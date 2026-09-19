@@ -30,5 +30,11 @@
   "trumpRule": "（切り札はソリストの最長スートから自動で決まります）",
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
   "errMustFollowSuit": "リードスートに従ってください",
-  "errMustPlayTrump": "切り札を出してください"
+  "errMustPlayTrump": "切り札を出してください",
+  "log.marriageDeclared": "{{name}} がマリアージュで {{points}} 点を宣言しました",
+  "log.play": "{{name}} が {{card}} を出しました",
+  "log.trickWon": "{{name}} がトリック {{trick}} を獲得（+{{points}}）",
+  "log.roundScoreSoloistWins": "ラウンド {{round}}: ソリスト({{soloist}})={{soloistTotal}} ディフェンス={{defenseTotal}} → ソリストの勝ち",
+  "log.roundScoreDefenseWins": "ラウンド {{round}}: ソリスト({{soloist}})={{soloistTotal}} ディフェンス={{defenseTotal}} → ディフェンスの勝ち",
+  "log.matchWon": "{{name}} がマッチに勝利！"
 }

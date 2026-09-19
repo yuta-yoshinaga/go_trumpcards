@@ -664,9 +664,17 @@ func TestSetteEMezzo_ActionLog(t *testing.T) {
 	if len(log) == 0 {
 		t.Fatal("the deal should be logged")
 	}
-	if log[0].ActionType != "deal" {
-		t.Errorf("log[0].ActionType = %q, want deal", log[0].ActionType)
+	var dealLog *ActionLogEntry
+	for _, entry := range log {
+		if entry.ActionType == "deal" {
+			dealLog = entry
+		}
 	}
+	if dealLog == nil {
+		t.Fatal("deal action was not logged")
+	}
+	assert.Equal(t, "setteemezzo.log.deal", dealLog.DetailCode)
+	assert.Empty(t, dealLog.Detail)
 }
 
 func TestSetteEMezzo_JSONRoundTrip(t *testing.T) {

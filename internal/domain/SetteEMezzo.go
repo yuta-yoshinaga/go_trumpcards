@@ -246,7 +246,7 @@ func (s *SetteEMezzo) deal(humanBet int) {
 		seat.hand = &SetteEMezzoHand{cards: s.drawOne(), bet: bet}
 	}
 	s.bankerHand = &SetteEMezzoHand{cards: s.drawOne()}
-	s.appendLog("deal", "全員に1枚ずつ配った", nil)
+	s.appendLog("deal", "setteemezzo.log.deal", nil, nil)
 
 	s.phase = SetteEMezzoPhasePlayerTurn
 	s.activeSeat = 0
@@ -341,7 +341,7 @@ func (s *SetteEMezzo) Hit() error {
 		return errors.New("settemezzo: the deck is empty")
 	}
 	s.autoAssignMatta(h)
-	s.appendLog("hit", "1枚引いた", h.cards)
+	s.appendLog("hit", "setteemezzo.log.hit", nil, h.cards)
 	// バーストしたか、ちょうど 7.5 に届いたらその手は終わり。7.5 は「見せて
 	// 手番を終える」手であって、即座の勝ちではない。
 	if s.handHalves(h) >= SetteEMezzoTargetHalves {
@@ -358,7 +358,7 @@ func (s *SetteEMezzo) Stand() error {
 		return err
 	}
 	h.stood = true
-	s.appendLog("stand", "スタンド", h.cards)
+	s.appendLog("stand", "setteemezzo.log.stand", nil, h.cards)
 	s.nextSeat()
 	return nil
 }
@@ -378,7 +378,7 @@ func (s *SetteEMezzo) SetMattaValue(halves int) error {
 		return errors.New("settemezzo: the matta is worth 0.5 or a whole number from 1 to 7")
 	}
 	h.mattaHalves = halves
-	s.appendLog("matta", fmt.Sprintf("マッタを %s 点にした", setteEMezzoFormatHalves(halves)), h.cards)
+	s.appendLog("matta", "setteemezzo.log.matta", map[string]string{"value": setteEMezzoFormatHalves(halves)}, h.cards)
 	return nil
 }
 
@@ -425,7 +425,7 @@ func (s *SetteEMezzo) BankerHit() error {
 		return errors.New("settemezzo: the deck is empty")
 	}
 	s.autoAssignMatta(s.bankerHand)
-	s.appendLog("bankerHit", "親が1枚引いた", s.bankerHand.cards)
+	s.appendLog("bankerHit", "setteemezzo.log.bankerHit", nil, s.bankerHand.cards)
 	if s.handHalves(s.bankerHand) >= SetteEMezzoTargetHalves {
 		s.settle()
 	}
@@ -465,7 +465,11 @@ func (s *SetteEMezzo) settle() {
 	}
 	s.phase = SetteEMezzoPhaseEnd
 	s.lastResult = s.describeResult(bankerHalves, bankerBust)
-	s.appendLog("result", s.lastResult, s.bankerHand.cards)
+	resultCode := "setteemezzo.log.bankerTotal"
+	if bankerBust {
+		resultCode = "setteemezzo.log.bankerBust"
+	}
+	s.appendLog("result", resultCode, map[string]string{"total": setteEMezzoFormatHalves(bankerHalves)}, s.bankerHand.cards)
 }
 
 // settleHand 1 つの手の増減（賭け金を除いた純増減）。同点は親の勝ち。
@@ -613,13 +617,14 @@ func (s *SetteEMezzo) CanSetMatta() bool {
 }
 
 // appendLog 棋譜エントリを追加
-func (s *SetteEMezzo) appendLog(actionType, detail string, cards []*Card) {
+func (s *SetteEMezzo) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	s.actionLog = append(s.actionLog, &ActionLogEntry{
-		TurnNumber: len(s.actionLog),
-		PlayerIdx:  s.activeSeat,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      append([]*Card(nil), cards...),
+		TurnNumber:   len(s.actionLog),
+		PlayerIdx:    s.activeSeat,
+		ActionType:   actionType,
+		DetailCode:   detailCode,
+		DetailParams: detailParams,
+		Cards:        append([]*Card(nil), cards...),
 	})
 }
 

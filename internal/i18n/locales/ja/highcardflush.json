@@ -29,5 +29,13 @@
   "hintRaise1x": "推奨: 1倍レイズ（4枚のフラッシュ）",
   "hintRaise1xMarginal": "推奨: 1倍レイズ（3枚だが最高札が Q 以上）",
   "helpExampleBet": "  b 100                                   100 チップを賭ける",
-  "helpHint": "  h                                       助言を表示"
+  "helpHint": "  h                                       助言を表示",
+  "log.bet": "アンテ={{ante}} フラッシュボーナス={{flushBonus}} ストレートフラッシュ={{straightFlush}}",
+  "log.raise": "レイズベット={{bet}} (x{{multiplier}})",
+  "log.playerFolds": "プレイヤーがフォールド",
+  "log.playerFolded": "プレイヤーがフォールドした",
+  "log.deal": "各プレイヤーに7枚配った（プレイヤーのフラッシュ={{flush}}）",
+  "log.playerWins": "プレイヤーの勝ち",
+  "log.push": "プッシュ",
+  "log.dealerWins": "ディーラーの勝ち"
 }

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"strconv"
 )
 
 // ハイカードフラッシュフェーズ定数
@@ -143,7 +144,7 @@ func (hcf *HighCardFlush) Bet(ante, flushBonus, straightFlush int) error {
 	hcf.anteBet = ante
 	hcf.flushBonusBet = flushBonus
 	hcf.straightFlushBet = straightFlush
-	hcf.appendLog(0, "bet", fmt.Sprintf("ante=%d flush_bonus=%d straight_flush=%d", ante, flushBonus, straightFlush), nil)
+	hcf.appendLogCode(0, "bet", "highcardflush.log.bet", map[string]string{"ante": strconv.Itoa(ante), "flushBonus": strconv.Itoa(flushBonus), "straightFlush": strconv.Itoa(straightFlush)}, nil)
 
 	hcf.deal()
 	hcf.phase = HighCardFlushPhaseAction
@@ -195,7 +196,7 @@ func (hcf *HighCardFlush) Raise(multiplier int) error {
 		return NewDomainError(ErrInsufficientChips, "Insufficient chips for raise.")
 	}
 	hcf.raiseBet = raise
-	hcf.appendLog(0, "raise", fmt.Sprintf("raise bet=%d (x%d)", raise, multiplier), nil)
+	hcf.appendLogCode(0, "raise", "highcardflush.log.raise", map[string]string{"bet": strconv.Itoa(raise), "multiplier": strconv.Itoa(multiplier)}, nil)
 	hcf.resolve()
 	return nil
 }
@@ -205,7 +206,7 @@ func (hcf *HighCardFlush) Fold() error {
 	if hcf.phase != HighCardFlushPhaseAction {
 		return NewDomainError(ErrWrongPhase, "Fold is only allowed during the action phase.")
 	}
-	hcf.appendLog(0, "fold", "player folds", nil)
+	hcf.appendLogCode(0, "fold", "highcardflush.log.playerFolds", nil, nil)
 
 	hcf.result = GameResultLose
 	// サイドベットはフォールドしても評価される
@@ -216,7 +217,7 @@ func (hcf *HighCardFlush) Fold() error {
 
 	hcf.gameEndFlag = true
 	hcf.phase = HighCardFlushPhaseEnd
-	hcf.appendLog(-1, "result", "player folded", nil)
+	hcf.appendLogCode(-1, "result", "highcardflush.log.playerFolded", nil, nil)
 	return nil
 }
 
@@ -232,7 +233,7 @@ func (hcf *HighCardFlush) deal() {
 	hcf.playerFlushLen = playerBest.Length
 	hcf.playerFlushSuit = playerBest.Suit
 	hcf.playerStraightLen = evalLongestStraightFlushLen(hcf.playerHand)
-	hcf.appendLog(-1, "deal", fmt.Sprintf("dealt 7 cards each (player flush=%d)", hcf.playerFlushLen), nil)
+	hcf.appendLogCode(-1, "deal", "highcardflush.log.deal", map[string]string{"flush": strconv.Itoa(hcf.playerFlushLen)}, nil)
 }
 
 // resolve Raise後の解決処理
@@ -270,16 +271,14 @@ func (hcf *HighCardFlush) resolve() {
 	hcf.gameEndFlag = true
 	hcf.phase = HighCardFlushPhaseEnd
 
-	var resultStr string
 	switch hcf.result {
 	case GameResultWin:
-		resultStr = "player wins"
+		hcf.appendLogCode(-1, "result", "highcardflush.log.playerWins", nil, nil)
 	case GameResultDraw:
-		resultStr = "push"
+		hcf.appendLogCode(-1, "result", "highcardflush.log.push", nil, nil)
 	default:
-		resultStr = "dealer wins"
+		hcf.appendLogCode(-1, "result", "highcardflush.log.dealerWins", nil, nil)
 	}
-	hcf.appendLog(-1, "result", resultStr, nil)
 }
 
 // calculatePayouts アンテ／レイズの配当（元ベット返却分を含む合計）

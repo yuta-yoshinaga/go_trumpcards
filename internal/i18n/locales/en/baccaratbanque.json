@@ -48,5 +48,12 @@
   "errGameEnded": "The bank has already ended.",
   "errNotBankerPhase": "This is not the moment for your draw decision.",
   "errNotResultPhase": "You can only give up the bank between coups.",
-  "errNaturalCannotDraw": "A natural cannot take a third card."
+  "errNaturalCannotDraw": "A natural cannot take a third card.",
+  "log.newShoe": "new shoe of {{cards}} cards",
+  "log.coupDealt": "coup {{coup}} dealt",
+  "log.thirdCard": "seat {{seat}} draws a third card",
+  "log.settle": "coup {{coup}}: banker {{banker}}, delta {{delta}}",
+  "log.bankRetired": "bank ends after {{coups}} coup(s): retired",
+  "log.bankrupt": "bank ends after {{coups}} coup(s): bankrupt",
+  "log.shoeExhausted": "bank ends after {{coups}} coup(s): shoeExhausted"
 }

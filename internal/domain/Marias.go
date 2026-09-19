@@ -17,9 +17,9 @@ package domain
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // MariasPlayerCnt プレイヤー数 (人間 1 + CPU 2)
@@ -184,7 +184,7 @@ func (g *Marias) detectMarriages() {
 			}
 		}
 		if len(g.roundMarriageSuits[i]) > 0 {
-			g.appendLog(i, "marriage", fmt.Sprintf("%s declares marriages worth %d", playerName(g.players, i), g.roundMarriage[i]), nil)
+			g.appendLogCode(i, "marriage", "marias.log.marriageDeclared", map[string]string{"name": playerName(g.players, i), "points": strconv.Itoa(g.roundMarriage[i])}, nil)
 		}
 	}
 }
@@ -248,7 +248,7 @@ func (g *Marias) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Marias) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLogCode(playerIdx, "play", "marias.log.play", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(g.currentTrick) == MariasPlayerCnt {
 		g.phase = MariasPhaseTrickEnd
@@ -272,8 +272,7 @@ func (g *Marias) ResolveTrick() {
 	}
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.roundCardPts[winnerIdx] += pts
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (+%d)", playerName(g.players, winnerIdx), g.trickNumber, pts), trickCards)
+	g.appendLogCode(winnerIdx, "trick_win", "marias.log.trickWon", map[string]string{"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber), "points": strconv.Itoa(pts)}, trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= MariasTrickCount {
@@ -313,10 +312,11 @@ func (g *Marias) ScoreRound() {
 			}
 		}
 	}
-	g.appendLog(-1, "round_score",
-		fmt.Sprintf("round %d: soloist(%s)=%d defense=%d -> %s",
-			g.roundNumber, playerName(g.players, g.soloistIdx), soloistTotal, defenseTotal,
-			map[bool]string{true: "soloist wins", false: "defense wins"}[soloistWon]), nil)
+	if soloistWon {
+		g.appendLogCode(-1, "round_score", "marias.log.roundScoreSoloistWins", map[string]string{"round": strconv.Itoa(g.roundNumber), "soloist": playerName(g.players, g.soloistIdx), "soloistTotal": strconv.Itoa(soloistTotal), "defenseTotal": strconv.Itoa(defenseTotal)}, nil)
+	} else {
+		g.appendLogCode(-1, "round_score", "marias.log.roundScoreDefenseWins", map[string]string{"round": strconv.Itoa(g.roundNumber), "soloist": playerName(g.players, g.soloistIdx), "soloistTotal": strconv.Itoa(soloistTotal), "defenseTotal": strconv.Itoa(defenseTotal)}, nil)
+	}
 
 	g.checkGameEnd()
 }
@@ -348,7 +348,7 @@ func (g *Marias) checkGameEnd() {
 		g.gameEndFlag = true
 		g.winnerPlayer = leader
 		g.phase = MariasPhaseGameEnd
-		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
+		g.appendLogCode(-1, "game_end", "marias.log.matchWon", map[string]string{"name": playerName(g.players, leader)}, nil)
 	}
 }
 

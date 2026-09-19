@@ -1,0 +1,9 @@
+{
+  "log.deal": "Dealt one card to everyone",
+  "log.hit": "Drew one card",
+  "log.stand": "Stand",
+  "log.matta": "Set matta to {{value}} points",
+  "log.bankerHit": "Banker drew one card",
+  "log.bankerTotal": "Banker is at {{total}}",
+  "log.bankerBust": "Banker busts ({{total}})"
+}

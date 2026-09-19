@@ -106,6 +106,21 @@ func TestMarias_MustFollowAndTrumpWhenVoid(t *testing.T) {
 	if err := g.PlayerPlay(0); err != nil {
 		t.Fatalf("valid follow err: %v", err)
 	}
+	var playLog *ActionLogEntry
+	for _, entry := range g.GetActionLog() {
+		if entry.ActionType == "play" {
+			playLog = entry
+		}
+	}
+	if playLog == nil {
+		t.Fatal("play action was not logged")
+	}
+	if playLog.DetailCode != "marias.log.play" || playLog.Detail != "" {
+		t.Fatalf("play log = %#v, want code and empty detail", playLog)
+	}
+	if playLog.DetailParams["name"] == "" || playLog.DetailParams["card"] == "" {
+		t.Fatalf("play params = %#v, want name and card", playLog.DetailParams)
+	}
 	// Void in clubs but holds a trump -> must trump.
 	g.SetCurrentTrick([]*TrickCard{{PlayerIdx: 1, Card: marCard(CardDesignClover, 1)}})
 	g.SetCurrentPlayerIdx(0)

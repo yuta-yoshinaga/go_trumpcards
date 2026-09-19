@@ -48,5 +48,12 @@
   "errGameEnded": "バンクは既に終わっています。",
   "errNotBankerPhase": "いまはあなたが引くかを決めるフェーズではありません。",
   "errNotResultPhase": "いまはバンクを降りられるフェーズではありません。",
-  "errNaturalCannotDraw": "ナチュラルなので 3 枚目は引けません。"
+  "errNaturalCannotDraw": "ナチュラルなので 3 枚目は引けません。",
+  "log.newShoe": "{{cards}}枚の新しいシューを使います",
+  "log.coupDealt": "クー {{coup}} を配りました",
+  "log.thirdCard": "席 {{seat}} が3枚目を引きます",
+  "log.settle": "クー {{coup}}: バンカー {{banker}}、増減 {{delta}}",
+  "log.bankRetired": "{{coups}}クー後にバンクを降ります",
+  "log.bankrupt": "{{coups}}クー後にバンクが尽きました",
+  "log.shoeExhausted": "{{coups}}クー後にシューを使い切りました"
 }

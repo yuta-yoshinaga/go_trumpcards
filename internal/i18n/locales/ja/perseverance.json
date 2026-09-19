@@ -23,5 +23,10 @@
   "helpTargets": "  t <col>                  その列の札を置ける先を一覧する",
   "helpRedeal": "  rd / redeal          集めて配り直す (最大2回)",
   "redealsLine": "残り再配り: {{count}}回",
-  "promptToZone": "移動先を入力してください (列番号, f=基礎札):"
+  "promptToZone": "移動先を入力してください (列番号, f=基礎札):",
+  "log.redeal": "集めて配り直しました (残り{{remaining}}回)",
+  "log.tableauMove": "タブロー列{{from}}→タブロー列{{to}}",
+  "log.tableauToFoundation": "タブロー列{{column}}→ファンデーション",
+  "log.giveUp": "ギブアップしました",
+  "log.autocomplete": "オートコンプリートを実行しました"
 }
