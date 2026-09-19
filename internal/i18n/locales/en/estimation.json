@@ -42,5 +42,14 @@
   "suitDiamond": "Diamonds",
   "helpExamplePlay": "  p 0                  play hand card 0",
   "helpHint": "  h                    show a hint",
-  "roundDelta": "this round: {{delta}}"
+  "roundDelta": "this round: {{delta}}",
+  "log.deal": "Started round {{round}}",
+  "log.trump": "Set trump to {{suit}}",
+  "log.dash": "Dash Call (bid 0)",
+  "log.bid": "Declared {{bid}} tricks",
+  "log.risk": "Risk (highest bid {{bid}})",
+  "log.play": "{{card}}",
+  "log.score": "Bid {{bid}} got {{got}}: {{score}}",
+  "log.result": "Final scores {{score0}}/{{score1}}/{{score2}}/{{score3}}",
+  "log.giveUp": "Gave up"
 }

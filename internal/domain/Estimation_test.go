@@ -771,4 +771,14 @@ func TestEstimation_ActionLog(t *testing.T) {
 	}
 	assert.True(t, kinds["trump"])
 	assert.True(t, kinds["bid"])
+	var bidLog *ActionLogEntry
+	for _, entry := range e.actionLog {
+		if entry.DetailCode == "estimation.log.bid" {
+			bidLog = entry
+			break
+		}
+	}
+	require.NotNil(t, bidLog)
+	assert.Equal(t, map[string]string{"bid": "3"}, bidLog.DetailParams)
+	assert.Empty(t, bidLog.Detail)
 }

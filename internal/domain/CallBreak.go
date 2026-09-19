@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // CallBreakPlayerCnt Call Break のプレイヤー数
@@ -166,7 +167,7 @@ func (cb *CallBreak) PlayerBid(bid int) error {
 	}
 
 	cb.players[humanIdx].SetBid(bid)
-	cb.appendLog(humanIdx, "bid", fmt.Sprintf("%s bids %d", playerName(cb.players, humanIdx), bid), nil)
+	cb.appendLog(humanIdx, "bid", "callbreak.log.bid", map[string]string{"name": playerName(cb.players, humanIdx), "bid": strconv.Itoa(bid)}, nil)
 
 	cb.bidPlayerIdx++
 	cb.checkBidComplete()
@@ -187,7 +188,7 @@ func (cb *CallBreak) CpuBid() {
 
 	bid := cb.cpuSelectBid(cb.bidPlayerIdx)
 	cb.players[cb.bidPlayerIdx].SetBid(bid)
-	cb.appendLog(cb.bidPlayerIdx, "bid", fmt.Sprintf("%s bids %d", playerName(cb.players, cb.bidPlayerIdx), bid), nil)
+	cb.appendLog(cb.bidPlayerIdx, "bid", "callbreak.log.bid", map[string]string{"name": playerName(cb.players, cb.bidPlayerIdx), "bid": strconv.Itoa(bid)}, nil)
 
 	cb.bidPlayerIdx++
 	cb.checkBidComplete()
@@ -254,7 +255,7 @@ func (cb *CallBreak) ResolveTrick() {
 	}
 
 	cb.players[winnerIdx].AddTrick(trickCards)
-	cb.appendLog(winnerIdx, "trick_win", fmt.Sprintf("%s wins trick %d", playerName(cb.players, winnerIdx), cb.trickNumber), trickCards)
+	cb.appendLog(winnerIdx, "trick_win", "callbreak.log.trickWin", map[string]string{"name": playerName(cb.players, winnerIdx), "trick": strconv.Itoa(cb.trickNumber)}, trickCards)
 
 	cb.leadPlayerIdx = winnerIdx
 
@@ -301,8 +302,7 @@ func (cb *CallBreak) ScoreRound() {
 		}
 		p.SetRoundScore(score)
 
-		cb.appendLog(i, "round_score", fmt.Sprintf("%s: bid=%d tricks=%d round=%s",
-			playerName(cb.players, i), bid, tricks, FormatCallBreakScore(score)), nil)
+		cb.appendLog(i, "round_score", "callbreak.log.roundScore", map[string]string{"name": playerName(cb.players, i), "bid": strconv.Itoa(bid), "tricks": strconv.Itoa(tricks), "round": FormatCallBreakScore(score)}, nil)
 	}
 
 	// 累積スコアに加算
@@ -312,8 +312,7 @@ func (cb *CallBreak) ScoreRound() {
 
 	// スコアログ
 	for i := 0; i < CallBreakPlayerCnt; i++ {
-		cb.appendLog(i, "cumulative_score", fmt.Sprintf("%s: total=%s",
-			playerName(cb.players, i), FormatCallBreakScore(cb.players[i].GetCumulativeScore())), nil)
+		cb.appendLog(i, "cumulative_score", "callbreak.log.cumulativeScore", map[string]string{"name": playerName(cb.players, i), "total": FormatCallBreakScore(cb.players[i].GetCumulativeScore())}, nil)
 	}
 
 	cb.checkGameEnd()
@@ -438,7 +437,7 @@ func (cb *CallBreak) playCard(playerIdx int, card *Card) {
 		cb.spadesBroken = true
 	}
 
-	cb.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(cb.players, playerIdx), cardStr(card)), []*Card{card})
+	cb.appendLog(playerIdx, "play", "callbreak.log.play", map[string]string{"name": playerName(cb.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(cb.currentTrick) == CallBreakPlayerCnt {
 		cb.phase = CallBreakPhaseTrickEnd
@@ -516,7 +515,12 @@ func (cb *CallBreak) checkGameEnd() {
 			cb.winnerIdx = i
 		}
 	}
-	cb.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(cb.players, cb.winnerIdx)), nil)
+	cb.appendLog(-1, "game_end", "callbreak.log.gameEnd", map[string]string{"name": playerName(cb.players, cb.winnerIdx)}, nil)
+}
+
+// appendLog records a Call Break action with a locale-independent detail code.
+func (cb *CallBreak) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	cb.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // sortAllHands 全プレイヤーの手札をソートする (スート → 値)

@@ -538,6 +538,16 @@ func TestTwoTenJack_GetActionLog(t *testing.T) {
 	_ = ttj.PlayerDeclareTrump(domain.CardDesignSpade)
 	log := ttj.GetActionLog()
 	assert.NotEmpty(t, log)
+	var trumpLog *domain.ActionLogEntry
+	for _, entry := range log {
+		if entry.DetailCode == "twotenjack.log.declareTrump" {
+			trumpLog = entry
+			break
+		}
+	}
+	require.NotNil(t, trumpLog)
+	assert.Equal(t, map[string]string{"name": "You", "suit": "Spade"}, trumpLog.DetailParams)
+	assert.Empty(t, trumpLog.Detail)
 }
 
 func TestTwoTenJack_JSONRoundTrip(t *testing.T) {

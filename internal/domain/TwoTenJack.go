@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // TwoTenJackPlayerCnt ツーテンジャックプレイヤー数
@@ -158,7 +159,7 @@ func (t *TwoTenJack) PlayerDeclareTrump(suit int) error {
 	}
 
 	t.trumpSuit = suit
-	t.appendLog(t.declarerIdx, "declare_trump", fmt.Sprintf("%s declares trump: %s", playerName(t.players, t.declarerIdx), twoTenJackSuitName(suit)), nil)
+	t.appendLog(t.declarerIdx, "declare_trump", "twotenjack.log.declareTrump", map[string]string{"name": playerName(t.players, t.declarerIdx), "suit": twoTenJackSuitName(suit)}, nil)
 	t.startPlayPhase()
 	return nil
 }
@@ -176,7 +177,7 @@ func (t *TwoTenJack) CpuDeclareTrump() {
 	}
 	suit := t.cpuSelectTrump(t.declarerIdx)
 	t.trumpSuit = suit
-	t.appendLog(t.declarerIdx, "declare_trump", fmt.Sprintf("%s declares trump: %s", playerName(t.players, t.declarerIdx), twoTenJackSuitName(suit)), nil)
+	t.appendLog(t.declarerIdx, "declare_trump", "twotenjack.log.declareTrump", map[string]string{"name": playerName(t.players, t.declarerIdx), "suit": twoTenJackSuitName(suit)}, nil)
 	t.startPlayPhase()
 }
 
@@ -248,7 +249,7 @@ func (t *TwoTenJack) ResolveTrick() {
 	t.players[winnerIdx].AddTrick(trickCards)
 
 	winnerName := playerName(t.players, winnerIdx)
-	t.appendLog(winnerIdx, "trick_win", fmt.Sprintf("%s wins trick %d", winnerName, t.trickNumber), trickCards)
+	t.appendLog(winnerIdx, "trick_win", "twotenjack.log.trickWin", map[string]string{"name": winnerName, "trick": strconv.Itoa(t.trickNumber)}, trickCards)
 
 	t.leadPlayerIdx = winnerIdx
 
@@ -316,8 +317,7 @@ func (t *TwoTenJack) ScoreRound() {
 		t.players[i].SetRoundScore(teamRoundScore[team])
 	}
 
-	t.appendLog(-1, "round_score", fmt.Sprintf("team0=%d team1=%d (declarer=team%d, declPts=%d)",
-		teamRoundScore[0], teamRoundScore[1], declaringTeam, declTeamPts), nil)
+	t.appendLog(-1, "round_score", "twotenjack.log.roundScore", map[string]string{"team0": strconv.Itoa(teamRoundScore[0]), "team1": strconv.Itoa(teamRoundScore[1]), "declarer": strconv.Itoa(declaringTeam), "declPts": strconv.Itoa(declTeamPts)}, nil)
 
 	// 累積スコアに加算
 	for i := 0; i < TwoTenJackPlayerCnt; i++ {
@@ -325,8 +325,7 @@ func (t *TwoTenJack) ScoreRound() {
 	}
 
 	for i := 0; i < TwoTenJackPlayerCnt; i++ {
-		t.appendLog(i, "cumulative_score", fmt.Sprintf("%s: total=%d",
-			playerName(t.players, i), t.players[i].GetCumulativeScore()), nil)
+		t.appendLog(i, "cumulative_score", "twotenjack.log.cumulativeScore", map[string]string{"name": playerName(t.players, i), "total": strconv.Itoa(t.players[i].GetCumulativeScore())}, nil)
 	}
 
 	t.checkGameEnd()
@@ -432,7 +431,7 @@ func (t *TwoTenJack) playCard(playerIdx int, card *Card) {
 		PlayerIdx: playerIdx,
 		Card:      card,
 	})
-	t.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(t.players, playerIdx), cardStr(card)), []*Card{card})
+	t.appendLog(playerIdx, "play", "twotenjack.log.play", map[string]string{"name": playerName(t.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(t.currentTrick) == TwoTenJackPlayerCnt {
 		t.phase = TwoTenJackPhaseTrickEnd
@@ -475,7 +474,12 @@ func (t *TwoTenJack) checkGameEnd() {
 	} else {
 		t.winnerTeam = 1
 	}
-	t.appendLog(-1, "game_end", fmt.Sprintf("Team %d wins the game! (team0=%d, team1=%d)", t.winnerTeam, team0, team1), nil)
+	t.appendLog(-1, "game_end", "twotenjack.log.gameEnd", map[string]string{"team": strconv.Itoa(t.winnerTeam), "team0": strconv.Itoa(team0), "team1": strconv.Itoa(team1)}, nil)
+}
+
+// appendLog records a Two Ten Jack action with a locale-independent detail code.
+func (t *TwoTenJack) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	t.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // sortAllHands 全プレイヤーの手札をソートする

@@ -25,5 +25,14 @@
   "hintReasonDumpHigh": "安全なうちに高い札を処分する",
   "helpExampleGiveUp": "  g                    この局を投了する",
   "helpHint": "  h                    助言を表示",
-  "handCard": "[{{idx}}]{{card}}({{points}}点)"
+  "handCard": "[{{idx}}]{{card}}({{points}}点)",
+  "log.deal": "ラウンド{{round}} 開始（プール {{pool}}）",
+  "log.play": "{{card}}",
+  "log.marked": "{{name}} を取った（+{{penalty}}失点、プールへ {{stake}}）",
+  "log.poolTied": "最少失点が同点。プール {{pool}} を持ち越し",
+  "log.poolWon": "最少失点（{{penalty}}）でプール {{pool}} を獲得",
+  "log.poolSplit": "最終ラウンドが同点。プール {{pool}} を {{players}} 人で分配",
+  "log.resultTie": "同点で決着つかず",
+  "log.resultWinner": "勝者（{{chips}}チップ）",
+  "log.giveUp": "ギブアップしました"
 }

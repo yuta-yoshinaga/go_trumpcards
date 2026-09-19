@@ -36,5 +36,11 @@
   "helpExamplePlay": "  p 0                  play hand card 0",
   "helpHint": "  h                    show a hint",
   "errInvalidTrumpSuit": "The trump suit is invalid.",
-  "errCardIndexOutOfRange": "The card index is out of range."
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "log.declareTrump": "{{name}} declares trump: {{suit}}",
+  "log.trickWin": "{{name}} wins trick {{trick}}",
+  "log.roundScore": "team0={{team0}} team1={{team1}} (declarer=team{{declarer}}, declPts={{declPts}})",
+  "log.cumulativeScore": "{{name}}: total={{total}}",
+  "log.play": "{{name}} plays {{card}}",
+  "log.gameEnd": "Team {{team}} wins the game! (team0={{team0}}, team1={{team1}})"
 }

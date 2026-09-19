@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // ReversisPhase レヴェルシのゲームフェーズ
@@ -162,7 +163,7 @@ func (r *Reversis) dealRound() {
 	r.leadPlayerIdx = (r.dealerIdx + 1) % ReversisPlayerCnt
 	r.currentPlayerIdx = r.leadPlayerIdx
 	r.sortAllHands()
-	r.appendLog(-1, "deal", fmt.Sprintf("ラウンド%d 開始（プール %d）", r.roundNumber, r.pool), nil)
+	r.appendLog(-1, "deal", "reversis.log.deal", map[string]string{"round": strconv.Itoa(r.roundNumber), "pool": strconv.Itoa(r.pool)}, nil)
 }
 
 // sortAllHands 手札をスートごと・強さ順に並べる
@@ -211,7 +212,7 @@ func (r *Reversis) play(playerIdx, cardIndex int) error {
 	}
 	p.RemoveCard(cardIndex)
 	r.currentTrick = append(r.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	r.appendLog(playerIdx, "play", cardStr(card), []*Card{card})
+	r.appendLog(playerIdx, "play", "reversis.log.play", map[string]string{"card": cardStr(card)}, []*Card{card})
 
 	if len(r.currentTrick) < ReversisPlayerCnt {
 		r.currentPlayerIdx = (playerIdx + 1) % ReversisPlayerCnt
@@ -291,8 +292,7 @@ func (r *Reversis) chargeMarked(winner int, name string, card *Card) {
 	r.players[winner].AddRoundPenalty(ReversisMarkedPenalty)
 	r.players[winner].AddChips(-ReversisMarkedStake)
 	r.pool += ReversisMarkedStake
-	r.appendLog(winner, "marked",
-		fmt.Sprintf("%s を取った（+%d失点、プールへ %d）", name, ReversisMarkedPenalty, ReversisMarkedStake), []*Card{card})
+	r.appendLog(winner, "marked", "reversis.log.marked", map[string]string{"name": name, "penalty": strconv.Itoa(ReversisMarkedPenalty), "stake": strconv.Itoa(ReversisMarkedStake)}, []*Card{card})
 }
 
 // ReversisCardPenalty その札の失点を返す。A=4 / K=3 / Q=2 / J=1 / その他=0。
@@ -361,10 +361,10 @@ func (r *Reversis) finishRound() {
 		r.splitPoolAmongTied(best)
 	case tied:
 		// まだ先があるなら次のラウンドへ持ち越す。プールが膨らむぶん次が重くなる。
-		r.appendLog(-1, "pool", fmt.Sprintf("最少失点が同点。プール %d を持ち越し", r.pool), nil)
+		r.appendLog(-1, "pool", "reversis.log.poolTied", map[string]string{"pool": strconv.Itoa(r.pool)}, nil)
 	default:
 		r.players[bestIdx].AddChips(r.pool)
-		r.appendLog(bestIdx, "pool", fmt.Sprintf("最少失点（%d）でプール %d を獲得", best, r.pool), nil)
+		r.appendLog(bestIdx, "pool", "reversis.log.poolWon", map[string]string{"penalty": strconv.Itoa(best), "pool": strconv.Itoa(r.pool)}, nil)
 		r.pool = 0
 	}
 
@@ -400,8 +400,7 @@ func (r *Reversis) splitPoolAmongTied(best int) {
 		}
 		r.players[idx].AddChips(amount)
 	}
-	r.appendLog(-1, "pool",
-		fmt.Sprintf("最終ラウンドが同点。プール %d を %d 人で分配", r.pool, len(tiedIdx)), nil)
+	r.appendLog(-1, "pool", "reversis.log.poolSplit", map[string]string{"pool": strconv.Itoa(r.pool), "players": strconv.Itoa(len(tiedIdx))}, nil)
 	r.pool = 0
 }
 
@@ -434,11 +433,11 @@ func (r *Reversis) finishGame() {
 	}
 	if tied {
 		r.winnerIdx = -1
-		r.appendLog(-1, "result", "同点で決着つかず", nil)
+		r.appendLog(-1, "result", "reversis.log.resultTie", nil, nil)
 		return
 	}
 	r.winnerIdx = bestIdx
-	r.appendLog(bestIdx, "result", fmt.Sprintf("勝者（%dチップ）", best), nil)
+	r.appendLog(bestIdx, "result", "reversis.log.resultWinner", map[string]string{"chips": strconv.Itoa(best)}, nil)
 }
 
 // trickWinner 現在のトリックの勝者。切り札が無いので、リードのスートの最強札。
@@ -696,12 +695,12 @@ func (r *Reversis) GiveUp() {
 	r.phase = ReversisPhaseGameEnd
 	r.gameEndFlag = true
 	r.winnerIdx = -1
-	r.appendLog(0, "giveup", "ギブアップしました", nil)
+	r.appendLog(0, "giveup", "reversis.log.giveUp", nil, nil)
 }
 
 // appendLog 棋譜エントリを追加
-func (r *Reversis) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	r.appendLogAt(r.trickNumber, playerIdx, actionType, detail, cards)
+func (r *Reversis) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	r.appendLogCodeAt(r.trickNumber, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // reversisJSON is the KV snapshot format for Reversis.
