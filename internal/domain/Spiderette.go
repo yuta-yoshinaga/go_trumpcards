@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // SpiderettePhase スパイダレットゲームフェーズ
@@ -174,7 +175,7 @@ func (s *Spiderette) Deal() error {
 	}
 	s.moveCount++
 	s.score -= SpideretteMovePenalty
-	s.appendLog("deal", "ストックから各列にカードを配りました", nil)
+	s.appendLog("deal", "spiderette.log.deal", nil, nil)
 	for i := range SpideretteTableauCnt {
 		s.checkAndRemoveCompletedSuit(i)
 	}
@@ -228,7 +229,7 @@ func (s *Spiderette) MoveTableauToTableau(fromCol, cardIndex, toCol int) error {
 	s.autoFlipTableau(fromCol)
 	s.moveCount++
 	s.score -= SpideretteMovePenalty
-	s.appendLog("move", fmt.Sprintf("タブロー列%d→タブロー列%d", fromCol, toCol), movedCards)
+	s.appendLog("move", "spiderette.log.move", map[string]string{"from": strconv.Itoa(fromCol), "to": strconv.Itoa(toCol)}, movedCards)
 	s.checkAndRemoveCompletedSuit(toCol)
 	s.checkSpideretteStalemate()
 	return nil
@@ -238,7 +239,7 @@ func (s *Spiderette) MoveTableauToTableau(fromCol, cardIndex, toCol int) error {
 func (s *Spiderette) GiveUp() {
 	if s.phase == SpiderettePhasePlaying {
 		s.phase = SpiderettePhaseGameOver
-		s.appendLog("giveup", "ギブアップしました", nil)
+		s.appendLog("giveup", "spiderette.log.giveUp", nil, nil)
 	}
 }
 
@@ -317,7 +318,7 @@ func (s *Spiderette) AutoComplete() error {
 			break
 		}
 	}
-	s.appendLog("autocomplete", "オートコンプリートを実行しました", nil)
+	s.appendLog("autocomplete", "spiderette.log.autocomplete", nil, nil)
 	s.checkGameClear()
 	return nil
 }
@@ -477,7 +478,7 @@ func (s *Spiderette) checkAndRemoveCompletedSuit(col int) bool {
 	s.tableau[col] = cards[:startIdx]
 	s.completedSuits++
 	s.score += SpideretteSuitBonus
-	s.appendLog("complete", fmt.Sprintf("タブロー列%dでスートが完成しました", col), nil)
+	s.appendLog("complete", "spiderette.log.complete", map[string]string{"column": strconv.Itoa(col)}, nil)
 
 	s.autoFlipTableau(col)
 	s.checkGameClear()
@@ -560,8 +561,8 @@ func (s *Spiderette) restoreSnapshot(snap *spideretteSnapshot) {
 }
 
 // appendLog 棋譜エントリを追加
-func (s *Spiderette) appendLog(actionType, detail string, cards []*Card) {
-	s.appendLogAt(s.moveCount, 0, actionType, detail, cards)
+func (s *Spiderette) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	s.appendLogCodeAt(s.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // spideretteJSON is the JSON wire format for Spiderette.

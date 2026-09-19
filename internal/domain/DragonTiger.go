@@ -5,6 +5,7 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 )
 
 // ドラゴンタイガーフェーズ定数
@@ -117,7 +118,14 @@ func (dt *DragonTiger) Bet(amount, betType int) error {
 	}
 	dt.betAmount = amount
 	dt.betType = betType
-	dt.appendLog(0, "bet", fmt.Sprintf("bet %d on %s", amount, dragonTigerBetTypeName(betType)), nil)
+	betCode := "dragontiger.log.betTie"
+	switch betType {
+	case DragonTigerBetDragon:
+		betCode = "dragontiger.log.betDragon"
+	case DragonTigerBetTiger:
+		betCode = "dragontiger.log.betTiger"
+	}
+	dt.appendLog(0, "bet", betCode, map[string]string{"amount": strconv.Itoa(amount)}, nil)
 
 	dt.deal()
 	dt.judge()
@@ -132,7 +140,7 @@ func (dt *DragonTiger) deal() {
 	if dt.tigerCard == nil {
 		dt.tigerCard = dt.trumpCards.DrawCard()
 	}
-	dt.appendLog(-1, "deal", "dealt dragon and tiger cards", []*Card{dt.dragonCard, dt.tigerCard})
+	dt.appendLog(-1, "deal", "dragontiger.log.deal", nil, []*Card{dt.dragonCard, dt.tigerCard})
 }
 
 // judge 勝敗判定＆配当計算
@@ -141,13 +149,13 @@ func (dt *DragonTiger) judge() {
 	switch {
 	case dr > tr:
 		dt.result = GameResultWin // Dragon wins
-		dt.appendLog(-1, "result", "dragon wins", nil)
+		dt.appendLog(-1, "result", "dragontiger.log.dragonWins", nil, nil)
 	case tr > dr:
 		dt.result = GameResultLose // Tiger wins (player's "lose" semantics for the dragon-default frame)
-		dt.appendLog(-1, "result", "tiger wins", nil)
+		dt.appendLog(-1, "result", "dragontiger.log.tigerWins", nil, nil)
 	default:
 		dt.result = GameResultDraw
-		dt.appendLog(-1, "result", "tie", nil)
+		dt.appendLog(-1, "result", "dragontiger.log.tie", nil, nil)
 	}
 
 	switch dt.result {
@@ -205,18 +213,8 @@ func dragonTigerRankOf(c *Card) int {
 	return c.GetValue()
 }
 
-// dragonTigerBetTypeName ベットタイプ名
-func dragonTigerBetTypeName(betType int) string {
-	switch betType {
-	case DragonTigerBetDragon:
-		return "dragon"
-	case DragonTigerBetTiger:
-		return "tiger"
-	case DragonTigerBetTie:
-		return "tie"
-	default:
-		return "unknown"
-	}
+func (dt *DragonTiger) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	dt.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- Getters ---

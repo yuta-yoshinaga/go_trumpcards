@@ -1,4 +1,11 @@
 {
+  "log.betDragon": "{{amount}}をドラゴンにベットしました",
+  "log.betTiger": "{{amount}}をタイガーにベットしました",
+  "log.betTie": "{{amount}}をタイにベットしました",
+  "log.deal": "ドラゴンとタイガーにカードを配りました",
+  "log.dragonWins": "ドラゴンの勝ち",
+  "log.tigerWins": "タイガーの勝ち",
+  "log.tie": "引き分け",
   "helpTitle": "Dragon Tiger (ドラゴンタイガー)",
   "helpBet": "  b <amount> <d|t|e>   ベット (d=ドラゴン, t=タイガー, e=タイ)",
   "helpClear": "  clear                罫線履歴をクリア",

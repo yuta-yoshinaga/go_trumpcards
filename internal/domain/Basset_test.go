@@ -28,6 +28,10 @@ func placeBassetBet(t *testing.T, b *Basset, rank int) {
 func TestBasset_FirstCardMatchLosesAndSecondCardMatchWins(t *testing.T) {
 	losing := newBassetDeterministic(7, 4, 3, 2)
 	placeBassetBet(t, losing, 7)
+	entry := losing.GetActionLog()[0]
+	if entry.DetailCode != "basset.log.bet" || entry.DetailParams["rank"] != "7" || entry.Detail != "" {
+		t.Fatalf("bet log = %#v, want code and params", entry)
+	}
 	if err := losing.PlayerDealTurn(); err != nil {
 		t.Fatal(err)
 	}

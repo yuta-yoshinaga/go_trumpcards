@@ -1,4 +1,12 @@
 {
+  "log.bet": "アンテ={{ante}} エースズアップ={{acesUp}}",
+  "log.play": "プレイベット={{bet}}（アンテの{{multiplier}}倍）",
+  "log.fold": "プレイヤーがフォールド",
+  "log.playerFolded": "プレイヤーがフォールドしました",
+  "log.deal": "プレイヤーに5枚、ディーラーに6枚配りました",
+  "log.playerWins": "プレイヤーの勝ち",
+  "log.dealerWins": "ディーラーの勝ち",
+  "log.push": "プッシュ",
   "helpTitle": "Four Card Poker (フォーカードポーカー)",
   "helpBet": "  b <ante> [acesup]    ベット (アンテ必須、エースズアップ任意)",
   "helpPlay": "  p [1|2|3]            プレイ (Anteの1〜3倍のプレイベット、未指定は1倍)",

@@ -1,4 +1,9 @@
 {
+  "log.deal": "ストックから列0-2に1枚ずつ配りました",
+  "log.move": "タブロー列{{from}}→タブロー列{{to}}",
+  "log.giveUp": "ギブアップしました",
+  "log.autocomplete": "オートコンプリートを実行しました",
+  "log.complete": "タブロー列{{column}}でスートが完成しました",
   "helpTitle": "Wasp (ワスプ)",
   "helpMove": "  m <col> [<col>]      move top card between tableau columns",
   "helpMoveTT": "  m t <col> <idx> t <col>  move tableau to tableau",

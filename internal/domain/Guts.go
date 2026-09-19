@@ -42,6 +42,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // GutsPhase はゲームフェーズ。
@@ -221,8 +222,7 @@ func (g *Guts) startRound() {
 		}
 	}
 	g.state.phase = GutsPhaseDeclare
-	g.appendLog(-1, "deal",
-		fmt.Sprintf("Round %d: ante %d, pot %d", g.state.roundNumber, g.config.Ante, g.state.pot), nil)
+	g.appendLog(-1, "deal", "guts.log.deal", map[string]string{"round": strconv.Itoa(g.state.roundNumber), "ante": strconv.Itoa(g.config.Ante), "pot": strconv.Itoa(g.state.pot)}, nil)
 }
 
 // Declare は人間 (seat 0) の in/out 宣言を受け付け、ラウンドを解決する。
@@ -237,7 +237,11 @@ func (g *Guts) Declare(stay bool) error {
 		return NewDomainError(ErrInvalidPlay, "you are out of the game")
 	}
 	g.players[0].SetIn(stay)
-	g.appendLog(0, "declare", gutsDeclareText(0, stay), nil)
+	declareCode := "guts.log.declareOut"
+	if stay {
+		declareCode = "guts.log.declareIn"
+	}
+	g.appendLog(0, "declare", declareCode, map[string]string{"player": "0"}, nil)
 	g.resolve()
 	return nil
 }
@@ -256,7 +260,11 @@ func (g *Guts) cpuDeclare() {
 		}
 		stay := g.cpuStays(p)
 		p.SetIn(stay)
-		g.appendLog(i, "declare", gutsDeclareText(i, stay), nil)
+		declareCode := "guts.log.declareOut"
+		if stay {
+			declareCode = "guts.log.declareIn"
+		}
+		g.appendLog(i, "declare", declareCode, map[string]string{"player": strconv.Itoa(i)}, nil)
 	}
 }
 
@@ -282,14 +290,13 @@ func (g *Guts) settle() {
 		// 誰も残らなかった: ポットを丸ごと次ラウンドへ持ち越す。
 		g.state.carryPot = g.state.pot
 		g.state.carryCount++
-		g.appendLog(-1, "result", fmt.Sprintf("nobody stayed; pot %d carries over", g.state.pot), nil)
+		g.appendLog(-1, "result", "guts.log.carry", map[string]string{"pot": strconv.Itoa(g.state.pot)}, nil)
 	default:
 		winner := g.bestHand(inPlayers)
 		g.state.winnerIdx = winner
 		g.state.carryCount = 0
 		g.players[winner].AddChips(g.state.pot)
-		g.appendLog(winner, "win",
-			fmt.Sprintf("%s wins the pot (%d)", playerName(g.players, winner), g.state.pot), nil)
+		g.appendLog(winner, "win", "guts.log.win", map[string]string{"name": playerName(g.players, winner), "pot": strconv.Itoa(g.state.pot)}, nil)
 		// 勝者以外の「イン」プレイヤーはポット額をマッチして次ラウンドの種銭に積む。
 		for _, idx := range inPlayers {
 			if idx == winner {
@@ -300,8 +307,7 @@ func (g *Guts) settle() {
 			g.players[idx].AddRoundBet(pay)
 			g.state.carryPot += pay
 			g.state.matchers = append(g.state.matchers, idx)
-			g.appendLog(idx, "match",
-				fmt.Sprintf("%s matches the pot (pays %d)", playerName(g.players, idx), pay), nil)
+			g.appendLog(idx, "match", "guts.log.match", map[string]string{"name": playerName(g.players, idx), "pay": strconv.Itoa(pay)}, nil)
 		}
 		g.setHumanResult(winner)
 	}
@@ -339,8 +345,7 @@ func (g *Guts) endGame() {
 	g.state.gameEndFlag = true
 	g.state.phase = GutsPhaseResult
 	g.state.matchWinnerIdx = g.richestIdx()
-	g.appendLog(g.state.matchWinnerIdx, "game_end",
-		fmt.Sprintf("%s wins the game", playerName(g.players, g.state.matchWinnerIdx)), nil)
+	g.appendLog(g.state.matchWinnerIdx, "game_end", "guts.log.gameEnd", map[string]string{"name": playerName(g.players, g.state.matchWinnerIdx)}, nil)
 }
 
 // --- 手役評価 (インライン) ---
@@ -478,17 +483,9 @@ func (g *Guts) richestIdx() int {
 	return maxIndexBy(g.players, func(p *GutsPlayer) int { return p.GetChips() })
 }
 
-// gutsDeclareText は宣言の棋譜テキストを返す。
-func gutsDeclareText(idx int, stay bool) string {
-	verb := "OUT"
-	if stay {
-		verb = "IN"
-	}
-	return fmt.Sprintf("player %d declares %s", idx, verb)
-}
-
-func (g *Guts) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.state.appendLog(playerIdx, actionType, detail, cards)
+// appendLog 棋譜エントリを追加
+func (g *Guts) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.state.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- Hint ---

@@ -1,4 +1,11 @@
 {
+  "log.betDragon": "Bet {{amount}} on dragon",
+  "log.betTiger": "Bet {{amount}} on tiger",
+  "log.betTie": "Bet {{amount}} on tie",
+  "log.deal": "Dealt dragon and tiger cards",
+  "log.dragonWins": "Dragon wins",
+  "log.tigerWins": "Tiger wins",
+  "log.tie": "Tie",
   "helpTitle": "Dragon Tiger",
   "helpBet": "  b <amount> <d|t|e>   bet (d=dragon, t=tiger, e=tie)",
   "helpClear": "  clear                clear history (Big Road)",

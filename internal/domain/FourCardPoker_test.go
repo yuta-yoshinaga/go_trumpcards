@@ -486,6 +486,16 @@ func TestFourCardPoker_ActionLog(t *testing.T) {
 	require.NoError(t, fcp.Play(1))
 	log := fcp.GetActionLog()
 	assert.NotEmpty(t, log)
+	var entry *domain.ActionLogEntry
+	for _, candidate := range log {
+		if candidate.DetailCode == "fourcardpoker.log.play" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, map[string]string{"bet": "100", "multiplier": "1"}, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
 }
 
 func TestFourCardPoker_JSONRoundTrip(t *testing.T) {
