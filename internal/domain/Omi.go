@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // OmiPlayerCnt オミプレイヤー数
@@ -163,9 +164,9 @@ func (e *Omi) startRound() {
 	e.currentPlayerIdx = e.trumpCallerIdx
 	e.phase = OmiPhaseCallTrump
 
-	e.appendLog(-1, "deal_first_batch",
-		fmt.Sprintf("round %d: dealer=%d, caller=%d, dealt %d cards each",
-			e.roundNumber, e.dealerIdx, e.trumpCallerIdx, OmiInitialDealSize), nil)
+	e.appendLog(-1, "deal_first_batch", "omi.log.dealFirstBatch", map[string]string{
+		"round": strconv.Itoa(e.roundNumber), "dealer": strconv.Itoa(e.dealerIdx), "caller": strconv.Itoa(e.trumpCallerIdx), "cards": strconv.Itoa(OmiInitialDealSize),
+	}, nil)
 }
 
 // dealSecondBatch は切り札決定後、第2段階の配り (残り4枚) を行う。
@@ -228,8 +229,7 @@ func (e *Omi) doCallTrump(callerIdx int, suit int) {
 	e.makerTeam = e.players[callerIdx].GetTeam()
 
 	suitName := suitStr(suit)
-	e.appendLog(callerIdx, "call_trump",
-		fmt.Sprintf("%s calls %s as trump", playerName(e.players, callerIdx), suitName), nil)
+	e.appendLog(callerIdx, "call_trump", "omi.log.callTrump", map[string]string{"name": playerName(e.players, callerIdx), "suit": suitName}, nil)
 
 	// 切り札確定後、残り4枚を配る
 	e.dealSecondBatch()
@@ -330,8 +330,7 @@ func (e *Omi) playCard(playerIdx int, card *Card) {
 		Card:      card,
 	})
 
-	e.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", playerName(e.players, playerIdx), cardStr(card)), []*Card{card})
+	e.appendLog(playerIdx, "play", "omi.log.play", map[string]string{"name": playerName(e.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(e.currentTrick) == OmiPlayerCnt {
 		e.phase = OmiPhaseTrickEnd
@@ -355,7 +354,7 @@ func (e *Omi) ResolveTrick() {
 	e.players[winnerIdx].AddTrick(trickCards)
 
 	winnerName := playerName(e.players, winnerIdx)
-	e.appendLog(winnerIdx, "trick_win", fmt.Sprintf("%s wins trick %d", winnerName, e.trickNumber), trickCards)
+	e.appendLog(winnerIdx, "trick_win", "omi.log.trickWin", map[string]string{"name": winnerName, "trick": strconv.Itoa(e.trickNumber)}, trickCards)
 
 	e.leadPlayerIdx = winnerIdx
 
@@ -403,25 +402,22 @@ func (e *Omi) ScoreRound() {
 		if tricks == OmiHandSize {
 			// 8 トリック全取り (Omi): 合計 2 点
 			e.teamScores[t] += 2
-			e.appendLog(-1, "omi_win",
-				fmt.Sprintf("Team %d wins all %d tricks (Omi)! +2 points", t, OmiHandSize), nil)
+			e.appendLog(-1, "omi_win", "omi.log.omiWin", map[string]string{"team": strconv.Itoa(t), "tricks": strconv.Itoa(OmiHandSize)}, nil)
 		} else if tricks >= 5 {
 			// 5-7 トリック獲得: 1 点
 			e.teamScores[t] += 1
-			e.appendLog(-1, "round_win",
-				fmt.Sprintf("Team %d wins the round with %d tricks! +1 point", t, tricks), nil)
+			e.appendLog(-1, "round_win", "omi.log.roundWin", map[string]string{"team": strconv.Itoa(t), "tricks": strconv.Itoa(tricks)}, nil)
 		}
 	}
 
 	if teamTricks[0] == 4 && teamTricks[1] == 4 {
 		// 4-4 引き分け: 両チーム 0 点
-		e.appendLog(-1, "round_draw", "Round ends in a 4-4 draw. 0 points for both teams.", nil)
+		e.appendLog(-1, "round_draw", "omi.log.roundDraw", nil, nil)
 	}
 
 	// スコアログ
 	for ti := range OmiTeamCnt {
-		e.appendLog(-1, "team_score",
-			fmt.Sprintf("Team %d: %d points (tricks: %d)", ti, e.teamScores[ti], teamTricks[ti]), nil)
+		e.appendLog(-1, "team_score", "omi.log.teamScore", map[string]string{"team": strconv.Itoa(ti), "points": strconv.Itoa(e.teamScores[ti]), "tricks": strconv.Itoa(teamTricks[ti])}, nil)
 	}
 
 	// ゲーム終了判定 (PointLimit 到達)
@@ -434,10 +430,13 @@ func (e *Omi) ScoreRound() {
 		} else if e.teamScores[1] > e.teamScores[0] {
 			e.winnerTeam = 1
 		}
-		e.appendLog(-1, "game_end",
-			fmt.Sprintf("Game over! Winner: Team %d (Team 0: %d, Team 1: %d)",
-				e.winnerTeam, e.teamScores[0], e.teamScores[1]), nil)
+		e.appendLog(-1, "game_end", "omi.log.gameEnd", map[string]string{"winner": strconv.Itoa(e.winnerTeam), "team0": strconv.Itoa(e.teamScores[0]), "team1": strconv.Itoa(e.teamScores[1])}, nil)
 	}
+}
+
+// appendLog records an Omi action with a locale-independent detail code.
+func (e *Omi) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	e.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- Validation & Rules ---

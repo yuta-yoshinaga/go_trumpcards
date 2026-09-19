@@ -22,6 +22,19 @@ func newTestOmi() *domain.Omi {
 	return domain.NewOmi(domain.NewTrumpCards32(), players, domain.DefaultOmiConfig())
 }
 
+func TestOmi_ResetActionLogUsesDetailCode(t *testing.T) {
+	game := newTestOmi()
+	game.Reset()
+	for _, entry := range game.GetActionLog() {
+		if entry.DetailCode == "omi.log.dealFirstBatch" {
+			assert.Equal(t, map[string]string{"round": "1", "dealer": "0", "caller": "1", "cards": "4"}, entry.DetailParams)
+			assert.Empty(t, entry.Detail)
+			return
+		}
+	}
+	t.Fatal("deal-first-batch action log entry not found")
+}
+
 func setupOmiHand(e *domain.Omi, playerIdx int, cards []*domain.Card) {
 	p := e.GetPlayer(playerIdx)
 	p.Reset()

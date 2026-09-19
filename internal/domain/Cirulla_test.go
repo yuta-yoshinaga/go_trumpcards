@@ -20,6 +20,18 @@ func newCirullaForTest(t *testing.T) *Cirulla {
 // cirullaCard は札を作る薄い別名。
 func cirullaCard(suit, value int) *Card { return NewCard(suit, value, false) }
 
+func TestCirulla_ResetActionLogUsesDetailCode(t *testing.T) {
+	c := newCirullaForTest(t)
+	for _, entry := range c.GetActionLog() {
+		if entry.DetailCode == "cirulla.log.deal" {
+			assert.Equal(t, map[string]string{"round": "1", "dealer": "1", "table": "4"}, entry.DetailParams)
+			assert.Empty(t, entry.Detail)
+			return
+		}
+	}
+	t.Fatal("deal action log entry not found")
+}
+
 // **値は A=1, 2-7 はそのまま, J=8, Q=9, K=10。**
 func TestCirullaCardValue(t *testing.T) {
 	for _, tt := range []struct{ value, want int }{

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"strconv"
 )
 
 // フェーズ定数
@@ -186,7 +187,7 @@ func (ip *IndianPoker) postAntes() {
 		p.SubtractChips(anteAmount)
 		p.SetCurrentBet(anteAmount)
 		ip.pot += anteAmount
-		ip.appendLog(i, "ante", fmt.Sprintf("posts ante %d", anteAmount), nil)
+		ip.appendLog(i, "ante", "indianpoker.log.postsAnte", map[string]string{"amount": strconv.Itoa(anteAmount)}, nil)
 
 		// チップが0になったらオールイン
 		if p.GetChips() == 0 {
@@ -272,7 +273,7 @@ func (ip *IndianPoker) advanceTurn() {
 	// ベッティングラウンド終了チェック
 	if ip.isBettingRoundComplete() {
 		ip.phase = IndianPokerPhaseShowdown
-		ip.appendLog(-1, "showdown", "showdown", nil)
+		ip.appendLog(-1, "showdown", "indianpoker.log.showdown", nil, nil)
 		ip.resolveShowdown()
 		return
 	}
@@ -288,7 +289,7 @@ func (ip *IndianPoker) advanceTurn() {
 
 	// 全員行動済みならショーダウン
 	ip.phase = IndianPokerPhaseShowdown
-	ip.appendLog(-1, "showdown", "showdown", nil)
+	ip.appendLog(-1, "showdown", "indianpoker.log.showdown", nil, nil)
 	ip.resolveShowdown()
 }
 
@@ -774,18 +775,23 @@ func (ip *IndianPoker) GetHandCount() int { return ip.handCount }
 func (ip *IndianPoker) logAction(playerIdx, action, amount int) {
 	switch action {
 	case IndianPokerActionFold:
-		ip.appendLog(playerIdx, "fold", "fold", nil)
+		ip.appendLog(playerIdx, "fold", "indianpoker.log.fold", nil, nil)
 	case IndianPokerActionCheck:
-		ip.appendLog(playerIdx, "check", "check", nil)
+		ip.appendLog(playerIdx, "check", "indianpoker.log.check", nil, nil)
 	case IndianPokerActionCall:
-		ip.appendLog(playerIdx, "call", fmt.Sprintf("call %d", ip.players[playerIdx].GetCurrentBet()), nil)
+		ip.appendLog(playerIdx, "call", "indianpoker.log.call", map[string]string{"amount": strconv.Itoa(ip.players[playerIdx].GetCurrentBet())}, nil)
 	case IndianPokerActionBet:
-		ip.appendLog(playerIdx, "bet", fmt.Sprintf("bet %d", amount), nil)
+		ip.appendLog(playerIdx, "bet", "indianpoker.log.bet", map[string]string{"amount": strconv.Itoa(amount)}, nil)
 	case IndianPokerActionRaise:
-		ip.appendLog(playerIdx, "raise", fmt.Sprintf("raise to %d", amount), nil)
+		ip.appendLog(playerIdx, "raise", "indianpoker.log.raiseTo", map[string]string{"amount": strconv.Itoa(amount)}, nil)
 	case IndianPokerActionAllIn:
-		ip.appendLog(playerIdx, "allin", fmt.Sprintf("all in %d", ip.players[playerIdx].GetCurrentBet()), nil)
+		ip.appendLog(playerIdx, "allin", "indianpoker.log.allIn", map[string]string{"amount": strconv.Itoa(ip.players[playerIdx].GetCurrentBet())}, nil)
 	}
+}
+
+// appendLog records an Indian Poker action with a locale-independent detail code.
+func (ip *IndianPoker) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	ip.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // indianPokerJSON is the JSON wire format for IndianPoker.

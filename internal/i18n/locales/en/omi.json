@@ -38,5 +38,14 @@
   "hintReasonTrumpCut": "cut with trump",
   "hintReasonDiscardWeak": "discard lowest card",
   "errInvalidSuit": "That suit is invalid.",
-  "errFollowLeadSuit": "You must follow the lead suit."
+  "errFollowLeadSuit": "You must follow the lead suit.",
+  "log.dealFirstBatch": "round {{round}}: dealer={{dealer}}, caller={{caller}}, dealt {{cards}} cards each",
+  "log.callTrump": "{{name}} calls {{suit}} as trump",
+  "log.play": "{{name}} plays {{card}}",
+  "log.trickWin": "{{name}} wins trick {{trick}}",
+  "log.omiWin": "Team {{team}} wins all {{tricks}} tricks (Omi)! +2 points",
+  "log.roundWin": "Team {{team}} wins the round with {{tricks}} tricks! +1 point",
+  "log.roundDraw": "Round ends in a 4-4 draw. 0 points for both teams.",
+  "log.teamScore": "Team {{team}}: {{points}} points (tricks: {{tricks}})",
+  "log.gameEnd": "Game over! Winner: Team {{winner}} (Team 0: {{team0}}, Team 1: {{team1}})"
 }

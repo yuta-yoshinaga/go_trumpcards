@@ -45,5 +45,13 @@
   ,"hintReasonStrong": "推定勝率が高く、強気に攻められます"
   ,"hintReasonFreeLook": "無料で次のカードを見られます"
   ,"hintReasonPotOddsShort": "ポットオッズに勝率が届かないため降ります"
-  ,"hintReasonPotOddsOK": "ポットオッズに見合う勝率があります"
+  ,"hintReasonPotOddsOK": "ポットオッズに見合う勝率があります",
+  "log.postsAnte": "アンティ {{amount}} を出しました",
+  "log.showdown": "ショーダウン",
+  "log.fold": "フォールド",
+  "log.check": "チェック",
+  "log.call": "{{amount}} にコールしました",
+  "log.bet": "{{amount}} をベットしました",
+  "log.raiseTo": "{{amount}} にレイズしました",
+  "log.allIn": "{{amount}} でオールインしました"
 }
