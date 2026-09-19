@@ -34,5 +34,17 @@
   "hintReasonAlreadySafe": "1トリック確保済み。あとは取れるだけ取る",
   "helpExampleIn": "  in                   配られた手で勝負すると宣言する",
   "helpHint": "  h                    助言を表示",
-  "dealerMark": "[親]"
+  "dealerMark": "[親]",
+  "log.roundStart": "ラウンド{{round}} 開始（ポット {{pot}}）",
+  "log.playIn": "参加した",
+  "log.passOut": "降りた",
+  "log.allPass": "全員降りた。ポット {{pot}} を持ち越し",
+  "log.playCard": "{{card}}",
+  "log.penalty": "{{tricks}} トリックで {{amount}} 支払い",
+  "log.payout": "{{tricks}} トリックで {{amount}} 獲得",
+  "log.finalPayout": "{{tricks}} トリックで {{amount}} 獲得",
+  "log.potDistribution": "最終ラウンド。残りポット {{pot}} を {{recipients}} 人で分配",
+  "log.tie": "同点で決着つかず",
+  "log.winner": "勝者（{{chips}}チップ）",
+  "log.giveUp": "ギブアップしました"
 }

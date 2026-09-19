@@ -34,5 +34,17 @@
   "hintReasonAlreadySafe": "one trick is banked -- now take what you can",
   "helpExampleIn": "  in                   declare that you will play this hand",
   "helpHint": "  h                    show a hint",
-  "dealerMark": "[dealer]"
+  "dealerMark": "[dealer]",
+  "log.roundStart": "Round {{round}} starts (pot {{pot}})",
+  "log.playIn": "played in",
+  "log.passOut": "dropped out",
+  "log.allPass": "Everyone dropped out. Pot {{pot}} carries over",
+  "log.playCard": "{{card}}",
+  "log.penalty": "{{tricks}} tricks, {{amount}} paid",
+  "log.payout": "{{tricks}} tricks, {{amount}} received",
+  "log.finalPayout": "{{tricks}} tricks, {{amount}} received",
+  "log.potDistribution": "Final round. Remaining pot {{pot}} split among {{recipients}} players",
+  "log.tie": "The game ends tied",
+  "log.winner": "Winner ({{chips}} chips)",
+  "log.giveUp": "Gave up"
 }

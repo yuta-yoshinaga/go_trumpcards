@@ -132,27 +132,27 @@ func TestRamsRoundSettlementLineCoversPenaltyPayoutCombinations(t *testing.T) {
 		{
 			name: "penalty only",
 			entries: []*domain.ActionLogEntry{{ActionType: "deal"},
-				{PlayerIdx: 0, ActionType: "penalty", Detail: "0 トリックで 5 支払い"}},
+				{PlayerIdx: 0, ActionType: "penalty", DetailCode: "rams.log.penalty", DetailParams: map[string]string{"amount": "5", "tricks": "0"}}},
 			want: "精算: 支払い CPU 0 -5 / 受け取り ",
 		},
 		{
 			name: "payout only",
 			entries: []*domain.ActionLogEntry{{ActionType: "deal"},
-				{PlayerIdx: 0, ActionType: "payout", Detail: "1 トリックで 12 獲得"}},
+				{PlayerIdx: 0, ActionType: "payout", DetailCode: "rams.log.payout", DetailParams: map[string]string{"amount": "12", "tricks": "1"}}},
 			want: "精算: 支払い  / 受け取り CPU 0 +12",
 		},
 		{
 			name: "multiple penalties and payouts",
 			entries: []*domain.ActionLogEntry{{ActionType: "deal"},
-				{PlayerIdx: 0, ActionType: "penalty", Detail: "0 トリックで 5 支払い"},
-				{PlayerIdx: 1, ActionType: "penalty", Detail: "0 トリックで 5 支払い"},
-				{PlayerIdx: 2, ActionType: "payout", Detail: "2 トリックで 20 獲得"},
-				{PlayerIdx: 3, ActionType: "payout", Detail: "1 トリックで 10 獲得"}},
+				{PlayerIdx: 0, ActionType: "penalty", DetailCode: "rams.log.penalty", DetailParams: map[string]string{"amount": "5", "tricks": "0"}},
+				{PlayerIdx: 1, ActionType: "penalty", DetailCode: "rams.log.penalty", DetailParams: map[string]string{"amount": "5", "tricks": "0"}},
+				{PlayerIdx: 2, ActionType: "payout", DetailCode: "rams.log.payout", DetailParams: map[string]string{"amount": "20", "tricks": "2"}},
+				{PlayerIdx: 3, ActionType: "payout", DetailCode: "rams.log.payout", DetailParams: map[string]string{"amount": "10", "tricks": "1"}}},
 			want: "精算: 支払い CPU 0 -5, CPU 1 -5 / 受け取り CPU 2 +20, CPU 3 +10",
 		},
 		{
 			name:    "no deal yet",
-			entries: []*domain.ActionLogEntry{{PlayerIdx: 0, ActionType: "penalty", Detail: "0 トリックで 5 支払い"}},
+			entries: []*domain.ActionLogEntry{{PlayerIdx: 0, ActionType: "penalty", DetailCode: "rams.log.penalty", DetailParams: map[string]string{"amount": "5", "tricks": "0"}}},
 			want:    "精算: 支払い CPU 0 -5 / 受け取り ",
 		},
 		{
@@ -163,7 +163,7 @@ func TestRamsRoundSettlementLineCoversPenaltyPayoutCombinations(t *testing.T) {
 		{
 			name: "negative player is ignored",
 			entries: []*domain.ActionLogEntry{{ActionType: "deal"},
-				{PlayerIdx: -1, ActionType: "penalty", Detail: "0 トリックで 5 支払い"}},
+				{PlayerIdx: -1, ActionType: "penalty", DetailCode: "rams.log.penalty", DetailParams: map[string]string{"amount": "5", "tricks": "0"}}},
 			want: "",
 		},
 	} {
