@@ -27,6 +27,23 @@ func TestFaro_NewDefault(t *testing.T) {
 	}
 }
 
+func TestFaro_ActionLogUsesDetailCode(t *testing.T) {
+	f := newFaroForTest()
+	var soda *ActionLogEntry
+	for _, entry := range f.GetActionLog() {
+		if entry.DetailCode == "faro.log.soda" {
+			soda = entry
+			break
+		}
+	}
+	if soda == nil {
+		t.Fatal("soda action log entry not found")
+	}
+	if soda.Detail != "" || len(soda.DetailParams) != 0 {
+		t.Fatalf("soda log = %+v, want empty detail and params", soda)
+	}
+}
+
 func TestFaro_NewWithInvalidConfigFallsBack(t *testing.T) {
 	f := NewFaroWithConfig(NewTrumpCards(0), FaroConfig{StartChips: -5, MinBet: 0, MaxBet: 0})
 	if f.GetConfig().StartChips != FaroDefaultStartChips {

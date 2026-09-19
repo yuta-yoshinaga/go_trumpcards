@@ -29,5 +29,10 @@
   "gameEndCpu": "ゲーム終了！ CPU {{seat}} の勝利です（{{scores}}）。",
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
   "errCardNil": "カードが nil です",
-  "errMustFollowSuit": "山札が尽きた後はリードスートに追従してください"
+  "errMustFollowSuit": "山札が尽きた後はリードスートに追従してください",
+  "log.trickWin": "{{name}}が{{trick}}トリックに勝利（{{points}}点）",
+  "log.strip": "山札を{{remaining}}枚に調整（{{seats}}席で割り切れる）",
+  "log.trump": "切り札: {{card}}",
+  "log.play": "{{name}}が{{card}}をプレイ",
+  "log.gameEnd": "ゲーム終了: {{scores}}"
 }

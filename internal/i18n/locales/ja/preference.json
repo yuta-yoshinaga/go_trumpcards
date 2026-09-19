@@ -54,5 +54,13 @@
   "progressFailed": " — 失敗確定",
   "errInvalidBid": "入札値が不正です",
   "errBidMustExceed": "現在の入札を上回る必要があります",
-  "errCardIndexOutOfRange": "カードインデックスが範囲外です"
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "log.bid": "{{name}}が{{bid}}を入札",
+  "log.bidPass": "{{name}}がパス",
+  "log.passedOut": "全員がパスし、ラウンドは無効",
+  "log.contract": "{{name}}が{{contract}}を宣言（切り札{{trump}}）",
+  "log.play": "{{name}}が{{card}}をプレイ",
+  "log.trickWin": "{{name}}が{{trick}}トリックに勝利",
+  "log.roundScore": "{{round}}ラウンド目: {{contract}} {{outcome}}（{{tricks}}/{{target}}トリック）",
+  "log.gameEnd": "{{name}}がマッチに勝利！"
 }

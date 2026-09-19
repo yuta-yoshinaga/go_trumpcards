@@ -247,9 +247,9 @@ func (g *Preference) applyBid(idx int, bid PreferenceBid) error {
 	g.bids[idx] = bid
 	g.bidDone[idx] = true
 	if bid != PreferenceBidPass {
-		g.appendLog(idx, "bid", fmt.Sprintf("%s bids %s", playerName(g.players, idx), preferenceBidName(bid)), nil)
+		g.appendLog(idx, "bid", "preference.log.bid", map[string]string{"name": playerName(g.players, idx), "bid": preferenceBidName(bid)}, nil)
 	} else {
-		g.appendLog(idx, "bid", fmt.Sprintf("%s passes", playerName(g.players, idx)), nil)
+		g.appendLog(idx, "bid", "preference.log.bidPass", map[string]string{"name": playerName(g.players, idx)}, nil)
 	}
 	for k := 1; k <= PreferencePlayerCnt; k++ {
 		ni := (idx + k) % PreferencePlayerCnt
@@ -268,7 +268,7 @@ func (g *Preference) resolveBidding() {
 	if idx < 0 || bid == PreferenceBidPass {
 		g.declarerIdx = -1
 		g.phase = PreferencePhaseRoundEnd
-		g.appendLog(-1, "passed_out", "all players passed; round is void", nil)
+		g.appendLog(-1, "passed_out", "preference.log.passedOut", nil, nil)
 		return
 	}
 	g.declarerIdx = idx
@@ -278,8 +278,7 @@ func (g *Preference) resolveBidding() {
 	} else {
 		g.trumpSuit = g.longestSuit(idx)
 	}
-	g.appendLog(idx, "contract",
-		fmt.Sprintf("%s declares %s (trump %d)", playerName(g.players, idx), preferenceBidName(bid), g.trumpSuit), nil)
+	g.appendLog(idx, "contract", "preference.log.contract", map[string]string{"name": playerName(g.players, idx), "contract": preferenceBidName(bid), "trump": fmt.Sprint(g.trumpSuit)}, nil)
 	g.leadPlayerIdx = (g.dealerIdx + 1) % PreferencePlayerCnt
 	g.currentPlayerIdx = g.leadPlayerIdx
 	g.phase = PreferencePhasePlay
@@ -370,7 +369,7 @@ func (g *Preference) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Preference) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "preference.log.play", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(g.currentTrick) == PreferencePlayerCnt {
 		g.phase = PreferencePhaseTrickEnd
@@ -391,8 +390,7 @@ func (g *Preference) ResolveTrick() {
 	}
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.roundTricks[winnerIdx]++
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), trickCards)
+	g.appendLog(winnerIdx, "trick_win", "preference.log.trickWin", map[string]string{"name": playerName(g.players, winnerIdx), "trick": fmt.Sprint(g.trickNumber)}, trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= PreferenceTrickCount {
@@ -430,11 +428,7 @@ func (g *Preference) ScoreRound() {
 				}
 			}
 		}
-		g.appendLog(-1, "round_score",
-			fmt.Sprintf("round %d: %s %s (%d/%d tricks)",
-				g.roundNumber, preferenceBidName(g.contract),
-				map[bool]string{true: "made", false: "failed"}[won],
-				g.roundTricks[g.declarerIdx], preferenceBidTarget(g.contract)), nil)
+		g.appendLog(-1, "round_score", "preference.log.roundScore", map[string]string{"round": fmt.Sprint(g.roundNumber), "contract": preferenceBidName(g.contract), "outcome": map[bool]string{true: "made", false: "failed"}[won], "tricks": fmt.Sprint(g.roundTricks[g.declarerIdx]), "target": fmt.Sprint(preferenceBidTarget(g.contract))}, nil)
 		g.checkGameEnd()
 	}
 }
@@ -461,8 +455,13 @@ func (g *Preference) checkGameEnd() {
 		g.gameEndFlag = true
 		g.winnerPlayer = leader
 		g.phase = PreferencePhaseGameEnd
-		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
+		g.appendLog(-1, "game_end", "preference.log.gameEnd", map[string]string{"name": playerName(g.players, leader)}, nil)
 	}
+}
+
+// appendLog records a Preference action with a locale-independent detail code.
+func (g *Preference) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- Trick / play helpers ---

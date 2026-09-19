@@ -40,5 +40,15 @@
   "reason.seeAnotherCard": "まだ役が弱いので、ただで次の1枚を見ましょう",
   "reason.notWorthIt": "役が無く、額も安くありません",
   "result.gameEnd": "ゲームが終わりました",
-  "helpExampleBet": "  bet 100             100 チップを賭ける"
+  "helpExampleBet": "  bet 100             100 チップを賭ける",
+  "log.reset": "ゲームをリセット",
+  "log.deal": "{{hand}}ハンド目、アンティ{{ante}}",
+  "log.fold": "席{{seat}}がフォールド",
+  "log.check": "席{{seat}}がチェック",
+  "log.call": "席{{seat}}が{{amount}}をコール",
+  "log.bet": "席{{seat}}が{{amount}}をベット",
+  "log.raise": "席{{seat}}が{{amount}}にレイズ",
+  "log.reveal": "コミュニティカード{{card}}枚目",
+  "log.showdown": "{{hand}}ハンド目を精算",
+  "log.gameEnd": "勝者は席{{seat}}"
 }

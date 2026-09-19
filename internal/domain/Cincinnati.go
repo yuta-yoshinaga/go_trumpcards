@@ -90,8 +90,8 @@ type Cincinnati struct {
 	handNumber  int
 	results     []CincinnatiResult
 	gameEndFlag bool
-	actionLog   []*ActionLogEntry
 	turnNumber  int
+	actionLogBase
 }
 
 // CincinnatiResult は 1 席のハンド結果。
@@ -130,7 +130,7 @@ func (g *Cincinnati) Reset() {
 	g.gameEndFlag = false
 	g.actionLog = nil
 	g.turnNumber = 0
-	g.appendLog(-1, "reset", "game reset", nil)
+	g.appendLog(-1, "reset", "cincinnati.log.reset", nil, nil)
 	g.startHand()
 }
 
@@ -167,7 +167,7 @@ func (g *Cincinnati) startHand() {
 	g.phase = CincinnatiPhaseBetting
 	g.turn = g.firstActiveSeat()
 	g.lastAggr = g.turn
-	g.appendLog(-1, "deal", fmt.Sprintf("hand %d, ante %d", g.handNumber, g.config.Ante), nil)
+	g.appendLog(-1, "deal", "cincinnati.log.deal", map[string]string{"hand": fmt.Sprint(g.handNumber), "ante": fmt.Sprint(g.config.Ante)}, nil)
 	g.advanceCpu()
 }
 
@@ -200,15 +200,15 @@ func (g *Cincinnati) applyAction(i, action, amount int) error {
 	switch action {
 	case CincinnatiActionFold:
 		p.SetFolded(true)
-		g.appendLog(i, "fold", fmt.Sprintf("seat %d folds", i), nil)
+		g.appendLog(i, "fold", "cincinnati.log.fold", map[string]string{"seat": fmt.Sprint(i)}, nil)
 	case CincinnatiActionCheck:
 		if toCall > 0 {
 			return errCincinnatiCannotCheck
 		}
-		g.appendLog(i, "check", fmt.Sprintf("seat %d checks", i), nil)
+		g.appendLog(i, "check", "cincinnati.log.check", map[string]string{"seat": fmt.Sprint(i)}, nil)
 	case CincinnatiActionCall:
 		g.moveToPot(p, toCall)
-		g.appendLog(i, "call", fmt.Sprintf("seat %d calls %d", i, toCall), nil)
+		g.appendLog(i, "call", "cincinnati.log.call", map[string]string{"seat": fmt.Sprint(i), "amount": fmt.Sprint(toCall)}, nil)
 	case CincinnatiActionBet:
 		if g.currentBet > 0 {
 			return errCincinnatiCannotBet
@@ -220,7 +220,7 @@ func (g *Cincinnati) applyAction(i, action, amount int) error {
 		g.currentBet = p.GetCurrentBet()
 		g.raiseCount++
 		g.lastAggr = i
-		g.appendLog(i, "bet", fmt.Sprintf("seat %d bets %d", i, amount), nil)
+		g.appendLog(i, "bet", "cincinnati.log.bet", map[string]string{"seat": fmt.Sprint(i), "amount": fmt.Sprint(amount)}, nil)
 	case CincinnatiActionRaise:
 		if g.currentBet == 0 {
 			return errCincinnatiCannotRaise
@@ -235,7 +235,7 @@ func (g *Cincinnati) applyAction(i, action, amount int) error {
 		g.currentBet = p.GetCurrentBet()
 		g.raiseCount++
 		g.lastAggr = i
-		g.appendLog(i, "raise", fmt.Sprintf("seat %d raises %d", i, amount), nil)
+		g.appendLog(i, "raise", "cincinnati.log.raise", map[string]string{"seat": fmt.Sprint(i), "amount": fmt.Sprint(amount)}, nil)
 	default:
 		return errCincinnatiBadAction
 	}
@@ -302,7 +302,7 @@ func (g *Cincinnati) nextStage() {
 	}
 	g.turn = g.firstActiveSeat()
 	g.lastAggr = g.turn
-	g.appendLog(-1, "reveal", fmt.Sprintf("community card %d", g.revealed),
+	g.appendLog(-1, "reveal", "cincinnati.log.reveal", map[string]string{"card": fmt.Sprint(g.revealed)},
 		[]*Card{g.community[len(g.community)-1]})
 
 	// **公開しきってもベットラウンドは 1 回入る。** 5 枚目の後に賭けずに
@@ -348,7 +348,7 @@ func (g *Cincinnati) showdown() {
 		}
 	}
 	g.pot = 0
-	g.appendLog(-1, "showdown", fmt.Sprintf("hand %d settled", g.handNumber), g.community)
+	g.appendLog(-1, "showdown", "cincinnati.log.showdown", map[string]string{"hand": fmt.Sprint(g.handNumber)}, g.community)
 }
 
 // NextHand は次のハンドを始める。
@@ -372,7 +372,7 @@ func (g *Cincinnati) NextHand() error {
 func (g *Cincinnati) finish() {
 	g.gameEndFlag = true
 	g.phase = CincinnatiPhaseGameEnd
-	g.appendLog(-1, "gameEnd", fmt.Sprintf("winner seat %d", g.WinnerSeat()), nil)
+	g.appendLog(-1, "gameEnd", "cincinnati.log.gameEnd", map[string]string{"seat": fmt.Sprint(g.WinnerSeat())}, nil)
 }
 
 // --- CPU ---
@@ -551,15 +551,9 @@ func (g *Cincinnati) GetRemainingCards() int { return g.deck.GetRemainingCount()
 func (g *Cincinnati) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // appendLog は棋譜に 1 行足す。
-func (g *Cincinnati) appendLog(seat int, actionType, detail string, cards []*Card) {
+func (g *Cincinnati) appendLog(seat int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	g.turnNumber++
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: g.turnNumber,
-		PlayerIdx:  seat,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.appendLogCodeAt(g.turnNumber, seat, actionType, detailCode, detailParams, cards)
 	if len(g.actionLog) > cincinnatiMaxSliceLen {
 		g.actionLog = g.actionLog[len(g.actionLog)-cincinnatiMaxSliceLen:]
 	}

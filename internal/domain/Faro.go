@@ -131,7 +131,7 @@ func (f *Faro) NextRound() {
 	if f.chips.GetChips() < f.config.MinBet {
 		f.gameEndFlag = true
 		f.phase = FaroPhaseGameEnd
-		f.appendLog(-1, "gameEnd", "player out of chips", nil)
+		f.appendLog(-1, "gameEnd", "faro.log.gameEnd", nil, nil)
 		return
 	}
 	f.startDeal()
@@ -153,7 +153,7 @@ func (f *Faro) startDeal() {
 	f.totalPayout = 0
 	f.actionLog = nil
 	f.soda = f.trumpCards.DrawCard() // ソーダ1枚を焼く。
-	f.appendLog(-1, "soda", "burned soda card", []*Card{f.soda})
+	f.appendLog(-1, "soda", "faro.log.soda", nil, []*Card{f.soda})
 }
 
 // totalBet はレイアウト上の全ベット金額の合計を返す。
@@ -197,7 +197,7 @@ func (f *Faro) PlayerPlaceBet(rank, amount int, copper bool) error {
 		f.chips.AddChips(-delta)
 	}
 	f.bets[rank] = &FaroBet{Amount: amount, Copper: copper}
-	f.appendLog(0, "bet", fmt.Sprintf("rank=%d amount=%d copper=%t", rank, amount, copper), nil)
+	f.appendLog(0, "bet", "faro.log.bet", map[string]string{"rank": fmt.Sprint(rank), "amount": fmt.Sprint(amount), "copper": fmt.Sprint(copper)}, nil)
 	return nil
 }
 
@@ -209,7 +209,7 @@ func (f *Faro) PlayerClearBet(rank int) error {
 	if b, ok := f.bets[rank]; ok {
 		f.chips.AddChips(b.Amount)
 		delete(f.bets, rank)
-		f.appendLog(0, "clearBet", fmt.Sprintf("rank=%d", rank), nil)
+		f.appendLog(0, "clearBet", "faro.log.clearBet", map[string]string{"rank": fmt.Sprint(rank)}, nil)
 	}
 	return nil
 }
@@ -223,7 +223,7 @@ func (f *Faro) PlayerClearAll() error {
 		f.chips.AddChips(b.Amount)
 		delete(f.bets, rank)
 	}
-	f.appendLog(0, "clearAll", "cleared all bets", nil)
+	f.appendLog(0, "clearAll", "faro.log.clearAll", nil, nil)
 	return nil
 }
 
@@ -251,12 +251,12 @@ func (f *Faro) PlayerDealTurn() error {
 	result.Net = f.resolveTurn(losingRank, winningRank, result.Split)
 	f.lastTurn = result
 	f.totalPayout += result.Net
-	f.appendLog(-1, "turn", fmt.Sprintf("losing=%d winning=%d split=%t net=%d", losingRank, winningRank, result.Split, result.Net), []*Card{losing, winning})
+	f.appendLog(-1, "turn", "faro.log.turn", map[string]string{"losing": fmt.Sprint(losingRank), "winning": fmt.Sprint(winningRank), "split": fmt.Sprint(result.Split), "net": fmt.Sprint(result.Net)}, []*Card{losing, winning})
 
 	if f.turnsPlayed >= FaroTurnsPerDeal {
 		f.phase = FaroPhaseCall
 		f.drawCallCards()
-		f.appendLog(-1, "callReady", "three cards remain; call is available", nil)
+		f.appendLog(-1, "callReady", "faro.log.callReady", nil, nil)
 	} else {
 		f.phase = FaroPhaseTurn
 	}
@@ -333,7 +333,7 @@ func (f *Faro) PlayerCall(order []int) error {
 		f.callWon = false
 		f.callOrder = nil
 		f.phase = FaroPhaseRoundEnd
-		f.appendLog(0, "call", "skipped call", nil)
+		f.appendLog(0, "call", "faro.log.callSkipped", nil, nil)
 		return nil
 	}
 	if len(order) != FaroCallCards {
@@ -362,16 +362,21 @@ func (f *Faro) PlayerCall(order []int) error {
 		payout := stake + stake*FaroCallPayoutMultiplier
 		f.chips.AddChips(payout)
 		f.totalPayout += stake * FaroCallPayoutMultiplier
-		f.appendLog(0, "call", fmt.Sprintf("call won payout=%d", payout), f.callCards)
+		f.appendLog(0, "call", "faro.log.callWon", map[string]string{"payout": fmt.Sprint(payout)}, f.callCards)
 	} else {
 		f.totalPayout -= stake
-		f.appendLog(0, "call", "call lost", f.callCards)
+		f.appendLog(0, "call", "faro.log.callLost", nil, f.callCards)
 	}
 	f.phase = FaroPhaseRoundEnd
 	return nil
 }
 
 // rankOf1to13 はカード値を 1..13 のランクに正規化する（A=1, J=11, Q=12, K=13）。
+// appendLog records a Faro action with a locale-independent detail code.
+func (f *Faro) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	f.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
+}
+
 func rankOf1to13(c *Card) int {
 	if c == nil {
 		return 0
