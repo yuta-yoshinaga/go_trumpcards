@@ -34,5 +34,13 @@
   "helpExamplePlay": "  p                    call, placing a play bet of 2x the ante",
   "helpHint": "  h                    show a hint",
   "jackpotHelp": "Jackpot (optional): pays on a flush or better, whether or not you beat the dealer",
-  "dealerQualifyHelp": "Dealer Qualify: If the dealer does not have a pair or better, or Ace-King high, they do not qualify. When not qualified, the ante pays 1:1 and the play bet pushes (is returned)."
+  "dealerQualifyHelp": "Dealer Qualify: If the dealer does not have a pair or better, or Ace-King high, they do not qualify. When not qualified, the ante pays 1:1 and the play bet pushes (is returned).",
+  "log.bet": "ante={{ante}} jackpot={{jackpot}}",
+  "log.play": "play bet={{bet}}",
+  "log.playerFolds": "player folds",
+  "log.playerFolded": "player folded",
+  "log.deal": "dealt 5 cards each",
+  "log.playerWins": "player wins",
+  "log.push": "push",
+  "log.dealerWins": "dealer wins"
 }

@@ -18,5 +18,7 @@
   "helpExampleHint": "  h                    ask for a move",
   "helpLog": "  l                    show the action log",
   "elapsedTime": "Elapsed time: {{time}}",
-  "sessionBestTime": "Session best time: {{time}}"
+  "sessionBestTime": "Session best time: {{time}}",
+  "log.play": "→ pile {{pile}}",
+  "log.flip": "flip center"
 }

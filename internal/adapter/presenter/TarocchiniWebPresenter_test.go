@@ -252,7 +252,7 @@ func TestTarocchiniWebPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockTarocchiniGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You play Papa"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "tarocchini.log.play"},
 	})
 	assert.Contains(t, p.ActionLogOutput(m), `"actionType":"play"`)
 }

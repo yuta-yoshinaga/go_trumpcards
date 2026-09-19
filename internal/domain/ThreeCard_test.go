@@ -558,6 +558,16 @@ func TestThreeCard_ActionLog(t *testing.T) {
 	require.NoError(t, err)
 	log := tc.GetActionLog()
 	assert.True(t, len(log) >= 3) // bet, deal, play, result (at least)
+	var betLog *domain.ActionLogEntry
+	for _, entry := range log {
+		if entry.DetailCode == "threecard.log.bet" {
+			betLog = entry
+			break
+		}
+	}
+	require.NotNil(t, betLog)
+	assert.Equal(t, map[string]string{"ante": "100", "pairplus": "50"}, betLog.DetailParams)
+	assert.Empty(t, betLog.Detail)
 }
 
 func TestThreeCard_JSON_RoundTrip(t *testing.T) {

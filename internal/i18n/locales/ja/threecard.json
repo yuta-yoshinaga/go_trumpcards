@@ -43,5 +43,13 @@
   "payoutRef.pairPlusStraight": "ストレート:           {{payout}}:1",
   "payoutRef.pairPlusThreeOfAKind": "スリーカード:         {{payout}}:1",
   "payoutRef.pairPlusStraightFlush": "ストレートフラッシュ: {{payout}}:1",
-  "errCannotRebet": "まだ賭けていないので再ベットできません"
+  "errCannotRebet": "まだ賭けていないので再ベットできません",
+  "log.bet": "アンテ={{ante}} ペアプラス={{pairplus}}",
+  "log.play": "プレイベット={{bet}}",
+  "log.playerFolds": "プレイヤーがフォールド",
+  "log.playerFolded": "プレイヤーがフォールドした",
+  "log.deal": "各プレイヤーに3枚ずつ配った",
+  "log.playerWins": "プレイヤーの勝ち",
+  "log.push": "プッシュ",
+  "log.dealerWins": "ディーラーの勝ち"
 }

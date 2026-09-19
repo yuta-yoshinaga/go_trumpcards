@@ -202,13 +202,13 @@ func TestActionLogBaseAdopters_LogSurvivesAKVRoundTrip(t *testing.T) {
 		{"Tarocchini", func() (any, any) {
 			g := NewDefaultTarocchini()
 			g.Reset()
-			g.appendLog(1, "act", "detail", nil)
+			g.appendLog(1, "act", "detail", nil, nil)
 			return g, NewDefaultTarocchini()
 		}},
 		{"BlackHole", func() (any, any) {
 			g := NewDefaultBlackHole()
 			g.Reset()
-			g.appendLog("act", "detail", nil)
+			g.appendLog("act", "detail", nil, nil)
 			return g, NewDefaultBlackHole()
 		}},
 		{"DoubleKlondike", func() (any, any) {
