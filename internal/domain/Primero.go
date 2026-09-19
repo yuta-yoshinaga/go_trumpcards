@@ -43,6 +43,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // PrimeroPhase はゲームフェーズ。
@@ -260,8 +261,9 @@ func (g *Primero) startRound() {
 	g.state.currentBet = g.config.Ante
 	g.state.phase = PrimeroPhaseBetting
 	g.state.currentPlayer = g.nextActive(g.state.dealerIdx)
-	g.appendLog(-1, "deal",
-		fmt.Sprintf("Round %d: ante %d, pot %d", g.state.roundNumber, g.config.Ante, g.state.pot), nil)
+	g.appendLog(-1, "deal", "primero.log.deal", map[string]string{
+		"round": strconv.Itoa(g.state.roundNumber), "ante": strconv.Itoa(g.config.Ante), "pot": strconv.Itoa(g.state.pot),
+	}, nil)
 	// 最初の手番が CPU なら人間の手番になるまで進める。
 	g.driveCPU()
 }
@@ -334,7 +336,7 @@ func (g *Primero) applyCall(idx int) {
 	}
 	g.state.actedSinceRaise++
 	g.state.actionCount++
-	g.appendLog(idx, "call", fmt.Sprintf("%s calls %d (pot %d)", playerName(g.players, idx), need, g.state.pot), nil)
+	g.appendLog(idx, "call", "primero.log.call", map[string]string{"name": playerName(g.players, idx), "need": strconv.Itoa(need), "pot": strconv.Itoa(g.state.pot)}, nil)
 	g.advanceOrClose(idx)
 }
 
@@ -356,7 +358,7 @@ func (g *Primero) applyRaise(idx int) {
 	// レイズ後は本人を含め 1 人がアクション済み。他のアクティブは応答が必要。
 	g.state.actedSinceRaise = 1
 	g.state.actionCount++
-	g.appendLog(idx, "raise", fmt.Sprintf("%s raises to %d, pays %d (pot %d)", playerName(g.players, idx), newBet, need, g.state.pot), nil)
+	g.appendLog(idx, "raise", "primero.log.raise", map[string]string{"name": playerName(g.players, idx), "newBet": strconv.Itoa(newBet), "need": strconv.Itoa(need), "pot": strconv.Itoa(g.state.pot)}, nil)
 	g.advanceOrClose(idx)
 }
 
@@ -364,7 +366,7 @@ func (g *Primero) applyRaise(idx int) {
 func (g *Primero) applyFold(idx int) {
 	g.players[idx].SetFolded(true)
 	g.state.actionCount++
-	g.appendLog(idx, "fold", fmt.Sprintf("%s folds", playerName(g.players, idx)), nil)
+	g.appendLog(idx, "fold", "primero.log.fold", map[string]string{"name": playerName(g.players, idx)}, nil)
 	g.advanceOrClose(idx)
 }
 
@@ -398,8 +400,7 @@ func (g *Primero) resolveRound() {
 	g.state.winnerIdx = winner
 	if winner >= 0 {
 		g.players[winner].AddChips(g.state.pot)
-		g.appendLog(winner, "win",
-			fmt.Sprintf("%s wins the pot (%d)", playerName(g.players, winner), g.state.pot), nil)
+		g.appendLog(winner, "win", "primero.log.win", map[string]string{"name": playerName(g.players, winner), "pot": strconv.Itoa(g.state.pot)}, nil)
 	}
 	g.setHumanResult(winner)
 	g.state.pot = 0
@@ -435,8 +436,7 @@ func (g *Primero) endGame() {
 	g.state.gameEndFlag = true
 	g.state.phase = PrimeroPhaseResult
 	g.state.matchWinnerIdx = g.richestIdx()
-	g.appendLog(g.state.matchWinnerIdx, "game_end",
-		fmt.Sprintf("%s wins the game", playerName(g.players, g.state.matchWinnerIdx)), nil)
+	g.appendLog(g.state.matchWinnerIdx, "game_end", "primero.log.gameEnd", map[string]string{"name": playerName(g.players, g.state.matchWinnerIdx)}, nil)
 }
 
 // --- CPU ---
@@ -654,8 +654,8 @@ func (g *Primero) richestIdx() int {
 	return maxIndexBy(g.players, func(p *PrimeroPlayer) int { return p.GetChips() })
 }
 
-func (g *Primero) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.state.appendLog(playerIdx, actionType, detail, cards)
+func (g *Primero) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.state.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- Hint ---

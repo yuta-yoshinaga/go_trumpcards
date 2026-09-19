@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // PyramidPhase ピラミッドゲームフェーズ
@@ -131,7 +132,7 @@ func (p *Pyramid) Draw() error {
 	p.stock = p.stock[:len(p.stock)-1]
 	p.waste = append(p.waste, card)
 	p.moveCount++
-	p.appendLog("draw", "ストックからカードを引きました", []*Card{card})
+	p.appendLog("draw", "pyramid.log.draw", nil, []*Card{card})
 	p.checkStalemate()
 	return nil
 }
@@ -171,7 +172,7 @@ func (p *Pyramid) RemovePair(row1, col1, row2, col2 int) error {
 	pc1.Removed = true
 	pc2.Removed = true
 	p.moveCount++
-	p.appendLog("remove", fmt.Sprintf("ペア除去: (%d,%d)+(%d,%d)", row1, col1, row2, col2),
+	p.appendLog("remove", "pyramid.log.removePair", map[string]string{"row1": strconv.Itoa(row1), "col1": strconv.Itoa(col1), "row2": strconv.Itoa(row2), "col2": strconv.Itoa(col2)},
 		[]*Card{pc1.Card, pc2.Card})
 	p.checkGameClear()
 	p.checkStalemate()
@@ -224,7 +225,7 @@ func (p *Pyramid) RemoveKing(row, col int) error {
 	p.takeSnapshot()
 	pc.Removed = true
 	p.moveCount++
-	p.appendLog("remove", fmt.Sprintf("キング除去: (%d,%d)", row, col), []*Card{pc.Card})
+	p.appendLog("remove", "pyramid.log.removeKing", map[string]string{"row": strconv.Itoa(row), "col": strconv.Itoa(col)}, []*Card{pc.Card})
 	p.checkGameClear()
 	p.checkStalemate()
 	return nil
@@ -256,7 +257,7 @@ func (p *Pyramid) RemoveWithWaste(row, col int) error {
 	pc.Removed = true
 	p.waste = p.waste[:len(p.waste)-1]
 	p.moveCount++
-	p.appendLog("remove", fmt.Sprintf("ウェイスト+ピラミッド(%d,%d)除去", row, col),
+	p.appendLog("remove", "pyramid.log.removeWastePair", map[string]string{"row": strconv.Itoa(row), "col": strconv.Itoa(col)},
 		[]*Card{wasteCard, pc.Card})
 	p.checkGameClear()
 	p.checkStalemate()
@@ -278,7 +279,7 @@ func (p *Pyramid) RemoveWasteKing() error {
 	p.takeSnapshot()
 	p.waste = p.waste[:len(p.waste)-1]
 	p.moveCount++
-	p.appendLog("remove", "ウェイストのキング除去", []*Card{wasteCard})
+	p.appendLog("remove", "pyramid.log.removeWasteKing", nil, []*Card{wasteCard})
 	// checkGameClear is intentionally omitted here: AllRemoved only checks pyramid cards,
 	// so removing a waste King can never trigger a game clear.
 	p.checkStalemate()
@@ -314,7 +315,7 @@ func (p *Pyramid) GiveUp() {
 	if p.phase == PyramidPhasePlaying {
 		p.phase = PyramidPhaseGameOver
 		p.recordSessionResult(false)
-		p.appendLog("giveup", "ギブアップしました", nil)
+		p.appendLog("giveup", "pyramid.log.giveUp", nil, nil)
 	}
 }
 
@@ -569,8 +570,8 @@ func (p *Pyramid) restoreSnapshot(snap *pyramidSnapshot) {
 }
 
 // appendLog 棋譜エントリを追加
-func (p *Pyramid) appendLog(actionType, detail string, cards []*Card) {
-	p.appendLogAt(p.moveCount, 0, actionType, detail, cards)
+func (p *Pyramid) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	p.appendLogCodeAt(p.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // pyramidJSON is the JSON wire format for Pyramid.

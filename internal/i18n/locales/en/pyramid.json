@@ -23,5 +23,11 @@
   "helpUndo": "  u                        undo one move",
   "noRedeal": "(no redeal)",
   "sessionStats": "This session: {{plays}} played, {{wins}} cleared / fewest moves {{best}}",
-  "sessionNoBest": "—"
+  "sessionNoBest": "—",
+  "log.draw": "drew a card from the stock",
+  "log.removePair": "removed pair: ({{row1}},{{col1}})+({{row2}},{{col2}})",
+  "log.removeKing": "removed king: ({{row}},{{col}})",
+  "log.removeWastePair": "removed waste + pyramid pair ({{row}},{{col}})",
+  "log.removeWasteKing": "removed the waste king",
+  "log.giveUp": "gave up"
 }

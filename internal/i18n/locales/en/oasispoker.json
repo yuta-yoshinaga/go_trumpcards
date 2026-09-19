@@ -32,5 +32,14 @@
   "hintFold": "Recommended: Fold (f) — no qualifying hand",
   "helpExampleBet": "  b 100                bet 100 chips",
   "helpHint": "  h                    show a hint",
-  "qualifyRule": "Qualification: one pair or better, or a hand holding both an ace and a king. If the dealer misses, the ante pushes"
+  "qualifyRule": "Qualification: one pair or better, or a hand holding both an ace and a king. If the dealer misses, the ante pushes",
+  "log.bet": "ante={{ante}} jackpot={{jackpot}}",
+  "log.exchange": "exchange {{count}} card(s) fee={{fee}}",
+  "log.play": "play bet={{bet}}",
+  "log.fold": "player folds",
+  "log.resultFolded": "player folded",
+  "log.deal": "dealt 5 cards each",
+  "log.resultPlayerWins": "player wins",
+  "log.resultPush": "push",
+  "log.resultDealerWins": "dealer wins"
 }

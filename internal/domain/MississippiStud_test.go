@@ -111,6 +111,17 @@ func TestMississippiStud_Bet_Success(t *testing.T) {
 	assert.Len(t, m.GetPlayerHand(), 2)
 	assert.Len(t, m.GetCommunityCards(), 3)
 	assert.Equal(t, domain.MississippiStudDefaultChips-100, m.GetChips())
+	var anteLog *domain.ActionLogEntry
+	for _, entry := range m.GetActionLog() {
+		if entry.ActionType == "ante" {
+			anteLog = entry
+			break
+		}
+	}
+	require.NotNil(t, anteLog)
+	assert.Equal(t, "mississippistud.log.ante", anteLog.DetailCode)
+	assert.Equal(t, map[string]string{"amount": "100"}, anteLog.DetailParams)
+	assert.Empty(t, anteLog.Detail)
 	// すべてのコミュニティは伏せ
 	revealed := m.GetCommunityRevealed()
 	for _, r := range revealed {

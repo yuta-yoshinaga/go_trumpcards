@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"strconv"
 )
 
 // ミシシッピ・スタッドフェーズ定数
@@ -124,7 +125,7 @@ func (m *MississippiStud) Bet(amount int) error {
 		return NewDomainError(ErrInsufficientChips, "Insufficient chips.")
 	}
 	m.anteAmount = amount
-	m.appendLog(0, "ante", fmt.Sprintf("ante=%d", amount), nil)
+	m.appendLog(0, "ante", "mississippistud.log.ante", map[string]string{"amount": strconv.Itoa(amount)}, nil)
 	m.deal()
 	m.phase = MississippiStudPhaseThirdSt
 	return nil
@@ -146,7 +147,9 @@ func (m *MississippiStud) Play(multiplier int) error {
 	}
 	m.streetMultipliers[streetIdx] = multiplier
 	m.communityRevealed[streetIdx] = true
-	m.appendLog(0, "play", fmt.Sprintf("street=%d x%d (-%d chips)", streetIdx+3, multiplier, cost), nil)
+	m.appendLog(0, "play", "mississippistud.log.play", map[string]string{
+		"street": strconv.Itoa(streetIdx + 3), "multiplier": strconv.Itoa(multiplier), "cost": strconv.Itoa(cost),
+	}, nil)
 	switch m.phase {
 	case MississippiStudPhaseThirdSt:
 		m.phase = MississippiStudPhaseFourthSt
@@ -164,7 +167,7 @@ func (m *MississippiStud) Fold() error {
 		return err
 	}
 	m.folded = true
-	m.appendLog(0, "fold", "player folds", nil)
+	m.appendLog(0, "fold", "mississippistud.log.fold", nil, nil)
 	m.resolve()
 	return nil
 }
@@ -193,7 +196,7 @@ func (m *MississippiStud) deal() {
 	for range MississippiStudCommunityCnt {
 		m.communityCards = append(m.communityCards, m.trumpCards.DrawCard())
 	}
-	m.appendLog(-1, "deal", "dealt 2 hole + 3 community cards", nil)
+	m.appendLog(-1, "deal", "mississippistud.log.deal", nil, nil)
 }
 
 // resolve ゲーム解決。フォールド or 5th Street プレイ後に呼ばれる。
@@ -204,7 +207,7 @@ func (m *MississippiStud) resolve() {
 	if m.folded {
 		m.result = GameResultLose
 		m.payoutMultiplier = MississippiStudPayLoss
-		m.appendLog(-1, "result", fmt.Sprintf("folded; wager=%d lost", m.GetTotalBet()), nil)
+		m.appendLog(-1, "result", "mississippistud.log.folded", map[string]string{"wager": strconv.Itoa(m.GetTotalBet())}, nil)
 		return
 	}
 
@@ -243,14 +246,20 @@ func (m *MississippiStud) resolve() {
 		m.chips.AddChips(m.totalPayout)
 	}
 
-	resultStr := "player loses"
+	resultCode := "mississippistud.log.resultLose"
 	switch m.result {
 	case GameResultWin:
-		resultStr = "player wins"
+		resultCode = "mississippistud.log.resultWin"
 	case GameResultDraw:
-		resultStr = "push"
+		resultCode = "mississippistud.log.resultPush"
 	}
-	m.appendLog(-1, "result", fmt.Sprintf("%s rank=%d total=%d", resultStr, m.handRank, m.totalPayout), nil)
+	m.appendLog(-1, "result", resultCode, map[string]string{
+		"rank": strconv.Itoa(m.handRank), "total": strconv.Itoa(m.totalPayout),
+	}, nil)
+}
+
+func (m *MississippiStud) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	m.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // mississippiStudPayoutMultiplier は最終 5 枚役と内訳から配当倍率を返す。
