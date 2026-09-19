@@ -169,6 +169,11 @@ func TestMinchiate_ScartoReturnsTheDealerToTwentyOne(t *testing.T) {
 	assert.Equal(t, MinchiateHandSize, dealer.GetCardsSize())
 	assert.Equal(t, MinchiateSurplus, g.GetScartoSize())
 	assert.Equal(t, MinchiatePhasePlay, g.GetPhase())
+	entries := g.GetActionLog()
+	if len(entries) == 0 || entries[len(entries)-1].DetailCode != "minchiate.log.scarto" || entries[len(entries)-1].Detail != "" {
+		t.Fatalf("scarto log = %#v, want code and empty detail", entries)
+	}
+	assert.Equal(t, fmt.Sprintf("%d", MinchiateSurplus), entries[len(entries)-1].DetailParams["count"])
 }
 
 func TestMinchiate_ScartoRefusesTrumpsAndTheMatto(t *testing.T) {

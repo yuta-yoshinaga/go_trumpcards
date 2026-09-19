@@ -50,5 +50,11 @@
   "errPlayerNil": "Player is nil.",
   "errTrickCardNil": "Trick card is nil.",
   "errActionLogEntryNil": "Action log entry is nil.",
-  "errTeamOutOfRange": "The team number is out of range."
+  "errTeamOutOfRange": "The team number is out of range.",
+  "log.trump": "Trump: {{card}}",
+  "log.marriage": "{{name}} declares marriage in {{suit}} (+{{bonus}} for team {{team}})",
+  "log.play": "{{name}} plays {{card}}",
+  "log.trickWin": "{{name}} wins trick {{trick}} ({{points}} pt)",
+  "log.teamScore": "Team {{team}}: {{cards}} card + {{marriage}} marriage = {{round}} (total {{total}})",
+  "log.gameEnd": "Team {{team}} wins the game!"
 }

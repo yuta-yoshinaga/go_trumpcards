@@ -45,5 +45,10 @@
   "errDuplicateScarto": "You cannot choose the same card twice.",
   "errCannotDiscardTrumpOrMatto": "Trumps and the Matto cannot be discarded.",
   "errFollowLeadSuit": "You must follow the led suit.",
-  "errTargetRoundsNotMultiple": "The number of rounds must be a multiple of {{min}}: {{rounds}}."
+  "errTargetRoundsNotMultiple": "The number of rounds must be a multiple of {{min}}: {{rounds}}.",
+  "log.matchEnd": "Match over",
+  "log.scarto": "Discarded {{count}} cards",
+  "log.play": "",
+  "log.trickWin": "Won trick {{trick}}",
+  "log.settle": "Round {{round}} over"
 }

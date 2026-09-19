@@ -24,8 +24,8 @@ package domain
 
 import (
 	"encoding/json"
-	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // GaigelPlayerCnt ガイゲルのプレイヤー数 (4人固定)
@@ -253,7 +253,7 @@ func (g *Gaigel) dealInitial() {
 	g.trumpCard = g.trumpCards.DrawCard()
 	if g.trumpCard != nil {
 		g.trumpSuit = g.trumpCard.GetDesign()
-		g.appendLog(-1, "trump", fmt.Sprintf("Trump: %s", cardStr(g.trumpCard)), []*Card{g.trumpCard})
+		g.appendLog(-1, "trump", "gaigel.log.trump", map[string]string{"card": cardStr(g.trumpCard)}, []*Card{g.trumpCard})
 	}
 }
 
@@ -362,9 +362,10 @@ func (g *Gaigel) declareMarriage(playerIdx, cardIndex int) error {
 	team := player.GetTeam()
 	g.marriageDeclared[suit] = true
 	g.roundMarriage[team] += bonus
-	g.appendLog(playerIdx, "marriage",
-		fmt.Sprintf("%s declares marriage in %s (+%d for team %d)",
-			playerName(g.players, playerIdx), suitStr(suit), bonus, team), nil)
+	g.appendLog(playerIdx, "marriage", "gaigel.log.marriage", map[string]string{
+		"name": playerName(g.players, playerIdx), "suit": suitStr(suit),
+		"bonus": strconv.Itoa(bonus), "team": strconv.Itoa(team),
+	}, nil)
 
 	played := player.RemoveCard(cardIndex)
 	g.playCard(playerIdx, played)
@@ -400,9 +401,9 @@ func (g *Gaigel) playCard(playerIdx int, card *Card) {
 		PlayerIdx: playerIdx,
 		Card:      card,
 	})
-	g.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)),
-		[]*Card{card})
+	g.appendLog(playerIdx, "play", "gaigel.log.play", map[string]string{
+		"name": playerName(g.players, playerIdx), "card": cardStr(card),
+	}, []*Card{card})
 
 	if len(g.currentTrick) == GaigelPlayerCnt {
 		g.phase = GaigelPhaseTrickEnd
@@ -428,9 +429,9 @@ func (g *Gaigel) ResolveTrick() {
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.roundPoints[g.players[winnerIdx].GetTeam()] += trickPoints
 
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (%d pt)", playerName(g.players, winnerIdx), g.trickNumber, trickPoints),
-		trickCards)
+	g.appendLog(winnerIdx, "trick_win", "gaigel.log.trickWin", map[string]string{
+		"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber), "points": strconv.Itoa(trickPoints),
+	}, trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	g.lastTrickWinner = winnerIdx
@@ -466,9 +467,11 @@ func (g *Gaigel) ScoreRound() {
 	for ti := range GaigelTeamCnt {
 		total := g.roundPoints[ti] + g.roundMarriage[ti]
 		g.teamScores[ti] += total
-		g.appendLog(-1, "team_score",
-			fmt.Sprintf("Team %d: %d card + %d marriage = %d (total %d)",
-				ti, g.roundPoints[ti], g.roundMarriage[ti], total, g.teamScores[ti]), nil)
+		g.appendLog(-1, "team_score", "gaigel.log.teamScore", map[string]string{
+			"team": strconv.Itoa(ti), "cards": strconv.Itoa(g.roundPoints[ti]),
+			"marriage": strconv.Itoa(g.roundMarriage[ti]), "round": strconv.Itoa(total),
+			"total": strconv.Itoa(g.teamScores[ti]),
+		}, nil)
 	}
 
 	g.checkGameEnd()
@@ -602,11 +605,15 @@ func (g *Gaigel) checkGameEnd() {
 			} else {
 				g.winnerTeam = 1
 			}
-			g.appendLog(-1, "game_end",
-				fmt.Sprintf("Team %d wins the game!", g.winnerTeam), nil)
+			g.appendLog(-1, "game_end", "gaigel.log.gameEnd", map[string]string{"team": strconv.Itoa(g.winnerTeam)}, nil)
 			return
 		}
 	}
+}
+
+// appendLog records a locale-independent action-log entry.
+func (g *Gaigel) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- State getters / setters ---

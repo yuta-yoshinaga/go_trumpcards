@@ -639,6 +639,16 @@ func TestMendikot_ActionLog(t *testing.T) {
 		kinds[e.ActionType] = true
 	}
 	assert.True(t, kinds["play"])
+	var found *ActionLogEntry
+	for _, entry := range m.actionLog {
+		if entry.ActionType == "play" {
+			found = entry
+			break
+		}
+	}
+	if found == nil || found.DetailCode != "mendikot.log.play" || found.Detail != "" || found.DetailParams["card"] == "" {
+		t.Fatalf("play log = %#v, want card code and parameter", found)
+	}
 }
 
 // **切り札は宣言ではなく事故で決まる** (#5755)。フォローできなかった最初の

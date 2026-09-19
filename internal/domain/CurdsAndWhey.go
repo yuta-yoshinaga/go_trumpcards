@@ -4,7 +4,7 @@ package domain
 
 import (
 	"errors"
-	"fmt"
+	"strconv"
 )
 
 // Curds and Whey 盤面定数。
@@ -85,7 +85,7 @@ func (g *CurdsAndWhey) Reset() {
 			g.columns[i] = append(g.columns[i], g.trumpCards.DrawCard())
 		}
 	}
-	g.appendLog("deal", "新しいゲームを開始しました", nil)
+	g.appendLog("deal", "curdsandwhey.log.start", nil, nil)
 }
 
 // --- rules ---
@@ -163,7 +163,7 @@ func (g *CurdsAndWhey) MoveSequence(fromCol, cardIndex, toCol int) error {
 	g.columns[fromCol] = src[:cardIndex]
 	g.columns[toCol] = append(g.columns[toCol], moving...)
 	g.moveCount++
-	g.appendLog("move", fmt.Sprintf("列%d[%d]→列%d", fromCol, cardIndex, toCol), nil)
+	g.appendLog("move", "curdsandwhey.log.move", map[string]string{"from": strconv.Itoa(fromCol), "index": strconv.Itoa(cardIndex), "to": strconv.Itoa(toCol)}, nil)
 	g.checkAndRemoveCompleted(toCol)
 	g.checkGameOver()
 	return nil
@@ -184,7 +184,7 @@ func (g *CurdsAndWhey) checkAndRemoveCompleted(col int) {
 	}
 	g.columns[col] = cards[:len(cards)-CardValueMax]
 	g.completedSuits++
-	g.appendLog("complete", fmt.Sprintf("列%dでスートが完成しました", col), nil)
+	g.appendLog("complete", "curdsandwhey.log.complete", map[string]string{"column": strconv.Itoa(col)}, nil)
 	g.checkGameClear()
 }
 
@@ -192,7 +192,7 @@ func (g *CurdsAndWhey) checkAndRemoveCompleted(col int) {
 func (g *CurdsAndWhey) checkGameClear() {
 	if g.completedSuits >= CurdsAndWheyFoundationCnt {
 		g.phase = CurdsAndWheyPhaseGameClear
-		g.appendLog("clear", "クリア！", nil)
+		g.appendLog("clear", "curdsandwhey.log.clear", nil, nil)
 	}
 }
 
@@ -227,7 +227,7 @@ func (g *CurdsAndWhey) hasAnyLegalMove() bool {
 func (g *CurdsAndWhey) checkGameOver() {
 	if g.phase == CurdsAndWheyPhasePlaying && !g.hasAnyLegalMove() {
 		g.phase = CurdsAndWheyPhaseGameOver
-		g.appendLog("gameover", "手詰まりです", nil)
+		g.appendLog("gameover", "curdsandwhey.log.gameOver", nil, nil)
 	}
 }
 
@@ -235,7 +235,7 @@ func (g *CurdsAndWhey) checkGameOver() {
 func (g *CurdsAndWhey) GiveUp() {
 	if g.phase == CurdsAndWheyPhasePlaying {
 		g.phase = CurdsAndWheyPhaseGameOver
-		g.appendLog("giveup", "ギブアップしました", nil)
+		g.appendLog("giveup", "curdsandwhey.log.giveUp", nil, nil)
 	}
 }
 
@@ -267,8 +267,8 @@ func (g *CurdsAndWhey) GetHint() *CurdsAndWheyHint {
 	return nil
 }
 
-func (g *CurdsAndWhey) appendLog(action, detail string, cards []*Card) {
-	g.appendLogAt(g.moveCount, 0, action, detail, cards)
+func (g *CurdsAndWhey) appendLog(action, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCodeAt(g.moveCount, 0, action, detailCode, detailParams, cards)
 }
 
 // --- undo ---
