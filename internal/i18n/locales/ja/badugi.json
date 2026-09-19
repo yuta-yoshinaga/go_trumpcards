@@ -47,5 +47,14 @@
   "helpExampleCall": "  c                    現在のベットにコールする",
   "helpHint": "  h                    助言を表示",
   "helpLog": "  l                    行動ログを表示",
-  "completeBadugiWarning": "✨ バドゥーギ完成（{{size}} 枚）。ここで交換すると弱くなります"
+  "completeBadugiWarning": "✨ バドゥーギ完成（{{size}} 枚）。ここで交換すると弱くなります",
+  "log.ante": "アンティ {{amount}} チップ",
+  "log.exchange": "ドロー {{draw}}: {{count}}枚交換",
+  "log.showdown": "ショーダウン: {{hand}}",
+  "log.fold": "フォールド",
+  "log.check": "チェック",
+  "log.call": "コール {{amount}}",
+  "log.bet": "ベット {{amount}}",
+  "log.raise": "{{amount}} へレイズ",
+  "log.allIn": "{{amount}} オールイン"
 }

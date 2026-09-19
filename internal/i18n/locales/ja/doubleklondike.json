@@ -16,5 +16,14 @@
   "zoneFoundation": "ファウンデーション",
   "helpExampleDraw": "  d                     ストックから 1 枚めくる",
   "helpHint": "  h                     助言を表示",
-  "helpLog": "  l                     行動ログを表示"
+  "helpLog": "  l                     行動ログを表示",
+  "log.deal": "新しいゲームを開始しました",
+  "log.recycle": "ウェイストをストックに戻しました",
+  "log.draw": "ストックからカードを引きました",
+  "log.moveWasteToTableau": "ウェイスト→タブロー列{{col}}",
+  "log.moveWasteToFoundation": "ウェイスト→ファンデーション",
+  "log.moveTableauToTableau": "タブロー列{{from}}→タブロー列{{to}}",
+  "log.moveTableauToFoundation": "タブロー列{{col}}→ファンデーション",
+  "log.giveUp": "ギブアップしました",
+  "log.clear": "クリア！"
 }

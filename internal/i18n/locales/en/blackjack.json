@@ -74,5 +74,20 @@
   "helpExampleBet": "  b 100                bet 100 chips and deal",
   "helpExampleHit": "  h                    draw one more card",
   "helpExampleStand": "  s                    stand and pass to the dealer",
-  "helpLog": "  l                    show the action log"
+  "helpLog": "  l                    show the action log",
+  "log.bet": "bet {{amount}} chips",
+  "log.insurance": "insurance",
+  "log.declineInsurance": "decline insurance",
+  "log.hit": "hit",
+  "log.stand": "stand",
+  "log.doubleDown": "double down",
+  "log.split": "split",
+  "log.surrender": "surrender",
+  "log.earlySurrender": "early surrender",
+  "log.dealerStand": "dealer stand",
+  "log.dealerHit": "dealer hit",
+  "log.resultWin": "player wins",
+  "log.resultDraw": "draw",
+  "log.resultLose": "player loses",
+  "log.bonus": "{{name}}"
 }

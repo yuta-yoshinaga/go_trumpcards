@@ -74,5 +74,20 @@
   "helpExampleBet": "  b 100                100 チップ賭けて配る",
   "helpExampleHit": "  h                    もう1枚引く",
   "helpExampleStand": "  s                    スタンドしてディーラーの番へ",
-  "helpLog": "  l                    行動ログを表示"
+  "helpLog": "  l                    行動ログを表示",
+  "log.bet": "ベット {{amount}} チップ",
+  "log.insurance": "インシュランス",
+  "log.declineInsurance": "インシュランスを辞退",
+  "log.hit": "ヒット",
+  "log.stand": "スタンド",
+  "log.doubleDown": "ダブルダウン",
+  "log.split": "スプリット",
+  "log.surrender": "サレンダー",
+  "log.earlySurrender": "アーリーサレンダー",
+  "log.dealerStand": "ディーラーはスタンド",
+  "log.dealerHit": "ディーラーはヒット",
+  "log.resultWin": "プレイヤーの勝ち",
+  "log.resultDraw": "引き分け",
+  "log.resultLose": "プレイヤーの負け",
+  "log.bonus": "{{name}}"
 }

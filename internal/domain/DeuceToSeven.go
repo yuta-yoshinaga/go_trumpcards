@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // DeuceToSeven game phase constants.
@@ -231,7 +232,7 @@ func (d *DeuceToSeven) collectAntes() {
 		}
 		pl.SubtractChips(ante)
 		d.round.pot += ante
-		d.appendLog(i, "ante", fmt.Sprintf("ante %d chips", ante), nil)
+		d.appendLog(i, "ante", "deucetoseven.log.ante", map[string]string{"amount": strconv.Itoa(ante)}, nil)
 	}
 }
 
@@ -323,8 +324,7 @@ func (d *DeuceToSeven) applyExchange(playerIdx int, indices []int) {
 	d.muck = append(d.muck, pending...)
 	pl.SetDrawCount(drawn)
 	pl.AddToTotalDrawCount(drawn)
-	d.appendLog(playerIdx, "exchange",
-		fmt.Sprintf("draw %d: exchange %d card(s)", d.round.drawIndex, drawn), nil)
+	d.appendLog(playerIdx, "exchange", "deucetoseven.log.exchange", map[string]string{"draw": strconv.Itoa(d.round.drawIndex), "count": strconv.Itoa(drawn)}, nil)
 }
 
 // drawOrRecycleMuck は山から 1 枚引く。山が尽きていたら捨て札を切り直して
@@ -545,7 +545,7 @@ func (d *DeuceToSeven) resolveShowdown() {
 			for j := 0; j < pl.GetCardsSize(); j++ {
 				cards[j] = pl.GetCard(j)
 			}
-			d.appendLog(i, "showdown", fmt.Sprintf("showdown: %s", pl.GetHandName()), cards)
+			d.appendLog(i, "showdown", "deucetoseven.log.showdown", map[string]string{"hand": pl.GetHandName()}, cards)
 		}
 	}
 
@@ -996,24 +996,24 @@ func (d *DeuceToSeven) ImportProfile(data []byte) error {
 // GetActionLog returns the chronological action log for this hand.
 func (d *DeuceToSeven) GetActionLog() []*ActionLogEntry { return d.round.actionLog }
 
-func (d *DeuceToSeven) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	d.round.appendLog(playerIdx, actionType, detail, cards)
+func (d *DeuceToSeven) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	d.round.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 func (d *DeuceToSeven) logBettingAction(playerIdx, action, _ int) {
 	switch action {
 	case DeuceToSevenActionFold:
-		d.appendLog(playerIdx, "fold", "fold", nil)
+		d.appendLog(playerIdx, "fold", "deucetoseven.log.fold", nil, nil)
 	case DeuceToSevenActionCheck:
-		d.appendLog(playerIdx, "check", "check", nil)
+		d.appendLog(playerIdx, "check", "deucetoseven.log.check", nil, nil)
 	case DeuceToSevenActionCall:
-		d.appendLog(playerIdx, "call", fmt.Sprintf("call %d", d.players[playerIdx].GetCurrentBet()), nil)
+		d.appendLog(playerIdx, "call", "deucetoseven.log.call", map[string]string{"amount": strconv.Itoa(d.players[playerIdx].GetCurrentBet())}, nil)
 	case DeuceToSevenActionBet:
-		d.appendLog(playerIdx, "bet", fmt.Sprintf("bet %d", d.players[playerIdx].GetCurrentBet()), nil)
+		d.appendLog(playerIdx, "bet", "deucetoseven.log.bet", map[string]string{"amount": strconv.Itoa(d.players[playerIdx].GetCurrentBet())}, nil)
 	case DeuceToSevenActionRaise:
-		d.appendLog(playerIdx, "raise", fmt.Sprintf("raise to %d", d.players[playerIdx].GetCurrentBet()), nil)
+		d.appendLog(playerIdx, "raise", "deucetoseven.log.raise", map[string]string{"amount": strconv.Itoa(d.players[playerIdx].GetCurrentBet())}, nil)
 	case DeuceToSevenActionAllIn:
-		d.appendLog(playerIdx, "allin", fmt.Sprintf("all in %d", d.players[playerIdx].GetCurrentBet()), nil)
+		d.appendLog(playerIdx, "allin", "deucetoseven.log.allIn", map[string]string{"amount": strconv.Itoa(d.players[playerIdx].GetCurrentBet())}, nil)
 	}
 }
 

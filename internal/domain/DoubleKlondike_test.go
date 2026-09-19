@@ -15,6 +15,23 @@ func newDkGame() *DoubleKlondike {
 	return g
 }
 
+func TestDoubleKlondike_ActionLogUsesDetailCode(t *testing.T) {
+	g := newDkGame()
+	var entry *ActionLogEntry
+	for _, candidate := range g.GetActionLog() {
+		if candidate.DetailCode == "doubleklondike.log.deal" {
+			entry = candidate
+			break
+		}
+	}
+	if entry == nil {
+		t.Fatal("expected double klondike deal log entry")
+	}
+	if entry.Detail != "" {
+		t.Fatalf("expected empty legacy detail, got %q", entry.Detail)
+	}
+}
+
 // dkClear empties the board for deterministic setups.
 func dkClear(g *DoubleKlondike) {
 	for i := range g.tableau {
