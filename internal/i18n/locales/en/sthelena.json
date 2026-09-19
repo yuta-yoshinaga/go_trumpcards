@@ -35,5 +35,10 @@
   "columnRowTop": "(top)",
   "columnRowBottom": "(bottom)",
   "columnRowSide": "(side)",
-  "errRestricted": "That column cannot reach that foundation (a first-deal restriction; a redeal lifts it)"
+  "errRestricted": "That column cannot reach that foundation (a first-deal restriction; a redeal lifts it)",
+  "log.moveTableau": "Tableau column {{fromCol}} → tableau column {{toCol}}",
+  "log.moveFoundation": "Tableau column {{fromCol}} → foundation {{foundationIdx}}",
+  "log.redeal": "Redeal ({{remaining}} remaining)",
+  "log.giveUp": "Gave up",
+  "log.autocomplete": "Auto-completed"
 }

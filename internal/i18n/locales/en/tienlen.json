@@ -25,5 +25,8 @@
   "comboThreePairRun": "Three-pair run",
   "comboFourOfAKind": "Four of a kind",
   "comboInvalid": "Unknown",
-  "helpLog": "  l                    show the action log"
+  "helpLog": "  l                    show the action log",
+  "log.pass": "pass",
+  "log.play": "played {{count}} card(s)",
+  "log.finish": "player {{player}} finished (rank {{rank}})"
 }

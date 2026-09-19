@@ -424,6 +424,16 @@ func TestZheng_PlayerPlay_LeaderMustPlay(t *testing.T) {
 
 	// Any card may lead (no forced ♠3 combo)
 	assert.NoError(t, z.PlayerPlay([]int{1}))
+	var entry *ActionLogEntry
+	for _, candidate := range z.GetActionLog() {
+		if candidate.DetailCode == "zheng.log.play" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, map[string]string{"count": "1"}, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
 }
 
 func TestZheng_PlayerPlay_PassOnTable(t *testing.T) {

@@ -336,6 +336,16 @@ func TestStHelena_Redeal(t *testing.T) {
 		assert.Equal(t, 2, got[0][1].Card.GetValue(), "その次が元の列0")
 		assert.Equal(t, before-1, cr.GetRedealsRemaining())
 		assert.Equal(t, 1, cr.GetMoveCount())
+		var entry *domain.ActionLogEntry
+		for _, candidate := range cr.GetActionLog() {
+			if candidate.DetailCode == "sthelena.log.redeal" {
+				entry = candidate
+				break
+			}
+		}
+		require.NotNil(t, entry)
+		assert.Equal(t, map[string]string{"remaining": "1"}, entry.DetailParams)
+		assert.Empty(t, entry.Detail)
 	})
 
 	t.Run("no redeals remaining", func(t *testing.T) {

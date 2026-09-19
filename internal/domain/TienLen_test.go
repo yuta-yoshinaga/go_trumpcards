@@ -350,6 +350,16 @@ func TestTienLen_PlayerPlay_Pass(t *testing.T) {
 
 	// Play a card first (must include ♠3 on first play)
 	assert.NoError(t, tl.PlayerPlay([]int{0}))
+	var entry *ActionLogEntry
+	for _, candidate := range tl.GetActionLog() {
+		if candidate.DetailCode == "tienlen.log.play" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, map[string]string{"count": "1"}, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
 }
 
 func TestTienLen_PlayerPlay_FirstPlayMustIncludeSpade3(t *testing.T) {

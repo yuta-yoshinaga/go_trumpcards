@@ -135,7 +135,7 @@ func (a *Narcotic) Draw() error {
 		dealt = append(dealt, card)
 	}
 	a.moveCount++
-	a.appendLog("draw", "各列にカードを配りました", dealt)
+	a.appendLog("draw", "narcotic.log.draw", nil, dealt)
 	a.checkGameClear()
 	a.checkStalemate()
 	return nil
@@ -160,7 +160,7 @@ func (a *Narcotic) Remove() error {
 	}
 	a.discard = append(a.discard, removed...)
 	a.moveCount++
-	a.appendLog("remove", "4枚のランクが揃ったので取り除きました", removed)
+	a.appendLog("remove", "narcotic.log.remove", nil, removed)
 	a.checkGameClear()
 	a.checkStalemate()
 	return nil
@@ -183,7 +183,7 @@ func (a *Narcotic) Move(col int) error {
 	top := a.popTop(col)
 	a.columns[dest] = append(a.columns[dest], top)
 	a.moveCount++
-	a.appendLog("move", fmt.Sprintf("カード移動: 列%d→列%d", col, dest), []*Card{top})
+	a.appendLog("move", "narcotic.log.move", map[string]string{"fromCol": fmt.Sprintf("%d", col), "toCol": fmt.Sprintf("%d", dest)}, []*Card{top})
 	a.checkGameClear()
 	a.checkStalemate()
 	return nil
@@ -213,7 +213,7 @@ func (a *Narcotic) Redeal() error {
 	a.stock = gathered
 	a.redealCount++
 	a.moveCount++
-	a.appendLog("redeal", fmt.Sprintf("集めて配り直しました (%d回目)", a.redealCount), nil)
+	a.appendLog("redeal", "narcotic.log.redeal", map[string]string{"count": fmt.Sprintf("%d", a.redealCount)}, nil)
 	a.checkStalemate()
 	return nil
 }
@@ -234,7 +234,7 @@ func (a *Narcotic) remainingOnTable() int {
 func (a *Narcotic) GiveUp() {
 	if a.phase == NarcoticPhasePlaying {
 		a.phase = NarcoticPhaseGameOver
-		a.appendLog("giveup", "ギブアップしました", nil)
+		a.appendLog("giveup", "narcotic.log.giveUp", nil, nil)
 	}
 }
 
@@ -526,8 +526,8 @@ func narcoticCloneCards(src []*Card) []*Card {
 }
 
 // appendLog 棋譜エントリを追加
-func (a *Narcotic) appendLog(actionType, detail string, cards []*Card) {
-	a.appendLogAt(a.moveCount, 0, actionType, detail, cards)
+func (a *Narcotic) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	a.appendLogCodeAt(a.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // narcoticJSON is the JSON wire format for Narcotic.

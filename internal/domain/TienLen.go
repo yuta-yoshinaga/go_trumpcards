@@ -119,7 +119,7 @@ func (tl *TienLen) PlayerPlay(indices []int) error {
 		}
 		tl.round.passCount++
 		tl.round.humanAction = &TienLenAction{PlayerIdx: tl.round.currentTurn, PlayedCards: nil}
-		tl.appendLog(tl.round.currentTurn, "pass", "pass", nil)
+		tl.appendLog(tl.round.currentTurn, "pass", "tienlen.log.pass", nil, nil)
 		tl.advanceTurn()
 		tl.checkPassClear()
 		return nil
@@ -163,7 +163,7 @@ func (tl *TienLen) PlayerPlay(indices []int) error {
 	cards := player.RemoveCards(indices)
 	playType := tienLenClassifyPlay(cards)
 	tl.round.humanAction = &TienLenAction{PlayerIdx: tl.round.currentTurn, PlayedCards: cards}
-	tl.appendLog(tl.round.currentTurn, "play", fmt.Sprintf("played %d card(s)", len(cards)), cards)
+	tl.appendLog(tl.round.currentTurn, "play", "tienlen.log.play", map[string]string{"count": fmt.Sprintf("%d", len(cards))}, cards)
 	tl.playCards(tl.round.currentTurn, cards, playType)
 	return nil
 }
@@ -201,7 +201,7 @@ func (tl *TienLen) CpuPlay() {
 		tl.round.passCount++
 		action := &TienLenAction{PlayerIdx: playerIdx, PlayedCards: nil}
 		tl.round.cpuActions = append(tl.round.cpuActions, action)
-		tl.appendLog(playerIdx, "pass", "pass", nil)
+		tl.appendLog(playerIdx, "pass", "tienlen.log.pass", nil, nil)
 		tl.advanceTurn()
 		tl.checkPassClear()
 	} else {
@@ -209,7 +209,7 @@ func (tl *TienLen) CpuPlay() {
 		playType := tienLenClassifyPlay(cards)
 		action := &TienLenAction{PlayerIdx: playerIdx, PlayedCards: cards}
 		tl.round.cpuActions = append(tl.round.cpuActions, action)
-		tl.appendLog(playerIdx, "play", fmt.Sprintf("played %d card(s)", len(cards)), cards)
+		tl.appendLog(playerIdx, "play", "tienlen.log.play", map[string]string{"count": fmt.Sprintf("%d", len(cards))}, cards)
 		tl.playCards(playerIdx, cards, playType)
 	}
 }
@@ -263,7 +263,7 @@ func (tl *TienLen) finishPlayer(idx int) {
 	rank := tl.countFinished() + 1
 	tl.players[idx].SetIsFinished(true)
 	tl.players[idx].SetRank(rank)
-	tl.appendLog(idx, "finish", fmt.Sprintf("player %d finished (rank %d)", idx, rank), nil)
+	tl.appendLog(idx, "finish", "tienlen.log.finish", map[string]string{"player": fmt.Sprintf("%d", idx), "rank": fmt.Sprintf("%d", rank)}, nil)
 }
 
 // checkGameEnd ゲーム終了チェック
@@ -347,8 +347,8 @@ func (tl *TienLen) SetConfig(config TienLenConfig) { tl.config = config }
 func (tl *TienLen) GetActionLog() []*ActionLogEntry { return tl.round.actionLog }
 
 // appendLog 棋譜にエントリを追加する
-func (tl *TienLen) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	tl.round.appendLog(playerIdx, actionType, detail, cards)
+func (tl *TienLen) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	tl.round.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- JSON Serialization ---

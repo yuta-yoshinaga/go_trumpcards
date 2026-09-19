@@ -18,5 +18,8 @@
   "hintNotYourTurn": "It is not your turn",
   "hintPlayLow": "You lead — shed your weaker cards first",
   "hintCanPlay": "You have a combination that beats the table",
-  "hintShouldPass": "Nothing beats the table — consider passing"
+  "hintShouldPass": "Nothing beats the table — consider passing",
+  "log.pass": "pass",
+  "log.play": "played {{count}} card(s)",
+  "log.finish": "player {{player}} finished (rank {{rank}})"
 }

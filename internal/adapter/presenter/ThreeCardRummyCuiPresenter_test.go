@@ -429,8 +429,8 @@ func TestThreeCardRummyCuiPresenter_ActionLogOutput(t *testing.T) {
 		out := p.ActionLogOutput(g)
 
 		assert.Contains(t, out, "棋譜")
-		assert.Contains(t, out, "player folds")
-		assert.Contains(t, out, "player folded")
+		assert.Contains(t, out, i18n.T("threecardrummy.log.fold"))
+		assert.Contains(t, out, i18n.T("threecardrummy.log.playerFolded"))
 		assert.NotContains(t, out, "棋譜はありません")
 	})
 }

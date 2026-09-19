@@ -18,5 +18,8 @@
   "hintNotYourTurn": "いまはあなたの番ではありません",
   "hintPlayLow": "リードです。弱いカードから出しましょう",
   "hintCanPlay": "場を上回れる組み合わせがあります",
-  "hintShouldPass": "場を上回れません。パスを検討しましょう"
+  "hintShouldPass": "場を上回れません。パスを検討しましょう",
+  "log.pass": "パス",
+  "log.play": "{{count}}枚のカードを出しました",
+  "log.finish": "プレイヤー{{player}}が{{rank}}位で上がりました"
 }
