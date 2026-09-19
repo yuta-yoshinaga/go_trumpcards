@@ -41,5 +41,14 @@
   "bak.pi": "Pi-bak",
   "bak.go": "Go-bak",
   "categoryCounts": "  Captured: Gwang {{gwang}} / Yeol {{yeol}} / Tti {{tti}} / Pi {{pi}}",
-  "helpExamplePlay": "  p 0                  play hand card 0"
+  "helpExamplePlay": "  p 0                  play hand card 0",
+  "log.deal": "round {{round}} dealt (field {{field}}, draw {{draw}})",
+  "log.play": "{{name}} plays {{card}} ({{result}})",
+  "log.draw": "{{name}} draws {{card}} ({{result}})",
+  "log.score": "{{name}} reaches {{points}} points",
+  "log.go": "{{name}} calls Go (x{{count}})",
+  "log.stop": "{{name}} stops",
+  "log.roundWin": "{{name}} wins round with {{points}} points (bak x{{bak}})",
+  "log.roundDraw": "round drawn (no winner)",
+  "log.gameEnd": "game ended (winner {{winner}})"
 }

@@ -540,6 +540,16 @@ func gostopDrive(t *testing.T, g *domain.GoStop) {
 			return
 		}
 	}
+	var entry *domain.ActionLogEntry
+	for _, candidate := range g.GetActionLog() {
+		if candidate.ActionType == "deal" && entry == nil {
+			entry = candidate
+		}
+	}
+	assert.NotNil(t, entry)
+	assert.Equal(t, "gostop.log.deal", entry.DetailCode)
+	assert.Equal(t, map[string]string{"round": "1", "field": "8", "draw": "20"}, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
 }
 
 func TestGoStopFullGame_Normal(t *testing.T) {

@@ -56,5 +56,14 @@
   "errTargetContractNotMet": "対象プレイヤーはまだコントラクトを達成していません",
   "errTargetMeldInvalid": "対象メルドが不正です",
   "errLayoffCardCannotAdd": "{{card}}はそのメルドに追加できません",
-  "errContractRequiredToGoOut": "上がるにはコントラクト達成が必要です"
+  "errContractRequiredToGoOut": "上がるにはコントラクト達成が必要です",
+  "log.drawStock": "{{name}}が山札から引きました",
+  "log.drawDiscard": "{{name}}が捨て札から{{card}}を引きました",
+  "log.meldContract": "{{name}}がコントラクトを達成しました（ラウンド{{round}}）",
+  "log.meldExtra": "{{name}}が追加カード{{count}}枚をメルドしました",
+  "log.layoff": "{{name}}が{{card}}をプレイヤー{{target}}のメルドに追加しました",
+  "log.discard": "{{name}}が{{card}}を捨てました",
+  "log.roundWin": "{{name}}が上がりました（ラウンド{{round}}）",
+  "log.draw": "山札が空になり、ラウンドは引き分けで終了しました",
+  "log.gameEnd": "{{name}}がペナルティ{{points}}点でゲームに勝利しました！"
 }

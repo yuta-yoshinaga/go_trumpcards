@@ -5,6 +5,7 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 )
 
 // カジノウォーフェーズ定数
@@ -91,7 +92,7 @@ func (cw *CasinoWar) Bet(amount int) error {
 		return NewDomainError(ErrInsufficientChips, "Insufficient chips.")
 	}
 	cw.ante = amount
-	cw.appendLog(0, "bet", fmt.Sprintf("ante=%d", amount), nil)
+	cw.appendLogCode(0, "bet", "casinowar.log.bet", map[string]string{"amount": strconv.Itoa(amount)}, nil)
 
 	cw.dealInitial()
 	cw.phase = CasinoWarPhaseInitialDealt
@@ -106,7 +107,7 @@ func (cw *CasinoWar) dealInitial() {
 	if cw.dealerCard == nil {
 		cw.dealerCard = cw.trumpCards.DrawCard()
 	}
-	cw.appendLog(-1, "deal", "dealt initial cards", []*Card{cw.playerCard, cw.dealerCard})
+	cw.appendLogCode(-1, "deal", "casinowar.log.dealInitial", nil, []*Card{cw.playerCard, cw.dealerCard})
 }
 
 // ResolveInitial 初手 2 枚を比較しフェーズ遷移
@@ -122,16 +123,16 @@ func (cw *CasinoWar) ResolveInitial() {
 		cw.chips.AddChips(cw.totalPayout)
 		cw.gameEndFlag = true
 		cw.phase = CasinoWarPhaseEnd
-		cw.appendLog(-1, "result", "player wins", nil)
+		cw.appendLogCode(-1, "result", "casinowar.log.playerWins", nil, nil)
 	case pr < dr:
 		cw.result = GameResultLose
 		cw.totalPayout = 0
 		cw.gameEndFlag = true
 		cw.phase = CasinoWarPhaseEnd
-		cw.appendLog(-1, "result", "player loses", nil)
+		cw.appendLogCode(-1, "result", "casinowar.log.playerLoses", nil, nil)
 	default:
 		cw.phase = CasinoWarPhaseTieDecision
-		cw.appendLog(-1, "tie", "ranks tied — surrender or war", nil)
+		cw.appendLogCode(-1, "tie", "casinowar.log.tie", nil, nil)
 	}
 }
 
@@ -151,7 +152,7 @@ func (cw *CasinoWar) Surrender() error {
 	cw.result = GameResultLose
 	cw.gameEndFlag = true
 	cw.phase = CasinoWarPhaseEnd
-	cw.appendLog(0, "surrender", fmt.Sprintf("refund=%d", refund), nil)
+	cw.appendLogCode(0, "surrender", "casinowar.log.surrender", map[string]string{"refund": strconv.Itoa(refund)}, nil)
 	return nil
 }
 
@@ -164,7 +165,7 @@ func (cw *CasinoWar) GoToWar() error {
 		return NewDomainError(ErrInsufficientChips, "Insufficient chips for war bet.")
 	}
 	cw.warBet = cw.ante
-	cw.appendLog(0, "war", fmt.Sprintf("warBet=%d", cw.warBet), nil)
+	cw.appendLogCode(0, "war", "casinowar.log.war", map[string]string{"warBet": strconv.Itoa(cw.warBet)}, nil)
 	cw.dealWar()
 	cw.ResolveWar()
 	return nil
@@ -184,7 +185,7 @@ func (cw *CasinoWar) dealWar() {
 	if cw.dealerWarCard == nil {
 		cw.dealerWarCard = cw.trumpCards.DrawCard()
 	}
-	cw.appendLog(-1, "deal", "burn 3 + war cards", []*Card{cw.playerWarCard, cw.dealerWarCard})
+	cw.appendLogCode(-1, "deal", "casinowar.log.dealWar", nil, []*Card{cw.playerWarCard, cw.dealerWarCard})
 	cw.phase = CasinoWarPhaseWarDealt
 }
 
@@ -199,17 +200,17 @@ func (cw *CasinoWar) ResolveWar() {
 		// アンテはプッシュ（返金）、ウォー bet は 1:1 で支払い
 		cw.totalPayout = cw.ante + cw.warBet*2
 		cw.chips.AddChips(cw.totalPayout)
-		var detail string
+		var detailCode string
 		if pr == dr {
-			detail = "war tie counted as player win"
+			detailCode = "casinowar.log.warTieWin"
 		} else {
-			detail = "player wins war"
+			detailCode = "casinowar.log.warWin"
 		}
-		cw.appendLog(-1, "result", detail, nil)
+		cw.appendLogCode(-1, "result", detailCode, nil, nil)
 	} else {
 		cw.result = GameResultLose
 		cw.totalPayout = 0
-		cw.appendLog(-1, "result", "player loses war", nil)
+		cw.appendLogCode(-1, "result", "casinowar.log.warLoss", nil, nil)
 	}
 	cw.gameEndFlag = true
 	cw.phase = CasinoWarPhaseEnd

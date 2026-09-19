@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // helperCariocaHand 既定構成の Carioca を Reset 済みで返す。
@@ -166,6 +168,18 @@ func TestCarioca_PlayerDrawFromStock_ProgressesPhase(t *testing.T) {
 	if g.GetPlayer(0).GetCardsSize() != CariocaHandSize+1 {
 		t.Errorf("hand should grow by 1 after draw")
 	}
+	var entry *ActionLogEntry
+	for _, candidate := range g.GetActionLog() {
+		if candidate.ActionType == "draw_stock" {
+			entry = candidate
+		}
+	}
+	if entry == nil {
+		t.Fatal("draw_stock log entry not found")
+	}
+	assert.Equal(t, "carioca.log.drawStock", entry.DetailCode)
+	assert.Equal(t, map[string]string{"name": "You"}, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
 }
 
 func TestCarioca_PlayerDrawFromStock_RejectsWrongPhase(t *testing.T) {

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // TarneebHandSize 各プレイヤーの手札枚数
@@ -222,7 +223,7 @@ func (t *Tarneeb) applyBid(playerIdx, bid int) {
 		t.highestBid = bid
 		t.bidWinnerIdx = playerIdx
 	}
-	t.appendLog(playerIdx, "bid", fmt.Sprintf("%s bids %s", playerName(t.players, playerIdx), bidLabel), nil)
+	t.appendLogCode(playerIdx, "bid", "tarneeb.log.bid", map[string]string{"name": playerName(t.players, playerIdx), "bid": bidLabel}, nil)
 
 	t.bidPlayerIdx = (t.bidPlayerIdx + 1) % TarneebPlayerCnt
 	// 4人ビッドし終えたらディーラーの左隣に戻り、フェーズ遷移を判定する。
@@ -235,15 +236,14 @@ func (t *Tarneeb) applyBid(playerIdx, bid int) {
 func (t *Tarneeb) finishBidPhase() {
 	if t.bidWinnerIdx < 0 {
 		t.redealCount++
-		t.appendLog(-1, "redeal", fmt.Sprintf("All passed (redeal #%d)", t.redealCount), nil)
+		t.appendLogCode(-1, "redeal", "tarneeb.log.redeal", map[string]string{"count": strconv.Itoa(t.redealCount)}, nil)
 		for _, p := range t.players {
 			p.ResetRound()
 		}
 		t.startBidRound()
 		return
 	}
-	t.appendLog(t.bidWinnerIdx, "bid_win",
-		fmt.Sprintf("%s wins the auction with %d", playerName(t.players, t.bidWinnerIdx), t.highestBid), nil)
+	t.appendLogCode(t.bidWinnerIdx, "bid_win", "tarneeb.log.bidWin", map[string]string{"name": playerName(t.players, t.bidWinnerIdx), "bid": strconv.Itoa(t.highestBid)}, nil)
 	t.phase = TarneebPhaseTrumpDeclaration
 }
 
@@ -280,8 +280,7 @@ func (t *Tarneeb) CpuDeclareTrump() {
 // applyTrumpDeclaration トランプスートを設定し、プレイフェーズへ遷移する。
 func (t *Tarneeb) applyTrumpDeclaration(suit int) {
 	t.trumpSuit = suit
-	t.appendLog(t.bidWinnerIdx, "trump",
-		fmt.Sprintf("%s declares %s as trump", playerName(t.players, t.bidWinnerIdx), suitName(suit)), nil)
+	t.appendLogCode(t.bidWinnerIdx, "trump", "tarneeb.log.trump", map[string]string{"name": playerName(t.players, t.bidWinnerIdx), "suit": suitName(suit)}, nil)
 	t.leadPlayerIdx = t.bidWinnerIdx
 	t.currentPlayerIdx = t.bidWinnerIdx
 	t.trickNumber = 1
@@ -347,8 +346,7 @@ func (t *Tarneeb) ResolveTrick() {
 		trickCards[i] = tc.Card
 	}
 	t.players[winnerIdx].AddTrick(trickCards)
-	t.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", playerName(t.players, winnerIdx), t.trickNumber), trickCards)
+	t.appendLogCode(winnerIdx, "trick_win", "tarneeb.log.trickWin", map[string]string{"name": playerName(t.players, winnerIdx), "trick": strconv.Itoa(t.trickNumber)}, trickCards)
 
 	t.leadPlayerIdx = winnerIdx
 	if t.trickNumber >= TarneebHandSize {
@@ -391,12 +389,8 @@ func (t *Tarneeb) ScoreRound() {
 	t.teamScores[bidderTeam] += bidderDelta
 	t.teamScores[defenderTeam] += defenderDelta
 
-	t.appendLog(-1, "round_score",
-		fmt.Sprintf("Team %d (bidder): bid=%d tricks=%d delta=%+d total=%d",
-			bidderTeam, bid, teamTricks[bidderTeam], bidderDelta, t.teamScores[bidderTeam]), nil)
-	t.appendLog(-1, "round_score",
-		fmt.Sprintf("Team %d (defender): tricks=%d delta=%+d total=%d",
-			defenderTeam, teamTricks[defenderTeam], defenderDelta, t.teamScores[defenderTeam]), nil)
+	t.appendLogCode(-1, "round_score", "tarneeb.log.roundScoreBidder", map[string]string{"team": strconv.Itoa(bidderTeam), "bid": strconv.Itoa(bid), "tricks": strconv.Itoa(teamTricks[bidderTeam]), "delta": fmt.Sprintf("%+d", bidderDelta), "total": strconv.Itoa(t.teamScores[bidderTeam])}, nil)
+	t.appendLogCode(-1, "round_score", "tarneeb.log.roundScoreDefender", map[string]string{"team": strconv.Itoa(defenderTeam), "tricks": strconv.Itoa(teamTricks[defenderTeam]), "delta": fmt.Sprintf("%+d", defenderDelta), "total": strconv.Itoa(t.teamScores[defenderTeam])}, nil)
 
 	// roundScore はプレイヤー単位の表示用 (チームスコアは teamScores に集約)。
 	for _, p := range t.players {
@@ -435,7 +429,7 @@ func (t *Tarneeb) checkGameEnd(bidderTeam int) {
 		// 同点: ビッドチームが勝つ
 		t.winnerTeam = bidderTeam
 	}
-	t.appendLog(-1, "game_end", fmt.Sprintf("Team %d wins the game!", t.winnerTeam), nil)
+	t.appendLogCode(-1, "game_end", "tarneeb.log.gameEnd", map[string]string{"team": strconv.Itoa(t.winnerTeam)}, nil)
 }
 
 // --- State getters ---
@@ -615,8 +609,7 @@ func (t *Tarneeb) playCard(playerIdx int, card *Card) {
 		PlayerIdx: playerIdx,
 		Card:      card,
 	})
-	t.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", playerName(t.players, playerIdx), cardStr(card)), []*Card{card})
+	t.appendLogCode(playerIdx, "play", "tarneeb.log.play", map[string]string{"name": playerName(t.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 	if len(t.currentTrick) == TarneebPlayerCnt {
 		t.phase = TarneebPhaseTrickEnd
 		return

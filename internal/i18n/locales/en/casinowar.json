@@ -25,5 +25,16 @@
   "totalPayoutLine": "total payout: {{payout}}",
   "helpExampleBet": "  b 100                bet 100 chips",
   "noPreviousBet": "There is no previous bet. Place one first with b <amount>",
-  "warInsufficientChips": "Not enough chips. Going to war costs {{ante}} chips"
+  "warInsufficientChips": "Not enough chips. Going to war costs {{ante}} chips",
+  "log.bet": "ante={{amount}}",
+  "log.dealInitial": "dealt initial cards",
+  "log.playerWins": "player wins",
+  "log.playerLoses": "player loses",
+  "log.tie": "ranks tied — surrender or war",
+  "log.surrender": "refund={{refund}}",
+  "log.war": "warBet={{warBet}}",
+  "log.dealWar": "burn 3 + war cards",
+  "log.warTieWin": "war tie counted as player win",
+  "log.warWin": "player wins war",
+  "log.warLoss": "player loses war"
 }
