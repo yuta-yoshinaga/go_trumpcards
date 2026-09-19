@@ -28,5 +28,13 @@
   "errYanivCallTooHigh": "手札合計が{{threshold}}点以下でないとYanivを宣言できません",
   "errPickupEmpty": "引ける捨て札がありません",
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
-  "errInvalidCombo": "単札・同数の組・同スートの3枚以上の連番のみ捨てられます"
+  "errInvalidCombo": "単札・同数の組・同スートの3枚以上の連番のみ捨てられます",
+  "log.discard": "{{name}} が {{cards}} を捨てました",
+  "log.drawStock": "{{name}} が山札から引きました",
+  "log.drawPickup": "{{name}} が捨て札から {{card}} を取りました",
+  "log.asaf": "{{caller}} がYanivを宣言（{{callerTotal}}）しましたが、{{winner}}（{{winnerTotal}}）に下回られました！ +{{penalty}}点のペナルティ",
+  "log.yaniv": "{{name}} が手札合計 {{total}} でYanivを宣言し、ラウンドに勝利しました！",
+  "log.eliminate": "{{name}} は脱落しました（スコア: {{score}}）",
+  "log.roundEnd": "Yanivなしでラウンド終了（山札切れ）",
+  "log.gameEnd": "{{name}} がゲームに勝利しました！"
 }

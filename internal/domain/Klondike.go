@@ -177,7 +177,7 @@ func (k *Klondike) Draw() error {
 			k.noProgressCycles++
 		}
 		k.progressSinceRecycle = false
-		k.appendLog("recycle", "ウェイストをストックに戻しました", nil)
+		k.appendLog("recycle", "klondike.log.recycle", nil, nil)
 		k.checkKlondikeStalemate()
 		return nil
 	}
@@ -195,7 +195,7 @@ func (k *Klondike) Draw() error {
 		drawnCards = append(drawnCards, card)
 	}
 	k.moveCount++
-	k.appendLog("draw", "ストックからカードを引きました", drawnCards)
+	k.appendLog("draw", "klondike.log.draw", nil, drawnCards)
 	k.checkKlondikeStalemate()
 	return nil
 }
@@ -220,7 +220,7 @@ func (k *Klondike) MoveWasteToTableau(col int) error {
 	k.tableau[col] = append(k.tableau[col], &KlondikeTableauCard{Card: card, FaceUp: true})
 	k.moveCount++
 	k.progressSinceRecycle = true
-	k.appendLog("move", fmt.Sprintf("ウェイスト→タブロー列%d", col), []*Card{card})
+	k.appendLog("move", "klondike.log.wasteToTableau", map[string]string{"col": fmt.Sprintf("%d", col)}, []*Card{card})
 	k.checkKlondikeStalemate()
 	return nil
 }
@@ -246,7 +246,7 @@ func (k *Klondike) MoveWasteToFoundation() error {
 	k.foundation[fIdx] = append(k.foundation[fIdx], card)
 	k.moveCount++
 	k.progressSinceRecycle = true
-	k.appendLog("move", "ウェイスト→ファンデーション", []*Card{card})
+	k.appendLog("move", "klondike.log.wasteToFoundation", nil, []*Card{card})
 	k.checkGameClear()
 	k.checkKlondikeStalemate()
 	return nil
@@ -292,7 +292,7 @@ func (k *Klondike) MoveTableauToTableau(fromCol, cardIndex, toCol int) error {
 	k.autoFlipTableau(fromCol)
 	k.moveCount++
 	k.progressSinceRecycle = true
-	k.appendLog("move", fmt.Sprintf("タブロー列%d→タブロー列%d", fromCol, toCol), movedCards)
+	k.appendLog("move", "klondike.log.tableauToTableau", map[string]string{"from": fmt.Sprintf("%d", fromCol), "to": fmt.Sprintf("%d", toCol)}, movedCards)
 	k.checkKlondikeStalemate()
 	return nil
 }
@@ -325,7 +325,7 @@ func (k *Klondike) MoveTableauToFoundation(col int) error {
 	k.autoFlipTableau(col)
 	k.moveCount++
 	k.progressSinceRecycle = true
-	k.appendLog("move", fmt.Sprintf("タブロー列%d→ファンデーション", col), []*Card{card})
+	k.appendLog("move", "klondike.log.tableauToFoundation", map[string]string{"col": fmt.Sprintf("%d", col)}, []*Card{card})
 	k.checkGameClear()
 	k.checkKlondikeStalemate()
 	return nil
@@ -335,7 +335,7 @@ func (k *Klondike) MoveTableauToFoundation(col int) error {
 func (k *Klondike) GiveUp() {
 	if k.phase == KlondikePhasePlaying {
 		k.phase = KlondikePhaseGameOver
-		k.appendLog("giveup", "ギブアップしました", nil)
+		k.appendLog("giveup", "klondike.log.giveUp", nil, nil)
 	}
 }
 
@@ -474,7 +474,7 @@ func (k *Klondike) AutoComplete() error {
 			break
 		}
 	}
-	k.appendLog("autocomplete", "オートコンプリートを実行しました", nil)
+	k.appendLog("autocomplete", "klondike.log.autoComplete", nil, nil)
 	k.checkGameClear()
 	return nil
 }
@@ -704,8 +704,8 @@ func (k *Klondike) restoreSnapshot(snap *klondikeSnapshot) {
 }
 
 // appendLog 棋譜エントリを追加
-func (k *Klondike) appendLog(actionType, detail string, cards []*Card) {
-	k.appendLogAt(k.moveCount, 0, actionType, detail, cards)
+func (k *Klondike) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	k.appendLogCodeAt(k.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // klondikeJSON is the JSON wire format for Klondike.

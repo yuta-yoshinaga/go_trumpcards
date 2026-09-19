@@ -28,5 +28,13 @@
   "maxBetHint": "Max bet: {{max}} (bet <amount> to wager)",
   "drawHint": "draw to take a card / stand to hold",
   "helpExampleBet": "  b 100                bet 100 chips",
-  "helpSort": "  s                    sort the hand"
+  "helpSort": "  s                    sort the hand",
+  "log.bet": "bet={{amount}}",
+  "log.deal": "dealt 2 cards each",
+  "log.playerDraw": "player draws a third card",
+  "log.playerStand": "player stands",
+  "log.bankerDraw": "banker draws a third card",
+  "log.playerWins": "player wins",
+  "log.bankerWins": "banker wins",
+  "log.push": "push"
 }

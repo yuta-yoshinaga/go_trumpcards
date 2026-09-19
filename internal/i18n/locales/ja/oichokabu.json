@@ -28,5 +28,13 @@
   "maxBetHint": "最大ベット: {{max}}（bet <額> で賭ける）",
   "drawHint": "draw で1枚引く / stand で確定",
   "helpExampleBet": "  b 100              100 チップを賭ける",
-  "helpSort": "  s                    手札を並べ替える"
+  "helpSort": "  s                    手札を並べ替える",
+  "log.bet": "ベット={{amount}}",
+  "log.deal": "それぞれに2枚配りました",
+  "log.playerDraw": "子が3枚目を引きました",
+  "log.playerStand": "子が引かずに勝負しました",
+  "log.bankerDraw": "親が3枚目を引きました",
+  "log.playerWins": "子の勝ち",
+  "log.bankerWins": "親の勝ち",
+  "log.push": "引き分け"
 }

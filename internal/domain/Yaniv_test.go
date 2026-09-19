@@ -439,6 +439,10 @@ func TestYaniv_ActionLogRecorded(t *testing.T) {
 	g.SetDrawPile([]*Card{NewCard(CardDesignClover, 2, false)})
 	require.NoError(t, g.PlayerDiscard([]int{0}))
 	assert.NotEmpty(t, g.GetActionLog())
+	entry := g.GetActionLog()[0]
+	assert.Equal(t, "yaniv.log.discard", entry.DetailCode)
+	assert.Equal(t, map[string]string{"name": playerName(g.players, 0), "cards": "♠9"}, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
 }
 
 func TestYaniv_CardsStrHelper(t *testing.T) {

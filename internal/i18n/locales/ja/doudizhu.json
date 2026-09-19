@@ -18,5 +18,11 @@
   "currentBidder": "現在の入札者: {{name}}",
   "promptBid": "入札してください（b 0-3、0=パス）",
   "helpExampleBid": "  b 0                  地主の入札をパスする",
-  "helpLog": "  l                    行動ログを表示"
+  "helpLog": "  l                    行動ログを表示",
+  "log.bid": "{{value}} にビッドしました",
+  "log.pass": "パスしました",
+  "log.landlord": "プレイヤー{{player}}が地主です",
+  "log.playPass": "パスしました",
+  "log.play": "{{count}}枚のカードを出しました",
+  "log.end": "ゲームオーバー"
 }
