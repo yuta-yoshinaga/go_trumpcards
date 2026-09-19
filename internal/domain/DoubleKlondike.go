@@ -4,7 +4,7 @@ package domain
 
 import (
 	"errors"
-	"fmt"
+	"strconv"
 )
 
 // Double Klondike (Gargantua) 盤面定数。
@@ -104,7 +104,7 @@ func (g *DoubleKlondike) Reset() {
 	for g.trumpCards.GetRemainingCount() > 0 {
 		g.stock = append(g.stock, g.trumpCards.DrawCard())
 	}
-	g.appendLog("deal", "新しいゲームを開始しました", nil)
+	g.appendLog("deal", "doubleklondike.log.deal", nil, nil)
 }
 
 // --- rules ---
@@ -179,7 +179,7 @@ func (g *DoubleKlondike) Draw() error {
 			g.stock = append(g.stock, g.waste[i])
 		}
 		g.waste = nil
-		g.appendLog("recycle", "ウェイストをストックに戻しました", nil)
+		g.appendLog("recycle", "doubleklondike.log.recycle", nil, nil)
 		return nil
 	}
 	g.takeSnapshot()
@@ -193,7 +193,7 @@ func (g *DoubleKlondike) Draw() error {
 		g.waste = append(g.waste, card)
 	}
 	g.moveCount++
-	g.appendLog("draw", "ストックからカードを引きました", nil)
+	g.appendLog("draw", "doubleklondike.log.draw", nil, nil)
 	return nil
 }
 
@@ -216,7 +216,7 @@ func (g *DoubleKlondike) MoveWasteToTableau(col int) error {
 	g.waste = g.waste[:len(g.waste)-1]
 	g.tableau[col] = append(g.tableau[col], &DoubleKlondikeTableauCard{Card: card, FaceUp: true})
 	g.moveCount++
-	g.appendLog("move", fmt.Sprintf("ウェイスト→タブロー列%d", col), []*Card{card})
+	g.appendLog("move", "doubleklondike.log.moveWasteToTableau", map[string]string{"col": strconv.Itoa(col)}, []*Card{card})
 	return nil
 }
 
@@ -237,7 +237,7 @@ func (g *DoubleKlondike) MoveWasteToFoundation() error {
 	g.waste = g.waste[:len(g.waste)-1]
 	g.foundation[fIdx] = append(g.foundation[fIdx], card)
 	g.moveCount++
-	g.appendLog("move", "ウェイスト→ファンデーション", []*Card{card})
+	g.appendLog("move", "doubleklondike.log.moveWasteToFoundation", nil, []*Card{card})
 	g.checkGameClear()
 	return nil
 }
@@ -273,7 +273,7 @@ func (g *DoubleKlondike) MoveTableauToTableau(fromCol, cardIndex, toCol int) err
 	g.tableau[fromCol] = from[:cardIndex]
 	g.autoFlipTableau(fromCol)
 	g.moveCount++
-	g.appendLog("move", fmt.Sprintf("タブロー列%d→タブロー列%d", fromCol, toCol), moved)
+	g.appendLog("move", "doubleklondike.log.moveTableauToTableau", map[string]string{"from": strconv.Itoa(fromCol), "to": strconv.Itoa(toCol)}, moved)
 	return nil
 }
 
@@ -299,7 +299,7 @@ func (g *DoubleKlondike) MoveTableauToFoundation(col int) error {
 	g.foundation[fIdx] = append(g.foundation[fIdx], card)
 	g.autoFlipTableau(col)
 	g.moveCount++
-	g.appendLog("move", fmt.Sprintf("タブロー列%d→ファンデーション", col), []*Card{card})
+	g.appendLog("move", "doubleklondike.log.moveTableauToFoundation", map[string]string{"col": strconv.Itoa(col)}, []*Card{card})
 	g.checkGameClear()
 	return nil
 }
@@ -308,7 +308,7 @@ func (g *DoubleKlondike) MoveTableauToFoundation(col int) error {
 func (g *DoubleKlondike) GiveUp() {
 	if g.phase == DoubleKlondikePhasePlaying {
 		g.phase = DoubleKlondikePhaseGameOver
-		g.appendLog("giveup", "ギブアップしました", nil)
+		g.appendLog("giveup", "doubleklondike.log.giveUp", nil, nil)
 	}
 }
 
@@ -320,7 +320,7 @@ func (g *DoubleKlondike) checkGameClear() {
 	}
 	if total == DoubleKlondikeTotalCards {
 		g.phase = DoubleKlondikePhaseGameClear
-		g.appendLog("clear", "クリア！", nil)
+		g.appendLog("clear", "doubleklondike.log.clear", nil, nil)
 	}
 }
 
@@ -440,8 +440,8 @@ func (g *DoubleKlondike) GetHint() *DoubleKlondikeHint {
 	return nil
 }
 
-func (g *DoubleKlondike) appendLog(action, detail string, cards []*Card) {
-	g.appendLogAt(g.moveCount, 0, action, detail, cards)
+func (g *DoubleKlondike) appendLog(action, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCodeAt(g.moveCount, 0, action, detailCode, detailParams, cards)
 }
 
 // --- undo ---

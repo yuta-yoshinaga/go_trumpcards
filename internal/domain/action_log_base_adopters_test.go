@@ -214,7 +214,7 @@ func TestActionLogBaseAdopters_LogSurvivesAKVRoundTrip(t *testing.T) {
 		{"DoubleKlondike", func() (any, any) {
 			g := NewDefaultDoubleKlondike()
 			g.Reset()
-			g.appendLog("act", "detail", nil)
+			g.appendLog("act", "doubleklondike.log.test", nil, nil)
 			return g, NewDefaultDoubleKlondike()
 		}},
 		{"LaBelleLucie", func() (any, any) {

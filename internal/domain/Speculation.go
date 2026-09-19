@@ -5,6 +5,7 @@ package domain
 import (
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // SpeculationPhase はゲームの進行段階。
@@ -71,6 +72,10 @@ type Speculation struct {
 	winnerSeat  int
 	gameEndFlag bool
 	actionLogBase
+}
+
+func (g *Speculation) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // NewSpeculation は設定を与えて卓を作る。
@@ -151,7 +156,7 @@ func (g *Speculation) Reset() {
 		g.trumpCard = c
 		g.trumpSuit = c.GetDesign()
 	}
-	g.appendLog(-1, "deal", fmt.Sprintf("trump=%d pot=%d", g.trumpSuit, g.pot), nil)
+	g.appendLog(-1, "deal", "speculation.log.deal", map[string]string{"trump": strconv.Itoa(g.trumpSuit), "pot": strconv.Itoa(g.pot)}, nil)
 }
 
 // Flip は手番の席の伏せ札を 1 枚めくる。
@@ -172,11 +177,11 @@ func (g *Speculation) Flip() error {
 		g.advanceTurn()
 		return nil
 	}
-	g.appendLog(seat, "flip", speculationCardStr(c), nil)
+	g.appendLog(seat, "flip", "speculation.log.flip", map[string]string{"card": speculationCardStr(c)}, nil)
 
 	if g.isNewBest(c) {
 		g.setBest(seat, c)
-		g.appendLog(seat, "lead", speculationCardStr(c), nil)
+		g.appendLog(seat, "lead", "speculation.log.lead", map[string]string{"card": speculationCardStr(c)}, nil)
 		if g.openAuction(seat) {
 			return nil // 人間の判断待ち
 		}
@@ -231,7 +236,7 @@ func (g *Speculation) openAuction(ownerSeat int) bool {
 		}
 		g.offerFrom, g.offerTo, g.offerAmount = buyer, ownerSeat, amount
 		g.phase = SpeculationPhaseAuction
-		g.appendLog(buyer, "offer", fmt.Sprintf("%d to seat %d", amount, ownerSeat), nil)
+		g.appendLog(buyer, "offer", "speculation.log.offer", map[string]string{"amount": strconv.Itoa(amount), "seat": strconv.Itoa(ownerSeat)}, nil)
 		return true
 	}
 
@@ -247,7 +252,7 @@ func (g *Speculation) openAuction(ownerSeat int) bool {
 	}
 	g.offerFrom, g.offerTo, g.offerAmount = 0, ownerSeat, ask
 	g.phase = SpeculationPhaseAuction
-	g.appendLog(ownerSeat, "asking", fmt.Sprintf("%d", g.offerAmount), nil)
+	g.appendLog(ownerSeat, "asking", "speculation.log.asking", map[string]string{"amount": strconv.Itoa(g.offerAmount)}, nil)
 	return true
 }
 
@@ -344,7 +349,7 @@ func (g *Speculation) Accept() error {
 	owner.SetBest(nil)
 	g.bestSeat = g.offerFrom
 	buyer.SetBest(card)
-	g.appendLog(g.offerFrom, "buy", fmt.Sprintf("%s for %d", speculationCardStr(card), amount), nil)
+	g.appendLog(g.offerFrom, "buy", "speculation.log.buy", map[string]string{"card": speculationCardStr(card), "amount": strconv.Itoa(amount)}, nil)
 
 	g.closeAuction()
 	g.advanceTurn()
@@ -359,7 +364,7 @@ func (g *Speculation) Decline() error {
 	if g.offerFrom < 0 || g.offerTo < 0 {
 		return errSpeculationNoOffer
 	}
-	g.appendLog(g.offerTo, "decline", fmt.Sprintf("%d", g.offerAmount), nil)
+	g.appendLog(g.offerTo, "decline", "speculation.log.decline", map[string]string{"amount": strconv.Itoa(g.offerAmount)}, nil)
 	g.closeAuction()
 	g.advanceTurn()
 	return nil
@@ -383,7 +388,7 @@ func (g *Speculation) Bid(amount int) error {
 		return errSpeculationBadAmount
 	}
 	g.offerAmount = amount
-	g.appendLog(0, "bid", fmt.Sprintf("%d", amount), nil)
+	g.appendLog(0, "bid", "speculation.log.bid", map[string]string{"amount": strconv.Itoa(amount)}, nil)
 	return g.Accept()
 }
 
@@ -417,18 +422,18 @@ func (g *Speculation) resolve() {
 	g.winnerSeat = g.bestSeat
 	if g.winnerSeat >= 0 {
 		g.players[g.winnerSeat].AddChips(g.pot)
-		g.appendLog(g.winnerSeat, "win", fmt.Sprintf("pot=%d", g.pot), nil)
+		g.appendLog(g.winnerSeat, "win", "speculation.log.win", map[string]string{"pot": strconv.Itoa(g.pot)}, nil)
 	} else {
 		share := g.pot / len(g.players)
 		g.refundPot()
-		g.appendLog(-1, "void", fmt.Sprintf("no trump; returned %d each", share), nil)
+		g.appendLog(-1, "void", "speculation.log.void", map[string]string{"share": strconv.Itoa(share)}, nil)
 	}
 	g.pot = 0
 	g.roundNo++
 	if g.roundNo >= g.config.Rounds {
 		g.phase = SpeculationPhaseGameEnd
 		g.gameEndFlag = true
-		g.appendLog(-1, "gameend", fmt.Sprintf("rounds=%d", g.roundNo), nil)
+		g.appendLog(-1, "gameend", "speculation.log.gameEnd", map[string]string{"rounds": strconv.Itoa(g.roundNo)}, nil)
 		return
 	}
 	g.phase = SpeculationPhaseResult

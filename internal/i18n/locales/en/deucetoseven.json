@@ -39,5 +39,14 @@
   "hintNotYourTurn": "It is not your draw phase right now.",
   "helpExampleFold": "  f                    fold this hand",
   "helpLog": "  l                    show the action log",
-  "madeLowWarning": "✨ You already have a made 8-or-better low — stand pat (s) rather than break it"
+  "madeLowWarning": "✨ You already have a made 8-or-better low — stand pat (s) rather than break it",
+  "log.ante": "ante {{amount}} chips",
+  "log.exchange": "draw {{draw}}: exchange {{count}} card(s)",
+  "log.showdown": "showdown: {{hand}}",
+  "log.fold": "fold",
+  "log.check": "check",
+  "log.call": "call {{amount}}",
+  "log.bet": "bet {{amount}}",
+  "log.raise": "raise to {{amount}}",
+  "log.allIn": "all in {{amount}}"
 }

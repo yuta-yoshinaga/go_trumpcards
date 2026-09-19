@@ -39,15 +39,15 @@ func (b *BlackJack) DealerHit() {
 		if b.dealerShouldHit() {
 			card := b.drawCard()
 			if card == nil {
-				b.appendLog(-1, "dealerstand", "dealer stand", nil)
+				b.appendLog(-1, "dealerstand", "blackjack.log.dealerStand", nil, nil)
 				b.DealerStand()
 				break
 			}
 			b.dealer.AddCard(card)
 			b.updateRunningCount(card)
-			b.appendLog(-1, "dealerhit", "dealer hit", []*Card{card})
+			b.appendLog(-1, "dealerhit", "blackjack.log.dealerHit", nil, []*Card{card})
 		} else {
-			b.appendLog(-1, "dealerstand", "dealer stand", nil)
+			b.appendLog(-1, "dealerstand", "blackjack.log.dealerStand", nil, nil)
 			b.DealerStand()
 			break
 		}
@@ -84,16 +84,14 @@ func (b *BlackJack) endGame() {
 	b.phase = BJPhaseEnd
 	// 棋譜に結果を記録
 	result := b.GameJudgment()
-	var detail string
+	detailCode := "blackjack.log.resultLose"
 	switch result {
 	case GameResultWin:
-		detail = "player wins"
+		detailCode = "blackjack.log.resultWin"
 	case GameResultDraw:
-		detail = "draw"
-	case GameResultLose:
-		detail = "player loses"
+		detailCode = "blackjack.log.resultDraw"
 	}
-	b.appendLog(-1, "result", detail, nil)
+	b.appendLog(-1, "result", detailCode, nil, nil)
 }
 
 // judgeHandCore 共通ハンド勝敗判定ロジック
@@ -223,7 +221,7 @@ func (b *BlackJack) resolvePayouts() {
 		result := b.judgeHand(hand)
 		bonus := b.payoutHandWithVariant(b.player, hand, hand.IsFromSplit(), result)
 		if bonus != nil {
-			b.appendLog(i, "bonus", bonus.NameKey, nil)
+			b.appendLog(i, "bonus", "blackjack.log.bonus", map[string]string{"name": bonus.NameKey}, nil)
 			b.bonusKeys = append(b.bonusKeys, bonus.NameKey)
 		}
 	}

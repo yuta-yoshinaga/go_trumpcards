@@ -39,5 +39,14 @@
   "hintNotYourTurn": "今はあなたのドローフェーズではありません。",
   "helpExampleFold": "  f                    この手を降りる",
   "helpLog": "  l                    行動ログを表示",
-  "madeLowWarning": "✨ 8以下のローが完成しています。スタンドパット (s) 推奨 — 崩さないこと"
+  "madeLowWarning": "✨ 8以下のローが完成しています。スタンドパット (s) 推奨 — 崩さないこと",
+  "log.ante": "アンティ {{amount}} チップ",
+  "log.exchange": "ドロー {{draw}}: {{count}}枚交換",
+  "log.showdown": "ショーダウン: {{hand}}",
+  "log.fold": "フォールド",
+  "log.check": "チェック",
+  "log.call": "コール {{amount}}",
+  "log.bet": "ベット {{amount}}",
+  "log.raise": "{{amount}} へレイズ",
+  "log.allIn": "{{amount}} オールイン"
 }

@@ -526,6 +526,14 @@ func TestBadugi_GetActionLog(t *testing.T) {
 	assert.Empty(t, bd.GetActionLog())
 	require.NoError(t, bd.Reset())
 	assert.NotEmpty(t, bd.GetActionLog(), "ante entries should be logged")
+	for _, entry := range bd.GetActionLog() {
+		if entry.DetailCode == "badugi.log.ante" {
+			assert.Equal(t, map[string]string{"amount": "10"}, entry.DetailParams)
+			assert.Empty(t, entry.Detail)
+			return
+		}
+	}
+	t.Fatal("expected badugi ante log entry")
 }
 
 // ---------------------------------------------------------------------------

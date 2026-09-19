@@ -4,6 +4,7 @@ package domain
 
 import (
 	"encoding/json"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -305,6 +306,21 @@ func TestSpeculation_ABrokeSeatPaysWhatItHasAndStays(t *testing.T) {
 	assert.Len(t, g.GetPlayers(), 2, "席は減らない")
 	assert.Equal(t, 0, g.GetPlayers()[1].GetChips(), "出せるだけ出す")
 	assert.Equal(t, 13, g.GetPot(), "10 + 3")
+}
+
+func TestSpeculation_ActionLogUsesDetailCode(t *testing.T) {
+	g := NewDefaultSpeculation()
+	entries := g.GetActionLog()
+	var entry *ActionLogEntry
+	for _, candidate := range entries {
+		if candidate.DetailCode == "speculation.log.deal" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, map[string]string{"trump": strconv.Itoa(g.GetTrumpSuit()), "pot": strconv.Itoa(g.GetPot())}, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
 }
 
 func TestSpeculation_ConfigNormalizesOutOfRangeValues(t *testing.T) {

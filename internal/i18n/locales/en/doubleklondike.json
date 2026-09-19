@@ -16,5 +16,14 @@
   "zoneFoundation": "Foundation",
   "helpExampleDraw": "  d                     turn one card from the stock",
   "helpHint": "  h                     show a hint",
-  "helpLog": "  l                     show the action log"
+  "helpLog": "  l                     show the action log",
+  "log.deal": "A new game has started",
+  "log.recycle": "Returned the waste to the stock",
+  "log.draw": "Drew cards from the stock",
+  "log.moveWasteToTableau": "Waste -> tableau column {{col}}",
+  "log.moveWasteToFoundation": "Waste -> foundation",
+  "log.moveTableauToTableau": "Tableau column {{from}} -> tableau column {{to}}",
+  "log.moveTableauToFoundation": "Tableau column {{col}} -> foundation",
+  "log.giveUp": "Gave up",
+  "log.clear": "Cleared!"
 }

@@ -455,6 +455,14 @@ func TestDeuceToSeven_GetActionLog(t *testing.T) {
 	assert.Empty(t, dt.GetActionLog())
 	require.NoError(t, dt.Reset())
 	assert.NotEmpty(t, dt.GetActionLog(), "ante entries should be logged")
+	for _, entry := range dt.GetActionLog() {
+		if entry.DetailCode == "deucetoseven.log.ante" {
+			assert.Equal(t, map[string]string{"amount": "10"}, entry.DetailParams)
+			assert.Empty(t, entry.Detail)
+			return
+		}
+	}
+	t.Fatal("expected deuce-to-seven ante log entry")
 }
 
 // ---------------------------------------------------------------------------
