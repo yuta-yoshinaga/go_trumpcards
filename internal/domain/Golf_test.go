@@ -118,6 +118,10 @@ func TestGolf_Remove_Success(t *testing.T) {
 	err := g.Remove(0)
 	require.NoError(t, err)
 	assert.True(t, g.layout[0][4].Removed)
+	log := g.GetActionLog()[len(g.GetActionLog())-1]
+	assert.Equal(t, "golf.log.remove", log.DetailCode)
+	assert.Equal(t, map[string]string{"col": "0"}, log.DetailParams)
+	assert.Empty(t, log.Detail)
 	assert.Equal(t, 1, g.GetMoveCount())
 	assert.Equal(t, 1, g.GetChainCombo())
 	// Removed card goes to waste

@@ -4,6 +4,7 @@ package domain
 
 import (
 	"encoding/json"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -56,6 +57,11 @@ func TestDehlaPakad_DealsFiveBeforeTheTrumpIsCalled(t *testing.T) {
 	require.NoError(t, d.SelectTrump(CardDesignHeart))
 	assert.Equal(t, CardDesignHeart, d.GetTrumpSuit())
 	assert.Equal(t, DehlaPakadPhasePlay, d.GetPhase())
+	logs := d.GetActionLog()
+	trumpLog := logs[len(logs)-1]
+	assert.Equal(t, "dehlapakad.log.trump", trumpLog.DetailCode)
+	assert.Equal(t, map[string]string{"player": strconv.Itoa(d.GetTrumpChooserIdx()), "suit": "heart"}, trumpLog.DetailParams)
+	assert.Empty(t, trumpLog.Detail)
 	total := 0
 	for i, p := range d.GetPlayers() {
 		assert.Equal(t, DehlaPakadHandSize, p.GetCardsSize(), "席 %d の手札", i)

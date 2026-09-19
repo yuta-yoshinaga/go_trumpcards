@@ -5,6 +5,7 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 )
 
 // YukonPhase ユーコンゲームフェーズ
@@ -149,7 +150,7 @@ func (y *Yukon) MoveTableauToTableau(fromCol, cardIndex, toCol int) error {
 	// 自動フリップ
 	y.autoFlipTableau(fromCol)
 	y.moveCount++
-	y.appendLog("move", fmt.Sprintf("タブロー列%d→タブロー列%d", fromCol, toCol), movedCards)
+	y.appendLog("move", "yukon.log.moveTableau", map[string]string{"from": strconv.Itoa(fromCol), "to": strconv.Itoa(toCol)}, movedCards)
 	y.checkYukonStalemate()
 	return nil
 }
@@ -181,7 +182,7 @@ func (y *Yukon) MoveTableauToFoundation(col int) error {
 	// 自動フリップ
 	y.autoFlipTableau(col)
 	y.moveCount++
-	y.appendLog("move", fmt.Sprintf("タブロー列%d→ファンデーション", col), []*Card{card})
+	y.appendLog("move", "yukon.log.moveFoundation", map[string]string{"col": strconv.Itoa(col)}, []*Card{card})
 	y.checkGameClear()
 	y.checkYukonStalemate()
 	return nil
@@ -191,7 +192,7 @@ func (y *Yukon) MoveTableauToFoundation(col int) error {
 func (y *Yukon) GiveUp() {
 	if y.phase == YukonPhasePlaying {
 		y.phase = YukonPhaseGameOver
-		y.appendLog("giveup", "ギブアップしました", nil)
+		y.appendLog("giveup", "yukon.log.giveUp", nil, nil)
 	}
 }
 
@@ -311,7 +312,7 @@ func (y *Yukon) AutoComplete() error {
 			break
 		}
 	}
-	y.appendLog("autocomplete", "オートコンプリートを実行しました", nil)
+	y.appendLog("autocomplete", "yukon.log.autocomplete", nil, nil)
 	y.checkGameClear()
 	return nil
 }
@@ -483,8 +484,8 @@ func (y *Yukon) restoreSnapshot(snap *yukonSnapshot) {
 }
 
 // appendLog 棋譜エントリを追加
-func (y *Yukon) appendLog(actionType, detail string, cards []*Card) {
-	y.appendLogAt(y.moveCount, 0, actionType, detail, cards)
+func (y *Yukon) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	y.appendLogCodeAt(y.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // yukonJSON is the JSON wire format for Yukon.

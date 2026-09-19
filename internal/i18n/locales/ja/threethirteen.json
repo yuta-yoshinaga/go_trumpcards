@@ -31,5 +31,12 @@
   "errDiscardPileEmpty": "捨て札が空です",
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
   "errAlreadyKnocked": "既にノックされています",
-  "errCannotKnock": "手札を完全にメルドできないためノックできません"
+  "errCannotKnock": "手札を完全にメルドできないためノックできません",
+  "log.drawStock": "{{name}}が山札から引く",
+  "log.drawDiscard": "{{name}}が捨て札から{{card}}を引く",
+  "log.discard": "{{name}}が{{card}}を捨てる",
+  "log.knock": "{{name}}がノックする！",
+  "log.roundEndKnocked": "ラウンド{{round}}終了（{{name}}がノック）",
+  "log.roundEndStockOut": "ラウンド{{round}}終了（山札切れ）",
+  "log.gameEnd": "{{name}}がゲームに勝利！"
 }

@@ -118,6 +118,11 @@ func TestThreeThirteen_DrawStockThenDiscard(t *testing.T) {
 	assert.Equal(t, ThreeThirteenPhaseDiscard, g.GetPhase())
 
 	require.NoError(t, g.PlayerDiscard(0))
+	logs := g.GetActionLog()
+	discardLog := logs[len(logs)-1]
+	assert.Equal(t, "threethirteen.log.discard", discardLog.DetailCode)
+	assert.Equal(t, map[string]string{"name": "You", "card": cardStr(g.GetDiscardTop())}, discardLog.DetailParams)
+	assert.Empty(t, discardLog.Detail)
 	assert.Equal(t, before, g.GetPlayer(0).GetCardsSize())
 	// turn advanced to player 1
 	assert.Equal(t, 1, g.GetCurrentPlayerIdx())

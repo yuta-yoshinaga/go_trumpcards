@@ -97,6 +97,10 @@ func TestYukon_MoveTableauToTableau(t *testing.T) {
 		assert.Equal(t, 0, len(y.GetTableau()[0]))
 		assert.Equal(t, 2, len(y.GetTableau()[1]))
 		assert.Equal(t, 1, y.GetMoveCount())
+		log := y.GetActionLog()[len(y.GetActionLog())-1]
+		assert.Equal(t, "yukon.log.moveTableau", log.DetailCode)
+		assert.Equal(t, map[string]string{"from": "0", "to": "1"}, log.DetailParams)
+		assert.Empty(t, log.Detail)
 	})
 
 	t.Run("valid move - unordered group (Yukon special)", func(t *testing.T) {

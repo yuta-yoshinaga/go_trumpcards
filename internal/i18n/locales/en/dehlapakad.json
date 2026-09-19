@@ -43,5 +43,12 @@
   "hintReasonKeepLead": "win the next one too and the pile is yours",
   "hintReasonNextHand": "move on to the next hand",
   "errCardRange": "That card number is out of range.",
-  "errTrumpSuit": "Invalid trump suit (1=spade 2=club 3=heart 4=diamond)."
+  "errTrumpSuit": "Invalid trump suit (1=spade 2=club 3=heart 4=diamond).",
+  "log.deal": "hand {{hand}}: dealer={{dealer}}, {{cards}} cards each",
+  "log.trump": "player {{player}} calls {{suit}}",
+  "log.play": "player {{player}} plays {{card}}",
+  "log.trickWin": "player {{player}} wins trick {{trick}}",
+  "log.collect": "player {{player}} gathers {{cards}} card(s) ({{reason}}), {{tens}} ten(s)",
+  "log.handEnd": "hand {{hand}}: team {{team}} wins (tens {{tens}}, kot={{kot}})",
+  "log.gameEnd": "team {{team}} takes the match"
 }
