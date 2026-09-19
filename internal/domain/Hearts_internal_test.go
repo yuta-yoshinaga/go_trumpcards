@@ -44,12 +44,6 @@ func TestHearts_passTarget_DefaultCase(t *testing.T) {
 	assert.Equal(t, 2, result)
 }
 
-func TestHearts_passDirectionStr_DefaultCase(t *testing.T) {
-	h := newInternalTestHearts()
-	result := h.passDirectionStr(HeartsPassNone)
-	assert.Equal(t, "none", result)
-}
-
 func TestHearts_playerName_OutOfBounds(t *testing.T) {
 	h := newInternalTestHearts()
 	assert.Equal(t, "Player -1", playerName(h.players, -1))

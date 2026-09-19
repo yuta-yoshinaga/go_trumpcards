@@ -707,20 +707,6 @@ func (h *Hearts) passTarget(from int, dir HeartsPassDirection) int {
 	}
 }
 
-// passDirectionStr はパス方向の文字列表現を返す。
-func (h *Hearts) passDirectionStr(dir HeartsPassDirection) string {
-	switch dir {
-	case HeartsPassLeft:
-		return "left"
-	case HeartsPassRight:
-		return "right"
-	case HeartsPassAcross:
-		return "across"
-	default:
-		return "none"
-	}
-}
-
 // sortAllHands 全プレイヤーの手札をソートする
 func (h *Hearts) sortAllHands() {
 	for _, p := range h.players {

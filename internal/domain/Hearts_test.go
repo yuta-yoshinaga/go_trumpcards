@@ -2109,7 +2109,7 @@ func TestHearts_CpuPlay_Hard_Follow_WithTrickPoints(t *testing.T) {
 	assert.Equal(t, 3, len(h.GetCurrentTrick()))
 }
 
-// --- passDirectionStr: all directions ---
+// --- pass direction log codes ---
 
 func TestHearts_ExecutePass_LogDirectionStrings(t *testing.T) {
 	// Test left (round 1), right (round 2), across (round 3)
