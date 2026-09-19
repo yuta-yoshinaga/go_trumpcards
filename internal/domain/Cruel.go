@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // CruelPhase クルーエルゲームフェーズ
@@ -160,7 +161,7 @@ func (c *Cruel) MoveTableauToTableau(fromCol, toCol int) error {
 	c.tableau[fromCol] = fromCards[:len(fromCards)-1]
 	c.tableau[toCol] = append(c.tableau[toCol], tc)
 	c.moveCount++
-	c.appendLog("move", fmt.Sprintf("タブロー列%d→タブロー列%d", fromCol, toCol), []*Card{tc.Card})
+	c.appendLog("move", "cruel.log.tableauMove", map[string]string{"from": strconv.Itoa(fromCol), "to": strconv.Itoa(toCol)}, []*Card{tc.Card})
 	c.checkStalemate()
 	return nil
 }
@@ -190,7 +191,7 @@ func (c *Cruel) MoveTableauToFoundation(col int) error {
 	c.tableau[col] = fromCards[:len(fromCards)-1]
 	c.foundation[fIdx] = append(c.foundation[fIdx], card)
 	c.moveCount++
-	c.appendLog("move", fmt.Sprintf("タブロー列%d→ファウンデーション", col), []*Card{card})
+	c.appendLog("move", "cruel.log.tableauToFoundation", map[string]string{"column": strconv.Itoa(col)}, []*Card{card})
 	c.checkGameClear()
 	c.checkStalemate()
 	return nil
@@ -237,7 +238,7 @@ func (c *Cruel) Shift() error {
 	}
 
 	c.moveCount++
-	c.appendLog("shift", "盤面を再構築しました", nil)
+	c.appendLog("shift", "cruel.log.shift", nil, nil)
 	c.checkStalemate()
 	return nil
 }
@@ -246,7 +247,7 @@ func (c *Cruel) Shift() error {
 func (c *Cruel) GiveUp() {
 	if c.phase == CruelPhasePlaying {
 		c.phase = CruelPhaseGameOver
-		c.appendLog("giveup", "ギブアップしました", nil)
+		c.appendLog("giveup", "cruel.log.giveUp", nil, nil)
 	}
 }
 
@@ -320,7 +321,7 @@ func (c *Cruel) AutoComplete() error {
 		c.history = c.history[:len(c.history)-1]
 		return nil
 	}
-	c.appendLog("autocomplete", "オートコンプリートを実行しました", nil)
+	c.appendLog("autocomplete", "cruel.log.autocomplete", nil, nil)
 	c.checkGameClear()
 	// AutoComplete can partially clear the board (e.g. some suits reach the
 	// foundation but others remain blocked). Refresh the stalemate flag so
@@ -509,8 +510,8 @@ func (c *Cruel) restoreSnapshot(snap *cruelSnapshot) {
 }
 
 // appendLog 棋譜エントリを追加
-func (c *Cruel) appendLog(actionType, detail string, cards []*Card) {
-	c.appendLogAt(c.moveCount, 0, actionType, detail, cards)
+func (c *Cruel) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	c.appendLogCodeAt(c.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // cruelJSON is the JSON wire format for Cruel.

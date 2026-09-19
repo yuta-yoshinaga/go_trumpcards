@@ -240,6 +240,70 @@ func TestTuSac_MeldMovesCardsOutOfTheHand(t *testing.T) {
 	assert.Positive(t, p.MeldPoints())
 }
 
+func TestTuSac_MeldActionLogUsesKindCode(t *testing.T) {
+	tests := []struct {
+		name  string
+		cards []*Card
+		code  string
+	}{
+		{
+			name: "same color set",
+			cards: []*Card{
+				tsCard(TuSacColorRed, TuSacPieceElephant),
+				tsCard(TuSacColorRed, TuSacPieceElephant),
+				tsCard(TuSacColorRed, TuSacPieceElephant),
+			},
+			code: "tusac.log.meldSameColorSet",
+		},
+		{
+			name: "chariot trio",
+			cards: []*Card{
+				tsCard(TuSacColorRed, TuSacPieceChariot),
+				tsCard(TuSacColorGreen, TuSacPieceHorse),
+				tsCard(TuSacColorWhite, TuSacPieceCannon),
+			},
+			code: "tusac.log.meldChariotTrio",
+		},
+		{
+			name: "soldier set",
+			cards: []*Card{
+				tsCard(TuSacColorRed, TuSacPieceSoldier),
+				tsCard(TuSacColorGreen, TuSacPieceSoldier),
+				tsCard(TuSacColorWhite, TuSacPieceSoldier),
+				tsCard(TuSacColorYellow, TuSacPieceSoldier),
+				tsCard(TuSacColorRed, TuSacPieceSoldier),
+			},
+			code: "tusac.log.meldSoldierSet",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			g := NewTuSac(NewTuSacPlayersForTable(2), TuSacConfig{Seats: 2, Rounds: 2})
+			g.Reset()
+			require.True(t, g.IsHumanTurn())
+			require.NoError(t, g.Draw(false))
+			p := g.GetPlayers()[g.HumanSeat()]
+			p.cards = tc.cards
+			indexes := make([]int, len(tc.cards))
+			for i := range indexes {
+				indexes[i] = i
+			}
+
+			require.NoError(t, g.Meld(indexes))
+
+			var found bool
+			for _, entry := range g.GetActionLog() {
+				if entry.ActionType == "meld" && entry.DetailCode == tc.code {
+					found = true
+					break
+				}
+			}
+			assert.True(t, found, "メルドの棋譜コードが見つからない: %s", tc.code)
+		})
+	}
+}
+
 // --- 得点 ---
 
 // **得点はメルド - 手残り。** 手札を抱えたままだと減点になる。
@@ -267,6 +331,10 @@ func TestTuSac_Accessors(t *testing.T) {
 	assert.Equal(t, DefaultTuSacConfig(), g.GetConfig())
 	assert.GreaterOrEqual(t, g.WinnerSeat(), 0)
 	assert.NotEmpty(t, g.GetActionLog())
+	entry := g.GetActionLog()[0]
+	assert.Equal(t, "tusac.log.deal", entry.DetailCode)
+	assert.Empty(t, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
 	assert.Equal(t, -1, g.GetWentOutSeat(), "配った直後に上がりが立っている")
 
 	cfg := TuSacConfig{Seats: 2, Rounds: 2}

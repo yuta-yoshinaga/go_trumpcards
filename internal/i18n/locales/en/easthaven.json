@@ -43,5 +43,10 @@
   "hintLine": "Hint: {{from}} -> {{to}}",
   "helpExampleHint": "  h                    ask for a move",
   "helpExampleAuto": "  ac                   send everything that can go to a foundation",
-  "helpUndo": "  u undo one move"
+  "helpUndo": "  u undo one move",
+  "log.deal": "Dealt cards from the stock to each column",
+  "log.tableauMove": "Tableau column {{from}}→tableau column {{to}}",
+  "log.tableauToFoundation": "Tableau column {{column}}→foundation",
+  "log.giveUp": "Gave up",
+  "log.autocomplete": "Auto-completed"
 }

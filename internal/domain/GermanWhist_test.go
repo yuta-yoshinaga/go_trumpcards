@@ -435,7 +435,11 @@ func TestGermanWhist_ActionLog(t *testing.T) {
 	require.NoError(t, g.PlayerPlay(0))
 	log := g.GetActionLog()
 	require.NotEmpty(t, log)
-	assert.Equal(t, "play", log[len(log)-1].ActionType)
+	entry := log[len(log)-1]
+	assert.Equal(t, "play", entry.ActionType)
+	assert.Equal(t, "germanwhist.log.play", entry.DetailCode)
+	assert.NotEmpty(t, entry.DetailParams["card"])
+	assert.Empty(t, entry.Detail)
 }
 
 // --- JSON round-trip ---

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // GermanWhistPhase ジャーマンホイストのゲームフェーズ
@@ -126,7 +127,7 @@ func (g *GermanWhist) Reset() {
 	g.turnUpCard()
 	if g.upCard != nil {
 		g.trumpSuit = g.upCard.GetDesign()
-		g.appendLog(-1, "trump", fmt.Sprintf("Trump: %s", cardStr(g.upCard)), []*Card{g.upCard})
+		g.appendLog(-1, "trump", "germanwhist.log.trump", map[string]string{"card": cardStr(g.upCard)}, []*Card{g.upCard})
 	}
 	g.sortAllHands()
 }
@@ -193,7 +194,7 @@ func (g *GermanWhist) play(playerIdx, cardIndex int) error {
 	}
 	p.RemoveCard(cardIndex)
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", cardStr(card), []*Card{card})
+	g.appendLog(playerIdx, "play", "germanwhist.log.play", map[string]string{"card": cardStr(card)}, []*Card{card})
 
 	if len(g.currentTrick) < GermanWhistPlayerCnt {
 		g.currentPlayerIdx = (playerIdx + 1) % GermanWhistPlayerCnt
@@ -242,7 +243,7 @@ func (g *GermanWhist) resolveTrick() {
 	g.currentTrick = nil
 	g.leadPlayerIdx = winner
 	g.currentPlayerIdx = winner
-	g.appendLog(winner, "trick", fmt.Sprintf("トリック%d を獲得", g.trickNumber), cards)
+	g.appendLog(winner, "trick", "germanwhist.log.trickWin", map[string]string{"trick": strconv.Itoa(g.trickNumber)}, cards)
 
 	g.advancePhase()
 }
@@ -269,7 +270,7 @@ func (g *GermanWhist) drawAfterTrick(winner int) {
 func (g *GermanWhist) advancePhase() {
 	if g.phase == GermanWhistPhaseDraw && g.trickNumber >= GermanWhistStageTricks {
 		g.phase = GermanWhistPhaseScoring
-		g.appendLog(-1, "phase", "後半（得点になるトリック）開始", nil)
+		g.appendLog(-1, "phase", "germanwhist.log.secondHalfStart", nil, nil)
 		return
 	}
 	if g.phase == GermanWhistPhaseScoring && g.trickNumber >= GermanWhistStageTricks*2 {
@@ -292,7 +293,7 @@ func (g *GermanWhist) finish() {
 		// 落ちないように -1 を残す。
 		g.winnerIdx = -1
 	}
-	g.appendLog(-1, "result", fmt.Sprintf("後半トリック %d - %d", a, b), nil)
+	g.appendLog(-1, "result", "germanwhist.log.result", map[string]string{"p0": strconv.Itoa(a), "p1": strconv.Itoa(b)}, nil)
 }
 
 // trickWinner 現在のトリックの勝者
@@ -500,12 +501,12 @@ func (g *GermanWhist) GiveUp() {
 	g.phase = GermanWhistPhaseGameEnd
 	g.gameEndFlag = true
 	g.winnerIdx = 1
-	g.appendLog(0, "giveup", "ギブアップしました", nil)
+	g.appendLog(0, "giveup", "germanwhist.log.giveUp", nil, nil)
 }
 
 // appendLog 棋譜エントリを追加
-func (g *GermanWhist) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.appendLogAt(g.trickNumber, playerIdx, actionType, detail, cards)
+func (g *GermanWhist) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCodeAt(g.trickNumber, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // germanWhistJSON is the JSON wire format for GermanWhist.

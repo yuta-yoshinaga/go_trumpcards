@@ -30,5 +30,10 @@
   "helpExampleHint": "  h                    次の一手を教えてもらう",
   "helpExampleAuto": "  ac                   組札へ送れる札を自動で送る",
   "helpUndo": "  u 1手戻す",
-  "autoCompleteReady": "オートコンプリート可能: ac で送れる札があります"
+  "autoCompleteReady": "オートコンプリート可能: ac で送れる札があります",
+  "log.tableauMove": "タブロー列{{from}}→タブロー列{{to}}",
+  "log.tableauToFoundation": "タブロー列{{column}}→ファウンデーション",
+  "log.shift": "盤面を再構築しました",
+  "log.giveUp": "ギブアップしました",
+  "log.autocomplete": "オートコンプリートを実行しました"
 }

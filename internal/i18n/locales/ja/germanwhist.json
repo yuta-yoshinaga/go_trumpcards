@@ -24,5 +24,11 @@
   "suitHeart": "ハート",
   "suitDiamond": "ダイヤ",
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "log.trump": "切り札: {{card}}",
+  "log.play": "{{card}}を出しました",
+  "log.trickWin": "トリック{{trick}} を獲得",
+  "log.secondHalfStart": "後半（得点になるトリック）開始",
+  "log.result": "後半トリック {{p0}} - {{p1}}",
+  "log.giveUp": "ギブアップしました"
 }
