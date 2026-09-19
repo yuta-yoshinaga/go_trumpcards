@@ -26,5 +26,13 @@
   "srcTableau": "タブロー{{col}}",
   "helpExampleDiscard": "  d                    手札を 1 枚捨てて手番を終える",
   "helpHint": "  h                    助言を表示",
-  "helpLog": "  l                    行動ログを表示"
+  "helpLog": "  l                    行動ログを表示",
+  "log.newGame": "新しいゲームを開始しました",
+  "log.toFoundation": "{{source}} → foundation {{foundation}}",
+  "log.toTableau": "{{source}} → tableau {{column}}",
+  "log.discard": "手札を廃札に送り手番終了",
+  "log.pass": "手番をパス",
+  "log.stalemate": "両者とも手詰まりのため停滞で決着",
+  "log.stop": "CPU の取りこぼしを咎めました (+1)",
+  "log.win": "{{name}} がリザーブを空にして勝利"
 }

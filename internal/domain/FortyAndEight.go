@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // FortyAndEightPhase フォーティ・アンド・エイトゲームフェーズ
@@ -135,7 +136,7 @@ func (ft *FortyAndEight) Draw() error {
 	ft.stock = ft.stock[:len(ft.stock)-1]
 	ft.waste = append(ft.waste, card)
 	ft.moveCount++
-	ft.appendLog("draw", "ストックからカードを引きました", []*Card{card})
+	ft.appendLog("draw", "fortyandeight.log.draw", nil, []*Card{card})
 	ft.checkFortyAndEightStalemate()
 	return nil
 }
@@ -164,7 +165,7 @@ func (ft *FortyAndEight) Redeal() error {
 	ft.waste = nil
 	ft.redealUsed = true
 	ft.moveCount++
-	ft.appendLog("redeal", "ウェイストを集めて新しいストックを作りました", nil)
+	ft.appendLog("redeal", "fortyandeight.log.redeal", nil, nil)
 	ft.checkFortyAndEightStalemate()
 	return nil
 }
@@ -188,7 +189,7 @@ func (ft *FortyAndEight) MoveWasteToTableau(col int) error {
 	ft.waste = ft.waste[:len(ft.waste)-1]
 	ft.tableau[col] = append(ft.tableau[col], &FortyAndEightTableauCard{Card: card, FaceUp: true})
 	ft.moveCount++
-	ft.appendLog("move", fmt.Sprintf("ウェイスト→タブロー列%d", col), []*Card{card})
+	ft.appendLog("move", "fortyandeight.log.wasteToTableau", map[string]string{"col": strconv.Itoa(col)}, []*Card{card})
 	ft.checkFortyAndEightStalemate()
 	return nil
 }
@@ -210,7 +211,7 @@ func (ft *FortyAndEight) MoveWasteToFoundation() error {
 	ft.waste = ft.waste[:len(ft.waste)-1]
 	ft.foundation[fIdx] = append(ft.foundation[fIdx], card)
 	ft.moveCount++
-	ft.appendLog("move", "ウェイスト→ファンデーション", []*Card{card})
+	ft.appendLog("move", "fortyandeight.log.wasteToFoundation", nil, []*Card{card})
 	ft.checkGameClear()
 	ft.checkFortyAndEightStalemate()
 	return nil
@@ -246,7 +247,7 @@ func (ft *FortyAndEight) MoveTableauToTableau(fromCol, cardIndex, toCol int) err
 	ft.tableau[toCol] = append(ft.tableau[toCol], tc)
 	ft.tableau[fromCol] = fromCards[:cardIndex]
 	ft.moveCount++
-	ft.appendLog("move", fmt.Sprintf("タブロー列%d→タブロー列%d", fromCol, toCol), []*Card{tc.Card})
+	ft.appendLog("move", "fortyandeight.log.tableauToTableau", map[string]string{"from": strconv.Itoa(fromCol), "to": strconv.Itoa(toCol)}, []*Card{tc.Card})
 	ft.checkFortyAndEightStalemate()
 	return nil
 }
@@ -273,7 +274,7 @@ func (ft *FortyAndEight) MoveTableauToFoundation(col int) error {
 	ft.tableau[col] = fromCards[:len(fromCards)-1]
 	ft.foundation[fIdx] = append(ft.foundation[fIdx], card)
 	ft.moveCount++
-	ft.appendLog("move", fmt.Sprintf("タブロー列%d→ファンデーション", col), []*Card{card})
+	ft.appendLog("move", "fortyandeight.log.tableauToFoundation", map[string]string{"col": strconv.Itoa(col)}, []*Card{card})
 	ft.checkGameClear()
 	ft.checkFortyAndEightStalemate()
 	return nil
@@ -283,7 +284,7 @@ func (ft *FortyAndEight) MoveTableauToFoundation(col int) error {
 func (ft *FortyAndEight) GiveUp() {
 	if ft.phase == FortyAndEightPhasePlaying {
 		ft.phase = FortyAndEightPhaseGameOver
-		ft.appendLog("giveup", "ギブアップしました", nil)
+		ft.appendLog("giveup", "fortyandeight.log.giveUp", nil, nil)
 	}
 }
 
@@ -410,7 +411,7 @@ func (ft *FortyAndEight) AutoComplete() error {
 			break
 		}
 	}
-	ft.appendLog("autocomplete", "オートコンプリートを実行しました", nil)
+	ft.appendLog("autocomplete", "fortyandeight.log.autocomplete", nil, nil)
 	ft.checkGameClear()
 	return nil
 }
@@ -620,8 +621,8 @@ func (ft *FortyAndEight) restoreSnapshot(snap *fortyAndEightSnapshot) {
 }
 
 // appendLog 棋譜エントリを追加
-func (ft *FortyAndEight) appendLog(actionType, detail string, cards []*Card) {
-	ft.appendLogAt(ft.moveCount, 0, actionType, detail, cards)
+func (ft *FortyAndEight) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	ft.appendLogCodeAt(ft.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // fortyAndEightJSON is the JSON wire format for FortyAndEight.

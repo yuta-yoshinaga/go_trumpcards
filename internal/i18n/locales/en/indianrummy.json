@@ -40,5 +40,14 @@
   "hintReasonDiscardDeadwood": "reduce deadwood",
   "errDiscardPileEmpty": "The discard pile is empty.",
   "errDiscardCardIndexOutOfRange": "The card index is out of range.",
-  "errDeclareCardIndexOutOfRange": "The card index is out of range."
+  "errDeclareCardIndexOutOfRange": "The card index is out of range.",
+  "log.drawStock": "{{name}} draws from stock",
+  "log.drawDiscard": "{{name}} draws {{card}} from discard",
+  "log.discard": "{{name}} discards {{card}}",
+  "log.declare": "{{name}} declares ({{status}})",
+  "log.stockOut": "Round ends (stock exhausted)",
+  "log.recycle": "Recycled {{count}} cards from discard into stock",
+  "log.roundWin": "{{name}} wins the round with a valid declaration",
+  "log.roundEnd": "{{name}} made an invalid declaration (+{{penalty}} penalty)",
+  "log.gameEnd": "{{name}} wins the game with {{points}} points!"
 }

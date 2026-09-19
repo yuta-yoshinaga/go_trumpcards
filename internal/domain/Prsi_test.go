@@ -64,6 +64,24 @@ func TestPrsi_ResetDealsHands(t *testing.T) {
 	assert.Equal(t, 11, g.GetDrawPileCount())
 }
 
+func TestPrsi_ActionLogUsesDetailCode(t *testing.T) {
+	g := newTestPrsi(t)
+	g.SetDiscardPile([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 9, false)})
+	setPrsiHand(g.GetPlayer(0), domain.NewCard(domain.CardDesignSpade, 13, false))
+	require.NoError(t, g.PlayerPlay(0))
+	var entry *domain.ActionLogEntry
+	for _, candidate := range g.GetActionLog() {
+		if candidate.DetailCode == "prsi.log.play" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, "You", entry.DetailParams["name"])
+	assert.NotEmpty(t, entry.DetailParams["card"])
+	assert.Empty(t, entry.Detail)
+}
+
 func TestPrsi_PlayMatchingSuitOrRank(t *testing.T) {
 	g := newTestPrsi(t)
 	g.SetCurrentPlayerIdx(0)

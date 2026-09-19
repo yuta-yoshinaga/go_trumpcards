@@ -36,5 +36,16 @@
   "paySpread3": "spread 3 {{mult}}:1",
   "paySpread4Plus": "spread 4+ {{mult}}:1",
   "payPair": "pair + matching third {{mult}}:1",
-  "payPush": "consecutive and pair-no-match push"
+  "payPush": "consecutive and pair-no-match push",
+  "log.bet": "ante={{amount}}",
+  "log.dealtInitial": "dealt 2 initial cards",
+  "log.initialPair": "initial pair, drawing third card",
+  "log.consecutivePush": "consecutive ranks → push",
+  "log.spread": "spread={{spread}}",
+  "log.raise": "raise={{amount}}",
+  "log.stay": "stay (no raise)",
+  "log.dealtThird": "dealt third card",
+  "log.playerWins": "player wins",
+  "log.playerLoses": "player loses",
+  "log.push": "push"
 }

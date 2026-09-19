@@ -181,7 +181,7 @@ func TestPrsiWebPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("with entries", func(t *testing.T) {
 		m := new(interfaces.MockPrsiGame)
 		entries := []*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "plays SPADE 7", Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 7, true)}},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "prsi.log.play", DetailParams: map[string]string{"name": "You", "card": "♠7"}, Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 7, true)}},
 		}
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetActionLog").Return(entries)

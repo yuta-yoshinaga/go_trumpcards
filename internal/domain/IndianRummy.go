@@ -35,6 +35,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // IndianRummyHandSize 各プレイヤーの手札枚数
@@ -131,6 +132,18 @@ func NewIndianRummy(trumpCards *TrumpCards, players []*IndianRummyPlayer, config
 		roundNumber: 0,
 		declarerIdx: -1,
 	}
+}
+
+func (g *IndianRummy) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
+}
+
+type indianRummyStockRecycler struct{ game *IndianRummy }
+
+func (r indianRummyStockRecycler) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
+	var count int
+	_, _ = fmt.Sscanf(detail, "Discard pile recycled into stock (%d cards)", &count)
+	r.game.appendLog(playerIdx, actionType, "indianrummy.log.recycle", map[string]string{"count": strconv.Itoa(count)}, cards)
 }
 
 // NewDefaultIndianRummy 標準構成（人間 1 + CPU 3、108 枚デッキ、デフォルト設定）でコンストラクトする SSoT。
@@ -288,7 +301,7 @@ func (g *IndianRummy) drawFromStock() error {
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", playerName(g.players, g.currentPlayerIdx)), nil)
+	g.appendLog(g.currentPlayerIdx, "draw_stock", "indianrummy.log.drawStock", map[string]string{"name": playerName(g.players, g.currentPlayerIdx)}, nil)
 	g.phase = IndianRummyPhaseDiscard
 	return nil
 }
@@ -302,14 +315,14 @@ func (g *IndianRummy) drawFromDiscard() error {
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s draws %s from discard", playerName(g.players, g.currentPlayerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(g.currentPlayerIdx, "draw_discard", "indianrummy.log.drawDiscard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(card)}, []*Card{card})
 	g.phase = IndianRummyPhaseDiscard
 	return nil
 }
 
 // recycleDiscardIntoStock 山札が空のとき捨て札トップ 1 枚を残して残りを山札へ戻しシャッフルする。
 func (g *IndianRummy) recycleDiscardIntoStock() bool {
-	return recycleDiscardIntoStock(&g.discardPile, &g.drawPile, g)
+	return recycleDiscardIntoStock(&g.discardPile, &g.drawPile, indianRummyStockRecycler{game: g})
 }
 
 // PlayerDiscard 人間プレイヤーが手札 1 枚を捨ててターンを終了する
@@ -333,7 +346,7 @@ func (g *IndianRummy) applyDiscard(cardIndex int) error {
 	}
 	discarded := player.RemoveCard(cardIndex)
 	g.discardPile = append(g.discardPile, discarded)
-	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+	g.appendLog(g.currentPlayerIdx, "discard", "indianrummy.log.discard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(discarded)}, []*Card{discarded})
 	g.advanceTurn()
 	return nil
 }
@@ -369,7 +382,7 @@ func (g *IndianRummy) applyDeclare(cardIndex int) error {
 	if !g.declarationValid {
 		status = "invalid"
 	}
-	g.appendLog(g.currentPlayerIdx, "declare", fmt.Sprintf("%s declares (%s)", playerName(g.players, g.currentPlayerIdx), status), nil)
+	g.appendLog(g.currentPlayerIdx, "declare", "indianrummy.log.declare", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "status": status}, nil)
 
 	g.enterRoundEnd()
 	return nil
@@ -488,7 +501,7 @@ func (g *IndianRummy) enterRoundEnd() {
 // endRoundStockOut 山札枯渇によるラウンド終了（宣言なし・全員デッドウッド採点）。
 func (g *IndianRummy) endRoundStockOut() {
 	g.declarerIdx = -1
-	g.appendLog(-1, "stock_out", "Round ends (stock exhausted)", nil)
+	g.appendLog(-1, "stock_out", "indianrummy.log.stockOut", nil, nil)
 	g.enterRoundEnd()
 }
 
@@ -509,9 +522,9 @@ func (g *IndianRummy) scoreRound() {
 	}
 
 	if g.declarerIdx >= 0 && g.declarationValid {
-		g.appendLog(g.declarerIdx, "round_win", fmt.Sprintf("%s wins the round with a valid declaration", playerName(g.players, g.declarerIdx)), nil)
+		g.appendLog(g.declarerIdx, "round_win", "indianrummy.log.roundWin", map[string]string{"name": playerName(g.players, g.declarerIdx)}, nil)
 	} else if g.declarerIdx >= 0 {
-		g.appendLog(g.declarerIdx, "round_end", fmt.Sprintf("%s made an invalid declaration (+%d penalty)", playerName(g.players, g.declarerIdx), IndianRummyDeadwoodCap), nil)
+		g.appendLog(g.declarerIdx, "round_end", "indianrummy.log.roundEnd", map[string]string{"name": playerName(g.players, g.declarerIdx), "penalty": strconv.Itoa(IndianRummyDeadwoodCap)}, nil)
 	}
 
 	for i := range g.players {
@@ -532,7 +545,7 @@ func (g *IndianRummy) finalizeGameEnd() {
 			g.winnerIdx = i
 		}
 	}
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game with %d points!", playerName(g.players, g.winnerIdx), minScore), nil)
+	g.appendLog(-1, "game_end", "indianrummy.log.gameEnd", map[string]string{"name": playerName(g.players, g.winnerIdx), "points": strconv.Itoa(minScore)}, nil)
 }
 
 // --- Getters / Setters ---
