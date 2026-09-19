@@ -40,5 +40,6 @@
   "hintSide": "Hint: side[{{idx}}] → foundation {{foundation}}",
   "helpExampleHint": "  h                   ask for a move",
   "helpAutoPlay": "  ac                  play automatically",
-  "wildMark": "*"
+  "wildMark": "*",
+  "log.playHand": "Player {{player}} played from hand to foundation {{foundation}}", "log.playGoal": "Player {{player}} played from goal to foundation {{foundation}}", "log.win": "Player {{player}} emptied the goal pile", "log.playSide": "Player {{player}} played from side {{side}} to foundation {{foundation}}", "log.discard": "Player {{player}} discarded to side {{side}} and ended the turn", "log.complete": "Foundation {{foundation}} completed", "log.refill": "Shuffled completed piles back into the stock"
 }

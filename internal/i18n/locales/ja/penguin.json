@@ -32,5 +32,6 @@
   "helpExampleMoveCell": "  m t 0 c 0            列 0 の一番上を空きセル 0 へ逃がす",
   "helpExampleHint": "  h                    次の一手を教えてもらう",
   "helpExampleAuto": "  ac                   組札へ送れる札を自動で送る",
-  "helpUndo": "  u 1手戻す"
+  "helpUndo": "  u 1手戻す",
+  "log.tableauToTableau": "タブロー列{{fromCol}}→タブロー列{{toCol}}", "log.tableauToFoundation": "タブロー列{{col}}→ファウンデーション", "log.tableauToFreeCell": "タブロー列{{col}}→フリーセル{{cell}}", "log.freeCellToTableau": "フリーセル{{cell}}→タブロー列{{col}}", "log.freeCellToFoundation": "フリーセル{{cell}}→ファウンデーション", "log.giveUp": "ギブアップしました", "log.autoComplete": "オートコンプリートを実行しました"
 }

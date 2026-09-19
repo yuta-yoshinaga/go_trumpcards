@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // SeahavenTowersPhase シーヘイブンタワーズゲームフェーズ
@@ -157,7 +158,7 @@ func (s *SeahavenTowers) MoveTableauToTableau(fromCol, cardIndex, toCol int) err
 	s.moveCount++
 	movedCards := make([]*Card, len(movingCards))
 	copy(movedCards, movingCards)
-	s.appendLog("move", fmt.Sprintf("タブロー列%d→タブロー列%d", fromCol, toCol), movedCards)
+	s.appendLog("move", "seahaventowers.log.tableauToTableau", map[string]string{"fromCol": strconv.Itoa(fromCol), "toCol": strconv.Itoa(toCol)}, movedCards)
 	s.checkStalemate()
 	return nil
 }
@@ -186,7 +187,7 @@ func (s *SeahavenTowers) MoveTableauToFoundation(col int) error {
 	s.tableau[col] = fromCards[:len(fromCards)-1]
 	s.foundation[fIdx] = append(s.foundation[fIdx], card)
 	s.moveCount++
-	s.appendLog("move", fmt.Sprintf("タブロー列%d→ファンデーション", col), []*Card{card})
+	s.appendLog("move", "seahaventowers.log.tableauToFoundation", map[string]string{"col": strconv.Itoa(col)}, []*Card{card})
 	s.checkGameClear()
 	s.checkStalemate()
 	return nil
@@ -215,7 +216,7 @@ func (s *SeahavenTowers) MoveTableauToFreeCell(col, cell int) error {
 	s.tableau[col] = fromCards[:len(fromCards)-1]
 	s.freeCells[cell] = card
 	s.moveCount++
-	s.appendLog("move", fmt.Sprintf("タブロー列%d→リザーブ%d", col, cell), []*Card{card})
+	s.appendLog("move", "seahaventowers.log.tableauToReserve", map[string]string{"col": strconv.Itoa(col), "cell": strconv.Itoa(cell)}, []*Card{card})
 	s.checkStalemate()
 	return nil
 }
@@ -242,7 +243,7 @@ func (s *SeahavenTowers) MoveFreeCellToTableau(cell, col int) error {
 	s.freeCells[cell] = nil
 	s.tableau[col] = append(s.tableau[col], card)
 	s.moveCount++
-	s.appendLog("move", fmt.Sprintf("リザーブ%d→タブロー列%d", cell, col), []*Card{card})
+	s.appendLog("move", "seahaventowers.log.reserveToTableau", map[string]string{"cell": strconv.Itoa(cell), "col": strconv.Itoa(col)}, []*Card{card})
 	s.checkStalemate()
 	return nil
 }
@@ -270,7 +271,7 @@ func (s *SeahavenTowers) MoveFreeCellToFoundation(cell int) error {
 	s.freeCells[cell] = nil
 	s.foundation[fIdx] = append(s.foundation[fIdx], card)
 	s.moveCount++
-	s.appendLog("move", fmt.Sprintf("リザーブ%d→ファンデーション", cell), []*Card{card})
+	s.appendLog("move", "seahaventowers.log.reserveToFoundation", map[string]string{"cell": strconv.Itoa(cell)}, []*Card{card})
 	s.checkGameClear()
 	s.checkStalemate()
 	return nil
@@ -280,7 +281,7 @@ func (s *SeahavenTowers) MoveFreeCellToFoundation(cell int) error {
 func (s *SeahavenTowers) GiveUp() {
 	if s.phase == SeahavenTowersPhasePlaying {
 		s.phase = SeahavenTowersPhaseGameOver
-		s.appendLog("giveup", "ギブアップしました", nil)
+		s.appendLog("giveup", "seahaventowers.log.giveUp", nil, nil)
 	}
 }
 
@@ -470,7 +471,7 @@ func (s *SeahavenTowers) AutoComplete() error {
 			break
 		}
 	}
-	s.appendLog("autocomplete", "オートコンプリートを実行しました", nil)
+	s.appendLog("autocomplete", "seahaventowers.log.autoComplete", nil, nil)
 	s.checkGameClear()
 	s.checkStalemate()
 	return nil
@@ -653,8 +654,8 @@ func (s *SeahavenTowers) checkStalemate() {
 }
 
 // appendLog 棋譜エントリを追加
-func (s *SeahavenTowers) appendLog(actionType, detail string, cards []*Card) {
-	s.appendLogAt(s.moveCount, 0, actionType, detail, cards)
+func (s *SeahavenTowers) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	s.appendLogCodeAt(s.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // seahavenTowersJSON is the JSON wire format for SeahavenTowers.

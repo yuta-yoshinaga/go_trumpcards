@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // PenguinPhase ペンギンゲームフェーズ
@@ -179,7 +180,7 @@ func (p *Penguin) MoveTableauToTableau(fromCol, cardIndex, toCol int) error {
 	p.moveCount++
 	movedCards := make([]*Card, len(movingCards))
 	copy(movedCards, movingCards)
-	p.appendLog("move", fmt.Sprintf("タブロー列%d→タブロー列%d", fromCol, toCol), movedCards)
+	p.appendLog("move", "penguin.log.tableauToTableau", map[string]string{"fromCol": strconv.Itoa(fromCol), "toCol": strconv.Itoa(toCol)}, movedCards)
 	p.checkStalemate()
 	return nil
 }
@@ -208,7 +209,7 @@ func (p *Penguin) MoveTableauToFoundation(col int) error {
 	p.tableau[col] = fromCards[:len(fromCards)-1]
 	p.foundation[fIdx] = append(p.foundation[fIdx], card)
 	p.moveCount++
-	p.appendLog("move", fmt.Sprintf("タブロー列%d→ファンデーション", col), []*Card{card})
+	p.appendLog("move", "penguin.log.tableauToFoundation", map[string]string{"col": strconv.Itoa(col)}, []*Card{card})
 	p.checkGameClear()
 	p.checkStalemate()
 	return nil
@@ -237,7 +238,7 @@ func (p *Penguin) MoveTableauToFreeCell(col, cell int) error {
 	p.tableau[col] = fromCards[:len(fromCards)-1]
 	p.freeCells[cell] = card
 	p.moveCount++
-	p.appendLog("move", fmt.Sprintf("タブロー列%d→フリーセル%d", col, cell), []*Card{card})
+	p.appendLog("move", "penguin.log.tableauToFreeCell", map[string]string{"col": strconv.Itoa(col), "cell": strconv.Itoa(cell)}, []*Card{card})
 	p.checkStalemate()
 	return nil
 }
@@ -264,7 +265,7 @@ func (p *Penguin) MoveFreeCellToTableau(cell, col int) error {
 	p.freeCells[cell] = nil
 	p.tableau[col] = append(p.tableau[col], card)
 	p.moveCount++
-	p.appendLog("move", fmt.Sprintf("フリーセル%d→タブロー列%d", cell, col), []*Card{card})
+	p.appendLog("move", "penguin.log.freeCellToTableau", map[string]string{"cell": strconv.Itoa(cell), "col": strconv.Itoa(col)}, []*Card{card})
 	p.checkStalemate()
 	return nil
 }
@@ -292,7 +293,7 @@ func (p *Penguin) MoveFreeCellToFoundation(cell int) error {
 	p.freeCells[cell] = nil
 	p.foundation[fIdx] = append(p.foundation[fIdx], card)
 	p.moveCount++
-	p.appendLog("move", fmt.Sprintf("フリーセル%d→ファンデーション", cell), []*Card{card})
+	p.appendLog("move", "penguin.log.freeCellToFoundation", map[string]string{"cell": strconv.Itoa(cell)}, []*Card{card})
 	p.checkGameClear()
 	p.checkStalemate()
 	return nil
@@ -302,7 +303,7 @@ func (p *Penguin) MoveFreeCellToFoundation(cell int) error {
 func (p *Penguin) GiveUp() {
 	if p.phase == PenguinPhasePlaying {
 		p.phase = PenguinPhaseGameOver
-		p.appendLog("giveup", "ギブアップしました", nil)
+		p.appendLog("giveup", "penguin.log.giveUp", nil, nil)
 	}
 }
 
@@ -467,7 +468,7 @@ func (p *Penguin) AutoComplete() error {
 			break
 		}
 	}
-	p.appendLog("autocomplete", "オートコンプリートを実行しました", nil)
+	p.appendLog("autocomplete", "penguin.log.autoComplete", nil, nil)
 	p.checkGameClear()
 	p.checkStalemate()
 	return nil
@@ -681,8 +682,8 @@ func (p *Penguin) checkStalemate() {
 }
 
 // appendLog 棋譜エントリを追加
-func (p *Penguin) appendLog(actionType, detail string, cards []*Card) {
-	p.appendLogAt(p.moveCount, 0, actionType, detail, cards)
+func (p *Penguin) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	p.appendLogCodeAt(p.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // penguinJSON is the JSON wire format for Penguin.

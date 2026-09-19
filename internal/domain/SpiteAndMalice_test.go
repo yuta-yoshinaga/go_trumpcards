@@ -98,6 +98,16 @@ func TestSpiteAndMalice_PlayFromHand_StartsFoundationWithAce(t *testing.T) {
 	require.Len(t, f[0], 1)
 	assert.Equal(t, 1, f[0][0].GetValue())
 	assert.Equal(t, 1, g.GetMoveCount())
+	var entry *ActionLogEntry
+	for _, candidate := range g.GetActionLog() {
+		if candidate.DetailCode == "spiteandmalice.log.playHand" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, map[string]string{"player": "0", "foundation": "1"}, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
 }
 
 func TestSpiteAndMalice_PlayFromHand_Sequential(t *testing.T) {

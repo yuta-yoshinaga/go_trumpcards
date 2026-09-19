@@ -33,5 +33,6 @@
   "helpExampleHint": "  h                    次の一手を教えてもらう",
   "helpExampleAuto": "  ac                   組札へ送れる札を自動で送る",
   "helpUndo": "  u 1手戻す",
-  "autoCompleteReady": "オートコンプリート可能: ac で最後まで自動で進められます"
+  "autoCompleteReady": "オートコンプリート可能: ac で最後まで自動で進められます",
+  "log.tableauToTableau": "タブロー列{{fromCol}}→タブロー列{{toCol}}", "log.tableauToFoundation": "タブロー列{{col}}→ファウンデーション", "log.tableauToReserve": "タブロー列{{col}}→リザーブ{{cell}}", "log.reserveToTableau": "リザーブ{{cell}}→タブロー列{{col}}", "log.reserveToFoundation": "リザーブ{{cell}}→ファウンデーション", "log.giveUp": "ギブアップしました", "log.autoComplete": "オートコンプリートを実行しました"
 }

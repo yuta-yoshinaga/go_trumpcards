@@ -33,5 +33,6 @@
   "helpExampleHint": "  h                    ask for a move",
   "helpExampleAuto": "  ac                   send everything that can go to a foundation",
   "helpUndo": "  u undo one move",
-  "autoCompleteReady": "Auto-complete available: ac will finish the game"
+  "autoCompleteReady": "Auto-complete available: ac will finish the game",
+  "log.tableauToTableau": "Tableau column {{fromCol}}→tableau column {{toCol}}", "log.tableauToFoundation": "Tableau column {{col}}→foundation", "log.tableauToReserve": "Tableau column {{col}}→reserve {{cell}}", "log.reserveToTableau": "Reserve {{cell}}→tableau column {{col}}", "log.reserveToFoundation": "Reserve {{cell}}→foundation", "log.giveUp": "Gave up", "log.autoComplete": "Ran auto-complete"
 }
