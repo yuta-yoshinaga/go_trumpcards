@@ -37,5 +37,9 @@
   "pointLegendQueen": "  Q (dama)                  2 points",
   "pointLegendOthers": "  others (2-6)              0 points",
   "pointLegendNote": "  120 points per round; the team with 61 or more wins.",
-  "errCardIndexOutOfRange": "The card index is out of range."
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "log.play": "{{name}} plays {{card}}",
+  "log.trickWin": "{{name}} wins trick {{trick}} (+{{points}})",
+  "log.roundScore": "round {{round}}: cards A={{cardsA}} B={{cardsB}} → Team {{team}} +{{points}} game pts (total A={{totalA}} B={{totalB}})",
+  "log.gameEnd": "Team {{team}} wins the match!"
 }

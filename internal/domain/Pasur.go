@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // PasurPhase はパスールのフェーズ。
@@ -164,7 +165,7 @@ func (p *Pasur) Reset() {
 		}
 	}
 	p.dealPack()
-	p.addLog(-1, "start", fmt.Sprintf("パスールを開始しました（%d 人）", p.config.PlayerCnt), nil)
+	p.addLog(-1, "start", "pasur.log.start", map[string]string{"players": strconv.Itoa(p.config.PlayerCnt)}, nil)
 }
 
 // dealPack は全員に 1 パック（4 枚）配る。
@@ -299,7 +300,7 @@ func (p *Pasur) play(playerIdx, cardIndex int, tableIndices []int) error {
 	if len(tableIndices) == 0 {
 		// **トレール: 取れないので場に置く。**
 		p.tableCards = append(p.tableCards, card)
-		p.addLog(playerIdx, "trail", "場に置きました", []*Card{card})
+		p.addLog(playerIdx, "trail", "pasur.log.trail", nil, []*Card{card})
 	} else {
 		p.capture(playerIdx, card, tableIndices)
 	}
@@ -371,13 +372,14 @@ func (p *Pasur) capture(playerIdx int, card *Card, tableIndices []int) {
 	// **スールは「取った結果、場が空になった」こと。** 取った枚数ではありません。
 	if len(p.tableCards) == 0 {
 		p.players[playerIdx].AddSoorCaptured(taken)
-		p.addLog(playerIdx, "soor",
-			fmt.Sprintf("スール！ %d 枚を取り、場を空にしました（この札は %d 倍）",
-				len(taken), PasurSoorMultiplier), taken)
+		p.addLog(playerIdx, "soor", "pasur.log.soor", map[string]string{
+			"cards": strconv.Itoa(len(taken)),
+			"mult":  strconv.Itoa(PasurSoorMultiplier),
+		}, taken)
 		return
 	}
 	p.players[playerIdx].AddCaptured(taken)
-	p.addLog(playerIdx, "capture", fmt.Sprintf("%d 枚を取りました", len(taken)), taken)
+	p.addLog(playerIdx, "capture", "pasur.log.capture", map[string]string{"cards": strconv.Itoa(len(taken))}, taken)
 }
 
 // advanceTurn は手番を進め、必要なら配り足し、山札が尽きたら精算する。
@@ -410,8 +412,7 @@ func (p *Pasur) finishGame() {
 	if len(p.tableCards) > 0 && p.lastCaptureIdx >= 0 {
 		p.leftoverIdx, p.leftoverCount = p.lastCaptureIdx, len(p.tableCards)
 		p.players[p.lastCaptureIdx].AddCaptured(p.tableCards)
-		p.addLog(p.lastCaptureIdx, "leftover",
-			fmt.Sprintf("場の残り %d 枚を取りました", len(p.tableCards)), p.tableCards)
+		p.addLog(p.lastCaptureIdx, "leftover", "pasur.log.leftover", map[string]string{"cards": strconv.Itoa(len(p.tableCards))}, p.tableCards)
 		p.tableCards = nil
 	}
 
@@ -431,7 +432,7 @@ func (p *Pasur) finishGame() {
 	}
 	p.phase = PasurPhaseGameEnd
 	p.gameEndFlag = true
-	p.addLog(-1, "result", fmt.Sprintf("最終得点 %v", p.scores), nil)
+	p.addLog(-1, "result", "pasur.log.result", map[string]string{"scores": fmt.Sprint(p.scores)}, nil)
 }
 
 // scoreOf は 1 人の得点を返す。**スールで取った札は倍。**
@@ -462,7 +463,7 @@ func (p *Pasur) GiveUp() {
 	for i := 1; i < p.config.PlayerCnt; i++ {
 		p.winners = append(p.winners, i)
 	}
-	p.addLog(0, "giveup", "投了しました", nil)
+	p.addLog(0, "giveup", "pasur.log.giveUp", nil, nil)
 }
 
 // chooseCpuMove は CPU の手を返す。
@@ -525,8 +526,8 @@ func (p *Pasur) GetHint() *PasurHint {
 }
 
 // addLog は棋譜に 1 行足す。
-func (p *Pasur) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	p.appendLog(playerIdx, actionType, detail, cards)
+func (p *Pasur) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	p.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- アクセサ ---------------------------------------------------------------

@@ -13,6 +13,7 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 )
 
 // BriscolaPlayerCnt ブリスコラのプレイヤー数 (v1は2人固定)
@@ -219,9 +220,9 @@ func (b *Briscola) ResolveTrick() {
 	b.playerPoints[winnerIdx] += trickPoints
 	b.lastTrickPoints = trickPoints
 
-	b.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (%d pt)", playerName(b.players, winnerIdx), b.trickNumber, trickPoints),
-		trickCards)
+	b.appendLogCode(winnerIdx, "trick_win", "briscola.log.trickWin", map[string]string{
+		"name": playerName(b.players, winnerIdx), "trick": strconv.Itoa(b.trickNumber), "points": strconv.Itoa(trickPoints),
+	}, trickCards)
 
 	b.leadPlayerIdx = winnerIdx
 	// Phase is already BriscolaPhaseTrickEnd (guarded at function entry); leave it.
@@ -392,7 +393,7 @@ func (b *Briscola) dealInitial() {
 	b.trumpCard = b.trumpCards.DrawCard()
 	if b.trumpCard != nil {
 		b.trumpSuit = b.trumpCard.GetDesign()
-		b.appendLog(-1, "trump", fmt.Sprintf("Trump: %s", cardStr(b.trumpCard)), []*Card{b.trumpCard})
+		b.appendLogCode(-1, "trump", "briscola.log.trump", map[string]string{"card": cardStr(b.trumpCard)}, []*Card{b.trumpCard})
 	}
 }
 
@@ -411,9 +412,9 @@ func (b *Briscola) playCard(playerIdx int, card *Card) {
 		PlayerIdx: playerIdx,
 		Card:      card,
 	})
-	b.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", playerName(b.players, playerIdx), cardStr(card)),
-		[]*Card{card})
+	b.appendLogCode(playerIdx, "play", "briscola.log.play", map[string]string{
+		"name": playerName(b.players, playerIdx), "card": cardStr(card),
+	}, []*Card{card})
 
 	if len(b.currentTrick) == BriscolaPlayerCnt {
 		b.phase = BriscolaPhaseTrickEnd
@@ -507,8 +508,9 @@ func (b *Briscola) finishGame() {
 	b.gameEndFlag = true
 	b.phase = BriscolaPhaseGameEnd
 	b.winnerIdx = BriscolaDetermineWinner(b.playerPoints[0], b.playerPoints[1])
-	detail := fmt.Sprintf("Game end: %d-%d", b.playerPoints[0], b.playerPoints[1])
-	b.appendLog(-1, "game_end", detail, nil)
+	b.appendLogCode(-1, "game_end", "briscola.log.gameEnd", map[string]string{
+		"p0": strconv.Itoa(b.playerPoints[0]), "p1": strconv.Itoa(b.playerPoints[1]),
+	}, nil)
 }
 
 // BriscolaDetermineWinner 二人ブリスコラの勝者を決定する。

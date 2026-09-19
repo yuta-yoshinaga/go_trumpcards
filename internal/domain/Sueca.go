@@ -15,9 +15,9 @@ package domain
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // SuecaPlayerCnt プレイヤー数 (人間 1 + CPU 3)
@@ -201,7 +201,9 @@ func (g *Sueca) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Sueca) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLogCode(playerIdx, "play", "sueca.log.play", map[string]string{
+		"name": playerName(g.players, playerIdx), "card": cardStr(card),
+	}, []*Card{card})
 
 	if len(g.currentTrick) == SuecaPlayerCnt {
 		g.phase = SuecaPhaseTrickEnd
@@ -224,8 +226,9 @@ func (g *Sueca) ResolveTrick() {
 	}
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.roundCardPts[SuecaTeamOf(winnerIdx)] += pts
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (+%d)", playerName(g.players, winnerIdx), g.trickNumber, pts), trickCards)
+	g.appendLogCode(winnerIdx, "trick_win", "sueca.log.trickWin", map[string]string{
+		"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber), "points": strconv.Itoa(pts),
+	}, trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	// Keep currentTrick intact through TrickEnd so the resolved trick stays
@@ -269,9 +272,11 @@ func (g *Sueca) ScoreRound() {
 	if g.roundWinnerTeam >= 0 {
 		g.teamGamePts[g.roundWinnerTeam] += g.roundGamePts
 	}
-	g.appendLog(-1, "round_score",
-		fmt.Sprintf("round %d: cards A=%d B=%d → Team %s +%d game pts (total A=%d B=%d)",
-			g.roundNumber, a, b, suecaTeamLabel(g.roundWinnerTeam), g.roundGamePts, g.teamGamePts[0], g.teamGamePts[1]), nil)
+	g.appendLogCode(-1, "round_score", "sueca.log.roundScore", map[string]string{
+		"round": strconv.Itoa(g.roundNumber), "cardsA": strconv.Itoa(a), "cardsB": strconv.Itoa(b),
+		"team": suecaTeamLabel(g.roundWinnerTeam), "points": strconv.Itoa(g.roundGamePts),
+		"totalA": strconv.Itoa(g.teamGamePts[0]), "totalB": strconv.Itoa(g.teamGamePts[1]),
+	}, nil)
 
 	leader, other := 0, 1
 	if g.teamGamePts[1] > g.teamGamePts[0] {
@@ -281,7 +286,7 @@ func (g *Sueca) ScoreRound() {
 		g.gameEndFlag = true
 		g.winnerTeam = leader
 		g.phase = SuecaPhaseGameEnd
-		g.appendLog(-1, "game_end", fmt.Sprintf("Team %s wins the match!", teamName(leader)), nil)
+		g.appendLogCode(-1, "game_end", "sueca.log.gameEnd", map[string]string{"team": teamName(leader)}, nil)
 	}
 }
 

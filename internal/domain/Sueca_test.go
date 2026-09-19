@@ -19,6 +19,21 @@ func newSuecaGame(human bool) *Sueca {
 	return NewSueca(NewTrumpCardsBriscola(), players, DefaultSuecaConfig())
 }
 
+func TestSueca_ActionLogUsesDetailCode(t *testing.T) {
+	g := newSuecaGame(true)
+	g.Reset()
+	g.CpuPlay()
+	for _, entry := range g.GetActionLog() {
+		if entry.DetailCode == "sueca.log.play" {
+			if entry.DetailParams["name"] == "" || entry.DetailParams["card"] == "" || entry.Detail != "" {
+				t.Fatalf("play log = %#v, want code params and empty Detail", entry)
+			}
+			return
+		}
+	}
+	t.Fatal("sueca.log.play entry not found")
+}
+
 func suecaSetHand(p *SuecaPlayer, cards ...*Card) {
 	p.Reset()
 	for _, c := range cards {

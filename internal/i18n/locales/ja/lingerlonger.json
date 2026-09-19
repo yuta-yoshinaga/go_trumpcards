@@ -25,5 +25,13 @@
   "gameEndLastTrickCpu": "ゲーム終了！ 全員が同時に手札を出し切り、{{name}} が最後のトリックを取りました。",
   "gameEndGiveUp": "ゲーム終了！ あなたが投了し、{{name}} の勝ちです。",
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
-  "errCardMissing": "カードがありません"
+  "errCardMissing": "カードがありません",
+  "log.start": "リンガーロンガーを開始しました（{{players}} 人、{{cardsPerPlayer}} 枚ずつ）",
+  "log.play": "カードを出しました",
+  "log.trick": "トリックを取りました（得点にはなりません）",
+  "log.draw": "山札から 1 枚補充しました",
+  "log.eliminate": "手札が尽きて {{rank}} 番目に脱落しました",
+  "log.resultLasted": "最後まで手札を持ち続けました",
+  "log.resultLastTrick": "全員が同時に手札を出し切り、最後のトリックを取りました",
+  "log.giveUp": "投了しました"
 }

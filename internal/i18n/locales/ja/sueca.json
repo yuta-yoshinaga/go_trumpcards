@@ -37,5 +37,9 @@
   "pointLegendQueen": "  Q（ダーマ）               2点",
   "pointLegendOthers": "  その他（2〜6）            0点",
   "pointLegendNote": "  1ラウンドの合計は120点。61点以上を取ったチームの勝ち。",
-  "errCardIndexOutOfRange": "カードインデックスが範囲外です"
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "log.play": "{{name}}が{{card}}を出しました",
+  "log.trickWin": "{{name}}がトリック{{trick}}を取りました（+{{points}}）",
+  "log.roundScore": "ラウンド{{round}}: カード得点 A={{cardsA}} B={{cardsB}} → チーム{{team}} +{{points}}ゲームポイント（合計 A={{totalA}} B={{totalB}}）",
+  "log.gameEnd": "チーム{{team}}がマッチに勝利しました！"
 }

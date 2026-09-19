@@ -18,6 +18,18 @@ func newTestPasur(t *testing.T) *Pasur {
 	return p
 }
 
+func TestPasur_ActionLogUsesDetailCode(t *testing.T) {
+	p := newTestPasur(t)
+	for _, entry := range p.GetActionLog() {
+		if entry.DetailCode == "pasur.log.start" {
+			assert.Equal(t, map[string]string{"players": "4"}, entry.DetailParams)
+			assert.Empty(t, entry.Detail)
+			return
+		}
+	}
+	t.Fatal("pasur.log.start entry not found")
+}
+
 // **場に 4 枚置いた残り 48 枚は 2/3/4 人のどれでも割り切れる。**
 func TestPasur_DealDividesForEveryPlayerCount(t *testing.T) {
 	for n := PasurPlayerCntMin; n <= PasurPlayerCntMax; n++ {
