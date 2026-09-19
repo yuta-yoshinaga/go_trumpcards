@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // PageOnePlayerCnt ページワンプレイヤー数
@@ -34,6 +35,10 @@ const (
 type PageOnePenalty struct {
 	PlayerIdx int `json:"playerIdx"`
 	CardCount int `json:"cardCount"`
+}
+
+func (g *PageOne) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // PageOne ページワンゲームクラス
@@ -276,7 +281,7 @@ func (g *PageOne) CpuDeclare() {
 // doDeclare 宣言処理の共通実装
 func (g *PageOne) doDeclare(playerIdx int) {
 	g.players[playerIdx].SetHasDeclared(true)
-	g.appendLog(playerIdx, "declare", fmt.Sprintf("%s declares Page One!", playerName(g.players, playerIdx)), nil)
+	g.appendLog(playerIdx, "declare", "pageone.log.declare", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 	g.advanceTurn()
 }
 
@@ -286,7 +291,7 @@ func (g *PageOne) applyDeclarePenalty(playerIdx int) {
 		PlayerIdx: playerIdx,
 		CardCount: PageOnePenaltyDraw,
 	})
-	g.appendLog(playerIdx, "penalty", fmt.Sprintf("%s forgot to declare Page One! (+%d cards)", playerName(g.players, playerIdx), PageOnePenaltyDraw), nil)
+	g.appendLog(playerIdx, "penalty", "pageone.log.penalty", map[string]string{"name": playerName(g.players, playerIdx), "count": strconv.Itoa(PageOnePenaltyDraw)}, nil)
 	for i := 0; i < PageOnePenaltyDraw; i++ {
 		if len(g.drawPile) == 0 {
 			g.recycleDrawPile()
@@ -330,11 +335,11 @@ func (g *PageOne) ScoreRound() {
 			score += pageOneCardScore(p.GetCard(j))
 		}
 		totalScore += score
-		g.appendLog(i, "hand_score", fmt.Sprintf("%s: %d points remaining", playerName(g.players, i), score), nil)
+		g.appendLog(i, "hand_score", "pageone.log.handScore", map[string]string{"name": playerName(g.players, i), "score": strconv.Itoa(score)}, nil)
 	}
 
 	g.players[winnerIdx].roundScore = totalScore
-	g.appendLog(winnerIdx, "round_win", fmt.Sprintf("%s wins round %d (+%d points)", playerName(g.players, winnerIdx), g.roundNumber, totalScore), nil)
+	g.appendLog(winnerIdx, "round_win", "pageone.log.roundWin", map[string]string{"name": playerName(g.players, winnerIdx), "round": strconv.Itoa(g.roundNumber), "points": strconv.Itoa(totalScore)}, nil)
 
 	g.players[winnerIdx].CommitRoundScore()
 
@@ -434,7 +439,7 @@ func (g *PageOne) isValidPlay(card *Card) bool {
 func (g *PageOne) playCard(playerIdx int, card *Card) {
 	g.discardPile = append(g.discardPile, card)
 
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "pageone.log.play", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	remaining := g.players[playerIdx].GetCardsSize()
 
@@ -471,7 +476,7 @@ func (g *PageOne) drawCard(playerIdx int) error {
 	}
 
 	if len(g.drawPile) == 0 {
-		g.appendLog(playerIdx, "pass", fmt.Sprintf("%s passes (no cards to draw)", playerName(g.players, playerIdx)), nil)
+		g.appendLog(playerIdx, "pass", "pageone.log.pass", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 		g.advanceTurn()
 		return nil
 	}
@@ -481,7 +486,7 @@ func (g *PageOne) drawCard(playerIdx int) error {
 	g.players[playerIdx].AddCard(card)
 	g.sortHand(playerIdx)
 
-	g.appendLog(playerIdx, "draw", fmt.Sprintf("%s draws a card", playerName(g.players, playerIdx)), nil)
+	g.appendLog(playerIdx, "draw", "pageone.log.draw", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 
 	if !g.hasPlayableCard(playerIdx) {
 		g.advanceTurn()
@@ -525,7 +530,7 @@ func (g *PageOne) checkGameEnd() {
 			g.winnerIdx = i
 		}
 	}
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(g.players, g.winnerIdx)), nil)
+	g.appendLog(-1, "game_end", "pageone.log.gameEnd", map[string]string{"name": playerName(g.players, g.winnerIdx)}, nil)
 }
 
 // sortAllHands 全プレイヤーの手札をソートする

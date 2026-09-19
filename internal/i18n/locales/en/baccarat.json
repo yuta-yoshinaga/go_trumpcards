@@ -30,5 +30,13 @@
   "payoutRefPlayer": "Player win (1:1)",
   "payoutRefBanker": "Banker win (1:1, {{commission}}% commission)",
   "payoutRefTie": "Tie ({{rate}}:1)",
-  "payoutRefPair": "Pair (player/banker) ({{rate}}:1)"
+  "payoutRefPair": "Pair (player/banker) ({{rate}}:1)",
+  "log.bet": "bet {{amount}} on {{type}}",
+  "log.deal": "player={{player}} banker={{banker}}",
+  "log.natural": "player={{player}} banker={{banker}}",
+  "log.playerDraws": "player draws {{value}}",
+  "log.bankerDraws": "banker draws {{value}}",
+  "log.playerWins": "player wins",
+  "log.bankerWins": "banker wins",
+  "log.tie": "tie"
 }

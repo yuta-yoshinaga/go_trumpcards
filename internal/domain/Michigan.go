@@ -34,6 +34,7 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"strconv"
 )
 
 // MichiganPhase はゲームフェーズ。ワイヤー値はフロントエンドの enum と一致させる。
@@ -198,7 +199,7 @@ func (g *Michigan) startRound() {
 	g.trumpCards.Shuffle()
 	g.state.phase = MichiganPhaseBet
 	g.state.currentPlayer = 0
-	g.appendLog(-1, "round_start", fmt.Sprintf("Round %d: place your boodle bets", g.state.roundNumber), nil)
+	g.appendLog(-1, "round_start", "michigan.log.roundStart", map[string]string{"round": strconv.Itoa(g.state.roundNumber)}, nil)
 	// CPU は自動でブードルに賭ける。
 	for i := 1; i < len(g.players); i++ {
 		g.autoBet(i)
@@ -264,7 +265,7 @@ func (g *Michigan) applyBet(seat int, dist []int) {
 		total += amt
 	}
 	p.AddRoundBet(total)
-	g.appendLog(seat, "bet", fmt.Sprintf("%s bets %d across boodles", playerName(g.players, seat), total), nil)
+	g.appendLog(seat, "bet", "michigan.log.bet", map[string]string{"name": playerName(g.players, seat), "total": strconv.Itoa(total)}, nil)
 }
 
 // PlaceHumanBet は人間 (seat 0) のブードル賭けを適用する。bets は 4 要素、各非負、
@@ -307,7 +308,7 @@ func (g *Michigan) finishBetting() {
 	g.state.lastPlayerIdx = g.state.leadPlayerIdx
 	g.state.seqSuit = 0
 	g.state.seqHighValue = 0
-	g.appendLog(-1, "deal", fmt.Sprintf("Round %d: cards dealt, player %d leads", g.state.roundNumber, g.state.leadPlayerIdx), nil)
+	g.appendLog(-1, "deal", "michigan.log.deal", map[string]string{"round": strconv.Itoa(g.state.roundNumber), "player": strconv.Itoa(g.state.leadPlayerIdx)}, nil)
 	g.driveCPU()
 }
 
@@ -405,14 +406,14 @@ func (g *Michigan) doPlay(seat, idx int) {
 			if won > 0 {
 				p.AddChips(won)
 			}
-			g.appendLog(seat, "boodle", fmt.Sprintf("%s hits a boodle and collects %d", playerName(g.players, seat), won), []*Card{removed})
+			g.appendLog(seat, "boodle", "michigan.log.boodle", map[string]string{"name": playerName(g.players, seat), "amount": strconv.Itoa(won)}, []*Card{removed})
 		}
 	}
 	// シーケンス更新。
 	g.state.seqSuit = removed.GetDesign()
 	g.state.seqHighValue = removed.GetValue()
 	g.state.lastPlayerIdx = seat
-	g.appendLog(seat, "play", fmt.Sprintf("%s plays %s", playerName(g.players, seat), michiganCardStr(removed)), []*Card{removed})
+	g.appendLog(seat, "play", "michigan.log.play", map[string]string{"name": playerName(g.players, seat), "card": michiganCardStr(removed)}, []*Card{removed})
 	// 手札を出し切ったらラウンド終了。
 	if p.GetCardsSize() == 0 {
 		g.enterRoundEnd(seat)
@@ -427,7 +428,7 @@ func (g *Michigan) doPlay(seat, idx int) {
 		}
 	}
 	// ストップ: 最後に出したプレイヤーが新しいシーケンスを始める。
-	g.appendLog(-1, "stop", "sequence stopped", nil)
+	g.appendLog(-1, "stop", "michigan.log.stop", nil, nil)
 	g.state.seqSuit = 0
 	g.state.seqHighValue = 0
 	g.state.currentPlayer = g.state.lastPlayerIdx
@@ -559,7 +560,7 @@ func (g *Michigan) enterRoundEnd(goOutSeat int) {
 	g.state.winnerIdx = goOutSeat
 	g.state.result = g.computeHumanResult()
 	g.state.scored = true
-	g.appendLog(goOutSeat, "round_end", fmt.Sprintf("%s empties their hand; round over", playerName(g.players, goOutSeat)), nil)
+	g.appendLog(goOutSeat, "round_end", "michigan.log.roundEnd", map[string]string{"name": playerName(g.players, goOutSeat)}, nil)
 	g.checkGameEnd()
 }
 
@@ -593,8 +594,7 @@ func (g *Michigan) endGame() {
 	g.state.gameEndFlag = true
 	g.state.phase = MichiganPhaseResult
 	g.state.matchWinnerIdx = g.richestIdx()
-	g.appendLog(g.state.matchWinnerIdx, "game_end",
-		fmt.Sprintf("%s wins the game", playerName(g.players, g.state.matchWinnerIdx)), nil)
+	g.appendLog(g.state.matchWinnerIdx, "game_end", "michigan.log.gameEnd", map[string]string{"name": playerName(g.players, g.state.matchWinnerIdx)}, nil)
 }
 
 // richestIdx はチップが最多のプレイヤーのインデックスを返す (同数は座席番号の小さい方)。
@@ -658,8 +658,8 @@ func michiganValidCard(c *Card) bool {
 	return d >= CardDesignSpade && d <= CardDesignDiamond && v >= 1 && v <= CardValueMax
 }
 
-func (g *Michigan) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.state.appendLog(playerIdx, actionType, detail, cards)
+func (g *Michigan) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.state.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- 状態アクセサ ---

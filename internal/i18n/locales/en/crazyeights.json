@@ -36,5 +36,12 @@
   "pointLegendOther": "  Other                face value",
   "errCardIndexOutOfRange": "The card index is out of range.",
   "errCardCannotBePlayed": "That card cannot be played.",
-  "errSuitOutOfRange": "The suit must be specified from 1 to 4."
+  "errSuitOutOfRange": "The suit must be specified from 1 to 4.",
+  "log.chooseSuit": "{{name}} chooses {{suit}}",
+  "log.handScore": "{{name}}: {{score}} points remaining",
+  "log.roundWin": "{{name}} wins round {{round}} (+{{points}} points)",
+  "log.play": "{{name}} plays {{card}}",
+  "log.pass": "{{name}} passes (no cards to draw)",
+  "log.draw": "{{name}} draws a card",
+  "log.gameEnd": "{{name}} wins the game!"
 }

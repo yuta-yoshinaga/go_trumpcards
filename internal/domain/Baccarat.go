@@ -5,6 +5,7 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 )
 
 // バカラフェーズ定数
@@ -56,6 +57,10 @@ type Baccarat struct {
 	playerPairBet  int                 // プレイヤーペアベット額
 	bankerPairBet  int                 // バンカーペアベット額
 	sideBetResults []*BacSideBetResult // サイドベット結果
+}
+
+func (b *Baccarat) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	b.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // NewBaccarat コンストラクタ
@@ -131,7 +136,7 @@ func (b *Baccarat) Bet(amount, betType, ppBet, bpBet int) error {
 	b.betType = betType
 	b.playerPairBet = ppBet
 	b.bankerPairBet = bpBet
-	b.appendLog(0, "bet", fmt.Sprintf("bet %d on %s", amount, betTypeName(betType)), nil)
+	b.appendLog(0, "bet", "baccarat.log.bet", map[string]string{"amount": strconv.Itoa(amount), "type": betTypeName(betType)}, nil)
 
 	// ディール
 	b.deal()
@@ -151,8 +156,7 @@ func (b *Baccarat) deal() {
 	b.bankerHand = append(b.bankerHand, b.trumpCards.DrawCard())
 	b.playerHand = append(b.playerHand, b.trumpCards.DrawCard())
 	b.bankerHand = append(b.bankerHand, b.trumpCards.DrawCard())
-	b.appendLog(-1, "deal", fmt.Sprintf("player=%d banker=%d",
-		b.CalculateHandValue(b.playerHand), b.CalculateHandValue(b.bankerHand)), nil)
+	b.appendLog(-1, "deal", "baccarat.log.deal", map[string]string{"player": strconv.Itoa(b.CalculateHandValue(b.playerHand)), "banker": strconv.Itoa(b.CalculateHandValue(b.bankerHand))}, nil)
 }
 
 // drawPhase サードカードルール適用
@@ -162,7 +166,7 @@ func (b *Baccarat) drawPhase() {
 
 	// ナチュラル判定（どちらかが8か9ならドロー無し）
 	if playerTotal >= BaccaratNaturalMinValue || bankerTotal >= BaccaratNaturalMinValue {
-		b.appendLog(-1, "natural", fmt.Sprintf("player=%d banker=%d", playerTotal, bankerTotal), nil)
+		b.appendLog(-1, "natural", "baccarat.log.natural", map[string]string{"player": strconv.Itoa(playerTotal), "banker": strconv.Itoa(bankerTotal)}, nil)
 		return
 	}
 
@@ -174,14 +178,14 @@ func (b *Baccarat) drawPhase() {
 		b.playerHand = append(b.playerHand, card)
 		playerDrew = true
 		playerThirdCardValue = b.cardPointValue(card)
-		b.appendLog(-1, "draw", fmt.Sprintf("player draws %d", playerThirdCardValue), []*Card{card})
+		b.appendLog(-1, "draw", "baccarat.log.playerDraws", map[string]string{"value": strconv.Itoa(playerThirdCardValue)}, []*Card{card})
 	}
 
 	// バンカーのサードカード
 	if b.shouldBankerDraw(bankerTotal, playerThirdCardValue, playerDrew) {
 		card := b.trumpCards.DrawCard()
 		b.bankerHand = append(b.bankerHand, card)
-		b.appendLog(-1, "draw", fmt.Sprintf("banker draws %d", b.cardPointValue(card)), []*Card{card})
+		b.appendLog(-1, "draw", "baccarat.log.bankerDraws", map[string]string{"value": strconv.Itoa(b.cardPointValue(card))}, []*Card{card})
 	}
 }
 
@@ -192,13 +196,13 @@ func (b *Baccarat) judge() {
 
 	if playerTotal > bankerTotal {
 		b.result = GameResultWin
-		b.appendLog(-1, "result", "player wins", nil)
+		b.appendLog(-1, "result", "baccarat.log.playerWins", nil, nil)
 	} else if bankerTotal > playerTotal {
 		b.result = GameResultLose
-		b.appendLog(-1, "result", "banker wins", nil)
+		b.appendLog(-1, "result", "baccarat.log.bankerWins", nil, nil)
 	} else {
 		b.result = GameResultDraw
-		b.appendLog(-1, "result", "tie", nil)
+		b.appendLog(-1, "result", "baccarat.log.tie", nil, nil)
 	}
 
 	// 罫線に結果を追加

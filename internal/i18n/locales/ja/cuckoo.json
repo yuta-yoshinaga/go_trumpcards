@@ -27,5 +27,13 @@
   "roundEnd": "ラウンド終了",
   "result.humanWin": "ゲーム終了！ あなたの勝ち！",
   "result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
-  "helpExampleKeep": "  k                         手札を交換せず保持する"
+  "helpExampleKeep": "  k                         手札を交換せず保持する",
+  "log.keep": "{{name}}が保持しました",
+  "log.swap": "{{name}}が{{target}}と交換しました",
+  "log.keepStockEmpty": "{{name}}が保持しました（山札が空です）",
+  "log.swapStock": "{{name}}が山札と交換しました",
+  "log.refuse": "{{name}}がキングを見せて拒否しました",
+  "log.loseLife": "{{name}}がライフを失いました（最低値: {{lowest}}）",
+  "log.survive": "{{name}}がタイブレークを生き残りました",
+  "log.gameEnd": "{{name}}がゲームに勝利しました！"
 }

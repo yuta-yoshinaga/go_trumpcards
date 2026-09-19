@@ -47,5 +47,13 @@
   "result.cpuWin": "ゲーム終了！CPU {{player}} の勝ち！",
   "helpExampleNext": "  n                         次のディールへ進む",
   "helpHint": "  h                         助言を表示",
-  "deadHandNote": "  （余分に1人分だけ配った札です。誰の手にも入らず、この局では最後まで使われません）"
+  "deadHandNote": "  （余分に1人分だけ配った札です。誰の手にも入らず、この局では最後まで使われません）",
+  "log.roundStart": "ラウンド{{round}}: ブードルに賭けてください",
+  "log.bet": "{{name}}がブードルに合計{{total}}を賭けました",
+  "log.deal": "ラウンド{{round}}: カードを配りました。プレイヤー{{player}}がリードします",
+  "log.boodle": "{{name}}がブードルを取り{{amount}}を獲得しました",
+  "log.play": "{{name}}が{{card}}を出しました",
+  "log.stop": "シーケンスが止まりました",
+  "log.roundEnd": "{{name}}が手札をなくしました。ラウンド終了です",
+  "log.gameEnd": "{{name}}がゲームに勝利しました"
 }

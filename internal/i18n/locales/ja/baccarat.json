@@ -30,5 +30,13 @@
   "payoutRefPlayer": "プレイヤー勝利 (1:1)",
   "payoutRefBanker": "バンカー勝利 (1:1、コミッション {{commission}}%)",
   "payoutRefTie": "タイ ({{rate}}:1)",
-  "payoutRefPair": "ペア (プレイヤー/バンカー) ({{rate}}:1)"
+  "payoutRefPair": "ペア (プレイヤー/バンカー) ({{rate}}:1)",
+  "log.bet": "{{amount}}を{{type}}に賭けました",
+  "log.deal": "プレイヤー={{player}} バンカー={{banker}}",
+  "log.natural": "プレイヤー={{player}} バンカー={{banker}}",
+  "log.playerDraws": "プレイヤーが{{value}}を引きました",
+  "log.bankerDraws": "バンカーが{{value}}を引きました",
+  "log.playerWins": "プレイヤーの勝ち",
+  "log.bankerWins": "バンカーの勝ち",
+  "log.tie": "タイ"
 }

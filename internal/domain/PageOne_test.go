@@ -127,6 +127,17 @@ func TestPageOne_PlayerPlay_MatchSuit(t *testing.T) {
 	err := g.PlayerPlay(0)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, g.GetCurrentPlayerIdx())
+	var playLog *domain.ActionLogEntry
+	for _, entry := range g.GetActionLog() {
+		if entry.DetailCode == "pageone.log.play" {
+			playLog = entry
+			break
+		}
+	}
+	require.NotNil(t, playLog)
+	assert.Equal(t, "pageone.log.play", playLog.DetailCode)
+	assert.Equal(t, "You", playLog.DetailParams["name"])
+	assert.Empty(t, playLog.Detail)
 }
 
 func TestPageOne_PlayerPlay_MatchRank(t *testing.T) {
