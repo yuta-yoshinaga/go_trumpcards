@@ -85,6 +85,26 @@ func TestMadrassoReset(t *testing.T) {
 	assert.Equal(t, 0, g.GetCurrentPlayerIdx())
 }
 
+func TestMadrassoActionLogUsesDetailCode(t *testing.T) {
+	g := newTestMadrasso()
+	madResolve(g, 1, []*domain.TrickCard{
+		{PlayerIdx: 0, Card: madCard(domain.CardDesignSpade, 1)},
+		{PlayerIdx: 1, Card: madCard(domain.CardDesignSpade, 2)},
+		{PlayerIdx: 2, Card: madCard(domain.CardDesignSpade, 3)},
+		{PlayerIdx: 3, Card: madCard(domain.CardDesignSpade, 13)},
+	})
+	var entry *domain.ActionLogEntry
+	for _, candidate := range g.GetActionLog() {
+		if candidate.DetailCode == "madrasso.log.trickWin" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, map[string]string{"name": "You", "trick": "1", "thirds": "25", "bonus": ""}, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
+}
+
 // --- config ---
 
 func TestMadrassoConfigValidate(t *testing.T) {

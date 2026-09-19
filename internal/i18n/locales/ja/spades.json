@@ -36,5 +36,14 @@
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
   "errLeadTwoOfClubs": "最初のトリックは2♣でリードしてください",
   "errSpadesNotBroken": "スペードはまだブレイクされていません",
-  "errFollowLeadSuit": "リードスートに従ってください"
+  "errFollowLeadSuit": "リードスートに従ってください",
+  "log.bid": "{{name}} が {{bid}} をビッド",
+  "log.trickWin": "{{name}} がトリック {{trick}} に勝利",
+  "log.nilSuccess": "{{name}} のニル成功！ +{{bonus}}",
+  "log.nilFail": "{{name}} のニル失敗！ -{{penalty}}（{{tricks}}トリック獲得）",
+  "log.bagPenalty": "{{name}} のバッグペナルティ！ -{{penalty}}",
+  "log.roundScore": "{{name}}: ビッド={{bid}} トリック={{tricks}} ラウンド={{round}} バッグ={{bags}}",
+  "log.cumulativeScore": "{{name}}: 合計={{total}}",
+  "log.play": "{{name}} が {{card}} を出す",
+  "log.gameEnd": "{{name}} がゲームに勝利！"
 }

@@ -23,5 +23,12 @@
   "helpExampleHint": "  h                    次の一手を教えてもらう",
   "helpExampleAuto": "  ac                   組札へ送れる札を自動で送る",
   "helpUndo": "  u                    1手戻す",
-  "hintDraw": "ヒント: 他に動かせる札はありません。山札から1枚引きましょう"
+  "hintDraw": "ヒント: 他に動かせる札はありません。山札から1枚引きましょう",
+  "log.draw": "ストックからカードを引きました",
+  "log.wasteToTableau": "ウェイスト→タブロー列{{column}}",
+  "log.wasteToFoundation": "ウェイスト→ファンデーション",
+  "log.tableauToTableau": "タブロー列{{from}}→タブロー列{{to}}",
+  "log.tableauToFoundation": "タブロー列{{column}}→ファンデーション",
+  "log.giveUp": "ギブアップしました",
+  "log.autocomplete": "オートコンプリートを実行しました"
 }

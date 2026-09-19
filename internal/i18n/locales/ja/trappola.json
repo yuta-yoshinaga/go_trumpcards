@@ -27,5 +27,10 @@
   "previousTrick": "直前のトリック (勝者: {{name}})",
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
   "helpHint": "  h                    助言を表示",
-  "errCardIndexOutOfRange": "カードインデックスが範囲外です"
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "log.declaration": "{{name}} が {{declaration}} を宣言（{{thirds}}/3点）",
+  "log.trickWin": "{{name}} がトリック {{trick}} に勝利（{{thirds}}/3{{bonus}}）",
+  "log.roundScore": "ラウンド {{round}}: TeamA={{teamAScore}}（+{{teamAThirds}}/3）、TeamB={{teamBScore}}（+{{teamBThirds}}/3）",
+  "log.gameEnd": "Team {{team}} がゲームに勝利！",
+  "log.play": "{{name}} が {{card}} を出す"
 }

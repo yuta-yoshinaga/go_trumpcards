@@ -16,8 +16,8 @@ package domain
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // MadrassoPlayerCnt マドラッソのプレイヤー数
@@ -223,9 +223,7 @@ func (g *Madrasso) ResolveTrick() {
 		g.teamRoundPoints[team] += MadrassoUltimaPoints
 		bonus = " +ultima"
 	}
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (+%d/3%s)", playerName(g.players, winnerIdx), g.trickNumber, thirds, bonus),
-		trickCards)
+	g.appendLog(winnerIdx, "trick_win", "madrasso.log.trickWin", map[string]string{"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber), "thirds": strconv.Itoa(thirds), "bonus": bonus}, trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= MadrassoTrickCount {
@@ -267,10 +265,7 @@ func (g *Madrasso) ScoreRound() {
 	if winner >= 0 {
 		g.teamScores[winner]++
 	}
-	g.appendLog(-1, "round_score",
-		fmt.Sprintf("round %d: TeamA=%d pts, TeamB=%d pts -> deal to %s (scores %d-%d)",
-			g.roundNumber, g.teamRoundPoints[0], g.teamRoundPoints[1],
-			madrassoDealResultName(winner), g.teamScores[0], g.teamScores[1]), nil)
+	g.appendLog(-1, "round_score", "madrasso.log.roundScore", map[string]string{"round": strconv.Itoa(g.roundNumber), "teamAPoints": strconv.Itoa(g.teamRoundPoints[0]), "teamBPoints": strconv.Itoa(g.teamRoundPoints[1]), "result": madrassoDealResultName(winner), "teamAScore": strconv.Itoa(g.teamScores[0]), "teamBScore": strconv.Itoa(g.teamScores[1])}, nil)
 
 	leader, other := 0, 1
 	if g.teamScores[1] > g.teamScores[0] {
@@ -280,7 +275,7 @@ func (g *Madrasso) ScoreRound() {
 		g.gameEndFlag = true
 		g.winnerTeam = leader
 		g.phase = MadrassoPhaseGameEnd
-		g.appendLog(-1, "game_end", fmt.Sprintf("Team %s wins the game!", madrassoTeamName(leader)), nil)
+		g.appendLog(-1, "game_end", "madrasso.log.gameEnd", map[string]string{"team": madrassoTeamName(leader)}, nil)
 	}
 }
 
@@ -372,7 +367,7 @@ func (g *Madrasso) playCard(playerIdx int, card *Card) {
 		PlayerIdx: playerIdx,
 		Card:      card,
 	})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "madrasso.log.play", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(g.currentTrick) == MadrassoPlayerCnt {
 		g.phase = MadrassoPhaseTrickEnd
@@ -776,4 +771,9 @@ func (g *Madrasso) UnmarshalJSON(data []byte) error {
 		g.actionLog = make([]*ActionLogEntry, 0)
 	}
 	return nil
+}
+
+// appendLog records a Madrasso action with a locale-independent detail code.
+func (g *Madrasso) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }

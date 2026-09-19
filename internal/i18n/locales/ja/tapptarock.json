@@ -41,5 +41,15 @@
   "hintReasonAvoidPoints": "トリシャーケンなので点を取らない",
   "result.scores": "ゲーム終了！ 得点: {{scores}}",
   "helpExamplePlay": "  play 0                    手札の 0 番のカードを出す",
-  "helpHint": "  h                         助言を表示"
+  "helpHint": "  h                         助言を表示",
+  "log.deal": "ディール {{round}}: 各プレイヤーに16枚、タロン{{talon}}枚",
+  "log.bid": "{{name}} が {{bid}} に入札",
+  "log.pass": "{{name}} がパス",
+  "log.everyonePassed": "全員パス: トリシャーケン",
+  "log.playsSolo": "{{name}} がソロを選択",
+  "log.discard": "{{name}} が {{count}} 枚を伏せる",
+  "log.play": "{{name}} が {{card}} を出す",
+  "log.trick": "{{name}} がトリック {{trick}} を取る",
+  "log.score": "ディール {{round}} の得点（{{contract}}）",
+  "log.matchOver": "対局終了"
 }
