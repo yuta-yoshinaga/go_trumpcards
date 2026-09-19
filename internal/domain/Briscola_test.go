@@ -54,6 +54,15 @@ func TestBriscola_Reset(t *testing.T) {
 	if b.GetLeadPlayerIdx() != 1 {
 		t.Errorf("lead = %d, want 1", b.GetLeadPlayerIdx())
 	}
+	for _, entry := range b.GetActionLog() {
+		if entry.DetailCode == "briscola.log.trump" {
+			if entry.DetailParams["card"] == "" || entry.Detail != "" {
+				t.Fatalf("trump log = %#v, want code params and empty Detail", entry)
+			}
+			return
+		}
+	}
+	t.Fatal("briscola.log.trump entry not found")
 }
 
 func TestBriscola_CardPointsAndRank(t *testing.T) {

@@ -38,5 +38,17 @@
   "helpExampleGiveUp": "  g                    この局を投了する",
   "helpHint": "  h                    助言を表示",
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
-  "errCardMissing": "カードがありません"
+  "errCardMissing": "カードがありません",
+  "log.start": "ミニブリッジを開始しました",
+  "log.announceHcp": "HCP {{hcp}} を申告しました",
+  "log.hcpTotal": "HCP 合計が {{total}} です（想定 {{expected}}）",
+  "log.declarerTie": "HCP が {{teamA}}-{{teamB}} の同点のため、親の側が宣言側になります",
+  "log.declarer": "HCP {{hcp}} でデクレアラーになりました（ダミーは席 {{dummySeat}}）",
+  "log.contract": "契約 {{level}}{{suit}}（必要 {{need}} トリック）",
+  "log.play": "カードを出しました",
+  "log.trick": "トリックを取りました",
+  "log.scoreMade": "契約 {{need}} に対し {{took}} トリック：成立 (+{{points}})",
+  "log.scoreFailed": "契約 {{need}} に対し {{took}} トリック：失敗、相手に +{{points}}",
+  "log.result": "最終得点 {{teamA}} - {{teamB}}",
+  "log.giveUp": "投了しました"
 }

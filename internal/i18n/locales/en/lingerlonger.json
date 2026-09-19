@@ -25,5 +25,13 @@
   "gameEndLastTrickCpu": "Game over! Everyone ran out at once, and {{name}} took the last trick.",
   "gameEndGiveUp": "Game over! You gave up, so {{name}} wins.",
   "errCardIndexOutOfRange": "The card index is out of range.",
-  "errCardMissing": "The card is missing."
+  "errCardMissing": "The card is missing.",
+  "log.start": "Started Linger Longer ({{players}} players, {{cardsPerPlayer}} cards each)",
+  "log.play": "Played a card",
+  "log.trick": "Won the trick (no points awarded)",
+  "log.draw": "Drew 1 card from the stock",
+  "log.eliminate": "Ran out of cards and was eliminated {{rank}}th",
+  "log.resultLasted": "Held cards longest",
+  "log.resultLastTrick": "Everyone ran out at once and the last trick was won",
+  "log.giveUp": "Gave up"
 }

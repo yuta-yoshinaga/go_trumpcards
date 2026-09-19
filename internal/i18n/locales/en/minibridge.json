@@ -38,5 +38,17 @@
   "helpExampleGiveUp": "  g                    give the round up",
   "helpHint": "  h                    show a hint",
   "errCardIndexOutOfRange": "The card index is out of range.",
-  "errCardMissing": "The card is missing."
+  "errCardMissing": "The card is missing.",
+  "log.start": "Started Minibridge",
+  "log.announceHcp": "Announced HCP {{hcp}}",
+  "log.hcpTotal": "HCP total is {{total}} (expected {{expected}})",
+  "log.declarerTie": "HCP was tied {{teamA}}-{{teamB}}, so the dealer's side declares",
+  "log.declarer": "Became declarer with HCP {{hcp}} (dummy is seat {{dummySeat}})",
+  "log.contract": "Contract {{level}}{{suit}} (needs {{need}} tricks)",
+  "log.play": "Played a card",
+  "log.trick": "Won the trick",
+  "log.scoreMade": "Contract {{need}} made with {{took}} tricks (+{{points}})",
+  "log.scoreFailed": "Contract {{need}} failed with {{took}} tricks; opponents get +{{points}}",
+  "log.result": "Final score {{teamA}} - {{teamB}}",
+  "log.giveUp": "Gave up"
 }
