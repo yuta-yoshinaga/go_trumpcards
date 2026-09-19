@@ -1,4 +1,11 @@
 {
+  "log.deal": "Round {{round}}: ante {{ante}}, pot {{pot}}",
+  "log.declareIn": "player {{player}} declares IN",
+  "log.declareOut": "player {{player}} declares OUT",
+  "log.carry": "nobody stayed; pot {{pot}} carries over",
+  "log.win": "{{name}} wins the pot ({{pot}})",
+  "log.match": "{{name}} matches the pot (pays {{pay}})",
+  "log.gameEnd": "{{name}} wins the game",
   "helpTitle": "Guts (2-card pot vying)",
   "helpDeclare": "  i / o                     Declare in (stay) or out (fold)",
   "helpNext": "  n                         Next round",

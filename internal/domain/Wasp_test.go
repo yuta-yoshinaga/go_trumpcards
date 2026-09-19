@@ -238,6 +238,16 @@ func TestWasp_MoveTableauToTableau(t *testing.T) {
 		err := s.MoveTableauToTableau(0, 1, 1)
 		assert.NoError(t, err)
 		assert.True(t, s.GetTableau()[0][0].FaceUp)
+		var entry *domain.ActionLogEntry
+		for _, candidate := range s.GetActionLog() {
+			if candidate.DetailCode == "wasp.log.move" {
+				entry = candidate
+				break
+			}
+		}
+		assert.NotNil(t, entry)
+		assert.Equal(t, map[string]string{"from": "0", "to": "1"}, entry.DetailParams)
+		assert.Empty(t, entry.Detail)
 	})
 
 	t.Run("suit completion removes K-A sequence", func(t *testing.T) {

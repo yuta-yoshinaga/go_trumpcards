@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // WaspPhase ワスプゲームフェーズ
@@ -160,7 +161,7 @@ func (s *Wasp) Deal() error {
 	}
 	s.stock = s.stock[dealCount:]
 	s.moveCount++
-	s.appendLog("deal", "ストックから列0-2に1枚ずつ配りました", dealt)
+	s.appendLog("deal", "wasp.log.deal", nil, dealt)
 	// 配った後に完成スートをチェック
 	for i := range WaspTableauCnt {
 		s.checkAndRemoveCompletedSuit(i)
@@ -211,7 +212,7 @@ func (s *Wasp) MoveTableauToTableau(fromCol, cardIndex, toCol int) error {
 	// 自動フリップ
 	s.autoFlipTableau(fromCol)
 	s.moveCount++
-	s.appendLog("move", fmt.Sprintf("タブロー列%d→タブロー列%d", fromCol, toCol), movedCards)
+	s.appendLog("move", "wasp.log.move", map[string]string{"from": strconv.Itoa(fromCol), "to": strconv.Itoa(toCol)}, movedCards)
 	// 完成スートチェック（移動先の列で末尾がK-Aの同スート完成になっているか）
 	s.checkAndRemoveCompletedSuit(toCol)
 	s.checkWaspStalemate()
@@ -222,7 +223,7 @@ func (s *Wasp) MoveTableauToTableau(fromCol, cardIndex, toCol int) error {
 func (s *Wasp) GiveUp() {
 	if s.phase == WaspPhasePlaying {
 		s.phase = WaspPhaseGameOver
-		s.appendLog("giveup", "ギブアップしました", nil)
+		s.appendLog("giveup", "wasp.log.giveUp", nil, nil)
 	}
 }
 
@@ -322,7 +323,7 @@ func (s *Wasp) AutoComplete() error {
 			break
 		}
 	}
-	s.appendLog("autocomplete", "オートコンプリートを実行しました", nil)
+	s.appendLog("autocomplete", "wasp.log.autocomplete", nil, nil)
 	s.checkGameClear()
 	// 除去によって新しい手が現れた可能性があるため、手詰まり状態を再評価する
 	s.checkWaspStalemate()
@@ -461,7 +462,7 @@ func (s *Wasp) checkAndRemoveCompletedSuit(col int) bool {
 	s.tableau[col] = cards[:startIdx]
 	s.completedSuits++
 	s.completedSuitMask |= 1 << (suit - 1)
-	s.appendLog("complete", fmt.Sprintf("タブロー列%dでスートが完成しました", col), nil)
+	s.appendLog("complete", "wasp.log.complete", map[string]string{"column": strconv.Itoa(col)}, nil)
 	s.autoFlipTableau(col)
 	s.checkGameClear()
 	return true
@@ -523,8 +524,8 @@ func (s *Wasp) restoreSnapshot(snap *waspSnapshot) {
 }
 
 // appendLog 棋譜エントリを追加
-func (s *Wasp) appendLog(actionType, detail string, cards []*Card) {
-	s.appendLogAt(s.moveCount, 0, actionType, detail, cards)
+func (s *Wasp) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	s.appendLogCodeAt(s.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // waspJSON is the JSON wire format for Wasp.

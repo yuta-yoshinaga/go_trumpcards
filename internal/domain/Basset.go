@@ -5,6 +5,7 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 )
 
 const (
@@ -124,7 +125,7 @@ func (b *Basset) PlayerPlaceBet(rank, amount int) error {
 		b.chips.AddChips(-delta)
 	}
 	b.bet, b.betRank = &BassetBet{Amount: amount, Stage: stage}, rank
-	b.appendLog(0, "bet", fmt.Sprintf("rank=%d amount=%d stage=%d", rank, amount, stage), nil)
+	b.appendLog(0, "bet", "basset.log.bet", map[string]string{"rank": strconv.Itoa(rank), "amount": strconv.Itoa(amount), "stage": strconv.Itoa(stage)}, nil)
 	return nil
 }
 
@@ -148,11 +149,15 @@ func (b *Basset) PlayerDealTurn() error {
 		b.bet, b.betRank = nil, 0
 	} else if player.GetValue() == b.betRank {
 		b.phase = BassetPhaseDecision
-		b.appendLog(-1, "hit", "player card matched; choose paroli or cash out", []*Card{banker, player})
+		b.appendLog(-1, "hit", "basset.log.hit", nil, []*Card{banker, player})
 		return nil
 	}
 	b.phase = b.nextPhase()
-	b.appendLog(-1, "turn", fmt.Sprintf("banker=%d player=%d hit=%t", banker.GetValue(), player.GetValue(), hit), []*Card{banker, player})
+	turnCode := "basset.log.turnMiss"
+	if hit {
+		turnCode = "basset.log.turnHit"
+	}
+	b.appendLog(-1, "turn", turnCode, map[string]string{"banker": strconv.Itoa(banker.GetValue()), "player": strconv.Itoa(player.GetValue())}, []*Card{banker, player})
 	return nil
 }
 
@@ -166,7 +171,7 @@ func (b *Basset) PlayerTakeWinnings() error {
 	b.totalPayout += b.bet.Amount * BassetPayoutMultipliers[b.bet.Stage]
 	b.bet, b.betRank = nil, 0
 	b.phase = b.nextPhase()
-	b.appendLog(0, "takeWinnings", fmt.Sprintf("payout=%d", payout), nil)
+	b.appendLog(0, "takeWinnings", "basset.log.takeWinnings", map[string]string{"payout": strconv.Itoa(payout)}, nil)
 	return nil
 }
 
@@ -180,7 +185,7 @@ func (b *Basset) PlayerPressParoli() error {
 	}
 	b.bet.Stage++
 	b.phase = b.nextPhase()
-	b.appendLog(0, "paroli", fmt.Sprintf("stage=%d multiplier=%d", b.bet.Stage, BassetPayoutMultipliers[b.bet.Stage]), nil)
+	b.appendLog(0, "paroli", "basset.log.paroli", map[string]string{"stage": strconv.Itoa(b.bet.Stage), "multiplier": strconv.Itoa(BassetPayoutMultipliers[b.bet.Stage])}, nil)
 	return nil
 }
 
@@ -252,6 +257,10 @@ func (b *Basset) SetDeckForTest(cards []*Card) {
 	b.trumpCards = NewTrumpCardsWithSuits(0, []int{})
 	b.trumpCards.deck, b.trumpCards.deckCnt = cards, len(cards)
 	b.trumpCards.deckInit()
+}
+
+func (b *Basset) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	b.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 type bassetJSON struct {

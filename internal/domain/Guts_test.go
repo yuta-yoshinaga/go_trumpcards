@@ -203,6 +203,16 @@ func TestGuts_ActionLog(t *testing.T) {
 	g := domain.NewDefaultGuts()
 	require.NoError(t, g.Declare(true))
 	assert.NotEmpty(t, g.GetActionLog())
+	var entry *domain.ActionLogEntry
+	for _, candidate := range g.GetActionLog() {
+		if candidate.DetailCode == "guts.log.declareIn" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, map[string]string{"player": "0"}, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
 }
 
 func TestGutsConfig_Validate(t *testing.T) {

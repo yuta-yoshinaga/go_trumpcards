@@ -157,6 +157,16 @@ func TestDragonTiger_Bet_DragonWins_PaysDouble(t *testing.T) {
 	assert.Equal(t, 1100, dt.GetChips())
 	assert.Equal(t, 200, dt.GetPayout())
 	assert.Equal(t, []int{domain.DragonTigerResultDragon}, dt.GetHistory())
+	var entry *domain.ActionLogEntry
+	for _, candidate := range dt.GetActionLog() {
+		if candidate.DetailCode == "dragontiger.log.betDragon" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, map[string]string{"amount": "100"}, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
 }
 
 func TestDragonTiger_Bet_TigerWins_PaysDouble(t *testing.T) {
