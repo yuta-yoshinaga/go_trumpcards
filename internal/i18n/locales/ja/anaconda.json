@@ -49,5 +49,15 @@
   "promptPassTo": "→ 左隣の {{name}} へ {{count}} 枚渡す",
   "hintCards": "対象: {{cards}}",
   "helpExampleCall": "  c                         現在のベットにコールする",
-  "helpHint": "  h                         助言を表示"
+  "helpHint": "  h                         助言を表示",
+  "log.deal": "ラウンド{{round}}: アンティ{{ante}}、ポット{{pot}}、配札{{deal}}",
+  "log.pass": "{{name}}が{{count}}枚をパス",
+  "log.set": "最善の5枚を残す",
+  "log.keep": "{{name}}が{{count}}枚を捨てる",
+  "log.roll": "ベッティングラウンド（{{revealed}}/{{total}}枚公開）",
+  "log.call": "{{name}}が{{amount}}をコール（ポット{{pot}}）",
+  "log.raise": "{{name}}が{{newBet}}までレイズ、{{amount}}を支払う（ポット{{pot}}）",
+  "log.fold": "{{name}}がフォールド",
+  "log.win": "{{name}}がポット{{pot}}を獲得",
+  "log.gameEnd": "{{name}}がゲームに勝利"
 }

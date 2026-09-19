@@ -41,5 +41,16 @@
   "suitHeart": "ハート",
   "suitDiamond": "ダイヤ",
   "helpExampleGiveUp": "  g                    この局を投了する",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "log.deal": "ラウンド{{round}} を開始",
+  "log.pass": "宣言を見送った",
+  "log.declareHokom": "Hokom を宣言（切り札 {{suit}}）",
+  "log.declareSun": "Sun を宣言",
+  "log.baloot": "Baloot（切り札のK+Q）+{{bonus}}",
+  "log.play": "{{card}}",
+  "log.revealBaloot": "Baloot を公開",
+  "log.last": "最終トリック +{{bonus}}",
+  "log.score": "チーム{{team}} に {{points}} 点",
+  "log.result": "最終得点 {{score0}} - {{score1}}",
+  "log.giveup": "ギブアップしました"
 }

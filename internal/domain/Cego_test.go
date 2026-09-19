@@ -84,6 +84,23 @@ func TestCegoDealDistribution(t *testing.T) {
 	assert.Equal(t, domain.CegoDeckSize, domain.CegoHandSize*domain.CegoPlayerCnt+domain.CegoBlindSize)
 }
 
+func TestCegoActionLogUsesDetailCode(t *testing.T) {
+	g := cegoNewReset()
+	g.SetBidPlayerIdx(0)
+	require.NoError(t, g.PlayerPass())
+	found := false
+	for _, e := range g.GetActionLog() {
+		if e.ActionType == "pass" {
+			assert.Equal(t, "cego.log.pass", e.DetailCode)
+			assert.Contains(t, e.DetailParams, "name")
+			assert.Empty(t, e.Detail)
+			found = true
+			break
+		}
+	}
+	assert.True(t, found, "expected pass action log entry")
+}
+
 // --- Card classification / points ---
 
 func TestCegoClassification(t *testing.T) {

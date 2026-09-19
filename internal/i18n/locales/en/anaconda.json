@@ -49,5 +49,15 @@
   "promptPassTo": "→ pass {{count}} card(s) left to {{name}}",
   "hintCards": "cards: {{cards}}",
   "helpExampleCall": "  c                         call the current bet",
-  "helpHint": "  h                         show a hint"
+  "helpHint": "  h                         show a hint",
+  "log.deal": "Round {{round}}: ante {{ante}}, pot {{pot}}, deal {{deal}}",
+  "log.pass": "{{name}} passes {{count}} card(s) left",
+  "log.set": "choose the best 5 cards to keep",
+  "log.keep": "{{name}} discards {{count}} card(s)",
+  "log.roll": "betting round (revealed {{revealed}} of {{total}})",
+  "log.call": "{{name}} calls {{amount}} (pot {{pot}})",
+  "log.raise": "{{name}} raises to {{newBet}}, pays {{amount}} (pot {{pot}})",
+  "log.fold": "{{name}} folds",
+  "log.win": "{{name}} wins the pot ({{pot}})",
+  "log.gameEnd": "{{name}} wins the game"
 }

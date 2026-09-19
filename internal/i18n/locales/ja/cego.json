@@ -58,5 +58,16 @@
   "errHigherBidRequired": "現在の入札より高い入札が必要です",
   "errInvalidContract": "コントラクトは Cego か Handspiel を選んでください",
   "errKeepOneCard": "残す札をちょうど 1 枚選んでください",
-  "errCardIndexOutOfRange": "カードインデックスが範囲外です"
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "log.bid": "{{name}}が{{bid}}をビッド",
+  "log.pass": "{{name}}がパス",
+  "log.forced": "全員がパス。{{name}}が強制的に宣言する",
+  "log.winBid": "{{name}}が宣言権を獲得",
+  "log.contract": "{{name}}が{{contract}}を選択",
+  "log.exchange": "{{name}}が{{count}}枚を伏せ、Cegoを取る",
+  "log.play": "{{name}}が{{card}}を出す",
+  "log.trickWin": "{{name}}が{{trick}}トリックに勝利",
+  "log.roundScore": "ディール{{round}}: デクレアラー({{declarer}}) {{contract}} 得点={{declarerPoints}}/{{totalPoints}} 勝利={{won}} 基礎点={{base}}",
+  "log.gameEndDraw": "マッチは引き分けで終了",
+  "log.gameEndWin": "{{name}}がマッチに勝利！"
 }

@@ -36,6 +36,7 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"strconv"
 )
 
 // AnacondaPhase はゲームフェーズ。
@@ -258,8 +259,7 @@ func (g *Anaconda) startRound() {
 		}
 	}
 	g.state.phase = AnacondaPhasePass
-	g.appendLog(-1, "deal",
-		fmt.Sprintf("Round %d: ante %d, pot %d, deal %d", g.state.roundNumber, g.config.Ante, g.state.pot, AnacondaDealSize), nil)
+	g.appendLog(-1, "deal", "anaconda.log.deal", map[string]string{"round": strconv.Itoa(g.state.roundNumber), "ante": strconv.Itoa(g.config.Ante), "pot": strconv.Itoa(g.state.pot), "deal": strconv.Itoa(AnacondaDealSize)}, nil)
 }
 
 // --- パスフェーズ ---
@@ -302,8 +302,7 @@ func (g *Anaconda) executePass(humanIndices []int) {
 			idxs = g.cpuPassIndices(p, g.state.passCount)
 		}
 		outgoing[k] = p.RemoveCards(idxs)
-		g.appendLog(seat, "pass",
-			fmt.Sprintf("%s passes %d card(s) left", playerName(g.players, seat), len(outgoing[k])), append([]*Card(nil), outgoing[k]...))
+		g.appendLog(seat, "pass", "anaconda.log.pass", map[string]string{"name": playerName(g.players, seat), "count": strconv.Itoa(len(outgoing[k]))}, append([]*Card(nil), outgoing[k]...))
 	}
 	for k := range participants {
 		recipient := participants[(k+1)%n]
@@ -334,7 +333,7 @@ func (g *Anaconda) cpuPassIndices(p *AnacondaPlayer, count int) []int {
 func (g *Anaconda) enterSetPhase() {
 	g.state.passCount = 0
 	g.state.phase = AnacondaPhaseSet
-	g.appendLog(-1, "set", "choose the best 5 cards to keep", nil)
+	g.appendLog(-1, "set", "anaconda.log.set", nil, nil)
 }
 
 // Keep は人間 (seat 0) が残す 5 枚を選び、CPU も最良の 5 枚を残してロールフェーズへ遷移する。
@@ -377,8 +376,7 @@ func (g *Anaconda) applyKeep(seat int, keep []int) {
 		}
 	}
 	removed := p.RemoveCards(discard)
-	g.appendLog(seat, "keep",
-		fmt.Sprintf("%s discards %d card(s)", playerName(g.players, seat), len(removed)), append([]*Card(nil), removed...))
+	g.appendLog(seat, "keep", "anaconda.log.keep", map[string]string{"name": playerName(g.players, seat), "count": strconv.Itoa(len(removed))}, append([]*Card(nil), removed...))
 }
 
 // cpuBestKeepIndices は 7 枚から最良の 5 枚を残すインデックス列を返す (捨てる 2 枚を総当り)。
@@ -427,8 +425,7 @@ func (g *Anaconda) startBettingRound() {
 		p.SetStreetBet(0)
 	}
 	g.state.currentPlayer = g.nextActive(g.state.dealerIdx)
-	g.appendLog(-1, "roll",
-		fmt.Sprintf("betting round (revealed %d of %d)", g.state.rollIndex, AnacondaKeepSize), nil)
+	g.appendLog(-1, "roll", "anaconda.log.roll", map[string]string{"revealed": strconv.Itoa(g.state.rollIndex), "total": strconv.Itoa(AnacondaKeepSize)}, nil)
 }
 
 // PlayerCall は人間 (現在の手番) が現在の賭けにコール (チェック含む) する。
@@ -497,7 +494,7 @@ func (g *Anaconda) applyCall(idx int) {
 	}
 	g.state.actedSinceRaise++
 	g.state.actionCount++
-	g.appendLog(idx, "call", fmt.Sprintf("%s calls %d (pot %d)", playerName(g.players, idx), need, g.state.pot), nil)
+	g.appendLog(idx, "call", "anaconda.log.call", map[string]string{"name": playerName(g.players, idx), "amount": strconv.Itoa(need), "pot": strconv.Itoa(g.state.pot)}, nil)
 	g.advanceOrClose(idx)
 }
 
@@ -518,7 +515,7 @@ func (g *Anaconda) applyRaise(idx int) {
 	g.state.pot += need
 	g.state.actedSinceRaise = 1
 	g.state.actionCount++
-	g.appendLog(idx, "raise", fmt.Sprintf("%s raises to %d, pays %d (pot %d)", playerName(g.players, idx), newBet, need, g.state.pot), nil)
+	g.appendLog(idx, "raise", "anaconda.log.raise", map[string]string{"name": playerName(g.players, idx), "newBet": strconv.Itoa(newBet), "amount": strconv.Itoa(need), "pot": strconv.Itoa(g.state.pot)}, nil)
 	g.advanceOrClose(idx)
 }
 
@@ -526,7 +523,7 @@ func (g *Anaconda) applyRaise(idx int) {
 func (g *Anaconda) applyFold(idx int) {
 	g.players[idx].SetFolded(true)
 	g.state.actionCount++
-	g.appendLog(idx, "fold", fmt.Sprintf("%s folds", playerName(g.players, idx)), nil)
+	g.appendLog(idx, "fold", "anaconda.log.fold", map[string]string{"name": playerName(g.players, idx)}, nil)
 	g.advanceOrClose(idx)
 }
 
@@ -567,8 +564,7 @@ func (g *Anaconda) resolveShowdown() {
 	g.state.winnerIdx = winner
 	if winner >= 0 {
 		g.players[winner].AddChips(g.state.pot)
-		g.appendLog(winner, "win",
-			fmt.Sprintf("%s wins the pot (%d)", playerName(g.players, winner), g.state.pot), nil)
+		g.appendLog(winner, "win", "anaconda.log.win", map[string]string{"name": playerName(g.players, winner), "pot": strconv.Itoa(g.state.pot)}, nil)
 	}
 	g.setHumanResult(winner)
 	g.state.pot = 0
@@ -604,8 +600,7 @@ func (g *Anaconda) endGame() {
 	g.state.gameEndFlag = true
 	g.state.phase = AnacondaPhaseResult
 	g.state.matchWinnerIdx = g.richestIdx()
-	g.appendLog(g.state.matchWinnerIdx, "game_end",
-		fmt.Sprintf("%s wins the game", playerName(g.players, g.state.matchWinnerIdx)), nil)
+	g.appendLog(g.state.matchWinnerIdx, "game_end", "anaconda.log.gameEnd", map[string]string{"name": playerName(g.players, g.state.matchWinnerIdx)}, nil)
 }
 
 // --- CPU ---
@@ -876,8 +871,8 @@ func anacondaValidateIndices(indices []int, want, handSize int) error {
 	return nil
 }
 
-func (g *Anaconda) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.state.appendLog(playerIdx, actionType, detail, cards)
+func (g *Anaconda) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.state.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- 公開カード ---

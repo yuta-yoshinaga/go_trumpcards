@@ -392,6 +392,17 @@ func TestAnaconda_ActionLog(t *testing.T) {
 	g := domain.NewDefaultAnaconda()
 	require.NoError(t, g.Pass([]int{0, 1, 2}))
 	assert.NotEmpty(t, g.GetActionLog())
+	found := false
+	for _, e := range g.GetActionLog() {
+		if e.ActionType == "pass" {
+			assert.Equal(t, "anaconda.log.pass", e.DetailCode)
+			assert.Contains(t, e.DetailParams, "count")
+			assert.Empty(t, e.Detail)
+			found = true
+			break
+		}
+	}
+	assert.True(t, found, "expected pass action log entry")
 }
 
 // --- JSON ---

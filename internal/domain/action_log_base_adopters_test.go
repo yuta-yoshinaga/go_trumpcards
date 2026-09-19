@@ -126,7 +126,7 @@ func TestActionLogBaseAdopters_LogSurvivesAKVRoundTrip(t *testing.T) {
 		}},
 		{"Cego", func() (any, any) {
 			g := NewDefaultCego()
-			g.appendLog(1, "act", "detail", nil)
+			g.appendLog(1, "act", "detail", nil, nil)
 			return g, NewDefaultCego()
 		}},
 		{"FrenchTarot", func() (any, any) {

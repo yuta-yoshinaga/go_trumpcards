@@ -877,6 +877,15 @@ func TestBaloot_ActionLog(t *testing.T) {
 	kinds := map[string]bool{}
 	for _, e := range b.actionLog {
 		kinds[e.ActionType] = true
+		if e.ActionType == "declare" {
+			assert.NotEmpty(t, e.DetailCode)
+			assert.Empty(t, e.Detail)
+		}
+		if e.ActionType == "play" {
+			assert.Equal(t, "baloot.log.play", e.DetailCode)
+			assert.Contains(t, e.DetailParams, "card")
+			assert.Empty(t, e.Detail)
+		}
 	}
 	assert.True(t, kinds["declare"])
 	assert.True(t, kinds["play"])
