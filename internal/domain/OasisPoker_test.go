@@ -114,6 +114,17 @@ func TestOasisPoker_Bet_Success(t *testing.T) {
 	assert.Len(t, op.GetPlayerHand(), 5)
 	assert.Len(t, op.GetDealerHand(), 5)
 	assert.Equal(t, domain.OasisPokerDefaultChips-150, op.GetChips())
+	var betLog *domain.ActionLogEntry
+	for _, entry := range op.GetActionLog() {
+		if entry.ActionType == "bet" {
+			betLog = entry
+			break
+		}
+	}
+	require.NotNil(t, betLog)
+	assert.Equal(t, "oasispoker.log.bet", betLog.DetailCode)
+	assert.Equal(t, map[string]string{"ante": "100", "jackpot": "50"}, betLog.DetailParams)
+	assert.Empty(t, betLog.Detail)
 }
 
 func TestOasisPoker_Exchange_WrongPhase(t *testing.T) {

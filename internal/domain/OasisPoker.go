@@ -5,6 +5,7 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 )
 
 // オアシスポーカーフェーズ定数
@@ -134,7 +135,7 @@ func (op *OasisPoker) Bet(ante, jackpot int) error {
 	}
 	op.anteBet = ante
 	op.jackpotBet = jackpot
-	op.appendLog(0, "bet", fmt.Sprintf("ante=%d jackpot=%d", ante, jackpot), nil)
+	op.appendLog(0, "bet", "oasispoker.log.bet", map[string]string{"ante": strconv.Itoa(ante), "jackpot": strconv.Itoa(jackpot)}, nil)
 
 	op.deal()
 	op.phase = OasisPokerPhaseExchange
@@ -174,7 +175,7 @@ func (op *OasisPoker) Exchange(indices []int) error {
 	}
 	op.exchangeCount = len(indices)
 	op.exchangeFee = fee
-	op.appendLog(0, "exchange", fmt.Sprintf("exchange %d card(s) fee=%d", op.exchangeCount, op.exchangeFee), nil)
+	op.appendLog(0, "exchange", "oasispoker.log.exchange", map[string]string{"count": strconv.Itoa(op.exchangeCount), "fee": strconv.Itoa(op.exchangeFee)}, nil)
 	op.phase = OasisPokerPhaseAction
 	return nil
 }
@@ -194,7 +195,7 @@ func (op *OasisPoker) Play() error {
 		return NewDomainError(ErrInsufficientChips, "Insufficient chips for play bet.")
 	}
 	op.playBet = playBet
-	op.appendLog(0, "play", fmt.Sprintf("play bet=%d", op.playBet), nil)
+	op.appendLog(0, "play", "oasispoker.log.play", map[string]string{"bet": strconv.Itoa(op.playBet)}, nil)
 
 	op.resolve()
 	return nil
@@ -205,7 +206,7 @@ func (op *OasisPoker) Fold() error {
 	if op.phase != OasisPokerPhaseAction {
 		return NewDomainError(ErrWrongPhase, "Fold is only allowed during the action phase.")
 	}
-	op.appendLog(0, "fold", "player folds", nil)
+	op.appendLog(0, "fold", "oasispoker.log.fold", nil, nil)
 
 	op.result = GameResultLose
 	op.playerHandRank = evalFiveCardHand(op.playerHand)
@@ -218,7 +219,7 @@ func (op *OasisPoker) Fold() error {
 
 	op.gameEndFlag = true
 	op.phase = OasisPokerPhaseEnd
-	op.appendLog(-1, "result", "player folded", nil)
+	op.appendLog(-1, "result", "oasispoker.log.resultFolded", nil, nil)
 	return nil
 }
 
@@ -230,7 +231,7 @@ func (op *OasisPoker) deal() {
 		op.playerHand = append(op.playerHand, op.trumpCards.DrawCard())
 		op.dealerHand = append(op.dealerHand, op.trumpCards.DrawCard())
 	}
-	op.appendLog(-1, "deal", "dealt 5 cards each", nil)
+	op.appendLog(-1, "deal", "oasispoker.log.deal", nil, nil)
 }
 
 // resolve ゲーム解決（Play後の処理）
@@ -266,16 +267,18 @@ func (op *OasisPoker) resolve() {
 	op.gameEndFlag = true
 	op.phase = OasisPokerPhaseEnd
 
-	var resultStr string
+	resultCode := "oasispoker.log.resultDealerWins"
 	switch op.result {
 	case GameResultWin:
-		resultStr = "player wins"
+		resultCode = "oasispoker.log.resultPlayerWins"
 	case GameResultDraw:
-		resultStr = "push"
-	default:
-		resultStr = "dealer wins"
+		resultCode = "oasispoker.log.resultPush"
 	}
-	op.appendLog(-1, "result", resultStr, nil)
+	op.appendLog(-1, "result", resultCode, nil, nil)
+}
+
+func (op *OasisPoker) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	op.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // compareHands プレイヤーとディーラーのハンドを比較する

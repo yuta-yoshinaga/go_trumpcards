@@ -32,5 +32,14 @@
   "hintFold": "推奨: フォールド（f）— 続行条件を満たしません",
   "helpExampleBet": "  b 100                100 チップを賭ける",
   "helpHint": "  h                    助言を表示",
-  "qualifyRule": "成立条件: ワンペア以上、または A と K を含む手。不成立ならアンティはプッシュ"
+  "qualifyRule": "成立条件: ワンペア以上、または A と K を含む手。不成立ならアンティはプッシュ",
+  "log.bet": "アンティ={{ante}} ジャックポット={{jackpot}}",
+  "log.exchange": "{{count}}枚交換 手数料={{fee}}",
+  "log.play": "プレイベット={{bet}}",
+  "log.fold": "プレイヤーがフォールド",
+  "log.resultFolded": "プレイヤーがフォールドしました",
+  "log.deal": "各5枚を配りました",
+  "log.resultPlayerWins": "プレイヤーの勝ち",
+  "log.resultPush": "プッシュ",
+  "log.resultDealerWins": "ディーラーの勝ち"
 }

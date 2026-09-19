@@ -5,6 +5,7 @@ package domain_test
 import (
 	"encoding/json"
 	"errors"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -43,6 +44,17 @@ func TestPrimero_ResetDealsRound(t *testing.T) {
 	assert.Equal(t, sumBets, g.GetPot())
 	assert.GreaterOrEqual(t, g.GetPot(), cfg.Ante*cfg.PlayerCount)
 	assert.Equal(t, domain.PrimeroHandSize, g.GetPlayer(0).GetCardsSize())
+	var dealLog *domain.ActionLogEntry
+	for _, entry := range g.GetActionLog() {
+		if entry.ActionType == "deal" {
+			dealLog = entry
+			break
+		}
+	}
+	require.NotNil(t, dealLog)
+	assert.Equal(t, "primero.log.deal", dealLog.DetailCode)
+	assert.Equal(t, map[string]string{"round": "1", "ante": "10", "pot": strconv.Itoa(cfg.Ante * cfg.PlayerCount)}, dealLog.DetailParams)
+	assert.Empty(t, dealLog.Detail)
 	// Human paid the ante; before any of their own bets, roundBet = ante.
 	assert.Equal(t, cfg.Ante, g.GetPlayer(0).GetRoundBet())
 }

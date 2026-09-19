@@ -36,5 +36,11 @@
   "hintReasonMediumHand": "decent hand — call and see",
   "hintReasonWeakHand": "weak hand — better to fold",
   "helpExampleCall": "  c                         call the current bet",
-  "helpHint": "  h                         show a hint"
+  "helpHint": "  h                         show a hint",
+  "log.deal": "Round {{round}}: ante {{ante}}, pot {{pot}}",
+  "log.call": "{{name}} calls {{need}} (pot {{pot}})",
+  "log.raise": "{{name}} raises to {{newBet}}, pays {{need}} (pot {{pot}})",
+  "log.fold": "{{name}} folds",
+  "log.win": "{{name}} wins the pot ({{pot}})",
+  "log.gameEnd": "{{name}} wins the game"
 }

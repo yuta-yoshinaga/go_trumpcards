@@ -2,7 +2,9 @@
 
 package domain
 
-import "fmt"
+import (
+	"strconv"
+)
 
 // QuodlibetShedding.go は第 3 の輪の 2 種目 ── 四分 (Quadrature) と
 // 小食い (Snack) ── を担う。**どちらもトリックを取らない。** 手札を早く
@@ -109,7 +111,7 @@ func (q *Quodlibet) applySheddingPlay(playerIdx, handIdx int) error {
 			return NewDomainErrorCode(ErrInvalidPlay, "quodlibet.errCannotPass", nil)
 		}
 		q.passCount[playerIdx]++
-		q.appendLog(playerIdx, "pass", fmt.Sprintf("player %d passes", playerIdx), nil)
+		q.appendLog(playerIdx, "pass", "quodlibet.log.pass", map[string]string{"player": strconv.Itoa(playerIdx)}, nil)
 		q.advanceSheddingTurn(true)
 		return nil
 	}
@@ -128,15 +130,16 @@ func (q *Quodlibet) applySheddingPlay(playerIdx, handIdx int) error {
 	case QuodlibetQuadrature:
 		q.stack = append(q.stack, played)
 	}
-	q.appendLog(playerIdx, "place",
-		fmt.Sprintf("player %d places %s", playerIdx, cardStr(played)), []*Card{played})
+	q.appendLog(playerIdx, "place", "quodlibet.log.place",
+		map[string]string{"player": strconv.Itoa(playerIdx), "card": cardStr(played)}, []*Card{played})
 
 	if player.GetCardsSize() == 0 {
 		q.outCount++
 		player.SetOutRank(q.outCount)
 		player.SetIsFinished(true)
-		q.appendLog(playerIdx, "finish",
-			fmt.Sprintf("player %d goes out (rank %d)", playerIdx, q.outCount), nil)
+		q.appendLog(playerIdx, "finish", "quodlibet.log.finish", map[string]string{
+			"player": strconv.Itoa(playerIdx), "rank": strconv.Itoa(q.outCount),
+		}, nil)
 	}
 	q.advanceSheddingTurn(false)
 	return nil
@@ -157,7 +160,7 @@ func (q *Quodlibet) advanceSheddingTurn(passed bool) {
 	} else if q.currentContract == QuodlibetQuadrature && q.consecutivePasses() >= active {
 		q.stack = nil
 		q.passCount = [QuodlibetPlayerCnt]int{}
-		q.appendLog(-1, "clear_stack", "nobody could follow; the stack is cleared", nil)
+		q.appendLog(-1, "clear_stack", "quodlibet.log.clearStack", nil, nil)
 	}
 	next := nextActivePlayer(q.players, q.currentPlayer, 1)
 	if next < 0 {
@@ -199,8 +202,9 @@ func (q *Quodlibet) finishSheddingDeal() {
 		q.outCount++
 		p.SetOutRank(q.outCount)
 		p.SetIsFinished(true)
-		q.appendLog(i, "finish", fmt.Sprintf("player %d ends with %d cards (rank %d)",
-			i, p.GetCardsSize(), q.outCount), nil)
+		q.appendLog(i, "finish", "quodlibet.log.finishWithCards", map[string]string{
+			"player": strconv.Itoa(i), "cards": strconv.Itoa(p.GetCardsSize()), "rank": strconv.Itoa(q.outCount),
+		}, nil)
 	}
 	q.finishDeal()
 }
