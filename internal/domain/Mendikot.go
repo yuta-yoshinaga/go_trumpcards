@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // MendikotPhase メンディコットのゲームフェーズ
@@ -170,7 +171,7 @@ func (m *Mendikot) dealHand() {
 	m.sortAllHands()
 	m.leadPlayerIdx = (m.dealerIdx + 1) % MendikotPlayerCnt
 	m.currentPlayerIdx = m.leadPlayerIdx
-	m.appendLog(-1, "deal", fmt.Sprintf("ハンド%d を開始（切り札は未定）", m.handNumber), nil)
+	m.appendLog(-1, "deal", "mendikot.log.handStart", map[string]string{"hand": strconv.Itoa(m.handNumber)}, nil)
 }
 
 // sortAllHands 手札をスート・ランク順に並べ替える
@@ -244,13 +245,13 @@ func (m *Mendikot) play(playerIdx, cardIndex int) error {
 
 	p.RemoveCard(cardIndex)
 	m.currentTrick = append(m.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	m.appendLog(playerIdx, "play", cardStr(card), []*Card{card})
+	m.appendLog(playerIdx, "play", "mendikot.log.play", map[string]string{"card": cardStr(card)}, []*Card{card})
 
 	if needsTrump {
 		m.trumpSuit = card.GetDesign()
 		m.trumpChooserIdx = playerIdx
-		m.appendLog(playerIdx, "trump",
-			fmt.Sprintf("フォローできず、切り札を %d に決めた", m.trumpSuit), []*Card{card})
+		m.appendLog(playerIdx, "trump", "mendikot.log.trump",
+			map[string]string{"suit": strconv.Itoa(m.trumpSuit)}, []*Card{card})
 	}
 
 	if len(m.currentTrick) < MendikotPlayerCnt {
@@ -334,7 +335,7 @@ func (m *Mendikot) resolveTrick() {
 	if tens > 0 {
 		// **10 は勝敗そのもの。** 誰が取ったかを数える。
 		m.players[winner].AddTens(tens)
-		m.appendLog(winner, "ten", fmt.Sprintf("10 を %d 枚獲得", tens), nil)
+		m.appendLog(winner, "ten", "mendikot.log.ten", map[string]string{"count": strconv.Itoa(tens)}, nil)
 	}
 
 	m.trickNumber++
@@ -448,10 +449,15 @@ func (m *Mendikot) finishHand() {
 	m.scores[res.WinnerTeam] += res.Points
 	m.lastHandWinner = res.WinnerTeam
 	m.lastHandKind = res.Kind
-	m.appendLog(-1, res.Kind,
-		fmt.Sprintf("チーム%d が %s で +%d（10: %d-%d / トリック: %d-%d）",
-			res.WinnerTeam, res.Kind, res.Points,
-			m.TeamTens(0), m.TeamTens(1), m.TeamTricks(0), m.TeamTricks(1)), nil)
+	detailCode := map[string]string{
+		"tens": "mendikot.log.handEndTens", "tricks": "mendikot.log.handEndTricks",
+		"mendikot": "mendikot.log.handEndMendikot", "whitewash": "mendikot.log.handEndWhitewash",
+	}[res.Kind]
+	m.appendLog(-1, res.Kind, detailCode, map[string]string{
+		"team": strconv.Itoa(res.WinnerTeam), "points": strconv.Itoa(res.Points),
+		"tens0": strconv.Itoa(m.TeamTens(0)), "tens1": strconv.Itoa(m.TeamTens(1)),
+		"tricks0": strconv.Itoa(m.TeamTricks(0)), "tricks1": strconv.Itoa(m.TeamTricks(1)),
+	}, nil)
 
 	// **負けたチームの席へ親が移る。** 勝ったチームは親を守る。
 	if MendikotTeamOf(m.dealerIdx) == res.WinnerTeam {
@@ -486,7 +492,7 @@ func (m *Mendikot) finishGame() {
 	default:
 		m.winnerTeam = -1
 	}
-	m.appendLog(-1, "result", fmt.Sprintf("最終得点 %d - %d", m.scores[0], m.scores[1]), nil)
+	m.appendLog(-1, "result", "mendikot.log.result", map[string]string{"team0": strconv.Itoa(m.scores[0]), "team1": strconv.Itoa(m.scores[1])}, nil)
 }
 
 // chooseCpuCard CPU の手。**10 を取らせない／取ることを最優先にする。**
@@ -724,12 +730,12 @@ func (m *Mendikot) GiveUp() {
 	m.phase = MendikotPhaseGameEnd
 	m.gameEndFlag = true
 	m.winnerTeam = 1
-	m.appendLog(0, "giveup", "ギブアップしました", nil)
+	m.appendLog(0, "giveup", "mendikot.log.giveUp", nil, nil)
 }
 
 // appendLog 棋譜エントリを追加
-func (m *Mendikot) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	m.appendLogAt(m.trickNumber, playerIdx, actionType, detail, cards)
+func (m *Mendikot) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	m.appendLogCodeAt(m.trickNumber, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // mendikotJSON is the KV snapshot format for Mendikot.

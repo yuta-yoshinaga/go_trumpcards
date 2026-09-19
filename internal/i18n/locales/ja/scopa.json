@@ -32,5 +32,11 @@
   "category.primiera": "プリミエラ(7最多)",
   "category.settebello": "セッテベッロ(7♦)",
   "helpExampleNext": "  n                        ラウンドの結果を見てから次へ",
-  "helpLog": "  l                        行動ログを表示"
+  "helpLog": "  l                        行動ログを表示",
+  "log.deal": "場に{{count}}枚の札を配った",
+  "log.lay": "場に置いた",
+  "log.capture": "{{count}}枚の札を捕獲した",
+  "log.lastTake": "最後に{{count}}枚の札を取った",
+  "log.gameEnd": "{{points}}点でゲーム終了",
+  "log.roundEnd": "ラウンド終了"
 }

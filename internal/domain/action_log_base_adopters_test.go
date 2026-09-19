@@ -196,7 +196,7 @@ func TestActionLogBaseAdopters_LogSurvivesAKVRoundTrip(t *testing.T) {
 		{"Minchiate", func() (any, any) {
 			g := NewDefaultMinchiate()
 			g.Reset()
-			g.appendLog(1, "act", "detail", nil)
+			g.appendLog(1, "act", "minchiate.log.test", nil, nil)
 			return g, NewDefaultMinchiate()
 		}},
 		{"Tarocchini", func() (any, any) {

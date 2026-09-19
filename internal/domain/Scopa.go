@@ -161,7 +161,7 @@ func (s *Scopa) startRound() {
 		}
 		s.round.tableCards = append(s.round.tableCards, card)
 	}
-	s.appendLog(-1, "deal", fmt.Sprintf("dealt %d table cards", len(s.round.tableCards)), s.round.tableCards)
+	s.appendLog(-1, "deal", "scopa.log.deal", map[string]string{"count": strconv.Itoa(len(s.round.tableCards))}, s.round.tableCards)
 	s.round.phase = ScopaPhasePlayerTurn
 }
 
@@ -256,7 +256,7 @@ func (s *Scopa) applyPlay(playerIdx, handIdx int, tableIdxs []int, record func(*
 		s.round.tableCards = append(s.round.tableCards, handCard)
 		action := &ScopaAction{PlayerIdx: playerIdx, PlayedCard: handCard}
 		record(action)
-		s.appendLog(playerIdx, "play", "placed on table", []*Card{handCard})
+		s.appendLog(playerIdx, "play", "scopa.log.lay", nil, []*Card{handCard})
 		s.postActionAdvance()
 		return nil
 	}
@@ -286,7 +286,7 @@ func (s *Scopa) applyPlay(playerIdx, handIdx int, tableIdxs []int, record func(*
 		IsScopa:       isScopa,
 	}
 	record(action)
-	s.appendLog(playerIdx, "capture", fmt.Sprintf("captured %d card(s)", len(captured)), pile)
+	s.appendLog(playerIdx, "capture", "scopa.log.capture", map[string]string{"count": strconv.Itoa(len(captured))}, pile)
 	s.postActionAdvance()
 	return nil
 }
@@ -323,7 +323,7 @@ func (s *Scopa) finishRound() {
 	s.round.tableCards = nil
 	if s.round.lastCaptureIdx >= 0 && len(leftover) > 0 {
 		s.players[s.round.lastCaptureIdx].AddCaptured(leftover)
-		s.appendLog(s.round.lastCaptureIdx, "lastTake", fmt.Sprintf("last-take: %d card(s)", len(leftover)), leftover)
+		s.appendLog(s.round.lastCaptureIdx, "lastTake", "scopa.log.lastTake", map[string]string{"count": strconv.Itoa(len(leftover))}, leftover)
 	}
 
 	detail := s.scoreRound()
@@ -349,9 +349,9 @@ func (s *Scopa) finishRound() {
 			}
 		}
 		s.round.roundWinners = winners
-		s.appendLog(-1, "gameEnd", fmt.Sprintf("game ended at %d points", maxScore), nil)
+		s.appendLog(-1, "gameEnd", "scopa.log.gameEnd", map[string]string{"points": strconv.Itoa(maxScore)}, nil)
 	} else {
-		s.appendLog(-1, "roundEnd", "round ended", nil)
+		s.appendLog(-1, "roundEnd", "scopa.log.roundEnd", nil, nil)
 	}
 }
 
@@ -444,8 +444,8 @@ func (s *Scopa) removeTableCardsByIndex(idxs []int) {
 }
 
 // appendLog 棋譜にエントリを追加する。
-func (s *Scopa) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	s.round.appendLog(playerIdx, actionType, detail, cards)
+func (s *Scopa) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	s.round.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- 状態アクセサ ---
