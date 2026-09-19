@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // 卓とデッキの形。**Königrufen と同じ 54 枚タロックデッキを使う。**
@@ -242,7 +243,7 @@ func (g *TappTarock) startRound() {
 	g.bidPlayerIdx = (g.dealerIdx + 1) % TappTarockPlayerCnt
 	g.currentPlayerIdx = g.bidPlayerIdx
 	g.phase = TappTarockPhaseBid
-	g.appendLog(-1, "deal", fmt.Sprintf("deal %d: 16 cards each, talon %d", g.roundNumber, len(g.talon)), nil)
+	g.appendLog(-1, "deal", "tapptarock.log.deal", map[string]string{"round": strconv.Itoa(g.roundNumber), "talon": strconv.Itoa(len(g.talon))}, nil)
 }
 
 // deal 3 枚パケットで各プレイヤーへ 16 枚を配り、場札 6 枚を脇に置く。
@@ -347,7 +348,7 @@ func (g *TappTarock) applyBid(idx int, bid TappTarockBid) {
 	g.highestBid = bid
 	g.highestBidder = idx
 	g.bidActedCnt++
-	g.appendLog(idx, "bid", fmt.Sprintf("%s bids %s", g.playerName(idx), TappTarockBidName(bid)), nil)
+	g.appendLog(idx, "bid", "tapptarock.log.bid", map[string]string{"name": g.playerName(idx), "bid": TappTarockBidName(bid)}, nil)
 	g.advanceBid()
 }
 
@@ -355,7 +356,7 @@ func (g *TappTarock) applyBid(idx int, bid TappTarockBid) {
 func (g *TappTarock) applyPass(idx int) {
 	g.passed[idx] = true
 	g.bidActedCnt++
-	g.appendLog(idx, "pass", fmt.Sprintf("%s passes", g.playerName(idx)), nil)
+	g.appendLog(idx, "pass", "tapptarock.log.pass", map[string]string{"name": g.playerName(idx)}, nil)
 	g.advanceBid()
 }
 
@@ -388,7 +389,7 @@ func (g *TappTarock) finalizeBid() {
 		g.stash = append([]*Card(nil), g.talon...)
 		g.talon = nil
 		g.stashOwner = -1
-		g.appendLog(-1, "contract", "everyone passed: Trischaken", nil)
+		g.appendLog(-1, "contract", "tapptarock.log.everyonePassed", nil, nil)
 		g.startPlay()
 		return
 	}
@@ -399,8 +400,7 @@ func (g *TappTarock) finalizeBid() {
 		g.stash = append([]*Card(nil), g.talon...)
 		g.talon = nil
 		g.stashOwner = 1
-		g.appendLog(g.declarerIdx, "contract",
-			fmt.Sprintf("%s plays solo", g.playerName(g.declarerIdx)), nil)
+		g.appendLog(g.declarerIdx, "contract", "tapptarock.log.playsSolo", map[string]string{"name": g.playerName(g.declarerIdx)}, nil)
 		g.startPlay()
 		return
 	}
@@ -474,8 +474,7 @@ func (g *TappTarock) applyDiscard(indices []int) {
 	g.stash = p.RemoveCards(indices)
 	g.stashOwner = 0
 	g.sortAllHands()
-	g.appendLog(g.declarerIdx, "discard",
-		fmt.Sprintf("%s buries %d cards", g.playerName(g.declarerIdx), len(g.stash)), nil)
+	g.appendLog(g.declarerIdx, "discard", "tapptarock.log.discard", map[string]string{"name": g.playerName(g.declarerIdx), "count": strconv.Itoa(len(g.stash))}, nil)
 	g.startPlay()
 }
 
@@ -591,8 +590,7 @@ func (g *TappTarock) playCard(playerIdx, handIdx int) {
 		return
 	}
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", g.playerName(playerIdx), koenigrufenCardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "tapptarock.log.play", map[string]string{"name": g.playerName(playerIdx), "card": koenigrufenCardStr(card)}, []*Card{card})
 
 	if len(g.currentTrick) < TappTarockPlayerCnt {
 		g.currentPlayerIdx = (g.currentPlayerIdx + 1) % TappTarockPlayerCnt
@@ -611,8 +609,7 @@ func (g *TappTarock) finishTrick() {
 	g.players[winner].AddTrick(cards)
 	g.lastTrickWinner = winner
 	g.lastTrickCards = cards
-	g.appendLog(winner, "trick",
-		fmt.Sprintf("%s takes trick %d", g.playerName(winner), g.trickNumber), cards)
+	g.appendLog(winner, "trick", "tapptarock.log.trick", map[string]string{"name": g.playerName(winner), "trick": strconv.Itoa(g.trickNumber)}, cards)
 	g.currentTrick = nil
 	g.phase = TappTarockPhaseTrickEnd
 	g.currentPlayerIdx = winner
@@ -802,8 +799,7 @@ func (g *TappTarock) finishRound() {
 		g.playerScores[i] += delta
 	}
 	g.phase = TappTarockPhaseRoundEnd
-	g.appendLog(-1, "score",
-		fmt.Sprintf("deal %d scored (%s)", g.roundNumber, TappTarockBidName(g.contract)), nil)
+	g.appendLog(-1, "score", "tapptarock.log.score", map[string]string{"round": strconv.Itoa(g.roundNumber), "contract": TappTarockBidName(g.contract)}, nil)
 	if g.roundNumber >= g.config.TargetDeals {
 		g.finishGame()
 	}
@@ -958,7 +954,12 @@ func (g *TappTarock) finishGame() {
 	}
 	g.gameEndFlag = true
 	g.phase = TappTarockPhaseGameEnd
-	g.appendLog(g.winnerPlayer, "gameEnd", "match over", nil)
+	g.appendLog(g.winnerPlayer, "gameEnd", "tapptarock.log.matchOver", nil, nil)
+}
+
+// appendLog records a Tapp Tarock action with a locale-independent detail code.
+func (g *TappTarock) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- 補助 ---

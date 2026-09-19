@@ -85,6 +85,26 @@ func TestTrappolaReset(t *testing.T) {
 	assert.Equal(t, 0, g.GetCurrentPlayerIdx())
 }
 
+func TestTrappolaActionLogUsesDetailCode(t *testing.T) {
+	g := newTestTrappola()
+	trapResolve(g, 1, []*domain.TrickCard{
+		{PlayerIdx: 0, Card: trapCard(domain.CardDesignSpade, 1)},
+		{PlayerIdx: 1, Card: trapCard(domain.CardDesignSpade, 2)},
+		{PlayerIdx: 2, Card: trapCard(domain.CardDesignSpade, 3)},
+		{PlayerIdx: 3, Card: trapCard(domain.CardDesignSpade, 13)},
+	})
+	var entry *domain.ActionLogEntry
+	for _, candidate := range g.GetActionLog() {
+		if candidate.DetailCode == "trappola.log.trickWin" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, map[string]string{"name": "You", "trick": "1", "thirds": "4", "bonus": ""}, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
+}
+
 // --- config ---
 
 func TestTrappolaConfigValidate(t *testing.T) {

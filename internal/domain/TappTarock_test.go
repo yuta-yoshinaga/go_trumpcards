@@ -26,6 +26,21 @@ func TestTappTarockDealUsesThreeHandsOfSixteenAndSixCardTalon(t *testing.T) {
 	}
 }
 
+func TestTappTarockActionLogUsesDetailCode(t *testing.T) {
+	g := NewDefaultTappTarock()
+	g.Reset()
+	var entry *ActionLogEntry
+	for _, candidate := range g.GetActionLog() {
+		if candidate.DetailCode == "tapptarock.log.deal" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, map[string]string{"round": "1", "talon": "6"}, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
+}
+
 func TestTappTarockPlaysSixteenTricks(t *testing.T) {
 	players := []*TappTarockPlayer{NewTappTarockPlayer(true), NewTappTarockPlayer(false), NewTappTarockPlayer(false)}
 	g := NewTappTarock(players, DefaultTappTarockConfig())

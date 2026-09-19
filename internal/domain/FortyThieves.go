@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // FortyThievesPhase フォーティシーブスゲームフェーズ
@@ -135,7 +136,7 @@ func (ft *FortyThieves) Draw() error {
 	ft.stock = ft.stock[:len(ft.stock)-1]
 	ft.waste = append(ft.waste, card)
 	ft.moveCount++
-	ft.appendLog("draw", "ストックからカードを引きました", []*Card{card})
+	ft.appendLog("draw", "fortythieves.log.draw", nil, []*Card{card})
 	ft.checkFortyThievesStalemate()
 	return nil
 }
@@ -159,7 +160,7 @@ func (ft *FortyThieves) MoveWasteToTableau(col int) error {
 	ft.waste = ft.waste[:len(ft.waste)-1]
 	ft.tableau[col] = append(ft.tableau[col], &FortyThievesTableauCard{Card: card, FaceUp: true})
 	ft.moveCount++
-	ft.appendLog("move", fmt.Sprintf("ウェイスト→タブロー列%d", col), []*Card{card})
+	ft.appendLog("move", "fortythieves.log.wasteToTableau", map[string]string{"column": strconv.Itoa(col)}, []*Card{card})
 	ft.checkFortyThievesStalemate()
 	return nil
 }
@@ -181,7 +182,7 @@ func (ft *FortyThieves) MoveWasteToFoundation() error {
 	ft.waste = ft.waste[:len(ft.waste)-1]
 	ft.foundation[fIdx] = append(ft.foundation[fIdx], card)
 	ft.moveCount++
-	ft.appendLog("move", "ウェイスト→ファンデーション", []*Card{card})
+	ft.appendLog("move", "fortythieves.log.wasteToFoundation", nil, []*Card{card})
 	ft.checkGameClear()
 	ft.checkFortyThievesStalemate()
 	return nil
@@ -217,7 +218,7 @@ func (ft *FortyThieves) MoveTableauToTableau(fromCol, cardIndex, toCol int) erro
 	ft.tableau[toCol] = append(ft.tableau[toCol], tc)
 	ft.tableau[fromCol] = fromCards[:cardIndex]
 	ft.moveCount++
-	ft.appendLog("move", fmt.Sprintf("タブロー列%d→タブロー列%d", fromCol, toCol), []*Card{tc.Card})
+	ft.appendLog("move", "fortythieves.log.tableauToTableau", map[string]string{"from": strconv.Itoa(fromCol), "to": strconv.Itoa(toCol)}, []*Card{tc.Card})
 	ft.checkFortyThievesStalemate()
 	return nil
 }
@@ -244,7 +245,7 @@ func (ft *FortyThieves) MoveTableauToFoundation(col int) error {
 	ft.tableau[col] = fromCards[:len(fromCards)-1]
 	ft.foundation[fIdx] = append(ft.foundation[fIdx], card)
 	ft.moveCount++
-	ft.appendLog("move", fmt.Sprintf("タブロー列%d→ファンデーション", col), []*Card{card})
+	ft.appendLog("move", "fortythieves.log.tableauToFoundation", map[string]string{"column": strconv.Itoa(col)}, []*Card{card})
 	ft.checkGameClear()
 	ft.checkFortyThievesStalemate()
 	return nil
@@ -254,7 +255,7 @@ func (ft *FortyThieves) MoveTableauToFoundation(col int) error {
 func (ft *FortyThieves) GiveUp() {
 	if ft.phase == FortyThievesPhasePlaying {
 		ft.phase = FortyThievesPhaseGameOver
-		ft.appendLog("giveup", "ギブアップしました", nil)
+		ft.appendLog("giveup", "fortythieves.log.giveUp", nil, nil)
 	}
 }
 
@@ -396,7 +397,7 @@ func (ft *FortyThieves) AutoComplete() error {
 			break
 		}
 	}
-	ft.appendLog("autocomplete", "オートコンプリートを実行しました", nil)
+	ft.appendLog("autocomplete", "fortythieves.log.autocomplete", nil, nil)
 	ft.checkGameClear()
 	return nil
 }
@@ -589,8 +590,8 @@ func (ft *FortyThieves) restoreSnapshot(snap *fortyThievesSnapshot) {
 }
 
 // appendLog 棋譜エントリを追加
-func (ft *FortyThieves) appendLog(actionType, detail string, cards []*Card) {
-	ft.appendLogAt(ft.moveCount, 0, actionType, detail, cards)
+func (ft *FortyThieves) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	ft.appendLogCodeAt(ft.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // fortyThievesJSON is the JSON wire format for FortyThieves.
