@@ -631,3 +631,20 @@ func TestBarbu_GetPlayableIndices(t *testing.T) {
 	// 範囲外は nil。
 	assert.Nil(t, b.GetPlayableIndices(99))
 }
+
+func TestBarbu_ActionLogUsesDetailCode(t *testing.T) {
+	b := domain.BarbuTestNew(domain.DefaultBarbuConfig())
+	b.Reset()
+
+	var entry *domain.ActionLogEntry
+	for _, candidate := range b.GetActionLog() {
+		if candidate.DetailCode == "barbu.log.deal" {
+			entry = candidate
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Contains(t, entry.DetailParams, "deal")
+	assert.Contains(t, entry.DetailParams, "total")
+	assert.Contains(t, entry.DetailParams, "dealer")
+	assert.Empty(t, entry.Detail)
+}

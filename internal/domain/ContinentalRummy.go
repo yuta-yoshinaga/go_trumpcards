@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // フェーズ。**文字列で持つ。** 数値だと 0 が「未設定」と区別できない。
@@ -91,6 +92,11 @@ type ContinentalRummy struct {
 	config         ContinentalRummyConfig
 }
 
+// appendLog records a Continental Rummy action with a locale-independent detail code.
+func (c *ContinentalRummy) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	c.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
+}
+
 // NewDefaultContinentalRummy は既定の設定でゲームを作る。
 func NewDefaultContinentalRummy() *ContinentalRummy {
 	return NewContinentalRummy(DefaultContinentalRummyConfig())
@@ -153,7 +159,7 @@ func (c *ContinentalRummy) startRound() {
 	c.discardPile = []*Card{c.drawStock()}
 	c.currentIdx = (c.dealerIdx + 1) % ContinentalRummyPlayerCnt
 	c.phase = ContinentalRummyPhaseDraw
-	c.appendLog(-1, "deal", fmt.Sprintf("round %d dealt, %d in stock", c.roundNumber, len(c.stock)), nil)
+	c.appendLog(-1, "deal", "continentalrummy.log.deal", map[string]string{"round": strconv.Itoa(c.roundNumber), "stock": strconv.Itoa(len(c.stock))}, nil)
 	c.runCpuTurns()
 }
 
@@ -195,9 +201,7 @@ func (c *ContinentalRummy) recycleDiscards() {
 	c.stock = shuffled
 	c.discardPile = []*Card{top}
 	c.recycles++
-	c.appendLog(-1, "recycle",
-		fmt.Sprintf("discards turned back into a stock of %d (recycle %d/%d)",
-			len(c.stock), c.recycles, continentalRummyMaxRecycles), nil)
+	c.appendLog(-1, "recycle", "continentalrummy.log.recycle", map[string]string{"stock": strconv.Itoa(len(c.stock)), "recycle": strconv.Itoa(c.recycles), "maxRecycle": strconv.Itoa(continentalRummyMaxRecycles)}, nil)
 }
 
 // DrawStock は山札から 1 枚取る。
@@ -233,7 +237,7 @@ func (c *ContinentalRummy) draw(fromStock bool) error {
 	if !fromStock {
 		logType = "takeDiscard"
 	}
-	c.appendLog(c.currentIdx, logType, fmt.Sprintf("seat %d draws", c.currentIdx), nil)
+	c.appendLog(c.currentIdx, logType, "continentalrummy.log.draw", map[string]string{"seat": strconv.Itoa(c.currentIdx)}, nil)
 	c.phase = ContinentalRummyPhaseDiscard
 	return nil
 }
@@ -252,8 +256,7 @@ func (c *ContinentalRummy) Discard(i int) error {
 	c.turnsThisRound[c.currentIdx]++
 	// **人間の手も棋譜に載せる。** CPU の捨て札しか載っていないと、
 	// 読み返したときに自分が何をしたのかだけが抜けている。
-	c.appendLog(c.currentIdx, "discard",
-		fmt.Sprintf("seat %d discards", c.currentIdx), []*Card{card})
+	c.appendLog(c.currentIdx, "discard", "continentalrummy.log.discard", map[string]string{"seat": strconv.Itoa(c.currentIdx)}, []*Card{card})
 	c.advance()
 	return nil
 }
@@ -366,11 +369,9 @@ func (c *ContinentalRummy) finishRound(winner int) {
 		// **勝った側が各相手から取り立てる。** 負けた側の残り札は数えない。
 		res.Total = res.PerOpponent * (ContinentalRummyPlayerCnt - 1)
 		c.players[winner].AddScore(res.Total)
-		c.appendLog(winner, "goOut",
-			fmt.Sprintf("seat %d goes out for %d from each of %d opponent(s)",
-				winner, res.PerOpponent, ContinentalRummyPlayerCnt-1), nil)
+		c.appendLog(winner, "goOut", "continentalrummy.log.goOut", map[string]string{"seat": strconv.Itoa(winner), "points": strconv.Itoa(res.PerOpponent), "opponents": strconv.Itoa(ContinentalRummyPlayerCnt - 1)}, nil)
 	} else {
-		c.appendLog(-1, "washout", "stock exhausted with nobody out", nil)
+		c.appendLog(-1, "washout", "continentalrummy.log.washout", nil, nil)
 	}
 	c.lastResult = res
 	if c.roundNumber >= c.config.TotalRounds {
@@ -450,7 +451,7 @@ func (c *ContinentalRummy) endGame() {
 		bestIdx = -1
 	}
 	c.winnerIdx = bestIdx
-	c.appendLog(-1, "gameEnd", fmt.Sprintf("game ends after %d round(s)", c.roundNumber), nil)
+	c.appendLog(-1, "gameEnd", "continentalrummy.log.gameEnd", map[string]string{"rounds": strconv.Itoa(c.roundNumber)}, nil)
 }
 
 // アクセサ。

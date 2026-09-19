@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // EscobaPlayerCnt Escoba プレイヤー数
@@ -70,6 +71,11 @@ type Escoba struct {
 	winnerIdx       int // -1: 未確定
 	lastRoundDetail *EscobaScoreDetail
 	actionLogBase
+}
+
+// appendLog records an Escoba action with a locale-independent detail code.
+func (e *Escoba) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	e.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // NewEscoba コンストラクタ
@@ -136,7 +142,7 @@ func (e *Escoba) startRound() {
 	e.dealPack()
 	e.currentTurn = (e.dealerIdx + 1) % EscobaPlayerCnt
 	e.phase = EscobaPhasePlayerTurn
-	e.appendLog(-1, "deal", fmt.Sprintf("round %d: 4 table cards, %d to each", e.roundNumber, EscobaPackSize), nil)
+	e.appendLog(-1, "deal", "escoba.log.deal", map[string]string{"round": strconv.Itoa(e.roundNumber), "cards": strconv.Itoa(EscobaPackSize)}, nil)
 }
 
 // dealPack 各プレイヤーに EscobaPackSize 枚ずつ配る (山札が尽きるまで)。
@@ -212,7 +218,7 @@ func (e *Escoba) applyPlay(playerIdx, handIdx int, tableIdxs []int) error {
 
 	if len(tableIdxs) == 0 {
 		e.tableCards = append(e.tableCards, handCard)
-		e.appendLog(playerIdx, "play", "placed on table", []*Card{handCard})
+		e.appendLog(playerIdx, "play", "escoba.log.play", nil, []*Card{handCard})
 		e.postActionAdvance()
 		return nil
 	}
@@ -230,9 +236,9 @@ func (e *Escoba) applyPlay(playerIdx, handIdx int, tableIdxs []int) error {
 
 	if len(e.tableCards) == 0 && !e.isLastPlay() {
 		player.IncrementScopa()
-		e.appendLog(playerIdx, "escoba", "swept the table (escoba)", pile)
+		e.appendLog(playerIdx, "escoba", "escoba.log.escoba", nil, pile)
 	} else {
-		e.appendLog(playerIdx, "capture", fmt.Sprintf("captured %d card(s)", len(captured)), pile)
+		e.appendLog(playerIdx, "capture", "escoba.log.capture", map[string]string{"cards": strconv.Itoa(len(captured))}, pile)
 	}
 	e.postActionAdvance()
 	return nil
@@ -282,7 +288,7 @@ func (e *Escoba) isLastPlay() bool {
 func (e *Escoba) finishRound() {
 	if e.lastCaptureIdx >= 0 && len(e.tableCards) > 0 {
 		e.players[e.lastCaptureIdx].AddCaptured(e.tableCards)
-		e.appendLog(e.lastCaptureIdx, "sweep_leftover", fmt.Sprintf("took %d leftover table card(s)", len(e.tableCards)), e.tableCards)
+		e.appendLog(e.lastCaptureIdx, "sweep_leftover", "escoba.log.sweepLeftover", map[string]string{"cards": strconv.Itoa(len(e.tableCards))}, e.tableCards)
 		e.tableCards = nil
 	}
 	det := e.scoreRound()
@@ -290,7 +296,7 @@ func (e *Escoba) finishRound() {
 	for i := range e.players {
 		e.players[i].AddScore(det.Gained[i])
 	}
-	e.appendLog(-1, "round_score", fmt.Sprintf("round %d scored", e.roundNumber), nil)
+	e.appendLog(-1, "round_score", "escoba.log.roundScore", map[string]string{"round": strconv.Itoa(e.roundNumber)}, nil)
 
 	for i := range e.players {
 		if e.players[i].GetTotalScore() >= e.config.TargetScore {
@@ -374,7 +380,7 @@ func (e *Escoba) finishGame() {
 		}
 	}
 	e.winnerIdx = best
-	e.appendLog(-1, "game_end", fmt.Sprintf("player %d wins with %d", best, bestScore), nil)
+	e.appendLog(-1, "game_end", "escoba.log.gameEnd", map[string]string{"player": strconv.Itoa(best), "score": strconv.Itoa(bestScore)}, nil)
 }
 
 // removeTableCardsByIndex は降順に並び替えてから tableCards を削除する。

@@ -1,4 +1,11 @@
 {
+  "log.trickWin": "{{player}}が{{trick}}トリックを取りました",
+  "log.bidSuccess": "{{player}}が{{bid}}を宣言し、{{tricks}}トリックを取りました: +{{score}}（ボーナス +{{bonus}}）",
+  "log.bidFail": "{{player}}が{{bid}}を宣言し、{{tricks}}トリックを取りました: 0",
+  "log.cumulativeScore": "{{player}}: 合計={{total}}",
+  "log.bid": "{{player}}が3枚を伏せて{{bid}}を宣言しました",
+  "log.play": "{{player}}が{{card}}を出しました",
+  "log.gameEnd": "{{player}}がゲームに勝ちました！",
   "helpTitle": "Ninety-Nine (ナインティナイン)",
   "helpBid": "  b <i> <j> <k>        3枚を伏せてビッド宣言",
   "helpPlay": "  p <idx>              カードを出す",

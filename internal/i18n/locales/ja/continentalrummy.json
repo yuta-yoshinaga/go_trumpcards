@@ -1,4 +1,11 @@
 {
+  "log.deal": "ラウンド{{round}}を配り、山札は{{stock}}枚",
+  "log.recycle": "捨て札を山札に戻しました（山札{{stock}}枚、{{recycle}}/{{maxRecycle}}回目）",
+  "log.draw": "席{{seat}}が引きました",
+  "log.discard": "席{{seat}}が捨てました",
+  "log.goOut": "席{{seat}}が{{points}}点（{{opponents}}人の相手から）で上がりました",
+  "log.washout": "山札が尽き、誰も上がれずに流れました",
+  "log.gameEnd": "{{rounds}}ラウンドでゲーム終了",
   "helpTitle": "コンチネンタル・ラミー",
   "helpStock": "  stock / ds                山札から 1 枚引く",
   "helpTake": "  take / dd                 捨て札の一番上を取る",

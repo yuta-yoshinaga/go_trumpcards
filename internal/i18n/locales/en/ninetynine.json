@@ -1,4 +1,11 @@
 {
+  "log.trickWin": "{{player}} wins trick {{trick}}",
+  "log.bidSuccess": "{{player}} declared {{bid}}, took {{tricks}}: +{{score}} (bonus +{{bonus}})",
+  "log.bidFail": "{{player}} declared {{bid}}, took {{tricks}}: 0",
+  "log.cumulativeScore": "{{player}}: total={{total}}",
+  "log.bid": "{{player}} buries 3 and declares {{bid}}",
+  "log.play": "{{player}} plays {{card}}",
+  "log.gameEnd": "{{player}} wins the game!",
   "helpTitle": "Ninety-Nine",
   "helpBid": "  b <i> <j> <k>        bury 3 cards to declare a bid",
   "helpPlay": "  p <idx>              play a card",

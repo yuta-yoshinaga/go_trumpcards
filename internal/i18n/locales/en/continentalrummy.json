@@ -1,4 +1,11 @@
 {
+  "log.deal": "round {{round}} dealt, {{stock}} in stock",
+  "log.recycle": "discards turned back into a stock of {{stock}} (recycle {{recycle}}/{{maxRecycle}})",
+  "log.draw": "seat {{seat}} draws",
+  "log.discard": "seat {{seat}} discards",
+  "log.goOut": "seat {{seat}} goes out for {{points}} from each of {{opponents}} opponent(s)",
+  "log.washout": "stock exhausted with nobody out",
+  "log.gameEnd": "game ends after {{rounds}} round(s)",
   "helpTitle": "Continental Rummy",
   "helpStock": "  stock / ds                draw from the stock",
   "helpTake": "  take / dd                 take the top discard",
