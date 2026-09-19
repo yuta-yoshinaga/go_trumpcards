@@ -28,5 +28,14 @@
   "result.humanWin": "Your team wins!",
   "result.cpuWin": "The opposing team wins...",
   "fourOfAKindReady": "* Four of a kind! You may declare Kemps (declare / d)",
-  "helpExamplePass": "  p                    skip the swap"
+  "helpExamplePass": "  p                    skip the swap",
+  "log.deal": "round {{round}} dealt",
+  "log.signal": "set signal type {{type}}",
+  "log.kempsMiss": "declared Kemps but no four of a kind",
+  "log.swap": "swap a hand card with the field",
+  "log.pass": "pass (no swap)",
+  "log.four": "four of a kind! signal your partner",
+  "log.score": "team {{team}} scores (result {{result}})",
+  "log.penalty": "team {{team}} counter-kemps failed",
+  "log.gameEnd": "team {{team}} wins"
 }

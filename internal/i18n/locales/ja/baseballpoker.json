@@ -49,5 +49,17 @@
   "reason.seeAnotherCard": "まだ役が弱いので、ただで次の1枚を見ましょう",
   "reason.wildsRaiseTheBar": "ワイルドが8枚あるぶん、この手では相場に届きません",
   "result.gameEnd": "ゲームが終わりました",
-  "helpExampleBet": "  bet 100             100 チップを賭ける"
+  "helpExampleBet": "  bet 100             100 チップを賭ける",
+  "log.dealInitial": "表",
+  "log.dealStreetUp": "{{street}}番目のストリートを表で配りました",
+  "log.dealStreetDown": "{{street}}番目のストリートを裏で配りました",
+  "log.bonus": "4枚目",
+  "log.buyInAsked": "買い増しを要求",
+  "log.buyInFold": "買い増しを降りる",
+  "log.buyInPay": "買い増しを支払う",
+  "log.fold": "",
+  "log.check": "",
+  "log.call": "",
+  "log.bet": "",
+  "log.raise": ""
 }

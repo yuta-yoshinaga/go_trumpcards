@@ -18,6 +18,15 @@ func newDilotiGame(t *testing.T) *Diloti {
 	return d
 }
 
+func findMigratedActionLogEntry(entries []*ActionLogEntry, code string) *ActionLogEntry {
+	for _, entry := range entries {
+		if entry.DetailCode == code {
+			return entry
+		}
+	}
+	return nil
+}
+
 // **開幕は人間の手番。** 非親が先に打つ規則なので、親を席 1 にしてある ──
 // 親を 0 にすると人間は最初の 4 枚に一度も手を出せない。
 func TestDiloti_ResetDealsAndStartsWithTheHuman(t *testing.T) {
@@ -68,6 +77,10 @@ func TestDiloti_XeriRequiresClearingTheTable(t *testing.T) {
 	// 1 手目はクセリにならない。
 	d.firstPlayDone = false
 	require.NoError(t, d.applyPlay(0, 0, DilotiActionCapture, []int{0}, nil, 0))
+	entry := findMigratedActionLogEntry(d.GetActionLog(), "diloti.log.capture")
+	require.NotNil(t, entry)
+	assert.Equal(t, map[string]string{"player": "0", "cards": "1"}, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
 	assert.Equal(t, 0, d.GetPlayer(0).GetXeri(), "局の初手がクセリに数えられている")
 	assert.Empty(t, d.GetTable())
 

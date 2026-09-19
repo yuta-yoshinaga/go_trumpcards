@@ -53,5 +53,14 @@
   "trumpRevealed": "The hidden trump is revealed: {{trump}}",
   "errInvalidBid": "The bid is invalid.",
   "errBidMustExceed": "The bid must exceed the current bid.",
-  "errCardIndexOutOfRange": "The card index is out of range."
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "log.bid": "{{name}} bids {{bid}}",
+  "log.pass": "{{name}} passes",
+  "log.passedOut": "all players passed; round is void",
+  "log.contract": "{{name}} (team {{team}}) bids {{bid}} with a hidden trump",
+  "log.revealTrump": "trump ({{trump}}) is revealed",
+  "log.play": "{{name}} plays {{card}}",
+  "log.trickWin": "{{name}} wins trick {{trick}} (+{{points}}{{bonus}})",
+  "log.roundScore": "round {{round}}: team {{team}} bid {{bid}}, got {{points}} -> {{result}}",
+  "log.gameEnd": "Team {{team}} wins the match!"
 }

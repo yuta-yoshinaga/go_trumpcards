@@ -129,20 +129,20 @@ type BaseballPoker struct {
 	results     []BaseballResult
 	gameEndFlag bool
 
-	actionLog  []*ActionLogEntry
+	actionLogBase
 	turnNumber int
 }
 
 // NewBaseballPoker は BaseballPoker を構築する。
 func NewBaseballPoker(deck *TrumpCards, players []*BaseballPokerPlayer, config BaseballPokerConfig) *BaseballPoker {
 	return &BaseballPoker{
-		deck:       deck,
-		players:    players,
-		config:     config,
-		buyer:      -1,
-		actedFlags: make([]bool, len(players)),
-		results:    make([]BaseballResult, 0, len(players)),
-		actionLog:  make([]*ActionLogEntry, 0),
+		deck:          deck,
+		players:       players,
+		config:        config,
+		buyer:         -1,
+		actedFlags:    make([]bool, len(players)),
+		results:       make([]BaseballResult, 0, len(players)),
+		actionLogBase: actionLogBase{actionLog: make([]*ActionLogEntry, 0)},
 	}
 }
 
@@ -209,7 +209,7 @@ func (g *BaseballPoker) startHand() {
 	}
 	for i, p := range g.players {
 		p.AddDealtCard(g.draw(), true)
-		g.appendLog(i, "deal", "up", p.FaceUpCards())
+		g.appendLog(i, "deal", "baseballpoker.log.dealInitial", nil, p.FaceUpCards())
 	}
 	g.street = 1
 
@@ -257,7 +257,7 @@ func (g *BaseballPoker) resolveUpCardEvents(from int) {
 		if last.GetValue() == BaseballBonusFour {
 			// **ボーナスは伏せて配る。** 表で配るとイベントが連鎖する。
 			p.AddBonusCard(g.draw())
-			g.appendLog(i, "bonus", "four", nil)
+			g.appendLog(i, "bonus", "baseballpoker.log.bonus", nil, nil)
 			continue
 		}
 		if last.GetValue() == BaseballWildThree {
@@ -267,7 +267,7 @@ func (g *BaseballPoker) resolveUpCardEvents(from int) {
 			g.buyer = i
 			g.buyCost = min(g.pot, p.GetChips())
 			g.phase = BaseballPhaseBuyIn
-			g.appendLog(i, "buyin", "asked", nil)
+			g.appendLog(i, "buyin", "baseballpoker.log.buyInAsked", nil, nil)
 			return
 		}
 	}
@@ -309,7 +309,7 @@ func (g *BaseballPoker) AnswerBuyIn(answer int) error {
 	p := g.players[i]
 	if answer == BaseballBuyFold {
 		p.SetFolded(true)
-		g.appendLog(i, "buyin", "fold", nil)
+		g.appendLog(i, "buyin", "baseballpoker.log.buyInFold", nil, nil)
 	} else {
 		cost := min(g.buyCost, p.GetChips())
 		p.SubtractChips(cost)
@@ -317,7 +317,7 @@ func (g *BaseballPoker) AnswerBuyIn(answer int) error {
 		if p.GetChips() == 0 {
 			p.SetAllIn(true)
 		}
-		g.appendLog(i, "buyin", "pay", nil)
+		g.appendLog(i, "buyin", "baseballpoker.log.buyInPay", nil, nil)
 	}
 	// **同じストリートの残りの席も見る。** 表の 3 が 2 席に出ることがある。
 	g.resolveUpCardEvents(i + 1)
@@ -350,15 +350,15 @@ func (g *BaseballPoker) applyAction(i, action, amount int) error {
 	switch action {
 	case BaseballActionFold:
 		p.SetFolded(true)
-		g.appendLog(i, "fold", "", nil)
+		g.appendLog(i, "fold", "baseballpoker.log.fold", nil, nil)
 	case BaseballActionCheck:
 		if toCall > 0 {
 			return errBaseballCannotCheck
 		}
-		g.appendLog(i, "check", "", nil)
+		g.appendLog(i, "check", "baseballpoker.log.check", nil, nil)
 	case BaseballActionCall:
 		g.moveToPot(p, min(toCall, p.GetChips()))
-		g.appendLog(i, "call", "", nil)
+		g.appendLog(i, "call", "baseballpoker.log.call", nil, nil)
 	case BaseballActionBet:
 		if g.currentBet > 0 {
 			return errBaseballCannotBet
@@ -368,7 +368,7 @@ func (g *BaseballPoker) applyAction(i, action, amount int) error {
 		}
 		g.moveToPot(p, amount)
 		g.currentBet = p.GetCurrentBet()
-		g.appendLog(i, "bet", "", nil)
+		g.appendLog(i, "bet", "baseballpoker.log.bet", nil, nil)
 	case BaseballActionRaise:
 		if g.raiseCount >= baseballMaxRaisesPerRound {
 			return errBaseballRaiseCapped
@@ -379,7 +379,7 @@ func (g *BaseballPoker) applyAction(i, action, amount int) error {
 		g.moveToPot(p, toCall+amount)
 		g.currentBet = p.GetCurrentBet()
 		g.raiseCount++
-		g.appendLog(i, "raise", "", nil)
+		g.appendLog(i, "raise", "baseballpoker.log.raise", nil, nil)
 	default:
 		return errBaseballUnknownAction
 	}
@@ -446,11 +446,11 @@ func (g *BaseballPoker) nextStreet() {
 	g.street++
 	// **どのストリートも棋譜に残す。** 3rd だけ記録して 4th〜7th を
 	// 落とすと、棋譜が配札の半分を語らないものになる。
-	detail := "dealt street " + strconv.Itoa(g.street) + " face down"
+	detailCode := "baseballpoker.log.dealStreetDown"
 	if faceUp {
-		detail = "dealt street " + strconv.Itoa(g.street) + " face up"
+		detailCode = "baseballpoker.log.dealStreetUp"
 	}
-	g.appendLog(-1, "deal", detail, nil)
+	g.appendLog(-1, "deal", detailCode, map[string]string{"street": strconv.Itoa(g.street)}, nil)
 	g.resetRound()
 	if faceUp {
 		g.resolveUpCardEvents(0)
@@ -744,15 +744,9 @@ func (g *BaseballPoker) GetRemainingCards() int { return g.deck.GetRemainingCoun
 func (g *BaseballPoker) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // appendLog は棋譜に 1 行足す。
-func (g *BaseballPoker) appendLog(seat int, actionType, detail string, cards []*Card) {
+func (g *BaseballPoker) appendLog(seat int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	g.turnNumber++
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: g.turnNumber,
-		PlayerIdx:  seat,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.appendLogCodeAt(g.turnNumber, seat, actionType, detailCode, detailParams, cards)
 }
 
 // --- 助言 ---

@@ -237,7 +237,7 @@ func TestTwentyNineWebPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockTwentyNineGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You plays ♠K"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "twentynine.log.play", DetailParams: map[string]string{"name": "You", "card": "♠K"}},
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, `"actionType":"play"`)

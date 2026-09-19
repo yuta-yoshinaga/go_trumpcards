@@ -204,7 +204,7 @@ func (g *Kemps) dealRound() {
 		}
 	}
 
-	g.appendLog(-1, "deal", fmt.Sprintf("round %d dealt", g.roundNumber), nil)
+	g.appendLog(-1, "deal", "kemps.log.deal", map[string]string{"round": fmt.Sprint(g.roundNumber)}, nil)
 }
 
 // drawAll はトランプから全カードを取り出してスライスで返す。
@@ -339,7 +339,7 @@ func (g *Kemps) PlayerSetSignal(signalType int) {
 		st = SignalSound
 	}
 	g.signalType = st
-	g.appendLog(0, "signal", fmt.Sprintf("set signal type %d", int(st)), nil)
+	g.appendLog(0, "signal", "kemps.log.signal", map[string]string{"type": fmt.Sprint(int(st))}, nil)
 }
 
 // PlayerSwap は人間プレイヤーが手札の handIndex をフィールドの fieldIndex と交換する。
@@ -408,7 +408,7 @@ func (g *Kemps) PlayerDeclareKemps() error {
 		g.awardRound(team, KempsResultKemps)
 	} else {
 		g.roundResult = KempsResultMiss
-		g.appendLog(0, "kempsMiss", "declared Kemps but no four of a kind", nil)
+		g.appendLog(0, "kempsMiss", "kemps.log.kempsMiss", nil, nil)
 		g.endRound(-1)
 	}
 	return nil
@@ -555,14 +555,14 @@ func (g *Kemps) doSwap(idx, handIndex, fieldIndex int) {
 	if taken != nil {
 		p.AddCard(taken)
 	}
-	g.appendLog(idx, "swap", "swap a hand card with the field", []*Card{taken})
+	g.appendLog(idx, "swap", "kemps.log.swap", nil, []*Card{taken})
 	g.swapCount++
 	g.afterExchange(idx)
 }
 
 // doPass はプレイヤー idx が交換せずに手番を渡す。
 func (g *Kemps) doPass(idx int) {
-	g.appendLog(idx, "pass", "pass (no swap)", nil)
+	g.appendLog(idx, "pass", "kemps.log.pass", nil, nil)
 	g.swapCount++
 	g.afterExchange(idx)
 }
@@ -601,7 +601,7 @@ func (g *Kemps) firstFourHolder() int {
 func (g *Kemps) openDeclareWindow(idx int) {
 	g.phase = KempsPhaseDeclare
 	g.fourHolderIdx = idx
-	g.appendLog(idx, "four", "four of a kind! signal your partner", nil)
+	g.appendLog(idx, "four", "kemps.log.four", nil, nil)
 }
 
 // awardRound はチーム team に +1 して result を記録し、ラウンドを締める。
@@ -610,7 +610,7 @@ func (g *Kemps) awardRound(team, result int) {
 		g.teamScores[team]++
 	}
 	g.roundResult = result
-	g.appendLog(-1, "score", fmt.Sprintf("team %d scores (result %d)", team, result), nil)
+	g.appendLog(-1, "score", "kemps.log.score", map[string]string{"team": fmt.Sprint(team), "result": fmt.Sprint(result)}, nil)
 	g.endRound(team)
 }
 
@@ -623,7 +623,7 @@ func (g *Kemps) penalizeRound(team int) {
 		}
 	}
 	g.roundResult = KempsResultCounterFail
-	g.appendLog(-1, "penalty", fmt.Sprintf("team %d counter-kemps failed", team), nil)
+	g.appendLog(-1, "penalty", "kemps.log.penalty", map[string]string{"team": fmt.Sprint(team)}, nil)
 	g.endRound(-1)
 }
 
@@ -667,7 +667,11 @@ func (g *Kemps) endGame(winnerTeam int) {
 			g.players[i].SetIsFinished(KempsTeamOf(i) == winnerTeam)
 		}
 	}
-	g.appendLog(-1, "gameEnd", fmt.Sprintf("team %d wins", winnerTeam), nil)
+	g.appendLog(-1, "gameEnd", "kemps.log.gameEnd", map[string]string{"team": fmt.Sprint(winnerTeam)}, nil)
+}
+
+func (g *Kemps) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- テスト/復元用セッター ---

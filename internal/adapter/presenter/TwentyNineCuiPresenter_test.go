@@ -246,7 +246,7 @@ func TestTwentyNineCuiPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockTwentyNineGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You plays ♠K"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "twentynine.log.play", DetailParams: map[string]string{"name": "You", "card": "♠K"}},
 	})
 	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
 	m.On("GetPlayer", mock.Anything).Return(domain.NewTwentyNinePlayer(true)).Maybe()

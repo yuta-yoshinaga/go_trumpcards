@@ -53,5 +53,14 @@
   "trumpRevealed": "切り札が公開されました: {{trump}}",
   "errInvalidBid": "入札値が不正です",
   "errBidMustExceed": "現在の入札を上回る必要があります",
-  "errCardIndexOutOfRange": "カードインデックスが範囲外です"
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "log.bid": "{{name}}が{{bid}}を入札",
+  "log.pass": "{{name}}がパス",
+  "log.passedOut": "全員がパスしたため、ラウンドは無効です",
+  "log.contract": "{{name}}（チーム{{team}}）が非公開の切り札で{{bid}}を入札",
+  "log.revealTrump": "切り札（{{trump}}）が公開されました",
+  "log.play": "{{name}}が{{card}}を出します",
+  "log.trickWin": "{{name}}がトリック{{trick}}に勝利（+{{points}}{{bonus}}）",
+  "log.roundScore": "ラウンド{{round}}: チーム{{team}} 入札{{bid}}、得点{{points}} → {{result}}",
+  "log.gameEnd": "チーム{{team}}がマッチに勝利！"
 }

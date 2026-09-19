@@ -28,5 +28,14 @@
   "result.humanWin": "あなたのチームの勝ちです！",
   "result.cpuWin": "相手チームの勝ちです...",
   "fourOfAKindReady": "★ 4枚が同ランクです！ ケンプスを宣言できます（declare / d）",
-  "helpExamplePass": "  p                    交換を見送る"
+  "helpExamplePass": "  p                    交換を見送る",
+  "log.deal": "ラウンド{{round}}を配りました",
+  "log.signal": "シグナルの種類を{{type}}に設定",
+  "log.kempsMiss": "ケンプスを宣言したが、フォー・オブ・ア・カインドではない",
+  "log.swap": "手札を場札と交換",
+  "log.pass": "パス（交換なし）",
+  "log.four": "フォー・オブ・ア・カインド！ パートナーにシグナルを送ってください",
+  "log.score": "チーム{{team}}が得点（結果{{result}}）",
+  "log.penalty": "チーム{{team}}のカウンター・ケンプス失敗",
+  "log.gameEnd": "チーム{{team}}の勝利"
 }

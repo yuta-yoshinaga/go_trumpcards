@@ -44,5 +44,14 @@
   "zoneTableauWithIdx": "Tableau {{col}} (idx={{idx}})",
   "zoneFoundation": "Foundation {{col}}",
   "helpExampleHint": "  h                   ask for a move",
-  "helpLog": "  l                   show the action log"
+  "helpLog": "  l                   show the action log",
+  "log.recycle": "Returned the waste to the stock",
+  "log.draw": "Drew a card from the stock",
+  "log.moveNf": "Player {{player}}: Nertz pile → foundation {{foundation}}",
+  "log.moveNt": "Player {{player}}: Nertz pile → tableau {{tableau}}",
+  "log.moveWf": "Player {{player}}: waste → foundation {{foundation}}",
+  "log.moveWt": "Player {{player}}: waste → tableau {{tableau}}",
+  "log.moveTf": "Player {{player}}: tableau {{tableau}} → foundation {{foundation}}",
+  "log.moveTt": "Player {{player}}: tableau {{fromTableau}} → tableau {{toTableau}}",
+  "log.nertz": "Player {{player}} emptied the Nertz pile"
 }

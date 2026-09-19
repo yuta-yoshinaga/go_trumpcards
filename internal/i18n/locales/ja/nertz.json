@@ -44,5 +44,14 @@
   "zoneTableauWithIdx": "タブロー{{col}}(idx={{idx}})",
   "zoneFoundation": "ファウンデーション{{col}}",
   "helpExampleHint": "  h                   次の一手を教えてもらう",
-  "helpLog": "  l                   行動ログを表示"
+  "helpLog": "  l                   行動ログを表示",
+  "log.recycle": "ウェイストをストックに戻しました",
+  "log.draw": "ストックからカードを引きました",
+  "log.moveNf": "プレイヤー{{player}}がナッツ→ファウンデーション{{foundation}}",
+  "log.moveNt": "プレイヤー{{player}}がナッツ→タブロー{{tableau}}",
+  "log.moveWf": "プレイヤー{{player}}がウェイスト→ファウンデーション{{foundation}}",
+  "log.moveWt": "プレイヤー{{player}}がウェイスト→タブロー{{tableau}}",
+  "log.moveTf": "プレイヤー{{player}}がタブロー{{tableau}}→ファウンデーション{{foundation}}",
+  "log.moveTt": "プレイヤー{{player}}がタブロー{{fromTableau}}→タブロー{{toTableau}}",
+  "log.nertz": "プレイヤー{{player}}がナッツパイルを出し切った"
 }
