@@ -51,6 +51,10 @@ type BlackJackSwitch struct {
 	actionLogBase
 }
 
+func (bs *BlackJackSwitch) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	bs.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
+}
+
 // NewBlackJackSwitch コンストラクタ
 func NewBlackJackSwitch(tc *TrumpCards, player, dealer *BlackJackPlayer) *BlackJackSwitch {
 	tc.Shuffle()
@@ -139,7 +143,7 @@ func (bs *BlackJackSwitch) PlayerBet(amount int) error {
 		}
 		bs.dealer.AddCard(c)
 	}
-	bs.appendLog(0, "bet", fmt.Sprintf("bet %d on each hand", amount), nil)
+	bs.appendLog(0, "bet", "blackjackswitch.log.bet", map[string]string{"amount": fmt.Sprint(amount)}, nil)
 	// ナチュラルBJを互いに持っていれば即終了。そうでなくとも、
 	// スイッチの選択肢は残す（プレイヤーは現状維持を選べる）。
 	if bs.dealerNaturalBJ() {
@@ -172,7 +176,7 @@ func (bs *BlackJackSwitch) PlayerSwitch() error {
 	bs.hands[0].SetCard(1, c1)
 	bs.hands[1].SetCard(1, c0)
 	bs.switched = true
-	bs.appendLog(0, "switch", "switch second cards", []*Card{c0, c1})
+	bs.appendLog(0, "switch", "blackjackswitch.log.switch", nil, []*Card{c0, c1})
 	return bs.beginActionPhase()
 }
 
@@ -205,7 +209,7 @@ func (bs *BlackJackSwitch) PlayerKeep() error {
 	if bs.phase != BJSwitchPhaseSwitch {
 		return NewDomainError(ErrWrongPhase, "Keep is not allowed now.")
 	}
-	bs.appendLog(0, "keep", "keep current hands", nil)
+	bs.appendLog(0, "keep", "blackjackswitch.log.keep", nil, nil)
 	return bs.beginActionPhase()
 }
 
@@ -236,7 +240,7 @@ func (bs *BlackJackSwitch) PlayerHit() error {
 		return ErrDeckExhausted
 	}
 	hand.AddCard(c)
-	bs.appendLog(0, "hit", "hit", []*Card{c})
+	bs.appendLog(0, "hit", "blackjackswitch.log.hit", nil, []*Card{c})
 	if hand.GetScore() >= 22 {
 		hand.SetBusted(true)
 		bs.advanceHand()
@@ -254,7 +258,7 @@ func (bs *BlackJackSwitch) PlayerStand() error {
 		return NewDomainError(ErrHandFinished, "This hand is already finished.")
 	}
 	hand.SetStood(true)
-	bs.appendLog(0, "stand", "stand", nil)
+	bs.appendLog(0, "stand", "blackjackswitch.log.stand", nil, nil)
 	bs.advanceHand()
 	return nil
 }
@@ -286,7 +290,7 @@ func (bs *BlackJackSwitch) PlayerDoubleDown() error {
 		return ErrDeckExhausted
 	}
 	hand.AddCard(c)
-	bs.appendLog(0, "doubledown", "double down", []*Card{c})
+	bs.appendLog(0, "doubledown", "blackjackswitch.log.doubleDown", nil, []*Card{c})
 	if hand.GetScore() >= 22 {
 		hand.SetBusted(true)
 	} else {
@@ -332,20 +336,20 @@ func (bs *BlackJackSwitch) dealerPlayCards() {
 			break // バースト → そのまま終了（22プッシュは精算側で判定）
 		}
 		if score >= 18 {
-			bs.appendLog(-1, "dealerstand", "dealer stand", nil)
+			bs.appendLog(-1, "dealerstand", "blackjackswitch.log.dealerStand", nil, nil)
 			break
 		}
 		if score == 17 && (!BJSwitchDealerHitsSoft17 || !bs.dealer.IsSoft()) {
-			bs.appendLog(-1, "dealerstand", "dealer stand", nil)
+			bs.appendLog(-1, "dealerstand", "blackjackswitch.log.dealerStand", nil, nil)
 			break
 		}
 		c := bs.trumpCards.DrawCard()
 		if c == nil {
-			bs.appendLog(-1, "dealerstand", "dealer stand", nil)
+			bs.appendLog(-1, "dealerstand", "blackjackswitch.log.dealerStand", nil, nil)
 			break
 		}
 		bs.dealer.AddCard(c)
-		bs.appendLog(-1, "dealerhit", "dealer hit", []*Card{c})
+		bs.appendLog(-1, "dealerhit", "blackjackswitch.log.dealerHit", nil, []*Card{c})
 	}
 }
 
@@ -370,16 +374,16 @@ func (bs *BlackJackSwitch) endGame() {
 	bs.gameEndFlag = true
 	bs.phase = BJSwitchPhaseEnd
 	overall := bs.overallResult()
-	var detail string
+	var detailCode string
 	switch overall {
 	case GameResultWin:
-		detail = "player wins"
+		detailCode = "blackjackswitch.log.resultWin"
 	case GameResultDraw:
-		detail = "draw"
+		detailCode = "blackjackswitch.log.resultDraw"
 	case GameResultLose:
-		detail = "player loses"
+		detailCode = "blackjackswitch.log.resultLose"
 	}
-	bs.appendLog(-1, "result", detail, nil)
+	bs.appendLog(-1, "result", detailCode, nil, nil)
 }
 
 // resolvePayouts 各ハンドを精算する。

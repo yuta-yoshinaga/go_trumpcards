@@ -35,5 +35,13 @@
   "errAlreadySeen": "You have already seen your hand.",
   "errRaiseMustExceedStake": "The raise must be greater than the current stake.",
   "errShowUnavailable": "Show is available only with two players remaining and your hand seen.",
-  "errInsufficientChips": "You do not have enough chips."
+  "errInsufficientChips": "You do not have enough chips.",
+  "log.gameEnd": "{{player}} wins the match",
+  "log.deal": "Deal {{round}}: ante {{ante}}, pot {{pot}}",
+  "log.see": "{{player}} sees their hand",
+  "log.bet": "{{player}} bets {{amount}} (pot {{pot}})",
+  "log.raise": "{{player}} raises to {{stake}}, bets {{amount}} (pot {{pot}})",
+  "log.fold": "{{player}} folds",
+  "log.show": "{{player}} pays {{amount}} to see (pot {{pot}})",
+  "log.win": "{{player}} wins the pot ({{pot}})"
 }

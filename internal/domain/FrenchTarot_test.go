@@ -324,6 +324,21 @@ func TestFrenchTarotFinalizePetiteEntersChien(t *testing.T) {
 	}
 }
 
+func TestFrenchTarotBidLogUsesDetailCode(t *testing.T) {
+	g := frenchTarotNewReset()
+	g.SetBidPlayerIdx(0)
+	require.NoError(t, g.PlayerBid(domain.FrenchTarotBidPetite))
+	var entry *domain.ActionLogEntry
+	for _, candidate := range g.GetActionLog() {
+		if candidate.DetailCode == "frenchtarot.log.bid" {
+			entry = candidate
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, map[string]string{"player": "You", "bid": "petite"}, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
+}
+
 func TestFrenchTarotGardeSansStashToDeclarer(t *testing.T) {
 	g := frenchTarotNewReset()
 	g.SetBidPlayerIdx(0)

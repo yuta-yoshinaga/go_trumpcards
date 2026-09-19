@@ -166,6 +166,10 @@ type ThreeCardBrag struct {
 	actionLogBase
 }
 
+func (g *ThreeCardBrag) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
+}
+
 // NewThreeCardBrag コンストラクタ
 func NewThreeCardBrag(trumpCards *TrumpCards, players []*ThreeCardBragPlayer, config ThreeCardBragConfig) *ThreeCardBrag {
 	return &ThreeCardBrag{
@@ -233,7 +237,7 @@ func (g *ThreeCardBrag) startDeal() {
 		g.gameEndFlag = true
 		g.phase = ThreeCardBragPhaseGameEnd
 		g.matchWinnerIdx = g.firstAlive()
-		g.appendLog(g.matchWinnerIdx, "game_end", fmt.Sprintf("%s wins the match", playerName(g.players, g.matchWinnerIdx)), nil)
+		g.appendLog(g.matchWinnerIdx, "game_end", "threecardbrag.log.gameEnd", map[string]string{"player": playerName(g.players, g.matchWinnerIdx)}, nil)
 		return
 	}
 	g.trumpCards.Replenish()
@@ -255,7 +259,7 @@ func (g *ThreeCardBrag) startDeal() {
 	g.phase = ThreeCardBragPhaseBetting
 	g.currentPlayerIdx = g.nextActive(g.dealerIdx)
 	g.lastAggressorIdx = g.currentPlayerIdx
-	g.appendLog(-1, "deal", fmt.Sprintf("Deal %d: ante %d, pot %d", g.roundNumber, g.config.Ante, g.pot), nil)
+	g.appendLog(-1, "deal", "threecardbrag.log.deal", map[string]string{"round": fmt.Sprint(g.roundNumber), "ante": fmt.Sprint(g.config.Ante), "pot": fmt.Sprint(g.pot)}, nil)
 }
 
 // callCost は playerIdx が現在の stake をコールするのに必要な額を返す (Blind は半額)。
@@ -277,7 +281,7 @@ func (g *ThreeCardBrag) PlayerSee() error {
 		return NewDomainErrorCode(ErrInvalidPlay, "threecardbrag.errAlreadySeen", nil)
 	}
 	g.players[g.currentPlayerIdx].SetSeen(true)
-	g.appendLog(g.currentPlayerIdx, "see", fmt.Sprintf("%s sees their hand", playerName(g.players, g.currentPlayerIdx)), nil)
+	g.appendLog(g.currentPlayerIdx, "see", "threecardbrag.log.see", map[string]string{"player": playerName(g.players, g.currentPlayerIdx)}, nil)
 	return nil
 }
 
@@ -348,7 +352,7 @@ func (g *ThreeCardBrag) applyCall(idx int) error {
 	p.AddRoundBet(cost)
 	g.pot += cost
 	g.actionCount++
-	g.appendLog(idx, "bet", fmt.Sprintf("%s bets %d (pot %d)", playerName(g.players, idx), cost, g.pot), nil)
+	g.appendLog(idx, "bet", "threecardbrag.log.bet", map[string]string{"player": playerName(g.players, idx), "amount": fmt.Sprint(cost), "pot": fmt.Sprint(g.pot)}, nil)
 	g.advanceOrResolve(idx)
 	return nil
 }
@@ -366,7 +370,7 @@ func (g *ThreeCardBrag) applyRaise(idx, newStake int) error {
 	g.pot += cost
 	g.lastAggressorIdx = idx
 	g.actionCount++
-	g.appendLog(idx, "raise", fmt.Sprintf("%s raises to %d, bets %d (pot %d)", playerName(g.players, idx), newStake, cost, g.pot), nil)
+	g.appendLog(idx, "raise", "threecardbrag.log.raise", map[string]string{"player": playerName(g.players, idx), "stake": fmt.Sprint(newStake), "amount": fmt.Sprint(cost), "pot": fmt.Sprint(g.pot)}, nil)
 	g.advanceOrResolve(idx)
 	return nil
 }
@@ -374,7 +378,7 @@ func (g *ThreeCardBrag) applyRaise(idx, newStake int) error {
 // applyFold フォールドを適用する。
 func (g *ThreeCardBrag) applyFold(idx int) {
 	g.players[idx].SetFolded(true)
-	g.appendLog(idx, "fold", fmt.Sprintf("%s folds", playerName(g.players, idx)), nil)
+	g.appendLog(idx, "fold", "threecardbrag.log.fold", map[string]string{"player": playerName(g.players, idx)}, nil)
 	if g.activeCount() == 1 {
 		g.endDeal([]int{g.firstActive()})
 		return
@@ -392,7 +396,7 @@ func (g *ThreeCardBrag) applyShow(idx int) {
 	p.SubtractChips(cost)
 	p.AddRoundBet(cost)
 	g.pot += cost
-	g.appendLog(idx, "show", fmt.Sprintf("%s pays %d to see (pot %d)", playerName(g.players, idx), cost, g.pot), nil)
+	g.appendLog(idx, "show", "threecardbrag.log.show", map[string]string{"player": playerName(g.players, idx), "amount": fmt.Sprint(cost), "pot": fmt.Sprint(g.pot)}, nil)
 	opp := g.otherActive(idx)
 	g.showdown = true
 	g.phase = ThreeCardBragPhaseShowdown
@@ -440,7 +444,7 @@ func (g *ThreeCardBrag) CpuAct() {
 	// Blind の場合はまず手札を見る (簡易 AI)。
 	if !p.GetSeen() {
 		p.SetSeen(true)
-		g.appendLog(idx, "see", fmt.Sprintf("%s sees their hand", playerName(g.players, idx)), nil)
+		g.appendLog(idx, "see", "threecardbrag.log.see", map[string]string{"player": playerName(g.players, idx)}, nil)
 	}
 	cat, _ := g.handEval(idx)
 	cost := g.callCost(idx)
@@ -491,7 +495,7 @@ func (g *ThreeCardBrag) endDeal(winners []int) {
 		g.players[w].AddChips(amt)
 	}
 	g.roundWinnerIdx = winners[0]
-	g.appendLog(winners[0], "win", fmt.Sprintf("%s wins the pot (%d)", playerName(g.players, winners[0]), g.pot), nil)
+	g.appendLog(winners[0], "win", "threecardbrag.log.win", map[string]string{"player": playerName(g.players, winners[0]), "pot": fmt.Sprint(g.pot)}, nil)
 
 	// チップ 0 は脱落。
 	for _, p := range g.players {
@@ -503,7 +507,7 @@ func (g *ThreeCardBrag) endDeal(winners []int) {
 		g.gameEndFlag = true
 		g.phase = ThreeCardBragPhaseGameEnd
 		g.matchWinnerIdx = g.firstAlive()
-		g.appendLog(g.matchWinnerIdx, "game_end", fmt.Sprintf("%s wins the match", playerName(g.players, g.matchWinnerIdx)), nil)
+		g.appendLog(g.matchWinnerIdx, "game_end", "threecardbrag.log.gameEnd", map[string]string{"player": playerName(g.players, g.matchWinnerIdx)}, nil)
 		return
 	}
 	g.phase = ThreeCardBragPhaseRoundEnd

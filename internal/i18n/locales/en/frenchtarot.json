@@ -57,5 +57,15 @@
   "errDiscardExcuse": "The Excuse cannot be discarded.",
   "errDiscardBout": "The Petit and 21 cannot be discarded.",
   "errDiscardKing": "Kings cannot be discarded.",
-  "errDiscardTrump": "Trumps cannot be discarded unless you have no choice."
+  "errDiscardTrump": "Trumps cannot be discarded unless you have no choice.",
+  "log.bid": "{{player}} bids {{bid}}",
+  "log.pass": "{{player}} passes",
+  "log.redeal": "All players passed. Redealing.",
+  "log.winBid": "{{player}} takes the contract {{bid}}",
+  "log.discard": "{{player}} discards {{count}} cards to the chien",
+  "log.play": "{{player}} plays {{card}}",
+  "log.trickWin": "{{player}} wins trick {{trick}}",
+  "log.roundScore": "deal {{deal}}: declarer({{declarer}}) {{bid}} target={{target}} pts={{points}}/2 bouts={{bouts}} base={{base}}",
+  "log.gameEndDraw": "the match ends in a draw",
+  "log.gameEndWin": "{{player}} wins the match!"
 }

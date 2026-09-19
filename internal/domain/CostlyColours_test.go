@@ -62,6 +62,15 @@ func TestCostlyColours_RefusingTheMogPaysTheOpponent(t *testing.T) {
 	assert.Equal(t, CostlyColoursPhasePlay, c.GetPhase(), "数え上げへ進んでいない")
 }
 
+func TestCostlyColours_MogLogUsesDetailCode(t *testing.T) {
+	c := newCostlyGame(t)
+	require.NoError(t, c.PlayerMog(false))
+	entry := c.GetActionLog()[len(c.GetActionLog())-1]
+	assert.Equal(t, "costlycolours.log.mogRefused", entry.DetailCode)
+	assert.Equal(t, map[string]string{"refuser": "0", "player": "1", "points": "1"}, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
+}
+
 // **交換しても手札は 3 枚のまま。** 1 枚ずつ取り替えるだけ。
 func TestCostlyColours_MogKeepsThreeCardsEach(t *testing.T) {
 	c := newCostlyGame(t)

@@ -138,7 +138,7 @@ func (c *Canfield) Draw() error {
 			c.stock = append(c.stock, c.waste[i])
 		}
 		c.waste = nil
-		c.appendLog("recycle", "ウェイストをストックに戻しました", nil)
+		c.appendLog("recycle", "canfield.log.recycle", nil, nil)
 		return nil
 	}
 	c.takeSnapshot()
@@ -154,7 +154,7 @@ func (c *Canfield) Draw() error {
 		drawn = append(drawn, card)
 	}
 	c.moveCount++
-	c.appendLog("draw", "ストックからカードを引きました", drawn)
+	c.appendLog("draw", "canfield.log.draw", nil, drawn)
 	return nil
 }
 
@@ -177,7 +177,7 @@ func (c *Canfield) MoveWasteToTableau(col int) error {
 	c.waste = c.waste[:len(c.waste)-1]
 	c.tableau[col] = append(c.tableau[col], &CanfieldTableauCard{Card: card})
 	c.moveCount++
-	c.appendLog("move", fmt.Sprintf("ウェイスト→タブロー列%d", col), []*Card{card})
+	c.appendLog("move", "canfield.log.wasteToTableau", map[string]string{"column": fmt.Sprint(col)}, []*Card{card})
 	c.autoFillFromReserve()
 	return nil
 }
@@ -202,7 +202,7 @@ func (c *Canfield) MoveWasteToFoundation() error {
 	c.waste = c.waste[:len(c.waste)-1]
 	c.foundation[fIdx] = append(c.foundation[fIdx], card)
 	c.moveCount++
-	c.appendLog("move", "ウェイスト→ファンデーション", []*Card{card})
+	c.appendLog("move", "canfield.log.wasteToFoundation", nil, []*Card{card})
 	c.checkGameClear()
 	return nil
 }
@@ -238,7 +238,7 @@ func (c *Canfield) MoveTableauToTableau(fromCol, cardIndex, toCol int) error {
 	}
 	c.tableau[fromCol] = fromCards[:cardIndex]
 	c.moveCount++
-	c.appendLog("move", fmt.Sprintf("タブロー列%d→タブロー列%d", fromCol, toCol), moved)
+	c.appendLog("move", "canfield.log.tableauToTableau", map[string]string{"from": fmt.Sprint(fromCol), "to": fmt.Sprint(toCol)}, moved)
 	c.autoFillFromReserve()
 	return nil
 }
@@ -267,7 +267,7 @@ func (c *Canfield) MoveTableauToFoundation(col int) error {
 	c.tableau[col] = from[:len(from)-1]
 	c.foundation[fIdx] = append(c.foundation[fIdx], card)
 	c.moveCount++
-	c.appendLog("move", fmt.Sprintf("タブロー列%d→ファンデーション", col), []*Card{card})
+	c.appendLog("move", "canfield.log.tableauToFoundation", map[string]string{"column": fmt.Sprint(col)}, []*Card{card})
 	c.checkGameClear()
 	c.autoFillFromReserve()
 	return nil
@@ -292,7 +292,7 @@ func (c *Canfield) MoveReserveToTableau(col int) error {
 	c.reserve = c.reserve[:len(c.reserve)-1]
 	c.tableau[col] = append(c.tableau[col], &CanfieldTableauCard{Card: card})
 	c.moveCount++
-	c.appendLog("move", fmt.Sprintf("リザーブ→タブロー列%d", col), []*Card{card})
+	c.appendLog("move", "canfield.log.reserveToTableau", map[string]string{"column": fmt.Sprint(col)}, []*Card{card})
 	return nil
 }
 
@@ -316,7 +316,7 @@ func (c *Canfield) MoveReserveToFoundation() error {
 	c.reserve = c.reserve[:len(c.reserve)-1]
 	c.foundation[fIdx] = append(c.foundation[fIdx], card)
 	c.moveCount++
-	c.appendLog("move", "リザーブ→ファンデーション", []*Card{card})
+	c.appendLog("move", "canfield.log.reserveToFoundation", nil, []*Card{card})
 	c.checkGameClear()
 	return nil
 }
@@ -325,7 +325,7 @@ func (c *Canfield) MoveReserveToFoundation() error {
 func (c *Canfield) GiveUp() {
 	if c.phase == CanfieldPhasePlaying {
 		c.phase = CanfieldPhaseGameOver
-		c.appendLog("giveup", "ギブアップしました", nil)
+		c.appendLog("giveup", "canfield.log.giveUp", nil, nil)
 	}
 }
 
@@ -414,7 +414,7 @@ func (c *Canfield) AutoComplete() error {
 			break
 		}
 	}
-	c.appendLog("autocomplete", "オートコンプリートを実行しました", nil)
+	c.appendLog("autocomplete", "canfield.log.autocomplete", nil, nil)
 	c.checkGameClear()
 	return nil
 }
@@ -596,8 +596,8 @@ func (c *Canfield) restoreSnapshot(snap *canfieldSnapshot) {
 	c.moveCount = snap.moveCount
 }
 
-func (c *Canfield) appendLog(actionType, detail string, cards []*Card) {
-	c.appendLogAt(c.moveCount, 0, actionType, detail, cards)
+func (c *Canfield) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	c.appendLogCodeAt(c.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // canfieldJSON is the JSON wire format for Canfield.
