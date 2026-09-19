@@ -30,5 +30,11 @@
   "errCardIndexOutOfRange": "The card index is out of range.",
   "errSpadesNotBroken": "Spades have not been broken yet.",
   "errFollowLeadSuit": "You must follow the lead suit.",
-  "errMustTrump": "When you cannot follow suit, you must play a spade."
+  "errMustTrump": "When you cannot follow suit, you must play a spade.",
+  "log.bid": "{{name}} bids {{bid}}",
+  "log.trickWin": "{{name}} wins trick {{trick}}",
+  "log.roundScore": "{{name}}: bid={{bid}} tricks={{tricks}} round={{round}}",
+  "log.cumulativeScore": "{{name}}: total={{total}}",
+  "log.play": "{{name}} plays {{card}}",
+  "log.gameEnd": "{{name}} wins the game!"
 }

@@ -265,11 +265,11 @@ func (p *Pontoon) deal(humanBet int) {
 		s.hands = []*PontoonHand{{cards: p.drawTwo(), bet: bet}}
 	}
 	p.bankerHand = &PontoonHand{cards: p.drawTwo()}
-	p.appendLog("deal", "全員に裏向き2枚を配った", nil)
+	p.appendLog("deal", "pontoon.log.deal", nil, nil)
 
 	// 親のポンツーンは即座に開かれ、その局は終わる。
 	if pontoonRankOf(p.bankerHand.cards) == PontoonRankPontoon {
-		p.appendLog("pontoon", "親がポンツーン", p.bankerHand.cards)
+		p.appendLog("pontoon", "pontoon.log.pontoon", nil, p.bankerHand.cards)
 		p.settle()
 		return
 	}
@@ -369,7 +369,7 @@ func (p *Pontoon) Stick() error {
 		return NewDomainErrorCode(ErrInvalidPlay, "pontoon.errCannotStickBelowMin", map[string]string{"Min": strconv.Itoa(PontoonStickMin)})
 	}
 	h.stuck = true
-	p.appendLog("stick", "スティック", h.cards)
+	p.appendLog("stick", "pontoon.log.stick", nil, h.cards)
 	p.nextHand()
 	return nil
 }
@@ -388,7 +388,7 @@ func (p *Pontoon) Twist() error {
 	}
 	h.twisted = true
 	p.hit(h)
-	p.appendLog("twist", "ツイスト", h.cards)
+	p.appendLog("twist", "pontoon.log.twist", nil, h.cards)
 	if pontoonTotal(h.cards) > PontoonTarget || len(h.cards) >= PontoonMaxCards {
 		p.nextHand()
 	}
@@ -422,7 +422,7 @@ func (p *Pontoon) Buy(extra int) error {
 	p.chips.SetChips(p.chips.GetChips() - extra)
 	h.bet += extra
 	p.hit(h)
-	p.appendLog("buy", fmt.Sprintf("バイ（+%d）", extra), h.cards)
+	p.appendLog("buy", "pontoon.log.buy", map[string]string{"amount": strconv.Itoa(extra)}, h.cards)
 	if pontoonTotal(h.cards) > PontoonTarget || len(h.cards) >= PontoonMaxCards {
 		p.nextHand()
 	}
@@ -457,7 +457,7 @@ func (p *Pontoon) Split() error {
 	s.hands = append(s.hands, nil)
 	copy(s.hands[p.activeHand+2:], s.hands[p.activeHand+1:])
 	s.hands[p.activeHand+1] = newHand
-	p.appendLog("split", "スプリット", h.cards)
+	p.appendLog("split", "pontoon.log.split", nil, h.cards)
 	return nil
 }
 
@@ -514,7 +514,7 @@ func (p *Pontoon) BankerTwist() error {
 		return NewDomainErrorCode(ErrInvalidPlay, "pontoon.errBankerAlreadyBust", nil)
 	}
 	p.hit(p.bankerHand)
-	p.appendLog("bankerTwist", "親がカードを引いた", p.bankerHand.cards)
+	p.appendLog("bankerTwist", "pontoon.log.bankerTwist", nil, p.bankerHand.cards)
 	if pontoonTotal(p.bankerHand.cards) > PontoonTarget || len(p.bankerHand.cards) >= PontoonMaxCards {
 		p.settle()
 	}
@@ -555,7 +555,17 @@ func (p *Pontoon) settle() {
 	}
 	p.phase = PontoonPhaseEnd
 	p.lastResult = p.describeResult(bankerRank, bankerTotal)
-	p.appendLog("result", p.lastResult, p.bankerHand.cards)
+	resultCode := "pontoon.log.resultTotal"
+	resultParams := map[string]string{"total": strconv.Itoa(bankerTotal)}
+	switch bankerRank {
+	case PontoonRankPontoon:
+		resultCode, resultParams = "pontoon.log.resultPontoon", nil
+	case PontoonRankFiveCard:
+		resultCode, resultParams = "pontoon.log.resultFiveCard", nil
+	case PontoonRankBust:
+		resultCode = "pontoon.log.resultBust"
+	}
+	p.appendLog("result", resultCode, resultParams, p.bankerHand.cards)
 }
 
 // settleHand 1 つの手の増減を返す（賭け金を除いた純増減）。
@@ -716,13 +726,14 @@ func (p *Pontoon) CanSplit() bool {
 }
 
 // appendLog 棋譜エントリを追加
-func (p *Pontoon) appendLog(actionType, detail string, cards []*Card) {
+func (p *Pontoon) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	p.actionLog = append(p.actionLog, &ActionLogEntry{
-		TurnNumber: len(p.actionLog),
-		PlayerIdx:  p.activeSeat,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      append([]*Card(nil), cards...),
+		TurnNumber:   len(p.actionLog),
+		PlayerIdx:    p.activeSeat,
+		ActionType:   actionType,
+		DetailCode:   detailCode,
+		DetailParams: detailParams,
+		Cards:        append([]*Card(nil), cards...),
 	})
 }
 

@@ -685,6 +685,12 @@ func TestPontoon_ActionLog(t *testing.T) {
 	if log[0].ActionType != "deal" {
 		t.Errorf("log[0].ActionType = %q, want deal", log[0].ActionType)
 	}
+	if log[0].DetailCode != "pontoon.log.deal" {
+		t.Errorf("log[0].DetailCode = %q, want pontoon.log.deal", log[0].DetailCode)
+	}
+	if log[0].Detail != "" {
+		t.Errorf("log[0].Detail = %q, want empty", log[0].Detail)
+	}
 }
 
 func TestPontoon_JSONRoundTrip(t *testing.T) {

@@ -455,6 +455,16 @@ func TestCallBreak_GetActionLog(t *testing.T) {
 	require.NoError(t, cb.PlayerBid(3))
 	log := cb.GetActionLog()
 	assert.NotEmpty(t, log)
+	var bidLog *domain.ActionLogEntry
+	for _, entry := range log {
+		if entry.DetailCode == "callbreak.log.bid" {
+			bidLog = entry
+			break
+		}
+	}
+	require.NotNil(t, bidLog)
+	assert.Equal(t, map[string]string{"name": "You", "bid": "3"}, bidLog.DetailParams)
+	assert.Empty(t, bidLog.Detail)
 }
 
 func TestFormatCallBreakScore(t *testing.T) {

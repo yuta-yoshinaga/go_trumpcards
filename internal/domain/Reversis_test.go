@@ -706,7 +706,18 @@ func TestReversis_UnmarshalRejectsNegativePool(t *testing.T) {
 
 func TestReversis_ActionLog(t *testing.T) {
 	r := newTestReversis(t)
-	assert.NotEmpty(t, r.GetActionLog())
+	log := r.GetActionLog()
+	assert.NotEmpty(t, log)
+	var dealLog *ActionLogEntry
+	for _, entry := range log {
+		if entry.DetailCode == "reversis.log.deal" {
+			dealLog = entry
+			break
+		}
+	}
+	require.NotNil(t, dealLog)
+	assert.Equal(t, map[string]string{"round": "1", "pool": "20"}, dealLog.DetailParams)
+	assert.Empty(t, dealLog.Detail)
 }
 
 // **手札に出す点数と精算の点数が同じであること** (#5747)。TS 側も同じ

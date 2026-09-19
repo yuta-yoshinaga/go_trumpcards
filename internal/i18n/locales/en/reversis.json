@@ -25,5 +25,14 @@
   "hintReasonDumpHigh": "safe trick: shed a high card now",
   "helpExampleGiveUp": "  g                    give the round up",
   "helpHint": "  h                    show a hint",
-  "handCard": "[{{idx}}]{{card}} ({{points}})"
+  "handCard": "[{{idx}}]{{card}} ({{points}})",
+  "log.deal": "Round {{round}} started (pool {{pool}})",
+  "log.play": "{{card}}",
+  "log.marked": "Took {{name}} ( +{{penalty}} penalty, {{stake}} to pool)",
+  "log.poolTied": "Fewest penalty points are tied. Carrying over pool {{pool}}",
+  "log.poolWon": "Won pool {{pool}} with fewest penalty points ({{penalty}})",
+  "log.poolSplit": "Final round tied. Splitting pool {{pool}} among {{players}} players",
+  "log.resultTie": "No winner: the game ended in a tie",
+  "log.resultWinner": "Winner ({{chips}} chips)",
+  "log.giveUp": "Gave up"
 }

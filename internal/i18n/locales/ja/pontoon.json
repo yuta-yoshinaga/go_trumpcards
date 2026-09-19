@@ -51,5 +51,16 @@
   "errNotHumanTurn": "あなたの手番ではありません",
   "errNotPlayerTurn": "プレイヤーの手番ではありません",
   "errSplitRequiresEqualRank": "スプリットは同じランクのカードが2枚必要です",
-  "errTooManyHands": "これ以上手札を分割できません（最大 {{Max}}）"
+  "errTooManyHands": "これ以上手札を分割できません（最大 {{Max}}）",
+  "log.deal": "全員に裏向き2枚を配った",
+  "log.pontoon": "親がポンツーン",
+  "log.stick": "スティック",
+  "log.twist": "ツイスト",
+  "log.buy": "バイ（+{{amount}}）",
+  "log.split": "スプリット",
+  "log.bankerTwist": "親がカードを引いた",
+  "log.resultPontoon": "親がポンツーン",
+  "log.resultFiveCard": "親がファイブカード・トリック",
+  "log.resultBust": "親がバースト（{{total}}）",
+  "log.resultTotal": "親は {{total}}"
 }

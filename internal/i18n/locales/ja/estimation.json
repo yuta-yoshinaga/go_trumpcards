@@ -42,5 +42,14 @@
   "suitDiamond": "ダイヤ",
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
   "helpHint": "  h                    助言を表示",
-  "roundDelta": "今回: {{delta}}"
+  "roundDelta": "今回: {{delta}}",
+  "log.deal": "ラウンド{{round}} を開始",
+  "log.trump": "切り札を {{suit}} に決めた",
+  "log.dash": "Dash Call（0 宣言）",
+  "log.bid": "{{bid}} トリックを宣言",
+  "log.risk": "Risk（最高宣言 {{bid}}）",
+  "log.play": "{{card}}",
+  "log.score": "宣言{{bid}} 獲得{{got}}: {{score}}",
+  "log.result": "最終得点 {{score0}}/{{score1}}/{{score2}}/{{score3}}",
+  "log.giveUp": "ギブアップしました"
 }
