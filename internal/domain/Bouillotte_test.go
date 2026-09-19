@@ -24,6 +24,15 @@ func bouillotteSetHand(p *domain.BouillottePlayer, cards ...*domain.Card) {
 	}
 }
 
+func TestBouillotteActionLogUsesDetailCode(t *testing.T) {
+	g := domain.NewDefaultBouillotte()
+	g.Reset()
+	entry := g.GetActionLog()[0]
+	assert.Equal(t, "bouillotte.log.deal", entry.DetailCode)
+	assert.NotEmpty(t, entry.DetailParams["round"])
+	assert.Empty(t, entry.Detail)
+}
+
 // bouillotteEval3 は 3 枚 + retourne を評価するショートカット。
 func bouillotteEval3(retourne *domain.Card, cards ...*domain.Card) (int, []int) {
 	return domain.BouillotteEval(cards, retourne)

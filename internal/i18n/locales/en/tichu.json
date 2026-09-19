@@ -22,5 +22,12 @@
   "dogLeadPassed": "Dog: {{from}} played the Dog; the lead passed to their partner ({{to}})",
   "dogLeadPassedByYou": "Dog: you played the Dog; the lead passed to your partner (CPU {{to}})",
   "dogLeadPassedToYou": "Dog: CPU {{from}} played the Dog; the lead passed to you",
-  "dogLeadPassedBetweenCpus": "Dog: CPU {{from}} played the Dog; the lead passed to CPU {{to}}"
+  "dogLeadPassedBetweenCpus": "Dog: CPU {{from}} played the Dog; the lead passed to CPU {{to}}",
+  "log.declareNone": "no declaration",
+  "log.declareTichu": "Tichu",
+  "log.declareGrandTichu": "Grand Tichu",
+  "log.pass": "pass",
+  "log.play": "played {{count}} card(s)",
+  "log.dog": "lead passed to partner",
+  "log.end": "deal over"
 }

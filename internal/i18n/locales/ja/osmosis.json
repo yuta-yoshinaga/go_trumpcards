@@ -32,5 +32,11 @@
   "hintLine": "ヒント: {{from}} → {{to}} (配置可能: {{allowed}})",
   "helpExampleHint": "  h                    次の一手を教えてもらう",
   "helpExampleAuto": "  ac                   組札へ送れる札を自動で送る",
-  "helpUndo": "  u                    1手戻す"
+  "helpUndo": "  u                    1手戻す",
+  "log.recycle": "ウェイストをストックに戻しました",
+  "log.draw": "ストックからカードを引きました",
+  "log.moveWasteToFoundation": "ウェイスト→ファンデーション{{foundation}}段目",
+  "log.moveReserveToFoundation": "リザーブ列{{reserve}}→ファンデーション{{foundation}}段目",
+  "log.giveUp": "ギブアップしました",
+  "log.autoComplete": "オートコンプリートを実行しました"
 }

@@ -14,6 +14,15 @@ func newTestOsmosis() *domain.Osmosis {
 	return domain.NewOsmosis(domain.NewTrumpCards(0))
 }
 
+func TestOsmosisActionLogUsesDetailCode(t *testing.T) {
+	o := setupPlayingOsmosis()
+	assert.NoError(t, o.Draw())
+	entry := o.GetActionLog()[len(o.GetActionLog())-1]
+	assert.Equal(t, "osmosis.log.draw", entry.DetailCode)
+	assert.Empty(t, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
+}
+
 func setupPlayingOsmosis() *domain.Osmosis {
 	o := newTestOsmosis()
 	o.Reset()

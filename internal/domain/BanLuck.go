@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // BanLuckPhase はゲームの進行段階。
@@ -86,8 +87,8 @@ type BanLuck struct {
 	roundNum int
 
 	gameEndFlag bool
-	actionLog   []*ActionLogEntry
 	turnNumber  int
+	actionLogBase
 }
 
 // NewBanLuck は指定の山・席・設定で卓を構築する。
@@ -127,7 +128,7 @@ func (g *BanLuck) Reset() {
 	g.gameEndFlag = false
 	g.actionLog = nil
 	g.turnNumber = 0
-	g.appendLog(-1, "reset", "game reset", nil)
+	g.appendLog(-1, "reset", "banluck.log.reset", nil, nil)
 }
 
 // --- 進行 ---
@@ -191,7 +192,7 @@ func (g *BanLuck) deal() {
 	}
 	g.settled = false
 	g.phase = BanLuckPhasePlay
-	g.appendLog(-1, "deal", fmt.Sprintf("round %d, banker seat %d", g.roundNum, g.banker), nil)
+	g.appendLog(-1, "deal", "banluck.log.deal", map[string]string{"round": strconv.Itoa(g.roundNum), "banker": strconv.Itoa(g.banker)}, nil)
 	// **手番は直接置かない。** 特別役の席は手番を持たないので、配った時点で
 	// 「動ける席が 1 つも無い」ことがある (全席が Ban Luck など)。手番を素直に
 	// 代入すると精算がどこからも呼ばれず、**盤面が PLAY のまま固まる** ──
@@ -245,7 +246,7 @@ func (g *BanLuck) hitSeat(i int) error {
 		h.SetBusted(true)
 	}
 	g.results[i].Rank = EvalBanLuckHand(h)
-	g.appendLog(i, "hit", fmt.Sprintf("seat %d hits", i), []*Card{c})
+	g.appendLog(i, "hit", "banluck.log.hit", map[string]string{"seat": strconv.Itoa(i)}, []*Card{c})
 	g.advanceTurn()
 	return nil
 }
@@ -267,7 +268,7 @@ func (g *BanLuck) Stand() error {
 // standSeat は席 i を打ち止めにし、手番を進める。
 func (g *BanLuck) standSeat(i int) error {
 	g.hands[i].SetStood(true)
-	g.appendLog(i, "stand", fmt.Sprintf("seat %d stands", i), nil)
+	g.appendLog(i, "stand", "banluck.log.stand", map[string]string{"seat": strconv.Itoa(i)}, nil)
 	g.advanceTurn()
 	return nil
 }
@@ -455,7 +456,7 @@ func (g *BanLuck) settle() {
 
 	g.settled = true
 	g.phase = BanLuckPhaseRoundEnd
-	g.appendLog(-1, "result", fmt.Sprintf("banker seat %d nets %d", g.banker, bankerDelta), nil)
+	g.appendLog(-1, "result", "banluck.log.result", map[string]string{"banker": strconv.Itoa(g.banker), "amount": strconv.Itoa(bankerDelta)}, nil)
 }
 
 // rotateBanker は次のラウンドの親を決める。
@@ -537,7 +538,7 @@ func (g *BanLuck) aliveSeats() int {
 func (g *BanLuck) finish() {
 	g.gameEndFlag = true
 	g.phase = BanLuckPhaseGameEnd
-	g.appendLog(-1, "gameEnd", fmt.Sprintf("winner seat %d", g.WinnerSeat()), nil)
+	g.appendLog(-1, "gameEnd", "banluck.log.gameEnd", map[string]string{"winner": strconv.Itoa(g.WinnerSeat())}, nil)
 }
 
 // WinnerSeat はチップがいちばん多い席を返す。同点なら若い席。
@@ -611,15 +612,9 @@ func (g *BanLuck) GetRemainingCards() int { return g.deck.GetRemainingCount() }
 func (g *BanLuck) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // appendLog は棋譜に 1 行足す。
-func (g *BanLuck) appendLog(seat int, actionType, detail string, cards []*Card) {
+func (g *BanLuck) appendLog(seat int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	g.turnNumber++
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: g.turnNumber,
-		PlayerIdx:  seat,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.appendLogCodeAt(g.turnNumber, seat, actionType, detailCode, detailParams, cards)
 	if len(g.actionLog) > banLuckMaxSliceLen {
 		g.actionLog = g.actionLog[len(g.actionLog)-banLuckMaxSliceLen:]
 	}

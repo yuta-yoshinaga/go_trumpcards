@@ -39,5 +39,13 @@
   "hintReasonExactlySeven": "7ちょうどです。引けば壊すだけ",
   "hintReasonExactlyTwentySeven": "27ちょうどです。引けば壊すだけ",
   "hintReasonStandPat": "ここで止めるのが安全です。1枚で超える危険があります",
-  "hintReasonBustBoth": "両側とも超えています。引いても失うものはありませんが、得るものもありません"
+  "hintReasonBustBoth": "両側とも超えています。引いても失うものはありませんが、得るものもありません",
+  "log.deal": "ラウンド{{round}}: アンティ{{ante}}、ポット{{pot}}",
+  "log.declareDraw": "プレイヤー{{player}}がカードを要求しました",
+  "log.declareStand": "プレイヤー{{player}}がスタンドを宣言しました",
+  "log.deckEmpty": "山札が尽きたため、全員がスタンドしました",
+  "log.draw": "{{player}}がカードを引きました",
+  "log.resultCarry": "全員が両方の側でバストしたため、ポット{{pot}}を持ち越します",
+  "log.win": "{{player}}が{{amount}}を獲得しました",
+  "log.gameEnd": "{{player}}がゲームに勝利しました"
 }
