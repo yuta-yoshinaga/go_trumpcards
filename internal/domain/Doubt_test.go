@@ -1085,8 +1085,9 @@ func TestDoubt_ActionLog_PlayerPlay(t *testing.T) {
 	entry := log[0]
 	assert.Equal(t, 0, entry.PlayerIdx)
 	assert.Equal(t, "play", entry.ActionType)
-	assert.Contains(t, entry.Detail, "declared 1")
-	assert.Contains(t, entry.Detail, "1 card(s)")
+	assert.Equal(t, "doubt.log.play", entry.DetailCode)
+	assert.Equal(t, map[string]string{"claimed": "1", "count": "1"}, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
 	assert.Len(t, entry.Cards, 1)
 }
 
@@ -1105,7 +1106,9 @@ func TestDoubt_ActionLog_CpuPlay(t *testing.T) {
 	for _, e := range log {
 		if e.ActionType == "play" && e.PlayerIdx != 0 {
 			found = true
-			assert.NotEmpty(t, e.Detail)
+			assert.Equal(t, "doubt.log.play", e.DetailCode)
+			assert.NotEmpty(t, e.DetailParams)
+			assert.Empty(t, e.Detail)
 			assert.NotEmpty(t, e.Cards)
 			break
 		}
@@ -1114,33 +1117,40 @@ func TestDoubt_ActionLog_CpuPlay(t *testing.T) {
 }
 
 func TestDoubt_ActionLog_ResolveDoubt(t *testing.T) {
-	game, players := makeDoubtGame()
-	// Human plays a card that is a bluff (claims 5 but card is 1)
-	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
-	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
-	game.SetPhase(domain.DoubtPhasePlay)
-	err := game.PlayerPlay([]int{0}, 5, 0) // bluff: card is 1, claims 5
-	assert.NoError(t, err)
+	for _, tc := range []struct {
+		name       string
+		cardValue  int
+		claimValue int
+		wantCode   string
+	}{
+		{name: "lying", cardValue: 1, claimValue: 5, wantCode: "doubt.log.doubtLying"},
+		{name: "honest", cardValue: 3, claimValue: 3, wantCode: "doubt.log.doubtHonest"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			game, players := makeDoubtGame()
+			players[0].AddCard(domain.NewCard(domain.CardDesignSpade, tc.cardValue, false))
+			players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 4, false))
+			game.SetPhase(domain.DoubtPhasePlay)
+			err := game.PlayerPlay([]int{0}, tc.claimValue, 0)
+			assert.NoError(t, err)
 
-	// Set phase to doubt and resolve
-	game.SetPhase(domain.DoubtPhaseDoubt)
-	game.ResolveDoubt([]int{1})
+			game.SetPhase(domain.DoubtPhaseDoubt)
+			game.ResolveDoubt([]int{1})
 
-	log := game.GetActionLog()
-	var doubtEntry, penaltyEntry *domain.ActionLogEntry
-	for _, e := range log {
-		if e.ActionType == "doubt" {
-			doubtEntry = e
-		}
-		if e.ActionType == "penalty" {
-			penaltyEntry = e
-		}
+			var doubtEntry *domain.ActionLogEntry
+			for _, e := range game.GetActionLog() {
+				if e.ActionType == "doubt" {
+					doubtEntry = e
+					break
+				}
+			}
+			assert.NotNil(t, doubtEntry, "expected doubt action log entry")
+			assert.Equal(t, 1, doubtEntry.PlayerIdx)
+			assert.Equal(t, tc.wantCode, doubtEntry.DetailCode)
+			assert.Equal(t, map[string]string{"player": "0"}, doubtEntry.DetailParams)
+			assert.Empty(t, doubtEntry.Detail)
+		})
 	}
-	assert.NotNil(t, doubtEntry, "expected doubt action log entry")
-	assert.Equal(t, 1, doubtEntry.PlayerIdx)
-	assert.Contains(t, doubtEntry.Detail, "lying")
-	assert.NotNil(t, penaltyEntry, "expected penalty action log entry")
-	assert.Contains(t, penaltyEntry.Detail, "card(s)")
 }
 
 func TestDoubt_ActionLog_SkipDoubt(t *testing.T) {
@@ -1160,7 +1170,9 @@ func TestDoubt_ActionLog_SkipDoubt(t *testing.T) {
 		if e.ActionType == "nodoubt" {
 			found = true
 			assert.Equal(t, -1, e.PlayerIdx)
-			assert.Equal(t, "no one doubted", e.Detail)
+			assert.Equal(t, "doubt.log.noDoubt", e.DetailCode)
+			assert.Empty(t, e.DetailParams)
+			assert.Empty(t, e.Detail)
 			break
 		}
 	}
@@ -1182,7 +1194,9 @@ func TestDoubt_ActionLog_Finish(t *testing.T) {
 		if e.ActionType == "finish" {
 			found = true
 			assert.Equal(t, -1, e.PlayerIdx)
-			assert.Contains(t, e.Detail, "wins")
+			assert.Equal(t, "doubt.log.finish", e.DetailCode)
+			assert.Equal(t, map[string]string{"player": "0"}, e.DetailParams)
+			assert.Empty(t, e.Detail)
 			break
 		}
 	}

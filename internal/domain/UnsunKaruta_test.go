@@ -17,6 +17,17 @@ func newUnsunForTest(t *testing.T) *UnsunKaruta {
 	return g
 }
 
+func TestUnsunKaruta_ActionLogUsesDetailCode(t *testing.T) {
+	g := newUnsunForTest(t)
+	log := g.GetActionLog()
+	require.NotEmpty(t, log)
+	entry := log[0]
+	assert.Equal(t, "unsunkaruta.log.deal", entry.DetailCode)
+	assert.Equal(t, "1", entry.DetailParams["round"])
+	assert.NotEmpty(t, entry.DetailParams["suit"])
+	assert.Empty(t, entry.Detail)
+}
+
 // unsunPlayDeal は 1 ディールを最後まで打つ。合法手の先頭を出し続ける。
 func unsunPlayDeal(t *testing.T, g *UnsunKaruta) {
 	t.Helper()

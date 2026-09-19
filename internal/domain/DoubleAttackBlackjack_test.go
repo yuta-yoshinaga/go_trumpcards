@@ -533,6 +533,10 @@ func TestDoubleAttack_Accessors(t *testing.T) {
 	assert.NotNil(t, g.GetPlayer())
 	assert.Equal(t, DoubleAttackDefaultChips, g.GetConfig().InitialChips)
 	assert.NotEmpty(t, g.GetActionLog())
+	entry := g.GetActionLog()[0]
+	assert.Equal(t, "doubleattack.log.start", entry.DetailCode)
+	assert.Empty(t, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
 	assert.Zero(t, g.GetHandCount())
 	assert.Nil(t, g.GetDealerCards())
 	assert.Zero(t, g.GetDealerScore())
@@ -550,7 +554,7 @@ func TestDoubleAttack_Accessors(t *testing.T) {
 func TestDoubleAttack_ActionLogIsBounded(t *testing.T) {
 	g := newDoubleAttackForTest(t)
 	for range doubleAttackMaxSliceLen + 50 {
-		g.appendLog("noise", "x", nil)
+		g.appendLog("noise", "x", nil, nil)
 	}
 	assert.Len(t, g.GetActionLog(), doubleAttackMaxSliceLen)
 }

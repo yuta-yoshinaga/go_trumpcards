@@ -625,6 +625,10 @@ func TestCasinoHoldem_ActionLog(t *testing.T) {
 	require.NotEmpty(t, log)
 	// bet → deal → flop → fold → result
 	assert.GreaterOrEqual(t, len(log), 5)
+	entry := log[len(log)-1]
+	assert.Equal(t, "casinoholdem.log.resultFolded", entry.DetailCode)
+	assert.Empty(t, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
 }
 
 func TestCasinoHoldem_RecommendCall(t *testing.T) {

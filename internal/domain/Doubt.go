@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // DoubtPlayerCnt ダウトプレイヤー数
@@ -256,13 +257,15 @@ func (d *Doubt) PlayerPlay(cardIndices []int, claimedValue int, humanPlayMs int)
 	}
 	d.cpuActions = nil
 
-	d.appendLog(d.currentTurn, "play", fmt.Sprintf("declared %d, played %d card(s)", claimedValue, len(played)), played)
+	d.appendLog(d.currentTurn, "play", "doubt.log.play", map[string]string{
+		"claimed": strconv.Itoa(claimedValue), "count": strconv.Itoa(len(played)),
+	}, played)
 
 	if player.GetCardsSize() == 0 {
 		player.SetIsFinished(true)
 		d.winnerIdx = d.currentTurn
 		d.gameEndFlag = true
-		d.appendLog(-1, "finish", fmt.Sprintf("player %d wins", d.currentTurn), nil)
+		d.appendLog(-1, "finish", "doubt.log.finish", map[string]string{"player": strconv.Itoa(d.currentTurn)}, nil)
 		return nil
 	}
 
@@ -351,13 +354,15 @@ func (d *Doubt) CpuPlay() {
 	}
 	d.cpuActions = append(d.cpuActions, cpuAction)
 
-	d.appendLog(playerIdx, "play", fmt.Sprintf("declared %d, played %d card(s)", claimedValue, numCards), played)
+	d.appendLog(playerIdx, "play", "doubt.log.play", map[string]string{
+		"claimed": strconv.Itoa(claimedValue), "count": strconv.Itoa(numCards),
+	}, played)
 
 	if player.GetCardsSize() == 0 {
 		player.SetIsFinished(true)
 		d.winnerIdx = playerIdx
 		d.gameEndFlag = true
-		d.appendLog(-1, "finish", fmt.Sprintf("player %d wins", playerIdx), nil)
+		d.appendLog(-1, "finish", "doubt.log.finish", map[string]string{"player": strconv.Itoa(playerIdx)}, nil)
 		return
 	}
 
@@ -512,12 +517,14 @@ func (d *Doubt) ResolveDoubt(doubterIndices []int) {
 		RevealedCards:  revealedCards,
 	}
 
-	lyingStr := "honest"
+	doubtCode := "doubt.log.doubtHonest"
 	if wasLying {
-		lyingStr = "lying"
+		doubtCode = "doubt.log.doubtLying"
 	}
-	d.appendLog(doubter, "doubt", fmt.Sprintf("doubted player %d (%s)", d.lastAction.PlayerIdx, lyingStr), revealedCards)
-	d.appendLog(loserIdx, "penalty", fmt.Sprintf("takes %d card(s)", takeCount), nil)
+	d.appendLog(doubter, "doubt", doubtCode, map[string]string{
+		"player": strconv.Itoa(d.lastAction.PlayerIdx),
+	}, revealedCards)
+	d.appendLog(loserIdx, "penalty", "doubt.log.penalty", map[string]string{"count": strconv.Itoa(takeCount)}, nil)
 
 	// 非敗者のCPUがカードを記憶する
 	retentionChance := memoryRetentionChance(d.config.CpuMemoryLevel)
@@ -541,11 +548,16 @@ func (d *Doubt) SkipDoubt() {
 	if d.phase != DoubtPhaseDoubt || d.lastAction == nil {
 		return
 	}
-	d.appendLog(-1, "nodoubt", "no one doubted", nil)
+	d.appendLog(-1, "nodoubt", "doubt.log.noDoubt", nil, nil)
 	d.turnCounter++
 	d.lastDoubtResult = nil
 	d.currentTurn = (d.lastAction.PlayerIdx + 1) % DoubtPlayerCnt
 	d.phase = DoubtPhasePlay
+}
+
+// appendLog は行動ログを追加する。
+func (d *Doubt) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	d.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // IsHumanTurn 現在の手番が人間かどうか

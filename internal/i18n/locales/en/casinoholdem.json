@@ -45,5 +45,15 @@
   "bonusPayStraight": "Straight: {{mult}}:1",
   "bonusPayThreeOfAKind": "Three of a Kind: {{mult}}:1",
   "bonusPayTwoPair": "Two Pair: {{mult}}:1",
-  "bonusPayPairOfAces": "Pair of Aces: {{mult}}:1"
+  "bonusPayPairOfAces": "Pair of Aces: {{mult}}:1",
+  "log.bet": "ante={{ante}} bonus={{bonus}}",
+  "log.call": "call bet={{bet}}",
+  "log.fold": "player folds",
+  "log.resultFolded": "player folded",
+  "log.deal": "dealt 2 hole cards each",
+  "log.flop": "flop dealt",
+  "log.turnRiver": "turn and river dealt",
+  "log.resultPlayerWins": "player wins",
+  "log.resultPush": "push",
+  "log.resultDealerWins": "dealer wins"
 }

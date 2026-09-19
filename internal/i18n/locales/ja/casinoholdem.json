@@ -45,5 +45,15 @@
   "bonusPayStraight": "ストレート: {{mult}}:1",
   "bonusPayThreeOfAKind": "スリーカード: {{mult}}:1",
   "bonusPayTwoPair": "ツーペア: {{mult}}:1",
-  "bonusPayPairOfAces": "エースペア: {{mult}}:1"
+  "bonusPayPairOfAces": "エースペア: {{mult}}:1",
+  "log.bet": "アンテ={{ante}} ボーナス={{bonus}}",
+  "log.call": "コールベット={{bet}}",
+  "log.fold": "プレイヤーがフォールド",
+  "log.resultFolded": "プレイヤーがフォールドしました",
+  "log.deal": "各プレイヤーにホールカードを2枚配りました",
+  "log.flop": "フロップを配りました",
+  "log.turnRiver": "ターンとリバーを配りました",
+  "log.resultPlayerWins": "プレイヤーの勝ち",
+  "log.resultPush": "プッシュ",
+  "log.resultDealerWins": "ディーラーの勝ち"
 }

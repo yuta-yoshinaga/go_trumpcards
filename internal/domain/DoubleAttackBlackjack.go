@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // doubleAttackMaxSliceLen はデシリアライズ時のスライス長上限。
@@ -94,8 +95,8 @@ type DoubleAttackBlackjack struct {
 	bustItPayout    int
 	roundNumber     int
 	gameEndFlag     bool
-	actionLog       []*ActionLogEntry
-	turnNumber      int
+	actionLogBase
+	turnNumber int
 }
 
 // NewDoubleAttackBlackjack は指定のシュー・プレイヤー・設定で卓を構築する。
@@ -127,7 +128,7 @@ func (g *DoubleAttackBlackjack) Reset() {
 	g.gameEndFlag = false
 	g.actionLog = nil
 	g.turnNumber = 0
-	g.appendLog("start", "extra bet blackjack begins", nil)
+	g.appendLog("start", "doubleattack.log.start", nil, nil)
 	g.startRound()
 }
 
@@ -169,7 +170,7 @@ func (g *DoubleAttackBlackjack) NextRound() error {
 	g.startRound()
 	if g.player.GetChips() < DoubleAttackAnteMin {
 		g.gameEndFlag = true
-		g.appendLog("gameEnd", "out of chips", nil)
+		g.appendLog("gameEnd", "doubleattack.log.gameEnd", nil, nil)
 	}
 	return nil
 }
@@ -198,7 +199,9 @@ func (g *DoubleAttackBlackjack) PlaceBet(ante, bustIt int) error {
 	}
 	g.anteBet = ante
 	g.bustItBet = bustIt
-	g.appendLog("bet", fmt.Sprintf("ante %d, bustIt %d", ante, bustIt), nil)
+	g.appendLog("bet", "doubleattack.log.bet", map[string]string{
+		"ante": strconv.Itoa(ante), "bustIt": strconv.Itoa(bustIt),
+	}, nil)
 
 	hand := NewBlackJackHand()
 	hand.AddCard(g.shoe.DrawCard())
@@ -210,7 +213,7 @@ func (g *DoubleAttackBlackjack) PlaceBet(ante, bustIt int) error {
 	g.dealerHand = NewBlackJackHand()
 	g.dealerHand.AddCard(g.shoe.DrawCard()) // アップカードのみ
 
-	g.appendLog("deal", "cards dealt", hand.GetCards())
+	g.appendLog("deal", "doubleattack.log.deal", nil, hand.GetCards())
 	g.phase = DoubleAttackPhaseAttack
 	return nil
 }
@@ -242,7 +245,7 @@ func (g *DoubleAttackBlackjack) Attack(amount int) error {
 	}
 	g.attackBet = amount
 	g.hands[0].SetBet(g.anteBet + amount)
-	g.appendLog("attack", fmt.Sprintf("double attack %d", amount), nil)
+	g.appendLog("attack", "doubleattack.log.attack", map[string]string{"amount": strconv.Itoa(amount)}, nil)
 
 	// **ここで初めてディーラーの 2 枚目を配る。**
 	g.dealerHand.AddCard(g.shoe.DrawCard())
@@ -274,7 +277,7 @@ func (g *DoubleAttackBlackjack) Hit() error {
 		return err
 	}
 	h.AddCard(g.shoe.DrawCard())
-	g.appendLog("hit", "hit", h.GetCards())
+	g.appendLog("hit", "doubleattack.log.hit", nil, h.GetCards())
 	if h.GetScore() > 21 {
 		h.SetBusted(true)
 		g.advanceHand()
@@ -294,7 +297,7 @@ func (g *DoubleAttackBlackjack) Stand() error {
 		return err
 	}
 	h.SetStood(true)
-	g.appendLog("stand", "stand", nil)
+	g.appendLog("stand", "doubleattack.log.stand", nil, nil)
 	g.advanceHand()
 	return nil
 }
@@ -323,7 +326,7 @@ func (g *DoubleAttackBlackjack) Double() error {
 	h.SetBet(h.GetBet() * 2)
 	h.SetDoubled(true)
 	h.AddCard(g.shoe.DrawCard())
-	g.appendLog("double", fmt.Sprintf("double to %d", h.GetBet()), h.GetCards())
+	g.appendLog("double", "doubleattack.log.double", map[string]string{"bet": strconv.Itoa(h.GetBet())}, h.GetCards())
 	if h.GetScore() > 21 {
 		h.SetBusted(true)
 	} else {
@@ -388,7 +391,7 @@ func (g *DoubleAttackBlackjack) Split() error {
 	g.hands[g.activeHand+1] = other
 	g.results = append(g.results, DoubleAttackResultNone)
 
-	g.appendLog("split", fmt.Sprintf("split into %d hands", len(g.hands)), nil)
+	g.appendLog("split", "doubleattack.log.split", map[string]string{"hands": strconv.Itoa(len(g.hands))}, nil)
 	if isAces {
 		g.advanceHand()
 	}
@@ -439,7 +442,7 @@ func (g *DoubleAttackBlackjack) dealerPlay() {
 		}
 		g.dealerHand.AddCard(g.shoe.DrawCard())
 	}
-	g.appendLog("dealer", "dealer plays", g.dealerHand.GetCards())
+	g.appendLog("dealer", "doubleattack.log.dealer", nil, g.dealerHand.GetCards())
 	g.settle()
 }
 
@@ -458,7 +461,7 @@ func (g *DoubleAttackBlackjack) settle() {
 	g.bustItPayout = g.settleBustIt(dealerBusted)
 	g.payout = total + g.bustItPayout
 	g.player.AddChips(g.payout)
-	g.appendLog("result", fmt.Sprintf("payout %d", g.payout), nil)
+	g.appendLog("result", "doubleattack.log.result", map[string]string{"payout": strconv.Itoa(g.payout)}, nil)
 	g.phase = DoubleAttackPhaseResult
 }
 
@@ -560,15 +563,9 @@ func (g *DoubleAttackBlackjack) dealerUpValue() int {
 // --- ログ ---
 
 // appendLog は行動ログを 1 行足す。
-func (g *DoubleAttackBlackjack) appendLog(actionType, detail string, cards []*Card) {
+func (g *DoubleAttackBlackjack) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	g.turnNumber++
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: g.turnNumber,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.appendLogCodeAt(g.turnNumber, 0, actionType, detailCode, detailParams, cards)
 	if len(g.actionLog) > doubleAttackMaxSliceLen {
 		g.actionLog = g.actionLog[len(g.actionLog)-doubleAttackMaxSliceLen:]
 	}
@@ -645,9 +642,6 @@ func (g *DoubleAttackBlackjack) GetConfig() DoubleAttackBlackjackConfig { return
 
 // SetConfig は設定を差し替える。
 func (g *DoubleAttackBlackjack) SetConfig(c DoubleAttackBlackjackConfig) { g.config = c }
-
-// GetActionLog は行動ログを返す。
-func (g *DoubleAttackBlackjack) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // GetRemainingCards はシューの残り枚数を返す。
 func (g *DoubleAttackBlackjack) GetRemainingCards() int { return g.shoe.GetRemainingCount() }
