@@ -32,5 +32,11 @@
   "hintLine": "Hint: {{from}} → {{to}} (allowed: {{allowed}})",
   "helpExampleHint": "  h                    ask for a move",
   "helpExampleAuto": "  ac                   send everything that can go to a foundation",
-  "helpUndo": "  u                    undo one move"
+  "helpUndo": "  u                    undo one move",
+  "log.recycle": "Returned the waste to the stock",
+  "log.draw": "Drew a card from the stock",
+  "log.moveWasteToFoundation": "Waste → foundation {{foundation}}",
+  "log.moveReserveToFoundation": "Reserve column {{reserve}} → foundation {{foundation}}",
+  "log.giveUp": "Gave up",
+  "log.autoComplete": "Ran auto-complete"
 }

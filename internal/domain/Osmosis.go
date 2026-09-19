@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // OsmosisPhase オズモシスゲームフェーズ
@@ -126,7 +127,7 @@ func (o *Osmosis) Draw() error {
 			o.stock = append(o.stock, o.waste[i])
 		}
 		o.waste = nil
-		o.appendLog("recycle", "ウェイストをストックに戻しました", nil)
+		o.appendLog("recycle", "osmosis.log.recycle", nil, nil)
 		return nil
 	}
 	o.takeSnapshot()
@@ -142,7 +143,7 @@ func (o *Osmosis) Draw() error {
 		drawn = append(drawn, card)
 	}
 	o.moveCount++
-	o.appendLog("draw", "ストックからカードを引きました", drawn)
+	o.appendLog("draw", "osmosis.log.draw", nil, drawn)
 	return nil
 }
 
@@ -165,7 +166,7 @@ func (o *Osmosis) MoveWasteToFoundation(fIdx int) error {
 	o.waste = o.waste[:len(o.waste)-1]
 	o.foundation[fIdx] = append(o.foundation[fIdx], card)
 	o.moveCount++
-	o.appendLog("move", fmt.Sprintf("ウェイスト→ファンデーション%d段目", fIdx), []*Card{card})
+	o.appendLog("move", "osmosis.log.moveWasteToFoundation", map[string]string{"foundation": strconv.Itoa(fIdx)}, []*Card{card})
 	o.checkGameClear()
 	return nil
 }
@@ -193,7 +194,7 @@ func (o *Osmosis) MoveReserveToFoundation(rIdx, fIdx int) error {
 	o.reserve[rIdx] = pile[:len(pile)-1]
 	o.foundation[fIdx] = append(o.foundation[fIdx], card)
 	o.moveCount++
-	o.appendLog("move", fmt.Sprintf("リザーブ列%d→ファンデーション%d段目", rIdx, fIdx), []*Card{card})
+	o.appendLog("move", "osmosis.log.moveReserveToFoundation", map[string]string{"reserve": strconv.Itoa(rIdx), "foundation": strconv.Itoa(fIdx)}, []*Card{card})
 	o.checkGameClear()
 	return nil
 }
@@ -202,7 +203,7 @@ func (o *Osmosis) MoveReserveToFoundation(rIdx, fIdx int) error {
 func (o *Osmosis) GiveUp() {
 	if o.phase == OsmosisPhasePlaying {
 		o.phase = OsmosisPhaseGameOver
-		o.appendLog("giveup", "ギブアップしました", nil)
+		o.appendLog("giveup", "osmosis.log.giveUp", nil, nil)
 	}
 }
 
@@ -273,7 +274,7 @@ func (o *Osmosis) AutoComplete() error {
 		o.history = o.history[:len(o.history)-1]
 		return errors.New("no card can be auto-completed")
 	}
-	o.appendLog("autocomplete", "オートコンプリートを実行しました", nil)
+	o.appendLog("autocomplete", "osmosis.log.autoComplete", nil, nil)
 	o.checkGameClear()
 	return nil
 }
@@ -490,8 +491,8 @@ func (o *Osmosis) restoreSnapshot(snap *osmosisSnapshot) {
 	o.moveCount = snap.moveCount
 }
 
-func (o *Osmosis) appendLog(actionType, detail string, cards []*Card) {
-	o.appendLogAt(o.moveCount, 0, actionType, detail, cards)
+func (o *Osmosis) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	o.appendLogCodeAt(o.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // osmosisJSON is the JSON wire format for Osmosis.

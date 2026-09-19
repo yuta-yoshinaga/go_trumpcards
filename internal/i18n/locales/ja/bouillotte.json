@@ -37,5 +37,11 @@
   "hintReasonMediumHand": "そこそこの手 — 様子を見てコール",
   "hintReasonWeakHand": "弱い手 — 降りるのが無難",
   "helpExampleCall": "  c                         現在のベットにコールする",
-  "helpHint": "  h                         助言を表示"
+  "helpHint": "  h                         助言を表示",
+  "log.deal": "ラウンド{{round}}: アンティ{{ante}}、ポット{{pot}}、ルトゥルヌを表向きにしました",
+  "log.call": "{{player}}が{{amount}}をコールしました (ポット{{pot}})",
+  "log.raise": "{{player}}が{{newBet}}までレイズし、{{amount}}を支払いました (ポット{{pot}})",
+  "log.fold": "{{player}}がフォールドしました",
+  "log.win": "{{player}}がポット{{pot}}を獲得しました",
+  "log.gameEnd": "{{player}}がゲームに勝利しました"
 }

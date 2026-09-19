@@ -20,6 +20,18 @@ func newAllCpuTichu() *Tichu {
 	return NewTichu(NewTrumpCards(TichuJokerCount), players, DefaultTichuConfig())
 }
 
+func TestTichuActionLogUsesDetailCode(t *testing.T) {
+	g := NewDefaultTichu()
+	g.Reset()
+	g.SetCurrentTurnForTest(0)
+	assert.NoError(t, g.PlayerDeclare(TichuDeclNone))
+	entries := g.GetActionLog()
+	entry := entries[len(entries)-1]
+	assert.Equal(t, "tichu.log.declareNone", entry.DetailCode)
+	assert.Empty(t, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
+}
+
 // drive a deal to completion with all-CPU players.
 func driveToEnd(t *testing.T, g *Tichu) {
 	t.Helper()

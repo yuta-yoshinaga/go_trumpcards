@@ -47,6 +47,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // SevenTwentySevenPhase はゲームフェーズ。
@@ -240,8 +241,7 @@ func (g *SevenTwentySeven) startRound() {
 	}
 	g.state.drawRound = 1
 	g.state.phase = SevenTwentySevenPhaseDraw
-	g.appendLog(-1, "deal",
-		fmt.Sprintf("Round %d: ante %d, pot %d", g.state.roundNumber, g.config.Ante, g.state.pot), nil)
+	g.appendLog(-1, "deal", "seventwentyseven.log.deal", map[string]string{"round": strconv.Itoa(g.state.roundNumber), "ante": strconv.Itoa(g.config.Ante), "pot": strconv.Itoa(g.state.pot)}, nil)
 }
 
 // TakeCard は人間 (seat 0) の「引く / 止まる」を受け付ける。
@@ -263,7 +263,11 @@ func (g *SevenTwentySeven) TakeCard(draw bool) error {
 		return NewDomainError(ErrInvalidPlay, "you have already stood pat this round")
 	}
 	human.SetStanding(!draw)
-	g.appendLog(0, "declare", sevenTwentySevenDeclareText(0, draw), nil)
+	detailCode := "seventwentyseven.log.declareStand"
+	if draw {
+		detailCode = "seventwentyseven.log.declareDraw"
+	}
+	g.appendLog(0, "declare", detailCode, map[string]string{"player": "0"}, nil)
 
 	// **人間が止まったあとも CPU は引き続ける。** そこで待ってしまうと、
 	// 人間には打つ手が無いのに全員が止まるまで盤が進まず、ゲームが固まる。
@@ -304,13 +308,12 @@ func (g *SevenTwentySeven) dealToDrawers() {
 			for _, q := range g.players {
 				q.SetStanding(true)
 			}
-			g.appendLog(-1, "deck_empty", "the deck ran out; everyone stands pat", nil)
+			g.appendLog(-1, "deck_empty", "seventwentyseven.log.deckEmpty", nil, nil)
 			return
 		}
 		p.AddCard(c)
 		idx := sevenTwentySevenIndexOf(g.players, p)
-		g.appendLog(idx, "draw",
-			fmt.Sprintf("%s takes a card", playerName(g.players, idx)), []*Card{c})
+		g.appendLog(idx, "draw", "seventwentyseven.log.draw", map[string]string{"player": playerName(g.players, idx)}, []*Card{c})
 	}
 }
 
@@ -332,7 +335,11 @@ func (g *SevenTwentySeven) cpuDeclare() {
 		}
 		draw := g.cpuDraws(p)
 		p.SetStanding(!draw)
-		g.appendLog(i, "declare", sevenTwentySevenDeclareText(i, draw), nil)
+		detailCode := "seventwentyseven.log.declareStand"
+		if draw {
+			detailCode = "seventwentyseven.log.declareDraw"
+		}
+		g.appendLog(i, "declare", detailCode, map[string]string{"player": strconv.Itoa(i)}, nil)
 	}
 }
 
@@ -401,8 +408,7 @@ func (g *SevenTwentySeven) settle() {
 	if len(lowWinners) == 0 && len(highWinners) == 0 {
 		g.state.carryPot = g.state.pot
 		g.state.carryCount++
-		g.appendLog(-1, "result",
-			fmt.Sprintf("everyone busted both ways; pot %d carries over", g.state.pot), nil)
+		g.appendLog(-1, "result", "seventwentyseven.log.resultCarry", map[string]string{"pot": strconv.Itoa(g.state.pot)}, nil)
 		g.finishRound()
 		return
 	}
@@ -424,8 +430,7 @@ func (g *SevenTwentySeven) settle() {
 
 	for idx, amount := range shares {
 		g.players[idx].AddChips(amount)
-		g.appendLog(idx, "win",
-			fmt.Sprintf("%s takes %d", playerName(g.players, idx), amount), nil)
+		g.appendLog(idx, "win", "seventwentyseven.log.win", map[string]string{"player": playerName(g.players, idx), "amount": strconv.Itoa(amount)}, nil)
 	}
 	g.state.carryCount = 0
 	g.setHumanResult(shares)
@@ -507,8 +512,7 @@ func (g *SevenTwentySeven) endGame() {
 	g.state.gameEndFlag = true
 	g.state.phase = SevenTwentySevenPhaseResult
 	g.state.matchWinnerIdx = g.richestIdx()
-	g.appendLog(g.state.matchWinnerIdx, "game_end",
-		fmt.Sprintf("%s wins the game", playerName(g.players, g.state.matchWinnerIdx)), nil)
+	g.appendLog(g.state.matchWinnerIdx, "game_end", "seventwentyseven.log.gameEnd", map[string]string{"player": playerName(g.players, g.state.matchWinnerIdx)}, nil)
 }
 
 // --- ヘルパー ---
@@ -524,16 +528,8 @@ func (g *SevenTwentySeven) richestIdx() int {
 }
 
 // sevenTwentySevenDeclareText は宣言の棋譜テキストを返す。
-func sevenTwentySevenDeclareText(idx int, draw bool) string {
-	verb := "stands pat"
-	if draw {
-		verb = "asks for a card"
-	}
-	return fmt.Sprintf("player %d %s", idx, verb)
-}
-
-func (g *SevenTwentySeven) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.state.appendLog(playerIdx, actionType, detail, cards)
+func (g *SevenTwentySeven) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.state.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- Hint ---
