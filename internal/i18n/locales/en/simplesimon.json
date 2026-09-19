@@ -7,5 +7,11 @@
   "completedLine": "Completed suits: {{count}} / 4",
   "hintLine": "[HINT: move col {{from}}[{{idx}}] to col {{to}}]",
   "helpHint": "  h                    show a hint",
-  "helpLog": "  l                    show the action log"
+  "helpLog": "  l                    show the action log",
+  "log.deal": "new game started",
+  "log.move": "column {{from}}[{{index}}]→column {{to}}",
+  "log.complete": "suit completed in column {{column}}",
+  "log.clear": "Clear!",
+  "log.gameover": "No moves available",
+  "log.giveup": "Gave up"
 }

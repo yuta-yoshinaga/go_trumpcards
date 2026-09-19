@@ -22,5 +22,11 @@
   "promptHelp": "p <hand> to capture or lay / n for next round",
   "teamCaptured": "Team {{team}} captured: {{count}} ({{need}}+ earns +{{bonus}})",
   "helpExamplePlay": "  p 0                      lay hand card 0 on the table, capturing nothing",
-  "helpExampleNext": "  n                        read the round result, then continue"
+  "helpExampleNext": "  n                        read the round result, then continue",
+  "log.deal": "dealt {{cards}} table cards",
+  "log.play": "placed on table",
+  "log.capture": "captured {{cards}} card(s)",
+  "log.lastTake": "last-take: {{cards}} card(s)",
+  "log.gameEnd": "game ended at {{points}} points",
+  "log.roundEnd": "round ended"
 }

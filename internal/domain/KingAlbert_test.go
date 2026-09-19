@@ -272,6 +272,11 @@ func TestKingAlbert_GiveUp(t *testing.T) {
 	ka.GiveUp()
 	assert.Equal(t, domain.KingAlbertPhaseGameOver, ka.GetPhase())
 	assert.True(t, ka.GetGameEndFlag())
+	logs := ka.GetActionLog()
+	entry := logs[len(logs)-1]
+	assert.Equal(t, "kingalbert.log.giveup", entry.DetailCode)
+	assert.Empty(t, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
 }
 
 func TestKingAlbert_Hint(t *testing.T) {

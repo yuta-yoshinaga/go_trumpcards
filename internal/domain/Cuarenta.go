@@ -28,6 +28,7 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 )
 
 // CuarentaPlayerCnt クアレンタのプレイヤー数 (4 人固定)。
@@ -191,7 +192,7 @@ func (g *Cuarenta) startRound() {
 		}
 		g.round.tableCards = append(g.round.tableCards, card)
 	}
-	g.appendLog(-1, "deal", fmt.Sprintf("dealt %d table cards", len(g.round.tableCards)), g.round.tableCards)
+	g.appendLog(-1, "deal", "cuarenta.log.deal", map[string]string{"cards": strconv.Itoa(len(g.round.tableCards))}, g.round.tableCards)
 	g.round.phase = CuarentaPhasePlay
 }
 
@@ -274,7 +275,7 @@ func (g *Cuarenta) applyPlay(playerIdx, handIdx int, record func(*CuarentaAction
 		g.round.lastLaidCard = handCard
 		action := &CuarentaAction{PlayerIdx: playerIdx, PlayedCard: handCard}
 		record(action)
-		g.appendLog(playerIdx, "play", "placed on table", []*Card{handCard})
+		g.appendLog(playerIdx, "play", "cuarenta.log.play", nil, []*Card{handCard})
 		g.postActionAdvance()
 		return nil
 	}
@@ -327,7 +328,7 @@ func (g *Cuarenta) applyPlay(playerIdx, handIdx int, record func(*CuarentaAction
 		RondaBonus:    rondaBonus,
 	}
 	record(action)
-	g.appendLog(playerIdx, "capture", fmt.Sprintf("captured %d card(s)", len(captured)), pile)
+	g.appendLog(playerIdx, "capture", "cuarenta.log.capture", map[string]string{"cards": strconv.Itoa(len(captured))}, pile)
 	g.postActionAdvance()
 	return nil
 }
@@ -361,7 +362,7 @@ func (g *Cuarenta) finishRound() {
 	g.round.tableCards = nil
 	if g.round.lastCaptureIdx >= 0 && len(leftover) > 0 {
 		g.players[g.round.lastCaptureIdx].AddCaptured(leftover)
-		g.appendLog(g.round.lastCaptureIdx, "lastTake", fmt.Sprintf("last-take: %d card(s)", len(leftover)), leftover)
+		g.appendLog(g.round.lastCaptureIdx, "lastTake", "cuarenta.log.lastTake", map[string]string{"cards": strconv.Itoa(len(leftover))}, leftover)
 	}
 
 	detail := g.scoreRound()
@@ -386,9 +387,9 @@ func (g *Cuarenta) finishRound() {
 			}
 		}
 		g.round.roundWinners = winners
-		g.appendLog(-1, "gameEnd", fmt.Sprintf("game ended at %d points", maxScore), nil)
+		g.appendLog(-1, "gameEnd", "cuarenta.log.gameEnd", map[string]string{"points": strconv.Itoa(maxScore)}, nil)
 	} else {
-		g.appendLog(-1, "roundEnd", "round ended", nil)
+		g.appendLog(-1, "roundEnd", "cuarenta.log.roundEnd", nil, nil)
 	}
 }
 
@@ -428,8 +429,8 @@ func (g *Cuarenta) removeTableCardsByIndex(idxs []int) {
 }
 
 // appendLog 棋譜にエントリを追加する。
-func (g *Cuarenta) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.round.appendLog(playerIdx, actionType, detail, cards)
+func (g *Cuarenta) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.round.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- 状態アクセサ ---
