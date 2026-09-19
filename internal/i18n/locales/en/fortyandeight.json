@@ -25,5 +25,13 @@
   "foundationLabel": "[f{{idx}}]",
   "helpExampleHint": "  h                    ask for a move",
   "helpExampleAuto": "  ac                   send everything that can go to a foundation",
-  "helpUndo": "  u                    undo one move"
+  "helpUndo": "  u                    undo one move",
+  "log.draw": "Drew a card from the stock",
+  "log.redeal": "Collected the waste to create a new stock",
+  "log.wasteToTableau": "Waste → tableau column {{col}}",
+  "log.wasteToFoundation": "Waste → foundation",
+  "log.tableauToTableau": "Tableau column {{from}} → tableau column {{to}}",
+  "log.tableauToFoundation": "Tableau column {{col}} → foundation",
+  "log.giveUp": "Gave up",
+  "log.autocomplete": "Ran autocomplete"
 }

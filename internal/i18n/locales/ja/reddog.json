@@ -36,5 +36,16 @@
   "paySpread3": "スプレッド3 {{mult}}:1",
   "paySpread4Plus": "スプレッド4以上 {{mult}}:1",
   "payPair": "同位ペア＋3枚目同位 {{mult}}:1",
-  "payPush": "連続・ペア＋不一致はプッシュ"
+  "payPush": "連続・ペア＋不一致はプッシュ",
+  "log.bet": "アンテ={{amount}}",
+  "log.dealtInitial": "最初の2枚を配りました",
+  "log.initialPair": "最初の2枚がペアのため、3枚目を引きます",
+  "log.consecutivePush": "連続ランク → プッシュ",
+  "log.spread": "スプレッド={{spread}}",
+  "log.raise": "レイズ={{amount}}",
+  "log.stay": "ステイ（レイズなし）",
+  "log.dealtThird": "3枚目を配りました",
+  "log.playerWins": "プレイヤーの勝ち",
+  "log.playerLoses": "プレイヤーの負け",
+  "log.push": "プッシュ"
 }

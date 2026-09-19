@@ -438,3 +438,17 @@ func TestRussianBank_GetFoundationNextDescribesEachPile(t *testing.T) {
 			"pile %d says it accepts %d of design %d but rbCanPlaceFoundation disagrees", i, n.Value, design)
 	}
 }
+func TestRussianBank_ActionLogUsesDetailCode(t *testing.T) {
+	g := NewDefaultRussianBank()
+	g.Reset()
+	var entry *ActionLogEntry
+	for _, candidate := range g.GetActionLog() {
+		if candidate.DetailCode == "russianbank.log.newGame" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Empty(t, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
+}

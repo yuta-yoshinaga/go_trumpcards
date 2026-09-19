@@ -5,6 +5,7 @@ package domain
 import (
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // Russian Bank (Crapette) 盤面定数。
@@ -58,6 +59,7 @@ var errRussianBank = errors.New("russianbank: illegal move")
 
 // RussianBank Russian Bank (Crapette) ゲーム本体。状態のみを保持する。
 type RussianBank struct {
+	actionLogBase
 	decks       []*TrumpCards
 	players     []*RussianBankPlayer
 	tableau     [RussianBankTableauCnt][]*Card
@@ -69,8 +71,7 @@ type RussianBank struct {
 	moveCount   int
 	passStreak  int                       // 連続スタック・パス数 (両者詰みの停滞検出用)
 	stopPoints  [RussianBankPlayerCnt]int // stop で咎めた回数 (副次スコア)
-	actionLog   []*ActionLogEntry
-	history     []*russianBankSnapshot // 人間の単一ステップ Undo 用
+	history     []*russianBankSnapshot    // 人間の単一ステップ Undo 用
 }
 
 // russianBankSnapshot Undo 用スナップショット。
@@ -138,7 +139,7 @@ func (g *RussianBank) startGame() {
 			p.pushHand(deck.DrawCard())
 		}
 	}
-	g.appendLog(-1, "deal", "新しいゲームを開始しました", nil)
+	g.appendLog(-1, "deal", "russianbank.log.newGame", nil, nil)
 }
 
 func (g *RussianBank) defaultPlayerName(idx int) string {
@@ -204,14 +205,8 @@ func (g *RussianBank) GetStopPoints(seat int) int {
 // GetActionLog アクションログを返す。
 func (g *RussianBank) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
-func (g *RussianBank) appendLog(seat int, action, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: g.moveCount,
-		PlayerIdx:  seat,
-		ActionType: action,
-		Detail:     detail,
-		Cards:      cards,
-	})
+func (g *RussianBank) appendLog(seat int, action, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCodeAt(g.moveCount, seat, action, detailCode, detailParams, cards)
 }
 
 func (g *RussianBank) opponent(seat int) int { return (seat + 1) % RussianBankPlayerCnt }
@@ -377,7 +372,7 @@ func (g *RussianBank) MoveToFoundation(src RussianBankSource) error {
 	g.takeSource(src)
 	g.foundations[fIdx] = append(g.foundations[fIdx], card)
 	g.moveCount++
-	g.appendLog(g.current, "foundation", fmt.Sprintf("%s → foundation %d", rbSourceName(src), fIdx), nil)
+	g.appendLog(g.current, "foundation", "russianbank.log.toFoundation", map[string]string{"source": rbSourceName(src), "foundation": strconv.Itoa(fIdx)}, nil)
 	g.afterMove()
 	return nil
 }
@@ -402,7 +397,7 @@ func (g *RussianBank) MoveToTableau(src RussianBankSource, col int) error {
 	g.takeSource(src)
 	g.tableau[col] = append(g.tableau[col], card)
 	g.moveCount++
-	g.appendLog(g.current, "tableau", fmt.Sprintf("%s → tableau %d", rbSourceName(src), col), nil)
+	g.appendLog(g.current, "tableau", "russianbank.log.toTableau", map[string]string{"source": rbSourceName(src), "column": strconv.Itoa(col)}, nil)
 	g.afterMove()
 	return nil
 }
@@ -418,10 +413,10 @@ func (g *RussianBank) Discard() error {
 		p.pushWaste(c)
 		g.moveCount++
 		g.passStreak = 0
-		g.appendLog(g.current, "discard", "手札を廃札に送り手番終了", nil)
+		g.appendLog(g.current, "discard", "russianbank.log.discard", nil, nil)
 	} else {
 		g.passStreak++
-		g.appendLog(g.current, "pass", "手番をパス", nil)
+		g.appendLog(g.current, "pass", "russianbank.log.pass", nil, nil)
 		if g.checkStalemate() {
 			return nil
 		}
@@ -451,7 +446,7 @@ func (g *RussianBank) checkStalemate() bool {
 	default:
 		g.winner = -1
 	}
-	g.appendLog(-1, "stalemate", "両者とも手詰まりのため停滞で決着", nil)
+	g.appendLog(-1, "stalemate", "russianbank.log.stalemate", nil, nil)
 	return true
 }
 
@@ -470,7 +465,7 @@ func (g *RussianBank) CallStop() error {
 		return errors.New("russianbank: no violation to call")
 	}
 	g.stopPoints[g.current]++
-	g.appendLog(g.current, "stop", "CPU の取りこぼしを咎めました (+1)", nil)
+	g.appendLog(g.current, "stop", "russianbank.log.stop", nil, nil)
 	g.history = nil // stop はアンドゥ対象外
 	return nil
 }
@@ -489,7 +484,7 @@ func (g *RussianBank) afterMove() {
 	if g.players[g.current].ReserveSize() == 0 {
 		g.winner = g.current
 		g.phase = RussianBankPhaseGameEnd
-		g.appendLog(g.current, "win", fmt.Sprintf("%s がリザーブを空にして勝利", g.players[g.current].GetName()), nil)
+		g.appendLog(g.current, "win", "russianbank.log.win", map[string]string{"name": g.players[g.current].GetName()}, nil)
 	}
 }
 

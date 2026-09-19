@@ -16,5 +16,13 @@
   "pendingSkips": " / スキップ{{count}}人ぶん",
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
-  "errCardNotPlayable": "そのカードは出せません"
+  "errCardNotPlayable": "そのカードは出せません",
+  "log.play": "{{name}} が {{card}} をプレイしました",
+  "log.drawStack": "ドロースタックは {{count}} 枚です",
+  "log.skipAce": "次のプレイヤーはスキップされます（Ace）",
+  "log.skipUnder": "次のプレイヤーはスキップされます（Under）",
+  "log.gameWin": "{{name}} がゲームに勝利しました！",
+  "log.takePenalty": "{{name}} がペナルティカードを {{count}} 枚引きました",
+  "log.pass": "{{name}} は（引けるカードがなく）パスしました",
+  "log.draw": "{{name}} がカードを1枚引きました"
 }

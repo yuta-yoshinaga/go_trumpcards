@@ -336,6 +336,7 @@ func TestIndianRummy_DrawAndDiscard(t *testing.T) {
 	g := newTestIndianRummy(2)
 	g.Reset()
 	g.SetCurrentPlayerIdx(0)
+	g.SetCurrentPlayerIdx(0)
 	g.SetPhase(domain.IndianRummyPhaseDraw)
 
 	before := g.GetPlayer(0).GetCardsSize()
@@ -748,4 +749,20 @@ func TestIndianRummy_GetHint(t *testing.T) {
 		g.GetPlayer(0).Reset()
 		assert.Equal(t, &domain.IndianRummyHint{Reason: "none"}, g.GetHint())
 	})
+}
+func TestIndianRummy_ActionLogUsesDetailCode(t *testing.T) {
+	g := newTestIndianRummy(2)
+	g.Reset()
+	g.SetCurrentPlayerIdx(0)
+	require.NoError(t, g.PlayerDrawFromStock())
+	var entry *domain.ActionLogEntry
+	for _, candidate := range g.GetActionLog() {
+		if candidate.DetailCode == "indianrummy.log.drawStock" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, "You", entry.DetailParams["name"])
+	assert.Empty(t, entry.Detail)
 }
