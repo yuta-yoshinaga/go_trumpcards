@@ -16,5 +16,11 @@
   "result.scores": "Game over. Scores: {{scores}}",
   "provisional": "{{name}} provisional: {{score}} cards",
   "provisionalNote": "Note: the running total is your team's captured cards (you + your partner)",
-  "helpExamplePlay": "  p 0                      play hand card 0"
+  "helpExamplePlay": "  p 0                      play hand card 0",
+  "log.dealtPileCards": "dealt {{count}} pile cards",
+  "log.countered": "countered for {{count}} card(s)",
+  "log.captured": "captured {{count}} card(s)",
+  "log.playedOntoPile": "played onto pile",
+  "log.lastTake": "last-take: {{count}} card(s)",
+  "log.gameEnded": "game ended (top score {{score}})"
 }

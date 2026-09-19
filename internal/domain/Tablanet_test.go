@@ -90,6 +90,15 @@ func TestTablanetRankCaptureIsTablanet(t *testing.T) {
 	assert.Equal(t, 2, g.GetPlayer(0).CapturedCount())
 	assert.Equal(t, 1, g.GetPlayer(0).GetTablaCount(), "clearing the table is a Tablanet")
 	assert.Equal(t, 0, g.GetLastCaptureIdx())
+	for _, entry := range g.GetActionLog() {
+		if entry.DetailCode == "tablanet.log.scoresTabla" {
+			assert.Empty(t, entry.Detail)
+			assert.Equal(t, "You", entry.DetailParams["name"])
+			assert.Equal(t, "1", entry.DetailParams["count"])
+			return
+		}
+	}
+	t.Fatal("Tabla action log entry not found")
 }
 
 func TestTablanetSumCapture(t *testing.T) {

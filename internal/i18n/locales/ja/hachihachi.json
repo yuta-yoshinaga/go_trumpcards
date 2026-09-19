@@ -26,5 +26,11 @@
   "yaku.inoshikacho": "猪鹿蝶",
   "yaku.akatan": "赤短",
   "yaku.aotan": "青短",
-  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
+  "log.roundDealt": "ラウンド{{round}}を配りました（場{{field}}枚、山札{{draw}}枚）",
+  "log.plays": "{{name}}が{{card}}を出しました（{{result}}）",
+  "log.draws": "{{name}}が{{card}}をめくりました（{{result}}）",
+  "log.roundSettled": "ラウンド{{round}}を精算しました（最高 {{best}}）",
+  "log.sweepsLeftover": "{{name}}が残りの場札{{count}}枚を取りました",
+  "log.gameEnded": "ゲーム終了（勝者 {{winner}}）"
 }

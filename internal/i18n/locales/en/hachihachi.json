@@ -26,5 +26,11 @@
   "yaku.inoshikacho": "Inoshikacho (Boar-Deer-Butterfly)",
   "yaku.akatan": "Akatan (Red Poetry Ribbons)",
   "yaku.aotan": "Aotan (Blue Ribbons)",
-  "helpExamplePlay": "  p 0                  play hand card 0"
+  "helpExamplePlay": "  p 0                  play hand card 0",
+  "log.roundDealt": "round {{round}} dealt (field {{field}}, draw {{draw}})",
+  "log.plays": "{{name}} plays {{card}} ({{result}})",
+  "log.draws": "{{name}} draws {{card}} ({{result}})",
+  "log.roundSettled": "round {{round}} settled (best {{best}})",
+  "log.sweepsLeftover": "{{name}} sweeps {{count}} leftover field card(s)",
+  "log.gameEnded": "game ended (winner {{winner}})"
 }

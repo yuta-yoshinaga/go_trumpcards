@@ -18,5 +18,11 @@
   "result.scores": "ゲーム終了。スコア: {{scores}}",
   "provisional": "{{name}} 暫定: {{score}}点",
   "provisionalNote": "※ カード点とピシュティ賞は確定済み。最多捕獲(+3)だけが残りの札で入れ替わりえます",
-  "helpExamplePlay": "  p 0                      手札の 0 番のカードを出す"
+  "helpExamplePlay": "  p 0                      手札の 0 番のカードを出す",
+  "log.dealtPileCards": "山札から{{count}}枚を配りました",
+  "log.pisti": "Pişti +{{bonus}}（{{count}}枚捕獲）",
+  "log.captured": "{{count}}枚を捕獲しました",
+  "log.playedOntoPile": "場に出しました",
+  "log.lastTake": "最後に取った札: {{count}}枚",
+  "log.gameEnded": "ゲーム終了（最高得点 {{score}}）"
 }

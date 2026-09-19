@@ -20,5 +20,12 @@
   "result.scores": "Game over! Scores: {{scores}}",
   "captureHint": "{{hand}} → table {{table}}",
   "helpExamplePlay": "  p 0                       lay hand card 0 on the table, capturing nothing",
-  "helpExampleNext": "  nr                        start a new game"
+  "helpExampleNext": "  nr                        start a new game",
+  "log.dealtTableCards": "dealt {{count}} table cards",
+  "log.trails": "{{name}} trails {{card}}",
+  "log.scoresBasra": "{{name}} scores a Basra! captured {{count}} card(s)",
+  "log.sweepsWithJack": "{{name}} sweeps {{count}} card(s) with a Jack",
+  "log.captures": "{{name}} captures {{count}} card(s)",
+  "log.lastTake": "last-take: {{count}} card(s)",
+  "log.gameEnded": "game ended (top score {{score}})"
 }
