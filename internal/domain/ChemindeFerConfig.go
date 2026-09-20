@@ -145,20 +145,6 @@ const (
 // ChemindeFerResultMax は最大の決着値 (復元時の範囲検査に使う)。
 const ChemindeFerResultMax = ChemindeFerResultTie
 
-// ChemindeFerResultName は決着の識別子を返す (i18n キーの一部に使う)。
-func ChemindeFerResultName(r ChemindeFerResult) string {
-	switch r {
-	case ChemindeFerResultBanker:
-		return "banker"
-	case ChemindeFerResultPunter:
-		return "punter"
-	case ChemindeFerResultTie:
-		return "tie"
-	default:
-		return "none"
-	}
-}
-
 // ChemindeFerPunterMustDraw は子側が**引かされる**合計かを返す。
 //
 // バカラ (プント・バンコ) では親も子も引き方が表で固定されているが、

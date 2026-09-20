@@ -221,7 +221,7 @@ func (b *BlackJack) resolvePayouts() {
 		result := b.judgeHand(hand)
 		bonus := b.payoutHandWithVariant(b.player, hand, hand.IsFromSplit(), result)
 		if bonus != nil {
-			b.appendLog(i, "bonus", "blackjack.log.bonus", map[string]string{"name": bonus.NameKey}, nil)
+			b.appendLog(i, "bonus", bonus.NameKey, nil, nil)
 			b.bonusKeys = append(b.bonusKeys, bonus.NameKey)
 		}
 	}

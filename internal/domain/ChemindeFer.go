@@ -615,7 +615,14 @@ func (g *ChemindeFer) settle() {
 			p.AddChips(bet) // 引き分け: 賭け金を返す
 		}
 	}
-	g.appendLog(-1, "result", "chemindefer.log.result", map[string]string{"result": ChemindeFerResultName(g.result)}, nil)
+	resultCode := "chemindefer.log.resultBanker"
+	switch g.result {
+	case ChemindeFerResultPunter:
+		resultCode = "chemindefer.log.resultPunter"
+	case ChemindeFerResultTie:
+		resultCode = "chemindefer.log.resultTie"
+	}
+	g.appendLog(-1, "result", resultCode, nil, nil)
 	if g.result == ChemindeFerResultPunter {
 		g.passBank()
 	}

@@ -88,6 +88,5 @@
   "log.dealerHit": "ディーラーはヒット",
   "log.resultWin": "プレイヤーの勝ち",
   "log.resultDraw": "引き分け",
-  "log.resultLose": "プレイヤーの負け",
-  "log.bonus": "{{name}}"
+  "log.resultLose": "プレイヤーの負け"
 }
