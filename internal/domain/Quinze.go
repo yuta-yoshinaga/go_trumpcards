@@ -217,7 +217,7 @@ func (s *Quinze) deal(humanBet int) {
 		seat.hand = &QuinzeHand{cards: s.drawOne(), bet: bet}
 	}
 	s.bankerHand = &QuinzeHand{cards: s.drawOne()}
-	s.appendLog("deal", "全員に1枚ずつ配った", nil)
+	s.appendLog("deal", "quinze.log.deal", nil, nil)
 
 	s.phase = QuinzePhasePlayerTurn
 	s.activeSeat = 0
@@ -291,7 +291,7 @@ func (s *Quinze) Hit() error {
 	if !s.hit(h) {
 		return errors.New("quinze: the deck is empty")
 	}
-	s.appendLog("hit", "1枚引いた", h.cards)
+	s.appendLog("hit", "quinze.log.hit", nil, h.cards)
 	// バーストしたか、ちょうど 15 に届いたらその手は終わり。15 は「見せて
 	// 手番を終える」手であって、即座の勝ちではない。
 	if s.handPoints(h) >= QuinzeTarget {
@@ -308,7 +308,7 @@ func (s *Quinze) Stand() error {
 		return err
 	}
 	h.stood = true
-	s.appendLog("stand", "スタンド", h.cards)
+	s.appendLog("stand", "quinze.log.stand", nil, h.cards)
 	s.nextSeat()
 	return nil
 }
@@ -354,7 +354,7 @@ func (s *Quinze) BankerHit() error {
 	if !s.hit(s.bankerHand) {
 		return errors.New("quinze: the deck is empty")
 	}
-	s.appendLog("bankerHit", "親が1枚引いた", s.bankerHand.cards)
+	s.appendLog("bankerHit", "quinze.log.bankerHit", nil, s.bankerHand.cards)
 	if s.handPoints(s.bankerHand) >= QuinzeTarget {
 		s.settle()
 	}
@@ -394,7 +394,11 @@ func (s *Quinze) settle() {
 	}
 	s.phase = QuinzePhaseEnd
 	s.lastResult = s.describeResult(bankerPoints, bankerBust)
-	s.appendLog("result", s.lastResult, s.bankerHand.cards)
+	code := "quinze.log.result"
+	if bankerBust {
+		code = "quinze.log.resultBust"
+	}
+	s.appendLog("result", code, map[string]string{"points": quinzeFormatPoints(bankerPoints)}, s.bankerHand.cards)
 }
 
 // settleHand 1 つの手の増減（賭け金を除いた純増減）。同点は親の勝ち。
@@ -510,13 +514,14 @@ func (s *Quinze) CanStand() bool {
 }
 
 // appendLog 棋譜エントリを追加
-func (s *Quinze) appendLog(actionType, detail string, cards []*Card) {
+func (s *Quinze) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	s.actionLog = append(s.actionLog, &ActionLogEntry{
-		TurnNumber: len(s.actionLog),
-		PlayerIdx:  s.activeSeat,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      append([]*Card(nil), cards...),
+		TurnNumber:   len(s.actionLog),
+		PlayerIdx:    s.activeSeat,
+		ActionType:   actionType,
+		DetailCode:   detailCode,
+		DetailParams: detailParams,
+		Cards:        append([]*Card(nil), cards...),
 	})
 }
 

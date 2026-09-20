@@ -1,4 +1,8 @@
 {
+  "log.deal": "新しいラウンドを配った",
+  "log.place": "{{name}}が{{card}}を{{row}}段目に置きました",
+  "log.roundScore": "ラウンド{{round}}を得点計算しました",
+  "log.gameEnd": "マッチ終了",
   "helpTitle": "オープンフェイス・チャイニーズポーカー (Open Face Chinese / OFC)",
   "helpPlace": "  place <0/1/2>            保留カードを段に置く (0=front, 1=middle, 2=back)",
   "helpFront": "  front / f                 上段に置く",

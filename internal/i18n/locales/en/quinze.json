@@ -1,4 +1,10 @@
 {
+  "log.deal": "Dealt one card to everyone",
+  "log.hit": "Drew one card",
+  "log.stand": "Stood",
+  "log.bankerHit": "Banker drew one card",
+  "log.result": "Banker has {{points}}",
+  "log.resultBust": "Banker busts ({{points}})",
   "helpTitle": "Quinze (Quinze)",
   "helpBet": "  b <amount>               Bet and deal (use deal when you bank)",
   "helpDeal": "  deal                     Deal the round you are banking",

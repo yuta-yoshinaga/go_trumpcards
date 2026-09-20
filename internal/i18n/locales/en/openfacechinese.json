@@ -1,4 +1,8 @@
 {
+  "log.deal": "new round dealt",
+  "log.place": "{{name}} places {{card}} on row {{row}}",
+  "log.roundScore": "round {{round}} scored",
+  "log.gameEnd": "match finished",
   "helpTitle": "Open Face Chinese Poker (OFC)",
   "helpPlace": "  place <0/1/2>            place the pending card on a row (0=front, 1=middle, 2=back)",
   "helpFront": "  front / f                 place on the front row",

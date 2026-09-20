@@ -1,4 +1,10 @@
 {
+  "log.play": "{{name}}が{{card}}を出しました",
+  "log.trickWin": "{{name}}がトリック{{trick}}を獲得しました（+{{points}}点）",
+  "log.trickWinLast": "{{name}}がトリック{{trick}}を獲得しました（+{{points}}点、最後のボーナス+{{bonus}}点）",
+  "log.roundScore": "ラウンド{{round}}: A={{teamA}}（ラウンド{{roundA}}）、B={{teamB}}（ラウンド{{roundB}}）",
+  "log.gameEndTeamA": "チームAがマッチに勝利しました！",
+  "log.gameEndTeamB": "チームBがマッチに勝利しました！",
   "helpTitle": "セドマ (Sedma)",
   "helpPlay": "  play <idx>               カードを出す",
   "helpNext": "  n                         次のトリックへ",

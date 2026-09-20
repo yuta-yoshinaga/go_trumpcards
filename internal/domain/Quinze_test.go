@@ -191,6 +191,9 @@ func TestQuinzeHitCanHitAndStopsOnBurst(t *testing.T) {
 	for _, entry := range game.GetActionLog() {
 		if entry.ActionType == "hit" {
 			hitLogged = true
+			if entry.DetailCode != "quinze.log.hit" || entry.Detail != "" || len(entry.DetailParams) != 0 {
+				t.Fatalf("hit log = %#v, want code with empty detail and params", entry)
+			}
 			break
 		}
 	}

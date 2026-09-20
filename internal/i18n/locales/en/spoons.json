@@ -1,4 +1,11 @@
 {
+  "log.deal": "round {{round}} dealt, {{spoons}} spoons",
+  "log.pass": "pass a card to the left",
+  "log.four": "four of a kind! grab a spoon",
+  "log.grab": "grabbed a spoon",
+  "log.missedSpoon": "missed spoon, +1 letter (now {{letters}})",
+  "log.missedSpoonEliminated": "missed spoon, eliminated (SPOONS)",
+  "log.gameEnd": "game over",
   "helpTitle": "Spoons (スプーン)",
   "helpPass": "  p <n>, pass <n>      pass hand card n to the next player",
   "helpGrab": "  g, grab              grab a spoon",
