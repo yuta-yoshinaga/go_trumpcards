@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // BeleagueredCastlePhase Beleaguered Castle game phase
@@ -173,7 +174,7 @@ func (bc *BeleagueredCastle) MoveTableauToTableau(fromCol, cardIndex, toCol int)
 	bc.tableau[toCol] = append(bc.tableau[toCol], tc)
 	bc.tableau[fromCol] = fromCards[:cardIndex]
 	bc.moveCount++
-	bc.appendLog("move", fmt.Sprintf("タブロー列%d→タブロー列%d", fromCol, toCol), []*Card{tc.Card})
+	bc.appendLog("move", "beleagueredcastle.log.tableauToTableau", map[string]string{"from": strconv.Itoa(fromCol), "to": strconv.Itoa(toCol)}, []*Card{tc.Card})
 	bc.checkStalemate()
 	return nil
 }
@@ -200,7 +201,7 @@ func (bc *BeleagueredCastle) MoveTableauToFoundation(col int) error {
 	bc.tableau[col] = fromCards[:len(fromCards)-1]
 	bc.foundation[fIdx] = append(bc.foundation[fIdx], card)
 	bc.moveCount++
-	bc.appendLog("move", fmt.Sprintf("タブロー列%d→ファンデーション", col), []*Card{card})
+	bc.appendLog("move", "beleagueredcastle.log.tableauToFoundation", map[string]string{"column": strconv.Itoa(col)}, []*Card{card})
 	bc.checkGameClear()
 	bc.checkStalemate()
 	return nil
@@ -210,7 +211,7 @@ func (bc *BeleagueredCastle) MoveTableauToFoundation(col int) error {
 func (bc *BeleagueredCastle) GiveUp() {
 	if bc.phase == BeleagueredCastlePhasePlaying {
 		bc.phase = BeleagueredCastlePhaseGameOver
-		bc.appendLog("giveup", "ギブアップしました", nil)
+		bc.appendLog("giveup", "beleagueredcastle.log.giveUp", nil, nil)
 	}
 }
 
@@ -286,7 +287,7 @@ func (bc *BeleagueredCastle) AutoComplete() error {
 			break
 		}
 	}
-	bc.appendLog("autocomplete", "オートコンプリートを実行しました", nil)
+	bc.appendLog("autocomplete", "beleagueredcastle.log.autoComplete", nil, nil)
 	bc.checkGameClear()
 	bc.checkStalemate()
 	return nil
@@ -449,8 +450,8 @@ func (bc *BeleagueredCastle) restoreSnapshot(snap *beleagueredCastleSnapshot) {
 }
 
 // appendLog 棋譜エントリを追加
-func (bc *BeleagueredCastle) appendLog(actionType, detail string, cards []*Card) {
-	bc.appendLogAt(bc.moveCount, 0, actionType, detail, cards)
+func (bc *BeleagueredCastle) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	bc.appendLogCodeAt(bc.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // beleagueredCastleJSON is the JSON wire format for BeleagueredCastle.

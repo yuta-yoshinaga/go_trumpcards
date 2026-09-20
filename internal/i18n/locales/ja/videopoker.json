@@ -47,5 +47,9 @@
   "helpExampleBet": "  b 5                  5 コイン賭けて配る",
   "madeHandLine": "現在の役: {{handName}}",
   "madeHandNone": "現在の役: 役なし（配当対象外）",
-  "chipsRefilled": "残高が最低ベットを下回ったため、{{chips}}コインを補充しました"
+  "chipsRefilled": "残高が最低ベットを下回ったため、{{chips}}コインを補充しました",
+  "log.bet": "{{amount}}コイン賭け",
+  "log.dealt": "5枚配りました",
+  "log.draw": "{{held}}枚キープ、{{drew}}枚ドロー",
+  "log.result": "{{hand}} 払戻し={{payout}}"
 }

@@ -75,6 +75,19 @@ func TestVideoPoker_Bet_Success(t *testing.T) {
 	assert.Equal(t, VideoPokerDefaultChips-3, vp.GetChips())
 }
 
+func TestVideoPoker_Bet_ActionLogUsesDetailCode(t *testing.T) {
+	vp := newTestVideoPoker()
+	require.NoError(t, vp.Bet(3))
+	for _, entry := range vp.GetActionLog() {
+		if entry.DetailCode == "videopoker.log.bet" {
+			assert.Equal(t, map[string]string{"amount": "3"}, entry.DetailParams)
+			assert.Empty(t, entry.Detail)
+			return
+		}
+	}
+	t.Fatal("bet action log entry not found")
+}
+
 func TestVideoPoker_Bet_WrongPhase(t *testing.T) {
 	vp := newTestVideoPoker()
 	vp.SetPhase(VideoPokerPhaseDraw)

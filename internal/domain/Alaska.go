@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // AlaskaPhase アラスカのゲームフェーズ
@@ -172,7 +173,7 @@ func (y *Alaska) MoveTableauToTableau(fromCol, cardIndex, toCol int) error {
 	// 自動フリップ
 	y.autoFlipTableau(fromCol)
 	y.moveCount++
-	y.appendLog("move", fmt.Sprintf("タブロー列%d→タブロー列%d", fromCol, toCol), movedCards)
+	y.appendLog("move", "alaska.log.tableauToTableau", map[string]string{"from": strconv.Itoa(fromCol), "to": strconv.Itoa(toCol)}, movedCards)
 	y.checkAlaskaStalemate()
 	return nil
 }
@@ -204,7 +205,7 @@ func (y *Alaska) MoveTableauToFoundation(col int) error {
 	// 自動フリップ
 	y.autoFlipTableau(col)
 	y.moveCount++
-	y.appendLog("move", fmt.Sprintf("タブロー列%d→ファンデーション", col), []*Card{card})
+	y.appendLog("move", "alaska.log.tableauToFoundation", map[string]string{"column": strconv.Itoa(col)}, []*Card{card})
 	y.checkGameClear()
 	y.checkAlaskaStalemate()
 	return nil
@@ -214,7 +215,7 @@ func (y *Alaska) MoveTableauToFoundation(col int) error {
 func (y *Alaska) GiveUp() {
 	if y.phase == AlaskaPhasePlaying {
 		y.phase = AlaskaPhaseGameOver
-		y.appendLog("giveup", "ギブアップしました", nil)
+		y.appendLog("giveup", "alaska.log.giveUp", nil, nil)
 	}
 }
 
@@ -334,7 +335,7 @@ func (y *Alaska) AutoComplete() error {
 			break
 		}
 	}
-	y.appendLog("autocomplete", "オートコンプリートを実行しました", nil)
+	y.appendLog("autocomplete", "alaska.log.autoComplete", nil, nil)
 	y.checkGameClear()
 	return nil
 }
@@ -511,8 +512,8 @@ func (y *Alaska) restoreSnapshot(snap *alaskaSnapshot) {
 }
 
 // appendLog 棋譜エントリを追加
-func (y *Alaska) appendLog(actionType, detail string, cards []*Card) {
-	y.appendLogAt(y.moveCount, 0, actionType, detail, cards)
+func (y *Alaska) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	y.appendLogCodeAt(y.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // alaskaJSON is the JSON wire format for Alaska.

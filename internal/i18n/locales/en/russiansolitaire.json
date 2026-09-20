@@ -25,5 +25,9 @@
   "helpExampleHint": "  h                    ask for a move",
   "helpExampleAuto": "  ac                   send everything that can go to a foundation",
   "helpUndo": "  u undo one move",
-  "tableauPlacementRule": "Hint: on the tableau a card goes only onto the same suit, one rank lower. An empty column takes a King only."
+  "tableauPlacementRule": "Hint: on the tableau a card goes only onto the same suit, one rank lower. An empty column takes a King only.",
+  "log.tableauToTableau": "tableau column {{from}}→tableau column {{to}}",
+  "log.tableauToFoundation": "tableau column {{column}}→foundation",
+  "log.giveUp": "gave up",
+  "log.autoComplete": "ran auto-complete"
 }

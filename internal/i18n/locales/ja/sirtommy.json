@@ -33,5 +33,9 @@
   "hintWaste": "ヒント: ウェイスト{{waste}} → ファンデーション{{foundation}}",
   "helpExampleHint": "  h                   次の一手を教えてもらう",
   "helpExampleAuto": "  ac                  置ける札を自動で送る",
-  "hintPlaceWaste": "ヒント: 山札の札はウェイスト {{waste}} に置きましょう (ファンデーションに置ける札はありません)"
+  "hintPlaceWaste": "ヒント: 山札の札はウェイスト {{waste}} に置きましょう (ファンデーションに置ける札はありません)",
+  "log.stockToFoundation": "ストック→ファンデーション{{foundation}}",
+  "log.stockToWaste": "ストック→ウェイスト{{waste}}",
+  "log.wasteToFoundation": "ウェイスト{{waste}}→ファンデーション{{foundation}}",
+  "log.giveUp": "ギブアップしました"
 }

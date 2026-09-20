@@ -90,6 +90,20 @@ func TestAcesUp_Draw(t *testing.T) {
 	assert.Len(t, a.GetActionLog(), 1)
 }
 
+func TestAcesUp_Draw_ActionLogUsesDetailCode(t *testing.T) {
+	a := setupAcesUpPlaying(t, [AcesUpColCnt][]*Card{{auCard(CardDesignSpade, 3)}, {auCard(CardDesignHeart, 4)}, {auCard(CardDesignClover, 5)}, {auCard(CardDesignDiamond, 6)}})
+	a.stock = []*Card{auCard(CardDesignSpade, 7), auCard(CardDesignHeart, 8), auCard(CardDesignClover, 9), auCard(CardDesignDiamond, 10)}
+	require.NoError(t, a.Draw())
+	for _, entry := range a.GetActionLog() {
+		if entry.DetailCode == "acesup.log.dealt" {
+			assert.Nil(t, entry.DetailParams)
+			assert.Empty(t, entry.Detail)
+			return
+		}
+	}
+	t.Fatal("draw action log entry not found")
+}
+
 func TestAcesUp_Draw_EmptyStock(t *testing.T) {
 	a := setupAcesUpPlaying(t, [AcesUpColCnt][]*Card{{auCard(CardDesignSpade, 3)}})
 	assert.EqualError(t, a.Draw(), "no cards in stock")
