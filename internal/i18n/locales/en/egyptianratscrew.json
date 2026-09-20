@@ -34,5 +34,11 @@
   "chanceTrigger": "Triggered by: {{card}}",
   "difficultyRequired": "CPU difficulty is required (0=Easy, 1=Normal, 2=Hard).",
   "difficultyInvalid": "Invalid CPU difficulty: %s. Please enter 0-2.",
-  "helpExampleStep": "  s                    turn the next card"
+  "helpExampleStep": "  s                    turn the next card",
+  "log.flipFromStock": "flip from stock (top={{top}})",
+  "log.correctSlapPair": "correct slap (pair), +{{cards}} cards",
+  "log.correctSlapSandwich": "correct slap (sandwich), +{{cards}} cards",
+  "log.correctSlapNone": "correct slap (none), +{{cards}} cards",
+  "log.wrongSlap": "wrong slap, -{{cards}} cards",
+  "log.chanceWin": "chance win, +{{cards}} cards"
 }

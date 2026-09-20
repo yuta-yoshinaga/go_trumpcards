@@ -5,6 +5,7 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 )
 
 // ビデオポーカーフェーズ定数
@@ -116,14 +117,14 @@ func (vp *VideoPoker) Bet(amount int) error {
 		return NewDomainError(ErrInsufficientChips, "Insufficient chips.")
 	}
 	vp.betAmount = amount
-	vp.appendLog(0, "bet", fmt.Sprintf("bet %d coin(s)", amount), nil)
+	vp.appendLogCode(0, "bet", "videopoker.log.bet", map[string]string{"amount": strconv.Itoa(amount)}, nil)
 
 	// ディール: 5枚配る
 	vp.hand = make([]*Card, VideoPokerHandSize)
 	for i := range VideoPokerHandSize {
 		vp.hand[i] = vp.trumpCards.DrawCard()
 	}
-	vp.appendLog(0, "deal", "dealt 5 cards", vp.hand)
+	vp.appendLogCode(0, "deal", "videopoker.log.dealt", nil, vp.hand)
 
 	vp.phase = VideoPokerPhaseDraw
 	return nil
@@ -160,7 +161,7 @@ func (vp *VideoPoker) Hold(indices []int) error {
 			replacedCount++
 		}
 	}
-	vp.appendLog(0, "draw", fmt.Sprintf("held %d, drew %d", len(indices), replacedCount), vp.hand)
+	vp.appendLogCode(0, "draw", "videopoker.log.draw", map[string]string{"held": strconv.Itoa(len(indices)), "drew": strconv.Itoa(replacedCount)}, vp.hand)
 
 	// 役判定＆配当計算
 	vp.evaluate()
@@ -199,7 +200,7 @@ func (vp *VideoPoker) evaluate() {
 			displayName = PokerHandNames[rank]
 		}
 	}
-	vp.appendLog(0, "result", fmt.Sprintf("%s payout=%d", displayName, vp.payout), vp.hand)
+	vp.appendLogCode(0, "result", "videopoker.log.result", map[string]string{"hand": displayName, "payout": strconv.Itoa(vp.payout)}, vp.hand)
 }
 
 // videoPokerHandKey maps a variant hand name (the English string returned by a

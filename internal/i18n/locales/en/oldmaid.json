@@ -30,5 +30,8 @@
   "helpExampleD": "  d                    draw one card at random",
   "helpLog": "  l                    show the action log",
   "hesitationFlagRequired0Off1On": "sh needs 0 (off) or 1 (on)",
-  "invalidHesitationFlag01": "the hesitation flag must be 0 or 1"
+  "invalidHesitationFlag01": "the hesitation flag must be 0 or 1",
+  "log.draw": "drew from player {{player}}",
+  "log.discard": "discarded {{count}} pair(s)",
+  "log.finish": "player {{player}} finished"
 }

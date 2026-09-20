@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // OldMaidPlayerCnt ババ抜きプレイヤー数
@@ -276,7 +277,7 @@ func (o *OldMaid) drawCard(playerIdx int, cardIdx int) *Card {
 	o.hasDrawn = true
 
 	// 棋譜: ドロー
-	o.appendLog(playerIdx, "draw", fmt.Sprintf("drew from player %d", targetIdx), []*Card{card})
+	o.appendLogCode(playerIdx, "draw", "oldmaid.log.draw", map[string]string{"player": strconv.Itoa(targetIdx)}, []*Card{card})
 
 	// ペアを捨てる
 	discardedCards, discardedCount := player.DiscardPairs()
@@ -285,17 +286,17 @@ func (o *OldMaid) drawCard(playerIdx int, cardIdx int) *Card {
 
 	// 棋譜: ペア捨て
 	if discardedCount > 0 {
-		o.appendLog(playerIdx, "discard", fmt.Sprintf("discarded %d pair(s)", discardedCount), discardedCards)
+		o.appendLogCode(playerIdx, "discard", "oldmaid.log.discard", map[string]string{"count": strconv.Itoa(discardedCount)}, discardedCards)
 	}
 
 	// 手が空になったプレイヤーを上がりにする
 	if target.GetCardsSize() == 0 {
 		target.SetIsFinished(true)
-		o.appendLog(targetIdx, "finish", fmt.Sprintf("player %d finished", targetIdx), nil)
+		o.appendLogCode(targetIdx, "finish", "oldmaid.log.finish", map[string]string{"player": strconv.Itoa(targetIdx)}, nil)
 	}
 	if player.GetCardsSize() == 0 {
 		player.SetIsFinished(true)
-		o.appendLog(playerIdx, "finish", fmt.Sprintf("player %d finished", playerIdx), nil)
+		o.appendLogCode(playerIdx, "finish", "oldmaid.log.finish", map[string]string{"player": strconv.Itoa(playerIdx)}, nil)
 	}
 
 	// ゲーム終了チェック

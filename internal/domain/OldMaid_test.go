@@ -35,6 +35,24 @@ func TestOldMaid_GetLastDrawCard(t *testing.T) {
 	assert.Equal(t, 7, drawnCard.GetValue())
 }
 
+func TestOldMaid_Draw_ActionLogUsesDetailCode(t *testing.T) {
+	players := []*domain.OldMaidPlayer{domain.NewOldMaidPlayer(true), domain.NewOldMaidPlayer(false), domain.NewOldMaidPlayer(false), domain.NewOldMaidPlayer(false)}
+	om := domain.NewOldMaid(domain.NewTrumpCards(1), players)
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+	players[1].AddCard(domain.NewCard(domain.CardDesignClover, 7, false))
+	players[2].SetIsFinished(true)
+	players[3].SetIsFinished(true)
+	assert.NoError(t, om.PlayerDraw(0))
+	for _, entry := range om.GetActionLog() {
+		if entry.DetailCode == "oldmaid.log.draw" {
+			assert.Equal(t, map[string]string{"player": "1"}, entry.DetailParams)
+			assert.Empty(t, entry.Detail)
+			return
+		}
+	}
+	t.Fatal("draw action log entry not found")
+}
+
 func TestOldMaid_SetLastDrawPlayerIdx(t *testing.T) {
 	tc := domain.NewTrumpCards(1)
 	players := []*domain.OldMaidPlayer{
@@ -1439,7 +1457,9 @@ func TestOldMaid_ActionLog_Draw(t *testing.T) {
 	for _, e := range log {
 		if e.ActionType == "draw" && e.PlayerIdx == 0 {
 			drawFound = true
-			assert.Contains(t, e.Detail, "drew from player")
+			assert.Equal(t, "oldmaid.log.draw", e.DetailCode)
+			assert.Equal(t, map[string]string{"player": "1"}, e.DetailParams)
+			assert.Empty(t, e.Detail)
 			assert.Len(t, e.Cards, 1)
 			break
 		}

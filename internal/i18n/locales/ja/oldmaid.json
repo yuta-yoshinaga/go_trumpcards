@@ -30,5 +30,8 @@
   "helpExampleD": "  d                    相手から 1 枚引く (無作為)",
   "helpLog": "  l                    行動ログを表示",
   "hesitationFlagRequired0Off1On": "sh の後に 0 (OFF) か 1 (ON) を指定してください",
-  "invalidHesitationFlag01": "迷い時間ディレイは 0 か 1 で指定してください"
+  "invalidHesitationFlag01": "迷い時間ディレイは 0 か 1 で指定してください",
+  "log.draw": "プレイヤー{{player}}から引きました",
+  "log.discard": "{{count}}ペアを捨てました",
+  "log.finish": "プレイヤー{{player}}が上がりました"
 }

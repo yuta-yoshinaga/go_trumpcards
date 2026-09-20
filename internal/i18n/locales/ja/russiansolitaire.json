@@ -25,5 +25,9 @@
   "helpExampleHint": "  h                    次の一手を教えてもらう",
   "helpExampleAuto": "  ac                   組札へ送れる札を自動で送る",
   "helpUndo": "  u 1手戻す",
-  "tableauPlacementRule": "ヒント: タブローに置けるのは「移動先と同じスートで1つ下の数字」の札だけです。空の列にはKしか置けません。"
+  "tableauPlacementRule": "ヒント: タブローに置けるのは「移動先と同じスートで1つ下の数字」の札だけです。空の列にはKしか置けません。",
+  "log.tableauToTableau": "タブロー列{{from}}→タブロー列{{to}}",
+  "log.tableauToFoundation": "タブロー列{{column}}→ファンデーション",
+  "log.giveUp": "ギブアップしました",
+  "log.autoComplete": "オートコンプリートを実行しました"
 }
