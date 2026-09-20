@@ -32,5 +32,8 @@
   "hintLine": "Hint: {{from}} → {{to}}",
   "undoToEscape": "Undo {{count}} move(s) to escape the dead end (undo {{count}}, or repeat u)",
   "helpExampleHint": "  h                        ask for a move",
-  "helpExampleAuto": "  ac                       send everything that can go to a foundation"
+  "helpExampleAuto": "  ac                       send everything that can go to a foundation",
+  "log.drawDetail": "Drew a card",
+  "log.move": "Moved tableau pile {{value1}} to foundation {{value2}}",
+  "log.giveup": "Gave up"
 }

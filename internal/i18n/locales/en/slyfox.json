@@ -39,5 +39,8 @@
   "errCannotPlaceFoundation": "No foundation accepts that card",
   "errInvalidPile": "Invalid reserve slot: {{pile}}",
   "errInvalidFoundation": "Invalid foundation number",
-  "errDealInProgress": "This round is not dealt out yet ({{dealt}}/{{cycle}}). The reserve cannot feed the foundations until it is"
+  "errDealInProgress": "This round is not dealt out yet ({{dealt}}/{{cycle}}). The reserve cannot feed the foundations until it is",
+  "log.deal": "{{value1}}",
+  "log.move": "{{value1}} {{value2}}",
+  "log.giveup": "Gave up"
 }

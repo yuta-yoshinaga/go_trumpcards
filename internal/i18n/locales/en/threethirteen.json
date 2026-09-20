@@ -1,4 +1,5 @@
 {
+  "log.recycle": "Discard pile recycled into stock ({{cards}} cards)",
   "helpTitle": "Three Thirteen",
   "helpDrawStock": "  ds                   draw from stock",
   "helpDrawDiscard": "  dd                   take the discard top",

@@ -126,7 +126,7 @@ func (f *FourSeasons) Draw() error {
 	f.stock = f.stock[:len(f.stock)-1]
 	f.waste = append(f.waste, card)
 	f.moveCount++
-	f.appendLog("draw", "ストックから1枚引きました", []*Card{card})
+	f.appendLog("draw", "fourseasons.log.draw", nil, []*Card{card})
 	return nil
 }
 
@@ -148,7 +148,7 @@ func (f *FourSeasons) MoveWasteToFoundation(fIdx int) error {
 	f.takeSnapshot()
 	f.waste = f.waste[:len(f.waste)-1]
 	f.foundation[fIdx] = append(f.foundation[fIdx], card)
-	f.afterMove(fmt.Sprintf("ウェイスト→ファンデーション%d", fIdx+1), card)
+	f.afterMove("fourseasons.log.move", map[string]string{"value1": fmt.Sprint(fIdx + 1)}, card)
 	return nil
 }
 
@@ -170,7 +170,7 @@ func (f *FourSeasons) MoveWasteToTableau(col int) error {
 	f.takeSnapshot()
 	f.waste = f.waste[:len(f.waste)-1]
 	f.tableau[col] = append(f.tableau[col], card)
-	f.afterMove(fmt.Sprintf("ウェイスト→タブロー%d", col+1), card)
+	f.afterMove("fourseasons.log.move", map[string]string{"value1": fmt.Sprint(col + 1)}, card)
 	return nil
 }
 
@@ -195,7 +195,7 @@ func (f *FourSeasons) MoveTableauToFoundation(col, fIdx int) error {
 	f.takeSnapshot()
 	f.tableau[col] = f.tableau[col][:len(f.tableau[col])-1]
 	f.foundation[fIdx] = append(f.foundation[fIdx], card)
-	f.afterMove(fmt.Sprintf("タブロー%d→ファンデーション%d", col+1, fIdx+1), card)
+	f.afterMove("fourseasons.log.move", map[string]string{"value1": fmt.Sprint(col + 1), "value2": fmt.Sprint(fIdx + 1)}, card)
 	return nil
 }
 
@@ -224,7 +224,7 @@ func (f *FourSeasons) MoveTableauToTableau(fromCol, toCol int) error {
 	f.takeSnapshot()
 	f.tableau[fromCol] = f.tableau[fromCol][:len(f.tableau[fromCol])-1]
 	f.tableau[toCol] = append(f.tableau[toCol], card)
-	f.afterMove(fmt.Sprintf("タブロー%d→タブロー%d", fromCol+1, toCol+1), card)
+	f.afterMove("fourseasons.log.move", map[string]string{"value1": fmt.Sprint(fromCol + 1), "value2": fmt.Sprint(toCol + 1)}, card)
 	return nil
 }
 
@@ -232,7 +232,7 @@ func (f *FourSeasons) MoveTableauToTableau(fromCol, toCol int) error {
 func (f *FourSeasons) GiveUp() {
 	if f.phase == FourSeasonsPhasePlaying {
 		f.phase = FourSeasonsPhaseGameOver
-		f.appendLog("giveup", "ギブアップしました", nil)
+		f.appendLog("giveup", "fourseasons.log.giveup", nil, nil)
 	}
 }
 
@@ -379,9 +379,9 @@ func (f *FourSeasons) wasteTop() (*Card, error) {
 }
 
 // afterMove は移動後の共通処理（手数・棋譜・クリア判定）。
-func (f *FourSeasons) afterMove(detail string, card *Card) {
+func (f *FourSeasons) afterMove(detailCode string, detailParams map[string]string, card *Card) {
 	f.moveCount++
-	f.appendLog("move", detail, []*Card{card})
+	f.appendLog("move", detailCode, detailParams, []*Card{card})
 	f.checkGameClear()
 }
 
@@ -454,8 +454,8 @@ func (f *FourSeasons) takeSnapshot() {
 	f.history = appendSnapshot(f.history, snap)
 }
 
-func (f *FourSeasons) appendLog(actionType, detail string, cards []*Card) {
-	f.appendLogAt(f.moveCount, 0, actionType, detail, cards)
+func (f *FourSeasons) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	f.appendLogCodeAt(f.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // fourSeasonsMaxSliceLen caps slice sizes during deserialisation.

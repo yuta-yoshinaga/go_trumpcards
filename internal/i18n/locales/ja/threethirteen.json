@@ -1,4 +1,5 @@
 {
+  "log.recycle": "捨て札から {{cards}} 枚を山札に戻しました",
   "helpTitle": "Three Thirteen (スリー・サーティーン)",
   "helpDrawStock": "  ds                   山札から引く",
   "helpDrawDiscard": "  dd                   捨て札トップを取る",

@@ -20,5 +20,7 @@
   "hintReasonOffset1": "(a move that preserves fewer options)",
   "hintReasonOffset3": "(an important move that preserves your options)",
   "helpExampleHint": "  h                   ask for a move",
-  "helpAutoPlay": "  ac                  play automatically"
+  "helpAutoPlay": "  ac                  play automatically",
+  "log.move": "Move: {{value1}}, {{value2}}",
+  "log.giveup": "Gave up"
 }

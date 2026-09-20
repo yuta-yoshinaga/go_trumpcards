@@ -220,7 +220,7 @@ func (n *NiuNiu) deal(humanBet int) {
 		s.hand = n.newHand(bet)
 	}
 	n.bankerHand = n.newHand(0)
-	n.appendLog("deal", "全員に5枚ずつ配った", nil)
+	n.appendLog("deal", "niuniu.log.deal", nil, nil)
 	n.settle()
 }
 
@@ -364,7 +364,7 @@ func (n *NiuNiu) settle() {
 	}
 	n.phase = NiuNiuPhaseEnd
 	n.lastResult = fmt.Sprintf("親: %s", NiuNiuRankLabel(n.bankerHand.rank))
-	n.appendLog("result", n.lastResult, n.bankerHand.cards)
+	n.appendLog("result", "niuniu.log.result", map[string]string{"rank": NiuNiuRankKey(n.bankerHand.rank)}, n.bankerHand.cards)
 }
 
 // settleHand 1 つの手の増減（賭け金を除いた純増減）。
@@ -445,13 +445,14 @@ func (n *NiuNiu) GetActionLog() []*ActionLogEntry { return n.actionLog }
 func (n *NiuNiu) GetGameEndFlag() bool { return n.phase == NiuNiuPhaseEnd }
 
 // appendLog 棋譜エントリを追加
-func (n *NiuNiu) appendLog(actionType, detail string, cards []*Card) {
+func (n *NiuNiu) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	n.actionLog = append(n.actionLog, &ActionLogEntry{
-		TurnNumber: len(n.actionLog),
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      append([]*Card(nil), cards...),
+		TurnNumber:   len(n.actionLog),
+		PlayerIdx:    0,
+		ActionType:   actionType,
+		DetailCode:   detailCode,
+		DetailParams: detailParams,
+		Cards:        append([]*Card(nil), cards...),
 	})
 }
 

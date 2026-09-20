@@ -472,10 +472,18 @@ func TestNapoleonsSquare_ActionLogUsesZeroBasedIndices(t *testing.T) {
 
 	log := ns.GetActionLog()
 	require.Len(t, log, 4)
-	assert.Equal(t, "タブロー列0→タブロー列1(2枚)", log[0].Detail)
-	assert.Equal(t, "タブロー列2→基礎札2", log[1].Detail, "heart is foundation 2, 0-indexed")
-	assert.Equal(t, "山札→ウェイスト", log[2].Detail)
-	assert.Equal(t, "ウェイスト→タブロー列0", log[3].Detail)
+	assert.Equal(t, "napoleonssquare.log.move", log[0].DetailCode)
+	assert.Equal(t, map[string]string{"value1": "0", "value2": "1", "value3": "2"}, log[0].DetailParams)
+	assert.Equal(t, "napoleonssquare.log.move", log[1].DetailCode)
+	assert.Equal(t, map[string]string{"value1": "2", "value2": "2"}, log[1].DetailParams,
+		"heart is foundation 2, 0-indexed")
+	assert.Equal(t, "napoleonssquare.log.draw", log[2].DetailCode)
+	assert.Nil(t, log[2].DetailParams)
+	assert.Equal(t, "napoleonssquare.log.move", log[3].DetailCode)
+	assert.Equal(t, map[string]string{"value1": "0"}, log[3].DetailParams)
+	for _, e := range log {
+		assert.Empty(t, e.Detail)
+	}
 }
 
 func TestNapoleonsSquare_JSONRoundTrip(t *testing.T) {

@@ -138,14 +138,6 @@ func (g *IndianRummy) appendLog(playerIdx int, actionType, detailCode string, de
 	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
-type indianRummyStockRecycler struct{ game *IndianRummy }
-
-func (r indianRummyStockRecycler) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	var count int
-	_, _ = fmt.Sscanf(detail, "Discard pile recycled into stock (%d cards)", &count)
-	r.game.appendLog(playerIdx, actionType, "indianrummy.log.recycle", map[string]string{"count": strconv.Itoa(count)}, cards)
-}
-
 // NewDefaultIndianRummy 標準構成（人間 1 + CPU 3、108 枚デッキ、デフォルト設定）でコンストラクトする SSoT。
 func NewDefaultIndianRummy() *IndianRummy {
 	cfg := DefaultIndianRummyConfig()
@@ -322,7 +314,7 @@ func (g *IndianRummy) drawFromDiscard() error {
 
 // recycleDiscardIntoStock 山札が空のとき捨て札トップ 1 枚を残して残りを山札へ戻しシャッフルする。
 func (g *IndianRummy) recycleDiscardIntoStock() bool {
-	return recycleDiscardIntoStock(&g.discardPile, &g.drawPile, indianRummyStockRecycler{game: g})
+	return recycleDiscardIntoStock(&g.discardPile, &g.drawPile, g, "indianrummy.log.recycle")
 }
 
 // PlayerDiscard 人間プレイヤーが手札 1 枚を捨ててターンを終了する

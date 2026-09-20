@@ -25,5 +25,9 @@
   "reason.allDuplicated": "どのスートも場札に2枚以上出ているので、どれを選んでも不利です",
   "result.gameEnd": "山が尽きました",
   "helpExampleBet": "  bet 1 100         1 番の場札に 100 賭ける",
-  "layoutRemaining": "（山残り{{remaining}}枚）"
+  "layoutRemaining": "（山残り{{remaining}}枚）",
+  "log.reset": "game reset",
+  "log.bet": "bet {{value1}} on layout {{value2}}",
+  "log.gate": "gate revealed, payout {{value1}}",
+  "log.gameEnd": "finished with {{value1}} chips"
 }

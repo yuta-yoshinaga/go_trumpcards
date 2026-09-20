@@ -381,7 +381,7 @@ func setHandForTest[T any, P interface {
 
 // moveFinisher is a solitaire that records a move and re-evaluates the board.
 type moveFinisher interface {
-	appendLog(actionType, detail string, cards []*Card)
+	appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card)
 	checkGameClear()
 	checkStalemate()
 }
@@ -392,13 +392,13 @@ type moveFinisher interface {
 // moveCount is passed as a pointer because these games use it as the log
 // entry's TurnNumber, so the increment has to happen before appendLog runs --
 // an order the tests pin rather than leave to reading.
-func afterMove(moveCount *int, g moveFinisher, actionType, detail string, card *Card) {
+func afterMove(moveCount *int, g moveFinisher, actionType, detailCode string, detailParams map[string]string, card *Card) {
 	*moveCount++
 	var cards []*Card
 	if card != nil {
 		cards = []*Card{card}
 	}
-	g.appendLog(actionType, detail, cards)
+	g.appendLog(actionType, detailCode, detailParams, cards)
 	g.checkGameClear()
 	g.checkStalemate()
 }
@@ -522,11 +522,6 @@ func resetRoundWithTricks[P trickRoundScorable](p P) {
 	p.SetIsFinished(false)
 }
 
-// stockRecycler is a game that can record recycling the discard pile.
-type stockRecycler interface {
-	appendLog(playerIdx int, actionType, detail string, cards []*Card)
-}
-
 type codedStockRecycler interface {
 	appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card)
 }
@@ -535,10 +530,8 @@ type codedStockRecycler interface {
 // draw pile, shuffled, and logs it. Returns false when there is nothing to
 // recycle. 5 games had this written out.
 //
-// The piles are passed by pointer because the helper rewrites both. Keeping the
-// fmt.Sprintf here rather than at each call site means one copy of it instead
-// of five.
-func recycleDiscardIntoStock(discard, draw *[]*Card, g any) bool {
+// The piles are passed by pointer because the helper rewrites both.
+func recycleDiscardIntoStock(discard, draw *[]*Card, g codedStockRecycler, detailCode string) bool {
 	if len(*discard) <= 1 {
 		return false
 	}
@@ -547,11 +540,7 @@ func recycleDiscardIntoStock(discard, draw *[]*Card, g any) bool {
 	*discard = []*Card{top}
 	rand.Shuffle(len(rest), func(i, j int) { rest[i], rest[j] = rest[j], rest[i] })
 	*draw = append(*draw, rest...)
-	if coded, ok := g.(codedStockRecycler); ok {
-		coded.appendLog(-1, "recycle", "kalooki.log.recycle", map[string]string{"cards": strconv.Itoa(len(rest))}, nil)
-	} else if legacy, ok := g.(stockRecycler); ok {
-		legacy.appendLog(-1, "recycle", fmt.Sprintf("Discard pile recycled into stock (%d cards)", len(rest)), nil)
-	}
+	g.appendLog(-1, "recycle", detailCode, map[string]string{"cards": strconv.Itoa(len(rest))}, nil)
 	return true
 }
 

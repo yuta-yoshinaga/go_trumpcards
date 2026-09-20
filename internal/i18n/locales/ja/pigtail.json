@@ -1,4 +1,6 @@
 {
+  "log.penalty": "{{card}}を引き、同じスートだったため{{count}}枚を引き取りました",
+  "log.draw": "{{card}}を引きました",
   "helpTitle": "Pig's Tail (ぶたのしっぽ)",
   "helpAction": "  d, draw               draw from circle",
   "header": "山札: {{stock}}枚 / 場札: {{center}}枚",

@@ -32,5 +32,8 @@
   "hintLine": "ヒント: {{from}} → {{to}}",
   "undoToEscape": "脱出には {{count}} 手戻す必要があります（undo {{count}} または u を繰り返す）",
   "helpExampleHint": "  h                        次の一手を教えてもらう",
-  "helpExampleAuto": "  ac                       組札へ送れる札を自動で送る"
+  "helpExampleAuto": "  ac                       組札へ送れる札を自動で送る",
+  "log.drawDetail": "山札から1枚めくった",
+  "log.move": "タブロー山{{value1}}→基礎札{{value2}}",
+  "log.giveup": "ギブアップしました"
 }

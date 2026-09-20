@@ -167,7 +167,7 @@ func (mm *MissMilligan) Deal() error {
 			&MissMilliganTableauCard{Card: card, FaceUp: true})
 		dealt++
 	}
-	mm.afterMove("deal", fmt.Sprintf("山札→各列に%d枚配布", dealt), nil)
+	mm.afterMove("deal", "missmilligan.log.deal", map[string]string{"value1": fmt.Sprint(dealt)}, nil)
 	return nil
 }
 
@@ -206,8 +206,7 @@ func (mm *MissMilligan) MoveTableauToTableau(fromCol, cardIndex, toCol int) erro
 	moved := append([]*MissMilliganTableauCard(nil), group...)
 	mm.tableau[fromCol] = fromCards[:cardIndex]
 	mm.tableau[toCol] = append(mm.tableau[toCol], moved...)
-	mm.afterMove("move",
-		fmt.Sprintf("タブロー列%d→タブロー列%d(%d枚)", fromCol, toCol, len(moved)),
+	mm.afterMove("move", "missmilligan.log.move", map[string]string{"value1": fmt.Sprint(fromCol), "value2": fmt.Sprint(toCol), "value3": fmt.Sprint(len(moved))},
 		moved[0].Card)
 	return nil
 }
@@ -232,7 +231,7 @@ func (mm *MissMilligan) MoveTableauToFoundation(col int) error {
 	mm.takeSnapshot()
 	mm.tableau[col] = fromCards[:len(fromCards)-1]
 	mm.foundation[fIdx] = append(mm.foundation[fIdx], card)
-	mm.afterMove("move", fmt.Sprintf("タブロー列%d→基礎札%d", col, fIdx), card)
+	mm.afterMove("move", "missmilligan.log.move", map[string]string{"value1": fmt.Sprint(col), "value2": fmt.Sprint(fIdx)}, card)
 	return nil
 }
 
@@ -269,7 +268,7 @@ func (mm *MissMilligan) Waive(col, cardIndex int) error {
 	}
 	mm.tableau[col] = fromCards[:cardIndex]
 	mm.waived = waived
-	mm.afterMove("waive", fmt.Sprintf("列%dから%d枚を保持", col, len(waived)), waived[0])
+	mm.afterMove("waive", "missmilligan.log.waive", map[string]string{"value1": fmt.Sprint(col), "value2": fmt.Sprint(len(waived))}, waived[0])
 	return nil
 }
 
@@ -295,7 +294,7 @@ func (mm *MissMilligan) PlaceWaived(toCol int) error {
 	n := len(mm.waived)
 	head := mm.waived[0]
 	mm.waived = nil
-	mm.afterMove("move", fmt.Sprintf("保持→タブロー列%d(%d枚)", toCol, n), head)
+	mm.afterMove("move", "missmilligan.log.move", map[string]string{"value1": fmt.Sprint(toCol), "value2": fmt.Sprint(n)}, head)
 	return nil
 }
 
@@ -319,7 +318,7 @@ func (mm *MissMilligan) MoveWaivedToFoundation() error {
 	mm.takeSnapshot()
 	mm.waived = nil
 	mm.foundation[fIdx] = append(mm.foundation[fIdx], card)
-	mm.afterMove("move", fmt.Sprintf("保持→基礎札%d", fIdx), card)
+	mm.afterMove("move", "missmilligan.log.move", map[string]string{"value1": fmt.Sprint(fIdx)}, card)
 	return nil
 }
 
@@ -327,7 +326,7 @@ func (mm *MissMilligan) MoveWaivedToFoundation() error {
 func (mm *MissMilligan) GiveUp() {
 	if mm.phase == MissMilliganPhasePlaying {
 		mm.phase = MissMilliganPhaseGameOver
-		mm.appendLog("giveup", "ギブアップしました", nil)
+		mm.appendLog("giveup", "missmilligan.log.giveup", nil, nil)
 	}
 }
 
@@ -595,8 +594,8 @@ func (mm *MissMilligan) findFoundation(card *Card) int {
 }
 
 // afterMove 手数・棋譜・終了判定をまとめて進める
-func (mm *MissMilligan) afterMove(actionType, detail string, card *Card) {
-	afterMove(&mm.moveCount, mm, actionType, detail, card)
+func (mm *MissMilligan) afterMove(actionType, detailCode string, detailParams map[string]string, card *Card) {
+	afterMove(&mm.moveCount, mm, actionType, detailCode, detailParams, card)
 }
 
 // checkGameClear 8 つの基礎札すべてが K まで積み上がったか
@@ -658,8 +657,8 @@ func (mm *MissMilligan) takeSnapshot() {
 }
 
 // appendLog 棋譜エントリを追加
-func (mm *MissMilligan) appendLog(actionType, detail string, cards []*Card) {
-	mm.appendLogAt(mm.moveCount, 0, actionType, detail, cards)
+func (mm *MissMilligan) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	mm.appendLogCodeAt(mm.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // missMilliganMaxSliceLen caps slice sizes during deserialisation.

@@ -158,7 +158,7 @@ func (b *Bisley) MoveTableauToAceFoundation(col int) error {
 	b.takeSnapshot()
 	b.popTop(col)
 	b.aceFoundations[fIdx] = append(b.aceFoundations[fIdx], card)
-	b.afterMove("move", fmt.Sprintf("タブロー列%d→昇順基礎%d", col, fIdx), card)
+	b.afterMove("move", "bisley.log.move", map[string]string{"value1": fmt.Sprint(col), "value2": fmt.Sprint(fIdx)}, card)
 	return nil
 }
 
@@ -175,7 +175,7 @@ func (b *Bisley) MoveTableauToKingFoundation(col int) error {
 	b.takeSnapshot()
 	b.popTop(col)
 	b.kingFoundations[fIdx] = append(b.kingFoundations[fIdx], card)
-	b.afterMove("move", fmt.Sprintf("タブロー列%d→降順基礎%d", col, fIdx), card)
+	b.afterMove("move", "bisley.log.move", map[string]string{"value1": fmt.Sprint(col), "value2": fmt.Sprint(fIdx)}, card)
 	return nil
 }
 
@@ -203,7 +203,7 @@ func (b *Bisley) MoveTableauToTableau(fromCol, toCol int) error {
 	b.takeSnapshot()
 	b.popTop(fromCol)
 	b.tableau[toCol] = append(b.tableau[toCol], &BisleyTableauCard{Card: card, FaceUp: true})
-	b.afterMove("move", fmt.Sprintf("タブロー列%d→タブロー列%d", fromCol, toCol), card)
+	b.afterMove("move", "bisley.log.move", map[string]string{"value1": fmt.Sprint(fromCol), "value2": fmt.Sprint(toCol)}, card)
 	return nil
 }
 
@@ -211,7 +211,7 @@ func (b *Bisley) MoveTableauToTableau(fromCol, toCol int) error {
 func (b *Bisley) GiveUp() {
 	if b.phase == BisleyPhasePlaying {
 		b.phase = BisleyPhaseGameOver
-		b.appendLog("giveup", "ギブアップしました", nil)
+		b.appendLog("giveup", "bisley.log.giveup", nil, nil)
 	}
 }
 
@@ -398,11 +398,8 @@ func (b *Bisley) popTop(col int) {
 }
 
 // afterMove 手数・棋譜・終了判定をまとめて進める
-func (b *Bisley) afterMove(actionType, detail string, card *Card) {
-	b.moveCount++
-	b.appendLog(actionType, detail, []*Card{card})
-	b.checkGameClear()
-	b.checkStalemate()
+func (b *Bisley) afterMove(actionType, detailCode string, detailParams map[string]string, card *Card) {
+	afterMove(&b.moveCount, b, actionType, detailCode, detailParams, card)
 }
 
 // canPlaceOnAce 昇順基礎札に置けるか（同スートで 1 つ上、K で打ち止め）
@@ -461,8 +458,8 @@ func (b *Bisley) takeSnapshot() {
 }
 
 // appendLog 棋譜エントリを追加
-func (b *Bisley) appendLog(actionType, detail string, cards []*Card) {
-	b.appendLogAt(b.moveCount, 0, actionType, detail, cards)
+func (b *Bisley) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	b.appendLogCodeAt(b.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // bisleyMaxSliceLen caps slice sizes during deserialisation.

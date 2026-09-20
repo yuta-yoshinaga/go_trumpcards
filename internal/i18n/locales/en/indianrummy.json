@@ -46,7 +46,7 @@
   "log.discard": "{{name}} discards {{card}}",
   "log.declare": "{{name}} declares ({{status}})",
   "log.stockOut": "Round ends (stock exhausted)",
-  "log.recycle": "Recycled {{count}} cards from discard into stock",
+  "log.recycle": "Discard pile recycled into stock ({{cards}} cards)",
   "log.roundWin": "{{name}} wins the round with a valid declaration",
   "log.roundEnd": "{{name}} made an invalid declaration (+{{penalty}} penalty)",
   "log.gameEnd": "{{name}} wins the game with {{points}} points!"

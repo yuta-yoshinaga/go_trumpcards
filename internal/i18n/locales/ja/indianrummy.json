@@ -46,7 +46,7 @@
   "log.discard": "{{name}} が {{card}} を捨てました",
   "log.declare": "{{name}} が宣言しました（{{status}}）",
   "log.stockOut": "山札が尽きてラウンド終了",
-  "log.recycle": "捨て札から {{count}} 枚を山札に戻しました",
+  "log.recycle": "捨て札から {{cards}} 枚を山札に戻しました",
   "log.roundWin": "{{name}} が有効な宣言でラウンドに勝利しました",
   "log.roundEnd": "{{name}} は無効な宣言をしました（{{penalty}}点のペナルティ）",
   "log.gameEnd": "{{name}} が {{points}} 点でゲームに勝利しました！"

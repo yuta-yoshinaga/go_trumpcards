@@ -3,6 +3,7 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 )
 
 // BeggarMyNeighbourPlayerCnt Beggar-My-Neighbour ゲームのプレイヤー数 (人間 + CPU)
@@ -60,6 +61,10 @@ type BeggarMyNeighbour struct {
 	winnerIdx         int
 	roundsPlayed      int
 	actionLogBase
+}
+
+func (g *BeggarMyNeighbour) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // NewBeggarMyNeighbour コンストラクタ
@@ -173,7 +178,7 @@ func (g *BeggarMyNeighbour) stepPlay() error {
 	g.centralPile = append(g.centralPile, c)
 	g.lastCardPlayed = c
 	g.lastCardPlayerIdx = g.currentPlayerIdx
-	g.appendLog(g.currentPlayerIdx, "play", "play card", []*Card{c})
+	g.appendLog(g.currentPlayerIdx, "play", "beggarmyneighbour.log.play", nil, []*Card{c})
 
 	if pv := beggarMyNeighbourPenaltyValue(c); pv > 0 {
 		g.penaltyOwnerIdx = g.currentPlayerIdx
@@ -202,7 +207,7 @@ func (g *BeggarMyNeighbour) stepPayPenalty() error {
 	g.lastCardPlayed = c
 	g.lastCardPlayerIdx = g.currentPlayerIdx
 	g.penaltyRemaining--
-	g.appendLog(g.currentPlayerIdx, "pay", fmt.Sprintf("pay penalty (%d remaining)", g.penaltyRemaining), []*Card{c})
+	g.appendLog(g.currentPlayerIdx, "pay", "beggarmyneighbour.log.pay", map[string]string{"remaining": strconv.Itoa(g.penaltyRemaining)}, []*Card{c})
 
 	if pv := beggarMyNeighbourPenaltyValue(c); pv > 0 {
 		// New penalty card: flip obligation to original payer
@@ -228,7 +233,7 @@ func (g *BeggarMyNeighbour) stepCollect() error {
 	collector := g.penaltyOwnerIdx
 
 	g.players[collector].AddToDiscardPile(g.centralPile...)
-	g.appendLog(collector, "collect", fmt.Sprintf("+%d cards", len(g.centralPile)), nil)
+	g.appendLog(collector, "collect", "beggarmyneighbour.log.collect", map[string]string{"count": strconv.Itoa(len(g.centralPile))}, nil)
 
 	g.centralPile = nil
 	g.penaltyOwnerIdx = -1

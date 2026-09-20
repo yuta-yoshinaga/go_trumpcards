@@ -38,5 +38,8 @@
   "helpExampleHint": "  h                        ask for a move",
   "helpExampleAuto": "  ac                       send everything that can go to a foundation",
   "foundationProgress": "On foundations: {{count}}/{{total}} ({{percent}}%)",
-  "cornerKingsOnly": " (kings only)"
+  "cornerKingsOnly": " (kings only)",
+  "log.draw": "Drew a card",
+  "log.move": "Move: {{value1}}",
+  "log.giveup": "Gave up"
 }

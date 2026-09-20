@@ -46,5 +46,11 @@
   "hintLine": "Hint: {{from}} -> {{to}}",
   "undoToEscape": "Undo {{count}} move(s) to escape (undo {{count}} or repeat u)",
   "helpExampleHint": "  h                        ask for a move",
-  "helpExampleAuto": "  ac                       send everything that can go to a foundation"
+  "helpExampleAuto": "  ac                       send everything that can go to a foundation",
+  "log.directionAscending": "Set the foundation direction to ascending",
+  "log.directionDescending": "Set the foundation direction to descending",
+  "log.redealDetail": "Returned the waste to the stock",
+  "log.drawDetail": "Drew one card from the stock",
+  "log.move": "{{value1}} {{value2}}",
+  "log.giveup": "Gave up"
 }

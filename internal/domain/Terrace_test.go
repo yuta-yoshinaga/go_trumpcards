@@ -674,16 +674,18 @@ func TestTerrace_ActionLog(t *testing.T) {
 
 	// The board is 0-indexed everywhere, so the log must be too -- a 1-based log
 	// silently disagrees with the hint and the CLI.
-	details := make([]string, 0, len(tr.GetActionLog()))
-	for _, e := range tr.GetActionLog() {
-		details = append(details, e.Detail)
+	log := tr.GetActionLog()
+	require.Len(t, log, 4)
+	assert.Equal(t, "terrace.log.move", log[0].DetailCode)
+	assert.Equal(t, map[string]string{"value1": "0"}, log[0].DetailParams)
+	assert.Equal(t, "terrace.log.move", log[1].DetailCode)
+	assert.Equal(t, map[string]string{"value1": "1"}, log[1].DetailParams)
+	assert.Equal(t, "terrace.log.move", log[2].DetailCode)
+	assert.Equal(t, map[string]string{"value1": "1", "value2": "0"}, log[2].DetailParams)
+	assert.Equal(t, "terrace.log.drawDetail", log[3].DetailCode)
+	for _, e := range log {
+		assert.Empty(t, e.Detail)
 	}
-	assert.Equal(t, []string{
-		"テラス→基礎札0",
-		"捨て札→基礎札1",
-		"タブロー山1→タブロー山0",
-		"山札から1枚めくった",
-	}, details)
 }
 
 func TestTerrace_JSONRoundTrip(t *testing.T) {

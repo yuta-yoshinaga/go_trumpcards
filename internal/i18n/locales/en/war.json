@@ -1,4 +1,7 @@
 {
+  "log.reveal": "turn up",
+  "log.collect": "+{{count}} cards",
+  "log.war": "buried {{count}} each, turn up",
   "helpTitle": "War (戦争)",
   "helpStep": "  s                    flip next card / resolve round / resolve war",
   "helpAutoPlay": "  a                    auto play until the game ends",

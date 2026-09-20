@@ -176,7 +176,7 @@ func (t *Terrace) Draw() error {
 	card := t.stock[0]
 	t.stock = t.stock[1:]
 	t.waste = append(t.waste, card)
-	t.afterMove("draw", "山札から1枚めくった", card)
+	t.afterMove("draw", "terrace.log.drawDetail", nil, card)
 	return nil
 }
 
@@ -199,7 +199,7 @@ func (t *Terrace) MoveReserveToFoundation() error {
 	t.popReserve()
 	t.placeOnFoundation(card, fIdx)
 	t.fillEmptyColumns()
-	t.afterMove("move", fmt.Sprintf("テラス→基礎札%d", fIdx), card)
+	t.afterMove("move", "terrace.log.move", map[string]string{"value1": fmt.Sprint(fIdx)}, card)
 	return nil
 }
 
@@ -220,7 +220,7 @@ func (t *Terrace) MoveWasteToFoundation() error {
 	t.popWaste()
 	t.placeOnFoundation(card, fIdx)
 	t.fillEmptyColumns()
-	t.afterMove("move", fmt.Sprintf("捨て札→基礎札%d", fIdx), card)
+	t.afterMove("move", "terrace.log.move", map[string]string{"value1": fmt.Sprint(fIdx)}, card)
 	return nil
 }
 
@@ -243,7 +243,7 @@ func (t *Terrace) MoveWasteToTableau(pile int) error {
 	t.popWaste()
 	t.tableau[pile] = append(t.tableau[pile], card)
 	t.fillEmptyColumns()
-	t.afterMove("move", fmt.Sprintf("捨て札→タブロー山%d", pile), card)
+	t.afterMove("move", "terrace.log.move", map[string]string{"value1": fmt.Sprint(pile)}, card)
 	return nil
 }
 
@@ -267,7 +267,7 @@ func (t *Terrace) MoveTableauToFoundation(pile int) error {
 	t.tableau[pile] = t.tableau[pile][:len(t.tableau[pile])-1]
 	t.placeOnFoundation(card, fIdx)
 	t.fillEmptyColumns()
-	t.afterMove("move", fmt.Sprintf("タブロー山%d→基礎札%d", pile, fIdx), card)
+	t.afterMove("move", "terrace.log.move", map[string]string{"value1": fmt.Sprint(pile), "value2": fmt.Sprint(fIdx)}, card)
 	return nil
 }
 
@@ -300,7 +300,7 @@ func (t *Terrace) MoveTableauToTableau(fromPile, toPile int) error {
 	t.tableau[fromPile] = t.tableau[fromPile][:len(t.tableau[fromPile])-1]
 	t.tableau[toPile] = append(t.tableau[toPile], card)
 	t.fillEmptyColumns()
-	t.afterMove("move", fmt.Sprintf("タブロー山%d→タブロー山%d", fromPile, toPile), card)
+	t.afterMove("move", "terrace.log.move", map[string]string{"value1": fmt.Sprint(fromPile), "value2": fmt.Sprint(toPile)}, card)
 	return nil
 }
 
@@ -308,7 +308,7 @@ func (t *Terrace) MoveTableauToTableau(fromPile, toPile int) error {
 func (t *Terrace) GiveUp() {
 	if t.phase == TerracePhasePlaying {
 		t.phase = TerracePhaseGameOver
-		t.appendLog("giveup", "ギブアップしました", nil)
+		t.appendLog("giveup", "terrace.log.giveup", nil, nil)
 	}
 }
 
@@ -640,8 +640,8 @@ func (t *Terrace) fillEmptyColumns() {
 }
 
 // afterMove 手数・棋譜・終了判定をまとめて進める
-func (t *Terrace) afterMove(actionType, detail string, card *Card) {
-	afterMove(&t.moveCount, t, actionType, detail, card)
+func (t *Terrace) afterMove(actionType, detailCode string, detailParams map[string]string, card *Card) {
+	afterMove(&t.moveCount, t, actionType, detailCode, detailParams, card)
 }
 
 // checkGameClear 8 つの基礎札がすべて 13 枚になったか
@@ -685,8 +685,8 @@ func (t *Terrace) takeSnapshot() {
 }
 
 // appendLog 棋譜エントリを追加
-func (t *Terrace) appendLog(actionType, detail string, cards []*Card) {
-	t.appendLogAt(t.moveCount, 0, actionType, detail, cards)
+func (t *Terrace) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	t.appendLogCodeAt(t.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // terraceSnapshotJSON is the wire format for a single undo snapshot.

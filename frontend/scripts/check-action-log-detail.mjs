@@ -10,13 +10,15 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = process.argv[2] ? path.resolve(process.argv[2]) : path.resolve(HERE, '..', '..');
 const SCAN_ROOT = path.join(ROOT, 'internal');
 
-// ADR-0040 の移行が進むたびに実測して下げる。0 になったら
-// `check-domain-error-locale.mjs` と同じく床を走査ファイル数へ移す。
-// 実測値: 実測 1436 件。
-const DETAIL_LITERAL_CEILING = 50;
+// **ADR-0040 の移行は完了した (2338 件 -> 0 件)。この天井は 0 のまま動かさない。**
+// 0 では「違反が無い」と「走査していない」が同じ出力になるので、意味のある床は
+// 下の SCANNED_FILE_FLOOR (走査した Go ファイル数) の方に移してある
+// —— `check-domain-error-locale.mjs` が #7592 の完了時に取ったのと同じ形。
+const DETAIL_LITERAL_CEILING = 0;
 // フィクスチャは数え方のテスト用で本番の件数ではないため、天井を緩くする。
 const FIXTURE_CEILING = 100;
 const CEILING = process.argv[2] ? FIXTURE_CEILING : DETAIL_LITERAL_CEILING;
+// 天井が 0 になった今、走査が実際に行われたことを保証するのはこの床だけ。
 const SCANNED_FILE_FLOOR = 3000;
 
 async function goFiles(dir) {
@@ -91,25 +93,51 @@ function isCardsArgument(rawArgument, argumentCount) {
     argument.startsWith('[]*Card{') ||
     argument.startsWith('append([]*Card') ||
     /^[A-Za-z_][A-Za-z0-9_.]*(\[[^\]]*\])?$/.test(argument) ||
-    (argumentCount >= 3 && !hasLiteralDetail(argument) && !/[()]/.test(argument))
+    (argumentCount >= 3 && !isLiteralDetailCode(argument) && !/[()]/.test(argument))
   );
 }
 
-function hasLiteralDetail(rawArgument) {
+function isDetailParams(rawArgument) {
+  const argument = rawArgument.trim();
+  return argument === 'nil' || /^map\s*\[\s*string\s*\]\s*string\s*\{/.test(argument);
+}
+
+function isLiteralDetailCode(rawArgument) {
   const argument = rawArgument.trim();
   return argument.startsWith('"') || /^fmt\.Sprintf\s*\(/.test(argument);
 }
 
-function literalActionLogs(source) {
-  let count = 0;
+function detailCodeText(rawArgument) {
+  return rawArgument.trim() || '<missing>';
+}
+
+function isFunctionDeclaration(source, index) {
+  const lineStart = source.lastIndexOf('\n', index - 1) + 1;
+  const prefix = source.slice(lineStart, index);
+  return /\bfunc\b/.test(prefix) && !prefix.includes('{');
+}
+
+function literalActionLogs(source, file) {
+  const violations = [];
   for (const match of source.matchAll(/\bappendLog[A-Za-z0-9_]*\s*\(/g)) {
+    if (isFunctionDeclaration(source, match.index)) continue;
     const open = match.index + match[0].lastIndexOf('(');
     const args = callArguments(source, open);
     if (args.length === 0) continue;
     const detailArgs = isCardsArgument(args.at(-1), args.length) ? args.slice(0, -1) : args;
-    if (hasLiteralDetail(detailArgs.at(-1) ?? '')) count += 1;
+    const detailParams = detailArgs.at(-1);
+    const detailCode = detailArgs.at(-2);
+    if (!isDetailParams(detailParams ?? '')) {
+      if (isLiteralDetailCode(detailCode ?? '')) {
+        violations.push({ file, detailCode: detailCodeText(detailCode ?? '') });
+      }
+      continue;
+    }
+    if (isLiteralDetailCode(detailCode ?? '') && !/^"[a-z0-9]+\.log\.[A-Za-z0-9]+"$/.test((detailCode ?? '').trim())) {
+      violations.push({ file, detailCode: detailCodeText(detailCode ?? '') });
+    }
   }
-  return count;
+  return violations;
 }
 
 let files;
@@ -122,15 +150,19 @@ try {
 
 if (!process.argv[2]) assertFloor('action-log-detail', files.length, SCANNED_FILE_FLOOR, 'Go files scanned');
 
-let count = 0;
 let matchingFiles = 0;
+const violations = [];
 for (const file of files) {
-  const found = literalActionLogs(await Bun.file(file).text());
-  count += found;
-  if (found > 0) matchingFiles += 1;
+  const found = literalActionLogs(await Bun.file(file).text(), path.relative(ROOT, file));
+  violations.push(...found);
+  if (found.length > 0) matchingFiles += 1;
 }
+const count = violations.length;
 
 if (count > CEILING) {
+  for (const violation of violations) {
+    console.error(`action-log-detail: ${violation.file}: invalid detailCode ${violation.detailCode}`);
+  }
   console.error(`action-log-detail: ${count} literal details exceeds ceiling ${CEILING}.`);
   process.exit(1);
 }

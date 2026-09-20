@@ -635,7 +635,7 @@ type fakeMover struct {
 	lastCards  []*Card
 }
 
-func (m *fakeMover) appendLog(_, _ string, cards []*Card) {
+func (m *fakeMover) appendLog(_, _ string, _ map[string]string, cards []*Card) {
 	// Records the move count as seen from inside appendLog, which is what the
 	// solitaires use as the entry's TurnNumber.
 	m.loggedTurn = append(m.loggedTurn, *m.moveCount)
@@ -651,7 +651,7 @@ func TestAfterMove_IncrementsBeforeLogging(t *testing.T) {
 	n := 4
 	m := &fakeMover{moveCount: &n}
 
-	afterMove(&n, m, "play", "detail", nil)
+	afterMove(&n, m, "play", "test.log.detail", nil, nil)
 
 	assert.Equal(t, 5, n)
 	assert.Equal(t, []int{5}, m.loggedTurn, "appendLog must see the incremented count")
@@ -664,11 +664,11 @@ func TestAfterMove_WrapsTheCard(t *testing.T) {
 	m := &fakeMover{moveCount: &n}
 	c := NewCard(1, 5, false)
 
-	afterMove(&n, m, "play", "d", c)
+	afterMove(&n, m, "play", "test.log.d", nil, c)
 	require.Len(t, m.lastCards, 1)
 	assert.Same(t, c, m.lastCards[0])
 
-	afterMove(&n, m, "play", "d", nil)
+	afterMove(&n, m, "play", "test.log.d", nil, nil)
 	assert.Nil(t, m.lastCards, "a nil card logs no cards, not a one-element slice of nil")
 }
 
@@ -834,9 +834,17 @@ func TestResetRoundWithTricks(t *testing.T) {
 		"tricks are cleared between the score and the hand")
 }
 
-type fakeRecycleLogger struct{ logged int }
+type fakeRecycleLogger struct {
+	logged     int
+	detailCode string
+	params     map[string]string
+}
 
-func (g *fakeRecycleLogger) appendLog(_ int, _, _ string, _ []*Card) { g.logged++ }
+func (g *fakeRecycleLogger) appendLog(_ int, _, detailCode string, params map[string]string, _ []*Card) {
+	g.logged++
+	g.detailCode = detailCode
+	g.params = params
+}
 
 func TestRecycleDiscardIntoStock(t *testing.T) {
 	discard := []*Card{NewCard(1, 1, false), NewCard(1, 2, false), NewCard(1, 3, false)}
@@ -844,12 +852,14 @@ func TestRecycleDiscardIntoStock(t *testing.T) {
 	top := discard[len(discard)-1]
 	g := &fakeRecycleLogger{}
 
-	require.True(t, recycleDiscardIntoStock(&discard, &draw, g))
+	require.True(t, recycleDiscardIntoStock(&discard, &draw, g, "test.log.recycle"))
 
 	require.Len(t, discard, 1)
 	assert.Same(t, top, discard[0], "the visible top card stays on the discard pile")
 	assert.Len(t, draw, 3, "the rest goes under the draw pile")
 	assert.Equal(t, 1, g.logged)
+	assert.Equal(t, "test.log.recycle", g.detailCode)
+	assert.Equal(t, map[string]string{"cards": "2"}, g.params)
 }
 
 // One card or none is not recyclable: taking the top would leave nothing to
@@ -863,10 +873,29 @@ func TestRecycleDiscardIntoStock_NothingToRecycle(t *testing.T) {
 		draw := []*Card{}
 		g := &fakeRecycleLogger{}
 
-		assert.False(t, recycleDiscardIntoStock(&discard, &draw, g), "n=%d", n)
+		assert.False(t, recycleDiscardIntoStock(&discard, &draw, g, "test.log.recycle"), "n=%d", n)
 		assert.Len(t, discard, n, "n=%d: discard untouched", n)
 		assert.Empty(t, draw, "n=%d: draw untouched", n)
 		assert.Equal(t, 0, g.logged, "n=%d: nothing logged", n)
+	}
+}
+
+func TestRecycleDiscardIntoStockUsesCallerCode(t *testing.T) {
+	for _, code := range []string{
+		"carioca.log.recycle",
+		"contractrummy.log.recycle",
+		"indianrummy.log.recycle",
+		"marriage.log.recycle",
+		"kalooki.log.recycle",
+		"threethirteen.log.recycle",
+	} {
+		discard := []*Card{NewCard(1, 1, false), NewCard(1, 2, false)}
+		draw := []*Card{}
+		g := &fakeRecycleLogger{}
+
+		require.True(t, recycleDiscardIntoStock(&discard, &draw, g, code), code)
+		assert.Equal(t, code, g.detailCode)
+		assert.Equal(t, map[string]string{"cards": "1"}, g.params)
 	}
 }
 

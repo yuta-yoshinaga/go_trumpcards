@@ -231,7 +231,7 @@ func (m *Memory) ResolveFlip() {
 			p.RemoveMemoryAt(m.secondFlipPos)
 		}
 
-		m.appendLog("match", fmt.Sprintf("ペア獲得: 位置%d,位置%d", m.firstFlipPos, m.secondFlipPos),
+		m.appendLog("match", "memory.log.match", map[string]string{"value1": fmt.Sprint(m.firstFlipPos), "value2": fmt.Sprint(m.secondFlipPos)},
 			[]*Card{card1.Card, card2.Card})
 
 		// ゲーム終了判定
@@ -249,7 +249,7 @@ func (m *Memory) ResolveFlip() {
 		card1.FaceUp = false
 		card2.FaceUp = false
 
-		m.appendLog("miss", fmt.Sprintf("不一致: 位置%d,位置%d", m.firstFlipPos, m.secondFlipPos),
+		m.appendLog("miss", "memory.log.miss", map[string]string{"value1": fmt.Sprint(m.firstFlipPos), "value2": fmt.Sprint(m.secondFlipPos)},
 			[]*Card{card1.Card, card2.Card})
 
 		m.advancePlayer()
@@ -441,13 +441,14 @@ func (m *Memory) determineWinner() {
 }
 
 // appendLog 棋譜エントリを追加
-func (m *Memory) appendLog(actionType, detail string, cards []*Card) {
+func (m *Memory) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	m.actionLog = append(m.actionLog, &ActionLogEntry{
-		TurnNumber: m.turnNumber,
-		PlayerIdx:  m.currentPlayerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
+		TurnNumber:   m.turnNumber,
+		PlayerIdx:    m.currentPlayerIdx,
+		ActionType:   actionType,
+		DetailCode:   detailCode,
+		DetailParams: detailParams,
+		Cards:        cards,
 	})
 }
 

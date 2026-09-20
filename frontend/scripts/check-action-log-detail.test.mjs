@@ -24,22 +24,22 @@ function run(root) {
 }
 
 describe('check-action-log-detail', () => {
-  it('counts Japanese and English literal details, but not code details', () => {
+  it('counts free-text detailCode literals, but not valid or non-literal codes', () => {
     const r = run(
       fixture([
         'Details.go',
-        'package domain\nfunc f() {\n appendLog("step", "日本語", nil)\n appendLog("step", "English", nil)\n appendLog("step", "game.log.step", map[string]string{"x": "y"}, nil)\n}\n',
+        'package domain\nfunc f(code string) {\n appendLog("step", "日本語", nil, nil)\n appendLog("step", "English", nil, nil)\n appendLog("step", "game.log.step", map[string]string{"x": "y"}, nil)\n appendLog("step", code, nil, nil)\n}\n',
       ]),
     );
     expect(r.status).toBe(0);
     expect(r.stdout).toContain('2 literal details');
   });
 
-  it('counts fmt.Sprintf details and ignores cards', () => {
+  it('counts fmt.Sprintf detailCode and ignores cards', () => {
     const r = run(
       fixture([
         'Formatted.go',
-        'package domain\nfunc f(cards []*Card, detail string) {\n appendLog("step", fmt.Sprintf("value %d", 1), cards)\n appendLog("step", detail, []*Card{card})\n}\n',
+        'package domain\nfunc f(cards []*Card, detail string) {\n appendLog("step", fmt.Sprintf("value %d", 1), nil, cards)\n appendLog("step", detail, nil, []*Card{card})\n}\n',
       ]),
     );
     expect(r.status).toBe(0);
@@ -50,7 +50,7 @@ describe('check-action-log-detail', () => {
     const r = run(
       fixture([
         'CardArguments.go',
-        'package domain\nfunc f(x []*Card, h *Hand) {\n appendLog("step", "appended detail", append([]*Card(nil), x...))\n appendLog("step", "sliced detail", h.communityCards[3:])\n}\n',
+        'package domain\nfunc f(x []*Card, h *Hand) {\n appendLog("step", "appended detail", nil, append([]*Card(nil), x...))\n appendLog("step", "sliced detail", nil, h.communityCards[3:])\n}\n',
       ]),
     );
     expect(r.status).toBe(0);
@@ -58,9 +58,13 @@ describe('check-action-log-detail', () => {
   });
 
   it('fails when the fixture ceiling is exceeded', () => {
-    const calls = Array.from({ length: 101 }, (_, i) => `func f${i}() { appendLog("step", "detail", nil) }`).join('\n');
+    const calls = Array.from({ length: 101 }, (_, i) => `func f${i}() { appendLog("step", "detail", nil, nil) }`).join(
+      '\n',
+    );
     const r = run(fixture(['TooMany.go', `package domain\n${calls}\n`]));
     expect(r.status).toBe(1);
     expect(r.stderr).toContain('exceeds ceiling');
+    expect(r.stderr).toContain('TooMany.go');
+    expect(r.stderr).toContain('"detail"');
   });
 });

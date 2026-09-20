@@ -137,7 +137,7 @@ func (m *FourteenOut) Remove(c1, c2 int) error {
 	m.columns[c1] = m.columns[c1][:len(m.columns[c1])-1]
 	m.columns[c2] = m.columns[c2][:len(m.columns[c2])-1]
 	m.removedCount += 2
-	m.appendLog("remove", fmt.Sprintf("列%d と 列%d を取り除いた", c1, c2), []*Card{a, b})
+	m.appendLog("remove", "fourteenout.log.remove", map[string]string{"value1": fmt.Sprint(c1), "value2": fmt.Sprint(c2)}, []*Card{a, b})
 	m.checkGameClear()
 	m.checkFourteenOutStalemate()
 	return nil
@@ -171,7 +171,7 @@ func (m *FourteenOut) CanUndo() bool {
 func (m *FourteenOut) GiveUp() {
 	if m.phase == FourteenOutPhasePlaying {
 		m.phase = FourteenOutPhaseGameOver
-		m.appendLog("giveup", "ギブアップしました", nil)
+		m.appendLog("giveup", "fourteenout.log.giveup", nil, nil)
 	}
 }
 
@@ -323,13 +323,14 @@ func (m *FourteenOut) takeSnapshot() {
 	})
 }
 
-func (m *FourteenOut) appendLog(actionType, detail string, cards []*Card) {
+func (m *FourteenOut) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	m.actionLog = append(m.actionLog, &ActionLogEntry{
-		TurnNumber: m.removedCount / 2,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
+		TurnNumber:   m.removedCount / 2,
+		PlayerIdx:    0,
+		ActionType:   actionType,
+		DetailCode:   detailCode,
+		DetailParams: detailParams,
+		Cards:        cards,
 	})
 }
 

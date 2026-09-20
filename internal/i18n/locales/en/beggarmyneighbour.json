@@ -1,4 +1,7 @@
 {
+  "log.play": "play card",
+  "log.pay": "pay penalty ({{remaining}} remaining)",
+  "log.collect": "+{{count}} cards",
   "helpTitle": "Beggar-My-Neighbour (ビガー・マイ・ネイバー)",
   "helpStep": "  s                    play next card / pay penalty / collect pile",
   "helpAutoPlay": "  a                    auto play until the game ends",

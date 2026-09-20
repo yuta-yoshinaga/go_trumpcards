@@ -232,7 +232,7 @@ func (gc *BigBen) MoveTableauToFoundation(col, fIdx int) error {
 	gc.takeSnapshot()
 	gc.popTop(col)
 	gc.foundation[fIdx] = append(gc.foundation[fIdx], card)
-	gc.afterMove("move", fmt.Sprintf("タブロー列%d→文字盤%d", col, fIdx), card)
+	gc.afterMove("move", "bigben.log.move", map[string]string{"value1": fmt.Sprint(col), "value2": fmt.Sprint(fIdx)}, card)
 	return nil
 }
 
@@ -258,7 +258,7 @@ func (gc *BigBen) MoveTableauToTableau(fromCol, toCol int) error {
 	gc.popTop(fromCol)
 	gc.tableau[toCol] = append(gc.tableau[toCol],
 		&BigBenTableauCard{Card: card, FaceUp: true})
-	gc.afterMove("move", fmt.Sprintf("タブロー列%d→タブロー列%d", fromCol, toCol), card)
+	gc.afterMove("move", "bigben.log.move", map[string]string{"value1": fmt.Sprint(fromCol), "value2": fmt.Sprint(toCol)}, card)
 	return nil
 }
 
@@ -299,7 +299,7 @@ func (gc *BigBen) Deal() error {
 		}
 	}
 	gc.moveCount++
-	gc.appendLog("deal", fmt.Sprintf("山札から%d枚補充した", dealt), nil)
+	gc.appendLog("deal", "bigben.log.deal", map[string]string{"value1": fmt.Sprint(dealt)}, nil)
 	gc.checkGameClear()
 	gc.checkStalemate()
 	return nil
@@ -312,7 +312,7 @@ func (gc *BigBen) GetStockCount() int { return len(gc.stock) }
 func (gc *BigBen) GiveUp() {
 	if gc.phase == BigBenPhasePlaying {
 		gc.phase = BigBenPhaseGameOver
-		gc.appendLog("giveup", "ギブアップしました", nil)
+		gc.appendLog("giveup", "bigben.log.giveup", nil, nil)
 	}
 }
 
@@ -559,9 +559,9 @@ func bigBenNextRank(v int) int {
 }
 
 // afterMove 手数・棋譜・終了判定をまとめて進める
-func (gc *BigBen) afterMove(actionType, detail string, card *Card) {
+func (gc *BigBen) afterMove(actionType, detailCode string, detailParams map[string]string, card *Card) {
 	gc.moveCount++
-	gc.appendLog(actionType, detail, []*Card{card})
+	gc.appendLog(actionType, detailCode, detailParams, []*Card{card})
 	gc.checkGameClear()
 	gc.checkStalemate()
 }
@@ -606,8 +606,8 @@ func (gc *BigBen) takeSnapshot() {
 }
 
 // appendLog 棋譜エントリを追加
-func (gc *BigBen) appendLog(actionType, detail string, cards []*Card) {
-	gc.appendLogAt(gc.moveCount, 0, actionType, detail, cards)
+func (gc *BigBen) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	gc.appendLogCodeAt(gc.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // bigBenMaxSliceLen caps slice sizes during deserialisation.

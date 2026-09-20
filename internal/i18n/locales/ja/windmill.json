@@ -38,5 +38,8 @@
   "helpExampleHint": "  h                        次の一手を教えてもらう",
   "helpExampleAuto": "  ac                       組札へ送れる札を自動で送る",
   "foundationProgress": "収納: {{count}}/{{total}} 枚 ({{percent}}%)",
-  "cornerKingsOnly": " (Kのみ)"
+  "cornerKingsOnly": " (Kのみ)",
+  "log.draw": "山札から1枚めくった",
+  "log.move": "帆{{value1}}→中央基礎",
+  "log.giveup": "ギブアップしました"
 }

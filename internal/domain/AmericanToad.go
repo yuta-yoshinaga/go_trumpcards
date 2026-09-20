@@ -209,14 +209,14 @@ func (at *AmericanToad) Draw() error {
 		at.stock = at.waste
 		at.waste = nil
 		at.passesUsed++
-		at.afterMove("redeal", "捨て札を山札に戻した", nil)
+		at.afterMove("redeal", "americantoad.log.redealDetail", nil, nil)
 		return nil
 	}
 	at.takeSnapshot()
 	card := at.stock[0]
 	at.stock = at.stock[1:]
 	at.waste = append(at.waste, card)
-	at.afterMove("draw", "山札から1枚めくった", card)
+	at.afterMove("draw", "americantoad.log.drawDetail", nil, card)
 	return nil
 }
 
@@ -237,7 +237,7 @@ func (at *AmericanToad) MoveReserveToFoundation() error {
 	at.popReserve()
 	at.foundation[fIdx] = append(at.foundation[fIdx], card)
 	at.fillEmptyColumnsFromReserve()
-	at.afterMove("move", fmt.Sprintf("リザーブ→基礎札%d", fIdx), card)
+	at.afterMove("move", "americantoad.log.move", map[string]string{"value1": fmt.Sprint(fIdx)}, card)
 	return nil
 }
 
@@ -260,7 +260,7 @@ func (at *AmericanToad) MoveReserveToTableau(col int) error {
 	at.popReserve()
 	at.tableau[col] = append(at.tableau[col], &AmericanToadTableauCard{Card: card, FaceUp: true})
 	at.fillEmptyColumnsFromReserve()
-	at.afterMove("move", fmt.Sprintf("リザーブ→タブロー列%d", col), card)
+	at.afterMove("move", "americantoad.log.move", map[string]string{"value1": fmt.Sprint(col)}, card)
 	return nil
 }
 
@@ -280,7 +280,7 @@ func (at *AmericanToad) MoveWasteToFoundation() error {
 	at.takeSnapshot()
 	at.popWaste()
 	at.foundation[fIdx] = append(at.foundation[fIdx], card)
-	at.afterMove("move", fmt.Sprintf("捨て札→基礎札%d", fIdx), card)
+	at.afterMove("move", "americantoad.log.move", map[string]string{"value1": fmt.Sprint(fIdx)}, card)
 	return nil
 }
 
@@ -302,7 +302,7 @@ func (at *AmericanToad) MoveWasteToTableau(col int) error {
 	at.takeSnapshot()
 	at.popWaste()
 	at.tableau[col] = append(at.tableau[col], &AmericanToadTableauCard{Card: card, FaceUp: true})
-	at.afterMove("move", fmt.Sprintf("捨て札→タブロー列%d", col), card)
+	at.afterMove("move", "americantoad.log.move", map[string]string{"value1": fmt.Sprint(col)}, card)
 	return nil
 }
 
@@ -326,7 +326,7 @@ func (at *AmericanToad) MoveTableauToFoundation(col int) error {
 	at.tableau[col] = at.tableau[col][:len(at.tableau[col])-1]
 	at.foundation[fIdx] = append(at.foundation[fIdx], card)
 	at.fillEmptyColumnsFromReserve()
-	at.afterMove("move", fmt.Sprintf("タブロー列%d→基礎札%d", col, fIdx), card)
+	at.afterMove("move", "americantoad.log.move", map[string]string{"value1": fmt.Sprint(col), "value2": fmt.Sprint(fIdx)}, card)
 	return nil
 }
 
@@ -371,7 +371,7 @@ func (at *AmericanToad) MoveTableauToTableau(fromCol, cardIndex, toCol int) erro
 	at.tableau[fromCol] = from[:idx]
 	at.tableau[toCol] = append(at.tableau[toCol], moved...)
 	at.fillEmptyColumnsFromReserve()
-	at.afterMove("move", fmt.Sprintf("タブロー列%d[%d]→タブロー列%d", fromCol, idx, toCol), moved[0].Card)
+	at.afterMove("move", "americantoad.log.move", map[string]string{"value1": fmt.Sprint(fromCol), "value2": fmt.Sprint(idx), "value3": fmt.Sprint(toCol)}, moved[0].Card)
 	return nil
 }
 
@@ -379,7 +379,7 @@ func (at *AmericanToad) MoveTableauToTableau(fromCol, cardIndex, toCol int) erro
 func (at *AmericanToad) GiveUp() {
 	if at.phase == AmericanToadPhasePlaying {
 		at.phase = AmericanToadPhaseGameOver
-		at.appendLog("giveup", "ギブアップしました", nil)
+		at.appendLog("giveup", "americantoad.log.giveup", nil, nil)
 	}
 }
 
@@ -734,8 +734,8 @@ func (at *AmericanToad) fillEmptyColumnsFromReserve() {
 }
 
 // afterMove 手数・棋譜・終了判定をまとめて進める
-func (at *AmericanToad) afterMove(actionType, detail string, card *Card) {
-	afterMove(&at.moveCount, at, actionType, detail, card)
+func (at *AmericanToad) afterMove(actionType, detailCode string, detailParams map[string]string, card *Card) {
+	afterMove(&at.moveCount, at, actionType, detailCode, detailParams, card)
 }
 
 // checkGameClear 8 つの基礎札がすべて 13 枚になったか
@@ -780,8 +780,8 @@ func (at *AmericanToad) takeSnapshot() {
 }
 
 // appendLog 棋譜エントリを追加
-func (at *AmericanToad) appendLog(actionType, detail string, cards []*Card) {
-	at.appendLogAt(at.moveCount, 0, actionType, detail, cards)
+func (at *AmericanToad) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	at.appendLogCodeAt(at.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // americanToadJSON is the JSON wire format for AmericanToad.

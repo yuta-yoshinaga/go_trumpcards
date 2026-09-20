@@ -306,6 +306,9 @@ func TestWar_ActionLog(t *testing.T) {
 	logs := w.GetActionLog()
 	assert.NotEmpty(t, logs)
 	assert.Equal(t, "reveal", logs[0].ActionType)
+	assert.Equal(t, "war.log.reveal", logs[0].DetailCode)
+	assert.Nil(t, logs[0].DetailParams)
+	assert.Empty(t, logs[0].Detail)
 }
 
 func TestWar_AutoPlay_RunsToEnd(t *testing.T) {
