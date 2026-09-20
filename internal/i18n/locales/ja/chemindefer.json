@@ -43,5 +43,5 @@
   "netWinLine": "あなたの結果: +{{n}} チップ",
   "netLossLine": "あなたの結果: -{{n}} チップ",
   "netFlatLine": "あなたの結果: 増減なし",
-  "log.start": "シュマン・ド・フェールが始まります", "log.stake": "親が{{amount}}を張りました", "log.bet": "{{amount}}を賭けました", "log.pass": "パスしました", "log.voidRound": "誰もバンクをカバーしませんでした", "log.deal": "カードを配りました", "log.natural": "ナチュラルのためクープを直ちに終了します", "log.punterDraw": "子が引きました", "log.punterStand": "子が立ちました", "log.bankerDraw": "親が引きました", "log.bankerStand": "親が立ちました", "log.result": "{{result}}", "log.bankPassed": "バンクが回りました", "log.gameEndNoBank": "もう誰もバンクを担当できません", "log.giveUp": "プレイヤーが降りました", "log.gameEndSession": "セッション終了です"
+  "log.start": "シュマン・ド・フェールが始まります", "log.stake": "親が{{amount}}を張りました", "log.bet": "{{amount}}を賭けました", "log.pass": "パスしました", "log.voidRound": "誰もバンクをカバーしませんでした", "log.deal": "カードを配りました", "log.natural": "ナチュラルのためクープを直ちに終了します", "log.punterDraw": "子が引きました", "log.punterStand": "子が立ちました", "log.bankerDraw": "親が引きました", "log.bankerStand": "親が立ちました", "log.resultBanker": "親の勝ち", "log.resultPunter": "子側の勝ち", "log.resultTie": "引き分け（égalité）", "log.bankPassed": "バンクが回りました", "log.gameEndNoBank": "もう誰もバンクを担当できません", "log.giveUp": "プレイヤーが降りました", "log.gameEndSession": "セッション終了です"
 }

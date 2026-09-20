@@ -649,10 +649,6 @@ func TestChemindeFerNames(t *testing.T) {
 	assert.Equal(t, "bankerDraw", ChemindeFerPhaseName(ChemindeFerPhaseBankerDraw))
 	assert.Equal(t, "roundEnd", ChemindeFerPhaseName(ChemindeFerPhaseRoundEnd))
 
-	assert.Equal(t, "banker", ChemindeFerResultName(ChemindeFerResultBanker))
-	assert.Equal(t, "punter", ChemindeFerResultName(ChemindeFerResultPunter))
-	assert.Equal(t, "tie", ChemindeFerResultName(ChemindeFerResultTie))
-	assert.Equal(t, "none", ChemindeFerResultName(ChemindeFerResultNone))
 }
 
 func TestChemindeFerConfig_Validate(t *testing.T) {
