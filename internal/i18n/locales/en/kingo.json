@@ -26,5 +26,8 @@
   "reason.roundIsOver": "this round is decided",
   "result.gameEnd": "The game is over",
   "helpExampleBet": "  bet 100              bet 100 chips",
-  "rankWithValue": "{{rank}} ({{value}})"
+  "rankWithValue": "{{rank}} ({{value}})",
+  "log.banker": "takes the bank",
+  "log.bet": "places a bet",
+  "log.deal": "Deals {{rank}}"
 }

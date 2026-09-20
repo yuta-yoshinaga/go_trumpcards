@@ -339,16 +339,7 @@ func (g *Marriage) drawFromDiscard() error {
 
 // recycleDiscardIntoStock 山札が空のとき捨て札トップ 1 枚を残して残りを山札へ戻しシャッフルする。
 func (g *Marriage) recycleDiscardIntoStock() bool {
-	if len(g.discardPile) <= 1 {
-		return false
-	}
-	top := g.discardPile[len(g.discardPile)-1]
-	rest := g.discardPile[:len(g.discardPile)-1]
-	g.discardPile = []*Card{top}
-	rand.Shuffle(len(rest), func(i, j int) { rest[i], rest[j] = rest[j], rest[i] })
-	g.drawPile = append(g.drawPile, rest...)
-	g.appendLog(-1, "recycle", "marriage.log.recycle", map[string]string{"cards": fmt.Sprintf("%d", len(rest))}, nil)
-	return true
+	return recycleDiscardIntoStock(&g.discardPile, &g.drawPile, g, "marriage.log.recycle")
 }
 
 // PlayerDiscard 人間プレイヤーが手札 1 枚を捨ててターンを終了する

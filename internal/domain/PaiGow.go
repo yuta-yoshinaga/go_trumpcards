@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"strconv"
 )
 
 // パイガオポーカーフェーズ定数
@@ -64,6 +65,10 @@ type PaiGow struct {
 	actionLogBase
 }
 
+func (pg *PaiGow) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	pg.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
+}
+
 // NewPaiGow コンストラクタ
 func NewPaiGow(trumpCards *TrumpCards) *PaiGow {
 	trumpCards.Shuffle()
@@ -120,7 +125,7 @@ func (pg *PaiGow) Bet(amount int) error {
 		return NewDomainError(ErrInsufficientChips, "Insufficient chips.")
 	}
 	pg.bet = amount
-	pg.appendLog(0, "bet", fmt.Sprintf("bet=%d", amount), nil)
+	pg.appendLog(0, "bet", "paigow.log.bet", map[string]string{"amount": strconv.Itoa(amount)}, nil)
 
 	// ディール: 7枚ずつ配る
 	pg.deal()
@@ -155,7 +160,7 @@ func (pg *PaiGow) SetHands(lowIdx0, lowIdx1 int) error {
 		}
 	}
 
-	pg.appendLog(0, "set", fmt.Sprintf("low=[%d,%d]", lowIdx0, lowIdx1), pg.playerLowHand)
+	pg.appendLog(0, "set", "paigow.log.set", map[string]string{"lowIdx0": strconv.Itoa(lowIdx0), "lowIdx1": strconv.Itoa(lowIdx1)}, pg.playerLowHand)
 
 	// ディーラーのハンドをハウスウェイで設定
 	pg.dealerHighHand, pg.dealerLowHand = paiGowHouseWay(pg.dealerCards)
@@ -249,7 +254,7 @@ func (pg *PaiGow) deal() {
 		pg.playerCards = append(pg.playerCards, pg.trumpCards.DrawCard())
 		pg.dealerCards = append(pg.dealerCards, pg.trumpCards.DrawCard())
 	}
-	pg.appendLog(-1, "deal", "dealt 7 cards each", nil)
+	pg.appendLog(-1, "deal", "paigow.log.deal", nil, nil)
 }
 
 // resolve ゲーム解決
@@ -302,16 +307,16 @@ func (pg *PaiGow) resolve() {
 	pg.gameEndFlag = true
 	pg.phase = PaiGowPhaseEnd
 
-	var resultStr string
+	var resultCode string
 	switch pg.result {
 	case GameResultWin:
-		resultStr = "player wins"
+		resultCode = "paigow.log.resultPlayerWins"
 	case GameResultDraw:
-		resultStr = "push"
+		resultCode = "paigow.log.resultPush"
 	default:
-		resultStr = "dealer wins"
+		resultCode = "paigow.log.resultDealerWins"
 	}
-	pg.appendLog(-1, "result", resultStr, nil)
+	pg.appendLog(-1, "result", resultCode, nil, nil)
 }
 
 // --- ハンド評価関数 ---

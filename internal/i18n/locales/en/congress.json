@@ -45,5 +45,8 @@
   "errNothingToAutoComplete": "No card can be auto-completed",
   "errNothingToUndo": "There is nothing to undo",
   "errNotPlaying": "The game is not in the playing phase",
-  "errInvalidPile": "Invalid pile number: {{pile}}"
+  "errInvalidPile": "Invalid pile number: {{pile}}",
+  "log.drawDetail": "Drew one card from the stock",
+  "log.move": "{{value1}} {{value2}}",
+  "log.giveup": "Gave up"
 }

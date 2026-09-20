@@ -270,6 +270,16 @@ func TestPigsTail_ActionLog(t *testing.T) {
 		_ = pt.CpuAction()
 	}
 	assert.NotEmpty(t, pt.GetActionLog())
+	var action *ActionLogEntry
+	for _, entry := range pt.GetActionLog() {
+		if entry.DetailCode == "pigtail.log.draw" || entry.DetailCode == "pigtail.log.penalty" {
+			action = entry
+			break
+		}
+	}
+	require.NotNil(t, action)
+	assert.Empty(t, action.Detail)
+	assert.NotEmpty(t, action.DetailParams)
 }
 
 func TestPigsTail_JSONRoundTrip(t *testing.T) {

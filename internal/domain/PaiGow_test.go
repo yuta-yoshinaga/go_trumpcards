@@ -519,6 +519,21 @@ func TestPaiGow_ActionLog(t *testing.T) {
 	require.NoError(t, err)
 	log := pg.GetActionLog()
 	assert.GreaterOrEqual(t, len(log), 2) // bet + deal
+	var bet, deal *domain.ActionLogEntry
+	for _, entry := range log {
+		switch entry.DetailCode {
+		case "paigow.log.bet":
+			bet = entry
+		case "paigow.log.deal":
+			deal = entry
+		}
+	}
+	require.NotNil(t, bet)
+	assert.Equal(t, map[string]string{"amount": "100"}, bet.DetailParams)
+	assert.Empty(t, bet.Detail)
+	require.NotNil(t, deal)
+	assert.Nil(t, deal.DetailParams)
+	assert.Empty(t, deal.Detail)
 }
 
 // --- Getters with test helpers ---

@@ -41,5 +41,9 @@
   "helpExampleHint": "  h                        次の一手を教えてもらう",
   "helpExampleAuto": "  ac                       組札へ送れる札を自動で送る",
   "emptyColReserveOnly": "(リザーブからのみ)",
-  "errEmptyColumnReserveOnly": "空の列にはリザーブからしか置けません"
+  "errEmptyColumnReserveOnly": "空の列にはリザーブからしか置けません",
+  "log.base": "{{value1}} {{value2}}",
+  "log.drawDetail": "山札→ウェイスト",
+  "log.move": "{{value1}} {{value2}} {{value3}}",
+  "log.giveup": "ギブアップしました"
 }

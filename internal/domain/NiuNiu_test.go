@@ -434,6 +434,22 @@ func TestNiuNiu_SettleCreditsTheHumanStack(t *testing.T) {
 	if n.GetLastResult() == "" {
 		t.Error("the settlement should be summarised")
 	}
+	var resultLog *ActionLogEntry
+	for _, entry := range n.GetActionLog() {
+		if entry.DetailCode == "niuniu.log.result" {
+			resultLog = entry
+			break
+		}
+	}
+	if resultLog == nil {
+		t.Fatal("settlement should append a result log entry")
+	}
+	if got := resultLog.DetailParams["rank"]; got != NiuNiuRankKey(n.bankerHand.rank) {
+		t.Errorf("result log rank = %q, want %q", got, NiuNiuRankKey(n.bankerHand.rank))
+	}
+	if _, ok := resultLog.DetailParams["detail"]; ok {
+		t.Error("result log should not contain the rendered detail")
+	}
 }
 
 func TestNiuNiu_PlaceBet(t *testing.T) {

@@ -20,5 +20,7 @@
   "hintReasonOffset1": "（選択肢を温存しにくい手）",
   "hintReasonOffset3": "（選択肢を温存できる重要な手）",
   "helpExampleHint": "  h                   次の一手を教えてもらう",
-  "helpAutoPlay": "  ac                  自動で進める"
+  "helpAutoPlay": "  ac                  自動で進める",
+  "log.move": "パイル{{value1}}→パイル{{value2}}",
+  "log.giveup": "ギブアップしました"
 }

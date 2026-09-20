@@ -46,5 +46,8 @@
   "errNothingToUndo": "取り消せる手がありません",
   "errSnapshotArrayTooLarge": "スナップショットの配列が最大許容サイズを超えています",
   "errSnapshotPileTooLarge": "スナップショットのパイルが最大許容サイズを超えています",
-  "errInputArrayTooLarge": "入力配列が最大許容サイズを超えています"
+  "errInputArrayTooLarge": "入力配列が最大許容サイズを超えています",
+  "log.draw": "山札→ウェイスト",
+  "log.move": "ウェイスト→タブロー列{{value1}}",
+  "log.giveup": "ギブアップしました"
 }

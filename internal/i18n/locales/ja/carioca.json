@@ -57,6 +57,7 @@
   "errTargetMeldInvalid": "対象メルドが不正です",
   "errLayoffCardCannotAdd": "{{card}}はそのメルドに追加できません",
   "errContractRequiredToGoOut": "上がるにはコントラクト達成が必要です",
+  "log.recycle": "捨て札から {{cards}} 枚を山札に戻しました",
   "log.drawStock": "{{name}}が山札から引きました",
   "log.drawDiscard": "{{name}}が捨て札から{{card}}を引きました",
   "log.meldContract": "{{name}}がコントラクトを達成しました（ラウンド{{round}}）",

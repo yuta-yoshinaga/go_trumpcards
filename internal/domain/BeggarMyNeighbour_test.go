@@ -301,6 +301,9 @@ func TestBeggarMyNeighbour_ActionLog(t *testing.T) {
 	logs := g.GetActionLog()
 	assert.NotEmpty(t, logs)
 	assert.Equal(t, "play", logs[0].ActionType)
+	assert.Equal(t, "beggarmyneighbour.log.play", logs[0].DetailCode)
+	assert.Empty(t, logs[0].Detail)
+	assert.Nil(t, logs[0].DetailParams)
 }
 
 func TestBeggarMyNeighbour_MaxRoundsTimeout(t *testing.T) {

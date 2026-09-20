@@ -165,7 +165,7 @@ func (c *Diplomat) Draw() error {
 	card := c.stock[0]
 	c.stock = c.stock[1:]
 	c.waste = append(c.waste, card)
-	c.afterMove("draw", "山札から1枚めくった", card)
+	c.afterMove("draw", "diplomat.log.drawDetail", nil, card)
 	return nil
 }
 
@@ -188,7 +188,7 @@ func (c *Diplomat) MoveTableauToFoundation(pile int) error {
 	c.takeSnapshot()
 	c.tableau[pile] = c.tableau[pile][:len(c.tableau[pile])-1]
 	c.foundation[fIdx] = append(c.foundation[fIdx], card)
-	c.afterMove("move", fmt.Sprintf("タブロー山%d→基礎札%d", pile, fIdx), card)
+	c.afterMove("move", "diplomat.log.move", map[string]string{"value1": fmt.Sprint(pile), "value2": fmt.Sprint(fIdx)}, card)
 	return nil
 }
 
@@ -219,7 +219,7 @@ func (c *Diplomat) MoveTableauToTableau(fromPile, toPile int) error {
 	c.takeSnapshot()
 	c.tableau[fromPile] = c.tableau[fromPile][:len(c.tableau[fromPile])-1]
 	c.tableau[toPile] = append(c.tableau[toPile], card)
-	c.afterMove("move", fmt.Sprintf("タブロー山%d→タブロー山%d", fromPile, toPile), card)
+	c.afterMove("move", "diplomat.log.move", map[string]string{"value1": fmt.Sprint(fromPile), "value2": fmt.Sprint(toPile)}, card)
 	return nil
 }
 
@@ -239,7 +239,7 @@ func (c *Diplomat) MoveWasteToFoundation() error {
 	c.takeSnapshot()
 	c.popWaste()
 	c.foundation[fIdx] = append(c.foundation[fIdx], card)
-	c.afterMove("move", fmt.Sprintf("捨て札→基礎札%d", fIdx), card)
+	c.afterMove("move", "diplomat.log.move", map[string]string{"value1": fmt.Sprint(fIdx)}, card)
 	return nil
 }
 
@@ -261,7 +261,7 @@ func (c *Diplomat) MoveWasteToTableau(pile int) error {
 	c.takeSnapshot()
 	c.popWaste()
 	c.tableau[pile] = append(c.tableau[pile], card)
-	c.afterMove("move", fmt.Sprintf("捨て札→タブロー山%d", pile), card)
+	c.afterMove("move", "diplomat.log.move", map[string]string{"value1": fmt.Sprint(pile)}, card)
 	return nil
 }
 
@@ -269,7 +269,7 @@ func (c *Diplomat) MoveWasteToTableau(pile int) error {
 func (c *Diplomat) GiveUp() {
 	if c.phase == DiplomatPhasePlaying {
 		c.phase = DiplomatPhaseGameOver
-		c.appendLog("giveup", "ギブアップしました", nil)
+		c.appendLog("giveup", "diplomat.log.giveup", nil, nil)
 	}
 }
 
@@ -527,8 +527,8 @@ func (c *Diplomat) findFoundation(card *Card) int {
 }
 
 // afterMove 手数・棋譜・終了判定をまとめて進める
-func (c *Diplomat) afterMove(actionType, detail string, card *Card) {
-	afterMove(&c.moveCount, c, actionType, detail, card)
+func (c *Diplomat) afterMove(actionType, detailCode string, detailParams map[string]string, card *Card) {
+	afterMove(&c.moveCount, c, actionType, detailCode, detailParams, card)
 }
 
 // checkGameClear 8 つの基礎札がすべて K まで積まれたか
@@ -570,8 +570,8 @@ func (c *Diplomat) takeSnapshot() {
 }
 
 // appendLog 棋譜エントリを追加
-func (c *Diplomat) appendLog(actionType, detail string, cards []*Card) {
-	c.appendLogAt(c.moveCount, 0, actionType, detail, cards)
+func (c *Diplomat) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	c.appendLogCodeAt(c.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // diplomatSnapshotJSON is the wire format for a single undo snapshot.

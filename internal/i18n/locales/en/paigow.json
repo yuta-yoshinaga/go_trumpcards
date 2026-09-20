@@ -1,4 +1,10 @@
 {
+  "log.bet": "bet={{amount}}",
+  "log.set": "low=[{{lowIdx0}},{{lowIdx1}}]",
+  "log.deal": "dealt 7 cards each",
+  "log.resultPlayerWins": "player wins",
+  "log.resultPush": "push",
+  "log.resultDealerWins": "dealer wins",
   "helpTitle": "Pai Gow Poker",
   "helpBet": "  b <amount>           bet",
   "helpSet": "  s <idx1> <idx2>      set low hand (choose 2 card indices)",

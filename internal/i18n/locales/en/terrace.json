@@ -56,5 +56,8 @@
   "errInputArrayTooLarge": "The input array exceeds the maximum allowed size.",
   "errReserveStockWasteTooLarge": "The reserve/stock/waste is too large.",
   "errBadColumn": "That column does not exist.",
-  "errEmptyPile": "That column is empty."
+  "errEmptyPile": "That column is empty.",
+  "log.drawDetail": "Drew one card from the stock",
+  "log.move": "{{value1}} {{value2}}",
+  "log.giveup": "Gave up"
 }

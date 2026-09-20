@@ -283,7 +283,11 @@ func (g *ContractRummy) drawFromDiscard() error {
 // recycleDiscardIntoStock 山札が空のとき捨て札トップ 1 枚を残して残りを山札へ戻しシャッフルする。
 // 戻り値は補充できたかどうか（捨て札も枯渇していれば false）。
 func (g *ContractRummy) recycleDiscardIntoStock() bool {
-	return recycleDiscardIntoStock(&g.discardPile, &g.drawPile, g)
+	return recycleDiscardIntoStock(&g.discardPile, &g.drawPile, g, "contractrummy.log.recycle")
+}
+
+func (g *ContractRummy) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // PlayerMeldContract 人間プレイヤーがコントラクトを達成する。

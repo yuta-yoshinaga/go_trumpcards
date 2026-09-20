@@ -34,5 +34,8 @@
   "hintAvailable": "ヒントがあります",
   "noHint": "ヒントはありません",
   "helpExampleHint": "  h                   次の一手を教えてもらう",
-  "helpExampleAuto": "  ac                  組札へ送れる札を自動で送る"
+  "helpExampleAuto": "  ac                  組札へ送れる札を自動で送る",
+  "log.draw": "ストックから1枚引きました",
+  "log.move": "{{value1}} {{value2}}",
+  "log.giveup": "ギブアップしました"
 }

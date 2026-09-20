@@ -1,4 +1,7 @@
 {
+  "log.reveal": "カードをめくりました",
+  "log.collect": "カードを{{count}}枚回収しました",
+  "log.war": "{{count}}枚ずつ伏せて、カードをめくりました",
   "helpTitle": "War (戦争)",
   "helpStep": "  s                    次の1枚をめくる / ラウンドを解決 / 戦争を解決",
   "helpAutoPlay": "  a                    決着まで自動で進める",

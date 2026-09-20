@@ -157,7 +157,7 @@ func (c *Congress) Draw() error {
 	card := c.stock[0]
 	c.stock = c.stock[1:]
 	c.waste = append(c.waste, card)
-	c.afterMove("draw", "山札から1枚めくった", card)
+	c.afterMove("draw", "congress.log.drawDetail", nil, card)
 	return nil
 }
 
@@ -180,7 +180,7 @@ func (c *Congress) MoveTableauToFoundation(pile int) error {
 	c.takeSnapshot()
 	c.tableau[pile] = c.tableau[pile][:len(c.tableau[pile])-1]
 	c.foundation[fIdx] = append(c.foundation[fIdx], card)
-	c.afterMove("move", fmt.Sprintf("タブロー山%d→基礎札%d", pile, fIdx), card)
+	c.afterMove("move", "congress.log.move", map[string]string{"value1": fmt.Sprint(pile), "value2": fmt.Sprint(fIdx)}, card)
 	return nil
 }
 
@@ -214,7 +214,7 @@ func (c *Congress) MoveTableauToTableau(fromPile, toPile int) error {
 	c.takeSnapshot()
 	c.tableau[fromPile] = c.tableau[fromPile][:len(c.tableau[fromPile])-1]
 	c.tableau[toPile] = append(c.tableau[toPile], card)
-	c.afterMove("move", fmt.Sprintf("タブロー山%d→タブロー山%d", fromPile, toPile), card)
+	c.afterMove("move", "congress.log.move", map[string]string{"value1": fmt.Sprint(fromPile), "value2": fmt.Sprint(toPile)}, card)
 	return nil
 }
 
@@ -234,7 +234,7 @@ func (c *Congress) MoveWasteToFoundation() error {
 	c.takeSnapshot()
 	c.popWaste()
 	c.foundation[fIdx] = append(c.foundation[fIdx], card)
-	c.afterMove("move", fmt.Sprintf("捨て札→基礎札%d", fIdx), card)
+	c.afterMove("move", "congress.log.move", map[string]string{"value1": fmt.Sprint(fIdx)}, card)
 	return nil
 }
 
@@ -256,7 +256,7 @@ func (c *Congress) MoveWasteToTableau(pile int) error {
 	c.takeSnapshot()
 	c.popWaste()
 	c.tableau[pile] = append(c.tableau[pile], card)
-	c.afterMove("move", fmt.Sprintf("捨て札→タブロー山%d", pile), card)
+	c.afterMove("move", "congress.log.move", map[string]string{"value1": fmt.Sprint(pile)}, card)
 	return nil
 }
 
@@ -281,7 +281,7 @@ func (c *Congress) MoveStockToTableau(pile int) error {
 	card := c.stock[0]
 	c.stock = c.stock[1:]
 	c.tableau[pile] = append(c.tableau[pile], card)
-	c.afterMove("move", fmt.Sprintf("山札→タブロー山%d", pile), card)
+	c.afterMove("move", "congress.log.move", map[string]string{"value1": fmt.Sprint(pile)}, card)
 	return nil
 }
 
@@ -289,7 +289,7 @@ func (c *Congress) MoveStockToTableau(pile int) error {
 func (c *Congress) GiveUp() {
 	if c.phase == CongressPhasePlaying {
 		c.phase = CongressPhaseGameOver
-		c.appendLog("giveup", "ギブアップしました", nil)
+		c.appendLog("giveup", "congress.log.giveup", nil, nil)
 	}
 }
 
@@ -540,8 +540,8 @@ func (c *Congress) findFoundation(card *Card) int {
 }
 
 // afterMove 手数・棋譜・終了判定をまとめて進める
-func (c *Congress) afterMove(actionType, detail string, card *Card) {
-	afterMove(&c.moveCount, c, actionType, detail, card)
+func (c *Congress) afterMove(actionType, detailCode string, detailParams map[string]string, card *Card) {
+	afterMove(&c.moveCount, c, actionType, detailCode, detailParams, card)
 }
 
 // checkGameClear 8 つの基礎札がすべて K まで積まれたか
@@ -583,8 +583,8 @@ func (c *Congress) takeSnapshot() {
 }
 
 // appendLog 棋譜エントリを追加
-func (c *Congress) appendLog(actionType, detail string, cards []*Card) {
-	c.appendLogAt(c.moveCount, 0, actionType, detail, cards)
+func (c *Congress) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	c.appendLogCodeAt(c.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // congressSnapshotJSON is the wire format for a single undo snapshot.

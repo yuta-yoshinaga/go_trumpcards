@@ -17,5 +17,7 @@
   "gameEnd": "Game over! {{name}} wins!",
   "progressLine": "Remaining: {{remaining}} / {{total}} pairs",
   "visitedCountLegend": "Seen cells: {{count}}",
-  "helpExampleFlip": "  f 0                  turn over the card at position 0"
+  "helpExampleFlip": "  f 0                  turn over the card at position 0",
+  "log.match": "Move: {{value1}}, {{value2}}",
+  "log.miss": "Move: {{value1}}, {{value2}}"
 }

@@ -235,7 +235,7 @@ func (g *Kalooki) drawFromDiscard() error {
 
 // recycleDiscardIntoStock 山札が空のとき捨て札トップ 1 枚を残して残りを山札へ戻しシャッフルする。
 func (g *Kalooki) recycleDiscardIntoStock() bool {
-	return recycleDiscardIntoStock(&g.discardPile, &g.drawPile, g)
+	return recycleDiscardIntoStock(&g.discardPile, &g.drawPile, g, "kalooki.log.recycle")
 }
 
 // PlayerMeld 人間プレイヤーがメルド群を場に出す。

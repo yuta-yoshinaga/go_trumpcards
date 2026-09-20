@@ -46,5 +46,8 @@
   "errNothingToUndo": "There is no move to undo.",
   "errSnapshotArrayTooLarge": "The snapshot array exceeds the maximum allowed size.",
   "errSnapshotPileTooLarge": "A snapshot pile exceeds the maximum allowed size.",
-  "errInputArrayTooLarge": "The input array exceeds the maximum allowed size."
+  "errInputArrayTooLarge": "The input array exceeds the maximum allowed size.",
+  "log.draw": "Drew a card",
+  "log.move": "Move: {{value1}}",
+  "log.giveup": "Gave up"
 }

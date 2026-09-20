@@ -57,6 +57,7 @@
   "errTargetMeldInvalid": "The target meld is invalid.",
   "errLayoffCardCannotAdd": "{{card}} cannot be added to that meld.",
   "errContractRequiredToGoOut": "You must meet the contract before going out.",
+  "log.recycle": "Discard pile recycled into stock ({{cards}} cards)",
   "log.drawStock": "{{name}} draws from stock",
   "log.drawDiscard": "{{name}} draws {{card}} from discard",
   "log.meldContract": "{{name}} meets the contract (round {{round}})",

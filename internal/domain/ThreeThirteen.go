@@ -268,7 +268,7 @@ func (g *ThreeThirteen) drawFromDiscard() error {
 
 // recycleDiscardIntoStock 山札が空のとき捨て札トップ 1 枚を残して残りを山札へ戻しシャッフルする。
 func (g *ThreeThirteen) recycleDiscardIntoStock() bool {
-	return recycleDiscardIntoStock(&g.discardPile, &g.drawPile, g)
+	return recycleDiscardIntoStock(&g.discardPile, &g.drawPile, g, "threethirteen.log.recycle")
 }
 
 // PlayerDiscard 人間プレイヤーが手札 1 枚を捨ててターン終了する

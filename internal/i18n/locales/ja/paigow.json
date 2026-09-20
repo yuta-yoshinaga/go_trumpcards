@@ -1,4 +1,10 @@
 {
+  "log.bet": "ベット={{amount}}",
+  "log.set": "ロー=[{{lowIdx0}},{{lowIdx1}}]",
+  "log.deal": "7枚ずつ配りました",
+  "log.resultPlayerWins": "プレイヤーの勝ち",
+  "log.resultPush": "プッシュ",
+  "log.resultDealerWins": "ディーラーの勝ち",
   "helpTitle": "Pai Gow Poker (パイガオポーカー)",
   "helpBet": "  b <金額>             ベット",
   "helpSet": "  s <idx1> <idx2>      ローハンド設定 (カードのインデックスを2つ選択)",

@@ -770,16 +770,19 @@ func TestAmericanToad_ActionLog(t *testing.T) {
 
 	// The board is 0-indexed everywhere, so the log must be too -- a 1-based log
 	// silently disagrees with the hint and the CLI.
-	details := make([]string, 0, len(at.GetActionLog()))
-	for _, e := range at.GetActionLog() {
-		details = append(details, e.Detail)
-	}
-	assert.Equal(t, []string{
-		"リザーブ→基礎札0",
-		"捨て札→基礎札1",
-		"タブロー列1[0]→タブロー列0",
-		"山札から1枚めくった",
-	}, details)
+	log := at.GetActionLog()
+	require.Len(t, log, 4)
+	assert.Equal(t, "americantoad.log.move", log[0].DetailCode)
+	assert.Equal(t, map[string]string{"value1": "0"}, log[0].DetailParams)
+	assert.Equal(t, "americantoad.log.move", log[1].DetailCode)
+	assert.Equal(t, map[string]string{"value1": "1"}, log[1].DetailParams)
+	assert.Equal(t, "americantoad.log.move", log[2].DetailCode)
+	assert.Equal(t, map[string]string{"value1": "1", "value2": "0", "value3": "0"}, log[2].DetailParams)
+	assert.Equal(t, "americantoad.log.drawDetail", log[3].DetailCode)
+	assert.Empty(t, log[0].Detail)
+	assert.Empty(t, log[1].Detail)
+	assert.Empty(t, log[2].Detail)
+	assert.Empty(t, log[3].Detail)
 }
 
 // The Cloudflare Worker is stateless per request and rebuilds the game from KV

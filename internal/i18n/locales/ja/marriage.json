@@ -36,7 +36,7 @@
   "log.drawDiscard": "{{name}}が捨て札から{{card}}を引く",
   "log.discard": "{{name}}が{{card}}を捨てる",
   "log.declare": "{{name}}が宣言（{{status}}）",
-  "log.recycle": "捨て札を{{cards}}枚山札に戻す",
+  "log.recycle": "捨て札から {{cards}} 枚を山札に戻しました",
   "log.stockOut": "山札が尽きてラウンド終了",
   "log.maal": "{{name}}がマール{{maal}}点を獲得",
   "log.roundWin": "{{name}}が有効な宣言でラウンドに勝利",

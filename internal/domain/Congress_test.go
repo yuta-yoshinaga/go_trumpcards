@@ -598,17 +598,20 @@ func TestCongress_ActionLog(t *testing.T) {
 
 	// The board is 0-indexed everywhere, so the log must be too -- a 1-based log
 	// silently disagrees with the hint and the CLI.
-	details := make([]string, 0, len(c.GetActionLog()))
-	for _, e := range c.GetActionLog() {
-		details = append(details, e.Detail)
+	log := c.GetActionLog()
+	require.Len(t, log, 5)
+	assert.Equal(t, "congress.log.move", log[0].DetailCode)
+	assert.Equal(t, map[string]string{"value1": "0", "value2": "0"}, log[0].DetailParams)
+	assert.Equal(t, "congress.log.move", log[1].DetailCode)
+	assert.Equal(t, map[string]string{"value1": "0"}, log[1].DetailParams)
+	assert.Equal(t, "congress.log.move", log[2].DetailCode)
+	assert.Equal(t, map[string]string{"value1": "1"}, log[2].DetailParams)
+	assert.Equal(t, "congress.log.move", log[3].DetailCode)
+	assert.Equal(t, map[string]string{"value1": "1", "value2": "2"}, log[3].DetailParams)
+	assert.Equal(t, "congress.log.drawDetail", log[4].DetailCode)
+	for _, e := range log {
+		assert.Empty(t, e.Detail)
 	}
-	assert.Equal(t, []string{
-		"タブロー山0→基礎札0",
-		"山札→タブロー山0",
-		"捨て札→基礎札1",
-		"タブロー山1→タブロー山2",
-		"山札から1枚めくった",
-	}, details)
 }
 
 func TestCongress_JSONRoundTrip(t *testing.T) {

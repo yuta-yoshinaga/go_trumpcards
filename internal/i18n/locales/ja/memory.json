@@ -17,5 +17,7 @@
   "gameEnd": "ゲーム終了！ {{name}}の勝利です！",
   "progressLine": "残り {{remaining}} ペア / 全 {{total}} ペア",
   "visitedCountLegend": "既出セル数: {{count}}",
-  "helpExampleFlip": "  f 0                  0 番の札をめくる"
+  "helpExampleFlip": "  f 0                  0 番の札をめくる",
+  "log.match": "ペア獲得: 位置{{value1}},位置{{value2}}",
+  "log.miss": "不一致: 位置{{value1}},位置{{value2}}"
 }

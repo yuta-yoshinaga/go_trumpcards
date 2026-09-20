@@ -41,5 +41,9 @@
   "helpExampleHint": "  h                        ask for a move",
   "helpExampleAuto": "  ac                       send everything that can go to a foundation",
   "emptyColReserveOnly": "(reserve only)",
-  "errEmptyColumnReserveOnly": "An empty column must be filled from the reserve first"
+  "errEmptyColumnReserveOnly": "An empty column must be filled from the reserve first",
+  "log.base": "{{value1}} {{value2}}",
+  "log.drawDetail": "Stock → waste",
+  "log.move": "{{value1}} {{value2}} {{value3}}",
+  "log.giveup": "Gave up"
 }

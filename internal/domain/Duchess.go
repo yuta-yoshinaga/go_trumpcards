@@ -199,7 +199,7 @@ func (d *Duchess) ChooseBaseRank(fanIdx int) error {
 	d.popReserve(fanIdx)
 	d.baseRank = card.GetValue()
 	d.foundation[fIdx] = []*Card{card}
-	d.afterMove("base", fmt.Sprintf("開始ランクを%dに決定（リザーブ%d）", d.baseRank, fanIdx), card)
+	d.afterMove("base", "duchess.log.base", map[string]string{"value1": fmt.Sprint(d.baseRank), "value2": fmt.Sprint(fanIdx)}, card)
 	return nil
 }
 
@@ -215,7 +215,7 @@ func (d *Duchess) Draw() error {
 	card := d.stock[0]
 	d.stock = d.stock[1:]
 	d.waste = append(d.waste, card)
-	d.afterMove("draw", "山札→ウェイスト", card)
+	d.afterMove("draw", "duchess.log.drawDetail", nil, card)
 	return nil
 }
 
@@ -235,7 +235,7 @@ func (d *Duchess) MoveReserveToFoundation(fanIdx int) error {
 	d.takeSnapshot()
 	d.popReserve(fanIdx)
 	d.foundation[fIdx] = append(d.foundation[fIdx], card)
-	d.afterMove("move", fmt.Sprintf("リザーブ%d→基礎札%d", fanIdx, fIdx), card)
+	d.afterMove("move", "duchess.log.move", map[string]string{"value1": fmt.Sprint(fanIdx), "value2": fmt.Sprint(fIdx)}, card)
 	return nil
 }
 
@@ -257,7 +257,7 @@ func (d *Duchess) MoveReserveToTableau(fanIdx, col int) error {
 	d.takeSnapshot()
 	d.popReserve(fanIdx)
 	d.tableau[col] = append(d.tableau[col], &DuchessTableauCard{Card: card, FaceUp: true})
-	d.afterMove("move", fmt.Sprintf("リザーブ%d→タブロー列%d", fanIdx, col), card)
+	d.afterMove("move", "duchess.log.move", map[string]string{"value1": fmt.Sprint(fanIdx), "value2": fmt.Sprint(col)}, card)
 	return nil
 }
 
@@ -277,7 +277,7 @@ func (d *Duchess) MoveWasteToFoundation() error {
 	d.takeSnapshot()
 	d.waste = d.waste[:len(d.waste)-1]
 	d.foundation[fIdx] = append(d.foundation[fIdx], card)
-	d.afterMove("move", fmt.Sprintf("ウェイスト→基礎札%d", fIdx), card)
+	d.afterMove("move", "duchess.log.move", map[string]string{"value1": fmt.Sprint(fIdx)}, card)
 	return nil
 }
 
@@ -302,7 +302,7 @@ func (d *Duchess) MoveWasteToTableau(col int) error {
 	d.takeSnapshot()
 	d.waste = d.waste[:len(d.waste)-1]
 	d.tableau[col] = append(d.tableau[col], &DuchessTableauCard{Card: card, FaceUp: true})
-	d.afterMove("move", fmt.Sprintf("ウェイスト→タブロー列%d", col), card)
+	d.afterMove("move", "duchess.log.move", map[string]string{"value1": fmt.Sprint(col)}, card)
 	return nil
 }
 
@@ -326,7 +326,7 @@ func (d *Duchess) MoveTableauToFoundation(col int) error {
 	d.takeSnapshot()
 	d.tableau[col] = pile[:len(pile)-1]
 	d.foundation[fIdx] = append(d.foundation[fIdx], card)
-	d.afterMove("move", fmt.Sprintf("タブロー列%d→基礎札%d", col, fIdx), card)
+	d.afterMove("move", "duchess.log.move", map[string]string{"value1": fmt.Sprint(col), "value2": fmt.Sprint(fIdx)}, card)
 	return nil
 }
 
@@ -368,8 +368,7 @@ func (d *Duchess) MoveTableauToTableau(fromCol, cardIndex, toCol int) error {
 	moved := append([]*DuchessTableauCard(nil), group...)
 	d.tableau[fromCol] = fromCards[:cardIndex]
 	d.tableau[toCol] = append(d.tableau[toCol], moved...)
-	d.afterMove("move",
-		fmt.Sprintf("タブロー列%d→タブロー列%d(%d枚)", fromCol, toCol, len(moved)),
+	d.afterMove("move", "duchess.log.move", map[string]string{"value1": fmt.Sprint(fromCol), "value2": fmt.Sprint(toCol), "value3": fmt.Sprint(len(moved))},
 		moved[0].Card)
 	return nil
 }
@@ -378,7 +377,7 @@ func (d *Duchess) MoveTableauToTableau(fromCol, cardIndex, toCol int) error {
 func (d *Duchess) GiveUp() {
 	if d.phase == DuchessPhasePlaying {
 		d.phase = DuchessPhaseGameOver
-		d.appendLog("giveup", "ギブアップしました", nil)
+		d.appendLog("giveup", "duchess.log.giveup", nil, nil)
 	}
 }
 
@@ -757,8 +756,8 @@ func (d *Duchess) findFoundation(card *Card) int {
 }
 
 // afterMove 手数・棋譜・終了判定をまとめて進める
-func (d *Duchess) afterMove(actionType, detail string, card *Card) {
-	afterMove(&d.moveCount, d, actionType, detail, card)
+func (d *Duchess) afterMove(actionType, detailCode string, detailParams map[string]string, card *Card) {
+	afterMove(&d.moveCount, d, actionType, detailCode, detailParams, card)
 }
 
 // checkGameClear 4 つの基礎札がすべて 13 枚（開始ランクから一周）になったか
@@ -804,8 +803,8 @@ func (d *Duchess) takeSnapshot() {
 }
 
 // appendLog 棋譜エントリを追加
-func (d *Duchess) appendLog(actionType, detail string, cards []*Card) {
-	d.appendLogAt(d.moveCount, 0, actionType, detail, cards)
+func (d *Duchess) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	d.appendLogCodeAt(d.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // duchessMaxSliceLen caps slice sizes during deserialisation.

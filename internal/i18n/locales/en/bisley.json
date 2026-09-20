@@ -29,5 +29,7 @@
   "errNothingToUndo": "There is nothing to undo",
   "errBadColumn": "Invalid column index",
   "errColumnEmpty": "That column is empty",
-  "errNotPlaying": "The game is not in play"
+  "errNotPlaying": "The game is not in play",
+  "log.move": "Move: {{value1}}, {{value2}}",
+  "log.giveup": "Gave up"
 }

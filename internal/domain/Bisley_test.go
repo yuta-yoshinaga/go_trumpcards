@@ -333,9 +333,15 @@ func TestBisley_ActionLogDetailUsesZeroBasedColumns(t *testing.T) {
 	log := b.GetActionLog()
 	require.Len(t, log, 3)
 	// Spade is foundation 0, heart is foundation 2 — both raw indices.
-	assert.Equal(t, "タブロー列1→昇順基礎0", log[0].Detail)
-	assert.Equal(t, "タブロー列2→降順基礎2", log[1].Detail)
-	assert.Equal(t, "タブロー列3→タブロー列4", log[2].Detail)
+	assert.Equal(t, "bisley.log.move", log[0].DetailCode)
+	assert.Equal(t, map[string]string{"value1": "1", "value2": "0"}, log[0].DetailParams)
+	assert.Equal(t, "bisley.log.move", log[1].DetailCode)
+	assert.Equal(t, map[string]string{"value1": "2", "value2": "2"}, log[1].DetailParams)
+	assert.Equal(t, "bisley.log.move", log[2].DetailCode)
+	assert.Equal(t, map[string]string{"value1": "3", "value2": "4"}, log[2].DetailParams)
+	assert.Empty(t, log[0].Detail)
+	assert.Empty(t, log[1].Detail)
+	assert.Empty(t, log[2].Detail)
 }
 
 // GetHint used to only look at the foundations, so a board with legal tableau

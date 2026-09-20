@@ -19,5 +19,7 @@
   "gameComplete": "ゲーム終了 合計得点: {{score}}",
   "undoUnavailable": "（戻せる手はありません）",
   "rowPartialHand": " (部分役: {{hand}})",
-  "colPartialHand": " (部分役: {{hand}})"
+  "colPartialHand": " (部分役: {{hand}})",
+  "log.place": "({{value1}},{{value2}}) に配置",
+  "log.giveup": "ギブアップしました"
 }

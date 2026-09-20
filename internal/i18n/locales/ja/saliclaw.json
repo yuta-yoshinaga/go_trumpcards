@@ -37,5 +37,8 @@
   "errNothingToAutoComplete": "自動で基礎札に送れる札がありません",
   "errNothingToUndo": "取り消せる手がありません",
   "errNotPlaying": "プレイ中ではありません",
-  "errInvalidPile": "無効なタブロー列の番号です: {{pile}}"
+  "errInvalidPile": "無効なタブロー列の番号です: {{pile}}",
+  "log.draw": "{{value1}}",
+  "log.move": "{{value1}} {{value2}}",
+  "log.giveup": "ギブアップしました"
 }

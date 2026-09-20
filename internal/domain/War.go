@@ -3,6 +3,7 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 )
 
 // WarPlayerCnt 戦争ゲームのプレイヤー数 (人間 + CPU)
@@ -53,6 +54,10 @@ type War struct {
 	gameEndFlag     bool
 	winnerIdx       int
 	actionLogBase
+}
+
+func (w *War) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	w.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // NewWar コンストラクタ
@@ -174,7 +179,7 @@ func (w *War) stepReveal() error {
 	w.playerRevealed = pc
 	w.cpuRevealed = cc
 	w.warPot = append(w.warPot, pc, cc)
-	w.appendLog(0, "reveal", "turn up", []*Card{pc, cc})
+	w.appendLog(0, "reveal", "war.log.reveal", nil, []*Card{pc, cc})
 	w.resolveCompare(pc, cc)
 	return nil
 }
@@ -183,7 +188,7 @@ func (w *War) stepReveal() error {
 func (w *War) stepResolved() error {
 	if w.lastWinnerIdx >= 0 && w.lastWinnerIdx < WarPlayerCnt && len(w.warPot) > 0 {
 		w.players[w.lastWinnerIdx].AddToDiscardPile(w.warPot...)
-		w.appendLog(w.lastWinnerIdx, "collect", fmt.Sprintf("+%d cards", len(w.warPot)), nil)
+		w.appendLog(w.lastWinnerIdx, "collect", "war.log.collect", map[string]string{"count": strconv.Itoa(len(w.warPot))}, nil)
 	}
 	w.warPot = nil
 	w.playerRevealed = nil
@@ -230,7 +235,7 @@ func (w *War) stepWarBury() error {
 	w.playerRevealed = pc
 	w.cpuRevealed = cc
 	w.warPot = append(w.warPot, pc, cc)
-	w.appendLog(0, "war", fmt.Sprintf("buried %d each, turn up", w.lastBurialCount), []*Card{pc, cc})
+	w.appendLog(0, "war", "war.log.war", map[string]string{"count": strconv.Itoa(w.lastBurialCount)}, []*Card{pc, cc})
 	w.resolveCompare(pc, cc)
 	return nil
 }

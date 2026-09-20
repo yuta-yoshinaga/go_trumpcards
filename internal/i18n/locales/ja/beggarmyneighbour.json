@@ -1,4 +1,7 @@
 {
+  "log.play": "カードを出しました",
+  "log.pay": "ペナルティを支払いました（残り{{remaining}}枚）",
+  "log.collect": "カードを{{count}}枚回収しました",
   "helpTitle": "Beggar-My-Neighbour (ビガー・マイ・ネイバー)",
   "helpStep": "  s                    次のカードを出す / ペナルティを払う / 山を回収する",
   "helpAutoPlay": "  a                    決着まで自動で進める",

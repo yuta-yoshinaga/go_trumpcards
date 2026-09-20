@@ -48,5 +48,9 @@
   "errWaivedSingleOnly": "組札へ置けるのは取り置いた1枚だけです",
   "errNotPlaying": "プレイ中のみ操作できます",
   "errNoAutoMove": "自動で動かせるカードがありません",
-  "errNothingToUndo": "元に戻せる操作がありません"
+  "errNothingToUndo": "元に戻せる操作がありません",
+  "log.deal": "山札→各列に{{value1}}枚配布",
+  "log.move": "タブロー列{{value1}}→タブロー列{{value2}}({{value3}}枚)",
+  "log.waive": "列{{value1}}から{{value2}}枚を保持",
+  "log.giveup": "ギブアップしました"
 }

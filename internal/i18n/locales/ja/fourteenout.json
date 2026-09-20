@@ -18,5 +18,7 @@
   "hintLineRemoveCard": "ヒント: 列{{col1}}の{{card1}} と 列{{col2}}の{{card2}} を取り除く (合計14)",
   "helpExampleHint": "  h                   次の一手を教えてもらう",
   "removablePairs": "除去可能: {{count}} 組",
-  "usageMC1C2": "使い方: m <列1> <列2> (例: m 0 3)"
+  "usageMC1C2": "使い方: m <列1> <列2> (例: m 0 3)",
+  "log.remove": "列{{value1}} と 列{{value2}} を取り除いた",
+  "log.giveup": "ギブアップしました"
 }

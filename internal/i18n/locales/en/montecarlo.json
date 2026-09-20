@@ -21,5 +21,8 @@
   "helpExampleHint": "  h                   ask for a move",
   "removablePairs": "Removable pairs: {{count}}",
   "undoAvailable": "Undo: available (u to take back a move)",
-  "undoUnavailable": "Undo: unavailable (nothing to take back)"
+  "undoUnavailable": "Undo: unavailable (nothing to take back)",
+  "log.remove": "Move: {{value1}}, {{value2}}, {{value3}}, {{value4}}",
+  "log.deal": "Move: ",
+  "log.giveup": "Gave up"
 }

@@ -21,5 +21,8 @@
   "helpExampleHint": "  h                   次の一手を教えてもらう",
   "removablePairs": "除去可能: {{count}} 組",
   "undoAvailable": "アンドゥ: 可能 (u で1手戻す)",
-  "undoUnavailable": "アンドゥ: 不可 (これ以上戻せません)"
+  "undoUnavailable": "アンドゥ: 不可 (これ以上戻せません)",
+  "log.remove": "({{value1}},{{value2}}) と ({{value3}},{{value4}}) を取り除いた",
+  "log.deal": "山札からの補充",
+  "log.giveup": "ギブアップしました"
 }

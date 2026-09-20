@@ -184,11 +184,11 @@ func (c *SalicLaw) Draw() error {
 	if card.GetValue() == CardValueMax && c.openPiles < SalicLawTableauCnt {
 		c.tableau[c.openPiles] = []*Card{card}
 		c.openPiles++
-		c.afterMove("draw", fmt.Sprintf("Kで列%dを開いた", c.openPiles-1), card)
+		c.afterMove("draw", "saliclaw.log.draw", map[string]string{"value1": fmt.Sprint(c.openPiles - 1)}, card)
 		return nil
 	}
 	c.tableau[c.openPiles-1] = append(c.tableau[c.openPiles-1], card)
-	c.afterMove("draw", fmt.Sprintf("列%dに1枚配った", c.openPiles-1), card)
+	c.afterMove("draw", "saliclaw.log.draw", map[string]string{"value1": fmt.Sprint(c.openPiles - 1)}, card)
 	return nil
 }
 
@@ -215,7 +215,7 @@ func (c *SalicLaw) MoveTableauToFoundation(pile int) error {
 	c.takeSnapshot()
 	c.tableau[pile] = c.tableau[pile][:len(c.tableau[pile])-1]
 	c.foundation[fIdx] = append(c.foundation[fIdx], card)
-	c.afterMove("move", fmt.Sprintf("列%d→基礎札%d", pile, fIdx), card)
+	c.afterMove("move", "saliclaw.log.move", map[string]string{"value1": fmt.Sprint(pile), "value2": fmt.Sprint(fIdx)}, card)
 	return nil
 }
 
@@ -247,7 +247,7 @@ func (c *SalicLaw) MoveTableauToTableau(fromPile, toPile int) error {
 	c.takeSnapshot()
 	c.tableau[fromPile] = c.tableau[fromPile][:len(c.tableau[fromPile])-1]
 	c.tableau[toPile] = append(c.tableau[toPile], card)
-	c.afterMove("move", fmt.Sprintf("列%d→列%d", fromPile, toPile), card)
+	c.afterMove("move", "saliclaw.log.move", map[string]string{"value1": fmt.Sprint(fromPile), "value2": fmt.Sprint(toPile)}, card)
 	return nil
 }
 
@@ -255,7 +255,7 @@ func (c *SalicLaw) MoveTableauToTableau(fromPile, toPile int) error {
 func (c *SalicLaw) GiveUp() {
 	if c.phase == SalicLawPhasePlaying {
 		c.phase = SalicLawPhaseGameOver
-		c.appendLog("giveup", "ギブアップしました", nil)
+		c.appendLog("giveup", "saliclaw.log.giveup", nil, nil)
 	}
 }
 
@@ -485,8 +485,8 @@ func (c *SalicLaw) findFoundation(card *Card) int {
 }
 
 // afterMove 手数・棋譜・終了判定をまとめて進める
-func (c *SalicLaw) afterMove(actionType, detail string, card *Card) {
-	afterMove(&c.moveCount, c, actionType, detail, card)
+func (c *SalicLaw) afterMove(actionType, detailCode string, detailParams map[string]string, card *Card) {
+	afterMove(&c.moveCount, c, actionType, detailCode, detailParams, card)
 }
 
 // checkGameClear 8 つの基礎札がすべて J まで積まれたか。K 8 枚は土台に残るので、
@@ -529,8 +529,8 @@ func (c *SalicLaw) takeSnapshot() {
 }
 
 // appendLog 棋譜エントリを追加
-func (c *SalicLaw) appendLog(actionType, detail string, cards []*Card) {
-	c.appendLogAt(c.moveCount, 0, actionType, detail, cards)
+func (c *SalicLaw) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	c.appendLogCodeAt(c.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // salicLawSnapshotJSON is the wire format for a single undo snapshot.

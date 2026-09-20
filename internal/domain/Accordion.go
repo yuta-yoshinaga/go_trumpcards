@@ -115,7 +115,7 @@ func (a *Accordion) Move(fromIdx, toIdx int) error {
 	a.piles = a.piles[:len(a.piles)-1]
 	a.moveCount++
 	top := a.piles[toIdx][len(a.piles[toIdx])-1]
-	a.appendLog("move", fmt.Sprintf("パイル%d→パイル%d", fromIdx, toIdx), []*Card{top})
+	a.appendLog("move", "accordion.log.move", map[string]string{"value1": fmt.Sprint(fromIdx), "value2": fmt.Sprint(toIdx)}, []*Card{top})
 	a.checkGameClear()
 	a.checkAccordionStalemate()
 	return nil
@@ -159,7 +159,7 @@ func (a *Accordion) AutoComplete() error {
 func (a *Accordion) GiveUp() {
 	if a.phase == AccordionPhasePlaying {
 		a.phase = AccordionPhaseGameOver
-		a.appendLog("giveup", "ギブアップしました", nil)
+		a.appendLog("giveup", "accordion.log.giveup", nil, nil)
 	}
 }
 
@@ -302,8 +302,8 @@ func (a *Accordion) restoreSnapshot(snap *accordionSnapshot) {
 }
 
 // appendLog 棋譜エントリを追加
-func (a *Accordion) appendLog(actionType, detail string, cards []*Card) {
-	a.appendLogAt(a.moveCount, 0, actionType, detail, cards)
+func (a *Accordion) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	a.appendLogCodeAt(a.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // accordionJSON is the JSON wire format for Accordion.
