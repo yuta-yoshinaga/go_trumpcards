@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // SergeantMajorPhase はサージェントメジャーのゲームフェーズ。
@@ -181,8 +182,7 @@ func (s *SergeantMajor) startRound() {
 	s.roundNumber++
 	s.currentPlayerIdx = s.dealerIdx
 	s.leadPlayerIdx = s.dealerIdx
-	s.addLog(-1, "deal", fmt.Sprintf("ラウンド %d：16 枚ずつ配り、余り %d 枚は親へ",
-		s.roundNumber, SergeantMajorKittySize), nil)
+	s.addLog(-1, "deal", "sergeantmajor.log.deal", map[string]string{"round": strconv.Itoa(s.roundNumber), "kitty": strconv.Itoa(SergeantMajorKittySize)}, nil)
 }
 
 // assignTargets はノルマを席へ割り当てる。**親が 8、左隣が 5、右隣が 3。**
@@ -224,7 +224,7 @@ func (s *SergeantMajor) DeclareTrump(suit int) error {
 	s.sortAllHands()
 	s.phase = SergeantMajorPhaseDiscard
 	s.currentPlayerIdx = s.dealerIdx
-	s.addLog(s.dealerIdx, "trump", fmt.Sprintf("切り札は %s、キティを取り込みました", suitStr(suit)), nil)
+	s.addLog(s.dealerIdx, "trump", "sergeantmajor.log.trump", map[string]string{"suit": suitStr(suit)}, nil)
 	return nil
 }
 
@@ -321,7 +321,7 @@ func (s *SergeantMajor) discardBy(playerIdx int, indices []int) error {
 	s.leadPlayerIdx = (s.dealerIdx + 1) % SergeantMajorPlayerCnt
 	s.currentPlayerIdx = s.leadPlayerIdx
 	s.sortAllHands()
-	s.addLog(playerIdx, "discard", fmt.Sprintf("%d 枚捨てました", SergeantMajorKittySize), nil)
+	s.addLog(playerIdx, "discard", "sergeantmajor.log.discard", map[string]string{"count": strconv.Itoa(SergeantMajorKittySize)}, nil)
 	return nil
 }
 
@@ -382,7 +382,7 @@ func (s *SergeantMajor) exchangeCards() {
 	s.lastExchange = moved
 	if moved > 0 {
 		s.sortAllHands()
-		s.addLog(-1, "exchange", fmt.Sprintf("前ラウンドの過不足で %d 枚を移しました", moved), nil)
+		s.addLog(-1, "exchange", "sergeantmajor.log.exchange", map[string]string{"count": strconv.Itoa(moved)}, nil)
 	}
 }
 
@@ -523,7 +523,7 @@ func (s *SergeantMajor) play(playerIdx, cardIndex int) error {
 
 	card := p.RemoveCard(cardIndex)
 	s.currentTrick = append(s.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	s.addLog(playerIdx, "play", cardStr(card), []*Card{card})
+	s.addLog(playerIdx, "play", "sergeantmajor.log.play", map[string]string{"card": cardStr(card)}, []*Card{card})
 
 	if len(s.currentTrick) < SergeantMajorPlayerCnt {
 		s.currentPlayerIdx = (s.currentPlayerIdx + 1) % SergeantMajorPlayerCnt
@@ -545,7 +545,7 @@ func (s *SergeantMajor) resolveTrick() {
 	s.trickNumber++
 	s.leadPlayerIdx = winner
 	s.currentPlayerIdx = winner
-	s.addLog(winner, "trick", fmt.Sprintf("トリック %d を取りました", s.trickNumber), nil)
+	s.addLog(winner, "trick", "sergeantmajor.log.trick", map[string]string{"trick": strconv.Itoa(s.trickNumber)}, nil)
 
 	if s.trickNumber >= SergeantMajorTricksPerRound {
 		s.finishRound()
@@ -584,8 +584,7 @@ func (s *SergeantMajor) finishRound() {
 		diff := p.GetTrickCount() - p.GetTarget()
 		s.surplus[i] = diff
 		p.AddScore(diff)
-		s.addLog(i, "score", fmt.Sprintf("ノルマ %d に対し %d トリック（%+d）",
-			p.GetTarget(), p.GetTrickCount(), diff), nil)
+		s.addLog(i, "score", "sergeantmajor.log.score", map[string]string{"target": strconv.Itoa(p.GetTarget()), "tricks": strconv.Itoa(p.GetTrickCount()), "diff": fmt.Sprintf("%+d", diff)}, nil)
 	}
 	if s.roundNumber >= s.config.Rounds {
 		s.finishGame()
@@ -619,7 +618,7 @@ func (s *SergeantMajor) finishGame() {
 		best = -1
 	}
 	s.winnerIdx = best
-	s.addLog(-1, "result", "ゲーム終了", nil)
+	s.addLog(-1, "result", "sergeantmajor.log.result", nil, nil)
 }
 
 // GiveUp は投了する。
@@ -630,7 +629,7 @@ func (s *SergeantMajor) GiveUp() {
 	s.phase = SergeantMajorPhaseGameEnd
 	s.gameEndFlag = true
 	s.winnerIdx = -1
-	s.addLog(0, "giveup", "投了しました", nil)
+	s.addLog(0, "giveup", "sergeantmajor.log.giveup", nil, nil)
 }
 
 // chooseCpuCard は CPU の手。
@@ -698,8 +697,8 @@ func sergeantMajorContains(xs []int, v int) bool {
 }
 
 // addLog は棋譜に 1 行足す。
-func (s *SergeantMajor) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	s.appendLog(playerIdx, actionType, detail, cards)
+func (s *SergeantMajor) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	s.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- アクセサ ---------------------------------------------------------------

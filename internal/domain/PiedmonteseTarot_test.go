@@ -31,7 +31,6 @@ func TestPiedmonteseTarot_ActionLogUsesDetailCode(t *testing.T) {
 	entry := g.GetActionLog()[0]
 	assert.Equal(t, "piedmontesetarot.log.scarto", entry.DetailCode)
 	assert.Equal(t, map[string]string{"name": "You", "count": "2"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 // piedmonteseTarotPlayHand は 1 ディールを最後まで打つ。合法手の先頭を出し続ける

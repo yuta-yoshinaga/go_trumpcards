@@ -263,7 +263,7 @@ func (d *Desmoche) dealRound() {
 
 	d.currentIdx = (d.dealerIdx + 1) % len(d.players)
 	d.phase = DesmochePhaseDraw
-	d.addLog(-1, "deal", fmt.Sprintf("cards dealt, pot is %d", d.pot), nil)
+	d.addLog(-1, "deal", "desmoche.log.deal", map[string]string{"pot": fmt.Sprintf("%d", d.pot)}, nil)
 }
 
 // DrawFromStock は山札から 1 枚引く。
@@ -280,7 +280,7 @@ func (d *Desmoche) DrawFromStock(player int) error {
 	d.stock = d.stock[1:]
 	d.GetPlayer(player).AddCard(card)
 	d.phase = DesmochePhaseAct
-	d.addLog(player, "draw", "draws from the stock", nil)
+	d.addLog(player, "draw", "desmoche.log.drawStock", nil, nil)
 	return nil
 }
 
@@ -296,7 +296,7 @@ func (d *Desmoche) DrawFromDiscard(player int) error {
 	d.discard = d.discard[:len(d.discard)-1]
 	d.GetPlayer(player).AddCard(card)
 	d.phase = DesmochePhaseAct
-	d.addLog(player, "draw", "takes the discard", []*Card{card})
+	d.addLog(player, "draw", "desmoche.log.drawDiscard", nil, []*Card{card})
 	return nil
 }
 
@@ -329,7 +329,7 @@ func (d *Desmoche) Meld(player int, handIdxs []int) error {
 	}
 	d.removeFromHand(player, handIdxs)
 	d.melds = append(d.melds, &DesmocheMeld{Owner: player, Kind: kind, Cards: cards})
-	d.addLog(player, "meld", fmt.Sprintf("puts down %d card(s)", len(cards)), cards)
+	d.addLog(player, "meld", "desmoche.log.meld", map[string]string{"count": fmt.Sprintf("%d", len(cards))}, cards)
 	d.checkGoneOut(player)
 	return nil
 }
@@ -379,7 +379,7 @@ func (d *Desmoche) Desmoche(player, fromMeldIdx, cardIdx, toMeldIdx int) error {
 	from.Cards = rest
 	to.Cards = grown
 	to.Kind = kind
-	d.addLog(player, "desmoche", fmt.Sprintf("moves a card from meld %d to meld %d", fromMeldIdx, toMeldIdx), []*Card{card})
+	d.addLog(player, "desmoche", "desmoche.log.desmoche", map[string]string{"from": fmt.Sprintf("%d", fromMeldIdx), "to": fmt.Sprintf("%d", toMeldIdx)}, []*Card{card})
 	return nil
 }
 
@@ -408,7 +408,7 @@ func (d *Desmoche) LayOff(player, handIdx, meldIdx int) error {
 	p.RemoveCard(handIdx)
 	meld.Cards = grown
 	meld.Kind = kind
-	d.addLog(player, "layoff", fmt.Sprintf("adds to meld %d", meldIdx), []*Card{card})
+	d.addLog(player, "layoff", "desmoche.log.layoff", map[string]string{"meld": fmt.Sprintf("%d", meldIdx)}, []*Card{card})
 	d.checkGoneOut(player)
 	return nil
 }
@@ -424,7 +424,7 @@ func (d *Desmoche) Discard(player, handIdx int) error {
 	}
 	card := p.RemoveCard(handIdx)
 	d.discard = append(d.discard, card)
-	d.addLog(player, "discard", "discards", []*Card{card})
+	d.addLog(player, "discard", "desmoche.log.discard", nil, []*Card{card})
 
 	d.currentIdx = (d.currentIdx + 1) % len(d.players)
 	d.phase = DesmochePhaseDraw
@@ -517,12 +517,12 @@ func (d *Desmoche) finishRound(winner int) {
 	d.roundWinner = winner
 	if winner >= 0 {
 		d.scores[winner] += d.pot
-		d.addLog(winner, "round_end", fmt.Sprintf("takes the pot of %d", d.pot), nil)
+		d.addLog(winner, "round_end", "desmoche.log.roundWin", map[string]string{"pot": fmt.Sprintf("%d", d.pot)}, nil)
 		d.pot = 0
 	} else {
 		// **勝者なし。**ポットはそのまま次のラウンドへ持ち越す。
 		d.roundExhausted = true
-		d.addLog(-1, "round_end", fmt.Sprintf("nobody went out; %d carries over", d.pot), nil)
+		d.addLog(-1, "round_end", "desmoche.log.roundCarry", map[string]string{"pot": fmt.Sprintf("%d", d.pot)}, nil)
 	}
 
 	d.roundNo++
@@ -543,7 +543,7 @@ func (d *Desmoche) finishGame() {
 	d.winnerIdx = best
 	d.gameEndFlag = true
 	d.phase = DesmochePhaseGameEnd
-	d.addLog(best, "game_end", "finishes ahead", nil)
+	d.addLog(best, "game_end", "desmoche.log.gameEnd", nil, nil)
 }
 
 // NextRound は次のラウンドを配る。
@@ -800,8 +800,8 @@ func (d *Desmoche) SetDiscardForTest(cards []*Card) { d.discard = cards }
 func (d *Desmoche) SetRoundNumberForTest(n int) { d.roundNo = n }
 
 // addLog は棋譜に 1 件追加する。
-func (d *Desmoche) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	d.appendLog(playerIdx, actionType, detail, cards)
+func (d *Desmoche) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	d.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // desmocheJSON is the JSON wire format for Desmoche.

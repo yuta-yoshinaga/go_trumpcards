@@ -85,7 +85,6 @@ func TestTeenPatti_SeeBetRaiseFold(t *testing.T) {
 	}
 	require.NotNil(t, seeEntry)
 	assert.Equal(t, map[string]string{"name": "You"}, seeEntry.DetailParams)
-	assert.Empty(t, seeEntry.Detail)
 
 	g.SetCurrentPlayerIdx(0)
 	assert.Error(t, g.PlayerRaise(g.GetStake())) // not greater

@@ -500,5 +500,4 @@ func TestContinentalRummy_ActionLogUsesDetailCode(t *testing.T) {
 	}
 	require.NotNil(t, entry)
 	assert.Equal(t, map[string]string{"seat": "0"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }

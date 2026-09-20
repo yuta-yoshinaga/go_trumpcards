@@ -259,7 +259,7 @@ func TestMadrassoWebPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockMadrassoGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "plays ♠5"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, `"actionType":"play"`)

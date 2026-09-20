@@ -248,7 +248,6 @@ func TestEasthaven_MoveTableauToTableau(t *testing.T) {
 		entry := e.GetActionLog()[0]
 		assert.Equal(t, "easthaven.log.tableauMove", entry.DetailCode)
 		assert.Equal(t, map[string]string{"from": "0", "to": "1"}, entry.DetailParams)
-		assert.Empty(t, entry.Detail)
 	})
 
 	t.Run("valid multi-card sequence move", func(t *testing.T) {

@@ -1,4 +1,11 @@
 {
+  "log.start": "Started Cucumber ({{players}} players, ending at {{target}} points)",
+  "log.deal": "Dealt round {{round}}",
+  "log.play": "Played a card",
+  "log.trickWin": "Won trick {{trick}}",
+  "log.penalty": "Took the last trick and received {{points}} penalty points",
+  "log.result": "Finished with the fewest penalty points: {{penalty}}",
+  "log.giveup": "Gave up",
   "helpTitle": "Cucumber (Gurka)",
   "helpPlay": "  p <idx>              Play the card at idx",
   "helpNext": "  n                    Deal the next round",

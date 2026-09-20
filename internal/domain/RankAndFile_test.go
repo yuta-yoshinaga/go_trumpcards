@@ -883,7 +883,6 @@ func TestRankAndFile_ActionLog(t *testing.T) {
 	assert.Equal(t, "draw", log[0].ActionType)
 	assert.Equal(t, "rankandfile.log.draw", log[0].DetailCode)
 	assert.Nil(t, log[0].DetailParams)
-	assert.Empty(t, log[0].Detail)
 }
 
 // --- Rank and File's three divergences from Forty Thieves ---

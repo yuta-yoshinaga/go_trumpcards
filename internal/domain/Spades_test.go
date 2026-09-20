@@ -811,7 +811,6 @@ func TestSpades_ActionLog(t *testing.T) {
 	}
 	require.NotNil(t, entry)
 	assert.Equal(t, map[string]string{"name": "You", "bid": "3"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 func TestSpades_SpadesBrokenOnPlay(t *testing.T) {

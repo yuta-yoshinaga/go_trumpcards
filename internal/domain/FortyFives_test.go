@@ -38,8 +38,8 @@ func TestFortyFives_AllPassActionLogUsesDetailCode(t *testing.T) {
 	}
 	for _, entry := range g.GetActionLog() {
 		if entry.DetailCode == "fortyfives.log.passedOut" {
-			if entry.Detail != "" || entry.DetailParams != nil {
-				t.Fatalf("passed-out entry = %#v, want empty detail and params", entry)
+			if entry.DetailParams != nil {
+				t.Fatalf("passed-out entry = %#v, want empty params", entry)
 			}
 			return
 		}

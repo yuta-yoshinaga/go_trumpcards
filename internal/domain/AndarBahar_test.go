@@ -24,7 +24,6 @@ func TestAndarBaharActionLogUsesDetailCode(t *testing.T) {
 	entry := ab.GetActionLog()[0]
 	assert.Equal(t, "andarbahar.log.bet", entry.DetailCode)
 	assert.Equal(t, map[string]string{"column": "アンダー", "amount": "100"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 // **先に配る列は基準札の色で決まる。** 黒ならアンダー、赤ならバハール。

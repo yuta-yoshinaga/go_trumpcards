@@ -625,7 +625,6 @@ func TestCrazyEights_appendLog(t *testing.T) {
 	assert.Equal(t, "play", g.actionLog[0].ActionType)
 	assert.Equal(t, "crazyeights.log.play", g.actionLog[0].DetailCode)
 	assert.Equal(t, map[string]string{"name": "Alice", "card": "♠3"}, g.actionLog[0].DetailParams)
-	assert.Empty(t, g.actionLog[0].Detail)
 
 	g.appendLog(1, "draw", "crazyeights.log.draw", map[string]string{"name": "Bob"}, nil)
 	assert.Len(t, g.actionLog, 2)

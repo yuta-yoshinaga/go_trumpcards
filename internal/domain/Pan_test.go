@@ -582,6 +582,5 @@ func TestPanActionLog(t *testing.T) {
 	if entry == nil {
 		t.Fatal("draw action log entry not found")
 	}
-	assert.Empty(t, entry.Detail)
 	assert.NotEmpty(t, entry.DetailParams["name"])
 }

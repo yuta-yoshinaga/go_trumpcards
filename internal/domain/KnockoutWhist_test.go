@@ -69,7 +69,7 @@ func TestKnockoutWhist_ActionLogUsesDetailCode(t *testing.T) {
 	g.Reset()
 	for _, entry := range g.GetActionLog() {
 		if entry.DetailCode == "knockoutwhist.log.roundStart" {
-			if entry.Detail != "" || entry.DetailParams["round"] == "" || entry.DetailParams["cards"] == "" || entry.DetailParams["name"] == "" {
+			if entry.DetailParams["round"] == "" || entry.DetailParams["cards"] == "" || entry.DetailParams["name"] == "" {
 				t.Fatalf("round start log = %#v, want code params and empty detail", entry)
 			}
 			return

@@ -285,7 +285,6 @@ func TestHorse_Reset(t *testing.T) {
 		}
 	}
 	require.NotNil(t, resetLog)
-	assert.Empty(t, resetLog.Detail)
 	assert.Empty(t, resetLog.DetailParams)
 }
 

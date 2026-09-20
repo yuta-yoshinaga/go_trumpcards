@@ -450,5 +450,4 @@ func TestRussianBank_ActionLogUsesDetailCode(t *testing.T) {
 	}
 	require.NotNil(t, entry)
 	assert.Empty(t, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }

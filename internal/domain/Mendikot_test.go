@@ -646,7 +646,7 @@ func TestMendikot_ActionLog(t *testing.T) {
 			break
 		}
 	}
-	if found == nil || found.DetailCode != "mendikot.log.play" || found.Detail != "" || found.DetailParams["card"] == "" {
+	if found == nil || found.DetailCode != "mendikot.log.play" || found.DetailParams["card"] == "" {
 		t.Fatalf("play log = %#v, want card code and parameter", found)
 	}
 }

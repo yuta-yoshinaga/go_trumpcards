@@ -774,9 +774,6 @@ func TestWindmill_ActionLog(t *testing.T) {
 	assert.Equal(t, map[string]string{"value1": "3"}, log[2].DetailParams)
 	assert.Equal(t, "windmill.log.draw", log[3].DetailCode)
 	assert.Nil(t, log[3].DetailParams)
-	for _, e := range log {
-		assert.Empty(t, e.Detail)
-	}
 }
 
 func TestWindmill_JSONRoundTrip(t *testing.T) {

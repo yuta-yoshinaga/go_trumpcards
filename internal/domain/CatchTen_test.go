@@ -502,7 +502,6 @@ func TestCatchTen_GetActionLog(t *testing.T) {
 		}
 	}
 	require.NotNil(t, found)
-	assert.Empty(t, found.Detail)
 	assert.NotEmpty(t, found.DetailParams["suit"])
 }
 

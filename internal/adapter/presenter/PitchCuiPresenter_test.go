@@ -177,12 +177,12 @@ func TestPitchCuiPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockPitchGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "bid", Detail: "You bid 3"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "bid", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
 	m.On("GetPlayer", mock.Anything).Return(domain.NewPitchPlayer(true)).Maybe()
 	out := p.ActionLogOutput(m)
-	assert.Contains(t, out, "You bid 3")
+	assert.Contains(t, out, "テスト用の棋譜行 1")
 }
 
 // **入札前に手札の得点価値を暗算させていた (#4751)。**Web は入札中にゲーム

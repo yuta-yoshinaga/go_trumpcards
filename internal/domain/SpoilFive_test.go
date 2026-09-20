@@ -19,7 +19,6 @@ func TestSpoilFive_ActionLogUsesDetailCode(t *testing.T) {
 	assert.Equal(t, "spoilfive.log.roundStart", entry.DetailCode)
 	assert.Contains(t, entry.DetailParams, "round")
 	assert.Contains(t, entry.DetailParams, "name")
-	assert.Empty(t, entry.Detail)
 }
 
 func newSfGame(human bool) *SpoilFive {

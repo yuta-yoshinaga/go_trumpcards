@@ -101,7 +101,6 @@ func TestNertz_DrawStock_DefaultDraw3(t *testing.T) {
 	entry := findNertzActionLogEntry(g.GetActionLog(), "nertz.log.draw")
 	require.NotNil(t, entry)
 	assert.Empty(t, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 	assert.Equal(t, stockBefore-3, p.StockSize())
 	assert.Equal(t, 3, p.WasteSize())
 }

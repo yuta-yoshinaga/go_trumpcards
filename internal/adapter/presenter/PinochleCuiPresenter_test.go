@@ -314,7 +314,7 @@ func TestPinochleCuiPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("with entries returns log", func(t *testing.T) {
 		m := new(interfaces.MockPinochleGame)
 		entries := []*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "bid", Detail: "bid 25"},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "bid", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		}
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetActionLog").Return(entries)

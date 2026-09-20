@@ -126,13 +126,13 @@ func TestClockSolitaireCuiPresenterOutput_GameOver(t *testing.T) {
 func TestClockSolitaireCuiPresenterActionLog(t *testing.T) {
 	defer i18n.SetLang("ja")
 	for _, tc := range []struct{ lang, want string }{
-		{lang: "ja", want: "カードを1番パイルに配置"},
-		{lang: "en", want: "Place the card on pile 1"},
+		{lang: "ja", want: "テスト用の棋譜行 1"},
+		{lang: "en", want: "test log entry 1"},
 	} {
 		i18n.SetLang(tc.lang)
 		gg := new(interfaces.MockClockSolitaireGame)
 		gg.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "step", DetailCode: "clocksolitaire.log.step", DetailParams: map[string]string{"pile": "1"}},
+			{TurnNumber: 1, ActionType: "step", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 
 		result := (&ClockSolitaireCuiPresenter{}).ActionLogOutput(gg)

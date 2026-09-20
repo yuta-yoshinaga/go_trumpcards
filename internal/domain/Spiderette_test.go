@@ -210,7 +210,6 @@ func TestSpideretteMoveTableauToTableau(t *testing.T) {
 	}
 	require.NotNil(t, entry)
 	assert.Equal(t, map[string]string{"from": "0", "to": "1"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 func TestSpideretteMoveTableauToTableau_Shorthand(t *testing.T) {

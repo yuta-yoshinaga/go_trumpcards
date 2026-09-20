@@ -115,7 +115,7 @@ func TestMarias_MustFollowAndTrumpWhenVoid(t *testing.T) {
 	if playLog == nil {
 		t.Fatal("play action was not logged")
 	}
-	if playLog.DetailCode != "marias.log.play" || playLog.Detail != "" {
+	if playLog.DetailCode != "marias.log.play" {
 		t.Fatalf("play log = %#v, want code and empty detail", playLog)
 	}
 	if playLog.DetailParams["name"] == "" || playLog.DetailParams["card"] == "" {

@@ -181,7 +181,6 @@ func TestThreeCardRummy_BetRejectsBadAmountsAndDealsSixCards(t *testing.T) {
 	}
 	require.NotNil(t, entry)
 	assert.Equal(t, map[string]string{"ante": "10", "lowBonus": "20"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 	assert.Len(t, tc.GetPlayerHand(), ThreeCardRummyHandSize)
 	assert.Len(t, tc.GetDealerHand(), ThreeCardRummyHandSize)
 	assert.Equal(t, ThreeCardRummyPhaseAction, tc.GetPhase())

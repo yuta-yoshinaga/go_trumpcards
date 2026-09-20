@@ -543,7 +543,6 @@ func TestBakersDozen_ActionLog(t *testing.T) {
 	entry := log[len(log)-1]
 	assert.Equal(t, "bakersdozen.log.moveTableauToFoundation", entry.DetailCode)
 	assert.Equal(t, map[string]string{"col": "0"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 // #5581: 13 列 + 4 組札を押して試すのは現実的でない。判定は既存の

@@ -326,7 +326,7 @@ func (b *BidEuchre) beginHand() {
 	}
 
 	b.bidIdx = (b.dealerIdx + 1) % BidEuchrePlayerCnt
-	b.addLog(-1, "deal", fmt.Sprintf("%d cards each, no kitty", BidEuchreHandSize), nil)
+	b.addLog(-1, "deal", "bideuchre.log.deal", map[string]string{"cards": fmt.Sprintf("%d", BidEuchreHandSize)}, nil)
 }
 
 // newBidEuchreDeck は 24 枚 (A-K-Q-J-10-9) のデッキを返す。
@@ -408,7 +408,7 @@ func (b *BidEuchre) Bid(player, value int) error {
 	b.bids = append(b.bids, rec)
 	b.highBid = rec
 	b.passCount = 0
-	b.addLog(player, "bid", fmt.Sprintf("bids %d", value), nil)
+	b.addLog(player, "bid", "bideuchre.log.bid", map[string]string{"amount": fmt.Sprintf("%d", value)}, nil)
 	b.advanceBid()
 	return nil
 }
@@ -420,7 +420,7 @@ func (b *BidEuchre) PassBid(player int) error {
 	}
 	b.bids = append(b.bids, &BidEuchreBid{Player: player, Value: 0})
 	b.passCount++
-	b.addLog(player, "pass", "passes", nil)
+	b.addLog(player, "pass", "bideuchre.log.pass", nil, nil)
 	b.advanceBid()
 	return nil
 }
@@ -437,7 +437,7 @@ func (b *BidEuchre) advanceBid() {
 	}
 	if b.highBid == nil && b.passCount >= BidEuchrePlayerCnt {
 		// **全員パスなら配り直し。**
-		b.addLog(-1, "redeal", "everybody passed", nil)
+		b.addLog(-1, "redeal", "bideuchre.log.redeal", nil, nil)
 		b.handNumber--
 		b.beginHand()
 		return
@@ -450,7 +450,7 @@ func (b *BidEuchre) settleBid() {
 	b.declarerIdx = b.highBid.Player
 	b.phase = BidEuchrePhaseChooseTrump
 	b.currentIdx = b.declarerIdx
-	b.addLog(b.declarerIdx, "won_bid", fmt.Sprintf("wins the auction at %d", b.highBid.Value), nil)
+	b.addLog(b.declarerIdx, "won_bid", "bideuchre.log.wonBid", map[string]string{"amount": fmt.Sprintf("%d", b.highBid.Value)}, nil)
 }
 
 // ChooseTrump は落札者が切札またはノートランプを指定する。
@@ -478,7 +478,7 @@ func (b *BidEuchre) ChooseTrump(player int, t BidEuchreTrump) error {
 	// **リードは落札者。**
 	b.trickLeader = b.declarerIdx
 	b.currentIdx = b.declarerIdx
-	b.addLog(player, "trump", fmt.Sprintf("names declaration %d", t), nil)
+	b.addLog(player, "trump", "bideuchre.log.trump", map[string]string{"declaration": fmt.Sprintf("%d", t)}, nil)
 	return nil
 }
 
@@ -533,7 +533,7 @@ func (b *BidEuchre) PlayCard(player, idx int) error {
 	card := p.GetCard(idx)
 	p.RemoveCard(idx)
 	b.trick = append(b.trick, card)
-	b.addLog(player, "play", "plays a card", []*Card{card})
+	b.addLog(player, "play", "bideuchre.log.play", nil, []*Card{card})
 
 	if len(b.trick) < BidEuchrePlayerCnt {
 		b.currentIdx = (player + 1) % BidEuchrePlayerCnt
@@ -572,7 +572,7 @@ func (b *BidEuchre) resolveTrick() {
 	b.trick = nil
 	b.trickLeader = winner
 	b.currentIdx = winner
-	b.addLog(winner, "trick", fmt.Sprintf("takes trick %d", b.trickNumber), nil)
+	b.addLog(winner, "trick", "bideuchre.log.trickWin", map[string]string{"trick": fmt.Sprintf("%d", b.trickNumber)}, nil)
 
 	if b.trickNumber >= BidEuchreHandSize {
 		b.finishHand()
@@ -610,11 +610,11 @@ func (b *BidEuchre) finishHand() {
 
 	if res.Made {
 		res.Points[declTeam] = res.Tricks[declTeam]
-		b.addLog(b.declarerIdx, "made", fmt.Sprintf("makes %d for a bid of %d", res.Tricks[declTeam], bid), nil)
+		b.addLog(b.declarerIdx, "made", "bideuchre.log.made", map[string]string{"tricks": fmt.Sprintf("%d", res.Tricks[declTeam]), "bid": fmt.Sprintf("%d", bid)}, nil)
 	} else {
 		// **引かれるのは宣言額。**取ったトリック数ではない。
 		res.Points[declTeam] = -bid
-		b.addLog(b.declarerIdx, "set", fmt.Sprintf("is set and loses %d", bid), nil)
+		b.addLog(b.declarerIdx, "set", "bideuchre.log.set", map[string]string{"bid": fmt.Sprintf("%d", bid)}, nil)
 	}
 	// **守備側は達成/未達に関係なく自分のトリックを得点する。**
 	res.Points[defTeam] = res.Tricks[defTeam]
@@ -645,7 +645,7 @@ func (b *BidEuchre) checkGameEnd() {
 	}
 	b.gameEndFlag = true
 	b.phase = BidEuchrePhaseGameEnd
-	b.addLog(-1, "game_end", fmt.Sprintf("team %d wins", b.winnerTeam), nil)
+	b.addLog(-1, "game_end", "bideuchre.log.gameEnd", map[string]string{"team": fmt.Sprintf("%d", b.winnerTeam)}, nil)
 }
 
 // NextHand は次の局を配る。
@@ -930,8 +930,8 @@ func (b *BidEuchre) GetConfig() BidEuchreConfig { return b.config }
 func (b *BidEuchre) SetConfig(c BidEuchreConfig) { b.config = c }
 
 // addLog は棋譜を 1 行足す。
-func (b *BidEuchre) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	b.appendLog(playerIdx, actionType, detail, cards)
+func (b *BidEuchre) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	b.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // SetPhaseForTest はテスト用にフェーズを設定する。

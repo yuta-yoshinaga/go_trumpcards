@@ -30,5 +30,4 @@ func TestUnsunKaruta_MeriDeclarationActionLog(t *testing.T) {
 	assert.Equal(t, "unsunkaruta.log.declareMeri", declarationEntry.DetailCode)
 	assert.Equal(t, map[string]string{"name": "You"}, declarationEntry.DetailParams)
 	assert.NotContains(t, declarationEntry.DetailParams, "declaration")
-	assert.Empty(t, declarationEntry.Detail)
 }

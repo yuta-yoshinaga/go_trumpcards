@@ -147,9 +147,6 @@ func TestMus_MusCutStartsBetting(t *testing.T) {
 	if len(log) == 0 || log[len(log)-1].DetailCode != "mus.log.corte" {
 		t.Fatalf("cut action log = %+v", log)
 	}
-	if log[len(log)-1].Detail != "" {
-		t.Fatalf("cut action log retained legacy detail: %+v", log[len(log)-1])
-	}
 	if g.GetPhase() != MusPhaseGrande {
 		t.Errorf("phase = %v, want Grande after cut", g.GetPhase())
 	}

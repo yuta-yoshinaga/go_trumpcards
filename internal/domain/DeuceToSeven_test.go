@@ -458,7 +458,6 @@ func TestDeuceToSeven_GetActionLog(t *testing.T) {
 	for _, entry := range dt.GetActionLog() {
 		if entry.DetailCode == "deucetoseven.log.ante" {
 			assert.Equal(t, map[string]string{"amount": "10"}, entry.DetailParams)
-			assert.Empty(t, entry.Detail)
 			return
 		}
 	}

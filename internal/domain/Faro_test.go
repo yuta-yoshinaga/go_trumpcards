@@ -39,9 +39,6 @@ func TestFaro_ActionLogUsesDetailCode(t *testing.T) {
 	if soda == nil {
 		t.Fatal("soda action log entry not found")
 	}
-	if soda.Detail != "" || len(soda.DetailParams) != 0 {
-		t.Fatalf("soda log = %+v, want empty detail and params", soda)
-	}
 }
 
 func TestFaro_NewWithInvalidConfigFallsBack(t *testing.T) {

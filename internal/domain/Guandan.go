@@ -290,12 +290,12 @@ func (g *Guandan) beginHand(prev *GuandanHandResult) {
 		g.phase = GuandanPhaseTribute
 		g.prepareTribute(prev)
 		g.currentIdx = prev.Order[0]
-		g.addLog(-1, "deal", "hand "+strconv.Itoa(g.handNumber)+" level "+strconv.Itoa(g.level), nil)
+		g.addLog(-1, "deal", "guandan.log.deal", map[string]string{"hand": strconv.Itoa(g.handNumber), "level": strconv.Itoa(g.level)}, nil)
 		return
 	}
 	g.phase = GuandanPhasePlay
 	g.currentIdx = 0
-	g.addLog(-1, "deal", "hand "+strconv.Itoa(g.handNumber)+" level "+strconv.Itoa(g.level), nil)
+	g.addLog(-1, "deal", "guandan.log.deal", map[string]string{"hand": strconv.Itoa(g.handNumber), "level": strconv.Itoa(g.level)}, nil)
 }
 
 // dealRound は 108 枚を 27 枚ずつ配る。
@@ -411,7 +411,7 @@ func (g *Guandan) prepareTribute(prev *GuandanHandResult) {
 		g.tributeCancelled = true
 		g.phase = GuandanPhasePlay
 		g.currentIdx = prev.Order[0]
-		g.addLog(-1, "tributeCancelled", "", nil)
+		g.addLog(-1, "tributeCancelled", "guandan.log.tributeCancelled", nil, nil)
 		return
 	}
 
@@ -437,7 +437,7 @@ func (g *Guandan) prepareTribute(prev *GuandanHandResult) {
 			g.guandanSortHand(to)
 		}
 		g.tributes = append(g.tributes, &GuandanTribute{From: from, To: to, Card: c})
-		g.addLog(from, "tribute", strconv.Itoa(to), []*Card{c})
+		g.addLog(from, "tribute", "guandan.log.tribute", map[string]string{"to": strconv.Itoa(to)}, []*Card{c})
 	}
 	// 還貢は受け取った側が選ぶ。CPU は自動で返す。
 
@@ -496,7 +496,7 @@ func (g *Guandan) ReturnTribute(player, idx int) error {
 		g.guandanSortHand(t.From)
 	}
 	t.Returned = c
-	g.addLog(player, "returnTribute", strconv.Itoa(t.From), []*Card{c})
+	g.addLog(player, "returnTribute", "guandan.log.returnTribute", map[string]string{"from": strconv.Itoa(t.From)}, []*Card{c})
 
 	for _, x := range g.tributes {
 		if x.Returned == nil {
@@ -821,11 +821,11 @@ func (g *Guandan) PlayCards(player int, idxs []int) error {
 	g.lastCombo = combo
 	g.lastPlayer = player
 	g.passCount = 0
-	g.addLog(player, "play", strconv.Itoa(int(combo.Kind)), cards)
+	g.addLog(player, "play", guandanPlayLogCode(combo.Kind), nil, cards)
 
 	if p.GetCardsSize() == 0 {
 		g.finished = append(g.finished, player)
-		g.addLog(player, "out", strconv.Itoa(len(g.finished)), nil)
+		g.addLog(player, "out", "guandan.log.out", map[string]string{"rank": strconv.Itoa(len(g.finished))}, nil)
 		if len(g.finished) >= GuandanPlayerCnt-1 {
 			g.finishHand()
 			return nil
@@ -850,7 +850,7 @@ func (g *Guandan) Pass(player int) error {
 		return errors.New("you must lead")
 	}
 	g.passCount++
-	g.addLog(player, "pass", "", nil)
+	g.addLog(player, "pass", "guandan.log.pass", nil, nil)
 	g.advanceTurn()
 	return nil
 }
@@ -929,7 +929,7 @@ func (g *Guandan) finishHand() {
 	}
 	g.lastResult = res
 	g.phase = GuandanPhaseHandEnd
-	g.addLog(-1, "handEnd", strconv.Itoa(team)+" +"+strconv.Itoa(advance), nil)
+	g.addLog(-1, "handEnd", "guandan.log.handEnd", map[string]string{"team": strconv.Itoa(team), "advance": strconv.Itoa(advance)}, nil)
 
 	// **A レベルで 1-2 または 1-3 を取れば勝ち。**それ以外に勝ち方は無い。
 	if g.levels[team] >= GuandanMaxLevel && partnerPos <= 2 {
@@ -1233,8 +1233,12 @@ func (g *Guandan) SetConfig(c GuandanConfig) { g.config = c }
 func (g *Guandan) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // addLog は棋譜を 1 件追加する。
-func (g *Guandan) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.appendLogAt(0, playerIdx, actionType, detail, cards)
+func (g *Guandan) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCodeAt(0, playerIdx, actionType, detailCode, detailParams, cards)
+}
+
+func guandanPlayLogCode(kind GuandanComboKind) string {
+	return "guandan.log.play" + []string{"", "Single", "Pair", "Triple", "FullHouse", "Straight", "Plate", "Tube", "Bomb", "StraightFlush", "JokerBomb"}[kind]
 }
 
 // ---- テスト用 ----

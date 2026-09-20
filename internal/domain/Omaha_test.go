@@ -137,7 +137,6 @@ func TestOmaha_PlayerAction_Bet(t *testing.T) {
 	}
 	assert.NotNil(t, entry)
 	assert.Equal(t, map[string]string{"amount": "20"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 func TestOmaha_PlayerAction_GameEnded(t *testing.T) {

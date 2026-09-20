@@ -230,7 +230,7 @@ func TestMacauWebPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("with entries", func(t *testing.T) {
 		m := new(interfaces.MockMacauGame)
 		entries := []*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "played SPADE 5"},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		}
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetActionLog").Return(entries)

@@ -243,7 +243,6 @@ func TestTongitsPlayerDrawAndDiscard(t *testing.T) {
 		}
 		require.NotNil(t, drawEntry)
 		assert.Equal(t, map[string]string{"name": "You"}, drawEntry.DetailParams)
-		assert.Empty(t, drawEntry.Detail)
 
 		require.NoError(t, g.PlayerDiscard(0))
 		assert.Equal(t, domain.TongitsPhaseDraw, g.GetPhase())

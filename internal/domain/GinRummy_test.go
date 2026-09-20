@@ -1247,7 +1247,6 @@ func TestGinRummy_PlayerName(t *testing.T) {
 	assert.NotEmpty(t, log)
 	assert.Equal(t, "ginrummy.log.drawStock", log[0].DetailCode)
 	assert.Equal(t, map[string]string{"name": "You"}, log[0].DetailParams)
-	assert.Empty(t, log[0].Detail)
 }
 
 // --- Action log ---
@@ -1271,7 +1270,6 @@ func TestGinRummy_ActionLog(t *testing.T) {
 	assert.Equal(t, 0, log[0].PlayerIdx)
 	assert.Equal(t, "ginrummy.log.drawStock", log[0].DetailCode)
 	assert.Equal(t, map[string]string{"name": "You"}, log[0].DetailParams)
-	assert.Empty(t, log[0].Detail)
 }
 
 // --- scoreRound: gin, undercut, normal ---

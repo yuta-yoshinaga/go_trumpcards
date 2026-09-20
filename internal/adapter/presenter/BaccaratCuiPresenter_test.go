@@ -393,11 +393,13 @@ func TestBaccaratCuiPresenter_ActionLogOutput(t *testing.T) {
 		m := new(interfaces.MockBaccaratGame)
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "bet", Detail: "bet 100 on player"},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "bet", DetailCode: "baccarat.log.bet", DetailParams: map[string]string{
+				"amount": "100", "type": "player",
+			}},
 		})
 		result := p.ActionLogOutput(m)
 		assert.Contains(t, result, "棋譜")
-		assert.Contains(t, result, "bet 100 on player")
+		assert.Contains(t, result, "100をplayerに賭けました")
 	})
 
 	t.Run("game ended without log", func(t *testing.T) {

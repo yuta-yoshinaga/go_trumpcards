@@ -83,7 +83,7 @@ func TestRistikontra_Capture_RankMatch(t *testing.T) {
 	}
 	for _, entry := range g.GetActionLog() {
 		if entry.DetailCode == "ristikontra.log.captured" {
-			if entry.Detail != "" || entry.DetailParams["count"] != "3" {
+			if entry.DetailParams["count"] != "3" {
 				t.Fatalf("captured log = %+v, want empty detail and count 3", entry)
 			}
 			return

@@ -75,7 +75,6 @@ func TestChemindeFer_ActionLogUsesDetailCode(t *testing.T) {
 		t.Fatal("start action log entry not found")
 	}
 	assert.Empty(t, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 // **子の引き方の規則は 0-9 の全域で定義されている。**

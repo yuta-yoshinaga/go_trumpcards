@@ -136,7 +136,7 @@ func TestMarjapussiWebPresenter_Output(t *testing.T) {
 		m.On("GetPussi").Return(pussi)
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetActionLog")
 		m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{ActionType: "pussi_win", PlayerIdx: 2, Detail: "team 0 wins the pussi (+21)"},
+			{ActionType: "pussi_win", PlayerIdx: 2, DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 
 		result := p.Output(m, nil)
@@ -239,7 +239,7 @@ func TestMarjapussiWebPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockMarjapussiGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You plays ♠K"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, `"actionType":"play"`)

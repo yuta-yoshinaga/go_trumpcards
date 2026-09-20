@@ -389,7 +389,6 @@ func TestRussianSolitaire_GiveUp_ActionLogUsesDetailCode(t *testing.T) {
 	for _, entry := range r.GetActionLog() {
 		if entry.DetailCode == "russiansolitaire.log.giveUp" {
 			assert.Nil(t, entry.DetailParams)
-			assert.Empty(t, entry.Detail)
 			return
 		}
 	}

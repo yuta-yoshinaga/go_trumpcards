@@ -339,9 +339,6 @@ func TestBisley_ActionLogDetailUsesZeroBasedColumns(t *testing.T) {
 	assert.Equal(t, map[string]string{"value1": "2", "value2": "2"}, log[1].DetailParams)
 	assert.Equal(t, "bisley.log.move", log[2].DetailCode)
 	assert.Equal(t, map[string]string{"value1": "3", "value2": "4"}, log[2].DetailParams)
-	assert.Empty(t, log[0].Detail)
-	assert.Empty(t, log[1].Detail)
-	assert.Empty(t, log[2].Detail)
 }
 
 // GetHint used to only look at the foundations, so a board with legal tableau

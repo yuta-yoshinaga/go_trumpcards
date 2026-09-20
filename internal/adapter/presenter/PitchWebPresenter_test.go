@@ -234,10 +234,10 @@ func TestPitchWebPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockPitchGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "bid", Detail: "You bid 3"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "bid", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	out := p.ActionLogOutput(m)
-	assert.Contains(t, out, "You bid 3")
+	assert.Contains(t, out, `"detailCode":"test.log.stub"`)
 }
 
 // **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の

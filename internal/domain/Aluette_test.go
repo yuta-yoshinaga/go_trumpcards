@@ -604,5 +604,4 @@ func TestAluetteActionLogUsesDetailCode(t *testing.T) {
 	entry := g.GetActionLog()[0]
 	assert.Equal(t, "aluette.log.matchEnd", entry.DetailCode)
 	assert.Empty(t, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }

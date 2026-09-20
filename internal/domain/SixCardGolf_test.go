@@ -883,7 +883,6 @@ func TestSixCardGolf_ActionLog(t *testing.T) {
 	entry := g.GetActionLog()[0]
 	assert.Equal(t, "sixcardgolf.log.flipInitial", entry.DetailCode)
 	assert.Equal(t, map[string]string{"player": "0", "position": "0"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 func TestSixCardGolf_CpuActionLogUsesCpuCodeWithoutActorParam(t *testing.T) {

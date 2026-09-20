@@ -395,14 +395,14 @@ func TestGinRummyWebPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("with entries", func(t *testing.T) {
 		m := new(interfaces.MockGinRummyGame)
 		entries := []*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "draw_stock", Detail: "drew from stock", Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, true)}},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "draw_stock", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}, Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, true)}},
 		}
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetActionLog").Return(entries)
 
 		result := p.ActionLogOutput(m)
 		assert.Contains(t, result, `"actionType":"draw_stock"`)
-		assert.Contains(t, result, `"detail":"drew from stock"`)
+		assert.Contains(t, result, `"detailCode":"test.log.stub"`)
 		assert.Contains(t, result, `"turnNumber":1`)
 		assert.Contains(t, result, `"playerIdx":0`)
 		m.AssertExpectations(t)

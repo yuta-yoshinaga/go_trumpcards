@@ -223,7 +223,7 @@ func TestThreeCardBragWebPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockThreeCardBragGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "bet", Detail: "You bets 1"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "bet", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, `"actionType":"bet"`)

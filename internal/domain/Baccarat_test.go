@@ -218,7 +218,6 @@ func TestBaccarat_Bet_Success(t *testing.T) {
 	}
 	require.NotNil(t, betLog)
 	assert.Equal(t, map[string]string{"amount": "100", "type": "player"}, betLog.DetailParams)
-	assert.Empty(t, betLog.Detail)
 	// history should have one entry
 	assert.Len(t, b.GetHistory(), 1)
 }

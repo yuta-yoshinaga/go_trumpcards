@@ -38,6 +38,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // NainJaunePlayerCnt はプレイヤー数 (4 人。原典は 3〜8 人)。
@@ -182,7 +183,7 @@ func (n *NainJaune) dealRound() {
 
 	n.currentIdx = (n.dealerIdx + 1) % len(n.players)
 	n.phase = NainJaunePhasePlay
-	n.addLog(-1, "deal", fmt.Sprintf("%d cards left in the talon", len(n.talon)), nil)
+	n.addLog(-1, "deal", "nainjaune.log.deal", map[string]string{"talon": strconv.Itoa(len(n.talon))}, nil)
 }
 
 // Play は手札 1 枚を出す。
@@ -211,7 +212,7 @@ func (n *NainJaune) Play(player, handIdx int) error {
 	p.RemoveCard(handIdx)
 	n.playedPile = append(n.playedPile, card)
 	n.runRank = card.GetValue()
-	n.addLog(player, "play", "plays a card", []*Card{card})
+	n.addLog(player, "play", "nainjaune.log.play", nil, []*Card{card})
 	n.payForCard(player, card)
 
 	if p.GetCardsSize() == 0 {
@@ -221,7 +222,7 @@ func (n *NainJaune) Play(player, handIdx int) error {
 	// **K は並びを止める。**出した本人が好きな札で次を始める。
 	if card.GetValue() == 13 {
 		n.runRank = 0
-		n.addLog(player, "stop", "a king ends the run; the same player leads again", nil)
+		n.addLog(player, "stop", "nainjaune.log.stopKing", nil, nil)
 		return nil
 	}
 	n.advance(player)
@@ -272,7 +273,7 @@ func (n *NainJaune) payForCard(player int, card *Card) {
 	}
 	n.players[player].AddChips(chips)
 	n.awards = append(n.awards, &NainJauneAward{Box: box, Player: player, Chips: chips})
-	n.addLog(player, "award", fmt.Sprintf("takes the %s box (%d)", box, chips), []*Card{card})
+	n.addLog(player, "award", "nainjaune.log.award", map[string]string{"box": box.String(), "chips": strconv.Itoa(chips)}, []*Card{card})
 }
 
 // advance は次に出せる人へ手番を回す。誰も次を持っていなければ、**最後に札を
@@ -287,7 +288,7 @@ func (n *NainJaune) advance(lastPlayer int) {
 	}
 	n.runRank = 0
 	n.currentIdx = lastPlayer
-	n.addLog(lastPlayer, "stop", "nobody can continue; the run restarts here", nil)
+	n.addLog(lastPlayer, "stop", "nainjaune.log.stopBlocked", nil, nil)
 }
 
 // hasNextCard は seat が並びの続きを持っているかを返す。
@@ -329,7 +330,7 @@ func (n *NainJaune) finishDeal(winner int) {
 	}
 	n.players[winner].AddChips(paid)
 	n.dealWinner = winner
-	n.addLog(winner, "deal_end", fmt.Sprintf("goes out and collects %d points", paid), nil)
+	n.addLog(winner, "deal_end", "nainjaune.log.dealEnd", map[string]string{"points": strconv.Itoa(paid)}, nil)
 
 	n.dealNo++
 	n.phase = NainJaunePhaseDealEnd
@@ -349,7 +350,7 @@ func (n *NainJaune) finishGame() {
 	n.winnerIdx = best
 	n.gameEndFlag = true
 	n.phase = NainJaunePhaseGameEnd
-	n.addLog(best, "game_end", "finishes with the most chips", nil)
+	n.addLog(best, "game_end", "nainjaune.log.gameEnd", nil, nil)
 }
 
 // NextDeal は次のディールを配る。
@@ -461,8 +462,8 @@ func (n *NainJaune) SetRunRankForTest(rank int) { n.runRank = rank }
 func (n *NainJaune) SetDealNumberForTest(d int) { n.dealNo = d }
 
 // addLog は棋譜に 1 件追加する。
-func (n *NainJaune) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	n.appendLog(playerIdx, actionType, detail, cards)
+func (n *NainJaune) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	n.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // nainJauneJSON is the JSON wire format for NainJaune.

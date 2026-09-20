@@ -27,7 +27,6 @@ func TestSevenTwentySevenActionLogUsesDetailCode(t *testing.T) {
 	entry := g.GetActionLog()[0]
 	assert.Equal(t, "seventwentyseven.log.deal", entry.DetailCode)
 	assert.NotEmpty(t, entry.DetailParams["round"])
-	assert.Empty(t, entry.Detail)
 }
 
 // **止まった人には二度と配られない。** ここが効いていないと「止まる」判断に

@@ -28,5 +28,6 @@
   "helpRedeal": "  d                        throw in a poverty hand (only A/K/Q/J) for a redeal",
   "promptRedeal": "your hand is nothing but A/K/Q/J -- d asks for a redeal",
   "helpExampleFold": "  f                        fold this round",
-  "helpHint": "  h                        show a hint"
+  "helpHint": "  h                        show a hint",
+  "log.deal": "hand {{hand}} dealt", "log.play": "plays a card", "log.trick": "wins trick {{trick}}", "log.redeal": "asks for a redeal on a poverty hand", "log.toep": "toeps; the stake is now {{stake}}", "log.fold": "folds for {{stake}}", "log.stay": "stays in", "log.hand": "hand {{hand}} settled for {{stake}}", "log.game": "game over", "log.out": "is eliminated"
 }

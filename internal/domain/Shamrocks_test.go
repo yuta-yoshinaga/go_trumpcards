@@ -20,7 +20,6 @@ func TestShamrocks_ActionLogUsesDetailCode(t *testing.T) {
 	entry := g.GetActionLog()[0]
 	assert.Equal(t, "shamrocks.log.deal", entry.DetailCode)
 	assert.Empty(t, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 func newLlGameSH() *Shamrocks {

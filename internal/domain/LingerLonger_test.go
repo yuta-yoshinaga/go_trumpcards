@@ -22,7 +22,6 @@ func TestLingerLonger_ActionLogUsesDetailCode(t *testing.T) {
 	for _, entry := range l.GetActionLog() {
 		if entry.DetailCode == "lingerlonger.log.start" {
 			assert.Equal(t, map[string]string{"players": "4", "cardsPerPlayer": "4"}, entry.DetailParams)
-			assert.Empty(t, entry.Detail)
 			return
 		}
 	}

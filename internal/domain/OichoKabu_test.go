@@ -225,7 +225,6 @@ func TestOichoKabu_GetActionLog(t *testing.T) {
 	entry := o.GetActionLog()[0]
 	assert.Equal(t, "oichokabu.log.bet", entry.DetailCode)
 	assert.Equal(t, map[string]string{"amount": "100"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 func TestOichoKabu_JSONRoundTrip(t *testing.T) {

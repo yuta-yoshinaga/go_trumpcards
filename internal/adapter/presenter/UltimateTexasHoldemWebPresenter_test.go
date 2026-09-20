@@ -222,7 +222,7 @@ func TestUltimateTexasHoldemWebPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockUltimateTexasHoldemGame)
 	m.On("GetGameEndFlag").Return(true).Maybe()
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "bet", Detail: "ante=100"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "bet", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	}).Maybe()
 
 	result := p.ActionLogOutput(m)

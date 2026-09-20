@@ -439,7 +439,6 @@ func TestGermanWhist_ActionLog(t *testing.T) {
 	assert.Equal(t, "play", entry.ActionType)
 	assert.Equal(t, "germanwhist.log.play", entry.DetailCode)
 	assert.NotEmpty(t, entry.DetailParams["card"])
-	assert.Empty(t, entry.Detail)
 }
 
 // --- JSON round-trip ---

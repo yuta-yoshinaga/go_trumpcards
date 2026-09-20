@@ -635,7 +635,6 @@ func TestCrazyFourPoker_Accessors(t *testing.T) {
 	}
 	require.NotNil(t, betLog)
 	assert.Equal(t, map[string]string{"ante": "50", "super": "50", "queensUp": "0"}, betLog.DetailParams)
-	assert.Empty(t, betLog.Detail)
 	assert.Len(t, g.GetPlayerHand(), CrazyFourPokerHandSize)
 	assert.Len(t, g.GetDealerHand(), CrazyFourPokerHandSize)
 	assert.Len(t, g.GetPlayerBest(), CrazyFourPokerBestSize)

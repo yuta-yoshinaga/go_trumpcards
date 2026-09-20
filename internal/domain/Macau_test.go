@@ -720,7 +720,6 @@ func TestMacau_ActionLog(t *testing.T) {
 	require.NotNil(t, playEntry)
 	assert.Equal(t, "play", playEntry.ActionType)
 	assert.Equal(t, map[string]string{"name": "You", "card": "♠3"}, playEntry.DetailParams)
-	assert.Empty(t, playEntry.Detail)
 }
 
 // --- JSON round-trip ---

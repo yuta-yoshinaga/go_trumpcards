@@ -413,7 +413,6 @@ func TestFiveHundred_PlayTrick_FollowSuitAndResolve(t *testing.T) {
 	}
 	require.NotNil(t, trickEntry)
 	assert.Equal(t, map[string]string{"name": "CPU 2", "trick": "1"}, trickEntry.DetailParams)
-	assert.Empty(t, trickEntry.Detail)
 }
 
 func TestFiveHundred_FollowSuitEnforced(t *testing.T) {

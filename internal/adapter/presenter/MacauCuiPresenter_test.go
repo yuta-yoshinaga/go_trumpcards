@@ -154,7 +154,7 @@ func TestMacauCuiPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("with entries", func(t *testing.T) {
 		m := new(interfaces.MockMacauGame)
 		entries := []*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You plays SPADE 5"},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		}
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetActionLog").Return(entries)
@@ -162,7 +162,7 @@ func TestMacauCuiPresenter_ActionLogOutput(t *testing.T) {
 		m.On("GetPlayer", mock.Anything).Return(domain.NewMacauPlayer(true)).Maybe()
 		result := p.ActionLogOutput(m)
 		assert.Contains(t, result, "棋譜")
-		assert.Contains(t, result, "You plays SPADE 5")
+		assert.Contains(t, result, "テスト用の棋譜行 1")
 	})
 
 	t.Run("game not ended", func(t *testing.T) {

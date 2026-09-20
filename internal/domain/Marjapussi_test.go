@@ -68,7 +68,6 @@ func TestMarjapussiActionLogUsesDetailCode(t *testing.T) {
 		if entry.ActionType == "play" {
 			assert.Equal(t, "marjapussi.log.play", entry.DetailCode)
 			assert.Equal(t, "♠K", entry.DetailParams["card"])
-			assert.Empty(t, entry.Detail)
 			return
 		}
 	}

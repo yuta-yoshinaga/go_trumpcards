@@ -178,7 +178,6 @@ func TestSimpleSimon_GiveUp(t *testing.T) {
 	entry := logs[len(logs)-1]
 	assert.Equal(t, "simplesimon.log.giveup", entry.DetailCode)
 	assert.Empty(t, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 func TestSimpleSimon_UndoAndHint(t *testing.T) {

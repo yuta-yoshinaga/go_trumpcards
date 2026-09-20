@@ -24,5 +24,6 @@
   "hintReasonBeat": "場の札を上回れる最も弱い札です",
   "hintReasonPickUp": "上回れる札が1枚もないので引き取るしかありません",
   "helpExamplePlay": "  p 0                      手札の 0 番のカードを出す",
-  "helpHint": "  h                        助言を表示"
+  "helpHint": "  h                        助言を表示",
+  "log.deal": "カードを配りました", "log.play": "カードを出しました", "log.stunsa": "同じランクです。カードは場に残り、リードを続けます", "log.win": "{{count}} 枚を取りました", "log.trump": "最後に引いたカードで切り札を {{suit}} にしました", "log.phase": "手札を減らすフェーズが始まりました", "log.beatsPile": "場の札を上回りました", "log.out": "手札がなくなりました", "log.pickup": "{{count}} 枚を引き取りました", "log.game": "Skitgubbe になりました"
 }

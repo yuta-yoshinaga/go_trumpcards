@@ -32,6 +32,7 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 )
 
 // ZwickerPlayerCnt はプレイヤー数 (4 人 2 対 2)。
@@ -188,7 +189,7 @@ func (z *Zwicker) dealRound() {
 
 	z.currentIdx = (z.dealerIdx + 1) % len(z.players)
 	z.phase = ZwickerPhasePlay
-	z.addLog(-1, "deal", fmt.Sprintf("%d cards to the table", len(z.tableCards)), z.tableCards)
+	z.addLog(-1, "deal", "zwicker.log.deal", map[string]string{"cards": strconv.Itoa(len(z.tableCards))}, z.tableCards)
 }
 
 // dealHands は現在の段階ぶんを各自に配り、段階を進める。
@@ -264,14 +265,15 @@ func (z *Zwicker) Take(player, handIdx, playedValue int, tableIdxs, buildIdxs []
 	p.AddCaptured(captured)
 	z.lastCaptureIdx = player
 
-	detail := fmt.Sprintf("captures %d card(s) as %d", len(captured)-1, playedValue)
+	detailCode := "zwicker.log.take"
+	detailParams := map[string]string{"count": strconv.Itoa(len(captured) - 1), "value": strconv.Itoa(playedValue)}
 	// **Zwick は「場を空にした」ボーナス。**issue が言うような複数組同時取りの
 	// 名前ではない。
 	if len(z.tableCards) == 0 && len(z.builds) == 0 {
 		p.AddZwick()
-		detail += " and clears the table (Zwick)"
+		detailCode = "zwicker.log.takeZwick"
 	}
-	z.addLog(player, "take", detail, captured)
+	z.addLog(player, "take", detailCode, detailParams, captured)
 	z.advance()
 	return nil
 }
@@ -316,7 +318,7 @@ func (z *Zwicker) Build(player, handIdx int, tableIdxs []int, declaredValue int)
 	p.RemoveCard(handIdx)
 	z.removeTableCards(tIdxs)
 	z.builds = append(z.builds, &ZwickerBuild{Owner: player, Value: declaredValue, Cards: group})
-	z.addLog(player, "build", fmt.Sprintf("builds %d", declaredValue), group)
+	z.addLog(player, "build", "zwicker.log.build", map[string]string{"value": strconv.Itoa(declaredValue)}, group)
 	z.advance()
 	return nil
 }
@@ -329,7 +331,7 @@ func (z *Zwicker) Trail(player, handIdx int) error {
 	}
 	z.GetPlayer(player).RemoveCard(handIdx)
 	z.tableCards = append(z.tableCards, card)
-	z.addLog(player, "trail", "trails a card", []*Card{card})
+	z.addLog(player, "trail", "zwicker.log.trail", nil, []*Card{card})
 	z.advance()
 	return nil
 }
@@ -432,7 +434,7 @@ func (z *Zwicker) advance() {
 	}
 	if z.dealStage < len(zwickerDealSizes) {
 		z.dealHands()
-		z.addLog(-1, "deal", fmt.Sprintf("deals stage %d", z.dealStage), nil)
+		z.addLog(-1, "deal", "zwicker.log.dealStage", map[string]string{"stage": strconv.Itoa(z.dealStage)}, nil)
 		return
 	}
 	z.finishRound()
@@ -454,7 +456,7 @@ func (z *Zwicker) finishRound() {
 			leftovers = append(leftovers, b.Cards...)
 		}
 		z.GetPlayer(last).AddCaptured(leftovers)
-		z.addLog(last, "sweep", "takes what is left on the table", leftovers)
+		z.addLog(last, "sweep", "zwicker.log.sweep", nil, leftovers)
 		z.tableCards = nil
 		z.builds = nil
 	}
@@ -463,7 +465,7 @@ func (z *Zwicker) finishRound() {
 	z.lastRound = score
 	z.scores[0] += score.Total[0]
 	z.scores[1] += score.Total[1]
-	z.addLog(-1, "round_end", fmt.Sprintf("team scores %d - %d", score.Total[0], score.Total[1]), nil)
+	z.addLog(-1, "round_end", "zwicker.log.roundEnd", map[string]string{"team0": strconv.Itoa(score.Total[0]), "team1": strconv.Itoa(score.Total[1])}, nil)
 
 	z.phase = ZwickerPhaseRoundEnd
 	z.checkGameEnd()
@@ -517,7 +519,7 @@ func (z *Zwicker) checkGameEnd() {
 	}
 	z.gameEndFlag = true
 	z.phase = ZwickerPhaseGameEnd
-	z.addLog(-1, "game_end", fmt.Sprintf("team %d wins", z.winnerTeam), nil)
+	z.addLog(-1, "game_end", "zwicker.log.gameEnd", map[string]string{"team": strconv.Itoa(z.winnerTeam)}, nil)
 }
 
 // NextRound は次のディールを配る。
@@ -694,8 +696,8 @@ func (z *Zwicker) SetTeamScoreForTest(team, score int) { z.scores[team] = score 
 func (z *Zwicker) SetDealStageForTest(stage int) { z.dealStage = stage }
 
 // addLog は棋譜に 1 件追加する。
-func (z *Zwicker) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	z.appendLog(playerIdx, actionType, detail, cards)
+func (z *Zwicker) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	z.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // zwickerJSON is the JSON wire format for Zwicker.

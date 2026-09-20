@@ -326,7 +326,7 @@ func TestTrucoCallAndDeclineAwardsPriorStake(t *testing.T) {
 			break
 		}
 	}
-	if entry == nil || entry.DetailParams["points"] != "1" || entry.Detail != "" {
+	if entry == nil || entry.DetailParams["points"] != "1" {
 		t.Errorf("decline action log = %#v, want code params and empty detail", entry)
 	}
 }

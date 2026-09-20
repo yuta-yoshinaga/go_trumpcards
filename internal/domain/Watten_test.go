@@ -27,7 +27,6 @@ func TestWatten_ActionLogUsesDetailCode(t *testing.T) {
 	assert.NoError(t, g.PlayerDeclare(7, domain.CardDesignHeart))
 	for _, entry := range g.GetActionLog() {
 		if entry.DetailCode == "watten.log.declare" {
-			assert.Empty(t, entry.Detail)
 			assert.Equal(t, "7", entry.DetailParams["rank"])
 			return
 		}

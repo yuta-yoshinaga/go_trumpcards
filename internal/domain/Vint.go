@@ -30,6 +30,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // VintPlayerCnt はプレイヤー数。
@@ -193,7 +194,7 @@ func (v *Vint) beginHand() {
 	}
 
 	v.bidIdx = (v.dealerIdx + 1) % VintPlayerCnt
-	v.addLog(-1, "deal", fmt.Sprintf("%d cards each", VintHandSize), nil)
+	v.addLog(-1, "deal", "vint.log.deal", map[string]string{"cards": strconv.Itoa(VintHandSize)}, nil)
 }
 
 // newVintDeck は 52 枚のデッキを返す。
@@ -248,7 +249,7 @@ func (v *Vint) Bid(player, level, denom int) error {
 	v.bids = append(v.bids, rec)
 	v.highBid = rec
 	v.passCount = 0
-	v.addLog(player, "bid", fmt.Sprintf("bids %d of denomination %d", level, denom), nil)
+	v.addLog(player, "bid", "vint.log.bid", map[string]string{"level": strconv.Itoa(level), "denom": strconv.Itoa(denom)}, nil)
 	v.advanceBid()
 	return nil
 }
@@ -260,7 +261,7 @@ func (v *Vint) PassBid(player int) error {
 	}
 	v.bids = append(v.bids, &VintBid{Player: player, Level: 0})
 	v.passCount++
-	v.addLog(player, "pass", "passes", nil)
+	v.addLog(player, "pass", "vint.log.pass", nil, nil)
 	v.advanceBid()
 	return nil
 }
@@ -273,7 +274,7 @@ func (v *Vint) advanceBid() {
 	}
 	if v.highBid == nil && v.passCount >= VintPlayerCnt {
 		// **全員パスなら配り直し。**
-		v.addLog(-1, "redeal", "everybody passed", nil)
+		v.addLog(-1, "redeal", "vint.log.redeal", nil, nil)
 		v.handNumber--
 		v.beginHand()
 		return
@@ -289,7 +290,7 @@ func (v *Vint) settleBid() {
 	// **リードはディーラーの左隣。**ダミーが無いので落札者の左からではない。
 	v.trickLeader = (v.dealerIdx + 1) % VintPlayerCnt
 	v.currentIdx = v.trickLeader
-	v.addLog(v.declarerIdx, "contract", fmt.Sprintf("takes %d of denomination %d", v.highBid.Level, v.highBid.Denom), nil)
+	v.addLog(v.declarerIdx, "contract", "vint.log.contract", map[string]string{"level": strconv.Itoa(v.highBid.Level), "denom": strconv.Itoa(v.highBid.Denom)}, nil)
 }
 
 // VintValidPlays は player が出せる手札インデックスを返す。
@@ -342,7 +343,7 @@ func (v *Vint) PlayCard(player, idx int) error {
 	card := p.GetCard(idx)
 	p.RemoveCard(idx)
 	v.trick = append(v.trick, card)
-	v.addLog(player, "play", "plays a card", []*Card{card})
+	v.addLog(player, "play", "vint.log.play", nil, []*Card{card})
 
 	if len(v.trick) < VintPlayerCnt {
 		v.currentIdx = (player + 1) % VintPlayerCnt
@@ -395,7 +396,7 @@ func (v *Vint) resolveTrick() {
 	v.trick = nil
 	v.trickLeader = winner
 	v.currentIdx = winner
-	v.addLog(winner, "trick", fmt.Sprintf("takes trick %d", v.trickNumber), nil)
+	v.addLog(winner, "trick", "vint.log.trick", map[string]string{"trick": strconv.Itoa(v.trickNumber)}, nil)
 
 	if v.trickNumber >= VintHandSize {
 		v.finishHand()
@@ -468,9 +469,9 @@ func (v *Vint) finishHand() {
 		short := target - res.DeclarerTricks
 		res.Penalty[defTeam] = short * level * VintUndertrickUnit
 		v.above[defTeam] += res.Penalty[defTeam]
-		v.addLog(v.declarerIdx, "set", fmt.Sprintf("is %d short of %d", short, target), nil)
+		v.addLog(v.declarerIdx, "set", "vint.log.set", map[string]string{"short": strconv.Itoa(short), "target": strconv.Itoa(target)}, nil)
 	} else {
-		v.addLog(v.declarerIdx, "made", fmt.Sprintf("makes %d of %d", res.DeclarerTricks, target), nil)
+		v.addLog(v.declarerIdx, "made", "vint.log.made", map[string]string{"tricks": strconv.Itoa(res.DeclarerTricks), "target": strconv.Itoa(target)}, nil)
 	}
 
 	v.lastResult = res
@@ -492,11 +493,11 @@ func (v *Vint) checkGameWon() {
 			v.winnerTeam = team
 			v.gameEndFlag = true
 			v.phase = VintPhaseGameEnd
-			v.addLog(-1, "rubber", fmt.Sprintf("team %d takes the rubber", team), nil)
+			v.addLog(-1, "rubber", "vint.log.rubber", map[string]string{"team": strconv.Itoa(team)}, nil)
 			return
 		}
 		v.above[team] += VintFirstGameBonus
-		v.addLog(-1, "game", fmt.Sprintf("team %d takes a game", team), nil)
+		v.addLog(-1, "game", "vint.log.game", map[string]string{"team": strconv.Itoa(team)}, nil)
 		return
 	}
 }
@@ -780,8 +781,8 @@ func (v *Vint) GetConfig() VintConfig { return v.config }
 func (v *Vint) SetConfig(c VintConfig) { v.config = c }
 
 // addLog は棋譜を 1 行足す。
-func (v *Vint) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	v.appendLog(playerIdx, actionType, detail, cards)
+func (v *Vint) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	v.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // SetPhaseForTest はテスト用にフェーズを設定する。

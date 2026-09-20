@@ -200,7 +200,7 @@ func TestFourteenOutWebPresenter_ActionLog_GameOver(t *testing.T) {
 	g.On("GetPhase").Return(domain.FourteenOutPhaseGameOver)
 	g.On("GetGameEndFlag").Return(true)
 	g.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, ActionType: "remove", Detail: "test"},
+		{TurnNumber: 1, ActionType: "remove", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	p := &FourteenOutWebPresenter{}
 	result := p.ActionLogOutput(g)

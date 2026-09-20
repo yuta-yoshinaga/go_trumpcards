@@ -477,7 +477,7 @@ func (s *ShengJi) beginHand() {
 	s.dealRound()
 	s.phase = ShengJiPhaseDeclare
 	s.currentIdx = 0
-	s.addLog(-1, "deal", "hand "+strconv.Itoa(s.handNumber)+" level "+strconv.Itoa(s.level), nil)
+	s.addLog(-1, "deal", "shengji.log.deal", map[string]string{"hand": strconv.Itoa(s.handNumber), "level": strconv.Itoa(s.level)}, nil)
 }
 
 // dealRound は 25 枚ずつ配り、**残り 8 枚を底牌として伏せる**。
@@ -572,7 +572,7 @@ func (s *ShengJi) Declare(seat, suit int) error {
 		}
 		s.declaration = &ShengJiDeclaration{Seat: seat, Suit: suit, Strength: st}
 		s.trumpSuit = suit
-		s.addLog(seat, "declare", strconv.Itoa(suit)+" x"+strconv.Itoa(st), nil)
+		s.addLog(seat, "declare", shengJiDeclareLogCode(suit, st), nil, nil)
 	}
 	s.advanceDeclare()
 	return nil
@@ -602,7 +602,7 @@ func (s *ShengJi) beginKitty() {
 	s.kitty = make([]*Card, 0, ShengJiKittySize)
 	s.currentIdx = taker
 	s.sortHand(taker)
-	s.addLog(taker, "takeKitty", "", nil)
+	s.addLog(taker, "takeKitty", "shengji.log.takeKitty", nil, nil)
 }
 
 // shengJiKittyTaker は底牌を取る席を返す。
@@ -643,7 +643,7 @@ func (s *ShengJi) BuryKitty(seat int, idxs []int) error {
 	s.currentIdx = seat
 	s.trick = make([][]*Card, 0, ShengJiPlayerCnt)
 	s.leadCombo = nil
-	s.addLog(seat, "buryKitty", "", cards)
+	s.addLog(seat, "buryKitty", "shengji.log.buryKitty", nil, cards)
 	return nil
 }
 
@@ -751,7 +751,7 @@ func (s *ShengJi) Play(seat int, idxs []int) error {
 		s.trickLeader = seat
 	}
 	s.trick = append(s.trick, taken)
-	s.addLog(seat, "play", "", taken)
+	s.addLog(seat, "play", "shengji.log.play", nil, taken)
 
 	if len(s.trick) >= ShengJiPlayerCnt {
 		s.resolveTrick()
@@ -886,7 +886,7 @@ func (s *ShengJi) resolveTrick() {
 	s.leadCombo = nil
 	s.trickLeader = winner
 	s.currentIdx = winner
-	s.addLog(winner, "trickWon", strconv.Itoa(pts), nil)
+	s.addLog(winner, "trickWon", "shengji.log.trickWon", map[string]string{"points": strconv.Itoa(pts)}, nil)
 
 	if s.GetPlayer(winner) != nil && s.GetPlayer(winner).GetCardsSize() == 0 {
 		s.finishHand()
@@ -966,7 +966,7 @@ func (s *ShengJi) finishHand() {
 		s.phase = ShengJiPhaseHandEnd
 	}
 	s.lastResult = res
-	s.addLog(-1, "handEnd", strconv.Itoa(pts), nil)
+	s.addLog(-1, "handEnd", "shengji.log.handEnd", map[string]string{"points": strconv.Itoa(pts)}, nil)
 }
 
 // shengJiDeclarerAdvance は宣言側が守りきったときの昇級量を返す。
@@ -1086,8 +1086,14 @@ func (s *ShengJi) SetConfig(c ShengJiConfig) { s.config = c }
 func (s *ShengJi) GetActionLog() []*ActionLogEntry { return s.actionLog }
 
 // addLog は棋譜に 1 件追加する。
-func (s *ShengJi) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	s.appendLogAt(0, playerIdx, actionType, detail, cards)
+func (s *ShengJi) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	s.appendLogCodeAt(0, playerIdx, actionType, detailCode, detailParams, cards)
+}
+
+func shengJiDeclareLogCode(suit, strength int) string {
+	suits := map[int]string{CardDesignSpade: "Spade", CardDesignClover: "Clover", CardDesignHeart: "Heart", CardDesignDiamond: "Diamond"}
+	strengths := map[int]string{1: "Single", 2: "Pair"}
+	return "shengji.log.declare" + suits[suit] + strengths[strength]
 }
 
 // IsHumanTurn は現在の手番が人間かを返す。

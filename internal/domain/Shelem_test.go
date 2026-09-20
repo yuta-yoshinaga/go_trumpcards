@@ -61,7 +61,6 @@ func TestShelem_ActionLogUsesDetailCode(t *testing.T) {
 	}
 	require.NotNil(t, entry)
 	assert.Equal(t, strconv.Itoa(ShelemMinBid), entry.DetailParams["bid"])
-	assert.Empty(t, entry.Detail)
 }
 
 // --- 配り ---

@@ -292,7 +292,6 @@ func TestClockSolitaire_Step_ActionLog(t *testing.T) {
 	assert.Equal(t, "step", log[0].ActionType)
 	assert.Equal(t, "clocksolitaire.log.step", log[0].DetailCode)
 	assert.Equal(t, map[string]string{"pile": "1"}, log[0].DetailParams)
-	assert.Empty(t, log[0].Detail)
 	assert.Len(t, log[0].Cards, 1)
 }
 
@@ -539,7 +538,6 @@ func TestClockSolitaire_Undo_RecordsActionLog(t *testing.T) {
 	assert.Equal(t, logLenAfterStep+1, len(log))
 	assert.Equal(t, "undo", log[len(log)-1].ActionType)
 	assert.Equal(t, "clocksolitaire.log.undo", log[len(log)-1].DetailCode)
-	assert.Empty(t, log[len(log)-1].Detail)
 }
 
 func TestClockSolitaire_Undo_RevertsGameOver(t *testing.T) {

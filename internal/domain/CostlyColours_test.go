@@ -68,7 +68,6 @@ func TestCostlyColours_MogLogUsesDetailCode(t *testing.T) {
 	entry := c.GetActionLog()[len(c.GetActionLog())-1]
 	assert.Equal(t, "costlycolours.log.mogRefused", entry.DetailCode)
 	assert.Equal(t, map[string]string{"refuser": "0", "player": "1", "points": "1"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 // **交換しても手札は 3 枚のまま。** 1 枚ずつ取り替えるだけ。

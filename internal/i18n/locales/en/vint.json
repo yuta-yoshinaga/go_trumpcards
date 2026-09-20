@@ -36,5 +36,6 @@
   "handSet": "Contract failed; undertricks x level x 500 go above the opponents' line",
   "result.humanWin": "Rubber over! Your team wins!",
   "result.cpuWin": "Rubber over! The other team wins.",
-  "helpExamplePlay": "  p 0                       play hand card 0"
+  "helpExamplePlay": "  p 0                       play hand card 0",
+  "log.deal": "{{cards}} cards each", "log.bid": "bids {{level}} of denomination {{denom}}", "log.pass": "passes", "log.redeal": "everybody passed", "log.contract": "takes {{level}} of denomination {{denom}}", "log.play": "plays a card", "log.trick": "takes trick {{trick}}", "log.set": "is {{short}} short of {{target}}", "log.made": "makes {{tricks}} of {{target}}", "log.rubber": "team {{team}} takes the rubber", "log.game": "team {{team}} takes a game"
 }

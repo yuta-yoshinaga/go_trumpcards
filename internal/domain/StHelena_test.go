@@ -345,7 +345,6 @@ func TestStHelena_Redeal(t *testing.T) {
 		}
 		require.NotNil(t, entry)
 		assert.Equal(t, map[string]string{"remaining": "1"}, entry.DetailParams)
-		assert.Empty(t, entry.Detail)
 	})
 
 	t.Run("no redeals remaining", func(t *testing.T) {

@@ -47,5 +47,22 @@
   "checkBeatsTable": "【場の役に勝ちます】",
   "checkLosesToTable": "（場の {{combo}} ({{size}}枚) には勝てません）",
   "checkNoHand": "手札がありません。",
-  "helpCheck": "  ch <i...>                 出さずに役だけ調べる"
+  "helpCheck": "  ch <i...>                 出さずに役だけ調べる",
+  "log.deal": "第{{hand}}局 レベル{{level}}",
+  "log.tributeCancelled": "抗貢により進貢を取りやめました",
+  "log.tribute": "席{{to}}へ進貢しました",
+  "log.returnTribute": "席{{from}}へ還貢しました",
+  "log.playSingle": "シングルを出しました",
+  "log.playPair": "ペアを出しました",
+  "log.playTriple": "スリーカードを出しました",
+  "log.playFullHouse": "フルハウスを出しました",
+  "log.playStraight": "ストレートを出しました",
+  "log.playPlate": "プレートを出しました",
+  "log.playTube": "チューブを出しました",
+  "log.playBomb": "ボムを出しました",
+  "log.playStraightFlush": "ストレートフラッシュを出しました",
+  "log.playJokerBomb": "ジョーカーボムを出しました",
+  "log.out": "{{rank}}位で上がりました",
+  "log.pass": "パスしました",
+  "log.handEnd": "チーム{{team}}が{{advance}}段階昇級しました"
 }

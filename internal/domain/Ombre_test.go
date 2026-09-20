@@ -44,7 +44,6 @@ func TestOmbreActionLogUsesDetailCode(t *testing.T) {
 		}
 	}
 	require.NotNil(t, entry)
-	assert.Empty(t, entry.Detail)
 	assert.NotEmpty(t, entry.DetailParams["name"])
 }
 

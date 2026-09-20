@@ -531,7 +531,6 @@ func TestBaseballPoker_ActionLogRecordsTheEvents(t *testing.T) {
 	entry := findMigratedActionLogEntry(g.GetActionLog(), "baseballpoker.log.dealInitial")
 	require.NotNil(t, entry)
 	assert.Empty(t, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 func TestBaseballPoker_Accessors(t *testing.T) {

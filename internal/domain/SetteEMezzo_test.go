@@ -674,7 +674,6 @@ func TestSetteEMezzo_ActionLog(t *testing.T) {
 		t.Fatal("deal action was not logged")
 	}
 	assert.Equal(t, "setteemezzo.log.deal", dealLog.DetailCode)
-	assert.Empty(t, dealLog.Detail)
 }
 
 func TestSetteEMezzo_JSONRoundTrip(t *testing.T) {

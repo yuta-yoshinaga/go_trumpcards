@@ -81,7 +81,6 @@ func TestVideoPoker_Bet_ActionLogUsesDetailCode(t *testing.T) {
 	for _, entry := range vp.GetActionLog() {
 		if entry.DetailCode == "videopoker.log.bet" {
 			assert.Equal(t, map[string]string{"amount": "3"}, entry.DetailParams)
-			assert.Empty(t, entry.Detail)
 			return
 		}
 	}

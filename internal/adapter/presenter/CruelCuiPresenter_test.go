@@ -197,7 +197,7 @@ func TestCruelCuiPresenter_ActionLogOutput(t *testing.T) {
 		cg := new(interfaces.MockCruelGame)
 		cg.On("GetPhase").Return(domain.CruelPhaseGameOver)
 		cg.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "move", Detail: "test"},
+			{TurnNumber: 1, ActionType: "move", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 
 		p := new(CruelCuiPresenter)

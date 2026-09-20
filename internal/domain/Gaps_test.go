@@ -22,7 +22,6 @@ func TestGapsActionLogUsesDetailCode(t *testing.T) {
 	entry := g.GetActionLog()[0]
 	assert.Equal(t, "gaps.log.redeal", entry.DetailCode)
 	assert.Equal(t, map[string]string{"count": "1"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 // gridWithAces builds a deterministic 4x13 grid for legality tests.

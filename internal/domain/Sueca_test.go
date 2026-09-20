@@ -25,7 +25,7 @@ func TestSueca_ActionLogUsesDetailCode(t *testing.T) {
 	g.CpuPlay()
 	for _, entry := range g.GetActionLog() {
 		if entry.DetailCode == "sueca.log.play" {
-			if entry.DetailParams["name"] == "" || entry.DetailParams["card"] == "" || entry.Detail != "" {
+			if entry.DetailParams["name"] == "" || entry.DetailParams["card"] == "" {
 				t.Fatalf("play log = %#v, want code params and empty Detail", entry)
 			}
 			return

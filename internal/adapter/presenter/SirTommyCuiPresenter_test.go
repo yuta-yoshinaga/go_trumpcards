@@ -280,7 +280,9 @@ func TestSirTommyCuiPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("game over", func(t *testing.T) {
 		g := new(interfaces.MockSirTommyGame)
 		g.On("GetPhase").Return(domain.SirTommyPhaseGameOver)
-		g.On("GetActionLog").Return([]*domain.ActionLogEntry{{TurnNumber: 1, ActionType: "move", Detail: "test"}})
+		g.On("GetActionLog").Return([]*domain.ActionLogEntry{
+			{TurnNumber: 1, ActionType: "move", DetailCode: "sirtommy.log.stockToFoundation", DetailParams: map[string]string{"foundation": "1"}},
+		})
 		assert.NotEmpty(t, new(SirTommyCuiPresenter).ActionLogOutput(g))
 	})
 }

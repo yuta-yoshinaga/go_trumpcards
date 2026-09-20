@@ -87,7 +87,6 @@ func TestMachiavelliActionLogUsesDetailCode(t *testing.T) {
 		if entry.ActionType == "draw" {
 			assert.Equal(t, "machiavelli.log.draw", entry.DetailCode)
 			assert.Equal(t, "You", entry.DetailParams["name"])
-			assert.Empty(t, entry.Detail)
 			return
 		}
 	}

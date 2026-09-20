@@ -230,7 +230,7 @@ func TestRankAndFileWebPresenter_ActionLogOutput(t *testing.T) {
 		fg.On("GetPhase").Return(domain.RankAndFilePhaseGameOver)
 		fg.On("GetGameEndFlag").Return(true)
 		fg.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "draw", Detail: "test"},
+			{TurnNumber: 1, ActionType: "draw", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 
 		p := new(RankAndFileWebPresenter)

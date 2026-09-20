@@ -29,5 +29,6 @@
   "hintReasonStep": "あなたがめくる番",
   "hintReasonWait": "まだ揃っていない。誤宣言はペナルティ",
   "helpExampleStep": "  s                    次の 1 枚をめくる",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "log.start": "スナップを開始しました（{{players}} 人）", "log.step": "1 枚めくりました", "log.snap": "スナップ！ {{count}} 枚を獲得しました", "log.penaltyCard": "誤宣言のペナルティで 1 枚差し出しました", "log.penaltyEmpty": "誤宣言しましたが、差し出す札がありません", "log.eliminate": "ストックが尽きました", "log.resultWin": "全札を集めました", "log.resultStalemate": "続けられなくなりました（場に全札）", "log.giveup": "投了しました"
 }

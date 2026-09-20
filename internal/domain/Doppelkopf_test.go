@@ -125,7 +125,7 @@ func TestDoppelkopf_ActionLogUsesDetailCode(t *testing.T) {
 	if entry == nil {
 		t.Fatal("play action log entry not found")
 	}
-	if entry.DetailParams["card"] != cardStr(card) || entry.Detail != "" {
+	if entry.DetailParams["card"] != cardStr(card) {
 		t.Fatalf("play detail = %#v, want card and empty legacy detail", entry)
 	}
 }

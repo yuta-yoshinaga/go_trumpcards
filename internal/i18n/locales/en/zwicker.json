@@ -24,5 +24,6 @@
   "hintReasonTake": "this capture picks up scoring cards",
   "hintReasonTrail": "nothing is takeable, so trail a card that scores nothing",
   "helpExampleN": "  n                        move on to the next deal",
-  "helpHint": "  h                        show a hint"
+  "helpHint": "  h                        show a hint",
+  "log.deal": "{{cards}} cards to the table", "log.take": "captures {{count}} card(s) as {{value}}", "log.takeZwick": "captures {{count}} card(s) as {{value}} and clears the table (Zwick)", "log.build": "builds {{value}}", "log.trail": "trails a card", "log.dealStage": "deals stage {{stage}}", "log.sweep": "takes what is left on the table", "log.roundEnd": "team scores {{team0}} - {{team1}}", "log.gameEnd": "team {{team}} wins"
 }

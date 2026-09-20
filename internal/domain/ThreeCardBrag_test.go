@@ -107,7 +107,6 @@ func TestThreeCardBrag_SeeAndBet(t *testing.T) {
 	}
 	require.NotNil(t, entry)
 	assert.Equal(t, map[string]string{"player": "You"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 	assert.True(t, g.GetPlayer(0).GetSeen())
 	assert.Error(t, g.PlayerSee()) // already seen
 	potBefore := g.GetPot()

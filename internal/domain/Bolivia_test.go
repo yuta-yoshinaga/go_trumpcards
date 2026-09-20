@@ -365,7 +365,6 @@ func TestBolivia_HumanTurnRunsThroughEveryPhase(t *testing.T) {
 	}
 	require.NotNil(t, entry, "action log entry %q not found", "bolivia.log.drawStock")
 	assert.Contains(t, entry.DetailParams, "name")
-	assert.Empty(t, entry.Detail)
 	assert.Equal(t, before+1, g.players[0].GetCardsSize())
 	assert.Equal(t, BoliviaPhaseMeld, g.GetPhase())
 

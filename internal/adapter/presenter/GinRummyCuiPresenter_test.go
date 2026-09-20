@@ -284,7 +284,7 @@ func TestGinRummyCuiPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("with entries", func(t *testing.T) {
 		m := new(interfaces.MockGinRummyGame)
 		entries := []*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "draw_stock", Detail: "You draws from stock"},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "draw_stock", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		}
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetActionLog").Return(entries)
@@ -294,7 +294,7 @@ func TestGinRummyCuiPresenter_ActionLogOutput(t *testing.T) {
 		result := p.ActionLogOutput(m)
 		assert.Contains(t, result, "棋譜")
 		assert.Contains(t, result, "draw_stock")
-		assert.Contains(t, result, "You draws from stock")
+		assert.Contains(t, result, "テスト用の棋譜行 1")
 		m.AssertExpectations(t)
 	})
 

@@ -27,5 +27,6 @@
   "helpExampleGiveUp": "  g                    この局を投了する",
   "helpHint": "  h                    助言を表示",
   "roleLastCaptureTake": "[直前に場から取った]",
-  "roleLastCaptureSteal": "[直前に {{name}} の束を盗んだ]"
+  "roleLastCaptureSteal": "[直前に {{name}} の束を盗んだ]",
+  "log.start": "スティーリングバンドルを開始しました（{{players}} 人）", "log.take": "場から {{count}} 枚取りました", "log.steal": "席 {{victim}} の束 {{count}} 枚を奪いました", "log.trail": "場に置きました", "log.sweep": "場に残った {{count}} 枚を受け取りました", "log.result": "{{count}} 枚でいちばん多く集めました", "log.giveup": "投了しました"
 }

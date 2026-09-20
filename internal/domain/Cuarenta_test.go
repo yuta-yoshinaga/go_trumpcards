@@ -58,7 +58,6 @@ func TestCuarenta_DealActionLogUsesDetailCode(t *testing.T) {
 	entry := logs[len(logs)-1]
 	assert.Equal(t, "cuarenta.log.deal", entry.DetailCode)
 	assert.Equal(t, map[string]string{"cards": "4"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 func TestCuarentaTeamOf(t *testing.T) {

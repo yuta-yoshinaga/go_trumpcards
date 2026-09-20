@@ -191,7 +191,7 @@ func TestQuinzeHitCanHitAndStopsOnBurst(t *testing.T) {
 	for _, entry := range game.GetActionLog() {
 		if entry.ActionType == "hit" {
 			hitLogged = true
-			if entry.DetailCode != "quinze.log.hit" || entry.Detail != "" || len(entry.DetailParams) != 0 {
+			if entry.DetailCode != "quinze.log.hit" || len(entry.DetailParams) != 0 {
 				t.Fatalf("hit log = %#v, want code with empty detail and params", entry)
 			}
 			break
@@ -273,7 +273,6 @@ func TestQuinzeJSONRoundTripRestoresPlayableState(t *testing.T) {
 	game.activeSeat = 0
 	game.nextBanker = 2
 	game.lastResult = "保存済み"
-	game.actionLog = []*ActionLogEntry{{TurnNumber: 0, PlayerIdx: 0, ActionType: "deal", Detail: "保存"}}
 	data, err := json.Marshal(game)
 	if err != nil {
 		t.Fatalf("Marshal: %v", err)

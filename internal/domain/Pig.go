@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // PigPhase はゲームフェーズ。
@@ -151,8 +152,7 @@ func (g *Pig) Reset() {
 	g.winnerIdx = -1
 	g.roundLoserIdx = -1
 	g.actionLog = nil
-	g.addLog(-1, "start", fmt.Sprintf("ピッグを開始しました（%d 人、%d 枚）",
-		g.config.PlayerCnt, PigDeckSize(g.config.PlayerCnt)), nil)
+	g.addLog(-1, "start", "pig.log.start", map[string]string{"players": strconv.Itoa(g.config.PlayerCnt), "cards": strconv.Itoa(PigDeckSize(g.config.PlayerCnt))}, nil)
 	g.dealRound()
 }
 
@@ -203,7 +203,7 @@ func (g *Pig) dealRound() {
 	g.sortActiveHands()
 
 	g.currentPlayerIdx = active[0]
-	g.addLog(-1, "deal", fmt.Sprintf("ラウンド %d を配りました（%d 人）", g.roundNumber, len(active)), nil)
+	g.addLog(-1, "deal", "pig.log.deal", map[string]string{"round": strconv.Itoa(g.roundNumber), "players": strconv.Itoa(len(active))}, nil)
 }
 
 // pigRanksFor は n 人卓で使うランクを返す。A を先頭に K から降順で詰める。
@@ -413,7 +413,7 @@ func (g *Pig) openSignal(idx int) {
 	g.phase = PigPhaseSignal
 	g.signallerIdx = idx
 	g.noticedCnt = 0
-	g.addLog(idx, "signal", "黙って手を鼻に当てました", nil)
+	g.addLog(idx, "signal", "pig.log.signal", nil, nil)
 	g.notice(idx)
 }
 
@@ -427,7 +427,7 @@ func (g *Pig) notice(idx int) {
 	p.SetHasSignalled(true)
 	p.SetNoticedOrder(g.noticedCnt)
 	if idx != g.signallerIdx {
-		g.addLog(idx, "notice", fmt.Sprintf("%d 番目に気づきました", g.noticedCnt), nil)
+		g.addLog(idx, "notice", "pig.log.notice", map[string]string{"order": strconv.Itoa(g.noticedCnt)}, nil)
 	}
 
 	// **最後の 1 人が残った時点で決まり。** 全員が気づくのを待ちません。
@@ -456,15 +456,14 @@ func (g *Pig) finishRound(loser int) {
 	g.phase = PigPhaseRoundEnd
 	g.roundLoserIdx = loser
 	out := g.players[loser].AddLetter()
-	g.addLog(loser, "letter", fmt.Sprintf("気づくのが最後でした（%s）",
-		g.players[loser].GetLetterWord()), nil)
+	g.addLog(loser, "letter", "pig.log.letter", map[string]string{"word": g.players[loser].GetLetterWord()}, nil)
 	if out {
 		// **脱落した席は合図の記録も落とす。** 「脱落しているのに気づいた」は
 		// codec が受け付けない状態で、実際そこへ落ちる経路がありました。
 		g.players[loser].SetHasSignalled(false)
 		g.players[loser].SetNoticedOrder(0)
 		g.recountNoticed()
-		g.addLog(loser, "eliminated", "PIG が揃って脱落しました", nil)
+		g.addLog(loser, "eliminated", "pig.log.eliminated", nil, nil)
 	}
 
 	if g.checkGameEnd() {
@@ -528,7 +527,7 @@ func (g *Pig) finish(winner int) {
 	g.phase = PigPhaseGameEnd
 	g.gameEndFlag = true
 	g.winnerIdx = winner
-	g.addLog(winner, "result", "最後まで残りました", nil)
+	g.addLog(winner, "result", "pig.log.result", nil, nil)
 }
 
 // GiveUp は投了する。
@@ -553,7 +552,7 @@ func (g *Pig) GiveUp() {
 	g.phase = PigPhaseGameEnd
 	g.gameEndFlag = true
 	g.winnerIdx = best
-	g.addLog(human, "giveup", "投了しました", nil)
+	g.addLog(human, "giveup", "pig.log.giveup", nil, nil)
 }
 
 // CpuPlay は CPU の手を 1 つ進める。
@@ -685,8 +684,8 @@ func (g *Pig) countRank(idx, rank int) int {
 }
 
 // addLog は棋譜に 1 行足す。
-func (g *Pig) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.appendLog(playerIdx, actionType, detail, cards)
+func (g *Pig) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // GetConfig は設定を返す。

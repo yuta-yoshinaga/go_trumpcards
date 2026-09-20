@@ -23,5 +23,13 @@
   "hintReasonFollow": "取っても得にはならないので安い札から",
   "hintReasonPickUp": "フォローできる札が無い",
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "log.start": "ローリングストーンを開始しました（{{players}} 人、{{cards}} 枚）",
+  "log.play": "カードを出しました",
+  "log.pickup": "フォローできず {{count}} 枚を引き取りました",
+  "log.stalemate": "{{tricks}} トリックで決着せず。手札のいちばん少ない席の勝ちとします（{{cards}} 枚）",
+  "log.trick": "トリックを取りました（得点にはなりません）",
+  "log.finish": "{{rank}} 番目に上がりました",
+  "log.result": "手札を出し切りました",
+  "log.giveup": "投了しました"
 }

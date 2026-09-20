@@ -202,7 +202,7 @@ func TestAlaskaCuiPresenter_ActionLogOutput(t *testing.T) {
 		rg := new(interfaces.MockAlaskaGame)
 		rg.On("GetPhase").Return(domain.AlaskaPhaseGameOver)
 		rg.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "move", Detail: "test"},
+			{TurnNumber: 1, ActionType: "move", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 
 		p := new(AlaskaCuiPresenter)

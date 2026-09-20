@@ -458,5 +458,4 @@ func TestSultan_GetActionLog(t *testing.T) {
 	entry := logs[len(logs)-1]
 	assert.Equal(t, "sultan.log.draw", entry.DetailCode)
 	assert.Empty(t, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }

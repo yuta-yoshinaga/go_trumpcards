@@ -32,7 +32,7 @@ func TestActionLogOutputText(t *testing.T) {
 		g := &stubGameEndLogger{
 			ended: true,
 			actionLog: []*domain.ActionLogEntry{
-				{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "test"},
+				{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 			},
 		}
 		result := actionLogOutputText(g)
@@ -63,7 +63,7 @@ func TestActionLogOutputJSON(t *testing.T) {
 		g := &stubGameEndLogger{
 			ended: true,
 			actionLog: []*domain.ActionLogEntry{
-				{TurnNumber: 2, PlayerIdx: 1, ActionType: "draw", Detail: "drew a card"},
+				{TurnNumber: 2, PlayerIdx: 1, ActionType: "draw", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 			},
 		}
 		result := actionLogOutputJSON(g)
@@ -89,15 +89,15 @@ func TestActionLogToJSON(t *testing.T) {
 				TurnNumber: 1,
 				PlayerIdx:  0,
 				ActionType: "play",
-				Detail:     "played a card",
-				Cards:      []*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, true)},
+				DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"},
+				Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, true)},
 			},
 		}
 		result := actionLogToJSON(entries)
 		assert.Contains(t, result, `"turnNumber":1`)
 		assert.Contains(t, result, `"playerIdx":0`)
 		assert.Contains(t, result, `"actionType":"play"`)
-		assert.Contains(t, result, `"detail":"played a card"`)
+		assert.Contains(t, result, `"detailCode":"test.log.stub"`)
 		assert.Contains(t, result, `"cards":[`)
 		assert.Contains(t, result, `"design":"SPADE"`)
 		assert.Contains(t, result, `"value":5`)
@@ -109,7 +109,7 @@ func TestActionLogToJSON(t *testing.T) {
 				TurnNumber: 1,
 				PlayerIdx:  -1,
 				ActionType: "deal",
-				Detail:     "dealt cards",
+				DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"},
 			},
 		}
 		result := actionLogToJSON(entries)
@@ -135,8 +135,8 @@ func TestActionLogToText(t *testing.T) {
 				TurnNumber: 1,
 				PlayerIdx:  0,
 				ActionType: "play",
-				Detail:     "played a card",
-				Cards:      []*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, true)},
+				DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"},
+				Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, true)},
 			},
 		}
 		result := actionLogToText(entries)
@@ -144,7 +144,7 @@ func TestActionLogToText(t *testing.T) {
 		assert.Contains(t, result, "T1")
 		assert.Contains(t, result, i18n.Tf("cuiActionLogPlayer", "idx", "0"))
 		assert.Contains(t, result, "play")
-		assert.Contains(t, result, "played a card")
+		assert.Contains(t, result, "テスト用の棋譜行 1")
 		assert.Contains(t, result, "SPADE 5")
 	})
 
@@ -154,13 +154,13 @@ func TestActionLogToText(t *testing.T) {
 				TurnNumber: 1,
 				PlayerIdx:  -1,
 				ActionType: "deal",
-				Detail:     "dealt cards",
+				DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"},
 			},
 		}
 		result := actionLogToText(entries)
 		assert.Contains(t, result, i18n.T("cuiActionLogSystem"))
 		assert.Contains(t, result, "deal")
-		assert.Contains(t, result, "dealt cards")
+		assert.Contains(t, result, "テスト用の棋譜行 1")
 	})
 
 	t.Run("entries without cards no card bracket", func(t *testing.T) {
@@ -169,12 +169,12 @@ func TestActionLogToText(t *testing.T) {
 				TurnNumber: 2,
 				PlayerIdx:  1,
 				ActionType: "pass",
-				Detail:     "passed",
+				DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"},
 			},
 		}
 		result := actionLogToText(entries)
 		assert.Contains(t, result, i18n.Tf("cuiActionLogPlayer", "idx", "1"))
-		assert.Contains(t, result, "pass: passed")
+		assert.Contains(t, result, "pass: テスト用の棋譜行 1")
 		// No card bracket appended (only [Player X] and header brackets exist)
 		assert.NotContains(t, result, "SPADE")
 		assert.NotContains(t, result, "HEART")
@@ -206,8 +206,8 @@ func TestActionLogTextIsTranslated(t *testing.T) {
 	t.Run("seat names match the rest of the screen", func(t *testing.T) {
 		i18n.SetLang("ja")
 		entries := []*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "出した"},
-			{TurnNumber: 2, PlayerIdx: 1, ActionType: "play", Detail: "出した"},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "aluette.log.play", DetailParams: map[string]string{"name": "出した"}},
+			{TurnNumber: 2, PlayerIdx: 1, ActionType: "play", DetailCode: "aluette.log.play", DetailParams: map[string]string{"name": "出した"}},
 		}
 		players := []*domain.AluettePlayer{domain.NewAluettePlayer(true), domain.NewAluettePlayer(false)}
 
@@ -221,7 +221,9 @@ func TestActionLogTextIsTranslated(t *testing.T) {
 
 	t.Run("a seat the resolver does not know still renders", func(t *testing.T) {
 		i18n.SetLang("ja")
-		entries := []*domain.ActionLogEntry{{TurnNumber: 1, PlayerIdx: 9, ActionType: "play", Detail: "出した"}}
+		entries := []*domain.ActionLogEntry{
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "aluette.log.play", DetailParams: map[string]string{"name": "出した"}},
+		}
 		result := actionLogToTextWithNames(entries, func(int) string { return "" })
 		assert.Contains(t, result, "T1", "名前が引けなくても行そのものは出る")
 	})
@@ -244,34 +246,15 @@ func TestActionLogDetailCodeIsTranslated(t *testing.T) {
 	assert.NotEqual(t, ja, en)
 }
 
-func TestActionLogUnregisteredDetailCodeFallsBackToDetail(t *testing.T) {
-	const code = "nosuch.log.key"
-
-	t.Run("uses legacy detail and hides the code", func(t *testing.T) {
-		result := actionLogToText([]*domain.ActionLogEntry{{
-			TurnNumber: 1, PlayerIdx: 0, ActionType: "play",
-			DetailCode: code, Detail: "legacy detail",
-		}})
-
-		assert.Contains(t, result, "legacy detail")
-		assert.NotContains(t, result, code)
-	})
-
-	t.Run("uses empty detail and hides the code", func(t *testing.T) {
-		result := actionLogToText([]*domain.ActionLogEntry{{
-			TurnNumber: 1, PlayerIdx: 0, ActionType: "play",
-			DetailCode: code,
-		}})
-
-		assert.NotContains(t, result, code)
-	})
-}
-
-func TestActionLogDetailFallsBackToLegacyDetail(t *testing.T) {
+func TestActionLogDetailCodeIsRenderedAsTranslatedText(t *testing.T) {
+	defer i18n.SetLang("ja")
+	i18n.SetLang("ja")
 	result := actionLogToText([]*domain.ActionLogEntry{{
-		TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "legacy detail",
+		TurnNumber: 1, PlayerIdx: 0, ActionType: "play",
+		DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"},
 	}})
-	assert.Contains(t, result, "legacy detail")
+	assert.NotContains(t, result, "test.log.stub")
+	assert.Contains(t, result, "テスト用の棋譜行 1")
 }
 
 func TestActionLogEmptyDetailDoesNotExposeCode(t *testing.T) {

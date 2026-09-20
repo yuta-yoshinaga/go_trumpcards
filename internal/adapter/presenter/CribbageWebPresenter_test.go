@@ -419,14 +419,14 @@ func TestCribbageWebPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("with entries", func(t *testing.T) {
 		m := new(interfaces.MockCribbageGame)
 		entries := []*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "discard", Detail: "discarded 2 cards", Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, true)}},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "discard", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}, Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, true)}},
 		}
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetActionLog").Return(entries)
 
 		result := p.ActionLogOutput(m)
 		assert.Contains(t, result, `"actionType":"discard"`)
-		assert.Contains(t, result, `"detail":"discarded 2 cards"`)
+		assert.Contains(t, result, `"detailCode":"test.log.stub"`)
 		assert.Contains(t, result, `"turnNumber":1`)
 		assert.Contains(t, result, `"playerIdx":0`)
 		m.AssertExpectations(t)

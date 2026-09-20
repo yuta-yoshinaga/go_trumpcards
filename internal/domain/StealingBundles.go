@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // StealingBundlesPhase はゲームフェーズ。
@@ -155,8 +156,7 @@ func (s *StealingBundles) Reset() {
 	}
 	s.dealPack()
 
-	s.addLog(-1, "start", fmt.Sprintf("スティーリングバンドルを開始しました（%d 人）",
-		s.config.PlayerCnt), nil)
+	s.addLog(-1, "start", "stealingbundles.log.start", map[string]string{"players": strconv.Itoa(s.config.PlayerCnt)}, nil)
 }
 
 // dealPack は全員へ 1 パック (4 枚) 配る。
@@ -325,7 +325,7 @@ func (s *StealingBundles) take(playerIdx, cardIndex int) error {
 	s.lastCaptureIdx = playerIdx
 	s.lastCaptureKind = StealingBundlesCaptureTake
 	s.lastCaptureVictimIdx = -1
-	s.addLog(playerIdx, "take", fmt.Sprintf("場から %d 枚取りました", len(taken)), taken)
+	s.addLog(playerIdx, "take", "stealingbundles.log.take", map[string]string{"count": strconv.Itoa(len(taken))}, taken)
 	s.finishTurn()
 	return nil
 }
@@ -350,7 +350,7 @@ func (s *StealingBundles) steal(playerIdx, cardIndex, victimIdx int) error {
 	s.lastCaptureIdx = playerIdx
 	s.lastCaptureKind = StealingBundlesCaptureSteal
 	s.lastCaptureVictimIdx = victimIdx
-	s.addLog(playerIdx, "steal", fmt.Sprintf("席 %d の束 %d 枚を奪いました", victimIdx, len(stolen)), stolen)
+	s.addLog(playerIdx, "steal", "stealingbundles.log.steal", map[string]string{"victim": strconv.Itoa(victimIdx), "count": strconv.Itoa(len(stolen))}, stolen)
 	s.finishTurn()
 	return nil
 }
@@ -368,7 +368,7 @@ func (s *StealingBundles) trail(playerIdx, cardIndex int) error {
 	}
 	s.players[playerIdx].RemoveCard(cardIndex)
 	s.tableCards = append(s.tableCards, c)
-	s.addLog(playerIdx, "trail", "場に置きました", []*Card{c})
+	s.addLog(playerIdx, "trail", "stealingbundles.log.trail", nil, []*Card{c})
 	s.finishTurn()
 	return nil
 }
@@ -402,16 +402,14 @@ func (s *StealingBundles) finish() {
 	// **場に残った札は最後に取った人のもの。** 誰も取っていなければ場に残します。
 	if len(s.tableCards) > 0 && s.lastCaptureIdx >= 0 {
 		s.players[s.lastCaptureIdx].AddToBundle(s.tableCards...)
-		s.addLog(s.lastCaptureIdx, "sweep",
-			fmt.Sprintf("場に残った %d 枚を受け取りました", len(s.tableCards)), s.tableCards)
+		s.addLog(s.lastCaptureIdx, "sweep", "stealingbundles.log.sweep", map[string]string{"count": strconv.Itoa(len(s.tableCards))}, s.tableCards)
 		s.tableCards = nil
 	}
 
 	s.phase = StealingBundlesPhaseGameEnd
 	s.gameEndFlag = true
 	s.winnerIdx = s.leaderIdx()
-	s.addLog(s.winnerIdx, "result",
-		fmt.Sprintf("%d 枚でいちばん多く集めました", s.players[s.winnerIdx].GetBundleSize()), nil)
+	s.addLog(s.winnerIdx, "result", "stealingbundles.log.result", map[string]string{"count": strconv.Itoa(s.players[s.winnerIdx].GetBundleSize())}, nil)
 }
 
 // leaderIdx は束がいちばん多い席を返す (同数なら若い席)。
@@ -443,7 +441,7 @@ func (s *StealingBundles) GiveUp() {
 		best = 0
 	}
 	s.winnerIdx = best
-	s.addLog(0, "giveup", "投了しました", nil)
+	s.addLog(0, "giveup", "stealingbundles.log.giveup", nil, nil)
 }
 
 // CpuPlay は CPU が 1 手打つ。
@@ -528,8 +526,8 @@ func (s *StealingBundles) GetHint() *StealingBundlesHint {
 }
 
 // addLog は棋譜に 1 行足す。
-func (s *StealingBundles) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	s.appendLog(playerIdx, actionType, detail, cards)
+func (s *StealingBundles) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	s.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // GetConfig は設定を返す。

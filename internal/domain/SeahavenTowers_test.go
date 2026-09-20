@@ -104,7 +104,6 @@ func TestSeahavenTowersMoveTableauToTableauSameSuit(t *testing.T) {
 	entry := s.GetActionLog()[0]
 	assert.Equal(t, "seahaventowers.log.tableauToTableau", entry.DetailCode)
 	assert.Equal(t, map[string]string{"fromCol": "1", "toCol": "0"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 func TestSeahavenTowersMoveTableauToTableauDifferentSuitRejected(t *testing.T) {

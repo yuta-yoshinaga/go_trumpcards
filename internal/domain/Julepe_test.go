@@ -660,7 +660,6 @@ func TestJulepe_ActionLog(t *testing.T) {
 	}
 	require.NotNil(t, deal)
 	assert.Equal(t, map[string]string{"round": "1", "pot": "12"}, deal.DetailParams)
-	assert.Empty(t, deal.Detail)
 }
 
 // TestJulepe_RequiredTricksScalesWithTheTable は、規定トリック数が

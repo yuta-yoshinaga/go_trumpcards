@@ -218,7 +218,6 @@ func TestPolignac_DeclareCapotStartsPlay(t *testing.T) {
 		}
 	}
 	require.NotNil(t, entry)
-	assert.Empty(t, entry.Detail)
 }
 
 func TestPolignac_PassDeclarationStartsPlay(t *testing.T) {

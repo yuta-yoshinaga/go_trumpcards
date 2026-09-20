@@ -230,7 +230,7 @@ func TestOhHellCuiPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.OhHellCuiPresenter)
 	m := setupOhHellCuiMock()
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "bid", Detail: "You bids 3"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "bid", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	result := p.ActionLogOutput(m)
 	assert.NotEmpty(t, result)

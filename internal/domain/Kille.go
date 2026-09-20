@@ -29,6 +29,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // KillePlayerCnt はプレイヤー数 (4 人。原典は 3〜12 人)。
@@ -160,7 +161,7 @@ func (k *Kille) dealRound() {
 		}
 	}
 	k.phase = KillePhaseExchange
-	k.addLog(-1, "deal", fmt.Sprintf("one card each, pot is %d", k.pot), nil)
+	k.addLog(-1, "deal", "kille.log.deal", map[string]string{"pot": strconv.Itoa(k.pot)}, nil)
 }
 
 // killeShuffle は Fisher-Yates。
@@ -178,7 +179,7 @@ func (k *Kille) Satisfied(player int) error {
 	}
 	k.GetPlayer(player).SetSatisfied(true)
 	k.events = append(k.events, &KilleEvent{Kind: "satisfied", Actor: player, Target: -1})
-	k.addLog(player, "satisfied", "is satisfied", nil)
+	k.addLog(player, "satisfied", "kille.log.satisfied", nil, nil)
 	k.advance()
 	return nil
 }
@@ -203,14 +204,14 @@ func (k *Kille) Exchange(player int) error {
 func (k *Kille) exchangeWithNeighbour(player, target, hops int) error {
 	if hops >= len(k.players) {
 		// 全員が Cavalier / Inn だった。交換できずに手番を終える。
-		k.addLog(player, "pass", "nobody could be swapped with", nil)
+		k.addLog(player, "pass", "kille.log.passNoTarget", nil, nil)
 		k.advance()
 		return nil
 	}
 	// **自分自身は交換相手にならない。**Cavalier / Inn で一周して戻ってくると
 	// ここに来る。素通しすると自分と自分を入れ替えて手札が消える。
 	if target == player {
-		k.addLog(player, "pass", "the pass came full circle", nil)
+		k.addLog(player, "pass", "kille.log.passCircle", nil, nil)
 		k.advance()
 		return nil
 	}
@@ -223,14 +224,14 @@ func (k *Kille) exchangeWithNeighbour(player, target, hops int) error {
 	case KilleCuckoo:
 		// **«No one swaps the Cuckoo!»** その場でラウンドが終わる。
 		k.events = append(k.events, &KilleEvent{Kind: "cuckoo", Actor: player, Target: target})
-		k.addLog(target, "cuckoo", "nobody swaps the Cuckoo; the round ends", nil)
+		k.addLog(target, "cuckoo", "kille.log.cuckoo", nil, nil)
 		k.finishRound()
 		return nil
 	case KilleHussar:
 		// **«Hussar strikes!»** 仕掛けた側が落ちる。
 		k.GetPlayer(player).SetOut(KilleKnockHussar)
 		k.events = append(k.events, &KilleEvent{Kind: "hussar", Actor: player, Target: target})
-		k.addLog(target, "hussar", "the Hussar strikes down the challenger", nil)
+		k.addLog(target, "hussar", "kille.log.hussar", nil, nil)
 		k.advance()
 		return nil
 	case KillePig:
@@ -249,19 +250,19 @@ func (k *Kille) exchangeWithNeighbour(player, target, hops int) error {
 		}
 		op.SetOut(KilleKnockPig)
 		k.events = append(k.events, &KilleEvent{Kind: "pig", Actor: player, Target: owner})
-		k.addLog(owner, "pig", "the Pig bites back; its original holder is out", nil)
+		k.addLog(owner, "pig", "kille.log.pig", nil, nil)
 		k.advance()
 		return nil
 	case KilleCavalier, KilleInn:
 		// **«Pass the Cavalier/Inn!»** 次の人に回す。
 		k.events = append(k.events, &KilleEvent{Kind: "pass", Actor: player, Target: target})
-		k.addLog(target, "pass", "pass along to the next player", nil)
+		k.addLog(target, "pass", "kille.log.passNext", nil, nil)
 		return k.exchangeWithNeighbour(player, k.nextSeat(target), hops+1)
 	}
 
 	k.swap(player, target)
 	k.events = append(k.events, &KilleEvent{Kind: "swap", Actor: player, Target: target})
-	k.addLog(player, "swap", "swaps with the next player", nil)
+	k.addLog(player, "swap", "kille.log.swap", nil, nil)
 	k.advance()
 	return nil
 }
@@ -281,7 +282,7 @@ func (k *Kille) exchangeWithStock(player int) error {
 	k.stock = append(k.stock, old)
 
 	k.events = append(k.events, &KilleEvent{Kind: "stock", Actor: player, Target: -1})
-	k.addLog(player, "stock", "exchanges with the stock", []*Card{drawn})
+	k.addLog(player, "stock", "kille.log.stock", nil, []*Card{drawn})
 	k.advance()
 	return nil
 }
@@ -399,7 +400,7 @@ func (k *Kille) finishRound() {
 			k.loserIdxs = append(k.loserIdxs, i)
 		}
 	}
-	k.addLog(-1, "showdown", fmt.Sprintf("%d player(s) go out", len(k.loserIdxs)), nil)
+	k.addLog(-1, "showdown", "kille.log.showdown", map[string]string{"count": strconv.Itoa(len(k.loserIdxs))}, nil)
 
 	k.roundNo++
 	k.phase = KillePhaseShowdown
@@ -445,7 +446,7 @@ func (k *Kille) Reenter(seat int) error {
 	p.AddReentry()
 	p.out = false
 	p.knockedBy = ""
-	k.addLog(seat, "reenter", fmt.Sprintf("buys back in for %d", cost), nil)
+	k.addLog(seat, "reenter", "kille.log.reenter", map[string]string{"cost": strconv.Itoa(cost)}, nil)
 	return nil
 }
 
@@ -469,7 +470,7 @@ func (k *Kille) checkGameEnd() {
 	}
 	k.gameEndFlag = true
 	k.phase = KillePhaseGameEnd
-	k.addLog(last, "game_end", "is the last one standing", nil)
+	k.addLog(last, "game_end", "kille.log.gameEnd", nil, nil)
 }
 
 // NextRound は次のラウンドを配る。
@@ -630,8 +631,8 @@ func (k *Kille) SetHandForTest(seat int, r KilleRank) {
 func (k *Kille) SetStockForTest(cards []*Card) { k.stock = cards }
 
 // addLog は棋譜に 1 件追加する。
-func (k *Kille) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	k.appendLog(playerIdx, actionType, detail, cards)
+func (k *Kille) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	k.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // killeJSON is the JSON wire format for Kille.

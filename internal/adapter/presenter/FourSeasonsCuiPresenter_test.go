@@ -140,7 +140,9 @@ func TestFourSeasonsCuiPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("emitted once ended", func(t *testing.T) {
 		g := new(interfaces.MockFourSeasonsGame)
 		g.On("GetPhase").Return(domain.FourSeasonsPhaseGameOver)
-		g.On("GetActionLog").Return([]*domain.ActionLogEntry{{TurnNumber: 1, ActionType: "draw", Detail: "引きました"}})
+		g.On("GetActionLog").Return([]*domain.ActionLogEntry{
+			{TurnNumber: 1, ActionType: "draw", DetailCode: "fourseasons.log.draw"},
+		})
 		assert.Contains(t, new(FourSeasonsCuiPresenter).ActionLogOutput(g), "draw")
 	})
 }

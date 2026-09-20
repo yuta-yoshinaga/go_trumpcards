@@ -1267,7 +1267,6 @@ func TestBridgeRubberBonus(t *testing.T) {
 	}
 	require.NotNil(t, rubberEnd)
 	assert.Equal(t, map[string]string{"team": "0"}, rubberEnd.DetailParams)
-	assert.Empty(t, rubberEnd.Detail)
 }
 
 func TestBridgePlayerBidPassActionLogCode(t *testing.T) {
@@ -1277,7 +1276,6 @@ func TestBridgePlayerBidPassActionLogCode(t *testing.T) {
 	entry := b.actionLog[len(b.actionLog)-1]
 	assert.Equal(t, "bridge.log.pass", entry.DetailCode)
 	assert.Equal(t, map[string]string{"name": "You (North)"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 func TestBridgeCpuBidNormalDouble(t *testing.T) {

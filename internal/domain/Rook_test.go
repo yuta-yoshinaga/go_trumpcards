@@ -62,7 +62,6 @@ func TestRookActionLogUsesDetailCode(t *testing.T) {
 		if entry.ActionType == "bid" {
 			assert.Equal(t, "rook.log.bid", entry.DetailCode)
 			assert.Equal(t, "75", entry.DetailParams["points"])
-			assert.Empty(t, entry.Detail)
 			return
 		}
 	}

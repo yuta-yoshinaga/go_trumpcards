@@ -796,5 +796,4 @@ func TestFortyThieves_ActionLog(t *testing.T) {
 	require.NotNil(t, entry)
 	assert.Equal(t, "draw", entry.ActionType)
 	assert.Empty(t, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }

@@ -137,7 +137,7 @@ func (b *Bhabhi) Reset() {
 	b.deal()
 	b.leadIdx = 0
 	b.currentIdx = 0
-	b.addLog(-1, "deal", fmt.Sprintf("%d 人に配り切りました", len(b.players)), nil)
+	b.addLog(-1, "deal", "bhabhi.log.deal", map[string]string{"players": fmt.Sprintf("%d", len(b.players))}, nil)
 }
 
 // deal は 52 枚を参加人数で配り切る。
@@ -252,7 +252,7 @@ func (b *Bhabhi) play(playerIdx, cardIndex int) error {
 	if b.leadSuit == 0 {
 		b.leadSuit = card.GetDesign()
 	}
-	b.addLog(playerIdx, "play", cardStr(card), []*Card{card})
+	b.addLog(playerIdx, "play", "bhabhi.log.play", map[string]string{"card": cardStr(card)}, []*Card{card})
 
 	if cannotFollow {
 		b.pickUpPile(playerIdx)
@@ -331,7 +331,7 @@ func (b *Bhabhi) resolveTrick() {
 	b.pile = nil
 	b.leadSuit = 0
 	b.trickNumber++
-	b.addLog(winner, "trick", fmt.Sprintf("%d 枚を場から流しました", discarded), nil)
+	b.addLog(winner, "trick", "bhabhi.log.trickWin", map[string]string{"count": fmt.Sprintf("%d", discarded)}, nil)
 
 	b.markFinished()
 	if b.gameEndFlag {
@@ -380,7 +380,7 @@ func (b *Bhabhi) pickUpPile(playerIdx int) {
 	b.leadSuit = 0
 	b.trickNumber++
 	b.sortAllHands()
-	b.addLog(playerIdx, "pickup", fmt.Sprintf("%d 枚を引き取りました", taken), nil)
+	b.addLog(playerIdx, "pickup", "bhabhi.log.pickup", map[string]string{"count": fmt.Sprintf("%d", taken)}, nil)
 
 	// **引き取った人は必ず手札を持っている**ので、上がりの判定は他の席だけ。
 	b.markFinished()
@@ -415,7 +415,7 @@ func (b *Bhabhi) markFinished() {
 		p.SetIsFinished(true)
 		b.lastFinishedIdx = i
 		b.lastFinishedRank = b.finishedCnt
-		b.addLog(i, "finish", fmt.Sprintf("%d 位で上がりました", b.finishedCnt), nil)
+		b.addLog(i, "finish", "bhabhi.log.finish", map[string]string{"rank": fmt.Sprintf("%d", b.finishedCnt)}, nil)
 	}
 	if b.aliveCount() <= 1 {
 		b.finishGame()
@@ -460,7 +460,7 @@ func (b *Bhabhi) finishGame() {
 		}
 	}
 	b.stalemate = false
-	b.addLog(b.bhabhiIdx, "result", "Bhabhi が確定しました", nil)
+	b.addLog(b.bhabhiIdx, "result", "bhabhi.log.resultBhabhi", nil, nil)
 }
 
 // finishStalemate は膠着で打ち切り、**いちばん手札の多い人**を Bhabhi にする。
@@ -481,8 +481,7 @@ func (b *Bhabhi) finishStalemate() {
 			b.bhabhiIdx, most = i, n
 		}
 	}
-	b.addLog(b.bhabhiIdx, "result",
-		fmt.Sprintf("%d トリックで膠着。手札が最も多い席を Bhabhi とします", b.trickNumber), nil)
+	b.addLog(b.bhabhiIdx, "result", "bhabhi.log.resultStalemate", map[string]string{"tricks": fmt.Sprintf("%d", b.trickNumber)}, nil)
 }
 
 // GiveUp は投了する。**投了した人が Bhabhi。**
@@ -494,7 +493,7 @@ func (b *Bhabhi) GiveUp() {
 	b.gameEndFlag = true
 	b.bhabhiIdx = 0
 	b.stalemate = false
-	b.addLog(0, "giveup", "投了しました", nil)
+	b.addLog(0, "giveup", "bhabhi.log.giveup", nil, nil)
 }
 
 // chooseCpuCard は CPU の手。
@@ -659,8 +658,8 @@ func (b *Bhabhi) GetBhabhiIdx() int { return b.bhabhiIdx }
 func (b *Bhabhi) GetActionLog() []*ActionLogEntry { return b.actionLog }
 
 // addLog は棋譜に 1 行足す。
-func (b *Bhabhi) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	b.appendLog(playerIdx, actionType, detail, cards)
+func (b *Bhabhi) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	b.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // bhabhiJSON は KV スナップショットの表現。

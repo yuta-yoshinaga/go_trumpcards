@@ -169,7 +169,9 @@ func TestCanfieldCuiPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("after clear", func(t *testing.T) {
 		cg := new(interfaces.MockCanfieldGame)
 		cg.On("GetPhase").Return(domain.CanfieldPhaseGameClear)
-		cg.On("GetActionLog").Return([]*domain.ActionLogEntry{{TurnNumber: 1, ActionType: "draw", Detail: "test"}})
+		cg.On("GetActionLog").Return([]*domain.ActionLogEntry{
+			{TurnNumber: 1, ActionType: "draw", DetailCode: "canfield.log.draw"},
+		})
 		p := new(CanfieldCuiPresenter)
 		result := p.ActionLogOutput(cg)
 		assert.Contains(t, result, "draw")

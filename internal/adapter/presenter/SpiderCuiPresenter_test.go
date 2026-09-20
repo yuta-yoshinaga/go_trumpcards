@@ -210,7 +210,7 @@ func TestSpiderCuiPresenter_ActionLogOutput(t *testing.T) {
 		sg := new(interfaces.MockSpiderGame)
 		sg.On("GetPhase").Return(domain.SpiderPhaseGameClear)
 		sg.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "move", Detail: "test", Cards: nil},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "move", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}, Cards: nil},
 		})
 
 		p := new(SpiderCuiPresenter)

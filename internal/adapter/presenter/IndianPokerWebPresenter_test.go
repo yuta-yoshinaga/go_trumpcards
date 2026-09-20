@@ -367,7 +367,7 @@ func TestIndianPokerWebPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("with entries", func(t *testing.T) {
 		mockGame := new(interfaces.MockIndianPokerGame)
 		entries := []*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "bet", Detail: "bet 100"},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "bet", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		}
 		mockGame.On("GetGameEndFlag").Return(true)
 		mockGame.On("GetActionLog").Return(entries)

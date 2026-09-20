@@ -25,7 +25,6 @@ func TestCirulla_ResetActionLogUsesDetailCode(t *testing.T) {
 	for _, entry := range c.GetActionLog() {
 		if entry.DetailCode == "cirulla.log.deal" {
 			assert.Equal(t, map[string]string{"round": "1", "dealer": "1", "table": "4"}, entry.DetailParams)
-			assert.Empty(t, entry.Detail)
 			return
 		}
 	}

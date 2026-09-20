@@ -14,17 +14,18 @@ import (
 func TestActionLogEntry(t *testing.T) {
 	card := NewCard(1, 5, true)
 	entry := &ActionLogEntry{
-		TurnNumber: 1,
-		PlayerIdx:  0,
-		ActionType: "play",
-		Detail:     "played SPADE 5",
-		Cards:      []*Card{card},
+		TurnNumber:   1,
+		PlayerIdx:    0,
+		ActionType:   "play",
+		DetailCode:   "play.card",
+		DetailParams: map[string]string{"card": "SPADE 5"},
+		Cards:        []*Card{card},
 	}
 
 	assert.Equal(t, 1, entry.TurnNumber)
 	assert.Equal(t, 0, entry.PlayerIdx)
 	assert.Equal(t, "play", entry.ActionType)
-	assert.Equal(t, "played SPADE 5", entry.Detail)
+	assert.Equal(t, "play.card", entry.DetailCode)
 	assert.Len(t, entry.Cards, 1)
 	assert.Equal(t, card, entry.Cards[0])
 }
@@ -34,7 +35,7 @@ func TestActionLogEntrySystemEvent(t *testing.T) {
 		TurnNumber: 1,
 		PlayerIdx:  -1,
 		ActionType: "result",
-		Detail:     "game ended",
+		DetailCode: "game.ended",
 		Cards:      nil,
 	}
 
@@ -71,7 +72,9 @@ func TestActionLogEntryJSONReadsLegacyDetail(t *testing.T) {
 	var entry ActionLogEntry
 	require.NoError(t, json.Unmarshal([]byte(`{"t":2,"p":0,"a":"play","d":"旧文言","c":null}`), &entry))
 	assert.Equal(t, 2, entry.TurnNumber)
-	assert.Equal(t, "旧文言", entry.Detail)
+	assert.Equal(t, 0, entry.PlayerIdx)
+	assert.Equal(t, "play", entry.ActionType)
 	assert.Empty(t, entry.DetailCode)
 	assert.Nil(t, entry.DetailParams)
+	assert.Nil(t, entry.Cards)
 }

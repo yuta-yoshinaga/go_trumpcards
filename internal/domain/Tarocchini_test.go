@@ -221,7 +221,6 @@ func TestTarocchini_ScartoReturnsTheDealerToFifteen(t *testing.T) {
 		}
 	}
 	require.NotNil(t, scartoLog)
-	assert.Empty(t, scartoLog.Detail)
 	assert.Equal(t, map[string]string{"count": "2"}, scartoLog.DetailParams)
 }
 

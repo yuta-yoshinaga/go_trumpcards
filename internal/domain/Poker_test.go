@@ -81,7 +81,6 @@ func TestPoker_ActionLogUsesDetailCode(t *testing.T) {
 	}
 	require.NotNil(t, entry)
 	assert.Equal(t, "20", entry.DetailParams["amount"])
-	assert.Empty(t, entry.Detail)
 }
 
 // ---------------------------------------------------------------------------
@@ -3219,7 +3218,6 @@ func TestPoker_ActionLog_Exchange(t *testing.T) {
 			found = true
 			assert.Equal(t, "poker.log.exchange", e.DetailCode)
 			assert.Equal(t, "1", e.DetailParams["cards"])
-			assert.Empty(t, e.Detail)
 			break
 		}
 	}

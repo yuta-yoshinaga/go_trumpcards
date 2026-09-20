@@ -1,4 +1,10 @@
 {
+  "log.deal": "切り札のスートは {{suit}} です",
+  "log.trickWin": "トリック {{trick}} に勝ちました（{{points}} 点）",
+  "log.draw": "山札が尽き、誰も請求できないため引き分けです",
+  "log.claimWin": "{{points}} 点を請求して勝ちました",
+  "log.claimLose": "{{points}} 点しかないため請求に失敗しました",
+  "log.declare": "組み合わせ {{combination}} を宣言して勝ちました",
   "helpTitle": "Bura (ブラ)",
   "helpPlay": "  p <i> [i] [i]            カードを出す (リードは同スート最大3枚)",
   "helpClaim": "  c                        31点到達を宣言する (足りなければ負け)",

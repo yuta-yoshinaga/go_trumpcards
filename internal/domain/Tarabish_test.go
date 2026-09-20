@@ -761,7 +761,6 @@ func TestTarabish_ActionLog(t *testing.T) {
 	}
 	require.NotNil(t, deal)
 	assert.Equal(t, map[string]string{"round": "1"}, deal.DetailParams)
-	assert.Empty(t, deal.Detail)
 }
 
 // **切り札の 10 は K/Q に勝つ。** 素の GetValue() に落とすと 10 < 12 < 13 で

@@ -111,7 +111,6 @@ func TestTysiac_Bidding_RaiseAndPass(t *testing.T) {
 	}
 	require.NotNil(t, bidLog)
 	assert.Equal(t, map[string]string{"name": "You", "bid": "110"}, bidLog.DetailParams)
-	assert.Empty(t, bidLog.Detail)
 
 	// Not human turn -> error.
 	if !g.GetPlayer(g.GetCurrentPlayerIdx()).GetIsHuman() {

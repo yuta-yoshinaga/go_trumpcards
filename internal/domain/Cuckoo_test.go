@@ -78,8 +78,8 @@ func TestCuckoo_Keep(t *testing.T) {
 	if len(logs) == 0 || logs[0].DetailCode != "cuckoo.log.keep" {
 		t.Fatalf("keep log = %#v, want cuckoo.log.keep", logs)
 	}
-	if logs[0].DetailParams["name"] != "You" || logs[0].Detail != "" {
-		t.Fatalf("keep detail = %#v, detail=%q", logs[0].DetailParams, logs[0].Detail)
+	if logs[0].DetailParams["name"] != "You" {
+		t.Fatalf("keep detail = %#v", logs[0].DetailParams)
 	}
 }
 

@@ -31,97 +31,97 @@ func TestActionLogBaseAdopters_LogSurvivesAKVRoundTrip(t *testing.T) {
 	}{
 		{"BidEuchre", func() (any, any) {
 			g := NewDefaultBidEuchre()
-			g.addLog(1, "act", "detail", nil)
+			g.addLog(1, "act", "detail", nil, nil)
 			return g, NewDefaultBidEuchre()
 		}},
 		{"Boston", func() (any, any) {
 			g := NewDefaultBoston()
-			g.addLog(1, "act", "detail", nil)
+			g.addLog(1, "act", "detail", nil, nil)
 			return g, NewDefaultBoston()
 		}},
 		{"Bura", func() (any, any) {
 			g := NewDefaultBura()
-			g.addLog(1, "act", "detail", nil)
+			g.addLog(1, "act", "detail", nil, nil)
 			return g, NewDefaultBura()
 		}},
 		{"ChineseTen", func() (any, any) {
 			g := NewDefaultChineseTen()
-			g.addLog(1, "act", "detail", nil)
+			g.addLog(1, "act", "detail", nil, nil)
 			return g, NewDefaultChineseTen()
 		}},
 		{"Desmoche", func() (any, any) {
 			g := NewDefaultDesmoche()
-			g.addLog(1, "act", "detail", nil)
+			g.addLog(1, "act", "detail", nil, nil)
 			return g, NewDefaultDesmoche()
 		}},
 		{"Kaiser", func() (any, any) {
 			g := NewDefaultKaiser()
-			g.addLog(1, "act", "detail", nil)
+			g.addLog(1, "act", "detail", nil, nil)
 			return g, NewDefaultKaiser()
 		}},
 		{"Kille", func() (any, any) {
 			g := NewDefaultKille()
-			g.addLog(1, "act", "detail", nil)
+			g.addLog(1, "act", "detail", nil, nil)
 			return g, NewDefaultKille()
 		}},
 		{"Klaberjass", func() (any, any) {
 			g := NewDefaultKlaberjass()
-			g.addLog(1, "act", "detail", nil)
+			g.addLog(1, "act", "detail", nil, nil)
 			return g, NewDefaultKlaberjass()
 		}},
 		{"Loba", func() (any, any) {
 			g := NewDefaultLoba()
-			g.addLog(1, "act", "detail", nil)
+			g.addLog(1, "act", "detail", nil, nil)
 			return g, NewDefaultLoba()
 		}},
 		{"Mushi", func() (any, any) {
 			g := NewDefaultMushi()
-			g.addLog(1, "act", "detail", nil)
+			g.addLog(1, "act", "detail", nil, nil)
 			return g, NewDefaultMushi()
 		}},
 		{"NainJaune", func() (any, any) {
 			g := NewDefaultNainJaune()
-			g.addLog(1, "act", "detail", nil)
+			g.addLog(1, "act", "detail", nil, nil)
 			return g, NewDefaultNainJaune()
 		}},
 		{"Poch", func() (any, any) {
 			g := NewDefaultPoch()
-			g.addLog(1, "act", "detail", nil)
+			g.addLog(1, "act", "detail", nil, nil)
 			return g, NewDefaultPoch()
 		}},
 		{"PopeJoan", func() (any, any) {
 			g := NewDefaultPopeJoan()
-			g.addLog(1, "act", "detail", nil)
+			g.addLog(1, "act", "detail", nil, nil)
 			return g, NewDefaultPopeJoan()
 		}},
 		{"Sjavs", func() (any, any) {
 			g := NewDefaultSjavs()
-			g.addLog(1, "act", "detail", nil)
+			g.addLog(1, "act", "detail", nil, nil)
 			return g, NewDefaultSjavs()
 		}},
 		{"Skitgubbe", func() (any, any) {
 			g := NewDefaultSkitgubbe()
-			g.addLog(1, "act", "detail", nil)
+			g.addLog(1, "act", "detail", nil, nil)
 			return g, NewDefaultSkitgubbe()
 		}},
 		{"Toepen", func() (any, any) {
 			g := NewDefaultToepen()
-			g.addLog(1, "act", "detail", nil)
+			g.addLog(1, "act", "detail", nil, nil)
 			return g, NewDefaultToepen()
 		}},
 		{"Trex", func() (any, any) {
 			g := NewDefaultTrex()
-			g.addLog(1, "act", "detail", nil)
+			g.addLog(1, "act", "detail", nil, nil)
 			return g, NewDefaultTrex()
 		}},
 		{"Vint", func() (any, any) {
 			g := NewDefaultVint()
-			g.addLog(1, "act", "detail", nil)
+			g.addLog(1, "act", "detail", nil, nil)
 			return g, NewDefaultVint()
 		}},
 		{"Zwicker", func() (any, any) {
 			g := NewDefaultZwicker()
-			g.addLog(1, "act", "detail", nil)
+			g.addLog(1, "act", "detail", nil, nil)
 			return g, NewDefaultZwicker()
 		}},
 		{"Cego", func() (any, any) {
@@ -164,27 +164,27 @@ func TestActionLogBaseAdopters_LogSurvivesAKVRoundTrip(t *testing.T) {
 		}},
 		{"Guandan", func() (any, any) {
 			g := NewDefaultGuandan()
-			g.addLog(1, "act", "detail", nil)
+			g.addLog(1, "act", "guandan.log.test", nil, nil)
 			return g, NewDefaultGuandan()
 		}},
 		{"Karnoffel", func() (any, any) {
 			g := NewDefaultKarnoffel()
-			g.addLog(1, "act", "detail", nil)
+			g.addLog(1, "act", "karnoffel.log.test", nil, nil)
 			return g, NewDefaultKarnoffel()
 		}},
 		{"Literature", func() (any, any) {
 			g := NewDefaultLiterature()
-			g.addLog(1, "act", "detail", nil)
+			g.addLog(1, "act", "literature.log.test", nil, nil)
 			return g, NewDefaultLiterature()
 		}},
 		{"ShengJi", func() (any, any) {
 			g := NewDefaultShengJi()
-			g.addLog(1, "act", "detail", nil)
+			g.addLog(1, "act", "shengji.log.test", nil, nil)
 			return g, NewDefaultShengJi()
 		}},
 		{"SixBidSolo", func() (any, any) {
 			g := NewDefaultSixBidSolo()
-			g.addLog(1, "act", "detail", nil)
+			g.addLog(1, "act", "sixbidsolo.log.test", nil, nil)
 			return g, NewDefaultSixBidSolo()
 		}},
 		{"Aluette", func() (any, any) {
@@ -252,7 +252,6 @@ func TestActionLogBaseAdopters_LogSurvivesAKVRoundTrip(t *testing.T) {
 			assert.Equal(t, b.TurnNumber, a.TurnNumber)
 			assert.Equal(t, b.PlayerIdx, a.PlayerIdx)
 			assert.Equal(t, b.ActionType, a.ActionType)
-			assert.Equal(t, b.Detail, a.Detail)
 		})
 	}
 }

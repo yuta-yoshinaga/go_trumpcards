@@ -702,7 +702,6 @@ func TestBatak_GetActionLog(t *testing.T) {
 	require.NotNil(t, entry)
 	assert.Equal(t, "batak.log.bid", entry.DetailCode)
 	assert.Equal(t, map[string]string{"name": "You", "bid": "5"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 func TestBatak_JSONRoundTrip(t *testing.T) {

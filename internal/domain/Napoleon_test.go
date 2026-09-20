@@ -82,7 +82,6 @@ func TestNapoleon_PlayerBid(t *testing.T) {
 			}
 		}
 		require.NotNil(t, bidLog)
-		assert.Empty(t, bidLog.Detail)
 		assert.Equal(t, map[string]string{"name": "You", "bid": "12"}, bidLog.DetailParams)
 	})
 

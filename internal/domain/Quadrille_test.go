@@ -125,7 +125,6 @@ func TestQuadrille_Bidding_WrongPhaseAndSuitRequired(t *testing.T) {
 		assert.NotEmpty(t, entry.DetailParams["name"])
 		assert.NotEmpty(t, entry.DetailParams["bid"])
 		assert.NotEmpty(t, entry.DetailParams["trump"])
-		assert.Empty(t, entry.Detail)
 	}
 
 	// Wrong phase -> error.

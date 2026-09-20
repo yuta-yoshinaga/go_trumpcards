@@ -55,7 +55,6 @@ func TestPitch_ActionLogUsesDetailCode(t *testing.T) {
 	}
 	require.NotNil(t, entry)
 	assert.Equal(t, map[string]string{"name": "You", "bid": "pass"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 func TestNewDefaultPitch(t *testing.T) {

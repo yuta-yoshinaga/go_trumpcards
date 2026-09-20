@@ -517,7 +517,6 @@ func TestCaribbeanStud_GetActionLog(t *testing.T) {
 	}
 	require.NotNil(t, betLog)
 	assert.Equal(t, map[string]string{"ante": "100", "jackpot": "0"}, betLog.DetailParams)
-	assert.Empty(t, betLog.Detail)
 }
 
 func TestCaribbeanStud_JSONRoundTrip(t *testing.T) {

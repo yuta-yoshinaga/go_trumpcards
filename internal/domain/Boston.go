@@ -167,7 +167,7 @@ func (b *Boston) beginHand() {
 	}
 
 	b.bidIdx = (b.dealerIdx + 1) % BostonPlayerCnt
-	b.addLog(-1, "deal", fmt.Sprintf("%d cards each in %v", BostonHandSize, bostonDealPattern), nil)
+	b.addLog(-1, "deal", "boston.log.deal", map[string]string{"cards": fmt.Sprintf("%d", BostonHandSize), "pattern": fmt.Sprintf("%v", bostonDealPattern)}, nil)
 }
 
 // newBostonDeck は 52 枚のデッキを返す。
@@ -229,7 +229,7 @@ func (b *Boston) Bid(player int, level BostonBidLevel, suit int) error {
 	b.bids = append(b.bids, rec)
 	b.highBid = rec
 	b.passCount = 0
-	b.addLog(player, "bid", fmt.Sprintf("bids %s", BostonBidName(level)), nil)
+	b.addLog(player, "bid", "boston.log.bid", map[string]string{"bid": BostonBidName(level)}, nil)
 	b.advanceBid()
 	return nil
 }
@@ -241,7 +241,7 @@ func (b *Boston) PassBid(player int) error {
 	}
 	b.bids = append(b.bids, &BostonBidRecord{Player: player, Level: BostonBidPass})
 	b.passCount++
-	b.addLog(player, "pass", "passes", nil)
+	b.addLog(player, "pass", "boston.log.pass", nil, nil)
 	b.advanceBid()
 	return nil
 }
@@ -254,7 +254,7 @@ func (b *Boston) advanceBid() {
 	}
 	if b.highBid == nil && b.passCount >= BostonPlayerCnt {
 		// **全員パスなら配り直し。**
-		b.addLog(-1, "redeal", "everybody passed", nil)
+		b.addLog(-1, "redeal", "boston.log.redeal", nil, nil)
 		b.handNumber--
 		b.beginHand()
 		return
@@ -267,7 +267,7 @@ func (b *Boston) settleBid() {
 	b.declarerIdx = b.highBid.Player
 	b.trumpSuit = b.highBid.Suit
 	b.exposed = BostonBidIsExposed(b.highBid.Level)
-	b.addLog(b.declarerIdx, "contract", fmt.Sprintf("takes %s", BostonBidName(b.highBid.Level)), nil)
+	b.addLog(b.declarerIdx, "contract", "boston.log.contract", map[string]string{"bid": BostonBidName(b.highBid.Level)}, nil)
 
 	// **パートナーを指名できるのはトリック数の宣言だけ。**
 	if BostonBidCanCallPartner(b.highBid.Level) {
@@ -297,9 +297,9 @@ func (b *Boston) CallPartner(player, partner int) error {
 	}
 	b.partnerIdx = partner
 	if partner >= 0 {
-		b.addLog(player, "call_partner", fmt.Sprintf("calls player %d", partner), nil)
+		b.addLog(player, "call_partner", "boston.log.callPartner", map[string]string{"player": fmt.Sprintf("%d", partner)}, nil)
 	} else {
-		b.addLog(player, "go_alone", "plays alone against three", nil)
+		b.addLog(player, "go_alone", "boston.log.goAlone", nil, nil)
 	}
 	b.beginPlay()
 	return nil
@@ -368,7 +368,7 @@ func (b *Boston) PlayCard(player, idx int) error {
 	card := p.GetCard(idx)
 	p.RemoveCard(idx)
 	b.trick = append(b.trick, card)
-	b.addLog(player, "play", "plays a card", []*Card{card})
+	b.addLog(player, "play", "boston.log.play", nil, []*Card{card})
 
 	if len(b.trick) < BostonPlayerCnt {
 		b.currentIdx = (player + 1) % BostonPlayerCnt
@@ -417,7 +417,7 @@ func (b *Boston) resolveTrick() {
 	b.trick = nil
 	b.trickLeader = winner
 	b.currentIdx = winner
-	b.addLog(winner, "trick", fmt.Sprintf("takes trick %d", b.trickNumber), nil)
+	b.addLog(winner, "trick", "boston.log.trickWin", map[string]string{"trick": fmt.Sprintf("%d", b.trickNumber)}, nil)
 
 	if b.trickNumber >= BostonHandSize {
 		b.finishHand()
@@ -463,9 +463,9 @@ func (b *Boston) finishHand() {
 	}
 
 	if b.bidMade {
-		b.addLog(b.declarerIdx, "hand_end", fmt.Sprintf("makes %s with %d tricks", BostonBidName(level), won), nil)
+		b.addLog(b.declarerIdx, "hand_end", "boston.log.handMade", map[string]string{"bid": BostonBidName(level), "tricks": fmt.Sprintf("%d", won)}, nil)
 	} else {
-		b.addLog(b.declarerIdx, "hand_end", fmt.Sprintf("fails %s with %d tricks", BostonBidName(level), won), nil)
+		b.addLog(b.declarerIdx, "hand_end", "boston.log.handFailed", map[string]string{"bid": BostonBidName(level), "tricks": fmt.Sprintf("%d", won)}, nil)
 	}
 
 	b.phase = BostonPhaseHandEnd
@@ -486,7 +486,7 @@ func (b *Boston) checkGameEnd() {
 	b.winnerIdx = bestIdx
 	b.gameEndFlag = true
 	b.phase = BostonPhaseGameEnd
-	b.addLog(bestIdx, "game_end", "finishes with the most chips", nil)
+	b.addLog(bestIdx, "game_end", "boston.log.gameEnd", nil, nil)
 }
 
 // NextHand は次の局を配る。
@@ -766,8 +766,8 @@ func (b *Boston) GetConfig() BostonConfig { return b.config }
 func (b *Boston) SetConfig(c BostonConfig) { b.config = c }
 
 // addLog は棋譜を 1 行足す。
-func (b *Boston) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	b.appendLog(playerIdx, actionType, detail, cards)
+func (b *Boston) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	b.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // SetPhaseForTest はテスト用にフェーズを設定する。

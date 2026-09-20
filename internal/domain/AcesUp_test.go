@@ -97,7 +97,6 @@ func TestAcesUp_Draw_ActionLogUsesDetailCode(t *testing.T) {
 	for _, entry := range a.GetActionLog() {
 		if entry.DetailCode == "acesup.log.dealt" {
 			assert.Nil(t, entry.DetailParams)
-			assert.Empty(t, entry.Detail)
 			return
 		}
 	}

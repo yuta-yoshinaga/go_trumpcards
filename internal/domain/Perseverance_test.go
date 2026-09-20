@@ -596,7 +596,6 @@ func TestPerseverance_ActionLog(t *testing.T) {
 	}
 	require.NotNil(t, entry)
 	assert.Equal(t, "perseverance.log.tableauToFoundation", entry.DetailCode)
-	assert.Empty(t, entry.Detail)
 	assert.Equal(t, "0", entry.DetailParams["column"])
 }
 

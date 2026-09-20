@@ -47,5 +47,22 @@
   "checkBeatsTable": "IT BEATS THE TABLE",
   "checkLosesToTable": "(it cannot beat the {{combo}} ({{size}}) on the table)",
   "checkNoHand": "There is no hand to check.",
-  "helpCheck": "  ch <i...>                 check a combo without playing it"
+  "helpCheck": "  ch <i...>                 check a combo without playing it",
+  "log.deal": "hand {{hand}} level {{level}}",
+  "log.tributeCancelled": "Tribute is off this hand: a payer held both red jokers.",
+  "log.tribute": "{{to}}",
+  "log.returnTribute": "{{from}}",
+  "log.playSingle": "1",
+  "log.playPair": "2",
+  "log.playTriple": "3",
+  "log.playFullHouse": "4",
+  "log.playStraight": "5",
+  "log.playPlate": "6",
+  "log.playTube": "7",
+  "log.playBomb": "8",
+  "log.playStraightFlush": "9",
+  "log.playJokerBomb": "10",
+  "log.out": "{{rank}}",
+  "log.pass": "passed",
+  "log.handEnd": "{{team}} +{{advance}}"
 }

@@ -639,7 +639,6 @@ func TestHighCardFlush_ActionLog(t *testing.T) {
 	}
 	require.NotNil(t, resultLog)
 	assert.Equal(t, "highcardflush.log.playerFolded", resultLog.DetailCode)
-	assert.Empty(t, resultLog.Detail)
 }
 
 func TestHighCardFlush_JSONRoundTrip(t *testing.T) {

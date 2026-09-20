@@ -117,7 +117,6 @@ func TestMrsMopMoveTableauToTableau(t *testing.T) {
 	entry := s.GetActionLog()[0]
 	assert.Equal(t, "mrsmop.log.moveTableauToTableau", entry.DetailCode)
 	assert.Equal(t, map[string]string{"fromCol": "0", "toCol": "1"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 func TestMrsMopMoveTableauToTableau_Errors(t *testing.T) {

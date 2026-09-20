@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // RollingStonePhase はローリングストーンのフェーズ。
@@ -194,8 +195,7 @@ func (r *RollingStone) Reset() {
 
 	r.leadPlayerIdx = 0
 	r.currentPlayerIdx = 0
-	r.addLog(-1, "start", fmt.Sprintf("ローリングストーンを開始しました（%d 人、%d 枚）",
-		r.config.PlayerCnt, want), nil)
+	r.addLog(-1, "start", "rollingstone.log.start", map[string]string{"players": strconv.Itoa(r.config.PlayerCnt), "cards": strconv.Itoa(want)}, nil)
 }
 
 // sortAllHands は手札をスート・ランク順に整える。
@@ -309,7 +309,7 @@ func (r *RollingStone) play(playerIdx, cardIndex int) error {
 
 	card := r.players[playerIdx].RemoveCard(cardIndex)
 	r.currentTrick = append(r.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	r.addLog(playerIdx, "play", "カードを出しました", []*Card{card})
+	r.addLog(playerIdx, "play", "rollingstone.log.play", nil, []*Card{card})
 
 	// **出し切ったら上がり。** 途中でも抜けます。
 	r.checkFinished(playerIdx)
@@ -374,8 +374,7 @@ func (r *RollingStone) pickUp(playerIdx int) error {
 	r.players[playerIdx].AddPickup()
 	r.lastPickupIdx = playerIdx
 	r.sortAllHands()
-	r.addLog(playerIdx, "pickup",
-		fmt.Sprintf("フォローできず %d 枚を引き取りました", len(taken)), taken)
+	r.addLog(playerIdx, "pickup", "rollingstone.log.pickup", map[string]string{"count": strconv.Itoa(len(taken))}, taken)
 
 	// **引き取った人が次のリード。**
 	r.trickNumber++
@@ -407,9 +406,7 @@ func (r *RollingStone) checkStalemate() bool {
 	r.gameEndFlag = true
 	r.winnerIdx = best
 	r.winReason = RollingStoneWinStalemate
-	r.addLog(best, "stalemate",
-		fmt.Sprintf("%d トリックで決着せず。手札のいちばん少ない席の勝ちとします（%d 枚）",
-			r.trickNumber, r.players[best].GetCardsSize()), nil)
+	r.addLog(best, "stalemate", "rollingstone.log.stalemate", map[string]string{"tricks": strconv.Itoa(r.trickNumber), "cards": strconv.Itoa(r.players[best].GetCardsSize())}, nil)
 	return true
 }
 
@@ -420,7 +417,7 @@ func (r *RollingStone) resolveTrick() {
 	for _, tc := range r.currentTrick {
 		cards = append(cards, tc.Card)
 	}
-	r.addLog(winner, "trick", "トリックを取りました（得点にはなりません）", cards)
+	r.addLog(winner, "trick", "rollingstone.log.trick", nil, cards)
 	r.discarded += len(cards)
 	r.currentTrick = nil
 	r.trickNumber++
@@ -493,7 +490,7 @@ func (r *RollingStone) checkFinished(playerIdx int) {
 	if r.winnerIdx < 0 {
 		r.winnerIdx = playerIdx
 	}
-	r.addLog(playerIdx, "finish", fmt.Sprintf("%d 番目に上がりました", r.finishedCnt), nil)
+	r.addLog(playerIdx, "finish", "rollingstone.log.finish", map[string]string{"rank": strconv.Itoa(r.finishedCnt)}, nil)
 	// **上がった瞬間に終局させる（レビュー指摘 PR #5316）。**
 	//
 	// 以前は `resolveTrick` でしか決着させていませんでした。上がった直後に
@@ -515,7 +512,7 @@ func (r *RollingStone) checkGameEnd() bool {
 	r.phase = RollingStonePhaseGameEnd
 	r.gameEndFlag = true
 	r.winReason = RollingStoneWinEmptied
-	r.addLog(r.winnerIdx, "result", "手札を出し切りました", nil)
+	r.addLog(r.winnerIdx, "result", "rollingstone.log.result", nil, nil)
 	return true
 }
 
@@ -538,7 +535,7 @@ func (r *RollingStone) GiveUp() {
 	}
 	r.winnerIdx = best
 	r.winReason = RollingStoneWinGiveUp
-	r.addLog(0, "giveup", "投了しました", nil)
+	r.addLog(0, "giveup", "rollingstone.log.giveup", nil, nil)
 }
 
 // chooseCpuCard は CPU の手。**手札を減らしたいので、安全に高い札から出す。**
@@ -595,8 +592,8 @@ func (r *RollingStone) GetHint() *RollingStoneHint {
 }
 
 // addLog は棋譜に 1 行足す。
-func (r *RollingStone) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	r.appendLog(playerIdx, actionType, detail, cards)
+func (r *RollingStone) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	r.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- アクセサ ---------------------------------------------------------------

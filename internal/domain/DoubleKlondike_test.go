@@ -27,9 +27,6 @@ func TestDoubleKlondike_ActionLogUsesDetailCode(t *testing.T) {
 	if entry == nil {
 		t.Fatal("expected double klondike deal log entry")
 	}
-	if entry.Detail != "" {
-		t.Fatalf("expected empty legacy detail, got %q", entry.Detail)
-	}
 }
 
 // dkClear empties the board for deterministic setups.

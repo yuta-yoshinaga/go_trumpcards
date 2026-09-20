@@ -1149,7 +1149,6 @@ func TestStalactitesActionLog(t *testing.T) {
 	assert.Equal(t, "move", log[0].ActionType)
 	assert.Equal(t, "stalactites.log.moveTableauToFoundation", log[0].DetailCode)
 	assert.Equal(t, map[string]string{"col": "0"}, log[0].DetailParams)
-	assert.Empty(t, log[0].Detail)
 }
 
 // --- maxMovableCards tests ---

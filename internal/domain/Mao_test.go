@@ -106,7 +106,6 @@ func TestMao_PlayTriggersAwaitingWord(t *testing.T) {
 		}
 	}
 	require.NotNil(t, playLog)
-	assert.Empty(t, playLog.Detail)
 	assert.Equal(t, map[string]string{"name": "You", "card": "♠9"}, playLog.DetailParams)
 }
 

@@ -1146,7 +1146,6 @@ func TestHearts_GetActionLog(t *testing.T) {
 	require.NotNil(t, found)
 	assert.Equal(t, "hearts.log.passLeft", found.DetailCode)
 	assert.Equal(t, map[string]string{"round": "1"}, found.DetailParams)
-	assert.Empty(t, found.Detail)
 }
 
 func TestHearts_GetPassedCards(t *testing.T) {
@@ -1768,7 +1767,6 @@ func TestHearts_ActionLog_PlayerNames(t *testing.T) {
 	assert.NotNil(t, log)
 	assert.Equal(t, "hearts.log.play", log[0].DetailCode)
 	assert.Equal(t, "You", log[0].DetailParams["name"])
-	assert.Empty(t, log[0].Detail)
 
 	// CPU plays -> log should contain "CPU"
 	cpu := h.GetPlayer(1)
@@ -1779,7 +1777,6 @@ func TestHearts_ActionLog_PlayerNames(t *testing.T) {
 	log = h.GetActionLog()
 	assert.Equal(t, "hearts.log.play", log[1].DetailCode)
 	assert.Equal(t, "CPU 1", log[1].DetailParams["name"])
-	assert.Empty(t, log[1].Detail)
 }
 
 // --- Full round scoring flow ---
@@ -1833,7 +1830,6 @@ func TestHearts_CardStr_UnknownDesignAndValue(t *testing.T) {
 	log := h.GetActionLog()
 	assert.Equal(t, "hearts.log.play", log[0].DetailCode)
 	assert.Equal(t, "??", log[0].DetailParams["card"])
-	assert.Empty(t, log[0].Detail)
 }
 
 // --- isPointCard branches ---
@@ -2214,7 +2210,6 @@ func TestHearts_ResolveTrick_ActionLog(t *testing.T) {
 		if entry.ActionType == "trick_win" {
 			found = true
 			assert.Equal(t, "hearts.log.trickWin", entry.DetailCode)
-			assert.Empty(t, entry.Detail)
 			assert.NotNil(t, entry.Cards)
 			assert.Equal(t, 4, len(entry.Cards))
 		}

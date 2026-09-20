@@ -1064,7 +1064,6 @@ func TestCrazyEights_ActionLog(t *testing.T) {
 	assert.Equal(t, 0, log[0].PlayerIdx)
 	assert.Equal(t, "crazyeights.log.play", log[0].DetailCode)
 	assert.Equal(t, map[string]string{"name": "You", "card": "♠3"}, log[0].DetailParams)
-	assert.Empty(t, log[0].Detail)
 }
 
 // --- CPU single valid card (len(validIndices) == 1 branch) ---

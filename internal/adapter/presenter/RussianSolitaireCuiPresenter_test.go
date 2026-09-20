@@ -172,7 +172,7 @@ func TestRussianSolitaireCuiPresenter_ActionLogOutput(t *testing.T) {
 		rg := new(interfaces.MockRussianSolitaireGame)
 		rg.On("GetPhase").Return(domain.RussianSolitairePhaseGameOver)
 		rg.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "move", Detail: "test"},
+			{TurnNumber: 1, ActionType: "move", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 
 		p := new(RussianSolitaireCuiPresenter)

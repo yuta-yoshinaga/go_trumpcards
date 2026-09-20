@@ -294,7 +294,7 @@ func TestSheepsheadWebPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockSheepsheadGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "pick", Detail: "You picks up the blind"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "pick", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, `"actionType":"pick"`)

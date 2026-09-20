@@ -88,7 +88,6 @@ func TestLoo_Reset_DealsAndAntes(t *testing.T) {
 	require.NotEmpty(t, logs)
 	assert.Equal(t, "loo.log.ante", logs[0].DetailCode)
 	assert.Equal(t, map[string]string{"ante": "3", "pot": "12"}, logs[0].DetailParams)
-	assert.Empty(t, logs[0].Detail)
 	for i := 0; i < domain.LooPlayerCnt; i++ {
 		assert.Equal(t, domain.LooHandSize, g.GetPlayer(i).GetCardsSize())
 	}

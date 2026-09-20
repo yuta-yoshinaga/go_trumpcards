@@ -85,7 +85,6 @@ func TestBeziqueActionLogUsesDetailCode(t *testing.T) {
 		if entry.ActionType == "trump" {
 			assert.Equal(t, "bezique.log.trump", entry.DetailCode)
 			assert.Equal(t, map[string]string{"card": entry.DetailParams["card"]}, entry.DetailParams)
-			assert.Empty(t, entry.Detail)
 			return
 		}
 	}

@@ -347,7 +347,7 @@ func (s *SixBidSolo) beginHand() {
 	s.bidIdx = (s.dealerIdx + 1) % SixBidSoloPlayerCnt
 	s.currentIdx = s.bidIdx
 	s.trickLeader = s.bidIdx
-	s.addLog(-1, "deal", "hand "+strconv.Itoa(s.handNumber), nil)
+	s.addLog(-1, "deal", "sixbidsolo.log.deal", map[string]string{"hand": strconv.Itoa(s.handNumber)}, nil)
 }
 
 // dealRound は 4 → 3 → ウィドウ 3 → 4 の順に配る。
@@ -445,7 +445,7 @@ func (s *SixBidSolo) Bid(player int, kind SixBidSoloBidKind) error {
 	b := &SixBidSoloBid{Player: player, Kind: kind}
 	s.bids = append(s.bids, b)
 	s.highBid = b
-	s.addLog(player, "bid", sixBidSoloBidName(kind), nil)
+	s.addLog(player, "bid", "sixbidsolo.log.bid"+upperFirst(sixBidSoloBidName(kind)), nil, nil)
 	s.advanceBid()
 	return nil
 }
@@ -457,7 +457,7 @@ func (s *SixBidSolo) PassBid(player int) error {
 	}
 	s.passed[player] = true
 	s.bids = append(s.bids, &SixBidSoloBid{Player: player, Kind: SixBidSoloBidPass})
-	s.addLog(player, "pass", "", nil)
+	s.addLog(player, "pass", "sixbidsolo.log.pass", nil, nil)
 	s.advanceBid()
 	return nil
 }
@@ -530,7 +530,7 @@ func (s *SixBidSolo) Declare(player, suit int, called *Card) error {
 			return err
 		}
 	}
-	s.addLog(player, "declare", sixBidSoloBidName(s.highBid.Kind)+" "+sixBidSoloSuitName(suit), nil)
+	s.addLog(player, "declare", "sixbidsolo.log.declare"+upperFirst(sixBidSoloBidName(s.highBid.Kind))+sixBidSoloSuitName(suit), nil, nil)
 	s.startPlay()
 	return nil
 }
@@ -679,7 +679,7 @@ func (s *SixBidSolo) PlayCard(player, idx int) error {
 	c := p.GetCard(idx)
 	p.RemoveCard(idx)
 	s.trick = append(s.trick, c)
-	s.addLog(player, "play", "", []*Card{c})
+	s.addLog(player, "play", "sixbidsolo.log.play", nil, []*Card{c})
 
 	// **公開の条件は「他の 2 人が 1 枚ずつ出したら」。**単に 2 枚出たら、
 	// ではない。落札者がリードする配席もあるので、宣言者以外が何人打ったかを
@@ -725,7 +725,7 @@ func (s *SixBidSolo) resolveTrick() {
 	}
 	s.points[winner] += pts
 	s.tricksWon[winner]++
-	s.addLog(winner, "trickWin", strconv.Itoa(pts)+"pt", s.trick)
+	s.addLog(winner, "trickWin", "sixbidsolo.log.trickWin", map[string]string{"points": strconv.Itoa(pts)}, s.trick)
 
 	s.trick = make([]*Card, 0, SixBidSoloPlayerCnt)
 	s.trickNumber++
@@ -828,7 +828,7 @@ func (s *SixBidSolo) finishHand() {
 		Deltas:         deltas,
 	}
 	s.phase = SixBidSoloPhaseHandEnd
-	s.addLog(dec, "settle", strconv.Itoa(declarerPts)+"/"+strconv.Itoa(target), nil)
+	s.addLog(dec, "settle", "sixbidsolo.log.settle", map[string]string{"points": strconv.Itoa(declarerPts), "target": strconv.Itoa(target)}, nil)
 	s.checkGameEnd()
 }
 
@@ -1189,9 +1189,11 @@ func (s *SixBidSolo) SetConfig(c SixBidSoloConfig) { s.config = c }
 func (s *SixBidSolo) GetActionLog() []*ActionLogEntry { return s.actionLog }
 
 // addLog は棋譜を 1 件追加する。
-func (s *SixBidSolo) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	s.appendLogAt(0, playerIdx, actionType, detail, cards)
+func (s *SixBidSolo) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	s.appendLogCodeAt(0, playerIdx, actionType, detailCode, detailParams, cards)
 }
+
+func upperFirst(s string) string { return string(s[0]-32) + s[1:] }
 
 // sixBidSoloBidName はビッドの内部名を返す (棋譜用)。
 func sixBidSoloBidName(k SixBidSoloBidKind) string {

@@ -33,5 +33,6 @@
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
   "helpHint": "  h                    助言を表示",
   "exchangeDetail": "（{{pairs}}）",
-  "exchangePair": "{{giver}}→{{taker}} {{n}}枚"
+  "exchangePair": "{{giver}}→{{taker}} {{n}}枚",
+  "log.deal": "ラウンド {{round}}：ノルマ 3/2/5 を割り当てました", "log.trump": "切り札は {{suit}}", "log.exchange": "前ラウンドの過不足で {{count}} 枚を移しました", "log.play": "{{card}}", "log.trick": "トリック {{trick}} を取りました", "log.scoreMet": "ノルマ {{target}} に対し {{tricks}} トリック：達成", "log.scoreMissed": "ノルマ {{target}} に対し {{tricks}} トリック：未達成", "log.result": "ゲーム終了", "log.giveup": "投了しました"
 }

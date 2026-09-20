@@ -279,7 +279,7 @@ func TestMusWebPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockMusGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "mus", Detail: "You wants mus"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "mus", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, `"actionType":"mus"`)

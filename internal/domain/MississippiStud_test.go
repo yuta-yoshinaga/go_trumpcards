@@ -121,7 +121,6 @@ func TestMississippiStud_Bet_Success(t *testing.T) {
 	require.NotNil(t, anteLog)
 	assert.Equal(t, "mississippistud.log.ante", anteLog.DetailCode)
 	assert.Equal(t, map[string]string{"amount": "100"}, anteLog.DetailParams)
-	assert.Empty(t, anteLog.Detail)
 	// すべてのコミュニティは伏せ
 	revealed := m.GetCommunityRevealed()
 	for _, r := range revealed {

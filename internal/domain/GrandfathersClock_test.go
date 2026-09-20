@@ -323,9 +323,6 @@ func TestGrandfathersClock_UndoRestoresBothZones(t *testing.T) {
 	require.NoError(t, gc.MoveTableauToTableau(1, 0))
 	assert.True(t, gc.CanUndo())
 	assert.Equal(t, 2, gc.GetMoveCount())
-	for _, e := range gc.GetActionLog() {
-		assert.Empty(t, e.Detail)
-	}
 
 	assert.Error(t, gc.UndoN(5), "more than the history holds")
 	require.NoError(t, gc.UndoN(2))
@@ -384,8 +381,6 @@ func TestGrandfathersClock_ActionLogUsesZeroBasedIndices(t *testing.T) {
 	assert.Equal(t, map[string]string{"value1": "0", "value2": "4"}, log[0].DetailParams)
 	assert.Equal(t, "grandfathersclock.log.move", log[1].DetailCode)
 	assert.Equal(t, map[string]string{"value1": "1", "value2": "0"}, log[1].DetailParams)
-	assert.Empty(t, log[0].Detail)
-	assert.Empty(t, log[1].Detail)
 }
 
 func TestGrandfathersClock_JSONRoundTrip(t *testing.T) {

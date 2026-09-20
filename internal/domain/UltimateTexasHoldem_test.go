@@ -186,7 +186,6 @@ func TestUltimateTexasHoldem_Bet_Success(t *testing.T) {
 	}
 	require.NotNil(t, entry)
 	assert.Equal(t, map[string]string{"ante": "100", "blind": "100", "trips": "50"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 	// 1000 - (ante 100 + blind 100 + trips 50) = 750
 	assert.Equal(t, domain.UltimateTexasHoldemDefaultChips-250, u.GetChips())
 }
@@ -605,9 +604,6 @@ func TestUltimateTexasHoldem_JSONUnmarshal_RejectsHugeSlices(t *testing.T) {
 		Detail     string `json:"Detail"`
 	}
 	huge := make([]entry, 1001)
-	for i := range huge {
-		huge[i] = entry{TurnNumber: i, PlayerIdx: 0, ActionType: "bet", Detail: "x"}
-	}
 	payload, err := json.Marshal(map[string]any{"al": huge})
 	require.NoError(t, err)
 	dst := new(domain.UltimateTexasHoldem)

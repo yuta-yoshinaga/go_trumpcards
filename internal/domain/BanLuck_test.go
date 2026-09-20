@@ -21,7 +21,6 @@ func TestBanLuckActionLogUsesDetailCode(t *testing.T) {
 	entry := g.GetActionLog()[0]
 	assert.Equal(t, "banluck.log.reset", entry.DetailCode)
 	assert.Empty(t, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 // blStackNext は次に引かれる札を指定する。

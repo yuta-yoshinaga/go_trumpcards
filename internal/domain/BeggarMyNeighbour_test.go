@@ -302,7 +302,6 @@ func TestBeggarMyNeighbour_ActionLog(t *testing.T) {
 	assert.NotEmpty(t, logs)
 	assert.Equal(t, "play", logs[0].ActionType)
 	assert.Equal(t, "beggarmyneighbour.log.play", logs[0].DetailCode)
-	assert.Empty(t, logs[0].Detail)
 	assert.Nil(t, logs[0].DetailParams)
 }
 

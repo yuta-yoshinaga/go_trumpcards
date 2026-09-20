@@ -117,7 +117,7 @@ func TestScopaPlayerPlay_Lay(t *testing.T) {
 			found = entry
 		}
 	}
-	if found == nil || found.Detail != "" || len(found.DetailParams) != 0 {
+	if found == nil || len(found.DetailParams) != 0 {
 		t.Fatalf("lay log = %#v, want code with empty detail and params", found)
 	}
 }

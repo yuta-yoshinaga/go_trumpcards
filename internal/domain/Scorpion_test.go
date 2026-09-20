@@ -760,7 +760,6 @@ func TestScorpion_ActionLog(t *testing.T) {
 	assert.Equal(t, "move", log[0].ActionType)
 	assert.Equal(t, "scorpion.log.move", log[0].DetailCode)
 	assert.Equal(t, map[string]string{"fromCol": "0", "toCol": "1"}, log[0].DetailParams)
-	assert.Empty(t, log[0].Detail)
 }
 
 func TestScorpion_MarshalUnmarshalJSON(t *testing.T) {

@@ -816,7 +816,6 @@ func TestOhHell_ActionLog(t *testing.T) {
 	entry := o.GetActionLog()[0]
 	assert.Equal(t, "ohhell.log.bid", entry.DetailCode)
 	assert.Equal(t, map[string]string{"name": "You", "bid": "2"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 // --- JSON round-trip ---

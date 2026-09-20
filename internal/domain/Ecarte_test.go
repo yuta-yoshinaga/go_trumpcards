@@ -105,7 +105,6 @@ func TestEcarteProposeActionLogCode(t *testing.T) {
 	}
 	require.NotNil(t, entry)
 	assert.Equal(t, map[string]string{"name": "You"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 func TestEcarte_StandStartsPlay(t *testing.T) {

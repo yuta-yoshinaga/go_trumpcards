@@ -27,5 +27,6 @@
   "helpExampleGiveUp": "  g                    give the round up",
   "helpHint": "  h                    show a hint",
   "roleLastCaptureTake": "[took from the table]",
-  "roleLastCaptureSteal": "[stole {{name}}'s bundle]"
+  "roleLastCaptureSteal": "[stole {{name}}'s bundle]",
+  "log.start": "Started Stealing Bundles ({{players}} players)", "log.take": "Took {{count}} cards from the table", "log.steal": "Stole {{count}} cards from seat {{victim}}'s bundle", "log.trail": "Placed a card on the table", "log.sweep": "Took the remaining {{count}} cards", "log.result": "Collected the most with {{count}} cards", "log.giveup": "Gave up"
 }

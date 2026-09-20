@@ -529,7 +529,6 @@ func TestBadugi_GetActionLog(t *testing.T) {
 	for _, entry := range bd.GetActionLog() {
 		if entry.DetailCode == "badugi.log.ante" {
 			assert.Equal(t, map[string]string{"amount": "10"}, entry.DetailParams)
-			assert.Empty(t, entry.Detail)
 			return
 		}
 	}

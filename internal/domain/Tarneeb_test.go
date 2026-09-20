@@ -104,7 +104,6 @@ func TestTarneeb_PlayerBid_LogUsesDetailCode(t *testing.T) {
 	require.NotNil(t, entry)
 	assert.Equal(t, "tarneeb.log.bid", entry.DetailCode)
 	assert.Equal(t, map[string]string{"name": "You", "bid": "7"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 func TestTarneeb_PlayerBid_ValueRange(t *testing.T) {

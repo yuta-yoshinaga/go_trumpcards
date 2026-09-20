@@ -110,7 +110,6 @@ func TestTwentyNine_BiddingResolvesHighestDeclarer(t *testing.T) {
 	entry := findMigratedActionLogEntry(g.GetActionLog(), "twentynine.log.bid")
 	require.NotNil(t, entry)
 	assert.Equal(t, map[string]string{"name": playerName(g.players, 1), "bid": "16"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 	if g.GetPhase() != TwentyNinePhasePlay {
 		t.Errorf("phase after bidding = %d, want Play", g.GetPhase())
 	}

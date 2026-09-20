@@ -215,7 +215,7 @@ func TestSheepshead_PickFlow(t *testing.T) {
 	if pickLog == nil {
 		t.Fatal("pick action log not found")
 	}
-	if pickLog.Detail != "" || pickLog.DetailCode != "sheepshead.log.pick" {
+	if pickLog.DetailCode != "sheepshead.log.pick" {
 		t.Fatalf("pick log = %#v, want code with empty detail", pickLog)
 	}
 }

@@ -92,7 +92,6 @@ func TestTablanetRankCaptureIsTablanet(t *testing.T) {
 	assert.Equal(t, 0, g.GetLastCaptureIdx())
 	for _, entry := range g.GetActionLog() {
 		if entry.DetailCode == "tablanet.log.scoresTabla" {
-			assert.Empty(t, entry.Detail)
 			assert.Equal(t, "You", entry.DetailParams["name"])
 			assert.Equal(t, "1", entry.DetailParams["count"])
 			return

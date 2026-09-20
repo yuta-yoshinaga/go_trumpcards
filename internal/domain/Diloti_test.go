@@ -80,7 +80,6 @@ func TestDiloti_XeriRequiresClearingTheTable(t *testing.T) {
 	entry := findMigratedActionLogEntry(d.GetActionLog(), "diloti.log.capture")
 	require.NotNil(t, entry)
 	assert.Equal(t, map[string]string{"player": "0", "cards": "1"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 	assert.Equal(t, 0, d.GetPlayer(0).GetXeri(), "局の初手がクセリに数えられている")
 	assert.Empty(t, d.GetTable())
 

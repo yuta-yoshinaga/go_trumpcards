@@ -7367,7 +7367,6 @@ func TestDaifugo_ActionLog_Play(t *testing.T) {
 			found = true
 			assert.Equal(t, "daifugo.log.play", e.DetailCode)
 			assert.Equal(t, map[string]string{"count": "1"}, e.DetailParams)
-			assert.Empty(t, e.Detail)
 			assert.Len(t, e.Cards, 1)
 			break
 		}
@@ -7414,7 +7413,6 @@ func TestDaifugo_ActionLog_Pass(t *testing.T) {
 			found = true
 			assert.Equal(t, "daifugo.log.pass", e.DetailCode)
 			assert.Empty(t, e.DetailParams)
-			assert.Empty(t, e.Detail)
 			break
 		}
 	}

@@ -308,7 +308,6 @@ func TestCoinche_PlayerBid_SetsTheContract(t *testing.T) {
 	}
 	require.NotNil(t, bidLog)
 	assert.Equal(t, map[string]string{"name": "You", "points": "100", "suit": "Spade"}, bidLog.DetailParams)
-	assert.Empty(t, bidLog.Detail)
 }
 
 // **上回れない宣言は拒否する。** 同点や下回る点を通すと、先に宣言した側が

@@ -191,7 +191,7 @@ func TestSomersetCuiPresenter_ActionLogOutput(t *testing.T) {
 		bg := new(interfaces.MockSomersetGame)
 		bg.On("GetPhase").Return(domain.SomersetPhaseGameOver)
 		bg.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "move", Detail: "test"},
+			{TurnNumber: 1, ActionType: "move", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 
 		p := new(SomersetCuiPresenter)

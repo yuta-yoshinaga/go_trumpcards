@@ -166,7 +166,6 @@ func TestDragonTiger_Bet_DragonWins_PaysDouble(t *testing.T) {
 	}
 	require.NotNil(t, entry)
 	assert.Equal(t, map[string]string{"amount": "100"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 func TestDragonTiger_Bet_TigerWins_PaysDouble(t *testing.T) {

@@ -23,7 +23,6 @@ func TestSutda_ActionLogUsesDetailCode(t *testing.T) {
 	assert.Equal(t, "sutda.log.deal", entry.DetailCode)
 	assert.Contains(t, entry.DetailParams, "hand")
 	assert.Contains(t, entry.DetailParams, "pot")
-	assert.Empty(t, entry.Detail)
 }
 
 // sutdaCard は月と複製番号から札を作る。複製 1 が光札 (1・3・8 月のみ)。

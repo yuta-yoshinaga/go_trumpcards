@@ -54,7 +54,6 @@ func TestAllFours_ActionLogUsesDetailCode(t *testing.T) {
 	}
 	require.NotNil(t, entry)
 	assert.Equal(t, map[string]string{"name": "You"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 func TestNewDefaultAllFours(t *testing.T) {

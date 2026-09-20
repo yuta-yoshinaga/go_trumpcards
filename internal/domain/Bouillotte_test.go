@@ -30,7 +30,6 @@ func TestBouillotteActionLogUsesDetailCode(t *testing.T) {
 	entry := g.GetActionLog()[0]
 	assert.Equal(t, "bouillotte.log.deal", entry.DetailCode)
 	assert.NotEmpty(t, entry.DetailParams["round"])
-	assert.Empty(t, entry.Detail)
 }
 
 // bouillotteEval3 は 3 枚 + retourne を評価するショートカット。

@@ -56,7 +56,6 @@ func TestHoldem_ActionLogUsesDetailCode(t *testing.T) {
 	entry := h.GetActionLog()[len(h.GetActionLog())-1]
 	assert.Equal(t, "holdem.log.raise", entry.DetailCode)
 	assert.Equal(t, map[string]string{"amount": "25"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 func TestHoldem_Resize(t *testing.T) {
@@ -2298,7 +2297,6 @@ func TestHoldem_ActionLog_Actions(t *testing.T) {
 		if e.ActionType == "blind" {
 			blindCount++
 			assert.Contains(t, []string{"holdem.log.smallBlind", "holdem.log.bigBlind"}, e.DetailCode)
-			assert.Empty(t, e.Detail)
 		}
 	}
 	assert.Equal(t, 2, blindCount, "expected 2 blind log entries (small + big)")

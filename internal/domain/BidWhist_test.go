@@ -290,7 +290,6 @@ func TestBidWhist_HumanBidValidationAndFlow(t *testing.T) {
 		}
 		entry := findActionLogEntry(t, g.GetActionLog(), "bidwhist.log.pass")
 		assert.NotEmpty(t, entry.DetailParams["name"])
-		assert.Empty(t, entry.Detail)
 	}
 }
 

@@ -172,7 +172,7 @@ func (h *Hasenpfeffer) startHand() {
 	h.handNumber++
 	h.currentPlayerIdx = (h.dealerIdx + 1) % HasenpfefferPlayerCnt
 	h.leadPlayerIdx = h.currentPlayerIdx
-	h.addLog(-1, "deal", fmt.Sprintf("ハンド %d を配りました（伏せ札 1 枚）", h.handNumber), nil)
+	h.addLog(-1, "deal", "hasenpfeffer.log.deal", map[string]string{"hand": fmt.Sprintf("%d", h.handNumber)}, nil)
 }
 
 // sortAllHands は手札をスート・ランク順に整える。
@@ -352,9 +352,9 @@ func (h *Hasenpfeffer) bidBy(playerIdx, bid int) error {
 	if bid > 0 {
 		h.declarerIdx = playerIdx
 		h.contract = bid
-		h.addLog(playerIdx, "bid", fmt.Sprintf("%d トリック宣言", bid), nil)
+		h.addLog(playerIdx, "bid", "hasenpfeffer.log.bid", map[string]string{"tricks": fmt.Sprintf("%d", bid)}, nil)
 	} else {
-		h.addLog(playerIdx, "pass", "降りました", nil)
+		h.addLog(playerIdx, "pass", "hasenpfeffer.log.pass", nil, nil)
 	}
 
 	if next := h.nextBidder(playerIdx); next >= 0 {
@@ -392,7 +392,7 @@ func (h *Hasenpfeffer) closeBidding() {
 	}
 	h.blind = nil
 	h.sortAllHands()
-	h.addLog(h.declarerIdx, "win", fmt.Sprintf("%d トリックで落札、伏せ札を取り込みました", h.contract), nil)
+	h.addLog(h.declarerIdx, "win", "hasenpfeffer.log.win", map[string]string{"tricks": fmt.Sprintf("%d", h.contract)}, nil)
 }
 
 // IsHumanBidTurn は人間が宣言する番かを返す。
@@ -492,8 +492,7 @@ func (h *Hasenpfeffer) discardBy(playerIdx, cardIndex, suit int) error {
 	h.leadPlayerIdx = (h.dealerIdx + 1) % HasenpfefferPlayerCnt
 	h.currentPlayerIdx = h.leadPlayerIdx
 	h.sortAllHands()
-	h.addLog(playerIdx, "trump", fmt.Sprintf("切り札は %s、%s を捨てました",
-		suitStr(suit), cardStr(discarded)), nil)
+	h.addLog(playerIdx, "trump", "hasenpfeffer.log.trump", map[string]string{"suit": suitStr(suit), "card": cardStr(discarded)}, nil)
 	return nil
 }
 
@@ -603,7 +602,7 @@ func (h *Hasenpfeffer) play(playerIdx, cardIndex int) error {
 
 	card := p.RemoveCard(cardIndex)
 	h.currentTrick = append(h.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	h.addLog(playerIdx, "play", cardStr(card), []*Card{card})
+	h.addLog(playerIdx, "play", "hasenpfeffer.log.play", map[string]string{"card": cardStr(card)}, []*Card{card})
 
 	if len(h.currentTrick) < HasenpfefferPlayerCnt {
 		h.currentPlayerIdx = (h.currentPlayerIdx + 1) % HasenpfefferPlayerCnt
@@ -625,7 +624,7 @@ func (h *Hasenpfeffer) resolveTrick() {
 	h.trickNumber++
 	h.leadPlayerIdx = winner
 	h.currentPlayerIdx = winner
-	h.addLog(winner, "trick", fmt.Sprintf("トリック %d を取りました", h.trickNumber), nil)
+	h.addLog(winner, "trick", "hasenpfeffer.log.trickWin", map[string]string{"trick": fmt.Sprintf("%d", h.trickNumber)}, nil)
 
 	if h.trickNumber >= HasenpfefferTricksPerRound {
 		h.finishHand()
@@ -675,14 +674,12 @@ func (h *Hasenpfeffer) finishHand() {
 	if took >= h.contract {
 		h.scores[declTeam] += took
 		h.lastHandEuchred = false
-		h.addLog(h.declarerIdx, "score",
-			fmt.Sprintf("契約 %d に対し %d トリック：達成 (+%d)", h.contract, took, took), nil)
+		h.addLog(h.declarerIdx, "score", "hasenpfeffer.log.scoreMade", map[string]string{"contract": fmt.Sprintf("%d", h.contract), "tricks": fmt.Sprintf("%d", took), "bonus": fmt.Sprintf("+%d", took)}, nil)
 	} else {
 		other := 1 - declTeam
 		h.scores[other] += h.contract
 		h.lastHandEuchred = true
-		h.addLog(h.declarerIdx, "score",
-			fmt.Sprintf("契約 %d に対し %d トリック：失敗、相手に +%d", h.contract, took, h.contract), nil)
+		h.addLog(h.declarerIdx, "score", "hasenpfeffer.log.scoreFailed", map[string]string{"contract": fmt.Sprintf("%d", h.contract), "tricks": fmt.Sprintf("%d", took), "bonus": fmt.Sprintf("+%d", h.contract)}, nil)
 	}
 	for team := range HasenpfefferTeamCnt {
 		if h.scores[team] >= h.config.Target {
@@ -713,7 +710,7 @@ func (h *Hasenpfeffer) finishGame() {
 	default:
 		h.winnerTeam = -1
 	}
-	h.addLog(-1, "result", fmt.Sprintf("最終得点 %d - %d", h.scores[0], h.scores[1]), nil)
+	h.addLog(-1, "result", "hasenpfeffer.log.result", map[string]string{"score0": fmt.Sprintf("%d", h.scores[0]), "score1": fmt.Sprintf("%d", h.scores[1])}, nil)
 }
 
 // GiveUp は投了する。
@@ -724,7 +721,7 @@ func (h *Hasenpfeffer) GiveUp() {
 	h.phase = HasenpfefferPhaseGameEnd
 	h.gameEndFlag = true
 	h.winnerTeam = 1
-	h.addLog(0, "giveup", "投了しました", nil)
+	h.addLog(0, "giveup", "hasenpfeffer.log.giveup", nil, nil)
 }
 
 // chooseCpuCard は CPU の手。
@@ -813,8 +810,8 @@ func hasenpfefferContains(xs []int, v int) bool {
 }
 
 // addLog は棋譜に 1 行足す。
-func (h *Hasenpfeffer) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	h.appendLog(playerIdx, actionType, detail, cards)
+func (h *Hasenpfeffer) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	h.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- アクセサ ---------------------------------------------------------------

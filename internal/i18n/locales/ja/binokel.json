@@ -78,5 +78,16 @@
   "errInvalidSuit": "無効なスートです。",
   "errPlayPhase": "プレイフェーズではありません。",
   "errInvalidCardIndex": "無効なカードインデックスです。",
-  "errCardCannotBePlayed": "このカードはプレイできません。"
+  "errCardCannotBePlayed": "このカードはプレイできません。",
+  "log.bid": "{{name}}がビッド: {{amount}}",
+  "log.pass": "{{name}}がパスしました",
+  "log.forcedBid": "全員パスのため最後の発言者が強制落札: {{amount}}点",
+  "log.dabbReveal": "Dabb公開: {{count}}枚",
+  "log.dabbDiscard": "{{name}}がDabbへ{{count}}枚伏せて捨てました",
+  "log.trump": "トランプ宣言: {{suit}}",
+  "log.meld": "メルド: {{points}}点",
+  "log.play": "カードプレイ",
+  "log.trickWin": "トリック獲得: {{points}}点",
+  "log.roundScore": "ラウンド終了: 累計スコア=[P0:{{score0}}, P1:{{score1}}, P2:{{score2}}]",
+  "log.gameEnd": "ゲーム終了！ プレイヤー{{player}}の勝ち！"
 }

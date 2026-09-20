@@ -98,7 +98,6 @@ func TestCalculation_PlayStockToFoundation_Valid(t *testing.T) {
 	log := c.GetActionLog()[0]
 	assert.Equal(t, "calculation.log.stockToFoundation", log.DetailCode)
 	assert.Equal(t, map[string]string{"foundation": "1"}, log.DetailParams)
-	assert.Empty(t, log.Detail)
 }
 
 func TestCalculation_PlayStockToFoundation_InvalidValue(t *testing.T) {

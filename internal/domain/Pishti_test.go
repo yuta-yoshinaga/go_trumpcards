@@ -118,7 +118,7 @@ func TestPishti_Pisti_SingleCardBonus(t *testing.T) {
 	}
 	for _, entry := range g.GetActionLog() {
 		if entry.DetailCode == "pishti.log.pisti" {
-			if entry.Detail != "" || entry.DetailParams["bonus"] != "10" || entry.DetailParams["count"] != "2" {
+			if entry.DetailParams["bonus"] != "10" || entry.DetailParams["count"] != "2" {
 				t.Fatalf("Pişti log = %+v, want empty detail and bonus/count params", entry)
 			}
 			return

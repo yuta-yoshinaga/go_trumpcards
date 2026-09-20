@@ -194,7 +194,7 @@ func TestCallBreakWebPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockCallBreakGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "x"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	out := p.ActionLogOutput(m)
 	assert.Contains(t, out, "\"actionType\":\"play\"")

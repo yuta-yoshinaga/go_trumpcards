@@ -65,5 +65,13 @@
   "errInvalidSuit": "無効なスートです。",
   "errPlayPhase": "プレイフェーズではありません。",
   "errInvalidCardIndex": "無効なカードインデックスです。",
-  "errCardCannotBePlayed": "このカードはプレイできません。"
+  "errCardCannotBePlayed": "このカードはプレイできません。",
+  "log.bid": "ビッド: {{amount}}",
+  "log.pass": "パス",
+  "log.forcedBid": "強制ビッド: {{amount}}",
+  "log.trump": "トランプ宣言: {{suit}}",
+  "log.meld": "メルド: {{points}}点",
+  "log.play": "カードプレイ",
+  "log.trickWin": "トリック獲得: {{points}}点",
+  "log.roundScore": "ラウンドスコア: チーム0={{team0}}, チーム1={{team1}} (累計: チーム0={{total0}}, チーム1={{total1}})"
 }

@@ -96,7 +96,7 @@ func TestOpenFaceChinese_PlayerPlaceFlow(t *testing.T) {
 		t.Fatalf("place err: %v", err)
 	}
 	entry := g.GetActionLog()[len(g.GetActionLog())-1]
-	if entry.DetailCode != "openfacechinese.log.place" || entry.Detail != "" || entry.DetailParams["name"] == "" || entry.DetailParams["card"] == "" || entry.DetailParams["row"] != "2" {
+	if entry.DetailCode != "openfacechinese.log.place" || entry.DetailParams["name"] == "" || entry.DetailParams["card"] == "" || entry.DetailParams["row"] != "2" {
 		t.Fatalf("place log = %#v, want code and name/card/row params", entry)
 	}
 	if len(p.GetBack()) != 1 {

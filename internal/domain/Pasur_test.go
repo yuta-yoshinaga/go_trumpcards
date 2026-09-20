@@ -23,7 +23,6 @@ func TestPasur_ActionLogUsesDetailCode(t *testing.T) {
 	for _, entry := range p.GetActionLog() {
 		if entry.DetailCode == "pasur.log.start" {
 			assert.Equal(t, map[string]string{"players": "4"}, entry.DetailParams)
-			assert.Empty(t, entry.Detail)
 			return
 		}
 	}

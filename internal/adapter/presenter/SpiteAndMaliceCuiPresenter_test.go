@@ -209,7 +209,9 @@ func TestSpiteAndMaliceCuiPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("game over", func(t *testing.T) {
 		g := new(interfaces.MockSpiteAndMaliceGame)
 		g.On("GetPhase").Return(domain.SpiteAndMalicePhaseGameOver)
-		g.On("GetActionLog").Return([]*domain.ActionLogEntry{{TurnNumber: 1, ActionType: "playHand", Detail: "test"}})
+		g.On("GetActionLog").Return([]*domain.ActionLogEntry{
+			{TurnNumber: 1, ActionType: "play", DetailCode: "spiteandmalice.log.playHand", DetailParams: map[string]string{"player": "1", "foundation": "1"}},
+		})
 		assert.NotEmpty(t, new(SpiteAndMaliceCuiPresenter).ActionLogOutput(g))
 	})
 }

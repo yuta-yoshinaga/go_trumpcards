@@ -543,7 +543,7 @@ func TestOldMaidWebPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("with entries", func(t *testing.T) {
 		mockGame := new(interfaces.MockOldMaidGame)
 		entries := []*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 1, ActionType: "draw", Detail: "drew a card", Cards: []*domain.Card{domain.NewCard(domain.CardDesignClover, 7, true)}},
+			{TurnNumber: 1, PlayerIdx: 1, ActionType: "draw", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}, Cards: []*domain.Card{domain.NewCard(domain.CardDesignClover, 7, true)}},
 		}
 		mockGame.On("GetGameEndFlag").Return(true)
 		mockGame.On("GetActionLog").Return(entries)
@@ -551,7 +551,7 @@ func TestOldMaidWebPresenter_ActionLogOutput(t *testing.T) {
 		result := p.ActionLogOutput(mockGame)
 
 		assert.Contains(t, result, `"actionType":"draw"`)
-		assert.Contains(t, result, `"detail":"drew a card"`)
+		assert.Contains(t, result, `"detailCode":"test.log.stub"`)
 		mockGame.AssertExpectations(t)
 	})
 

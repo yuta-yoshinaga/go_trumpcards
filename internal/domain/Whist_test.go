@@ -63,7 +63,6 @@ func TestWhist_ActionLogUsesDetailCode(t *testing.T) {
 	w.Reset()
 	for _, entry := range w.GetActionLog() {
 		if entry.DetailCode == "whist.log.trump" {
-			assert.Empty(t, entry.Detail)
 			assert.NotEmpty(t, entry.DetailParams["suit"])
 			return
 		}

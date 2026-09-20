@@ -564,11 +564,12 @@ func TestCribbage_JSONRoundTrip(t *testing.T) {
 
 func TestActionLogEntry_JSONRoundTrip(t *testing.T) {
 	entry := &ActionLogEntry{
-		TurnNumber: 3,
-		PlayerIdx:  0,
-		ActionType: "hit",
-		Detail:     "Player hits",
-		Cards:      []*Card{NewCard(CardDesignSpade, 7, false)},
+		TurnNumber:   3,
+		PlayerIdx:    0,
+		ActionType:   "hit",
+		DetailCode:   "blackjack.log.hit",
+		DetailParams: map[string]string{"name": "Player"},
+		Cards:        []*Card{NewCard(CardDesignSpade, 7, false)},
 	}
 
 	data, err := json.Marshal(entry)
@@ -580,7 +581,8 @@ func TestActionLogEntry_JSONRoundTrip(t *testing.T) {
 	assert.Equal(t, entry.TurnNumber, got.TurnNumber)
 	assert.Equal(t, entry.PlayerIdx, got.PlayerIdx)
 	assert.Equal(t, entry.ActionType, got.ActionType)
-	assert.Equal(t, entry.Detail, got.Detail)
+	assert.Equal(t, entry.DetailCode, got.DetailCode)
+	assert.Equal(t, entry.DetailParams, got.DetailParams)
 	require.Len(t, got.Cards, 1)
 	assert.Equal(t, entry.Cards[0].GetDesign(), got.Cards[0].GetDesign())
 	assert.Equal(t, entry.Cards[0].GetValue(), got.Cards[0].GetValue())

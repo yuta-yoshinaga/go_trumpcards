@@ -433,7 +433,6 @@ func TestZheng_PlayerPlay_LeaderMustPlay(t *testing.T) {
 	}
 	require.NotNil(t, entry)
 	assert.Equal(t, map[string]string{"count": "1"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 func TestZheng_PlayerPlay_PassOnTable(t *testing.T) {

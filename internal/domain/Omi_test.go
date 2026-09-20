@@ -28,7 +28,6 @@ func TestOmi_ResetActionLogUsesDetailCode(t *testing.T) {
 	for _, entry := range game.GetActionLog() {
 		if entry.DetailCode == "omi.log.dealFirstBatch" {
 			assert.Equal(t, map[string]string{"round": "1", "dealer": "0", "caller": "1", "cards": "4"}, entry.DetailParams)
-			assert.Empty(t, entry.Detail)
 			return
 		}
 	}

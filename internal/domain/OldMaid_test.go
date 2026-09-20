@@ -46,7 +46,6 @@ func TestOldMaid_Draw_ActionLogUsesDetailCode(t *testing.T) {
 	for _, entry := range om.GetActionLog() {
 		if entry.DetailCode == "oldmaid.log.draw" {
 			assert.Equal(t, map[string]string{"player": "1"}, entry.DetailParams)
-			assert.Empty(t, entry.Detail)
 			return
 		}
 	}
@@ -1459,7 +1458,6 @@ func TestOldMaid_ActionLog_Draw(t *testing.T) {
 			drawFound = true
 			assert.Equal(t, "oldmaid.log.draw", e.DetailCode)
 			assert.Equal(t, map[string]string{"player": "1"}, e.DetailParams)
-			assert.Empty(t, e.Detail)
 			assert.Len(t, e.Cards, 1)
 			break
 		}
