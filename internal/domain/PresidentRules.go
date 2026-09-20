@@ -1,8 +1,6 @@
 package domain
 
-import (
-	"fmt"
-)
+import "strconv"
 
 // triggerRevolutionIfNeeded 4枚出しで革命が起きるか判定し、起きた場合は革命フラグを切り替えて全プレイヤーの手札を再ソートする
 func (p *President) triggerRevolutionIfNeeded(cards []*Card) {
@@ -13,7 +11,7 @@ func (p *President) triggerRevolutionIfNeeded(cards []*Card) {
 		return
 	}
 	p.round.revolutionActive = !p.round.revolutionActive
-	p.appendLog(-1, "revolution", "revolution!", nil)
+	p.appendLog(-1, "revolution", "president.log.revolution", nil, nil)
 	p.sortAllActiveHands()
 }
 
@@ -39,12 +37,7 @@ func (p *President) performCardExchange() {
 
 	// 交換記録を棋譜に追加
 	for _, ex := range p.round.exchangeActions {
-		p.appendLog(
-			ex.FromPlayerIdx,
-			"exchange",
-			fmt.Sprintf("exchanged %d card(s) with player %d", len(ex.Cards), ex.ToPlayerIdx),
-			ex.Cards,
-		)
+		p.appendLog(ex.FromPlayerIdx, "exchange", "president.log.exchange", map[string]string{"count": strconv.Itoa(len(ex.Cards)), "player": strconv.Itoa(ex.ToPlayerIdx)}, ex.Cards)
 	}
 
 	// 交換後に再ソート

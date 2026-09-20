@@ -94,6 +94,9 @@ func TestAuldLangSyne_Deal_AddsOneCardToEveryWaste(t *testing.T) {
 	}
 	assert.Equal(t, 1, a.GetMoveCount())
 	assert.Len(t, a.GetActionLog(), 1)
+	assert.Equal(t, "auldlangsyne.log.deal", a.GetActionLog()[0].DetailCode)
+	assert.Equal(t, map[string]string{"count": "4"}, a.GetActionLog()[0].DetailParams)
+	assert.Empty(t, a.GetActionLog()[0].Detail)
 	assert.True(t, a.CanUndo(), "a deal must be undoable")
 }
 

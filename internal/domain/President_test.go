@@ -122,6 +122,12 @@ func TestPresident_PlayerPlay_Singles(t *testing.T) {
 
 		err := pr.PlayerPlay([]int{0}) // play the 3
 		assert.NoError(t, err)
+		logs := pr.GetActionLog()
+		assert.NotEmpty(t, logs)
+		entry := logs[len(logs)-1]
+		assert.Equal(t, "president.log.play", entry.DetailCode)
+		assert.Equal(t, map[string]string{"count": "1"}, entry.DetailParams)
+		assert.Empty(t, entry.Detail)
 		require.NotNil(t, pr.GetTableCards())
 		assert.Equal(t, 3, pr.GetTableCards()[0].GetValue())
 		assert.Equal(t, 0, pr.GetLastPlayPlayerIdx())

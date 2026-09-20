@@ -190,7 +190,7 @@ func TestActionLogBaseAdopters_LogSurvivesAKVRoundTrip(t *testing.T) {
 		{"Aluette", func() (any, any) {
 			g := NewDefaultAluette()
 			g.Reset()
-			g.appendLog(1, "act", "detail", nil)
+			g.appendLog(1, "act", "aluette.log.play", map[string]string{"name": "detail"}, nil)
 			return g, NewDefaultAluette()
 		}},
 		{"Minchiate", func() (any, any) {

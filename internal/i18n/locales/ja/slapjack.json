@@ -27,5 +27,8 @@
   "difficultyLine": "CPU難易度: {{difficulty}}",
   "difficultyEasy": "Easy",
   "difficultyNormal": "Normal",
-  "difficultyHard": "Hard"
+  "difficultyHard": "Hard",
+  "log.step": "ストックからめくりました (トップ={{top}})",
+  "log.correctSlap": "正しいスラップ、+{{count}}枚",
+  "log.wrongSlap": "誤スラップ、-{{count}}枚"
 }

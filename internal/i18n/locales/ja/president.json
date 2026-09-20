@@ -30,5 +30,10 @@
   "hintPlay": "推奨: 手札 [{{idxs}}] ({{cards}}) を出す",
   "hintPass": "推奨: 出せる手がないのでパス (p) しましょう。",
   "hintNotYourTurn": "今はあなたの番ではありません。",
-  "helpExampleHint": "  h                    次の一手を教えてもらう"
+  "helpExampleHint": "  h                    次の一手を教えてもらう",
+  "log.play": "{{count}}枚を出しました",
+  "log.revolution": "革命！",
+  "log.exchange": "{{player}}と{{count}}枚交換しました",
+  "log.pass": "パス",
+  "log.finish": "プレイヤー{{player}}が上がりました (ランク{{rank}})"
 }

@@ -20,5 +20,9 @@
   "hintToTableau": "tableau column {{col}}",
   "hintLine": "Hint: {{from}} → {{to}}",
   "helpExampleHint": "  h                    ask for a move",
-  "helpUndo": "  u                    undo one move"
+  "helpUndo": "  u                    undo one move",
+  "log.deal": "Dealt one card to each tableau column from the stock",
+  "log.move": "Moved from tableau column {{from}} to tableau column {{to}}",
+  "log.moveToFoundation": "Moved from tableau column {{column}} to foundation",
+  "log.giveUp": "Gave up"
 }
