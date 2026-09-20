@@ -40,6 +40,10 @@
   "foundationProgress": "On foundations: {{count}}/{{total}} ({{percent}}%)",
   "cornerKingsOnly": " (kings only)",
   "log.draw": "Drew a card",
-  "log.move": "Move: {{value1}}",
+  "log.moveSailToCenter": "Sail {{sail}} → centre foundation",
+  "log.moveSailToCorner": "Sail {{sail}} → corner foundation {{corner}}",
+  "log.moveWasteToCenter": "Waste → centre foundation",
+  "log.moveWasteToCorner": "Waste → corner foundation {{corner}}",
+  "log.moveCornerToCenter": "Corner foundation {{corner}} → centre foundation",
   "log.giveup": "Gave up"
 }

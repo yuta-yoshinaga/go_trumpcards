@@ -48,6 +48,9 @@
   "errSnapshotPileTooLarge": "A snapshot pile exceeds the maximum allowed size.",
   "errInputArrayTooLarge": "The input array exceeds the maximum allowed size.",
   "log.draw": "Drew a card",
-  "log.move": "Move: {{value1}}",
+  "log.moveWasteToTableau": "Waste → tableau column {{column}}",
+  "log.moveWasteToFoundation": "Waste → foundation {{foundation}}",
+  "log.moveTableauToTableau": "Tableau column {{from}} → tableau column {{to}} ({{count}} cards)",
+  "log.moveTableauToFoundation": "Tableau column {{column}} → foundation {{foundation}}",
   "log.giveup": "Gave up"
 }

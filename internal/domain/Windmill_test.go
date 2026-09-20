@@ -766,12 +766,12 @@ func TestWindmill_ActionLog(t *testing.T) {
 	// silently disagrees with the hint and the CLI.
 	log := w.GetActionLog()
 	require.Len(t, log, 4)
-	assert.Equal(t, "windmill.log.move", log[0].DetailCode)
-	assert.Equal(t, map[string]string{"value1": "0"}, log[0].DetailParams)
-	assert.Equal(t, "windmill.log.move", log[1].DetailCode)
-	assert.Equal(t, map[string]string{"value1": "1", "value2": "0"}, log[1].DetailParams)
-	assert.Equal(t, "windmill.log.move", log[2].DetailCode)
-	assert.Equal(t, map[string]string{"value1": "3"}, log[2].DetailParams)
+	assert.Equal(t, "windmill.log.moveSailToCenter", log[0].DetailCode)
+	assert.Equal(t, map[string]string{"sail": "0"}, log[0].DetailParams)
+	assert.Equal(t, "windmill.log.moveSailToCorner", log[1].DetailCode)
+	assert.Equal(t, map[string]string{"sail": "1", "corner": "0"}, log[1].DetailParams)
+	assert.Equal(t, "windmill.log.moveCornerToCenter", log[2].DetailCode)
+	assert.Equal(t, map[string]string{"corner": "3"}, log[2].DetailParams)
 	assert.Equal(t, "windmill.log.draw", log[3].DetailCode)
 	assert.Nil(t, log[3].DetailParams)
 }

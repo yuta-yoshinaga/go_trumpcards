@@ -58,4 +58,33 @@ describe('check-action-log-params', () => {
     const r = run(fixture('func f() { appendLog(0, "play", "fixture.log.play", nil, nil) }', { 'log.play': 'played' }));
     expect(r.status).toBe(0);
   });
+
+  it('finds code literals passed through an addLog wrapper', () => {
+    const r = run(
+      fixture(
+        `func f() {
+  addLog("fixture.log.play", map[string]string{"name": "x"})
+}
+func addLog(code string, params map[string]string) {
+  appendLogCode(code, params)
+}`,
+        { 'log.play': '{{name}} plays' },
+      ),
+    );
+    expect(r.status).toBe(0);
+    expect(r.stdout).toContain('checked 1 codes');
+  });
+
+  it('reports code literals whose params are hidden behind a variable', () => {
+    const r = run(
+      fixture(
+        `func f(params map[string]string) {
+  addLog("fixture.log.play", params)
+}`,
+        { 'log.play': '{{name}} plays' },
+      ),
+    );
+    expect(r.status).toBe(0);
+    expect(r.stdout).toContain('1 codes skipped because params could not be read');
+  });
 });

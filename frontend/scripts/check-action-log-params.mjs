@@ -40,9 +40,17 @@ function skipLiteral(source, start) {
   return source.length;
 }
 
-function callArguments(source, open) {
-  const args = [];
-  let start = open + 1;
+function mapKeys(argument) {
+  const map = argument.trim();
+  if (map === 'nil') return [];
+  if (!map.startsWith('map[string]string{')) return [];
+  return [...map.matchAll(/(?:[{,])\s*"([^"\\]+)"\s*:/g)].map((match) => match[1]);
+}
+
+function nextArgument(source, end) {
+  const rest = source.slice(end).match(/^\s*,\s*/)?.[0];
+  if (!rest) return null;
+  const start = end + rest.length;
   let parens = 0;
   let brackets = 0;
   let braces = 0;
@@ -53,54 +61,40 @@ function callArguments(source, open) {
       continue;
     }
     if (ch === '/' && source[i + 1] === '/') {
-      const end = source.indexOf('\n', i + 2);
-      i = end === -1 ? source.length : end;
+      const lineEnd = source.indexOf('\n', i + 2);
+      i = lineEnd === -1 ? source.length : lineEnd;
       continue;
     }
     if (ch === '/' && source[i + 1] === '*') {
-      const end = source.indexOf('*/', i + 2);
-      i = end === -1 ? source.length : end + 1;
+      const commentEnd = source.indexOf('*/', i + 2);
+      i = commentEnd === -1 ? source.length : commentEnd + 1;
       continue;
     }
     if (ch === '(') parens += 1;
     else if (ch === ')') {
-      if (parens === 0 && brackets === 0 && braces === 0) {
-        args.push(source.slice(start, i));
-        return args;
-      }
+      if (parens === 0 && brackets === 0 && braces === 0) return source.slice(start, i);
       parens -= 1;
     } else if (ch === '[') brackets += 1;
     else if (ch === ']') brackets -= 1;
     else if (ch === '{') braces += 1;
     else if (ch === '}') braces -= 1;
-    else if (ch === ',' && parens === 0 && brackets === 0 && braces === 0) {
-      args.push(source.slice(start, i));
-      start = i + 1;
-    }
+    else if (ch === ',' && parens === 0 && brackets === 0 && braces === 0) return source.slice(start, i);
   }
-  return [];
-}
-
-function mapKeys(argument) {
-  const map = argument.trim();
-  if (map === 'nil') return [];
-  if (!map.startsWith('map[string]string{')) return [];
-  return [...map.matchAll(/(?:[{,])\s*"([^"\\]+)"\s*:/g)].map((match) => match[1]);
+  return null;
 }
 
 function codeCalls(source) {
   const calls = new Map();
-  for (const match of source.matchAll(/\bappendLog[A-Za-z0-9_]*\s*\(/g)) {
-    const open = match.index + match[0].lastIndexOf('(');
-    const args = callArguments(source, open);
-    for (let i = 0; i < args.length - 1; i += 1) {
-      const code = args[i].trim().match(/^"([A-Za-z0-9_-]+\.log\.[A-Za-z0-9_]+)"$/)?.[1];
-      if (!code) continue;
-      const keys = calls.get(code) ?? new Set();
-      for (const key of mapKeys(args[i + 1])) keys.add(key);
-      calls.set(code, keys);
-      break;
+  for (const match of source.matchAll(/"([A-Za-z0-9_-]+\.log\.[A-Za-z0-9_.-]+)"/g)) {
+    const code = match[1];
+    const params = nextArgument(source, match.index + match[0].length);
+    const entry = calls.get(code) ?? { keys: new Set(), paramsAvailable: true };
+    if (params === null || (!params.trim().startsWith('map[string]string{') && params.trim() !== 'nil')) {
+      entry.paramsAvailable = false;
+    } else {
+      for (const key of mapKeys(params)) entry.keys.add(key);
     }
+    calls.set(code, entry);
   }
   return calls;
 }
@@ -122,16 +116,19 @@ try {
 }
 const calls = new Map();
 for (const file of files) {
-  for (const [code, keys] of codeCalls(await readFile(file, 'utf8'))) {
-    const allKeys = calls.get(code) ?? new Set();
-    for (const key of keys) allKeys.add(key);
-    calls.set(code, allKeys);
+  for (const [code, entry] of codeCalls(await readFile(file, 'utf8'))) {
+    const all = calls.get(code) ?? { keys: new Set(), paramsAvailable: true };
+    for (const key of entry.keys) all.keys.add(key);
+    all.paramsAvailable &&= entry.paramsAvailable;
+    calls.set(code, all);
   }
 }
 
 const mismatches = [];
 const warnings = [];
-for (const [code, keys] of [...calls.entries()].sort()) {
+const skippedCodes = new Set();
+for (const [code, entry] of [...calls.entries()].sort()) {
+  const { keys } = entry;
   const [game] = code.split('.');
   const localeKey = code.slice(game.length + 1);
   const localePlaceholders = new Map();
@@ -156,6 +153,10 @@ for (const [code, keys] of [...calls.entries()].sort()) {
   const ja = localePlaceholders.get('ja');
   const en = localePlaceholders.get('en');
   if (ja && en) {
+    if (!entry.paramsAvailable && (ja.size > 0 || en.size > 0)) {
+      skippedCodes.add(code);
+      continue;
+    }
     const missingJa = difference(ja, keys);
     const missingEn = difference(en, keys);
     if (missingJa.length) mismatches.push(`${code}: ja placeholders missing from params: ${missingJa.join(', ')}`);
@@ -182,6 +183,10 @@ if (!process.argv[2]) {
   assertFloor('action-log-params', calls.size, CODES_FLOOR, 'codes checked');
   assertFloor('action-log-params', files.length, SCANNED_FILE_FLOOR, 'Go files scanned');
 }
-console.log(`action-log-params: checked ${calls.size} codes (${files.length} Go files scanned).`);
+console.log(
+  `action-log-params: checked ${calls.size} codes (${skippedCodes.size} codes skipped because params could not be read; ${files.length} Go files scanned).`,
+);
 if (mismatches.length > 0) process.exit(1);
-console.log(`action-log-params: OK (${calls.size} codes checked; ${files.length} Go files scanned).`);
+console.log(
+  `action-log-params: OK (${calls.size} codes checked; ${skippedCodes.size} codes skipped because params could not be read; ${files.length} Go files scanned).`,
+);

@@ -48,6 +48,9 @@
   "errSnapshotPileTooLarge": "スナップショットのパイルが最大許容サイズを超えています",
   "errInputArrayTooLarge": "入力配列が最大許容サイズを超えています",
   "log.draw": "山札→ウェイスト",
-  "log.move": "ウェイスト→タブロー列{{value1}}",
+  "log.moveWasteToTableau": "ウェイスト→タブロー列{{column}}",
+  "log.moveWasteToFoundation": "ウェイスト→基礎札{{foundation}}",
+  "log.moveTableauToTableau": "タブロー列{{from}}→タブロー列{{to}}({{count}}枚)",
+  "log.moveTableauToFoundation": "タブロー列{{column}}→基礎札{{foundation}}",
   "log.giveup": "ギブアップしました"
 }

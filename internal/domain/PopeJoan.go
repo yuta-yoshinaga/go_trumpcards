@@ -278,11 +278,57 @@ func (p *PopeJoan) award(comp PopeJoanCompartment, seat int, byTurnUp bool) {
 	p.awards = append(p.awards, &PopeJoanAward{
 		Compartment: comp, Player: seat, Chips: n, ByTurnUp: byTurnUp,
 	})
-	detailCode := "popejoan.log.award." + comp.String()
-	if byTurnUp {
-		detailCode += "FromTurnUp"
+	p.addPopeJoanAwardLog(seat, comp, byTurnUp, n)
+}
+
+func popeJoanAwardLogCode(comp PopeJoanCompartment, byTurnUp bool) string {
+	switch comp {
+	case PopeJoanAce:
+		if byTurnUp {
+			return "popejoan.log.award.aceFromTurnUp"
+		}
+		return "popejoan.log.award.ace"
+	case PopeJoanKing:
+		if byTurnUp {
+			return "popejoan.log.award.kingFromTurnUp"
+		}
+		return "popejoan.log.award.king"
+	case PopeJoanQueen:
+		if byTurnUp {
+			return "popejoan.log.award.queenFromTurnUp"
+		}
+		return "popejoan.log.award.queen"
+	case PopeJoanJack:
+		if byTurnUp {
+			return "popejoan.log.award.jackFromTurnUp"
+		}
+		return "popejoan.log.award.jack"
+	case PopeJoanGame:
+		if byTurnUp {
+			return "popejoan.log.award.gameFromTurnUp"
+		}
+		return "popejoan.log.award.game"
+	case PopeJoanPope:
+		if byTurnUp {
+			return "popejoan.log.award.popeFromTurnUp"
+		}
+		return "popejoan.log.award.pope"
+	case PopeJoanMatrimony:
+		if byTurnUp {
+			return "popejoan.log.award.matrimonyFromTurnUp"
+		}
+		return "popejoan.log.award.matrimony"
+	default:
+		if byTurnUp {
+			return "popejoan.log.award.intrigueFromTurnUp"
+		}
+		return "popejoan.log.award.intrigue"
 	}
-	p.addLog(seat, "award", detailCode, map[string]string{"chips": strconv.Itoa(n)}, nil)
+}
+
+func (p *PopeJoan) addPopeJoanAwardLog(seat int, comp PopeJoanCompartment, byTurnUp bool, chips int) {
+	params := map[string]string{"chips": strconv.Itoa(chips)}
+	p.addLog(seat, "award", popeJoanAwardLogCode(comp, byTurnUp), params, nil)
 }
 
 // Play は手札 1 枚を出す。

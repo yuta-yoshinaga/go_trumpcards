@@ -821,7 +821,7 @@ func (g *Guandan) PlayCards(player int, idxs []int) error {
 	g.lastCombo = combo
 	g.lastPlayer = player
 	g.passCount = 0
-	g.addLog(player, "play", guandanPlayLogCode(combo.Kind), nil, cards)
+	g.addGuandanPlayLog(player, combo.Kind, cards)
 
 	if p.GetCardsSize() == 0 {
 		g.finished = append(g.finished, player)
@@ -1238,7 +1238,32 @@ func (g *Guandan) addLog(playerIdx int, actionType, detailCode string, detailPar
 }
 
 func guandanPlayLogCode(kind GuandanComboKind) string {
-	return "guandan.log.play" + []string{"", "Single", "Pair", "Triple", "FullHouse", "Straight", "Plate", "Tube", "Bomb", "StraightFlush", "JokerBomb"}[kind]
+	switch kind {
+	case GuandanComboSingle:
+		return "guandan.log.playSingle"
+	case GuandanComboPair:
+		return "guandan.log.playPair"
+	case GuandanComboTriple:
+		return "guandan.log.playTriple"
+	case GuandanComboFullHouse:
+		return "guandan.log.playFullHouse"
+	case GuandanComboStraight:
+		return "guandan.log.playStraight"
+	case GuandanComboPlate:
+		return "guandan.log.playPlate"
+	case GuandanComboTube:
+		return "guandan.log.playTube"
+	case GuandanComboBomb:
+		return "guandan.log.playBomb"
+	case GuandanComboStraightFlush:
+		return "guandan.log.playStraightFlush"
+	default:
+		return "guandan.log.playJokerBomb"
+	}
+}
+
+func (g *Guandan) addGuandanPlayLog(player int, kind GuandanComboKind, cards []*Card) {
+	g.addLog(player, "play", guandanPlayLogCode(kind), nil, cards)
 }
 
 // ---- テスト用 ----
