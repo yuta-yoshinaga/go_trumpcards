@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // CitadelPhase Citadel game phase
@@ -181,7 +182,7 @@ func (c *Citadel) MoveTableauToTableau(fromCol, cardIndex, toCol int) error {
 	c.tableau[toCol] = append(c.tableau[toCol], tc)
 	c.tableau[fromCol] = fromCards[:cardIndex]
 	c.moveCount++
-	c.appendLog("move", fmt.Sprintf("タブロー列%d→タブロー列%d", fromCol, toCol), []*Card{tc.Card})
+	c.appendLog("move", "citadel.log.moveTableauToTableau", map[string]string{"fromCol": strconv.Itoa(fromCol), "toCol": strconv.Itoa(toCol)}, []*Card{tc.Card})
 	c.checkStalemate()
 	return nil
 }
@@ -208,7 +209,7 @@ func (c *Citadel) MoveTableauToFoundation(col int) error {
 	c.tableau[col] = fromCards[:len(fromCards)-1]
 	c.foundation[fIdx] = append(c.foundation[fIdx], card)
 	c.moveCount++
-	c.appendLog("move", fmt.Sprintf("タブロー列%d→ファンデーション", col), []*Card{card})
+	c.appendLog("move", "citadel.log.moveTableauToFoundation", map[string]string{"col": strconv.Itoa(col)}, []*Card{card})
 	c.checkGameClear()
 	c.checkStalemate()
 	return nil
@@ -218,7 +219,7 @@ func (c *Citadel) MoveTableauToFoundation(col int) error {
 func (c *Citadel) GiveUp() {
 	if c.phase == CitadelPhasePlaying {
 		c.phase = CitadelPhaseGameOver
-		c.appendLog("giveup", "ギブアップしました", nil)
+		c.appendLog("giveup", "citadel.log.giveUp", nil, nil)
 	}
 }
 
@@ -294,7 +295,7 @@ func (c *Citadel) AutoComplete() error {
 			break
 		}
 	}
-	c.appendLog("autocomplete", "オートコンプリートを実行しました", nil)
+	c.appendLog("autocomplete", "citadel.log.autoComplete", nil, nil)
 	c.checkGameClear()
 	c.checkStalemate()
 	return nil
@@ -457,8 +458,8 @@ func (c *Citadel) restoreSnapshot(snap *citadelSnapshot) {
 }
 
 // appendLog 棋譜エントリを追加
-func (c *Citadel) appendLog(actionType, detail string, cards []*Card) {
-	c.appendLogAt(c.moveCount, 0, actionType, detail, cards)
+func (c *Citadel) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	c.appendLogCodeAt(c.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // citadelJSON is the JSON wire format for Citadel.

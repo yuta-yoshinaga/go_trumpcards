@@ -593,4 +593,8 @@ func TestFortress_ActionLog(t *testing.T) {
 	require.NoError(t, bc.MoveTableauToFoundation(0))
 	log := bc.GetActionLog()
 	assert.NotEmpty(t, log)
+	entry := log[len(log)-1]
+	assert.Equal(t, "fortress.log.moveTableauToFoundation", entry.DetailCode)
+	assert.Equal(t, map[string]string{"col": "0"}, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
 }

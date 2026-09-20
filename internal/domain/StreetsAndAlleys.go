@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // StreetsAndAlleysPhase Streets and Alleys game phase
@@ -168,7 +169,7 @@ func (sa *StreetsAndAlleys) MoveTableauToTableau(fromCol, cardIndex, toCol int) 
 	sa.tableau[toCol] = append(sa.tableau[toCol], tc)
 	sa.tableau[fromCol] = fromCards[:cardIndex]
 	sa.moveCount++
-	sa.appendLog("move", fmt.Sprintf("タブロー列%d→タブロー列%d", fromCol, toCol), []*Card{tc.Card})
+	sa.appendLog("move", "streetsandalleys.log.moveTableauToTableau", map[string]string{"fromCol": strconv.Itoa(fromCol), "toCol": strconv.Itoa(toCol)}, []*Card{tc.Card})
 	sa.checkStalemate()
 	return nil
 }
@@ -195,7 +196,7 @@ func (sa *StreetsAndAlleys) MoveTableauToFoundation(col int) error {
 	sa.tableau[col] = fromCards[:len(fromCards)-1]
 	sa.foundation[fIdx] = append(sa.foundation[fIdx], card)
 	sa.moveCount++
-	sa.appendLog("move", fmt.Sprintf("タブロー列%d→ファンデーション", col), []*Card{card})
+	sa.appendLog("move", "streetsandalleys.log.moveTableauToFoundation", map[string]string{"col": strconv.Itoa(col)}, []*Card{card})
 	sa.checkGameClear()
 	sa.checkStalemate()
 	return nil
@@ -205,7 +206,7 @@ func (sa *StreetsAndAlleys) MoveTableauToFoundation(col int) error {
 func (sa *StreetsAndAlleys) GiveUp() {
 	if sa.phase == StreetsAndAlleysPhasePlaying {
 		sa.phase = StreetsAndAlleysPhaseGameOver
-		sa.appendLog("giveup", "ギブアップしました", nil)
+		sa.appendLog("giveup", "streetsandalleys.log.giveUp", nil, nil)
 	}
 }
 
@@ -281,7 +282,7 @@ func (sa *StreetsAndAlleys) AutoComplete() error {
 			break
 		}
 	}
-	sa.appendLog("autocomplete", "オートコンプリートを実行しました", nil)
+	sa.appendLog("autocomplete", "streetsandalleys.log.autoComplete", nil, nil)
 	sa.checkGameClear()
 	sa.checkStalemate()
 	return nil
@@ -444,8 +445,8 @@ func (sa *StreetsAndAlleys) restoreSnapshot(snap *streetsAndAlleysSnapshot) {
 }
 
 // appendLog 棋譜エントリを追加
-func (sa *StreetsAndAlleys) appendLog(actionType, detail string, cards []*Card) {
-	sa.appendLogAt(sa.moveCount, 0, actionType, detail, cards)
+func (sa *StreetsAndAlleys) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	sa.appendLogCodeAt(sa.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // streetsAndAlleysJSON is the JSON wire format for StreetsAndAlleys.

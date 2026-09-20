@@ -627,6 +627,10 @@ func TestCitadel_ActionLog(t *testing.T) {
 	require.NoError(t, c.MoveTableauToFoundation(0))
 	log := c.GetActionLog()
 	assert.NotEmpty(t, log)
+	entry := log[len(log)-1]
+	assert.Equal(t, "citadel.log.moveTableauToFoundation", entry.DetailCode)
+	assert.Equal(t, map[string]string{"col": "0"}, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
 }
 
 func TestCitadel_AllFaceUp(t *testing.T) {

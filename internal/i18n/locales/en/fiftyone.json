@@ -22,5 +22,12 @@
   "winCpu": "CPU {{idx}} wins!",
   "promptHumanTurn": "Your turn: p <handIdx> <tableIdx> / a (swap all) / stop",
   "helpExampleAll": "  a                      swap all five cards",
-  "helpLog": "  l                      show the action log"
+  "helpLog": "  l                      show the action log",
+  "log.exchangeOne": "exchanged hand[{{handIdx}}] with table[{{tableIdx}}]",
+  "log.exchangeAll": "exchanged all 5 cards",
+  "log.callStop": "player {{playerIdx}} called stop (score: {{score}})",
+  "log.resultSpade": "score: {{score}} (suit: Spade)",
+  "log.resultClover": "score: {{score}} (suit: Clover)",
+  "log.resultHeart": "score: {{score}} (suit: Heart)",
+  "log.resultDiamond": "score: {{score}} (suit: Diamond)"
 }

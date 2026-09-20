@@ -17,5 +17,9 @@
   "targetsNone": "Column {{col}} from card {{idx}} has nowhere to go",
   "targetTableau": "column {{col}}",
   "helpTargets": "  t <col> [idx]            list where that column can go",
-  "moveUsage": "Usage: m <col> <col>  or  m t <col> <cardId> t <col>"
+  "moveUsage": "Usage: m <col> <col>  or  m t <col> <cardId> t <col>",
+  "log.moveTableauToTableau": "Move from tableau column {{fromCol}} to tableau column {{toCol}}",
+  "log.giveUp": "Gave up",
+  "log.autoComplete": "Ran auto-complete",
+  "log.completeSuit": "Completed a suit in tableau column {{col}}"
 }
