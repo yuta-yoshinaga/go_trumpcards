@@ -172,7 +172,12 @@ func (g *OpenFaceChinese) startRound() {
 	}
 	g.currentPlayerIdx = (g.dealerIdx + 1) % len(g.players)
 	g.phase = OpenFaceChinesePhasePlacing
-	g.appendLog(-1, "deal", "new round dealt", nil)
+	g.appendLog(-1, "deal", "openfacechinese.log.deal", nil, nil)
+}
+
+// appendLog records an Open Face Chinese action with a locale-independent detail code.
+func (g *OpenFaceChinese) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // IsHumanTurn 現在の手番が人間か（配置フェーズ）。
@@ -207,7 +212,11 @@ func (g *OpenFaceChinese) place(playerIdx, row int) error {
 	if err := p.placeCard(row); err != nil {
 		return err
 	}
-	g.appendLog(playerIdx, "place", fmt.Sprintf("%s places %s on row %d", playerName(g.players, playerIdx), cardStr(card), row), []*Card{card})
+	g.appendLog(playerIdx, "place", "openfacechinese.log.place", map[string]string{
+		"name": playerName(g.players, playerIdx),
+		"card": cardStr(card),
+		"row":  fmt.Sprintf("%d", row),
+	}, []*Card{card})
 	g.afterPlace(playerIdx)
 	return nil
 }
@@ -379,7 +388,7 @@ func (g *OpenFaceChinese) scoreRound() {
 		// 次ラウンドのファンタジーランド権を判定する。
 		p.fantasyland = !p.fouled && ofcQualifiesFantasyland(p)
 	}
-	g.appendLog(-1, "round_score", fmt.Sprintf("round %d scored", g.roundNumber), nil)
+	g.appendLog(-1, "round_score", "openfacechinese.log.roundScore", map[string]string{"round": fmt.Sprintf("%d", g.roundNumber)}, nil)
 	g.phase = OpenFaceChinesePhaseRoundEnd
 	g.checkGameEnd()
 }
@@ -420,7 +429,7 @@ func (g *OpenFaceChinese) checkGameEnd() {
 	} else {
 		g.winnerIdx = bestIdx
 	}
-	g.appendLog(-1, "game_end", "match finished", nil)
+	g.appendLog(-1, "game_end", "openfacechinese.log.gameEnd", nil, nil)
 }
 
 // --- Row validation / scoring helpers ---

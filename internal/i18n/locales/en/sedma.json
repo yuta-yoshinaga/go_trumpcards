@@ -1,4 +1,10 @@
 {
+  "log.play": "{{name}} plays {{card}}",
+  "log.trickWin": "{{name}} captures trick {{trick}} (+{{points}})",
+  "log.trickWinLast": "{{name}} captures trick {{trick}} (+{{points}} +{{bonus}} last)",
+  "log.roundScore": "round {{round}}: A={{teamA}} (round {{roundA}}), B={{teamB}} (round {{roundB}})",
+  "log.gameEndTeamA": "Team A wins the match!",
+  "log.gameEndTeamB": "Team B wins the match!",
   "helpTitle": "Sedma",
   "helpPlay": "  play <idx>               play a card",
   "helpNext": "  n                         go to next trick",

@@ -4,6 +4,7 @@ package domain
 
 import (
 	"encoding/json"
+	"strconv"
 	"testing"
 )
 
@@ -161,6 +162,10 @@ func TestSedma_AnyCardIsPlayable(t *testing.T) {
 	if err := g.PlayerPlay(0); err != nil { // off-rank discard is legal
 		t.Fatalf("any card should be legal, got: %v", err)
 	}
+	entry := g.GetActionLog()[0]
+	if entry.DetailCode != "sedma.log.play" || entry.Detail != "" || entry.DetailParams["name"] == "" || entry.DetailParams["card"] == "" {
+		t.Fatalf("play log = %#v, want code and name/card params with empty detail", entry)
+	}
 }
 
 func TestSedma_ResolveTrickPointsAndLastBonus(t *testing.T) {
@@ -175,6 +180,10 @@ func TestSedma_ResolveTrickPointsAndLastBonus(t *testing.T) {
 		{PlayerIdx: 3, Card: sedCard(CardDesignDiamond, 7)},
 	})
 	g.ResolveTrick()
+	entry := g.GetActionLog()[0]
+	if entry.DetailCode != "sedma.log.trickWinLast" || entry.Detail != "" || entry.DetailParams["points"] != "20" || entry.DetailParams["bonus"] != strconv.Itoa(SedmaLastTrickBonus) {
+		t.Fatalf("trick log = %#v, want final-trick code and points", entry)
+	}
 	pts := g.GetRoundCardPoints()
 	if pts[1] != 30 {
 		t.Errorf("team 1 round points = %d, want 30 (20 + 10 last)", pts[1])

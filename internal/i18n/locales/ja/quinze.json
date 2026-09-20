@@ -1,4 +1,10 @@
 {
+  "log.deal": "全員に1枚ずつ配った",
+  "log.hit": "1枚引いた",
+  "log.stand": "スタンド",
+  "log.bankerHit": "親が1枚引いた",
+  "log.result": "親は {{points}}",
+  "log.resultBust": "親がバースト（{{points}}）",
   "helpTitle": "Quinze (カーンズ)",
   "helpBet": "  b <額>                   ベットして配る（親のときは deal）",
   "helpDeal": "  deal                     自分が親の局を配る",

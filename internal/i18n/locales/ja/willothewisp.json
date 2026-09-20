@@ -1,4 +1,9 @@
 {
+  "log.deal": "ストックから各列にカードを配りました",
+  "log.move": "タブロー列{{from}}→タブロー列{{to}}",
+  "log.giveUp": "ギブアップしました",
+  "log.autocomplete": "オートコンプリートを実行しました",
+  "log.complete": "タブロー列{{column}}でスートが完成しました",
   "helpTitle": "Will o' the Wisp (ウィル・オ・ザ・ウィスプ)",
   "helpDeal": "  d                        deal from stock",
   "helpMove": "  m t <col> <idx> t <col>  move tableau to tableau",

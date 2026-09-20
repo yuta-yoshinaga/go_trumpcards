@@ -1,4 +1,11 @@
 {
+  "log.deal": "ラウンド{{round}}を配り、スプーンは{{spoons}}本",
+  "log.pass": "左隣にカードを1枚渡しました",
+  "log.four": "フォーオブアカインド！スプーンを掴んでください",
+  "log.grab": "スプーンを掴みました",
+  "log.missedSpoon": "スプーンを逃し、文字を1つ取りました（現在{{letters}}文字）",
+  "log.missedSpoonEliminated": "スプーンを逃し、脱落しました（SPOONS）",
+  "log.gameEnd": "ゲーム終了",
   "helpTitle": "Spoons (スプーン)",
   "helpPass": "  p <n>, pass <n>      手札 n 番を次のプレイヤーへ渡す",
   "helpGrab": "  g, grab              スプーンを掴む",

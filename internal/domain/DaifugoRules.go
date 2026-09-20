@@ -16,7 +16,7 @@ func (d *Daifugo) triggerRevolutionIfNeeded(cards []*Card, isSeq bool) {
 		return
 	}
 	d.round.revolutionActive = !d.round.revolutionActive
-	d.appendLog(-1, "revolution", "revolution!", nil)
+	d.appendLog(-1, "revolution", "daifugo.log.revolution", nil, nil)
 	d.sortAllActiveHands()
 }
 
@@ -111,7 +111,7 @@ func (d *Daifugo) triggerEmperor(cards []*Card) bool {
 		return false
 	}
 	d.round.revolutionActive = !d.round.revolutionActive
-	d.appendLog(-1, "revolution", "revolution!", nil)
+	d.appendLog(-1, "revolution", "daifugo.log.revolution", nil, nil)
 	d.sortAllActiveHands()
 	d.clearTableState()
 	return true
@@ -158,7 +158,7 @@ func (d *Daifugo) triggerCoupDetatIfNeeded(cards []*Card) {
 		}
 	}
 	d.round.revolutionActive = !d.round.revolutionActive
-	d.appendLog(-1, "revolution", "revolution!", nil)
+	d.appendLog(-1, "revolution", "daifugo.log.revolution", nil, nil)
 	d.sortAllActiveHands()
 }
 
@@ -536,7 +536,10 @@ func (d *Daifugo) performCardExchange() {
 
 	// 交換記録を棋譜に追加
 	for _, ex := range d.round.exchangeActions {
-		d.appendLog(ex.FromPlayerIdx, "exchange", fmt.Sprintf("exchanged %d card(s) with player %d", len(ex.Cards), ex.ToPlayerIdx), ex.Cards)
+		d.appendLog(ex.FromPlayerIdx, "exchange", "daifugo.log.exchange", map[string]string{
+			"count":  fmt.Sprintf("%d", len(ex.Cards)),
+			"player": fmt.Sprintf("%d", ex.ToPlayerIdx),
+		}, ex.Cards)
 	}
 
 	// 交換後に再ソート
@@ -639,7 +642,10 @@ func (d *Daifugo) finishPlayer(idx int) {
 	rank := d.countFinished() + 1
 	d.players[idx].SetIsFinished(true)
 	d.players[idx].SetRank(rank)
-	d.appendLog(idx, "finish", fmt.Sprintf("player %d finished (rank %d)", idx, rank), nil)
+	d.appendLog(idx, "finish", "daifugo.log.finish", map[string]string{
+		"player": fmt.Sprintf("%d", idx),
+		"rank":   fmt.Sprintf("%d", rank),
+	}, nil)
 	// 上がったプレイヤーが最後に出したプレイヤーなら場をクリア
 	if d.round.lastPlayPlayerIdx == idx {
 		d.clearTableState()

@@ -176,7 +176,7 @@ func (s *WillOTheWisp) Deal() error {
 	}
 	s.moveCount++
 	s.score -= WillOTheWispMovePenalty
-	s.appendLog("deal", "ストックから各列にカードを配りました", nil)
+	s.appendLog("deal", "willothewisp.log.deal", nil, nil)
 	for i := range WillOTheWispTableauCnt {
 		s.checkAndRemoveCompletedSuit(i)
 	}
@@ -229,7 +229,10 @@ func (s *WillOTheWisp) MoveTableauToTableau(fromCol, cardIndex, toCol int) error
 	s.tableau[fromCol] = fromCards[:cardIndex]
 	s.moveCount++
 	s.score -= WillOTheWispMovePenalty
-	s.appendLog("move", fmt.Sprintf("タブロー列%d→タブロー列%d", fromCol, toCol), movedCards)
+	s.appendLog("move", "willothewisp.log.move", map[string]string{
+		"from": fmt.Sprintf("%d", fromCol),
+		"to":   fmt.Sprintf("%d", toCol),
+	}, movedCards)
 	s.checkAndRemoveCompletedSuit(toCol)
 	s.checkWillOTheWispStalemate()
 	return nil
@@ -239,7 +242,7 @@ func (s *WillOTheWisp) MoveTableauToTableau(fromCol, cardIndex, toCol int) error
 func (s *WillOTheWisp) GiveUp() {
 	if s.phase == WillOTheWispPhasePlaying {
 		s.phase = WillOTheWispPhaseGameOver
-		s.appendLog("giveup", "ギブアップしました", nil)
+		s.appendLog("giveup", "willothewisp.log.giveUp", nil, nil)
 	}
 }
 
@@ -318,7 +321,7 @@ func (s *WillOTheWisp) AutoComplete() error {
 			break
 		}
 	}
-	s.appendLog("autocomplete", "オートコンプリートを実行しました", nil)
+	s.appendLog("autocomplete", "willothewisp.log.autocomplete", nil, nil)
 	s.checkGameClear()
 	return nil
 }
@@ -470,7 +473,7 @@ func (s *WillOTheWisp) checkAndRemoveCompletedSuit(col int) bool {
 	s.tableau[col] = cards[:startIdx]
 	s.completedSuits++
 	s.score += WillOTheWispSuitBonus
-	s.appendLog("complete", fmt.Sprintf("タブロー列%dでスートが完成しました", col), nil)
+	s.appendLog("complete", "willothewisp.log.complete", map[string]string{"column": fmt.Sprintf("%d", col)}, nil)
 
 	s.checkGameClear()
 	return true
@@ -544,8 +547,8 @@ func (s *WillOTheWisp) restoreSnapshot(snap *willOTheWispSnapshot) {
 }
 
 // appendLog 棋譜エントリを追加
-func (s *WillOTheWisp) appendLog(actionType, detail string, cards []*Card) {
-	s.appendLogAt(s.moveCount, 0, actionType, detail, cards)
+func (s *WillOTheWisp) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	s.appendLogCodeAt(s.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // willOTheWispJSON is the JSON wire format for WillOTheWisp.
