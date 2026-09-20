@@ -34,5 +34,16 @@
   "magicEffectSeven": "Forced down: next play must be 7 or lower",
   "magicEffectEight": "Skip: skip the next player's turn",
   "magicEffectTen": "Burn: clear the discard pile and play again",
-  "magicLegendItem": "{{rank}} = {{effect}}"
+  "magicLegendItem": "{{rank}} = {{effect}}",
+  "log.facedownPickup": "face-down {{card}} was not playable; picked up discard",
+  "log.playOneFromHand": "played {{card}} from hand",
+  "log.playOneFromFaceUp": "played {{card}} from the face-up cards",
+  "log.playOneFromFaceDown": "played {{card}} from the face-down cards",
+  "log.playManyFromHand": "played {{count}} {{value}}s from hand",
+  "log.playManyFromFaceUp": "played {{count}} {{value}}s from the face-up cards",
+  "log.playManyFromFaceDown": "played {{count}} {{value}}s from the face-down cards",
+  "log.burned": "burned the pile",
+  "log.skipped": "next player skipped",
+  "log.pickup": "picked up the discard pile",
+  "log.finish": "finished at rank {{rank}}"
 }

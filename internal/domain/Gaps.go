@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // GapsPhase はGaps（Montana）ゲームのフェーズを表す。
@@ -134,7 +135,7 @@ func (g *Gaps) Move(fromRow, fromCol, toRow, toCol int) error {
 	g.grid[toRow][toCol] = src
 	g.grid[fromRow][fromCol] = nil
 	g.moveCount++
-	g.appendLog("move", fmt.Sprintf("(%d,%d)→(%d,%d)", fromRow, fromCol, toRow, toCol), []*Card{src})
+	g.appendLog("move", "gaps.log.move", map[string]string{"fromRow": strconv.Itoa(fromRow), "fromCol": strconv.Itoa(fromCol), "toRow": strconv.Itoa(toRow), "toCol": strconv.Itoa(toCol)}, []*Card{src})
 	g.checkGameClear()
 	g.checkStalemate()
 	return nil
@@ -258,7 +259,7 @@ func (g *Gaps) Redeal() error {
 	g.grid = newGrid
 	g.redealsUsed++
 	g.moveCount++
-	g.appendLog("redeal", fmt.Sprintf("redeal #%d", g.redealsUsed), nil)
+	g.appendLog("redeal", "gaps.log.redeal", map[string]string{"count": strconv.Itoa(g.redealsUsed)}, nil)
 	g.checkGameClear()
 	g.checkStalemate()
 	return nil
@@ -338,7 +339,7 @@ func (g *Gaps) UndoN(n int) error {
 func (g *Gaps) GiveUp() {
 	if g.phase == GapsPhasePlaying {
 		g.phase = GapsPhaseGameOver
-		g.appendLog("giveup", "give up", nil)
+		g.appendLog("giveup", "gaps.log.giveUp", nil, nil)
 	}
 }
 
@@ -463,8 +464,8 @@ func (g *Gaps) restoreSnapshot(snap *gapsSnapshot) {
 }
 
 // appendLog はアクションログにエントリを追加する。
-func (g *Gaps) appendLog(actionType, detail string, cards []*Card) {
-	g.appendLogAt(g.moveCount, 0, actionType, detail, cards)
+func (g *Gaps) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCodeAt(g.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // --- Getters / setters ---

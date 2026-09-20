@@ -32,5 +32,9 @@
   "helpExamplePlay": "  play 0               手札の 0 番のカードを出す",
   "helpExampleNext": "  n                    トリックの決着を見てから次のトリックへ",
   "helpHint": "  h                    助言を表示",
-  "errCardIndexOutOfRange": "カードインデックスが範囲外です"
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "log.matchEnd": "マッチ終了",
+  "log.play": "{{name}}",
+  "log.trickWin": "トリック {{trick}} を獲得",
+  "log.roundEnd": "メーヌ {{round}} 終了"
 }

@@ -18,6 +18,15 @@ func newAndarBaharForTest(t *testing.T) *AndarBahar {
 	return ab
 }
 
+func TestAndarBaharActionLogUsesDetailCode(t *testing.T) {
+	ab := &AndarBahar{}
+	ab.appendLogCode(0, "bet", "andarbahar.log.bet", map[string]string{"column": "アンダー", "amount": "100"}, nil)
+	entry := ab.GetActionLog()[0]
+	assert.Equal(t, "andarbahar.log.bet", entry.DetailCode)
+	assert.Equal(t, map[string]string{"column": "アンダー", "amount": "100"}, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
+}
+
 // **先に配る列は基準札の色で決まる。** 黒ならアンダー、赤ならバハール。
 func TestAndarBaharFirstColumnFollowsTheJokerColour(t *testing.T) {
 	t.Parallel()

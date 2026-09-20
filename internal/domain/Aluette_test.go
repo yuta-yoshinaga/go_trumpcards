@@ -597,3 +597,12 @@ func TestAluette_TrickWinnerSurvivesNilEntries(t *testing.T) {
 	assert.Equal(t, 0, aluetteTrickWinnerOf([]*TrickCard{nil, nil}))
 	assert.Equal(t, 2, aluetteTrickWinnerOf([]*TrickCard{nil, {PlayerIdx: 2, Card: NewCard(1, 4, false)}}))
 }
+
+func TestAluetteActionLogUsesDetailCode(t *testing.T) {
+	g := &Aluette{}
+	g.appendLog(-1, "gameend", "aluette.log.matchEnd", nil, nil)
+	entry := g.GetActionLog()[0]
+	assert.Equal(t, "aluette.log.matchEnd", entry.DetailCode)
+	assert.Empty(t, entry.DetailParams)
+	assert.Empty(t, entry.Detail)
+}

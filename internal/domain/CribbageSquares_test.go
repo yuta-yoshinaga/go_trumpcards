@@ -169,6 +169,8 @@ func TestCribbageSquares_PlaceLogsTheStarter(t *testing.T) {
 	log := c.GetActionLog()
 	require.NotEmpty(t, log)
 	assert.Equal(t, "starter", log[len(log)-1].ActionType)
+	assert.Equal(t, "cribbagesquares.log.starter", log[len(log)-1].DetailCode)
+	assert.Empty(t, log[len(log)-1].Detail)
 	assert.Len(t, log[len(log)-1].Cards, 1)
 }
 

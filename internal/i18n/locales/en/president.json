@@ -30,5 +30,10 @@
   "hintPlay": "Suggestion: play hand [{{idxs}}] ({{cards}})",
   "hintPass": "Suggestion: no legal play — pass (p).",
   "hintNotYourTurn": "It is not your turn right now.",
-  "helpExampleHint": "  h                    ask for a move"
+  "helpExampleHint": "  h                    ask for a move",
+  "log.play": "played {{count}} card(s)",
+  "log.revolution": "revolution!",
+  "log.exchange": "exchanged {{count}} card(s) with player {{player}}",
+  "log.pass": "pass",
+  "log.finish": "player {{player}} finished (rank {{rank}})"
 }

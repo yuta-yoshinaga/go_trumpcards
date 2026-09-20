@@ -11,6 +11,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"strconv"
 )
 
 // ShitheadPlayerCnt シットヘッドのプレイヤー数 (4人固定)
@@ -478,9 +479,7 @@ func (s *Shithead) playFromFaceDown(idx int, p *ShitheadPlayer, fdIdx int, isHum
 		Source:    ShitheadSourceFaceDown,
 		Pickup:    true,
 	}, isHuman)
-	s.appendLog(idx, "facedown_pickup",
-		fmt.Sprintf("face-down %s was not playable; picked up discard", cuiCardName(c)),
-		[]*Card{c})
+	s.appendLog(idx, "facedown_pickup", "shithead.log.facedownPickup", map[string]string{"card": cuiCardName(c)}, []*Card{c})
 	s.advanceTurn()
 	s.checkGameEnd()
 	return nil
@@ -604,7 +603,38 @@ func (s *Shithead) applyPlay(idx int, cards []*Card, source string, isHuman bool
 		Burned:      burned,
 		Skipped:     skipped,
 	}, isHuman)
-	s.appendLog(idx, "play", buildPlayDetail(cards, burned, skipped, source), append([]*Card{}, cards...))
+	playDetailCode := "shithead.log.playOneFromHand"
+	if len(cards) > 1 {
+		playDetailCode = "shithead.log.playManyFromHand"
+	}
+	switch source {
+	case ShitheadSourceFaceUp:
+		if len(cards) == 1 {
+			playDetailCode = "shithead.log.playOneFromFaceUp"
+		} else {
+			playDetailCode = "shithead.log.playManyFromFaceUp"
+		}
+	case ShitheadSourceFaceDown:
+		if len(cards) == 1 {
+			playDetailCode = "shithead.log.playOneFromFaceDown"
+		} else {
+			playDetailCode = "shithead.log.playManyFromFaceDown"
+		}
+	}
+	playParams := map[string]string{}
+	if len(cards) == 1 {
+		playParams["card"] = cuiCardName(cards[0])
+	} else {
+		playParams["count"] = strconv.Itoa(len(cards))
+		playParams["value"] = valueName(cards[0])
+	}
+	s.appendLog(idx, "play", playDetailCode, playParams, append([]*Card{}, cards...))
+	if burned {
+		s.appendLog(idx, "burned", "shithead.log.burned", nil, nil)
+	}
+	if skipped {
+		s.appendLog(idx, "skipped", "shithead.log.skipped", nil, nil)
+	}
 
 	// Check finish for this player
 	s.maybeMarkFinished(idx)
@@ -655,7 +685,7 @@ func (s *Shithead) pickupAndAdvance(idx int, isHuman bool) error {
 		PlayerIdx: idx,
 		Pickup:    true,
 	}, isHuman)
-	s.appendLog(idx, "pickup", "picked up the discard pile", nil)
+	s.appendLog(idx, "pickup", "shithead.log.pickup", nil, nil)
 	s.advanceTurn()
 	s.checkGameEnd()
 	return nil
@@ -686,7 +716,7 @@ func (s *Shithead) maybeMarkFinished(idx int) {
 		p.SetIsFinished(true)
 		p.SetRank(s.round.nextRank)
 		s.round.nextRank++
-		s.appendLog(idx, "finish", fmt.Sprintf("finished at rank %d", p.GetRank()), nil)
+		s.appendLog(idx, "finish", "shithead.log.finish", map[string]string{"rank": strconv.Itoa(p.GetRank())}, nil)
 	}
 }
 
@@ -752,25 +782,8 @@ func (s *Shithead) recordAction(_ int, action *ShitheadCpuAction, isHuman bool) 
 }
 
 // appendLog adds an entry to the action log.
-func (s *Shithead) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	s.round.appendLog(playerIdx, actionType, detail, cards)
-}
-
-// buildPlayDetail constructs a human-readable description of a play.
-func buildPlayDetail(cards []*Card, burned, skipped bool, source string) string {
-	var s string
-	if len(cards) == 1 {
-		s = fmt.Sprintf("played %s from %s", cuiCardName(cards[0]), source)
-	} else {
-		s = fmt.Sprintf("played %d %ss from %s", len(cards), valueName(cards[0]), source)
-	}
-	if burned {
-		s += " (burned the pile)"
-	}
-	if skipped {
-		s += " (next player skipped)"
-	}
-	return s
+func (s *Shithead) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	s.round.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // cuiCardName returns "<suit> <value>" like "SPADE 5". Used only for action

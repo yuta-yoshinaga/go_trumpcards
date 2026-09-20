@@ -33,5 +33,9 @@
   "andarBaharHintBaharFirst": "バハールから配ります。バハールは 51.50% で当たりますが配当は 0.9:1 です",
   "andarBaharHintWaitNextRound": "決着しました。次のラウンドを始めてください",
   "helpExampleBet": "  b 100 a                       100 をアンダーに賭ける",
-  "payoutBreakdownLine": "　内訳: メイン {{main}} / サイド {{side}}"
+  "payoutBreakdownLine": "　内訳: メイン {{main}} / サイド {{side}}",
+  "log.joker": "基準札 {{column}} が公開されました",
+  "log.bet": "{{column}} に {{amount}} ベットしました",
+  "log.match": "{{column}} に基準札と同じランクが出ました ({{count}} 枚目)",
+  "log.result": "{{column}} の勝ち。払い戻し {{payout}}"
 }

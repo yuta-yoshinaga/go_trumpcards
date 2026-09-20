@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"strconv"
 )
 
 // PresidentPlayerCnt プレジデントのプレイヤー数 (4人固定)
@@ -205,7 +206,7 @@ func (p *President) PlayerPlay(indices []int) error {
 	cards := player.RemoveCards(indices)
 	action := &PresidentCpuAction{PlayerIdx: p.round.currentTurn, PlayedCards: cards}
 	p.round.humanAction = action
-	p.appendLog(p.round.currentTurn, "play", fmt.Sprintf("played %d card(s)", len(cards)), cards)
+	p.appendLog(p.round.currentTurn, "play", "president.log.play", map[string]string{"count": strconv.Itoa(len(cards))}, cards)
 	p.playCards(p.round.currentTurn, cards)
 	return nil
 }
@@ -235,7 +236,7 @@ func (p *President) handlePass(playerIdx int, setAction func(*PresidentCpuAction
 	p.round.passCount++
 	action := &PresidentCpuAction{PlayerIdx: playerIdx, PlayedCards: nil}
 	setAction(action)
-	p.appendLog(playerIdx, "pass", "pass", nil)
+	p.appendLog(playerIdx, "pass", "president.log.pass", nil, nil)
 
 	// パス即場流れモード: パスしたら即座に場をクリア
 	if p.config.PassFieldFlushEnabled && p.round.tableCards != nil {
@@ -273,7 +274,7 @@ func (p *President) CpuPlay() {
 	cards := player.RemoveCards(playIndices)
 	action := &PresidentCpuAction{PlayerIdx: playerIdx, PlayedCards: cards}
 	p.round.cpuActions = append(p.round.cpuActions, action)
-	p.appendLog(playerIdx, "play", fmt.Sprintf("played %d card(s)", len(cards)), cards)
+	p.appendLog(playerIdx, "play", "president.log.play", map[string]string{"count": strconv.Itoa(len(cards))}, cards)
 	p.playCards(playerIdx, cards)
 }
 
@@ -341,7 +342,7 @@ func (p *President) finishPlayer(idx int) {
 	rank := p.countFinished() + 1
 	p.players[idx].SetIsFinished(true)
 	p.players[idx].SetRank(rank)
-	p.appendLog(idx, "finish", fmt.Sprintf("player %d finished (rank %d)", idx, rank), nil)
+	p.appendLog(idx, "finish", "president.log.finish", map[string]string{"player": strconv.Itoa(idx), "rank": strconv.Itoa(rank)}, nil)
 	if p.round.lastPlayPlayerIdx == idx {
 		p.clearTableState()
 	}
@@ -375,8 +376,8 @@ func dedupSortedInts(in []int) []int {
 }
 
 // appendLog 棋譜にエントリを追加する
-func (p *President) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	p.round.appendLog(playerIdx, actionType, detail, cards)
+func (p *President) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	p.round.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- 状態アクセサ ---

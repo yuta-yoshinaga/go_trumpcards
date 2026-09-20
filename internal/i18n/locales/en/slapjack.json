@@ -27,5 +27,8 @@
   "difficultyLine": "CPU difficulty: {{difficulty}}",
   "difficultyEasy": "Easy",
   "difficultyNormal": "Normal",
-  "difficultyHard": "Hard"
+  "difficultyHard": "Hard",
+  "log.step": "flip from stock (top={{top}})",
+  "log.correctSlap": "correct slap, +{{count}} cards",
+  "log.wrongSlap": "wrong slap, -{{count}} cards"
 }

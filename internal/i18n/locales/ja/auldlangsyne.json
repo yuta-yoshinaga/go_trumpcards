@@ -27,5 +27,8 @@
   "hintWaste": "ヒント: ウェイスト{{waste}} → ファンデーション{{foundation}}",
   "helpExampleHint": "  h                   次の一手を教えてもらう",
   "invalidUndoCount": "無効なアンドゥ回数です: {{val}}（1以上の整数を指定してください）",
-  "noUndoToEscape": "手詰まり状態ではないか、脱出可能なアンドゥがありません"
+  "noUndoToEscape": "手詰まり状態ではないか、脱出可能なアンドゥがありません",
+  "log.deal": "{{count}}枚を配りました",
+  "log.move": "ウェイスト{{waste}}→ファンデーション{{foundation}}",
+  "log.giveUp": "ギブアップしました"
 }

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // AgnesPhase アグネス・ソレルゲームフェーズ
@@ -133,7 +134,7 @@ func (a *Agnes) DealStock() error {
 		dealt = append(dealt, card)
 	}
 	a.moveCount++
-	a.appendLog("deal", "ストックから各列に1枚ずつ配りました", dealt)
+	a.appendLog("deal", "agnes.log.deal", nil, dealt)
 	return nil
 }
 
@@ -175,7 +176,7 @@ func (a *Agnes) MoveTableauToTableau(fromCol, cardIndex, toCol int) error {
 	a.tableau[fromCol] = fromCards[:cardIndex]
 	a.autoFlipTableau(fromCol)
 	a.moveCount++
-	a.appendLog("move", fmt.Sprintf("タブロー列%d→タブロー列%d", fromCol, toCol), []*Card{card})
+	a.appendLog("move", "agnes.log.move", map[string]string{"from": strconv.Itoa(fromCol), "to": strconv.Itoa(toCol)}, []*Card{card})
 	return nil
 }
 
@@ -208,7 +209,7 @@ func (a *Agnes) MoveTableauToFoundation(col int) error {
 	a.foundation[fIdx] = append(a.foundation[fIdx], card)
 	a.autoFlipTableau(col)
 	a.moveCount++
-	a.appendLog("move", fmt.Sprintf("タブロー列%d→ファンデーション", col), []*Card{card})
+	a.appendLog("move", "agnes.log.moveToFoundation", map[string]string{"column": strconv.Itoa(col)}, []*Card{card})
 	a.checkGameClear()
 	return nil
 }
@@ -217,7 +218,7 @@ func (a *Agnes) MoveTableauToFoundation(col int) error {
 func (a *Agnes) GiveUp() {
 	if a.phase == AgnesPhasePlaying {
 		a.phase = AgnesPhaseGameOver
-		a.appendLog("giveup", "ギブアップしました", nil)
+		a.appendLog("giveup", "agnes.log.giveUp", nil, nil)
 	}
 }
 
@@ -420,8 +421,8 @@ func (a *Agnes) restoreSnapshot(snap *agnesSnapshot) {
 	a.moveCount = snap.moveCount
 }
 
-func (a *Agnes) appendLog(actionType, detail string, cards []*Card) {
-	a.appendLogAt(a.moveCount, 0, actionType, detail, cards)
+func (a *Agnes) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	a.appendLogCodeAt(a.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // agnesJSON is the JSON wire format for Agnes.
