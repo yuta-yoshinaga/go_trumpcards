@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // BakersDozenPhase ベーカーズダズンゲームフェーズ
@@ -152,7 +153,7 @@ func (bd *BakersDozen) MoveTableauToTableau(fromCol, cardIndex, toCol int) error
 	bd.tableau[toCol] = append(bd.tableau[toCol], tc)
 	bd.tableau[fromCol] = fromCards[:cardIndex]
 	bd.moveCount++
-	bd.appendLog("move", fmt.Sprintf("タブロー列%d→タブロー列%d", fromCol, toCol), []*Card{tc.Card})
+	bd.appendLog("move", "bakersdozen.log.moveTableauToTableau", map[string]string{"fromCol": strconv.Itoa(fromCol), "toCol": strconv.Itoa(toCol)}, []*Card{tc.Card})
 	bd.checkStalemate()
 	return nil
 }
@@ -179,7 +180,7 @@ func (bd *BakersDozen) MoveTableauToFoundation(col int) error {
 	bd.tableau[col] = fromCards[:len(fromCards)-1]
 	bd.foundation[fIdx] = append(bd.foundation[fIdx], card)
 	bd.moveCount++
-	bd.appendLog("move", fmt.Sprintf("タブロー列%d→ファンデーション", col), []*Card{card})
+	bd.appendLog("move", "bakersdozen.log.moveTableauToFoundation", map[string]string{"col": strconv.Itoa(col)}, []*Card{card})
 	bd.checkGameClear()
 	bd.checkStalemate()
 	return nil
@@ -189,7 +190,7 @@ func (bd *BakersDozen) MoveTableauToFoundation(col int) error {
 func (bd *BakersDozen) GiveUp() {
 	if bd.phase == BakersDozenPhasePlaying {
 		bd.phase = BakersDozenPhaseGameOver
-		bd.appendLog("giveup", "ギブアップしました", nil)
+		bd.appendLog("giveup", "bakersdozen.log.giveUp", nil, nil)
 	}
 }
 
@@ -265,7 +266,7 @@ func (bd *BakersDozen) AutoComplete() error {
 			break
 		}
 	}
-	bd.appendLog("autocomplete", "オートコンプリートを実行しました", nil)
+	bd.appendLog("autocomplete", "bakersdozen.log.autoComplete", nil, nil)
 	bd.checkGameClear()
 	return nil
 }
@@ -450,8 +451,8 @@ func (bd *BakersDozen) restoreSnapshot(snap *bakersDozenSnapshot) {
 }
 
 // appendLog 棋譜エントリを追加
-func (bd *BakersDozen) appendLog(actionType, detail string, cards []*Card) {
-	bd.appendLogAt(bd.moveCount, 0, actionType, detail, cards)
+func (bd *BakersDozen) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	bd.appendLogCodeAt(bd.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // bakersDozenJSON is the JSON wire format for BakersDozen.

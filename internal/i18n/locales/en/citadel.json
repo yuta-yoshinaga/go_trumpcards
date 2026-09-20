@@ -14,5 +14,9 @@
   "undoToEscape": "Undo {{count}} move(s) to escape the dead end (undo {{count}}, or repeat u)",
   "helpExampleHint": "  h                    ask for a move",
   "helpExampleAuto": "  ac                   send everything that can go to a foundation",
-  "helpUndo": "  u undo one move"
+  "helpUndo": "  u undo one move",
+  "log.moveTableauToTableau": "Move from tableau column {{fromCol}} to tableau column {{toCol}}",
+  "log.moveTableauToFoundation": "Move from tableau column {{col}} to foundation",
+  "log.giveUp": "Gave up",
+  "log.autoComplete": "Ran auto-complete"
 }

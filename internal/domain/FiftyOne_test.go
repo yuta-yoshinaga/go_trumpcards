@@ -293,6 +293,30 @@ func TestFiftyOne_EndGame_WinnerDetermination(t *testing.T) {
 	assert.Equal(t, 2, fo.GetWinnerIdx()) // プレイヤー2が最高29
 }
 
+func TestFiftyOne_EndGame_ResultLogCodes(t *testing.T) {
+	fo := setupManualGame()
+	fo.endGame()
+
+	expectedCodes := map[string]int{
+		"fiftyone.log.resultSpade":   0,
+		"fiftyone.log.resultHeart":   1,
+		"fiftyone.log.resultDiamond": 2,
+		"fiftyone.log.resultClover":  3,
+	}
+	for code, playerIdx := range expectedCodes {
+		var resultLog *ActionLogEntry
+		for _, entry := range fo.GetActionLog() {
+			if entry.DetailCode == code {
+				resultLog = entry
+				break
+			}
+		}
+		require.NotNil(t, resultLog, "result log code %q", code)
+		assert.Equal(t, "result", resultLog.ActionType)
+		assert.Equal(t, playerIdx, resultLog.PlayerIdx)
+	}
+}
+
 func TestFiftyOne_EndGame_TieBreaker(t *testing.T) {
 	// 同点の場合、インデックスの小さい方が勝つ
 	fo := setupManualGame()
@@ -380,6 +404,9 @@ func TestFiftyOne_ActionLog(t *testing.T) {
 	assert.Len(t, fo.GetActionLog(), 1)
 	assert.Equal(t, "exchange_one", fo.GetActionLog()[0].ActionType)
 	assert.Equal(t, 0, fo.GetActionLog()[0].PlayerIdx)
+	assert.Equal(t, "fiftyone.log.exchangeOne", fo.GetActionLog()[0].DetailCode)
+	assert.Equal(t, map[string]string{"handIdx": "0", "tableIdx": "0"}, fo.GetActionLog()[0].DetailParams)
+	assert.Empty(t, fo.GetActionLog()[0].Detail)
 }
 
 func TestFiftyOne_Config(t *testing.T) {

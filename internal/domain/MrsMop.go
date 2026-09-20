@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // MrsMopPhase ミセス・モップソリティアゲームフェーズ
@@ -195,7 +196,7 @@ func (s *MrsMop) MoveTableauToTableau(fromCol, cardIndex, toCol int) error {
 	s.autoFlipTableau(fromCol)
 	s.moveCount++
 	s.score--
-	s.appendLog("move", fmt.Sprintf("タブロー列%d→タブロー列%d", fromCol, toCol), movedCards)
+	s.appendLog("move", "mrsmop.log.moveTableauToTableau", map[string]string{"fromCol": strconv.Itoa(fromCol), "toCol": strconv.Itoa(toCol)}, movedCards)
 	// 完成スートチェック
 	s.checkAndRemoveCompletedSuit(toCol)
 	s.checkMrsMopStalemate()
@@ -206,7 +207,7 @@ func (s *MrsMop) MoveTableauToTableau(fromCol, cardIndex, toCol int) error {
 func (s *MrsMop) GiveUp() {
 	if s.phase == MrsMopPhasePlaying {
 		s.phase = MrsMopPhaseGameOver
-		s.appendLog("giveup", "ギブアップしました", nil)
+		s.appendLog("giveup", "mrsmop.log.giveUp", nil, nil)
 	}
 }
 
@@ -298,7 +299,7 @@ func (s *MrsMop) AutoComplete() error {
 			break
 		}
 	}
-	s.appendLog("autocomplete", "オートコンプリートを実行しました", nil)
+	s.appendLog("autocomplete", "mrsmop.log.autoComplete", nil, nil)
 	s.checkGameClear()
 	return nil
 }
@@ -534,7 +535,7 @@ func (s *MrsMop) checkAndRemoveCompletedSuit(col int) bool {
 	s.tableau[col] = cards[:startIdx]
 	s.completedSuits++
 	s.score += 100
-	s.appendLog("complete", fmt.Sprintf("タブロー列%dでスートが完成しました", col), nil)
+	s.appendLog("complete", "mrsmop.log.completeSuit", map[string]string{"col": strconv.Itoa(col)}, nil)
 
 	// 自動フリップ
 	s.autoFlipTableau(col)
@@ -606,8 +607,8 @@ func (s *MrsMop) restoreSnapshot(snap *mrsMopSnapshot) {
 }
 
 // appendLog 棋譜エントリを追加
-func (s *MrsMop) appendLog(actionType, detail string, cards []*Card) {
-	s.appendLogAt(s.moveCount, 0, actionType, detail, cards)
+func (s *MrsMop) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	s.appendLogCodeAt(s.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // mrsMopJSON is the JSON wire format for MrsMop.

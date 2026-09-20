@@ -15,5 +15,9 @@
   "helpExampleHint": "  h                    ask for a move",
   "helpExampleAuto": "  ac                   send everything that can go to a foundation",
   "helpUndo": "  u undo one move",
-  "promptToZone": "Enter the destination (column number, f=foundation):"
+  "promptToZone": "Enter the destination (column number, f=foundation):",
+  "log.moveTableauToTableau": "Move from tableau column {{fromCol}} to tableau column {{toCol}}",
+  "log.moveTableauToFoundation": "Move from tableau column {{col}} to foundation",
+  "log.giveUp": "Gave up",
+  "log.autoComplete": "Ran auto-complete"
 }
