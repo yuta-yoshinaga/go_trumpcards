@@ -20,5 +20,9 @@
   "hintReasonTakeOne": "同ランクの場札を取れます",
   "hintReasonTakeThree": "同ランクが3枚あるので、まとめて取れます",
   "helpExamplePlay": "  p 0                      手札の 0 番のカードを出す",
-  "helpHint": "  h                        助言を表示"
+  "helpHint": "  h                        助言を表示",
+  "log.deal": "カードを配りました",
+  "log.capture": "{{count}}枚のカードを取りました",
+  "log.lieDown": "{{count}}枚のカードを場に出して降りました",
+  "log.residue": "残りの{{count}}枚のカードを取りました"
 }

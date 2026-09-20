@@ -43333,7 +43333,6 @@ components:
         - turnNumber
         - playerIdx
         - actionType
-        - detail
       properties:
         turnNumber:
           type: integer
@@ -43348,10 +43347,6 @@ components:
           type: string
           description: Type of action (e.g., "hit", "stand", "bet", "play", "draw", "doubt", "fold")
           example: hit
-        detail:
-          type: string
-          description: Human-readable description of the action
-          example: "Player 0 hit and drew ♠A"
         detailCode:
           type: string
           description: i18n key for the action description; resolved by the client (empty for not-yet-migrated games)

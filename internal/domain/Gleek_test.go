@@ -52,7 +52,6 @@ func TestGleek_ActionLogUsesDetailCode(t *testing.T) {
 	g := newTestGleek()
 	for _, entry := range g.GetActionLog() {
 		if entry.DetailCode == "gleek.log.turnUp" {
-			assert.Empty(t, entry.Detail)
 			assert.Equal(t, map[string]string{"card": entry.DetailParams["card"], "suit": entry.DetailParams["suit"]}, entry.DetailParams)
 			return
 		}

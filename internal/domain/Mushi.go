@@ -55,6 +55,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // MushiPlayerCnt は虫のプレイヤー数 (固定 2)。
@@ -412,14 +413,14 @@ func (m *Mushi) startRound() {
 		if MushiIsWild(c) {
 			m.field = append(m.field[:i], m.field[i+1:]...)
 			m.captured[m.dealerIdx] = append(m.captured[m.dealerIdx], c)
-			m.addLog(m.dealerIdx, "wild", "dealer claims the lightning card from the field", []*Card{c})
+			m.addLog(m.dealerIdx, "wild", "mushi.log.wild", nil, []*Card{c})
 			break
 		}
 	}
 
 	m.currentIdx = m.dealerIdx
 	m.roundNumber++
-	m.addLog(-1, "deal", fmt.Sprintf("round %d dealt", m.roundNumber), nil)
+	m.addLog(-1, "deal", "mushi.log.deal", map[string]string{"round": strconv.Itoa(m.roundNumber)}, nil)
 }
 
 // mushiShuffle は Fisher-Yates。TrumpCards を通さないのは虫の 40 枚が標準デッキの
@@ -478,7 +479,7 @@ func (m *Mushi) resolvePlay(player int, card *Card, fromFlip bool) {
 	switch len(matches) {
 	case 0:
 		m.field = append(m.field, card)
-		m.addLog(player, "place", "no match; card goes to the field", []*Card{card})
+		m.addLog(player, "place", "mushi.log.place", nil, []*Card{card})
 	case 1:
 		m.capture(player, card, []int{matches[0]})
 	case 3:
@@ -556,7 +557,7 @@ func (m *Mushi) capture(player int, card *Card, fieldIdxs []int) {
 		m.field = append(m.field[:i], m.field[i+1:]...)
 	}
 	m.captured[player] = append(m.captured[player], taken...)
-	m.addLog(player, "capture", fmt.Sprintf("captures %d card(s)", len(taken)), taken)
+	m.addLog(player, "capture", "mushi.log.capture", map[string]string{"count": strconv.Itoa(len(taken))}, taken)
 }
 
 // afterResolve は 1 枚ぶんの処理が終わった後の進行 (山札めくり → 手番交代)。
@@ -612,7 +613,7 @@ func (m *Mushi) finishRound() {
 		m.roundResults[i] = delta
 		m.scores[i] += delta
 	}
-	m.addLog(-1, "round", fmt.Sprintf("round %d settled", m.roundNumber), nil)
+	m.addLog(-1, "round", "mushi.log.round", map[string]string{"round": strconv.Itoa(m.roundNumber)}, nil)
 
 	if m.roundNumber >= m.config.TargetRounds {
 		m.finishGame()
@@ -650,12 +651,12 @@ func (m *Mushi) finishGame() {
 	} else {
 		m.winnerIdx = best
 	}
-	m.addLog(-1, "game", "game over", nil)
+	m.addLog(-1, "game", "mushi.log.game", nil, nil)
 }
 
 // addLog は棋譜へ 1 行追加する。
-func (m *Mushi) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	m.appendLog(playerIdx, actionType, detail, cards)
+func (m *Mushi) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	m.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // ---- 公開アクセサ ----

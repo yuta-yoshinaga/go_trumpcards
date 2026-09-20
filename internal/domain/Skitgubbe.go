@@ -34,6 +34,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // SkitgubbePlayerCnt はプレイヤー数 (3 人が標準)。
@@ -165,7 +166,7 @@ func (s *Skitgubbe) Reset() {
 
 	s.duelLeader = 0
 	s.currentIdx = 0
-	s.addLog(-1, "deal", "cards dealt", nil)
+	s.addLog(-1, "deal", "skitgubbe.log.deal", nil, nil)
 }
 
 // duelOpponent は第1フェーズでリード側の相手 (左隣) を返す。
@@ -207,7 +208,7 @@ func (s *Skitgubbe) PlayCard(player, handIdx int) error {
 // resolveDuelPlay は第1フェーズの 1 枚を処理する。
 func (s *Skitgubbe) resolveDuelPlay(player int, card *Card) {
 	s.duel = append(s.duel, card)
-	s.addLog(player, "play", "plays a card", []*Card{card})
+	s.addLog(player, "play", "skitgubbe.log.play", nil, []*Card{card})
 
 	// リード側が出した直後なら、相手の番。
 	if player == s.duelLeader {
@@ -222,7 +223,7 @@ func (s *Skitgubbe) resolveDuelPlay(player int, card *Card) {
 
 	if leadRank == respRank {
 		// stunsa: 札は場に残したまま、両者が引いて同じ人がもう一度リード。
-		s.addLog(-1, "stunsa", "equal ranks -- the cards stay and the lead repeats", nil)
+		s.addLog(-1, "stunsa", "skitgubbe.log.stunsa", nil, nil)
 		s.drawUp(s.duelLeader)
 		s.drawUp(player)
 		s.currentIdx = s.duelLeader
@@ -235,7 +236,7 @@ func (s *Skitgubbe) resolveDuelPlay(player int, card *Card) {
 		winner = player
 	}
 	s.collected[winner] = append(s.collected[winner], s.duel...)
-	s.addLog(winner, "win", fmt.Sprintf("takes %d card(s)", len(s.duel)), s.duel)
+	s.addLog(winner, "win", "skitgubbe.log.win", map[string]string{"count": strconv.Itoa(len(s.duel))}, s.duel)
 	s.duel = nil
 
 	s.drawUp(s.duelLeader)
@@ -259,7 +260,7 @@ func (s *Skitgubbe) drawUp(player int) {
 			// **山札から最後に引かれた札が切札を決める。** issue はこの規則に
 			// 触れていないが、第2フェーズの強さがこれで決まる。
 			s.trumpSuit = card.GetDesign()
-			s.addLog(-1, "trump", fmt.Sprintf("the last card drawn sets trump to %d", s.trumpSuit), []*Card{card})
+			s.addLog(-1, "trump", "skitgubbe.log.trump", map[string]string{"suit": strconv.Itoa(s.trumpSuit)}, []*Card{card})
 		}
 	}
 }
@@ -318,7 +319,7 @@ func (s *Skitgubbe) startShedPhase() {
 
 	s.pileLeader = s.nextActive(len(s.players) - 1)
 	s.currentIdx = s.pileLeader
-	s.addLog(-1, "phase", "the shedding phase begins", nil)
+	s.addLog(-1, "phase", "skitgubbe.log.phase", nil, nil)
 	s.checkShedEnd()
 }
 
@@ -369,11 +370,11 @@ func (s *Skitgubbe) GetValidPlayIndices(player int) []int {
 // resolveShedPlay は第2フェーズの 1 枚を処理する。
 func (s *Skitgubbe) resolveShedPlay(player int, card *Card) {
 	s.pile = append(s.pile, card)
-	s.addLog(player, "play", "beats the pile", []*Card{card})
+	s.addLog(player, "play", "skitgubbe.log.beatsPile", nil, []*Card{card})
 
 	if s.GetPlayer(player).GetCardsSize() == 0 {
 		s.finished[player] = true
-		s.addLog(player, "out", "is out of cards", nil)
+		s.addLog(player, "out", "skitgubbe.log.out", nil, nil)
 	}
 
 	// 場の枚数が残っている人数に達したら、そのトリックは流す (avstick)。
@@ -407,7 +408,7 @@ func (s *Skitgubbe) PickUp(player int) error {
 	for _, c := range s.pile {
 		p.AddCard(c)
 	}
-	s.addLog(player, "pickup", fmt.Sprintf("picks up %d card(s)", len(s.pile)), s.pile)
+	s.addLog(player, "pickup", "skitgubbe.log.pickup", map[string]string{"count": strconv.Itoa(len(s.pile))}, s.pile)
 	s.pile = nil
 	s.finished[player] = false
 
@@ -460,12 +461,12 @@ func (s *Skitgubbe) checkShedEnd() {
 			break
 		}
 	}
-	s.addLog(s.loserIdx, "game", "is the Skitgubbe", nil)
+	s.addLog(s.loserIdx, "game", "skitgubbe.log.game", nil, nil)
 }
 
 // addLog は棋譜へ 1 行追加する。
-func (s *Skitgubbe) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	s.appendLog(playerIdx, actionType, detail, cards)
+func (s *Skitgubbe) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	s.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // ---- CPU ----

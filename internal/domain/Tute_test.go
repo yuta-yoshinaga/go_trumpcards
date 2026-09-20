@@ -37,10 +37,7 @@ func TestTute_PlayActionLogUsesDetailCode(t *testing.T) {
 	for _, entry := range g.GetActionLog() {
 		if entry.DetailCode == "tute.log.play" {
 			if entry.DetailParams["name"] == "" || entry.DetailParams["card"] == "" {
-				t.Fatalf("play entry = %#v, want code params and empty legacy detail", entry)
-			}
-			if entry.Detail != "" {
-				t.Fatalf("play entry has legacy detail: %q", entry.Detail)
+				t.Fatalf("play entry = %#v, want code params", entry)
 			}
 			return
 		}

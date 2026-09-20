@@ -1,4 +1,12 @@
 {
+  "log.deal": "Dealt out to {{players}} players",
+  "log.play": "Played {{card}}",
+  "log.trickWin": "Cleared {{count}} cards from the table",
+  "log.pickup": "Picked up {{count}} cards",
+  "log.finish": "Finished in position {{rank}}",
+  "log.resultBhabhi": "Bhabhi was determined",
+  "log.resultStalemate": "Stalemate after {{tricks}} tricks. The seat with the most cards is Bhabhi",
+  "log.giveup": "Gave up",
   "helpTitle": "Bhabhi",
   "helpPlay": "  p <idx>              Play a card",
   "helpGiveUp": "  g                    Give up",

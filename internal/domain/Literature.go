@@ -216,7 +216,7 @@ func (l *Literature) Reset() {
 		}
 	}
 	l.dealRound()
-	l.addLog(-1, "deal", "", nil)
+	l.addLog(-1, "deal", "literature.log.deal", nil, nil)
 }
 
 // dealRound は 48 枚を 8 枚ずつ配る。
@@ -336,7 +336,7 @@ func (l *Literature) Ask(from, to int, c *Card) error {
 	ask := &LiteratureAsk{From: from, To: to, Card: NewCard(c.GetDesign(), c.GetValue(), true), Success: got}
 	l.asks = append(l.asks, ask)
 	l.lastAsk = ask
-	l.addLog(from, "ask", strconv.Itoa(to)+" "+literatureCardName(c)+" "+strconv.FormatBool(got), []*Card{c})
+	l.addLog(from, "ask", "literature.log.ask", map[string]string{"to": strconv.Itoa(to), "suit": strconv.Itoa(c.GetDesign()), "rank": strconv.Itoa(c.GetValue()), "got": strconv.FormatBool(got)}, []*Card{c})
 
 	// **的中なら手番継続、外れれば手番は要求先へ移る。**
 	if !got {
@@ -408,7 +408,7 @@ func (l *Literature) Claim(player, half int, holders []int) error {
 	}
 	l.claims = append(l.claims, res)
 	l.lastClaim = res
-	l.addLog(player, "claim", strconv.Itoa(half)+" "+strconv.Itoa(int(res.Outcome)), nil)
+	l.addLog(player, "claim", literatureClaimLogCode(res.Outcome), map[string]string{"half": strconv.Itoa(half)}, nil)
 
 	// 宣言されたハーフスートの札は場から抜ける。
 	l.literatureRemoveHalfSuit(half)
@@ -547,7 +547,7 @@ func (l *Literature) finish(team int) {
 	l.gameEndFlag = true
 	l.phase = LiteraturePhaseGameEnd
 	l.winnerTeam = team
-	l.addLog(-1, "gameEnd", strconv.Itoa(team), nil)
+	l.addLog(-1, "gameEnd", "literature.log.gameEnd", map[string]string{"team": strconv.Itoa(team)}, nil)
 }
 
 // ---- CPU ----
@@ -852,8 +852,12 @@ func (l *Literature) SetConfig(c LiteratureConfig) { l.config = c }
 func (l *Literature) GetActionLog() []*ActionLogEntry { return l.actionLog }
 
 // addLog は棋譜を 1 件追加する。
-func (l *Literature) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	l.appendLogAt(0, playerIdx, actionType, detail, cards)
+func (l *Literature) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	l.appendLogCodeAt(0, playerIdx, actionType, detailCode, detailParams, cards)
+}
+
+func literatureClaimLogCode(outcome LiteratureClaimOutcome) string {
+	return map[LiteratureClaimOutcome]string{LiteratureClaimWon: "literature.log.claimWon", LiteratureClaimCancelled: "literature.log.claimCancelled", LiteratureClaimLost: "literature.log.claimLost"}[outcome]
 }
 
 // literatureCardName は札の内部名を返す (棋譜用)。

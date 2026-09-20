@@ -683,9 +683,6 @@ func TestTerrace_ActionLog(t *testing.T) {
 	assert.Equal(t, "terrace.log.move", log[2].DetailCode)
 	assert.Equal(t, map[string]string{"value1": "1", "value2": "0"}, log[2].DetailParams)
 	assert.Equal(t, "terrace.log.drawDetail", log[3].DetailCode)
-	for _, e := range log {
-		assert.Empty(t, e.Detail)
-	}
 }
 
 func TestTerrace_JSONRoundTrip(t *testing.T) {

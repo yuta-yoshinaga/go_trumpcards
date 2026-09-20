@@ -38,5 +38,11 @@
   "result.draw": "ゲーム終了。同数で勝者なしです。",
   "claimPreview": "宣言内容の確認: 組{{half}} → {{pairs}}。【この内容で確定するなら y、打ち直すならもう一度 c から入力してください】",
   "claimPreviewPair": "{{rank}}→席{{seat}}",
-  "nothingToConfirm": "確認待ちの宣言はありません。"
+  "nothingToConfirm": "確認待ちの宣言はありません。",
+  "log.deal": "カードを配りました",
+  "log.ask": "席{{to}}に{{suit}}-{{rank}}を要求しました（{{got}}）",
+  "log.claimWon": "ハーフスート{{half}}の宣言に成功しました",
+  "log.claimCancelled": "ハーフスート{{half}}の宣言は無効です",
+  "log.claimLost": "ハーフスート{{half}}は相手のものになりました",
+  "log.gameEnd": "チーム{{team}}の勝ちです"
 }

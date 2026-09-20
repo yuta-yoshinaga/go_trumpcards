@@ -118,9 +118,6 @@ func TestPiquetResolveTrickLogsWinner(t *testing.T) {
 	if entry.DetailParams["name"] != "CPU 1" || entry.DetailParams["trick"] != "3" {
 		t.Errorf("detail params = %v, want CPU 1 / 3", entry.DetailParams)
 	}
-	if entry.Detail != "" {
-		t.Errorf("detail = %q, want empty", entry.Detail)
-	}
 	if len(entry.Cards) != 2 {
 		t.Errorf("cards = %d, want 2", len(entry.Cards))
 	}
@@ -624,8 +621,8 @@ func TestPlayCardLeadScoresAndAdvancesTurn(t *testing.T) {
 	if playLog == nil {
 		t.Fatal("expected play action log")
 	}
-	if playLog.Detail != "" || playLog.DetailParams != nil {
-		t.Fatalf("unexpected play log payload: code=%q params=%v detail=%q", playLog.DetailCode, playLog.DetailParams, playLog.Detail)
+	if playLog.DetailParams != nil {
+		t.Fatalf("unexpected play log params: code=%q params=%v", playLog.DetailCode, playLog.DetailParams)
 	}
 }
 

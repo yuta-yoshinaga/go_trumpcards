@@ -179,7 +179,6 @@ func TestCarioca_PlayerDrawFromStock_ProgressesPhase(t *testing.T) {
 	}
 	assert.Equal(t, "carioca.log.drawStock", entry.DetailCode)
 	assert.Equal(t, map[string]string{"name": "You"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 func TestCarioca_PlayerDrawFromStock_RejectsWrongPhase(t *testing.T) {

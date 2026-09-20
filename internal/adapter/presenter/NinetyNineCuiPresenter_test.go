@@ -194,7 +194,7 @@ func TestNinetyNineCuiPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.NinetyNineCuiPresenter)
 	m := setupNinetyNineCuiMock()
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "bid", Detail: "You buries 3 and declares 3"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "bid", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	assert.NotEmpty(t, p.ActionLogOutput(m))
 }

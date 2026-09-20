@@ -257,7 +257,9 @@ func TestOsmosisCuiPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("after clear", func(t *testing.T) {
 		og := new(interfaces.MockOsmosisGame)
 		og.On("GetPhase").Return(domain.OsmosisPhaseGameClear)
-		og.On("GetActionLog").Return([]*domain.ActionLogEntry{{TurnNumber: 1, ActionType: "draw", Detail: "test"}})
+		og.On("GetActionLog").Return([]*domain.ActionLogEntry{
+			{TurnNumber: 1, ActionType: "draw", DetailCode: "osmosis.log.draw"},
+		})
 		p := new(OsmosisCuiPresenter)
 		result := p.ActionLogOutput(og)
 		assert.Contains(t, result, "draw")

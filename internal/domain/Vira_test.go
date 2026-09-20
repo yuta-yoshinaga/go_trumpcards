@@ -325,7 +325,6 @@ func TestVira_ActionLogUsesDetailCode(t *testing.T) {
 	}
 	require.NotNil(t, entry)
 	assert.Equal(t, map[string]string{"bid": "Pass"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 func TestVira_TrickWinner(t *testing.T) {

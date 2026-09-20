@@ -272,7 +272,6 @@ func TestChinchon_DrawFromStock(t *testing.T) {
 	}
 	require.NotNil(t, drawEntry)
 	assert.Equal(t, map[string]string{"name": "You"}, drawEntry.DetailParams)
-	assert.Empty(t, drawEntry.Detail)
 }
 
 func TestChinchon_DrawFromStock_WrongPhase(t *testing.T) {

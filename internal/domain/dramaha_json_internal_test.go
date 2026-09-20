@@ -123,7 +123,6 @@ func TestDramahaJSONRoundTrip(t *testing.T) {
 
 	require.Len(t, got.actionLog, len(src.actionLog))
 	assert.Equal(t, src.actionLog[0].ActionType, got.actionLog[0].ActionType)
-	assert.Equal(t, src.actionLog[0].Detail, got.actionLog[0].Detail)
 
 	// Board and deck
 	require.Len(t, got.communityCards, len(src.communityCards))

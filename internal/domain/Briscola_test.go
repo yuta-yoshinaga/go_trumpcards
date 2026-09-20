@@ -56,7 +56,7 @@ func TestBriscola_Reset(t *testing.T) {
 	}
 	for _, entry := range b.GetActionLog() {
 		if entry.DetailCode == "briscola.log.trump" {
-			if entry.DetailParams["card"] == "" || entry.Detail != "" {
+			if entry.DetailParams["card"] == "" {
 				t.Fatalf("trump log = %#v, want code params and empty Detail", entry)
 			}
 			return

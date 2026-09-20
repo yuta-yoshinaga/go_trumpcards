@@ -717,7 +717,6 @@ func TestReversis_ActionLog(t *testing.T) {
 	}
 	require.NotNil(t, dealLog)
 	assert.Equal(t, map[string]string{"round": "1", "pool": "20"}, dealLog.DetailParams)
-	assert.Empty(t, dealLog.Detail)
 }
 
 // **手札に出す点数と精算の点数が同じであること** (#5747)。TS 側も同じ

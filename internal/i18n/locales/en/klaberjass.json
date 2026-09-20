@@ -39,5 +39,20 @@
   "result.humanWin": "Game over! You win!",
   "result.cpuWin": "Game over! CPU {{cpuId}} wins!",
   "lastTrickBonus": "Last trick: +{{points}} to {{name}}",
-  "helpExamplePlay": "  p 0                       play hand card 0"
+  "helpExamplePlay": "  p 0                       play hand card 0",
+  "log.deal": "6 cards each with a card turned up",
+  "log.pass": "passes",
+  "log.schmeiss": "offers to throw the deal in",
+  "log.schmeissAccept": "agrees to throw the deal in",
+  "log.schmeissRefuse": "refuses the throw",
+  "log.redeal": "nobody took the deal",
+  "log.makeTrump": "makes suit {{suit}} trump",
+  "log.dix": "exchanges the trump 7 for the turn-up",
+  "log.sequence": "scores {{points}} for sequences",
+  "log.play": "plays a card",
+  "log.bela": "declares bela",
+  "log.trick": "takes the trick for {{points}}",
+  "log.handEnd": "makes it with {{maker}} to {{opponent}}",
+  "log.bete": "goes bete; {{points}} points go to the opponent",
+  "log.gameEnd": "wins the game"
 }

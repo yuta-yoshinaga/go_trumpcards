@@ -115,7 +115,6 @@ func TestKemps_PlayerSwap(t *testing.T) {
 	entry := findMigratedActionLogEntry(g.GetActionLog(), "kemps.log.swap")
 	require.NotNil(t, entry)
 	assert.Empty(t, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 	// 取った 9 が手札に、出した 2 がフィールドに。
 	assert.Equal(t, 9, g.GetPlayer(0).GetCard(3).GetValue())
 	assert.Equal(t, 2, g.GetFieldCard(0).GetValue())

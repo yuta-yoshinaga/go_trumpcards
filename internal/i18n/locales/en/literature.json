@@ -38,5 +38,11 @@
   "result.draw": "Game over. It ended level, so nobody wins.",
   "claimPreview": "Claim preview: half-suit {{half}} -> {{pairs}}. TYPE y TO COMMIT, or enter c again to change it.",
   "claimPreviewPair": "{{rank}}->seat {{seat}}",
-  "nothingToConfirm": "There is no claim waiting for confirmation."
+  "nothingToConfirm": "There is no claim waiting for confirmation.",
+  "log.deal": "dealt the cards",
+  "log.ask": "{{to}} {{suit}}-{{rank}} {{got}}",
+  "log.claimWon": "{{half}} 1",
+  "log.claimCancelled": "{{half}} 2",
+  "log.claimLost": "{{half}} 3",
+  "log.gameEnd": "{{team}}"
 }

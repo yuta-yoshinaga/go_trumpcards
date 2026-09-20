@@ -19,7 +19,6 @@ func TestBauernschnapsen_ActionLogUsesDetailCode(t *testing.T) {
 	g.Reset()
 	for _, entry := range g.GetActionLog() {
 		if entry.DetailCode == "bauernschnapsen.log.deal" {
-			assert.Empty(t, entry.Detail)
 			assert.Empty(t, entry.DetailParams)
 			return
 		}

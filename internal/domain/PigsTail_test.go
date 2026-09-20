@@ -278,7 +278,6 @@ func TestPigsTail_ActionLog(t *testing.T) {
 		}
 	}
 	require.NotNil(t, action)
-	assert.Empty(t, action.Detail)
 	assert.NotEmpty(t, action.DetailParams)
 }
 

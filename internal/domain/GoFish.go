@@ -329,11 +329,12 @@ func (g *GoFish) executeAsk(askerIdx, targetIdx, rank int) *GoFishCpuAction {
 
 		// 棋譜
 		g.actionLog = append(g.actionLog, &ActionLogEntry{
-			TurnNumber: g.turnNumber,
-			PlayerIdx:  askerIdx,
-			ActionType: "ask_hit",
-			Detail:     fmt.Sprintf("P%d asked P%d for rank %d → got %d card(s)", askerIdx, targetIdx, rank, len(cards)),
-			Cards:      cards,
+			TurnNumber:   g.turnNumber,
+			PlayerIdx:    askerIdx,
+			ActionType:   "ask_hit",
+			DetailCode:   "gofish.log.askHit",
+			DetailParams: map[string]string{"asker": fmt.Sprintf("%d", askerIdx), "target": fmt.Sprintf("%d", targetIdx), "rank": fmt.Sprintf("%d", rank), "count": fmt.Sprintf("%d", len(cards))},
+			Cards:        cards,
 		})
 	} else {
 		// Go Fish! 山札から1枚引く
@@ -351,10 +352,11 @@ func (g *GoFish) executeAsk(askerIdx, targetIdx, rank int) *GoFishCpuAction {
 
 		// 棋譜
 		g.actionLog = append(g.actionLog, &ActionLogEntry{
-			TurnNumber: g.turnNumber,
-			PlayerIdx:  askerIdx,
-			ActionType: "ask_miss",
-			Detail:     fmt.Sprintf("P%d asked P%d for rank %d → Go Fish!", askerIdx, targetIdx, rank),
+			TurnNumber:   g.turnNumber,
+			PlayerIdx:    askerIdx,
+			ActionType:   "ask_miss",
+			DetailCode:   "gofish.log.askMiss",
+			DetailParams: map[string]string{"asker": fmt.Sprintf("%d", askerIdx), "target": fmt.Sprintf("%d", targetIdx), "rank": fmt.Sprintf("%d", rank)},
 		})
 	}
 
@@ -412,11 +414,12 @@ func (g *GoFish) checkAndFormBooks(playerIdx int) (bool, int) {
 				found = true
 
 				g.actionLog = append(g.actionLog, &ActionLogEntry{
-					TurnNumber: g.turnNumber,
-					PlayerIdx:  playerIdx,
-					ActionType: "book",
-					Detail:     fmt.Sprintf("P%d completed book of rank %d", playerIdx, rank),
-					Cards:      cards,
+					TurnNumber:   g.turnNumber,
+					PlayerIdx:    playerIdx,
+					ActionType:   "book",
+					DetailCode:   "gofish.log.book",
+					DetailParams: map[string]string{"player": fmt.Sprintf("%d", playerIdx), "rank": fmt.Sprintf("%d", rank)},
+					Cards:        cards,
 				})
 				break
 			}

@@ -93,7 +93,6 @@ func TestBlackHole_PlayAdjacentCard(t *testing.T) {
 	}
 	require.NotNil(t, moveLog)
 	assert.Equal(t, map[string]string{"fan": "0"}, moveLog.DetailParams)
-	assert.Empty(t, moveLog.Detail)
 	// Non-adjacent move is rejected.
 	if err := g.MoveFanToBlackHole(1); err == nil {
 		t.Error("expected error: 10 is not adjacent to 6")

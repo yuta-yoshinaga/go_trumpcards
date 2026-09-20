@@ -397,7 +397,6 @@ func TestAnaconda_ActionLog(t *testing.T) {
 		if e.ActionType == "pass" {
 			assert.Equal(t, "anaconda.log.pass", e.DetailCode)
 			assert.Contains(t, e.DetailParams, "count")
-			assert.Empty(t, e.Detail)
 			found = true
 			break
 		}

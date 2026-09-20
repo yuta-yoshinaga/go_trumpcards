@@ -104,7 +104,6 @@ func TestFiveCardStud_PlayerAction_Fold(t *testing.T) {
 	}
 	require.NotNil(t, entry)
 	assert.Empty(t, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 func TestFiveCardStud_PlayerAction_Call(t *testing.T) {

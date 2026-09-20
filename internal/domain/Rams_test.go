@@ -639,7 +639,6 @@ func TestRams_ActionLog(t *testing.T) {
 	}
 	require.NotNil(t, deal)
 	assert.Equal(t, map[string]string{"round": "1", "pot": "12"}, deal.DetailParams)
-	assert.Empty(t, deal.Detail)
 
 	r.GiveUp()
 	var giveUp *ActionLogEntry
@@ -649,5 +648,4 @@ func TestRams_ActionLog(t *testing.T) {
 		}
 	}
 	require.NotNil(t, giveUp)
-	assert.Empty(t, giveUp.Detail)
 }

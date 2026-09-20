@@ -3189,7 +3189,6 @@ func TestBlackJack_ActionLog_Bet(t *testing.T) {
 	assert.Equal(t, "bet", entry.ActionType)
 	assert.Equal(t, "blackjack.log.bet", entry.DetailCode)
 	assert.Equal(t, map[string]string{"amount": "100"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 	assert.Nil(t, entry.Cards)
 }
 

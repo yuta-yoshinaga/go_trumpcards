@@ -109,7 +109,6 @@ func TestConquian_DrawFromStock(t *testing.T) {
 	}
 	require.NotNil(t, entry)
 	assert.Equal(t, map[string]string{"name": "You"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 func TestConquian_DrawFromStock_WrongPhase(t *testing.T) {

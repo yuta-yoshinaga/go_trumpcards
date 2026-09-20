@@ -42,5 +42,14 @@
   "hintReasonFold": "組がなく、追いつくのに払いが要ります",
   "hintReasonPlay": "出せる中で最も低い札です",
   "helpExamplePlay": "  p 0                      手札の 0 番のカードを出す",
-  "helpHint": "  h                        助言を表示"
+  "helpHint": "  h                        助言を表示",
+  "log.deal": "支払いスートは {{suit}} です",
+  "log.staking": "{{pool}} のポットを取りました（{{amount}}）",
+  "log.bet": "{{amount}} を賭けました",
+  "log.fold": "降りました",
+  "log.pochen": "ポッヘンのポット（{{pot}}）を取りました",
+  "log.play": "札を出しました",
+  "log.stop": "並びが止まり、ここから再開します",
+  "log.dealEnd": "上がって中央のポット {{centre}} と残り札の {{paid}} を取りました",
+  "log.gameEnd": "最もチップを持って終わりました"
 }

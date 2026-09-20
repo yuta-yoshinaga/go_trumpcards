@@ -212,7 +212,6 @@ func TestGuts_ActionLog(t *testing.T) {
 	}
 	require.NotNil(t, entry)
 	assert.Equal(t, map[string]string{"player": "0"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 func TestGutsConfig_Validate(t *testing.T) {

@@ -1,4 +1,8 @@
 {
+  "log.deal": "cards dealt",
+  "log.place": "no capture; the card joins the layout",
+  "log.capture": "captures a pair",
+  "log.gameEnd": "game over",
   "helpTitle": "Chinese Ten",
   "helpPlay": "  p <i>                    play a card from your hand",
   "helpSelect": "  s <i>                    choose which layout card to take",

@@ -33,5 +33,6 @@
   "helpExamplePlay": "  p 0                  play hand card 0",
   "helpHint": "  h                    show a hint",
   "exchangeDetail": " ({{pairs}})",
-  "exchangePair": "{{giver}} to {{taker}}: {{n}}"
+  "exchangePair": "{{giver}} to {{taker}}: {{n}}",
+  "log.deal": "Round {{round}}: assigned the 3/2/5 targets", "log.trump": "{{suit}} is trump", "log.exchange": "Moved {{count}} cards for the previous round's shortage or surplus", "log.play": "{{card}}", "log.trick": "Won trick {{trick}}", "log.scoreMet": "{{tricks}} tricks against a target of {{target}}: met", "log.scoreMissed": "{{tricks}} tricks against a target of {{target}}: missed", "log.result": "Game over", "log.giveup": "Gave up"
 }

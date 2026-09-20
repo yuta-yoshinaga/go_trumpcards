@@ -27,7 +27,6 @@ func TestPineapple_ActionLogUsesDetailCode(t *testing.T) {
 	entry := p.GetActionLog()[len(p.GetActionLog())-1]
 	assert.Equal(t, "pineapple.log.call", entry.DetailCode)
 	assert.Equal(t, map[string]string{"amount": "25"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 func TestPineapple_PhaseConstants(t *testing.T) {

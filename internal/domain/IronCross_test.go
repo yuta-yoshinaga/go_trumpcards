@@ -369,7 +369,6 @@ func TestIronCrossActionLogUsesDetailCode(t *testing.T) {
 	for _, entry := range g.GetActionLog() {
 		if entry.ActionType == "reset" {
 			assert.Equal(t, "ironcross.log.reset", entry.DetailCode)
-			assert.Empty(t, entry.Detail)
 			return
 		}
 	}

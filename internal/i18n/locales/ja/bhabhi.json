@@ -1,4 +1,12 @@
 {
+  "log.deal": "{{players}} 人に配り切りました",
+  "log.play": "{{card}} を出しました",
+  "log.trickWin": "{{count}} 枚を場から流しました",
+  "log.pickup": "{{count}} 枚を引き取りました",
+  "log.finish": "{{rank}} 位で上がりました",
+  "log.resultBhabhi": "Bhabhi が確定しました",
+  "log.resultStalemate": "{{tricks}} トリックで膠着。手札が最も多い席を Bhabhi とします",
+  "log.giveup": "投了しました",
   "helpTitle": "Bhabhi (バービー)",
   "helpPlay": "  p <idx>              カードを出す",
   "helpGiveUp": "  g                    投了する",

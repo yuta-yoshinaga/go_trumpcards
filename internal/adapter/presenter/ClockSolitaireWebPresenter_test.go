@@ -183,7 +183,7 @@ func TestClockSolitaireWebPresenterActionLog_GameOver(t *testing.T) {
 	gg.On("GetPhase").Return(domain.ClockSolitairePhaseGameOver)
 	gg.On("GetGameEndFlag").Return(true)
 	gg.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, ActionType: "step", Detail: "test"},
+		{TurnNumber: 1, ActionType: "step", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 
 	p := &ClockSolitaireWebPresenter{}

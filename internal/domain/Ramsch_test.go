@@ -43,7 +43,6 @@ func TestRamsch_ActionLogUsesDetailCode(t *testing.T) {
 	g.Reset()
 	for _, entry := range g.GetActionLog() {
 		if entry.DetailCode == "ramsch.log.roundStart" {
-			assert.Empty(t, entry.Detail)
 			assert.Equal(t, "1", entry.DetailParams["round"])
 			return
 		}

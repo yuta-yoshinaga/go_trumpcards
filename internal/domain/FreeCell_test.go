@@ -141,7 +141,6 @@ func TestFreeCellMoveTableauToTableau(t *testing.T) {
 	entry := f.GetActionLog()[0]
 	assert.Equal(t, "freecell.log.tableauToTableau", entry.DetailCode)
 	assert.Equal(t, map[string]string{"fromCol": "1", "toCol": "0"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 func TestFreeCellMoveTableauToTableauSupermove(t *testing.T) {

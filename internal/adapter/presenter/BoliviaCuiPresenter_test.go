@@ -213,7 +213,7 @@ func TestBoliviaCuiPresenter_ActionLogOutput(t *testing.T) {
 		m := new(interfaces.MockBoliviaGame)
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "draw_stock", Detail: "drew"},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "draw_stock", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 		// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
 		m.On("GetPlayer", mock.Anything).Return(domain.NewBoliviaPlayer(true, 0)).Maybe()

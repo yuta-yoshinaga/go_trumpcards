@@ -276,7 +276,6 @@ func TestSamba_DrawFromStock_Success(t *testing.T) {
 	require.NoError(t, g.PlayerDrawFromStock())
 	entry := findActionLogEntry(t, g.GetActionLog(), "samba.log.drawStock")
 	assert.Contains(t, entry.DetailParams, "name")
-	assert.Empty(t, entry.Detail)
 	assert.Equal(t, domain.SambaPhaseMeld, g.GetPhase())
 	assert.GreaterOrEqual(t, g.GetPlayer(0).GetCardsSize(), before)
 	assert.Less(t, g.GetDrawPileCount(), drawBefore)

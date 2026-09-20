@@ -107,7 +107,6 @@ func TestSpiteAndMalice_PlayFromHand_StartsFoundationWithAce(t *testing.T) {
 	}
 	require.NotNil(t, entry)
 	assert.Equal(t, map[string]string{"player": "0", "foundation": "1"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 func TestSpiteAndMalice_PlayFromHand_Sequential(t *testing.T) {

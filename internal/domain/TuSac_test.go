@@ -334,7 +334,6 @@ func TestTuSac_Accessors(t *testing.T) {
 	entry := g.GetActionLog()[0]
 	assert.Equal(t, "tusac.log.deal", entry.DetailCode)
 	assert.Empty(t, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 	assert.Equal(t, -1, g.GetWentOutSeat(), "配った直後に上がりが立っている")
 
 	cfg := TuSacConfig{Seats: 2, Rounds: 2}

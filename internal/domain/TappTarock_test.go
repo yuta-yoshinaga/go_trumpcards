@@ -38,7 +38,6 @@ func TestTappTarockActionLogUsesDetailCode(t *testing.T) {
 	}
 	require.NotNil(t, entry)
 	assert.Equal(t, map[string]string{"round": "1", "talon": "6"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 func TestTappTarockPlaysSixteenTricks(t *testing.T) {

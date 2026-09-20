@@ -81,7 +81,6 @@ func TestMichigan_PlaceHumanBet_TransitionsToPlay(t *testing.T) {
 	require.NotNil(t, betLog)
 	assert.Equal(t, "michigan.log.bet", betLog.DetailCode)
 	assert.NotEmpty(t, betLog.DetailParams["total"])
-	assert.Empty(t, betLog.Detail)
 }
 
 // michiganEvenBet は budget を 4 分割した賭けスライスを返す。

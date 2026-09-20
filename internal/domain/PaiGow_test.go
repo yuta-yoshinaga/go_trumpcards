@@ -530,10 +530,8 @@ func TestPaiGow_ActionLog(t *testing.T) {
 	}
 	require.NotNil(t, bet)
 	assert.Equal(t, map[string]string{"amount": "100"}, bet.DetailParams)
-	assert.Empty(t, bet.Detail)
 	require.NotNil(t, deal)
 	assert.Nil(t, deal.DetailParams)
-	assert.Empty(t, deal.Detail)
 }
 
 // --- Getters with test helpers ---

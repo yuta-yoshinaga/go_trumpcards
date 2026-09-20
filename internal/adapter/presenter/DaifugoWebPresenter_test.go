@@ -703,7 +703,7 @@ func TestDaifugoWebPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("with entries", func(t *testing.T) {
 		mockGame := new(interfaces.MockDaifugoGame)
 		entries := []*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "played 3 of spades", Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 3, true)}},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}, Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 3, true)}},
 		}
 		mockGame.On("GetGameEndFlag").Return(true)
 		mockGame.On("GetActionLog").Return(entries)
@@ -711,7 +711,7 @@ func TestDaifugoWebPresenter_ActionLogOutput(t *testing.T) {
 		result := p.ActionLogOutput(mockGame)
 
 		assert.Contains(t, result, `"actionType":"play"`)
-		assert.Contains(t, result, `"detail":"played 3 of spades"`)
+		assert.Contains(t, result, `"detailCode":"test.log.stub"`)
 		mockGame.AssertExpectations(t)
 	})
 

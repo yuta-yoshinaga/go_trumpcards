@@ -481,9 +481,6 @@ func TestNapoleonsSquare_ActionLogUsesZeroBasedIndices(t *testing.T) {
 	assert.Nil(t, log[2].DetailParams)
 	assert.Equal(t, "napoleonssquare.log.move", log[3].DetailCode)
 	assert.Equal(t, map[string]string{"value1": "0"}, log[3].DetailParams)
-	for _, e := range log {
-		assert.Empty(t, e.Detail)
-	}
 }
 
 func TestNapoleonsSquare_JSONRoundTrip(t *testing.T) {

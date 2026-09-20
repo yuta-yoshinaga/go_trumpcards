@@ -134,8 +134,7 @@ func (c *Cucumber) Reset() {
 	c.gameEndFlag = false
 	c.winnerIdx = -1
 	c.actionLog = nil
-	c.addLog(-1, "start", fmt.Sprintf("キューカンバーを開始しました（%d 人、%d 点で終了）",
-		c.config.PlayerCnt, c.config.TargetScore), nil)
+	c.addLog(-1, "start", "cucumber.log.start", map[string]string{"players": fmt.Sprintf("%d", c.config.PlayerCnt), "target": fmt.Sprintf("%d", c.config.TargetScore)}, nil)
 	c.dealRound()
 }
 
@@ -168,7 +167,7 @@ func (c *Cucumber) dealRound() {
 	}
 	c.leadPlayerIdx = lead
 	c.currentPlayerIdx = lead
-	c.addLog(-1, "deal", fmt.Sprintf("ラウンド %d を配りました", c.roundNumber), nil)
+	c.addLog(-1, "deal", "cucumber.log.deal", map[string]string{"round": fmt.Sprintf("%d", c.roundNumber)}, nil)
 }
 
 // sortAllHands は手札をランク順に整える。
@@ -296,7 +295,7 @@ func (c *Cucumber) play(playerIdx, cardIndex int) error {
 
 	card := c.players[playerIdx].RemoveCard(cardIndex)
 	c.currentTrick = append(c.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	c.addLog(playerIdx, "play", "カードを出しました", []*Card{card})
+	c.addLog(playerIdx, "play", "cucumber.log.play", nil, []*Card{card})
 
 	if len(c.currentTrick) < len(c.players) {
 		c.currentPlayerIdx = (c.currentPlayerIdx + 1) % len(c.players)
@@ -333,7 +332,7 @@ func (c *Cucumber) forcedLowest(playerIdx int, valid []int) bool {
 func (c *Cucumber) resolveTrick() {
 	winner := c.trickWinner()
 	c.trickNumber++
-	c.addLog(winner, "trick", fmt.Sprintf("%d 番目のトリックを取りました", c.trickNumber), nil)
+	c.addLog(winner, "trick", "cucumber.log.trickWin", map[string]string{"trick": fmt.Sprintf("%d", c.trickNumber)}, nil)
 
 	if c.players[winner].GetCardsSize() == 0 {
 		// **失点が付くのは最終トリックだけ。**
@@ -371,7 +370,7 @@ func (c *Cucumber) finishRound(winner int) {
 	c.lastTrickWinnerIdx = winner
 	c.lastPenalty = penalty
 	c.phase = CucumberPhaseRoundEnd
-	c.addLog(winner, "penalty", fmt.Sprintf("最終トリックを取り %d 点の失点", penalty), nil)
+	c.addLog(winner, "penalty", "cucumber.log.penalty", map[string]string{"points": fmt.Sprintf("%d", penalty)}, nil)
 
 	if c.reachedTarget() {
 		c.finish()
@@ -393,8 +392,7 @@ func (c *Cucumber) finish() {
 	c.phase = CucumberPhaseGameEnd
 	c.gameEndFlag = true
 	c.winnerIdx = c.leaderIdx()
-	c.addLog(c.winnerIdx, "result",
-		fmt.Sprintf("失点 %d 点でいちばん少なく終えました", c.players[c.winnerIdx].GetPenalty()), nil)
+	c.addLog(c.winnerIdx, "result", "cucumber.log.result", map[string]string{"penalty": fmt.Sprintf("%d", c.players[c.winnerIdx].GetPenalty())}, nil)
 }
 
 // leaderIdx は失点のいちばん少ない席を返す (同点なら若い席)。
@@ -426,7 +424,7 @@ func (c *Cucumber) GiveUp() {
 		best = 0
 	}
 	c.winnerIdx = best
-	c.addLog(0, "giveup", "投了しました", nil)
+	c.addLog(0, "giveup", "cucumber.log.giveup", nil, nil)
 }
 
 // chooseCpuCard は CPU が出す札を選ぶ。
@@ -481,8 +479,8 @@ func cucumberContains(xs []int, v int) bool {
 }
 
 // addLog は棋譜に 1 行足す。
-func (c *Cucumber) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	c.appendLog(playerIdx, actionType, detail, cards)
+func (c *Cucumber) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	c.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // GetConfig は設定を返す。

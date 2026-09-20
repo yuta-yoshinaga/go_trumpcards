@@ -77,7 +77,6 @@ func TestCourtPiece_ActionLogUsesDetailCode(t *testing.T) {
 	c.Reset()
 	for _, entry := range c.GetActionLog() {
 		if entry.DetailCode == "courtpiece.log.deal" {
-			assert.Empty(t, entry.Detail)
 			assert.Equal(t, "5", entry.DetailParams["count"])
 			return
 		}

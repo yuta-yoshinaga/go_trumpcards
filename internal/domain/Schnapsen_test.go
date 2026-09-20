@@ -175,7 +175,6 @@ func TestSchnapsen_ResolveTrick_AddsPointsAndWinsAt66(t *testing.T) {
 	}
 	assert.Equal(t, "schnapsen.log.trickWinYou", trickLog.DetailCode)
 	assert.Equal(t, map[string]string{"playerIdx": "0", "trick": "1", "points": "13"}, trickLog.DetailParams)
-	assert.Empty(t, trickLog.Detail)
 }
 
 func TestSchnapsen_ResolveTrick_GuardWrongPhase(t *testing.T) {

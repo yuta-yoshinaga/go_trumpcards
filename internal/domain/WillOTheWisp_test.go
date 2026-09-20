@@ -209,7 +209,6 @@ func TestWillOTheWispMoveTableauToTableau(t *testing.T) {
 	log := s.GetActionLog()
 	assert.Equal(t, "willothewisp.log.move", log[0].DetailCode)
 	assert.Equal(t, map[string]string{"from": "0", "to": "1"}, log[0].DetailParams)
-	assert.Empty(t, log[0].Detail)
 	result := s.GetTableau()
 	assert.Len(t, result[0], 0)
 	assert.Len(t, result[1], 2)

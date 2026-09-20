@@ -247,7 +247,6 @@ func TestWasp_MoveTableauToTableau(t *testing.T) {
 		}
 		assert.NotNil(t, entry)
 		assert.Equal(t, map[string]string{"from": "0", "to": "1"}, entry.DetailParams)
-		assert.Empty(t, entry.Detail)
 	})
 
 	t.Run("suit completion removes K-A sequence", func(t *testing.T) {

@@ -406,7 +406,6 @@ func TestFiftyOne_ActionLog(t *testing.T) {
 	assert.Equal(t, 0, fo.GetActionLog()[0].PlayerIdx)
 	assert.Equal(t, "fiftyone.log.exchangeOne", fo.GetActionLog()[0].DetailCode)
 	assert.Equal(t, map[string]string{"handIdx": "0", "tableIdx": "0"}, fo.GetActionLog()[0].DetailParams)
-	assert.Empty(t, fo.GetActionLog()[0].Detail)
 }
 
 func TestFiftyOne_Config(t *testing.T) {

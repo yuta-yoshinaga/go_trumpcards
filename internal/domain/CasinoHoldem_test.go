@@ -628,7 +628,6 @@ func TestCasinoHoldem_ActionLog(t *testing.T) {
 	entry := log[len(log)-1]
 	assert.Equal(t, "casinoholdem.log.resultFolded", entry.DetailCode)
 	assert.Empty(t, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 func TestCasinoHoldem_RecommendCall(t *testing.T) {

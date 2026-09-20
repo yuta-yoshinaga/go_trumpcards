@@ -307,7 +307,6 @@ func TestGinRummy_appendLog(t *testing.T) {
 	assert.Equal(t, "draw_stock", g.actionLog[0].ActionType)
 	assert.Equal(t, "ginrummy.log.test", g.actionLog[0].DetailCode)
 	assert.Equal(t, map[string]string{"name": "You"}, g.actionLog[0].DetailParams)
-	assert.Empty(t, g.actionLog[0].Detail)
 
 	g.appendLog(1, "discard", "ginrummy.log.discard", nil, nil)
 	assert.Len(t, g.actionLog, 2)

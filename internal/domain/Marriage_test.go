@@ -737,5 +737,4 @@ func TestMarriage_ActionLogAccumulates(t *testing.T) {
 	require.NotNil(t, entry)
 	assert.Equal(t, "marriage.log.drawStock", entry.DetailCode)
 	assert.Equal(t, map[string]string{"name": "You"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }

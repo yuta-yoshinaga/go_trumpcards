@@ -137,7 +137,6 @@ func TestPageOne_PlayerPlay_MatchSuit(t *testing.T) {
 	require.NotNil(t, playLog)
 	assert.Equal(t, "pageone.log.play", playLog.DetailCode)
 	assert.Equal(t, "You", playLog.DetailParams["name"])
-	assert.Empty(t, playLog.Detail)
 }
 
 func TestPageOne_PlayerPlay_MatchRank(t *testing.T) {

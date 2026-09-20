@@ -234,7 +234,6 @@ func TestHachiHachiCapture(t *testing.T) {
 	assert.GreaterOrEqual(t, human.CapturedCount(), 2)
 	for _, entry := range g.GetActionLog() {
 		if entry.DetailCode == "hachihachi.log.plays" {
-			assert.Empty(t, entry.Detail)
 			assert.Equal(t, "You", entry.DetailParams["name"])
 			assert.Equal(t, "captures", entry.DetailParams["result"])
 			return

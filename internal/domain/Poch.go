@@ -36,6 +36,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // PochPlayerCnt はプレイヤー数 (4 人。原典は 3〜6 人)。
@@ -244,7 +245,7 @@ func (p *Poch) dealRound() {
 	p.paySuit = p.turnUp.GetDesign()
 
 	p.phase = PochPhaseStaking
-	p.addLog(-1, "deal", fmt.Sprintf("pay suit is %d", p.paySuit), []*Card{p.turnUp})
+	p.addLog(-1, "deal", "poch.log.deal", map[string]string{"suit": strconv.Itoa(p.paySuit)}, []*Card{p.turnUp})
 	p.resolveStaking()
 }
 
@@ -289,7 +290,7 @@ func (p *Poch) award(pool PochPool, seat int) {
 	}
 	p.players[seat].AddChips(n)
 	p.stakingAwards = append(p.stakingAwards, &PochStakingAward{Pool: pool, Player: seat, Chips: n})
-	p.addLog(seat, "staking", fmt.Sprintf("takes the %s pool (%d)", pool, n), nil)
+	p.addLog(seat, "staking", "poch.log.staking", map[string]string{"pool": pool.String(), "amount": strconv.Itoa(n)}, nil)
 }
 
 // holderOf は pay suit の rank を持つ席を返す (-1: 誰も持っていない)。
@@ -322,7 +323,7 @@ func (p *Poch) Bet(player int) error {
 	if pl.GetBet() > p.betTarget {
 		p.betTarget = pl.GetBet()
 	}
-	p.addLog(player, "bet", fmt.Sprintf("bets %d", need), nil)
+	p.addLog(player, "bet", "poch.log.bet", map[string]string{"amount": strconv.Itoa(need)}, nil)
 	p.advancePochen()
 	return nil
 }
@@ -333,7 +334,7 @@ func (p *Poch) Fold(player int) error {
 		return err
 	}
 	p.GetPlayer(player).Fold()
-	p.addLog(player, "fold", "folds", nil)
+	p.addLog(player, "fold", "poch.log.fold", nil, nil)
 	p.advancePochen()
 	return nil
 }
@@ -442,7 +443,7 @@ func (p *Poch) finishPochen(winner int) {
 	p.pochenWinner = winner
 	p.pochenPot = pot
 	p.betTarget = 0
-	p.addLog(winner, "pochen", fmt.Sprintf("wins the pochen pot (%d)", pot), nil)
+	p.addLog(winner, "pochen", "poch.log.pochen", map[string]string{"pot": strconv.Itoa(pot)}, nil)
 
 	// **pochen を取った人がストップスを始める。**
 	p.currentIdx = winner
@@ -480,7 +481,7 @@ func (p *Poch) Play(player, handIdx int) error {
 	p.playedPile = append(p.playedPile, card)
 	p.stopsSuit = card.GetDesign()
 	p.stopsRank = pochRankOrder(card.GetValue())
-	p.addLog(player, "play", "plays a card", []*Card{card})
+	p.addLog(player, "play", "poch.log.play", nil, []*Card{card})
 
 	if pl.GetCardsSize() == 0 {
 		p.finishDeal(player)
@@ -535,7 +536,7 @@ func (p *Poch) advanceStops(lastPlayer int) {
 	p.stopsSuit = -1
 	p.stopsRank = 0
 	p.currentIdx = lastPlayer
-	p.addLog(lastPlayer, "stop", "the run is stopped and restarts here", nil)
+	p.addLog(lastPlayer, "stop", "poch.log.stop", nil, nil)
 }
 
 // hasPlayable は seat が今出せる札を持っているかを返す。
@@ -574,8 +575,7 @@ func (p *Poch) finishDeal(winner int) {
 	}
 	p.players[winner].AddChips(paid)
 	p.dealWinner = winner
-	p.addLog(winner, "deal_end",
-		fmt.Sprintf("goes out, takes the centre pot (%d) and %d for the cards left", centre, paid), nil)
+	p.addLog(winner, "deal_end", "poch.log.dealEnd", map[string]string{"centre": strconv.Itoa(centre), "paid": strconv.Itoa(paid)}, nil)
 
 	p.dealNo++
 	p.phase = PochPhaseDealEnd
@@ -595,7 +595,7 @@ func (p *Poch) finishGame() {
 	p.winnerIdx = best
 	p.gameEndFlag = true
 	p.phase = PochPhaseGameEnd
-	p.addLog(best, "game_end", "finishes with the most chips", nil)
+	p.addLog(best, "game_end", "poch.log.gameEnd", nil, nil)
 }
 
 // NextDeal は次のディールを配る。
@@ -775,8 +775,8 @@ func (p *Poch) SetStopsForTest(suit, rank int) { p.stopsSuit, p.stopsRank = suit
 func (p *Poch) ResolveStakingForTest() { p.resolveStaking() }
 
 // addLog は棋譜に 1 件追加する。
-func (p *Poch) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	p.appendLog(playerIdx, actionType, detail, cards)
+func (p *Poch) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	p.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // pochJSON is the JSON wire format for Poch.

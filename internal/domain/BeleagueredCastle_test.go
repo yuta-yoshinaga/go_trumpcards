@@ -284,7 +284,6 @@ func TestBeleagueredCastle_GiveUp_ActionLogUsesDetailCode(t *testing.T) {
 	for _, entry := range bc.GetActionLog() {
 		if entry.DetailCode == "beleagueredcastle.log.giveUp" {
 			assert.Nil(t, entry.DetailParams)
-			assert.Empty(t, entry.Detail)
 			return
 		}
 	}

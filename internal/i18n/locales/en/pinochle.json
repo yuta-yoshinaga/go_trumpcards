@@ -65,5 +65,13 @@
   "errInvalidSuit": "The suit is invalid.",
   "errPlayPhase": "This is not the play phase.",
   "errInvalidCardIndex": "The card index is invalid.",
-  "errCardCannotBePlayed": "This card cannot be played."
+  "errCardCannotBePlayed": "This card cannot be played.",
+  "log.bid": "Bid: {{amount}}",
+  "log.pass": "Passed",
+  "log.forcedBid": "Forced bid: {{amount}}",
+  "log.trump": "Declared trump: {{suit}}",
+  "log.meld": "Meld: {{points}} points",
+  "log.play": "Played a card",
+  "log.trickWin": "Won a trick: {{points}} points",
+  "log.roundScore": "Round score: team 0={{team0}}, team 1={{team1}} (cumulative: team 0={{total0}}, team 1={{total1}})"
 }

@@ -126,7 +126,6 @@ func TestPenguinMoveTableauToTableauSameSuitDescending(t *testing.T) {
 	entry := p.GetActionLog()[0]
 	assert.Equal(t, "penguin.log.tableauToTableau", entry.DetailCode)
 	assert.Equal(t, map[string]string{"fromCol": "1", "toCol": "0"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 func TestPenguinMoveTableauToTableauRejectsDifferentSuit(t *testing.T) {

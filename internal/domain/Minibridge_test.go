@@ -22,7 +22,6 @@ func TestMinibridge_ActionLogUsesDetailCode(t *testing.T) {
 	for _, entry := range m.GetActionLog() {
 		if entry.DetailCode == "minibridge.log.start" {
 			assert.Nil(t, entry.DetailParams)
-			assert.Empty(t, entry.Detail)
 			return
 		}
 	}

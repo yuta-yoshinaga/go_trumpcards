@@ -529,7 +529,6 @@ func TestSlobberhannes_ActionLog(t *testing.T) {
 	}
 	require.NotNil(t, deal)
 	assert.Equal(t, map[string]string{"round": "1"}, deal.DetailParams)
-	assert.Empty(t, deal.Detail)
 }
 
 // --- ヒント ---

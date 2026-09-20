@@ -216,7 +216,7 @@ func TestWillOTheWispWebPresenter_ActionLogOutput(t *testing.T) {
 	sg := new(interfaces.MockWillOTheWispGame)
 	sg.On("GetGameEndFlag").Return(true)
 	sg.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "move", Detail: "x"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "move", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 
 	p := new(WillOTheWispWebPresenter)

@@ -982,7 +982,6 @@ func TestWizard_ActionLog(t *testing.T) {
 	}
 	assert.NotNil(t, entry)
 	assert.Equal(t, map[string]string{"name": "You", "bid": "1"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 // --- JSON round-trip ---

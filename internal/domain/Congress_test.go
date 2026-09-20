@@ -609,9 +609,6 @@ func TestCongress_ActionLog(t *testing.T) {
 	assert.Equal(t, "congress.log.move", log[3].DetailCode)
 	assert.Equal(t, map[string]string{"value1": "1", "value2": "2"}, log[3].DetailParams)
 	assert.Equal(t, "congress.log.drawDetail", log[4].DetailCode)
-	for _, e := range log {
-		assert.Empty(t, e.Detail)
-	}
 }
 
 func TestCongress_JSONRoundTrip(t *testing.T) {

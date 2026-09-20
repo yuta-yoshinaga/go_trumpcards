@@ -269,7 +269,7 @@ func TestDuchessCuiPresenter_ActionLogOutput(t *testing.T) {
 		g := new(interfaces.MockDuchessGame)
 		g.On("GetPhase").Return(domain.DuchessPhaseGameOver)
 		g.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "move", Detail: "test"},
+			{TurnNumber: 1, ActionType: "move", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 
 		assert.Contains(t, new(DuchessCuiPresenter).ActionLogOutput(g), "move")

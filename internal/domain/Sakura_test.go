@@ -350,7 +350,6 @@ func TestSakura_ActionLogUsesDetailCode(t *testing.T) {
 	}
 	require.NotNil(t, entry)
 	assert.Equal(t, "1", entry.DetailParams["round"])
-	assert.Empty(t, entry.Detail)
 }
 
 // --- 手番 ---

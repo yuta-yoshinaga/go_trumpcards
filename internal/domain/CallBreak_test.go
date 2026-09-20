@@ -464,7 +464,6 @@ func TestCallBreak_GetActionLog(t *testing.T) {
 	}
 	require.NotNil(t, bidLog)
 	assert.Equal(t, map[string]string{"name": "You", "bid": "3"}, bidLog.DetailParams)
-	assert.Empty(t, bidLog.Detail)
 }
 
 func TestFormatCallBreakScore(t *testing.T) {

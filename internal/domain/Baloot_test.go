@@ -879,12 +879,10 @@ func TestBaloot_ActionLog(t *testing.T) {
 		kinds[e.ActionType] = true
 		if e.ActionType == "declare" {
 			assert.NotEmpty(t, e.DetailCode)
-			assert.Empty(t, e.Detail)
 		}
 		if e.ActionType == "play" {
 			assert.Equal(t, "baloot.log.play", e.DetailCode)
 			assert.Contains(t, e.DetailParams, "card")
-			assert.Empty(t, e.Detail)
 		}
 	}
 	assert.True(t, kinds["declare"])

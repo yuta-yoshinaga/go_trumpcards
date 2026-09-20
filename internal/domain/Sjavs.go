@@ -30,6 +30,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // SjavsPlayerCnt はプレイヤー数 (4 人固定、2 対 2)。
@@ -305,7 +306,7 @@ func (s *Sjavs) dealHand() {
 		}
 		s.currentIdx = (s.dealerIdx + 1) % len(s.players)
 		s.leadIdx = s.currentIdx
-		s.addLog(-1, "deal", "cards dealt", nil)
+		s.addLog(-1, "deal", "sjavs.log.deal", nil, nil)
 
 		// 誰か 1 人でも 5 枚のスートを持っていれば成立する。
 		for i := range s.players {
@@ -313,7 +314,7 @@ func (s *Sjavs) dealHand() {
 				return
 			}
 		}
-		s.addLog(-1, "redeal", "nobody can bid five, so the hand is redealt", nil)
+		s.addLog(-1, "redeal", "sjavs.log.redeal", nil, nil)
 	}
 }
 
@@ -398,9 +399,9 @@ func (s *Sjavs) Bid(player, length int) error {
 		s.bidderIdx = player
 		s.bidLength = length
 		s.bidIsClubs = clubs
-		s.addLog(player, "bid", fmt.Sprintf("bids %d", length), nil)
+		s.addLog(player, "bid", "sjavs.log.bid", map[string]string{"length": strconv.Itoa(length)}, nil)
 	} else {
-		s.addLog(player, "pass", "passes", nil)
+		s.addLog(player, "pass", "sjavs.log.pass", nil, nil)
 	}
 
 	s.currentIdx = (s.currentIdx + 1) % len(s.players)
@@ -446,7 +447,7 @@ func (s *Sjavs) finishBidding() {
 	s.phase = SjavsPhasePlay
 	s.currentIdx = (s.dealerIdx + 1) % len(s.players)
 	s.leadIdx = s.currentIdx
-	s.addLog(s.bidderIdx, "trump", fmt.Sprintf("declares trump suit %d", s.trumpSuit), nil)
+	s.addLog(s.bidderIdx, "trump", "sjavs.log.trump", map[string]string{"suit": strconv.Itoa(s.trumpSuit)}, nil)
 }
 
 // GetValidPlayIndices は player が出せる手札の添字を返す。
@@ -519,7 +520,7 @@ func (s *Sjavs) PlayCard(player, handIdx int) error {
 
 	card := p.RemoveCard(handIdx)
 	s.trick = append(s.trick, SjavsTrickCard{PlayerIdx: player, Card: card})
-	s.addLog(player, "play", "plays a card", []*Card{card})
+	s.addLog(player, "play", "sjavs.log.play", nil, []*Card{card})
 
 	if len(s.trick) < len(s.players) {
 		s.currentIdx = (s.currentIdx + 1) % len(s.players)
@@ -571,7 +572,7 @@ func (s *Sjavs) resolveTrick() {
 	}
 	s.tricksWon[winner]++
 	s.points[SjavsTeamOf(winner)] += pts
-	s.addLog(winner, "trick", fmt.Sprintf("wins the trick for %d point(s)", pts), cards)
+	s.addLog(winner, "trick", "sjavs.log.trick", map[string]string{"points": strconv.Itoa(pts)}, cards)
 
 	s.trick = nil
 	s.trickNo++
@@ -630,7 +631,7 @@ func (s *Sjavs) settleHand() {
 	case declPts == 60:
 		// 引き分け。加点は無く、次ゲームの価値が上がる。
 		s.carryOver += 2
-		s.addLog(-1, "tie", "60-60: no score, the next game is worth two more", nil)
+		s.addLog(-1, "tie", "sjavs.log.tie", nil, nil)
 	case declTricks == 0:
 		// スート不問で 16。ここだけ♣の倍額規則が効かない。
 		res.ScoringTeam, res.Amount = 1-declTeam, 16
@@ -644,7 +645,7 @@ func (s *Sjavs) settleHand() {
 		res.Amount += s.carryOver
 		s.carryOver = 0
 		s.remaining[res.ScoringTeam] -= res.Amount
-		s.addLog(-1, "score", fmt.Sprintf("team %d scores %d", res.ScoringTeam, res.Amount), nil)
+		s.addLog(-1, "score", "sjavs.log.score", map[string]string{"team": strconv.Itoa(res.ScoringTeam), "amount": strconv.Itoa(res.Amount)}, nil)
 	}
 
 	s.handResult = res
@@ -656,7 +657,7 @@ func (s *Sjavs) settleHand() {
 			s.winnerTeam = t
 			s.gameEndFlag = true
 			s.phase = SjavsPhaseGameEnd
-			s.addLog(-1, "rubber", fmt.Sprintf("team %d wins the rubber", t), nil)
+			s.addLog(-1, "rubber", "sjavs.log.rubber", map[string]string{"team": strconv.Itoa(t)}, nil)
 			return
 		}
 	}
@@ -889,8 +890,8 @@ func (s *Sjavs) SetRemainingForTest(a, b int) { s.remaining = []int{a, b} }
 func (s *Sjavs) SettleHandForTest() { s.settleHand() }
 
 // addLog は棋譜に 1 件追加する。
-func (s *Sjavs) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	s.appendLog(playerIdx, actionType, detail, cards)
+func (s *Sjavs) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	s.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // sjavsTrickCardJSON is the JSON wire format for SjavsTrickCard.

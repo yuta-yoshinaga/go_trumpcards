@@ -1087,7 +1087,6 @@ func TestDoubt_ActionLog_PlayerPlay(t *testing.T) {
 	assert.Equal(t, "play", entry.ActionType)
 	assert.Equal(t, "doubt.log.play", entry.DetailCode)
 	assert.Equal(t, map[string]string{"claimed": "1", "count": "1"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 	assert.Len(t, entry.Cards, 1)
 }
 
@@ -1108,7 +1107,6 @@ func TestDoubt_ActionLog_CpuPlay(t *testing.T) {
 			found = true
 			assert.Equal(t, "doubt.log.play", e.DetailCode)
 			assert.NotEmpty(t, e.DetailParams)
-			assert.Empty(t, e.Detail)
 			assert.NotEmpty(t, e.Cards)
 			break
 		}
@@ -1148,7 +1146,6 @@ func TestDoubt_ActionLog_ResolveDoubt(t *testing.T) {
 			assert.Equal(t, 1, doubtEntry.PlayerIdx)
 			assert.Equal(t, tc.wantCode, doubtEntry.DetailCode)
 			assert.Equal(t, map[string]string{"player": "0"}, doubtEntry.DetailParams)
-			assert.Empty(t, doubtEntry.Detail)
 		})
 	}
 }
@@ -1172,7 +1169,6 @@ func TestDoubt_ActionLog_SkipDoubt(t *testing.T) {
 			assert.Equal(t, -1, e.PlayerIdx)
 			assert.Equal(t, "doubt.log.noDoubt", e.DetailCode)
 			assert.Empty(t, e.DetailParams)
-			assert.Empty(t, e.Detail)
 			break
 		}
 	}
@@ -1196,7 +1192,6 @@ func TestDoubt_ActionLog_Finish(t *testing.T) {
 			assert.Equal(t, -1, e.PlayerIdx)
 			assert.Equal(t, "doubt.log.finish", e.DetailCode)
 			assert.Equal(t, map[string]string{"player": "0"}, e.DetailParams)
-			assert.Empty(t, e.Detail)
 			break
 		}
 	}

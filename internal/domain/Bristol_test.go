@@ -82,7 +82,6 @@ func TestBristol_Draw(t *testing.T) {
 	entry := b.GetActionLog()[0]
 	assert.Equal(t, "bristol.log.draw", entry.DetailCode)
 	assert.Empty(t, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 	assert.True(t, b.CanUndo())
 }
 

@@ -320,7 +320,6 @@ func TestSpeculation_ActionLogUsesDetailCode(t *testing.T) {
 	}
 	require.NotNil(t, entry)
 	assert.Equal(t, map[string]string{"trump": strconv.Itoa(g.GetTrumpSuit()), "pot": strconv.Itoa(g.GetPot())}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 func TestSpeculation_ConfigNormalizesOutOfRangeValues(t *testing.T) {

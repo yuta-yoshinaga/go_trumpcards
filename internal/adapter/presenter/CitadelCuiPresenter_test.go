@@ -191,7 +191,7 @@ func TestCitadelCuiPresenter_ActionLogOutput(t *testing.T) {
 		bg := new(interfaces.MockCitadelGame)
 		bg.On("GetPhase").Return(domain.CitadelPhaseGameOver)
 		bg.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "move", Detail: "test"},
+			{TurnNumber: 1, ActionType: "move", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 
 		p := new(CitadelCuiPresenter)

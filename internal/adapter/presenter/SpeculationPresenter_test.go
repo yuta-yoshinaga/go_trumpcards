@@ -493,7 +493,7 @@ func TestSpeculationCuiPresenter_ActionLogOutput(t *testing.T) {
 	b := specDefaultBoard()
 	b.gameEnd = true
 	b.log = []*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "flip", Detail: "1-5"},
+		{TurnNumber: 1, ActionType: "flip", DetailCode: "speculation.log.flip", DetailParams: map[string]string{"card": "A"}},
 	}
 	out := new(SpeculationCuiPresenter).ActionLogOutput(b.mock())
 	assert.Contains(t, out, "flip")
@@ -629,7 +629,7 @@ func TestSpeculationWebPresenter_ActionLogOutput(t *testing.T) {
 	b := specDefaultBoard()
 	b.gameEnd = true
 	b.log = []*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "flip", Detail: "1-5"},
+		{TurnNumber: 1, ActionType: "flip", DetailCode: "speculation.log.flip", DetailParams: map[string]string{"card": "A"}},
 	}
 	out := new(SpeculationWebPresenter).ActionLogOutput(b.mock())
 	assert.Contains(t, out, "flip")

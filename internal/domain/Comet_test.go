@@ -28,7 +28,6 @@ func TestComet_ActionLogUsesDetailCode(t *testing.T) {
 	}
 	require.NotNil(t, entry)
 	assert.Equal(t, "1", entry.DetailParams["round"])
-	assert.Empty(t, entry.Detail)
 }
 
 // **開幕は人間の手番。** 親の左隣が先に打つ規則なので親を最後の席にしてある ──

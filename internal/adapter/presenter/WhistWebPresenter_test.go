@@ -303,7 +303,7 @@ func TestWhistWebPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.WhistWebPresenter)
 	m := setupWhistWebMock()
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "test"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 
 	result := p.ActionLogOutput(m)

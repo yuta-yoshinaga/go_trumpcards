@@ -107,7 +107,6 @@ func TestCasinoWar_Bet_Success_NaturalFlow(t *testing.T) {
 	assert.NotNil(t, entry)
 	assert.Equal(t, "casinowar.log.bet", entry.DetailCode)
 	assert.Equal(t, map[string]string{"amount": "100"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 func TestCasinoWar_ResolveInitial_PlayerWins(t *testing.T) {

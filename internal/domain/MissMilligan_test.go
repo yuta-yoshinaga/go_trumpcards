@@ -579,9 +579,6 @@ func TestMissMilligan_ActionLogUsesZeroBasedIndices(t *testing.T) {
 	assert.Equal(t, map[string]string{"value1": "0", "value2": "1"}, log[2].DetailParams)
 	assert.Equal(t, "missmilligan.log.move", log[3].DetailCode)
 	assert.Equal(t, map[string]string{"value1": "0", "value2": "1"}, log[3].DetailParams)
-	for _, e := range log {
-		assert.Empty(t, e.Detail)
-	}
 }
 
 func TestMissMilligan_JSONRoundTrip(t *testing.T) {

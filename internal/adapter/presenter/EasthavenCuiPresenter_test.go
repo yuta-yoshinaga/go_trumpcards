@@ -151,7 +151,9 @@ func TestEasthavenCuiPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("game over", func(t *testing.T) {
 		eg := new(interfaces.MockEasthavenGame)
 		eg.On("GetPhase").Return(domain.EasthavenPhaseGameOver)
-		eg.On("GetActionLog").Return([]*domain.ActionLogEntry{{TurnNumber: 1, ActionType: "move", Detail: "test"}})
+		eg.On("GetActionLog").Return([]*domain.ActionLogEntry{
+			{TurnNumber: 1, ActionType: "deal", DetailCode: "easthaven.log.deal"},
+		})
 		p := new(EasthavenCuiPresenter)
 		assert.NotEmpty(t, p.ActionLogOutput(eg))
 	})

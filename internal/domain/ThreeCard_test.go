@@ -567,7 +567,6 @@ func TestThreeCard_ActionLog(t *testing.T) {
 	}
 	require.NotNil(t, betLog)
 	assert.Equal(t, map[string]string{"ante": "100", "pairplus": "50"}, betLog.DetailParams)
-	assert.Empty(t, betLog.Detail)
 }
 
 func TestThreeCard_JSON_RoundTrip(t *testing.T) {

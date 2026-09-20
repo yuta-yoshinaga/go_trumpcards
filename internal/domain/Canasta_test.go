@@ -238,7 +238,6 @@ func TestCanasta_PlayerDrawFromStock(t *testing.T) {
 	require.NoError(t, err)
 	entry := findActionLogEntry(t, g.GetActionLog(), "canasta.log.drawStock")
 	assert.Contains(t, entry.DetailParams, "name")
-	assert.Empty(t, entry.Detail)
 
 	// Phase should advance to Meld
 	assert.Equal(t, domain.CanastaPhaseMeld, g.GetPhase())

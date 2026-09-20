@@ -346,7 +346,7 @@ func TestBridgeCuiPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("with entries", func(t *testing.T) {
 		m := new(interfaces.MockBridgeGame)
 		entries := []*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "played SPADE 5"},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		}
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetActionLog").Return(entries)
@@ -357,7 +357,7 @@ func TestBridgeCuiPresenter_ActionLogOutput(t *testing.T) {
 		assert.Contains(t, result, "棋譜")
 		assert.Contains(t, result, "play")
 		assert.Contains(t, result, "あなた", "棋譜の座席名が他の行と揃っていない")
-		assert.Contains(t, result, "played SPADE 5")
+		assert.Contains(t, result, "テスト用の棋譜行 1")
 		m.AssertExpectations(t)
 	})
 

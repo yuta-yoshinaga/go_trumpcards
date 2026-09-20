@@ -77,7 +77,6 @@ func TestBaccaratBanque_SettlesEachSideSeparately(t *testing.T) {
 		t.Fatal("settle action was not logged")
 	}
 	assert.Equal(t, "baccaratbanque.log.settle", settleLog.DetailCode)
-	assert.Empty(t, settleLog.Detail)
 	assert.Equal(t, "2", settleLog.DetailParams["coup"])
 }
 

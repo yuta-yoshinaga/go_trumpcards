@@ -24,5 +24,8 @@
   "hintNone": "ヒントはありません。",
   "hintDecision": "[HINT: ランク {{rank}} (手札 {{indices}}) を要求 ({{reason}})]",
   "hintReasonKnownRank": "相手が持つと分かっているランク",
-  "hintReasonMostCopies": "手札で最も多く持っているランク"
+  "hintReasonMostCopies": "手札で最も多く持っているランク",
+  "log.askHit": "P{{asker}}がP{{target}}にランク{{rank}}を要求 → {{count}}枚獲得",
+  "log.askMiss": "P{{asker}}がP{{target}}にランク{{rank}}を要求 → Go Fish!",
+  "log.book": "P{{player}}がランク{{rank}}のブックを完成"
 }

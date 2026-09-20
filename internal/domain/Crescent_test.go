@@ -480,7 +480,6 @@ func TestCrescent_UndoFlow(t *testing.T) {
 	entry := cr.GetActionLog()[0]
 	assert.Equal(t, "crescent.log.tableauMove", entry.DetailCode)
 	assert.Equal(t, map[string]string{"from": "0", "to": "1"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 
 	logBefore := len(cr.GetActionLog())
 	require.Equal(t, 1, logBefore, "the move should have appended one action log entry")

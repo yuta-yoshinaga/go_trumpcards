@@ -123,7 +123,6 @@ func TestSpoons_HumanPassCompletesFourOfAKind(t *testing.T) {
 	require.NotNil(t, passLog)
 	assert.Equal(t, "spoons.log.pass", passLog.DetailCode)
 	assert.Empty(t, passLog.DetailParams)
-	assert.Empty(t, passLog.Detail)
 	// 人間がフォーオブアカインドを揃えた瞬間にスプーンを掴み、最初の取得者となる
 	// (どちらも決定的)。
 	assert.Equal(t, 0, g.GetFirstGrabberIdx())

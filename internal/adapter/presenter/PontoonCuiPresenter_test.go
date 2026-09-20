@@ -209,9 +209,9 @@ func TestPontoonCuiPresenter_ActionLogOutput(t *testing.T) {
 		g := new(interfaces.MockPontoonGame)
 		g.On("GetGameEndFlag").Return(true)
 		g.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "deal", Detail: "test detail"},
+			{TurnNumber: 1, ActionType: "deal", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
-		assert.Contains(t, new(PontoonCuiPresenter).ActionLogOutput(g), "test detail")
+		assert.Contains(t, new(PontoonCuiPresenter).ActionLogOutput(g), "deal")
 	})
 }
 

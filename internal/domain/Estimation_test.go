@@ -780,5 +780,4 @@ func TestEstimation_ActionLog(t *testing.T) {
 	}
 	require.NotNil(t, bidLog)
 	assert.Equal(t, map[string]string{"bid": "3"}, bidLog.DetailParams)
-	assert.Empty(t, bidLog.Detail)
 }

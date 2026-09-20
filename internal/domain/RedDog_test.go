@@ -32,7 +32,6 @@ func TestRedDog_ActionLogUsesDetailCode(t *testing.T) {
 	}
 	require.NotNil(t, entry)
 	assert.Equal(t, map[string]string{"amount": "100"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 func TestRedDog_Reset(t *testing.T) {

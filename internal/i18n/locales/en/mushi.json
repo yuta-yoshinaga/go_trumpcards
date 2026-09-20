@@ -30,5 +30,11 @@
   "cardLabel": "m{{month}}-{{index}}({{category}})",
   "helpExamplePlay": "  p 0                      play hand card 0",
   "helpHint": "  h                        show a hint",
-  "wildRule": "The ★ lightning card is wild — it takes any field card EXCEPT a willow"
+  "wildRule": "The ★ lightning card is wild — it takes any field card EXCEPT a willow",
+  "log.wild": "dealer claims the lightning card from the field",
+  "log.deal": "round {{round}} dealt",
+  "log.place": "no match; card goes to the field",
+  "log.capture": "captures {{count}} card(s)",
+  "log.round": "round {{round}} settled",
+  "log.game": "game over"
 }

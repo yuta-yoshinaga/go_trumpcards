@@ -162,7 +162,7 @@ func TestCribbageSquaresWebPresenter_ActionLog_Complete(t *testing.T) {
 	pg.On("GetHint").Return((*domain.CribbageSquaresHint)(nil)).Maybe()
 	pg.On("GetGameEndFlag").Return(true)
 	pg.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, ActionType: "place", Detail: "test"},
+		{TurnNumber: 1, ActionType: "place", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	p := &CribbageSquaresWebPresenter{}
 	result := p.ActionLogOutput(pg)

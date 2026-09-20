@@ -131,7 +131,7 @@ func (cp *ChinesePoker) Bet(amount int) error {
 		return NewDomainError(ErrInsufficientChips, "Insufficient chips.")
 	}
 	cp.bet = amount
-	cp.cpAppendLog(0, "bet", fmt.Sprintf("bet=%d", amount), nil)
+	cp.cpAppendLog(0, "bet", "chinesepoker.log.bet", map[string]string{"amount": fmt.Sprintf("%d", amount)}, nil)
 
 	cp.cpDeal()
 	cp.phase = ChinesePokerPhaseSetHands
@@ -196,7 +196,7 @@ func (cp *ChinesePoker) SetHands(frontIndices []int, middleIndices []int) error 
 	cp.playerMiddle = middle
 	cp.playerBack = back
 
-	cp.cpAppendLog(0, "set", fmt.Sprintf("front=%v middle=%v", frontIndices, middleIndices), nil)
+	cp.cpAppendLog(0, "set", "chinesepoker.log.set", map[string]string{"front": fmt.Sprintf("%v", frontIndices), "middle": fmt.Sprintf("%v", middleIndices)}, nil)
 
 	cp.dealerFront, cp.dealerMiddle, cp.dealerBack = cpHouseWay(cp.dealerCards)
 
@@ -212,7 +212,7 @@ func (cp *ChinesePoker) cpDeal() {
 		cp.playerCards = append(cp.playerCards, cp.trumpCards.DrawCard())
 		cp.dealerCards = append(cp.dealerCards, cp.trumpCards.DrawCard())
 	}
-	cp.cpAppendLog(-1, "deal", "dealt 13 cards each", nil)
+	cp.cpAppendLog(-1, "deal", "chinesepoker.log.deal", nil, nil)
 }
 
 // cpResolve ゲーム解決
@@ -302,22 +302,17 @@ func (cp *ChinesePoker) cpResolve() {
 	cp.gameEndFlag = true
 	cp.phase = ChinesePokerPhaseEnd
 
-	var resultStr string
-	switch cp.result {
-	case GameResultWin:
+	resultCode := "chinesepoker.log.resultDealerWins"
+	if cp.result == GameResultWin {
 		if cp.scoop {
-			resultStr = "player scoop"
+			resultCode = "chinesepoker.log.resultPlayerScoop"
 		} else {
-			resultStr = "player wins"
+			resultCode = "chinesepoker.log.resultPlayerWins"
 		}
-	default:
-		if cp.scoop {
-			resultStr = "dealer scoop"
-		} else {
-			resultStr = "dealer wins"
-		}
+	} else if cp.scoop {
+		resultCode = "chinesepoker.log.resultDealerScoop"
 	}
-	cp.cpAppendLog(-1, "result", resultStr, nil)
+	cp.cpAppendLog(-1, "result", resultCode, nil, nil)
 }
 
 // --- ハンド比較 ---
@@ -669,13 +664,14 @@ func cpHouseWayScore(front, middle, back []*Card) int {
 }
 
 // cpAppendLog 棋譜にエントリを追加する
-func (cp *ChinesePoker) cpAppendLog(playerIdx int, actionType, detail string, cards []*Card) {
+func (cp *ChinesePoker) cpAppendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	cp.actionLog = append(cp.actionLog, &ActionLogEntry{
-		TurnNumber: len(cp.actionLog) + 1,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
+		TurnNumber:   len(cp.actionLog) + 1,
+		PlayerIdx:    playerIdx,
+		ActionType:   actionType,
+		DetailCode:   detailCode,
+		DetailParams: detailParams,
+		Cards:        cards,
 	})
 }
 

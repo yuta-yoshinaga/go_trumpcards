@@ -442,7 +442,6 @@ func TestYaniv_ActionLogRecorded(t *testing.T) {
 	entry := g.GetActionLog()[0]
 	assert.Equal(t, "yaniv.log.discard", entry.DetailCode)
 	assert.Equal(t, map[string]string{"name": playerName(g.players, 0), "cards": "♠9"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 func TestYaniv_CardsStrHelper(t *testing.T) {

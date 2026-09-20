@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"strconv"
 	"time"
 )
 
@@ -172,7 +173,7 @@ func (g *Snap) Reset() {
 		}
 		g.players[i%g.config.PlayerCnt].AddToStockBottom(c)
 	}
-	g.addLog(-1, "start", fmt.Sprintf("スナップを開始しました（%d 人）", g.config.PlayerCnt), nil)
+	g.addLog(-1, "start", "snap.log.start", map[string]string{"players": strconv.Itoa(g.config.PlayerCnt)}, nil)
 	g.scheduleNext()
 }
 
@@ -224,7 +225,7 @@ func (g *Snap) step(playerIdx int) {
 	}
 	g.centerPile = append(g.centerPile, card)
 	g.lastEvent = SnapLastEvent{Kind: SnapEventStep, PlayerIdx: playerIdx}
-	g.addLog(playerIdx, "step", "1 枚めくりました", []*Card{card})
+	g.addLog(playerIdx, "step", "snap.log.step", nil, []*Card{card})
 	g.advanceTurn()
 	// **めくった直後にも終局を見る。** 最後の 1 枚を出すと全員のストックが空に
 	// なり得ます。ここで見ないと「誰も動かせないのに終わっていない」盤面を
@@ -242,7 +243,7 @@ func (g *Snap) snap(playerIdx int) {
 		g.centerPile = nil
 		g.players[playerIdx].AddToStockBottom(taken...)
 		g.lastEvent = SnapLastEvent{Kind: SnapEventSnapCorrect, PlayerIdx: playerIdx}
-		g.addLog(playerIdx, "snap", fmt.Sprintf("スナップ！ %d 枚を獲得しました", len(taken)), taken)
+		g.addLog(playerIdx, "snap", "snap.log.snap", map[string]string{"count": strconv.Itoa(len(taken))}, taken)
 		// **取った人が次にめくる。**
 		g.currentTurnIdx = playerIdx
 		g.pending = SnapPending{Kind: SnapPendingNone}
@@ -257,9 +258,9 @@ func (g *Snap) snap(playerIdx int) {
 	g.lastEvent = SnapLastEvent{Kind: SnapEventSnapWrong, PlayerIdx: playerIdx}
 	if c := g.players[playerIdx].DrawTop(); c != nil {
 		g.centerPile = append(g.centerPile, c)
-		g.addLog(playerIdx, "penalty", "誤宣言のペナルティで 1 枚差し出しました", []*Card{c})
+		g.addLog(playerIdx, "penalty", "snap.log.penaltyCard", nil, []*Card{c})
 	} else {
-		g.addLog(playerIdx, "penalty", "誤宣言しましたが、差し出す札がありません", nil)
+		g.addLog(playerIdx, "penalty", "snap.log.penaltyEmpty", nil, nil)
 	}
 	g.checkGameEnd()
 	if !g.gameEndFlag {
@@ -270,7 +271,7 @@ func (g *Snap) snap(playerIdx int) {
 // eliminate はストックが尽きた席を飛ばす。
 func (g *Snap) eliminate(playerIdx int) {
 	g.lastEvent = SnapLastEvent{Kind: SnapEventEliminated, PlayerIdx: playerIdx}
-	g.addLog(playerIdx, "eliminate", "ストックが尽きました", nil)
+	g.addLog(playerIdx, "eliminate", "snap.log.eliminate", nil, nil)
 	g.advanceTurn()
 	g.checkGameEnd()
 	if !g.gameEndFlag {
@@ -315,10 +316,10 @@ func (g *Snap) finish(winner int) {
 	g.pending = SnapPending{Kind: SnapPendingNone}
 	g.winnerIdx = winner
 	if winner >= 0 {
-		g.addLog(winner, "result", "全札を集めました", nil)
+		g.addLog(winner, "result", "snap.log.resultWin", nil, nil)
 		return
 	}
-	g.addLog(-1, "result", "続けられなくなりました（場に全札）", nil)
+	g.addLog(-1, "result", "snap.log.resultStalemate", nil, nil)
 }
 
 // GiveUp は投了する。
@@ -337,7 +338,7 @@ func (g *Snap) GiveUp() {
 		}
 	}
 	g.winnerIdx = best
-	g.addLog(0, "giveup", "投了しました", nil)
+	g.addLog(0, "giveup", "snap.log.giveup", nil, nil)
 }
 
 // Tick は CPU の保留アクションを（期限に達していれば）実行する。
@@ -436,8 +437,8 @@ func (g *Snap) GetHint() *SnapHint {
 }
 
 // addLog は棋譜に 1 行足す。
-func (g *Snap) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.appendLog(playerIdx, actionType, detail, cards)
+func (g *Snap) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- アクセサ ---------------------------------------------------------------

@@ -31,5 +31,12 @@
   "hintSplitOk": "This split does not foul",
   "hintFoulRisk": "Careful: this split fouls. Rework the front and middle rows",
   "helpExampleBet": "  b 100                                        bet 100 chips",
-  "helpHint": "  h                                            show a hint"
+  "helpHint": "  h                                            show a hint",
+  "log.bet": "bet={{amount}}",
+  "log.set": "front={{front}} middle={{middle}}",
+  "log.deal": "dealt 13 cards each",
+  "log.resultPlayerScoop": "player scoop",
+  "log.resultPlayerWins": "player wins",
+  "log.resultDealerScoop": "dealer scoop",
+  "log.resultDealerWins": "dealer wins"
 }

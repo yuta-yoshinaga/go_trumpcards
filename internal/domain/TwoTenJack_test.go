@@ -547,7 +547,6 @@ func TestTwoTenJack_GetActionLog(t *testing.T) {
 	}
 	require.NotNil(t, trumpLog)
 	assert.Equal(t, map[string]string{"name": "You", "suit": "Spade"}, trumpLog.DetailParams)
-	assert.Empty(t, trumpLog.Detail)
 }
 
 func TestTwoTenJack_JSONRoundTrip(t *testing.T) {

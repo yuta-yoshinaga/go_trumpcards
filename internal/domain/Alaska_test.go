@@ -487,7 +487,6 @@ func TestAlaska_GiveUp_ActionLogUsesDetailCode(t *testing.T) {
 	for _, entry := range y.GetActionLog() {
 		if entry.DetailCode == "alaska.log.giveUp" {
 			assert.Nil(t, entry.DetailParams)
-			assert.Empty(t, entry.Detail)
 			return
 		}
 	}

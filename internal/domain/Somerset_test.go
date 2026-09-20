@@ -605,5 +605,4 @@ func TestSomerset_ActionLog(t *testing.T) {
 	entry := log[len(log)-1]
 	assert.Equal(t, "somerset.log.moveTableauToFoundation", entry.DetailCode)
 	assert.Equal(t, map[string]string{"col": "0"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }

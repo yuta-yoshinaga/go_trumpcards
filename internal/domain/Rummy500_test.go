@@ -117,7 +117,6 @@ func TestRummy500_PlayerDrawFromStock(t *testing.T) {
 			}
 		}
 		require.NotNil(t, drawLog)
-		assert.Empty(t, drawLog.Detail)
 		assert.Equal(t, map[string]string{"name": "You"}, drawLog.DetailParams)
 	})
 

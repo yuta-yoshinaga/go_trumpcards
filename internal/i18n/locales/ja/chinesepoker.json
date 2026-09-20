@@ -31,5 +31,12 @@
   "hintSplitOk": "この分け方ならファウルにならない",
   "hintFoulRisk": "注意: この分け方はファウルになる。前列/中列を組み替えること",
   "helpExampleBet": "  b 100                                      100 チップを賭ける",
-  "helpHint": "  h                                          助言を表示"
+  "helpHint": "  h                                          助言を表示",
+  "log.bet": "ベット={{amount}}",
+  "log.set": "フロント={{front}} ミドル={{middle}}",
+  "log.deal": "各プレイヤーに13枚ずつ配りました",
+  "log.resultPlayerScoop": "プレイヤーのスイープ勝ち",
+  "log.resultPlayerWins": "プレイヤーの勝ち",
+  "log.resultDealerScoop": "ディーラーのスイープ勝ち",
+  "log.resultDealerWins": "ディーラーの勝ち"
 }

@@ -233,7 +233,6 @@ func TestSirTommy_GiveUp_ActionLogUsesDetailCode(t *testing.T) {
 	for _, entry := range s.GetActionLog() {
 		if entry.DetailCode == "sirtommy.log.giveUp" {
 			assert.Nil(t, entry.DetailParams)
-			assert.Empty(t, entry.Detail)
 			return
 		}
 	}

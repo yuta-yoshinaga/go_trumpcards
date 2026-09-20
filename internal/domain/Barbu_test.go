@@ -646,5 +646,4 @@ func TestBarbu_ActionLogUsesDetailCode(t *testing.T) {
 	assert.Contains(t, entry.DetailParams, "deal")
 	assert.Contains(t, entry.DetailParams, "total")
 	assert.Contains(t, entry.DetailParams, "dealer")
-	assert.Empty(t, entry.Detail)
 }

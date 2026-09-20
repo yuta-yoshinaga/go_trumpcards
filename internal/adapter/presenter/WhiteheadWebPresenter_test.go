@@ -391,7 +391,7 @@ func TestWhiteheadWebPresenter_ActionLogOutput(t *testing.T) {
 		kg.On("GetPhase").Return(domain.WhiteheadPhaseGameClear)
 		kg.On("GetGameEndFlag").Return(true)
 		kg.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "draw", Detail: "test", Cards: nil},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "draw", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}, Cards: nil},
 		})
 
 		p := new(WhiteheadWebPresenter)

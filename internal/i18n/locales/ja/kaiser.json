@@ -55,5 +55,18 @@
   "hintDumpSpadeThree": "♠3 は取った側が −3 点です。選べるうちに手放します。",
   "hintChoose": "♥5 は +5 点なので、自分から出すと相手に取られかねません。",
   "hintWith": "{{hint}} → {{list}}",
-  "helpExamplePlay": "  p 0                       手札の 0 番のカードを出す"
+  "helpExamplePlay": "  p 0                       手札の 0 番のカードを出す",
+  "log.deal": "8 枚ずつ配りました。山札は {{kitty}} 枚です",
+  "log.bid": "{{value}} を宣言しました",
+  "log.pass": "パスしました",
+  "log.redeal": "全員パス。ディールをやり直します",
+  "log.takeKitty": "山札を取りました",
+  "log.setTrump": "スート {{suit}} を切り札にしました",
+  "log.discard": "2 枚捨てました",
+  "log.play": "札を出しました",
+  "log.trick": "トリック {{trick}} を取りました",
+  "log.handEndMade": "{{points}} 点を取り、宣言 {{bid}} を達成しました",
+  "log.set": "宣言 {{bid}} を失敗しました",
+  "log.mustBid": "チーム {{team}} はここから得点するために宣言が必要です",
+  "log.gameEnd": "チーム {{team}} の勝ちです"
 }

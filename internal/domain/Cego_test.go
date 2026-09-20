@@ -93,7 +93,6 @@ func TestCegoActionLogUsesDetailCode(t *testing.T) {
 		if e.ActionType == "pass" {
 			assert.Equal(t, "cego.log.pass", e.DetailCode)
 			assert.Contains(t, e.DetailParams, "name")
-			assert.Empty(t, e.Detail)
 			found = true
 			break
 		}

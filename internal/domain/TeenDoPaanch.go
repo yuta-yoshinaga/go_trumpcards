@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // TeenDoPaanchPhase は 3-2-5 のゲームフェーズ。
@@ -184,7 +185,7 @@ func (g *TeenDoPaanch) startRound() {
 	g.roundNumber++
 	g.currentPlayerIdx = g.fivePlayerIdx
 	g.leadPlayerIdx = g.fivePlayerIdx
-	g.addLog(-1, "deal", fmt.Sprintf("ラウンド %d：ノルマ 3/2/5 を割り当てました", g.roundNumber), nil)
+	g.addLog(-1, "deal", "teendopaanch.log.deal", map[string]string{"round": strconv.Itoa(g.roundNumber)}, nil)
 }
 
 // assignTargets はノルマを席へ割り当てる。**5 を起点に 3・2 と回します。**
@@ -219,7 +220,7 @@ func (g *TeenDoPaanch) DeclareTrump(suit int) error {
 	g.exchangeCards()
 	g.phase = TeenDoPaanchPhasePlay
 	g.currentPlayerIdx = g.leadPlayerIdx
-	g.addLog(g.fivePlayerIdx, "trump", fmt.Sprintf("切り札は %s", suitStr(suit)), nil)
+	g.addLog(g.fivePlayerIdx, "trump", "teendopaanch.log.trump", map[string]string{"suit": suitStr(suit)}, nil)
 	return nil
 }
 
@@ -319,7 +320,7 @@ func (g *TeenDoPaanch) exchangeCards() {
 	}
 	if moved > 0 {
 		g.sortAllHands()
-		g.addLog(-1, "exchange", fmt.Sprintf("前ラウンドの過不足で %d 枚を移しました", moved), nil)
+		g.addLog(-1, "exchange", "teendopaanch.log.exchange", map[string]string{"count": strconv.Itoa(moved)}, nil)
 	}
 }
 
@@ -452,7 +453,7 @@ func (g *TeenDoPaanch) play(playerIdx, cardIndex int) error {
 
 	card := p.RemoveCard(cardIndex)
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.addLog(playerIdx, "play", cardStr(card), []*Card{card})
+	g.addLog(playerIdx, "play", "teendopaanch.log.play", map[string]string{"card": cardStr(card)}, []*Card{card})
 
 	if len(g.currentTrick) < TeenDoPaanchPlayerCnt {
 		g.currentPlayerIdx = (g.currentPlayerIdx + 1) % TeenDoPaanchPlayerCnt
@@ -477,7 +478,7 @@ func (g *TeenDoPaanch) resolveTrick() {
 	g.leadPlayerIdx = winner
 	g.lastTrickWinner = winner
 	g.currentPlayerIdx = winner
-	g.addLog(winner, "trick", fmt.Sprintf("トリック %d を取りました", g.trickNumber), nil)
+	g.addLog(winner, "trick", "teendopaanch.log.trick", map[string]string{"trick": strconv.Itoa(g.trickNumber)}, nil)
 
 	if g.trickNumber >= TeenDoPaanchTricksPerRound {
 		g.finishRound()
@@ -517,11 +518,9 @@ func (g *TeenDoPaanch) finishRound() {
 		g.surplus[i] = diff
 		if diff >= 0 {
 			p.AddMet()
-			g.addLog(i, "score", fmt.Sprintf("ノルマ %d に対し %d トリック：達成",
-				p.GetTarget(), p.GetTrickCount()), nil)
+			g.addLog(i, "score", "teendopaanch.log.scoreMet", map[string]string{"target": strconv.Itoa(p.GetTarget()), "tricks": strconv.Itoa(p.GetTrickCount())}, nil)
 		} else {
-			g.addLog(i, "score", fmt.Sprintf("ノルマ %d に対し %d トリック：未達成",
-				p.GetTarget(), p.GetTrickCount()), nil)
+			g.addLog(i, "score", "teendopaanch.log.scoreMissed", map[string]string{"target": strconv.Itoa(p.GetTarget()), "tricks": strconv.Itoa(p.GetTrickCount())}, nil)
 		}
 	}
 	if g.roundNumber >= g.config.Rounds {
@@ -556,7 +555,7 @@ func (g *TeenDoPaanch) finishGame() {
 		best = -1
 	}
 	g.winnerIdx = best
-	g.addLog(-1, "result", "ゲーム終了", nil)
+	g.addLog(-1, "result", "teendopaanch.log.result", nil, nil)
 }
 
 // GiveUp は投了する。
@@ -567,7 +566,7 @@ func (g *TeenDoPaanch) GiveUp() {
 	g.phase = TeenDoPaanchPhaseGameEnd
 	g.gameEndFlag = true
 	g.winnerIdx = -1
-	g.addLog(0, "giveup", "投了しました", nil)
+	g.addLog(0, "giveup", "teendopaanch.log.giveup", nil, nil)
 }
 
 // chooseCpuCard は CPU の手。
@@ -636,8 +635,8 @@ func teenDoPaanchContains(xs []int, v int) bool {
 }
 
 // addLog は棋譜に 1 行足す。
-func (g *TeenDoPaanch) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.appendLog(playerIdx, actionType, detail, cards)
+func (g *TeenDoPaanch) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- アクセサ ---------------------------------------------------------------

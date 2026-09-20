@@ -232,7 +232,6 @@ func TestTrenteEtQuarante_ActionLog(t *testing.T) {
 	entry := logs[len(logs)-1]
 	assert.Equal(t, "trenteetquarante.log.resultRougeNoirLose", entry.DetailCode)
 	assert.Equal(t, map[string]string{"payout": "0"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 func TestTrenteEtQuaranteConfig_Validate(t *testing.T) {

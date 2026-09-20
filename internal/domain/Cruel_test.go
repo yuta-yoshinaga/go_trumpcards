@@ -582,7 +582,6 @@ func TestCruel_GetActionLog(t *testing.T) {
 	assert.Equal(t, "move", log[0].ActionType)
 	assert.Equal(t, "cruel.log.tableauToFoundation", log[0].DetailCode)
 	assert.Equal(t, map[string]string{"column": "0"}, log[0].DetailParams)
-	assert.Empty(t, log[0].Detail)
 }
 
 // #5496: AutoComplete は1枚も動かなくても「オートコンプリートを実行しました」を

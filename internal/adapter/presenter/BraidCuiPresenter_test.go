@@ -190,7 +190,7 @@ func TestBraidCuiPresenter_ActionLogOutput(t *testing.T) {
 		g := new(interfaces.MockBraidGame)
 		g.On("GetPhase").Return(domain.BraidPhaseGameOver)
 		g.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "move", Detail: "test detail"},
+			{TurnNumber: 1, ActionType: "move", DetailCode: "braid.log.move", DetailParams: map[string]string{"value1": "test", "value2": "detail"}},
 		})
 		assert.Contains(t, new(BraidCuiPresenter).ActionLogOutput(g), "test detail")
 	})

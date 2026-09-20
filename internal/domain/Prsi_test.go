@@ -79,7 +79,6 @@ func TestPrsi_ActionLogUsesDetailCode(t *testing.T) {
 	require.NotNil(t, entry)
 	assert.Equal(t, "You", entry.DetailParams["name"])
 	assert.NotEmpty(t, entry.DetailParams["card"])
-	assert.Empty(t, entry.Detail)
 }
 
 func TestPrsi_PlayMatchingSuitOrRank(t *testing.T) {

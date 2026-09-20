@@ -67,7 +67,7 @@ func TestKlaverjas_ActionLogUsesDetailCode(t *testing.T) {
 	}
 	for _, entry := range g.GetActionLog() {
 		if entry.DetailCode == "klaverjas.log.play" {
-			if entry.Detail != "" || entry.DetailParams["name"] == "" || entry.DetailParams["card"] == "" {
+			if entry.DetailParams["name"] == "" || entry.DetailParams["card"] == "" {
 				t.Fatalf("play log = %#v, want code params and empty detail", entry)
 			}
 			return

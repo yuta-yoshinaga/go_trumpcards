@@ -78,5 +78,16 @@
   "errInvalidSuit": "The suit is invalid.",
   "errPlayPhase": "This is not the play phase.",
   "errInvalidCardIndex": "The card index is invalid.",
-  "errCardCannotBePlayed": "This card cannot be played."
+  "errCardCannotBePlayed": "This card cannot be played.",
+  "log.bid": "{{name}} bid {{amount}}",
+  "log.pass": "{{name}} passed",
+  "log.forcedBid": "Everyone passed, so the last speaker won by forced bid: {{amount}} points",
+  "log.dabbReveal": "Revealed Dabb: {{count}} cards",
+  "log.dabbDiscard": "{{name}} discarded {{count}} cards face down to Dabb",
+  "log.trump": "Declared trump: {{suit}}",
+  "log.meld": "Meld: {{points}} points",
+  "log.play": "Played a card",
+  "log.trickWin": "Won a trick: {{points}} points",
+  "log.roundScore": "Round ended: cumulative scores=[P0:{{score0}}, P1:{{score1}}, P2:{{score2}}]",
+  "log.gameEnd": "Game over! Player {{player}} wins!"
 }

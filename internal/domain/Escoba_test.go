@@ -201,7 +201,6 @@ func TestEscoba_ActionLogUsesDetailCode(t *testing.T) {
 	}
 	require.NotNil(t, entry)
 	assert.Equal(t, map[string]string{"round": "1", "cards": "3"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 func TestEscoba_JSONRoundTrip(t *testing.T) {

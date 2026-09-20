@@ -360,7 +360,7 @@ func (b *Bura) Reset() {
 
 	b.leadPlayerIdx = 0
 	b.currentPlayerIdx = 0
-	b.addLog(-1, "deal", fmt.Sprintf("trump suit is %d", b.trumpSuit), []*Card{b.trumpCard})
+	b.addLog(-1, "deal", "bura.log.deal", map[string]string{"suit": fmt.Sprintf("%d", b.trumpSuit)}, []*Card{b.trumpCard})
 }
 
 // PlayCards idx のプレイヤーが手札の indices を出す。
@@ -439,7 +439,7 @@ func (b *Bura) resolveTrick() {
 		points += BuraCardPoints(c)
 	}
 	b.playerPoints[winner] += points
-	b.addLog(winner, "trick", fmt.Sprintf("wins trick %d (%d pt)", b.trickNumber+1, points), taken)
+	b.addLog(winner, "trick", "bura.log.trickWin", map[string]string{"trick": fmt.Sprintf("%d", b.trickNumber+1), "points": fmt.Sprintf("%d", points)}, taken)
 
 	b.trickNumber++
 	b.currentLead = nil
@@ -462,7 +462,7 @@ func (b *Bura) resolveTrick() {
 		b.phase = BuraPhaseGameEnd
 		b.winnerIdx = -1
 		b.currentPlayerIdx = -1
-		b.addLog(-1, "draw", "stock exhausted with no claim -- the round is a draw", nil)
+		b.addLog(-1, "draw", "bura.log.draw", nil, nil)
 	}
 }
 
@@ -514,11 +514,11 @@ func (b *Bura) Claim(idx int) error {
 
 	if b.playerPoints[idx] >= BuraWinThreshold {
 		b.winnerIdx = idx
-		b.addLog(idx, "claim", fmt.Sprintf("claims %d points and wins", b.playerPoints[idx]), nil)
+		b.addLog(idx, "claim", "bura.log.claimWin", map[string]string{"points": fmt.Sprintf("%d", b.playerPoints[idx])}, nil)
 		return nil
 	}
 	b.winnerIdx = b.nextPlayer(idx)
-	b.addLog(idx, "claim", fmt.Sprintf("claims with only %d points and forfeits", b.playerPoints[idx]), nil)
+	b.addLog(idx, "claim", "bura.log.claimLose", map[string]string{"points": fmt.Sprintf("%d", b.playerPoints[idx])}, nil)
 	return nil
 }
 
@@ -544,7 +544,7 @@ func (b *Bura) DeclareCombination(idx int) error {
 	b.phase = BuraPhaseGameEnd
 	b.winnerIdx = idx
 	b.currentPlayerIdx = -1
-	b.addLog(idx, "declare", fmt.Sprintf("declares combination %d and wins", combo), hand)
+	b.addLog(idx, "declare", "bura.log.declare", map[string]string{"combination": fmt.Sprintf("%d", combo)}, hand)
 	return nil
 }
 
@@ -554,8 +554,8 @@ func (b *Bura) nextPlayer(idx int) int {
 }
 
 // addLog アクションログへ 1 行追加する。
-func (b *Bura) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	b.appendLog(playerIdx, actionType, detail, cards)
+func (b *Bura) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	b.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // ---- 公開アクセサ ----

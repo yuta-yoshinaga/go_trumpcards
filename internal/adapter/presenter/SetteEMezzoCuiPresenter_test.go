@@ -178,9 +178,9 @@ func TestSetteEMezzoCuiPresenter_ActionLogOutput(t *testing.T) {
 		g := new(interfaces.MockSetteEMezzoGame)
 		g.On("GetGameEndFlag").Return(true)
 		g.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "deal", Detail: "test detail"},
+			{TurnNumber: 1, ActionType: "deal", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
-		assert.Contains(t, new(SetteEMezzoCuiPresenter).ActionLogOutput(g), "test detail")
+		assert.Contains(t, new(SetteEMezzoCuiPresenter).ActionLogOutput(g), "deal")
 	})
 }
 

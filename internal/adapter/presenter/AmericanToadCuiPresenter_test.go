@@ -213,7 +213,9 @@ func TestAmericanToadCuiPresenter_ActionLogOutput(t *testing.T) {
 		g := new(interfaces.MockAmericanToadGame)
 		g.On("GetPhase").Return(domain.AmericanToadPhaseGameOver)
 		g.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "move", Detail: "test"},
+			{TurnNumber: 1, ActionType: "move", DetailCode: "americantoad.log.move", DetailParams: map[string]string{
+				"value1": "0", "value2": "0", "value3": "1",
+			}},
 		})
 
 		assert.Contains(t, new(AmericanToadCuiPresenter).ActionLogOutput(g), "move")

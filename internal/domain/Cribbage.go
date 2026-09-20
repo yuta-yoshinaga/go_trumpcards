@@ -214,7 +214,7 @@ func (g *Cribbage) doDiscard(playerIdx int, indices []int) error {
 
 	g.discardDone[playerIdx] = true
 
-	g.addLog(playerIdx, "discard", "クリブに2枚捨てた", removed)
+	g.addLog(playerIdx, "discard", "cribbage.log.discard", nil, removed)
 
 	// 両方がディスカード完了したか確認
 	if g.discardDone[0] && g.discardDone[1] {
@@ -260,11 +260,11 @@ func (g *Cribbage) doCut() {
 		g.drawPile = g.drawPile[:len(g.drawPile)-1]
 	}
 
-	g.addLog(-1, "cut", "スターターカード公開", []*Card{g.starter})
+	g.addLog(-1, "cut", "cribbage.log.cut", nil, []*Card{g.starter})
 
 	// His Heels: スターターがJなら、ディーラーに2点
 	if g.starter != nil && g.starter.GetValue() == CribbageJackValue {
-		g.addScore(g.dealerIdx, 2, "His Heels (スターターがJ)")
+		g.addScore(g.dealerIdx, 2, "cribbage.log.scoreHisHeels", nil)
 		if g.checkWin() {
 			return
 		}
@@ -315,12 +315,12 @@ func (g *Cribbage) doPeg(playerIdx int, cardIndex int) error {
 	g.lastPegPlayer = playerIdx
 	g.pegGoState = 0
 
-	g.addLog(playerIdx, "peg", fmt.Sprintf("カードを出した (合計: %d)", g.pegCount), []*Card{card})
+	g.addLog(playerIdx, "peg", "cribbage.log.peg", map[string]string{"total": fmt.Sprintf("%d", g.pegCount)}, []*Card{card})
 
 	// ペギングスコア
 	pegScore := CribbageScorePegging(g.pegPlayedCards, g.pegCount)
 	if pegScore > 0 {
-		g.addScore(playerIdx, pegScore, fmt.Sprintf("ペギング %d点", pegScore))
+		g.addScore(playerIdx, pegScore, "cribbage.log.scorePegging", map[string]string{"points": fmt.Sprintf("%d", pegScore)})
 		if g.checkWin() {
 			return nil
 		}
@@ -355,13 +355,13 @@ func (g *Cribbage) PlayerGo() error {
 
 // doGo Goの処理
 func (g *Cribbage) doGo(playerIdx int) error {
-	g.addLog(playerIdx, "go", "Go", nil)
+	g.addLog(playerIdx, "go", "cribbage.log.go", nil, nil)
 	g.pegGoState++
 
 	if g.pegGoState >= 2 || !g.canAnyPlayerPeg() {
 		// 両方Go → ラストカードの1点を最後にカードを出したプレイヤーに付与
 		if g.lastPegPlayer >= 0 && g.pegCount < CribbagePegLimit {
-			g.addScore(g.lastPegPlayer, 1, "ラストカード (Go)")
+			g.addScore(g.lastPegPlayer, 1, "cribbage.log.scoreLastCardGo", nil)
 			if g.checkWin() {
 				return nil
 			}
@@ -410,7 +410,7 @@ func (g *Cribbage) advancePegging() {
 	if g.players[0].GetCardsSize() == 0 && g.players[1].GetCardsSize() == 0 {
 		// 最後のカードを出したプレイヤーに1点 (31でなかった場合)
 		if g.lastPegPlayer >= 0 && g.pegCount > 0 && g.pegCount < CribbagePegLimit {
-			g.addScore(g.lastPegPlayer, 1, "ラストカード")
+			g.addScore(g.lastPegPlayer, 1, "cribbage.log.scoreLastCard", nil)
 			if g.checkWin() {
 				return
 			}
@@ -428,7 +428,7 @@ func (g *Cribbage) advancePegging() {
 	} else {
 		// どちらも出せない
 		if g.lastPegPlayer >= 0 && g.pegCount > 0 && g.pegCount < CribbagePegLimit {
-			g.addScore(g.lastPegPlayer, 1, "ラストカード (Go)")
+			g.addScore(g.lastPegPlayer, 1, "cribbage.log.scoreLastCardGo", nil)
 			if g.checkWin() {
 				return
 			}
@@ -470,34 +470,34 @@ func (g *Cribbage) ShowNext() error {
 		detail := CribbageScoreHand(g.originalHands[nonDealerIdx], g.starter, false)
 		g.handScoreDetails[0] = &detail
 		if detail.Total > 0 {
-			g.addScore(nonDealerIdx, detail.Total, fmt.Sprintf("ハンドスコア %d点", detail.Total))
+			g.addScore(nonDealerIdx, detail.Total, "cribbage.log.scoreHand", map[string]string{"points": fmt.Sprintf("%d", detail.Total)})
 			if g.checkWin() {
 				return nil
 			}
 		}
-		g.addLog(nonDealerIdx, "show", fmt.Sprintf("ハンドスコア: %d点", detail.Total), g.originalHands[nonDealerIdx])
+		g.addLog(nonDealerIdx, "show", "cribbage.log.show", map[string]string{"points": fmt.Sprintf("%d", detail.Total)}, g.originalHands[nonDealerIdx])
 	case 1:
 		// ディーラーの手札をスコア
 		detail := CribbageScoreHand(g.originalHands[g.dealerIdx], g.starter, false)
 		g.handScoreDetails[1] = &detail
 		if detail.Total > 0 {
-			g.addScore(g.dealerIdx, detail.Total, fmt.Sprintf("ハンドスコア %d点", detail.Total))
+			g.addScore(g.dealerIdx, detail.Total, "cribbage.log.scoreHand", map[string]string{"points": fmt.Sprintf("%d", detail.Total)})
 			if g.checkWin() {
 				return nil
 			}
 		}
-		g.addLog(g.dealerIdx, "show", fmt.Sprintf("ハンドスコア: %d点", detail.Total), g.originalHands[g.dealerIdx])
+		g.addLog(g.dealerIdx, "show", "cribbage.log.show", map[string]string{"points": fmt.Sprintf("%d", detail.Total)}, g.originalHands[g.dealerIdx])
 	case 2:
 		// クリブをスコア (ディーラーのもの)
 		detail := CribbageScoreHand(g.crib, g.starter, true)
 		g.handScoreDetails[2] = &detail
 		if detail.Total > 0 {
-			g.addScore(g.dealerIdx, detail.Total, fmt.Sprintf("クリブスコア %d点", detail.Total))
+			g.addScore(g.dealerIdx, detail.Total, "cribbage.log.scoreCrib", map[string]string{"points": fmt.Sprintf("%d", detail.Total)})
 			if g.checkWin() {
 				return nil
 			}
 		}
-		g.addLog(g.dealerIdx, "show_crib", fmt.Sprintf("クリブスコア: %d点", detail.Total), g.crib)
+		g.addLog(g.dealerIdx, "show_crib", "cribbage.log.showCrib", map[string]string{"points": fmt.Sprintf("%d", detail.Total)}, g.crib)
 		// ショーフェーズ完了
 		g.phase = CribbagePhaseRoundEnd
 	}
@@ -735,12 +735,12 @@ func (g *Cribbage) cpuPegHard(playerIdx int, hand []*Card) {
 }
 
 // addScore プレイヤーにスコアを加算
-func (g *Cribbage) addScore(playerIdx int, points int, reason string) {
+func (g *Cribbage) addScore(playerIdx int, points int, detailCode string, detailParams map[string]string) {
 	p := g.players[playerIdx]
 	p.SetRoundScore(p.GetRoundScore() + points)
 	p.SetCumulativeScore(p.GetCumulativeScore() + points)
-	if reason != "" {
-		g.addLog(playerIdx, "score", reason, nil)
+	if detailCode != "" {
+		g.addLog(playerIdx, "score", detailCode, detailParams, nil)
 	}
 }
 
@@ -768,13 +768,14 @@ func (g *Cribbage) getPlayerCards(playerIdx int) []*Card {
 }
 
 // addLog アクションログを追加
-func (g *Cribbage) addLog(playerIdx int, actionType, detail string, cards []*Card) {
+func (g *Cribbage) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: g.roundNumber,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
+		TurnNumber:   g.roundNumber,
+		PlayerIdx:    playerIdx,
+		ActionType:   actionType,
+		DetailCode:   detailCode,
+		DetailParams: detailParams,
+		Cards:        cards,
 	})
 }
 

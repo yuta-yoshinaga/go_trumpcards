@@ -29,7 +29,6 @@ func TestTichuActionLogUsesDetailCode(t *testing.T) {
 	entry := entries[len(entries)-1]
 	assert.Equal(t, "tichu.log.declareNone", entry.DetailCode)
 	assert.Empty(t, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 // drive a deal to completion with all-CPU players.

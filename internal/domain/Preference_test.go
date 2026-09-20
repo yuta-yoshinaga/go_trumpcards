@@ -101,7 +101,7 @@ func TestPreference_ActionLogUsesDetailCode(t *testing.T) {
 	if contract == nil {
 		t.Fatal("contract action log entry not found")
 	}
-	if contract.Detail != "" || contract.DetailParams["contract"] == "" {
+	if contract.DetailParams["contract"] == "" {
 		t.Fatalf("contract log = %+v, want code params and empty detail", contract)
 	}
 }

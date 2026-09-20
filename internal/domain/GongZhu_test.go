@@ -94,7 +94,6 @@ func TestGongZhuActionLogUsesDetailCode(t *testing.T) {
 		if entry.ActionType == "expose" {
 			assert.Equal(t, "gongzhu.log.expose", entry.DetailCode)
 			assert.Equal(t, "1", entry.DetailParams["round"])
-			assert.Empty(t, entry.Detail)
 			return
 		}
 	}

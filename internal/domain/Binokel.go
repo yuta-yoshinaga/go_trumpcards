@@ -395,13 +395,14 @@ func (p *Binokel) GetPlayerMelds() [BinokelPlayerCnt][]*BinokelMeld { return p.p
 func (p *Binokel) GetActionLog() []*ActionLogEntry { return p.actionLog }
 
 // addLog アクションログを追加
-func (p *Binokel) addLog(playerIdx int, actionType, detail string, cards []*Card) {
+func (p *Binokel) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	p.actionLog = append(p.actionLog, &ActionLogEntry{
-		TurnNumber: p.trickNumber,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
+		TurnNumber:   p.trickNumber,
+		PlayerIdx:    playerIdx,
+		ActionType:   actionType,
+		DetailCode:   detailCode,
+		DetailParams: detailParams,
+		Cards:        cards,
 	})
 }
 
@@ -718,7 +719,7 @@ func (p *Binokel) doBid(playerIdx, amount int) error {
 	p.players[playerIdx].SetBid(amount)
 	p.highestBid = amount
 	p.highestBidder = playerIdx
-	p.addLog(playerIdx, "bid", fmt.Sprintf("%sがビッド: %d", playerName(p.players, playerIdx), amount), nil)
+	p.addLog(playerIdx, "bid", "binokel.log.bid", map[string]string{"name": playerName(p.players, playerIdx), "amount": fmt.Sprintf("%d", amount)}, nil)
 	p.advanceBidder()
 	return nil
 }
@@ -727,7 +728,7 @@ func (p *Binokel) doBid(playerIdx, amount int) error {
 func (p *Binokel) doPass(playerIdx int) error {
 	p.lastBidSpeaker = playerIdx
 	p.players[playerIdx].SetHasPassed(true)
-	p.addLog(playerIdx, "pass", fmt.Sprintf("%sがパスしました", playerName(p.players, playerIdx)), nil)
+	p.addLog(playerIdx, "pass", "binokel.log.pass", map[string]string{"name": playerName(p.players, playerIdx)}, nil)
 	p.advanceBidder()
 	return nil
 }
@@ -760,7 +761,7 @@ func (p *Binokel) advanceBidder() {
 		p.players[forcedBidder].SetBid(BinokelMinBid)
 		// 強制落札者はパスではなく落札者として扱うため、直前のパスフラグを解除する
 		p.players[forcedBidder].SetHasPassed(false)
-		p.addLog(forcedBidder, "forced_bid", fmt.Sprintf("全員パスのため最後の発言者が強制落札: %d点", BinokelMinBid), nil)
+		p.addLog(forcedBidder, "forced_bid", "binokel.log.forcedBid", map[string]string{"amount": fmt.Sprintf("%d", BinokelMinBid)}, nil)
 		p.finishBidding(forcedBidder)
 		return
 	}
@@ -777,7 +778,7 @@ func (p *Binokel) advanceBidder() {
 func (p *Binokel) finishBidding(bidder int) {
 	p.highestBidder = bidder
 	// Dabbの3枚を全員に見える形で公開する (ログにも残す)
-	p.addLog(bidder, "dabb_reveal", fmt.Sprintf("Dabb公開: %d枚", len(p.dabb)), p.dabb)
+	p.addLog(bidder, "dabb_reveal", "binokel.log.dabbReveal", map[string]string{"count": fmt.Sprintf("%d", len(p.dabb))}, p.dabb)
 	// 落札者はDabbの3枚を手札に加える (15枚 + 3枚 = 18枚)
 	for _, c := range p.dabb {
 		p.players[bidder].AddCard(c)
@@ -842,7 +843,7 @@ func (p *Binokel) doDiscardToDabb(playerIdx int, cardIndices []int) error {
 	}
 	p.dabbDiscarded = discarded
 
-	p.addLog(playerIdx, "dabb_discard", fmt.Sprintf("%sがDabbへ%d枚伏せて捨てました", playerName(p.players, playerIdx), BinokelDabbSize), nil)
+	p.addLog(playerIdx, "dabb_discard", "binokel.log.dabbDiscard", map[string]string{"name": playerName(p.players, playerIdx), "count": fmt.Sprintf("%d", BinokelDabbSize)}, nil)
 
 	p.phase = BinokelPhaseTrump
 	p.currentPlayerIdx = p.highestBidder
@@ -1083,7 +1084,7 @@ func (p *Binokel) doCallTrump(playerIdx, suit int) error {
 		CardDesignHeart:   "ハート",
 		CardDesignDiamond: "ダイヤ",
 	}
-	p.addLog(playerIdx, "trump", fmt.Sprintf("トランプ宣言: %s", suitNames[suit]), nil)
+	p.addLog(playerIdx, "trump", "binokel.log.trump", map[string]string{"suit": suitNames[suit]}, nil)
 
 	// メルドフェーズへ移行 (15枚の手札に対してメルド評価)
 	p.evaluateAllMelds()
@@ -1115,7 +1116,7 @@ func (p *Binokel) evaluateAllMelds() {
 		melds := evaluateBinokelMelds(hand, p.trumpSuit)
 		p.playerMelds[i] = melds
 		p.players[i].SetMeldScore(binokelMeldTotalPoints(melds))
-		p.addLog(i, "meld", fmt.Sprintf("メルド: %d点", p.players[i].GetMeldScore()), nil)
+		p.addLog(i, "meld", "binokel.log.meld", map[string]string{"points": fmt.Sprintf("%d", p.players[i].GetMeldScore())}, nil)
 	}
 }
 
@@ -1244,7 +1245,7 @@ func (p *Binokel) doPlay(playerIdx, cardIndex int) error {
 		PlayerIdx: playerIdx,
 		Card:      card,
 	})
-	p.addLog(playerIdx, "play", "カードプレイ", []*Card{card})
+	p.addLog(playerIdx, "play", "binokel.log.play", nil, []*Card{card})
 
 	// トリック完了チェック
 	if len(p.currentTrick) == BinokelPlayerCnt {
@@ -1412,7 +1413,7 @@ func (p *Binokel) ResolveTrick() {
 	p.players[winner].AddTrick(trickCards)
 	p.players[winner].AddTrickPoints(trickPoints)
 
-	p.addLog(winner, "trick_win", fmt.Sprintf("トリック獲得: %d点", trickPoints), trickCards)
+	p.addLog(winner, "trick_win", "binokel.log.trickWin", map[string]string{"points": fmt.Sprintf("%d", trickPoints)}, trickCards)
 
 	// 次のトリックまたはラウンド終了
 	if p.trickNumber >= BinokelHandSize {
@@ -1466,10 +1467,9 @@ func (p *Binokel) scoreRound() {
 		}
 	}
 
-	p.addLog(-1, "round_score",
-		fmt.Sprintf("ラウンド終了: 累計スコア=[P0:%d, P1:%d, P2:%d]",
-			p.scores[0], p.scores[1], p.scores[2]),
-		nil)
+	p.addLog(-1, "round_score", "binokel.log.roundScore", map[string]string{
+		"score0": fmt.Sprintf("%d", p.scores[0]), "score1": fmt.Sprintf("%d", p.scores[1]), "score2": fmt.Sprintf("%d", p.scores[2]),
+	}, nil)
 
 	// ゲーム終了チェック
 	hasReached := false
@@ -1492,7 +1492,7 @@ func (p *Binokel) scoreRound() {
 			}
 		}
 		p.winnerPlayer = winner
-		p.addLog(winner, "game_end", fmt.Sprintf("ゲーム終了！ プレイヤー%dの勝ち！", winner), nil)
+		p.addLog(winner, "game_end", "binokel.log.gameEnd", map[string]string{"player": fmt.Sprintf("%d", winner)}, nil)
 	}
 }
 

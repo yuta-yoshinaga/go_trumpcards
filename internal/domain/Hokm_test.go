@@ -573,7 +573,6 @@ func TestHokm_ActionLog(t *testing.T) {
 	}
 	require.NotNil(t, trumpLog)
 	assert.Equal(t, map[string]string{"suit": "1"}, trumpLog.DetailParams)
-	assert.Empty(t, trumpLog.Detail)
 }
 
 // **親は負けたときだけ交代する** (#5753)。次に切り札を選ぶ席が変わるかどうかを

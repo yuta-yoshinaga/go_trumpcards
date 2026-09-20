@@ -45,7 +45,6 @@ func TestScartoActionLogUsesDetailCode(t *testing.T) {
 	entry := g.GetActionLog()[len(g.GetActionLog())-1]
 	assert.Equal(t, "scarto.log.scarto", entry.DetailCode)
 	assert.Equal(t, map[string]string{"name": "You", "count": "3"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 func TestScartoLastTrickWinnerIsSetOnEveryTrick(t *testing.T) {

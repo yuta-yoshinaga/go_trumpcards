@@ -498,7 +498,6 @@ func TestTriPeaks_GetActionLog(t *testing.T) {
 	_ = tp.Draw()
 	assert.Len(t, tp.GetActionLog(), 1)
 	assert.Equal(t, "tripeaks.log.draw", tp.GetActionLog()[0].DetailCode)
-	assert.Empty(t, tp.GetActionLog()[0].Detail)
 }
 
 func TestTriPeaks_SettersForTest(t *testing.T) {

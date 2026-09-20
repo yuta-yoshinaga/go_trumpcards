@@ -58,7 +58,6 @@ func TestDramaha_ActionLogUsesDetailCode(t *testing.T) {
 	entry := o.GetActionLog()[len(o.GetActionLog())-1]
 	assert.Equal(t, "dramaha.log.bet", entry.DetailCode)
 	assert.Equal(t, map[string]string{"amount": "25"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 func TestDramaha_Reset(t *testing.T) {

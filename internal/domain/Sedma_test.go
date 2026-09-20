@@ -163,7 +163,7 @@ func TestSedma_AnyCardIsPlayable(t *testing.T) {
 		t.Fatalf("any card should be legal, got: %v", err)
 	}
 	entry := g.GetActionLog()[0]
-	if entry.DetailCode != "sedma.log.play" || entry.Detail != "" || entry.DetailParams["name"] == "" || entry.DetailParams["card"] == "" {
+	if entry.DetailCode != "sedma.log.play" || entry.DetailParams["name"] == "" || entry.DetailParams["card"] == "" {
 		t.Fatalf("play log = %#v, want code and name/card params with empty detail", entry)
 	}
 }
@@ -181,7 +181,7 @@ func TestSedma_ResolveTrickPointsAndLastBonus(t *testing.T) {
 	})
 	g.ResolveTrick()
 	entry := g.GetActionLog()[0]
-	if entry.DetailCode != "sedma.log.trickWinLast" || entry.Detail != "" || entry.DetailParams["points"] != "20" || entry.DetailParams["bonus"] != strconv.Itoa(SedmaLastTrickBonus) {
+	if entry.DetailCode != "sedma.log.trickWinLast" || entry.DetailParams["points"] != "20" || entry.DetailParams["bonus"] != strconv.Itoa(SedmaLastTrickBonus) {
 		t.Fatalf("trick log = %#v, want final-trick code and points", entry)
 	}
 	pts := g.GetRoundCardPoints()

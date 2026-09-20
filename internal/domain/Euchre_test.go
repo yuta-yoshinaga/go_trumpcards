@@ -906,7 +906,6 @@ func TestEuchre_ActionLog(t *testing.T) {
 	}
 	require.NotNil(t, passLog)
 	assert.Equal(t, map[string]string{"name": "You"}, passLog.DetailParams)
-	assert.Empty(t, passLog.Detail)
 }
 
 // --- ResolveTrick with going alone (3 cards) ---

@@ -1,4 +1,11 @@
 {
+  "log.start": "キューカンバーを開始しました（{{players}} 人、{{target}} 点で終了）",
+  "log.deal": "ラウンド {{round}} を配りました",
+  "log.play": "カードを出しました",
+  "log.trickWin": "{{trick}} 番目のトリックを取りました",
+  "log.penalty": "最終トリックを取り {{points}} 点の失点",
+  "log.result": "失点 {{penalty}} 点でいちばん少なく終えました",
+  "log.giveup": "投了しました",
   "helpTitle": "Cucumber (キューカンバー／グルカ)",
   "helpPlay": "  p <idx>              手札の idx 番目を出す",
   "helpNext": "  n                    次のラウンドを配る",

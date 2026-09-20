@@ -120,7 +120,6 @@ func TestNap_AllPassVoidsRound(t *testing.T) {
 		}
 	}
 	if assert.NotNil(t, found) {
-		assert.Empty(t, found.Detail)
 		assert.Nil(t, found.DetailParams)
 	}
 }

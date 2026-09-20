@@ -401,7 +401,6 @@ func TestShitheadActionLogUsesDetailCode(t *testing.T) {
 	entry := s.GetActionLog()[0]
 	assert.Equal(t, "shithead.log.pickup", entry.DetailCode)
 	assert.Empty(t, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 func TestShitheadCheckGameEnd_AssignsLastRank(t *testing.T) {

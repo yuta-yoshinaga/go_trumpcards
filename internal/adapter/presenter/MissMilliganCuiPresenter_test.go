@@ -183,7 +183,7 @@ func TestMissMilliganCuiPresenter_ActionLogOutput(t *testing.T) {
 		g := new(interfaces.MockMissMilliganGame)
 		g.On("GetPhase").Return(domain.MissMilliganPhaseGameOver)
 		g.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "move", Detail: "test"},
+			{TurnNumber: 1, ActionType: "move", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 
 		assert.Contains(t, new(MissMilliganCuiPresenter).ActionLogOutput(g), "move")

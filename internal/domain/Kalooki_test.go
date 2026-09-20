@@ -744,7 +744,7 @@ func TestKalooki_GetActionLog(t *testing.T) {
 	}
 	for _, entry := range g.GetActionLog() {
 		if entry.DetailCode == "kalooki.log.drawStock" {
-			if entry.Detail != "" || entry.DetailParams["player"] == "" {
+			if entry.DetailParams["player"] == "" {
 				t.Fatalf("unexpected detail: %#v", entry)
 			}
 			return

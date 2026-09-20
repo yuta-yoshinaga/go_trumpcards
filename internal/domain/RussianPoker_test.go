@@ -848,7 +848,6 @@ func TestRussianPoker_ActionLog(t *testing.T) {
 	}
 	require.NotNil(t, entry)
 	assert.Equal(t, map[string]string{"ante": "100"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 func TestRussianPoker_ResultLog_PlayerWins(t *testing.T) {

@@ -36,5 +36,18 @@
   "showdown": "公開",
   "result.humanWin": "ゲーム終了！ あなたの勝ち！",
   "result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
-  "helpExampleSatisfied": "  s                         交換しないと宣言する"
+  "helpExampleSatisfied": "  s                         交換しないと宣言する",
+  "log.deal": "1 枚ずつ配り、ポットは {{pot}} です",
+  "log.satisfied": "満足しました",
+  "log.passNoTarget": "交換できる相手がいません",
+  "log.passCircle": "パスが一周しました",
+  "log.cuckoo": "誰もカッコウを交換しないのでラウンド終了",
+  "log.hussar": "ハサーが挑戦者を脱落させました",
+  "log.pig": "ピッグが反撃し、元の持ち主が脱落しました",
+  "log.passNext": "次のプレイヤーへパスしました",
+  "log.swap": "次のプレイヤーと交換しました",
+  "log.stock": "山札と交換しました",
+  "log.showdown": "{{count}} 人が脱落しました",
+  "log.reenter": "{{cost}} で復帰しました",
+  "log.gameEnd": "最後まで残りました"
 }

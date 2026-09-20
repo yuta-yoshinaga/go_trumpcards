@@ -127,7 +127,6 @@ func TestTressette_ActionLogUsesDetailCode(t *testing.T) {
 		}
 	}
 	assert.NotNil(t, win)
-	assert.Empty(t, win.Detail)
 	assert.Equal(t, "1", win.DetailParams["trick"])
 }
 

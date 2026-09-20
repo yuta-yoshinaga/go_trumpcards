@@ -134,7 +134,6 @@ func TestGaigel_Marriage(t *testing.T) {
 		}
 	}
 	require.NotNil(t, found)
-	assert.Empty(t, found.Detail)
 	assert.Equal(t, "0", found.DetailParams["team"])
 	assert.Equal(t, "20", found.DetailParams["bonus"])
 	// Re-declaring the same suit is now blocked.

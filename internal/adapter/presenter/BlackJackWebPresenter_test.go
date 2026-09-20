@@ -685,7 +685,7 @@ func TestBlackJackWebPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("with entries", func(t *testing.T) {
 		mockGame := new(interfaces.MockBlackJackGame)
 		entries := []*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "hit", Detail: "drew a card", Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 10, true)}},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "hit", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}, Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 10, true)}},
 		}
 		mockGame.On("GetGameEndFlag").Return(true)
 		mockGame.On("GetActionLog").Return(entries)
@@ -693,7 +693,7 @@ func TestBlackJackWebPresenter_ActionLogOutput(t *testing.T) {
 		result := p.ActionLogOutput(mockGame)
 
 		assert.Contains(t, result, `"actionType":"hit"`)
-		assert.Contains(t, result, `"detail":"drew a card"`)
+		assert.Contains(t, result, `"detailCode":"test.log.stub"`)
 		mockGame.AssertExpectations(t)
 	})
 

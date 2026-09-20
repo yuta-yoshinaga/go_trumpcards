@@ -114,7 +114,7 @@ func TestCuckooWebPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.CuckooWebPresenter)
 	m := new(interfaces.MockCuckooGame)
 	entries := []*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "swap", Detail: "swap"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "swap", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	}
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return(entries)

@@ -41,5 +41,14 @@
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
   "helpHint": "  h                    助言を表示",
   "kittyCard": "{{card}}*",
-  "kittyNote": "（* が付いた札がキティから入ってきた 4 枚です）"
+  "kittyNote": "（* が付いた札がキティから入ってきた 4 枚です）",
+  "log.deal": "ラウンド {{round}}：16 枚ずつ配り、余り {{kitty}} 枚は親へ",
+  "log.trump": "切り札は {{suit}}、キティを取り込みました",
+  "log.discard": "{{count}} 枚捨てました",
+  "log.exchange": "前ラウンドの過不足で {{count}} 枚を移しました",
+  "log.play": "{{card}} を出しました",
+  "log.trick": "トリック {{trick}} を取りました",
+  "log.score": "ノルマ {{target}} に対し {{tricks}} トリック（{{diff}}）",
+  "log.result": "ゲーム終了",
+  "log.giveup": "投了しました"
 }

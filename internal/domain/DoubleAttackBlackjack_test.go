@@ -536,7 +536,6 @@ func TestDoubleAttack_Accessors(t *testing.T) {
 	entry := g.GetActionLog()[0]
 	assert.Equal(t, "doubleattack.log.start", entry.DetailCode)
 	assert.Empty(t, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 	assert.Zero(t, g.GetHandCount())
 	assert.Nil(t, g.GetDealerCards())
 	assert.Zero(t, g.GetDealerScore())

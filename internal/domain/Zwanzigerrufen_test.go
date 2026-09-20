@@ -277,7 +277,6 @@ func TestZwanzigerrufenAllPass_BecomesTrischaken(t *testing.T) {
 	assertZwanzigerrufenDeckIntact(t, g)
 	entry := findActionLogEntry(t, g.GetActionLog(), "zwanzigerrufen.log.trischaken")
 	assert.Empty(t, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 // **どの契約でも、ディールが終われば 54 枚すべてが席に収まる。**

@@ -24,5 +24,6 @@
   "hintReasonBeat": "the weakest card that still beats the pile",
   "hintReasonPickUp": "nothing in your hand beats the pile",
   "helpExamplePlay": "  p 0                      play hand card 0",
-  "helpHint": "  h                        show a hint"
+  "helpHint": "  h                        show a hint",
+  "log.deal": "cards dealt", "log.play": "plays a card", "log.stunsa": "equal ranks -- the cards stay and the lead repeats", "log.win": "takes {{count}} card(s)", "log.trump": "the last card drawn sets trump to {{suit}}", "log.phase": "the shedding phase begins", "log.beatsPile": "beats the pile", "log.out": "is out of cards", "log.pickup": "picks up {{count}} card(s)", "log.game": "is the Skitgubbe"
 }

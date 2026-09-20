@@ -530,7 +530,6 @@ func TestSpeed_ActionLog(t *testing.T) {
 	assert.Equal(t, "play", log[0].ActionType)
 	assert.Equal(t, "speed.log.play", log[0].DetailCode)
 	assert.Equal(t, map[string]string{"pile": "0"}, log[0].DetailParams)
-	assert.Empty(t, log[0].Detail)
 }
 
 func TestSpeed_JSON(t *testing.T) {

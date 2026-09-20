@@ -764,5 +764,4 @@ func TestIndianRummy_ActionLogUsesDetailCode(t *testing.T) {
 	}
 	require.NotNil(t, entry)
 	assert.Equal(t, "You", entry.DetailParams["name"])
-	assert.Empty(t, entry.Detail)
 }

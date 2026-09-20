@@ -124,7 +124,6 @@ func TestOasisPoker_Bet_Success(t *testing.T) {
 	require.NotNil(t, betLog)
 	assert.Equal(t, "oasispoker.log.bet", betLog.DetailCode)
 	assert.Equal(t, map[string]string{"ante": "100", "jackpot": "50"}, betLog.DetailParams)
-	assert.Empty(t, betLog.Detail)
 }
 
 func TestOasisPoker_Exchange_WrongPhase(t *testing.T) {

@@ -35,6 +35,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // PopeJoanPlayerCnt はプレイヤー数 (4 人。原典は 3〜8 人)。
@@ -243,7 +244,7 @@ func (p *PopeJoan) dealRound() {
 	p.trumpSuit = p.turnUp.GetDesign()
 
 	p.phase = PopeJoanPhasePlay
-	p.addLog(-1, "deal", fmt.Sprintf("trump is %d", p.trumpSuit), []*Card{p.turnUp})
+	p.addLog(-1, "deal", "popejoan.log.deal", map[string]string{"suit": strconv.Itoa(p.trumpSuit)}, []*Card{p.turnUp})
 	p.resolveTurnUp()
 
 	p.currentIdx = (p.dealerIdx + 1) % len(p.players)
@@ -277,11 +278,11 @@ func (p *PopeJoan) award(comp PopeJoanCompartment, seat int, byTurnUp bool) {
 	p.awards = append(p.awards, &PopeJoanAward{
 		Compartment: comp, Player: seat, Chips: n, ByTurnUp: byTurnUp,
 	})
-	detail := fmt.Sprintf("takes the %s compartment (%d)", comp, n)
+	detailCode := "popejoan.log.award." + comp.String()
 	if byTurnUp {
-		detail += " from the turn-up"
+		detailCode += "FromTurnUp"
 	}
-	p.addLog(seat, "award", detail, nil)
+	p.addLog(seat, "award", detailCode, map[string]string{"chips": strconv.Itoa(n)}, nil)
 }
 
 // Play は手札 1 枚を出す。
@@ -311,7 +312,7 @@ func (p *PopeJoan) Play(player, handIdx int) error {
 	p.playedPile = append(p.playedPile, card)
 	p.runSuit = card.GetDesign()
 	p.runRank = popeJoanRankOrder(card.GetValue())
-	p.addLog(player, "play", "plays a card", []*Card{card})
+	p.addLog(player, "play", "popejoan.log.play", nil, []*Card{card})
 	p.payForCard(player, card)
 
 	if pl.GetCardsSize() == 0 {
@@ -431,7 +432,7 @@ func (p *PopeJoan) advance(lastPlayer int) {
 	p.runSuit = -1
 	p.runRank = 0
 	p.currentIdx = lastPlayer
-	p.addLog(lastPlayer, "stop", "the run is stopped and restarts here", nil)
+	p.addLog(lastPlayer, "stop", "popejoan.log.stop", nil, nil)
 }
 
 // hasNextCard は seat が並びの続きを持っているかを返す。
@@ -471,7 +472,7 @@ func (p *PopeJoan) finishDeal(winner int) {
 		// **Pope を抱えている人は払わない。**6 枚積まれた区画を取り逃した
 		// 代償が、この免除で釣り合っている。
 		if p.holdsPope(i) {
-			p.addLog(i, "excused", "holds the Pope and is excused payment", nil)
+			p.addLog(i, "excused", "popejoan.log.excused", nil, nil)
 			continue
 		}
 		pl.AddChips(-n)
@@ -479,7 +480,7 @@ func (p *PopeJoan) finishDeal(winner int) {
 	}
 	p.players[winner].AddChips(paid)
 	p.dealWinner = winner
-	p.addLog(winner, "deal_end", fmt.Sprintf("goes out and collects %d for the cards left", paid), nil)
+	p.addLog(winner, "deal_end", "popejoan.log.dealEnd", map[string]string{"paid": strconv.Itoa(paid)}, nil)
 
 	p.dealNo++
 	p.phase = PopeJoanPhaseDealEnd
@@ -505,7 +506,7 @@ func (p *PopeJoan) finishGame() {
 	p.winnerIdx = best
 	p.gameEndFlag = true
 	p.phase = PopeJoanPhaseGameEnd
-	p.addLog(best, "game_end", "finishes with the most chips", nil)
+	p.addLog(best, "game_end", "popejoan.log.gameEnd", nil, nil)
 }
 
 // NextDeal は次のディールを配る。
@@ -630,8 +631,8 @@ func (p *PopeJoan) SetTurnUpForTest(c *Card) { p.turnUp = c }
 func (p *PopeJoan) ResolveTurnUpForTest() { p.resolveTurnUp() }
 
 // addLog は棋譜に 1 件追加する。
-func (p *PopeJoan) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	p.appendLog(playerIdx, actionType, detail, cards)
+func (p *PopeJoan) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	p.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // popeJoanJSON is the JSON wire format for PopeJoan.

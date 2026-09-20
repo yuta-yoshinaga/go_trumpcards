@@ -31,5 +31,16 @@
   "hintReasonMeld": "these three make a meld",
   "hintReasonDiscard": "this card connects to nothing",
   "helpExampleDraw": "  ds                       start the turn by drawing from the stock",
-  "helpHint": "  h                        show a hint"
+  "helpHint": "  h                        show a hint",
+  "log.deal": "cards dealt",
+  "log.drawStock": "draws from the stock",
+  "log.drawDiscard": "takes the discard",
+  "log.recycle": "the discard pile is turned back into the stock",
+  "log.meld": "puts down {{count}} card(s)",
+  "log.layoff": "adds to meld {{meld}}",
+  "log.discard": "discards",
+  "log.clean": "goes out in one go",
+  "log.roundEnd": "wins round {{round}}",
+  "log.eliminated": "reaches {{score}} and is out",
+  "log.gameEnd": "is the last player standing"
 }

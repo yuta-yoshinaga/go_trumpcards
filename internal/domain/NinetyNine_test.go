@@ -590,7 +590,6 @@ func TestNinetyNine_ActionLogUsesDetailCode(t *testing.T) {
 	require.NotNil(t, entry)
 	assert.Contains(t, entry.DetailParams, "player")
 	assert.Contains(t, entry.DetailParams, "bid")
-	assert.Empty(t, entry.Detail)
 }
 
 // --- JSON round trip + unmarshal hardening ---

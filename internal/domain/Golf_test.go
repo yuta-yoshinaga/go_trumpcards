@@ -121,7 +121,6 @@ func TestGolf_Remove_Success(t *testing.T) {
 	log := g.GetActionLog()[len(g.GetActionLog())-1]
 	assert.Equal(t, "golf.log.remove", log.DetailCode)
 	assert.Equal(t, map[string]string{"col": "0"}, log.DetailParams)
-	assert.Empty(t, log.Detail)
 	assert.Equal(t, 1, g.GetMoveCount())
 	assert.Equal(t, 1, g.GetChainCombo())
 	// Removed card goes to waste

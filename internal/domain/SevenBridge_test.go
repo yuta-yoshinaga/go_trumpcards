@@ -944,7 +944,6 @@ func TestSevenBridge_GetActionLog(t *testing.T) {
 	require.NotNil(t, meld)
 	assert.Equal(t, "meld", meld.ActionType)
 	assert.Equal(t, map[string]string{"name": "You", "count": "3"}, meld.DetailParams)
-	assert.Empty(t, meld.Detail)
 }
 
 func TestSevenBridge_SetRoundNumber(t *testing.T) {

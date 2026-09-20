@@ -51,9 +51,6 @@ func TestBourreActionLogUsesDetailCode(t *testing.T) {
 	if entry == nil {
 		t.Fatal("ante action log entry not found")
 	}
-	if entry.Detail != "" {
-		t.Fatalf("Detail = %q, want empty", entry.Detail)
-	}
 	if entry.DetailParams["amount"] != "5" {
 		t.Fatalf("amount = %q, want 5", entry.DetailParams["amount"])
 	}

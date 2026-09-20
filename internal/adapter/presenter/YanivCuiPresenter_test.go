@@ -145,7 +145,7 @@ func TestYanivCuiPresenter_ActionLogOutput(t *testing.T) {
 
 	m := new(interfaces.MockYanivGame)
 	entries := []*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "yaniv", Detail: "You call Yaniv"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "yaniv", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	}
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return(entries)

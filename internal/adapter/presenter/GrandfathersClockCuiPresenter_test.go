@@ -252,7 +252,7 @@ func TestGrandfathersClockCuiPresenter_ActionLogOutput(t *testing.T) {
 		g := new(interfaces.MockGrandfathersClockGame)
 		g.On("GetPhase").Return(domain.GrandfathersClockPhaseGameOver)
 		g.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "move", Detail: "test"},
+			{TurnNumber: 1, ActionType: "move", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 
 		assert.Contains(t, new(GrandfathersClockCuiPresenter).ActionLogOutput(g), "move")

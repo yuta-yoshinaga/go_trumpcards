@@ -81,7 +81,6 @@ func TestCassino_ActionLogUsesDetailCode(t *testing.T) {
 	}
 	require.NotNil(t, entry)
 	assert.Equal(t, "4", entry.DetailParams["cards"])
-	assert.Empty(t, entry.Detail)
 }
 
 func TestCassinoCardValueAndFlags(t *testing.T) {

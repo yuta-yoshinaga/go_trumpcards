@@ -179,7 +179,7 @@ func TestColoradoCuiPresenter_ActionLogOutput(t *testing.T) {
 		g := new(interfaces.MockColoradoGame)
 		g.On("GetPhase").Return(domain.ColoradoPhaseGameOver)
 		g.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "move", Detail: "test"},
+			{TurnNumber: 1, ActionType: "move", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 
 		assert.Contains(t, new(ColoradoCuiPresenter).ActionLogOutput(g), "move")

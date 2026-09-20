@@ -55,5 +55,18 @@
   "hintDumpSpadeThree": "The three of spades costs its taker 3 points — shed it while you still have a choice.",
   "hintChoose": "The five of hearts is worth 5 to whoever takes it, so leading it invites the opponents to grab it.",
   "hintWith": "{{hint}} -> {{list}}",
-  "helpExamplePlay": "  p 0                       play hand card 0"
+  "helpExamplePlay": "  p 0                       play hand card 0",
+  "log.deal": "8 cards each with a kitty of {{kitty}}",
+  "log.bid": "bids {{value}}",
+  "log.pass": "passes",
+  "log.redeal": "everybody passed",
+  "log.takeKitty": "takes the kitty",
+  "log.setTrump": "names suit {{suit}} trump",
+  "log.discard": "discards two cards",
+  "log.play": "plays a card",
+  "log.trick": "takes trick {{trick}}",
+  "log.handEndMade": "makes {{points}} for a bid of {{bid}}",
+  "log.set": "is set for {{bid}}",
+  "log.mustBid": "team {{team}} must bid to score from here",
+  "log.gameEnd": "team {{team}} wins"
 }

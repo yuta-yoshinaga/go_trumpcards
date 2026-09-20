@@ -41,5 +41,14 @@
   "helpExamplePlay": "  p 0                  play hand card 0",
   "helpHint": "  h                    show a hint",
   "kittyCard": "{{card}}*",
-  "kittyNote": "(* marks the four cards that came in from the kitty)"
+  "kittyNote": "(* marks the four cards that came in from the kitty)",
+  "log.deal": "Round {{round}}: deal 16 cards each and give the remaining {{kitty}} to the dealer",
+  "log.trump": "{{suit}} is trump; picked up the kitty",
+  "log.discard": "Discarded {{count}} cards",
+  "log.exchange": "Moved {{count}} cards for the previous round's shortage or surplus",
+  "log.play": "Played {{card}}",
+  "log.trick": "Won trick {{trick}}",
+  "log.score": "{{tricks}} tricks against a target of {{target}} ({{diff}})",
+  "log.result": "Game over",
+  "log.giveup": "Gave up"
 }

@@ -41,5 +41,17 @@
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
   "errDuplicateCardIndex": "同じカードを2枚選択できません",
   "errPeggingLimitExceeded": "合計が{{limit}}を超えます",
-  "errPlayableCardsRemain": "まだ出せるカードがあります"
+  "errPlayableCardsRemain": "まだ出せるカードがあります",
+  "log.discard": "クリブに2枚捨てた",
+  "log.cut": "スターターカード公開",
+  "log.peg": "カードを出した (合計: {{total}})",
+  "log.go": "Go",
+  "log.show": "ハンドスコア: {{points}}点",
+  "log.showCrib": "クリブスコア: {{points}}点",
+  "log.scoreHisHeels": "His Heels (スターターがJ)",
+  "log.scorePegging": "ペギング {{points}}点",
+  "log.scoreLastCardGo": "ラストカード (Go)",
+  "log.scoreLastCard": "ラストカード",
+  "log.scoreHand": "ハンドスコア {{points}}点",
+  "log.scoreCrib": "クリブスコア {{points}}点"
 }

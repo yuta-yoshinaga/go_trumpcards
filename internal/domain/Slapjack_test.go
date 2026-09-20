@@ -288,7 +288,6 @@ func TestSlapjack_ActionLog(t *testing.T) {
 	assert.Equal(t, "step", logs[0].ActionType)
 	assert.Equal(t, "slapjack.log.step", logs[0].DetailCode)
 	assert.Equal(t, map[string]string{"top": "5"}, logs[0].DetailParams)
-	assert.Empty(t, logs[0].Detail)
 }
 
 func TestSlapjack_CheckStuck_BothEmpty(t *testing.T) {

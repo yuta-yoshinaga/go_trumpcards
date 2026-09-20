@@ -186,7 +186,7 @@ func TestSchafkopf_PickFlow(t *testing.T) {
 	if entry == nil {
 		t.Fatal("declaration log entry not found")
 	}
-	if entry.Detail != "" || entry.DetailParams["name"] == "" || entry.DetailParams["contract"] != "Rufspiel" {
+	if entry.DetailParams["name"] == "" || entry.DetailParams["contract"] != "Rufspiel" {
 		t.Fatalf("unexpected declaration log entry: %+v", entry)
 	}
 	// 宣言しただけでは競りは閉じない。残る 3 席が発言してから確定する。

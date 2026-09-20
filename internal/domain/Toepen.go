@@ -38,6 +38,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // ToepenPlayerCnt は既定のプレイヤー数。
@@ -234,7 +235,7 @@ func (t *Toepen) startHand() {
 	t.leadIdx = t.nextActive(t.dealerIdx)
 	t.currentIdx = t.leadIdx
 	t.handNumber++
-	t.addLog(-1, "deal", fmt.Sprintf("hand %d dealt", t.handNumber), nil)
+	t.addLog(-1, "deal", "toepen.log.deal", map[string]string{"hand": strconv.Itoa(t.handNumber)}, nil)
 }
 
 // nextActive は idx の次の、まだこのハンドに参加しているプレイヤーを返す。
@@ -313,7 +314,7 @@ func (t *Toepen) PlayCard(player, handIdx int) error {
 		t.leadSuit = card.GetDesign()
 	}
 	t.trick = append(t.trick, &TrickCard{PlayerIdx: player, Card: card})
-	t.addLog(player, "play", "plays a card", []*Card{card})
+	t.addLog(player, "play", "toepen.log.play", nil, []*Card{card})
 
 	next := t.nextActive(player)
 	if len(t.trick) >= t.activeCount() {
@@ -354,7 +355,7 @@ func (t *Toepen) resolveTrick() {
 
 	t.trickNumber++
 	t.lastTrickWin = winner
-	t.addLog(winner, "trick", fmt.Sprintf("wins trick %d", t.trickNumber), nil)
+	t.addLog(winner, "trick", "toepen.log.trick", map[string]string{"trick": strconv.Itoa(t.trickNumber)}, nil)
 	t.trick = nil
 	t.leadSuit = -1
 	t.leadIdx = winner
@@ -401,7 +402,7 @@ func (t *Toepen) Redeal(player int) error {
 		return fmt.Errorf("a redeal needs a hand of nothing but A, K, Q and J")
 	}
 
-	t.addLog(player, "redeal", "asks for a redeal on a poverty hand", nil)
+	t.addLog(player, "redeal", "toepen.log.redeal", nil, nil)
 	// 同じ親でハンド番号も据え置いたまま配り直す。startHand は番号を進めるので
 	// 戻しておく -- 配り直しは新しいハンドではない。
 	t.handNumber--
@@ -443,7 +444,7 @@ func (t *Toepen) Toep(player int) error {
 	t.knockerIdx = player
 	t.phase = ToepenPhaseRespond
 	t.pendingIdx = t.nextActive(player)
-	t.addLog(player, "toep", fmt.Sprintf("toeps; the stake is now %d", t.stake), nil)
+	t.addLog(player, "toep", "toepen.log.toep", map[string]string{"stake": strconv.Itoa(t.stake)}, nil)
 	return nil
 }
 
@@ -461,14 +462,14 @@ func (t *Toepen) Respond(player int, stay bool) error {
 		// 直近の吊り上げぶんは負わない。
 		t.folded[player] = true
 		t.loseLives(player, t.stake-1)
-		t.addLog(player, "fold", fmt.Sprintf("folds for %d", t.stake-1), nil)
+		t.addLog(player, "fold", "toepen.log.fold", map[string]string{"stake": strconv.Itoa(t.stake - 1)}, nil)
 		// 降りた者が手番だったなら手番を進める。
 		if t.currentIdx == player {
 			t.currentIdx = t.nextActive(player)
 		}
 		// 場に出ている札のうち降りた者のぶんは残す (トリックの解決には影響しない)。
 	} else {
-		t.addLog(player, "stay", "stays in", nil)
+		t.addLog(player, "stay", "toepen.log.stay", nil, nil)
 	}
 
 	t.pendingIdx = t.nextRespondent(player)
@@ -525,7 +526,7 @@ func (t *Toepen) finishHand() {
 		}
 		t.loseLives(i, t.stake)
 	}
-	t.addLog(-1, "hand", fmt.Sprintf("hand %d settled for %d", t.handNumber, t.stake), nil)
+	t.addLog(-1, "hand", "toepen.log.hand", map[string]string{"hand": strconv.Itoa(t.handNumber), "stake": strconv.Itoa(t.stake)}, nil)
 
 	remaining := 0
 	last := -1
@@ -539,7 +540,7 @@ func (t *Toepen) finishHand() {
 		t.gameEndFlag = true
 		t.phase = ToepenPhaseGameEnd
 		t.winnerIdx = last
-		t.addLog(-1, "game", "game over", nil)
+		t.addLog(-1, "game", "toepen.log.game", nil, nil)
 	}
 }
 
@@ -577,7 +578,7 @@ func (t *Toepen) loseLives(player, n int) {
 	if t.lives[player] >= ToepenMaxLives {
 		t.lives[player] = ToepenMaxLives
 		t.eliminated[player] = true
-		t.addLog(player, "out", "is eliminated", nil)
+		t.addLog(player, "out", "toepen.log.out", nil, nil)
 	}
 }
 
@@ -607,8 +608,8 @@ func (t *Toepen) nextSeat(idx int) int {
 }
 
 // addLog は棋譜へ 1 行追加する。
-func (t *Toepen) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	t.appendLog(playerIdx, actionType, detail, cards)
+func (t *Toepen) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	t.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // ---- 公開アクセサ ----

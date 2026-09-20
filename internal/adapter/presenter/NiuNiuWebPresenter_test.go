@@ -229,7 +229,7 @@ func TestNiuNiuWebPresenter_ActionLogOutput(t *testing.T) {
 		g := new(interfaces.MockNiuNiuGame)
 		g.On("GetGameEndFlag").Return(true)
 		g.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "deal", Detail: "test"},
+			{TurnNumber: 1, ActionType: "deal", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 		assert.Contains(t, new(NiuNiuWebPresenter).ActionLogOutput(g), "deal")
 	})

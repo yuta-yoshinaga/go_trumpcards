@@ -857,7 +857,6 @@ func TestWhitehead_ActionLog(t *testing.T) {
 	assert.Equal(t, 1, len(k.GetActionLog()))
 	entry := k.GetActionLog()[0]
 	assert.Equal(t, "whitehead.log.draw", entry.DetailCode)
-	assert.Empty(t, entry.Detail)
 	assert.Nil(t, entry.DetailParams)
 }
 

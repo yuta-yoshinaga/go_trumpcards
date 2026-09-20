@@ -61,7 +61,6 @@ func TestDehlaPakad_DealsFiveBeforeTheTrumpIsCalled(t *testing.T) {
 	trumpLog := logs[len(logs)-1]
 	assert.Equal(t, "dehlapakad.log.trump", trumpLog.DetailCode)
 	assert.Equal(t, map[string]string{"player": strconv.Itoa(d.GetTrumpChooserIdx()), "suit": "heart"}, trumpLog.DetailParams)
-	assert.Empty(t, trumpLog.Detail)
 	total := 0
 	for i, p := range d.GetPlayers() {
 		assert.Equal(t, DehlaPakadHandSize, p.GetCardsSize(), "席 %d の手札", i)

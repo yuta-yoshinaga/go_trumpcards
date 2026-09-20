@@ -147,7 +147,7 @@ func TestThirtyOneWebPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.ThirtyOneWebPresenter)
 	m := new(interfaces.MockThirtyOneGame)
 	entries := []*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "knock", Detail: "knocks"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "knock", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	}
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return(entries)

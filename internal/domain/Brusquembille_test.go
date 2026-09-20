@@ -73,7 +73,7 @@ func TestBrusquembille_ActionLogUsesDetailCode(t *testing.T) {
 	if trump == nil {
 		t.Fatal("trump action log entry not found")
 	}
-	if trump.Detail != "" || trump.DetailParams["card"] == "" {
+	if trump.DetailParams["card"] == "" {
 		t.Fatalf("trump log = %+v, want code params and empty detail", trump)
 	}
 }

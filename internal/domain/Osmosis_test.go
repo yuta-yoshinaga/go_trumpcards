@@ -20,7 +20,6 @@ func TestOsmosisActionLogUsesDetailCode(t *testing.T) {
 	entry := o.GetActionLog()[len(o.GetActionLog())-1]
 	assert.Equal(t, "osmosis.log.draw", entry.DetailCode)
 	assert.Empty(t, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 func setupPlayingOsmosis() *domain.Osmosis {

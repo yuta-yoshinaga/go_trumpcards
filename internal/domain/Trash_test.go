@@ -508,7 +508,6 @@ func TestTrashActionLogPopulated(t *testing.T) {
 	assert.Equal(t, "end", log[len(log)-1].ActionType)
 	assert.Equal(t, "trash.log.end", log[len(log)-1].DetailCode)
 	assert.Equal(t, map[string]string{"player": "0"}, log[len(log)-1].DetailParams)
-	assert.Empty(t, log[len(log)-1].Detail)
 }
 
 func TestTrashJSONRoundtrip(t *testing.T) {

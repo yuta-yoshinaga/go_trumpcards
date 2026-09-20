@@ -35,6 +35,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // TrexPlayerCnt はプレイヤー数 (4 人個人戦)。
@@ -220,7 +221,7 @@ func (t *Trex) Reset() {
 	// **♥7 を配られた人が最初の王。**任意の席から始めると、原典の
 	// 「王国が右回りに移る」順序の起点が決まらない。
 	t.kingIdx = t.holderOf(CardDesignHeart, 7)
-	t.addLog(t.kingIdx, "kingdom", "owns the first kingdom (dealt the seven of hearts)", nil)
+	t.addLog(t.kingIdx, "kingdom", "trex.log.firstKingdom", nil, nil)
 	t.beginChoose()
 }
 
@@ -300,7 +301,7 @@ func (t *Trex) ChooseContract(player int, contract TrexContract) error {
 	// リードは王から。ドミノでも王が最初に出す (出せなければパス)。
 	t.currentIdx = t.kingIdx
 	t.leadIdx = t.kingIdx
-	t.addLog(player, "contract", fmt.Sprintf("chooses contract %d", contract), nil)
+	t.addLog(player, "contract", "trex.log.contract", map[string]string{"contract": strconv.Itoa(int(contract))}, nil)
 	if t.contract == TrexContractTrix {
 		t.skipStuckTrixPlayers()
 	}
@@ -402,7 +403,7 @@ func (t *Trex) PlayCard(player, handIdx int) error {
 		return nil
 	}
 	t.trick = append(t.trick, TrexTrickCard{PlayerIdx: player, Card: card})
-	t.addLog(player, "play", "plays a card", []*Card{card})
+	t.addLog(player, "play", "trex.log.play", nil, []*Card{card})
 	if len(t.trick) < len(t.players) {
 		t.currentIdx = (t.currentIdx + 1) % len(t.players)
 		return nil
@@ -422,7 +423,7 @@ func (t *Trex) Pass(player int) error {
 	if len(t.GetValidPlayIndices(player)) > 0 {
 		return fmt.Errorf("you have a legal play, so you may not pass")
 	}
-	t.addLog(player, "pass", "cannot play and passes", nil)
+	t.addLog(player, "pass", "trex.log.pass", nil, nil)
 	t.advanceTrix()
 	return nil
 }
@@ -438,12 +439,12 @@ func (t *Trex) resolveTrixPlay(player int, card *Card) {
 	} else {
 		t.runs[suit].High = rank
 	}
-	t.addLog(player, "play", "extends the layout", []*Card{card})
+	t.addLog(player, "play", "trex.log.extend", nil, []*Card{card})
 
 	if t.GetPlayer(player).GetCardsSize() == 0 {
 		t.finishOrder = append(t.finishOrder, player)
 		t.GetPlayer(player).SetIsFinished(true)
-		t.addLog(player, "out", fmt.Sprintf("goes out in position %d", len(t.finishOrder)), nil)
+		t.addLog(player, "out", "trex.log.out", map[string]string{"position": strconv.Itoa(len(t.finishOrder))}, nil)
 		if len(t.finishOrder) >= len(t.players)-1 {
 			t.finishTrix()
 			return
@@ -533,7 +534,7 @@ func (t *Trex) resolveTrick() {
 	}
 	t.dealScores[winner] += penalty
 	t.tricksWon[winner]++
-	t.addLog(winner, "trick", fmt.Sprintf("wins the trick for %d", penalty), cards)
+	t.addLog(winner, "trick", "trex.log.trick", map[string]string{"penalty": strconv.Itoa(penalty)}, cards)
 
 	t.trick = nil
 	t.trickNo++
@@ -603,12 +604,12 @@ func (t *Trex) settleDeal() {
 	}
 	t.dealNo++
 	t.phase = TrexPhaseDealEnd
-	t.addLog(-1, "deal_end", fmt.Sprintf("deal %d of %d settled", t.dealNo, TrexTotalDeals), nil)
+	t.addLog(-1, "deal_end", "trex.log.dealEnd", map[string]string{"deal": strconv.Itoa(t.dealNo), "total": strconv.Itoa(TrexTotalDeals)}, nil)
 
 	if t.dealNo >= TrexTotalDeals {
 		t.phase = TrexPhaseGameEnd
 		t.gameEndFlag = true
-		t.addLog(-1, "game_end", "all twenty deals played", nil)
+		t.addLog(-1, "game_end", "trex.log.gameEnd", nil, nil)
 	}
 }
 
@@ -623,7 +624,7 @@ func (t *Trex) NextDeal() error {
 	// 王が 5 契約を消化したら王国が移る。
 	if t.dealNo%TrexContractsPerKingdom == 0 {
 		t.kingIdx = (t.kingIdx + 1) % len(t.players)
-		t.addLog(t.kingIdx, "kingdom", "takes over the kingdom", nil)
+		t.addLog(t.kingIdx, "kingdom", "trex.log.nextKingdom", nil, nil)
 	}
 	t.dealCards()
 	t.beginChoose()
@@ -822,8 +823,8 @@ func (t *Trex) SetKingForTest(idx int) { t.kingIdx = idx }
 func (t *Trex) SetDealNumberForTest(n int) { t.dealNo = n }
 
 // addLog は棋譜に 1 件追加する。
-func (t *Trex) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	t.appendLog(playerIdx, actionType, detail, cards)
+func (t *Trex) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	t.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // trexTrickCardJSON is the JSON wire format for TrexTrickCard.

@@ -749,7 +749,6 @@ func TestIsraeliWhist_ActionLog(t *testing.T) {
 		}
 	}
 	require.NotNil(t, entry)
-	assert.Empty(t, entry.Detail)
 	assert.Equal(t, map[string]string{"bid": "6", "suit": "1"}, entry.DetailParams)
 }
 

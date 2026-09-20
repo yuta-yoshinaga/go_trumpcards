@@ -109,7 +109,6 @@ func TestLetItRide_Bet_Success(t *testing.T) {
 	}
 	require.NotNil(t, found)
 	assert.Equal(t, map[string]string{"amount": "100", "total": "300"}, found.DetailParams)
-	assert.Empty(t, found.Detail)
 }
 
 func TestLetItRide_Pull_WrongPhase(t *testing.T) {

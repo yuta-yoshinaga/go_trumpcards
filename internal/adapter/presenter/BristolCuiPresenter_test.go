@@ -148,7 +148,9 @@ func TestBristolCuiPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("after clear", func(t *testing.T) {
 		bg := new(interfaces.MockBristolGame)
 		bg.On("GetPhase").Return(domain.BristolPhaseGameClear)
-		bg.On("GetActionLog").Return([]*domain.ActionLogEntry{{TurnNumber: 1, ActionType: "draw", Detail: "test"}})
+		bg.On("GetActionLog").Return([]*domain.ActionLogEntry{
+			{TurnNumber: 1, ActionType: "draw", DetailCode: "bristol.log.draw"},
+		})
 		p := new(BristolCuiPresenter)
 		result := p.ActionLogOutput(bg)
 		assert.Contains(t, result, "draw")

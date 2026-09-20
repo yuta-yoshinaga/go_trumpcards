@@ -83,7 +83,6 @@ func TestSkatBidActionLogCode(t *testing.T) {
 	}
 	require.NotNil(t, entry)
 	assert.NotEmpty(t, entry.DetailParams["name"])
-	assert.Empty(t, entry.Detail)
 }
 
 func TestSkatBidRoundFlow(t *testing.T) {

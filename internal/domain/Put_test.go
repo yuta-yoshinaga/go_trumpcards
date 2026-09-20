@@ -337,7 +337,7 @@ func TestPutCallAndAccept(t *testing.T) {
 			break
 		}
 	}
-	if entry == nil || entry.DetailParams["stake"] != "2" || entry.Detail != "" {
+	if entry == nil || entry.DetailParams["stake"] != "2" {
 		t.Errorf("accept action log = %#v, want code params and empty detail", entry)
 	}
 }

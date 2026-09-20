@@ -66,7 +66,6 @@ func TestNarcotic_DrawDealsOnePerPile(t *testing.T) {
 	}
 	require.NotNil(t, entry)
 	assert.Empty(t, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 
 	for c := range domain.NarcoticColCnt {
 		assert.Len(t, g.GetColumns()[c], 2, "column %d", c)

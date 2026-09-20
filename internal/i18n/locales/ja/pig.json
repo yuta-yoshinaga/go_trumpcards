@@ -27,5 +27,13 @@
   "hintReasonDiscardOdd": "揃いかけていないランクから手放す",
   "hintReasonNoSingleton": "全部同じ枚数なので、崩しても被害の小さい札から",
   "helpExamplePass": "  p 0                  手札の 0 番を左隣へ渡す",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "log.start": "ピッグを開始しました（{{players}} 人、{{cards}} 枚）",
+  "log.deal": "ラウンド {{round}} を配りました（{{players}} 人）",
+  "log.signal": "黙って手を鼻に当てました",
+  "log.notice": "{{order}} 番目に気づきました",
+  "log.letter": "気づくのが最後でした（{{word}}）",
+  "log.eliminated": "PIG が揃って脱落しました",
+  "log.result": "最後まで残りました",
+  "log.giveup": "投了しました"
 }

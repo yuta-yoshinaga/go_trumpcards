@@ -284,7 +284,6 @@ func TestCincinnati_ActionLogUsesDetailCode(t *testing.T) {
 		}
 	}
 	require.NotNil(t, reset)
-	assert.Empty(t, reset.Detail)
 	assert.Empty(t, reset.DetailParams)
 }
 

@@ -105,7 +105,6 @@ func TestUlti_Bid_Declare(t *testing.T) {
 		require.NotNil(t, entry)
 		assert.Equal(t, "ulti.log.bid", entry.DetailCode)
 		assert.Equal(t, map[string]string{"name": "You", "contract": "party", "trump": "hearts"}, entry.DetailParams)
-		assert.Empty(t, entry.Detail)
 		assert.Equal(t, domain.UltiPhaseDiscard, g.GetPhase())
 		assert.Equal(t, domain.UltiContractParty, g.GetContract())
 		assert.Equal(t, domain.CardDesignHeart, g.GetTrumpSuit())

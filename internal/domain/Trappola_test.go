@@ -102,7 +102,6 @@ func TestTrappolaActionLogUsesDetailCode(t *testing.T) {
 	}
 	require.NotNil(t, entry)
 	assert.Equal(t, map[string]string{"name": "You", "trick": "1", "thirds": "4", "bonus": ""}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 }
 
 // --- config ---

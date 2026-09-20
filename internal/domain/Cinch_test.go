@@ -182,7 +182,6 @@ func TestCinch_BidFlow(t *testing.T) {
 	require.NotNil(t, entry)
 	assert.Equal(t, "cinch.log.bid", entry.DetailCode)
 	assert.Equal(t, map[string]string{"name": "You", "bid": "4"}, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 	// ドメインの PlayerBid は 1 手番進めるだけ (CPU の自動消化は interactor の役目)。
 	// 残りの CPU ビッダーを手動で回してビッドフェーズを終える。
 	for i := 0; i < 10 && g.GetPhase() == domain.CinchPhaseBid; i++ {

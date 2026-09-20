@@ -621,7 +621,6 @@ func TestFreeBet_Accessors(t *testing.T) {
 	}
 	require.NotNil(t, dealLog)
 	assert.Equal(t, "freebetblackjack.log.deal", dealLog.DetailCode)
-	assert.Empty(t, dealLog.Detail)
 	assert.Equal(t, "50", dealLog.DetailParams["ante"])
 	// 配った直後はまだ何も戻っていない。
 	assert.Zero(t, g.GetPayout())

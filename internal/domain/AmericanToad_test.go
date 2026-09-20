@@ -779,10 +779,6 @@ func TestAmericanToad_ActionLog(t *testing.T) {
 	assert.Equal(t, "americantoad.log.move", log[2].DetailCode)
 	assert.Equal(t, map[string]string{"value1": "1", "value2": "0", "value3": "0"}, log[2].DetailParams)
 	assert.Equal(t, "americantoad.log.drawDetail", log[3].DetailCode)
-	assert.Empty(t, log[0].Detail)
-	assert.Empty(t, log[1].Detail)
-	assert.Empty(t, log[2].Detail)
-	assert.Empty(t, log[3].Detail)
 }
 
 // The Cloudflare Worker is stateless per request and rebuilds the game from KV

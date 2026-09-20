@@ -503,7 +503,7 @@ func TestGanjifa_ActionLogRecordsPlay(t *testing.T) {
 	if entry == nil {
 		t.Fatal("trick win action log entry not found")
 	}
-	if entry.DetailParams["trick"] != "1" || entry.Detail != "" {
+	if entry.DetailParams["trick"] != "1" {
 		t.Fatalf("trick win detail = %#v, want trick=1 and empty legacy detail", entry)
 	}
 }

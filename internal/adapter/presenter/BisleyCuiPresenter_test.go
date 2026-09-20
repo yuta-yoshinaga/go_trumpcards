@@ -191,7 +191,7 @@ func TestBisleyCuiPresenter_ActionLogOutput(t *testing.T) {
 		bg := new(interfaces.MockBisleyGame)
 		bg.On("GetPhase").Return(domain.BisleyPhaseGameOver)
 		bg.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "move", Detail: "test"},
+			{TurnNumber: 1, ActionType: "move", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 
 		p := new(BisleyCuiPresenter)

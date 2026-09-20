@@ -375,7 +375,6 @@ func TestThirtyOne_ActionLogRecorded(t *testing.T) {
 		}
 	}
 	require.NotNil(t, entry)
-	assert.Empty(t, entry.Detail)
 	assert.Equal(t, playerName(g.players, 0), entry.DetailParams["name"])
 }
 

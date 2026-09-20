@@ -506,9 +506,6 @@ func TestDuchess_ActionLogUsesZeroBasedIndices(t *testing.T) {
 	assert.Equal(t, "duchess.log.move", log[2].DetailCode)
 	assert.Equal(t, map[string]string{"value1": "1", "value2": "0", "value3": "1"}, log[2].DetailParams)
 	assert.Equal(t, "duchess.log.drawDetail", log[3].DetailCode)
-	for _, e := range log {
-		assert.Empty(t, e.Detail)
-	}
 }
 
 func TestDuchess_JSONRoundTrip(t *testing.T) {

@@ -87,7 +87,6 @@ func TestEgyptianRatscrew_Step_ActionLogUsesDetailCode(t *testing.T) {
 	for _, entry := range g.GetActionLog() {
 		if entry.DetailCode == "egyptianratscrew.log.flipFromStock" {
 			assert.Equal(t, map[string]string{"top": "5"}, entry.DetailParams)
-			assert.Empty(t, entry.Detail)
 			return
 		}
 	}

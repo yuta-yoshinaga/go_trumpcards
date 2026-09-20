@@ -607,7 +607,6 @@ func TestCaribbeanDraw_ActionLogUsesDetailCode(t *testing.T) {
 	require.NotNil(t, entry)
 	assert.Equal(t, "100", entry.DetailParams["ante"])
 	assert.Equal(t, "10", entry.DetailParams["jackpot"])
-	assert.Empty(t, entry.Detail)
 }
 
 func TestCaribbeanDraw_JSONRoundTrip(t *testing.T) {

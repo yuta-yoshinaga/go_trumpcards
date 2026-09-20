@@ -226,7 +226,7 @@ func TestFortyThievesCuiPresenter_ActionLogOutput(t *testing.T) {
 		fg := new(interfaces.MockFortyThievesGame)
 		fg.On("GetPhase").Return(domain.FortyThievesPhaseGameOver)
 		fg.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "draw", Detail: "test"},
+			{TurnNumber: 1, ActionType: "draw", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 
 		p := new(FortyThievesCuiPresenter)

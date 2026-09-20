@@ -154,7 +154,7 @@ func (g *ColourWhist) Reset() {
 	g.gameEndFlag = false
 	g.winnerIdx = -1
 	g.actionLog = nil
-	g.addLog(-1, "start", "カラーホイストを開始しました", nil)
+	g.addLog(-1, "start", "colourwhist.log.start", nil, nil)
 	g.startRound()
 }
 
@@ -188,7 +188,7 @@ func (g *ColourWhist) startRound() {
 	g.roundNumber++
 	g.currentTurn = (g.dealerIdx + 1) % ColourWhistPlayerCnt
 
-	g.addLog(g.dealerIdx, "deal", fmt.Sprintf("ラウンド %d を配りました", g.roundNumber), nil)
+	g.addLog(g.dealerIdx, "deal", "colourwhist.log.deal", map[string]string{"round": fmt.Sprintf("%d", g.roundNumber)}, nil)
 
 	// **配りが契約を決めてしまうことがある。** 競りより先に見ます。
 	if g.detectTroel() {
@@ -219,9 +219,7 @@ func (g *ColourWhist) detectTroel() bool {
 	g.partnerIdx = g.fourthAceHolder(holder)
 	// **4 枚とも持っていれば相方は居ません。** 単独で 8 トリックです。
 	g.partnerRevealed = g.partnerIdx >= 0
-	g.addLog(holder, "troel",
-		fmt.Sprintf("席 %d がエースを %d 枚持っているため troel が成立しました",
-			holder, g.players[holder].CountAces()), nil)
+	g.addLog(holder, "troel", "colourwhist.log.troel", map[string]string{"player": fmt.Sprintf("%d", holder), "aces": fmt.Sprintf("%d", g.players[holder].CountAces())}, nil)
 
 	g.currentTurn = holder
 	g.phase = ColourWhistPhaseCall
@@ -262,7 +260,7 @@ func (g *ColourWhist) bid(idx, contract int) error {
 	}
 	if contract == ColourWhistContractNone {
 		g.passed[idx] = true
-		g.addLog(idx, "pass", "パスしました", nil)
+		g.addLog(idx, "pass", "colourwhist.log.pass", nil, nil)
 		g.advanceBid()
 		return nil
 	}
@@ -272,7 +270,7 @@ func (g *ColourWhist) bid(idx, contract int) error {
 	g.contract = contract
 	g.declarerIdx = idx
 	g.passed[idx] = false
-	g.addLog(idx, "bid", ColourWhistContractName(contract)+" を宣言しました", nil)
+	g.addLog(idx, "bid", "colourwhist.log.bid", map[string]string{"contract": ColourWhistContractName(contract)}, nil)
 	g.advanceBid()
 	return nil
 }
@@ -313,7 +311,7 @@ func (g *ColourWhist) finishBidding() {
 		// **全員が降りたら親が Samen を引き受けます。** 流局にすると終わりません。
 		g.declarerIdx = g.dealerIdx
 		g.contract = ColourWhistContractSamen
-		g.addLog(g.dealerIdx, "forced", "全員パスのため親が samen を引き受けます", nil)
+		g.addLog(g.dealerIdx, "forced", "colourwhist.log.forced", nil, nil)
 	}
 	g.currentTurn = g.declarerIdx
 	if ColourWhistNeedsTrump(g.contract) {
@@ -341,7 +339,7 @@ func (g *ColourWhist) call(idx, trumpSuit int) error {
 		return fmt.Errorf("切り札のスートが範囲外です: %d", trumpSuit)
 	}
 	g.trumpSuit = trumpSuit
-	g.addLog(idx, "trump", colourWhistSuitName(trumpSuit)+" を切り札にしました", nil)
+	g.addLog(idx, "trump", "colourwhist.log.trump", map[string]string{"suit": colourWhistSuitName(trumpSuit)}, nil)
 
 	// **Troel の相方は配りで決まっているので指名しません。**
 	if g.contract == ColourWhistContractSamen {
@@ -393,7 +391,7 @@ func (g *ColourWhist) holderOf(c *Card) int {
 func (g *ColourWhist) startPlay() {
 	g.phase = ColourWhistPhasePlay
 	g.currentTurn = (g.dealerIdx + 1) % ColourWhistPlayerCnt
-	g.addLog(-1, "play", ColourWhistContractName(g.contract)+" で開始します", nil)
+	g.addLog(-1, "play", "colourwhist.log.playStart", map[string]string{"contract": ColourWhistContractName(g.contract)}, nil)
 	g.advanceCpu()
 }
 
@@ -466,12 +464,12 @@ func (g *ColourWhist) playAt(idx, cardIndex int) {
 		return
 	}
 	g.trick = append(g.trick, &TrickCard{PlayerIdx: idx, Card: card})
-	g.addLog(idx, "card", "札を出しました", []*Card{card})
+	g.addLog(idx, "card", "colourwhist.log.play", nil, []*Card{card})
 
 	if g.calledCard != nil && !g.partnerRevealed &&
 		card.GetDesign() == g.calledCard.GetDesign() && card.GetValue() == g.calledCard.GetValue() {
 		g.partnerRevealed = true
-		g.addLog(idx, "partner", "相方が判明しました", nil)
+		g.addLog(idx, "partner", "colourwhist.log.partner", nil, nil)
 	}
 
 	if len(g.trick) < ColourWhistPlayerCnt {
@@ -498,7 +496,7 @@ func (g *ColourWhist) finishTrick() {
 	g.trick = nil
 	g.trickCount++
 	g.currentTurn = winner
-	g.addLog(winner, "trick", "トリックを取りました", nil)
+	g.addLog(winner, "trick", "colourwhist.log.trickWin", nil, nil)
 
 	if g.trickCount >= ColourWhistTrickCnt {
 		g.finishRound()
@@ -522,7 +520,11 @@ func (g *ColourWhist) finishRound() {
 	for i := range g.players {
 		g.players[i].AddScore(g.roundScoreFor(i, made))
 	}
-	g.addLog(g.declarerIdx, "result", g.resultDetail(made), nil)
+	if made {
+		g.addLog(g.declarerIdx, "result", "colourwhist.log.resultMade", map[string]string{"contract": ColourWhistContractName(g.contract), "tricks": fmt.Sprintf("%d", g.declarerTricks)}, nil)
+	} else {
+		g.addLog(g.declarerIdx, "result", "colourwhist.log.resultFailed", map[string]string{"contract": ColourWhistContractName(g.contract), "tricks": fmt.Sprintf("%d", g.declarerTricks)}, nil)
+	}
 
 	g.phase = ColourWhistPhaseRoundEnd
 	if g.roundNumber >= g.config.Rounds {
@@ -583,15 +585,6 @@ func (g *ColourWhist) sideSizes() (int, int) {
 	return declarers, ColourWhistPlayerCnt - declarers
 }
 
-// resultDetail は精算の説明を返す。
-func (g *ColourWhist) resultDetail(made bool) string {
-	state := "不成立"
-	if made {
-		state = "成立"
-	}
-	return fmt.Sprintf("%s %s（%d トリック）", ColourWhistContractName(g.contract), state, g.declarerTricks)
-}
-
 // finishGame は終局する。
 func (g *ColourWhist) finishGame() {
 	g.phase = ColourWhistPhaseGameEnd
@@ -603,7 +596,7 @@ func (g *ColourWhist) finishGame() {
 		}
 	}
 	g.winnerIdx = best
-	g.addLog(best, "gameEnd", "いちばん点の高い席が勝ちです", nil)
+	g.addLog(best, "gameEnd", "colourwhist.log.gameEnd", nil, nil)
 }
 
 // NextRound は次のラウンドを配る。
@@ -633,7 +626,7 @@ func (g *ColourWhist) GiveUp() {
 		}
 	}
 	g.winnerIdx = best
-	g.addLog(0, "giveup", "投了しました", nil)
+	g.addLog(0, "giveup", "colourwhist.log.giveup", nil, nil)
 }
 
 // CpuPlay は CPU の手番を進める。
@@ -764,8 +757,8 @@ func (g *ColourWhist) GetHint() *ColourWhistHint {
 }
 
 // addLog は棋譜に 1 行足す。
-func (g *ColourWhist) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.appendLog(playerIdx, actionType, detail, cards)
+func (g *ColourWhist) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- Getters ---

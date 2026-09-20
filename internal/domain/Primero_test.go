@@ -54,7 +54,6 @@ func TestPrimero_ResetDealsRound(t *testing.T) {
 	require.NotNil(t, dealLog)
 	assert.Equal(t, "primero.log.deal", dealLog.DetailCode)
 	assert.Equal(t, map[string]string{"round": "1", "ante": "10", "pot": strconv.Itoa(cfg.Ante * cfg.PlayerCount)}, dealLog.DetailParams)
-	assert.Empty(t, dealLog.Detail)
 	// Human paid the ante; before any of their own bets, roundBet = ante.
 	assert.Equal(t, cfg.Ante, g.GetPlayer(0).GetRoundBet())
 }

@@ -100,7 +100,6 @@ func TestBlackJackSwitch_PlayerSwitch_SwapsSecondCards(t *testing.T) {
 	entry := bs.GetActionLog()[len(bs.GetActionLog())-1]
 	assert.Equal(t, "blackjackswitch.log.switch", entry.DetailCode)
 	assert.Nil(t, entry.DetailParams)
-	assert.Empty(t, entry.Detail)
 	// Hand 0: 10 + (was hand1 second) Jack(11→10) = 20
 	assert.Equal(t, 20, bs.GetHands()[0].GetScore())
 	// Hand 1: 6 + (was hand0 second) 5 = 11
