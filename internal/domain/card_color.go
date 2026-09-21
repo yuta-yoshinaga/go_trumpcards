@@ -49,6 +49,16 @@ func suitKeyOf(suit int) string {
 	}
 }
 
+// trumpKeyOf は切り札スートの i18n キーを返す。suitKeyOf と違い、
+// スート以外の値は「切り札なし」を意味するゲームで使うため
+// common.suit.notrump に落とす。
+func trumpKeyOf(suit int) string {
+	if suit < CardDesignSpade || suit > CardDesignDiamond {
+		return "common.suit.notrump"
+	}
+	return suitKeyOf(suit)
+}
+
 // cardStr returns the display string for a card (suit glyph + rank). Shared
 // across categories — over a hundred game files render a card this way — so it
 // lives here rather than in any one game's file.

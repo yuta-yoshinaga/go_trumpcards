@@ -6820,5 +6820,6 @@
   "common.suit.club": "Club",
   "common.suit.heart": "Heart",
   "common.suit.diamond": "Diamond",
+  "common.suit.notrump": "No trump",
   "common.suit.unknown": "Unknown"
 }

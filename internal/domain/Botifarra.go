@@ -224,7 +224,7 @@ func (g *Botifarra) declare(idx, suit int) error {
 	}
 	g.trumpSuit = suit
 	g.declarerIdx = idx
-	g.addLog(idx, "declare", "botifarra.log.declare", map[string]string{"suit": botifarraTrumpName(suit)}, nil)
+	g.addLog(idx, "declare", "botifarra.log.declare", map[string]string{"suitKey": trumpKeyOf(suit)}, nil)
 	g.openDoubling()
 	return nil
 }
@@ -328,7 +328,7 @@ func (g *Botifarra) passDouble(idx int) {
 func (g *Botifarra) startPlay() {
 	g.phase = BotifarraPhasePlay
 	g.currentTurn = g.dealerIdx
-	g.addLog(-1, "play", "botifarra.log.playStart", map[string]string{"suit": botifarraTrumpName(g.trumpSuit)}, nil)
+	g.addLog(-1, "play", "botifarra.log.playStart", map[string]string{"suitKey": trumpKeyOf(g.trumpSuit)}, nil)
 	g.advanceCpu()
 }
 
@@ -643,22 +643,6 @@ func (g *Botifarra) cpuChooseCard(idx int) int {
 		return pickHighest(p, valid, BotifarraCardPoint)
 	}
 	return pickLowest(p, valid, BotifarraRank)
-}
-
-// botifarraTrumpName は切り札の表示名を返す。
-func botifarraTrumpName(suit int) string {
-	switch suit {
-	case CardDesignSpade:
-		return "spade"
-	case CardDesignClover:
-		return "clover"
-	case CardDesignHeart:
-		return "heart"
-	case CardDesignDiamond:
-		return "diamond"
-	default:
-		return "notrump"
-	}
 }
 
 // GetHint は人間への助言を返す。

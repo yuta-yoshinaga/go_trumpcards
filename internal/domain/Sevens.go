@@ -527,7 +527,7 @@ func (s *Sevens) PlayerPlayJoker(cardIdx, targetSuit, targetValue int) error {
 	playedCard := player.RemoveCard(cardIdx)
 	s.recordJokerCard(playedCard, targetSuit, targetValue)
 	player.SetLastPlayedJoker(true)
-	s.appendLog(s.currentTurn, "joker", "sevens.log.joker", map[string]string{"suit": suitLogStr(targetSuit), "value": strconv.Itoa(targetValue)}, []*Card{playedCard})
+	s.appendLog(s.currentTurn, "joker", "sevens.log.joker", map[string]string{"suitKey": suitKeyOf(targetSuit), "value": strconv.Itoa(targetValue)}, []*Card{playedCard})
 	s.humanAction = &SevensCpuAction{
 		PlayerIdx:   s.currentTurn,
 		PlayedCard:  playedCard,
@@ -1007,7 +1007,7 @@ func (s *Sevens) CpuPlay() {
 		if card.GetDesign() == CardDesignJoker {
 			s.recordJokerCard(playedCard, targetSuit, targetValue)
 			player.SetLastPlayedJoker(true)
-			s.appendLog(playerIdx, "joker", "sevens.log.joker", map[string]string{"suit": suitLogStr(targetSuit), "value": strconv.Itoa(targetValue)}, []*Card{playedCard})
+			s.appendLog(playerIdx, "joker", "sevens.log.joker", map[string]string{"suitKey": suitKeyOf(targetSuit), "value": strconv.Itoa(targetValue)}, []*Card{playedCard})
 		} else {
 			reclaimed = s.reclaimJokerIfNeeded(playerIdx, card.GetDesign(), card.GetValue())
 			player.SetLastPlayedJoker(false)

@@ -170,7 +170,7 @@ func (b *Bourre) startHand() {
 		b.sortHand(b.players[idx])
 	}
 
-	b.appendLog(-1, "trump", "bourre.log.trump", map[string]string{"suit": suitNameOf(b.trumpSuit)}, trumpCardSlice(b.trumpCard))
+	b.appendLog(-1, "trump", "bourre.log.trump", map[string]string{"suitKey": suitKeyOf(b.trumpSuit)}, trumpCardSlice(b.trumpCard))
 
 	b.phase = BourrePhaseDecide
 	if len(order) > 0 {
@@ -792,22 +792,6 @@ func bourreRank(c *Card) int {
 		return 14
 	}
 	return c.GetValue()
-}
-
-// suitNameOf design 定数のスート名 (英語)
-func suitNameOf(design int) string {
-	switch design {
-	case CardDesignSpade:
-		return "Spades"
-	case CardDesignClover:
-		return "Clubs"
-	case CardDesignHeart:
-		return "Hearts"
-	case CardDesignDiamond:
-		return "Diamonds"
-	default:
-		return "?"
-	}
 }
 
 // trumpCardSlice trumpCard を []*Card に変換する (nil は空)

@@ -272,6 +272,38 @@ func TestActionLogToText_RendersTargetGameSuitsInBothLanguages(t *testing.T) {
 	assert.NotContains(t, en, "Spades")
 }
 
+func TestActionLogToText_RendersRemainingGameSuitsInBothLanguages(t *testing.T) {
+	entries := []*domain.ActionLogEntry{
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "bid", DetailCode: "ombre.log.bid", DetailParams: map[string]string{"name": "You", "bid": "entrar", "trumpKey": "common.suit.spade"}},
+		{TurnNumber: 2, PlayerIdx: 0, ActionType: "bid", DetailCode: "ulti.log.bid", DetailParams: map[string]string{"name": "You", "contract": "party", "trumpKey": "common.suit.spade"}},
+		{TurnNumber: 3, PlayerIdx: 0, ActionType: "declare", DetailCode: "vira.log.declare", DetailParams: map[string]string{"bid": "normal", "trumpKey": "common.suit.spade"}},
+		{TurnNumber: 4, PlayerIdx: 0, ActionType: "declare", DetailCode: "botifarra.log.declare", DetailParams: map[string]string{"suitKey": "common.suit.spade"}},
+		{TurnNumber: 5, PlayerIdx: -1, ActionType: "trump", DetailCode: "bourre.log.trump", DetailParams: map[string]string{"suitKey": "common.suit.spade"}},
+		{TurnNumber: 6, PlayerIdx: 0, ActionType: "joker", DetailCode: "sevens.log.joker", DetailParams: map[string]string{"suitKey": "common.suit.spade", "value": "7"}},
+		{TurnNumber: 7, PlayerIdx: 0, ActionType: "declare", DetailCode: "botifarra.log.declare", DetailParams: map[string]string{"suitKey": "common.suit.notrump"}},
+		{TurnNumber: 8, PlayerIdx: 0, ActionType: "bid", DetailCode: "honeymoonbridge.log.bid", DetailParams: map[string]string{"level": "1", "suitKey": "common.suit.spade"}},
+		{TurnNumber: 9, PlayerIdx: 0, ActionType: "contract", DetailCode: "honeymoonbridge.log.contract", DetailParams: map[string]string{"level": "1", "suitKey": "common.suit.notrump", "need": "7"}},
+	}
+
+	t.Cleanup(func() { i18n.SetLang("ja") })
+
+	i18n.SetLang("ja")
+	ja := actionLogToText(entries)
+	assert.Contains(t, ja, "スペード")
+	assert.NotContains(t, ja, "Spade")
+	assert.NotContains(t, ja, "spades")
+	assert.NotContains(t, ja, "Spades")
+	assert.Contains(t, ja, "切り札なし")
+	assert.NotContains(t, ja, "NT")
+
+	i18n.SetLang("en")
+	en := actionLogToText(entries)
+	assert.Contains(t, en, "Spade")
+	assert.NotContains(t, en, "スペード")
+	assert.NotContains(t, en, "クラブ")
+	assert.Contains(t, en, "No trump")
+}
+
 // #5977: 棋譜だけ文字列が直書きで、`--lang en` でも日本語の見出しと
 // 「棋譜はありません。」が出ていた。座席名も他の行 (cuiPlayerName) が
 // 「あなた」「CPU 1」と出すのに対し、ここだけ英語固定の "Player 0" だった。
