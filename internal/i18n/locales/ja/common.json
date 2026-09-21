@@ -131,7 +131,7 @@
   "stud.helpLevelUpHands": "  lh <hands>           アンテレベルアップ手数 (>=1)",
   "stud.helpTableSize": "  ts [2-7]             テーブルサイズ",
   "realtime.banner": "リアルタイムモード (キーを押すだけ、Enter 不要):",
-  "realtime.keySpace": "Space",
+  "realtime.keySpace": "スペース",
   "realtime.labelSlap": "スラップ",
   "realtime.labelStep": "カードをめくる",
   "realtime.labelReset": "リセット",

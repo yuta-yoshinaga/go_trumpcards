@@ -20,7 +20,7 @@
   "helpAutoComplete": "  ac                   auto-complete",
   "settingsLine": "ドロー: {{draw}}枚 / スコアリング: {{mode}} / スコア: {{score}}",
   "scoringNone": "なし",
-  "scoringVegas": "Vegas",
+  "scoringVegas": "ベガス",
   "wasteFan": " | Waste: {{cards}} (末尾*のみ操作可)",
   "clearScore": "スコア: {{score}}",
   "foundationHeader": "組札: ",

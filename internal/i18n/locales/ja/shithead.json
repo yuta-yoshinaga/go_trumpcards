@@ -6,7 +6,7 @@
   "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
   "helpSetRule": "  sr <rule> <0|1>      ルールを切替 (two/seven/eight/ten/fourburn)",
   "outputTitle": "Shithead (シットヘッド / カーマ)",
-  "playerTurnSuffix": " ← turn",
+  "playerTurnSuffix": " ← 手番",
   "playerFinished": " [上がり rank={{rank}}]",
   "playerLine": "{{name}}: 手札{{hand}} / 表{{up}} / 裏{{down}}",
   "handLabel": "  hand:    ",

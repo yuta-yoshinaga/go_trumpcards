@@ -87,7 +87,7 @@ func TestNertzCuiPresenter_Output(t *testing.T) {
 		g.On("GetPlayers").Return([]*domain.NertzPlayer{empty, nil}).Maybe()
 		g.On("GetFoundations").Return([]*domain.NertzFoundation{nil, domain.NewNertzFoundation()}).Maybe()
 		out := new(NertzCuiPresenter).Output(g, nil)
-		assert.Contains(t, out, "(empty)")
+		assert.Contains(t, out, "(空)")
 	})
 	t.Run("with error", func(t *testing.T) {
 		g := new(interfaces.MockNertzGame)

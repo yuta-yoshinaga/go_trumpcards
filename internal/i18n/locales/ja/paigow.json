@@ -19,7 +19,7 @@
   "phaseSetHands": "手役セット",
   "phaseEnd": "終了",
   "phaseUnknown": "不明",
-  "rankUnknown": "Unknown",
+  "rankUnknown": "不明",
   "betLine": "ベット: {{bet}}",
   "playerWins": "プレイヤーの勝ち！",
   "dealerWins": "ディーラーの勝ち！",

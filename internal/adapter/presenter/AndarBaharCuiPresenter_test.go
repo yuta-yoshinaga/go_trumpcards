@@ -187,7 +187,7 @@ func TestAndarBaharCuiPresenter_UnknownValues(t *testing.T) {
 	p := new(AndarBaharCuiPresenter)
 	assert.Equal(t, "不明", p.phaseStr(99))
 	assert.Equal(t, "不明", p.columnStr(99))
-	assert.Equal(t, "UNKNOWN", p.bandStr(99))
+	assert.Equal(t, "不明", p.bandStr(99))
 	assert.Equal(t, "1 枚ちょうど", p.bandStr(domain.AndarBaharSideFirst))
 	assert.Equal(t, "(なし)", p.columnCards(nil))
 }

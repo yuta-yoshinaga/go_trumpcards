@@ -25,9 +25,9 @@
   "difficultyInvalid": "CPU難易度が不正です: %s。0〜2 を指定してください。",
   "helpExampleStep": "  s                    次の 1 枚をめくる",
   "difficultyLine": "CPU難易度: {{difficulty}}",
-  "difficultyEasy": "Easy",
-  "difficultyNormal": "Normal",
-  "difficultyHard": "Hard",
+  "difficultyEasy": "イージー",
+  "difficultyNormal": "ノーマル",
+  "difficultyHard": "ハード",
   "log.step": "ストックからめくりました (トップ={{top}})",
   "log.correctSlap": "正しいスラップ、+{{count}}枚",
   "log.wrongSlap": "誤スラップ、-{{count}}枚"
