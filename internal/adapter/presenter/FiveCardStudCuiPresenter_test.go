@@ -44,10 +44,10 @@ func TestFiveCardStudCuiPresenter_Output(t *testing.T) {
 		s.SetPhase(domain.FiveCardStudPhaseSecondStreet)
 
 		result := p.Output(s, nil)
-		assert.Contains(t, result, "Ante:1")
-		assert.Contains(t, result, "BringIn:2")
-		assert.Contains(t, result, "SmallBet:5")
-		assert.Contains(t, result, "BigBet:10")
+		assert.Contains(t, result, "アンテ:1")
+		assert.Contains(t, result, "ブリングイン:2")
+		assert.Contains(t, result, "スモールベット:5")
+		assert.Contains(t, result, "ビッグベット:10")
 	})
 
 	t.Run("CPU door cards always visible", func(t *testing.T) {
@@ -243,7 +243,7 @@ func TestFiveCardStudCuiPresenter_Output(t *testing.T) {
 		s.SetHandCount(3)
 
 		result := p.Output(s, nil)
-		assert.Contains(t, result, "トーナメント ハンド#3 Ante:5 BringIn:10 (アンテレベル1, 次のレベルアップまで3ハンド; レベルアップ:5ハンド毎)")
+		assert.Contains(t, result, "トーナメント ハンド#3 アンテ:5 ブリングイン:10 (アンテレベル1, 次のレベルアップまで3ハンド; レベルアップ:5ハンド毎)")
 	})
 
 	t.Run("tournament mode header not shown when disabled", func(t *testing.T) {

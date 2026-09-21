@@ -40,7 +40,7 @@
   "highestBidWithName": "最高ビッド: {{bid}} ({{name}})",
   "highestBidNone": "なし",
   "scores": "累計スコア: {{scores}}",
-  "dabbCards": "Dabb: {{cards}}",
+  "dabbCards": "ダブ: {{cards}}",
   "playerMeldsHeader": "{{name}}のメルド:",
   "playerMeldLine": "  {{type}}: {{points}}点",
   "tableLabel": "テーブル: ",

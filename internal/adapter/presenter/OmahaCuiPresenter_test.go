@@ -824,7 +824,7 @@ func TestOmahaCuiPresenter_HiLo_ResultRendering(t *testing.T) {
 				domain.NewCard(domain.CardDesignClover, 4, false),
 				domain.NewCard(domain.CardDesignSpade, 5, false),
 			},
-			wantSubstrs: []string{"Low:", "Hi:50", "Lo:50"},
+			wantSubstrs: []string{"ロー:", "Hi:50", "Lo:50"},
 		},
 		{
 			name: "hi only",
@@ -842,7 +842,7 @@ func TestOmahaCuiPresenter_HiLo_ResultRendering(t *testing.T) {
 				domain.NewCard(domain.CardDesignClover, 4, false),
 				domain.NewCard(domain.CardDesignSpade, 5, false),
 			},
-			wantSubstrs: []string{"(Lo)", "Low:"},
+			wantSubstrs: []string{"(Lo)", "ロー:"},
 		},
 	}
 	for _, tc := range cases {

@@ -368,6 +368,43 @@ func TestJapaneseRemainingLocaleLabels(t *testing.T) {
 	}
 }
 
+func TestJapaneseInlineLabels(t *testing.T) {
+	t.Cleanup(func() { i18n.SetLang("ja") })
+
+	expected := map[string]string{
+		"fivecardstud.anteLine":         "アンテ:{{ante}} ブリングイン:{{bringIn}} スモールベット:{{small}} ビッグベット:{{big}}",
+		"fivecardstud.tournamentLine":   "トーナメント ハンド#{{hand}} アンテ:{{ante}} ブリングイン:{{bringIn}} (アンテレベル{{level}}, 次のレベルアップまで{{remaining}}ハンド; レベルアップ:{{levelup}}ハンド毎)",
+		"followthequeen.anteLine":       "アンテ:{{ante}} ブリングイン:{{bringIn}} スモールベット:{{small}} ビッグベット:{{big}}",
+		"followthequeen.tournamentLine": "トーナメント ハンド#{{hand}} アンテ:{{ante}} ブリングイン:{{bringIn}} (レベルアップ:{{levelup}}ハンド毎)",
+		"sevencardstud.anteLine":        "アンテ:{{ante}} ブリングイン:{{bringIn}} スモールベット:{{small}} ビッグベット:{{big}}",
+		"sevencardstud.tournamentLine":  "トーナメント ハンド#{{hand}} アンテ:{{ante}} ブリングイン:{{bringIn}} (レベルアップ:{{levelup}}ハンド毎)",
+		"soko.anteLine":                 "アンテ:{{ante}} ブリングイン:{{bringIn}} スモールベット:{{small}} ビッグベット:{{big}}",
+		"soko.tournamentLine":           "トーナメント ハンド#{{hand}} アンテ:{{ante}} ブリングイン:{{bringIn}} (レベルアップ:{{levelup}}ハンド毎)",
+		"allfours.breakdownHigh":        "  ハイ: {{name}}",
+		"allfours.breakdownLow":         "  ロー: {{name}}",
+		"allfours.breakdownJack":        "  ジャック: {{name}}",
+		"allfours.breakdownGame":        "  ゲーム: {{name}}",
+		"binokel.dabbCards":             "ダブ: {{cards}}",
+		"knockoutwhist.playerLine":      "{{name}}: {{cards}}枚  今ラウンドのトリック: {{roundTricks}}  ドッグボーン: {{dogbones}}",
+		"omaha.resultLow":               " / ロー: {{cards}}",
+		"sixcardgolf.scoreLine":         "  スコア: {{score}}",
+	}
+	for key, want := range expected {
+		i18n.SetLang("ja")
+		got := i18n.T(key)
+		assert.Equal(t, want, got, key)
+		// VPIP/PFR/3Bet/AF と Roem/Weis/Baloot/CPU は標準指標または固有名詞なので除外する。
+		for _, english := range []string{"Ante:", "BringIn:", "SmallBet:", "BigBet:", "High:", "Low:", "Jack:", "Game:", "Dabb:", "Dogbone:", "Score:"} {
+			assert.NotContains(t, got, english, key+" contains "+english)
+		}
+	}
+
+	for key, japanese := range expected {
+		i18n.SetLang("en")
+		assert.NotContains(t, i18n.T(key), japanese, key+" contains Japanese translation")
+	}
+}
+
 func TestJapaneseGameLogAndWasteLabels(t *testing.T) {
 	t.Cleanup(func() { i18n.SetLang("ja") })
 

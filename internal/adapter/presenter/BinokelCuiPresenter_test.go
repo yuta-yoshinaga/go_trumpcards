@@ -170,7 +170,7 @@ func TestBinokelCuiPresenter_Output(t *testing.T) {
 		}
 		m.On("GetDabb").Return(dabb)
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "Dabb: SPADE 1 HEART 10 DIAMOND 11")
+		assert.Contains(t, result, "ダブ: SPADE 1 HEART 10 DIAMOND 11")
 		assert.Contains(t, result, "discard")
 	})
 
