@@ -6,6 +6,61 @@ import (
 	"testing"
 )
 
+func TestSkatGameTypeKey(t *testing.T) {
+	tests := []struct {
+		name string
+		got  SkatGameType
+		want string
+	}{
+		{name: "grand", got: SkatGameGrand, want: "skat.gameTypeGrand"},
+		{name: "null", got: SkatGameNull, want: "skat.gameTypeNull"},
+		{name: "none", got: SkatGameNone, want: "skat.gameTypeNone"},
+		// Suit declarations use a separate code and do not reach this helper.
+		{name: "suit default", got: SkatGameSuit, want: "skat.gameTypeNone"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := skatGameTypeKey(tt.got); got != tt.want {
+				t.Fatalf("skatGameTypeKey(%v) = %q, want %q", tt.got, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestSkatDeclareGameLogsSuitAndGameType(t *testing.T) {
+	tests := []struct {
+		name       string
+		gameType   SkatGameType
+		trumpSuit  int
+		code       string
+		param      string
+		paramValue string
+	}{
+		{name: "suit", gameType: SkatGameSuit, trumpSuit: CardDesignSpade, code: "skat.log.declareGameSuit", param: "trumpKey", paramValue: "common.suit.spade"},
+		{name: "grand", gameType: SkatGameGrand, code: "skat.log.declareGame", param: "gameKey", paramValue: "skat.gameTypeGrand"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := newSkatForTest(t, DefaultSkatConfig())
+			resetForControlledPhase(g)
+			g.round.declarerIdx = 0
+			g.applyGameDeclaration(tt.gameType, tt.trumpSuit)
+
+			logs := g.GetActionLog()
+			if len(logs) == 0 {
+				t.Fatal("expected declaration log")
+			}
+			entry := logs[len(logs)-1]
+			if entry.DetailCode != tt.code {
+				t.Fatalf("DetailCode = %q, want %q", entry.DetailCode, tt.code)
+			}
+			if entry.DetailParams[tt.param] != tt.paramValue {
+				t.Fatalf("DetailParams[%q] = %q, want %q", tt.param, entry.DetailParams[tt.param], tt.paramValue)
+			}
+		})
+	}
+}
+
 // skatTestCard is a small helper to keep card construction terse.
 func skatTestCard(design, value int) *Card {
 	return NewCard(design, value, false)
@@ -461,47 +516,6 @@ func TestSkatHandStrengthAccountsForJacksTensAces(t *testing.T) {
 	// 2 jacks * 5 + maxSuit(2) * 2 + 1 ace * 2 + 1 ten = 10 + 4 + 2 + 1 = 17.
 	if got != 17 {
 		t.Fatalf("handStrength = %d, want 17", got)
-	}
-}
-
-// TestSkatGameTypeNameAllVariants exercises every game-type label branch.
-func TestSkatGameTypeNameAllVariants(t *testing.T) {
-	g := newSkatForTest(t, DefaultSkatConfig())
-	g.round.gameType = SkatGameSuit
-	g.round.trumpSuit = CardDesignSpade
-	if got := g.gameTypeName(); got == "" || got == "None" {
-		t.Fatalf("Suit gameTypeName empty/None: %q", got)
-	}
-	g.round.gameType = SkatGameGrand
-	if got := g.gameTypeName(); got != "Grand" {
-		t.Fatalf("Grand gameTypeName: got %q, want Grand", got)
-	}
-	g.round.gameType = SkatGameNull
-	if got := g.gameTypeName(); got != "Null" {
-		t.Fatalf("Null gameTypeName: got %q, want Null", got)
-	}
-	g.round.gameType = SkatGameNone
-	if got := g.gameTypeName(); got != "None" {
-		t.Fatalf("None gameTypeName: got %q, want None", got)
-	}
-}
-
-// TestSkatSuitNameAllBranches exercises skatSuitName for each suit + default.
-func TestSkatSuitNameAllBranches(t *testing.T) {
-	cases := []struct {
-		suit int
-		want string
-	}{
-		{CardDesignSpade, "Spades"},
-		{CardDesignClover, "Clubs"},
-		{CardDesignHeart, "Hearts"},
-		{CardDesignDiamond, "Diamonds"},
-		{99, "?"},
-	}
-	for _, c := range cases {
-		if got := skatSuitName(c.suit); got != c.want {
-			t.Fatalf("skatSuitName(%d) = %q, want %q", c.suit, got, c.want)
-		}
 	}
 }
 

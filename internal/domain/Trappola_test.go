@@ -4,6 +4,7 @@ package domain_test
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -565,6 +566,31 @@ func TestTrappolaDeclarations(t *testing.T) {
 		assert.Equal(t, domain.TrappolaDeclarationThree, ds[0].Kind)
 		assert.Equal(t, domain.TrappolaThreeThirds, ds[0].Thirds)
 	})
+}
+
+func TestTrappola_DeclarationLogSplitsByKind(t *testing.T) {
+	seen := map[string]*domain.ActionLogEntry{}
+	for i := 0; i < 1000 && len(seen) < 3; i++ {
+		g := newTestTrappola()
+		g.Reset()
+		for _, entry := range g.GetActionLog() {
+			if strings.HasPrefix(entry.DetailCode, "trappola.log.declaration") {
+				seen[entry.DetailCode] = entry
+			}
+		}
+	}
+
+	trappola, ok := seen["trappola.log.declarationTrappola"]
+	require.True(t, ok, "trappola declaration log not observed")
+	assert.True(t, strings.HasPrefix(trappola.DetailParams["suitKey"], "common.suit."))
+
+	four, ok := seen["trappola.log.declarationFour"]
+	require.True(t, ok, "four declaration log not observed")
+	assert.Regexp(t, `^[0-9]+$`, four.DetailParams["rank"])
+
+	three, ok := seen["trappola.log.declarationThree"]
+	require.True(t, ok, "three declaration log not observed")
+	assert.Regexp(t, `^[0-9]+$`, three.DetailParams["rank"])
 }
 
 // TestTrappolaDeclarationsScoreTheTeam は、配った時点で役の点がチームに

@@ -147,6 +147,39 @@ func TestBezique_AvailableMelds(t *testing.T) {
 	assert.True(t, sawBezique, "bezique")
 }
 
+func TestBezique_MeldLogSplitsMarriageFromTheRest(t *testing.T) {
+	t.Run("plain marriage", func(t *testing.T) {
+		b := newTestBezique(true)
+		b.SetPhase(domain.BeziquePhaseMeld)
+		b.SetCurrentPlayerIdx(0)
+		b.SetTrumpSuit(domain.CardDesignClover)
+		bzSetHand(b.GetPlayer(0), bzCard(domain.CardDesignSpade, 13), bzCard(domain.CardDesignSpade, 12))
+
+		require.NoError(t, b.PlayerDeclareMeld(0))
+		logs := b.GetActionLog()
+		require.NotEmpty(t, logs)
+		entry := logs[len(logs)-1]
+		assert.Equal(t, "bezique.log.meldMarriage", entry.DetailCode)
+		assert.True(t, strings.HasPrefix(entry.DetailParams["suitKey"], "common.suit."))
+	})
+
+	t.Run("four aces", func(t *testing.T) {
+		b := newTestBezique(true)
+		b.SetPhase(domain.BeziquePhaseMeld)
+		b.SetCurrentPlayerIdx(0)
+		bzSetHand(b.GetPlayer(0),
+			bzCard(domain.CardDesignSpade, 1), bzCard(domain.CardDesignClover, 1),
+			bzCard(domain.CardDesignHeart, 1), bzCard(domain.CardDesignDiamond, 1))
+
+		require.NoError(t, b.PlayerDeclareMeld(0))
+		logs := b.GetActionLog()
+		require.NotEmpty(t, logs)
+		entry := logs[len(logs)-1]
+		assert.Equal(t, "bezique.log.meld", entry.DetailCode)
+		assert.True(t, strings.HasPrefix(entry.DetailParams["meldKey"], "bezique.meld."))
+	})
+}
+
 func TestBezique_FourAcesMeld(t *testing.T) {
 	b := newTestBezique(true)
 	b.SetPhase(domain.BeziquePhaseMeld)

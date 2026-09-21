@@ -6953,5 +6953,19 @@
   "king.contractShort.noLastTwo": "ノーラスト2",
   "king.contractShort.noMen": "ノーメン",
   "king.contractShort.kingTrump": "キング（切り札あり）",
-  "king.contractShort.unknown": "不明"
+  "king.contractShort.unknown": "不明",
+  "skat.log.declareGameSuit": "{{name}}がスート（切り札{{trump}}）を宣言しました",
+  "skat.gameTypeGrand": "グランド",
+  "skat.gameTypeNull": "ヌル",
+  "skat.gameTypeNone": "なし",
+  "bezique.log.meldMarriage": "{{name}}が{{suit}}のマリッジを宣言（+{{points}}）",
+  "bezique.meld.royalMarriage": "ロイヤルマリッジ",
+  "bezique.meld.bezique": "ベジック",
+  "bezique.meld.fourAces": "エース4枚",
+  "bezique.meld.fourKings": "キング4枚",
+  "bezique.meld.fourQueens": "クイーン4枚",
+  "bezique.meld.fourJacks": "ジャック4枚",
+  "trappola.log.declarationTrappola": "{{name}} が {{suit}} のトラッポラを宣言（{{thirds}}/3点）",
+  "trappola.log.declarationFour": "{{name}} が {{rank}} 4枚を宣言（{{thirds}}/3点）",
+  "trappola.log.declarationThree": "{{name}} が {{rank}} 3枚を宣言（{{thirds}}/3点）"
 }
