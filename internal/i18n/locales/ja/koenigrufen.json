@@ -18,6 +18,7 @@
   "roleOpponent": "対戦側",
   "bidNone": "-",
   "bidRufer": "ルーファー",
+  "bidPass": "パス",
   "outcomeNone": "-",
   "outcomeWin": "成功 (デクレアラー側の勝ち)",
   "outcomeLoss": "失敗 (対戦側の勝ち)",

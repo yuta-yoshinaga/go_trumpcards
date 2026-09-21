@@ -289,7 +289,7 @@ func (g *Calabresella) applyBid(playerIdx int, bid CalabresellaBid) {
 	if bid == CalabresellaBidNone {
 		g.appendLog(playerIdx, "bid_pass", "calabresella.log.bidPass", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 	} else {
-		g.appendLog(playerIdx, "bid", "calabresella.log.bid", map[string]string{"name": playerName(g.players, playerIdx), "bid": calabresellaBidName(bid)}, nil)
+		g.appendLog(playerIdx, "bid", "calabresella.log.bid", map[string]string{"name": playerName(g.players, playerIdx), "bidKey": calabresellaBidKey(bid)}, nil)
 	}
 
 	if g.allBidsActed() {
@@ -341,7 +341,7 @@ func (g *Calabresella) finalizeAuction() {
 	}
 	g.soloistIdx = soloist
 	g.winningBid = best
-	g.appendLog(soloist, "soloist", "calabresella.log.soloist", map[string]string{"name": playerName(g.players, soloist), "bid": calabresellaBidName(best)}, nil)
+	g.appendLog(soloist, "soloist", "calabresella.log.soloist", map[string]string{"name": playerName(g.players, soloist), "bidKey": calabresellaBidKey(best)}, nil)
 
 	g.startDiscard()
 }
@@ -726,15 +726,15 @@ func calabresellaSortHand(p *CalabresellaPlayer) {
 	}
 }
 
-// calabresellaBidName ビッドの表示名を返す。
-func calabresellaBidName(bid CalabresellaBid) string {
+// calabresellaBidKey はビッドの i18n キーを返す。
+func calabresellaBidKey(bid CalabresellaBid) string {
 	switch bid {
 	case CalabresellaBidChiamo:
-		return "chiamo"
+		return "calabresella.bidChiamo"
 	case CalabresellaBidSolo:
-		return "solo"
+		return "calabresella.bidSolo"
 	default:
-		return "pass"
+		return "calabresella.bidPass"
 	}
 }
 

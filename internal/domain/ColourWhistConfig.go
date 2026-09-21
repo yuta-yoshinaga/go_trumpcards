@@ -117,6 +117,22 @@ func ColourWhistContractName(contract int) string {
 	}
 }
 
+// ColourWhistContractKey は棋譜用の短い契約 i18n キーを返す。
+func ColourWhistContractKey(contract int) string {
+	switch contract {
+	case ColourWhistContractSamen:
+		return "colourwhist.contractShort.samen"
+	case ColourWhistContractAlleen:
+		return "colourwhist.contractShort.alleen"
+	case ColourWhistContractMiserie:
+		return "colourwhist.contractShort.miserie"
+	case ColourWhistContractTroel:
+		return "colourwhist.contractShort.troel"
+	default:
+		return "colourwhist.contractShort.none"
+	}
+}
+
 // ColourWhistIsMiserie は契約が「1 トリックも取らない」系かを返す。
 func ColourWhistIsMiserie(contract int) bool { return contract == ColourWhistContractMiserie }
 

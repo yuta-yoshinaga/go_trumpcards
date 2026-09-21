@@ -16,6 +16,7 @@
   "roleOpponent": "対戦側",
   "bidNone": "-",
   "bidPlay": "プレイ",
+  "bidPass": "パス",
   "contractNone": "-",
   "contractCego": "Cego (場札交換)",
   "contractHandspiel": "Handspiel (手札のまま)",

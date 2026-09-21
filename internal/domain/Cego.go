@@ -437,7 +437,7 @@ func (g *Cego) CpuBid() {
 func (g *Cego) applyBid(idx int, bid CegoBid) {
 	g.highestBid = bid
 	g.highestBidder = idx
-	g.appendLog(idx, "bid", "cego.log.bid", map[string]string{"name": playerName(g.players, idx), "bid": cegoBidName(bid)}, nil)
+	g.appendLog(idx, "bid", "cego.log.bid", map[string]string{"name": playerName(g.players, idx), "bidKey": cegoBidKey(bid)}, nil)
 	g.advanceBid()
 }
 
@@ -509,7 +509,7 @@ func (g *Cego) CpuChooseContract() {
 // 渡して即プレイへ進む。
 func (g *Cego) applyContract(ct CegoContract) {
 	g.contractType = ct
-	g.appendLog(g.declarerIdx, "contract", "cego.log.contract", map[string]string{"name": playerName(g.players, g.declarerIdx), "contract": cegoContractName(ct)}, nil)
+	g.appendLog(g.declarerIdx, "contract", "cego.log.contract", map[string]string{"name": playerName(g.players, g.declarerIdx), "contractKey": cegoContractKey(ct)}, nil)
 	if ct == CegoContractHandspiel {
 		// 場札は対戦側の得点山に渡る (伏せたまま公開しない)。
 		g.stash = g.blind
@@ -765,7 +765,7 @@ func (g *Cego) enterRoundEnd() {
 			g.playerScores[i] += bd.OpponentScore
 		}
 	}
-	g.appendLog(-1, "round_score", "cego.log.roundScore", map[string]string{"round": strconv.Itoa(g.roundNumber), "declarer": playerName(g.players, g.declarerIdx), "contract": cegoContractName(g.contractType), "declarerPoints": strconv.Itoa(bd.DeclarerPoints), "totalPoints": strconv.Itoa(CegoTotalPoints), "won": strconv.FormatBool(bd.Won), "base": strconv.Itoa(bd.Base)}, nil)
+	g.appendLog(-1, "round_score", "cego.log.roundScore", map[string]string{"round": strconv.Itoa(g.roundNumber), "declarer": playerName(g.players, g.declarerIdx), "contractKey": cegoContractKey(g.contractType), "declarerPoints": strconv.Itoa(bd.DeclarerPoints), "totalPoints": strconv.Itoa(CegoTotalPoints), "won": strconv.FormatBool(bd.Won), "base": strconv.Itoa(bd.Base)}, nil)
 	g.checkGameEnd()
 }
 
@@ -1389,23 +1389,23 @@ func (g *Cego) appendLog(playerIdx int, actionType, detailCode string, detailPar
 	g.appendLogCodeAt(len(g.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
-// cegoBidName 入札の表示名を返す。
-func cegoBidName(bid CegoBid) string {
+// cegoBidKey は入札の i18n キーを返す。
+func cegoBidKey(bid CegoBid) string {
 	if bid == CegoBidPlay {
-		return "play"
+		return "cego.bidPlay"
 	}
-	return "pass"
+	return "cego.bidPass"
 }
 
-// cegoContractName コントラクトの表示名を返す。
-func cegoContractName(ct CegoContract) string {
+// cegoContractKey はコントラクトの i18n キーを返す。
+func cegoContractKey(ct CegoContract) string {
 	switch ct {
 	case CegoContractCego:
-		return "cego"
+		return "cego.contractCego"
 	case CegoContractHandspiel:
-		return "handspiel"
+		return "cego.contractHandspiel"
 	default:
-		return "none"
+		return "cego.contractNone"
 	}
 }
 

@@ -16,6 +16,7 @@
   "bidGarde": "Garde",
   "bidGardeSans": "Garde Sans",
   "bidGardeContre": "Garde Contre",
+  "bidPass": "Pass",
   "outcomeNone": "-",
   "outcomeWin": "Made (declarer wins)",
   "outcomeLoss": "Failed (defenders win)",

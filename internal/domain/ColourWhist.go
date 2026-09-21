@@ -270,7 +270,7 @@ func (g *ColourWhist) bid(idx, contract int) error {
 	g.contract = contract
 	g.declarerIdx = idx
 	g.passed[idx] = false
-	g.addLog(idx, "bid", "colourwhist.log.bid", map[string]string{"contract": ColourWhistContractName(contract)}, nil)
+	g.addLog(idx, "bid", "colourwhist.log.bid", map[string]string{"contractKey": ColourWhistContractKey(contract)}, nil)
 	g.advanceBid()
 	return nil
 }
@@ -391,7 +391,7 @@ func (g *ColourWhist) holderOf(c *Card) int {
 func (g *ColourWhist) startPlay() {
 	g.phase = ColourWhistPhasePlay
 	g.currentTurn = (g.dealerIdx + 1) % ColourWhistPlayerCnt
-	g.addLog(-1, "play", "colourwhist.log.playStart", map[string]string{"contract": ColourWhistContractName(g.contract)}, nil)
+	g.addLog(-1, "play", "colourwhist.log.playStart", map[string]string{"contractKey": ColourWhistContractKey(g.contract)}, nil)
 	g.advanceCpu()
 }
 
@@ -521,9 +521,9 @@ func (g *ColourWhist) finishRound() {
 		g.players[i].AddScore(g.roundScoreFor(i, made))
 	}
 	if made {
-		g.addLog(g.declarerIdx, "result", "colourwhist.log.resultMade", map[string]string{"contract": ColourWhistContractName(g.contract), "tricks": fmt.Sprintf("%d", g.declarerTricks)}, nil)
+		g.addLog(g.declarerIdx, "result", "colourwhist.log.resultMade", map[string]string{"contractKey": ColourWhistContractKey(g.contract), "tricks": fmt.Sprintf("%d", g.declarerTricks)}, nil)
 	} else {
-		g.addLog(g.declarerIdx, "result", "colourwhist.log.resultFailed", map[string]string{"contract": ColourWhistContractName(g.contract), "tricks": fmt.Sprintf("%d", g.declarerTricks)}, nil)
+		g.addLog(g.declarerIdx, "result", "colourwhist.log.resultFailed", map[string]string{"contractKey": ColourWhistContractKey(g.contract), "tricks": fmt.Sprintf("%d", g.declarerTricks)}, nil)
 	}
 
 	g.phase = ColourWhistPhaseRoundEnd
