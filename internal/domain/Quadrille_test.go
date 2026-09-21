@@ -124,7 +124,7 @@ func TestQuadrille_Bidding_WrongPhaseAndSuitRequired(t *testing.T) {
 		entry := findActionLogEntry(t, g.GetActionLog(), "quadrille.log.bid")
 		assert.NotEmpty(t, entry.DetailParams["name"])
 		assert.NotEmpty(t, entry.DetailParams["bid"])
-		assert.NotEmpty(t, entry.DetailParams["trump"])
+		assert.Equal(t, "common.suit.heart", entry.DetailParams["trumpKey"])
 	}
 
 	// Wrong phase -> error.

@@ -312,7 +312,7 @@ func (g *Sheepshead) PlayerCall(suit int) error {
 func (g *Sheepshead) applyCall(suit int) {
 	g.calledSuit = suit
 	g.partnerIdx = g.holderOfCalledAce(suit)
-	g.appendLog(g.pickerIdx, "call", "sheepshead.log.call", map[string]string{"name": playerName(g.players, g.pickerIdx), "suit": suitStr(suit)}, nil)
+	g.appendLog(g.pickerIdx, "call", "sheepshead.log.call", map[string]string{"name": playerName(g.players, g.pickerIdx), "suitKey": suitKeyOf(suit)}, nil)
 	g.beginPlay()
 }
 

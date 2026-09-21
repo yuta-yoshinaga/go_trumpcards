@@ -199,6 +199,79 @@ func TestActionLogToText_ResolvesSjavsTrumpSuitInBothLanguages(t *testing.T) {
 	i18n.SetLang("ja")
 }
 
+func TestActionLogToText_RendersTargetGameSuitsInBothLanguages(t *testing.T) {
+	entries := []*domain.ActionLogEntry{
+		{
+			TurnNumber: 1, PlayerIdx: -1, ActionType: "turn_up", DetailCode: "gleek.log.turnUp",
+			DetailParams: map[string]string{"card": "♠A", "suitKey": "common.suit.spade"},
+		},
+		{
+			TurnNumber: 2, PlayerIdx: 0, ActionType: "marriage", DetailCode: "marjapussi.log.marriage",
+			DetailParams: map[string]string{"name": "Player", "suitKey": "common.suit.spade", "points": "20"},
+		},
+		{
+			TurnNumber: 3, PlayerIdx: -1, ActionType: "trump_set", DetailCode: "loo.log.trumpSet",
+			DetailParams: map[string]string{"suitKey": "common.suit.spade", "turnUp": "SPADE 5"},
+		},
+		{
+			TurnNumber: 4, PlayerIdx: 0, ActionType: "call_trump", DetailCode: "omi.log.callTrump",
+			DetailParams: map[string]string{"name": "Player", "suitKey": "common.suit.spade"},
+		},
+		{
+			TurnNumber: 5, PlayerIdx: 0, ActionType: "marriage", DetailCode: "tute.log.marriage",
+			DetailParams: map[string]string{"name": "Player", "suitKey": "common.suit.spade", "points": "20"},
+		},
+		{
+			TurnNumber: 6, PlayerIdx: 0, ActionType: "marriage", DetailCode: "bauernschnapsen.log.marriage",
+			DetailParams: map[string]string{"player": "Player", "suitKey": "common.suit.spade", "bonus": "20", "team": "0"},
+		},
+		{
+			TurnNumber: 7, PlayerIdx: 0, ActionType: "call_trump", DetailCode: "belote.log.callTrump",
+			DetailParams: map[string]string{"name": "Player", "suitKey": "common.suit.spade"},
+		},
+		{
+			TurnNumber: 8, PlayerIdx: 0, ActionType: "choose_trump", DetailCode: "jass.log.chooseTrump",
+			DetailParams: map[string]string{"name": "Player", "suitKey": "common.suit.spade"},
+		},
+		{
+			TurnNumber: 9, PlayerIdx: 0, ActionType: "declare_trump", DetailCode: "twotenjack.log.declareTrump",
+			DetailParams: map[string]string{"name": "Player", "suitKey": "common.suit.spade"},
+		},
+		{
+			TurnNumber: 10, PlayerIdx: 0, ActionType: "trump", DetailCode: "colourwhist.log.trump",
+			DetailParams: map[string]string{"suitKey": "common.suit.club"},
+		},
+		{
+			TurnNumber: 11, PlayerIdx: 0, ActionType: "trump", DetailCode: "dehlapakad.log.trump",
+			DetailParams: map[string]string{"player": "0", "suitKey": "common.suit.heart"},
+		},
+	}
+
+	t.Cleanup(func() { i18n.SetLang("ja") })
+
+	i18n.SetLang("ja")
+	ja := actionLogToText(entries)
+	assert.Contains(t, ja, "スペード")
+	assert.Contains(t, ja, "クラブ")
+	assert.Contains(t, ja, "ハート")
+	assert.NotContains(t, ja, "Spade")
+	assert.NotContains(t, ja, "Club")
+	assert.NotContains(t, ja, "Heart")
+	assert.NotContains(t, ja, "spades")
+	assert.NotContains(t, ja, "Spades")
+
+	i18n.SetLang("en")
+	en := actionLogToText(entries)
+	assert.Contains(t, en, "Spade")
+	assert.Contains(t, en, "Club")
+	assert.Contains(t, en, "Heart")
+	assert.NotContains(t, en, "スペード")
+	assert.NotContains(t, en, "クラブ")
+	assert.NotContains(t, en, "ハート")
+	assert.NotContains(t, en, "spades")
+	assert.NotContains(t, en, "Spades")
+}
+
 // #5977: 棋譜だけ文字列が直書きで、`--lang en` でも日本語の見出しと
 // 「棋譜はありません。」が出ていた。座席名も他の行 (cuiPlayerName) が
 // 「あなた」「CPU 1」と出すのに対し、ここだけ英語固定の "Player 0" だった。

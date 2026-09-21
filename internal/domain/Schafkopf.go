@@ -341,7 +341,7 @@ func (g *Schafkopf) PlayerCall(suit int) error {
 func (g *Schafkopf) applyCall(suit int) {
 	g.calledSuit = suit
 	g.partnerIdx = g.holderOfCalledAce(suit)
-	g.appendLog(g.pickerIdx, "call", "schafkopf.log.callsAce", map[string]string{"name": playerName(g.players, g.pickerIdx), "suit": suitStr(suit)}, nil)
+	g.appendLog(g.pickerIdx, "call", "schafkopf.log.callsAce", map[string]string{"name": playerName(g.players, g.pickerIdx), "suitKey": suitKeyOf(suit)}, nil)
 	g.beginPlay()
 }
 

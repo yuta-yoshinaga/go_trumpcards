@@ -270,7 +270,7 @@ func (g *Jass) doChooseTrump(playerIdx, suit int) {
 	g.trumpSuit = suit
 	g.makerTeam = g.players[playerIdx].GetTeam()
 	g.makerPlayerIdx = playerIdx
-	g.appendLog(playerIdx, "choose_trump", "jass.log.chooseTrump", map[string]string{"name": playerName(g.players, playerIdx), "suit": suitStr(suit)}, nil)
+	g.appendLog(playerIdx, "choose_trump", "jass.log.chooseTrump", map[string]string{"name": playerName(g.players, playerIdx), "suitKey": suitKeyOf(suit)}, nil)
 
 	g.sortAllHands()
 	g.resolveWeis()

@@ -308,7 +308,7 @@ func (g *Marjapussi) maybeDeclareMarriage(playerIdx int, card *Card) {
 	g.trumpSuit = suit
 	teamIdx := marjapussiPlayerTeam(playerIdx)
 	g.roundMarriage[teamIdx] += pts
-	g.appendLogCode(playerIdx, "marriage", "marjapussi.log.marriage", map[string]string{"name": playerName(g.players, playerIdx), "suit": marjapussiSuitName(suit), "points": strconv.Itoa(pts)}, nil)
+	g.appendLogCode(playerIdx, "marriage", "marjapussi.log.marriage", map[string]string{"name": playerName(g.players, playerIdx), "suitKey": suitKeyOf(suit), "points": strconv.Itoa(pts)}, nil)
 }
 
 // playCard カードをプレイする共通処理。
@@ -551,22 +551,6 @@ func marjapussiMarriagePoints(currentTrump, suit int) int {
 // marjapussiSuits スート一覧を返す。
 func marjapussiSuits() []int {
 	return []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond}
-}
-
-// marjapussiSuitName スート表示名 (英語) を返す。
-func marjapussiSuitName(suit int) string {
-	switch suit {
-	case CardDesignSpade:
-		return "Spades"
-	case CardDesignClover:
-		return "Clubs"
-	case CardDesignHeart:
-		return "Hearts"
-	case CardDesignDiamond:
-		return "Diamonds"
-	default:
-		return "None"
-	}
 }
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す。

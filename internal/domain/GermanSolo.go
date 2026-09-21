@@ -412,7 +412,7 @@ func (g *GermanSolo) applyBid(playerIdx int, bid GermanSoloBid, trumpSuit int) {
 		g.appendLog(playerIdx, "bid_pass", "germansolo.log.bidPass", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 	} else {
 		g.bidTrump[playerIdx] = trumpSuit
-		g.appendLog(playerIdx, "bid", "germansolo.log.bid", map[string]string{"name": playerName(g.players, playerIdx), "bid": germanSoloBidName(bid), "trump": germanSoloSuitName(trumpSuit)}, nil)
+		g.appendLog(playerIdx, "bid", "germansolo.log.bid", map[string]string{"name": playerName(g.players, playerIdx), "bid": germanSoloBidName(bid), "trumpKey": suitKeyOf(trumpSuit)}, nil)
 	}
 
 	if g.allBidsActed() {
@@ -470,7 +470,7 @@ func (g *GermanSolo) finalizeAuction() {
 	// **切り札が決まった時点で並べ替える。** プレイ開始まで待つと、エース呼びの
 	// 画面だけ配られたままの並びになり、どれが切り札か読めないまま指名させられる。
 	g.sortAllHands()
-	g.appendLog(declarer, "declarer", "germansolo.log.declarer", map[string]string{"name": playerName(g.players, declarer), "bid": germanSoloBidName(best), "trump": germanSoloSuitName(g.trumpSuit)}, nil)
+	g.appendLog(declarer, "declarer", "germansolo.log.declarer", map[string]string{"name": playerName(g.players, declarer), "bid": germanSoloBidName(best), "trumpKey": suitKeyOf(g.trumpSuit)}, nil)
 	if germanSoloIsPartnerBid(best) {
 		g.startAceCall()
 		return
@@ -579,7 +579,7 @@ func (g *GermanSolo) DeclareAce(playerIdx, suit int) error {
 	g.calledAceSuit = suit
 	g.partnerIdx = g.findAceHolder(suit)
 	g.partnerRevealed = false
-	g.appendLog(playerIdx, "call_ace", "germansolo.log.callAce", map[string]string{"name": playerName(g.players, playerIdx), "suit": germanSoloSuitName(suit)}, nil)
+	g.appendLog(playerIdx, "call_ace", "germansolo.log.callAce", map[string]string{"name": playerName(g.players, playerIdx), "suitKey": suitKeyOf(suit)}, nil)
 	g.startPlay()
 	return nil
 }
@@ -904,7 +904,7 @@ func (g *GermanSolo) revealPartnerIfCalledAce(playerIdx int, card *Card) {
 		return
 	}
 	g.partnerRevealed = true
-	g.appendLog(playerIdx, "partner_revealed", "germansolo.log.partnerRevealed", map[string]string{"name": playerName(g.players, playerIdx), "suit": germanSoloSuitName(g.calledAceSuit)}, nil)
+	g.appendLog(playerIdx, "partner_revealed", "germansolo.log.partnerRevealed", map[string]string{"name": playerName(g.players, playerIdx), "suitKey": suitKeyOf(g.calledAceSuit)}, nil)
 }
 
 // ResolveTrick トリックを解決して勝者を決定する。最終トリックなら RoundEnd に入り、得点計算を発火する。
@@ -1319,22 +1319,6 @@ func germanSoloBidName(bid GermanSoloBid) string {
 		return "tout"
 	default:
 		return "pass"
-	}
-}
-
-// germanSoloSuitName スートの表示名を返す。
-func germanSoloSuitName(suit int) string {
-	switch suit {
-	case CardDesignSpade:
-		return "spades"
-	case CardDesignClover:
-		return "clubs"
-	case CardDesignHeart:
-		return "hearts"
-	case CardDesignDiamond:
-		return "diamonds"
-	default:
-		return "-"
 	}
 }
 

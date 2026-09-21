@@ -33,14 +33,6 @@ func TestTTJInternal_IsValidSuit(t *testing.T) {
 	assert.False(t, isValidTwoTenJackSuit(99))
 }
 
-func TestTTJInternal_SuitName(t *testing.T) {
-	assert.Equal(t, "Spade", twoTenJackSuitName(CardDesignSpade))
-	assert.Equal(t, "Heart", twoTenJackSuitName(CardDesignHeart))
-	assert.Equal(t, "Diamond", twoTenJackSuitName(CardDesignDiamond))
-	assert.Equal(t, "Club", twoTenJackSuitName(CardDesignClover))
-	assert.Equal(t, "?", twoTenJackSuitName(99))
-}
-
 func TestTTJInternal_CpuTrumpNormal_ChoosesMost(t *testing.T) {
 	ttj := newInternalTTJ()
 	p := ttj.players[1]

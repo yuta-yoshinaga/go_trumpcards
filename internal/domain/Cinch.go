@@ -489,7 +489,7 @@ func (g *Cinch) applyNameTrump(suit int) error {
 		return NewDomainErrorCode(ErrInvalidPlay, "cinch.errTrumpSuitRange", nil)
 	}
 	g.trumpSuit = suit
-	g.appendLog(g.bidWinnerIdx, "trump_set", "cinch.log.trumpSet", map[string]string{"suit": suitName(suit)}, nil)
+	g.appendLog(g.bidWinnerIdx, "trump_set", "cinch.log.trumpSet", map[string]string{"suitKey": suitKeyOf(suit)}, nil)
 	g.startPlayPhase()
 	return nil
 }

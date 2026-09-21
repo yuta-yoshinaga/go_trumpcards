@@ -204,7 +204,7 @@ func (g *CrazyEights) PlayerChooseSuit(suit int) error {
 	}
 
 	g.chosenSuit = suit
-	g.appendLog(g.currentPlayerIdx, "choose_suit", "crazyeights.log.chooseSuit", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "suit": suitName(suit)}, nil)
+	g.appendLog(g.currentPlayerIdx, "choose_suit", "crazyeights.log.chooseSuit", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "suitKey": suitKeyOf(suit)}, nil)
 
 	g.advanceTurn()
 	return nil
@@ -262,7 +262,7 @@ func (g *CrazyEights) CpuChooseSuit() {
 
 	suit := g.cpuSelectSuit(g.currentPlayerIdx)
 	g.chosenSuit = suit
-	g.appendLog(g.currentPlayerIdx, "choose_suit", "crazyeights.log.chooseSuit", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "suit": suitName(suit)}, nil)
+	g.appendLog(g.currentPlayerIdx, "choose_suit", "crazyeights.log.chooseSuit", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "suitKey": suitKeyOf(suit)}, nil)
 	g.advanceTurn()
 }
 

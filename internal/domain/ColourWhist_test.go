@@ -390,8 +390,6 @@ func TestColourWhistGiveUpAndAccessors(t *testing.T) {
 	assert.False(t, g.HasPassed(99))
 	assert.Zero(t, colourWhistRank(nil))
 	assert.Equal(t, 14, colourWhistRank(NewCard(CardDesignSpade, 1, false)), "エースが最強")
-	assert.Equal(t, "spade", colourWhistSuitName(CardDesignSpade))
-	assert.Equal(t, "notrump", colourWhistSuitName(ColourWhistNoTrump))
 }
 
 func TestColourWhistCallRejectsBadSuit(t *testing.T) {

@@ -230,7 +230,7 @@ func (g *Macau) PlayerChooseSuit(suit int) error {
 	}
 
 	g.chosenSuit = suit
-	g.appendLog(g.currentPlayerIdx, "choose_suit", "macau.log.chooseSuit", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "suit": suitName(suit)}, nil)
+	g.appendLog(g.currentPlayerIdx, "choose_suit", "macau.log.chooseSuit", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "suitKey": suitKeyOf(suit)}, nil)
 
 	g.finishTurn(g.currentPlayerIdx)
 	return nil
@@ -318,7 +318,7 @@ func (g *Macau) CpuChooseSuit() {
 
 	suit := g.cpuSelectSuit(g.currentPlayerIdx)
 	g.chosenSuit = suit
-	g.appendLog(g.currentPlayerIdx, "choose_suit", "macau.log.chooseSuit", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "suit": suitName(suit)}, nil)
+	g.appendLog(g.currentPlayerIdx, "choose_suit", "macau.log.chooseSuit", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "suitKey": suitKeyOf(suit)}, nil)
 	g.finishTurn(g.currentPlayerIdx)
 }
 

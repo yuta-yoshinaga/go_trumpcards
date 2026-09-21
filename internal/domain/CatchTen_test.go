@@ -502,7 +502,7 @@ func TestCatchTen_GetActionLog(t *testing.T) {
 		}
 	}
 	require.NotNil(t, found)
-	assert.NotEmpty(t, found.DetailParams["suit"])
+	assert.NotEmpty(t, found.DetailParams["suitKey"])
 }
 
 func TestCatchTen_DealerAndPlayerCntAccessors(t *testing.T) {

@@ -339,7 +339,7 @@ func (g *ColourWhist) call(idx, trumpSuit int) error {
 		return fmt.Errorf("切り札のスートが範囲外です: %d", trumpSuit)
 	}
 	g.trumpSuit = trumpSuit
-	g.addLog(idx, "trump", "colourwhist.log.trump", map[string]string{"suit": colourWhistSuitName(trumpSuit)}, nil)
+	g.addLog(idx, "trump", "colourwhist.log.trump", map[string]string{"suitKey": suitKeyOf(trumpSuit)}, nil)
 
 	// **Troel の相方は配りで決まっているので指名しません。**
 	if g.contract == ColourWhistContractSamen {
@@ -721,22 +721,6 @@ func (g *ColourWhist) cpuChooseCard(idx int) int {
 		return pickLowest(p, valid, colourWhistRank)
 	}
 	return pickHighest(p, valid, colourWhistRank)
-}
-
-// colourWhistSuitName はスート名を返す。
-func colourWhistSuitName(suit int) string {
-	switch suit {
-	case CardDesignSpade:
-		return "spade"
-	case CardDesignClover:
-		return "clover"
-	case CardDesignHeart:
-		return "heart"
-	case CardDesignDiamond:
-		return "diamond"
-	default:
-		return "notrump"
-	}
 }
 
 // GetHint は人間への助言を返す。

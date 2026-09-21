@@ -418,7 +418,7 @@ func (g *CatchTen) dealAndSetTrump() {
 		g.trumpSuit = CardDesignSpade
 	}
 
-	g.appendLog(-1, "trump", "catchten.log.trump", map[string]string{"suit": suitName(g.trumpSuit)}, nil)
+	g.appendLog(-1, "trump", "catchten.log.trump", map[string]string{"suitKey": suitKeyOf(g.trumpSuit)}, nil)
 }
 
 // startPlayPhase プレイフェーズ開始: ディーラーの左隣がリード

@@ -400,7 +400,7 @@ func (g *BidWhist) CpuDeclareTrump() {
 func (g *BidWhist) applyTrumpDeclaration(suit int) {
 	g.trumpSuit = suit
 	g.appendLog(g.declarerIdx, "trump",
-		"bidwhist.log.declaresTrump", map[string]string{"name": g.playerName(g.declarerIdx), "suit": suitName(suit)}, nil)
+		"bidwhist.log.declaresTrump", map[string]string{"name": g.playerName(g.declarerIdx), "suitKey": suitKeyOf(suit)}, nil)
 	g.sortAllHands()
 	g.phase = BidWhistPhaseKittyExchange
 }

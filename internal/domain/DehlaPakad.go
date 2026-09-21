@@ -224,7 +224,7 @@ func (d *DehlaPakad) applySelectTrump(suit int) error {
 		dehlaPakadSortHand(p, d.trumpSuit)
 	}
 	d.phase = DehlaPakadPhasePlay
-	d.appendLog(d.GetTrumpChooserIdx(), "trump", "dehlapakad.log.trump", map[string]string{"player": strconv.Itoa(d.GetTrumpChooserIdx()), "suit": DehlaPakadSuitName(suit)}, nil)
+	d.appendLog(d.GetTrumpChooserIdx(), "trump", "dehlapakad.log.trump", map[string]string{"player": strconv.Itoa(d.GetTrumpChooserIdx()), "suitKey": suitKeyOf(suit)}, nil)
 	return nil
 }
 

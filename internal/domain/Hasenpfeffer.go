@@ -492,7 +492,7 @@ func (h *Hasenpfeffer) discardBy(playerIdx, cardIndex, suit int) error {
 	h.leadPlayerIdx = (h.dealerIdx + 1) % HasenpfefferPlayerCnt
 	h.currentPlayerIdx = h.leadPlayerIdx
 	h.sortAllHands()
-	h.addLog(playerIdx, "trump", "hasenpfeffer.log.trump", map[string]string{"suit": suitStr(suit), "card": cardStr(discarded)}, nil)
+	h.addLog(playerIdx, "trump", "hasenpfeffer.log.trump", map[string]string{"suitKey": suitKeyOf(suit), "card": cardStr(discarded)}, nil)
 	return nil
 }
 

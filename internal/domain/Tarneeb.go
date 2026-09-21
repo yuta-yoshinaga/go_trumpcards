@@ -280,7 +280,7 @@ func (t *Tarneeb) CpuDeclareTrump() {
 // applyTrumpDeclaration トランプスートを設定し、プレイフェーズへ遷移する。
 func (t *Tarneeb) applyTrumpDeclaration(suit int) {
 	t.trumpSuit = suit
-	t.appendLogCode(t.bidWinnerIdx, "trump", "tarneeb.log.trump", map[string]string{"name": playerName(t.players, t.bidWinnerIdx), "suit": suitName(suit)}, nil)
+	t.appendLogCode(t.bidWinnerIdx, "trump", "tarneeb.log.trump", map[string]string{"name": playerName(t.players, t.bidWinnerIdx), "suitKey": suitKeyOf(suit)}, nil)
 	t.leadPlayerIdx = t.bidWinnerIdx
 	t.currentPlayerIdx = t.bidWinnerIdx
 	t.trickNumber = 1
