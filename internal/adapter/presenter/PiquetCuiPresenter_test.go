@@ -101,7 +101,7 @@ func TestPiquetCuiPresenter_Output_TrickWinner(t *testing.T) {
 
 	i18n.SetLang("ja")
 	out := (&PiquetCuiPresenter{}).Output(g2, nil)
-	if !strings.Contains(out, "Elder (あなた) が直前のトリック (") {
+	if !strings.Contains(out, "エルダー (あなた) が直前のトリック (") {
 		t.Errorf("expected Japanese trick winner text, got: %s", out)
 	}
 }
@@ -218,7 +218,7 @@ func TestPiquetCuiPresenter_DeclResultsRendering(t *testing.T) {
 	}
 	p := &PiquetCuiPresenter{}
 	out := p.Output(g2, nil)
-	if !strings.Contains(out, "Point") && !strings.Contains(out, "Sequence") && !strings.Contains(out, "Set") {
+	if !strings.Contains(out, "ポイント") && !strings.Contains(out, "シークエンス") && !strings.Contains(out, "セット") {
 		t.Errorf("expected at least one declaration label, got: %s", out)
 	}
 }
@@ -279,15 +279,15 @@ func TestPiquetCuiPresenter_PlayerNames_ElderAndYounger(t *testing.T) {
 			name:        "ja: human Elder, CPU Younger",
 			lang:        "ja",
 			humanElder:  true,
-			wantElder:   "Elder (あなた)",
-			wantYounger: "Younger (CPU 1)",
+			wantElder:   "エルダー (あなた)",
+			wantYounger: "ヤンガー (CPU 1)",
 		},
 		{
 			name:        "ja: CPU Elder, human Younger",
 			lang:        "ja",
 			humanElder:  false,
-			wantElder:   "Elder (CPU 0)",
-			wantYounger: "Younger (あなた)",
+			wantElder:   "エルダー (CPU 0)",
+			wantYounger: "ヤンガー (あなた)",
 		},
 		{
 			name:        "en: human Elder, CPU Younger",

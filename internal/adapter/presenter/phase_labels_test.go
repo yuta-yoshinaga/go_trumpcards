@@ -317,3 +317,47 @@ func TestHintTranslationsUseTheSelectedLanguage(t *testing.T) {
 		assert.NotContains(t, value, "ヒント", key)
 	}
 }
+
+func TestJapaneseRemainingLocaleLabels(t *testing.T) {
+	t.Cleanup(func() { i18n.SetLang("ja") })
+
+	expected := map[string]string{
+		"blackjack.suggestHit": "ヒット", "blackjack.suggestStand": "スタンド",
+		"blackjack.suggestSplit": "スプリット", "blackjack.suggestSurrender": "サレンダー",
+		"blackjack.suggestDouble": "ダブル", "blackjack.suggestDeclineInsurance": "インシュランスを断る",
+		"baccarat.betTypePlayer": "プレイヤー", "baccarat.betTypeBanker": "バンカー",
+		"baccarat.betTypeTie": "タイ", "baccarat.betTypeUnknown": "不明",
+		"andarbahar.bandUnknown": "不明", "dragontiger.betTypeTie": "引き分け",
+		"dragontiger.betTypeUnknown": "不明", "chinesepoker.rankUnknown": "不明",
+		"paigow.rankUnknown": "不明", "cuiPlayerUnknown": "不明",
+		"nertz.foundationEmpty": "(空)", "nertz.nertzEmpty": "  ナッツ: (空)",
+		"nertz.tableauEmpty": "(空)", "nertz.wasteEmpty": "  ウェイスト: (空)  ストック: {{stock}}枚",
+		"spiteandmalice.foundationEmpty": "(空)", "spiteandmalice.goalEmpty": "ゴール: (空)",
+		"spiteandmalice.humanHandEmpty": "(空)", "spiteandmalice.sideEmpty": "(空)",
+		"blackjack.countingHiLo": "ハイロー", "realtime.keySpace": "スペース",
+		"dragontiger.betTypeDragon": "ドラゴン", "dragontiger.betTypeTiger": "タイガー",
+		"letitride.betStatusRide": "ライド", "letitride.betStatusPull": "プル",
+		"piquet.roleElder": "エルダー", "piquet.roleYounger": "ヤンガー",
+		"piquet.declKindPoint": "ポイント", "piquet.declKindSequence": "シークエンス", "piquet.declKindSet": "セット",
+		"put.levelPut": "プット", "slapjack.difficultyEasy": "イージー",
+		"slapjack.difficultyNormal": "ノーマル", "slapjack.difficultyHard": "ハード",
+		"truco.levelTruco": "トルーコ", "truco.levelRetruco": "レトルーコ", "truco.levelValeCuatro": "バレ・クアトロ",
+		"klondike.scoringVegas": "ベガス", "whitehead.scoringVegas": "ベガス",
+		"clocksolitaire.actionLogTitle": "クロックソリティア行動ログ", "shithead.playerTurnSuffix": " ← 手番",
+	}
+
+	oldEnglish := []string{"HIT", "STAND", "SPLIT", "SURRENDER", "PLAYER", "BANKER", "TIE", "UNKNOWN", "(empty)"}
+	i18n.SetLang("ja")
+	for key, want := range expected {
+		got := i18n.T(key)
+		assert.Equal(t, want, got, key)
+		for _, english := range oldEnglish {
+			assert.NotContains(t, got, english, key+" contains "+english)
+		}
+	}
+
+	i18n.SetLang("en")
+	for key, japanese := range expected {
+		assert.NotContains(t, i18n.T(key), japanese, key+" contains Japanese translation")
+	}
+}

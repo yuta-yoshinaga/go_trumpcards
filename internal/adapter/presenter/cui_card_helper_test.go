@@ -136,7 +136,7 @@ func TestCuiPlayerName(t *testing.T) {
 		idx      int
 		expected string
 	}{
-		{"nil player", nil, 0, "UNKNOWN"},
+		{"nil player", nil, 0, "不明"},
 		{"human player", &mockCuiPlayer{isHuman: true}, 0, "あなた"},
 		{"cpu player idx 1", &mockCuiPlayer{isHuman: false}, 1, "CPU 1"},
 		{"cpu player idx 3", &mockCuiPlayer{isHuman: false}, 3, "CPU 3"},
@@ -544,7 +544,7 @@ func TestCuiPlayerNameColor(t *testing.T) {
 
 	// nil player should not be colored
 	got = cuiPlayerName[*mockCuiPlayer](nil, 0)
-	assert.Equal(t, "UNKNOWN", got)
+	assert.Equal(t, "不明", got)
 }
 
 // 共有ヘルパの境界。**空を返す条件を取り違えると、空行だけが出る。**

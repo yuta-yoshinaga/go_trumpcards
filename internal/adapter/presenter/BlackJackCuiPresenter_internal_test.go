@@ -14,13 +14,13 @@ func TestBlackJackCuiPresenter_suggestionStr(t *testing.T) {
 		action domain.BJSuggestedAction
 		want   string
 	}{
-		{domain.BJSuggestHit, "HIT"},
-		{domain.BJSuggestStand, "STAND"},
-		{domain.BJSuggestDouble, "DOUBLE"},
-		{domain.BJSuggestDoubleStand, "DOUBLE"},
-		{domain.BJSuggestSplit, "SPLIT"},
-		{domain.BJSuggestSurrender, "SURRENDER"},
-		{domain.BJSuggestDeclineInsurance, "DECLINE INSURANCE"},
+		{domain.BJSuggestHit, "ヒット"},
+		{domain.BJSuggestStand, "スタンド"},
+		{domain.BJSuggestDouble, "ダブル"},
+		{domain.BJSuggestDoubleStand, "ダブル"},
+		{domain.BJSuggestSplit, "スプリット"},
+		{domain.BJSuggestSurrender, "サレンダー"},
+		{domain.BJSuggestDeclineInsurance, "インシュランスを断る"},
 		{domain.BJSuggestNone, ""},
 	}
 	for _, tc := range cases {

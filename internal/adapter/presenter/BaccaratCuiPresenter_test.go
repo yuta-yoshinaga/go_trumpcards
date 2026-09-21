@@ -293,7 +293,7 @@ func TestBaccaratCuiPresenter_Output_EndPhase_Tie(t *testing.T) {
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "タイ")
-	assert.Contains(t, result, "TIE")
+	assert.Contains(t, result, "タイ")
 }
 
 func TestBaccaratCuiPresenter_Output_Error(t *testing.T) {
@@ -373,7 +373,7 @@ func TestBaccaratCuiPresenter_Output_UnknownBetType(t *testing.T) {
 	m.On("GetSideBetResults").Return(([]*domain.BacSideBetResult)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "UNKNOWN")
+	assert.Contains(t, result, "不明")
 }
 
 func TestBaccaratCuiPresenter_ActionLogOutput(t *testing.T) {

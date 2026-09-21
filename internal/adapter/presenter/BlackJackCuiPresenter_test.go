@@ -438,7 +438,7 @@ func TestBlackJackCuiPresenter_SurrenderAndHint(t *testing.T) {
 		bj.SetPhase(domain.BJPhaseAction)
 		output := bjp.Output(bj, nil)
 		// hard 16 vs 10 → surrender
-		assert.Contains(t, output, "[ヒント: SURRENDER]")
+		assert.Contains(t, output, "[ヒント: サレンダー]")
 	})
 
 	t.Run("hint enabled INSURANCE phase shows decline insurance", func(t *testing.T) {
@@ -451,7 +451,7 @@ func TestBlackJackCuiPresenter_SurrenderAndHint(t *testing.T) {
 		bj.GetDealer().AddCard(domain.NewCard(domain.CardDesignClover, 1, false))
 		bj.SetPhase(domain.BJPhaseInsurance)
 		output := bjp.Output(bj, nil)
-		assert.Contains(t, output, "[ヒント: DECLINE INSURANCE]")
+		assert.Contains(t, output, "[ヒント: インシュランスを断る]")
 	})
 
 	t.Run("hint enabled but no suggestion (bet phase): no hint line", func(t *testing.T) {
@@ -502,7 +502,7 @@ func TestBlackJackCuiPresenter_CountingDisplay(t *testing.T) {
 		_ = bj.SetConfig(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: true, CountingSystem: domain.BJCountingHiLo})
 		bj.Reset()
 		output := bjp.Output(bj, nil)
-		assert.Contains(t, output, "カウント (Hi-Lo): RC=")
+		assert.Contains(t, output, "カウント (ハイロー): RC=")
 		assert.Contains(t, output, "TC=")
 		assert.NotContains(t, output, "TC=N/A")
 	})

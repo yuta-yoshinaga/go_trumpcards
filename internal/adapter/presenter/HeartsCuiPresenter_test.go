@@ -318,7 +318,7 @@ func TestHeartsCuiPresenter_Output(t *testing.T) {
 		m.On("GetPlayer", 99).Return((*domain.HeartsPlayer)(nil))
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "UNKNOWN")
+		assert.Contains(t, result, "不明")
 	})
 }
 

@@ -9,7 +9,7 @@
   "stakeLine": "賭け点: {{stake}} ({{level}})",
   "playerLine": "{{name}}: 獲得{{tricks}}トリック {{cards}}枚",
   "levelNone": "通常",
-  "levelPut": "Put",
+  "levelPut": "プット",
   "promptCurrentPlayer": "手番: {{name}}",
   "promptPlay": "play <idx>・・・カードを出す",
   "promptCanPut": "put・・・賭け点を倍にする",
