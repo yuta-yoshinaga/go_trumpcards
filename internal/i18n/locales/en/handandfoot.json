@@ -17,6 +17,8 @@
   "teamRed3s": " red 3s: {{count}}",
   "meldTypeBlack": "dirty",
   "meldTypeRed": "clean",
+  "meldTypeNatural": "natural",
+  "meldTypeMixed": "mixed",
   "meldTypeCanastaSuffix": " canasta",
   "meldLine": "  meld [{{type}}]: {{cards}}",
   "playerLine": "{{name}}(T{{team}}): cumulative {{cum}} round {{round}} hand {{cards}} foot {{foot}}",

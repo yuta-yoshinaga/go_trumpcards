@@ -6987,5 +6987,21 @@
   "colourwhist.contractShort.alleen": "アレーン",
   "colourwhist.contractShort.miserie": "ミゼリー",
   "colourwhist.contractShort.troel": "トルール",
-  "colourwhist.contractShort.none": "未定"
+  "colourwhist.contractShort.none": "未定",
+  "bolivia.meldTypeSequence": "シーケンス",
+  "bolivia.meldTypeSet": "セット",
+  "bolivia.meldTypeNatural": "ナチュラル",
+  "bolivia.meldTypeMixed": "ミックス",
+  "samba.meldTypeSequence": "シーケンス",
+  "samba.meldTypeSet": "セット",
+  "samba.meldTypeNatural": "ナチュラル",
+  "samba.meldTypeMixed": "ミックス",
+  "canasta.meldTypeNatural": "ナチュラル",
+  "canasta.meldTypeMixed": "ミックス",
+  "handandfoot.meldTypeNatural": "ナチュラル",
+  "handandfoot.meldTypeMixed": "ミックス",
+  "baccarat.sidePlayer": "プレイヤー",
+  "baccarat.sideBanker": "バンカー",
+  "baccarat.sideTie": "タイ",
+  "baccarat.sideUnknown": "不明"
 }

@@ -26,6 +26,7 @@
   "meldTypeMixed": "mixed",
   "meldTypeNatural": "natural",
   "meldTypeSequence": "sequence",
+  "meldTypeSet": "set",
   "meldTypeWild": "wild",
   "meldTypeCanastaSuffix": " canasta",
   "meldTypeEscaleraSuffix": " = escalera",

@@ -583,7 +583,7 @@ func (g *HandAndFoot) PlayerMeld(meldGroups [][]int) error {
 
 	for _, m := range g.teamMelds[team] {
 		if m.IsCanasta() {
-			g.appendLog(g.currentPlayerIdx, "canasta", "handandfoot.log.canasta", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "type": canastaTypeStr(m.IsNatural)}, nil)
+			g.appendLog(g.currentPlayerIdx, "canasta", "handandfoot.log.canasta", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "typeKey": handAndFootCanastaTypeKey(m.IsNatural)}, nil)
 		}
 	}
 
@@ -1326,6 +1326,14 @@ func (g *HandAndFoot) SetTeamRed3s(team int, red3s []*Card) {
 // IsHumanTurn 現在の手番が人間かどうか
 func (g *HandAndFoot) IsHumanTurn() bool {
 	return isHumanTurn(g.players, g.currentPlayerIdx)
+}
+
+// handAndFootCanastaTypeKey はカナスタの種別 i18n キーを返す。
+func handAndFootCanastaTypeKey(isNatural bool) string {
+	if isNatural {
+		return "handandfoot.meldTypeNatural"
+	}
+	return "handandfoot.meldTypeMixed"
 }
 
 // GetConfig 設定取得

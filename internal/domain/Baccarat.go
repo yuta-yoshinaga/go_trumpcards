@@ -136,7 +136,7 @@ func (b *Baccarat) Bet(amount, betType, ppBet, bpBet int) error {
 	b.betType = betType
 	b.playerPairBet = ppBet
 	b.bankerPairBet = bpBet
-	b.appendLog(0, "bet", "baccarat.log.bet", map[string]string{"amount": strconv.Itoa(amount), "type": betTypeName(betType)}, nil)
+	b.appendLog(0, "bet", "baccarat.log.bet", map[string]string{"amount": strconv.Itoa(amount), "typeKey": betTypeKey(betType)}, nil)
 
 	// ディール
 	b.deal()
@@ -302,17 +302,17 @@ func (b *Baccarat) shouldBankerDraw(bankerTotal, playerThirdCardValue int, playe
 	}
 }
 
-// betTypeName ベットタイプ名
-func betTypeName(betType int) string {
+// betTypeKey はベットタイプの i18n キーを返す。
+func betTypeKey(betType int) string {
 	switch betType {
 	case BaccaratBetPlayer:
-		return "player"
+		return "baccarat.sidePlayer"
 	case BaccaratBetBanker:
-		return "banker"
+		return "baccarat.sideBanker"
 	case BaccaratBetTie:
-		return "tie"
+		return "baccarat.sideTie"
 	default:
-		return "unknown"
+		return "baccarat.sideUnknown"
 	}
 }
 
