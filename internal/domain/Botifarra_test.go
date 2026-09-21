@@ -429,7 +429,6 @@ func TestBotifarraAccessorsRejectOutOfRange(t *testing.T) {
 	assert.Zero(t, g.GetScore(9))
 	assert.Nil(t, g.GetValidPlayIndices(-1))
 	assert.Nil(t, g.GetValidPlayIndices(99))
-
 }
 
 func TestBotifarraHint(t *testing.T) {
