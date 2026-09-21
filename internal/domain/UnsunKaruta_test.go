@@ -24,7 +24,7 @@ func TestUnsunKaruta_ActionLogUsesDetailCode(t *testing.T) {
 	entry := log[0]
 	assert.Equal(t, "unsunkaruta.log.deal", entry.DetailCode)
 	assert.Equal(t, "1", entry.DetailParams["round"])
-	assert.NotEmpty(t, entry.DetailParams["suit"])
+	assert.Equal(t, "unsunkaruta.suit."+UnsunKarutaSuitName(g.trumpSuit), entry.DetailParams["suitKey"])
 }
 
 // unsunPlayDeal は 1 ディールを最後まで打つ。合法手の先頭を出し続ける。

@@ -333,7 +333,7 @@ func (g *Troggu) applyBid(idx int, bid TrogguBid) {
 	g.highestBid = bid
 	g.highestBidder = idx
 	g.bidActedCnt++
-	g.appendLog(idx, "bid", "troggu.log.bid", map[string]string{"name": g.playerName(idx), "bid": TrogguBidName(bid)}, nil)
+	g.appendLog(idx, "bid", "troggu.log.bid", map[string]string{"name": g.playerName(idx), "bidKey": trogguContractShortKey(bid)}, nil)
 	g.advanceBid()
 }
 
@@ -379,7 +379,7 @@ func (g *Troggu) finalizeBid() {
 	}
 	g.declarerIdx = g.highestBidder
 	g.contract = g.highestBid
-	g.appendLog(g.declarerIdx, "contract", "troggu.log.contract", map[string]string{"name": g.playerName(g.declarerIdx), "contract": TrogguBidName(g.contract)}, nil)
+	g.appendLog(g.declarerIdx, "contract", "troggu.log.contract", map[string]string{"name": g.playerName(g.declarerIdx), "contractKey": trogguContractShortKey(g.contract)}, nil)
 	g.startPlay()
 }
 
@@ -642,7 +642,7 @@ func (g *Troggu) finishRound() {
 		g.playerScores[i] += delta
 	}
 	g.phase = TrogguPhaseRoundEnd
-	g.appendLog(-1, "score", "troggu.log.score", map[string]string{"round": fmt.Sprint(g.roundNumber), "contract": TrogguBidName(g.contract)}, nil)
+	g.appendLog(-1, "score", "troggu.log.score", map[string]string{"round": fmt.Sprint(g.roundNumber), "contractKey": trogguContractShortKey(g.contract)}, nil)
 	if g.roundNumber >= g.config.TargetDeals {
 		g.finishGame()
 	}
@@ -841,6 +841,27 @@ func TrogguBidName(bid TrogguBid) string {
 		return "misere"
 	default:
 		return "pass"
+	}
+}
+
+// trogguContractShortKey は棋譜用の契約名キーを返す。共有の
+// troggu.contract.* は solo が {{target}} を含み、棋譜側からは埋められない
+// ため、プレースホルダのない別系統を引く。
+//
+// **キーは連結せず完全なリテラルで返す。** check-action-log-params は
+// <game>.log.<...> の形のリテラルを棋譜コードとして拾うため。
+func trogguContractShortKey(bid TrogguBid) string {
+	switch TrogguBidName(bid) {
+	case "trois":
+		return "troggu.contractShort.trois"
+	case "solo":
+		return "troggu.contractShort.solo"
+	case "piccolo":
+		return "troggu.contractShort.piccolo"
+	case "misere":
+		return "troggu.contractShort.misere"
+	default:
+		return "troggu.contractShort.pass"
 	}
 }
 

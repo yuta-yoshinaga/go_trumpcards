@@ -51,5 +51,10 @@
   "log.play": "{{name}} plays {{card}}",
   "log.trick": "{{name}} takes trick {{trick}}",
   "log.score": "deal {{round}} scored ({{contract}})",
-  "log.matchOver": "match over"
+  "log.matchOver": "match over",
+  "contractShort.pass": "Pass",
+  "contractShort.trois": "Trois",
+  "contractShort.solo": "Solo",
+  "contractShort.piccolo": "Piccolo",
+  "contractShort.misere": "Misere"
 }

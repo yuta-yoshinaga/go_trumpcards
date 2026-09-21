@@ -20,6 +20,7 @@
   "pool.sequence": "Sequence",
   "pool.pocher": "Pocher",
   "pool.centre": "Centre",
+  "pool.unknown": "-",
   "promptStaking": "settling the pools",
   "promptPochen": "b to bet (currently {{target}}) / f to fold",
   "yourCombo": "Your set: {{size}} of a kind, rank {{rank}}",

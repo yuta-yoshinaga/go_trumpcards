@@ -51,5 +51,10 @@
   "log.play": "{{name}}が{{card}}をプレイしました",
   "log.trick": "{{name}}が{{trick}}トリックを取りました",
   "log.score": "{{round}}ディールの得点 ({{contract}})",
-  "log.matchOver": "マッチ終了"
+  "log.matchOver": "マッチ終了",
+  "contractShort.pass": "パス",
+  "contractShort.trois": "トロワ",
+  "contractShort.solo": "ソロ",
+  "contractShort.piccolo": "ピッコロ",
+  "contractShort.misere": "ミゼール"
 }

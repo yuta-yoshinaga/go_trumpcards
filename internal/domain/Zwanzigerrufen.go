@@ -360,7 +360,7 @@ func (g *Zwanzigerrufen) applyBid(idx int, bid ZwanzigerrufenBid) {
 	g.highestBid = bid
 	g.highestBidder = idx
 	g.bidActedCnt++
-	g.appendLog(idx, "bid", "zwanzigerrufen.log.bid", map[string]string{"name": g.playerName(idx), "bid": ZwanzigerrufenBidName(bid)}, nil)
+	g.appendLog(idx, "bid", "zwanzigerrufen.log.bid", map[string]string{"name": g.playerName(idx), "bidKey": "zwanzigerrufen.contract." + ZwanzigerrufenBidName(bid)}, nil)
 	g.advanceBid()
 }
 
@@ -873,7 +873,7 @@ func (g *Zwanzigerrufen) finishRound() {
 	}
 	g.phase = ZwanzigerrufenPhaseRoundEnd
 	g.appendLog(-1, "score",
-		"zwanzigerrufen.log.dealScored", map[string]string{"deal": strconv.Itoa(g.roundNumber), "contract": ZwanzigerrufenBidName(g.contract)}, nil)
+		"zwanzigerrufen.log.dealScored", map[string]string{"deal": strconv.Itoa(g.roundNumber), "contractKey": "zwanzigerrufen.contract." + ZwanzigerrufenBidName(g.contract)}, nil)
 	if g.roundNumber >= g.config.TargetDeals {
 		g.finishGame()
 	}

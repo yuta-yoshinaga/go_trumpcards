@@ -290,7 +290,7 @@ func (p *Poch) award(pool PochPool, seat int) {
 	}
 	p.players[seat].AddChips(n)
 	p.stakingAwards = append(p.stakingAwards, &PochStakingAward{Pool: pool, Player: seat, Chips: n})
-	p.addLog(seat, "staking", "poch.log.staking", map[string]string{"pool": pool.String(), "amount": strconv.Itoa(n)}, nil)
+	p.addLog(seat, "staking", "poch.log.staking", map[string]string{"poolKey": "poch.pool." + pool.String(), "amount": strconv.Itoa(n)}, nil)
 }
 
 // holderOf は pay suit の rank を持つ席を返す (-1: 誰も持っていない)。
