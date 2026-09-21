@@ -7003,5 +7003,18 @@
   "baccarat.sidePlayer": "プレイヤー",
   "baccarat.sideBanker": "バンカー",
   "baccarat.sideTie": "タイ",
-  "baccarat.sideUnknown": "不明"
+  "baccarat.sideUnknown": "不明",
+  "andarbahar.columnAndar": "アンダー",
+  "andarbahar.columnBahar": "バハール",
+  "andarbahar.columnUnknown": "不明",
+  "mus.roundGrande": "グランデ",
+  "mus.roundChica": "チカ",
+  "mus.roundPares": "パレス",
+  "mus.roundJuego": "フエゴ",
+  "mus.roundUnknown": "不明",
+  "vira.bidShort.pass": "パス",
+  "vira.bidShort.gask": "ガスク",
+  "vira.bidShort.solo": "ソロ",
+  "vira.bidShort.misere": "ミゼール",
+  "vira.bidShort.vira": "ヴィーラ"
 }

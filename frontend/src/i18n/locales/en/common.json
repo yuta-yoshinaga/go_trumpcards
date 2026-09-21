@@ -7003,5 +7003,18 @@
   "baccarat.sidePlayer": "Player",
   "baccarat.sideBanker": "Banker",
   "baccarat.sideTie": "Tie",
-  "baccarat.sideUnknown": "Unknown"
+  "baccarat.sideUnknown": "Unknown",
+  "andarbahar.columnAndar": "Andar",
+  "andarbahar.columnBahar": "Bahar",
+  "andarbahar.columnUnknown": "Unknown",
+  "mus.roundGrande": "Grande",
+  "mus.roundChica": "Chica",
+  "mus.roundPares": "Pares",
+  "mus.roundJuego": "Juego",
+  "mus.roundUnknown": "Unknown",
+  "vira.bidShort.pass": "Pass",
+  "vira.bidShort.gask": "Gask",
+  "vira.bidShort.solo": "Solo",
+  "vira.bidShort.misere": "Misère",
+  "vira.bidShort.vira": "Vira"
 }

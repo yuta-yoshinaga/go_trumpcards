@@ -732,3 +732,41 @@ func TestActionLogToText_RendersCompositeGameLabelsInBothLanguages(t *testing.T)
 		}
 	}
 }
+
+func TestActionLogToText_RendersAndarBaharMusAndViraLabelsInBothLanguages(t *testing.T) {
+	entries := []*domain.ActionLogEntry{
+		{DetailCode: "andarbahar.log.joker", DetailParams: map[string]string{"columnKey": "andarbahar.columnAndar"}},
+		{DetailCode: "andarbahar.log.bet", DetailParams: map[string]string{"columnKey": "andarbahar.columnBahar", "amount": "100"}},
+		{DetailCode: "andarbahar.log.match", DetailParams: map[string]string{"columnKey": "andarbahar.columnUnknown", "count": "3"}},
+		{DetailCode: "mus.log.showdown", DetailParams: map[string]string{"roundKey": "mus.roundGrande", "team": "A", "stake": "1"}},
+		{DetailCode: "mus.log.showdown", DetailParams: map[string]string{"roundKey": "mus.roundChica", "team": "A", "stake": "1"}},
+		{DetailCode: "mus.log.showdown", DetailParams: map[string]string{"roundKey": "mus.roundPares", "team": "A", "stake": "1"}},
+		{DetailCode: "mus.log.showdown", DetailParams: map[string]string{"roundKey": "mus.roundJuego", "team": "A", "stake": "1"}},
+		{DetailCode: "mus.log.showdown", DetailParams: map[string]string{"roundKey": "mus.roundUnknown", "team": "A", "stake": "1"}},
+		{DetailCode: "vira.log.bid", DetailParams: map[string]string{"bidKey": "vira.bidShort.pass"}},
+		{DetailCode: "vira.log.bid", DetailParams: map[string]string{"bidKey": "vira.bidShort.gask"}},
+		{DetailCode: "vira.log.declare", DetailParams: map[string]string{"bidKey": "vira.bidShort.solo", "trumpKey": "common.suit.spade"}},
+		{DetailCode: "vira.log.declare", DetailParams: map[string]string{"bidKey": "vira.bidShort.misere", "trumpKey": "common.suit.spade"}},
+		{DetailCode: "vira.log.settle", DetailParams: map[string]string{"bidKey": "vira.bidShort.vira", "outcomeKey": "vira.log.outcome.made", "tricks": "10", "pot": "10"}},
+	}
+
+	t.Cleanup(func() { i18n.SetLang("ja") })
+
+	i18n.SetLang("ja")
+	ja := actionLogToText(entries)
+	for _, text := range []string{"アンダー", "バハール", "グランデ", "チカ", "パレス", "フエゴ", "ガスク", "ソロ", "ミゼール", "ヴィーラ"} {
+		assert.Contains(t, ja, text)
+	}
+	for _, text := range []string{"andar", "bahar", "Grande", "Chica", "Pares", "Juego", "Gask", "Solo", "Misère", "Vira", "vira.bidShort.gask", "{{", "(7 トリック)", "(8 トリック)", "(10 トリック)"} {
+		assert.NotContains(t, ja, text)
+	}
+
+	i18n.SetLang("en")
+	en := actionLogToText(entries)
+	for _, text := range []string{"Andar", "Bahar", "Grande", "Chica", "Pares", "Juego", "Gask", "Solo", "Misère", "Vira", "Team A"} {
+		assert.Contains(t, en, text)
+	}
+	for _, text := range []string{"アンダー", "バハール", "グランデ", "チカ", "パレス", "フエゴ", "ガスク", "ソロ", "ミゼール", "ヴィーラ", "vira.bidShort.gask", "{{", "(7 トリック)", "(8 トリック)", "(10 トリック)"} {
+		assert.NotContains(t, en, text)
+	}
+}

@@ -376,8 +376,8 @@ func TestAndarBaharGetters(t *testing.T) {
 	ab.SetPhase(AndarBaharPhaseBet)
 	assert.Equal(t, AndarBaharPhaseBet, ab.GetPhase())
 
-	assert.Equal(t, "andar", andarBaharColumnName(AndarBaharBetAndar))
-	assert.Equal(t, "bahar", andarBaharColumnName(AndarBaharBetBahar))
-	assert.Equal(t, "unknown", andarBaharColumnName(99))
+	assert.Equal(t, "andarbahar.columnAndar", andarBaharColumnKey(AndarBaharBetAndar))
+	assert.Equal(t, "andarbahar.columnBahar", andarBaharColumnKey(AndarBaharBetBahar))
+	assert.Equal(t, "andarbahar.columnUnknown", andarBaharColumnKey(99))
 	assert.Zero(t, andarBaharRank(nil))
 }

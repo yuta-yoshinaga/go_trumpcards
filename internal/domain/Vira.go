@@ -98,6 +98,23 @@ func viraBidValue(b ViraBid) int {
 // ViraBidNames 表示用のビッド名。
 var ViraBidNames = []string{"Pass", "Gask", "Solo", "Misère", "Vira"}
 
+// ViraBidKey は棋譜用の入札名キーを返す。既存の vira.bid.* は
+// 括弧付きの説明を含み棋譜の 1 行には長いので、短い別系統を引く。
+func ViraBidKey(bid int) string {
+	switch ViraBid(bid) {
+	case ViraBidGask:
+		return "vira.bidShort.gask"
+	case ViraBidSolo:
+		return "vira.bidShort.solo"
+	case ViraBidMisere:
+		return "vira.bidShort.misere"
+	case ViraBidVira:
+		return "vira.bidShort.vira"
+	default:
+		return "vira.bidShort.pass"
+	}
+}
+
 // ViraPhase ゲームフェーズ。
 type ViraPhase int
 
@@ -349,7 +366,7 @@ func (g *Vira) applyBid(idx int, bid ViraBid) error {
 	}
 	g.bids[idx] = bid
 	g.bidDone[idx] = true
-	g.appendLog(idx, "bid", "vira.log.bid", map[string]string{"bid": ViraBidNames[bid]}, nil)
+	g.appendLog(idx, "bid", "vira.log.bid", map[string]string{"bidKey": ViraBidKey(int(bid))}, nil)
 
 	g.currentPlayerIdx = (g.currentPlayerIdx + 1) % ViraPlayerCnt
 	if g.allBidsDone() {
@@ -437,7 +454,7 @@ func (g *Vira) resolveBidding() {
 	}
 	g.currentPlayerIdx = g.leadPlayerIdx
 	g.phase = ViraPhasePlay
-	g.appendLog(idx, "declare", "vira.log.declare", map[string]string{"bid": ViraBidNames[best], "trumpKey": trumpKeyOf(g.trumpSuit)}, nil)
+	g.appendLog(idx, "declare", "vira.log.declare", map[string]string{"bidKey": ViraBidKey(int(best)), "trumpKey": trumpKeyOf(g.trumpSuit)}, nil)
 }
 
 // longestSuit プレイヤーの最長スートを返す。同数なら番号の小さい方。
@@ -735,7 +752,7 @@ func (g *Vira) settleRound() {
 	for i := range g.playerScores {
 		g.lastRoundDelta[i] = g.playerScores[i] - before[i]
 	}
-	g.appendLog(g.declarerIdx, "settle", "vira.log.settle", map[string]string{"bid": ViraBidNames[g.contract], "outcomeKey": viraMadeKey(made), "tricks": fmt.Sprintf("%d", won), "pot": fmt.Sprintf("%d", g.pot)}, nil)
+	g.appendLog(g.declarerIdx, "settle", "vira.log.settle", map[string]string{"bidKey": ViraBidKey(int(g.contract)), "outcomeKey": viraMadeKey(made), "tricks": fmt.Sprintf("%d", won), "pot": fmt.Sprintf("%d", g.pot)}, nil)
 }
 
 // viraMadeKey は達成可否の i18n キーを返す。

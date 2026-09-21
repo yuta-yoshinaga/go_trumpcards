@@ -152,3 +152,56 @@ func TestBaccaratBetTypeKeyAllBranches(t *testing.T) {
 		}
 	}
 }
+
+func TestAndarBaharColumnKeyAllBranches(t *testing.T) {
+	tests := []struct {
+		column int
+		want   string
+	}{
+		{AndarBaharBetAndar, "andarbahar.columnAndar"},
+		{AndarBaharBetBahar, "andarbahar.columnBahar"},
+		{99, "andarbahar.columnUnknown"},
+	}
+	for _, tt := range tests {
+		if got := andarBaharColumnKey(tt.column); got != tt.want {
+			t.Errorf("andarBaharColumnKey(%d) = %q, want %q", tt.column, got, tt.want)
+		}
+	}
+}
+
+func TestMusRoundKeyAllBranches(t *testing.T) {
+	tests := []struct {
+		round int
+		want  string
+	}{
+		{0, "mus.roundGrande"},
+		{1, "mus.roundChica"},
+		{2, "mus.roundPares"},
+		{3, "mus.roundJuego"},
+		{99, "mus.roundUnknown"},
+	}
+	for _, tt := range tests {
+		if got := musRoundKey(tt.round); got != tt.want {
+			t.Errorf("musRoundKey(%d) = %q, want %q", tt.round, got, tt.want)
+		}
+	}
+}
+
+func TestViraBidKeyAllBranches(t *testing.T) {
+	tests := []struct {
+		bid  int
+		want string
+	}{
+		{int(ViraBidGask), "vira.bidShort.gask"},
+		{int(ViraBidSolo), "vira.bidShort.solo"},
+		{int(ViraBidMisere), "vira.bidShort.misere"},
+		{int(ViraBidVira), "vira.bidShort.vira"},
+		{int(ViraBidPass), "vira.bidShort.pass"},
+		{99, "vira.bidShort.pass"},
+	}
+	for _, tt := range tests {
+		if got := ViraBidKey(tt.bid); got != tt.want {
+			t.Errorf("ViraBidKey(%d) = %q, want %q", tt.bid, got, tt.want)
+		}
+	}
+}
