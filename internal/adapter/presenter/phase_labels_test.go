@@ -186,13 +186,13 @@ func TestTranslatedPresenterLabels(t *testing.T) {
 		"russianpoker.notQualified":  "(クオリファイなし)",
 		"threecard.qualified":        "(クオリファイ)",
 		"threecard.notQualified":     "(クオリファイなし)",
-		"agnes.baseRank":             "基準ランク: {{rank}}",
-		"canfield.baseRank":          "基準ランク: {{rank}}",
-		"penguin.baseRankLabel":      "基準ランク: {{rank}}",
+		"agnes.baseRank":             "ベースランク: {{rank}}",
+		"canfield.baseRank":          "ベースランク: {{rank}}",
+		"penguin.baseRankLabel":      "ベースランク: {{rank}}",
 	}
 
 	jaForbidden := []string{"Qualified", "Not Qualified", "Base rank", "BaseRank"}
-	jaJapanese := []string{"クオリファイ", "基準ランク"}
+	jaJapanese := []string{"クオリファイ", "ベースランク"}
 
 	i18n.SetLang("ja")
 	for key, want := range expected {

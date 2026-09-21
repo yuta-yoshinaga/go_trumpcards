@@ -34,7 +34,7 @@ func TestPenguinCuiPresenterOutputBaseRankLabels(t *testing.T) {
 		g.SetPhase(domain.PenguinPhasePlaying)
 		g.SetBaseRank(rank)
 		result := p.Output(g, nil)
-		assert.Contains(t, result, "基準ランク: "+label)
+		assert.Contains(t, result, "ベースランク: "+label)
 	}
 }
 
