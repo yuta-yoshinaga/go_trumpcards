@@ -19,6 +19,7 @@ const cuiFiles = (language) => readdirSync(join(CUI_LOCALES, language)).filter((
 const mismatches = [];
 let compared = 0;
 let logCompared = 0;
+let copiedCompared = 0;
 
 for (const language of LANGUAGES) {
   const common = readJson(join(WEB_LOCALES, language, 'common.json'));
@@ -55,6 +56,17 @@ for (const language of LANGUAGES) {
             webText: common[webKey],
           });
         }
+      } else if (webKey in common) {
+        copiedCompared += 1;
+        if (cuiText !== common[webKey]) {
+          mismatches.push({
+            language,
+            game,
+            key,
+            cuiText,
+            webText: common[webKey],
+          });
+        }
       }
     }
   }
@@ -68,6 +80,7 @@ if (IS_FIXTURE) {
   assertFloor('locale-text-agreement', compared, 577, 'shared error messages compared');
   // 実測 32 (2026-09-18、移行済み 2 ゲーム)。移行が進むほど増えるので下がることはない
   assertFloor('locale-text-agreement', logCompared, 20, 'shared log messages compared');
+  assertFloor('locale-text-agreement', copiedCompared, 120, 'copied keys compared');
 }
 
 if (mismatches.length > 0) {
@@ -81,5 +94,5 @@ if (mismatches.length > 0) {
 }
 
 console.log(
-  `locale-text-agreement: OK (${compared} shared error messages, ${logCompared} shared log messages compared).`,
+  `locale-text-agreement: OK (${compared} shared error messages, ${logCompared} shared log messages, ${copiedCompared} copied keys compared).`,
 );
