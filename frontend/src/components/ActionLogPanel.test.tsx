@@ -54,6 +54,25 @@ describe('ActionLogPanel', () => {
     expect(screen.getByText(/T4 \[Player 0\] play: CPU 7/)).toBeInTheDocument();
   });
 
+  it('resolves Key-suffixed detail params before translating', () => {
+    render(
+      <ActionLogPanel
+        entries={[
+          {
+            turnNumber: 4,
+            playerIdx: 0,
+            actionType: 'trump',
+            detail: 'fallback',
+            detailCode: 'sjavs.log.trump',
+            detailParams: { suitKey: 'common.suit.spade' },
+          },
+        ]}
+        onClose={vi.fn()}
+      />,
+    );
+    expect(screen.getByText(/T4 \[Player 0\] trump: 切り札のスート スペード を宣言しました/)).toBeInTheDocument();
+  });
+
   it('translates a migrated Clock Solitaire log detail when the legacy detail is empty', () => {
     render(
       <ActionLogPanel

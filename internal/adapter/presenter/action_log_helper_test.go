@@ -181,6 +181,24 @@ func TestActionLogToText(t *testing.T) {
 	})
 }
 
+func TestActionLogToText_ResolvesSjavsTrumpSuitInBothLanguages(t *testing.T) {
+	entry := &domain.ActionLogEntry{
+		TurnNumber: 1, PlayerIdx: 0, ActionType: "trump", DetailCode: "sjavs.log.trump",
+		DetailParams: map[string]string{"suitKey": "common.suit.spade"},
+	}
+
+	i18n.SetLang("ja")
+	ja := actionLogToText([]*domain.ActionLogEntry{entry})
+	assert.Contains(t, ja, "切り札のスート スペード を宣言しました")
+	assert.NotContains(t, ja, "Spade")
+
+	i18n.SetLang("en")
+	en := actionLogToText([]*domain.ActionLogEntry{entry})
+	assert.Contains(t, en, "declares trump suit Spade")
+
+	i18n.SetLang("ja")
+}
+
 // #5977: 棋譜だけ文字列が直書きで、`--lang en` でも日本語の見出しと
 // 「棋譜はありません。」が出ていた。座席名も他の行 (cuiPlayerName) が
 // 「あなた」「CPU 1」と出すのに対し、ここだけ英語固定の "Player 0" だった。

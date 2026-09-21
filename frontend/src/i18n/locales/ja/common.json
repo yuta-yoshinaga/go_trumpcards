@@ -6815,5 +6815,10 @@
   "zwicker.log.sweep": "場に残った札を取りました",
   "zwicker.log.roundEnd": "チームの得点は {{team0}} - {{team1}} です",
   "zwicker.log.gameEnd": "チーム {{team}} が勝ちました",
-  "test.log.stub": "テスト用の棋譜行 {{value}}"
+  "test.log.stub": "テスト用の棋譜行 {{value}}",
+  "common.suit.spade": "スペード",
+  "common.suit.club": "クラブ",
+  "common.suit.heart": "ハート",
+  "common.suit.diamond": "ダイヤ",
+  "common.suit.unknown": "不明"
 }

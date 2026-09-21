@@ -13,7 +13,14 @@ export interface ActionLogPanelProps {
 
 function formatEntry(entry: ActionLogEntry, t: (key: string, opts?: Record<string, unknown>) => string): string {
   const player = entry.playerIdx < 0 ? t('actionLog.system') : t('actionLog.player', { idx: entry.playerIdx });
-  const translatedDetail = entry.detailCode ? t(entry.detailCode, entry.detailParams) : entry.detail;
+  const detailParams = entry.detailParams
+    ? Object.fromEntries(
+        Object.entries(entry.detailParams).map(([key, value]) =>
+          key.endsWith('Key') ? [key.slice(0, -3), t(value)] : [key, value],
+        ),
+      )
+    : undefined;
+  const translatedDetail = entry.detailCode ? t(entry.detailCode, detailParams) : entry.detail;
   const detail = entry.detailCode && translatedDetail === entry.detailCode ? entry.detail : translatedDetail;
   let line = `T${entry.turnNumber} [${player}] ${entry.actionType}: ${detail}`;
   if (entry.cards && entry.cards.length > 0) {
