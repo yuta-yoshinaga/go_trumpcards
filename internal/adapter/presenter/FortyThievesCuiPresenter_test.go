@@ -53,7 +53,7 @@ func TestFortyThievesCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "Forty Thieves")
 		assert.Contains(t, result, "組札")
 		assert.Contains(t, result, "Stock: 64枚")
-		assert.Contains(t, result, "Waste: [空]")
+		assert.Contains(t, result, "ウェイスト: [空]")
 		assert.Contains(t, result, "列0:")
 		assert.Contains(t, result, "手数: 0")
 		assert.Contains(t, result, "操作: m で移動")
@@ -70,8 +70,8 @@ func TestFortyThievesCuiPresenter_Output(t *testing.T) {
 
 		p := new(FortyThievesCuiPresenter)
 		result := p.Output(fg, nil)
-		assert.Contains(t, result, "Waste:")
-		assert.NotContains(t, result, "Waste: [空]")
+		assert.Contains(t, result, "ウェイスト:")
+		assert.NotContains(t, result, "ウェイスト: [空]")
 	})
 
 	t.Run("with error", func(t *testing.T) {

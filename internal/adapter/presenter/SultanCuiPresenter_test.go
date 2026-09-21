@@ -52,7 +52,7 @@ func TestSultanCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "組札")
 		assert.Contains(t, result, "ディヴァン")
 		assert.Contains(t, result, "Stock: 88枚")
-		assert.Contains(t, result, "Waste: [空]")
+		assert.Contains(t, result, "ウェイスト: [空]")
 		assert.Contains(t, result, "リディール残: 2回")
 		assert.Contains(t, result, "手数: 0")
 		assert.Contains(t, result, "操作: m で移動")
@@ -66,8 +66,8 @@ func TestSultanCuiPresenter_Output(t *testing.T) {
 
 		p := new(SultanCuiPresenter)
 		result := p.Output(sg, nil)
-		assert.Contains(t, result, "Waste:")
-		assert.NotContains(t, result, "Waste: [空]")
+		assert.Contains(t, result, "ウェイスト:")
+		assert.NotContains(t, result, "ウェイスト: [空]")
 	})
 
 	t.Run("nil divan slot", func(t *testing.T) {

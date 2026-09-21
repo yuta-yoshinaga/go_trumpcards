@@ -55,7 +55,7 @@ func TestKlondikeCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "Klondike")
 		assert.Contains(t, result, "組札")
 		assert.Contains(t, result, "Stock: 24枚")
-		assert.Contains(t, result, "Waste: [空]")
+		assert.Contains(t, result, "ウェイスト: [空]")
 		assert.Contains(t, result, "列0:")
 		assert.Contains(t, result, "手数: 0")
 		// Header surfaces draw mode, scoring mode, and the running score.
@@ -109,7 +109,7 @@ func TestKlondikeCuiPresenter_Output(t *testing.T) {
 
 		p := new(KlondikeCuiPresenter)
 		result := p.Output(kg, nil)
-		assert.Contains(t, result, "Waste: HEART 5")
+		assert.Contains(t, result, "ウェイスト: HEART 5")
 	})
 
 	t.Run("with error", func(t *testing.T) {

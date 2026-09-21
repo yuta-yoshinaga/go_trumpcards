@@ -307,6 +307,10 @@ func TestHintTranslationsUseTheSelectedLanguage(t *testing.T) {
 	i18n.SetLang("ja")
 	for key, value := range localeValues("ja") {
 		assert.NotContains(t, value, "HINT", key)
+		if strings.Contains(key, ".help") || strings.Contains(key, ".prompt") {
+			continue
+		}
+		assert.NotContains(t, value, "Waste:", key+" contains Waste:")
 	}
 	assert.Equal(t, "[ヒント: パス ({{reason}})]", i18n.T("honeymoonbridge.hintPass"))
 	assert.Equal(t, "[ヒント: ホールド ({{reason}})]", i18n.T("watten.hintHold"))
@@ -355,6 +359,48 @@ func TestJapaneseRemainingLocaleLabels(t *testing.T) {
 		assert.Equal(t, want, got, key)
 		for _, english := range oldEnglish {
 			assert.NotContains(t, got, english, key+" contains "+english)
+		}
+	}
+
+	i18n.SetLang("en")
+	for key, japanese := range expected {
+		assert.NotContains(t, i18n.T(key), japanese, key+" contains Japanese translation")
+	}
+}
+
+func TestJapaneseGameLogAndWasteLabels(t *testing.T) {
+	t.Cleanup(func() { i18n.SetLang("ja") })
+
+	expected := map[string]string{
+		"kingo.log.banker":             "親を引き受けました",
+		"kingo.log.bet":                "ベットしました",
+		"montebank.log.reset":          "ゲームをリセットしました",
+		"montebank.log.bet":            "レイアウト{{value2}}に{{value1}}をベットしました",
+		"montebank.log.gate":           "ゲートが公開されました。払戻し {{value1}}",
+		"montebank.log.gameEnd":        "チップ{{value1}}で終了しました",
+		"piquet.log.trickWin":          "{{name}}がトリック{{trick}}を取りました",
+		"russianbank.log.toFoundation": "{{source}} → ファウンデーション{{foundation}}",
+		"russianbank.log.toTableau":    "{{source}} → タブロー{{column}}",
+		"canfield.wasteCard":           " | ウェイスト: {{card}}",
+		"fortyandeight.wasteCard":      " | ウェイスト: {{card}}",
+		"fortythieves.wasteCard":       " | ウェイスト: {{card}}",
+		"golf.wasteCard":               " | ウェイスト: {{card}}",
+		"klondike.wasteCard":           " | ウェイスト: {{card}}",
+		"pyramid.wasteCard":            " | ウェイスト: {{card}}",
+		"pyramid.wasteKing":            " | ウェイスト: {{card}}[K]",
+		"rankandfile.wasteCard":        " | ウェイスト: {{card}}",
+		"sultan.wasteCard":             " | ウェイスト: {{card}}",
+		"tripeaks.wasteCard":           " | ウェイスト: {{card}}",
+		"whitehead.wasteCard":          " | ウェイスト: {{card}}",
+	}
+	forbidden := []string{"Waste:", "foundation ", "tableau ", "wins trick", "takes the bank", "places a bet", "game reset", "payout"}
+
+	i18n.SetLang("ja")
+	for key, want := range expected {
+		got := i18n.T(key)
+		assert.Equal(t, want, got, key)
+		for _, value := range forbidden {
+			assert.NotContains(t, got, value, key+" contains "+value)
 		}
 	}
 

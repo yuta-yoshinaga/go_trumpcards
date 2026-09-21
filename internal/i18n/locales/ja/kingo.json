@@ -27,7 +27,7 @@
   "result.gameEnd": "ゲームが終わりました",
   "helpExampleBet": "  bet 100             100 チップを賭ける",
   "rankWithValue": "{{rank}}（{{value}}）",
-  "log.banker": "takes the bank",
-  "log.bet": "places a bet",
+  "log.banker": "親を引き受けました",
+  "log.bet": "ベットしました",
   "log.deal": "{{rank}}を配りました"
 }
