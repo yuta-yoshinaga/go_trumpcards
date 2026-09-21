@@ -480,6 +480,52 @@ func TestActionLogToText_RendersGameIdentifiersInBothLanguages(t *testing.T) {
 	}
 }
 
+func TestActionLogToText_RendersBarbuAndKingContractsInBothLanguages(t *testing.T) {
+	entries := []*domain.ActionLogEntry{
+		{DetailCode: "barbu.log.selectContract", DetailParams: map[string]string{"dealer": "0", "contractKey": "barbu.cNoTricks"}},
+		{DetailCode: "barbu.log.selectContract", DetailParams: map[string]string{"dealer": "0", "contractKey": "barbu.cNoHearts"}},
+		{DetailCode: "barbu.log.selectContract", DetailParams: map[string]string{"dealer": "0", "contractKey": "barbu.cNoQueens"}},
+		{DetailCode: "barbu.log.selectContract", DetailParams: map[string]string{"dealer": "0", "contractKey": "barbu.cBarbu"}},
+		{DetailCode: "barbu.log.selectContract", DetailParams: map[string]string{"dealer": "0", "contractKey": "barbu.cNoLastTrick"}},
+		{DetailCode: "barbu.log.selectContract", DetailParams: map[string]string{"dealer": "0", "contractKey": "barbu.cTrumps"}},
+		{DetailCode: "barbu.log.selectContract", DetailParams: map[string]string{"dealer": "0", "contractKey": "barbu.cDominoes"}},
+		{DetailCode: "king.log.selectContract", DetailParams: map[string]string{"dealer": "0", "contractKey": "king.contractShort.noTricks"}},
+		{DetailCode: "king.log.selectContract", DetailParams: map[string]string{"dealer": "0", "contractKey": "king.contractShort.noHearts"}},
+		{DetailCode: "king.log.selectContract", DetailParams: map[string]string{"dealer": "0", "contractKey": "king.contractShort.noQueens"}},
+		{DetailCode: "king.log.selectContract", DetailParams: map[string]string{"dealer": "0", "contractKey": "king.contractShort.noKingHeart"}},
+		{DetailCode: "king.log.selectContract", DetailParams: map[string]string{"dealer": "0", "contractKey": "king.contractShort.noLastTwo"}},
+		{DetailCode: "king.log.selectContract", DetailParams: map[string]string{"dealer": "0", "contractKey": "king.contractShort.noMen"}},
+		{DetailCode: "king.log.selectContract", DetailParams: map[string]string{"dealer": "0", "contractKey": "king.contractShort.kingTrump"}},
+	}
+
+	t.Cleanup(func() { i18n.SetLang("ja") })
+
+	i18n.SetLang("ja")
+	ja := actionLogToText(entries)
+	for _, text := range []string{"ノー・トリック", "ノー・ハーツ", "ノー・クイーン", "バルブ", "ノー・ラストトリック", "トランプ", "ドミノ", "ノートリック", "ノーハート", "ノークイーン", "ノーキングハート", "ノーラスト2", "ノーメン", "キング（切り札あり）"} {
+		assert.Contains(t, ja, text)
+	}
+	for _, text := range []string{"No Tricks", "No Hearts", "No Queens", "Barbu", "No Last Trick", "Trumps", "Dominoes", "No King of Hearts", "No Last Two Tricks", "No Men", "King (Trump)"} {
+		assert.NotContains(t, ja, text)
+	}
+	for _, key := range []string{"barbu.cNoTricks", "barbu.cNoHearts", "barbu.cNoQueens", "barbu.cBarbu", "barbu.cNoLastTrick", "barbu.cTrumps", "barbu.cDominoes", "king.contractShort.noTricks", "king.contractShort.noHearts", "king.contractShort.noQueens", "king.contractShort.noKingHeart", "king.contractShort.noLastTwo", "king.contractShort.noMen", "king.contractShort.kingTrump"} {
+		assert.NotContains(t, ja, key)
+	}
+	assert.NotContains(t, ja, "（取ったトリックごとに減点）")
+
+	i18n.SetLang("en")
+	en := actionLogToText(entries)
+	for _, text := range []string{"No Tricks", "No Hearts", "No Queens", "Barbu (K of Hearts)", "No Last Trick", "Trumps", "Dominoes", "No King of Hearts", "No Last Two Tricks", "No Men", "King (Trump)"} {
+		assert.Contains(t, en, text)
+	}
+	for _, text := range []string{"ノー・トリック", "ノー・ハーツ", "ノー・クイーン", "バルブ", "ノー・ラストトリック", "トランプ", "ドミノ", "ノートリック", "ノーハート", "ノークイーン", "ノーキングハート", "ノーラスト2", "ノーメン", "キング（切り札あり）"} {
+		assert.NotContains(t, en, text)
+	}
+	for _, key := range []string{"barbu.cNoTricks", "barbu.cNoHearts", "barbu.cNoQueens", "barbu.cBarbu", "barbu.cNoLastTrick", "barbu.cTrumps", "barbu.cDominoes", "king.contractShort.noTricks", "king.contractShort.noHearts", "king.contractShort.noQueens", "king.contractShort.noKingHeart", "king.contractShort.noLastTwo", "king.contractShort.noMen", "king.contractShort.kingTrump"} {
+		assert.NotContains(t, en, key)
+	}
+}
+
 func TestActionLogToText_RendersHanafudaCaptureLabelsInBothLanguages(t *testing.T) {
 	entries := []*domain.ActionLogEntry{
 		{DetailCode: "gostop.log.play", DetailParams: map[string]string{"name": "You", "card": "三月·光", "resultKey": "gostop.log.result.captured"}},

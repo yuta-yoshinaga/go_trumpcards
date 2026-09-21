@@ -173,7 +173,7 @@ func TestKing_SelectContract_MarksUsedAndStartsPlay(t *testing.T) {
 		}
 	}
 	require.NotNil(t, contractLog)
-	assert.Equal(t, map[string]string{"dealer": "0", "contract": "No Hearts"}, contractLog.DetailParams)
+	assert.Equal(t, map[string]string{"dealer": "0", "contractKey": "king.contractShort.noHearts"}, contractLog.DetailParams)
 	used := g.GetUsedContracts()
 	assert.True(t, used[domain.KingContractNoHearts])
 

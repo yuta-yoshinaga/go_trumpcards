@@ -238,7 +238,7 @@ func (g *King) applySelectContract(contract, trumpSuit int) error {
 	g.currentPlayer = g.dealerIdx
 	g.trickNumber = 1
 	g.appendLog(g.dealerIdx, "selectContract", "king.log.selectContract",
-		map[string]string{"dealer": fmt.Sprint(g.dealerIdx), "contract": kingContractName(contract)}, nil)
+		map[string]string{"dealer": fmt.Sprint(g.dealerIdx), "contractKey": kingContractKey(contract)}, nil)
 	return nil
 }
 
@@ -402,7 +402,7 @@ func (g *King) finishDeal() {
 	}
 	g.phase = KingPhaseDealEnd
 	g.appendLog(-1, "dealEnd", "king.log.dealEnd",
-		map[string]string{"deal": fmt.Sprint(g.dealNumber + 1), "contract": kingContractName(g.currentContract)}, nil)
+		map[string]string{"deal": fmt.Sprint(g.dealNumber + 1), "contractKey": kingContractKey(g.currentContract)}, nil)
 	// 最終ディールが終わったら、NextDeal を待たずにゲーム終了とする。
 	if g.dealNumber >= KingTotalDeals-1 {
 		g.gameEndFlag = true
@@ -440,25 +440,26 @@ func kingSortHand(p *KingPlayer) {
 	}
 }
 
-// kingContractName はコントラクトの英語名を返す (ログ用)。
-func kingContractName(c int) string {
+// kingContractKey は棋譜用の短いコントラクトの i18n キーを返す。
+// king.c* は括弧付きの説明を含み棋譜の 1 行には長いので、短い別系統を引く。
+func kingContractKey(c int) string {
 	switch c {
 	case KingContractNoTricks:
-		return "No Tricks"
+		return "king.contractShort.noTricks"
 	case KingContractNoHearts:
-		return "No Hearts"
+		return "king.contractShort.noHearts"
 	case KingContractNoQueens:
-		return "No Queens"
+		return "king.contractShort.noQueens"
 	case KingContractKingHeart:
-		return "No King of Hearts"
+		return "king.contractShort.noKingHeart"
 	case KingContractNoLastTwo:
-		return "No Last Two Tricks"
+		return "king.contractShort.noLastTwo"
 	case KingContractNoMen:
-		return "No Men"
+		return "king.contractShort.noMen"
 	case KingContractKingTrump:
-		return "King (Trump)"
+		return "king.contractShort.kingTrump"
 	default:
-		return "Unknown"
+		return "king.contractShort.unknown"
 	}
 }
 

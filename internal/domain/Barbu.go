@@ -216,7 +216,7 @@ func (b *Barbu) applySelectContract(contract, trumpSuit int) error {
 	b.leadPlayer = b.dealerIdx
 	b.currentPlayer = b.dealerIdx
 	b.trickNumber = 1
-	b.appendLog(b.dealerIdx, "selectContract", "barbu.log.selectContract", map[string]string{"dealer": strconv.Itoa(b.dealerIdx), "contract": barbuContractName(contract)}, nil)
+	b.appendLog(b.dealerIdx, "selectContract", "barbu.log.selectContract", map[string]string{"dealer": strconv.Itoa(b.dealerIdx), "contractKey": barbuContractKey(contract)}, nil)
 	return nil
 }
 
@@ -406,7 +406,7 @@ func (b *Barbu) finishDeal() {
 		p.AddScore(detail.Gained[i])
 	}
 	b.phase = BarbuPhaseDealEnd
-	b.appendLog(-1, "dealEnd", "barbu.log.dealEnd", map[string]string{"deal": strconv.Itoa(b.dealNumber + 1), "contract": barbuContractName(b.currentContract)}, nil)
+	b.appendLog(-1, "dealEnd", "barbu.log.dealEnd", map[string]string{"deal": strconv.Itoa(b.dealNumber + 1), "contractKey": barbuContractKey(b.currentContract)}, nil)
 	// 28 ディール目が終わったら、NextDeal を待たずにゲーム終了とする。
 	if b.dealNumber >= BarbuTotalDeals-1 {
 		b.gameEndFlag = true
@@ -439,25 +439,25 @@ func barbuSortHand(p *BarbuPlayer) {
 	}
 }
 
-// barbuContractName はコントラクトの英語名を返す (ログ用)。
-func barbuContractName(c int) string {
+// barbuContractKey は契約の i18n キーを返す。
+func barbuContractKey(c int) string {
 	switch c {
 	case BarbuContractNoTricks:
-		return "No Tricks"
+		return "barbu.cNoTricks"
 	case BarbuContractNoHearts:
-		return "No Hearts"
+		return "barbu.cNoHearts"
 	case BarbuContractNoQueens:
-		return "No Queens"
+		return "barbu.cNoQueens"
 	case BarbuContractKingHeart:
-		return "Barbu"
+		return "barbu.cBarbu"
 	case BarbuContractNoLastTrick:
-		return "No Last Trick"
+		return "barbu.cNoLastTrick"
 	case BarbuContractTrumps:
-		return "Trumps"
+		return "barbu.cTrumps"
 	case BarbuContractDominoes:
-		return "Dominoes"
+		return "barbu.cDominoes"
 	default:
-		return "Unknown"
+		return "barbu.cUnknown"
 	}
 }
 

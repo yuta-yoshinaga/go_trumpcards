@@ -6937,5 +6937,21 @@
   "solowhist.log.outcome.made": "made",
   "solowhist.log.outcome.failed": "failed",
   "twentynine.log.result.made": "made",
-  "twentynine.log.result.set": "set"
+  "twentynine.log.result.set": "set",
+  "barbu.cNoTricks": "No Tricks",
+  "barbu.cNoHearts": "No Hearts",
+  "barbu.cNoQueens": "No Queens",
+  "barbu.cBarbu": "Barbu (K of Hearts)",
+  "barbu.cNoLastTrick": "No Last Trick",
+  "barbu.cTrumps": "Trumps",
+  "barbu.cDominoes": "Dominoes",
+  "barbu.cUnknown": "Unknown",
+  "king.contractShort.noTricks": "No Tricks",
+  "king.contractShort.noHearts": "No Hearts",
+  "king.contractShort.noQueens": "No Queens",
+  "king.contractShort.noKingHeart": "No King of Hearts",
+  "king.contractShort.noLastTwo": "No Last Two Tricks",
+  "king.contractShort.noMen": "No Men",
+  "king.contractShort.kingTrump": "King (Trump)",
+  "king.contractShort.unknown": "Unknown"
 }
