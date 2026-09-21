@@ -13,7 +13,7 @@
   "helpAutoComplete": "  ac                   オートコンプリート",
   "freeCellHeader": "FreeCells: ",
   "foundationHeader": "Foundation: ",
-  "baseRankLabel": "BaseRank: {{rank}}",
+  "baseRankLabel": "基準ランク: {{rank}}",
   "columnLabel": "列{{col}}:",
   "promptSourceZone": "移動元を指定してください (t = タブロー、c = フリーセル):",
   "promptToZone": "移動先を指定してください (t = タブロー、f = 組札、c = フリーセル):",

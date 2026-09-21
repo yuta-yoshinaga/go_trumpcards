@@ -20,7 +20,7 @@
   "gameOver": "ゲームオーバー",
   "hintAvailable": "ヒントがあります",
   "noHint": "ヒントはありません",
-  "baseRank": "Base rank: {{rank}}",
+  "baseRank": "基準ランク: {{rank}}",
   "baseRankRule": "ファンデーションはベースランクから始まり、Kの次はAへ循環します",
   "foundationHeader": "Foundation: ",
   "reserveLine": "Reserve: {{count}}枚 (top: {{card}})",
