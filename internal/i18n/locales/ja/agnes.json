@@ -11,7 +11,7 @@
   "gameOver": "ゲームオーバー",
   "hintAvailable": "ヒントがあります",
   "noHint": "ヒントはありません",
-  "baseRank": "Base rank: {{rank}}",
+  "baseRank": "ベースランク: {{rank}}",
   "foundationHeader": "Foundation: ",
   "stockLine": "Stock: {{count}}枚",
   "columnLabel": "列{{col}}:",

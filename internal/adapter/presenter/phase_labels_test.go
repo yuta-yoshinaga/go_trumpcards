@@ -171,3 +171,43 @@ func TestPhaseLabels(t *testing.T) {
 		}
 	}
 }
+
+func TestTranslatedPresenterLabels(t *testing.T) {
+	t.Cleanup(func() { i18n.SetLang("ja") })
+
+	expected := map[string]string{
+		"caribbeanstud.qualified":    "(クオリファイ)",
+		"caribbeanstud.notQualified": "(クオリファイなし)",
+		"highcardflush.qualified":    "(クオリファイ)",
+		"highcardflush.notQualified": "(クオリファイなし)",
+		"oasispoker.qualified":       "(クオリファイ)",
+		"oasispoker.notQualified":    "(クオリファイなし)",
+		"russianpoker.qualified":     "(クオリファイ)",
+		"russianpoker.notQualified":  "(クオリファイなし)",
+		"threecard.qualified":        "(クオリファイ)",
+		"threecard.notQualified":     "(クオリファイなし)",
+		"agnes.baseRank":             "ベースランク: {{rank}}",
+		"canfield.baseRank":          "ベースランク: {{rank}}",
+		"penguin.baseRankLabel":      "ベースランク: {{rank}}",
+	}
+
+	jaForbidden := []string{"Qualified", "Not Qualified", "Base rank", "BaseRank"}
+	jaJapanese := []string{"クオリファイ", "ベースランク"}
+
+	i18n.SetLang("ja")
+	for key, want := range expected {
+		got := i18n.T(key)
+		assert.Equal(t, want, got, key)
+		for _, forbidden := range jaForbidden {
+			assert.NotContains(t, got, forbidden, key+" contains "+forbidden)
+		}
+	}
+
+	i18n.SetLang("en")
+	for key := range expected {
+		got := i18n.T(key)
+		for _, japanese := range jaJapanese {
+			assert.NotContains(t, got, japanese, key+" contains "+japanese)
+		}
+	}
+}

@@ -120,7 +120,7 @@ func TestCaribbeanStudCuiPresenter_Output_EndPhase_PlayerWins(t *testing.T) {
 	assert.Contains(t, result, "フェーズ: 終了")
 	assert.Contains(t, result, "プレイヤーの勝ち")
 	assert.Contains(t, result, "DEALER")
-	assert.Contains(t, result, "(Qualified)")
+	assert.Contains(t, result, "(クオリファイ)")
 	assert.Contains(t, result, "合計払戻し: 1000")
 	assert.NotContains(t, result, "ジャックポット:")
 	assert.NotContains(t, result, "ジャックポット配当:")

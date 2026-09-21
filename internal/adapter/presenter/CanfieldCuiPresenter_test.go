@@ -43,7 +43,7 @@ func TestCanfieldCuiPresenter_Output(t *testing.T) {
 		p := new(CanfieldCuiPresenter)
 		result := p.Output(cg, nil)
 		assert.Contains(t, result, "Canfield")
-		assert.Contains(t, result, "Base rank: 7")
+		assert.Contains(t, result, "ベースランク: 7")
 		assert.Contains(t, result, "Reserve")
 		assert.Contains(t, result, "Stock: 34枚")
 		assert.Contains(t, result, "Waste: [空]")
