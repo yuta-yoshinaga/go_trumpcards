@@ -6953,5 +6953,19 @@
   "king.contractShort.noLastTwo": "No Last Two Tricks",
   "king.contractShort.noMen": "No Men",
   "king.contractShort.kingTrump": "King (Trump)",
-  "king.contractShort.unknown": "Unknown"
+  "king.contractShort.unknown": "Unknown",
+  "skat.log.declareGameSuit": "{{name}} declares Suit (trump {{trump}})",
+  "skat.gameTypeGrand": "Grand",
+  "skat.gameTypeNull": "Null",
+  "skat.gameTypeNone": "None",
+  "bezique.log.meldMarriage": "{{name}} declares a marriage in {{suit}} (+{{points}})",
+  "bezique.meld.royalMarriage": "Royal Marriage",
+  "bezique.meld.bezique": "Bezique",
+  "bezique.meld.fourAces": "Four Aces",
+  "bezique.meld.fourKings": "Four Kings",
+  "bezique.meld.fourQueens": "Four Queens",
+  "bezique.meld.fourJacks": "Four Jacks",
+  "trappola.log.declarationTrappola": "{{name}} declares trappola in {{suit}} (+{{thirds}} thirds)",
+  "trappola.log.declarationFour": "{{name}} declares four {{rank}}s (+{{thirds}} thirds)",
+  "trappola.log.declarationThree": "{{name}} declares three {{rank}}s (+{{thirds}} thirds)"
 }

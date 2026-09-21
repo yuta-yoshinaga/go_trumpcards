@@ -58,5 +58,12 @@
   "log.lastTrick": "{{name}} takes the last trick (+{{bonus}})",
   "log.dealScore": "Deal {{deal}}: {{dealScore0}}-{{dealScore1}} (match {{matchScore0}}-{{matchScore1}})",
   "log.gameEnd": "Game end: {{score0}}-{{score1}}",
-  "log.meld": "{{name}} declares {{meld}} (+{{points}})"
+  "log.meld": "{{name}} declares {{meld}} (+{{points}})",
+  "log.meldMarriage": "{{name}} declares a marriage in {{suit}} (+{{points}})",
+  "meld.royalMarriage": "Royal Marriage",
+  "meld.bezique": "Bezique",
+  "meld.fourAces": "Four Aces",
+  "meld.fourKings": "Four Kings",
+  "meld.fourQueens": "Four Queens",
+  "meld.fourJacks": "Four Jacks"
 }

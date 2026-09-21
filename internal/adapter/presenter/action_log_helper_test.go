@@ -593,3 +593,43 @@ func TestActionLogToText_RendersNapPreferenceSoloWhistAndTwentyNineLabelsInBothL
 		assert.NotContains(t, en, text)
 	}
 }
+
+func TestActionLogToText_RendersCompositeGameLabelsInBothLanguages(t *testing.T) {
+	entries := []*domain.ActionLogEntry{
+		{DetailCode: "skat.log.declareGameSuit", DetailParams: map[string]string{"name": "You", "trumpKey": "common.suit.spade"}},
+		{DetailCode: "skat.log.declareGame", DetailParams: map[string]string{"name": "You", "gameKey": "skat.gameTypeGrand"}},
+		{DetailCode: "skat.log.declareGame", DetailParams: map[string]string{"name": "You", "gameKey": "skat.gameTypeNull"}},
+		{DetailCode: "bezique.log.meldMarriage", DetailParams: map[string]string{"name": "You", "suitKey": "common.suit.spade", "points": "20"}},
+		{DetailCode: "bezique.log.meld", DetailParams: map[string]string{"name": "You", "meldKey": "bezique.meld.royalMarriage", "points": "40"}},
+		{DetailCode: "bezique.log.meld", DetailParams: map[string]string{"name": "You", "meldKey": "bezique.meld.bezique", "points": "40"}},
+		{DetailCode: "bezique.log.meld", DetailParams: map[string]string{"name": "You", "meldKey": "bezique.meld.fourAces", "points": "100"}},
+		{DetailCode: "trappola.log.declarationTrappola", DetailParams: map[string]string{"name": "You", "suitKey": "common.suit.spade", "thirds": "4"}},
+		{DetailCode: "trappola.log.declarationFour", DetailParams: map[string]string{"name": "You", "rank": "1", "thirds": "6"}},
+		{DetailCode: "trappola.log.declarationThree", DetailParams: map[string]string{"name": "You", "rank": "13", "thirds": "3"}},
+	}
+
+	t.Cleanup(func() { i18n.SetLang("ja") })
+
+	i18n.SetLang("ja")
+	ja := actionLogToText(entries)
+	for _, text := range []string{"スペード", "グランド", "ヌル", "マリッジ", "ロイヤルマリッジ", "ベジック", "エース4枚", "トラッポラ"} {
+		assert.Contains(t, ja, text)
+	}
+	for _, text := range []string{"Spade", "Grand", "Null", "Marriage", "Royal Marriage", "Bezique", "Four Aces", "trappola in", "Suit (trump=", "Spades"} {
+		assert.NotContains(t, ja, text)
+	}
+
+	i18n.SetLang("en")
+	en := actionLogToText(entries)
+	for _, text := range []string{"Spade", "Grand", "Null", "Marriage", "Royal Marriage", "Bezique", "Four Aces", "trappola in", "Suit (trump"} {
+		assert.Contains(t, en, text)
+	}
+	for _, text := range []string{"スペード", "グランド", "ヌル", "マリッジ", "ロイヤルマリッジ", "ベジック", "エース4枚", "トラッポラ"} {
+		assert.NotContains(t, en, text)
+	}
+	for _, output := range []string{ja, en} {
+		for _, raw := range []string{"skat.log.declareGameSuit", "bezique.meld.bezique", "common.suit.spade", "{{"} {
+			assert.NotContains(t, output, raw)
+		}
+	}
+}

@@ -798,7 +798,11 @@ func (b *Bezique) applyMeld(playerIdx int, m BeziqueMeld) {
 	b.meldsDeclared[playerIdx] |= 1 << bit
 	b.dealPoints[playerIdx] += m.Points
 	b.dealMeldPoints[playerIdx] += m.Points
-	b.appendLogCode(playerIdx, "meld", "bezique.log.meld", map[string]string{"name": playerName(b.players, playerIdx), "meld": beziqueMeldName(m), "points": strconv.Itoa(m.Points)}, nil)
+	if m.Type == BeziqueMeldMarriage && m.Points != BeziqueRoyalMarriagePoints {
+		b.appendLogCode(playerIdx, "meld", "bezique.log.meldMarriage", map[string]string{"name": playerName(b.players, playerIdx), "suitKey": suitKeyOf(m.Suit), "points": strconv.Itoa(m.Points)}, nil)
+	} else {
+		b.appendLogCode(playerIdx, "meld", "bezique.log.meld", map[string]string{"name": playerName(b.players, playerIdx), "meldKey": beziqueMeldKey(m), "points": strconv.Itoa(m.Points)}, nil)
+	}
 }
 
 // beziqueMeldBit メルドの宣言済みビット位置を返す。
@@ -819,24 +823,21 @@ func beziqueMeldBit(m BeziqueMeld) int {
 	}
 }
 
-// beziqueMeldName メルドのログ表示名。
-func beziqueMeldName(m BeziqueMeld) string {
+// beziqueMeldKey はメルドのログ表示用 i18n キーを返す。
+func beziqueMeldKey(m BeziqueMeld) string {
 	switch m.Type {
 	case BeziqueMeldMarriage:
-		if m.Points == BeziqueRoyalMarriagePoints {
-			return "Royal Marriage"
-		}
-		return "Marriage (" + suitStr(m.Suit) + ")"
+		return "bezique.meld.royalMarriage"
 	case BeziqueMeldBezique:
-		return "Bezique"
+		return "bezique.meld.bezique"
 	case BeziqueMeldFourAces:
-		return "Four Aces"
+		return "bezique.meld.fourAces"
 	case BeziqueMeldFourKings:
-		return "Four Kings"
+		return "bezique.meld.fourKings"
 	case BeziqueMeldFourQueens:
-		return "Four Queens"
+		return "bezique.meld.fourQueens"
 	default:
-		return "Four Jacks"
+		return "bezique.meld.fourJacks"
 	}
 }
 

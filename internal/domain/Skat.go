@@ -589,7 +589,11 @@ func (s *Skat) applyGameDeclaration(gt SkatGameType, trumpSuit int) {
 	} else {
 		s.round.trumpSuit = 0
 	}
-	s.appendLog(s.round.declarerIdx, "declare_game", "skat.log.declareGame", map[string]string{"name": playerName(s.players, s.round.declarerIdx), "game": s.gameTypeName()}, nil)
+	if s.round.gameType == SkatGameSuit {
+		s.appendLog(s.round.declarerIdx, "declare_game", "skat.log.declareGameSuit", map[string]string{"name": playerName(s.players, s.round.declarerIdx), "trumpKey": suitKeyOf(s.round.trumpSuit)}, nil)
+	} else {
+		s.appendLog(s.round.declarerIdx, "declare_game", "skat.log.declareGame", map[string]string{"name": playerName(s.players, s.round.declarerIdx), "gameKey": skatGameTypeKey(s.round.gameType)}, nil)
+	}
 	s.startPlay()
 }
 
@@ -1299,32 +1303,16 @@ func (s *Skat) GetHint() *SkatHint {
 	return nil
 }
 
-// gameTypeName returns the human-readable game type.
-func (s *Skat) gameTypeName() string {
-	switch s.round.gameType {
-	case SkatGameSuit:
-		return fmt.Sprintf("Suit (trump=%s)", skatSuitName(s.round.trumpSuit))
+// skatGameTypeKey はスート以外のゲーム種別の i18n キーを返す。
+func skatGameTypeKey(t SkatGameType) string {
+	switch t {
 	case SkatGameGrand:
-		return "Grand"
+		return "skat.gameTypeGrand"
 	case SkatGameNull:
-		return "Null"
+		return "skat.gameTypeNull"
+	default:
+		return "skat.gameTypeNone"
 	}
-	return "None"
-}
-
-// skatSuitName returns the English suit name.
-func skatSuitName(suit int) string {
-	switch suit {
-	case CardDesignSpade:
-		return "Spades"
-	case CardDesignClover:
-		return "Clubs"
-	case CardDesignHeart:
-		return "Hearts"
-	case CardDesignDiamond:
-		return "Diamonds"
-	}
-	return "?"
 }
 
 // appendLog appends an entry to the round action log.

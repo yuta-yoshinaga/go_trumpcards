@@ -16,7 +16,6 @@ package domain
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"math/rand"
 	"strconv"
 )
@@ -204,7 +203,14 @@ func (g *Trappola) scoreDeclarations() {
 		for _, d := range trappolaFindDeclarations(idx, p) {
 			g.declarations = append(g.declarations, d)
 			g.teamRoundThirds[TrappolaTeamOf(idx)] += d.Thirds
-			g.appendLog(idx, "declaration", "trappola.log.declaration", map[string]string{"name": playerName(g.players, idx), "declaration": trappolaDeclarationName(d), "thirds": strconv.Itoa(d.Thirds)}, nil)
+			switch d.Kind {
+			case TrappolaDeclarationTrappola:
+				g.appendLog(idx, "declaration", "trappola.log.declarationTrappola", map[string]string{"name": playerName(g.players, idx), "suitKey": suitKeyOf(d.Value), "thirds": strconv.Itoa(d.Thirds)}, nil)
+			case TrappolaDeclarationFour:
+				g.appendLog(idx, "declaration", "trappola.log.declarationFour", map[string]string{"name": playerName(g.players, idx), "rank": strconv.Itoa(d.Value), "thirds": strconv.Itoa(d.Thirds)}, nil)
+			default:
+				g.appendLog(idx, "declaration", "trappola.log.declarationThree", map[string]string{"name": playerName(g.players, idx), "rank": strconv.Itoa(d.Value), "thirds": strconv.Itoa(d.Thirds)}, nil)
+			}
 		}
 	}
 }
@@ -245,18 +251,6 @@ func trappolaFindDeclarations(playerIdx int, p *TrappolaPlayer) []TrappolaDeclar
 		}
 	}
 	return out
-}
-
-// trappolaDeclarationName は棋譜に出す役名を組み立てる。
-func trappolaDeclarationName(d TrappolaDeclaration) string {
-	switch d.Kind {
-	case TrappolaDeclarationTrappola:
-		return fmt.Sprintf("trappola in %s", suitStr(d.Value))
-	case TrappolaDeclarationFour:
-		return fmt.Sprintf("four %ds", d.Value)
-	default:
-		return fmt.Sprintf("three %ds", d.Value)
-	}
 }
 
 // TrappolaFindDeclarationsForTest は 1 席の手札から成立する役を返す (テスト用)。

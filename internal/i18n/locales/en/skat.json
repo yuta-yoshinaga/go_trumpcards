@@ -67,6 +67,7 @@
   "log.handGame": "{{name}} plays a hand game",
   "log.discard": "{{name}} discards 2 cards into the skat",
   "log.declareGame": "{{name}} declares {{game}}",
+  "log.declareGameSuit": "{{name}} declares Suit (trump {{trump}})",
   "log.play": "{{name}} plays {{card}}",
   "log.trickWin": "{{name}} wins trick {{trick}} ({{points}} card points)",
   "log.roundWin": "{{name}} wins (+{{value}})",

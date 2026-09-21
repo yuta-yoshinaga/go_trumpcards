@@ -58,5 +58,12 @@
   "log.lastTrick": "{{name}}が最終トリックを獲得（+{{bonus}}）",
   "log.dealScore": "ディール{{deal}}: {{dealScore0}}-{{dealScore1}}（マッチ {{matchScore0}}-{{matchScore1}}）",
   "log.gameEnd": "ゲーム終了: {{score0}}-{{score1}}",
-  "log.meld": "{{name}}が{{meld}}を宣言（+{{points}}）"
+  "log.meld": "{{name}}が{{meld}}を宣言（+{{points}}）",
+  "log.meldMarriage": "{{name}}が{{suit}}のマリッジを宣言（+{{points}}）",
+  "meld.royalMarriage": "ロイヤルマリッジ",
+  "meld.bezique": "ベジック",
+  "meld.fourAces": "エース4枚",
+  "meld.fourKings": "キング4枚",
+  "meld.fourQueens": "クイーン4枚",
+  "meld.fourJacks": "ジャック4枚"
 }

@@ -464,47 +464,6 @@ func TestSkatHandStrengthAccountsForJacksTensAces(t *testing.T) {
 	}
 }
 
-// TestSkatGameTypeNameAllVariants exercises every game-type label branch.
-func TestSkatGameTypeNameAllVariants(t *testing.T) {
-	g := newSkatForTest(t, DefaultSkatConfig())
-	g.round.gameType = SkatGameSuit
-	g.round.trumpSuit = CardDesignSpade
-	if got := g.gameTypeName(); got == "" || got == "None" {
-		t.Fatalf("Suit gameTypeName empty/None: %q", got)
-	}
-	g.round.gameType = SkatGameGrand
-	if got := g.gameTypeName(); got != "Grand" {
-		t.Fatalf("Grand gameTypeName: got %q, want Grand", got)
-	}
-	g.round.gameType = SkatGameNull
-	if got := g.gameTypeName(); got != "Null" {
-		t.Fatalf("Null gameTypeName: got %q, want Null", got)
-	}
-	g.round.gameType = SkatGameNone
-	if got := g.gameTypeName(); got != "None" {
-		t.Fatalf("None gameTypeName: got %q, want None", got)
-	}
-}
-
-// TestSkatSuitNameAllBranches exercises skatSuitName for each suit + default.
-func TestSkatSuitNameAllBranches(t *testing.T) {
-	cases := []struct {
-		suit int
-		want string
-	}{
-		{CardDesignSpade, "Spades"},
-		{CardDesignClover, "Clubs"},
-		{CardDesignHeart, "Hearts"},
-		{CardDesignDiamond, "Diamonds"},
-		{99, "?"},
-	}
-	for _, c := range cases {
-		if got := skatSuitName(c.suit); got != c.want {
-			t.Fatalf("skatSuitName(%d) = %q, want %q", c.suit, got, c.want)
-		}
-	}
-}
-
 // TestSkatNullRankAllValues fills in the missing branches of nullRank.
 func TestSkatNullRankAllValues(t *testing.T) {
 	cases := []struct {

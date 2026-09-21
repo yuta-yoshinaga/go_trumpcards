@@ -67,6 +67,7 @@
   "log.handGame": "{{name}}がハンドゲームを行います",
   "log.discard": "{{name}}がスカートに2枚捨てました",
   "log.declareGame": "{{name}}が{{game}}を宣言しました",
+  "log.declareGameSuit": "{{name}}がスート（切り札{{trump}}）を宣言しました",
   "log.play": "{{name}}が{{card}}を出しました",
   "log.trickWin": "{{name}}が{{trick}}トリック目に勝ちました（カード点{{points}}）",
   "log.roundWin": "{{name}}の勝ち（+{{value}}）",
