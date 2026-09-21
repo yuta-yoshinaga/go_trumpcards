@@ -195,7 +195,7 @@ func TestBlackJackCuiPresenters_Method(t *testing.T) {
 		bj.SetPhase(domain.BJPhaseAction)
 		output := tbp.Output(bj, nil)
 		assert.Contains(t, output, "[DD]")
-		assert.Contains(t, output, "[BUST]")
+		assert.Contains(t, output, "[バースト]")
 	})
 	t.Run("success Output BJ flag", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
@@ -423,7 +423,7 @@ func TestBlackJackCuiPresenter_SurrenderAndHint(t *testing.T) {
 		bj.SetPhase(domain.BJPhaseAction)
 		_ = bj.PlayerSurrender()
 		output := bjp.Output(bj, nil)
-		assert.Contains(t, output, "[SURRENDER]")
+		assert.Contains(t, output, "[サレンダー]")
 	})
 
 	t.Run("hint enabled ACTION phase shows hint text", func(t *testing.T) {
@@ -657,7 +657,7 @@ func TestBlackJackCuiPresenter_CpuHandFlags(t *testing.T) {
 		bj.SetPhase(domain.BJPhaseAction)
 		output := bjp.Output(bj, nil)
 		assert.Contains(t, output, "[DD]")
-		assert.Contains(t, output, "[STAND]")
+		assert.Contains(t, output, "[スタンド]")
 		assert.Contains(t, output, "SPADE 5")
 	})
 
@@ -685,7 +685,7 @@ func TestBlackJackCuiPresenter_CpuHandFlags(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
 		bj.SetPhase(domain.BJPhaseAction)
 		output := bjp.Output(bj, nil)
-		assert.Contains(t, output, "[BUST]")
+		assert.Contains(t, output, "[バースト]")
 	})
 
 	t.Run("CPU hand with BJ flag", func(t *testing.T) {
@@ -736,7 +736,7 @@ func TestBlackJackCuiPresenter_CpuHandFlags(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
 		bj.SetPhase(domain.BJPhaseAction)
 		output := bjp.Output(bj, nil)
-		assert.Contains(t, output, "[SURRENDER]")
+		assert.Contains(t, output, "[サレンダー]")
 	})
 
 	t.Run("CPU multi-hand display", func(t *testing.T) {

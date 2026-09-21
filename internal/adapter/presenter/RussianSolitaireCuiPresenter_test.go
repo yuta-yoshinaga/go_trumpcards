@@ -37,7 +37,7 @@ func TestRussianSolitaireCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(rg, nil)
 		assert.Contains(t, result, "Russian Solitaire")
-		assert.Contains(t, result, "Foundation")
+		assert.Contains(t, result, "組札")
 		assert.Contains(t, result, "列0:")
 		assert.Contains(t, result, "手数: 0")
 		assert.Contains(t, result, "ヒント: タブローに置けるのは「移動先と同じスートで1つ下の数字」の札だけです。空の列にはKしか置けません。")

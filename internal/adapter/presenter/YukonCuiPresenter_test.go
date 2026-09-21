@@ -38,7 +38,7 @@ func TestYukonCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(yg, nil)
 		assert.Contains(t, result, "Yukon")
-		assert.Contains(t, result, "Foundation")
+		assert.Contains(t, result, "組札")
 		assert.Contains(t, result, "列0:")
 		// **Yukon 固有の一括移動ルールを常時出す (#4788)。**盤面は Klondike と
 		// 見分けが付かないので、Klondike の感覚だと「揃った並びしか動かせない」

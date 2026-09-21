@@ -20,8 +20,8 @@ func TestFreeCellCuiPresenterOutputPlaying(t *testing.T) {
 	result := p.Output(f, nil)
 
 	assert.Contains(t, result, "FreeCell")
-	assert.Contains(t, result, "FreeCells:")
-	assert.Contains(t, result, "Foundation:")
+	assert.Contains(t, result, "フリーセル:")
+	assert.Contains(t, result, "組札:")
 	assert.Contains(t, result, "手数:")
 }
 
@@ -107,7 +107,7 @@ func TestFreeCellCuiPresenterOutputFreeCellsOccupied(t *testing.T) {
 
 	result := p.Output(f, nil)
 
-	assert.Contains(t, result, "FreeCells:")
+	assert.Contains(t, result, "フリーセル:")
 	assert.Contains(t, result, "SPADE 5")
 }
 
@@ -123,7 +123,7 @@ func TestFreeCellCuiPresenterOutputFoundationWithCards(t *testing.T) {
 
 	result := p.Output(f, nil)
 
-	assert.Contains(t, result, "Foundation:")
+	assert.Contains(t, result, "組札:")
 	assert.Contains(t, result, "SPADE 1")
 }
 

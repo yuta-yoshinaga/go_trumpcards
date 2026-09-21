@@ -21,7 +21,7 @@
   "targetsNone": "列{{col}}の札を置ける先はありません",
   "targetsNotMovable": "列{{col}}の札{{idx}}は掴めません",
   "helpAutoComplete": "  ac                   auto-complete",
-  "foundationHeader": "Foundation: ",
+  "foundationHeader": "組札: ",
   "stockLine": "Stock: {{count}}枚",
   "wasteCard": " | Waste: {{card}}",
   "wasteEmpty": " | Waste: [空]",

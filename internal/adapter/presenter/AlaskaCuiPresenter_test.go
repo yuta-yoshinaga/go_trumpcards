@@ -37,7 +37,7 @@ func TestAlaskaCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(rg, nil)
 		assert.Contains(t, result, "Alaska")
-		assert.Contains(t, result, "Foundation")
+		assert.Contains(t, result, "組札")
 		assert.Contains(t, result, "列0:")
 	})
 

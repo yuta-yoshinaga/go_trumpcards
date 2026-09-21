@@ -24,8 +24,8 @@ func TestBakersGameCuiPresenterOutputPlaying(t *testing.T) {
 	result := p.Output(f, nil)
 
 	assert.Contains(t, result, "Baker")
-	assert.Contains(t, result, "FreeCells:")
-	assert.Contains(t, result, "Foundation:")
+	assert.Contains(t, result, "フリーセル:")
+	assert.Contains(t, result, "組札:")
 	assert.Contains(t, result, "手数:")
 }
 

@@ -12,7 +12,7 @@
   "hintAvailable": "ヒントがあります",
   "noHint": "ヒントはありません",
   "baseRank": "ベースランク: {{rank}}",
-  "foundationHeader": "Foundation: ",
+  "foundationHeader": "組札: ",
   "stockLine": "Stock: {{count}}枚",
   "columnLabel": "列{{col}}:",
   "hintFromTableau": "タブロー列{{col}}[{{idx}}]",

@@ -5,7 +5,7 @@
   "helpGiveUp": "  g                    ギブアップ",
   "helpHint": "  h                    ヒント",
   "helpAutoComplete": "  ac                   オートコンプリート",
-  "foundationHeader": "Foundation: ",
+  "foundationHeader": "組札: ",
   "columnLabel": "列{{col}}:",
   "hintFrom": "タブロー列{{col}}[{{idx}}]",
   "hintToFoundation": "ファンデーション",
