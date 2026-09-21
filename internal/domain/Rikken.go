@@ -237,7 +237,7 @@ func (g *Rikken) bid(idx, contract int) error {
 	g.declarerIdx = idx
 	// **競り上げた本人は降りていない扱いに戻ります。**
 	g.passed[idx] = false
-	g.addLog(idx, "bid", "rikken.log.bid."+RikkenContractName(contract), nil, nil)
+	g.addRikkenBidLog(idx, contract)
 	g.advanceBid()
 	return nil
 }
@@ -309,7 +309,7 @@ func (g *Rikken) call(idx, trumpSuit int) error {
 		return fmt.Errorf("切り札のスートが範囲外です: %d", trumpSuit)
 	}
 	g.trumpSuit = trumpSuit
-	g.addLog(idx, "trump", "rikken.log.trump."+rikkenSuitName(trumpSuit), nil, nil)
+	g.addRikkenTrumpLog(idx, trumpSuit)
 
 	if RikkenHasPartner(g.contract) {
 		card := g.chooseCalledCard(idx)
@@ -377,7 +377,7 @@ func (g *Rikken) startPlay() {
 	g.phase = RikkenPhasePlay
 	// 落札者の左隣からリード。
 	g.currentTurn = (g.declarerIdx + 1) % RikkenPlayerCnt
-	g.addLog(-1, "play", "rikken.log.play."+RikkenContractName(g.contract), nil, nil)
+	g.addRikkenPlayLog(g.contract)
 	g.advanceCpu()
 }
 
@@ -580,11 +580,90 @@ func (g *Rikken) sideSizes() (int, int) {
 }
 
 func rikkenResultLogCode(contract int, made bool) string {
-	suffix := "Failed"
-	if made {
-		suffix = "Made"
+	switch contract {
+	case RikkenContractNone:
+		if made {
+			return "rikken.log.result.noneMade"
+		}
+		return "rikken.log.result.noneFailed"
+	case RikkenContractRik:
+		if made {
+			return "rikken.log.result.rikMade"
+		}
+		return "rikken.log.result.rikFailed"
+	case RikkenContractMisere:
+		if made {
+			return "rikken.log.result.misereMade"
+		}
+		return "rikken.log.result.misereFailed"
+	case RikkenContractSolo:
+		if made {
+			return "rikken.log.result.soloMade"
+		}
+		return "rikken.log.result.soloFailed"
+	default:
+		if made {
+			return "rikken.log.result.openMisereMade"
+		}
+		return "rikken.log.result.openMisereFailed"
 	}
-	return "rikken.log.result." + RikkenContractName(contract) + suffix
+}
+
+func rikkenBidLogCode(contract int) string {
+	switch contract {
+	case RikkenContractNone:
+		return "rikken.log.bid.none"
+	case RikkenContractRik:
+		return "rikken.log.bid.rik"
+	case RikkenContractMisere:
+		return "rikken.log.bid.misere"
+	case RikkenContractSolo:
+		return "rikken.log.bid.solo"
+	default:
+		return "rikken.log.bid.openMisere"
+	}
+}
+
+func rikkenTrumpLogCode(suit int) string {
+	switch suit {
+	case CardDesignSpade:
+		return "rikken.log.trump.spade"
+	case CardDesignClover:
+		return "rikken.log.trump.clover"
+	case CardDesignHeart:
+		return "rikken.log.trump.heart"
+	case CardDesignDiamond:
+		return "rikken.log.trump.diamond"
+	default:
+		return "rikken.log.trump.notrump"
+	}
+}
+
+func rikkenPlayLogCode(contract int) string {
+	switch contract {
+	case RikkenContractNone:
+		return "rikken.log.play.none"
+	case RikkenContractRik:
+		return "rikken.log.play.rik"
+	case RikkenContractMisere:
+		return "rikken.log.play.misere"
+	case RikkenContractSolo:
+		return "rikken.log.play.solo"
+	default:
+		return "rikken.log.play.openMisere"
+	}
+}
+
+func (g *Rikken) addRikkenBidLog(idx, contract int) {
+	g.addLog(idx, "bid", rikkenBidLogCode(contract), nil, nil)
+}
+
+func (g *Rikken) addRikkenTrumpLog(idx, suit int) {
+	g.addLog(idx, "trump", rikkenTrumpLogCode(suit), nil, nil)
+}
+
+func (g *Rikken) addRikkenPlayLog(contract int) {
+	g.addLog(-1, "play", rikkenPlayLogCode(contract), nil, nil)
 }
 
 // finishGame は終局する。

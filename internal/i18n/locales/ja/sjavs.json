@@ -30,5 +30,15 @@
   "hintReasonPlay": "この札が最も無駄がありません",
   "helpExamplePlay": "  p 0                      手札の 0 番のカードを出す",
   "helpHint": "  h                        助言を表示",
-  "trumpMark": "*"
+  "trumpMark": "*",
+  "log.deal": "カードを配りました",
+  "log.redeal": "5 枚をビッドできる人がいないため、配り直します",
+  "log.bid": "{{length}} 枚をビッドしました",
+  "log.pass": "パスしました",
+  "log.trump": "切り札のスート {{suit}} を宣言しました",
+  "log.play": "カードを出しました",
+  "log.trick": "トリックで {{points}} 点取りました",
+  "log.tie": "60-60：得点なし。次のゲームの価値が 2 増えます",
+  "log.score": "チーム {{team}} が {{amount}} 点取りました",
+  "log.rubber": "チーム {{team}} がラバーに勝ちました"
 }

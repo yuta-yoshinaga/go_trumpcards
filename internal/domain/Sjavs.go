@@ -447,7 +447,7 @@ func (s *Sjavs) finishBidding() {
 	s.phase = SjavsPhasePlay
 	s.currentIdx = (s.dealerIdx + 1) % len(s.players)
 	s.leadIdx = s.currentIdx
-	s.addLog(s.bidderIdx, "trump", "sjavs.log.trump", map[string]string{"suit": strconv.Itoa(s.trumpSuit)}, nil)
+	s.addLog(s.bidderIdx, "trump", "sjavs.log.trump", map[string]string{"suit": suitStr(s.trumpSuit)}, nil)
 }
 
 // GetValidPlayIndices は player が出せる手札の添字を返す。

@@ -40,6 +40,10 @@
   "foundationProgress": "収納: {{count}}/{{total}} 枚 ({{percent}}%)",
   "cornerKingsOnly": " (Kのみ)",
   "log.draw": "山札から1枚めくった",
-  "log.move": "帆{{value1}}→中央基礎",
+  "log.moveSailToCenter": "帆{{sail}}→中央基礎",
+  "log.moveSailToCorner": "帆{{sail}}→四隅基礎{{corner}}",
+  "log.moveWasteToCenter": "捨て札→中央基礎",
+  "log.moveWasteToCorner": "捨て札→四隅基礎{{corner}}",
+  "log.moveCornerToCenter": "四隅基礎{{corner}}→中央基礎",
   "log.giveup": "ギブアップしました"
 }

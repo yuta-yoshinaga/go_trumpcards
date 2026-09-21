@@ -111,6 +111,10 @@ function detailCodeText(rawArgument) {
   return rawArgument.trim() || '<missing>';
 }
 
+function isValidDetailCode(rawArgument) {
+  return /^"[a-z0-9]+\.log\.[A-Za-z0-9_.]+"$/.test(rawArgument.trim());
+}
+
 function isFunctionDeclaration(source, index) {
   const lineStart = source.lastIndexOf('\n', index - 1) + 1;
   const prefix = source.slice(lineStart, index);
@@ -119,7 +123,7 @@ function isFunctionDeclaration(source, index) {
 
 function literalActionLogs(source, file) {
   const violations = [];
-  for (const match of source.matchAll(/\bappendLog[A-Za-z0-9_]*\s*\(/g)) {
+  for (const match of source.matchAll(/\b(?:appendLog|addLog)[A-Za-z0-9_]*\s*\(/g)) {
     if (isFunctionDeclaration(source, match.index)) continue;
     const open = match.index + match[0].lastIndexOf('(');
     const args = callArguments(source, open);
@@ -128,12 +132,12 @@ function literalActionLogs(source, file) {
     const detailParams = detailArgs.at(-1);
     const detailCode = detailArgs.at(-2);
     if (!isDetailParams(detailParams ?? '')) {
-      if (isLiteralDetailCode(detailCode ?? '')) {
+      if (isLiteralDetailCode(detailCode ?? '') && !isValidDetailCode(detailCode ?? '')) {
         violations.push({ file, detailCode: detailCodeText(detailCode ?? '') });
       }
       continue;
     }
-    if (isLiteralDetailCode(detailCode ?? '') && !/^"[a-z0-9]+\.log\.[A-Za-z0-9]+"$/.test((detailCode ?? '').trim())) {
+    if (isLiteralDetailCode(detailCode ?? '') && !isValidDetailCode(detailCode ?? '')) {
       violations.push({ file, detailCode: detailCodeText(detailCode ?? '') });
     }
   }

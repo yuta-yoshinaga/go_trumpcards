@@ -57,6 +57,17 @@ describe('check-action-log-detail', () => {
     expect(r.stdout).toContain('2 literal details');
   });
 
+  it('checks literal details passed through addLog wrappers', () => {
+    const r = run(
+      fixture([
+        'Wrapper.go',
+        'package domain\nfunc f() { addLog("step", "turn up", nil, nil) }\nfunc addLog(action, detail string, params map[string]string, cards []*Card) { appendLogCode(0, action, detail, params, cards) }\n',
+      ]),
+    );
+    expect(r.status).toBe(0);
+    expect(r.stdout).toContain('1 literal details');
+  });
+
   it('fails when the fixture ceiling is exceeded', () => {
     const calls = Array.from({ length: 101 }, (_, i) => `func f${i}() { appendLog("step", "detail", nil, nil) }`).join(
       '\n',

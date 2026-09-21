@@ -193,7 +193,7 @@ func (w *Windmill) MoveSailToCenter(sailIdx int) error {
 	w.sails[sailIdx] = nil
 	w.pushCenter(card)
 	w.refillSails()
-	w.afterMove("move", "windmill.log.move", map[string]string{"value1": fmt.Sprint(sailIdx)}, card)
+	w.afterMove("move", "windmill.log.moveSailToCenter", map[string]string{"sail": fmt.Sprint(sailIdx)}, card)
 	return nil
 }
 
@@ -219,7 +219,7 @@ func (w *Windmill) MoveSailToCorner(sailIdx, cornerIdx int) error {
 	w.sails[sailIdx] = nil
 	w.corners[cornerIdx] = append(w.corners[cornerIdx], card)
 	w.refillSails()
-	w.afterMove("move", "windmill.log.move", map[string]string{"value1": fmt.Sprint(sailIdx), "value2": fmt.Sprint(cornerIdx)}, card)
+	w.afterMove("move", "windmill.log.moveSailToCorner", map[string]string{"sail": fmt.Sprint(sailIdx), "corner": fmt.Sprint(cornerIdx)}, card)
 	return nil
 }
 
@@ -238,7 +238,7 @@ func (w *Windmill) MoveWasteToCenter() error {
 	w.takeSnapshot()
 	w.popWaste()
 	w.pushCenter(card)
-	w.afterMove("move", "windmill.log.move", nil, card)
+	w.afterMove("move", "windmill.log.moveWasteToCenter", nil, card)
 	return nil
 }
 
@@ -260,7 +260,7 @@ func (w *Windmill) MoveWasteToCorner(cornerIdx int) error {
 	w.takeSnapshot()
 	w.popWaste()
 	w.corners[cornerIdx] = append(w.corners[cornerIdx], card)
-	w.afterMove("move", "windmill.log.move", map[string]string{"value1": fmt.Sprint(cornerIdx)}, card)
+	w.afterMove("move", "windmill.log.moveWasteToCorner", map[string]string{"corner": fmt.Sprint(cornerIdx)}, card)
 	return nil
 }
 
@@ -289,7 +289,7 @@ func (w *Windmill) MoveCornerToCenter(cornerIdx int) error {
 	w.center = append(w.center, card)
 	// pushCenter ではなくここで直接立てる。帆・捨て札から置いたときだけ解除される。
 	w.transferBlocked = true
-	w.afterMove("move", "windmill.log.move", map[string]string{"value1": fmt.Sprint(cornerIdx)}, card)
+	w.afterMove("move", "windmill.log.moveCornerToCenter", map[string]string{"corner": fmt.Sprint(cornerIdx)}, card)
 	return nil
 }
 

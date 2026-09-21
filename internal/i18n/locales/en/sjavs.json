@@ -30,5 +30,15 @@
   "hintReasonPlay": "this card wastes the least",
   "helpExamplePlay": "  p 0                      play hand card 0",
   "helpHint": "  h                        show a hint",
-  "trumpMark": "*"
+  "trumpMark": "*",
+  "log.deal": "cards dealt",
+  "log.redeal": "nobody can bid five, so the hand is redealt",
+  "log.bid": "bids {{length}}",
+  "log.pass": "passes",
+  "log.trump": "declares trump suit {{suit}}",
+  "log.play": "plays a card",
+  "log.trick": "wins the trick for {{points}} point(s)",
+  "log.tie": "60-60: no score, the next game is worth two more",
+  "log.score": "team {{team}} scores {{amount}}",
+  "log.rubber": "team {{team}} wins the rubber"
 }

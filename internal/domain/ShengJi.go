@@ -572,7 +572,7 @@ func (s *ShengJi) Declare(seat, suit int) error {
 		}
 		s.declaration = &ShengJiDeclaration{Seat: seat, Suit: suit, Strength: st}
 		s.trumpSuit = suit
-		s.addLog(seat, "declare", shengJiDeclareLogCode(suit, st), nil, nil)
+		s.addShengJiDeclareLog(seat, suit, st)
 	}
 	s.advanceDeclare()
 	return nil
@@ -1091,9 +1091,28 @@ func (s *ShengJi) addLog(playerIdx int, actionType, detailCode string, detailPar
 }
 
 func shengJiDeclareLogCode(suit, strength int) string {
-	suits := map[int]string{CardDesignSpade: "Spade", CardDesignClover: "Clover", CardDesignHeart: "Heart", CardDesignDiamond: "Diamond"}
-	strengths := map[int]string{1: "Single", 2: "Pair"}
-	return "shengji.log.declare" + suits[suit] + strengths[strength]
+	switch {
+	case suit == CardDesignSpade && strength == 1:
+		return "shengji.log.declareSpadeSingle"
+	case suit == CardDesignSpade && strength == 2:
+		return "shengji.log.declareSpadePair"
+	case suit == CardDesignClover && strength == 1:
+		return "shengji.log.declareCloverSingle"
+	case suit == CardDesignClover && strength == 2:
+		return "shengji.log.declareCloverPair"
+	case suit == CardDesignHeart && strength == 1:
+		return "shengji.log.declareHeartSingle"
+	case suit == CardDesignHeart && strength == 2:
+		return "shengji.log.declareHeartPair"
+	case suit == CardDesignDiamond && strength == 1:
+		return "shengji.log.declareDiamondSingle"
+	default:
+		return "shengji.log.declareDiamondPair"
+	}
+}
+
+func (s *ShengJi) addShengJiDeclareLog(seat, suit, strength int) {
+	s.addLog(seat, "declare", shengJiDeclareLogCode(suit, strength), nil, nil)
 }
 
 // IsHumanTurn は現在の手番が人間かを返す。

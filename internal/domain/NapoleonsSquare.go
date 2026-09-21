@@ -200,7 +200,7 @@ func (ns *NapoleonsSquare) MoveWasteToTableau(col int) error {
 	ns.waste = ns.waste[:len(ns.waste)-1]
 	ns.tableau[col] = append(ns.tableau[col],
 		&NapoleonsSquareTableauCard{Card: card, FaceUp: true})
-	ns.afterMove("move", "napoleonssquare.log.move", map[string]string{"value1": fmt.Sprint(col)}, card)
+	ns.afterMove("move", "napoleonssquare.log.moveWasteToTableau", map[string]string{"column": fmt.Sprint(col)}, card)
 	return nil
 }
 
@@ -220,7 +220,7 @@ func (ns *NapoleonsSquare) MoveWasteToFoundation() error {
 	ns.takeSnapshot()
 	ns.waste = ns.waste[:len(ns.waste)-1]
 	ns.foundation[fIdx] = append(ns.foundation[fIdx], card)
-	ns.afterMove("move", "napoleonssquare.log.move", map[string]string{"value1": fmt.Sprint(fIdx)}, card)
+	ns.afterMove("move", "napoleonssquare.log.moveWasteToFoundation", map[string]string{"foundation": fmt.Sprint(fIdx)}, card)
 	return nil
 }
 
@@ -260,7 +260,7 @@ func (ns *NapoleonsSquare) MoveTableauToTableau(fromCol, cardIndex, toCol int) e
 	moved := append([]*NapoleonsSquareTableauCard(nil), group...)
 	ns.tableau[fromCol] = fromCards[:cardIndex]
 	ns.tableau[toCol] = append(ns.tableau[toCol], moved...)
-	ns.afterMove("move", "napoleonssquare.log.move", map[string]string{"value1": fmt.Sprint(fromCol), "value2": fmt.Sprint(toCol), "value3": fmt.Sprint(len(moved))},
+	ns.afterMove("move", "napoleonssquare.log.moveTableauToTableau", map[string]string{"from": fmt.Sprint(fromCol), "to": fmt.Sprint(toCol), "count": fmt.Sprint(len(moved))},
 		moved[0].Card)
 	return nil
 }
@@ -285,7 +285,7 @@ func (ns *NapoleonsSquare) MoveTableauToFoundation(col int) error {
 	ns.takeSnapshot()
 	ns.tableau[col] = fromCards[:len(fromCards)-1]
 	ns.foundation[fIdx] = append(ns.foundation[fIdx], card)
-	ns.afterMove("move", "napoleonssquare.log.move", map[string]string{"value1": fmt.Sprint(col), "value2": fmt.Sprint(fIdx)}, card)
+	ns.afterMove("move", "napoleonssquare.log.moveTableauToFoundation", map[string]string{"column": fmt.Sprint(col), "foundation": fmt.Sprint(fIdx)}, card)
 	return nil
 }
 
