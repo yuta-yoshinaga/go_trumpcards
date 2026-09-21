@@ -435,7 +435,7 @@ func (g *Koenigrufen) CpuBid() {
 func (g *Koenigrufen) applyBid(idx int, bid KoenigrufenBid) {
 	g.highestBid = bid
 	g.highestBidder = idx
-	g.appendLog(idx, "bid", "koenigrufen.log.bid", map[string]string{"name": playerName(g.players, idx), "bid": koenigrufenBidName(bid)}, nil)
+	g.appendLog(idx, "bid", "koenigrufen.log.bid", map[string]string{"name": playerName(g.players, idx), "bidKey": koenigrufenBidKey(bid)}, nil)
 	g.advanceBid()
 }
 
@@ -466,7 +466,7 @@ func (g *Koenigrufen) finalizeBid() {
 	} else {
 		g.declarerIdx = g.highestBidder
 		g.contract = g.highestBid
-		g.appendLog(g.declarerIdx, "win_bid", "koenigrufen.log.winBid", map[string]string{"name": playerName(g.players, g.declarerIdx), "contract": koenigrufenBidName(g.contract)}, nil)
+		g.appendLog(g.declarerIdx, "win_bid", "koenigrufen.log.winBid", map[string]string{"name": playerName(g.players, g.declarerIdx), "contractKey": koenigrufenBidKey(g.contract)}, nil)
 	}
 	g.enterCallOrSolo()
 }
@@ -821,7 +821,7 @@ func (g *Koenigrufen) enterRoundEnd() {
 			g.playerScores[i] += bd.OpponentScore
 		}
 	}
-	g.appendLog(-1, "round_score", "koenigrufen.log.roundScore", map[string]string{"deal": strconv.Itoa(g.roundNumber), "declarer": playerName(g.players, g.declarerIdx), "contract": koenigrufenBidName(g.contract), "teamPoints": strconv.Itoa(bd.TeamPoints), "totalPoints": strconv.Itoa(KoenigrufenTotalPoints), "won": strconv.FormatBool(bd.Won), "base": strconv.Itoa(bd.Base)}, nil)
+	g.appendLog(-1, "round_score", "koenigrufen.log.roundScore", map[string]string{"deal": strconv.Itoa(g.roundNumber), "declarer": playerName(g.players, g.declarerIdx), "contractKey": koenigrufenBidKey(g.contract), "teamPoints": strconv.Itoa(bd.TeamPoints), "totalPoints": strconv.Itoa(KoenigrufenTotalPoints), "won": strconv.FormatBool(bd.Won), "base": strconv.Itoa(bd.Base)}, nil)
 	g.checkGameEnd()
 }
 
@@ -1527,12 +1527,12 @@ func (g *Koenigrufen) appendLog(playerIdx int, actionType, detailCode string, de
 	g.appendLogCodeAt(len(g.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
-// koenigrufenBidName 入札の表示名を返す。
-func koenigrufenBidName(bid KoenigrufenBid) string {
+// koenigrufenBidKey は入札の i18n キーを返す。
+func koenigrufenBidKey(bid KoenigrufenBid) string {
 	if bid == KoenigrufenBidRufer {
-		return "rufer"
+		return "koenigrufen.bidRufer"
 	}
-	return "pass"
+	return "koenigrufen.bidPass"
 }
 
 // koenigrufenCardStr カードのログ表示文字列 (切り札・スキュース対応)。

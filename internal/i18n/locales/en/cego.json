@@ -16,6 +16,7 @@
   "roleOpponent": "Opponent",
   "bidNone": "-",
   "bidPlay": "Play",
+  "bidPass": "Pass",
   "contractNone": "-",
   "contractCego": "Cego (swap with blind)",
   "contractHandspiel": "Handspiel (keep hand)",

@@ -18,6 +18,7 @@
   "roleOpponent": "Opponent",
   "bidNone": "-",
   "bidRufer": "Rufer",
+  "bidPass": "Pass",
   "outcomeNone": "-",
   "outcomeWin": "Made (declarer's team wins)",
   "outcomeLoss": "Failed (opponents win)",

@@ -427,7 +427,7 @@ func (g *FrenchTarot) CpuBid() {
 func (g *FrenchTarot) applyBid(idx int, bid FrenchTarotBid) {
 	g.highestBid = bid
 	g.highestBidder = idx
-	g.appendLog(idx, "bid", "frenchtarot.log.bid", map[string]string{"player": playerName(g.players, idx), "bid": frenchTarotBidName(bid)}, nil)
+	g.appendLog(idx, "bid", "frenchtarot.log.bid", map[string]string{"player": playerName(g.players, idx), "bidKey": frenchTarotBidKey(bid)}, nil)
 	g.advanceBid()
 }
 
@@ -463,7 +463,7 @@ func (g *FrenchTarot) redeal() {
 func (g *FrenchTarot) finalizeBid() {
 	g.declarerIdx = g.highestBidder
 	g.contract = g.highestBid
-	g.appendLog(g.declarerIdx, "win_bid", "frenchtarot.log.winBid", map[string]string{"player": playerName(g.players, g.declarerIdx), "bid": frenchTarotBidName(g.contract)}, nil)
+	g.appendLog(g.declarerIdx, "win_bid", "frenchtarot.log.winBid", map[string]string{"player": playerName(g.players, g.declarerIdx), "bidKey": frenchTarotBidKey(g.contract)}, nil)
 	switch g.contract {
 	case FrenchTarotBidPetite, FrenchTarotBidGarde:
 		// シアンを公開してデクレアラーの手札に加え、エカルトを待つ。
@@ -793,7 +793,7 @@ func (g *FrenchTarot) enterRoundEnd() {
 			g.playerScores[i] += bd.DefenderScore
 		}
 	}
-	g.appendLog(-1, "round_score", "frenchtarot.log.roundScore", map[string]string{"deal": fmt.Sprint(g.roundNumber), "declarer": playerName(g.players, g.declarerIdx), "bid": frenchTarotBidName(g.contract), "target": fmt.Sprint(bd.Target), "points": fmt.Sprint(bd.DeclarerHalfPoints), "bouts": fmt.Sprint(bd.Bouts), "base": fmt.Sprint(bd.Base)}, nil)
+	g.appendLog(-1, "round_score", "frenchtarot.log.roundScore", map[string]string{"deal": fmt.Sprint(g.roundNumber), "declarer": playerName(g.players, g.declarerIdx), "bidKey": frenchTarotBidKey(g.contract), "target": fmt.Sprint(bd.Target), "points": fmt.Sprint(bd.DeclarerHalfPoints), "bouts": fmt.Sprint(bd.Bouts), "base": fmt.Sprint(bd.Base)}, nil)
 	g.checkGameEnd()
 }
 
@@ -1530,19 +1530,19 @@ func (g *FrenchTarot) appendLog(playerIdx int, actionType, detailCode string, de
 	g.appendLogCodeAt(len(g.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
-// frenchTarotBidName 入札の表示名を返す。
-func frenchTarotBidName(bid FrenchTarotBid) string {
+// frenchTarotBidKey は入札の i18n キーを返す。
+func frenchTarotBidKey(bid FrenchTarotBid) string {
 	switch bid {
 	case FrenchTarotBidPetite:
-		return "petite"
+		return "frenchtarot.bidPetite"
 	case FrenchTarotBidGarde:
-		return "garde"
+		return "frenchtarot.bidGarde"
 	case FrenchTarotBidGardeSans:
-		return "garde-sans"
+		return "frenchtarot.bidGardeSans"
 	case FrenchTarotBidGardeContre:
-		return "garde-contre"
+		return "frenchtarot.bidGardeContre"
 	default:
-		return "pass"
+		return "frenchtarot.bidPass"
 	}
 }
 

@@ -204,7 +204,7 @@ func TestKoenigrufenBiddingRufer(t *testing.T) {
 		}
 	}
 	require.NotNil(t, entry)
-	assert.Equal(t, "rufer", entry.DetailParams["bid"])
+	assert.Equal(t, "koenigrufen.bidRufer", entry.DetailParams["bidKey"])
 }
 
 func TestKoenigrufenBidInvalid(t *testing.T) {

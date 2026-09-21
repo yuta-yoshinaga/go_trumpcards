@@ -526,6 +526,63 @@ func TestActionLogToText_RendersBarbuAndKingContractsInBothLanguages(t *testing.
 	}
 }
 
+func TestActionLogToText_RendersSliceSevenContractsAndBidsInBothLanguages(t *testing.T) {
+	entries := []*domain.ActionLogEntry{
+		{DetailCode: "frenchtarot.log.bid", DetailParams: map[string]string{"player": "Player", "bidKey": "frenchtarot.bidPetite"}},
+		{DetailCode: "frenchtarot.log.bid", DetailParams: map[string]string{"player": "Player", "bidKey": "frenchtarot.bidGarde"}},
+		{DetailCode: "frenchtarot.log.bid", DetailParams: map[string]string{"player": "Player", "bidKey": "frenchtarot.bidGardeSans"}},
+		{DetailCode: "frenchtarot.log.bid", DetailParams: map[string]string{"player": "Player", "bidKey": "frenchtarot.bidGardeContre"}},
+		{DetailCode: "frenchtarot.log.bid", DetailParams: map[string]string{"player": "Player", "bidKey": "frenchtarot.bidPass"}},
+		{DetailCode: "calabresella.log.bid", DetailParams: map[string]string{"name": "Player", "bidKey": "calabresella.bidChiamo"}},
+		{DetailCode: "calabresella.log.bid", DetailParams: map[string]string{"name": "Player", "bidKey": "calabresella.bidSolo"}},
+		{DetailCode: "calabresella.log.bid", DetailParams: map[string]string{"name": "Player", "bidKey": "calabresella.bidPass"}},
+		{DetailCode: "koenigrufen.log.bid", DetailParams: map[string]string{"name": "Player", "bidKey": "koenigrufen.bidRufer"}},
+		{DetailCode: "koenigrufen.log.bid", DetailParams: map[string]string{"name": "Player", "bidKey": "koenigrufen.bidPass"}},
+		{DetailCode: "cego.log.bid", DetailParams: map[string]string{"name": "Player", "bidKey": "cego.bidPlay"}},
+		{DetailCode: "cego.log.bid", DetailParams: map[string]string{"name": "Player", "bidKey": "cego.bidPass"}},
+		{DetailCode: "cego.log.contract", DetailParams: map[string]string{"name": "Player", "contractKey": "cego.contractCego"}},
+		{DetailCode: "cego.log.contract", DetailParams: map[string]string{"name": "Player", "contractKey": "cego.contractHandspiel"}},
+		{DetailCode: "cego.log.contract", DetailParams: map[string]string{"name": "Player", "contractKey": "cego.contractNone"}},
+		{DetailCode: "colourwhist.log.bid", DetailParams: map[string]string{"contractKey": "colourwhist.contractShort.samen"}},
+		{DetailCode: "colourwhist.log.bid", DetailParams: map[string]string{"contractKey": "colourwhist.contractShort.alleen"}},
+		{DetailCode: "colourwhist.log.bid", DetailParams: map[string]string{"contractKey": "colourwhist.contractShort.miserie"}},
+		{DetailCode: "colourwhist.log.bid", DetailParams: map[string]string{"contractKey": "colourwhist.contractShort.troel"}},
+		{DetailCode: "colourwhist.log.bid", DetailParams: map[string]string{"contractKey": "colourwhist.contractShort.none"}},
+	}
+
+	t.Cleanup(func() { i18n.SetLang("ja") })
+
+	i18n.SetLang("ja")
+	ja := actionLogToText(entries)
+	for _, text := range []string{"プティット", "ガルド", "ガルド・サン", "ガルド・コントル", "パス", "キアーモ", "ソロ", "ルーファー", "プレイ", "Cego (場札交換)", "Handspiel (手札のまま)", "-", "サーメン", "アレーン", "ミゼリー", "トルール", "未定"} {
+		assert.Contains(t, ja, text)
+	}
+	for _, text := range []string{"petite", "garde", "garde-sans", "garde-contre", "chiamo", "solo", "rufer", "play", "samen", "alleen", "miserie", "troel"} {
+		assert.NotContains(t, ja, text)
+	}
+	for _, key := range []string{"frenchtarot.bidPetite", "frenchtarot.bidGarde", "frenchtarot.bidGardeSans", "frenchtarot.bidGardeContre", "frenchtarot.bidPass", "calabresella.bidChiamo", "calabresella.bidSolo", "calabresella.bidPass", "koenigrufen.bidRufer", "koenigrufen.bidPass", "cego.bidPlay", "cego.bidPass", "cego.contractCego", "cego.contractHandspiel", "cego.contractNone", "colourwhist.contractShort.samen", "colourwhist.contractShort.alleen", "colourwhist.contractShort.miserie", "colourwhist.contractShort.troel", "colourwhist.contractShort.none"} {
+		assert.NotContains(t, ja, key)
+	}
+	assert.NotContains(t, ja, "{{")
+	assert.NotContains(t, ja, "（相方と8）")
+	assert.NotContains(t, ja, "（エース3枚・強制）")
+
+	i18n.SetLang("en")
+	en := actionLogToText(entries)
+	for _, text := range []string{"Petite", "Garde", "Garde Sans", "Garde Contre", "Pass", "chiamo", "solo", "Rufer", "Play", "Cego (swap with blind)", "Handspiel (keep hand)", "-", "Samen", "Alleen", "Miserie", "Troel", "undecided"} {
+		assert.Contains(t, en, text)
+	}
+	for _, text := range []string{"プティット", "ガルド", "ガルド・サン", "ガルド・コントル", "キアーモ", "ソロ", "ルーファー", "プレイ", "サーメン", "アレーン", "ミゼリー", "トルール", "未定"} {
+		assert.NotContains(t, en, text)
+	}
+	for _, key := range []string{"frenchtarot.bidPetite", "frenchtarot.bidGarde", "frenchtarot.bidGardeSans", "frenchtarot.bidGardeContre", "frenchtarot.bidPass", "calabresella.bidChiamo", "calabresella.bidSolo", "calabresella.bidPass", "koenigrufen.bidRufer", "koenigrufen.bidPass", "cego.bidPlay", "cego.bidPass", "cego.contractCego", "cego.contractHandspiel", "cego.contractNone", "colourwhist.contractShort.samen", "colourwhist.contractShort.alleen", "colourwhist.contractShort.miserie", "colourwhist.contractShort.troel", "colourwhist.contractShort.none"} {
+		assert.NotContains(t, en, key)
+	}
+	assert.NotContains(t, en, "{{")
+	assert.NotContains(t, en, "（相方と8）")
+	assert.NotContains(t, en, "（エース3枚・強制）")
+}
+
 func TestActionLogToText_RendersHanafudaCaptureLabelsInBothLanguages(t *testing.T) {
 	entries := []*domain.ActionLogEntry{
 		{DetailCode: "gostop.log.play", DetailParams: map[string]string{"name": "You", "card": "三月·光", "resultKey": "gostop.log.result.captured"}},
