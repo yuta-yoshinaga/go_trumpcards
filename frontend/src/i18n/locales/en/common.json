@@ -6815,5 +6815,10 @@
   "zwicker.log.sweep": "takes what is left on the table",
   "zwicker.log.roundEnd": "team scores {{team0}} - {{team1}}",
   "zwicker.log.gameEnd": "team {{team}} wins",
-  "test.log.stub": "test log entry {{value}}"
+  "test.log.stub": "test log entry {{value}}",
+  "common.suit.spade": "Spade",
+  "common.suit.club": "Club",
+  "common.suit.heart": "Heart",
+  "common.suit.diamond": "Diamond",
+  "common.suit.unknown": "Unknown"
 }

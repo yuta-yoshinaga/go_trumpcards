@@ -633,5 +633,10 @@
   "blackhole.log.deal": "新しいゲームを開始しました", "blackhole.log.move": "扇{{fan}}→ブラックホール", "blackhole.log.giveUp": "投了しました", "blackhole.log.clear": "ブラックホールに全カードを吸い込みました", "blackhole.log.gameOver": "合法手がなくなりました",
   "threecard.log.bet": "アンテ={{ante}} ペアプラス={{pairplus}}", "threecard.log.play": "プレイベット={{bet}}", "threecard.log.playerFolds": "プレイヤーがフォールド", "threecard.log.playerFolded": "プレイヤーがフォールドした", "threecard.log.deal": "各プレイヤーに3枚ずつ配った", "threecard.log.playerWins": "プレイヤーの勝ち", "threecard.log.push": "プッシュ", "threecard.log.dealerWins": "ディーラーの勝ち",
   "caribbeanstud.log.bet": "アンテ={{ante}} ジャックポット={{jackpot}}", "caribbeanstud.log.play": "プレイベット={{bet}}", "caribbeanstud.log.playerFolds": "プレイヤーがフォールド", "caribbeanstud.log.playerFolded": "プレイヤーがフォールドした", "caribbeanstud.log.deal": "各プレイヤーに5枚ずつ配った", "caribbeanstud.log.playerWins": "プレイヤーの勝ち", "caribbeanstud.log.push": "プッシュ", "caribbeanstud.log.dealerWins": "ディーラーの勝ち",
-  "test.log.stub": "テスト用の棋譜行 {{value}}"
+  "test.log.stub": "テスト用の棋譜行 {{value}}",
+  "common.suit.spade": "スペード",
+  "common.suit.club": "クラブ",
+  "common.suit.heart": "ハート",
+  "common.suit.diamond": "ダイヤ",
+  "common.suit.unknown": "不明"
 }

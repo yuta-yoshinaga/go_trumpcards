@@ -37,6 +37,18 @@ describe('check-action-log-params', () => {
     expect(r.status).toBe(0);
   });
 
+  it('accepts Key-suffixed params against the resolved placeholder name', () => {
+    const r = run(
+      fixture(
+        'func f() { appendLog(0, "play", "fixture.log.play", map[string]string{"suitKey": "common.suit.spade"}, nil) }',
+        {
+          'log.play': 'trump {{suit}}',
+        },
+      ),
+    );
+    expect(r.status).toBe(0);
+  });
+
   it('rejects a mismatched param key and prints the key name', () => {
     const r = run(
       fixture('func f() { appendLog(0, "play", "fixture.log.play", map[string]string{"cardStr": "x"}, nil) }', {

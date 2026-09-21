@@ -60,3 +60,10 @@ func TestI18nPairs_IsOrderStable(t *testing.T) {
 	assert.Nil(t, i18nPairs(nil))
 	assert.Nil(t, i18nPairs(map[string]string{}))
 }
+
+func TestI18nPairs_ResolvesKeySuffixedParams(t *testing.T) {
+	i18n.SetLang("ja")
+	assert.Equal(t, []string{"plain", "value", "suit", "スペード"}, i18nPairs(map[string]string{
+		"plain": "value", "suitKey": "common.suit.spade",
+	}))
+}

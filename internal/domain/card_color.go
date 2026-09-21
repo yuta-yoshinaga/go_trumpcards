@@ -33,6 +33,22 @@ func suitStr(suit int) string {
 	return "Unknown"
 }
 
+// suitKeyOf returns the i18n key for a suit design.
+func suitKeyOf(suit int) string {
+	switch suit {
+	case CardDesignSpade:
+		return "common.suit.spade"
+	case CardDesignClover:
+		return "common.suit.club"
+	case CardDesignHeart:
+		return "common.suit.heart"
+	case CardDesignDiamond:
+		return "common.suit.diamond"
+	default:
+		return "common.suit.unknown"
+	}
+}
+
 // cardStr returns the display string for a card (suit glyph + rank). Shared
 // across categories — over a hundred game files render a card this way — so it
 // lives here rather than in any one game's file.

@@ -44,7 +44,9 @@ function mapKeys(argument) {
   const map = argument.trim();
   if (map === 'nil') return [];
   if (!map.startsWith('map[string]string{')) return [];
-  return [...map.matchAll(/(?:[{,])\s*"([^"\\]+)"\s*:/g)].map((match) => match[1]);
+  return [...map.matchAll(/(?:[{,])\s*"([^"\\]+)"\s*:/g)].map((match) =>
+    match[1].endsWith('Key') ? match[1].slice(0, -3) : match[1],
+  );
 }
 
 function nextArgument(source, end) {
