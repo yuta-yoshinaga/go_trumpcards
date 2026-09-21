@@ -290,11 +290,12 @@ func TestHorse_Reset(t *testing.T) {
 
 func TestHorse_PhaseGuards(t *testing.T) {
 	t.Parallel()
-	g := newHorseForTest(t)
+	g := NewHorse(HorseConfig{Seats: 4, InitialChips: 5000, HandsPerDiscipline: 2})
+	g.Reset()
 	assert.ErrorIs(t, g.NextHand(), errHorseWrongPhase, "ハンド中に次へ進めてしまう")
 
 	horseFoldOutHand(t, g)
-	assert.Equal(t, HorsePhaseHandEnd, g.GetPhase())
+	require.Equal(t, HorsePhaseHandEnd, g.GetPhase())
 	assert.ErrorIs(t, g.PlayerAction(HoldemActionFold, 0, 0), errHorseWrongPhase,
 		"決着後に手を受け付けてしまう")
 
