@@ -5,7 +5,7 @@
   "helpGiveUp": "  g                    ギブアップ",
   "helpHint": "  h                    ヒント",
   "helpAutoComplete": "  ac                   オートコンプリート",
-  "foundationHeader": "Foundation: ",
+  "foundationHeader": "組札: ",
   "oneCardWarning": "(!残り1枚)",
   "emptyColNote": "注意: 空列は再利用できません",
   "columnLabel": "列{{col}}:",

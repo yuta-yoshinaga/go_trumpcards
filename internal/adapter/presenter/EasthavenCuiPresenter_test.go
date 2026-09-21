@@ -41,7 +41,7 @@ func TestEasthavenCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(eg, nil)
 		assert.Contains(t, result, "Easthaven")
-		assert.Contains(t, result, "Foundation")
+		assert.Contains(t, result, "組札")
 		assert.Contains(t, result, "列0:")
 	})
 

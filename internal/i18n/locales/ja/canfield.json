@@ -22,7 +22,7 @@
   "noHint": "ヒントはありません",
   "baseRank": "ベースランク: {{rank}}",
   "baseRankRule": "ファンデーションはベースランクから始まり、Kの次はAへ循環します",
-  "foundationHeader": "Foundation: ",
+  "foundationHeader": "組札: ",
   "reserveLine": "Reserve: {{count}}枚 (top: {{card}})",
   "reserveEmpty": "Reserve: [空]",
   "stockLine": "Stock: {{count}}枚",

@@ -17,7 +17,7 @@
   "shiftHint": "シフト(s)で盤面を再構築できます",
   "hintAvailable": "ヒントがあります",
   "noHint": "ヒントはありません",
-  "foundationHeader": "Foundation: ",
+  "foundationHeader": "組札: ",
   "foundationPile": "{{card}}({{count}})",
   "foundationProgress": "進捗: {{total}}/52",
   "opHelp": "操作: s=シャッフル（山札再構築） m=移動",

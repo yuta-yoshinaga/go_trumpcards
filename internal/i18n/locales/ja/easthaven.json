@@ -32,7 +32,7 @@
   "stalemate": "手詰まりです",
   "hintAvailable": "ヒントがあります",
   "noHint": "ヒントはありません",
-  "foundationHeader": "Foundation: ",
+  "foundationHeader": "組札: ",
   "stockLine": "Stock: {{count}}",
   "cannotDealEmptyCol": "空き列があるためめくれません（先に埋めてください）",
   "faceDownLeft": "山札が尽きました。裏向きのカードが残っている列があります",

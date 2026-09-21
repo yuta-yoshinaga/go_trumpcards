@@ -7,7 +7,7 @@
   "helpGiveUp": "  g                    ギブアップ",
   "helpHint": "  h                    ヒント",
   "helpAutoComplete": "  ac                   オートコンプリート",
-  "foundationHeader": "Foundation: ",
+  "foundationHeader": "組札: ",
   "reserveHeader": "リザーブ: ",
   "stalemateEscape": "脱出には undo を {{count}} 回（undo コマンド）実行してください",
   "columnLabel": "列{{col}}:",

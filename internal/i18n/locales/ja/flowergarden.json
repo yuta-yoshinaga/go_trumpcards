@@ -7,7 +7,7 @@
   "helpGiveUp": "  g                    ギブアップ",
   "helpHint": "  h                    ヒント",
   "helpAutoComplete": "  ac                   オートコンプリート",
-  "foundationHeader": "Foundation: ",
+  "foundationHeader": "組札: ",
   "reserveHeader": "ブーケ: ",
   "columnLabel": "列{{col}}:",
   "promptToZone": "移動先の列、または組札なら 'f'",

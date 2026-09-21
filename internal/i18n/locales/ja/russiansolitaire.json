@@ -16,7 +16,7 @@
   "stalemate": "手詰まりです",
   "hintAvailable": "ヒントがあります",
   "noHint": "ヒントはありません",
-  "foundationHeader": "Foundation: ",
+  "foundationHeader": "組札: ",
   "columnLabel": "列{{col}}:",
   "hintFrom": "タブロー列{{col}}[{{idx}}]",
   "hintToFoundation": "ファンデーション",

@@ -210,4 +210,63 @@ func TestTranslatedPresenterLabels(t *testing.T) {
 			assert.NotContains(t, got, japanese, key+" contains "+japanese)
 		}
 	}
+
+	boardLabels := map[string]string{
+		"agnes.foundationHeader":             "組札: ",
+		"alaska.foundationHeader":            "組札: ",
+		"bakersdozen.foundationHeader":       "組札: ",
+		"bakersgame.freeCellHeader":          "フリーセル: ",
+		"bakersgame.foundationHeader":        "組札: ",
+		"beleagueredcastle.foundationHeader": "組札: ",
+		"canfield.foundationHeader":          "組札: ",
+		"citadel.foundationHeader":           "組札: ",
+		"cruel.foundationHeader":             "組札: ",
+		"easthaven.foundationHeader":         "組札: ",
+		"eightoff.freeCellHeader":            "フリーセル: ",
+		"eightoff.foundationHeader":          "組札: ",
+		"flowergarden.foundationHeader":      "組札: ",
+		"fortress.foundationHeader":          "組札: ",
+		"fortyandeight.foundationHeader":     "組札: ",
+		"fortythieves.foundationHeader":      "組札: ",
+		"freecell.freeCellHeader":            "フリーセル: ",
+		"freecell.foundationHeader":          "組札: ",
+		"kingalbert.foundationHeader":        "組札: ",
+		"klondike.foundationHeader":          "組札: ",
+		"penguin.freeCellHeader":             "フリーセル: ",
+		"penguin.foundationHeader":           "組札: ",
+		"perseverance.foundationHeader":      "組札: ",
+		"rankandfile.foundationHeader":       "組札: ",
+		"russiansolitaire.foundationHeader":  "組札: ",
+		"seahaventowers.reservedHeader":      "リザーブ: ",
+		"seahaventowers.foundationHeader":    "組札: ",
+		"somerset.foundationHeader":          "組札: ",
+		"stalactites.foundationHeader":       "組札: ",
+		"streetsandalleys.foundationHeader":  "組札: ",
+		"sultan.foundationHeader":            "組札: ",
+		"sultan.divanHeader":                 "ディヴァン:",
+		"whitehead.foundationHeader":         "組札: ",
+		"yukon.foundationHeader":             "組札: ",
+		"blackjack.handStatusBust":           "[バースト]",
+		"blackjack.handStatusStand":          "[スタンド]",
+		"blackjack.handStatusSurrender":      "[サレンダー]",
+	}
+	englishForbidden := []string{"Foundation", "FreeCells", "Reserved", "Divan", "BUST", "STAND", "SURRENDER"}
+	japaneseForbidden := []string{"組札", "フリーセル", "リザーブ", "ディヴァン", "バースト", "スタンド", "サレンダー"}
+
+	i18n.SetLang("ja")
+	for key, want := range boardLabels {
+		got := i18n.T(key)
+		assert.Equal(t, want, got, key)
+		for _, forbidden := range englishForbidden {
+			assert.NotContains(t, got, forbidden, key+" contains "+forbidden)
+		}
+	}
+
+	i18n.SetLang("en")
+	for key := range boardLabels {
+		got := i18n.T(key)
+		for _, forbidden := range japaneseForbidden {
+			assert.NotContains(t, got, forbidden, key+" contains "+forbidden)
+		}
+	}
 }

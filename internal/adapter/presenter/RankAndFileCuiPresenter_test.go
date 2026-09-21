@@ -111,7 +111,7 @@ func TestRankAndFileCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(fg, nil)
 		assert.Contains(t, result, "Rank and File")
-		assert.Contains(t, result, "Foundation")
+		assert.Contains(t, result, "組札")
 		assert.Contains(t, result, "Stock: 64枚")
 		assert.Contains(t, result, "Waste: [空]")
 		assert.Contains(t, result, "列0:")

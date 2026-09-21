@@ -57,7 +57,7 @@ func TestKingAlbertCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(bg, nil)
 		assert.Contains(t, result, "King Albert")
-		assert.Contains(t, result, "Foundation")
+		assert.Contains(t, result, "組札")
 		assert.Contains(t, result, "列0:")
 		assert.Contains(t, result, "手数: 0")
 	})

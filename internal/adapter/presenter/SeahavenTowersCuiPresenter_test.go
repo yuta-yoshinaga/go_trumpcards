@@ -21,8 +21,8 @@ func TestSeahavenTowersCuiPresenterOutputPlaying(t *testing.T) {
 	result := p.Output(s, nil)
 
 	assert.Contains(t, result, "Seahaven Towers")
-	assert.Contains(t, result, "Reserved:")
-	assert.Contains(t, result, "Foundation:")
+	assert.Contains(t, result, "リザーブ:")
+	assert.Contains(t, result, "組札:")
 	assert.Contains(t, result, "手数:")
 }
 
@@ -94,7 +94,7 @@ func TestSeahavenTowersCuiPresenterOutputReservedOccupied(t *testing.T) {
 	s.SetFreeCells(cells)
 
 	result := p.Output(s, nil)
-	assert.Contains(t, result, "Reserved:")
+	assert.Contains(t, result, "リザーブ:")
 	assert.Contains(t, result, "SPADE 5")
 }
 
@@ -109,7 +109,7 @@ func TestSeahavenTowersCuiPresenterOutputFoundationWithCards(t *testing.T) {
 	s.SetFoundation(foundation)
 
 	result := p.Output(s, nil)
-	assert.Contains(t, result, "Foundation:")
+	assert.Contains(t, result, "組札:")
 	assert.Contains(t, result, "SPADE 1")
 }
 

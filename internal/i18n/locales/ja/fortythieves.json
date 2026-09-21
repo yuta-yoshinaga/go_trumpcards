@@ -10,7 +10,7 @@
   "helpHint": "  h                    hint",
   "helpAutoComplete": "  ac                   auto-complete",
   "cuiEmptyFoundation": "[空: どのAでも可]",
-  "foundationHeader": "Foundation: ",
+  "foundationHeader": "組札: ",
   "stockLine": "Stock: {{count}}枚",
   "wasteCard": " | Waste: {{card}}",
   "wasteEmpty": " | Waste: [空]",
