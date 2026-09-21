@@ -49,5 +49,13 @@
   "log.selectContract": "親{{dealer}}が{{contract}}を選択しました",
   "log.play": "プレイヤー{{player}}が{{card}}を出しました",
   "log.trickWin": "プレイヤー{{player}}がトリック{{trick}}を取りました",
-  "log.dealEnd": "ディール{{deal}}の得点を計算しました（{{contract}}）"
+  "log.dealEnd": "ディール{{deal}}の得点を計算しました（{{contract}}）",
+  "contractShort.noTricks": "ノートリック",
+  "contractShort.noHearts": "ノーハート",
+  "contractShort.noQueens": "ノークイーン",
+  "contractShort.noKingHeart": "ノーキングハート",
+  "contractShort.noLastTwo": "ノーラスト2",
+  "contractShort.noMen": "ノーメン",
+  "contractShort.kingTrump": "キング（切り札あり）",
+  "contractShort.unknown": "不明"
 }

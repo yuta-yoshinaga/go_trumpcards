@@ -6937,5 +6937,21 @@
   "solowhist.log.outcome.made": "成功",
   "solowhist.log.outcome.failed": "失敗",
   "twentynine.log.result.made": "成功",
-  "twentynine.log.result.set": "失敗"
+  "twentynine.log.result.set": "失敗",
+  "barbu.cNoTricks": "ノー・トリック",
+  "barbu.cNoHearts": "ノー・ハーツ",
+  "barbu.cNoQueens": "ノー・クイーン",
+  "barbu.cBarbu": "バルブ (ハートの K)",
+  "barbu.cNoLastTrick": "ノー・ラストトリック",
+  "barbu.cTrumps": "トランプ",
+  "barbu.cDominoes": "ドミノ",
+  "barbu.cUnknown": "不明",
+  "king.contractShort.noTricks": "ノートリック",
+  "king.contractShort.noHearts": "ノーハート",
+  "king.contractShort.noQueens": "ノークイーン",
+  "king.contractShort.noKingHeart": "ノーキングハート",
+  "king.contractShort.noLastTwo": "ノーラスト2",
+  "king.contractShort.noMen": "ノーメン",
+  "king.contractShort.kingTrump": "キング（切り札あり）",
+  "king.contractShort.unknown": "不明"
 }

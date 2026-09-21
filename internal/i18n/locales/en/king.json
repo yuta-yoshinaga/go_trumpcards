@@ -49,5 +49,13 @@
   "log.selectContract": "dealer {{dealer}} selects {{contract}}",
   "log.play": "player {{player}} plays {{card}}",
   "log.trickWin": "player {{player}} wins trick {{trick}}",
-  "log.dealEnd": "deal {{deal}} scored ({{contract}})"
+  "log.dealEnd": "deal {{deal}} scored ({{contract}})",
+  "contractShort.noTricks": "No Tricks",
+  "contractShort.noHearts": "No Hearts",
+  "contractShort.noQueens": "No Queens",
+  "contractShort.noKingHeart": "No King of Hearts",
+  "contractShort.noLastTwo": "No Last Two Tricks",
+  "contractShort.noMen": "No Men",
+  "contractShort.kingTrump": "King (Trump)",
+  "contractShort.unknown": "Unknown"
 }

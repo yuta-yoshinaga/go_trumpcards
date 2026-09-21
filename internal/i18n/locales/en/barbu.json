@@ -50,5 +50,6 @@
   "contractDescBarbu": "-20 for taking the K of hearts",
   "contractDescNoLastTrick": "-20 for taking the last trick",
   "contractDescTrumps": "+5 per trick (you pick trumps)",
-  "contractDescDominoes": "shed your hand first (fan-out)"
+  "contractDescDominoes": "shed your hand first (fan-out)",
+  "cUnknown": "Unknown"
 }
