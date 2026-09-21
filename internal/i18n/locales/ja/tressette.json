@@ -19,7 +19,7 @@
   "promptRoundEnd": "ラウンド終了",
   "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
   "hintNone": "ヒントはありません。",
-  "hintCard": "[HINT: {{cards}} ({{reason}})]",
+  "hintCard": "[ヒント: {{cards}} ({{reason}})]",
   "hintReasonLeadLow": "得点の低い札でリードして温存する",
   "hintReasonFollowWin": "得点があるので勝てる札で取りに行く",
   "hintReasonFollowDuck": "取れない／取る価値がないのでダックする",

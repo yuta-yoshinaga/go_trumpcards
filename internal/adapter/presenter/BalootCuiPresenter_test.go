@@ -158,7 +158,7 @@ func TestBalootCuiPresenterHintInDeclarePhase(t *testing.T) {
 	b.SetCurrentPlayerIdxForTest(0)
 
 	out := p.HintOutput(b)
-	assert.Contains(t, out, "HINT")
+	assert.Contains(t, out, "ヒント")
 	assert.NotContains(t, out, "balootDeclareSun", "生のキーが出ていたら未登録")
 	assert.NotContains(t, out, "balootDeclareHokom")
 	assert.NotContains(t, out, "balootPassDeclare")

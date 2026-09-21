@@ -234,7 +234,7 @@ func TestSheepsheadCuiPresenter_HintOutput(t *testing.T) {
 		m, _ := setupSheepsheadCuiMockWithPlayers()
 		m.On("GetHint").Return(&domain.SheepsheadHint{Pick: true, Reason: "pick_take"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 
 	t.Run("bury hint with card indices", func(t *testing.T) {
@@ -247,14 +247,14 @@ func TestSheepsheadCuiPresenter_HintOutput(t *testing.T) {
 		m.On("GetPhase").Return(domain.SheepsheadPhaseBury)
 		m.On("GetHint").Return(&domain.SheepsheadHint{CardIndices: []int{0, 1}, Reason: "bury_low"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 
 	t.Run("call suit hint", func(t *testing.T) {
 		m, _ := setupSheepsheadCuiMockWithPlayers()
 		m.On("GetHint").Return(&domain.SheepsheadHint{Suit: domain.CardDesignClover, Reason: "call_suit"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 
 	t.Run("play hint", func(t *testing.T) {
@@ -262,7 +262,7 @@ func TestSheepsheadCuiPresenter_HintOutput(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
 		m.On("GetHint").Return(&domain.SheepsheadHint{CardIndices: []int{0}, Reason: "lead_low"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 }
 

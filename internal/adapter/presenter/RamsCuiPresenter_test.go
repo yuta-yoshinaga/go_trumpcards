@@ -217,7 +217,7 @@ func TestRamsCuiPresenterHintInDecidePhase(t *testing.T) {
 	r := newRamsForCui(t)
 
 	out := p.HintOutput(r)
-	assert.Contains(t, out, "HINT")
+	assert.Contains(t, out, "ヒント")
 	// 参加/降りのどちらかの文言が出て、生のキーは出ない。
 	assert.True(t,
 		strings.Contains(out, i18n.T("rams.hintReasonPlayIn")) ||

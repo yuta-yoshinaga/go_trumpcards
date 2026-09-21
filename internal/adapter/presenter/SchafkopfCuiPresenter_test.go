@@ -250,14 +250,14 @@ func TestSchafkopfCuiPresenter_HintOutput(t *testing.T) {
 		m, _ := setupSchafkopfCuiMockWithPlayers()
 		m.On("GetHint").Return(&domain.SchafkopfHint{Pick: true, Reason: "pick_take"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 
 	t.Run("call suit hint", func(t *testing.T) {
 		m, _ := setupSchafkopfCuiMockWithPlayers()
 		m.On("GetHint").Return(&domain.SchafkopfHint{Suit: domain.CardDesignClover, Reason: "call_suit"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 
 	t.Run("play hint", func(t *testing.T) {
@@ -265,7 +265,7 @@ func TestSchafkopfCuiPresenter_HintOutput(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
 		m.On("GetHint").Return(&domain.SchafkopfHint{CardIndices: []int{0}, Reason: "lead_low"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 }
 

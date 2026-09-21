@@ -169,7 +169,7 @@ func TestThirtyOneCuiPresenter_HintOutput(t *testing.T) {
 		g.SetCurrentPlayerIdx(0)
 
 		out := p.HintOutput(g)
-		assert.Contains(t, out, "[HINT]")
+		assert.Contains(t, out, "[ヒント]")
 		assert.Contains(t, out, "捨てましょう")
 	})
 
@@ -180,7 +180,7 @@ func TestThirtyOneCuiPresenter_HintOutput(t *testing.T) {
 		g.SetCurrentPlayerIdx(0)
 
 		out := p.HintOutput(g)
-		assert.Contains(t, out, "[HINT]")
+		assert.Contains(t, out, "[ヒント]")
 		// ドロー / ノックのいずれか。生の識別子が漏れていないこと。
 		assert.NotContains(t, out, "draw_stock")
 		assert.NotContains(t, out, "knock_ready")

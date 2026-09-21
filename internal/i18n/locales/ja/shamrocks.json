@@ -8,7 +8,7 @@
   "fanLabel": "扇{{idx}}:",
   "hintToFan": "扇{{idx}}",
   "hintToFoundation": "ファウンデーション",
-  "hintLine": "[HINT: 扇{{from}} を {{to}} へ]",
+  "hintLine": "[ヒント: 扇{{from}} を {{to}} へ]",
   "foundationCount": "(計{{count}}枚)",
   "stuckDeadlock": "これ以上動かせる手がありません。シャムロックスに再配札はありません — giveup でギブアップできます。",
   "helpExampleAuto": "  ac                   組札へ送れる札を自動で送る",

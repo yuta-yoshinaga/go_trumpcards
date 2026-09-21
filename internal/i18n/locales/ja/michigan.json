@@ -31,7 +31,7 @@
   "result.lose": "他のプレイヤーの方が稼ぎました。",
   "result.none": "ラウンド終了。",
   "gameEnd": "ゲーム終了 — プレイヤー {{player}} の勝ち！",
-  "hint": "[HINT: 手札 {{index}} を出す（{{reason}}）]",
+  "hint": "[ヒント: 手札 {{index}} を出す（{{reason}}）]",
   "hintNone": "ヒントはありません。",
   "hintReasonForced": "次の札は強制です",
   "hintReasonClaimBoodle": "ブードルのチップを獲得できます",

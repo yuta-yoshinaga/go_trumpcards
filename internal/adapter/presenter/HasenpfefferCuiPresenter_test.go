@@ -216,7 +216,7 @@ func TestHasenpfefferCuiPresenterHint(t *testing.T) {
 	require.NoError(t, h.DiscardForTest(0, 0, domain.CardDesignHeart))
 	h.SetCurrentPlayerIdxForTest(0)
 	cardHint := p.HintOutput(h)
-	assert.Contains(t, cardHint, "HINT")
+	assert.Contains(t, cardHint, "ヒント")
 	for id := range hasenpfefferHintReasonKeys {
 		assert.NotContains(t, cardHint, id, "識別子がそのまま漏れていない")
 	}

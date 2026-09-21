@@ -13,7 +13,7 @@
   "promptGameEnd": "ゲーム終了。nr で新しいゲームを始めます。",
   "promptHelp": "p <h> [t...] でプレイ（t 省略でトレイル。ジャックは場を一掃）",
   "hintNone": "ヒントはありません。",
-  "hintCard": "[HINT: {{cards}} ({{reason}})]",
+  "hintCard": "[ヒント: {{cards}} ({{reason}})]",
   "hintReasonTabla": "場を一掃してタブラ・ボーナスを狙う",
   "hintReasonJack": "ジャックで場を一掃する",
   "hintReasonCapture": "価値の高い場札を捕獲する",

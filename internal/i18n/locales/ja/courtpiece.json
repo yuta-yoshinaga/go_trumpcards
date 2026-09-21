@@ -21,7 +21,7 @@
   "promptRoundEnd": "ラウンド終了",
   "roundEndCourt": "Court（独占／連勝ボーナス）成立 — このラウンドは +2 点",
   "promptRoundEndHelp": "nr・・・次のラウンドへ",
-  "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
+  "hintCard": "[ヒント: [{{idx}}]{{card}} ({{reason}})]",
   "hintTrump": "推奨切り札: {{suit}} ({{reason}})",
   "hintNone": "ヒントはありません。",
   "hintReasonTrumpLongest": "最も長いスートを切り札にする",

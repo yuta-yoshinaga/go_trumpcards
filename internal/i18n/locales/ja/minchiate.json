@@ -13,7 +13,7 @@
   "targetRoundsRequired": "目標ラウンド数を指定してください (4-100)。",
   "invalidTargetRounds": "無効な目標ラウンド数です: {{val}}。4-100 の4の倍数を指定してください。",
   "helpTitle": "ミンキアーテ (Minchiate)",
-  "hintCard": "[HINT: {{cards}} ({{reason}})]",
+  "hintCard": "[ヒント: {{cards}} ({{reason}})]",
   "hintNone": "ヒントはありません。",
   "hintReasonFollowLow": "取れないので低い札でフォローする",
   "hintReasonFollowTrump": "切札でフォローしてトリックを取りに行く",

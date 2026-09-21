@@ -201,7 +201,7 @@ func TestJassCuiPresenter_HintOutput(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 11, false))
 		idx := 0
 		m.On("GetHint").Return(&domain.JassHint{CardIndex: &idx, Reason: "trump_cut"})
-		assert.Contains(t, p.HintOutput(m), "HINT")
+		assert.Contains(t, p.HintOutput(m), "ヒント")
 	})
 }
 

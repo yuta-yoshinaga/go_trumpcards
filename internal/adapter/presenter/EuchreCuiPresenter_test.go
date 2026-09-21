@@ -342,7 +342,7 @@ func TestEuchreCuiPresenter_HintOutput(t *testing.T) {
 
 		p := new(presenter.EuchreCuiPresenter)
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 		assert.Contains(t, result, "オーダーアップ")
 		assert.Contains(t, result, "強い手札")
 	})
@@ -421,7 +421,7 @@ func TestEuchreCuiPresenter_HintOutput(t *testing.T) {
 
 		p := new(presenter.EuchreCuiPresenter)
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 		assert.Contains(t, result, "リードスートに追随")
 	})
 

@@ -16,7 +16,7 @@
   "promptSpoil": "流局 (Spoil)！誰も3トリックに届かず、ポット{{pot}}は次ラウンドへ持ち越し",
   "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
   "hintNone": "ヒントはありません。",
-  "hintCard": "[HINT: {{cards}} ({{reason}})]",
+  "hintCard": "[ヒント: {{cards}} ({{reason}})]",
   "hintReasonLeadHigh": "高い札でリードしてトリックを取りにいく",
   "hintReasonTakeTrick": "このトリックを取りにいく（3トリックでポット獲得）",
   "hintReasonDiscardLow": "取れないので低い札を捨てる",

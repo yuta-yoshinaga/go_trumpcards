@@ -142,7 +142,7 @@ func TestSlobberhannesCuiPresenterHintOutput(t *testing.T) {
 	s.SetCurrentPlayerIdxForTest(0)
 
 	out := p.HintOutput(s)
-	assert.Contains(t, out, "HINT")
+	assert.Contains(t, out, "ヒント")
 	// 理由キーが i18n に解決されている。生のキーが出ていたら未登録。
 	assert.NotContains(t, out, "slobberhannesLeadLow")
 	assert.NotContains(t, out, "slobberhannesAvoid")

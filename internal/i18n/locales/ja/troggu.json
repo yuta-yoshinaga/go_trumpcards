@@ -32,7 +32,7 @@
   "roundWinTricks": "{{name}} の{{contract}}成功！ {{got}}トリック（目標 {{target}}）",
   "roundLossTricks": "{{name}} の{{contract}}失敗。{{got}}トリック（目標 {{target}}）",
   "hintNone": "ヒントはありません。",
-  "hintCard": "[HINT: {{cards}} ({{reason}})]",
+  "hintCard": "[ヒント: {{cards}} ({{reason}})]",
   "hintReasonPass": "契約を取れる手ではないのでパスする",
   "hintReasonBidTrois": "アトゥがあるので3トリックは取れる",
   "hintReasonBidSolo": "高いアトゥが揃っているので過半を狙える",

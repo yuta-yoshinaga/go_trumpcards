@@ -27,7 +27,7 @@
   "passNone": "交換なし",
   "passUnknown": "不明",
   "hintNone": "ヒントはありません。",
-  "hintCard": "[HINT: {{cards}} ({{reason}})]",
+  "hintCard": "[ヒント: {{cards}} ({{reason}})]",
   "hintReasonPassHighRisk": "リスクの高いカードを渡す",
   "hintReasonDiscardQueenSpades": "Q♠を捨てるチャンス",
   "hintReasonDiscardHearts": "ハートを捨てる",

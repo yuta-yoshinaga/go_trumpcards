@@ -167,7 +167,7 @@ func TestEstimationCuiPresenterHintNamesTheTrumpSuit(t *testing.T) {
 	e.SetDealerIdxForTest(0)
 
 	out := p.HintOutput(e)
-	assert.Contains(t, out, "HINT")
+	assert.Contains(t, out, "ヒント")
 	assert.NotContains(t, out, "estimationSelectTrump", "生のキーが出ていたら未登録")
 }
 
@@ -179,7 +179,7 @@ func TestEstimationCuiPresenterHintDuringBidding(t *testing.T) {
 	require.NoError(t, e.SelectTrump(domain.CardDesignSpade))
 
 	out := p.HintOutput(e)
-	assert.Contains(t, out, "HINT")
+	assert.Contains(t, out, "ヒント")
 	assert.NotContains(t, out, "estimationBid")
 	assert.NotContains(t, out, "estimationDashCall")
 }

@@ -33,7 +33,7 @@
   "roundLoss": "{{name}} 側の失敗。{{points}}点（必要 {{threshold}}点超）",
   "roundTrischaken": "トリシャーケン: {{name}} が最も多く取りました（{{points}}点）。最多失点者の負けです。",
   "hintNone": "ヒントはありません。",
-  "hintCard": "[HINT: {{cards}} ({{reason}})]",
+  "hintCard": "[ヒント: {{cards}} ({{reason}})]",
   "hintReasonPass": "切り札が足りないのでパスする",
   "hintReasonBid": "切り札が多いので入札する",
   "hintReasonBury": "点の低い札を伏せる",

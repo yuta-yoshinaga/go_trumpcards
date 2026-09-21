@@ -22,7 +22,7 @@
   "gameWin": "{{name}} の勝ち！ 通算{{score}}点。",
   "gameDraw": "引き分けでゲーム終了。",
   "hintNone": "ヒントはありません。",
-  "hintCard": "[HINT: {{card}} ({{reason}})]",
+  "hintCard": "[ヒント: {{card}} ({{reason}})]",
   "hintReasonCapture": "同じ月の札を合わせて点を稼ぐ",
   "hintReasonDiscard": "合う札が無いので安い札を捨てる",
   "result.scores": "ゲーム終了！ 得点: {{scores}}",

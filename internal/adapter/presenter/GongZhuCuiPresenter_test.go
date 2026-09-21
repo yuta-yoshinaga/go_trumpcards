@@ -117,14 +117,14 @@ func TestGongZhuCuiPresenter_HintOutput(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 11, false))
 		m.On("GetHint").Return(&domain.GongZhuHint{CardIndices: []int{0}, Reason: "expose_sheep"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 
 	t.Run("expose none hint (empty indices)", func(t *testing.T) {
 		m, _ := setupGongZhuCuiMockWithPlayers()
 		m.On("GetHint").Return(&domain.GongZhuHint{CardIndices: []int{}, Reason: "expose_none"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 
 	t.Run("no hint", func(t *testing.T) {

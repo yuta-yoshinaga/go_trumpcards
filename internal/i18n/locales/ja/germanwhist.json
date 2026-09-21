@@ -15,7 +15,7 @@
   "promptCurrentPlayer": "手番: {{name}}",
   "promptPlay": "play <idx>・・・カードを出す",
   "hintNone": "ヒントはありません。",
-  "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
+  "hintCard": "[ヒント: [{{idx}}]{{card}} ({{reason}})]",
   "hintReasonTakeUpCard": "表向きの札が欲しいので取りに行く",
   "hintReasonDuck": "表向きの札は要らないのでわざと負ける",
   "hintReasonWinTrick": "後半は得点になるので取りに行く",

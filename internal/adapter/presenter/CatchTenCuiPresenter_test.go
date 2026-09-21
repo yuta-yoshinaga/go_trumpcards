@@ -104,7 +104,7 @@ func TestCatchTenCuiPresenter_HintOutput(t *testing.T) {
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.CatchTenHint{CardIndex: &cardIdx, Reason: "trump_cut"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 
 	t.Run("no hint", func(t *testing.T) {

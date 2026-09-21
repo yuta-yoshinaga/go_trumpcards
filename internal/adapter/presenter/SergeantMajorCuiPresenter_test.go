@@ -219,7 +219,7 @@ func TestSergeantMajorCuiPresenterHint(t *testing.T) {
 	require.NoError(t, s.DiscardForTest(0, []int{0, 1, 2, 3}))
 	s.SetCurrentPlayerIdxForTest(0)
 	cardHint := p.HintOutput(s)
-	assert.Contains(t, cardHint, "HINT")
+	assert.Contains(t, cardHint, "ヒント")
 	for id := range sergeantMajorHintReasonKeys {
 		assert.NotContains(t, cardHint, id, "識別子がそのまま漏れていない")
 	}

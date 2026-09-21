@@ -187,7 +187,7 @@ func TestWattenCuiPresenter_HintOutput(t *testing.T) {
 	t.Run("raise hint", func(t *testing.T) {
 		m := setupWattenCuiMock()
 		m.On("GetHint").Return(&domain.WattenHint{Action: "raise", Reason: "raise_strong"})
-		assert.Contains(t, p.HintOutput(m), "HINT")
+		assert.Contains(t, p.HintOutput(m), "ヒント")
 	})
 
 	t.Run("hold hint", func(t *testing.T) {
@@ -207,7 +207,7 @@ func TestWattenCuiPresenter_HintOutput(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
 		idx := 0
 		m.On("GetHint").Return(&domain.WattenHint{Action: "play", CardIndex: &idx, Reason: "follow_win"})
-		assert.Contains(t, p.HintOutput(m), "HINT")
+		assert.Contains(t, p.HintOutput(m), "ヒント")
 	})
 }
 

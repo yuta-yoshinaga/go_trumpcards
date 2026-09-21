@@ -396,7 +396,7 @@ func TestZwanzigerrufenCuiPresenter_HintOutput(t *testing.T) {
 	g := newZwanzigerrufenGame()
 	out := new(presenter.ZwanzigerrufenCuiPresenter).HintOutput(g)
 	if g.IsHumanTurn() {
-		assert.Contains(t, out, "HINT")
+		assert.Contains(t, out, "ヒント")
 		assert.NotContains(t, out, "zwanzigerrufen.hintReason", "理由が訳されていない")
 		return
 	}

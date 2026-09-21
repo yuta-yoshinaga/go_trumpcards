@@ -92,7 +92,7 @@ func TestGermanWhistCuiPresenterHintOutput(t *testing.T) {
 	g := newGermanWhistForCui(t)
 
 	out := p.HintOutput(g)
-	assert.Contains(t, out, "HINT")
+	assert.Contains(t, out, "ヒント")
 	// 理由キーは i18n に解決されている。生のキーが出ていたら未登録。
 	assert.NotContains(t, out, "germanWhistTakeUpCard")
 	assert.NotContains(t, out, "germanWhistDuck")

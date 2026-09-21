@@ -1,7 +1,7 @@
 {
   "gameEnd": "ゲーム終了！{{name}}がマッチ勝利！",
   "helpTitle": "ガンジファ (Ganjifa)",
-  "hintCard": "[HINT: {{cards}} ({{reason}})]",
+  "hintCard": "[ヒント: {{cards}} ({{reason}})]",
   "hintNone": "ヒントはありません。",
   "hintReasonFollowTrump": "切り札を出してこのトリックを取りに行く",
   "hintReasonFollowWeakSuit": "弱い群でフォローする —— 数字の向きが逆なので注意",

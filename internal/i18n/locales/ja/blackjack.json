@@ -34,7 +34,7 @@
   "insuranceAvailable": "インシュランス可能！",
   "sideBetWin": "サイドベット [{{type}}]: {{result}} WIN +{{payout}} (ベット={{bet}})",
   "sideBetLose": "サイドベット [{{type}}]: LOSE -{{bet}}",
-  "hintLine": "[HINT: {{action}}]",
+  "hintLine": "[ヒント: {{action}}]",
   "handStatusDD": "[DD]",
   "handStatusBust": "[バースト]",
   "handStatusStand": "[スタンド]",

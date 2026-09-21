@@ -145,7 +145,7 @@ func TestPolignacCuiPresenterHintOutput(t *testing.T) {
 	g.SetCurrentPlayerIdxForTest(0)
 
 	out := p.HintOutput(g)
-	assert.Contains(t, out, "HINT")
+	assert.Contains(t, out, "ヒント")
 	// 生の理由キーが出ていたら i18n 未登録。
 	assert.NotContains(t, out, "polignacLeadSafe")
 	assert.NotContains(t, out, "polignacAvoidJack")

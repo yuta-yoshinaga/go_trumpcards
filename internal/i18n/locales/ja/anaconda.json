@@ -40,7 +40,7 @@
   "action.raise": "レイズ",
   "action.fold": "フォールド",
   "hintNone": "ヒントはありません。",
-  "hint": "[HINT: {{action}}（{{reason}}）]",
+  "hint": "[ヒント: {{action}}（{{reason}}）]",
   "hintReasonPassWeakest": "最も弱い札を渡すのが無難",
   "hintReasonKeepBest": "最強の5枚を残す",
   "hintReasonStrongHand": "強い手 — レイズの価値あり",

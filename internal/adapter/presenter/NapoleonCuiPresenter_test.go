@@ -442,7 +442,7 @@ func TestNapoleonCuiPresenter_HintOutput(t *testing.T) {
 
 		p := new(presenter.NapoleonCuiPresenter)
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 		assert.Contains(t, result, "ビッド 14")
 		assert.Contains(t, result, "戦略的なビッド")
 	})
@@ -461,7 +461,7 @@ func TestNapoleonCuiPresenter_HintOutput(t *testing.T) {
 
 		p := new(presenter.NapoleonCuiPresenter)
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 		assert.Contains(t, result, "切り札 ♠")
 		assert.Contains(t, result, "戦略的な宣言")
 	})
@@ -483,7 +483,7 @@ func TestNapoleonCuiPresenter_HintOutput(t *testing.T) {
 
 		p := new(presenter.NapoleonCuiPresenter)
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 		assert.Contains(t, result, "を捨てる")
 		assert.Contains(t, result, "戦略的な捨て")
 	})
@@ -534,7 +534,7 @@ func TestNapoleonCuiPresenter_HintOutput(t *testing.T) {
 
 		p := new(presenter.NapoleonCuiPresenter)
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 		assert.Contains(t, result, "リードスートに追随")
 	})
 

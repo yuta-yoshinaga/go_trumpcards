@@ -234,7 +234,7 @@ func TestGermanSoloCuiPresenter_HintOutput(t *testing.T) {
 		result := p.HintOutput(m)
 		assert.Contains(t, result, "ソロ")  // recommended action name
 		assert.Contains(t, result, "を推奨") // hintDecision format
-		assert.NotContains(t, result, "HINT: -")
+		assert.NotContains(t, result, "ヒント: -")
 	})
 
 	// **エース呼びのヒントはスートを名指しする。** 札を指さないので、スートを
@@ -245,7 +245,7 @@ func TestGermanSoloCuiPresenter_HintOutput(t *testing.T) {
 		result := p.HintOutput(m)
 		assert.Contains(t, result, "クラブ")
 		assert.Contains(t, result, "味方の助けが大きい")
-		assert.NotContains(t, result, "HINT: -")
+		assert.NotContains(t, result, "ヒント: -")
 	})
 
 	t.Run("non-bid empty-card hint falls back to the card line", func(t *testing.T) {

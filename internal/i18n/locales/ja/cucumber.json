@@ -26,7 +26,7 @@
   "gameEndYou": "ゲーム終了！ あなたが失点 {{n}} 点でいちばん少なく終えました。",
   "gameEndCpu": "ゲーム終了！ {{name}} が失点 {{n}} 点でいちばん少なく終えました。",
   "hintNone": "ヒントはありません。",
-  "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
+  "hintCard": "[ヒント: [{{idx}}]{{card}} ({{reason}})]",
   "hintReasonLead": "リードなので何を出してもよい",
   "hintReasonBeat": "更新できる中でいちばん低い札。高い札は終盤に残さない",
   "hintReasonForced": "更新できないので、この札に決まっている",

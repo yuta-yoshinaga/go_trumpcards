@@ -16,7 +16,7 @@
   "errPlayerIndexOutOfRange": "席が範囲外です",
   "gameEnd": "ゲーム終了！{{name}}がマッチ勝利！",
   "helpTitle": "ヴィーラ (Vira)",
-  "hintCard": "[HINT: {{cards}} ({{reason}})]",
+  "hintCard": "[ヒント: {{cards}} ({{reason}})]",
   "hintNone": "ヒントはありません。",
   "hintReasonFollowBlock": "ディフェンダーとして宣言者のトリックを阻止する",
   "hintReasonFollowWin": "宣言者としてこのトリックを取りに行く",
