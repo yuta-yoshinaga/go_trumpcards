@@ -14,16 +14,7 @@ import (
 
 // soloWhistBidName maps a bid constant (0-3) to its localized contract name.
 func soloWhistBidName(bid int) string {
-	switch domain.SoloWhistBid(bid) {
-	case domain.SoloWhistBidSolo:
-		return i18n.T("solowhist.bid.solo")
-	case domain.SoloWhistBidMisere:
-		return i18n.T("solowhist.bid.misere")
-	case domain.SoloWhistBidAbundance:
-		return i18n.T("solowhist.bid.abundance")
-	default:
-		return i18n.T("solowhist.bid.pass")
-	}
+	return i18n.T(domain.SoloWhistBidKey(domain.SoloWhistBid(bid)))
 }
 
 // soloWhistTrumpStr renders the trump glyph, or a "no trump" label when none.

@@ -239,7 +239,7 @@ func (g *SoloWhist) applyBid(idx int, bid SoloWhistBid) error {
 	g.bidDone[idx] = true
 	if bid != SoloWhistBidPass {
 		g.appendLog(idx, "bid", "solowhist.log.bid", map[string]string{
-			"name": playerName(g.players, idx), "bid": soloWhistBidName(bid),
+			"name": playerName(g.players, idx), "bidKey": SoloWhistBidKey(bid),
 		}, nil)
 	} else {
 		g.appendLog(idx, "bid", "solowhist.log.bidPass", map[string]string{"name": playerName(g.players, idx)}, nil)
@@ -274,7 +274,7 @@ func (g *SoloWhist) resolveBidding() {
 		g.trumpSuit = g.longestSuit(idx)
 	}
 	g.appendLog(idx, "contract", "solowhist.log.contract", map[string]string{
-		"name": playerName(g.players, idx), "contract": soloWhistBidName(bid),
+		"name": playerName(g.players, idx), "contractKey": SoloWhistBidKey(bid),
 		"trump": strconv.Itoa(g.trumpSuit),
 	}, nil)
 	g.leadPlayerIdx = (g.dealerIdx + 1) % SoloWhistPlayerCnt
@@ -429,9 +429,9 @@ func (g *SoloWhist) ScoreRound() {
 			}
 		}
 		g.appendLog(-1, "round_score", "solowhist.log.roundScore", map[string]string{
-			"round": strconv.Itoa(g.roundNumber), "contract": soloWhistBidName(g.contract),
-			"outcome": map[bool]string{true: "made", false: "failed"}[won],
-			"tricks":  strconv.Itoa(g.roundTricks[g.declarerIdx]),
+			"round": strconv.Itoa(g.roundNumber), "contractKey": SoloWhistBidKey(g.contract),
+			"outcomeKey": soloWhistOutcomeKey(won),
+			"tricks":     strconv.Itoa(g.roundTricks[g.declarerIdx]),
 		}, nil)
 		g.checkGameEnd()
 	}
@@ -934,16 +934,24 @@ func (g *SoloWhist) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// soloWhistBidName 入札種別の表示名を返す。
-func soloWhistBidName(b SoloWhistBid) string {
+// SoloWhistBidKey は入札種別の i18n キーを返す。棋譜と presenter の両方が引く。
+func SoloWhistBidKey(b SoloWhistBid) string {
 	switch b {
 	case SoloWhistBidSolo:
-		return "Solo"
+		return "solowhist.bid.solo"
 	case SoloWhistBidMisere:
-		return "Misère"
+		return "solowhist.bid.misere"
 	case SoloWhistBidAbundance:
-		return "Abundance"
+		return "solowhist.bid.abundance"
 	default:
-		return "Pass"
+		return "solowhist.bid.pass"
 	}
+}
+
+// soloWhistOutcomeKey は宣言を達成したかの i18n キーを返す。
+func soloWhistOutcomeKey(won bool) string {
+	if won {
+		return "solowhist.log.outcome.made"
+	}
+	return "solowhist.log.outcome.failed"
 }

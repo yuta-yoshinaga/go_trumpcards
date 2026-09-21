@@ -512,3 +512,38 @@ func TestActionLogToText_RendersHanafudaCaptureLabelsInBothLanguages(t *testing.
 		assert.NotContains(t, en, text)
 	}
 }
+
+func TestActionLogToText_RendersNapPreferenceSoloWhistAndTwentyNineLabelsInBothLanguages(t *testing.T) {
+	entries := []*domain.ActionLogEntry{
+		{DetailCode: "nap.log.bid", DetailParams: map[string]string{"name": "You", "bidKey": "nap.bid.two"}},
+		{DetailCode: "nap.log.contract", DetailParams: map[string]string{"name": "You", "contractKey": "nap.bid.nap", "trump": "0"}},
+		{DetailCode: "nap.log.roundScore", DetailParams: map[string]string{"round": "1", "contractKey": "nap.bid.nap", "resultKey": "nap.log.outcome.made", "won": "5", "target": "5"}},
+		{DetailCode: "preference.log.bid", DetailParams: map[string]string{"name": "You", "bidKey": "preference.bid.misere"}},
+		{DetailCode: "preference.log.contract", DetailParams: map[string]string{"name": "You", "contractKey": "preference.bid.misere", "trump": "0"}},
+		{DetailCode: "preference.log.roundScore", DetailParams: map[string]string{"round": "1", "contractKey": "preference.bid.misere", "outcomeKey": "preference.log.outcome.failed", "tricks": "0", "target": "0"}},
+		{DetailCode: "solowhist.log.bid", DetailParams: map[string]string{"name": "You", "bidKey": "solowhist.bid.abundance"}},
+		{DetailCode: "solowhist.log.contract", DetailParams: map[string]string{"name": "You", "contractKey": "solowhist.bid.abundance", "trump": "0"}},
+		{DetailCode: "solowhist.log.roundScore", DetailParams: map[string]string{"round": "1", "contractKey": "solowhist.bid.abundance", "outcomeKey": "solowhist.log.outcome.made", "tricks": "9"}},
+		{DetailCode: "twentynine.log.roundScore", DetailParams: map[string]string{"round": "1", "team": "A", "bid": "28", "points": "29", "resultKey": "twentynine.log.result.set"}},
+	}
+
+	t.Cleanup(func() { i18n.SetLang("ja") })
+
+	i18n.SetLang("ja")
+	ja := actionLogToText(entries)
+	for _, text := range []string{"ツー", "ナップ", "ミゼール", "アバンダンス", "成功", "失敗"} {
+		assert.Contains(t, ja, text)
+	}
+	for _, text := range []string{"Two", "Nap", "Abundance", "made", "failed", "set", "nap.bid.two", "twentynine.log.result.set"} {
+		assert.NotContains(t, ja, text)
+	}
+
+	i18n.SetLang("en")
+	en := actionLogToText(entries)
+	for _, text := range []string{"Two", "Nap", "Misère", "Abundance", "made", "failed", "set"} {
+		assert.Contains(t, en, text)
+	}
+	for _, text := range []string{"ツー", "ナップ", "成功", "失敗", "nap.bid.two", "twentynine.log.result.set"} {
+		assert.NotContains(t, en, text)
+	}
+}

@@ -223,7 +223,7 @@ func (g *Nap) applyBid(idx int, bid NapBid) error {
 	g.bids[idx] = bid
 	g.bidDone[idx] = true
 	if bid != NapBidPass {
-		g.appendLog(idx, "bid", "nap.log.bid", map[string]string{"name": playerName(g.players, idx), "bid": napBidName(bid)}, nil)
+		g.appendLog(idx, "bid", "nap.log.bid", map[string]string{"name": playerName(g.players, idx), "bidKey": NapBidKey(bid)}, nil)
 	} else {
 		g.appendLog(idx, "bid", "nap.log.pass", map[string]string{"name": playerName(g.players, idx)}, nil)
 	}
@@ -250,7 +250,7 @@ func (g *Nap) resolveBidding() {
 	g.declarerIdx = idx
 	g.contract = bid
 	g.trumpSuit = g.longestSuit(idx)
-	g.appendLog(idx, "contract", "nap.log.contract", map[string]string{"name": playerName(g.players, idx), "contract": napBidName(bid), "trump": fmt.Sprintf("%d", g.trumpSuit)}, nil)
+	g.appendLog(idx, "contract", "nap.log.contract", map[string]string{"name": playerName(g.players, idx), "contractKey": NapBidKey(bid), "trump": fmt.Sprintf("%d", g.trumpSuit)}, nil)
 	g.leadPlayerIdx = idx // declarer leads in Nap
 	g.currentPlayerIdx = g.leadPlayerIdx
 	g.phase = NapPhasePlay
@@ -400,7 +400,7 @@ func (g *Nap) ScoreRound() {
 				}
 			}
 		}
-		g.appendLog(-1, "round_score", "nap.log.roundScore", map[string]string{"round": fmt.Sprintf("%d", g.roundNumber), "contract": napBidName(g.contract), "result": map[bool]string{true: "made", false: "failed"}[won], "won": fmt.Sprintf("%d", g.roundTricks[g.declarerIdx]), "target": fmt.Sprintf("%d", napBidTarget(g.contract))}, nil)
+		g.appendLog(-1, "round_score", "nap.log.roundScore", map[string]string{"round": fmt.Sprintf("%d", g.roundNumber), "contractKey": NapBidKey(g.contract), "resultKey": napOutcomeKey(won), "won": fmt.Sprintf("%d", g.roundTricks[g.declarerIdx]), "target": fmt.Sprintf("%d", napBidTarget(g.contract))}, nil)
 		g.checkGameEnd()
 	}
 }
@@ -904,18 +904,26 @@ func (g *Nap) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// napBidName 入札種別の表示名を返す。
-func napBidName(b NapBid) string {
+// NapBidKey は入札種別の i18n キーを返す。棋譜と presenter の両方が引く。
+func NapBidKey(b NapBid) string {
 	switch b {
 	case NapBidTwo:
-		return "Two"
+		return "nap.bid.two"
 	case NapBidThree:
-		return "Three"
+		return "nap.bid.three"
 	case NapBidFour:
-		return "Four"
+		return "nap.bid.four"
 	case NapBidNap:
-		return "Nap"
+		return "nap.bid.nap"
 	default:
-		return "Pass"
+		return "nap.bid.pass"
 	}
+}
+
+// napOutcomeKey は宣言を達成したかの i18n キーを返す。
+func napOutcomeKey(won bool) string {
+	if won {
+		return "nap.log.outcome.made"
+	}
+	return "nap.log.outcome.failed"
 }

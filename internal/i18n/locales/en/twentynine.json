@@ -62,5 +62,7 @@
   "log.play": "{{name}} plays {{card}}",
   "log.trickWin": "{{name}} wins trick {{trick}} (+{{points}}{{bonus}})",
   "log.roundScore": "round {{round}}: team {{team}} bid {{bid}}, got {{points}} -> {{result}}",
+  "log.result.made": "made",
+  "log.result.set": "set",
   "log.gameEnd": "Team {{team}} wins the match!"
 }

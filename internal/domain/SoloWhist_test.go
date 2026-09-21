@@ -95,7 +95,7 @@ func TestSoloWhist_ActionLogUsesDetailCode(t *testing.T) {
 	}
 	for _, entry := range g.GetActionLog() {
 		if entry.DetailCode == "solowhist.log.bid" {
-			if entry.DetailParams["name"] == "" || entry.DetailParams["bid"] == "" {
+			if entry.DetailParams["name"] == "" || entry.DetailParams["bidKey"] != "solowhist.bid.solo" {
 				t.Fatalf("bid log = %#v, want code params and empty detail", entry)
 			}
 			return

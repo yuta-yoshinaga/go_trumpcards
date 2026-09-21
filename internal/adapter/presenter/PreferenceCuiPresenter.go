@@ -14,18 +14,7 @@ import (
 
 // preferenceBidName maps a bid constant (0-4) to its localized contract name.
 func preferenceBidName(bid int) string {
-	switch domain.PreferenceBid(bid) {
-	case domain.PreferenceBidSix:
-		return i18n.T("preference.bid.six")
-	case domain.PreferenceBidMisere:
-		return i18n.T("preference.bid.misere")
-	case domain.PreferenceBidSeven:
-		return i18n.T("preference.bid.seven")
-	case domain.PreferenceBidEight:
-		return i18n.T("preference.bid.eight")
-	default:
-		return i18n.T("preference.bid.pass")
-	}
+	return i18n.T(domain.PreferenceBidKey(domain.PreferenceBid(bid)))
 }
 
 // preferenceTrumpStr renders the trump glyph, or a "no trump" label when none.
