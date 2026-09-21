@@ -12,20 +12,21 @@ afterAll(() => {
   for (const dir of dirs) rmSync(dir, { recursive: true, force: true });
 });
 
-function fixture(cuiText, webText, { cuiLog, webLog } = {}) {
+function fixture(cuiText, webText, { cuiLog, webLog, cuiEntries = {}, webEntries = {}, game = 'example' } = {}) {
   const root = mkdtempSync(join(tmpdir(), 'locale-text-agreement-'));
   dirs.push(root);
   mkdirSync(join(root, 'internal', 'i18n', 'locales', 'en'), { recursive: true });
   mkdirSync(join(root, 'frontend', 'src', 'i18n', 'locales', 'en'), { recursive: true });
   writeFileSync(
-    join(root, 'internal', 'i18n', 'locales', 'en', 'example.json'),
-    JSON.stringify({ errExample: cuiText, ...(cuiLog ? { 'log.example': cuiLog } : {}) }),
+    join(root, 'internal', 'i18n', 'locales', 'en', `${game}.json`),
+    JSON.stringify({ errExample: cuiText, ...(cuiLog ? { 'log.example': cuiLog } : {}), ...cuiEntries }),
   );
   writeFileSync(
     join(root, 'frontend', 'src', 'i18n', 'locales', 'en', 'common.json'),
     JSON.stringify({
-      messageCode: { 'example.errExample': webText },
-      ...(webLog ? { 'example.log.example': webLog } : {}),
+      messageCode: { [`${game}.errExample`]: webText },
+      ...(webLog ? { [`${game}.log.example`]: webLog } : {}),
+      ...webEntries,
     }),
   );
   mkdirSync(join(root, 'internal', 'i18n', 'locales', 'ja'));
@@ -48,7 +49,7 @@ describe('check-locale-text-agreement', () => {
     expect(result.status).toBe(0);
     expect(`${result.stdout}${result.stderr}`).not.toContain('mismatch');
     expect(result.stdout).toContain('1 shared error messages');
-    expect(result.stdout).toContain('1 shared log messages compared');
+    expect(result.stdout).toContain('1 shared log messages');
   });
 
   it('rejects a log message missing from the Web locale', () => {
@@ -72,5 +73,39 @@ describe('check-locale-text-agreement', () => {
     expect(output).toContain('en example.errExample');
     expect(output).toContain('CUI: CUI text.');
     expect(output).toContain('Web: Web text.');
+  });
+
+  it('compares a copied non-log key when the Web locale has it', () => {
+    const result = check(
+      fixture('Same text.', 'Same text.', {
+        game: 'nap',
+        cuiEntries: { 'bid.two': 'Bid two.' },
+        webEntries: { 'nap.bid.two': 'Bid two.' },
+      }),
+    );
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain('1 copied keys compared');
+  });
+
+  it('rejects a copied non-log key whose text differs', () => {
+    const result = check(
+      fixture('Same text.', 'Same text.', {
+        game: 'nap',
+        cuiEntries: { 'bid.two': 'CUI bid.' },
+        webEntries: { 'nap.bid.two': 'Web bid.' },
+      }),
+    );
+    const output = `${result.stdout}${result.stderr}`;
+    expect(result.status).toBe(1);
+    expect(output).toContain('nap.bid.two');
+  });
+
+  it('does not compare an intentionally different key that is not copied', () => {
+    const result = check(
+      fixture('Same text.', 'Same text.', {
+        cuiEntries: { helpBid: 'CUI help.' },
+      }),
+    );
+    expect(result.status).toBe(0);
   });
 });
