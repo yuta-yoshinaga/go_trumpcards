@@ -188,7 +188,7 @@ func (ab *AndarBahar) Reset() {
 func (ab *AndarBahar) revealJoker() {
 	ab.joker = ab.trumpCards.DrawCard()
 	ab.firstColumn = AndarBaharFirstColumnFor(ab.joker)
-	ab.appendLogCode(-1, "joker", "andarbahar.log.joker", map[string]string{"column": andarBaharColumnName(ab.firstColumn)}, []*Card{ab.joker})
+	ab.appendLogCode(-1, "joker", "andarbahar.log.joker", map[string]string{"columnKey": andarBaharColumnKey(ab.firstColumn)}, []*Card{ab.joker})
 }
 
 // AndarBaharFirstColumnFor は基準札の色から先に配る列を返す。
@@ -238,7 +238,7 @@ func (ab *AndarBahar) Bet(amount, target, sideAmount, sideBand int) error {
 	ab.betTarget = target
 	ab.sideAmount = sideAmount
 	ab.sideBand = sideBand
-	ab.appendLogCode(0, "bet", "andarbahar.log.bet", map[string]string{"column": andarBaharColumnName(target), "amount": strconv.Itoa(amount)}, nil)
+	ab.appendLogCode(0, "bet", "andarbahar.log.bet", map[string]string{"columnKey": andarBaharColumnKey(target), "amount": strconv.Itoa(amount)}, nil)
 
 	ab.deal()
 	ab.judge()
@@ -267,7 +267,7 @@ func (ab *AndarBahar) deal() {
 		ab.push(col, c)
 		if andarBaharRank(c) == target {
 			ab.winner = col
-			ab.appendLogCode(-1, "match", "andarbahar.log.match", map[string]string{"column": andarBaharColumnName(col), "count": strconv.Itoa(ab.DealtCount())}, []*Card{c})
+			ab.appendLogCode(-1, "match", "andarbahar.log.match", map[string]string{"columnKey": andarBaharColumnKey(col), "count": strconv.Itoa(ab.DealtCount())}, []*Card{c})
 			return
 		}
 		col = andarBaharOtherColumn(col)
@@ -296,7 +296,7 @@ func (ab *AndarBahar) judge() {
 	ab.mainPayout, ab.sidePayout = ab.calculatePayout()
 	ab.payout = ab.mainPayout + ab.sidePayout
 	ab.chips.AddChips(ab.payout)
-	ab.appendLogCode(-1, "result", "andarbahar.log.result", map[string]string{"column": andarBaharColumnName(ab.winner), "payout": strconv.Itoa(ab.payout)}, nil)
+	ab.appendLogCode(-1, "result", "andarbahar.log.result", map[string]string{"columnKey": andarBaharColumnKey(ab.winner), "payout": strconv.Itoa(ab.payout)}, nil)
 
 	ab.gameEndFlag = true
 	ab.phase = AndarBaharPhaseEnd
@@ -349,15 +349,15 @@ func andarBaharOtherColumn(col int) int {
 	return AndarBaharBetAndar
 }
 
-// andarBaharColumnName は列の名前を返す。
-func andarBaharColumnName(col int) string {
+// andarBaharColumnKey は棋譜の列名キーを返す。
+func andarBaharColumnKey(col int) string {
 	switch col {
 	case AndarBaharBetAndar:
-		return "andar"
+		return "andarbahar.columnAndar"
 	case AndarBaharBetBahar:
-		return "bahar"
+		return "andarbahar.columnBahar"
 	default:
-		return "unknown"
+		return "andarbahar.columnUnknown"
 	}
 }
 

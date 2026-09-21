@@ -776,11 +776,11 @@ func TestMus_ActionNameAll(t *testing.T) {
 	}
 }
 
-func TestMus_RoundNameAll(t *testing.T) {
-	wants := []string{"Grande", "Chica", "Pares", "Juego", "?"}
+func TestMus_RoundKeyAll(t *testing.T) {
+	wants := []string{"mus.roundGrande", "mus.roundChica", "mus.roundPares", "mus.roundJuego", "mus.roundUnknown"}
 	for ri, want := range wants {
-		if got := musRoundName(ri); got != want {
-			t.Errorf("musRoundName(%d) = %q, want %q", ri, got, want)
+		if got := musRoundKey(ri); got != want {
+			t.Errorf("musRoundKey(%d) = %q, want %q", ri, got, want)
 		}
 	}
 }

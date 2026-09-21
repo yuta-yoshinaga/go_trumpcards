@@ -152,3 +152,22 @@ func TestBaccaratBetTypeKeyAllBranches(t *testing.T) {
 		}
 	}
 }
+
+func TestViraBidKeyAllBranches(t *testing.T) {
+	tests := []struct {
+		bid  int
+		want string
+	}{
+		{int(ViraBidGask), "vira.bidShort.gask"},
+		{int(ViraBidSolo), "vira.bidShort.solo"},
+		{int(ViraBidMisere), "vira.bidShort.misere"},
+		{int(ViraBidVira), "vira.bidShort.vira"},
+		{int(ViraBidPass), "vira.bidShort.pass"},
+		{99, "vira.bidShort.pass"},
+	}
+	for _, tt := range tests {
+		if got := ViraBidKey(tt.bid); got != tt.want {
+			t.Errorf("ViraBidKey(%d) = %q, want %q", tt.bid, got, tt.want)
+		}
+	}
+}

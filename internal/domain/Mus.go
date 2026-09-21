@@ -549,7 +549,7 @@ func (g *Mus) Showdown() {
 		win := g.roundWinner(ri)
 		r.Team = win
 		g.amarrakos[win] += r.Stake
-		g.appendLog(-1, "showdown", "mus.log.showdown", map[string]string{"round": musRoundName(ri), "team": teamName(win), "stake": strconv.Itoa(r.Stake)}, nil)
+		g.appendLog(-1, "showdown", "mus.log.showdown", map[string]string{"roundKey": musRoundKey(ri), "team": teamName(win), "stake": strconv.Itoa(r.Stake)}, nil)
 		if g.checkGameEnd() {
 			return
 		}
@@ -861,19 +861,19 @@ func musSortHand(p *MusPlayer) {
 	}
 }
 
-// musRoundName ラウンド名。
-func musRoundName(ri int) string {
+// musRoundKey は棋譜のラウンド名キーを返す。
+func musRoundKey(ri int) string {
 	switch ri {
 	case 0:
-		return "Grande"
+		return "mus.roundGrande"
 	case 1:
-		return "Chica"
+		return "mus.roundChica"
 	case 2:
-		return "Pares"
+		return "mus.roundPares"
 	case 3:
-		return "Juego"
+		return "mus.roundJuego"
 	default:
-		return "?"
+		return "mus.roundUnknown"
 	}
 }
 

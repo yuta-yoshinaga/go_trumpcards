@@ -61,5 +61,10 @@
   "log.trickWin": "Won trick {{trick}}",
   "log.settle": "{{bid}} {{outcome}} ({{tricks}} tricks, pot {{pot}})",
   "log.outcome.made": "made",
-  "log.outcome.failed": "failed"
+  "log.outcome.failed": "failed",
+  "bidShort.pass": "Pass",
+  "bidShort.gask": "Gask",
+  "bidShort.solo": "Solo",
+  "bidShort.misere": "Misère",
+  "bidShort.vira": "Vira"
 }

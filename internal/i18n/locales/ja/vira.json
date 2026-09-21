@@ -61,5 +61,10 @@
   "log.trickWin": "トリック {{trick}} を獲得",
   "log.settle": "{{bid}} {{outcome}} ({{tricks}} トリック, ポット {{pot}})",
   "log.outcome.made": "成功",
-  "log.outcome.failed": "失敗"
+  "log.outcome.failed": "失敗",
+  "bidShort.pass": "パス",
+  "bidShort.gask": "ガスク",
+  "bidShort.solo": "ソロ",
+  "bidShort.misere": "ミゼール",
+  "bidShort.vira": "ヴィーラ"
 }
