@@ -437,23 +437,7 @@ func (g *Vira) resolveBidding() {
 	}
 	g.currentPlayerIdx = g.leadPlayerIdx
 	g.phase = ViraPhasePlay
-	g.appendLog(idx, "declare", "vira.log.declare", map[string]string{"bid": ViraBidNames[best], "trump": viraSuitName(g.trumpSuit)}, nil)
-}
-
-// viraSuitName 切り札スートの表示名。0 は切り札なし。
-func viraSuitName(suit int) string {
-	switch suit {
-	case CardDesignSpade:
-		return "スペード"
-	case CardDesignClover:
-		return "クラブ"
-	case CardDesignHeart:
-		return "ハート"
-	case CardDesignDiamond:
-		return "ダイヤ"
-	default:
-		return "なし"
-	}
+	g.appendLog(idx, "declare", "vira.log.declare", map[string]string{"bid": ViraBidNames[best], "trumpKey": trumpKeyOf(g.trumpSuit)}, nil)
 }
 
 // longestSuit プレイヤーの最長スートを返す。同数なら番号の小さい方。

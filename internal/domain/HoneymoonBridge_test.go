@@ -625,8 +625,6 @@ func TestHoneymoonBridge_AccessorsAndBounds(t *testing.T) {
 	assert.Equal(t, HoneymoonBridgeDefaultTarget, h.GetConfig().Target)
 	assert.NotEmpty(t, h.GetActionLog())
 	assert.Empty(t, h.GetCurrentTrick())
-	assert.Equal(t, "NT", honeymoonBridgeContractSuitStr(0))
-	assert.NotEqual(t, "NT", honeymoonBridgeContractSuitStr(CardDesignHeart))
 }
 
 // **得点式は細かい** (契約レベル×10 + オーバートリック×5 / 失敗は不足×10)。

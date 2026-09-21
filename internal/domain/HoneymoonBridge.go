@@ -505,17 +505,9 @@ func (h *HoneymoonBridge) bidBy(playerIdx, level, suit int) error {
 	h.passCount = 0
 	h.contractLevel, h.trumpSuit, h.declarerIdx = level, suit, playerIdx
 	h.players[playerIdx].SetBid(level, suit)
-	h.addLog(playerIdx, "bid", "honeymoonbridge.log.bid", map[string]string{"level": strconv.Itoa(level), "suit": honeymoonBridgeContractSuitStr(suit)}, nil)
+	h.addLog(playerIdx, "bid", "honeymoonbridge.log.bid", map[string]string{"level": strconv.Itoa(level), "suitKey": trumpKeyOf(suit)}, nil)
 	h.currentPlayerIdx = (h.currentPlayerIdx + 1) % HoneymoonBridgePlayerCnt
 	return nil
-}
-
-// honeymoonBridgeContractSuitStr は契約スートの表示文字列を返す。
-func honeymoonBridgeContractSuitStr(suit int) string {
-	if suit == 0 {
-		return "NT"
-	}
-	return suitStr(suit)
 }
 
 // closeBidding は競りを締めて本番のプレイへ進む。
@@ -533,7 +525,7 @@ func (h *HoneymoonBridge) closeBidding() {
 	// **リードは落札者の相手から。**
 	h.leadPlayerIdx = (h.declarerIdx + 1) % HoneymoonBridgePlayerCnt
 	h.currentPlayerIdx = h.leadPlayerIdx
-	h.addLog(h.declarerIdx, "contract", "honeymoonbridge.log.contract", map[string]string{"level": strconv.Itoa(h.contractLevel), "suit": honeymoonBridgeContractSuitStr(h.trumpSuit), "need": strconv.Itoa(h.RequiredTricks())}, nil)
+	h.addLog(h.declarerIdx, "contract", "honeymoonbridge.log.contract", map[string]string{"level": strconv.Itoa(h.contractLevel), "suitKey": trumpKeyOf(h.trumpSuit), "need": strconv.Itoa(h.RequiredTricks())}, nil)
 }
 
 // RequiredTricks は契約に必要なトリック数を返す（ブック 6 + レベル）。

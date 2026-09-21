@@ -6820,5 +6820,6 @@
   "common.suit.club": "クラブ",
   "common.suit.heart": "ハート",
   "common.suit.diamond": "ダイヤ",
+  "common.suit.notrump": "切り札なし",
   "common.suit.unknown": "不明"
 }

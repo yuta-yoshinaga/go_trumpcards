@@ -321,7 +321,7 @@ func (g *Ulti) applyBid(contract UltiContract, trumpSuit int) {
 	g.talon = make([]*Card, 0)
 	g.talonTaken = true
 	g.sortAllHands()
-	g.appendLog(g.declarerIdx, "bid", "ulti.log.bid", map[string]string{"name": playerName(g.players, g.declarerIdx), "contract": ultiContractName(contract), "trump": ultiSuitName(g.trumpSuit)}, nil)
+	g.appendLog(g.declarerIdx, "bid", "ulti.log.bid", map[string]string{"name": playerName(g.players, g.declarerIdx), "contract": ultiContractName(contract), "trumpKey": trumpKeyOf(g.trumpSuit)}, nil)
 	g.phase = UltiPhaseDiscard
 }
 
@@ -836,22 +836,6 @@ func ultiContractName(contract UltiContract) string {
 		return "durchmarsch"
 	case UltiContractUlti:
 		return "ulti"
-	default:
-		return "-"
-	}
-}
-
-// ultiSuitName スートの表示名を返す。
-func ultiSuitName(suit int) string {
-	switch suit {
-	case CardDesignSpade:
-		return "spades"
-	case CardDesignClover:
-		return "clubs"
-	case CardDesignHeart:
-		return "hearts"
-	case CardDesignDiamond:
-		return "diamonds"
 	default:
 		return "-"
 	}

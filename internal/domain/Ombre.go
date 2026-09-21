@@ -349,7 +349,7 @@ func (g *Ombre) applyBid(playerIdx int, bid OmbreBid, trumpSuit int) {
 		g.appendLog(playerIdx, "bid_pass", "ombre.log.bidPass", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 	} else {
 		g.bidTrump[playerIdx] = trumpSuit
-		g.appendLog(playerIdx, "bid", "ombre.log.bid", map[string]string{"name": playerName(g.players, playerIdx), "bid": ombreBidName(bid), "trump": ombreSuitName(trumpSuit)}, nil)
+		g.appendLog(playerIdx, "bid", "ombre.log.bid", map[string]string{"name": playerName(g.players, playerIdx), "bid": ombreBidName(bid), "trumpKey": trumpKeyOf(trumpSuit)}, nil)
 	}
 
 	if g.allBidsActed() {
@@ -408,7 +408,7 @@ func (g *Ombre) finalizeAuction() {
 	if !ombreValidSuit(g.trumpSuit) {
 		g.trumpSuit = g.cpuChooseTrump(ombre)
 	}
-	g.appendLog(ombre, "ombre", "ombre.log.ombre", map[string]string{"name": playerName(g.players, ombre), "bid": ombreBidName(best), "trump": ombreSuitName(g.trumpSuit)}, nil)
+	g.appendLog(ombre, "ombre", "ombre.log.ombre", map[string]string{"name": playerName(g.players, ombre), "bid": ombreBidName(best), "trumpKey": trumpKeyOf(g.trumpSuit)}, nil)
 	g.startPlay()
 }
 
@@ -943,22 +943,6 @@ func ombreBidName(bid OmbreBid) string {
 		return "solo"
 	default:
 		return "pass"
-	}
-}
-
-// ombreSuitName スートの表示名を返す。
-func ombreSuitName(suit int) string {
-	switch suit {
-	case CardDesignSpade:
-		return "spades"
-	case CardDesignClover:
-		return "clubs"
-	case CardDesignHeart:
-		return "hearts"
-	case CardDesignDiamond:
-		return "diamonds"
-	default:
-		return "-"
 	}
 }
 
