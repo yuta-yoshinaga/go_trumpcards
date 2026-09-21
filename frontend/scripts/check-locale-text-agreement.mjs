@@ -80,7 +80,8 @@ if (IS_FIXTURE) {
   assertFloor('locale-text-agreement', compared, 577, 'shared error messages compared');
   // 実測 32 (2026-09-18、移行済み 2 ゲーム)。移行が進むほど増えるので下がることはない
   assertFloor('locale-text-agreement', logCompared, 20, 'shared log messages compared');
-  assertFloor('locale-text-agreement', copiedCompared, 120, 'copied keys compared');
+  // 実測 132 (2026-09-21)。frontend/CLAUDE.md の「現在値のおよそ 2/3」に合わせる。
+  assertFloor('locale-text-agreement', copiedCompared, 88, 'copied keys compared');
 }
 
 if (mismatches.length > 0) {
