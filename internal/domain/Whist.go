@@ -379,7 +379,7 @@ func (w *Whist) dealAndSetTrump() {
 		w.trumpSuit = CardDesignSpade
 	}
 
-	w.appendLog(-1, "trump", "whist.log.trump", map[string]string{"suit": suitName(w.trumpSuit)}, nil)
+	w.appendLog(-1, "trump", "whist.log.trump", map[string]string{"suitKey": suitKeyOf(w.trumpSuit)}, nil)
 }
 
 // startPlayPhase プレイフェーズ開始: ディーラーの左隣がリード

@@ -268,7 +268,7 @@ func (g *Watten) CpuDeclare() {
 func (g *Watten) doDeclare(playerIdx, rank, suit int) {
 	g.schlagRank = rank
 	g.criticalSuit = suit
-	g.appendLog(playerIdx, "declare", "watten.log.declare", map[string]string{"player": playerName(g.players, playerIdx), "rank": strconv.Itoa(rank), "suit": suitStr(suit)}, nil)
+	g.appendLog(playerIdx, "declare", "watten.log.declare", map[string]string{"player": playerName(g.players, playerIdx), "rank": strconv.Itoa(rank), "suitKey": suitKeyOf(suit)}, nil)
 	g.sortAllHands()
 	g.startPlayPhase()
 }

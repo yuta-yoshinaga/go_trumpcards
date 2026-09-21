@@ -356,13 +356,12 @@ func (e *Euchre) doCallTrump(playerIdx int, suit int, goAlone bool) {
 	e.trumpSuit = suit
 	e.makerTeam = e.players[playerIdx].GetTeam()
 
-	suitName := suitStr(suit)
 	if goAlone {
 		e.goingAlone = true
 		e.goingAlonePlayerIdx = playerIdx
-		e.appendLog(playerIdx, "call_trump_alone", "euchre.log.callTrumpAlone", map[string]string{"name": playerName(e.players, playerIdx), "suit": suitName}, nil)
+		e.appendLog(playerIdx, "call_trump_alone", "euchre.log.callTrumpAlone", map[string]string{"name": playerName(e.players, playerIdx), "suitKey": suitKeyOf(suit)}, nil)
 	} else {
-		e.appendLog(playerIdx, "call_trump", "euchre.log.callTrump", map[string]string{"name": playerName(e.players, playerIdx), "suit": suitName}, nil)
+		e.appendLog(playerIdx, "call_trump", "euchre.log.callTrump", map[string]string{"name": playerName(e.players, playerIdx), "suitKey": suitKeyOf(suit)}, nil)
 	}
 
 	e.startPlayPhase()

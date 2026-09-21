@@ -364,7 +364,7 @@ func (p *Pitch) playCard(playerIdx int, card *Card) {
 	// 最初のトリックのリードカードがトランプを設定
 	if p.trumpSuit == PitchTrumpUnset && len(p.currentTrick) == 0 {
 		p.trumpSuit = card.GetDesign()
-		p.appendLog(playerIdx, "trump_set", "pitch.log.trumpSet", map[string]string{"suit": suitName(p.trumpSuit)}, nil)
+		p.appendLog(playerIdx, "trump_set", "pitch.log.trumpSet", map[string]string{"suitKey": suitKeyOf(p.trumpSuit)}, nil)
 	}
 	p.currentTrick = append(p.currentTrick, &TrickCard{
 		PlayerIdx: playerIdx,

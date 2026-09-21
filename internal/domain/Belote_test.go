@@ -301,7 +301,7 @@ func TestBelote_PlayerCallTrump_Success(t *testing.T) {
 		}
 	}
 	require.NotNil(t, callLog)
-	assert.Equal(t, map[string]string{"name": "You", "suit": "Spade"}, callLog.DetailParams)
+	assert.Equal(t, map[string]string{"name": "You", "suitKey": "common.suit.spade"}, callLog.DetailParams)
 }
 
 func TestBelote_PlayerCallTrump_FaceUpSuit_Rejected(t *testing.T) {

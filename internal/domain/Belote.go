@@ -379,8 +379,7 @@ func (b *Belote) doCallTrump(playerIdx int, suit int) {
 	b.trumpSuit = suit
 	b.makerTeam = b.players[playerIdx].GetTeam()
 	b.makerPlayerIdx = playerIdx
-	suitName := suitStr(suit)
-	b.appendLog(playerIdx, "call_trump", "belote.log.callTrump", map[string]string{"name": playerName(b.players, playerIdx), "suit": suitName}, nil)
+	b.appendLog(playerIdx, "call_trump", "belote.log.callTrump", map[string]string{"name": playerName(b.players, playerIdx), "suitKey": suitKeyOf(suit)}, nil)
 
 	b.dealRemainder(playerIdx)
 	b.startPlayPhase()

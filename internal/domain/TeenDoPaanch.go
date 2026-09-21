@@ -220,7 +220,7 @@ func (g *TeenDoPaanch) DeclareTrump(suit int) error {
 	g.exchangeCards()
 	g.phase = TeenDoPaanchPhasePlay
 	g.currentPlayerIdx = g.leadPlayerIdx
-	g.addLog(g.fivePlayerIdx, "trump", "teendopaanch.log.trump", map[string]string{"suit": suitStr(suit)}, nil)
+	g.addLog(g.fivePlayerIdx, "trump", "teendopaanch.log.trump", map[string]string{"suitKey": suitKeyOf(suit)}, nil)
 	return nil
 }
 

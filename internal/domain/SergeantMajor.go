@@ -224,7 +224,7 @@ func (s *SergeantMajor) DeclareTrump(suit int) error {
 	s.sortAllHands()
 	s.phase = SergeantMajorPhaseDiscard
 	s.currentPlayerIdx = s.dealerIdx
-	s.addLog(s.dealerIdx, "trump", "sergeantmajor.log.trump", map[string]string{"suit": suitStr(suit)}, nil)
+	s.addLog(s.dealerIdx, "trump", "sergeantmajor.log.trump", map[string]string{"suitKey": suitKeyOf(suit)}, nil)
 	return nil
 }
 

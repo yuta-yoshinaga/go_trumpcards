@@ -198,7 +198,7 @@ func (g *Loo) startDeal() {
 	g.turnUp = g.trumpCards.DrawCard()
 	if g.turnUp != nil {
 		g.trumpSuit = g.turnUp.GetDesign()
-		g.appendLog(-1, "trump_set", "loo.log.trumpSet", map[string]string{"suit": suitName(g.trumpSuit), "turnUp": cardStr(g.turnUp)}, []*Card{g.turnUp})
+		g.appendLog(-1, "trump_set", "loo.log.trumpSet", map[string]string{"suitKey": suitKeyOf(g.trumpSuit), "turnUp": cardStr(g.turnUp)}, []*Card{g.turnUp})
 	}
 
 	// decide 手番は forehand (dealer の次) から。

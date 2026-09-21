@@ -159,7 +159,7 @@ func (t *TwoTenJack) PlayerDeclareTrump(suit int) error {
 	}
 
 	t.trumpSuit = suit
-	t.appendLog(t.declarerIdx, "declare_trump", "twotenjack.log.declareTrump", map[string]string{"name": playerName(t.players, t.declarerIdx), "suit": twoTenJackSuitName(suit)}, nil)
+	t.appendLog(t.declarerIdx, "declare_trump", "twotenjack.log.declareTrump", map[string]string{"name": playerName(t.players, t.declarerIdx), "suitKey": suitKeyOf(suit)}, nil)
 	t.startPlayPhase()
 	return nil
 }
@@ -177,7 +177,7 @@ func (t *TwoTenJack) CpuDeclareTrump() {
 	}
 	suit := t.cpuSelectTrump(t.declarerIdx)
 	t.trumpSuit = suit
-	t.appendLog(t.declarerIdx, "declare_trump", "twotenjack.log.declareTrump", map[string]string{"name": playerName(t.players, t.declarerIdx), "suit": twoTenJackSuitName(suit)}, nil)
+	t.appendLog(t.declarerIdx, "declare_trump", "twotenjack.log.declareTrump", map[string]string{"name": playerName(t.players, t.declarerIdx), "suitKey": suitKeyOf(suit)}, nil)
 	t.startPlayPhase()
 }
 
@@ -497,22 +497,6 @@ func twoTenJackSortHand(p *TwoTenJackPlayer) {
 		}
 		return ci.GetValue() < cj.GetValue()
 	})
-}
-
-// twoTenJackSuitName スート名を返す
-func twoTenJackSuitName(suit int) string {
-	switch suit {
-	case CardDesignSpade:
-		return "Spade"
-	case CardDesignHeart:
-		return "Heart"
-	case CardDesignDiamond:
-		return "Diamond"
-	case CardDesignClover:
-		return "Club"
-	default:
-		return "?"
-	}
 }
 
 // GetHint ヒントを取得する

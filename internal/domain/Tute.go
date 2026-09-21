@@ -240,7 +240,7 @@ func (g *Tute) applyMarriage(playerIdx, suit int) {
 	}
 	team := TuteTeamOf(playerIdx)
 	g.roundTeamPts[team] += pts
-	g.appendLog(playerIdx, "marriage", "tute.log.marriage", map[string]string{"name": playerName(g.players, playerIdx), "suit": suitStr(suit), "points": strconv.Itoa(pts)}, nil)
+	g.appendLog(playerIdx, "marriage", "tute.log.marriage", map[string]string{"name": playerName(g.players, playerIdx), "suitKey": suitKeyOf(suit), "points": strconv.Itoa(pts)}, nil)
 }
 
 // hasTute プレイヤーが 4 枚の K または 4 枚の Q を持つか。

@@ -334,7 +334,7 @@ func (g *Gleek) openAuction() {
 		map[string]string{"name": playerName(g.players, g.elderIdx), "amount": fmt.Sprint(GleekMinBid)}, nil)
 	if g.turnUp != nil {
 		g.appendLog(-1, "turn_up", "gleek.log.turnUp",
-			map[string]string{"card": cardStr(g.turnUp), "suit": gleekSuitName(g.trumpSuit)}, []*Card{g.turnUp})
+			map[string]string{"card": cardStr(g.turnUp), "suitKey": suitKeyOf(g.trumpSuit)}, []*Card{g.turnUp})
 		g.payTiddyTurnUp()
 	}
 	g.currentBidderIdx = g.nextBidder(g.elderIdx)
@@ -687,7 +687,7 @@ func (g *Gleek) scoreRuff() {
 		g.playerScores[i] -= GleekRuffStake
 	}
 	g.appendLog(winner, "ruff", "gleek.log.ruff",
-		map[string]string{"name": playerName(g.players, winner), "total": fmt.Sprint(g.ruffs[winner].Total), "suit": gleekSuitName(g.ruffs[winner].Suit)}, nil)
+		map[string]string{"name": playerName(g.players, winner), "total": fmt.Sprint(g.ruffs[winner].Total), "suitKey": suitKeyOf(g.ruffs[winner].Suit)}, nil)
 }
 
 // scoreMelds グリークとマーニヴァルを申告し、各相手から点を取る。
@@ -1139,22 +1139,6 @@ func gleekSortHand(p *GleekPlayer, trump int) {
 // gleekValidSuit suit が有効なスート (1..4) か。
 func gleekValidSuit(suit int) bool {
 	return suit >= CardDesignSpade && suit <= CardDesignDiamond
-}
-
-// gleekSuitName スートの表示名を返す。
-func gleekSuitName(suit int) string {
-	switch suit {
-	case CardDesignSpade:
-		return "spades"
-	case CardDesignClover:
-		return "clubs"
-	case CardDesignHeart:
-		return "hearts"
-	case CardDesignDiamond:
-		return "diamonds"
-	default:
-		return "-"
-	}
 }
 
 // gleekRankName メルド対象ランクの表示名を返す。

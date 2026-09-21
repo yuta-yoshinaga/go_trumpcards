@@ -125,15 +125,15 @@ func TestMarjapussiReachability_Marriage(t *testing.T) {
 	assert.GreaterOrEqual(t, marriagePts[0], foundPts, "team 0 must receive at least the initial marriage points")
 
 	suitNames := map[int]string{
-		domain.CardDesignSpade:   "Spades",
-		domain.CardDesignClover:  "Clubs",
-		domain.CardDesignHeart:   "Hearts",
-		domain.CardDesignDiamond: "Diamonds",
+		domain.CardDesignSpade:   "common.suit.spade",
+		domain.CardDesignClover:  "common.suit.club",
+		domain.CardDesignHeart:   "common.suit.heart",
+		domain.CardDesignDiamond: "common.suit.diamond",
 	}
 	expectedSuitName := suitNames[foundSuit]
 	hasMarriageLog := false
 	for _, log := range foundGame.GetActionLog() {
-		if log.PlayerIdx == 0 && log.ActionType == "marriage" && log.DetailCode == "marjapussi.log.marriage" && log.DetailParams["suit"] == expectedSuitName {
+		if log.PlayerIdx == 0 && log.ActionType == "marriage" && log.DetailCode == "marjapussi.log.marriage" && log.DetailParams["suitKey"] == expectedSuitName {
 			hasMarriageLog = true
 			break
 		}
@@ -202,10 +202,10 @@ func TestMarjapussiReachability_CpuOverwritesTrumpByMarriage(t *testing.T) {
 	cpuMarriageFound := false
 	for _, log := range g.GetActionLog() {
 		if log.ActionType == "marriage" && log.DetailCode == "marjapussi.log.marriage" {
-			if log.PlayerIdx == 0 && log.DetailParams["suit"] == "Spades" {
+			if log.PlayerIdx == 0 && log.DetailParams["suitKey"] == "common.suit.spade" {
 				humanMarriageFound = true
 			}
-			if log.PlayerIdx == 1 && log.DetailParams["suit"] == "Hearts" {
+			if log.PlayerIdx == 1 && log.DetailParams["suitKey"] == "common.suit.heart" {
 				cpuMarriageFound = true
 			}
 		}

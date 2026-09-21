@@ -224,7 +224,7 @@ func (c *CourtPiece) CpuDeclareTrump() {
 func (c *CourtPiece) applyTrumpDeclaration(suit int) {
 	c.trumpSuit = suit
 	c.appendLog(c.callerIdx, "trump", "courtpiece.log.trump", map[string]string{
-		"name": playerName(c.players, c.callerIdx), "suit": suitName(suit),
+		"name": playerName(c.players, c.callerIdx), "suitKey": suitKeyOf(suit),
 	}, nil)
 
 	// Stage 2: 残りのカードを配り切る。

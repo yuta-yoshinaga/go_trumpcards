@@ -593,7 +593,7 @@ func (g *Bauernschnapsen) declareMarriage(playerIdx, cardIndex int) error {
 	g.marriageDeclared[suit] = true
 	g.roundMarriage[team] += bonus
 	g.appendLog(playerIdx, "marriage", "bauernschnapsen.log.marriage", map[string]string{
-		"player": playerName(g.players, playerIdx), "suit": suitStr(suit),
+		"player": playerName(g.players, playerIdx), "suitKey": suitKeyOf(suit),
 		"bonus": strconv.Itoa(bonus), "team": strconv.Itoa(team),
 	}, nil)
 

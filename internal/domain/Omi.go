@@ -228,8 +228,7 @@ func (e *Omi) doCallTrump(callerIdx int, suit int) {
 	e.trumpCallerIdx = callerIdx
 	e.makerTeam = e.players[callerIdx].GetTeam()
 
-	suitName := suitStr(suit)
-	e.appendLog(callerIdx, "call_trump", "omi.log.callTrump", map[string]string{"name": playerName(e.players, callerIdx), "suit": suitName}, nil)
+	e.appendLog(callerIdx, "call_trump", "omi.log.callTrump", map[string]string{"name": playerName(e.players, callerIdx), "suitKey": suitKeyOf(suit)}, nil)
 
 	// 切り札確定後、残り4枚を配る
 	e.dealSecondBatch()

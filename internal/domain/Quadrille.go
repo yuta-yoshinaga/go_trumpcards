@@ -375,7 +375,7 @@ func (g *Quadrille) applyBid(playerIdx int, bid QuadrilleBid, trumpSuit int) {
 	} else {
 		g.bidTrump[playerIdx] = trumpSuit
 		g.appendLog(playerIdx, "bid",
-			"quadrille.log.bid", map[string]string{"name": playerName(g.players, playerIdx), "bid": quadrilleBidName(bid), "trump": quadrilleSuitName(trumpSuit)}, nil)
+			"quadrille.log.bid", map[string]string{"name": playerName(g.players, playerIdx), "bid": quadrilleBidName(bid), "trumpKey": suitKeyOf(trumpSuit)}, nil)
 	}
 
 	if g.allBidsActed() {
@@ -434,7 +434,7 @@ func (g *Quadrille) finalizeAuction() {
 		g.trumpSuit = g.cpuChooseTrump(quadrille)
 	}
 	g.appendLog(quadrille, "quadrille",
-		"quadrille.log.quadrille", map[string]string{"name": playerName(g.players, quadrille), "bid": quadrilleBidName(best), "trump": quadrilleSuitName(g.trumpSuit)}, nil)
+		"quadrille.log.quadrille", map[string]string{"name": playerName(g.players, quadrille), "bid": quadrilleBidName(best), "trumpKey": suitKeyOf(g.trumpSuit)}, nil)
 	g.startKingCall()
 }
 
@@ -502,7 +502,7 @@ func (g *Quadrille) DeclareKing(playerIdx, suit int) error {
 	g.partnerIdx = g.findKingHolder(suit)
 	g.partnerRevealed = false
 	g.appendLog(playerIdx, "call_king",
-		"quadrille.log.callsKing", map[string]string{"name": playerName(g.players, playerIdx), "suit": quadrilleSuitName(suit)}, nil)
+		"quadrille.log.callsKing", map[string]string{"name": playerName(g.players, playerIdx), "suitKey": suitKeyOf(suit)}, nil)
 	g.startPlay()
 	return nil
 }
@@ -727,7 +727,7 @@ func (g *Quadrille) revealPartnerIfCalledKing(playerIdx int, card *Card) {
 	}
 	g.partnerRevealed = true
 	g.appendLog(playerIdx, "partner_revealed",
-		"quadrille.log.partnerRevealed", map[string]string{"name": playerName(g.players, playerIdx), "suit": quadrilleSuitName(g.calledKingSuit)}, nil)
+		"quadrille.log.partnerRevealed", map[string]string{"name": playerName(g.players, playerIdx), "suitKey": suitKeyOf(g.calledKingSuit)}, nil)
 }
 
 // ResolveTrick トリックを解決して勝者を決定する。最終トリックなら RoundEnd に入り、得点計算を発火する。
@@ -1150,22 +1150,6 @@ func quadrilleBidName(bid QuadrilleBid) string {
 		return "solo"
 	default:
 		return "pass"
-	}
-}
-
-// quadrilleSuitName スートの表示名を返す。
-func quadrilleSuitName(suit int) string {
-	switch suit {
-	case CardDesignSpade:
-		return "spades"
-	case CardDesignClover:
-		return "clubs"
-	case CardDesignHeart:
-		return "hearts"
-	case CardDesignDiamond:
-		return "diamonds"
-	default:
-		return "-"
 	}
 }
 

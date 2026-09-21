@@ -52,7 +52,12 @@ func TestGleek_ActionLogUsesDetailCode(t *testing.T) {
 	g := newTestGleek()
 	for _, entry := range g.GetActionLog() {
 		if entry.DetailCode == "gleek.log.turnUp" {
-			assert.Equal(t, map[string]string{"card": entry.DetailParams["card"], "suit": entry.DetailParams["suit"]}, entry.DetailParams)
+			assert.Equal(t, map[string]string{"card": entry.DetailParams["card"], "suitKey": entry.DetailParams["suitKey"]}, entry.DetailParams)
+			suitKeys := map[int]string{
+				domain.CardDesignSpade: "common.suit.spade", domain.CardDesignClover: "common.suit.club",
+				domain.CardDesignHeart: "common.suit.heart", domain.CardDesignDiamond: "common.suit.diamond",
+			}
+			assert.Equal(t, suitKeys[g.GetTrumpSuit()], entry.DetailParams["suitKey"])
 			return
 		}
 	}

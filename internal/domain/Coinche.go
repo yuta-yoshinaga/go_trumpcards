@@ -381,7 +381,7 @@ func (b *Coinche) doBid(playerIdx, points, suit int) {
 	// **宣言のたびに連続パス数を戻す。** 戻さないと、競りの序盤に出た
 	// パスが後の宣言を追い越して競りを閉じてしまう。
 	b.bidPassCount = 0
-	b.appendLog(playerIdx, "bid", "coinche.log.bid", map[string]string{"name": playerName(b.players, playerIdx), "points": strconv.Itoa(points), "suit": suitStr(suit)}, nil)
+	b.appendLog(playerIdx, "bid", "coinche.log.bid", map[string]string{"name": playerName(b.players, playerIdx), "points": strconv.Itoa(points), "suitKey": suitKeyOf(suit)}, nil)
 	b.advanceBid()
 }
 
@@ -414,14 +414,14 @@ func (b *Coinche) advanceBid() {
 		b.trumpSuit = b.cpuBestSuit(forced)
 		b.makerTeam = b.players[forced].GetTeam()
 		b.makerPlayerIdx = forced
-		b.appendLog(forced, "forced_bid", "coinche.log.forcedBid", map[string]string{"name": playerName(b.players, forced), "points": strconv.Itoa(b.contractPoints), "suit": suitStr(b.trumpSuit)}, nil)
+		b.appendLog(forced, "forced_bid", "coinche.log.forcedBid", map[string]string{"name": playerName(b.players, forced), "points": strconv.Itoa(b.contractPoints), "suitKey": suitKeyOf(b.trumpSuit)}, nil)
 		b.closeBidding()
 	}
 }
 
 // closeBidding 競りを閉じ、コワンシュフェーズへ移る。
 func (b *Coinche) closeBidding() {
-	b.appendLog(b.makerPlayerIdx, "contract", "coinche.log.contract", map[string]string{"points": strconv.Itoa(b.contractPoints), "suit": suitStr(b.trumpSuit), "team": strconv.Itoa(b.makerTeam)}, nil)
+	b.appendLog(b.makerPlayerIdx, "contract", "coinche.log.contract", map[string]string{"points": strconv.Itoa(b.contractPoints), "suitKey": suitKeyOf(b.trumpSuit), "team": strconv.Itoa(b.makerTeam)}, nil)
 	// 切り札が決まったので並べ直す。配った直後の並びは切り札を知らない。
 	b.sortAllHands()
 	b.detectBeloteHolder()
