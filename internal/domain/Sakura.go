@@ -365,7 +365,7 @@ func (g *Sakura) applyTurn(seat, handIdx, fieldIdx int) {
 	}
 	took := g.placeCard(seat, card, fieldIdx)
 	g.appendLog(seat, "play", "sakura.log.play", map[string]string{
-		"player": g.playerName(seat), "card": sakuraCardStr(card), "took": sakuraTookWord(took),
+		"player": g.playerName(seat), "card": sakuraCardStr(card), "tookKey": sakuraTookKey(took),
 	}, []*Card{card})
 
 	if len(g.stock) > 0 {
@@ -373,7 +373,7 @@ func (g *Sakura) applyTurn(seat, handIdx, fieldIdx int) {
 		g.stock = g.stock[1:]
 		tookDraw := g.placeCard(seat, drawn, -1)
 		g.appendLog(seat, "draw", "sakura.log.draw", map[string]string{
-			"player": g.playerName(seat), "card": sakuraCardStr(drawn), "took": sakuraTookWord(tookDraw),
+			"player": g.playerName(seat), "card": sakuraCardStr(drawn), "tookKey": sakuraTookKey(tookDraw),
 		}, []*Card{drawn})
 	}
 
@@ -592,12 +592,12 @@ func sakuraCardStr(c *Card) string {
 	return fmt.Sprintf("%d月%s", c.GetDesign(), KoiKoiCardGlyph(c))
 }
 
-// sakuraTookWord は獲得したかどうかの語を返す。
-func sakuraTookWord(took bool) string {
+// sakuraTookKey は獲得したかどうかの i18n キーを返す。
+func sakuraTookKey(took bool) string {
 	if took {
-		return "captured"
+		return "sakura.log.took.captured"
 	}
-	return "discarded"
+	return "sakura.log.took.discarded"
 }
 
 // --- JSON ---

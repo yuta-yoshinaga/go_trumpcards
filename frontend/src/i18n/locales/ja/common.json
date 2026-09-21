@@ -6907,5 +6907,13 @@
   "troggu.contractShort.trois": "トロワ",
   "troggu.contractShort.solo": "ソロ",
   "troggu.contractShort.piccolo": "ピッコロ",
-  "troggu.contractShort.misere": "ミゼール"
+  "troggu.contractShort.misere": "ミゼール",
+  "gostop.log.result.captured": "取りました",
+  "gostop.log.result.toField": "場に置きました",
+  "hachihachi.log.result.captured": "取りました",
+  "hachihachi.log.result.toField": "場に置きました",
+  "koikoi.log.result.captured": "取りました",
+  "koikoi.log.result.toField": "場に置きました",
+  "sakura.log.took.captured": "取りました",
+  "sakura.log.took.discarded": "捨てました"
 }
