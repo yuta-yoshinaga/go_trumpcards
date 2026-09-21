@@ -53,7 +53,7 @@ func TestPaiGowCuiPresenter_Output_BetPhase(t *testing.T) {
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "チップ: 1000")
-	assert.Contains(t, result, "フェーズ: BET")
+	assert.Contains(t, result, "フェーズ: 賭け")
 }
 
 func TestPaiGowCuiPresenter_Output_SetHandsPhase(t *testing.T) {
@@ -91,7 +91,7 @@ func TestPaiGowCuiPresenter_Output_SetHandsPhase(t *testing.T) {
 	m.On("GetHint").Return(&domain.PaiGowHint{LowIdx0: 0, LowIdx1: 1}).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "フェーズ: SET HANDS")
+	assert.Contains(t, result, "フェーズ: 手役セット")
 	assert.Contains(t, result, "[0]")
 	assert.Contains(t, result, "[6]")
 	assert.Contains(t, result, "ハウスウェイ推奨: [0] [1] (SPADE 1 CLOVER 10) をローハンドへ")
@@ -297,7 +297,7 @@ func TestPaiGowCuiPresenter_PhaseStr_Unknown(t *testing.T) {
 	m.On("IsFoulSplit", mock.Anything, mock.Anything).Return(false).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "UNKNOWN")
+	assert.Contains(t, result, "不明")
 }
 
 func TestPaiGowCuiPresenter_ActionLogOutput(t *testing.T) {

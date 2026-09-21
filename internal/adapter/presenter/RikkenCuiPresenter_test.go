@@ -61,7 +61,7 @@ func TestRikkenCuiPresenter_Output(t *testing.T) {
 	fillRikkenDefaults(m)
 
 	out := new(RikkenCuiPresenter).Output(m, nil)
-	assert.Contains(t, out, "フェーズ: PLAY")
+	assert.Contains(t, out, "フェーズ: プレイ")
 	assert.Contains(t, out, "ラウンド: 1 / 8")
 	assert.Contains(t, out, "リク")
 	assert.Contains(t, out, "スペード")
@@ -150,7 +150,7 @@ func TestRikkenCuiPresenter_Result(t *testing.T) {
 
 	out := new(RikkenCuiPresenter).Output(m, nil)
 	assert.Contains(t, out, "席 0 の勝ちです")
-	assert.Contains(t, out, "フェーズ: GAME END")
+	assert.Contains(t, out, "フェーズ: ゲーム終了")
 }
 
 func TestRikkenCuiPresenter_Error(t *testing.T) {
@@ -183,13 +183,13 @@ func TestRikkenCuiPresenter_Hint(t *testing.T) {
 
 func TestRikkenCuiPresenter_UnknownValues(t *testing.T) {
 	p := new(RikkenCuiPresenter)
-	assert.Equal(t, "UNKNOWN", p.phaseStr(99))
+	assert.Equal(t, "不明", p.phaseStr(99))
 	assert.Equal(t, "なし", p.trumpStr(domain.RikkenNoTrump))
 	assert.Equal(t, "クラブ", p.trumpStr(domain.CardDesignClover))
 	assert.Equal(t, "ダイヤ", p.trumpStr(domain.CardDesignDiamond))
-	assert.Equal(t, "BID", p.phaseStr(domain.RikkenPhaseBid))
-	assert.Equal(t, "CALL", p.phaseStr(domain.RikkenPhaseCall))
-	assert.Equal(t, "ROUND END", p.phaseStr(domain.RikkenPhaseRoundEnd))
+	assert.Equal(t, "入札", p.phaseStr(domain.RikkenPhaseBid))
+	assert.Equal(t, "コール", p.phaseStr(domain.RikkenPhaseCall))
+	assert.Equal(t, "ラウンド終了", p.phaseStr(domain.RikkenPhaseRoundEnd))
 }
 
 // **CUI もオープンミゼールで宣言者の手札を見せる。**

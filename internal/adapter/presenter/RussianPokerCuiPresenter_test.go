@@ -76,7 +76,7 @@ func TestRussianPokerCuiPresenter_Output_BetPhase(t *testing.T) {
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "チップ: 1000")
-	assert.Contains(t, result, "フェーズ: BET")
+	assert.Contains(t, result, "フェーズ: 賭け")
 }
 
 func TestRussianPokerCuiPresenter_Output_ActionPhase(t *testing.T) {
@@ -117,7 +117,7 @@ func TestRussianPokerCuiPresenter_Output_ActionPhase(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "フェーズ: ACTION")
+	assert.Contains(t, result, "フェーズ: アクション")
 	assert.Contains(t, result, "PLAYER")
 	assert.Contains(t, result, "DEALER")
 	assert.Contains(t, result, "??")
@@ -161,7 +161,7 @@ func TestRussianPokerCuiPresenter_Output_PostActionPhase_ShowsExchangeInfo(t *te
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "フェーズ: POST-ACTION")
+	assert.Contains(t, result, "フェーズ: アクション後")
 	// First dealer card visible
 	assert.Contains(t, result, "HEART 13")
 	// Remaining masked
@@ -194,7 +194,7 @@ func TestRussianPokerCuiPresenter_Output_ForceQualifyPhase(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "フェーズ: FORCE QUALIFY")
+	assert.Contains(t, result, "フェーズ: 強制クオリファイ")
 	assert.Contains(t, result, "ディーラー未クオリファイ")
 }
 
@@ -236,7 +236,7 @@ func TestRussianPokerCuiPresenter_Output_EndPhase_PlayerWins(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "フェーズ: END")
+	assert.Contains(t, result, "フェーズ: 終了")
 	assert.Contains(t, result, "プレイヤーの勝ち")
 	assert.Contains(t, result, "(Qualified)")
 	assert.Contains(t, result, "アンテ払戻し: 200")
@@ -408,7 +408,7 @@ func TestRussianPokerCuiPresenter_Output_Buy6th(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "フェーズ: SELECT")
+	assert.Contains(t, result, "フェーズ: 選択")
 	assert.Contains(t, result, "6枚目購入 (手数料: 100)")
 }
 

@@ -52,7 +52,7 @@ func TestColourWhistCuiPresenter_Output(t *testing.T) {
 	fillColourWhistDefaults(m)
 
 	out := new(ColourWhistCuiPresenter).Output(m, nil)
-	assert.Contains(t, out, "フェーズ: PLAY")
+	assert.Contains(t, out, "フェーズ: プレイ")
 	assert.Contains(t, out, "ラウンド: 1 / 8")
 	assert.Contains(t, out, "サーメン")
 	assert.NotContains(t, out, "colourwhist.", "生キーが漏れている")
@@ -185,11 +185,11 @@ func TestColourWhistCuiPresenter_Hint(t *testing.T) {
 
 func TestColourWhistCuiPresenter_UnknownValues(t *testing.T) {
 	p := new(ColourWhistCuiPresenter)
-	assert.Equal(t, "UNKNOWN", p.phaseStr(99))
+	assert.Equal(t, "不明", p.phaseStr(99))
 	assert.Equal(t, "未定", p.contractStr(domain.ColourWhistContractNone))
 	assert.Contains(t, p.contractStr(domain.ColourWhistContractMiserie), "ミゼリー")
 	assert.Equal(t, "なし", p.trumpStr(domain.ColourWhistNoTrump))
 	assert.Equal(t, "クラブ", p.trumpStr(domain.CardDesignClover))
-	assert.Equal(t, "BID", p.phaseStr(domain.ColourWhistPhaseBid))
-	assert.Equal(t, "CALL", p.phaseStr(domain.ColourWhistPhaseCall))
+	assert.Equal(t, "入札", p.phaseStr(domain.ColourWhistPhaseBid))
+	assert.Equal(t, "コール", p.phaseStr(domain.ColourWhistPhaseCall))
 }

@@ -33,7 +33,7 @@ func TestRedDogCuiPresenter_Output_BetPhase(t *testing.T) {
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "チップ: 1000")
-	assert.Contains(t, result, "BET")
+	assert.Contains(t, result, "賭け")
 }
 
 func TestRedDogCuiPresenter_Output_Error(t *testing.T) {
@@ -63,7 +63,7 @@ func TestRedDogCuiPresenter_Output_SpreadDecision(t *testing.T) {
 	m.On("GetTotalPayout").Return(0)
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "SPREAD DECISION")
+	assert.Contains(t, result, "スプレッド判断")
 	assert.Contains(t, result, "INITIAL")
 	assert.Contains(t, result, "スプレッド: 4")
 	assert.Contains(t, result, "アンテ: 100")
@@ -190,11 +190,11 @@ func TestRedDogCuiPresenter_Output_End_SpreadZero(t *testing.T) {
 func TestRedDogCuiPresenter_PhaseStr_AllBranches(t *testing.T) {
 	p := new(RedDogCuiPresenter)
 	for phase, expect := range map[int]string{
-		domain.RedDogPhaseBet:            "BET",
-		domain.RedDogPhaseInitialDealt:   "INITIAL DEALT",
-		domain.RedDogPhaseSpreadDecision: "SPREAD DECISION",
-		domain.RedDogPhaseEnd:            "END",
-		999:                              "UNKNOWN",
+		domain.RedDogPhaseBet:            "賭け",
+		domain.RedDogPhaseInitialDealt:   "初期配り済み",
+		domain.RedDogPhaseSpreadDecision: "スプレッド判断",
+		domain.RedDogPhaseEnd:            "終了",
+		999:                              "不明",
 	} {
 		assert.Equal(t, expect, p.phaseStr(phase))
 	}
