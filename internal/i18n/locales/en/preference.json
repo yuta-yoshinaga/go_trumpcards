@@ -62,5 +62,7 @@
   "log.play": "{{name}} plays {{card}}",
   "log.trickWin": "{{name}} wins trick {{trick}}",
   "log.roundScore": "round {{round}}: {{contract}} {{outcome}} ({{tricks}}/{{target}} tricks)",
+  "log.outcome.made": "made",
+  "log.outcome.failed": "failed",
   "log.gameEnd": "{{name}} wins the match!"
 }

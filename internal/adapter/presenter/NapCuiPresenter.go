@@ -14,18 +14,7 @@ import (
 
 // napBidName maps a bid constant (0/2/3/4/5) to its localized contract name.
 func napBidName(bid int) string {
-	switch domain.NapBid(bid) {
-	case domain.NapBidTwo:
-		return i18n.T("nap.bid.two")
-	case domain.NapBidThree:
-		return i18n.T("nap.bid.three")
-	case domain.NapBidFour:
-		return i18n.T("nap.bid.four")
-	case domain.NapBidNap:
-		return i18n.T("nap.bid.nap")
-	default:
-		return i18n.T("nap.bid.pass")
-	}
+	return i18n.T(domain.NapBidKey(domain.NapBid(bid)))
 }
 
 // napTrumpStr renders the trump glyph, or a "no trump" label when none.

@@ -247,7 +247,7 @@ func (g *Preference) applyBid(idx int, bid PreferenceBid) error {
 	g.bids[idx] = bid
 	g.bidDone[idx] = true
 	if bid != PreferenceBidPass {
-		g.appendLog(idx, "bid", "preference.log.bid", map[string]string{"name": playerName(g.players, idx), "bid": preferenceBidName(bid)}, nil)
+		g.appendLog(idx, "bid", "preference.log.bid", map[string]string{"name": playerName(g.players, idx), "bidKey": PreferenceBidKey(bid)}, nil)
 	} else {
 		g.appendLog(idx, "bid", "preference.log.bidPass", map[string]string{"name": playerName(g.players, idx)}, nil)
 	}
@@ -278,7 +278,7 @@ func (g *Preference) resolveBidding() {
 	} else {
 		g.trumpSuit = g.longestSuit(idx)
 	}
-	g.appendLog(idx, "contract", "preference.log.contract", map[string]string{"name": playerName(g.players, idx), "contract": preferenceBidName(bid), "trump": fmt.Sprint(g.trumpSuit)}, nil)
+	g.appendLog(idx, "contract", "preference.log.contract", map[string]string{"name": playerName(g.players, idx), "contractKey": PreferenceBidKey(bid), "trump": fmt.Sprint(g.trumpSuit)}, nil)
 	g.leadPlayerIdx = (g.dealerIdx + 1) % PreferencePlayerCnt
 	g.currentPlayerIdx = g.leadPlayerIdx
 	g.phase = PreferencePhasePlay
@@ -428,7 +428,7 @@ func (g *Preference) ScoreRound() {
 				}
 			}
 		}
-		g.appendLog(-1, "round_score", "preference.log.roundScore", map[string]string{"round": fmt.Sprint(g.roundNumber), "contract": preferenceBidName(g.contract), "outcome": map[bool]string{true: "made", false: "failed"}[won], "tricks": fmt.Sprint(g.roundTricks[g.declarerIdx]), "target": fmt.Sprint(preferenceBidTarget(g.contract))}, nil)
+		g.appendLog(-1, "round_score", "preference.log.roundScore", map[string]string{"round": fmt.Sprint(g.roundNumber), "contractKey": PreferenceBidKey(g.contract), "outcomeKey": preferenceOutcomeKey(won), "tricks": fmt.Sprint(g.roundTricks[g.declarerIdx]), "target": fmt.Sprint(preferenceBidTarget(g.contract))}, nil)
 		g.checkGameEnd()
 	}
 }
@@ -946,18 +946,26 @@ func (g *Preference) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// preferenceBidName 入札種別の表示名を返す。
-func preferenceBidName(b PreferenceBid) string {
+// PreferenceBidKey は入札種別の i18n キーを返す。棋譜と presenter の両方が引く。
+func PreferenceBidKey(b PreferenceBid) string {
 	switch b {
 	case PreferenceBidSix:
-		return "Six"
+		return "preference.bid.six"
 	case PreferenceBidMisere:
-		return "Misère"
+		return "preference.bid.misere"
 	case PreferenceBidSeven:
-		return "Seven"
+		return "preference.bid.seven"
 	case PreferenceBidEight:
-		return "Eight"
+		return "preference.bid.eight"
 	default:
-		return "Pass"
+		return "preference.bid.pass"
 	}
+}
+
+// preferenceOutcomeKey は宣言を達成したかの i18n キーを返す。
+func preferenceOutcomeKey(won bool) string {
+	if won {
+		return "preference.log.outcome.made"
+	}
+	return "preference.log.outcome.failed"
 }

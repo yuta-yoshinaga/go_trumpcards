@@ -57,5 +57,7 @@
   "log.play": "{{name}} が {{card}} をプレイしました",
   "log.trickWin": "{{name}} が {{trick}} トリックに勝ちました",
   "log.roundScore": "ラウンド {{round}}: {{contract}} {{result}}（{{won}}/{{target}} トリック）",
+  "log.outcome.made": "成功",
+  "log.outcome.failed": "失敗",
   "log.gameEnd": "{{name}} がマッチに勝利しました！"
 }

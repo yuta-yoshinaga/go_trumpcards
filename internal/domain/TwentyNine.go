@@ -445,9 +445,17 @@ func (g *TwentyNine) ScoreRound() {
 		} else {
 			g.teamScores[otherTeam]++
 		}
-		g.appendLog(-1, "round_score", "twentynine.log.roundScore", map[string]string{"round": fmt.Sprint(g.roundNumber), "team": twentyNineTeamName(bidTeam), "bid": fmt.Sprint(int(g.contract)), "points": fmt.Sprint(g.roundTeamPts[bidTeam]), "result": map[bool]string{true: "made", false: "set"}[made]}, nil)
+		g.appendLog(-1, "round_score", "twentynine.log.roundScore", map[string]string{"round": fmt.Sprint(g.roundNumber), "team": twentyNineTeamName(bidTeam), "bid": fmt.Sprint(int(g.contract)), "points": fmt.Sprint(g.roundTeamPts[bidTeam]), "resultKey": twentyNineOutcomeKey(made)}, nil)
 		g.checkGameEnd()
 	}
+}
+
+// twentyNineOutcomeKey は宣言を達成したかの i18n キーを返す。
+func twentyNineOutcomeKey(made bool) string {
+	if made {
+		return "twentynine.log.result.made"
+	}
+	return "twentynine.log.result.set"
 }
 
 // checkGameEnd 目標ゲーム点到達でマッチ終了を判定する。
