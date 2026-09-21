@@ -311,7 +311,7 @@ func TestTriPeaksCuiPresenterOutput_WithWaste(t *testing.T) {
 
 	p := &TriPeaksCuiPresenter{}
 	result := p.Output(tg, nil)
-	assert.Contains(t, result, "Waste:")
+	assert.Contains(t, result, "ウェイスト:")
 	assert.NotContains(t, result, "[空]")
 }
 

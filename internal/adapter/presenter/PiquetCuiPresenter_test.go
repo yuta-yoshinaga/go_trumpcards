@@ -162,7 +162,7 @@ func TestPiquetCuiPresenter_ActionLogOutput(t *testing.T) {
 	}
 	p := &PiquetCuiPresenter{}
 	out := p.ActionLogOutput(g)
-	assert.Contains(t, out, "wins trick 1")
+	assert.Contains(t, out, "がトリック1を取りました")
 	assert.Contains(t, out, "トリック点 +1")
 }
 

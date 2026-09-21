@@ -230,7 +230,7 @@ func TestPyramidCuiPresenterOutput_StalemateAndNonEmptyWaste(t *testing.T) {
 	p := &PyramidCuiPresenter{}
 	result := p.Output(pg, nil)
 	assert.Contains(t, result, "手詰まりです")
-	assert.Contains(t, result, "Waste: ")
+	assert.Contains(t, result, "ウェイスト: ")
 }
 
 func TestPyramidCuiPresenterActionLogOutput(t *testing.T) {

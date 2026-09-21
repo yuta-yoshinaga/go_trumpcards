@@ -214,7 +214,7 @@ func TestGolfCuiPresenterOutput_WithWaste(t *testing.T) {
 
 	p := &GolfCuiPresenter{}
 	result := p.Output(gg, nil)
-	assert.Contains(t, result, "Waste:")
+	assert.Contains(t, result, "ウェイスト:")
 	assert.NotContains(t, result, "[空]")
 }
 

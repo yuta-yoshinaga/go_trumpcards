@@ -54,7 +54,7 @@ func TestWhiteheadCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "Whitehead")
 		assert.Contains(t, result, "組札")
 		assert.Contains(t, result, "Stock: 24枚")
-		assert.Contains(t, result, "Waste: [空]")
+		assert.Contains(t, result, "ウェイスト: [空]")
 		assert.Contains(t, result, "列0:")
 		assert.Contains(t, result, "手数: 0")
 		// Header surfaces draw mode, scoring mode, and the running score.
@@ -108,7 +108,7 @@ func TestWhiteheadCuiPresenter_Output(t *testing.T) {
 
 		p := new(WhiteheadCuiPresenter)
 		result := p.Output(kg, nil)
-		assert.Contains(t, result, "Waste: HEART 5")
+		assert.Contains(t, result, "ウェイスト: HEART 5")
 	})
 
 	t.Run("with error", func(t *testing.T) {
