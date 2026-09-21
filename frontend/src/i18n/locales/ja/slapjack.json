@@ -18,9 +18,9 @@
   "settings": {
     "cpuDifficulty": "CPU難易度",
     "difficulty": {
-      "easy": "Easy",
-      "normal": "Normal",
-      "hard": "Hard"
+      "easy": "イージー",
+      "normal": "ノーマル",
+      "hard": "ハード"
     }
   },
   "slapjack": {
