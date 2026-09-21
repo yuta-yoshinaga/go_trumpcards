@@ -344,7 +344,11 @@ func (g *ContractRummy) applyContractMeld(indicesPerSlot [][]int) error {
 		}
 		slot := contract.Slots[slotIdx]
 		if !ValidateContractSlot(slot, cards) {
-			return NewDomainErrorCode(ErrInvalidPlay, "contractrummy.errContractSlotInvalid", map[string]string{"slot": strconv.Itoa(slotIdx + 1), "kind": contractSlotLabel(slot)})
+			code := "contractrummy.errContractSlotSet"
+			if slot.Kind == ContractSlotRun {
+				code = "contractrummy.errContractSlotRun"
+			}
+			return NewDomainErrorCode(ErrInvalidPlay, code, map[string]string{"slot": strconv.Itoa(slotIdx + 1), "size": strconv.Itoa(slot.Size)})
 		}
 		slotCards[slotIdx] = cards
 	}
@@ -850,14 +854,6 @@ func contractRummyCardPenalty(card *Card) int {
 		return 10
 	}
 	return v
-}
-
-// contractSlotLabel スロットの種別を表示用文字列で返す
-func contractSlotLabel(slot ContractSlot) string {
-	if slot.Kind == ContractSlotSet {
-		return fmt.Sprintf("Set of %d", slot.Size)
-	}
-	return fmt.Sprintf("Run of %d", slot.Size)
 }
 
 // ValidateContractSlot cards がスロットの条件（種別・枚数・組み合わせ）を満たすか。

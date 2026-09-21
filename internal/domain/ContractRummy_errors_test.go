@@ -83,3 +83,23 @@ func TestContractRummy_AdditionalDomainErrorCallSitesHaveCodes(t *testing.T) {
 		assertContractRummyDomainError(t, g.PlayerLayoff(1, 0, 0), ErrInvalidPlay, "contractrummy.errLayoffCardCannotAdd")
 	})
 }
+
+func TestContractRummy_ContractSlotErrorsUseSeparateCodes(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		round    int
+		cards    []*Card
+		indices  [][]int
+		wantCode string
+	}{
+		{"set", 1, []*Card{crCard(CardDesignSpade, 5), crCard(CardDesignHeart, 6), crCard(CardDesignDiamond, 7), crCard(CardDesignClover, 8), crCard(CardDesignSpade, 9), crCard(CardDesignHeart, 10)}, [][]int{{0, 1, 2}, {3, 4, 5}}, "contractrummy.errContractSlotSet"},
+		{"run", 2, []*Card{crCard(CardDesignSpade, 5), crCard(CardDesignHeart, 5), crCard(CardDesignDiamond, 5), crCard(CardDesignSpade, 5), crCard(CardDesignHeart, 7), crCard(CardDesignDiamond, 9), crCard(CardDesignClover, 11)}, [][]int{{0, 1, 2}, {3, 4, 5, 6}}, "contractrummy.errContractSlotRun"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			g, p, _ := contractRummyErrorGame()
+			g.SetRoundNumber(tc.round)
+			setHand(p, tc.cards)
+			assertContractRummyDomainError(t, g.PlayerMeldContract(tc.indices), ErrInvalidPlay, tc.wantCode)
+		})
+	}
+}

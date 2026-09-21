@@ -337,7 +337,11 @@ func (g *Carioca) applyContractMeld(indicesPerSlot [][]int) error {
 		}
 		slot := contract.Slots[slotIdx]
 		if !cariocaValidateContractSlot(slot, cards) {
-			return NewDomainErrorCode(ErrInvalidPlay, "carioca.errContractSlotInvalid", map[string]string{"slot": strconv.Itoa(slotIdx + 1), "kind": contractSlotLabel(slot)})
+			code := "carioca.errContractSlotSet"
+			if slot.Kind == ContractSlotRun {
+				code = "carioca.errContractSlotRun"
+			}
+			return NewDomainErrorCode(ErrInvalidPlay, code, map[string]string{"slot": strconv.Itoa(slotIdx + 1), "size": strconv.Itoa(slot.Size)})
 		}
 		slotCards[slotIdx] = cards
 	}

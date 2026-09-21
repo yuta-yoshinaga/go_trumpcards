@@ -21,7 +21,14 @@ export function GameMessageBox({
   const { t } = useTranslation('common');
   let displayMessage = message ?? '';
   if (messageCode) {
-    const translated = t(`messageCode.${messageCode}`, messageParams ?? {});
+    const params = messageParams
+      ? Object.fromEntries(
+          Object.entries(messageParams).map(([key, value]) =>
+            key.endsWith('Key') ? [key.slice(0, -3), t(value)] : [key, value],
+          ),
+        )
+      : {};
+    const translated = t(`messageCode.${messageCode}`, params);
     if (translated !== `messageCode.${messageCode}`) {
       displayMessage = translated;
     }

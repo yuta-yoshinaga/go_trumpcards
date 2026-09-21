@@ -34,7 +34,7 @@ func TestViraDomainErrorsHaveMessageCodes(t *testing.T) {
 	t.Run("bid must outrank", func(t *testing.T) {
 		g := newTestVira(t)
 		require.NoError(t, g.applyBid(0, ViraBidSolo))
-		assertViraDomainError(t, g.applyBid(1, ViraBidGask), ErrInvalidPlay, "vira.errBidMustOutrank", map[string]string{"bid": "Solo"})
+		assertViraDomainError(t, g.applyBid(1, ViraBidGask), ErrInvalidPlay, "vira.errBidMustOutrank", map[string]string{"bidKey": "vira.bidShort.solo"})
 	})
 
 	t.Run("card index out of range", func(t *testing.T) {

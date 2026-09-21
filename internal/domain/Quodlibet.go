@@ -281,7 +281,7 @@ func (q *Quodlibet) applySelectContract(contract int) error {
 	}
 	if !ok {
 		return NewDomainErrorCode(ErrInvalidPlay, "quodlibet.errContractUnavailable",
-			map[string]string{"contract": QuodlibetContractName(contract)})
+			map[string]string{"contractKey": QuodlibetContractKey(contract)})
 	}
 	q.currentContract = contract
 	q.usedContracts[contract] = true
@@ -620,6 +620,38 @@ func QuodlibetContractName(c int) string {
 		return "snack"
 	default:
 		return "unknown"
+	}
+}
+
+// QuodlibetContractKey はコントラクト名の i18n キーを返す。
+func QuodlibetContractKey(c int) string {
+	switch c {
+	case QuodlibetPlus:
+		return "quodlibet.contractName.plus"
+	case QuodlibetMinus:
+		return "quodlibet.contractName.minus"
+	case QuodlibetBadNeighbour:
+		return "quodlibet.contractName.badNeighbour"
+	case QuodlibetAlarich:
+		return "quodlibet.contractName.alarich"
+	case QuodlibetFirstThreeAndLast:
+		return "quodlibet.contractName.firstThreeAndLast"
+	case QuodlibetNoReds:
+		return "quodlibet.contractName.noReds"
+	case QuodlibetOberUnter:
+		return "quodlibet.contractName.oberUnter"
+	case QuodlibetBribe:
+		return "quodlibet.contractName.bribe"
+	case QuodlibetOpen:
+		return "quodlibet.contractName.open"
+	case QuodlibetHunt:
+		return "quodlibet.contractName.hunt"
+	case QuodlibetQuadrature:
+		return "quodlibet.contractName.quadrature"
+	case QuodlibetSnack:
+		return "quodlibet.contractName.snack"
+	default:
+		return "quodlibet.contractName.unknown"
 	}
 }
 
