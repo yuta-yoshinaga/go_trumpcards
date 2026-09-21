@@ -11,7 +11,7 @@
   "helpHint": "  h                    hint",
   "helpAutoComplete": "  ac                   auto-complete",
   "foundationHeader": "組札: ",
-  "stockLine": "Stock: {{count}}枚",
+  "stockLine": "ストック: {{count}}枚",
   "wasteCard": " | ウェイスト: {{card}}",
   "wasteEmpty": " | ウェイスト: [空]",
   "redealUsed": " | リディール: 使用済み",

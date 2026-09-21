@@ -53,7 +53,7 @@ func TestGolfCuiPresenterOutput_Playing(t *testing.T) {
 
 	result := p.Output(gg, nil)
 	assert.Contains(t, result, "Golf")
-	assert.Contains(t, result, "Stock: 16枚")
+	assert.Contains(t, result, "ストック: 16枚")
 	assert.Contains(t, result, "手数: 0")
 }
 

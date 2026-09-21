@@ -24,7 +24,7 @@
   "wasteFan": " | ウェイスト: {{cards}} (末尾*のみ操作可)",
   "clearScore": "スコア: {{score}}",
   "foundationHeader": "組札: ",
-  "stockLine": "Stock: {{count}}枚",
+  "stockLine": "ストック: {{count}}枚",
   "wasteCard": " | ウェイスト: {{card}}",
   "wasteEmpty": " | ウェイスト: [空]",
   "columnLabel": "列{{col}}:",

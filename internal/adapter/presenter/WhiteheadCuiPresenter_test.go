@@ -53,7 +53,7 @@ func TestWhiteheadCuiPresenter_Output(t *testing.T) {
 		result := p.Output(kg, nil)
 		assert.Contains(t, result, "Whitehead")
 		assert.Contains(t, result, "組札")
-		assert.Contains(t, result, "Stock: 24枚")
+		assert.Contains(t, result, "ストック: 24枚")
 		assert.Contains(t, result, "ウェイスト: [空]")
 		assert.Contains(t, result, "列0:")
 		assert.Contains(t, result, "手数: 0")

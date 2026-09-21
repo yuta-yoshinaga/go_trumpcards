@@ -33,7 +33,7 @@
   "hintAvailable": "ヒントがあります",
   "noHint": "ヒントはありません",
   "foundationHeader": "組札: ",
-  "stockLine": "Stock: {{count}}",
+  "stockLine": "ストック: {{count}}",
   "cannotDealEmptyCol": "空き列があるためめくれません（先に埋めてください）",
   "faceDownLeft": "山札が尽きました。裏向きのカードが残っている列があります",
   "columnLabel": "列{{col}}:",

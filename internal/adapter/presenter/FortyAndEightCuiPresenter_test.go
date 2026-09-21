@@ -51,7 +51,7 @@ func TestFortyAndEightCuiPresenter_Output(t *testing.T) {
 		result := p.Output(fg, nil)
 		assert.Contains(t, result, "Forty and Eight")
 		assert.Contains(t, result, "組札")
-		assert.Contains(t, result, "Stock: 64枚")
+		assert.Contains(t, result, "ストック: 64枚")
 		assert.Contains(t, result, "ウェイスト: [空]")
 		assert.Contains(t, result, "列0:")
 		assert.Contains(t, result, "手数: 0")

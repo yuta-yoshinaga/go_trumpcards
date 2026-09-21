@@ -17,7 +17,7 @@
   "clearScore": "スコア: {{score}}",
   "clearTimeBonus": "タイムボーナス: {{bonus}} 合計: {{total}}",
   "foundationHeader": "組札: ",
-  "stockLine": "Stock: {{count}}枚",
+  "stockLine": "ストック: {{count}}枚",
   "wasteCard": " | ウェイスト: {{card}}",
   "wasteEmpty": " | ウェイスト: [空]",
   "columnLabel": "列{{col}}:",

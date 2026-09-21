@@ -409,3 +409,72 @@ func TestJapaneseGameLogAndWasteLabels(t *testing.T) {
 		assert.NotContains(t, i18n.T(key), japanese, key+" contains Japanese translation")
 	}
 }
+
+func TestJapaneseStockDiscardAndReserveLabels(t *testing.T) {
+	t.Cleanup(func() { i18n.SetLang("ja") })
+
+	expected := map[string]string{
+		"acesup.stockLine":        "ストック: {{count}}枚",
+		"acesup.discardLine":      " | 捨札: {{count}}/{{goal}}枚",
+		"agnes.stockLine":         "ストック: {{count}}枚",
+		"canfield.reserveLine":    "リザーブ: {{count}}枚 (top: {{card}})",
+		"canfield.reserveEmpty":   "リザーブ: [空]",
+		"canfield.stockLine":      "ストック: {{count}}枚",
+		"easthaven.stockLine":     "ストック: {{count}}",
+		"fortyandeight.stockLine": "ストック: {{count}}枚",
+		"fortythieves.stockLine":  "ストック: {{count}}枚",
+		"golf.stockLine":          "ストック: {{count}}枚",
+		"klondike.stockLine":      "ストック: {{count}}枚",
+		"narcotic.stockLine":      "ストック: {{count}}枚",
+		"narcotic.discardLine":    " | 捨札: {{count}}/{{goal}}枚",
+		"pyramid.stockLine":       "ストック: {{count}}枚",
+		"rankandfile.stockLine":   "ストック: {{count}}枚",
+		"sultan.stockLine":        "ストック: {{count}}枚",
+		"tripeaks.stockLine":      "ストック: {{count}}枚",
+		"whitehead.stockLine":     "ストック: {{count}}枚",
+	}
+
+	localeValues := func(lang string) map[string]string {
+		values := map[string]string{}
+		dir := filepath.Join("..", "..", "i18n", "locales", lang)
+		entries, err := os.ReadDir(dir)
+		if !assert.NoError(t, err, lang) {
+			return values
+		}
+		for _, entry := range entries {
+			if entry.IsDir() || filepath.Ext(entry.Name()) != ".json" {
+				continue
+			}
+			path := filepath.Join(dir, entry.Name())
+			data, readErr := os.ReadFile(path)
+			if !assert.NoError(t, readErr, path) {
+				continue
+			}
+			var translations map[string]string
+			if !assert.NoError(t, json.Unmarshal(data, &translations), path) {
+				continue
+			}
+			for key, value := range translations {
+				values[lang+"."+key] = value
+			}
+		}
+		return values
+	}
+
+	i18n.SetLang("ja")
+	for key, want := range expected {
+		assert.Equal(t, want, i18n.T(key), key)
+	}
+	for key, value := range localeValues("ja") {
+		for _, english := range []string{"Stock:", "Discard:", "Reserve:"} {
+			assert.NotContains(t, value, english, key+" contains "+english)
+		}
+	}
+
+	i18n.SetLang("en")
+	for key := range expected {
+		for _, japanese := range []string{"ストック", "捨札", "リザーブ"} {
+			assert.NotContains(t, i18n.T(key), japanese, key+" contains "+japanese)
+		}
+	}
+}

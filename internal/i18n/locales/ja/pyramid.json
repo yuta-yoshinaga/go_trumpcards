@@ -9,7 +9,7 @@
   "helpHint": "  h                        ヒント",
   "exposedCard": "({{row}},{{col}}){{card}}",
   "blockedCard": "[--]{{card}}",
-  "stockLine": "Stock: {{count}}枚",
+  "stockLine": "ストック: {{count}}枚",
   "wasteCard": " | ウェイスト: {{card}}",
   "wasteEmpty": " | ウェイスト: [空]",
   "hintKing": "ヒント: キング除去: ({{row}},{{col}})",
