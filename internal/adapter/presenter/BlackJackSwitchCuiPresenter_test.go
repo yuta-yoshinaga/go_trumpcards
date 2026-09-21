@@ -43,7 +43,7 @@ func TestBlackJackSwitchCuiPresenter_Output_BetPhase(t *testing.T) {
 	setupBlackJackSwitchCuiMockDefaults(m)
 	out := p.Output(m, nil)
 	assert.Contains(t, out, "1000")
-	assert.Contains(t, out, "BET")
+	assert.Contains(t, out, "賭け")
 }
 
 func TestBlackJackSwitchCuiPresenter_Output_Error(t *testing.T) {
@@ -84,7 +84,7 @@ func TestBlackJackSwitchCuiPresenter_Output_DealerHoleHidden_DuringAction(t *tes
 
 	out := p.Output(m, nil)
 	assert.Contains(t, out, "??", "dealer hole card should be hidden during action phase")
-	assert.Contains(t, out, "ACTION")
+	assert.Contains(t, out, "アクション")
 }
 
 func TestBlackJackSwitchCuiPresenter_Output_EndPhaseShowsResults(t *testing.T) {
@@ -163,11 +163,11 @@ func TestBlackJackSwitchCuiPresenter_Output_Dealer22ShowsPushBanner(t *testing.T
 
 func TestBlackJackSwitchCuiPresenter_PhaseStr(t *testing.T) {
 	p := new(BlackJackSwitchCuiPresenter)
-	assert.Equal(t, "BET", p.phaseStr(domain.BJSwitchPhaseBet))
-	assert.Equal(t, "SWITCH", p.phaseStr(domain.BJSwitchPhaseSwitch))
-	assert.Equal(t, "ACTION", p.phaseStr(domain.BJSwitchPhaseAction))
-	assert.Equal(t, "END", p.phaseStr(domain.BJSwitchPhaseEnd))
-	assert.Equal(t, "UNKNOWN", p.phaseStr(99))
+	assert.Equal(t, "賭け", p.phaseStr(domain.BJSwitchPhaseBet))
+	assert.Equal(t, "スイッチ", p.phaseStr(domain.BJSwitchPhaseSwitch))
+	assert.Equal(t, "アクション", p.phaseStr(domain.BJSwitchPhaseAction))
+	assert.Equal(t, "終了", p.phaseStr(domain.BJSwitchPhaseEnd))
+	assert.Equal(t, "不明", p.phaseStr(99))
 }
 
 func TestBlackJackSwitchCuiPresenter_ActionLogOutput(t *testing.T) {

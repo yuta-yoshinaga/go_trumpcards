@@ -39,7 +39,7 @@ func TestLetItRideCuiPresenter_Output_BetPhase(t *testing.T) {
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "チップ: 1000")
-	assert.Contains(t, result, "BET")
+	assert.Contains(t, result, "賭け")
 }
 
 func TestLetItRideCuiPresenter_Output_Error(t *testing.T) {
@@ -78,7 +78,7 @@ func TestLetItRideCuiPresenter_Output_FirstDecision(t *testing.T) {
 	m.On("GetTotalPayout").Return(0)
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "FIRST DECISION")
+	assert.Contains(t, result, "1回目の判断")
 	assert.Contains(t, result, "PLAYER")
 	assert.Contains(t, result, "COMMUNITY")
 	assert.Contains(t, result, "??")
@@ -106,7 +106,7 @@ func TestLetItRideCuiPresenter_Output_SecondDecision(t *testing.T) {
 	m.On("GetTotalPayout").Return(0)
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "SECOND DECISION")
+	assert.Contains(t, result, "2回目の判断")
 	// First community card should be shown, second masked
 	lines := strings.Split(result, "\n")
 	communityFound := false
@@ -225,7 +225,7 @@ func TestLetItRideCuiPresenter_Output_UnknownPhase(t *testing.T) {
 	m.On("GetCommunityCards").Return([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)})
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "UNKNOWN")
+	assert.Contains(t, result, "不明")
 }
 
 func TestLetItRideCuiPresenter_ActionLogOutput(t *testing.T) {

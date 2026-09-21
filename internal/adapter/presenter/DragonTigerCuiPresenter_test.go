@@ -41,7 +41,7 @@ func TestDragonTigerCuiPresenter_Output_BetPhase(t *testing.T) {
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "チップ: 1000")
-	assert.Contains(t, result, "フェーズ: BET")
+	assert.Contains(t, result, "フェーズ: 賭け")
 	assert.NotContains(t, result, "残高が最低ベットを下回ったため、1000チップを補充しました")
 	// No history yet, so the history line is omitted.
 	assert.NotContains(t, result, "履歴:")
@@ -207,9 +207,9 @@ func TestDragonTigerCuiPresenter_Output_Error(t *testing.T) {
 
 func TestDragonTigerCuiPresenter_PhaseStr(t *testing.T) {
 	p := new(DragonTigerCuiPresenter)
-	assert.Equal(t, "BET", p.phaseStr(domain.DragonTigerPhaseBet))
-	assert.Equal(t, "END", p.phaseStr(domain.DragonTigerPhaseEnd))
-	assert.Equal(t, "UNKNOWN", p.phaseStr(99))
+	assert.Equal(t, "賭け", p.phaseStr(domain.DragonTigerPhaseBet))
+	assert.Equal(t, "終了", p.phaseStr(domain.DragonTigerPhaseEnd))
+	assert.Equal(t, "不明", p.phaseStr(99))
 }
 
 func TestDragonTigerCuiPresenter_BetTypeStr(t *testing.T) {

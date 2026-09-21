@@ -44,7 +44,7 @@ func TestBlackJackCuiPresenters_Method(t *testing.T) {
 		bj.Reset()
 		output := tbp.Output(bj, nil)
 		assert.Contains(t, output, "チップ: プレイヤー=1000 ディーラー=1000")
-		assert.Contains(t, output, "フェーズ: BET")
+		assert.Contains(t, output, "フェーズ: 賭け")
 	})
 	t.Run("success Output action phase", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
@@ -62,7 +62,7 @@ func TestBlackJackCuiPresenters_Method(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
 		bj.SetPhase(domain.BJPhaseAction)
 		output := tbp.Output(bj, nil)
-		assert.Contains(t, output, "フェーズ: ACTION")
+		assert.Contains(t, output, "フェーズ: アクション")
 		assert.Contains(t, output, "ベット=100")
 		assert.Contains(t, output, "SPADE 5")
 		// In-progress dealer shows the up-card plus a hidden-card placeholder, with no trailing comma.
@@ -90,7 +90,7 @@ func TestBlackJackCuiPresenters_Method(t *testing.T) {
 		_ = bj.PlayerStand()
 		output := tbp.Output(bj, nil)
 		assert.Contains(t, output, "あなたの負けです")
-		assert.Contains(t, output, "フェーズ: END")
+		assert.Contains(t, output, "フェーズ: 終了")
 	})
 	t.Run("success Output end phase draw", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
@@ -172,7 +172,7 @@ func TestBlackJackCuiPresenters_Method(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 10, false))
 		bj.SetPhase(domain.BJPhaseInsurance)
 		output := tbp.Output(bj, nil)
-		assert.Contains(t, output, "フェーズ: INSURANCE")
+		assert.Contains(t, output, "フェーズ: インシュランス")
 		assert.Contains(t, output, "インシュランス可能")
 	})
 	t.Run("success Output doubled and busted flags", func(t *testing.T) {
@@ -300,13 +300,13 @@ func TestBlackJackCuiPresenters_Method(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
 		bj.SetPhase(domain.BJPhaseEnd)
 		output := tbp.Output(bj, nil)
-		assert.Contains(t, output, "フェーズ: END")
+		assert.Contains(t, output, "フェーズ: 終了")
 	})
 	t.Run("success phaseStr unknown phase", func(t *testing.T) {
 		bj, _ := setupBJCuiTest(1000, 1000)
 		bj.SetPhase(999)
 		output := tbp.Output(bj, nil)
-		assert.Contains(t, output, "フェーズ: UNKNOWN")
+		assert.Contains(t, output, "フェーズ: 不明")
 	})
 	t.Run("success Output multi-hand split game end all results", func(t *testing.T) {
 		bj, dealer := setupBJCuiTest(800, 1000)
@@ -383,7 +383,7 @@ func TestBlackJackCuiPresenters_Method(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
 		bj.SetPhase(domain.BJPhaseDeal)
 		output := tbp.Output(bj, nil)
-		assert.Contains(t, output, "フェーズ: DEAL")
+		assert.Contains(t, output, "フェーズ: 配り")
 	})
 }
 
@@ -989,7 +989,7 @@ func TestBlackJackCuiPresenter_EarlySurrenderPhase(t *testing.T) {
 	dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 6, false))
 	bj.SetPhase(domain.BJPhaseEarlySurrender)
 	output := bjp.Output(bj, nil)
-	assert.Contains(t, output, "フェーズ: EARLY SURRENDER")
+	assert.Contains(t, output, "フェーズ: アーリーサレンダー")
 }
 
 func TestBlackJackCuiPresenter_ActionLogOutput(t *testing.T) {

@@ -209,7 +209,7 @@ func TestChemindeFerCuiPresenter_UnknownPhase(t *testing.T) {
 	g := chemindeFerPresenterPosition(t, 3, 2, domain.ChemindeFerPhase(99))
 
 	out := cp.Output(g, nil)
-	assert.Contains(t, out, "UNKNOWN", "範囲外のフェーズが UNKNOWN として出ていない")
+	assert.Contains(t, out, "不明", "範囲外のフェーズが不明として出ていない")
 	assert.NotContains(t, out, "chemindefer.")
 }
 
@@ -217,5 +217,5 @@ func TestChemindeFerCuiPresenter_UnknownPhase(t *testing.T) {
 func TestChemindeFerCuiPresenter_StartsAtStake(t *testing.T) {
 	cp := new(ChemindeFerCuiPresenter)
 	out := cp.Output(newChemindeFerForPresenter(t), nil)
-	assert.True(t, strings.Contains(out, "STAKE"), "既定の卓は張り待ちのはず: %s", out)
+	assert.True(t, strings.Contains(out, "賭け金"), "既定の卓は張り待ちのはず: %s", out)
 }

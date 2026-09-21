@@ -50,7 +50,7 @@ func TestBotifarraCuiPresenter_Output(t *testing.T) {
 	fillBotifarraDefaults(m)
 
 	out := new(BotifarraCuiPresenter).Output(m, nil)
-	assert.Contains(t, out, "フェーズ: PLAY")
+	assert.Contains(t, out, "フェーズ: プレイ")
 	assert.Contains(t, out, "切り札: スペード")
 	assert.Contains(t, out, "101 点で上がり")
 	assert.Contains(t, out, "合計 72")
@@ -117,7 +117,7 @@ func TestBotifarraCuiPresenter_Result(t *testing.T) {
 
 	out := new(BotifarraCuiPresenter).Output(m, nil)
 	assert.Contains(t, out, "チーム 0 の勝ちです")
-	assert.Contains(t, out, "フェーズ: GAME END")
+	assert.Contains(t, out, "フェーズ: ゲーム終了")
 }
 
 func TestBotifarraCuiPresenter_Error(t *testing.T) {
@@ -152,14 +152,14 @@ func TestBotifarraCuiPresenter_Hint(t *testing.T) {
 
 func TestBotifarraCuiPresenter_UnknownValues(t *testing.T) {
 	p := new(BotifarraCuiPresenter)
-	assert.Equal(t, "UNKNOWN", p.phaseStr(99))
+	assert.Equal(t, "不明", p.phaseStr(99))
 	assert.Equal(t, "切り札なし", p.trumpStr(domain.BotifarraNoTrump))
 	assert.Equal(t, "クラブ", p.trumpStr(domain.CardDesignClover))
 	assert.Equal(t, "ダイヤ", p.trumpStr(domain.CardDesignDiamond))
-	assert.Equal(t, "DECLARE", p.phaseStr(domain.BotifarraPhaseDeclare))
-	assert.Equal(t, "DELEGATED", p.phaseStr(domain.BotifarraPhaseDelegated))
-	assert.Equal(t, "DOUBLE", p.phaseStr(domain.BotifarraPhaseDouble))
-	assert.Equal(t, "ROUND END", p.phaseStr(domain.BotifarraPhaseRoundEnd))
+	assert.Equal(t, "宣言", p.phaseStr(domain.BotifarraPhaseDeclare))
+	assert.Equal(t, "委任済み", p.phaseStr(domain.BotifarraPhaseDelegated))
+	assert.Equal(t, "ダブル", p.phaseStr(domain.BotifarraPhaseDouble))
+	assert.Equal(t, "ラウンド終了", p.phaseStr(domain.BotifarraPhaseRoundEnd))
 }
 
 // **契約の当事者が誰かは倍率と同じくらい基本の情報。**画面から追えなかった。

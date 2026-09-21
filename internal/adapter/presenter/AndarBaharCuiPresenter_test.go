@@ -47,7 +47,7 @@ func TestAndarBaharCuiPresenter_Output_BetPhase(t *testing.T) {
 
 	result := new(AndarBaharCuiPresenter).Output(m, nil)
 	assert.Contains(t, result, "チップ: 1000")
-	assert.Contains(t, result, "フェーズ: BET")
+	assert.Contains(t, result, "フェーズ: 賭け")
 	// **先に配る列は賭ける前に見えている必要がある。** 配当が下がる側だからです。
 	assert.Contains(t, result, "先に配る列: アンダー")
 	assert.Contains(t, result, "0.9:1")
@@ -96,7 +96,7 @@ func TestAndarBaharCuiPresenter_Output_Result(t *testing.T) {
 	fillAndarBaharCuiDefaults(m)
 
 	result := new(AndarBaharCuiPresenter).Output(m, nil)
-	assert.Contains(t, result, "フェーズ: END")
+	assert.Contains(t, result, "フェーズ: 終了")
 	assert.Contains(t, result, "バハール に基準札と同じランクが出ました")
 	assert.Contains(t, result, "払い戻し: 190")
 	assert.Contains(t, result, "ベット: 100 (アンダー)")
@@ -185,7 +185,7 @@ func TestAndarBaharCuiPresenter_HintAndActionLog(t *testing.T) {
 
 func TestAndarBaharCuiPresenter_UnknownValues(t *testing.T) {
 	p := new(AndarBaharCuiPresenter)
-	assert.Equal(t, "UNKNOWN", p.phaseStr(99))
+	assert.Equal(t, "不明", p.phaseStr(99))
 	assert.Equal(t, "不明", p.columnStr(99))
 	assert.Equal(t, "UNKNOWN", p.bandStr(99))
 	assert.Equal(t, "1 枚ちょうど", p.bandStr(domain.AndarBaharSideFirst))

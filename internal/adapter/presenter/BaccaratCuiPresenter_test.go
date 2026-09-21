@@ -57,7 +57,7 @@ func TestBaccaratCuiPresenter_Output_BetPhase(t *testing.T) {
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "チップ: 1000")
-	assert.Contains(t, result, "フェーズ: BET")
+	assert.Contains(t, result, "フェーズ: 賭け")
 }
 
 func TestBaccaratCuiPresenter_Output_History(t *testing.T) {
@@ -190,7 +190,7 @@ func TestBaccaratCuiPresenter_Output_EndPhase_PlayerWins(t *testing.T) {
 	m.On("GetSideBetResults").Return(([]*domain.BacSideBetResult)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "フェーズ: END")
+	assert.Contains(t, result, "フェーズ: 終了")
 	assert.Contains(t, result, "PLAYER")
 	assert.Contains(t, result, "BANKER")
 	assert.Contains(t, result, "プレイヤーの勝ち")
@@ -319,7 +319,7 @@ func TestBaccaratCuiPresenter_Output_UnknownPhase(t *testing.T) {
 	m.On("GetPhase").Return(99).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "UNKNOWN")
+	assert.Contains(t, result, "不明")
 }
 
 func TestBaccaratCuiPresenter_Output_EndPhase_UnknownResult(t *testing.T) {

@@ -43,7 +43,7 @@ func TestHighCardFlushCuiPresenter_Output_BetPhase(t *testing.T) {
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "チップ: 1000")
-	assert.Contains(t, result, "フェーズ: BET")
+	assert.Contains(t, result, "フェーズ: 賭け")
 }
 
 func TestHighCardFlushCuiPresenter_Output_ActionPhase(t *testing.T) {
@@ -81,7 +81,7 @@ func TestHighCardFlushCuiPresenter_Output_ActionPhase(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "フェーズ: ACTION")
+	assert.Contains(t, result, "フェーズ: アクション")
 	assert.Contains(t, result, "PLAYER")
 	assert.Contains(t, result, "最長フラッシュ: 3")
 }
@@ -129,7 +129,7 @@ func TestHighCardFlushCuiPresenter_Output_EndPhase_PlayerWins(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "フェーズ: END")
+	assert.Contains(t, result, "フェーズ: 終了")
 	assert.Contains(t, result, "プレイヤーの勝ち")
 	assert.Contains(t, result, "DEALER")
 	assert.Contains(t, result, "(Qualified)")

@@ -34,7 +34,7 @@ func TestCasinoWarCuiPresenter_Output_BetPhase(t *testing.T) {
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "チップ: 1000")
-	assert.Contains(t, result, "BET")
+	assert.Contains(t, result, "賭け")
 }
 
 func TestCasinoWarCuiPresenter_Output_Error(t *testing.T) {
@@ -64,7 +64,7 @@ func TestCasinoWarCuiPresenter_Output_TieDecision(t *testing.T) {
 	m.On("GetTotalPayout").Return(0)
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "TIE DECISION")
+	assert.Contains(t, result, "引き分け判断")
 	assert.Contains(t, result, "INITIAL")
 	assert.Contains(t, result, "アンテ: 100")
 	assert.Contains(t, result, "プレイヤー:")
@@ -97,7 +97,7 @@ func TestCasinoWarCuiPresenter_Output_WarDealt(t *testing.T) {
 	m.On("GetTotalPayout").Return(0)
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "WAR DEALT")
+	assert.Contains(t, result, "ウォー配り済み")
 	assert.Contains(t, result, "BURN")
 	assert.Contains(t, result, "WAR")
 	assert.Contains(t, result, "ウォーベット: 100")
@@ -167,12 +167,12 @@ func TestCasinoWarCuiPresenter_Output_EndPush(t *testing.T) {
 func TestCasinoWarCuiPresenter_PhaseStr_AllBranches(t *testing.T) {
 	p := new(CasinoWarCuiPresenter)
 	for phase, expect := range map[int]string{
-		domain.CasinoWarPhaseBet:          "BET",
-		domain.CasinoWarPhaseInitialDealt: "INITIAL DEALT",
-		domain.CasinoWarPhaseTieDecision:  "TIE DECISION",
-		domain.CasinoWarPhaseWarDealt:     "WAR DEALT",
-		domain.CasinoWarPhaseEnd:          "END",
-		999:                               "UNKNOWN",
+		domain.CasinoWarPhaseBet:          "賭け",
+		domain.CasinoWarPhaseInitialDealt: "初期配り済み",
+		domain.CasinoWarPhaseTieDecision:  "引き分け判断",
+		domain.CasinoWarPhaseWarDealt:     "ウォー配り済み",
+		domain.CasinoWarPhaseEnd:          "終了",
+		999:                               "不明",
 	} {
 		assert.Equal(t, expect, p.phaseStr(phase))
 	}
