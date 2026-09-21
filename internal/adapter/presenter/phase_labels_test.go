@@ -321,20 +321,22 @@ func TestHintTranslationsUseTheSelectedLanguage(t *testing.T) {
 func TestJapaneseRemainingLocaleLabels(t *testing.T) {
 	t.Cleanup(func() { i18n.SetLang("ja") })
 
+	// blackjack.countingHiLo は Hi-Lo のまま残す (兄弟の countingKO / countingZen /
+	// countingOmegaII と同じくカウンティング手法の固有名)。英語を含まない検査には掛けない。
 	expected := map[string]string{
 		"blackjack.suggestHit": "ヒット", "blackjack.suggestStand": "スタンド",
 		"blackjack.suggestSplit": "スプリット", "blackjack.suggestSurrender": "サレンダー",
 		"blackjack.suggestDouble": "ダブル", "blackjack.suggestDeclineInsurance": "インシュランスを断る",
 		"baccarat.betTypePlayer": "プレイヤー", "baccarat.betTypeBanker": "バンカー",
 		"baccarat.betTypeTie": "タイ", "baccarat.betTypeUnknown": "不明",
-		"andarbahar.bandUnknown": "不明", "dragontiger.betTypeTie": "引き分け",
+		"andarbahar.bandUnknown": "不明", "dragontiger.betTypeTie": "タイ",
 		"dragontiger.betTypeUnknown": "不明", "chinesepoker.rankUnknown": "不明",
 		"paigow.rankUnknown": "不明", "cuiPlayerUnknown": "不明",
 		"nertz.foundationEmpty": "(空)", "nertz.nertzEmpty": "  ナッツ: (空)",
 		"nertz.tableauEmpty": "(空)", "nertz.wasteEmpty": "  ウェイスト: (空)  ストック: {{stock}}枚",
 		"spiteandmalice.foundationEmpty": "(空)", "spiteandmalice.goalEmpty": "ゴール: (空)",
 		"spiteandmalice.humanHandEmpty": "(空)", "spiteandmalice.sideEmpty": "(空)",
-		"blackjack.countingHiLo": "ハイロー", "realtime.keySpace": "スペース",
+		"realtime.keySpace":         "スペース",
 		"dragontiger.betTypeDragon": "ドラゴン", "dragontiger.betTypeTiger": "タイガー",
 		"letitride.betStatusRide": "ライド", "letitride.betStatusPull": "プル",
 		"piquet.roleElder": "エルダー", "piquet.roleYounger": "ヤンガー",

@@ -194,7 +194,7 @@ func TestDragonTigerCuiPresenter_Output_Tie_TieBetWins(t *testing.T) {
 	assert.Contains(t, result, "タイベット的中")
 	assert.Contains(t, result, "払戻し: 900")
 	// Tie pays 8:1, so the odds line reads ×8.
-	assert.Contains(t, result, "引き分け ×8")
+	assert.Contains(t, result, "タイ ×8")
 }
 
 func TestDragonTigerCuiPresenter_Output_Error(t *testing.T) {
@@ -216,7 +216,7 @@ func TestDragonTigerCuiPresenter_BetTypeStr(t *testing.T) {
 	p := new(DragonTigerCuiPresenter)
 	assert.Equal(t, "ドラゴン", p.betTypeStr(domain.DragonTigerBetDragon))
 	assert.Equal(t, "タイガー", p.betTypeStr(domain.DragonTigerBetTiger))
-	assert.Equal(t, "引き分け", p.betTypeStr(domain.DragonTigerBetTie))
+	assert.Equal(t, "タイ", p.betTypeStr(domain.DragonTigerBetTie))
 	assert.Equal(t, "不明", p.betTypeStr(99))
 }
 

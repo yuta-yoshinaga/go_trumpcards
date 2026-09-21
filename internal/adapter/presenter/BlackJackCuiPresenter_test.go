@@ -502,7 +502,7 @@ func TestBlackJackCuiPresenter_CountingDisplay(t *testing.T) {
 		_ = bj.SetConfig(domain.BlackJackConfig{DealerHitsSoft17: false, CpuPlayerCount: 0, CountingEnabled: true, CountingSystem: domain.BJCountingHiLo})
 		bj.Reset()
 		output := bjp.Output(bj, nil)
-		assert.Contains(t, output, "カウント (ハイロー): RC=")
+		assert.Contains(t, output, "カウント (Hi-Lo): RC=")
 		assert.Contains(t, output, "TC=")
 		assert.NotContains(t, output, "TC=N/A")
 	})
