@@ -273,7 +273,7 @@ func (n *NainJaune) payForCard(player int, card *Card) {
 	}
 	n.players[player].AddChips(chips)
 	n.awards = append(n.awards, &NainJauneAward{Box: box, Player: player, Chips: chips})
-	n.addLog(player, "award", "nainjaune.log.award", map[string]string{"box": box.String(), "chips": strconv.Itoa(chips)}, []*Card{card})
+	n.addLog(player, "award", "nainjaune.log.award", map[string]string{"boxKey": "nainjaune.box." + box.String(), "chips": strconv.Itoa(chips)}, []*Card{card})
 }
 
 // advance は次に出せる人へ手番を回す。誰も次を持っていなければ、**最後に札を

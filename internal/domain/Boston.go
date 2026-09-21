@@ -229,7 +229,7 @@ func (b *Boston) Bid(player int, level BostonBidLevel, suit int) error {
 	b.bids = append(b.bids, rec)
 	b.highBid = rec
 	b.passCount = 0
-	b.addLog(player, "bid", "boston.log.bid", map[string]string{"bid": BostonBidName(level)}, nil)
+	b.addLog(player, "bid", "boston.log.bid", map[string]string{"bidKey": "boston.bid." + BostonBidName(level)}, nil)
 	b.advanceBid()
 	return nil
 }
@@ -267,7 +267,7 @@ func (b *Boston) settleBid() {
 	b.declarerIdx = b.highBid.Player
 	b.trumpSuit = b.highBid.Suit
 	b.exposed = BostonBidIsExposed(b.highBid.Level)
-	b.addLog(b.declarerIdx, "contract", "boston.log.contract", map[string]string{"bid": BostonBidName(b.highBid.Level)}, nil)
+	b.addLog(b.declarerIdx, "contract", "boston.log.contract", map[string]string{"bidKey": "boston.bid." + BostonBidName(b.highBid.Level)}, nil)
 
 	// **パートナーを指名できるのはトリック数の宣言だけ。**
 	if BostonBidCanCallPartner(b.highBid.Level) {
@@ -463,9 +463,9 @@ func (b *Boston) finishHand() {
 	}
 
 	if b.bidMade {
-		b.addLog(b.declarerIdx, "hand_end", "boston.log.handMade", map[string]string{"bid": BostonBidName(level), "tricks": fmt.Sprintf("%d", won)}, nil)
+		b.addLog(b.declarerIdx, "hand_end", "boston.log.handMade", map[string]string{"bidKey": "boston.bid." + BostonBidName(level), "tricks": fmt.Sprintf("%d", won)}, nil)
 	} else {
-		b.addLog(b.declarerIdx, "hand_end", "boston.log.handFailed", map[string]string{"bid": BostonBidName(level), "tricks": fmt.Sprintf("%d", won)}, nil)
+		b.addLog(b.declarerIdx, "hand_end", "boston.log.handFailed", map[string]string{"bidKey": "boston.bid." + BostonBidName(level), "tricks": fmt.Sprintf("%d", won)}, nil)
 	}
 
 	b.phase = BostonPhaseHandEnd

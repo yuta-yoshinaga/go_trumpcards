@@ -287,7 +287,7 @@ func (g *UnsunKaruta) startRound() {
 	g.currentPlayerIdx = g.leadPlayerIdx
 	g.phase = UnsunKarutaPhasePlay
 	g.appendLog(-1, "deal", "unsunkaruta.log.deal", map[string]string{
-		"round": strconv.Itoa(g.roundNumber), "suit": UnsunKarutaSuitName(g.trumpSuit),
+		"round": strconv.Itoa(g.roundNumber), "suitKey": "unsunkaruta.suit." + UnsunKarutaSuitName(g.trumpSuit),
 	}, []*Card{g.TrumpCard()})
 }
 

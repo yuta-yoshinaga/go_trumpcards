@@ -198,7 +198,7 @@ func (g *Kingo) deal() {
 		}
 	}
 	for i, p := range g.players {
-		g.appendLog(i, "deal", "kingo.log.deal", map[string]string{"rank": KingoRankName(p.GetRank())}, p.GetCards())
+		g.appendLog(i, "deal", "kingo.log.deal", map[string]string{"rankKey": "kingo.rank." + KingoRankName(p.GetRank())}, p.GetCards())
 	}
 }
 

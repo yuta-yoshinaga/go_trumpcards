@@ -13,6 +13,7 @@
   "box.queen": "queen of spades",
   "box.king": "king of hearts",
   "box.dwarf": "7 of diamonds (the dwarf)",
+  "box.unknown": "-",
   "promptLead": "The run is stopped. p <i> to lead any card",
   "promptFollow": "p <i> to play a {{rank}} -- any suit",
   "promptNext": "n for the next deal",

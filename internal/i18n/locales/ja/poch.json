@@ -20,6 +20,7 @@
   "pool.sequence": "シーケンス",
   "pool.pocher": "ポッハー",
   "pool.centre": "センター",
+  "pool.unknown": "-",
   "promptStaking": "区画の精算中です",
   "promptPochen": "b で賭ける（現在 {{target}}）／f で降りる",
   "yourCombo": "あなたの組: {{rank}} の {{size}}枚",

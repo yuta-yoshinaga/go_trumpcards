@@ -357,7 +357,7 @@ func (g *IronCross) ChooseLine(l IronCrossLine) error {
 	}
 	p := g.players[g.HumanSeat()]
 	p.SetLine(l)
-	g.appendLogCode(g.HumanSeat(), "line", "ironcross.log.line", map[string]string{"seat": strconv.Itoa(g.HumanSeat()), "line": IronCrossLineName(l)}, nil)
+	g.appendLogCode(g.HumanSeat(), "line", "ironcross.log.line", map[string]string{"seat": strconv.Itoa(g.HumanSeat()), "lineKey": "ironcross.line." + IronCrossLineName(l)}, nil)
 	g.finishHand()
 	return nil
 }

@@ -444,3 +444,38 @@ func TestActionLogToText_RendersOutcomeLabelsInBothLanguages(t *testing.T) {
 		assert.NotContains(t, en, text)
 	}
 }
+
+func TestActionLogToText_RendersGameIdentifiersInBothLanguages(t *testing.T) {
+	entries := []*domain.ActionLogEntry{
+		{DetailCode: "boston.log.bid", DetailParams: map[string]string{"bidKey": "boston.bid.chelem"}},
+		{DetailCode: "tapptarock.log.bid", DetailParams: map[string]string{"name": "You", "bidKey": "tapptarock.contract.trischaken"}},
+		{DetailCode: "zwanzigerrufen.log.bid", DetailParams: map[string]string{"name": "You", "bidKey": "zwanzigerrufen.contract.rufer"}},
+		{DetailCode: "troggu.log.contract", DetailParams: map[string]string{"name": "You", "contractKey": "troggu.contractShort.solo"}},
+		{DetailCode: "horse.log.hand", DetailParams: map[string]string{"letter": "H", "hand": "1", "nameKey": "horse.discipline.holdem"}},
+		{DetailCode: "ironcross.log.line", DetailParams: map[string]string{"seat": "0", "lineKey": "ironcross.line.vertical"}},
+		{DetailCode: "kingo.log.deal", DetailParams: map[string]string{"rankKey": "kingo.rank.arashi"}},
+		{DetailCode: "unsunkaruta.log.deal", DetailParams: map[string]string{"round": "1", "suitKey": "unsunkaruta.suit.pao"}},
+		{DetailCode: "nainjaune.log.award", DetailParams: map[string]string{"boxKey": "nainjaune.box.dwarf", "chips": "1"}},
+		{DetailCode: "poch.log.staking", DetailParams: map[string]string{"poolKey": "poch.pool.marriage", "amount": "1"}},
+	}
+
+	t.Cleanup(func() { i18n.SetLang("ja") })
+
+	i18n.SetLang("ja")
+	ja := actionLogToText(entries)
+	for _, text := range []string{"シュレム（13トリック）", "トリシャーケン", "20番呼び", "ソロ", "テキサスホールデム", "縦", "嵐", "ぱお", "♦7（黄色い小人）", "マリッジ"} {
+		assert.Contains(t, ja, text)
+	}
+	for _, text := range []string{"trischaken", "rufer", "holdem", "pao", "arashi", "vertical", "chelem", "marriage", "{{target}}"} {
+		assert.NotContains(t, ja, text)
+	}
+
+	i18n.SetLang("en")
+	en := actionLogToText(entries)
+	for _, text := range []string{"Chelem (13 tricks)", "Trischaken", "Call the XX", "Solo", "Texas Hold'em", "vertical", "arashi (three alike)", "Pao", "7 of diamonds (the dwarf)", "Marriage"} {
+		assert.Contains(t, en, text)
+	}
+	for _, text := range []string{"シュレム（13トリック）", "トリシャーケン", "20番呼び", "テキサスホールデム", "ぱお", "嵐", "マリッジ", "{{target}}"} {
+		assert.NotContains(t, en, text)
+	}
+}

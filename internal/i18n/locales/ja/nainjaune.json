@@ -13,6 +13,7 @@
   "box.queen": "♠Q",
   "box.king": "♥K",
   "box.dwarf": "♦7（黄色い小人）",
+  "box.unknown": "-",
   "promptLead": "並びが止まっています。p <i> で好きな札から始めてください",
   "promptFollow": "p <i> で {{rank}} の札を出してください（スートは問いません）",
   "promptNext": "n で次のディールへ",

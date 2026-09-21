@@ -193,9 +193,9 @@ func (g *Horse) startHand() {
 	}
 	g.phase = HorsePhaseHand
 	g.appendLog("hand", "horse.log.hand", map[string]string{
-		"letter": HorseDisciplineLetter(g.discipline),
-		"hand":   fmt.Sprintf("%d", g.handNumber),
-		"name":   HorseDisciplineName(g.discipline),
+		"letter":  HorseDisciplineLetter(g.discipline),
+		"hand":    fmt.Sprintf("%d", g.handNumber),
+		"nameKey": "horse.discipline." + HorseDisciplineName(g.discipline),
 	}, nil)
 	// **配っただけで終わっているハンドがある。** アンティで出し切った席は
 	// オールイン扱いで手番が回らないので、種目側の `Reset` が CPU だけで

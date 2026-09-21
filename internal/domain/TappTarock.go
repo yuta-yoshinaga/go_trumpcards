@@ -348,7 +348,7 @@ func (g *TappTarock) applyBid(idx int, bid TappTarockBid) {
 	g.highestBid = bid
 	g.highestBidder = idx
 	g.bidActedCnt++
-	g.appendLog(idx, "bid", "tapptarock.log.bid", map[string]string{"name": g.playerName(idx), "bid": TappTarockBidName(bid)}, nil)
+	g.appendLog(idx, "bid", "tapptarock.log.bid", map[string]string{"name": g.playerName(idx), "bidKey": "tapptarock.contract." + TappTarockBidName(bid)}, nil)
 	g.advanceBid()
 }
 
@@ -799,7 +799,7 @@ func (g *TappTarock) finishRound() {
 		g.playerScores[i] += delta
 	}
 	g.phase = TappTarockPhaseRoundEnd
-	g.appendLog(-1, "score", "tapptarock.log.score", map[string]string{"round": strconv.Itoa(g.roundNumber), "contract": TappTarockBidName(g.contract)}, nil)
+	g.appendLog(-1, "score", "tapptarock.log.score", map[string]string{"round": strconv.Itoa(g.roundNumber), "contractKey": "tapptarock.contract." + TappTarockBidName(g.contract)}, nil)
 	if g.roundNumber >= g.config.TargetDeals {
 		g.finishGame()
 	}
