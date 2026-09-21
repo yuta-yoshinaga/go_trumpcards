@@ -50,7 +50,7 @@ func TestDoubleKlondikeCuiPresenter_Output(t *testing.T) {
 		// Waste holds an Ace -> foundation hint.
 		js := `{"wa":[{"d":1,"v":1,"w":true}],"ph":0}`
 		out := p.HintOutput(dkState(t, js))
-		assert.Contains(t, out, "HINT")
+		assert.Contains(t, out, "ヒント")
 		// Zone identifiers are localised (ja), not raw "waste"/"foundation".
 		assert.Contains(t, out, "ウェイスト")
 		assert.Contains(t, out, "ファウンデーション")

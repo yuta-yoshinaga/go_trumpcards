@@ -252,7 +252,7 @@ func TestOmiCuiPresenter_HintOutput(t *testing.T) {
 
 		p := new(presenter.OmiCuiPresenter)
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 		assert.Contains(t, result, "リードスートに従う")
 	})
 

@@ -30,7 +30,7 @@
   "promptRoundEnd": "ラウンド終了",
   "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
   "hintNone": "ヒントはありません。",
-  "hintRow": "[HINT: {{row}}に置く ({{reason}})]",
+  "hintRow": "[ヒント: {{row}}に置く ({{reason}})]",
   "hintReasonStrongBack": "強い札なので下段に置いて土台を固める",
   "hintReasonWeakFront": "弱い札なので上段に置く",
   "hintReasonBalance": "段の埋まり具合からバランスよく置く",

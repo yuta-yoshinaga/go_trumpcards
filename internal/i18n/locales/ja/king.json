@@ -24,7 +24,7 @@
   "cNoMen": "ノーメン（J/K1枚ごとに減点）",
   "cKingTrump": "キング（切り札あり・取ったトリックごとに加点）",
   "hintNone": "ヒントはありません。",
-  "hintCard": "[HINT: {{cards}} ({{reason}})]",
+  "hintCard": "[ヒント: {{cards}} ({{reason}})]",
   "hintReasonAvoidLow": "失点を避けるため低い札／取らない札を出す",
   "hintReasonWinHigh": "得点コントラクトなので勝ちに行く",
   "hintReasonSelectNoTricks": "強い札が少なく、トリックを避けやすい手札",

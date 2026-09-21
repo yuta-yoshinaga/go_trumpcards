@@ -10,7 +10,7 @@
   "redealsLine": "残りシャッフル: {{count}}",
   "hintToFan": "扇{{idx}}",
   "hintToFoundation": "ファウンデーション",
-  "hintLine": "[HINT: 扇{{from}} を {{to}} へ]",
+  "hintLine": "[ヒント: 扇{{from}} を {{to}} へ]",
   "foundationCount": "(計{{count}}枚)",
   "redealRecommended": "合法手がありません。nr でリディールを推奨します。",
   "stuckDeadlock": "これ以上動かせる手がありません。再配札も残っていません — giveup でギブアップできます。",

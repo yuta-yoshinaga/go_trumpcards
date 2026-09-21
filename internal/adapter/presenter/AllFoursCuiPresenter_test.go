@@ -162,7 +162,7 @@ func TestAllFoursCuiPresenter_HintOutput(t *testing.T) {
 		beg := true
 		m.On("GetHint").Return(&domain.AllFoursHint{Beg: &beg, Reason: "beg_beg"})
 		out := p.HintOutput(m)
-		assert.Contains(t, out, "HINT")
+		assert.Contains(t, out, "ヒント")
 	})
 
 	t.Run("run hint", func(t *testing.T) {
@@ -170,7 +170,7 @@ func TestAllFoursCuiPresenter_HintOutput(t *testing.T) {
 		run := false
 		m.On("GetHint").Return(&domain.AllFoursHint{Run: &run, Reason: "gift_gift"})
 		out := p.HintOutput(m)
-		assert.Contains(t, out, "HINT")
+		assert.Contains(t, out, "ヒント")
 	})
 
 	t.Run("card hint", func(t *testing.T) {
@@ -179,7 +179,7 @@ func TestAllFoursCuiPresenter_HintOutput(t *testing.T) {
 		idx := 0
 		m.On("GetHint").Return(&domain.AllFoursHint{CardIndex: &idx, Reason: "trump_cut"})
 		out := p.HintOutput(m)
-		assert.Contains(t, out, "HINT")
+		assert.Contains(t, out, "ヒント")
 	})
 }
 

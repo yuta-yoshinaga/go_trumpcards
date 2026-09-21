@@ -177,14 +177,14 @@ func TestTeenDoPaanchCuiPresenterHint(t *testing.T) {
 	g.SetFivePlayerIdxForTest(0)
 
 	trumpHint := p.HintOutput(g)
-	assert.Contains(t, trumpHint, "HINT")
+	assert.Contains(t, trumpHint, "ヒント")
 	assert.Contains(t, trumpHint, fixedPart("teendopaanch.hintTrump"))
 
 	require.NoError(t, g.DeclareTrump(domain.CardDesignHeart))
 	g.SetCurrentPlayerIdxForTest(0)
 	cardHint := p.HintOutput(g)
 	// **勧める札は配りで変わる。** 固定の添字ではなく「合法な札を指している」を見る。
-	idx := regexp.MustCompile(`\[HINT: \[(\d+)\]`).FindStringSubmatch(cardHint)
+	idx := regexp.MustCompile(`\[ヒント: \[(\d+)\]`).FindStringSubmatch(cardHint)
 	require.Len(t, idx, 2, "札を指した助言になっている")
 	n, err := strconv.Atoi(idx[1])
 	require.NoError(t, err)

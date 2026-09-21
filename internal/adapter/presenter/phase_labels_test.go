@@ -3,6 +3,9 @@
 package presenter
 
 import (
+	"encoding/json"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -268,5 +271,49 @@ func TestTranslatedPresenterLabels(t *testing.T) {
 		for _, forbidden := range japaneseForbidden {
 			assert.NotContains(t, got, forbidden, key+" contains "+forbidden)
 		}
+	}
+}
+
+func TestHintTranslationsUseTheSelectedLanguage(t *testing.T) {
+	t.Cleanup(func() { i18n.SetLang("ja") })
+
+	localeValues := func(lang string) map[string]string {
+		values := map[string]string{}
+		dir := filepath.Join("..", "..", "i18n", "locales", lang)
+		entries, err := os.ReadDir(dir)
+		if !assert.NoError(t, err, lang) {
+			return values
+		}
+		for _, entry := range entries {
+			if entry.IsDir() || filepath.Ext(entry.Name()) != ".json" {
+				continue
+			}
+			path := filepath.Join(dir, entry.Name())
+			data, readErr := os.ReadFile(path)
+			if !assert.NoError(t, readErr, path) {
+				continue
+			}
+			var translations map[string]string
+			if !assert.NoError(t, json.Unmarshal(data, &translations), path) {
+				continue
+			}
+			for key, value := range translations {
+				values[lang+"."+key] = value
+			}
+		}
+		return values
+	}
+
+	i18n.SetLang("ja")
+	for key, value := range localeValues("ja") {
+		assert.NotContains(t, value, "HINT", key)
+	}
+	assert.Equal(t, "[ヒント: パス ({{reason}})]", i18n.T("honeymoonbridge.hintPass"))
+	assert.Equal(t, "[ヒント: ホールド ({{reason}})]", i18n.T("watten.hintHold"))
+	assert.Equal(t, "[ヒント: フォールド ({{reason}})]", i18n.T("watten.hintFold"))
+
+	i18n.SetLang("en")
+	for key, value := range localeValues("en") {
+		assert.NotContains(t, value, "ヒント", key)
 	}
 }

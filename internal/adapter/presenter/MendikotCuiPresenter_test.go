@@ -133,7 +133,7 @@ func TestMendikotCuiPresenterHint(t *testing.T) {
 	m.SetCurrentPlayerIdxForTest(0)
 
 	out := p.HintOutput(m)
-	assert.Contains(t, out, "HINT")
+	assert.Contains(t, out, "ヒント")
 	// **理由は生の識別子ではなく訳文で出す。**
 	for id, key := range mendikotHintReasonKeys {
 		assert.NotContains(t, out, id, "識別子がそのまま漏れていない")

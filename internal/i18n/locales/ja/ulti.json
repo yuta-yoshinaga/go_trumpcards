@@ -37,7 +37,7 @@
   "promptRoundEnd": "ディール終了（デクレアラー {{declarer}}: {{outcome}}）",
   "promptRoundEndHelp": "nr / nextround・・・次のディールへ",
   "hintNone": "ヒントはありません。",
-  "hintCard": "[HINT: {{cards}} ({{reason}})]",
+  "hintCard": "[ヒント: {{cards}} ({{reason}})]",
   "hintReasonLeadHigh": "デクレアラーなので強い札でリードして主導する",
   "hintReasonLeadLow": "連合なので低い札でリードして温存する",
   "hintReasonFollowWin": "勝てるので取りに行く",

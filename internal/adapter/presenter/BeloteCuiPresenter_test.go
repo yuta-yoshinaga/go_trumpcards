@@ -208,7 +208,7 @@ func TestBeloteCuiPresenter_HintOutput(t *testing.T) {
 		m.On("GetHint").Return(&domain.BeloteHint{OrderUp: &ok, Reason: "strategic_pickup"})
 
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 
 	t.Run("pass hint", func(t *testing.T) {
@@ -236,7 +236,7 @@ func TestBeloteCuiPresenter_HintOutput(t *testing.T) {
 		m.On("GetHint").Return(&domain.BeloteHint{CardIndex: &idx, Reason: "trump_cut"})
 
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 }
 

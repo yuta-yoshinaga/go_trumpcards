@@ -405,7 +405,7 @@ func TestBridgeCuiPresenter_HintOutput(t *testing.T) {
 
 		p := new(presenter.BridgeCuiPresenter)
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 		assert.Contains(t, result, "パス")
 		assert.Contains(t, result, "弱い手札")
 	})
@@ -424,7 +424,7 @@ func TestBridgeCuiPresenter_HintOutput(t *testing.T) {
 
 		p := new(presenter.BridgeCuiPresenter)
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 		assert.Contains(t, result, "ビッド")
 		assert.Contains(t, result, "2レベル")
 		assert.Contains(t, result, "HEART")
@@ -473,7 +473,7 @@ func TestBridgeCuiPresenter_HintOutput(t *testing.T) {
 
 		p := new(presenter.BridgeCuiPresenter)
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 		assert.Contains(t, result, "リードスートに追随")
 	})
 

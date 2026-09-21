@@ -29,7 +29,7 @@
   "promptRoundEnd": "ラウンド終了",
   "promptRoundEndHelp": "nr / nextround・・・スコアリングして次のラウンドへ",
   "hintNone": "ヒントはありません。",
-  "hintCard": "[HINT: {{cards}} ({{reason}})]",
+  "hintCard": "[ヒント: {{cards}} ({{reason}})]",
   "hintReasonLeadHigh": "強い札でリードしてトリックを取りに行く",
   "hintReasonTakeTrick": "このトリックを取りに行く",
   "hintReasonDiscardLow": "取れないので低い札を捨てる",

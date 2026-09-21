@@ -170,7 +170,7 @@ func TestBhabhiCuiPresenterHint(t *testing.T) {
 	b.SetCurrentIdxForTest(0)
 
 	out := p.HintOutput(b)
-	assert.Contains(t, out, "HINT")
+	assert.Contains(t, out, "ヒント")
 	for id := range bhabhiHintReasonKeys {
 		assert.NotContains(t, out, id, "識別子がそのまま漏れていない")
 	}

@@ -16,7 +16,7 @@
   "promptHuman": "あなたの手番です。合法手を続け、終えるときは discard。",
   "promptHelp": "pf <src>=ファウンデーションへ / mt <src> <col>=タブローへ / d=手札を捨て手番終了 / s=stop / u=undo (src: r/w/or/ow/t0..t3)",
   "hintNone": "ヒントはありません。",
-  "hintMove": "[HINT: {{src}} を {{dest}} へ]",
+  "hintMove": "[ヒント: {{src}} を {{dest}} へ]",
   "destFoundation": "ファウンデーション",
   "destTableau": "タブロー{{col}}",
   "srcReserve": "自リザーブ",

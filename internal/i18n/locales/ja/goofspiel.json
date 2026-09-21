@@ -25,7 +25,7 @@
   "gameEndYou": "ゲーム終了！ あなたが {{n}} 点でいちばん多く取りました。",
   "gameEndCpu": "ゲーム終了！ {{name}} が {{n}} 点でいちばん多く取りました。",
   "hintNone": "ヒントはありません。",
-  "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
+  "hintCard": "[ヒント: [{{idx}}]{{card}} ({{reason}})]",
   "hintReasonMatch": "賞札の高さに見合った札",
   "hintReasonHighPrize": "高い賞札なので、高い札で取りにいく",
   "hintReasonLowPrize": "安い賞札なので、低い札で流す",

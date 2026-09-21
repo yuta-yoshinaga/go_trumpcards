@@ -29,7 +29,7 @@
   "promptTrickEndHelp": "n・・・次のトリックへ",
   "promptRoundEnd": "ラウンド終了",
   "promptRoundEndHelp": "nr・・・次のラウンドへ",
-  "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
+  "hintCard": "[ヒント: [{{idx}}]{{card}} ({{reason}})]",
   "hintTrump": "推奨切り札: {{suit}} ({{reason}})",
   "hintBid": "推奨ビッド: {{bid}} ({{reason}})",
   "hintNone": "ヒントはありません。",

@@ -8,7 +8,7 @@
   "helpPlay": "  play <n>             カードを出す",
   "helpSetDifficulty": "  sd <0-2>             CPU難易度（0=Easy 1=Normal 2=Hard）",
   "helpTitle": "アリュエット (Aluette)",
-  "hintCard": "[HINT: {{cards}} ({{reason}})]",
+  "hintCard": "[ヒント: {{cards}} ({{reason}})]",
   "hintNone": "ヒントはありません。",
   "hintReasonFollowLow": "取れないので低い札を捨てる",
   "hintReasonLeadLow": "低い札でリードして強い札を温存する",

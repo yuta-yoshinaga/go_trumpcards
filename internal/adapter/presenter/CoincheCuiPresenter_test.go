@@ -228,7 +228,7 @@ func TestCoincheCuiPresenter_HintOutput(t *testing.T) {
 		m.On("GetHint").Return(&domain.CoincheHint{CardIndex: &idx, Reason: "trump_cut"})
 
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 }
 

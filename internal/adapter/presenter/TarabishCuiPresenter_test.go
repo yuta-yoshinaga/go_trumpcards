@@ -184,7 +184,7 @@ func TestTarabishCuiPresenterHintInBidPhase(t *testing.T) {
 	tb.SetCurrentPlayerIdxForTest(0)
 
 	out := p.HintOutput(tb)
-	assert.Contains(t, out, "HINT")
+	assert.Contains(t, out, "ヒント")
 	assert.NotContains(t, out, "tarabishTakeTrump", "生のキーが出ていたら未登録")
 	assert.NotContains(t, out, "tarabishPassTrump")
 }

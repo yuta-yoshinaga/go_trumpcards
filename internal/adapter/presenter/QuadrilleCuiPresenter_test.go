@@ -201,7 +201,7 @@ func TestQuadrilleCuiPresenter_HintOutput(t *testing.T) {
 		result := p.HintOutput(m)
 		assert.Contains(t, result, "ソロ")  // recommended action name
 		assert.Contains(t, result, "を推奨") // hintDecision format
-		assert.NotContains(t, result, "HINT: -")
+		assert.NotContains(t, result, "ヒント: -")
 	})
 
 	t.Run("non-bid empty-card hint falls back to the card line", func(t *testing.T) {

@@ -167,7 +167,7 @@ func TestBeziqueCuiPresenter_HintOutput(t *testing.T) {
 		m.On("GetHint").Return(&domain.BeziqueHint{CardIndex: &idx, Reason: "follow_cut"})
 
 		out := p.HintOutput(m)
-		assert.Contains(t, out, "HINT")
+		assert.Contains(t, out, "ヒント")
 		assert.Contains(t, out, "切り札でカット")
 	})
 
@@ -177,7 +177,7 @@ func TestBeziqueCuiPresenter_HintOutput(t *testing.T) {
 		m.On("GetHint").Return(&domain.BeziqueHint{MeldIndex: &idx, Reason: "meld_declare"})
 
 		out := p.HintOutput(m)
-		assert.Contains(t, out, "HINT")
+		assert.Contains(t, out, "ヒント")
 		assert.Contains(t, out, "役を宣言")
 	})
 
@@ -187,7 +187,7 @@ func TestBeziqueCuiPresenter_HintOutput(t *testing.T) {
 		m.On("GetHint").Return(&domain.BeziqueHint{MeldIndex: &skip, Reason: "meld_skip"})
 
 		out := p.HintOutput(m)
-		assert.Contains(t, out, "HINT")
+		assert.Contains(t, out, "ヒント")
 	})
 
 	t.Run("hint nil falls back to hintNone", func(t *testing.T) {

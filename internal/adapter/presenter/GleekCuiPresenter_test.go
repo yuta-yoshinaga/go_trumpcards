@@ -241,7 +241,7 @@ func TestGleekCuiPresenter_HintOutput(t *testing.T) {
 		result := p.HintOutput(m)
 		assert.Contains(t, result, "16")
 		assert.Contains(t, result, "を推奨")
-		assert.NotContains(t, result, "HINT: -")
+		assert.NotContains(t, result, "ヒント: -")
 	})
 
 	t.Run("dropping out is named as an action, not a card", func(t *testing.T) {
@@ -250,7 +250,7 @@ func TestGleekCuiPresenter_HintOutput(t *testing.T) {
 		m.On("GetHint").Return(&domain.GleekHint{Bid: 0, Reason: "bid_pass"})
 		result := p.HintOutput(m)
 		assert.Contains(t, result, "降りる")
-		assert.NotContains(t, result, "HINT: -")
+		assert.NotContains(t, result, "ヒント: -")
 	})
 
 	t.Run("play hint lists the recommended card", func(t *testing.T) {

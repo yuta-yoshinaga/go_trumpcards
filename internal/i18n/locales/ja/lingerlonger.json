@@ -15,7 +15,7 @@
   "gameEndYou": "ゲーム終了！ あなたが最後まで手札を持ち続けました。",
   "gameEndCpu": "ゲーム終了！ {{name}} が最後まで持ち続けました。",
   "hintNone": "ヒントはありません。",
-  "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
+  "hintCard": "[ヒント: [{{idx}}]{{card}} ({{reason}})]",
   "hintReasonWinTrick": "取れば山札から1枚補充できる",
   "hintReasonNoStock": "取れるが山札が空なので補充は無い",
   "hintReasonDuck": "取れないので安い札から",

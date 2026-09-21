@@ -36,7 +36,7 @@
   "breakdownTotal": "  合計: {{total}}",
   "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
   "hintNone": "ヒントはありません。",
-  "hintCard": "[HINT: {{cards}} ({{reason}})]",
+  "hintCard": "[ヒント: {{cards}} ({{reason}})]",
   "hintReasonExposeSheep": "♦J（羊）を公開して得点を倍に",
   "hintReasonExposeNone": "公開せず様子を見る",
   "hintReasonDiscardPig": "♠Q（豚）を捨てるチャンス",

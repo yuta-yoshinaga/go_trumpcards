@@ -202,7 +202,7 @@ func TestTwoTenJackCuiPresenter_HintOutput(t *testing.T) {
 		suit := domain.CardDesignSpade
 		m.On("GetHint").Return(&domain.TwoTenJackHint{TrumpSuit: &suit, Reason: "strategic_trump"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 		assert.Contains(t, result, "SPADE")
 	})
 
@@ -214,7 +214,7 @@ func TestTwoTenJackCuiPresenter_HintOutput(t *testing.T) {
 		player.AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
 		m.On("GetPlayer", 0).Return(player)
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 		assert.Contains(t, result, "リードスートに追随")
 	})
 

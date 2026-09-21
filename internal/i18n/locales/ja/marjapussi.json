@@ -21,7 +21,7 @@
   "promptRoundEndPussi": "ベリー袋 (pussi): チーム{{team}}が獲得 (+{{pts}}点)",
   "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
   "hintNone": "ヒントはありません。",
-  "hintCard": "[HINT: {{cards}} ({{reason}})]",
+  "hintCard": "[ヒント: {{cards}} ({{reason}})]",
   "hintReasonLeadLow": "低い札でリードして温存する",
   "hintReasonLeadMarriage": "キングをリードしてマリッジを宣言し切り札を設定する",
   "hintReasonFollowWin": "得点があるので勝ちに行く",

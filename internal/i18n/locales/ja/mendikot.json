@@ -23,7 +23,7 @@
   "gameEndTeam1": "ゲーム終了！ 相手チームの勝利です（{{t0}} - {{t1}}）。",
   "gameEndTie": "ゲーム終了！ 同点です（{{t0}} - {{t1}}）。",
   "hintNone": "ヒントはありません。",
-  "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
+  "hintCard": "[ヒント: [{{idx}}]{{card}} ({{reason}})]",
   "hintReasonChaseTen": "10 が出ている。このトリックは取りに行く",
   "hintReasonFeedPartner": "味方が勝っている。10 を乗せてよい",
   "hintReasonDuck": "取れない。10 は温存して安い札を捨てる",

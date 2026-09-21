@@ -25,7 +25,7 @@
   "gameEndCpu": "ゲーム終了！ {{name}} が Bhabhi です。",
   "gameEndStalemate": "{{tricks}} トリックで膠着。手札がいちばん多い {{name}} を Bhabhi とします。",
   "hintNone": "ヒントはありません。",
-  "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
+  "hintCard": "[ヒント: [{{idx}}]{{card}} ({{reason}})]",
   "hintReasonLead": "枚数の多いスートからリードする",
   "hintReasonDuck": "フォローできる。安い札で流す",
   "hintReasonDumpHigh": "フォローできない。どうせ引き取るので高い札を落とす",

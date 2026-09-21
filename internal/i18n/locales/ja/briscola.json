@@ -19,7 +19,7 @@
   "promptTrickEnd": "トリック終了",
   "promptTrickEndHelp": "next・・・次のトリックへ",
   "hintNone": "ヒントはありません。",
-  "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
+  "hintCard": "[ヒント: [{{idx}}]{{card}} ({{reason}})]",
   "hintReasonLeadTrump": "トランプで相手のトランプを誘う",
   "hintReasonLeadLow": "0点札でリード",
   "hintReasonLeadValue": "得点札でリード",

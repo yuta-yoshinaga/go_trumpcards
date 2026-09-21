@@ -141,7 +141,7 @@ func TestReversisCuiPresenterHintOutput(t *testing.T) {
 	r.SetCurrentPlayerIdxForTest(0)
 
 	out := p.HintOutput(r)
-	assert.Contains(t, out, "HINT")
+	assert.Contains(t, out, "ヒント")
 	assert.NotContains(t, out, "reversisLeadSafe", "生のキーが出ていたら未登録")
 }
 

@@ -28,7 +28,7 @@
   "promptRoundEndPassedOut": "全員がパスしたため、このラウンドは流れました。",
   "promptRoundEndHelp": "nr / nextround・・・スコアリングして次のラウンドへ",
   "hintNone": "ヒントはありません。",
-  "hintCard": "[HINT: {{cards}} ({{reason}})]",
+  "hintCard": "[ヒント: {{cards}} ({{reason}})]",
   "hintReasonLeadHigh": "高い札でリードしてトリックを取りに行く",
   "hintReasonFollowWin": "このトリックを取りに行く",
   "hintReasonFollowDuck": "取れない／取る価値がないのでダック",

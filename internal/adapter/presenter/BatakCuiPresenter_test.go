@@ -234,7 +234,7 @@ func TestBatakCuiPresenter_HintOutput(t *testing.T) {
 		// Japanese
 		i18n.SetLang("ja")
 		jaOut := (&presenter.BatakCuiPresenter{}).HintOutput(m)
-		assert.Contains(t, jaOut, "[HINT: パスを推奨 (手が弱い)]")
+		assert.Contains(t, jaOut, "[ヒント: パスを推奨 (手が弱い)]")
 		assert.NotContains(t, jaOut, "pass_weak_hand")
 		assert.NotContains(t, jaOut, "ビッド 0")
 

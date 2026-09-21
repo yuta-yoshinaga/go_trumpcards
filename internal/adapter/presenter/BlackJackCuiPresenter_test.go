@@ -438,7 +438,7 @@ func TestBlackJackCuiPresenter_SurrenderAndHint(t *testing.T) {
 		bj.SetPhase(domain.BJPhaseAction)
 		output := bjp.Output(bj, nil)
 		// hard 16 vs 10 → surrender
-		assert.Contains(t, output, "[HINT: SURRENDER]")
+		assert.Contains(t, output, "[ヒント: SURRENDER]")
 	})
 
 	t.Run("hint enabled INSURANCE phase shows decline insurance", func(t *testing.T) {
@@ -451,14 +451,14 @@ func TestBlackJackCuiPresenter_SurrenderAndHint(t *testing.T) {
 		bj.GetDealer().AddCard(domain.NewCard(domain.CardDesignClover, 1, false))
 		bj.SetPhase(domain.BJPhaseInsurance)
 		output := bjp.Output(bj, nil)
-		assert.Contains(t, output, "[HINT: DECLINE INSURANCE]")
+		assert.Contains(t, output, "[ヒント: DECLINE INSURANCE]")
 	})
 
 	t.Run("hint enabled but no suggestion (bet phase): no hint line", func(t *testing.T) {
 		bj, _ := setupBJCuiTest(1000, 1000)
 		bj.ToggleHint()
 		output := bjp.Output(bj, nil)
-		assert.NotContains(t, output, "[HINT:")
+		assert.NotContains(t, output, "[ヒント:")
 	})
 
 	t.Run("decks shown in chip info", func(t *testing.T) {

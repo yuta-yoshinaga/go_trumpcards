@@ -21,7 +21,7 @@
   "promptTrumpSelect": "{{name}} がラウンド勝者です。次ラウンドの切り札を選んでください。",
   "promptTrumpSelectHelp": "st <1-4>・・・切り札を選択 (1=♠ 2=♣ 3=♥ 4=♦)",
   "hintNone": "ヒントはありません。",
-  "hintCard": "[HINT: {{cards}} ({{reason}})]",
+  "hintCard": "[ヒント: {{cards}} ({{reason}})]",
   "hintReasonLeadHigh": "高い札でリードしてトリックを取りにいく",
   "hintReasonFollowWin": "トリックを取って生き残る（トリック数が重要）",
   "hintReasonFollowDuck": "取れないのでリードスートの低い札で受ける",

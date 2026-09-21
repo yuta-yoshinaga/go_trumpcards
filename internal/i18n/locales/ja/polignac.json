@@ -24,7 +24,7 @@
   "gameEndWinner": "ゲーム終了！ 勝者は {{name}}（失点 {{score}}）！",
   "gameEndTie": "ゲーム終了！ 同点で決着つかず。",
   "hintNone": "ヒントはありません。",
-  "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
+  "hintCard": "[ヒント: [{{idx}}]{{card}} ({{reason}})]",
   "hintReasonAvoidJack": "ジャックが乗っているので取らない",
   "hintReasonDumpJack": "安全なうちにジャックを処分する",
   "hintReasonLeadSafe": "ジャック以外の低い札でリードする",

@@ -20,7 +20,7 @@
   "gameEndWinner": "ゲーム終了！ 勝者は {{name}} ({{score}}点)！",
   "gameEndTie": "ゲーム終了！ 同点で決着つかず。",
   "hintNone": "ヒントはありません。",
-  "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
+  "hintCard": "[ヒント: [{{idx}}]{{card}} ({{reason}})]",
   "hintReasonAvoid": "罰点のトリックなので取らない",
   "hintReasonDump": "安全なうちに高い札を処分する",
   "hintReasonLeadLow": "低い札でリードして様子を見る",

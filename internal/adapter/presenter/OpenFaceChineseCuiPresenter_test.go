@@ -104,14 +104,14 @@ func TestOpenFaceChineseCuiPresenter_HintOutput(t *testing.T) {
 		m := setupOpenFaceChineseCuiMock()
 		m.On("GetHint").Return(&domain.OpenFaceChineseHint{Row: domain.OpenFaceChineseRowBack, Reason: "strong_back"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 
 	t.Run("hint front row", func(t *testing.T) {
 		m := setupOpenFaceChineseCuiMock()
 		m.On("GetHint").Return(&domain.OpenFaceChineseHint{Row: domain.OpenFaceChineseRowFront, Reason: "weak_front"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 }
 

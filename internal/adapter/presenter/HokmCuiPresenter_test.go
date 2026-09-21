@@ -160,7 +160,7 @@ func TestHokmCuiPresenterHintNamesTheSuit(t *testing.T) {
 	h.SetHakemIdxForTest(0)
 
 	out := p.HintOutput(h)
-	assert.Contains(t, out, "HINT")
+	assert.Contains(t, out, "ヒント")
 	assert.NotContains(t, out, "hokmDeclareTrump", "生のキーが出ていたら未登録")
 }
 

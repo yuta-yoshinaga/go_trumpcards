@@ -48,7 +48,7 @@ func TestSimpleSimonCuiPresenter_Output(t *testing.T) {
 	t.Run("hint output", func(t *testing.T) {
 		// A board where col1's 8♠ can move onto col0's 9♠.
 		js := `{"co":[[{"d":1,"v":9,"w":true}],[{"d":1,"v":8,"w":true}]],"ph":0}`
-		assert.Contains(t, p.HintOutput(ssState(t, js)), "HINT")
+		assert.Contains(t, p.HintOutput(ssState(t, js)), "ヒント")
 		// No hint once ended.
 		assert.NotEmpty(t, p.HintOutput(ssState(t, `{"ph":2}`)))
 	})

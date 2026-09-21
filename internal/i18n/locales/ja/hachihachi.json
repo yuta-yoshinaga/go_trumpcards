@@ -15,7 +15,7 @@
   "roundBestMark": "★このラウンドの一番手",
   "roundDraw": "引き分け。",
   "hintNone": "ヒントはありません。",
-  "hintCard": "[HINT: {{card}} ({{reason}})]",
+  "hintCard": "[ヒント: {{card}} ({{reason}})]",
   "hintReasonCapture": "同月の札を捕獲して素点を稼ぐ",
   "hintReasonDiscard": "捕獲できないので価値の低い札を捨てる",
   "result.scores": "ゲーム終了！ 得点: {{scores}}",

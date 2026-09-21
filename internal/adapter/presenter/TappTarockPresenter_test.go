@@ -344,7 +344,7 @@ func TestTappTarockCuiPresenter_HintOutput(t *testing.T) {
 	g := newTappTarockGame()
 	out := new(presenter.TappTarockCuiPresenter).HintOutput(g)
 	if g.IsHumanTurn() {
-		assert.Contains(t, out, "HINT")
+		assert.Contains(t, out, "ヒント")
 		assert.NotContains(t, out, "tapptarock.hintReason", "理由が訳されていない")
 		return
 	}

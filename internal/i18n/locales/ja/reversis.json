@@ -18,7 +18,7 @@
   "gameEndWinner": "ゲーム終了！ 勝者は {{name}}（{{chips}}チップ）！",
   "gameEndTie": "ゲーム終了！ 同点で決着つかず。",
   "hintNone": "ヒントはありません。",
-  "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
+  "hintCard": "[ヒント: [{{idx}}]{{card}} ({{reason}})]",
   "hintReasonAvoidMarked": "キノラか♦Aが乗っている。絶対に取らない",
   "hintReasonAvoidPoints": "失点札が乗っているので取らない",
   "hintReasonLeadSafe": "失点にならない低い札でリードする",

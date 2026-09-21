@@ -180,7 +180,7 @@ func TestIsraeliWhistCuiPresenterHintDuringAuction(t *testing.T) {
 	w.SetAuctionPlayerIdxForTest(0)
 
 	out := p.HintOutput(w)
-	assert.Contains(t, out, "HINT")
+	assert.Contains(t, out, "ヒント")
 	assert.NotContains(t, out, "israeliwhistAuctionBid", "生のキーが出ていたら未登録")
 	assert.NotContains(t, out, "israeliwhistAuctionPass")
 }
@@ -194,7 +194,7 @@ func TestIsraeliWhistCuiPresenterHintMeetsQuota(t *testing.T) {
 	w.SetBidPlayerIdxForTest(0)
 
 	out := p.HintOutput(w)
-	assert.Contains(t, out, "HINT")
+	assert.Contains(t, out, "ヒント")
 	assert.NotContains(t, out, "israeliwhistMeetQuota")
 }
 
