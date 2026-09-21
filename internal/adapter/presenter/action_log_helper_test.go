@@ -479,3 +479,36 @@ func TestActionLogToText_RendersGameIdentifiersInBothLanguages(t *testing.T) {
 		assert.NotContains(t, en, text)
 	}
 }
+
+func TestActionLogToText_RendersHanafudaCaptureLabelsInBothLanguages(t *testing.T) {
+	entries := []*domain.ActionLogEntry{
+		{DetailCode: "gostop.log.play", DetailParams: map[string]string{"name": "You", "card": "三月·光", "resultKey": "gostop.log.result.captured"}},
+		{DetailCode: "gostop.log.draw", DetailParams: map[string]string{"name": "You", "card": "三月·光", "resultKey": "gostop.log.result.toField"}},
+		{DetailCode: "hachihachi.log.plays", DetailParams: map[string]string{"name": "You", "card": "三月·光", "resultKey": "hachihachi.log.result.captured"}},
+		{DetailCode: "hachihachi.log.draws", DetailParams: map[string]string{"name": "You", "card": "三月·光", "resultKey": "hachihachi.log.result.toField"}},
+		{DetailCode: "koikoi.log.play", DetailParams: map[string]string{"name": "You", "card": "三月·光", "capturedKey": "koikoi.log.result.captured"}},
+		{DetailCode: "koikoi.log.draw", DetailParams: map[string]string{"name": "You", "card": "三月·光", "capturedKey": "koikoi.log.result.toField"}},
+		{DetailCode: "sakura.log.play", DetailParams: map[string]string{"player": "You", "card": "三月·光", "tookKey": "sakura.log.took.captured"}},
+		{DetailCode: "sakura.log.draw", DetailParams: map[string]string{"player": "You", "card": "三月·光", "tookKey": "sakura.log.took.discarded"}},
+	}
+
+	t.Cleanup(func() { i18n.SetLang("ja") })
+
+	i18n.SetLang("ja")
+	ja := actionLogToText(entries)
+	for _, text := range []string{"取りました", "場に置きました", "捨てました"} {
+		assert.Contains(t, ja, text)
+	}
+	for _, text := range []string{"captures", "to field", "captured", "discarded", "gostop.log.result.captured", "gostop.log.result.toField", "hachihachi.log.result.captured", "hachihachi.log.result.toField", "koikoi.log.result.captured", "koikoi.log.result.toField", "sakura.log.took.captured", "sakura.log.took.discarded"} {
+		assert.NotContains(t, ja, text)
+	}
+
+	i18n.SetLang("en")
+	en := actionLogToText(entries)
+	for _, text := range []string{"captures", "to field", "captured", "discarded"} {
+		assert.Contains(t, en, text)
+	}
+	for _, text := range []string{"取りました", "場に置きました", "捨てました", "gostop.log.result.captured", "gostop.log.result.toField", "hachihachi.log.result.captured", "hachihachi.log.result.toField", "koikoi.log.result.captured", "koikoi.log.result.toField", "sakura.log.took.captured", "sakura.log.took.discarded"} {
+		assert.NotContains(t, en, text)
+	}
+}

@@ -6907,5 +6907,13 @@
   "troggu.contractShort.trois": "Trois",
   "troggu.contractShort.solo": "Solo",
   "troggu.contractShort.piccolo": "Piccolo",
-  "troggu.contractShort.misere": "Misere"
+  "troggu.contractShort.misere": "Misere",
+  "gostop.log.result.captured": "captures",
+  "gostop.log.result.toField": "to field",
+  "hachihachi.log.result.captured": "captures",
+  "hachihachi.log.result.toField": "to field",
+  "koikoi.log.result.captured": "captures",
+  "koikoi.log.result.toField": "to field",
+  "sakura.log.took.captured": "captured",
+  "sakura.log.took.discarded": "discarded"
 }

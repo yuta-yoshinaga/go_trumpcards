@@ -47,5 +47,7 @@
   "log.stopsShobu": "{{name}} stops (Shobu)",
   "log.roundWin": "{{name}} wins round with {{total}} points (x{{multiplier}})",
   "log.roundDraw": "Round drawn (no winner)",
-  "log.gameEnded": "Game ended (winner {{winner}})"
+  "log.gameEnded": "Game ended (winner {{winner}})",
+  "log.result.captured": "captures",
+  "log.result.toField": "to field"
 }

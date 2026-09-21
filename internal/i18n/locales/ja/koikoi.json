@@ -47,5 +47,7 @@
   "log.stopsShobu": "{{name}} が勝負を宣言しました（勝負）",
   "log.roundWin": "{{name}} が {{total}} 点（倍率×{{multiplier}}）でラウンドに勝利しました",
   "log.roundDraw": "ラウンドは引き分けです（勝者なし）",
-  "log.gameEnded": "ゲーム終了（勝者 {{winner}}）"
+  "log.gameEnded": "ゲーム終了（勝者 {{winner}}）",
+  "log.result.captured": "取りました",
+  "log.result.toField": "場に置きました"
 }

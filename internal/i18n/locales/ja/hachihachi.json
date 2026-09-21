@@ -32,5 +32,7 @@
   "log.draws": "{{name}}が{{card}}をめくりました（{{result}}）",
   "log.roundSettled": "ラウンド{{round}}を精算しました（最高 {{best}}）",
   "log.sweepsLeftover": "{{name}}が残りの場札{{count}}枚を取りました",
-  "log.gameEnded": "ゲーム終了（勝者 {{winner}}）"
+  "log.gameEnded": "ゲーム終了（勝者 {{winner}}）",
+  "log.result.captured": "取りました",
+  "log.result.toField": "場に置きました"
 }

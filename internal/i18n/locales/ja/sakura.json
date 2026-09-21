@@ -30,5 +30,7 @@
   "bonus.allBrights": "五光",
   "bonus.none": "なし",
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
-  "helpNext": "  n                    次へ進む"
+  "helpNext": "  n                    次へ進む",
+  "log.took.captured": "取りました",
+  "log.took.discarded": "捨てました"
 }

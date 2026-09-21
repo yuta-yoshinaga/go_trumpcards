@@ -621,7 +621,7 @@ func (g *KoiKoi) applyTurn(playerIdx, handIdx, fieldIdx int) {
 	g.koikoiPlaceCard(playerIdx, card, fieldIdx)
 	handCaptured := len(g.state.fieldCards) <= beforeField
 	g.appendLog(playerIdx, "play", "koikoi.log.play", map[string]string{
-		"name": g.playerName(playerIdx), "card": koikoiCardStr(card), "captured": koikoiCapturedWord(handCaptured),
+		"name": g.playerName(playerIdx), "card": koikoiCardStr(card), "capturedKey": koikoiCapturedKey(handCaptured),
 	}, []*Card{card})
 
 	// めくり札。
@@ -632,7 +632,7 @@ func (g *KoiKoi) applyTurn(playerIdx, handIdx, fieldIdx int) {
 		g.koikoiPlaceCard(playerIdx, drawn, -1)
 		drawCaptured := len(g.state.fieldCards) <= before2
 		g.appendLog(playerIdx, "draw", "koikoi.log.draw", map[string]string{
-			"name": g.playerName(playerIdx), "card": koikoiCardStr(drawn), "captured": koikoiCapturedWord(drawCaptured),
+			"name": g.playerName(playerIdx), "card": koikoiCardStr(drawn), "capturedKey": koikoiCapturedKey(drawCaptured),
 		}, []*Card{drawn})
 	}
 
@@ -906,11 +906,12 @@ func koikoiCardStr(c *Card) string {
 	return koikoiMonthKanji(c.GetDesign()) + "·" + koikoiCategoryShort(koikoiInfo(c).category)
 }
 
-func koikoiCapturedWord(captured bool) string {
+// koikoiCapturedKey は取れたかどうかの i18n キーを返す。
+func koikoiCapturedKey(captured bool) string {
 	if captured {
-		return "captures"
+		return "koikoi.log.result.captured"
 	}
-	return "to field"
+	return "koikoi.log.result.toField"
 }
 
 // koikoiMonthKanji は月番号を月札の代表漢字にする。

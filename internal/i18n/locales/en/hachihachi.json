@@ -32,5 +32,7 @@
   "log.draws": "{{name}} draws {{card}} ({{result}})",
   "log.roundSettled": "round {{round}} settled (best {{best}})",
   "log.sweepsLeftover": "{{name}} sweeps {{count}} leftover field card(s)",
-  "log.gameEnded": "game ended (winner {{winner}})"
+  "log.gameEnded": "game ended (winner {{winner}})",
+  "log.result.captured": "captures",
+  "log.result.toField": "to field"
 }

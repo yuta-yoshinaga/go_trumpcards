@@ -235,7 +235,7 @@ func TestHachiHachiCapture(t *testing.T) {
 	for _, entry := range g.GetActionLog() {
 		if entry.DetailCode == "hachihachi.log.plays" {
 			assert.Equal(t, "You", entry.DetailParams["name"])
-			assert.Equal(t, "captures", entry.DetailParams["result"])
+			assert.Equal(t, "hachihachi.log.result.captured", entry.DetailParams["resultKey"])
 			return
 		}
 	}

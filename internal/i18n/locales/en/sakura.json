@@ -30,5 +30,7 @@
   "bonus.allBrights": "Five Brights",
   "bonus.none": "none",
   "helpExamplePlay": "  p 0                  play hand card 0",
-  "helpNext": "  n                    go to the next step"
+  "helpNext": "  n                    go to the next step",
+  "log.took.captured": "captured",
+  "log.took.discarded": "discarded"
 }

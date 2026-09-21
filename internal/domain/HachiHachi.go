@@ -616,7 +616,7 @@ func (g *HachiHachi) applyTurn(playerIdx, handIdx, fieldIdx int) {
 	beforeField := len(g.state.fieldCards)
 	g.hachihachiPlaceCard(playerIdx, card, fieldIdx)
 	handCaptured := len(g.state.fieldCards) <= beforeField
-	g.appendLog(playerIdx, "play", "hachihachi.log.plays", map[string]string{"name": g.playerName(playerIdx), "card": hachihachiCardStr(card), "result": hachihachiCapturedWord(handCaptured)}, []*Card{card})
+	g.appendLog(playerIdx, "play", "hachihachi.log.plays", map[string]string{"name": g.playerName(playerIdx), "card": hachihachiCardStr(card), "resultKey": hachihachiCapturedKey(handCaptured)}, []*Card{card})
 
 	// めくり札。
 	if len(g.state.drawPile) > 0 {
@@ -629,7 +629,7 @@ func (g *HachiHachi) applyTurn(playerIdx, handIdx, fieldIdx int) {
 		if drawCaptured {
 			drawLogCards = append(drawLogCards, drawnCaptured[1:]...)
 		}
-		g.appendLog(playerIdx, "draw", "hachihachi.log.draws", map[string]string{"name": g.playerName(playerIdx), "card": hachihachiCardStr(drawn), "result": hachihachiCapturedWord(drawCaptured)}, drawLogCards)
+		g.appendLog(playerIdx, "draw", "hachihachi.log.draws", map[string]string{"name": g.playerName(playerIdx), "card": hachihachiCardStr(drawn), "resultKey": hachihachiCapturedKey(drawCaptured)}, drawLogCards)
 	}
 
 	g.advanceTurn()
@@ -828,11 +828,12 @@ func hachihachiCardStr(c *Card) string {
 	return hachihachiMonthKanji(c.GetDesign()) + "·" + hachihachiCategoryShort(hachihachiInfo(c).category)
 }
 
-func hachihachiCapturedWord(captured bool) string {
+// hachihachiCapturedKey は取れたかどうかの i18n キーを返す。
+func hachihachiCapturedKey(captured bool) string {
 	if captured {
-		return "captures"
+		return "hachihachi.log.result.captured"
 	}
-	return "to field"
+	return "hachihachi.log.result.toField"
 }
 
 // hachihachiMonthKanji は月番号を月札の代表漢字にする。

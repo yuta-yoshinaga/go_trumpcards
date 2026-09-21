@@ -740,7 +740,7 @@ func (g *GoStop) applyTurn(playerIdx, handIdx, fieldIdx int) {
 	beforeField := len(g.state.fieldCards)
 	g.gostopPlaceCard(playerIdx, card, fieldIdx)
 	handCaptured := len(g.state.fieldCards) <= beforeField
-	g.appendLog(playerIdx, "play", "gostop.log.play", map[string]string{"name": g.playerName(playerIdx), "card": gostopCardStr(card), "result": gostopCapturedWord(handCaptured)}, []*Card{card})
+	g.appendLog(playerIdx, "play", "gostop.log.play", map[string]string{"name": g.playerName(playerIdx), "card": gostopCardStr(card), "resultKey": gostopCapturedKey(handCaptured)}, []*Card{card})
 
 	// めくり札。
 	if len(g.state.drawPile) > 0 {
@@ -749,7 +749,7 @@ func (g *GoStop) applyTurn(playerIdx, handIdx, fieldIdx int) {
 		before2 := len(g.state.fieldCards)
 		g.gostopPlaceCard(playerIdx, drawn, -1)
 		drawCaptured := len(g.state.fieldCards) <= before2
-		g.appendLog(playerIdx, "draw", "gostop.log.draw", map[string]string{"name": g.playerName(playerIdx), "card": gostopCardStr(drawn), "result": gostopCapturedWord(drawCaptured)}, []*Card{drawn})
+		g.appendLog(playerIdx, "draw", "gostop.log.draw", map[string]string{"name": g.playerName(playerIdx), "card": gostopCardStr(drawn), "resultKey": gostopCapturedKey(drawCaptured)}, []*Card{drawn})
 	}
 
 	// 得点判定。
@@ -1034,11 +1034,12 @@ func gostopCardStr(c *Card) string {
 	return gostopMonthKanji(c.GetDesign()) + "·" + gostopCategoryShort(gostopInfo(c).category)
 }
 
-func gostopCapturedWord(captured bool) string {
+// gostopCapturedKey は取れたかどうかの i18n キーを返す。
+func gostopCapturedKey(captured bool) string {
 	if captured {
-		return "captures"
+		return "gostop.log.result.captured"
 	}
-	return "to field"
+	return "gostop.log.result.toField"
 }
 
 // gostopMonthKanji は月番号を月札の代表漢字にする。

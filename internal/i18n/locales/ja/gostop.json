@@ -50,5 +50,7 @@
   "log.stop": "{{name}}がストップしました",
   "log.roundWin": "{{name}}が{{points}}点でラウンドに勝利しました（バク×{{bak}}）",
   "log.roundDraw": "ラウンドは引き分けでした（勝者なし）",
-  "log.gameEnd": "ゲーム終了（勝者{{winner}}）"
+  "log.gameEnd": "ゲーム終了（勝者{{winner}}）",
+  "log.result.captured": "取りました",
+  "log.result.toField": "場に置きました"
 }
