@@ -5,7 +5,7 @@
   "helpNextRound": "  nr                        次のラウンドへ",
   "helpSetDifficulty": "  sd [0-2]                  CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
   "round": "ラウンド: {{round}}  手札: {{handSize}}枚  トリック: {{trick}}  切り札: {{trump}}",
-  "playerLine": "{{name}}: {{cards}}枚  今ラウンドのトリック: {{roundTricks}}  Dogbone: {{dogbones}}",
+  "playerLine": "{{name}}: {{cards}}枚  今ラウンドのトリック: {{roundTricks}}  ドッグボーン: {{dogbones}}",
   "playerLineEliminated": "{{name}}: 脱落",
   "gameEnd": "ゲーム終了！{{name}}が生き残ってマッチ勝利！",
   "promptPlay": "手番: {{name}}",
