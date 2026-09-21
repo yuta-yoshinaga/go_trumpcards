@@ -536,11 +536,6 @@ func TestVira_SettlementMovesThePot(t *testing.T) {
 	})
 }
 
-func TestVira_MadeLabel(t *testing.T) {
-	assert.Equal(t, "成功", viraMadeLabel(true))
-	assert.Equal(t, "失敗", viraMadeLabel(false))
-}
-
 func TestVira_NextRoundRedealsAndRotatesTheDealer(t *testing.T) {
 	g := newTestVira(t)
 	g.SetPhase(ViraPhaseRoundEnd)

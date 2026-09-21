@@ -40,6 +40,9 @@
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
   "log.play": "{{name}}が{{card}}を出しました",
   "log.trickWin": "{{name}}がトリック{{trick}}を取りました（+{{points}}）",
-  "log.roundScore": "ラウンド{{round}}: カード得点 A={{cardsA}} B={{cardsB}} → チーム{{team}} +{{points}}ゲームポイント（合計 A={{totalA}} B={{totalB}}）",
+  "log.roundScore": "ラウンド{{round}}: カード得点 A={{cardsA}} B={{cardsB}} → {{team}} +{{points}}ゲームポイント（合計 A={{totalA}} B={{totalB}}）",
+  "log.team.draw": "引き分け",
+  "log.team.a": "チームA",
+  "log.team.b": "チームB",
   "log.gameEnd": "チーム{{team}}がマッチに勝利しました！"
 }

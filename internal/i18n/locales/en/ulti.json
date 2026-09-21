@@ -64,5 +64,8 @@
   "log.play": "{{name}} plays {{card}}",
   "log.trickWin": "{{name}} wins trick {{trick}}",
   "log.roundScore": "round {{round}}: declarer({{name}}) {{contract}} {{outcome}}",
-  "log.gameEnd": "{{name}} wins the match!"
+  "log.gameEnd": "{{name}} wins the match!",
+  "log.outcome.win": "won",
+  "log.outcome.loss": "lost",
+  "log.outcome.unknown": "-"
 }

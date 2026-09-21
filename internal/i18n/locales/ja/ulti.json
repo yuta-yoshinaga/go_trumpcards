@@ -64,5 +64,8 @@
   "log.play": "{{name}} が {{card}} をプレイ",
   "log.trickWin": "{{name}} がトリック {{trick}} を獲得",
   "log.roundScore": "ラウンド {{round}}: デクレアラー({{name}}) {{contract}} {{outcome}}",
-  "log.gameEnd": "{{name}} がマッチに勝利！"
+  "log.gameEnd": "{{name}} がマッチに勝利！",
+  "log.outcome.win": "成功",
+  "log.outcome.loss": "失敗",
+  "log.outcome.unknown": "-"
 }

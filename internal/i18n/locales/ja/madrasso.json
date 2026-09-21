@@ -31,5 +31,8 @@
   "log.trickWin": "{{name}} がトリック {{trick}} に勝利（{{thirds}}/3{{bonus}}）",
   "log.roundScore": "ラウンド {{round}}: TeamA={{teamAPoints}}点、TeamB={{teamBPoints}}点 → {{result}}（得点 {{teamAScore}}-{{teamBScore}}）",
   "log.gameEnd": "Team {{team}} がゲームに勝利！",
-  "log.play": "{{name}} が {{card}} を出す"
+  "log.play": "{{name}} が {{card}} を出す",
+  "log.result.tie": "引き分け",
+  "log.result.teamA": "TeamA の勝ち",
+  "log.result.teamB": "TeamB の勝ち"
 }

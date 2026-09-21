@@ -62,5 +62,7 @@
   "log.partnerReveal": "{{name}} is the picker's partner",
   "log.trickWin": "{{name}} wins trick {{trick}} ({{points}} pts)",
   "log.roundScore": "round {{round}}: picker team {{points}} pts ({{outcome}}, x{{multiplier}})",
-  "log.gameEnd": "{{name}} wins the game!"
+  "log.gameEnd": "{{name}} wins the game!",
+  "log.outcome.pickerWins": "picker team wins",
+  "log.outcome.defendersWin": "defenders win"
 }

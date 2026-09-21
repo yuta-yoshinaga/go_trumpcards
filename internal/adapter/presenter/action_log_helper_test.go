@@ -399,3 +399,48 @@ func TestLatestActionOnlyReturnsTheCurrentEvent(t *testing.T) {
 	assert.Nil(t, latestAction([]*domain.ActionLogEntry{marked, draw}, "marked"), "次の操作で一時メッセージを消す")
 	assert.Equal(t, "松·短", hachiHachiCapturedLabels(draw.Cards[1:]))
 }
+
+func TestActionLogToText_RendersOutcomeLabelsInBothLanguages(t *testing.T) {
+	entries := []*domain.ActionLogEntry{
+		{DetailCode: "schafkopf.log.roundScore", DetailParams: map[string]string{"round": "1", "points": "61", "outcomeKey": "schafkopf.log.outcome.pickerWins", "multiplier": "1"}},
+		{DetailCode: "schafkopf.log.roundScore", DetailParams: map[string]string{"round": "2", "points": "59", "outcomeKey": "schafkopf.log.outcome.defendersWin", "multiplier": "1"}},
+		{DetailCode: "sheepshead.log.roundScore", DetailParams: map[string]string{"round": "1", "points": "61", "outcomeKey": "sheepshead.log.outcome.pickerWins", "multiplier": "1"}},
+		{DetailCode: "sheepshead.log.roundScore", DetailParams: map[string]string{"round": "2", "points": "59", "outcomeKey": "sheepshead.log.outcome.defendersWin", "multiplier": "1"}},
+		{DetailCode: "doppelkopf.log.roundScore", DetailParams: map[string]string{"round": "1", "rePoints": "121", "outcomeKey": "doppelkopf.log.outcome.reWins", "gamePoints": "1"}},
+		{DetailCode: "doppelkopf.log.roundScore", DetailParams: map[string]string{"round": "2", "rePoints": "119", "outcomeKey": "doppelkopf.log.outcome.kontraWins", "gamePoints": "1"}},
+		{DetailCode: "germansolo.log.roundScore", DetailParams: map[string]string{"round": "1", "name": "You", "outcomeKey": "germansolo.log.outcome.made", "tricks": "7", "total": "10", "needed": "6", "stake": "1"}},
+		{DetailCode: "germansolo.log.roundScore", DetailParams: map[string]string{"round": "2", "name": "You", "outcomeKey": "germansolo.log.outcome.failed", "tricks": "5", "total": "10", "needed": "6", "stake": "1"}},
+		{DetailCode: "germansolo.log.roundScore", DetailParams: map[string]string{"round": "3", "name": "You", "outcomeKey": "germansolo.log.outcome.unknown", "tricks": "0", "total": "10", "needed": "6", "stake": "1"}},
+		{DetailCode: "ulti.log.roundScore", DetailParams: map[string]string{"round": "1", "name": "You", "contract": "party", "outcomeKey": "ulti.log.outcome.win"}},
+		{DetailCode: "ulti.log.roundScore", DetailParams: map[string]string{"round": "2", "name": "You", "contract": "party", "outcomeKey": "ulti.log.outcome.loss"}},
+		{DetailCode: "ulti.log.roundScore", DetailParams: map[string]string{"round": "3", "name": "You", "contract": "party", "outcomeKey": "ulti.log.outcome.unknown"}},
+		{DetailCode: "madrasso.log.roundScore", DetailParams: map[string]string{"round": "1", "teamAPoints": "60", "teamBPoints": "60", "resultKey": "madrasso.log.result.tie", "teamAScore": "1", "teamBScore": "1"}},
+		{DetailCode: "madrasso.log.roundScore", DetailParams: map[string]string{"round": "2", "teamAPoints": "61", "teamBPoints": "59", "resultKey": "madrasso.log.result.teamA", "teamAScore": "2", "teamBScore": "1"}},
+		{DetailCode: "madrasso.log.roundScore", DetailParams: map[string]string{"round": "3", "teamAPoints": "59", "teamBPoints": "61", "resultKey": "madrasso.log.result.teamB", "teamAScore": "2", "teamBScore": "2"}},
+		{DetailCode: "sueca.log.roundScore", DetailParams: map[string]string{"round": "1", "cardsA": "60", "cardsB": "60", "teamKey": "sueca.log.team.draw", "points": "0", "totalA": "1", "totalB": "1"}},
+		{DetailCode: "sueca.log.roundScore", DetailParams: map[string]string{"round": "2", "cardsA": "61", "cardsB": "59", "teamKey": "sueca.log.team.a", "points": "1", "totalA": "2", "totalB": "1"}},
+		{DetailCode: "sueca.log.roundScore", DetailParams: map[string]string{"round": "3", "cardsA": "59", "cardsB": "61", "teamKey": "sueca.log.team.b", "points": "1", "totalA": "2", "totalB": "2"}},
+		{DetailCode: "vira.log.settle", DetailParams: map[string]string{"bid": "normal", "outcomeKey": "vira.log.outcome.made", "tricks": "7", "pot": "10"}},
+		{DetailCode: "vira.log.settle", DetailParams: map[string]string{"bid": "normal", "outcomeKey": "vira.log.outcome.failed", "tricks": "5", "pot": "10"}},
+	}
+
+	t.Cleanup(func() { i18n.SetLang("ja") })
+
+	i18n.SetLang("ja")
+	ja := actionLogToText(entries)
+	for _, text := range []string{"ピッカー組の勝ち", "ディフェンス組の勝ち", "Re の勝ち", "Kontra の勝ち", "成功", "失敗", "引き分け", "TeamA の勝ち", "TeamB の勝ち", "チームA", "チームB"} {
+		assert.Contains(t, ja, text)
+	}
+	for _, text := range []string{"picker team wins", "defenders win", "Re wins", "Kontra wins", "made it", "won", "lost", "nobody (tied)", "Draw", "Team A", "Team B", "failed", "made"} {
+		assert.NotContains(t, ja, text)
+	}
+
+	i18n.SetLang("en")
+	en := actionLogToText(entries)
+	for _, text := range []string{"picker team wins", "defenders win", "Re wins", "Kontra wins", "made it", "won", "lost", "nobody (tied)", "Draw", "Team A", "Team B", "made", "failed"} {
+		assert.Contains(t, en, text)
+	}
+	for _, text := range []string{"ピッカー組の勝ち", "ディフェンス組の勝ち", "Re の勝ち", "Kontra の勝ち", "成功", "失敗", "引き分け", "チームA", "チームB", "TeamA の勝ち", "TeamB の勝ち"} {
+		assert.NotContains(t, en, text)
+	}
+}

@@ -37,5 +37,7 @@
   "log.play": "{{name}} plays {{card}}",
   "log.trickWin": "{{name}} wins trick {{trick}} ({{points}} pts)",
   "log.roundScore": "round {{round}}: Re {{rePoints}} pts ({{outcome}}, {{gamePoints}} game pts)",
-  "log.gameEnd": "{{name}} wins the game!"
+  "log.gameEnd": "{{name}} wins the game!",
+  "log.outcome.reWins": "Re wins",
+  "log.outcome.kontraWins": "Kontra wins"
 }

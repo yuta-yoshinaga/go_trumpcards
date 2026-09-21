@@ -31,5 +31,8 @@
   "log.trickWin": "{{name}} wins trick {{trick}} (+{{thirds}}/3{{bonus}})",
   "log.roundScore": "round {{round}}: TeamA={{teamAPoints}} pts, TeamB={{teamBPoints}} pts -> deal to {{result}} (scores {{teamAScore}}-{{teamBScore}})",
   "log.gameEnd": "Team {{team}} wins the game!",
-  "log.play": "{{name}} plays {{card}}"
+  "log.play": "{{name}} plays {{card}}",
+  "log.result.tie": "nobody (tied)",
+  "log.result.teamA": "Team A",
+  "log.result.teamB": "Team B"
 }

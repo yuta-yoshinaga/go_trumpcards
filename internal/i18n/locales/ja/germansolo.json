@@ -86,5 +86,8 @@
   "log.partnerRevealed": "{{name}}が呼ばれた{{suit}}のエースを持つジャーマン・ソロの相棒と判明",
   "log.trickWin": "{{name}}がトリック{{trick}}に勝つ",
   "log.roundScore": "ラウンド{{round}}: {{name}}は{{outcome}}（{{tricks}}/{{total}}トリック、必要{{needed}}、ステーク={{stake}}）",
-  "log.gameEnd": "{{name}}がマッチに勝利！"
+  "log.gameEnd": "{{name}}がマッチに勝利！",
+  "log.outcome.made": "成功",
+  "log.outcome.failed": "失敗",
+  "log.outcome.unknown": "-"
 }

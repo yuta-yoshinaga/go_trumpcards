@@ -66,5 +66,7 @@
   "log.partnerRevealed": "{{name}}がピッカーの相棒だと判明",
   "log.winsTrick": "{{name}}がトリック{{trick}}に勝つ（{{points}}点）",
   "log.roundScore": "ラウンド{{round}}: ピッカー組{{points}}点（{{outcome}}、x{{multiplier}}）",
-  "log.winsGame": "{{name}}がゲームに勝利！"
+  "log.winsGame": "{{name}}がゲームに勝利！",
+  "log.outcome.pickerWins": "ピッカー組の勝ち",
+  "log.outcome.defendersWin": "ディフェンス組の勝ち"
 }

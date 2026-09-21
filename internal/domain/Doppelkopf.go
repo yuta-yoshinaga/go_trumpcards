@@ -341,7 +341,7 @@ func (g *Doppelkopf) ScoreRound() {
 	g.roundGamePts = gamePts
 	g.settleChips(reWon, gamePts)
 
-	g.appendLog(-1, "round_score", "doppelkopf.log.roundScore", map[string]string{"round": fmt.Sprintf("%d", g.roundNumber), "rePoints": fmt.Sprintf("%d", rePts), "outcome": dkOutcomeStr(reWon), "gamePoints": fmt.Sprintf("%d", gamePts)}, nil)
+	g.appendLog(-1, "round_score", "doppelkopf.log.roundScore", map[string]string{"round": fmt.Sprintf("%d", g.roundNumber), "rePoints": fmt.Sprintf("%d", rePts), "outcomeKey": dkOutcomeKey(reWon), "gamePoints": fmt.Sprintf("%d", gamePts)}, nil)
 
 	if w := g.chipLeaderAtTarget(); w >= 0 {
 		g.gameEndFlag = true
@@ -639,12 +639,12 @@ func dkGamePoints(loserPoints int, loserNoTrick bool) int {
 	return pts
 }
 
-// dkOutcomeStr 勝敗の表示文字列。
-func dkOutcomeStr(reWon bool) string {
+// dkOutcomeKey は勝敗の i18n キーを返す。
+func dkOutcomeKey(reWon bool) string {
 	if reWon {
-		return "Re wins"
+		return "doppelkopf.log.outcome.reWins"
 	}
-	return "Kontra wins"
+	return "doppelkopf.log.outcome.kontraWins"
 }
 
 // --- State getters ---
