@@ -6,6 +6,61 @@ import (
 	"testing"
 )
 
+func TestSkatGameTypeKey(t *testing.T) {
+	tests := []struct {
+		name string
+		got  SkatGameType
+		want string
+	}{
+		{name: "grand", got: SkatGameGrand, want: "skat.gameTypeGrand"},
+		{name: "null", got: SkatGameNull, want: "skat.gameTypeNull"},
+		{name: "none", got: SkatGameNone, want: "skat.gameTypeNone"},
+		// Suit declarations use a separate code and do not reach this helper.
+		{name: "suit default", got: SkatGameSuit, want: "skat.gameTypeNone"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := skatGameTypeKey(tt.got); got != tt.want {
+				t.Fatalf("skatGameTypeKey(%v) = %q, want %q", tt.got, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestSkatDeclareGameLogsSuitAndGameType(t *testing.T) {
+	tests := []struct {
+		name       string
+		gameType   SkatGameType
+		trumpSuit  int
+		code       string
+		param      string
+		paramValue string
+	}{
+		{name: "suit", gameType: SkatGameSuit, trumpSuit: CardDesignSpade, code: "skat.log.declareGameSuit", param: "trumpKey", paramValue: "common.suit.spade"},
+		{name: "grand", gameType: SkatGameGrand, code: "skat.log.declareGame", param: "gameKey", paramValue: "skat.gameTypeGrand"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := newSkatForTest(t, DefaultSkatConfig())
+			resetForControlledPhase(g)
+			g.round.declarerIdx = 0
+			g.applyGameDeclaration(tt.gameType, tt.trumpSuit)
+
+			logs := g.GetActionLog()
+			if len(logs) == 0 {
+				t.Fatal("expected declaration log")
+			}
+			entry := logs[len(logs)-1]
+			if entry.DetailCode != tt.code {
+				t.Fatalf("DetailCode = %q, want %q", entry.DetailCode, tt.code)
+			}
+			if entry.DetailParams[tt.param] != tt.paramValue {
+				t.Fatalf("DetailParams[%q] = %q, want %q", tt.param, entry.DetailParams[tt.param], tt.paramValue)
+			}
+		})
+	}
+}
+
 // skatTestCard is a small helper to keep card construction terse.
 func skatTestCard(design, value int) *Card {
 	return NewCard(design, value, false)
