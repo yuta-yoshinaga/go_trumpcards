@@ -614,7 +614,7 @@ func (g *Bolivia) applyResolvedMeld(playerIdx int, res boliviaMeldResolution, ca
 		}
 		meld := &BoliviaMeld{Cards: cards, Kind: res.kind, IsNatural: isNatural}
 		player.AddMeld(meld)
-		g.appendLog(playerIdx, "meld", "bolivia.log.meld", map[string]string{"name": playerName(g.players, playerIdx), "type": boliviaMeldKindStr(res.kind), "cards": strconv.Itoa(len(cards))}, cards)
+		g.appendLog(playerIdx, "meld", "bolivia.log.meld", map[string]string{"name": playerName(g.players, playerIdx), "typeKey": boliviaMeldKindKey(res.kind), "cards": strconv.Itoa(len(cards))}, cards)
 		return
 	}
 	existing := player.melds[res.existingIdx]
@@ -624,7 +624,7 @@ func (g *Bolivia) applyResolvedMeld(playerIdx int, res boliviaMeldResolution, ca
 			existing.IsNatural = false
 		}
 	}
-	g.appendLog(playerIdx, "meld_add", "bolivia.log.meldAdd", map[string]string{"name": playerName(g.players, playerIdx), "cards": strconv.Itoa(len(cards)), "type": boliviaMeldKindStr(existing.Kind)}, cards)
+	g.appendLog(playerIdx, "meld_add", "bolivia.log.meldAdd", map[string]string{"name": playerName(g.players, playerIdx), "cards": strconv.Itoa(len(cards)), "typeKey": boliviaMeldKindKey(existing.Kind)}, cards)
 }
 
 // logCompletedMelds 完成したカナスタ/ボリビアをログに記録する
@@ -634,7 +634,7 @@ func (g *Bolivia) logCompletedMelds(playerIdx int) {
 		if m.IsEscalera() {
 			g.appendLog(playerIdx, "bolivia", "bolivia.log.bolivia", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 		} else if m.IsCanasta() {
-			g.appendLog(playerIdx, "canasta", "bolivia.log.canasta", map[string]string{"name": playerName(g.players, playerIdx), "type": boliviaCanastaTypeStr(m.IsNatural)}, nil)
+			g.appendLog(playerIdx, "canasta", "bolivia.log.canasta", map[string]string{"name": playerName(g.players, playerIdx), "typeKey": boliviaCanastaTypeKey(m.IsNatural)}, nil)
 		}
 	}
 }
@@ -881,7 +881,7 @@ func (g *Bolivia) cpuMeld() {
 					existing.IsNatural = false
 				}
 			}
-			g.appendLog(g.currentPlayerIdx, "meld_add", "bolivia.log.meldAdd", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "cards": strconv.Itoa(len(grp.cards)), "type": boliviaMeldKindStr(existing.Kind)}, grp.cards)
+			g.appendLog(g.currentPlayerIdx, "meld_add", "bolivia.log.meldAdd", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "cards": strconv.Itoa(len(grp.cards)), "typeKey": boliviaMeldKindKey(existing.Kind)}, grp.cards)
 		} else {
 			isNatural := true
 			for _, c := range grp.cards {
@@ -892,7 +892,7 @@ func (g *Bolivia) cpuMeld() {
 			}
 			meld := &BoliviaMeld{Cards: grp.cards, Kind: grp.kind, IsNatural: isNatural}
 			player.AddMeld(meld)
-			g.appendLog(g.currentPlayerIdx, "meld", "bolivia.log.meld", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "type": boliviaMeldKindStr(grp.kind), "cards": strconv.Itoa(len(grp.cards))}, grp.cards)
+			g.appendLog(g.currentPlayerIdx, "meld", "bolivia.log.meld", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "typeKey": boliviaMeldKindKey(grp.kind), "cards": strconv.Itoa(len(grp.cards))}, grp.cards)
 		}
 
 		for _, c := range grp.cards {
@@ -1637,20 +1637,20 @@ func boliviaEscaleraSuit(cards []*Card) int {
 	return -1
 }
 
-// boliviaMeldKindStr はメルド種別の文字列を返す。
-func boliviaMeldKindStr(kind BoliviaMeldKind) string {
+// boliviaMeldKindKey はメルド種別の i18n キーを返す。
+func boliviaMeldKindKey(kind BoliviaMeldKind) string {
 	if kind == BoliviaMeldEscalera {
-		return "sequence"
+		return "bolivia.meldTypeSequence"
 	}
-	return "set"
+	return "bolivia.meldTypeSet"
 }
 
-// boliviaCanastaTypeStr はカナスタの種別文字列を返す。
-func boliviaCanastaTypeStr(isNatural bool) string {
+// boliviaCanastaTypeKey はカナスタの種別 i18n キーを返す。
+func boliviaCanastaTypeKey(isNatural bool) string {
 	if isNatural {
-		return "natural"
+		return "bolivia.meldTypeNatural"
 	}
-	return "mixed"
+	return "bolivia.meldTypeMixed"
 }
 
 // --- State getters ---

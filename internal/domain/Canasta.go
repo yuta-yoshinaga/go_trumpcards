@@ -626,7 +626,7 @@ func (g *Canasta) PlayerMeld(meldGroups [][]int) error {
 	// カナスタ完成チェック
 	for _, m := range player.melds {
 		if m.IsCanasta() {
-			g.appendLog(g.currentPlayerIdx, "canasta", "canasta.log.canasta", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "type": canastaTypeStr(m.IsNatural)}, nil)
+			g.appendLog(g.currentPlayerIdx, "canasta", "canasta.log.canasta", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "typeKey": canastaTypeKey(m.IsNatural)}, nil)
 		}
 	}
 
@@ -1679,12 +1679,12 @@ func (g *Canasta) sortHand(playerIdx int) {
 	sortPlayerHand(g.players[playerIdx], bySuitThenValue)
 }
 
-// canastaTypeStr カナスタの種別文字列を返す
-func canastaTypeStr(isNatural bool) string {
+// canastaTypeKey はカナスタの種別 i18n キーを返す。
+func canastaTypeKey(isNatural bool) string {
 	if isNatural {
-		return "natural"
+		return "canasta.meldTypeNatural"
 	}
-	return "mixed"
+	return "canasta.meldTypeMixed"
 }
 
 // --- JSON serialization ---

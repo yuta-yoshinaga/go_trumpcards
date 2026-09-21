@@ -20,6 +20,7 @@
   "meldTypeMixed": "mixed",
   "meldTypeNatural": "natural",
   "meldTypeSequence": "sequence",
+  "meldTypeSet": "set",
   "meldRemaining": " ({{count}} to go)",
   "meldTypeCanastaSuffix": " canasta",
   "meldTypeSambaSuffix": " samba",

@@ -25,6 +25,8 @@
   "historyStreak": "現在 {{side}} が {{count}} 連勝中",
   "sidePlayer": "プレイヤー",
   "sideBanker": "バンカー",
+  "sideTie": "タイ",
+  "sideUnknown": "不明",
   "helpExampleBet": "  b 100 0              100 をプレイヤーに賭ける",
   "payoutRefTitle": "配当表",
   "payoutRefPlayer": "プレイヤー勝利 (1:1)",

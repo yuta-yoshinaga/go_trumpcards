@@ -554,7 +554,7 @@ func (g *Samba) applyResolvedMeld(playerIdx int, res sambaMeldResolution, cards 
 		}
 		meld := &SambaMeld{Cards: cards, Kind: res.kind, IsNatural: isNatural}
 		player.AddMeld(meld)
-		g.appendLog(playerIdx, "meld", "samba.log.meld", map[string]string{"name": playerName(g.players, playerIdx), "type": sambaMeldKindStr(res.kind), "cards": strconv.Itoa(len(cards))}, cards)
+		g.appendLog(playerIdx, "meld", "samba.log.meld", map[string]string{"name": playerName(g.players, playerIdx), "typeKey": sambaMeldKindKey(res.kind), "cards": strconv.Itoa(len(cards))}, cards)
 		return
 	}
 	existing := player.melds[res.existingIdx]
@@ -564,7 +564,7 @@ func (g *Samba) applyResolvedMeld(playerIdx int, res sambaMeldResolution, cards 
 			existing.IsNatural = false
 		}
 	}
-	g.appendLog(playerIdx, "meld_add", "samba.log.meldAdd", map[string]string{"name": playerName(g.players, playerIdx), "cards": strconv.Itoa(len(cards)), "type": sambaMeldKindStr(existing.Kind)}, cards)
+	g.appendLog(playerIdx, "meld_add", "samba.log.meldAdd", map[string]string{"name": playerName(g.players, playerIdx), "cards": strconv.Itoa(len(cards)), "typeKey": sambaMeldKindKey(existing.Kind)}, cards)
 }
 
 // logCompletedMelds 完成したカナスタ/サンバをログに記録する
@@ -574,7 +574,7 @@ func (g *Samba) logCompletedMelds(playerIdx int) {
 		if m.IsSamba() {
 			g.appendLog(playerIdx, "samba", "samba.log.samba", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 		} else if m.IsCanasta() {
-			g.appendLog(playerIdx, "canasta", "samba.log.canasta", map[string]string{"name": playerName(g.players, playerIdx), "type": sambaCanastaTypeStr(m.IsNatural)}, nil)
+			g.appendLog(playerIdx, "canasta", "samba.log.canasta", map[string]string{"name": playerName(g.players, playerIdx), "typeKey": sambaCanastaTypeKey(m.IsNatural)}, nil)
 		}
 	}
 }
@@ -815,7 +815,7 @@ func (g *Samba) cpuMeld() {
 					existing.IsNatural = false
 				}
 			}
-			g.appendLog(g.currentPlayerIdx, "meld_add", "samba.log.meldAdd", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "cards": strconv.Itoa(len(grp.cards)), "type": sambaMeldKindStr(existing.Kind)}, grp.cards)
+			g.appendLog(g.currentPlayerIdx, "meld_add", "samba.log.meldAdd", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "cards": strconv.Itoa(len(grp.cards)), "typeKey": sambaMeldKindKey(existing.Kind)}, grp.cards)
 		} else {
 			isNatural := true
 			for _, c := range grp.cards {
@@ -826,7 +826,7 @@ func (g *Samba) cpuMeld() {
 			}
 			meld := &SambaMeld{Cards: grp.cards, Kind: grp.kind, IsNatural: isNatural}
 			player.AddMeld(meld)
-			g.appendLog(g.currentPlayerIdx, "meld", "samba.log.meld", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "type": sambaMeldKindStr(grp.kind), "cards": strconv.Itoa(len(grp.cards))}, grp.cards)
+			g.appendLog(g.currentPlayerIdx, "meld", "samba.log.meld", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "typeKey": sambaMeldKindKey(grp.kind), "cards": strconv.Itoa(len(grp.cards))}, grp.cards)
 		}
 
 		for _, c := range grp.cards {
@@ -1523,20 +1523,20 @@ func sambaSequenceSuit(cards []*Card) int {
 	return -1
 }
 
-// sambaMeldKindStr はメルド種別の文字列を返す。
-func sambaMeldKindStr(kind SambaMeldKind) string {
+// sambaMeldKindKey はメルド種別の i18n キーを返す。
+func sambaMeldKindKey(kind SambaMeldKind) string {
 	if kind == SambaMeldSequence {
-		return "sequence"
+		return "samba.meldTypeSequence"
 	}
-	return "set"
+	return "samba.meldTypeSet"
 }
 
-// sambaCanastaTypeStr はカナスタの種別文字列を返す。
-func sambaCanastaTypeStr(isNatural bool) string {
+// sambaCanastaTypeKey はカナスタの種別 i18n キーを返す。
+func sambaCanastaTypeKey(isNatural bool) string {
 	if isNatural {
-		return "natural"
+		return "samba.meldTypeNatural"
 	}
-	return "mixed"
+	return "samba.meldTypeMixed"
 }
 
 // --- State getters ---

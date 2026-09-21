@@ -87,3 +87,68 @@ func TestColourWhistContractKeyAllBranches(t *testing.T) {
 		}
 	}
 }
+
+func TestBoliviaActionLogKeysAllBranches(t *testing.T) {
+	if got := boliviaMeldKindKey(BoliviaMeldEscalera); got != "bolivia.meldTypeSequence" {
+		t.Errorf("boliviaMeldKindKey(Escalera) = %q", got)
+	}
+	if got := boliviaMeldKindKey(BoliviaMeldSet); got != "bolivia.meldTypeSet" {
+		t.Errorf("boliviaMeldKindKey(Set) = %q", got)
+	}
+	if got := boliviaCanastaTypeKey(true); got != "bolivia.meldTypeNatural" {
+		t.Errorf("boliviaCanastaTypeKey(true) = %q", got)
+	}
+	if got := boliviaCanastaTypeKey(false); got != "bolivia.meldTypeMixed" {
+		t.Errorf("boliviaCanastaTypeKey(false) = %q", got)
+	}
+}
+
+func TestSambaActionLogKeysAllBranches(t *testing.T) {
+	if got := sambaMeldKindKey(SambaMeldSequence); got != "samba.meldTypeSequence" {
+		t.Errorf("sambaMeldKindKey(Sequence) = %q", got)
+	}
+	if got := sambaMeldKindKey(SambaMeldSet); got != "samba.meldTypeSet" {
+		t.Errorf("sambaMeldKindKey(Set) = %q", got)
+	}
+	if got := sambaCanastaTypeKey(true); got != "samba.meldTypeNatural" {
+		t.Errorf("sambaCanastaTypeKey(true) = %q", got)
+	}
+	if got := sambaCanastaTypeKey(false); got != "samba.meldTypeMixed" {
+		t.Errorf("sambaCanastaTypeKey(false) = %q", got)
+	}
+}
+
+func TestCanastaTypeKeyAllBranches(t *testing.T) {
+	if got := canastaTypeKey(true); got != "canasta.meldTypeNatural" {
+		t.Errorf("canastaTypeKey(true) = %q", got)
+	}
+	if got := canastaTypeKey(false); got != "canasta.meldTypeMixed" {
+		t.Errorf("canastaTypeKey(false) = %q", got)
+	}
+}
+
+func TestHandAndFootCanastaTypeKeyAllBranches(t *testing.T) {
+	if got := handAndFootCanastaTypeKey(true); got != "handandfoot.meldTypeNatural" {
+		t.Errorf("handAndFootCanastaTypeKey(true) = %q", got)
+	}
+	if got := handAndFootCanastaTypeKey(false); got != "handandfoot.meldTypeMixed" {
+		t.Errorf("handAndFootCanastaTypeKey(false) = %q", got)
+	}
+}
+
+func TestBaccaratBetTypeKeyAllBranches(t *testing.T) {
+	tests := []struct {
+		betType int
+		want    string
+	}{
+		{BaccaratBetPlayer, "baccarat.sidePlayer"},
+		{BaccaratBetBanker, "baccarat.sideBanker"},
+		{BaccaratBetTie, "baccarat.sideTie"},
+		{99, "baccarat.sideUnknown"},
+	}
+	for _, tt := range tests {
+		if got := betTypeKey(tt.betType); got != tt.want {
+			t.Errorf("betTypeKey(%d) = %q, want %q", tt.betType, got, tt.want)
+		}
+	}
+}

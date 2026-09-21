@@ -6987,5 +6987,21 @@
   "colourwhist.contractShort.alleen": "Alleen",
   "colourwhist.contractShort.miserie": "Miserie",
   "colourwhist.contractShort.troel": "Troel",
-  "colourwhist.contractShort.none": "undecided"
+  "colourwhist.contractShort.none": "undecided",
+  "bolivia.meldTypeSequence": "sequence",
+  "bolivia.meldTypeSet": "set",
+  "bolivia.meldTypeNatural": "natural",
+  "bolivia.meldTypeMixed": "mixed",
+  "samba.meldTypeSequence": "sequence",
+  "samba.meldTypeSet": "set",
+  "samba.meldTypeNatural": "natural",
+  "samba.meldTypeMixed": "mixed",
+  "canasta.meldTypeNatural": "natural",
+  "canasta.meldTypeMixed": "mixed",
+  "handandfoot.meldTypeNatural": "natural",
+  "handandfoot.meldTypeMixed": "mixed",
+  "baccarat.sidePlayer": "Player",
+  "baccarat.sideBanker": "Banker",
+  "baccarat.sideTie": "Tie",
+  "baccarat.sideUnknown": "Unknown"
 }

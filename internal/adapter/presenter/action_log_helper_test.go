@@ -304,6 +304,48 @@ func TestActionLogToText_RendersRemainingGameSuitsInBothLanguages(t *testing.T) 
 	assert.Contains(t, en, "No trump")
 }
 
+func TestActionLogToText_RendersMeldAndBetTypesInBothLanguages(t *testing.T) {
+	entries := []*domain.ActionLogEntry{
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "meld", DetailCode: "bolivia.log.meld", DetailParams: map[string]string{"name": "Player", "typeKey": "bolivia.meldTypeSequence", "cards": "3"}},
+		{TurnNumber: 2, PlayerIdx: 0, ActionType: "meld", DetailCode: "bolivia.log.meld", DetailParams: map[string]string{"name": "Player", "typeKey": "bolivia.meldTypeSet", "cards": "3"}},
+		{TurnNumber: 3, PlayerIdx: 0, ActionType: "canasta", DetailCode: "bolivia.log.canasta", DetailParams: map[string]string{"name": "Player", "typeKey": "bolivia.meldTypeNatural"}},
+		{TurnNumber: 4, PlayerIdx: 0, ActionType: "canasta", DetailCode: "bolivia.log.canasta", DetailParams: map[string]string{"name": "Player", "typeKey": "bolivia.meldTypeMixed"}},
+		{TurnNumber: 5, PlayerIdx: 0, ActionType: "canasta", DetailCode: "samba.log.canasta", DetailParams: map[string]string{"name": "Player", "typeKey": "samba.meldTypeNatural"}},
+		{TurnNumber: 6, PlayerIdx: 0, ActionType: "canasta", DetailCode: "samba.log.canasta", DetailParams: map[string]string{"name": "Player", "typeKey": "samba.meldTypeMixed"}},
+		{TurnNumber: 7, PlayerIdx: 0, ActionType: "meld", DetailCode: "samba.log.meld", DetailParams: map[string]string{"name": "Player", "typeKey": "samba.meldTypeSequence", "cards": "3"}},
+		{TurnNumber: 8, PlayerIdx: 0, ActionType: "meld", DetailCode: "samba.log.meld", DetailParams: map[string]string{"name": "Player", "typeKey": "samba.meldTypeSet", "cards": "3"}},
+		{TurnNumber: 9, PlayerIdx: 0, ActionType: "canasta", DetailCode: "canasta.log.canasta", DetailParams: map[string]string{"name": "Player", "typeKey": "canasta.meldTypeNatural"}},
+		{TurnNumber: 10, PlayerIdx: 0, ActionType: "canasta", DetailCode: "canasta.log.canasta", DetailParams: map[string]string{"name": "Player", "typeKey": "canasta.meldTypeMixed"}},
+		{TurnNumber: 11, PlayerIdx: 0, ActionType: "canasta", DetailCode: "handandfoot.log.canasta", DetailParams: map[string]string{"name": "Player", "typeKey": "handandfoot.meldTypeNatural"}},
+		{TurnNumber: 12, PlayerIdx: 0, ActionType: "canasta", DetailCode: "handandfoot.log.canasta", DetailParams: map[string]string{"name": "Player", "typeKey": "handandfoot.meldTypeMixed"}},
+		{TurnNumber: 13, PlayerIdx: 0, ActionType: "bet", DetailCode: "baccarat.log.bet", DetailParams: map[string]string{"amount": "100", "typeKey": "baccarat.sidePlayer"}},
+		{TurnNumber: 14, PlayerIdx: 0, ActionType: "bet", DetailCode: "baccarat.log.bet", DetailParams: map[string]string{"amount": "100", "typeKey": "baccarat.sideBanker"}},
+		{TurnNumber: 15, PlayerIdx: 0, ActionType: "bet", DetailCode: "baccarat.log.bet", DetailParams: map[string]string{"amount": "100", "typeKey": "baccarat.sideTie"}},
+		{TurnNumber: 16, PlayerIdx: 0, ActionType: "bet", DetailCode: "baccarat.log.bet", DetailParams: map[string]string{"amount": "100", "typeKey": "baccarat.sideUnknown"}},
+	}
+
+	t.Cleanup(func() { i18n.SetLang("ja") })
+
+	i18n.SetLang("ja")
+	ja := actionLogToText(entries)
+	for _, want := range []string{"シーケンス", "セット", "ナチュラル", "ミックス", "プレイヤー", "バンカー", "タイ", "不明"} {
+		assert.Contains(t, ja, want)
+	}
+	for _, unwanted := range []string{"sequence", "set", "natural", "mixed", "player", "banker", "tie", "bolivia.meldTypeSet", "{{"} {
+		assert.NotContains(t, ja, unwanted)
+	}
+	assert.NotContains(t, ja, "100をタイ！に賭けました")
+
+	i18n.SetLang("en")
+	en := actionLogToText(entries)
+	for _, want := range []string{"sequence", "set", "natural", "mixed", "Player", "Banker", "Tie", "Unknown"} {
+		assert.Contains(t, en, want)
+	}
+	for _, unwanted := range []string{"シーケンス", "セット", "ナチュラル", "ミックス", "プレイヤー", "バンカー", "タイ", "不明", "bolivia.meldTypeSet", "{{"} {
+		assert.NotContains(t, en, unwanted)
+	}
+}
+
 // #5977: 棋譜だけ文字列が直書きで、`--lang en` でも日本語の見出しと
 // 「棋譜はありません。」が出ていた。座席名も他の行 (cuiPlayerName) が
 // 「あなた」「CPU 1」と出すのに対し、ここだけ英語固定の "Player 0" だった。

@@ -17,6 +17,8 @@
   "teamRed3s": " 赤3: {{count}}枚",
   "meldTypeBlack": "ダーティ",
   "meldTypeRed": "クリーン",
+  "meldTypeNatural": "ナチュラル",
+  "meldTypeMixed": "ミックス",
   "meldTypeCanastaSuffix": "カナスタ",
   "meldLine": "  メルド[{{type}}]: {{cards}}",
   "playerLine": "{{name}}(T{{team}}): 累積{{cum}}点 ラウンド{{round}}点 手札{{cards}}枚 フット{{foot}}枚",
