@@ -193,13 +193,20 @@ func TestWattenCuiPresenter_HintOutput(t *testing.T) {
 	t.Run("hold hint", func(t *testing.T) {
 		m := setupWattenCuiMock()
 		m.On("GetHint").Return(&domain.WattenHint{Action: "hold", Reason: "hold_ok"})
-		assert.Contains(t, p.HintOutput(m), "hold")
+		// Reason は未マップのコードなので {{reason}} にそのまま流れる。"hold" を
+		// 探すと接頭辞ではなくそちらに当たって ja/en どちらでも通るので、
+		// 訳された接頭辞そのものを見る。
+		out := p.HintOutput(m)
+		assert.Contains(t, out, "[ヒント: ホールド")
+		assert.NotContains(t, out, "[HINT:")
 	})
 
 	t.Run("fold hint", func(t *testing.T) {
 		m := setupWattenCuiMock()
 		m.On("GetHint").Return(&domain.WattenHint{Action: "fold", Reason: "fold_weak"})
-		assert.Contains(t, p.HintOutput(m), "fold")
+		out := p.HintOutput(m)
+		assert.Contains(t, out, "[ヒント: フォールド")
+		assert.NotContains(t, out, "[HINT:")
 	})
 
 	t.Run("card hint", func(t *testing.T) {
