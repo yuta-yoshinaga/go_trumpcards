@@ -42,6 +42,8 @@
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
   "errDuplicateCardIndex": "カードインデックスが重複しています",
   "errContractSlotInvalid": "スロット{{slot}}が{{kind}}の条件を満たしていません",
+  "errContractSlotSet": "スロット{{slot}}は{{size}}枚のセットが必要です",
+  "errContractSlotRun": "スロット{{slot}}は{{size}}枚のランが必要です",
   "errExtraMeldContractRequired": "追加メルドの前にコントラクトを達成する必要があります",
   "errMeldMinimumCards": "メルドには最低{{min}}枚必要です",
   "errInvalidMeld": "有効なメルドではありません",

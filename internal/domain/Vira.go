@@ -361,7 +361,7 @@ func (g *Vira) applyBid(idx int, bid ViraBid) error {
 	// 誰が宣言者になるかが席順だけで決まり、階梯が意味を失う。
 	if bid != ViraBidPass {
 		if best, _ := g.highestBid(); bid <= best {
-			return NewDomainErrorCode(ErrInvalidPlay, "vira.errBidMustOutrank", map[string]string{"bid": ViraBidNames[best]})
+			return NewDomainErrorCode(ErrInvalidPlay, "vira.errBidMustOutrank", map[string]string{"bidKey": ViraBidKey(int(best))})
 		}
 	}
 	g.bids[idx] = bid

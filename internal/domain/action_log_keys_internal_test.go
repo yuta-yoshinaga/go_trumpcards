@@ -171,3 +171,15 @@ func TestViraBidKeyAllBranches(t *testing.T) {
 		}
 	}
 }
+
+func TestQuodlibetContractKey_AllContracts(t *testing.T) {
+	for c := 0; c < QuodlibetContractCnt; c++ {
+		want := "quodlibet.contractName." + QuodlibetContractName(c)
+		if got := QuodlibetContractKey(c); got != want {
+			t.Errorf("QuodlibetContractKey(%d) = %q, want %q", c, got, want)
+		}
+	}
+	if got := QuodlibetContractKey(QuodlibetContractCnt); got != "quodlibet.contractName.unknown" {
+		t.Errorf("unknown contract key = %q", got)
+	}
+}

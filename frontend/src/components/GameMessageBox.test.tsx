@@ -89,6 +89,24 @@ describe('GameMessageBox', () => {
     expect(screen.getByText('ゲーム終了！ CPU 2の勝ち！')).toBeInTheDocument();
   });
 
+  it('translates Key-suffixed message params before interpolation', () => {
+    render(
+      <GameMessageBox
+        message="fallback"
+        messageCode="vira.errBidMustOutrank"
+        messageParams={{ bidKey: 'vira.bidShort.gask' }}
+      />,
+    );
+    const box = screen.getByRole('status');
+    expect(box).toHaveTextContent('ガスク');
+    expect(box).not.toHaveTextContent('vira.bidShort.gask');
+  });
+
+  it('keeps non-Key-suffixed message params unchanged', () => {
+    render(<GameMessageBox message="fallback" messageCode="doubt.result.cpuWin" messageParams={{ cpuId: '3' }} />);
+    expect(screen.getByText('ゲーム終了！ CPU 3の勝ち！')).toBeInTheDocument();
+  });
+
   it('translates messageCode without messageParams using default empty object', () => {
     render(<GameMessageBox message="fallback" messageCode="blackjack.result.win" />);
     expect(screen.getByText('あなたの勝ちです。')).toBeInTheDocument();
