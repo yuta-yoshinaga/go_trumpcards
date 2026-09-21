@@ -499,7 +499,7 @@ func (g *Schafkopf) ScoreRound() {
 	g.roundPickerWon = pickerWon
 	g.settleChips(pickerWon, mult)
 
-	g.appendLog(-1, "round_score", "schafkopf.log.roundScore", map[string]string{"round": strconv.Itoa(g.roundNumber), "points": strconv.Itoa(pickerPts), "outcome": schafkopfOutcomeStr(pickerWon), "multiplier": strconv.Itoa(mult)}, nil)
+	g.appendLog(-1, "round_score", "schafkopf.log.roundScore", map[string]string{"round": strconv.Itoa(g.roundNumber), "points": strconv.Itoa(pickerPts), "outcomeKey": schafkopfOutcomeKey(pickerWon), "multiplier": strconv.Itoa(mult)}, nil)
 
 	if w := g.chipLeaderAtTarget(); w >= 0 {
 		g.gameEndFlag = true
@@ -941,12 +941,12 @@ func schafkopfMultiplier(loserPoints int, loserNoTrick bool) int {
 	return 1
 }
 
-// schafkopfOutcomeStr 勝敗の表示文字列。
-func schafkopfOutcomeStr(pickerWon bool) string {
+// schafkopfOutcomeKey は勝敗の i18n キーを返す。
+func schafkopfOutcomeKey(pickerWon bool) string {
 	if pickerWon {
-		return "picker team wins"
+		return "schafkopf.log.outcome.pickerWins"
 	}
-	return "defenders win"
+	return "schafkopf.log.outcome.defendersWin"
 }
 
 // --- State getters ---

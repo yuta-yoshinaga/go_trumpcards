@@ -735,15 +735,15 @@ func (g *Vira) settleRound() {
 	for i := range g.playerScores {
 		g.lastRoundDelta[i] = g.playerScores[i] - before[i]
 	}
-	g.appendLog(g.declarerIdx, "settle", "vira.log.settle", map[string]string{"bid": ViraBidNames[g.contract], "outcome": viraMadeLabel(made), "tricks": fmt.Sprintf("%d", won), "pot": fmt.Sprintf("%d", g.pot)}, nil)
+	g.appendLog(g.declarerIdx, "settle", "vira.log.settle", map[string]string{"bid": ViraBidNames[g.contract], "outcomeKey": viraMadeKey(made), "tricks": fmt.Sprintf("%d", won), "pot": fmt.Sprintf("%d", g.pot)}, nil)
 }
 
-// viraMadeLabel 達成可否の表示。
-func viraMadeLabel(made bool) string {
+// viraMadeKey は達成可否の i18n キーを返す。
+func viraMadeKey(made bool) string {
 	if made {
-		return "成功"
+		return "vira.log.outcome.made"
 	}
-	return "失敗"
+	return "vira.log.outcome.failed"
 }
 
 // GetPhase 現在のフェーズ。

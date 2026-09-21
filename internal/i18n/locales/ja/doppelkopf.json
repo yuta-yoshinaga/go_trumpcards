@@ -37,5 +37,7 @@
   "log.play": "{{name}}が{{card}}を出す",
   "log.trickWin": "{{name}}がトリック{{trick}}に勝利（{{points}}点）",
   "log.roundScore": "ラウンド{{round}}: Re {{rePoints}}点（{{outcome}}、{{gamePoints}}ゲームポイント）",
-  "log.gameEnd": "{{name}}がゲームに勝利！"
+  "log.gameEnd": "{{name}}がゲームに勝利！",
+  "log.outcome.reWins": "Re の勝ち",
+  "log.outcome.kontraWins": "Kontra の勝ち"
 }

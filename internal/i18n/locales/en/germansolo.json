@@ -86,5 +86,8 @@
   "log.partnerRevealed": "{{name}} holds the called Ace of {{suit}} and is the GermanSolo's partner",
   "log.trickWin": "{{name}} wins trick {{trick}}",
   "log.roundScore": "round {{round}}: {{name}} {{outcome}} with {{tricks}}/{{total}} tricks (needed {{needed}}, stake={{stake}})",
-  "log.gameEnd": "{{name}} wins the match!"
+  "log.gameEnd": "{{name}} wins the match!",
+  "log.outcome.made": "made it",
+  "log.outcome.failed": "failed",
+  "log.outcome.unknown": "-"
 }

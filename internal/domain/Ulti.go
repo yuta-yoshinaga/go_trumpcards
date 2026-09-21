@@ -478,7 +478,7 @@ func (g *Ulti) enterRoundEnd() {
 	g.scored = true
 	g.outcome = g.evalOutcome()
 	g.applyScores(g.outcome)
-	g.appendLog(-1, "round_score", "ulti.log.roundScore", map[string]string{"round": fmt.Sprintf("%d", g.roundNumber), "name": playerName(g.players, g.declarerIdx), "contract": ultiContractName(g.contract), "outcome": ultiOutcomeName(g.outcome)}, nil)
+	g.appendLog(-1, "round_score", "ulti.log.roundScore", map[string]string{"round": fmt.Sprintf("%d", g.roundNumber), "name": playerName(g.players, g.declarerIdx), "contract": ultiContractName(g.contract), "outcomeKey": ultiOutcomeKey(g.outcome)}, nil)
 	g.checkGameEnd()
 }
 
@@ -841,15 +841,15 @@ func ultiContractName(contract UltiContract) string {
 	}
 }
 
-// ultiOutcomeName 結果の表示名を返す。
-func ultiOutcomeName(o UltiOutcome) string {
+// ultiOutcomeKey は結果の i18n キーを返す。
+func ultiOutcomeKey(o UltiOutcome) string {
 	switch o {
 	case UltiOutcomeWin:
-		return "win"
+		return "ulti.log.outcome.win"
 	case UltiOutcomeLoss:
-		return "loss"
+		return "ulti.log.outcome.loss"
 	default:
-		return "-"
+		return "ulti.log.outcome.unknown"
 	}
 }
 

@@ -265,7 +265,7 @@ func (g *Madrasso) ScoreRound() {
 	if winner >= 0 {
 		g.teamScores[winner]++
 	}
-	g.appendLog(-1, "round_score", "madrasso.log.roundScore", map[string]string{"round": strconv.Itoa(g.roundNumber), "teamAPoints": strconv.Itoa(g.teamRoundPoints[0]), "teamBPoints": strconv.Itoa(g.teamRoundPoints[1]), "result": madrassoDealResultName(winner), "teamAScore": strconv.Itoa(g.teamScores[0]), "teamBScore": strconv.Itoa(g.teamScores[1])}, nil)
+	g.appendLog(-1, "round_score", "madrasso.log.roundScore", map[string]string{"round": strconv.Itoa(g.roundNumber), "teamAPoints": strconv.Itoa(g.teamRoundPoints[0]), "teamBPoints": strconv.Itoa(g.teamRoundPoints[1]), "resultKey": madrassoDealResultKey(winner), "teamAScore": strconv.Itoa(g.teamScores[0]), "teamBScore": strconv.Itoa(g.teamScores[1])}, nil)
 
 	leader, other := 0, 1
 	if g.teamScores[1] > g.teamScores[0] {
@@ -516,12 +516,15 @@ func madrassoStrength(value int) int {
 	}
 }
 
-// madrassoDealResultName はディールの結果をログ用の文字列にする。
-func madrassoDealResultName(winner int) string {
+// madrassoDealResultKey はディール結果の i18n キーを返す。
+func madrassoDealResultKey(winner int) string {
 	if winner < 0 {
-		return "nobody (tied)"
+		return "madrasso.log.result.tie"
 	}
-	return "Team " + madrassoTeamName(winner)
+	if winner == 0 {
+		return "madrasso.log.result.teamA"
+	}
+	return "madrasso.log.result.teamB"
 }
 
 // SetTeamRoundPointsForTest はチームの現ラウンド獲得点を設定する (テスト用)。

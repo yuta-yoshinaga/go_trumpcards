@@ -59,5 +59,7 @@
   "log.gameEnd": "Match ended (pot remaining {{pot}})",
   "log.play": "",
   "log.trickWin": "Won trick {{trick}}",
-  "log.settle": "{{bid}} {{outcome}} ({{tricks}} tricks, pot {{pot}})"
+  "log.settle": "{{bid}} {{outcome}} ({{tricks}} tricks, pot {{pot}})",
+  "log.outcome.made": "made",
+  "log.outcome.failed": "failed"
 }

@@ -955,7 +955,7 @@ func (g *GermanSolo) enterRoundEnd() {
 	g.outcome = g.evalOutcome()
 	g.applyScores(g.outcome)
 	ours, _ := g.sideTrickCounts()
-	g.appendLog(-1, "round_score", "germansolo.log.roundScore", map[string]string{"round": strconv.Itoa(g.roundNumber), "name": playerName(g.players, g.declarerIdx), "outcome": germanSoloOutcomeName(g.outcome), "tricks": strconv.Itoa(ours), "total": strconv.Itoa(GermanSoloTrickCount), "needed": strconv.Itoa(g.RequiredTricks()), "stake": strconv.Itoa(germanSoloBidValue(g.winningBid))}, nil)
+	g.appendLog(-1, "round_score", "germansolo.log.roundScore", map[string]string{"round": strconv.Itoa(g.roundNumber), "name": playerName(g.players, g.declarerIdx), "outcomeKey": germanSoloOutcomeKey(g.outcome), "tricks": strconv.Itoa(ours), "total": strconv.Itoa(GermanSoloTrickCount), "needed": strconv.Itoa(g.RequiredTricks()), "stake": strconv.Itoa(germanSoloBidValue(g.winningBid))}, nil)
 	g.checkGameEnd()
 }
 
@@ -1322,15 +1322,15 @@ func germanSoloBidName(bid GermanSoloBid) string {
 	}
 }
 
-// germanSoloOutcomeName 結果の表示名を返す。
-func germanSoloOutcomeName(o GermanSoloOutcome) string {
+// germanSoloOutcomeKey は結果の i18n キーを返す。
+func germanSoloOutcomeKey(o GermanSoloOutcome) string {
 	switch o {
 	case GermanSoloOutcomeMade:
-		return "made"
+		return "germansolo.log.outcome.made"
 	case GermanSoloOutcomeFailed:
-		return "failed"
+		return "germansolo.log.outcome.failed"
 	default:
-		return "-"
+		return "germansolo.log.outcome.unknown"
 	}
 }
 

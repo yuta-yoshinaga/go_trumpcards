@@ -274,7 +274,7 @@ func (g *Sueca) ScoreRound() {
 	}
 	g.appendLogCode(-1, "round_score", "sueca.log.roundScore", map[string]string{
 		"round": strconv.Itoa(g.roundNumber), "cardsA": strconv.Itoa(a), "cardsB": strconv.Itoa(b),
-		"team": suecaTeamLabel(g.roundWinnerTeam), "points": strconv.Itoa(g.roundGamePts),
+		"teamKey": suecaTeamKey(g.roundWinnerTeam), "points": strconv.Itoa(g.roundGamePts),
 		"totalA": strconv.Itoa(g.teamGamePts[0]), "totalB": strconv.Itoa(g.teamGamePts[1]),
 	}, nil)
 
@@ -302,12 +302,15 @@ func suecaGamePoints(cardPts int) int {
 	}
 }
 
-// suecaTeamLabel チーム表示ラベル (-1=Draw)。
-func suecaTeamLabel(team int) string {
+// suecaTeamKey はチーム表示の i18n キーを返す。
+func suecaTeamKey(team int) string {
 	if team < 0 {
-		return "Draw"
+		return "sueca.log.team.draw"
 	}
-	return teamName(team)
+	if team == 0 {
+		return "sueca.log.team.a"
+	}
+	return "sueca.log.team.b"
 }
 
 // --- Trick / play helpers ---

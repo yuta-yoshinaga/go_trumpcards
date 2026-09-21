@@ -466,7 +466,7 @@ func (g *Sheepshead) ScoreRound() {
 	g.roundPickerWon = pickerWon
 	g.settleChips(pickerWon, mult)
 
-	g.appendLog(-1, "round_score", "sheepshead.log.roundScore", map[string]string{"round": strconv.Itoa(g.roundNumber), "points": strconv.Itoa(pickerPts), "outcome": sheepsheadOutcomeStr(pickerWon), "multiplier": strconv.Itoa(mult)}, nil)
+	g.appendLog(-1, "round_score", "sheepshead.log.roundScore", map[string]string{"round": strconv.Itoa(g.roundNumber), "points": strconv.Itoa(pickerPts), "outcomeKey": sheepsheadOutcomeKey(pickerWon), "multiplier": strconv.Itoa(mult)}, nil)
 
 	if w := g.chipLeaderAtTarget(); w >= 0 {
 		g.gameEndFlag = true
@@ -803,12 +803,12 @@ func sheepsheadMultiplier(loserPoints int, loserNoTrick bool) int {
 	return 1
 }
 
-// sheepsheadOutcomeStr 勝敗の表示文字列。
-func sheepsheadOutcomeStr(pickerWon bool) string {
+// sheepsheadOutcomeKey は勝敗の i18n キーを返す。
+func sheepsheadOutcomeKey(pickerWon bool) string {
 	if pickerWon {
-		return "picker team wins"
+		return "sheepshead.log.outcome.pickerWins"
 	}
-	return "defenders win"
+	return "sheepshead.log.outcome.defendersWin"
 }
 
 // --- State getters ---

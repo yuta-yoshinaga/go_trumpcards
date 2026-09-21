@@ -59,5 +59,7 @@
   "log.gameEnd": "マッチ終了 (ポット残 {{pot}})",
   "log.play": "",
   "log.trickWin": "トリック {{trick}} を獲得",
-  "log.settle": "{{bid}} {{outcome}} ({{tricks}} トリック, ポット {{pot}})"
+  "log.settle": "{{bid}} {{outcome}} ({{tricks}} トリック, ポット {{pot}})",
+  "log.outcome.made": "成功",
+  "log.outcome.failed": "失敗"
 }
