@@ -51,7 +51,7 @@ func TestSultanCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "Sultan of Turkey")
 		assert.Contains(t, result, "組札")
 		assert.Contains(t, result, "ディヴァン")
-		assert.Contains(t, result, "Stock: 88枚")
+		assert.Contains(t, result, "ストック: 88枚")
 		assert.Contains(t, result, "ウェイスト: [空]")
 		assert.Contains(t, result, "リディール残: 2回")
 		assert.Contains(t, result, "手数: 0")

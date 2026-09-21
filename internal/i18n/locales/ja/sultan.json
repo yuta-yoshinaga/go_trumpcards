@@ -11,7 +11,7 @@
   "cuiCommandHint": "操作: m で移動 (例 m d 0 / m w), d=ドロー, rd=リディール, u=アンドゥ, h=ヒント",
   "foundationHeader": "組札: ",
   "divanHeader": "ディヴァン:",
-  "stockLine": "Stock: {{count}}枚",
+  "stockLine": "ストック: {{count}}枚",
   "wasteCard": " | ウェイスト: {{card}}",
   "wasteEmpty": " | ウェイスト: [空]",
   "redealLine": " | リディール残: {{count}}回",

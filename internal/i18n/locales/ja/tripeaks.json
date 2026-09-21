@@ -9,7 +9,7 @@
   "blockedCard": "[--]{{card}}",
   "playableSummary": "今出せるカード: {{count}}枚",
   "drawRecommended": "ドロー推奨（出せる札がありません）",
-  "stockLine": "Stock: {{count}}枚",
+  "stockLine": "ストック: {{count}}枚",
   "wasteCard": " | ウェイスト: {{card}}",
   "wasteEmpty": " | ウェイスト: [空]",
   "hintRemove": "ヒント: カード除去: ({{row}},{{col}})",

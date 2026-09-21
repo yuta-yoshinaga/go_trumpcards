@@ -178,7 +178,7 @@ func TestTriPeaksCuiPresenterOutput_Playing(t *testing.T) {
 
 	result := p.Output(tg, nil)
 	assert.Contains(t, result, "TriPeaks")
-	assert.Contains(t, result, "Stock: 23枚")
+	assert.Contains(t, result, "ストック: 23枚")
 	assert.Contains(t, result, "手数: 0")
 	// No waste top -> nothing playable; stock remains, so draw is recommended.
 	assert.Contains(t, result, "今出せるカード: 0枚")

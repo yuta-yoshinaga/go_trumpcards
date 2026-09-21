@@ -6,7 +6,7 @@
   "helpHint": "  h                        ヒント",
   "exposedCard": "({{col}}){{card}}",
   "playableCard": "({{col}}){{card}}*",
-  "stockLine": "Stock: {{count}}枚",
+  "stockLine": "ストック: {{count}}枚",
   "combo": "コンボ ×{{count}}",
   "wasteCard": " | ウェイスト: {{card}}",
   "wasteEmpty": " | ウェイスト: [空]",

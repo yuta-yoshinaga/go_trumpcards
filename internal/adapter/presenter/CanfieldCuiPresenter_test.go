@@ -44,8 +44,8 @@ func TestCanfieldCuiPresenter_Output(t *testing.T) {
 		result := p.Output(cg, nil)
 		assert.Contains(t, result, "Canfield")
 		assert.Contains(t, result, "ベースランク: 7")
-		assert.Contains(t, result, "Reserve")
-		assert.Contains(t, result, "Stock: 34枚")
+		assert.Contains(t, result, "リザーブ")
+		assert.Contains(t, result, "ストック: 34枚")
 		assert.Contains(t, result, "ウェイスト: [空]")
 		assert.Contains(t, result, "列0:")
 		assert.Contains(t, result, "手数: 0")
@@ -107,7 +107,7 @@ func TestCanfieldCuiPresenter_Output(t *testing.T) {
 		cg.On("GetReserve").Return([]*domain.Card{})
 		p := new(CanfieldCuiPresenter)
 		result := p.Output(cg, nil)
-		assert.Contains(t, result, "Reserve: [空]")
+		assert.Contains(t, result, "リザーブ: [空]")
 	})
 
 	t.Run("foundation with cards", func(t *testing.T) {

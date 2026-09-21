@@ -22,7 +22,7 @@
   "targetsNotMovable": "列{{col}}の札{{idx}}は掴めません",
   "helpAutoComplete": "  ac                   auto-complete",
   "foundationHeader": "組札: ",
-  "stockLine": "Stock: {{count}}枚",
+  "stockLine": "ストック: {{count}}枚",
   "wasteCard": " | ウェイスト: {{card}}",
   "wasteEmpty": " | ウェイスト: [空]",
   "columnLabel": "列{{col}}:",
