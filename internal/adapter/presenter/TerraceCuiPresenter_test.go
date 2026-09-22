@@ -166,10 +166,10 @@ func TestTerraceCuiPresenter_HintOutput(t *testing.T) {
 	}{
 		{"terrace to a foundation",
 			&domain.TerraceHint{FromZone: "reserve", FromIdx: -1, ToZone: "foundation", ToIdx: 1},
-			[]string{"テラス", "基礎札1"}},
+			[]string{"テラス", "組札1"}},
 		{"waste to a foundation",
 			&domain.TerraceHint{FromZone: "waste", FromIdx: -1, ToZone: "foundation", ToIdx: 2},
-			[]string{"捨て札", "基礎札2"}},
+			[]string{"捨て札", "組札2"}},
 		{"waste to a pile",
 			&domain.TerraceHint{FromZone: "waste", FromIdx: -1, ToZone: "tableau", ToIdx: 3},
 			[]string{"捨て札", "タブロー山3"}},

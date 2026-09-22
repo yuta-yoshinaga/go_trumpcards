@@ -1,17 +1,17 @@
 {
   "autoComplete": "オートコンプリート",
-  "autoCompleteNotReady": "すべての山がファンデーションに移動可能になると有効になります",
+  "autoCompleteNotReady": "すべての山が組札に移動可能になると有効になります",
   "direction": {
     "asc": "昇順",
     "desc": "降順"
   },
   "empty": "空",
-  "emptyFoundationAriaLabel": "空の{{direction}}ファンデーション ({{suit}})",
-  "foundation": "ファンデーション",
-  "foundationAriaLabel": "{{direction}}ファンデーション {{suit}} 残り{{count}}枚 トップ {{top}}",
+  "emptyFoundationAriaLabel": "空の{{direction}}組札 ({{suit}})",
+  "foundation": "組札",
+  "foundationAriaLabel": "{{direction}}組札 {{suit}} 残り{{count}}枚 トップ {{top}}",
   "frontendHint": {
     "tableau": "タブロー列{{col}}",
-    "foundation": "ファンデーション{{id}}",
+    "foundation": "組札{{id}}",
     "redeal": "再配り",
     "stHelenaMove": "この札を動かせます",
     "stHelenaRedeal": "動ける手がありません。再配りしましょう"
@@ -29,7 +29,7 @@
     "gameClear": "ゲームクリア",
     "gameOver": "ゲームオーバー"
   },
-  "playing": "8 つのファンデーション (A から昇順 4 + K から降順 4) を同じスートで完成させましょう",
+  "playing": "8 つの組札 (A から昇順 4 + K から降順 4) を同じスートで完成させましょう",
   "redeal": "再配り",
   "redealUnavailable": "残り再配り回数がありません",
   "redealsLeft": "残り再配り回数: {{count}}",
@@ -39,7 +39,7 @@
   "stalemateAlert": "手詰まりです。アンドゥ {{count}} 回で脱出できます",
   "tableau": "タブロー",
   "tutorial": {
-    "foundations": "中央には 8 つのファンデーション。各スートの K と A を 1 枚ずつ抜いて種札にしてあり、**K の段は降順、A の段は昇順**に同じスートで積みます。全 104 枚でクリアです。",
+    "foundations": "中央には 8 つの組札。各スートの K と A を 1 枚ずつ抜いて種札にしてあり、**K の段は降順、A の段は昇順**に同じスートで積みます。全 104 枚でクリアです。",
     "tableau": "周りを囲む 12 のタブロー列。最上段のカードのみ動かせ、**スートは問わず値差 ±1** で重ねます。**K と A は繋がりません**。空いた列は二度と埋まりません。",
     "restriction": "**初回の配りでは、列の位置が送り先を決めます。**上の 4 列は K の段だけ、下の 4 列は A の段だけ、横の 4 列はどちらへも送れます。",
     "redeal": "手詰まりになったら **最大 2 回の再配り**。最後の列から集めてシャッフルせずに配り直すので、列をまたいで並びが変わります。**1 回目の再配りで送り先の制限が解けます**。",

@@ -264,7 +264,7 @@ describe('StalactitesPage', () => {
     renderWithProviders(<StalactitesPage />);
     const btn = await screen.findByTestId('autocomplete-button');
     expect(btn).toBeDisabled();
-    expect(btn).toHaveAttribute('title', 'すべてのカードをファウンデーションへ直接送れる状態になるとクリックできます');
+    expect(btn).toHaveAttribute('title', 'すべてのカードを組札へ直接送れる状態になるとクリックできます');
   });
 
   it('give up button opens a confirm dialog and only dispatches giveup after confirm', async () => {
@@ -512,7 +512,7 @@ describe('StalactitesPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
 
     const line = await screen.findByTestId('fc-hint-line');
-    expect(line.textContent).toBe('ヒント: タブロー 2 → ファンデーション');
+    expect(line.textContent).toBe('ヒント: タブロー 2 → 組札');
   });
 
   // **未知のゾーンでも翻訳キー文字列を画面に出さない。** ドメインが新しいゾーンを
@@ -529,7 +529,7 @@ describe('StalactitesPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
 
     const line = await screen.findByTestId('fc-hint-line');
-    expect(line.textContent).toBe('ヒント: reserve 1 → ファンデーション');
+    expect(line.textContent).toBe('ヒント: reserve 1 → 組札');
     expect(line.textContent).not.toContain('frontendHint');
   });
 
@@ -712,7 +712,7 @@ describe('StalactitesPage', () => {
     await waitFor(() => expect(screen.getByText('♠')).toBeInTheDocument());
 
     for (const suit of ['♠', '♣', '♥', '♦']) {
-      expect(screen.getByRole('button', { name: `${suit} ファンデーション (空)` })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: `${suit} 組札 (空)` })).toBeInTheDocument();
     }
   });
 
@@ -721,10 +721,10 @@ describe('StalactitesPage', () => {
     renderWithProviders(<StalactitesPage />);
     await waitFor(() => expect(screen.getByText('♠')).toBeInTheDocument());
 
-    expect(screen.getByRole('button', { name: '♠ ファンデーション (1枚)' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '♥ ファンデーション (2枚)' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '♣ ファンデーション (空)' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '♦ ファンデーション (空)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♠ 組札 (1枚)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♥ 組札 (2枚)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♣ 組札 (空)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♦ 組札 (空)' })).toBeInTheDocument();
   });
 
   // --- Stalactites aria labels ---
