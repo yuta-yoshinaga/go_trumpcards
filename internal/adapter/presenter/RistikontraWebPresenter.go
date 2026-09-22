@@ -102,10 +102,7 @@ func (pwp *RistikontraWebPresenter) buildResultMessage(pg interfaces.Ristikontra
 		if p == nil {
 			continue
 		}
-		name := fmt.Sprintf("CPU %d", i)
-		if p.GetIsHuman() {
-			name = "You"
-		}
+		name := webPlayerName(p.GetIsHuman(), i)
 		score := 0
 		if i < len(scores) {
 			score = scores[i]

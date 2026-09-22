@@ -87,9 +87,9 @@ func (p *BourreWebPresenter) Output(bg interfaces.BourreGame, lastErr error) str
 // buildResultMessage ゲーム終了メッセージを生成
 func (p *BourreWebPresenter) buildResultMessage(bg interfaces.BourreGame) string {
 	idx := bg.GetWinnerIdx()
-	winner := "You"
-	if player := bg.GetPlayer(idx); player != nil && !player.GetIsHuman() {
-		winner = fmt.Sprintf("CPU %d", idx)
+	winner := webPlayerName(true, idx)
+	if player := bg.GetPlayer(idx); player != nil {
+		winner = webPlayerName(player.GetIsHuman(), idx)
 	}
 	chips := 0
 	if player := bg.GetPlayer(idx); player != nil {

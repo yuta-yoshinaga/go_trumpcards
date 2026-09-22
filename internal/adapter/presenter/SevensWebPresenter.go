@@ -116,12 +116,7 @@ func (swp *SevensWebPresenter) buildResultMessage(s interfaces.SevensGame) strin
 		if rank < 1 {
 			continue
 		}
-		var name string
-		if player.GetIsHuman() {
-			name = "あなた"
-		} else {
-			name = fmt.Sprintf("CPU %d", i)
-		}
+		name := webPlayerName(player.GetIsHuman(), i)
 		msg += fmt.Sprintf("%s:%d位 ", name, rank)
 	}
 	return msg

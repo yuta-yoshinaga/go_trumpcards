@@ -183,10 +183,7 @@ func (p *SakuraWebPresenter) buildResultMessage(g interfaces.SakuraGame) string 
 		if player == nil {
 			continue
 		}
-		name := "CPU"
-		if player.GetIsHuman() {
-			name = "You"
-		}
+		name := webPlayerName(player.GetIsHuman(), i)
 		msg += fmt.Sprintf("%s:%d ", name, player.GetScore())
 	}
 	return msg

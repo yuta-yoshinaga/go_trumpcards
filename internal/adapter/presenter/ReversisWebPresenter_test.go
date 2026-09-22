@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func newReversisForWeb(t *testing.T) *domain.Reversis {
@@ -83,7 +84,7 @@ func TestReversisWebPresenterMarkedMessageIsTransient(t *testing.T) {
 	m := decodeReversis(t, p.Output(r, nil))
 	assert.Equal(t, "reversis.marked", m["messageCode"])
 	params := m["messageParams"].(map[string]any)
-	assert.Equal(t, "You", params["name"])
+	assert.Equal(t, i18n.T("cuiPlayerYou"), params["name"])
 	assert.Equal(t, "5", params["penalty"])
 	assert.Equal(t, "5", params["stake"])
 

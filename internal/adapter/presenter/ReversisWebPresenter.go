@@ -70,10 +70,7 @@ func (p *ReversisWebPresenter) buildMessage(r interfaces.ReversisGame, lastErr e
 		return lastErr.Error(), "", nil
 	}
 	if entries := latestActions(r.GetActionLog(), "marked"); len(entries) > 0 {
-		name := "CPU " + strconv.Itoa(entries[0].PlayerIdx)
-		if r.GetPlayer(entries[0].PlayerIdx).GetIsHuman() {
-			name = "You"
-		}
+		name := webPlayerName(r.GetPlayer(entries[0].PlayerIdx).GetIsHuman(), entries[0].PlayerIdx)
 		marks := make([]string, 0, len(entries))
 		for _, entry := range entries {
 			mark := "♥J"

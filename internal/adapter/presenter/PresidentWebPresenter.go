@@ -115,12 +115,7 @@ func (pwp *PresidentWebPresenter) buildResultMessage(pg interfaces.PresidentGame
 		if rank < 1 || rank > 4 {
 			continue
 		}
-		var name string
-		if player.GetIsHuman() {
-			name = "あなた"
-		} else {
-			name = fmt.Sprintf("CPU %d", i)
-		}
+		name := webPlayerName(player.GetIsHuman(), i)
 		msg += fmt.Sprintf("%s:%s ", name, presidentRankName(rank))
 	}
 	return msg
