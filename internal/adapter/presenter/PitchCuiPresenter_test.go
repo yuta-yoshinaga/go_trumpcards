@@ -106,7 +106,7 @@ func TestPitchCuiPresenter_Output_PassedBidShown(t *testing.T) {
 	players[1].SetBid(3)
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "あなた: ビッド=pass")
+	assert.Contains(t, result, "あなた: ビッド=パス")
 	assert.Contains(t, result, "CPU 1: ビッド=3")
 }
 
