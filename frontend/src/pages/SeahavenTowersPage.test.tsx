@@ -173,7 +173,7 @@ describe('SeahavenTowersPage', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
     // Zone identifiers render as localized names (ja), matching the CUI terminology.
-    await waitFor(() => expect(screen.getByText(/リザーブセル 1.*→.*ファンデーション/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/リザーブセル 1.*→.*組札/)).toBeInTheDocument());
   });
 
   it('hint display omits column when col is negative and localizes both zones', async () => {
@@ -185,7 +185,7 @@ describe('SeahavenTowersPage', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
     // fromCol < 0 -> no number after the source zone; toCol >= 0 -> "タブロー 2".
-    await waitFor(() => expect(screen.getByText(/ファンデーション.*→.*タブロー 2/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/組札.*→.*タブロー 2/)).toBeInTheDocument());
   });
 
   it('autocomplete button triggers autocomplete API call', async () => {

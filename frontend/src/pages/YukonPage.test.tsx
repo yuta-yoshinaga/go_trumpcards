@@ -159,7 +159,7 @@ describe('YukonPage', () => {
     await waitFor(() =>
       expect(screen.getByRole('button', { name: /ヒント: このカードを組札へ移動/ })).toBeInTheDocument(),
     );
-    expect(hintLiveRegion()).toHaveTextContent('優先度: 高・基礎へ送れる安全な手');
+    expect(hintLiveRegion()).toHaveTextContent('優先度: 高・組札へ送れる安全な手');
   });
 
   it('autocomplete button triggers autocomplete command when all face-up', async () => {

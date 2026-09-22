@@ -23,7 +23,7 @@
   "moveUsage": "使い方: m t <col> [<idx>] t|f|c <toCol|cell>",
   "hintFromTableau": "タブロー列{{col}}[{{idx}}]",
   "hintFromFreeCell": "フリーセル{{col}}",
-  "hintToFoundation": "ファンデーション",
+  "hintToFoundation": "組札",
   "hintToTableau": "タブロー列{{col}}",
   "hintToFreeCell": "フリーセル{{col}}",
   "hintLine": "ヒント: {{from}} → {{to}}",
@@ -33,5 +33,5 @@
   "helpExampleHint": "  h                    次の一手を教えてもらう",
   "helpExampleAuto": "  ac                   組札へ送れる札を自動で送る",
   "helpUndo": "  u 1手戻す",
-  "log.tableauToTableau": "タブロー列{{fromCol}}→タブロー列{{toCol}}", "log.tableauToFoundation": "タブロー列{{col}}→ファウンデーション", "log.tableauToFreeCell": "タブロー列{{col}}→フリーセル{{cell}}", "log.freeCellToTableau": "フリーセル{{cell}}→タブロー列{{col}}", "log.freeCellToFoundation": "フリーセル{{cell}}→ファウンデーション", "log.giveUp": "ギブアップしました", "log.autoComplete": "オートコンプリートを実行しました"
+  "log.tableauToTableau": "タブロー列{{fromCol}}→タブロー列{{toCol}}", "log.tableauToFoundation": "タブロー列{{col}}→組札", "log.tableauToFreeCell": "タブロー列{{col}}→フリーセル{{cell}}", "log.freeCellToTableau": "フリーセル{{cell}}→タブロー列{{col}}", "log.freeCellToFoundation": "フリーセル{{cell}}→組札", "log.giveUp": "ギブアップしました", "log.autoComplete": "オートコンプリートを実行しました"
 }

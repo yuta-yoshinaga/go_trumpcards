@@ -16,7 +16,7 @@
   "columnLabel": "列{{col}}:",
   "hintFromTableau": "タブロー列{{col}}[{{idx}}]",
   "hintFromReserved": "リザーブセル{{col}}",
-  "hintToFoundation": "ファンデーション",
+  "hintToFoundation": "組札",
   "hintToTableau": "タブロー列{{col}}",
   "hintToReserved": "リザーブセル{{col}}",
   "hintLine": "ヒント: {{from}} → {{to}}",
@@ -34,5 +34,5 @@
   "helpExampleAuto": "  ac                   組札へ送れる札を自動で送る",
   "helpUndo": "  u 1手戻す",
   "autoCompleteReady": "オートコンプリート可能: ac で最後まで自動で進められます",
-  "log.tableauToTableau": "タブロー列{{fromCol}}→タブロー列{{toCol}}", "log.tableauToFoundation": "タブロー列{{col}}→ファウンデーション", "log.tableauToReserve": "タブロー列{{col}}→リザーブ{{cell}}", "log.reserveToTableau": "リザーブ{{cell}}→タブロー列{{col}}", "log.reserveToFoundation": "リザーブ{{cell}}→ファウンデーション", "log.giveUp": "ギブアップしました", "log.autoComplete": "オートコンプリートを実行しました"
+  "log.tableauToTableau": "タブロー列{{fromCol}}→タブロー列{{toCol}}", "log.tableauToFoundation": "タブロー列{{col}}→組札", "log.tableauToReserve": "タブロー列{{col}}→リザーブ{{cell}}", "log.reserveToTableau": "リザーブ{{cell}}→タブロー列{{col}}", "log.reserveToFoundation": "リザーブ{{cell}}→組札", "log.giveUp": "ギブアップしました", "log.autoComplete": "オートコンプリートを実行しました"
 }

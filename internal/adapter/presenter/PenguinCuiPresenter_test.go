@@ -209,7 +209,7 @@ func TestPenguinCuiPresenterHintToFoundation(t *testing.T) {
 	result := p.HintOutput(mg)
 
 	assert.Contains(t, result, "タブロー列")
-	assert.Contains(t, result, "ファンデーション")
+	assert.Contains(t, result, "組札")
 }
 
 func TestPenguinCuiPresenterHintToFreeCell(t *testing.T) {

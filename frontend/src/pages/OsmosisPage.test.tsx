@@ -150,7 +150,7 @@ describe('OsmosisPage', () => {
   // **このページはヒント応答を盤面ごと飲み込む。**専用の hint state を持たず、
   // `useGameApi` の `exec('hint')` をそのまま呼ぶので `setState(res)` が状態を
   // 丸ごと差し替える ── サーバが盤面を空で返していた頃は、それが画面に流れ込んで
-  // リザーブもウェイストもファウンデーションも消えていた (#6800)。
+  // リザーブもウェイストも組札も消えていた (#6800)。
   //
   // 修正は「`HintOutput` が盤面を返す」側 (`TestHintOutputKeepsTheBoardForPagesThatMergeIt`)。
   // ここで固定するのは**その修正が必要である理由**、つまりこの結合そのもの。

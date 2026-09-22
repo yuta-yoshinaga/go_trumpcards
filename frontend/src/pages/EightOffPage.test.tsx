@@ -256,7 +256,7 @@ describe('EightOffPage', () => {
       const region = screen.getByTestId('eo-hint-announce');
       expect(region).toHaveAttribute('role', 'status');
       expect(region).toHaveAttribute('aria-live', 'polite');
-      expect(region).toHaveTextContent('ヒント: ♠ K を タブロー 1 から ファンデーション へ移動');
+      expect(region).toHaveTextContent('ヒント: ♠ K を タブロー 1 から 組札 へ移動');
     });
   });
 
@@ -340,7 +340,7 @@ describe('EightOffPage', () => {
 
     await waitFor(() => {
       const region = screen.getByTestId('eo-hint-announce');
-      expect(region).toHaveTextContent('ヒント: を タブロー 3 から ファンデーション へ移動');
+      expect(region).toHaveTextContent('ヒント: を タブロー 3 から 組札 へ移動');
     });
   });
 
@@ -354,14 +354,14 @@ describe('EightOffPage', () => {
     let firstRegion: HTMLElement | null = null;
     await waitFor(() => {
       firstRegion = screen.getByTestId('eo-hint-announce');
-      expect(firstRegion).toHaveTextContent('ヒント: ♠ K を タブロー 1 から ファンデーション へ移動');
+      expect(firstRegion).toHaveTextContent('ヒント: ♠ K を タブロー 1 から 組札 へ移動');
     });
 
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
 
     await waitFor(() => {
       const secondRegion = screen.getByTestId('eo-hint-announce');
-      expect(secondRegion).toHaveTextContent('ヒント: ♠ K を タブロー 1 から ファンデーション へ移動');
+      expect(secondRegion).toHaveTextContent('ヒント: ♠ K を タブロー 1 から 組札 へ移動');
       expect(secondRegion).not.toBe(firstRegion);
     });
   });
@@ -825,7 +825,7 @@ describe('EightOffPage', () => {
     await waitFor(() => expect(screen.getByText('♠')).toBeInTheDocument());
 
     for (const suit of ['♠', '♣', '♥', '♦']) {
-      expect(screen.getByRole('button', { name: `${suit} ファンデーション (空)` })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: `${suit} 組札 (空)` })).toBeInTheDocument();
     }
   });
 
@@ -834,10 +834,10 @@ describe('EightOffPage', () => {
     renderWithProviders(<EightOffPage />);
     await waitFor(() => expect(screen.getByText('♠')).toBeInTheDocument());
 
-    expect(screen.getByRole('button', { name: '♠ ファンデーション (1枚)' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '♥ ファンデーション (2枚)' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '♣ ファンデーション (空)' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '♦ ファンデーション (空)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♠ 組札 (1枚)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♥ 組札 (2枚)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♣ 組札 (空)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♦ 組札 (空)' })).toBeInTheDocument();
   });
 
   // --- Freecell aria labels ---
