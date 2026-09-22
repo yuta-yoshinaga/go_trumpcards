@@ -78,7 +78,7 @@ describe('WindmillPage', () => {
     renderWithProviders(<WindmillPage />);
     // Six sails are empty in this fixture, and three corners are unopened.
     await waitFor(() => expect(screen.getAllByLabelText(/帆 \d は空です/).length).toBe(6));
-    expect(screen.getAllByLabelText(/空の四隅基礎札\d/).length).toBe(3);
+    expect(screen.getAllByLabelText(/空の四隅組札\d/).length).toBe(3);
     for (let i = 0; i < 8; i++) {
       expect(screen.getByText(`#${i}`)).toBeInTheDocument();
     }
@@ -89,14 +89,14 @@ describe('WindmillPage', () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<WindmillPage />);
     await waitFor(() => expect(screen.getByText('1/52')).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: '中央基礎札 1/52枚' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '中央組札 1/52枚' })).toBeInTheDocument();
   });
 
   it('labels an unopened corner as Kings-only', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<WindmillPage />);
     await waitFor(() =>
-      expect(screen.getByRole('button', { name: '空の四隅基礎札1 (K のみ置けます)' })).toBeInTheDocument(),
+      expect(screen.getByRole('button', { name: '空の四隅組札1 (K のみ置けます)' })).toBeInTheDocument(),
     );
   });
 
@@ -117,7 +117,7 @@ describe('WindmillPage', () => {
     await waitFor(() => expect(sail).toHaveAttribute('aria-pressed', 'true'));
     mockExec.mockClear();
 
-    fireEvent.click(screen.getByRole('button', { name: '中央基礎札 1/52枚' }));
+    fireEvent.click(screen.getByRole('button', { name: '中央組札 1/52枚' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', { zone: 'sail', col: 0 }, { zone: 'center' }));
   });
 
@@ -129,7 +129,7 @@ describe('WindmillPage', () => {
     await waitFor(() => expect(sail).toHaveAttribute('aria-pressed', 'true'));
     mockExec.mockClear();
 
-    fireEvent.click(screen.getByRole('button', { name: '空の四隅基礎札2 (K のみ置けます)' }));
+    fireEvent.click(screen.getByRole('button', { name: '空の四隅組札2 (K のみ置けます)' }));
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'sail', col: 1 }, { zone: 'corner', col: 2 }),
     );
@@ -140,12 +140,12 @@ describe('WindmillPage', () => {
   it('pulls a corner card back onto the centre', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<WindmillPage />);
-    const corner = await screen.findByRole('button', { name: '四隅基礎札0 1/13枚' });
+    const corner = await screen.findByRole('button', { name: '四隅組札0 1/13枚' });
     fireEvent.click(corner);
     await waitFor(() => expect(corner).toHaveAttribute('aria-pressed', 'true'));
     mockExec.mockClear();
 
-    fireEvent.click(screen.getByRole('button', { name: '中央基礎札 1/52枚' }));
+    fireEvent.click(screen.getByRole('button', { name: '中央組札 1/52枚' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', { zone: 'corner', col: 0 }, { zone: 'center' }));
   });
 
@@ -157,7 +157,7 @@ describe('WindmillPage', () => {
     await waitFor(() => expect(wasteTop).toHaveAttribute('aria-pressed', 'true'));
     mockExec.mockClear();
 
-    fireEvent.click(screen.getByRole('button', { name: '中央基礎札 1/52枚' }));
+    fireEvent.click(screen.getByRole('button', { name: '中央組札 1/52枚' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', { zone: 'waste' }, { zone: 'center' }));
   });
 
@@ -184,7 +184,7 @@ describe('WindmillPage', () => {
   // transferBlocked が禁じるのは引き戻しだけ。ボタンごと無効にすると、
   // 影響を受けないはずの「四隅へ置く」手まで潰れる。
   describe('the corner while the transfer is blocked', () => {
-    const cornerName = /四隅基礎札0/;
+    const cornerName = /四隅組札0/;
 
     it('cannot be picked as a source', async () => {
       mockExec.mockResolvedValue({ ...playingState, transferBlocked: true });
@@ -281,9 +281,9 @@ describe('WindmillPage', () => {
   });
 
   it.each([
-    ['center', { fromZone: 'sail', fromIdx: 1, toZone: 'center', toIdx: -1 }, '中央基礎札'],
-    ['corner', { fromZone: 'waste', fromIdx: -1, toZone: 'corner', toIdx: 2 }, '四隅基礎札2'],
-    ['pull-back', { fromZone: 'corner', fromIdx: 0, toZone: 'center', toIdx: -1 }, '四隅基礎札0'],
+    ['center', { fromZone: 'sail', fromIdx: 1, toZone: 'center', toIdx: -1 }, '中央組札'],
+    ['corner', { fromZone: 'waste', fromIdx: -1, toZone: 'corner', toIdx: 2 }, '四隅組札2'],
+    ['pull-back', { fromZone: 'corner', fromIdx: 0, toZone: 'center', toIdx: -1 }, '四隅組札0'],
     ['draw', { fromZone: 'stock', fromIdx: -1, toZone: 'waste', toIdx: -1 }, '山札'],
   ])('renders a %s hint after the hint button is pressed', async (_name, hint, expected) => {
     mockExec.mockResolvedValueOnce(playingState).mockResolvedValueOnce({ ...playingState, hint });
