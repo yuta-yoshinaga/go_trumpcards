@@ -3,7 +3,6 @@
 package presenter
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
@@ -73,9 +72,20 @@ func (p *TichuWebPresenter) Output(tg interfaces.TichuGame, lastErr error) strin
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else if tg.GetGameEndFlag() {
-		resObj.Message = p.buildResultMessage(tg)
 		resObj.MessageCode = "tichu.result.summary"
-		resObj.MessageParams = map[string]string{"summary": resObj.Message}
+		scores := tg.GetScores()
+		winnerKey := "tichu.draw"
+		switch {
+		case scores[0] > scores[1]:
+			winnerKey = "tichu.teamA"
+		case scores[1] > scores[0]:
+			winnerKey = "tichu.teamB"
+		}
+		resObj.MessageParams = map[string]string{
+			"winnerKey": winnerKey,
+			"scoreA":    strconv.Itoa(scores[0]),
+			"scoreB":    strconv.Itoa(scores[1]),
+		}
 	} else if tg.GetDogLeadPassed() {
 		p.setDogLeadMessage(resObj, tg)
 	}
@@ -121,21 +131,6 @@ func (p *TichuWebPresenter) setDogLeadMessage(resObj *controller.TichuWebOutput,
 func isTichuHuman(tg interfaces.TichuGame, idx int) bool {
 	player := tg.GetPlayer(idx)
 	return player != nil && player.GetIsHuman()
-}
-
-// buildResultMessage ディール終了メッセージを生成
-func (p *TichuWebPresenter) buildResultMessage(tg interfaces.TichuGame) string {
-	scores := tg.GetScores()
-	var winner string
-	switch {
-	case scores[0] > scores[1]:
-		winner = "Team A (P0/P2)"
-	case scores[1] > scores[0]:
-		winner = "Team B (P1/P3)"
-	default:
-		winner = "Draw"
-	}
-	return fmt.Sprintf("%s — A:%d B:%d", winner, scores[0], scores[1])
 }
 
 // ActionLogOutput 棋譜をJSON出力

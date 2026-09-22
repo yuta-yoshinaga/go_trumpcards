@@ -17,6 +17,9 @@ func (d *Doudizhu) SetLastPlayIdx(idx int) { d.round.lastPlayIdx = idx }
 // SetGameEndFlag テスト用: ゲーム終了フラグ設定
 func (d *Doudizhu) SetGameEndFlag(flag bool) { d.round.gameEndFlag = flag }
 
+// SetScores テスト用: 得点設定
+func (d *Doudizhu) SetScores(scores [DoudizhuPlayerCnt]int) { d.round.scores = scores }
+
 // SetKittyCards テスト用: 底牌設定
 func (d *Doudizhu) SetKittyCards(cards []*Card) { d.round.kittyCards = cards }
 

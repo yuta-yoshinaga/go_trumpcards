@@ -129,4 +129,34 @@ describe('GameMessageBox', () => {
     render(<GameMessageBox message="fallback" messageCode="blackjack.result.win" />);
     expect(screen.getByText('あなたの勝ちです。')).toBeInTheDocument();
   });
+
+  it.each([
+    ['doudizhu.landlord', '地主', 'Landlord'],
+    ['doudizhu.peasant', '農民', 'Peasant'],
+    ['tichu.teamA', 'チームA', 'Team A'],
+    ['tichu.teamB', 'チームB', 'Team B'],
+    ['tichu.draw', '引き分け', 'Draw'],
+  ])('renders %s in Japanese and English', async (winnerKey, japanese, english) => {
+    const messageParams: Record<string, string> = winnerKey.startsWith('doudizhu')
+      ? { winnerKey, score: '10' }
+      : { winnerKey, scoreA: '10', scoreB: '5' };
+    const props = {
+      message: undefined,
+      messageCode: winnerKey.startsWith('doudizhu') ? 'doudizhu.result.summary' : 'tichu.result.summary',
+      messageParams,
+    } as const;
+    await i18n.changeLanguage('ja');
+    const { rerender } = render(<GameMessageBox {...props} />);
+    const box = screen.getByRole('status');
+    expect(box).toHaveTextContent(japanese);
+    expect(box.textContent).not.toContain('Team A');
+    await i18n.changeLanguage('en');
+    rerender(<GameMessageBox {...props} />);
+    expect(box).toHaveTextContent(english);
+    if (winnerKey === 'doudizhu.landlord' || winnerKey === 'doudizhu.peasant') {
+      expect(box.textContent).not.toContain('地主');
+      expect(box.textContent).not.toContain('農民');
+    }
+    await i18n.changeLanguage('ja');
+  });
 });

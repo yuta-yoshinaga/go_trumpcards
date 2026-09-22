@@ -88,7 +88,36 @@ func TestDoudizhuWebPresenter_Output_GameEnd(t *testing.T) {
 	require.NoError(t, json.Unmarshal([]byte(out), &resp))
 	assert.True(t, resp.GameEndFlag)
 	assert.Equal(t, "end", resp.Phase)
-	assert.NotEmpty(t, resp.Message)
+	assert.Empty(t, resp.Message)
+	assert.Equal(t, "doudizhu.result.summary", resp.MessageCode)
+	assert.Equal(t, "doudizhu.landlord", resp.MessageParams["winnerKey"])
+	assert.Equal(t, "2", resp.MessageParams["score"])
+}
+
+func TestDoudizhuWebPresenter_Output_GameEndWinnerKeys(t *testing.T) {
+	for _, tc := range []struct {
+		name      string
+		scores    [domain.DoudizhuPlayerCnt]int
+		winnerKey string
+		score     string
+	}{
+		{name: "landlord wins", scores: [domain.DoudizhuPlayerCnt]int{2, -1, -1}, winnerKey: "doudizhu.landlord", score: "2"},
+		{name: "peasants win", scores: [domain.DoudizhuPlayerCnt]int{-2, 1, 1}, winnerKey: "doudizhu.peasant", score: "-2"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			dg := newDoudizhuForPresenter()
+			dg.SetPhase(domain.DoudizhuPhaseEnd)
+			dg.SetLandlordIdx(0)
+			dg.SetScores(tc.scores)
+			dg.SetGameEndFlag(true)
+
+			var resp controller.DoudizhuWebOutput
+			require.NoError(t, json.Unmarshal([]byte(new(presenter.DoudizhuWebPresenter).Output(dg, nil)), &resp))
+			assert.Equal(t, tc.winnerKey, resp.MessageParams["winnerKey"])
+			assert.Equal(t, tc.score, resp.MessageParams["score"])
+			assert.Empty(t, resp.Message)
+		})
+	}
 }
 
 func TestDoudizhuWebPresenter_ActionLogOutput(t *testing.T) {
