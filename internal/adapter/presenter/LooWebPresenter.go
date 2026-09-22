@@ -156,10 +156,7 @@ func (p *LooWebPresenter) buildResultMessage(g interfaces.LooGame) string {
 		if player == nil {
 			continue
 		}
-		name := fmt.Sprintf("CPU %d", i)
-		if player.GetIsHuman() {
-			name = "You"
-		}
+		name := webPlayerName(player.GetIsHuman(), i)
 		msg += fmt.Sprintf("%s:%d ", name, player.GetChips())
 	}
 	return msg

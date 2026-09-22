@@ -100,12 +100,7 @@ func (swp *ShitheadWebPresenter) buildResultMessage(sg interfaces.ShitheadGame) 
 		if player == nil {
 			continue
 		}
-		var name string
-		if player.GetIsHuman() {
-			name = "あなた"
-		} else {
-			name = fmt.Sprintf("CPU %d", i)
-		}
+		name := webPlayerName(player.GetIsHuman(), i)
 		rankStr := i18n.Tf("shithead.resultRank", "rank", strconv.Itoa(player.GetRank()))
 		if player.GetRank() == sg.GetPlayerCnt() {
 			rankStr += i18n.T("shithead.resultShithead")

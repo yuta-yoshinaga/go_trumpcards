@@ -154,10 +154,7 @@ func (p *CinchWebPresenter) buildResultMessage(g interfaces.CinchGame) string {
 		if player == nil {
 			continue
 		}
-		name := fmt.Sprintf("CPU %d", i)
-		if player.GetIsHuman() {
-			name = "You"
-		}
+		name := webPlayerName(player.GetIsHuman(), i)
 		msg += fmt.Sprintf("%s:%dpt ", name, player.GetTotalScore())
 	}
 	return msg

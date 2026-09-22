@@ -156,12 +156,7 @@ func (cwp *CassinoWebPresenter) buildResultMessage(cg interfaces.CassinoGame) st
 		if p == nil {
 			continue
 		}
-		var name string
-		if p.GetIsHuman() {
-			name = "You"
-		} else {
-			name = fmt.Sprintf("CPU %d", i)
-		}
+		name := webPlayerName(p.GetIsHuman(), i)
 		msg += fmt.Sprintf("%s:%dpt ", name, p.GetTotalScore())
 	}
 	return msg

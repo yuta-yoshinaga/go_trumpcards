@@ -196,10 +196,7 @@ func (p *HachiHachiWebPresenter) buildResultMessage(g interfaces.HachiHachiGame)
 		if player == nil {
 			continue
 		}
-		name := fmt.Sprintf("CPU%d", i)
-		if player.GetIsHuman() {
-			name = "You"
-		}
+		name := webPlayerName(player.GetIsHuman(), i)
 		msg += fmt.Sprintf("%s:%d ", name, player.GetScore())
 	}
 	return msg

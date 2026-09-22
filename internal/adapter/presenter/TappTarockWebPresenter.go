@@ -169,10 +169,7 @@ func (p *TappTarockWebPresenter) buildResultMessage(g interfaces.TappTarockGame)
 		if player == nil {
 			continue
 		}
-		name := "CPU"
-		if player.GetIsHuman() {
-			name = "You"
-		}
+		name := webPlayerName(player.GetIsHuman(), i)
 		msg += fmt.Sprintf("%s:%d ", name, g.GetPlayerScore(i))
 	}
 	return msg

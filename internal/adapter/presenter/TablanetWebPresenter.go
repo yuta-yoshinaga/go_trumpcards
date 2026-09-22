@@ -128,10 +128,7 @@ func (p *TablanetWebPresenter) buildResultMessage(g interfaces.TablanetGame) str
 		if player == nil {
 			continue
 		}
-		name := fmt.Sprintf("CPU %d", i)
-		if player.GetIsHuman() {
-			name = "You"
-		}
+		name := webPlayerName(player.GetIsHuman(), i)
 		msg += fmt.Sprintf("%s:%d ", name, player.GetScore())
 	}
 	return msg
