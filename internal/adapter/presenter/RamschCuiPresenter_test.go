@@ -43,6 +43,23 @@ func TestRamschCuiPresenter_Output_AlwaysStatesTheFixedTrumpAndInvertedScoring(t
 	assert.NotContains(t, out, "ramsch.scoringNote")
 }
 
+func TestRamschCuiPresenter_Output_PlayerSummaryUsesLocaleLabels(t *testing.T) {
+	ramschNoColor(t)
+	p := new(presenter.RamschCuiPresenter)
+	for _, tc := range []struct {
+		lang string
+		want string
+	}{
+		{lang: "ja", want: "トリック="},
+		{lang: "en", want: "tricks="},
+	} {
+		i18n.SetLang(tc.lang)
+		out := p.Output(newRamschForPresenter(), nil)
+		assert.Contains(t, out, tc.want)
+	}
+	i18n.SetLang("ja")
+}
+
 // **ラウンド終了で、誰がいくつ取ったかを全員分出す。** 罰点なので「最多が誰か」
 // が結果そのものだが、1 点差のこともある。合計だけでは読めない。
 func TestRamschCuiPresenter_Output_RoundEndNamesTheLoserAndEveryonesPoints(t *testing.T) {

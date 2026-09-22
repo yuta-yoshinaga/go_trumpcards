@@ -22,6 +22,8 @@
   "actionSuffixBurned": " (pile burned!)",
   "actionSuffixSkipped": " (next player skipped)",
   "gameEnd": "Game over!",
+  "resultRank": "rank={{rank}}",
+  "resultShithead": " (Shithead)",
   "rankLine": "  {{name}}: rank={{rank}}{{suffix}}",
   "rankShithead": " (Shithead!)",
   "promptCurrentTurn": "{{name}} to act (source: {{source}})",

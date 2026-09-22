@@ -2,10 +2,12 @@ package presenter
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 // ShitheadWebPresenter シットヘッドWebプレゼンタークラス
@@ -104,9 +106,9 @@ func (swp *ShitheadWebPresenter) buildResultMessage(sg interfaces.ShitheadGame) 
 		} else {
 			name = fmt.Sprintf("CPU %d", i)
 		}
-		rankStr := fmt.Sprintf("rank=%d", player.GetRank())
+		rankStr := i18n.Tf("shithead.resultRank", "rank", strconv.Itoa(player.GetRank()))
 		if player.GetRank() == sg.GetPlayerCnt() {
-			rankStr += "(Shithead)"
+			rankStr += i18n.T("shithead.resultShithead")
 		}
 		msg += fmt.Sprintf("%s:%s ", name, rankStr)
 	}
