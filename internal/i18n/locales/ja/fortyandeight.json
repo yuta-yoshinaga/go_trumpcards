@@ -19,7 +19,7 @@
   "columnLabel": "列{{col}}:",
   "hintFromTableau": "タブロー列{{col}}[{{idx}}]",
   "hintFromWaste": "ウェイスト",
-  "hintToFoundation": "ファンデーション",
+  "hintToFoundation": "組札",
   "hintToTableau": "タブロー列{{col}}",
   "hintLine": "ヒント: {{from}} → {{to}}",
   "foundationLabel": "[f{{idx}}]",
@@ -29,9 +29,9 @@
   "log.draw": "ストックからカードを引きました",
   "log.redeal": "ウェイストを集めて新しいストックを作りました",
   "log.wasteToTableau": "ウェイスト→タブロー列{{col}}",
-  "log.wasteToFoundation": "ウェイスト→ファンデーション",
+  "log.wasteToFoundation": "ウェイスト→組札",
   "log.tableauToTableau": "タブロー列{{from}}→タブロー列{{to}}",
-  "log.tableauToFoundation": "タブロー列{{col}}→ファンデーション",
+  "log.tableauToFoundation": "タブロー列{{col}}→組札",
   "log.giveUp": "ギブアップしました",
   "log.autocomplete": "オートコンプリートを実行しました"
 }
