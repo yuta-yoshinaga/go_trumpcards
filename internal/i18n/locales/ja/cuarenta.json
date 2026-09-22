@@ -11,7 +11,7 @@
   "humanActionLine": "あなたの行動: {{text}}",
   "cpuActionsHeader": "[CPUの行動]",
   "cpuActionLine": "  {{name}}: {{text}}",
-  "actionCapture": "捕獲 出した札={{played}} 捕獲枚数={{count}}枚{{suffix}}",
+  "actionCapture": "捕獲 出した札={{played}} 取った枚数={{count}}枚{{suffix}}",
   "actionCaidaSuffix": " (カイーダ!+2)",
   "actionRondaSuffix": " (ロンダ!+{{bonus}})",
   "actionLimpiaSuffix": " (リンピア!+1)",

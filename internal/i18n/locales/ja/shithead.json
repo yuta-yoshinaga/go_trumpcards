@@ -7,7 +7,7 @@
   "helpSetRule": "  sr <rule> <0|1>      ルールを切替 (two/seven/eight/ten/fourburn)",
   "outputTitle": "Shithead (シットヘッド / カーマ)",
   "playerTurnSuffix": " ← 手番",
-  "playerFinished": " [上がり ランク={{rank}}]",
+  "playerFinished": " [上がり 順位={{rank}}]",
   "playerLine": "{{name}}: 手札{{hand}} / 表{{up}} / 裏{{down}}",
   "handLabel": "  手札:    ",
   "faceupLabel": "  表向き:  ",

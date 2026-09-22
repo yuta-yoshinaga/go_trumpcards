@@ -27,7 +27,7 @@
   "scoreEntry": "  {{name}}: {{score}}点",
   "promptCurrentTurn": "手番: {{name}}",
   "promptHelp": "t <hand> <tbl...> で捕獲 / b <hand> <value> <tbl...> でビルド / tr <hand> で場に置く",
-  "actionTake": "捕獲 出した札={{played}} 捕獲枚数={{count}}枚{{suffix}}",
+  "actionTake": "捕獲 出した札={{played}} 取った枚数={{count}}枚{{suffix}}",
   "actionTakeSweepSuffix": " (スイープ!)",
   "actionBuild": "ビルド値{{value}} (出した札={{played}})",
   "actionTrail": "場に置く {{played}}",

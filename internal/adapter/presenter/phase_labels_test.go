@@ -555,3 +555,35 @@ func TestJapaneseFinalSliceLabels(t *testing.T) {
 		assert.NotContains(t, i18n.T(key), japanese, key+" contains Japanese translation")
 	}
 }
+
+func TestJapaneseInlineEnglishLabels(t *testing.T) {
+	t.Cleanup(func() { i18n.SetLang("ja") })
+
+	expected := map[string]string{
+		"shithead.playerFinished":        " [上がり 順位={{rank}}]",
+		"mississippistud.log.resultWin":  "プレイヤーの勝ち 役={{rank}} 合計={{total}}",
+		"mississippistud.log.resultPush": "プッシュ 役={{rank}} 合計={{total}}",
+		"mississippistud.log.resultLose": "プレイヤーの負け 役={{rank}} 合計={{total}}",
+		"piquet.log.declare":             "宣言結果 種類={{kind}} 勝者={{winner}} 得点={{score}}",
+		"koenigrufen.log.roundScore":     "ディール{{deal}}: デクレアラー({{declarer}}) {{contract}} チーム得点={{teamPoints}}/{{totalPoints}} 成功={{won}} 基礎点={{base}}",
+		"cassino.actionTake":             "捕獲 出した札={{played}} 取った枚数={{count}}枚{{suffix}}",
+		"cassino.actionBuild":            "ビルド値{{value}} (出した札={{played}})",
+		"cuarenta.actionCapture":         "捕獲 出した札={{played}} 取った枚数={{count}}枚{{suffix}}",
+		"scopa.actionCapture":            "捕獲 出した札={{played}} 取った枚数={{count}}枚{{suffix}}",
+		"nertz.zoneTableauWithIdx":       "タブロー{{col}}(番号={{idx}})",
+	}
+	for key, want := range expected {
+		i18n.SetLang("ja")
+		got := i18n.T(key)
+		assert.Equal(t, want, got, key)
+		for _, forbidden := range []string{"rank=", "total=", "kind=", "winner=", "score=", "teamPts=", "won=", "base=", "played=", "captured=", "idx="} {
+			assert.NotContains(t, got, forbidden, key+" contains "+forbidden)
+		}
+	}
+
+	// cli_help.* and opt* keys are command spellings, so they are excluded from this label check.
+	i18n.SetLang("en")
+	for key, japanese := range expected {
+		assert.NotContains(t, i18n.T(key), japanese, key+" contains Japanese translation")
+	}
+}
