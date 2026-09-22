@@ -11,8 +11,8 @@
     "cards": "枚",
     "tichu": "ティチュー",
     "grandTichu": "グランドティチュー",
-    "teamA": "チームA",
-    "teamB": "チームB",
+    "teamA": "チームA (P0/P2)",
+    "teamB": "チームB (P1/P3)",
     "oneTwo": "ワンツー上がり (+200)"
   },
   "button": {

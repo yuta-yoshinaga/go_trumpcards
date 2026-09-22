@@ -19,6 +19,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import i18n from '../i18n';
 import { badgeInfoColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -28,6 +29,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { classifyDoudizhuCombo, doudizhuInvalidReason } from '../utils/doudizhuComboValidator';
+import { resolveMessageCode } from '../utils/resolveMessageCode';
 
 type ApiArgs = {
   command: string;
@@ -88,7 +90,8 @@ export function formatDDZState(state: DoudizhuResponse): string {
   if (human?.cards?.length) {
     lines.push(`Your hand: ${human.cards.map((c, i) => `[${i}]${cardAlt(c)}`).join(' ')}`);
   }
-  if (state.message) lines.push(state.message);
+  const message = resolveMessageCode(i18n.t, state.messageCode, state.messageParams, state.message);
+  if (message) lines.push(message);
   return lines.join('\n');
 }
 

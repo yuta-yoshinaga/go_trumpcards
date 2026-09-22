@@ -11,8 +11,8 @@
     "cards": "cards",
     "tichu": "Tichu",
     "grandTichu": "Grand Tichu",
-    "teamA": "Team A",
-    "teamB": "Team B",
+    "teamA": "Team A (P0/P2)",
+    "teamB": "Team B (P1/P3)",
     "oneTwo": "1-2 finish (+200)"
   },
   "button": {

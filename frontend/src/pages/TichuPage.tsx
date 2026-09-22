@@ -20,6 +20,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import i18n from '../i18n';
 import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -29,6 +30,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
+import { resolveMessageCode } from '../utils/resolveMessageCode';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { tichuBombIndices } from '../utils/tichuBomb';
 import { classifyTichuCombo } from '../utils/tichuCombo';
@@ -84,7 +86,8 @@ function parseTichuCommand(input: string): CliParseResult<[ApiArgs]> {
   }
 }
 
-function formatTichuState(state: TichuResponse): string {
+/** Formats Tichu state for the CLI terminal, including localized result messages. */
+export function formatTichuState(state: TichuResponse): string {
   const lines: string[] = [`Phase: ${state.phase}`];
   for (const p of state.players) {
     const name = p.isHuman ? 'You' : `CPU ${p.id}`;
@@ -93,7 +96,8 @@ function formatTichuState(state: TichuResponse): string {
   if (state.tableCards.length > 0) {
     lines.push(`Table: ${state.tableCombo} (${state.tableCards.length} cards)`);
   }
-  if (state.message) lines.push(state.message);
+  const message = resolveMessageCode(i18n.t, state.messageCode, state.messageParams, state.message);
+  if (message) lines.push(message);
   return lines.join('\n');
 }
 
