@@ -10,6 +10,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func makeTTJPlayers() []*domain.TwoTenJackPlayer {
@@ -51,13 +52,14 @@ func TestTwoTenJackCuiPresenter_Output(t *testing.T) {
 	p := new(presenter.TwoTenJackCuiPresenter)
 
 	t.Run("basic render", func(t *testing.T) {
+		i18n.SetLang("ja")
 		m, players := setupTTJCuiMock()
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
 		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "Two Ten Jack")
 		assert.Contains(t, result, "ラウンド: 1")
-		assert.Contains(t, result, "SPADE")
+		assert.Contains(t, result, "スペード")
 		assert.Contains(t, result, "手番:")
 	})
 
@@ -184,6 +186,38 @@ func TestTwoTenJackCuiPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestTwoTenJackCuiPresenter_SuitLabelsFollowLocale(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	i18n.SetLang("ja")
+	defer i18n.SetLang("ja")
+
+	p := new(presenter.TwoTenJackCuiPresenter)
+	for _, tc := range []struct {
+		lang string
+		want string
+	}{
+		{lang: "ja", want: "スペード"},
+		{lang: "en", want: "Spade"},
+	} {
+		t.Run(tc.lang, func(t *testing.T) {
+			i18n.SetLang(tc.lang)
+
+			m, _ := setupTTJCuiMock()
+			assert.Contains(t, p.Output(m, nil), tc.want)
+
+			suit := domain.CardDesignSpade
+			hintGame := new(interfaces.MockTwoTenJackGame)
+			hintGame.On("GetHint").Return(&domain.TwoTenJackHint{
+				TrumpSuit: &suit,
+				Reason:    "strategic_trump",
+			})
+			assert.Contains(t, p.HintOutput(hintGame), tc.want)
+		})
+	}
+}
+
 func TestTwoTenJackCuiPresenter_HintOutput(t *testing.T) {
 	origNoColor := color.NoColor()
 	color.SetNoColor(true)
@@ -203,7 +237,7 @@ func TestTwoTenJackCuiPresenter_HintOutput(t *testing.T) {
 		m.On("GetHint").Return(&domain.TwoTenJackHint{TrumpSuit: &suit, Reason: "strategic_trump"})
 		result := p.HintOutput(m)
 		assert.Contains(t, result, "ヒント")
-		assert.Contains(t, result, "SPADE")
+		assert.Contains(t, result, "スペード")
 	})
 
 	t.Run("play hint", func(t *testing.T) {
