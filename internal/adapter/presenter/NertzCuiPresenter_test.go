@@ -148,7 +148,7 @@ func TestNertzCuiPresenter_HintOutput(t *testing.T) {
 		{"none", nil, "ヒントはありません"},
 		{"nertz->foundation", &domain.NertzHint{FromZone: "nertz", FromCol: -1, CardIndex: -1, ToZone: "foundation", ToCol: 0}, "ナッツ → ファウンデーション0"},
 		{"waste->tableau", &domain.NertzHint{FromZone: "waste", FromCol: -1, CardIndex: -1, ToZone: "tableau", ToCol: 1}, "ウェイスト → タブロー1"},
-		{"tableau->foundation", &domain.NertzHint{FromZone: "tableau", FromCol: 0, CardIndex: 2, ToZone: "foundation", ToCol: 1}, "タブロー0(idx=2) → ファウンデーション1"},
+		{"tableau->foundation", &domain.NertzHint{FromZone: "tableau", FromCol: 0, CardIndex: 2, ToZone: "foundation", ToCol: 1}, "タブロー0(番号=2) → ファウンデーション1"},
 		{"tableau->tableau no idx", &domain.NertzHint{FromZone: "tableau", FromCol: 0, CardIndex: -1, ToZone: "tableau", ToCol: 2}, "タブロー0 → タブロー2"},
 	}
 	for _, tt := range tests {

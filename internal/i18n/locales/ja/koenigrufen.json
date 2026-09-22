@@ -69,7 +69,7 @@
   "log.discard": "{{name}} が {{cards}} 枚を場札に捨てました",
   "log.play": "{{name}} が {{card}} を出しました",
   "log.trickWin": "{{name}} が {{trick}} トリック目を取りました",
-  "log.roundScore": "ディール{{deal}}: デクレアラー({{declarer}}) {{contract}} teamPts={{teamPoints}}/{{totalPoints}} won={{won}} base={{base}}",
+  "log.roundScore": "ディール{{deal}}: デクレアラー({{declarer}}) {{contract}} チーム得点={{teamPoints}}/{{totalPoints}} 成功={{won}} 基礎点={{base}}",
   "log.gameEndDraw": "マッチは引き分けで終了しました",
   "log.gameEndWin": "{{name}} がマッチに勝利しました！"
 }
