@@ -140,10 +140,10 @@ func TestNapoleonsSquareCuiPresenter_HintOutput(t *testing.T) {
 	}{
 		{"waste to foundation",
 			&domain.NapoleonsSquareHint{FromZone: "waste", FromCol: -1, CardIndex: -1, ToZone: "foundation", ToCol: 2},
-			[]string{"ウェイスト", "基礎札2"}},
+			[]string{"ウェイスト", "組札2"}},
 		{"tableau to foundation",
 			&domain.NapoleonsSquareHint{FromZone: "tableau", FromCol: 3, CardIndex: 0, ToZone: "foundation", ToCol: 5},
-			[]string{"タブロー列3", "基礎札5"}},
+			[]string{"タブロー列3", "組札5"}},
 		{"tableau to tableau",
 			&domain.NapoleonsSquareHint{FromZone: "tableau", FromCol: 1, CardIndex: 2, ToZone: "tableau", ToCol: 9},
 			[]string{"タブロー列1[2]", "タブロー列9"}},

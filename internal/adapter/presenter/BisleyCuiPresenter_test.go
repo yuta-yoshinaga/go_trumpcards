@@ -144,7 +144,7 @@ func TestBisleyCuiPresenter_HintOutput(t *testing.T) {
 		result := p.HintOutput(bg)
 		assert.Contains(t, result, "ヒント")
 		assert.Contains(t, result, "タブロー列0")
-		assert.Contains(t, result, "昇順基礎札2")
+		assert.Contains(t, result, "昇順組札2")
 	})
 
 	t.Run("descending foundation hint", func(t *testing.T) {
@@ -154,7 +154,7 @@ func TestBisleyCuiPresenter_HintOutput(t *testing.T) {
 		p := new(BisleyCuiPresenter)
 		result := p.HintOutput(bg)
 		assert.Contains(t, result, "タブロー列4")
-		assert.Contains(t, result, "降順基礎札1")
+		assert.Contains(t, result, "降順組札1")
 	})
 
 	t.Run("tableau hint", func(t *testing.T) {

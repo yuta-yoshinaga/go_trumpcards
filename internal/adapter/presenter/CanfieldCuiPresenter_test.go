@@ -137,7 +137,7 @@ func TestCanfieldCuiPresenter_HintOutput(t *testing.T) {
 		p := new(CanfieldCuiPresenter)
 		result := p.HintOutput(cg)
 		assert.Contains(t, result, "タブロー列0[2]")
-		assert.Contains(t, result, "ファンデーション")
+		assert.Contains(t, result, "組札")
 	})
 
 	t.Run("reserve to tableau", func(t *testing.T) {

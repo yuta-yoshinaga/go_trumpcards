@@ -179,7 +179,7 @@ func TestSlyFoxCuiPresenter_HintOutput(t *testing.T) {
 	}{
 		{"tableau to a foundation",
 			&domain.SlyFoxHint{FromZone: "tableau", FromIdx: 1, ToZone: "foundation", ToIdx: 2},
-			[]string{"リザーブ枠1", "基礎札2"}},
+			[]string{"リザーブ枠1", "組札2"}},
 		{"between piles",
 			&domain.SlyFoxHint{FromZone: "tableau", FromIdx: 0, ToZone: "tableau", ToIdx: 5},
 			[]string{"リザーブ枠0", "リザーブ枠5"}},
@@ -188,7 +188,7 @@ func TestSlyFoxCuiPresenter_HintOutput(t *testing.T) {
 			[]string{"山札", "リザーブ枠3"}},
 		{"deal straight to a foundation",
 			&domain.SlyFoxHint{FromZone: "stock", FromIdx: -1, ToZone: "foundation", ToIdx: 2},
-			[]string{"山札", "基礎札2"}},
+			[]string{"山札", "組札2"}},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			g := new(interfaces.MockSlyFoxGame)
