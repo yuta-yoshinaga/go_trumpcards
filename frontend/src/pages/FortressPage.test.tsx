@@ -228,7 +228,7 @@ describe('FortressPage', () => {
   // 合法な移動先のリング表示 (#4799)。「選ぶまで光らない」側も踏まないと、
   // 常時全部を光らせる実装でも通ってしまう。
   describe('legal target highlighting', () => {
-    /** リングが付いた列の見出し (`#0` など)。ファンデーションは見出しを持たない。 */
+    /** リングが付いた列の見出し (`#0` など)。組札は見出しを持たない。 */
     const markedColumns = () =>
       [...document.querySelectorAll('[data-legal-target="true"]')]
         .map((el) => el.querySelector('[aria-hidden="true"]')?.textContent ?? '')
@@ -271,7 +271,7 @@ describe('FortressPage', () => {
       expect(document.querySelectorAll('[data-legal-target="true"]')).toHaveLength(13);
     });
 
-    // ファンデーションは A の上に同スートの 2 だけ。♠5 では光らない。
+    // 組札は A の上に同スートの 2 だけ。♠5 では光らない。
     it('marks a foundation only for the card that continues it', async () => {
       mockExec.mockResolvedValue(playingState);
       const { unmount } = renderWithProviders(<FortressPage />);

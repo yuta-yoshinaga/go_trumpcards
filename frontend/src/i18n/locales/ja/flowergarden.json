@@ -1,6 +1,6 @@
 {
   "autoComplete": "自動完成",
-  "autoCompleteNotReady": "ファンデーションを2枚目以降まで進めると有効になります",
+  "autoCompleteNotReady": "組札を2枚目以降まで進めると有効になります",
   "empty": "空",
   "emptyFoundationAriaLabel": "空の組札 ({{suit}})",
   "emptyReserveSlot": "空のリザーブ枠 {{idx}}",
@@ -14,7 +14,7 @@
   },
   "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
   "gameOver": "ゲームオーバー",
-  "gameOverSummary": "ファウンデーション {{count}}/52 枚（{{percent}}%）まで到達",
+  "gameOverSummary": "組札 {{count}}/52 枚（{{percent}}%）まで到達",
   "giveup": "ギブアップ",
   "hint": "ヒント",
   "hintAvailable": "ヒントがあります",

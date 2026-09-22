@@ -17,7 +17,7 @@ const card = (design: Card['design'], value: number): Card => ({ design, value }
 function makeState(overrides: Partial<LaBelleLucieResponse> = {}): LaBelleLucieResponse {
   return {
     fans: [[card('SPADE', 9)], [card('SPADE', 8)], [card('DIAMOND', 1)]],
-    // ♠8 は ♠9 に載り、♦A はファウンデーションへ行ける。♠9 の行き先は無い。
+    // ♠8 は ♠9 に載り、♦A は組札へ行ける。♠9 の行き先は無い。
     movableFans: [false, true, true],
     foundation: [[], [], [], []],
     redealsLeft: 3,
@@ -210,7 +210,7 @@ describe('LaBelleLuciePage', () => {
   });
 
   // #5678: どの扇が動かせるかは、ヒント (4秒で消える) を押さないと分からなかった。
-  // 既定の盤面: ♠9 / ♠8 / ♦A — ♠8 は ♠9 の上へ、♦A は空のファウンデーションへ動ける。
+  // 既定の盤面: ♠9 / ♠8 / ♦A — ♠8 は ♠9 の上へ、♦A は空の組札へ動ける。
   it('marks the fans that can move without asking for a hint', async () => {
     renderWithProviders(<LaBelleLuciePage />);
 

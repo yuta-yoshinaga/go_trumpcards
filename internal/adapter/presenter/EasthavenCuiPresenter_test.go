@@ -122,7 +122,7 @@ func TestEasthavenCuiPresenter_HintOutput(t *testing.T) {
 		p := new(EasthavenCuiPresenter)
 		result := p.HintOutput(eg)
 		assert.Contains(t, result, "ヒント")
-		assert.Contains(t, result, "ファンデーション")
+		assert.Contains(t, result, "組札")
 	})
 
 	t.Run("to tableau", func(t *testing.T) {
