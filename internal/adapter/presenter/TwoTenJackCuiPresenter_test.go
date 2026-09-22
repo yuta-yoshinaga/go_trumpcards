@@ -196,24 +196,36 @@ func TestTwoTenJackCuiPresenter_SuitLabelsFollowLocale(t *testing.T) {
 	p := new(presenter.TwoTenJackCuiPresenter)
 	for _, tc := range []struct {
 		lang string
+		suit int
+		name string
 		want string
 	}{
-		{lang: "ja", want: "スペード"},
-		{lang: "en", want: "Spade"},
+		{lang: "ja", suit: domain.CardDesignSpade, name: "spade", want: "スペード"},
+		{lang: "en", suit: domain.CardDesignSpade, name: "spade", want: "Spade"},
+		{lang: "ja", suit: domain.CardDesignClover, name: "club", want: "クラブ"},
+		{lang: "en", suit: domain.CardDesignClover, name: "club", want: "Club"},
+		{lang: "ja", suit: domain.CardDesignHeart, name: "heart", want: "ハート"},
+		{lang: "en", suit: domain.CardDesignHeart, name: "heart", want: "Heart"},
+		{lang: "ja", suit: domain.CardDesignDiamond, name: "diamond", want: "ダイヤ"},
+		{lang: "en", suit: domain.CardDesignDiamond, name: "diamond", want: "Diamond"},
 	} {
-		t.Run(tc.lang, func(t *testing.T) {
+		t.Run(tc.lang+"/"+tc.name, func(t *testing.T) {
 			i18n.SetLang(tc.lang)
 
 			m, _ := setupTTJCuiMock()
+			m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTrumpSuit")
+			m.On("GetTrumpSuit").Return(tc.suit)
 			assert.Contains(t, p.Output(m, nil), tc.want)
 
-			suit := domain.CardDesignSpade
-			hintGame := new(interfaces.MockTwoTenJackGame)
-			hintGame.On("GetHint").Return(&domain.TwoTenJackHint{
-				TrumpSuit: &suit,
-				Reason:    "strategic_trump",
-			})
-			assert.Contains(t, p.HintOutput(hintGame), tc.want)
+			if tc.suit == domain.CardDesignSpade {
+				hintSuit := tc.suit
+				hintGame := new(interfaces.MockTwoTenJackGame)
+				hintGame.On("GetHint").Return(&domain.TwoTenJackHint{
+					TrumpSuit: &hintSuit,
+					Reason:    "strategic_trump",
+				})
+				assert.Contains(t, p.HintOutput(hintGame), tc.want)
+			}
 		})
 	}
 }
