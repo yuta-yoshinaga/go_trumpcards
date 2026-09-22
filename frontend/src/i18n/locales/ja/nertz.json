@@ -11,8 +11,8 @@
     "tableau": "タブロー",
     "waste": "ウェイスト",
     "stock": "ストック",
-    "foundation": "ファウンデーション",
-    "foundationN": "ファウンデーション{{n}}（{{size}}/{{max}}枚）",
+    "foundation": "組札",
+    "foundationN": "組札{{n}}（{{size}}/{{max}}枚）",
     "remaining": "残り",
     "size": "枚"
   },
@@ -32,7 +32,7 @@
   },
   "messages": {
     "selectSource": "ナッツ・ウェイスト・タブローのいずれかを選んでください",
-    "selectTarget": "移動先のファウンデーションかタブローを選んでください",
+    "selectTarget": "移動先の組札かタブローを選んでください",
     "win": "あなたの勝ち！",
     "lose": "プレイヤー{{winner}}の勝ち",
     "noHint": "ヒントはありません",
@@ -57,20 +57,20 @@
     "intro": "Nertzは複数プレイヤーが同時に進める対戦型ソリティアです。",
     "nertzPile": "ここがあなたのナッツパイル。これを最初に出し切った人が勝ち。",
     "tableau": "タブローは赤黒交互・降順で並べていきます。",
-    "foundations": "中央のファウンデーションは全員共有。Aから同スートで積み上げます。",
+    "foundations": "中央の組札は全員共有。Aから同スートで積み上げます。",
     "stock": "ストックを引いてウェイスト経由で使えるカードを増やしましょう。",
     "resetButton": "リセットでもう一度遊べます。"
   },
   "foundationAnnounce": {
-    "human": "ファウンデーション{{foundation}}にあなたが配置",
-    "cpu": "ファウンデーション{{foundation}}にCPUが配置",
-    "collision": "ファウンデーション{{foundation}}への移動が失敗"
+    "human": "組札{{foundation}}にあなたが配置",
+    "cpu": "組札{{foundation}}にCPUが配置",
+    "collision": "組札{{foundation}}への移動が失敗"
   },
   "zones": {
     "nertz": "ナッツ",
     "waste": "ウェイスト",
     "tableau": "タブロー{{col}}",
     "tableauWithIdx": "タブロー{{col}}(idx={{idx}})",
-    "foundation": "ファウンデーション{{col}}"
+    "foundation": "組札{{col}}"
   }
 }

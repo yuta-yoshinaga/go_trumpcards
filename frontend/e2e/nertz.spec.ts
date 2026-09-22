@@ -15,7 +15,7 @@ test.describe('Nertz / Pounce E2E', () => {
 
     // The shared foundation grid renders the first foundation cell (F0).
     // aria-label uses the localized template, so accept either ja or en.
-    await expect(page.getByLabel(/ファウンデーション0|Foundation 0/).first()).toBeVisible({
+    await expect(page.getByLabel(/組札0|Foundation 0/).first()).toBeVisible({
       timeout: TIMEOUT_TRANSITION,
     });
   });

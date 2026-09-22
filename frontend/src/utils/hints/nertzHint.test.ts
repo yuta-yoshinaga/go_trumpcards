@@ -5,7 +5,7 @@ import { getNertzHint } from './nertzHint';
 const state = (hint: NertzResponse['hint']): NertzResponse => ({ hint }) as NertzResponse;
 
 // **CUI の方が具体的だった。**NertzCuiPresenter は同じフィールドから
-// 「ナッツ → ファウンデーション2」を組み立てているのに、Web の reason は
+// 「ナッツ → 組札2」を組み立てているのに、Web の reason は
 // 「移動先を選んでください」の固定文だった (#4885)。
 describe('getNertzHint', () => {
   it('returns null without a server hint', () => {
@@ -15,7 +15,7 @@ describe('getNertzHint', () => {
   it('names the source and the destination', () => {
     const r = getNertzHint(state({ fromZone: 'nertz', fromCol: -1, cardIndex: -1, toZone: 'foundation', toCol: 2 }));
     expect(r?.reason).toBe('messages.hintMove');
-    expect(r?.reasonParams).toEqual({ from: 'ナッツ', to: 'ファウンデーション2' });
+    expect(r?.reasonParams).toEqual({ from: 'ナッツ', to: '組札2' });
     expect(r?.confidence).toBe('moderate');
   });
 
@@ -28,7 +28,7 @@ describe('getNertzHint', () => {
   // 序数表現にすると日本語として壊れるので、CUI と同じ生の索引で出す。
   it('renders index 0 without pretending it is an ordinal', () => {
     const r = getNertzHint(state({ fromZone: 'tableau', fromCol: 2, cardIndex: 0, toZone: 'foundation', toCol: 1 }));
-    expect(r?.reasonParams).toEqual({ from: 'タブロー2(idx=0)', to: 'ファウンデーション1' });
+    expect(r?.reasonParams).toEqual({ from: 'タブロー2(idx=0)', to: '組札1' });
   });
 
   it('keeps the targetAction identifier the page keys off', () => {

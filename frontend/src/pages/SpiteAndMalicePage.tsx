@@ -695,7 +695,7 @@ function HandRow({
                 }`}
               >
                 {card ? <AnimatedCard card={card} width={cardWidth} /> : <FaceDownSlot label="?" width={cardWidth} />}
-                {/* K はどの基礎札にも出せるワイルド。規則はドメインにあるのに、
+                {/* K はどの組札にも出せるワイルド。規則はドメインにあるのに、
                     表示にも読み上げにも出ていなかった (#5560)。 */}
                 {isSpiteAndMaliceWild(card) && (
                   <span

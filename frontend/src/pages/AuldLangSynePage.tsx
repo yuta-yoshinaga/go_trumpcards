@@ -284,7 +284,7 @@ function AuldLangSynePageContent() {
     [runApi],
   );
 
-  // **キーボードだけで遊べるようにする** (#5736)。同じ 4 基礎札 + 4 ウェイスト
+  // **キーボードだけで遊べるようにする** (#5736)。同じ 4 組札 + 4 ウェイスト
   // 系のページ (AcesUp / American Toad など) と同じ束ね方に揃える。
   // 早期 return より前に置く: biome の useHookAtTopLevel。
   const actionBindings = useMemo(

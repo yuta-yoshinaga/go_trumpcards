@@ -38,7 +38,7 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 
 const SAIL_CNT = 8;
 const CORNER_CNT = 4;
-/** 中央基礎札の完成枚数。domain の `WindmillCenterTarget = CardValueMax * 4`。 */
+/** 中央組札の完成枚数。domain の `WindmillCenterTarget = CardValueMax * 4`。 */
 const CENTER_TARGET = 13 * 4;
 /** 四隅それぞれの完成枚数。domain の `WindmillCornerTarget`。 */
 const CORNER_TARGET = 13;

@@ -172,7 +172,7 @@ describe('AuldLangSynePage', () => {
     fireEvent.click(screen.getByTestId('als-waste-button-0'));
     await waitFor(() => expect(screen.getByTestId('als-waste-button-0')).toHaveAttribute('aria-pressed', 'true'));
 
-    fireEvent.click(screen.getByRole('button', { name: /ファンデーション 0/ }));
+    fireEvent.click(screen.getByRole('button', { name: /組札 0/ }));
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'waste', idx: 0 }, { zone: 'foundation', idx: 0 }),
     );
@@ -187,8 +187,8 @@ describe('AuldLangSynePage', () => {
     renderWithProviders(<AuldLangSynePage />);
 
     fireEvent.click(await screen.findByTestId('als-waste-button-0'));
-    const legalFoundation = screen.getByRole('button', { name: /ファンデーション 0/ });
-    const illegalFoundation = screen.getByRole('button', { name: /ファンデーション 1/ });
+    const legalFoundation = screen.getByRole('button', { name: /組札 0/ });
+    const illegalFoundation = screen.getByRole('button', { name: /組札 1/ });
     expect(legalFoundation).toBeEnabled();
     expect(illegalFoundation).toBeDisabled();
     expect(legalFoundation).toHaveAttribute('data-legal-target', 'true');
@@ -199,10 +199,10 @@ describe('AuldLangSynePage', () => {
   // stock source here, so the selection is the only thing that can supply a card.
   it('does not move when no waste is selected', async () => {
     renderWithProviders(<AuldLangSynePage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: /ファンデーション 0/ })).toBeDisabled());
+    await waitFor(() => expect(screen.getByRole('button', { name: /組札 0/ })).toBeDisabled());
 
     mockExec.mockClear();
-    fireEvent.click(screen.getByRole('button', { name: /ファンデーション 0/ }));
+    fireEvent.click(screen.getByRole('button', { name: /組札 0/ }));
     // Without this await the assertion passes whether or not a move fired — the
     // dispatch has not been flushed yet (#4439).
     await flushPendingDispatch();
@@ -212,7 +212,7 @@ describe('AuldLangSynePage', () => {
     // assertion above is testing the guard rather than a broken click path.
     fireEvent.click(screen.getByTestId('als-waste-button-0'));
     await waitFor(() => expect(screen.getByTestId('als-waste-button-0')).toHaveAttribute('aria-pressed', 'true'));
-    fireEvent.click(screen.getByRole('button', { name: /ファンデーション 0/ }));
+    fireEvent.click(screen.getByRole('button', { name: /組札 0/ }));
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'waste', idx: 0 }, { zone: 'foundation', idx: 0 }),
     );
