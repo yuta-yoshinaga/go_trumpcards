@@ -17,7 +17,7 @@
   "columnLabel": "列{{col}}:",
   "hintFromTableau": "タブロー列{{col}}[{{idx}}]",
   "hintFromWaste": "ウェイスト",
-  "hintToFoundation": "ファンデーション",
+  "hintToFoundation": "組札",
   "hintToTableau": "タブロー列{{col}}",
   "hintLine": "ヒント: {{from}} → {{to}}",
   "helpExampleHint": "  h                    次の一手を教えてもらう",
@@ -26,9 +26,9 @@
   "hintDraw": "ヒント: 他に動かせる札はありません。山札から1枚引きましょう",
   "log.draw": "ストックからカードを引きました",
   "log.wasteToTableau": "ウェイスト→タブロー列{{column}}",
-  "log.wasteToFoundation": "ウェイスト→ファンデーション",
+  "log.wasteToFoundation": "ウェイスト→組札",
   "log.tableauToTableau": "タブロー列{{from}}→タブロー列{{to}}",
-  "log.tableauToFoundation": "タブロー列{{column}}→ファンデーション",
+  "log.tableauToFoundation": "タブロー列{{column}}→組札",
   "log.giveUp": "ギブアップしました",
   "log.autocomplete": "オートコンプリートを実行しました"
 }

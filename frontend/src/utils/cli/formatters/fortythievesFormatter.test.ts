@@ -21,7 +21,7 @@ const baseState = (overrides: Partial<FortyThievesResponse> = {}): FortyThievesR
 });
 
 describe('formatFortythievesState', () => {
-  // #6717 は「空のファンデーションはどのエースでも受ける」を CUI に出したが、
+  // #6717 は「空の組札はどのエースでも受ける」を CUI に出したが、
   // CLI フォーマッタは空の山を捨札と同じ `[  ]` のままにしていた (#7059)。
   it('says an empty foundation takes any ace', () => {
     const out = formatFortythievesState(baseState({ waste: [] }));

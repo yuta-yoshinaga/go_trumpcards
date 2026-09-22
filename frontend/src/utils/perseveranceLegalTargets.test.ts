@@ -43,7 +43,7 @@ describe('perseveranceLegalTargets', () => {
     expect(targets.tableau.has(1)).toBe(true);
   });
 
-  // **ファンデーションは逆に同スート。**タブローの規則を流用すると、置けない
+  // **組札は逆に同スート。**タブローの規則を流用すると、置けない
   // 山を光らせる。
   it('requires the same suit going up on a foundation', () => {
     const foundation: Card[][] = [[card('SPADE', 4)], [card('HEART', 4)], [], []];

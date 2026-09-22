@@ -14,7 +14,7 @@ export function getSultanHint(state: SultanResponse): HintResult | null {
   const hint = state.hint;
   if (!hint) return null;
 
-  // **ファウンデーション 0 は正当。**真偽値で見ると先頭だけ落ちる。
+  // **組札 0 は正当。**真偽値で見ると先頭だけ落ちる。
   return {
     targetAction: `foundation-${hint.toFoundation}`,
     reason: 'frontendHint.sultanMove',
