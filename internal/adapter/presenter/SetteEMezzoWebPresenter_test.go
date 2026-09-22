@@ -44,6 +44,8 @@ func setupSemWebMockDefaults(g *interfaces.MockSetteEMezzoGame) {
 	g.On("GetNextBanker").Return(-1).Maybe()
 	g.On("GetBankerChanged").Return(false).Maybe()
 	g.On("GetLastResult").Return("").Maybe()
+	g.On("GetLastResultCode").Return("").Maybe()
+	g.On("GetLastResultParams").Return(nil).Maybe()
 	g.On("GetGameEndFlag").Return(false).Maybe()
 	g.On("CanHit").Return(true).Maybe()
 	g.On("CanStand").Return(true).Maybe()
@@ -203,12 +205,16 @@ func TestSetteEMezzoWebPresenter_Output(t *testing.T) {
 		setupSemWebMockDefaults(g)
 		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetPhase")
 		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetLastResult")
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetLastResultCode")
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetLastResultParams")
 		g.On("GetPhase").Return(domain.SetteEMezzoPhaseEnd)
 		g.On("GetLastResult").Return("親は 6.5")
+		g.On("GetLastResultCode").Return("setteemezzo.log.bankerTotal")
+		g.On("GetLastResultParams").Return(map[string]string{"total": "6.5"})
 
 		result := parseSemOutput(t, new(SetteEMezzoWebPresenter).Output(g, nil))
-		assert.Equal(t, "settemezzo.roundOver", result.MessageCode)
-		assert.Equal(t, "親は 6.5", result.Message)
+		assert.Equal(t, "setteemezzo.log.bankerTotal", result.MessageCode)
+		assert.Empty(t, result.Message)
 	})
 
 	// Landing exactly on 7.5 is the only way the bank moves, so it gets its own
@@ -218,11 +224,17 @@ func TestSetteEMezzoWebPresenter_Output(t *testing.T) {
 		setupSemWebMockDefaults(g)
 		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetPhase")
 		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetNextBanker")
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetLastResultCode")
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetLastResultParams")
 		g.On("GetPhase").Return(domain.SetteEMezzoPhaseEnd)
 		g.On("GetNextBanker").Return(0)
+		g.On("GetLastResultCode").Return("setteemezzo.log.bankerTotal")
+		g.On("GetLastResultParams").Return(map[string]string{"total": "6.5"})
 
 		result := parseSemOutput(t, new(SetteEMezzoWebPresenter).Output(g, nil))
 		assert.Equal(t, "settemezzo.bankPasses", result.MessageCode)
+		assert.Equal(t, "setteemezzo.log.bankerTotal", result.MessageParams["resultKey"])
+		assert.Equal(t, "6.5", result.MessageParams["total"])
 	})
 }
 

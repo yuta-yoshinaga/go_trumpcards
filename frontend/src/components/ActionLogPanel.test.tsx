@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import i18n from 'i18next';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ActionLogEntry } from '../types/card';
 import { ActionLogPanel } from './ActionLogPanel';
@@ -71,6 +72,46 @@ describe('ActionLogPanel', () => {
       />,
     );
     expect(screen.getByText(/T4 \[Player 0\] trump: 切り札のスート スペード を宣言しました/)).toBeInTheDocument();
+  });
+
+  it('passes sibling params when resolving a nested Key detail', async () => {
+    i18n.addResourceBundle(
+      'ja',
+      'common',
+      {
+        'test.actionLogNestedOuter': '{{inner}}（続き{{seat}}）',
+        'test.actionLogNestedInner': '中身（{{total}}）',
+      },
+      true,
+      true,
+    );
+    i18n.addResourceBundle(
+      'en',
+      'common',
+      {
+        'test.actionLogNestedOuter': '{{inner}} (cont {{seat}})',
+        'test.actionLogNestedInner': 'inner ({{total}})',
+      },
+      true,
+      true,
+    );
+    const entry = {
+      turnNumber: 4,
+      playerIdx: 0,
+      actionType: 'result',
+      detail: 'fallback',
+      detailCode: 'test.actionLogNestedOuter',
+      detailParams: { innerKey: 'test.actionLogNestedInner', total: '18', seat: '2' },
+    } as const;
+    const { rerender } = render(<ActionLogPanel entries={[entry]} onClose={vi.fn()} />);
+    const log = screen.getByText(/T4 \[Player 0\] result:/);
+    expect(log).toHaveTextContent('中身（18）（続き2）');
+    expect(log).not.toHaveTextContent('{{total}}');
+    await i18n.changeLanguage('en');
+    rerender(<ActionLogPanel entries={[entry]} onClose={vi.fn()} />);
+    expect(log).toHaveTextContent('inner (18) (cont 2)');
+    expect(log).not.toHaveTextContent('{{total}}');
+    await i18n.changeLanguage('ja');
   });
 
   it('translates a migrated Clock Solitaire log detail when the legacy detail is empty', () => {

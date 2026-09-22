@@ -109,7 +109,9 @@ func (pp *PontoonCuiPresenter) Output(p interfaces.PontoonGame, lastErr error) s
 	case domain.PontoonPhaseBankerTurn:
 		sb.WriteString(color.Yellow(i18n.T("pontoon.bankerTurn")) + "\n")
 	case domain.PontoonPhaseEnd:
-		sb.WriteString(color.Green(p.GetLastResult()) + "\n")
+		if result := translateMessageCode(p.GetLastResultCode(), p.GetLastResultParams()); result != "" {
+			sb.WriteString(color.Green(result) + "\n")
+		}
 		if nb := p.GetNextBanker(); nb >= 0 {
 			sb.WriteString(color.Yellow(i18n.Tf("pontoon.bankPasses",
 				"name", p.GetSeats()[nb].GetName())) + "\n")

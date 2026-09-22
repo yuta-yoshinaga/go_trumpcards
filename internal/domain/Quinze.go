@@ -107,6 +107,8 @@ type Quinze struct {
 	// nextBanker はこの局で 15 を出した最初のプレイヤー（いなければ -1）。
 	nextBanker       int
 	lastResult       string
+	lastResultCode   string
+	lastResultParams map[string]string
 	chipsReplenished bool
 	actionLog        []*ActionLogEntry
 }
@@ -162,6 +164,8 @@ func (s *Quinze) Reset() {
 	s.activeSeat = 0
 	s.phase = QuinzePhaseBet
 	s.lastResult = ""
+	s.lastResultCode = ""
+	s.lastResultParams = nil
 	s.actionLog = nil
 }
 
@@ -398,7 +402,10 @@ func (s *Quinze) settle() {
 	if bankerBust {
 		code = "quinze.log.resultBust"
 	}
-	s.appendLog("result", code, map[string]string{"points": quinzeFormatPoints(bankerPoints)}, s.bankerHand.cards)
+	params := map[string]string{"points": quinzeFormatPoints(bankerPoints)}
+	s.appendLog("result", code, params, s.bankerHand.cards)
+	s.lastResultCode = code
+	s.lastResultParams = params
 }
 
 // settleHand 1 つの手の増減（賭け金を除いた純増減）。同点は親の勝ち。
@@ -491,6 +498,12 @@ func (s *Quinze) GetNextBanker() int { return s.nextBanker }
 
 // GetLastResult 直近の精算の要約
 func (s *Quinze) GetLastResult() string { return s.lastResult }
+
+// GetLastResultCode 直近の精算メッセージコードを取得する
+func (s *Quinze) GetLastResultCode() string { return s.lastResultCode }
+
+// GetLastResultParams 直近の精算メッセージパラメータを取得する
+func (s *Quinze) GetLastResultParams() map[string]string { return s.lastResultParams }
 
 // WasChipsReplenished reports whether the most recent reset restored the chips.
 func (s *Quinze) WasChipsReplenished() bool { return s.chipsReplenished }

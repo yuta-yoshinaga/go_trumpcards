@@ -67,3 +67,13 @@ func TestI18nPairs_ResolvesKeySuffixedParams(t *testing.T) {
 		"plain": "value", "suitKey": "common.suit.spade",
 	}))
 }
+
+func TestI18nPairs_ResolvesNestedKeyWithSiblingParams(t *testing.T) {
+	i18n.SetLang("ja")
+	pairs := i18nPairs(map[string]string{
+		"resultKey": "pontoon.log.resultBust",
+		"total":     "18",
+		"seat":      "2",
+	})
+	assert.Equal(t, []string{"result", "親がバースト（18）", "seat", "2", "total", "18"}, pairs)
+}

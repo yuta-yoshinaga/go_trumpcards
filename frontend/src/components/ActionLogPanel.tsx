@@ -16,7 +16,7 @@ function formatEntry(entry: ActionLogEntry, t: (key: string, opts?: Record<strin
   const detailParams = entry.detailParams
     ? Object.fromEntries(
         Object.entries(entry.detailParams).map(([key, value]) =>
-          key.endsWith('Key') ? [key.slice(0, -3), t(value)] : [key, value],
+          key.endsWith('Key') ? [key.slice(0, -3), t(value, entry.detailParams)] : [key, value],
         ),
       )
     : undefined;

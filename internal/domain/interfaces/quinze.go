@@ -40,6 +40,8 @@ type QuinzeGame interface {
 	GetNextBanker() int
 	// GetLastResult 直近の精算の要約を取得する
 	GetLastResult() string
+	GetLastResultCode() string
+	GetLastResultParams() map[string]string
 	// WasChipsReplenished reports whether the most recent reset restored chips.
 	WasChipsReplenished() bool
 	// GetGameEndFlag 局が終わっているか

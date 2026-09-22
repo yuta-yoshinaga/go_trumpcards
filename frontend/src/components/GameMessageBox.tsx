@@ -24,7 +24,7 @@ export function GameMessageBox({
     const params = messageParams
       ? Object.fromEntries(
           Object.entries(messageParams).map(([key, value]) =>
-            key.endsWith('Key') ? [key.slice(0, -3), t(value)] : [key, value],
+            key.endsWith('Key') ? [key.slice(0, -3), t(value, messageParams)] : [key, value],
           ),
         )
       : {};

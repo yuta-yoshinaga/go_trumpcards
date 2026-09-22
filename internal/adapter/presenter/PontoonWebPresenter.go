@@ -107,12 +107,13 @@ func (pp *PontoonWebPresenter) Output(p interfaces.PontoonGame, lastErr error) s
 		case domain.PontoonPhaseBankerTurn:
 			resObj.MessageCode = "pontoon.bankerTurn"
 		case domain.PontoonPhaseEnd:
-			resObj.Message = p.GetLastResult()
-			resObj.MessageCode = "pontoon.roundOver"
-			resObj.MessageParams = map[string]string{"result": p.GetLastResult()}
+			resObj.MessageCode = p.GetLastResultCode()
+			resObj.MessageParams = p.GetLastResultParams()
 			if p.GetNextBanker() >= 0 {
 				resObj.MessageCode = "pontoon.bankPasses"
-				resObj.MessageParams["seat"] = fmt.Sprintf("%d", p.GetNextBanker())
+				resObj.MessageParams = withMessageParams(resObj.MessageParams,
+					"resultKey", p.GetLastResultCode(),
+					"seat", fmt.Sprintf("%d", p.GetNextBanker()))
 			}
 		}
 	}

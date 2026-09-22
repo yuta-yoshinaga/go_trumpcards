@@ -98,7 +98,9 @@ func (sp *SetteEMezzoCuiPresenter) Output(s interfaces.SetteEMezzoGame, lastErr 
 	case domain.SetteEMezzoPhaseBankerTurn:
 		sb.WriteString(color.Yellow(i18n.T("settemezzo.bankerTurn")) + "\n")
 	case domain.SetteEMezzoPhaseEnd:
-		sb.WriteString(color.Green(s.GetLastResult()) + "\n")
+		if result := translateMessageCode(s.GetLastResultCode(), s.GetLastResultParams()); result != "" {
+			sb.WriteString(color.Green(result) + "\n")
+		}
 		if nb := s.GetNextBanker(); nb >= 0 {
 			sb.WriteString(color.Yellow(i18n.Tf("settemezzo.bankPasses",
 				"name", s.GetSeats()[nb].GetName())) + "\n")

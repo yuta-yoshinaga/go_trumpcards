@@ -22,6 +22,8 @@ func setupQuinzeCuiMockDefaults(g *interfaces.MockQuinzeGame) {
 	g.On("GetActiveSeat").Return(0).Maybe()
 	g.On("GetNextBanker").Return(-1).Maybe()
 	g.On("GetLastResult").Return("親は 6.5").Maybe()
+	g.On("GetLastResultCode").Return("quinze.log.result").Maybe()
+	g.On("GetLastResultParams").Return(map[string]string{"points": "6.5"}).Maybe()
 	g.On("GetGameEndFlag").Return(false).Maybe()
 	g.On("CanHit").Return(true).Maybe()
 	g.On("CanStand").Return(true).Maybe()
@@ -75,6 +77,20 @@ func TestQuinzeCuiPresenter_Output(t *testing.T) {
 		out := new(QuinzeCuiPresenter).Output(g, nil)
 		assert.NotContains(t, out, i18n.T("quinze.faceDown"))
 		assert.Contains(t, out, "親は 6.5")
+	})
+
+	t.Run("an English settled round is translated", func(t *testing.T) {
+		i18n.SetLang("en")
+		defer i18n.SetLang("ja")
+		g := new(interfaces.MockQuinzeGame)
+		setupQuinzeCuiMockDefaults(g)
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetPhase")
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetGameEndFlag")
+		g.On("GetPhase").Return(domain.QuinzePhaseEnd)
+		g.On("GetGameEndFlag").Return(true)
+		out := new(QuinzeCuiPresenter).Output(g, nil)
+		assert.Contains(t, out, "Banker has 6.5")
+		assert.NotContains(t, out, "親")
 	})
 
 	t.Run("only the legal actions are listed", func(t *testing.T) {

@@ -115,6 +115,16 @@ func (_m *MockPontoonGame) GetLastResult() string {
 	return ret.String(0)
 }
 
+func (_m *MockPontoonGame) GetLastResultCode() string { return _m.Called().String(0) }
+
+func (_m *MockPontoonGame) GetLastResultParams() map[string]string {
+	v := _m.Called().Get(0)
+	if v == nil {
+		return nil
+	}
+	return v.(map[string]string)
+}
+
 func (_m *MockPontoonGame) GetGameEndFlag() bool {
 	ret := _m.Called()
 	return ret.Bool(0)

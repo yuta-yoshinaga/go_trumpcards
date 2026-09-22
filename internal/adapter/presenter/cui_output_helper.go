@@ -74,12 +74,18 @@ func i18nPairs(params map[string]string) []string {
 		keys = append(keys, k)
 	}
 	sort.Strings(keys)
+	plainPairs := make([]string, 0, len(params)*2)
+	for _, k := range keys {
+		if !strings.HasSuffix(k, "Key") {
+			plainPairs = append(plainPairs, k, params[k])
+		}
+	}
 	pairs := make([]string, 0, len(params)*2)
 	for _, k := range keys {
 		value := params[k]
 		if strings.HasSuffix(k, "Key") {
 			k = strings.TrimSuffix(k, "Key")
-			value = i18n.T(value)
+			value = i18n.Tf(value, plainPairs...)
 		}
 		pairs = append(pairs, k, value)
 	}

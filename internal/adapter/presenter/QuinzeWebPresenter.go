@@ -85,11 +85,11 @@ func (sp *QuinzeWebPresenter) Output(s interfaces.QuinzeGame, lastErr error) str
 			case domain.QuinzePhaseBankerTurn:
 				resObj.MessageCode = "quinze.bankerTurn"
 			case domain.QuinzePhaseEnd:
-				resObj.Message = s.GetLastResult()
-				resObj.MessageCode = "quinze.roundOver"
-				resObj.MessageParams = map[string]string{"result": s.GetLastResult()}
+				resObj.MessageCode = s.GetLastResultCode()
+				resObj.MessageParams = s.GetLastResultParams()
 				if s.GetNextBanker() >= 0 {
 					resObj.MessageCode = "quinze.bankPasses"
+					resObj.MessageParams = withMessageParams(resObj.MessageParams, "resultKey", s.GetLastResultCode())
 				}
 			}
 		}
