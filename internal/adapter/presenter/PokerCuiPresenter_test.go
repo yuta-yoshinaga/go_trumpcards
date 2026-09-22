@@ -317,8 +317,8 @@ func TestPokerCuiPresenter_Output(t *testing.T) {
 
 		result := pres.Output(p, nil)
 		assert.Contains(t, result, "[CPU交換]")
-		assert.Contains(t, result, "Player 1: 3枚交換")
-		assert.Contains(t, result, "Player 2: 0枚交換")
+		assert.Contains(t, result, "プレイヤー1: 3枚交換")
+		assert.Contains(t, result, "プレイヤー2: 0枚交換")
 	})
 
 	t.Run("no CPU exchanges hides section", func(t *testing.T) {

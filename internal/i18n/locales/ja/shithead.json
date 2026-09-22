@@ -25,7 +25,7 @@
   "resultRank": "順位={{rank}}",
   "resultShithead": " (シットヘッド)",
   "rankLine": "  {{name}}: 順位={{rank}}{{suffix}}",
-  "rankShithead": " (Shithead!)",
+  "rankShithead": " (シットヘッド!)",
   "promptCurrentTurn": "手番: {{name}} (出すソース: {{source}})",
   "promptPlayHelp": "p [インデックス...] でカードを出す / p で場札を引き取る",
   "facedownSlots": "ブラインド選択: {{slots}}",

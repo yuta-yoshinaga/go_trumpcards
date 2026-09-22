@@ -19,7 +19,7 @@
   "tableLine": "場: {{cards}}",
   "tableEmpty": "場: なし",
   "buildsHeader": "[ビルド]",
-  "buildLine": "  #{{idx}} (値{{value}}, owner:{{owner}}, multi:{{multi}}): {{cards}}",
+  "buildLine": "  #{{idx}} (値{{value}}, 所有者{{owner}}, 複合{{multi}}): {{cards}}",
   "humanActionLine": "あなたの行動: {{text}}",
   "cpuActionsHeader": "[CPUの行動]",
   "cpuActionLine": "  {{name}}: {{text}}",
