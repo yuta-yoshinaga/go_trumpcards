@@ -219,13 +219,13 @@ chips: player=950 dealer=1000 decks=1 soft17=S17
 count (Hi-Lo): RC=+3 TC=+1.5
 phase: ACTION
 dealer score
-SPADE 10,
+♠10,
 ----------
 cpu1 score 18 bet=50 chips=900
-HEART 10,DIAMOND 8
+♥10,♦8
 ----------
 player (*) score 15 bet=50
-HEART 8,DIAMOND 7
+♥8,♦7
 [HINT: HIT]
 ----------
 ```

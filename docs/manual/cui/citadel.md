@@ -93,7 +93,7 @@ flowchart TD
 ==========
 Citadel (シタデル)
 ==========
-Foundation: SPADE 2 | CLOVER 5 | HEART 3 | DIAMOND 3
+Foundation: ♠2 | ♣5 | ♥3 | ♦3
 ----------
 列0: [0]♠K [1]♠8 [2]♥Q [3]♣8 [4]♦7
 列1: [0]♣K [1]♥8 [2]♦9 [3]♥7 [4]♠6

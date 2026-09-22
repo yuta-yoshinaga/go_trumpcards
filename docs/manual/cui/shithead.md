@@ -84,13 +84,11 @@ flowchart TD
 Shithead (シットヘッド / カーマ)
 ==========
 あなた ← turn: 手札3 / 表3 / 裏3
-  hand:    [0]SPADE 5  [1]HEART 9  [2]DIAMOND 2
-  faceup:  CLOVER 11, CLOVER 12, CLOVER 13
 CPU 1: 手札3 / 表3 / 裏3
 CPU 2: 手札3 / 表3 / 裏3
 CPU 3: 手札3 / 表3 / 裏3
 ----------
-場札: HEART 5
+場札: ♥5
 山札: 16 枚
 手番: あなた (出すソース: hand)
 p [インデックス...] でカードを出す / p で場札を引き取る

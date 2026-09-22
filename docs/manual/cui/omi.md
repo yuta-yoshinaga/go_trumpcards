@@ -90,7 +90,7 @@ Omi (オミ)
 得点規則: 5トリック以上で1点、全取り(8トリック)で2点、4-4引き分けは0点
 チーム0: 0点 (0トリック)  チーム1: 2点 (0トリック)
 あなた: チーム0 獲得0トリック 4枚
-[0]SPADE 9  [1]SPADE 11  [2]CLOVER 10  [3]HEART 1
+[0]♠9  [1]♠11  [2]♣10  [3]♥1
 ...
 ----------
 コールトランプフェーズ: あなたの番
@@ -112,12 +112,12 @@ Omi (オミ)
 得点規則: 5トリック以上で1点、全取り(8トリック)で2点、4-4引き分けは0点
 チーム0: 0点 (0トリック)  チーム1: 0点 (0トリック)
 あなた: チーム0 獲得0トリック 8枚
-[0]SPADE 8*  [1]SPADE 10*  [2]CLOVER 8  [3]CLOVER 13  [4]HEART 8  [5]HEART 11  [6]HEART 12  [7]DIAMOND 11
+[0]♠8*  [1]♠10*  [2]♣8  [3]♣13  [4]♥8  [5]♥11  [6]♥12  [7]♦11
 CPU 1: チーム1 獲得0トリック 7枚
 CPU 2: チーム0 獲得0トリック 7枚
 CPU 3: チーム1 獲得0トリック 7枚
 ----------
-トリック: CPU 1=SPADE 1, CPU 2=SPADE 7, CPU 3=SPADE 9
+トリック: CPU 1=♠1, CPU 2=♠7, CPU 3=♠9
 手番: あなた
 p <i> (play)
 ==========
@@ -133,7 +133,7 @@ Trump: SPADE (Caller: CPU 1 / Team 1)
 Remaining 4 cards dealt. Hands are now 8 cards.
 Scoring: 1 pt for 5+ tricks, 2 pts for all 8 tricks (Omi), 0 pts for 4-4 draw
 You: Team 0 tricks=0 cards=8
-[0]SPADE 9*  [1]CLOVER 11  [2]HEART 9  [3]HEART 11  [4]DIAMOND 8  [5]DIAMOND 9  [6]DIAMOND 13  [7]DIAMOND 1
+[0]♠9*  [1]♣11  [2]♥9  [3]♥11  [4]♦8  [5]♦9  [6]♦13  [7]♦1
 You to play
 p <i> (play)
 ```

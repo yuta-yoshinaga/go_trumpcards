@@ -65,7 +65,7 @@ flowchart TD
 
 ```
 === Cruel (クルーエル) ===
-Foundation: SPADE 1 | CLOVER 1 | HEART 1 | DIAMOND 1
+Foundation: ♠1 | ♣1 | ♥1 | ♦1
 ----------
 列0: [0]♠5 [1]♥9 [2]♣7 [3]♦K
 列1: [0]♥3 [1]♠Q [2]♦8 [3]♣2

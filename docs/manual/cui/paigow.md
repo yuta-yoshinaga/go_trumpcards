@@ -104,9 +104,9 @@ flowchart TD
 チップ: 900
 フェーズ: SET HANDS
 --- PLAYER ---
-カード: [0]DIAMOND 13 [1]DIAMOND 11 [2]SPADE 12 [3]CLOVER 10 [4]HEART 8 [5]HEART 11 [6]CLOVER 5
+カード: [0]♦13 [1]♦11 [2]♠12 [3]♣10 [4]♥8 [5]♥11 [6]♣5
 反則になる分割: [0,1] [0,5] [1,5]
-ハウスウェイ推奨: [0] [2] (DIAMOND 13 SPADE 12) をローハンドへ
+ハウスウェイ推奨: [0] [2] (♦13 ♠12) をローハンドへ
 ----------
 
 > s 5 6
@@ -115,12 +115,8 @@ flowchart TD
 チップ: 900
 フェーズ: END
 --- PLAYER ---
-カード: [0]DIAMOND 13 [1]DIAMOND 11 [2]SPADE 12 [3]CLOVER 10 [4]HEART 8 [5]HEART 11 [6]CLOVER 5
-  ハイ: DIAMOND 13, DIAMOND 11, SPADE 12, CLOVER 10, HEART 8 (High Card)
-  ロー: HEART 11, CLOVER 5 (High Card)
+カード: [0]♦13 [1]♦11 [2]♠12 [3]♣10 [4]♥8 [5]♥11 [6]♣5
 --- DEALER ---
-  ハイ: CLOVER 13, DIAMOND 9, SPADE 9, SPADE 11, HEART 12 (One Pair)
-  ロー: SPADE 10, HEART 10 (Pair)
 ----------
 ベット: 100
 ディーラーの勝ち！

@@ -92,12 +92,12 @@ Whitehead (ホワイトヘッド)
 Foundation: [空] | [空] | [空] | [空]
 Stock: 24枚 | Waste: [空]
 ----------
-列0: [0]HEART 6
-列1: [0]HEART 10  [1]SPADE 3
-列2: [0]SPADE 10  [1]CLOVER 7  [2]DIAMOND 9
-列3: [0]DIAMOND 3  [1]SPADE 4  [2]HEART 4  [3]CLOVER 5
+列0: [0]♥6
+列1: [0]♥10  [1]♠3
+列2: [0]♠10  [1]♣7  [2]♦9
+列3: [0]♦3  [1]♠4  [2]♥4  [3]♣5
 ...
-列6: [0]DIAMOND 12  [1]HEART 13  [2]CLOVER 6  [3]SPADE 9  [4]DIAMOND 2  [5]HEART 7  [6]CLOVER 9
+列6: [0]♦12  [1]♥13  [2]♣6  [3]♠9  [4]♦2  [5]♥7  [6]♣9
 ----------
 手数: 1
 ==========

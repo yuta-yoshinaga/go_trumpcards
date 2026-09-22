@@ -80,11 +80,10 @@ flowchart TD
 Prší (プルシー/チェコ版クレイジーエイト)
 ==========
 draw pile: 18
-discard: HEART 9
+discard: ♥9
 penalty: 2 (stack a 7 or draw)
 
 [You]: cards=2
-  [0]SPADE A  [1]HEART J
 CPU 1: cards=5
 CPU 2: cards=4
 CPU 3: cards=6

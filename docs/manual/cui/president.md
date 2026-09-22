@@ -92,7 +92,6 @@ flowchart TD
 President (プレジデント)
 ==========
 あなた: 13枚
-  [0]SPADE 3 [1]SPADE 5 [2]HEART 5 ...
 CPU 1: 13枚
 CPU 2: 13枚
 CPU 3: 13枚

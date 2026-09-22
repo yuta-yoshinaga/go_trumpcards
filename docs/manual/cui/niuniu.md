@@ -78,9 +78,8 @@ flowchart TD
 ```
 ----------
 チップ: 900
-親: *SPADE 10 *SPADE 10 *SPADE 10 SPADE 5 SPADE 5 牛牛 (x3)
+親: *♠10 *♠10 *♠10 ♠5 ♠5 牛牛 (x3)
 ----------
-  あなた 賭け100 *SPADE 1 *SPADE 2 *SPADE 7 SPADE 3 SPADE 4 牛7 (x2) → -300
   CPU1 賭け20 [伏]
 ----------
 ```

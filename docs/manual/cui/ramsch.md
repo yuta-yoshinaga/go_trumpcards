@@ -102,11 +102,11 @@ Ramsch (ラムシュ)
 切り札: ジャック4枚 (♣J > ♠J > ♥J > ♦J) — 入札はありません
 点を最も多く取った人がその点数を失います（取らないゲーム）
 あなた: tricks=0 cardPts=0 total=0 round=0 hand=10
-[0]SPADE 11  [1]CLOVER 1  [2]CLOVER 9  [3]CLOVER 12  [4]HEART 9  [5]HEART 10  [6]HEART 12  [7]DIAMOND 7  [8]DIAMOND 8  [9]DIAMOND 12
+[0]♠11  [1]♣1  [2]♣9  [3]♣12  [4]♥9  [5]♥10  [6]♥12  [7]♦7  [8]♦8  [9]♦12
 CPU 1: tricks=0 cardPts=0 total=0 round=0 hand=9
 CPU 2: tricks=0 cardPts=0 total=0 round=0 hand=9
 ----------
-トリック: CPU 1=SPADE 7, CPU 2=SPADE 12
+トリック: CPU 1=♠7, CPU 2=♠12
 手番: あなた
 p <idx>
 ==========

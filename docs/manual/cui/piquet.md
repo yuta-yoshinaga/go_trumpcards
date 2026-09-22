@@ -56,7 +56,6 @@ Piquet (ピケ)
 ==========
 ディール 1 / 6
 Elder (あなた)  手札:12  獲得トリック:0  ラウンド:0  通算:0
-  [0]DIAMOND 9 [1]SPADE 1 [2]HEART 13 [3]CLOVER 7 [4]CLOVER 9 [5]DIAMOND 10 [6]HEART 10 [7]CLOVER 12 [8]CLOVER 1 [9]HEART 11 [10]HEART 1 [11]SPADE 9
 Younger (CPU)  手札:12  獲得トリック:0  ラウンド:0  通算:0
 ----------
 [交換フェーズ]

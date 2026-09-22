@@ -89,20 +89,16 @@ flowchart TD
 ==========
 Golf Solitaire (ゴルフ)
 ==========
-   HEART 6     DIAMOND 13     SPADE 6     CLOVER 1     DIAMOND 12     CLOVER 11     DIAMOND 4
-   CLOVER 12     SPADE 8     DIAMOND 7     SPADE 2     CLOVER 13     SPADE 13     HEART 1
-   DIAMOND 5     SPADE 10     SPADE 4     DIAMOND 10     HEART 4     SPADE 7     CLOVER 8
-   HEART 11     CLOVER 3     HEART 7     DIAMOND 9     SPADE 1     CLOVER 6     SPADE 9
-(0)CLOVER 7  (1)SPADE 5  (2)SPADE 12  (3)HEART 8  (4)CLOVER 4*  (5)DIAMOND 3  (6)HEART 12
+(0)♣7  (1)♠5  (2)♠12  (3)♥8  (4)♣4*  (5)♦3  (6)♥12
 ----------
-Stock: 16枚 | Waste: HEART 5
+Stock: 16枚 | Waste: ♥5
 ----------
 手数: 0 （戻せる手はありません）
 ==========
 ```
 
 - 先頭の 4 行が 7 列 x 5 段のタブロー。**列見出しは付きません**
-- `(0)CLOVER 7 ... (6)HEART 12`: 各列の一番下の露出カード。番号がそのまま
+- `(0)♣7 ... (6)♥12`: 各列の一番下の露出カード。番号がそのまま
   `rm <n>` の引数になります。**末尾の `*` は「いまウェイストに出せる札」**の印
 - `Stock: N枚 | Waste: X`: 山札の残り枚数とウェイストの一番上のカード
 - `手数: N （戻せる手はありません）`: 現在の手数と、アンドゥできるかどうか

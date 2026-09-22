@@ -87,18 +87,12 @@ Nertz / Pounce (ナーツ / パウンス)
 ==========
 ラウンド 1 / 手数 12
 [Foundations]
-  F0 SPADE 5 (5/13)
   F1 (empty)
   ...
   F15 (empty)
 ----------
 [P0 人間 You] スコア: 3
-  ナッツ: HEART 7 (残 10)
-  T0: SPADE 5 HEART 4
   T1: (empty)
-  T2: CLOVER 12 DIAMOND 11 SPADE 10
-  T3: HEART 9
-  ウェイスト: DIAMOND 3 (3枚)  ストック: 32枚
 [P1 CPU CPU1] スコア: -1
   ...
 ----------

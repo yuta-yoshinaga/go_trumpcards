@@ -64,17 +64,17 @@ flowchart TD
 ## 画面の見方
 
 ```
-組札(↑=A→K, ↓=K→A): ↑SPADE 1 | ↑CLOVER 1 | ↑HEART 1 | ↑DIAMOND 1 | ↓SPADE 13 | ↓CLOVER 13 | ↓HEART 13 | ↓DIAMOND 13
+組札(↑=A→K, ↓=K→A): ↑♠1 | ↑♣1 | ↑♥1 | ↑♦1 | ↓♠13 | ↓♣13 | ↓♥13 | ↓♦13
 山札: 32枚 組み直し: 残り1回 捨て札: ♥9 (1枚)
 ----------
-[*CLOVER 3  ]( CLOVER 12 )[*HEART 8   ]( DIAMOND 8 )[*HEART 9   ]( SPADE 5   )[*CLOVER 5  ](*CLOVER 10 )
-(*DIAMOND 6 )[ DIAMOND 10]( DIAMOND 2 )[ SPADE 8   ]( CLOVER 8  )[ DIAMOND 11]( SPADE 11  )[ DIAMOND 5 ]
-[ CLOVER 7  ]( SPADE 12  )[ DIAMOND 12]( HEART 7   )[ HEART 11  ]( CLOVER 4  )[ SPADE 11  ](*SPADE 2   )
-(*DIAMOND 13)[ DIAMOND 5 ]( CLOVER 6  )[ DIAMOND 9 ]( HEART 13  )[ CLOVER 2  ]( SPADE 3   )[ HEART 9   ]
-[ DIAMOND 4 ]( HEART 12  )[ HEART 7   ]( CLOVER 11 )[ DIAMOND 9 ]( SPADE 4   )[ HEART 3   ](*CLOVER 2  )
-(*CLOVER 6  )[ SPADE 9   ]( DIAMOND 2 )[ HEART 5   ]( DIAMOND 1 )[ SPADE 1   ]( HEART 10  )[ SPADE 8   ]
-[ SPADE 13  ]( HEART 1   )[ DIAMOND 7 ]( SPADE 9   )[ DIAMOND 12]( HEART 12  )[ HEART 4   ](*CLOVER 10 )
-(*HEART 2   )[*HEART 6   ]( HEART 3   )[*CLOVER 5  ]( HEART 5   )[*DIAMOND 3 ]( SPADE 2   )[*SPADE 6   ]
+[*♣3  ]( ♣12 )[*♥8   ]( ♦8 )[*♥9   ]( ♠5   )[*♣5  ](*♣10 )
+(*♦6 )[ ♦10]( ♦2 )[ ♠8   ]( ♣8  )[ ♦11]( ♠11  )[ ♦5 ]
+[ ♣7  ]( ♠12  )[ ♦12]( ♥7   )[ ♥11  ]( ♣4  )[ ♠11  ](*♠2   )
+(*♦13)[ ♦5 ]( ♣6  )[ ♦9 ]( ♥13  )[ ♣2  ]( ♠3   )[ ♥9   ]
+[ ♦4 ]( ♥12  )[ ♥7   ]( ♣11 )[ ♦9 ]( ♠4   )[ ♥3   ](*♣2  )
+(*♣6  )[ ♠9   ]( ♦2 )[ ♥5   ]( ♦1 )[ ♠1   ]( ♥10  )[ ♠8   ]
+[ ♠13  ]( ♥1   )[ ♦7 ]( ♠9   )[ ♦12]( ♥12  )[ ♥4   ](*♣10 )
+(*♥2   )[*♥6   ]( ♥3   )[*♣5  ]( ♥5   )[*♦3 ]( ♠2   )[*♠6   ]
 * が付いた札だけ取れます（短辺が空いている札）
 ----------
 手数: 0

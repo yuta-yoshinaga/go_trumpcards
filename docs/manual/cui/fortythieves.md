@@ -89,10 +89,10 @@ Forty Thieves (フォーティシーブス)
 Foundation: [空: どのAでも可] | [空: どのAでも可] | ... (8 つ)
 Stock: 64枚 | Waste: [空]
 ----------
-列0: [0]HEART 6  [1]SPADE 10  [2]CLOVER 11  [3]DIAMOND 11
-列1: [0]DIAMOND 1  [1]CLOVER 3  [2]CLOVER 2  [3]DIAMOND 11
+列0: [0]♥6  [1]♠10  [2]♣11  [3]♦11
+列1: [0]♦1  [1]♣3  [2]♣2  [3]♦11
 ...
-列9: [0]SPADE 12  [1]HEART 11  [2]DIAMOND 6  [3]SPADE 4
+列9: [0]♠12  [1]♥11  [2]♦6  [3]♠4
 ----------
 操作: m で移動 (例 m w f / m t 0 f), d=ドロー, u=アンドゥ, h=ヒント
 手数: 0

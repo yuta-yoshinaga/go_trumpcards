@@ -77,7 +77,7 @@ flowchart TD
 チップ: 800
 フェーズ: PRE-FLOP
 --- PLAYER ---
-SPADE 1,SPADE 13
+♠1,♠13
 --- DEALER ---
 ??,??
 ----------

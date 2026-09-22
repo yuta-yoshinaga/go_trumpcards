@@ -154,7 +154,7 @@ Binokel (ビノクル)
 最高ビッド: 150 (CPU 1)
 累計スコア: あなた=0  CPU 1=0  CPU 2=0
 あなた: スコア:0点 ビッド:未ビッド メルド:0点 トリック:0T/0点 15枚
-[0]CLOVER 10  [1]CLOVER 1  [2]HEART 1  [3]DIAMOND 11  [4]HEART 13  [5]HEART 10  [6]DIAMOND 1  [7]DIAMOND 10  [8]CLOVER 13  [9]SPADE 13  [10]SPADE 11  [11]SPADE 12  [12]HEART 10  [13]SPADE 1  [14]SPADE 12
+[0]♣10  [1]♣1  [2]♥1  [3]♦11  [4]♥13  [5]♥10  [6]♦1  [7]♦10  [8]♣13  [9]♠13  [10]♠11  [11]♠12  [12]♥10  [13]♠1  [14]♠12
 CPU 1: スコア:0点 ビッド:150 メルド:0点 トリック:0T/0点 15枚
 CPU 2: スコア:0点 ビッド:パス メルド:0点 トリック:0T/0点 15枚
 メルド早見表:
@@ -179,9 +179,9 @@ Binokel (ビノクル)
 切り札: 未決定
 最高ビッド: 400 (あなた)
 累計スコア: あなた=0  CPU 1=0  CPU 2=0
-Dabb: DIAMOND 10 DIAMOND 11 SPADE 7
+Dabb: ♦10 ♦11 ♠7
 あなた: スコア:0点 ビッド:400 メルド:0点 トリック:0T/0点 18枚
-[0]HEART 11  [1]DIAMOND 12  [2]HEART 1  [3]SPADE 12  [4]CLOVER 10  [5]HEART 13  [6]SPADE 7  [7]CLOVER 13  [8]SPADE 10  [9]DIAMOND 13  [10]HEART 12  [11]CLOVER 12  [12]DIAMOND 1  [13]DIAMOND 7  [14]HEART 1  [15]DIAMOND 10  [16]DIAMOND 11  [17]SPADE 7
+[0]♥11  [1]♦12  [2]♥1  [3]♠12  [4]♣10  [5]♥13  [6]♠7  [7]♣13  [8]♠10  [9]♦13  [10]♥12  [11]♣12  [12]♦1  [13]♦7  [14]♥1  [15]♦10  [16]♦11  [17]♠7
 CPU 1: スコア:0点 ビッド:パス メルド:0点 トリック:0T/0点 15枚
 CPU 2: スコア:0点 ビッド:パス メルド:0点 トリック:0T/0点 15枚
 メルド早見表:
@@ -205,7 +205,7 @@ Trump: undecided
 Highest bid: 150 (CPU 2)
 Scores: You=0  CPU 1=0  CPU 2=0
 You: score:0pt bid:no bid meld:0pt tricks:0T/0pt 15 cards
-[0]HEART 13  [1]DIAMOND 1  [2]HEART 1  [3]DIAMOND 12  [4]HEART 10  [5]DIAMOND 10  [6]CLOVER 11  [7]SPADE 11  [8]DIAMOND 1  [9]CLOVER 12  [10]SPADE 11  [11]HEART 12  [12]CLOVER 7  [13]SPADE 1  [14]HEART 13
+[0]♥13  [1]♦1  [2]♥1  [3]♦12  [4]♥10  [5]♦10  [6]♣11  [7]♠11  [8]♦1  [9]♣12  [10]♠11  [11]♥12  [12]♣7  [13]♠1  [14]♥13
 CPU 1: score:0pt bid:pass meld:0pt tricks:0T/0pt 15 cards
 CPU 2: score:0pt bid:150 meld:0pt tricks:0T/0pt 15 cards
 Meld reference:
