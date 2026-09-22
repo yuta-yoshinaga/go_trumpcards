@@ -168,7 +168,7 @@ func TestPerseveranceCuiPresenter_HintOutput(t *testing.T) {
 		result := p.HintOutput(bg)
 		assert.Contains(t, result, "ヒント")
 		assert.Contains(t, result, "タブロー列0")
-		assert.Contains(t, result, "ファンデーション")
+		assert.Contains(t, result, "組札")
 	})
 
 	t.Run("tableau hint", func(t *testing.T) {

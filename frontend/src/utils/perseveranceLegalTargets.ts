@@ -14,7 +14,7 @@ export interface PerseveranceLegalTargets {
  * Sync: `Perseverance.canPlaceOnTableau` / `canPlaceOnFoundation`.
  *
  * **タブローも同スート。**ランクが1つ下がり、かつスートが一致するときだけ。
- * ファンデーションは同スートで1つ上がるときだけ。
+ * 組札は同スートで1つ上がるときだけ。
  *
  * **クローン元の Baker\'s Dozen はここでスートを見ない。**その版をそのまま残すと
  * ♠8 を ♥9 に置けるように光り、サーバに弾かれる手を勧めることになる。

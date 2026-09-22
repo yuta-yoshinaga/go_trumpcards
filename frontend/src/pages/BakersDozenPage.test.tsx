@@ -475,7 +475,7 @@ describe('BakersDozenPage empty column rule banner', () => {
     expect(banner).toHaveClass('text-center', 'text-xs', 'text-ds-warning', 'mb-3', 'font-medium');
     expect(banner).toHaveAttribute('data-tutorial', 'bd-rule');
 
-    // ファンデーション行の上にあること
+    // 組札行の上にあること
     const foundation = container.querySelector('[data-tutorial="bd-foundation"]');
     expect(foundation).toBeInTheDocument();
     if (foundation && banner) {

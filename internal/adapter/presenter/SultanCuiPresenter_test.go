@@ -175,7 +175,7 @@ func TestSultanCuiPresenter_HintOutput(t *testing.T) {
 		result := p.HintOutput(sg)
 		assert.Contains(t, result, "ヒント")
 		assert.Contains(t, result, "ディヴァン")
-		assert.Contains(t, result, "ファンデーション")
+		assert.Contains(t, result, "組札")
 	})
 
 	t.Run("waste hint", func(t *testing.T) {
@@ -185,7 +185,7 @@ func TestSultanCuiPresenter_HintOutput(t *testing.T) {
 		p := new(SultanCuiPresenter)
 		result := p.HintOutput(sg)
 		assert.Contains(t, result, "ウェイスト")
-		assert.Contains(t, result, "ファンデーション")
+		assert.Contains(t, result, "組札")
 	})
 
 	t.Run("no hint", func(t *testing.T) {

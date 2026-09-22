@@ -13,7 +13,7 @@ export interface BakersDozenLegalTargets {
  *
  * Sync: `BakersDozen.canPlaceOnTableau` / `canPlaceOnFoundation`.
  *
- * **タブローはスートを見ない。**ランクが1つ下がるかどうかだけ。ファンデーションは
+ * **タブローはスートを見ない。**ランクが1つ下がるかどうかだけ。組札は
  * 逆に同スートで1つ上がるときだけ。この2つを取り違えると、置けない列を光らせる。
  *
  * **空き列には置けない。**Baker's Dozen は空き列を埋められないので、空の列を
