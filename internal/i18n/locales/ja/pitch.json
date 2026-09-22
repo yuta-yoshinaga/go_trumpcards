@@ -6,7 +6,7 @@
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
   "errFollowLeadSuitOrTrump": "リードスートに従うかトランプを切ってください",
   "bidPending": "未ビッド",
-  "bidPass": "pass",
+  "bidPass": "パス",
   "trumpUndecided": "(未確定)",
   "playerLine": "{{name}}: ビッド={{bid}} 獲得{{tricks}}トリック 累積{{cum}}点 ラウンド{{round}}点 {{cards}}枚",
   "header": "ラウンド: {{round}}  トリック: {{trick}}  親: {{dealer}}",

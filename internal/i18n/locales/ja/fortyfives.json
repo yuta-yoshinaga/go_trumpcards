@@ -18,7 +18,7 @@
   "bid.pass": "パス",
   "bid.fifteen": "15",
   "bid.twenty": "20",
-  "bid.twentyfive": "25 (Jink)",
+  "bid.twentyfive": "25 (ジンク)",
   "gameEnd": "ゲーム終了！チーム{{team}}がマッチ勝利！",
   "promptBid": "入札手番: {{name}}（現在の最高入札: {{high}}）",
   "promptBidHelp": "bid <0/15/20/25>・・・0=パス／パス以外は現在の入札を上回る必要あり。25 = Jink（全トリック取得で即勝利）",

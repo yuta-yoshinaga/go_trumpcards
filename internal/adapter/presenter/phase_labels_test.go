@@ -515,3 +515,43 @@ func TestJapaneseStockDiscardAndReserveLabels(t *testing.T) {
 		}
 	}
 }
+
+func TestJapaneseFinalSliceLabels(t *testing.T) {
+	t.Cleanup(func() { i18n.SetLang("ja") })
+
+	expected := map[string]string{
+		"shithead.handLabel":        "  手札:    ",
+		"shithead.faceupLabel":      "  表向き:  ",
+		"shithead.rankLine":         "  {{name}}: 順位={{rank}}{{suffix}}",
+		"pitch.bidPass":             "パス",
+		"michigan.betHintHold":      "{{card}}(ブードル{{idx}})",
+		"fortyfives.bid.twentyfive": "25 (ジンク)",
+	}
+
+	displayWidth := func(value string) int {
+		width := 0
+		for _, char := range value {
+			if char > 0x2000 {
+				width += 2
+			} else {
+				width++
+			}
+		}
+		return width
+	}
+
+	i18n.SetLang("ja")
+	for key, want := range expected {
+		assert.Equal(t, want, i18n.T(key), key)
+		for _, forbidden := range []string{"hand:", "faceup:", "rank=", "pass", "boodle", "Jink"} {
+			assert.NotContains(t, want, forbidden, key+" contains "+forbidden)
+		}
+	}
+	assert.Equal(t, 11, displayWidth(i18n.T("shithead.handLabel")))
+	assert.Equal(t, 11, displayWidth(i18n.T("shithead.faceupLabel")))
+
+	i18n.SetLang("en")
+	for key, japanese := range expected {
+		assert.NotContains(t, i18n.T(key), japanese, key+" contains Japanese translation")
+	}
+}
