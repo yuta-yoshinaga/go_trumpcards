@@ -26,7 +26,7 @@
   "invalidLevelHand": "Invalid level-up hands: {{val}}. Please enter 1 or more.",
   "tableSizeRequired": "Table size is required (2-6).",
   "invalidTableSize": "Invalid table size: {{val}}. Please enter 2-6.",
-  "outputTitle": "Five Card Stud",
+  "outputTitle": "Soko",
   "tournamentLine": "Tournament hand #{{hand}} Ante:{{ante}} BringIn:{{bringIn}} (level-up every {{levelup}} hands)",
   "rebuyLine": "Rebuy: {{chips}} chips (max {{max}}, through hand {{period}})",
   "addonLine": "Add-on: {{chips}} chips (offered after hand {{after}})",

@@ -22,7 +22,11 @@ func (p *FiveCardStudCuiPresenter) ActionLogOutput(s interfaces.FiveCardStudGame
 
 // Output renders the current game state for the active locale.
 func (p *FiveCardStudCuiPresenter) Output(s interfaces.FiveCardStudGame, lastErr error) string {
-	return buildCuiOutput(i18n.T("fivecardstud.outputTitle"), func(b *strings.Builder) {
+	title := i18n.T("fivecardstud.outputTitle")
+	if s.GetIsSoko() {
+		title = i18n.T("soko.outputTitle")
+	}
+	return buildCuiOutput(title, func(b *strings.Builder) {
 		cfg := s.GetConfig()
 		if cfg.TournamentMode {
 			handCount := s.GetHandCount()
