@@ -255,6 +255,28 @@ func TestFiveCardStudCuiPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestFiveCardStudCuiPresenter_OutputTitle(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.FiveCardStudCuiPresenter)
+
+	t.Run("Soko uses the Soko title", func(t *testing.T) {
+		s := domain.NewDefaultSoko()
+
+		result := p.Output(s, nil)
+		assert.Contains(t, result, "Soko")
+		assert.NotContains(t, result, "Five Card Stud")
+	})
+
+	t.Run("Five Card Stud keeps its title", func(t *testing.T) {
+		s, _ := makeFiveCardStudForPresenter()
+
+		result := p.Output(s, nil)
+		assert.Contains(t, result, "Five Card Stud")
+	})
+}
+
 func TestFiveCardStudCuiPresenter_Output_BettingLimitDisplay(t *testing.T) {
 	origNoColor := color.NoColor()
 	color.SetNoColor(true)

@@ -26,7 +26,7 @@
   "invalidLevelHand": "無効なハンド数です: {{val}}。1以上の数値を入力してください。",
   "tableSizeRequired": "テーブルサイズが必要です (2-6)。",
   "invalidTableSize": "無効なテーブルサイズです: {{val}}。2〜6を入力してください。",
-  "outputTitle": "Five Card Stud",
+  "outputTitle": "Soko",
   "tournamentLine": "トーナメント ハンド#{{hand}} アンテ:{{ante}} ブリングイン:{{bringIn}} (レベルアップ:{{levelup}}ハンド毎)",
   "rebuyLine": "リバイ: {{chips}}チップ (最大{{max}}回, {{period}}ハンド目まで)",
   "addonLine": "アドオン: {{chips}}チップ ({{after}}ハンド目に提供)",
