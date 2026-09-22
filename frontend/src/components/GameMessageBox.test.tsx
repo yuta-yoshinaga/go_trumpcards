@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import i18n from 'i18next';
 import { describe, expect, it } from 'vitest';
 import { GameMessageBox } from './GameMessageBox';
 
@@ -105,6 +106,23 @@ describe('GameMessageBox', () => {
   it('keeps non-Key-suffixed message params unchanged', () => {
     render(<GameMessageBox message="fallback" messageCode="doubt.result.cpuWin" messageParams={{ cpuId: '3' }} />);
     expect(screen.getByText('ゲーム終了！ CPU 3の勝ち！')).toBeInTheDocument();
+  });
+
+  it('passes sibling params when resolving a nested Key message', async () => {
+    const props = {
+      message: 'fallback',
+      messageCode: 'pontoon.bankPasses',
+      messageParams: { resultKey: 'pontoon.log.resultBust', total: '18', seat: '2' },
+    } as const;
+    const { rerender } = render(<GameMessageBox {...props} />);
+    const box = screen.getByRole('status');
+    expect(box).toHaveTextContent('親がバースト（18）（親はプレイヤー2に移ります）');
+    expect(box).not.toHaveTextContent('{{total}}');
+    await i18n.changeLanguage('en');
+    rerender(<GameMessageBox {...props} />);
+    expect(box).toHaveTextContent('The banker busts (18) (the bank passes to player 2)');
+    expect(box).not.toHaveTextContent('{{total}}');
+    await i18n.changeLanguage('ja');
   });
 
   it('translates messageCode without messageParams using default empty object', () => {

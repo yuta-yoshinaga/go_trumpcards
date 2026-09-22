@@ -89,11 +89,11 @@ func (sp *SetteEMezzoWebPresenter) Output(s interfaces.SetteEMezzoGame, lastErr 
 		case domain.SetteEMezzoPhaseBankerTurn:
 			resObj.MessageCode = "settemezzo.bankerTurn"
 		case domain.SetteEMezzoPhaseEnd:
-			resObj.Message = s.GetLastResult()
-			resObj.MessageCode = "settemezzo.roundOver"
-			resObj.MessageParams = map[string]string{"result": s.GetLastResult()}
+			resObj.MessageCode = s.GetLastResultCode()
+			resObj.MessageParams = s.GetLastResultParams()
 			if s.GetNextBanker() >= 0 {
 				resObj.MessageCode = "settemezzo.bankPasses"
+				resObj.MessageParams = withMessageParams(resObj.MessageParams, "resultKey", s.GetLastResultCode())
 			}
 		}
 	}

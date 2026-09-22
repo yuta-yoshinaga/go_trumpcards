@@ -21,6 +21,8 @@ func setupSemCuiMockDefaults(g *interfaces.MockSetteEMezzoGame) {
 	g.On("GetActiveSeat").Return(0).Maybe()
 	g.On("GetNextBanker").Return(-1).Maybe()
 	g.On("GetLastResult").Return("親は 6.5").Maybe()
+	g.On("GetLastResultCode").Return("setteemezzo.log.bankerTotal").Maybe()
+	g.On("GetLastResultParams").Return(map[string]string{"total": "6.5"}).Maybe()
 	g.On("GetGameEndFlag").Return(false).Maybe()
 	g.On("CanHit").Return(true).Maybe()
 	g.On("CanStand").Return(true).Maybe()
@@ -67,6 +69,20 @@ func TestSetteEMezzoCuiPresenter_Output(t *testing.T) {
 		out := new(SetteEMezzoCuiPresenter).Output(g, nil)
 		assert.NotContains(t, out, i18n.T("settemezzo.faceDown"))
 		assert.Contains(t, out, "親は 6.5")
+	})
+
+	t.Run("an English settled round is translated", func(t *testing.T) {
+		i18n.SetLang("en")
+		defer i18n.SetLang("ja")
+		g := new(interfaces.MockSetteEMezzoGame)
+		setupSemCuiMockDefaults(g)
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetPhase")
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetGameEndFlag")
+		g.On("GetPhase").Return(domain.SetteEMezzoPhaseEnd)
+		g.On("GetGameEndFlag").Return(true)
+		out := new(SetteEMezzoCuiPresenter).Output(g, nil)
+		assert.Contains(t, out, "Banker is at 6.5")
+		assert.NotContains(t, out, "親")
 	})
 
 	// The matta's current value has to be visible: it is adjustable until the

@@ -98,6 +98,16 @@ func (_m *MockQuinzeGame) GetLastResult() string {
 	return ret.String(0)
 }
 
+func (_m *MockQuinzeGame) GetLastResultCode() string { return _m.Called().String(0) }
+
+func (_m *MockQuinzeGame) GetLastResultParams() map[string]string {
+	v := _m.Called().Get(0)
+	if v == nil {
+		return nil
+	}
+	return v.(map[string]string)
+}
+
 // WasChipsReplenished provides the mock implementation.
 func (_m *MockQuinzeGame) WasChipsReplenished() bool {
 	ret := _m.Called()

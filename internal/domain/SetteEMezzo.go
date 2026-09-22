@@ -135,9 +135,11 @@ type SetteEMezzo struct {
 	// again after every reload instead of only after the Reset that caused it.
 	bankerChanged bool
 	// nextBanker はこの局で 7.5 を出した最初のプレイヤー（いなければ -1）。
-	nextBanker int
-	lastResult string
-	actionLog  []*ActionLogEntry
+	nextBanker       int
+	lastResult       string
+	lastResultCode   string
+	lastResultParams map[string]string
+	actionLog        []*ActionLogEntry
 }
 
 // setteEMezzoOpeningBanker 最初の局の親。
@@ -191,6 +193,8 @@ func (s *SetteEMezzo) Reset() {
 	s.activeSeat = 0
 	s.phase = SetteEMezzoPhaseBet
 	s.lastResult = ""
+	s.lastResultCode = ""
+	s.lastResultParams = nil
 	s.actionLog = nil
 }
 
@@ -469,7 +473,10 @@ func (s *SetteEMezzo) settle() {
 	if bankerBust {
 		resultCode = "setteemezzo.log.bankerBust"
 	}
-	s.appendLog("result", resultCode, map[string]string{"total": setteEMezzoFormatHalves(bankerHalves)}, s.bankerHand.cards)
+	resultParams := map[string]string{"total": setteEMezzoFormatHalves(bankerHalves)}
+	s.appendLog("result", resultCode, resultParams, s.bankerHand.cards)
+	s.lastResultCode = resultCode
+	s.lastResultParams = resultParams
 }
 
 // settleHand 1 つの手の増減（賭け金を除いた純増減）。同点は親の勝ち。
@@ -591,6 +598,12 @@ func (s *SetteEMezzo) GetBankerChanged() bool { return s.bankerChanged }
 
 // GetLastResult 直近の精算の要約
 func (s *SetteEMezzo) GetLastResult() string { return s.lastResult }
+
+// GetLastResultCode 直近の精算メッセージコードを取得する
+func (s *SetteEMezzo) GetLastResultCode() string { return s.lastResultCode }
+
+// GetLastResultParams 直近の精算メッセージパラメータを取得する
+func (s *SetteEMezzo) GetLastResultParams() map[string]string { return s.lastResultParams }
 
 // GetActionLog 棋譜取得
 func (s *SetteEMezzo) GetActionLog() []*ActionLogEntry { return s.actionLog }

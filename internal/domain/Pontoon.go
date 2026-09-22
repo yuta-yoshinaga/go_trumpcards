@@ -149,9 +149,11 @@ type Pontoon struct {
 	activeHand int
 	phase      int
 	// nextBanker は次局の親。この局でポンツーンを出した最初のプレイヤー。
-	nextBanker int
-	lastResult string
-	actionLog  []*ActionLogEntry
+	nextBanker       int
+	lastResult       string
+	lastResultCode   string
+	lastResultParams map[string]string
+	actionLog        []*ActionLogEntry
 }
 
 // pontoonOpeningBanker 最初の局の親。
@@ -209,6 +211,8 @@ func (p *Pontoon) Reset() {
 	p.activeHand = 0
 	p.phase = PontoonPhaseBet
 	p.lastResult = ""
+	p.lastResultCode = ""
+	p.lastResultParams = nil
 	p.actionLog = nil
 }
 
@@ -566,6 +570,8 @@ func (p *Pontoon) settle() {
 		resultCode = "pontoon.log.resultBust"
 	}
 	p.appendLog("result", resultCode, resultParams, p.bankerHand.cards)
+	p.lastResultCode = resultCode
+	p.lastResultParams = resultParams
 }
 
 // settleHand 1 つの手の増減を返す（賭け金を除いた純増減）。
@@ -683,6 +689,12 @@ func (p *Pontoon) GetNextBanker() int { return p.nextBanker }
 
 // GetLastResult 直近の精算の要約
 func (p *Pontoon) GetLastResult() string { return p.lastResult }
+
+// GetLastResultCode 直近の精算メッセージコードを取得する
+func (p *Pontoon) GetLastResultCode() string { return p.lastResultCode }
+
+// GetLastResultParams 直近の精算メッセージパラメータを取得する
+func (p *Pontoon) GetLastResultParams() map[string]string { return p.lastResultParams }
 
 // GetActionLog 棋譜取得
 func (p *Pontoon) GetActionLog() []*ActionLogEntry { return p.actionLog }

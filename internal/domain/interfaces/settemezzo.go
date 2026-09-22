@@ -44,6 +44,8 @@ type SetteEMezzoGame interface {
 	GetBankerChanged() bool
 	// GetLastResult 直近の精算の要約を取得する
 	GetLastResult() string
+	GetLastResultCode() string
+	GetLastResultParams() map[string]string
 	// GetGameEndFlag 局が終わっているか
 	GetGameEndFlag() bool
 	// GetHandHalves 手の合計を半点単位で取得する
