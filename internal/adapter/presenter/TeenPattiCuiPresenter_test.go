@@ -70,7 +70,7 @@ func TestTeenPattiCuiPresenter_Output(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 12, false))
 		result := p.Output(m, nil)
 		assert.NotEmpty(t, result)
-		assert.Contains(t, result, "SPADE")
+		assert.Contains(t, result, "♠")
 	})
 
 	t.Run("betting raise range: blind human sees full-chip ceiling", func(t *testing.T) {

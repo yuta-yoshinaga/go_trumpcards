@@ -73,10 +73,10 @@ func TestSpeedCuiPresenter_MarksPlayableCards(t *testing.T) {
 			domain.NewCard(domain.CardDesignSpade, 13, false),
 		})
 		out := p.Output(s, nil)
-		assert.Contains(t, out, "[0]SPADE 6*")
-		assert.Contains(t, out, "[1]HEART 10 ")
-		assert.NotContains(t, out, "[1]HEART 10*")
-		assert.Contains(t, out, "[2]CLOVER 1*")
+		assert.Contains(t, out, "[0]♠6*")
+		assert.Contains(t, out, "[1]♥10 ")
+		assert.NotContains(t, out, "[1]♥10*")
+		assert.Contains(t, out, "[2]♣1*")
 	})
 
 	t.Run("marks nothing when the hand is stuck", func(t *testing.T) {
@@ -105,7 +105,7 @@ func TestSpeedCuiPresenter_Output(t *testing.T) {
 		})
 		result := p.Output(s, nil)
 		assert.Contains(t, result, "[1] ")
-		assert.Contains(t, result, "CPU: SPADE 7を0番の台札へ")
+		assert.Contains(t, result, "CPU: ♠7を0番の台札へ")
 		assert.NotContains(t, result, "1番の台札")
 	})
 

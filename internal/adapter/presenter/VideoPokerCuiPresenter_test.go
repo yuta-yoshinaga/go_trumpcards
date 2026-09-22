@@ -365,7 +365,7 @@ func TestVideoPokerCuiPresenter_Output_JokerHighlighted(t *testing.T) {
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, color.BoldYellow("JOKER"))
-	assert.Contains(t, result, "SPADE 5")
+	assert.Contains(t, result, "♠5")
 }
 
 func TestVideoPokerCuiPresenter_Output_DeucesWildTwosHighlighted(t *testing.T) {
@@ -392,7 +392,7 @@ func TestVideoPokerCuiPresenter_Output_DeucesWildTwosHighlighted(t *testing.T) {
 	result := p.Output(m, nil)
 	assert.Contains(t, result, color.Yellow("HEART 2"))
 	assert.Contains(t, result, color.Yellow("SPADE 2"))
-	assert.NotContains(t, result, color.Yellow("SPADE 5"))
+	assert.NotContains(t, result, color.Yellow("♠5"))
 }
 
 func TestVideoPokerCuiPresenter_Output_PlainVariantTwoNotHighlighted(t *testing.T) {
@@ -415,8 +415,8 @@ func TestVideoPokerCuiPresenter_Output_PlainVariantTwoNotHighlighted(t *testing.
 	setupVideoPokerCuiStatsMockDefaults(m)
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "SPADE 2")
-	assert.NotContains(t, result, color.Yellow("SPADE 2"))
+	assert.Contains(t, result, "♠2")
+	assert.NotContains(t, result, color.Yellow("♠2"))
 }
 
 func TestVideoPokerCuiPresenter_cardStr_NilCard(t *testing.T) {

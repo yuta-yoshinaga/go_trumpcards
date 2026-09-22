@@ -24,12 +24,12 @@ func TestCuiCardStr(t *testing.T) {
 		expected string
 	}{
 		{"nil card", nil, "??"},
-		{"joker", domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false), "JOKER"},
-		{"spade", domain.NewCard(domain.CardDesignSpade, 1, false), "SPADE 1"},
-		{"clover", domain.NewCard(domain.CardDesignClover, 5, false), "CLOVER 5"},
-		{"heart", domain.NewCard(domain.CardDesignHeart, 10, false), "HEART 10"},
-		{"diamond", domain.NewCard(domain.CardDesignDiamond, 13, false), "DIAMOND 13"},
-		{"unknown design", domain.NewCard(99, 1, false), "UNKNOWN"},
+		{"joker", domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false), "🃏0"},
+		{"spade", domain.NewCard(domain.CardDesignSpade, 1, false), "♠1"},
+		{"clover", domain.NewCard(domain.CardDesignClover, 5, false), "♣5"},
+		{"heart", domain.NewCard(domain.CardDesignHeart, 10, false), "♥10"},
+		{"diamond", domain.NewCard(domain.CardDesignDiamond, 13, false), "♦13"},
+		{"unknown design", domain.NewCard(99, 1, false), "🃏1"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -167,14 +167,14 @@ func TestCuiCardListStr(t *testing.T) {
 		expected string
 	}{
 		{"empty hand", []*domain.Card{}, ""},
-		{"single card", []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}, "SPADE 1"},
+		{"single card", []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}, "♠1"},
 		{
 			"multiple cards",
 			[]*domain.Card{
 				domain.NewCard(domain.CardDesignSpade, 1, false),
 				domain.NewCard(domain.CardDesignHeart, 5, false),
 			},
-			"SPADE 1,HEART 5",
+			"♠1,♥5",
 		},
 	}
 	for _, tt := range tests {
@@ -195,14 +195,14 @@ func TestCuiIndexedCardListStr(t *testing.T) {
 		expected string
 	}{
 		{"empty hand", []*domain.Card{}, ""},
-		{"single card", []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}, "[0]SPADE 1"},
+		{"single card", []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}, "[0]♠1"},
 		{
 			"multiple cards",
 			[]*domain.Card{
 				domain.NewCard(domain.CardDesignSpade, 1, false),
 				domain.NewCard(domain.CardDesignHeart, 5, false),
 			},
-			"[0]SPADE 1  [1]HEART 5",
+			"[0]♠1  [1]♥5",
 		},
 	}
 	for _, tt := range tests {
@@ -279,14 +279,14 @@ func TestCuiCardSliceStr(t *testing.T) {
 		expected string
 	}{
 		{"empty slice", []*domain.Card{}, ""},
-		{"single card", []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}, "SPADE 1"},
+		{"single card", []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}, "♠1"},
 		{
 			"multiple cards",
 			[]*domain.Card{
 				domain.NewCard(domain.CardDesignSpade, 1, false),
 				domain.NewCard(domain.CardDesignHeart, 5, false),
 			},
-			"SPADE 1, HEART 5",
+			"♠1, ♥5",
 		},
 	}
 	for _, tt := range tests {
@@ -341,8 +341,8 @@ func TestFormatCardList(t *testing.T) {
 		indexed  bool
 		expected string
 	}{
-		{"text no-index comma", cuiCardStr, ",", false, "SPADE 1,HEART 5"},
-		{"text indexed double-space", cuiCardStr, "  ", true, "[0]SPADE 1  [1]HEART 5"},
+		{"text no-index comma", cuiCardStr, ",", false, "♠1,♥5"},
+		{"text indexed double-space", cuiCardStr, "  ", true, "[0]♠1  [1]♥5"},
 		{"emoji no-index", cuiCardStrEmoji, "  ", false, "♠1  ♥5"},
 		{"emoji indexed", cuiCardStrEmoji, "  ", true, "[0]♠1  [1]♥5"},
 	}
@@ -374,7 +374,7 @@ func TestFormatCardSlice(t *testing.T) {
 		sep      string
 		expected string
 	}{
-		{"text comma-space", cuiCardStr, ", ", "SPADE 1, HEART 5"},
+		{"text comma-space", cuiCardStr, ", ", "♠1, ♥5"},
 		{"emoji double-space", cuiCardStrEmoji, "  ", "♠1  ♥5"},
 	}
 	for _, tt := range tests {
@@ -476,7 +476,7 @@ func TestCuiCardStrColor(t *testing.T) {
 	got := cuiCardStr(heartCard)
 	assert.Contains(t, got, "\033[31m")
 	assert.Contains(t, got, "\033[0m")
-	assert.Contains(t, got, "HEART 10")
+	assert.Contains(t, got, "♥10")
 
 	diamondCard := domain.NewCard(domain.CardDesignDiamond, 5, false)
 	got = cuiCardStr(diamondCard)
@@ -486,13 +486,13 @@ func TestCuiCardStrColor(t *testing.T) {
 	spadeCard := domain.NewCard(domain.CardDesignSpade, 1, false)
 	got = cuiCardStr(spadeCard)
 	assert.NotContains(t, got, "\033[31m")
-	assert.Equal(t, "SPADE 1", got)
+	assert.Equal(t, "♠1", got)
 
 	// Joker should not be colored
 	jokerCard := domain.NewCard(domain.CardDesignJoker, 0, false)
 	got = cuiCardStr(jokerCard)
 	assert.NotContains(t, got, "\033[31m")
-	assert.Equal(t, "JOKER", got)
+	assert.Equal(t, "🃏0", got)
 
 	// nil card should not be colored
 	got = cuiCardStr(nil)
@@ -501,7 +501,7 @@ func TestCuiCardStrColor(t *testing.T) {
 	// Unknown design should not be colored
 	unknownCard := domain.NewCard(99, 1, false)
 	got = cuiCardStr(unknownCard)
-	assert.Equal(t, "UNKNOWN", got)
+	assert.Equal(t, "🃏1", got)
 }
 
 func TestCuiCardStrEmojiColor(t *testing.T) {
@@ -555,9 +555,9 @@ func TestCuiCaptureHintLine(t *testing.T) {
 
 	// 捕獲候補がある札だけ注記が付く。
 	line := cuiCaptureHintLine(hand, map[int][]int{0: {1, 3}}, "tablanet.captureHint")
-	assert.Contains(t, line, "[0]SPADE 5")
+	assert.Contains(t, line, "[0]♠5")
 	assert.Contains(t, line, "[1][3]")
-	assert.NotContains(t, line, "HEART 9")
+	assert.NotContains(t, line, "♥9")
 
 	// 候補が無ければ 1 行も出さない (空文字。空白 1 文字ではない)。
 	assert.Empty(t, cuiCaptureHintLine(hand, map[int][]int{}, "tablanet.captureHint"))
@@ -582,10 +582,10 @@ func TestCuiDiscardPileLines(t *testing.T) {
 	}
 	out := cuiDiscardPileLines(pile, "canasta.discardPileLine")
 	assert.Equal(t, 3, strings.Count(out, "\n"), "8 枚ごとに折り返して 3 行")
-	assert.Contains(t, out, "[0]SPADE 1")
-	assert.Contains(t, out, "[19]SPADE 7")
+	assert.Contains(t, out, "[0]♠1")
+	assert.Contains(t, out, "[19]♠7")
 	// 折り返しの境目: 8 枚目の次は新しい行の先頭。
-	assert.Contains(t, out, "[7]SPADE 8\n")
+	assert.Contains(t, out, "[7]♠8\n")
 }
 
 // **場のトップカードやスート宣言の行だけ赤/黒が消えていた** ── suitDisplayName は

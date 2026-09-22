@@ -76,7 +76,7 @@ func TestSevenBridgeCuiPresenter_Output(t *testing.T) {
 		m.On("GetDiscardTop").Return(domain.NewCard(domain.CardDesignHeart, 7, false))
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "捨て札: HEART 7")
+		assert.Contains(t, result, "捨て札: ♥7")
 	})
 
 	t.Run("meld rendered for player", func(t *testing.T) {
@@ -89,7 +89,7 @@ func TestSevenBridgeCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "場: ")
-		assert.Contains(t, result, "SPADE 3")
+		assert.Contains(t, result, "♠3")
 	})
 
 	t.Run("error shown", func(t *testing.T) {

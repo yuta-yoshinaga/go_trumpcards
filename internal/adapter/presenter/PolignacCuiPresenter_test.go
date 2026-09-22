@@ -237,7 +237,7 @@ func TestPolignacCuiPresenterShowsTheJackBreakdown(t *testing.T) {
 	// ♠ が先に、続けて ♥ が並ぶ。1 行として突き合わせる。
 	assert.Contains(t, out, i18n.Tf("polignac.jackMarks",
 		"jacks", i18n.T("polignac.jackSpade")+" "+
-			i18n.Tf("polignac.jackOther", "suit", "HEART 11")))
+			i18n.Tf("polignac.jackOther", "suit", "♥11")))
 	assert.NotContains(t, out, "{{")
 
 	// 何も取っていない席には内訳が出ない (負のコントロール)。

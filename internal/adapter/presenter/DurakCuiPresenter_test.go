@@ -95,8 +95,8 @@ func TestDurakCuiPresenter_Output(t *testing.T) {
 			},
 		})
 		result := p.Output(d, nil)
-		assert.Contains(t, result, "SPADE 7")
-		assert.Contains(t, result, "SPADE 8")
+		assert.Contains(t, result, "♠7")
+		assert.Contains(t, result, "♠8")
 	})
 
 	t.Run("trump cards highlighted in human hand", func(t *testing.T) {
@@ -117,7 +117,7 @@ func TestDurakCuiPresenter_Output(t *testing.T) {
 		boldStart := strings.Split(color.BoldYellow("X"), "X")[0]
 		assert.Contains(t, result, boldStart+"[0]")    // trump card highlighted
 		assert.NotContains(t, result, boldStart+"[1]") // non-trump left plain
-		assert.Contains(t, result, "SPADE 7")
+		assert.Contains(t, result, "♠7")
 	})
 
 	t.Run("finished player rendered", func(t *testing.T) {
@@ -160,14 +160,14 @@ func TestDurakCuiPresenter_HintOutput(t *testing.T) {
 	t.Run("attack hint names the card and the reason", func(t *testing.T) {
 		idx := 0
 		out := p.HintOutput(newMock(&domain.DurakHint{CardIndex: &idx, Reason: "attack_weakest"}))
-		assert.Contains(t, out, "SPADE 6")
+		assert.Contains(t, out, "♠6")
 		assert.Contains(t, out, "最弱の非切り札で攻める")
 	})
 
 	t.Run("defend hint names which attack to beat", func(t *testing.T) {
 		idx, atk := 0, 1
 		out := p.HintOutput(newMock(&domain.DurakHint{CardIndex: &idx, AttackIdx: &atk, Reason: "defend_beat"}))
-		assert.Contains(t, out, "SPADE 6")
+		assert.Contains(t, out, "♠6")
 		assert.Contains(t, out, "この札で返せる")
 	})
 

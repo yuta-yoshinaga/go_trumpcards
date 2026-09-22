@@ -53,7 +53,7 @@ func TestDaifugoCuiPresenter_Method(t *testing.T) {
 		result := tdp.Output(dg, nil)
 		assert.Contains(t, result, "Daifugo (大富豪)")
 		assert.Contains(t, result, "あなた: 2枚")
-		assert.Contains(t, result, "[0]SPADE 3")
+		assert.Contains(t, result, "[0]♠3")
 		assert.Contains(t, result, "CPU 1: 1枚")
 		assert.Contains(t, result, "場: なし")
 		assert.Contains(t, result, "手番: あなた")
@@ -227,7 +227,7 @@ func TestDaifugoCuiPresenter_Method(t *testing.T) {
 		assert.Contains(t, result, "カード交換")
 		assert.Contains(t, result, "あなた")
 		assert.Contains(t, result, "CPU 3")
-		assert.Contains(t, result, "SPADE 3")
+		assert.Contains(t, result, "♠3")
 	})
 
 	t.Run("success Output human action with played cards", func(t *testing.T) {
@@ -257,11 +257,11 @@ func TestDaifugoCuiPresenter_Method(t *testing.T) {
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
 		result := tdp.Output(dg, nil)
-		assert.Contains(t, result, "SPADE 3")
-		assert.Contains(t, result, "CLOVER 4")
-		assert.Contains(t, result, "HEART 5")
-		assert.Contains(t, result, "DIAMOND 6")
-		assert.Contains(t, result, "JOKER")
+		assert.Contains(t, result, "♠3")
+		assert.Contains(t, result, "♣4")
+		assert.Contains(t, result, "♥5")
+		assert.Contains(t, result, "♦6")
+		assert.Contains(t, result, "🃏0")
 	})
 
 	t.Run("success Output getPlayerName nil player", func(t *testing.T) {
@@ -307,7 +307,7 @@ func TestDaifugoCuiPresenter_Method(t *testing.T) {
 		})
 		result := tdp.Output(dg, nil)
 		assert.Contains(t, result, "??")
-		assert.Contains(t, result, "UNKNOWN")
+		assert.Contains(t, result, "🃏1")
 	})
 
 	t.Run("success Output CPU action pass in cpuActions", func(t *testing.T) {
@@ -527,17 +527,17 @@ func TestDaifugoCuiPresenter_MarksPlayableCards(t *testing.T) {
 		dg.SetTableCards([]*domain.Card{card(domain.CardDesignClover, 9)})
 
 		result := tdp.Output(dg, nil)
-		assert.Contains(t, result, "[1]HEART 12*")
+		assert.Contains(t, result, "[1]♥12*")
 		// **付かないことも確かめる。**全部に星が付く実装でも「付く」だけなら通る。
-		assert.NotContains(t, result, "[0]SPADE 5*")
+		assert.NotContains(t, result, "[0]♠5*")
 	})
 
 	t.Run("stars every card when the table is empty", func(t *testing.T) {
 		dg, _ := newGame(card(domain.CardDesignSpade, 5), card(domain.CardDesignHeart, 12))
 
 		result := tdp.Output(dg, nil)
-		assert.Contains(t, result, "[0]SPADE 5*")
-		assert.Contains(t, result, "[1]HEART 12*")
+		assert.Contains(t, result, "[0]♠5*")
+		assert.Contains(t, result, "[1]♥12*")
 	})
 
 	t.Run("stars nothing when no card can be played", func(t *testing.T) {
@@ -566,7 +566,7 @@ func TestDaifugoCuiPresenter_MarksPlayableCards(t *testing.T) {
 		dg.SetRevolutionActive(true)
 
 		result := tdp.Output(dg, nil)
-		assert.Contains(t, result, "[0]SPADE 5*")
-		assert.NotContains(t, result, "[1]HEART 12*")
+		assert.Contains(t, result, "[0]♠5*")
+		assert.NotContains(t, result, "[1]♥12*")
 	})
 }

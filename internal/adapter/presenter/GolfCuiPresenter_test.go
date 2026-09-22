@@ -105,10 +105,10 @@ func TestGolfCuiPresenterOutput_PlayableMarker(t *testing.T) {
 
 	p := &GolfCuiPresenter{}
 	result := p.Output(gg, nil)
-	assert.Contains(t, result, "(0)SPADE 12*")   // adjacent
-	assert.Contains(t, result, "(1)SPADE 1*")    // K-A wrap
-	assert.Contains(t, result, "(2)SPADE 8")     // exposed, not adjacent
-	assert.NotContains(t, result, "(2)SPADE 8*") // no marker on non-adjacent
+	assert.Contains(t, result, "(0)♠12*")   // adjacent
+	assert.Contains(t, result, "(1)♠1*")    // K-A wrap
+	assert.Contains(t, result, "(2)♠8")     // exposed, not adjacent
+	assert.NotContains(t, result, "(2)♠8*") // no marker on non-adjacent
 }
 
 func TestGolfCuiPresenterOutput_Error(t *testing.T) {

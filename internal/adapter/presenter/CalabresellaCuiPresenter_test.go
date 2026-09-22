@@ -151,8 +151,8 @@ func TestCalabresellaCuiPresenter_ShowsRevealedMonte(t *testing.T) {
 		m.On("GetActionLog").Return(log)
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "モンテ（公開）:")
-		assert.Contains(t, result, "SPADE 1")
-		assert.Contains(t, result, "DIAMOND 13")
+		assert.Contains(t, result, "♠1")
+		assert.Contains(t, result, "♦13")
 	})
 
 	t.Run("hidden during the bid phase", func(t *testing.T) {

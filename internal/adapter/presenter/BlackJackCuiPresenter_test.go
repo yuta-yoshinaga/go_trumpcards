@@ -64,11 +64,11 @@ func TestBlackJackCuiPresenters_Method(t *testing.T) {
 		output := tbp.Output(bj, nil)
 		assert.Contains(t, output, "フェーズ: アクション")
 		assert.Contains(t, output, "ベット=100")
-		assert.Contains(t, output, "SPADE 5")
+		assert.Contains(t, output, "♠5")
 		// In-progress dealer shows the up-card plus a hidden-card placeholder, with no trailing comma.
 		assert.Contains(t, output, "[??]")
-		assert.Contains(t, output, "CLOVER 10, [??]")
-		assert.NotContains(t, output, "CLOVER 10,\n")
+		assert.Contains(t, output, "♣10, [??]")
+		assert.NotContains(t, output, "♣10,\n")
 	})
 	t.Run("success Output end phase lose", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
@@ -658,7 +658,7 @@ func TestBlackJackCuiPresenter_CpuHandFlags(t *testing.T) {
 		output := bjp.Output(bj, nil)
 		assert.Contains(t, output, "[DD]")
 		assert.Contains(t, output, "[スタンド]")
-		assert.Contains(t, output, "SPADE 5")
+		assert.Contains(t, output, "♠5")
 	})
 
 	t.Run("CPU hand with BUST flag", func(t *testing.T) {
@@ -774,8 +774,8 @@ func TestBlackJackCuiPresenter_CpuHandFlags(t *testing.T) {
 		assert.Contains(t, output, "CPU 1 ハンド 1")
 		assert.Contains(t, output, "CPU 1 ハンド 2")
 		// Cards should be displayed (comma-separated)
-		assert.Contains(t, output, "SPADE 8")
-		assert.Contains(t, output, "CLOVER 10")
+		assert.Contains(t, output, "♠8")
+		assert.Contains(t, output, "♣10")
 	})
 
 	t.Run("CPU hand cards with comma separator", func(t *testing.T) {
@@ -802,8 +802,8 @@ func TestBlackJackCuiPresenter_CpuHandFlags(t *testing.T) {
 		dealer.AddCard(domain.NewCard(domain.CardDesignDiamond, 7, false))
 		bj.SetPhase(domain.BJPhaseEnd)
 		output := bjp.Output(bj, nil)
-		// Cards should be comma-separated: "SPADE 5,HEART 6,CLOVER 10"
-		assert.Contains(t, output, "SPADE 5,HEART 6")
+		// Cards should be comma-separated: "♠5,♥6,♣10"
+		assert.Contains(t, output, "♠5,♥6")
 	})
 }
 

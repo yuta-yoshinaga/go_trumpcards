@@ -80,8 +80,8 @@ func TestEuchreCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "ラウンド: 1")
 		assert.Contains(t, result, "トリック: 1")
 		assert.Contains(t, result, "あなた: チーム0 獲得0トリック 2枚")
-		assert.Contains(t, result, "[0]SPADE 1")
-		assert.Contains(t, result, "[1]HEART 5")
+		assert.Contains(t, result, "[0]♠1")
+		assert.Contains(t, result, "[1]♥5")
 		assert.Contains(t, result, "CPU 1: チーム1 獲得0トリック 1枚")
 		assert.Contains(t, result, "手番: あなた")
 		assert.Contains(t, result, "p <i> (play)")
@@ -109,7 +109,7 @@ func TestEuchreCuiPresenter_Output(t *testing.T) {
 		m.On("GetFaceUpCard").Return(domain.NewCard(domain.CardDesignHeart, 11, false))
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "表向きカード: HEART 11")
+		assert.Contains(t, result, "表向きカード: ♥11")
 	})
 
 	t.Run("going alone shown", func(t *testing.T) {
@@ -160,7 +160,7 @@ func TestEuchreCuiPresenter_Output(t *testing.T) {
 		m.On("GetCurrentTrick").Return(trick)
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "トリック: あなた=CLOVER 3, CPU 1=CLOVER 7")
+		assert.Contains(t, result, "トリック: あなた=♣3, CPU 1=♣7")
 	})
 
 	t.Run("no trick cards hides trick section", func(t *testing.T) {
@@ -268,10 +268,10 @@ func TestEuchreCuiPresenter_Output_BowerMarks(t *testing.T) {
 	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
 
 	result := (&presenter.EuchreCuiPresenter{}).Output(m, nil)
-	assert.Contains(t, result, "SPADE 11[R]")
-	assert.Contains(t, result, "CLOVER 11[L]")
-	assert.NotContains(t, result, "HEART 11[R]")
-	assert.NotContains(t, result, "HEART 11[L]")
+	assert.Contains(t, result, "♠11[R]")
+	assert.Contains(t, result, "♣11[L]")
+	assert.NotContains(t, result, "♥11[R]")
+	assert.NotContains(t, result, "♥11[L]")
 }
 
 func TestEuchreCuiPresenter_ActionLogOutput(t *testing.T) {

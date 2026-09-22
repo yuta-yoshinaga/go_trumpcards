@@ -153,9 +153,9 @@ func TestPishtiCuiPresenter_MarksCapturingCards(t *testing.T) {
 
 		out := p.Output(g, nil)
 
-		assert.Contains(t, out, "[0]SPADE 7"+presenter.CuiLegalMark)
-		assert.Contains(t, out, "[1]"+color.Red("HEART 11")+presenter.CuiLegalMark)
-		assert.NotContains(t, out, "[2]CLOVER 3"+presenter.CuiLegalMark)
+		assert.Contains(t, out, "[0]♠7"+presenter.CuiLegalMark)
+		assert.Contains(t, out, "[1]"+color.Red("♥11")+presenter.CuiLegalMark)
+		assert.NotContains(t, out, "[2]♣3"+presenter.CuiLegalMark)
 	})
 
 	// **自分の手番でないときは出さない。**Web も isHumanTurn を条件にしている。
@@ -164,7 +164,7 @@ func TestPishtiCuiPresenter_MarksCapturingCards(t *testing.T) {
 
 		out := p.Output(g, nil)
 
-		assert.NotContains(t, out, "[0]SPADE 7"+presenter.CuiLegalMark)
+		assert.NotContains(t, out, "[0]♠7"+presenter.CuiLegalMark)
 	})
 
 	// 場が空ならジャックだけが取れる (同ランク条件が成立しない)。
@@ -176,8 +176,8 @@ func TestPishtiCuiPresenter_MarksCapturingCards(t *testing.T) {
 
 		out := p.Output(g, nil)
 
-		assert.NotContains(t, out, "[0]SPADE 7"+presenter.CuiLegalMark)
-		assert.Contains(t, out, "[1]"+color.Red("HEART 11")+presenter.CuiLegalMark)
+		assert.NotContains(t, out, "[0]♠7"+presenter.CuiLegalMark)
+		assert.Contains(t, out, "[1]"+color.Red("♥11")+presenter.CuiLegalMark)
 	})
 
 	t.Run("explains what the mark means", func(t *testing.T) {

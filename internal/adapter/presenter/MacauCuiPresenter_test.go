@@ -66,7 +66,7 @@ func TestMacauCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "ラウンド: 1")
 		assert.Contains(t, result, "山札: 30枚")
 		assert.Contains(t, result, "あなた: 累積0点 ラウンド0点 1枚")
-		assert.Contains(t, result, "[0]SPADE 1")
+		assert.Contains(t, result, "[0]♠1")
 		assert.Contains(t, result, "手番: あなた")
 	})
 
@@ -75,7 +75,7 @@ func TestMacauCuiPresenter_Output(t *testing.T) {
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDiscardTop")
 		m.On("GetDiscardTop").Return(domain.NewCard(domain.CardDesignHeart, 7, false))
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "捨て札: HEART 7")
+		assert.Contains(t, result, "捨て札: ♥7")
 	})
 
 	t.Run("chosen suit shown", func(t *testing.T) {
@@ -190,7 +190,7 @@ func TestMacauCuiPresenter_HintOutput(t *testing.T) {
 		m.On("IsValidPlay", unplayable).Return(false)
 
 		out := p.HintOutput(m)
-		assert.Contains(t, out, i18n.Tf("macau.hintPlayable", "cards", "[0]HEART 5"))
+		assert.Contains(t, out, i18n.Tf("macau.hintPlayable", "cards", "[0]♥5"))
 		assert.NotContains(t, out, "[1]")
 	})
 

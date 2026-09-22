@@ -65,7 +65,7 @@ func TestThreeCardBragCuiPresenter_Output(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 12, false))
 		result := p.Output(m, nil)
 		assert.NotEmpty(t, result)
-		assert.Contains(t, result, "SPADE")
+		assert.Contains(t, result, "♠")
 		// Seen player with 30 chips at stake 1: raise range max = 30/2 = 15.
 		assert.Contains(t, result, "15")
 	})

@@ -75,7 +75,7 @@ func TestRikkenCuiPresenter_CalledCardOnlyForRik(t *testing.T) {
 		fillRikkenDefaults(m)
 
 		out := new(RikkenCuiPresenter).Output(m, nil)
-		assert.Contains(t, out, "指名札: SPADE 1（この札を出した人が相方として公開されます）")
+		assert.Contains(t, out, "指名札: ♠1（この札を出した人が相方として公開されます）")
 	})
 
 	t.Run("does not show the called card for other contracts", func(t *testing.T) {

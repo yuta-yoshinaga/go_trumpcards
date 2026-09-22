@@ -1058,7 +1058,7 @@ func TestSevenCardStudCuiPresenter_Output_BringIn(t *testing.T) {
 // **#5435: シカゴの内訳と「その 1 枚」を CUI に出す。** 合計額しか出ていないと、
 // 役で勝ったのか伏せ札のスペードで勝ったのかが読めず、ポットが割れた理由が
 // 画面のどこにも現れない。カードは他の行と同じ絵札表記で出す — ここが生の
-// `SPADE 1` になっていても Go のテストは通ってしまう。
+// `♠1` になっていても Go のテストは通ってしまう。
 func TestSevenCardStudCuiPresenter_Output_ChicagoSplit(t *testing.T) {
 	origNoColor := color.NoColor()
 	color.SetNoColor(true)
@@ -1105,7 +1105,7 @@ func TestSevenCardStudCuiPresenter_Output_ChicagoSplit(t *testing.T) {
 	})
 
 	// **その 1 枚は他のカードと同じ表記で出す。** `cuiCardStr` を使うと
-	// `SPADE 1` という生の綴りが、♠A を並べた盤面の中に 1 行だけ混ざる。
+	// `♠1` という生の綴りが、♠A を並べた盤面の中に 1 行だけ混ざる。
 	t.Run("prints the deciding spade in the same notation as the board", func(t *testing.T) {
 		r := base
 		r.WonAmount, r.WonSpade = 100, 50

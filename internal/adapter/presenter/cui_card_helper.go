@@ -96,24 +96,25 @@ type cuiPlayer interface {
 	GetIsHuman() bool
 }
 
+// cardDesignSymbols maps design constants to CUI card symbols.
+// Index 0 is the joker; indices 1–4 correspond to CardDesignSpade–CardDesignDiamond.
+var cardDesignSymbols = []string{"🃏", "♠", "♣", "♥", "♦"}
+
 // suitNames maps design constants to suit name strings.
 // Index 0 is unused (joker); indices 1–4 correspond to CardDesignSpade–CardDesignDiamond.
 var suitNames = []string{"", "SPADE", "CLOVER", "HEART", "DIAMOND"}
 
-// cuiCardStr returns a text-based card string (e.g. "SPADE 5", "JOKER", "??").
-// Used by BlackJack, OldMaid, Daifugo, Sevens, and Doubt CUI presenters.
+// cuiCardStr returns a symbol-based card string (e.g. "♠5", "🃏0", "??").
+// Used by the CUI presenters for all games that display cards.
 func cuiCardStr(card *domain.Card) string {
 	if card == nil {
 		return "??"
 	}
-	if card.GetDesign() == domain.CardDesignJoker {
-		return "JOKER"
+	d := card.GetDesign()
+	if d < 0 || d >= len(cardDesignSymbols) {
+		d = domain.CardDesignJoker
 	}
-	name := cuiSuitName(card.GetDesign())
-	if name == "UNKNOWN" {
-		return "UNKNOWN"
-	}
-	s := name + " " + strconv.Itoa(card.GetValue())
+	s := cardDesignSymbols[d] + strconv.Itoa(card.GetValue())
 	if isRedSuit(card.GetDesign()) {
 		return color.Red(s)
 	}
@@ -126,12 +127,11 @@ func cuiCardStrEmoji(card *domain.Card) string {
 	if card == nil {
 		return "??"
 	}
-	designs := []string{"🃏", "♠", "♣", "♥", "♦"}
 	d := card.GetDesign()
-	if d < 0 || d >= len(designs) {
+	if d < 0 || d >= len(cardDesignSymbols) {
 		d = 0
 	}
-	s := fmt.Sprintf("%s%d", designs[d], card.GetValue())
+	s := fmt.Sprintf("%s%d", cardDesignSymbols[d], card.GetValue())
 	if isRedSuit(card.GetDesign()) {
 		return color.Red(s)
 	}
@@ -151,12 +151,11 @@ func cuiCardStrEmojiRank(card *domain.Card) string {
 	if card == nil {
 		return "??"
 	}
-	designs := []string{"🃏", "♠", "♣", "♥", "♦"}
 	d := card.GetDesign()
-	if d < 0 || d >= len(designs) {
+	if d < 0 || d >= len(cardDesignSymbols) {
 		d = 0
 	}
-	s := designs[d] + cuiRankLabel(card.GetValue())
+	s := cardDesignSymbols[d] + cuiRankLabel(card.GetValue())
 	if isRedSuit(card.GetDesign()) {
 		return color.Red(s)
 	}

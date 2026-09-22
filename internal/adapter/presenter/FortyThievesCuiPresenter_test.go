@@ -144,7 +144,7 @@ func TestFortyThievesCuiPresenter_Output(t *testing.T) {
 		p := new(FortyThievesCuiPresenter)
 		result := p.Output(fg, nil)
 		foundationLine := fortyThievesFoundationLine(result)
-		assert.Contains(t, foundationLine, "SPADE 1")
+		assert.Contains(t, foundationLine, "♠1")
 		assert.NotContains(t, foundationLine, "[空: どのAでも可]")
 	})
 }

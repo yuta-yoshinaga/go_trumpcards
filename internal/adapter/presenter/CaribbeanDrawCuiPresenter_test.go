@@ -91,7 +91,7 @@ func TestCaribbeanDrawCuiPresenter_Output_ActionPhase(t *testing.T) {
 	assert.Contains(t, result, "あなた")
 	// First dealer card is visible
 	assert.Contains(t, result, "ディーラー")
-	assert.Contains(t, result, "HEART 13")
+	assert.Contains(t, result, "♥13")
 	// Remaining cards hidden
 	assert.Contains(t, result, "??")
 }

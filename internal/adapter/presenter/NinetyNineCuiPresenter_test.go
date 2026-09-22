@@ -125,13 +125,13 @@ func TestNinetyNineCuiPresenter_OutputIncludesBuriedCountOnly(t *testing.T) {
 	assert.Contains(t, result, "あなた: 宣言=4 獲得1トリック 累積20点 ディール7点 5枚 伏せ3枚")
 	assert.Contains(t, result, "CPU 1: 宣言=未宣言 獲得0トリック 累積0点 ディール0点 0枚 伏せ0枚")
 	// The buried cards are secret: only their count may appear. This presenter
-	// renders cards through cuiCardStr as "SPADE 1", not "♠A", so assert the
+	// renders cards through cuiCardStr as "♠1", not "♠A", so assert the
 	// format it actually emits -- and pick buried cards that are absent from the
-	// hand (HEART 2..6, which IS printed for the human) so a leak is the only
+	// hand (♥2..6, which IS printed for the human) so a leak is the only
 	// way these strings could show up.
-	assert.NotContains(t, result, "SPADE 1")
-	assert.NotContains(t, result, "HEART 12")
-	assert.NotContains(t, result, "CLOVER 13")
+	assert.NotContains(t, result, "♠1")
+	assert.NotContains(t, result, "♥12")
+	assert.NotContains(t, result, "♣13")
 	assert.NotContains(t, result, "{{")
 }
 

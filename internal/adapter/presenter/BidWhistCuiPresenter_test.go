@@ -102,7 +102,7 @@ func TestBidWhistCuiPresenterStatesTheTargetScore(t *testing.T) {
 
 	// **i18n.T で期待値を作らない。** 未翻訳ならキーがそのまま返るので
 	// `Contains(out, T(k))` は翻訳が無くても通る。解決後の文言で見る。
-	// **裸の数字で見ない。** 手札に "SPADE 7" が出るので
+	// **裸の数字で見ない。** 手札に "♠7" が出るので
 	// `Contains(out, "7")` は目標点が無くても通ってしまう (実測済み)。
 	assert.Contains(t, out, "先取 "+strconv.Itoa(domain.BidWhistDefaultTargetScore)+"点",
 		"目標点が出力に出ていない")

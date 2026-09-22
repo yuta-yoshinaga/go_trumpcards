@@ -158,8 +158,8 @@ func TestKempsCuiPresenter_MarksFieldCardsMatchingTheHand(t *testing.T) {
 
 		out := p.Output(g, nil)
 
-		assert.Contains(t, out, "[0]CLOVER 7"+presenter.CuiSwapMark)
-		assert.NotContains(t, out, "[1]"+color.Red("DIAMOND 9")+presenter.CuiSwapMark)
+		assert.Contains(t, out, "[0]♣7"+presenter.CuiSwapMark)
+		assert.NotContains(t, out, "[1]"+color.Red("♦9")+presenter.CuiSwapMark)
 	})
 
 	t.Run("marks nothing when no rank matches", func(t *testing.T) {

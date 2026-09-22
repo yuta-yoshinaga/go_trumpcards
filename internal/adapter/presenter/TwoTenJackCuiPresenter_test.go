@@ -120,7 +120,7 @@ func TestTwoTenJackCuiPresenter_Output(t *testing.T) {
 		}
 		m.On("GetCurrentTrick").Return(trick)
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "CLOVER 3")
+		assert.Contains(t, result, "♣3")
 	})
 
 	t.Run("team total correctness", func(t *testing.T) {

@@ -110,7 +110,7 @@ func TestJassCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "Jass")
 		assert.Contains(t, result, "ラウンド: 1")
 		assert.Contains(t, result, "切り札: SPADE")
-		assert.Contains(t, result, "[0]SPADE 1")
+		assert.Contains(t, result, "[0]♠1")
 	})
 
 	t.Run("trump undecided", func(t *testing.T) {
@@ -239,8 +239,8 @@ func TestJassCuiPresenter_ShowsThePreviousTrick(t *testing.T) {
 		out := p.Output(build(2, trickLog), nil)
 
 		assert.Contains(t, out, i18n.T("jass.previousTrick"))
-		assert.Contains(t, out, "SPADE 1")
-		assert.Contains(t, out, "SPADE 9")
+		assert.Contains(t, out, "♠1")
+		assert.Contains(t, out, "♠9")
 		assert.Contains(t, out, i18n.Tf("jass.previousTrickWinner",
 			"name", color.Bold(i18n.T("cuiPlayerYou"))))
 	})
@@ -258,8 +258,8 @@ func TestJassCuiPresenter_ShowsThePreviousTrick(t *testing.T) {
 
 		out := p.Output(build(3, twoTricks), nil)
 
-		assert.Contains(t, out, color.Red("HEART 13"), "2 トリック目の札が出る")
-		assert.NotContains(t, out, "SPADE 1", "1 トリック目の札は出ない")
+		assert.Contains(t, out, color.Red("♥13"), "2 トリック目の札が出る")
+		assert.NotContains(t, out, "♠1", "1 トリック目の札は出ない")
 		assert.Contains(t, out, i18n.Tf("jass.previousTrickWinner",
 			"name", color.Bold(i18n.Tf("cuiPlayerCpu", "idx", "1"))))
 	})

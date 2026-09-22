@@ -123,8 +123,8 @@ func TestContractRummyCuiPresenter_NumbersEachMeldForLayoff(t *testing.T) {
 		},
 	}
 	want := []string{
-		"[0] SPADE 3 SPADE 4 SPADE 5",
-		"[1] CLOVER 9 CLOVER 10 CLOVER 11",
+		"[0] ♠3 ♠4 ♠5",
+		"[1] ♣9 ♣10 ♣11",
 	}
 
 	withMelds := func(seat int) string {

@@ -238,12 +238,12 @@ func TestJulepeCuiPresenterMarksThePlayableCards(t *testing.T) {
 		r := setup(domain.JulepePhasePlay, 0, trick)
 		out := p.Output(r, nil)
 
-		// 出せる札（SPADE 7, SPADE 1）には印が付く
-		assert.Contains(t, out, "[0]SPADE 7"+CuiLegalMark)
-		assert.Contains(t, out, "[1]SPADE 1"+CuiLegalMark)
-		// 出せない札（HEART 8, DIAMOND 10）には印が付かない
-		assert.NotContains(t, out, "HEART 8"+CuiLegalMark)
-		assert.NotContains(t, out, "DIAMOND 10"+CuiLegalMark)
+		// 出せる札（♠7, ♠1）には印が付く
+		assert.Contains(t, out, "[0]♠7"+CuiLegalMark)
+		assert.Contains(t, out, "[1]♠1"+CuiLegalMark)
+		// 出せない札（♥8, ♦10）には印が付かない
+		assert.NotContains(t, out, "♥8"+CuiLegalMark)
+		assert.NotContains(t, out, "♦10"+CuiLegalMark)
 		// 印の総数が合法手の数（2枚）と一致する
 		assert.Equal(t, 2, strings.Count(out, CuiLegalMark))
 	})

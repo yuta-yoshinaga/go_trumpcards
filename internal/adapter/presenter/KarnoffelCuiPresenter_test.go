@@ -16,7 +16,7 @@ import (
 )
 
 // karnoffelAnsi は色付けのエスケープを落とす。赤スートは cuiCardStr が色を
-// 付けるので、そのままだと "HEART 6" すら部分一致しない。
+// 付けるので、そのままだと "♥6" すら部分一致しない。
 var karnoffelAnsi = regexp.MustCompile(`\x1b\[[0-9;]*m`)
 
 func karnoffelPlain(s string) string { return karnoffelAnsi.ReplaceAllString(s, "") }
@@ -178,18 +178,18 @@ func TestKarnoffelCuiPresenter_NamesTheTitledCards(t *testing.T) {
 	// **札ごとに突き合わせる。**称号名が行のどこかにある、では他の札の
 	// 称号を写しても通ってしまう。
 	for _, want := range []string{
-		"[0]HEART 11[カルニッフェル]",
-		"[1]HEART 7[悪魔]",
-		"[2]HEART 6[法王]",
-		"[3]HEART 2[皇帝]",
-		"[4]HEART 3[オーバー]",
-		"[5]HEART 4[ウンター]",
-		"[6]HEART 5[ファルベン]",
+		"[0]♥11[カルニッフェル]",
+		"[1]♥7[悪魔]",
+		"[2]♥6[法王]",
+		"[3]♥2[皇帝]",
+		"[4]♥3[オーバー]",
+		"[5]♥4[ウンター]",
+		"[6]♥5[ファルベン]",
 	} {
 		assert.Contains(t, karnoffelPlain(out), want)
 	}
 	// 選ばれたスートでも称号を持たない札、他スートの同ランクには付かない。
-	for _, plain := range []string{"[7]HEART 13 ", "[8]SPADE 6 ", "[9]SPADE 11\n"} {
+	for _, plain := range []string{"[7]♥13 ", "[8]♠6 ", "[9]♠11\n"} {
 		assert.Contains(t, karnoffelPlain(out), plain)
 	}
 	plainOut := karnoffelPlain(out)
@@ -213,8 +213,8 @@ func TestKarnoffelCuiPresenter_LeavesTheOtherSuitsPlain(t *testing.T) {
 	}
 	out := karnoffelPlain(new(presenter.KarnoffelCuiPresenter).Output(setupKarnoffelCuiMock(o), nil))
 
-	assert.Contains(t, out, "[0]HEART 6 ")
-	assert.Contains(t, out, "[1]SPADE 6[法王]")
+	assert.Contains(t, out, "[0]♥6 ")
+	assert.Contains(t, out, "[1]♠6[法王]")
 }
 
 // **上札自身が称号札のこともある。**手札には称号を出しているのに上札には
@@ -224,13 +224,13 @@ func TestKarnoffelCuiPresenter_NamesTheTitledUpCard(t *testing.T) {
 	out := karnoffelPlain(new(presenter.KarnoffelCuiPresenter).Output(setupKarnoffelCuiMock(o), nil))
 
 	// 席 0 の上札 ♥3 はオーバーシュテッヒャー、席 3 の ♥6 は法王。
-	assert.Contains(t, out, "HEART 3[オーバー]")
-	assert.Contains(t, out, "HEART 6[法王]")
+	assert.Contains(t, out, "♥3[オーバー]")
+	assert.Contains(t, out, "♥6[法王]")
 
 	// 負のコントロール: 選ばれたスートでなければ称号は付かない。
 	o2 := defaultKarnoffelOpts()
 	o2.chosen = domain.CardDesignSpade
 	plain := karnoffelPlain(new(presenter.KarnoffelCuiPresenter).Output(setupKarnoffelCuiMock(o2), nil))
-	assert.NotContains(t, plain, "HEART 3[オーバー]")
-	assert.NotContains(t, plain, "HEART 6[法王]")
+	assert.NotContains(t, plain, "♥3[オーバー]")
+	assert.NotContains(t, plain, "♥6[法王]")
 }

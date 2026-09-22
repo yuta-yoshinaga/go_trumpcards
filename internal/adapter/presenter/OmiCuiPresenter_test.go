@@ -80,8 +80,8 @@ func TestOmiCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "得点規則: 5トリック以上で1点、全取り(8トリック)で2点、4-4引き分けは0点")
 		assert.Contains(t, result, "チーム0: 0点 (0トリック)  チーム1: 0点 (0トリック)")
 		assert.Contains(t, result, "あなた: チーム0 獲得0トリック 2枚")
-		assert.Contains(t, result, "[0]SPADE 1")
-		assert.Contains(t, result, "[1]HEART 5")
+		assert.Contains(t, result, "[0]♠1")
+		assert.Contains(t, result, "[1]♥5")
 		assert.Contains(t, result, "CPU 1: チーム1 獲得0トリック 1枚")
 		assert.Contains(t, result, "手番: あなた")
 		assert.Contains(t, result, "p <i> (play)")
@@ -140,7 +140,7 @@ func TestOmiCuiPresenter_Output(t *testing.T) {
 		m.On("GetCurrentTrick").Return(trick)
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "トリック: あなた=CLOVER 3, CPU 1=CLOVER 7")
+		assert.Contains(t, result, "トリック: あなた=♣3, CPU 1=♣7")
 	})
 
 	t.Run("error message shown", func(t *testing.T) {

@@ -114,7 +114,7 @@ func TestRussianSolitaireCuiPresenter_Output(t *testing.T) {
 
 		p := new(RussianSolitaireCuiPresenter)
 		result := p.Output(rg, nil)
-		assert.Contains(t, result, "SPADE 1")
+		assert.Contains(t, result, "♠1")
 	})
 }
 

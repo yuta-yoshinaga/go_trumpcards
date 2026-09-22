@@ -111,7 +111,7 @@ func TestEasthavenCuiPresenter_Output(t *testing.T) {
 		eg.On("GetFoundation").Return(foundation).Maybe()
 
 		p := new(EasthavenCuiPresenter)
-		assert.Contains(t, p.Output(eg, nil), "SPADE 1")
+		assert.Contains(t, p.Output(eg, nil), "♠1")
 	})
 }
 

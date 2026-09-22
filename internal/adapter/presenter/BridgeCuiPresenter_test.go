@@ -84,8 +84,8 @@ func TestBridgeCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "ラウンド: 1")
 		assert.Contains(t, result, "トリック: 1")
 		assert.Contains(t, result, "あなた: チーム0 獲得0トリック 2枚")
-		assert.Contains(t, result, "[0]SPADE 1")
-		assert.Contains(t, result, "[1]HEART 5")
+		assert.Contains(t, result, "[0]♠1")
+		assert.Contains(t, result, "[1]♥5")
 		assert.Contains(t, result, "CPU 1: チーム1 獲得0トリック 1枚")
 		assert.Contains(t, result, "手番: あなた")
 		assert.Contains(t, result, "p <i> (play)")
@@ -228,7 +228,7 @@ func TestBridgeCuiPresenter_Output(t *testing.T) {
 		})
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "ダミー手札: HEART 10, SPADE 1")
+		assert.Contains(t, result, "ダミー手札: ♥10, ♠1")
 	})
 
 	t.Run("current trick shown", func(t *testing.T) {
@@ -241,7 +241,7 @@ func TestBridgeCuiPresenter_Output(t *testing.T) {
 		m.On("GetCurrentTrick").Return(trick)
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "トリック: あなた=CLOVER 3, CPU 1=CLOVER 7")
+		assert.Contains(t, result, "トリック: あなた=♣3, CPU 1=♣7")
 	})
 
 	t.Run("no trick cards hides trick section", func(t *testing.T) {

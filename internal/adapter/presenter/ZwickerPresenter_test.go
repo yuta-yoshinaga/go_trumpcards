@@ -232,7 +232,7 @@ func TestZwickerCuiPresenter_NamesTheBuildValue(t *testing.T) {
 		"idx", "0", "value", "9", "owner", "1", "cards", "@@@"), "@@@", 2)[0]
 	assert.Contains(t, out, head)
 	// 札そのものは値つきで出ていること。
-	assert.Contains(t, out, "SPADE 5(5)")
+	assert.Contains(t, out, "♠5(5)")
 }
 
 func TestZwickerCuiPresenter_PromptsPerPhase(t *testing.T) {

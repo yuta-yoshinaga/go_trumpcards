@@ -97,7 +97,7 @@ func TestOsmosisCuiPresenter_Output(t *testing.T) {
 		og.On("GetWaste").Return([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 5, false)})
 		p := new(OsmosisCuiPresenter)
 		result := p.Output(og, nil)
-		assert.Contains(t, result, "ウェイスト: HEART 5")
+		assert.Contains(t, result, "ウェイスト: ♥5")
 	})
 
 	t.Run("empty foundation row", func(t *testing.T) {

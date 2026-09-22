@@ -72,8 +72,8 @@ func TestChinchonCuiPresenter_MeldSplit(t *testing.T) {
 		m.On("GetPlayerMeldSplit", mock.Anything).Return(([][]*domain.Card)(nil), ([]*domain.Card)(nil)).Maybe()
 
 		out := p.Output(m, nil)
-		assert.Contains(t, out, "メルド済み: SPADE 5, SPADE 6, SPADE 7")
-		assert.Contains(t, out, "デッドウッド: HEART 9, CLOVER 2 (9 + 2 = 11)")
+		assert.Contains(t, out, "メルド済み: ♠5, ♠6, ♠7")
+		assert.Contains(t, out, "デッドウッド: ♥9, ♣2 (9 + 2 = 11)")
 	})
 
 	t.Run("no lines when the split is empty", func(t *testing.T) {
@@ -289,7 +289,7 @@ func TestChinchonCuiPresenter_LabelsTheKnockerMelds(t *testing.T) {
 			card(domain.CardDesignClover, 7),
 		}}), nil)
 
-		assert.Contains(t, out, "SPADE 7")
-		assert.Contains(t, out, "HEART 7")
+		assert.Contains(t, out, "♠7")
+		assert.Contains(t, out, "♥7")
 	})
 }

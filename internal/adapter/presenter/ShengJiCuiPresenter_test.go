@@ -53,7 +53,7 @@ func TestShengJiCuiPresenter_LabelsLevelsAndSuits(t *testing.T) {
 
 func TestShengJiCuiPresenter_ShowsSidesAndHidesOtherHands(t *testing.T) {
 	out := new(presenter.ShengJiCuiPresenter).Output(setupShengJiMock(defaultShengJiOpts()), nil)
-	assert.Contains(t, out, "0:SPADE 2")
+	assert.Contains(t, out, "0:♠2")
 	assert.Contains(t, out, "非公開 1枚")
 	assert.Contains(t, out, "宣言側")
 	assert.Contains(t, out, "守備側")
@@ -205,8 +205,8 @@ func TestShengJiCuiPresenter_HandEnd(t *testing.T) {
 		}
 		out := new(presenter.ShengJiCuiPresenter).Output(setupShengJiMock(o), nil)
 		assert.Contains(t, out, "底牌の中身:")
-		assert.Contains(t, out, "SPADE 2")
-		assert.Contains(t, out, "CLOVER 13")
+		assert.Contains(t, out, "♠2")
+		assert.Contains(t, out, "♣13")
 	})
 
 	// **否定コントロールは精算行が出ている状態で取る。**プレイ中は精算ブロック

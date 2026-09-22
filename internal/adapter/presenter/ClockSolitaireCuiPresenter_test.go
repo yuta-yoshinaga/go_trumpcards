@@ -22,7 +22,7 @@ func TestClockSolitaireCuiPresenterOutput_Playing(t *testing.T) {
 	result := p.Output(gg, nil)
 	assert.Contains(t, result, "Clock Solitaire")
 	assert.Contains(t, result, "ステップ: 0")
-	// Current card is SPADE 5 → placement hint points to the 5 o'clock pile.
+	// Current card is ♠5 → placement hint points to the 5 o'clock pile.
 	assert.Contains(t, result, "5時の山へ")
 }
 

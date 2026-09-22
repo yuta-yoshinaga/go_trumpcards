@@ -92,14 +92,14 @@ func TestLiteratureCuiPresenter_LimitsRecentAskHistoryAndCanShowAll(t *testing.T
 	p := new(presenter.LiteratureCuiPresenter)
 	recent := p.Output(setupLiteratureCuiMock(o), nil)
 	assert.Contains(t, recent, "直近の要求")
-	assert.NotContains(t, recent, "席0 → 席1: SPADE 2")
-	assert.Contains(t, recent, "席0 → 席1: SPADE 3")
-	assert.Contains(t, recent, "席0 → 席1: SPADE 7")
+	assert.NotContains(t, recent, "席0 → 席1: ♠2")
+	assert.Contains(t, recent, "席0 → 席1: ♠3")
+	assert.Contains(t, recent, "席0 → 席1: ♠7")
 
 	all := p.AllAsksOutput(setupLiteratureCuiMock(o))
 	assert.Contains(t, all, "全件")
 	for i := 2; i <= 7; i++ {
-		assert.Contains(t, all, "席0 → 席1: SPADE "+strconv.Itoa(i))
+		assert.Contains(t, all, "席0 → 席1: ♠"+strconv.Itoa(i))
 	}
 }
 
@@ -111,7 +111,7 @@ func TestLiteratureCuiPresenter_AllAsksSkipsNilAsks(t *testing.T) {
 	}
 
 	out := new(presenter.LiteratureCuiPresenter).AllAsksOutput(setupLiteratureCuiMock(o))
-	assert.Contains(t, out, "席0 → 席1: SPADE 3")
+	assert.Contains(t, out, "席0 → 席1: ♠3")
 	assert.NotContains(t, out, "<nil>")
 }
 

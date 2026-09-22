@@ -141,7 +141,7 @@ func TestTriPeaksCuiPresenterOutput_PeakRemainingMarksOnlyEmptyPeaks(t *testing.
 
 	out := (&TriPeaksCuiPresenter{}).Output(triPeaksCuiMockWithLayout(layout), nil)
 	assert.Equal(t, "山の残り: 左 0 ✓ / 中 1 / 右 1", triPeaksRemainingLine(out))
-	assert.Contains(t, out, "SPADE 1")
+	assert.Contains(t, out, "♠1")
 	assert.NotContains(t, out, "中 1 ✓")
 	assert.NotContains(t, out, "右 1 ✓")
 	assert.NotContains(t, out, "{{")

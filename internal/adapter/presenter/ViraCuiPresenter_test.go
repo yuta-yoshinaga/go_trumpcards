@@ -219,7 +219,7 @@ func TestViraCuiPresenter_Output(t *testing.T) {
 		m.On("GetCurrentTrick").Return([]*domain.TrickCard{
 			{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 9, false)},
 		})
-		assert.Contains(t, p.Output(m, nil), "HEART")
+		assert.Contains(t, p.Output(m, nil), "♥")
 	})
 
 	t.Run("error block is rendered", func(t *testing.T) {

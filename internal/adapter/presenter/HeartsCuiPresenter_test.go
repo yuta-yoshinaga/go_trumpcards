@@ -84,8 +84,8 @@ func TestHeartsCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "トリック: 1")
 		assert.Contains(t, result, "ハートブレイク: なし")
 		assert.Contains(t, result, "あなた: 累積0点 ラウンド0点 2枚 0トリック")
-		assert.Contains(t, result, "[0]SPADE 1")
-		assert.Contains(t, result, "[1]HEART 5")
+		assert.Contains(t, result, "[0]♠1")
+		assert.Contains(t, result, "[1]♥5")
 		assert.Contains(t, result, "CPU 1: 累積0点 ラウンド0点 1枚 0トリック")
 		assert.Contains(t, result, "手番: あなた")
 		assert.Contains(t, result, "play <idx>")
@@ -167,7 +167,7 @@ func TestHeartsCuiPresenter_Output(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 10, false))
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "[0]SPADE 1  [1]DIAMOND 10")
+		assert.Contains(t, result, "[0]♠1  [1]♦10")
 	})
 
 	t.Run("current trick shown", func(t *testing.T) {
@@ -180,7 +180,7 @@ func TestHeartsCuiPresenter_Output(t *testing.T) {
 		m.On("GetCurrentTrick").Return(trick)
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "トリック: あなた=CLOVER 3, CPU 1=CLOVER 7")
+		assert.Contains(t, result, "トリック: あなた=♣3, CPU 1=♣7")
 	})
 
 	t.Run("no trick cards hides trick section", func(t *testing.T) {

@@ -276,11 +276,11 @@ func TestBourreCuiPresenter_MarksThePlayableCards(t *testing.T) {
 	})
 }
 
-// bourreCardText mirrors the presenter's plain-text card rendering ("SPADE 7").
+// bourreCardText mirrors the presenter's plain-text card rendering ("♠7").
 //
 // 印は札の**後ろ**に付くので、この文字列に印を足したものが手札の行に出るか
 // どうかで「印が付いたか」を判定できる。色は NoColor で落としてある。
 func bourreCardText(c *domain.Card) string {
-	names := []string{"", "SPADE", "CLOVER", "HEART", "DIAMOND"}
-	return names[c.GetDesign()] + " " + strconv.Itoa(c.GetValue())
+	symbols := []string{"🃏", "♠", "♣", "♥", "♦"}
+	return symbols[c.GetDesign()] + strconv.Itoa(c.GetValue())
 }

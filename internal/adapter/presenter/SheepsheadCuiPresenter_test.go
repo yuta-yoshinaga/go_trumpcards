@@ -300,8 +300,8 @@ func TestSheepsheadCuiPresenter_RoundEndShowsTheBuriedCards(t *testing.T) {
 
 		assert.Contains(t, out, i18n.T("sheepshead.roundEndBuried"))
 		// 色付けは cuiCardStr の担当なので、スート名と数字だけを見る。
-		assert.Contains(t, out, "HEART 1")
-		assert.Contains(t, out, "CLOVER 10")
+		assert.Contains(t, out, "♥1")
+		assert.Contains(t, out, "♣10")
 	})
 
 	t.Run("play phase keeps them hidden", func(t *testing.T) {
@@ -314,7 +314,7 @@ func TestSheepsheadCuiPresenter_RoundEndShowsTheBuriedCards(t *testing.T) {
 		out := p.Output(m, nil)
 
 		assert.NotContains(t, out, i18n.T("sheepshead.roundEndBuried"))
-		assert.NotContains(t, out, "HEART 1", "埋め札はプレイ中は伏せたまま")
+		assert.NotContains(t, out, "♥1", "埋め札はプレイ中は伏せたまま")
 	})
 
 	t.Run("no buried cards yields no line", func(t *testing.T) {
@@ -357,17 +357,17 @@ func TestSheepsheadCuiPresenter_MarksThePlayableCards(t *testing.T) {
 	t.Run("marks only the legal card on the human's play turn", func(t *testing.T) {
 		m := newMock(domain.SheepsheadPhasePlay, 0)
 		out := new(presenter.SheepsheadCuiPresenter).Output(m, nil)
-		// 印は札の後ろに付く: "[1]HEART 8*"
-		assert.Contains(t, out, "HEART 8"+presenter.CuiLegalMark)
-		assert.NotContains(t, out, "SPADE 7"+presenter.CuiLegalMark)
-		assert.NotContains(t, out, "CLOVER 9"+presenter.CuiLegalMark)
+		// 印は札の後ろに付く: "[1]♥8*"
+		assert.Contains(t, out, "♥8"+presenter.CuiLegalMark)
+		assert.NotContains(t, out, "♠7"+presenter.CuiLegalMark)
+		assert.NotContains(t, out, "♣9"+presenter.CuiLegalMark)
 		m.AssertCalled(t, "GetPlayableIndices", 0)
 	})
 
 	t.Run("marks nothing in the pick phase", func(t *testing.T) {
 		m := newMock(domain.SheepsheadPhasePick, 0)
 		out := new(presenter.SheepsheadCuiPresenter).Output(m, nil)
-		assert.Contains(t, out, "HEART 8", "the hand is still listed")
+		assert.Contains(t, out, "♥8", "the hand is still listed")
 		assert.NotContains(t, out, presenter.CuiLegalMark, "no card carries the legal mark")
 		m.AssertNotCalled(t, "GetPlayableIndices", mock.Anything)
 	})
@@ -375,7 +375,7 @@ func TestSheepsheadCuiPresenter_MarksThePlayableCards(t *testing.T) {
 	t.Run("marks nothing while it is someone else's turn", func(t *testing.T) {
 		m := newMock(domain.SheepsheadPhasePlay, 2)
 		out := new(presenter.SheepsheadCuiPresenter).Output(m, nil)
-		assert.Contains(t, out, "HEART 8", "the hand is still listed")
+		assert.Contains(t, out, "♥8", "the hand is still listed")
 		assert.NotContains(t, out, presenter.CuiLegalMark, "no card carries the legal mark")
 		m.AssertNotCalled(t, "GetPlayableIndices", mock.Anything)
 	})

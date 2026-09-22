@@ -77,7 +77,7 @@ func TestFortyFivesCuiPresenter_Output(t *testing.T) {
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTopTrumpIndices")
 		m.On("GetTopTrumpIndices", mock.Anything).Return([]int{0})
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "SPADE 5 > SPADE 11 > HEART 1 > SPADE 1 > SPADE 13 > SPADE 12 > SPADE 10 > SPADE 9 > SPADE 8 > SPADE 7 > SPADE 6 > SPADE 4 > SPADE 3 > SPADE 2")
+		assert.Contains(t, result, "♠5 > ♠11 > ♥1 > ♠1 > ♠13 > ♠12 > ♠10 > ♠9 > ♠8 > ♠7 > ♠6 > ♠4 > ♠3 > ♠2")
 	})
 
 	t.Run("shows trump order even when the hand has no top trumps", func(t *testing.T) {
@@ -87,7 +87,7 @@ func TestFortyFivesCuiPresenter_Output(t *testing.T) {
 		m.On("GetTopTrumpIndices", mock.Anything).Return([]int{})
 		result := p.Output(m, nil)
 		// The order must not depend on the dealt hand, or most deals would never show it.
-		assert.Contains(t, result, "SPADE 5 > SPADE 11 > HEART 1 > SPADE 1 > SPADE 13 > SPADE 12 > SPADE 10 > SPADE 9 > SPADE 8 > SPADE 7 > SPADE 6 > SPADE 4 > SPADE 3 > SPADE 2")
+		assert.Contains(t, result, "♠5 > ♠11 > ♥1 > ♠1 > ♠13 > ♠12 > ♠10 > ♠9 > ♠8 > ♠7 > ♠6 > ♠4 > ♠3 > ♠2")
 		assert.NotContains(t, result, "!! = 最上位の切り札（切り札の5・切り札のJ・♥A）。持っているとマストフォローが免除されます")
 	})
 
@@ -246,9 +246,9 @@ func TestFortyFivesCuiPresenter_MarksTheTopTrumps(t *testing.T) {
 	t.Run("marks only the top trumps", func(t *testing.T) {
 		out := p.Output(handMock([]int{0, 1}), nil)
 
-		assert.Contains(t, out, "[0]SPADE 5"+presenter.CuiTopTrumpMark)
-		assert.Contains(t, out, "[1]"+color.Red("HEART 1")+presenter.CuiTopTrumpMark)
-		assert.NotContains(t, out, "[2]CLOVER 9"+presenter.CuiTopTrumpMark)
+		assert.Contains(t, out, "[0]♠5"+presenter.CuiTopTrumpMark)
+		assert.Contains(t, out, "[1]"+color.Red("♥1")+presenter.CuiTopTrumpMark)
+		assert.NotContains(t, out, "[2]♣9"+presenter.CuiTopTrumpMark)
 	})
 
 	t.Run("explains the mark, including the reneging exemption", func(t *testing.T) {

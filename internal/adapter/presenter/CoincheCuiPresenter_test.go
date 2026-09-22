@@ -105,7 +105,7 @@ func TestCoincheCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "トリック: 1")
 		assert.Contains(t, result, "あなた")
 		assert.Contains(t, result, "切り札: SPADE (宣言: チーム0)")
-		assert.Contains(t, result, "[0]SPADE 1")
+		assert.Contains(t, result, "[0]♠1")
 	})
 
 	t.Run("trump undecided", func(t *testing.T) {

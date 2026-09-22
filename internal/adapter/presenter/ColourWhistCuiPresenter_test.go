@@ -90,7 +90,7 @@ func TestColourWhistCuiPresenter_ShowsCalledCard(t *testing.T) {
 	fillColourWhistDefaults(m)
 
 	out := new(ColourWhistCuiPresenter).Output(m, nil)
-	assert.Contains(t, out, "指名札: SPADE 1（この札を出した人が相方として公開されます）")
+	assert.Contains(t, out, "指名札: ♠1（この札を出した人が相方として公開されます）")
 }
 
 // **指名札が無ければその行は出ない。** 負のコントロールです。

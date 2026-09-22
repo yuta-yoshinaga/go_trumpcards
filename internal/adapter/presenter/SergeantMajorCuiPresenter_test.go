@@ -130,8 +130,8 @@ func TestSergeantMajorCuiPresenterReportsTheExchange(t *testing.T) {
 		s.SetLastExchangeForTest(1, lost, received)
 		out := p.Output(s, nil)
 		assert.Contains(t, out, "前ラウンドの過不足で 1 枚を移しました。")
-		assert.Contains(t, out, "失った札: SPADE 14")
-		assert.Contains(t, out, "受け取った札: \x1b[31mHEART 2\x1b[0m")
+		assert.Contains(t, out, "失った札: ♠14")
+		assert.Contains(t, out, "受け取った札: \x1b[31m♥2\x1b[0m")
 	})
 }
 

@@ -73,8 +73,8 @@ func TestCrazyQuiltCuiPresenter_Output(t *testing.T) {
 
 		out := new(CrazyQuiltCuiPresenter).Output(g, nil)
 		// 凡例そのものに * が入るので、**札に付いた印**だけを数える。
-		assert.Contains(t, out, "[*SPADE 1   ]", "available vertical cards carry a marker")
-		assert.Contains(t, out, "( SPADE 11  )", "locked horizontal cards still show orientation")
+		assert.Contains(t, out, "[*♠1        ]", "available vertical cards carry a marker")
+		assert.Contains(t, out, "( ♠11       )", "locked horizontal cards still show orientation")
 		assert.Contains(t, out, i18n.T("crazyquilt.availableLegend"))
 
 		board := strings.Split(out, "----------\n")[1]
@@ -191,10 +191,10 @@ func TestCrazyQuiltCellMarkKeepsColoredBoardRowsAligned(t *testing.T) {
 		assert.Equal(t, crazyQuiltDisplayWidth(stripANSI(rows[0])), crazyQuiltDisplayWidth(stripANSI(row)),
 			"every colored board row has the same display width")
 	}
-	assert.Contains(t, stripANSI(rows[0]), "[*HEART 1   ]", "red available vertical cell is aligned")
-	assert.Contains(t, stripANSI(rows[0]), "(*DIAMOND 2 )", "red available horizontal cell is aligned")
-	assert.Contains(t, stripANSI(rows[0]), "[ HEART 3   ]", "red unavailable vertical cell is aligned")
-	assert.Contains(t, stripANSI(rows[0]), "( DIAMOND 4 )", "red unavailable horizontal cell is aligned")
+	assert.Contains(t, stripANSI(rows[0]), "[*♥1        ]", "red available vertical cell is aligned")
+	assert.Contains(t, stripANSI(rows[0]), "(*♦2        )", "red available horizontal cell is aligned")
+	assert.Contains(t, stripANSI(rows[0]), "[ ♥3        ]", "red unavailable vertical cell is aligned")
+	assert.Contains(t, stripANSI(rows[0]), "( ♦4        )", "red unavailable horizontal cell is aligned")
 
 	color.SetNoColor(true)
 	out = new(CrazyQuiltCuiPresenter).Output(g, nil)

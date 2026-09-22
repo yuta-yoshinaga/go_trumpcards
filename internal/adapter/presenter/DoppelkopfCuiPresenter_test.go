@@ -228,9 +228,9 @@ func TestDoppelkopfCuiPresenter_MarksTheTrumpsInHand(t *testing.T) {
 	t.Run("marks only the trump indices", func(t *testing.T) {
 		out := p.Output(handMock([]int{0, 2}), nil)
 
-		assert.Contains(t, out, "[0]"+color.Red("DIAMOND 9")+presenter.CuiTrumpMark)
-		assert.Contains(t, out, "[2]"+"CLOVER 12"+presenter.CuiTrumpMark)
-		assert.NotContains(t, out, "[1]"+"SPADE 1"+presenter.CuiTrumpMark)
+		assert.Contains(t, out, "[0]"+color.Red("♦9")+presenter.CuiTrumpMark)
+		assert.Contains(t, out, "[2]"+"♣12"+presenter.CuiTrumpMark)
+		assert.NotContains(t, out, "[1]"+"♠1"+presenter.CuiTrumpMark)
 	})
 
 	t.Run("explains what the mark means and how the trumps rank", func(t *testing.T) {

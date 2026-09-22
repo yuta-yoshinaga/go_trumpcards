@@ -67,8 +67,8 @@ func TestBiribaCuiPresenter_ListsTheDiscardPile(t *testing.T) {
 	t.Run("lists every card with its index", func(t *testing.T) {
 		out := p.Output(withPile(3), nil)
 		assert.Contains(t, out, "山の中身:")
-		assert.Contains(t, out, "[0]SPADE 1")
-		assert.Contains(t, out, "[2]SPADE 3")
+		assert.Contains(t, out, "[0]♠1")
+		assert.Contains(t, out, "[2]♠3")
 	})
 
 	t.Run("wraps a long pile over several lines", func(t *testing.T) {
@@ -99,7 +99,7 @@ func TestBiribaCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "ラウンド: 1")
 		assert.Contains(t, result, "山札: 54枚")
 		assert.Contains(t, result, "あなた: 累積0点 ラウンド0点 1枚")
-		assert.Contains(t, result, "[0]SPADE 5")
+		assert.Contains(t, result, "[0]♠5")
 		assert.Contains(t, result, "CPU 1: 累積0点 ラウンド0点 1枚")
 		assert.Contains(t, result, "手番: あなた")
 		assert.Contains(t, result, "ds")
@@ -124,7 +124,7 @@ func TestBiribaCuiPresenter_Output(t *testing.T) {
 		m.On("GetDiscardTop").Return(top)
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "捨て札: HEART 7")
+		assert.Contains(t, result, "捨て札: ♥7")
 	})
 
 	t.Run("discard top nil hides section", func(t *testing.T) {
@@ -157,7 +157,7 @@ func TestBiribaCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "ナチュラル")
-		assert.Contains(t, result, "SPADE 7")
+		assert.Contains(t, result, "♠7")
 	})
 
 	t.Run("error message shown", func(t *testing.T) {

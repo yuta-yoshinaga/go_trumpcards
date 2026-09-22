@@ -67,7 +67,7 @@ func TestCuckooCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "ラウンド: 1")
 		assert.Contains(t, result, "ライフ 3")
 		// Human card is shown, opponent card hidden.
-		assert.Contains(t, result, "SPADE 5")
+		assert.Contains(t, result, "♠5")
 		assert.Contains(t, result, "非公開")
 	})
 

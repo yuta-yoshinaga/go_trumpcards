@@ -163,7 +163,7 @@ func TestRussianPokerCuiPresenter_Output_PostActionPhase_ShowsExchangeInfo(t *te
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "フェーズ: アクション後")
 	// First dealer card visible
-	assert.Contains(t, result, "HEART 13")
+	assert.Contains(t, result, "♥13")
 	// Remaining masked
 	assert.Contains(t, result, "??")
 }

@@ -78,8 +78,8 @@ func TestKlondikeCuiPresenter_Output(t *testing.T) {
 		result := p.Output(kg, nil)
 		assert.Contains(t, result, "ドロー: 3枚")
 		// All three shown, the top (last) card marked playable.
-		assert.Contains(t, result, "SPADE 2")
-		assert.Contains(t, result, "CLOVER 9*")
+		assert.Contains(t, result, "♠2")
+		assert.Contains(t, result, "♣9*")
 		assert.Contains(t, result, "末尾*のみ操作可")
 	})
 
@@ -109,7 +109,7 @@ func TestKlondikeCuiPresenter_Output(t *testing.T) {
 
 		p := new(KlondikeCuiPresenter)
 		result := p.Output(kg, nil)
-		assert.Contains(t, result, "ウェイスト: HEART 5")
+		assert.Contains(t, result, "ウェイスト: ♥5")
 	})
 
 	t.Run("with error", func(t *testing.T) {
@@ -178,7 +178,7 @@ func TestKlondikeCuiPresenter_Output(t *testing.T) {
 
 		p := new(KlondikeCuiPresenter)
 		result := p.Output(kg, nil)
-		assert.Contains(t, result, "SPADE 1")
+		assert.Contains(t, result, "♠1")
 	})
 
 	t.Run("face down card shows ??", func(t *testing.T) {

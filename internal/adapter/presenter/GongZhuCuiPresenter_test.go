@@ -66,7 +66,7 @@ func TestGongZhuCuiPresenter_Output(t *testing.T) {
 			domain.NewCard(domain.CardDesignDiamond, 8, false), // plain -> not shown
 		})
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "獲得: SPADE 12 HEART 5")
+		assert.Contains(t, result, "獲得: ♠12 ♥5")
 		// Only the one capturing player gets a line; the others took nothing.
 		assert.Equal(t, 1, strings.Count(result, "獲得:"))
 	})
