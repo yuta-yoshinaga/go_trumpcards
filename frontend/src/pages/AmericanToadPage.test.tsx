@@ -331,7 +331,7 @@ describe('AmericanToadPage keyboard shortcuts', () => {
   });
 });
 
-// #5559: 8列 + 8基礎札 + リザーブ + 捨て札と候補が多いのに、どこに置けるかは
+// #5559: 8列 + 8組札 + リザーブ + 捨て札と候補が多いのに、どこに置けるかは
 // クリックしてサーバーのエラーを見るまで分からなかった。
 describe('AmericanToadPage destination highlight', () => {
   const targets = () => document.querySelectorAll('[data-legal-target]');

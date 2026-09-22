@@ -734,7 +734,7 @@ describe('PenguinPage hint announcement', () => {
       const region = screen.getByTestId('pg-hint-announce');
       expect(region).toHaveAttribute('role', 'status');
       expect(region).toHaveAttribute('aria-live', 'polite');
-      expect(region).toHaveTextContent('ヒント: ♠ K を タブロー 1 から ファンデーション へ移動');
+      expect(region).toHaveTextContent('ヒント: ♠ K を タブロー 1 から 組札 へ移動');
     });
   });
 
@@ -778,14 +778,14 @@ describe('PenguinPage hint announcement', () => {
     let firstRegion: HTMLElement | null = null;
     await waitFor(() => {
       firstRegion = screen.getByTestId('pg-hint-announce');
-      expect(firstRegion).toHaveTextContent('ヒント: ♠ K を タブロー 1 から ファンデーション へ移動');
+      expect(firstRegion).toHaveTextContent('ヒント: ♠ K を タブロー 1 から 組札 へ移動');
     });
 
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
 
     await waitFor(() => {
       const secondRegion = screen.getByTestId('pg-hint-announce');
-      expect(secondRegion).toHaveTextContent('ヒント: ♠ K を タブロー 1 から ファンデーション へ移動');
+      expect(secondRegion).toHaveTextContent('ヒント: ♠ K を タブロー 1 から 組札 へ移動');
       expect(secondRegion).not.toBe(firstRegion);
     });
   });
@@ -838,7 +838,7 @@ describe('PenguinPage hint announcement', () => {
 
     await waitFor(() => {
       const region = screen.getByTestId('pg-hint-announce');
-      expect(region).toHaveTextContent('ヒント: を タブロー 3 から ファンデーション へ移動');
+      expect(region).toHaveTextContent('ヒント: を タブロー 3 から 組札 へ移動');
     });
   });
 });

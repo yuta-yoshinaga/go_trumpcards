@@ -145,7 +145,7 @@ func TestYukonCuiPresenter_HintOutput(t *testing.T) {
 		p := new(YukonCuiPresenter)
 		result := p.HintOutput(yg)
 		assert.Contains(t, result, "ヒント")
-		assert.Contains(t, result, "ファンデーション")
+		assert.Contains(t, result, "組札")
 		// Foundation moves carry the high-priority confidence label.
 		assert.Contains(t, result, "優先度: 高")
 	})

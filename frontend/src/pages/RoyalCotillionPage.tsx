@@ -123,7 +123,7 @@ function RoyalCotillionPageContent() {
 
   const dispatchMove = useCallback(
     (source: RoyalCotillionMoveZone, target: RoyalCotillionMoveZone) => {
-      // **タブロー枠とリザーブの札は基礎札へしか行けない。**空き枠を埋められる
+      // **タブロー枠とリザーブの札は組札へしか行けない。**空き枠を埋められる
       // のは山札か捨て札だけ。クリック経路はボタンの disabled で防いでいるが、
       // **ドラッグ経路はここを通る**ので、同じ規則をここでも見る (#4906)。
       if (target.zone === 'tableau' && (source.zone === 'tableau' || source.zone === 'reserve')) return;
@@ -201,7 +201,7 @@ function RoyalCotillionPageContent() {
               type="button"
               onClick={() => game.handleSelectTarget(slotZone)}
               // 空き枠を埋められるのは山札か捨て札だけ。枠もリザーブも
-              // 行き先は基礎札しかないので、移動元がそれらのときは押せない。
+              // 行き先は組札しかないので、移動元がそれらのときは押せない。
               disabled={
                 !isPlaying ||
                 loading ||
