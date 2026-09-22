@@ -10,6 +10,7 @@
   "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
   "helpSetTarget": "  sl <n>               game-end target score",
   "statusLine": "ラウンド: {{round}}  トリック: {{trick}}  ディーラー: {{dealer}} (前={{fore}} / 中={{mid}} / 後={{rear}})",
+  "playerLine": "{{name}}{{role}}: ビッド={{bid}} トリック={{tricks}} カード点={{cardPts}} 合計={{total}} ラウンド={{round}} 手札={{hand}}",
   "gameLabel": "ゲーム: {{type}}",
   "trumpLabel": " (切り札={{suit}})",
   "currentBid": "現在のビッド: {{bid}}",

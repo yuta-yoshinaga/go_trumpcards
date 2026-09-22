@@ -22,6 +22,8 @@
   "actionSuffixBurned": " (場札焼却!)",
   "actionSuffixSkipped": " (次プレイヤーをスキップ)",
   "gameEnd": "ゲーム終了！",
+  "resultRank": "順位={{rank}}",
+  "resultShithead": " (シットヘッド)",
   "rankLine": "  {{name}}: 順位={{rank}}{{suffix}}",
   "rankShithead": " (Shithead!)",
   "promptCurrentTurn": "手番: {{name}} (出すソース: {{source}})",

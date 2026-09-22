@@ -10,6 +10,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func TestShitheadWebPresenter_Output(t *testing.T) {
@@ -59,6 +60,17 @@ func TestShitheadWebPresenter_Output(t *testing.T) {
 		assert.NoError(t, json.Unmarshal([]byte(out), &parsed))
 		assert.Contains(t, parsed.Message, "ゲーム終了")
 		assert.Equal(t, "shithead.result.rankings", parsed.MessageCode)
+
+		i18n.SetLang("en")
+		out = p.Output(s, nil)
+		assert.NoError(t, json.Unmarshal([]byte(out), &parsed))
+		assert.Contains(t, parsed.Message, "rank=")
+		assert.Contains(t, parsed.Message, "(Shithead)")
+		i18n.SetLang("ja")
+		out = p.Output(s, nil)
+		assert.NoError(t, json.Unmarshal([]byte(out), &parsed))
+		assert.Contains(t, parsed.Message, "順位=")
+		assert.Contains(t, parsed.Message, "(シットヘッド)")
 	})
 }
 
