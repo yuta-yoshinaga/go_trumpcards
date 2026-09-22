@@ -41,7 +41,7 @@
   "zoneNertz": "ナッツ",
   "zoneWaste": "ウェイスト",
   "zoneTableau": "タブロー{{col}}",
-  "zoneTableauWithIdx": "タブロー{{col}}(idx={{idx}})",
+  "zoneTableauWithIdx": "タブロー{{col}}(番号={{idx}})",
   "zoneFoundation": "ファウンデーション{{col}}",
   "helpExampleHint": "  h                   次の一手を教えてもらう",
   "helpLog": "  l                   行動ログを表示",

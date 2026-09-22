@@ -2,7 +2,7 @@
   "helpTitle": "Miss Milligan (ミス・ミリガン)",
   "helpDeal": "  d                        山札から各列に1枚ずつ配り足す",
   "helpMoveTF": "  m t <col> f              タブローから基礎札へ",
-  "helpMoveTT": "  m t <from> t <to> [idx]  タブロー間で移動 (idx=連番の先頭、省略時は最上段)",
+  "helpMoveTT": "  m t <from> t <to> [idx]  タブロー間で移動 (番号=連番の先頭、省略時は最上段)",
   "helpWaive": "  wv <col> [idx]           連番を脇へ保持する (山札を使い切った後のみ)",
   "helpMoveWT": "  m w t <col>              保持中の札をタブローへ戻す",
   "helpMoveWF": "  m w f                    保持中の1枚を基礎札へ",

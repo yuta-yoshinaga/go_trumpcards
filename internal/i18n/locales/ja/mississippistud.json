@@ -40,7 +40,7 @@
   "log.fold": "プレイヤーがフォールド",
   "log.deal": "ホールカード2枚 + コミュニティカード3枚を配りました",
   "log.folded": "フォールド; ベット{{wager}}を失いました",
-  "log.resultWin": "プレイヤーの勝ち rank={{rank}} total={{total}}",
-  "log.resultPush": "プッシュ rank={{rank}} total={{total}}",
-  "log.resultLose": "プレイヤーの負け rank={{rank}} total={{total}}"
+  "log.resultWin": "プレイヤーの勝ち ランク={{rank}} 合計={{total}}",
+  "log.resultPush": "プッシュ ランク={{rank}} 合計={{total}}",
+  "log.resultLose": "プレイヤーの負け ランク={{rank}} 合計={{total}}"
 }

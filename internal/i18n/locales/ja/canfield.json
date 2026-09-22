@@ -23,7 +23,7 @@
   "baseRank": "ベースランク: {{rank}}",
   "baseRankRule": "ファンデーションはベースランクから始まり、Kの次はAへ循環します",
   "foundationHeader": "組札: ",
-  "reserveLine": "リザーブ: {{count}}枚 (top: {{card}})",
+  "reserveLine": "リザーブ: {{count}}枚 (一番上: {{card}})",
   "reserveEmpty": "リザーブ: [空]",
   "stockLine": "ストック: {{count}}枚",
   "wasteCard": " | ウェイスト: {{card}}",

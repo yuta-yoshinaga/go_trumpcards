@@ -6,7 +6,7 @@
   "helpMoveWF": "  m w f                    捨て札から基礎札へ",
   "helpMoveWT": "  m w t <col>              捨て札からタブローへ",
   "helpMoveTF": "  m t <col> f              タブローから基礎札へ",
-  "helpMoveTT": "  m t <from> t <to> [idx]  タブロー間で移動 (idx=連番の先頭、省略時は最上段)",
+  "helpMoveTT": "  m t <from> t <to> [idx]  タブロー間で移動 (番号=連番の先頭、省略時は最上段)",
   "helpGiveUp": "  g                        ギブアップ",
   "helpHint": "  h                        ヒント",
   "helpAutoComplete": "  ac                       オートコンプリート",

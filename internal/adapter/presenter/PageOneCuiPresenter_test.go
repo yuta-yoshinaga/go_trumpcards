@@ -126,7 +126,7 @@ func TestPageOneCuiPresenter_Output(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
 		players[0].SetHasDeclared(true)
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "[PAGE ONE!]")
+		assert.Contains(t, result, "[ページワン!]")
 	})
 
 	t.Run("last-card warning shown for undeclared single-card player", func(t *testing.T) {
@@ -147,7 +147,7 @@ func TestPageOneCuiPresenter_Output(t *testing.T) {
 		players[0].SetHasDeclared(true)
 		result := p.Output(m, nil)
 		assert.NotContains(t, result, "残り1枚！")
-		assert.Contains(t, result, "[PAGE ONE!]")
+		assert.Contains(t, result, "[ページワン!]")
 	})
 
 	t.Run("penalty line shown for CPU", func(t *testing.T) {
