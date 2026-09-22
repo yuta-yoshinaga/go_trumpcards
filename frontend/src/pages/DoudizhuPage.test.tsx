@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { doudizhuApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { DoudizhuResponse } from '../types/card';
 import { DoudizhuPage, formatDDZState } from './DoudizhuPage';
@@ -259,6 +260,30 @@ describe('DoudizhuPage', () => {
   it('formatDDZState omits the hand line when the human has no visible cards', () => {
     // defaultState's human has cards: [] → no "Your hand" line.
     expect(formatDDZState(defaultState)).not.toContain('Your hand');
+  });
+
+  it('formatDDZState localizes an end-of-game message for the CLI', async () => {
+    const state = {
+      ...defaultState,
+      phase: 'end',
+      gameEndFlag: true,
+      players: defaultState.players.map((player) => ({ ...player, isLandlord: false })),
+      message: '',
+      messageCode: 'doudizhu.result.summary',
+      messageParams: { winnerKey: 'doudizhu.landlord', score: '10' },
+    };
+
+    await i18n.changeLanguage('ja');
+    const japanese = formatDDZState(state);
+    expect(japanese).toContain('地主');
+    expect(japanese).not.toContain('Landlord');
+
+    await i18n.changeLanguage('en');
+    const english = formatDDZState(state);
+    expect(english).toContain('Landlord');
+    expect(english).not.toContain('地主');
+
+    await i18n.changeLanguage('ja');
   });
 
   it('labels hand cards via cardAlt and reflects selection with aria-pressed', async () => {

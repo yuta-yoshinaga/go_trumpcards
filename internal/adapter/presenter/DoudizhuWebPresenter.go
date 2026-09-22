@@ -3,7 +3,7 @@
 package presenter
 
 import (
-	"fmt"
+	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -79,28 +79,19 @@ func (p *DoudizhuWebPresenter) Output(dg interfaces.DoudizhuGame, lastErr error)
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()
 	} else if dg.GetGameEndFlag() {
-		resObj.Message = p.buildResultMessage(dg)
 		resObj.MessageCode = "doudizhu.result.summary"
-		resObj.MessageParams = map[string]string{"summary": resObj.Message}
+		scores := dg.GetScores()
+		winnerKey := "doudizhu.peasant"
+		if scores[dg.GetLandlordIdx()] > 0 {
+			winnerKey = "doudizhu.landlord"
+		}
+		resObj.MessageParams = map[string]string{
+			"winnerKey": winnerKey,
+			"score":     strconv.Itoa(scores[dg.GetLandlordIdx()]),
+		}
 	}
 
 	return marshalOrError(resObj)
-}
-
-// buildResultMessage ゲーム終了メッセージを生成
-func (p *DoudizhuWebPresenter) buildResultMessage(dg interfaces.DoudizhuGame) string {
-	scores := dg.GetScores()
-	landlordIdx := dg.GetLandlordIdx()
-	landlordWon := scores[landlordIdx] > 0
-
-	var winner string
-	if landlordWon {
-		winner = "地主"
-	} else {
-		winner = "農民"
-	}
-
-	return fmt.Sprintf("%s の勝利！ スコア: %d", winner, scores[landlordIdx])
 }
 
 // ActionLogOutput 棋譜をJSON出力

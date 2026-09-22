@@ -1,9 +1,10 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { tichuApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { TichuPlayerData, TichuResponse } from '../types/card';
-import { TichuPage } from './TichuPage';
+import { formatTichuState, TichuPage } from './TichuPage';
 
 vi.mock('../api/gameApi', () => ({
   tichuApi: { exec: vi.fn() },
@@ -272,6 +273,29 @@ describe('TichuPage', () => {
     // Human (P0) is on team A, so Team A is emphasised.
     const teamA = screen.getByText(/チームA.*30/);
     expect(teamA).toHaveClass('text-ds-accent');
+    expect(teamA).toHaveTextContent('チームA (P0/P2)');
+  });
+
+  it('formatTichuState localizes an end-of-game message for the CLI', async () => {
+    const state = makeState({
+      phase: 'end',
+      gameEndFlag: true,
+      message: '',
+      messageCode: 'tichu.result.summary',
+      messageParams: { winnerKey: 'tichu.teamA', scoreA: '10', scoreB: '5' },
+    });
+
+    await i18n.changeLanguage('ja');
+    const japanese = formatTichuState(state);
+    expect(japanese).toContain('チームA');
+    expect(japanese).not.toContain('Team A');
+
+    await i18n.changeLanguage('en');
+    const english = formatTichuState(state);
+    expect(english).toContain('Team A');
+    expect(english).not.toContain('チームA');
+
+    await i18n.changeLanguage('ja');
   });
 
   it('end phase: hides the live score bar (only the result block shows scores)', async () => {

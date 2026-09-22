@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { resolveMessageCode } from '../utils/resolveMessageCode';
 
 /** Props for {@link GameMessageBox}. */
 export interface GameMessageBoxProps {
@@ -19,20 +20,7 @@ export function GameMessageBox({
   severity = 'info',
 }: GameMessageBoxProps) {
   const { t } = useTranslation('common');
-  let displayMessage = message ?? '';
-  if (messageCode) {
-    const params = messageParams
-      ? Object.fromEntries(
-          Object.entries(messageParams).map(([key, value]) =>
-            key.endsWith('Key') ? [key.slice(0, -3), t(value, messageParams)] : [key, value],
-          ),
-        )
-      : {};
-    const translated = t(`messageCode.${messageCode}`, params);
-    if (translated !== `messageCode.${messageCode}`) {
-      displayMessage = translated;
-    }
-  }
+  const displayMessage = resolveMessageCode(t, messageCode, messageParams, message);
   if (!alwaysVisible && !displayMessage) return null;
   const role = severity === 'alert' ? 'alert' : 'status';
   const live = severity === 'alert' ? 'assertive' : 'polite';
