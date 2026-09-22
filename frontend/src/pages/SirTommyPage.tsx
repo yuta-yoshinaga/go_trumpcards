@@ -574,7 +574,7 @@ function SirTommyPageContent() {
                 {requestedHint && (
                   <div className="text-sm text-ds-accent bg-ds-surface/90 border border-ds-accent rounded px-3 py-1.5 mt-1">
                     {t('hintAvailable')}:{' '}
-                    {/* 置き場所の助言はファンデーションを指さない。移動の体裁に
+                    {/* 置き場所の助言は組札を指さない。移動の体裁に
                         落とすと foundationIdx の -1 が出る (#5552)。 */}
                     {hintPlacesOnWaste
                       ? `${t('stock')} → ${t('waste')} ${requestedHint.wasteIdx.toString()}`

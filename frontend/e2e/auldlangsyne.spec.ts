@@ -11,8 +11,8 @@ test.describe('AuldLangSyne E2E', () => {
     // Foundations row. Uses the JA-locale aria-label since the Playwright suite
     // runs against the JA-default browser. Every foundation builds +1, suit
     // ignored, so there is no step suffix.
-    await expect(page.getByLabel(/ファンデーション 0 /).first()).toBeVisible({ timeout: TIMEOUT_TRANSITION });
-    await expect(page.getByLabel(/ファンデーション 3 /).first()).toBeVisible({ timeout: TIMEOUT_TRANSITION });
+    await expect(page.getByLabel(/組札 0 /).first()).toBeVisible({ timeout: TIMEOUT_TRANSITION });
+    await expect(page.getByLabel(/組札 3 /).first()).toBeVisible({ timeout: TIMEOUT_TRANSITION });
 
     // The stock shows deals remaining rather than a face-up next card.
     await expect(page.getByTestId('als-deals-left')).toBeVisible({ timeout: TIMEOUT_TRANSITION });

@@ -73,7 +73,7 @@ beforeEach(() => {
 });
 
 describe('SpiteAndMalicePage', () => {
-  const foundationButtons = () => screen.getAllByRole('button', { name: /ファウンデーション|Foundation/ });
+  const foundationButtons = () => screen.getAllByRole('button', { name: /組札|Foundation/ });
 
   it('marks only matching foundations after selecting a hand, goal, or side card', async () => {
     mockExec.mockResolvedValue({
@@ -397,7 +397,7 @@ describe('SpiteAndMalicePage', () => {
     const toggle = await screen.findByRole('checkbox', { name: 'ヒント表示' });
     if (!(toggle as HTMLInputElement).checked) fireEvent.click(toggle);
     const tooltip = await screen.findByTestId('hint-tooltip');
-    expect(tooltip).toHaveTextContent('ゴールパイルのトップをファウンデーションに出せます');
+    expect(tooltip).toHaveTextContent('ゴールパイルのトップを組札に出せます');
   });
 
   it('defaults the CPU speed select to normal when unset', async () => {
@@ -443,7 +443,7 @@ describe('SpiteAndMalicePage', () => {
   });
 });
 
-// #5560: K はどの基礎札にも出せるワイルドだが、その規則が表示にも読み上げにも
+// #5560: K はどの組札にも出せるワイルドだが、その規則が表示にも読み上げにも
 // 出ておらず、初見では気付けなかった。
 describe('SpiteAndMalicePage wild king', () => {
   it('badges the King in hand and says so in the label', async () => {
@@ -501,7 +501,7 @@ describe('SpiteAndMalicePage pile aria-labels', () => {
 
     expect(screen.getByLabelText('ゴール: 空')).toBeInTheDocument();
     expect(screen.getByLabelText('サイド 1 一番上: ♠ 3 (1枚)')).toBeInTheDocument();
-    expect(screen.getByLabelText('ファウンデーション 1: ♥ A (一番上=1)')).toBeInTheDocument();
+    expect(screen.getByLabelText('組札 1: ♥ A (一番上=1)')).toBeInTheDocument();
 
     const labels = Array.from(document.querySelectorAll('[aria-label]'), (el) => el.getAttribute('aria-label') ?? '');
     expect(labels.join(' | ')).not.toMatch(/ top:| left\)|: empty|aria\.(goal|side|foundation)/);

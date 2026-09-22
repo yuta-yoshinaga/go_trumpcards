@@ -183,7 +183,7 @@ describe('CalculationPage', () => {
     renderWithProviders(<CalculationPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
-    const f0 = screen.getByLabelText(/ファンデーション 0 \+1/);
+    const f0 = screen.getByLabelText(/組札 0 \+1/);
     fireEvent.click(f0);
     await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
@@ -195,7 +195,7 @@ describe('CalculationPage', () => {
     mockExec.mockClear();
 
     fireEvent.click(screen.getByTestId('calc-stock-button'));
-    fireEvent.click(screen.getByLabelText(/ファンデーション 2 \+3/));
+    fireEvent.click(screen.getByLabelText(/組札 2 \+3/));
 
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'stock' }, { zone: 'foundation', idx: 2 }),
@@ -223,7 +223,7 @@ describe('CalculationPage', () => {
     mockExec.mockClear();
 
     fireEvent.click(screen.getByTestId('calc-waste-button-1'));
-    fireEvent.click(screen.getByLabelText(/ファンデーション 1 \+2/));
+    fireEvent.click(screen.getByLabelText(/組札 1 \+2/));
 
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'waste', idx: 1 }, { zone: 'foundation', idx: 1 }),
@@ -279,7 +279,7 @@ describe('CalculationPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     // messageCode を付けるとメッセージ枠にも同じ文が出るので、バナー側だけを見る。
     // Hint uses localized zone names + index, not raw F/W symbols.
-    expect(screen.getByText(/ストック → ファンデーション 2/)).toBeInTheDocument();
+    expect(screen.getByText(/ストック → 組札 2/)).toBeInTheDocument();
   });
 
   // **押していない人にヒントを見せない。**#4483 以降 `Output()` が毎回
@@ -293,7 +293,7 @@ describe('CalculationPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     // messageCode を付けるとメッセージ枠にも同じ文が出るので、バナー側だけを見る。
     // Hint uses localized zone names + index, not raw F/W symbols.
-    expect(screen.queryByText(/ストック → ファンデーション 2/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/ストック → 組札 2/)).not.toBeInTheDocument();
   });
 
   it('renders the backend hint banner when state.hint is a waste hint', async () => {
@@ -305,7 +305,7 @@ describe('CalculationPage', () => {
     });
     renderWithProviders(<CalculationPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    expect(screen.getByText(/ウェイスト 0 → ファンデーション 1/)).toBeInTheDocument();
+    expect(screen.getByText(/ウェイスト 0 → 組札 1/)).toBeInTheDocument();
   });
 
   it('renders a stock-to-waste hint and marks its destination', async () => {
