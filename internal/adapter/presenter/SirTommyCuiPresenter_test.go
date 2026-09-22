@@ -233,7 +233,7 @@ func TestSirTommyCuiPresenter_HintOutput(t *testing.T) {
 		g.On("GetHint").Return(&domain.SirTommyHint{FromZone: "stock", WasteIdx: -1, FoundationIdx: 2, ToZone: "foundation"})
 		result := new(SirTommyCuiPresenter).HintOutput(g)
 		assert.Contains(t, result, "ストック")
-		assert.Contains(t, result, "ファンデーション2")
+		assert.Contains(t, result, "組札2")
 	})
 
 	// #5552: ファンデーションに置けない局面 — このゲームで最も頻繁に起きる —
@@ -252,7 +252,7 @@ func TestSirTommyCuiPresenter_HintOutput(t *testing.T) {
 		g.On("GetHint").Return(&domain.SirTommyHint{FromZone: "waste", WasteIdx: 1, FoundationIdx: 0, ToZone: "foundation"})
 		result := new(SirTommyCuiPresenter).HintOutput(g)
 		assert.Contains(t, result, "ウェイスト1")
-		assert.Contains(t, result, "ファンデーション0")
+		assert.Contains(t, result, "組札0")
 	})
 
 	t.Run("no hint", func(t *testing.T) {

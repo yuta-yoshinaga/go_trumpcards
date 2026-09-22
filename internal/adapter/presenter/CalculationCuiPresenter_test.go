@@ -121,7 +121,7 @@ func TestCalculationCuiPresenter_HintOutput(t *testing.T) {
 		g.On("GetHint").Return(&domain.CalculationHint{FromZone: "stock", WasteIdx: -1, FoundationIdx: 2})
 		result := new(CalculationCuiPresenter).HintOutput(g)
 		assert.Contains(t, result, "ストック")
-		assert.Contains(t, result, "ファンデーション2")
+		assert.Contains(t, result, "組札2")
 	})
 
 	t.Run("stock to waste hint", func(t *testing.T) {
@@ -137,7 +137,7 @@ func TestCalculationCuiPresenter_HintOutput(t *testing.T) {
 		g.On("GetHint").Return(&domain.CalculationHint{FromZone: "waste", WasteIdx: 1, FoundationIdx: 0})
 		result := new(CalculationCuiPresenter).HintOutput(g)
 		assert.Contains(t, result, "ウェイスト1")
-		assert.Contains(t, result, "ファンデーション0")
+		assert.Contains(t, result, "組札0")
 	})
 
 	t.Run("no hint", func(t *testing.T) {

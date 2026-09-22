@@ -7,8 +7,8 @@
   "title": "オールド・ラング・サイン",
   "stock": "山札",
   "waste": "ウェイスト",
-  "foundation": "ファンデーション",
-  "foundations": "ファンデーション",
+  "foundation": "組札",
+  "foundations": "組札",
   "moveCount": "手数",
   "stockCount": "残り",
   "deal": "配る",
@@ -35,10 +35,10 @@
   "stalemate": "手詰まりです",
   "landscapeBanner": "横画面での表示を推奨します",
   "frontendHint": {
-    "auldlangsyneWaste": "ウェイストのカードをファンデーションに置けます"
+    "auldlangsyneWaste": "ウェイストのカードを組札に置けます"
   },
   "tutorial": {
-    "foundations": "上段の4つがファンデーション。4枚のエースが最初から据えられており、スートを問わずA→2→3…→K(13)へ1ずつ積み上げます。",
+    "foundations": "上段の4つが組札。4枚のエースが最初から据えられており、スートを問わずA→2→3…→K(13)へ1ずつ積み上げます。",
     "stockWaste": "「配る」を押すと山札から4つのウェイストへ1枚ずつ配られます。置き先は選べません。動かせるのは各ウェイストの一番上のカードだけです。",
     "controls": "操作ボタン。配る・ヒント・ギブアップ・元に戻すなどが行えます。",
     "resetButton": "新しいゲームを始めるボタンです。"

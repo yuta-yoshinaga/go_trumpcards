@@ -416,7 +416,7 @@ func TestJapaneseGameLogAndWasteLabels(t *testing.T) {
 		"montebank.log.gate":           "ゲートが公開されました。払戻し {{value1}}",
 		"montebank.log.gameEnd":        "チップ{{value1}}で終了しました",
 		"piquet.log.trickWin":          "{{name}}がトリック{{trick}}を取りました",
-		"russianbank.log.toFoundation": "{{source}} → ファウンデーション{{foundation}}",
+		"russianbank.log.toFoundation": "{{source}} → 組札{{foundation}}",
 		"russianbank.log.toTableau":    "{{source}} → タブロー{{column}}",
 		"canfield.wasteCard":           " | ウェイスト: {{card}}",
 		"fortyandeight.wasteCard":      " | ウェイスト: {{card}}",

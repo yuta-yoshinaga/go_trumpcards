@@ -33,7 +33,7 @@ func TestRussianBankCuiPresenter_Output(t *testing.T) {
 		g := rbState(t, "{"+rbTwoEmptyPlayers+`,"ph":1,"cu":0}`)
 		out := p.Output(g, nil)
 		assert.Contains(t, out, "Russian Bank")
-		assert.Contains(t, out, "ファウンデーション")
+		assert.Contains(t, out, "組札")
 		assert.Contains(t, out, "あなたの手番")
 	})
 
