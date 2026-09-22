@@ -16,8 +16,8 @@ export interface FlowerGardenLegalTargets {
  * (`internal/domain/FlowerGarden.go`).
  *
  * - タブローの規則: 値差 -1 のみ（スートも色も見ない。赤黒交互ではない）。空列には任意のカードを置ける。
- * - ファンデーションの規則: 空なら A、そうでなければ同スートで +1。ただし WebController は index を受け取らず
- *   ドメイン側の `findFoundation` で受け入れ可能な最初の山に着地するため、合法なファンデーションとして
+ * - 組札の規則: 空なら A、そうでなければ同スートで +1。ただし WebController は index を受け取らず
+ *   ドメイン側の `findFoundation` で受け入れ可能な最初の山に着地するため、合法な組札として
  *   光らせるのは実際に着地する最初の1つだけにする。
  */
 export function flowerGardenLegalTargets(

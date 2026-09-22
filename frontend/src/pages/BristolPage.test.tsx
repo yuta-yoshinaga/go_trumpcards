@@ -364,7 +364,7 @@ describe('BristolPage', () => {
   it('highlights only the destinations the selected card can go to', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
-      // タブロー 0 の札は「タブロー 3」と「ファウンデーション 1」にだけ置ける。
+      // タブロー 0 の札は「タブロー 3」と「組札 1」にだけ置ける。
       legalTargets: { 'tableau-0': { tableau: [3], foundation: [1] } },
     });
     renderWithProviders(<BristolPage />);
@@ -375,7 +375,7 @@ describe('BristolPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '降順ビルド列 1（1枚）' }));
 
-    // 合法な移動先は 2 つ (タブロー 3 とファウンデーション 1) だけ。
+    // 合法な移動先は 2 つ (タブロー 3 と組札 1) だけ。
     await waitFor(() => expect(screen.queryAllByTestId('bristol-legal-target')).toHaveLength(2));
     expect(screen.getByRole('button', { name: /降順ビルド列 4/ })).toHaveAccessibleDescription('ここに置けます');
     expect(screen.getByRole('button', { name: /降順ビルド列 2/ })).toHaveAccessibleDescription('ここには置けません');

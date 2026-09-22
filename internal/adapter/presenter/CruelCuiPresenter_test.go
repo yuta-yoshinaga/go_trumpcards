@@ -156,7 +156,7 @@ func TestCruelCuiPresenter_HintOutput(t *testing.T) {
 		p := new(CruelCuiPresenter)
 		result := p.HintOutput(cg)
 		assert.Contains(t, result, "ヒント")
-		assert.Contains(t, result, "ファウンデーション")
+		assert.Contains(t, result, "組札")
 	})
 
 	t.Run("hint to tableau", func(t *testing.T) {

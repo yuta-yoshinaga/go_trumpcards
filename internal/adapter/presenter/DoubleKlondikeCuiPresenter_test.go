@@ -53,7 +53,7 @@ func TestDoubleKlondikeCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, out, "ヒント")
 		// Zone identifiers are localised (ja), not raw "waste"/"foundation".
 		assert.Contains(t, out, "ウェイスト")
-		assert.Contains(t, out, "ファウンデーション")
+		assert.Contains(t, out, "組札")
 		assert.NotContains(t, out, "waste")
 		assert.NotContains(t, out, "foundation")
 		assert.NotEmpty(t, p.HintOutput(dkState(t, `{"ph":2}`)))
