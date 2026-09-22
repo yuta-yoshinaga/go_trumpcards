@@ -172,7 +172,7 @@ describe('BakersGamePage', () => {
     await waitFor(() => expect(screen.getByTestId('bg-foundation-total')).toHaveTextContent('0/52'));
 
     fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
-    fireEvent.click(screen.getByRole('button', { name: '♠ ファンデーション (空)' }));
+    fireEvent.click(screen.getByRole('button', { name: '♠ 組札 (空)' }));
 
     await waitFor(() => expect(screen.getByTestId('bg-foundation-total')).toHaveTextContent('1/52'));
   });
@@ -587,7 +587,7 @@ describe('BakersGamePage', () => {
     await waitFor(() => expect(screen.getByText('♠')).toBeInTheDocument());
 
     for (const suit of ['♠', '♣', '♥', '♦']) {
-      expect(screen.getByRole('button', { name: `${suit} ファンデーション (空)` })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: `${suit} 組札 (空)` })).toBeInTheDocument();
     }
   });
 
@@ -596,10 +596,10 @@ describe('BakersGamePage', () => {
     renderWithProviders(<BakersGamePage />);
     await waitFor(() => expect(screen.getByText('♠')).toBeInTheDocument());
 
-    expect(screen.getByRole('button', { name: '♠ ファンデーション (1枚)' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '♥ ファンデーション (2枚)' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '♣ ファンデーション (空)' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '♦ ファンデーション (空)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♠ 組札 (1枚)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♥ 組札 (2枚)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♣ 組札 (空)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♦ 組札 (空)' })).toBeInTheDocument();
   });
 
   // --- Freecell aria labels ---

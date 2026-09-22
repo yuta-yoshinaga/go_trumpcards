@@ -217,7 +217,7 @@ func TestKlondikeCuiPresenter_HintOutput(t *testing.T) {
 		p := new(KlondikeCuiPresenter)
 		result := p.HintOutput(kg)
 		assert.Contains(t, result, "タブロー列0[2]")
-		assert.Contains(t, result, "ファンデーション")
+		assert.Contains(t, result, "組札")
 	})
 
 	t.Run("waste to tableau hint", func(t *testing.T) {

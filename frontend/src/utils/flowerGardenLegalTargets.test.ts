@@ -59,7 +59,7 @@ describe('flowerGardenLegalTargets', () => {
 
   it('returns only the first empty foundation when an ace is passed with multiple empty foundations', () => {
     // WebController は index を受け取らず findFoundation で最初の受け入れ可能山に着地するため、
-    // 空のファンデーションが複数あっても着地する最初の 1 つだけを返す。
+    // 空の組札が複数あっても着地する最初の 1 つだけを返す。
     const emptyFoundations: Card[][] = [[], [], [], []];
     const targets = flowerGardenLegalTargets([], emptyFoundations, card('SPADE', 1));
     expect(targets.foundation.size).toBe(1);
@@ -84,7 +84,7 @@ describe('flowerGardenLegalTargets', () => {
     const clover6 = flowerGardenLegalTargets([], foundation, card('CLOVER', 6));
     expect([...clover6.foundation]).toEqual([2]);
 
-    // ♦2 は空ファンデーション (idx 3) には置けない (A ではない)
+    // ♦2 は空組札 (idx 3) には置けない (A ではない)
     const diamond2 = flowerGardenLegalTargets([], foundation, card('DIAMOND', 2));
     expect(diamond2.foundation.size).toBe(0);
   });

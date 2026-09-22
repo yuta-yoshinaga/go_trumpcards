@@ -143,7 +143,7 @@ func TestMissMilliganCuiPresenter_HintOutput(t *testing.T) {
 			[]string{"保持中の札", "タブロー列3"}},
 		{"waived to a foundation",
 			&domain.MissMilliganHint{FromZone: "waived", FromCol: -1, CardIndex: -1, ToZone: "foundation", ToIdx: 2},
-			[]string{"保持中の札", "基礎札2"}},
+			[]string{"保持中の札", "組札2"}},
 		{"tableau to tableau",
 			&domain.MissMilliganHint{FromZone: "tableau", FromCol: 1, CardIndex: 2, ToZone: "tableau", ToIdx: 5},
 			[]string{"タブロー列1[2]", "タブロー列5"}},

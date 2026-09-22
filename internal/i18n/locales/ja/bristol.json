@@ -2,9 +2,9 @@
   "helpTitle": "Bristol (ブリストル)",
   "helpDraw": "  d                    ストックから3つのファンに1枚ずつ配る",
   "helpMoveTT": "  m t <col> t <col>    タブロー列からタブロー列に移動",
-  "helpMoveTF": "  m t <col> f          タブロー列からファウンデーションに移動",
+  "helpMoveTF": "  m t <col> f          タブロー列から組札に移動",
   "helpMoveNT": "  m n <fan> t <col>    ファンからタブロー列に移動",
-  "helpMoveNF": "  m n <fan> f          ファンからファウンデーションに移動",
+  "helpMoveNF": "  m n <fan> f          ファンから組札に移動",
   "helpTargets": "  t <zone> <col>      その札を置ける先を一覧する (zone: t=タブロー n=ファン)",
   "helpGiveUp": "  g                    ギブアップ",
   "helpHint": "  h                    ヒント",
@@ -12,7 +12,7 @@
   "promptSourceZone": "移動元ゾーンを入力 (t=タブロー, n=ファン)",
   "promptFromColumn": "移動元タブロー列(0-7)を入力",
   "promptFan": "ファン(0-2)を入力",
-  "promptDestination": "移動先を入力 (t=タブロー, f=ファウンデーション)",
+  "promptDestination": "移動先を入力 (t=タブロー, f=組札)",
   "promptToColumn": "移動先タブロー列(0-7)を入力",
   "invalidFromZone": "無効な移動元ゾーンです: {{val}}",
   "moveUsage": "使い方: m t <col> t <col> | m t <col> f | m n <fan> t <col> | m n <fan> f",
@@ -42,5 +42,5 @@
   "helpExampleHint": "  h                    次の一手を教えてもらう",
   "helpExampleAuto": "  ac                   組札へ送れる札を自動で送る",
   "helpUndo": "  u                    1手戻す",
-  "log.draw": "ストックからファンにカードを配りました", "log.tableauToTableau": "タブロー列{{fromCol}}→タブロー列{{toCol}}", "log.tableauToFoundation": "タブロー列{{col}}→ファウンデーション", "log.fanToTableau": "ファン{{fanIdx}}→タブロー列{{toCol}}", "log.fanToFoundation": "ファン{{fanIdx}}→ファウンデーション", "log.giveUp": "ギブアップしました", "log.autoComplete": "オートコンプリートを実行しました"
+  "log.draw": "ストックからファンにカードを配りました", "log.tableauToTableau": "タブロー列{{fromCol}}→タブロー列{{toCol}}", "log.tableauToFoundation": "タブロー列{{col}}→組札", "log.fanToTableau": "ファン{{fanIdx}}→タブロー列{{toCol}}", "log.fanToFoundation": "ファン{{fanIdx}}→組札", "log.giveUp": "ギブアップしました", "log.autoComplete": "オートコンプリートを実行しました"
 }
