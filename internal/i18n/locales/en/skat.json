@@ -10,6 +10,7 @@
   "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
   "helpSetTarget": "  sl <n>               game-end target score",
   "statusLine": "Round: {{round}}  Trick: {{trick}}  Dealer: {{dealer}} (Fore={{fore}} / Mid={{mid}} / Rear={{rear}})",
+  "playerLine": "{{name}}{{role}}: bid={{bid}} tricks={{tricks}} cardPts={{cardPts}} total={{total}} round={{round}} hand={{hand}}",
   "gameLabel": "Game: {{type}}",
   "trumpLabel": " (trump={{suit}})",
   "currentBid": "Current bid: {{bid}}",

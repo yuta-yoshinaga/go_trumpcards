@@ -3,7 +3,6 @@
 package presenter
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -20,14 +19,13 @@ import (
 func ramschPlayerStr(player *domain.RamschPlayer, i int) string {
 	var b strings.Builder
 	name := cuiPlayerName(player, i)
-	fmt.Fprintf(&b, "%s: tricks=%d cardPts=%d total=%d round=%d hand=%d\n",
-		name,
-		player.GetTrickCount(),
-		player.GetCardPoints(),
-		player.GetCumulativeScore(),
-		player.GetRoundScore(),
-		player.GetCardsSize(),
-	)
+	b.WriteString(i18n.Tf("ramsch.playerLine",
+		"name", name,
+		"tricks", strconv.Itoa(player.GetTrickCount()),
+		"cardPts", strconv.Itoa(player.GetCardPoints()),
+		"total", strconv.Itoa(player.GetCumulativeScore()),
+		"round", strconv.Itoa(player.GetRoundScore()),
+		"hand", strconv.Itoa(player.GetCardsSize())) + "\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
 		b.WriteString(cuiIndexedCardListStr(player))
 		b.WriteString("\n")
