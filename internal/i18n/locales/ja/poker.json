@@ -27,7 +27,7 @@
   "cpuActionLine": "  Player {{idx}}: {{action}}",
   "cpuActionAmount": " ({{amount}})",
   "cpuExchangesHeader": "[CPU交換]",
-  "cpuExchangeLine": "  Player {{idx}}: {{count}}枚交換",
+  "cpuExchangeLine": "  プレイヤー{{idx}}: {{count}}枚交換",
   "resultsHeader": "[結果]",
   "resultHand": "  {{name}}: {{hand}}{{kickers}}",
   "resultName": "  {{name}}",

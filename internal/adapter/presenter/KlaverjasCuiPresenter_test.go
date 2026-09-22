@@ -114,7 +114,7 @@ func TestKlaverjasCuiPresenter_Output(t *testing.T) {
 		m.On("GetRoundPlayerRoem").Return([domain.KlaverjasPlayerCnt]int{50, 0, 0, 100})
 		result := p.Output(m, nil)
 		// 正の席だけが出る
-		assert.Contains(t, result, "Roem 内訳: あなた 50点, CPU 3 100点")
+		assert.Contains(t, result, "ロエム 内訳: あなた 50点, CPU 3 100点")
 		// 0 の席が出ないこと
 		assert.NotContains(t, result, "CPU 1 0点")
 		assert.NotContains(t, result, "CPU 2 0点")

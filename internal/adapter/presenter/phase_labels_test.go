@@ -454,7 +454,7 @@ func TestJapaneseStockDiscardAndReserveLabels(t *testing.T) {
 		"acesup.stockLine":        "ストック: {{count}}枚",
 		"acesup.discardLine":      " | 捨札: {{count}}/{{goal}}枚",
 		"agnes.stockLine":         "ストック: {{count}}枚",
-		"canfield.reserveLine":    "リザーブ: {{count}}枚 (top: {{card}})",
+		"canfield.reserveLine":    "リザーブ: {{count}}枚 (一番上: {{card}})",
 		"canfield.reserveEmpty":   "リザーブ: [空]",
 		"canfield.stockLine":      "ストック: {{count}}枚",
 		"easthaven.stockLine":     "ストック: {{count}}",

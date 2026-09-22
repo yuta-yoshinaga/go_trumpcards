@@ -22,7 +22,7 @@
   "colorYellow": "黄",
   "colorGreen": "緑",
   "colorBlack": "黒",
-  "birdName": "Rook",
+  "birdName": "ルーク",
   "promptBid": "{{name}} のビッドです",
   "promptBidHelp": "b <points> (70-120, 5刻み) / pa でパス",
   "promptNestExchange": "ネストを手札に加えました。5枚捨てて切り札色を宣言してください",
