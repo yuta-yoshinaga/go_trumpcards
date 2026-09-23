@@ -1,8 +1,8 @@
 import type { SoloWhistResponse } from '../../../types/card';
+import { suitSymbolAt } from '../../cardAlt';
 import { formatCard, formatHeader, formatIndexedCards, formatPlayerName, formatSeparator } from '../formatterBase';
 
 const PHASE_NAMES = ['Bid', 'Play', 'TrickEnd', 'RoundEnd', 'GameEnd'];
-const SUIT_SYMBOLS = ['none', '♠', '♣', '♥', '♦'];
 const CONTRACT_NAMES = ['Pass', 'Solo', 'Misère', 'Abundance'];
 
 /** Format a Solo Whist game state as terminal text. */
@@ -13,7 +13,7 @@ export function formatSoloWhistState(state: SoloWhistResponse): string {
   lines.push(
     `round: ${state.roundNumber}  trick: ${state.trickNumber}  phase: ${PHASE_NAMES[state.phase] ?? state.phase}`,
   );
-  lines.push(`trump: ${SUIT_SYMBOLS[state.trumpSuit] ?? '?'}`);
+  lines.push(`trump: ${suitSymbolAt(state.trumpSuit, 'none')}`);
   if (state.declarerIdx >= 0) {
     const name = formatPlayerName(state.declarerIdx, state.players[state.declarerIdx]?.isHuman ?? false);
     lines.push(`declarer: ${name} — ${CONTRACT_NAMES[state.contract] ?? '?'}`);

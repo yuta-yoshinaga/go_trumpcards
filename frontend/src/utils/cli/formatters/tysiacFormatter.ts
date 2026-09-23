@@ -1,4 +1,5 @@
 import type { TysiacResponse } from '../../../types/card';
+import { suitSymbolAt } from '../../cardAlt';
 import {
   formatCard,
   formatHeader,
@@ -9,7 +10,6 @@ import {
 } from '../formatterBase';
 
 const PHASE_NAMES = ['Bid', 'Talon', 'Play', 'TrickEnd', 'RoundEnd', 'GameEnd'];
-const SUIT_SYMBOLS = ['-', '♠', '♣', '♥', '♦'];
 
 /** Format a Tysiąc (Thousand) game state as terminal text. */
 export function formatTysiacState(state: TysiacResponse): string {
@@ -19,7 +19,7 @@ export function formatTysiacState(state: TysiacResponse): string {
   lines.push(
     `round: ${state.roundNumber}  trick: ${state.trickNumber}  phase: ${PHASE_NAMES[state.phase] ?? state.phase}`,
   );
-  lines.push(`trump: ${SUIT_SYMBOLS[state.trumpSuit] ?? '-'}  bid: ${state.currentBid}  contract: ${state.contract}`);
+  lines.push(`trump: ${suitSymbolAt(state.trumpSuit, '-')}  bid: ${state.currentBid}  contract: ${state.contract}`);
   lines.push(`scores: ${state.playerScores.map((s, i) => `P${i}=${s}`).join('  ')}`);
   lines.push('');
 

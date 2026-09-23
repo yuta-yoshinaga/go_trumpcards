@@ -46,7 +46,7 @@ import { hintCheckboxItem } from '../utils/settingsItems';
  */
 const NEAR_WIN_RATIO = 0.8;
 
-/** Card design string → suit number (1=♠ 2=♣ 3=♥ 4=♦), to align with SUIT_SYMBOLS / trumpSuit. */
+/** Card design string → suit number (1=♠ 2=♣ 3=♥ 4=♦), to align with suitSymbolAt / trumpSuit. */
 const DESIGN_TO_SUIT: Readonly<Record<string, number>> = { SPADE: 1, CLOVER: 2, HEART: 3, DIAMOND: 4 };
 
 /** Card points: A=11, 10=10, K=4, Q=3, J=2, others=0. */

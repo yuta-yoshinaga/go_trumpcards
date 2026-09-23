@@ -1,10 +1,8 @@
 import type { SpoilFiveResponse } from '../../../types/card';
+import { suitSymbolAt } from '../../cardAlt';
 import { formatCard, formatHeader, formatIndexedCards, formatPlayerName, formatSeparator } from '../formatterBase';
 
 const PHASE_NAMES = ['Play', 'TrickEnd', 'RoundEnd', 'GameEnd'];
-
-/** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 unused). */
-const SUIT_SYMBOLS = ['?', '♠', '♣', '♥', '♦'];
 
 /** Format a Spoil Five game state as terminal text (shows trump, pot, per-player round tricks and score). */
 export function formatSpoilFiveState(state: SpoilFiveResponse): string {
@@ -14,7 +12,7 @@ export function formatSpoilFiveState(state: SpoilFiveResponse): string {
   lines.push(
     `round: ${state.roundNumber}  trick: ${state.trickNumber}  phase: ${PHASE_NAMES[state.phase] ?? state.phase}`,
   );
-  lines.push(`trump: ${SUIT_SYMBOLS[state.trumpSuit] ?? '?'}  pot: ${state.pot}`);
+  lines.push(`trump: ${suitSymbolAt(state.trumpSuit, '?')}  pot: ${state.pot}`);
   lines.push('');
 
   for (const p of state.players) {

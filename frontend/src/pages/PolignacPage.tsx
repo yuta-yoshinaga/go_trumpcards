@@ -32,7 +32,7 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 /** Suit symbols indexed by the domain's design constant (1..4). */
 /** Domain constant for spades — the jack that costs two points. */
 const SPADE_DESIGN = 1;
-/** Suit names for the accessible reading, indexed like SUIT_SYMBOLS. */
+/** Suit names for the accessible reading, indexed like suitSymbolAt. */
 const SUIT_ARIA_KEYS = ['', 'spade', 'clover', 'heart', 'diamond'] as const;
 
 /** Tricks per round. Capot means taking all of them. */
