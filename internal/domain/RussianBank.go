@@ -352,16 +352,6 @@ func rbSourceKey(src RussianBankSource) string {
 	}
 }
 
-func rbSourceTableauCode(src RussianBankSource, destination string) string {
-	if src.Zone == RussianBankZoneTableau {
-		if destination == "foundation" {
-			return "russianbank.log.toFoundationTableau"
-		}
-		return "russianbank.log.toTableauTableau"
-	}
-	return ""
-}
-
 // --- public actions ---
 
 // MoveToFoundation 移動元のトップを置ける任意のファウンデーションに移す。
@@ -384,7 +374,7 @@ func (g *RussianBank) MoveToFoundation(src RussianBankSource) error {
 	params := map[string]string{"foundation": strconv.Itoa(fIdx)}
 	detailCode := "russianbank.log.toFoundation"
 	if src.Zone == RussianBankZoneTableau {
-		detailCode = rbSourceTableauCode(src, "foundation")
+		detailCode = "russianbank.log.toFoundationTableau"
 		params["col"] = strconv.Itoa(src.Col)
 	} else {
 		params["sourceKey"] = rbSourceKey(src)
@@ -417,7 +407,7 @@ func (g *RussianBank) MoveToTableau(src RussianBankSource, col int) error {
 	params := map[string]string{"column": strconv.Itoa(col)}
 	detailCode := "russianbank.log.toTableau"
 	if src.Zone == RussianBankZoneTableau {
-		detailCode = rbSourceTableauCode(src, "tableau")
+		detailCode = "russianbank.log.toTableauTableau"
 		params["col"] = strconv.Itoa(src.Col)
 	} else {
 		params["sourceKey"] = rbSourceKey(src)

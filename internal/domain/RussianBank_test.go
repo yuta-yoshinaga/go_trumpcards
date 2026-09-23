@@ -258,15 +258,21 @@ func TestRussianBank_MoveMechanics(t *testing.T) {
 		g.players[0].pushWaste(rbCard(CardDesignClover, 1))    // own waste A
 		g.players[1].pushReserve(rbCard(CardDesignHeart, 1))   // opp reserve A
 		g.players[1].pushWaste(rbCard(CardDesignSpade, 1))     // opp waste A
+		g.tableau[0] = []*Card{rbCard(CardDesignHeart, 1)}     // tableau A
 		for _, src := range []RussianBankSource{
 			{Zone: RussianBankZoneReserve},
 			{Zone: RussianBankZoneWaste},
 			{Zone: RussianBankZoneReserve, FromOpponent: true},
 			{Zone: RussianBankZoneWaste, FromOpponent: true},
+			{Zone: RussianBankZoneTableau, Col: 0},
 		} {
 			if err := g.MoveToFoundation(src); err != nil {
 				t.Errorf("MoveToFoundation(%+v): %v", src, err)
 			}
+		}
+		entry := g.GetActionLog()[len(g.GetActionLog())-1]
+		if entry.DetailCode != "russianbank.log.toFoundationTableau" || entry.DetailParams["col"] != "0" {
+			t.Errorf("tableau source log = %+v", entry)
 		}
 		for _, candidate := range g.GetActionLog() {
 			if candidate.DetailCode == "russianbank.log.toFoundation" {

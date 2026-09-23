@@ -50,12 +50,6 @@ func TestActionLogNewKeyHelpers(t *testing.T) {
 			t.Errorf("rbSourceKey(%+v) = %q, want %q", tt.src, got, tt.want)
 		}
 	}
-	if got := rbSourceTableauCode(RussianBankSource{Zone: RussianBankZoneTableau}, "foundation"); got != "russianbank.log.toFoundationTableau" {
-		t.Errorf("tableau foundation code = %q", got)
-	}
-	if got := rbSourceTableauCode(RussianBankSource{Zone: RussianBankZoneTableau}, "tableau"); got != "russianbank.log.toTableauTableau" {
-		t.Errorf("tableau tableau code = %q", got)
-	}
 }
 
 func TestQuodlibetPointsStrUsesPlayerNames(t *testing.T) {
