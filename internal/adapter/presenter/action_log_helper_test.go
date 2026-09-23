@@ -272,6 +272,27 @@ func TestActionLogToText_RendersTargetGameSuitsInBothLanguages(t *testing.T) {
 	assert.NotContains(t, en, "Spades")
 }
 
+func TestActionLogToText_RendersChangedSuitParamsInBothLanguages(t *testing.T) {
+	entries := []*domain.ActionLogEntry{
+		{DetailCode: "binokel.log.trump", DetailParams: map[string]string{"suitKey": "common.suit.heart"}},
+		{DetailCode: "pinochle.log.trump", DetailParams: map[string]string{"suitKey": "common.suit.heart"}},
+		{DetailCode: "mighty.log.declareTrump", DetailParams: map[string]string{"name": "Player", "suitKey": "common.suit.heart"}},
+		{DetailCode: "mighty.log.playJokerLead", DetailParams: map[string]string{"name": "Player", "card": "🃏", "suitKey": "common.suit.heart"}},
+		{DetailCode: "napoleon.log.declareTrump", DetailParams: map[string]string{"name": "Player", "suitKey": "common.suit.heart"}},
+	}
+
+	t.Cleanup(func() { i18n.SetLang("ja") })
+	i18n.SetLang("ja")
+	ja := actionLogToText(entries)
+	assert.Contains(t, ja, "ハート")
+	assert.NotContains(t, ja, "Heart")
+
+	i18n.SetLang("en")
+	en := actionLogToText(entries)
+	assert.Contains(t, en, "Heart")
+	assert.NotContains(t, en, "ハート")
+}
+
 func TestActionLogToText_RendersRemainingGameSuitsInBothLanguages(t *testing.T) {
 	entries := []*domain.ActionLogEntry{
 		{TurnNumber: 1, PlayerIdx: 0, ActionType: "bid", DetailCode: "ombre.log.bid", DetailParams: map[string]string{"name": "You", "bid": "entrar", "trumpKey": "common.suit.spade"}},

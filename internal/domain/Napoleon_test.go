@@ -34,6 +34,17 @@ func TestNapoleon_NewNapoleon(t *testing.T) {
 	assert.False(t, n.GetGameEndFlag())
 }
 
+func TestNapoleon_TrumpLogUsesSuitKey(t *testing.T) {
+	n := newTestNapoleon()
+	n.SetPhase(domain.NapoleonPhaseTrumpDeclaration)
+	n.SetNapoleonIdx(0)
+	require.NoError(t, n.PlayerDeclareTrump(domain.CardDesignHeart, domain.CardDesignSpade, 1))
+
+	entry := n.GetActionLog()[0]
+	assert.Equal(t, "common.suit.heart", entry.DetailParams["suitKey"])
+	assert.NotContains(t, entry.DetailParams, "suit")
+}
+
 func TestNapoleon_Reset(t *testing.T) {
 	n := newTestNapoleon()
 	n.Reset()

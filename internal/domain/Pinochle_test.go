@@ -54,6 +54,23 @@ func TestPinochleDomainErrorsHaveMessageCodes(t *testing.T) {
 	}
 }
 
+func TestPinochle_TrumpLogUsesSuitKey(t *testing.T) {
+	game := newTestPinochle()
+	game.phase = PinochlePhaseTrump
+
+	if err := game.doCallTrump(0, CardDesignHeart); err != nil {
+		t.Fatalf("doCallTrump failed: %v", err)
+	}
+
+	entry := game.GetActionLog()[0]
+	if got := entry.DetailParams["suitKey"]; got != "common.suit.heart" {
+		t.Fatalf("expected heart suit key, got %q", got)
+	}
+	if _, ok := entry.DetailParams["suit"]; ok {
+		t.Fatal("expected suit parameter to be absent")
+	}
+}
+
 func TestPinochleDomainErrorCallSitesHaveMessageCodes(t *testing.T) {
 	g := newTestPinochle()
 	g.Reset()
