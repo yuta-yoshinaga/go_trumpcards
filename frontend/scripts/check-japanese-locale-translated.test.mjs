@@ -24,13 +24,13 @@ afterAll(() => {
  */
 const ANCHOR = { ja: { anchor: 'アンカー' }, en: { anchor: 'Anchor' } };
 
-function fixture(ja, en) {
+function fixture(ja, en, filename = 'game.json') {
   const dir = mkdtempSync(join(tmpdir(), 'japanese-locale-translated-'));
   dirs.push(dir);
   for (const [language, given] of Object.entries({ ja, en })) {
     const values = { ...ANCHOR[language], ...given };
     mkdirSync(join(dir, 'internal', 'i18n', 'locales', language), { recursive: true });
-    writeFileSync(join(dir, 'internal', 'i18n', 'locales', language, 'game.json'), JSON.stringify(values, null, 2));
+    writeFileSync(join(dir, 'internal', 'i18n', 'locales', language, filename), JSON.stringify(values, null, 2));
   }
   return dir;
 }
@@ -112,5 +112,20 @@ describe('check-japanese-locale-translated', () => {
       ),
     );
     expect(result.code).toBe(0);
+  });
+
+  it('exempts Schafkopf contractShort.wenz from identical-to-English checks', () => {
+    const result = check(fixture({ 'contractShort.wenz': 'Wenz' }, { 'contractShort.wenz': 'Wenz' }, 'schafkopf.json'));
+    expect(result.code).toBe(0);
+  });
+
+  it('rejects the same contract label outside the Schafkopf contractShort exemption', () => {
+    const otherFile = check(fixture({ 'contractShort.wenz': 'Wenz' }, { 'contractShort.wenz': 'Wenz' }, 'skat.json'));
+    expect(otherFile.code).toBe(1);
+    expect(otherFile.out).toContain('contractShort.wenz');
+
+    const otherKey = check(fixture({ contractWenz: 'Wenz' }, { contractWenz: 'Wenz' }, 'schafkopf.json'));
+    expect(otherKey.code).toBe(1);
+    expect(otherKey.out).toContain('contractWenz');
   });
 });

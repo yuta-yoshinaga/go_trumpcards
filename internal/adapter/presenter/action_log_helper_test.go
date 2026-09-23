@@ -199,6 +199,41 @@ func TestActionLogToText_ResolvesSjavsTrumpSuitInBothLanguages(t *testing.T) {
 	i18n.SetLang("ja")
 }
 
+func TestActionLogToText_RendersIssue7950ParamsInBothLanguages(t *testing.T) {
+	entries := []*domain.ActionLogEntry{
+		{DetailCode: "schafkopf.log.declares", DetailParams: map[string]string{"name": "You", "contractKey": "schafkopf.contractShort.wenz"}},
+		{DetailCode: "bidwhist.log.bid", DetailParams: map[string]string{"name": "You", "tricks": "3", "directionKey": "bidwhist.dirUptown"}},
+		{DetailCode: "russianbank.log.toFoundation", DetailParams: map[string]string{"sourceKey": "russianbank.srcReserve", "foundation": "1"}},
+		{DetailCode: "russianbank.log.toFoundationTableau", DetailParams: map[string]string{"col": "3", "foundation": "1"}},
+		{DetailCode: "reversis.log.marked", DetailParams: map[string]string{"nameKey": "reversis.mark.quinola", "penalty": "5", "stake": "5"}},
+		{DetailCode: "quodlibet.log.dealEnd", DetailParams: map[string]string{"deal": "1", "points": "You 3 / CPU 1 -1 / CPU 2 0 / CPU 3 5"}},
+	}
+
+	i18n.SetLang("ja")
+	ja := actionLogToText(entries)
+	assert.Contains(t, ja, "Wenz")
+	assert.Contains(t, ja, "3 アップタウン")
+	assert.Contains(t, ja, "自リザーブ")
+	assert.Contains(t, ja, "タブロー3")
+	assert.Contains(t, ja, "キノラ（♥J）")
+	assert.Contains(t, ja, "You 3 / CPU 1 -1")
+	assert.NotContains(t, ja, "Uptown")
+	assert.NotContains(t, ja, "reserve")
+	assert.NotContains(t, ja, "p0=")
+
+	i18n.SetLang("en")
+	en := actionLogToText(entries)
+	assert.Contains(t, en, "Wenz")
+	assert.Contains(t, en, "3 Uptown")
+	assert.Contains(t, en, "your reserve")
+	assert.Contains(t, en, "tableau 3")
+	assert.Contains(t, en, "Quinola (J♥)")
+	assert.NotContains(t, en, "キノラ")
+	assert.NotContains(t, en, "p0=")
+
+	i18n.SetLang("ja")
+}
+
 func TestActionLogToText_RendersTargetGameSuitsInBothLanguages(t *testing.T) {
 	entries := []*domain.ActionLogEntry{
 		{

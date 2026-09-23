@@ -258,14 +258,27 @@ func TestRussianBank_MoveMechanics(t *testing.T) {
 		g.players[0].pushWaste(rbCard(CardDesignClover, 1))    // own waste A
 		g.players[1].pushReserve(rbCard(CardDesignHeart, 1))   // opp reserve A
 		g.players[1].pushWaste(rbCard(CardDesignSpade, 1))     // opp waste A
+		g.tableau[0] = []*Card{rbCard(CardDesignHeart, 1)}     // tableau A
 		for _, src := range []RussianBankSource{
 			{Zone: RussianBankZoneReserve},
 			{Zone: RussianBankZoneWaste},
 			{Zone: RussianBankZoneReserve, FromOpponent: true},
 			{Zone: RussianBankZoneWaste, FromOpponent: true},
+			{Zone: RussianBankZoneTableau, Col: 0},
 		} {
 			if err := g.MoveToFoundation(src); err != nil {
-				t.Errorf("MoveToFoundation(%s): %v", rbSourceName(src), err)
+				t.Errorf("MoveToFoundation(%+v): %v", src, err)
+			}
+		}
+		entry := g.GetActionLog()[len(g.GetActionLog())-1]
+		if entry.DetailCode != "russianbank.log.toFoundationTableau" || entry.DetailParams["col"] != "0" {
+			t.Errorf("tableau source log = %+v", entry)
+		}
+		for _, candidate := range g.GetActionLog() {
+			if candidate.DetailCode == "russianbank.log.toFoundation" {
+				if candidate.DetailParams["sourceKey"] == "" || candidate.DetailParams["source"] != "" {
+					t.Errorf("foundation source params = %+v", candidate.DetailParams)
+				}
 			}
 		}
 	})
@@ -297,6 +310,10 @@ func TestRussianBank_MoveMechanics(t *testing.T) {
 		}
 		if len(g.tableau[1]) != 2 || len(g.tableau[0]) != 0 {
 			t.Errorf("unexpected tableau state: %d / %d", len(g.tableau[0]), len(g.tableau[1]))
+		}
+		entry := g.GetActionLog()[len(g.GetActionLog())-1]
+		if entry.DetailCode != "russianbank.log.toTableauTableau" || entry.DetailParams["col"] != "0" {
+			t.Errorf("tableau source log = %+v", entry)
 		}
 		// Moving a column onto itself is rejected.
 		if err := g.MoveToTableau(RussianBankSource{Zone: RussianBankZoneTableau, Col: 1}, 1); err == nil {

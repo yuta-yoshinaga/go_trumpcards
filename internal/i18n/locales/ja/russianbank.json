@@ -30,6 +30,8 @@
   "log.newGame": "新しいゲームを開始しました",
   "log.toFoundation": "{{source}} → 組札{{foundation}}",
   "log.toTableau": "{{source}} → タブロー{{column}}",
+  "log.toFoundationTableau": "タブロー{{col}} → 組札{{foundation}}",
+  "log.toTableauTableau": "タブロー{{col}} → タブロー{{column}}",
   "log.discard": "手札を廃札に送り手番終了",
   "log.pass": "手番をパス",
   "log.stalemate": "両者とも手詰まりのため停滞で決着",

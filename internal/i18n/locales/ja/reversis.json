@@ -9,6 +9,8 @@
   "playerLine": "{{name}}: {{chips}}チップ 失点{{penalty}} [{{marks}}] 手札{{cards}}枚",
   "markQuinola": "♥J",
   "markDiamondAce": "♦A",
+  "mark.quinola": "キノラ（♥J）",
+  "mark.diamondAce": "♦A",
   "markNone": "無傷",
   "marked": "{{name}} が{{mark}}を獲得: +{{penalty}}失点、プールに +{{stake}}チップ",
   "promptCurrentPlayer": "手番: {{name}}",

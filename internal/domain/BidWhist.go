@@ -300,7 +300,7 @@ func (g *BidWhist) applyBid(idx int, bid BidWhistBid) {
 	g.players[idx].SetBid(&b)
 	g.highestBid = &b
 	g.highestBidder = idx
-	g.appendLog(idx, "bid", "bidwhist.log.bid", map[string]string{"name": g.playerName(idx), "bid": bidWhistBidLabel(b)}, nil)
+	g.appendLog(idx, "bid", "bidwhist.log.bid", map[string]string{"name": g.playerName(idx), "tricks": strconv.Itoa(b.Tricks), "directionKey": bidWhistDirectionKey(b.Direction)}, nil)
 	g.advanceBid()
 }
 
@@ -354,7 +354,7 @@ func (g *BidWhist) finalizeBid() {
 	}
 	g.kitty = nil
 	g.appendLog(g.declarerIdx, "win_bid",
-		"bidwhist.log.winsBid", map[string]string{"name": g.playerName(g.declarerIdx), "bid": bidWhistBidLabel(g.contract)}, nil)
+		"bidwhist.log.winsBid", map[string]string{"name": g.playerName(g.declarerIdx), "tricks": strconv.Itoa(g.contract.Tricks), "directionKey": bidWhistDirectionKey(g.contract.Direction)}, nil)
 	g.sortAllHands()
 	g.currentPlayerIdx = g.declarerIdx
 	if g.isNoTrump() {
@@ -1266,22 +1266,17 @@ func bidWhistCardLabel(c *Card) string {
 	return cardStr(c)
 }
 
-// bidWhistDirectionLabel 方向のログ表示文字列
-func bidWhistDirectionLabel(dir int) string {
+func bidWhistDirectionKey(dir int) string {
 	switch dir {
 	case BidWhistDirectionUptown:
-		return "Uptown"
+		return "bidwhist.dirUptown"
 	case BidWhistDirectionDowntown:
-		return "Downtown"
+		return "bidwhist.dirDowntown"
 	case BidWhistDirectionNoTrump:
-		return "No Trump"
+		return "bidwhist.dirNoTrump"
+	default:
+		return "bidwhist.dirUnknown"
 	}
-	return "?"
-}
-
-// bidWhistBidLabel ビッドのログ表示文字列
-func bidWhistBidLabel(b BidWhistBid) string {
-	return fmt.Sprintf("%d %s", b.Tricks, bidWhistDirectionLabel(b.Direction))
 }
 
 // --- JSON ---
