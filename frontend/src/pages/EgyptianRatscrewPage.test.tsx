@@ -398,30 +398,30 @@ describe('EgyptianRatscrewPage CHANCE_WIN', () => {
   it('shows a burst and announces when the human wins the chance battle', async () => {
     mockExec.mockResolvedValue(chanceWinHumanState);
     renderWithProviders(<EgyptianRatscrewPage />);
+    const burst = await screen.findByTestId('slap-burst');
+    // 人間が奪ったので緑（correct）。
+    expect(burst).toHaveAttribute('data-outcome', 'correct');
+    expect(burst.textContent).toContain('チャンス勝ち！');
     await waitFor(() => {
       const announce = screen.getByTestId('er-slap-announce');
       // リテラル文字列で確認（i18n.T に依存しない）。
       expect(announce.textContent).toContain('チャンス勝ちで山札を総取り');
       expect(announce.textContent).toContain('あなた');
     });
-    const burst = screen.getByTestId('slap-burst');
-    // 人間が奪ったので緑（correct）。
-    expect(burst).toHaveAttribute('data-outcome', 'correct');
-    expect(burst.textContent).toContain('チャンス勝ち！');
   });
 
   it('shows a burst and announces when the CPU wins the chance battle', async () => {
     mockExec.mockResolvedValue(chanceWinCpuState);
     renderWithProviders(<EgyptianRatscrewPage />);
+    const burst = await screen.findByTestId('slap-burst');
+    // CPU が奪ったので赤（wrong）。
+    expect(burst).toHaveAttribute('data-outcome', 'wrong');
     await waitFor(() => {
       const announce = screen.getByTestId('er-slap-announce');
       expect(announce.textContent).toContain('チャンス勝ちで山札を総取り');
       // CPU が奪ったとき。
       expect(announce.textContent).toContain('CPU 1');
     });
-    const burst = screen.getByTestId('slap-burst');
-    // CPU が奪ったので赤（wrong）。
-    expect(burst).toHaveAttribute('data-outcome', 'wrong');
   });
 
   // 否定対照: CHANCE_WIN が誤スラップ（赤リング）の見た目にならないこと。
@@ -443,13 +443,13 @@ describe('EgyptianRatscrewPage CHANCE_WIN', () => {
       lastSlapReason: EgyptianRatscrewSlapReason.PAIR,
     });
     renderWithProviders(<EgyptianRatscrewPage />);
+    const burst = await screen.findByTestId('slap-burst');
+    expect(burst).toHaveAttribute('data-outcome', 'correct');
     await waitFor(() => {
       const announce = screen.getByTestId('er-slap-announce');
       expect(announce.textContent).toContain('スラップ成功');
       expect(announce.textContent).toContain('ペア');
     });
-    const burst = screen.getByTestId('slap-burst');
-    expect(burst).toHaveAttribute('data-outcome', 'correct');
   });
 
   it('still fires the burst and announce for a wrong slap', async () => {
@@ -459,11 +459,11 @@ describe('EgyptianRatscrewPage CHANCE_WIN', () => {
       lastEventPlayerIdx: 0,
     });
     renderWithProviders(<EgyptianRatscrewPage />);
+    const burst = await screen.findByTestId('slap-burst');
+    expect(burst).toHaveAttribute('data-outcome', 'wrong');
     await waitFor(() => {
       const announce = screen.getByTestId('er-slap-announce');
       expect(announce.textContent).toContain('スラップ失敗');
     });
-    const burst = screen.getByTestId('slap-burst');
-    expect(burst).toHaveAttribute('data-outcome', 'wrong');
   });
 });

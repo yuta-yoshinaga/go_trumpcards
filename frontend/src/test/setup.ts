@@ -120,6 +120,22 @@ beforeEach(() => {
   localStorage.setItem('tutorial_no_suggest', 'true');
 });
 
-afterEach(() => {
+// vi.useFakeTimers() also fakes setImmediate by default, so this await can stall until hookTimeout
+// if a test leaves fake timers enabled; restore real timers in the test or a describe-level afterEach.
+const yieldToEventLoop = () =>
+  new Promise<void>((resolve) => {
+    const fn = (globalThis as unknown as { setImmediate?: (cb: () => void) => void }).setImmediate;
+    if (typeof fn === 'function') {
+      fn(resolve);
+    } else {
+      setTimeout(resolve, 0);
+    }
+  });
+
+afterEach(async () => {
   cleanup();
+  // Allow the Node.js event loop to turn so V8 / libuv clears
+  // `weak_refs_keep_during_job` (via Environment::RunWeakRefCleanup), releasing
+  // happy-dom's WeakRef query caches and detached DOM/FiberNode trees.
+  await yieldToEventLoop();
 });

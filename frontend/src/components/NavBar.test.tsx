@@ -39,18 +39,31 @@ function renderNavBar(initialPath = '/') {
 function labelFor(labelKey: string): string {
   return i18n.t(labelKey);
 }
-
 afterEach(() => {
   i18n.changeLanguage('ja');
 });
 
 describe('NavBar', () => {
   it('renders navigation links for all game routes', () => {
-    renderNavBar();
+    const { container } = renderNavBar('/poker');
     const links = screen.getAllByRole('link');
     // game links + brand link
     expect(links.length).toBeGreaterThanOrEqual(gameRoutes.length);
+    const activeLinks = container.querySelectorAll('a[aria-current="page"]');
+    expect(activeLinks).toHaveLength(1);
+    expect(activeLinks[0]).toHaveAttribute('href', '/poker');
   });
+
+  for (const { path, labelKey } of gameRoutes) {
+    it(`marks ${labelKey} link as active when on ${path}`, () => {
+      const { container } = renderNavBar(path);
+      const current = Array.from(container.querySelectorAll<HTMLAnchorElement>('a[aria-current="page"]'));
+      expect(current).toHaveLength(1);
+      expect(current[0]).toHaveAttribute('aria-current', 'page');
+      expect(current[0]).toHaveAttribute('href', path);
+      expect(current[0]).toHaveTextContent(labelFor(labelKey));
+    });
+  }
 
   it('renders category labels for all categories', () => {
     renderNavBar();
@@ -58,18 +71,6 @@ describe('NavBar', () => {
       expect(screen.getAllByText(labelFor(labelKey)).length).toBeGreaterThanOrEqual(1);
     }
   });
-
-  for (const { path, labelKey } of gameRoutes) {
-    it(`marks ${labelKey} link as active when on ${path}`, () => {
-      renderNavBar(path);
-      // Exactly one link may carry aria-current, which also proves no other
-      // route's link has it.
-      const current = screen.getAllByRole('link').filter((link) => link.hasAttribute('aria-current'));
-      expect(current).toHaveLength(1);
-      expect(current[0]).toHaveAttribute('aria-current', 'page');
-      expect(current[0]).toHaveTextContent(labelFor(labelKey));
-    });
-  }
 
   it('links point to correct hrefs', () => {
     renderNavBar();
