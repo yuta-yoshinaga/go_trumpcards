@@ -35,6 +35,7 @@
   "updateApplyError": "アップデートの適用に失敗しました: {{error}}",
   "inputReadError": "入力の読み取り中にエラーが発生しました: {{error}}",
   "cliUnknownGame": "エラー: 不明なゲーム「{{name}}」",
+  "cliStartIsSubcommand": "「{{name}}」はゲームではなくサブコマンドです。'trumpcards {{name}}' を実行してください。",
   "didYouMean": "もしかして「{{name}}」ですか？",
   "cliUnknownGameHint": "ゲーム一覧は 'trumpcards games'、ヘルプは 'trumpcards --help' で確認できます。",
   "cliUnsupportedLang": "警告: サポートされていない言語「{{lang}}」です。ja をデフォルトとして使用します (--quiet/-q または TRUMPCARDS_QUIET=1 で抑止可能)",

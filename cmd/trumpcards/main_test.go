@@ -2295,6 +2295,25 @@ func TestHelpSuggestionCandidatesIncludesAliases(t *testing.T) {
 	}
 }
 
+func TestGameSuggestionCandidatesExcludeSubcommands(t *testing.T) {
+	got := gameSuggestionCandidates()
+	gotSet := make(map[string]struct{}, len(got))
+	for _, name := range got {
+		gotSet[name] = struct{}{}
+	}
+	for _, name := range builtinSubcommandNames {
+		if _, ok := gotSet[name]; ok {
+			t.Errorf("game candidates should not include subcommand %q: %v", name, got)
+		}
+	}
+	for alias := range ui.GameAliases {
+		if _, ok := gotSet[alias]; !ok {
+			t.Errorf("game candidates should include alias %q: %v", alias, got)
+		}
+		break
+	}
+}
+
 // TestBuildHelpTextLocalized verifies issue #4309: the top-level --help is
 // localized — section headings are translated in ja while the command syntax
 // (copy-paste lines) stays English in both locales.
@@ -2439,6 +2458,37 @@ func TestResolveStartGame_UnknownEmitsDidYouMean(t *testing.T) {
 	// The --start path prints the same recovery hint as the positional path.
 	if !strings.Contains(stderr.String(), "games") || !strings.Contains(stderr.String(), "--help") {
 		t.Errorf("expected recovery hint mentioning 'games' and '--help'; stderr=%q", stderr.String())
+	}
+}
+
+func TestResolveStartGame_BlackjackTypoStillSuggestsGame(t *testing.T) {
+	var stderr bytes.Buffer
+	_, code, ok := resolveStartGame("blakjack", &stderr)
+	if ok || code != 2 {
+		t.Fatalf("resolveStartGame(\"blakjack\") = (_, %d, %v), want (_, 2, false)", code, ok)
+	}
+	if !strings.Contains(stderr.String(), "blackjack") {
+		t.Errorf("expected Did-you-mean to mention blackjack; stderr=%q", stderr.String())
+	}
+}
+
+func TestResolveStartGame_SubcommandsUseDedicatedHint(t *testing.T) {
+	t.Cleanup(func() { i18n.SetLang("ja") })
+	i18n.SetLang("ja")
+	for _, name := range builtinSubcommandNames {
+		t.Run(name, func(t *testing.T) {
+			var stderr bytes.Buffer
+			_, code, ok := resolveStartGame(name, &stderr)
+			if ok || code != 2 {
+				t.Errorf("resolveStartGame(%q) = (_, %d, %v), want (_, 2, false)", name, code, ok)
+			}
+			if strings.Contains(stderr.String(), "もしかして「"+name+"」") {
+				t.Errorf("stderr self-suggested subcommand %q: %q", name, stderr.String())
+			}
+			if want := i18n.Tf("cliStartIsSubcommand", "name", name); !strings.Contains(stderr.String(), want) {
+				t.Errorf("stderr missing subcommand hint %q: %q", want, stderr.String())
+			}
+		})
 	}
 }
 
