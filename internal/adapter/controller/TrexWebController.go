@@ -5,7 +5,6 @@ package controller
 import (
 	"net/http"
 
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/webutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
@@ -21,7 +20,6 @@ type TrexWebInput struct {
 
 // TrexWebConfig トリックスWeb設定
 type TrexWebConfig struct {
-	CpuDifficulty *int `json:"cpuDifficulty,omitempty"`
 }
 
 // TrexWebOutputPlayer トリックスWebアウトプットプレイヤー
@@ -96,21 +94,11 @@ type TrexWebOutput struct {
 	WinnerIdx   int                `json:"winnerIdx"`
 	Hint        *TrexWebOutputHint `json:"hint,omitempty"`
 	WebOutputBase
-	Config TrexWebOutputConfig `json:"config"`
-}
-
-// TrexWebOutputConfig トリックス設定アウトプット
-type TrexWebOutputConfig struct {
-	CpuDifficulty int `json:"cpuDifficulty"`
 }
 
 // ToConfig builds a TrexConfig from the nested web config, applying bounds checking.
 func (c *TrexWebConfig) ToConfig() domain.TrexConfig {
-	cfg := domain.DefaultTrexConfig()
-	cfg.CpuDifficulty = domain.TrexCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty,
-		int(domain.TrexCpuDifficultyNormal), int(domain.TrexCpuDifficultyNormal),
-		int(cfg.CpuDifficulty)))
-	return cfg
+	return domain.DefaultTrexConfig()
 }
 
 // ToConfig builds a TrexConfig from the input, falling back to defaults when absent.

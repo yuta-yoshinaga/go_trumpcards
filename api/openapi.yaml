@@ -36063,11 +36063,6 @@ components:
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
           items:
             $ref: '#/components/schemas/ActionLogEntry'
-        config:
-          type: object
-          properties:
-            cpuDifficulty:
-              type: integer
         players:
           type: array
           items:
@@ -38572,8 +38567,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
             playerCnt:
               type: integer
         players:

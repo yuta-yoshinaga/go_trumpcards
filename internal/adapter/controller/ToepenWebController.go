@@ -20,8 +20,7 @@ type ToepenWebInput struct {
 
 // ToepenWebConfig トゥーペンWeb設定
 type ToepenWebConfig struct {
-	CpuDifficulty *int `json:"cpuDifficulty,omitempty"`
-	PlayerCnt     *int `json:"playerCnt,omitempty"`
+	PlayerCnt *int `json:"playerCnt,omitempty"`
 }
 
 // ToepenWebOutputPlayer トゥーペンWebアウトプットプレイヤー
@@ -79,16 +78,12 @@ type ToepenWebOutput struct {
 
 // ToepenWebOutputConfig トゥーペン設定アウトプット
 type ToepenWebOutputConfig struct {
-	CpuDifficulty int `json:"cpuDifficulty"`
-	PlayerCnt     int `json:"playerCnt"`
+	PlayerCnt int `json:"playerCnt"`
 }
 
 // ToConfig builds a ToepenConfig from the nested web config, applying bounds checking.
 func (c *ToepenWebConfig) ToConfig() domain.ToepenConfig {
 	cfg := domain.DefaultToepenConfig()
-	cfg.CpuDifficulty = domain.ToepenCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty,
-		int(domain.ToepenCpuDifficultyNormal), int(domain.ToepenCpuDifficultyNormal),
-		int(cfg.CpuDifficulty)))
 	cfg.PlayerCnt = webutil.BoundedIntPtr(c.PlayerCnt,
 		domain.ToepenMinPlayers, domain.ToepenMaxPlayers, cfg.PlayerCnt)
 	return cfg
