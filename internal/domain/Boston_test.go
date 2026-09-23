@@ -770,9 +770,8 @@ func TestBostonConfigValidate(t *testing.T) {
 		t.Errorf("the default config must validate: %v", err)
 	}
 	for _, bad := range []BostonConfig{
-		{CpuDifficulty: 9, TargetHands: 8},
-		{CpuDifficulty: BostonCpuDifficultyNormal, TargetHands: 0},
-		{CpuDifficulty: BostonCpuDifficultyNormal, TargetHands: 999},
+		{TargetHands: 0},
+		{TargetHands: 999},
 	} {
 		if err := bad.Validate(); err == nil {
 			t.Errorf("%+v must not validate", bad)

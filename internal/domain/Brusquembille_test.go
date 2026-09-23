@@ -519,18 +519,6 @@ func TestBrusquembille_Getters(t *testing.T) {
 	if got := b.GetPlayerPoints(99); got != 0 {
 		t.Error("out-of-range player points should return 0")
 	}
-	cfg := b.GetConfig()
-	if cfg.CpuDifficulty != domain.BrusquembilleCpuDifficultyNormal {
-		t.Error("default config not preserved")
-	}
-}
-
-func TestBrusquembille_SetConfig(t *testing.T) {
-	b := newTestBrusquembille()
-	b.SetConfig(domain.BrusquembilleConfig{CpuDifficulty: domain.BrusquembilleCpuDifficultyNormal})
-	if b.GetConfig().CpuDifficulty != domain.BrusquembilleCpuDifficultyNormal {
-		t.Error("SetConfig did not persist")
-	}
 }
 
 func TestBrusquembille_JSONRoundtrip(t *testing.T) {

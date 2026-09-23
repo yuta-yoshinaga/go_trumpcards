@@ -41,7 +41,7 @@ function makeState(overrides: Partial<BrusquembilleResponse> = {}): Brusquembill
     gameEndFlag: false,
     winnerIdx: -1,
     message: '',
-    config: { cpuDifficulty: 0, playerCnt: 2 },
+    config: { playerCnt: 2 },
     validIndices: [0, 1, 2],
     followRequired: false,
     ...overrides,

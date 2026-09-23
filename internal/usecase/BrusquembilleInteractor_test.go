@@ -72,7 +72,7 @@ func TestBrusquembilleInteractor_ResetWithConfig_ValidationError(t *testing.T) {
 	bpMock.On("Output", gameMock, mock.MatchedBy(func(err error) bool { return err != nil })).Return("validation error")
 
 	bi := usecase.NewBrusquembilleInteractor(gameMock, bpMock)
-	invalid := domain.BrusquembilleConfig{CpuDifficulty: 99}
+	invalid := domain.BrusquembilleConfig{}
 	got := bi.ResetWithConfig(invalid)
 	assert.Equal(t, "validation error", got)
 	gameMock.AssertNotCalled(t, "Reset")

@@ -111,8 +111,7 @@ func TestBostonWebController_ResetWithConfig(t *testing.T) {
 
 	t.Run("out-of-range values fall back to defaults", func(t *testing.T) {
 		hands := 999
-		diff := 9
-		run(t, "cfg-2", &controller.BostonWebConfig{TargetHands: &hands, CpuDifficulty: &diff}, domain.DefaultBostonConfig())
+		run(t, "cfg-2", &controller.BostonWebConfig{TargetHands: &hands}, domain.DefaultBostonConfig())
 	})
 
 	// **config はワイヤ上で任意。**省略時に落ちるとフロントの reset が死ぬ。

@@ -22,8 +22,7 @@ type BostonWebInput struct {
 
 // BostonWebConfig ボストン Web設定
 type BostonWebConfig struct {
-	CpuDifficulty *int `json:"cpuDifficulty,omitempty"`
-	TargetHands   *int `json:"targetHands,omitempty"`
+	TargetHands *int `json:"targetHands,omitempty"`
 }
 
 // BostonWebOutputBid ボストン Webアウトプット宣言
@@ -105,15 +104,12 @@ type BostonWebOutput struct {
 
 // BostonWebOutputConfig ボストン設定アウトプット
 type BostonWebOutputConfig struct {
-	CpuDifficulty int `json:"cpuDifficulty"`
-	TargetHands   int `json:"targetHands"`
+	TargetHands int `json:"targetHands"`
 }
 
 // ToConfig builds a BostonConfig from the nested web config, applying bounds checking.
 func (c *BostonWebConfig) ToConfig() domain.BostonConfig {
 	cfg := domain.DefaultBostonConfig()
-	cfg.CpuDifficulty = domain.BostonCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty,
-		int(domain.BostonCpuDifficultyNormal), int(domain.BostonCpuDifficultyNormal), int(cfg.CpuDifficulty)))
 	webutil.ApplyBoundedInt(&cfg.TargetHands, c.TargetHands,
 		domain.BostonTargetHandsMin, domain.BostonTargetHandsMax)
 	return cfg

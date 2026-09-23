@@ -20417,9 +20417,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
                     targetHands:
                       type: integer
                       description: Hands played before the game is decided (1-30, default 8).
@@ -20620,9 +20617,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
                     allowNoTrump:
                       type: boolean
                       description: Whether the declarer may name a no-trump form.
@@ -37451,8 +37445,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
             targetHands:
               type: integer
         players:
@@ -37931,8 +37923,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
             allowNoTrump:
               type: boolean
         message:
@@ -45511,14 +45501,6 @@ components:
     # -------------------------------------------------------------------------
     BriscolaConfig:
       type: object
-      description: Briscola game configuration. v1 only supports Normal difficulty.
-      properties:
-        cpuDifficulty:
-          type: integer
-          minimum: 0
-          maximum: 0
-          description: "0 = Normal (only level supported in v1)"
-
     BriscolaResponse:
       type: object
       description: Current state of the Briscola game.
@@ -45610,11 +45592,6 @@ components:
       type: object
       description: Brusquembille game configuration.
       properties:
-        cpuDifficulty:
-          type: integer
-          minimum: 0
-          maximum: 0
-          description: "0 = Normal (only level supported in v1)"
         playerCnt:
           type: integer
           minimum: 2

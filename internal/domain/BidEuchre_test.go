@@ -734,9 +734,6 @@ func TestBidEuchreConfigValidate(t *testing.T) {
 	if err := DefaultBidEuchreConfig().Validate(); err != nil {
 		t.Errorf("the default config must validate: %v", err)
 	}
-	if err := (BidEuchreConfig{CpuDifficulty: 9}).Validate(); err == nil {
-		t.Error("a bad difficulty must not validate")
-	}
 }
 
 func TestBidEuchreRoundTripsThroughJSON(t *testing.T) {
