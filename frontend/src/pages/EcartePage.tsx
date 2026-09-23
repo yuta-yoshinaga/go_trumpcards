@@ -27,6 +27,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { EcarteResponse } from '../types/card';
 import { EcarteNegStep, EcartePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { suitSymbolAt } from '../utils/cardAlt';
 import { cardLabel } from '../utils/cardUtils';
 import { ECARTE_HELP, parseEcarteCommand } from '../utils/cli/commands/ecarteCommands';
 import { formatEcarteState } from '../utils/cli/formatters/ecarteFormatter';
@@ -35,7 +36,6 @@ import { isRequestedHint } from '../utils/hintRequest';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 = undeclared). */
-const SUIT_SYMBOLS = ['', '♠', '♣', '♥', '♦'] as const;
 
 /** Écarté tutorial step definitions. */
 const ECARTE_TUTORIAL_STEPS: TutorialStep[] = [
@@ -172,7 +172,7 @@ function EcartePageContent() {
   const discardReasonKey =
     discardCount === 0 ? 'discardReasonEmpty' : discardExceedsStock ? 'discardReasonExceed' : null;
 
-  const trumpSymbol = state.trumpSuit >= 1 && state.trumpSuit <= 4 ? SUIT_SYMBOLS[state.trumpSuit] : t('noTrump');
+  const trumpSymbol = state.trumpSuit >= 1 && state.trumpSuit <= 4 ? suitSymbolAt(state.trumpSuit, '') : t('noTrump');
   // 宣言ボーナスは自分が宣言できるときだけ意味があり、相手の手札は見えないため人間の手札だけを見る。
   const hasTrumpKingBonus =
     state.trumpCard?.value === 13 ||

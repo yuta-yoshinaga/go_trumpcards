@@ -11,6 +11,17 @@ const DESIGN_SYMBOLS: Record<string, string> = {
 
 const RED_DESIGNS = new Set(['HEART', 'DIAMOND']);
 
+const SUIT_SYMBOLS_BY_INDEX = ['', '♠', '♣', '♥', '♦'] as const;
+
+/**
+ * Suit symbol for the numeric suit index the Go backend sends (1=♠ 2=♣ 3=♥ 4=♦).
+ * Any other value (0 = no suit / undecided, or out of range) returns `fallback`,
+ * so each caller keeps its own placeholder ("", "-", "?", "none").
+ */
+export function suitSymbolAt(suit: number, fallback = ''): string {
+  return suit >= 1 && suit <= 4 ? SUIT_SYMBOLS_BY_INDEX[suit] : fallback;
+}
+
 /** Return the suit symbol for a card design (e.g. SPADE → ♠), or the raw design when unknown. */
 export function suitSymbol(design: string): string {
   return DESIGN_SYMBOLS[design] ?? design;

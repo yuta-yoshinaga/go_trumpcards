@@ -33,6 +33,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { CourtPieceResponse } from '../types/card';
 import { CourtPiecePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { suitSymbolAt } from '../utils/cardAlt';
 import { COURT_PIECE_HELP, parseCourtPieceCommand } from '../utils/cli/commands/courtPieceCommands';
 import { formatCourtPieceState } from '../utils/cli/formatters/courtPieceFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -41,7 +42,6 @@ import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 = undeclared). */
-const SUIT_SYMBOLS = ['', '♠', '♣', '♥', '♦'] as const;
 
 /** Tricks a team must take within a 13-trick round to win it (Sar); mirrors CourtPieceTricksToWin in internal/domain/CourtPiece.go. */
 const COURT_PIECE_TRICKS_TO_WIN = 7;
@@ -154,7 +154,7 @@ function CourtPiecePageContent() {
   // 非合法手もクリックでき、拒否の最終判断はバックエンドが持つ。
   const legalPlayIndices = canPlay ? state.playableIndices : undefined;
 
-  const trumpSymbol = state.trumpSuit === 0 ? t('noTrump') : (SUIT_SYMBOLS[state.trumpSuit] ?? '?');
+  const trumpSymbol = state.trumpSuit === 0 ? t('noTrump') : suitSymbolAt(state.trumpSuit, '');
 
   const handleManualReset = () => {
     hideActionLog();
@@ -359,7 +359,7 @@ function CourtPiecePageContent() {
                 <div className="text-ds-warning text-sm mb-2">
                   {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
                   {state.hint.cardIndex != null && ` ([${state.hint.cardIndex}])`}
-                  {state.hint.trumpSuit != null && ` (${SUIT_SYMBOLS[state.hint.trumpSuit] ?? '?'})`}
+                  {state.hint.trumpSuit != null && ` (${suitSymbolAt(state.hint.trumpSuit, '')})`}
                 </div>
               )}
             </div>

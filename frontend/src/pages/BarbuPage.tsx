@@ -20,7 +20,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { gameTheme } from '../styles/gameTheme';
 import type { BarbuResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
-import { cardAlt } from '../utils/cardAlt';
+import { cardAlt, suitSymbolAt } from '../utils/cardAlt';
 import { suitName } from '../utils/cardUtils';
 import {
   BARBU_HELP,
@@ -40,7 +40,6 @@ const DIFFICULTY_OPTIONS = [
 const CONTRACT_COUNT = 7;
 const CONTRACT_TRUMPS = 5;
 const CONTRACT_DOMINOES = 6;
-const SUIT_SYMBOLS = ['', '♠', '♣', '♥', '♦'];
 
 /** Tutorial steps for Barbu. */
 const BB_TUTORIAL_STEPS: TutorialStep[] = [
@@ -196,7 +195,7 @@ function BarbuPageContent() {
               {state.currentContract >= 0 && (
                 <span className="ml-2 text-ds-text-primary">
                   · {t('label.contract')}: {t(`contract.${state.currentContract}`)}
-                  {state.trumpSuit >= 1 && ` (${SUIT_SYMBOLS[state.trumpSuit]})`}
+                  {state.trumpSuit >= 1 && ` (${suitSymbolAt(state.trumpSuit, '')})`}
                 </span>
               )}
             </div>
@@ -282,7 +281,7 @@ function BarbuPageContent() {
                       const vals = expandPlaced(state.tablePlaced[suit] ?? 0);
                       return (
                         <div key={suit} className="text-sm text-ds-text-primary text-center">
-                          <span className="mr-2">{SUIT_SYMBOLS[suit]}</span>
+                          <span className="mr-2">{suitSymbolAt(suit, '')}</span>
                           {vals.length === 0 ? <span className="text-ds-text-muted">—</span> : vals.join(' · ')}
                         </div>
                       );
@@ -398,7 +397,7 @@ function BarbuPageContent() {
                         <td className="px-2 py-1 text-center">{i + 1}</td>
                         <td className="px-2 py-1 whitespace-nowrap text-ds-text-primary">
                           {t(`contract.${d.contract}`)}
-                          {d.contract === CONTRACT_TRUMPS && d.trumpSuit >= 1 && ` (${SUIT_SYMBOLS[d.trumpSuit]})`}
+                          {d.contract === CONTRACT_TRUMPS && d.trumpSuit >= 1 && ` (${suitSymbolAt(d.trumpSuit, '')})`}
                         </td>
                         {state.players.map((p) => {
                           const gained = d.gained[p.id] ?? 0;
