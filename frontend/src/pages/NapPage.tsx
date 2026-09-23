@@ -28,6 +28,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { NapResponse } from '../types/card';
 import { NapContract, NapPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { suitSymbolAt } from '../utils/cardAlt';
 import { NAP_HELP, parseNapCommand } from '../utils/cli/commands/napCommands';
 import { formatNapState } from '../utils/cli/formatters/napFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -37,7 +38,6 @@ import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 = no trump). */
-const SUIT_SYMBOLS = ['', '♠', '♣', '♥', '♦'] as const;
 
 /** Total tricks in a Nap round (5 cards dealt to each player). */
 const NAP_TOTAL_TRICKS = 5;
@@ -165,7 +165,7 @@ function NapPageContent() {
   const isGameEnd = state.phase === NapPhase.GAME_END || state.gameEndFlag;
 
   const canPlay = isPlayPhase && isHumanTurn;
-  const trumpSymbol = state.trumpSuit === 0 ? t('noTrump') : (SUIT_SYMBOLS[state.trumpSuit] ?? '?');
+  const trumpSymbol = state.trumpSuit === 0 ? t('noTrump') : suitSymbolAt(state.trumpSuit, '');
 
   // The current highest (non-pass) bid; a new non-pass bid must beat it.
   const highestBid = Math.max(0, ...state.bids);

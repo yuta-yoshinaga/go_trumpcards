@@ -29,6 +29,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { Card, MarjapussiResponse } from '../types/card';
 import { MarjapussiPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { suitSymbolAt } from '../utils/cardAlt';
 import { MARJAPUSSI_HELP, parseMarjapussiCommand } from '../utils/cli/commands/marjapussiCommands';
 import { formatMarjapussiState } from '../utils/cli/formatters/marjapussiFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -44,8 +45,6 @@ import { hintCheckboxItem } from '../utils/settingsItems';
  * build if the two drift (#6483).
  */
 const NEAR_WIN_RATIO = 0.8;
-
-const SUIT_SYMBOLS = ['-', '♠', '♣', '♥', '♦'] as const;
 
 /** Card design string → suit number (1=♠ 2=♣ 3=♥ 4=♦), to align with SUIT_SYMBOLS / trumpSuit. */
 const DESIGN_TO_SUIT: Readonly<Record<string, number>> = { SPADE: 1, CLOVER: 2, HEART: 3, DIAMOND: 4 };
@@ -218,7 +217,7 @@ function MarjapussiPageContent() {
   const isGameEnd = state.phase === MarjapussiPhase.GAME_END || state.gameEndFlag;
 
   const canPlay = isPlayPhase && isHumanTurn;
-  const trumpSymbol = state.trumpSuit > 0 ? (SUIT_SYMBOLS[state.trumpSuit] ?? '-') : t('trumpNone');
+  const trumpSymbol = state.trumpSuit > 0 ? suitSymbolAt(state.trumpSuit, '-') : t('trumpNone');
 
   // Suits where the human holds both K (13) and Q (12) — a marriage that sets
   // trump when led and scores 40 if same suit as current trump, 20 if different.
@@ -233,7 +232,7 @@ function MarjapussiPageContent() {
         })
         .map((suit) => {
           const points = state.trumpSuit > 0 && suit === state.trumpSuit ? 40 : 20;
-          return { symbol: SUIT_SYMBOLS[suit] ?? '-', points };
+          return { symbol: suitSymbolAt(suit, '-'), points };
         })
     : [];
 
@@ -315,7 +314,7 @@ function MarjapussiPageContent() {
                 <span>
                   {t('lastMarriage', {
                     player: playerName(activeMarriage.playerIdx, activeMarriage.playerIdx === humanIdx),
-                    suit: SUIT_SYMBOLS[activeMarriage.suit] ?? '-',
+                    suit: suitSymbolAt(activeMarriage.suit, '-'),
                     points: activeMarriage.points,
                   })}
                 </span>

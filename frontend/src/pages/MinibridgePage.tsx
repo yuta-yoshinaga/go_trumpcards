@@ -23,14 +23,13 @@ import { gameTheme } from '../styles/gameTheme';
 import type { MinibridgeResponse } from '../types/card';
 import { MinibridgePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { cardAlt } from '../utils/cardAlt';
+import { cardAlt, suitSymbolAt } from '../utils/cardAlt';
 import { MINIBRIDGE_HELP, parseMinibridgeCommand } from '../utils/cli/commands/minibridgeCommands';
 import { formatMinibridgeState } from '../utils/cli/formatters/minibridgeFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Contract denominations. **`0` is no-trump**, which is a choice, not a blank. */
-const SUIT_SYMBOLS: Readonly<Record<number, string>> = { 0: 'NT', 1: '♠', 2: '♣', 3: '♥', 4: '♦' };
 
 /** The five denominations, in the order the contract buttons are offered. */
 const DENOMINATIONS: readonly number[] = [1, 2, 3, 4, 0];
@@ -219,7 +218,7 @@ function MinibridgePageContent() {
               {state.contractLevel > 0
                 ? t('header.contract', {
                     level: String(state.contractLevel),
-                    suit: SUIT_SYMBOLS[state.contractSuit] ?? '?',
+                    suit: suitSymbolAt(state.contractSuit, state.contractSuit === 0 ? 'NT' : '?'),
                     name:
                       state.declarerIdx === 0 ? t('header.you') : t('header.cpu', { idx: String(state.declarerIdx) }),
                     need: String(state.requiredTricks),
@@ -400,7 +399,10 @@ function MinibridgePageContent() {
                       disabled={loading}
                       data-testid={`mb-contract-${suit.toString()}-btn`}
                     >
-                      {t('actions.contract', { level: String(level), suit: SUIT_SYMBOLS[suit] ?? '?' })}
+                      {t('actions.contract', {
+                        level: String(level),
+                        suit: suitSymbolAt(suit, suit === 0 ? 'NT' : '?'),
+                      })}
                     </button>
                   ))}
                 </>

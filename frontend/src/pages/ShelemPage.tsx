@@ -23,7 +23,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { ShelemPlayer, ShelemResponse } from '../types/card';
 import { ShelemPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { cardAlt } from '../utils/cardAlt';
+import { cardAlt, suitSymbolAt } from '../utils/cardAlt';
 import { parseShelemCommand, SHELEM_HELP } from '../utils/cli/commands/shelemCommands';
 import { formatShelemState } from '../utils/cli/formatters/shelemFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -36,7 +36,6 @@ const SHELEM_HAND_POINTS = 100;
 const TRICKS_PER_ROUND = 12;
 
 /** Suit code (1=♠ 2=♣ 3=♥ 4=♦) to its symbol. */
-const SUIT_SYMBOLS: Readonly<Record<number, string>> = { 1: '♠', 2: '♣', 3: '♥', 4: '♦' };
 
 /** The four suits, in the order the trump buttons are offered. */
 const SUITS: readonly number[] = [1, 2, 3, 4];
@@ -275,7 +274,7 @@ function ShelemPageContent() {
                   })}
                 </span>
               )}
-              {state.trumpSuit > 0 && ` / ${t('header.trump', { suit: SUIT_SYMBOLS[state.trumpSuit] ?? '?' })}`}
+              {state.trumpSuit > 0 && ` / ${t('header.trump', { suit: suitSymbolAt(state.trumpSuit, '?') })}`}
             </div>
 
             <div className="text-ds-text-muted text-sm text-center mb-3" data-testid="sh-score">
@@ -419,7 +418,7 @@ function ShelemPageContent() {
                     aria-disabled={picked.length !== state.discardCount}
                     data-testid={`sh-discard-${suit.toString()}-btn`}
                   >
-                    {t('actions.discard', { suit: SUIT_SYMBOLS[suit] ?? '?' })}
+                    {t('actions.discard', { suit: suitSymbolAt(suit, '?') })}
                   </button>
                 ))}
               {isRoundEnd && !isGameEnd && (

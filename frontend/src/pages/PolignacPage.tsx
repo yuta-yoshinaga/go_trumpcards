@@ -23,14 +23,13 @@ import { gameTheme } from '../styles/gameTheme';
 import type { PolignacResponse } from '../types/card';
 import { PolignacPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { cardAlt } from '../utils/cardAlt';
+import { cardAlt, suitSymbolAt } from '../utils/cardAlt';
 import { POLIGNAC_HELP, parsePolignacCommand } from '../utils/cli/commands/polignacCommands';
 import { formatPolignacState } from '../utils/cli/formatters/polignacFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Suit symbols indexed by the domain's design constant (1..4). */
-const SUIT_SYMBOLS = ['', '♠', '♣', '♥', '♦'] as const;
 /** Domain constant for spades — the jack that costs two points. */
 const SPADE_DESIGN = 1;
 /** Suit names for the accessible reading, indexed like SUIT_SYMBOLS. */
@@ -242,7 +241,7 @@ function PolignacPageContent() {
                           <span aria-hidden="true">
                             {suit === SPADE_DESIGN
                               ? t('jacks.spade')
-                              : t('jacks.other', { suit: SUIT_SYMBOLS[suit] ?? '?' })}
+                              : t('jacks.other', { suit: suitSymbolAt(suit, '') })}
                           </span>
                           <span className="sr-only">
                             {suit === SPADE_DESIGN

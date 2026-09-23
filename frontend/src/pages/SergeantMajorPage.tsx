@@ -24,14 +24,13 @@ import { gameTheme } from '../styles/gameTheme';
 import type { Card, SergeantMajorResponse } from '../types/card';
 import { SergeantMajorPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { cardAlt } from '../utils/cardAlt';
+import { cardAlt, suitSymbolAt } from '../utils/cardAlt';
 import { parseSergeantMajorCommand, SERGEANTMAJOR_HELP } from '../utils/cli/commands/sergeantmajorCommands';
 import { formatSergeantMajorState } from '../utils/cli/formatters/sergeantmajorFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Suit code (1=♠ 2=♣ 3=♥ 4=♦) to its symbol. */
-const SUIT_SYMBOLS: Readonly<Record<number, string>> = { 1: '♠', 2: '♣', 3: '♥', 4: '♦' };
 
 /** The four suits, in the order the trump buttons are offered. */
 const SUITS: readonly number[] = [1, 2, 3, 4];
@@ -193,7 +192,7 @@ function SergeantMajorPageContent() {
               </span>
               <span data-testid="sm-trump" data-tutorial="sm-trump">
                 {state.trumpSuit > 0
-                  ? t('header.trump', { suit: SUIT_SYMBOLS[state.trumpSuit] ?? '?' })
+                  ? t('header.trump', { suit: suitSymbolAt(state.trumpSuit, '?') })
                   : t('header.trumpUndecided', { kitty: String(state.kittySize) })}
               </span>
             </div>
@@ -346,7 +345,7 @@ function SergeantMajorPageContent() {
                     disabled={loading}
                     data-testid={`sm-trump-${suit.toString()}-btn`}
                   >
-                    {t('actions.trump', { suit: SUIT_SYMBOLS[suit] ?? '?' })}
+                    {t('actions.trump', { suit: suitSymbolAt(suit, '?') })}
                   </button>
                 ))}
               {/* **ちょうど 4 枚選ぶまで確定できない。** サーバが必ず拒否する操作は出さない。 */}
