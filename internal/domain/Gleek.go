@@ -1162,8 +1162,8 @@ func gleekMeldKey(count int) string {
 	return "gleek.meldLabelGleek"
 }
 
-// GleekHonourValueForTest はテスト用に名札の点を返す。
-func GleekHonourValueForTest(c *Card, trump int) int { return gleekHonourValue(c, trump) }
+// GleekHonourValue は名札 (honour) の点を返す。CUI presenter が表示に使う。
+func GleekHonourValue(c *Card, trump int) int { return gleekHonourValue(c, trump) }
 
 // indexOfPlayerInTrick currentTrick 内で playerIdx の札の位置を返す (-1=なし)。
 func (g *Gleek) indexOfPlayerInTrick(playerIdx int) int {
