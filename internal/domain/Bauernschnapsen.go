@@ -1029,12 +1029,6 @@ func (g *Bauernschnapsen) GetMarriageIndices(playerIdx int) []int {
 	return out
 }
 
-// CardRankPublic カードランク取得 (テスト用公開メソッド)
-func (g *Bauernschnapsen) CardRankPublic(card *Card) int { return BauernschnapsenRankOrder(card) }
-
-// CardPointsPublic カード得点取得 (テスト用公開メソッド)
-func (g *Bauernschnapsen) CardPointsPublic(card *Card) int { return BauernschnapsenCardPoints(card) }
-
 // --- Hints ---
 
 // GetHint 人間プレイヤー (idx 0) へのヒントを取得する
@@ -1328,13 +1322,6 @@ func (g *Bauernschnapsen) sortHand(p *BauernschnapsenPlayer) {
 
 // --- Test-only helpers ---
 
-// AddRoundPointsForTest adds card points to a team for the current round (テスト用)。
-func (g *Bauernschnapsen) AddRoundPointsForTest(team, pts int) {
-	if team >= 0 && team < BauernschnapsenTeamCnt {
-		g.roundPoints[team] += pts
-	}
-}
-
 // GetConfigDeckHelper returns a fresh 20-card Bauernschnapsen deck (テスト用コンストラクタ補助)。
 func (g *Bauernschnapsen) GetConfigDeckHelper() *TrumpCards { return newBauernschnapsenDeck() }
 
@@ -1489,32 +1476,4 @@ func (g *Bauernschnapsen) UnmarshalJSON(data []byte) error {
 	g.winnerTeam = j.WinnerTeam
 	g.actionLog = j.ActionLog
 	return nil
-}
-
-// SetContractForTest はテスト用に契約と宣言者を設定する。
-func (g *Bauernschnapsen) SetContractForTest(c BauernschnapsenContract, declarerIdx int) {
-	g.contract = c
-	g.declarerIdx = declarerIdx
-}
-
-// SetSeatTricksForTest はテスト用に席別の獲得トリック数を設定する。
-func (g *Bauernschnapsen) SetSeatTricksForTest(idx, tricks int) {
-	if idx < 0 || idx >= BauernschnapsenPlayerCnt {
-		return
-	}
-	g.seatTricks[idx] = tricks
-}
-
-// SetRoundResultForTest はテスト用にチームのラウンド成績を設定する。
-func (g *Bauernschnapsen) SetRoundResultForTest(team, points, tricks int) {
-	if team < 0 || team >= BauernschnapsenTeamCnt {
-		return
-	}
-	g.roundPoints[team] = points
-	g.roundTricks[team] = tricks
-}
-
-// ContractMadeForTest はテスト用に契約の成否を返す。
-func (g *Bauernschnapsen) ContractMadeForTest(declarerTeam int) bool {
-	return g.contractMade(declarerTeam)
 }
