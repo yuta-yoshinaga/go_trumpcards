@@ -182,8 +182,8 @@ func writeBashCompletion(w io.Writer) error {
             COMPREPLY=( $(compgen -W "%[3]s" -- "$cur") )
             return
             ;;
-        games|--short|--aliases|--json)
-            COMPREPLY=( $(compgen -W "--short --aliases --json --category" -- "$cur") )
+        games|--short|--aliases|--json|--search|--category)
+            COMPREPLY=( $(compgen -W "--short --aliases --json --category --search" -- "$cur") )
             return
             ;;
         help)
@@ -257,6 +257,7 @@ _trumpcards() {
                     ;;
                 games)
                     _arguments \
+                        '--search[Search names, aliases, and descriptions]:text:' \
                         '--short[Print game names only]' \
                         '--aliases[Include aliases in output]' \
                         '--json[Emit machine-readable JSON]' \
@@ -324,6 +325,7 @@ complete -c trumpcards -n '__fish_seen_subcommand_from update' -l dry-run -d 'Al
 complete -c trumpcards -n '__fish_seen_subcommand_from games' -l short -d 'Print game names only'
 complete -c trumpcards -n '__fish_seen_subcommand_from games' -l aliases -d 'Include aliases in output'
 complete -c trumpcards -n '__fish_seen_subcommand_from games' -l json -d 'Emit machine-readable JSON'
+complete -c trumpcards -n '__fish_seen_subcommand_from games' -l search -x -d 'Search names, aliases, and descriptions'
 complete -c trumpcards -n '__fish_seen_subcommand_from games' -l category -x -a '%[3]s' -d 'Filter by category'
 
 # web subcommand
