@@ -103,10 +103,10 @@ Baker's Game (ベーカーズ・ゲーム)
 FreeCells: [空] | [空] | [空] | [空]
 Foundation: [空] | [空] | [空] | [空]
 ----------
-列0: [0]HEART 10 [1]SPADE 1 [2]HEART 4 [3]DIAMOND 9 [4]SPADE 8 [5]DIAMOND 5 [6]CLOVER 8
-列1: [0]DIAMOND 7 [1]HEART 2 [2]CLOVER 13 [3]SPADE 7 [4]SPADE 13 [5]DIAMOND 4 [6]DIAMOND 8
+列0: [0]♥10 [1]♠1 [2]♥4 [3]♦9 [4]♠8 [5]♦5 [6]♣8
+列1: [0]♦7 [1]♥2 [2]♣13 [3]♠7 [4]♠13 [5]♦4 [6]♦8
 ...
-列7: [0]CLOVER 5 [1]SPADE 5 [2]DIAMOND 11 [3]HEART 8 [4]CLOVER 1 [5]DIAMOND 12
+列7: [0]♣5 [1]♠5 [2]♦11 [3]♥8 [4]♣1 [5]♦12
 ----------
 一括移動: 最大5枚 (空きセル4 / 空き列0)
 手数: 0

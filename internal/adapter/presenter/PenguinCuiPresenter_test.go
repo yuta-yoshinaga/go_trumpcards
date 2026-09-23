@@ -94,7 +94,7 @@ func TestPenguinCuiPresenterOutputFreeCellsOccupied(t *testing.T) {
 
 	result := p.Output(g, nil)
 
-	assert.Contains(t, result, "SPADE 5")
+	assert.Contains(t, result, "♠5")
 }
 
 func TestPenguinCuiPresenterOutputEmptyFreeCells(t *testing.T) {
@@ -123,7 +123,7 @@ func TestPenguinCuiPresenterOutputFoundationWithCards(t *testing.T) {
 
 	result := p.Output(g, nil)
 
-	assert.Contains(t, result, "SPADE 1")
+	assert.Contains(t, result, "♠1")
 }
 
 func TestPenguinCuiPresenterOutputEmptyTableau(t *testing.T) {

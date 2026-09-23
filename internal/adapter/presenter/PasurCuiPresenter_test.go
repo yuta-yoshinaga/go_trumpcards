@@ -272,7 +272,7 @@ func TestPasurCuiPresenterCaptureOptions_En(t *testing.T) {
 
 	out := p.Output(g, nil)
 	assert.Contains(t, out, "Captures available:")
-	assert.Contains(t, out, "  hand 0 CLOVER 4 -> table 0")
+	assert.Contains(t, out, "  hand 0 ♣4 -> table 0")
 
 	// No capture case in English
 	g.SetTableForTest([]*domain.Card{

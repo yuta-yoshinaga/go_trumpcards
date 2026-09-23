@@ -128,7 +128,7 @@ func TestYukonCuiPresenter_Output(t *testing.T) {
 
 		p := new(YukonCuiPresenter)
 		result := p.Output(yg, nil)
-		assert.Contains(t, result, "SPADE 1")
+		assert.Contains(t, result, "♠1")
 	})
 }
 

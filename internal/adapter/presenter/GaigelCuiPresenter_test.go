@@ -69,7 +69,7 @@ func TestGaigelCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "ガイゲル")
 		assert.Contains(t, result, "ラウンド: 1")
 		assert.Contains(t, result, "切り札: SPADE")
-		assert.Contains(t, result, "[0]SPADE 1")
+		assert.Contains(t, result, "[0]♠1")
 	})
 
 	t.Run("trump undecided", func(t *testing.T) {
@@ -203,7 +203,7 @@ func TestGaigelCuiPresenter_ShowsTheTrumpCard(t *testing.T) {
 
 		assert.Contains(t, out, i18n.Tf("gaigel.trumpLineWithCard",
 			"suit", "SPADE",
-			"card", "SPADE 13",
+			"card", "♠13",
 			"stock", "27"))
 	})
 
@@ -215,7 +215,7 @@ func TestGaigelCuiPresenter_ShowsTheTrumpCard(t *testing.T) {
 			"suit", "SPADE", "stock", "27"))
 		// 表示カード入りの行は出ない。
 		assert.NotContains(t, out, i18n.Tf("gaigel.trumpLineWithCard",
-			"suit", "SPADE", "card", "SPADE 13", "stock", "27"))
+			"suit", "SPADE", "card", "♠13", "stock", "27"))
 	})
 }
 

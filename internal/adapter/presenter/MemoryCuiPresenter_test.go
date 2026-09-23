@@ -209,7 +209,7 @@ func TestMemoryCuiPresenterOutput(t *testing.T) {
 		p := new(MemoryCuiPresenter)
 		result := p.Output(mg, nil)
 		assert.Contains(t, result, "2枚目を選んでください")
-		assert.Contains(t, result, "SPADE 1") // face up card
+		assert.Contains(t, result, "♠1") // face up card
 	})
 
 	t.Run("result phase match", func(t *testing.T) {

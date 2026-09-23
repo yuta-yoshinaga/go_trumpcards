@@ -180,9 +180,9 @@ func TestRummy500CuiPresenter_HintOutput(t *testing.T) {
 		out := p.HintOutput(m)
 		layoffPrefix := strings.SplitN(i18n.T("rummy500.hintLayoff"), "{{", 2)[0]
 		assert.Contains(t, out, layoffPrefix)
-		assert.Contains(t, out, "DIAMOND 7")
+		assert.Contains(t, out, "♦7")
 		// 足せない札は挙がらない。
-		assert.NotContains(t, out, "HEART 2")
+		assert.NotContains(t, out, "♥2")
 	})
 
 	t.Run("says nothing about layoffs when none is legal", func(t *testing.T) {

@@ -119,9 +119,9 @@ func TestThreeCardRummyCuiPresenter_Output_PlayerScoreShownFromTheActionPhase(t 
 	assert.Contains(t, out, "あなた")
 	// **点数がそのまま強さ。** 役名ではなく数字を出す。
 	assert.Contains(t, out, "点数: 17（低いほど強い）")
-	assert.Contains(t, out, "SPADE 2")
-	assert.Contains(t, out, "HEART 6")
-	assert.Contains(t, out, "CLOVER 9")
+	assert.Contains(t, out, "♠2")
+	assert.Contains(t, out, "♥6")
+	assert.Contains(t, out, "♣9")
 }
 
 func TestThreeCardRummyCuiPresenter_Output_ScoreIsSetAtDealTime(t *testing.T) {
@@ -183,9 +183,9 @@ func TestThreeCardRummyCuiPresenter_Output_DealerIsHiddenUntilTheEnd(t *testing.
 			out := p.Output(g, nil)
 
 			// 伏せたままの 3 枚も、その点数も出してはいけない。
-			assert.NotContains(t, out, "DIAMOND 4")
-			assert.NotContains(t, out, "CLOVER 8")
-			assert.NotContains(t, out, "SPADE 13")
+			assert.NotContains(t, out, "♦4")
+			assert.NotContains(t, out, "♣8")
+			assert.NotContains(t, out, "♠13")
 			assert.NotContains(t, out, "点数: 22")
 			assert.NotContains(t, out, "クオリファイせず")
 		})
@@ -211,9 +211,9 @@ func TestThreeCardRummyCuiPresenter_Output_DealerRevealedAtTheEnd(t *testing.T) 
 
 		assert.Contains(t, out, "ディーラー")
 		assert.Contains(t, out, "点数: 19（低いほど強い）")
-		assert.Contains(t, out, "DIAMOND 4")
-		assert.Contains(t, out, "CLOVER 6")
-		assert.Contains(t, out, "SPADE 9")
+		assert.Contains(t, out, "♦4")
+		assert.Contains(t, out, "♣6")
+		assert.Contains(t, out, "♠9")
 		assert.Contains(t, out, "ディーラー: クオリファイ")
 		// 「クオリファイ」は「クオリファイせず」の接頭辞なので、否定側も見る。
 		assert.NotContains(t, out, "クオリファイせず")

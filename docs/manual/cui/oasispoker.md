@@ -120,9 +120,9 @@ flowchart TD
 チップ: 900
 フェーズ: EXCHANGE
 --- PLAYER ---
-HEART 4,CLOVER 4,HEART 12,CLOVER 8,DIAMOND 8
+♥4,♣4,♥12,♣8,♦8
 --- DEALER ---
-HEART 9,??,??,??,??
+♥9,??,??,??,??
 ----------
 ```
 

@@ -165,9 +165,9 @@ func TestRistikontraCuiPresenter_MarksCapturingCards(t *testing.T) {
 
 		out := p.Output(g, nil)
 
-		assert.Contains(t, out, "[0]SPADE 7"+presenter.CuiLegalMark)
-		assert.NotContains(t, out, "[1]"+color.Red("HEART 11")+presenter.CuiLegalMark)
-		assert.NotContains(t, out, "[2]CLOVER 3"+presenter.CuiLegalMark)
+		assert.Contains(t, out, "[0]♠7"+presenter.CuiLegalMark)
+		assert.NotContains(t, out, "[1]"+color.Red("♥11")+presenter.CuiLegalMark)
+		assert.NotContains(t, out, "[2]♣3"+presenter.CuiLegalMark)
 	})
 
 	// **自分の手番でないときは出さない。**Web も isHumanTurn を条件にしている。
@@ -176,7 +176,7 @@ func TestRistikontraCuiPresenter_MarksCapturingCards(t *testing.T) {
 
 		out := p.Output(g, nil)
 
-		assert.NotContains(t, out, "[0]SPADE 7"+presenter.CuiLegalMark)
+		assert.NotContains(t, out, "[0]♠7"+presenter.CuiLegalMark)
 	})
 
 	// **場が空なら何も取れない。** ピシュティならジャックが取れたが、
@@ -189,8 +189,8 @@ func TestRistikontraCuiPresenter_MarksCapturingCards(t *testing.T) {
 
 		out := p.Output(g, nil)
 
-		assert.NotContains(t, out, "[0]SPADE 7"+presenter.CuiLegalMark)
-		assert.NotContains(t, out, "[1]"+color.Red("HEART 11")+presenter.CuiLegalMark)
+		assert.NotContains(t, out, "[0]♠7"+presenter.CuiLegalMark)
+		assert.NotContains(t, out, "[1]"+color.Red("♥11")+presenter.CuiLegalMark)
 	})
 
 	t.Run("explains what the mark means", func(t *testing.T) {
@@ -283,10 +283,10 @@ func TestRistikontraCuiPresenter_MarksCounterCards(t *testing.T) {
 
 		// **記号が違うこと自体が要件。** 同じ印だと「取れる」と「奪える」を
 		// 画面上で区別できない。
-		assert.Contains(t, out, "[0]SPADE 9"+presenter.CuiCounterMark)
-		assert.Contains(t, out, "[1]CLOVER 7"+presenter.CuiLegalMark)
-		assert.NotContains(t, out, "[2]CLOVER 4"+presenter.CuiLegalMark)
-		assert.NotContains(t, out, "[2]CLOVER 4"+presenter.CuiCounterMark)
+		assert.Contains(t, out, "[0]♠9"+presenter.CuiCounterMark)
+		assert.Contains(t, out, "[1]♣7"+presenter.CuiLegalMark)
+		assert.NotContains(t, out, "[2]♣4"+presenter.CuiLegalMark)
+		assert.NotContains(t, out, "[2]♣4"+presenter.CuiCounterMark)
 	})
 
 	// **負のコントロール**: 打ち返しの対象が無いラウンドでは † を出さない。

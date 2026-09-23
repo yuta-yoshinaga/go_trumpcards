@@ -239,7 +239,7 @@ func TestCuarentaCuiPresenter_PreviewsTheCapture(t *testing.T) {
 			0,
 		)
 
-		assert.Contains(t, p.Output(g, nil), i18n.Tf("cuarenta.tableLine", "cards", color.Red("HEART 7")))
+		assert.Contains(t, p.Output(g, nil), i18n.Tf("cuarenta.tableLine", "cards", color.Red("♥7")))
 	})
 }
 

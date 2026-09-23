@@ -54,7 +54,7 @@ func TestThirtyOneCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "ラウンド: 1")
 		assert.Contains(t, result, "山札: 39")
 		assert.Contains(t, result, "あなた: ライフ 3")
-		assert.Contains(t, result, "[0]SPADE 1")
+		assert.Contains(t, result, "[0]♠1")
 		assert.Contains(t, result, "ds")
 		assert.Contains(t, result, "dd")
 		assert.Contains(t, result, "k:") // knock help shown when no knocker
@@ -91,7 +91,7 @@ func TestThirtyOneCuiPresenter_Output(t *testing.T) {
 		m, _ := setupThirtyOneCuiMock()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDiscardTop")
 		m.On("GetDiscardTop").Return(domain.NewCard(domain.CardDesignHeart, 7, false))
-		assert.Contains(t, p.Output(m, nil), "捨て札: HEART 7")
+		assert.Contains(t, p.Output(m, nil), "捨て札: ♥7")
 	})
 
 	t.Run("error shown", func(t *testing.T) {

@@ -71,8 +71,8 @@ func TestTonkCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "ラウンド: 1")
 		assert.Contains(t, result, "山札: 41枚")
 		assert.Contains(t, result, "あなた: 累積0点 ラウンド0点 2枚")
-		assert.Contains(t, result, "[0]SPADE 1")
-		assert.Contains(t, result, "[1]HEART 5")
+		assert.Contains(t, result, "[0]♠1")
+		assert.Contains(t, result, "[1]♥5")
 		assert.Contains(t, result, "CPU 1: 累積0点 ラウンド0点 1枚")
 		assert.Contains(t, result, "手番: あなた")
 		assert.Contains(t, result, "ds")
@@ -86,7 +86,7 @@ func TestTonkCuiPresenter_Output(t *testing.T) {
 		m.On("GetDiscardTop").Return(top)
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "捨て札: HEART 7")
+		assert.Contains(t, result, "捨て札: ♥7")
 	})
 
 	t.Run("error message shown", func(t *testing.T) {
@@ -215,7 +215,7 @@ func TestTonkCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "[ノッカーのメルド]")
 		assert.Contains(t, result, "メルド1(セット):")
 		assert.Contains(t, result, "メルド2(ラン):")
-		assert.Contains(t, result, "CPU 1の手札: DIAMOND 12")
+		assert.Contains(t, result, "CPU 1の手札: ♦12")
 	})
 
 	// ラウンドの点差はアンダーカット判定（両者のデッドウッド比較）から来るのに、
@@ -239,13 +239,13 @@ func TestTonkCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(m, nil)
 		assert.Contains(t, result, i18n.T("tonk.opponentMeldsHeader"))
-		assert.Contains(t, result, "HEART 5")
+		assert.Contains(t, result, "♥5")
 		// 点数はカードから導く。3 と 2 をそのまま書き写さない。
 		assert.Contains(t, result, i18n.Tf("tonk.knockerDeadwoodLine",
-			"cards", "DIAMOND 3",
+			"cards", "♦3",
 			"points", strconv.Itoa(domain.CalcDeadwoodValue([]*domain.Card{domain.NewCard(domain.CardDesignDiamond, 3, false)}))))
 		assert.Contains(t, result, i18n.Tf("tonk.opponentDeadwoodLine",
-			"cards", "CLOVER 2",
+			"cards", "♣2",
 			"points", strconv.Itoa(domain.CalcDeadwoodValue([]*domain.Card{domain.NewCard(domain.CardDesignClover, 2, false)}))))
 	})
 

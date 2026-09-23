@@ -58,7 +58,7 @@ func TestCanfieldCuiPresenter_Output(t *testing.T) {
 		cg.On("GetWaste").Return([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 5, false)})
 		p := new(CanfieldCuiPresenter)
 		result := p.Output(cg, nil)
-		assert.Contains(t, result, "ウェイスト: HEART 5")
+		assert.Contains(t, result, "ウェイスト: ♥5")
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -119,7 +119,7 @@ func TestCanfieldCuiPresenter_Output(t *testing.T) {
 		cg.On("GetFoundation").Return(f)
 		p := new(CanfieldCuiPresenter)
 		result := p.Output(cg, nil)
-		assert.Contains(t, result, "SPADE 7")
+		assert.Contains(t, result, "♠7")
 	})
 }
 

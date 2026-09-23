@@ -224,7 +224,7 @@ func TestSpeculationCuiPresenter_Output_HoldsMarkerOnlyOnTheLeader(t *testing.T)
 	b.bestSeat = 2
 	out := new(SpeculationCuiPresenter).Output(b.mock(), nil)
 
-	assert.Contains(t, specLineContaining(t, out, "CPU2:"), "【最高札 CLOVER 12】")
+	assert.Contains(t, specLineContaining(t, out, "CPU2:"), "【最高札 ♣12】")
 	assert.NotContains(t, specLineContaining(t, out, "You:"), "【最高札")
 	assert.NotContains(t, specLineContaining(t, out, "CPU1:"), "【最高札")
 	assert.NotContains(t, specLineContaining(t, out, "CPU3:"), "【最高札")

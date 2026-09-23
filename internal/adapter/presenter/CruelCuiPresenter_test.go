@@ -139,7 +139,7 @@ func TestCruelCuiPresenter_Output(t *testing.T) {
 
 		p := new(CruelCuiPresenter)
 		result := p.Output(cg, nil)
-		assert.Contains(t, result, "SPADE 1")
+		assert.Contains(t, result, "♠1")
 	})
 }
 

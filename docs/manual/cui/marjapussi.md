@@ -119,12 +119,12 @@ Marjapussi (マルヤプッシ)
 目標: 500点  チーム0: 0点  チーム1: 0点
 直近のマリッジ: なし
 あなた (チーム0): 8枚  得点: 0  トリック: 0
-[0]SPADE 11  [1]CLOVER 12  [2]CLOVER 6  [3]HEART 1  [4]HEART 12  [5]HEART 11  [6]HEART 6  [7]DIAMOND 6
+[0]♠11  [1]♣12  [2]♣6  [3]♥1  [4]♥12  [5]♥11  [6]♥6  [7]♦6
 CPU 1 (チーム1): 7枚  得点: 0  トリック: 0
 CPU 2 (チーム0): 7枚  得点: 0  トリック: 0
 CPU 3 (チーム1): 7枚  得点: 0  トリック: 0
 ----------
-トリック: CPU 1=SPADE 7, CPU 2=SPADE 10, CPU 3=SPADE 8
+トリック: CPU 1=♠7, CPU 2=♠10, CPU 3=♠8
 手番: あなた
 play <idx>・・・カードを出す（強さ A>10>K>Q>J>9>8>7>6／マストフォロー、ボイド時は切り札強制）
 マリッジ: 同スートの K と Q を持ちリードすると切り札になり、現在の切り札なら40点、違えば20点（新しい切り札になる）
@@ -143,12 +143,12 @@ Round: 1  Trick: 1  Trump: None
 Target: 500  Team 0: 0  Team 1: 0
 Last marriage: None
 You (Team 0): 8 cards  Score: 0  Tricks: 0
-[0]SPADE 10  [1]SPADE 13  [2]SPADE 7  [3]CLOVER 1  [4]HEART 9  [5]DIAMOND 10  [6]DIAMOND 9  [7]DIAMOND 7
+[0]♠10  [1]♠13  [2]♠7  [3]♣1  [4]♥9  [5]♦10  [6]♦9  [7]♦7
 CPU 1 (Team 1): 7 cards  Score: 0  Tricks: 0
 CPU 2 (Team 0): 7 cards  Score: 0  Tricks: 0
 CPU 3 (Team 1): 7 cards  Score: 0  Tricks: 0
 ----------
-Trick: CPU 1=CLOVER 6, CPU 2=CLOVER 9, CPU 3=CLOVER 10
+Trick: CPU 1=♣6, CPU 2=♣9, CPU 3=♣10
 Turn: You
 play <idx> ... play a card (A>10>K>Q>J>9>8>7>6; must follow suit, then must trump if void)
 Marriage: hold both the K and Q of the same suit and lead one of them to set trump (40 pts if current trump, 20 pts if new trump)

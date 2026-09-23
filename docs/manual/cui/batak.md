@@ -102,7 +102,7 @@ Batak (バタック)
 得点規則: 親は達成で +bid・未達で -bid、子は獲得トリック数が加点
 スペードブレイク: なし
 あなた: ビッド=未ビッド 獲得0トリック 累積0点 ラウンド0点 13枚
-[0]SPADE 8  [1]CLOVER 4  [2]CLOVER 6  [3]CLOVER 10  [4]HEART 1  [5]HEART 2  [6]HEART 9  [7]HEART 10  [8]HEART 11  [9]DIAMOND 2  [10]DIAMOND 8  [11]DIAMOND 10  [12]DIAMOND 11
+[0]♠8  [1]♣4  [2]♣6  [3]♣10  [4]♥1  [5]♥2  [6]♥9  [7]♥10  [8]♥11  [9]♦2  [10]♦8  [11]♦10  [12]♦11
 CPU 1: ビッド=未ビッド 獲得0トリック 累積0点 ラウンド0点 13枚
 CPU 2: ビッド=未ビッド 獲得0トリック 累積0点 ラウンド0点 13枚
 CPU 3: ビッド=未ビッド 獲得0トリック 累積0点 ラウンド0点 13枚
@@ -123,7 +123,7 @@ Batak (バタック)
 得点規則: 親は達成で +bid・未達で -bid、子は獲得トリック数が加点
 スペードブレイク: なし
 あなた [親]: ビッド=5 獲得0トリック 累積0点 ラウンド0点 13枚
-[0]SPADE 2  [1]SPADE 4  [2]SPADE 5  [3]SPADE 11  [4]CLOVER 3*  [5]CLOVER 4*  [6]CLOVER 5*  [7]CLOVER 7*  [8]CLOVER 9*  [9]HEART 8*  [10]DIAMOND 1*  [11]DIAMOND 3*  [12]DIAMOND 7*
+[0]♠2  [1]♠4  [2]♠5  [3]♠11  [4]♣3*  [5]♣4*  [6]♣5*  [7]♣7*  [8]♣9*  [9]♥8*  [10]♦1*  [11]♦3*  [12]♦7*
 CPU 1: ビッド=パス 獲得0トリック 累積0点 ラウンド0点 13枚
 CPU 2: ビッド=パス 獲得0トリック 累積0点 ラウンド0点 13枚
 CPU 3: ビッド=パス 獲得0トリック 累積0点 ラウンド0点 13枚
@@ -144,7 +144,7 @@ Declarer: Undecided (High bid: -)
 Scoring: Declarer +bid on make / -bid on set; Defenders +1 per trick won
 Spades broken: no
 You: bid=no bid won 0 tricks, cum 0pt round 0pt 13 cards
-[0]CLOVER 2  [1]CLOVER 4  [2]CLOVER 8  [3]HEART 4  [4]HEART 5  [5]HEART 13  [6]DIAMOND 2  [7]DIAMOND 4  [8]DIAMOND 5  [9]DIAMOND 6  [10]DIAMOND 7  [11]DIAMOND 9  [12]DIAMOND 10
+[0]♣2  [1]♣4  [2]♣8  [3]♥4  [4]♥5  [5]♥13  [6]♦2  [7]♦4  [8]♦5  [9]♦6  [10]♦7  [11]♦9  [12]♦10
 CPU 1: bid=no bid won 0 tricks, cum 0pt round 0pt 13 cards
 CPU 2: bid=no bid won 0 tricks, cum 0pt round 0pt 13 cards
 CPU 3: bid=no bid won 0 tricks, cum 0pt round 0pt 13 cards

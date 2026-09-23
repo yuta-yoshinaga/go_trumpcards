@@ -71,7 +71,7 @@ func TestDoubtCuiPresenter_Output(t *testing.T) {
 		result := p.Output(game, nil)
 		assert.Contains(t, result, "Doubt (ダウト)")
 		assert.Contains(t, result, "あなた: 2枚")
-		assert.Contains(t, result, "[0]SPADE 1")
+		assert.Contains(t, result, "[0]♠1")
 		assert.Contains(t, result, "CPU 1: 1枚")
 		assert.Contains(t, result, "テーブル: 0枚")
 		assert.Contains(t, result, "手番: あなた")
@@ -86,10 +86,10 @@ func TestDoubtCuiPresenter_Output(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 4, false))
 
 		result := p.Output(game, nil)
-		assert.Contains(t, result, "SPADE 1")
-		assert.Contains(t, result, "CLOVER 2")
-		assert.Contains(t, result, "HEART 3")
-		assert.Contains(t, result, "DIAMOND 4")
+		assert.Contains(t, result, "♠1")
+		assert.Contains(t, result, "♣2")
+		assert.Contains(t, result, "♥3")
+		assert.Contains(t, result, "♦4")
 	})
 
 	t.Run("nil card shows ??", func(t *testing.T) {
@@ -100,12 +100,12 @@ func TestDoubtCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "??")
 	})
 
-	t.Run("unknown design shows UNKNOWN", func(t *testing.T) {
+	t.Run("unknown design falls back to joker symbol", func(t *testing.T) {
 		game, players := makeDoubtGameForPresenter()
 		players[0].AddCard(domain.NewCard(99, 1, false))
 
 		result := p.Output(game, nil)
-		assert.Contains(t, result, "UNKNOWN")
+		assert.Contains(t, result, "🃏1")
 	})
 
 	t.Run("finished player shows 上がり", func(t *testing.T) {
@@ -148,7 +148,7 @@ func TestDoubtCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "嘘つき")
 		assert.Contains(t, result, "3枚引き取りました")
 		assert.Contains(t, result, "公開カード")
-		assert.Contains(t, result, "SPADE 7")
+		assert.Contains(t, result, "♠7")
 	})
 
 	t.Run("doubt result - was honest", func(t *testing.T) {
@@ -199,8 +199,8 @@ func TestDoubtCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(game, nil)
 		assert.Contains(t, result, "公開カード")
-		assert.Contains(t, result, "SPADE 3")
-		assert.Contains(t, result, "HEART 7")
+		assert.Contains(t, result, "♠3")
+		assert.Contains(t, result, "♥7")
 		assert.Contains(t, result, ", ")
 	})
 

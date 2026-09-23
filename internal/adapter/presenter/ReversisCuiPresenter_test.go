@@ -209,10 +209,10 @@ func TestReversisCuiPresenterShowsCardPoints(t *testing.T) {
 	out := reversisPlain(p.Output(r, nil))
 
 	// 札ごとに突き合わせる。どこかに 4 がある、では隣の札の点でも通る。
-	assert.Contains(t, out, i18n.Tf("reversis.handCard", "idx", "0", "card", "SPADE 1", "points", "4"))
-	assert.Contains(t, out, i18n.Tf("reversis.handCard", "idx", "1", "card", "HEART 13", "points", "3"))
+	assert.Contains(t, out, i18n.Tf("reversis.handCard", "idx", "0", "card", "♠1", "points", "4"))
+	assert.Contains(t, out, i18n.Tf("reversis.handCard", "idx", "1", "card", "♥13", "points", "3"))
 	// **0 点の札も明示する** (受け入れ条件2)。
-	assert.Contains(t, out, i18n.Tf("reversis.handCard", "idx", "2", "card", "SPADE 7", "points", "0"))
+	assert.Contains(t, out, i18n.Tf("reversis.handCard", "idx", "2", "card", "♠7", "points", "0"))
 	assert.NotContains(t, out, "{{")
 }
 
@@ -240,10 +240,10 @@ func TestReversisCuiPresenterCountsTheMarkedSurcharge(t *testing.T) {
 
 	out := reversisPlain(p.Output(r, nil))
 
-	assert.Contains(t, out, i18n.Tf("reversis.handCard", "idx", "0", "card", "HEART 11", "points",
+	assert.Contains(t, out, i18n.Tf("reversis.handCard", "idx", "0", "card", "♥11", "points",
 		strconv.Itoa(1+domain.ReversisMarkedPenalty)))
-	assert.Contains(t, out, i18n.Tf("reversis.handCard", "idx", "1", "card", "DIAMOND 1", "points",
+	assert.Contains(t, out, i18n.Tf("reversis.handCard", "idx", "1", "card", "♦1", "points",
 		strconv.Itoa(4+domain.ReversisMarkedPenalty)))
 	// 同じランクでも印が無ければ素の点。
-	assert.Contains(t, out, i18n.Tf("reversis.handCard", "idx", "2", "card", "SPADE 11", "points", "1"))
+	assert.Contains(t, out, i18n.Tf("reversis.handCard", "idx", "2", "card", "♠11", "points", "1"))
 }

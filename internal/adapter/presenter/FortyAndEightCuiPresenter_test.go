@@ -151,7 +151,7 @@ func TestFortyAndEightCuiPresenter_Output(t *testing.T) {
 
 		p := new(FortyAndEightCuiPresenter)
 		result := p.Output(fg, nil)
-		assert.Contains(t, result, "SPADE 1")
+		assert.Contains(t, result, "♠1")
 	})
 }
 

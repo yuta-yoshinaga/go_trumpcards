@@ -256,9 +256,9 @@ func TestTarabishCuiPresenterShowsCardPoints(t *testing.T) {
 
 	out := tarabishPlain(p.Output(g, nil))
 
-	assert.Contains(t, out, i18n.Tf("tarabish.handCard", "idx", "0", "card", "HEART 11", "points", "20"))
-	assert.Contains(t, out, i18n.Tf("tarabish.handCard", "idx", "1", "card", "HEART 9", "points", "14"))
-	assert.Contains(t, out, i18n.Tf("tarabish.handCard", "idx", "2", "card", "SPADE 11", "points", "2"))
+	assert.Contains(t, out, i18n.Tf("tarabish.handCard", "idx", "0", "card", "♥11", "points", "20"))
+	assert.Contains(t, out, i18n.Tf("tarabish.handCard", "idx", "1", "card", "♥9", "points", "14"))
+	assert.Contains(t, out, i18n.Tf("tarabish.handCard", "idx", "2", "card", "♠11", "points", "2"))
 	assert.NotContains(t, out, "{{")
 
 	// **切り札が決まるまでは点が定まらない。**入札中に出すと嘘になる。
@@ -268,8 +268,8 @@ func TestTarabishCuiPresenterShowsCardPoints(t *testing.T) {
 	biddingHuman.ResetRound()
 	biddingHuman.AddCard(domain.NewCard(domain.CardDesignHeart, 11, true))
 	biddingOut := tarabishPlain(p.Output(bidding, nil))
-	assert.Contains(t, biddingOut, "[0]HEART 11")
-	assert.NotContains(t, biddingOut, i18n.Tf("tarabish.handCard", "idx", "0", "card", "HEART 11", "points", "2"))
+	assert.Contains(t, biddingOut, "[0]♥11")
+	assert.NotContains(t, biddingOut, i18n.Tf("tarabish.handCard", "idx", "0", "card", "♥11", "points", "2"))
 	assert.NotContains(t, biddingOut, "点)")
 }
 

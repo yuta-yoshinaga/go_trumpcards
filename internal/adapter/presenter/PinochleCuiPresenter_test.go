@@ -111,7 +111,7 @@ func TestPinochleCuiPresenter_Output(t *testing.T) {
 		m, players := setupPinochleCuiMockWithPlayers()
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "[0]SPADE 1")
+		assert.Contains(t, result, "[0]♠1")
 	})
 
 	t.Run("shows legal-play legend on human play turn", func(t *testing.T) {
@@ -141,7 +141,7 @@ func TestPinochleCuiPresenter_Output(t *testing.T) {
 		m.On("GetCurrentTrick").Return(trick)
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "テーブル:")
-		assert.Contains(t, result, "SPADE 1")
+		assert.Contains(t, result, "♠1")
 	})
 
 	t.Run("shows melds in meld phase", func(t *testing.T) {

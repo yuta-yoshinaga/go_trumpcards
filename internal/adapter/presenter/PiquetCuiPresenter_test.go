@@ -128,7 +128,7 @@ func TestPiquetCuiPresenter_Output_TrickWinnerBonusesAndNilLogEntry(t *testing.T
 	i18n.SetLang("en")
 	out := (&PiquetCuiPresenter{}).Output(g2, nil)
 	assert.Contains(t, out, "Elder (You)")
-	assert.Contains(t, out, "SPADE 7, HEART 11")
+	assert.Contains(t, out, "♠7, ♥11")
 	assert.Contains(t, out, "Trick point +1")
 	assert.Contains(t, out, "Last trick bonus +1")
 	assert.Contains(t, out, "Pique bonus +30")

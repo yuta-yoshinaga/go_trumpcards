@@ -154,8 +154,8 @@ func TestEscobaCuiPresenter_ListsTheCapturedCards(t *testing.T) {
 		prefix, _, ok := strings.Cut(i18n.Tf("escoba.capturedLine", "cards", "\x00"), "\x00")
 		require.True(t, ok)
 		assert.Contains(t, out, prefix)
-		assert.Contains(t, out, "SPADE 7")
-		assert.Contains(t, out, "CLOVER 1")
+		assert.Contains(t, out, "♠7")
+		assert.Contains(t, out, "♣1")
 		_ = captured
 	})
 
@@ -172,9 +172,9 @@ func TestEscobaCuiPresenter_ListsTheCapturedCards(t *testing.T) {
 		// **画面全体で探さない。** 同じ札は場にも出るので、配り次第で
 		// "まだ取っていない" 側の断言が落ちる (CI で実際に落ちた)。
 		// 取り札の行だけを切り出して見る。
-		assert.NotContains(t, escobaCapturedLine(t, before), "HEART 3")
-		assert.Contains(t, escobaCapturedLine(t, after), "HEART 3")
-		assert.Contains(t, escobaCapturedLine(t, after), "SPADE 7", "先に取った札も残る")
+		assert.NotContains(t, escobaCapturedLine(t, before), "♥3")
+		assert.Contains(t, escobaCapturedLine(t, after), "♥3")
+		assert.Contains(t, escobaCapturedLine(t, after), "♠7", "先に取った札も残る")
 	})
 
 	// **1枚も取っていないうちは出さない。**空の一覧は「取れていない」と

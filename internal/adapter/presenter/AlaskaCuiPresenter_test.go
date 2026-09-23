@@ -144,7 +144,7 @@ func TestAlaskaCuiPresenter_Output(t *testing.T) {
 
 		p := new(AlaskaCuiPresenter)
 		result := p.Output(rg, nil)
-		assert.Contains(t, result, "SPADE 1")
+		assert.Contains(t, result, "♠1")
 	})
 }
 

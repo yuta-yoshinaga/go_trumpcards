@@ -73,13 +73,13 @@ Fourteen Out (フォーティーンアウト)
 ==========
 取り除いた枚数: 0/52
 ----------
-列0: HEART 10 HEART 4 CLOVER 3 DIAMOND 3 HEART 5  ← HEART 5
-列1: CLOVER 1 DIAMOND 13 SPADE 2 HEART 1 CLOVER 6  ← CLOVER 6
-列2: DIAMOND 4 DIAMOND 2 CLOVER 4 HEART 13 HEART 2  ← HEART 2
-列3: CLOVER 11 HEART 3 SPADE 13 CLOVER 13 HEART 6  ← HEART 6
-列4: SPADE 5 HEART 9 CLOVER 2 SPADE 12  ← SPADE 12
+列0: ♥10 ♥4 ♣3 ♦3 ♥5  ← ♥5
+列1: ♣1 ♦13 ♠2 ♥1 ♣6  ← ♣6
+列2: ♦4 ♦2 ♣4 ♥13 ♥2  ← ♥2
+列3: ♣11 ♥3 ♠13 ♣13 ♥6  ← ♥6
+列4: ♠5 ♥9 ♣2 ♠12  ← ♠12
 ...
-列11: SPADE 7 CLOVER 8 DIAMOND 9 SPADE 3  ← SPADE 3
+列11: ♠7 ♣8 ♦9 ♠3  ← ♠3
 ----------
 除去可能: 5 組 （戻せる手はありません）
 ==========

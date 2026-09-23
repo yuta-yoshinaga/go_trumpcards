@@ -217,9 +217,9 @@ func TestSchafkopfCuiPresenter_MarksPlayableCardsOnlyOnHumanPlayTurn(t *testing.
 
 	t.Run("marks only the playable card on the human play turn", func(t *testing.T) {
 		out := p.Output(setup(domain.SchafkopfPhasePlay, 0), nil)
-		assert.Contains(t, out, "[0]SPADE 7*")
-		assert.Contains(t, out, "[1]HEART 8")
-		assert.NotContains(t, out, "[1]HEART 8*")
+		assert.Contains(t, out, "[0]♠7*")
+		assert.Contains(t, out, "[1]♥8")
+		assert.NotContains(t, out, "[1]♥8*")
 	})
 
 	t.Run("marks nothing on another player's turn", func(t *testing.T) {

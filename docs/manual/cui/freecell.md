@@ -103,8 +103,8 @@ FreeCell (フリーセル)
 FreeCells: [空] | [空] | [空] | [空]
 Foundation: [空] | [空] | [空] | [空]
 ----------
-列0: [0]CLOVER 11 [1]CLOVER 2 [2]DIAMOND 6 [3]HEART 12 [4]SPADE 8 [5]DIAMOND 1 [6]HEART 11
-列1: [0]CLOVER 4 [1]HEART 2 [2]CLOVER 7 [3]DIAMOND 4 [4]SPADE 9 [5]DIAMOND 3 [6]CLOVER 12
+列0: [0]♣11 [1]♣2 [2]♦6 [3]♥12 [4]♠8 [5]♦1 [6]♥11
+列1: [0]♣4 [1]♥2 [2]♣7 [3]♦4 [4]♠9 [5]♦3 [6]♣12
 ...
 ----------
 一括移動: 最大5枚 (空きセル4 / 空き列0)

@@ -78,8 +78,8 @@ func TestNapoleonCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "ラウンド: 1")
 		assert.Contains(t, result, "トリック: 1")
 		assert.Contains(t, result, "あなた: ビッド=未ビッド 獲得0トリック 絵札0枚 累積0点 ラウンド0点 2枚")
-		assert.Contains(t, result, "[0]SPADE 1")
-		assert.Contains(t, result, "[1]HEART 5")
+		assert.Contains(t, result, "[0]♠1")
+		assert.Contains(t, result, "[1]♥5")
 		assert.Contains(t, result, "CPU 1: ビッド=未ビッド 獲得0トリック 絵札0枚 累積0点 ラウンド0点 1枚")
 		assert.Contains(t, result, "手番: あなた")
 		assert.Contains(t, result, "p <idx>")
@@ -100,7 +100,7 @@ func TestNapoleonCuiPresenter_Output(t *testing.T) {
 		m.On("GetAdjutantCard").Return(domain.NewCard(domain.CardDesignHeart, 13, false))
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "副官カード: HEART 13")
+		assert.Contains(t, result, "副官カード: ♥13")
 		assert.Contains(t, result, "(非公開)")
 	})
 
@@ -112,7 +112,7 @@ func TestNapoleonCuiPresenter_Output(t *testing.T) {
 		m.On("GetAdjutantRevealed").Return(true)
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "副官カード: DIAMOND 1")
+		assert.Contains(t, result, "副官カード: ♦1")
 		assert.Contains(t, result, "(公開済み)")
 	})
 
@@ -226,7 +226,7 @@ func TestNapoleonCuiPresenter_Output(t *testing.T) {
 		m.On("GetCurrentTrick").Return(trick)
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "トリック: あなた=CLOVER 3, CPU 1=CLOVER 7")
+		assert.Contains(t, result, "トリック: あなた=♣3, CPU 1=♣7")
 	})
 
 	t.Run("no trick cards hides trick section", func(t *testing.T) {
@@ -302,7 +302,7 @@ func TestNapoleonCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "t <suit> <adjSuit> <adjVal>")
 		assert.Contains(t, result, "  suit: 1=♠ 2=♣ 3=♥ 4=♦")
 		assert.Contains(t, result, "自分の手札のカードを指名すると自分が副官になります")
-		assert.Contains(t, result, "[0]HEART 7")
+		assert.Contains(t, result, "[0]♥7")
 		assert.NotContains(t, result, "{{")
 	})
 

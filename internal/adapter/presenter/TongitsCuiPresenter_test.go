@@ -66,8 +66,8 @@ func TestTongitsCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "ラウンド: 1")
 		assert.Contains(t, result, "山札: 41枚")
 		assert.Contains(t, result, "あなた: 累積0点 ラウンド0点 2枚")
-		assert.Contains(t, result, "[0]SPADE 1")
-		assert.Contains(t, result, "[1]HEART 5")
+		assert.Contains(t, result, "[0]♠1")
+		assert.Contains(t, result, "[1]♥5")
 		assert.Contains(t, result, "CPU 1: 累積0点 ラウンド0点 1枚")
 		assert.Contains(t, result, "手番: あなた")
 		assert.Contains(t, result, "ds")
@@ -81,7 +81,7 @@ func TestTongitsCuiPresenter_Output(t *testing.T) {
 		m.On("GetDiscardTop").Return(top)
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "捨て札: HEART 7")
+		assert.Contains(t, result, "捨て札: ♥7")
 	})
 
 	t.Run("error message shown", func(t *testing.T) {
@@ -171,7 +171,7 @@ func TestTongitsCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "あなた の公開メルド")
 		assert.Contains(t, result, "1. [セット]")
 		assert.Contains(t, result, "2. [ラン]")
-		assert.Contains(t, result, "CPU 1の手札: DIAMOND 12")
+		assert.Contains(t, result, "CPU 1の手札: ♦12")
 	})
 
 	t.Run("CPU hands are not revealed during play", func(t *testing.T) {

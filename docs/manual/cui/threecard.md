@@ -119,7 +119,7 @@ b <ante> [pairplus]・・・ベットする
 チップ: 850
 フェーズ: ACTION
 --- PLAYER ---
-SPADE 6,DIAMOND 12,SPADE 13
+♠6,♦12,♠13
 ----------
 
 > p
@@ -129,11 +129,11 @@ SPADE 6,DIAMOND 12,SPADE 13
 フェーズ: END
 --- PLAYER ---
 ハンド: ハイカード
-SPADE 6,DIAMOND 12,SPADE 13
+♠6,♦12,♠13
 --- DEALER ---
 ハンド: ハイカード
 (Not Qualified)
-SPADE 10,SPADE 9,HEART 5
+♠10,♠9,♥5
 ----------
 アンテ: 100
 プレイ: 100

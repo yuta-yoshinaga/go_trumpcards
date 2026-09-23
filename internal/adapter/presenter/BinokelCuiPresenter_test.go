@@ -112,7 +112,7 @@ func TestBinokelCuiPresenter_Output(t *testing.T) {
 		m, players := setupBinokelCuiMockWithPlayers()
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "[0]SPADE 1")
+		assert.Contains(t, result, "[0]♠1")
 	})
 
 	t.Run("shows legal-play legend on human play turn", func(t *testing.T) {
@@ -142,7 +142,7 @@ func TestBinokelCuiPresenter_Output(t *testing.T) {
 		m.On("GetCurrentTrick").Return(trick)
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "テーブル:")
-		assert.Contains(t, result, "SPADE 1")
+		assert.Contains(t, result, "♠1")
 	})
 
 	t.Run("shows melds in meld phase", func(t *testing.T) {
@@ -170,7 +170,7 @@ func TestBinokelCuiPresenter_Output(t *testing.T) {
 		}
 		m.On("GetDabb").Return(dabb)
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "ダブ: SPADE 1 HEART 10 DIAMOND 11")
+		assert.Contains(t, result, "ダブ: ♠1 ♥10 ♦11")
 		assert.Contains(t, result, "discard")
 	})
 

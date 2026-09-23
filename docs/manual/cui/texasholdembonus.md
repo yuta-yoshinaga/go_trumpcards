@@ -122,9 +122,9 @@ flowchart TD
 chips: 700
 phase: FLOP
 --- BOARD ---
-SPADE 11,SPADE 12,SPADE 10
+♠11,♠12,♠10
 --- PLAYER ---
-SPADE 1,SPADE 13
+♠1,♠13
 --- DEALER ---
 ??,??
 ----------

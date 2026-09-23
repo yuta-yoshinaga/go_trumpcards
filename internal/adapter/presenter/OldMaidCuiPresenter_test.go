@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-// setupOldMaidCuiTest creates an OldMaid game with standard CPU card setup (player[1] has HEART 5, players[2,3] finished).
+// setupOldMaidCuiTest creates an OldMaid game with standard CPU card setup (player[1] has ♥5, players[2,3] finished).
 func setupOldMaidCuiTest() (*domain.OldMaid, []*domain.OldMaidPlayer) {
 	tc := domain.NewTrumpCards(1)
 	players := []*domain.OldMaidPlayer{
@@ -55,7 +55,7 @@ func TestOldMaidCuiPresenter_Method(t *testing.T) {
 		players[2].SetIsFinished(true)
 		players[3].AddCard(domain.NewCard(domain.CardDesignDiamond, 4, false))
 		expected := "==========\nOld Maid (ババ抜き)\n==========\n" +
-			"あなた: 2枚\n[0]SPADE 1  [1]CLOVER 2\n" +
+			"あなた: 2枚\n[0]♠1  [1]♣2\n" +
 			"CPU 1: 1枚\n" +
 			"CPU 2: 上がり\n" +
 			"CPU 3: 1枚\n" +
@@ -69,8 +69,8 @@ func TestOldMaidCuiPresenter_Method(t *testing.T) {
 		tc := domain.NewTrumpCards(1)
 		players := makePlayers()
 		om := domain.NewOldMaid(tc, players)
-		// Setup: player 0 (human, turn=0) has JOKER + SPADE 5 + CLOVER 5
-		// player 1 (CPU 1) has HEART 7 — exactly 1 card (deterministic draw at index 0)
+		// Setup: player 0 (human, turn=0) has JOKER + ♠5 + ♣5
+		// player 1 (CPU 1) has ♥7 — exactly 1 card (deterministic draw at index 0)
 		// players 2,3 finished
 		players[0].AddCard(domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false))
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
@@ -78,24 +78,24 @@ func TestOldMaidCuiPresenter_Method(t *testing.T) {
 		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
 		players[2].SetIsFinished(true)
 		players[3].SetIsFinished(true)
-		// PlayerDraw(0): draws card at index 0 from player 1 (HEART 7)
-		// player 0 gains HEART 7 → hand: JOKER, SPADE 5, CLOVER 5, HEART 7
-		// DiscardPairs: SPADE 5 + CLOVER 5 pair → discarded → player 0: JOKER, HEART 7 (shuffled order)
+		// PlayerDraw(0): draws card at index 0 from player 1 (♥7)
+		// player 0 gains ♥7 → hand: JOKER, ♠5, ♣5, ♥7
+		// DiscardPairs: ♠5 + ♣5 pair → discarded → player 0: JOKER, ♥7 (shuffled order)
 		// player 1 has 0 cards → finished
 		// checkGameEnd: active = {0} → gameEndFlag=true, loserIdx=0
 		_ = om.PlayerDraw(0)
 		result := top.Output(om, nil)
 		// Card display order in player's hand is non-deterministic due to ShuffleCards
 		assert.Contains(t, result, "あなた: 2枚")
-		assert.Contains(t, result, "JOKER")
-		assert.Contains(t, result, "HEART 7")
+		assert.Contains(t, result, "🃏0")
+		assert.Contains(t, result, "♥7")
 		assert.Contains(t, result, "CPU 1: 上がり")
 		assert.Contains(t, result, "CPU 2: 上がり")
 		assert.Contains(t, result, "CPU 3: 上がり")
-		assert.Contains(t, result, "あなたがCPU 1から1枚引きました (HEART 7)。1組捨てました")
+		assert.Contains(t, result, "あなたがCPU 1から1枚引きました (♥7)。1組捨てました")
 		assert.Contains(t, result, "（")
-		assert.Contains(t, result, "SPADE 5")
-		assert.Contains(t, result, "CLOVER 5")
+		assert.Contains(t, result, "♠5")
+		assert.Contains(t, result, "♣5")
 		assert.NotContains(t, result, "{{")
 		assert.Contains(t, result, "ゲーム終了！ あなたの負け！")
 	})
@@ -104,11 +104,11 @@ func TestOldMaidCuiPresenter_Method(t *testing.T) {
 		tc := domain.NewTrumpCards(1)
 		players := makePlayers()
 		om := domain.NewOldMaid(tc, players)
-		// player 0 (human, turn=0): SPADE 3 (1 card)
-		// player 1 (CPU 1): CLOVER 3 (1 card, next active) → deterministic draw (index always 0)
+		// player 0 (human, turn=0): ♠3 (1 card)
+		// player 1 (CPU 1): ♣3 (1 card, next active) → deterministic draw (index always 0)
 		// player 2 (CPU 2): JOKER (1 card) → will be the loser
 		// player 3: finished
-		// PlayerDraw(0): player 0 draws CLOVER 3, forms pair with SPADE 3 → both players 0 and 1 finish
+		// PlayerDraw(0): player 0 draws ♣3, forms pair with ♠3 → both players 0 and 1 finish
 		// active = {2} → gameEndFlag=true, loserIdx=2
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
 		players[1].AddCard(domain.NewCard(domain.CardDesignClover, 3, false))
@@ -126,16 +126,16 @@ func TestOldMaidCuiPresenter_Method(t *testing.T) {
 			"CPU 2: 1枚\n" +
 			"CPU 3: 上がり\n" +
 			"----------\n" +
-			"あなたがCPU 1から1枚引きました (CLOVER 3)。1組捨てました（CLOVER 3 SPADE 3）\n" +
+			"あなたがCPU 1から1枚引きました (♣3)。1組捨てました（♣3 ♠3）\n" +
 			"[引き履歴]\n" +
 			"1. あなたがCPU 1から引いた (1組捨て) [あなた上がり] [CPU 1上がり]\n" +
 			"ゲーム終了！ CPU 2の負け！\n" +
 			"==========\n"
 		got := top.Output(om, nil)
-		assert.Equal(t, expected, strings.Replace(got, "（SPADE 3 CLOVER 3）", "（CLOVER 3 SPADE 3）", 1))
+		assert.Equal(t, expected, strings.Replace(got, "（♠3 ♣3）", "（♣3 ♠3）", 1))
 		// Both cards must be named whichever order they land in.
-		assert.Contains(t, got, "SPADE 3")
-		assert.Contains(t, got, "CLOVER 3")
+		assert.Contains(t, got, "♠3")
+		assert.Contains(t, got, "♣3")
 	})
 
 	t.Run("success Output human zero cards not finished", func(t *testing.T) {
@@ -164,21 +164,21 @@ func TestOldMaidCuiPresenter_Method(t *testing.T) {
 		}
 		om := domain.NewOldMaid(tc, cpuPlayers)
 		// Player 0: JOKER
-		// Player 1: SPADE 5 (1 card, deterministic draw at index 0)
+		// Player 1: ♠5 (1 card, deterministic draw at index 0)
 		// Players 2, 3: finished
 		cpuPlayers[0].AddCard(domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false))
 		cpuPlayers[1].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
 		cpuPlayers[2].SetIsFinished(true)
 		cpuPlayers[3].SetIsFinished(true)
 
-		// Player 0 draws SPADE 5, no pair → keeps it
+		// Player 0 draws ♠5, no pair → keeps it
 		_ = om.CpuDraw()
 
 		result := top.Output(om, nil)
 		// CPU action should show who drew from whom but NOT which card was drawn
 		assert.Contains(t, result, "[CPUの行動]")
 		assert.Contains(t, result, "CPU 0がCPU 1から1枚引きました")
-		assert.NotContains(t, result, "SPADE 5")
+		assert.NotContains(t, result, "♠5")
 	})
 
 	t.Run("success Output displays error message", func(t *testing.T) {
@@ -202,27 +202,27 @@ func TestOldMaidCuiPresenter_Method(t *testing.T) {
 			domain.NewOldMaidPlayer(false),
 		}
 		om := domain.NewOldMaid(tc, cpuPlayers)
-		// Player 0: SPADE 10
-		// Player 1: CLOVER 10 (1 card, deterministic draw at index 0)
+		// Player 0: ♠10
+		// Player 1: ♣10 (1 card, deterministic draw at index 0)
 		// Players 2, 3: finished
 		cpuPlayers[0].AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
 		cpuPlayers[1].AddCard(domain.NewCard(domain.CardDesignClover, 10, false))
 		cpuPlayers[2].SetIsFinished(true)
 		cpuPlayers[3].SetIsFinished(true)
 
-		// Player 0 draws CLOVER 10, discards pair SPADE 10 + CLOVER 10
+		// Player 0 draws ♣10, discards pair ♠10 + ♣10
 		_ = om.CpuDraw()
 
 		result := top.Output(om, nil)
 		assert.Contains(t, result, "[CPUの行動]")
 		assert.Contains(t, result, "CPU 0がCPU 1から1枚引きました。1組捨てました")
 		assert.Contains(t, result, "（")
-		assert.Contains(t, result, "SPADE 10")
-		assert.Contains(t, result, "CLOVER 10")
+		assert.Contains(t, result, "♠10")
+		assert.Contains(t, result, "♣10")
 		// The discarded pair is public, but the *draw* line must still not name
 		// the card the CPU drew -- that is the fairness rule this case has
 		// guarded since it was written. Only the discard line may show it.
-		assert.NotContains(t, result, "1枚引きました (CLOVER 10)")
+		assert.NotContains(t, result, "1枚引きました (♣10)")
 		assert.NotContains(t, result, "{{")
 	})
 
@@ -282,10 +282,10 @@ func TestOldMaidCuiPresenter_Method(t *testing.T) {
 		om.On("GetNextDrawTargetIdx").Return(-1)
 
 		result := top.Output(om, nil)
-		assert.Contains(t, result, "SPADE 4")
-		assert.Contains(t, result, "HEART 4")
-		assert.Contains(t, result, "CLOVER 9")
-		assert.Contains(t, result, "DIAMOND 9")
+		assert.Contains(t, result, "♠4")
+		assert.Contains(t, result, "♥4")
+		assert.Contains(t, result, "♣9")
+		assert.Contains(t, result, "♦9")
 		assert.NotContains(t, result, "{{")
 		om.AssertExpectations(t)
 	})
@@ -298,11 +298,11 @@ func TestOldMaidCuiPresenter_Method(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 4, false))
 		players[0].AddCard(domain.NewCard(domain.CardDesignJoker, domain.CardValueJoker, false))
 		result := top.Output(om, nil)
-		assert.Contains(t, result, "SPADE 1")
-		assert.Contains(t, result, "CLOVER 2")
-		assert.Contains(t, result, "HEART 3")
-		assert.Contains(t, result, "DIAMOND 4")
-		assert.Contains(t, result, "JOKER")
+		assert.Contains(t, result, "♠1")
+		assert.Contains(t, result, "♣2")
+		assert.Contains(t, result, "♥3")
+		assert.Contains(t, result, "♦4")
+		assert.Contains(t, result, "🃏0")
 	})
 
 	t.Run("success Output targetIdx negative no draw target", func(t *testing.T) {
@@ -327,7 +327,7 @@ func TestOldMaidCuiPresenter_Method(t *testing.T) {
 		players[0].AddCard(domain.NewCard(99, 1, false))
 		result := top.Output(om, nil)
 		assert.Contains(t, result, "??")
-		assert.Contains(t, result, "UNKNOWN")
+		assert.Contains(t, result, "🃏1")
 	})
 
 	t.Run("success Output getPlayerName nil player in human action", func(t *testing.T) {
@@ -536,7 +536,7 @@ func TestOldMaidCuiPresenter_JijiNuki_GameEnd_ShowsRemovedCard(t *testing.T) {
 	assert.True(t, om.GetGameEndFlag())
 	assert.Equal(t, 2, om.GetLoserIdx())
 	result := top.Output(om, nil)
-	assert.Contains(t, result, "（除外カード: HEART 7）")
+	assert.Contains(t, result, "（除外カード: ♥7）")
 }
 
 func TestOldMaidCuiPresenter_Normal_GameEnd_NoRemovedCard(t *testing.T) {

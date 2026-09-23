@@ -66,13 +66,13 @@ Spite and Malice (スパイト・アンド・マリス)
 [F2] (empty)
 [F3] (empty)
 ----------
-[P0 人間] ゴール: HEART 9 (残 20) ← 今出せます！
-  手札: 0:SPADE 5 1:HEART 8 2:DIAMOND 11 3:CLOVER 13 4:SPADE 2
+[P0 人間] ゴール: ♥9 (残 20) ← 今出せます！
+  手札: 0:♠5 1:♥8 2:♦11 3:♣13 4:♠2
   [S0] (empty)
   [S1] (empty)
   [S2] (empty)
   [S3] (empty)
-[P1 CPU] ゴール: CLOVER 7 (残 20)
+[P1 CPU] ゴール: ♣7 (残 20)
   手札: 5枚
   [S0] (empty) ...
 ----------

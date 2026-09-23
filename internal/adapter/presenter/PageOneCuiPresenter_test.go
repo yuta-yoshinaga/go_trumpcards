@@ -77,9 +77,9 @@ func TestPageOneCuiPresenter_Output(t *testing.T) {
 		m.On("GetDiscardTop").Return(top)
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "捨て札: HEART 7")
+		assert.Contains(t, result, "捨て札: ♥7")
 		// Play condition references the matchable discard top during the play phase.
-		assert.Contains(t, result, "出せる条件: HEART 7")
+		assert.Contains(t, result, "出せる条件: ♥7")
 	})
 
 	t.Run("must declare phase", func(t *testing.T) {
@@ -242,7 +242,7 @@ func TestPageOneCuiPresenter_HintOutput(t *testing.T) {
 		m.On("IsValidPlay", unplayable).Return(false)
 
 		out := p.HintOutput(m)
-		assert.Contains(t, out, i18n.Tf("pageone.hintPlayable", "cards", "[0]HEART 5"))
+		assert.Contains(t, out, i18n.Tf("pageone.hintPlayable", "cards", "[0]♥5"))
 		assert.NotContains(t, out, "[1]")
 	})
 

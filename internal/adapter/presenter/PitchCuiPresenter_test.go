@@ -313,10 +313,10 @@ func TestPitchCuiPresenter_LastTrick(t *testing.T) {
 		out := p.Output(m, nil)
 
 		assert.Contains(t, out, i18n.T("pitch.previousTrick"))
-		assert.Contains(t, out, "あなた: SPADE 5")
-		assert.Contains(t, out, "CPU 1: SPADE 10")
-		assert.Contains(t, out, "CPU 2: SPADE 1")
-		assert.Contains(t, out, "CPU 3: HEART 2")
+		assert.Contains(t, out, "あなた: ♠5")
+		assert.Contains(t, out, "CPU 1: ♠10")
+		assert.Contains(t, out, "CPU 2: ♠1")
+		assert.Contains(t, out, "CPU 3: ♥2")
 		assert.Contains(t, out, i18n.Tf("pitch.previousTrickWinner", "name", "CPU 2"))
 	})
 
@@ -332,8 +332,8 @@ func TestPitchCuiPresenter_LastTrick(t *testing.T) {
 		m, _ := setupPitchCuiMockCustom(domain.PitchPhaseTrickEnd, 2, twoTricks)
 		out := p.Output(m, nil)
 
-		assert.Contains(t, out, "あなた: CLOVER 13")
-		assert.NotContains(t, out, "SPADE 5")
+		assert.Contains(t, out, "あなた: ♣13")
+		assert.NotContains(t, out, "♠5")
 		assert.Contains(t, out, i18n.Tf("pitch.previousTrickWinner", "name", "CPU 1"))
 	})
 

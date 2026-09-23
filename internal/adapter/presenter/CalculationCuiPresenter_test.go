@@ -297,7 +297,7 @@ func TestCalculationCuiPresenter_Output_WasteRanks(t *testing.T) {
 	assert.NotContains(t, wasteLine(0), "8")
 	// 既存の wasteFilled 表示は残っている。
 	assert.Contains(t, wasteLine(0), "(5枚)")
-	assert.Contains(t, wasteLine(0), "SPADE 1")
+	assert.Contains(t, wasteLine(0), "♠1")
 
 	// 2 枚の山: 3 枚未満でも壊れず、2 枚とも並び順どおり出る。
 	assert.Contains(t, wasteLine(1), "J・Q")

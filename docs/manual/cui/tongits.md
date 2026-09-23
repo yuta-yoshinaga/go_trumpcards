@@ -96,9 +96,9 @@ flowchart TD
 Tongits (トンギッツ)
 ==========
 ラウンド: 1  山札: 14枚
-捨て札: HEART 1
+捨て札: ♥1
 あなた: 累積0点 ラウンド0点 13枚
-[0]SPADE 1  [1]SPADE 3  [2]SPADE 4  [3]SPADE 8  [4]CLOVER 1  [5]CLOVER 5  [6]CLOVER 7  [7]CLOVER 11  [8]HEART 12  [9]DIAMOND 1  [10]DIAMOND 9  [11]DIAMOND 12  [12]DIAMOND 13
+[0]♠1  [1]♠3  [2]♠4  [3]♠8  [4]♣1  [5]♣5  [6]♣7  [7]♣11  [8]♥12  [9]♦1  [10]♦9  [11]♦12  [12]♦13
 CPU 1: 累積0点 ラウンド0点 12枚
 CPU 2: 累積0点 ラウンド0点 12枚
 ----------

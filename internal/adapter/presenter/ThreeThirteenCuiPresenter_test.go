@@ -152,8 +152,8 @@ func TestThreeThirteenCuiPresenter_MarksTheWildCards(t *testing.T) {
 		), nil)
 
 		// 黒スートは色付けされないので素の文字列。赤スートは color.Red が付く。
-		assert.Contains(t, out, "[0]SPADE 3"+presenter.CuiWildMark)
-		assert.NotContains(t, out, "[1]"+color.Red("HEART 5")+presenter.CuiWildMark)
+		assert.Contains(t, out, "[0]♠3"+presenter.CuiWildMark)
+		assert.NotContains(t, out, "[1]"+color.Red("♥5")+presenter.CuiWildMark)
 	})
 
 	t.Run("explains what the mark means", func(t *testing.T) {

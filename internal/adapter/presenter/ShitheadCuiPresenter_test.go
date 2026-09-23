@@ -109,9 +109,9 @@ func TestShitheadCuiPresenter_MarksTheMagicCards(t *testing.T) {
 
 	on := build(func(c *domain.ShitheadConfig) { c.MagicTwo = true })
 	mark := i18n.T("shithead.magicMark")
-	assert.Contains(t, on, "SPADE 2"+mark)
+	assert.Contains(t, on, "♠2"+mark)
 	// **普通の札には付けないこと。**全部に付ける実装でも「含む」検査だけなら通る。
-	assert.NotContains(t, on, "HEART 5"+mark)
+	assert.NotContains(t, on, "♥5"+mark)
 	// 効果も出ること。印だけでは何が起きるか分からない。
 	assert.Contains(t, on, i18n.T("shithead.magicEffectTwo"))
 
@@ -119,7 +119,7 @@ func TestShitheadCuiPresenter_MarksTheMagicCards(t *testing.T) {
 	off := build(func(c *domain.ShitheadConfig) {
 		c.MagicTwo, c.MagicSeven, c.MagicEight, c.MagicTen = false, false, false, false
 	})
-	assert.NotContains(t, off, "SPADE 2"+mark)
+	assert.NotContains(t, off, "♠2"+mark)
 	assert.NotContains(t, off, i18n.T("shithead.magicEffectTwo"))
 	// 凡例ごと消えること。空の「特殊札(*): 」は意味が無い。
 	assert.NotContains(t, off, strings.SplitN(i18n.T("shithead.magicLegend"), "{{", 2)[0])

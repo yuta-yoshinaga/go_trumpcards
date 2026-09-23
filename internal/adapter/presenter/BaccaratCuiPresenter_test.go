@@ -195,7 +195,7 @@ func TestBaccaratCuiPresenter_Output_EndPhase_PlayerWins(t *testing.T) {
 	assert.Contains(t, result, "BANKER")
 	assert.Contains(t, result, "プレイヤーの勝ち")
 	assert.Contains(t, result, "払戻し: 200")
-	assert.Contains(t, result, "SPADE 9")
+	assert.Contains(t, result, "♠9")
 	// No side bet placed -> no side-bet outcome lines.
 	assert.NotContains(t, result, "的中")
 	assert.NotContains(t, result, "外れ")

@@ -163,8 +163,8 @@ func TestFourSeasonsCuiPresenter_TableauAnnouncesTheNextRank(t *testing.T) {
 	out := new(FourSeasonsCuiPresenter).Output(g, nil)
 
 	// 列ごとに突き合わせる。ランク名がどこかにある、では隣の列の値でも通る。
-	assert.Contains(t, plainFourSeasons(out), "[T0] HEART 12 (1枚) → 次に置けるのは J")
-	assert.Contains(t, out, "[T1] SPADE 1 (1枚) → 次に置けるのは K")
+	assert.Contains(t, plainFourSeasons(out), "[T0] ♥12 (1枚) → 次に置けるのは J")
+	assert.Contains(t, out, "[T1] ♠1 (1枚) → 次に置けるのは K")
 	// 空列は現状のまま。
 	assert.Contains(t, out, "[T2] [空]")
 	assert.NotContains(t, out, "[空] → 次に置けるのは")

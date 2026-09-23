@@ -89,7 +89,7 @@ Round: 1  Trick: 0  Dealer: 0 (Fore=1 / Mid=2 / Rear=0)
 Game: Suit (trump=♠)
 Current bid: 18
 You [Declarer]: bid=18 tricks=0 cardPts=0 total=0 round=0 hand=10
-  [0]CLOVER 11 [1]SPADE 11 ...
+  [0]♣11 [1]♠11 ...
 CPU 1: bid=- tricks=0 cardPts=0 total=0 round=0 hand=10
 CPU 2: bid=- tricks=0 cardPts=0 total=0 round=0 hand=10
 ----------

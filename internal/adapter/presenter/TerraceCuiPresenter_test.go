@@ -71,7 +71,7 @@ func TestTerraceCuiPresenter_Output(t *testing.T) {
 		setupTerraceCuiMockDefaults(g)
 
 		assert.Contains(t, new(TerraceCuiPresenter).Output(g, nil),
-			i18n.Tf("terrace.reserveLine", "card", "CLOVER 3", "count", "1"))
+			i18n.Tf("terrace.reserveLine", "card", "♣3", "count", "1"))
 	})
 
 	t.Run("empty terrace, empty waste and empty piles", func(t *testing.T) {

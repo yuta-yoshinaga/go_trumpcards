@@ -103,8 +103,8 @@ func TestWizardCuiPresenter_Output(t *testing.T) {
 			{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 5, false)},
 		})
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "[0]HEART 9"+presenter.WizardLegalMark)
-		assert.NotContains(t, result, "[1]SPADE 3"+presenter.WizardLegalMark)
+		assert.Contains(t, result, "[0]♥9"+presenter.WizardLegalMark)
+		assert.NotContains(t, result, "[1]♠3"+presenter.WizardLegalMark)
 		assert.Contains(t, result, "[2]Wizard"+presenter.WizardLegalMark)
 		assert.Contains(t, result, "[3]Jester"+presenter.WizardLegalMark)
 		// 凡例が無いと印の意味が分からない。

@@ -250,11 +250,11 @@ func TestSlyFoxCuiPresenter_MarksOnlyTheMovableCard(t *testing.T) {
 	out := new(SlyFoxCuiPresenter).Output(g, nil)
 
 	// 一番上だけが囲まれ、下の 2 枚は地の文で並ぶ。
-	assert.Contains(t, out, "枠0: SPADE 4  CLOVER 7  <SPADE 11>")
+	assert.Contains(t, out, "枠0: ♠4  ♣7  <♠11>")
 	// 添字はどのカードにも付かない。
-	assert.NotContains(t, out, "[0]SPADE 4")
-	assert.NotContains(t, out, "[1]CLOVER 7")
-	assert.NotContains(t, out, "[2]SPADE 11")
+	assert.NotContains(t, out, "[0]♠4")
+	assert.NotContains(t, out, "[1]♣7")
+	assert.NotContains(t, out, "[2]♠11")
 	// 読み方の説明も出す。
 	assert.Contains(t, out, i18n.T("slyfox.pileTopNote"))
 	assert.NotContains(t, out, "{{")

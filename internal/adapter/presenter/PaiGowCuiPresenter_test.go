@@ -94,7 +94,7 @@ func TestPaiGowCuiPresenter_Output_SetHandsPhase(t *testing.T) {
 	assert.Contains(t, result, "フェーズ: 手役セット")
 	assert.Contains(t, result, "[0]")
 	assert.Contains(t, result, "[6]")
-	assert.Contains(t, result, "ハウスウェイ推奨: [0] [1] (SPADE 1 CLOVER 10) をローハンドへ")
+	assert.Contains(t, result, "ハウスウェイ推奨: [0] [1] (♠1 ♣10) をローハンドへ")
 }
 
 func TestPaiGowCuiPresenter_Output_SetHandsPhaseWithoutHouseWay(t *testing.T) {

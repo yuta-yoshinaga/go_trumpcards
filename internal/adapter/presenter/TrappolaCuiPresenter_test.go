@@ -233,10 +233,10 @@ func TestTrappolaCuiPresenter_ShowsThePreviousTrick(t *testing.T) {
 
 		assert.Contains(t, out, "直前のトリック")
 		assert.Contains(t, out, "勝者: CPU 2")
-		assert.Contains(t, out, "CPU 1: SPADE 3")
-		assert.Contains(t, out, "CPU 2: SPADE 1")
-		assert.Contains(t, out, "CPU 3: SPADE 5")
-		assert.Contains(t, out, "あなた: SPADE 7")
+		assert.Contains(t, out, "CPU 1: ♠3")
+		assert.Contains(t, out, "CPU 2: ♠1")
+		assert.Contains(t, out, "CPU 3: ♠5")
+		assert.Contains(t, out, "あなた: ♠7")
 		assert.NotContains(t, out, "{{", "未展開のテンプレート変数が残っていないこと")
 	})
 
@@ -252,11 +252,11 @@ func TestTrappolaCuiPresenter_ShowsThePreviousTrick(t *testing.T) {
 		out := p.Output(build(3, twoTricks), nil)
 
 		assert.Contains(t, out, "勝者: あなた")
-		assert.Contains(t, out, "CPU 2: HEART 10")
-		assert.Contains(t, out, "CPU 3: HEART 9")
-		assert.Contains(t, out, "あなた: HEART 8")
-		assert.Contains(t, out, "CPU 1: HEART 7")
-		assert.NotContains(t, out, "SPADE 3", "古いトリックの札は出ない")
+		assert.Contains(t, out, "CPU 2: ♥10")
+		assert.Contains(t, out, "CPU 3: ♥9")
+		assert.Contains(t, out, "あなた: ♥8")
+		assert.Contains(t, out, "CPU 1: ♥7")
+		assert.NotContains(t, out, "♠3", "古いトリックの札は出ない")
 		assert.NotContains(t, out, "{{")
 	})
 

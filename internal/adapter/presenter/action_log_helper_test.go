@@ -145,7 +145,7 @@ func TestActionLogToText(t *testing.T) {
 		assert.Contains(t, result, i18n.Tf("cuiActionLogPlayer", "idx", "0"))
 		assert.Contains(t, result, "play")
 		assert.Contains(t, result, "テスト用の棋譜行 1")
-		assert.Contains(t, result, "SPADE 5")
+		assert.Contains(t, result, "♠5")
 	})
 
 	t.Run("system entry shows SYSTEM", func(t *testing.T) {

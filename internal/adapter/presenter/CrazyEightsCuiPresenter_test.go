@@ -68,8 +68,8 @@ func TestCrazyEightsCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "ラウンド: 1")
 		assert.Contains(t, result, "山札: 30枚")
 		assert.Contains(t, result, "あなた: 累積0点 ラウンド0点 2枚")
-		assert.Contains(t, result, "[0]SPADE 1")
-		assert.Contains(t, result, "[1]HEART 5")
+		assert.Contains(t, result, "[0]♠1")
+		assert.Contains(t, result, "[1]♥5")
 		assert.Contains(t, result, "CPU 1: 累積0点 ラウンド0点 1枚")
 		assert.Contains(t, result, "手番: あなた")
 		assert.Contains(t, result, "play <idx>")
@@ -88,7 +88,7 @@ func TestCrazyEightsCuiPresenter_Output(t *testing.T) {
 		m.On("GetDiscardTop").Return(top)
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "捨て札: HEART 7")
+		assert.Contains(t, result, "捨て札: ♥7")
 	})
 
 	t.Run("legal cards are starred on the human's play turn", func(t *testing.T) {
@@ -101,11 +101,11 @@ func TestCrazyEightsCuiPresenter_Output(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false))  // eight -> always legal
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "[0]HEART 5*")
-		assert.Contains(t, result, "[1]SPADE 3")
-		assert.NotContains(t, result, "[1]SPADE 3*")
-		assert.Contains(t, result, "[2]CLOVER 7*")
-		assert.Contains(t, result, "[3]SPADE 8*")
+		assert.Contains(t, result, "[0]♥5*")
+		assert.Contains(t, result, "[1]♠3")
+		assert.NotContains(t, result, "[1]♠3*")
+		assert.Contains(t, result, "[2]♣7*")
+		assert.Contains(t, result, "[3]♠8*")
 	})
 
 	t.Run("chosen suit governs legality after an eight is played", func(t *testing.T) {
@@ -119,10 +119,10 @@ func TestCrazyEightsCuiPresenter_Output(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignClover, 8, false)) // eight -> always legal
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "[0]HEART 2*")
-		assert.Contains(t, result, "[1]SPADE 3")
-		assert.NotContains(t, result, "[1]SPADE 3*")
-		assert.Contains(t, result, "[2]CLOVER 8*")
+		assert.Contains(t, result, "[0]♥2*")
+		assert.Contains(t, result, "[1]♠3")
+		assert.NotContains(t, result, "[1]♠3*")
+		assert.Contains(t, result, "[2]♣8*")
 	})
 
 	t.Run("no legal markers when it is not the human's turn", func(t *testing.T) {
@@ -134,8 +134,8 @@ func TestCrazyEightsCuiPresenter_Output(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false)) // would be legal if marked
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "[0]HEART 5")
-		assert.NotContains(t, result, "[0]HEART 5*")
+		assert.Contains(t, result, "[0]♥5")
+		assert.NotContains(t, result, "[0]♥5*")
 	})
 
 	t.Run("discard top nil hides section", func(t *testing.T) {
@@ -329,7 +329,7 @@ func TestCrazyEightsCuiPresenter_HintOutput(t *testing.T) {
 		m.On("GetHint").Return(&domain.CrazyEightsHint{CardIndex: &idx, Reason: "match_suit"})
 
 		out := p.HintOutput(m)
-		assert.Contains(t, out, "SPADE 5")
+		assert.Contains(t, out, "♠5")
 		assert.Contains(t, out, "スートが合う")
 	})
 

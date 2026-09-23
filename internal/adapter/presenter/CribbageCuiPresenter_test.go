@@ -64,8 +64,8 @@ func TestCribbageCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "Cribbage (クリベッジ)")
 		assert.Contains(t, result, "ラウンド: 1")
 		assert.Contains(t, result, "あなた")
-		assert.Contains(t, result, "[0]SPADE 1")
-		assert.Contains(t, result, "[1]HEART 5")
+		assert.Contains(t, result, "[0]♠1")
+		assert.Contains(t, result, "[1]♥5")
 		assert.Contains(t, result, "CPU 1")
 		assert.Contains(t, result, "ディスカードフェーズ")
 		assert.Contains(t, result, "d <idx,idx>")
@@ -78,7 +78,7 @@ func TestCribbageCuiPresenter_Output(t *testing.T) {
 		m.On("GetStarter").Return(starter)
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "スターター: HEART 7")
+		assert.Contains(t, result, "スターター: ♥7")
 		// J でなければ His Heels は出ない。
 		assert.NotContains(t, result, "His Heels")
 	})
@@ -261,8 +261,8 @@ func TestCribbageCuiPresenter_Output(t *testing.T) {
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "ペギング合計: 15/31")
 		assert.Contains(t, result, "出されたカード:")
-		assert.Contains(t, result, "SPADE 5")
-		assert.Contains(t, result, "HEART 10")
+		assert.Contains(t, result, "♠5")
+		assert.Contains(t, result, "♥10")
 	})
 
 	t.Run("show phase shows commands and score details", func(t *testing.T) {

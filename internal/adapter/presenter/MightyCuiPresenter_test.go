@@ -79,8 +79,8 @@ func TestMightyCuiPresenter_Output(t *testing.T) {
 		// Header block always rendered.
 		assert.Contains(t, result, "==========")
 		// Human cards are listed with indexes.
-		assert.Contains(t, result, "[0]SPADE 1")
-		assert.Contains(t, result, "[1]HEART 5")
+		assert.Contains(t, result, "[0]♠1")
+		assert.Contains(t, result, "[1]♥5")
 		// Human name "あなた" (cui_common.json) appears for player 0.
 		assert.Contains(t, result, "あなた")
 		// CPU player name appears.
@@ -109,7 +109,7 @@ func TestMightyCuiPresenter_Output(t *testing.T) {
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPartnerCard")
 		m.On("GetPartnerCard").Return(domain.NewCard(domain.CardDesignHeart, 13, false))
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "HEART 13")
+		assert.Contains(t, result, "♥13")
 		assert.Contains(t, result, "(非公開)")
 	})
 
@@ -120,7 +120,7 @@ func TestMightyCuiPresenter_Output(t *testing.T) {
 		m.On("GetPartnerCard").Return(domain.NewCard(domain.CardDesignDiamond, 1, false))
 		m.On("GetPartnerRevealed").Return(true)
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "DIAMOND 1")
+		assert.Contains(t, result, "♦1")
 		assert.Contains(t, result, "(公開済み)")
 	})
 
@@ -164,8 +164,8 @@ func TestMightyCuiPresenter_Output(t *testing.T) {
 		}
 		m.On("GetCurrentTrick").Return(trick)
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "CLOVER 3")
-		assert.Contains(t, result, "CLOVER 7")
+		assert.Contains(t, result, "♣3")
+		assert.Contains(t, result, "♣7")
 	})
 
 	t.Run("joker trick card renders as 'Joker'", func(t *testing.T) {
@@ -224,8 +224,8 @@ func TestMightyCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "キティのカード")
 		// The kitty cards are shown at their positions in the declarer's hand,
 		// matching the indices the `e` (exchange) command consumes.
-		assert.Contains(t, result, "[1]HEART 5")
-		assert.Contains(t, result, "[2]CLOVER 9")
+		assert.Contains(t, result, "[1]♥5")
+		assert.Contains(t, result, "[2]♣9")
 	})
 
 	t.Run("kitty line omitted when declarer is missing", func(t *testing.T) {

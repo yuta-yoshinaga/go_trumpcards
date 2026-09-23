@@ -63,7 +63,7 @@ func TestFiftyOneCuiPresenter_ShowsEverySuitTotal(t *testing.T) {
 	p := new(presenter.FiftyOneCuiPresenter)
 	result := p.Output(m, nil)
 
-	// 手札は SPADE A(11)/10, HEART 5, DIAMOND 3, CLOVER 2 -> SPADE 21 が最良で、
+	// 手札は SPADE A(11)/10, ♥5, ♦3, ♣2 -> ♠21 が最良で、
 	// 既存の (スコア: 21) と一致する。満点 51 と合わせた「合計/51」で表示される。
 	assert.Contains(t, result, "スート別: SPADE 21/51*  CLOVER 2/51  HEART 5/51  DIAMOND 3/51")
 	assert.Contains(t, result, "SPADE 21/51*")
@@ -71,7 +71,7 @@ func TestFiftyOneCuiPresenter_ShowsEverySuitTotal(t *testing.T) {
 	// CPU の行には出さない (非公開ルールは変えない)。
 	assert.Equal(t, 1, strings.Count(result, "スート別:"))
 
-	// 異なる手札構成でもスート別行に /51 が正しく出ること (DIAMOND 20/51, HEART 8/51)
+	// 異なる手札構成でもスート別行に /51 が正しく出ること (♦20/51, ♥8/51)
 	m2 := setupFiftyOneMock()
 	p2 := domain.NewFiftyOnePlayer(true)
 	p2.AddCard(domain.NewCard(domain.CardDesignDiamond, 10, false))

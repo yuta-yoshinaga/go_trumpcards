@@ -79,8 +79,8 @@ func TestGleekCuiPresenter_Output(t *testing.T) {
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "グリーク")
 		// **名札の点は手札に出す。** 出さないと 15 点の Tib を捨てた理由が読めない。
-		assert.Contains(t, result, "HEART 1(15)")
-		assert.NotContains(t, result, "SPADE 13(", "平札に点は付かない")
+		assert.Contains(t, result, "♥1(15)")
+		assert.NotContains(t, result, "♠13(", "平札に点は付かない")
 	})
 
 	t.Run("stock line names the buyer once the auction closes", func(t *testing.T) {
@@ -260,7 +260,7 @@ func TestGleekCuiPresenter_HintOutput(t *testing.T) {
 		m.On("GetHint").Return(&domain.GleekHint{CardIndices: []int{0}, Reason: "lead_high"})
 		result := p.HintOutput(m)
 		assert.Contains(t, result, "[0]")
-		assert.Contains(t, result, "SPADE 13")
+		assert.Contains(t, result, "♠13")
 	})
 
 	// **捨て札のヒントは落札者の手札を指す。** 現在の手番の席を読むと、
@@ -271,6 +271,6 @@ func TestGleekCuiPresenter_HintOutput(t *testing.T) {
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.GleekHint{CardIndices: []int{0}, Reason: "discard_stock"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "CLOVER 4")
+		assert.Contains(t, result, "♣4")
 	})
 }

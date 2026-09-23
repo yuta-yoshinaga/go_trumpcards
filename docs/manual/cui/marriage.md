@@ -93,9 +93,9 @@ flowchart TD
 Marriage (マリッジ)
 ==========
 ラウンド: 1/3  山札: 45枚
-ワイルドジョーカー: HEART 7  マール: tiplu=3 poplu=2 jhiplu=2 alter=1
+ワイルドジョーカー: ♥7  マール: tiplu=3 poplu=2 jhiplu=2 alter=1
 あなたの手札: 21枚
-[0]HEART 5  [1]HEART 6  [2]HEART 8  ...
+[0]♥5  [1]♥6  [2]♥8  ...
 手番: あなた (ドロー → ディスカード)
 ==========
 ```
