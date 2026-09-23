@@ -733,6 +733,36 @@ func TestActionLogToText_RendersCompositeGameLabelsInBothLanguages(t *testing.T)
 	}
 }
 
+func TestActionLogToText_RendersFiveHundredAndGongZhuLabelsInBothLanguages(t *testing.T) {
+	entries := []*domain.ActionLogEntry{
+		{DetailCode: "fivehundred.log.bidSuit", DetailParams: map[string]string{"name": "P1", "tricks": "7", "suitKey": "common.suit.spade", "value": "140"}},
+		{DetailCode: "fivehundred.log.bidNoTrump", DetailParams: map[string]string{"name": "P1", "tricks": "8", "value": "320"}},
+		{DetailCode: "fivehundred.log.bidMisere", DetailParams: map[string]string{"name": "P1", "tricks": "0", "value": "250"}},
+		{DetailCode: "fivehundred.log.bidOpenMisere", DetailParams: map[string]string{"name": "P1", "tricks": "0", "value": "520"}},
+		{DetailCode: "fivehundred.log.winBidSuit", DetailParams: map[string]string{"name": "P1", "tricks": "7", "suitKey": "common.suit.spade", "value": "140"}},
+		{DetailCode: "fivehundred.log.winBidNoTrump", DetailParams: map[string]string{"name": "P1", "tricks": "8", "value": "320"}},
+		{DetailCode: "fivehundred.log.winBidMisere", DetailParams: map[string]string{"name": "P1", "tricks": "0", "value": "250"}},
+		{DetailCode: "fivehundred.log.winBidOpenMisere", DetailParams: map[string]string{"name": "P1", "tricks": "0", "value": "520"}},
+		{DetailCode: "gongzhu.log.exposeNone", DetailParams: map[string]string{"round": "3"}},
+		{DetailCode: "gongzhu.log.exposeCards", DetailParams: map[string]string{"round": "3", "cards": "♠Q, ♦J"}},
+	}
+
+	t.Cleanup(func() { i18n.SetLang("ja") })
+	i18n.SetLang("ja")
+	ja := actionLogToText(entries)
+	for _, text := range []string{"P1が7スペード (140)をビッド", "P1が8NT (320)をビッド", "P1がミゼール (250)をビッド", "P1がオープンミゼール (520)をビッド", "P1が契約を獲得: 7スペード (140)", "ラウンド3: 公開なし", "ラウンド3: 公開 ♠Q, ♦J"} {
+		assert.Contains(t, ja, text)
+	}
+	assert.NotContains(t, ja, "Misere")
+
+	i18n.SetLang("en")
+	en := actionLogToText(entries)
+	for _, text := range []string{"P1 bids 7Spade (140)", "P1 bids 8NT (320)", "P1 bids Misere (250)", "P1 bids Open Misere (520)", "P1 wins the contract: 7Spade (140)", "round 3: no cards exposed", "round 3: exposed: ♠Q, ♦J"} {
+		assert.Contains(t, en, text)
+	}
+	assert.NotContains(t, en, "スペード")
+}
+
 func TestActionLogToText_RendersAndarBaharMusAndViraLabelsInBothLanguages(t *testing.T) {
 	entries := []*domain.ActionLogEntry{
 		{DetailCode: "andarbahar.log.joker", DetailParams: map[string]string{"columnKey": "andarbahar.columnAndar"}},

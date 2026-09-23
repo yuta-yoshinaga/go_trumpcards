@@ -92,7 +92,7 @@ func TestGongZhuActionLogUsesDetailCode(t *testing.T) {
 	g.ExecuteExpose()
 	for _, entry := range g.GetActionLog() {
 		if entry.ActionType == "expose" {
-			assert.Equal(t, "gongzhu.log.expose", entry.DetailCode)
+			assert.Equal(t, "gongzhu.log.exposeNone", entry.DetailCode)
 			assert.Equal(t, "1", entry.DetailParams["round"])
 			return
 		}
