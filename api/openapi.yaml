@@ -35697,9 +35697,6 @@ components:
             $ref: '#/components/schemas/ActionLogEntry'
         config:
           type: object
-          properties:
-            cpuDifficulty:
-              type: integer
         players:
           type: array
           items:
@@ -35909,9 +35906,6 @@ components:
             $ref: '#/components/schemas/ActionLogEntry'
         config:
           type: object
-          properties:
-            cpuDifficulty:
-              type: integer
         players:
           type: array
           items:

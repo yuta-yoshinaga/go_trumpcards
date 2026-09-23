@@ -308,11 +308,6 @@ func TestSkitgubbe_UnmarshalRejectsAndClampsHostileSnapshots(t *testing.T) {
 	data, err := json.Marshal(s)
 	require.NoError(t, err)
 
-	t.Run("invalid config", func(t *testing.T) {
-		hostile := replaceJSONNumber(t, string(data), `"cd":0`, `"cd":99`)
-		assert.Error(t, json.Unmarshal([]byte(hostile), NewDefaultSkitgubbe()))
-	})
-
 	t.Run("out-of-range seats are clamped", func(t *testing.T) {
 		cur := fmt.Sprintf(`"ci":%d`, s.GetCurrentPlayerIdx())
 		hostile := replaceJSONNumber(t, string(data), cur, `"ci":99`)

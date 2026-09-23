@@ -5,7 +5,6 @@ package controller
 import (
 	"net/http"
 
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/webutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
@@ -18,9 +17,7 @@ type SkitgubbeWebInput struct {
 }
 
 // SkitgubbeWebConfig シートグッベWeb設定
-type SkitgubbeWebConfig struct {
-	CpuDifficulty *int `json:"cpuDifficulty,omitempty"`
-}
+type SkitgubbeWebConfig struct{}
 
 // SkitgubbeWebOutputPlayer シートグッベWebアウトプットプレイヤー
 type SkitgubbeWebOutputPlayer struct {
@@ -74,27 +71,10 @@ type SkitgubbeWebOutput struct {
 }
 
 // SkitgubbeWebOutputConfig シートグッベ設定アウトプット
-type SkitgubbeWebOutputConfig struct {
-	CpuDifficulty int `json:"cpuDifficulty"`
-}
+type SkitgubbeWebOutputConfig struct{}
 
-// ToConfig builds a SkitgubbeConfig from the nested web config, applying bounds checking.
-func (c *SkitgubbeWebConfig) ToConfig() domain.SkitgubbeConfig {
-	cfg := domain.DefaultSkitgubbeConfig()
-	cfg.CpuDifficulty = domain.SkitgubbeCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty,
-		int(domain.SkitgubbeCpuDifficultyNormal), int(domain.SkitgubbeCpuDifficultyNormal),
-		int(cfg.CpuDifficulty)))
-	return cfg
-}
-
-// ToConfig builds a SkitgubbeConfig from the input, falling back to defaults when absent.
-//
-// Must go through configOrDefault: `config` is optional on the wire, so a plain
-// reset arrives with a nil *SkitgubbeWebConfig and calling the method on it
-// would dereference nil.
-func (i SkitgubbeWebInput) ToConfig() domain.SkitgubbeConfig {
-	return configOrDefault(i.Config, (*SkitgubbeWebConfig).ToConfig, domain.DefaultSkitgubbeConfig())
-}
+// ToConfig returns the default Skitgubbe configuration.
+func (SkitgubbeWebInput) ToConfig() domain.SkitgubbeConfig { return domain.DefaultSkitgubbeConfig() }
 
 // SkitgubbeWebController シートグッベWebコントローラ
 type SkitgubbeWebController = GameWebController[usecase.SkitgubbeInteractorIF, SkitgubbeWebInput, *SkitgubbeWebOutput]
