@@ -750,12 +750,7 @@ func (n *Napoleon) applyDeclareTrump(suit int, adjSuit int, adjVal int) {
 	n.round.trumpSuit = suit
 	n.round.adjutantCard = NewCard(adjSuit, adjVal, false)
 
-	suitNames := map[int]string{
-		CardDesignSpade: "Spade", CardDesignClover: "Club",
-		CardDesignHeart: "Heart", CardDesignDiamond: "Diamond",
-		CardDesignJoker: "Joker",
-	}
-	n.appendLog(n.round.napoleonIdx, "declare_trump", "napoleon.log.declareTrump", map[string]string{"name": playerName(n.players, n.round.napoleonIdx), "suit": suitNames[suit]}, nil)
+	n.appendLog(n.round.napoleonIdx, "declare_trump", "napoleon.log.declareTrump", map[string]string{"name": playerName(n.players, n.round.napoleonIdx), "suitKey": suitKeyOf(suit)}, nil)
 	n.appendLog(n.round.napoleonIdx, "declare_adjutant", "napoleon.log.declareAdjutant", map[string]string{"name": playerName(n.players, n.round.napoleonIdx), "card": napoleonCardStr(n.round.adjutantCard)}, nil)
 
 	// 副官を特定

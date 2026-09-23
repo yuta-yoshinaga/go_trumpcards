@@ -32,6 +32,23 @@ func TestBinokelDomainErrorsHaveMessageCodes(t *testing.T) {
 	}
 }
 
+func TestBinokel_TrumpLogUsesSuitKey(t *testing.T) {
+	game := newTestBinokel()
+	game.phase = BinokelPhaseTrump
+
+	if err := game.doCallTrump(0, CardDesignHeart); err != nil {
+		t.Fatalf("doCallTrump failed: %v", err)
+	}
+
+	entry := game.GetActionLog()[0]
+	if got := entry.DetailParams["suitKey"]; got != "common.suit.heart" {
+		t.Fatalf("expected heart suit key, got %q", got)
+	}
+	if _, ok := entry.DetailParams["suit"]; ok {
+		t.Fatal("expected suit parameter to be absent")
+	}
+}
+
 func TestBinokelUnplayableCardHasMessageCode(t *testing.T) {
 	g := newTestBinokel()
 	g.Reset()

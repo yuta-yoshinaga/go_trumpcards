@@ -902,15 +902,10 @@ func (m *Mighty) applyDeclareTrumpAndFriend(suit int, partnerSuit int, partnerVa
 	m.round.trumpSuit = suit
 	m.round.partnerCard = NewCard(partnerSuit, partnerVal, false)
 
-	suitNames := map[int]string{
-		CardDesignSpade: "Spade", CardDesignClover: "Club",
-		CardDesignHeart: "Heart", CardDesignDiamond: "Diamond",
-		CardDesignJoker: "Joker",
-	}
 	if suit == MightyTrumpNone {
 		m.appendLog(m.round.declarerIdx, "declare_trump", "mighty.log.declareTrumpNoTrump", map[string]string{"name": playerName(m.players, m.round.declarerIdx)}, nil)
 	} else {
-		m.appendLog(m.round.declarerIdx, "declare_trump", "mighty.log.declareTrump", map[string]string{"name": playerName(m.players, m.round.declarerIdx), "suit": suitNames[suit]}, nil)
+		m.appendLog(m.round.declarerIdx, "declare_trump", "mighty.log.declareTrump", map[string]string{"name": playerName(m.players, m.round.declarerIdx), "suitKey": suitKeyOf(suit)}, nil)
 	}
 	m.appendLog(m.round.declarerIdx, "declare_partner", "mighty.log.declarePartner", map[string]string{"name": playerName(m.players, m.round.declarerIdx), "card": mightyCardStr(m.round.partnerCard)}, nil)
 
@@ -1005,16 +1000,8 @@ func (m *Mighty) playCard(playerIdx int, card *Card, isJokerLead bool, demandSui
 	})
 
 	cardText := mightyCardStr(card)
-	demandSuitName := ""
 	if isJokerLead {
-		suitNames := map[int]string{
-			CardDesignSpade: "Spade", CardDesignClover: "Club",
-			CardDesignHeart: "Heart", CardDesignDiamond: "Diamond",
-		}
-		demandSuitName = suitNames[demandSuit]
-	}
-	if isJokerLead {
-		m.appendLog(playerIdx, "play", "mighty.log.playJokerLead", map[string]string{"name": playerName(m.players, playerIdx), "card": cardText, "suit": demandSuitName}, []*Card{card})
+		m.appendLog(playerIdx, "play", "mighty.log.playJokerLead", map[string]string{"name": playerName(m.players, playerIdx), "card": cardText, "suitKey": suitKeyOf(demandSuit)}, []*Card{card})
 	} else {
 		m.appendLog(playerIdx, "play", "mighty.log.play", map[string]string{"name": playerName(m.players, playerIdx), "card": cardText}, []*Card{card})
 	}

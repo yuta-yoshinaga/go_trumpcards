@@ -1078,13 +1078,7 @@ func (p *Binokel) doCallTrump(playerIdx, suit int) error {
 		return NewDomainErrorCode(ErrInvalidPlay, "binokel.errInvalidSuit", nil)
 	}
 	p.trumpSuit = suit
-	suitNames := map[int]string{
-		CardDesignSpade:   "スペード",
-		CardDesignClover:  "クラブ",
-		CardDesignHeart:   "ハート",
-		CardDesignDiamond: "ダイヤ",
-	}
-	p.addLog(playerIdx, "trump", "binokel.log.trump", map[string]string{"suit": suitNames[suit]}, nil)
+	p.addLog(playerIdx, "trump", "binokel.log.trump", map[string]string{"suitKey": suitKeyOf(suit)}, nil)
 
 	// メルドフェーズへ移行 (15枚の手札に対してメルド評価)
 	p.evaluateAllMelds()
