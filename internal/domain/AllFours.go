@@ -499,7 +499,21 @@ func (a *AllFours) ScoreRound() {
 	for _, aw := range awards {
 		base[aw.player]++
 		a.players[aw.player].SetRoundScore(a.players[aw.player].GetRoundScore() + 1)
-		a.appendLog(aw.player, "score_"+aw.kind, "allfours.log.score", map[string]string{"name": playerName(a.players, aw.player), "kind": aw.kind}, nil)
+		var detailCode string
+		switch aw.kind {
+		case "gift":
+			detailCode = "allfours.log.scoreGift"
+		case "high":
+			detailCode = "allfours.log.scoreHigh"
+		case "low":
+			detailCode = "allfours.log.scoreLow"
+		case "jack":
+			detailCode = "allfours.log.scoreJack"
+		default:
+			// awards に入る kind は gift/high/low/jack/game の 5 つだけなので、残りは game。
+			detailCode = "allfours.log.scoreGame"
+		}
+		a.appendLog(aw.player, "score_"+aw.kind, detailCode, map[string]string{"name": playerName(a.players, aw.player)}, nil)
 		if winner < 0 && base[aw.player] >= limit {
 			winner = aw.player
 		}
