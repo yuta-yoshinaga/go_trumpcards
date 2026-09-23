@@ -259,4 +259,28 @@ func init() {
 			return usecase.RestoreTappTarockInteractor(data, new(presenter.TappTarockWebPresenter))
 		},
 		controller.NewTappTarockWebControllerWithProvider)
+	games.RegisterKVGame("pontoon", games.CategoryExtra,
+		func() usecase.PontoonInteractorIF {
+			return usecase.NewPontoonInteractor(domain.NewDefaultPontoon(), new(presenter.PontoonWebPresenter))
+		},
+		func(data []byte) (usecase.PontoonInteractorIF, error) {
+			return usecase.RestorePontoonInteractor(data, new(presenter.PontoonWebPresenter))
+		},
+		controller.NewPontoonWebControllerWithProvider)
+	games.RegisterKVGame("quinze", games.CategoryExtra,
+		func() usecase.QuinzeInteractorIF {
+			return usecase.NewQuinzeInteractor(domain.NewDefaultQuinze(), new(presenter.QuinzeWebPresenter))
+		},
+		func(data []byte) (usecase.QuinzeInteractorIF, error) {
+			return usecase.RestoreQuinzeInteractor(data, new(presenter.QuinzeWebPresenter))
+		},
+		controller.NewQuinzeWebControllerWithProvider)
+	games.RegisterKVGame("settemezzo", games.CategoryExtra,
+		func() usecase.SetteEMezzoInteractorIF {
+			return usecase.NewSetteEMezzoInteractor(domain.NewDefaultSetteEMezzo(), new(presenter.SetteEMezzoWebPresenter))
+		},
+		func(data []byte) (usecase.SetteEMezzoInteractorIF, error) {
+			return usecase.RestoreSetteEMezzoInteractor(data, new(presenter.SetteEMezzoWebPresenter))
+		},
+		controller.NewSetteEMezzoWebControllerWithProvider)
 }

@@ -156,7 +156,7 @@ var registry = []*Game{
 	{Name: "baccarat", Category: CategoryCasino},
 	{Name: "spades", Category: CategoryClassic},
 	{Name: "crazyeights", Category: CategoryClassic},
-	{Name: "ginrummy", Category: CategoryExtra7},
+	{Name: "ginrummy", Category: CategoryClassic},
 	// Indian Rummy (13-card) is a draw-and-discard rummy.
 	{Name: "indianrummy", Category: CategoryExtra},
 	{Name: "canasta", Category: CategoryExtra7},
@@ -260,10 +260,10 @@ var registry = []*Game{
 	{Name: "braid", Category: CategoryExtra2},
 	// Pontoon deals every hand face down, including the banker's, and ranks a
 	// two-card 21 above a five-card trick above any total.
-	{Name: "pontoon", Category: CategoryExtra6},
+	{Name: "pontoon", Category: CategoryExtra},
 	// Sette e Mezzo plays to 7.5 on a 40-card deck where face cards are worth
 	// half a point, and the king of coins is wild for 0.5 or 1-7.
-	{Name: "settemezzo", Category: CategoryExtra6},
+	{Name: "settemezzo", Category: CategoryExtra},
 	// Niu Niu finds three of five cards summing to a multiple of ten; the
 	// remaining pair's last digit is the rank, and the multiplier follows it.
 	{Name: "niuniu", Category: CategoryExtra3},
@@ -321,7 +321,7 @@ var registry = []*Game{
 	{Name: "spiderette", Category: CategorySolo},
 	// Mighty is a trick-taking game.
 	{Name: "mighty", Category: CategoryExtra6},
-	{Name: "oasispoker", Category: CategoryExtra6},
+	{Name: "oasispoker", Category: CategorySolo},
 	{Name: "beleagueredcastle", Category: CategorySolo},
 	// Streets and Alleys is a Beleaguered Castle variant.
 	{Name: "streetsandalleys", Category: CategoryExtra},
@@ -374,7 +374,7 @@ var registry = []*Game{
 	{Name: "yaniv", Category: CategorySolo},
 	// Gong Zhu (拱猪 / Chinese Hearts) is a trick-taking game with positive and negative
 	// point cards, a doubling card, and an exposure phase.
-	{Name: "gongzhu", Category: CategoryExtra7},
+	{Name: "gongzhu", Category: CategoryExtra4},
 	// Bristol is a tableau/reserve solitaire (build-down tableau, 3 fans, stock).
 	{Name: "bristol", Category: CategorySolo},
 	// Bid Whist is a 4-player partnership trick-taking game with jokers, a 6-card kitty
@@ -709,7 +709,7 @@ var registry = []*Game{
 	{Name: "wizard", Category: CategoryExtra5},
 	// Oicho-Kabu is a kabufuda (40-card, values 1-10) baccarat-style banking game; its
 	// cards use the non-52 procedural render path (ADR-0033).
-	{Name: "oichokabu", Category: CategoryExtra6},
+	{Name: "oichokabu", Category: CategoryExtra5},
 	// Rook is a 57-card (4 colors 1-14 + Rook bird) 2-team point-trick game; its special-
 	// deck cards use the non-52 procedural render path (ADR-0033).
 	{Name: "rook", Category: CategoryExtra3},
@@ -748,7 +748,7 @@ var registry = []*Game{
 	{Name: "cego", Category: CategoryExtra5},
 	// Zheng Shangyou is a Chinese climbing/shedding game (ancestor of Big Two / Daifugo)
 	// on a 54-card deck (52 + 2 jokers); suits are irrelevant to rank strength.
-	{Name: "zheng", Category: CategoryExtra7},
+	{Name: "zheng", Category: CategorySolo},
 	// Desmoche is a Nicaraguan rummy: nine dealt, and the pot goes to whoever melds
 	// exactly ten cards. Poker hand rankings play no part despite the family
 	// resemblance, and "desmoche" itself is the move of reusing a card from one of
@@ -1180,13 +1180,13 @@ var registry = []*Game{
 	//
 	// **おいちょかぶと同じ株札を使うが、競うものが違う。** 合計の下一桁では
 	// なく、同じ数字を何枚そろえたかで決まる ── 役の判定に総和は出てこない。
-	{Name: "kingo", Category: CategoryExtra6},
+	{Name: "kingo", Category: CategoryExtra5},
 	// Tu Sac トゥーサック (四色牌)
 	//
 	// **4 色 × 7 種 × 4 枚 = 112 枚の専用デッキ。** 引いて捨てる形は
 	// ラミーと同じだが、数字の並びという概念が無いので「同スートの連番」に
 	// 当たるメルドが存在しない ── 同色同種 3 枚 / 異色の車馬砲 / 卒 5 枚の 3 つ。
-	{Name: "tusac", Category: CategoryExtra6},
+	{Name: "tusac", Category: CategoryExtra5},
 	// Sakura さくら (肥後花)
 	//
 	// **花札 48 枚を使うが、役ではなく点数の合計で競う。** こいこいや八八が
@@ -1269,7 +1269,7 @@ var registry = []*Game{
 	{Name: "omi", Category: CategoryExtra5},
 	{Name: "tongits", Category: CategoryExtra5},
 	{Name: "willothewisp", Category: CategorySolo},
-	{Name: "quinze", Category: CategoryExtra6},
+	{Name: "quinze", Category: CategoryExtra},
 	{Name: "doubleexposure", Category: CategoryCasino},
 	{Name: "basset", Category: CategoryExtra4},
 	{Name: "matrimony", Category: CategoryExtra},

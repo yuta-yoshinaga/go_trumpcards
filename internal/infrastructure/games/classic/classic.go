@@ -332,4 +332,12 @@ func init() {
 			return usecase.RestoreBotifarraInteractor(data, new(presenter.BotifarraWebPresenter))
 		},
 		controller.NewBotifarraWebControllerWithProvider)
+	games.RegisterKVGame("ginrummy", games.CategoryClassic,
+		func() usecase.GinRummyInteractorIF {
+			return usecase.NewGinRummyInteractor(domain.NewDefaultGinRummy(), new(presenter.GinRummyWebPresenter))
+		},
+		func(data []byte) (usecase.GinRummyInteractorIF, error) {
+			return usecase.RestoreGinRummyInteractor(data, new(presenter.GinRummyWebPresenter))
+		},
+		controller.NewGinRummyWebControllerWithProvider)
 }

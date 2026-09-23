@@ -76,14 +76,6 @@ func init() {
 			return usecase.RestoreConquianInteractor(data, new(presenter.ConquianWebPresenter))
 		},
 		controller.NewConquianWebControllerWithProvider)
-	games.RegisterKVGame("ginrummy", games.CategoryExtra7,
-		func() usecase.GinRummyInteractorIF {
-			return usecase.NewGinRummyInteractor(domain.NewDefaultGinRummy(), new(presenter.GinRummyWebPresenter))
-		},
-		func(data []byte) (usecase.GinRummyInteractorIF, error) {
-			return usecase.RestoreGinRummyInteractor(data, new(presenter.GinRummyWebPresenter))
-		},
-		controller.NewGinRummyWebControllerWithProvider)
 	games.RegisterKVGame("bidwhist", games.CategoryExtra7,
 		func() usecase.BidWhistInteractorIF {
 			return usecase.NewBidWhistInteractor(domain.NewDefaultBidWhist(), new(presenter.BidWhistWebPresenter))
@@ -124,22 +116,6 @@ func init() {
 			return usecase.RestoreFiveHundredInteractor(data, new(presenter.FiveHundredWebPresenter))
 		},
 		controller.NewFiveHundredWebControllerWithProvider)
-	games.RegisterKVGame("gongzhu", games.CategoryExtra7,
-		func() usecase.GongZhuInteractorIF {
-			return usecase.NewGongZhuInteractor(domain.NewDefaultGongZhu(), new(presenter.GongZhuWebPresenter))
-		},
-		func(data []byte) (usecase.GongZhuInteractorIF, error) {
-			return usecase.RestoreGongZhuInteractor(data, new(presenter.GongZhuWebPresenter))
-		},
-		controller.NewGongZhuWebControllerWithProvider)
-	games.RegisterKVGame("zheng", games.CategoryExtra7,
-		func() usecase.ZhengInteractorIF {
-			return usecase.NewZhengInteractor(domain.NewDefaultZheng(), new(presenter.ZhengWebPresenter))
-		},
-		func(data []byte) (usecase.ZhengInteractorIF, error) {
-			return usecase.RestoreZhengInteractor(data, new(presenter.ZhengWebPresenter))
-		},
-		controller.NewZhengWebControllerWithProvider)
 	games.RegisterKVGame("thirtyone", games.CategoryExtra7,
 		func() usecase.ThirtyOneInteractorIF {
 			return usecase.NewThirtyOneInteractor(domain.NewDefaultThirtyOne(), new(presenter.ThirtyOneWebPresenter))

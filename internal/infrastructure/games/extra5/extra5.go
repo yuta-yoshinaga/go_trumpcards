@@ -245,4 +245,28 @@ func init() {
 			return usecase.RestoreTongitsInteractor(data, new(presenter.TongitsWebPresenter))
 		},
 		controller.NewTongitsWebControllerWithProvider)
+	games.RegisterKVGame("kingo", games.CategoryExtra5,
+		func() usecase.KingoInteractorIF {
+			return usecase.NewKingoInteractor(domain.NewDefaultKingo(), new(presenter.KingoWebPresenter))
+		},
+		func(data []byte) (usecase.KingoInteractorIF, error) {
+			return usecase.RestoreKingoInteractor(data, new(presenter.KingoWebPresenter))
+		},
+		controller.NewKingoWebControllerWithProvider)
+	games.RegisterKVGame("oichokabu", games.CategoryExtra5,
+		func() usecase.OichoKabuInteractorIF {
+			return usecase.NewOichoKabuInteractor(domain.NewDefaultOichoKabu(), new(presenter.OichoKabuWebPresenter))
+		},
+		func(data []byte) (usecase.OichoKabuInteractorIF, error) {
+			return usecase.RestoreOichoKabuInteractor(data, new(presenter.OichoKabuWebPresenter))
+		},
+		controller.NewOichoKabuWebControllerWithProvider)
+	games.RegisterKVGame("tusac", games.CategoryExtra5,
+		func() usecase.TuSacInteractorIF {
+			return usecase.NewTuSacInteractor(domain.NewDefaultTuSac(), new(presenter.TuSacWebPresenter))
+		},
+		func(data []byte) (usecase.TuSacInteractorIF, error) {
+			return usecase.RestoreTuSacInteractor(data, new(presenter.TuSacWebPresenter))
+		},
+		controller.NewTuSacWebControllerWithProvider)
 }

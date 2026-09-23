@@ -392,4 +392,20 @@ func init() {
 			return usecase.RestoreWillOTheWispInteractor(data, new(presenter.WillOTheWispWebPresenter))
 		},
 		controller.NewWillOTheWispWebControllerWithProvider)
+	games.RegisterKVGame("zheng", games.CategorySolo,
+		func() usecase.ZhengInteractorIF {
+			return usecase.NewZhengInteractor(domain.NewDefaultZheng(), new(presenter.ZhengWebPresenter))
+		},
+		func(data []byte) (usecase.ZhengInteractorIF, error) {
+			return usecase.RestoreZhengInteractor(data, new(presenter.ZhengWebPresenter))
+		},
+		controller.NewZhengWebControllerWithProvider)
+	games.RegisterKVGame("oasispoker", games.CategorySolo,
+		func() usecase.OasisPokerInteractorIF {
+			return usecase.NewOasisPokerInteractor(domain.NewDefaultOasisPoker(), new(presenter.OasisPokerWebPresenter))
+		},
+		func(data []byte) (usecase.OasisPokerInteractorIF, error) {
+			return usecase.RestoreOasisPokerInteractor(data, new(presenter.OasisPokerWebPresenter))
+		},
+		controller.NewOasisPokerWebControllerWithProvider)
 }

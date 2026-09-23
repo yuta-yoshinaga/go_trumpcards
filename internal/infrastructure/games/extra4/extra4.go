@@ -306,4 +306,12 @@ func init() {
 			return usecase.RestoreBassetInteractor(data, new(presenter.BassetWebPresenter))
 		},
 		controller.NewBassetWebControllerWithProvider)
+	games.RegisterKVGame("gongzhu", games.CategoryExtra4,
+		func() usecase.GongZhuInteractorIF {
+			return usecase.NewGongZhuInteractor(domain.NewDefaultGongZhu(), new(presenter.GongZhuWebPresenter))
+		},
+		func(data []byte) (usecase.GongZhuInteractorIF, error) {
+			return usecase.RestoreGongZhuInteractor(data, new(presenter.GongZhuWebPresenter))
+		},
+		controller.NewGongZhuWebControllerWithProvider)
 }
