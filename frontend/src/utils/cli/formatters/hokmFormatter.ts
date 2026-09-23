@@ -1,5 +1,6 @@
 import type { HokmResponse } from '../../../types/card';
 import { HokmPhase } from '../../../types/phases';
+import { suitSymbolAt } from '../../cardAlt';
 import { formatCard, formatHeader, formatPlayerName, formatSeparator } from '../formatterBase';
 
 const PHASE_NAMES: Record<number, string> = {
@@ -8,9 +9,6 @@ const PHASE_NAMES: Record<number, string> = {
   [HokmPhase.HAND_END]: 'HAND END',
   [HokmPhase.GAME_END]: 'GAME END',
 };
-
-/** trumpSuit is a 1-based suit code, as elsewhere in this repo. */
-const SUIT_SYMBOLS: Record<number, string> = { 1: '♠', 2: '♣', 3: '♥', 4: '♦' };
 
 /** Format a Hokm game state as terminal text. */
 export function formatHokmState(state: HokmResponse | null): string {
@@ -28,7 +26,7 @@ export function formatHokmState(state: HokmResponse | null): string {
   lines.push(`hand points: yours=${state.scores[0] ?? 0} theirs=${state.scores[1] ?? 0}`);
   lines.push(
     state.trumpSuit > 0
-      ? `trump: ${SUIT_SYMBOLS[state.trumpSuit] ?? '?'}`
+      ? `trump: ${suitSymbolAt(state.trumpSuit, '?')}`
       : 'trump: undeclared (the hakem chooses from their first five)',
   );
 

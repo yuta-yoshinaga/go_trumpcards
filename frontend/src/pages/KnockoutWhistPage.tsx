@@ -28,15 +28,13 @@ import { gameTheme } from '../styles/gameTheme';
 import type { KnockoutWhistResponse } from '../types/card';
 import { KnockoutWhistPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { suitSymbolAt } from '../utils/cardAlt';
 import { KNOCKOUT_WHIST_HELP, parseKnockoutWhistCommand } from '../utils/cli/commands/knockoutWhistCommands';
 import { formatKnockoutWhistState } from '../utils/cli/formatters/knockoutWhistFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
 import { findPlayerName, playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
-
-/** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 unused). */
-const SUIT_SYMBOLS = ['', '♠', '♣', '♥', '♦'] as const;
 
 /** Knockout Whist tutorial step definitions. */
 const KNOCKOUT_WHIST_TUTORIAL_STEPS: TutorialStep[] = [
@@ -155,7 +153,7 @@ function KnockoutWhistPageContent() {
   const canPlay = isPlayPhase && isHumanTurn && !isHumanEliminated;
   // Show a spectator banner while the human is knocked out but the match continues among the CPUs.
   const showSpectatorBanner = isHumanEliminated && !isGameEnd;
-  const trumpSymbol = SUIT_SYMBOLS[state.trumpSuit] ?? '?';
+  const trumpSymbol = suitSymbolAt(state.trumpSuit, '');
 
   const handleManualReset = () => {
     hideActionLog();
@@ -402,9 +400,9 @@ function KnockoutWhistPageContent() {
                       onClick={() => handleSelectTrump(suit)}
                       disabled={loading}
                       data-testid={`knockoutwhist-trump-${suit}`}
-                      aria-label={t('trumpSelectSuit', { suit: SUIT_SYMBOLS[suit] })}
+                      aria-label={t('trumpSelectSuit', { suit: suitSymbolAt(suit, '') })}
                     >
-                      {SUIT_SYMBOLS[suit]}
+                      {suitSymbolAt(suit, '')}
                     </button>
                   ))}
                 </div>

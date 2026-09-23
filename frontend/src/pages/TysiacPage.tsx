@@ -28,6 +28,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { TysiacResponse } from '../types/card';
 import { TysiacPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { suitSymbolAt } from '../utils/cardAlt';
 import { parseTysiacCommand, TYSIAC_HELP } from '../utils/cli/commands/tysiacCommands';
 import { formatTysiacState } from '../utils/cli/formatters/tysiacFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -35,7 +36,6 @@ import { isRequestedHint } from '../utils/hintRequest';
 import { findPlayerName, playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
-/** Suit symbols indexed by suit number (0=unset, 1=♠ 2=♣ 3=♥ 4=♦). */
 /**
  * Share of the target at which a player counts as "close to winning".
  *
@@ -45,12 +45,10 @@ import { hintCheckboxItem } from '../utils/settingsItems';
  */
 const NEAR_WIN_RATIO = 0.8;
 
-const SUIT_SYMBOLS = ['-', '♠', '♣', '♥', '♦'] as const;
-
 /** Bid increment applied by a raise (mirrors backend `TysiacBidStep`). */
 const TYSIAC_BID_STEP = 10;
 
-/** Card design string → suit number (1=♠ 2=♣ 3=♥ 4=♦), to align with SUIT_SYMBOLS / trumpSuit. */
+/** Card design string → suit number (1=♠ 2=♣ 3=♥ 4=♦), to align with trumpSuit. */
 const DESIGN_TO_SUIT: Readonly<Record<string, number>> = { SPADE: 1, CLOVER: 2, HEART: 3, DIAMOND: 4 };
 
 /** Marriage points by suit number (1=♠ 40, 2=♣ 60, 3=♥ 100, 4=♦ 80). */
@@ -163,7 +161,7 @@ function TysiacPageContent() {
   const canBid = isBidPhase && state.currentPlayerIdx === humanIdx;
   const canDiscard = isTalonPhase && state.declarerIdx === humanIdx;
   const canPlay = isPlayPhase && isHumanTurn;
-  const trumpSymbol = SUIT_SYMBOLS[state.trumpSuit] ?? '-';
+  const trumpSymbol = suitSymbolAt(state.trumpSuit, '-');
 
   // Suits where the human holds both K (13) and Q (12) — a marriage that sets
   // trump when led and scores 40/60/80/100 by suit (♠/♣/♦/♥). Surfaced as a
@@ -176,7 +174,7 @@ function TysiacPageContent() {
           const hasQ = cards.some((c) => DESIGN_TO_SUIT[c.design] === suit && c.value === 12);
           return hasK && hasQ;
         })
-        .map((suit) => ({ symbol: SUIT_SYMBOLS[suit] ?? '-', points: MARRIAGE_POINTS[suit] ?? 0 }))
+        .map((suit) => ({ symbol: suitSymbolAt(suit, '-'), points: MARRIAGE_POINTS[suit] ?? 0 }))
     : [];
 
   const handleManualReset = () => {

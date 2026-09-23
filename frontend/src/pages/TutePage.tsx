@@ -27,6 +27,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { TuteResponse } from '../types/card';
 import { TutePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { suitSymbolAt } from '../utils/cardAlt';
 import { suitName } from '../utils/cardUtils';
 import { parseTuteCommand, TUTE_HELP } from '../utils/cli/commands/tuteCommands';
 import { formatTuteState } from '../utils/cli/formatters/tuteFormatter';
@@ -35,8 +36,6 @@ import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
-/** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 unused). */
-const SUIT_SYMBOLS = ['', '♠', '♣', '♥', '♦'] as const;
 /** Suit id → `suitName.*` i18n key (1=♠ .. 4=♦). */
 const SUIT_KEYS = ['', 'spade', 'club', 'heart', 'diamond'] as const;
 
@@ -149,7 +148,7 @@ function TutePageContent() {
     </>
   );
   const humanTeam = humanIdx % 2;
-  const trumpSymbol = SUIT_SYMBOLS[state.trumpSuit] ?? '?';
+  const trumpSymbol = suitSymbolAt(state.trumpSuit, '');
   // Trump suit is 0 before the last dealt card establishes it.
   const trumpDesign = suitName(state.trumpSuit);
   const trumpIndices =
@@ -254,7 +253,7 @@ function TutePageContent() {
                     const declared = state.declaredSuits[suit] ?? false;
                     return (
                       <div key={suit} className="py-0.5">
-                        <span className="mr-1">{SUIT_SYMBOLS[suit]}</span>
+                        <span className="mr-1">{suitSymbolAt(suit, '')}</span>
                         {suit === state.trumpSuit && <span className="mr-1 text-ds-warning">★</span>}
                         <span className={declared ? 'text-ds-text-primary' : ''}>
                           {declared ? t('declaredMarriages.declared') : t('declaredMarriages.undeclared')}
@@ -413,7 +412,7 @@ function TutePageContent() {
                             points: suit === state.trumpSuit ? 40 : 20,
                           })}
                         >
-                          {t('declareMarriage', { suit: SUIT_SYMBOLS[suit] })}
+                          {t('declareMarriage', { suit: suitSymbolAt(suit, '') })}
                         </button>
                       ))}
                   {state.canDeclareTute && (

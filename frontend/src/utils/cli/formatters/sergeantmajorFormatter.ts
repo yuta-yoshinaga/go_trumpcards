@@ -1,5 +1,6 @@
 import type { SergeantMajorResponse } from '../../../types/card';
 import { SergeantMajorPhase } from '../../../types/phases';
+import { suitSymbolAt } from '../../cardAlt';
 import { formatCard, formatHeader, formatPlayerName, formatSeparator } from '../formatterBase';
 
 const PHASE_NAMES: Record<number, string> = {
@@ -9,9 +10,6 @@ const PHASE_NAMES: Record<number, string> = {
   [SergeantMajorPhase.ROUND_END]: 'ROUND END',
   [SergeantMajorPhase.GAME_END]: 'GAME END',
 };
-
-/** trumpSuit is a 1-based suit code, as elsewhere in this repo. */
-const SUIT_SYMBOLS: Record<number, string> = { 1: '♠', 2: '♣', 3: '♥', 4: '♦' };
 
 /** Format a Sergeant Major game state as terminal text. */
 export function formatSergeantMajorState(state: SergeantMajorResponse | null): string {
@@ -28,7 +26,7 @@ export function formatSergeantMajorState(state: SergeantMajorResponse | null): s
   lines.push('targets follow the seats: dealer 8, next 5, next 3 — nobody bids');
   lines.push(
     state.trumpSuit > 0
-      ? `trump: ${SUIT_SYMBOLS[state.trumpSuit] ?? '?'} (declared by ${formatPlayerName(
+      ? `trump: ${suitSymbolAt(state.trumpSuit, '?')} (declared by ${formatPlayerName(
           state.dealerIdx,
           state.dealerIdx === 0,
         )})`

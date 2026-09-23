@@ -36,7 +36,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { MightyResponse } from '../types/card';
 import { MightyPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { cardAlt } from '../utils/cardAlt';
+import { cardAlt, suitSymbolAt } from '../utils/cardAlt';
 import { valueName } from '../utils/cardUtils';
 import { MIGHTY_HELP, parseMightyCommand } from '../utils/cli/commands/mightyCommands';
 import { formatMightyState } from '../utils/cli/formatters/mightyFormatter';
@@ -108,7 +108,6 @@ const MIGHTY_PHASE_KEYS: Readonly<Record<number, string>> = {
 };
 
 const SUIT_KEYS: Record<number, string> = { 1: 'spade', 2: 'club', 3: 'heart', 4: 'diamond' };
-const SUIT_SYMBOLS: Record<number, string> = { 1: '♠', 2: '♣', 3: '♥', 4: '♦' };
 
 /** Highest Mighty bid (all 20 point cards); mirrors the domain `MightyMaxPoints`. */
 const MIGHTY_MAX_BID = 20;
@@ -747,7 +746,7 @@ function MightyPageContent() {
                         disabled={loading}
                         className={suitToggleClass(trumpSuitValue === s)}
                       >
-                        {SUIT_SYMBOLS[s]}
+                        {suitSymbolAt(s)}
                       </button>
                     ))}
                   </fieldset>
@@ -774,7 +773,7 @@ function MightyPageContent() {
                         disabled={loading}
                         className={suitToggleClass(partnerSuitValue === s)}
                       >
-                        {SUIT_SYMBOLS[s]}
+                        {suitSymbolAt(s)}
                       </button>
                     ))}
                   </fieldset>

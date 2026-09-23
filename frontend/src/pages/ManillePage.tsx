@@ -27,15 +27,13 @@ import { gameTheme } from '../styles/gameTheme';
 import type { ManilleResponse } from '../types/card';
 import { ManillePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { suitSymbolAt } from '../utils/cardAlt';
 import { MANILLE_HELP, parseManilleCommand } from '../utils/cli/commands/manilleCommands';
 import { formatManilleState } from '../utils/cli/formatters/manilleFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
-
-/** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 unused). */
-const SUIT_SYMBOLS = ['', '♠', '♣', '♥', '♦'] as const;
 
 /**
  * Static card-strength legend rows, strongest first, mirroring the Go domain
@@ -154,7 +152,7 @@ function ManillePageContent() {
 
   const canPlay = isPlayPhase && isHumanTurn;
   const humanTeam = humanIdx % 2;
-  const trumpSymbol = SUIT_SYMBOLS[state.trumpSuit] ?? '?';
+  const trumpSymbol = suitSymbolAt(state.trumpSuit, '');
 
   // One info-sidebar row per player; same-team members are emphasised. Shared by the
   // mobile (<details>) and desktop layouts so the highlight logic lives in one place.

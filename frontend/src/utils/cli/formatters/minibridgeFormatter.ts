@@ -1,5 +1,6 @@
 import type { MinibridgeResponse } from '../../../types/card';
 import { MinibridgePhase } from '../../../types/phases';
+import { suitSymbolAt } from '../../cardAlt';
 import { formatCard, formatHeader, formatPlayerName, formatSeparator } from '../formatterBase';
 
 const PHASE_NAMES: Record<number, string> = {
@@ -8,9 +9,6 @@ const PHASE_NAMES: Record<number, string> = {
   [MinibridgePhase.ROUND_END]: 'ROUND END',
   [MinibridgePhase.GAME_END]: 'GAME END',
 };
-
-/** Contract denominations. **`0` is no-trump**, which is a choice, not a blank. */
-const SUIT_SYMBOLS: Record<number, string> = { 0: 'NT', 1: '♠', 2: '♣', 3: '♥', 4: '♦' };
 
 /** Format a Minibridge game state as terminal text. */
 export function formatMinibridgeState(state: MinibridgeResponse | null): string {
@@ -28,7 +26,7 @@ export function formatMinibridgeState(state: MinibridgeResponse | null): string 
 
   lines.push(
     state.contractLevel > 0
-      ? `contract: ${state.contractLevel}${SUIT_SYMBOLS[state.contractSuit] ?? '?'} by ${formatPlayerName(
+      ? `contract: ${state.contractLevel}${suitSymbolAt(state.contractSuit, 'NT')} by ${formatPlayerName(
           state.declarerIdx,
           state.declarerIdx === 0,
         )} — needs ${state.requiredTricks} tricks`

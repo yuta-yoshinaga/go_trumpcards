@@ -24,7 +24,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { TarabishPlayer, TarabishResponse } from '../types/card';
 import { TarabishPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { cardAlt } from '../utils/cardAlt';
+import { cardAlt, suitSymbolAt } from '../utils/cardAlt';
 import { parseTarabishCommand, TARABISH_HELP } from '../utils/cli/commands/tarabishCommands';
 import { formatTarabishState } from '../utils/cli/formatters/tarabishFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -33,9 +33,6 @@ import { tarabishCardPoints } from '../utils/tarabishPoints';
 
 /** Tricks per round (nine cards each). */
 const TRICKS_PER_ROUND = 9;
-
-/** Suit code (1=♠ 2=♣ 3=♥ 4=♦) to its symbol, for the trump readout. */
-const SUIT_SYMBOLS: Readonly<Record<number, string>> = { 1: '♠', 2: '♣', 3: '♥', 4: '♦' };
 
 /** Guided tutorial steps (trump order, bidding, melds, hand). */
 const TARABISH_TUTORIAL_STEPS: TutorialStep[] = [
@@ -203,7 +200,7 @@ function TarabishPageContent() {
               {state.trumpTakerIdx >= 0 ? (
                 <div className="rounded bg-black/30 px-3 py-2 text-ds-text-primary text-sm" data-testid="tb-trump">
                   {t('header.trumpTaken', {
-                    suit: SUIT_SYMBOLS[state.trumpSuit] ?? '?',
+                    suit: suitSymbolAt(state.trumpSuit, '?'),
                     name:
                       state.trumpTakerIdx === 0
                         ? t('header.you')

@@ -28,6 +28,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { CinchResponse } from '../types/card';
 import { CinchPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { suitSymbolAt } from '../utils/cardAlt';
 import { estimateCinchBidStrength } from '../utils/cinchBidStrength';
 import { CINCH_HELP, parseCinchCommand } from '../utils/cli/commands/cinchCommands';
 import { formatCinchState } from '../utils/cli/formatters/cinchFormatter';
@@ -35,9 +36,6 @@ import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
-
-/** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; 0 = unset). */
-const SUIT_SYMBOLS = ['-', '♠', '♣', '♥', '♦'] as const;
 
 /** i18n suit-name key by suit number (1=♠ 2=♣ 3=♥ 4=♦). */
 const SUIT_KEYS: Readonly<Record<number, string>> = { 1: 'spade', 2: 'club', 3: 'heart', 4: 'diamond' };
@@ -173,7 +171,7 @@ function CinchPageContent() {
   const suitLabel = (suit: number): string => (SUIT_KEYS[suit] ? t(`suit.${SUIT_KEYS[suit]}`) : '');
   /** Colored suit symbol: hearts/diamonds red, spades/clubs default. */
   const renderSuitSymbol = (suit: number) => (
-    <span className={isRedSuit(suit) ? 'text-ds-error' : undefined}>{SUIT_SYMBOLS[suit]}</span>
+    <span className={isRedSuit(suit) ? 'text-ds-error' : undefined}>{suitSymbolAt(suit, '-')}</span>
   );
 
   const handleManualReset = () => {
@@ -393,7 +391,7 @@ function CinchPageContent() {
                 </div>
                 <div data-testid="cinch-bid-strength-best">
                   {t('bidStrength.best', {
-                    symbol: SUIT_SYMBOLS[bidStrength.bestSuit],
+                    symbol: suitSymbolAt(bidStrength.bestSuit, '-'),
                     suit: suitLabel(bidStrength.bestSuit),
                     points: bidStrength.pointsBySuit[bidStrength.bestSuit],
                   })}

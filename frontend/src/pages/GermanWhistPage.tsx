@@ -26,14 +26,11 @@ import { gameTheme } from '../styles/gameTheme';
 import type { GermanWhistResponse } from '../types/card';
 import { GermanWhistPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { cardAlt } from '../utils/cardAlt';
+import { cardAlt, suitSymbolAt } from '../utils/cardAlt';
 import { GERMANWHIST_HELP, parseGermanWhistCommand } from '../utils/cli/commands/germanwhistCommands';
 import { formatGermanWhistState } from '../utils/cli/formatters/germanwhistFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
-
-/** Suit code to its symbol, for the trump readout. */
-const SUIT_SYMBOLS: Readonly<Record<number, string>> = { 1: '♠', 2: '♣', 3: '♥', 4: '♦' };
 
 /** Guided tutorial steps (face-up card, trick, hand, actions). */
 const GERMANWHIST_TUTORIAL_STEPS: TutorialStep[] = [
@@ -186,7 +183,7 @@ function GermanWhistPageContent() {
                 {t('header.stock')}: {state.stockCount}
               </span>
               <span className="mr-4">
-                {t('header.trump')}: {SUIT_SYMBOLS[state.trumpSuit] ?? '?'}
+                {t('header.trump')}: {suitSymbolAt(state.trumpSuit, '?')}
               </span>
               <span className="text-ds-accent" data-testid="gw-phase">
                 {isFirstHalf ? t('header.phase1') : t('header.phase2')}
@@ -212,7 +209,7 @@ function GermanWhistPageContent() {
                 <span className="text-ds-text-muted text-sm">
                   {state.upCard
                     ? t('header.upCard')
-                    : t('header.upCardNone', { suit: SUIT_SYMBOLS[state.trumpSuit] ?? '?' })}
+                    : t('header.upCardNone', { suit: suitSymbolAt(state.trumpSuit, '?') })}
                 </span>
                 {state.upCard ? (
                   <div className="flex items-center gap-1">

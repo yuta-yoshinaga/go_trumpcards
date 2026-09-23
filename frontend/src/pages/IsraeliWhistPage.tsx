@@ -23,7 +23,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { IsraeliWhistPlayer, IsraeliWhistResponse } from '../types/card';
 import { IsraeliWhistPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { cardAlt } from '../utils/cardAlt';
+import { cardAlt, suitSymbolAt } from '../utils/cardAlt';
 import { ISRAELIWHIST_HELP, parseIsraeliWhistCommand } from '../utils/cli/commands/israeliwhistCommands';
 import { formatIsraeliWhistState } from '../utils/cli/formatters/israeliwhistFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -32,9 +32,6 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Tricks per round (thirteen cards each). */
 const TRICKS_PER_ROUND = 13;
-
-/** Suit code (1=♠ 2=♣ 3=♥ 4=♦) to its symbol. */
-const SUIT_SYMBOLS: Readonly<Record<number, string>> = { 1: '♠', 2: '♣', 3: '♥', 4: '♦' };
 
 /** The four suits, in the order the auction buttons are offered. */
 const SUITS: readonly number[] = [1, 2, 3, 4];
@@ -229,10 +226,10 @@ function IsraeliWhistPageContent() {
               </span>
               <span data-testid="iw-trump">
                 {state.trumpSuit > 0
-                  ? t('header.trump', { suit: SUIT_SYMBOLS[state.trumpSuit] ?? '?', n: String(state.highBid) })
+                  ? t('header.trump', { suit: suitSymbolAt(state.trumpSuit, '?'), n: String(state.highBid) })
                   : t('header.auction', {
                       n: String(state.highBid),
-                      suit: SUIT_SYMBOLS[state.highSuit] ?? '-',
+                      suit: suitSymbolAt(state.highSuit, '-'),
                     })}
               </span>
             </div>
@@ -367,7 +364,7 @@ function IsraeliWhistPageContent() {
                         aria-disabled={barred}
                         data-testid={`iw-auction-${suit.toString()}-btn`}
                       >
-                        {t('actions.auction', { n: String(bid), suit: SUIT_SYMBOLS[suit] ?? '?' })}
+                        {t('actions.auction', { n: String(bid), suit: suitSymbolAt(suit, '?') })}
                       </button>
                     );
                   })}

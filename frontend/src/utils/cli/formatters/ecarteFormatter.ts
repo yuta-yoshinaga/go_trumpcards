@@ -1,4 +1,5 @@
 import type { EcarteResponse } from '../../../types/card';
+import { suitSymbolAt } from '../../cardAlt';
 import {
   formatCard,
   formatHeader,
@@ -10,7 +11,6 @@ import {
 
 const PHASE_NAMES = ['Exchange', 'Play', 'RoundEnd', 'GameEnd'];
 const NEG_STEP_NAMES = ['ElderDecide', 'DealerRespond', 'ElderDiscard', 'DealerDiscard'];
-const SUIT_SYMBOLS = ['none', '♠', '♣', '♥', '♦'];
 
 /** Format an Écarté game state as terminal text. */
 export function formatEcarteState(state: EcarteResponse): string {
@@ -23,7 +23,7 @@ export function formatEcarteState(state: EcarteResponse): string {
   if (state.phase === 0) {
     lines.push(`negotiation: ${NEG_STEP_NAMES[state.negStep] ?? state.negStep}`);
   }
-  const trumpText = state.trumpSuit >= 1 && state.trumpSuit <= 4 ? SUIT_SYMBOLS[state.trumpSuit] : 'undeclared';
+  const trumpText = state.trumpSuit >= 1 && state.trumpSuit <= 4 ? suitSymbolAt(state.trumpSuit, 'none') : 'undeclared';
   const trumpCardText = state.trumpCard ? ` (${formatCard(state.trumpCard)})` : '';
   lines.push(`trump: ${trumpText}${trumpCardText}`);
   lines.push(`stock: ${state.stockRemaining}${state.refusalByDealer ? '  [dealer refused]' : ''}`);

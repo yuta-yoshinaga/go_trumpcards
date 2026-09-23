@@ -26,18 +26,12 @@ import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/but
 import { gameTheme } from '../styles/gameTheme';
 import { GapsPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { cardAlt } from '../utils/cardAlt';
+import { cardAlt, isSuitDesign, suitSymbol } from '../utils/cardAlt';
 import { valueName } from '../utils/cardUtils';
 import { gapsLockedPrefixLengths } from '../utils/gapsUtils';
 import { isRequestedHint } from '../utils/hintRequest';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
-const SUIT_SYMBOLS: Record<string, string> = {
-  SPADE: '♠',
-  HEART: '♥',
-  DIAMOND: '♦',
-  CLOVER: '♣',
-};
 const RED_DESIGNS = new Set(['HEART', 'DIAMOND']);
 
 const GAPS_TUTORIAL_STEPS: TutorialStep[] = [
@@ -281,7 +275,7 @@ function GapsPageContent() {
                               data-testid={`gaps-ghost-${rIdx}-${cIdx}`}
                               className={`text-base font-semibold opacity-30 ${RED_DESIGNS.has(ghost.design) ? 'text-ds-error' : 'text-ds-text-primary'}`}
                             >
-                              {SUIT_SYMBOLS[ghost.design]}
+                              {isSuitDesign(ghost.design) ? suitSymbol(ghost.design) : undefined}
                               {valueName(ghost.value)}
                             </span>
                           )}

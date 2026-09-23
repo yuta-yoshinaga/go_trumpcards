@@ -27,6 +27,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { LooResponse } from '../types/card';
 import { LooPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { suitSymbolAt } from '../utils/cardAlt';
 import { LOO_HELP, parseLooCommand } from '../utils/cli/commands/looCommands';
 import { formatLooState } from '../utils/cli/formatters/looFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -34,9 +35,6 @@ import { isRequestedHint } from '../utils/hintRequest';
 import { computeLooPotRisk } from '../utils/looPotRisk';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
-
-/** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; 0 = unset). */
-const SUIT_SYMBOLS = ['-', '♠', '♣', '♥', '♦'] as const;
 
 /** Loo tutorial step definitions. */
 const LOO_TUTORIAL_STEPS: TutorialStep[] = [
@@ -138,7 +136,7 @@ function LooPageContent() {
   const canDecide = isDecidePhase && state.decidePlayerIdx === humanIdx && isHumanTurn;
   const canPlay = isPlayPhase && isHumanTurn;
 
-  const trumpSymbol = state.trumpSuit >= 1 ? (SUIT_SYMBOLS[state.trumpSuit] ?? '-') : '-';
+  const trumpSymbol = state.trumpSuit >= 1 ? suitSymbolAt(state.trumpSuit, '-') : '-';
 
   const handleManualReset = () => {
     hideActionLog();

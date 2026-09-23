@@ -92,6 +92,12 @@ beforeEach(() => {
 });
 
 describe('CourtPiecePage', () => {
+  it('shows the translated no-trump label before a trump is declared', async () => {
+    mockExec.mockResolvedValue(makeCourtPieceState({ trumpSuit: 0 }));
+    renderWithProviders(<CourtPiecePage />);
+    expect(await screen.findByText('切り札: 未宣言')).toBeInTheDocument();
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<CourtPiecePage />);

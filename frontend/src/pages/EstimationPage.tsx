@@ -23,7 +23,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { EstimationPlayer, EstimationResponse } from '../types/card';
 import { EstimationCall, EstimationPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { cardAlt } from '../utils/cardAlt';
+import { cardAlt, suitSymbolAt } from '../utils/cardAlt';
 import { ESTIMATION_HELP, parseEstimationCommand } from '../utils/cli/commands/estimationCommands';
 import { formatEstimationState } from '../utils/cli/formatters/estimationFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -32,9 +32,6 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Tricks per round (thirteen cards each). */
 const TRICKS_PER_ROUND = 13;
-
-/** Suit code (1=♠ 2=♣ 3=♥ 4=♦) to its symbol, for the trump readout. */
-const SUIT_SYMBOLS: Readonly<Record<number, string>> = { 1: '♠', 2: '♣', 3: '♥', 4: '♦' };
 
 /** The four suits, in the order the trump buttons are offered. */
 const SUITS: readonly number[] = [1, 2, 3, 4];
@@ -193,7 +190,7 @@ function EstimationPageContent() {
               </span>
               <span data-testid="est-trump">
                 {state.trumpSuit > 0
-                  ? t('header.trump', { suit: SUIT_SYMBOLS[state.trumpSuit] ?? '?' })
+                  ? t('header.trump', { suit: suitSymbolAt(state.trumpSuit, '?') })
                   : t('header.trumpUndecided')}
               </span>
             </div>
@@ -302,7 +299,7 @@ function EstimationPageContent() {
                     disabled={loading}
                     data-testid={`est-trump-${suit.toString()}-btn`}
                   >
-                    {t('actions.trump', { suit: SUIT_SYMBOLS[suit] ?? '?' })}
+                    {t('actions.trump', { suit: suitSymbolAt(suit, '?') })}
                   </button>
                 ))}
               {isHumanBidTurn &&

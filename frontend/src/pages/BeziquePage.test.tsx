@@ -53,6 +53,12 @@ beforeEach(() => {
 });
 
 describe('BeziquePage', () => {
+  it('shows the translated no-trump label before a trump is declared', async () => {
+    mockExec.mockResolvedValue(makeBeziqueState({ trumpSuit: 0 }));
+    renderWithProviders(<BeziquePage />);
+    expect(await screen.findByText('切り札: 未宣言')).toBeInTheDocument();
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<BeziquePage />);

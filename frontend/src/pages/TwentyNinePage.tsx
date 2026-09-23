@@ -28,6 +28,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { TwentyNineResponse } from '../types/card';
 import { TwentyNinePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { suitSymbolAt } from '../utils/cardAlt';
 import { parseTwentyNineCommand, TWENTY_NINE_HELP } from '../utils/cli/commands/twentyNineCommands';
 import { formatTwentyNineState } from '../utils/cli/formatters/twentyNineFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -35,9 +36,6 @@ import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { twentyNineContractProgress } from '../utils/twentyNineContract';
-
-/** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 = no trump). */
-const SUIT_SYMBOLS = ['', '♠', '♣', '♥', '♦'] as const;
 
 /** Bid button options (Pass / 16 / 20 / 24 / 28). */
 const BIDS: { value: number; key: string }[] = [
@@ -170,7 +168,7 @@ function TwentyNinePageContent() {
 
   const canPlay = isPlayPhase && isHumanTurn;
   // The trump suit is hidden until trumpRevealed flips true mid-play.
-  const revealedTrumpSymbol = state.trumpSuit === 0 ? t('noTrump') : (SUIT_SYMBOLS[state.trumpSuit] ?? '?');
+  const revealedTrumpSymbol = state.trumpSuit === 0 ? t('noTrump') : suitSymbolAt(state.trumpSuit, '');
   const isHumanDeclarer = state.declarerIdx >= 0 && humanIdx === state.declarerIdx;
   const trumpSymbol = !state.trumpRevealed && !isHumanDeclarer ? t('hiddenTrump') : revealedTrumpSymbol;
   const trumpDisplay =

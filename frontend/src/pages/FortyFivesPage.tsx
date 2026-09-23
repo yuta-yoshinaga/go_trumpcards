@@ -28,6 +28,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { FortyFivesResponse } from '../types/card';
 import { FortyFivesPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { suitSymbolAt } from '../utils/cardAlt';
 import { FORTY_FIVES_HELP, parseFortyFivesCommand } from '../utils/cli/commands/fortyFivesCommands';
 import { formatFortyFivesState } from '../utils/cli/formatters/fortyFivesFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -36,9 +37,6 @@ import { formatFortyFivesTrumpOrder } from '../utils/fortyFivesTrump';
 import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
-
-/** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 = no trump). */
-const SUIT_SYMBOLS = ['', '♠', '♣', '♥', '♦'] as const;
 
 /** Bid button options (Pass / 15 / 20 / 25 Jink). */
 const BIDS: { value: number; key: string }[] = [
@@ -146,7 +144,7 @@ function FortyFivesPageContent() {
   const isGameEnd = state.phase === FortyFivesPhase.GAME_END || state.gameEndFlag;
 
   const canPlay = isPlayPhase && isHumanTurn;
-  const trumpSymbol = state.trumpSuit === 0 ? t('noTrump') : (SUIT_SYMBOLS[state.trumpSuit] ?? '?');
+  const trumpSymbol = state.trumpSuit === 0 ? t('noTrump') : suitSymbolAt(state.trumpSuit, '?');
   // 固定の最上位切り札 (切り札の5・切り札のJ・♥A) は手札を見ても分からない。
   // ♥A は切り札スート外でも切り札扱いで、持っているとフォロー義務が外れる (#5643)。
   const topTrumpIndices = fortyFivesTopTrumpIndices(humanPlayer?.cards ?? [], state.trumpSuit);

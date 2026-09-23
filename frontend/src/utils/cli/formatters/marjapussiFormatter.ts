@@ -1,4 +1,5 @@
 import type { MarjapussiResponse } from '../../../types/card';
+import { suitSymbolAt } from '../../cardAlt';
 import {
   formatCard,
   formatHeader,
@@ -9,7 +10,6 @@ import {
 } from '../formatterBase';
 
 const PHASE_NAMES = ['Play', 'TrickEnd', 'RoundEnd', 'GameEnd'];
-const SUIT_SYMBOLS = ['-', '♠', '♣', '♥', '♦'];
 
 /** Format a Marjapussi game state as terminal text. */
 export function formatMarjapussiState(state: MarjapussiResponse): string {
@@ -19,7 +19,7 @@ export function formatMarjapussiState(state: MarjapussiResponse): string {
   lines.push(
     `round: ${state.roundNumber}  trick: ${state.trickNumber}  phase: ${PHASE_NAMES[state.phase] ?? state.phase}`,
   );
-  lines.push(`trump: ${SUIT_SYMBOLS[state.trumpSuit] ?? '-'}`);
+  lines.push(`trump: ${suitSymbolAt(state.trumpSuit, '-')}`);
   const team0Score = state.teamScores[0] ?? 0;
   const team1Score = state.teamScores[1] ?? 0;
   lines.push(`team scores: Team0=${team0Score}  Team1=${team1Score} (target: ${state.config.targetPoints})`);

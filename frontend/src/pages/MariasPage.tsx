@@ -28,15 +28,13 @@ import { gameTheme } from '../styles/gameTheme';
 import type { MariasResponse } from '../types/card';
 import { MariasPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { suitSymbolAt } from '../utils/cardAlt';
 import { MARIAS_HELP, parseMariasCommand } from '../utils/cli/commands/mariasCommands';
 import { formatMariasState } from '../utils/cli/formatters/mariasFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
 import { findPlayerName, playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
-
-/** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 unused). */
-const SUIT_SYMBOLS = ['', '♠', '♣', '♥', '♦'] as const;
 
 /** Mariáš tutorial step definitions. */
 const MARIAS_TUTORIAL_STEPS: TutorialStep[] = [
@@ -137,7 +135,7 @@ function MariasPageContent() {
   const isGameEnd = state.phase === MariasPhase.GAME_END || state.gameEndFlag;
 
   const canPlay = isPlayPhase && isHumanTurn;
-  const trumpSymbol = SUIT_SYMBOLS[state.trumpSuit] ?? '?';
+  const trumpSymbol = suitSymbolAt(state.trumpSuit, '');
   const marriageDetails = (playerIdx: number) =>
     (state.roundMarriageSuits[playerIdx] ?? [])
       .map(

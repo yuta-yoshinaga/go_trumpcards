@@ -92,6 +92,21 @@ describe('formatHoneymoonBridgeState', () => {
     expect(formatHoneymoonBridgeState(state({ trumpSuit: 0 }))).toContain('contract: 2NT');
   });
 
+  it('uses ? for unknown contract and minimum-bid suit numbers', () => {
+    const out = formatHoneymoonBridgeState(
+      state({
+        trumpSuit: 99,
+        phase: 1,
+        minBidLevel: 3,
+        minBidSuit: 99,
+        players: [seat(0, { bidLevel: 2, bidSuit: 99 }), seat(1)],
+      }),
+    );
+    expect(out).toContain('contract: 2?');
+    expect(out).toContain('lowest bid that outbids: 3?');
+    expect(out).toContain('bid 2?');
+  });
+
   it('shows each seat, marking the declarer and their bid', () => {
     const out = formatHoneymoonBridgeState(
       state({ declarerIdx: 1, players: [seat(0), seat(1, { bidLevel: 2, bidSuit: 3, trickCount: 4, score: 30 })] }),

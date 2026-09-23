@@ -24,14 +24,11 @@ import { gameTheme } from '../styles/gameTheme';
 import type { MendikotResponse } from '../types/card';
 import { MendikotPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { cardAlt } from '../utils/cardAlt';
+import { cardAlt, suitSymbolAt } from '../utils/cardAlt';
 import { MENDIKOT_HELP, parseMendikotCommand } from '../utils/cli/commands/mendikotCommands';
 import { formatMendikotState } from '../utils/cli/formatters/mendikotFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
-
-/** Suit code (1=♠ 2=♣ 3=♥ 4=♦) to its symbol. */
-const SUIT_SYMBOLS: Readonly<Record<number, string>> = { 1: '♠', 2: '♣', 3: '♥', 4: '♦' };
 
 /** Guided tutorial steps (the race for the tens, trump, the hand, your cards). */
 const MENDIKOT_TUTORIAL_STEPS: TutorialStep[] = [
@@ -152,7 +149,7 @@ function MendikotPageContent() {
               <span className="mr-4">{t('header.target', { target: String(state.config.target) })}</span>
               <span data-testid="md-trump" data-tutorial="md-trump">
                 {state.trumpSuit > 0
-                  ? t('header.trump', { suit: SUIT_SYMBOLS[state.trumpSuit] ?? '?' })
+                  ? t('header.trump', { suit: suitSymbolAt(state.trumpSuit, '?') })
                   : t('header.trumpUndecided')}
               </span>
             </div>

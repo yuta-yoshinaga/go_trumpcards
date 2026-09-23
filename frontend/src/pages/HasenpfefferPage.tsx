@@ -24,14 +24,11 @@ import { gameTheme } from '../styles/gameTheme';
 import type { HasenpfefferResponse } from '../types/card';
 import { HasenpfefferPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { cardAlt } from '../utils/cardAlt';
+import { cardAlt, suitSymbolAt } from '../utils/cardAlt';
 import { HASENPFEFFER_HELP, parseHasenpfefferCommand } from '../utils/cli/commands/hasenpfefferCommands';
 import { formatHasenpfefferState } from '../utils/cli/formatters/hasenpfefferFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
-
-/** Suit code (1=♠ 2=♣ 3=♥ 4=♦) to its symbol. */
-const SUIT_SYMBOLS: Readonly<Record<number, string>> = { 1: '♠', 2: '♣', 3: '♥', 4: '♦' };
 
 /** The four suits, in the order the trump buttons are offered. */
 const SUITS: readonly number[] = [1, 2, 3, 4];
@@ -199,7 +196,7 @@ function HasenpfefferPageContent() {
               <span className="mr-4">{t('header.target', { target: String(state.config.target) })}</span>
               <span data-testid="hpf-trump">
                 {state.trumpSuit > 0
-                  ? t('header.trump', { suit: SUIT_SYMBOLS[state.trumpSuit] ?? '?' })
+                  ? t('header.trump', { suit: suitSymbolAt(state.trumpSuit, '?') })
                   : state.blindSize > 0
                     ? t('header.blind', { n: String(state.blindSize) })
                     : t('header.trumpUndecided')}
@@ -371,7 +368,7 @@ function HasenpfefferPageContent() {
                     aria-disabled={picked === null}
                     data-testid={`hpf-discard-${suit.toString()}-btn`}
                   >
-                    {t('actions.discard', { suit: SUIT_SYMBOLS[suit] ?? '?' })}
+                    {t('actions.discard', { suit: suitSymbolAt(suit, '?') })}
                   </button>
                 ))}
               {isHandEnd && !isGameEnd && (

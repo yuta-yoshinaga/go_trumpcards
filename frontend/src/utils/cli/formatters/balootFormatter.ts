@@ -1,5 +1,6 @@
 import type { BalootResponse } from '../../../types/card';
 import { BalootMode, BalootPhase } from '../../../types/phases';
+import { suitSymbolAt } from '../../cardAlt';
 import { formatCard, formatHeader, formatPlayerName, formatSeparator } from '../formatterBase';
 
 const PHASE_NAMES: Record<number, string> = {
@@ -11,9 +12,6 @@ const PHASE_NAMES: Record<number, string> = {
 
 /** Tricks per round (eight cards each). */
 const TRICKS_PER_ROUND = 8;
-
-/** trumpSuit is a 1-based suit code, as elsewhere in this repo. */
-const SUIT_SYMBOLS: Record<number, string> = { 1: '♠', 2: '♣', 3: '♥', 4: '♦' };
 
 /** Format a Baloot game state as terminal text. */
 export function formatBalootState(state: BalootResponse | null): string {
@@ -38,7 +36,7 @@ export function formatBalootState(state: BalootResponse | null): string {
     lines.push(`mode: Sun, no trump (declared by ${declarer})`);
     lines.push('order: A=11 > 10 > K=4 > Q=3 > J=2 > 9 > 8 > 7 (120 a round)');
   } else if (state.mode === BalootMode.HOKOM) {
-    lines.push(`mode: Hokom, trump ${SUIT_SYMBOLS[state.trumpSuit] ?? '?'} (declared by ${declarer})`);
+    lines.push(`mode: Hokom, trump ${suitSymbolAt(state.trumpSuit, '?')} (declared by ${declarer})`);
     lines.push('trump: J=20 > 9=14 > A=11 > 10 > K=4 > Q=3 > 8 > 7; plain suits as in Sun (152 a round)');
   } else {
     lines.push('mode: undeclared — sun or hokom <suit>');

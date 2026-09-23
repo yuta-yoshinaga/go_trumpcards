@@ -25,6 +25,7 @@ import { badgeErrorColors } from '../styles/badgeStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, PigsTailResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
+import { isSuitDesign, suitSymbol } from '../utils/cardAlt';
 import { valueName } from '../utils/cardUtils';
 import { parsePigtailCommand, pigtailHelp } from '../utils/cli/commands/pigtailCommands';
 import { formatPigtailState } from '../utils/cli/formatters/pigtailFormatter';
@@ -32,16 +33,9 @@ import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 
-const SUIT_SYMBOLS: Record<string, string> = {
-  SPADE: '♠',
-  HEART: '♥',
-  DIAMOND: '♦',
-  CLOVER: '♣',
-};
-
 /** Render a center-pile card as suit symbol + rank (e.g. "♠A"), so the rank is visible. */
 function centerCardLabel(card: Card): string {
-  return `${SUIT_SYMBOLS[card.design] ?? '?'}${valueName(card.value)}`;
+  return `${isSuitDesign(card.design) ? suitSymbol(card.design) : '?'}${valueName(card.value)}`;
 }
 
 /** Max number of recent center-pile tops kept in the client-side tail strip. */
@@ -284,7 +278,9 @@ function PigsTailPageContent() {
               >
                 {playerName(state.humanAction.drawPlayerIdx, true)}:{' '}
                 {state.humanAction.drawnCard
-                  ? (SUIT_SYMBOLS[state.humanAction.drawnCard.design] ?? '?') + state.humanAction.drawnCard.value
+                  ? (isSuitDesign(state.humanAction.drawnCard.design)
+                      ? suitSymbol(state.humanAction.drawnCard.design)
+                      : '?') + state.humanAction.drawnCard.value
                   : '?'}
                 {state.humanAction.penaltyFlag
                   ? ` — ${t('label.penalty')} (+${state.humanAction.penaltyCount})`
@@ -301,7 +297,10 @@ function PigsTailPageContent() {
                     className={`text-xs px-2 py-1 rounded ${action.penaltyFlag ? badgeErrorColors : 'bg-black/30 text-ds-text-muted'}`}
                   >
                     {playerName(action.drawPlayerIdx, false)}:{' '}
-                    {action.drawnCard ? (SUIT_SYMBOLS[action.drawnCard.design] ?? '?') + action.drawnCard.value : '?'}
+                    {action.drawnCard
+                      ? (isSuitDesign(action.drawnCard.design) ? suitSymbol(action.drawnCard.design) : '?') +
+                        action.drawnCard.value
+                      : '?'}
                     {action.penaltyFlag
                       ? ` — ${t('label.penalty')} (+${action.penaltyCount})`
                       : ` — ${t('label.safe')}`}
