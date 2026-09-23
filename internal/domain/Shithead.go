@@ -786,18 +786,16 @@ func (s *Shithead) appendLog(playerIdx int, actionType, detailCode string, detai
 	s.round.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
-// cuiCardName returns "<suit> <value>" like "SPADE 5". Used only for action
+// cuiCardName returns the language-independent card notation used in action
 // log detail messages.
 func cuiCardName(c *Card) string {
 	if c == nil {
 		return "??"
 	}
-	suits := []string{"JOKER", "SPADE", "CLOVER", "HEART", "DIAMOND"}
-	d := c.GetDesign()
-	if d < 0 || d >= len(suits) {
-		d = 0
+	if c.GetDesign() == CardDesignJoker {
+		return "JK"
 	}
-	return fmt.Sprintf("%s %d", suits[d], c.GetValue())
+	return cardStr(c)
 }
 
 // valueName returns the card value as text for action log.

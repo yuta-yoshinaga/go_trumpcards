@@ -298,7 +298,7 @@ func TestShitheadPlayLogsUseSourceAndCardCount(t *testing.T) {
 
 			playLogs := shitheadLogsByCode(s.GetActionLog(), tt.oneCode)
 			require.Len(t, playLogs, 1)
-			assert.Equal(t, map[string]string{"card": "SPADE 5"}, playLogs[0].DetailParams)
+			assert.Equal(t, map[string]string{"card": "♠5"}, playLogs[0].DetailParams)
 			assert.Empty(t, shitheadLogsByCode(s.GetActionLog(), "shithead.log.burned"))
 			assert.Empty(t, shitheadLogsByCode(s.GetActionLog(), "shithead.log.skipped"))
 		})

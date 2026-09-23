@@ -1177,28 +1177,12 @@ func (s *Sevens) SetConfig(config SevensConfig) {
 	s.config = config
 }
 
-// suitLogStr スートを棋譜用文字列に変換
-func suitLogStr(suit int) string {
-	switch suit {
-	case CardDesignSpade:
-		return "spade"
-	case CardDesignClover:
-		return "clover"
-	case CardDesignHeart:
-		return "heart"
-	case CardDesignDiamond:
-		return "diamond"
-	default:
-		return "joker"
-	}
-}
-
 // cardLogStr カードを棋譜用文字列に変換
 func cardLogStr(card *Card) string {
 	if card.GetDesign() == CardDesignJoker {
-		return "joker"
+		return "JK"
 	}
-	return fmt.Sprintf("%s %d", suitLogStr(card.GetDesign()), card.GetValue())
+	return cardStr(card)
 }
 
 // sevensJSON is the JSON wire format for Sevens.

@@ -480,7 +480,16 @@ func (g *Rook) CpuPlay() {
 // playCard カードをプレイする共通処理
 func (g *Rook) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLogCode(playerIdx, "play", "rook.log.play", map[string]string{"name": playerName(g.players, playerIdx), "card": rookCardLabel(card)}, []*Card{card})
+	params := map[string]string{"name": playerName(g.players, playerIdx)}
+	detailCode := "rook.log.play"
+	if card.GetDesign() == RookBirdDesign {
+		detailCode = "rook.log.playBird"
+		params["birdKey"] = "rook.birdName"
+	} else {
+		params["colorKey"] = rookColorLogKey(card.GetDesign())
+		params["value"] = strconv.Itoa(card.GetValue())
+	}
+	g.appendLogCode(playerIdx, "play", detailCode, params, []*Card{card})
 	if len(g.currentTrick) == RookPlayerCnt {
 		g.phase = RookPhaseTrickEnd
 	} else {
@@ -1172,32 +1181,6 @@ func (g *Rook) sortHand(p *RookPlayer) {
 	for _, c := range cards {
 		p.AddCard(c)
 	}
-}
-
-// rookColorName 色番号を英字ラベルにする (ログ用)
-func rookColorName(color int) string {
-	switch color {
-	case 1:
-		return "Red"
-	case 2:
-		return "Yellow"
-	case 3:
-		return "Green"
-	case 4:
-		return "Black"
-	}
-	return "?"
-}
-
-// rookCardLabel カードのログ表示文字列 (ルーク鳥対応)
-func rookCardLabel(c *Card) string {
-	if c == nil {
-		return "??"
-	}
-	if c.GetDesign() == RookBirdDesign {
-		return "Rook"
-	}
-	return fmt.Sprintf("%s%d", rookColorName(c.GetDesign()), c.GetValue())
 }
 
 // --- JSON ---
