@@ -304,7 +304,7 @@ classDiagram
 
     BlackJack --> "2" BlackJackPlayer
     BlackJack --> "1" BlackJackConfig
-    BlackJackPlayer --|> GamePlayer
+    BlackJackPlayer --|> Player
     BlackJack --> "*" BlackJackHand
     BlackJackPlayer --> "1" ChipHolder
     Poker --> "*" PokerPlayer
@@ -778,10 +778,10 @@ classDiagram
 
     Holdem --> "*" HoldemPlayer
     Holdem --> "1" BettingState
-    HoldemPlayer --|> GamePlayer
+    HoldemPlayer --|> Player
     HoldemPlayer --> "1" ChipHolder
     Omaha --> "*" OmahaPlayer
-    OmahaPlayer --|> GamePlayer
+    OmahaPlayer --|> Player
 
     class ShortDeck {
         -trumpCards *TrumpCards
@@ -799,7 +799,7 @@ classDiagram
     }
 
     ShortDeck --> "*" ShortDeckPlayer
-    ShortDeckPlayer --|> GamePlayer
+    ShortDeckPlayer --|> Player
 
     class Pineapple {
         -trumpCards *TrumpCards
@@ -1103,7 +1103,7 @@ classDiagram
     DoubtPlayer --|> GamePlayer
     CrazyEightsPlayer --|> GamePlayer
     GinRummyPlayer --|> GamePlayer
-    SpeedPlayer --|> Player
+    SpeedPlayer --|> GamePlayer
     GoFishPlayer --|> GamePlayer
 
     class PigsTail {
@@ -1210,7 +1210,7 @@ classDiagram
     SevenCardStud --> "*" SevenCardStudPlayer
     SevenCardStud --> "1" SevenCardStudConfig
     SevenCardStud --> "1" BettingState
-    SevenCardStudPlayer --|> GamePlayer
+    SevenCardStudPlayer --|> Player
     SevenCardStudPlayer --> "1" ChipHolder
 
     note for SevenCardStud "Razz (ラズ) はSevenCardStudのローボール変種\nNewRazz() でlowballフラグ付きインスタンスを生成\nA-5ローボールルール = Aは常にロー、ストレート・フラッシュはカウントしない\n最強ハンド = A-2-3-4-5 (the wheel)"
