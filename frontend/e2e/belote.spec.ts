@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, waitForLoaded } from './helpers';
+import { gameButton, navigateTo, waitForLoaded } from './helpers';
 
 test.describe('Belote E2E', () => {
   test('navigates, resets, and plays through phase transitions', async ({ page }) => {
@@ -16,7 +16,7 @@ test.describe('Belote E2E', () => {
     await expect(page.getByText('チームスコア').first()).toBeVisible();
 
     const orderUpButton = page.getByRole('button', { name: '取る', exact: true });
-    const passButton = page.getByRole('button', { name: 'パス' });
+    const passButton = gameButton(page, 'パス');
     const playButton = page.getByRole('button', { name: '出す' });
     const nextTrickButton = page.getByRole('button', { name: '次のトリック' });
     const nextRoundButton = page.getByRole('button', { name: '次のラウンド' });
