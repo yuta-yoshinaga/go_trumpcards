@@ -27,6 +27,16 @@ func findMigratedActionLogEntry(entries []*ActionLogEntry, code string) *ActionL
 	return nil
 }
 
+// **未知の手は入力文字列をそのまま返す。** 翻訳キーへ変換すると、入力の情報が失われる。
+func TestDiloti_UnknownActionKeepsRawInput(t *testing.T) {
+	d := newDilotiGame(t)
+	err := d.applyPlay(0, 0, "unexpected", nil, nil, 0)
+	require.ErrorIs(t, err, ErrInvalidPlay)
+	code, params := ErrorMessageCode(err)
+	assert.Equal(t, "diloti.errUnknownAction", code)
+	assert.Equal(t, map[string]string{"action": "unexpected"}, params)
+}
+
 // **開幕は人間の手番。** 非親が先に打つ規則なので、親を席 1 にしてある ──
 // 親を 0 にすると人間は最初の 4 枚に一度も手を出せない。
 func TestDiloti_ResetDealsAndStartsWithTheHuman(t *testing.T) {

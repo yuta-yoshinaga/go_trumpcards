@@ -200,7 +200,7 @@ func (vp *VideoPoker) evaluate() {
 			displayName = PokerHandNames[rank]
 		}
 	}
-	vp.appendLogCode(0, "result", "videopoker.log.result", map[string]string{"hand": displayName, "payout": strconv.Itoa(vp.payout)}, vp.hand)
+	vp.appendLogCode(0, "result", "videopoker.log.result", map[string]string{"handKey": videoPokerHandLogKey(displayName), "payout": strconv.Itoa(vp.payout)}, vp.hand)
 }
 
 // videoPokerHandKey maps a variant hand name (the English string returned by a
@@ -461,5 +461,45 @@ func resolveVideoPokerConfig(name string) *VideoPokerVariantConfig {
 		return JokerPokerConfig()
 	default:
 		return JacksOrBetterConfig()
+	}
+}
+
+// videoPokerHandLogKey はビデオポーカーの役名をログ用の翻訳キーに変換する。
+func videoPokerHandLogKey(handName string) string {
+	switch handName {
+	case "Royal Flush":
+		return "pokerhand.royalFlush"
+	case "Natural Royal Flush":
+		return "pokerhand.naturalRoyalFlush"
+	case "Wild Royal Flush":
+		return "pokerhand.wildRoyalFlush"
+	case "Four Deuces":
+		return "pokerhand.fourDeuces"
+	case "Five of a Kind":
+		return "pokerhand.fiveOfAKind"
+	case "Straight Flush":
+		return "pokerhand.straightFlush"
+	case "Four of a Kind":
+		return "pokerhand.fourOfAKind"
+	case "Full House":
+		return "pokerhand.fullHouse"
+	case "Flush":
+		return "pokerhand.flush"
+	case "Straight":
+		return "pokerhand.straight"
+	case "Three of a Kind":
+		return "pokerhand.threeOfAKind"
+	case "Two Pair":
+		return "pokerhand.twoPair"
+	case "Jacks or Better":
+		return "pokerhand.jacksOrBetter"
+	case "Kings or Better":
+		return "pokerhand.kingsOrBetter"
+	case "One Pair":
+		return "pokerhand.pair"
+	case "High Card":
+		return "pokerhand.highCard"
+	default:
+		return "pokerhand.unknown"
 	}
 }
