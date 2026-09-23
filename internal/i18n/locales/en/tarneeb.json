@@ -51,5 +51,6 @@
   "log.roundScoreBidder": "Team {{team}} (bidder): bid={{bid}} tricks={{tricks}} delta={{delta}} total={{total}}",
   "log.roundScoreDefender": "Team {{team}} (defender): tricks={{tricks}} delta={{delta}} total={{total}}",
   "log.gameEnd": "Team {{team}} wins the game!",
-  "log.play": "{{name}} plays {{card}}"
+  "log.play": "{{name}} plays {{card}}",
+  "log.bidPass": "{{name}} passes"
 }

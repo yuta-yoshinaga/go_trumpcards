@@ -216,14 +216,15 @@ func (t *Tarneeb) validateBid(bid int) error {
 // applyBid ビッドを適用し、必要なら次のフェーズへ遷移する。
 func (t *Tarneeb) applyBid(playerIdx, bid int) {
 	t.players[playerIdx].SetBid(bid)
-	bidLabel := fmt.Sprintf("%d", bid)
 	if bid == TarneebPassBid {
-		bidLabel = "Pass"
-	} else if bid > t.highestBid {
-		t.highestBid = bid
-		t.bidWinnerIdx = playerIdx
+		t.appendLogCode(playerIdx, "bid", "tarneeb.log.bidPass", map[string]string{"name": playerName(t.players, playerIdx)}, nil)
+	} else {
+		if bid > t.highestBid {
+			t.highestBid = bid
+			t.bidWinnerIdx = playerIdx
+		}
+		t.appendLogCode(playerIdx, "bid", "tarneeb.log.bid", map[string]string{"name": playerName(t.players, playerIdx), "bid": fmt.Sprintf("%d", bid)}, nil)
 	}
-	t.appendLogCode(playerIdx, "bid", "tarneeb.log.bid", map[string]string{"name": playerName(t.players, playerIdx), "bid": bidLabel}, nil)
 
 	t.bidPlayerIdx = (t.bidPlayerIdx + 1) % TarneebPlayerCnt
 	// 4人ビッドし終えたらディーラーの左隣に戻り、フェーズ遷移を判定する。
