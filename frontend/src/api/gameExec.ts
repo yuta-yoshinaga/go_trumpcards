@@ -29,6 +29,11 @@ export const WORKER_EXTRA4 = import.meta.env.VITE_WORKER_EXTRA4_URL || '';
 /** Eighth size bucket (ADR-0038). */
 export const WORKER_EXTRA5 = import.meta.env.VITE_WORKER_EXTRA5_URL || '';
 
+/** Ninth size bucket (ADR-0041). */
+export const WORKER_EXTRA6 = import.meta.env.VITE_WORKER_EXTRA6_URL || '';
+/** Tenth size bucket (ADR-0041). */
+export const WORKER_EXTRA7 = import.meta.env.VITE_WORKER_EXTRA7_URL || '';
+
 /** Maps each game to its Worker base URL. */
 export const workerUrl: Record<string, string> = {
   blackjack: WORKER_CASINO,
