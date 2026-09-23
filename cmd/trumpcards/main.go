@@ -852,6 +852,10 @@ func parseSubFlagsWithArgs(name string, args []string, setup func(*flag.FlagSet)
 // leftover-args warning for subcommands whose handler consumes fs.Args(). When
 // takesPositional is true, flags and positional arguments may appear in any
 // order before `--`; arguments after `--` are always positional.
+// Limitation: the split at the first `--` happens before flag parsing, so a
+// literal `--` used as a string flag value would be read as the separator.
+// Safe today because completion (the only takesPositional caller) has only a
+// bool flag; revisit before adding a string flag to a positional subcommand.
 func parseSubFlagsTo(name string, args []string, setup func(*flag.FlagSet), stdout, stderr io.Writer, takesPositional bool) (*flag.FlagSet, int, bool) {
 	fs := flag.NewFlagSet(name, flag.ContinueOnError)
 	fs.SetOutput(io.Discard) // suppress Go's raw English error/usage text
