@@ -18391,9 +18391,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
                     targetRounds:
                       type: integer
                       description: Rounds per game, 1-12. Mushi is normally 12.
@@ -19022,9 +19019,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
       responses:
         '200':
           description: Current game state
@@ -19127,9 +19121,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
       responses:
         '200':
           description: Current game state
@@ -19238,9 +19229,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
       responses:
         '200':
           description: Current game state
@@ -19343,9 +19331,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
       responses:
         '200':
           description: Current game state
@@ -19453,9 +19438,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
       responses:
         '200':
           description: Current game state
@@ -19563,9 +19545,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
       responses:
         '200':
           description: Current game state
@@ -19680,9 +19659,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
                     targetScore:
                       type: integer
                       description: Points that win the game (default 61).
@@ -19779,9 +19755,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
                     targetDeals:
                       type: integer
                       description: Deals played before the game is decided (default 5).
@@ -19875,9 +19848,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
                     targetDeals:
                       type: integer
                       description: Deals played before the game is decided (default 5).
@@ -19968,9 +19938,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
                     targetDeals:
                       type: integer
                       description: Deals played before the game is decided (default 5).
@@ -20065,9 +20032,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
                     stake:
                       type: integer
                       description: Stake each player antes per round (1-100, default 1).
@@ -20178,9 +20142,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
                     targetScore:
                       type: integer
                       description: Points needed to win (100-1000, default 501).
@@ -20510,9 +20471,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
       responses:
         '200':
           description: Current game state
@@ -20722,9 +20680,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
                     targetHands:
                       type: integer
                       description: Hands in a game (3-12).
@@ -21927,9 +21882,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
                     targetHands:
                       type: integer
                       description: Hands needed to win the game (1-10).
@@ -22037,9 +21989,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
       responses:
         '200':
           description: Current game state

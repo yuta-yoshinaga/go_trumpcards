@@ -7,6 +7,16 @@ import (
 	"testing"
 )
 
+func TestLiteratureConfigUnmarshalIgnoresLegacyCpuDifficulty(t *testing.T) {
+	var cfg LiteratureConfig
+	if err := json.Unmarshal([]byte(`{"cd":0}`), &cfg); err != nil {
+		t.Fatalf("unmarshal legacy config: %v", err)
+	}
+	if err := cfg.Validate(); err != nil {
+		t.Fatalf("validate legacy config: %v", err)
+	}
+}
+
 func ltCard(suit, value int) *Card { return NewCard(suit, value, true) }
 
 // ltFresh returns a dealt game with every seat's hand cleared, so a test can
@@ -701,9 +711,6 @@ func TestLiteratureConfigValidate(t *testing.T) {
 	if err := DefaultLiteratureConfig().Validate(); err != nil {
 		t.Errorf("the default config must validate: %v", err)
 	}
-	if err := (LiteratureConfig{CpuDifficulty: 9}).Validate(); err == nil {
-		t.Error("a bad difficulty must not validate")
-	}
 }
 
 func TestLiteratureRoundTripsThroughJSON(t *testing.T) {
@@ -731,13 +738,13 @@ func TestLiteratureRoundTripsThroughJSON(t *testing.T) {
 
 // **壊れた状態を弾く。**KV から戻る値なので、範囲外のまま受け入れると詰む。
 func TestLiteratureRejectsBadJSON(t *testing.T) {
-	base := `"pl":[{},{},{},{},{},{}],"cf":{"cd":0},"ph":0,"ci":0,"wt":-1`
+	base := `"pl":[{},{},{},{},{},{}],"cf":{},"ph":0,"ci":0,"wt":-1`
 	for _, tc := range []struct {
 		name string
 		body string
 	}{
 		{"not json", `{`},
-		{"wrong player count", `{"pl":[],"cf":{"cd":0},"ph":0}`},
+		{"wrong player count", `{"pl":[],"cf":{},"ph":0}`},
 		{"bad phase", `{` + base + `,"ph":99}`},
 		{"bad current seat", `{` + base + `,"ci":9}`},
 		{"bad winner team", `{` + base + `,"wt":9}`},
@@ -745,7 +752,6 @@ func TestLiteratureRejectsBadJSON(t *testing.T) {
 		{"bad claimed half-suit", `{` + base + `,"cl":[{"Player":0,"HalfSuit":99,"Outcome":0,"AwardedTeam":-1}]}`},
 		{"bad claim outcome", `{` + base + `,"cl":[{"Player":0,"HalfSuit":0,"Outcome":99,"AwardedTeam":-1}]}`},
 		{"bad ask seat", `{` + base + `,"as":[{"From":9,"To":0}]}`},
-		{"bad config", `{"pl":[{},{},{},{},{},{}],"cf":{"cd":99},"ph":0,"ci":0,"wt":-1}`},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			var l Literature

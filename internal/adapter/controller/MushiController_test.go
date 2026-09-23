@@ -27,10 +27,10 @@ func TestMushiWebInput_ToConfigWithNoConfigDoesNotPanic(t *testing.T) {
 	})
 }
 
-func TestMushiWebInput_ToConfigClampsOutOfRangeValues(t *testing.T) {
-	badDifficulty, badRounds := 99, 999
+func TestMushiWebInput_ToConfigClampsOutOfRangeTargetRounds(t *testing.T) {
+	badRounds := 999
 	cfg := controller.MushiWebInput{
-		Config: &controller.MushiWebConfig{CpuDifficulty: &badDifficulty, TargetRounds: &badRounds},
+		Config: &controller.MushiWebConfig{TargetRounds: &badRounds},
 	}.ToConfig()
 	assert.NoError(t, cfg.Validate(), "out-of-range values must be clamped, not passed through")
 	assert.LessOrEqual(t, cfg.TargetRounds, domain.MushiMaxRounds)
