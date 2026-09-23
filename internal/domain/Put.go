@@ -501,7 +501,7 @@ func (t *Put) callPut(caller int) {
 	t.putCallerIdx = caller
 	t.responderIdx = 1 - caller
 	t.phase = PutPhaseRespond
-	t.appendLog(caller, "put", "put.log.put", map[string]string{"name": playerName(t.players, caller), "level": putLevelName(t.pendingLevel)}, nil)
+	t.appendLog(caller, "put", "put.log.put", map[string]string{"name": playerName(t.players, caller), "levelKey": putLevelKey(t.pendingLevel)}, nil)
 }
 
 // respond responder が宣言に応答する。
@@ -726,11 +726,14 @@ func (t *Put) sortAllHands() {
 	}
 }
 
-// putLevelName ベッティングレベルの表示名を返す。
-func putLevelName(int) string {
+// putLevelKey ベッティングレベルの i18n キーを返す。
+func putLevelKey(level int) string {
 	// 宣言は 1 段だけなので、名前は常に "Put"。レベルを引数に残してあるのは
 	// 呼び出し側の形を変えないため。
-	return "Put"
+	if level == PutLevelPut {
+		return "put.levelPut"
+	}
+	return "put.levelNone"
 }
 
 // playHintReason プレイ推奨の理由キーを判定する。

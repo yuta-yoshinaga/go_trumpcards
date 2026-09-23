@@ -10,6 +10,7 @@
   "roleQuadrille": "Quadrille",
   "roleCoalition": "Coalition",
   "bidNone": "-",
+  "bidPass": "pass",
   "bidEntrar": "entrar",
   "bidSolo": "solo",
   "suitNone": "-",

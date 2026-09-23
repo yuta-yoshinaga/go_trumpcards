@@ -412,7 +412,7 @@ func (g *GermanSolo) applyBid(playerIdx int, bid GermanSoloBid, trumpSuit int) {
 		g.appendLog(playerIdx, "bid_pass", "germansolo.log.bidPass", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 	} else {
 		g.bidTrump[playerIdx] = trumpSuit
-		g.appendLog(playerIdx, "bid", "germansolo.log.bid", map[string]string{"name": playerName(g.players, playerIdx), "bid": germanSoloBidName(bid), "trumpKey": suitKeyOf(trumpSuit)}, nil)
+		g.appendLog(playerIdx, "bid", "germansolo.log.bid", map[string]string{"name": playerName(g.players, playerIdx), "bidKey": germanSoloBidKey(bid), "trumpKey": suitKeyOf(trumpSuit)}, nil)
 	}
 
 	if g.allBidsActed() {
@@ -470,7 +470,7 @@ func (g *GermanSolo) finalizeAuction() {
 	// **切り札が決まった時点で並べ替える。** プレイ開始まで待つと、エース呼びの
 	// 画面だけ配られたままの並びになり、どれが切り札か読めないまま指名させられる。
 	g.sortAllHands()
-	g.appendLog(declarer, "declarer", "germansolo.log.declarer", map[string]string{"name": playerName(g.players, declarer), "bid": germanSoloBidName(best), "trumpKey": suitKeyOf(g.trumpSuit)}, nil)
+	g.appendLog(declarer, "declarer", "germansolo.log.declarer", map[string]string{"name": playerName(g.players, declarer), "bidKey": germanSoloBidKey(best), "trumpKey": suitKeyOf(g.trumpSuit)}, nil)
 	if germanSoloIsPartnerBid(best) {
 		g.startAceCall()
 		return
@@ -1306,19 +1306,19 @@ func germanSoloSortHand(p *GermanSoloPlayer, trump int) {
 	}
 }
 
-// germanSoloBidName ビッドの表示名を返す。
-func germanSoloBidName(bid GermanSoloBid) string {
+// germanSoloBidKey ビッドの i18n キーを返す。
+func germanSoloBidKey(bid GermanSoloBid) string {
 	switch bid {
 	case GermanSoloBidMussfrage:
-		return "mussfrage"
+		return "germansolo.bidMussfrage"
 	case GermanSoloBidFrage:
-		return "frage"
+		return "germansolo.bidFrage"
 	case GermanSoloBidSolo:
-		return "solo"
+		return "germansolo.bidSolo"
 	case GermanSoloBidTout:
-		return "tout"
+		return "germansolo.bidTout"
 	default:
-		return "pass"
+		return "germansolo.bidNone"
 	}
 }
 
