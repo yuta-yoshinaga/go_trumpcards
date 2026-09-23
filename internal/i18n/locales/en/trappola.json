@@ -32,7 +32,8 @@
   "log.declarationTrappola": "{{name}} declares trappola in {{suit}} (+{{thirds}} thirds)",
   "log.declarationFour": "{{name}} declares four {{rank}}s (+{{thirds}} thirds)",
   "log.declarationThree": "{{name}} declares three {{rank}}s (+{{thirds}} thirds)",
-  "log.trickWin": "{{name}} wins trick {{trick}} (+{{thirds}}/3{{bonus}})",
+  "log.trickWin": "{{name}} wins trick {{trick}} (+{{thirds}}/3)",
+  "log.trickWinLast": "{{name}} wins trick {{trick}} (+{{thirds}}/3 +last trick)",
   "log.roundScore": "round {{round}}: TeamA={{teamAScore}} (+{{teamAThirds}}/3), TeamB={{teamBScore}} (+{{teamBThirds}}/3)",
   "log.gameEnd": "Team {{team}} wins the game!",
   "log.play": "{{name}} plays {{card}}"

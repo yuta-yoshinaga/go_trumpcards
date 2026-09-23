@@ -51,7 +51,8 @@
   "log.monteTake": "{{name}} takes the monte",
   "log.discard": "{{name}} discards {{card}}",
   "log.play": "{{name}} plays {{card}}",
-  "log.trickWin": "{{name}} wins trick {{trick}} (+{{points}}/3{{bonus}})",
+  "log.trickWin": "{{name}} wins trick {{trick}} (+{{points}}/3)",
+  "log.trickWinLast": "{{name}} wins trick {{trick}} (+{{points}}/3 +last trick)",
   "log.roundScoreWon": "round {{round}}: soloist({{name}}) wins ({{points}}/3, stake={{stake}})",
   "log.roundScoreLost": "round {{round}}: soloist({{name}}) loses ({{points}}/3, stake={{stake}})",
   "log.gameEnd": "{{name}} wins the match!"

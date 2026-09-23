@@ -51,7 +51,8 @@
   "log.monteTake": "{{name}}がモンテを取る",
   "log.discard": "{{name}}が{{card}}を捨てる",
   "log.play": "{{name}}が{{card}}を出す",
-  "log.trickWin": "{{name}}がトリック{{trick}}に勝つ（+{{points}}/3{{bonus}}）",
+  "log.trickWin": "{{name}}がトリック{{trick}}に勝つ（+{{points}}/3）",
+  "log.trickWinLast": "{{name}}がトリック{{trick}}に勝つ（+{{points}}/3 +ラストトリック）",
   "log.roundScoreWon": "ラウンド{{round}}: ソリスト({{name}}) 勝利（{{points}}/3、ステーク={{stake}}）",
   "log.roundScoreLost": "ラウンド{{round}}: ソリスト({{name}}) 敗北（{{points}}/3、ステーク={{stake}}）",
   "log.gameEnd": "{{name}}がマッチに勝利！"
