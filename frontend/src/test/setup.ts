@@ -120,6 +120,8 @@ beforeEach(() => {
   localStorage.setItem('tutorial_no_suggest', 'true');
 });
 
+// vi.useFakeTimers() also fakes setImmediate by default, so this await can stall until hookTimeout
+// if a test leaves fake timers enabled; restore real timers in the test or a describe-level afterEach.
 const yieldToEventLoop = () =>
   new Promise<void>((resolve) => {
     const fn = (globalThis as unknown as { setImmediate?: (cb: () => void) => void }).setImmediate;
