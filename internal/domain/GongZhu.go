@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math/rand"
 	"strconv"
+	"strings"
 )
 
 // GongZhuPlayerCnt 拱猪（Gong Zhu）プレイヤー数
@@ -206,7 +207,13 @@ func (g *GongZhu) ExecuteExpose() {
 		}
 	}
 
-	g.appendLogCode(-1, "expose", "gongzhu.log.expose", map[string]string{"round": strconv.Itoa(g.roundNumber), "summary": g.exposureSummary()}, nil)
+	params := map[string]string{"round": strconv.Itoa(g.roundNumber)}
+	detailCode := "gongzhu.log.exposeNone"
+	if cards := g.exposureCards(); cards != "" {
+		detailCode = "gongzhu.log.exposeCards"
+		params["cards"] = cards
+	}
+	g.appendLogCode(-1, "expose", detailCode, params, nil)
 	g.phase = GongZhuPhasePlay
 	g.startPlayPhase()
 }
@@ -557,8 +564,8 @@ func (g *GongZhu) markExposed(c *Card) {
 	}
 }
 
-// exposureSummary 公開状況の文字列表現
-func (g *GongZhu) exposureSummary() string {
+// exposureCards 公開されたポイントカードの表示文字列
+func (g *GongZhu) exposureCards() string {
 	var parts []string
 	if g.exposed.Pig {
 		parts = append(parts, "♠Q")
@@ -573,16 +580,9 @@ func (g *GongZhu) exposureSummary() string {
 		parts = append(parts, "♣10")
 	}
 	if len(parts) == 0 {
-		return "no cards exposed"
+		return ""
 	}
-	out := "exposed:"
-	for i, p := range parts {
-		if i > 0 {
-			out += ","
-		}
-		out += " " + p
-	}
-	return out
+	return strings.Join(parts, ", ")
 }
 
 // startPlayPhase プレイフェーズ開始: ♣2を持つプレイヤーをリードに設定

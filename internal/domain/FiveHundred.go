@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"strconv"
 )
 
 // FiveHundredPlayerCnt 500 のプレイヤー数
@@ -324,7 +325,8 @@ func (g *FiveHundred) applyBid(idx int, bid FiveHundredBid) {
 	g.players[idx].SetBid(&b)
 	g.highestBid = &b
 	g.highestBidder = idx
-	g.appendLog(idx, "bid", "fivehundred.log.bid", map[string]string{"name": playerName(g.players, idx), "bid": fiveHundredBidLabel(b)}, nil)
+	detailCode, detailParams := fiveHundredBidLog(b, playerName(g.players, idx), false)
+	g.appendLog(idx, "bid", detailCode, detailParams, nil)
 	g.advanceBid()
 }
 
@@ -387,7 +389,8 @@ func (g *FiveHundred) finalizeBid() {
 		g.players[g.declarerIdx].AddCard(c)
 	}
 	g.kitty = nil
-	g.appendLog(g.declarerIdx, "win_bid", "fivehundred.log.winBid", map[string]string{"name": playerName(g.players, g.declarerIdx), "bid": fiveHundredBidLabel(g.contract)}, nil)
+	detailCode, detailParams := fiveHundredBidLog(g.contract, playerName(g.players, g.declarerIdx), true)
+	g.appendLog(g.declarerIdx, "win_bid", detailCode, detailParams, nil)
 	g.sortAllHands()
 	g.phase = FiveHundredPhaseKittyExchange
 	g.currentPlayerIdx = g.declarerIdx
@@ -1300,19 +1303,37 @@ func fiveHundredCardLabel(c *Card) string {
 	return cardStr(c)
 }
 
-// fiveHundredBidLabel ビッドのログ表示文字列
-func fiveHundredBidLabel(b FiveHundredBid) string {
+// fiveHundredBidLog ビッドのログコードとパラメータを返す。
+func fiveHundredBidLog(b FiveHundredBid, name string, win bool) (string, map[string]string) {
+	params := map[string]string{
+		"name":   name,
+		"tricks": strconv.Itoa(b.Tricks),
+		"value":  strconv.Itoa(b.Value()),
+	}
 	switch b.Kind {
 	case FiveHundredContractSuit:
-		return fmt.Sprintf("%d%s (%d)", b.Tricks, suitStr(b.Suit), b.Value())
+		params["suitKey"] = suitKeyOf(b.Suit)
+		if !win {
+			return "fivehundred.log.bidSuit", params
+		}
+		return "fivehundred.log.winBidSuit", params
 	case FiveHundredContractNoTrump:
-		return fmt.Sprintf("%dNT (%d)", b.Tricks, b.Value())
+		if !win {
+			return "fivehundred.log.bidNoTrump", params
+		}
+		return "fivehundred.log.winBidNoTrump", params
 	case FiveHundredContractMisere:
-		return fmt.Sprintf("Misere (%d)", b.Value())
+		if !win {
+			return "fivehundred.log.bidMisere", params
+		}
+		return "fivehundred.log.winBidMisere", params
 	case FiveHundredContractOpenMisere:
-		return fmt.Sprintf("Open Misere (%d)", b.Value())
+		if !win {
+			return "fivehundred.log.bidOpenMisere", params
+		}
+		return "fivehundred.log.winBidOpenMisere", params
 	}
-	return "Pass"
+	return "fivehundred.log.pass", map[string]string{"name": name}
 }
 
 // clampInt 整数を [min,max] に収める
