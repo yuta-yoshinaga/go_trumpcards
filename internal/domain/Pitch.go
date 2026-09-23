@@ -264,11 +264,11 @@ func (p *Pitch) applyBid(playerIdx, bid int) {
 		p.currentBid = bid
 		p.bidWinnerIdx = playerIdx
 	}
-	logBid := fmt.Sprintf("%d", bid)
 	if bid == PitchPassBid {
-		logBid = "pass"
+		p.appendLog(playerIdx, "bid", "pitch.log.bidPass", map[string]string{"name": playerName(p.players, playerIdx)}, nil)
+		return
 	}
-	p.appendLog(playerIdx, "bid", "pitch.log.bid", map[string]string{"name": playerName(p.players, playerIdx), "bid": logBid}, nil)
+	p.appendLog(playerIdx, "bid", "pitch.log.bid", map[string]string{"name": playerName(p.players, playerIdx), "bid": fmt.Sprintf("%d", bid)}, nil)
 }
 
 // advanceBid 次のビッド手番へ進める。全員終わればプレイ開始 (stuck dealer も処理)

@@ -164,11 +164,7 @@ func (s *Spades) PlayerBid(bid int) error {
 	}
 
 	s.players[humanIdx].SetBid(bid)
-	bidStr := fmt.Sprintf("%d", bid)
-	if bid == 0 {
-		bidStr = "Nil"
-	}
-	s.appendLog(humanIdx, "bid", "spades.log.bid", map[string]string{"name": playerName(s.players, humanIdx), "bid": bidStr}, nil)
+	s.appendBidLog(humanIdx, bid)
 
 	s.bidPlayerIdx++
 	s.checkBidComplete()
@@ -189,14 +185,19 @@ func (s *Spades) CpuBid() {
 
 	bid := s.cpuSelectBid(s.bidPlayerIdx)
 	s.players[s.bidPlayerIdx].SetBid(bid)
-	bidStr := fmt.Sprintf("%d", bid)
-	if bid == 0 {
-		bidStr = "Nil"
-	}
-	s.appendLog(s.bidPlayerIdx, "bid", "spades.log.bid", map[string]string{"name": playerName(s.players, s.bidPlayerIdx), "bid": bidStr}, nil)
+	s.appendBidLog(s.bidPlayerIdx, bid)
 
 	s.bidPlayerIdx++
 	s.checkBidComplete()
+}
+
+// appendBidLog records a Spades bid without mixing the nil label into numeric bid parameters.
+func (s *Spades) appendBidLog(playerIdx, bid int) {
+	if bid == 0 {
+		s.appendLog(playerIdx, "bid", "spades.log.bidNil", map[string]string{"name": playerName(s.players, playerIdx)}, nil)
+		return
+	}
+	s.appendLog(playerIdx, "bid", "spades.log.bid", map[string]string{"name": playerName(s.players, playerIdx), "bid": fmt.Sprintf("%d", bid)}, nil)
 }
 
 // PlayerPlay 人間プレイヤーがカードをプレイする

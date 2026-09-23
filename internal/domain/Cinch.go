@@ -423,11 +423,11 @@ func (g *Cinch) applyBid(playerIdx, bid int) {
 		g.currentBid = bid
 		g.bidWinnerIdx = playerIdx
 	}
-	logBid := fmt.Sprintf("%d", bid)
 	if bid == CinchPassBid {
-		logBid = "pass"
+		g.appendLog(playerIdx, "bid", "cinch.log.bidPass", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
+		return
 	}
-	g.appendLog(playerIdx, "bid", "cinch.log.bid", map[string]string{"name": playerName(g.players, playerIdx), "bid": logBid}, nil)
+	g.appendLog(playerIdx, "bid", "cinch.log.bid", map[string]string{"name": playerName(g.players, playerIdx), "bid": fmt.Sprintf("%d", bid)}, nil)
 }
 
 // advanceBid は次のビッド手番へ進める。全員終わればトランプ宣言へ移る (stuck dealer も処理)。

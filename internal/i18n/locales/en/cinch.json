@@ -57,5 +57,6 @@
   "log.nonBidderScore": "{{name}} scores {{points}}",
   "log.cumulativeScore": "{{name}}: total={{total}}",
   "log.scorePoint": "{{name}} captures {{card}} ({{points}} pt)",
-  "log.gameEnd": "{{name}} wins the game!"
+  "log.gameEnd": "{{name}} wins the game!",
+  "log.bidPass": "{{name}} passes"
 }

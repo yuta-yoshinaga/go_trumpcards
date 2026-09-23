@@ -191,6 +191,14 @@ func TestCinch_BidFlow(t *testing.T) {
 	assert.NotEqual(t, domain.CinchPhaseBid, g.GetPhase())
 }
 
+func TestCinch_PlayerBid_PassLogUsesSeparateCode(t *testing.T) {
+	g := newTestCinch(t, domain.CinchDifficultyEasy)
+	require.NoError(t, g.PlayerBid(domain.CinchPassBid))
+	entry := g.GetActionLog()[0]
+	assert.Equal(t, "cinch.log.bidPass", entry.DetailCode)
+	assert.Equal(t, map[string]string{"name": "You"}, entry.DetailParams)
+}
+
 func TestCinch_PlayerBid_Errors(t *testing.T) {
 	g := newTestCinch(t, domain.CinchDifficultyEasy)
 	// 範囲外ビッド。
