@@ -253,11 +253,6 @@ func trappolaFindDeclarations(playerIdx int, p *TrappolaPlayer) []TrappolaDeclar
 	return out
 }
 
-// TrappolaFindDeclarationsForTest は 1 席の手札から成立する役を返す (テスト用)。
-func TrappolaFindDeclarationsForTest(playerIdx int, p *TrappolaPlayer) []TrappolaDeclaration {
-	return trappolaFindDeclarations(playerIdx, p)
-}
-
 // GetDeclarations は現ラウンドで成立した役を返す。
 func (g *Trappola) GetDeclarations() []TrappolaDeclaration { return g.declarations }
 
@@ -561,16 +556,6 @@ func trappolaStrength(value int) int {
 		return 0
 	}
 }
-
-// trappolaThirds カードの得点を 1/3点 単位で返す。A=3、2/3/J/Q/K=1、その他=0。
-// GetDeckForTest は山札を返す (テスト用)。
-func (g *Trappola) GetDeckForTest() *TrumpCards { return g.trumpCards }
-
-// TrappolaStrengthForTest は札位の強さを返す (テスト用)。
-func TrappolaStrengthForTest(value int) int { return trappolaStrength(value) }
-
-// TrappolaThirdsForTest はカード点 (1/3 点単位) を返す (テスト用)。
-func TrappolaThirdsForTest(value int) int { return trappolaThirds(value) }
 
 // trappolaThirds はカード点を 1/3 点単位で返す。
 //

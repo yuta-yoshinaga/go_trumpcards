@@ -523,12 +523,6 @@ func (e *Omi) cardRank(card *Card) int {
 	return 100 + base
 }
 
-// CardRankPublic カードランク取得 (テスト用公開メソッド)
-func (e *Omi) CardRankPublic(card *Card) int { return e.cardRank(card) }
-
-// EffectiveSuitPublic 実効スート取得 (テスト・互換用公開メソッド)
-func (e *Omi) EffectiveSuitPublic(card *Card) int { return card.GetDesign() }
-
 // sortAllHands 全プレイヤーの手札をソート
 func (e *Omi) sortAllHands() {
 	for _, p := range e.players {

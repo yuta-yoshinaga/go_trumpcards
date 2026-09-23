@@ -607,29 +607,6 @@ func (k *Kille) GetConfig() KilleConfig { return k.config }
 // SetConfig はゲーム設定をセットする。
 func (k *Kille) SetConfig(c KilleConfig) { k.config = c }
 
-// SetPhaseForTest はテスト用にフェーズを差し替える。
-func (k *Kille) SetPhaseForTest(p KillePhase) { k.phase = p }
-
-// SetCurrentPlayerForTest はテスト用に手番を差し替える。
-func (k *Kille) SetCurrentPlayerForTest(idx int) { k.currentIdx = idx }
-
-// SetDealerForTest はテスト用にディーラーを差し替える。
-func (k *Kille) SetDealerForTest(idx int) { k.dealerIdx = idx }
-
-// SetPotForTest はテスト用にポットを差し替える。
-func (k *Kille) SetPotForTest(n int) { k.pot = n }
-
-// SetHandForTest はテスト用に席の手札を 1 枚に差し替える。
-func (k *Kille) SetHandForTest(seat int, r KilleRank) {
-	p := k.GetPlayer(seat)
-	p.Reset()
-	p.AddCard(NewKilleCard(r))
-	p.SetHarlequinSwapped(false)
-}
-
-// SetStockForTest はテスト用に山札を差し替える。
-func (k *Kille) SetStockForTest(cards []*Card) { k.stock = cards }
-
 // addLog は棋譜に 1 件追加する。
 func (k *Kille) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	k.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)

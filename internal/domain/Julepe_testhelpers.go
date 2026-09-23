@@ -35,3 +35,9 @@ func (r *Julepe) FinishGameForTest() { r.finishGame() }
 
 // SetDealerIdxForTest は親の席を差し替える（テスト用）。
 func (r *Julepe) SetDealerIdxForTest(i int) { r.dealerIdx = i }
+
+// GetBeastForTest は beast フラグを返す (テスト用)。
+func (r *Julepe) GetBeastForTest() []bool { return r.beast }
+
+// DealRoundForTest は次ラウンドの配りを実行する (テスト用)。
+func (r *Julepe) DealRoundForTest() { r.dealRound() }

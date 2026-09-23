@@ -19,3 +19,6 @@ func (g *Pishti) SetLastCaptureIdx(idx int) { g.state.lastCaptureIdx = idx }
 
 // SetWinners 勝者リストを設定する (テスト用)。
 func (g *Pishti) SetWinners(w []int) { g.state.winners = w }
+
+// SetGameEndFlagForTest はテスト用に終了フラグを設定する。
+func (g *Pishti) SetGameEndFlagForTest(v bool) { g.state.gameEndFlag = v }

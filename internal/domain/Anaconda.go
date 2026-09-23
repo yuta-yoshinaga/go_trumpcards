@@ -1097,13 +1097,6 @@ func (g *Anaconda) SetConfig(cfg AnacondaConfig) { g.config = cfg }
 // GetActionLog は棋譜を返す。
 func (g *Anaconda) GetActionLog() []*ActionLogEntry { return g.state.actionLog }
 
-// ResolveShowdownForTest は手札を設定済みの状態でショーダウンを解決する (テスト用)。
-func (g *Anaconda) ResolveShowdownForTest() { g.resolveShowdown() }
-
-// EnterRollForTest はロールフェーズ入場 (最初のベッティングラウンド開始 + CPU 進行) を
-// 手動で発火する (テスト用)。
-func (g *Anaconda) EnterRollForTest() { g.enterRollPhase() }
-
 // --- JSON Serialization ---
 
 // anacondaJSON is the JSON wire format for Anaconda.

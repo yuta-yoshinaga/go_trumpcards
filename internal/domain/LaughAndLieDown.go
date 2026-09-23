@@ -489,12 +489,6 @@ func (l *LaughAndLieDown) SetConfig(c LaughAndLieDownConfig) { l.config = c }
 // GetActionLog は棋譜を返す。
 func (l *LaughAndLieDown) GetActionLog() []*ActionLogEntry { return l.actionLog }
 
-// SetLayoutForTest はテスト用に場札を差し替える。
-func (l *LaughAndLieDown) SetLayoutForTest(cards []*Card) { l.layout = cards }
-
-// SetCurrentPlayerForTest はテスト用に手番を差し替える。
-func (l *LaughAndLieDown) SetCurrentPlayerForTest(idx int) { l.currentIdx = idx }
-
 // addLog は棋譜に 1 件追加する。
 func (l *LaughAndLieDown) addLog(player int, action, detailCode string, detailParams map[string]string, cards []*Card) {
 	l.actionLog = append(l.actionLog, &ActionLogEntry{

@@ -613,24 +613,6 @@ func (t *Tichu) GetDogLeadPassed() bool { return t.round.dogLeadPassed }
 // GetDogLeadFrom 犬を出したプレイヤーインデックスを取得する (GetDogLeadPassed が true のときのみ有効)
 func (t *Tichu) GetDogLeadFrom() int { return t.round.dogLeadFrom }
 
-// SetBombCountForTest はテスト用にボム使用回数を設定する。
-func (t *Tichu) SetBombCountForTest(n int) { t.round.bombCount = n }
-
-// SetIsOneTwoForTest はテスト用にワンツー成立を設定する。
-func (t *Tichu) SetIsOneTwoForTest(v bool) { t.round.oneTwo = v }
-
-// SetPhaseForTest はテスト用にフェーズを設定する。
-func (t *Tichu) SetPhaseForTest(phase TichuPhase) { t.round.phase = phase }
-
-// SetCurrentTurnForTest はテスト用に手番を設定する。
-func (t *Tichu) SetCurrentTurnForTest(idx int) { t.round.currentTurn = idx }
-
-// SetDogLeadPassedForTest はテスト用に犬リードフラグを設定する。
-func (t *Tichu) SetDogLeadPassedForTest(passed bool, from int) {
-	t.round.dogLeadPassed = passed
-	t.round.dogLeadFrom = from
-}
-
 // HasPendingAction ペンディングアクションがあるか (常にfalse)
 func (t *Tichu) HasPendingAction() bool { return false }
 

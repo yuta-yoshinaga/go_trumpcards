@@ -158,7 +158,3 @@ func (p *BiribaWebPresenter) HintOutput(g interfaces.BiribaGame) string {
 func (p *BiribaWebPresenter) ActionLogOutput(g interfaces.BiribaGame) string {
 	return actionLogOutputJSON(g)
 }
-
-// BiribaWebHintReasonKeyForTest exposes the reason mapping to tests in the
-// external test package.
-func BiribaWebHintReasonKeyForTest(reason string) string { return biribaWebHintReasonKeys[reason] }

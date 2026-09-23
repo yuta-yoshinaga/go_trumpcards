@@ -429,11 +429,6 @@ func madrassoBeats(challenger, best *Card, leadSuit, trumpSuit int) bool {
 	return madrassoStrength(challenger.GetValue()) > madrassoStrength(best.GetValue())
 }
 
-// MadrassoBeatsForTest は madrassoBeats を公開する (テスト用)。
-func MadrassoBeatsForTest(challenger, best *Card, leadSuit, trumpSuit int) bool {
-	return madrassoBeats(challenger, best, leadSuit, trumpSuit)
-}
-
 // madrassoLastDealtSuit は最後に配られた 1 枚のスートを返す。
 //
 // dealAllCards は席を順に回して配るので、**最後に配られるのは
@@ -530,19 +525,6 @@ func madrassoDealResultKey(winner int) string {
 	return "madrasso.log.result.teamB"
 }
 
-// SetTeamRoundPointsForTest はチームの現ラウンド獲得点を設定する (テスト用)。
-func (g *Madrasso) SetTeamRoundPointsForTest(team, pts int) {
-	if team >= 0 && team < MadrassoTeamCnt {
-		g.teamRoundPoints[team] = pts
-	}
-}
-
-// SetTrumpSuitForTest は切り札スートを設定する (テスト用)。
-func (g *Madrasso) SetTrumpSuitForTest(suit int) { g.trumpSuit = suit }
-
-// MadrassoStrengthForTest は札位の強さを返す (テスト用)。
-func MadrassoStrengthForTest(value int) int { return madrassoStrength(value) }
-
 // madrassoPoints カードの得点を 1/3点 単位で返す。A=3、2/3/J/Q/K=1、その他=0。
 // madrassoPoints はカード点を**整数**で返す。
 //
@@ -565,9 +547,6 @@ func madrassoPoints(value int) int {
 		return 0
 	}
 }
-
-// MadrassoPointsForTest はカード点を返す (テスト用)。
-func MadrassoPointsForTest(value int) int { return madrassoPoints(value) }
 
 // GetTrumpSuit は配りで決まった切り札スートを返す (-1=未確定)。
 func (g *Madrasso) GetTrumpSuit() int { return g.trumpSuit }
