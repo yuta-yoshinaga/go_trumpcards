@@ -284,10 +284,9 @@ func run() int {
 	// not English.
 	i18n.SetLang(detectBootstrapLang(os.Args[1:], os.Getenv("LANG")))
 
-	// buildHelpText reads i18n keys, so it must run after SetLang (issue #4309).
+	// buildHelpText reads i18n keys, so call it only after SetLang (issue #4309).
 	// detectBootstrapLang already accounts for --lang in os.Args, so `--help`
 	// and flag-error output render in the requested locale.
-	helpText := buildHelpText()
 
 	if err := flag.CommandLine.Parse(os.Args[1:]); err != nil {
 		// NB: -h / --help are registered above so flag.Parse handles them
@@ -305,7 +304,7 @@ func run() int {
 	}
 
 	if *showHelp {
-		_, _ = fmt.Fprint(os.Stdout, helpText)
+		_, _ = fmt.Fprint(os.Stdout, buildHelpText())
 		return 0
 	}
 
@@ -428,7 +427,7 @@ func run() int {
 		return runCompletion(fs.Args(), stdoutIsTTY, noHint)
 	}
 	commands["help"] = func() int {
-		return runHelpCommand(subArgs, helpText, os.Stdout, os.Stderr)
+		return runHelpCommand(subArgs, buildHelpText(), os.Stdout, os.Stderr)
 	}
 	commands["version"] = func() int {
 		var short bool
@@ -598,7 +597,7 @@ func run() int {
 			// game. Subcommands in subFlagCommands are handled by parseSubFlags
 			// (which catches flag.ErrHelp).
 			if hasHelpFlag(trailing) {
-				return runHelpCommand([]string{arg}, helpText, os.Stdout, os.Stderr)
+				return runHelpCommand([]string{arg}, buildHelpText(), os.Stdout, os.Stderr)
 			}
 			if len(trailing) > 0 && !quiet {
 				fmt.Fprintln(os.Stderr, i18n.Tf("cliExtraArgsWarning", "args", strings.Join(trailing, " ")))
