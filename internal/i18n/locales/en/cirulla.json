@@ -1,4 +1,5 @@
 {
+  "bonus.unknown": "Unknown",
   "helpTitle": "Cirulla",
   "helpPlay": "  play / p <idx> [table...] play a card (list table numbers to capture)",
   "helpNextRound": "  nextround / nr            go to the next round",

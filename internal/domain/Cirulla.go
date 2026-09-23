@@ -171,7 +171,7 @@ func (c *Cirulla) dealHands() {
 		c.lastBonus[idx] = name
 		if points > 0 {
 			c.players[idx].AddBonusPoints(points)
-			c.appendLog(idx, "bonus", "cirulla.log.bonus", map[string]string{"player": strconv.Itoa(idx), "bonus": name, "points": strconv.Itoa(points)}, hand)
+			c.appendLog(idx, "bonus", "cirulla.log.bonus", map[string]string{"player": strconv.Itoa(idx), "bonusKey": cirullaBonusLogKey(name), "points": strconv.Itoa(points)}, hand)
 		}
 	}
 }
@@ -684,3 +684,15 @@ func cirullaRandIntn(n int) int {
 // **場は配りで決まるので、狙った盤面は組めない。** 捕獲規則を確かめるには
 // ここで固定するしかない。
 func (c *Cirulla) SetTableForTest(cards []*Card) { c.table = cards }
+
+// cirullaBonusLogKey はチルッラのボーナス名をログ用の翻訳キーに変換する。
+func cirullaBonusLogKey(name string) string {
+	switch name {
+	case "barsega":
+		return "cirulla.bonus.barsega"
+	case "barsegon":
+		return "cirulla.bonus.barsegon"
+	default:
+		return "cirulla.bonus.unknown"
+	}
+}

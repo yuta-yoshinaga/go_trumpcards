@@ -432,6 +432,31 @@ func TestActionLogDetailCodeIsTranslated(t *testing.T) {
 	assert.NotEqual(t, ja, en)
 }
 
+func TestActionLogKeyParamsResolveInBothLanguages(t *testing.T) {
+	defer i18n.SetLang("ja")
+	entries := []*domain.ActionLogEntry{
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "showdown", DetailCode: "poker.log.showdown", DetailParams: map[string]string{"handKey": "pokerhand.highCard"}},
+		{TurnNumber: 2, PlayerIdx: 0, ActionType: "result", DetailCode: "videopoker.log.result", DetailParams: map[string]string{"handKey": "pokerhand.jacksOrBetter", "payout": "5"}},
+		{TurnNumber: 3, PlayerIdx: 0, ActionType: "exchange", DetailCode: "rook.log.exchange", DetailParams: map[string]string{"name": "Player", "count": "5", "trumpKey": "rook.colorRed"}},
+	}
+
+	i18n.SetLang("ja")
+	ja := actionLogToText(entries)
+	assert.Contains(t, ja, "ハイカード")
+	assert.Contains(t, ja, "ジャックス・オア・ベター")
+	assert.Contains(t, ja, "赤")
+	assert.NotContains(t, ja, "High Card")
+	assert.NotContains(t, ja, "Jacks or Better")
+	assert.NotContains(t, ja, "Red")
+
+	i18n.SetLang("en")
+	en := actionLogToText(entries)
+	assert.Contains(t, en, "High Card")
+	assert.Contains(t, en, "Jacks or Better")
+	assert.Contains(t, en, "Red")
+	assert.NotContains(t, en, "ハイカード")
+}
+
 func TestActionLogDetailCodeIsRenderedAsTranslatedText(t *testing.T) {
 	defer i18n.SetLang("ja")
 	i18n.SetLang("ja")

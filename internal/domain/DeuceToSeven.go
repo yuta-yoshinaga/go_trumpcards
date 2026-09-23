@@ -545,7 +545,7 @@ func (d *DeuceToSeven) resolveShowdown() {
 			for j := 0; j < pl.GetCardsSize(); j++ {
 				cards[j] = pl.GetCard(j)
 			}
-			d.appendLog(i, "showdown", "deucetoseven.log.showdown", map[string]string{"hand": pl.GetHandName()}, cards)
+			d.appendLog(i, "showdown", "deucetoseven.log.showdown", map[string]string{"handKey": pokerHandLogKey(pl.GetHandRank())}, cards)
 		}
 	}
 

@@ -1,4 +1,11 @@
 {
+  "luette.monsieur": "ムッシュー",
+  "luette.madame": "マダム",
+  "luette.borgne": "ボルニュ",
+  "luette.vache": "ヴァッシュ",
+  "luette.grandNeuf": "グラン・ヌフ",
+  "luette.petitNeuf": "プチ・ヌフ",
+  "luette.unknown": "不明",
   "cardLuette": "{{card}}〈{{name}}〉",
   "dealerBadge": "[親]",
   "gameEnd": "ゲーム終了！チーム{{team}}の勝ち！",

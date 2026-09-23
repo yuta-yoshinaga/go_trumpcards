@@ -529,7 +529,7 @@ func (p *Poker) resolveShowdown() {
 			for j := 0; j < pl.GetCardsSize(); j++ {
 				cards[j] = pl.GetCard(j)
 			}
-			p.appendLog(i, "showdown", "poker.log.showdown", map[string]string{"hand": pl.GetHandName()}, cards)
+			p.appendLog(i, "showdown", "poker.log.showdown", map[string]string{"handKey": pokerHandLogKey(pl.GetHandRank())}, cards)
 		}
 	}
 
@@ -1332,5 +1332,35 @@ func (p *Poker) logBettingAction(playerIdx, action, amount int) {
 		p.appendLog(playerIdx, "raise", "poker.log.raise", map[string]string{"amount": strconv.Itoa(p.players[playerIdx].GetCurrentBet())}, nil)
 	case PokerActionAllIn:
 		p.appendLog(playerIdx, "allin", "poker.log.allIn", map[string]string{"amount": strconv.Itoa(p.players[playerIdx].GetCurrentBet())}, nil)
+	}
+}
+
+// pokerHandLogKey はポーカーの役ランクをログ用の翻訳キーに変換する。
+func pokerHandLogKey(rank int) string {
+	switch rank {
+	case PokerHandHighCard:
+		return "pokerhand.highCard"
+	case PokerHandOnePair:
+		return "pokerhand.pair"
+	case PokerHandTwoPair:
+		return "pokerhand.twoPair"
+	case PokerHandThreeOfAKind:
+		return "pokerhand.threeOfAKind"
+	case PokerHandStraight:
+		return "pokerhand.straight"
+	case PokerHandFlush:
+		return "pokerhand.flush"
+	case PokerHandFullHouse:
+		return "pokerhand.fullHouse"
+	case PokerHandFourOfAKind:
+		return "pokerhand.fourOfAKind"
+	case PokerHandStraightFlush:
+		return "pokerhand.straightFlush"
+	case PokerHandRoyalFlush:
+		return "pokerhand.royalFlush"
+	case PokerHandFiveOfAKind:
+		return "pokerhand.fiveOfAKind"
+	default:
+		return "pokerhand.unknown"
 	}
 }

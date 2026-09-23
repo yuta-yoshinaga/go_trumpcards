@@ -538,7 +538,7 @@ func (g *Aluette) lowestOf(playerIdx int, valid []int) int {
 // playCard 1 枚を場に出し、トリックが揃えばフェーズを進める。
 func (g *Aluette) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", "aluette.log.play", map[string]string{"name": AluetteLuetteName(card)}, []*Card{card})
+	g.appendLog(playerIdx, "play", "aluette.log.play", map[string]string{"nameKey": aluetteLuetteLogKey(AluetteLuetteName(card))}, []*Card{card})
 	if len(g.currentTrick) < AluettePlayerCnt {
 		g.currentPlayerIdx = (g.currentPlayerIdx + 1) % AluettePlayerCnt
 		return
@@ -826,4 +826,24 @@ func (g *Aluette) UnmarshalJSON(data []byte) error {
 	// SetRand は呼ばれない。これを落とすと Easy 難易度の乱択が nil で落ちる (#4663)。
 	g.rng = rand.New(rand.NewSource(rand.Int63()))
 	return nil
+}
+
+// aluetteLuetteLogKey はリュエット名をログ用の翻訳キーに変換する。
+func aluetteLuetteLogKey(name string) string {
+	switch name {
+	case "Monsieur":
+		return "aluette.luette.monsieur"
+	case "Madame":
+		return "aluette.luette.madame"
+	case "Borgne":
+		return "aluette.luette.borgne"
+	case "Vache":
+		return "aluette.luette.vache"
+	case "GrandNeuf":
+		return "aluette.luette.grandNeuf"
+	case "PetitNeuf":
+		return "aluette.luette.petitNeuf"
+	default:
+		return "aluette.luette.unknown"
+	}
 }
