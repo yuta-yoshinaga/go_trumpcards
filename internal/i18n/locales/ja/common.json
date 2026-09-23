@@ -640,5 +640,6 @@
   "common.suit.heart": "ハート",
   "common.suit.diamond": "ダイヤ",
   "common.suit.notrump": "切り札なし",
-  "common.suit.unknown": "不明"
+  "common.suit.unknown": "不明",
+  "cliGamesNoMatches": "一致するゲームはありません"
 }

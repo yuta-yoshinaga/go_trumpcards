@@ -28,6 +28,8 @@ go run ./cmd/trumpcards --lang en <game>   # Run in English
 # (the SSoT lives in `internal/infrastructure/games/registry.go`).
 go run ./cmd/trumpcards games      # List all available games
 go run ./cmd/trumpcards games --short  # List game names only (for scripting)
+go run ./cmd/trumpcards games --search solitaire --short  # Search names, aliases, and descriptions
+go run ./cmd/trumpcards games --category casino  # Filter by Cloudflare Worker binary-size bucket
 go run ./cmd/trumpcards update     # Self-update to the latest version
 go run ./cmd/trumpcards version    # Show version information (equivalent to --version)
 go run ./cmd/trumpcards version --short  # Print version number only (machine-readable)

@@ -9,8 +9,13 @@ import (
 	"io"
 	"os"
 	"slices"
+	"sort"
+	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
@@ -1166,7 +1171,7 @@ func TestPrintGamesLongModeAlwaysIncludesAliases(t *testing.T) {
 	}
 	var buf bytes.Buffer
 	// aliases=false — long mode must STILL show aliases inline.
-	printGames(false, false, "", &buf)
+	printGames(false, false, "", "", &buf)
 	out := buf.String()
 	if !strings.Contains(out, "[aliases:") {
 		t.Errorf("long mode output should contain inline '[aliases:' for games with aliases; got:\n%s", out)
@@ -1188,8 +1193,8 @@ func TestPrintGamesShortModeRespectsAliasesFlag(t *testing.T) {
 	}
 
 	var without, with bytes.Buffer
-	printGames(true, false, "", &without)
-	printGames(true, true, "", &with)
+	printGames(true, false, "", "", &without)
+	printGames(true, true, "", "", &with)
 
 	// Without --aliases, alias lines should not appear.
 	if strings.Contains(without.String(), "\n"+aliasSample+"\n") || strings.HasPrefix(without.String(), aliasSample+"\n") {
@@ -1222,7 +1227,7 @@ func TestGameNamesAllHaveCategory(t *testing.T) {
 // a silently-dropped game shrinks the count and fails here.
 func TestPrintGamesLongListsEveryGame(t *testing.T) {
 	var buf bytes.Buffer
-	printGames(false, false, "", &buf)
+	printGames(false, false, "", "", &buf)
 	rows := 0
 	for _, line := range strings.Split(buf.String(), "\n") {
 		if strings.HasPrefix(line, "  ") { // game rows are indented; headings are not
@@ -1234,18 +1239,22 @@ func TestPrintGamesLongListsEveryGame(t *testing.T) {
 	}
 }
 
-// TestPrintGamesLongGroupsByCategory verifies issue #4311: the long-form list
-// prints an uppercase "CATEGORY (N):" heading (derived from games.AllCategories,
-// the SSoT) before each group.
-func TestPrintGamesLongGroupsByCategory(t *testing.T) {
+// TestPrintGamesLongIsFlatAndSorted verifies long output has no worker-bucket
+// headings and emits canonical names in ascending order.
+func TestPrintGamesLongIsFlatAndSorted(t *testing.T) {
 	var buf bytes.Buffer
-	printGames(false, false, "", &buf)
-	out := buf.String()
-	for _, cat := range games.AllCategories() {
-		heading := strings.ToUpper(cat.String()) + " ("
-		if !strings.Contains(out, heading) {
-			t.Errorf("expected category heading starting %q in long output; got:\n%s", heading, out)
+	printGames(false, false, "", "", &buf)
+	var names []string
+	for _, line := range strings.Split(buf.String(), "\n") {
+		if strings.HasPrefix(line, "  ") {
+			names = append(names, strings.Fields(line)[0])
 		}
+		if strings.Contains(line, "CASINO (") || strings.Contains(line, "CLASSIC (") {
+			t.Errorf("unexpected bucket heading: %q", line)
+		}
+	}
+	if !sort.StringsAreSorted(names) {
+		t.Errorf("game names are not sorted: %v", names)
 	}
 }
 
@@ -1255,7 +1264,7 @@ func TestPrintGamesLongGroupsByCategory(t *testing.T) {
 // (ultimatetexasholdem), which the old fixed %-16s clipped out of alignment.
 func TestPrintGamesLongDynamicWidthAlignsDescriptions(t *testing.T) {
 	var buf bytes.Buffer
-	printGames(false, false, "", &buf)
+	printGames(false, false, "", "", &buf)
 	descs := ui.GameDescriptions()
 
 	width := 0
@@ -1370,7 +1379,7 @@ func TestValidCategory(t *testing.T) {
 // the registry, each with the expected schema.
 func TestPrintGamesJSONFullEmitsEveryGame(t *testing.T) {
 	var buf bytes.Buffer
-	if err := printGamesJSON("", &buf); err != nil {
+	if err := printGamesJSON("", "", &buf); err != nil {
 		t.Fatalf("printGamesJSON returned error: %v", err)
 	}
 	type entry struct {
@@ -1409,7 +1418,7 @@ func TestPrintGamesJSONFullEmitsEveryGame(t *testing.T) {
 // `.aliases | length` would crash on a null without this guarantee.
 func TestPrintGamesJSONNullAliasesAvoided(t *testing.T) {
 	var buf bytes.Buffer
-	if err := printGamesJSON("", &buf); err != nil {
+	if err := printGamesJSON("", "", &buf); err != nil {
 		t.Fatalf("printGamesJSON err: %v", err)
 	}
 	if strings.Contains(buf.String(), `"aliases":null`) {
@@ -1424,7 +1433,7 @@ func TestPrintGamesJSONByCategory(t *testing.T) {
 	for _, cat := range []string{"casino", "classic", "solo"} {
 		t.Run(cat, func(t *testing.T) {
 			var buf bytes.Buffer
-			if err := printGamesJSON(cat, &buf); err != nil {
+			if err := printGamesJSON(cat, "", &buf); err != nil {
 				t.Fatalf("printGamesJSON(%q) err: %v", cat, err)
 			}
 			var got []map[string]any
@@ -1447,7 +1456,7 @@ func TestPrintGamesJSONByCategory(t *testing.T) {
 // honors --category.
 func TestPrintGamesByCategoryFiltersLong(t *testing.T) {
 	var buf bytes.Buffer
-	printGames(false, false, "casino", &buf)
+	printGames(false, false, "casino", "", &buf)
 	out := buf.String()
 	if !strings.Contains(out, "blackjack") {
 		t.Errorf("expected casino filter to include blackjack; got:\n%s", out)
@@ -1461,7 +1470,7 @@ func TestPrintGamesByCategoryFiltersLong(t *testing.T) {
 // TestPrintGamesByCategoryFiltersShort verifies short output honors --category.
 func TestPrintGamesByCategoryFiltersShort(t *testing.T) {
 	var buf bytes.Buffer
-	printGames(true, false, "solo", &buf)
+	printGames(true, false, "solo", "", &buf)
 	lines := strings.Split(strings.TrimSpace(buf.String()), "\n")
 	if len(lines) == 0 || lines[0] == "" {
 		t.Fatalf("expected non-empty solo output; got:\n%s", buf.String())
@@ -1482,6 +1491,64 @@ func TestPrintGamesByCategoryFiltersShort(t *testing.T) {
 	if hasBlackjack {
 		t.Errorf("solo filter should exclude blackjack; got:\n%s", buf.String())
 	}
+}
+
+func TestGamesSearchAndCategoryCLI(t *testing.T) {
+	i18n.SetLang("en")
+	t.Cleanup(func() { i18n.SetLang("ja") })
+
+	out, _, code := runCLI(t, "games", "--search", "solitaire", "--short", "--lang", "en")
+	require.Equal(t, 0, code)
+	require.NotEmpty(t, strings.TrimSpace(out))
+	aliases := buildReverseAliases()
+	for _, name := range strings.Fields(out) {
+		require.True(t, gameMatchesSearch(name, "solitaire", aliases), "unexpected search result %q", name)
+	}
+	assert.Contains(t, out, "klondike")
+	assert.NotContains(t, out, "blackjack")
+
+	out, _, code = runCLI(t, "games", "--search", "  KLONDIKE ", "--short", "--lang", "en")
+	require.Equal(t, 0, code)
+	assert.Contains(t, out, "klondike")
+
+	out, _, code = runCLI(t, "games", "--search", "zzz-no-match", "--json", "--lang", "en")
+	require.Equal(t, 0, code)
+	assert.Equal(t, "[]\n", out)
+	out, stderr, code := runCLI(t, "games", "--search", "zzz-no-match", "--lang", "en")
+	require.Equal(t, 0, code)
+	assert.Empty(t, out)
+	assert.Contains(t, stderr, "No games match")
+	out, _, code = runCLI(t, "games", "--search", "poker", "--category", "casino", "--short", "--lang", "en")
+	require.Equal(t, 0, code)
+	assert.Contains(t, out, "poker")
+	assert.NotContains(t, out, "chinese poker")
+
+	upper, _, code := runCLI(t, "games", "--category", " CASINO ", "--short", "--lang", "en")
+	require.Equal(t, 0, code)
+	canonical, _, code := runCLI(t, "games", "--category", "casino", "--short", "--lang", "en")
+	require.Equal(t, 0, code)
+	assert.Equal(t, canonical, upper)
+	_, stderr, code = runCLI(t, "games", "--category", "casno", "--lang", "en")
+	require.Equal(t, 2, code)
+	assert.Contains(t, stderr, `Did you mean "casino"?`)
+}
+
+func TestGamesSearchShortMatchesAlias(t *testing.T) {
+	out, _, code := runCLI(t, "games", "--search", "6plus", "--short")
+	require.Equal(t, 0, code)
+	assert.Contains(t, out, "shortdeck")
+}
+
+func TestBuildHelpTextGamesDoesNotExposeWorkerBuckets(t *testing.T) {
+	i18n.SetLang("en")
+	t.Cleanup(func() { i18n.SetLang("ja") })
+	help := buildHelpText()
+	gamesSection := strings.SplitN(strings.SplitN(help, "GAMES:", 2)[1], "COMMANDS:", 2)[0]
+	for _, bucket := range categoryDisplayNames() {
+		assert.NotContains(t, gamesSection, bucket)
+	}
+	assert.Contains(t, gamesSection, strconv.Itoa(len(ui.GameRegistry()))+" games")
+	assert.Contains(t, gamesSection, "--search")
 }
 
 // TestRunGamesInvalidCategoryExits2 verifies that --category with an invalid
@@ -2575,8 +2642,8 @@ func TestBuildHelpTextGamesSummaryStaysCompact(t *testing.T) {
 	t.Cleanup(func() { i18n.SetLang("ja") })
 	helpText := buildHelpText()
 
-	// The category summary must appear, with a pointer to `games`.
-	for _, want := range []string{"GAMES:", "trumpcards games", "casino", "classic", "solo"} {
+	// The games section should point to the list and search command without exposing worker buckets.
+	for _, want := range []string{"GAMES:", "trumpcards games", "--search"} {
 		if !strings.Contains(helpText, want) {
 			t.Errorf("help text missing %q; got:\n%s", want, helpText)
 		}

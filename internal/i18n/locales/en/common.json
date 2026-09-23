@@ -640,5 +640,6 @@
   "common.suit.heart": "Heart",
   "common.suit.diamond": "Diamond",
   "common.suit.notrump": "No trump",
-  "common.suit.unknown": "Unknown"
+  "common.suit.unknown": "Unknown",
+  "cliGamesNoMatches": "No games match your search"
 }
