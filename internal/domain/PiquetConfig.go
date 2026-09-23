@@ -34,7 +34,7 @@ type piquetConfigJSON struct {
 
 // MarshalJSON implements json.Marshaler.
 func (c PiquetConfig) MarshalJSON() ([]byte, error) {
-	return json.Marshal(piquetConfigJSON{DealsPerPartie: c.DealsPerPartie})
+	return json.Marshal(piquetConfigJSON(c))
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
