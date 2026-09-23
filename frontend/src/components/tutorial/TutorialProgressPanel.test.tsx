@@ -35,8 +35,10 @@ describe('TutorialProgressPanel', () => {
   it('names completed and pending links with their game labels', () => {
     localStorage.setItem('tutorial_completed_hearts', 'true');
     renderPanel();
-    expect(screen.getByRole('link', { name: 'ハーツ（完了）' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'ブラックジャック（未完了）' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'ハーツ（完了）' })).toHaveClass('min-h-[44px]');
+    expect(screen.getByRole('link', { name: 'ハーツ（完了）' })).toHaveClass('min-w-[44px]');
+    expect(screen.getByRole('link', { name: 'ブラックジャック（未完了）' })).toHaveClass('min-h-[44px]');
+    expect(screen.getByRole('link', { name: 'ブラックジャック（未完了）' })).toHaveClass('min-w-[44px]');
   });
 
   it('renders game links as icons', () => {
