@@ -73,6 +73,7 @@ func TestWriteBashCompletion(t *testing.T) {
 	assert.Contains(t, script, "--open", "bash completion missing web --open flag")
 	assert.Contains(t, script, "--check", "bash completion missing update --check flag")
 	assert.Contains(t, script, "--dry-run", "bash completion missing update --dry-run flag")
+	assert.Contains(t, script, `compgen -W "bash zsh fish --no-hint"`, "bash completion missing completion --no-hint flag")
 	// Issue #4308: --category value completion must list every registered
 	// category (including the `extra` bucket the old hardcoded list omitted).
 	assert.Contains(t, script, `compgen -W "`+strings.Join(categoryDisplayNames(), " ")+`"`,
@@ -97,6 +98,7 @@ func TestWriteZshCompletion(t *testing.T) {
 	assert.Contains(t, script, "--open", "zsh completion missing web --open flag")
 	assert.Contains(t, script, "--check", "zsh completion missing update --check flag")
 	assert.Contains(t, script, "--dry-run", "zsh completion missing update --dry-run flag")
+	assert.Contains(t, script, "_values 'shell' bash zsh fish --no-hint", "zsh completion missing completion --no-hint flag")
 	// Issue #4308: --category value completion must list every registered category.
 	assert.Contains(t, script, `:category:(`+strings.Join(categoryDisplayNames(), " ")+`)`,
 		"zsh --category completion must list all registry categories")
@@ -121,6 +123,7 @@ func TestWriteFishCompletion(t *testing.T) {
 	assert.Contains(t, script, "-l open", "fish completion missing web --open flag")
 	assert.Contains(t, script, "-l check", "fish completion missing update --check flag")
 	assert.Contains(t, script, "-l dry-run", "fish completion missing update --dry-run flag")
+	assert.Contains(t, script, "-a 'bash zsh fish --no-hint'", "fish completion missing completion --no-hint flag")
 	// Issue #4308: --category value completion must list every registered category.
 	assert.Contains(t, script, `-l category -x -a '`+strings.Join(categoryDisplayNames(), " ")+`'`,
 		"fish --category completion must list all registry categories")
@@ -210,6 +213,31 @@ func TestCompletionShellArgNotReportedAsIgnored(t *testing.T) {
 			assert.Empty(t, stderr, "a valid invocation must not warn on stderr")
 		})
 	}
+}
+
+func TestCompletionNoHintFlagOrder(t *testing.T) {
+	for _, tc := range []struct {
+		shell string
+		args  []string
+	}{
+		{"bash", []string{"bash", "--no-hint"}},
+		{"bash flag first", []string{"--no-hint", "bash"}},
+		{"zsh", []string{"zsh", "--no-hint"}},
+		{"fish", []string{"fish", "--no-hint"}},
+		{"after separator", []string{"--", "bash"}},
+	} {
+		t.Run(tc.shell, func(t *testing.T) {
+			args := append([]string{"completion"}, tc.args...)
+			stdout, stderr, exit := runCLI(t, args...)
+			assert.Equal(t, 0, exit)
+			assert.NotEmpty(t, stdout)
+			assert.NotContains(t, stdout, "# To load completions")
+			assert.Empty(t, stderr)
+		})
+	}
+	_, stderr, exit := runCLI(t, "completion", "bash", "extra")
+	assert.Equal(t, 2, exit)
+	assert.Contains(t, stderr, "trumpcards completion")
 }
 
 func TestRunCompletion_UnsupportedShell(t *testing.T) {
@@ -412,6 +440,30 @@ func TestParseSubFlagsTo_LeftoverArgs_WarnsOnlyWhenNotExpected(t *testing.T) {
 			} else {
 				assert.Empty(t, stderr.String())
 			}
+		})
+	}
+}
+
+func TestParseSubFlagsTo_PositionalFlagsInterleaved(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		args     []string
+		wantFlag bool
+		wantArgs []string
+	}{
+		{"interleaved", []string{"pos1", "--flag", "pos2"}, true, []string{"pos1", "pos2"}},
+		{"after separator", []string{"--", "--flag"}, false, []string{"--flag"}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			var stdout, stderr bytes.Buffer
+			var got bool
+			fs, code, ok := parseSubFlagsTo("completion", tc.args, func(fs *flag.FlagSet) {
+				fs.BoolVar(&got, "flag", false, "flag")
+			}, &stdout, &stderr, true)
+			require.True(t, ok)
+			assert.Equal(t, 0, code)
+			assert.Equal(t, tc.wantFlag, got)
+			assert.Equal(t, tc.wantArgs, fs.Args())
 		})
 	}
 }
