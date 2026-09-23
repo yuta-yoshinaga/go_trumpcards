@@ -542,6 +542,3 @@ func (g *Speculation) SetOffer(from, to, amount int) {
 
 // SetRoundNo はラウンド数を設定する（テスト用）。
 func (g *Speculation) SetRoundNo(n int) { g.roundNo = n }
-
-// DeckForTest は山札を返す（テスト用）。
-func (g *Speculation) DeckForTest() *TrumpCards { return g.deck }
