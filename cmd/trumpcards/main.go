@@ -1078,13 +1078,12 @@ func applyTrailingGlobalFlags(args []string, quietPtr *bool, stderr io.Writer) (
 	if haveTrailingColor || trailingNoColor {
 		// applyColorMode only writes errors here; quiet suppresses warnings above,
 		// never validation errors.
-		errSink := stderr
 		mode := trailingColor
 		if !haveTrailingColor {
 			mode = "auto" // --no-color alone with no --color value
 		}
 		var valid bool
-		code, valid = applyColorMode(mode, trailingNoColor, os.Getenv("NO_COLOR"), os.Stdout.Fd(), os.Stderr.Fd(), errSink)
+		code, valid = applyColorMode(mode, trailingNoColor, os.Getenv("NO_COLOR"), os.Stdout.Fd(), os.Stderr.Fd(), stderr)
 		if !valid {
 			return nil, code, false
 		}
