@@ -32,6 +32,13 @@ describe('TutorialProgressPanel', () => {
     expect(screen.getByText(/3/)).toBeInTheDocument();
   });
 
+  it('names completed and pending links with their game labels', () => {
+    localStorage.setItem('tutorial_completed_hearts', 'true');
+    renderPanel();
+    expect(screen.getByRole('link', { name: 'ハーツ（完了）' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'ブラックジャック（未完了）' })).toBeInTheDocument();
+  });
+
   it('renders game links as icons', () => {
     renderPanel();
     const links = screen.getAllByRole('link');
