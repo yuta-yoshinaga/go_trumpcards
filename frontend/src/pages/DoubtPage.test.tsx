@@ -2,6 +2,7 @@ import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, doubtApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import { registerOpenModal } from '../hooks/keyboardNavUtils';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { settleUntil } from '../test/settleUntil';
@@ -1262,6 +1263,25 @@ describe('DoubtPage', () => {
   // ── Keyboard navigation ──────────────────────────────────────────────────
 
   describe('keyboard navigation', () => {
+    it('ignores keyboard shortcuts while a modal is open', async () => {
+      mockExec.mockResolvedValue(doubtPhaseCpuPlayedState);
+      renderWithProviders(<DoubtPage />);
+      await waitFor(() => expect(screen.getByText('ダウトしますか？')).toBeInTheDocument());
+      mockExec.mockClear();
+      const unregister = registerOpenModal();
+      try {
+        fireEvent.keyDown(window, { key: ' ' });
+        await flushPendingDispatch();
+        expect(mockExec).not.toHaveBeenCalled();
+
+        unregister();
+        fireEvent.keyDown(window, { key: ' ' });
+        await waitFor(() => expect(mockExec).toHaveBeenCalledWith('doubt', undefined, undefined, [0]));
+      } finally {
+        unregister();
+      }
+    });
+
     it('pressing number key toggles card when in human play turn', async () => {
       renderWithProviders(<DoubtPage />);
       await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());

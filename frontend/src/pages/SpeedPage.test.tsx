@@ -1,6 +1,7 @@
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { speedApi } from '../api/gameApi';
+import { registerOpenModal } from '../hooks/keyboardNavUtils';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { SpeedResponse } from '../types/card';
@@ -343,6 +344,24 @@ describe('SpeedPage', () => {
     // Hand index 0 is SPADE 4 (single-valid-pile → smart-click auto-plays to pile 0)
     fireEvent.keyDown(window, { key: '1' });
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0, 0));
+  });
+
+  it('ignores keyboard shortcuts while a modal is open', async () => {
+    renderWithProviders(<SpeedPage />);
+    await waitFor(() => expect(screen.getByText('手札')).toBeInTheDocument());
+    mockExec.mockClear();
+    const unregister = registerOpenModal();
+    try {
+      fireEvent.keyDown(window, { key: '1' });
+      await flushPendingDispatch();
+      expect(mockExec).not.toHaveBeenCalled();
+
+      unregister();
+      fireEvent.keyDown(window, { key: '1' });
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0, 0));
+    } finally {
+      unregister();
+    }
   });
 
   it('keyboard shortcut: ArrowRight plays the selected card to right pile', async () => {
