@@ -10,6 +10,7 @@ import (
 	"os"
 	"slices"
 	"sort"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -1546,7 +1547,7 @@ func TestBuildHelpTextGamesDoesNotExposeWorkerBuckets(t *testing.T) {
 	for _, bucket := range categoryDisplayNames() {
 		assert.NotContains(t, gamesSection, bucket)
 	}
-	assert.Contains(t, gamesSection, "383 games")
+	assert.Contains(t, gamesSection, strconv.Itoa(len(ui.GameRegistry()))+" games")
 	assert.Contains(t, gamesSection, "--search")
 }
 

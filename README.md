@@ -500,7 +500,7 @@ trumpcards version               # バージョン情報を表示 (--version と
 trumpcards version --short       # バージョン番号のみ出力 (機械読み取り用)
 trumpcards help                  # ヘルプを表示
 trumpcards help blackjack        # 特定ゲームの操作方法を表示
-trumpcards games                 # 383ゲームを名前順で一覧表示
+trumpcards games                 # 全ゲームを名前順で一覧表示
 trumpcards games --search solitaire --short  # 名前・エイリアス・説明文から検索
 trumpcards games --category casino           # Workerのバイナリサイズ区分で絞り込み
 PORT=3000 trumpcards web         # カスタムポートで起動 (環境変数)

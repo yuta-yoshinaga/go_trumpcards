@@ -1436,10 +1436,10 @@ func printGamesJSON(category, search string, w io.Writer) error {
 		if category != "" && cat != category {
 			continue
 		}
-		al := reverseAliases[g.Name]
 		if !gameMatchesSearch(g.Name, search, reverseAliases) {
 			continue
 		}
+		al := reverseAliases[g.Name]
 		if al == nil {
 			al = []string{} // emit `[]`, never `null` — stable schema for scripts.
 		}
