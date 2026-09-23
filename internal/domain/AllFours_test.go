@@ -236,6 +236,48 @@ func TestAllFours_FullDealScoring(t *testing.T) {
 	assert.Equal(t, 4, a.GetPlayer(domain.AllFoursNonDealerIdx).GetCumulativeScore())
 }
 
+func TestAllFours_ScoreLogsEachAwardWithDedicatedDetailCode(t *testing.T) {
+	players := []*domain.AllFoursPlayer{
+		domain.NewAllFoursPlayer(true),
+		domain.NewAllFoursPlayer(true),
+	}
+	a := domain.NewAllFours(domain.NewTrumpCards(0), players, domain.DefaultAllFoursConfig())
+	a.Reset()
+	assert.NoError(t, a.PlayerBeg(true))
+	assert.NoError(t, a.PlayerRespondBeg(false))
+	a.SetTrumpSuit(domain.CardDesignHeart)
+	a.GetPlayer(domain.AllFoursNonDealerIdx).ResetTricks()
+	a.GetPlayer(domain.AllFoursDealerIdx).ResetTricks()
+	a.GetPlayer(domain.AllFoursNonDealerIdx).AddTrick([]*domain.Card{
+		afCard(domain.CardDesignHeart, 1),
+		afCard(domain.CardDesignHeart, 11),
+		afCard(domain.CardDesignHeart, 2),
+	})
+	a.GetPlayer(domain.AllFoursDealerIdx).AddTrick([]*domain.Card{
+		afCard(domain.CardDesignSpade, 3),
+		afCard(domain.CardDesignSpade, 4),
+		afCard(domain.CardDesignSpade, 5),
+	})
+	a.SetPhase(domain.AllFoursPhaseRoundEnd)
+	a.ScoreRound()
+
+	expected := map[string]string{
+		"score_gift": "allfours.log.scoreGift",
+		"score_high": "allfours.log.scoreHigh",
+		"score_low":  "allfours.log.scoreLow",
+		"score_jack": "allfours.log.scoreJack",
+		"score_game": "allfours.log.scoreGame",
+	}
+	for _, entry := range a.GetActionLog() {
+		if detailCode, ok := expected[entry.ActionType]; ok {
+			assert.Equal(t, detailCode, entry.DetailCode)
+			assert.Equal(t, map[string]string{"name": "You"}, entry.DetailParams)
+			delete(expected, entry.ActionType)
+		}
+	}
+	assert.Empty(t, expected)
+}
+
 func TestAllFours_GameEndAtLimit(t *testing.T) {
 	players := []*domain.AllFoursPlayer{domain.NewAllFoursPlayer(true), domain.NewAllFoursPlayer(false)}
 	a := domain.NewAllFours(domain.NewTrumpCards(0), players, domain.AllFoursConfig{PointLimit: 2, CpuDifficulty: domain.AllFoursCpuDifficultyNormal})

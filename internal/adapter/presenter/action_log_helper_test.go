@@ -234,6 +234,31 @@ func TestActionLogToText_RendersIssue7950ParamsInBothLanguages(t *testing.T) {
 	i18n.SetLang("ja")
 }
 
+func TestActionLogToText_RendersAllFoursScoreCodesInBothLanguages(t *testing.T) {
+	entries := []*domain.ActionLogEntry{
+		{DetailCode: "allfours.log.scoreGift", DetailParams: map[string]string{"name": "P1"}},
+		{DetailCode: "allfours.log.scoreHigh", DetailParams: map[string]string{"name": "P1"}},
+		{DetailCode: "allfours.log.scoreLow", DetailParams: map[string]string{"name": "P1"}},
+		{DetailCode: "allfours.log.scoreJack", DetailParams: map[string]string{"name": "P1"}},
+		{DetailCode: "allfours.log.scoreGame", DetailParams: map[string]string{"name": "P1"}},
+	}
+	t.Cleanup(func() { i18n.SetLang("ja") })
+
+	i18n.SetLang("ja")
+	ja := actionLogToText(entries)
+	for _, text := range []string{"P1 がギフトの1点を獲得しました", "P1 がHighを獲得しました", "P1 がLowを獲得しました", "P1 がJackを獲得しました", "P1 がGameを獲得しました"} {
+		assert.Contains(t, ja, text)
+	}
+	assert.NotContains(t, ja, "high")
+	assert.NotContains(t, ja, "gift")
+
+	i18n.SetLang("en")
+	en := actionLogToText(entries)
+	for _, text := range []string{"P1 scores the Gift point", "P1 scores High", "P1 scores Low", "P1 scores Jack", "P1 scores Game"} {
+		assert.Contains(t, en, text)
+	}
+}
+
 func TestActionLogToText_RendersTargetGameSuitsInBothLanguages(t *testing.T) {
 	entries := []*domain.ActionLogEntry{
 		{
