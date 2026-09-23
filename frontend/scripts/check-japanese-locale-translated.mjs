@@ -80,6 +80,13 @@ const isUrl = (value) => value.includes('://');
 // (for example, the historical soko = Five Card Stud mistake from #7974).
 const isFormalGameTitle = (key) => /^outputTitle/.test(key);
 
+// H: Schafkopf contract names are written in Latin script throughout schafkopf.json
+// (Wenz 37 / Rufspiel 41 / Solo 44; 0 katakana occurrences). This is treated like E's
+// Weis, but Solo is also used by other games, so the exemption is narrowed by key.
+// Measured exemption count: 3 (FILES is internal/i18n/locales only, so the Web
+// common.json copies are never read here).
+const isSchafkopfContractKey = (file, key) => file === 'schafkopf.json' && key.startsWith('contractShort.');
+
 const condition1Violations = [];
 const condition2Violations = [];
 let identicalCompared = 0;
@@ -104,7 +111,8 @@ for (const file of FILES) {
         isHeader(key) ||
         isCpuKey(key) ||
         hasEstablishedTerm(value) ||
-        isFormalGameTitle(key);
+        isFormalGameTitle(key) ||
+        isSchafkopfContractKey(file, key);
       if (exempt) identicalExempt += 1;
       else condition1Violations.push(`${file}:${key} = ${value}`);
     }

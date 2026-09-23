@@ -132,6 +132,10 @@ func TestReversis_MarkedCardChargesPenaltyAndChips(t *testing.T) {
 	assert.Equal(t, chipsBefore-ReversisMarkedStake, p.GetChips(), "プールへ 5 払う")
 	assert.Equal(t, poolBefore+ReversisMarkedStake, r.GetPool())
 	assert.False(t, r.GetPlayer(1).GetTookQuinola(), "出した人には付かない")
+	marked := r.GetActionLog()[len(r.GetActionLog())-1]
+	assert.Equal(t, "reversis.log.marked", marked.DetailCode)
+	assert.Equal(t, "reversis.mark.quinola", marked.DetailParams["nameKey"])
+	assert.NotContains(t, marked.DetailParams, "name")
 }
 
 func TestReversis_MarkedCardsInOneTrickChargeBoth(t *testing.T) {

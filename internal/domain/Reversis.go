@@ -265,11 +265,11 @@ func (r *Reversis) resolveTrick() {
 		penalty += ReversisCardPenalty(tc.Card)
 		if ReversisIsQuinola(tc.Card) {
 			r.players[winner].SetTookQuinola(true)
-			r.chargeMarked(winner, "キノラ（♥J）", tc.Card)
+			r.chargeMarked(winner, "reversis.mark.quinola", tc.Card)
 		}
 		if ReversisIsDiamondAce(tc.Card) {
 			r.players[winner].SetTookDiamondAce(true)
-			r.chargeMarked(winner, "♦A", tc.Card)
+			r.chargeMarked(winner, "reversis.mark.diamondAce", tc.Card)
 		}
 	}
 	r.players[winner].AddTrick(cards)
@@ -288,11 +288,11 @@ func (r *Reversis) resolveTrick() {
 }
 
 // chargeMarked 印付きの札を取った罰。**追加失点とプールへの支払いの両方。**
-func (r *Reversis) chargeMarked(winner int, name string, card *Card) {
+func (r *Reversis) chargeMarked(winner int, nameKey string, card *Card) {
 	r.players[winner].AddRoundPenalty(ReversisMarkedPenalty)
 	r.players[winner].AddChips(-ReversisMarkedStake)
 	r.pool += ReversisMarkedStake
-	r.appendLog(winner, "marked", "reversis.log.marked", map[string]string{"name": name, "penalty": strconv.Itoa(ReversisMarkedPenalty), "stake": strconv.Itoa(ReversisMarkedStake)}, []*Card{card})
+	r.appendLog(winner, "marked", "reversis.log.marked", map[string]string{"nameKey": nameKey, "penalty": strconv.Itoa(ReversisMarkedPenalty), "stake": strconv.Itoa(ReversisMarkedStake)}, []*Card{card})
 }
 
 // ReversisCardPenalty その札の失点を返す。A=4 / K=3 / Q=2 / J=1 / その他=0。
