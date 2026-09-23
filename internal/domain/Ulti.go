@@ -321,7 +321,7 @@ func (g *Ulti) applyBid(contract UltiContract, trumpSuit int) {
 	g.talon = make([]*Card, 0)
 	g.talonTaken = true
 	g.sortAllHands()
-	g.appendLog(g.declarerIdx, "bid", "ulti.log.bid", map[string]string{"name": playerName(g.players, g.declarerIdx), "contract": ultiContractName(contract), "trumpKey": trumpKeyOf(g.trumpSuit)}, nil)
+	g.appendLog(g.declarerIdx, "bid", "ulti.log.bid", map[string]string{"name": playerName(g.players, g.declarerIdx), "contractKey": ultiContractKey(contract), "trumpKey": trumpKeyOf(g.trumpSuit)}, nil)
 	g.phase = UltiPhaseDiscard
 }
 
@@ -478,7 +478,7 @@ func (g *Ulti) enterRoundEnd() {
 	g.scored = true
 	g.outcome = g.evalOutcome()
 	g.applyScores(g.outcome)
-	g.appendLog(-1, "round_score", "ulti.log.roundScore", map[string]string{"round": fmt.Sprintf("%d", g.roundNumber), "name": playerName(g.players, g.declarerIdx), "contract": ultiContractName(g.contract), "outcomeKey": ultiOutcomeKey(g.outcome)}, nil)
+	g.appendLog(-1, "round_score", "ulti.log.roundScore", map[string]string{"round": fmt.Sprintf("%d", g.roundNumber), "name": playerName(g.players, g.declarerIdx), "contractKey": ultiContractKey(g.contract), "outcomeKey": ultiOutcomeKey(g.outcome)}, nil)
 	g.checkGameEnd()
 }
 
@@ -825,19 +825,19 @@ func ultiSortHand(p *UltiPlayer, trump int, contract UltiContract) {
 	}
 }
 
-// ultiContractName コントラクトの表示名を返す。
-func ultiContractName(contract UltiContract) string {
+// ultiContractKey コントラクトの i18n キーを返す。
+func ultiContractKey(contract UltiContract) string {
 	switch contract {
 	case UltiContractParty:
-		return "party"
+		return "ulti.contractParty"
 	case UltiContractBetli:
-		return "betli"
+		return "ulti.contractBetli"
 	case UltiContractDurchmarsch:
-		return "durchmarsch"
+		return "ulti.contractDurchmarsch"
 	case UltiContractUlti:
-		return "ulti"
+		return "ulti.contractUlti"
 	default:
-		return "-"
+		return "ulti.contractNone"
 	}
 }
 

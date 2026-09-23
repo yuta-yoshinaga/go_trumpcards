@@ -375,7 +375,7 @@ func (g *Quadrille) applyBid(playerIdx int, bid QuadrilleBid, trumpSuit int) {
 	} else {
 		g.bidTrump[playerIdx] = trumpSuit
 		g.appendLog(playerIdx, "bid",
-			"quadrille.log.bid", map[string]string{"name": playerName(g.players, playerIdx), "bid": quadrilleBidName(bid), "trumpKey": suitKeyOf(trumpSuit)}, nil)
+			"quadrille.log.bid", map[string]string{"name": playerName(g.players, playerIdx), "bidKey": quadrilleBidKey(bid), "trumpKey": suitKeyOf(trumpSuit)}, nil)
 	}
 
 	if g.allBidsActed() {
@@ -434,7 +434,7 @@ func (g *Quadrille) finalizeAuction() {
 		g.trumpSuit = g.cpuChooseTrump(quadrille)
 	}
 	g.appendLog(quadrille, "quadrille",
-		"quadrille.log.quadrille", map[string]string{"name": playerName(g.players, quadrille), "bid": quadrilleBidName(best), "trumpKey": suitKeyOf(g.trumpSuit)}, nil)
+		"quadrille.log.quadrille", map[string]string{"name": playerName(g.players, quadrille), "bidKey": quadrilleBidKey(best), "trumpKey": suitKeyOf(g.trumpSuit)}, nil)
 	g.startKingCall()
 }
 
@@ -785,7 +785,7 @@ func (g *Quadrille) enterRoundEnd() {
 		stake = 2
 	}
 	g.appendLog(-1, "round_score",
-		"quadrille.log.roundScore", map[string]string{"round": strconv.Itoa(g.roundNumber), "name": playerName(g.players, g.quadrilleIdx), "outcome": quadrilleOutcomeName(g.outcome), "stake": strconv.Itoa(stake)}, nil)
+		"quadrille.log.roundScore", map[string]string{"round": strconv.Itoa(g.roundNumber), "name": playerName(g.players, g.quadrilleIdx), "outcomeKey": quadrilleOutcomeKey(g.outcome), "stake": strconv.Itoa(stake)}, nil)
 	g.checkGameEnd()
 }
 
@@ -1141,29 +1141,29 @@ func quadrilleSortHand(p *QuadrillePlayer, trump int) {
 	}
 }
 
-// quadrilleBidName ビッドの表示名を返す。
-func quadrilleBidName(bid QuadrilleBid) string {
+// quadrilleBidKey ビッドの i18n キーを返す。
+func quadrilleBidKey(bid QuadrilleBid) string {
 	switch bid {
 	case QuadrilleBidEntrar:
-		return "entrar"
+		return "quadrille.bidEntrar"
 	case QuadrilleBidSolo:
-		return "solo"
+		return "quadrille.bidSolo"
 	default:
-		return "pass"
+		return "quadrille.bidPass"
 	}
 }
 
-// quadrilleOutcomeName 結果の表示名を返す。
-func quadrilleOutcomeName(o QuadrilleOutcome) string {
+// quadrilleOutcomeKey 結果の棋譜用 i18n キーを返す。
+func quadrilleOutcomeKey(o QuadrilleOutcome) string {
 	switch o {
 	case QuadrilleOutcomeSacar:
-		return "sacar"
+		return "quadrille.outcomeShort.sacar"
 	case QuadrilleOutcomePuesta:
-		return "puesta"
+		return "quadrille.outcomeShort.puesta"
 	case QuadrilleOutcomeCodille:
-		return "codille"
+		return "quadrille.outcomeShort.codille"
 	default:
-		return "-"
+		return "quadrille.outcomeNone"
 	}
 }
 

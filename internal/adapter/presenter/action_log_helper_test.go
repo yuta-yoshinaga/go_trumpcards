@@ -800,3 +800,32 @@ func TestActionLogToText_RendersAndarBaharMusAndViraLabelsInBothLanguages(t *tes
 		assert.NotContains(t, en, text)
 	}
 }
+
+func TestActionLogToText_RendersTargetContractKeysInBothLanguages(t *testing.T) {
+	entries := []*domain.ActionLogEntry{
+		{DetailCode: "germansolo.log.bid", DetailParams: map[string]string{"name": "P1", "bidKey": "germansolo.bidSolo", "trumpKey": "common.suit.heart"}},
+		{DetailCode: "ombre.log.bid", DetailParams: map[string]string{"name": "P1", "bidKey": "ombre.bidEntrar", "trumpKey": "common.suit.heart"}},
+		{DetailCode: "ombre.log.roundScore", DetailParams: map[string]string{"round": "1", "name": "P1", "outcomeKey": "ombre.outcomeShort.sacar", "stake": "1"}},
+		{DetailCode: "quadrille.log.bid", DetailParams: map[string]string{"name": "P1", "bidKey": "quadrille.bidSolo", "trumpKey": "common.suit.heart"}},
+		{DetailCode: "quadrille.log.roundScore", DetailParams: map[string]string{"round": "1", "name": "P1", "outcomeKey": "quadrille.outcomeShort.codille", "stake": "1"}},
+		{DetailCode: "ulti.log.bid", DetailParams: map[string]string{"name": "P1", "contractKey": "ulti.contractParty", "trumpKey": "common.suit.heart"}},
+		{DetailCode: "truco.log.truco", DetailParams: map[string]string{"name": "P1", "levelKey": "truco.levelRetruco"}},
+		{DetailCode: "put.log.put", DetailParams: map[string]string{"name": "P1", "levelKey": "put.levelPut"}},
+	}
+
+	t.Cleanup(func() { i18n.SetLang("ja") })
+	i18n.SetLang("ja")
+	ja := actionLogToText(entries)
+	for _, text := range []string{"ソロ", "エントラール", "サカール", "コディール", "パルティ", "レトルーコ", "プット"} {
+		assert.Contains(t, ja, text)
+	}
+	for _, raw := range []string{"entrar", "solo", "sacar", "codille", "party", "Retruco", "Put", "ombre.bidEntrar"} {
+		assert.NotContains(t, ja, raw)
+	}
+
+	i18n.SetLang("en")
+	en := actionLogToText(entries)
+	for _, text := range []string{"Solo", "entrar", "Sacar", "Codille", "Party", "Retruco", "Put"} {
+		assert.Contains(t, en, text)
+	}
+}
