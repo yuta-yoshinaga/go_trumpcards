@@ -284,10 +284,6 @@ func run() int {
 	// not English.
 	i18n.SetLang(detectBootstrapLang(os.Args[1:], os.Getenv("LANG")))
 
-	// buildHelpText reads i18n keys, so call it only after SetLang (issue #4309).
-	// detectBootstrapLang already accounts for --lang in os.Args, so `--help`
-	// and flag-error output render in the requested locale.
-
 	if err := flag.CommandLine.Parse(os.Args[1:]); err != nil {
 		// NB: -h / --help are registered above so flag.Parse handles them
 		// itself and returns nil; flag.ErrHelp is therefore unreachable here.
@@ -1143,6 +1139,9 @@ const gameCategoryPreview = 5
 // the common 24–40 line case. Now it presents a category-grouped summary
 // with a pointer to `trumpcards games` for the full list, mirroring the
 // `git --help` / `kubectl --help` / `cargo --help` style.
+// It reads i18n keys, so call it at the point of use, after SetLang and after
+// applyTrailingGlobalFlags; never cache it at startup, or a trailing --lang is
+// ignored (issues #4309, #8010).
 func buildHelpText() string {
 	var sb strings.Builder
 	categories := games.AllCategories()

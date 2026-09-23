@@ -43,17 +43,10 @@ func TestHelpCommandTrailingLang(t *testing.T) {
 				t.Fatalf("runCLI(%v) exit = %d, want 0", tt.args, exit)
 			}
 			if !strings.HasPrefix(stdout, tt.want) {
-				t.Errorf("runCLI(%v) stdout prefix = %q, want %q; full output: %q", tt.args, firstOutputLine(stdout), tt.want, stdout)
+				t.Errorf("runCLI(%v) stdout prefix = %q, want %q; full output: %q", tt.args, firstLine(stdout), tt.want, stdout)
 			}
 		})
 	}
-}
-
-func firstOutputLine(s string) string {
-	if i := strings.IndexByte(s, '\n'); i >= 0 {
-		return s[:i]
-	}
-	return s
 }
 
 func TestHasHelpFlag(t *testing.T) {
