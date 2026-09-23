@@ -446,21 +446,6 @@ func (n *NainJaune) GetConfig() NainJauneConfig { return n.config }
 // SetConfig はゲーム設定をセットする。
 func (n *NainJaune) SetConfig(c NainJauneConfig) { n.config = c }
 
-// SetPhaseForTest はテスト用にフェーズを差し替える。
-func (n *NainJaune) SetPhaseForTest(p NainJaunePhase) { n.phase = p }
-
-// SetCurrentPlayerForTest はテスト用に手番を差し替える。
-func (n *NainJaune) SetCurrentPlayerForTest(idx int) { n.currentIdx = idx }
-
-// SetBoardForTest はテスト用に盤を差し替える。
-func (n *NainJaune) SetBoardForTest(b NainJauneBoard) { n.board = b }
-
-// SetRunRankForTest はテスト用に並びの状態を差し替える。
-func (n *NainJaune) SetRunRankForTest(rank int) { n.runRank = rank }
-
-// SetDealNumberForTest はテスト用にディール数を差し替える。
-func (n *NainJaune) SetDealNumberForTest(d int) { n.dealNo = d }
-
 // addLog は棋譜に 1 件追加する。
 func (n *NainJaune) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	n.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)

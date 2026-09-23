@@ -562,9 +562,6 @@ func (g *Pishti) GetConfig() PishtiConfig { return g.config }
 // SetConfig は設定を変更する。
 func (g *Pishti) SetConfig(config PishtiConfig) { g.config = config }
 
-// SetGameEndFlagForTest はテスト用に終了フラグを設定する。
-func (g *Pishti) SetGameEndFlagForTest(v bool) { g.state.gameEndFlag = v }
-
 // GetActionLog は棋譜を返す。
 func (g *Pishti) GetActionLog() []*ActionLogEntry { return g.state.actionLog }
 
