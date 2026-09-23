@@ -1,4 +1,4 @@
-//go:build !js || !wasm || casino
+//go:build !js || !wasm || extra6
 
 // Package domain トレセッテ (Tressette) のドメインモデル。
 //
@@ -404,14 +404,6 @@ func tressetteSortHand(p *TressettePlayer) {
 		}
 		return tressetteStrength(ci.GetValue()) < tressetteStrength(cj.GetValue())
 	})
-}
-
-// teamName チーム表示名 (0=A, 1=B)
-func teamName(team int) string {
-	if team == 0 {
-		return "A"
-	}
-	return "B"
 }
 
 // --- Card helpers ---

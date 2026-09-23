@@ -1,4 +1,4 @@
-//go:build test && (!js || !wasm || classic)
+//go:build test && (!js || !wasm || extra7)
 
 package interfaces
 

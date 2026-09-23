@@ -52,7 +52,7 @@ func TestDocsMatchRegistry(t *testing.T) {
 	}
 
 	// Walk AllCategories rather than enumerating bucket names by hand: listing
-	// them manually left the 7th and 8th buckets uninspected even though the
+	// them manually left the 7th through 10th buckets uninspected even though the
 	// row-count assertion below was already derived.
 	for _, cat := range games.AllCategories() {
 		want := make([]string, 0, 64)

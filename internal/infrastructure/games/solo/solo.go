@@ -14,22 +14,6 @@ import (
 )
 
 func init() {
-	games.RegisterKVGame("minchiate", games.CategorySolo,
-		func() usecase.MinchiateInteractorIF {
-			return usecase.NewMinchiateInteractor(domain.NewDefaultMinchiate(), new(presenter.MinchiateWebPresenter))
-		},
-		func(data []byte) (usecase.MinchiateInteractorIF, error) {
-			return usecase.RestoreMinchiateInteractor(data, new(presenter.MinchiateWebPresenter))
-		},
-		controller.NewMinchiateWebControllerWithProvider)
-	games.RegisterKVGame("tarocchini", games.CategorySolo,
-		func() usecase.TarocchiniInteractorIF {
-			return usecase.NewTarocchiniInteractor(domain.NewDefaultTarocchini(), new(presenter.TarocchiniWebPresenter))
-		},
-		func(data []byte) (usecase.TarocchiniInteractorIF, error) {
-			return usecase.RestoreTarocchiniInteractor(data, new(presenter.TarocchiniWebPresenter))
-		},
-		controller.NewTarocchiniWebControllerWithProvider)
 	games.RegisterKVGame("memory", games.CategorySolo,
 		func() usecase.MemoryInteractorIF {
 			return usecase.NewMemoryInteractor(domain.NewDefaultMemory(), new(presenter.MemoryWebPresenter))
@@ -309,14 +293,6 @@ func init() {
 	// worker is at the 1 MB gzip free-tier limit. See registry.go.
 	// Macau is a Crazy Eights variant bucketed here (solo worker) for binary-size
 	// reasons; the classic worker is at the 1 MB gzip free-tier limit. See registry.go.
-	games.RegisterKVGame("thirtyone", games.CategorySolo,
-		func() usecase.ThirtyOneInteractorIF {
-			return usecase.NewThirtyOneInteractor(domain.NewDefaultThirtyOne(), new(presenter.ThirtyOneWebPresenter))
-		},
-		func(data []byte) (usecase.ThirtyOneInteractorIF, error) {
-			return usecase.RestoreThirtyOneInteractor(data, new(presenter.ThirtyOneWebPresenter))
-		},
-		controller.NewThirtyOneWebControllerWithProvider)
 	games.RegisterKVGame("tienlen", games.CategorySolo,
 		func() usecase.TienLenInteractorIF {
 			return usecase.NewTienLenInteractor(domain.NewDefaultTienLen(), new(presenter.TienLenWebPresenter))
@@ -333,14 +309,6 @@ func init() {
 			return usecase.RestoreOsmosisInteractor(data, new(presenter.OsmosisWebPresenter))
 		},
 		controller.NewOsmosisWebControllerWithProvider)
-	games.RegisterKVGame("fivehundred", games.CategorySolo,
-		func() usecase.FiveHundredInteractorIF {
-			return usecase.NewFiveHundredInteractor(domain.NewDefaultFiveHundred(), new(presenter.FiveHundredWebPresenter))
-		},
-		func(data []byte) (usecase.FiveHundredInteractorIF, error) {
-			return usecase.RestoreFiveHundredInteractor(data, new(presenter.FiveHundredWebPresenter))
-		},
-		controller.NewFiveHundredWebControllerWithProvider)
 	// Schnapsen / Sixty-Six is a 2-player trick-taking game bucketed here (solo
 	// worker) for binary-size reasons; the classic worker is at the 1 MB gzip
 	// free-tier limit. See registry.go.
@@ -352,23 +320,6 @@ func init() {
 			return usecase.RestoreSchnapsenInteractor(data, new(presenter.SchnapsenWebPresenter))
 		},
 		controller.NewSchnapsenWebControllerWithProvider)
-	games.RegisterKVGame("euchre", games.CategorySolo,
-		func() usecase.EuchreInteractorIF {
-			return usecase.NewEuchreInteractor(domain.NewDefaultEuchre(), new(presenter.EuchreWebPresenter))
-		},
-		func(data []byte) (usecase.EuchreInteractorIF, error) {
-			return usecase.RestoreEuchreInteractor(data, new(presenter.EuchreWebPresenter))
-		},
-		controller.NewEuchreWebControllerWithProvider)
-
-	games.RegisterKVGame("gongzhu", games.CategorySolo,
-		func() usecase.GongZhuInteractorIF {
-			return usecase.NewGongZhuInteractor(domain.NewDefaultGongZhu(), new(presenter.GongZhuWebPresenter))
-		},
-		func(data []byte) (usecase.GongZhuInteractorIF, error) {
-			return usecase.RestoreGongZhuInteractor(data, new(presenter.GongZhuWebPresenter))
-		},
-		controller.NewGongZhuWebControllerWithProvider)
 
 	games.RegisterKVGame("bristol", games.CategorySolo,
 		func() usecase.BristolInteractorIF {
@@ -378,15 +329,6 @@ func init() {
 			return usecase.RestoreBristolInteractor(data, new(presenter.BristolWebPresenter))
 		},
 		controller.NewBristolWebControllerWithProvider)
-
-	games.RegisterKVGame("bidwhist", games.CategorySolo,
-		func() usecase.BidWhistInteractorIF {
-			return usecase.NewBidWhistInteractor(domain.NewDefaultBidWhist(), new(presenter.BidWhistWebPresenter))
-		},
-		func(data []byte) (usecase.BidWhistInteractorIF, error) {
-			return usecase.RestoreBidWhistInteractor(data, new(presenter.BidWhistWebPresenter))
-		},
-		controller.NewBidWhistWebControllerWithProvider)
 
 	games.RegisterKVGame("easthaven", games.CategorySolo,
 		func() usecase.EasthavenInteractorIF {
@@ -410,14 +352,6 @@ func init() {
 	// size bucket, not a user-facing taxonomy.
 	// Cego (54-card Baden tarock, Cego-blind swap) — bucketed in solo (extra full).
 	// Zheng Shangyou (54-card Chinese climbing game, suit-blind ranks).
-	games.RegisterKVGame("zheng", games.CategorySolo,
-		func() usecase.ZhengInteractorIF {
-			return usecase.NewZhengInteractor(domain.NewDefaultZheng(), new(presenter.ZhengWebPresenter))
-		},
-		func(data []byte) (usecase.ZhengInteractorIF, error) {
-			return usecase.RestoreZhengInteractor(data, new(presenter.ZhengWebPresenter))
-		},
-		controller.NewZhengWebControllerWithProvider)
 	games.RegisterKVGame("yaniv", games.CategorySolo,
 		func() usecase.YanivInteractorIF {
 			return usecase.NewYanivInteractor(domain.NewDefaultYaniv(), new(presenter.YanivWebPresenter))
@@ -458,4 +392,20 @@ func init() {
 			return usecase.RestoreWillOTheWispInteractor(data, new(presenter.WillOTheWispWebPresenter))
 		},
 		controller.NewWillOTheWispWebControllerWithProvider)
+	games.RegisterKVGame("zheng", games.CategorySolo,
+		func() usecase.ZhengInteractorIF {
+			return usecase.NewZhengInteractor(domain.NewDefaultZheng(), new(presenter.ZhengWebPresenter))
+		},
+		func(data []byte) (usecase.ZhengInteractorIF, error) {
+			return usecase.RestoreZhengInteractor(data, new(presenter.ZhengWebPresenter))
+		},
+		controller.NewZhengWebControllerWithProvider)
+	games.RegisterKVGame("oasispoker", games.CategorySolo,
+		func() usecase.OasisPokerInteractorIF {
+			return usecase.NewOasisPokerInteractor(domain.NewDefaultOasisPoker(), new(presenter.OasisPokerWebPresenter))
+		},
+		func(data []byte) (usecase.OasisPokerInteractorIF, error) {
+			return usecase.RestoreOasisPokerInteractor(data, new(presenter.OasisPokerWebPresenter))
+		},
+		controller.NewOasisPokerWebControllerWithProvider)
 }

@@ -58,3 +58,4 @@ ADR番号は連番ではない — 欠番はリトマステスト導入時に非
 | [ADR-0038](0038-eighth-worker-capacity.md) | 8 つ目の Cloudflare Worker（容量バケット）の追加 | Accepted | 2026-09-05 |
 | [ADR-0039](0039-biriba-as-canasta-sequence-mode.md) | Biriba を Canasta のシーケンスモードとして実装 | Accepted | 2026-09-10 |
 | [ADR-0040](0040-action-log-detail-code-and-params.md) | 棋譜の説明文を DetailCode + DetailParams で持ち、文面は presenter で組む | Proposed | 2026-09-13 |
+| [ADR-0041](0041-tinygo-042-ninth-tenth-worker.md) | TinyGo 0.42.0 への更新と 9・10 個目の Worker（容量バケット）の追加 | Accepted | 2026-09-23 |

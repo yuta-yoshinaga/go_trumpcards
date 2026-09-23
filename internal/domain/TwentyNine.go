@@ -1,4 +1,4 @@
-//go:build !js || !wasm || casino
+//go:build !js || !wasm || extra6
 
 // Package domain トゥエンティナイン (Twenty-Nine / 29) のドメインモデル。
 //

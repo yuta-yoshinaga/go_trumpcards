@@ -93,7 +93,7 @@ def main() -> None:
             # a false CLEAN -- the expensive kind of wrong answer here.
             m = BUILD_RE.search(s)
             if not m: continue
-            tags = set(re.findall(r"\b(casino|classic|solo|extra[2345]?)\b", m.group(0)))
+            tags = set(re.findall(r"\b(casino|classic|solo|extra[234567]?)\b", m.group(0)))
             if not tags: continue
                 
             file_buckets[p] = tags

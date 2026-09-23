@@ -70,13 +70,13 @@ Go source (//go:build js && wasm)
   → wrangler deploy (Cloudflare Workers)
 ```
 
-Build commands: `make build-worker-{casino,classic,solo,extra,extra2,extra3,extra4,extra5}` or `make build-workers`.
+Build commands: `make build-worker-{casino,classic,solo,extra,extra2,extra3,extra4,extra5,extra6,extra7}` or `make build-workers`.
 
 ### Size buckets
 
-Games are distributed across **eight** Workers to stay under the 1 MB gzip size limit per Worker
-(`casino`, `classic`, `solo`, `extra`, `extra2`, `extra3`, `extra4`, `extra5`; see [ADR-0032](adr/0032-fourth-worker-capacity.md)
-[ADR-0036](adr/0036-fifth-sixth-worker-capacity.md) and [ADR-0037](adr/0037-seventh-worker-capacity.md)). A `Category` is purely a binary-size
+Games are distributed across **ten** Workers to stay under the 1 MB gzip size limit per Worker
+(`casino`, `classic`, `solo`, `extra`, `extra2`, `extra3`, `extra4`, `extra5`, `extra6`, `extra7`; see [ADR-0032](adr/0032-fourth-worker-capacity.md)
+[ADR-0036](adr/0036-fifth-sixth-worker-capacity.md), [ADR-0037](adr/0037-seventh-worker-capacity.md), and ADR-0041). A `Category` is purely a binary-size
 bucket, **not** a user-facing taxonomy, and games move between buckets whenever one nears the
 limit.
 
@@ -116,7 +116,7 @@ constant in `frontend/src/api/gameApi.ts`. For the full set of registration poin
 
 ### TinyGo constraints
 
-- `go.mod` specifies `go 1.25.8` (TinyGo's latest supported Go version) with `toolchain go1.26.0` for local development
+- `go.mod` specifies `go 1.25.8` (the oldest Go that TinyGo 0.42.0 supports; it accepts 1.25–1.27) with `toolchain go1.26.0` for local development
 - Mock files require `//go:build test` tag to exclude `testify/mock` from WASM builds
 - `net/http` method-prefixed routing (`"POST /path"`) is not supported; Worker entry points use plain `"/path"` patterns
 

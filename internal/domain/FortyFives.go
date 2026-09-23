@@ -1,4 +1,4 @@
-//go:build !js || !wasm || casino
+//go:build !js || !wasm || extra6
 
 // Package domain オークション・フォーティファイブズ (Auction Forty-Fives) のドメインモデル。
 //
