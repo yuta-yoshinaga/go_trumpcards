@@ -16,6 +16,8 @@
   "ruffOtherLine": "{{name}}: {{suit}} の {{total}}",
   "meldGleek": "グリーク: {{name}} の{{rank}}3枚（各相手から {{value}}）",
   "meldMournival": "マーニヴァル: {{name}} の{{rank}}4枚（各相手から {{value}}）",
+  "meldLabelGleek": "グリーク",
+  "meldLabelMournival": "マーニヴァル",
   "playerLine": "{{name}} ({{role}}): {{cards}}枚  得点: {{score}}  トリック: {{tricks}}  札点: {{points}}",
   "roleBuyer": "落札者",
   "roleDefender": "対抗",

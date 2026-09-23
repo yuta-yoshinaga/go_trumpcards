@@ -370,11 +370,11 @@ func (g *IndianRummy) applyDeclare(cardIndex int) error {
 	cards := indianRummyCollectCards(player)
 	g.declarationValid = IndianRummyValidateDeclaration(cards, g.wildRank)
 
-	status := "valid"
+	code := "indianrummy.log.declareValid"
 	if !g.declarationValid {
-		status = "invalid"
+		code = "indianrummy.log.declareInvalid"
 	}
-	g.appendLog(g.currentPlayerIdx, "declare", "indianrummy.log.declare", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "status": status}, nil)
+	g.appendLog(g.currentPlayerIdx, "declare", code, map[string]string{"name": playerName(g.players, g.currentPlayerIdx)}, nil)
 
 	g.enterRoundEnd()
 	return nil

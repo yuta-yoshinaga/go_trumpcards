@@ -410,6 +410,10 @@ func TestIndianRummy_Declare_Valid(t *testing.T) {
 	assert.Equal(t, domain.IndianRummyPhaseRoundEnd, g.GetPhase())
 	assert.Equal(t, 0, g.GetPlayer(0).GetRoundScore())                             // winner scores 0
 	assert.Equal(t, domain.IndianRummyDeadwoodCap, g.GetPlayer(1).GetRoundScore()) // no pure → 80
+	entry := findIndianRummyActionLogEntry(g.GetActionLog(), "indianrummy.log.declareValid")
+	assert.NotNil(t, entry)
+	assert.Equal(t, "indianrummy.log.declareValid", entry.DetailCode)
+	assert.Equal(t, map[string]string{"name": entry.DetailParams["name"]}, entry.DetailParams)
 }
 
 func TestIndianRummy_Declare_Invalid(t *testing.T) {
@@ -442,6 +446,10 @@ func TestIndianRummy_Declare_Invalid(t *testing.T) {
 	require.NoError(t, g.PlayerDeclare(13))
 	assert.False(t, g.GetDeclarationValid())
 	assert.Equal(t, domain.IndianRummyDeadwoodCap, g.GetPlayer(0).GetRoundScore()) // invalid → 80
+	entry := findIndianRummyActionLogEntry(g.GetActionLog(), "indianrummy.log.declareInvalid")
+	assert.NotNil(t, entry)
+	assert.Equal(t, "indianrummy.log.declareInvalid", entry.DetailCode)
+	assert.Equal(t, "You", entry.DetailParams["name"])
 }
 
 func TestIndianRummy_DeclareGuards(t *testing.T) {
@@ -453,6 +461,15 @@ func TestIndianRummy_DeclareGuards(t *testing.T) {
 
 	g.SetPhase(domain.IndianRummyPhaseDiscard)
 	assert.Error(t, g.PlayerDeclare(999)) // out of range
+}
+
+func findIndianRummyActionLogEntry(entries []*domain.ActionLogEntry, code string) *domain.ActionLogEntry {
+	for _, entry := range entries {
+		if entry.DetailCode == code {
+			return entry
+		}
+	}
+	return nil
 }
 
 func TestIndianRummy_Recycle(t *testing.T) {

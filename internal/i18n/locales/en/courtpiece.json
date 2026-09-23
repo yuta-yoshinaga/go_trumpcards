@@ -38,6 +38,8 @@
   "log.trump": "{{name}} declares {{suit}} as trump",
   "log.trickWin": "{{name}} wins trick {{trick}}",
   "log.roundScore": "Team {{team}} wins the round ({{label}}, tricks={{tricks}}, +{{points}}, total={{total}})",
+  "sar": "Sar",
+  "court": "Court",
   "log.gameEnd": "Team {{team}} wins the game!",
   "log.play": "{{name}} plays {{card}}"
 }

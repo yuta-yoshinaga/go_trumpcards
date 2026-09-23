@@ -60,6 +60,15 @@ func TestShortDeck_Reset(t *testing.T) {
 		assert.True(t, p.GetChips() > 0 || p.GetAllIn())
 	}
 	assert.True(t, sd.GetPot() > 0)
+	blindCodes := map[string]bool{}
+	for _, entry := range sd.GetActionLog() {
+		if entry.ActionType == "blind" {
+			blindCodes[entry.DetailCode] = true
+			assert.Equal(t, map[string]string{"amount": entry.DetailParams["amount"]}, entry.DetailParams)
+		}
+	}
+	assert.True(t, blindCodes["shortdeck.log.smallBlind"])
+	assert.True(t, blindCodes["shortdeck.log.bigBlind"])
 }
 
 func TestShortDeck_Reset_Deals2Cards(t *testing.T) {

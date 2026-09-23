@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // 闘牛（ニウニウ）のフェーズ定数
@@ -364,7 +365,17 @@ func (n *NiuNiu) settle() {
 	}
 	n.phase = NiuNiuPhaseEnd
 	n.lastResult = fmt.Sprintf("親: %s", NiuNiuRankLabel(n.bankerHand.rank))
-	n.appendLog("result", "niuniu.log.result", map[string]string{"rank": NiuNiuRankKey(n.bankerHand.rank)}, n.bankerHand.cards)
+	code := "niuniu.log.resultN"
+	params := map[string]string{"n": strconv.Itoa(int(n.bankerHand.rank))}
+	switch n.bankerHand.rank {
+	case NiuNiuRankNone:
+		code = "niuniu.log.resultNone"
+		params = nil
+	case NiuNiuRankNiuNiu:
+		code = "niuniu.log.resultNiuNiu"
+		params = nil
+	}
+	n.appendLog("result", code, params, n.bankerHand.cards)
 }
 
 // settleHand 1 つの手の増減（賭け金を除いた純増減）。

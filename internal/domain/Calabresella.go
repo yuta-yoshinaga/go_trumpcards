@@ -596,11 +596,11 @@ func (g *Calabresella) ScoreRound() {
 			}
 		}
 	}
-	result := "loses"
+	code := "calabresella.log.roundScoreLost"
 	if soloistWon {
-		result = "wins"
+		code = "calabresella.log.roundScoreWon"
 	}
-	g.appendLog(-1, "round_score", "calabresella.log.roundScore", map[string]string{"round": strconv.Itoa(g.roundNumber), "name": playerName(g.players, g.soloistIdx), "result": result, "points": strconv.Itoa(soloistThirds), "stake": strconv.Itoa(stake)}, nil)
+	g.appendLog(-1, "round_score", code, map[string]string{"round": strconv.Itoa(g.roundNumber), "name": playerName(g.players, g.soloistIdx), "points": strconv.Itoa(soloistThirds), "stake": strconv.Itoa(stake)}, nil)
 	g.checkGameEnd()
 }
 

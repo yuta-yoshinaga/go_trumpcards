@@ -53,6 +53,7 @@
   "log.play": "{{name}} plays {{card}}",
   "log.trickWin": "{{name}} wins trick {{trick}} (+{{points}}/3)",
   "log.trickWinLast": "{{name}} wins trick {{trick}} (+{{points}}/3 +last trick)",
-  "log.roundScore": "round {{round}}: soloist({{name}}) {{result}} ({{points}}/3, stake={{stake}})",
+  "log.roundScoreWon": "round {{round}}: soloist({{name}}) wins ({{points}}/3, stake={{stake}})",
+  "log.roundScoreLost": "round {{round}}: soloist({{name}}) loses ({{points}}/3, stake={{stake}})",
   "log.gameEnd": "{{name}} wins the match!"
 }

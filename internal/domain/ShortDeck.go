@@ -210,10 +210,11 @@ func (sd *ShortDeck) continueReset() error {
 func (sd *ShortDeck) postBlinds() {
 	postBlindsFor(sd.players, sd.dealerIdx, sd.config.SmallBlind, sd.config.BigBlind, &sd.pot, &sd.lastBet, sd.actedFlags,
 		func(playerIdx int, label string, amount int) {
-			sd.appendLog(playerIdx, "blind", "shortdeck.log.blind", map[string]string{
-				"label":  label,
-				"amount": strconv.Itoa(amount),
-			}, nil)
+			code := "shortdeck.log.smallBlind"
+			if label == "big blind" {
+				code = "shortdeck.log.bigBlind"
+			}
+			sd.appendLog(playerIdx, "blind", code, map[string]string{"amount": strconv.Itoa(amount)}, nil)
 		})
 }
 
