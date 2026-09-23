@@ -105,6 +105,31 @@ func TestBidWhistConfig_Validate(t *testing.T) {
 	}
 }
 
+func TestBidWhist_BidActionLogUsesSeparateTranslatedDirection(t *testing.T) {
+	g := newBidWhistForTest()
+	g.SetBidPlayerIdx(0)
+	g.SetPhase(domain.BidWhistPhaseBid)
+	if err := g.PlayerBid(3, domain.BidWhistDirectionUptown); err != nil {
+		t.Fatalf("PlayerBid: %v", err)
+	}
+	var entry *domain.ActionLogEntry
+	for _, candidate := range g.GetActionLog() {
+		if candidate.DetailCode == "bidwhist.log.bid" {
+			entry = candidate
+			break
+		}
+	}
+	if entry == nil {
+		t.Fatal("bid log entry not found")
+	}
+	if entry.DetailParams["tricks"] != "3" || entry.DetailParams["directionKey"] != "bidwhist.dirUptown" {
+		t.Fatalf("unexpected bid params: %+v", entry.DetailParams)
+	}
+	if _, ok := entry.DetailParams["bid"]; ok {
+		t.Fatalf("legacy bid parameter remains: %+v", entry.DetailParams)
+	}
+}
+
 func TestBidWhist_DeckComposition(t *testing.T) {
 	tc := domain.NewTrumpCards(2)
 	if got := tc.GetTotalCount(); got != 54 {

@@ -9,6 +9,8 @@
   "playerLine": "{{name}}: {{chips}} chips, {{penalty}} penalty [{{marks}}], {{cards}} in hand",
   "markQuinola": "J♥",
   "markDiamondAce": "A♦",
+  "mark.quinola": "Quinola (J♥)",
+  "mark.diamondAce": "A♦",
   "markNone": "clean",
   "marked": "{{name}} took the {{mark}}: +{{penalty}} penalty, +{{stake}} chips to the pool",
   "promptCurrentPlayer": "Turn: {{name}}",

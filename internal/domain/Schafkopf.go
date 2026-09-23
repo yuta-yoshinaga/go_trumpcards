@@ -265,7 +265,7 @@ func (g *Schafkopf) resolvePick(playerIdx int, pick bool, contract SchafkopfCont
 		g.bestSoloSuit = soloSuit
 		g.bestBidderIdx = playerIdx
 		g.appendLog(playerIdx, "declare",
-			"schafkopf.log.declares", map[string]string{"name": playerName(g.players, playerIdx), "contract": schafkopfContractName(contract)}, nil)
+			"schafkopf.log.declares", map[string]string{"name": playerName(g.players, playerIdx), "contractKey": schafkopfContractKey(contract)}, nil)
 	} else {
 		g.appendLog(playerIdx, "pass", "schafkopf.log.passes", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 	}
@@ -304,7 +304,7 @@ func (g *Schafkopf) becomePicker(playerIdx int) {
 	// **Wenz と Solo は単独プレイ。** 相棒を呼ぶのは Rufspiel だけ。
 	if g.contract != SchafkopfContractRufspiel {
 		g.partnerIdx = -1
-		g.appendLog(playerIdx, "alone", "schafkopf.log.playsContractAlone", map[string]string{"name": playerName(g.players, playerIdx), "contract": schafkopfContractName(g.contract)}, nil)
+		g.appendLog(playerIdx, "alone", "schafkopf.log.playsContractAlone", map[string]string{"name": playerName(g.players, playerIdx), "contractKey": schafkopfContractKey(g.contract)}, nil)
 		g.beginPlay()
 		return
 	}
@@ -799,15 +799,15 @@ func (g *Schafkopf) isTrump(card *Card) bool {
 	}
 }
 
-// schafkopfContractName は契約名を返す (棋譜用)。
-func schafkopfContractName(c SchafkopfContract) string {
+// schafkopfContractKey は棋譜用の契約名キーを返す。
+func schafkopfContractKey(c SchafkopfContract) string {
 	switch c {
 	case SchafkopfContractWenz:
-		return "Wenz"
+		return "schafkopf.contractShort.wenz"
 	case SchafkopfContractSolo:
-		return "Solo"
+		return "schafkopf.contractShort.solo"
 	default:
-		return "Rufspiel"
+		return "schafkopf.contractShort.rufspiel"
 	}
 }
 

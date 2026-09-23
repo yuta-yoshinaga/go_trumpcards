@@ -4,7 +4,6 @@ package domain
 
 import (
 	"errors"
-	"fmt"
 	"strconv"
 )
 
@@ -336,21 +335,31 @@ func (g *RussianBank) takeSource(src RussianBankSource) *Card {
 	}
 }
 
-func rbSourceName(src RussianBankSource) string {
-	owner := "own"
-	if src.FromOpponent {
-		owner = "opp"
-	}
+func rbSourceKey(src RussianBankSource) string {
 	switch src.Zone {
 	case RussianBankZoneReserve:
-		return owner + " reserve"
+		if src.FromOpponent {
+			return "russianbank.srcOppReserve"
+		}
+		return "russianbank.srcReserve"
 	case RussianBankZoneWaste:
-		return owner + " waste"
-	case RussianBankZoneTableau:
-		return fmt.Sprintf("tableau %d", src.Col)
+		if src.FromOpponent {
+			return "russianbank.srcOppWaste"
+		}
+		return "russianbank.srcWaste"
 	default:
-		return "?"
+		return ""
 	}
+}
+
+func rbSourceTableauCode(src RussianBankSource, destination string) string {
+	if src.Zone == RussianBankZoneTableau {
+		if destination == "foundation" {
+			return "russianbank.log.toFoundationTableau"
+		}
+		return "russianbank.log.toTableauTableau"
+	}
+	return ""
 }
 
 // --- public actions ---
@@ -372,7 +381,15 @@ func (g *RussianBank) MoveToFoundation(src RussianBankSource) error {
 	g.takeSource(src)
 	g.foundations[fIdx] = append(g.foundations[fIdx], card)
 	g.moveCount++
-	g.appendLog(g.current, "foundation", "russianbank.log.toFoundation", map[string]string{"source": rbSourceName(src), "foundation": strconv.Itoa(fIdx)}, nil)
+	params := map[string]string{"foundation": strconv.Itoa(fIdx)}
+	detailCode := "russianbank.log.toFoundation"
+	if src.Zone == RussianBankZoneTableau {
+		detailCode = rbSourceTableauCode(src, "foundation")
+		params["col"] = strconv.Itoa(src.Col)
+	} else {
+		params["sourceKey"] = rbSourceKey(src)
+	}
+	g.appendLog(g.current, "foundation", detailCode, params, nil)
 	g.afterMove()
 	return nil
 }
@@ -397,7 +414,15 @@ func (g *RussianBank) MoveToTableau(src RussianBankSource, col int) error {
 	g.takeSource(src)
 	g.tableau[col] = append(g.tableau[col], card)
 	g.moveCount++
-	g.appendLog(g.current, "tableau", "russianbank.log.toTableau", map[string]string{"source": rbSourceName(src), "column": strconv.Itoa(col)}, nil)
+	params := map[string]string{"column": strconv.Itoa(col)}
+	detailCode := "russianbank.log.toTableau"
+	if src.Zone == RussianBankZoneTableau {
+		detailCode = rbSourceTableauCode(src, "tableau")
+		params["col"] = strconv.Itoa(src.Col)
+	} else {
+		params["sourceKey"] = rbSourceKey(src)
+	}
+	g.appendLog(g.current, "tableau", detailCode, params, nil)
 	g.afterMove()
 	return nil
 }

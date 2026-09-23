@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"sort"
 	"strconv"
+	"strings"
 )
 
 // QuodlibetPlayerCnt はプレイヤー数。
@@ -461,7 +462,7 @@ func (q *Quodlibet) finishDeal() {
 	q.dealHistory = append(q.dealHistory, detail)
 	q.phase = QuodlibetPhaseDealEnd
 	q.appendLog(-1, "dealEnd", "quodlibet.log.dealEnd",
-		map[string]string{"deal": strconv.Itoa(q.dealNumber + 1), "points": quodlibetPointsStr(detail.Points)}, nil)
+		map[string]string{"deal": strconv.Itoa(q.dealNumber + 1), "points": quodlibetPointsStr(q, detail.Points)}, nil)
 }
 
 func quodlibetContractLogCode(contract int) string {
@@ -496,12 +497,12 @@ func quodlibetContractLogCode(contract int) string {
 }
 
 // quodlibetPointsStr は罰点内訳をログ用の文字列にする。
-func quodlibetPointsStr(points map[int]int) string {
+func quodlibetPointsStr(q *Quodlibet, points map[int]int) string {
 	parts := make([]string, 0, len(points))
 	for i := 0; i < QuodlibetPlayerCnt; i++ {
-		parts = append(parts, fmt.Sprintf("p%d=%d", i, points[i]))
+		parts = append(parts, fmt.Sprintf("%s %d", playerName(q.players, i), points[i]))
 	}
-	return fmt.Sprint(parts)
+	return strings.Join(parts, " / ")
 }
 
 // quodlibetSortHand はスート別・強い順に手札を並べる。
