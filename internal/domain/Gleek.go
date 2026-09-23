@@ -1165,15 +1165,6 @@ func gleekMeldKey(count int) string {
 // GleekHonourValueForTest はテスト用に名札の点を返す。
 func GleekHonourValueForTest(c *Card, trump int) int { return gleekHonourValue(c, trump) }
 
-// StartPlayForTest はテスト用にラフとメルドを精算してプレイフェーズを開始する。
-func (g *Gleek) StartPlayForTest() { g.startPlay() }
-
-// SetTrickPointsForTest はテスト用にトリック点を差し込む。
-func (g *Gleek) SetTrickPointsForTest(p [GleekPlayerCnt]int) { g.trickPoints = p }
-
-// ScoreMeldsForTest はテスト用にメルドだけを精算する。
-func (g *Gleek) ScoreMeldsForTest() { g.scoreMelds() }
-
 // indexOfPlayerInTrick currentTrick 内で playerIdx の札の位置を返す (-1=なし)。
 func (g *Gleek) indexOfPlayerInTrick(playerIdx int) int {
 	return indexOfPlayerInTrick(g.currentTrick, playerIdx)

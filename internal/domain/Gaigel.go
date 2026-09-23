@@ -762,12 +762,6 @@ func (g *Gaigel) GetMarriageIndices(playerIdx int) []int {
 	return out
 }
 
-// CardRankPublic カードランク取得 (テスト用公開メソッド)
-func (g *Gaigel) CardRankPublic(card *Card) int { return GaigelRankOrder(card) }
-
-// CardPointsPublic カード得点取得 (テスト用公開メソッド)
-func (g *Gaigel) CardPointsPublic(card *Card) int { return GaigelCardPoints(card) }
-
 // --- Hints ---
 
 // GetHint 人間プレイヤー (idx 0) へのヒントを取得する
@@ -1004,21 +998,6 @@ func (g *Gaigel) sortHand(p *GaigelPlayer) {
 }
 
 // --- Test-only helpers ---
-
-// AddRoundPointsForTest adds card points to a team for the current round (テスト用)。
-func (g *Gaigel) AddRoundPointsForTest(team, pts int) {
-	if team >= 0 && team < GaigelTeamCnt {
-		g.roundPoints[team] += pts
-	}
-}
-
-// RebeginRoundForTest re-deals and re-enters the play phase (テスト用)。
-func (g *Gaigel) RebeginRoundForTest() {
-	for _, p := range g.players {
-		p.ResetRound()
-	}
-	g.beginRound()
-}
 
 // GetConfigDeckHelper returns a fresh 48-card Gaigel deck (テスト用コンストラクタ補助)。
 func (g *Gaigel) GetConfigDeckHelper() *TrumpCards { return newGaigelDeck() }

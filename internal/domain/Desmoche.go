@@ -784,21 +784,6 @@ func (d *Desmoche) GetConfig() DesmocheConfig { return d.config }
 // SetConfig はゲーム設定をセットする。
 func (d *Desmoche) SetConfig(c DesmocheConfig) { d.config = c }
 
-// SetPhaseForTest はテスト用にフェーズを差し替える。
-func (d *Desmoche) SetPhaseForTest(p DesmochePhase) { d.phase = p }
-
-// SetCurrentPlayerForTest はテスト用に手番を差し替える。
-func (d *Desmoche) SetCurrentPlayerForTest(idx int) { d.currentIdx = idx }
-
-// SetStockForTest はテスト用に山札を差し替える。
-func (d *Desmoche) SetStockForTest(cards []*Card) { d.stock = cards }
-
-// SetDiscardForTest はテスト用に捨て札を差し替える。
-func (d *Desmoche) SetDiscardForTest(cards []*Card) { d.discard = cards }
-
-// SetRoundNumberForTest はテスト用にラウンド数を差し替える。
-func (d *Desmoche) SetRoundNumberForTest(n int) { d.roundNo = n }
-
 // addLog は棋譜に 1 件追加する。
 func (d *Desmoche) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	d.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
