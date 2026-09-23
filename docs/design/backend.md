@@ -148,7 +148,8 @@ classDiagram
         +int TurnNumber
         +int PlayerIdx
         +string ActionType
-        +string Detail
+        +string DetailCode
+        +map[string]string DetailParams
         +[]*Card Cards
     }
 
@@ -209,7 +210,10 @@ classDiagram
 classDiagram
     class BlackJack {
         -trumpCards *TrumpCards
-        -players []*BlackJackPlayer
+        -player *BlackJackPlayer
+        -dealer *BlackJackPlayer
+        -playerHands []*BlackJackHand
+        -cpuPlayers []*BlackJackCpuSeat
         -config BlackJackConfig
         -phase int
         +Reset()
@@ -225,24 +229,29 @@ classDiagram
     }
 
     class BlackJackPlayer {
-        -hands []*BlackJackHand
-        -cpuSeat *BlackJackCpuSeat
+        +GetScore() int
+        +IsSoft() bool
     }
 
     class BlackJackHand {
-        +[]*Card Cards
-        +int Bet
-        +bool IsStand
-        +bool IsBusted
+        -cards []*Card
+        -bet int
+        -stood bool
+        -doubled bool
+        -busted bool
+        -surrendered bool
+        -fromSplit bool
     }
 
     class BlackJackConfig {
-        +int DeckCount
-        +bool AllowDoubleDown
-        +bool AllowSplit
-        +bool AllowInsurance
-        +bool AllowSurrender
-        +bool AllowEarlySurrender
+        +bool DealerHitsSoft17
+        +int CpuPlayerCount
+        +bool CountingEnabled
+        +bool DoubleAfterSplit
+        +int CountingSystem
+        +int DeckPenetration
+        +int SurrenderRule
+        +BlackJackVariantName Variant
     }
 
     class Poker {
@@ -288,18 +297,15 @@ classDiagram
 
     class VideoPokerVariantConfig {
         +string Name
-        +int DeckSize
-        +bool UseJoker
+        +int JokerCount
         +func IsWild func(*Card) bool
-        +func EvalHand func([]*Card) (int, string)
-        +func PayTable func(int, int) int
-        +func MinQualifying func(int) bool
+        +func GetResult func([]*Card, int) (int, int, string)
     }
 
-    BlackJack --> "*" BlackJackPlayer
+    BlackJack --> "2" BlackJackPlayer
     BlackJack --> "1" BlackJackConfig
     BlackJackPlayer --|> GamePlayer
-    BlackJackPlayer --> "*" BlackJackHand
+    BlackJack --> "*" BlackJackHand
     BlackJackPlayer --> "1" ChipHolder
     Poker --> "*" PokerPlayer
     class ThreeCard {
@@ -751,14 +757,18 @@ classDiagram
     }
 
     class HoldemPlayer {
-        +[]*Card HoleCards
-        +int HandRank
-        +string HandName
+        -isHuman bool
+        -bestHand []*Card
+        -handRank int
+        -playStyle HoldemPlayStyle
     }
 
     class BettingState {
-        +int CurrentBet
-        +[]*SidePot SidePots
+        +int Pot
+        +int LastBet
+        +int MinRaise
+        +int RaiseCount
+        +[]bool ActedFlags
     }
 
     class SidePot {
@@ -768,7 +778,6 @@ classDiagram
 
     Holdem --> "*" HoldemPlayer
     Holdem --> "1" BettingState
-    BettingState --> "*" SidePot
     HoldemPlayer --|> GamePlayer
     HoldemPlayer --> "1" ChipHolder
     Omaha --> "*" OmahaPlayer
@@ -798,8 +807,8 @@ classDiagram
         -config PineappleConfig
         -communityCards []*Card
         -phase int
-        -isDiscardPhase bool
-        -discardDone bool
+        -discardAfterFlopBetting bool
+        -discardDone []bool
         +Reset()
         +PlayerAction(action int, amount int, humanPlayMs int) error
         +DiscardCard(cardIdx int) error
@@ -975,7 +984,7 @@ classDiagram
     }
 
     class SpeedConfig {
-        +int HandSize
+        +SpeedCpuDifficulty CpuDifficulty
     }
 
     OldMaid --> "*" OldMaidPlayer
@@ -1008,7 +1017,6 @@ classDiagram
 
     class GoFishConfig {
         +GoFishCpuDifficulty CpuDifficulty
-        +bool CpuMetaAI
     }
 
     GoFish --> "4" GoFishPlayer
@@ -1111,7 +1119,8 @@ classDiagram
     }
 
     class PigsTailPlayer {
-        -penaltyCards []*Card
+        +MarshalJSON() ([]byte, error)
+        +UnmarshalJSON(data []byte) error
     }
 
     PigsTail --> "4" PigsTailPlayer
@@ -1159,7 +1168,10 @@ classDiagram
         -config SevenCardStudConfig
         -phase int
         -pot int
-        -bettingState BettingState
+        -lastBet int
+        -minRaise int
+        -raiseCount int
+        -actedFlags []bool
         -dealerIdx int
         -currentTurn int
         -bringInPlayerIdx int
@@ -1175,10 +1187,11 @@ classDiagram
     }
 
     class SevenCardStudPlayer {
-        +[]*Card HoleCards
-        +[]*Card DoorCards
-        +int HandRank
-        +string HandName
+        -isHuman bool
+        -holeCards []*Card
+        -doorCards []*Card
+        -bestHand []*Card
+        -handRank int
     }
 
     class SevenCardStudConfig {
@@ -1213,7 +1226,8 @@ classDiagram
         -foundation [4][]*Card
         -stock []*Card
         -waste []*Card
-        -config KlondikeConfig
+        -drawCount int
+        -scoringMode KlondikeScoringMode
         -phase KlondikePhase
         -history []*klondikeSnapshot
         +Reset()
@@ -1256,9 +1270,9 @@ classDiagram
     class Spider {
         -trumpCards *TrumpCards
         -tableau [10][]*SpiderTableauCard
-        -foundation [][]*Card
+        -completedSuits int
         -stock []*Card
-        -config SpiderConfig
+        -difficulty SpiderDifficulty
         -phase SpiderPhase
         -history []*spiderSnapshot
         +Reset()
@@ -1296,7 +1310,7 @@ classDiagram
 
     class TriPeaks {
         -trumpCards *TrumpCards
-        -tableau [4][]*TriPeaksCard
+        -layout [TriPeaksRowCnt][TriPeaksColCnt]*TriPeaksCard
         -stock []*Card
         -waste []*Card
         -phase TriPeaksPhase
@@ -1337,8 +1351,7 @@ classDiagram
         -phase DurakPhase
         -trumpSuit int
         -trumpCard *Card
-        -tableAttack []*Card
-        -tableDefense []*Card
+        -tablePairs []*DurakTablePair
         +Reset()
         +PlayerAttack(cardIdx int) error
         +PlayerDefend(attackIdx int, handIdx int) error
@@ -1379,7 +1392,7 @@ classDiagram
     class ClockSolitaire {
         -trumpCards *TrumpCards
         -piles [13][]*ClockSolitaireCard
-        -currentPileIdx int
+        -currentCard *Card
         -stepCount int
         -phase ClockSolitairePhase
         +Reset()
@@ -1441,7 +1454,8 @@ classDiagram
     class MemoryBoardCard {
         +*Card Card
         +bool FaceUp
-        +bool Matched
+        +bool Taken
+        +bool Visited
     }
 
     class ClockSolitaireCard {
