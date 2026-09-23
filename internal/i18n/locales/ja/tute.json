@@ -38,7 +38,8 @@
   "log.marriage": "{{name}} が {{suit}} の結婚を宣言しました（+{{points}}）",
   "log.tute": "{{name}} が TUTE を宣言！ チーム{{team}}がゲームに勝利しました！",
   "log.play": "{{name}} が {{card}} をプレイしました",
-  "log.trickWin": "{{name}} が {{trick}} トリックに勝ちました（+{{points}}{{bonus}}）",
+  "log.trickWin": "{{name}} が {{trick}} トリックに勝ちました（+{{points}}）",
+  "log.trickWinLast": "{{name}} が {{trick}} トリックに勝ちました（+{{points}} +{{lastBonus}} ラストトリック）",
   "log.roundScore": "ラウンド {{round}}: チームA={{teamA}}（+{{pointsA}}）、チームB={{teamB}}（+{{pointsB}}）",
   "log.gameEnd": "チーム{{team}}がゲームに勝利しました！"
 }

@@ -32,7 +32,8 @@
   "log.declarationTrappola": "{{name}} が {{suit}} のトラッポラを宣言（{{thirds}}/3点）",
   "log.declarationFour": "{{name}} が {{rank}} 4枚を宣言（{{thirds}}/3点）",
   "log.declarationThree": "{{name}} が {{rank}} 3枚を宣言（{{thirds}}/3点）",
-  "log.trickWin": "{{name}} がトリック {{trick}} に勝利（{{thirds}}/3{{bonus}}）",
+  "log.trickWin": "{{name}} がトリック {{trick}} に勝利（{{thirds}}/3）",
+  "log.trickWinLast": "{{name}} がトリック {{trick}} に勝利（{{thirds}}/3 +ラストトリック）",
   "log.roundScore": "ラウンド {{round}}: TeamA={{teamAScore}}（+{{teamAThirds}}/3）、TeamB={{teamBScore}}（+{{teamBThirds}}/3）",
   "log.gameEnd": "Team {{team}} がゲームに勝利！",
   "log.play": "{{name}} が {{card}} を出す"

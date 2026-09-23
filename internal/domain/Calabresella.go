@@ -533,13 +533,16 @@ func (g *Calabresella) ResolveTrick() {
 		thirds += calabresellaThirds(tc.Card.GetValue())
 	}
 	g.players[winnerIdx].AddTrick(trickCards)
-	bonus := ""
 	if g.trickNumber >= CalabresellaTrickCount {
 		thirds += CalabresellaUltimaThirds
-		bonus = " +ultima"
 	}
 	g.roundThirds[winnerIdx] += thirds
-	g.appendLog(winnerIdx, "trick_win", "calabresella.log.trickWin", map[string]string{"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber), "points": strconv.Itoa(thirds), "bonus": bonus}, trickCards)
+	params := map[string]string{"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber), "points": strconv.Itoa(thirds)}
+	if g.trickNumber >= CalabresellaTrickCount {
+		g.appendLog(winnerIdx, "trick_win", "calabresella.log.trickWinLast", params, trickCards)
+	} else {
+		g.appendLog(winnerIdx, "trick_win", "calabresella.log.trickWin", params, trickCards)
+	}
 
 	g.leadPlayerIdx = winnerIdx
 	// **どのトリックの勝者も憶えておく。** 以前は最終トリックのぶんしか入れて

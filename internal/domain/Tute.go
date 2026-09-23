@@ -15,7 +15,6 @@ package domain
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"math/rand"
 	"sort"
 	"strconv"
@@ -314,12 +313,14 @@ func (g *Tute) ResolveTrick() {
 	g.players[winnerIdx].AddTrick(trickCards)
 	team := TuteTeamOf(winnerIdx)
 	g.roundTeamPts[team] += pts
-	bonus := ""
+	params := map[string]string{"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber), "points": strconv.Itoa(pts)}
 	if g.trickNumber >= TuteTrickCount {
 		g.roundTeamPts[team] += TuteLastTrickBonus
-		bonus = fmt.Sprintf(" +%d last", TuteLastTrickBonus)
+		params["lastBonus"] = strconv.Itoa(TuteLastTrickBonus)
+		g.appendLog(winnerIdx, "trick_win", "tute.log.trickWinLast", params, trickCards)
+	} else {
+		g.appendLog(winnerIdx, "trick_win", "tute.log.trickWin", params, trickCards)
 	}
-	g.appendLog(winnerIdx, "trick_win", "tute.log.trickWin", map[string]string{"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber), "points": strconv.Itoa(pts), "bonus": bonus}, trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	// Keep currentTrick intact through TrickEnd so the resolved trick stays

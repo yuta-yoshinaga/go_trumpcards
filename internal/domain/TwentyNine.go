@@ -405,12 +405,14 @@ func (g *TwentyNine) ResolveTrick() {
 	g.players[winnerIdx].AddTrick(trickCards)
 	team := TwentyNineTeamOf(winnerIdx)
 	g.roundTeamPts[team] += pts
-	bonus := ""
+	params := map[string]string{"name": playerName(g.players, winnerIdx), "trick": fmt.Sprint(g.trickNumber), "points": fmt.Sprint(pts)}
 	if g.trickNumber >= TwentyNineTrickCount {
 		g.roundTeamPts[team]++ // 最終トリック +1
-		bonus = " +1 last"
+		params["lastBonus"] = "1"
+		g.appendLog(winnerIdx, "trick_win", "twentynine.log.trickWinLast", params, trickCards)
+	} else {
+		g.appendLog(winnerIdx, "trick_win", "twentynine.log.trickWin", params, trickCards)
 	}
-	g.appendLog(winnerIdx, "trick_win", "twentynine.log.trickWin", map[string]string{"name": playerName(g.players, winnerIdx), "trick": fmt.Sprint(g.trickNumber), "points": fmt.Sprint(pts), "bonus": bonus}, trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= TwentyNineTrickCount {

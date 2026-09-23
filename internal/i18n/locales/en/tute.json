@@ -38,7 +38,8 @@
   "log.marriage": "{{name}} declares a {{suit}} marriage (+{{points}})",
   "log.tute": "{{name}} declares TUTE! Team {{team}} wins the game!",
   "log.play": "{{name}} plays {{card}}",
-  "log.trickWin": "{{name}} wins trick {{trick}} (+{{points}}{{bonus}})",
+  "log.trickWin": "{{name}} wins trick {{trick}} (+{{points}})",
+  "log.trickWinLast": "{{name}} wins trick {{trick}} (+{{points}} +{{lastBonus}} last trick)",
   "log.roundScore": "round {{round}}: Team A={{teamA}} (+{{pointsA}}), Team B={{teamB}} (+{{pointsB}})",
   "log.gameEnd": "Team {{team}} wins the game!"
 }

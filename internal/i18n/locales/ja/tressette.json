@@ -29,7 +29,8 @@
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
   "helpHint": "  h                    助言を表示",
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",
-  "log.trickWin": "{{name}}が{{trick}}トリックに勝利（+{{thirds}}/3{{bonus}}）",
+  "log.trickWin": "{{name}}が{{trick}}トリックに勝利（+{{thirds}}/3）",
+  "log.trickWinLast": "{{name}}が{{trick}}トリックに勝利（+{{thirds}}/3 +ラストトリック）",
   "log.roundScore": "{{round}}ラウンド目: チームA={{teamAScore}}（+{{teamAThirds}}/3）、チームB={{teamBScore}}（+{{teamBThirds}}/3）",
   "log.gameEnd": "チーム{{team}}がゲームに勝利！",
   "log.play": "{{name}}が{{card}}をプレイ"

@@ -325,12 +325,15 @@ func (g *Trappola) ResolveTrick() {
 
 	team := TrappolaTeamOf(winnerIdx)
 	g.teamRoundThirds[team] += thirds
-	bonus := ""
 	if g.trickNumber >= TrappolaTrickCount {
 		g.teamRoundThirds[team] += TrappolaUltimaThirds
-		bonus = " +ultima"
 	}
-	g.appendLog(winnerIdx, "trick_win", "trappola.log.trickWin", map[string]string{"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber), "thirds": strconv.Itoa(thirds), "bonus": bonus}, trickCards)
+	params := map[string]string{"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber), "thirds": strconv.Itoa(thirds)}
+	if g.trickNumber >= TrappolaTrickCount {
+		g.appendLog(winnerIdx, "trick_win", "trappola.log.trickWinLast", params, trickCards)
+	} else {
+		g.appendLog(winnerIdx, "trick_win", "trappola.log.trickWin", params, trickCards)
+	}
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= TrappolaTrickCount {
