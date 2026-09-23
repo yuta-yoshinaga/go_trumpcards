@@ -663,7 +663,9 @@ func resolveStartGame(flagValue string, stderr io.Writer) (string, int, bool) {
 		return v, 0, true
 	}
 	_, _ = fmt.Fprintln(stderr, i18n.Tf("cliUnknownGame", "name", v))
-	if suggestion := cuiutil.SuggestCommand(v, helpSuggestionCandidates(), 2); suggestion != "" {
+	if slices.Contains(builtinSubcommandNames, v) {
+		_, _ = fmt.Fprintf(stderr, "  %s\n", i18n.Tf("cliStartIsSubcommand", "name", v))
+	} else if suggestion := cuiutil.SuggestCommand(v, gameSuggestionCandidates(), 2); suggestion != "" {
 		_, _ = fmt.Fprintf(stderr, "  %s\n", i18n.Tf("didYouMean", "name", suggestion))
 	}
 	// Same one-line recovery hint as the top-level positional-arg path, so a
@@ -778,7 +780,30 @@ func runHelpCommand(args []string, helpText string, stdout, stderr io.Writer) in
 // alias (e.g. `gni` -> `gin`) instead of a far-off canonical name. See
 // issue #1555.
 func helpSuggestionCandidates() []string {
-	capacity := len(ui.GameNames()) + len(builtinSubcommandNames) + len(ui.GameAliases)
+	gameCandidates := gameSuggestionCandidates()
+	capacity := len(gameCandidates) + len(builtinSubcommandNames)
+	seen := make(map[string]struct{}, capacity)
+	out := make([]string, 0, capacity)
+	add := func(name string) {
+		if _, ok := seen[name]; ok {
+			return
+		}
+		seen[name] = struct{}{}
+		out = append(out, name)
+	}
+	for _, name := range gameCandidates {
+		add(name)
+	}
+	for _, name := range builtinSubcommandNames {
+		add(name)
+	}
+	return out
+}
+
+// gameSuggestionCandidates returns the deduplicated set of canonical game
+// names and game aliases accepted by --start.
+func gameSuggestionCandidates() []string {
+	capacity := len(ui.GameNames()) + len(ui.GameAliases)
 	seen := make(map[string]struct{}, capacity)
 	out := make([]string, 0, capacity)
 	add := func(name string) {
@@ -789,9 +814,6 @@ func helpSuggestionCandidates() []string {
 		out = append(out, name)
 	}
 	for _, name := range ui.GameNames() {
-		add(name)
-	}
-	for _, name := range builtinSubcommandNames {
 		add(name)
 	}
 	for alias := range ui.GameAliases {
