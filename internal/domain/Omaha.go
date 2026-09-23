@@ -269,10 +269,11 @@ func (o *Omaha) continueReset() error {
 func (o *Omaha) postBlinds() {
 	postBlindsFor(o.players, o.dealerIdx, o.config.SmallBlind, o.config.BigBlind, &o.pot, &o.lastBet, o.actedFlags,
 		func(playerIdx int, label string, amount int) {
-			o.appendLog(playerIdx, "blind", "omaha.log.blind", map[string]string{
-				"label":  label,
-				"amount": strconv.Itoa(amount),
-			}, nil)
+			code := "omaha.log.smallBlind"
+			if label == "big blind" {
+				code = "omaha.log.bigBlind"
+			}
+			o.appendLog(playerIdx, "blind", code, map[string]string{"amount": strconv.Itoa(amount)}, nil)
 		})
 }
 

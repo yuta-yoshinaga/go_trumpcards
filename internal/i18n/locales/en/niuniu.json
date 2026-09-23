@@ -15,5 +15,7 @@
   "rankN": "Niu {{n}}",
   "bankerResult": "Banker: {{rank}}",
   "log.deal": "Move: ",
-  "log.result": "banker: {{rank}}"
+  "log.resultNone": "banker: No Niu",
+  "log.resultNiuNiu": "banker: Niu Niu",
+  "log.resultN": "banker: Niu {{n}}"
 }

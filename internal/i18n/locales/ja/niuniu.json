@@ -15,5 +15,7 @@
   "rankN": "牛{{n}}",
   "bankerResult": "親: {{rank}}",
   "log.deal": "全員に5枚ずつ配った",
-  "log.result": "親: {{rank}}"
+  "log.resultNone": "親: 無牛",
+  "log.resultNiuNiu": "親: 牛牛",
+  "log.resultN": "親: 牛{{n}}"
 }

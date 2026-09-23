@@ -428,6 +428,16 @@ func TestGleek_MeldsPayEachOpponentAndMournivalDoublesTheGleek(t *testing.T) {
 	assert.Equal(t, 2*2-3, scores[1], "J マーニヴァルで +4、K グリークに -3")
 	assert.Equal(t, -3-2, scores[2])
 	assert.Zero(t, gleekSum(scores))
+	seen := map[string]bool{}
+	for _, entry := range g.GetActionLog() {
+		if entry.DetailCode == "gleek.log.meld" {
+			seen[entry.DetailParams["meldKey"]+entry.DetailParams["rankKey"]] = true
+			assert.NotContains(t, entry.DetailParams, "meld")
+			assert.NotContains(t, entry.DetailParams, "rank")
+		}
+	}
+	assert.True(t, seen["gleek.meldLabelGleekgleek.rankKing"])
+	assert.True(t, seen["gleek.meldLabelMournivalgleek.rankJack"])
 }
 
 func TestGleek_TwoCardsOfARankAreNotAMeld(t *testing.T) {

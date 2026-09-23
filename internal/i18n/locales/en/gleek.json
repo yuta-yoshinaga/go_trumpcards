@@ -16,6 +16,8 @@
   "ruffOtherLine": "{{name}}: {{total}} in {{suit}}",
   "meldGleek": "Gleek: {{name}} shows three {{rank}} ({{value}} from each opponent)",
   "meldMournival": "Mournival: {{name}} shows four {{rank}} ({{value}} from each opponent)",
+  "meldLabelGleek": "Gleek",
+  "meldLabelMournival": "Mournival",
   "playerLine": "{{name}} ({{role}}): {{cards}} cards  score: {{score}}  tricks: {{tricks}}  points: {{points}}",
   "roleBuyer": "buyer",
   "roleDefender": "opponent",

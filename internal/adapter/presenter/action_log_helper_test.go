@@ -555,6 +555,34 @@ func TestActionLogKeyParamsResolveInBothLanguages(t *testing.T) {
 	assert.NotContains(t, en, "ハイカード")
 }
 
+func TestActionLogStatusKeysResolveInBothLanguages(t *testing.T) {
+	entries := []*domain.ActionLogEntry{
+		{DetailCode: "omaha.log.smallBlind", DetailParams: map[string]string{"amount": "5"}},
+		{DetailCode: "omaha.log.bigBlind", DetailParams: map[string]string{"amount": "10"}},
+		{DetailCode: "indianrummy.log.declareValid", DetailParams: map[string]string{"name": "P1"}},
+		{DetailCode: "indianrummy.log.declareInvalid", DetailParams: map[string]string{"name": "P1"}},
+		{DetailCode: "calabresella.log.roundScoreWon", DetailParams: map[string]string{"round": "1", "name": "P1", "points": "20", "stake": "1"}},
+		{DetailCode: "calabresella.log.roundScoreLost", DetailParams: map[string]string{"round": "2", "name": "P1", "points": "10", "stake": "2"}},
+		{DetailCode: "courtpiece.log.roundScore", DetailParams: map[string]string{"team": "0", "labelKey": "courtpiece.sar", "tricks": "7", "points": "1", "total": "1"}},
+		{DetailCode: "gleek.log.meld", DetailParams: map[string]string{"name": "P1", "meldKey": "gleek.meldLabelGleek", "rankKey": "gleek.rankAce", "value": "3"}},
+		{DetailCode: "niuniu.log.resultN", DetailParams: map[string]string{"n": "7"}},
+	}
+	t.Cleanup(func() { i18n.SetLang("ja") })
+	i18n.SetLang("ja")
+	ja := actionLogToText(entries)
+	for _, want := range []string{"スモールブラインド", "成立", "勝利", "サール", "グリーク", "エース", "牛7"} {
+		assert.Contains(t, ja, want)
+	}
+	for _, raw := range []string{"small blind", "valid", "wins", "Sar", "aces", "n7"} {
+		assert.NotContains(t, ja, raw)
+	}
+	i18n.SetLang("en")
+	en := actionLogToText(entries)
+	for _, want := range []string{"small blind", "valid", "wins", "Sar", "aces", "Niu 7"} {
+		assert.Contains(t, en, want)
+	}
+}
+
 func TestActionLogDetailCodeIsRenderedAsTranslatedText(t *testing.T) {
 	defer i18n.SetLang("ja")
 	i18n.SetLang("ja")

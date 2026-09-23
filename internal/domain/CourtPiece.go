@@ -370,12 +370,12 @@ func (c *CourtPiece) ScoreRound() {
 		c.callerIdx = (c.callerIdx + 1) % CourtPiecePlayerCnt
 	}
 
-	label := "Sar"
+	labelKey := "courtpiece.sar"
 	if isCourt {
-		label = "Court"
+		labelKey = "courtpiece.court"
 	}
 	c.appendLog(-1, "round_score", "courtpiece.log.roundScore", map[string]string{
-		"team": strconv.Itoa(winningTeam), "label": label, "tricks": strconv.Itoa(teamTricks[winningTeam]),
+		"team": strconv.Itoa(winningTeam), "labelKey": labelKey, "tricks": strconv.Itoa(teamTricks[winningTeam]),
 		"points": strconv.Itoa(delta), "total": strconv.Itoa(c.teamScores[winningTeam]),
 	}, nil)
 

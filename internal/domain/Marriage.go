@@ -395,11 +395,11 @@ func (g *Marriage) applyDeclare(cardIndex int) error {
 	cards := marriageCollectCards(player)
 	g.declarationValid = MarriageValidateDeclaration(cards, g.wildRank)
 
-	status := "valid"
+	code := "marriage.log.declareValid"
 	if !g.declarationValid {
-		status = "invalid"
+		code = "marriage.log.declareInvalid"
 	}
-	g.appendLog(g.currentPlayerIdx, "declare", "marriage.log.declare", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "status": status}, nil)
+	g.appendLog(g.currentPlayerIdx, "declare", code, map[string]string{"name": playerName(g.players, g.currentPlayerIdx)}, nil)
 
 	g.enterRoundEnd()
 	return nil
