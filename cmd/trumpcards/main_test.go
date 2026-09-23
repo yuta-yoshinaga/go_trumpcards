@@ -24,6 +24,31 @@ func init() {
 	i18n.SetLang("ja")
 }
 
+func TestHelpCommandTrailingLang(t *testing.T) {
+	tests := []struct {
+		name string
+		args []string
+		want string
+	}{
+		{name: "separate lang argument", args: []string{"help", "--lang", "en"}, want: "USAGE:"},
+		{name: "equals lang argument", args: []string{"help", "--lang=en"}, want: "USAGE:"},
+		{name: "leading Japanese lang", args: []string{"--lang", "ja", "help"}, want: "使い方:"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			originalLang := i18n.Lang()
+			t.Cleanup(func() { i18n.SetLang(originalLang) })
+			stdout, _, exit := runCLI(t, tt.args...)
+			if exit != 0 {
+				t.Fatalf("runCLI(%v) exit = %d, want 0", tt.args, exit)
+			}
+			if !strings.HasPrefix(stdout, tt.want) {
+				t.Errorf("runCLI(%v) stdout prefix = %q, want %q; full output: %q", tt.args, firstLine(stdout), tt.want, stdout)
+			}
+		})
+	}
+}
+
 func TestHasHelpFlag(t *testing.T) {
 	tests := []struct {
 		name string
