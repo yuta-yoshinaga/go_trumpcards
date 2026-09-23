@@ -148,12 +148,13 @@ func realtimeLegendLines(mapping map[rune]string) []string {
 // realtimeCuiCore drives the realtime CUI loop without touching the
 // terminal or starting goroutines. Tests feed deterministic key/tick
 // channels; the production runner wires raw stdin and a time.Ticker on
-// top. Loop exits when the keys channel closes (stdin EOF), the quit
-// channel closes (signal received), or a key maps to realtimeQuitCommand.
+// top. Loop exits when the keys channel closes (stdin EOF, returns 0), the
+// quit channel delivers an exit code (a signal was received), Ctrl+C (0x03)
+// is read (returns 130), or a key maps to realtimeQuitCommand (returns 0).
 //
 // The initial reset ("r") is dispatched once on entry so the player sees
 // a fresh game without having to type anything.
-func realtimeCuiCore(execer CuiExecer, keys <-chan rune, ticks <-chan struct{}, quit <-chan struct{}, w io.Writer, mapping map[rune]string) {
+func realtimeCuiCore(execer CuiExecer, keys <-chan rune, ticks <-chan struct{}, quit <-chan int, w io.Writer, mapping map[rune]string) int {
 	writeRealtimeOutput(w, execer.Exec("r"))
 	for {
 		select {
@@ -161,14 +162,19 @@ func realtimeCuiCore(execer CuiExecer, keys <-chan rune, ticks <-chan struct{}, 
 			if !ok {
 				// stdin closed: nobody can quit interactively; exit so
 				// the production loop can restore the terminal.
-				return
+				return 0
+			}
+			if k == 0x03 {
+				// Raw mode delivers Ctrl+C as byte 0x03 instead of SIGINT, so report
+				// the SIGINT exit code (issue #8009).
+				return posixSignalExitCode(os.Interrupt)
 			}
 			cmd, mapped := mapping[k]
 			if !mapped {
 				continue
 			}
 			if cmd == realtimeQuitCommand {
-				return
+				return 0
 			}
 			if cmd == realtimeHelpCommand {
 				// Loop-level, not a game action: the 200 ms tick scrolls the
@@ -189,8 +195,8 @@ func realtimeCuiCore(execer CuiExecer, keys <-chan rune, ticks <-chan struct{}, 
 				continue
 			}
 			writeRealtimeOutput(w, execer.Exec(realtimeTickCommand))
-		case <-quit:
-			return
+		case code := <-quit:
+			return code
 		}
 	}
 }
@@ -210,10 +216,9 @@ func writeRealtimeOutput(w io.Writer, out string) {
 // stdio), it falls back to the standard line-mode loop so non-interactive
 // scripts keep working.
 //
-// Returns 0 on normal exit and the line-mode loop's code (0 normally, 1 on
-// non-EOF stdin error — issue #1839) when it falls back. The realtime loop
-// itself only exits on user quit / signal / stdin EOF, all of which are
-// clean shutdowns.
+// Returns 0 on user quit or stdin EOF, 130 on Ctrl+C/SIGINT, 143 on SIGTERM,
+// and 1 on a non-EOF stdin error (issue #1839). When it falls back to line
+// mode, it returns that loop's exit code.
 //
 // Signal handling is local rather than via the package-level
 // setupSignalHandler — the latter calls os.Exit on SIGINT/SIGTERM, which
@@ -245,10 +250,10 @@ func RunRealtimeCuiLoop(gameName string, controller CuiExecer, helpLines []strin
 	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
 	defer signal.Stop(sigCh)
 
-	quit := make(chan struct{})
+	quit := make(chan int, 1)
 	go func() {
-		<-sigCh
-		close(quit)
+		s := <-sigCh
+		quit <- posixSignalExitCode(s)
 	}()
 
 	keys := make(chan rune)
@@ -280,7 +285,7 @@ func RunRealtimeCuiLoop(gameName string, controller CuiExecer, helpLines []strin
 		}
 	}()
 
-	realtimeCuiCore(controller, keys, ticks, quit, os.Stdout, SlapjackRealtimeKeyMap)
+	exitCode := realtimeCuiCore(controller, keys, ticks, quit, os.Stdout, SlapjackRealtimeKeyMap)
 	close(done)
 	// Pick up any non-EOF stdin error the reader recorded before the keys
 	// channel closed. Non-blocking: EOF / signal exits leave errCh empty.
@@ -293,7 +298,7 @@ func RunRealtimeCuiLoop(gameName string, controller CuiExecer, helpLines []strin
 	default:
 	}
 	fmt.Println(i18n.T("bye"))
-	return 0
+	return exitCode
 }
 
 // readRealtimeKeys reads single bytes from r and forwards them as runes.
