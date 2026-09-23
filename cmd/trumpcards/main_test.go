@@ -1747,12 +1747,11 @@ func TestApplyTrailingGlobalFlags(t *testing.T) {
 			wantLang: "ja",
 		},
 		{
-			name:        "--lang followed by flag token treats it as lang value",
+			name:        "--lang does not consume following flag token",
 			args:        []string{"--lang", "--no-color"},
 			wantRest:    []string{},
-			wantLang:    "ja",  // "--no-color" is not a supported lang, falls back
-			wantNoColor: false, // --no-color was consumed as the lang value, not processed
-			wantWarn:    "--no-color",
+			wantLang:    "ja",
+			wantNoColor: true,
 		},
 		{
 			name:        "--no-color=true disables both streams",
@@ -1812,7 +1811,7 @@ func TestApplyTrailingGlobalFlags(t *testing.T) {
 
 			var stderr bytes.Buffer
 			q := tt.quiet
-			got := applyTrailingGlobalFlags(tt.args, &q, &stderr)
+			got, _, _ := applyTrailingGlobalFlags(tt.args, &q, &stderr)
 
 			if !slices.Equal(got, tt.wantRest) {
 				t.Errorf("rest = %#v, want %#v", got, tt.wantRest)
@@ -1907,7 +1906,7 @@ func TestApplyTrailingGlobalFlags_TrailingQuietPropagates(t *testing.T) {
 			i18n.SetLang("ja")
 			var stderr bytes.Buffer
 			q := tt.startQ
-			rest := applyTrailingGlobalFlags(tt.args, &q, &stderr)
+			rest, _, _ := applyTrailingGlobalFlags(tt.args, &q, &stderr)
 			if q != tt.wantQ {
 				t.Errorf("quiet = %v, want %v", q, tt.wantQ)
 			}
@@ -1922,6 +1921,66 @@ func TestApplyTrailingGlobalFlags_TrailingQuietPropagates(t *testing.T) {
 				t.Errorf("stderr missing %q: got %q", tt.wantWarn, stderr.String())
 			}
 		})
+	}
+}
+
+func TestApplyTrailingGlobalFlagsIssue8012(t *testing.T) {
+	t.Setenv("NO_COLOR", "")
+	origLang := i18n.Lang()
+	t.Cleanup(func() { i18n.SetLang(origLang) })
+	cases := []struct {
+		name      string
+		args      []string
+		quiet     bool
+		wantRest  []string
+		wantLang  string
+		wantError string
+		wantOK    bool
+		wantCode  int
+	}{
+		{name: "invalid trailing color", args: []string{"--color", "bogus"}, wantRest: []string{}, wantLang: "ja", wantError: "無効な --color モード", wantCode: 2},
+		{name: "invalid trailing color under quiet", args: []string{"--color", "bogus"}, quiet: true, wantRest: []string{}, wantLang: "ja", wantError: "無効な --color モード", wantCode: 2},
+		{name: "valid trailing color", args: []string{"--color", "always"}, wantRest: []string{}, wantLang: "ja", wantOK: true},
+		{name: "lang does not consume next flag", args: []string{"--lang", "--category", "solo"}, wantRest: []string{"--category", "solo"}, wantLang: "ja", wantOK: true},
+		{name: "color does not consume next flag", args: []string{"--color", "--category", "solo"}, wantRest: []string{"--category", "solo"}, wantLang: "ja", wantOK: true},
+		{name: "bare color at end is ignored", args: []string{"--color"}, wantRest: []string{}, wantLang: "ja", wantOK: true},
+		{name: "lang value still applies", args: []string{"--lang", "en"}, wantRest: []string{}, wantLang: "en", wantOK: true},
+	}
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			i18n.SetLang("ja")
+			var stderr bytes.Buffer
+			quiet := tt.quiet
+			got, code, ok := applyTrailingGlobalFlags(tt.args, &quiet, &stderr)
+			if ok != tt.wantOK || code != tt.wantCode {
+				t.Errorf("result = (%d, %v), want (%d, %v)", code, ok, tt.wantCode, tt.wantOK)
+			}
+			if !slices.Equal(got, tt.wantRest) {
+				t.Errorf("rest = %#v, want %#v", got, tt.wantRest)
+			}
+			if i18n.Lang() != tt.wantLang {
+				t.Errorf("lang = %q, want %q", i18n.Lang(), tt.wantLang)
+			}
+			if tt.wantError == "" && stderr.Len() != 0 {
+				t.Errorf("stderr = %q, want empty", stderr.String())
+			}
+			if tt.wantError != "" && !strings.Contains(stderr.String(), tt.wantError) {
+				t.Errorf("stderr = %q, want substring %q", stderr.String(), tt.wantError)
+			}
+		})
+	}
+}
+
+func TestRunGamesTrailingFlagsIssue8012(t *testing.T) {
+	t.Setenv("NO_COLOR", "")
+	_, stderr, exit := runCLI(t, "games", "--color", "bogus")
+	if exit != 2 || !strings.Contains(stderr, "無効な --color モード") {
+		t.Errorf("games --color bogus: exit=%d stderr=%q, want exit 2 and color error", exit, stderr)
+	}
+	want, _, wantExit := runCLI(t, "games", "--category", "solo", "--short")
+	got, _, exit := runCLI(t, "games", "--lang", "--category", "solo", "--short")
+	if exit != 0 || wantExit != 0 || got != want {
+		t.Errorf("games --lang --category solo --short: exit=%d output=%q, want exit 0 and solo output %q", exit, got, want)
 	}
 }
 
@@ -2051,8 +2110,7 @@ func TestApplyColorMode(t *testing.T) {
 
 // TestApplyTrailingColorFlag verifies issue #1554: trailing `--color=...` (after
 // the game name) is honored just like `--lang` and `--no-color`. An invalid
-// trailing value is a soft warning rather than an exit-2, because the game has
-// already been resolved and we don't want a typo to abort a launched session.
+// trailing invalid values follow the leading flag behavior and return exit 2.
 func TestApplyTrailingColorFlag(t *testing.T) {
 	origNoColor, hadNoColor := os.LookupEnv("NO_COLOR")
 	defer func() {
@@ -2084,16 +2142,17 @@ func TestApplyTrailingColorFlag(t *testing.T) {
 			wantStdout: true, wantStderr: true,
 		},
 		{
-			name:       "invalid value warns (loud) but does not abort",
+			name:       "invalid value reports error",
 			args:       []string{"--color=rainbow"},
 			wantStdout: true, wantStderr: true, // unchanged
 			wantWarn: "rainbow",
 		},
 		{
-			name:       "invalid value silenced under quiet",
+			name:       "invalid value still reports error under quiet",
 			args:       []string{"--color=rainbow"},
 			quiet:      true,
 			wantStdout: true, wantStderr: true,
+			wantWarn: "rainbow",
 		},
 		// PR #1583 review #3: missing edge cases for trailing --color.
 		{
@@ -2150,7 +2209,7 @@ func TestApplyTrailingColorFlag(t *testing.T) {
 
 			var stderr bytes.Buffer
 			q := tt.quiet
-			rest := applyTrailingGlobalFlags(tt.args, &q, &stderr)
+			rest, _, _ := applyTrailingGlobalFlags(tt.args, &q, &stderr)
 			if len(rest) != 0 {
 				t.Errorf("trailing color flag should be consumed; got rest=%v", rest)
 			}
