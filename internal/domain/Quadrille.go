@@ -1157,11 +1157,11 @@ func quadrilleBidKey(bid QuadrilleBid) string {
 func quadrilleOutcomeKey(o QuadrilleOutcome) string {
 	switch o {
 	case QuadrilleOutcomeSacar:
-		return "quadrille.outcomeShort.sacar"
+		return "quadrille.outcomeSacar"
 	case QuadrilleOutcomePuesta:
-		return "quadrille.outcomeShort.puesta"
+		return "quadrille.outcomePuesta"
 	case QuadrilleOutcomeCodille:
-		return "quadrille.outcomeShort.codille"
+		return "quadrille.outcomeCodille"
 	default:
 		return "quadrille.outcomeNone"
 	}

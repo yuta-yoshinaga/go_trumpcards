@@ -950,11 +950,11 @@ func ombreBidKey(bid OmbreBid) string {
 func ombreOutcomeKey(o OmbreOutcome) string {
 	switch o {
 	case OmbreOutcomeSacar:
-		return "ombre.outcomeShort.sacar"
+		return "ombre.outcomeSacar"
 	case OmbreOutcomePuesta:
-		return "ombre.outcomeShort.puesta"
+		return "ombre.outcomePuesta"
 	case OmbreOutcomeCodille:
-		return "ombre.outcomeShort.codille"
+		return "ombre.outcomeCodille"
 	default:
 		return "ombre.outcomeNone"
 	}
