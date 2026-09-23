@@ -10,6 +10,7 @@
   "roleOmbre": "Ombre",
   "roleCoalition": "Coalition",
   "bidNone": "-",
+  "bidPass": "pass",
   "bidEntrar": "entrar",
   "bidSolo": "solo",
   "suitNone": "-",

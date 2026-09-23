@@ -349,7 +349,7 @@ func (g *Ombre) applyBid(playerIdx int, bid OmbreBid, trumpSuit int) {
 		g.appendLog(playerIdx, "bid_pass", "ombre.log.bidPass", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 	} else {
 		g.bidTrump[playerIdx] = trumpSuit
-		g.appendLog(playerIdx, "bid", "ombre.log.bid", map[string]string{"name": playerName(g.players, playerIdx), "bid": ombreBidName(bid), "trumpKey": trumpKeyOf(trumpSuit)}, nil)
+		g.appendLog(playerIdx, "bid", "ombre.log.bid", map[string]string{"name": playerName(g.players, playerIdx), "bidKey": ombreBidKey(bid), "trumpKey": trumpKeyOf(trumpSuit)}, nil)
 	}
 
 	if g.allBidsActed() {
@@ -408,7 +408,7 @@ func (g *Ombre) finalizeAuction() {
 	if !ombreValidSuit(g.trumpSuit) {
 		g.trumpSuit = g.cpuChooseTrump(ombre)
 	}
-	g.appendLog(ombre, "ombre", "ombre.log.ombre", map[string]string{"name": playerName(g.players, ombre), "bid": ombreBidName(best), "trumpKey": trumpKeyOf(g.trumpSuit)}, nil)
+	g.appendLog(ombre, "ombre", "ombre.log.ombre", map[string]string{"name": playerName(g.players, ombre), "bidKey": ombreBidKey(best), "trumpKey": trumpKeyOf(g.trumpSuit)}, nil)
 	g.startPlay()
 }
 
@@ -588,7 +588,7 @@ func (g *Ombre) enterRoundEnd() {
 		stake = 2
 	}
 	g.appendLog(-1, "round_score", "ombre.log.roundScore", map[string]string{
-		"round": strconv.Itoa(g.roundNumber), "name": playerName(g.players, g.ombreIdx), "outcome": ombreOutcomeName(g.outcome), "stake": strconv.Itoa(stake),
+		"round": strconv.Itoa(g.roundNumber), "name": playerName(g.players, g.ombreIdx), "outcomeKey": ombreOutcomeKey(g.outcome), "stake": strconv.Itoa(stake),
 	}, nil)
 	g.checkGameEnd()
 }
@@ -934,29 +934,29 @@ func ombreSortHand(p *OmbrePlayer, trump int) {
 	}
 }
 
-// ombreBidName ビッドの表示名を返す。
-func ombreBidName(bid OmbreBid) string {
+// ombreBidKey ビッドの i18n キーを返す。
+func ombreBidKey(bid OmbreBid) string {
 	switch bid {
 	case OmbreBidEntrar:
-		return "entrar"
+		return "ombre.bidEntrar"
 	case OmbreBidSolo:
-		return "solo"
+		return "ombre.bidSolo"
 	default:
-		return "pass"
+		return "ombre.bidPass"
 	}
 }
 
-// ombreOutcomeName 結果の表示名を返す。
-func ombreOutcomeName(o OmbreOutcome) string {
+// ombreOutcomeKey 結果の棋譜用 i18n キーを返す。
+func ombreOutcomeKey(o OmbreOutcome) string {
 	switch o {
 	case OmbreOutcomeSacar:
-		return "sacar"
+		return "ombre.outcomeSacar"
 	case OmbreOutcomePuesta:
-		return "puesta"
+		return "ombre.outcomePuesta"
 	case OmbreOutcomeCodille:
-		return "codille"
+		return "ombre.outcomeCodille"
 	default:
-		return "-"
+		return "ombre.outcomeNone"
 	}
 }
 

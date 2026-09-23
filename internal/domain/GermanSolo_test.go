@@ -219,7 +219,7 @@ func TestGermanSolo_BidMustExceedTheStandingBid(t *testing.T) {
 		}
 	}
 	require.NotNil(t, bidLog)
-	assert.Equal(t, map[string]string{"name": "You", "bid": "solo", "trumpKey": "common.suit.heart"}, bidLog.DetailParams)
+	assert.Equal(t, map[string]string{"name": "You", "bidKey": "germansolo.bidSolo", "trumpKey": "common.suit.heart"}, bidLog.DetailParams)
 	assert.Equal(t, []int{int(domain.GermanSoloBidTout)}, g.GetBiddableBids(),
 		"Solo が立っていれば残る選択肢は Tout だけ")
 	// 人間の後は CPU が順に宣言し、全員が喋ると競りが閉じる。

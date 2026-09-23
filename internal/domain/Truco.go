@@ -509,7 +509,7 @@ func (t *Truco) callTruco(caller int) {
 	t.trucoCallerIdx = caller
 	t.responderIdx = 1 - caller
 	t.phase = TrucoPhaseRespond
-	t.appendLog(caller, "truco", "truco.log.truco", map[string]string{"name": playerName(t.players, caller), "level": trucoLevelName(t.pendingLevel)}, nil)
+	t.appendLog(caller, "truco", "truco.log.truco", map[string]string{"name": playerName(t.players, caller), "levelKey": trucoLevelKey(t.pendingLevel)}, nil)
 }
 
 // respond responder が宣言に応答する。
@@ -734,17 +734,17 @@ func (t *Truco) sortAllHands() {
 	}
 }
 
-// trucoLevelName ベッティングレベルの表示名を返す。
-func trucoLevelName(level int) string {
+// trucoLevelKey ベッティングレベルの i18n キーを返す。
+func trucoLevelKey(level int) string {
 	switch level {
 	case TrucoLevelTruco:
-		return "Truco"
+		return "truco.levelTruco"
 	case TrucoLevelRetruco:
-		return "Retruco"
+		return "truco.levelRetruco"
 	case TrucoLevelValeCuatro:
-		return "Vale Cuatro"
+		return "truco.levelValeCuatro"
 	default:
-		return "Truco"
+		return "truco.levelNone"
 	}
 }
 

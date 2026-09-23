@@ -123,7 +123,8 @@ func TestQuadrille_Bidding_WrongPhaseAndSuitRequired(t *testing.T) {
 		require.NoError(t, g.PlayerBid(domain.QuadrilleBidEntrar, domain.CardDesignHeart))
 		entry := findActionLogEntry(t, g.GetActionLog(), "quadrille.log.bid")
 		assert.NotEmpty(t, entry.DetailParams["name"])
-		assert.NotEmpty(t, entry.DetailParams["bid"])
+		assert.Equal(t, "quadrille.bidEntrar", entry.DetailParams["bidKey"])
+		assert.NotContains(t, entry.DetailParams, "bid")
 		assert.Equal(t, "common.suit.heart", entry.DetailParams["trumpKey"])
 	}
 
