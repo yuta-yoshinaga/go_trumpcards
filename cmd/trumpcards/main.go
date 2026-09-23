@@ -585,7 +585,10 @@ func run() int {
 		// command name so `trumpcards <game|subcmd> --lang en` matches the
 		// prepositional form. quiet is passed by pointer because a trailing -q
 		// must update the caller's value. See issues #1509, #4306.
-		trailing := applyTrailingGlobalFlags(flag.Args()[1:], &quiet, os.Stderr)
+		trailing, code, ok := applyTrailingGlobalFlags(flag.Args()[1:], &quiet, os.Stderr)
+		if !ok {
+			return code
+		}
 		if !subFlagCommands[arg] {
 			// `<game> --help` / `<game> -h`: Go's flag package stops parsing at
 			// the first non-flag argument, so these trailing flags land in Args().
@@ -991,10 +994,8 @@ func trailingFlagAny(arg string, names ...string) (inlineVal string, hasInline, 
 // top-level flag exactly: --no-color (or --color=never) beats --color=always
 // regardless of token order, an explicit --color=always beats NO_COLOR, and
 // NO_COLOR beats everything else (issues #1583, #4310). An invalid trailing
-// --color value emits the localized warning but does NOT abort the session —
-// the ambient state is already valid and a late typo shouldn't kill a game
-// that's about to run; applyColorMode's exit code is therefore
-// intentionally discarded here.
+// --color value emits the localized error and returns exit code 2, matching
+// the leading flag behavior (#8012).
 //
 // `--quiet`/`-q` writes through quietPtr so trailing position has the same
 // effect as the leading position — Go's `flag` package stops parsing at the
@@ -1006,10 +1007,10 @@ func trailingFlagAny(arg string, names ...string) (inlineVal string, hasInline, 
 // `<game> --lang xyz -q` and `<game> -q --lang xyz` both suppress the
 // cliUnsupportedLang warning. Without the pre-pass, the single-pass
 // implementation would only suppress when -q appeared first.
-func applyTrailingGlobalFlags(args []string, quietPtr *bool, stderr io.Writer) []string {
+func applyTrailingGlobalFlags(args []string, quietPtr *bool, stderr io.Writer) (rest []string, code int, ok bool) {
 	quiet := resolveTrailingQuiet(args, *quietPtr)
 	*quietPtr = quiet
-	rest := make([]string, 0, len(args))
+	rest = make([]string, 0, len(args))
 	// Accumulate color flags across the entire scan so precedence matches
 	// applyColorMode's documented order rather than depending on which
 	// flag the user wrote last. trailingNoColor stays false unless
@@ -1027,7 +1028,7 @@ func applyTrailingGlobalFlags(args []string, quietPtr *bool, stderr io.Writer) [
 		// --lang / -lang [=value | <next arg>]: value flag.
 		if v, _, bare, ok := trailingFlag(a, "lang"); ok {
 			langVal := v
-			if bare && i+1 < len(args) {
+			if bare && i+1 < len(args) && !strings.HasPrefix(args[i+1], "-") {
 				langVal = args[i+1]
 				i++
 			}
@@ -1065,12 +1066,14 @@ func applyTrailingGlobalFlags(args []string, quietPtr *bool, stderr io.Writer) [
 		// deferred to applyColorMode after the scan for correct precedence.
 		if v, _, bare, ok := trailingFlag(a, "color"); ok {
 			colorVal := v
-			if bare && i+1 < len(args) {
+			if bare && i+1 < len(args) && !strings.HasPrefix(args[i+1], "-") {
 				colorVal = args[i+1]
 				i++
 			}
-			haveTrailingColor = true
-			trailingColor = colorVal
+			if !bare || colorVal != "" {
+				haveTrailingColor = true
+				trailingColor = colorVal
+			}
 			continue
 		}
 
@@ -1095,17 +1098,19 @@ func applyTrailingGlobalFlags(args []string, quietPtr *bool, stderr io.Writer) [
 	// don't change anything" contract — the top-level applyColorMode
 	// already ran in run() at startup and its result must remain.
 	if haveTrailingColor || trailingNoColor {
-		errSink := io.Discard
-		if !quiet {
-			errSink = stderr
-		}
+		// applyColorMode only writes errors here; quiet suppresses warnings above,
+		// never validation errors.
 		mode := trailingColor
 		if !haveTrailingColor {
 			mode = "auto" // --no-color alone with no --color value
 		}
-		_, _ = applyColorMode(mode, trailingNoColor, os.Getenv("NO_COLOR"), os.Stdout.Fd(), os.Stderr.Fd(), errSink)
+		var valid bool
+		code, valid = applyColorMode(mode, trailingNoColor, os.Getenv("NO_COLOR"), os.Stdout.Fd(), os.Stderr.Fd(), stderr)
+		if !valid {
+			return nil, code, false
+		}
 	}
-	return rest
+	return rest, 0, true
 }
 
 // resolveTrailingQuiet pre-scans args for -q / --quiet (and their =BOOL forms)
