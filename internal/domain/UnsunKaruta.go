@@ -410,11 +410,11 @@ func (g *UnsunKaruta) playCard(playerIdx int, card *Card) {
 		"suitKey": "unsunkaruta.suit." + UnsunKarutaSuitName(card.GetDesign()),
 	}
 	detailCode := "unsunkaruta.log.playRank"
-	if rankKey := UnsunKarutaRankName(card.GetValue()); isUnsunKarutaNumber(card.GetValue()) {
+	if rankName := UnsunKarutaRankName(card.GetValue()); isUnsunKarutaNumber(card.GetValue()) {
 		detailCode = "unsunkaruta.log.playNumber"
-		params["value"] = rankKey
+		params["value"] = rankName
 	} else {
-		params["rankKey"] = "unsunkaruta.rank." + rankKey
+		params["rankKey"] = "unsunkaruta.rank." + rankName
 	}
 	g.appendLog(playerIdx, "play", detailCode, params, []*Card{card})
 	if len(g.currentTrick) == UnsunKarutaPlayerCnt {
@@ -864,14 +864,6 @@ func UnsunKarutaRankName(value int) string {
 
 func isUnsunKarutaNumber(value int) bool {
 	return value >= 1 && value <= 9
-}
-
-// UnsunKarutaCardName は棋譜用の短い表記を返す。
-func UnsunKarutaCardName(c *Card) string {
-	if c == nil {
-		return "??"
-	}
-	return UnsunKarutaSuitName(c.GetDesign()) + "-" + UnsunKarutaRankName(c.GetValue())
 }
 
 // sortAllHands は全員の手札を並べ替える。
