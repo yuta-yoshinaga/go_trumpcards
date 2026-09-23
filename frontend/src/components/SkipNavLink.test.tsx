@@ -1,6 +1,16 @@
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { SkipNavLink } from './SkipNavLink';
+
+const originalScrollIntoView = Element.prototype.scrollIntoView;
+
+afterEach(() => {
+  if (originalScrollIntoView) {
+    Element.prototype.scrollIntoView = originalScrollIntoView;
+  } else {
+    Reflect.deleteProperty(Element.prototype, 'scrollIntoView');
+  }
+});
 
 describe('SkipNavLink', () => {
   it('renders a link with the given label and href', () => {
@@ -21,5 +31,30 @@ describe('SkipNavLink', () => {
 
     link.focus();
     expect(link).toHaveFocus();
+  });
+
+  it('focuses and scrolls to the target without changing the URL hash', () => {
+    const scrollIntoView = vi.fn();
+    Element.prototype.scrollIntoView = scrollIntoView;
+    window.history.replaceState(null, '', '/');
+    render(
+      <>
+        <SkipNavLink targetId="content" label="Skip" />
+        <main id="content" tabIndex={-1} />
+      </>,
+    );
+    const initialHash = window.location.hash;
+
+    fireEvent.click(screen.getByRole('link', { name: 'Skip' }));
+
+    expect(screen.getByRole('main')).toHaveFocus();
+    expect(window.location.hash).toBe(initialHash);
+    expect(scrollIntoView).toHaveBeenCalledWith({ block: 'start' });
+  });
+
+  it('does nothing when the target element is missing', () => {
+    render(<SkipNavLink targetId="missing" label="Skip" />);
+
+    expect(() => fireEvent.click(screen.getByRole('link', { name: 'Skip' }))).not.toThrow();
   });
 });
