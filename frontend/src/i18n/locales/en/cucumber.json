@@ -30,6 +30,7 @@
     "lead": "You lead. Any card is legal.",
     "beat": "Play a card higher than {{n}}.",
     "forced": "You cannot beat it, so your lowest card is the only legal play.",
+    "finalTrick": "This is the final trick. Only its winner scores penalty points.",
     "waiting": "Waiting for the other players.",
     "roundEnd": "{{name}} took the last trick and scored {{n}} penalty points."
   },

@@ -56,6 +56,7 @@ func (p *HoneymoonBridgeWebPresenter) buildBase(s interfaces.HoneymoonBridgeGame
 	resObj.LeadPlayerIdx = s.GetLeadPlayerIdx()
 	resObj.DealerIdx = s.GetDealerIdx()
 	resObj.ValidPlays = intSliceOrEmpty(s.GetValidPlayIndices(0))
+	resObj.DrawnIndices = intSliceOrEmpty(s.GetDrawnIndices())
 	resObj.GameEndFlag = s.GetGameEndFlag()
 	resObj.WinnerIdx = s.GetWinnerIdx()
 	resObj.CurrentTrick = trickCardsToOutput(s.GetCurrentTrick())

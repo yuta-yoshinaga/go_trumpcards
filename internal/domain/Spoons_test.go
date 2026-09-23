@@ -113,6 +113,16 @@ func TestSpoons_HumanPassCompletesFourOfAKind(t *testing.T) {
 
 	// 9 (index 3) を渡せば 7 が 4 枚残りフォーオブアカインド成立。
 	require.NoError(t, g.PlayerPass(3))
+	var passLog *ActionLogEntry
+	for _, entry := range g.GetActionLog() {
+		if entry.DetailCode == "spoons.log.pass" {
+			passLog = entry
+			break
+		}
+	}
+	require.NotNil(t, passLog)
+	assert.Equal(t, "spoons.log.pass", passLog.DetailCode)
+	assert.Empty(t, passLog.DetailParams)
 	// 人間がフォーオブアカインドを揃えた瞬間にスプーンを掴み、最初の取得者となる
 	// (どちらも決定的)。
 	assert.Equal(t, 0, g.GetFirstGrabberIdx())

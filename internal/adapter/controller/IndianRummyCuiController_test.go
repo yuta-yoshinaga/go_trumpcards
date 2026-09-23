@@ -125,6 +125,15 @@ func TestIndianRummyCuiController_Exec(t *testing.T) {
 		m.AssertCalled(t, "ActionLog")
 	})
 
+	t.Run("hint", func(t *testing.T) {
+		m := newMock()
+		m.On("Hint").Return("hint output")
+		c := controller.NewIndianRummyCuiController(m)
+		assert.Equal(t, "hint output", c.Exec("h"))
+		assert.Equal(t, "hint output", c.Exec("hint"))
+		m.AssertNumberOfCalls(t, "Hint", 2)
+	})
+
 	t.Run("unknown command", func(t *testing.T) {
 		m := newMock()
 		c := controller.NewIndianRummyCuiController(m)

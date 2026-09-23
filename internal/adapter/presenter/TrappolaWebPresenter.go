@@ -111,6 +111,9 @@ func (p *TrappolaWebPresenter) buildPlayersOutput(g interfaces.TrappolaGame) []*
 // buildMessage ゲーム結果メッセージを構築
 func (p *TrappolaWebPresenter) buildMessage(g interfaces.TrappolaGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {
@@ -125,7 +128,8 @@ func (p *TrappolaWebPresenter) buildMessage(g interfaces.TrappolaGame, lastErr e
 	case domain.TrappolaPhaseTrickEnd:
 		return "", "trappola.trickEnd", nil
 	case domain.TrappolaPhaseRoundEnd:
-		return "", "trappola.roundEnd", nil
+		return "", "trappola.roundBreakdown", trappolaRoundBreakdownParams(
+			g.GetTeamRoundThirds(), g.GetLeadPlayerIdx())
 	}
 	return "", "", nil
 }

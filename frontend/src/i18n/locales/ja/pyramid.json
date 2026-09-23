@@ -37,6 +37,7 @@
   "bestMovesValue": "{{moves}} 手",
   "newBestMoves": "新記録！ {{moves}} 手でクリア",
   "clears": "クリア {{wins}}/{{plays}}",
+  "winRate": "勝率 {{rate}}%",
   "frontendHint": {
     "removeKing": "露出したキングはそのまま除去できます",
     "removePair": "合計13になる露出カードのペアがあります",

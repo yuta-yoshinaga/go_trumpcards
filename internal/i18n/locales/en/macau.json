@@ -35,5 +35,21 @@
   "magicSeven": "  7                    skip the next player",
   "magicEight": "  8                    wild -- choose any suit, playable anytime",
   "magicJack": "  J                    reverse the play direction",
-  "magicNote": "  declare \"Macau!\" when down to your last card (forgetting costs 2 cards)"
+  "magicNote": "  declare \"Macau!\" when down to your last card (forgetting costs 2 cards)",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errCardNotPlayable": "That card cannot be played.",
+  "errSuitOutOfRange": "The suit must be between 1 and 4.",
+  "log.chooseSuit": "{{name}} chooses {{suit}}",
+  "log.declare": "{{name}} declares Macau!",
+  "log.penalty": "{{name}} forgot to declare Macau! (+{{cards}} cards)",
+  "log.handScore": "{{name}}: {{score}} points remaining",
+  "log.roundWin": "{{name}} wins round {{round}} (+{{points}} points)",
+  "log.play": "{{name}} plays {{card}}",
+  "log.drawTwo": "Draw stack is now {{count}}",
+  "log.skip": "Next player is skipped",
+  "log.reverse": "Play direction reversed",
+  "log.takePenalty": "{{name}} takes {{cards}} penalty cards",
+  "log.pass": "{{name}} passes (no cards to draw)",
+  "log.draw": "{{name}} draws a card",
+  "log.gameEnd": "{{name}} wins the game!"
 }

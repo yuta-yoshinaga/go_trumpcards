@@ -43,6 +43,68 @@ func TestNewTrumpCardsPinochle(t *testing.T) {
 	}
 }
 
+func TestPinochleDomainErrorsHaveMessageCodes(t *testing.T) {
+	g := newTestPinochle()
+	g.Reset()
+	g.bidPlayerIdx = 0
+	err := g.PlayerBid(PinochleMinBid - 1)
+	de, ok := err.(*DomainError)
+	if !ok || de.MessageCode() != "pinochle.errBidMinimum" {
+		t.Fatalf("expected pinochle.errBidMinimum, got %T %v", err, err)
+	}
+}
+
+func TestPinochle_TrumpLogUsesSuitKey(t *testing.T) {
+	game := newTestPinochle()
+	game.phase = PinochlePhaseTrump
+
+	if err := game.doCallTrump(0, CardDesignHeart); err != nil {
+		t.Fatalf("doCallTrump failed: %v", err)
+	}
+
+	entry := game.GetActionLog()[0]
+	if got := entry.DetailParams["suitKey"]; got != "common.suit.heart" {
+		t.Fatalf("expected heart suit key, got %q", got)
+	}
+	if _, ok := entry.DetailParams["suit"]; ok {
+		t.Fatal("expected suit parameter to be absent")
+	}
+}
+
+func TestPinochleDomainErrorCallSitesHaveMessageCodes(t *testing.T) {
+	g := newTestPinochle()
+	g.Reset()
+	g.bidPlayerIdx = 1
+	assertPinochleErrorCode(t, g.PlayerBid(PinochleMinBid), "pinochle.errNotHumanTurn")
+	assertPinochleErrorCode(t, g.PlayerPass(), "pinochle.errNotHumanTurn")
+
+	g.bidPlayerIdx = 0
+	g.highestBid = PinochleMinBid
+	g.players[1].SetHasPassed(true)
+	g.players[2].SetHasPassed(true)
+	g.players[3].SetHasPassed(true)
+	assertPinochleErrorCode(t, g.PlayerPass(), "pinochle.errCannotPass")
+
+	g.phase = PinochlePhaseTrump
+	g.currentPlayerIdx = 1
+	assertPinochleErrorCode(t, g.PlayerCallTrump(CardDesignSpade), "pinochle.errNotHumanTurn")
+	g.currentPlayerIdx = 1
+	g.phase = PinochlePhasePlay
+	assertPinochleErrorCode(t, g.PlayerPlay(0), "pinochle.errNotHumanTurn")
+
+	g = setupPlayPhase(t)
+	g.currentTrick = []*TrickCard{{PlayerIdx: 1, Card: NewCard(CardDesignSpade, 7, false)}}
+	assertPinochleErrorCode(t, g.PlayerPlay(2), "pinochle.errCardCannotBePlayed")
+}
+
+func assertPinochleErrorCode(t *testing.T, err error, want string) {
+	t.Helper()
+	de, ok := err.(*DomainError)
+	if !ok || de.MessageCode() != want {
+		t.Fatalf("expected %s, got %T %v", want, err, err)
+	}
+}
+
 // ─── Config ─────────────────────────────────────────────
 
 func TestPinochleConfig_Default(t *testing.T) {

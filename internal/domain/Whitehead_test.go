@@ -855,6 +855,9 @@ func TestWhitehead_ActionLog(t *testing.T) {
 	_ = k.Draw()
 	assert.NotNil(t, k.GetActionLog())
 	assert.Equal(t, 1, len(k.GetActionLog()))
+	entry := k.GetActionLog()[0]
+	assert.Equal(t, "whitehead.log.draw", entry.DetailCode)
+	assert.Nil(t, entry.DetailParams)
 }
 
 func TestWhitehead_MoveWasteToFoundation_DifferentSuit(t *testing.T) {

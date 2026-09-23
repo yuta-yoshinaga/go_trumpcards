@@ -16,5 +16,11 @@
   "result.scores": "ゲーム終了。スコア: {{scores}}",
   "provisional": "{{name}} 暫定: {{score}}枚",
   "provisionalNote": "※ 暫定点はチームの獲得枚数です（あなた＋パートナー）",
-  "helpExamplePlay": "  p 0                      手札の 0 番のカードを出す"
+  "helpExamplePlay": "  p 0                      手札の 0 番のカードを出す",
+  "log.dealtPileCards": "山札から{{count}}枚を配りました",
+  "log.countered": "{{count}}枚を打ち返しました",
+  "log.captured": "{{count}}枚を捕獲しました",
+  "log.playedOntoPile": "場に出しました",
+  "log.lastTake": "最後に取った札: {{count}}枚",
+  "log.gameEnded": "ゲーム終了（最高得点 {{score}}）"
 }

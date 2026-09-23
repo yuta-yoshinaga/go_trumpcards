@@ -89,6 +89,25 @@ describe('RollingStonePage', () => {
     expect(deck).toHaveTextContent('24');
   });
 
+  it('shows the finished count for an active and finished game', async () => {
+    const { unmount } = renderWithProviders(<RollingStonePage />);
+    expect(await screen.findByTestId('rs-finished-count')).toHaveTextContent('上がり 0 / 全 4 人');
+    unmount();
+
+    mockExec.mockResolvedValue(
+      makeState({
+        finishedCnt: 2,
+        gameEndFlag: true,
+        phase: 1,
+        winnerIdx: 0,
+        players: [seat(0, { cardCount: 0, finishedAt: 1 }), seat(1, { cardCount: 0, finishedAt: 2 }), seat(2), seat(3)],
+      }),
+    );
+    renderWithProviders(<RollingStonePage />);
+    expect(await screen.findByTestId('rs-finished-count')).toHaveTextContent('上がり 2 / 全 4 人');
+    expect(screen.getByTestId('rs-result')).toHaveTextContent('あなたの勝ち！');
+  });
+
   // **手札の枚数がそのまま順位。** 得点表示は無い。
   it('shows every hand size and pickup count', async () => {
     mockExec.mockResolvedValue(

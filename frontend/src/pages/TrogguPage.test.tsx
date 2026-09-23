@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { trogguApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeTrogguState } from '../test/stateFactories';
 import { TrogguPage } from './TrogguPage';
@@ -57,20 +58,46 @@ describe('TrogguPage', () => {
   // **今の最高入札を超えられない契約は押せない。**押せてしまうとサーバーに
   // 却下されるだけで、画面は入札のまま何も変わらない (#5808)。トロワ(1) <
   // ソロ(2) < ピッコロ(3) < ミゼール(4) で、`bid <= highestBid` は却下される。
-  it('disables the contracts that cannot beat the current highest bid', async () => {
+  it('keeps losing bids focusable and explains why they cannot be selected', async () => {
     mockExec.mockResolvedValue(makeTrogguState({ highestBid: 2 }));
     renderWithProviders(<TrogguPage />);
 
-    // ソロ(2) 以下は却下される。
-    expect(await screen.findByTestId('tg-bid-trois')).toBeDisabled();
-    expect(screen.getByTestId('tg-bid-solo')).toBeDisabled();
+    // ソロ(2) 以下はフォーカス可能なまま、aria-disabled で却下対象を示す。
+    const trois = await screen.findByTestId('tg-bid-trois');
+    const solo = screen.getByTestId('tg-bid-solo');
+    expect(trois).not.toBeDisabled();
+    expect(trois).toHaveAttribute('aria-disabled', 'true');
+    expect(solo).not.toBeDisabled();
+    expect(solo).toHaveAttribute('aria-disabled', 'true');
+
+    const describedBy = solo.getAttribute('aria-describedby');
+    expect(describedBy).toBeTruthy();
+    const reason = document.getElementById(describedBy ?? '');
+    expect(reason).toBeInTheDocument();
+    expect(reason).toHaveTextContent('この契約では今の最高入札（ソロ（92点以上））を超えられません');
+
+    // 負の対照: aria-disabled はクリックを自動抑止しないので、明示的に門番する。
+    mockExec.mockClear();
+    fireEvent.click(solo);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+
     // 上回る契約は押せる。
-    expect(screen.getByTestId('tg-bid-piccolo')).toBeEnabled();
-    expect(screen.getByTestId('tg-bid-misere')).toBeEnabled();
+    const piccolo = screen.getByTestId('tg-bid-piccolo');
+    const misere = screen.getByTestId('tg-bid-misere');
+    expect(piccolo).toBeEnabled();
+    expect(piccolo).not.toHaveAttribute('aria-disabled');
+    expect(piccolo).not.toHaveAttribute('aria-describedby');
+    expect(misere).toBeEnabled();
+    expect(misere).not.toHaveAttribute('aria-disabled');
+    expect(misere).not.toHaveAttribute('aria-describedby');
+    fireEvent.click(piccolo);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', { bid: 'piccolo' }));
+
     // パスはいつでも押せる。
     expect(screen.getByTestId('tg-pass')).toBeEnabled();
     // 理由が読める (押せない理由が画面に無いと、ただ壊れて見える)。
-    expect(screen.getByTestId('tg-bid-solo').getAttribute('title') ?? '').not.toBe('');
+    expect(solo.getAttribute('title') ?? '').not.toBe('');
   });
 
   // 負のコントロール: 誰も入札していなければ 4 契約すべて押せる。
@@ -78,7 +105,10 @@ describe('TrogguPage', () => {
     mockExec.mockResolvedValue(makeTrogguState({ highestBid: 0 }));
     renderWithProviders(<TrogguPage />);
     for (const c of ['trois', 'solo', 'piccolo', 'misere']) {
-      expect(await screen.findByTestId(`tg-bid-${c}`)).toBeEnabled();
+      const button = await screen.findByTestId(`tg-bid-${c}`);
+      expect(button).toBeEnabled();
+      expect(button).not.toHaveAttribute('aria-disabled');
+      expect(button).not.toHaveAttribute('aria-describedby');
     }
   });
 

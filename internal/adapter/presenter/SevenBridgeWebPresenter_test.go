@@ -128,6 +128,12 @@ func TestSevenBridgeWebPresenter_Output(t *testing.T) {
 		out := unmarshalSevenBridge(t, p.Output(m, errors.New("boom")))
 		assert.Equal(t, "boom", out.Message)
 	})
+	t.Run("coded error", func(t *testing.T) {
+		m, _ := setupSevenBridgeWebMockWithPlayers()
+		out := unmarshalSevenBridge(t, p.Output(m, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "sevenbridge.errInvalidMeld", nil)))
+		assert.Empty(t, out.Message)
+		assert.Equal(t, "sevenbridge.errInvalidMeld", out.MessageCode)
+	})
 
 	t.Run("game end message", func(t *testing.T) {
 		m, _ := setupSevenBridgeWebMockWithPlayers()
@@ -159,7 +165,7 @@ func TestSevenBridgeWebPresenter_ActionLogOutput(t *testing.T) {
 
 	m := new(interfaces.MockSevenBridgeGame)
 	entries := []*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "draw_stock", Detail: "You draws from stock"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "draw_stock", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	}
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return(entries)

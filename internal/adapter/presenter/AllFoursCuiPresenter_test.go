@@ -34,6 +34,7 @@ func setupAllFoursCuiMock() *interfaces.MockAllFoursGame {
 	m.On("GetLeadPlayerIdx").Return(-1)
 	m.On("GetConfig").Return(domain.DefaultAllFoursConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	m.On("GetValidPlayIndices", mock.Anything).Return([]int(nil)).Maybe()
 	return m
 }
 
@@ -77,6 +78,43 @@ func TestAllFoursCuiPresenter_Output_Play(t *testing.T) {
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "手番: あなた")
+}
+
+func TestAllFoursCuiPresenter_MarksLegalPlays(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.AllFoursCuiPresenter)
+
+	t.Run("one legal card", func(t *testing.T) {
+		m, players := setupAllFoursCuiMockWithPlayers()
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+		m.On("GetPhase").Return(domain.AllFoursPhasePlay)
+		m.On("GetValidPlayIndices", 0).Return([]int{0})
+		out := p.Output(m, nil)
+		assert.Contains(t, out, "[0] の札が合法手です。")
+	})
+
+	t.Run("multiple legal cards", func(t *testing.T) {
+		m, players := setupAllFoursCuiMockWithPlayers()
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetValidPlayIndices")
+		m.On("GetPhase").Return(domain.AllFoursPhasePlay)
+		m.On("GetValidPlayIndices", 0).Return([]int{0, 1})
+		out := p.Output(m, nil)
+		assert.Contains(t, out, "[0] [1] の札が合法手です。")
+	})
+
+	t.Run("non-play phases have no legal legend", func(t *testing.T) {
+		m, players := setupAllFoursCuiMockWithPlayers()
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		out := p.Output(m, nil)
+		assert.NotContains(t, out, "の札が合法手です。")
+	})
 }
 
 func TestAllFoursCuiPresenter_Output_GameEnd(t *testing.T) {
@@ -124,7 +162,7 @@ func TestAllFoursCuiPresenter_HintOutput(t *testing.T) {
 		beg := true
 		m.On("GetHint").Return(&domain.AllFoursHint{Beg: &beg, Reason: "beg_beg"})
 		out := p.HintOutput(m)
-		assert.Contains(t, out, "HINT")
+		assert.Contains(t, out, "ヒント")
 	})
 
 	t.Run("run hint", func(t *testing.T) {
@@ -132,7 +170,7 @@ func TestAllFoursCuiPresenter_HintOutput(t *testing.T) {
 		run := false
 		m.On("GetHint").Return(&domain.AllFoursHint{Run: &run, Reason: "gift_gift"})
 		out := p.HintOutput(m)
-		assert.Contains(t, out, "HINT")
+		assert.Contains(t, out, "ヒント")
 	})
 
 	t.Run("card hint", func(t *testing.T) {
@@ -141,7 +179,7 @@ func TestAllFoursCuiPresenter_HintOutput(t *testing.T) {
 		idx := 0
 		m.On("GetHint").Return(&domain.AllFoursHint{CardIndex: &idx, Reason: "trump_cut"})
 		out := p.HintOutput(m)
-		assert.Contains(t, out, "HINT")
+		assert.Contains(t, out, "ヒント")
 	})
 }
 
@@ -150,12 +188,12 @@ func TestAllFoursCuiPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockAllFoursGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "stand", Detail: "You stand"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "stand", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
 	m.On("GetPlayer", mock.Anything).Return(domain.NewAllFoursPlayer(true)).Maybe()
 	out := p.ActionLogOutput(m)
-	assert.Contains(t, out, "You stand")
+	assert.Contains(t, out, "テスト用の棋譜行 1")
 }
 
 // #5683: 得点は High / Low / Jack / Game の4項目で決まる。Web は af-breakdown で

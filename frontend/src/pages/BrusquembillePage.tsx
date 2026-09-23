@@ -187,9 +187,15 @@ function BrusquembillePageContent() {
 
   const resultBanner = (() => {
     if (!isGameEnd) return null;
-    const p0 = state.players[0]?.points ?? 0;
-    const p1 = state.players[1]?.points ?? 0;
-    const params = { p0: String(p0), p1: String(p1) };
+    const scores =
+      state.players.length <= 2
+        ? `${state.players[0]?.points ?? 0}-${state.players[1]?.points ?? 0}`
+        : state.players.map((p) => p.points).join(' - ');
+    const params = {
+      p0: String(state.players[0]?.points ?? 0),
+      p1: String(state.players[1]?.points ?? 0),
+      scores,
+    };
     if (state.winnerIdx === 0) return t('result.youWin', params);
     // **勝った席を名指しする。** `=== 1` だけを CPU の勝ちとすると、3〜5 人卓で
     // 席 2 以降が勝ったラウンドが全部「引き分け」に落ちる。引き分けは
@@ -197,7 +203,6 @@ function BrusquembillePageContent() {
     if (state.winnerIdx > 0) {
       // 2 人卓は CPU が 1 人しかいないので席番号を出さない (従来の文言のまま)。
       if (cpus.length <= 1) return t('result.cpuWin', params);
-      const scores = state.players.map((p) => p.points).join(' - ');
       return t('result.cpuWinSeat', { seat: String(state.winnerIdx), scores });
     }
     return t('result.tie', params);

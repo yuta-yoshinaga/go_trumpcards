@@ -28,6 +28,14 @@ func (pp *PineappleWebPresenter) buildOutput(p interfaces.PineappleGame, lastErr
 		DiscardDone:      p.GetDiscardDone(),
 		InitialDealCount: p.GetInitialDealCount(),
 		LiveBestHand:     pineappleLiveBestHand(p),
+		DiscardPreviews: func() []*controller.PineappleWebDiscardPreview {
+			previews := p.GetHumanDiscardPreviews()
+			out := make([]*controller.PineappleWebDiscardPreview, 0, len(previews))
+			for _, preview := range previews {
+				out = append(out, &controller.PineappleWebDiscardPreview{CardIdx: preview.CardIdx, HandRank: preview.HandRank, Recommended: preview.Recommended})
+			}
+			return out
+		}(),
 	}
 }
 

@@ -3187,7 +3187,8 @@ func TestBlackJack_ActionLog_Bet(t *testing.T) {
 	entry := log[0]
 	assert.Equal(t, 0, entry.PlayerIdx)
 	assert.Equal(t, "bet", entry.ActionType)
-	assert.Contains(t, entry.Detail, "bet 100 chips")
+	assert.Equal(t, "blackjack.log.bet", entry.DetailCode)
+	assert.Equal(t, map[string]string{"amount": "100"}, entry.DetailParams)
 	assert.Nil(t, entry.Cards)
 }
 

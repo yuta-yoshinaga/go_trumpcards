@@ -24,5 +24,8 @@
   "stockLine": "Stock: {{count}}",
   "helpDeal": "  d                        deal from the stock (up to three per column)",
   "errStockEmptyNoRedeal": "The stock is empty (this game has no redeal)",
-  "errCannotPlaceTableau": "That column will not take that card (same suit, one lower; an empty column is never filled)"
+  "errCannotPlaceTableau": "That column will not take that card (same suit, one lower; an empty column is never filled)",
+  "log.move": "{{value1}} {{value2}}",
+  "log.deal": "Move: {{value1}}",
+  "log.giveup": "Gave up"
 }

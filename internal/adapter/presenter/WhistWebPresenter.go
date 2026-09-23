@@ -98,6 +98,9 @@ func (p *WhistWebPresenter) buildPlayersOutput(w interfaces.WhistGame) []*contro
 // buildMessage ゲーム結果メッセージを構築
 func (p *WhistWebPresenter) buildMessage(w interfaces.WhistGame, trick []*domain.TrickCard, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if w.GetGameEndFlag() {

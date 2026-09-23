@@ -260,13 +260,26 @@ function GuandanPageContent() {
             {/* The table. */}
             <div className="mb-2 p-2 rounded bg-black/20 text-sm" data-testid="guandan-table">
               {state.lastCombo ? (
-                <span>
-                  {t('tableCombo', {
-                    combo: comboLabel(state.lastCombo.kind),
-                    size: state.lastCombo.size,
-                    seat: state.lastPlayerIdx,
-                  })}
-                </span>
+                <>
+                  <span>
+                    {t('tableCombo', {
+                      combo: comboLabel(state.lastCombo.kind),
+                      size: state.lastCombo.size,
+                      seat: state.lastPlayerIdx,
+                    })}
+                  </span>
+                  {(state.lastCombo.cards?.length ?? 0) > 0 && (
+                    <div className="flex gap-1 justify-center mt-1" data-testid="guandan-table-cards">
+                      {state.lastCombo.cards?.map((card, i) => (
+                        <CardImage
+                          key={`table-card-${i.toString()}`}
+                          card={card}
+                          width={Math.round(cardWidth * 0.55)}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </>
               ) : (
                 <span>{t('tableEmpty')}</span>
               )}
@@ -345,7 +358,7 @@ function GuandanPageContent() {
                       {t('invalidCombo')}
                     </span>
                   ) : (
-                    <span className="text-ds-text-secondary">
+                    <span className="text-ds-text-muted">
                       {t('comboPreview')}:{' '}
                       <span className="font-medium text-ds-accent">
                         {comboLabel(selectedCombo.kind)} ({selectedCombo.size})

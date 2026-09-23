@@ -1,7 +1,9 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
+import i18n from 'i18next';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { pasurApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import enCommon from '../i18n/locales/en/common.json';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, PasurResponse } from '../types/card';
 import { PasurPage } from './PasurPage';
@@ -240,5 +242,46 @@ describe('PasurPage soor options', () => {
     renderWithProviders(<PasurPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.queryByTestId('ps-options')).not.toBeInTheDocument();
+  });
+});
+
+describe('Pasur result messages', () => {
+  it.each([
+    ['ja', 'you', 'あなたの勝ちです。', 'leftoverYou', 'あなたが場の残り 3 枚を取りました。', {}],
+    ['ja', 'you', 'あなたの勝ちです。', 'leftoverCpu', 'CPU2 が場の残り 3 枚を取りました。', { leftoverIdx: '2' }],
+    ['ja', 'cpu', 'CPU1 の勝ちです。', 'leftoverYou', 'あなたが場の残り 3 枚を取りました。', {}],
+    ['ja', 'cpu', 'CPU1 の勝ちです。', 'leftoverCpu', 'CPU2 が場の残り 3 枚を取りました。', { leftoverIdx: '2' }],
+    ['ja', 'tie', '4 人が同点です。', 'leftoverYou', 'あなたが場の残り 3 枚を取りました。', {}],
+    ['ja', 'tie', '4 人が同点です。', 'leftoverCpu', 'CPU2 が場の残り 3 枚を取りました。', { leftoverIdx: '2' }],
+    ['en', 'you', 'You win.', 'leftoverYou', 'You took the remaining 3 cards from the table.', {}],
+    ['en', 'you', 'You win.', 'leftoverCpu', 'CPU2 took the remaining 3 cards from the table.', { leftoverIdx: '2' }],
+    ['en', 'cpu', 'CPU1 wins.', 'leftoverYou', 'You took the remaining 3 cards from the table.', {}],
+    ['en', 'cpu', 'CPU1 wins.', 'leftoverCpu', 'CPU2 took the remaining 3 cards from the table.', { leftoverIdx: '2' }],
+    ['en', 'tie', '4 players tie.', 'leftoverYou', 'You took the remaining 3 cards from the table.', {}],
+    [
+      'en',
+      'tie',
+      '4 players tie.',
+      'leftoverCpu',
+      'CPU2 took the remaining 3 cards from the table.',
+      { leftoverIdx: '2' },
+    ],
+  ])('%s renders the %s result for a %s recipient', async (lang, result, text, recipient, suffix, recipientParams) => {
+    i18n.addResourceBundle('en', 'common', enCommon, true, true);
+    await i18n.changeLanguage(lang);
+    try {
+      mockExec.mockResolvedValue(
+        makeState({
+          phase: 1,
+          gameEndFlag: true,
+          messageCode: `pasur.result.${result}.${recipient}`,
+          messageParams: { idx: '1', n: '4', leftoverCount: '3', ...recipientParams },
+        }),
+      );
+      renderWithProviders(<PasurPage />);
+      expect(await screen.findByText(`${text} ${suffix}`)).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
   });
 });

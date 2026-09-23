@@ -543,6 +543,34 @@ func TestScorpion_AutoComplete(t *testing.T) {
 	})
 }
 
+func TestScorpion_CompletedSuitMask(t *testing.T) {
+	s := newTestScorpion()
+	s.Reset()
+	clearScorpionTableau(s)
+	var tab [domain.ScorpionTableauCnt][]*domain.KlondikeTableauCard
+	for col, design := range []int{domain.CardDesignSpade, domain.CardDesignHeart} {
+		cards := make([]*domain.KlondikeTableauCard, 0, domain.CardValueMax)
+		for value := domain.CardValueMax; value >= 1; value-- {
+			cards = append(cards, makeTableauCard(design, value, true))
+		}
+		tab[col] = cards
+	}
+	s.SetTableau(tab)
+
+	assert.NoError(t, s.AutoComplete())
+	assert.Equal(t, 2, s.GetCompletedSuits())
+	assert.Equal(t, 5, s.GetCompletedSuitMask())
+
+	data, err := json.Marshal(s)
+	assert.NoError(t, err)
+	restored := newTestScorpion()
+	assert.NoError(t, json.Unmarshal(data, restored))
+	assert.Equal(t, 5, restored.GetCompletedSuitMask())
+
+	restored.Reset()
+	assert.Equal(t, 0, restored.GetCompletedSuitMask())
+}
+
 func TestScorpion_ResetClearsStalemate(t *testing.T) {
 	s := setupPlayingScorpion()
 	s.SetIsStalemate(true)
@@ -630,6 +658,29 @@ func TestScorpion_Undo(t *testing.T) {
 		assert.Equal(t, 1, len(s.GetTableau()[1]))
 	})
 
+	t.Run("undo completed suit restores mask and count", func(t *testing.T) {
+		s := newTestScorpion()
+		s.Reset()
+		clearScorpionTableau(s)
+
+		var tab [domain.ScorpionTableauCnt][]*domain.KlondikeTableauCard
+		tab[0] = []*domain.KlondikeTableauCard{makeTableauCard(domain.CardDesignSpade, 1, true)}
+		for value := domain.CardValueMax; value >= 2; value-- {
+			tab[1] = append(tab[1], makeTableauCard(domain.CardDesignSpade, value, true))
+		}
+		s.SetTableau(tab)
+
+		err := s.MoveTableauToTableau(0, 0, 1)
+		assert.NoError(t, err)
+		assert.Equal(t, 1, s.GetCompletedSuits())
+		assert.Equal(t, 1, s.GetCompletedSuitMask())
+
+		err = s.Undo()
+		assert.NoError(t, err)
+		assert.Equal(t, 0, s.GetCompletedSuits())
+		assert.Equal(t, 0, s.GetCompletedSuitMask())
+	})
+
 	t.Run("no history", func(t *testing.T) {
 		s := setupPlayingScorpion()
 		err := s.Undo()
@@ -707,6 +758,8 @@ func TestScorpion_ActionLog(t *testing.T) {
 	log := s.GetActionLog()
 	assert.Equal(t, 1, len(log))
 	assert.Equal(t, "move", log[0].ActionType)
+	assert.Equal(t, "scorpion.log.move", log[0].DetailCode)
+	assert.Equal(t, map[string]string{"fromCol": "0", "toCol": "1"}, log[0].DetailParams)
 }
 
 func TestScorpion_MarshalUnmarshalJSON(t *testing.T) {

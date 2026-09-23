@@ -88,3 +88,9 @@ func (m *MockPasurGame) GetActionLog() []*domain.ActionLogEntry {
 	}
 	return nil
 }
+
+// GetLeftoverIdx returns the mocked leftover recipient.
+func (m *MockPasurGame) GetLeftoverIdx() int { return m.Called().Int(0) }
+
+// GetLeftoverCount returns the mocked leftover count.
+func (m *MockPasurGame) GetLeftoverCount() int { return m.Called().Int(0) }

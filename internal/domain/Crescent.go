@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // CrescentPhase クレセント・ソリティアのゲームフェーズ。
@@ -187,7 +188,7 @@ func (cr *Crescent) MoveTableauToTableau(fromCol, toCol int) error {
 	cr.tableau[toCol] = append(cr.tableau[toCol], tc)
 	cr.tableau[fromCol] = fromCards[:len(fromCards)-1]
 	cr.moveCount++
-	cr.appendLog("move", fmt.Sprintf("タブロー列%d→タブロー列%d", fromCol, toCol), []*Card{tc.Card})
+	cr.appendLog("move", "crescent.log.tableauMove", map[string]string{"from": strconv.Itoa(fromCol), "to": strconv.Itoa(toCol)}, []*Card{tc.Card})
 	cr.checkCrescentStalemate()
 	return nil
 }
@@ -216,7 +217,7 @@ func (cr *Crescent) MoveTableauToFoundation(fromCol, foundationIdx int) error {
 	cr.tableau[fromCol] = fromCards[:len(fromCards)-1]
 	cr.foundation[foundationIdx] = append(cr.foundation[foundationIdx], tc.Card)
 	cr.moveCount++
-	cr.appendLog("move", fmt.Sprintf("タブロー列%d→ファンデーション%d", fromCol, foundationIdx), []*Card{tc.Card})
+	cr.appendLog("move", "crescent.log.tableauToFoundation", map[string]string{"from": strconv.Itoa(fromCol), "foundation": strconv.Itoa(foundationIdx)}, []*Card{tc.Card})
 	cr.checkGameClear()
 	cr.checkCrescentStalemate()
 	return nil
@@ -240,7 +241,7 @@ func (cr *Crescent) Redeal() error {
 	}
 	cr.redealsRemaining--
 	cr.moveCount++
-	cr.appendLog("redeal", fmt.Sprintf("再配り (残り%d回)", cr.redealsRemaining), nil)
+	cr.appendLog("redeal", "crescent.log.redeal", map[string]string{"remaining": strconv.Itoa(cr.redealsRemaining)}, nil)
 	cr.checkCrescentStalemate()
 	return nil
 }
@@ -249,7 +250,7 @@ func (cr *Crescent) Redeal() error {
 func (cr *Crescent) GiveUp() {
 	if cr.phase == CrescentPhasePlaying {
 		cr.phase = CrescentPhaseGameOver
-		cr.appendLog("giveup", "ギブアップしました", nil)
+		cr.appendLog("giveup", "crescent.log.giveUp", nil, nil)
 	}
 }
 
@@ -317,7 +318,7 @@ func (cr *Crescent) AutoComplete() error {
 			break
 		}
 	}
-	cr.appendLog("autocomplete", "オートコンプリートを実行しました", nil)
+	cr.appendLog("autocomplete", "crescent.log.autocomplete", nil, nil)
 	cr.checkGameClear()
 	cr.checkCrescentStalemate()
 	return nil
@@ -557,8 +558,8 @@ func (cr *Crescent) restoreSnapshot(snap *crescentSnapshot) {
 }
 
 // appendLog 棋譜エントリを追加。
-func (cr *Crescent) appendLog(actionType, detail string, cards []*Card) {
-	cr.appendLogAt(cr.moveCount, 0, actionType, detail, cards)
+func (cr *Crescent) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	cr.appendLogCodeAt(cr.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // crescentJSON Crescent の永続化用ワイヤーフォーマット。

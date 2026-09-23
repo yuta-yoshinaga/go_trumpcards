@@ -176,7 +176,7 @@ func TestSirTommyCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "ゲームクリア")
 	})
 
-	t.Run("game over", func(t *testing.T) {
+	t.Run("game over reports foundation progress", func(t *testing.T) {
 		g := new(interfaces.MockSirTommyGame)
 		g.On("GetPhase").Return(domain.SirTommyPhaseGameOver).Maybe()
 		g.On("GetMoveCount").Return(10).Maybe()
@@ -190,6 +190,40 @@ func TestSirTommyCuiPresenter_Output(t *testing.T) {
 
 		result := new(SirTommyCuiPresenter).Output(g, nil)
 		assert.Contains(t, result, "ゲームオーバー")
+		assert.Contains(t, result, "組札 0/52 枚（0%）まで到達")
+		assert.NotContains(t, result, "{{")
+
+		g = new(interfaces.MockSirTommyGame)
+		g.On("GetPhase").Return(domain.SirTommyPhaseGameOver).Maybe()
+		g.On("GetMoveCount").Return(10).Maybe()
+		g.On("IsStalemate").Return(false).Maybe()
+		g.On("GetStockCount").Return(0).Maybe()
+		g.On("GetStockTop").Return((*domain.Card)(nil)).Maybe()
+		foundations[0] = []*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 1, false),
+			domain.NewCard(domain.CardDesignSpade, 2, false),
+			domain.NewCard(domain.CardDesignSpade, 3, false),
+		}
+		foundations[1] = []*domain.Card{
+			domain.NewCard(domain.CardDesignHeart, 1, false),
+			domain.NewCard(domain.CardDesignHeart, 2, false),
+		}
+		foundations[2] = []*domain.Card{domain.NewCard(domain.CardDesignClover, 1, false)}
+		g.On("GetFoundations").Return(foundations).Maybe()
+		g.On("GetWastes").Return(wastes).Maybe()
+
+		result = new(SirTommyCuiPresenter).Output(g, nil)
+		assert.Contains(t, result, "組札 6/52 枚（12%）まで到達")
+		assert.NotContains(t, result, "{{")
+	})
+
+	t.Run("playing does not report foundation progress", func(t *testing.T) {
+		g := new(interfaces.MockSirTommyGame)
+		setupSirTommyCuiMockDefaults(g)
+
+		result := new(SirTommyCuiPresenter).Output(g, nil)
+		assert.NotContains(t, result, "まで到達")
+		assert.NotContains(t, result, "{{")
 	})
 }
 
@@ -199,7 +233,7 @@ func TestSirTommyCuiPresenter_HintOutput(t *testing.T) {
 		g.On("GetHint").Return(&domain.SirTommyHint{FromZone: "stock", WasteIdx: -1, FoundationIdx: 2, ToZone: "foundation"})
 		result := new(SirTommyCuiPresenter).HintOutput(g)
 		assert.Contains(t, result, "ストック")
-		assert.Contains(t, result, "ファンデーション2")
+		assert.Contains(t, result, "組札2")
 	})
 
 	// #5552: ファンデーションに置けない局面 — このゲームで最も頻繁に起きる —
@@ -218,7 +252,7 @@ func TestSirTommyCuiPresenter_HintOutput(t *testing.T) {
 		g.On("GetHint").Return(&domain.SirTommyHint{FromZone: "waste", WasteIdx: 1, FoundationIdx: 0, ToZone: "foundation"})
 		result := new(SirTommyCuiPresenter).HintOutput(g)
 		assert.Contains(t, result, "ウェイスト1")
-		assert.Contains(t, result, "ファンデーション0")
+		assert.Contains(t, result, "組札0")
 	})
 
 	t.Run("no hint", func(t *testing.T) {
@@ -246,7 +280,9 @@ func TestSirTommyCuiPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("game over", func(t *testing.T) {
 		g := new(interfaces.MockSirTommyGame)
 		g.On("GetPhase").Return(domain.SirTommyPhaseGameOver)
-		g.On("GetActionLog").Return([]*domain.ActionLogEntry{{TurnNumber: 1, ActionType: "move", Detail: "test"}})
+		g.On("GetActionLog").Return([]*domain.ActionLogEntry{
+			{TurnNumber: 1, ActionType: "move", DetailCode: "sirtommy.log.stockToFoundation", DetailParams: map[string]string{"foundation": "1"}},
+		})
 		assert.NotEmpty(t, new(SirTommyCuiPresenter).ActionLogOutput(g))
 	})
 }

@@ -90,6 +90,9 @@ func (p *BauernschnapsenWebPresenter) buildPlayersOutput(g interfaces.Bauernschn
 
 func (p *BauernschnapsenWebPresenter) buildMessage(g interfaces.BauernschnapsenGame, trick []*domain.TrickCard, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

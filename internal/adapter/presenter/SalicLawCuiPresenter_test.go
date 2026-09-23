@@ -151,7 +151,7 @@ func TestSalicLawCuiPresenter_HintOutput(t *testing.T) {
 	}{
 		{"tableau to a foundation",
 			&domain.SalicLawHint{FromZone: "tableau", FromIdx: 1, ToZone: "foundation", ToIdx: 2},
-			[]string{"タブロー列1", "基礎札2"}},
+			[]string{"タブロー列1", "組札2"}},
 		{"onto a bare king",
 			&domain.SalicLawHint{FromZone: "tableau", FromIdx: 0, ToZone: "tableau", ToIdx: 5},
 			[]string{"タブロー列0", "タブロー列5"}},
@@ -190,7 +190,7 @@ func TestSalicLawCuiPresenter_ActionLogOutput(t *testing.T) {
 		g := new(interfaces.MockSalicLawGame)
 		g.On("GetPhase").Return(domain.SalicLawPhaseGameOver)
 		g.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "move", Detail: "test"},
+			{TurnNumber: 1, ActionType: "move", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 
 		assert.Contains(t, new(SalicLawCuiPresenter).ActionLogOutput(g), "move")

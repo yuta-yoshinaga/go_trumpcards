@@ -144,7 +144,7 @@ func TestBisleyCuiPresenter_HintOutput(t *testing.T) {
 		result := p.HintOutput(bg)
 		assert.Contains(t, result, "ヒント")
 		assert.Contains(t, result, "タブロー列0")
-		assert.Contains(t, result, "昇順基礎札2")
+		assert.Contains(t, result, "昇順組札2")
 	})
 
 	t.Run("descending foundation hint", func(t *testing.T) {
@@ -154,7 +154,7 @@ func TestBisleyCuiPresenter_HintOutput(t *testing.T) {
 		p := new(BisleyCuiPresenter)
 		result := p.HintOutput(bg)
 		assert.Contains(t, result, "タブロー列4")
-		assert.Contains(t, result, "降順基礎札1")
+		assert.Contains(t, result, "降順組札1")
 	})
 
 	t.Run("tableau hint", func(t *testing.T) {
@@ -191,7 +191,7 @@ func TestBisleyCuiPresenter_ActionLogOutput(t *testing.T) {
 		bg := new(interfaces.MockBisleyGame)
 		bg.On("GetPhase").Return(domain.BisleyPhaseGameOver)
 		bg.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "move", Detail: "test"},
+			{TurnNumber: 1, ActionType: "move", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 
 		p := new(BisleyCuiPresenter)

@@ -49,6 +49,8 @@ type TysiacGame interface {
 	GetCurrentPlayerIdx() int
 	// GetCurrentTrick 現在のトリックを取得する
 	GetCurrentTrick() []*domain.TrickCard
+	// GetLastTrickWinner 直前トリックの勝者を取得する (-1=なし)
+	GetLastTrickWinner() int
 	// GetLeadPlayerIdx リードプレイヤーインデックスを取得する
 	GetLeadPlayerIdx() int
 	// GetDealerIdx ディーラーインデックスを取得する
@@ -57,6 +59,8 @@ type TysiacGame interface {
 	GetForehandIdx() int
 	// GetDeclarerIdx declarer インデックスを取得する (-1=未確定)
 	GetDeclarerIdx() int
+	// GetTalonRecipientIdx returns the opponent receiving the next talon card.
+	GetTalonRecipientIdx() int
 	// GetContract 確定 contract を取得する
 	GetContract() int
 	// GetCurrentBid 現在の最高ビッドを取得する

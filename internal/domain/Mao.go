@@ -80,6 +80,12 @@ type MaoHiddenRule struct {
 	HintKey string `json:"ht"`
 }
 
+// MaoSayWordAttempt records a human's secret-rule word and its outcome.
+type MaoSayWordAttempt struct {
+	Word    string `json:"w"`
+	Penalty bool   `json:"p"`
+}
+
 // maoRuleSet は固定の隠しルール候補。ゲーム開始時に 1 つが決定的に選ばれる。
 var maoRuleSet = []MaoHiddenRule{
 	{TriggerKind: MaoTriggerSuit, TriggerValue: CardDesignSpade, RequiredWord: "spade", HintKey: "hintSuit"},
@@ -113,6 +119,7 @@ type Mao struct {
 	playerCorrectCount int           // 人間が累計で正しく従った回数
 	hintUnlocked       bool          // ハーフヒントが解放されたか (3回正解で解放)
 	rulePenaltyFlag    bool          // 直近のアクションで隠しルール違反ペナルティが発生したか
+	sayWordHistory     []MaoSayWordAttempt
 }
 
 // NewMao コンストラクタ
@@ -158,6 +165,7 @@ func (g *Mao) Reset() {
 	g.playerCorrectCount = 0
 	g.hintUnlocked = false
 	g.rulePenaltyFlag = false
+	g.sayWordHistory = nil
 
 	for _, p := range g.players {
 		p.roundScore = 0
@@ -191,6 +199,7 @@ func (g *Mao) NextRound() {
 	g.currentPlayerIdx = 0
 	g.awaitingWord = false
 	g.rulePenaltyFlag = false
+	g.sayWordHistory = nil
 
 	for _, p := range g.players {
 		p.ResetRound()
@@ -290,12 +299,12 @@ func (g *Mao) PlayerPlay(cardIndex int) error {
 
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "mao.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
 	if !g.isValidPlay(card) {
-		return NewDomainError(ErrInvalidPlay, "そのカードは出せません")
+		return NewDomainErrorCode(ErrInvalidPlay, "mao.errCardNotPlayable", nil)
 	}
 
 	// 選択カードを先に取り除く。宣言待ちペナルティは手札を引いて並べ替えるため、
@@ -326,10 +335,13 @@ func (g *Mao) PlayerDeclareWord(word string) error {
 	if !g.awaitingWord {
 		// 宣言待ちでないのに言葉を発した → ルール違反 (誤発言ペナルティ)
 		g.applyRulePenalty(humanIdx)
+		g.sayWordHistory = append(g.sayWordHistory, MaoSayWordAttempt{Word: normalizeMaoWord(word), Penalty: true})
 		return nil
 	}
-	correct := strings.EqualFold(strings.TrimSpace(word), g.hiddenRule.RequiredWord)
+	trimmed := strings.TrimSpace(word)
+	correct := strings.EqualFold(trimmed, g.hiddenRule.RequiredWord)
 	g.resolvePendingWord(humanIdx, correct)
+	g.sayWordHistory = append(g.sayWordHistory, MaoSayWordAttempt{Word: normalizeMaoWord(trimmed), Penalty: !correct})
 	return nil
 }
 
@@ -352,7 +364,7 @@ func (g *Mao) resolvePendingWord(playerIdx int, complied bool) {
 	g.awaitingWord = false
 	if complied {
 		g.playerCorrectCount++
-		g.appendLog(playerIdx, "rule_ok", fmt.Sprintf("%s follows the secret rule", playerName(g.players, playerIdx)), nil)
+		g.appendLog(playerIdx, "rule_ok", "mao.log.ruleOk", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 		if g.playerCorrectCount >= MaoHintThreshold {
 			g.hintUnlocked = true
 		}
@@ -366,7 +378,7 @@ func (g *Mao) applyRulePenalty(playerIdx int) {
 	g.playerCorrectCount = 0
 	g.rulePenaltyFlag = true
 	drawn := g.drawCards(playerIdx, MaoRulePenalty)
-	g.appendLog(playerIdx, "penalty", fmt.Sprintf("%s receives a penalty (+%d card)", playerName(g.players, playerIdx), drawn), nil)
+	g.appendLog(playerIdx, "penalty", "mao.log.penalty", map[string]string{"name": playerName(g.players, playerIdx), "count": fmt.Sprintf("%d", drawn)}, nil)
 	g.sortHand(playerIdx)
 }
 
@@ -383,11 +395,11 @@ func (g *Mao) PlayerChooseSuit(suit int) error {
 	}
 
 	if suit < CardDesignSpade || suit > CardDesignDiamond {
-		return NewDomainError(ErrInvalidPlay, "スートは1〜4で指定してください")
+		return NewDomainErrorCode(ErrInvalidPlay, "mao.errSuitOutOfRange", nil)
 	}
 
 	g.chosenSuit = suit
-	g.appendLog(g.currentPlayerIdx, "choose_suit", fmt.Sprintf("%s chooses %s", playerName(g.players, g.currentPlayerIdx), suitName(suit)), nil)
+	g.appendLog(g.currentPlayerIdx, "choose_suit", "mao.log.chooseSuit", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "suitKey": suitKeyOf(suit)}, nil)
 
 	g.finishTurn(g.currentPlayerIdx)
 	return nil
@@ -483,7 +495,7 @@ func (g *Mao) CpuChooseSuit() {
 
 	suit := g.cpuSelectSuit(g.currentPlayerIdx)
 	g.chosenSuit = suit
-	g.appendLog(g.currentPlayerIdx, "choose_suit", fmt.Sprintf("%s chooses %s", playerName(g.players, g.currentPlayerIdx), suitName(suit)), nil)
+	g.appendLog(g.currentPlayerIdx, "choose_suit", "mao.log.chooseSuit", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "suitKey": suitKeyOf(suit)}, nil)
 	g.finishTurn(g.currentPlayerIdx)
 }
 
@@ -506,14 +518,14 @@ func (g *Mao) CpuDeclare() {
 // doDeclare 宣言処理の共通実装
 func (g *Mao) doDeclare(playerIdx int) {
 	g.players[playerIdx].SetHasDeclared(true)
-	g.appendLog(playerIdx, "declare", fmt.Sprintf("%s declares Mao!", playerName(g.players, playerIdx)), nil)
+	g.appendLog(playerIdx, "declare", "mao.log.declare", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 	g.advanceTurn()
 }
 
 // applyDeclarePenalty 宣言忘れペナルティとして規定枚数を引かせる
 func (g *Mao) applyDeclarePenalty(playerIdx int) {
 	drawn := g.drawCards(playerIdx, MaoForgotPenalty)
-	g.appendLog(playerIdx, "penalty", fmt.Sprintf("%s forgot to declare Mao! (+%d cards)", playerName(g.players, playerIdx), drawn), nil)
+	g.appendLog(playerIdx, "penalty", "mao.log.forgotDeclare", map[string]string{"name": playerName(g.players, playerIdx), "count": fmt.Sprintf("%d", drawn)}, nil)
 	g.sortHand(playerIdx)
 	g.advanceTurn()
 }
@@ -546,11 +558,11 @@ func (g *Mao) ScoreRound() {
 			score += crazyEightsCardScore(p.GetCard(j))
 		}
 		totalScore += score
-		g.appendLog(i, "hand_score", fmt.Sprintf("%s: %d points remaining", playerName(g.players, i), score), nil)
+		g.appendLog(i, "hand_score", "mao.log.handScore", map[string]string{"name": playerName(g.players, i), "score": fmt.Sprintf("%d", score)}, nil)
 	}
 
 	g.players[winnerIdx].roundScore = totalScore
-	g.appendLog(winnerIdx, "round_win", fmt.Sprintf("%s wins round %d (+%d points)", playerName(g.players, winnerIdx), g.roundNumber, totalScore), nil)
+	g.appendLog(winnerIdx, "round_win", "mao.log.roundWin", map[string]string{"name": playerName(g.players, winnerIdx), "round": fmt.Sprintf("%d", g.roundNumber), "points": fmt.Sprintf("%d", totalScore)}, nil)
 
 	g.players[winnerIdx].CommitRoundScore()
 
@@ -654,6 +666,11 @@ func (g *Mao) GetHintUnlocked() bool { return g.hintUnlocked }
 // GetRulePenaltyFlag 直近のアクションで隠しルール違反ペナルティが発生したか
 func (g *Mao) GetRulePenaltyFlag() bool { return g.rulePenaltyFlag }
 
+// GetSayWordHistory returns the secret-rule attempts made during this round.
+func (g *Mao) GetSayWordHistory() []MaoSayWordAttempt {
+	return append([]MaoSayWordAttempt(nil), g.sayWordHistory...)
+}
+
 // GetRuleHintKey 解放済みであればハーフヒントの i18n キーを返す。未解放なら空文字。
 // 解放後もトリガーのみを示し、宣言すべき言葉そのものは明かさない。
 // 翻訳は presenter 側で行う (ドメインは i18n に依存しない)。
@@ -703,16 +720,16 @@ func (g *Mao) playCard(playerIdx int, card *Card) {
 	g.discardPile = append(g.discardPile, card)
 	g.chosenSuit = -1
 
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "mao.log.play", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	// マジックカードの状態更新
 	switch card.GetValue() {
 	case MaoDrawTwoValue:
 		g.penaltyDrawCount += MaoDrawTwoAmount
-		g.appendLog(playerIdx, "draw_two", fmt.Sprintf("Draw stack is now %d", g.penaltyDrawCount), nil)
+		g.appendLog(playerIdx, "draw_two", "mao.log.drawTwo", map[string]string{"count": fmt.Sprintf("%d", g.penaltyDrawCount)}, nil)
 	case MaoSkipValue:
 		g.pendingSkip = true
-		g.appendLog(playerIdx, "skip", "Next player is skipped", nil)
+		g.appendLog(playerIdx, "skip", "mao.log.skip", nil, nil)
 	}
 
 	// 手札が空になったらラウンド終了
@@ -771,7 +788,7 @@ func (g *Mao) drawCard(playerIdx int) error {
 	if g.penaltyDrawCount > 0 {
 		drawn := g.drawCards(playerIdx, g.penaltyDrawCount)
 		g.penaltyDrawCount = 0
-		g.appendLog(playerIdx, "take_penalty", fmt.Sprintf("%s takes %d penalty cards", playerName(g.players, playerIdx), drawn), nil)
+		g.appendLog(playerIdx, "take_penalty", "mao.log.takePenalty", map[string]string{"name": playerName(g.players, playerIdx), "count": fmt.Sprintf("%d", drawn)}, nil)
 		g.sortHand(playerIdx)
 		g.advanceTurn()
 		return nil
@@ -783,7 +800,7 @@ func (g *Mao) drawCard(playerIdx int) error {
 
 	if len(g.drawPile) == 0 {
 		// 引けるカードがない→パス
-		g.appendLog(playerIdx, "pass", fmt.Sprintf("%s passes (no cards to draw)", playerName(g.players, playerIdx)), nil)
+		g.appendLog(playerIdx, "pass", "mao.log.pass", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 		g.advanceTurn()
 		return nil
 	}
@@ -793,7 +810,7 @@ func (g *Mao) drawCard(playerIdx int) error {
 	g.players[playerIdx].AddCard(card)
 	g.sortHand(playerIdx)
 
-	g.appendLog(playerIdx, "draw", fmt.Sprintf("%s draws a card", playerName(g.players, playerIdx)), nil)
+	g.appendLog(playerIdx, "draw", "mao.log.draw", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 
 	// 引いたカードが出せないなら次へ
 	if !g.hasPlayableCard(playerIdx) {
@@ -844,7 +861,11 @@ func (g *Mao) checkGameEnd() {
 			g.winnerIdx = i
 		}
 	}
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(g.players, g.winnerIdx)), nil)
+	g.appendLog(-1, "game_end", "mao.log.gameEnd", map[string]string{"name": playerName(g.players, g.winnerIdx)}, nil)
+}
+
+func (g *Mao) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // sortAllHands 全プレイヤーの手札をソートする
@@ -999,26 +1020,27 @@ func (g *Mao) GetValidPlayIndices(playerIdx int) []int {
 
 // maoJSON is the JSON wire format for Mao.
 type maoJSON struct {
-	TrumpCards         *TrumpCards       `json:"tc"`
-	Players            []*MaoPlayer      `json:"pl"`
-	Config             MaoConfig         `json:"cf"`
-	Phase              MaoPhase          `json:"ps"`
-	CurrentPlayerIdx   int               `json:"ci"`
-	DiscardPile        []*Card           `json:"dp"`
-	DrawPile           []*Card           `json:"wp"`
-	ChosenSuit         int               `json:"cs"`
-	PenaltyDrawCount   int               `json:"pd"`
-	Direction          int               `json:"dr"`
-	PendingSkip        bool              `json:"sk"`
-	GameEndFlag        bool              `json:"ge"`
-	WinnerIdx          int               `json:"wi"`
-	RoundNumber        int               `json:"rn"`
-	ActionLog          []*ActionLogEntry `json:"al"`
-	HiddenRule         MaoHiddenRule     `json:"hr"`
-	AwaitingWord       bool              `json:"aw"`
-	PlayerCorrectCount int               `json:"pc"`
-	HintUnlocked       bool              `json:"hu"`
-	RulePenaltyFlag    bool              `json:"rp"`
+	TrumpCards         *TrumpCards         `json:"tc"`
+	Players            []*MaoPlayer        `json:"pl"`
+	Config             MaoConfig           `json:"cf"`
+	Phase              MaoPhase            `json:"ps"`
+	CurrentPlayerIdx   int                 `json:"ci"`
+	DiscardPile        []*Card             `json:"dp"`
+	DrawPile           []*Card             `json:"wp"`
+	ChosenSuit         int                 `json:"cs"`
+	PenaltyDrawCount   int                 `json:"pd"`
+	Direction          int                 `json:"dr"`
+	PendingSkip        bool                `json:"sk"`
+	GameEndFlag        bool                `json:"ge"`
+	WinnerIdx          int                 `json:"wi"`
+	RoundNumber        int                 `json:"rn"`
+	ActionLog          []*ActionLogEntry   `json:"al"`
+	HiddenRule         MaoHiddenRule       `json:"hr"`
+	AwaitingWord       bool                `json:"aw"`
+	PlayerCorrectCount int                 `json:"pc"`
+	HintUnlocked       bool                `json:"hu"`
+	RulePenaltyFlag    bool                `json:"rp"`
+	SayWordHistory     []MaoSayWordAttempt `json:"sh"`
 }
 
 // MarshalJSON implements json.Marshaler. The hidden rule IS included so the
@@ -1046,12 +1068,26 @@ func (g *Mao) MarshalJSON() ([]byte, error) {
 		PlayerCorrectCount: g.playerCorrectCount,
 		HintUnlocked:       g.hintUnlocked,
 		RulePenaltyFlag:    g.rulePenaltyFlag,
+		SayWordHistory:     g.sayWordHistory,
 	})
 }
 
 // maoMaxSliceLen caps slice sizes during deserialisation to prevent
 // excessive memory allocation from malformed input.
 const maoMaxSliceLen = 1000
+
+// maoMaxWordLen caps each persisted declaration. Words are truncated when
+// recorded so normal play remains available, and rejected during restore so
+// older or tampered state cannot reintroduce oversized entries.
+const maoMaxWordLen = 1000
+
+func normalizeMaoWord(word string) string {
+	runes := []rune(strings.TrimSpace(word))
+	if len(runes) > maoMaxWordLen {
+		runes = runes[:maoMaxWordLen]
+	}
+	return string(runes)
+}
 
 // UnmarshalJSON implements json.Unmarshaler.
 func (g *Mao) UnmarshalJSON(data []byte) error {
@@ -1060,8 +1096,14 @@ func (g *Mao) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if len(j.Players) > maoMaxSliceLen || len(j.DiscardPile) > maoMaxSliceLen ||
-		len(j.DrawPile) > maoMaxSliceLen || len(j.ActionLog) > maoMaxSliceLen {
+		len(j.DrawPile) > maoMaxSliceLen || len(j.ActionLog) > maoMaxSliceLen ||
+		len(j.SayWordHistory) > maoMaxSliceLen {
 		return fmt.Errorf("mao: input array exceeds maximum allowed size")
+	}
+	for _, attempt := range j.SayWordHistory {
+		if len([]rune(attempt.Word)) > maoMaxWordLen {
+			return fmt.Errorf("mao: say word exceeds maximum allowed length")
+		}
 	}
 	if err := j.Config.Validate(); err != nil {
 		return fmt.Errorf("mao: invalid config: %w", err)
@@ -1129,5 +1171,6 @@ func (g *Mao) UnmarshalJSON(data []byte) error {
 	}
 	g.hintUnlocked = j.HintUnlocked
 	g.rulePenaltyFlag = j.RulePenaltyFlag
+	g.sayWordHistory = j.SayWordHistory
 	return nil
 }

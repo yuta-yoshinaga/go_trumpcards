@@ -14,7 +14,7 @@
   "promptPlay": "Turn: {{name}}",
   "promptPlayHelp": "play <idx> ... play a card (must follow suit)",
   "promptAnnounce": "a / announce ... announce Re or Kontra to raise the stakes",
-  "promptTrickEnd": "Trick complete",
+  "promptTrickEnd": "Trick complete: {{name}} won {{points}} points",
   "promptTrickEndHelp": "n / next ... go to the next trick",
   "promptRoundEnd": "Round complete (Re {{rePts}} pts, {{outcome}}, {{gamePts}} game pts)",
   "outcomeReWins": "Re wins",
@@ -28,5 +28,16 @@
   "hintReasonDiscardLow": "Cannot follow suit — discard a low card",
   "helpExamplePlay": "  play 0               play hand card 0",
   "helpHint": "  h                    show a hint",
-  "livePoints": "Card points so far: Re {{rePts}} (needs {{reTarget}}) / Kontra {{kontraPts}} (needs {{kontraTarget}})"
+  "livePoints": "Card points so far: Re {{rePts}} (needs {{reTarget}}) / Kontra {{kontraPts}} (needs {{kontraTarget}})",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errAnnounceUnavailable": "Announcements are not available at this time.",
+  "errFollowLeadSuit": "You must follow the lead suit.",
+  "log.announceRe": "{{name}} announces Re",
+  "log.announceKontra": "{{name}} announces Kontra",
+  "log.play": "{{name}} plays {{card}}",
+  "log.trickWin": "{{name}} wins trick {{trick}} ({{points}} pts)",
+  "log.roundScore": "round {{round}}: Re {{rePoints}} pts ({{outcome}}, {{gamePoints}} game pts)",
+  "log.gameEnd": "{{name}} wins the game!",
+  "log.outcome.reWins": "Re wins",
+  "log.outcome.kontraWins": "Kontra wins"
 }

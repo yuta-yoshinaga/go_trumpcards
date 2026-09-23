@@ -45,10 +45,27 @@ func setupSheepsheadCuiMock() *interfaces.MockSheepsheadGame {
 	m.On("GetWinnerIdx").Return(-1)
 	m.On("IsPartnerRevealed").Return(false)
 	m.On("GetRoundPickerPoints").Return(0)
+	m.On("GetLivePickerPoints").Return(23)
+	m.On("GetLiveDefenderPoints").Return(97)
 	m.On("GetRoundMultiplier").Return(1)
 	m.On("GetRoundPickerWon").Return(false)
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	return m
+}
+
+func TestSheepsheadCuiPresenter_LivePoints(t *testing.T) {
+	p := new(presenter.SheepsheadCuiPresenter)
+
+	for _, phase := range []domain.SheepsheadPhase{domain.SheepsheadPhasePlay, domain.SheepsheadPhaseTrickEnd} {
+		m, _ := setupSheepsheadCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(phase)
+		assert.Contains(t, p.Output(m, nil), "現在の獲得点: ピッカー組 23点（勝利ライン 61点） / 守備組 97点")
+	}
+
+	// The progress is actionable only while cards are being played or a trick awaits acknowledgement.
+	m, _ := setupSheepsheadCuiMockWithPlayers()
+	assert.NotContains(t, p.Output(m, nil), "現在の獲得点:")
 }
 
 func setupSheepsheadCuiMockWithPlayers() (*interfaces.MockSheepsheadGame, []*domain.SheepsheadPlayer) {
@@ -217,7 +234,7 @@ func TestSheepsheadCuiPresenter_HintOutput(t *testing.T) {
 		m, _ := setupSheepsheadCuiMockWithPlayers()
 		m.On("GetHint").Return(&domain.SheepsheadHint{Pick: true, Reason: "pick_take"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 
 	t.Run("bury hint with card indices", func(t *testing.T) {
@@ -230,14 +247,14 @@ func TestSheepsheadCuiPresenter_HintOutput(t *testing.T) {
 		m.On("GetPhase").Return(domain.SheepsheadPhaseBury)
 		m.On("GetHint").Return(&domain.SheepsheadHint{CardIndices: []int{0, 1}, Reason: "bury_low"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 
 	t.Run("call suit hint", func(t *testing.T) {
 		m, _ := setupSheepsheadCuiMockWithPlayers()
 		m.On("GetHint").Return(&domain.SheepsheadHint{Suit: domain.CardDesignClover, Reason: "call_suit"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 
 	t.Run("play hint", func(t *testing.T) {
@@ -245,7 +262,7 @@ func TestSheepsheadCuiPresenter_HintOutput(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
 		m.On("GetHint").Return(&domain.SheepsheadHint{CardIndices: []int{0}, Reason: "lead_low"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 }
 
@@ -254,7 +271,7 @@ func TestSheepsheadCuiPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockSheepsheadGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "pick", Detail: "You picks up the blind"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "pick", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
 	m.On("GetPlayer", mock.Anything).Return(domain.NewSheepsheadPlayer(true, 0)).Maybe()
@@ -283,8 +300,8 @@ func TestSheepsheadCuiPresenter_RoundEndShowsTheBuriedCards(t *testing.T) {
 
 		assert.Contains(t, out, i18n.T("sheepshead.roundEndBuried"))
 		// 色付けは cuiCardStr の担当なので、スート名と数字だけを見る。
-		assert.Contains(t, out, "HEART 1")
-		assert.Contains(t, out, "CLOVER 10")
+		assert.Contains(t, out, "♥1")
+		assert.Contains(t, out, "♣10")
 	})
 
 	t.Run("play phase keeps them hidden", func(t *testing.T) {
@@ -297,7 +314,7 @@ func TestSheepsheadCuiPresenter_RoundEndShowsTheBuriedCards(t *testing.T) {
 		out := p.Output(m, nil)
 
 		assert.NotContains(t, out, i18n.T("sheepshead.roundEndBuried"))
-		assert.NotContains(t, out, "HEART 1", "埋め札はプレイ中は伏せたまま")
+		assert.NotContains(t, out, "♥1", "埋め札はプレイ中は伏せたまま")
 	})
 
 	t.Run("no buried cards yields no line", func(t *testing.T) {
@@ -340,17 +357,17 @@ func TestSheepsheadCuiPresenter_MarksThePlayableCards(t *testing.T) {
 	t.Run("marks only the legal card on the human's play turn", func(t *testing.T) {
 		m := newMock(domain.SheepsheadPhasePlay, 0)
 		out := new(presenter.SheepsheadCuiPresenter).Output(m, nil)
-		// 印は札の後ろに付く: "[1]HEART 8*"
-		assert.Contains(t, out, "HEART 8"+presenter.CuiLegalMark)
-		assert.NotContains(t, out, "SPADE 7"+presenter.CuiLegalMark)
-		assert.NotContains(t, out, "CLOVER 9"+presenter.CuiLegalMark)
+		// 印は札の後ろに付く: "[1]♥8*"
+		assert.Contains(t, out, "♥8"+presenter.CuiLegalMark)
+		assert.NotContains(t, out, "♠7"+presenter.CuiLegalMark)
+		assert.NotContains(t, out, "♣9"+presenter.CuiLegalMark)
 		m.AssertCalled(t, "GetPlayableIndices", 0)
 	})
 
 	t.Run("marks nothing in the pick phase", func(t *testing.T) {
 		m := newMock(domain.SheepsheadPhasePick, 0)
 		out := new(presenter.SheepsheadCuiPresenter).Output(m, nil)
-		assert.Contains(t, out, "HEART 8", "the hand is still listed")
+		assert.Contains(t, out, "♥8", "the hand is still listed")
 		assert.NotContains(t, out, presenter.CuiLegalMark, "no card carries the legal mark")
 		m.AssertNotCalled(t, "GetPlayableIndices", mock.Anything)
 	})
@@ -358,7 +375,7 @@ func TestSheepsheadCuiPresenter_MarksThePlayableCards(t *testing.T) {
 	t.Run("marks nothing while it is someone else's turn", func(t *testing.T) {
 		m := newMock(domain.SheepsheadPhasePlay, 2)
 		out := new(presenter.SheepsheadCuiPresenter).Output(m, nil)
-		assert.Contains(t, out, "HEART 8", "the hand is still listed")
+		assert.Contains(t, out, "♥8", "the hand is still listed")
 		assert.NotContains(t, out, presenter.CuiLegalMark, "no card carries the legal mark")
 		m.AssertNotCalled(t, "GetPlayableIndices", mock.Anything)
 	})

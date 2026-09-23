@@ -137,6 +137,15 @@ func TestWizardWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "test error", resObj.Message)
 	})
 
+	t.Run("coded error returns message code without message", func(t *testing.T) {
+		m, _ := setupWizardWebMockWithPlayers()
+		result := p.Output(m, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "wizard.errFollowLeadSuit", nil))
+		var resObj controller.WizardWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "wizard.errFollowLeadSuit", resObj.MessageCode)
+	})
+
 	t.Run("bid phase message", func(t *testing.T) {
 		m, _ := setupWizardWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
@@ -255,7 +264,7 @@ func TestWizardWebPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.WizardWebPresenter)
 	m := setupWizardWebMock()
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "bid", Detail: "test"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "bid", DetailCode: "wizard.log.bid", DetailParams: map[string]string{"name": "You", "bid": "3"}},
 	})
 
 	result := p.ActionLogOutput(m)

@@ -226,8 +226,12 @@ func TestTrenteEtQuarante_Hint(t *testing.T) {
 func TestTrenteEtQuarante_ActionLog(t *testing.T) {
 	g := domain.NewDefaultTrenteEtQuarante()
 	g.Reset()
-	require.NoError(t, g.PlaceBet(domain.TrenteEtQuaranteBetNoir, 100))
-	assert.NotEmpty(t, g.GetActionLog())
+	g.ResolveRowsForTest(domain.TrenteEtQuaranteBetNoir, 100, teqRow32Black(), teqRow31Black())
+	logs := g.GetActionLog()
+	require.NotEmpty(t, logs)
+	entry := logs[len(logs)-1]
+	assert.Equal(t, "trenteetquarante.log.resultRougeNoirLose", entry.DetailCode)
+	assert.Equal(t, map[string]string{"payout": "0"}, entry.DetailParams)
 }
 
 func TestTrenteEtQuaranteConfig_Validate(t *testing.T) {

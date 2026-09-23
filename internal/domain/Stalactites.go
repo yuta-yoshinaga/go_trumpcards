@@ -160,7 +160,7 @@ func (f *Stalactites) MoveTableauToTableau(fromCol, cardIndex, toCol int) error 
 	f.moveCount++
 	movedCards := make([]*Card, len(movingCards))
 	copy(movedCards, movingCards)
-	f.appendLog("move", fmt.Sprintf("タブロー列%d→タブロー列%d", fromCol, toCol), movedCards)
+	f.appendLog("move", "stalactites.log.moveTableauToTableau", map[string]string{"from": fmt.Sprint(fromCol), "to": fmt.Sprint(toCol)}, movedCards)
 	f.checkStalemate()
 	return nil
 }
@@ -186,7 +186,7 @@ func (f *Stalactites) MoveTableauToFoundation(col int) error {
 	f.tableau[col] = fromCards[:len(fromCards)-1]
 	f.foundation[fIdx] = append(f.foundation[fIdx], card)
 	f.moveCount++
-	f.appendLog("move", fmt.Sprintf("タブロー列%d→ファンデーション", col), []*Card{card})
+	f.appendLog("move", "stalactites.log.moveTableauToFoundation", map[string]string{"col": fmt.Sprint(col)}, []*Card{card})
 	f.checkGameClear()
 	f.checkStalemate()
 	return nil
@@ -215,7 +215,7 @@ func (f *Stalactites) MoveTableauToStalactites(col, cell int) error {
 	f.tableau[col] = fromCards[:len(fromCards)-1]
 	f.cells[cell] = card
 	f.moveCount++
-	f.appendLog("move", fmt.Sprintf("タブロー列%d→フリーセル%d", col, cell), []*Card{card})
+	f.appendLog("move", "stalactites.log.moveTableauToFreeCell", map[string]string{"col": fmt.Sprint(col), "cell": fmt.Sprint(cell)}, []*Card{card})
 	f.checkStalemate()
 	return nil
 }
@@ -242,7 +242,7 @@ func (f *Stalactites) MoveStalactitesToTableau(cell, col int) error {
 	f.cells[cell] = nil
 	f.tableau[col] = append(f.tableau[col], card)
 	f.moveCount++
-	f.appendLog("move", fmt.Sprintf("フリーセル%d→タブロー列%d", cell, col), []*Card{card})
+	f.appendLog("move", "stalactites.log.moveFreeCellToTableau", map[string]string{"cell": fmt.Sprint(cell), "col": fmt.Sprint(col)}, []*Card{card})
 	f.checkStalemate()
 	return nil
 }
@@ -267,7 +267,7 @@ func (f *Stalactites) MoveStalactitesToFoundation(cell int) error {
 	f.cells[cell] = nil
 	f.foundation[fIdx] = append(f.foundation[fIdx], card)
 	f.moveCount++
-	f.appendLog("move", fmt.Sprintf("フリーセル%d→ファンデーション", cell), []*Card{card})
+	f.appendLog("move", "stalactites.log.moveFreeCellToFoundation", map[string]string{"cell": fmt.Sprint(cell)}, []*Card{card})
 	f.checkGameClear()
 	f.checkStalemate()
 	return nil
@@ -277,7 +277,7 @@ func (f *Stalactites) MoveStalactitesToFoundation(cell int) error {
 func (f *Stalactites) GiveUp() {
 	if f.phase == StalactitesPhasePlaying {
 		f.phase = StalactitesPhaseGameOver
-		f.appendLog("giveup", "ギブアップしました", nil)
+		f.appendLog("giveup", "stalactites.log.giveUp", nil, nil)
 	}
 }
 
@@ -517,7 +517,7 @@ func (f *Stalactites) AutoComplete() error {
 			break
 		}
 	}
-	f.appendLog("autocomplete", "オートコンプリートを実行しました", nil)
+	f.appendLog("autocomplete", "stalactites.log.autoComplete", nil, nil)
 	f.checkGameClear()
 	f.checkStalemate()
 	return nil
@@ -770,8 +770,8 @@ func (f *Stalactites) checkStalemate() {
 }
 
 // appendLog 棋譜エントリを追加
-func (f *Stalactites) appendLog(actionType, detail string, cards []*Card) {
-	f.appendLogAt(f.moveCount, 0, actionType, detail, cards)
+func (f *Stalactites) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	f.appendLogCodeAt(f.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // stalactitesJSON is the JSON wire format for Stalactites.

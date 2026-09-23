@@ -52,5 +52,20 @@
   "helpExamplePlay": "  play 0                    play hand card 0",
   "helpExampleNext": "  n                         read the trick result, then continue",
   "helpExampleTalon": "  discard 0 1               put two cards back after taking the talon",
-  "helpHint": "  h                         show a hint"
+  "helpHint": "  h                         show a hint",
+  "errInvalidContract": "Choose a contract (party/betli/durchmarsch/ulti).",
+  "errContractTrumpSuitRequired": "Party and Ulti require a trump suit from 1 to 4.",
+  "errDiscardCount": "You must discard exactly 2 cards.",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errDuplicateCard": "You cannot select the same card twice.",
+  "errFollowLeadOrOvertrump": "You must follow the lead suit or overtrump.",
+  "log.bid": "{{name}} declares {{contract}} (trump {{trump}})",
+  "log.discard": "{{name}} discards {{count}} cards",
+  "log.play": "{{name}} plays {{card}}",
+  "log.trickWin": "{{name}} wins trick {{trick}}",
+  "log.roundScore": "round {{round}}: declarer({{name}}) {{contract}} {{outcome}}",
+  "log.gameEnd": "{{name}} wins the match!",
+  "log.outcome.win": "won",
+  "log.outcome.loss": "lost",
+  "log.outcome.unknown": "-"
 }

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // freeBetMaxSliceLen はデシリアライズ時のスライス長上限。
@@ -126,7 +127,7 @@ func (g *FreeBetBlackjack) Reset() {
 	g.gameEndFlag = false
 	g.actionLog = nil
 	g.turnNumber = 0
-	g.appendLog("start", "free bet blackjack begins", nil)
+	g.appendLog("start", "freebetblackjack.log.start", nil, nil)
 	g.startRound()
 }
 
@@ -164,7 +165,7 @@ func (g *FreeBetBlackjack) NextRound() error {
 	g.startRound()
 	if g.player.GetChips() < FreeBetAnteMin {
 		g.gameEndFlag = true
-		g.appendLog("gameEnd", "out of chips", nil)
+		g.appendLog("gameEnd", "freebetblackjack.log.outOfChips", nil, nil)
 	}
 	return nil
 }
@@ -203,7 +204,7 @@ func (g *FreeBetBlackjack) PlaceBet(ante int) error {
 	g.dealerHand.AddCard(g.shoe.DrawCard())
 	g.dealerHand.AddCard(g.shoe.DrawCard())
 
-	g.appendLog("deal", fmt.Sprintf("ante %d", ante), hand.GetCards())
+	g.appendLog("deal", "freebetblackjack.log.deal", map[string]string{"ante": strconv.Itoa(ante)}, hand.GetCards())
 
 	if hand.IsBlackJack() || g.dealerHand.IsBlackJack() {
 		g.settle()
@@ -245,7 +246,7 @@ func (g *FreeBetBlackjack) Hit() error {
 		return err
 	}
 	h.AddCard(g.shoe.DrawCard())
-	g.appendLog("hit", "hit", h.GetCards())
+	g.appendLog("hit", "freebetblackjack.log.hit", nil, h.GetCards())
 	if h.GetScore() > 21 {
 		h.SetBusted(true)
 		g.advanceHand()
@@ -265,7 +266,7 @@ func (g *FreeBetBlackjack) Stand() error {
 		return err
 	}
 	h.SetStood(true)
-	g.appendLog("stand", "stand", nil)
+	g.appendLog("stand", "freebetblackjack.log.stand", nil, nil)
 	g.advanceHand()
 	return nil
 }
@@ -296,8 +297,7 @@ func (g *FreeBetBlackjack) FreeDouble() error {
 	g.freeBets[g.activeHand] += h.GetBet()
 	h.SetDoubled(true)
 	h.AddCard(g.shoe.DrawCard())
-	g.appendLog("freeDouble", fmt.Sprintf("free double to %d", h.GetBet()+g.freeBets[g.activeHand]),
-		h.GetCards())
+	g.appendLog("freeDouble", "freebetblackjack.log.freeDouble", map[string]string{"amount": strconv.Itoa(h.GetBet() + g.freeBets[g.activeHand])}, h.GetCards())
 	if h.GetScore() > 21 {
 		h.SetBusted(true)
 	} else {
@@ -362,7 +362,7 @@ func (g *FreeBetBlackjack) FreeSplit() error {
 	g.insertAt(g.activeHand+1, other, h.GetBet(), FreeBetResultNone)
 	g.freeBets[g.activeHand] = freeHere
 
-	g.appendLog("freeSplit", fmt.Sprintf("free split into %d hands", len(g.hands)), nil)
+	g.appendLog("freeSplit", "freebetblackjack.log.freeSplit", map[string]string{"hands": strconv.Itoa(len(g.hands))}, nil)
 	if isAces {
 		g.advanceHand()
 	}
@@ -411,7 +411,7 @@ func (g *FreeBetBlackjack) dealerPlay() {
 		}
 		g.dealerHand.AddCard(g.shoe.DrawCard())
 	}
-	g.appendLog("dealer", "dealer plays", g.dealerHand.GetCards())
+	g.appendLog("dealer", "freebetblackjack.log.dealerPlays", nil, g.dealerHand.GetCards())
 	g.settle()
 }
 
@@ -430,7 +430,7 @@ func (g *FreeBetBlackjack) settle() {
 	}
 	g.payout = total
 	g.player.AddChips(g.payout)
-	g.appendLog("result", fmt.Sprintf("payout %d", g.payout), nil)
+	g.appendLog("result", "freebetblackjack.log.payout", map[string]string{"payout": strconv.Itoa(g.payout)}, nil)
 	g.phase = FreeBetPhaseResult
 }
 
@@ -533,15 +533,9 @@ func (g *FreeBetBlackjack) dealerUpValue() int {
 // --- ログ ---
 
 // appendLog は行動ログを 1 行足す。
-func (g *FreeBetBlackjack) appendLog(actionType, detail string, cards []*Card) {
+func (g *FreeBetBlackjack) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	g.turnNumber++
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: g.turnNumber,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+	g.actionLog = append(g.actionLog, &ActionLogEntry{TurnNumber: g.turnNumber, PlayerIdx: 0, ActionType: actionType, DetailCode: detailCode, DetailParams: detailParams, Cards: cards})
 	if len(g.actionLog) > freeBetMaxSliceLen {
 		g.actionLog = g.actionLog[len(g.actionLog)-freeBetMaxSliceLen:]
 	}
@@ -586,6 +580,13 @@ func (g *FreeBetBlackjack) GetDealerScore() int {
 		return 0
 	}
 	return g.dealerHand.GetScore()
+}
+
+// IsDealerHoleRevealed はディーラーの伏せ札が公開済みかを返す。
+// ベット中は手札が空で、プレイ中は判断材料にならないよう非公開とし、
+// 決着後の Result フェーズだけ公開済みとする。
+func (g *FreeBetBlackjack) IsDealerHoleRevealed() bool {
+	return g.phase == FreeBetPhaseResult
 }
 
 // IsDealerPushed22 はディーラーが 22 でバストしたかを返す。

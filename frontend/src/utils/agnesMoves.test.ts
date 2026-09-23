@@ -1,6 +1,24 @@
 import { describe, expect, it } from 'vitest';
 import type { AgnesTableauCard, Card, CardDesign } from '../types/card';
-import { agnesCanPlaceOnFoundation, agnesCanPlaceOnTableau, agnesNextFoundationMove } from './agnesMoves';
+import {
+  agnesCanPlaceOnFoundation,
+  agnesCanPlaceOnTableau,
+  agnesFoundationIndex,
+  agnesNextFoundationMove,
+} from './agnesMoves';
+
+describe('agnesFoundationIndex', () => {
+  it('maps each suit to its foundation pile', () => {
+    expect(agnesFoundationIndex(card('SPADE', 1))).toBe(0);
+    expect(agnesFoundationIndex(card('CLOVER', 1))).toBe(1);
+    expect(agnesFoundationIndex(card('HEART', 1))).toBe(2);
+    expect(agnesFoundationIndex(card('DIAMOND', 1))).toBe(3);
+  });
+
+  it('returns -1 for an unknown suit', () => {
+    expect(agnesFoundationIndex(card('JOKER', 1))).toBe(-1);
+  });
+});
 
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 const up = (design: CardDesign, value: number): AgnesTableauCard => ({ card: card(design, value), faceUp: true });

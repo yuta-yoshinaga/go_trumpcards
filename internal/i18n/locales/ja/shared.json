@@ -1,0 +1,9 @@
+{
+  "errEmptyIndexList": "インデックスが空です",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errDuplicateCardIndex": "カードインデックスが重複しています",
+  "errFollowLeadSuit": "リードスートに従ってください",
+  "errFollowRuleViolation": "フォロー義務・切り札義務・オーバートランプ義務に反しています",
+  "errCardNil": "カードが nil です",
+  "errMustFollowEndgameRule": "第2フェーズではフォロールールに従う必要があります"
+}

@@ -1,4 +1,10 @@
 {
+  "log.deal": "trump suit is {{suit}}",
+  "log.trickWin": "wins trick {{trick}} ({{points}} pt)",
+  "log.draw": "stock exhausted with no claim -- the round is a draw",
+  "log.claimWin": "claims {{points}} points and wins",
+  "log.claimLose": "claims with only {{points}} points and forfeits",
+  "log.declare": "declares combination {{combination}} and wins",
   "helpTitle": "Bura",
   "helpPlay": "  p <i> [i] [i]            play cards (a lead may be up to 3 of one suit)",
   "helpClaim": "  c                        claim 31 points (claiming short forfeits)",

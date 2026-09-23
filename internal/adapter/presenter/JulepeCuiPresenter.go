@@ -13,13 +13,16 @@ import (
 )
 
 // julepePlayerStr returns the display string for a single player.
-func julepePlayerStr(player *domain.JulepePlayer, idx int, isDealer bool, playable []int) string {
+func julepePlayerStr(player *domain.JulepePlayer, idx int, isDealer bool, beast bool, playable []int) string {
 	var b strings.Builder
 	// **参加判断もリードも親の左隣から始まる** (#5748)。誰が親かが出ていないと、
 	// 自分が何番目に決断するのかが読めない。3〜5 人卓で毎ラウンド 1 つ回る。
 	name := cuiPlayerName(player, idx)
 	if isDealer {
 		name += i18n.T("julepe.dealerMark")
+	}
+	if beast {
+		name += i18n.T("julepe.beastMark")
 	}
 	b.WriteString(i18n.Tf("julepe.playerLine",
 		"name", name,
@@ -79,7 +82,8 @@ func (p *JulepeCuiPresenter) Output(r interfaces.JulepeGame, lastErr error) stri
 			if r.GetPhase() == domain.JulepePhasePlay && r.GetCurrentPlayerIdx() == i {
 				playable = r.GetValidPlayIndices(i)
 			}
-			sb.WriteString(julepePlayerStr(r.GetPlayer(i), i, i == r.GetDealerIdx(), playable))
+			beast := i < len(r.GetBeast()) && r.GetBeast()[i]
+			sb.WriteString(julepePlayerStr(r.GetPlayer(i), i, i == r.GetDealerIdx(), beast, playable))
 		}
 
 		sb.WriteString("----------\n")

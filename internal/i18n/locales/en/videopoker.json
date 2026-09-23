@@ -9,6 +9,7 @@
   "phaseDraw": "DRAW",
   "phaseResult": "RESULT",
   "phaseUnknown": "UNKNOWN",
+  "statsSummary": "{{hands}} hands / win rate {{winRate}}% / net {{net}}",
   "handHeader": "--- HAND ---",
   "holdLabel": "[HOLD]",
   "betLine": "bet: {{bet}} coin(s)",
@@ -46,5 +47,9 @@
   "helpExampleBet": "  b 5                  bet five coins and deal",
   "madeHandLine": "Current hand: {{handName}}",
   "madeHandNone": "Current hand: no paying hand",
-  "chipsRefilled": "Your balance fell below the minimum bet, so it was topped up to {{chips}}"
+  "chipsRefilled": "Your balance fell below the minimum bet, so it was topped up to {{chips}}",
+  "log.bet": "bet {{amount}} coin(s)",
+  "log.dealt": "dealt 5 cards",
+  "log.draw": "held {{held}}, drew {{drew}}",
+  "log.result": "{{hand}} payout={{payout}}"
 }

@@ -23,9 +23,9 @@ package domain
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // AluettePlayerCnt プレイヤー数 (人間 1 + CPU 3)。
@@ -364,12 +364,12 @@ func (g *Aluette) finishMatch() {
 		// **同点なら勝者なし。**席順で決めると片方のチームが常に得をする。
 		g.winnerTeam = -1
 	}
-	g.appendLog(-1, "gameend", "マッチ終了", nil)
+	g.appendLog(-1, "gameend", "aluette.log.matchEnd", nil, nil)
 }
 
 // appendLog 棋譜に 1 件追加する。
-func (g *Aluette) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.appendLogAt(g.trickNumber, playerIdx, actionType, detail, cards)
+func (g *Aluette) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCodeAt(g.trickNumber, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- トリックプレイ ---
@@ -414,7 +414,7 @@ func (g *Aluette) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "aluette.errCardIndexOutOfRange", nil)
 	}
 	g.playCard(g.currentPlayerIdx, player.RemoveCard(cardIndex))
 	return nil
@@ -538,7 +538,7 @@ func (g *Aluette) lowestOf(playerIdx int, valid []int) int {
 // playCard 1 枚を場に出し、トリックが揃えばフェーズを進める。
 func (g *Aluette) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", AluetteLuetteName(card), []*Card{card})
+	g.appendLog(playerIdx, "play", "aluette.log.play", map[string]string{"nameKey": aluetteLuetteLogKey(AluetteLuetteName(card))}, []*Card{card})
 	if len(g.currentTrick) < AluettePlayerCnt {
 		g.currentPlayerIdx = (g.currentPlayerIdx + 1) % AluettePlayerCnt
 		return
@@ -559,7 +559,7 @@ func (g *Aluette) ResolveTrick() {
 	g.players[winnerIdx].AddTrick(cards)
 	g.roundTricks[winnerIdx]++
 	g.lastTrickWinner = winnerIdx
-	g.appendLog(winnerIdx, "trickwin", fmt.Sprintf("トリック %d を獲得", g.trickNumber), cards)
+	g.appendLog(winnerIdx, "trickwin", "aluette.log.trickWin", map[string]string{"trick": strconv.Itoa(g.trickNumber)}, cards)
 
 	g.leadPlayerIdx = winnerIdx
 	g.currentPlayerIdx = winnerIdx
@@ -595,7 +595,7 @@ func (g *Aluette) settleRound() {
 	case teamTricks[1] >= AluetteTricksToWin:
 		g.teamScores[1]++
 	}
-	g.appendLog(-1, "settle", fmt.Sprintf("メーヌ %d 終了", g.roundNumber), nil)
+	g.appendLog(-1, "settle", "aluette.log.roundEnd", map[string]string{"round": strconv.Itoa(g.roundNumber)}, nil)
 }
 
 // ScoreRound メーヌを締め、規定点に達していればマッチを終える。
@@ -668,9 +668,6 @@ func (g *Aluette) GetConfig() AluetteConfig { return g.config }
 
 // SetConfig ゲーム設定を差し替える。
 func (g *Aluette) SetConfig(c AluetteConfig) { g.config = c }
-
-// GetActionLog 棋譜。
-func (g *Aluette) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // AluetteHint ヒント情報。
 type AluetteHint struct {
@@ -829,4 +826,24 @@ func (g *Aluette) UnmarshalJSON(data []byte) error {
 	// SetRand は呼ばれない。これを落とすと Easy 難易度の乱択が nil で落ちる (#4663)。
 	g.rng = rand.New(rand.NewSource(rand.Int63()))
 	return nil
+}
+
+// aluetteLuetteLogKey はリュエット名をログ用の翻訳キーに変換する。
+func aluetteLuetteLogKey(name string) string {
+	switch name {
+	case "Monsieur":
+		return "aluette.luette.monsieur"
+	case "Madame":
+		return "aluette.luette.madame"
+	case "Borgne":
+		return "aluette.luette.borgne"
+	case "Vache":
+		return "aluette.luette.vache"
+	case "GrandNeuf":
+		return "aluette.luette.grandNeuf"
+	case "PetitNeuf":
+		return "aluette.luette.petitNeuf"
+	default:
+		return "aluette.luette.unknown"
+	}
 }

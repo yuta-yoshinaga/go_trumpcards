@@ -28,13 +28,15 @@ import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { badgeErrorColors } from '../styles/badgeStyles';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { DiplomatMoveZone, DiplomatResponse } from '../types/card';
+import type { Card, DiplomatMoveZone, DiplomatResponse } from '../types/card';
 import { DiplomatPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { valueName } from '../utils/cardUtils';
 import { DIPLOMAT_HELP, parseDiplomatCommand } from '../utils/cli/commands/diplomatCommands';
 import { formatDiplomatState } from '../utils/cli/formatters/diplomatFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { diplomatFoundationRequirement } from '../utils/diplomatFoundation';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦', '♠', '♣', '♥', '♦'] as const;
@@ -162,6 +164,18 @@ function DiplomatPageContent() {
   const isEnded = isGameClear || isGameOver;
   const foundationCount = isGameOver ? state.foundation.reduce((sum, pile) => sum + pile.length, 0) : 0;
   const autoCompleteReady = state.foundation.some((pile) => pile.length > 0);
+
+  const selectedSourceCard: Card | undefined = (() => {
+    if (!selectedSource) return undefined;
+    if (selectedSource.zone === 'waste') {
+      return state.waste[state.waste.length - 1];
+    }
+    if (selectedSource.zone === 'tableau' && selectedSource.col !== undefined) {
+      const pile = state.tableau[selectedSource.col];
+      return pile ? pile[pile.length - 1] : undefined;
+    }
+    return undefined;
+  })();
 
   const isSourceSelected = (zone: string, col?: number) =>
     selectedSource !== null && selectedSource.zone === zone && selectedSource.col === col;
@@ -292,10 +306,19 @@ function DiplomatPageContent() {
               <div className="flex flex-wrap justify-center gap-1 sm:gap-2" data-tutorial="cg-foundation">
                 {state.foundation.map((pile, idx) => {
                   const foundationZone: DiplomatMoveZone = { zone: 'foundation', col: idx };
+                  const req = diplomatFoundationRequirement(idx, pile);
+                  const nextRankLabel = req.nextRank !== null ? valueName(req.nextRank) : null;
+                  const isLegalTarget =
+                    isPlaying &&
+                    !loading &&
+                    !isAutoCompleting &&
+                    selectedSourceCard !== undefined &&
+                    req.canPlace(selectedSourceCard);
                   return (
                     <div key={`f-${idx.toString()}`} className="text-center">
                       <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
                       <DropZone
+                        className="relative inline-block"
                         isDropTarget={dnd.isDropTarget(foundationZone)}
                         onDragOver={dnd.handleDragOver(foundationZone)}
                         onDrop={dnd.handleDrop(foundationZone)}
@@ -304,14 +327,17 @@ function DiplomatPageContent() {
                         {pile.length > 0 ? (
                           <button
                             type="button"
-                            onClick={() => game.handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
+                            onClick={() => {
+                              if (isLegalTarget) game.handleSelectTarget(foundationZone);
+                            }}
+                            disabled={!isLegalTarget}
+                            data-legal-target={isLegalTarget ? 'true' : undefined}
                             aria-label={t('foundationAriaLabel', {
                               suit: FOUNDATION_SUITS[idx],
                               idx,
                               count: pile.length,
                             })}
-                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
+                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isLegalTarget ? 'ring-2 ring-ds-success' : ''}`}
                           >
                             <AnimatedCard
                               card={pile[pile.length - 1]}
@@ -323,14 +349,26 @@ function DiplomatPageContent() {
                         ) : (
                           <button
                             type="button"
-                            onClick={() => game.handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading || !selectedSource}
+                            onClick={() => {
+                              if (isLegalTarget) game.handleSelectTarget(foundationZone);
+                            }}
+                            disabled={!isLegalTarget}
+                            data-legal-target={isLegalTarget ? 'true' : undefined}
                             aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx], idx })}
                             style={{ width: dims.cw, height: dims.ch }}
-                            className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+                            className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite} ${isLegalTarget ? 'ring-2 ring-ds-success' : ''}`}
                           >
                             A
                           </button>
+                        )}
+                        {nextRankLabel && (
+                          <span
+                            data-testid={`diplomat-foundation-next-${idx.toString()}`}
+                            aria-hidden="true"
+                            className="absolute -top-1 -right-1 px-1.5 py-0.5 rounded-md bg-black/60 text-ds-text-on-accent text-[10px] font-bold leading-none ring-1 ring-white/30 pointer-events-none"
+                          >
+                            {t('nextRankBadge', { rank: nextRankLabel })}
+                          </span>
                         )}
                       </DropZone>
                     </div>

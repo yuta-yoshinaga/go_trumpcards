@@ -34,6 +34,7 @@ func setupMaoCuiMock() *interfaces.MockMaoGame {
 	m.On("GetPlayerCorrectCount").Return(1)
 	m.On("GetRuleHintKey").Return("")
 	m.On("GetRulePenaltyFlag").Return(false)
+	m.On("GetSayWordHistory").Return([]domain.MaoSayWordAttempt(nil))
 	return m
 }
 
@@ -105,12 +106,24 @@ func TestMaoCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "ペナルティ")
 	})
 
+	t.Run("word history shows outcomes", func(t *testing.T) {
+		m, _ := setupMaoCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetSayWordHistory")
+		m.On("GetSayWordHistory").Return([]domain.MaoSayWordAttempt{{Word: "spade", Penalty: false}, {Word: "wrong", Penalty: true}})
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "宣言履歴")
+		assert.Contains(t, result, "spade")
+		assert.Contains(t, result, "正解")
+		assert.Contains(t, result, "wrong")
+		assert.Contains(t, result, "不正解（ペナルティ）")
+	})
+
 	t.Run("discard top shown", func(t *testing.T) {
 		m, _ := setupMaoCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDiscardTop")
 		m.On("GetDiscardTop").Return(domain.NewCard(domain.CardDesignHeart, 7, false))
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "捨て札: HEART 7")
+		assert.Contains(t, result, "捨て札: ♥7")
 	})
 
 	t.Run("penalty stack shown", func(t *testing.T) {
@@ -156,14 +169,14 @@ func TestMaoCuiPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.MaoCuiPresenter)
 	m := new(interfaces.MockMaoGame)
 	entries := []*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You plays SPADE 5"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	}
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return(entries)
 	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
 	m.On("GetPlayer", mock.Anything).Return(domain.NewMaoPlayer(true)).Maybe()
 	result := p.ActionLogOutput(m)
-	assert.Contains(t, result, "You plays SPADE 5")
+	assert.Contains(t, result, "テスト用の棋譜行 1")
 }
 
 // MaoRuleHintKeys は domain.maoRuleSet が使うヒントキー。ここを増やしたら

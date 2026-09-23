@@ -37,11 +37,13 @@
     "burst": {
       "pair": "PAIR!",
       "sandwich": "SANDWICH!",
-      "miss": "MISS!"
+      "miss": "MISS!",
+      "chanceWin": "CHANCE WIN!"
     },
     "slapAnnounce": {
       "correct": "{{player}} slapped correctly ({{reason}})",
-      "wrong": "{{player}} slapped incorrectly"
+      "wrong": "{{player}} slapped incorrectly",
+      "chanceWin": "{{player}} wins the chance and takes the pile"
     }
   },
   "hint": {

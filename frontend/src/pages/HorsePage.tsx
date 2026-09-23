@@ -212,6 +212,9 @@ export function HorsePageContent({ gameKey }: { gameKey: HorsePageGameKey }) {
               </span>
               <span className="mr-3 text-ds-text-primary">{disciplineName}</span>
               <span className="mr-3">
+                {t('disciplineOrder', { position: state.disciplinePosition, total: state.disciplineTotal })}
+              </span>
+              <span className="mr-3">
                 {t('hand', { n: state.handInDiscipline, total: state.config.handsPerDiscipline })}
               </span>
               {roundLabel && (
@@ -240,6 +243,9 @@ export function HorsePageContent({ gameKey }: { gameKey: HorsePageGameKey }) {
                   <div className={s.id === state.currentTurn ? 'text-ds-warning' : 'text-ds-text-primary'}>
                     {s.isHuman ? t('you') : s.name}
                   </div>
+                  {(s.folded || s.allIn) && (
+                    <div className="text-ds-warning">{s.folded ? t('label.folded') : t('label.allIn')}</div>
+                  )}
                   <div data-testid={`ho-seat-${s.id}-chips`}>{t('chips', { chips: s.chips })}</div>
                   {/* **見えている札だけが届く。** CPU の伏せ札はサーバが返さない。 */}
                   <div className="mt-1 flex justify-center gap-1">

@@ -14,18 +14,7 @@ import (
 
 // napBidName maps a bid constant (0/2/3/4/5) to its localized contract name.
 func napBidName(bid int) string {
-	switch domain.NapBid(bid) {
-	case domain.NapBidTwo:
-		return i18n.T("nap.bid.two")
-	case domain.NapBidThree:
-		return i18n.T("nap.bid.three")
-	case domain.NapBidFour:
-		return i18n.T("nap.bid.four")
-	case domain.NapBidNap:
-		return i18n.T("nap.bid.nap")
-	default:
-		return i18n.T("nap.bid.pass")
-	}
+	return i18n.T(domain.NapBidKey(domain.NapBid(bid)))
 }
 
 // napTrumpStr renders the trump glyph, or a "no trump" label when none.
@@ -156,7 +145,11 @@ func (p *NapCuiPresenter) writePrompt(b *strings.Builder, g interfaces.NapGame) 
 		b.WriteString(i18n.T("nap.promptTrickEnd") + "\n")
 		b.WriteString(i18n.T("nap.promptTrickEndHelp") + "\n")
 	case domain.NapPhaseRoundEnd:
-		b.WriteString(i18n.T("nap.promptRoundEnd") + "\n")
+		promptKey := "nap.promptRoundEnd"
+		if g.GetDeclarerIdx() < 0 {
+			promptKey = "nap.promptRoundEndPassedOut"
+		}
+		b.WriteString(i18n.T(promptKey) + "\n")
 		// **チップの授受が CUI に一切出ていなかった。**Web は nap-round-payout で
 		// 出しているのに、CUI はスコアの推移を見比べて何枚動いたのか推測する
 		// しかなかった。Nap 契約だけ非対称 (達成 +10 / 失敗は相手が各 +5) なので、

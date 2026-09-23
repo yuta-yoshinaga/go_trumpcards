@@ -67,6 +67,7 @@ func (p *TrashWebPresenter) buildBase(t interfaces.TrashGame) *controller.TrashW
 	resObj.DiscardSize = t.GetDiscardSize()
 	resObj.MoveCount = t.GetMoveCount()
 	resObj.Winner = t.GetWinner()
+	resObj.SuggestedWildSlot = t.SuggestWildSlot()
 
 	if top := t.GetDiscardTop(); top != nil {
 		resObj.DiscardTop = cardToOutput(top)

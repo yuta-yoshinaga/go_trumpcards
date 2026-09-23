@@ -358,6 +358,9 @@ function SeahavenTowersPageContent() {
             <div className="text-game-text-muted text-xs mb-2" data-testid="st-supermove-limit">
               {t('supermoveLimitLabel', { limit: supermoveLimit })}
             </div>
+            <div className="text-game-text-muted text-xs mb-2" data-testid="st-empty-column-rule">
+              {t('emptyColumnRule')}
+            </div>
 
             {/* Tableau */}
             <div className="relative">

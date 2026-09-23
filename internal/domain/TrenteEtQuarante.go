@@ -38,6 +38,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // トラント・エ・カラントの定数
@@ -216,7 +217,7 @@ func (g *TrenteEtQuarante) ensureShoe() {
 	if g.trumpCards == nil || g.trumpCards.GetRemainingCount() < TrenteEtQuaranteReshuffleThreshold {
 		g.trumpCards = newTrenteEtQuaranteShoe()
 		g.trumpCards.Shuffle()
-		g.appendLog(-1, "shuffle", "shoe reshuffled", nil)
+		g.appendLog(-1, "shuffle", "trenteetquarante.log.shuffle", nil, nil)
 	}
 }
 
@@ -236,8 +237,7 @@ func (g *TrenteEtQuarante) PlaceBet(bet TrenteEtQuaranteBet, stake int) error {
 	}
 	g.state.currentBet = bet
 	g.state.stake = stake
-	g.appendLog(0, "bet",
-		fmt.Sprintf("%s stake=%d", TrenteEtQuaranteBetNames[bet], stake), nil)
+	g.appendLog(0, "bet", trenteEtQuaranteBetLogCode(bet), map[string]string{"stake": strconv.Itoa(stake)}, nil)
 
 	g.ensureShoe()
 	g.dealRows()
@@ -253,10 +253,12 @@ func (g *TrenteEtQuarante) dealRows() {
 	if len(g.state.noirRow) > 0 {
 		g.state.firstCardRed = trenteEtQuaranteIsRed(g.state.noirRow[0])
 	}
-	g.appendLog(-1, "deal",
-		fmt.Sprintf("Noir=%d (%d cards), Rouge=%d (%d cards)",
-			g.state.noirTotal, len(g.state.noirRow), g.state.rougeTotal, len(g.state.rougeRow)),
-		nil)
+	g.appendLog(-1, "deal", "trenteetquarante.log.deal", map[string]string{
+		"noirTotal":  strconv.Itoa(g.state.noirTotal),
+		"noirCards":  strconv.Itoa(len(g.state.noirRow)),
+		"rougeTotal": strconv.Itoa(g.state.rougeTotal),
+		"rougeCards": strconv.Itoa(len(g.state.rougeRow)),
+	}, nil)
 }
 
 // dealOneRow は合計が TrenteEtQuaranteTarget 以上になるまで札を引き、列と合計を返す。
@@ -297,15 +299,14 @@ func (g *TrenteEtQuarante) resolve() {
 		g.state.payout = g.state.stake / 2
 		g.player.AddChips(g.state.payout)
 		g.player.RecordRound(false)
-		g.appendLog(-1, "refait",
-			fmt.Sprintf("Refait at 31 — half stake to house (refund=%d)", g.state.payout), nil)
+		g.appendLog(-1, "refait", "trenteetquarante.log.refait", map[string]string{"refund": strconv.Itoa(g.state.payout)}, nil)
 	case g.state.winningRow == TrenteEtQuaranteRowNone:
 		// プッシュ: ステーク全額返却。
 		g.state.result = TrenteEtQuaranteResultDraw
 		g.state.payout = g.state.stake
 		g.player.AddChips(g.state.payout)
 		g.player.RecordRound(false)
-		g.appendLog(-1, "push", "tie — stake returned", nil)
+		g.appendLog(-1, "push", "trenteetquarante.log.push", nil, nil)
 	default:
 		won := trenteEtQuaranteBetWins(g.state.currentBet, g.state.winningRow, g.state.firstCardRed)
 		if won {
@@ -317,11 +318,7 @@ func (g *TrenteEtQuarante) resolve() {
 			g.state.payout = 0
 		}
 		g.player.RecordRound(won)
-		g.appendLog(-1, "result",
-			fmt.Sprintf("%s row wins; bet=%s -> %s (payout=%d)",
-				trenteEtQuaranteRowName(g.state.winningRow),
-				TrenteEtQuaranteBetNames[g.state.currentBet],
-				trenteEtQuaranteResultName(g.state.result), g.state.payout), nil)
+		g.addTrenteEtQuaranteResultLog(g.state.winningRow, g.state.currentBet, g.state.result, g.state.payout)
 	}
 
 	g.state.scored = true
@@ -372,30 +369,6 @@ func trenteEtQuaranteBetWins(bet TrenteEtQuaranteBet, winningRow int, firstCardR
 	}
 }
 
-// trenteEtQuaranteRowName は勝ち列の名称を返す。
-func trenteEtQuaranteRowName(row int) string {
-	switch row {
-	case TrenteEtQuaranteRowNoir:
-		return "Noir"
-	case TrenteEtQuaranteRowRouge:
-		return "Rouge"
-	default:
-		return "None"
-	}
-}
-
-// trenteEtQuaranteResultName は結果の名称を返す。
-func trenteEtQuaranteResultName(r TrenteEtQuaranteResult) string {
-	switch r {
-	case TrenteEtQuaranteResultWin:
-		return "Win"
-	case TrenteEtQuaranteResultLose:
-		return "Lose"
-	default:
-		return "Push"
-	}
-}
-
 // --- Hint ---
 
 // GetHint はベット受付中に教育的な助言を返す。バンキングゲームのため戦略的優劣はなく、
@@ -412,8 +385,74 @@ func (g *TrenteEtQuarante) GetHint() *TrenteEtQuaranteHint {
 
 // --- ヘルパー ---
 
-func (g *TrenteEtQuarante) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.state.appendLog(playerIdx, actionType, detail, cards)
+func (g *TrenteEtQuarante) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.state.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
+}
+
+func trenteEtQuaranteBetLogCode(bet TrenteEtQuaranteBet) string {
+	switch bet {
+	case TrenteEtQuaranteBetNoir:
+		return "trenteetquarante.log.betNoir"
+	case TrenteEtQuaranteBetRouge:
+		return "trenteetquarante.log.betRouge"
+	case TrenteEtQuaranteBetCouleur:
+		return "trenteetquarante.log.betCouleur"
+	default:
+		return "trenteetquarante.log.betInverse"
+	}
+}
+
+func trenteEtQuaranteResultLogCode(row int, bet TrenteEtQuaranteBet, result TrenteEtQuaranteResult) string {
+	if row == TrenteEtQuaranteRowRouge {
+		switch bet {
+		case TrenteEtQuaranteBetNoir:
+			if result == TrenteEtQuaranteResultLose {
+				return "trenteetquarante.log.resultRougeNoirLose"
+			}
+			return "trenteetquarante.log.resultRougeNoirWin"
+		case TrenteEtQuaranteBetRouge:
+			if result == TrenteEtQuaranteResultLose {
+				return "trenteetquarante.log.resultRougeRougeLose"
+			}
+			return "trenteetquarante.log.resultRougeRougeWin"
+		case TrenteEtQuaranteBetCouleur:
+			if result == TrenteEtQuaranteResultLose {
+				return "trenteetquarante.log.resultRougeCouleurLose"
+			}
+			return "trenteetquarante.log.resultRougeCouleurWin"
+		default:
+			if result == TrenteEtQuaranteResultLose {
+				return "trenteetquarante.log.resultRougeInverseLose"
+			}
+			return "trenteetquarante.log.resultRougeInverseWin"
+		}
+	}
+	switch bet {
+	case TrenteEtQuaranteBetNoir:
+		if result == TrenteEtQuaranteResultLose {
+			return "trenteetquarante.log.resultNoirNoirLose"
+		}
+		return "trenteetquarante.log.resultNoirNoirWin"
+	case TrenteEtQuaranteBetRouge:
+		if result == TrenteEtQuaranteResultLose {
+			return "trenteetquarante.log.resultNoirRougeLose"
+		}
+		return "trenteetquarante.log.resultNoirRougeWin"
+	case TrenteEtQuaranteBetCouleur:
+		if result == TrenteEtQuaranteResultLose {
+			return "trenteetquarante.log.resultNoirCouleurLose"
+		}
+		return "trenteetquarante.log.resultNoirCouleurWin"
+	default:
+		if result == TrenteEtQuaranteResultLose {
+			return "trenteetquarante.log.resultNoirInverseLose"
+		}
+		return "trenteetquarante.log.resultNoirInverseWin"
+	}
+}
+
+func (g *TrenteEtQuarante) addTrenteEtQuaranteResultLog(row int, bet TrenteEtQuaranteBet, result TrenteEtQuaranteResult, payout int) {
+	g.appendLog(-1, "result", trenteEtQuaranteResultLogCode(row, bet, result), map[string]string{"payout": strconv.Itoa(payout)}, nil)
 }
 
 // --- 状態アクセサ ---

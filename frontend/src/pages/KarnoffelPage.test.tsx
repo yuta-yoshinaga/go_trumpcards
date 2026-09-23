@@ -243,6 +243,29 @@ describe('KarnoffelPage', () => {
     expect(screen.queryByTestId('karnoffel-rank-pope')).not.toBeInTheDocument();
     expect(document.querySelectorAll('[data-testid^="karnoffel-rank-"]')).toHaveLength(1);
   });
+
+  it('distinguishes the devil badge and aria label when leading versus following', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [seat(0, true, { cards: [card('HEART', 7)] }), seat(1, false), seat(2, false), seat(3, false)],
+        trick: [],
+      }),
+    );
+    const { unmount } = renderWithProviders(<KarnoffelPage />);
+    expect(await screen.findByTestId('karnoffel-rank-devilLead')).toHaveTextContent('悪魔（リード）');
+    expect(screen.getByRole('button', { name: /悪魔（リード）/ })).toBeInTheDocument();
+    unmount();
+
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [seat(0, true, { cards: [card('HEART', 7)] }), seat(1, false), seat(2, false), seat(3, false)],
+        trick: [card('SPADE', 13)],
+      }),
+    );
+    renderWithProviders(<KarnoffelPage />);
+    expect(await screen.findByTestId('karnoffel-rank-devilFollow')).toHaveTextContent('悪魔（追随・最弱）');
+    expect(screen.getByRole('button', { name: /悪魔（追随・最弱）/ })).toBeInTheDocument();
+  });
   // **上札自身が称号札のこともある。**手札にはバッジを出しているのに上札には
   // 出していないと、同じ札が場所によって別の重みに見える (#6529)。
   it('badges an up-card that carries a title', async () => {

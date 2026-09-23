@@ -85,4 +85,20 @@ describe('formatSnapState', () => {
   it('shows the server message', () => {
     expect(formatSnapState(state({ message: 'boom' }))).toContain('boom');
   });
+
+  // 札切れ席に "(out of cards)" が出て、ストックを持つ席には出ない。
+  it('appends (out of cards) only for zero-stock seats', () => {
+    const zeroStock = state({
+      players: [
+        { id: 0, isHuman: true, stockSize: 0 },
+        { id: 1, isHuman: false, stockSize: 5 },
+      ],
+    });
+    const out = formatSnapState(zeroStock);
+    // 札切れ席に付く
+    expect(out).toContain('0 in stock (out of cards)');
+    // ストックがある席には付かない
+    expect(out).toContain('5 in stock');
+    expect(out).not.toContain('5 in stock (out of cards)');
+  });
 });

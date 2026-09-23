@@ -87,7 +87,7 @@ func TestNertzCuiPresenter_Output(t *testing.T) {
 		g.On("GetPlayers").Return([]*domain.NertzPlayer{empty, nil}).Maybe()
 		g.On("GetFoundations").Return([]*domain.NertzFoundation{nil, domain.NewNertzFoundation()}).Maybe()
 		out := new(NertzCuiPresenter).Output(g, nil)
-		assert.Contains(t, out, "(empty)")
+		assert.Contains(t, out, "(空)")
 	})
 	t.Run("with error", func(t *testing.T) {
 		g := new(interfaces.MockNertzGame)
@@ -146,9 +146,9 @@ func TestNertzCuiPresenter_HintOutput(t *testing.T) {
 		want string
 	}{
 		{"none", nil, "ヒントはありません"},
-		{"nertz->foundation", &domain.NertzHint{FromZone: "nertz", FromCol: -1, CardIndex: -1, ToZone: "foundation", ToCol: 0}, "ナッツ → ファウンデーション0"},
+		{"nertz->foundation", &domain.NertzHint{FromZone: "nertz", FromCol: -1, CardIndex: -1, ToZone: "foundation", ToCol: 0}, "ナッツ → 組札0"},
 		{"waste->tableau", &domain.NertzHint{FromZone: "waste", FromCol: -1, CardIndex: -1, ToZone: "tableau", ToCol: 1}, "ウェイスト → タブロー1"},
-		{"tableau->foundation", &domain.NertzHint{FromZone: "tableau", FromCol: 0, CardIndex: 2, ToZone: "foundation", ToCol: 1}, "タブロー0(idx=2) → ファウンデーション1"},
+		{"tableau->foundation", &domain.NertzHint{FromZone: "tableau", FromCol: 0, CardIndex: 2, ToZone: "foundation", ToCol: 1}, "タブロー0(番号=2) → 組札1"},
 		{"tableau->tableau no idx", &domain.NertzHint{FromZone: "tableau", FromCol: 0, CardIndex: -1, ToZone: "tableau", ToCol: 2}, "タブロー0 → タブロー2"},
 	}
 	for _, tt := range tests {

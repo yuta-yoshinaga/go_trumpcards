@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // SultanPhase スルタンゲームフェーズ
@@ -141,7 +142,7 @@ func (su *Sultan) Draw() error {
 	su.stock = su.stock[:len(su.stock)-1]
 	su.waste = append(su.waste, card)
 	su.moveCount++
-	su.appendLog("draw", "ストックからカードを引きました", []*Card{card})
+	su.appendLog("draw", "sultan.log.draw", nil, []*Card{card})
 	su.checkSultanStalemate()
 	return nil
 }
@@ -170,7 +171,7 @@ func (su *Sultan) Redeal() error {
 	su.waste = nil
 	su.redealCount++
 	su.moveCount++
-	su.appendLog("redeal", "ウェイストを集めて新しいストックを作りました", nil)
+	su.appendLog("redeal", "sultan.log.redeal", nil, nil)
 	su.checkSultanStalemate()
 	return nil
 }
@@ -201,7 +202,7 @@ func (su *Sultan) MoveDivanToFoundation(divanIdx int) error {
 		su.divan[divanIdx] = nil
 	}
 	su.moveCount++
-	su.appendLog("move", fmt.Sprintf("ディヴァン%d→ファンデーション", divanIdx), []*Card{card})
+	su.appendLog("move", "sultan.log.divanToFoundation", map[string]string{"divan": strconv.Itoa(divanIdx)}, []*Card{card})
 	su.checkGameClear()
 	su.checkSultanStalemate()
 	return nil
@@ -224,7 +225,7 @@ func (su *Sultan) MoveWasteToFoundation() error {
 	su.waste = su.waste[:len(su.waste)-1]
 	su.foundation[fIdx] = append(su.foundation[fIdx], card)
 	su.moveCount++
-	su.appendLog("move", "ウェイスト→ファンデーション", []*Card{card})
+	su.appendLog("move", "sultan.log.wasteToFoundation", nil, []*Card{card})
 	su.checkGameClear()
 	su.checkSultanStalemate()
 	return nil
@@ -234,7 +235,7 @@ func (su *Sultan) MoveWasteToFoundation() error {
 func (su *Sultan) GiveUp() {
 	if su.phase == SultanPhasePlaying {
 		su.phase = SultanPhaseGameOver
-		su.appendLog("giveup", "ギブアップしました", nil)
+		su.appendLog("giveup", "sultan.log.giveup", nil, nil)
 	}
 }
 
@@ -305,7 +306,7 @@ func (su *Sultan) AutoComplete() error {
 			break
 		}
 	}
-	su.appendLog("autocomplete", "オートコンプリートを実行しました", nil)
+	su.appendLog("autocomplete", "sultan.log.autocomplete", nil, nil)
 	su.checkGameClear()
 	return nil
 }
@@ -506,8 +507,8 @@ func (su *Sultan) restoreSnapshot(snap *sultanSnapshot) {
 }
 
 // appendLog 棋譜エントリを追加
-func (su *Sultan) appendLog(actionType, detail string, cards []*Card) {
-	su.appendLogAt(su.moveCount, 0, actionType, detail, cards)
+func (su *Sultan) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	su.appendLogCodeAt(su.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // sultanJSON is the JSON wire format for Sultan.

@@ -77,5 +77,6 @@
   "scoresRoundPoints": "今ラウンド",
   "roundPointsOf": "{{points}} / {{total}}",
   "trumpSuit": "切り札: {{suit}}",
-  "noTrump": "切り札未確定"
+  "noTrump": "切り札未確定",
+  "roundBreakdown": "ラウンド内訳: チーム{{a}} {{athird}}点 / チーム{{b}} {{bthird}}点（最後のトリック: チーム{{lastteam}}）"
 }

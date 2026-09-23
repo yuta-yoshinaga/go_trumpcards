@@ -221,6 +221,28 @@ function BostonPageContent() {
               <div className="mt-1 text-ds-text-muted">{t('ladderNote')}</div>
             </div>
 
+            {/* **相方がどの段で宣言し、誰がどこで降りたかは公開情報で、続けるか降りるかの
+                判断そのもの。**パス (level=0) も区別して並べる (#7388)。 */}
+            {state.bids.length > 0 && (
+              <div className="mb-2 p-2 rounded bg-black/20 text-xs" data-testid="boston-bid-history">
+                <div className="mb-1 text-ds-text-primary">{t('bidHistoryTitle')}</div>
+                <div className="flex flex-wrap gap-x-3">
+                  {state.bids.map((b, i) => (
+                    <span key={`bid-${b.player}-${i}`} data-testid={`boston-bid-${i}`}>
+                      {b.level === 0
+                        ? t('bidHistoryPass', {
+                            name: playerLabel(b.player, state.players[b.player]?.isHuman === true),
+                          })
+                        : t('bidHistoryEntry', {
+                            name: playerLabel(b.player, state.players[b.player]?.isHuman === true),
+                            bid: b.suit > 0 ? `${bidLabel(b.name)} ${SUIT_GLYPHS[b.suit]}` : bidLabel(b.name),
+                          })}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Players */}
             <div className="mb-2 p-2 rounded bg-black/30" data-tutorial="boston-players">
               <div className="mb-1 text-ds-text-primary text-sm">{t('playersTitle')}</div>

@@ -34,6 +34,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { DUCHESS_HELP, parseDuchessCommand } from '../utils/cli/commands/duchessCommands';
 import { formatDuchessState } from '../utils/cli/formatters/duchessFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { duchessLegalTargets } from '../utils/duchessLegalTargets';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
@@ -176,12 +177,36 @@ function DuchessPageContent() {
     selectedSource.col === col &&
     selectedSource.cardIndex === cardIndex;
 
+  const selectedCard = selectedSource
+    ? selectedSource.zone === 'reserve'
+      ? state.reserve[selectedSource.col ?? -1]?.at(-1)
+      : selectedSource.zone === 'waste'
+        ? state.waste.at(-1)
+        : selectedSource.zone === 'tableau'
+          ? state.tableau[selectedSource.col ?? -1]?.[selectedSource.cardIndex ?? -1]?.card
+          : undefined
+    : undefined;
+  const legalTargets = duchessLegalTargets(
+    state.tableau,
+    state.foundation,
+    state.reserve,
+    state.baseRank,
+    state.awaitingBaseRank,
+    selectedCard,
+    selectedSource?.zone,
+  );
+  const targetRing = ' rounded ring-2 ring-ds-success';
+
   const renderTableauColumn = (colIdx: number) => {
     const col = state.tableau[colIdx] ?? [];
     const tableauColZone: DuchessMoveZone = { zone: 'tableau', col: colIdx };
     const reserveOnly = col.length === 0 && reserveRemaining > 0;
     return (
-      <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
+      <div
+        key={`col-${colIdx.toString()}`}
+        className={`flex-1 min-w-0${legalTargets.tableau.has(colIdx) ? targetRing : ''}`}
+        data-legal-target={legalTargets.tableau.has(colIdx) ? 'true' : undefined}
+      >
         <div className="text-center text-xs text-ds-text-muted mb-0.5" aria-hidden="true">
           #{colIdx}
         </div>
@@ -355,7 +380,11 @@ function DuchessPageContent() {
                 {state.foundation.map((pile, idx) => {
                   const foundationZone: DuchessMoveZone = { zone: 'foundation', col: idx };
                   return (
-                    <div key={`f-${idx.toString()}`} className="text-center">
+                    <div
+                      key={`f-${idx.toString()}`}
+                      className={`text-center${legalTargets.foundation.has(idx) ? targetRing : ''}`}
+                      data-legal-target={legalTargets.foundation.has(idx) ? 'true' : undefined}
+                    >
                       <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
                       <DropZone
                         isDropTarget={dnd.isDropTarget(foundationZone)}

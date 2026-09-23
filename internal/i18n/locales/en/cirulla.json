@@ -1,4 +1,5 @@
 {
+  "bonus.unknown": "Unknown",
   "helpTitle": "Cirulla",
   "helpPlay": "  play / p <idx> [table...] play a card (list table numbers to capture)",
   "helpNextRound": "  nextround / nr            go to the next round",
@@ -45,5 +46,13 @@
   "errCardRange": "That card number is out of range.",
   "errMustCapture": "You must capture when a capture is available.",
   "errInvalidCapture": "That combination cannot be captured.",
-  "invalidTargetScore": "Invalid target score: {{val}}. Please enter 11-51."
+  "invalidTargetScore": "Invalid target score: {{val}}. Please enter 11-51.",
+  "log.deal": "round {{round}}: dealer={{dealer}}, table={{table}}",
+  "log.bonus": "player {{player}} scores {{bonus}} for {{points}}",
+  "log.discard": "player {{player}} lays {{card}}",
+  "log.capture": "player {{player}} takes {{count}} card(s) with {{card}}",
+  "log.scopa": "player {{player}} sweeps the table",
+  "log.sweep": "player {{player}} takes the {{count}} card(s) left on the table",
+  "log.roundEnd": "round {{round}}: {{score0}} - {{score1}}",
+  "log.gameEnd": "player {{player}} wins the match"
 }

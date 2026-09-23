@@ -62,6 +62,16 @@ describe('ScoponePage', () => {
     expect(screen.getByTestId('team-score-1')).toBeInTheDocument();
   });
 
+  it('renders the scoring categories before the round ends', async () => {
+    renderWithProviders(<ScoponePage />);
+    const rules = await screen.findByTestId('scopone-score-rules');
+    expect(rules).toHaveTextContent('最多カード（1点）');
+    expect(rules).toHaveTextContent('最多ダイヤ（1点）');
+    expect(rules).toHaveTextContent('最多の7（1点）');
+    expect(rules).toHaveTextContent('セッテベッロ (7♦)（1点）');
+    expect(rules).toHaveTextContent('スコパ（1回1点）');
+  });
+
   it('take button is disabled until both hand and table are selected', async () => {
     renderWithProviders(<ScoponePage />);
     await waitFor(() => expect(screen.getByTestId('take-button')).toBeInTheDocument());

@@ -170,6 +170,30 @@ describe('PitchPage', () => {
     expect(pass.querySelector('kbd')?.textContent).toBe('P');
   });
 
+  it('disables passing and explains the dealer rule when everyone has passed', async () => {
+    mockApi.mockResolvedValue({ ...bidState, dealerIdx: 0 });
+    renderWithProviders(<PitchPage />);
+    const pass = await screen.findByRole('button', { name: /パス/ });
+    expect(pass).toBeDisabled();
+    expect(pass).toHaveAttribute('title', '親は全員パスのときパスできません。2〜4のビッドを宣言してください。');
+    expect(screen.getByTestId('pitch-pass-restriction')).toHaveTextContent(
+      '親は全員パスのときパスできません。2〜4のビッドを宣言してください。',
+    );
+    expect(screen.getByRole('button', { name: /ビッド 2/ })).toBeEnabled();
+  });
+
+  it.each([
+    ['親でない', { dealerIdx: 3, currentBid: 0 }],
+    ['ビッド済み', { dealerIdx: 0, currentBid: 2 }],
+  ])('keeps passing enabled when %s', async (_label, overrides) => {
+    mockApi.mockResolvedValue({ ...bidState, ...overrides });
+    renderWithProviders(<PitchPage />);
+    const pass = await screen.findByRole('button', { name: /パス/ });
+    expect(pass).toBeEnabled();
+    expect(pass).not.toHaveAttribute('title');
+    expect(screen.queryByTestId('pitch-pass-restriction')).not.toBeInTheDocument();
+  });
+
   it('shows score table with players', async () => {
     mockApi.mockResolvedValue(bidState);
     renderWithProviders(<PitchPage />);

@@ -135,16 +135,16 @@ func TestWindmillCuiPresenter_HintOutput(t *testing.T) {
 	}{
 		{"sail to the centre",
 			&domain.WindmillHint{FromZone: "sail", FromIdx: 4, ToZone: "center", ToIdx: -1},
-			[]string{"帆4", "中央基礎札"}},
+			[]string{"帆4", "中央組札"}},
 		{"sail to a corner",
 			&domain.WindmillHint{FromZone: "sail", FromIdx: 0, ToZone: "corner", ToIdx: 2},
-			[]string{"帆0", "四隅基礎札2"}},
+			[]string{"帆0", "四隅組札2"}},
 		{"waste to the centre",
 			&domain.WindmillHint{FromZone: "waste", FromIdx: -1, ToZone: "center", ToIdx: -1},
-			[]string{"捨て札", "中央基礎札"}},
+			[]string{"捨て札", "中央組札"}},
 		{"the corner pull-back",
 			&domain.WindmillHint{FromZone: "corner", FromIdx: 1, ToZone: "center", ToIdx: -1},
-			[]string{"四隅基礎札1", "中央基礎札"}},
+			[]string{"四隅組札1", "中央組札"}},
 		{"draw from the stock",
 			&domain.WindmillHint{FromZone: "stock", FromIdx: -1, ToZone: "waste", ToIdx: -1},
 			[]string{"山札", i18n.T("windmill.hintToWaste")}},
@@ -181,7 +181,7 @@ func TestWindmillCuiPresenter_ActionLogOutput(t *testing.T) {
 		g := new(interfaces.MockWindmillGame)
 		g.On("GetPhase").Return(domain.WindmillPhaseGameOver)
 		g.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "move", Detail: "test"},
+			{TurnNumber: 1, ActionType: "move", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 
 		assert.Contains(t, new(WindmillCuiPresenter).ActionLogOutput(g), "move")

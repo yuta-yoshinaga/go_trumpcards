@@ -86,6 +86,7 @@ const cpuPlayTurnState: BridgeResponse = {
 const trickEndState: BridgeResponse = {
   ...playPhaseState,
   phase: 2,
+  leadPlayerIdx: 0,
   currentTrick: [
     { playerIdx: 0, card: { design: 'SPADE', value: 1 } },
     { playerIdx: 1, card: { design: 'HEART', value: 5 } },
@@ -178,6 +179,38 @@ beforeEach(() => {
 });
 
 describe('BridgePage', () => {
+  it('shows the resolved winner badge at the lead player seat', async () => {
+    mockExec.mockResolvedValue(trickEndState);
+    renderWithProviders(<BridgePage />);
+
+    const badge = await screen.findByTestId('trick-winner-badge');
+    expect(badge).toHaveTextContent('勝ち');
+    expect(badge).not.toHaveTextContent('trickWinnerBadge');
+    expect(badge.closest('[data-trick-winner]')).toHaveAttribute('data-trick-winner', 'true');
+    expect(screen.getAllByTestId('trick-winner-badge')).toHaveLength(1);
+  });
+
+  it('does not show a winner badge while the trick is in progress', async () => {
+    mockExec.mockResolvedValue({ ...trickEndState, phase: 1 });
+    renderWithProviders(<BridgePage />);
+
+    await waitFor(() => expect(screen.getByTestId('trick-display-cards')).toBeInTheDocument());
+    expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument();
+  });
+
+  it('does not show a winner badge at a seat other than leadPlayerIdx', async () => {
+    mockExec.mockResolvedValue(trickEndState);
+    renderWithProviders(<BridgePage />);
+
+    const trickCards = await screen.findByTestId('trick-display-cards');
+    const otherSeat = Array.from(trickCards.querySelectorAll('[data-team]')).find((seat) =>
+      seat.textContent?.includes('CPU 1'),
+    );
+    expect(otherSeat).toBeInTheDocument();
+    expect(otherSeat).not.toHaveAttribute('data-trick-winner', 'true');
+    expect(within(trickCards).getByTestId('trick-winner-badge')).toBeInTheDocument();
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<BridgePage />);

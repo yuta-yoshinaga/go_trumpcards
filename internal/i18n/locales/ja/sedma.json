@@ -1,4 +1,10 @@
 {
+  "log.play": "{{name}}が{{card}}を出しました",
+  "log.trickWin": "{{name}}がトリック{{trick}}を獲得しました（+{{points}}点）",
+  "log.trickWinLast": "{{name}}がトリック{{trick}}を獲得しました（+{{points}}点、最後のボーナス+{{bonus}}点）",
+  "log.roundScore": "ラウンド{{round}}: A={{teamA}}（ラウンド{{roundA}}）、B={{teamB}}（ラウンド{{roundB}}）",
+  "log.gameEndTeamA": "チームAがマッチに勝利しました！",
+  "log.gameEndTeamB": "チームBがマッチに勝利しました！",
   "helpTitle": "セドマ (Sedma)",
   "helpPlay": "  play <idx>               カードを出す",
   "helpNext": "  n                         次のトリックへ",
@@ -14,12 +20,13 @@
   "promptRoundEnd": "ラウンド終了（チームA: {{ptsA}}点, チームB: {{ptsB}}点）",
   "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
   "hintNone": "ヒントはありません。",
-  "hintCard": "[HINT: {{cards}} ({{reason}})]",
+  "hintCard": "[ヒント: {{cards}} ({{reason}})]",
   "hintReasonLeadLow": "低い札でリードして温存する",
   "hintReasonCapture": "奪取する（同ランクまたは7）",
   "hintReasonDiscardLow": "取れない／取る価値がないので低い札を捨てる",
   "trickWinner": "{{name}} がトリックを獲得 (+{{points}}点)",
   "helpExamplePlay": "  play 0                   手札の 0 番のカードを出す",
   "helpExampleNext": "  n                        トリックの決着を見てから次のトリックへ",
-  "helpHint": "  h                         助言を表示"
+  "helpHint": "  h                         助言を表示",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です"
 }

@@ -21,6 +21,8 @@ export interface HeartsPlayerData {
    * (#5491). Always false while the rule is off.
    */
   tookOmnibusJD: boolean;
+  /** Card-design values for suits this player has proven void this deal. */
+  voidSuits?: number[];
 }
 
 /** A card played in a Hearts trick. */

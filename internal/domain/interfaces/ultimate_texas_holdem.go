@@ -64,4 +64,6 @@ type UltimateTexasHoldemGame interface {
 	GetDealerBest() []*domain.Card
 	// GetChips チップを取得する
 	GetChips() int
+	// GetChipsRefilled 直前の Reset が残高を補充したかを取得する
+	GetChipsRefilled() bool
 }

@@ -23,5 +23,18 @@
   "handResult": "ハンド結果",
   "gameEndWinner": "{{name}} の勝利！",
   "you": "あなた",
-  "helpExampleDecide": "  d 1                  このハンドに参加する"
+  "helpExampleDecide": "  d 1                  このハンドに参加する",
+  "log.ante": "{{name}} が {{amount}} をアンティとして出します",
+  "log.trump": "切り札: {{suit}}",
+  "log.play": "{{name}} が参加します",
+  "log.fold": "{{name}} が降ります",
+  "log.draw": "{{name}} が {{count}} 枚引きます",
+  "log.playCard": "{{name}} が {{card}} を出します",
+  "log.trickWin": "{{name}} がトリック {{trick}} を取ります",
+  "log.potWinUncontested": "{{name}} がポット ({{amount}}) を無競争で取ります",
+  "log.potCarryAllFolded": "全員が降りた — {{amount}} のポットを繰り越します",
+  "log.bourre": "{{name}} はブーレとなり、罰金 {{amount}} を支払います",
+  "log.potWin": "{{name}} が {{amount}} のポットを {{tricks}} トリックで取ります",
+  "log.potCarryTie": "最多トリックが同数 — {{amount}} のポットを繰り越します",
+  "log.gameEnd": "{{name}} が {{chips}} チップでゲームに勝ちます!"
 }

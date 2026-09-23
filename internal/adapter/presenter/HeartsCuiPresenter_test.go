@@ -42,6 +42,7 @@ func setupHeartsCuiMock() *interfaces.MockHeartsGame {
 	m.On("GetLeadPlayerIdx").Return(0)
 	m.On("GetConfig").Return(domain.DefaultHeartsConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	m.On("GetVoidSuits").Return([domain.HeartsPlayerCnt][domain.CardDesignMax + 1]bool{})
 	return m
 }
 
@@ -83,8 +84,8 @@ func TestHeartsCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "トリック: 1")
 		assert.Contains(t, result, "ハートブレイク: なし")
 		assert.Contains(t, result, "あなた: 累積0点 ラウンド0点 2枚 0トリック")
-		assert.Contains(t, result, "[0]SPADE 1")
-		assert.Contains(t, result, "[1]HEART 5")
+		assert.Contains(t, result, "[0]♠1")
+		assert.Contains(t, result, "[1]♥5")
 		assert.Contains(t, result, "CPU 1: 累積0点 ラウンド0点 1枚 0トリック")
 		assert.Contains(t, result, "手番: あなた")
 		assert.Contains(t, result, "play <idx>")
@@ -166,7 +167,7 @@ func TestHeartsCuiPresenter_Output(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 10, false))
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "[0]SPADE 1  [1]DIAMOND 10")
+		assert.Contains(t, result, "[0]♠1  [1]♦10")
 	})
 
 	t.Run("current trick shown", func(t *testing.T) {
@@ -179,7 +180,7 @@ func TestHeartsCuiPresenter_Output(t *testing.T) {
 		m.On("GetCurrentTrick").Return(trick)
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "トリック: あなた=CLOVER 3, CPU 1=CLOVER 7")
+		assert.Contains(t, result, "トリック: あなた=♣3, CPU 1=♣7")
 	})
 
 	t.Run("no trick cards hides trick section", func(t *testing.T) {
@@ -317,8 +318,21 @@ func TestHeartsCuiPresenter_Output(t *testing.T) {
 		m.On("GetPlayer", 99).Return((*domain.HeartsPlayer)(nil))
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "UNKNOWN")
+		assert.Contains(t, result, "不明")
 	})
+}
+
+func TestHeartsCuiPresenter_OutputShowsVoidSuits(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	m, _ := setupHeartsCuiMockWithPlayers()
+	voidSuits := [domain.HeartsPlayerCnt][domain.CardDesignMax + 1]bool{}
+	voidSuits[1][domain.CardDesignClover] = true
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetVoidSuits")
+	m.On("GetVoidSuits").Return(voidSuits)
+
+	assert.Contains(t, new(presenter.HeartsCuiPresenter).Output(m, nil), "ボイド: ♣")
 }
 
 func TestHeartsCuiPresenter_ActionLogOutput(t *testing.T) {
@@ -330,7 +344,7 @@ func TestHeartsCuiPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("with entries", func(t *testing.T) {
 		m := new(interfaces.MockHeartsGame)
 		entries := []*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "played SPADE 5"},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		}
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetActionLog").Return(entries)
@@ -340,7 +354,7 @@ func TestHeartsCuiPresenter_ActionLogOutput(t *testing.T) {
 		result := p.ActionLogOutput(m)
 		assert.Contains(t, result, "棋譜")
 		assert.Contains(t, result, "play")
-		assert.Contains(t, result, "played SPADE 5")
+		assert.Contains(t, result, "テスト用の棋譜行 1")
 		m.AssertExpectations(t)
 	})
 
@@ -395,7 +409,7 @@ func TestHeartsCuiPresenter_HintOutput(t *testing.T) {
 
 		p := new(presenter.HeartsCuiPresenter)
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 		assert.Contains(t, result, "リードスートに追随")
 	})
 
@@ -414,7 +428,7 @@ func TestHeartsCuiPresenter_HintOutput(t *testing.T) {
 
 		p := new(presenter.HeartsCuiPresenter)
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 		assert.Contains(t, result, "リスクの高いカードを渡す")
 	})
 

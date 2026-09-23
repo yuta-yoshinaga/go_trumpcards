@@ -29,6 +29,22 @@ func tuteSetHand(p *TutePlayer, cards ...*Card) {
 	}
 }
 
+func TestTute_PlayActionLogUsesDetailCode(t *testing.T) {
+	g := newTuteGame(false)
+	g.currentTrick = nil
+	card := tuteCard(CardDesignSpade, 1)
+	g.playCard(0, card)
+	for _, entry := range g.GetActionLog() {
+		if entry.DetailCode == "tute.log.play" {
+			if entry.DetailParams["name"] == "" || entry.DetailParams["card"] == "" {
+				t.Fatalf("play entry = %#v, want code params", entry)
+			}
+			return
+		}
+	}
+	t.Fatal("play action log entry not found")
+}
+
 func TestTuteConfig_Validate(t *testing.T) {
 	if err := DefaultTuteConfig().Validate(); err != nil {
 		t.Fatalf("default invalid: %v", err)

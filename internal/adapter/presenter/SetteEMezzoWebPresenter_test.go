@@ -42,7 +42,10 @@ func setupSemWebMockDefaults(g *interfaces.MockSetteEMezzoGame) {
 	g.On("IsHumanBanker").Return(false).Maybe()
 	g.On("GetActiveSeat").Return(0).Maybe()
 	g.On("GetNextBanker").Return(-1).Maybe()
+	g.On("GetBankerChanged").Return(false).Maybe()
 	g.On("GetLastResult").Return("").Maybe()
+	g.On("GetLastResultCode").Return("").Maybe()
+	g.On("GetLastResultParams").Return(nil).Maybe()
 	g.On("GetGameEndFlag").Return(false).Maybe()
 	g.On("CanHit").Return(true).Maybe()
 	g.On("CanStand").Return(true).Maybe()
@@ -171,22 +174,26 @@ func TestSetteEMezzoWebPresenter_Output(t *testing.T) {
 	})
 
 	for _, tc := range []struct {
-		name        string
-		phase       int
-		humanBanker bool
-		code        string
+		name          string
+		phase         int
+		humanBanker   bool
+		bankerChanged bool
+		code          string
 	}{
-		{"betting", domain.SetteEMezzoPhaseBet, false, "settemezzo.placeBet"},
-		{"betting while banking", domain.SetteEMezzoPhaseBet, true, "settemezzo.dealAsBanker"},
-		{"banker turn", domain.SetteEMezzoPhaseBankerTurn, true, "settemezzo.bankerTurn"},
+		{"betting", domain.SetteEMezzoPhaseBet, false, false, "settemezzo.placeBet"},
+		{"betting after CPU banker change", domain.SetteEMezzoPhaseBet, false, true, "settemezzo.bankerChanged"},
+		{"betting while banking", domain.SetteEMezzoPhaseBet, true, false, "settemezzo.dealAsBanker"},
+		{"banker turn", domain.SetteEMezzoPhaseBankerTurn, true, false, "settemezzo.bankerTurn"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			g := new(interfaces.MockSetteEMezzoGame)
 			setupSemWebMockDefaults(g)
 			g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetPhase")
 			g.ExpectedCalls = filterCalls(g.ExpectedCalls, "IsHumanBanker")
+			g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetBankerChanged")
 			g.On("GetPhase").Return(tc.phase)
 			g.On("IsHumanBanker").Return(tc.humanBanker)
+			g.On("GetBankerChanged").Return(tc.bankerChanged)
 
 			result := parseSemOutput(t, new(SetteEMezzoWebPresenter).Output(g, nil))
 			assert.Equal(t, tc.code, result.MessageCode)
@@ -198,12 +205,16 @@ func TestSetteEMezzoWebPresenter_Output(t *testing.T) {
 		setupSemWebMockDefaults(g)
 		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetPhase")
 		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetLastResult")
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetLastResultCode")
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetLastResultParams")
 		g.On("GetPhase").Return(domain.SetteEMezzoPhaseEnd)
 		g.On("GetLastResult").Return("親は 6.5")
+		g.On("GetLastResultCode").Return("setteemezzo.log.bankerTotal")
+		g.On("GetLastResultParams").Return(map[string]string{"total": "6.5"})
 
 		result := parseSemOutput(t, new(SetteEMezzoWebPresenter).Output(g, nil))
-		assert.Equal(t, "settemezzo.roundOver", result.MessageCode)
-		assert.Equal(t, "親は 6.5", result.Message)
+		assert.Equal(t, "setteemezzo.log.bankerTotal", result.MessageCode)
+		assert.Empty(t, result.Message)
 	})
 
 	// Landing exactly on 7.5 is the only way the bank moves, so it gets its own
@@ -213,11 +224,17 @@ func TestSetteEMezzoWebPresenter_Output(t *testing.T) {
 		setupSemWebMockDefaults(g)
 		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetPhase")
 		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetNextBanker")
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetLastResultCode")
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetLastResultParams")
 		g.On("GetPhase").Return(domain.SetteEMezzoPhaseEnd)
 		g.On("GetNextBanker").Return(0)
+		g.On("GetLastResultCode").Return("setteemezzo.log.bankerTotal")
+		g.On("GetLastResultParams").Return(map[string]string{"total": "6.5"})
 
 		result := parseSemOutput(t, new(SetteEMezzoWebPresenter).Output(g, nil))
 		assert.Equal(t, "settemezzo.bankPasses", result.MessageCode)
+		assert.Equal(t, "setteemezzo.log.bankerTotal", result.MessageParams["resultKey"])
+		assert.Equal(t, "6.5", result.MessageParams["total"])
 	})
 }
 
@@ -232,7 +249,7 @@ func TestSetteEMezzoWebPresenter_ActionLogOutput(t *testing.T) {
 		g := new(interfaces.MockSetteEMezzoGame)
 		g.On("GetGameEndFlag").Return(true)
 		g.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "deal", Detail: "test"},
+			{TurnNumber: 1, ActionType: "deal", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 		assert.Contains(t, new(SetteEMezzoWebPresenter).ActionLogOutput(g), "deal")
 	})

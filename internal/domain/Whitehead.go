@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // WhiteheadPhase ホワイトヘッドゲームフェーズ
@@ -179,7 +180,7 @@ func (k *Whitehead) Draw() error {
 			k.noProgressCycles++
 		}
 		k.progressSinceRecycle = false
-		k.appendLog("recycle", "ウェイストをストックに戻しました", nil)
+		k.appendLog("recycle", "whitehead.log.recycle", nil, nil)
 		k.checkWhiteheadStalemate()
 		return nil
 	}
@@ -197,7 +198,7 @@ func (k *Whitehead) Draw() error {
 		drawnCards = append(drawnCards, card)
 	}
 	k.moveCount++
-	k.appendLog("draw", "ストックからカードを引きました", drawnCards)
+	k.appendLog("draw", "whitehead.log.draw", nil, drawnCards)
 	k.checkWhiteheadStalemate()
 	return nil
 }
@@ -222,7 +223,7 @@ func (k *Whitehead) MoveWasteToTableau(col int) error {
 	k.tableau[col] = append(k.tableau[col], &WhiteheadTableauCard{Card: card, FaceUp: true})
 	k.moveCount++
 	k.progressSinceRecycle = true
-	k.appendLog("move", fmt.Sprintf("ウェイスト→タブロー列%d", col), []*Card{card})
+	k.appendLog("move", "whitehead.log.wasteToTableau", map[string]string{"column": strconv.Itoa(col)}, []*Card{card})
 	k.checkWhiteheadStalemate()
 	return nil
 }
@@ -248,7 +249,7 @@ func (k *Whitehead) MoveWasteToFoundation() error {
 	k.foundation[fIdx] = append(k.foundation[fIdx], card)
 	k.moveCount++
 	k.progressSinceRecycle = true
-	k.appendLog("move", "ウェイスト→ファンデーション", []*Card{card})
+	k.appendLog("move", "whitehead.log.wasteToFoundation", nil, []*Card{card})
 	k.checkGameClear()
 	k.checkWhiteheadStalemate()
 	return nil
@@ -294,7 +295,7 @@ func (k *Whitehead) MoveTableauToTableau(fromCol, cardIndex, toCol int) error {
 	k.autoFlipTableau(fromCol)
 	k.moveCount++
 	k.progressSinceRecycle = true
-	k.appendLog("move", fmt.Sprintf("タブロー列%d→タブロー列%d", fromCol, toCol), movedCards)
+	k.appendLog("move", "whitehead.log.tableauToTableau", map[string]string{"fromColumn": strconv.Itoa(fromCol), "toColumn": strconv.Itoa(toCol)}, movedCards)
 	k.checkWhiteheadStalemate()
 	return nil
 }
@@ -327,7 +328,7 @@ func (k *Whitehead) MoveTableauToFoundation(col int) error {
 	k.autoFlipTableau(col)
 	k.moveCount++
 	k.progressSinceRecycle = true
-	k.appendLog("move", fmt.Sprintf("タブロー列%d→ファンデーション", col), []*Card{card})
+	k.appendLog("move", "whitehead.log.tableauToFoundation", map[string]string{"column": strconv.Itoa(col)}, []*Card{card})
 	k.checkGameClear()
 	k.checkWhiteheadStalemate()
 	return nil
@@ -337,7 +338,7 @@ func (k *Whitehead) MoveTableauToFoundation(col int) error {
 func (k *Whitehead) GiveUp() {
 	if k.phase == WhiteheadPhasePlaying {
 		k.phase = WhiteheadPhaseGameOver
-		k.appendLog("giveup", "ギブアップしました", nil)
+		k.appendLog("giveup", "whitehead.log.giveup", nil, nil)
 	}
 }
 
@@ -480,7 +481,7 @@ func (k *Whitehead) AutoComplete() error {
 			break
 		}
 	}
-	k.appendLog("autocomplete", "オートコンプリートを実行しました", nil)
+	k.appendLog("autocomplete", "whitehead.log.autocomplete", nil, nil)
 	k.checkGameClear()
 	return nil
 }
@@ -707,8 +708,8 @@ func (k *Whitehead) restoreSnapshot(snap *whiteheadSnapshot) {
 }
 
 // appendLog 棋譜エントリを追加
-func (k *Whitehead) appendLog(actionType, detail string, cards []*Card) {
-	k.appendLogAt(k.moveCount, 0, actionType, detail, cards)
+func (k *Whitehead) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	k.appendLogCodeAt(k.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // whiteheadJSON is the JSON wire format for Whitehead.

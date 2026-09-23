@@ -1,4 +1,4 @@
-//go:build !js || !wasm || classic
+//go:build !js || !wasm || extra7
 
 package presenter
 
@@ -98,6 +98,9 @@ func (p *KlaverjasWebPresenter) buildPlayersOutput(g interfaces.KlaverjasGame) [
 // buildMessage ゲーム結果メッセージを構築
 func (p *KlaverjasWebPresenter) buildMessage(g interfaces.KlaverjasGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

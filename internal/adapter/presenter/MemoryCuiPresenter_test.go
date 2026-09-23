@@ -209,7 +209,7 @@ func TestMemoryCuiPresenterOutput(t *testing.T) {
 		p := new(MemoryCuiPresenter)
 		result := p.Output(mg, nil)
 		assert.Contains(t, result, "2枚目を選んでください")
-		assert.Contains(t, result, "SPADE 1") // face up card
+		assert.Contains(t, result, "♠1") // face up card
 	})
 
 	t.Run("result phase match", func(t *testing.T) {
@@ -381,7 +381,7 @@ func TestMemoryCuiPresenterActionLog(t *testing.T) {
 		mg := newMockMemoryGame()
 		mg.On("GetGameEndFlag").Return(true)
 		mg.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "match", Detail: "ペア獲得"},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "match", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 		// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
 		mg.On("GetPlayer", mock.Anything).Return(domain.NewMemoryPlayer(true)).Maybe()

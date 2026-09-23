@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
 	mockusecase "github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
@@ -50,6 +51,48 @@ func TestRankAndFileCuiControllerHint(t *testing.T) {
 	fi.On("Hint").Return("hint_output")
 	assert.Equal(t, "hint_output", c.Exec("h"))
 	assert.Equal(t, "hint_output", c.Exec("hint"))
+}
+
+func TestRankAndFileCuiControllerTargets(t *testing.T) {
+	t.Run("column only", func(t *testing.T) {
+		fi := newMockRankAndFileInteractor()
+		c := NewRankAndFileCuiController(fi)
+		fi.On("Targets", 2, -1).Return("targets_output")
+		assert.Equal(t, "targets_output", c.Exec("t 2"))
+		assert.Equal(t, "targets_output", c.Exec("targets 2"))
+	})
+
+	t.Run("explicit card index", func(t *testing.T) {
+		fi := newMockRankAndFileInteractor()
+		c := NewRankAndFileCuiController(fi)
+		fi.On("Targets", 2, 3).Return("targets_output")
+		assert.Equal(t, "targets_output", c.Exec("t 2 3"))
+		fi.AssertCalled(t, "Targets", 2, 3)
+	})
+
+	t.Run("missing column asks for it", func(t *testing.T) {
+		fi := newMockRankAndFileInteractor()
+		c := NewRankAndFileCuiController(fi)
+		out := c.Exec("t")
+		assert.Contains(t, out, "移動元の列番号を入力してください:")
+		fi.AssertNotCalled(t, "Targets", mock.Anything, mock.Anything)
+	})
+
+	t.Run("non-numeric column is rejected", func(t *testing.T) {
+		fi := newMockRankAndFileInteractor()
+		c := NewRankAndFileCuiController(fi)
+		out := c.Exec("t x")
+		assert.Contains(t, out, "無効な列番号です: x")
+		fi.AssertNotCalled(t, "Targets", mock.Anything, mock.Anything)
+	})
+
+	t.Run("out of range column is passed to the interactor", func(t *testing.T) {
+		fi := newMockRankAndFileInteractor()
+		c := NewRankAndFileCuiController(fi)
+		fi.On("Targets", 10, -1).Return("invalid target column")
+		assert.Equal(t, "invalid target column", c.Exec("t 10"))
+		fi.AssertCalled(t, "Targets", 10, -1)
+	})
 }
 
 func TestRankAndFileCuiControllerAutoComplete(t *testing.T) {

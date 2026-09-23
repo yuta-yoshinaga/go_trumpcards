@@ -114,7 +114,7 @@ func TestKlaverjasCuiPresenter_Output(t *testing.T) {
 		m.On("GetRoundPlayerRoem").Return([domain.KlaverjasPlayerCnt]int{50, 0, 0, 100})
 		result := p.Output(m, nil)
 		// 正の席だけが出る
-		assert.Contains(t, result, "Roem 内訳: あなた 50点, CPU 3 100点")
+		assert.Contains(t, result, "ロエム 内訳: あなた 50点, CPU 3 100点")
 		// 0 の席が出ないこと
 		assert.NotContains(t, result, "CPU 1 0点")
 		assert.NotContains(t, result, "CPU 2 0点")
@@ -166,14 +166,14 @@ func TestKlaverjasCuiPresenter_HintOutput(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 13, false))
 		m.On("GetHint").Return(&domain.KlaverjasHint{CardIndices: []int{0}, Reason: "lead_low"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 
 	t.Run("hint no card indices", func(t *testing.T) {
 		m, _ := setupKlaverjasCuiMockWithPlayers()
 		m.On("GetHint").Return(&domain.KlaverjasHint{CardIndices: nil, Reason: "follow_win"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 }
 
@@ -182,7 +182,7 @@ func TestKlaverjasCuiPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockKlaverjasGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You plays ♠K"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
 	m.On("GetPlayer", mock.Anything).Return(domain.NewKlaverjasPlayer(true)).Maybe()

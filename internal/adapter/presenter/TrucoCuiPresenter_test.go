@@ -60,6 +60,32 @@ func TestTrucoCuiPresenter_Output_GameEndBanner(t *testing.T) {
 	assert.NotEmpty(t, out)
 }
 
+func TestTrucoCuiPresenter_Output_ManoAndTrickHistory(t *testing.T) {
+	i18n.SetLang("ja")
+	p := new(presenter.TrucoCuiPresenter)
+	g := domain.NewDefaultTruco()
+	g.Reset()
+	g.SetManoIdx(1)
+	g.SetTrickResults([]int{0, -1, 1})
+
+	out := p.Output(g, nil)
+	plain := strings.NewReplacer("\x1b[1m", "", "\x1b[0m", "").Replace(out)
+	assert.Contains(t, plain, "先手: CPU 1")
+	assert.Contains(t, plain, "1バサ: あなたの勝ち")
+	assert.Contains(t, plain, "2バサ: パルダ（引き分け）")
+	assert.Contains(t, plain, "3バサ: CPU 1の勝ち")
+}
+
+func TestTrucoCuiPresenter_Output_HidesEmptyTrickHistory(t *testing.T) {
+	i18n.SetLang("ja")
+	p := new(presenter.TrucoCuiPresenter)
+	g := domain.NewDefaultTruco()
+	g.Reset()
+
+	out := p.Output(g, nil)
+	assert.NotContains(t, out, "バサ履歴")
+}
+
 func TestTrucoCuiPresenter_HintOutput(t *testing.T) {
 	p := new(presenter.TrucoCuiPresenter)
 

@@ -123,7 +123,7 @@ func TestHandAndFootCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "ラウンド: 1")
 		assert.Contains(t, result, "山札: 75枚")
 		assert.Contains(t, result, "あなた")
-		assert.Contains(t, result, "[0]SPADE 5")
+		assert.Contains(t, result, "[0]♠5")
 		assert.Contains(t, result, "ds")
 		assert.Contains(t, result, "dd")
 	})
@@ -139,7 +139,7 @@ func TestHandAndFootCuiPresenter_Output(t *testing.T) {
 		m, _ := setupHandAndFootCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDiscardTop")
 		m.On("GetDiscardTop").Return(domain.NewCard(domain.CardDesignHeart, 7, false))
-		assert.Contains(t, p.Output(m, nil), "捨て札: HEART 7")
+		assert.Contains(t, p.Output(m, nil), "捨て札: ♥7")
 	})
 
 	t.Run("team meld shown", func(t *testing.T) {
@@ -158,7 +158,7 @@ func TestHandAndFootCuiPresenter_Output(t *testing.T) {
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "チーム0")
 		assert.Contains(t, result, "クリーン")
-		assert.Contains(t, result, "SPADE 7")
+		assert.Contains(t, result, "♠7")
 	})
 
 	t.Run("in foot tag shown", func(t *testing.T) {
@@ -254,7 +254,7 @@ func TestHandAndFootCuiPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("with entries", func(t *testing.T) {
 		m := new(interfaces.MockHandAndFootGame)
 		entries := []*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "draw_stock", Detail: "drew from stock"},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "draw_stock", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		}
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetActionLog").Return(entries)

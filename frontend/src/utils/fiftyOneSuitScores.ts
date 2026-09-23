@@ -1,5 +1,11 @@
 import type { Card, CardDesign } from '../types/card';
 
+/**
+ * Maximum possible score in Fifty-One (A+K+Q+J+10 of the same suit = 51).
+ * `internal/domain/FiftyOnePlayer.go` の `FiftyOneMaxScore` と同期。片方だけ変えないこと。
+ */
+export const FIFTY_ONE_MAX_SCORE = 51;
+
 /** Numeric score a single card contributes in Fifty-One: A=11, J/Q/K=10, 2-10=face value. */
 export function fiftyOneCardScore(value: number): number {
   if (value === 1) return 11;

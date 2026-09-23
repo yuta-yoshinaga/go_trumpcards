@@ -245,6 +245,9 @@ func TestBigTwo_PlayerPlay_Pass(t *testing.T) {
 	// Play a card first
 	err = bt.PlayerPlay([]int{0})
 	assert.NoError(t, err)
+	entry := bt.GetActionLog()[0]
+	assert.Equal(t, "bigtwo.log.play", entry.DetailCode)
+	assert.Equal(t, map[string]string{"count": "1"}, entry.DetailParams)
 }
 
 func TestBigTwo_PlayerPlay_FirstPlayMustIncludeDiamond3(t *testing.T) {

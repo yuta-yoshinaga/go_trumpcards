@@ -168,6 +168,14 @@ describe('FortyFivesPage', () => {
     expect(history).toHaveTextContent('CPU 3=未入札');
   });
 
+  it('renders the complete trump order and identifies the special top three', async () => {
+    mockExec.mockResolvedValue(makeFortyFivesState({ trumpSuit: 1 }));
+    renderWithProviders(<FortyFivesPage />);
+    const legend = await screen.findByTestId('ff-trump-legend');
+    expect(legend).toHaveTextContent('♠5>♠J>♥A>♠A>♠K>♠Q>♠10>♠9>♠8>♠7>♠6>♠4>♠3>♠2');
+    expect(legend).toHaveTextContent('色付きの上位3枚はフォロー義務が免除される特別な札です。');
+  });
+
   it('renders bid history even on a CPU bid turn (isHumanBidTurn=false)', async () => {
     mockExec.mockResolvedValue(
       makeFortyFivesState({

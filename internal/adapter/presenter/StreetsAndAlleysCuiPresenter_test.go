@@ -50,7 +50,7 @@ func TestStreetsAndAlleysCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(bg, nil)
 		assert.Contains(t, result, "Streets and Alleys")
-		assert.Contains(t, result, "Foundation")
+		assert.Contains(t, result, "組札")
 		assert.Contains(t, result, "列0:")
 		assert.Contains(t, result, "手数: 0")
 	})
@@ -137,7 +137,7 @@ func TestStreetsAndAlleysCuiPresenter_HintOutput(t *testing.T) {
 		result := p.HintOutput(bg)
 		assert.Contains(t, result, "ヒント")
 		assert.Contains(t, result, "タブロー列0")
-		assert.Contains(t, result, "ファンデーション")
+		assert.Contains(t, result, "組札")
 	})
 
 	t.Run("tableau hint", func(t *testing.T) {
@@ -179,7 +179,7 @@ func TestStreetsAndAlleysCuiPresenter_ActionLogOutput(t *testing.T) {
 		bg := new(interfaces.MockStreetsAndAlleysGame)
 		bg.On("GetPhase").Return(domain.StreetsAndAlleysPhaseGameOver)
 		bg.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "move", Detail: "test"},
+			{TurnNumber: 1, ActionType: "move", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 
 		p := new(StreetsAndAlleysCuiPresenter)

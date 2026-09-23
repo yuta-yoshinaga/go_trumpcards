@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
+	"strings"
 )
 
 // QuodlibetPlayerCnt はプレイヤー数。
@@ -178,10 +180,14 @@ func (q *Quodlibet) NextDeal() {
 	if q.dealNumber >= QuodlibetTotalDeals {
 		q.gameEndFlag = true
 		q.phase = QuodlibetPhaseGameEnd
-		q.appendLog(-1, "gameEnd", "all 12 deals completed", nil)
+		q.appendLog(-1, "gameEnd", "quodlibet.log.gameEnd", nil, nil)
 		return
 	}
 	q.startDeal()
+}
+
+func (q *Quodlibet) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	q.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // startDeal はディーラーを決め、8 枚ずつ配り、コントラクト選択フェーズへ移る。
@@ -208,8 +214,10 @@ func (q *Quodlibet) startDeal() {
 		quodlibetSortHand(p)
 	}
 	q.phase = QuodlibetPhaseSelectContract
-	q.appendLog(-1, "deal", fmt.Sprintf("deal %d/%d, round %d, dealer=%d",
-		q.dealNumber+1, QuodlibetTotalDeals, q.GetRoundNumber(), q.dealerIdx), nil)
+	q.appendLog(-1, "deal", "quodlibet.log.deal", map[string]string{
+		"deal": strconv.Itoa(q.dealNumber + 1), "total": strconv.Itoa(QuodlibetTotalDeals),
+		"round": strconv.Itoa(q.GetRoundNumber()), "dealer": strconv.Itoa(q.dealerIdx),
+	}, nil)
 	if q.config.AutoSelectContract {
 		_ = q.applySelectContract(q.autoContract())
 	}
@@ -274,7 +282,7 @@ func (q *Quodlibet) applySelectContract(contract int) error {
 	}
 	if !ok {
 		return NewDomainErrorCode(ErrInvalidPlay, "quodlibet.errContractUnavailable",
-			map[string]string{"contract": QuodlibetContractName(contract)})
+			map[string]string{"contractKey": QuodlibetContractKey(contract)})
 	}
 	q.currentContract = contract
 	q.usedContracts[contract] = true
@@ -283,8 +291,8 @@ func (q *Quodlibet) applySelectContract(contract int) error {
 	// **リードはディーラーの右隣。** 反時計回りなので次の席から始まる。
 	q.leadPlayer = QuodlibetRightOf(q.dealerIdx)
 	q.currentPlayer = q.leadPlayer
-	q.appendLog(q.dealerIdx, "contract",
-		fmt.Sprintf("dealer %d chooses %s", q.dealerIdx, QuodlibetContractName(contract)), nil)
+	q.appendLog(q.dealerIdx, "contract", quodlibetContractLogCode(contract),
+		map[string]string{"dealer": strconv.Itoa(q.dealerIdx)}, nil)
 	return nil
 }
 
@@ -344,8 +352,8 @@ func (q *Quodlibet) applyTrickPlay(playerIdx, handIdx int) error {
 	}
 	played := player.RemoveCard(handIdx)
 	q.currentTrick = append(q.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: played})
-	q.appendLog(playerIdx, "play",
-		fmt.Sprintf("player %d plays %s", playerIdx, cardStr(played)), []*Card{played})
+	q.appendLog(playerIdx, "play", "quodlibet.log.play",
+		map[string]string{"player": strconv.Itoa(playerIdx), "card": cardStr(played)}, []*Card{played})
 
 	if len(q.currentTrick) < QuodlibetPlayerCnt {
 		q.currentPlayer = QuodlibetRightOf(q.currentPlayer)
@@ -401,8 +409,8 @@ func (q *Quodlibet) resolveTrick() {
 	q.trickRecord = append(q.trickRecord, q.currentTrick)
 	q.lastTrick = q.currentTrick
 	q.lastTrickWinner = winner
-	q.appendLog(winner, "trick_win",
-		fmt.Sprintf("player %d wins trick %d", winner, q.trickNumber), cards)
+	q.appendLog(winner, "trick_win", "quodlibet.log.trickWin",
+		map[string]string{"player": strconv.Itoa(winner), "trick": strconv.Itoa(q.trickNumber)}, cards)
 	q.currentTrick = nil
 
 	if q.trickNumber >= QuodlibetHandSize {
@@ -453,17 +461,48 @@ func (q *Quodlibet) finishDeal() {
 	q.lastDealDetail = detail
 	q.dealHistory = append(q.dealHistory, detail)
 	q.phase = QuodlibetPhaseDealEnd
-	q.appendLog(-1, "dealEnd",
-		fmt.Sprintf("deal %d scored: %s", q.dealNumber+1, quodlibetPointsStr(detail.Points)), nil)
+	q.appendLog(-1, "dealEnd", "quodlibet.log.dealEnd",
+		map[string]string{"deal": strconv.Itoa(q.dealNumber + 1), "points": quodlibetPointsStr(q, detail.Points)}, nil)
+}
+
+func quodlibetContractLogCode(contract int) string {
+	switch contract {
+	case QuodlibetPlus:
+		return "quodlibet.log.contractPlus"
+	case QuodlibetMinus:
+		return "quodlibet.log.contractMinus"
+	case QuodlibetBadNeighbour:
+		return "quodlibet.log.contractBadNeighbour"
+	case QuodlibetAlarich:
+		return "quodlibet.log.contractAlarich"
+	case QuodlibetFirstThreeAndLast:
+		return "quodlibet.log.contractFirstThreeAndLast"
+	case QuodlibetNoReds:
+		return "quodlibet.log.contractNoReds"
+	case QuodlibetOberUnter:
+		return "quodlibet.log.contractOberUnter"
+	case QuodlibetBribe:
+		return "quodlibet.log.contractBribe"
+	case QuodlibetOpen:
+		return "quodlibet.log.contractOpen"
+	case QuodlibetHunt:
+		return "quodlibet.log.contractHunt"
+	case QuodlibetQuadrature:
+		return "quodlibet.log.contractQuadrature"
+	case QuodlibetSnack:
+		return "quodlibet.log.contractSnack"
+	default:
+		return "quodlibet.log.contractUnknown"
+	}
 }
 
 // quodlibetPointsStr は罰点内訳をログ用の文字列にする。
-func quodlibetPointsStr(points map[int]int) string {
+func quodlibetPointsStr(q *Quodlibet, points map[int]int) string {
 	parts := make([]string, 0, len(points))
 	for i := 0; i < QuodlibetPlayerCnt; i++ {
-		parts = append(parts, fmt.Sprintf("p%d=%d", i, points[i]))
+		parts = append(parts, fmt.Sprintf("%s %d", playerName(q.players, i), points[i]))
 	}
-	return fmt.Sprint(parts)
+	return strings.Join(parts, " / ")
 }
 
 // quodlibetSortHand はスート別・強い順に手札を並べる。
@@ -582,6 +621,38 @@ func QuodlibetContractName(c int) string {
 		return "snack"
 	default:
 		return "unknown"
+	}
+}
+
+// QuodlibetContractKey はコントラクト名の i18n キーを返す。
+func QuodlibetContractKey(c int) string {
+	switch c {
+	case QuodlibetPlus:
+		return "quodlibet.contractName.plus"
+	case QuodlibetMinus:
+		return "quodlibet.contractName.minus"
+	case QuodlibetBadNeighbour:
+		return "quodlibet.contractName.badNeighbour"
+	case QuodlibetAlarich:
+		return "quodlibet.contractName.alarich"
+	case QuodlibetFirstThreeAndLast:
+		return "quodlibet.contractName.firstThreeAndLast"
+	case QuodlibetNoReds:
+		return "quodlibet.contractName.noReds"
+	case QuodlibetOberUnter:
+		return "quodlibet.contractName.oberUnter"
+	case QuodlibetBribe:
+		return "quodlibet.contractName.bribe"
+	case QuodlibetOpen:
+		return "quodlibet.contractName.open"
+	case QuodlibetHunt:
+		return "quodlibet.contractName.hunt"
+	case QuodlibetQuadrature:
+		return "quodlibet.contractName.quadrature"
+	case QuodlibetSnack:
+		return "quodlibet.contractName.snack"
+	default:
+		return "quodlibet.contractName.unknown"
 	}
 }
 

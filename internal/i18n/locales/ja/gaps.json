@@ -19,5 +19,8 @@
   "gapBlocked": "[ x ]",
   "gapAnySuit": "[{{rank}}?]",
   "gapNeeded": "[{{card}}]",
-  "helpExampleHint": "  h                         次の一手を教えてもらう"
+  "helpExampleHint": "  h                         次の一手を教えてもらう",
+  "log.move": "({{fromRow}},{{fromCol}})→({{toRow}},{{toCol}})",
+  "log.redeal": "再配り #{{count}}",
+  "log.giveUp": "ギブアップ"
 }

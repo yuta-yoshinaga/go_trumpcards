@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra4
+//go:build !js || !wasm || extra7
 
 package domain
 
@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // アンダーバハールのフェーズ定数
@@ -187,9 +188,7 @@ func (ab *AndarBahar) Reset() {
 func (ab *AndarBahar) revealJoker() {
 	ab.joker = ab.trumpCards.DrawCard()
 	ab.firstColumn = AndarBaharFirstColumnFor(ab.joker)
-	ab.appendLog(-1, "joker",
-		fmt.Sprintf("基準札 %s が公開されました", andarBaharColumnName(ab.firstColumn)),
-		[]*Card{ab.joker})
+	ab.appendLogCode(-1, "joker", "andarbahar.log.joker", map[string]string{"columnKey": andarBaharColumnKey(ab.firstColumn)}, []*Card{ab.joker})
 }
 
 // AndarBaharFirstColumnFor は基準札の色から先に配る列を返す。
@@ -239,8 +238,7 @@ func (ab *AndarBahar) Bet(amount, target, sideAmount, sideBand int) error {
 	ab.betTarget = target
 	ab.sideAmount = sideAmount
 	ab.sideBand = sideBand
-	ab.appendLog(0, "bet",
-		fmt.Sprintf("%s に %d ベットしました", andarBaharColumnName(target), amount), nil)
+	ab.appendLogCode(0, "bet", "andarbahar.log.bet", map[string]string{"columnKey": andarBaharColumnKey(target), "amount": strconv.Itoa(amount)}, nil)
 
 	ab.deal()
 	ab.judge()
@@ -269,9 +267,7 @@ func (ab *AndarBahar) deal() {
 		ab.push(col, c)
 		if andarBaharRank(c) == target {
 			ab.winner = col
-			ab.appendLog(-1, "match",
-				fmt.Sprintf("%s に基準札と同じランクが出ました (%d 枚目)",
-					andarBaharColumnName(col), ab.DealtCount()), []*Card{c})
+			ab.appendLogCode(-1, "match", "andarbahar.log.match", map[string]string{"columnKey": andarBaharColumnKey(col), "count": strconv.Itoa(ab.DealtCount())}, []*Card{c})
 			return
 		}
 		col = andarBaharOtherColumn(col)
@@ -300,8 +296,7 @@ func (ab *AndarBahar) judge() {
 	ab.mainPayout, ab.sidePayout = ab.calculatePayout()
 	ab.payout = ab.mainPayout + ab.sidePayout
 	ab.chips.AddChips(ab.payout)
-	ab.appendLog(-1, "result",
-		fmt.Sprintf("%s の勝ち。払い戻し %d", andarBaharColumnName(ab.winner), ab.payout), nil)
+	ab.appendLogCode(-1, "result", "andarbahar.log.result", map[string]string{"columnKey": andarBaharColumnKey(ab.winner), "payout": strconv.Itoa(ab.payout)}, nil)
 
 	ab.gameEndFlag = true
 	ab.phase = AndarBaharPhaseEnd
@@ -354,15 +349,15 @@ func andarBaharOtherColumn(col int) int {
 	return AndarBaharBetAndar
 }
 
-// andarBaharColumnName は列の名前を返す。
-func andarBaharColumnName(col int) string {
+// andarBaharColumnKey は棋譜の列名キーを返す。
+func andarBaharColumnKey(col int) string {
 	switch col {
 	case AndarBaharBetAndar:
-		return "andar"
+		return "andarbahar.columnAndar"
 	case AndarBaharBetBahar:
-		return "bahar"
+		return "andarbahar.columnBahar"
 	default:
-		return "unknown"
+		return "andarbahar.columnUnknown"
 	}
 }
 
@@ -437,6 +432,37 @@ func AndarBaharSidePayout(band int) (int, bool) {
 		return 0, false
 	}
 	return andarBaharSidePayouts[band], true
+}
+
+// AndarBaharSideProbability は帯 band に決着する確率を返す。
+//
+// ジョーカーを除く 51 枚には基準札と同ランクの札が 3 枚あり、最初の
+// マッチが k 枚目に来る確率は C(51-k, 2) / C(51, 3) です。
+func AndarBaharSideProbability(band int) (float64, bool) {
+	if band < AndarBaharSideFirst || band > AndarBaharSide36Plus {
+		return 0, false
+	}
+	lo, hi, _ := AndarBaharSideBand(band)
+	if hi > AndarBaharMaxCards {
+		hi = AndarBaharMaxCards
+	}
+	denominator := combination(51, 3)
+	numerator := 0
+	for k := lo; k <= hi; k++ {
+		numerator += combination(51-k, 2)
+	}
+	return float64(numerator) / float64(denominator), true
+}
+
+func combination(n, r int) int {
+	if r < 0 || r > n {
+		return 0
+	}
+	result := 1
+	for i := 1; i <= r; i++ {
+		result = result * (n - r + i) / i
+	}
+	return result
 }
 
 // GetHint は人間への助言を返す。

@@ -149,6 +149,9 @@ describe('ManillePage', () => {
     expect(legend).toHaveTextContent('10 (マニーユ)');
     expect(legend).toHaveTextContent('A (マニヨン)');
     expect(legend).toHaveTextContent('10 > A > K > Q > J > 9 > 8 > 7（切り札・非切り札で共通）。得点合計60点。');
+    expect(legend).toHaveTextContent(
+      'フォローできないときは原則として切り札を出さなければなりませんが、相棒が既にそのトリックを取っている場合は切り札を温存できます。',
+    );
   });
 
   it('applies the same-team highlight in the mobile player list', async () => {

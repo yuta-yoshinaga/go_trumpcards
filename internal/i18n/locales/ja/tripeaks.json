@@ -9,14 +9,18 @@
   "blockedCard": "[--]{{card}}",
   "playableSummary": "今出せるカード: {{count}}枚",
   "drawRecommended": "ドロー推奨（出せる札がありません）",
-  "stockLine": "Stock: {{count}}枚",
-  "wasteCard": " | Waste: {{card}}",
-  "wasteEmpty": " | Waste: [空]",
+  "stockLine": "ストック: {{count}}枚",
+  "wasteCard": " | ウェイスト: {{card}}",
+  "wasteEmpty": " | ウェイスト: [空]",
   "hintRemove": "ヒント: カード除去: ({{row}},{{col}})",
   "hintDraw": "ヒント: ストックからカードを引いてください",
   "hintUnknown": "ヒント: 不明",
   "helpExampleHint": "  h                        次の一手を教えてもらう",
   "helpUndo": "  u                        1手戻す",
   "cuiScoreLine": "スコア: {{score}}",
-  "cuiComboLine": "🔥 {{combo}}連鎖中"
+  "cuiComboLine": "🔥 {{combo}}連鎖中",
+  "peakRemaining": "山の残り: 左 {{left}} / 中 {{middle}} / 右 {{right}}",
+  "log.draw": "ストックからカードを引きました",
+  "log.remove": "カード除去: ({{row}},{{col}})",
+  "log.giveUp": "ギブアップしました"
 }

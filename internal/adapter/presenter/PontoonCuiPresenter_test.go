@@ -24,6 +24,8 @@ func setupPontoonCuiMockDefaults(g *interfaces.MockPontoonGame) {
 	g.On("GetActiveHand").Return(0).Maybe()
 	g.On("GetNextBanker").Return(-1).Maybe()
 	g.On("GetLastResult").Return("親は 19").Maybe()
+	g.On("GetLastResultCode").Return("pontoon.log.resultTotal").Maybe()
+	g.On("GetLastResultParams").Return(map[string]string{"total": "19"}).Maybe()
 	g.On("GetGameEndFlag").Return(false).Maybe()
 	g.On("CanStick").Return(true).Maybe()
 	g.On("CanTwist").Return(true).Maybe()
@@ -65,6 +67,20 @@ func TestPontoonCuiPresenter_Output(t *testing.T) {
 		out := new(PontoonCuiPresenter).Output(g, nil)
 		assert.NotContains(t, out, i18n.T("pontoon.faceDown"))
 		assert.Contains(t, out, "親は 19")
+	})
+
+	t.Run("an English settled round is translated", func(t *testing.T) {
+		i18n.SetLang("en")
+		defer i18n.SetLang("ja")
+		g := new(interfaces.MockPontoonGame)
+		setupPontoonCuiMockDefaults(g)
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetPhase")
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetGameEndFlag")
+		g.On("GetPhase").Return(domain.PontoonPhaseEnd)
+		g.On("GetGameEndFlag").Return(true)
+		out := new(PontoonCuiPresenter).Output(g, nil)
+		assert.Contains(t, out, "The banker has 19")
+		assert.NotContains(t, out, "親")
 	})
 
 	t.Run("chips and the banker lead the view", func(t *testing.T) {
@@ -209,9 +225,9 @@ func TestPontoonCuiPresenter_ActionLogOutput(t *testing.T) {
 		g := new(interfaces.MockPontoonGame)
 		g.On("GetGameEndFlag").Return(true)
 		g.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "deal", Detail: "test detail"},
+			{TurnNumber: 1, ActionType: "deal", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
-		assert.Contains(t, new(PontoonCuiPresenter).ActionLogOutput(g), "test detail")
+		assert.Contains(t, new(PontoonCuiPresenter).ActionLogOutput(g), "deal")
 	})
 }
 
@@ -230,6 +246,15 @@ func TestPontoonCuiPresenter_ShowsBothStickThresholds(t *testing.T) {
 	assert.Contains(t, out, strconv.Itoa(domain.PontoonCpuStickMin))
 }
 
+func TestPontoonCuiPresenter_ShowsTieRule(t *testing.T) {
+	i18n.SetLang("ja")
+	g := new(interfaces.MockPontoonGame)
+	setupPontoonCuiMockDefaults(g)
+
+	out := new(PontoonCuiPresenter).Output(g, nil)
+	assert.Contains(t, out, "同点は親の勝ちなので、親と同じ点で止まっても負けます。")
+}
+
 // 打てる手が無い局面では案内ごと出さない。手番でもないのに停止ラインだけ
 // 残ると、誰の話をしているのか分からない。
 func TestPontoonCuiPresenter_HidesTheThresholdsWithNoLegalAction(t *testing.T) {
@@ -243,4 +268,5 @@ func TestPontoonCuiPresenter_HidesTheThresholdsWithNoLegalAction(t *testing.T) {
 	assert.NotContains(t, out, i18n.Tf("pontoon.cpuStickLine",
 		"cpuMin", strconv.Itoa(domain.PontoonCpuStickMin),
 		"min", strconv.Itoa(domain.PontoonStickMin)))
+	assert.NotContains(t, out, i18n.T("pontoon.helpTieRule"))
 }

@@ -658,9 +658,12 @@ func TestSevenCardStud_ActionLog(t *testing.T) {
 	s := newTestSevenCardStud()
 	assert.Empty(t, s.GetActionLog())
 
-	s.appendLog(0, "test", "test action", nil)
+	s.players[0].SetCurrentBet(25)
+	s.logAction(0, SevenCardStudActionCall, 0)
 	assert.Len(t, s.GetActionLog(), 1)
 	assert.Equal(t, 1, s.GetActionLog()[0].TurnNumber)
+	assert.Equal(t, "sevencardstud.log.call", s.GetActionLog()[0].DetailCode)
+	assert.Equal(t, map[string]string{"amount": "25"}, s.GetActionLog()[0].DetailParams)
 }
 
 func TestSevenCardStud_CountActivePlayers(t *testing.T) {

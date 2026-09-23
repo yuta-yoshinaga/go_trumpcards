@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"slices"
 	"sort"
+	"strconv"
 )
 
 // PiquetPlayerCnt Piquetは2人用ゲーム
@@ -186,7 +187,7 @@ type Piquet struct {
 	carteBlanche [PiquetPlayerCnt]bool
 
 	// アクションログ
-	actionLog []*ActionLogEntry
+	actionLogBase
 }
 
 // NewPiquet コンストラクタ
@@ -286,12 +287,12 @@ func (p *Piquet) startDeal() {
 			p.carteBlanche[i] = true
 			p.players[i].AddDeclScore(PiquetCarteBlancheBonus)
 			p.recordFirstScorer(i)
-			p.appendLog(i, "carteblanche", "カルトブランシュ +10", nil)
+			p.appendLog(i, "carteblanche", "piquet.log.carteBlanche", nil, nil)
 		}
 	}
 
 	p.phase = PiquetPhaseExchange
-	p.appendLog(p.elderIdx, "deal", fmt.Sprintf("ディール%d開始 (Elder=%d)", p.dealNumber, p.elderIdx), nil)
+	p.appendLog(p.elderIdx, "deal", "piquet.log.deal", map[string]string{"deal": strconv.Itoa(p.dealNumber), "elder": strconv.Itoa(p.elderIdx)}, nil)
 }
 
 // finishPartie パルティ終了 (ルビコン判定)
@@ -310,7 +311,7 @@ func (p *Piquet) finishPartie() {
 		// 引き分け
 		p.winnerIdx = -1
 	}
-	p.appendLog(p.winnerIdx, "partie", "パルティ終了", nil)
+	p.appendLog(p.winnerIdx, "partie", "piquet.log.partie", nil, nil)
 }
 
 // applyPartieResult ルビコン判定の結果スコアに変換する。
@@ -494,7 +495,7 @@ func (p *Piquet) ExchangeElder(discardIndices []int) error {
 	p.elderExchanged = taken
 	p.elderExchangedCnt = n
 	p.exchangeTurn = PiquetExchangeTurnYounger
-	p.appendLog(p.elderIdx, "exchange", fmt.Sprintf("Elder交換 %d枚", n), discarded)
+	p.appendLog(p.elderIdx, "exchange", "piquet.log.elderExchange", map[string]string{"cards": strconv.Itoa(n)}, discarded)
 	return nil
 }
 
@@ -527,12 +528,12 @@ func (p *Piquet) ExchangeYounger(discardIndices []int) error {
 		// 残った Younger talon は Younger 用 reveal
 		p.youngerRevealedTalon = append(p.youngerRevealedTalon, p.talon[n:PiquetYoungerTalonSize]...)
 		p.talon = nil
-		p.appendLog(p.GetYoungerIdx(), "exchange", fmt.Sprintf("Younger交換 %d枚", n), discarded)
+		p.appendLog(p.GetYoungerIdx(), "exchange", "piquet.log.youngerExchange", map[string]string{"cards": strconv.Itoa(n)}, discarded)
 	} else {
 		// 0枚交換: Younger は3枚全部 reveal できる (Elderにも公開される伝統)
 		p.youngerRevealedTalon = append(p.youngerRevealedTalon, p.talon[:PiquetYoungerTalonSize]...)
 		p.talon = nil
-		p.appendLog(p.GetYoungerIdx(), "exchange", "Younger交換 0枚", nil)
+		p.appendLog(p.GetYoungerIdx(), "exchange", "piquet.log.youngerExchange", map[string]string{"cards": "0"}, nil)
 	}
 	p.youngerExchangedCnt = n
 	p.exchangeTurn = PiquetExchangeTurnDone
@@ -594,7 +595,7 @@ func (p *Piquet) ResolveDeclaration() (*PiquetDeclarationResult, error) {
 		p.recordFirstScorer(result.ScoredBy)
 	}
 	p.declResults = append(p.declResults, result)
-	p.appendLog(result.ScoredBy, "declare", fmt.Sprintf("宣言結果 kind=%d winner=%d score=%d", result.Kind, result.Winner, result.Score), nil)
+	p.appendLog(result.ScoredBy, "declare", "piquet.log.declare", map[string]string{"kind": strconv.Itoa(int(result.Kind)), "winner": strconv.Itoa(result.Winner), "score": strconv.Itoa(result.Score)}, nil)
 
 	// 次ステージ or プレイ遷移
 	switch p.declStage {
@@ -619,7 +620,7 @@ func (p *Piquet) checkRepique() {
 		opp := (i + 1) % PiquetPlayerCnt
 		if p.players[i].GetDeclScore() >= 30 && p.players[opp].GetDeclScore() == 0 {
 			p.players[i].AddBonusScore(PiquetRepiqueBonus)
-			p.appendLog(i, "repique", "ルピーク +60", nil)
+			p.appendLog(i, "repique", "piquet.log.repique", nil, nil)
 		}
 	}
 }
@@ -675,7 +676,7 @@ func (p *Piquet) PlayCard(cardIdx int) error {
 	pl := p.players[playerIdx]
 	card := pl.RemoveCard(cardIdx)
 	p.currentTrick = append(p.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	p.appendLog(playerIdx, "play", "カードプレイ", []*Card{card})
+	p.appendLog(playerIdx, "play", "piquet.log.play", nil, []*Card{card})
 
 	// リード側が出した瞬間は得点
 	if playerIdx == p.leadPlayerIdx {
@@ -706,6 +707,11 @@ func (p *Piquet) resolveTrick() {
 		}
 	}
 	winner := p.currentTrick[bestIdx].PlayerIdx
+	trickCards := make([]*Card, 0, PiquetPlayerCnt)
+	for _, tc := range p.currentTrick {
+		trickCards = append(trickCards, tc.Card)
+	}
+	p.appendLog(winner, "trick_win", "piquet.log.trickWin", map[string]string{"name": playerName(p.players[:], winner), "trick": strconv.Itoa(p.trickNumber + 1)}, trickCards)
 
 	// 取得点: リーダー側が勝った場合は既に +1 加算済み (PlayCardのリード加点)
 	// リーダー以外が取った場合は +1
@@ -716,17 +722,15 @@ func (p *Piquet) resolveTrick() {
 	}
 
 	// トリック保管
-	trickCards := make([]*Card, 0, PiquetPlayerCnt)
-	for _, tc := range p.currentTrick {
-		trickCards = append(trickCards, tc.Card)
-	}
 	p.players[winner].AddTrick(trickCards)
 	p.tricksWon[winner]++
+	p.appendLog(winner, "trick_point", "piquet.log.trickPoint", nil, nil)
 
 	// 最終トリックボーナス
 	if p.trickNumber == PiquetTricksPerRound-1 {
 		p.players[winner].AddTrickScore(PiquetLastTrickBonus)
 		p.recordFirstScorer(winner)
+		p.appendLog(winner, "last_trick_bonus", "piquet.log.lastTrickBonus", nil, nil)
 		p.checkPique(winner)
 	}
 
@@ -756,7 +760,7 @@ func (p *Piquet) checkPique(scorer int) {
 	if elderTotal >= 30 && youngerTotal == 0 {
 		p.players[p.elderIdx].AddBonusScore(PiquetPiqueBonus)
 		p.elderReached30InPlay = true
-		p.appendLog(p.elderIdx, "pique", "ピーク +30", nil)
+		p.appendLog(p.elderIdx, "pique", "piquet.log.pique", nil, nil)
 	}
 }
 
@@ -767,16 +771,16 @@ func (p *Piquet) endRoundScoring() {
 	switch {
 	case t0 == PiquetTricksPerRound:
 		p.players[0].AddBonusScore(PiquetCapotBonus)
-		p.appendLog(0, "capot", "カポー +40", nil)
+		p.appendLog(0, "capot", "piquet.log.capot", nil, nil)
 	case t1 == PiquetTricksPerRound:
 		p.players[1].AddBonusScore(PiquetCapotBonus)
-		p.appendLog(1, "capot", "カポー +40", nil)
+		p.appendLog(1, "capot", "piquet.log.capot", nil, nil)
 	case t0 > t1:
 		p.players[0].AddBonusScore(PiquetCardsBonus)
-		p.appendLog(0, "cards", "カード +10", nil)
+		p.appendLog(0, "cards", "piquet.log.cards", nil, nil)
 	case t1 > t0:
 		p.players[1].AddBonusScore(PiquetCardsBonus)
-		p.appendLog(1, "cards", "カード +10", nil)
+		p.appendLog(1, "cards", "piquet.log.cards", nil, nil)
 		// 引き分けなら誰にも cards ボーナスなし (歴史的にはディーラーに付与する説もあるがここでは無し)
 	}
 
@@ -785,7 +789,7 @@ func (p *Piquet) endRoundScoring() {
 		p.players[i].AddMatchScore(p.players[i].GetRoundScore())
 	}
 	p.phase = PiquetPhaseScore
-	p.appendLog(-1, "round", fmt.Sprintf("ディール%d 終了", p.dealNumber), nil)
+	p.appendLog(-1, "round", "piquet.log.round", map[string]string{"deal": strconv.Itoa(p.dealNumber)}, nil)
 
 	// パルティ終了判定
 	if p.dealNumber >= p.config.DealsPerPartie {
@@ -899,15 +903,8 @@ func (p *Piquet) GetHint(playerIdx int) *PiquetHint {
 
 // ───── Log ─────
 
-func (p *Piquet) appendLog(playerIdx int, action, detail string, cards []*Card) {
-	entry := &ActionLogEntry{
-		ActionType: action,
-		Detail:     detail,
-		Cards:      cards,
-		PlayerIdx:  playerIdx,
-		TurnNumber: len(p.actionLog),
-	}
-	p.actionLog = append(p.actionLog, entry)
+func (p *Piquet) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	p.appendLogCodeAt(len(p.actionLog), playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // ───── Card rank helper ─────

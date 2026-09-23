@@ -27,7 +27,8 @@ export function formatSnapState(state: SnapResponse | null): string {
 
   state.players.forEach((p) => {
     const marker = p.id === state.currentTurnIdx && !state.gameEndFlag ? '>' : ' ';
-    lines.push(`${marker}${formatPlayerName(p.id, p.isHuman)}: ${p.stockSize} in stock`);
+    const outOfCards = p.stockSize === 0 ? ' (out of cards)' : '';
+    lines.push(`${marker}${formatPlayerName(p.id, p.isHuman)}: ${p.stockSize} in stock${outOfCards}`);
   });
 
   // **直近に何が起きたかを出す。** 盤面だけでは誰が取ったのか読めない。

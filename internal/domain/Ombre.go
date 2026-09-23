@@ -38,9 +38,9 @@ package domain
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // OmbrePlayerCnt プレイヤー数 (人間 1 + CPU 2)
@@ -163,7 +163,7 @@ type Ombre struct {
 	bidTrump         [OmbrePlayerCnt]int      // 各プレイヤーが宣言時に選んだ切り札 (-1=なし)
 	bidActed         [OmbrePlayerCnt]bool     // 各プレイヤーが宣言済みか
 	playerScores     [OmbrePlayerCnt]int      // 累積ゲーム点
-	lastTrickWinner  int                      // 最終トリック勝者 (-1=未確定)
+	lastTrickWinner  int                      // 直前トリックの勝者 (-1=未確定)
 	outcome          OmbreOutcome             // 直近ディールの結果
 	result           OmbreResult              // 人間視点のマッチ結果
 	scored           bool                     // 当該ディールの得点計算済みか (RoundEnd 突入時に一度だけ)
@@ -292,10 +292,10 @@ func (g *Ombre) PlayerBid(bid OmbreBid, trumpSuit int) error {
 		return ErrNotHumanTurn
 	}
 	if !g.isBidLegal(bid) {
-		return NewDomainError(ErrInvalidPlay, "現在の最高ビッドを上回る宣言が必要です")
+		return NewDomainErrorCode(ErrInvalidPlay, "ombre.errBidTooLow", nil)
 	}
 	if bid != OmbreBidNone && !ombreValidSuit(trumpSuit) {
-		return NewDomainError(ErrInvalidPlay, "切り札スートを選んでください (1..4)")
+		return NewDomainErrorCode(ErrInvalidPlay, "ombre.errTrumpSuitRequired", nil)
 	}
 	g.applyBid(g.currentBidderIdx, bid, trumpSuit)
 	return nil
@@ -346,12 +346,10 @@ func (g *Ombre) applyBid(playerIdx int, bid OmbreBid, trumpSuit int) {
 	g.bidActed[playerIdx] = true
 	if bid == OmbreBidNone {
 		g.bidTrump[playerIdx] = -1
-		g.appendLog(playerIdx, "bid_pass",
-			fmt.Sprintf("%s passes", playerName(g.players, playerIdx)), nil)
+		g.appendLog(playerIdx, "bid_pass", "ombre.log.bidPass", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 	} else {
 		g.bidTrump[playerIdx] = trumpSuit
-		g.appendLog(playerIdx, "bid",
-			fmt.Sprintf("%s bids %s (trump %s)", playerName(g.players, playerIdx), ombreBidName(bid), ombreSuitName(trumpSuit)), nil)
+		g.appendLog(playerIdx, "bid", "ombre.log.bid", map[string]string{"name": playerName(g.players, playerIdx), "bidKey": ombreBidKey(bid), "trumpKey": trumpKeyOf(trumpSuit)}, nil)
 	}
 
 	if g.allBidsActed() {
@@ -410,8 +408,7 @@ func (g *Ombre) finalizeAuction() {
 	if !ombreValidSuit(g.trumpSuit) {
 		g.trumpSuit = g.cpuChooseTrump(ombre)
 	}
-	g.appendLog(ombre, "ombre",
-		fmt.Sprintf("%s is Ombre with %s (trump %s)", playerName(g.players, ombre), ombreBidName(best), ombreSuitName(g.trumpSuit)), nil)
+	g.appendLog(ombre, "ombre", "ombre.log.ombre", map[string]string{"name": playerName(g.players, ombre), "bidKey": ombreBidKey(best), "trumpKey": trumpKeyOf(g.trumpSuit)}, nil)
 	g.startPlay()
 }
 
@@ -497,7 +494,7 @@ func (g *Ombre) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "ombre.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
@@ -531,7 +528,7 @@ func (g *Ombre) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Ombre) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "ombre.log.play", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(g.currentTrick) == OmbrePlayerCnt {
 		g.phase = OmbrePhaseTrickEnd
@@ -551,12 +548,15 @@ func (g *Ombre) ResolveTrick() {
 		trickCards[i] = tc.Card
 	}
 	g.players[winnerIdx].AddTrick(trickCards)
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), trickCards)
+	g.appendLog(winnerIdx, "trick_win", "ombre.log.trickWin", map[string]string{"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber)}, trickCards)
 
 	g.leadPlayerIdx = winnerIdx
+	// **どのトリックの勝者も憶えておく。** 以前は最終トリックのぶんしか入れて
+	// おらず、しかもその枝は同時に RoundEnd へ移るので、TrickEnd の画面では
+	// この値がいつも -1 だった。King (King.go:333) は毎トリック入れており、
+	// getter の説明「直前トリックの勝者」もそちらの意味で書かれている。
+	g.lastTrickWinner = winnerIdx
 	if g.trickNumber >= OmbreTrickCount {
-		g.lastTrickWinner = winnerIdx
 		g.phase = OmbrePhaseRoundEnd
 		g.enterRoundEnd()
 	} else {
@@ -587,9 +587,9 @@ func (g *Ombre) enterRoundEnd() {
 	if g.winningBid == OmbreBidSolo {
 		stake = 2
 	}
-	g.appendLog(-1, "round_score",
-		fmt.Sprintf("round %d: Ombre(%s) %s (stake=%d)",
-			g.roundNumber, playerName(g.players, g.ombreIdx), ombreOutcomeName(g.outcome), stake), nil)
+	g.appendLog(-1, "round_score", "ombre.log.roundScore", map[string]string{
+		"round": strconv.Itoa(g.roundNumber), "name": playerName(g.players, g.ombreIdx), "outcomeKey": ombreOutcomeKey(g.outcome), "stake": strconv.Itoa(stake),
+	}, nil)
 	g.checkGameEnd()
 }
 
@@ -657,7 +657,7 @@ func (g *Ombre) checkGameEnd() {
 	g.winnerPlayer = leader
 	g.phase = OmbrePhaseGameEnd
 	g.result = g.humanResult(leader, tie)
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
+	g.appendLog(-1, "game_end", "ombre.log.gameEnd", map[string]string{"name": playerName(g.players, leader)}, nil)
 }
 
 // humanResult 人間 (seat 0) の視点でマッチ結果を返す。単独トップなら Win、トップ同点なら None、他は Lose。
@@ -673,6 +673,11 @@ func (g *Ombre) humanResult(leader int, tie bool) OmbreResult {
 		return OmbreResultWin
 	}
 	return OmbreResultLose
+}
+
+// appendLog records an Ombre action with a locale-independent detail code.
+func (g *Ombre) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCodeAt(len(g.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // ScoreRound RoundEnd フェーズでの得点計算を行う (enterRoundEnd を idempotent に呼ぶ、インタフェース互換)。
@@ -692,7 +697,7 @@ func (g *Ombre) validatePlay(playerIdx int, card *Card) error {
 	}
 	leadEff := ombreEffectiveSuit(g.currentTrick[0].Card, g.trumpSuit)
 	if ombreEffectiveSuit(card, g.trumpSuit) != leadEff && g.playerHasEffSuit(playerIdx, leadEff) {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+		return NewDomainErrorCode(ErrInvalidPlay, "ombre.errFollowLeadSuit", nil)
 	}
 	return nil
 }
@@ -929,45 +934,29 @@ func ombreSortHand(p *OmbrePlayer, trump int) {
 	}
 }
 
-// ombreBidName ビッドの表示名を返す。
-func ombreBidName(bid OmbreBid) string {
+// ombreBidKey ビッドの i18n キーを返す。
+func ombreBidKey(bid OmbreBid) string {
 	switch bid {
 	case OmbreBidEntrar:
-		return "entrar"
+		return "ombre.bidEntrar"
 	case OmbreBidSolo:
-		return "solo"
+		return "ombre.bidSolo"
 	default:
-		return "pass"
+		return "ombre.bidPass"
 	}
 }
 
-// ombreSuitName スートの表示名を返す。
-func ombreSuitName(suit int) string {
-	switch suit {
-	case CardDesignSpade:
-		return "spades"
-	case CardDesignClover:
-		return "clubs"
-	case CardDesignHeart:
-		return "hearts"
-	case CardDesignDiamond:
-		return "diamonds"
-	default:
-		return "-"
-	}
-}
-
-// ombreOutcomeName 結果の表示名を返す。
-func ombreOutcomeName(o OmbreOutcome) string {
+// ombreOutcomeKey 結果の棋譜用 i18n キーを返す。
+func ombreOutcomeKey(o OmbreOutcome) string {
 	switch o {
 	case OmbreOutcomeSacar:
-		return "sacar"
+		return "ombre.outcomeSacar"
 	case OmbreOutcomePuesta:
-		return "puesta"
+		return "ombre.outcomePuesta"
 	case OmbreOutcomeCodille:
-		return "codille"
+		return "ombre.outcomeCodille"
 	default:
-		return "-"
+		return "ombre.outcomeNone"
 	}
 }
 
@@ -1176,6 +1165,9 @@ func (g *Ombre) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
 func (g *Ombre) GetCurrentTrick() []*TrickCard { return g.currentTrick }
+
+// GetLastTrickWinner 直前トリックの勝者を返す (-1 = なし)。
+func (g *Ombre) GetLastTrickWinner() int { return g.lastTrickWinner }
 
 // SetCurrentTrick トリック設定 (テスト用)
 func (g *Ombre) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }

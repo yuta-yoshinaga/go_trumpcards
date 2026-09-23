@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // CallBreakPlayerCnt Call Break のプレイヤー数
@@ -159,11 +160,14 @@ func (cb *CallBreak) PlayerBid(bid int) error {
 		return ErrNotHumanTurn
 	}
 	if bid < CallBreakMinBid || bid > CallBreakHandSize {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("ビッドは %d〜%d で指定してください", CallBreakMinBid, CallBreakHandSize))
+		return NewDomainErrorCode(ErrInvalidPlay, "callbreak.errBidRange", map[string]string{
+			"min": fmt.Sprintf("%d", CallBreakMinBid),
+			"max": fmt.Sprintf("%d", CallBreakHandSize),
+		})
 	}
 
 	cb.players[humanIdx].SetBid(bid)
-	cb.appendLog(humanIdx, "bid", fmt.Sprintf("%s bids %d", playerName(cb.players, humanIdx), bid), nil)
+	cb.appendLog(humanIdx, "bid", "callbreak.log.bid", map[string]string{"name": playerName(cb.players, humanIdx), "bid": strconv.Itoa(bid)}, nil)
 
 	cb.bidPlayerIdx++
 	cb.checkBidComplete()
@@ -184,7 +188,7 @@ func (cb *CallBreak) CpuBid() {
 
 	bid := cb.cpuSelectBid(cb.bidPlayerIdx)
 	cb.players[cb.bidPlayerIdx].SetBid(bid)
-	cb.appendLog(cb.bidPlayerIdx, "bid", fmt.Sprintf("%s bids %d", playerName(cb.players, cb.bidPlayerIdx), bid), nil)
+	cb.appendLog(cb.bidPlayerIdx, "bid", "callbreak.log.bid", map[string]string{"name": playerName(cb.players, cb.bidPlayerIdx), "bid": strconv.Itoa(bid)}, nil)
 
 	cb.bidPlayerIdx++
 	cb.checkBidComplete()
@@ -204,7 +208,7 @@ func (cb *CallBreak) PlayerPlay(cardIndex int) error {
 
 	player := cb.players[cb.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "callbreak.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
@@ -251,7 +255,7 @@ func (cb *CallBreak) ResolveTrick() {
 	}
 
 	cb.players[winnerIdx].AddTrick(trickCards)
-	cb.appendLog(winnerIdx, "trick_win", fmt.Sprintf("%s wins trick %d", playerName(cb.players, winnerIdx), cb.trickNumber), trickCards)
+	cb.appendLog(winnerIdx, "trick_win", "callbreak.log.trickWin", map[string]string{"name": playerName(cb.players, winnerIdx), "trick": strconv.Itoa(cb.trickNumber)}, trickCards)
 
 	cb.leadPlayerIdx = winnerIdx
 
@@ -298,8 +302,7 @@ func (cb *CallBreak) ScoreRound() {
 		}
 		p.SetRoundScore(score)
 
-		cb.appendLog(i, "round_score", fmt.Sprintf("%s: bid=%d tricks=%d round=%s",
-			playerName(cb.players, i), bid, tricks, FormatCallBreakScore(score)), nil)
+		cb.appendLog(i, "round_score", "callbreak.log.roundScore", map[string]string{"name": playerName(cb.players, i), "bid": strconv.Itoa(bid), "tricks": strconv.Itoa(tricks), "round": FormatCallBreakScore(score)}, nil)
 	}
 
 	// 累積スコアに加算
@@ -309,8 +312,7 @@ func (cb *CallBreak) ScoreRound() {
 
 	// スコアログ
 	for i := 0; i < CallBreakPlayerCnt; i++ {
-		cb.appendLog(i, "cumulative_score", fmt.Sprintf("%s: total=%s",
-			playerName(cb.players, i), FormatCallBreakScore(cb.players[i].GetCumulativeScore())), nil)
+		cb.appendLog(i, "cumulative_score", "callbreak.log.cumulativeScore", map[string]string{"name": playerName(cb.players, i), "total": FormatCallBreakScore(cb.players[i].GetCumulativeScore())}, nil)
 	}
 
 	cb.checkGameEnd()
@@ -435,7 +437,7 @@ func (cb *CallBreak) playCard(playerIdx int, card *Card) {
 		cb.spadesBroken = true
 	}
 
-	cb.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(cb.players, playerIdx), cardStr(card)), []*Card{card})
+	cb.appendLog(playerIdx, "play", "callbreak.log.play", map[string]string{"name": playerName(cb.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(cb.currentTrick) == CallBreakPlayerCnt {
 		cb.phase = CallBreakPhaseTrickEnd
@@ -450,7 +452,7 @@ func (cb *CallBreak) validatePlay(playerIdx int, card *Card) error {
 		// リード: スペード未ブレイクの場合、スペードでリードできない (他にカードがある場合)
 		if !cb.spadesBroken && card.GetDesign() == CardDesignSpade {
 			if cb.playerHasNonSpade(playerIdx) {
-				return NewDomainError(ErrInvalidPlay, "スペードはまだブレイクされていません")
+				return NewDomainErrorCode(ErrInvalidPlay, "callbreak.errSpadesNotBroken", nil)
 			}
 		}
 		return nil
@@ -461,7 +463,7 @@ func (cb *CallBreak) validatePlay(playerIdx int, card *Card) error {
 	// フォロースート優先
 	if cb.playerHasSuit(playerIdx, leadSuit) {
 		if card.GetDesign() != leadSuit {
-			return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+			return NewDomainErrorCode(ErrInvalidPlay, "callbreak.errFollowLeadSuit", nil)
 		}
 		return nil
 	}
@@ -469,7 +471,7 @@ func (cb *CallBreak) validatePlay(playerIdx int, card *Card) error {
 	// ボイド: スペード (トランプ) を持っている場合は必ず切る必要がある
 	if leadSuit != CardDesignSpade && cb.playerHasSuit(playerIdx, CardDesignSpade) {
 		if card.GetDesign() != CardDesignSpade {
-			return NewDomainError(ErrInvalidPlay, "リードスートが無い場合はスペードで切らなければなりません")
+			return NewDomainErrorCode(ErrInvalidPlay, "callbreak.errMustTrump", nil)
 		}
 	}
 	return nil
@@ -513,7 +515,12 @@ func (cb *CallBreak) checkGameEnd() {
 			cb.winnerIdx = i
 		}
 	}
-	cb.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(cb.players, cb.winnerIdx)), nil)
+	cb.appendLog(-1, "game_end", "callbreak.log.gameEnd", map[string]string{"name": playerName(cb.players, cb.winnerIdx)}, nil)
+}
+
+// appendLog records a Call Break action with a locale-independent detail code.
+func (cb *CallBreak) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	cb.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // sortAllHands 全プレイヤーの手札をソートする (スート → 値)

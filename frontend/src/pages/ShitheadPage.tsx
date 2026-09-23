@@ -492,6 +492,7 @@ function FaceDownRow({ label, count, selectable, selected, onToggle }: FaceDownR
               disabled={!selectable}
               onClick={() => onToggle(i)}
               aria-pressed={selectable ? isSelected : undefined}
+              aria-label={`${label} ${i + 1}/${count}`}
               data-testid={`sh-facedown-${i}`}
               className={`relative rounded transition-transform ${focusRingCard} ${
                 isSelected ? 'ring-2 ring-ds-warning -translate-y-1' : ''

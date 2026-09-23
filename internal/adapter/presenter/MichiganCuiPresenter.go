@@ -119,6 +119,7 @@ func (p *MichiganCuiPresenter) Output(g interfaces.MichiganGame, lastErr error) 
 	return buildCuiOutput(i18n.T("michigan.helpTitle"), func(b *strings.Builder) {
 		b.WriteString(i18n.Tf("michigan.roundLine",
 			"round", strconv.Itoa(g.GetRoundNumber()),
+			"total", strconv.Itoa(g.GetTargetRounds()),
 			"ante", strconv.Itoa(g.GetAnte()),
 		) + "\n")
 

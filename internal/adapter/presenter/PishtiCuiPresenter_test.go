@@ -153,9 +153,9 @@ func TestPishtiCuiPresenter_MarksCapturingCards(t *testing.T) {
 
 		out := p.Output(g, nil)
 
-		assert.Contains(t, out, "[0]SPADE 7"+presenter.CuiLegalMark)
-		assert.Contains(t, out, "[1]"+color.Red("HEART 11")+presenter.CuiLegalMark)
-		assert.NotContains(t, out, "[2]CLOVER 3"+presenter.CuiLegalMark)
+		assert.Contains(t, out, "[0]♠7"+presenter.CuiLegalMark)
+		assert.Contains(t, out, "[1]"+color.Red("♥11")+presenter.CuiLegalMark)
+		assert.NotContains(t, out, "[2]♣3"+presenter.CuiLegalMark)
 	})
 
 	// **自分の手番でないときは出さない。**Web も isHumanTurn を条件にしている。
@@ -164,7 +164,7 @@ func TestPishtiCuiPresenter_MarksCapturingCards(t *testing.T) {
 
 		out := p.Output(g, nil)
 
-		assert.NotContains(t, out, "[0]SPADE 7"+presenter.CuiLegalMark)
+		assert.NotContains(t, out, "[0]♠7"+presenter.CuiLegalMark)
 	})
 
 	// 場が空ならジャックだけが取れる (同ランク条件が成立しない)。
@@ -176,8 +176,8 @@ func TestPishtiCuiPresenter_MarksCapturingCards(t *testing.T) {
 
 		out := p.Output(g, nil)
 
-		assert.NotContains(t, out, "[0]SPADE 7"+presenter.CuiLegalMark)
-		assert.Contains(t, out, "[1]"+color.Red("HEART 11")+presenter.CuiLegalMark)
+		assert.NotContains(t, out, "[0]♠7"+presenter.CuiLegalMark)
+		assert.Contains(t, out, "[1]"+color.Red("♥11")+presenter.CuiLegalMark)
 	})
 
 	t.Run("explains what the mark means", func(t *testing.T) {
@@ -207,4 +207,49 @@ func TestPishtiCuiPresenter_ProvisionalScoreCountsCardPoints(t *testing.T) {
 	// カード点を落とす実装なら +3 だけになる。その数字が出ていないことを見る。
 	assert.NotContains(t, out, i18n.Tf("pishti.provisional",
 		"name", i18n.T("cuiPlayerYou"), "score", strconv.Itoa(domain.PishtiScoreMostCards)))
+}
+
+func TestPishtiCuiPresenter_AnnouncesLastTake(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.PishtiCuiPresenter)
+	for _, tc := range []struct {
+		name string
+		idx  int
+		want string
+	}{
+		{name: "human", idx: 0, want: "最後に捕獲したあなたが残り山札2枚を獲得しました"},
+		{name: "cpu", idx: 1, want: "最後に捕獲したCPU 1が残り山札2枚を獲得しました"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			g := newPishtiForPresenter()
+			pishtiSetField(g, map[string]any{
+				"lc": tc.idx,
+				"ge": true,
+				"al": []*domain.ActionLogEntry{{ActionType: "lastTake", Cards: []*domain.Card{
+					domain.NewCard(domain.CardDesignSpade, 2, false),
+					domain.NewCard(domain.CardDesignHeart, 3, false),
+				}}},
+			})
+			assert.Contains(t, p.Output(g, nil), tc.want)
+		})
+	}
+
+	for _, tc := range []struct {
+		name   string
+		fields map[string]any
+	}{
+		{name: "no capturer", fields: map[string]any{"lc": -1, "ge": true}},
+		{name: "empty leftover", fields: map[string]any{
+			"lc": 0, "ge": true, "al": []*domain.ActionLogEntry{{ActionType: "lastTake"}},
+		}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			g := newPishtiForPresenter()
+			pishtiSetField(g, tc.fields)
+			out := p.Output(g, nil)
+			assert.NotContains(t, out, "残り山札")
+		})
+	}
 }

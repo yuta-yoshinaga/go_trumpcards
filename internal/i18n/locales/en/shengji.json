@@ -40,5 +40,19 @@
   "handTaken": "The defenders reached eighty and took the deal",
   "result.humanWin": "Game over! Your team wins!",
   "result.cpuWin": "Game over! The other team wins.",
-  "helpExampleDeclare": "  d 0                       pass on declaring a trump"
+  "helpExampleDeclare": "  d 0                       pass on declaring a trump",
+  "log.deal": "hand {{hand}} level {{level}}",
+  "log.declareSpadeSingle": "1 x1",
+  "log.declareSpadePair": "1 x2",
+  "log.declareCloverSingle": "2 x1",
+  "log.declareCloverPair": "2 x2",
+  "log.declareHeartSingle": "3 x1",
+  "log.declareHeartPair": "3 x2",
+  "log.declareDiamondSingle": "4 x1",
+  "log.declareDiamondPair": "4 x2",
+  "log.takeKitty": "took the kitty",
+  "log.buryKitty": "buried the kitty",
+  "log.play": "played cards",
+  "log.trickWon": "{{points}}",
+  "log.handEnd": "{{points}}"
 }

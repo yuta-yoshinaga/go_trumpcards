@@ -172,6 +172,16 @@ func TestCinch_BidFlow(t *testing.T) {
 	// dealer は CinchPlayerCnt-1 = 3, bid start = 0 (human)。
 	assert.Equal(t, 0, g.GetBidPlayerIdx())
 	require.NoError(t, g.PlayerBid(4))
+	var entry *domain.ActionLogEntry
+	for _, candidate := range g.GetActionLog() {
+		if candidate.DetailCode == "cinch.log.bid" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, "cinch.log.bid", entry.DetailCode)
+	assert.Equal(t, map[string]string{"name": "You", "bid": "4"}, entry.DetailParams)
 	// ドメインの PlayerBid は 1 手番進めるだけ (CPU の自動消化は interactor の役目)。
 	// 残りの CPU ビッダーを手動で回してビッドフェーズを終える。
 	for i := 0; i < 10 && g.GetPhase() == domain.CinchPhaseBid; i++ {
@@ -179,6 +189,14 @@ func TestCinch_BidFlow(t *testing.T) {
 	}
 	// 全員ビッド後は nameTrump (勝者が宣言) へ移る。
 	assert.NotEqual(t, domain.CinchPhaseBid, g.GetPhase())
+}
+
+func TestCinch_PlayerBid_PassLogUsesSeparateCode(t *testing.T) {
+	g := newTestCinch(t, domain.CinchDifficultyEasy)
+	require.NoError(t, g.PlayerBid(domain.CinchPassBid))
+	entry := g.GetActionLog()[0]
+	assert.Equal(t, "cinch.log.bidPass", entry.DetailCode)
+	assert.Equal(t, map[string]string{"name": "You"}, entry.DetailParams)
 }
 
 func TestCinch_PlayerBid_Errors(t *testing.T) {

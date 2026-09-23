@@ -33,7 +33,7 @@ import { formatOmbreState } from '../utils/cli/formatters/ombreFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
 import { MATADOR_NAME_KEY, matadorRank } from '../utils/ombreMatadors';
-import { playerName } from '../utils/playerUtils';
+import { findPlayerName, playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Ombre tutorial step definitions. */
@@ -270,6 +270,12 @@ function OmbrePageContent() {
                   players={state.players}
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
+                  winnerIdx={isTrickEnd ? state.lastTrickWinner : undefined}
+                  winnerLabel={
+                    isTrickEnd
+                      ? t('previousTrickWinner', { name: findPlayerName(state.players, state.lastTrickWinner) })
+                      : undefined
+                  }
                   dataTutorial="ombre-trick-display"
                 />
               </div>

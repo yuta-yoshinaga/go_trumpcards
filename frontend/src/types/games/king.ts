@@ -51,6 +51,7 @@ export interface KingDealDetail {
 /** A suggested hint for King, computed by the backend. */
 export interface KingHint {
   cardIndices: number[];
+  contract: number;
   /** i18n reason suffix identifier (e.g. `avoid_low`, `win_high`). */
   reason: string;
 }

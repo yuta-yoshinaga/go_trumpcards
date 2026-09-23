@@ -16,21 +16,30 @@ func isAlternateColor(card1, card2 *Card) bool {
 	return isBlack(card1) != isBlack(card2)
 }
 
-// suitStr returns the English suit name for a design constant. Shared across
-// categories (Belote/BigTwo are classic; Euchre/FiveHundred/Schnapsen are
-// solo), so it lives in this untagged core file (#2126).
-func suitStr(suit int) string {
+// suitKeyOf returns the i18n key for a suit design.
+func suitKeyOf(suit int) string {
 	switch suit {
 	case CardDesignSpade:
-		return "Spade"
+		return "common.suit.spade"
 	case CardDesignClover:
-		return "Club"
+		return "common.suit.club"
 	case CardDesignHeart:
-		return "Heart"
+		return "common.suit.heart"
 	case CardDesignDiamond:
-		return "Diamond"
+		return "common.suit.diamond"
+	default:
+		return "common.suit.unknown"
 	}
-	return "Unknown"
+}
+
+// trumpKeyOf は切り札スートの i18n キーを返す。suitKeyOf と違い、
+// スート以外の値は「切り札なし」を意味するゲームで使うため
+// common.suit.notrump に落とす。
+func trumpKeyOf(suit int) string {
+	if suit < CardDesignSpade || suit > CardDesignDiamond {
+		return "common.suit.notrump"
+	}
+	return suitKeyOf(suit)
 }
 
 // cardStr returns the display string for a card (suit glyph + rank). Shared

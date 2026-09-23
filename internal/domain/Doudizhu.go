@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra4
+//go:build !js || !wasm || extra7
 
 package domain
 
@@ -171,9 +171,9 @@ func (d *Doudizhu) executeBid(value int) error {
 		d.round.bidValues[playerIdx] = value
 		d.round.highestBid = value
 		d.round.highestBidder = playerIdx
-		d.appendLog(playerIdx, "bid", fmt.Sprintf("bid %d", value), nil)
+		d.appendLog(playerIdx, "bid", "doudizhu.log.bid", map[string]string{"value": fmt.Sprintf("%d", value)}, nil)
 	} else {
-		d.appendLog(playerIdx, "bid", "pass", nil)
+		d.appendLog(playerIdx, "bid", "doudizhu.log.pass", nil, nil)
 	}
 	d.round.bidCount++
 
@@ -206,7 +206,7 @@ func (d *Doudizhu) decideLandlord(idx int) {
 	}
 	d.players[idx].SortCardsByStrength()
 
-	d.appendLog(-1, "landlord", fmt.Sprintf("player %d is the landlord", idx), d.round.kittyCards)
+	d.appendLog(-1, "landlord", "doudizhu.log.landlord", map[string]string{"player": fmt.Sprintf("%d", idx)}, d.round.kittyCards)
 
 	d.round.phase = DoudizhuPhasePlay
 	d.round.currentTurn = idx
@@ -232,7 +232,7 @@ func (d *Doudizhu) PlayerPlay(indices []int) error {
 		}
 		d.round.passCount++
 		d.round.humanAction = &DoudizhuCpuAction{PlayerIdx: d.round.currentTurn}
-		d.appendLog(d.round.currentTurn, "pass", "pass", nil)
+		d.appendLog(d.round.currentTurn, "pass", "doudizhu.log.playPass", nil, nil)
 		d.advanceTurn()
 		d.checkPassClear()
 		return nil
@@ -275,7 +275,7 @@ func (d *Doudizhu) PlayerPlay(indices []int) error {
 	cards := player.RemoveCards(indices)
 	combo.Cards = cards
 	d.round.humanAction = &DoudizhuCpuAction{PlayerIdx: d.round.currentTurn, PlayedCards: cards}
-	d.appendLog(d.round.currentTurn, "play", fmt.Sprintf("played %d card(s)", len(cards)), cards)
+	d.appendLog(d.round.currentTurn, "play", "doudizhu.log.play", map[string]string{"count": fmt.Sprintf("%d", len(cards))}, cards)
 	d.playCards(d.round.currentTurn, combo)
 	return nil
 }
@@ -319,7 +319,7 @@ func (d *Doudizhu) CpuPlay() {
 		d.round.passCount++
 		action := &DoudizhuCpuAction{PlayerIdx: playerIdx}
 		d.round.cpuActions = append(d.round.cpuActions, action)
-		d.appendLog(playerIdx, "pass", "pass", nil)
+		d.appendLog(playerIdx, "pass", "doudizhu.log.playPass", nil, nil)
 		d.advanceTurn()
 		d.checkPassClear()
 	} else {
@@ -332,7 +332,7 @@ func (d *Doudizhu) CpuPlay() {
 		combo.Cards = cards
 		action := &DoudizhuCpuAction{PlayerIdx: playerIdx, PlayedCards: cards}
 		d.round.cpuActions = append(d.round.cpuActions, action)
-		d.appendLog(playerIdx, "play", fmt.Sprintf("played %d card(s)", len(cards)), cards)
+		d.appendLog(playerIdx, "play", "doudizhu.log.play", map[string]string{"count": fmt.Sprintf("%d", len(cards))}, cards)
 		d.playCards(playerIdx, combo)
 	}
 }
@@ -384,7 +384,7 @@ func (d *Doudizhu) endGame() {
 		}
 	}
 
-	d.appendLog(-1, "end", "game over", nil)
+	d.appendLog(-1, "end", "doudizhu.log.end", nil, nil)
 }
 
 // --- Getters ---
@@ -457,8 +457,8 @@ func (d *Doudizhu) HasPendingAction() bool { return false }
 func (d *Doudizhu) GetActionLog() []*ActionLogEntry { return d.round.actionLog }
 
 // appendLog 棋譜にエントリを追加する
-func (d *Doudizhu) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	d.round.appendLog(playerIdx, actionType, detail, cards)
+func (d *Doudizhu) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	d.round.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- JSON Serialization ---

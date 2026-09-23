@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -38,6 +39,7 @@ func setupMachiavelliCuiMock(phase domain.MachiavelliPhase, gameEnd bool, table 
 	m.On("GetPlayerCnt").Return(2)
 	m.On("GetPlayer", 0).Return(players[0])
 	m.On("GetPlayer", 1).Return(players[1])
+	m.On("PlayerDeadwoodValue", mock.Anything).Return(7)
 	return m, players
 }
 
@@ -56,6 +58,7 @@ func TestMachiavelliCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, out, "マキャヴェッリ")
 		assert.Contains(t, out, "ラウンド")
 		assert.Contains(t, out, "場のメルド")
+		assert.Contains(t, out, "デッドウッド: 7点")
 		// With melds on the table, the layoff-help format line is shown.
 		assert.Contains(t, out, strings.Split(i18n.T("machiavelli.promptLayoffHelp"), "{{")[0])
 		assert.NotContains(t, out, i18n.T("machiavelli.promptLayoffNone"))
@@ -67,6 +70,7 @@ func TestMachiavelliCuiPresenter_Output(t *testing.T) {
 		assert.NotEmpty(t, out)
 		// With no melds, layoff is announced as unavailable.
 		assert.Contains(t, out, i18n.T("machiavelli.promptLayoffNone"))
+		assert.Contains(t, out, "デッドウッド: 7点")
 	})
 
 	t.Run("round end", func(t *testing.T) {

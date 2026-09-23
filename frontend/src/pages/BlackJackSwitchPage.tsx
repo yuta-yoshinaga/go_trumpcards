@@ -173,7 +173,14 @@ function BlackJackSwitchPageContent() {
 
             {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
 
-            {isBetPhase && <p className="text-ds-text-muted text-center text-sm py-3">{t('guide.bet')}</p>}
+            {isBetPhase && (
+              <div className="flex flex-col items-center gap-2 py-3 text-center">
+                <p className="text-ds-text-muted text-sm">{t('guide.bet')}</p>
+                <p className="text-ds-text-primary text-sm" data-testid="bjswitch-rules-summary">
+                  {t('rules.summary')}
+                </p>
+              </div>
+            )}
             {isSwitchPhase && <p className="text-ds-text-muted text-center text-sm py-2">{t('guide.switch')}</p>}
 
             {/* SR-only live region announcing switch preview score changes (#6382). */}

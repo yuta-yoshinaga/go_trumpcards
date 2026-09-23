@@ -1,4 +1,4 @@
-//go:build !js || !wasm || classic
+//go:build !js || !wasm || extra7
 
 package domain
 
@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // HeartsPlayerCnt ハーツプレイヤー数
@@ -70,11 +71,13 @@ type Hearts struct {
 	currentPlayerIdx int
 	currentTrick     []*TrickCard
 	heartsBroken     bool
-	passedCards      [HeartsPlayerCnt][]*Card
-	passReady        [HeartsPlayerCnt]bool
-	leadPlayerIdx    int
-	gameEndFlag      bool
-	winnerIdx        int
+	// voidSuits records suits each seat has proven it cannot follow in this deal.
+	voidSuits     [HeartsPlayerCnt][CardDesignMax + 1]bool
+	passedCards   [HeartsPlayerCnt][]*Card
+	passReady     [HeartsPlayerCnt]bool
+	leadPlayerIdx int
+	gameEndFlag   bool
+	winnerIdx     int
 	actionLogBase
 }
 
@@ -125,6 +128,7 @@ func (h *Hearts) Reset() {
 
 	h.passedCards = [HeartsPlayerCnt][]*Card{}
 	h.passReady = [HeartsPlayerCnt]bool{}
+	h.voidSuits = [HeartsPlayerCnt][CardDesignMax + 1]bool{}
 
 	h.trumpCards.Shuffle()
 	dealAllCards(h.trumpCards, h.players)
@@ -153,6 +157,7 @@ func (h *Hearts) NextRound() {
 
 	h.passedCards = [HeartsPlayerCnt][]*Card{}
 	h.passReady = [HeartsPlayerCnt]bool{}
+	h.voidSuits = [HeartsPlayerCnt][CardDesignMax + 1]bool{}
 
 	h.trumpCards.Shuffle()
 	dealAllCards(h.trumpCards, h.players)
@@ -181,17 +186,17 @@ func (h *Hearts) PlayerPass(cardIndices []int) error {
 		return ErrNotHumanTurn
 	}
 	if h.passReady[humanIdx] {
-		return NewDomainError(ErrInvalidPlay, "すでにカードを選択済みです")
+		return NewDomainErrorCode(ErrInvalidPlay, "hearts.errPassAlreadySelected", nil)
 	}
 	if len(cardIndices) != HeartsPassCardCount {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("%d枚のカードを選択してください", HeartsPassCardCount))
+		return NewDomainErrorCode(ErrInvalidPlay, "hearts.errPassCardCount", map[string]string{"count": fmt.Sprintf("%d", HeartsPassCardCount)})
 	}
 
 	// 重複チェック
 	seen := make(map[int]bool, len(cardIndices))
 	for _, idx := range cardIndices {
 		if seen[idx] {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが重複しています")
+			return NewDomainErrorCode(ErrInvalidCard, "hearts.errDuplicateCardIndex", nil)
 		}
 		seen[idx] = true
 	}
@@ -199,7 +204,7 @@ func (h *Hearts) PlayerPass(cardIndices []int) error {
 	player := h.players[humanIdx]
 	for _, idx := range cardIndices {
 		if idx < 0 || idx >= player.GetCardsSize() {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+			return NewDomainErrorCode(ErrInvalidCard, "hearts.errCardIndexOutOfRange", nil)
 		}
 	}
 
@@ -242,7 +247,11 @@ func (h *Hearts) ExecutePass() {
 		}
 	}
 
-	h.appendLog(-1, "pass", fmt.Sprintf("round %d: cards passed (%s)", h.roundNumber, h.passDirectionStr(dir)), nil)
+	passCode := map[HeartsPassDirection]string{HeartsPassLeft: "hearts.log.passLeft", HeartsPassRight: "hearts.log.passRight", HeartsPassAcross: "hearts.log.passAcross"}[dir]
+	if passCode == "" {
+		passCode = "hearts.log.passNone"
+	}
+	h.appendLog(-1, "pass", passCode, map[string]string{"round": strconv.Itoa(h.roundNumber)}, nil)
 
 	h.sortAllHands()
 	h.phase = HeartsPhasePlay
@@ -263,7 +272,7 @@ func (h *Hearts) PlayerPlay(cardIndex int) error {
 
 	player := h.players[h.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "hearts.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
@@ -319,7 +328,7 @@ func (h *Hearts) ResolveTrick() {
 	h.players[winnerIdx].roundScore += points
 
 	winnerName := playerName(h.players, winnerIdx)
-	h.appendLog(winnerIdx, "trick_win", fmt.Sprintf("%s wins trick %d (%+d pts)", winnerName, h.trickNumber, points), trickCards)
+	h.appendLog(winnerIdx, "trick_win", "hearts.log.trickWin", map[string]string{"name": winnerName, "trick": strconv.Itoa(h.trickNumber), "points": fmt.Sprintf("%+d", points)}, trickCards)
 
 	h.leadPlayerIdx = winnerIdx
 
@@ -367,7 +376,7 @@ func (h *Hearts) ScoreRound() {
 	}
 
 	if moonShooter >= 0 {
-		h.appendLog(moonShooter, "shoot_moon", fmt.Sprintf("%s shot the moon!", playerName(h.players, moonShooter)), nil)
+		h.appendLog(moonShooter, "shoot_moon", "hearts.log.shootMoon", map[string]string{"name": playerName(h.players, moonShooter)}, nil)
 		h.players[moonShooter].roundScore = 0
 		for i := 0; i < HeartsPlayerCnt; i++ {
 			if i != moonShooter {
@@ -383,8 +392,7 @@ func (h *Hearts) ScoreRound() {
 
 	// スコアログ
 	for i := 0; i < HeartsPlayerCnt; i++ {
-		h.appendLog(i, "round_score", fmt.Sprintf("%s: round=%d, total=%d",
-			playerName(h.players, i), h.players[i].roundScore, h.players[i].cumulativeScore), nil)
+		h.appendLog(i, "round_score", "hearts.log.roundScore", map[string]string{"name": playerName(h.players, i), "round": strconv.Itoa(h.players[i].roundScore), "total": strconv.Itoa(h.players[i].cumulativeScore)}, nil)
 	}
 
 	// ゲーム終了判定
@@ -408,7 +416,7 @@ func (h *Hearts) ScoreRound() {
 				h.winnerIdx = i
 			}
 		}
-		h.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(h.players, h.winnerIdx)), nil)
+		h.appendLog(-1, "game_end", "hearts.log.gameEnd", map[string]string{"name": playerName(h.players, h.winnerIdx)}, nil)
 	}
 }
 
@@ -486,6 +494,10 @@ func (h *Hearts) GetPassReady() [HeartsPlayerCnt]bool { return h.passReady }
 // GetPassedCards パス済みカード取得
 func (h *Hearts) GetPassedCards() [HeartsPlayerCnt][]*Card { return h.passedCards }
 
+// GetVoidSuits returns the suits each seat has proven void during this deal.
+// The first index is the player seat and the second is a CardDesign value.
+func (h *Hearts) GetVoidSuits() [HeartsPlayerCnt][CardDesignMax + 1]bool { return h.voidSuits }
+
 // SetRoundNumber ラウンド番号設定 (テスト用)
 func (h *Hearts) SetRoundNumber(n int) { h.roundNumber = n }
 
@@ -520,6 +532,14 @@ func (h *Hearts) findTwoOfClubs() int {
 
 // playCard カードをプレイする共通処理
 func (h *Hearts) playCard(playerIdx int, card *Card) {
+	// The same follow-suit rule validated in validatePlay proves a void when a
+	// player legally discards a different suit after the lead card is present.
+	if len(h.currentTrick) > 0 {
+		leadSuit := h.currentTrick[0].Card.GetDesign()
+		if card.GetDesign() != leadSuit && !h.playerHasSuit(playerIdx, leadSuit) {
+			h.voidSuits[playerIdx][leadSuit] = true
+		}
+	}
 	h.currentTrick = append(h.currentTrick, &TrickCard{
 		PlayerIdx: playerIdx,
 		Card:      card,
@@ -530,13 +550,18 @@ func (h *Hearts) playCard(playerIdx int, card *Card) {
 		h.heartsBroken = true
 	}
 
-	h.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(h.players, playerIdx), cardStr(card)), []*Card{card})
+	h.appendLog(playerIdx, "play", "hearts.log.play", map[string]string{"name": playerName(h.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(h.currentTrick) == HeartsPlayerCnt {
 		h.phase = HeartsPhaseTrickEnd
 	} else {
 		h.currentPlayerIdx = (h.currentPlayerIdx + 1) % HeartsPlayerCnt
 	}
+}
+
+// appendLog records a Hearts action with a locale-independent detail code.
+func (h *Hearts) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	h.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // validatePlay カードのプレイが有効か検証する
@@ -548,7 +573,7 @@ func (h *Hearts) validatePlay(playerIdx int, card *Card) error {
 		if card.GetDesign() != CardDesignClover || card.GetValue() != 2 {
 			// 2♣を持っているか確認
 			if h.playerHasCard(playerIdx, CardDesignClover, 2) {
-				return NewDomainError(ErrInvalidPlay, "最初のトリックは2♣でリードしてください")
+				return NewDomainErrorCode(ErrInvalidPlay, "hearts.errFirstTrickMustLeadTwoOfClubs", nil)
 			}
 		}
 	}
@@ -557,7 +582,7 @@ func (h *Hearts) validatePlay(playerIdx int, card *Card) error {
 		// リード: ハーツが壊れていない場合、ハーツでリードできない（他にカードがある場合）
 		if !h.heartsBroken && card.GetDesign() == CardDesignHeart {
 			if h.playerHasNonHeart(playerIdx) {
-				return NewDomainError(ErrInvalidPlay, "ハーツはまだブレイクされていません")
+				return NewDomainErrorCode(ErrInvalidPlay, "hearts.errHeartsNotBroken", nil)
 			}
 		}
 		return nil
@@ -568,12 +593,12 @@ func (h *Hearts) validatePlay(playerIdx int, card *Card) error {
 	if card.GetDesign() != leadSuit {
 		// そのスートを持っていない場合のみ許可
 		if h.playerHasSuit(playerIdx, leadSuit) {
-			return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+			return NewDomainErrorCode(ErrInvalidPlay, "hearts.errFollowLeadSuit", nil)
 		}
 		// 最初のトリックではハートとQ♠を出せない（強制される場合を除く）
 		if h.trickNumber == 1 {
 			if isPointCard(card, h.config.OmnibusJD) && h.playerHasNonPointCard(player) {
-				return NewDomainError(ErrInvalidPlay, "最初のトリックではポイントカードを出せません")
+				return NewDomainErrorCode(ErrInvalidPlay, "hearts.errFirstTrickNoPointCards", nil)
 			}
 		}
 	}
@@ -679,20 +704,6 @@ func (h *Hearts) passTarget(from int, dir HeartsPassDirection) int {
 		return (from + 2) % HeartsPlayerCnt
 	default:
 		return from
-	}
-}
-
-// passDirectionStr パス方向の文字列表現
-func (h *Hearts) passDirectionStr(dir HeartsPassDirection) string {
-	switch dir {
-	case HeartsPassLeft:
-		return "left"
-	case HeartsPassRight:
-		return "right"
-	case HeartsPassAcross:
-		return "across"
-	default:
-		return "none"
 	}
 }
 
@@ -1111,6 +1122,7 @@ type heartsJSON struct {
 	GameEndFlag      bool                     `json:"ge"`
 	WinnerIdx        int                      `json:"wi"`
 	ActionLog        []*ActionLogEntry        `json:"al"`
+	VoidSuits        [][]bool                 `json:"vs"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -1131,12 +1143,21 @@ func (h *Hearts) MarshalJSON() ([]byte, error) {
 		GameEndFlag:      h.gameEndFlag,
 		WinnerIdx:        h.winnerIdx,
 		ActionLog:        h.actionLog,
+		VoidSuits:        heartsVoidSuitsToJSON(h.voidSuits),
 	})
 }
 
 // heartsMaxSliceLen caps slice sizes during deserialisation to prevent
 // excessive memory allocation from malformed input.
 const heartsMaxSliceLen = 1000
+
+func heartsVoidSuitsToJSON(voidSuits [HeartsPlayerCnt][CardDesignMax + 1]bool) [][]bool {
+	out := make([][]bool, HeartsPlayerCnt)
+	for i := range voidSuits {
+		out[i] = append([]bool(nil), voidSuits[i][:]...)
+	}
+	return out
+}
 
 // UnmarshalJSON implements json.Unmarshaler.
 func (h *Hearts) UnmarshalJSON(data []byte) error {
@@ -1151,6 +1172,16 @@ func (h *Hearts) UnmarshalJSON(data []byte) error {
 	for i := range j.PassedCards {
 		if len(j.PassedCards[i]) > heartsMaxSliceLen {
 			return fmt.Errorf("hearts: input array exceeds maximum allowed size")
+		}
+	}
+	if j.VoidSuits != nil {
+		if len(j.VoidSuits) != HeartsPlayerCnt {
+			return fmt.Errorf("hearts: void suits player count is invalid")
+		}
+		for _, suits := range j.VoidSuits {
+			if len(suits) != CardDesignMax+1 {
+				return fmt.Errorf("hearts: void suits suit count is invalid")
+			}
 		}
 	}
 	h.trumpCards = j.TrumpCards
@@ -1177,6 +1208,10 @@ func (h *Hearts) UnmarshalJSON(data []byte) error {
 	h.gameEndFlag = j.GameEndFlag
 	h.winnerIdx = j.WinnerIdx
 	h.actionLog = j.ActionLog
+	h.voidSuits = [HeartsPlayerCnt][CardDesignMax + 1]bool{}
+	for i, suits := range j.VoidSuits {
+		copy(h.voidSuits[i][:], suits)
+	}
 	if h.actionLog == nil {
 		h.actionLog = make([]*ActionLogEntry, 0)
 	}

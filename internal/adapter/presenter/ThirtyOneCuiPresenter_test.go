@@ -54,7 +54,7 @@ func TestThirtyOneCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "ラウンド: 1")
 		assert.Contains(t, result, "山札: 39")
 		assert.Contains(t, result, "あなた: ライフ 3")
-		assert.Contains(t, result, "[0]SPADE 1")
+		assert.Contains(t, result, "[0]♠1")
 		assert.Contains(t, result, "ds")
 		assert.Contains(t, result, "dd")
 		assert.Contains(t, result, "k:") // knock help shown when no knocker
@@ -91,7 +91,7 @@ func TestThirtyOneCuiPresenter_Output(t *testing.T) {
 		m, _ := setupThirtyOneCuiMock()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDiscardTop")
 		m.On("GetDiscardTop").Return(domain.NewCard(domain.CardDesignHeart, 7, false))
-		assert.Contains(t, p.Output(m, nil), "捨て札: HEART 7")
+		assert.Contains(t, p.Output(m, nil), "捨て札: ♥7")
 	})
 
 	t.Run("error shown", func(t *testing.T) {
@@ -145,7 +145,7 @@ func TestThirtyOneCuiPresenter_ActionLogOutput(t *testing.T) {
 
 	m := new(interfaces.MockThirtyOneGame)
 	entries := []*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "knock", Detail: "You knock"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "knock", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	}
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return(entries)
@@ -169,7 +169,7 @@ func TestThirtyOneCuiPresenter_HintOutput(t *testing.T) {
 		g.SetCurrentPlayerIdx(0)
 
 		out := p.HintOutput(g)
-		assert.Contains(t, out, "[HINT]")
+		assert.Contains(t, out, "[ヒント]")
 		assert.Contains(t, out, "捨てましょう")
 	})
 
@@ -180,7 +180,7 @@ func TestThirtyOneCuiPresenter_HintOutput(t *testing.T) {
 		g.SetCurrentPlayerIdx(0)
 
 		out := p.HintOutput(g)
-		assert.Contains(t, out, "[HINT]")
+		assert.Contains(t, out, "[ヒント]")
 		// ドロー / ノックのいずれか。生の識別子が漏れていないこと。
 		assert.NotContains(t, out, "draw_stock")
 		assert.NotContains(t, out, "knock_ready")

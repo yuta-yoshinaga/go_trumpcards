@@ -52,6 +52,9 @@ func (p *LingerLongerCuiPresenter) Output(s interfaces.LingerLongerGame, lastErr
 			"trick", strconv.Itoa(s.GetTrickNumber()+1),
 			"stock", strconv.Itoa(s.GetStockSize()),
 			"discarded", strconv.Itoa(s.GetDiscarded())) + "\n")
+		sb.WriteString(i18n.Tf("lingerlonger.eliminatedSummary",
+			"eliminated", strconv.Itoa(s.GetEliminatedCnt()),
+			"total", strconv.Itoa(s.GetPlayerCnt())) + "\n")
 		// **補充が勝敗そのもの。** 規則を毎回書く。
 		sb.WriteString(i18n.T("lingerlonger.rule") + "\n")
 

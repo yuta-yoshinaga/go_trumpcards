@@ -220,7 +220,7 @@ function SlobberhannesPageContent() {
 
             {/* 得点と、そのラウンドで受けている罰の内訳 */}
             <div className="flex flex-wrap justify-center gap-2 mb-4" data-tutorial="slobberhannes-scores">
-              {state.players.map((p) => (
+              {state.players.map((p, seatIdx) => (
                 <div
                   key={p.id}
                   className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
@@ -228,6 +228,7 @@ function SlobberhannesPageContent() {
                 >
                   <span className="text-ds-text-primary">
                     {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
+                    {seatIdx === state.dealerIdx ? ` / ${t('dealerBadge')}` : ''}
                   </span>
                   {': '}
                   {t('header.score', { score: String(p.score) })} [{penaltyMarks(p)}]

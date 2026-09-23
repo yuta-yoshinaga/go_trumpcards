@@ -3,7 +3,9 @@ import type {
   AnacondaResponse,
   BaccaratBanqueResponse,
   BasraResponse,
+  BatakResponse,
   BeziqueResponse,
+  BinokelResponse,
   BoliviaPlayerData,
   BoliviaResponse,
   BouillotteResponse,
@@ -22,6 +24,7 @@ import type {
   DoppelkopfResponse,
   EcarteResponse,
   EscobaResponse,
+  FiveHundredResponse,
   FortyFivesResponse,
   FrenchTarotResponse,
   GanjifaResponse,
@@ -43,6 +46,7 @@ import type {
   MadrassoResponse,
   ManilleResponse,
   MariasResponse,
+  MarjapussiResponse,
   MichiganResponse,
   MinchiateResponse,
   MusResponse,
@@ -67,6 +71,7 @@ import type {
   SuecaResponse,
   SutdaResponse,
   TablanetResponse,
+  TappTarockResponse,
   TarocchiniResponse,
   TeenPattiResponse,
   ThreeCardBragResponse,
@@ -99,6 +104,7 @@ const heartsHumanPlayer = {
   trickCount: 0,
   penaltyCards: [],
   tookOmnibusJD: false,
+  voidSuits: [],
 };
 
 /** Base Hearts state used as the default for {@link makeHeartsState}. */
@@ -115,6 +121,7 @@ const baseHeartsState: HeartsResponse = {
       trickCount: 1,
       penaltyCards: [],
       tookOmnibusJD: false,
+      voidSuits: [],
     },
     {
       id: 2,
@@ -126,6 +133,7 @@ const baseHeartsState: HeartsResponse = {
       trickCount: 2,
       penaltyCards: [],
       tookOmnibusJD: false,
+      voidSuits: [],
     },
     {
       id: 3,
@@ -137,6 +145,7 @@ const baseHeartsState: HeartsResponse = {
       trickCount: 0,
       penaltyCards: [],
       tookOmnibusJD: false,
+      voidSuits: [],
     },
   ],
   phase: 1,
@@ -398,6 +407,81 @@ export function makeCallBreakState(overrides?: Partial<CallBreakResponse>): Call
   return { ...baseCallBreakState, ...overrides };
 }
 
+/** Base Batak player data used by {@link makeBatakState}. */
+const batakPlayers: BatakResponse['players'] = [
+  {
+    id: 0,
+    isHuman: true,
+    cardCount: 13,
+    cards: [
+      { design: 'SPADE' as const, value: 1 },
+      { design: 'HEART' as const, value: 11 },
+    ],
+    bid: 5,
+    roundScore: 0,
+    cumulativeScore: 0,
+    trickCount: 0,
+  },
+  {
+    id: 1,
+    isHuman: false,
+    cardCount: 13,
+    cards: [],
+    bid: 0,
+    roundScore: 0,
+    cumulativeScore: 4,
+    trickCount: 1,
+  },
+  {
+    id: 2,
+    isHuman: false,
+    cardCount: 13,
+    cards: [],
+    bid: 0,
+    roundScore: 0,
+    cumulativeScore: 3,
+    trickCount: 2,
+  },
+  {
+    id: 3,
+    isHuman: false,
+    cardCount: 13,
+    cards: [],
+    bid: 0,
+    roundScore: 0,
+    cumulativeScore: -5,
+    trickCount: 5,
+  },
+];
+
+/** Base Batak state for {@link makeBatakState}. */
+const baseBatakState: BatakResponse = {
+  players: batakPlayers,
+  phase: 1,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  bidPlayerIdx: 0,
+  declarerIdx: 0,
+  highBid: 5,
+  minLegalBid: 0,
+  currentTrick: [],
+  spadesBroken: false,
+  gameEndFlag: false,
+  winnerIdx: -1,
+  leadPlayerIdx: 0,
+  message: '',
+  config: { cpuDifficulty: 1, maxRounds: 5 },
+  validPlayIndices: [],
+};
+
+/**
+ * Creates a {@link BatakResponse} with sensible defaults.
+ */
+export function makeBatakState(overrides?: Partial<BatakResponse>): BatakResponse {
+  return { ...baseBatakState, ...overrides };
+}
+
 /** Base Two Ten Jack player data used by {@link makeTwoTenJackState}. */
 const twoTenJackPlayers: TwoTenJackResponse['players'] = [
   {
@@ -458,6 +542,7 @@ const baseTwoTenJackState: TwoTenJackResponse = {
   gameEndFlag: false,
   winnerTeam: -1,
   leadPlayerIdx: 0,
+  validPlayIndices: [0, 1],
   message: '',
   config: { cpuDifficulty: 1, pointLimit: 50 },
 };
@@ -756,6 +841,8 @@ const baseSheepsheadState: SheepsheadResponse = {
   callableSuits: [],
   playableIndices: [0, 1],
   roundPickerPoints: 0,
+  livePickerPoints: 0,
+  liveDefenderPoints: 120,
   roundMultiplier: 1,
   roundPickerWon: false,
   gameEndFlag: false,
@@ -1174,6 +1261,7 @@ const baseMariasState: MariasResponse = {
   playerScores: [0, 0, 0],
   roundCardPoints: [0, 0, 0],
   roundMarriage: [0, 0, 0],
+  roundMarriageSuits: [[], [], []],
   lastTrickWinner: -1,
   playableIndices: [0, 1, 2],
   gameEndFlag: false,
@@ -1274,6 +1362,7 @@ const baseTysiacState: TysiacResponse = {
   dealerIdx: 2,
   forehandIdx: 0,
   declarerIdx: 0,
+  talonRecipientIdx: 1,
   contract: 100,
   currentBid: 100,
   trumpSuit: 3,
@@ -1300,6 +1389,67 @@ const baseTysiacState: TysiacResponse = {
  */
 export function makeTysiacState(overrides?: Partial<TysiacResponse>): TysiacResponse {
   return { ...baseTysiacState, ...overrides };
+}
+
+/** Base Marjapussi state used as the default for {@link makeMarjapussiState}. Defaults to a human Play turn. */
+const baseMarjapussiState: MarjapussiResponse = {
+  players: [
+    {
+      id: 0,
+      teamId: 0,
+      isHuman: true,
+      cardCount: 8,
+      cards: [
+        { design: 'HEART' as const, value: 12 },
+        { design: 'HEART' as const, value: 13 },
+        { design: 'SPADE' as const, value: 1 },
+        { design: 'SPADE' as const, value: 10 },
+        { design: 'CLOVER' as const, value: 11 },
+        { design: 'CLOVER' as const, value: 9 },
+        { design: 'DIAMOND' as const, value: 8 },
+        { design: 'DIAMOND' as const, value: 7 },
+      ],
+      trickCount: 0,
+      score: 0,
+    },
+    { id: 1, teamId: 1, isHuman: false, cardCount: 8, cards: [], trickCount: 0, score: 0 },
+    { id: 2, teamId: 0, isHuman: false, cardCount: 8, cards: [], trickCount: 0, score: 0 },
+    { id: 3, teamId: 1, isHuman: false, cardCount: 8, cards: [], trickCount: 0, score: 0 },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 1,
+  currentPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 0,
+  trumpSuit: 0,
+  currentTrick: [],
+  teamScores: [0, 0],
+  playerScores: [0, 0, 0, 0],
+  roundCardPoints: [0, 0],
+  roundMarriage: [0, 0],
+  pussiCount: 4,
+  pussiWinnerTeam: -1,
+  lastTrickWinner: -1,
+  playableIndices: [0, 1, 2, 3, 4, 5, 6, 7],
+  gameEndFlag: false,
+  winnerPlayer: -1,
+  winnerTeam: -1,
+  isHumanTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetPoints: 500 },
+};
+
+/**
+ * Creates a {@link MarjapussiResponse} with sensible defaults (a human Play turn).
+ * Any field can be overridden via the `overrides` parameter.
+ *
+ * @param overrides - Partial MarjapussiResponse fields to override.
+ * @returns A complete MarjapussiResponse suitable for use in tests.
+ */
+export function makeMarjapussiState(overrides?: Partial<MarjapussiResponse>): MarjapussiResponse {
+  return { ...baseMarjapussiState, ...overrides };
 }
 
 /** Base Calabresella state used as the default for {@link makeCalabresellaState}. Defaults to a human Play turn. */
@@ -1741,6 +1891,8 @@ const baseFrenchTarotState: FrenchTarotResponse = {
   playerScores: [0, 0, 0, 0],
   lastTrickWinner: -1,
   outcome: 0,
+  declarerCaptured: 0,
+  target: 56,
   petitAuBoutDelta: 0,
   result: 0,
   playableIndices: [0, 1, 2, 3, 4],
@@ -1838,6 +1990,7 @@ const basePiedmonteseTarotState: PiedmonteseTarotResponse = {
       ],
       trickCount: 0,
       cardThirds: 0,
+      scartoThirds: 0,
       cardPoints: '0',
       score: 0,
       isDealer: false,
@@ -1849,6 +2002,7 @@ const basePiedmonteseTarotState: PiedmonteseTarotResponse = {
       cards: [],
       trickCount: 0,
       cardThirds: 0,
+      scartoThirds: 0,
       cardPoints: '0',
       score: 0,
       isDealer: false,
@@ -1860,6 +2014,7 @@ const basePiedmonteseTarotState: PiedmonteseTarotResponse = {
       cards: [],
       trickCount: 0,
       cardThirds: 0,
+      scartoThirds: 0,
       cardPoints: '0',
       score: 0,
       isDealer: false,
@@ -1871,6 +2026,7 @@ const basePiedmonteseTarotState: PiedmonteseTarotResponse = {
       cards: [],
       trickCount: 0,
       cardThirds: 0,
+      scartoThirds: 0,
       cardPoints: '0',
       score: 0,
       isDealer: true,
@@ -1988,6 +2144,7 @@ const baseKoenigrufenState: KoenigrufenResponse = {
   playerScores: [0, 0, 0, 0],
   lastTrickWinner: -1,
   outcome: 0,
+  teamPoints: 0,
   result: 0,
   playableIndices: [0, 1, 2, 3, 4],
   gameEndFlag: false,
@@ -2822,6 +2979,56 @@ const baseFortyFivesState: FortyFivesResponse = {
  */
 export function makeFortyFivesState(overrides?: Partial<FortyFivesResponse>): FortyFivesResponse {
   return { ...baseFortyFivesState, ...overrides };
+}
+
+/** Base Five Hundred state used as the default for {@link makeFiveHundredState}. */
+const baseFiveHundredState: FiveHundredResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 3,
+      cards: [
+        { design: 'SPADE' as const, value: 5 },
+        { design: 'HEART' as const, value: 6 },
+        { design: 'DIAMOND' as const, value: 7 },
+      ],
+      team: 0,
+      trickCount: 0,
+      passed: false,
+      isDeclarer: false,
+    },
+    { id: 1, isHuman: false, cardCount: 0, cards: [], team: 1, trickCount: 0, passed: false, isDeclarer: false },
+    { id: 2, isHuman: false, cardCount: 0, cards: [], team: 0, trickCount: 0, passed: false, isDeclarer: false },
+    { id: 3, isHuman: false, cardCount: 0, cards: [], team: 1, trickCount: 0, passed: false, isDeclarer: false },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 0,
+  currentPlayerIdx: 0,
+  bidPlayerIdx: 0,
+  dealerIdx: 3,
+  leadPlayerIdx: 0,
+  trumpSuit: -1,
+  contractKind: 0,
+  contractTricks: 0,
+  contractValue: 0,
+  declarerIdx: -1,
+  highestBid: null,
+  highestBidder: -1,
+  jokerLeadSuit: -1,
+  kittyCount: 3,
+  currentTrick: [],
+  teamScores: [0, 0],
+  gameEndFlag: false,
+  winnerTeam: -1,
+  config: { cpuDifficulty: 1, targetScore: 500 },
+  message: '',
+};
+
+/** Creates a Five Hundred state with sensible defaults (the human on the bid turn). */
+export function makeFiveHundredState(overrides?: Partial<FiveHundredResponse>): FiveHundredResponse {
+  return { ...baseFiveHundredState, ...overrides };
 }
 
 /** Base Twenty-Nine (29) state used as the default for {@link makeTwentyNineState}. A 4-player 2-team hidden-trump bidding trick-taker; defaults to a human Bid turn. */
@@ -4126,6 +4333,7 @@ const baseBoliviaState: BoliviaResponse = {
   isFrozen: false,
   gameEndFlag: false,
   winnerIdx: -1,
+  canGoOut: false,
   message: '',
   messageCode: 'bolivia.drawPhase',
   config: { cpuDifficulty: 1, pointLimit: 10000 },
@@ -4227,7 +4435,8 @@ const baseSambaState: SambaResponse = {
   winnerIdx: -1,
   message: '',
   messageCode: 'samba.drawPhase',
-  config: { cpuDifficulty: 1, pointLimit: 10000 },
+  config: { cpuDifficulty: 1, pointLimit: 10000, goOutRequiredMelds: 2 },
+  completedMelds: [0, 0],
 };
 
 /**
@@ -4419,6 +4628,57 @@ export function makeZwanzigerrufenState(overrides?: Partial<ZwanzigerrufenRespon
   return { ...baseZwanzigerrufenState, ...overrides };
 }
 
+/** Base Tapp Tarock state used as the default for {@link makeTappTarockState}. */
+const baseTappTarockState: TappTarockResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 16,
+      cards: [
+        { design: 'SPADE', value: 8, glyph: '♠', label: 'K', color: 'black', deck: 'tarot' },
+        { design: 'HEART', value: 3, glyph: '♥', label: '3', color: 'red', deck: 'tarot' },
+      ],
+      trickCount: 0,
+      cardPoints: 0,
+      score: 0,
+      isDeclarer: false,
+    },
+    { id: 1, isHuman: false, cardCount: 16, cards: [], trickCount: 0, cardPoints: 0, score: 0, isDeclarer: false },
+    { id: 2, isHuman: false, cardCount: 16, cards: [], trickCount: 0, cardPoints: 0, score: 0, isDeclarer: false },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  totalRounds: 4,
+  trickNumber: 0,
+  currentPlayerIdx: 0,
+  dealerIdx: 0,
+  bidPlayerIdx: 0,
+  highestBid: 0,
+  declarerIdx: -1,
+  contract: 0,
+  contractName: 'pass',
+  talonCount: 6,
+  currentTrick: [],
+  lastTrickWinner: -1,
+  lastTrickCards: [],
+  outcome: 0,
+  breakdown: null,
+  playableIndices: [0, 1],
+  discardableIndices: [],
+  gameEndFlag: false,
+  winnerPlayer: -1,
+  isHumanTurn: true,
+  hint: null,
+  message: '',
+  config: { cpuDifficulty: 1, targetDeals: 4 },
+};
+
+/** Creates a complete Tapp Tarock response suitable for page and hint tests. */
+export function makeTappTarockState(overrides?: Partial<TappTarockResponse>): TappTarockResponse {
+  return { ...baseTappTarockState, ...overrides };
+}
+
 /** Base Troggu state used as the default for {@link makeTrogguState}. Defaults to a human bid turn. */
 const baseTrogguState: TrogguResponse = {
   players: [
@@ -4486,19 +4746,23 @@ const baseHorseState: HorseResponse = {
       name: 'YOU',
       isHuman: true,
       chips: 1000,
+      folded: false,
+      allIn: false,
       cards: [
         { design: 'SPADE', value: 14, glyph: '\u2660', label: 'A', color: 'black', deck: 'standard' },
         { design: 'HEART', value: 13, glyph: '\u2665', label: 'K', color: 'red', deck: 'standard' },
       ],
     },
-    { id: 1, name: 'CPU1', isHuman: false, chips: 1000, cards: [] },
-    { id: 2, name: 'CPU2', isHuman: false, chips: 1000, cards: [] },
-    { id: 3, name: 'CPU3', isHuman: false, chips: 1000, cards: [] },
+    { id: 1, name: 'CPU1', isHuman: false, chips: 1000, folded: false, allIn: false, cards: [] },
+    { id: 2, name: 'CPU2', isHuman: false, chips: 1000, folded: false, allIn: false, cards: [] },
+    { id: 3, name: 'CPU3', isHuman: false, chips: 1000, folded: false, allIn: false, cards: [] },
   ],
   phase: 0,
   discipline: 0,
   disciplineLetter: 'H',
   disciplineName: 'holdem',
+  disciplinePosition: 1,
+  disciplineTotal: 5,
   handInDiscipline: 1,
   handNumber: 1,
   currentTurn: 0,
@@ -5292,4 +5556,82 @@ const baseCostlyColoursState: CostlyColoursResponse = {
  */
 export function makeCostlyColoursState(overrides?: Partial<CostlyColoursResponse>): CostlyColoursResponse {
   return { ...baseCostlyColoursState, ...overrides };
+}
+
+/** Base Binokel state used as default for {@link makeBinokelState}. */
+const baseBinokelState: BinokelResponse = {
+  players: [
+    {
+      id: 0,
+      isHuman: true,
+      cardCount: 15,
+      cards: [],
+      score: 0,
+      trickCount: 0,
+      bid: 0,
+      hasPassed: false,
+      meldScore: 0,
+      trickPoints: 0,
+    },
+    {
+      id: 1,
+      isHuman: false,
+      cardCount: 15,
+      cards: [],
+      score: 0,
+      trickCount: 0,
+      bid: 0,
+      hasPassed: false,
+      meldScore: 0,
+      trickPoints: 0,
+    },
+    {
+      id: 2,
+      isHuman: false,
+      cardCount: 15,
+      cards: [],
+      score: 0,
+      trickCount: 0,
+      bid: 0,
+      hasPassed: false,
+      meldScore: 0,
+      trickPoints: 0,
+    },
+  ],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 0,
+  currentPlayerIdx: 0,
+  bidPlayerIdx: 0,
+  dealerIdx: 2,
+  trumpSuit: 0,
+  highestBid: 0,
+  highestBidder: -1,
+  currentTrick: [],
+  scores: [0, 0, 0],
+  gameEndFlag: false,
+  winnerPlayer: -1,
+  leadPlayerIdx: -1,
+  playerMelds: [[], [], []],
+  dabb: [],
+  dabbDiscarded: [],
+  validPlayIndices: [],
+  meldTable: [
+    { type: 0, points: 10 },
+    { type: 1, points: 20 },
+    { type: 2, points: 40 },
+    { type: 17, points: 1500 },
+  ],
+  message: '',
+  config: { cpuDifficulty: 1, pointLimit: 1500 },
+};
+
+/**
+ * Creates a {@link BinokelResponse} with sensible defaults.
+ *
+ * @param overrides - Partial BinokelResponse fields to override.
+ * @returns A complete BinokelResponse suitable for use in tests.
+ */
+export function makeBinokelState(overrides?: Partial<BinokelResponse>): BinokelResponse {
+  return { ...baseBinokelState, ...overrides };
 }

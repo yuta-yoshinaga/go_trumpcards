@@ -307,23 +307,109 @@ func followTheQueenThirdStreetAdvice(cards []*domain.Card, isWild func(*domain.C
 }
 
 // HintOutput advises on the human's turn, using basic starting-hand strategy on
-// third street.
+// third street and the corresponding betting advice on later streets.
 func (p *FollowTheQueenCuiPresenter) HintOutput(s interfaces.FollowTheQueenGame) string {
 	if !s.IsHumanTurn() {
 		return i18n.T("followthequeen.hintNone") + "\n"
 	}
-	if s.GetPhase() != domain.FollowTheQueenPhaseThirdStreet {
+	if s.GetPhase() == domain.FollowTheQueenPhaseThirdStreet {
+		player := s.GetPlayer(s.GetCurrentTurn())
+		if player == nil {
+			return i18n.T("followthequeen.hintNone") + "\n"
+		}
+		cont, reasonKey := followTheQueenThirdStreetAdvice(player.GetAllCards(), s.IsWild)
+		action := i18n.T("followthequeen.hintFold")
+		if cont {
+			action = i18n.T("followthequeen.hintContinue")
+		}
+		return color.Yellow(i18n.Tf("followthequeen.hint",
+			"action", action, "reason", hintReasonStr(reasonKey, followTheQueenHintReasonKeys))) + "\n"
+	}
+	if s.GetPhase() < domain.FollowTheQueenPhaseFourthStreet || s.GetPhase() > domain.FollowTheQueenPhaseSeventhStreet {
 		return i18n.T("followthequeen.hintNone") + "\n"
 	}
 	player := s.GetPlayer(s.GetCurrentTurn())
-	if player == nil {
+	if player == nil || player.GetFolded() || player.GetAllIn() || len(player.GetAllCards()) == 0 {
 		return i18n.T("followthequeen.hintNone") + "\n"
 	}
-	cont, reasonKey := followTheQueenThirdStreetAdvice(player.GetAllCards(), s.IsWild)
-	action := i18n.T("followthequeen.hintFold")
-	if cont {
-		action = i18n.T("followthequeen.hintContinue")
+	owed := s.GetLastBet() - player.GetCurrentBet()
+	if owed < 0 {
+		owed = 0
+	}
+	action := "followthequeen.hintCheck"
+	if owed > 0 {
+		action = "followthequeen.hintCall"
+	}
+	reason := "fold_weak"
+	wilds := 0
+	for _, card := range player.GetAllCards() {
+		if s.IsWild(card) {
+			wilds++
+		}
+	}
+	switch {
+	case wilds >= 2:
+		action = followTheQueenPushAction(owed)
+		reason = "wild_two"
+	case wilds == 1:
+		action = followTheQueenPushAction(owed)
+		reason = "wild_one"
+	case followTheQueenHasPair(player.GetAllCards()):
+		action = followTheQueenPushAction(owed)
+		reason = "pair"
+	case owed == 0:
+		reason = "check_free"
+	case followTheQueenHasHighCard(player.GetAllCards()):
+		reason = "high"
+	case owed > 0:
+		action = "followthequeen.hintFold"
 	}
 	return color.Yellow(i18n.Tf("followthequeen.hint",
-		"action", action, "reason", i18n.T(reasonKey))) + "\n"
+		"action", i18n.T(action), "reason", hintReasonStr(reason, followTheQueenHintReasonKeys))) + "\n"
+}
+
+func followTheQueenPushAction(owed int) string {
+	if owed > 0 {
+		return "followthequeen.hintRaise"
+	}
+	return "followthequeen.hintBet"
+}
+
+func followTheQueenHasPair(cards []*domain.Card) bool {
+	seen := map[int]bool{}
+	for _, card := range cards {
+		if seen[card.GetValue()] {
+			return true
+		}
+		seen[card.GetValue()] = true
+	}
+	return false
+}
+
+func followTheQueenHasHighCard(cards []*domain.Card) bool {
+	for _, card := range cards {
+		if value := card.GetValue(); value == 1 || value >= 10 {
+			return true
+		}
+	}
+	return false
+}
+
+var followTheQueenHintReasonKeys = map[string]string{
+	// Third-street advice returns complete i18n keys and passes through the shared
+	// hintReasonStr helper, so those keys intentionally map to themselves. The
+	// later-street advice below uses short reason codes, like the other presenters.
+	"followthequeen.hintReasonPair":     "followthequeen.hintReasonPair",
+	"followthequeen.hintReasonWildOne":  "followthequeen.hintReasonWildOne",
+	"followthequeen.hintReasonWildTwo":  "followthequeen.hintReasonWildTwo",
+	"followthequeen.hintReasonFlush":    "followthequeen.hintReasonFlush",
+	"followthequeen.hintReasonStraight": "followthequeen.hintReasonStraight",
+	"followthequeen.hintReasonHigh":     "followthequeen.hintReasonHigh",
+	"followthequeen.hintReasonFold":     "followthequeen.hintReasonFold",
+	"pair":                              "followthequeen.hintReasonPair",
+	"wild_one":                          "followthequeen.hintReasonWildOne",
+	"wild_two":                          "followthequeen.hintReasonWildTwo",
+	"high":                              "followthequeen.hintReasonHigh",
+	"check_free":                        "followthequeen.hintReasonCheckFree",
+	"fold_weak":                         "followthequeen.hintReasonFold",
 }

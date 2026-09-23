@@ -4,6 +4,7 @@
   "helpPickUp": "  u                    Pick the trick up (you cannot follow)",
   "helpGiveUp": "  g                    Give up",
   "header": "Trick: {{trick}}  Deck: {{deck}} ({{left}} still in play)",
+  "finishedCount": "Out {{finished}} / {{total}} players",
   "rule": "Winning a trick scores nothing; the winner is whoever runs out of cards first. Fail to follow suit and the whole trick goes into your hand -- the penalty is being given cards, not taking them. Everyone starts with eight, and the deck is sized to the table (32 for four players, 40 for five, 48 for six).",
   "playerLine": "{{name}}{{role}}: {{cards}} cards, picked up {{pickups}}x",
   "roleFinished": "[out in {{rank}}]",
@@ -22,5 +23,13 @@
   "hintReasonFollow": "Taking the trick gains nothing, so play low",
   "hintReasonPickUp": "Nothing in your hand follows",
   "helpExamplePlay": "  p 0                  play hand card 0",
-  "helpHint": "  h                    show a hint"
+  "helpHint": "  h                    show a hint",
+  "log.start": "Started Rolling Stone ({{players}} players, {{cards}} cards)",
+  "log.play": "Played a card",
+  "log.pickup": "Could not follow and picked up {{count}} cards",
+  "log.stalemate": "No decision after {{tricks}} tricks. The seat with the fewest cards wins ({{cards}} cards)",
+  "log.trick": "Won the trick (it scores nothing)",
+  "log.finish": "Finished in position {{rank}}",
+  "log.result": "Emptied the hand",
+  "log.giveup": "Gave up"
 }

@@ -19,7 +19,9 @@
     "penaltyRemaining": "Penalty Left",
     "lastCard": "Last Card",
     "rounds": "Rounds",
-    "maxRounds": "Max Rounds"
+    "maxRounds": "Max Rounds",
+    "turn": "Turn: {{name}}",
+    "lastCardBy": "Last card by {{name}}"
   },
   "settings": {
     "maxRounds": "Max Rounds",

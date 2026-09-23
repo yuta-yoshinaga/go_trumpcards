@@ -32,5 +32,11 @@
   "category.primiera": "Primiera (most sevens)",
   "category.settebello": "Settebello (7 of diamonds)",
   "helpExampleNext": "  n                        read the round result, then continue",
-  "helpLog": "  l                        show the action log"
+  "helpLog": "  l                        show the action log",
+  "log.deal": "dealt {{count}} table cards",
+  "log.lay": "placed on table",
+  "log.capture": "captured {{count}} card(s)",
+  "log.lastTake": "last-take: {{count}} card(s)",
+  "log.gameEnd": "game ended at {{points}} points",
+  "log.roundEnd": "round ended"
 }

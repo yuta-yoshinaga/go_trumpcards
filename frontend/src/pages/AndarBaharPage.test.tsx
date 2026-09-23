@@ -39,6 +39,9 @@ const betState: AndarBaharResponse = {
   betTarget: AndarBaharColumn.ANDAR,
   sideAmount: 0,
   sideBand: AndarBaharSideBand.NONE,
+  sideBandProbabilities: [
+    0.0588235294, 0.212244898, 0.2170468187, 0.169027611, 0.2180072029, 0.0979591837, 0.0268907563,
+  ],
   winner: -1,
   result: 0,
   payout: 0,
@@ -64,6 +67,7 @@ const andarWinState: AndarBaharResponse = {
   result: 1,
   payout: 190,
   history: [AndarBaharColumn.ANDAR],
+  sideBandProbabilities: betState.sideBandProbabilities,
 };
 
 beforeEach(() => {
@@ -136,6 +140,16 @@ describe('AndarBaharPage', () => {
     await waitFor(() =>
       expect(mockApi).toHaveBeenCalledWith('bet', 100, AndarBaharColumn.ANDAR, 50, AndarBaharSideBand.SIX_TO_TEN),
     );
+  });
+
+  it('shows server-provided side-band probabilities beside payouts', async () => {
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<AndarBaharPage />);
+
+    await waitFor(() => expect(screen.getByLabelText('サイドベット')).toBeInTheDocument());
+    const options = screen.getByLabelText('サイドベット').querySelectorAll('option');
+    expect(options[1]).toHaveTextContent('15.0x, 5.88%');
+    expect(options[7]).toHaveTextContent('33.0x, 2.69%');
   });
 
   it('keeps the side band NONE when the band is chosen but the stake stays 0', async () => {

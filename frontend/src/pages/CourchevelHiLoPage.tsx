@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { courchevelHiLoApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { BettingControls } from '../components/BettingControls';
 import { BoardLowBadge } from '../components/BoardLowBadge';
 import { CpuAccordion } from '../components/CpuAccordion';
@@ -147,6 +148,7 @@ function CourchevelHiLoPageContent() {
     isAddonPhase,
     humanRebuyCount,
     cpuPlayers,
+    actionBindings,
   } = useCommunityPokerGame({
     game: 'courchevelhilo',
     exec: courchevelHiLoApi.exec,
@@ -639,6 +641,7 @@ function CourchevelHiLoPageContent() {
               dataTutorial="bohl-reset-button"
               className="min-w-[90px]"
             />
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="courchevelhilo-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

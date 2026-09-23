@@ -14,7 +14,7 @@
   },
   "you": "You",
   "cpu": "CPU {{id}}",
-  "round": "Round {{n}}",
+  "round": "Round {{n}} / {{total}}",
   "ante": "Ante: {{amount}}",
   "chips": "Chips: {{amount}}",
   "handCount": "Hand: {{count}}",

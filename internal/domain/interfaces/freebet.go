@@ -46,6 +46,8 @@ type FreeBetBlackjackGame interface {
 	GetDealerCards() []*domain.Card
 	// GetDealerScore ディーラーの点数
 	GetDealerScore() int
+	// IsDealerHoleRevealed ディーラーの伏せ札が公開済みか
+	IsDealerHoleRevealed() bool
 	// IsDealerPushed22 ディーラーが 22 でバストしたか
 	IsDealerPushed22() bool
 

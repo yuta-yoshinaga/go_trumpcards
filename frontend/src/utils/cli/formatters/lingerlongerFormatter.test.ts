@@ -48,6 +48,20 @@ describe('formatLingerLongerState', () => {
     expect(out).toMatch(/one card from the stock/);
   });
 
+  it('shows the number of eliminated seats and changes when a seat is eliminated', () => {
+    const active = formatLingerLongerState(state());
+    const oneOut = formatLingerLongerState(
+      state({
+        players: [seat(0), seat(1, { eliminatedAt: 1 }), seat(2), seat(3)],
+        eliminatedCnt: 1,
+      }),
+    );
+
+    expect(active).toContain('Eliminated 0 / 4 players');
+    expect(oneOut).toContain('Eliminated 1 / 4 players');
+    expect(oneOut).not.toContain('Eliminated 0 / 4 players');
+  });
+
   // **山札が尽きた瞬間から局は終わりに向かう。**
   it('announces the empty stock, and only while the game runs', () => {
     expect(formatLingerLongerState(state({ stockSize: 0 }))).toMatch(/nobody can refill/);

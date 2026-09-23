@@ -330,6 +330,16 @@ func TestPutCallAndAccept(t *testing.T) {
 	if g.GetResponderIdx() != -1 || g.GetPutCallerIdx() != -1 || g.GetPendingLevel() != 0 {
 		t.Errorf("pending state not cleared after accept")
 	}
+	var entry *ActionLogEntry
+	for _, candidate := range g.GetActionLog() {
+		if candidate.DetailCode == "put.log.accept" {
+			entry = candidate
+			break
+		}
+	}
+	if entry == nil || entry.DetailParams["stake"] != "2" {
+		t.Errorf("accept action log = %#v, want code params and empty detail", entry)
+	}
 }
 
 func TestPutCallAndDeclineAwardsPriorStake(t *testing.T) {

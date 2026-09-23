@@ -78,6 +78,21 @@ func TestPitchCuiPresenter_Output_Bid(t *testing.T) {
 	assert.Contains(t, result, "ビッド: 0")
 	assert.Contains(t, result, "ビッドフェーズ: あなたの番")
 	assert.Contains(t, result, "あなた: ビッド=未ビッド")
+	assert.NotContains(t, result, "親は全員パスのときパスできません。2-4のビッドを宣言してください。")
+}
+
+func TestPitchCuiPresenter_Output_Bid_DealerMustBid(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.PitchCuiPresenter)
+
+	m, _ := setupPitchCuiMockWithPlayers()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDealerIdx")
+	m.On("GetDealerIdx").Return(0)
+	result := p.Output(m, nil)
+
+	assert.Contains(t, result, "親は全員パスのときパスできません。2-4のビッドを宣言してください。")
 }
 
 func TestPitchCuiPresenter_Output_PassedBidShown(t *testing.T) {
@@ -91,7 +106,7 @@ func TestPitchCuiPresenter_Output_PassedBidShown(t *testing.T) {
 	players[1].SetBid(3)
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "あなた: ビッド=pass")
+	assert.Contains(t, result, "あなた: ビッド=パス")
 	assert.Contains(t, result, "CPU 1: ビッド=3")
 }
 
@@ -162,12 +177,12 @@ func TestPitchCuiPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockPitchGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "bid", Detail: "You bid 3"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "bid", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
 	m.On("GetPlayer", mock.Anything).Return(domain.NewPitchPlayer(true)).Maybe()
 	out := p.ActionLogOutput(m)
-	assert.Contains(t, out, "You bid 3")
+	assert.Contains(t, out, "テスト用の棋譜行 1")
 }
 
 // **入札前に手札の得点価値を暗算させていた (#4751)。**Web は入札中にゲーム
@@ -298,10 +313,10 @@ func TestPitchCuiPresenter_LastTrick(t *testing.T) {
 		out := p.Output(m, nil)
 
 		assert.Contains(t, out, i18n.T("pitch.previousTrick"))
-		assert.Contains(t, out, "あなた: SPADE 5")
-		assert.Contains(t, out, "CPU 1: SPADE 10")
-		assert.Contains(t, out, "CPU 2: SPADE 1")
-		assert.Contains(t, out, "CPU 3: HEART 2")
+		assert.Contains(t, out, "あなた: ♠5")
+		assert.Contains(t, out, "CPU 1: ♠10")
+		assert.Contains(t, out, "CPU 2: ♠1")
+		assert.Contains(t, out, "CPU 3: ♥2")
 		assert.Contains(t, out, i18n.Tf("pitch.previousTrickWinner", "name", "CPU 2"))
 	})
 
@@ -317,8 +332,8 @@ func TestPitchCuiPresenter_LastTrick(t *testing.T) {
 		m, _ := setupPitchCuiMockCustom(domain.PitchPhaseTrickEnd, 2, twoTricks)
 		out := p.Output(m, nil)
 
-		assert.Contains(t, out, "あなた: CLOVER 13")
-		assert.NotContains(t, out, "SPADE 5")
+		assert.Contains(t, out, "あなた: ♣13")
+		assert.NotContains(t, out, "♠5")
 		assert.Contains(t, out, i18n.Tf("pitch.previousTrickWinner", "name", "CPU 1"))
 	})
 

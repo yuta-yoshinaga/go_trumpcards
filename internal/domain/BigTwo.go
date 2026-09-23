@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"strconv"
 )
 
 // BigTwoPlayerCnt Big Twoプレイヤー数
@@ -117,7 +118,7 @@ func (bt *BigTwo) PlayerPlay(indices []int) error {
 		}
 		bt.round.passCount++
 		bt.round.humanAction = &BigTwoAction{PlayerIdx: bt.round.currentTurn, PlayedCards: nil}
-		bt.appendLog(bt.round.currentTurn, "pass", "pass", nil)
+		bt.appendLog(bt.round.currentTurn, "pass", "bigtwo.log.pass", nil, nil)
 		bt.advanceTurn()
 		bt.checkPassClear()
 		return nil
@@ -161,7 +162,7 @@ func (bt *BigTwo) PlayerPlay(indices []int) error {
 	cards := player.RemoveCards(indices)
 	playType := bigTwoClassifyPlay(cards)
 	bt.round.humanAction = &BigTwoAction{PlayerIdx: bt.round.currentTurn, PlayedCards: cards}
-	bt.appendLog(bt.round.currentTurn, "play", fmt.Sprintf("played %d card(s)", len(cards)), cards)
+	bt.appendLog(bt.round.currentTurn, "play", "bigtwo.log.play", map[string]string{"count": strconv.Itoa(len(cards))}, cards)
 	bt.playCards(bt.round.currentTurn, cards, playType)
 	return nil
 }
@@ -199,7 +200,7 @@ func (bt *BigTwo) CpuPlay() {
 		bt.round.passCount++
 		action := &BigTwoAction{PlayerIdx: playerIdx, PlayedCards: nil}
 		bt.round.cpuActions = append(bt.round.cpuActions, action)
-		bt.appendLog(playerIdx, "pass", "pass", nil)
+		bt.appendLog(playerIdx, "pass", "bigtwo.log.pass", nil, nil)
 		bt.advanceTurn()
 		bt.checkPassClear()
 	} else {
@@ -207,7 +208,7 @@ func (bt *BigTwo) CpuPlay() {
 		playType := bigTwoClassifyPlay(cards)
 		action := &BigTwoAction{PlayerIdx: playerIdx, PlayedCards: cards}
 		bt.round.cpuActions = append(bt.round.cpuActions, action)
-		bt.appendLog(playerIdx, "play", fmt.Sprintf("played %d card(s)", len(cards)), cards)
+		bt.appendLog(playerIdx, "play", "bigtwo.log.play", map[string]string{"count": strconv.Itoa(len(cards))}, cards)
 		bt.playCards(playerIdx, cards, playType)
 	}
 }
@@ -241,7 +242,7 @@ func (bt *BigTwo) finishPlayer(idx int) {
 	rank := bt.countFinished() + 1
 	bt.players[idx].SetIsFinished(true)
 	bt.players[idx].SetRank(rank)
-	bt.appendLog(idx, "finish", fmt.Sprintf("player %d finished (rank %d)", idx, rank), nil)
+	bt.appendLog(idx, "finish", "bigtwo.log.finish", map[string]string{"player": strconv.Itoa(idx), "rank": strconv.Itoa(rank)}, nil)
 	if bt.round.lastPlayPlayerIdx == idx {
 		bt.round.tableCards = nil
 		bt.round.tablePlayType = BigTwoPlayInvalid
@@ -331,8 +332,8 @@ func (bt *BigTwo) SetConfig(config BigTwoConfig) { bt.config = config }
 func (bt *BigTwo) GetActionLog() []*ActionLogEntry { return bt.round.actionLog }
 
 // appendLog 棋譜にエントリを追加する
-func (bt *BigTwo) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	bt.round.appendLog(playerIdx, actionType, detail, cards)
+func (bt *BigTwo) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	bt.round.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- JSON Serialization ---

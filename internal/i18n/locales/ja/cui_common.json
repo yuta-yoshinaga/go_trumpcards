@@ -1,7 +1,7 @@
 {
   "cuiPlayerYou": "あなた",
   "cuiPlayerCpu": "CPU {{idx}}",
-  "cuiPlayerUnknown": "UNKNOWN",
+  "cuiPlayerUnknown": "不明",
   "cuiBettingActionFold": "フォールド",
   "cuiBettingActionCheck": "チェック",
   "cuiBettingActionCall": "コール",

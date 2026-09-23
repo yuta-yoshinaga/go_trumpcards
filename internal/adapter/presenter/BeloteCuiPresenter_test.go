@@ -85,6 +85,23 @@ func TestBeloteCuiPresenter_NamesTheBeloteRebeloteBonus(t *testing.T) {
 	assert.NotContains(t, p.Output(build(0, 0), nil), "ベロート・ルベロート成立")
 }
 
+func TestBeloteCuiPresenter_ShowsTheConfiguredTargetScore(t *testing.T) {
+	i18n.SetLang("ja")
+	p := new(presenter.BeloteCuiPresenter)
+	build := func(targetScore int) string {
+		m, _ := setupBeloteCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetConfig")
+		cfg := domain.DefaultBeloteConfig()
+		cfg.TargetScore = targetScore
+		m.On("GetConfig").Return(cfg)
+		return p.Output(m, nil)
+	}
+
+	assert.Contains(t, build(750), "目標: 750点")
+	assert.Contains(t, build(1500), "目標: 1500点")
+	assert.NotContains(t, build(1500), "目標: 750点")
+}
+
 func TestBeloteCuiPresenter_Output(t *testing.T) {
 	origNoColor := color.NoColor()
 	color.SetNoColor(true)
@@ -102,7 +119,7 @@ func TestBeloteCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "トリック: 1")
 		assert.Contains(t, result, "あなた")
 		assert.Contains(t, result, "切り札: SPADE (メイカー: チーム0)")
-		assert.Contains(t, result, "[0]SPADE 1")
+		assert.Contains(t, result, "[0]♠1")
 	})
 
 	t.Run("trump undecided", func(t *testing.T) {
@@ -120,7 +137,7 @@ func TestBeloteCuiPresenter_Output(t *testing.T) {
 		m.On("GetFaceUpCard").Return(domain.NewCard(domain.CardDesignHeart, 11, false))
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "表向きカード: HEART 11")
+		assert.Contains(t, result, "表向きカード: ♥11")
 	})
 
 	t.Run("phase: bid pickup", func(t *testing.T) {
@@ -191,7 +208,7 @@ func TestBeloteCuiPresenter_HintOutput(t *testing.T) {
 		m.On("GetHint").Return(&domain.BeloteHint{OrderUp: &ok, Reason: "strategic_pickup"})
 
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 
 	t.Run("pass hint", func(t *testing.T) {
@@ -219,7 +236,7 @@ func TestBeloteCuiPresenter_HintOutput(t *testing.T) {
 		m.On("GetHint").Return(&domain.BeloteHint{CardIndex: &idx, Reason: "trump_cut"})
 
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 }
 
@@ -270,7 +287,7 @@ func TestBeloteCuiPresenter_AnnouncesTheDixDeDerOnTheLastTrick(t *testing.T) {
 //
 // **キーの有無でなく、描かれた行を見る。** ja のロケールに値があっても
 // 英語のままなら、日本語でプレイしている人には英語が出る (#6388)。
-// 札の表記 (SPADE 1 など) は cuiSuitName の全ゲーム共通の規約なので対象外。
+// 札の表記 (♠1 など) は cuiSuitName の全ゲーム共通の規約なので対象外。
 func TestBeloteCuiPresenter_JapanesePromptsAreTranslated(t *testing.T) {
 	old := i18n.Lang()
 	i18n.SetLang("ja")

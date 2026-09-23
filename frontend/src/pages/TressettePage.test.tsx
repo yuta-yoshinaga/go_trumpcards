@@ -5,6 +5,16 @@ import { renderWithProviders } from '../test/renderWithProviders';
 import { makeTressetteState } from '../test/stateFactories';
 import { TressettePage } from './TressettePage';
 
+const mobileFlag = { value: false };
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useCardDimensions: () => ({ ...actual.useCardDimensions(), isMobile: mobileFlag.value }),
+  };
+});
+
 vi.mock('../api/gameApi', () => ({
   tressetteApi: { exec: vi.fn() },
   actionLogApi: { tressette: vi.fn() },
@@ -30,6 +40,7 @@ const gameEndState = makeTressetteState({
 const cpuTurnState = makeTressetteState({ currentPlayerIdx: 1 });
 
 beforeEach(() => {
+  mobileFlag.value = false;
   mockExec.mockResolvedValue(playPhaseState);
 });
 
@@ -107,6 +118,26 @@ describe('TressettePage', () => {
     renderWithProviders(<TressettePage />);
     await waitFor(() => expect(screen.getByAltText('♠ 3')).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
+  });
+
+  it.each([false, true])('labels partner and opponent CPUs on %s layout', async (isMobile) => {
+    mobileFlag.value = isMobile;
+    const state = makeTressetteState({
+      players: makeTressetteState().players.map((player) => ({
+        ...player,
+        teamId: player.isHuman ? 1 : player.id === 1 ? 0 : player.id === 2 ? 1 : 0,
+      })),
+    });
+    mockExec.mockResolvedValue(state);
+
+    renderWithProviders(<TressettePage />);
+
+    const partnerRole = await screen.findByTestId('tr-player-role-2');
+    expect(partnerRole).toHaveTextContent('味方');
+    expect(screen.getByTestId('tr-player-role-1')).toHaveTextContent('相手');
+    // Negative control: the opponent team must not be labelled as the partner.
+    expect(screen.getByTestId('tr-player-role-1')).not.toHaveTextContent('味方');
+    expect(screen.getByTestId('tr-player-role-3')).toHaveTextContent('相手');
   });
 
   it('renders a three-dot thirds indicator with the filled count and remaining tooltip', async () => {

@@ -82,6 +82,7 @@ const chienPhaseState = makeFrenchTarotState({
 const trickEndState = makeFrenchTarotState({
   phase: 3,
   isHumanTurn: false,
+  lastTrickWinner: 1,
   currentTrick: [
     { playerIdx: 0, card: suit(12, 'HEART', '♥', 'C') },
     { playerIdx: 1, card: suit(13, 'CLOVER', '♣', 'D') },
@@ -290,13 +291,33 @@ describe('FrenchTarotPage', () => {
     mockExec.mockResolvedValue(trickEndState);
     renderWithProviders(<FrenchTarotPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
+    expect(screen.getByTestId('trick-winner-badge')).toHaveTextContent('CPU 1 が獲得');
+  });
+
+  it('does not render a winner badge while a trick is in progress', async () => {
+    mockExec.mockResolvedValue(
+      makeFrenchTarotState({ phase: 2, lastTrickWinner: 1, currentTrick: trickEndState.currentTrick.slice(0, 1) }),
+    );
+    renderWithProviders(<FrenchTarotPage />);
+    await waitFor(() => expect(screen.getByTestId('trick-display-cards')).toBeInTheDocument());
+    expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument();
   });
 
   it('renders round end with the next deal button and the deal result', async () => {
-    mockExec.mockResolvedValue(roundEndState);
+    mockExec.mockResolvedValue(
+      makeFrenchTarotState({
+        phase: 4,
+        outcome: 2,
+        declarerCaptured: 43,
+        target: 51,
+        players: roundEndState.players.map((p, i) => (i === 0 ? { ...p, cardPoints: 86 } : p)),
+      }),
+    );
     renderWithProviders(<FrenchTarotPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のディール' })).toBeInTheDocument());
     expect(screen.getByTestId('frenchtarot-result')).toBeInTheDocument();
+    expect(screen.getByTestId('frenchtarot-result')).toHaveTextContent('43');
+    expect(screen.getByTestId('frenchtarot-result')).toHaveTextContent('51');
   });
 
   it('renders the game end message', async () => {

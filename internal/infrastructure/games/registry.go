@@ -8,9 +8,9 @@
 //     Category) for all 318 games. Cheap; no references to game code.
 //   - games_server.go (!js || !wasm)   — installs Web-server factories for
 //     every game via BindWebController. Imported by TrumpCardsWeb.
-//   - casino/, classic/, solo/, extra/, extra2/, extra3/, extra4/, extra5/ (js && wasm) —
+//   - casino/, classic/, solo/, extra/, extra2/, extra3/, extra4/, extra5/, extra6/, extra7/ (js && wasm) —
 //     per-category worker bindings. Each worker blank-imports only its own
-//     sub-package so TinyGo dead-code elimination can drop the other seven
+//     sub-package so TinyGo dead-code elimination can drop the other nine
 //     categories' domain/usecase code.
 package games
 
@@ -54,6 +54,10 @@ const (
 	CategoryExtra4
 	// CategoryExtra5 is the eighth size bucket (ADR-0038). See CategoryExtra2.
 	CategoryExtra5
+	// CategoryExtra6 is the ninth size bucket (ADR-0041). See CategoryExtra2.
+	CategoryExtra6
+	// CategoryExtra7 is the tenth size bucket (ADR-0041). See CategoryExtra2.
+	CategoryExtra7
 )
 
 // String returns the lowercase worker name (casino/classic/solo). Panics on
@@ -78,6 +82,10 @@ func (c Category) String() string {
 		return "extra4"
 	case CategoryExtra5:
 		return "extra5"
+	case CategoryExtra6:
+		return "extra6"
+	case CategoryExtra7:
+		return "extra7"
 	default:
 		panic(fmt.Sprintf("games: unknown Category %d", int(c)))
 	}
@@ -120,7 +128,7 @@ var registry = []*Game{
 	{Name: "blackjack", Category: CategoryCasino},
 	{Name: "poker", Category: CategoryCasino},
 	{Name: "oldmaid", Category: CategoryClassic},
-	{Name: "daifugo", Category: CategoryExtra5},
+	{Name: "daifugo", Category: CategoryExtra6},
 	{Name: "bigtwo", Category: CategoryExtra2},
 	{Name: "sevens", Category: CategoryClassic},
 	{Name: "doubt", Category: CategoryExtra5},
@@ -139,7 +147,7 @@ var registry = []*Game{
 	{Name: "pineapple", Category: CategoryCasino},
 	{Name: "crazypineapple", Category: CategoryCasino},
 	{Name: "irishpoker", Category: CategoryCasino},
-	{Name: "hearts", Category: CategoryClassic},
+	{Name: "hearts", Category: CategoryExtra7},
 	{Name: "memory", Category: CategorySolo},
 	{Name: "klondike", Category: CategorySolo},
 	{Name: "freecell", Category: CategorySolo},
@@ -148,10 +156,10 @@ var registry = []*Game{
 	{Name: "baccarat", Category: CategoryCasino},
 	{Name: "spades", Category: CategoryClassic},
 	{Name: "crazyeights", Category: CategoryClassic},
-	{Name: "ginrummy", Category: CategoryExtra},
+	{Name: "ginrummy", Category: CategoryClassic},
 	// Indian Rummy (13-card) is a draw-and-discard rummy.
 	{Name: "indianrummy", Category: CategoryExtra},
-	{Name: "canasta", Category: CategoryExtra},
+	{Name: "canasta", Category: CategoryExtra7},
 	{Name: "spider", Category: CategorySolo},
 	// Napoleon is a trick-taking game.
 	{Name: "napoleon", Category: CategoryExtra5},
@@ -160,10 +168,10 @@ var registry = []*Game{
 	{Name: "deuceswild", Category: CategoryCasino},
 	{Name: "jokerpoker", Category: CategoryCasino},
 	// Euchre is a trick-taking game.
-	{Name: "euchre", Category: CategorySolo},
+	{Name: "euchre", Category: CategoryExtra7},
 	{Name: "pyramid", Category: CategorySolo},
 	{Name: "tripeaks", Category: CategorySolo},
-	{Name: "cribbage", Category: CategoryExtra5},
+	{Name: "cribbage", Category: CategoryExtra6},
 	{Name: "threecard", Category: CategoryCasino},
 	{Name: "ohhell", Category: CategoryClassic},
 	// Ninety-Nine (David Parlett) is a trick-taking game; it shares its trick-play code
@@ -180,7 +188,7 @@ var registry = []*Game{
 	{Name: "clocksolitaire", Category: CategorySolo},
 	{Name: "durak", Category: CategoryClassic},
 	{Name: "fortythieves", Category: CategorySolo},
-	{Name: "paigow", Category: CategoryCasino},
+	{Name: "paigow", Category: CategoryExtra6},
 	{Name: "twotenjack", Category: CategoryClassic},
 	{Name: "caribbeanstud", Category: CategoryCasino},
 	{Name: "texasholdembonus", Category: CategoryCasino},
@@ -194,7 +202,7 @@ var registry = []*Game{
 	{Name: "letitride", Category: CategoryExtra4},
 	{Name: "pokersquares", Category: CategorySolo},
 	{Name: "pageone", Category: CategoryClassic},
-	{Name: "reddog", Category: CategoryExtra4},
+	{Name: "reddog", Category: CategoryExtra7},
 	{Name: "badugi", Category: CategoryCasino},
 	{Name: "deucetoseven", Category: CategoryCasino},
 	{Name: "razz", Category: CategoryCasino},
@@ -240,7 +248,7 @@ var registry = []*Game{
 	{Name: "americantoad", Category: CategoryExtra2},
 	{Name: "spiteandmalice", Category: CategoryExtra2},
 	// Skat is a trick-taking game.
-	{Name: "skat", Category: CategoryExtra3},
+	{Name: "skat", Category: CategoryExtra6},
 	// Congress deals one card to each of eight piles and keeps the other 96 as
 	// the stock; empty piles can only be refilled from the stock or the waste.
 	{Name: "congress", Category: CategoryExtra3},
@@ -252,10 +260,10 @@ var registry = []*Game{
 	{Name: "braid", Category: CategoryExtra2},
 	// Pontoon deals every hand face down, including the banker's, and ranks a
 	// two-card 21 above a five-card trick above any total.
-	{Name: "pontoon", Category: CategoryExtra2},
+	{Name: "pontoon", Category: CategoryExtra},
 	// Sette e Mezzo plays to 7.5 on a 40-card deck where face cards are worth
 	// half a point, and the king of coins is wild for 0.5 or 1-7.
-	{Name: "settemezzo", Category: CategoryExtra2},
+	{Name: "settemezzo", Category: CategoryExtra},
 	// Niu Niu finds three of five cards summing to a multiple of ten; the
 	// remaining pair's last digit is the rank, and the multiplier follows it.
 	{Name: "niuniu", Category: CategoryExtra3},
@@ -266,7 +274,7 @@ var registry = []*Game{
 
 	// Mushi is hanafuda on 40 cards -- June and July are out -- and is a
 	// hana-awase game: no koi-koi stop, the round runs to the last card.
-	{Name: "mushi", Category: CategoryExtra2},
+	{Name: "mushi", Category: CategoryExtra6},
 
 	// Toepen's ranking is the standard order inverted -- 10 high, jack low --
 	// and only the winner of the final trick escapes the penalty.
@@ -274,7 +282,7 @@ var registry = []*Game{
 
 	// Chinese Ten captures by summing to ten (A-9) or by rank (10-K), and only
 	// the RED cards score.
-	{Name: "chineseten", Category: CategoryExtra2},
+	{Name: "chineseten", Category: CategoryExtra6},
 
 	// Skitgubbe's two phases are different games: a two-player duel that
 	// collects cards, then a durak-style beat-or-pick-up shed.
@@ -299,7 +307,7 @@ var registry = []*Game{
 	{Name: "egyptianratscrew", Category: CategoryClassic},
 	{Name: "bakersdozen", Category: CategorySolo},
 	{Name: "tonk", Category: CategoryClassic},
-	{Name: "casinowar", Category: CategoryExtra4},
+	{Name: "casinowar", Category: CategoryExtra7},
 	{Name: "pitch", Category: CategoryExtra5},
 	{Name: "dragontiger", Category: CategoryExtra4},
 	{Name: "blackjackswitch", Category: CategoryCasino},
@@ -307,13 +315,13 @@ var registry = []*Game{
 	{Name: "contractrummy", Category: CategoryExtra},
 	{Name: "ultimatetexasholdem", Category: CategoryCasino},
 	{Name: "crescent", Category: CategorySolo},
-	{Name: "mississippistud", Category: CategoryCasino},
+	{Name: "mississippistud", Category: CategoryExtra6},
 	// Belote is a 4-player partnership trick-taking game on the 32-card deck.
-	{Name: "belote", Category: CategoryExtra3},
+	{Name: "belote", Category: CategoryExtra6},
 	{Name: "spiderette", Category: CategorySolo},
 	// Mighty is a trick-taking game.
-	{Name: "mighty", Category: CategoryExtra5},
-	{Name: "oasispoker", Category: CategoryCasino},
+	{Name: "mighty", Category: CategoryExtra6},
+	{Name: "oasispoker", Category: CategorySolo},
 	{Name: "beleagueredcastle", Category: CategorySolo},
 	// Streets and Alleys is a Beleaguered Castle variant.
 	{Name: "streetsandalleys", Category: CategoryExtra},
@@ -330,7 +338,7 @@ var registry = []*Game{
 	{Name: "casinoholdem", Category: CategoryCasino},
 	{Name: "callbreak", Category: CategoryClassic},
 	// Tarneeb is a trick-taking game.
-	{Name: "tarneeb", Category: CategoryCasino},
+	{Name: "tarneeb", Category: CategoryExtra6},
 	{Name: "highcardflush", Category: CategoryExtra4},
 	{Name: "briscola", Category: CategoryClassic},
 	{Name: "gaps", Category: CategorySolo},
@@ -342,75 +350,75 @@ var registry = []*Game{
 	{Name: "chinesepoker", Category: CategoryCasino},
 	{Name: "sixcardgolf", Category: CategoryExtra2},
 	// Dou Dizhu (fight the landlord) is a 3-player climbing/shedding game.
-	{Name: "doudizhu", Category: CategoryExtra4},
+	{Name: "doudizhu", Category: CategoryExtra7},
 	{Name: "truco", Category: CategoryClassic},
-	{Name: "scopa", Category: CategoryClassic},
+	{Name: "scopa", Category: CategoryExtra7},
 	{Name: "acesup", Category: CategorySolo},
 	// Barbu is a compendium trick-taking game.
 	{Name: "barbu", Category: CategoryExtra4},
 	// Macau is a Crazy Eights variant.
 	{Name: "macau", Category: CategoryExtra5},
 	// Thirty-One (Scat) is a draw-and-discard pub game.
-	{Name: "thirtyone", Category: CategorySolo},
+	{Name: "thirtyone", Category: CategoryExtra7},
 	// Tien Len (Vietnamese Big Two) is a shedding game.
 	{Name: "tienlen", Category: CategorySolo},
 	// Osmosis (浸透) is a foundation-only solitaire.
 	{Name: "osmosis", Category: CategorySolo},
 	// 500 (Five Hundred) is a trick-taking game (auction + kitty exchange + bowers/joker).
-	{Name: "fivehundred", Category: CategorySolo},
+	{Name: "fivehundred", Category: CategoryExtra7},
 	// Schnapsen / Sixty-Six is a 2-player trick-taking game (marriages + draw from stock).
 	{Name: "schnapsen", Category: CategorySolo},
 	// Burraco is a Canasta-derived rummy game.
-	{Name: "burraco", Category: CategoryExtra},
+	{Name: "burraco", Category: CategoryExtra7},
 	// Yaniv (ヤニブ) is a draw-and-discard hand-reduction game.
 	{Name: "yaniv", Category: CategorySolo},
 	// Gong Zhu (拱猪 / Chinese Hearts) is a trick-taking game with positive and negative
 	// point cards, a doubling card, and an exposure phase.
-	{Name: "gongzhu", Category: CategorySolo},
+	{Name: "gongzhu", Category: CategoryExtra4},
 	// Bristol is a tableau/reserve solitaire (build-down tableau, 3 fans, stock).
 	{Name: "bristol", Category: CategorySolo},
 	// Bid Whist is a 4-player partnership trick-taking game with jokers, a 6-card kitty
 	// and Uptown/Downtown/No-Trump bidding.
-	{Name: "bidwhist", Category: CategorySolo},
+	{Name: "bidwhist", Category: CategoryExtra7},
 	// Tressette (トレセッテ) is an Italian no-trump must-follow trick-taking team game on the
 	// 40-card Briscola deck.
-	{Name: "tressette", Category: CategoryCasino},
+	{Name: "tressette", Category: CategoryExtra6},
 	// Easthaven (イーストヘイブン) is a Klondike/Spider hybrid solitaire: alternating-color
 	// descending tableau with A-K foundations (Klondike) but a Spider-style stock that
 	// deals one card to every column.
 	{Name: "easthaven", Category: CategorySolo},
 	// Tichu (ティチュー) is a 4-player partnership shedding game (Daifugo-like combinations +
 	// special cards Dragon/Phoenix/Dog/Mahjong).
-	{Name: "tichu", Category: CategoryExtra2},
+	{Name: "tichu", Category: CategoryExtra6},
 	// Baker's Game is FreeCell's same-suit ancestor; it reuses the FreeCell engine
 	// (domain.NewDefaultBakersGame).
 	{Name: "bakersgame", Category: CategorySolo},
 	// Bourré fuses poker-style ante/draw betting with must-follow trick-taking.
-	{Name: "bourre", Category: CategoryCasino},
+	{Name: "bourre", Category: CategoryExtra6},
 	// Sheepshead (シープスヘッド) is a German-American 5-player trick-taking game with a fixed-
 	// trump system (all Queens + all Jacks + all Diamonds) and a secret picker/partner
 	// formed via a called Ace.
-	{Name: "sheepshead", Category: CategoryExtra4},
+	{Name: "sheepshead", Category: CategoryExtra7},
 	// Doppelkopf (ドッペルコップ) is a German 4-player partnership trick-taking game on a doubled
 	// 48-card deck with a fixed trump (♥10 Dulle + all Q + all J + all ♦) and secret
 	// Re/Kontra teams formed by the two Q♣ holders.
-	{Name: "doppelkopf", Category: CategoryCasino},
+	{Name: "doppelkopf", Category: CategoryExtra6},
 	// Mus (ムス) is a Basque 4-player 2-team vying (betting) game on a 40-card Latin deck:
 	// four wager rounds (Grande/Chica/Pares/Juego) with paso/envido/ ordago and a mus
 	// card-exchange phase.
-	{Name: "mus", Category: CategoryCasino},
+	{Name: "mus", Category: CategoryExtra6},
 	// Tute (トゥーテ) is a Spanish 40-card trump trick-taking game for 4 players (2v2) with
 	// K+Q marriage declarations (cante) and a 4-King/4-Queen instant win.
-	{Name: "tute", Category: CategoryCasino},
+	{Name: "tute", Category: CategoryExtra6},
 	// Sueca (スエカ) is a Portuguese/Brazilian 40-card trump trick-taking game for 4 players
 	// (2v2) with A=11/7=10 scoring.
-	{Name: "sueca", Category: CategoryCasino},
-	{Name: "fortyfives", Category: CategoryCasino},
-	{Name: "twentynine", Category: CategoryCasino},
+	{Name: "sueca", Category: CategoryExtra6},
+	{Name: "fortyfives", Category: CategoryExtra6},
+	{Name: "twentynine", Category: CategoryExtra6},
 	// Klaverjas (クラヴァヤス) is a Dutch Jass-family trump trick-taking game for 4 players
 	// (2v2) with the J(20)>9(14) trump rank and Roem melds.
-	{Name: "klaverjas", Category: CategoryClassic},
-	{Name: "manille", Category: CategoryClassic},
+	{Name: "klaverjas", Category: CategoryExtra7},
+	{Name: "manille", Category: CategoryExtra7},
 	{Name: "marias", Category: CategoryClassic},
 	{Name: "sedma", Category: CategoryClassic},
 	{Name: "solowhist", Category: CategoryClassic},
@@ -423,7 +431,7 @@ var registry = []*Game{
 	// Court Piece (コートピース / Rang / Hokm) is a Pakistani/Iranian 4-player (2v2) trick-
 	// taking game where the caller declares trump after peeking at the first 5 cards; 7+
 	// tricks wins the round (Sar), consecutive wins score a Court bonus.
-	{Name: "courtpiece", Category: CategoryCasino},
+	{Name: "courtpiece", Category: CategoryExtra6},
 	// Bezique (ベジーク) is a French 2-player declaration trick game (the ancestor of
 	// Pinochle) using a 64-card deck. Trick winners declare melds (marriages, Bezique =
 	// ♠Q+♦J, four-of-a-kind); after the stock empties play becomes strict must-follow.
@@ -431,7 +439,7 @@ var registry = []*Game{
 	// Écarté (エカルテ) is a French 2-player trick game (32-card deck) with an exchange-
 	// negotiation phase (propose/accept/refuse/discard), King-of-trump and Vole bonuses,
 	// then 5 strict-follow tricks.
-	{Name: "ecarte", Category: CategoryCasino},
+	{Name: "ecarte", Category: CategoryExtra6},
 	// Three Card Brag (スリーカード・ブラグ) is a British 3-card vying/betting game (an ancestor of
 	// poker) for 4 players with Blind/Seen betting, ante/pot, and the ranking Prial >
 	// Running Flush > Run > Flush > Pair > High Card.
@@ -443,22 +451,22 @@ var registry = []*Game{
 	// Scopone (スコポーネ) is the 4-player, 2-team "scientific" version of Scopa: all 40 cards
 	// are dealt at once and captured by summing to the played card's value, scoring
 	// carte/denari/sevens/settebello/scopa per team.
-	{Name: "scopone", Category: CategoryClassic},
+	{Name: "scopone", Category: CategoryExtra7},
 	// Escoba (エスコバ) is a Spanish 4-player free-for-all capture game in the Scopa family:
 	// capture table cards summing to exactly 15 (figures J/Q/K = 8/9/10), with Escoba
 	// sweeps and Espada/Oro/seven scoring.
-	{Name: "escoba", Category: CategoryClassic},
+	{Name: "escoba", Category: CategoryExtra7},
 	// Hand and Foot: Canasta-family two-stage game (each player holds a "hand" and a
 	// "foot"), 4 players / 2 teams, 216-card deck (4 decks + 8 jokers).
-	{Name: "handandfoot", Category: CategoryExtra},
+	{Name: "handandfoot", Category: CategoryExtra7},
 	// Conquian: the Mexican 2-player ancestor of rummy. 40-card Latin deck (standard 52
 	// minus 8/9/10), table melds (sets + runs with 7–J adjacency), forced use of a taken
 	// discard, win by melding out the whole hand.
-	{Name: "conquian", Category: CategoryExtra},
+	{Name: "conquian", Category: CategoryExtra7},
 	// Chinchón: Spanish/Argentine 7-card rummy in the Gin Rummy family. 40-card Latin deck
 	// (no 8/9/10), draw/knock/layoff with deadwood scoring, plus the "Chinchón" instant
 	// win (7 consecutive cards of one suit).
-	{Name: "chinchon", Category: CategoryExtra},
+	{Name: "chinchon", Category: CategoryExtra7},
 	// Kalooki: Jamaican/British joker-wild rummy, 2–4 players, two 52-card decks plus 2
 	// jokers (106 cards). First melds must total ≥51 points (opening requirement); jokers
 	// are wild and a meld containing one scores 1.5×.
@@ -475,7 +483,7 @@ var registry = []*Game{
 	// someone collects four of a kind, then everyone races to grab one of the N-1 spoons.
 	// Missing out earns a letter (S-P-O-O-N-S); six letters eliminates you, last player
 	// standing wins.
-	{Name: "spoons", Category: CategoryExtra2},
+	{Name: "spoons", Category: CategoryExtra6},
 	// Kemps: 4-player, 2-team matching game. Swap cards through a shared field until you
 	// collect four of a kind, then your partner signals secretly and your team declares
 	// "Kemps!" for a point — or the opponents call "Counter-Kemps!" to steal it. First
@@ -485,7 +493,7 @@ var registry = []*Game{
 	// each hold one card and 3 lives; on your turn keep or swap with your neighbour (a
 	// King holder may refuse). The lowest card each round loses a life; last player
 	// standing wins.
-	{Name: "cuckoo", Category: CategoryExtra2},
+	{Name: "cuckoo", Category: CategoryExtra6},
 	// Pişti: a popular Turkish fishing/capture game. 2–4 players; play a card matching the
 	// pile top (or any Jack) to capture the whole pile. Matching a lone card scores a
 	// Pişti (+10; +20 for Jack-on-Jack).
@@ -502,7 +510,7 @@ var registry = []*Game{
 	// layout (a copper bets the rank to lose); the bank deals cards in turns of two
 	// (losing card then winning card), with a half-collect on splits and a final 3-card
 	// call.
-	{Name: "faro", Category: CategoryExtra2},
+	{Name: "faro", Category: CategoryExtra6},
 	// Open Face Chinese Poker (OFC): a modern Chinese-poker variant. Players receive cards
 	// and place them one at a time into three rows (top/middle/ bottom) face-up with no
 	// rearranging; rows must rank bottom >= middle >= top or the hand fouls. Royalties
@@ -547,7 +555,7 @@ var registry = []*Game{
 	// Jass (Schieber): a 36-card (6..A) 4-player/2-team Swiss trump trick-taker with
 	// Schieber bidding, Weis melds, and the Stöck (trump K+Q) bonus. The trump Jack
 	// (Bauer) and 9 (Nell) outrank the Ace. Modelled on belote.
-	{Name: "jass", Category: CategoryExtra3},
+	{Name: "jass", Category: CategoryExtra6},
 	// Gaigel: a 48-card (A,10,K,Q,J,7 doubled) 4-player/2-team Schwabian point-trick game
 	// in the Schnapsen/66 family. A stock/talon refills hands in phase 1 (optional
 	// follow); phase 2 enforces must-follow. Marriage (trump K+Q = 40, else 20) scores to
@@ -632,7 +640,7 @@ var registry = []*Game{
 	// player must MATCH the pot into the next round's pot — the escalation/penalty. Chips
 	// accumulate; the game ends after a fixed number of rounds or when fewer than two
 	// players can ante, and the richest player wins.
-	{Name: "guts", Category: CategoryExtra4},
+	{Name: "guts", Category: CategoryExtra7},
 	// Bouillotte: an 18th-century French poker ancestor, a vying/betting pot game on a
 	// 20-card deck (A, K, Q, 9, 8 × 4 suits). 3–4 players ante to a pot, are dealt 3 cards
 	// each, and a shared "retourne" card is turned face up. Players bet in turn (call /
@@ -678,7 +686,7 @@ var registry = []*Game{
 	// decks + 6 jokers = 162 cards). It is a 4-player partnership rummy game (seats 0 & 2
 	// vs 1 & 3). Modelled on canasta (same wild-aware set melds, canasta/red-3/take-the-
 	// pile/go-out engine) extended with same-suit sequence melds and team scoring.
-	{Name: "samba", Category: CategoryExtra},
+	{Name: "samba", Category: CategoryExtra7},
 	// Anaconda ("Pass the Trash") is an American home-poker variant on a 52-card deck, 3-7
 	// players. Everyone antes and is dealt 7 cards, then passes cards to the left in three
 	// sub-rounds (3, then 2, then 1), keeps the best 5, and reveals them one at a time
@@ -732,8 +740,8 @@ var registry = []*Game{
 	// fixed 2v2 teams. It has no trump suit and no follow obligation: strength is
 	// per CARD, not per rank -- six named cards (the luettes) outrank everything.
 	{Name: "aluette", Category: CategoryExtra2},
-	{Name: "minchiate", Category: CategorySolo},
-	{Name: "tarocchini", Category: CategorySolo},
+	{Name: "minchiate", Category: CategoryExtra7},
+	{Name: "tarocchini", Category: CategoryExtra7},
 	{Name: "scarto", Category: CategoryExtra4},
 	// Cego is a German (Baden) tarock trick-taker on the 54-card tarock deck with the
 	// signature Cego-blind swap; procedural render path (ADR-0033).
@@ -778,7 +786,7 @@ var registry = []*Game{
 	// the ace, sequences are contested so that only the better holder scores, and
 	// a maker who fails to score MORE than the opponent goes bete and hands over
 	// the whole hand.
-	{Name: "klaberjass", Category: CategoryExtra3},
+	{Name: "klaberjass", Category: CategoryExtra6},
 	// Kaiser is the Saskatchewan partnership bidding game on a 34-card pack: the
 	// usual A-K-Q-J-10-9-8-7 in each suit PLUS the five of hearts (+5) and the
 	// three of spades (-3), which is why 4x8 cards leave a two-card kitty. The
@@ -847,7 +855,7 @@ var registry = []*Game{
 	// TRIBUTE (highest card, wilds excluded) and receive one back, unless a
 	// payer holds both red jokers, which cancels tribute outright. Climbing
 	// past the ace wins the game.
-	{Name: "guandan", Category: CategoryExtra4},
+	{Name: "guandan", Category: CategoryExtra7},
 	// shengji -- Sheng Ji (Tractor), a two-pack point-trick game for four
 	// players in two partnerships sitting OPPOSITE. 25 cards each from 108,
 	// leaving an EIGHT-CARD KITTY -- 108 divides by four, but dealing 27 each
@@ -921,7 +929,7 @@ var registry = []*Game{
 	// correct. Whist proper scores every trick and has four players; Schnapsen
 	// is the other two-player draw-then-follow game here, but it scores card
 	// points to 66 rather than counting tricks.
-	{Name: "germanwhist", Category: CategoryClassic},
+	{Name: "germanwhist", Category: CategoryExtra7},
 	// Slobberhannes penalises three things that have nothing to do with card
 	// values: taking the FIRST trick, taking the LAST trick, and taking the
 	// trick with the Q of clubs -- one point each, plus one point for escaping
@@ -929,7 +937,7 @@ var registry = []*Game{
 	// but its penalties attach to cards; here two of the three attach to a
 	// trick's POSITION, so the opening and closing tricks are dangerous
 	// regardless of what is in them.
-	{Name: "slobberhannes", Category: CategoryClassic},
+	{Name: "slobberhannes", Category: CategoryExtra7},
 	// Polignac is the French avoidance game to Slobberhannes's German one, and
 	// the contrast is the point: only the four JACKS score, and the jack of
 	// spades (the "Polignac") costs double -- 2 against the others' 1, so 5
@@ -960,7 +968,7 @@ var registry = []*Game{
 	// outrank the ace**, in strength and in points. Melds are runs (3 = 20,
 	// 4+ = 50) and bella (trump K+Q = 20). Belote and Jass share the same point
 	// table, but each keeps its own unexported copy, so this one does too.
-	{Name: "tarabish", Category: CategoryExtra3},
+	{Name: "tarabish", Category: CategoryExtra6},
 	// Baloot is the Gulf's most-played trick-taker, a Belote descendant in which
 	// **the rank order itself is what the players bid over**: Sun runs
 	// A>10>K>Q>J>9>8>7 with no trump (120 a round), while Hokom gives the chosen
@@ -986,7 +994,7 @@ var registry = []*Game{
 	// rest of the cards are never played. The hakem declares trump from their
 	// first five cards alone, keeps the role while their team keeps winning,
 	// and a hand where the losers take nothing at all (Kot) is worth two.
-	{Name: "hokm", Category: CategoryClassic},
+	{Name: "hokm", Category: CategoryExtra7},
 	// Shelem is Iran's bridge-shaped bidder, and **what is bid is the score
 	// itself**, not a number of tricks: 100 upward in fives, over a hand that
 	// holds exactly 100 card points (A and 10 are 10, the 5 is 5, nothing else
@@ -1038,7 +1046,7 @@ var registry = []*Game{
 	// イランのフィッシング系。**手札 1 枚と場の数札の合計が 11** になる組み合わせを
 	// 取る。**J/Q/K は合計に使わず同ランクだけ**取れる。取った結果**場が空になると
 	// スール**で、その捕獲の札は得点が 2 倍。
-	{Name: "pasur", Category: CategoryExtra4},
+	{Name: "pasur", Category: CategoryExtra7},
 	// Snap スナップ
 	//
 	// イギリスの反射ゲーム。**トリガーは固定ではなく「直前に出た札と同じランク」**
@@ -1063,7 +1071,7 @@ var registry = []*Game{
 	// 黙って手を鼻に当て、他の人はそれに気づいて真似るだけ。**最後まで気づか
 	// なかった 1 人**が P・I・G の文字を 1 つ受け取り、3 文字で脱落する。
 	// デッキは人数 × 4 枚（= 人数と同じ種類のランク × 4 スート）。
-	{Name: "pig", Category: CategoryExtra2},
+	{Name: "pig", Category: CategoryExtra6},
 	// StealingBundles スティーリングバンドル
 	//
 	// **相手の得点済みの束を丸ごと奪える。** 場の同じランクを取るのが基本だが、
@@ -1090,7 +1098,7 @@ var registry = []*Game{
 	// 同じランクが先に出た列を当てる。**先に配る列は 1 枚多く配られる機会があるぶん
 	// 51.50% で有利**なので、その列だけ配当を 0.9:1 に下げる (もう一方は 1:1)。
 	// 非対称なのは「最初の 1 枚」ではなく「先に配る列」。
-	{Name: "andarbahar", Category: CategoryExtra4},
+	{Name: "andarbahar", Category: CategoryExtra7},
 	// Botifarra ボティファラ
 	//
 	// **カタルーニャの 2 対 2 トリックテイキング。** 競りは無く、親が切り札を宣言するか
@@ -1123,7 +1131,7 @@ var registry = []*Game{
 	// 5 枚から**最良の 4 枚**で勝負するテーブルポーカー。名前の由来は
 	// 「エースのペア以上なら、プレイベットを 3 倍まで乗せられる」ところで、
 	// **倍率を動かせること自体が強い手の特典**。ディーラーはキング以上で成立。
-	{Name: "crazyfourpoker", Category: CategoryExtra4},
+	{Name: "crazyfourpoker", Category: CategoryExtra7},
 	// Double Attack Blackjack 追加ベット・ブラックジャック
 	//
 	// **アップカードを見てから賭け増しできる**のが本体。その対価として
@@ -1149,7 +1157,7 @@ var registry = []*Game{
 	// 賭け、次にめくる 1 枚 (ゲート) とスートが一致すれば 3:1。控除率は
 	// すべてプレイヤーの選択から出る ── 場札に 1 枚しか出ていないスートを
 	// 選べば互角で、重複したスートを選ぶたびに 11% 以上を失う。
-	{Name: "montebank", Category: CategoryCasino},
+	{Name: "montebank", Category: CategoryExtra6},
 	// Cincinnati シンシナティ
 	//
 	// **手札 5 枚 + コミュニティ 5 枚の 10 枚から最良の 5 枚。** コミュニティを
@@ -1221,23 +1229,23 @@ var registry = []*Game{
 	{Name: "slyfox", Category: CategoryExtra2},
 	{Name: "bigben", Category: CategoryExtra3},
 	{Name: "followthequeen", Category: CategoryCasino},
-	{Name: "ramsch", Category: CategoryExtra3},
-	{Name: "seventwentyseven", Category: CategoryExtra4},
+	{Name: "ramsch", Category: CategoryExtra6},
+	{Name: "seventwentyseven", Category: CategoryExtra7},
 	{Name: "threecardrummy", Category: CategoryCasino},
-	{Name: "caribbeandraw", Category: CategoryCasino},
+	{Name: "caribbeandraw", Category: CategoryExtra6},
 	{Name: "speculation", Category: CategoryExtra5},
 	{Name: "dramaha", Category: CategoryCasino},
 	{Name: "put", Category: CategoryExtra4},
 	{Name: "ristikontra", Category: CategoryExtra2},
-	{Name: "brusquembille", Category: CategoryClassic},
+	{Name: "brusquembille", Category: CategoryExtra7},
 	{Name: "bauernschnapsen", Category: CategoryExtra},
 	{Name: "quadrille", Category: CategoryExtra5},
 	{Name: "trappola", Category: CategoryExtra2},
 	{Name: "madrasso", Category: CategoryExtra3},
 	{Name: "julepe", Category: CategoryExtra2},
-	{Name: "schafkopf", Category: CategoryExtra4},
-	{Name: "coinche", Category: CategoryExtra3},
-	{Name: "germansolo", Category: CategoryClassic},
+	{Name: "schafkopf", Category: CategoryExtra7},
+	{Name: "coinche", Category: CategoryExtra6},
+	{Name: "germansolo", Category: CategoryExtra7},
 	{Name: "gleek", Category: CategoryExtra5},
 	{Name: "chicago", Category: CategoryCasino},
 	{Name: "eightgame", Category: CategoryCasino},
@@ -1245,15 +1253,31 @@ var registry = []*Game{
 	{Name: "unsunkaruta", Category: CategoryClassic},
 	{Name: "quodlibet", Category: CategoryExtra5},
 	{Name: "dehlapakad", Category: CategoryExtra5},
-	{Name: "sutda", Category: CategoryExtra2},
+	{Name: "sutda", Category: CategoryExtra6},
 	{Name: "cirulla", Category: CategoryExtra3},
 	{Name: "diloti", Category: CategoryExtra5},
 	{Name: "comet", Category: CategoryExtra5},
-	{Name: "costlycolours", Category: CategoryExtra5},
+	{Name: "costlycolours", Category: CategoryExtra6},
 	{Name: "baccaratbanque", Category: CategoryExtra2},
 	{Name: "continentalrummy", Category: CategoryExtra5},
-	{Name: "bolivia", Category: CategoryExtra},
+	{Name: "bolivia", Category: CategoryExtra7},
 	{Name: "courchevelhilo", Category: CategoryCasino},
+	{Name: "citadel", Category: CategorySolo},
+	{Name: "batak", Category: CategoryExtra5},
+	{Name: "binokel", Category: CategoryExtra5},
+	{Name: "marjapussi", Category: CategoryExtra6},
+	{Name: "omi", Category: CategoryExtra5},
+	{Name: "tongits", Category: CategoryExtra5},
+	{Name: "willothewisp", Category: CategorySolo},
+	{Name: "quinze", Category: CategoryExtra},
+	{Name: "doubleexposure", Category: CategoryCasino},
+	{Name: "basset", Category: CategoryExtra4},
+	{Name: "matrimony", Category: CategoryExtra},
+	{Name: "tehonbiki", Category: CategoryExtra2},
+	{Name: "tapptarock", Category: CategoryExtra},
+	// Biriba is the pure same-suit-sequence Canasta variant: 106 cards including two jokers.
+	{Name: "biriba", Category: CategoryExtra7},
+	{Name: "marriage", Category: CategoryExtra6},
 }
 
 // All returns a value-level copy of the registry in canonical order.
@@ -1280,7 +1304,7 @@ func ByCategory(cat Category) []Game {
 }
 
 // AllCategories returns every Category value in canonical display order
-// (casino, classic, solo, extra, extra2, extra3, extra4, extra5). The returned slice is fresh per
+// (casino, classic, solo, extra, extra2, extra3, extra4, extra5, extra6, extra7). The returned slice is fresh per
 // call so callers
 // cannot mutate package state. Adding a new Category value to the iota above
 // requires extending this slice — that intentional coupling is the SSoT
@@ -1290,7 +1314,7 @@ func AllCategories() []Category {
 	return []Category{
 		CategoryCasino, CategoryClassic, CategorySolo,
 		CategoryExtra, CategoryExtra2, CategoryExtra3, CategoryExtra4,
-		CategoryExtra5,
+		CategoryExtra5, CategoryExtra6, CategoryExtra7,
 	}
 }
 

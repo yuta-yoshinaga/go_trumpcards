@@ -66,8 +66,22 @@ func TestThreeCardBragWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 1, resObj.Stake)
 		// human cards visible, CPU hidden
 		assert.Len(t, resObj.Players[0].Cards, 1)
+		assert.Empty(t, resObj.Players[0].HandName, "blind human hand name must stay hidden")
 		assert.Len(t, resObj.Players[1].Cards, 0)
+		assert.Empty(t, resObj.Players[1].HandName, "CPU hand name must stay hidden before showdown")
 		assert.Equal(t, 30, resObj.Players[0].Chips)
+	})
+
+	t.Run("seen human shows hand name before showdown", func(t *testing.T) {
+		m, players := tcbSetupWebMockWithPlayers()
+		players[0].SetSeen(true)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
+		result := p.Output(m, nil)
+		var resObj controller.ThreeCardBragWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Equal(t, "prial", resObj.Players[0].HandName)
 	})
 
 	t.Run("config values", func(t *testing.T) {
@@ -87,6 +101,9 @@ func TestThreeCardBragWebPresenter_Output(t *testing.T) {
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "IsShowdown")
 		m.On("IsShowdown").Return(true)
 		// CPU (player 1) gets a prial 5-5-5 -> handName set.
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
 		players[1].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
 		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
 		players[1].AddCard(domain.NewCard(domain.CardDesignClover, 5, false))
@@ -97,9 +114,11 @@ func TestThreeCardBragWebPresenter_Output(t *testing.T) {
 		var resObj controller.ThreeCardBragWebOutput
 		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
 		assert.Equal(t, "threecardbrag.showdownPhase", resObj.MessageCode)
+		assert.Equal(t, "prial", resObj.Players[0].HandName)
 		assert.Len(t, resObj.Players[1].Cards, 3)
 		assert.Equal(t, "prial", resObj.Players[1].HandName)
 		assert.Len(t, resObj.Players[2].Cards, 0)
+		assert.Empty(t, resObj.Players[2].HandName, "folded CPU hand name must stay hidden")
 	})
 
 	t.Run("round end human win message", func(t *testing.T) {
@@ -134,6 +153,16 @@ func TestThreeCardBragWebPresenter_Output(t *testing.T) {
 		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
 		assert.Equal(t, "boom", resObj.Message)
 		assert.Empty(t, resObj.MessageCode)
+	})
+
+	t.Run("coded error returns message code", func(t *testing.T) {
+		m, _ := tcbSetupWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "threecardbrag.errShowUnavailable", nil)
+		result := p.Output(m, err)
+		var resObj controller.ThreeCardBragWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "threecardbrag.errShowUnavailable", resObj.MessageCode)
 	})
 
 	t.Run("game end human win", func(t *testing.T) {
@@ -194,7 +223,7 @@ func TestThreeCardBragWebPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockThreeCardBragGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "bet", Detail: "You bets 1"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "bet", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, `"actionType":"bet"`)

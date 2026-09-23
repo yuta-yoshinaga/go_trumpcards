@@ -70,8 +70,12 @@ type Bhabhi struct {
 	lastPickupIdx int
 	// lastPickupSize は直前に引き取った枚数。
 	lastPickupSize int
-	finishedCnt    int
-	gameEndFlag    bool
+	// lastFinishedIdx は直前に上がった人（-1 = まだ無い）。
+	lastFinishedIdx int
+	// lastFinishedRank は直前に上がった人の順位。
+	lastFinishedRank int
+	finishedCnt      int
+	gameEndFlag      bool
 	// bhabhiIdx は敗者（-1 = 未確定）。
 	bhabhiIdx int
 	// stalemate は膠着で打ち切ったかどうか。
@@ -82,11 +86,12 @@ type Bhabhi struct {
 // NewBhabhi はコンストラクタ。
 func NewBhabhi(players []*BhabhiPlayer, config BhabhiConfig) *Bhabhi {
 	return &Bhabhi{
-		players:       players,
-		config:        config,
-		leadSuit:      0,
-		lastPickupIdx: -1,
-		bhabhiIdx:     -1,
+		players:         players,
+		config:          config,
+		leadSuit:        0,
+		lastPickupIdx:   -1,
+		lastFinishedIdx: -1,
+		bhabhiIdx:       -1,
 	}
 }
 
@@ -119,6 +124,8 @@ func (b *Bhabhi) Reset() {
 	b.trickNumber = 0
 	b.lastPickupIdx = -1
 	b.lastPickupSize = 0
+	b.lastFinishedIdx = -1
+	b.lastFinishedRank = 0
 	b.finishedCnt = 0
 	b.gameEndFlag = false
 	b.bhabhiIdx = -1
@@ -130,7 +137,7 @@ func (b *Bhabhi) Reset() {
 	b.deal()
 	b.leadIdx = 0
 	b.currentIdx = 0
-	b.addLog(-1, "deal", fmt.Sprintf("%d 人に配り切りました", len(b.players)), nil)
+	b.addLog(-1, "deal", "bhabhi.log.deal", map[string]string{"players": fmt.Sprintf("%d", len(b.players))}, nil)
 }
 
 // deal は 52 枚を参加人数で配り切る。
@@ -245,7 +252,7 @@ func (b *Bhabhi) play(playerIdx, cardIndex int) error {
 	if b.leadSuit == 0 {
 		b.leadSuit = card.GetDesign()
 	}
-	b.addLog(playerIdx, "play", cardStr(card), []*Card{card})
+	b.addLog(playerIdx, "play", "bhabhi.log.play", map[string]string{"card": cardStr(card)}, []*Card{card})
 
 	if cannotFollow {
 		b.pickUpPile(playerIdx)
@@ -258,12 +265,12 @@ func (b *Bhabhi) play(playerIdx, cardIndex int) error {
 // advance は次の手番へ進め、一周したらトリックを解決する。
 func (b *Bhabhi) advance() {
 	// **手札が尽きた人はその場で抜ける。** 引き取りが起きないかぎり戻れません。
-	b.markFinished()
-	if b.gameEndFlag {
-		return
-	}
 	if b.trickComplete() {
 		b.resolveTrick()
+		return
+	}
+	b.markFinished()
+	if b.gameEndFlag {
 		return
 	}
 	next := b.nextInTrick(b.currentIdx)
@@ -317,12 +324,14 @@ func (b *Bhabhi) nextInTrick(from int) int {
 //
 // **場札は捨てる。** 引き取らせるとカードが場から消えず、誰も上がれません。
 func (b *Bhabhi) resolveTrick() {
+	b.lastFinishedIdx = -1
+	b.lastFinishedRank = 0
 	winner := b.trickWinner()
 	discarded := len(b.pile)
 	b.pile = nil
 	b.leadSuit = 0
 	b.trickNumber++
-	b.addLog(winner, "trick", fmt.Sprintf("%d 枚を場から流しました", discarded), nil)
+	b.addLog(winner, "trick", "bhabhi.log.trickWin", map[string]string{"count": fmt.Sprintf("%d", discarded)}, nil)
 
 	b.markFinished()
 	if b.gameEndFlag {
@@ -357,6 +366,8 @@ func (b *Bhabhi) trickWinner() int {
 
 // pickUpPile は playerIdx に場札を全部引き取らせ、そのままリードさせる。
 func (b *Bhabhi) pickUpPile(playerIdx int) {
+	b.lastFinishedIdx = -1
+	b.lastFinishedRank = 0
 	p := b.players[playerIdx]
 	taken := len(b.pile)
 	for _, tc := range b.pile {
@@ -369,7 +380,7 @@ func (b *Bhabhi) pickUpPile(playerIdx int) {
 	b.leadSuit = 0
 	b.trickNumber++
 	b.sortAllHands()
-	b.addLog(playerIdx, "pickup", fmt.Sprintf("%d 枚を引き取りました", taken), nil)
+	b.addLog(playerIdx, "pickup", "bhabhi.log.pickup", map[string]string{"count": fmt.Sprintf("%d", taken)}, nil)
 
 	// **引き取った人は必ず手札を持っている**ので、上がりの判定は他の席だけ。
 	b.markFinished()
@@ -402,7 +413,9 @@ func (b *Bhabhi) markFinished() {
 		b.finishedCnt++
 		p.SetRank(b.finishedCnt)
 		p.SetIsFinished(true)
-		b.addLog(i, "finish", fmt.Sprintf("%d 位で上がりました", b.finishedCnt), nil)
+		b.lastFinishedIdx = i
+		b.lastFinishedRank = b.finishedCnt
+		b.addLog(i, "finish", "bhabhi.log.finish", map[string]string{"rank": fmt.Sprintf("%d", b.finishedCnt)}, nil)
 	}
 	if b.aliveCount() <= 1 {
 		b.finishGame()
@@ -447,7 +460,7 @@ func (b *Bhabhi) finishGame() {
 		}
 	}
 	b.stalemate = false
-	b.addLog(b.bhabhiIdx, "result", "Bhabhi が確定しました", nil)
+	b.addLog(b.bhabhiIdx, "result", "bhabhi.log.resultBhabhi", nil, nil)
 }
 
 // finishStalemate は膠着で打ち切り、**いちばん手札の多い人**を Bhabhi にする。
@@ -468,8 +481,7 @@ func (b *Bhabhi) finishStalemate() {
 			b.bhabhiIdx, most = i, n
 		}
 	}
-	b.addLog(b.bhabhiIdx, "result",
-		fmt.Sprintf("%d トリックで膠着。手札が最も多い席を Bhabhi とします", b.trickNumber), nil)
+	b.addLog(b.bhabhiIdx, "result", "bhabhi.log.resultStalemate", map[string]string{"tricks": fmt.Sprintf("%d", b.trickNumber)}, nil)
 }
 
 // GiveUp は投了する。**投了した人が Bhabhi。**
@@ -481,7 +493,7 @@ func (b *Bhabhi) GiveUp() {
 	b.gameEndFlag = true
 	b.bhabhiIdx = 0
 	b.stalemate = false
-	b.addLog(0, "giveup", "投了しました", nil)
+	b.addLog(0, "giveup", "bhabhi.log.giveup", nil, nil)
 }
 
 // chooseCpuCard は CPU の手。
@@ -627,6 +639,12 @@ func (b *Bhabhi) GetLastPickupIdx() int { return b.lastPickupIdx }
 // GetLastPickupSize は直前に引き取った枚数を返す。
 func (b *Bhabhi) GetLastPickupSize() int { return b.lastPickupSize }
 
+// GetLastFinishedIdx は直前に上がった人を返す（-1 = まだ無い）。
+func (b *Bhabhi) GetLastFinishedIdx() int { return b.lastFinishedIdx }
+
+// GetLastFinishedRank は直前に上がった人の順位を返す（0 = まだ無い）。
+func (b *Bhabhi) GetLastFinishedRank() int { return b.lastFinishedRank }
+
 // GetAliveCount はまだ手札が残っている人数を返す。
 func (b *Bhabhi) GetAliveCount() int { return b.aliveCount() }
 
@@ -640,8 +658,8 @@ func (b *Bhabhi) GetBhabhiIdx() int { return b.bhabhiIdx }
 func (b *Bhabhi) GetActionLog() []*ActionLogEntry { return b.actionLog }
 
 // addLog は棋譜に 1 行足す。
-func (b *Bhabhi) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	b.appendLog(playerIdx, actionType, detail, cards)
+func (b *Bhabhi) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	b.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // bhabhiJSON は KV スナップショットの表現。
@@ -649,41 +667,45 @@ func (b *Bhabhi) addLog(playerIdx int, actionType, detail string, cards []*Card)
 // **非公開フィールドは全部ここに載せる。** Worker はリクエストごとに JSON
 // からゲームを作り直すので、載せ忘れたものは毎回消えます (#4478)。
 type bhabhiJSON struct {
-	Players        []*BhabhiPlayer   `json:"pl"`
-	Config         BhabhiConfig      `json:"cf"`
-	Phase          BhabhiPhase       `json:"ph"`
-	Pile           []*TrickCard      `json:"pi"`
-	LeadSuit       int               `json:"ls"`
-	CurrentIdx     int               `json:"ci"`
-	LeadIdx        int               `json:"li"`
-	TrickNumber    int               `json:"tn"`
-	LastPickupIdx  int               `json:"lpi"`
-	LastPickupSize int               `json:"lps"`
-	FinishedCnt    int               `json:"fc"`
-	GameEndFlag    bool              `json:"ge"`
-	BhabhiIdx      int               `json:"bi"`
-	Stalemate      bool              `json:"sm"`
-	ActionLog      []*ActionLogEntry `json:"al"`
+	Players          []*BhabhiPlayer   `json:"pl"`
+	Config           BhabhiConfig      `json:"cf"`
+	Phase            BhabhiPhase       `json:"ph"`
+	Pile             []*TrickCard      `json:"pi"`
+	LeadSuit         int               `json:"ls"`
+	CurrentIdx       int               `json:"ci"`
+	LeadIdx          int               `json:"li"`
+	TrickNumber      int               `json:"tn"`
+	LastPickupIdx    int               `json:"lpi"`
+	LastPickupSize   int               `json:"lps"`
+	LastFinishedIdx  int               `json:"lfi"`
+	LastFinishedRank int               `json:"lfr"`
+	FinishedCnt      int               `json:"fc"`
+	GameEndFlag      bool              `json:"ge"`
+	BhabhiIdx        int               `json:"bi"`
+	Stalemate        bool              `json:"sm"`
+	ActionLog        []*ActionLogEntry `json:"al"`
 }
 
 // MarshalJSON KV スナップショット用のシリアライズ
 func (b *Bhabhi) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&bhabhiJSON{
-		Players:        b.players,
-		Config:         b.config,
-		Phase:          b.phase,
-		Pile:           b.pile,
-		LeadSuit:       b.leadSuit,
-		CurrentIdx:     b.currentIdx,
-		LeadIdx:        b.leadIdx,
-		TrickNumber:    b.trickNumber,
-		LastPickupIdx:  b.lastPickupIdx,
-		LastPickupSize: b.lastPickupSize,
-		FinishedCnt:    b.finishedCnt,
-		GameEndFlag:    b.gameEndFlag,
-		BhabhiIdx:      b.bhabhiIdx,
-		Stalemate:      b.stalemate,
-		ActionLog:      b.actionLog,
+		Players:          b.players,
+		Config:           b.config,
+		Phase:            b.phase,
+		Pile:             b.pile,
+		LeadSuit:         b.leadSuit,
+		CurrentIdx:       b.currentIdx,
+		LeadIdx:          b.leadIdx,
+		TrickNumber:      b.trickNumber,
+		LastPickupIdx:    b.lastPickupIdx,
+		LastPickupSize:   b.lastPickupSize,
+		LastFinishedIdx:  b.lastFinishedIdx,
+		LastFinishedRank: b.lastFinishedRank,
+		FinishedCnt:      b.finishedCnt,
+		GameEndFlag:      b.gameEndFlag,
+		BhabhiIdx:        b.bhabhiIdx,
+		Stalemate:        b.stalemate,
+		ActionLog:        b.actionLog,
 	})
 }
 
@@ -692,6 +714,11 @@ func (b *Bhabhi) UnmarshalJSON(data []byte) error {
 	var j bhabhiJSON
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
+	}
+	// Snapshots written before the finish announcement fields existed have both
+	// values at their zero value, which means "no announcement".
+	if j.LastFinishedIdx == 0 && j.LastFinishedRank == 0 {
+		j.LastFinishedIdx = -1
 	}
 	if err := j.Config.Validate(); err != nil {
 		return err
@@ -738,7 +765,7 @@ func (b *Bhabhi) UnmarshalJSON(data []byte) error {
 			return fmt.Errorf("invalid %s: %d", name, idx)
 		}
 	}
-	for name, idx := range map[string]int{"last pickup": j.LastPickupIdx, "bhabhi": j.BhabhiIdx} {
+	for name, idx := range map[string]int{"last pickup": j.LastPickupIdx, "last finished": j.LastFinishedIdx, "bhabhi": j.BhabhiIdx} {
 		if idx < -1 || idx >= n {
 			return fmt.Errorf("invalid %s: %d", name, idx)
 		}
@@ -753,6 +780,12 @@ func (b *Bhabhi) UnmarshalJSON(data []byte) error {
 	if j.LastPickupSize < 0 || j.LastPickupSize > BhabhiDeckSize {
 		return fmt.Errorf("invalid pickup size: %d", j.LastPickupSize)
 	}
+	if j.LastFinishedRank < 0 || j.LastFinishedRank > n {
+		return fmt.Errorf("invalid finished rank: %d", j.LastFinishedRank)
+	}
+	if (j.LastFinishedIdx == -1) != (j.LastFinishedRank == 0) {
+		return errors.New("last finished index and rank must be set together")
+	}
 
 	b.players = j.Players
 	b.config = j.Config
@@ -764,6 +797,8 @@ func (b *Bhabhi) UnmarshalJSON(data []byte) error {
 	b.trickNumber = j.TrickNumber
 	b.lastPickupIdx = j.LastPickupIdx
 	b.lastPickupSize = j.LastPickupSize
+	b.lastFinishedIdx = j.LastFinishedIdx
+	b.lastFinishedRank = j.LastFinishedRank
 	b.finishedCnt = j.FinishedCnt
 	b.gameEndFlag = j.GameEndFlag
 	b.bhabhiIdx = j.BhabhiIdx

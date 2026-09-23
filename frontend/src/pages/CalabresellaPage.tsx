@@ -33,7 +33,7 @@ import { CALABRESELLA_HELP, parseCalabresellaCommand } from '../utils/cli/comman
 import { formatCalabresellaState } from '../utils/cli/formatters/calabresellaFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
-import { playerName } from '../utils/playerUtils';
+import { findPlayerName, playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Calabresella tutorial step definitions. */
@@ -243,6 +243,12 @@ function CalabresellaPageContent() {
                   players={state.players}
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
+                  winnerIdx={isTrickEnd ? state.lastTrickWinner : undefined}
+                  winnerLabel={
+                    isTrickEnd
+                      ? t('previousTrickWinner', { name: findPlayerName(state.players, state.lastTrickWinner) })
+                      : undefined
+                  }
                   dataTutorial="calabresella-trick-display"
                 />
               </div>

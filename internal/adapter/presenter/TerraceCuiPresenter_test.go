@@ -71,7 +71,7 @@ func TestTerraceCuiPresenter_Output(t *testing.T) {
 		setupTerraceCuiMockDefaults(g)
 
 		assert.Contains(t, new(TerraceCuiPresenter).Output(g, nil),
-			i18n.Tf("terrace.reserveLine", "card", "CLOVER 3", "count", "1"))
+			i18n.Tf("terrace.reserveLine", "card", "♣3", "count", "1"))
 	})
 
 	t.Run("empty terrace, empty waste and empty piles", func(t *testing.T) {
@@ -166,10 +166,10 @@ func TestTerraceCuiPresenter_HintOutput(t *testing.T) {
 	}{
 		{"terrace to a foundation",
 			&domain.TerraceHint{FromZone: "reserve", FromIdx: -1, ToZone: "foundation", ToIdx: 1},
-			[]string{"テラス", "基礎札1"}},
+			[]string{"テラス", "組札1"}},
 		{"waste to a foundation",
 			&domain.TerraceHint{FromZone: "waste", FromIdx: -1, ToZone: "foundation", ToIdx: 2},
-			[]string{"捨て札", "基礎札2"}},
+			[]string{"捨て札", "組札2"}},
 		{"waste to a pile",
 			&domain.TerraceHint{FromZone: "waste", FromIdx: -1, ToZone: "tableau", ToIdx: 3},
 			[]string{"捨て札", "タブロー山3"}},
@@ -212,7 +212,7 @@ func TestTerraceCuiPresenter_ActionLogOutput(t *testing.T) {
 		g := new(interfaces.MockTerraceGame)
 		g.On("GetPhase").Return(domain.TerracePhaseGameOver)
 		g.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "move", Detail: "test"},
+			{TurnNumber: 1, ActionType: "move", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 
 		assert.Contains(t, new(TerraceCuiPresenter).ActionLogOutput(g), "move")

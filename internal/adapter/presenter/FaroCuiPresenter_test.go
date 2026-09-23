@@ -35,7 +35,7 @@ func TestFaroCuiPresenter_Output_BettingPhase(t *testing.T) {
 	setupFaroCuiMockDefaults(m)
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "チップ: 1000")
-	assert.Contains(t, result, "BETTING")
+	assert.Contains(t, result, "賭け")
 	assert.Contains(t, result, "ターン: 0/24")
 }
 
@@ -77,6 +77,20 @@ func TestFaroCuiPresenter_Output_Error(t *testing.T) {
 	assert.Contains(t, result, "oops")
 }
 
+// TestFaroCuiPresenter_Output_ErrorCodeIsTranslated は、Code しか持たない
+// DomainError が**訳文**として出ることを固定する。Error() はコード文字列を
+// 返すので、共有の cuiErrorBlock を通さず lastErr.Error() を直に書くと
+// 画面に "faro.errRankDepleted" がそのまま出る。
+func TestFaroCuiPresenter_Output_ErrorCodeIsTranslated(t *testing.T) {
+	p := new(FaroCuiPresenter)
+	m := new(interfaces.MockFaroGame)
+	setupFaroCuiMockDefaults(m)
+	err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "faro.errRankDepleted", nil)
+	result := p.Output(m, err)
+	assert.Contains(t, result, "そのランクのカードはすべて出ています。")
+	assert.NotContains(t, result, "faro.errRankDepleted", "コード文字列が生で出てはいけない")
+}
+
 func TestFaroCuiPresenter_Output_WithBetsAndTurn(t *testing.T) {
 	p := new(FaroCuiPresenter)
 	m := new(interfaces.MockFaroGame)
@@ -103,7 +117,7 @@ func TestFaroCuiPresenter_Output_WithBetsAndTurn(t *testing.T) {
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "ランク 7: 100")
 	assert.Contains(t, result, "カッパー")
-	assert.Contains(t, result, "TURN")
+	assert.Contains(t, result, "ターン")
 }
 
 func TestFaroCuiPresenter_Output_SplitAndCall(t *testing.T) {
@@ -134,7 +148,7 @@ func TestFaroCuiPresenter_Output_SplitAndCall(t *testing.T) {
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "スプリット")
-	assert.Contains(t, result, "CALL")
+	assert.Contains(t, result, "コール")
 }
 
 func TestFaroCuiPresenter_Output_RoundEndWonAndLost(t *testing.T) {
@@ -201,12 +215,12 @@ func TestFaroCuiPresenter_Output_GameEnd(t *testing.T) {
 func TestFaroCuiPresenter_PhaseStr_AllBranches(t *testing.T) {
 	p := new(FaroCuiPresenter)
 	for phase, expect := range map[int]string{
-		domain.FaroPhaseBetting:  "BETTING",
-		domain.FaroPhaseTurn:     "TURN",
-		domain.FaroPhaseCall:     "CALL",
-		domain.FaroPhaseRoundEnd: "ROUND END",
-		domain.FaroPhaseGameEnd:  "GAME END",
-		999:                      "UNKNOWN",
+		domain.FaroPhaseBetting:  "賭け",
+		domain.FaroPhaseTurn:     "ターン",
+		domain.FaroPhaseCall:     "コール",
+		domain.FaroPhaseRoundEnd: "ラウンド終了",
+		domain.FaroPhaseGameEnd:  "ゲーム終了",
+		999:                      "不明",
 	} {
 		assert.Equal(t, expect, p.phaseStr(phase))
 	}

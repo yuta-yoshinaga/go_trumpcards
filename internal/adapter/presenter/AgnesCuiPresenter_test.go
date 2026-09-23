@@ -47,9 +47,9 @@ func TestAgnesCuiPresenter_Output(t *testing.T) {
 		a := newCuiAgnes()
 		p := new(AgnesCuiPresenter)
 		result := p.Output(a, nil)
-		assert.Contains(t, result, "SPADE 5") // face-up tableau card
-		assert.Contains(t, result, "??")      // face-down card rendering
-		assert.Contains(t, result, "SPADE 7") // foundation top
+		assert.Contains(t, result, "♠5") // face-up tableau card
+		assert.Contains(t, result, "??") // face-down card rendering
+		assert.Contains(t, result, "♠7") // foundation top
 	})
 
 	t.Run("error", func(t *testing.T) {

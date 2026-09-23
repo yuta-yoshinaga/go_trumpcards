@@ -34,7 +34,7 @@ func (c *IndianRummyCuiController) Exec(command string) string {
 			"d", "discard",
 			"de", "declare",
 			"nr", "nextround",
-			"pc", "setplayers", "sd", "setdifficulty", "sr", "setrounds", "log", "l",
+			"pc", "setplayers", "sd", "setdifficulty", "sr", "setrounds", "h", "hint", "log", "l",
 		},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
@@ -67,7 +67,7 @@ func (c *IndianRummyCuiController) Exec(command string) string {
 					return c.ci.ResetWithConfig(cfg)
 				})
 			default:
-				return handleCuiLog(cmd, c.ci.ActionLog)
+				return handleCuiHintAndLog(cmd, c.ci.Hint, c.ci.ActionLog)
 			}
 		},
 	)

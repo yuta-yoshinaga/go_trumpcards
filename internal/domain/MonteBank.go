@@ -1,4 +1,4 @@
-//go:build !js || !wasm || casino
+//go:build !js || !wasm || extra6
 
 package domain
 
@@ -126,7 +126,7 @@ func (g *MonteBank) Reset() {
 	g.actionLog = nil
 	g.turnNumber = 0
 	g.dealLayout()
-	g.appendLog("reset", "game reset", nil)
+	g.appendLog("reset", "montebank.log.reset", nil, nil)
 }
 
 // dealLayout は場札 4 枚を並べる。前半 2 枚が「上の組」、後半 2 枚が「下の組」。
@@ -172,7 +172,7 @@ func (g *MonteBank) PlaceBet(idx, bet int) error {
 
 	g.pick = idx
 	g.bet = bet
-	g.appendLog("bet", fmt.Sprintf("bet %d on layout %d", bet, idx), []*Card{g.layout[idx]})
+	g.appendLog("bet", "montebank.log.bet", map[string]string{"value1": fmt.Sprint(bet), "value2": fmt.Sprint(idx)}, []*Card{g.layout[idx]})
 	g.revealGate()
 	return nil
 }
@@ -190,7 +190,7 @@ func (g *MonteBank) revealGate() {
 	}
 	g.player.AddChips(g.payout)
 	g.phase = MonteBankPhaseResult
-	g.appendLog("gate", fmt.Sprintf("gate revealed, payout %d", g.payout), monteBankCardOrNil(g.gate))
+	g.appendLog("gate", "montebank.log.gate", map[string]string{"value1": fmt.Sprint(g.payout)}, monteBankCardOrNil(g.gate))
 }
 
 // monteBankCardOrNil は棋譜に載せる札の並びを作る。
@@ -231,7 +231,7 @@ func (g *MonteBank) NextRound() error {
 func (g *MonteBank) finish() {
 	g.gameEndFlag = true
 	g.phase = MonteBankPhaseGameEnd
-	g.appendLog("gameEnd", fmt.Sprintf("finished with %d chips", g.player.GetChips()), nil)
+	g.appendLog("gameEnd", "montebank.log.gameEnd", map[string]string{"value1": fmt.Sprint(g.player.GetChips())}, nil)
 }
 
 // --- 参照 ---
@@ -304,14 +304,15 @@ func (g *MonteBank) GetRemainingCards() int { return g.deck.GetRemainingCount() 
 func (g *MonteBank) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // appendLog は棋譜に 1 行足す。
-func (g *MonteBank) appendLog(actionType, detail string, cards []*Card) {
+func (g *MonteBank) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	g.turnNumber++
 	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: g.turnNumber,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
+		TurnNumber:   g.turnNumber,
+		PlayerIdx:    0,
+		ActionType:   actionType,
+		DetailCode:   detailCode,
+		DetailParams: detailParams,
+		Cards:        cards,
 	})
 	if len(g.actionLog) > monteBankMaxSliceLen {
 		g.actionLog = g.actionLog[len(g.actionLog)-monteBankMaxSliceLen:]

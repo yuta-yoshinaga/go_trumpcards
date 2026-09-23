@@ -37,7 +37,15 @@
     "stock": "{{actor}} swapped with the stock"
   },
   "deckTitle": "The pack, strongest first",
-  "deckNote": "42 cards of its own: 21 denominations twice over, a single suit. The five cards with an effect are colour-coded.",
+  "deckNote": "42 cards of its own: 21 denominations twice over, a single suit. Effect cards use both colour and symbols.",
+  "effectLegendTitle": "Effect card guide",
+  "effect": {
+    "cuckoo": "The exchange fails and the round ends immediately",
+    "hussar": "The challenger goes out",
+    "pig": "The exchange unwinds and the Pig's original holder goes out",
+    "cavalier": "Pass the exchange to the next seat",
+    "inn": "Pass the exchange to the next seat"
+  },
   "rulesNote": "A Harlequin received in an exchange is the LOWEST card, not the highest.",
   "settings": {
     "title": "Settings",

@@ -39,10 +39,47 @@ func setupPineappleCuiMock() *interfaces.MockPineappleGame {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	m.On("GetInitialDealCount").Return(3).Maybe()
 	m.On("IsDiscardAfterFlopBetting").Return(false).Maybe()
+	m.On("IsHumanTurn").Return(false).Maybe()
 	m.On("GetDiscardDone").Return(([]bool)(nil)).Maybe()
 	m.On("GetHumanDiscardPairPreviews").Return(([]domain.PineappleDiscardPairPreview)(nil)).Maybe()
 	m.On("GetHumanDiscardPreviews").Return(([]domain.PineappleDiscardPreview)(nil)).Maybe()
 	return m
+}
+
+func TestPineappleCuiPresenterLearning(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.PineappleCuiPresenter)
+	m, _ := setupPineappleCuiMockWithPlayers()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "IsHumanTurn")
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetInitialDealCount")
+	m.On("IsHumanTurn").Return(true)
+	m.On("GetInitialDealCount").Return(4)
+	m.On("GetEquity").Return(&domain.HoldemEquityResult{Equity: 0.5})
+	m.On("GetPotOdds").Return(20.0)
+	assert.Contains(t, p.Output(m, nil), "勝率: 50.0% / ポットオッズ: 20.0%")
+
+	n, _ := setupPineappleCuiMockWithPlayers()
+	n.ExpectedCalls = removeMockCall(n.ExpectedCalls, "IsHumanTurn")
+	n.On("IsHumanTurn").Return(true)
+	n.On("GetEquity").Return((*domain.HoldemEquityResult)(nil))
+	assert.NotContains(t, p.Output(n, nil), "[学習モード]")
+
+	f, _ := setupPineappleCuiMockWithPlayers()
+	f.ExpectedCalls = removeMockCall(f.ExpectedCalls, "IsHumanTurn")
+	f.On("IsHumanTurn").Return(false)
+	assert.NotContains(t, p.Output(f, nil), "[学習モード]")
+
+	z, _ := setupPineappleCuiMockWithPlayers()
+	z.ExpectedCalls = removeMockCall(z.ExpectedCalls, "IsHumanTurn")
+	z.On("IsHumanTurn").Return(true)
+	z.On("GetEquity").Return(&domain.HoldemEquityResult{Equity: 0.5})
+	z.On("GetPotOdds").Return(0.0)
+	result := p.Output(z, nil)
+	assert.Contains(t, result, "[学習モード]")
+	assert.NotContains(t, result, "  +EV (勝率がポットオッズを上回っています。コール有利)")
+	assert.NotContains(t, result, "  -EV (勝率がポットオッズ以下です。コール不利)")
 }
 
 func setupPineappleCuiMockWithPlayers() (*interfaces.MockPineappleGame, []*domain.PineapplePlayer) {
@@ -430,7 +467,7 @@ func TestPineappleCuiPresenter_ActionLogOutput(t *testing.T) {
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetActionLog")
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "raise", Detail: "raise 30"},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "raise", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 		// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
 		m.On("GetPlayer", mock.Anything).Return(domain.NewPineapplePlayer(true, domain.HoldemPlayStyle(0))).Maybe()

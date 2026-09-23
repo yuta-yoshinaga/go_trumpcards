@@ -65,7 +65,7 @@ func (p *PageOneCuiPresenter) Output(g interfaces.PageOneGame, lastErr error) st
 		b.WriteString("----------\n")
 
 		if lastErr != nil {
-			fmt.Fprintf(b, "%s\n", i18n.MarkErrorLine(color.Red(lastErr.Error())))
+			cuiErrorBlock(b, lastErr)
 		}
 
 		penalties := g.GetRecentPenalties()

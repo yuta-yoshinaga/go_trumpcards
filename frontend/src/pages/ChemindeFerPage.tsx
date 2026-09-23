@@ -207,7 +207,8 @@ function ChemindeFerPageContent() {
             <div className="text-ds-text-primary text-center text-sm mb-2" data-testid="cdf-bank-line">
               {t('label.round')}: {state.roundNumber}
               {state.config ? ` / ${state.config.rounds}` : ''} · {t('label.banker')}: #{state.bankerIdx} ·{' '}
-              {t('label.stake')}: {state.stake}
+              {t('label.stake')}: {state.stake} ·{' '}
+              <span data-testid="cdf-shoe-line">{t('label.shoe', { n: state.remainingCards })}</span>
             </div>
 
             {state.stake > 0 && (

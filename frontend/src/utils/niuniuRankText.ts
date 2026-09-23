@@ -1,3 +1,4 @@
+import niuniuMultipliersGolden from '../constants/niuniuMultipliers.json';
 import i18n from '../i18n';
 
 /**
@@ -28,4 +29,15 @@ export function niuniuRankText(rankKey: string): string {
 export function niuniuBankerResultText(rankKey: string): string {
   const rank = niuniuRankText(rankKey);
   return rank === '' ? '' : i18n.t('niuniu:bankerResult', { rank });
+}
+
+/**
+ * Returns the payout multiplier for a given Niu Niu rank key.
+ *
+ * 値は internal/domain/NiuNiu.go の niuNiuMultiplier が正。
+ * Go 側の golden テストが JSON と規則の一致を検査するので片方だけ変えると落ちる。
+ */
+export function niuniuMultiplier(rankKey: string): number {
+  const multipliers: Record<string, number> = niuniuMultipliersGolden;
+  return multipliers[rankKey] ?? 1;
 }

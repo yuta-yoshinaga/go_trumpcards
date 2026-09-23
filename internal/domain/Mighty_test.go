@@ -60,6 +60,47 @@ func TestNewDefaultMighty(t *testing.T) {
 	assert.Equal(t, 1, humanCount)
 }
 
+func TestMighty_ActionLogUsesDetailCode(t *testing.T) {
+	m := newTestMighty()
+	m.Reset()
+	require.NoError(t, m.PlayerBid(0, false))
+	var entry *domain.ActionLogEntry
+	for _, candidate := range m.GetActionLog() {
+		if candidate.DetailCode == "mighty.log.bidPass" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, map[string]string{"name": "You"}, entry.DetailParams)
+}
+
+func TestMighty_SuitLogsUseSuitKey(t *testing.T) {
+	t.Run("declare trump", func(t *testing.T) {
+		m := newTestMighty()
+		m.SetPhase(domain.MightyPhaseTrumpAndFriend)
+		m.SetDeclarerIdx(0)
+		require.NoError(t, m.PlayerDeclareTrumpAndFriend(domain.CardDesignHeart, domain.CardDesignSpade, 1))
+
+		entry := m.GetActionLog()[0]
+		assert.Equal(t, "common.suit.heart", entry.DetailParams["suitKey"])
+		assert.NotContains(t, entry.DetailParams, "suit")
+	})
+
+	t.Run("joker lead demand", func(t *testing.T) {
+		m := newTestMighty()
+		m.SetPhase(domain.MightyPhasePlay)
+		m.SetCurrentPlayerIdx(0)
+		m.SetCurrentTrick(nil)
+		replaceHand(m.GetPlayer(0), mightyCard(domain.CardDesignJoker, 1))
+		require.NoError(t, m.PlayerPlayJokerLead(0, domain.CardDesignHeart))
+
+		entry := m.GetActionLog()[0]
+		assert.Equal(t, "common.suit.heart", entry.DetailParams["suitKey"])
+		assert.NotContains(t, entry.DetailParams, "suit")
+	})
+}
+
 func TestMighty_Reset_dealCards(t *testing.T) {
 	m := newTestMighty()
 	m.Reset()
@@ -196,6 +237,16 @@ func TestMighty_PlayerBid_validations(t *testing.T) {
 		assert.NoError(t, err)
 		assert.True(t, m.GetWinningBidNoTrump())
 	})
+}
+
+func TestMightyDomainErrorsHaveMessageCodes(t *testing.T) {
+	m := newTestMighty()
+	m.Reset()
+	err := m.PlayerBid(m.GetConfig().MinBid-1, false)
+	de, ok := err.(*domain.DomainError)
+	if !ok || de.MessageCode() != "mighty.errBidRange" {
+		t.Fatalf("expected mighty.errBidRange, got %T %v", err, err)
+	}
 }
 
 func TestMighty_PlayerBid_pass(t *testing.T) {

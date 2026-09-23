@@ -28,5 +28,16 @@
   "hintLine": "Hint: {{from}} → {{to}}",
   "autoCompleteReady": "Auto-complete is available (ac)",
   "helpExampleDraw": "  d                    draw one card from the stock",
-  "helpUndo": "  u                    undo one move"
+  "helpUndo": "  u                    undo one move",
+  "helpSetScoringMode": "  sm <0-1>              scoring mode (0=none, 1=Vegas)",
+  "scoringModeRequired": "Scoring mode is required (0-1).",
+  "invalidScoringMode": "Invalid scoring mode: {{val}}. Please enter 0-1.",
+  "log.recycle": "Moved the waste back to the stock",
+  "log.draw": "Drew cards from the stock",
+  "log.wasteToTableau": "Waste → tableau column {{col}}",
+  "log.wasteToFoundation": "Waste → foundation",
+  "log.tableauToTableau": "Tableau column {{from}} → tableau column {{to}}",
+  "log.tableauToFoundation": "Tableau column {{col}} → foundation",
+  "log.giveUp": "Gave up",
+  "log.autoComplete": "Ran auto-complete"
 }

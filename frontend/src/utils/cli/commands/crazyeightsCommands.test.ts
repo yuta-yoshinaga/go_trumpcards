@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseCrazyeightsCommand } from './crazyeightsCommands';
+import { CRAZYEIGHTS_HELP, parseCrazyeightsCommand } from './crazyeightsCommands';
 
 describe('parseCrazyeightsCommand', () => {
   it('parses play with index', () => {
@@ -51,5 +51,19 @@ describe('parseCrazyeightsCommand', () => {
   it('returns error for unknown command', () => {
     const result = parseCrazyeightsCommand('xyz');
     expect('error' in result).toBe(true);
+  });
+});
+
+describe('CRAZYEIGHTS_HELP', () => {
+  it('lists every leftover-card penalty', () => {
+    expect(CRAZYEIGHTS_HELP).toEqual(
+      expect.arrayContaining([
+        '  8                    50 points',
+        '  A                     1 point',
+        '  J / Q / K            10 points',
+        '  Other                face value',
+      ]),
+    );
+    expect(CRAZYEIGHTS_HELP.join('\n')).not.toContain('{{');
   });
 });

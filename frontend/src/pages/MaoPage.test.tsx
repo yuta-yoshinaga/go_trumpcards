@@ -135,6 +135,21 @@ describe('MaoPage', () => {
     expect(panel.className).toContain('ring-ds-error');
   });
 
+  it('announces a rule penalty through a live region', async () => {
+    mockExec.mockResolvedValue(rulePenaltyState);
+    renderWithProviders(<MaoPage />);
+
+    const live = await waitFor(() => {
+      const element = [...document.querySelectorAll('[role="status"][aria-live="polite"][aria-atomic="true"]')].find(
+        (candidate) => candidate.textContent?.includes('ペナルティ'),
+      );
+      expect(element).not.toBeUndefined();
+      return element;
+    });
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toHaveAttribute('aria-atomic', 'true');
+  });
+
   it('does not buzz when there is no rule penalty', async () => {
     renderWithProviders(<MaoPage />);
     await waitFor(() => expect(screen.getByTestId('mao-rule-panel')).toBeInTheDocument());

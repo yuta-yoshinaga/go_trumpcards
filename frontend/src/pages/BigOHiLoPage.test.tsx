@@ -1746,4 +1746,28 @@ describe('BigOHiLoPage', () => {
       expect(el).toHaveTextContent('ハイ・ロー');
     }
   });
+
+  it('renders action shortcuts panel during betting phase', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<BigOHiLoPage />);
+    const panel = await screen.findByTestId('bigohilo-kbd-shortcuts');
+    expect(panel).toBeInTheDocument();
+  });
+
+  // ---- Live best-hand preview (#7142) ----
+  it('shows the live best-hand preview badge post-flop (two pair)', async () => {
+    // Hole A♠ K♥ T♦ 5♣ + board T♠ 5♥ 8♦ -> best 2+3 = tens & fives (two pair).
+    mockExec.mockResolvedValue(flopState);
+    renderWithProviders(<BigOHiLoPage />);
+    const badge = await screen.findByTestId('bigohilo-live-besthand');
+    expect(badge).toHaveTextContent('現在の役');
+    expect(screen.getByTestId('bigohilo-live-besthand-name')).toHaveTextContent('ツーペア');
+  });
+
+  it('does not show the live best-hand preview pre-flop (communityCards empty)', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<BigOHiLoPage />);
+    await waitFor(() => expect(screen.getByText('コミュニティカード')).toBeInTheDocument());
+    expect(screen.queryByTestId('bigohilo-live-besthand')).not.toBeInTheDocument();
+  });
 });

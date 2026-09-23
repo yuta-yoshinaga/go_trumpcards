@@ -64,8 +64,11 @@ describe('SixCardGolfPage', () => {
     // Column 0 is a 5-over-5 pair → 0pt with success highlight.
     const col0 = screen.getByTestId('scg-column-score-0');
     expect(col0.className).toContain('bg-ds-success');
+    expect(col0).toHaveTextContent('0pt (ペア)');
     // Column 1 (3 over 9) is not a pair → no success highlight.
-    expect(screen.getByTestId('scg-column-score-1').className).not.toContain('bg-ds-success');
+    const col1 = screen.getByTestId('scg-column-score-1');
+    expect(col1.className).not.toContain('bg-ds-success');
+    expect(col1).not.toHaveTextContent('ペア');
   });
 
   it('localizes the face-down grid slot aria-label', async () => {

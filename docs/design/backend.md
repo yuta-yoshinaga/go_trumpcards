@@ -6,7 +6,7 @@
 
 - [1. クラス図](#1-クラス図)
   - [1.1 コアドメイン (カード・プレイヤー)](#11-コアドメイン-カードプレイヤー)
-  - [1.2 ゲームドメイン (全368ゲーム)](#12-ゲームドメイン-全368ゲーム)
+  - [1.2 ゲームドメイン (全383ゲーム)](#12-ゲームドメイン-全383ゲーム)
   - [1.3 ユースケース層 (Interactor・Presenter)](#13-ユースケース層-interactorpresenter)
   - [1.4 アダプタ層 (Controller・Presenter実装)](#14-アダプタ層-controllerpresenter実装)
   - [1.5 インフラストラクチャ層](#15-インフラストラクチャ層)
@@ -201,7 +201,7 @@ classDiagram
 新しいゲームでこれらを埋め込む場合、ゲーム側のコーデックがこの往復を壊していないか
 確認すること（[ADR-0031](../adr/0031-registry-consolidation.md) の登録手順を参照）。
 
-### 1.2 ゲームドメイン (全368ゲーム)
+### 1.2 ゲームドメイン (全383ゲーム)
 
 #### ベッティング系ゲーム
 
@@ -1047,6 +1047,14 @@ classDiagram
     CanastaPlayer --> "*" CanastaMeld
     CanastaPlayer --|> GamePlayer
 
+    class Biriba {
+        <<type alias>>
+        -Canasta with UsePozzetto=true
+        -same-suit sequence mode
+    }
+
+    Biriba --|> Canasta : type alias / sequence mode
+
     class Pinochle {
         -trumpCards *TrumpCards
         -players []*PinochlePlayer
@@ -1732,7 +1740,7 @@ classDiagram
     note for GamePresenter "各ゲームの Presenter は\nGamePresenter[G] の型エイリアス\nまたは拡張インターフェース"
 ```
 
-**Interactor パターン (全368ゲーム共通)**
+**Interactor パターン (全383ゲーム共通)**
 
 ```mermaid
 classDiagram
@@ -1817,8 +1825,8 @@ classDiagram
     GameCuiPresenter ..|> GamePresenter : implements
     GameWebPresenter ..|> GamePresenter : implements
 
-    note for GameCuiController "368ゲーム × CUI/Web = 736 バインディング\n実装型は 704 種類 (CuiController 352 + WebController 352)\n差分は複数ゲームで共有される Controller\n(総称基底 GameWebController[I,P,O] は別)"
-    note for GameCuiPresenter "368ゲーム × CUI/Web = 736 バインディング\n実装型は 706 種類 (CuiPresenter 353 + WebPresenter 353)"
+    note for GameCuiController "383ゲーム × CUI/Web = 766 バインディング\n実装型は 732 種類 (CuiController 366 + WebController 366)\n差分は複数ゲームで共有される Controller\n(総称基底 GameWebController[I,P,O] は別)"
+    note for GameCuiPresenter "383ゲーム × CUI/Web = 766 バインディング\n実装型は 734 種類 (CuiPresenter 367 + WebPresenter 367)"
 ```
 
 ### 1.5 インフラストラクチャ層
@@ -1857,8 +1865,8 @@ classDiagram
     }
 
     TrumpCardsWeb --> "*" gameEntry : registerAll() over games.All()
-    gameEntry --> GameWebController : holds 368 controllers
-    GameManager --> "*" CuiExecer : holds 368 games
+    gameEntry --> GameWebController : holds 383 controllers
+    GameManager --> "*" CuiExecer : holds 383 games
     GameCui ..|> CuiExecer : implements
     GameCui --> GameCuiController : delegates
 ```
@@ -1901,11 +1909,11 @@ classDiagram
     note for KVSessionProvider~T~ "Worker 用。リクエスト毎に KV から復元し、\nGameBase.Snapshot() の JSON を書き戻す。\nプロセスが持続しないので状態は毎回 KV 往復する"
 ```
 
-Worker 側はゲームをカテゴリ単位で 8 バイナリに分割している。
+Worker 側はゲームをカテゴリ単位で 10 バイナリに分割している。
 `Category` は**バイナリのサイズバケットであってユーザ向けの分類ではない**
 （[ADR-0032](../adr/0032-fourth-worker-capacity.md) /
 [ADR-0036](../adr/0036-fifth-sixth-worker-capacity.md) /
-[ADR-0037](../adr/0037-seventh-worker-capacity.md)）。
+[ADR-0037](../adr/0037-seventh-worker-capacity.md) / ADR-0041）。
 
 ```mermaid
 classDiagram
@@ -1924,12 +1932,14 @@ classDiagram
         CategoryExtra3
         CategoryExtra4
         CategoryExtra5
+        CategoryExtra6
+        CategoryExtra7
     }
 
     Game --> Category : size bucket
 
     note for Game "registry.go が 318 件の Name+Category だけを持つ。\nゲーム実装への参照は持たないので、TinyGo が\n他カテゴリを dead-code elimination できる"
-    note for Category "8 バケットは 1 MB gzip 無料枠に収めるための分割。\n各 Worker は自分のカテゴリだけを blank import する"
+    note for Category "10 バケットは 1 MB gzip 無料枠に収めるための分割。\n各 Worker は自分のカテゴリだけを blank import する"
 ```
 
 詳細な per-worker のゲーム一覧とビルド手順は
@@ -3816,3 +3826,19 @@ stateDiagram-v2
 ```
 
 **注:** Barbu は 4 人・52 枚デッキのコンペンディウム型トリックテイキング。フェーズ定数は文字列で保持する。各プレイヤーがディーラーを 7 回務め計 28 ディール。ディーラーは 7 コントラクト (No Tricks / No Hearts / No Queens / Barbu(K♥) / No Last Trick / Trumps / Dominoes) を 1 回ずつ選択する。得点は `BarbuContracts.go` の Strategy テーブルで切り替える。6 つのトリック系コントラクトは共通のフォロースート処理 (Hearts/Whist と同型) を、Dominoes は Sevens 同型の bitmask レイアウト (`BarbuDominoes.go`) を再利用する。28 ディール後の累計最高得点が勝者。
+
+### Pasur 終局時の残り札
+
+```mermaid
+classDiagram
+    class Pasur {
+        -int leftoverIdx
+        -int leftoverCount
+        +GetLeftoverIdx() int
+        +GetLeftoverCount() int
+    }
+```
+
+最後の手札を出して終局する際、場に札があり最後の捕獲者が存在する場合だけ受取席・枚数を記録する。
+Reset で受取席を -1、枚数を 0 に戻し、KV JSON の li / ln に保存・復元する。
+Web は勝敗別の messageCode と messageParams の leftoverIdx / leftoverCount で表示し、CUI は終局バナーに受取人と枚数を1行追加する。

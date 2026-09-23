@@ -22,6 +22,7 @@
   "cards": "{{count}}枚",
   "cumulativeScore": "累計: {{score}}",
   "roundScore": "ラウンド: {{score}}",
+  "cpuLastCardWarning": "{{name}}は残り1枚です。",
   "scores": "スコア",
   "scoresPlayer": "プレイヤー",
   "scoresRound": "ラウンド",

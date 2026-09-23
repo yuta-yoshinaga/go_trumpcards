@@ -15,7 +15,7 @@ go_trumpcardsが目指す未来は、**あらゆる人がクリエイターと�
 
 ## Features
 
-Go + Clean Architecture で実装した368種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
+Go + Clean Architecture で実装した383種類のトランプゲーム。CLI と Web GUI（React + Go REST API）の2つのインターフェースで遊べます。Web GUI は日英多言語対応。
 
 | ゲーム | コマンド | マニュアル |
 |--------|----------|------------|
@@ -59,8 +59,10 @@ Go + Clean Architecture で実装した368種類のトランプゲーム。CLI �
 | カナスタ (Canasta) | `canasta` | [CUI](docs/manual/cui/canasta.md) / [Web](docs/manual/web/canasta.md) |
 | ハンド・アンド・フット (Hand and Foot) | `handandfoot` | [CUI](docs/manual/cui/handandfoot.md) / [Web](docs/manual/web/handandfoot.md) |
 | ブラーコ (Burraco) | `burraco` | [CUI](docs/manual/cui/burraco.md) / [Web](docs/manual/web/burraco.md) |
+| ビリバ (Biriba) | `biriba` | [CUI](docs/manual/cui/biriba.md) / [Web](docs/manual/web/biriba.md) |
 | スパイダーソリティア (Spider Solitaire) | `spider` | [CUI](docs/manual/cui/spider.md) / [Web](docs/manual/web/spider.md) |
 | スパイダレット (Spiderette) | `spiderette` | [CUI](docs/manual/cui/spiderette.md) / [Web](docs/manual/web/spiderette.md) |
+| ウィル・オ・ザ・ウィスプ (Will o' the Wisp) | `willothewisp` | [CUI](docs/manual/cui/willothewisp.md) / [Web](docs/manual/web/willothewisp.md) |
 | ナポレオン (Napoleon) | `napoleon` | [CUI](docs/manual/cui/napoleon.md) / [Web](docs/manual/web/napoleon.md) |
 | マイティ (Mighty) | `mighty` | [CUI](docs/manual/cui/mighty.md) / [Web](docs/manual/web/mighty.md) |
 | インディアンポーカー (Indian Poker) | `indianpoker` | [CUI](docs/manual/cui/indianpoker.md) / [Web](docs/manual/web/indianpoker.md) |
@@ -93,6 +95,8 @@ Go + Clean Architecture で実装した368種類のトランプゲーム。CLI �
 | クリベッジ・スクエアズ (Cribbage Squares) | `cribbagesquares` | [CUI](docs/manual/cui/cribbagesquares.md) / [Web](docs/manual/web/cribbagesquares.md) |
 | ディプロマット (Diplomat) | `diplomat` | [CUI](docs/manual/cui/diplomat.md) / [Web](docs/manual/web/diplomat.md) |
 | ロイヤルコティヨン (Royal Cotillion) | `royalcotillion` | [CUI](docs/manual/cui/royalcotillion.md) / [Web](docs/manual/web/royalcotillion.md) |
+| マトリモニー (Matrimony) | `matrimony` | [CUI](docs/manual/cui/matrimony.md) / [Web](docs/manual/web/matrimony.md) |
+| マリッジ (Marriage) | `marriage` | [CUI](docs/manual/cui/marriage.md) / [Web](docs/manual/web/marriage.md) |
 | クレイジーキルト (Crazy Quilt) | `crazyquilt` | [CUI](docs/manual/cui/crazyquilt.md) / [Web](docs/manual/web/crazyquilt.md) |
 | ジャーマンホイスト (German Whist) | `germanwhist` | [CUI](docs/manual/cui/germanwhist.md) / [Web](docs/manual/web/germanwhist.md) |
 | スロバーハンネス (Slobberhannes) | `slobberhannes` | [CUI](docs/manual/cui/slobberhannes.md) / [Web](docs/manual/web/slobberhannes.md) |
@@ -137,6 +141,7 @@ Go + Clean Architecture で実装した368種類のトランプゲーム。CLI �
 | フリーベット・ブラックジャック (Free Bet Blackjack) | `freebet` | [CUI](docs/manual/cui/freebet.md) / [Web](docs/manual/web/freebet.md) |
 | バンラック (Ban Luck) | `banluck` | [CUI](docs/manual/cui/banluck.md) / [Web](docs/manual/web/banluck.md) |
 | モンテバンク (Monte Bank) | `montebank` | [CUI](docs/manual/cui/montebank.md) / [Web](docs/manual/web/montebank.md) |
+| 手本引き (Tehonbiki) | `tehonbiki` | [CUI](docs/manual/cui/tehonbiki.md) / [Web](docs/manual/web/tehonbiki.md) |
 | スペキュレーション (Speculation) | `speculation` | [CUI](docs/manual/cui/speculation.md) / [Web](docs/manual/web/speculation.md) |
 | シンシナティ (Cincinnati) | `cincinnati` | [CUI](docs/manual/cui/cincinnati.md) / [Web](docs/manual/web/cincinnati.md) |
 | アイアンクロス (Iron Cross) | `ironcross` | [CUI](docs/manual/cui/ironcross.md) / [Web](docs/manual/web/ironcross.md) |
@@ -187,6 +192,7 @@ Go + Clean Architecture で実装した368種類のトランプゲーム。CLI �
 | プレジデント (President / Scum) | `president` | [CUI](docs/manual/cui/president.md) / [Web](docs/manual/web/president.md) |
 | カッシーノ (Cassino) | `cassino` | [CUI](docs/manual/cui/cassino.md) / [Web](docs/manual/web/cassino.md) |
 | スパニッシュ21 (Spanish 21) | `spanish21` | [CUI](docs/manual/cui/spanish21.md) / [Web](docs/manual/web/spanish21.md) |
+| ダブルエクスポージャー・ブラックジャック (Double Exposure Blackjack) | `doubleexposure` | [CUI](docs/manual/cui/doubleexposure.md) / [Web](docs/manual/web/doubleexposure.md) |
 | カルキュレーション (Calculation) | `calculation` | [CUI](docs/manual/cui/calculation.md) / [Web](docs/manual/web/calculation.md) |
 | サー・トミー (Sir Tommy) | `sirtommy` | [CUI](docs/manual/cui/sirtommy.md) / [Web](docs/manual/web/sirtommy.md) |
 | オールド・ラング・サイン (Auld Lang Syne) | `auldlangsyne` | [CUI](docs/manual/cui/auldlangsyne.md) / [Web](docs/manual/web/auldlangsyne.md) |
@@ -202,6 +208,7 @@ Go + Clean Architecture で実装した368種類のトランプゲーム。CLI �
 | ブレイド (Braid) | `braid` | [CUI](docs/manual/cui/braid.md) / [Web](docs/manual/web/braid.md) |
 | ポンツーン (Pontoon) | `pontoon` | [CUI](docs/manual/cui/pontoon.md) / [Web](docs/manual/web/pontoon.md) |
 | セッテ・エ・メッツォ (Sette e Mezzo) | `settemezzo` | [CUI](docs/manual/cui/settemezzo.md) / [Web](docs/manual/web/settemezzo.md) |
+| カーンズ (Quinze) | `quinze` | [CUI](docs/manual/cui/quinze.md) / [Web](docs/manual/web/quinze.md) |
 | 闘牛 (Niu Niu) | `niuniu` | [CUI](docs/manual/cui/niuniu.md) / [Web](docs/manual/web/niuniu.md) |
 | スパイト・アンド・マリス (Spite and Malice) | `spiteandmalice` | [CUI](docs/manual/cui/spiteandmalice.md) / [Web](docs/manual/web/spiteandmalice.md) |
 | スカート (Skat) | `skat` | [CUI](docs/manual/cui/skat.md) / [Web](docs/manual/web/skat.md) |
@@ -214,6 +221,7 @@ Go + Clean Architecture で実装した368種類のトランプゲーム。CLI �
 | 包囲された城 (Beleaguered Castle) | `beleagueredcastle` | [CUI](docs/manual/cui/beleagueredcastle.md) / [Web](docs/manual/web/beleagueredcastle.md) |
 | ピケ (Piquet) | `piquet` | [CUI](docs/manual/cui/piquet.md) / [Web](docs/manual/web/piquet.md) |
 | トンク (Tonk) | `tonk` | [CUI](docs/manual/cui/tonk.md) / [Web](docs/manual/web/tonk.md) |
+| トンギッツ (Tongits) | `tongits` | [CUI](docs/manual/cui/tongits.md) / [Web](docs/manual/web/tongits.md) |
 | サーティワン (Thirty-One) | `thirtyone` | [CUI](docs/manual/cui/thirtyone.md) / [Web](docs/manual/web/thirtyone.md) |
 | ヤニブ (Yaniv) | `yaniv` | [CUI](docs/manual/cui/yaniv.md) / [Web](docs/manual/web/yaniv.md) |
 | 拱猪 (Gong Zhu) | `gongzhu` | [CUI](docs/manual/cui/gongzhu.md) / [Web](docs/manual/web/gongzhu.md) |
@@ -340,6 +348,7 @@ Go + Clean Architecture で実装した368種類のトランプゲーム。CLI �
 | フレンチタロット (French Tarot) | `frenchtarot` | [CUI](docs/manual/cui/frenchtarot.md) / [Web](docs/manual/web/frenchtarot.md) |
 | ケーニッヒルーフェン (Königrufen) | `koenigrufen` | [CUI](docs/manual/cui/koenigrufen.md) / [Web](docs/manual/web/koenigrufen.md) |
 | ツヴァンツィガールーフェン (Zwanzigerrufen) | `zwanzigerrufen` | [CUI](docs/manual/cui/zwanzigerrufen.md) / [Web](docs/manual/web/zwanzigerrufen.md) |
+| タップ・タロック (Tapp Tarock) | `tapptarock` | [CUI](docs/manual/cui/tapptarock.md) / [Web](docs/manual/web/tapptarock.md) |
 | トロッグ (Troggu) | `troggu` | [CUI](docs/manual/cui/troggu.md) / [Web](docs/manual/web/troggu.md) |
 | H.O.R.S.E. (ホース) | `horse` | [CUI](docs/manual/cui/horse.md) / [Web](docs/manual/web/horse.md) |
 | スカルト (Scarto) | `scarto` | [CUI](docs/manual/cui/scarto.md) / [Web](docs/manual/web/scarto.md) |
@@ -387,6 +396,12 @@ Go + Clean Architecture で実装した368種類のトランプゲーム。CLI �
 | リテラチャー (Literature) | `literature` | [CUI](docs/manual/cui/literature.md) / [Web](docs/manual/web/literature.md) |
 | 掼蛋 (Guandan) | `guandan` | [CUI](docs/manual/cui/guandan.md) / [Web](docs/manual/web/guandan.md) |
 | 升级 / 拖拉机 (Sheng Ji) | `shengji` | [CUI](docs/manual/cui/shengji.md) / [Web](docs/manual/web/shengji.md) |
+| シタデル (Citadel) | `citadel` | [CUI](docs/manual/cui/citadel.md) / [Web](docs/manual/web/citadel.md) |
+| バタック (Batak) | `batak` | [CUI](docs/manual/cui/batak.md) / [Web](docs/manual/web/batak.md) |
+| ビノクル (Binokel) | `binokel` | [CUI](docs/manual/cui/binokel.md) / [Web](docs/manual/web/binokel.md) |
+| マルヤプッシ (Marjapussi) | `marjapussi` | [CUI](docs/manual/cui/marjapussi.md) / [Web](docs/manual/web/marjapussi.md) |
+| オミ (Omi) | `omi` | [CUI](docs/manual/cui/omi.md) / [Web](docs/manual/web/omi.md) |
+| バセット (Basset) | `basset` | [CUI](docs/manual/cui/basset.md) / [Web](docs/manual/web/basset.md) |
 
 ## Demo
 
@@ -528,7 +543,7 @@ Clean Architecture を採用。依存の方向は外側から内側への一方�
 cmd/
   trumpcards/         # CLIエントリーポイント（全ゲーム + Webサーバー）
   server/             # Webサーバー専用エントリーポイント
-  workers/            # Cloudflare Workers (WASM) エントリーポイント x8
+  workers/            # Cloudflare Workers (WASM) エントリーポイント x10
 internal/
   domain/             # コアビジネスロジック（最内層）
   usecase/            # アプリケーションビジネスルール

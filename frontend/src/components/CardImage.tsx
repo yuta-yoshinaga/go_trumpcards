@@ -25,6 +25,8 @@ function getImagePath(card: Card): string {
 /** Props for {@link CardImage}. */
 export interface CardImageProps {
   card: Card;
+  /** Optional accessible name override, used when a game-specific marker is present. */
+  ariaLabel?: string;
   width?: number;
   style?: React.CSSProperties;
   className?: string;
@@ -48,6 +50,7 @@ const noCalloutStyle = {
 /** Renders a face-up playing card image. */
 export function CardImage({
   card,
+  ariaLabel,
   width,
   style,
   className,
@@ -61,6 +64,7 @@ export function CardImage({
     return (
       <CardFace
         card={card}
+        ariaLabel={ariaLabel}
         width={width}
         style={style}
         className={className}
@@ -74,7 +78,7 @@ export function CardImage({
   return (
     <img
       src={getImagePath(card)}
-      alt={cardAlt(card)}
+      alt={ariaLabel ?? cardAlt(card)}
       width={CARD_NATURAL_WIDTH}
       height={CARD_NATURAL_HEIGHT}
       loading="lazy"
@@ -101,12 +105,13 @@ export interface CardBackProps {
   style?: React.CSSProperties;
   className?: string;
   onClick?: () => void;
+  disabled?: boolean;
   /** Only applies when onClick is provided (button mode). */
   ariaLabel?: string;
 }
 
 /** Renders a face-down card back image, optionally as a clickable button. */
-export function CardBack({ width, style, className, onClick, ariaLabel }: CardBackProps) {
+export function CardBack({ width, style, className, onClick, disabled = false, ariaLabel }: CardBackProps) {
   const { t } = useTranslation('common');
   const effectiveAriaLabel = onClick ? ariaLabel || t('card.back') : undefined;
   const w = width ?? 80;
@@ -135,9 +140,16 @@ export function CardBack({ width, style, className, onClick, ariaLabel }: CardBa
       <button
         type="button"
         onClick={onClick}
+        disabled={disabled}
         aria-label={effectiveAriaLabel}
-        className={`${focusRingWhite} rounded-md`}
-        style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', lineHeight: 0 }}
+        className={`${focusRingWhite} rounded-md disabled:opacity-40 disabled:cursor-not-allowed`}
+        style={{
+          background: 'none',
+          border: 'none',
+          padding: 0,
+          cursor: disabled ? 'not-allowed' : 'pointer',
+          lineHeight: 0,
+        }}
       >
         {img}
       </button>

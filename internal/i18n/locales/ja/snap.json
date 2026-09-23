@@ -9,7 +9,8 @@
   "topLine": "いちばん上: {{card}}",
   "pileEmpty": "場札: なし",
   "availableLine": "*** スナップ成立中！ n で宣言 ***",
-  "playerLine": "{{name}}: ストック{{stock}}枚",
+  "playerLine": "{{name}}: ストック{{stock}}枚{{role}}",
+  "roleOut": "（札切れ）",
   "eventStep": "{{name}} がめくりました。",
   "eventSnapCorrect": "{{name}} がスナップ！ 場札を総取りしました。",
   "eventSnapWrong": "{{name}} の誤宣言。ペナルティで1枚差し出しました。",
@@ -22,11 +23,12 @@
   "gameEndCpu": "ゲーム終了！ {{name}} の勝ちです。",
   "gameEndNone": "ゲーム終了！ 続けられなくなりました。",
   "hintNone": "ヒントはありません。",
-  "hintSnap": "[HINT: いま宣言！ ({{reason}})]",
-  "hintWait": "[HINT: 待つ ({{reason}})]",
+  "hintSnap": "[ヒント: いま宣言！ ({{reason}})]",
+  "hintWait": "[ヒント: 待つ ({{reason}})]",
   "hintReasonDeclare": "直前の札と同じランクが出ている",
   "hintReasonStep": "あなたがめくる番",
   "hintReasonWait": "まだ揃っていない。誤宣言はペナルティ",
   "helpExampleStep": "  s                    次の 1 枚をめくる",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "log.start": "スナップを開始しました（{{players}} 人）", "log.step": "1 枚めくりました", "log.snap": "スナップ！ {{count}} 枚を獲得しました", "log.penaltyCard": "誤宣言のペナルティで 1 枚差し出しました", "log.penaltyEmpty": "誤宣言しましたが、差し出す札がありません", "log.eliminate": "ストックが尽きました", "log.resultWin": "全札を集めました", "log.resultStalemate": "続けられなくなりました（場に全札）", "log.giveup": "投了しました"
 }

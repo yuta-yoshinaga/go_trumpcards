@@ -1,10 +1,11 @@
-//go:build !js || !wasm || extra4
+//go:build !js || !wasm || extra7
 
 package domain
 
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 )
 
 // レッドドッグフェーズ定数
@@ -98,7 +99,7 @@ func (rd *RedDog) Bet(amount int) error {
 		return NewDomainError(ErrInsufficientChips, "Insufficient chips.")
 	}
 	rd.ante = amount
-	rd.appendLog(0, "bet", fmt.Sprintf("ante=%d", amount), nil)
+	rd.appendLog(0, "bet", "reddog.log.bet", map[string]string{"amount": strconv.Itoa(amount)}, nil)
 
 	rd.dealInitial()
 	rd.phase = RedDogPhaseInitialDealt
@@ -111,7 +112,7 @@ func (rd *RedDog) dealInitial() {
 	for range RedDogInitialCards {
 		rd.initialCards = append(rd.initialCards, rd.trumpCards.DrawCard())
 	}
-	rd.appendLog(-1, "deal", "dealt 2 initial cards", rd.initialCards)
+	rd.appendLog(-1, "deal", "reddog.log.dealtInitial", nil, rd.initialCards)
 }
 
 // rankOf カード値をランク化（A=14, K=13, …, 2=2）
@@ -139,7 +140,7 @@ func (rd *RedDog) ResolveInitial() {
 		// （PairThird で止めるとどのコマンドも受け付けずデッドエンドになる）
 		rd.spread = 0
 		rd.phase = RedDogPhasePairThird
-		rd.appendLog(-1, "pair", "initial pair, drawing third card", nil)
+		rd.appendLog(-1, "pair", "reddog.log.initialPair", nil, nil)
 		rd.dealThird()
 		rd.ResolveThird()
 	case 1:
@@ -150,11 +151,11 @@ func (rd *RedDog) ResolveInitial() {
 		rd.chips.AddChips(rd.ante)
 		rd.gameEndFlag = true
 		rd.phase = RedDogPhaseEnd
-		rd.appendLog(-1, "push", "consecutive ranks → push", nil)
+		rd.appendLog(-1, "push", "reddog.log.consecutivePush", nil, nil)
 	default:
 		rd.spread = diff - 1
 		rd.phase = RedDogPhaseSpreadDecision
-		rd.appendLog(-1, "spread", fmt.Sprintf("spread=%d", rd.spread), nil)
+		rd.appendLog(-1, "spread", "reddog.log.spread", map[string]string{"spread": strconv.Itoa(rd.spread)}, nil)
 	}
 }
 
@@ -170,7 +171,7 @@ func (rd *RedDog) Raise(amount int) error {
 		return NewDomainError(ErrInsufficientChips, "Insufficient chips.")
 	}
 	rd.raise = amount
-	rd.appendLog(0, "raise", fmt.Sprintf("raise=%d", amount), nil)
+	rd.appendLog(0, "raise", "reddog.log.raise", map[string]string{"amount": strconv.Itoa(amount)}, nil)
 	rd.dealThird()
 	rd.ResolveThird()
 	return nil
@@ -181,7 +182,7 @@ func (rd *RedDog) Stay() error {
 	if rd.phase != RedDogPhaseSpreadDecision {
 		return NewDomainError(ErrWrongPhase, "Stay is only allowed during the spread decision phase.")
 	}
-	rd.appendLog(0, "stay", "stay (no raise)", nil)
+	rd.appendLog(0, "stay", "reddog.log.stay", nil, nil)
 	rd.dealThird()
 	rd.ResolveThird()
 	return nil
@@ -193,7 +194,7 @@ func (rd *RedDog) dealThird() {
 		return
 	}
 	rd.thirdCard = rd.trumpCards.DrawCard()
-	rd.appendLog(-1, "deal", "dealt third card", []*Card{rd.thirdCard})
+	rd.appendLog(-1, "deal", "reddog.log.dealtThird", nil, []*Card{rd.thirdCard})
 }
 
 // ResolveThird 3枚目評価＆ペイアウト
@@ -232,16 +233,16 @@ func (rd *RedDog) ResolveThird() {
 	rd.gameEndFlag = true
 	rd.phase = RedDogPhaseEnd
 
-	var s string
+	var detailCode string
 	switch rd.result {
 	case GameResultWin:
-		s = "player wins"
+		detailCode = "reddog.log.playerWins"
 	case GameResultLose:
-		s = "player loses"
+		detailCode = "reddog.log.playerLoses"
 	default:
-		s = "push"
+		detailCode = "reddog.log.push"
 	}
-	rd.appendLog(-1, "result", s, nil)
+	rd.appendLog(-1, "result", detailCode, nil, nil)
 }
 
 // payoutMultiplier スプレッドに基づく配当倍率
@@ -289,6 +290,10 @@ func (rd *RedDog) GetTotalPayout() int { return rd.totalPayout }
 
 // GetChips チップ
 func (rd *RedDog) GetChips() int { return rd.chips.GetChips() }
+
+func (rd *RedDog) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	rd.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
+}
 
 // --- Test helpers ---
 

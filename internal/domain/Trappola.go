@@ -16,8 +16,8 @@ package domain
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // TrappolaPlayerCnt トラッポラのプレイヤー数
@@ -203,9 +203,14 @@ func (g *Trappola) scoreDeclarations() {
 		for _, d := range trappolaFindDeclarations(idx, p) {
 			g.declarations = append(g.declarations, d)
 			g.teamRoundThirds[TrappolaTeamOf(idx)] += d.Thirds
-			g.appendLog(idx, "declaration",
-				fmt.Sprintf("%s declares %s (+%d thirds)",
-					playerName(g.players, idx), trappolaDeclarationName(d), d.Thirds), nil)
+			switch d.Kind {
+			case TrappolaDeclarationTrappola:
+				g.appendLog(idx, "declaration", "trappola.log.declarationTrappola", map[string]string{"name": playerName(g.players, idx), "suitKey": suitKeyOf(d.Value), "thirds": strconv.Itoa(d.Thirds)}, nil)
+			case TrappolaDeclarationFour:
+				g.appendLog(idx, "declaration", "trappola.log.declarationFour", map[string]string{"name": playerName(g.players, idx), "rank": strconv.Itoa(d.Value), "thirds": strconv.Itoa(d.Thirds)}, nil)
+			default:
+				g.appendLog(idx, "declaration", "trappola.log.declarationThree", map[string]string{"name": playerName(g.players, idx), "rank": strconv.Itoa(d.Value), "thirds": strconv.Itoa(d.Thirds)}, nil)
+			}
 		}
 	}
 }
@@ -248,18 +253,6 @@ func trappolaFindDeclarations(playerIdx int, p *TrappolaPlayer) []TrappolaDeclar
 	return out
 }
 
-// trappolaDeclarationName は棋譜に出す役名を組み立てる。
-func trappolaDeclarationName(d TrappolaDeclaration) string {
-	switch d.Kind {
-	case TrappolaDeclarationTrappola:
-		return fmt.Sprintf("trappola in %s", suitStr(d.Value))
-	case TrappolaDeclarationFour:
-		return fmt.Sprintf("four %ds", d.Value)
-	default:
-		return fmt.Sprintf("three %ds", d.Value)
-	}
-}
-
 // TrappolaFindDeclarationsForTest は 1 席の手札から成立する役を返す (テスト用)。
 func TrappolaFindDeclarationsForTest(playerIdx int, p *TrappolaPlayer) []TrappolaDeclaration {
 	return trappolaFindDeclarations(playerIdx, p)
@@ -282,7 +275,7 @@ func (g *Trappola) PlayerPlay(cardIndex int) error {
 
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "trappola.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
@@ -332,14 +325,15 @@ func (g *Trappola) ResolveTrick() {
 
 	team := TrappolaTeamOf(winnerIdx)
 	g.teamRoundThirds[team] += thirds
-	bonus := ""
 	if g.trickNumber >= TrappolaTrickCount {
 		g.teamRoundThirds[team] += TrappolaUltimaThirds
-		bonus = " +ultima"
 	}
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (+%d/3%s)", playerName(g.players, winnerIdx), g.trickNumber, thirds, bonus),
-		trickCards)
+	params := map[string]string{"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber), "thirds": strconv.Itoa(thirds)}
+	if g.trickNumber >= TrappolaTrickCount {
+		g.appendLog(winnerIdx, "trick_win", "trappola.log.trickWinLast", params, trickCards)
+	} else {
+		g.appendLog(winnerIdx, "trick_win", "trappola.log.trickWin", params, trickCards)
+	}
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= TrappolaTrickCount {
@@ -370,9 +364,7 @@ func (g *Trappola) ScoreRound() {
 	for t := 0; t < TrappolaTeamCnt; t++ {
 		g.teamScores[t] += g.teamRoundThirds[t] / 3
 	}
-	g.appendLog(-1, "round_score",
-		fmt.Sprintf("round %d: TeamA=%d (+%d/3), TeamB=%d (+%d/3)",
-			g.roundNumber, g.teamScores[0], g.teamRoundThirds[0], g.teamScores[1], g.teamRoundThirds[1]), nil)
+	g.appendLog(-1, "round_score", "trappola.log.roundScore", map[string]string{"round": strconv.Itoa(g.roundNumber), "teamAScore": strconv.Itoa(g.teamScores[0]), "teamAThirds": strconv.Itoa(g.teamRoundThirds[0]), "teamBScore": strconv.Itoa(g.teamScores[1]), "teamBThirds": strconv.Itoa(g.teamRoundThirds[1])}, nil)
 
 	leader, other := 0, 1
 	if g.teamScores[1] > g.teamScores[0] {
@@ -382,7 +374,7 @@ func (g *Trappola) ScoreRound() {
 		g.gameEndFlag = true
 		g.winnerTeam = leader
 		g.phase = TrappolaPhaseGameEnd
-		g.appendLog(-1, "game_end", fmt.Sprintf("Team %s wins the game!", trappolaTeamName(leader)), nil)
+		g.appendLog(-1, "game_end", "trappola.log.gameEnd", map[string]string{"team": trappolaTeamName(leader)}, nil)
 	}
 }
 
@@ -474,7 +466,7 @@ func (g *Trappola) playCard(playerIdx int, card *Card) {
 		PlayerIdx: playerIdx,
 		Card:      card,
 	})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "trappola.log.play", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(g.currentTrick) == TrappolaPlayerCnt {
 		g.phase = TrappolaPhaseTrickEnd
@@ -804,4 +796,9 @@ func (g *Trappola) UnmarshalJSON(data []byte) error {
 		g.actionLog = make([]*ActionLogEntry, 0)
 	}
 	return nil
+}
+
+// appendLog records a Trappola action with a locale-independent detail code.
+func (g *Trappola) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }

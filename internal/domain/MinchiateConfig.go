@@ -1,8 +1,15 @@
-//go:build !js || !wasm || solo
+//go:build !js || !wasm || extra7
 
 package domain
 
 import "fmt"
+
+// MinchiateMaxTargetRounds は CUI で指定できる最大ラウンド数。
+// **ドメイン (Validate) に上限は無い。**Web のセレクトが 4/8/12 しか出さないのは
+// 見せ方の都合で、13 局を「無効」と言う理由はドメインの側に無い。CUI に上限が
+// 要るのは打ち間違いで遊べない長さのマッチが始まらないようにするためだけなので、
+// ディーラー 25 巡と広めに取る。倍数の制約のほうは Validate がそのまま持つ。
+const MinchiateMaxTargetRounds = MinchiatePlayerCnt * 25
 
 // MinchiateCpuDifficulty CPU の難易度。
 type MinchiateCpuDifficulty int
@@ -41,8 +48,8 @@ func (c MinchiateConfig) Validate() error {
 	// **プレイヤー数の倍数に限る。**ディーラーは 1 局ごとに回るので、倍数でないと
 	// 誰かが余分に親を務めたままマッチが終わり、スカルトの回数が不平等になる。
 	if c.TargetRounds%MinchiatePlayerCnt != 0 {
-		return NewDomainError(ErrInvalidPlay,
-			fmt.Sprintf("局数は %d の倍数でなければなりません: %d", MinchiatePlayerCnt, c.TargetRounds))
+		return NewDomainErrorCode(ErrInvalidPlay, "minchiate.errTargetRoundsNotMultiple",
+			map[string]string{"min": fmt.Sprintf("%d", MinchiatePlayerCnt), "rounds": fmt.Sprintf("%d", c.TargetRounds)})
 	}
 	return nil
 }

@@ -90,6 +90,26 @@ func TestUltimateTexasHoldem_Reset_RefillChips(t *testing.T) {
 	u.SetChips(5)
 	u.Reset()
 	assert.Equal(t, domain.UltimateTexasHoldemDefaultChips, u.GetChips())
+	assert.True(t, u.GetChipsRefilled())
+}
+
+func TestUltimateTexasHoldem_Reset_NoRefillAboveThreshold(t *testing.T) {
+	u := domain.NewDefaultUltimateTexasHoldem()
+	u.SetChips(domain.UltimateTexasHoldemMinBet * 2)
+	u.Reset()
+	assert.False(t, u.GetChipsRefilled())
+}
+
+func TestUltimateTexasHoldem_Reset_RefillFlagIsNotPersisted(t *testing.T) {
+	u := domain.NewDefaultUltimateTexasHoldem()
+	u.SetChips(0)
+	u.Reset()
+	data, err := json.Marshal(u)
+	require.NoError(t, err)
+	assert.NotContains(t, string(data), "chipsRefilled")
+	restored := domain.NewDefaultUltimateTexasHoldem()
+	require.NoError(t, json.Unmarshal(data, restored))
+	assert.False(t, restored.GetChipsRefilled())
 }
 
 func TestUltimateTexasHoldem_Bet_WrongPhase(t *testing.T) {
@@ -157,6 +177,15 @@ func TestUltimateTexasHoldem_Bet_Success(t *testing.T) {
 	assert.Equal(t, 50, u.GetTripsBet())
 	assert.Len(t, u.GetPlayerHand(), 2)
 	assert.Len(t, u.GetDealerHand(), 2)
+	var entry *domain.ActionLogEntry
+	for _, candidate := range u.GetActionLog() {
+		if candidate.DetailCode == "ultimatetexasholdem.log.anteBlindTrips" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, map[string]string{"ante": "100", "blind": "100", "trips": "50"}, entry.DetailParams)
 	// 1000 - (ante 100 + blind 100 + trips 50) = 750
 	assert.Equal(t, domain.UltimateTexasHoldemDefaultChips-250, u.GetChips())
 }
@@ -575,9 +604,6 @@ func TestUltimateTexasHoldem_JSONUnmarshal_RejectsHugeSlices(t *testing.T) {
 		Detail     string `json:"Detail"`
 	}
 	huge := make([]entry, 1001)
-	for i := range huge {
-		huge[i] = entry{TurnNumber: i, PlayerIdx: 0, ActionType: "bet", Detail: "x"}
-	}
 	payload, err := json.Marshal(map[string]any{"al": huge})
 	require.NoError(t, err)
 	dst := new(domain.UltimateTexasHoldem)

@@ -110,6 +110,15 @@ func TestPrsiWebPresenter_Output(t *testing.T) {
 		assert.Empty(t, resObj.MessageCode)
 	})
 
+	t.Run("coded error has message code and no message", func(t *testing.T) {
+		m, _ := setupPrsiWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "prsi.errCardIndexOutOfRange", nil)
+		var resObj controller.PrsiWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, err)), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "prsi.errCardIndexOutOfRange", resObj.MessageCode)
+	})
+
 	t.Run("game end human wins", func(t *testing.T) {
 		m, _ := setupPrsiWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
@@ -172,7 +181,7 @@ func TestPrsiWebPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("with entries", func(t *testing.T) {
 		m := new(interfaces.MockPrsiGame)
 		entries := []*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "plays SPADE 7", Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 7, true)}},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "prsi.log.play", DetailParams: map[string]string{"name": "You", "card": "♠7"}, Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 7, true)}},
 		}
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetActionLog").Return(entries)

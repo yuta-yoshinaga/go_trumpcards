@@ -6,6 +6,7 @@ import type { BaseGameResponse, Card } from '../common';
 /** A suggested move hint in Black Hole. */
 export interface BlackHoleHint {
   fan: number;
+  movesAfter: number;
 }
 
 /** Full Black Hole game state returned from the API. */

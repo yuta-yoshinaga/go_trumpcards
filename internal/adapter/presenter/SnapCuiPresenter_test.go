@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"math/rand"
+	"strings"
 	"testing"
 	"time"
 
@@ -171,6 +172,27 @@ func TestSnapCuiPresenterHintOutput(t *testing.T) {
 
 	g.GiveUp()
 	assert.Contains(t, p.HintOutput(g), i18n.T("snap.hintNone"))
+}
+
+// 札切れの席にだけ「（札切れ）」が出て、残りの席には出ない。
+// テンプレート変数が展開されずそのまま残っていないことも確認する。
+func TestSnapCuiPresenterOutOfCardsMarker(t *testing.T) {
+	p := new(SnapCuiPresenter)
+
+	// 席 0 のストックを空にする。席 1 はストックを持つ。
+	g := newSnapForCui(t)
+	g.GiveStockForTest(0) // 空にする
+
+	out := p.Output(g, nil)
+
+	// 札切れの席に「（札切れ）」が出る（i18n.T の戻り値ではなくリテラルで検証）。
+	assert.Contains(t, out, "（札切れ）", "empty-stock seat must show the marker")
+	// ストックを持つ席に「（札切れ）」が出ない（否定コントロール）。
+	// 席 1 はストックがあるので出てはいけない。
+	// 出力全体に1個だけ含まれることを確認する（席0の分だけ）。
+	assert.Equal(t, 1, strings.Count(out, "（札切れ）"), "marker must appear exactly once")
+	// テンプレート変数がそのまま残っていないこと。
+	assert.NotContains(t, out, "{{role}}", "template placeholder must not remain in output")
 }
 
 func TestSnapCuiPresenterActionLogOutput(t *testing.T) {

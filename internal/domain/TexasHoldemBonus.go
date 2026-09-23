@@ -5,6 +5,7 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 )
 
 // テキサスホールデムボーナスポーカーフェーズ定数
@@ -137,7 +138,7 @@ func (t *TexasHoldemBonus) Bet(ante, bonus int) error {
 	}
 	t.anteBet = ante
 	t.bonusBet = bonus
-	t.appendLog(0, "bet", fmt.Sprintf("ante=%d bonus=%d", ante, bonus), nil)
+	t.appendLog(0, "bet", "texasholdembonus.log.anteBonus", map[string]string{"ante": strconv.Itoa(ante), "bonus": strconv.Itoa(bonus)}, nil)
 
 	t.dealHole()
 	t.phase = TexasHoldemBonusPhasePreFlop
@@ -154,7 +155,7 @@ func (t *TexasHoldemBonus) Play() error {
 		return NewDomainError(ErrInsufficientChips, "Insufficient chips for flop bet.")
 	}
 	t.flopBet = bet
-	t.appendLog(0, "play", fmt.Sprintf("flop bet=%d", bet), nil)
+	t.appendLog(0, "play", "texasholdembonus.log.flopBet", map[string]string{"bet": strconv.Itoa(bet)}, nil)
 
 	t.dealFlop()
 	t.phase = TexasHoldemBonusPhaseFlop
@@ -166,7 +167,7 @@ func (t *TexasHoldemBonus) Fold() error {
 	if t.phase != TexasHoldemBonusPhasePreFlop {
 		return NewDomainError(ErrWrongPhase, "Fold is only allowed during the pre-flop phase.")
 	}
-	t.appendLog(0, "fold", "player folds", nil)
+	t.appendLog(0, "fold", "texasholdembonus.log.playerFolds", nil, nil)
 
 	t.result = GameResultLose
 	t.evaluateBonus()
@@ -175,7 +176,7 @@ func (t *TexasHoldemBonus) Fold() error {
 	}
 	t.gameEndFlag = true
 	t.phase = TexasHoldemBonusPhaseEnd
-	t.appendLog(-1, "result", "player folded", nil)
+	t.appendLog(-1, "result", "texasholdembonus.log.playerFolded", nil, nil)
 	return nil
 }
 
@@ -183,12 +184,12 @@ func (t *TexasHoldemBonus) Fold() error {
 func (t *TexasHoldemBonus) Check() error {
 	switch t.phase {
 	case TexasHoldemBonusPhaseFlop:
-		t.appendLog(0, "check", "flop check", nil)
+		t.appendLog(0, "check", "texasholdembonus.log.flopCheck", nil, nil)
 		t.dealTurn()
 		t.phase = TexasHoldemBonusPhaseTurn
 		return nil
 	case TexasHoldemBonusPhaseTurn:
-		t.appendLog(0, "check", "turn check", nil)
+		t.appendLog(0, "check", "texasholdembonus.log.turnCheck", nil, nil)
 		t.dealRiver()
 		t.resolve()
 		return nil
@@ -206,7 +207,7 @@ func (t *TexasHoldemBonus) Raise() error {
 			return NewDomainError(ErrInsufficientChips, "Insufficient chips for turn bet.")
 		}
 		t.turnBet = bet
-		t.appendLog(0, "raise", fmt.Sprintf("turn bet=%d", bet), nil)
+		t.appendLog(0, "raise", "texasholdembonus.log.turnBet", map[string]string{"bet": strconv.Itoa(bet)}, nil)
 		t.dealTurn()
 		t.phase = TexasHoldemBonusPhaseTurn
 		return nil
@@ -215,7 +216,7 @@ func (t *TexasHoldemBonus) Raise() error {
 			return NewDomainError(ErrInsufficientChips, "Insufficient chips for river bet.")
 		}
 		t.riverBet = bet
-		t.appendLog(0, "raise", fmt.Sprintf("river bet=%d", bet), nil)
+		t.appendLog(0, "raise", "texasholdembonus.log.riverBet", map[string]string{"bet": strconv.Itoa(bet)}, nil)
 		t.dealRiver()
 		t.resolve()
 		return nil
@@ -256,7 +257,7 @@ func (t *TexasHoldemBonus) dealHole() {
 		t.playerHand = append(t.playerHand, t.trumpCards.DrawCard())
 		t.dealerHand = append(t.dealerHand, t.trumpCards.DrawCard())
 	}
-	t.appendLog(-1, "deal", "dealt 2 hole cards each", nil)
+	t.appendLog(-1, "deal", "texasholdembonus.log.dealtTwoHoleCards", nil, nil)
 }
 
 // dealFlop 3枚のフロップを配る。
@@ -266,14 +267,14 @@ func (t *TexasHoldemBonus) dealFlop() {
 		t.community = append(t.community, t.trumpCards.DrawCard())
 	}
 	t.updatePlayerCurrentRank()
-	t.appendLog(-1, "flop", "flop dealt", nil)
+	t.appendLog(-1, "flop", "texasholdembonus.log.flopDealt", nil, nil)
 }
 
 // dealTurn ターンを配る。
 func (t *TexasHoldemBonus) dealTurn() {
 	t.community = append(t.community, t.trumpCards.DrawCard())
 	t.updatePlayerCurrentRank()
-	t.appendLog(-1, "turn", "turn dealt", nil)
+	t.appendLog(-1, "turn", "texasholdembonus.log.turnDealt", nil, nil)
 }
 
 // updatePlayerCurrentRank プレイヤーの現在の最良ハンドランクを更新する。
@@ -289,7 +290,7 @@ func (t *TexasHoldemBonus) updatePlayerCurrentRank() {
 // dealRiver リバーを配る。
 func (t *TexasHoldemBonus) dealRiver() {
 	t.community = append(t.community, t.trumpCards.DrawCard())
-	t.appendLog(-1, "river", "river dealt", nil)
+	t.appendLog(-1, "river", "texasholdembonus.log.riverDealt", nil, nil)
 }
 
 // resolve ショーダウン処理（リバー後）
@@ -323,16 +324,19 @@ func (t *TexasHoldemBonus) resolve() {
 	t.gameEndFlag = true
 	t.phase = TexasHoldemBonusPhaseEnd
 
-	var resultStr string
+	resultCode := "texasholdembonus.log.dealerWins"
 	switch t.result {
 	case GameResultWin:
-		resultStr = "player wins"
+		resultCode = "texasholdembonus.log.playerWins"
 	case GameResultDraw:
-		resultStr = "push"
-	default:
-		resultStr = "dealer wins"
+		resultCode = "texasholdembonus.log.push"
 	}
-	t.appendLog(-1, "result", resultStr, nil)
+	t.appendLog(-1, "result", resultCode, nil, nil)
+}
+
+// appendLog records a Texas Hold'em Bonus action with a locale-independent detail code.
+func (t *TexasHoldemBonus) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	t.appendLogCodeAt(len(t.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // compareBest プレイヤーとディーラーの最良5枚を比較する

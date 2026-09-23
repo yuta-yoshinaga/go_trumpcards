@@ -9,6 +9,7 @@ export function formatVideopokerState(state: VideoPokerResponse): string {
 
   lines.push(formatHeader(state.variantName || 'Video Poker'));
   lines.push(`chips: ${state.chips}  phase: ${PHASE_NAMES[state.phase] ?? 'UNKNOWN'}`);
+  lines.push(`hands: ${state.hands}  win: ${state.winRate}%  net: ${state.net >= 0 ? '+' : ''}${state.net}`);
   if (state.betAmount > 0) lines.push(`bet: ${state.betAmount}`);
   lines.push('');
 

@@ -75,6 +75,12 @@ func (p *GanjifaCuiPresenter) Output(g interfaces.GanjifaGame, lastErr error) st
 			"round", strconv.Itoa(g.GetRoundNumber()),
 			"trick", strconv.Itoa(g.GetTrickNumber()),
 			"trump", ganjifaTrumpStr(g.GetTrumpSuit())) + "\n")
+		dealerIdx := g.GetDealerIdx()
+		if dealerIdx >= 0 && dealerIdx < g.GetPlayerCnt() {
+			b.WriteString(i18n.Tf("ganjifa.dealer",
+				"name", cuiPlayerName(g.GetPlayer(dealerIdx), dealerIdx)) + "\n")
+		}
+		b.WriteString(i18n.T("ganjifa.trumpAutoNote") + "\n")
 
 		// **切り札がどちらの群かを毎回書く。**強い群なら数字の大きい札が強く、
 		// 弱い群では逆になる。この一行が無いと、手札の並びを見ても

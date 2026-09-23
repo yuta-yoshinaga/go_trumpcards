@@ -19,7 +19,7 @@
   "label.punter": "子",
   "label.punterSide": "子側",
   "label.total": "合計",
-  "label.shoe": "シュー残り",
+  "label.shoe": "シュー残り: {{n}} 枚",
   "label.amount": "金額",
   "phase.stake": "張り",
   "phase.bet": "賭け",

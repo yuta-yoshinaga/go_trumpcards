@@ -35,6 +35,25 @@ func TestTeenDoPaanchCuiPresenterOutput(t *testing.T) {
 		domain.TeenDoPaanchPlayerCnt, "全員の席行にノルマと獲得数が出る")
 }
 
+func TestTeenDoPaanchCuiPresenterReportsLastTrickWinner(t *testing.T) {
+	p := new(TeenDoPaanchCuiPresenter)
+	g := newTeenDoPaanchForCui(t)
+	g.SetPhaseForTest(domain.TeenDoPaanchPhasePlay)
+	g.SetTrumpSuitForTest(domain.CardDesignDiamond)
+	g.SetCurrentTrickForTest([]*domain.TrickCard{
+		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignSpade, 8, false)},
+		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 13, false)},
+		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignHeart, 1, false)},
+	})
+	g.ResolveTrickForTest()
+
+	assert.Contains(t, p.Output(g, nil), "CPU 1")
+
+	g.SetCurrentTrickForTest([]*domain.TrickCard{{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignHeart, 8, false)}})
+	assert.NotContains(t, p.Output(g, nil), fixedPart("teendopaanch.trickWinner"),
+		"進行中のトリックでは前の勝者を表示しない")
+}
+
 // 切り札は未宣言と確定の両側を踏む。
 func TestTeenDoPaanchCuiPresenterTrumpLine(t *testing.T) {
 	p := new(TeenDoPaanchCuiPresenter)
@@ -158,14 +177,14 @@ func TestTeenDoPaanchCuiPresenterHint(t *testing.T) {
 	g.SetFivePlayerIdxForTest(0)
 
 	trumpHint := p.HintOutput(g)
-	assert.Contains(t, trumpHint, "HINT")
+	assert.Contains(t, trumpHint, "ヒント")
 	assert.Contains(t, trumpHint, fixedPart("teendopaanch.hintTrump"))
 
 	require.NoError(t, g.DeclareTrump(domain.CardDesignHeart))
 	g.SetCurrentPlayerIdxForTest(0)
 	cardHint := p.HintOutput(g)
 	// **勧める札は配りで変わる。** 固定の添字ではなく「合法な札を指している」を見る。
-	idx := regexp.MustCompile(`\[HINT: \[(\d+)\]`).FindStringSubmatch(cardHint)
+	idx := regexp.MustCompile(`\[ヒント: \[(\d+)\]`).FindStringSubmatch(cardHint)
 	require.Len(t, idx, 2, "札を指した助言になっている")
 	n, err := strconv.Atoi(idx[1])
 	require.NoError(t, err)

@@ -392,7 +392,9 @@ function PerseverancePageContent() {
                               ? 'ring-2 ring-ds-warning'
                               : isLastInCol
                                 ? 'ring-2 ring-ds-warning/60 ring-dashed'
-                                : '';
+                                : canGrab
+                                  ? 'ring-1 ring-ds-success/60'
+                                  : '';
                             return (
                               <div
                                 key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}

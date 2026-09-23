@@ -38,6 +38,7 @@ func TestDragonTiger_Reset_RefillChips(t *testing.T) {
 	dt.SetChips(5)
 	dt.Reset()
 	assert.Equal(t, domain.DragonTigerDefaultChips, dt.GetChips())
+	assert.True(t, dt.GetChipsRefilled())
 }
 
 func TestDragonTiger_Reset_NoRefillAboveThreshold(t *testing.T) {
@@ -45,6 +46,19 @@ func TestDragonTiger_Reset_NoRefillAboveThreshold(t *testing.T) {
 	dt.SetChips(500)
 	dt.Reset()
 	assert.Equal(t, 500, dt.GetChips())
+	assert.False(t, dt.GetChipsRefilled())
+}
+
+func TestDragonTiger_Reset_RefillFlagIsNotPersisted(t *testing.T) {
+	dt := domain.NewDefaultDragonTiger()
+	dt.SetChips(0)
+	dt.Reset()
+	data, err := json.Marshal(dt)
+	require.NoError(t, err)
+	assert.NotContains(t, string(data), "chipsRefilled")
+	restored := domain.NewDefaultDragonTiger()
+	require.NoError(t, json.Unmarshal(data, restored))
+	assert.False(t, restored.GetChipsRefilled())
 }
 
 func TestDragonTiger_Reset_PreservesHistory(t *testing.T) {
@@ -143,6 +157,15 @@ func TestDragonTiger_Bet_DragonWins_PaysDouble(t *testing.T) {
 	assert.Equal(t, 1100, dt.GetChips())
 	assert.Equal(t, 200, dt.GetPayout())
 	assert.Equal(t, []int{domain.DragonTigerResultDragon}, dt.GetHistory())
+	var entry *domain.ActionLogEntry
+	for _, candidate := range dt.GetActionLog() {
+		if candidate.DetailCode == "dragontiger.log.betDragon" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, map[string]string{"amount": "100"}, entry.DetailParams)
 }
 
 func TestDragonTiger_Bet_TigerWins_PaysDouble(t *testing.T) {

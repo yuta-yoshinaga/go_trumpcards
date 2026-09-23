@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // PigsTailPlayerCnt ぶたのしっぽデフォルトプレイヤー数
@@ -69,6 +70,10 @@ type PigsTail struct {
 	humanAction  *PigsTailCpuAction   // 人間プレイヤーの最後の行動記録
 	config       PigsTailConfig       // ゲーム設定
 	actionLogBase
+}
+
+func (pt *PigsTail) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	pt.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // NewPigsTail コンストラクタ
@@ -180,16 +185,14 @@ func (pt *PigsTail) drawAndPlace(playerIdx int) (*Card, bool) {
 		for _, c := range pt.center {
 			pt.players[playerIdx].AddCard(c)
 		}
-		pt.appendLog(playerIdx, "penalty",
-			fmt.Sprintf("drew %s, matched suit — took %d cards", cardShortStr(card), len(pt.center)),
-			[]*Card{card})
+		pt.appendLog(playerIdx, "penalty", "pigtail.log.penalty",
+			map[string]string{"card": cardShortStr(card), "count": strconv.Itoa(len(pt.center))}, []*Card{card})
 		pt.center = make([]*Card, 0)
 	} else {
 		// 場札にカードを追加
 		pt.center = append(pt.center, card)
-		pt.appendLog(playerIdx, "draw",
-			fmt.Sprintf("drew %s", cardShortStr(card)),
-			[]*Card{card})
+		pt.appendLog(playerIdx, "draw", "pigtail.log.draw",
+			map[string]string{"card": cardShortStr(card)}, []*Card{card})
 	}
 
 	pt.lastDrawCard = card

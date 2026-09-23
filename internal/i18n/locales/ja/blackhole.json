@@ -6,10 +6,15 @@
   "blackHoleLabel": "ブラックホール:",
   "progress": "吸い込み: {{count}}/{{total}}枚",
   "fanLabel": "扇{{idx}}:",
-  "hintLine": "[HINT: 扇{{fan}} を積めます]",
+  "hintLine": "[ヒント: 扇{{fan}} を積めます（直後の合法手 {{movesAfter}}）]",
   "acceptableRanks": "出せるランク: {{ranks}}",
   "acceptableRanksNone": "出せるランク: なし",
   "legalMoveCount": "残り合法手: {{count}}",
   "helpHint": "  h                    助言を表示",
-  "helpLog": "  l                    行動ログを表示"
+  "helpLog": "  l                    行動ログを表示",
+  "log.deal": "新しいゲームを開始しました",
+  "log.move": "扇{{fan}}→ブラックホール",
+  "log.giveUp": "投了しました",
+  "log.clear": "ブラックホールに全カードを吸い込みました",
+  "log.gameOver": "合法手がなくなりました"
 }

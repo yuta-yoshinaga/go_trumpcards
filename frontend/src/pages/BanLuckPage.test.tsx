@@ -143,11 +143,17 @@ describe('BanLuckPage', () => {
   it('自分の手番では引くと止めるを出す', async () => {
     mockApi.mockResolvedValue(playing());
     renderWithProviders(<BanLuckPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '引く' })).toBeInTheDocument());
-    expect(screen.getByTestId('bl-stand')).toBeInTheDocument();
+    const hitButton = await screen.findByRole('button', { name: '引く' });
+    const standButton = screen.getByTestId('bl-stand');
+    expect(hitButton).toHaveAttribute('aria-keyshortcuts', 'h');
+    expect(standButton).toHaveAttribute('aria-keyshortcuts', 's');
+    expect(screen.getByText('H', { exact: true })).toBeVisible();
+    expect(screen.getByText('S', { exact: true })).toBeVisible();
+    expect(screen.queryByText('kbd.hit', { exact: true })).not.toBeInTheDocument();
+    expect(screen.queryByText('kbd.stand', { exact: true })).not.toBeInTheDocument();
 
     mockApi.mockClear();
-    fireEvent.click(screen.getByRole('button', { name: '引く' }));
+    fireEvent.click(hitButton);
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('hit'));
   });
 
@@ -158,6 +164,7 @@ describe('BanLuckPage', () => {
     renderWithProviders(<BanLuckPage />);
     await waitFor(() => expect(screen.getByTestId('bl-must-hit')).toBeInTheDocument());
     expect(screen.queryByTestId('bl-stand')).not.toBeInTheDocument();
+    expect(screen.queryByText('S', { exact: true })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: '引く' })).toBeInTheDocument();
   });
 

@@ -10,6 +10,17 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func findActionLogEntry(t *testing.T, log []*ActionLogEntry, detailCode string) *ActionLogEntry {
+	t.Helper()
+	for i := len(log) - 1; i >= 0; i-- {
+		if log[i].DetailCode == detailCode {
+			return log[i]
+		}
+	}
+	t.Fatalf("action log entry %q not found", detailCode)
+	return nil
+}
+
 // newZwanzigerrufenForTest はゲームを開始した状態で返す。
 func newZwanzigerrufenForTest(t *testing.T) *Zwanzigerrufen {
 	t.Helper()
@@ -264,6 +275,8 @@ func TestZwanzigerrufenAllPass_BecomesTrischaken(t *testing.T) {
 	assert.Equal(t, 0, g.GetTalonSize(), "場札が場に残っている")
 	assert.Len(t, g.stash, ZwanzigerrufenTalonSize, "場札が脇へ移っていない")
 	assertZwanzigerrufenDeckIntact(t, g)
+	entry := findActionLogEntry(t, g.GetActionLog(), "zwanzigerrufen.log.trischaken")
+	assert.Empty(t, entry.DetailParams)
 }
 
 // **どの契約でも、ディールが終われば 54 枚すべてが席に収まる。**

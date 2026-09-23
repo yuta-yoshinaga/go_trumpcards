@@ -54,6 +54,22 @@ func TestTysiac_ResetDeal(t *testing.T) {
 	assert.Equal(t, g.GetForehandIdx(), g.GetCurrentPlayerIdx())
 }
 
+func TestTysiacLastTrickWinnerIsSetOnEveryTrick(t *testing.T) {
+	g := newTestTysiac()
+	g.SetTrickNumber(1)
+	g.SetPhase(domain.TysiacPhaseTrickEnd)
+	g.SetCurrentTrick([]*domain.TrickCard{
+		{PlayerIdx: 0, Card: tysCard(domain.CardDesignSpade, 14)},
+		{PlayerIdx: 1, Card: tysCard(domain.CardDesignHeart, 9)},
+		{PlayerIdx: 2, Card: tysCard(domain.CardDesignSpade, 10)},
+	})
+
+	g.ResolveTrick()
+
+	assert.NotEqual(t, -1, g.GetLastTrickWinner())
+	assert.Equal(t, g.GetLeadPlayerIdx(), g.GetLastTrickWinner())
+}
+
 func TestTysiac_DeckIsUnique24(t *testing.T) {
 	// Reconstruct the whole round's cards (7*3 hands + 3 talon via marshal) and
 	// verify 24 unique cards, each of 9,J,Q,K,10,A across 4 suits.
@@ -87,6 +103,14 @@ func TestTysiac_Bidding_RaiseAndPass(t *testing.T) {
 	base := g.GetCurrentBid()
 	require.NoError(t, g.PlayerBid(true))
 	assert.Equal(t, base+domain.TysiacBidStep, g.GetCurrentBid())
+	var bidLog *domain.ActionLogEntry
+	for _, entry := range g.GetActionLog() {
+		if entry.DetailCode == "tysiac.log.bid" {
+			bidLog = entry
+		}
+	}
+	require.NotNil(t, bidLog)
+	assert.Equal(t, map[string]string{"name": "You", "bid": "110"}, bidLog.DetailParams)
 
 	// Not human turn -> error.
 	if !g.GetPlayer(g.GetCurrentPlayerIdx()).GetIsHuman() {
@@ -149,9 +173,12 @@ func TestTysiac_Talon_DeclarerExchange(t *testing.T) {
 		tysCard(domain.CardDesignDiamond, 9))
 	g.SetPhase(domain.TysiacPhaseTalon)
 	g.SetCurrentPlayerIdx(0)
+	assert.Equal(t, 1, g.GetTalonRecipientIdx())
 
 	require.NoError(t, g.PlayerDiscard(0)) // give to first opponent
+	assert.Equal(t, 2, g.GetTalonRecipientIdx())
 	require.NoError(t, g.PlayerDiscard(0)) // give to second opponent -> starts play
+	assert.Equal(t, -1, g.GetTalonRecipientIdx())
 
 	// After exchange every player holds 8 cards.
 	for i := 0; i < g.GetPlayerCnt(); i++ {

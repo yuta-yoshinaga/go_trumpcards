@@ -1,4 +1,4 @@
-//go:build !js || !wasm || solo
+//go:build !js || !wasm || extra7
 
 package presenter
 
@@ -150,6 +150,9 @@ func (p *MinchiateWebPresenter) buildPlayersOutput(g interfaces.MinchiateGame) [
 // buildMessage ゲーム結果メッセージを構築
 func (p *MinchiateWebPresenter) buildMessage(g interfaces.MinchiateGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

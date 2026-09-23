@@ -28,6 +28,7 @@
   },
   "landscapeBanner": "横画面での表示を推奨します",
   "moveCount": "手数",
+  "runMoveAria": "{{count}}枚まとめて動かせます",
   "noHint": "ヒントはありません",
   "phase": {
     "playing": "プレイ中",

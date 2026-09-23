@@ -16,6 +16,7 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 )
 
 // BarbuPlayerCnt はバルブのプレイヤー数 (固定 4)。
@@ -94,6 +95,11 @@ type Barbu struct {
 	actionLogBase
 }
 
+// appendLog records a Barbu action with a locale-independent detail code.
+func (b *Barbu) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	b.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
+}
+
 // NewBarbu はコンストラクタ。
 func NewBarbu(trumpCards *TrumpCards, players []*BarbuPlayer, config BarbuConfig) *Barbu {
 	return &Barbu{
@@ -142,7 +148,7 @@ func (b *Barbu) NextDeal() {
 	if b.dealNumber >= BarbuTotalDeals {
 		b.gameEndFlag = true
 		b.phase = BarbuPhaseGameEnd
-		b.appendLog(-1, "gameEnd", "all 28 deals completed", nil)
+		b.appendLog(-1, "gameEnd", "barbu.log.gameEnd", nil, nil)
 		return
 	}
 	b.startDeal()
@@ -170,7 +176,7 @@ func (b *Barbu) startDeal() {
 		barbuSortHand(p)
 	}
 	b.phase = BarbuPhaseSelectContract
-	b.appendLog(-1, "deal", fmt.Sprintf("deal %d/%d, dealer=%d", b.dealNumber+1, BarbuTotalDeals, b.dealerIdx), nil)
+	b.appendLog(-1, "deal", "barbu.log.deal", map[string]string{"deal": strconv.Itoa(b.dealNumber + 1), "total": strconv.Itoa(BarbuTotalDeals), "dealer": strconv.Itoa(b.dealerIdx)}, nil)
 }
 
 // SelectContract はディーラーがコントラクトを選択する。
@@ -210,8 +216,7 @@ func (b *Barbu) applySelectContract(contract, trumpSuit int) error {
 	b.leadPlayer = b.dealerIdx
 	b.currentPlayer = b.dealerIdx
 	b.trickNumber = 1
-	b.appendLog(b.dealerIdx, "selectContract",
-		fmt.Sprintf("dealer %d selects %s", b.dealerIdx, barbuContractName(contract)), nil)
+	b.appendLog(b.dealerIdx, "selectContract", "barbu.log.selectContract", map[string]string{"dealer": strconv.Itoa(b.dealerIdx), "contractKey": barbuContractKey(contract)}, nil)
 	return nil
 }
 
@@ -274,7 +279,7 @@ func (b *Barbu) applyTrickPlay(playerIdx, handIdx int) error {
 	}
 	played := player.RemoveCard(handIdx)
 	b.currentTrick = append(b.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: played})
-	b.appendLog(playerIdx, "play", fmt.Sprintf("player %d plays %s", playerIdx, cardStr(played)), []*Card{played})
+	b.appendLog(playerIdx, "play", "barbu.log.play", map[string]string{"player": strconv.Itoa(playerIdx), "card": cardStr(played)}, []*Card{played})
 
 	if len(b.currentTrick) == BarbuPlayerCnt {
 		b.resolveTrick()
@@ -330,7 +335,7 @@ func (b *Barbu) resolveTrick() {
 	b.players[winner].AddTrick(cards)
 	b.lastTrick = b.currentTrick
 	b.lastTrickWinner = winner
-	b.appendLog(winner, "trickWin", fmt.Sprintf("player %d wins trick %d", winner, b.trickNumber), cards)
+	b.appendLog(winner, "trickWin", "barbu.log.trickWin", map[string]string{"player": strconv.Itoa(winner), "trick": strconv.Itoa(b.trickNumber)}, cards)
 
 	b.currentTrick = nil
 	b.leadPlayer = winner
@@ -401,13 +406,12 @@ func (b *Barbu) finishDeal() {
 		p.AddScore(detail.Gained[i])
 	}
 	b.phase = BarbuPhaseDealEnd
-	b.appendLog(-1, "dealEnd",
-		fmt.Sprintf("deal %d scored (%s)", b.dealNumber+1, barbuContractName(b.currentContract)), nil)
+	b.appendLog(-1, "dealEnd", "barbu.log.dealEnd", map[string]string{"deal": strconv.Itoa(b.dealNumber + 1), "contractKey": barbuContractKey(b.currentContract)}, nil)
 	// 28 ディール目が終わったら、NextDeal を待たずにゲーム終了とする。
 	if b.dealNumber >= BarbuTotalDeals-1 {
 		b.gameEndFlag = true
 		b.phase = BarbuPhaseGameEnd
-		b.appendLog(-1, "gameEnd", "all 28 deals completed", nil)
+		b.appendLog(-1, "gameEnd", "barbu.log.gameEnd", nil, nil)
 	}
 }
 
@@ -435,25 +439,25 @@ func barbuSortHand(p *BarbuPlayer) {
 	}
 }
 
-// barbuContractName はコントラクトの英語名を返す (ログ用)。
-func barbuContractName(c int) string {
+// barbuContractKey は契約の i18n キーを返す。
+func barbuContractKey(c int) string {
 	switch c {
 	case BarbuContractNoTricks:
-		return "No Tricks"
+		return "barbu.cNoTricks"
 	case BarbuContractNoHearts:
-		return "No Hearts"
+		return "barbu.cNoHearts"
 	case BarbuContractNoQueens:
-		return "No Queens"
+		return "barbu.cNoQueens"
 	case BarbuContractKingHeart:
-		return "Barbu"
+		return "barbu.cBarbu"
 	case BarbuContractNoLastTrick:
-		return "No Last Trick"
+		return "barbu.cNoLastTrick"
 	case BarbuContractTrumps:
-		return "Trumps"
+		return "barbu.cTrumps"
 	case BarbuContractDominoes:
-		return "Dominoes"
+		return "barbu.cDominoes"
 	default:
-		return "Unknown"
+		return "barbu.cUnknown"
 	}
 }
 

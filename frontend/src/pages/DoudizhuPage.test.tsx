@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { doudizhuApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { DoudizhuResponse } from '../types/card';
 import { DoudizhuPage, formatDDZState } from './DoudizhuPage';
@@ -41,6 +42,54 @@ beforeEach(() => {
 });
 
 describe('DoudizhuPage', () => {
+  it('shows the resolved landlord label for the human player', async () => {
+    mockExec.mockResolvedValue({
+      ...defaultState,
+      players: [
+        { ...defaultState.players[0], isHuman: false, isLandlord: false },
+        { ...defaultState.players[1], isHuman: true, isLandlord: true },
+        defaultState.players[2],
+      ],
+      landlordIdx: 1,
+    });
+    renderWithProviders(<DoudizhuPage />);
+
+    const badge = await screen.findByTestId('ddz-own-role');
+    expect(badge).toHaveTextContent('地主');
+    expect(badge).not.toHaveTextContent('label.landlord');
+    expect(badge).not.toHaveTextContent('label.peasant');
+  });
+
+  it('shows the resolved peasant label for the human player', async () => {
+    mockExec.mockResolvedValue({
+      ...defaultState,
+      players: [
+        { ...defaultState.players[0], isHuman: false, isLandlord: true },
+        { ...defaultState.players[1], isHuman: true, isLandlord: false },
+        defaultState.players[2],
+      ],
+      landlordIdx: 0,
+    });
+    renderWithProviders(<DoudizhuPage />);
+
+    const badge = await screen.findByTestId('ddz-own-role');
+    expect(badge).toHaveTextContent('農民');
+    expect(badge).not.toHaveTextContent('label.landlord');
+    expect(badge).not.toHaveTextContent('label.peasant');
+  });
+
+  it('hides the human role until the landlord is determined', async () => {
+    mockExec.mockResolvedValue({
+      ...defaultState,
+      landlordIdx: -1,
+      phase: 'bid',
+    });
+    renderWithProviders(<DoudizhuPage />);
+
+    expect(await screen.findByRole('button', { name: 'パス' })).toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByTestId('ddz-own-role')).not.toBeInTheDocument());
+  });
+
   // プレイヤーがカードを選択したときのみ、その組み合わせが有効かどうかの判定や役名を表示する
   it('shows combo hint when cards are selected', async () => {
     mockExec.mockResolvedValue({
@@ -211,6 +260,30 @@ describe('DoudizhuPage', () => {
   it('formatDDZState omits the hand line when the human has no visible cards', () => {
     // defaultState's human has cards: [] → no "Your hand" line.
     expect(formatDDZState(defaultState)).not.toContain('Your hand');
+  });
+
+  it('formatDDZState localizes an end-of-game message for the CLI', async () => {
+    const state = {
+      ...defaultState,
+      phase: 'end',
+      gameEndFlag: true,
+      players: defaultState.players.map((player) => ({ ...player, isLandlord: false })),
+      message: '',
+      messageCode: 'doudizhu.result.summary',
+      messageParams: { winnerKey: 'doudizhu.landlord', score: '10' },
+    };
+
+    await i18n.changeLanguage('ja');
+    const japanese = formatDDZState(state);
+    expect(japanese).toContain('地主');
+    expect(japanese).not.toContain('Landlord');
+
+    await i18n.changeLanguage('en');
+    const english = formatDDZState(state);
+    expect(english).toContain('Landlord');
+    expect(english).not.toContain('地主');
+
+    await i18n.changeLanguage('ja');
   });
 
   it('labels hand cards via cardAlt and reflects selection with aria-pressed', async () => {

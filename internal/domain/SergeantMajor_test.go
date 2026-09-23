@@ -371,6 +371,46 @@ func TestSergeantMajor_NoSurplusMovesNothing(t *testing.T) {
 	s.ExchangeForTest()
 	assert.Equal(t, 0, s.GetLastExchange())
 	assert.Equal(t, 14, sergeantMajorRank(s.GetPlayer(1).GetCard(0)), "♥A は動かない")
+	assert.Empty(t, s.GetLastExchangeLost())
+	assert.Empty(t, s.GetLastExchangeReceived())
+}
+
+func TestSergeantMajor_ExchangeRecordsHumanCardsAndJSONRoundTrip(t *testing.T) {
+	s := newTestSergeantMajor(t)
+	s.SetPhaseForTest(SergeantMajorPhasePlay)
+	s.SetTrumpSuitForTest(CardDesignSpade)
+	lost := NewCard(CardDesignHeart, 13, false)
+	sergeantMajorHandOf(s, 0, lost, NewCard(CardDesignSpade, 2, false))
+	sergeantMajorHandOf(s, 1, NewCard(CardDesignClover, 1, false), NewCard(CardDesignDiamond, 3, false))
+	sergeantMajorHandOf(s, 2, NewCard(CardDesignSpade, 9, false))
+	s.SetSurplusForTest([]int{-1, 1, 0})
+
+	s.ExchangeForTest()
+	require.Equal(t, []*Card{lost}, s.GetLastExchangeLost())
+	require.Equal(t, []*Card{NewCard(CardDesignDiamond, 3, false)}, s.GetLastExchangeReceived())
+
+	sergeantMajorHandOf(s, 0, NewCard(CardDesignHeart, 13, false), NewCard(CardDesignSpade, 2, false))
+	sergeantMajorHandOf(s, 1, NewCard(CardDesignClover, 1, false), NewCard(CardDesignDiamond, 3, false))
+	s.SetSurplusForTest([]int{1, -1, 0})
+	s.ExchangeForTest()
+	require.Equal(t, []*Card{NewCard(CardDesignSpade, 2, false)}, s.GetLastExchangeLost())
+	require.Equal(t, []*Card{NewCard(CardDesignClover, 1, false)}, s.GetLastExchangeReceived())
+
+	// exchangeCards is deliberately tested directly; put the snapshot into a
+	// valid phase before exercising the hand-written JSON validation.
+	s.SetPhaseForTest(SergeantMajorPhaseTrump)
+	s.SetTrumpSuitForTest(0)
+	data, err := json.Marshal(s)
+	require.NoError(t, err)
+	restored := NewDefaultSergeantMajor()
+	require.NoError(t, json.Unmarshal(data, restored))
+	assert.Equal(t, s.GetLastExchangeLost(), restored.GetLastExchangeLost())
+	assert.Equal(t, s.GetLastExchangeReceived(), restored.GetLastExchangeReceived())
+
+	s.SetPhaseForTest(SergeantMajorPhaseRoundEnd)
+	s.NextRound()
+	assert.Empty(t, s.GetLastExchangeLost())
+	assert.Empty(t, s.GetLastExchangeReceived())
 }
 
 func TestSergeantMajor_MostPointsWins(t *testing.T) {

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
@@ -13,6 +14,7 @@ import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { CPU_DIFFICULTY_OPTIONS, TARGET_SCORE_OPTIONS, useCoincheGame } from '../hooks/useCoincheGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
@@ -98,6 +100,7 @@ function CoinchePageContent() {
     coincheConfig,
     selectedCardIndices,
     toggleCard,
+    clearSelection,
     handleConfigChange,
     handleToggle,
     handlePlay,
@@ -117,6 +120,17 @@ function CoinchePageContent() {
   // 目標点は先に選んでからスートを押す。契約は「点 + 切り札」の対なので、
   // 片方だけで送ると残りに既定値が入って別の契約になる。
   const [selectedPoints, setSelectedPoints] = useState<number | null>(null);
+
+  const isPlayPhaseForKbd = state?.phase === CoinchePhase.PLAY;
+  const isHumanTurnForKbd = isPlayPhaseForKbd && state?.players[state.currentPlayerIdx]?.isHuman === true;
+  const humanCardCountForKbd = state?.players.find((p) => p.isHuman)?.cards?.length ?? 0;
+  useCardKeyboardNav({
+    cardCount: humanCardCountForKbd,
+    onToggle: toggleCard,
+    onConfirm: handlePlay,
+    onClear: clearSelection,
+    enabled: !!isHumanTurnForKbd && !loading,
+  });
 
   const {
     hint: frontendHint,
@@ -526,6 +540,7 @@ function CoinchePageContent() {
             dataTutorial="be-reset-button"
           />
         </div>
+        <CardNavShortcutsPanel data-testid="coinche-kbd-shortcuts" />
       </GameFooter>
     </GamePageShell>
   );

@@ -97,6 +97,12 @@ describe('KoiKoiPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
   });
 
+  it('shows base points, multiplier, and total in the round result', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<KoiKoiPage />);
+    expect(await screen.findByTestId('koikoi-round-result')).toHaveTextContent('役 1点 × 2倍 = 2点');
+  });
+
   it('renders the game-end result', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<KoiKoiPage />);

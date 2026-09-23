@@ -11,7 +11,15 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	mockUsecases "github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
+
+type scartoCuiTestPresenter struct{}
+
+func (scartoCuiTestPresenter) Output(interfaces.ScartoGame, error) string   { return "" }
+func (scartoCuiTestPresenter) ActionLogOutput(interfaces.ScartoGame) string { return "" }
+func (scartoCuiTestPresenter) HintOutput(interfaces.ScartoGame) string      { return "" }
 
 func TestScartoCuiController_Exec(t *testing.T) {
 	mockOutput := `{"phase":1}`
@@ -97,6 +105,21 @@ func TestScartoCuiController_Exec(t *testing.T) {
 	t.Run("setdifficulty invalid", func(t *testing.T) {
 		result := controller.NewScartoCuiController(newMock()).Exec("sd 9")
 		assert.Contains(t, result, msgInvalidCpuDifficultyPrefix())
+	})
+
+	t.Run("settargetdeals validates, sets, and survives reset", func(t *testing.T) {
+		interactor := usecase.NewScartoInteractor(domain.NewDefaultScarto(), scartoCuiTestPresenter{})
+		c := controller.NewScartoCuiController(interactor)
+
+		assert.Equal(t, "", c.Exec("settargetdeals 7"))
+		assert.Equal(t, 7, interactor.GetConfig().TargetDeals)
+		assert.Equal(t, "", c.Exec("reset"))
+		assert.Equal(t, 7, interactor.GetConfig().TargetDeals)
+	})
+
+	t.Run("settargetdeals rejects invalid values", func(t *testing.T) {
+		assert.Equal(t, "\x1eERR\x1e目標ディール数を指定してください (1-100)。", controller.NewScartoCuiController(newMock()).Exec("std"))
+		assert.Equal(t, "\x1eERR\x1e無効な目標ディール数です: 0。1-100 を指定してください。", controller.NewScartoCuiController(newMock()).Exec("std 0"))
 	})
 
 	t.Run("hint / log", func(t *testing.T) {

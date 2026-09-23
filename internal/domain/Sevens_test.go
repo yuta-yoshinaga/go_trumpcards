@@ -4003,7 +4003,8 @@ func TestSevens_ActionLog_Play(t *testing.T) {
 	for _, e := range log {
 		if e.ActionType == "play" && e.PlayerIdx == 0 {
 			found = true
-			assert.Contains(t, e.Detail, "played")
+			assert.Equal(t, "sevens.log.play", e.DetailCode)
+			assert.Equal(t, map[string]string{"card": "♠6"}, e.DetailParams)
 			assert.Len(t, e.Cards, 1)
 			break
 		}
@@ -4039,7 +4040,8 @@ func TestSevens_ActionLog_Pass(t *testing.T) {
 	for _, e := range log {
 		if e.ActionType == "pass" && e.PlayerIdx == 0 {
 			found = true
-			assert.Equal(t, "pass", e.Detail)
+			assert.Equal(t, "sevens.log.pass", e.DetailCode)
+			assert.Empty(t, e.DetailParams)
 			break
 		}
 	}

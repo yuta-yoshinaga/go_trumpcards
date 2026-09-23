@@ -94,6 +94,12 @@ func (p *TeenDoPaanchCuiPresenter) Output(g interfaces.TeenDoPaanchGame, lastErr
 			func(tc *domain.TrickCard) string { return cuiCardStr(tc.Card) },
 			func(idx int) string { return cuiPlayerName(g.GetPlayer(idx), idx) },
 		)
+		if len(g.GetCurrentTrick()) == 0 {
+			winner := g.GetLastTrickWinner()
+			if winner >= 0 {
+				sb.WriteString(i18n.Tf("teendopaanch.trickWinner", "name", cuiPlayerName(g.GetPlayer(winner), winner)) + "\n")
+			}
+		}
 
 		cuiErrorBlock(sb, lastErr)
 

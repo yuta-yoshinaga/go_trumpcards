@@ -8,7 +8,9 @@
   "round": "Round: {{round}}  Trick: {{trick}}",
   "teamScores": "Team A: {{a}} pts (this round {{athird}}/3)   Team B: {{b}} pts (this round {{bthird}}/3)",
   "thirdsRule": "Thirds: every 3 tricks won convert to 1 point, then the counter resets",
-  "playerLine": "{{name}} [Team {{team}}]: {{cards}} cards, {{tricks}} tricks",
+  "playerLine": "{{name}} [Team {{team}}]{{role}}: {{cards}} cards, {{tricks}} tricks",
+  "partner": "Partner",
+  "opponent": "Opponent",
   "gameEnd": "Game over! Team {{team}} wins!",
   "promptPlay": "Turn: {{name}}",
   "promptPlayHelp": "play <idx> ... play a card (must follow the led suit)",
@@ -25,5 +27,11 @@
   "hintReasonDiscardLow": "Cannot follow, so discard a low card",
   "roundBreakdown": "Round breakdown: Team {{a}} thirds {{athird}} / Team {{b}} thirds {{bthird}} (last trick: Team {{lastteam}})",
   "helpExamplePlay": "  p 0                  play hand card 0",
-  "helpHint": "  h                    show a hint"
+  "helpHint": "  h                    show a hint",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "log.trickWin": "{{name}} wins trick {{trick}} (+{{thirds}}/3)",
+  "log.trickWinLast": "{{name}} wins trick {{trick}} (+{{thirds}}/3 +last trick)",
+  "log.roundScore": "round {{round}}: TeamA={{teamAScore}} (+{{teamAThirds}}/3), TeamB={{teamBScore}} (+{{teamBThirds}}/3)",
+  "log.gameEnd": "Team {{team}} wins the game!",
+  "log.play": "{{name}} plays {{card}}"
 }

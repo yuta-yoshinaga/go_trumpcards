@@ -36,6 +36,26 @@ func TestBolivia_WildOnlyMeldIsLegal(t *testing.T) {
 	assert.Error(t, g.validateNewSet(mixed), "ナチュラル 1 枚の混成が通ってしまっている")
 }
 
+func TestBolivia_DomainErrorsExposeMessageCodes(t *testing.T) {
+	g := newBoliviaGame(t)
+	cases := []struct {
+		name string
+		err  error
+		code string
+	}{
+		{"meld minimum", g.validateNewSet(nil), "bolivia.errMeldNeedsAtLeastThreeCards"},
+		{"sequence minimum", g.validateNewEscalera(nil), "bolivia.errSequenceNeedsAtLeastThreeCards"},
+		{"black three", g.validateNewSet([]*Card{bolCard(CardDesignSpade, 3), bolCard(CardDesignHeart, 3), bolCard(CardDesignClover, 3)}), "bolivia.errBlackThreeCannotMeld"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			code, params := ErrorMessageCode(tc.err)
+			assert.Equal(t, tc.code, code)
+			assert.Nil(t, params)
+		})
+	}
+}
+
 func TestBoliviaIsWildOnly(t *testing.T) {
 	assert.True(t, BoliviaIsWildOnly([]*Card{bolCard(CardDesignSpade, 2), bolJoker()}))
 	assert.False(t, BoliviaIsWildOnly([]*Card{bolCard(CardDesignSpade, 2), bolCard(CardDesignSpade, 5)}))
@@ -135,20 +155,22 @@ func TestBolivia_GoingOutRequiresAnEscalera(t *testing.T) {
 	})
 	g.players[2].SetMelds(nil)
 	require.Equal(t, 2, g.teamCompletedCount(g.players[0].team), "完成メルドが 2 つになっていない")
-	assert.False(t, g.canGoOut(0), "エスカレラ無しで上がれてしまっている")
+	// CanGoOut は手番のプレイヤーを見るため、手番のチームを固定する。
+	require.Equal(t, g.players[0].team, g.players[g.currentPlayerIdx].team, "手番が players[0] のチームでない")
+	assert.False(t, g.CanGoOut(), "エスカレラ無しで上がれてしまっている")
 
 	// パートナーがエスカレラを持てば上がれる (チームで数える)。
 	g.players[2].SetMelds([]*BoliviaMeld{
 		{Kind: BoliviaMeldEscalera, Cards: seven(CardDesignHeart, 4), IsNatural: true},
 	})
-	assert.True(t, g.canGoOut(0), "エスカレラがあるのに上がれない")
+	assert.True(t, g.CanGoOut(), "エスカレラがあるのに上がれない")
 
 	// 相手チームのエスカレラでは上がれない。
 	g.players[2].SetMelds(nil)
 	g.players[1].SetMelds([]*BoliviaMeld{
 		{Kind: BoliviaMeldEscalera, Cards: seven(CardDesignHeart, 4), IsNatural: true},
 	})
-	assert.False(t, g.canGoOut(0), "相手のエスカレラで上がれてしまっている")
+	assert.False(t, g.CanGoOut(), "相手のエスカレラで上がれてしまっている")
 }
 
 // **目標はサンバの 10000 ではなく 15000。**
@@ -330,9 +352,19 @@ func boliviaSeven(design, from int) []*Card {
 // 誰も見ていない ── ドロー・メルド・ディスカードの入口はどれも 0% だった。
 func TestBolivia_HumanTurnRunsThroughEveryPhase(t *testing.T) {
 	g := boliviaHumanTurn(t)
+	g.drawPile = []*Card{bolCard(CardDesignSpade, 4)}
 	before := g.players[0].GetCardsSize()
 
 	assert.NoError(t, g.PlayerDrawFromStock())
+	var entry *ActionLogEntry
+	for i := len(g.GetActionLog()) - 1; i >= 0; i-- {
+		if g.GetActionLog()[i].DetailCode == "bolivia.log.drawStock" {
+			entry = g.GetActionLog()[i]
+			break
+		}
+	}
+	require.NotNil(t, entry, "action log entry %q not found", "bolivia.log.drawStock")
+	assert.Contains(t, entry.DetailParams, "name")
 	assert.Equal(t, before+1, g.players[0].GetCardsSize())
 	assert.Equal(t, BoliviaPhaseMeld, g.GetPhase())
 
@@ -383,8 +415,8 @@ func TestBolivia_GoOutRefusalNamesTheRealReason(t *testing.T) {
 		require.NoError(t, g.PlayerSkipMeld())
 		err := g.PlayerGoOut()
 		require.Error(t, err)
-		assert.Contains(t, err.Error(), "完成メルド")
-		assert.NotContains(t, err.Error(), "エスカレラ")
+		code, _ := ErrorMessageCode(err)
+		assert.Equal(t, "bolivia.errCompletedMeldsRequiredToGoOut", code)
 	})
 
 	// **数は足りているがエスカレラが無い**とき、その一点を名指すこと。
@@ -400,7 +432,8 @@ func TestBolivia_GoOutRefusalNamesTheRealReason(t *testing.T) {
 
 		err := g.PlayerGoOut()
 		require.Error(t, err)
-		assert.Contains(t, err.Error(), "エスカレラ", "エスカレラが無いことを言っていない")
+		code, _ := ErrorMessageCode(err)
+		assert.Equal(t, "bolivia.errEscaleraRequiredToGoOut", code, "エスカレラが無いことを言っていない")
 
 		// 負のコントロール: パートナーがエスカレラを持てば上がれる。
 		// **上がりは手札を出し切ってから**なので、手札も 1 枚まで減らす。

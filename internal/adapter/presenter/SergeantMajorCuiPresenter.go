@@ -86,6 +86,15 @@ func (p *SergeantMajorCuiPresenter) Output(s interfaces.SergeantMajorGame, lastE
 		if s.GetLastExchange() > 0 {
 			sb.WriteString(i18n.Tf("sergeantmajor.exchangeLine",
 				"n", strconv.Itoa(s.GetLastExchange())) + "\n")
+
+			if len(s.GetLastExchangeLost()) > 0 {
+				sb.WriteString(i18n.Tf("sergeantmajor.exchangeLost",
+					"cards", formatCardSlice(s.GetLastExchangeLost(), cuiCardStr, ", ")) + "\n")
+			}
+			if len(s.GetLastExchangeReceived()) > 0 {
+				sb.WriteString(i18n.Tf("sergeantmajor.exchangeReceived",
+					"cards", formatCardSlice(s.GetLastExchangeReceived(), cuiCardStr, ", ")) + "\n")
+			}
 		}
 
 		for i := 0; i < s.GetPlayerCnt(); i++ {

@@ -123,6 +123,9 @@ func (p *PitchCuiPresenter) Output(s interfaces.PitchGame, lastErr error) string
 			bidIdx := s.GetBidPlayerIdx()
 			b.WriteString(i18n.Tf("pitch.promptBid",
 				"name", cuiPlayerName(s.GetPlayer(bidIdx), bidIdx)) + "\n")
+			if bidIdx == s.GetDealerIdx() && s.GetCurrentBid() == 0 {
+				b.WriteString(i18n.T("pitch.dealerMustBid") + "\n")
+			}
 			// **入札前に手札の得点価値を暗算させていた (#4751)。**Web は入札中に
 			// ゲーム得点バッジと内訳を出している。強気に入札してよいかの判断材料。
 			writePitchHandPips(b, s)

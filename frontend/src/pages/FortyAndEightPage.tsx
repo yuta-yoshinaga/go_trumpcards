@@ -189,6 +189,7 @@ function FortyAndEightPageContent() {
   // Give-up is irreversible, so route both the button and the `g` key through
   // the confirm dialog — matching reset's guard (issue #2099).
   const confirmGiveUpAction = useGiveUpConfirm(handleGiveUp, requestGiveUpConfirm);
+  const canRedeal = state?.canRedeal ?? false;
 
   const actionBindings = useMemo(
     () => [
@@ -197,8 +198,9 @@ function FortyAndEightPageContent() {
       { key: 'a', action: handleAutoComplete, label: 'autoComplete' },
       { key: 'g', action: confirmGiveUpAction, label: 'giveUp' },
       { key: 'z', action: handleUndo, label: 'undo' },
+      { key: 'r', action: handleRedeal, enabled: canRedeal, label: 'redeal' },
     ],
-    [handleDraw, handleHint, handleAutoComplete, confirmGiveUpAction, handleUndo],
+    [handleDraw, handleHint, handleAutoComplete, confirmGiveUpAction, handleUndo, handleRedeal, canRedeal],
   );
 
   useActionKeyboardNav({
@@ -518,7 +520,7 @@ function FortyAndEightPageContent() {
                   </button>
                   {/* **消すと「使い切った」のか「元から無い」のか区別が付かない。**
                       CUI は毎回どちらかを必ず案内している (#4914)。 */}
-                  {state.canRedeal ? (
+                  {canRedeal ? (
                     <button
                       type="button"
                       className={btnPrimary}

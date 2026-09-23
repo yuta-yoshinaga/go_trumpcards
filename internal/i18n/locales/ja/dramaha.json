@@ -62,5 +62,21 @@
   "phaseDraw": "ドロー",
   "helpExampleBet": "  b 100               100 ベット",
   "resultDraw": "  ドロー役: {{cards}}\n",
-  "tableSizeFixed": "ドラマハは 4 人卓のみです（1 人あたり最大 10 枚使うため、{{val}} 人では山札 52 枚が足りません）。"
+  "tableSizeFixed": "ドラマハは 4 人卓のみです（1 人あたり最大 10 枚使うため、{{val}} 人では山札 52 枚が足りません）。",
+  "log.exposedFlop": "最初のフロップカードを表にしました",
+  "log.exchanged": "{{count}} 枚交換しました",
+  "log.dealtFlop": "フロップを配りました",
+  "log.drawRound": "ドローラウンド",
+  "log.dealtTurn": "ターンを配りました",
+  "log.dealtRiver": "リバーを配りました",
+  "log.showdown": "ショーダウン",
+  "log.rebuy": "リバイ",
+  "log.fold": "フォールド",
+  "log.check": "チェック",
+  "log.call": "{{amount}} にコール",
+  "log.bet": "{{amount}} をベット",
+  "log.raise": "{{amount}} までレイズ",
+  "log.allIn": "{{amount}} のオールイン",
+  "log.smallBlind": "スモールブラインド {{amount}} を出しました",
+  "log.bigBlind": "ビッグブラインド {{amount}} を出しました"
 }

@@ -111,6 +111,9 @@ func (p *PreferenceWebPresenter) buildPlayersOutput(g interfaces.PreferenceGame)
 // buildMessage ゲーム結果メッセージを構築
 func (p *PreferenceWebPresenter) buildMessage(g interfaces.PreferenceGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {
@@ -127,6 +130,9 @@ func (p *PreferenceWebPresenter) buildMessage(g interfaces.PreferenceGame, lastE
 	case domain.PreferencePhaseTrickEnd:
 		return "", "preference.trickEnd", nil
 	case domain.PreferencePhaseRoundEnd:
+		if g.GetDeclarerIdx() < 0 {
+			return "", "preference.roundEnd.passedOut", nil
+		}
 		return "", "preference.roundEnd", nil
 	}
 	return "", "", nil

@@ -40,5 +40,19 @@
   "handTaken": "守備側が80点に届き、宣言側が交代しました",
   "result.humanWin": "ゲーム終了！ あなたのチームの勝ちです！",
   "result.cpuWin": "ゲーム終了！ 相手チームの勝ちです。",
-  "helpExampleDeclare": "  d 0                       亮牌をパスする"
+  "helpExampleDeclare": "  d 0                       亮牌をパスする",
+  "log.deal": "第{{hand}}局 レベル{{level}}",
+  "log.declareSpadeSingle": "スペードを単張で亮牌しました",
+  "log.declareSpadePair": "スペードを対子で亮牌しました",
+  "log.declareCloverSingle": "クラブを単張で亮牌しました",
+  "log.declareCloverPair": "クラブを対子で亮牌しました",
+  "log.declareHeartSingle": "ハートを単張で亮牌しました",
+  "log.declareHeartPair": "ハートを対子で亮牌しました",
+  "log.declareDiamondSingle": "ダイヤを単張で亮牌しました",
+  "log.declareDiamondPair": "ダイヤを対子で亮牌しました",
+  "log.takeKitty": "底牌を取りました",
+  "log.buryKitty": "底牌を埋めました",
+  "log.play": "カードを出しました",
+  "log.trickWon": "{{points}}点のトリックを取りました",
+  "log.handEnd": "{{points}}点で局を終えました"
 }

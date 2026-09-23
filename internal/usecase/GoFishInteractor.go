@@ -16,6 +16,8 @@ type GoFishInteractorIF interface {
 	GetConfig() domain.GoFishConfig
 	// Ask 人間プレイヤーが相手にランクを要求する
 	Ask(targetIdx, rank int) string
+	// Hint ヒント取得
+	Hint() string
 	// ActionLog 棋譜を出力する
 	ActionLog() string
 }
@@ -59,6 +61,9 @@ func (gi *GoFishInteractor) Ask(targetIdx, rank int) string {
 	}
 	return gi.gfp.Output(gi.Game, err)
 }
+
+// Hint ヒントを出力する
+func (gi *GoFishInteractor) Hint() string { return gi.gfp.HintOutput(gi.Game) }
 
 // ActionLog 棋譜を出力する
 func (gi *GoFishInteractor) ActionLog() string {

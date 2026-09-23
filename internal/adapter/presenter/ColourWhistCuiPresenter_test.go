@@ -52,7 +52,7 @@ func TestColourWhistCuiPresenter_Output(t *testing.T) {
 	fillColourWhistDefaults(m)
 
 	out := new(ColourWhistCuiPresenter).Output(m, nil)
-	assert.Contains(t, out, "フェーズ: PLAY")
+	assert.Contains(t, out, "フェーズ: プレイ")
 	assert.Contains(t, out, "ラウンド: 1 / 8")
 	assert.Contains(t, out, "サーメン")
 	assert.NotContains(t, out, "colourwhist.", "生キーが漏れている")
@@ -90,7 +90,7 @@ func TestColourWhistCuiPresenter_ShowsCalledCard(t *testing.T) {
 	fillColourWhistDefaults(m)
 
 	out := new(ColourWhistCuiPresenter).Output(m, nil)
-	assert.Contains(t, out, "指名札: SPADE 1（この札を出した人が相方として公開されます）")
+	assert.Contains(t, out, "指名札: ♠1（この札を出した人が相方として公開されます）")
 }
 
 // **指名札が無ければその行は出ない。** 負のコントロールです。
@@ -113,6 +113,32 @@ func TestColourWhistCuiPresenter_ShowsTheTrickAndScores(t *testing.T) {
 	out := new(ColourWhistCuiPresenter).Output(m, nil)
 	assert.Contains(t, out, "席 3:")
 	assert.Contains(t, out, "得点:")
+}
+
+func TestColourWhistCuiPresenter_ShowsThePreviousTrick(t *testing.T) {
+	t.Run("displays previous trick and winner when available", func(t *testing.T) {
+		m := new(interfaces.MockColourWhistGame)
+		m.On("GetLastTrick").Return([]*domain.TrickCard{
+			{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignDiamond, 11, false)},
+		})
+		m.On("GetLastTrickWinner").Return(1)
+		fillColourWhistDefaults(m)
+
+		out := new(ColourWhistCuiPresenter).Output(m, nil)
+		assert.Contains(t, out, "前のトリック")
+		assert.Contains(t, out, "席 1:")
+		assert.Contains(t, out, "→ 席 1 が獲得")
+	})
+
+	t.Run("does not display anything when last trick is empty", func(t *testing.T) {
+		m := new(interfaces.MockColourWhistGame)
+		m.On("GetLastTrick").Return([]*domain.TrickCard{})
+		fillColourWhistDefaults(m)
+
+		out := new(ColourWhistCuiPresenter).Output(m, nil)
+		assert.NotContains(t, out, "前のトリック")
+		assert.NotContains(t, out, "が獲得")
+	})
 }
 
 func TestColourWhistCuiPresenter_Result(t *testing.T) {
@@ -159,11 +185,11 @@ func TestColourWhistCuiPresenter_Hint(t *testing.T) {
 
 func TestColourWhistCuiPresenter_UnknownValues(t *testing.T) {
 	p := new(ColourWhistCuiPresenter)
-	assert.Equal(t, "UNKNOWN", p.phaseStr(99))
+	assert.Equal(t, "不明", p.phaseStr(99))
 	assert.Equal(t, "未定", p.contractStr(domain.ColourWhistContractNone))
 	assert.Contains(t, p.contractStr(domain.ColourWhistContractMiserie), "ミゼリー")
 	assert.Equal(t, "なし", p.trumpStr(domain.ColourWhistNoTrump))
 	assert.Equal(t, "クラブ", p.trumpStr(domain.CardDesignClover))
-	assert.Equal(t, "BID", p.phaseStr(domain.ColourWhistPhaseBid))
-	assert.Equal(t, "CALL", p.phaseStr(domain.ColourWhistPhaseCall))
+	assert.Equal(t, "入札", p.phaseStr(domain.ColourWhistPhaseBid))
+	assert.Equal(t, "コール", p.phaseStr(domain.ColourWhistPhaseCall))
 }

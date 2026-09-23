@@ -53,6 +53,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // TablanetPlayerCnt はタブラネットのプレイヤー数 (固定 4, 個人戦)。
@@ -219,7 +220,7 @@ func (g *Tablanet) dealInitialTable() {
 		}
 		g.state.tableCards = append(g.state.tableCards, card)
 	}
-	g.appendLog(-1, "deal", fmt.Sprintf("dealt %d table cards", len(g.state.tableCards)),
+	g.appendLog(-1, "deal", "tablanet.log.dealtTableCards", map[string]string{"count": strconv.Itoa(len(g.state.tableCards))},
 		append([]*Card(nil), g.state.tableCards...))
 }
 
@@ -479,7 +480,7 @@ func (g *Tablanet) applyPlay(playerIdx, handIdx int, tableIdxs []int) {
 	if len(tableIdxs) == 0 {
 		// トレイル: 場に置く。
 		g.state.tableCards = append(g.state.tableCards, card)
-		g.appendLog(playerIdx, "trail", fmt.Sprintf("%s trails %s", playerName(g.players, playerIdx), cardStr(card)),
+		g.appendLog(playerIdx, "trail", "tablanet.log.trails", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)},
 			[]*Card{card})
 		g.advanceTurn()
 		return
@@ -499,16 +500,13 @@ func (g *Tablanet) applyPlay(playerIdx, handIdx int, tableIdxs []int) {
 	isTabla := !tablanetIsJack(card) && len(g.state.tableCards) == 0 && tableBefore > 0
 	if isTabla {
 		player.IncrementTabla()
-		g.appendLog(playerIdx, "tabla",
-			fmt.Sprintf("%s scores a Tabla! captured %d card(s)", playerName(g.players, playerIdx), len(captured)-1),
+		g.appendLog(playerIdx, "tabla", "tablanet.log.scoresTabla", map[string]string{"name": playerName(g.players, playerIdx), "count": strconv.Itoa(len(captured) - 1)},
 			captured)
 	} else if tablanetIsJack(card) {
-		g.appendLog(playerIdx, "sweep",
-			fmt.Sprintf("%s sweeps %d card(s) with a Jack", playerName(g.players, playerIdx), len(captured)-1),
+		g.appendLog(playerIdx, "sweep", "tablanet.log.sweepsWithJack", map[string]string{"name": playerName(g.players, playerIdx), "count": strconv.Itoa(len(captured) - 1)},
 			captured)
 	} else {
-		g.appendLog(playerIdx, "capture",
-			fmt.Sprintf("%s captures %d card(s)", playerName(g.players, playerIdx), len(captured)-1),
+		g.appendLog(playerIdx, "capture", "tablanet.log.captures", map[string]string{"name": playerName(g.players, playerIdx), "count": strconv.Itoa(len(captured) - 1)},
 			captured)
 	}
 	g.advanceTurn()
@@ -539,8 +537,7 @@ func (g *Tablanet) finishGame() {
 	if g.state.lastCaptureIdx >= 0 && len(g.state.tableCards) > 0 {
 		leftover := append([]*Card(nil), g.state.tableCards...)
 		g.players[g.state.lastCaptureIdx].AddCaptured(leftover)
-		g.appendLog(g.state.lastCaptureIdx, "lastTake",
-			fmt.Sprintf("last-take: %d card(s)", len(leftover)), leftover)
+		g.appendLog(g.state.lastCaptureIdx, "lastTake", "tablanet.log.lastTake", map[string]string{"count": strconv.Itoa(len(leftover))}, leftover)
 	}
 	g.state.tableCards = nil
 
@@ -565,7 +562,7 @@ func (g *Tablanet) finishGame() {
 	g.state.winners = winners
 	g.state.gameEndFlag = true
 	g.state.phase = TablanetPhaseGameEnd
-	g.appendLog(-1, "gameEnd", fmt.Sprintf("game ended (top score %d)", maxScore), nil)
+	g.appendLog(-1, "gameEnd", "tablanet.log.gameEnded", map[string]string{"score": strconv.Itoa(maxScore)}, nil)
 }
 
 // calcFinalScore は各プレイヤーの最終得点内訳を計算する。
@@ -808,8 +805,8 @@ func (g *Tablanet) sortHumanHand() {
 	sortHumanHands(g.players)
 }
 
-func (g *Tablanet) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.state.appendLog(playerIdx, actionType, detail, cards)
+func (g *Tablanet) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.state.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- 状態アクセサ ---

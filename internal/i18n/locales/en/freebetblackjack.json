@@ -1,0 +1,11 @@
+{
+  "log.start": "free bet blackjack begins",
+  "log.outOfChips": "out of chips",
+  "log.deal": "ante {{ante}}",
+  "log.hit": "hit",
+  "log.stand": "stand",
+  "log.freeDouble": "free double to {{amount}}",
+  "log.freeSplit": "free split into {{hands}} hands",
+  "log.dealerPlays": "dealer plays",
+  "log.payout": "payout {{payout}}"
+}

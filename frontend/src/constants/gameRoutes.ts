@@ -80,6 +80,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [3, 2, 3, 4], skill: [3, 5, 4, 2], social: [3, 5, 2, 3, 3], theme: [5, 1, 1, 1, 3, 1] },
       },
       {
+        path: '/doubleexposure',
+        labelKey: 'nav.doubleexposure',
+        icon: '👀',
+        page: 'DoubleExposure',
+        profile: { mood: [3, 2, 3, 4], skill: [3, 5, 4, 2], social: [3, 5, 2, 3, 3], theme: [5, 1, 1, 1, 3, 1] },
+      },
+      {
         path: '/baccarat',
         labelKey: 'nav.baccarat',
         icon: '💎',
@@ -213,6 +220,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [2, 3, 5, 2], skill: [5, 5, 4, 2], social: [4, 5, 4, 5, 2], theme: [2, 1, 1, 1, 5, 1] },
       },
       {
+        path: '/tapptarock',
+        labelKey: 'nav.tapptarock',
+        icon: '🃏',
+        page: 'TappTarock',
+        profile: { mood: [2, 3, 5, 2], skill: [5, 5, 4, 2], social: [4, 5, 4, 5, 2], theme: [2, 1, 1, 1, 5, 1] },
+      },
+      {
         path: '/troggu',
         labelKey: 'nav.troggu',
         icon: '🎴',
@@ -337,6 +351,13 @@ export const gameCategories: readonly GameCategory[] = [
         icon: '🃏',
         page: 'MonteBank',
         profile: { mood: [5, 2, 2, 2], skill: [3, 3, 2, 4], social: [5, 2, 2, 2, 2], theme: [5, 1, 1, 1, 2, 2] },
+      },
+      {
+        path: '/tehonbiki',
+        labelKey: 'nav.tehonbiki',
+        icon: '🎴',
+        page: 'Tehonbiki',
+        profile: { mood: [5, 2, 3, 3], skill: [4, 3, 2, 4], social: [4, 3, 3, 3, 3], theme: [5, 1, 1, 3, 2, 2] },
       },
       {
         path: '/banluck',
@@ -1038,6 +1059,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [3, 4, 5, 2], skill: [2, 3, 5, 2], social: [1, 2, 5, 4, 5], theme: [2, 4, 1, 1, 3, 3] },
       },
       {
+        path: '/omi',
+        labelKey: 'nav.omi',
+        icon: '🇱🇰',
+        page: 'Omi',
+        profile: { mood: [2, 4, 3, 3], skill: [2, 4, 4, 2], social: [1, 3, 5, 3, 4], theme: [2, 4, 1, 1, 3, 3] },
+      },
+      {
         path: '/bezique',
         labelKey: 'nav.bezique',
         icon: '💞',
@@ -1143,6 +1171,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [4, 4, 3, 4], skill: [3, 3, 3, 2], social: [2, 5, 4, 3, 4], theme: [3, 2, 1, 3, 3, 2] },
       },
       {
+        path: '/marjapussi',
+        labelKey: 'nav.marjapussi',
+        icon: '🇫🇮',
+        page: 'Marjapussi',
+        profile: { mood: [2, 3, 4, 2], skill: [2, 4, 4, 2], social: [1, 3, 5, 3, 4], theme: [2, 5, 1, 1, 2, 3] },
+      },
+      {
         path: '/cuarenta',
         labelKey: 'nav.cuarenta',
         icon: '🇪🇨',
@@ -1155,6 +1190,13 @@ export const gameCategories: readonly GameCategory[] = [
         icon: '🎴',
         page: 'Faro',
         profile: { mood: [5, 3, 2, 4], skill: [2, 2, 4, 1], social: [5, 2, 1, 3, 2], theme: [1, 1, 5, 1, 2, 2] },
+      },
+      {
+        path: '/basset',
+        labelKey: 'nav.basset',
+        icon: '🎴',
+        page: 'Basset',
+        profile: { mood: [4, 3, 4, 3], skill: [3, 4, 4, 2], social: [3, 5, 1, 4, 3], theme: [5, 1, 2, 1, 4, 2] },
       },
       {
         path: '/openfacechinese',
@@ -1176,6 +1218,13 @@ export const gameCategories: readonly GameCategory[] = [
         icon: '🃏',
         page: 'CallBreak',
         profile: { mood: [2, 4, 4, 3], skill: [2, 4, 4, 2], social: [1, 3, 5, 3, 4], theme: [2, 2, 1, 3, 2, 2] },
+      },
+      {
+        path: '/batak',
+        labelKey: 'nav.batak',
+        icon: '🇹🇷',
+        page: 'Batak',
+        profile: { mood: [2, 4, 4, 3], skill: [2, 4, 4, 2], social: [1, 3, 5, 3, 4], theme: [2, 3, 1, 3, 2, 3] },
       },
       {
         path: '/tarneeb',
@@ -1611,6 +1660,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [2, 3, 5, 2], skill: [2, 4, 5, 1], social: [1, 3, 5, 2, 4], theme: [2, 3, 3, 1, 2, 2] },
       },
       {
+        path: '/binokel',
+        labelKey: 'nav.binokel',
+        icon: '🇩🇪',
+        page: 'Binokel',
+        profile: { mood: [2, 3, 5, 2], skill: [2, 4, 5, 1], social: [1, 3, 5, 2, 4], theme: [2, 5, 1, 1, 2, 3] },
+      },
+      {
         path: '/pigtail',
         labelKey: 'nav.pigtail',
         icon: '🐷',
@@ -1804,6 +1860,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [5, 1, 4, 3], skill: [4, 4, 3, 3], social: [5, 1, 0, 3, 4], theme: [3, 3, 3, 2, 3, 3] },
       },
       {
+        path: '/willothewisp',
+        labelKey: 'nav.willothewisp',
+        icon: '✨',
+        page: 'WillOTheWisp',
+        profile: { mood: [5, 1, 4, 3], skill: [4, 4, 3, 3], social: [5, 1, 0, 3, 4], theme: [3, 3, 3, 2, 3, 3] },
+      },
+      {
         path: '/pyramid',
         labelKey: 'nav.pyramid',
         icon: '🔺',
@@ -1944,6 +2007,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [5, 1, 5, 2], skill: [3, 4, 4, 2], social: [5, 1, 0, 2, 4], theme: [3, 4, 2, 1, 2, 3] },
       },
       {
+        path: '/citadel',
+        labelKey: 'nav.citadel',
+        icon: '🏰',
+        page: 'Citadel',
+        profile: { mood: [5, 1, 5, 2], skill: [3, 4, 4, 2], social: [5, 1, 0, 2, 4], theme: [3, 4, 2, 1, 2, 3] },
+      },
+      {
         path: '/bisley',
         labelKey: 'nav.bisley',
         icon: '🎯',
@@ -1976,6 +2046,13 @@ export const gameCategories: readonly GameCategory[] = [
         labelKey: 'nav.settemezzo',
         icon: '🇮🇹',
         page: 'SetteEMezzo',
+        profile: { mood: [4, 3, 3, 4], skill: [3, 3, 3, 4], social: [3, 4, 2, 4, 3], theme: [5, 1, 1, 1, 3, 2] },
+      },
+      {
+        path: '/quinze',
+        labelKey: 'nav.quinze',
+        icon: '🇫🇷',
+        page: 'Quinze',
         profile: { mood: [4, 3, 3, 4], skill: [3, 3, 3, 4], social: [3, 4, 2, 4, 3], theme: [5, 1, 1, 1, 3, 2] },
       },
       {
@@ -2448,6 +2525,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [5, 1, 5, 2], skill: [2, 4, 4, 3], social: [5, 1, 0, 2, 4], theme: [1, 5, 3, 1, 2, 4] },
       },
       {
+        path: '/matrimony',
+        labelKey: 'nav.matrimony',
+        icon: '💍',
+        page: 'Matrimony',
+        profile: { mood: [5, 1, 5, 2], skill: [2, 4, 4, 3], social: [5, 1, 0, 2, 4], theme: [1, 5, 3, 1, 2, 4] },
+      },
+      {
         path: '/crazyquilt',
         labelKey: 'nav.crazyquilt',
         icon: '🧵',
@@ -2500,6 +2584,13 @@ export const gameCategories: readonly GameCategory[] = [
         labelKey: 'nav.indianrummy',
         icon: '🪷',
         page: 'IndianRummy',
+        profile: { mood: [3, 3, 4, 3], skill: [3, 5, 4, 3], social: [3, 3, 4, 3, 4], theme: [3, 2, 4, 2, 3, 2] },
+      },
+      {
+        path: '/marriage',
+        labelKey: 'nav.marriage',
+        icon: '💍',
+        page: 'Marriage',
         profile: { mood: [3, 3, 4, 3], skill: [3, 5, 4, 3], social: [3, 3, 4, 3, 4], theme: [3, 2, 4, 2, 3, 2] },
       },
       {
@@ -2622,6 +2713,13 @@ export const gameCategories: readonly GameCategory[] = [
         profile: { mood: [2, 3, 5, 1], skill: [1, 3, 5, 1], social: [1, 3, 5, 1, 4], theme: [2, 3, 3, 1, 2, 2] },
       },
       {
+        path: '/biriba',
+        labelKey: 'nav.biriba',
+        icon: '🎴',
+        page: 'Biriba',
+        profile: { mood: [2, 3, 5, 1], skill: [1, 3, 5, 1], social: [1, 3, 5, 1, 4], theme: [2, 3, 3, 1, 2, 2] },
+      },
+      {
         path: '/cribbage',
         labelKey: 'nav.cribbage',
         icon: '📌',
@@ -2683,6 +2781,13 @@ export const gameCategories: readonly GameCategory[] = [
         icon: '🇦🇹',
         page: 'Bauernschnapsen',
         profile: { mood: [2, 3, 4, 2], skill: [2, 4, 4, 2], social: [1, 3, 5, 2, 4], theme: [2, 5, 1, 1, 2, 3] },
+      },
+      {
+        path: '/tongits',
+        labelKey: 'nav.tongits',
+        icon: '🃏',
+        page: 'Tongits',
+        profile: { mood: [3, 4, 3, 4], skill: [4, 4, 3, 3], social: [1, 3, 5, 4, 3], theme: [3, 1, 3, 2, 3, 2] },
       },
     ],
   },

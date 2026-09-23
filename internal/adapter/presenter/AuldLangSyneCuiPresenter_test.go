@@ -164,7 +164,7 @@ func TestAuldLangSyneCuiPresenter_ActionLogOutput(t *testing.T) {
 		g := new(interfaces.MockAuldLangSyneGame)
 		g.On("GetPhase").Return(domain.AuldLangSynePhaseGameOver)
 		g.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "deal", Detail: "4枚を配りました"},
+			{TurnNumber: 1, ActionType: "deal", DetailCode: "auldlangsyne.log.deal", DetailParams: map[string]string{"count": "4"}},
 		})
 		p := new(AuldLangSyneCuiPresenter)
 

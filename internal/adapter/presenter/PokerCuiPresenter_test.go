@@ -317,8 +317,8 @@ func TestPokerCuiPresenter_Output(t *testing.T) {
 
 		result := pres.Output(p, nil)
 		assert.Contains(t, result, "[CPU交換]")
-		assert.Contains(t, result, "Player 1: 3枚交換")
-		assert.Contains(t, result, "Player 2: 0枚交換")
+		assert.Contains(t, result, "プレイヤー1: 3枚交換")
+		assert.Contains(t, result, "プレイヤー2: 0枚交換")
 	})
 
 	t.Run("no CPU exchanges hides section", func(t *testing.T) {
@@ -595,6 +595,66 @@ func TestPokerCuiPresenter_OutputWithOdds(t *testing.T) {
 	assert.Contains(t, result, "ワンペア: 30.00% (30/100)")
 }
 
+func mockPokerCuiOutputGame(phase int, equity *domain.HoldemEquityResult, potOdds float64) *interfaces.MockPokerGame {
+	game := new(interfaces.MockPokerGame)
+	players := []*domain.PokerPlayer{domain.NewPokerPlayer(true, domain.PokerStyleBalanced)}
+	game.On("GetConfig").Return(domain.DefaultPokerConfig())
+	game.On("GetPlayers").Return(players)
+	game.On("GetDealerIdx").Return(0)
+	game.On("GetPot").Return(100)
+	game.On("GetPhase").Return(phase)
+	game.On("GetGameEndFlag").Return(false)
+	if phase == domain.PokerPhaseDeal || phase == domain.PokerPhaseSecondBet {
+		game.On("IsExchangeRead", 0).Return(false)
+	}
+	game.On("GetRoundResults").Return([]domain.PokerResult(nil))
+	game.On("GetCpuActions").Return([]domain.PokerCpuAction(nil))
+	game.On("GetCpuExchanges").Return([]domain.PokerCpuExchange(nil))
+	game.On("GetEquity").Return(equity)
+	if equity != nil {
+		game.On("GetPotOdds").Return(potOdds)
+	}
+	return game
+}
+
+func TestPokerCuiPresenter_Output_EquityAndPotOdds(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	pres := new(presenter.PokerCuiPresenter)
+
+	t.Run("betting phase shows fixed equity and pot odds", func(t *testing.T) {
+		game := mockPokerCuiOutputGame(domain.PokerPhaseSecondBet, &domain.HoldemEquityResult{Equity: 0.65}, 40.0)
+		result := pres.Output(game, nil)
+
+		assert.Contains(t, result, "[学習モード]")
+		assert.Contains(t, result, "勝率: 65.0% / ポットオッズ: 40.0%")
+		game.AssertExpectations(t)
+	})
+
+	t.Run("exchange and end phases hide nil equity", func(t *testing.T) {
+		for _, phase := range []int{domain.PokerPhaseExchange, domain.PokerPhaseEnd} {
+			game := mockPokerCuiOutputGame(phase, nil, 40.0)
+			result := pres.Output(game, nil)
+			assert.NotContains(t, result, "[学習モード]")
+			assert.NotContains(t, result, "勝率:")
+			game.AssertExpectations(t)
+		}
+	})
+
+	t.Run("draw odds remain alongside equity and pot odds", func(t *testing.T) {
+		game := mockPokerCuiOutputGame(domain.PokerPhaseDeal, &domain.HoldemEquityResult{Equity: 0.72}, 55.0)
+		result := pres.OutputWithOdds(game, nil, []domain.PokerDrawOdds{
+			{HandRank: domain.PokerHandOnePair, Probability: 0.3, Count: 3, Total: 10},
+		})
+
+		assert.Contains(t, result, "勝率: 72.0% / ポットオッズ: 55.0%")
+		assert.Contains(t, result, "[ドローオッズ]")
+		assert.Contains(t, result, "ワンペア: 30.00% (3/10)")
+		game.AssertExpectations(t)
+	})
+}
+
 func TestPokerCuiPresenter_OutputWithOdds_NilOdds(t *testing.T) {
 	origNoColor := color.NoColor()
 	color.SetNoColor(true)
@@ -704,7 +764,7 @@ func TestPokerCuiPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("with entries", func(t *testing.T) {
 		mockGame := new(interfaces.MockPokerGame)
 		entries := []*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "exchange", Detail: "exchanged 2 cards"},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "exchange", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		}
 		mockGame.On("GetGameEndFlag").Return(true)
 		mockGame.On("GetActionLog").Return(entries)
@@ -717,7 +777,7 @@ func TestPokerCuiPresenter_ActionLogOutput(t *testing.T) {
 		assert.Contains(t, result, "棋譜")
 		assert.Contains(t, result, "exchange")
 		assert.Contains(t, result, "あなた", "棋譜の座席名が他の行と揃っていない")
-		assert.Contains(t, result, "exchanged 2 cards")
+		assert.Contains(t, result, "テスト用の棋譜行 1")
 		mockGame.AssertExpectations(t)
 	})
 

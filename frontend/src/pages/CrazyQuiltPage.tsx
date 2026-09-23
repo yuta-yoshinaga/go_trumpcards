@@ -34,6 +34,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { CRAZYQUILT_HELP, parseCrazyQuiltCommand } from '../utils/cli/commands/crazyquiltCommands';
 import { formatCrazyQuiltState } from '../utils/cli/formatters/crazyquiltFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { isCrazyQuiltVertical } from '../utils/crazyQuiltCells';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦', '♠', '♣', '♥', '♦'] as const;
@@ -182,14 +183,16 @@ function CrazyQuiltPageContent() {
   const renderCell = (idx: number) => {
     const card = state.quilt[idx] ?? null;
     const available = state.available[idx] ?? false;
+    const vertical = isCrazyQuiltVertical(idx);
     const cellZone: CrazyQuiltMoveZone = { zone: 'quilt', col: idx };
     if (card === null) {
       return (
         <div
           key={`cell-${idx.toString()}`}
           style={{ width: dims.cw, height: dims.ch }}
-          className="rounded border border-dashed border-white/10"
+          className={`flex items-center justify-center border-2 border-dashed border-ds-text-muted/70 ${vertical ? 'rounded-tl-lg rounded-br-lg' : 'rounded-tr-lg rounded-bl-lg'}`}
           data-testid={`cq-cell-${idx.toString()}`}
+          data-orientation={vertical ? 'vertical' : 'horizontal'}
         >
           <span className="sr-only">{t('emptyCellAriaLabel', { cell: idx })}</span>
         </div>
@@ -208,9 +211,11 @@ function CrazyQuiltPageContent() {
         onDragEnd={dnd.handleDragEnd}
         data-testid={`cq-cell-${idx.toString()}`}
         data-available={available ? 'true' : undefined}
-        className={`p-0 border-0 bg-transparent rounded ${focusRingWhite} ${
+        data-orientation={vertical ? 'vertical' : 'horizontal'}
+        className={`p-0 bg-transparent flex items-center justify-center border-2 border-ds-text-muted ${vertical ? 'rounded-tl-lg rounded-br-lg' : 'rounded-tr-lg rounded-bl-lg'} ${focusRingWhite} ${
           available ? 'cursor-pointer ring-1 ring-ds-info/70' : 'opacity-60'
         } ${isSourceSelected('quilt', idx) ? 'ring-2 ring-ds-warning' : ''}`}
+        style={{ width: dims.cw, height: dims.ch }}
       >
         <AnimatedCard card={card} width={dims.cw} draggable={false} />
       </button>

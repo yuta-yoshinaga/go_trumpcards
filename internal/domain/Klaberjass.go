@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra3
+//go:build !js || !wasm || extra6
 
 // Package domain — クラバーヤス (Klaberjass / Clobyosh / Bela) のドメインモデル。
 //
@@ -31,6 +31,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"strconv"
 )
 
 // KlaberjassPlayerCnt はプレイヤー数 (2 人)。
@@ -314,7 +315,7 @@ func (k *Klaberjass) beginDeal() {
 	k.turnUpCard = k.trumpCards.DrawCard()
 	// **非ディーラーから。**2 人戦なのでディーラーの相手が先に判断する。
 	k.bidIdx = k.opponentOf(k.dealerIdx)
-	k.addLog(-1, "deal", "6 cards each with a card turned up", nil)
+	k.addLog(-1, "deal", "klaberjass.log.deal", nil, nil)
 }
 
 // opponentOf は相手の席を返す。
@@ -375,7 +376,7 @@ func (k *Klaberjass) Pass(player int) error {
 		return err
 	}
 	k.bidPassCount++
-	k.addLog(player, "pass", "passes", nil)
+	k.addLog(player, "pass", "klaberjass.log.pass", nil, nil)
 	if k.bidPassCount >= 2 {
 		if k.phase == KlaberjassPhaseBidTurnUp {
 			// 両者が表向きのスートを断ったら、好きなスートを選べる第 2 ラウンドへ。
@@ -409,7 +410,7 @@ func (k *Klaberjass) Schmeiss(player int) error {
 	k.schmeissBy = player
 	k.phase = KlaberjassPhaseSchmeiss
 	k.bidIdx = k.opponentOf(player)
-	k.addLog(player, "schmeiss", "offers to throw the deal in", nil)
+	k.addLog(player, "schmeiss", "klaberjass.log.schmeiss", nil, nil)
 	return nil
 }
 
@@ -427,11 +428,11 @@ func (k *Klaberjass) AnswerSchmeiss(player int, accept bool) error {
 	}
 	thrower := k.schmeissBy
 	if accept {
-		k.addLog(player, "schmeiss_accept", "agrees to throw the deal in", nil)
+		k.addLog(player, "schmeiss_accept", "klaberjass.log.schmeissAccept", nil, nil)
 		k.redeal()
 		return nil
 	}
-	k.addLog(player, "schmeiss_refuse", "refuses the throw", nil)
+	k.addLog(player, "schmeiss_refuse", "klaberjass.log.schmeissRefuse", nil, nil)
 	if k.turnUpCard == nil {
 		return fmt.Errorf("there is no turn-up card")
 	}
@@ -444,7 +445,7 @@ func (k *Klaberjass) AnswerSchmeiss(player int, accept bool) error {
 // **手札は捨てて山札を丸ごと戻す。**両ラウンドとも流れた配りは無かったことに
 // なるので、ディール番号も進めない。
 func (k *Klaberjass) redeal() {
-	k.addLog(-1, "redeal", "nobody took the deal", nil)
+	k.addLog(-1, "redeal", "klaberjass.log.redeal", nil, nil)
 	k.discardHands()
 	k.turnUpCard = nil
 	k.dealNumber--
@@ -465,7 +466,7 @@ func (k *Klaberjass) settleTrump(maker, suit int) {
 	k.trumpSuit = suit
 	k.makerIdx = maker
 	k.schmeissBy = -1
-	k.addLog(maker, "make_trump", fmt.Sprintf("makes suit %d trump", suit), nil)
+	k.addLog(maker, "make_trump", "klaberjass.log.makeTrump", map[string]string{"suit": strconv.Itoa(suit)}, nil)
 
 	k.applyDix()
 	k.dealRemainder()
@@ -496,7 +497,7 @@ func (k *Klaberjass) applyDix() {
 			p.AddCard(k.turnUpCard)
 			k.turnUpCard = c
 			k.dixUsed = true
-			k.addLog(i, "dix", "exchanges the trump seven for the turn-up", nil)
+			k.addLog(i, "dix", "klaberjass.log.dix", nil, nil)
 			return
 		}
 	}
@@ -624,7 +625,7 @@ func (k *Klaberjass) collectSequences() {
 		total += s.Points
 	}
 	k.handPoints[winner] += total
-	k.addLog(winner, "sequence", fmt.Sprintf("scores %d for sequences", total), nil)
+	k.addLog(winner, "sequence", "klaberjass.log.sequence", map[string]string{"points": strconv.Itoa(total)}, nil)
 }
 
 // findBela は切札の K と Q を両方持っている席を記録する。
@@ -755,7 +756,7 @@ func (k *Klaberjass) PlayCard(player, idx int) error {
 	p.RemoveCard(idx)
 	k.trick = append(k.trick, card)
 	k.noteBela(player, card)
-	k.addLog(player, "play", "plays a card", []*Card{card})
+	k.addLog(player, "play", "klaberjass.log.play", nil, []*Card{card})
 
 	if len(k.trick) < KlaberjassPlayerCnt {
 		k.currentIdx = k.opponentOf(player)
@@ -783,7 +784,7 @@ func (k *Klaberjass) noteBela(player int, card *Card) {
 	if k.belaKingPlayed && k.belaQueenPlayed && !k.belaScored {
 		k.belaScored = true
 		k.handPoints[player] += KlaberjassBelaBonus
-		k.addLog(player, "bela", "declares bela", nil)
+		k.addLog(player, "bela", "klaberjass.log.bela", nil, nil)
 	}
 }
 
@@ -823,7 +824,7 @@ func (k *Klaberjass) resolveTrick() {
 	k.trick = nil
 	k.trickLeader = winner
 	k.currentIdx = winner
-	k.addLog(winner, "trick", fmt.Sprintf("takes the trick for %d", points), nil)
+	k.addLog(winner, "trick", "klaberjass.log.trick", map[string]string{"points": strconv.Itoa(points)}, nil)
 
 	if k.players[0].GetCardsSize() == 0 && k.players[1].GetCardsSize() == 0 {
 		k.finishHand()
@@ -842,11 +843,11 @@ func (k *Klaberjass) finishHand() {
 	if k.handPoints[maker] > k.handPoints[opp] {
 		k.scores[maker] += k.handPoints[maker]
 		k.scores[opp] += k.handPoints[opp]
-		k.addLog(maker, "hand_end", fmt.Sprintf("makes it with %d to %d", k.handPoints[maker], k.handPoints[opp]), nil)
+		k.addLog(maker, "hand_end", "klaberjass.log.handEnd", map[string]string{"maker": strconv.Itoa(k.handPoints[maker]), "opponent": strconv.Itoa(k.handPoints[opp])}, nil)
 	} else {
 		k.beteFlag = true
 		k.scores[opp] += k.handPoints[maker] + k.handPoints[opp]
-		k.addLog(maker, "bete", fmt.Sprintf("goes bete; %d points go to the opponent", k.handPoints[maker]), nil)
+		k.addLog(maker, "bete", "klaberjass.log.bete", map[string]string{"points": strconv.Itoa(k.handPoints[maker])}, nil)
 	}
 
 	k.phase = KlaberjassPhaseHandEnd
@@ -876,7 +877,7 @@ func (k *Klaberjass) checkGameEnd() {
 	}
 	k.gameEndFlag = true
 	k.phase = KlaberjassPhaseGameEnd
-	k.addLog(k.winnerIdx, "game_end", "wins the game", nil)
+	k.addLog(k.winnerIdx, "game_end", "klaberjass.log.gameEnd", nil, nil)
 }
 
 // NextDeal は次のディールを配る。
@@ -1201,8 +1202,8 @@ func (k *Klaberjass) CollectSequencesForTest() { k.collectSequences() }
 func (k *Klaberjass) FindBelaForTest() { k.findBela() }
 
 // addLog は棋譜を 1 行足す。
-func (k *Klaberjass) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	k.appendLog(playerIdx, actionType, detail, cards)
+func (k *Klaberjass) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	k.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // klaberjassJSON is the JSON wire format for Klaberjass.

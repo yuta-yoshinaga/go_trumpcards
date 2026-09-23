@@ -41,6 +41,18 @@ beforeEach(() => {
 });
 
 describe('AnacondaPage', () => {
+  it('shows the configured target rounds', async () => {
+    for (const { targetRounds, text } of [
+      { targetRounds: 4, text: 'ラウンド 1 / 4' },
+      { targetRounds: 12, text: 'ラウンド 1 / 12' },
+    ]) {
+      mockExec.mockResolvedValueOnce(makeAnacondaState({ config: { ...makeAnacondaState().config, targetRounds } }));
+      const { unmount } = renderWithProviders(<AnacondaPage />);
+      await waitFor(() => expect(screen.getByText(text)).toBeInTheDocument());
+      unmount();
+    }
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<AnacondaPage />);
@@ -108,6 +120,18 @@ describe('AnacondaPage', () => {
     mockExec.mockClear();
     fireEvent.click(callBtn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', undefined, 'call'));
+  });
+
+  it('announces the raise count through the atomic polite live region', async () => {
+    mockExec.mockResolvedValue(rollState);
+    const { container } = renderWithProviders(<AnacondaPage />);
+
+    const live = await waitFor(() => {
+      const element = container.querySelector('[role="status"][aria-live="polite"][aria-atomic="true"]');
+      expect(element).not.toBeNull();
+      return element;
+    });
+    expect(live).toHaveTextContent('レイズ 0/3回');
   });
 
   it('disables the Raise button when canRaise is false', async () => {

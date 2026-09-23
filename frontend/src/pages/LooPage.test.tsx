@@ -160,6 +160,22 @@ describe('LooPage', () => {
     expect(potRisk).not.toHaveTextContent('+12');
   });
 
+  it('keeps the loo pot-risk live region mounted outside the decide phase', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<LooPage />);
+
+    await waitFor(() => expect(screen.getByAltText('♥ Q')).toBeInTheDocument());
+    expect(screen.getByTestId('loo-pot-risk-live')).toBeInTheDocument();
+  });
+
+  it('renders the loo pot-risk block inside its live region at the decide phase', async () => {
+    mockExec.mockResolvedValue(decidePhaseState);
+    renderWithProviders(<LooPage />);
+
+    const live = await screen.findByTestId('loo-pot-risk-live');
+    expect(within(live).getByTestId('loo-pot-risk')).toBeInTheDocument();
+  });
+
   it('does not show the pot-risk block outside the human decide turn', async () => {
     mockExec.mockResolvedValue(playPhaseState);
     renderWithProviders(<LooPage />);

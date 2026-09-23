@@ -25,5 +25,9 @@
   "reason.allDuplicated": "every suit is showing at least twice, so no bet here is even",
   "result.gameEnd": "The deck is used up",
   "helpExampleBet": "  bet 1 100            bet 100 on layout card 1",
-  "layoutRemaining": " ({{remaining}} left in the deck)"
+  "layoutRemaining": " ({{remaining}} left in the deck)",
+  "log.reset": "game reset",
+  "log.bet": "bet {{value1}} on layout {{value2}}",
+  "log.gate": "gate revealed, payout {{value1}}",
+  "log.gameEnd": "finished with {{value1}} chips"
 }

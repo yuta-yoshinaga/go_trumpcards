@@ -11,6 +11,8 @@ type GoFishGame interface {
 	SetConfig(config domain.GoFishConfig)
 	// GetGameEndFlag ゲーム終了フラグを取得する
 	GetGameEndFlag() bool
+	// GetHint は現在の人間の手番に対するヒントを取得する。
+	GetHint() *domain.GoFishHint
 	// IsHumanTurn 現在の手番が人間かを返す
 	IsHumanTurn() bool
 	// PlayerAsk 人間プレイヤーが相手にランクを要求する

@@ -27,7 +27,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[4]
-BUCKETS = ["casino", "classic", "solo", "extra", "extra2", "extra3", "extra4", "extra5"]
+BUCKETS = ["casino", "classic", "solo", "extra", "extra2", "extra3", "extra4", "extra5", "extra6", "extra7"]
 SRC_DIRS = ["internal/domain", "internal/usecase", "internal/adapter"]
 REGISTRY = ROOT / "internal/infrastructure/games/registry.go"
 REGISTRY_TEST = ROOT / "internal/infrastructure/games/registry_test.go"
@@ -85,9 +85,12 @@ def ensure_register_func(tree: Tree, bucket: str) -> None:
         return
     # Strip the Phase-1 "Currently empty" comment. Use regex instead of a literal
     # ADR number because matching a fixed string silently breaks on the next ADR.
+    # Drop adjacent empty comment lines ('//') so goimports does not report trailing '//' (#7109).
     text = re.sub(
+        r"(?://\n)?"
         r"// Currently empty\. Phase 1 of ADR-\d{4} adds the bucket and proves the build and\n"
-        r"// deploy path; Phase 2 moves games in\.\n(//\n)?",
+        r"// deploy path; Phase 2 moves games in\.\n"
+        r"(?://\n)?",
         "",
         text,
     )

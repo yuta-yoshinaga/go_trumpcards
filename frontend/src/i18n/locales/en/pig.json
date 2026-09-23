@@ -23,6 +23,7 @@
     "next": "Next round",
     "players": "Players",
     "difficulty": "CPU reaction",
+    "difficultyTip": "The chance that the CPU notices the signal on each check: Slow = 45%, Normal = 65%, Fast = 85%.",
     "difficultyEasy": "Slow",
     "difficultyNormal": "Normal",
     "difficultyHard": "Fast",

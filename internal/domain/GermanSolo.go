@@ -1,4 +1,4 @@
-//go:build !js || !wasm || classic
+//go:build !js || !wasm || extra7
 
 // Package domain ジャーマン・ソロ (German Solo) のドメインモデル。
 //
@@ -37,10 +37,10 @@ package domain
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"math/rand"
 	"slices"
 	"sort"
+	"strconv"
 )
 
 // GermanSoloPlayerCnt プレイヤー数 (人間 1 + CPU 3)
@@ -195,7 +195,7 @@ type GermanSolo struct {
 	bidTrump         [GermanSoloPlayerCnt]int           // 各プレイヤーが宣言時に選んだ切り札 (-1=なし)
 	bidActed         [GermanSoloPlayerCnt]bool          // 各プレイヤーが宣言済みか
 	playerScores     [GermanSoloPlayerCnt]int           // 累積ゲーム点
-	lastTrickWinner  int                                // 最終トリック勝者 (-1=未確定)
+	lastTrickWinner  int                                // 直前トリックの勝者 (-1=未確定)
 
 	// エース呼び。calledAceSuit は指名されたエースのスート (-1=未指名)。
 	// **呼び声は卓で聞こえるのでエース自体は公開情報**だが、誰が持っているかは
@@ -215,6 +215,10 @@ type GermanSolo struct {
 	gameEndFlag   bool
 	winnerPlayer  int // -1=未確定
 	actionLogBase
+}
+
+func (g *GermanSolo) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // NewGermanSolo コンストラクタ
@@ -347,10 +351,10 @@ func (g *GermanSolo) PlayerBid(bid GermanSoloBid, trumpSuit int) error {
 		return ErrNotHumanTurn
 	}
 	if !g.isBidLegal(bid) {
-		return NewDomainError(ErrInvalidPlay, "現在の最高ビッドを上回る宣言が必要です")
+		return NewDomainErrorCode(ErrInvalidPlay, "germansolo.errBidTooLow", nil)
 	}
 	if bid != GermanSoloBidNone && !germanSoloValidSuit(trumpSuit) {
-		return NewDomainError(ErrInvalidPlay, "切り札スートを選んでください (1..4)")
+		return NewDomainErrorCode(ErrInvalidPlay, "germansolo.errInvalidTrumpSuit", nil)
 	}
 	g.applyBid(g.currentBidderIdx, bid, trumpSuit)
 	return nil
@@ -405,12 +409,10 @@ func (g *GermanSolo) applyBid(playerIdx int, bid GermanSoloBid, trumpSuit int) {
 	g.bidActed[playerIdx] = true
 	if bid == GermanSoloBidNone {
 		g.bidTrump[playerIdx] = -1
-		g.appendLog(playerIdx, "bid_pass",
-			fmt.Sprintf("%s passes", playerName(g.players, playerIdx)), nil)
+		g.appendLog(playerIdx, "bid_pass", "germansolo.log.bidPass", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 	} else {
 		g.bidTrump[playerIdx] = trumpSuit
-		g.appendLog(playerIdx, "bid",
-			fmt.Sprintf("%s bids %s (trump %s)", playerName(g.players, playerIdx), germanSoloBidName(bid), germanSoloSuitName(trumpSuit)), nil)
+		g.appendLog(playerIdx, "bid", "germansolo.log.bid", map[string]string{"name": playerName(g.players, playerIdx), "bidKey": germanSoloBidKey(bid), "trumpKey": suitKeyOf(trumpSuit)}, nil)
 	}
 
 	if g.allBidsActed() {
@@ -468,8 +470,7 @@ func (g *GermanSolo) finalizeAuction() {
 	// **切り札が決まった時点で並べ替える。** プレイ開始まで待つと、エース呼びの
 	// 画面だけ配られたままの並びになり、どれが切り札か読めないまま指名させられる。
 	g.sortAllHands()
-	g.appendLog(declarer, "declarer",
-		fmt.Sprintf("%s declares %s (trump %s)", playerName(g.players, declarer), germanSoloBidName(best), germanSoloSuitName(g.trumpSuit)), nil)
+	g.appendLog(declarer, "declarer", "germansolo.log.declarer", map[string]string{"name": playerName(g.players, declarer), "bidKey": germanSoloBidKey(best), "trumpKey": suitKeyOf(g.trumpSuit)}, nil)
 	if germanSoloIsPartnerBid(best) {
 		g.startAceCall()
 		return
@@ -492,8 +493,7 @@ func (g *GermanSolo) forceMussfrage() (int, GermanSoloBid) {
 		declarer = g.forehandIdx
 	}
 	g.bidTrump[declarer] = g.cpuChooseTrump(declarer)
-	g.appendLog(declarer, "mussfrage",
-		fmt.Sprintf("all pass: %s must take the Mussfrage", playerName(g.players, declarer)), nil)
+	g.appendLog(declarer, "mussfrage", "germansolo.log.mussfrage", map[string]string{"name": playerName(g.players, declarer)}, nil)
 	return declarer, GermanSoloBidMussfrage
 }
 
@@ -518,9 +518,7 @@ func (g *GermanSolo) startAceCall() {
 	if len(g.callableAceSuits(g.declarerIdx)) == 0 {
 		g.playsAlone = true
 		g.partnerIdx = -1
-		g.appendLog(g.declarerIdx, "plays_alone",
-			fmt.Sprintf("%s holds every callable ace and plays the Frage alone",
-				playerName(g.players, g.declarerIdx)), nil)
+		g.appendLog(g.declarerIdx, "plays_alone", "germansolo.log.playsAlone", map[string]string{"name": playerName(g.players, g.declarerIdx)}, nil)
 		g.startPlay()
 		return
 	}
@@ -566,23 +564,22 @@ func (g *GermanSolo) DeclareAce(playerIdx, suit int) error {
 		return ErrWrongPhase
 	}
 	if playerIdx != g.declarerIdx {
-		return NewDomainError(ErrInvalidPlay, "エースを呼べるのは落札者だけです")
+		return NewDomainErrorCode(ErrInvalidPlay, "germansolo.errAceCallerOnly", nil)
 	}
 	if !germanSoloValidSuit(suit) {
-		return NewDomainError(ErrInvalidCard, "スートを選んでください (1..4)")
+		return NewDomainErrorCode(ErrInvalidCard, "germansolo.errInvalidSuit", nil)
 	}
 	if !slices.Contains(g.callableAceSuits(playerIdx), suit) {
 		// **自分が持っているエース・切り札のエースは呼べない。** 前者を通すと
 		// 味方が増えないまま「4 人卓の 1 対 3」が黙って成立し、後者を通すと
 		// 味方探しでなく切り札の補充になる。
-		return NewDomainError(ErrInvalidPlay, "自分が持っているエースと切り札のエースは呼べません")
+		return NewDomainErrorCode(ErrInvalidPlay, "germansolo.errOwnAceCannotBeCalled", nil)
 	}
 
 	g.calledAceSuit = suit
 	g.partnerIdx = g.findAceHolder(suit)
 	g.partnerRevealed = false
-	g.appendLog(playerIdx, "call_ace",
-		fmt.Sprintf("%s calls the Ace of %s", playerName(g.players, playerIdx), germanSoloSuitName(suit)), nil)
+	g.appendLog(playerIdx, "call_ace", "germansolo.log.callAce", map[string]string{"name": playerName(g.players, playerIdx), "suitKey": suitKeyOf(suit)}, nil)
 	g.startPlay()
 	return nil
 }
@@ -851,7 +848,7 @@ func (g *GermanSolo) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "germansolo.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
@@ -885,7 +882,7 @@ func (g *GermanSolo) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *GermanSolo) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "germansolo.log.play", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 	g.revealPartnerIfCalledAce(playerIdx, card)
 
 	if len(g.currentTrick) == GermanSoloPlayerCnt {
@@ -907,9 +904,7 @@ func (g *GermanSolo) revealPartnerIfCalledAce(playerIdx int, card *Card) {
 		return
 	}
 	g.partnerRevealed = true
-	g.appendLog(playerIdx, "partner_revealed",
-		fmt.Sprintf("%s holds the called Ace of %s and is the GermanSolo's partner",
-			playerName(g.players, playerIdx), germanSoloSuitName(g.calledAceSuit)), nil)
+	g.appendLog(playerIdx, "partner_revealed", "germansolo.log.partnerRevealed", map[string]string{"name": playerName(g.players, playerIdx), "suitKey": suitKeyOf(g.calledAceSuit)}, nil)
 }
 
 // ResolveTrick トリックを解決して勝者を決定する。最終トリックなら RoundEnd に入り、得点計算を発火する。
@@ -922,17 +917,16 @@ func (g *GermanSolo) ResolveTrick() {
 	}
 	g.trickResolved = true
 	winnerIdx := g.trickWinner()
+	g.lastTrickWinner = winnerIdx
 	trickCards := make([]*Card, len(g.currentTrick))
 	for i, tc := range g.currentTrick {
 		trickCards[i] = tc.Card
 	}
 	g.players[winnerIdx].AddTrick(trickCards)
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), trickCards)
+	g.appendLog(winnerIdx, "trick_win", "germansolo.log.trickWin", map[string]string{"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber)}, trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= GermanSoloTrickCount {
-		g.lastTrickWinner = winnerIdx
 		g.phase = GermanSoloPhaseRoundEnd
 		g.enterRoundEnd()
 	} else {
@@ -961,10 +955,7 @@ func (g *GermanSolo) enterRoundEnd() {
 	g.outcome = g.evalOutcome()
 	g.applyScores(g.outcome)
 	ours, _ := g.sideTrickCounts()
-	g.appendLog(-1, "round_score",
-		fmt.Sprintf("round %d: %s %s with %d/%d tricks (needed %d, stake=%d)",
-			g.roundNumber, playerName(g.players, g.declarerIdx), germanSoloOutcomeName(g.outcome),
-			ours, GermanSoloTrickCount, g.RequiredTricks(), germanSoloBidValue(g.winningBid)), nil)
+	g.appendLog(-1, "round_score", "germansolo.log.roundScore", map[string]string{"round": strconv.Itoa(g.roundNumber), "name": playerName(g.players, g.declarerIdx), "outcomeKey": germanSoloOutcomeKey(g.outcome), "tricks": strconv.Itoa(ours), "total": strconv.Itoa(GermanSoloTrickCount), "needed": strconv.Itoa(g.RequiredTricks()), "stake": strconv.Itoa(germanSoloBidValue(g.winningBid))}, nil)
 	g.checkGameEnd()
 }
 
@@ -1066,7 +1057,7 @@ func (g *GermanSolo) checkGameEnd() {
 	g.winnerPlayer = leader
 	g.phase = GermanSoloPhaseGameEnd
 	g.result = g.humanResult(leader, tie)
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
+	g.appendLog(-1, "game_end", "germansolo.log.gameEnd", map[string]string{"name": playerName(g.players, leader)}, nil)
 }
 
 // humanResult 人間 (seat 0) の視点でマッチ結果を返す。単独トップなら Win、トップ同点なら None、他は Lose。
@@ -1101,7 +1092,7 @@ func (g *GermanSolo) validatePlay(playerIdx int, card *Card) error {
 	}
 	leadEff := germanSoloEffectiveSuit(g.currentTrick[0].Card, g.trumpSuit)
 	if germanSoloEffectiveSuit(card, g.trumpSuit) != leadEff && g.playerHasEffSuit(playerIdx, leadEff) {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+		return NewDomainErrorCode(ErrInvalidPlay, "germansolo.errFollowLeadSuit", nil)
 	}
 	return nil
 }
@@ -1315,47 +1306,31 @@ func germanSoloSortHand(p *GermanSoloPlayer, trump int) {
 	}
 }
 
-// germanSoloBidName ビッドの表示名を返す。
-func germanSoloBidName(bid GermanSoloBid) string {
+// germanSoloBidKey ビッドの i18n キーを返す。
+func germanSoloBidKey(bid GermanSoloBid) string {
 	switch bid {
 	case GermanSoloBidMussfrage:
-		return "mussfrage"
+		return "germansolo.bidMussfrage"
 	case GermanSoloBidFrage:
-		return "frage"
+		return "germansolo.bidFrage"
 	case GermanSoloBidSolo:
-		return "solo"
+		return "germansolo.bidSolo"
 	case GermanSoloBidTout:
-		return "tout"
+		return "germansolo.bidTout"
 	default:
-		return "pass"
+		return "germansolo.bidNone"
 	}
 }
 
-// germanSoloSuitName スートの表示名を返す。
-func germanSoloSuitName(suit int) string {
-	switch suit {
-	case CardDesignSpade:
-		return "spades"
-	case CardDesignClover:
-		return "clubs"
-	case CardDesignHeart:
-		return "hearts"
-	case CardDesignDiamond:
-		return "diamonds"
-	default:
-		return "-"
-	}
-}
-
-// germanSoloOutcomeName 結果の表示名を返す。
-func germanSoloOutcomeName(o GermanSoloOutcome) string {
+// germanSoloOutcomeKey は結果の i18n キーを返す。
+func germanSoloOutcomeKey(o GermanSoloOutcome) string {
 	switch o {
 	case GermanSoloOutcomeMade:
-		return "made"
+		return "germansolo.log.outcome.made"
 	case GermanSoloOutcomeFailed:
-		return "failed"
+		return "germansolo.log.outcome.failed"
 	default:
-		return "-"
+		return "germansolo.log.outcome.unknown"
 	}
 }
 
@@ -1569,6 +1544,9 @@ func (g *GermanSolo) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
 func (g *GermanSolo) GetCurrentTrick() []*TrickCard { return g.currentTrick }
+
+// GetLastTrickWinner 直前トリックの勝者を返す (-1 = なし)。
+func (g *GermanSolo) GetLastTrickWinner() int { return g.lastTrickWinner }
 
 // SetCurrentTrick トリック設定 (テスト用)
 func (g *GermanSolo) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }

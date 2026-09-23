@@ -38,6 +38,24 @@ func TestBourreReset(t *testing.T) {
 	}
 }
 
+func TestBourreActionLogUsesDetailCode(t *testing.T) {
+	b := domain.NewDefaultBourre()
+	b.Reset()
+	var entry *domain.ActionLogEntry
+	for _, candidate := range b.GetActionLog() {
+		if candidate.DetailCode == "bourre.log.ante" {
+			entry = candidate
+			break
+		}
+	}
+	if entry == nil {
+		t.Fatal("ante action log entry not found")
+	}
+	if entry.DetailParams["amount"] != "5" {
+		t.Fatalf("amount = %q, want 5", entry.DetailParams["amount"])
+	}
+}
+
 // driveBourre plays a full game to completion, asserting the chip-conservation
 // invariant at every step. humanPlays controls the human's decide choice.
 func driveBourre(t *testing.T, b *domain.Bourre, humanPlays bool) {

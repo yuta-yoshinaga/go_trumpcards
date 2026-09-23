@@ -22,6 +22,7 @@ func TestGoFishWebController_Method(t *testing.T) {
 	giMock.On("GetConfig").Return(domain.DefaultGoFishConfig())
 	giMock.On("Ask", 1, 3).Return(mockOutput)
 	giMock.On("ActionLog").Return(`{"entries":[]}`)
+	giMock.On("Hint").Return(mockOutput)
 
 	factory := func() uc.GoFishInteractorIF { return giMock }
 	ctrl := controller.NewGoFishWebController(factory)
@@ -58,5 +59,13 @@ func TestGoFishWebController_Method(t *testing.T) {
 		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
 		recorded.BodyIs(`{"entries":[]}`)
+	})
+
+	t.Run("hint", func(t *testing.T) {
+		var input controller.GoFishWebInput
+		_ = json.Unmarshal([]byte(`{"command":"hint","sessionId":"test-gf"}`), &input)
+		recorded := execRequest(t, ctrl.Exec, &input)
+		recorded.CodeIs(http.StatusOK)
+		recorded.BodyIs(mockOutput)
 	})
 }

@@ -299,6 +299,17 @@ function ViraPageContent() {
                 : t('contractUndecided')}
             </div>
 
+            {/* 切り札は選ぶものではなく、契約成立と同時に宣言者の最長スートへ
+                自動設定される (Vira.go の resolveBidding)。切り札選択ボタンの
+                あるゲームと並ぶと、いつ選んだのか分からない。姉妹の Solo Whist と
+                Préférence は #5652 で同じ注記を入れてある (#7313)。
+                ミゼールは切り札そのものが無いので出さない。 */}
+            {state.contract !== ViraContract.PASS && state.contract !== ViraContract.MISERE && (
+              <div className="text-ds-text-muted text-center mb-2 text-xs" data-testid="vira-trump-note">
+                {t('trumpAutoNote')}
+              </div>
+            )}
+
             {contractProgress && (
               <div
                 className={`text-center mb-2 text-sm font-semibold ${CONTRACT_STATUS_COLOR[contractProgress.status]}`}

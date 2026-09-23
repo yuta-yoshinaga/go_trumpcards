@@ -106,5 +106,18 @@
     "hi": "ハイ",
     "lo": "ロー",
     "both": "ハイ・ロー"
+  },
+  "livePreview": "現在の役:",
+  "hand": {
+    "highCard": "ハイカード",
+    "onePair": "ワンペア",
+    "twoPair": "ツーペア",
+    "threeOfAKind": "スリーカード",
+    "straight": "ストレート",
+    "flush": "フラッシュ",
+    "fullHouse": "フルハウス",
+    "fourOfAKind": "フォーカード",
+    "straightFlush": "ストレートフラッシュ",
+    "royalFlush": "ロイヤルフラッシュ"
   }
 }

@@ -8,6 +8,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -40,6 +43,39 @@ func TestKoenigrufenWebPresenter_Output(t *testing.T) {
 	}
 	if parsed.TalonCount != domain.KoenigrufenTalonSize {
 		t.Errorf("talonCount = %d", parsed.TalonCount)
+	}
+}
+
+func TestKoenigrufenWebPresenter_CodedError(t *testing.T) {
+	g := newKoenigrufenGame()
+	err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "koenigrufen.errInvalidSuit", nil)
+	p := &presenter.KoenigrufenWebPresenter{}
+	var parsed controller.KoenigrufenWebOutput
+	require.NoError(t, json.Unmarshal([]byte(p.Output(g, err)), &parsed))
+	assert.Empty(t, parsed.Message)
+	assert.Equal(t, "koenigrufen.errInvalidSuit", parsed.MessageCode)
+}
+
+func TestKoenigrufenWebPresenterOutputsLastTrickWinner(t *testing.T) {
+	g := newKoenigrufenGame()
+	g.Reset()
+	g.SetTrickNumber(1)
+	g.SetPhase(domain.KoenigrufenPhaseTrickEnd)
+	g.SetCurrentTrick([]*domain.TrickCard{
+		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignSpade, 2, false)},
+		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 3, false)},
+		{PlayerIdx: 2, Card: domain.NewCard(domain.KoenigrufenTrumpDesign, 4, false)},
+		{PlayerIdx: 3, Card: domain.NewCard(domain.KoenigrufenSkusDesign, domain.KoenigrufenSkusValue, false)},
+	})
+	g.ResolveTrick()
+
+	p := &presenter.KoenigrufenWebPresenter{}
+	var parsed controller.KoenigrufenWebOutput
+	if err := json.Unmarshal([]byte(p.Output(g, nil)), &parsed); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	if parsed.LastTrickWinner != g.GetLastTrickWinner() {
+		t.Errorf("lastTrickWinner = %d, want %d", parsed.LastTrickWinner, g.GetLastTrickWinner())
 	}
 }
 

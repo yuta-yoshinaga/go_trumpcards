@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra2
+//go:build !js || !wasm || extra
 
 package interfaces
 
@@ -46,6 +46,8 @@ type PontoonGame interface {
 	GetNextBanker() int
 	// GetLastResult 直近の精算の要約を取得する
 	GetLastResult() string
+	GetLastResultCode() string
+	GetLastResultParams() map[string]string
 	// GetGameEndFlag 局が終わっているか
 	GetGameEndFlag() bool
 	// GetHandTotal 手の合計を取得する

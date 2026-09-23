@@ -55,7 +55,7 @@ func (p *PanWebPresenter) buildPlayersOutput(g interfaces.PanGame) []*controller
 		melds := player.GetLaidMelds()
 		laid := make([]*controller.PanWebOutputMeld, 0, len(melds))
 		for _, m := range melds {
-			meldOut := &controller.PanWebOutputMeld{Cards: make([]*controller.WebOutputCard, 0, len(m))}
+			meldOut := &controller.PanWebOutputMeld{Cards: make([]*controller.WebOutputCard, 0, len(m)), ChipUnits: domain.PanMeldChipUnits(m)}
 			for _, c := range m {
 				meldOut.Cards = append(meldOut.Cards, cardToOutput(c))
 			}
@@ -87,6 +87,9 @@ func (p *PanWebPresenter) buildPlayersOutput(g interfaces.PanGame) []*controller
 // buildMessage ゲーム結果メッセージを構築
 func (p *PanWebPresenter) buildMessage(g interfaces.PanGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

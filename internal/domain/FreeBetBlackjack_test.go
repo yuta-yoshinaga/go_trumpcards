@@ -60,6 +60,18 @@ func fbStaged(t *testing.T, ante int, player, dealer []*Card) *FreeBetBlackjack 
 	return g
 }
 
+func TestFreeBetDealerHoleRevealedFollowsPhase(t *testing.T) {
+	g := newFreeBetForTest(t)
+
+	assert.False(t, g.IsDealerHoleRevealed(), "ベット中は手札が空なので非公開扱いにする")
+
+	g.phase = FreeBetPhasePlay
+	assert.False(t, g.IsDealerHoleRevealed())
+
+	g.phase = FreeBetPhaseResult
+	assert.True(t, g.IsDealerHoleRevealed())
+}
+
 // --- 無料ダブルの条件 ---
 
 // **ハードの 9・10・11 だけ。** ソフトも 3 枚目以降も対象外。
@@ -601,6 +613,15 @@ func TestFreeBet_Accessors(t *testing.T) {
 	assert.Len(t, g.GetDealerCards(), 2)
 	assert.Zero(t, g.GetActiveHandIdx())
 	assert.Equal(t, 1, g.GetRoundNumber())
+	var dealLog *ActionLogEntry
+	for _, entry := range g.GetActionLog() {
+		if entry.ActionType == "deal" {
+			dealLog = entry
+		}
+	}
+	require.NotNil(t, dealLog)
+	assert.Equal(t, "freebetblackjack.log.deal", dealLog.DetailCode)
+	assert.Equal(t, "50", dealLog.DetailParams["ante"])
 	// 配った直後はまだ何も戻っていない。
 	assert.Zero(t, g.GetPayout())
 
@@ -611,7 +632,7 @@ func TestFreeBet_Accessors(t *testing.T) {
 func TestFreeBet_ActionLogIsBounded(t *testing.T) {
 	g := newFreeBetForTest(t)
 	for range freeBetMaxSliceLen + 50 {
-		g.appendLog("noise", "x", nil)
+		g.appendLog("noise", "freebetblackjack.log.hit", nil, nil)
 	}
 	assert.Len(t, g.GetActionLog(), freeBetMaxSliceLen)
 }

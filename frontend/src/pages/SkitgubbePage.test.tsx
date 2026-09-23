@@ -212,4 +212,40 @@ describe('SkitgubbePage', () => {
     expect(screen.queryByTestId('sg-finished-1')).not.toBeInTheDocument();
     expect(screen.queryByTestId('sg-finished-2')).not.toBeInTheDocument();
   });
+
+  it('badges the current duel leader during the collect phase', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 0, duelLeader: 1 }));
+    renderWithProviders(<SkitgubbePage />);
+    await waitFor(() => expect(screen.getByTestId('sg-duel-leader-1')).toBeInTheDocument());
+    expect(screen.getByTestId('sg-duel-leader-1')).toHaveTextContent('リード');
+    expect(screen.queryByTestId('sg-duel-leader-0')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('sg-duel-leader-2')).not.toBeInTheDocument();
+  });
+
+  it('badges another duel leader during the collect phase', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 0, duelLeader: 2 }));
+    renderWithProviders(<SkitgubbePage />);
+    await waitFor(() => expect(screen.getByTestId('sg-duel-leader-2')).toBeInTheDocument());
+    expect(screen.getByTestId('sg-duel-leader-2')).toHaveTextContent('リード');
+    expect(screen.queryByTestId('sg-duel-leader-0')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('sg-duel-leader-1')).not.toBeInTheDocument();
+  });
+
+  it('badges the human duel leader during the collect phase', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 0, duelLeader: 0 }));
+    renderWithProviders(<SkitgubbePage />);
+    await waitFor(() => expect(screen.getByTestId('sg-duel-leader-0')).toBeInTheDocument());
+    expect(screen.getByTestId('sg-duel-leader-0')).toHaveTextContent('リード');
+    expect(screen.queryByTestId('sg-duel-leader-1')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('sg-duel-leader-2')).not.toBeInTheDocument();
+  });
+
+  it('does not badge the duel leader during the shed phase', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 1, duelLeader: 1 }));
+    renderWithProviders(<SkitgubbePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.queryByTestId('sg-duel-leader-1')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('sg-duel-leader-0')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('sg-duel-leader-2')).not.toBeInTheDocument();
+  });
 });

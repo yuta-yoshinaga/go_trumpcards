@@ -10,7 +10,8 @@
   "foundation": "Clock face",
   "frontendHint": {
     "tableau": "Tableau column {{col}}",
-    "foundation": "Clock face {{idx}}"
+    "foundation": "Clock face {{idx}}",
+    "stock": "Stock"
   },
   "gameClear": "Game Clear! Moves: {{moveCount}}",
   "gameOver": "Game Over",

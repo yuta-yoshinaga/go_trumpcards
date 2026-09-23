@@ -20,6 +20,7 @@ func setupTysiacWebMock() *interfaces.MockTysiacGame {
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
 	m.On("GetCurrentTrick").Return(([]*domain.TrickCard)(nil))
+	m.On("GetLastTrickWinner").Return(-1)
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.TysiacPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -27,6 +28,7 @@ func setupTysiacWebMock() *interfaces.MockTysiacGame {
 	m.On("GetDealerIdx").Return(0)
 	m.On("GetForehandIdx").Return(1)
 	m.On("GetDeclarerIdx").Return(0)
+	m.On("GetTalonRecipientIdx").Return(1)
 	m.On("GetContract").Return(100)
 	m.On("GetCurrentBid").Return(100)
 	m.On("GetTrumpSuit").Return(domain.CardDesignSpade)
@@ -81,6 +83,17 @@ func TestTysiacWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 1, resObj.ForehandIdx)
 		assert.Equal(t, 100, resObj.Contract)
 		assert.Equal(t, 100, resObj.CurrentBid)
+	})
+
+	t.Run("includes the last trick winner", func(t *testing.T) {
+		m, _ := setupTysiacWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLastTrickWinner")
+		m.On("GetLastTrickWinner").Return(2)
+
+		result := p.Output(m, nil)
+		var resObj controller.TysiacWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Equal(t, 2, resObj.LastTrickWinner)
 	})
 
 	t.Run("config values", func(t *testing.T) {
@@ -156,6 +169,15 @@ func TestTysiacWebPresenter_Output(t *testing.T) {
 		assert.Empty(t, resObj.MessageCode)
 	})
 
+	t.Run("coded error returns message code and no message", func(t *testing.T) {
+		m, _ := setupTysiacWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "tysiac.errMustPlayTrump", nil)
+		var resObj controller.TysiacWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, err)), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "tysiac.errMustPlayTrump", resObj.MessageCode)
+	})
+
 	t.Run("game end human wins", func(t *testing.T) {
 		m, _ := setupTysiacWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
@@ -227,7 +249,7 @@ func TestTysiacWebPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockTysiacGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You plays ♠K"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, `"actionType":"play"`)

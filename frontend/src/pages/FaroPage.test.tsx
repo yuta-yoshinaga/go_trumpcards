@@ -97,6 +97,29 @@ describe('FaroPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', { rank: 7, amount: 10, copper: false }));
   });
 
+  it('disables depleted ranks while leaving ranks with cards available', async () => {
+    const counts = [...bettingState.remainingByRank];
+    counts[2] = 0;
+    mockExec.mockResolvedValue(makeState({ remainingByRank: counts }));
+    renderWithProviders(<FaroPage />);
+
+    expect(await screen.findByTestId('rank-2')).toBeDisabled();
+    expect(screen.getByTestId('rank-7')).toBeEnabled();
+  });
+
+  // ドメインが拒むのは新規の資金だけ (Faro.PlayerPlaceBet)。既にベットがある
+  // ランクは 0 枚になっても額や copper を調整できるので、押せないと道が塞がる。
+  it('keeps a depleted rank clickable while a bet already sits on it', async () => {
+    const counts = [...bettingState.remainingByRank];
+    counts[2] = 0;
+    mockExec.mockResolvedValue(makeState({ remainingByRank: counts, bets: [{ rank: 2, amount: 10, copper: false }] }));
+    renderWithProviders(<FaroPage />);
+
+    expect(await screen.findByTestId('rank-2')).toBeEnabled();
+    fireEvent.click(screen.getByTestId('rank-2'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', { rank: 2, amount: 10, copper: false }));
+  });
+
   it('selects a chip amount and bets with it', async () => {
     renderWithProviders(<FaroPage />);
     await screen.findByTestId('rank-7');

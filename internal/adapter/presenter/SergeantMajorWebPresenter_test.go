@@ -122,7 +122,32 @@ func TestSergeantMajorWebPresenterReportsTheExchange(t *testing.T) {
 	require.NoError(t, s.DeclareTrump(domain.CardDesignSpade))
 	require.NoError(t, s.DiscardForTest(s.GetDealerIdx(), []int{0, 1, 2, 3}))
 
-	assert.Positive(t, decodeSergeantMajor(t, p.Output(s, nil))["lastExchange"])
+	out := decodeSergeantMajor(t, p.Output(s, nil))
+	assert.Positive(t, out["lastExchange"])
+	assert.NotEmpty(t, out["lastExchangeLost"])
+	assert.NotEmpty(t, out["lastExchangeReceived"])
+}
+
+func TestSergeantMajorWebPresenterExchangeCardsUseWebOutputKeys(t *testing.T) {
+	p := new(SergeantMajorWebPresenter)
+	s := newSergeantMajorForWeb(t)
+	s.SetDealerIdxForTest(0)
+	require.NoError(t, s.DeclareTrump(domain.CardDesignSpade))
+	require.NoError(t, s.DiscardForTest(0, []int{0, 1, 2, 3}))
+	s.GiveTricksForTest(0, 10)
+	s.GiveTricksForTest(1, 4)
+	s.GiveTricksForTest(2, 2)
+	s.FinishRoundForTest()
+	s.NextRound()
+	require.NoError(t, s.DeclareTrump(domain.CardDesignSpade))
+	require.NoError(t, s.DiscardForTest(s.GetDealerIdx(), []int{0, 1, 2, 3}))
+
+	lost := decodeSergeantMajor(t, p.Output(s, nil))["lastExchangeLost"].([]any)[0].(map[string]any)
+	assert.Contains(t, lost, "design")
+	assert.Contains(t, lost, "value")
+	assert.NotContains(t, lost, "d")
+	assert.NotContains(t, lost, "v")
+	assert.NotContains(t, lost, "w")
 }
 
 func TestSergeantMajorWebPresenterRoundEnd(t *testing.T) {

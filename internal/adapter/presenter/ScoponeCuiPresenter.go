@@ -1,4 +1,4 @@
-//go:build !js || !wasm || classic
+//go:build !js || !wasm || extra7
 
 package presenter
 
@@ -58,6 +58,7 @@ func (p *ScoponeCuiPresenter) Output(sg interfaces.ScoponeGame, lastErr error) s
 			"name", cuiPlayerName(sg.GetPlayer(currentTurn), currentTurn),
 			"team", strconv.Itoa(domain.ScoponeTeamOf(currentTurn))) + "\n")
 		b.WriteString(i18n.T("scopone.promptHelp") + "\n")
+		b.WriteString(i18n.T("scopone.promptScore") + "\n")
 	})
 }
 

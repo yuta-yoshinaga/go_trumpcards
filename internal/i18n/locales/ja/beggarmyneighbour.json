@@ -1,4 +1,7 @@
 {
+  "log.play": "カードを出しました",
+  "log.pay": "ペナルティを支払いました（残り{{remaining}}枚）",
+  "log.collect": "カードを{{count}}枚回収しました",
   "helpTitle": "Beggar-My-Neighbour (ビガー・マイ・ネイバー)",
   "helpStep": "  s                    次のカードを出す / ペナルティを払う / 山を回収する",
   "helpAutoPlay": "  a                    決着まで自動で進める",
@@ -10,7 +13,7 @@
   "boardPile": "場のカード: {{count}}枚",
   "boardLastCard": "最後に出たカード: {{card}}",
   "boardLastCardEmpty": "最後に出たカード: --",
-  "promptPlay": "step コマンドで次のカードを出します。",
+  "promptPlay": "{{name}}の手番です。step コマンドで次のカードを出します。",
   "promptPayPenalty": "ペナルティ支払い中！ {{name}} があと{{remaining}}枚 step で払います。",
   "promptCollect": "ペナルティを払いきった！ step で山を回収します。",
   "gameWinHuman": "あなたの勝ちです！",

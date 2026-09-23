@@ -12,10 +12,17 @@
   "deckLine": "Stock: {{count}} left",
   "gameEnd": "Game over!",
   "scoreEntry": "  {{name}}: {{score}} pts",
+  "lastTake": "{{name}} took the remaining {{count}} card(s) as the last capturer",
   "promptCurrentTurn": "Turn: {{name}}",
   "promptHelp": "p <hand> to play a card (capture the pile by matching rank or with a Jack)",
   "result.scores": "Game over. Scores: {{scores}}",
   "provisional": "{{name}} provisional: {{score}}",
   "provisionalNote": "Card points and pisti bonuses are already final; only the most-cards (+3) can still change hands",
-  "helpExamplePlay": "  p 0                      play hand card 0"
+  "helpExamplePlay": "  p 0                      play hand card 0",
+  "log.dealtPileCards": "dealt {{count}} pile cards",
+  "log.pisti": "Pişti +{{bonus}} (captured {{count}})",
+  "log.captured": "captured {{count}} card(s)",
+  "log.playedOntoPile": "played onto pile",
+  "log.lastTake": "last-take: {{count}} card(s)",
+  "log.gameEnded": "game ended (top score {{score}})"
 }

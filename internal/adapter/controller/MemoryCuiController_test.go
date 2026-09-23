@@ -6,6 +6,8 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 
 	mockusecase "github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
 )
@@ -13,6 +15,12 @@ import (
 func newMockMemoryInteractor() *mockusecase.MockMemoryInteractor {
 	return new(mockusecase.MockMemoryInteractor)
 }
+
+type memoryTestPresenter struct{}
+
+func (memoryTestPresenter) Output(interfaces.MemoryGame, error) string { return "" }
+
+func (memoryTestPresenter) ActionLogOutput(interfaces.MemoryGame) string { return "" }
 
 func TestMemoryCuiControllerQuit(t *testing.T) {
 	mi := newMockMemoryInteractor()
@@ -104,6 +112,49 @@ func TestMemoryCuiControllerSetDifficulty(t *testing.T) {
 		c := NewMemoryCuiController(mi)
 		result := c.Exec("sd abc")
 		assert.Contains(t, result, msgInvalidCpuDifficultyPrefix())
+	})
+}
+
+func TestMemoryCuiControllerSetPairCount(t *testing.T) {
+	t.Run("sets pair count", func(t *testing.T) {
+		mi := usecase.NewMemoryInteractor(domain.NewDefaultMemory(), memoryTestPresenter{})
+		c := NewMemoryCuiController(mi)
+
+		c.Exec("sp 10")
+		assert.Equal(t, 10, mi.GetConfig().PairCount)
+	})
+
+	t.Run("rejects pair counts below the minimum", func(t *testing.T) {
+		mi := newMockMemoryInteractor()
+		c := NewMemoryCuiController(mi)
+
+		assert.Equal(t, "\x1eERR\x1e無効なペア数です: 5。6-26 を指定してください。", c.Exec("sp 5"))
+	})
+
+	t.Run("rejects pair counts above the maximum", func(t *testing.T) {
+		mi := newMockMemoryInteractor()
+		c := NewMemoryCuiController(mi)
+
+		assert.Equal(t, "\x1eERR\x1e無効なペア数です: 27。6-26 を指定してください。", c.Exec("sp 27"))
+	})
+
+	t.Run("requires a pair count", func(t *testing.T) {
+		mi := newMockMemoryInteractor()
+		c := NewMemoryCuiController(mi)
+
+		assert.Equal(t, "\x1eERR\x1eペア数を指定してください (6-26)。", c.Exec("sp"))
+	})
+
+	t.Run("setpaircount alias sets pair count", func(t *testing.T) {
+		mi := newMockMemoryInteractor()
+		c := NewMemoryCuiController(mi)
+		cfg := domain.DefaultMemoryConfig()
+		mi.On("GetConfig").Return(cfg)
+		newCfg := cfg
+		newCfg.PairCount = 15
+		mi.On("ResetWithConfig", newCfg).Return("pair_count_output")
+
+		assert.Equal(t, "pair_count_output", c.Exec("setpaircount 15"))
 	})
 }
 

@@ -45,6 +45,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // ScartoPlayerCnt プレイヤー数 (人間 1 + CPU 2)
@@ -304,15 +305,15 @@ func (g *Scarto) CpuScarto() {
 func (g *Scarto) doScarto(cardIndices []int) error {
 	player := g.players[g.dealerIdx]
 	if len(cardIndices) != ScartoSurplus {
-		return NewDomainError(ErrInvalidCard, "ちょうど 3 枚を捨ててください")
+		return NewDomainErrorCode(ErrInvalidCard, "scarto.errScartoCount", map[string]string{"n": fmt.Sprintf("%d", ScartoSurplus)})
 	}
 	seen := make(map[int]bool, ScartoSurplus)
 	for _, idx := range cardIndices {
 		if idx < 0 || idx >= player.GetCardsSize() {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+			return NewDomainErrorCode(ErrInvalidCard, "scarto.errCardIndexOutOfRange", nil)
 		}
 		if seen[idx] {
-			return NewDomainError(ErrInvalidCard, "同じカードを 2 回選べません")
+			return NewDomainErrorCode(ErrInvalidCard, "scarto.errSameCard", nil)
 		}
 		seen[idx] = true
 	}
@@ -321,8 +322,7 @@ func (g *Scarto) doScarto(cardIndices []int) error {
 	}
 	discarded := player.RemoveCards(cardIndices)
 	g.scarto = discarded
-	g.appendLog(g.dealerIdx, "scarto",
-		fmt.Sprintf("%s discards %d cards (scarto)", playerName(g.players, g.dealerIdx), len(discarded)), discarded)
+	g.appendLog(g.dealerIdx, "scarto", "scarto.log.scarto", map[string]string{"name": playerName(g.players, g.dealerIdx), "count": strconv.Itoa(len(discarded))}, discarded)
 	g.sortAllHands()
 	g.startPlay()
 	return nil
@@ -335,22 +335,22 @@ func (g *Scarto) validateScarto(player *ScartoPlayer, cardIndices []int) error {
 	for _, idx := range cardIndices {
 		c := player.GetCard(idx)
 		if c == nil {
-			return NewDomainError(ErrInvalidCard, "カードが不正です")
+			return NewDomainErrorCode(ErrInvalidCard, "scarto.errScartoInvalidCard", nil)
 		}
 		if scartoIsExcuse(c) {
-			return NewDomainError(ErrInvalidPlay, "エクスキューズは捨てられません")
+			return NewDomainErrorCode(ErrInvalidPlay, "scarto.errDiscardHonour", nil)
 		}
 		if scartoIsBout(c) {
-			return NewDomainError(ErrInvalidPlay, "ブー (切り札1/21) は捨てられません")
+			return NewDomainErrorCode(ErrInvalidPlay, "scarto.errDiscardHonour", nil)
 		}
 		if scartoIsTrump(c) {
 			if !allowTrump {
-				return NewDomainError(ErrInvalidPlay, "切り札は (やむを得ない場合を除き) 捨てられません")
+				return NewDomainErrorCode(ErrInvalidPlay, "scarto.errDiscardTrump", nil)
 			}
 			continue
 		}
 		if c.GetValue() >= ScartoCourtMin {
-			return NewDomainError(ErrInvalidPlay, "得点札 (King/コート札) は捨てられません")
+			return NewDomainErrorCode(ErrInvalidPlay, "scarto.errDiscardCourt", nil)
 		}
 	}
 	return nil
@@ -433,7 +433,7 @@ func (g *Scarto) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "scarto.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
@@ -467,7 +467,7 @@ func (g *Scarto) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Scarto) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), scartoCardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "scarto.log.play", map[string]string{"name": playerName(g.players, playerIdx), "card": scartoCardStr(card)}, []*Card{card})
 	if len(g.currentTrick) == ScartoPlayerCnt {
 		g.phase = ScartoPhaseTrickEnd
 	} else {
@@ -502,12 +502,11 @@ func (g *Scarto) ResolveTrick() {
 	if excuseOwner >= 0 && excuseCard != nil {
 		g.players[excuseOwner].AddTrick([]*Card{excuseCard})
 	}
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), allCards)
+	g.appendLog(winnerIdx, "trick_win", "scarto.log.trickWin", map[string]string{"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber)}, allCards)
 
 	g.leadPlayerIdx = winnerIdx
+	g.lastTrickWinner = winnerIdx
 	if g.trickNumber >= ScartoTrickCount {
-		g.lastTrickWinner = winnerIdx
 		g.phase = ScartoPhaseRoundEnd
 		g.enterRoundEnd()
 	} else {
@@ -546,9 +545,7 @@ func (g *Scarto) enterRoundEnd() {
 		g.playerScores[i] += g.dealScores[i]
 	}
 	g.outcome = g.humanOutcome()
-	g.appendLog(-1, "round_score",
-		fmt.Sprintf("deal %d: captured half-points %v -> deal scores %v",
-			g.roundNumber, half, g.dealScores), nil)
+	g.appendLog(-1, "round_score", "scarto.log.roundScore", map[string]string{"round": strconv.Itoa(g.roundNumber), "half": fmt.Sprint(half), "scores": fmt.Sprint(g.dealScores)}, nil)
 	g.checkGameEnd()
 }
 
@@ -610,10 +607,10 @@ func (g *Scarto) checkGameEnd() {
 	g.result = g.humanResult(leader, tie)
 	if tie {
 		g.winnerPlayer = -1
-		g.appendLog(-1, "game_end", "the match ends in a draw", nil)
+		g.appendLog(-1, "game_end", "scarto.log.gameEndDraw", nil, nil)
 	} else {
 		g.winnerPlayer = leader
-		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
+		g.appendLog(-1, "game_end", "scarto.log.gameEnd", map[string]string{"name": playerName(g.players, leader)}, nil)
 	}
 }
 
@@ -989,8 +986,8 @@ func (g *Scarto) isHumanScartoTurn() bool {
 }
 
 // appendLog 棋譜にエントリを追加する。
-func (g *Scarto) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.appendLogAt(len(g.actionLog)+1, playerIdx, actionType, detail, cards)
+func (g *Scarto) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCodeAt(len(g.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // scartoCardStr カードのログ表示文字列 (切り札・エクスキューズ対応)。
@@ -1045,6 +1042,9 @@ func (g *Scarto) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
 func (g *Scarto) GetCurrentTrick() []*TrickCard { return g.currentTrick }
+
+// GetLastTrickWinner 直前トリックの勝者を取得する (-1=なし)
+func (g *Scarto) GetLastTrickWinner() int { return g.lastTrickWinner }
 
 // SetCurrentTrick トリック設定 (テスト用)
 func (g *Scarto) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }

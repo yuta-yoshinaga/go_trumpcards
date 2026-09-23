@@ -38,6 +38,8 @@ type PresidentGame interface {
 	GetCpuActions() []*domain.PresidentCpuAction
 	// GetCurrentTurn 現在の手番プレイヤーインデックスを取得する
 	GetCurrentTurn() int
+	// GetClubThreeStarterIdx ♣3 により先手が決まった席を取得する (-1 = ♣3 以外の理由で決定)
+	GetClubThreeStarterIdx() int
 	// GetConfig ゲーム設定を取得する
 	GetConfig() domain.PresidentConfig
 	// GetPassCount パス回数を取得する

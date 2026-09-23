@@ -440,6 +440,11 @@ func init() {
 			return usecase.NewBlackJackInteractor(domain.NewSpanish21BlackJack(), new(presenter.BlackJackWebPresenter))
 		},
 		controller.NewBlackJackWebController)
+	BindWebControllerFor("doubleexposure",
+		func() usecase.BlackJackInteractorIF {
+			return usecase.NewBlackJackInteractor(domain.NewDoubleExposureBlackJack(), new(presenter.BlackJackWebPresenter))
+		},
+		controller.NewBlackJackWebController)
 	BindWebControllerFor("calculation",
 		func() usecase.CalculationInteractorIF {
 			return usecase.NewCalculationInteractor(domain.NewDefaultCalculation(), new(presenter.CalculationWebPresenter))
@@ -1715,6 +1720,11 @@ func init() {
 			return usecase.NewMonteBankInteractor(domain.NewDefaultMonteBank(), new(presenter.MonteBankWebPresenter))
 		},
 		controller.NewMonteBankWebController)
+	BindWebControllerFor("tehonbiki",
+		func() usecase.TehonbikiInteractorIF {
+			return usecase.NewTehonbikiInteractor(domain.NewDefaultTehonbiki(), new(presenter.TehonbikiWebPresenter))
+		},
+		controller.NewTehonbikiWebController)
 	BindWebControllerFor("cincinnati",
 		func() usecase.CincinnatiInteractorIF {
 			return usecase.NewCincinnatiInteractor(domain.NewDefaultCincinnati(), new(presenter.CincinnatiWebPresenter))
@@ -1855,4 +1865,69 @@ func init() {
 			return usecase.NewContinentalRummyInteractor(domain.NewDefaultContinentalRummy(), new(presenter.ContinentalRummyWebPresenter))
 		},
 		controller.NewContinentalRummyWebController)
+	BindWebControllerFor("citadel",
+		func() usecase.CitadelInteractorIF {
+			return usecase.NewCitadelInteractor(domain.NewDefaultCitadel(), new(presenter.CitadelWebPresenter))
+		},
+		controller.NewCitadelWebController)
+	BindWebControllerFor("batak",
+		func() usecase.BatakInteractorIF {
+			return usecase.NewBatakInteractor(domain.NewDefaultBatak(), new(presenter.BatakWebPresenter))
+		},
+		controller.NewBatakWebController)
+	BindWebControllerFor("binokel",
+		func() usecase.BinokelInteractorIF {
+			return usecase.NewBinokelInteractor(domain.NewDefaultBinokel(), new(presenter.BinokelWebPresenter))
+		},
+		controller.NewBinokelWebController)
+	BindWebControllerFor("marjapussi",
+		func() usecase.MarjapussiInteractorIF {
+			return usecase.NewMarjapussiInteractor(domain.NewDefaultMarjapussi(), new(presenter.MarjapussiWebPresenter))
+		},
+		controller.NewMarjapussiWebController)
+	BindWebControllerFor("omi",
+		func() usecase.OmiInteractorIF {
+			return usecase.NewOmiInteractor(domain.NewDefaultOmi(), new(presenter.OmiWebPresenter))
+		},
+		controller.NewOmiWebController)
+	BindWebControllerFor("tongits",
+		func() usecase.TongitsInteractorIF {
+			return usecase.NewTongitsInteractor(domain.NewDefaultTongits(), new(presenter.TongitsWebPresenter))
+		},
+		controller.NewTongitsWebController)
+	BindWebControllerFor("willothewisp",
+		func() usecase.WillOTheWispInteractorIF {
+			return usecase.NewWillOTheWispInteractor(domain.NewDefaultWillOTheWisp(), new(presenter.WillOTheWispWebPresenter))
+		},
+		controller.NewWillOTheWispWebController)
+	BindWebControllerFor("quinze",
+		func() usecase.QuinzeInteractorIF {
+			return usecase.NewQuinzeInteractor(domain.NewDefaultQuinze(), new(presenter.QuinzeWebPresenter))
+		},
+		controller.NewQuinzeWebController)
+	BindWebControllerFor("basset",
+		func() usecase.BassetInteractorIF {
+			return usecase.NewBassetInteractor(domain.NewDefaultBasset(), new(presenter.BassetWebPresenter))
+		},
+		controller.NewBassetWebController)
+	BindWebControllerFor("matrimony",
+		func() usecase.MatrimonyInteractorIF {
+			return usecase.NewMatrimonyInteractor(domain.NewDefaultMatrimony(), new(presenter.MatrimonyWebPresenter))
+		},
+		controller.NewMatrimonyWebController)
+	BindWebControllerFor("tapptarock",
+		func() usecase.TappTarockInteractorIF {
+			return usecase.NewTappTarockInteractor(domain.NewDefaultTappTarock(), new(presenter.TappTarockWebPresenter))
+		},
+		controller.NewTappTarockWebController)
+	BindWebControllerFor("biriba",
+		func() usecase.BiribaInteractorIF {
+			return usecase.NewBiribaInteractor(domain.NewDefaultBiriba(), new(presenter.BiribaWebPresenter))
+		},
+		controller.NewBiribaWebController)
+	BindWebControllerFor("marriage",
+		func() usecase.MarriageInteractorIF {
+			return usecase.NewMarriageInteractor(domain.NewDefaultMarriage(), new(presenter.MarriageWebPresenter))
+		},
+		controller.NewMarriageWebController)
 }

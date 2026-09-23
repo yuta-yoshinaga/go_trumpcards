@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra
+//go:build !js || !wasm || extra7
 
 package controller
 
@@ -111,5 +111,6 @@ func canastaDispatch(bc *baseController, w http.ResponseWriter, ci usecase.Canas
 		goOut:           ci.GoOut,
 		nextRound:       ci.NextRound,
 		actionLog:       ci.ActionLog,
+		hint:            ci.Hint,
 	}, param.CardIndex, newDefault)
 }

@@ -41,5 +41,9 @@
   "errCannotPlaceFoundation": "A foundation only takes the same suit, one rank higher.",
   "errNotAllFaceUp": "Cards are still face down, so the game cannot be finished automatically.",
   "errUndoNotPlaying": "The game is not in play, so there is nothing to undo.",
-  "errNothingToUndo": "There is no move to undo."
+  "errNothingToUndo": "There is no move to undo.",
+  "log.moveTableau": "Tableau column {{from}} → tableau column {{to}}",
+  "log.moveFoundation": "Tableau column {{col}} → foundation",
+  "log.giveUp": "Give up",
+  "log.autocomplete": "Run auto-complete"
 }

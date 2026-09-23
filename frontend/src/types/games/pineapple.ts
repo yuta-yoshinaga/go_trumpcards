@@ -16,4 +16,12 @@ export interface PineappleResponse extends HoldemResponse {
    * #5601 removed elsewhere (#5488).
    */
   liveBestHand: string;
+  discardPreviews?: PineappleDiscardPreview[];
+}
+
+/** Server-evaluated Crazy Pineapple discard candidate. */
+export interface PineappleDiscardPreview {
+  cardIdx: number;
+  handRank: number;
+  recommended: boolean;
 }

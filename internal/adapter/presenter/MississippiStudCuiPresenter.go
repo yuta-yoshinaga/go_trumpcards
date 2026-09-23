@@ -1,4 +1,4 @@
-//go:build !js || !wasm || casino
+//go:build !js || !wasm || extra6
 
 package presenter
 
@@ -24,6 +24,11 @@ func (mp *MississippiStudCuiPresenter) Output(g interfaces.MississippiStudGame, 
 
 		if g.GetAnteAmount() > 0 {
 			fmt.Fprintf(b, "%s\n", i18n.Tf("mississippistud.anteLine", "amount", strconv.Itoa(g.GetAnteAmount())))
+		}
+
+		if g.GetPhase() == domain.MississippiStudPhaseAnte && g.GetChipsRefilled() {
+			fmt.Fprintf(b, "%s\n", color.Yellow(i18n.Tf("mississippistud.chipsRefilled",
+				"chips", strconv.Itoa(domain.MississippiStudDefaultChips))))
 		}
 
 		playerHand := g.GetPlayerHand()

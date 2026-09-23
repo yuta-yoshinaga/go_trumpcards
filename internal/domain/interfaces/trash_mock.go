@@ -85,6 +85,11 @@ func (_m *MockTrashGame) GetPending() *domain.Card {
 	return v.(*domain.Card)
 }
 
+func (_m *MockTrashGame) SuggestWildSlot() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}
+
 func (_m *MockTrashGame) GetPlayerSlots(idx int) []domain.TrashSlot {
 	ret := _m.Called(idx)
 	v := ret.Get(0)

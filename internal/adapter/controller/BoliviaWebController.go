@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra
+//go:build !js || !wasm || extra7
 
 package controller
 
@@ -72,6 +72,7 @@ type BoliviaWebOutput struct {
 	IsFrozen         bool                      `json:"isFrozen"`
 	GameEndFlag      bool                      `json:"gameEndFlag"`
 	WinnerIdx        int                       `json:"winnerIdx"`
+	CanGoOut         bool                      `json:"canGoOut"`
 	WebOutputBase
 	Config BoliviaWebOutputConfig `json:"config"`
 }

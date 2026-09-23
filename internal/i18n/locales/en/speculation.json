@@ -14,6 +14,7 @@
   "holdsLine": "[best {{card}}]",
   "offerToYou": "{{buyer}} offers {{amount}} for your card. `a` to sell, `d` to decline.",
   "offerFromYou": "{{owner}} will part with the best trump for {{amount}}. `a` to buy, `bid <amount>` to raise, `d` to pass.",
+  "minRaise": "A raise must be at least {{amount}}.",
   "phaseFlip": "Turn up",
   "phaseAuction": "Bidding",
   "phaseResult": "Round result",
@@ -28,5 +29,16 @@
   "hintHold": "Hold: few cards remain, so this one may well take the pot",
   "hintBuy": "Buy: few cards remain, so this one may well take the pot",
   "hintPass": "Pass: plenty of cards are still face down, so a purchase could be beaten",
-  "hintNone": "Nothing to advise right now"
+  "hintNone": "Nothing to advise right now",
+  "log.deal": "trump={{trump}} pot={{pot}}",
+  "log.flip": "{{card}}",
+  "log.lead": "{{card}}",
+  "log.offer": "{{amount}} to seat {{seat}}",
+  "log.asking": "{{amount}}",
+  "log.buy": "{{card}} for {{amount}}",
+  "log.decline": "{{amount}}",
+  "log.bid": "{{amount}}",
+  "log.win": "pot={{pot}}",
+  "log.void": "no trump; returned {{share}} each",
+  "log.gameEnd": "rounds={{rounds}}"
 }

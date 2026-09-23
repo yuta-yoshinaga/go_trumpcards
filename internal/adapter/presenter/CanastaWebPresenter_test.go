@@ -47,6 +47,13 @@ func setupCanastaWebMockWithPlayers() (*interfaces.MockCanastaGame, []*domain.Ca
 	return m, players
 }
 
+func TestCanastaWebPresenter_HintOutput(t *testing.T) {
+	// Web hints are client-side, so HintOutput mirrors Output.
+	p := new(presenter.CanastaWebPresenter)
+	m, _ := setupCanastaWebMockWithPlayers()
+	assert.Equal(t, p.Output(m, nil), p.HintOutput(m))
+}
+
 func TestCanastaWebPresenter_Output(t *testing.T) {
 	p := new(presenter.CanastaWebPresenter)
 
@@ -216,6 +223,18 @@ func TestCanastaWebPresenter_Output(t *testing.T) {
 		assert.Empty(t, resObj.MessageCode)
 	})
 
+	t.Run("domain error uses message code", func(t *testing.T) {
+		m, _ := setupCanastaWebMockWithPlayers()
+
+		result := p.Output(m, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "canasta.errBlackThreeCannotMeld", nil))
+		var resObj controller.CanastaWebOutput
+		err := json.Unmarshal([]byte(result), &resObj)
+		assert.NoError(t, err)
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "canasta.errBlackThreeCannotMeld", resObj.MessageCode)
+		assert.Nil(t, resObj.MessageParams)
+	})
+
 	t.Run("game end human wins", func(t *testing.T) {
 		m, _ := setupCanastaWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
@@ -363,14 +382,14 @@ func TestCanastaWebPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("with entries", func(t *testing.T) {
 		m := new(interfaces.MockCanastaGame)
 		entries := []*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "draw_stock", Detail: "drew from stock", Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, true)}},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "draw_stock", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}, Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, true)}},
 		}
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetActionLog").Return(entries)
 
 		result := p.ActionLogOutput(m)
 		assert.Contains(t, result, `"actionType":"draw_stock"`)
-		assert.Contains(t, result, `"detail":"drew from stock"`)
+		assert.Contains(t, result, `"detailCode":"test.log.stub"`)
 		assert.Contains(t, result, `"turnNumber":1`)
 		assert.Contains(t, result, `"playerIdx":0`)
 		m.AssertExpectations(t)

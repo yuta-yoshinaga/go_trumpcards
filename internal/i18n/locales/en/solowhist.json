@@ -28,6 +28,7 @@
   "promptTrickEnd": "Trick complete",
   "promptTrickEndHelp": "n / next ... go to the next trick",
   "promptRoundEnd": "Round complete",
+  "promptRoundEndPassedOut": "Everyone passed, so the round was thrown in.",
   "promptRoundEndHelp": "nr / nextround ... score and go to the next round",
   "hintNone": "No hint available.",
   "hintCard": "[HINT: {{cards}} ({{reason}})]",
@@ -44,5 +45,17 @@
   "result.cpuWin": "Game over! Player {{player}} wins!",
   "bidHistory": "Bids: {{bids}}",
   "helpExampleBid": "  pass                      drop out of the bidding",
-  "helpHint": "  h                         show a hint"
+  "helpHint": "  h                         show a hint",
+  "errBidMustExceed": "Your bid must exceed the current bid.",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "log.bid": "{{name}} bids {{bid}}",
+  "log.bidPass": "{{name}} passes",
+  "log.passedOut": "all players passed; round is void",
+  "log.contract": "{{name}} declares {{contract}} (trump {{trump}})",
+  "log.play": "{{name}} plays {{card}}",
+  "log.trickWin": "{{name}} wins trick {{trick}}",
+  "log.roundScore": "round {{round}}: {{contract}} {{outcome}} ({{tricks}} tricks)",
+  "log.outcome.made": "made",
+  "log.outcome.failed": "failed",
+  "log.gameEnd": "{{name}} wins the match!"
 }

@@ -110,6 +110,7 @@ function KlaberjassPageContent() {
   const { state, loading, error, exec, retry } = useGameApi(klaberjassApi.exec);
 
   const [targetScore, setTargetScore] = useState(501);
+  const [allowSchmeiss, setAllowSchmeiss] = useState(true);
   const [selected, setSelected] = useState<number | null>(null);
 
   // Fetch a fresh game on mount.
@@ -121,7 +122,12 @@ function KlaberjassPageContent() {
   const handleTargetChange = (value: string) => {
     const next = Number(value);
     setTargetScore(next);
-    exec('reset', { config: { targetScore: next } });
+    exec('reset', { config: { targetScore: next, allowSchmeiss } });
+  };
+
+  const handleAllowSchmeissChange = (checked: boolean) => {
+    setAllowSchmeiss(checked);
+    exec('reset', { config: { targetScore, allowSchmeiss: checked } });
   };
 
   // CLI mode
@@ -213,6 +219,13 @@ function KlaberjassPageContent() {
                     value: targetScore,
                     options: TARGET_OPTIONS.map((v) => ({ value: v, label: String(v) })),
                     onSelect: handleTargetChange,
+                  },
+                  {
+                    type: 'checkbox',
+                    id: 'allowSchmeiss',
+                    label: t('settings.allowSchmeiss'),
+                    checked: allowSchmeiss,
+                    onToggle: handleAllowSchmeissChange,
                   },
                   hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],

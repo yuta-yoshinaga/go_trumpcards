@@ -21,6 +21,7 @@
   "team": "チーム{{n}}",
   "teamYou": "チーム{{n}} (あなた)",
   "trumpSuit": "切り札: {{suit}}",
+  "trumpPending": "切り札: 未定",
   "noTrump": "切り札なし",
   "currentTrick": "現在のトリック",
   "trickCount": "獲得トリック: {{count}}",

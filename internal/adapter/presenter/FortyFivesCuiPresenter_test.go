@@ -71,6 +71,26 @@ func TestFortyFivesCuiPresenter_Output(t *testing.T) {
 		assert.NotEmpty(t, result)
 	})
 
+	t.Run("shows the complete trump order with the top-trump explanation", func(t *testing.T) {
+		m, players := setupFortyFivesCuiMockWithPlayers()
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTopTrumpIndices")
+		m.On("GetTopTrumpIndices", mock.Anything).Return([]int{0})
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "♠5 > ♠11 > ♥1 > ♠1 > ♠13 > ♠12 > ♠10 > ♠9 > ♠8 > ♠7 > ♠6 > ♠4 > ♠3 > ♠2")
+	})
+
+	t.Run("shows trump order even when the hand has no top trumps", func(t *testing.T) {
+		m, players := setupFortyFivesCuiMockWithPlayers()
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 13, false))
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTopTrumpIndices")
+		m.On("GetTopTrumpIndices", mock.Anything).Return([]int{})
+		result := p.Output(m, nil)
+		// The order must not depend on the dealt hand, or most deals would never show it.
+		assert.Contains(t, result, "♠5 > ♠11 > ♥1 > ♠1 > ♠13 > ♠12 > ♠10 > ♠9 > ♠8 > ♠7 > ♠6 > ♠4 > ♠3 > ♠2")
+		assert.NotContains(t, result, "!! = 最上位の切り札（切り札の5・切り札のJ・♥A）。持っているとマストフォローが免除されます")
+	})
+
 	t.Run("bid phase prompt", func(t *testing.T) {
 		m, _ := setupFortyFivesCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
@@ -137,14 +157,14 @@ func TestFortyFivesCuiPresenter_HintOutput(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 13, false))
 		m.On("GetHint").Return(&domain.FortyFivesHint{CardIndices: []int{0}, Reason: "lead_high"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 
 	t.Run("hint no card indices", func(t *testing.T) {
 		m, _ := setupFortyFivesCuiMockWithPlayers()
 		m.On("GetHint").Return(&domain.FortyFivesHint{CardIndices: nil, Reason: "take_trick"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 }
 
@@ -153,7 +173,7 @@ func TestFortyFivesCuiPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockFortyFivesGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You plays ♠K"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
 	m.On("GetPlayer", mock.Anything).Return(domain.NewFortyFivesPlayer(true)).Maybe()
@@ -226,9 +246,9 @@ func TestFortyFivesCuiPresenter_MarksTheTopTrumps(t *testing.T) {
 	t.Run("marks only the top trumps", func(t *testing.T) {
 		out := p.Output(handMock([]int{0, 1}), nil)
 
-		assert.Contains(t, out, "[0]SPADE 5"+presenter.CuiTopTrumpMark)
-		assert.Contains(t, out, "[1]"+color.Red("HEART 1")+presenter.CuiTopTrumpMark)
-		assert.NotContains(t, out, "[2]CLOVER 9"+presenter.CuiTopTrumpMark)
+		assert.Contains(t, out, "[0]♠5"+presenter.CuiTopTrumpMark)
+		assert.Contains(t, out, "[1]"+color.Red("♥1")+presenter.CuiTopTrumpMark)
+		assert.NotContains(t, out, "[2]♣9"+presenter.CuiTopTrumpMark)
 	})
 
 	t.Run("explains the mark, including the reneging exemption", func(t *testing.T) {

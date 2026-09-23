@@ -19,11 +19,22 @@
   "betStatusPull": "PULL",
   "playerWins": "Player wins!",
   "playerLoses": "Player loses.",
+  "bet1PayoutLine": "bet1 payout: {{payout}}",
+  "bet2PayoutLine": "bet2 payout: {{payout}}",
+  "bet3PayoutLine": "bet3 payout: {{payout}}",
   "totalPayoutLine": "total payout: {{payout}}",
   "pullConfirm": "Pull one bet back. {{amount}} returns to you and the amount at stake goes {{risk}} -> {{newRisk}}. This cannot be undone.",
   "pullConfirmPrompt": "Enter y to go ahead (any other command cancels).",
   "pullUnavailable": "You cannot pull right now.",
   "helpExampleBet": "  b 100                bet 100 chips",
   "totalRiskLine": "At risk right now: {{risk}}",
-  "nothingToConfirm": "There is no pull waiting for confirmation."
+  "nothingToConfirm": "There is no pull waiting for confirmation.",
+  "log.bet": "bet={{amount}} (x3={{total}})",
+  "log.pullBet3": "pull bet 3",
+  "log.pullBet2": "pull bet 2",
+  "log.letItRideBet3": "let it ride (bet 3)",
+  "log.letItRideBet2": "let it ride (bet 2)",
+  "log.deal": "dealt 3 player cards + 2 community cards",
+  "log.playerWins": "player wins",
+  "log.playerLoses": "player loses"
 }

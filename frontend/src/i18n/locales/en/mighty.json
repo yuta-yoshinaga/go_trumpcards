@@ -59,6 +59,7 @@
     "partner": "Partner card"
   },
   "scores": "Score",
+  "pointLimit": "Finish line: +{{limit}} points (the declarer side wins at +{{limit}} total, but loses immediately at -{{limit}})",
   "scoresPlayer": "Player",
   "scoresBid": "Bid",
   "scoresPointCards": "Points",

@@ -79,6 +79,13 @@ describe('BeziquePage', () => {
     expect(breakdown).toHaveTextContent('4');
   });
 
+  it('shows the literal trick point table', async () => {
+    mockExec.mockResolvedValue(makeBeziqueState());
+    renderWithProviders(<BeziquePage />);
+    const points = await screen.findByTestId('bezique-trick-points');
+    expect(points).toHaveTextContent('トリック得点: A=11 / 10=10 / K=4 / Q=3 / J=2 / その他=0');
+  });
+
   it('renders the play phase with the human cards and the play button', async () => {
     renderWithProviders(<BeziquePage />);
     await waitFor(() => {
@@ -123,6 +130,18 @@ describe('BeziquePage', () => {
     const live = await screen.findByTestId('bezique-meld-live');
     expect(live).toHaveAttribute('role', 'status');
     expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toHaveTextContent('2');
+  });
+
+  it('announces meld availability through the atomic polite live region', async () => {
+    mockExec.mockResolvedValue(meldPhaseState);
+    const { container } = renderWithProviders(<BeziquePage />);
+
+    const live = await waitFor(() => {
+      const element = container.querySelector('[role="status"][aria-live="polite"][aria-atomic="true"]');
+      expect(element).not.toBeNull();
+      return element;
+    });
     expect(live).toHaveTextContent('2');
   });
 

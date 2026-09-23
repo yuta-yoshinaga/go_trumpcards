@@ -6,13 +6,8 @@ const TOTAL_SUITS = SUIT_GLYPHS.length;
 
 /** Props for {@link SuitProgressBadge}. */
 export interface SuitProgressBadgeProps {
-  /**
-   * Number of completed suits (0–4). The first `completed` glyphs are filled
-   * (`text-ds-success`); the rest are shown muted. The count is suit-agnostic —
-   * games such as Scorpion/Wasp expose only a tally, so glyphs fill in canonical
-   * ♠♣♥♦ order rather than by which specific suits finished.
-   */
-  completed: number;
+  /** Bit mask of completed suits, using the canonical ♠♣♥♦ bit order. */
+  completedMask: number;
   /** Optional label rendered before the glyphs (e.g. "Completed"). */
   label?: string;
 }
@@ -22,8 +17,9 @@ export interface SuitProgressBadgeProps {
  * games (Scorpion, Wasp) a visual "N of 4 suits done" progress indicator in
  * place of plain `N/4` text.
  */
-export function SuitProgressBadge({ completed, label }: SuitProgressBadgeProps) {
-  const filled = Math.max(0, Math.min(completed, TOTAL_SUITS));
+export function SuitProgressBadge({ completedMask, label }: SuitProgressBadgeProps) {
+  const normalizedMask = completedMask & ((1 << TOTAL_SUITS) - 1);
+  const filled = SUIT_GLYPHS.filter((_, i) => normalizedMask & (1 << i)).length;
   return (
     <span
       className="inline-flex items-center gap-1"
@@ -36,8 +32,8 @@ export function SuitProgressBadge({ completed, label }: SuitProgressBadgeProps) 
         <span
           // Fixed-length canonical list; index is a stable key.
           key={glyph}
-          data-testid={i < filled ? 'suit-done' : 'suit-todo'}
-          className={i < filled ? 'text-ds-success' : 'text-ds-text-muted'}
+          data-testid={normalizedMask & (1 << i) ? 'suit-done' : 'suit-todo'}
+          className={normalizedMask & (1 << i) ? 'text-ds-success' : 'text-ds-text-muted'}
         >
           {glyph}
         </span>

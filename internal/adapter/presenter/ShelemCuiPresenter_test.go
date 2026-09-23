@@ -159,7 +159,7 @@ func TestShelemCuiPresenterHintDuringBidding(t *testing.T) {
 	s.SetBidPlayerIdxForTest(0)
 
 	out := p.HintOutput(s)
-	assert.Contains(t, out, "HINT")
+	assert.Contains(t, out, "ヒント")
 	assert.NotContains(t, out, "shelemBid", "生のキーが出ていたら未登録")
 	assert.NotContains(t, out, "shelemPass")
 }
@@ -172,7 +172,7 @@ func TestShelemCuiPresenterHintDuringDiscard(t *testing.T) {
 	s.CloseBiddingForTest()
 
 	out := p.HintOutput(s)
-	assert.Contains(t, out, "HINT")
+	assert.Contains(t, out, "ヒント")
 	assert.NotContains(t, out, "shelemDiscard")
 }
 

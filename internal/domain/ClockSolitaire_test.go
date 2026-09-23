@@ -282,6 +282,7 @@ func TestClockSolitaire_UnmarshalJSON_NilTrumpCards(t *testing.T) {
 
 func TestClockSolitaire_Step_ActionLog(t *testing.T) {
 	cs := newTestClockSolitaire()
+	cs.SetCurrentCard(NewCard(CardDesignSpade, 1, false))
 
 	err := cs.Step()
 	require.NoError(t, err)
@@ -289,7 +290,8 @@ func TestClockSolitaire_Step_ActionLog(t *testing.T) {
 	log := cs.GetActionLog()
 	require.Len(t, log, 1)
 	assert.Equal(t, "step", log[0].ActionType)
-	assert.Contains(t, log[0].Detail, "パイルに配置")
+	assert.Equal(t, "clocksolitaire.log.step", log[0].DetailCode)
+	assert.Equal(t, map[string]string{"pile": "1"}, log[0].DetailParams)
 	assert.Len(t, log[0].Cards, 1)
 }
 
@@ -535,6 +537,7 @@ func TestClockSolitaire_Undo_RecordsActionLog(t *testing.T) {
 	log := cs.GetActionLog()
 	assert.Equal(t, logLenAfterStep+1, len(log))
 	assert.Equal(t, "undo", log[len(log)-1].ActionType)
+	assert.Equal(t, "clocksolitaire.log.undo", log[len(log)-1].DetailCode)
 }
 
 func TestClockSolitaire_Undo_RevertsGameOver(t *testing.T) {

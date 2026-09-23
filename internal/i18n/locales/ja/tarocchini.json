@@ -11,7 +11,7 @@
   "helpScarto": "  scarto <i0> <i1>     余剰 2 枚を捨てる（親のみ）",
   "helpSetDifficulty": "  sd <0-2>             CPU難易度（0=Easy 1=Normal 2=Hard）",
   "helpTitle": "タロッキーニ (Tarocchini)",
-  "hintCard": "[HINT: {{cards}} ({{reason}})]",
+  "hintCard": "[ヒント: {{cards}} ({{reason}})]",
   "hintNone": "ヒントはありません。",
   "hintReasonFollowLow": "取れないので低い札でフォローする",
   "hintReasonFollowTrump": "切札でフォローしてトリックを取りに行く",
@@ -39,5 +39,16 @@
   "teamLine": "得点  チーム0: {{team0}}  チーム1: {{team1}}",
   "helpExamplePlay": "  play 0               手札の 0 番のカードを出す",
   "helpExampleNext": "  n                    トリックの決着を見てから次へ",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "errDiscardCount": "捨てる札は {{count}} 枚選んでください",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errDuplicateCard": "同じ札を 2 回選べません",
+  "errCannotDiscardTrumpOrMatto": "切り札とマットは捨てられません",
+  "errFollowLeadSuit": "リードスートに従ってください",
+  "errTargetRoundsNotMultiple": "局数は {{min}} の倍数でなければなりません: {{rounds}}",
+  "log.matchEnd": "マッチ終了",
+  "log.scarto": "{{count}} 枚を捨てた",
+  "log.play": "",
+  "log.trickWin": "トリック {{trick}} を獲得",
+  "log.roundEnd": "ラウンド {{round}} 終了"
 }

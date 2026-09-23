@@ -157,6 +157,16 @@ func TestBrusquembilleWebPresenter_Output_Error(t *testing.T) {
 	assert.Equal(t, "boom", out.Message)
 }
 
+func TestBrusquembilleWebPresenter_Output_CodedError(t *testing.T) {
+	p := new(presenter.BrusquembilleWebPresenter)
+	m, _ := setupBrusquembilleWebMockWithPlayers(nil)
+	err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "brusquembille.errCardIndexOutOfRange", nil)
+	var out controller.BrusquembilleWebOutput
+	require.NoError(t, json.Unmarshal([]byte(p.Output(m, err)), &out))
+	assert.Empty(t, out.Message)
+	assert.Equal(t, "brusquembille.errCardIndexOutOfRange", out.MessageCode)
+}
+
 func TestBrusquembilleWebPresenter_HintOutput(t *testing.T) {
 	p := new(presenter.BrusquembilleWebPresenter)
 	trump := domain.NewCard(domain.CardDesignSpade, 13, false)

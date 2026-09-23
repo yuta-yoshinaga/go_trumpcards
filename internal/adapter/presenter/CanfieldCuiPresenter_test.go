@@ -43,10 +43,10 @@ func TestCanfieldCuiPresenter_Output(t *testing.T) {
 		p := new(CanfieldCuiPresenter)
 		result := p.Output(cg, nil)
 		assert.Contains(t, result, "Canfield")
-		assert.Contains(t, result, "Base rank: 7")
-		assert.Contains(t, result, "Reserve")
-		assert.Contains(t, result, "Stock: 34枚")
-		assert.Contains(t, result, "Waste: [空]")
+		assert.Contains(t, result, "ベースランク: 7")
+		assert.Contains(t, result, "リザーブ")
+		assert.Contains(t, result, "ストック: 34枚")
+		assert.Contains(t, result, "ウェイスト: [空]")
 		assert.Contains(t, result, "列0:")
 		assert.Contains(t, result, "手数: 0")
 	})
@@ -58,7 +58,7 @@ func TestCanfieldCuiPresenter_Output(t *testing.T) {
 		cg.On("GetWaste").Return([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 5, false)})
 		p := new(CanfieldCuiPresenter)
 		result := p.Output(cg, nil)
-		assert.Contains(t, result, "Waste: HEART 5")
+		assert.Contains(t, result, "ウェイスト: ♥5")
 	})
 
 	t.Run("error", func(t *testing.T) {
@@ -107,7 +107,7 @@ func TestCanfieldCuiPresenter_Output(t *testing.T) {
 		cg.On("GetReserve").Return([]*domain.Card{})
 		p := new(CanfieldCuiPresenter)
 		result := p.Output(cg, nil)
-		assert.Contains(t, result, "Reserve: [空]")
+		assert.Contains(t, result, "リザーブ: [空]")
 	})
 
 	t.Run("foundation with cards", func(t *testing.T) {
@@ -119,7 +119,7 @@ func TestCanfieldCuiPresenter_Output(t *testing.T) {
 		cg.On("GetFoundation").Return(f)
 		p := new(CanfieldCuiPresenter)
 		result := p.Output(cg, nil)
-		assert.Contains(t, result, "SPADE 7")
+		assert.Contains(t, result, "♠7")
 	})
 }
 
@@ -137,7 +137,7 @@ func TestCanfieldCuiPresenter_HintOutput(t *testing.T) {
 		p := new(CanfieldCuiPresenter)
 		result := p.HintOutput(cg)
 		assert.Contains(t, result, "タブロー列0[2]")
-		assert.Contains(t, result, "ファンデーション")
+		assert.Contains(t, result, "組札")
 	})
 
 	t.Run("reserve to tableau", func(t *testing.T) {
@@ -169,7 +169,9 @@ func TestCanfieldCuiPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("after clear", func(t *testing.T) {
 		cg := new(interfaces.MockCanfieldGame)
 		cg.On("GetPhase").Return(domain.CanfieldPhaseGameClear)
-		cg.On("GetActionLog").Return([]*domain.ActionLogEntry{{TurnNumber: 1, ActionType: "draw", Detail: "test"}})
+		cg.On("GetActionLog").Return([]*domain.ActionLogEntry{
+			{TurnNumber: 1, ActionType: "draw", DetailCode: "canfield.log.draw"},
+		})
 		p := new(CanfieldCuiPresenter)
 		result := p.ActionLogOutput(cg)
 		assert.Contains(t, result, "draw")

@@ -68,7 +68,7 @@ func TestBauernschnapsenCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "バウエルンシュナプセン")
 		assert.Contains(t, result, "ラウンド: 1")
 		assert.Contains(t, result, "切り札: SPADE")
-		assert.Contains(t, result, "[0]SPADE 1")
+		assert.Contains(t, result, "[0]♠1")
 	})
 
 	// 切り札が未確定のときにスート名を出すと、番人のいない -1 が

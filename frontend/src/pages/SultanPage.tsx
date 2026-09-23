@@ -32,7 +32,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { parseSultanCommand, SULTAN_HELP } from '../utils/cli/commands/sultanCommands';
 import { formatSultanState } from '../utils/cli/formatters/sultanFormatter';
 import { hintCheckboxItem } from '../utils/settingsItems';
-import { sultanFoundationInfo } from '../utils/sultanFoundation';
+import { canPlaceCardOnSultanFoundation, sultanFoundationInfo } from '../utils/sultanFoundation';
 
 /**
  * Maximum number of waste redeals allowed in Sultan of Turkey.
@@ -173,6 +173,8 @@ function SultanPageContent() {
 
   // Waste display: show top card only
   const wasteDisplay = state.waste.slice(-1);
+  const wasteCard = wasteDisplay[0];
+  const wastePlayable = wasteCard ? canPlaceCardOnSultanFoundation(wasteCard, state.foundation) : false;
 
   return (
     <GamePageShell
@@ -239,7 +241,8 @@ function SultanPageContent() {
                       onClick={() => handlePlay({ zone: 'waste' })}
                       disabled={!isPlaying || loading || isAutoCompleting}
                       aria-label={cardAlt(wasteDisplay[0])}
-                      className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
+                      className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}${wastePlayable ? ' ring-2 ring-ds-success' : ''}`}
+                      data-playable={wastePlayable ? 'true' : undefined}
                     >
                       <AnimatedCard card={wasteDisplay[0]} width={sultan.cw} draggable={false} />
                     </button>
@@ -312,31 +315,35 @@ function SultanPageContent() {
 
             {/* Divan reserve (8 slots; null = played/empty) */}
             <div className="flex gap-1 sm:gap-2 mb-3 flex-wrap" data-tutorial="sultan-divan">
-              {state.divan.map((dcard, idx) => (
-                <div key={`divan-${idx.toString()}`} className="text-center">
-                  <div className="text-game-text-muted text-xs mb-1">{idx}</div>
-                  {dcard ? (
-                    <button
-                      type="button"
-                      onClick={() => handlePlay({ zone: 'divan', divanIdx: idx })}
-                      disabled={!isPlaying || loading || isAutoCompleting}
-                      aria-label={cardAlt(dcard)}
-                      className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
-                    >
-                      <AnimatedCard card={dcard} width={sultan.cw} draggable={false} />
-                    </button>
-                  ) : (
-                    <div
-                      role="img"
-                      aria-label={t('emptyDivanSlot', { idx })}
-                      style={{ width: sultan.cw, height: sultan.ch }}
-                      className="rounded border border-white/20 flex items-center justify-center text-game-text-muted text-xs"
-                    >
-                      {t('empty')}
-                    </div>
-                  )}
-                </div>
-              ))}
+              {state.divan.map((dcard, idx) => {
+                const divanPlayable = dcard ? canPlaceCardOnSultanFoundation(dcard, state.foundation) : false;
+                return (
+                  <div key={`divan-${idx.toString()}`} className="text-center">
+                    <div className="text-game-text-muted text-xs mb-1">{idx}</div>
+                    {dcard ? (
+                      <button
+                        type="button"
+                        onClick={() => handlePlay({ zone: 'divan', divanIdx: idx })}
+                        disabled={!isPlaying || loading || isAutoCompleting}
+                        aria-label={cardAlt(dcard)}
+                        className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}${divanPlayable ? ' ring-2 ring-ds-success' : ''}`}
+                        data-playable={divanPlayable ? 'true' : undefined}
+                      >
+                        <AnimatedCard card={dcard} width={sultan.cw} draggable={false} />
+                      </button>
+                    ) : (
+                      <div
+                        role="img"
+                        aria-label={t('emptyDivanSlot', { idx })}
+                        style={{ width: sultan.cw, height: sultan.ch }}
+                        className="rounded border border-white/20 flex items-center justify-center text-game-text-muted text-xs"
+                      >
+                        {t('empty')}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
 
             {/* Hint display */}

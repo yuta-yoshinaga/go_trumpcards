@@ -31,6 +31,14 @@ func gaigelPlayerStr(player *domain.GaigelPlayer, i int) string {
 // GaigelCuiPresenter renders the Gaigel CUI view.
 type GaigelCuiPresenter struct{}
 
+// gaigelMarriagePoints returns the bonus for a marriage card.
+func gaigelMarriagePoints(card *domain.Card, trumpSuit int) int {
+	if card != nil && card.GetDesign() == trumpSuit {
+		return domain.GaigelRoyalMarriageBonus
+	}
+	return domain.GaigelMarriageBonus
+}
+
 // Output renders the current game state for the active locale.
 func (p *GaigelCuiPresenter) Output(g interfaces.GaigelGame, lastErr error) string {
 	return buildCuiOutput(i18n.T("gaigel.helpTitle"), func(out *strings.Builder) {
@@ -103,7 +111,7 @@ func (p *GaigelCuiPresenter) Output(g interfaces.GaigelGame, lastErr error) stri
 				if human := g.GetPlayer(currentIdx); human != nil && human.GetIsHuman() {
 					cards := make([]string, len(idxs))
 					for i, idx := range idxs {
-						cards[i] = "[" + strconv.Itoa(idx) + "]" + cuiCardStr(human.GetCard(idx))
+						cards[i] = "[" + strconv.Itoa(idx) + "]" + cuiCardStr(human.GetCard(idx)) + " (" + i18n.Tf("gaigel.marriageCardPoints", "points", strconv.Itoa(gaigelMarriagePoints(human.GetCard(idx), g.GetTrumpSuit()))) + ")"
 					}
 					out.WriteString(i18n.Tf("gaigel.promptMarriageCards",
 						"cards", strings.Join(cards, ", ")) + "\n")

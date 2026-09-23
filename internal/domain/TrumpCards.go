@@ -274,6 +274,27 @@ func NewTrumpCardsPinochle() *TrumpCards {
 	return t
 }
 
+// NewTrumpCardsBinokel ビノクル用48枚デッキコンストラクタ
+// 7,10,J,Q,K,A (値: 1,7,10,11,12,13) × 4スート × 2セット = 48枚
+func NewTrumpCardsBinokel() *TrumpCards {
+	binokelValues := []int{1, 7, 10, 11, 12, 13} // A,7,10,J,Q,K
+	suits := []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond}
+	totalCards := len(binokelValues) * len(suits) * 2 // 48
+
+	t := new(TrumpCards)
+	t.deckCnt = totalCards
+	t.deck = make([]*Card, 0, totalCards)
+	for range 2 {
+		for _, suit := range suits {
+			for _, val := range binokelValues {
+				t.deck = append(t.deck, NewCard(suit, val, false))
+			}
+		}
+	}
+	t.deckInit()
+	return t
+}
+
 // NewTrumpCardsBriscola ブリスコラ用40枚デッキコンストラクタ
 // A,2,3,4,5,6,7,J,Q,K (値: 1,2,3,4,5,6,7,11,12,13) × 4スート = 40枚
 // 8,9,10 を除外する。

@@ -1,4 +1,4 @@
-//go:build !js || !wasm || classic
+//go:build !js || !wasm || extra7
 
 // Package domain ブリュスカンビーユ (Brusquembille) のドメインモデル。
 //
@@ -200,7 +200,7 @@ func (b *Brusquembille) PlayerPlay(cardIndex int) error {
 
 	player := b.players[b.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "brusquembille.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
@@ -250,9 +250,7 @@ func (b *Brusquembille) ResolveTrick() {
 	b.players[winnerIdx].AddTrick(trickCards)
 	b.playerPoints[winnerIdx] += trickPoints
 
-	b.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (%d pt)", playerName(b.players, winnerIdx), b.trickNumber, trickPoints),
-		trickCards)
+	b.appendLog(winnerIdx, "trick_win", "brusquembille.log.trickWin", map[string]string{"name": playerName(b.players, winnerIdx), "trick": fmt.Sprint(b.trickNumber), "points": fmt.Sprint(trickPoints)}, trickCards)
 
 	b.leadPlayerIdx = winnerIdx
 	// Phase is already BrusquembillePhaseTrickEnd (guarded at function entry); leave it.
@@ -445,8 +443,7 @@ func (b *Brusquembille) stripForTableSize() {
 	}
 	surplus = b.trumpCards.GetRemainingCount() % len(b.players)
 	if surplus == 0 {
-		b.appendLog(-1, "strip", fmt.Sprintf("deck trimmed to %d so it divides by %d seats",
-			b.trumpCards.GetRemainingCount(), len(b.players)), nil)
+		b.appendLog(-1, "strip", "brusquembille.log.strip", map[string]string{"remaining": fmt.Sprint(b.trumpCards.GetRemainingCount()), "seats": fmt.Sprint(len(b.players))}, nil)
 	}
 }
 
@@ -464,7 +461,7 @@ func (b *Brusquembille) dealInitial() {
 	b.trumpCard = b.trumpCards.DrawCard()
 	if b.trumpCard != nil {
 		b.trumpSuit = b.trumpCard.GetDesign()
-		b.appendLog(-1, "trump", fmt.Sprintf("Trump: %s", cardStr(b.trumpCard)), []*Card{b.trumpCard})
+		b.appendLog(-1, "trump", "brusquembille.log.trump", map[string]string{"card": cardStr(b.trumpCard)}, []*Card{b.trumpCard})
 	}
 }
 
@@ -483,9 +480,7 @@ func (b *Brusquembille) playCard(playerIdx int, card *Card) {
 		PlayerIdx: playerIdx,
 		Card:      card,
 	})
-	b.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", playerName(b.players, playerIdx), cardStr(card)),
-		[]*Card{card})
+	b.appendLog(playerIdx, "play", "brusquembille.log.play", map[string]string{"name": playerName(b.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(b.currentTrick) == len(b.players) {
 		b.phase = BrusquembillePhaseTrickEnd
@@ -533,7 +528,7 @@ func (b *Brusquembille) leadSuit() int {
 
 func (b *Brusquembille) validatePlay(playerIdx int, card *Card) error {
 	if card == nil {
-		return NewDomainError(ErrInvalidCard, "カードが nil です")
+		return NewDomainErrorCode(ErrInvalidCard, "brusquembille.errCardNil", nil)
 	}
 	// 前半 (山札あり) は自由出し。クローン元と同じ。
 	if !b.IsFollowRequired() {
@@ -546,7 +541,7 @@ func (b *Brusquembille) validatePlay(playerIdx int, card *Card) error {
 	}
 	// **持っているのに違うスートを出すのは反則。** 持っていなければ自由。
 	if card.GetDesign() != lead && b.hasSuit(playerIdx, lead) {
-		return NewDomainError(ErrInvalidCard, "山札が尽きた後はリードスートに追従してください")
+		return NewDomainErrorCode(ErrInvalidCard, "brusquembille.errMustFollowSuit", nil)
 	}
 	return nil
 }
@@ -633,8 +628,7 @@ func (b *Brusquembille) finishGame() {
 	for _, pt := range b.playerPoints {
 		parts = append(parts, strconv.Itoa(pt))
 	}
-	detail := "Game end: " + strings.Join(parts, "-")
-	b.appendLog(-1, "game_end", detail, nil)
+	b.appendLog(-1, "game_end", "brusquembille.log.gameEnd", map[string]string{"scores": strings.Join(parts, "-")}, nil)
 }
 
 // BrusquembilleDetermineWinner は最多得点の席を返す。同点が並べば -1 (引き分け)。
@@ -646,6 +640,11 @@ func (b *Brusquembille) finishGame() {
 // 2 人卓では従来どおり「60 点超で勝ち、60-60 は引き分け」になる: 合計 120 点を
 // 二人で分けるので、単独最多は必ず 60 点超だから。3 席以上では 60 を超えなくても
 // 単独最多なら勝ちで、これが素直な一般化。
+// appendLog records a Brusquembille action with a locale-independent detail code.
+func (b *Brusquembille) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	b.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
+}
+
 func BrusquembilleDetermineWinner(points []int) int {
 	best, bestIdx, tied := -1, -1, false
 	for i, pt := range points {

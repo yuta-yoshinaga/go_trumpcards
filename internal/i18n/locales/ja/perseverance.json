@@ -5,12 +5,12 @@
   "helpGiveUp": "  g                    ギブアップ",
   "helpHint": "  h                    ヒント",
   "helpAutoComplete": "  ac                   オートコンプリート",
-  "foundationHeader": "Foundation: ",
+  "foundationHeader": "組札: ",
   "oneCardWarning": "(!残り1枚)",
   "emptyColNote": "注意: 空列は再利用できません",
   "columnLabel": "列{{col}}:",
   "hintFrom": "タブロー列{{col}}[{{idx}}]",
-  "hintToFoundation": "ファンデーション",
+  "hintToFoundation": "組札",
   "hintToTableau": "タブロー列{{col}}",
   "hintLine": "ヒント: {{from}} → {{to}}",
   "helpExampleHint": "  h                    次の一手を教えてもらう",
@@ -23,5 +23,10 @@
   "helpTargets": "  t <col>                  その列の札を置ける先を一覧する",
   "helpRedeal": "  rd / redeal          集めて配り直す (最大2回)",
   "redealsLine": "残り再配り: {{count}}回",
-  "promptToZone": "移動先を入力してください (列番号, f=基礎札):"
+  "promptToZone": "移動先を入力してください (列番号, f=組札):",
+  "log.redeal": "集めて配り直しました (残り{{remaining}}回)",
+  "log.tableauMove": "タブロー列{{from}}→タブロー列{{to}}",
+  "log.tableauToFoundation": "タブロー列{{column}}→組札",
+  "log.giveUp": "ギブアップしました",
+  "log.autocomplete": "オートコンプリートを実行しました"
 }

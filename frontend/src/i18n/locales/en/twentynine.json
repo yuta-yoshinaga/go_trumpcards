@@ -20,6 +20,7 @@
   "trumpRevealBanner": "Trump revealed: {{suit}}",
   "noTrump": "none",
   "hiddenTrump": "Hidden",
+  "trumpVisibleToYou": "{{suit}} (shown only to you)",
   "cards": "{{count}} cards",
   "tricks": "{{count}} tricks",
   "currentTrick": "Current Trick",

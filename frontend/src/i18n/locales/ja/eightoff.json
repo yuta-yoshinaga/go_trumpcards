@@ -5,7 +5,7 @@
     "gameOver": "ゲームオーバー"
   },
   "freecell": "フリーセル",
-  "foundation": "ファンデーション",
+  "foundation": "組札",
   "tableau": "タブロー",
   "giveup": "ギブアップ",
   "hint": "ヒント",
@@ -15,14 +15,15 @@
   "moveCount": "手数",
   "empty": "空",
   "hintAvailable": "ヒント",
-  "foundationAriaLabel": "{{suit}} ファンデーション ({{cardCount}}枚)",
-  "emptyFoundationAriaLabel": "{{suit}} ファンデーション (空)",
+  "doubleClickHint": "カードをダブルクリック（ダブルタップ）すると組札へ送れます",
+  "foundationAriaLabel": "{{suit}} 組札 ({{cardCount}}枚)",
+  "emptyFoundationAriaLabel": "{{suit}} 組札 (空)",
   "emptyFreecellAriaLabel": "フリーセル {{idx}} (空)",
   "emptyColumnAriaLabel": "空き列（{{rank}} のみ置けます）",
   "supermoveLimitTooltip": "一度に動かせるのは{{limit}}枚まで（空きフリーセル{{cells}}・空き列{{cols}}）",
   "tutorial": {
     "freeCells": "8つのフリーセルです。一時的にカードを置けるスペースで、4つには既に初期カードが配られています。空きセルが多いほど多くのカードを一度に移動できます。",
-    "foundation": "ファンデーションです。各スートをAからKまで順番に積み上げます。",
+    "foundation": "組札です。各スートをAからKまで順番に積み上げます。",
     "tableau": "タブローです。フリーセルと異なり、カードは「同じスート」の降順でのみ重ねられます。空の列にはKしか置けません。",
     "controls": "元に戻す、ヒント、自動完了などの操作ボタンです。",
     "resetButton": "リセットボタンで新しいゲームを始められます。"

@@ -3,10 +3,12 @@
 package domain_test
 
 import (
+	"encoding/json"
 	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
@@ -55,6 +57,7 @@ func TestNewHearts(t *testing.T) {
 	assert.Equal(t, -1, h.GetWinnerIdx())
 	assert.False(t, h.GetGameEndFlag())
 	assert.False(t, h.GetHeartsBroken())
+	assert.Equal(t, [domain.HeartsPlayerCnt][domain.CardDesignMax + 1]bool{}, h.GetVoidSuits())
 	assert.Nil(t, h.GetCurrentTrick())
 	assert.Nil(t, h.GetActionLog())
 }
@@ -454,6 +457,44 @@ func TestHearts_PlayerPlay_FirstTrick_NoTwoClubs(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestHearts_PlayerPlay_FollowSuitDoesNotMarkVoid(t *testing.T) {
+	h := newTestHearts()
+	setupPlayPhase(h, 0, 1, 2)
+	h.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 5, false)}})
+	player := h.GetPlayer(0)
+	player.Reset()
+	player.AddCard(domain.NewCard(domain.CardDesignClover, 8, false))
+
+	assert.NoError(t, h.PlayerPlay(0))
+	assert.False(t, h.GetVoidSuits()[0][domain.CardDesignClover])
+}
+
+func TestHearts_VoidSuitsJSONAndRoundReset(t *testing.T) {
+	h := newTestHearts()
+	setupPlayPhase(h, 0, 1, 2)
+	h.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignClover, 5, false)}})
+	h.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+	assert.NoError(t, h.PlayerPlay(0))
+
+	data, err := json.Marshal(h)
+	assert.NoError(t, err)
+	var restored domain.Hearts
+	assert.NoError(t, json.Unmarshal(data, &restored))
+	assert.True(t, restored.GetVoidSuits()[0][domain.CardDesignClover])
+
+	h.SetPhase(domain.HeartsPhaseRoundEnd)
+	h.NextRound()
+	assert.Equal(t, [domain.HeartsPlayerCnt][domain.CardDesignMax + 1]bool{}, h.GetVoidSuits())
+}
+
+func TestHearts_UnmarshalJSON_VoidSuitsValidationAndLegacySnapshot(t *testing.T) {
+	var h domain.Hearts
+	assert.Error(t, json.Unmarshal([]byte(`{"vs":[[false,false,false,false,false]]}`), &h))
+	assert.Error(t, json.Unmarshal([]byte(`{"vs":[[false,false,false,false],[false,false,false,false],[false,false,false,false],[false,false,false,false]]}`), &h))
+	assert.NoError(t, json.Unmarshal([]byte(`{"tc":null,"ps":null}`), &h))
+	assert.Equal(t, [domain.HeartsPlayerCnt][domain.CardDesignMax + 1]bool{}, h.GetVoidSuits())
+}
+
 func TestHearts_PlayerPlay_MustFollowSuit(t *testing.T) {
 	h := newTestHearts()
 	setupPlayPhase(h, 0, 1, 2) // human's turn after lead
@@ -494,6 +535,7 @@ func TestHearts_PlayerPlay_CanPlayOffSuitWhenVoid(t *testing.T) {
 
 	err := h.PlayerPlay(0)
 	assert.NoError(t, err)
+	assert.True(t, h.GetVoidSuits()[0][domain.CardDesignClover])
 }
 
 func TestHearts_PlayerPlay_CantLeadHeartsUnbroken(t *testing.T) {
@@ -1000,6 +1042,7 @@ func TestHearts_NextRound(t *testing.T) {
 	assert.Equal(t, 2, h.GetRoundNumber())
 	assert.Equal(t, 0, h.GetTrickNumber()) // stays 0 until pass completes (round 2 = right)
 	assert.False(t, h.GetHeartsBroken())
+	assert.Equal(t, [domain.HeartsPlayerCnt][domain.CardDesignMax + 1]bool{}, h.GetVoidSuits())
 	assert.Nil(t, h.GetCurrentTrick())
 
 	// 52 cards distributed
@@ -1093,6 +1136,16 @@ func TestHearts_GetActionLog(t *testing.T) {
 	log := h.GetActionLog()
 	assert.NotNil(t, log)
 	assert.Greater(t, len(log), 0)
+	var found *domain.ActionLogEntry
+	for _, entry := range log {
+		if entry.ActionType == "pass" {
+			found = entry
+			break
+		}
+	}
+	require.NotNil(t, found)
+	assert.Equal(t, "hearts.log.passLeft", found.DetailCode)
+	assert.Equal(t, map[string]string{"round": "1"}, found.DetailParams)
 }
 
 func TestHearts_GetPassedCards(t *testing.T) {
@@ -1712,7 +1765,8 @@ func TestHearts_ActionLog_PlayerNames(t *testing.T) {
 
 	log := h.GetActionLog()
 	assert.NotNil(t, log)
-	assert.Contains(t, log[0].Detail, "You")
+	assert.Equal(t, "hearts.log.play", log[0].DetailCode)
+	assert.Equal(t, "You", log[0].DetailParams["name"])
 
 	// CPU plays -> log should contain "CPU"
 	cpu := h.GetPlayer(1)
@@ -1721,7 +1775,8 @@ func TestHearts_ActionLog_PlayerNames(t *testing.T) {
 
 	h.CpuPlay()
 	log = h.GetActionLog()
-	assert.Contains(t, log[1].Detail, "CPU")
+	assert.Equal(t, "hearts.log.play", log[1].DetailCode)
+	assert.Equal(t, "CPU 1", log[1].DetailParams["name"])
 }
 
 // --- Full round scoring flow ---
@@ -1773,7 +1828,8 @@ func TestHearts_CardStr_UnknownDesignAndValue(t *testing.T) {
 	assert.NoError(t, err)
 
 	log := h.GetActionLog()
-	assert.Contains(t, log[0].Detail, "?")
+	assert.Equal(t, "hearts.log.play", log[0].DetailCode)
+	assert.Equal(t, "??", log[0].DetailParams["card"])
 }
 
 // --- isPointCard branches ---
@@ -2049,17 +2105,18 @@ func TestHearts_CpuPlay_Hard_Follow_WithTrickPoints(t *testing.T) {
 	assert.Equal(t, 3, len(h.GetCurrentTrick()))
 }
 
-// --- passDirectionStr: all directions ---
+// --- pass direction log codes ---
 
 func TestHearts_ExecutePass_LogDirectionStrings(t *testing.T) {
 	// Test left (round 1), right (round 2), across (round 3)
 	for _, tc := range []struct {
 		round int
 		dir   string
+		code  string
 	}{
-		{1, "left"},
-		{2, "right"},
-		{3, "across"},
+		{1, "left", "hearts.log.passLeft"},
+		{2, "right", "hearts.log.passRight"},
+		{3, "across", "hearts.log.passAcross"},
 	} {
 		h := newTestHearts()
 		h.Reset()
@@ -2083,7 +2140,7 @@ func TestHearts_ExecutePass_LogDirectionStrings(t *testing.T) {
 		found := false
 		for _, entry := range log {
 			if entry.ActionType == "pass" {
-				assert.Contains(t, entry.Detail, tc.dir)
+				assert.Equal(t, tc.code, entry.DetailCode)
 				found = true
 			}
 		}
@@ -2152,7 +2209,7 @@ func TestHearts_ResolveTrick_ActionLog(t *testing.T) {
 	for _, entry := range log {
 		if entry.ActionType == "trick_win" {
 			found = true
-			assert.Contains(t, entry.Detail, "wins trick")
+			assert.Equal(t, "hearts.log.trickWin", entry.DetailCode)
 			assert.NotNil(t, entry.Cards)
 			assert.Equal(t, 4, len(entry.Cards))
 		}
@@ -2406,11 +2463,6 @@ func TestHearts_Reset_AlwaysStartsPassPhase(t *testing.T) {
 }
 
 // Defensive guard tests for private methods are in Hearts_internal_test.go
-
-func TestHearts_PassDirectionStr_Default(t *testing.T) {
-	// passDirectionStr default: only used in ExecutePass log.
-	// Since ExecutePass skips for PassNone, the "none" branch is unreachable.
-}
 
 func TestHearts_CpuSelectPlayCard_EmptyValidIndices(t *testing.T) {
 	// Line 843: len(validIndices) == 0, return 0

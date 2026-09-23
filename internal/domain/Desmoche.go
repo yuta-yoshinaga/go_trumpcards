@@ -28,6 +28,7 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
+	"math/bits"
 	"math/rand"
 	"sort"
 )
@@ -262,7 +263,7 @@ func (d *Desmoche) dealRound() {
 
 	d.currentIdx = (d.dealerIdx + 1) % len(d.players)
 	d.phase = DesmochePhaseDraw
-	d.addLog(-1, "deal", fmt.Sprintf("cards dealt, pot is %d", d.pot), nil)
+	d.addLog(-1, "deal", "desmoche.log.deal", map[string]string{"pot": fmt.Sprintf("%d", d.pot)}, nil)
 }
 
 // DrawFromStock は山札から 1 枚引く。
@@ -279,7 +280,7 @@ func (d *Desmoche) DrawFromStock(player int) error {
 	d.stock = d.stock[1:]
 	d.GetPlayer(player).AddCard(card)
 	d.phase = DesmochePhaseAct
-	d.addLog(player, "draw", "draws from the stock", nil)
+	d.addLog(player, "draw", "desmoche.log.drawStock", nil, nil)
 	return nil
 }
 
@@ -295,7 +296,7 @@ func (d *Desmoche) DrawFromDiscard(player int) error {
 	d.discard = d.discard[:len(d.discard)-1]
 	d.GetPlayer(player).AddCard(card)
 	d.phase = DesmochePhaseAct
-	d.addLog(player, "draw", "takes the discard", []*Card{card})
+	d.addLog(player, "draw", "desmoche.log.drawDiscard", nil, []*Card{card})
 	return nil
 }
 
@@ -328,7 +329,7 @@ func (d *Desmoche) Meld(player int, handIdxs []int) error {
 	}
 	d.removeFromHand(player, handIdxs)
 	d.melds = append(d.melds, &DesmocheMeld{Owner: player, Kind: kind, Cards: cards})
-	d.addLog(player, "meld", fmt.Sprintf("puts down %d card(s)", len(cards)), cards)
+	d.addLog(player, "meld", "desmoche.log.meld", map[string]string{"count": fmt.Sprintf("%d", len(cards))}, cards)
 	d.checkGoneOut(player)
 	return nil
 }
@@ -378,7 +379,7 @@ func (d *Desmoche) Desmoche(player, fromMeldIdx, cardIdx, toMeldIdx int) error {
 	from.Cards = rest
 	to.Cards = grown
 	to.Kind = kind
-	d.addLog(player, "desmoche", fmt.Sprintf("moves a card from meld %d to meld %d", fromMeldIdx, toMeldIdx), []*Card{card})
+	d.addLog(player, "desmoche", "desmoche.log.desmoche", map[string]string{"from": fmt.Sprintf("%d", fromMeldIdx), "to": fmt.Sprintf("%d", toMeldIdx)}, []*Card{card})
 	return nil
 }
 
@@ -407,7 +408,7 @@ func (d *Desmoche) LayOff(player, handIdx, meldIdx int) error {
 	p.RemoveCard(handIdx)
 	meld.Cards = grown
 	meld.Kind = kind
-	d.addLog(player, "layoff", fmt.Sprintf("adds to meld %d", meldIdx), []*Card{card})
+	d.addLog(player, "layoff", "desmoche.log.layoff", map[string]string{"meld": fmt.Sprintf("%d", meldIdx)}, []*Card{card})
 	d.checkGoneOut(player)
 	return nil
 }
@@ -423,7 +424,7 @@ func (d *Desmoche) Discard(player, handIdx int) error {
 	}
 	card := p.RemoveCard(handIdx)
 	d.discard = append(d.discard, card)
-	d.addLog(player, "discard", "discards", []*Card{card})
+	d.addLog(player, "discard", "desmoche.log.discard", nil, []*Card{card})
 
 	d.currentIdx = (d.currentIdx + 1) % len(d.players)
 	d.phase = DesmochePhaseDraw
@@ -516,12 +517,12 @@ func (d *Desmoche) finishRound(winner int) {
 	d.roundWinner = winner
 	if winner >= 0 {
 		d.scores[winner] += d.pot
-		d.addLog(winner, "round_end", fmt.Sprintf("takes the pot of %d", d.pot), nil)
+		d.addLog(winner, "round_end", "desmoche.log.roundWin", map[string]string{"pot": fmt.Sprintf("%d", d.pot)}, nil)
 		d.pot = 0
 	} else {
 		// **勝者なし。**ポットはそのまま次のラウンドへ持ち越す。
 		d.roundExhausted = true
-		d.addLog(-1, "round_end", fmt.Sprintf("nobody went out; %d carries over", d.pot), nil)
+		d.addLog(-1, "round_end", "desmoche.log.roundCarry", map[string]string{"pot": fmt.Sprintf("%d", d.pot)}, nil)
 	}
 
 	d.roundNo++
@@ -542,7 +543,7 @@ func (d *Desmoche) finishGame() {
 	d.winnerIdx = best
 	d.gameEndFlag = true
 	d.phase = DesmochePhaseGameEnd
-	d.addLog(best, "game_end", "finishes ahead", nil)
+	d.addLog(best, "game_end", "desmoche.log.gameEnd", nil, nil)
 }
 
 // NextRound は次のラウンドを配る。
@@ -562,8 +563,16 @@ func (d *Desmoche) NextRound() error {
 
 // DesmocheCpuAction は CPU が選んだ手。
 type DesmocheCpuAction struct {
+	// DrawFromDiscard は捨て札から引く (false: 山札から引く)。
+	DrawFromDiscard bool
+	// LayOff はレイオフを実行する。
+	LayOff bool
 	// MeldIdxs は出すメルドの手札添字 (無ければ nil)。
 	MeldIdxs []int
+	// LayOffHandIdx は付ける手札の添字 (-1: 付けない)。
+	LayOffHandIdx int
+	// LayOffMeldIdx は付け先メルドの添字 (-1: 付けない)。
+	LayOffMeldIdx int
 	// DiscardIdx は捨てる手札の添字 (-1: 捨てない)。
 	DiscardIdx int
 }
@@ -571,12 +580,47 @@ type DesmocheCpuAction struct {
 // DesmocheCpuDecide は idx の CPU が取る手を決める。
 func (d *Desmoche) DesmocheCpuDecide(idx int) DesmocheCpuAction {
 	if d.phase == DesmochePhaseDraw {
-		return DesmocheCpuAction{DiscardIdx: -1}
+		return DesmocheCpuAction{DrawFromDiscard: d.config.CpuDifficulty == DesmocheCpuDifficultyHard && d.canMeldDiscard(idx), LayOffHandIdx: -1, LayOffMeldIdx: -1, DiscardIdx: -1}
 	}
 	if meld := d.findMeld(idx); meld != nil {
-		return DesmocheCpuAction{MeldIdxs: meld, DiscardIdx: -1}
+		return DesmocheCpuAction{MeldIdxs: meld, LayOffHandIdx: -1, LayOffMeldIdx: -1, DiscardIdx: -1}
 	}
-	return DesmocheCpuAction{DiscardIdx: d.pickDiscard(idx)}
+	if d.config.CpuDifficulty == DesmocheCpuDifficultyHard {
+		if handIdx, meldIdx := d.findLayOff(idx); handIdx >= 0 {
+			return DesmocheCpuAction{LayOff: true, LayOffHandIdx: handIdx, LayOffMeldIdx: meldIdx, DiscardIdx: -1}
+		}
+	}
+	return DesmocheCpuAction{LayOffHandIdx: -1, LayOffMeldIdx: -1, DiscardIdx: d.pickDiscard(idx)}
+}
+
+// canMeldDiscard は捨て札を加えればメルドを作れるかを返す。
+func (d *Desmoche) canMeldDiscard(idx int) bool {
+	top := d.GetDiscardTop()
+	p := d.GetPlayer(idx)
+	if top == nil || p == nil {
+		return false
+	}
+	cards := make([]*Card, 0, p.GetCardsSize()+1)
+	for i := range p.GetCardsSize() {
+		cards = append(cards, p.GetCard(i))
+	}
+	cards = append(cards, top)
+	for mask := 1; mask < 1<<len(cards); mask++ {
+		if bits.OnesCount(uint(mask)) < DesmocheMinMeldSize {
+			continue
+		}
+		candidate := make([]*Card, 0, len(cards))
+		for i := range cards {
+			if mask&(1<<i) != 0 {
+				candidate = append(candidate, cards[i])
+			}
+		}
+		// << binds more tightly than -, so parentheses are required around the discard bit index.
+		if _, err := DesmocheValidateMeld(candidate); err == nil && mask&(1<<(len(cards)-1)) != 0 {
+			return true
+		}
+	}
+	return false
 }
 
 // findMeld は手札から出せるメルドを 1 つ探す。
@@ -586,17 +630,52 @@ func (d *Desmoche) findMeld(idx int) []int {
 		return nil
 	}
 	n := p.GetCardsSize()
-	for a := range n {
-		for b := a + 1; b < n; b++ {
-			for c := b + 1; c < n; c++ {
-				cards := []*Card{p.GetCard(a), p.GetCard(b), p.GetCard(c)}
-				if _, err := DesmocheValidateMeld(cards); err == nil {
-					return []int{a, b, c}
-				}
+	var best []int
+	limit := 1 << n
+	for mask := 1; mask < limit; mask++ {
+		if bits.OnesCount(uint(mask)) < DesmocheMinMeldSize {
+			continue
+		}
+		candidate := make([]int, 0, n)
+		cards := make([]*Card, 0, n)
+		for i := range n {
+			if mask&(1<<i) != 0 {
+				candidate = append(candidate, i)
+				cards = append(cards, p.GetCard(i))
+			}
+		}
+		if _, err := DesmocheValidateMeld(cards); err != nil {
+			continue
+		}
+		if d.config.CpuDifficulty == DesmocheCpuDifficultyEasy {
+			return candidate
+		}
+		if d.config.CpuDifficulty != DesmocheCpuDifficultyHard && len(candidate) > DesmocheMinMeldSize {
+			continue
+		}
+		if len(candidate) > len(best) {
+			best = candidate
+		}
+	}
+	return best
+}
+
+// findLayOff は Hard CPU が手札を減らせるレイオフを 1 つ選ぶ。
+func (d *Desmoche) findLayOff(idx int) (int, int) {
+	p := d.GetPlayer(idx)
+	if p == nil {
+		return -1, -1
+	}
+	for handIdx := range p.GetCardsSize() {
+		card := p.GetCard(handIdx)
+		for meldIdx, meld := range d.melds {
+			grown := append(append([]*Card(nil), meld.Cards...), card)
+			if _, err := DesmocheValidateMeld(grown); err == nil {
+				return handIdx, meldIdx
 			}
 		}
 	}
-	return nil
+	return -1, -1
 }
 
 // pickDiscard は捨てる札を選ぶ。組みかけの札を残し、繋がらない札から捨てる。
@@ -721,8 +800,8 @@ func (d *Desmoche) SetDiscardForTest(cards []*Card) { d.discard = cards }
 func (d *Desmoche) SetRoundNumberForTest(n int) { d.roundNo = n }
 
 // addLog は棋譜に 1 件追加する。
-func (d *Desmoche) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	d.appendLog(playerIdx, actionType, detail, cards)
+func (d *Desmoche) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	d.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // desmocheJSON is the JSON wire format for Desmoche.

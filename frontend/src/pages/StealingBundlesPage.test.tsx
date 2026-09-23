@@ -64,6 +64,15 @@ beforeEach(() => {
 });
 
 describe('StealingBundlesPage', () => {
+  it('names every table card captured by take', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ tableCards: [card('CLOVER', 7), card('HEART', 7)], tableMatches: { '0': [0, 1] } }),
+    );
+    renderWithProviders(<StealingBundlesPage />);
+    await waitFor(() => expect(screen.getAllByRole('button', { name: /を選ぶ$/ })).toHaveLength(4));
+    selectCard(0);
+    expect(await screen.findByTestId('sb-take-btn')).toHaveTextContent('♣ 7, ♥ 7');
+  });
   it('resets on mount', async () => {
     renderWithProviders(<StealingBundlesPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

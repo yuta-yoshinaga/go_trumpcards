@@ -75,6 +75,15 @@ func TestCallBreakWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "bad play", resObj.Message)
 	})
 
+	t.Run("coded error", func(t *testing.T) {
+		m, _ := setupCallBreakWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "callbreak.errFollowLeadSuit", nil)
+		var resObj controller.CallBreakWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, err)), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "callbreak.errFollowLeadSuit", resObj.MessageCode)
+	})
+
 	t.Run("bid phase message code", func(t *testing.T) {
 		m, _ := setupCallBreakWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
@@ -185,7 +194,7 @@ func TestCallBreakWebPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockCallBreakGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "x"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	out := p.ActionLogOutput(m)
 	assert.Contains(t, out, "\"actionType\":\"play\"")

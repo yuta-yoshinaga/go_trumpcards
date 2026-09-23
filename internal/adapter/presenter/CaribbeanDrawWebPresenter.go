@@ -1,4 +1,4 @@
-//go:build !js || !wasm || casino
+//go:build !js || !wasm || extra6
 
 package presenter
 
@@ -11,6 +11,9 @@ import (
 // CaribbeanDrawWebPresenter カリビアン・ドロー・ポーカーWebプレゼンタークラス
 type CaribbeanDrawWebPresenter struct {
 }
+
+// ClearSession is a no-op because Web session statistics are client-side.
+func (cp *CaribbeanDrawWebPresenter) ClearSession() {}
 
 // Output ゲーム状態を出力
 func (cp *CaribbeanDrawWebPresenter) Output(cs interfaces.CaribbeanDrawGame, lastErr error) string {

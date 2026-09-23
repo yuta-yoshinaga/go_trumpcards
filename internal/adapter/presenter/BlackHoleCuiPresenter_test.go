@@ -76,7 +76,7 @@ func TestBlackHoleCuiPresenter_Output(t *testing.T) {
 	t.Run("hint output", func(t *testing.T) {
 		// Black hole top = 5, a fan top = 6 -> playable hint.
 		js := `{"bh":[{"d":1,"v":5,"w":true}],"fn":[[{"d":2,"v":6,"w":true}]],"ph":0}`
-		assert.Contains(t, p.HintOutput(bhState(t, js)), "HINT")
+		assert.Contains(t, p.HintOutput(bhState(t, js)), "ヒント")
 		assert.NotEmpty(t, p.HintOutput(bhState(t, `{"ph":2}`)))
 	})
 

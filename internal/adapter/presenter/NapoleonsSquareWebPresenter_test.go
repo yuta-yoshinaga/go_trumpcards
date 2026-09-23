@@ -190,7 +190,7 @@ func TestNapoleonsSquareWebPresenter_ActionLogOutput(t *testing.T) {
 		g.On("GetPhase").Return(domain.NapoleonsSquarePhaseGameOver)
 		g.On("GetGameEndFlag").Return(true)
 		g.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "move", Detail: "test"},
+			{TurnNumber: 1, ActionType: "move", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 
 		assert.Contains(t, new(NapoleonsSquareWebPresenter).ActionLogOutput(g), "move")

@@ -23,6 +23,7 @@
     "dummyHand": "ダミーの手札",
     "yourTurn": "あなたの番",
     "dummyTurn": "ダミーの番（あなたが出します）",
+    "cpuOperatedDummy": "この手札はCPUが操作するダミーです",
     "teamTag": "T{{team}}",
     "teamAllyAria": "あなたの味方",
     "teamFoeAria": "相手チーム"

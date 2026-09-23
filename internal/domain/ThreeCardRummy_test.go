@@ -172,6 +172,15 @@ func TestThreeCardRummy_BetRejectsBadAmountsAndDealsSixCards(t *testing.T) {
 	assert.Equal(t, ThreeCardRummyPhaseBet, tc.GetPhase(), "弾いたベットで進まない")
 
 	require.NoError(t, tc.Bet(10, 20))
+	var entry *ActionLogEntry
+	for _, candidate := range tc.GetActionLog() {
+		if candidate.DetailCode == "threecardrummy.log.bet" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, map[string]string{"ante": "10", "lowBonus": "20"}, entry.DetailParams)
 	assert.Len(t, tc.GetPlayerHand(), ThreeCardRummyHandSize)
 	assert.Len(t, tc.GetDealerHand(), ThreeCardRummyHandSize)
 	assert.Equal(t, ThreeCardRummyPhaseAction, tc.GetPhase())
@@ -201,7 +210,7 @@ func TestThreeCardRummy_RebetRepeatsTheLastAmountsAcrossReset(t *testing.T) {
 	tc := NewDefaultThreeCardRummy()
 	err := tc.Rebet()
 	require.Error(t, err, "まだ賭けていない")
-	assert.Contains(t, err.Error(), "再ベット", "額 0 のベットエラーではなく、専用のメッセージを返す")
+	assert.Equal(t, "threecardrummy.errCannotRebet", err.(*DomainError).MessageCode(), "額 0 のベットエラーではなく、専用のメッセージコードを返す")
 	require.NoError(t, tc.Bet(20, 10))
 	require.NoError(t, tc.Fold())
 	tc.Reset()

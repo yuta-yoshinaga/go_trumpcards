@@ -14,6 +14,7 @@
   "drawAction": "{{drawer}}が{{from}}から1枚引きました",
   "drawActionWithCard": " ({{card}})",
   "drawActionDiscard": "。{{count}}組捨てました",
+  "drawActionDiscardCards": "（{{cards}}）",
   "cpuActionsHeader": "[CPUの行動]",
   "drawHistoryHeader": "[引き履歴]",
   "drawHistoryOmitted": "…他{{count}}件（棋譜は log コマンドで参照可）",
@@ -29,5 +30,8 @@
   "helpExampleD": "  d                    相手から 1 枚引く (無作為)",
   "helpLog": "  l                    行動ログを表示",
   "hesitationFlagRequired0Off1On": "sh の後に 0 (OFF) か 1 (ON) を指定してください",
-  "invalidHesitationFlag01": "迷い時間ディレイは 0 か 1 で指定してください"
+  "invalidHesitationFlag01": "迷い時間ディレイは 0 か 1 で指定してください",
+  "log.draw": "プレイヤー{{player}}から引きました",
+  "log.discard": "{{count}}ペアを捨てました",
+  "log.finish": "プレイヤー{{player}}が上がりました"
 }

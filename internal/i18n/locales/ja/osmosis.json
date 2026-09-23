@@ -1,13 +1,13 @@
 {
   "helpTitle": "Osmosis (オズモシス / 浸透)",
   "helpDraw": "  d                    ストックから1枚引く",
-  "helpMoveWF": "  m w f <seg>          ウェイストからファンデーション(seg段目)に移動",
-  "helpMoveRF": "  m r <col> f <seg>    リザーブ(col列)からファンデーション(seg段目)に移動",
+  "helpMoveWF": "  m w f <seg>          ウェイストから組札(seg段目)に移動",
+  "helpMoveRF": "  m r <col> f <seg>    リザーブ(col列)から組札(seg段目)に移動",
   "helpGiveUp": "  g                    ギブアップ",
   "helpHint": "  h                    ヒント",
   "helpAutoComplete": "  ac                   オートコンプリート",
   "promptSourceZone": "移動元ゾーンを入力 (w=waste, r=reserve)",
-  "promptFoundation": "移動先ファンデーション段(0-3)を入力",
+  "promptFoundation": "移動先組札段(0-3)を入力",
   "promptReserve": "リザーブ列(0-3)を入力",
   "invalidFromZone": "無効な移動元ゾーンです: {{val}}",
   "moveUsage": "使い方: m w f <seg> | m r <col> f <seg>",
@@ -32,5 +32,11 @@
   "hintLine": "ヒント: {{from}} → {{to}} (配置可能: {{allowed}})",
   "helpExampleHint": "  h                    次の一手を教えてもらう",
   "helpExampleAuto": "  ac                   組札へ送れる札を自動で送る",
-  "helpUndo": "  u                    1手戻す"
+  "helpUndo": "  u                    1手戻す",
+  "log.recycle": "ウェイストをストックに戻しました",
+  "log.draw": "ストックからカードを引きました",
+  "log.moveWasteToFoundation": "ウェイスト→組札{{foundation}}段目",
+  "log.moveReserveToFoundation": "リザーブ列{{reserve}}→組札{{foundation}}段目",
+  "log.giveUp": "ギブアップしました",
+  "log.autoComplete": "オートコンプリートを実行しました"
 }

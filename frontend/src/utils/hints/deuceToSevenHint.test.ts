@@ -37,6 +37,7 @@ function makeState(overrides: Partial<DeuceToSevenResponse> = {}): DeuceToSevenR
     ante: 0,
     bettingLimit: 0,
     raiseCount: 0,
+    maxRaises: 4,
     maxBetAmount: 0,
     roundResults: [],
     cpuActions: [],

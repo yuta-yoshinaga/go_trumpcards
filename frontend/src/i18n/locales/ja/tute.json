@@ -16,6 +16,7 @@
   "round": "ラウンド {{n}}",
   "trick": "トリック {{n}}",
   "trump": "切り札: {{suit}}",
+  "trumpTitle": "切り札",
   "cards": "{{count}}枚",
   "tricks": "{{count}}トリック",
   "currentTrick": "現在のトリック",

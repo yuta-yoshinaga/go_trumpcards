@@ -85,6 +85,26 @@ func TestSpadesCuiPresenter_Output(t *testing.T) {
 		assert.NotContains(t, result, "ニル失敗")
 	})
 
+	t.Run("shows remaining tricks for an ordinary bid", func(t *testing.T) {
+		m, players := setupSpadesCuiMockWithPlayers()
+		players[0].SetBid(4)
+		players[0].AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 2, false)})
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "あと3トリックでビッド達成")
+	})
+
+	t.Run("shows made bid and bags for an ordinary bid", func(t *testing.T) {
+		m, players := setupSpadesCuiMockWithPlayers()
+		players[0].SetBid(2)
+		players[0].AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 2, false)})
+		players[0].AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 3, false)})
+		players[0].AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignHeart, 4, false)})
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "ビッド達成（バッグ1）")
+	})
+
 	t.Run("initial state with header and player info", func(t *testing.T) {
 		m, players := setupSpadesCuiMockWithPlayers()
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
@@ -97,8 +117,8 @@ func TestSpadesCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "トリック: 1")
 		assert.Contains(t, result, "スペードブレイク: なし")
 		assert.Contains(t, result, "あなた: ビッド=未ビッド 獲得0トリック バッグ0 累積0点 ラウンド0点 2枚")
-		assert.Contains(t, result, "[0]SPADE 1")
-		assert.Contains(t, result, "[1]HEART 5")
+		assert.Contains(t, result, "[0]♠1")
+		assert.Contains(t, result, "[1]♥5")
 		assert.Contains(t, result, "CPU 1: ビッド=未ビッド 獲得0トリック バッグ0 累積0点 ラウンド0点 1枚")
 		assert.Contains(t, result, "手番: あなた")
 		assert.Contains(t, result, "play <idx>")
@@ -157,7 +177,7 @@ func TestSpadesCuiPresenter_Output(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 10, false))
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "[0]SPADE 1  [1]DIAMOND 10")
+		assert.Contains(t, result, "[0]♠1  [1]♦10")
 	})
 
 	t.Run("current trick shown", func(t *testing.T) {
@@ -170,7 +190,7 @@ func TestSpadesCuiPresenter_Output(t *testing.T) {
 		m.On("GetCurrentTrick").Return(trick)
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "トリック: あなた=CLOVER 3, CPU 1=CLOVER 7")
+		assert.Contains(t, result, "トリック: あなた=♣3, CPU 1=♣7")
 	})
 
 	t.Run("no trick cards hides trick section", func(t *testing.T) {
@@ -276,7 +296,7 @@ func TestSpadesCuiPresenter_Output(t *testing.T) {
 		m.On("GetPlayer", 99).Return((*domain.SpadesPlayer)(nil))
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "UNKNOWN")
+		assert.Contains(t, result, "不明")
 	})
 }
 
@@ -289,7 +309,7 @@ func TestSpadesCuiPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("with entries", func(t *testing.T) {
 		m := new(interfaces.MockSpadesGame)
 		entries := []*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "played SPADE 5"},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		}
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetActionLog").Return(entries)
@@ -300,7 +320,7 @@ func TestSpadesCuiPresenter_ActionLogOutput(t *testing.T) {
 		assert.Contains(t, result, "棋譜")
 		assert.Contains(t, result, "play")
 		assert.Contains(t, result, "あなた", "棋譜の座席名が他の行と揃っていない")
-		assert.Contains(t, result, "played SPADE 5")
+		assert.Contains(t, result, "テスト用の棋譜行 1")
 		m.AssertExpectations(t)
 	})
 
@@ -348,7 +368,7 @@ func TestSpadesCuiPresenter_HintOutput(t *testing.T) {
 
 		p := new(presenter.SpadesCuiPresenter)
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 		assert.Contains(t, result, "ビッド 3")
 		assert.Contains(t, result, "戦略的なビッド")
 	})
@@ -379,7 +399,7 @@ func TestSpadesCuiPresenter_HintOutput(t *testing.T) {
 
 		p := new(presenter.SpadesCuiPresenter)
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 		assert.Contains(t, result, "リードスートに追随")
 	})
 

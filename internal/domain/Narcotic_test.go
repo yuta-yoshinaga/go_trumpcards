@@ -57,6 +57,15 @@ func TestNarcotic_ResetDealsOneCardToEachOfFourPiles(t *testing.T) {
 func TestNarcotic_DrawDealsOnePerPile(t *testing.T) {
 	g := playingNarcotic(t)
 	require.NoError(t, g.Draw())
+	var entry *domain.ActionLogEntry
+	for _, candidate := range g.GetActionLog() {
+		if candidate.DetailCode == "narcotic.log.draw" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Empty(t, entry.DetailParams)
 
 	for c := range domain.NarcoticColCnt {
 		assert.Len(t, g.GetColumns()[c], 2, "column %d", c)

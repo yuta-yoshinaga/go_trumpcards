@@ -348,7 +348,7 @@ func (k *Karnoffel) beginHand() {
 	// **リードは親の左から。**
 	k.trickLeader = (k.dealerIdx + 1) % KarnoffelPlayerCnt
 	k.currentIdx = k.trickLeader
-	k.addLog(-1, "deal", "hand "+strconv.Itoa(k.handNumber)+" chosen "+strconv.Itoa(k.chosenSuit), nil)
+	k.addLog(-1, "deal", "karnoffel.log.deal", map[string]string{"hand": strconv.Itoa(k.handNumber), "suit": strconv.Itoa(k.chosenSuit)}, nil)
 }
 
 // dealRound は 1 枚目を表向きに、残り 4 枚を伏せて配る。
@@ -476,7 +476,7 @@ func (k *Karnoffel) PlayCard(player, idx int) error {
 	c := p.GetCard(idx)
 	p.RemoveCard(idx)
 	k.trick = append(k.trick, c)
-	k.addLog(player, "play", "", []*Card{c})
+	k.addLog(player, "play", "karnoffel.log.play", nil, []*Card{c})
 
 	if len(k.trick) < KarnoffelPlayerCnt {
 		k.currentIdx = (k.currentIdx + 1) % KarnoffelPlayerCnt
@@ -511,7 +511,7 @@ func (k *Karnoffel) resolveTrick() {
 	winOffset, _ := karnoffelLeadingCard(k.trick, k.chosenSuit)
 	winner := (k.trickLeader + winOffset) % KarnoffelPlayerCnt
 	k.tricksWon[winner]++
-	k.addLog(winner, "trickWin", "", k.trick)
+	k.addLog(winner, "trickWin", "karnoffel.log.trickWin", nil, k.trick)
 
 	k.trick = make([]*Card, 0, KarnoffelPlayerCnt)
 	k.trickNumber++
@@ -568,7 +568,7 @@ func (k *Karnoffel) finishHand() {
 	}
 	k.lastResult = &KarnoffelHandResult{WinnerTeam: winner, Tricks: tricks, ChosenSuit: k.chosenSuit}
 	k.phase = KarnoffelPhaseHandEnd
-	k.addLog(-1, "handEnd", strconv.Itoa(tricks[0])+"-"+strconv.Itoa(tricks[1]), nil)
+	k.addLog(-1, "handEnd", "karnoffel.log.handEnd", map[string]string{"team0": strconv.Itoa(tricks[0]), "team1": strconv.Itoa(tricks[1])}, nil)
 	k.checkGameEnd()
 }
 
@@ -763,8 +763,8 @@ func (k *Karnoffel) SetConfig(c KarnoffelConfig) { k.config = c }
 func (k *Karnoffel) GetActionLog() []*ActionLogEntry { return k.actionLog }
 
 // addLog は棋譜を 1 件追加する。
-func (k *Karnoffel) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	k.appendLogAt(0, playerIdx, actionType, detail, cards)
+func (k *Karnoffel) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	k.appendLogCodeAt(0, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // ---- テスト用 ----

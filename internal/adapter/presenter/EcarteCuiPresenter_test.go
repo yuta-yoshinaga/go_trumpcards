@@ -67,6 +67,8 @@ func TestEcarteCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, out, "トリック: 1")
 		assert.Contains(t, out, "山札: 21枚")
 		assert.Contains(t, out, "累積得点: あなた=4  CPU=3")
+		assert.Contains(t, out, "切り札のKがめくれたらディーラーに+1点")
+		assert.Contains(t, out, "プレイ開始時に切り札のKを手札に持って宣言すると")
 		assert.Contains(t, out, "play <idx>")
 	})
 
@@ -195,7 +197,7 @@ func TestEcarteCuiPresenter_HintOutput(t *testing.T) {
 		m.On("GetHint").Return(&domain.EcarteHint{CardIndex: &idx, Reason: "follow_win"})
 
 		out := p.HintOutput(m)
-		assert.Contains(t, out, "HINT")
+		assert.Contains(t, out, "ヒント")
 		assert.Contains(t, out, "このトリックを取る")
 	})
 
@@ -204,7 +206,7 @@ func TestEcarteCuiPresenter_HintOutput(t *testing.T) {
 		m.On("GetHint").Return(&domain.EcarteHint{Action: "propose", Reason: "weak_hand"})
 
 		out := p.HintOutput(m)
-		assert.Contains(t, out, "HINT")
+		assert.Contains(t, out, "ヒント")
 		assert.Contains(t, out, "交換を提案")
 	})
 

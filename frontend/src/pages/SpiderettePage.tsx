@@ -38,6 +38,7 @@ import { formatSpideretteState } from '../utils/cli/formatters/spideretteFormatt
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { isTableauAllFaceUp } from '../utils/solitaireUtils';
+import { spideretteCanSelectSource } from '../utils/spideretteMoves';
 
 const SPDT_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -370,14 +371,19 @@ function SpiderettePageContent() {
                                           handleSelectSource(cardZone);
                                         }
                                       }}
-                                      disabled={!isPlaying || loading}
+                                      disabled={
+                                        !isPlaying ||
+                                        loading ||
+                                        ((!selectedSource || selectedSource.col === colIdx) &&
+                                          !spideretteCanSelectSource(col, cardIdx))
+                                      }
                                       aria-label={cardAlt(tc.card)}
                                       aria-pressed={isSourceSelected(colIdx, cardIdx)}
                                       draggable={isPlaying && !loading}
                                       onDragStart={dnd.handleDragStart(cardZone)}
                                       onDragEnd={dnd.handleDragEnd}
                                       data-testid={`spdt-card-${colIdx.toString()}-${cardIdx.toString()}`}
-                                      className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected(colIdx, cardIdx) ? 'ring-2 ring-ds-warning' : isHintSource(colIdx, cardIdx) ? 'ring-2 ring-ds-info animate-pulse' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
+                                      className={`p-0 border-0 bg-transparent cursor-pointer w-full rounded ${focusRingWhite} ${isSourceSelected(colIdx, cardIdx) ? 'ring-2 ring-ds-warning' : isHintSource(colIdx, cardIdx) ? 'ring-2 ring-ds-info animate-pulse' : ''} ${!spideretteCanSelectSource(col, cardIdx) ? 'opacity-40 cursor-default' : ''} ${dnd.isDragSource(cardZone) ? 'opacity-50' : ''}`}
                                     >
                                       <AnimatedCard
                                         card={tc.card}

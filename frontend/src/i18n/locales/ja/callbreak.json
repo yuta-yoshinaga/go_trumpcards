@@ -41,7 +41,9 @@
   "nextTrick": "次のトリック",
   "nextRound": "次のラウンド",
   "bidPhase": "ビッド宣言 (1-13)",
-  "mustTrumpSpadeTooltip": "このカードは出せません (リードスートに従うか、ボイドならスペードで切ってください)",
+  "spadesNotBrokenTooltip": "このカードは出せません (スペードはまだブレイクされていません)",
+  "followSuitTooltip": "このカードは出せません (リードスートに従ってください)",
+  "mustTrumpSpadeTooltip": "このカードは出せません (リードスートが無い場合はスペードで切らなければなりません)",
   "playPhase": {
     "lead": "リードしてください",
     "follow": "カードを出してください (ボイドならスペードで切る)"

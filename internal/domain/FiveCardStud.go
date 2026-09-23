@@ -5,6 +5,7 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 )
 
 // フェーズ定数
@@ -301,7 +302,7 @@ func (s *FiveCardStud) postAntes() {
 		}
 		p.SubtractChips(ante)
 		s.pot += ante
-		s.appendLog(i, "ante", fmt.Sprintf("posts ante %d", ante), nil)
+		s.appendLog(i, "ante", "fivecardstud.log.postsAnte", map[string]string{"amount": strconv.Itoa(ante)}, nil)
 		if p.GetChips() == 0 {
 			p.SetAllIn(true)
 			s.actedFlags[i] = true
@@ -349,7 +350,7 @@ func (s *FiveCardStud) postBringIn() {
 	p.SetCurrentBet(bringIn)
 	s.pot += bringIn
 	s.lastBet = bringIn
-	s.appendLog(s.bringInPlayerIdx, "bringin", fmt.Sprintf("brings in %d", bringIn), nil)
+	s.appendLog(s.bringInPlayerIdx, "bringin", "fivecardstud.log.bringsIn", map[string]string{"amount": strconv.Itoa(bringIn)}, nil)
 
 	if p.GetChips() == 0 {
 		p.SetAllIn(true)
@@ -481,20 +482,20 @@ func (s *FiveCardStud) advancePhase() {
 		s.phase = FiveCardStudPhaseThirdStreet
 		s.minRaise = s.config.SmallBet
 		s.dealStreetCard(true) // 表向き
-		s.appendLog(-1, "deal", "dealt third street", nil)
+		s.appendLog(-1, "deal", "fivecardstud.log.dealtThirdStreet", nil, nil)
 	case FiveCardStudPhaseThirdStreet:
 		s.phase = FiveCardStudPhaseFourthStreet
 		s.minRaise = s.config.BigBet
 		s.dealStreetCard(true)
-		s.appendLog(-1, "deal", "dealt fourth street", nil)
+		s.appendLog(-1, "deal", "fivecardstud.log.dealtFourthStreet", nil, nil)
 	case FiveCardStudPhaseFourthStreet:
 		s.phase = FiveCardStudPhaseFifthStreet
 		s.minRaise = s.config.BigBet
 		s.dealStreetCard(true)
-		s.appendLog(-1, "deal", "dealt fifth street", nil)
+		s.appendLog(-1, "deal", "fivecardstud.log.dealtFifthStreet", nil, nil)
 	case FiveCardStudPhaseFifthStreet:
 		s.phase = FiveCardStudPhaseShowdown
-		s.appendLog(-1, "showdown", "showdown", nil)
+		s.appendLog(-1, "showdown", "fivecardstud.log.showdown", nil, nil)
 		s.resolveShowdown()
 		return
 	}
@@ -786,18 +787,23 @@ func (s *FiveCardStud) getHandName(rank int) string {
 func (s *FiveCardStud) logAction(playerIdx, action, amount int) {
 	switch action {
 	case FiveCardStudActionFold:
-		s.appendLog(playerIdx, "fold", "fold", nil)
+		s.appendLog(playerIdx, "fold", "fivecardstud.log.fold", nil, nil)
 	case FiveCardStudActionCheck:
-		s.appendLog(playerIdx, "check", "check", nil)
+		s.appendLog(playerIdx, "check", "fivecardstud.log.check", nil, nil)
 	case FiveCardStudActionCall:
-		s.appendLog(playerIdx, "call", fmt.Sprintf("call %d", s.players[playerIdx].GetCurrentBet()), nil)
+		s.appendLog(playerIdx, "call", "fivecardstud.log.call", map[string]string{"amount": strconv.Itoa(s.players[playerIdx].GetCurrentBet())}, nil)
 	case FiveCardStudActionBet:
-		s.appendLog(playerIdx, "bet", fmt.Sprintf("bet %d", amount), nil)
+		s.appendLog(playerIdx, "bet", "fivecardstud.log.bet", map[string]string{"amount": strconv.Itoa(amount)}, nil)
 	case FiveCardStudActionRaise:
-		s.appendLog(playerIdx, "raise", fmt.Sprintf("raise to %d", amount), nil)
+		s.appendLog(playerIdx, "raise", "fivecardstud.log.raise", map[string]string{"amount": strconv.Itoa(amount)}, nil)
 	case FiveCardStudActionAllIn:
-		s.appendLog(playerIdx, "allin", fmt.Sprintf("all in %d", s.players[playerIdx].GetCurrentBet()), nil)
+		s.appendLog(playerIdx, "allin", "fivecardstud.log.allIn", map[string]string{"amount": strconv.Itoa(s.players[playerIdx].GetCurrentBet())}, nil)
 	}
+}
+
+// appendLog records a Five Card Stud action with a locale-independent detail code.
+func (s *FiveCardStud) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	s.appendLogCodeAt(len(s.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- ゲッター ---

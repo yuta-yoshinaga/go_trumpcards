@@ -364,4 +364,15 @@ describe('ChemindeFerPage', () => {
     renderWithProviders(<ChemindeFerPage />);
     await waitFor(() => expect(screen.queryByTestId('cdf-bet-line')).not.toBeInTheDocument());
   });
+
+  it('always renders the current shoe count', async () => {
+    mockApi.mockResolvedValue(withState({ remainingCards: 312 }));
+    const { unmount } = renderWithProviders(<ChemindeFerPage />);
+    expect(await screen.findByTestId('cdf-shoe-line')).toHaveTextContent('シュー残り: 312 枚');
+    unmount();
+
+    mockApi.mockResolvedValue(withState({ remainingCards: 306 }));
+    renderWithProviders(<ChemindeFerPage />);
+    expect(await screen.findByTestId('cdf-shoe-line')).toHaveTextContent('シュー残り: 306 枚');
+  });
 });

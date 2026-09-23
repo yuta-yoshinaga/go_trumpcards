@@ -25,7 +25,7 @@
   "actions": {
     "next": "次のトリックへ",
     "reset": "リセット",
-    "marriage": "マリアージュ宣言",
+    "marriagePoints": "マリアージュ宣言 ({{points}}点)",
     "hint": "ヒント",
     "marriageAria": "マリアージュ宣言: {{suit}} のKとQで{{points}}点",
     "playAria": "{{card}} を出す"

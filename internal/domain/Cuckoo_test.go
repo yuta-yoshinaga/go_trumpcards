@@ -74,6 +74,13 @@ func TestCuckoo_Keep(t *testing.T) {
 	if g.GetPlayer(0).CardValue() != 5 {
 		t.Errorf("player 0 card changed after keep")
 	}
+	logs := g.GetActionLog()
+	if len(logs) == 0 || logs[0].DetailCode != "cuckoo.log.keep" {
+		t.Fatalf("keep log = %#v, want cuckoo.log.keep", logs)
+	}
+	if logs[0].DetailParams["name"] != "You" {
+		t.Fatalf("keep detail = %#v", logs[0].DetailParams)
+	}
 }
 
 func TestCuckoo_SwapExchangesCards(t *testing.T) {

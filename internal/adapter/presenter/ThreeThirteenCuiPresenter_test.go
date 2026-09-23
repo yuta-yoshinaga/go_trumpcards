@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -109,6 +110,12 @@ func TestThreeThirteenCuiPresenter_Output(t *testing.T) {
 		assert.NotContains(t, out2, "デッドウッド?") // all hands revealed at round end
 	})
 
+	t.Run("header includes the maximum round", func(t *testing.T) {
+		m, _ := setupThreeThirteenCuiMock(domain.ThreeThirteenPhaseDraw, false)
+		out := p.Output(m, nil)
+		assert.Contains(t, out, fmt.Sprintf("ラウンド 1/%d", domain.ThreeThirteenMaxRound))
+	})
+
 	t.Run("error block", func(t *testing.T) {
 		m, _ := setupThreeThirteenCuiMock(domain.ThreeThirteenPhaseDraw, false)
 		assert.NotEmpty(t, p.Output(m, errors.New("err")))
@@ -145,8 +152,8 @@ func TestThreeThirteenCuiPresenter_MarksTheWildCards(t *testing.T) {
 		), nil)
 
 		// 黒スートは色付けされないので素の文字列。赤スートは color.Red が付く。
-		assert.Contains(t, out, "[0]SPADE 3"+presenter.CuiWildMark)
-		assert.NotContains(t, out, "[1]"+color.Red("HEART 5")+presenter.CuiWildMark)
+		assert.Contains(t, out, "[0]♠3"+presenter.CuiWildMark)
+		assert.NotContains(t, out, "[1]"+color.Red("♥5")+presenter.CuiWildMark)
 	})
 
 	t.Run("explains what the mark means", func(t *testing.T) {

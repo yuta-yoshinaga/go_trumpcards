@@ -240,6 +240,27 @@ describe('ChineseTenPage pendingCard display', () => {
     expect(screen.getByText('取る札を選んでください')).toBeInTheDocument();
   });
 
+  it('labels a stock-flipped pendingCard as flipped', async () => {
+    const pc = card('CLOVER', 2);
+    mockExec.mockResolvedValue(makeState({ phase: 1, pendingCard: pc, pendingFlip: true, selectableIndices: [1] }));
+    renderWithProviders(<ChineseTenPage />);
+    await waitFor(() => expect(screen.getAllByTestId('animated-card').length).toBeGreaterThan(0));
+
+    expect(screen.getByText('めくった札:')).toBeInTheDocument();
+    expect(screen.queryByText('出した札:')).not.toBeInTheDocument();
+  });
+
+  it.each([undefined, false])('keeps the hand-card label when pendingFlip is %s', async (pendingFlip) => {
+    mockExec.mockResolvedValue(
+      makeState({ phase: 1, pendingCard: card('CLOVER', 2), pendingFlip, selectableIndices: [1] }),
+    );
+    renderWithProviders(<ChineseTenPage />);
+    await waitFor(() => expect(screen.getAllByTestId('animated-card').length).toBeGreaterThan(0));
+
+    expect(screen.getByText('出した札:')).toBeInTheDocument();
+    expect(screen.queryByText('めくった札:')).not.toBeInTheDocument();
+  });
+
   it('does not render pendingCard area when not in SELECT phase (negative control)', async () => {
     // phase 0 (PLAY) - shouldn't render pending line even if state has pendingCard
     mockExec.mockResolvedValue(makeState({ phase: 0, pendingCard: card('SPADE', 1) }));

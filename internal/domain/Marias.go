@@ -17,9 +17,9 @@ package domain
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // MariasPlayerCnt プレイヤー数 (人間 1 + CPU 2)
@@ -63,25 +63,32 @@ type MariasHint struct {
 
 // Marias マリアーシュのゲームクラス
 type Marias struct {
-	trumpCards       *TrumpCards
-	players          []*MariasPlayer
-	config           MariasConfig
-	phase            MariasPhase
-	roundNumber      int
-	trickNumber      int
-	currentPlayerIdx int
-	currentTrick     []*TrickCard
-	leadPlayerIdx    int
-	dealerIdx        int
-	soloistIdx       int                  // その回の Soloist
-	trumpSuit        int                  // 切り札スート
-	playerScores     [MariasPlayerCnt]int // 累積ゲーム点
-	roundCardPts     [MariasPlayerCnt]int // 現ラウンドのプレイヤー別カード得点
-	roundMarriage    [MariasPlayerCnt]int // 現ラウンドのプレイヤー別結婚点
-	lastTrickWinner  int                  // 最終トリック勝者 (-1=未確定)
-	gameEndFlag      bool
-	winnerPlayer     int // -1=未確定
+	trumpCards         *TrumpCards
+	players            []*MariasPlayer
+	config             MariasConfig
+	phase              MariasPhase
+	roundNumber        int
+	trickNumber        int
+	currentPlayerIdx   int
+	currentTrick       []*TrickCard
+	leadPlayerIdx      int
+	dealerIdx          int
+	soloistIdx         int                               // その回の Soloist
+	trumpSuit          int                               // 切り札スート
+	playerScores       [MariasPlayerCnt]int              // 累積ゲーム点
+	roundCardPts       [MariasPlayerCnt]int              // 現ラウンドのプレイヤー別カード得点
+	roundMarriage      [MariasPlayerCnt]int              // 現ラウンドのプレイヤー別結婚点
+	roundMarriageSuits [MariasPlayerCnt][]MariasMarriage // スート別結婚点
+	lastTrickWinner    int                               // 直前トリックの勝者 (-1=未確定)
+	gameEndFlag        bool
+	winnerPlayer       int // -1=未確定
 	actionLogBase
+}
+
+// MariasMarriage is a marriage bonus earned in one suit.
+type MariasMarriage struct {
+	Suit   int `json:"suit"`
+	Points int `json:"points"`
 }
 
 // NewMarias コンストラクタ
@@ -126,6 +133,7 @@ func (g *Marias) startRound() {
 	g.currentTrick = nil
 	g.roundCardPts = [MariasPlayerCnt]int{}
 	g.roundMarriage = [MariasPlayerCnt]int{}
+	g.roundMarriageSuits = [MariasPlayerCnt][]MariasMarriage{}
 	g.lastTrickWinner = -1
 	for _, p := range g.players {
 		p.ResetRound()
@@ -165,19 +173,18 @@ func (g *Marias) longestSuit(playerIdx int) int {
 // detectMarriages 各プレイヤーの初手から結婚 (同スート K+Q) を検出し加点する。
 func (g *Marias) detectMarriages() {
 	for i := range g.players {
-		pts := 0
 		for _, suit := range []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond} {
 			if g.playerHasCard(i, suit, 13) && g.playerHasCard(i, suit, 12) {
+				pts := MariasMarriagePoints
 				if suit == g.trumpSuit {
-					pts += MariasTrumpMarriagePoints
-				} else {
-					pts += MariasMarriagePoints
+					pts = MariasTrumpMarriagePoints
 				}
+				g.roundMarriage[i] += pts
+				g.roundMarriageSuits[i] = append(g.roundMarriageSuits[i], MariasMarriage{Suit: suit, Points: pts})
 			}
 		}
-		if pts > 0 {
-			g.roundMarriage[i] += pts
-			g.appendLog(i, "marriage", fmt.Sprintf("%s declares marriages worth %d", playerName(g.players, i), pts), nil)
+		if len(g.roundMarriageSuits[i]) > 0 {
+			g.appendLogCode(i, "marriage", "marias.log.marriageDeclared", map[string]string{"name": playerName(g.players, i), "points": strconv.Itoa(g.roundMarriage[i])}, nil)
 		}
 	}
 }
@@ -207,7 +214,7 @@ func (g *Marias) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "marias.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
@@ -241,7 +248,7 @@ func (g *Marias) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Marias) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLogCode(playerIdx, "play", "marias.log.play", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(g.currentTrick) == MariasPlayerCnt {
 		g.phase = MariasPhaseTrickEnd
@@ -256,6 +263,7 @@ func (g *Marias) ResolveTrick() {
 		return
 	}
 	winnerIdx := g.trickWinner()
+	g.lastTrickWinner = winnerIdx
 	trickCards := make([]*Card, len(g.currentTrick))
 	pts := 0
 	for i, tc := range g.currentTrick {
@@ -264,12 +272,10 @@ func (g *Marias) ResolveTrick() {
 	}
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.roundCardPts[winnerIdx] += pts
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (+%d)", playerName(g.players, winnerIdx), g.trickNumber, pts), trickCards)
+	g.appendLogCode(winnerIdx, "trick_win", "marias.log.trickWon", map[string]string{"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber), "points": strconv.Itoa(pts)}, trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= MariasTrickCount {
-		g.lastTrickWinner = winnerIdx
 		g.roundCardPts[winnerIdx] += MariasLastTrickBonus
 		g.phase = MariasPhaseRoundEnd
 	} else {
@@ -306,10 +312,11 @@ func (g *Marias) ScoreRound() {
 			}
 		}
 	}
-	g.appendLog(-1, "round_score",
-		fmt.Sprintf("round %d: soloist(%s)=%d defense=%d -> %s",
-			g.roundNumber, playerName(g.players, g.soloistIdx), soloistTotal, defenseTotal,
-			map[bool]string{true: "soloist wins", false: "defense wins"}[soloistWon]), nil)
+	if soloistWon {
+		g.appendLogCode(-1, "round_score", "marias.log.roundScoreSoloistWins", map[string]string{"round": strconv.Itoa(g.roundNumber), "soloist": playerName(g.players, g.soloistIdx), "soloistTotal": strconv.Itoa(soloistTotal), "defenseTotal": strconv.Itoa(defenseTotal)}, nil)
+	} else {
+		g.appendLogCode(-1, "round_score", "marias.log.roundScoreDefenseWins", map[string]string{"round": strconv.Itoa(g.roundNumber), "soloist": playerName(g.players, g.soloistIdx), "soloistTotal": strconv.Itoa(soloistTotal), "defenseTotal": strconv.Itoa(defenseTotal)}, nil)
+	}
 
 	g.checkGameEnd()
 }
@@ -341,7 +348,7 @@ func (g *Marias) checkGameEnd() {
 		g.gameEndFlag = true
 		g.winnerPlayer = leader
 		g.phase = MariasPhaseGameEnd
-		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
+		g.appendLogCode(-1, "game_end", "marias.log.matchWon", map[string]string{"name": playerName(g.players, leader)}, nil)
 	}
 }
 
@@ -355,10 +362,10 @@ func (g *Marias) validatePlay(playerIdx int, card *Card) error {
 	leadSuit := g.currentTrick[0].Card.GetDesign()
 	hasLeadSuit := g.playerHasSuit(playerIdx, leadSuit)
 	if hasLeadSuit && card.GetDesign() != leadSuit {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+		return NewDomainErrorCode(ErrInvalidPlay, "marias.errMustFollowSuit", nil)
 	}
 	if !hasLeadSuit && g.playerHasSuit(playerIdx, g.trumpSuit) && card.GetDesign() != g.trumpSuit {
-		return NewDomainError(ErrInvalidPlay, "切り札を出してください")
+		return NewDomainErrorCode(ErrInvalidPlay, "marias.errMustPlayTrump", nil)
 	}
 	return nil
 }
@@ -585,6 +592,9 @@ func (g *Marias) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 // GetCurrentTrick 現在のトリック取得
 func (g *Marias) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
+// GetLastTrickWinner 直前トリックの勝者を返す (-1 = なし)。
+func (g *Marias) GetLastTrickWinner() int { return g.lastTrickWinner }
+
 // SetCurrentTrick トリック設定 (テスト用)
 func (g *Marias) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
 
@@ -623,6 +633,11 @@ func (g *Marias) SetRoundCardPoints(s [MariasPlayerCnt]int) { g.roundCardPts = s
 
 // GetRoundMarriage 現ラウンドの結婚点取得
 func (g *Marias) GetRoundMarriage() [MariasPlayerCnt]int { return g.roundMarriage }
+
+// GetRoundMarriageSuits returns the current round's marriage bonuses by suit.
+func (g *Marias) GetRoundMarriageSuits() [MariasPlayerCnt][]MariasMarriage {
+	return g.roundMarriageSuits
+}
 
 // SetRoundMarriage 現ラウンドの結婚点設定 (テスト用)
 func (g *Marias) SetRoundMarriage(s [MariasPlayerCnt]int) { g.roundMarriage = s }
@@ -664,49 +679,51 @@ func (g *Marias) GetPlayableIndices(playerIdx int) []int {
 
 // mariasJSON is the JSON wire format for Marias.
 type mariasJSON struct {
-	TrumpCards       *TrumpCards          `json:"tc"`
-	Players          []*MariasPlayer      `json:"ps"`
-	Config           MariasConfig         `json:"cf"`
-	Phase            MariasPhase          `json:"ph"`
-	RoundNumber      int                  `json:"rn"`
-	TrickNumber      int                  `json:"tn"`
-	CurrentPlayerIdx int                  `json:"ci"`
-	CurrentTrick     []*TrickCard         `json:"ct"`
-	LeadPlayerIdx    int                  `json:"li"`
-	DealerIdx        int                  `json:"di"`
-	SoloistIdx       int                  `json:"so"`
-	TrumpSuit        int                  `json:"ts"`
-	PlayerScores     [MariasPlayerCnt]int `json:"sc"`
-	RoundCardPts     [MariasPlayerCnt]int `json:"rp"`
-	RoundMarriage    [MariasPlayerCnt]int `json:"rm"`
-	LastTrickWinner  int                  `json:"lt"`
-	GameEndFlag      bool                 `json:"ge"`
-	WinnerPlayer     int                  `json:"wp"`
-	ActionLog        []*ActionLogEntry    `json:"al"`
+	TrumpCards         *TrumpCards                       `json:"tc"`
+	Players            []*MariasPlayer                   `json:"ps"`
+	Config             MariasConfig                      `json:"cf"`
+	Phase              MariasPhase                       `json:"ph"`
+	RoundNumber        int                               `json:"rn"`
+	TrickNumber        int                               `json:"tn"`
+	CurrentPlayerIdx   int                               `json:"ci"`
+	CurrentTrick       []*TrickCard                      `json:"ct"`
+	LeadPlayerIdx      int                               `json:"li"`
+	DealerIdx          int                               `json:"di"`
+	SoloistIdx         int                               `json:"so"`
+	TrumpSuit          int                               `json:"ts"`
+	PlayerScores       [MariasPlayerCnt]int              `json:"sc"`
+	RoundCardPts       [MariasPlayerCnt]int              `json:"rp"`
+	RoundMarriage      [MariasPlayerCnt]int              `json:"rm"`
+	RoundMarriageSuits [MariasPlayerCnt][]MariasMarriage `json:"rms"`
+	LastTrickWinner    int                               `json:"lt"`
+	GameEndFlag        bool                              `json:"ge"`
+	WinnerPlayer       int                               `json:"wp"`
+	ActionLog          []*ActionLogEntry                 `json:"al"`
 }
 
 // MarshalJSON implements json.Marshaler.
 func (g *Marias) MarshalJSON() ([]byte, error) {
 	return json.Marshal(mariasJSON{
-		TrumpCards:       g.trumpCards,
-		Players:          g.players,
-		Config:           g.config,
-		Phase:            g.phase,
-		RoundNumber:      g.roundNumber,
-		TrickNumber:      g.trickNumber,
-		CurrentPlayerIdx: g.currentPlayerIdx,
-		CurrentTrick:     g.currentTrick,
-		LeadPlayerIdx:    g.leadPlayerIdx,
-		DealerIdx:        g.dealerIdx,
-		SoloistIdx:       g.soloistIdx,
-		TrumpSuit:        g.trumpSuit,
-		PlayerScores:     g.playerScores,
-		RoundCardPts:     g.roundCardPts,
-		RoundMarriage:    g.roundMarriage,
-		LastTrickWinner:  g.lastTrickWinner,
-		GameEndFlag:      g.gameEndFlag,
-		WinnerPlayer:     g.winnerPlayer,
-		ActionLog:        g.actionLog,
+		TrumpCards:         g.trumpCards,
+		Players:            g.players,
+		Config:             g.config,
+		Phase:              g.phase,
+		RoundNumber:        g.roundNumber,
+		TrickNumber:        g.trickNumber,
+		CurrentPlayerIdx:   g.currentPlayerIdx,
+		CurrentTrick:       g.currentTrick,
+		LeadPlayerIdx:      g.leadPlayerIdx,
+		DealerIdx:          g.dealerIdx,
+		SoloistIdx:         g.soloistIdx,
+		TrumpSuit:          g.trumpSuit,
+		PlayerScores:       g.playerScores,
+		RoundCardPts:       g.roundCardPts,
+		RoundMarriage:      g.roundMarriage,
+		RoundMarriageSuits: g.roundMarriageSuits,
+		LastTrickWinner:    g.lastTrickWinner,
+		GameEndFlag:        g.gameEndFlag,
+		WinnerPlayer:       g.winnerPlayer,
+		ActionLog:          g.actionLog,
 	})
 }
 
@@ -769,6 +786,7 @@ func (g *Marias) UnmarshalJSON(data []byte) error {
 	g.playerScores = j.PlayerScores
 	g.roundCardPts = j.RoundCardPts
 	g.roundMarriage = j.RoundMarriage
+	g.roundMarriageSuits = j.RoundMarriageSuits
 	g.lastTrickWinner = j.LastTrickWinner
 	g.gameEndFlag = j.GameEndFlag
 	g.winnerPlayer = j.WinnerPlayer

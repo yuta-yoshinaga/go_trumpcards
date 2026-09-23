@@ -1,4 +1,9 @@
 {
+  "log.deal": "Dealt cards to each tableau column from the stock",
+  "log.move": "Moved from tableau column {{from}} to tableau column {{to}}",
+  "log.giveUp": "Gave up",
+  "log.autocomplete": "Ran auto-complete",
+  "log.complete": "Completed a suit in tableau column {{column}}",
   "helpTitle": "Spiderette",
   "helpDeal": "  d                        deal from stock",
   "helpMove": "  m t <col> <idx> t <col>  move tableau to tableau",

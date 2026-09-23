@@ -151,7 +151,7 @@ func TestBrusquembilleCuiPresenter_HintOutput(t *testing.T) {
 		m.On("GetHint").Return(&domain.BrusquembilleHint{CardIndex: &idx, Reason: "follow_cut"})
 
 		out := p.HintOutput(m)
-		assert.Contains(t, out, "HINT")
+		assert.Contains(t, out, "ヒント")
 		assert.Contains(t, out, "トランプでカット")
 	})
 

@@ -48,6 +48,9 @@ func (t *Tarabish) SetDealerIdxForTest(i int) { t.dealerIdx = i }
 // FinishGameForTest 現在のチーム得点で勝敗を確定させる（テスト用）
 func (t *Tarabish) FinishGameForTest() { t.finishGame() }
 
+// SetLastTrickBonusTeamForTest 最終トリックボーナス獲得チームを設定する（テスト用）
+func (t *Tarabish) SetLastTrickBonusTeamForTest(team int) { t.lastTrickBonusTeam = team }
+
 // PassTrumpForTest 指定席が見送る（テスト用。人間以外の見送りを再現する）
 func (t *Tarabish) PassTrumpForTest(idx int) error {
 	if t.phase != TarabishPhaseBid {

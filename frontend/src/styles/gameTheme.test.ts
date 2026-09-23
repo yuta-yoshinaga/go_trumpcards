@@ -5,6 +5,24 @@ import { gameTheme } from './gameTheme';
 describe('gameTheme', () => {
   it('table games use green-bright theme', () => {
     expect(gameTheme.blackjack.bg).toContain('green-bright');
+    expect(gameTheme.doubleexposure.bg).toContain('green-bright');
+  });
+
+  it('Quinze uses the casino theme', () => {
+    expect(gameTheme.quinze.bg).toContain('casino');
+  });
+
+  it('Basset uses the Faro-style casino theme', () => {
+    expect(gameTheme.basset.bg).toContain('faro');
+    expect(gameTheme.basset.footer).toContain('faro-dark');
+  });
+
+  it('Tehonbiki uses the green table theme', () => {
+    expect(gameTheme.tehonbiki.bg).toContain('green');
+  });
+
+  it('Tapp Tarock uses the green tarock theme', () => {
+    expect(gameTheme.tapptarock.bg).toContain('green');
   });
 
   it('poker games use green-poker theme', () => {
@@ -25,15 +43,21 @@ describe('gameTheme', () => {
   it('solitaire games use casino theme', () => {
     expect(gameTheme.klondike.bg).toContain('casino');
     expect(gameTheme.memory.bg).toContain('casino');
+    expect(gameTheme.willothewisp.bg).toContain('casino');
   });
 
   it('counting/rummy games use blue theme', () => {
     expect(gameTheme.ginrummy.bg).toContain('blue');
     expect(gameTheme.cribbage.bg).toContain('blue');
+    expect(gameTheme.tongits.bg).toContain('blue');
   });
 
   it('Indian Rummy uses its saffron/marigold theme', () => {
     expect(gameTheme.indianrummy.bg).toContain('indianrummy');
+  });
+
+  it('Marriage uses the rummy theme', () => {
+    expect(gameTheme.marriage.bg).toContain('indianrummy');
   });
 
   it('Machiavelli uses its Renaissance crimson theme', () => {

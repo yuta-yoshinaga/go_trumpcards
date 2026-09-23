@@ -25,5 +25,11 @@
   "invalidFromZone": "Invalid source zone: {{val}}",
   "helpExampleHint": "  h                    ask for a move",
   "helpExampleAuto": "  ac                   send everything that can go to a foundation",
-  "helpUndo": "  u                    undo one move"
+  "helpUndo": "  u                    undo one move",
+  "log.draw": "drew a card from the stock",
+  "log.redeal": "collected the waste to create a new stock",
+  "log.divanToFoundation": "Divan{{divan}}→Foundation",
+  "log.wasteToFoundation": "Waste→Foundation",
+  "log.giveup": "Gave up",
+  "log.autocomplete": "Auto-completed"
 }

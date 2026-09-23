@@ -1,11 +1,13 @@
 import type { literatureApi } from '../../../api/gameApi';
+import type { LiteratureResponse } from '../../../types/card';
 import { splitCommand, suggestCommand } from '../commandParserBase';
+import { formatLiteratureAsks } from '../formatters/literatureFormatter';
 import type { CliParseResult } from '../types';
 
 /** Args tuple accepted by literatureApi.exec. */
 export type LiteratureCliArgs = Parameters<typeof literatureApi.exec>;
 
-const VALID_COMMANDS = ['a', 'ask', 'c', 'claim', 'l', 'log', 'r', 'reset', 'help', '?'];
+const VALID_COMMANDS = ['a', 'ask', 'c', 'claim', 'ah', 'history', 'l', 'log', 'r', 'reset', 'help', '?'];
 
 /** Seats at the table (sync: `LiteraturePlayerCnt`). */
 const SEAT_MAX = 5;
@@ -82,6 +84,9 @@ export function parseLiteratureCommand(input: string): CliParseResult<Literature
     case 'l':
     case 'log':
       return { args: ['log'] };
+    case 'ah':
+    case 'history':
+      return { error: 'Use the local Literature history command.' };
     case 'r':
     case 'reset':
       return { args: ['reset'] };
@@ -98,5 +103,12 @@ export const LITERATURE_HELP: string[] = [
   'a <seat> <1-4> <1-13> - Ask an OPPONENT for a card (you must hold that half-suit, and not that card)',
   'c <half> <seat x6>    - Claim a half-suit, placing all six cards',
   'l / log               - Show action log',
+  'ah / history          - Show all asks',
   'r / reset             - Reset game',
 ];
+
+/** Answer the Literature history command from the state already held by the CLI. */
+export function literatureLocalCommand(input: string, state: LiteratureResponse): string | null {
+  const { cmd } = splitCommand(input);
+  return cmd === 'ah' || cmd === 'history' ? formatLiteratureAsks(state) : null;
+}

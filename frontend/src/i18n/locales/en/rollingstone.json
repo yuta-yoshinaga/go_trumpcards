@@ -6,6 +6,7 @@
   "header": {
     "trick": "Trick {{n}}",
     "deck": "Deck {{deck}} ({{left}} still in play)",
+    "finishedCount": "Out {{finished}} / {{total}} players",
     "rule": "Winning a trick scores nothing; the winner is whoever runs out of cards first. Fail to follow suit and the whole trick goes into your hand -- the penalty is being given cards, not taking them. Everyone starts with eight, and the deck is sized to the table (32 for four players, 40 for five, 48 for six).",
     "cards": "{{n}} cards",
     "pickups": "picked up {{n}}x",

@@ -44,10 +44,10 @@ func TestFiveCardStudCuiPresenter_Output(t *testing.T) {
 		s.SetPhase(domain.FiveCardStudPhaseSecondStreet)
 
 		result := p.Output(s, nil)
-		assert.Contains(t, result, "Ante:1")
-		assert.Contains(t, result, "BringIn:2")
-		assert.Contains(t, result, "SmallBet:5")
-		assert.Contains(t, result, "BigBet:10")
+		assert.Contains(t, result, "アンテ:1")
+		assert.Contains(t, result, "ブリングイン:2")
+		assert.Contains(t, result, "スモールベット:5")
+		assert.Contains(t, result, "ビッグベット:10")
 	})
 
 	t.Run("CPU door cards always visible", func(t *testing.T) {
@@ -243,7 +243,7 @@ func TestFiveCardStudCuiPresenter_Output(t *testing.T) {
 		s.SetHandCount(3)
 
 		result := p.Output(s, nil)
-		assert.Contains(t, result, "トーナメント ハンド#3 Ante:5 BringIn:10 (レベルアップ:5ハンド毎)")
+		assert.Contains(t, result, "トーナメント ハンド#3 アンテ:5 ブリングイン:10 (アンテレベル1, 次のレベルアップまで3ハンド; レベルアップ:5ハンド毎)")
 	})
 
 	t.Run("tournament mode header not shown when disabled", func(t *testing.T) {
@@ -252,6 +252,28 @@ func TestFiveCardStudCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(s, nil)
 		assert.NotContains(t, result, "トーナメント")
+	})
+}
+
+func TestFiveCardStudCuiPresenter_OutputTitle(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.FiveCardStudCuiPresenter)
+
+	t.Run("Soko uses the Soko title", func(t *testing.T) {
+		s := domain.NewDefaultSoko()
+
+		result := p.Output(s, nil)
+		assert.Contains(t, result, "Soko")
+		assert.NotContains(t, result, "Five Card Stud")
+	})
+
+	t.Run("Five Card Stud keeps its title", func(t *testing.T) {
+		s, _ := makeFiveCardStudForPresenter()
+
+		result := p.Output(s, nil)
+		assert.Contains(t, result, "Five Card Stud")
 	})
 }
 
@@ -416,7 +438,7 @@ func TestFiveCardStudCuiPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("with entries", func(t *testing.T) {
 		mockGame := new(interfaces.MockFiveCardStudGame)
 		entries := []*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "raise", Detail: "raised to 100"},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "raise", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		}
 		mockGame.On("GetGameEndFlag").Return(true)
 		mockGame.On("GetActionLog").Return(entries)

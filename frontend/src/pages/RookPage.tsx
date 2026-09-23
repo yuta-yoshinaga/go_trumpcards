@@ -165,6 +165,7 @@ function RookPageContent() {
   const isTrickEnd = state.phase === RookPhase.TRICK_END;
   const isRoundEnd = state.phase === RookPhase.ROUND_END;
   const isGameEnd = state.phase === RookPhase.GAME_END || state.gameEndFlag;
+  const showRoundResult = isRoundEnd || isGameEnd;
 
   const human = state.players[0];
   const humanTeam = human.team;
@@ -273,6 +274,23 @@ function RookPageContent() {
                 )}
               </div>
               <div>{t('teamScores', { t0: state.teamScores[0], t1: state.teamScores[1] })}</div>
+              {showRoundResult && state.roundResult && (
+                <div className="mt-2 rounded bg-black/30 p-2 text-sm" data-testid="rook-round-result">
+                  <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
+                  <div>
+                    {t('roundResult.summary', {
+                      team: state.roundResult.declarerTeam,
+                      points: state.roundResult.teamPoints,
+                      bid: state.roundResult.contractBid,
+                    })}
+                  </div>
+                  <div className={state.roundResult.made ? 'text-ds-success' : 'text-ds-error'}>
+                    {state.roundResult.made ? t('roundResult.made') : t('roundResult.failed')} (
+                    {state.roundResult.scoreDelta >= 0 ? '+' : ''}
+                    {state.roundResult.scoreDelta})
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* CPU players */}
@@ -430,7 +448,7 @@ function RookPageContent() {
                     id="rook-bid"
                     value={effectiveBid}
                     onChange={(e) => setBidValue(Number.parseInt(e.target.value, 10))}
-                    className="rounded px-2 py-2 text-sm text-ds-text bg-ds-surface"
+                    className="rounded px-2 py-2 text-sm text-ds-text-primary bg-ds-surface"
                   >
                     {bidOptions.map((v) => (
                       <option key={v} value={v}>

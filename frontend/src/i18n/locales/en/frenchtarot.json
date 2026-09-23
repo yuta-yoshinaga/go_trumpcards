@@ -30,6 +30,7 @@
   "points": "{{points}} pts",
   "score": "Score: {{score}}",
   "currentTrick": "Current Trick",
+  "previousTrickWinner": "Won by {{name}}",
   "players": "Players",
   "chienLabel": "Chien (revealed)",
   "bouts": {
@@ -75,6 +76,7 @@
     "declarer": "Declarer: {{name}}",
     "contract": "Contract: {{contract}}",
     "captured": "Captured: {{points}} pts",
+    "target": "Target: {{points}} pts",
     "petitAuBout": "Petit au bout: {{side}} took it ({{points}} per defender)",
     "petitAuBoutDeclarer": "the declarer",
     "petitAuBoutDefenders": "the defenders"

@@ -36,7 +36,8 @@ func TestOichoKabuCuiPresenter_Output_BetPhase(t *testing.T) {
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "チップ: 1000")
-	assert.Contains(t, result, "BET")
+	assert.Contains(t, result, "賭け")
+	assert.Contains(t, result, "目は手札の点数（10は0）を合計し、その合計を10で割った余りです。")
 	assert.Contains(t, result, "伏せ札")
 	// Betting hint spells out the ceiling (current chips).
 	assert.Contains(t, result, i18n.Tf("oichokabu.maxBetHint", "max", "1000"))
@@ -129,10 +130,10 @@ func TestOichoKabuCuiPresenter_Output_EndPush(t *testing.T) {
 func TestOichoKabuCuiPresenter_PhaseStr_AllBranches(t *testing.T) {
 	p := new(OichoKabuCuiPresenter)
 	for phase, expect := range map[int]string{
-		domain.OichoKabuPhaseBet:  "BET",
-		domain.OichoKabuPhaseDraw: "DRAW",
-		domain.OichoKabuPhaseEnd:  "END",
-		999:                       "UNKNOWN",
+		domain.OichoKabuPhaseBet:  "賭け",
+		domain.OichoKabuPhaseDraw: "ドロー",
+		domain.OichoKabuPhaseEnd:  "終了",
+		999:                       "不明",
 	} {
 		assert.Equal(t, expect, p.phaseStr(phase))
 	}

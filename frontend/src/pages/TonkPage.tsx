@@ -35,6 +35,7 @@ import { parseTonkCommand, TONK_HELP } from '../utils/cli/commands/tonkCommands'
 import { formatTonkState } from '../utils/cli/formatters/tonkFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
+import { calcTonkDeadwoodValue } from '../utils/hints/tonkHint';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { tonkMeldIndices } from '../utils/tonkMeldIndices';
@@ -165,6 +166,8 @@ function TonkPageContent() {
   const isRoundEnd = state.phase === TonkPhase.ROUND_END;
   const isGameEnd = state.phase === TonkPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = (isDrawPhase || isDiscardPhase) && state.players[state.currentPlayerIdx]?.isHuman === true;
+  const knockerDeadwoodScore = calcTonkDeadwoodValue(state.knockerDeadwood);
+  const opponentDeadwoodScore = calcTonkDeadwoodValue(state.opponentDeadwood);
 
   // When exactly one card is selected to discard, highlight which of the remaining
   // four cards already form a meld (set or run) so the player can knock with confidence.
@@ -296,9 +299,11 @@ function TonkPageContent() {
 
                 {/* ラウンドの点差はアンダーカット判定（両者のデッドウッド比較）から
                     来るのに、比較の相手側が画面に出ていなかった。 */}
-                {state.knockerDeadwood.length > 0 && (
+                {(state.knockerDeadwood.length > 0 || (isRoundEnd && state.knockerIdx >= 0)) && (
                   <div className="my-3 p-2 rounded bg-black/30" data-testid="tonk-knocker-deadwood">
-                    <div className="text-ds-text-muted text-sm mb-1">{t('knockerDeadwood')}</div>
+                    <div className="text-ds-text-muted text-sm mb-1">
+                      {t('knockerDeadwood')} — {t('deadwood.score', { value: knockerDeadwoodScore })}
+                    </div>
                     <div className="flex flex-wrap gap-1">
                       {state.knockerDeadwood.map((card, cardIdx) => (
                         <AnimatedCard
@@ -328,9 +333,11 @@ function TonkPageContent() {
                   </div>
                 )}
 
-                {state.opponentDeadwood.length > 0 && (
+                {(state.opponentDeadwood.length > 0 || (isRoundEnd && state.knockerIdx >= 0)) && (
                   <div className="my-3 p-2 rounded bg-black/30" data-testid="tonk-opponent-deadwood">
-                    <div className="text-ds-text-muted text-sm mb-1">{t('opponentDeadwood')}</div>
+                    <div className="text-ds-text-muted text-sm mb-1">
+                      {t('opponentDeadwood')} — {t('deadwood.score', { value: opponentDeadwoodScore })}
+                    </div>
                     <div className="flex flex-wrap gap-1">
                       {state.opponentDeadwood.map((card, cardIdx) => (
                         <AnimatedCard
@@ -340,6 +347,15 @@ function TonkPageContent() {
                         />
                       ))}
                     </div>
+                  </div>
+                )}
+                {isRoundEnd && state.isUndercut && (
+                  <div
+                    className="my-3 rounded px-3 py-2 text-center text-sm font-semibold bg-ds-error text-white"
+                    role="status"
+                    data-testid="tonk-undercut-result"
+                  >
+                    {t('result.undercut')}
                   </div>
                 )}
               </div>

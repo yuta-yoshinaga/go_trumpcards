@@ -93,6 +93,7 @@ type DeuceToSevenWebOutput struct {
 	Ante         int                                 `json:"ante"`
 	BettingLimit int                                 `json:"bettingLimit"`
 	RaiseCount   int                                 `json:"raiseCount"`
+	MaxRaises    int                                 `json:"maxRaises"`
 	MaxBetAmount int                                 `json:"maxBetAmount"`
 	RoundResults []*DeuceToSevenWebOutputResult      `json:"roundResults"`
 	CpuActions   []*DeuceToSevenWebOutputCpuAction   `json:"cpuActions"`

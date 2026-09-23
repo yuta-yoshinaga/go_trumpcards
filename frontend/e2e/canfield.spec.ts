@@ -5,7 +5,10 @@ test.describe('Canfield E2E', () => {
   test('navigates and renders the game', async ({ page }) => {
     await navigateTo(page, '/canfield');
 
-    await expect(page.getByText(/ベースランク/)).toBeVisible();
+    // **本文で拾わない。** ベースランクの循環規則を盤に出した (#7188) ので、
+    // `/ベースランク/` は見出しと規則文の 2 つに当たり strict mode で落ちる。
+    await expect(page.getByTestId('cf-base-rank')).toBeVisible();
+    await expect(page.getByTestId('cf-base-rank-rule')).toBeVisible();
     await expect(page.getByText(/手数/).first()).toBeVisible();
   });
 

@@ -11,6 +11,11 @@ const DESIGN_TO_FOUNDATION: Record<string, number> = {
   DIAMOND: 3,
 };
 
+/** Returns the foundation pile index assigned to a card's suit, or -1 if unknown. */
+export function agnesFoundationIndex(card: Card): number {
+  return DESIGN_TO_FOUNDATION[card.design] ?? -1;
+}
+
 /** Next foundation rank, wrapping King (13) back to Ace (1). Mirrors domain `nextRank`. */
 function nextRank(r: number): number {
   return (r % 13) + 1;

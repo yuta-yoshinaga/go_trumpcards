@@ -10,6 +10,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
+import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
@@ -61,7 +62,7 @@ const BET_OPTIONS: readonly { type: number; labelKey: string; descKey: string }[
 export const TrenteEtQuarantePage = withTutorial(TrenteEtQuarantePageContent, 'trenteetquarante', TEQ_TUTORIAL_STEPS);
 
 function TrenteEtQuarantePageContent() {
-  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, confirmReset, cancelReset } =
+  const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('trenteetquarante');
   const { cardWidth } = useCardDimensions();
 
@@ -82,6 +83,9 @@ function TrenteEtQuarantePageContent() {
     handleBet,
     handleNextRound,
     handleRebet,
+    config,
+    handleConfigChange,
+    reset,
   } = useTrenteEtQuaranteGame();
 
   // Merge the locally selected bet into the state so the hint reflects the pending choice.
@@ -100,7 +104,7 @@ function TrenteEtQuarantePageContent() {
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  useMountReset(execApi);
+  useMountReset(reset);
 
   const actionBindings = useMemo(
     () => [
@@ -237,7 +241,23 @@ function TrenteEtQuarantePageContent() {
 
           <GameFooter className={`${gameTheme.trenteetquarante.footer} px-4 pt-3`}>
             <ErrorAlert message={error} onRetry={retry} />
-            <SettingsPanel title={tc('settings.title')} groups={[]} />
+            <SettingsPanel
+              title={tc('settings.title')}
+              groups={[
+                {
+                  items: [
+                    {
+                      type: 'select' as const,
+                      id: 'defaultBet',
+                      label: t('settings.defaultBet'),
+                      value: String(config.defaultBet),
+                      options: BET_OPTIONS.map((opt) => ({ value: String(opt.type), label: t(opt.labelKey) })),
+                      onSelect: (v: string) => handleConfigChange('defaultBet', v),
+                    },
+                  ],
+                },
+              ]}
+            />
             {isBetPhase && (
               <div className="flex flex-col items-center gap-3 pb-2" data-tutorial="teq-bet-controls">
                 {/* biome-ignore lint/a11y/useSemanticElements: a flex row of bet buttons; fieldset would break the layout */}
@@ -327,6 +347,15 @@ function TrenteEtQuarantePageContent() {
                 </button>
               </div>
             )}
+            <div className="flex justify-center pb-2">
+              <GameResetButton
+                isGameEnd={false}
+                onReset={reset}
+                requestConfirm={requestConfirm}
+                loading={loading}
+                dataTutorial="teq-reset-button"
+              />
+            </div>
             <ActionShortcutsPanel bindings={actionBindings} data-testid="trente-et-quarante-kbd-shortcuts" />
           </GameFooter>
         </>

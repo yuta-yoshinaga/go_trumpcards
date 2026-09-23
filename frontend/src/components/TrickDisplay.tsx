@@ -1,5 +1,7 @@
 import type { Card } from '../types/card';
+import { cardAlt } from '../utils/cardAlt';
 import { playerName } from '../utils/playerUtils';
+import { CardRoleBadge } from './CardRoleBadge';
 import { AnimatedCard } from './motion/AnimatedCard';
 
 /** One card played into the current trick. Matches all trick-taking game TrickCard shapes. */
@@ -20,6 +22,8 @@ export interface TrickDisplayPlayer {
 export interface TrickDisplayProps {
   /** Cards currently on the trick. When empty, the component renders nothing. */
   currentTrick: TrickDisplayCard[];
+  /** Previously resolved trick, shown only while the current trick is empty. */
+  lastTrick?: TrickDisplayCard[];
   /** All players; indexed by `trickCard.playerIdx`. */
   players: TrickDisplayPlayer[];
   /** Card width in px forwarded to {@link AnimatedCard}. */
@@ -30,6 +34,8 @@ export interface TrickDisplayProps {
   dataTutorial?: string;
   /** When set (e.g. the trick winner at TRICK_END), that player's card gets a gold ring + WIN badge. */
   winnerIdx?: number;
+  /** Winner of {@link lastTrick}, used when the current trick is empty. */
+  lastTrickWinner?: number;
   /** Localised badge/announcement text for the winning card (defaults to "WIN"). */
   winnerLabel?: string;
   /**
@@ -41,6 +47,8 @@ export interface TrickDisplayProps {
    * the existing games render exactly as before.
    */
   wrap?: boolean;
+  /** Optional per-card role marker, rendered in both the visual and accessible card label. */
+  cardBadgeFor?: (card: Card) => { glyph: string; title: string } | null;
 }
 
 /**
@@ -61,10 +69,16 @@ export function TrickDisplay({
   label,
   dataTutorial,
   winnerIdx,
+  lastTrick,
+  lastTrickWinner,
   winnerLabel,
   wrap = false,
+  cardBadgeFor,
 }: TrickDisplayProps) {
-  if (currentTrick.length === 0) {
+  const displayedTrick = currentTrick.length > 0 ? currentTrick : (lastTrick ?? []);
+  const displayedWinnerIdx = currentTrick.length > 0 ? winnerIdx : (lastTrickWinner ?? winnerIdx);
+
+  if (displayedTrick.length === 0) {
     return null;
   }
 
@@ -78,12 +92,12 @@ export function TrickDisplay({
       {/* wrap の既定は false。通常のトリックは席数までしか積まれないので
           1 行に収まり、これまでの見た目のまま。 */}
       <div className={wrap ? 'flex gap-2 flex-wrap' : 'flex gap-2'} data-testid="trick-display-cards">
-        {currentTrick.map((trickCard) => {
+        {displayedTrick.map((trickCard) => {
           const player = players[trickCard.playerIdx];
           const team = player?.team;
           const isAlly = hasTeams && team !== undefined && team === humanTeam;
           const isFoe = hasTeams && team !== undefined && team !== humanTeam;
-          const isWinner = winnerIdx !== undefined && winnerIdx === trickCard.playerIdx;
+          const isWinner = displayedWinnerIdx !== undefined && displayedWinnerIdx === trickCard.playerIdx;
           // The winning card's gold ring takes visual priority over the ally/foe team rings.
           const wrapperClass = isWinner
             ? 'ring-2 ring-ds-warning rounded motion-safe:animate-pulse'
@@ -97,6 +111,7 @@ export function TrickDisplay({
             : isFoe
               ? 'text-ds-error font-semibold'
               : 'text-game-text-muted';
+          const badge = cardBadgeFor?.(trickCard.card);
           return (
             <div
               key={`trick-${trickCard.playerIdx}`}
@@ -105,7 +120,13 @@ export function TrickDisplay({
               data-team-role={isAlly ? 'ally' : isFoe ? 'foe' : undefined}
               data-trick-winner={isWinner || undefined}
             >
-              <AnimatedCard card={trickCard.card} width={cardWidth} wrapperClassName={wrapperClass || undefined} />
+              <AnimatedCard
+                card={trickCard.card}
+                width={cardWidth}
+                wrapperClassName={wrapperClass || undefined}
+                ariaLabel={badge ? `${cardAlt(trickCard.card)} (${badge.title})` : undefined}
+              />
+              {badge && <CardRoleBadge idx={trickCard.playerIdx} glyph={badge.glyph} title={badge.title} />}
               {isWinner && (
                 <span
                   data-testid="trick-winner-badge"

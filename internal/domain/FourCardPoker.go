@@ -5,6 +5,7 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 )
 
 // FourCardPoker phase constants.
@@ -137,7 +138,7 @@ func (fcp *FourCardPoker) Bet(ante, acesUp int) error {
 	}
 	fcp.anteBet = ante
 	fcp.acesUpBet = acesUp
-	fcp.appendLog(0, "bet", fmt.Sprintf("ante=%d acesup=%d", ante, acesUp), nil)
+	fcp.appendLog(0, "bet", "fourcardpoker.log.bet", map[string]string{"ante": strconv.Itoa(ante), "acesUp": strconv.Itoa(acesUp)}, nil)
 
 	fcp.deal()
 	fcp.phase = FourCardPokerPhaseAction
@@ -158,7 +159,7 @@ func (fcp *FourCardPoker) Play(multiplier int) error {
 	}
 	fcp.playBet = cost
 	fcp.playMultiplier = multiplier
-	fcp.appendLog(0, "play", fmt.Sprintf("play bet=%d (x%d ante)", cost, multiplier), nil)
+	fcp.appendLog(0, "play", "fourcardpoker.log.play", map[string]string{"bet": strconv.Itoa(cost), "multiplier": strconv.Itoa(multiplier)}, nil)
 
 	fcp.resolve()
 	return nil
@@ -169,7 +170,7 @@ func (fcp *FourCardPoker) Fold() error {
 	if fcp.phase != FourCardPokerPhaseAction {
 		return NewDomainError(ErrWrongPhase, "Fold is only allowed during the action phase.")
 	}
-	fcp.appendLog(0, "fold", "player folds", nil)
+	fcp.appendLog(0, "fold", "fourcardpoker.log.fold", nil, nil)
 
 	fcp.updateBestHands()
 	fcp.result = GameResultLose
@@ -182,7 +183,7 @@ func (fcp *FourCardPoker) Fold() error {
 
 	fcp.gameEndFlag = true
 	fcp.phase = FourCardPokerPhaseEnd
-	fcp.appendLog(-1, "result", "player folded", nil)
+	fcp.appendLog(-1, "result", "fourcardpoker.log.playerFolded", nil, nil)
 	return nil
 }
 
@@ -196,7 +197,7 @@ func (fcp *FourCardPoker) deal() {
 	for range FourCardPokerDealerCards {
 		fcp.dealerHand = append(fcp.dealerHand, fcp.trumpCards.DrawCard())
 	}
-	fcp.appendLog(-1, "deal", "dealt 5 to player and 6 to dealer", nil)
+	fcp.appendLog(-1, "deal", "fourcardpoker.log.deal", nil, nil)
 }
 
 // updateBestHands picks the strongest 4-card subset for both player and dealer
@@ -233,16 +234,14 @@ func (fcp *FourCardPoker) resolve() {
 	fcp.gameEndFlag = true
 	fcp.phase = FourCardPokerPhaseEnd
 
-	var resultStr string
+	resultCode := "fourcardpoker.log.dealerWins"
 	switch fcp.result {
 	case GameResultWin:
-		resultStr = "player wins"
+		resultCode = "fourcardpoker.log.playerWins"
 	case GameResultDraw:
-		resultStr = "push"
-	default:
-		resultStr = "dealer wins"
+		resultCode = "fourcardpoker.log.push"
 	}
-	fcp.appendLog(-1, "result", resultStr, nil)
+	fcp.appendLog(-1, "result", resultCode, nil, nil)
 }
 
 // calculatePayouts settles Ante and Play bets. Four Card Poker has no dealer qualify.
@@ -511,6 +510,10 @@ func (fcp *FourCardPoker) MarshalJSON() ([]byte, error) {
 }
 
 const fourCardPokerMaxSliceLen = 1000
+
+func (fcp *FourCardPoker) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	fcp.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
+}
 
 // UnmarshalJSON implements json.Unmarshaler.
 func (fcp *FourCardPoker) UnmarshalJSON(data []byte) error {

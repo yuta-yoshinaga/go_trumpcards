@@ -21,7 +21,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, TARGET_ROUNDS_OPTIONS, useQuadrilleGame } from '../hooks/useQuadrilleGame';
-import { badgeWarningColors } from '../styles/badgeStyles';
+import { badgeInfoColors, badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -32,7 +32,7 @@ import { parseQuadrilleCommand, QUADRILLE_HELP } from '../utils/cli/commands/qua
 import { formatQuadrilleState } from '../utils/cli/formatters/quadrilleFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
-import { playerName } from '../utils/playerUtils';
+import { findPlayerName, playerName } from '../utils/playerUtils';
 import { MATADOR_NAME_KEY, matadorRank } from '../utils/quadrilleMatadors';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -290,6 +290,12 @@ function QuadrillePageContent() {
                   players={state.players}
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
+                  winnerIdx={isTrickEnd ? state.lastTrickWinner : undefined}
+                  winnerLabel={
+                    isTrickEnd
+                      ? t('previousTrickWinner', { name: findPlayerName(state.players, state.lastTrickWinner) })
+                      : undefined
+                  }
                   dataTutorial="quadrille-trick-display"
                 />
               </div>
@@ -300,12 +306,25 @@ function QuadrillePageContent() {
                 <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
                   {state.players.map((p) => (
                     <div key={p.id} className="py-0.5 flex items-center gap-2">
-                      <span className={p.isQuadrille ? 'text-ds-warning font-semibold' : ''}>
+                      <span
+                        className={
+                          p.isQuadrille
+                            ? 'text-ds-warning font-semibold'
+                            : p.id === state.partnerIdx
+                              ? 'text-ds-info font-semibold'
+                              : ''
+                        }
+                      >
                         {playerName(p.id, p.isHuman)}: {t('score', { score: p.score })}
                       </span>
                       {p.isQuadrille && (
                         <span className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>
                           {t('quadrilleBadge')}
+                        </span>
+                      )}
+                      {p.id === state.partnerIdx && (
+                        <span data-role="partner" className={`px-1.5 py-0.5 rounded text-xs ${badgeInfoColors}`}>
+                          {t('partnerBadge')}
                         </span>
                       )}
                     </div>

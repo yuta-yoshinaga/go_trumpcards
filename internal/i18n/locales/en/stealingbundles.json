@@ -12,7 +12,7 @@
   "playerLine": "{{name}}{{role}}: {{cards}} cards, bundle {{bundle}}, top [{{top}}]",
   "promptCurrentPlayer": "Turn: {{name}}",
   "promptMustCapture": "A capture is available. You cannot place a card on the table.",
-  "promptTake": "take <idx> ... capture from the table",
+  "promptTakeCards": "take <idx> ... capture {{cards}} from the table",
   "promptSteal": "steal <idx> <seat> ... take that seat's bundle",
   "promptNoCapture": "No capture is available. Place a card on the table.",
   "promptTrail": "trail <idx> ... place a card on the table",
@@ -27,5 +27,6 @@
   "helpExampleGiveUp": "  g                    give the round up",
   "helpHint": "  h                    show a hint",
   "roleLastCaptureTake": "[took from the table]",
-  "roleLastCaptureSteal": "[stole {{name}}'s bundle]"
+  "roleLastCaptureSteal": "[stole {{name}}'s bundle]",
+  "log.start": "Started Stealing Bundles ({{players}} players)", "log.take": "Took {{count}} cards from the table", "log.steal": "Stole {{count}} cards from seat {{victim}}'s bundle", "log.trail": "Placed a card on the table", "log.sweep": "Took the remaining {{count}} cards", "log.result": "Collected the most with {{count}} cards", "log.giveup": "Gave up"
 }

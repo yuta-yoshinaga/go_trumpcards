@@ -1,4 +1,4 @@
-//go:build !js || !wasm || classic
+//go:build !js || !wasm || extra7
 
 package domain
 
@@ -156,7 +156,7 @@ func (h *Hokm) dealHand() {
 	h.sortHand(h.hakemIdx)
 	h.currentPlayerIdx = h.hakemIdx
 	h.leadPlayerIdx = h.hakemIdx
-	h.appendLog(-1, "deal", fmt.Sprintf("ハンド%d を開始（親: %d）", h.handNumber, h.hakemIdx), nil)
+	h.appendLog(-1, "deal", "hokm.log.deal", map[string]string{"hand": fmt.Sprint(h.handNumber), "hakem": fmt.Sprint(h.hakemIdx)}, nil)
 }
 
 // dealRemaining 宣言後に残りを配り、全員 13 枚にそろえる
@@ -224,7 +224,7 @@ func (h *Hokm) CpuDeclareTrump() {
 // acceptTrump 切り札を確定させ、残りを配ってプレイに入る
 func (h *Hokm) acceptTrump(suit int) {
 	h.trumpSuit = suit
-	h.appendLog(h.hakemIdx, "trump", fmt.Sprintf("切り札を %d に宣言", suit), nil)
+	h.appendLog(h.hakemIdx, "trump", "hokm.log.declareTrump", map[string]string{"suit": fmt.Sprint(suit)}, nil)
 	h.dealRemaining()
 	h.phase = HokmPhasePlay
 	// リードは親から。
@@ -285,7 +285,7 @@ func (h *Hokm) play(playerIdx, cardIndex int) error {
 	}
 	p.RemoveCard(cardIndex)
 	h.currentTrick = append(h.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	h.appendLog(playerIdx, "play", cardStr(card), []*Card{card})
+	h.appendLog(playerIdx, "play", "hokm.log.play", map[string]string{"card": cardStr(card)}, []*Card{card})
 
 	if len(h.currentTrick) < HokmPlayerCnt {
 		h.currentPlayerIdx = (playerIdx + 1) % HokmPlayerCnt
@@ -401,16 +401,16 @@ func (h *Hokm) finishHand(winnerTeam int) {
 	h.lastHandWinner = winnerTeam
 
 	if kot {
-		h.appendLog(-1, "kot", fmt.Sprintf("チーム%d が Kot（相手 0 トリック）で +%d", winnerTeam, points), nil)
+		h.appendLog(-1, "kot", "hokm.log.kot", map[string]string{"team": fmt.Sprint(winnerTeam), "points": fmt.Sprint(points)}, nil)
 	} else {
-		h.appendLog(-1, "hand", fmt.Sprintf("チーム%d がハンドを制して +%d", winnerTeam, points), nil)
+		h.appendLog(-1, "hand", "hokm.log.handWin", map[string]string{"team": fmt.Sprint(winnerTeam), "points": fmt.Sprint(points)}, nil)
 	}
 
 	// **親は負けたときだけ交代する。** 勝っているあいだは切り札を選び続ける。
 	h.lastHandHakemChanged = HokmTeamOf(h.hakemIdx) != winnerTeam
 	if h.lastHandHakemChanged {
 		h.hakemIdx = (h.hakemIdx + 1) % HokmPlayerCnt
-		h.appendLog(-1, "hakem", fmt.Sprintf("親が %d へ移った", h.hakemIdx), nil)
+		h.appendLog(-1, "hakem", "hokm.log.hakemChanged", map[string]string{"hakem": fmt.Sprint(h.hakemIdx)}, nil)
 	}
 
 	if h.scores[winnerTeam] >= h.config.Target {
@@ -441,7 +441,7 @@ func (h *Hokm) finishGame() {
 	default:
 		h.winnerTeam = -1
 	}
-	h.appendLog(-1, "result", fmt.Sprintf("最終得点 %d - %d", h.scores[0], h.scores[1]), nil)
+	h.appendLog(-1, "result", "hokm.log.result", map[string]string{"team0": fmt.Sprint(h.scores[0]), "team1": fmt.Sprint(h.scores[1])}, nil)
 }
 
 // trickWinner 現在のトリックの勝者
@@ -669,12 +669,12 @@ func (h *Hokm) GiveUp() {
 	h.phase = HokmPhaseGameEnd
 	h.gameEndFlag = true
 	h.winnerTeam = 1
-	h.appendLog(0, "giveup", "ギブアップしました", nil)
+	h.appendLog(0, "giveup", "hokm.log.giveUp", nil, nil)
 }
 
 // appendLog 棋譜エントリを追加
-func (h *Hokm) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	h.appendLogAt(h.trickNumber, playerIdx, actionType, detail, cards)
+func (h *Hokm) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	h.appendLogCodeAt(h.trickNumber, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // hokmJSON is the KV snapshot format for Hokm.

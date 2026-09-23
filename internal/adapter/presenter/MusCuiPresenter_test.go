@@ -171,14 +171,14 @@ func TestMusCuiPresenter_HintOutput(t *testing.T) {
 		m, _ := setupMusCuiMockWithPlayers()
 		m.On("GetHint").Return(&domain.MusHint{Mus: true, Reason: "mus_exchange"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 
 	t.Run("mus phase hint - cut", func(t *testing.T) {
 		m, _ := setupMusCuiMockWithPlayers()
 		m.On("GetHint").Return(&domain.MusHint{Mus: false, Reason: "mus_cut"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 
 	t.Run("discard phase hint with indices", func(t *testing.T) {
@@ -189,7 +189,7 @@ func TestMusCuiPresenter_HintOutput(t *testing.T) {
 		m.On("GetPhase").Return(domain.MusPhaseDiscard)
 		m.On("GetHint").Return(&domain.MusHint{Indices: []int{1}, Reason: "discard_low"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 
 	t.Run("discard phase hint no cards to discard", func(t *testing.T) {
@@ -198,7 +198,7 @@ func TestMusCuiPresenter_HintOutput(t *testing.T) {
 		m.On("GetPhase").Return(domain.MusPhaseDiscard)
 		m.On("GetHint").Return(&domain.MusHint{Indices: []int{}, Reason: "discard_low"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 
 	t.Run("bet hint - paso", func(t *testing.T) {
@@ -207,7 +207,7 @@ func TestMusCuiPresenter_HintOutput(t *testing.T) {
 		m.On("GetPhase").Return(domain.MusPhaseGrande)
 		m.On("GetHint").Return(&domain.MusHint{Action: domain.MusActionPaso, Reason: "bet_paso"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 
 	t.Run("bet hint - envido", func(t *testing.T) {
@@ -216,7 +216,7 @@ func TestMusCuiPresenter_HintOutput(t *testing.T) {
 		m.On("GetPhase").Return(domain.MusPhasePares)
 		m.On("GetHint").Return(&domain.MusHint{Action: domain.MusActionEnvido, Amount: 2, Reason: "bet_envido"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 }
 
@@ -225,7 +225,7 @@ func TestMusCuiPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockMusGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "mus", Detail: "You wants mus"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "mus", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
 	m.On("GetPlayer", mock.Anything).Return(domain.NewMusPlayer(true)).Maybe()

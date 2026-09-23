@@ -97,6 +97,20 @@ func TestSlyFoxWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "test error", result.Message)
 	})
 
+	t.Run("error message code", func(t *testing.T) {
+		g := new(interfaces.MockSlyFoxGame)
+		setupSlyFoxOutputMock(g)
+
+		result := parseSlyFoxOutput(t, new(SlyFoxWebPresenter).Output(g,
+			domain.NewDomainErrorCode(domain.ErrInvalidPlay, "slyfox.errSomething", nil)))
+		assert.Equal(t, "slyfox.errSomething", result.MessageCode)
+		assert.Empty(t, result.Message)
+
+		result = parseSlyFoxOutput(t, new(SlyFoxWebPresenter).Output(g, errors.New("test error")))
+		assert.Equal(t, "test error", result.Message)
+		assert.Empty(t, result.MessageCode)
+	})
+
 	for _, tc := range []struct {
 		name string
 		val  domain.SlyFoxPhase
@@ -178,7 +192,7 @@ func TestSlyFoxWebPresenter_ActionLogOutput(t *testing.T) {
 		g.On("GetPhase").Return(domain.SlyFoxPhaseGameOver)
 		g.On("GetGameEndFlag").Return(true)
 		g.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "move", Detail: "test"},
+			{TurnNumber: 1, ActionType: "move", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 
 		assert.Contains(t, new(SlyFoxWebPresenter).ActionLogOutput(g), "move")

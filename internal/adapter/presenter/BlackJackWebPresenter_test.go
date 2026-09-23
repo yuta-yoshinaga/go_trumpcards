@@ -228,6 +228,84 @@ func TestBlackJackWebPresenters_Method(t *testing.T) {
 	})
 }
 
+func TestBlackJackWebPresenterSpanish21ExplainsPlayer21(t *testing.T) {
+	bj := domain.NewSpanish21BlackJack()
+	bj.Reset()
+	hand := bj.GetPlayerHands()[0]
+	hand.SetBet(100)
+	hand.AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+	hand.AddCard(domain.NewCard(domain.CardDesignSpade, 11, false))
+	dealer := bj.GetDealer()
+	dealer.AddCard(domain.NewCard(domain.CardDesignClover, 1, false))
+	dealer.AddCard(domain.NewCard(domain.CardDesignClover, 11, false))
+	bj.SetPhase(domain.BJPhaseAction)
+	_ = bj.PlayerStand()
+
+	var result controller.BlackJackWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(new(presenter.BlackJackWebPresenter).Output(bj, nil)), &result))
+	assert.Equal(t, "spanish21.result.player21BeatsDealer21", result.MessageCode)
+}
+
+func TestBlackJackWebPresenterSpanish21Player21BeatsDealer21Conditions(t *testing.T) {
+	tests := []struct {
+		name       string
+		game       func() *domain.BlackJack
+		playerCard []int
+		dealerCard []int
+		wantCode   string
+	}{
+		{
+			name:       "nil variant",
+			game:       domain.NewDefaultBlackJack,
+			playerCard: []int{1, 10},
+			dealerCard: []int{1, 10},
+			wantCode:   "blackjack.result.draw",
+		},
+		{
+			name:       "non Spanish21 variant",
+			game:       domain.NewDoubleExposureBlackJack,
+			playerCard: []int{1, 10},
+			dealerCard: []int{9, 10},
+			wantCode:   "blackjack.result.win",
+		},
+		{
+			name:       "dealer is not 21",
+			game:       domain.NewSpanish21BlackJack,
+			playerCard: []int{1, 10},
+			dealerCard: []int{9, 10},
+			wantCode:   "blackjack.result.win",
+		},
+		{
+			name:       "Spanish21 dealer 21 and no player hand is 21",
+			game:       domain.NewSpanish21BlackJack,
+			playerCard: []int{9, 11},
+			dealerCard: []int{1, 11},
+			wantCode:   "blackjack.result.lose",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			bj := tt.game()
+			bj.Reset()
+			hand := bj.GetPlayerHands()[0]
+			hand.SetBet(100)
+			for _, value := range tt.playerCard {
+				hand.AddCard(domain.NewCard(domain.CardDesignSpade, value, false))
+			}
+			for _, value := range tt.dealerCard {
+				bj.GetDealer().AddCard(domain.NewCard(domain.CardDesignClover, value, false))
+			}
+			bj.SetPhase(domain.BJPhaseAction)
+			assert.NoError(t, bj.PlayerStand())
+
+			var result controller.BlackJackWebOutput
+			assert.NoError(t, json.Unmarshal([]byte(new(presenter.BlackJackWebPresenter).Output(bj, nil)), &result))
+			assert.Equal(t, tt.wantCode, result.MessageCode)
+		})
+	}
+}
+
 func TestBlackJackWebPresenter_ConfigFields(t *testing.T) {
 	tbp := new(presenter.BlackJackWebPresenter)
 
@@ -607,7 +685,7 @@ func TestBlackJackWebPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("with entries", func(t *testing.T) {
 		mockGame := new(interfaces.MockBlackJackGame)
 		entries := []*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "hit", Detail: "drew a card", Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 10, true)}},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "hit", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}, Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 10, true)}},
 		}
 		mockGame.On("GetGameEndFlag").Return(true)
 		mockGame.On("GetActionLog").Return(entries)
@@ -615,7 +693,7 @@ func TestBlackJackWebPresenter_ActionLogOutput(t *testing.T) {
 		result := p.ActionLogOutput(mockGame)
 
 		assert.Contains(t, result, `"actionType":"hit"`)
-		assert.Contains(t, result, `"detail":"drew a card"`)
+		assert.Contains(t, result, `"detailCode":"test.log.stub"`)
 		mockGame.AssertExpectations(t)
 	})
 

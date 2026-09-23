@@ -202,7 +202,7 @@ func (t *Truco) PlayerPlay(cardIndex int) error {
 	}
 	player := t.players[t.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "truco.errCardIndexOutOfRange", nil)
 	}
 	played := player.RemoveCard(cardIndex)
 	t.playCard(t.currentPlayerIdx, played)
@@ -219,7 +219,7 @@ func (t *Truco) DeclareTruco() error {
 		return ErrNotHumanTurn
 	}
 	if !t.canDeclare(actor) {
-		return NewDomainError(ErrWrongPhase, "これ以上引き上げできません")
+		return NewDomainErrorCode(ErrWrongPhase, "truco.errCannotRaiseNow", nil)
 	}
 	t.callTruco(actor)
 	return nil
@@ -509,8 +509,7 @@ func (t *Truco) callTruco(caller int) {
 	t.trucoCallerIdx = caller
 	t.responderIdx = 1 - caller
 	t.phase = TrucoPhaseRespond
-	t.appendLog(caller, "truco",
-		fmt.Sprintf("%s calls %s", playerName(t.players, caller), trucoLevelName(t.pendingLevel)), nil)
+	t.appendLog(caller, "truco", "truco.log.truco", map[string]string{"name": playerName(t.players, caller), "levelKey": trucoLevelKey(t.pendingLevel)}, nil)
 }
 
 // respond responder が宣言に応答する。
@@ -522,8 +521,7 @@ func (t *Truco) respond(responder int, accept bool) {
 		t.trucoCallerIdx = -1
 		t.responderIdx = -1
 		t.phase = TrucoPhasePlay
-		t.appendLog(responder, "accept",
-			fmt.Sprintf("%s accepts (stake %d)", playerName(t.players, responder), t.handStake), nil)
+		t.appendLog(responder, "accept", "truco.log.accept", map[string]string{"name": playerName(t.players, responder), "stake": fmt.Sprint(t.handStake)}, nil)
 		return
 	}
 	// 拒否: 宣言者が直前の確定点でマノを取る
@@ -533,9 +531,7 @@ func (t *Truco) respond(responder int, accept bool) {
 	t.trucoCallerIdx = -1
 	t.handWinnerIdx = caller
 	t.phase = TrucoPhaseHandEnd
-	t.appendLog(responder, "decline",
-		fmt.Sprintf("%s declines; %s wins hand (%d pt)",
-			playerName(t.players, responder), playerName(t.players, caller), t.handStake), nil)
+	t.appendLog(responder, "decline", "truco.log.decline", map[string]string{"name": playerName(t.players, responder), "winner": playerName(t.players, caller), "points": fmt.Sprint(t.handStake)}, nil)
 }
 
 // --- Private: trick / hand progression ---
@@ -543,8 +539,7 @@ func (t *Truco) respond(responder int, accept bool) {
 // playCard カードをプレイする共通処理。
 func (t *Truco) playCard(playerIdx int, card *Card) {
 	t.currentTrick = append(t.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	t.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", playerName(t.players, playerIdx), cardStr(card)), []*Card{card})
+	t.appendLog(playerIdx, "play", "truco.log.play", map[string]string{"name": playerName(t.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 	if len(t.currentTrick) == TrucoPlayerCnt {
 		t.finishBaza()
 	} else {
@@ -558,12 +553,11 @@ func (t *Truco) finishBaza() {
 	t.trickResults = append(t.trickResults, result)
 	cards := []*Card{t.currentTrick[0].Card, t.currentTrick[1].Card}
 	if result < 0 {
-		t.appendLog(-1, "baza_tie", fmt.Sprintf("Baza %d: parda", t.trickNumber), cards)
+		t.appendLog(-1, "baza_tie", "truco.log.bazaTie", map[string]string{"baza": fmt.Sprint(t.trickNumber)}, cards)
 		// パルダはリードプレイヤーが維持
 	} else {
 		t.leadPlayerIdx = result
-		t.appendLog(result, "baza_win",
-			fmt.Sprintf("%s wins baza %d", playerName(t.players, result), t.trickNumber), cards)
+		t.appendLog(result, "baza_win", "truco.log.bazaWin", map[string]string{"name": playerName(t.players, result), "baza": fmt.Sprint(t.trickNumber)}, cards)
 	}
 	t.phase = TrucoPhaseTrickEnd
 }
@@ -587,17 +581,13 @@ func (t *Truco) advanceHand() {
 	if t.handWinnerIdx >= 0 && t.handWinnerIdx < len(t.playerMatchPoints) {
 		t.playerMatchPoints[t.handWinnerIdx] += t.handStake
 	}
-	t.appendLog(t.handWinnerIdx, "hand_end",
-		fmt.Sprintf("Hand %d: %s +%d (match %d-%d)", t.handNumber,
-			playerName(t.players, t.handWinnerIdx), t.handStake,
-			t.playerMatchPoints[0], t.playerMatchPoints[1]), nil)
+	t.appendLog(t.handWinnerIdx, "hand_end", "truco.log.handEnd", map[string]string{"hand": fmt.Sprint(t.handNumber), "name": playerName(t.players, t.handWinnerIdx), "points": fmt.Sprint(t.handStake), "p0": fmt.Sprint(t.playerMatchPoints[0]), "p1": fmt.Sprint(t.playerMatchPoints[1])}, nil)
 
 	if t.playerMatchPoints[t.handWinnerIdx] >= t.matchTarget {
 		t.gameEndFlag = true
 		t.winnerIdx = t.handWinnerIdx
 		t.phase = TrucoPhaseGameEnd
-		t.appendLog(-1, "game_end",
-			fmt.Sprintf("Match end: %d-%d", t.playerMatchPoints[0], t.playerMatchPoints[1]), nil)
+		t.appendLog(-1, "game_end", "truco.log.gameEnd", map[string]string{"p0": fmt.Sprint(t.playerMatchPoints[0]), "p1": fmt.Sprint(t.playerMatchPoints[1])}, nil)
 		return
 	}
 	t.dealerIdx = 1 - t.dealerIdx
@@ -635,8 +625,11 @@ func (t *Truco) dealHand() {
 	t.leadPlayerIdx = t.manoIdx
 	t.currentPlayerIdx = t.manoIdx
 	t.phase = TrucoPhasePlay
-	t.appendLog(-1, "deal", fmt.Sprintf("Hand %d dealt (dealer=%s)",
-		t.handNumber, playerName(t.players, t.dealerIdx)), nil)
+	t.appendLog(-1, "deal", "truco.log.deal", map[string]string{"hand": fmt.Sprint(t.handNumber), "dealer": playerName(t.players, t.dealerIdx)}, nil)
+}
+
+func (t *Truco) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	t.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- Pure rule helpers ---
@@ -741,17 +734,17 @@ func (t *Truco) sortAllHands() {
 	}
 }
 
-// trucoLevelName ベッティングレベルの表示名を返す。
-func trucoLevelName(level int) string {
+// trucoLevelKey ベッティングレベルの i18n キーを返す。
+func trucoLevelKey(level int) string {
 	switch level {
 	case TrucoLevelTruco:
-		return "Truco"
+		return "truco.levelTruco"
 	case TrucoLevelRetruco:
-		return "Retruco"
+		return "truco.levelRetruco"
 	case TrucoLevelValeCuatro:
-		return "Vale Cuatro"
+		return "truco.levelValeCuatro"
 	default:
-		return "Truco"
+		return "truco.levelNone"
 	}
 }
 

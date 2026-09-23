@@ -36,7 +36,7 @@ func TestGuandanCuiPresenter_LabelsTheFaceLevels(t *testing.T) {
 func TestGuandanCuiPresenter_HidesTheOtherHands(t *testing.T) {
 	out := new(presenter.GuandanCuiPresenter).Output(setupGuandanMock(defaultGuandanOpts()), nil)
 	// 人間の手札は添字つきで見える。
-	assert.Contains(t, out, "0:SPADE 2")
+	assert.Contains(t, out, "0:♠2")
 	// **味方の手札も伏せる。**
 	assert.Contains(t, out, "非公開 1枚")
 	assert.Contains(t, out, "<- 手番")
@@ -98,7 +98,7 @@ func TestGuandanCuiPresenter_Tribute(t *testing.T) {
 		}
 		out := new(presenter.GuandanCuiPresenter).Output(setupGuandanMock(o), nil)
 		assert.Contains(t, out, "還貢待ち")
-		assert.Contains(t, out, "還貢: CLOVER 2")
+		assert.Contains(t, out, "還貢: ♣2")
 		assert.Contains(t, out, "t <添字>")
 	})
 

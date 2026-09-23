@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra2
+//go:build !js || !wasm || extra
 
 package presenter
 
@@ -75,7 +75,11 @@ func (sp *SetteEMezzoWebPresenter) Output(s interfaces.SetteEMezzoGame, lastErr 
 	} else {
 		switch s.GetPhase() {
 		case domain.SetteEMezzoPhaseBet:
-			if s.IsHumanBanker() {
+			if s.GetBankerChanged() && s.IsHumanBanker() {
+				resObj.MessageCode = "settemezzo.bankerChangedYou"
+			} else if s.GetBankerChanged() {
+				resObj.MessageCode = "settemezzo.bankerChanged"
+			} else if s.IsHumanBanker() {
 				resObj.MessageCode = "settemezzo.dealAsBanker"
 			} else {
 				resObj.MessageCode = "settemezzo.placeBet"
@@ -85,11 +89,11 @@ func (sp *SetteEMezzoWebPresenter) Output(s interfaces.SetteEMezzoGame, lastErr 
 		case domain.SetteEMezzoPhaseBankerTurn:
 			resObj.MessageCode = "settemezzo.bankerTurn"
 		case domain.SetteEMezzoPhaseEnd:
-			resObj.Message = s.GetLastResult()
-			resObj.MessageCode = "settemezzo.roundOver"
-			resObj.MessageParams = map[string]string{"result": s.GetLastResult()}
+			resObj.MessageCode = s.GetLastResultCode()
+			resObj.MessageParams = s.GetLastResultParams()
 			if s.GetNextBanker() >= 0 {
 				resObj.MessageCode = "settemezzo.bankPasses"
+				resObj.MessageParams = withMessageParams(resObj.MessageParams, "resultKey", s.GetLastResultCode())
 			}
 		}
 	}

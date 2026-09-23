@@ -79,6 +79,33 @@ func TestPreference_BiddingResolvesHighestDeclarer(t *testing.T) {
 	}
 }
 
+func TestPreference_ActionLogUsesDetailCode(t *testing.T) {
+	g := newPrefAllHuman()
+	g.Reset()
+	if err := g.PlayerBid(PreferenceBidSix); err != nil {
+		t.Fatal(err)
+	}
+	if err := g.PlayerBid(PreferenceBidSeven); err != nil {
+		t.Fatal(err)
+	}
+	if err := g.PlayerBid(PreferenceBidPass); err != nil {
+		t.Fatal(err)
+	}
+	var contract *ActionLogEntry
+	for _, entry := range g.GetActionLog() {
+		if entry.DetailCode == "preference.log.contract" {
+			contract = entry
+			break
+		}
+	}
+	if contract == nil {
+		t.Fatal("contract action log entry not found")
+	}
+	if contract.DetailParams["contractKey"] != "preference.bid.seven" {
+		t.Fatalf("contract log = %+v, want code params and empty detail", contract)
+	}
+}
+
 func TestPreference_MisereHasNoTrump(t *testing.T) {
 	g := newPrefAllHuman()
 	g.Reset()

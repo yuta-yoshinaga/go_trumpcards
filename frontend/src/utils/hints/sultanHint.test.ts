@@ -17,7 +17,7 @@ describe('getSultanHint', () => {
     });
   });
 
-  // **ファウンデーション 0 は正当。**真偽値で見ると先頭だけ落ちる。
+  // **組札 0 は正当。**真偽値で見ると先頭だけ落ちる。
   it('keeps a move onto foundation zero', () => {
     expect(getSultanHint(state({ fromZone: 'divan', fromIdx: 1, toFoundation: 0 }))?.targetAction).toBe('foundation-0');
   });

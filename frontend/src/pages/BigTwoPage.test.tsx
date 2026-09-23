@@ -187,6 +187,38 @@ describe('BigTwoPage', () => {
     expect(label).toHaveTextContent('フラッシュ');
   });
 
+  it('shows when a CPU passes in the action log', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        cpuActions: [{ playerIdx: 1, playedCards: null }],
+      }),
+    );
+    renderWithProviders(<BigTwoPage />);
+
+    await screen.findByTestId('pass-button');
+    const log = screen.getByText(/^\[CPUの行動\]/).parentElement;
+    expect(log).toHaveTextContent('CPU 1がパスしました');
+  });
+
+  it('shows the cards played by a CPU in the action log', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        cpuActions: [{ playerIdx: 2, playedCards: [card('SPADE', 4)] }],
+      }),
+    );
+    renderWithProviders(<BigTwoPage />);
+
+    await screen.findByTestId('pass-button');
+    const log = screen.getByText(/^\[CPUの行動\]/).parentElement;
+    expect(log).toHaveTextContent('CPU 2が出しました: SPADE 4');
+  });
+
+  it('does not render the CPU action log when there are no CPU actions', async () => {
+    renderWithProviders(<BigTwoPage />);
+    await screen.findByTestId('pass-button');
+    expect(screen.queryByText('[CPUの行動]')).not.toBeInTheDocument();
+  });
+
   // **currentTurn は届いていたのに isHumanTurn の判定にしか使われていなかった。**
   // 誰の番かが画面に出ておらず、Daifugo / Sevens だけがハイライトしていた (#5478)。
   it('highlights the CPU whose turn it is', async () => {

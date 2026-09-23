@@ -129,14 +129,32 @@ func TestDoppelkopfWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "doppelkopf.playPhase.follow", resObj.MessageCode)
 	})
 
-	t.Run("trick end message code", func(t *testing.T) {
+	t.Run("trick end human winner includes points", func(t *testing.T) {
 		m, _ := setupDoppelkopfWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLeadPlayerIdx")
 		m.On("GetPhase").Return(domain.DoppelkopfPhaseTrickEnd)
+		m.On("GetLeadPlayerIdx").Return(0)
+		m.On("GetLastTrickPoints").Return(15)
 		result := p.Output(m, nil)
 		var resObj controller.DoppelkopfWebOutput
 		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
-		assert.Equal(t, "doppelkopf.trickEnd", resObj.MessageCode)
+		assert.Equal(t, "doppelkopf.trickEnd.humanWin", resObj.MessageCode)
+		assert.Equal(t, map[string]string{"points": "15"}, resObj.MessageParams)
+	})
+
+	t.Run("trick end CPU winner includes points and seat", func(t *testing.T) {
+		m, _ := setupDoppelkopfWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLeadPlayerIdx")
+		m.On("GetPhase").Return(domain.DoppelkopfPhaseTrickEnd)
+		m.On("GetLeadPlayerIdx").Return(2)
+		m.On("GetLastTrickPoints").Return(15)
+		result := p.Output(m, nil)
+		var resObj controller.DoppelkopfWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Equal(t, "doppelkopf.trickEnd.cpuWin", resObj.MessageCode)
+		assert.Equal(t, map[string]string{"points": "15", "winnerId": "2"}, resObj.MessageParams)
 	})
 
 	t.Run("round end reveals teams", func(t *testing.T) {
@@ -170,6 +188,15 @@ func TestDoppelkopfWebPresenter_Output(t *testing.T) {
 		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
 		assert.Equal(t, "boom", resObj.Message)
 		assert.Empty(t, resObj.MessageCode)
+	})
+
+	t.Run("coded error returns message code without message", func(t *testing.T) {
+		m, _ := setupDoppelkopfWebMockWithPlayers()
+		result := p.Output(m, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "doppelkopf.errFollowLeadSuit", nil))
+		var resObj controller.DoppelkopfWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "doppelkopf.errFollowLeadSuit", resObj.MessageCode)
 	})
 
 	t.Run("game end human wins", func(t *testing.T) {
@@ -248,7 +275,7 @@ func TestDoppelkopfWebPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockDoppelkopfGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You plays ♠Q"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "doppelkopf.log.play", DetailParams: map[string]string{"name": "You", "card": "♠Q"}},
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, `"actionType":"play"`)

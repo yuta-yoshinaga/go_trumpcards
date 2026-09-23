@@ -4,9 +4,10 @@
 import type { SpoilFiveResponse } from '../../types/card';
 import { gameExec } from '../gameExec';
 
-/** Configuration options for Spoil Five game settings (CPU difficulty only — target points are fixed server-side). */
+/** Configuration options for Spoil Five game settings. */
 export interface SpoilFiveConfigInput {
   cpuDifficulty?: number;
+  targetPoints?: number;
 }
 
 /** Commands accepted by the Spoil Five /spoilfive/exec endpoint. */

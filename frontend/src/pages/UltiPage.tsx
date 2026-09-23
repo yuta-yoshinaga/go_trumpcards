@@ -32,7 +32,7 @@ import { parseUltiCommand, ULTI_HELP } from '../utils/cli/commands/ultiCommands'
 import { formatUltiState } from '../utils/cli/formatters/ultiFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
-import { playerName } from '../utils/playerUtils';
+import { findPlayerName, playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Ulti tutorial step definitions. */
@@ -267,6 +267,12 @@ function UltiPageContent() {
                   players={state.players}
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
+                  winnerIdx={isTrickEnd ? state.lastTrickWinner : undefined}
+                  winnerLabel={
+                    isTrickEnd
+                      ? t('previousTrickWinner', { name: findPlayerName(state.players, state.lastTrickWinner) })
+                      : undefined
+                  }
                   dataTutorial="ulti-trick-display"
                 />
               </div>

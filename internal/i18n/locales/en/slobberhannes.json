@@ -25,5 +25,15 @@
   "hintReasonDump": "safe trick: get rid of a high card now",
   "hintReasonLeadLow": "lead low and see what happens",
   "helpExampleGiveUp": "  g                    give the round up",
-  "helpHint": "  h                    show a hint"
+  "helpHint": "  h                    show a hint",
+  "log.roundStarted": "Round {{round}} started",
+  "log.play": "{{card}}",
+  "log.tookFirstTrick": "Took the first trick",
+  "log.tookLastTrick": "Took the last trick",
+  "log.tookQueen": "Took the queen of clubs",
+  "log.cleanBonus": "Clean-play bonus +1",
+  "log.penalty": "Penalty {{points}}",
+  "log.draw": "It's a tie",
+  "log.winner": "Winner ({{score}} points)",
+  "log.giveUp": "Gave up"
 }

@@ -377,8 +377,10 @@ func TestGrandfathersClock_ActionLogUsesZeroBasedIndices(t *testing.T) {
 
 	log := gc.GetActionLog()
 	require.Len(t, log, 2)
-	assert.Equal(t, "タブロー列0→文字盤4", log[0].Detail)
-	assert.Equal(t, "タブロー列1→タブロー列0", log[1].Detail)
+	assert.Equal(t, "grandfathersclock.log.move", log[0].DetailCode)
+	assert.Equal(t, map[string]string{"value1": "0", "value2": "4"}, log[0].DetailParams)
+	assert.Equal(t, "grandfathersclock.log.move", log[1].DetailCode)
+	assert.Equal(t, map[string]string{"value1": "1", "value2": "0"}, log[1].DetailParams)
 }
 
 func TestGrandfathersClock_JSONRoundTrip(t *testing.T) {

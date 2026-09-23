@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"math/rand"
 	"slices"
+	"strconv"
 )
 
 // リッケンのフェーズ定数
@@ -157,7 +158,7 @@ func (g *Rikken) Reset() {
 	g.gameEndFlag = false
 	g.winnerIdx = -1
 	g.actionLog = nil
-	g.addLog(-1, "start", "リッケンを開始しました", nil)
+	g.addLog(-1, "start", "rikken.log.start", nil, nil)
 	g.startRound()
 }
 
@@ -191,8 +192,7 @@ func (g *Rikken) startRound() {
 	// 競りは親の左隣から。
 	g.currentTurn = (g.dealerIdx + 1) % RikkenPlayerCnt
 
-	g.addLog(g.dealerIdx, "deal",
-		fmt.Sprintf("ラウンド %d を配りました", g.roundNumber), nil)
+	g.addLog(g.dealerIdx, "deal", "rikken.log.deal", map[string]string{"round": strconv.Itoa(g.roundNumber)}, nil)
 	g.advanceCpu()
 }
 
@@ -225,7 +225,7 @@ func (g *Rikken) bid(idx, contract int) error {
 	}
 	if contract == RikkenContractNone {
 		g.passed[idx] = true
-		g.addLog(idx, "pass", "パスしました", nil)
+		g.addLog(idx, "pass", "rikken.log.pass", nil, nil)
 		g.advanceBid()
 		return nil
 	}
@@ -237,7 +237,7 @@ func (g *Rikken) bid(idx, contract int) error {
 	g.declarerIdx = idx
 	// **競り上げた本人は降りていない扱いに戻ります。**
 	g.passed[idx] = false
-	g.addLog(idx, "bid", RikkenContractName(contract)+" を宣言しました", nil)
+	g.addRikkenBidLog(idx, contract)
 	g.advanceBid()
 	return nil
 }
@@ -281,7 +281,7 @@ func (g *Rikken) finishBidding() {
 		// **全員が降りたら親が Rik を引き受けます。** 流局にすると終わらないためです。
 		g.declarerIdx = g.dealerIdx
 		g.contract = RikkenContractRik
-		g.addLog(g.dealerIdx, "forced", "全員パスのため親が rik を引き受けます", nil)
+		g.addLog(g.dealerIdx, "forced", "rikken.log.forced", nil, nil)
 	}
 	g.currentTurn = g.declarerIdx
 	if RikkenNeedsTrump(g.contract) {
@@ -309,13 +309,13 @@ func (g *Rikken) call(idx, trumpSuit int) error {
 		return fmt.Errorf("切り札のスートが範囲外です: %d", trumpSuit)
 	}
 	g.trumpSuit = trumpSuit
-	g.addLog(idx, "trump", rikkenSuitName(trumpSuit)+" を切り札にしました", nil)
+	g.addRikkenTrumpLog(idx, trumpSuit)
 
 	if RikkenHasPartner(g.contract) {
 		card := g.chooseCalledCard(idx)
 		g.calledCard = card
 		g.partnerIdx = g.holderOf(card)
-		g.addLog(idx, "call", "相方の札を指名しました", []*Card{card})
+		g.addLog(idx, "call", "rikken.log.call", nil, []*Card{card})
 	}
 	g.startPlay()
 	return nil
@@ -377,8 +377,7 @@ func (g *Rikken) startPlay() {
 	g.phase = RikkenPhasePlay
 	// 落札者の左隣からリード。
 	g.currentTurn = (g.declarerIdx + 1) % RikkenPlayerCnt
-	g.addLog(-1, "play",
-		fmt.Sprintf("%s で開始します", RikkenContractName(g.contract)), nil)
+	g.addRikkenPlayLog(g.contract)
 	g.advanceCpu()
 }
 
@@ -452,13 +451,13 @@ func (g *Rikken) playAt(idx, cardIndex int) {
 		return
 	}
 	g.trick = append(g.trick, &TrickCard{PlayerIdx: idx, Card: card})
-	g.addLog(idx, "card", "札を出しました", []*Card{card})
+	g.addLog(idx, "card", "rikken.log.card", nil, []*Card{card})
 
 	// **指名された札が出たら相方が判明します。**
 	if g.calledCard != nil && !g.partnerRevealed &&
 		card.GetDesign() == g.calledCard.GetDesign() && card.GetValue() == g.calledCard.GetValue() {
 		g.partnerRevealed = true
-		g.addLog(idx, "partner", "相方が判明しました", nil)
+		g.addLog(idx, "partner", "rikken.log.partner", nil, nil)
 	}
 
 	if len(g.trick) < RikkenPlayerCnt {
@@ -485,7 +484,7 @@ func (g *Rikken) finishTrick() {
 	g.trick = nil
 	g.trickCount++
 	g.currentTurn = winner
-	g.addLog(winner, "trick", "トリックを取りました", nil)
+	g.addLog(winner, "trick", "rikken.log.trick", nil, nil)
 
 	if g.trickCount >= RikkenTrickCnt {
 		g.finishRound()
@@ -511,7 +510,7 @@ func (g *Rikken) finishRound() {
 	for i := range g.players {
 		g.players[i].AddScore(g.roundScoreFor(i, made))
 	}
-	g.addLog(g.declarerIdx, "result", g.resultDetail(made), nil)
+	g.addLog(g.declarerIdx, "result", rikkenResultLogCode(g.contract, made), map[string]string{"tricks": strconv.Itoa(g.declarerTricks)}, nil)
 
 	g.phase = RikkenPhaseRoundEnd
 	if g.roundNumber >= g.config.Rounds {
@@ -580,12 +579,91 @@ func (g *Rikken) sideSizes() (int, int) {
 	return declarers, RikkenPlayerCnt - declarers
 }
 
-// resultDetail は精算の説明を返す。
-func (g *Rikken) resultDetail(made bool) string {
-	if made {
-		return fmt.Sprintf("%s 成立（%d トリック）", RikkenContractName(g.contract), g.declarerTricks)
+func rikkenResultLogCode(contract int, made bool) string {
+	switch contract {
+	case RikkenContractNone:
+		if made {
+			return "rikken.log.result.noneMade"
+		}
+		return "rikken.log.result.noneFailed"
+	case RikkenContractRik:
+		if made {
+			return "rikken.log.result.rikMade"
+		}
+		return "rikken.log.result.rikFailed"
+	case RikkenContractMisere:
+		if made {
+			return "rikken.log.result.misereMade"
+		}
+		return "rikken.log.result.misereFailed"
+	case RikkenContractSolo:
+		if made {
+			return "rikken.log.result.soloMade"
+		}
+		return "rikken.log.result.soloFailed"
+	default:
+		if made {
+			return "rikken.log.result.openMisereMade"
+		}
+		return "rikken.log.result.openMisereFailed"
 	}
-	return fmt.Sprintf("%s 不成立（%d トリック）", RikkenContractName(g.contract), g.declarerTricks)
+}
+
+func rikkenBidLogCode(contract int) string {
+	switch contract {
+	case RikkenContractNone:
+		return "rikken.log.bid.none"
+	case RikkenContractRik:
+		return "rikken.log.bid.rik"
+	case RikkenContractMisere:
+		return "rikken.log.bid.misere"
+	case RikkenContractSolo:
+		return "rikken.log.bid.solo"
+	default:
+		return "rikken.log.bid.openMisere"
+	}
+}
+
+func rikkenTrumpLogCode(suit int) string {
+	switch suit {
+	case CardDesignSpade:
+		return "rikken.log.trump.spade"
+	case CardDesignClover:
+		return "rikken.log.trump.clover"
+	case CardDesignHeart:
+		return "rikken.log.trump.heart"
+	case CardDesignDiamond:
+		return "rikken.log.trump.diamond"
+	default:
+		return "rikken.log.trump.notrump"
+	}
+}
+
+func rikkenPlayLogCode(contract int) string {
+	switch contract {
+	case RikkenContractNone:
+		return "rikken.log.play.none"
+	case RikkenContractRik:
+		return "rikken.log.play.rik"
+	case RikkenContractMisere:
+		return "rikken.log.play.misere"
+	case RikkenContractSolo:
+		return "rikken.log.play.solo"
+	default:
+		return "rikken.log.play.openMisere"
+	}
+}
+
+func (g *Rikken) addRikkenBidLog(idx, contract int) {
+	g.addLog(idx, "bid", rikkenBidLogCode(contract), nil, nil)
+}
+
+func (g *Rikken) addRikkenTrumpLog(idx, suit int) {
+	g.addLog(idx, "trump", rikkenTrumpLogCode(suit), nil, nil)
+}
+
+func (g *Rikken) addRikkenPlayLog(contract int) {
+	g.addLog(-1, "play", rikkenPlayLogCode(contract), nil, nil)
 }
 
 // finishGame は終局する。
@@ -599,7 +677,7 @@ func (g *Rikken) finishGame() {
 		}
 	}
 	g.winnerIdx = best
-	g.addLog(best, "gameEnd", "いちばん点の高い席が勝ちです", nil)
+	g.addLog(best, "gameEnd", "rikken.log.gameEnd", nil, nil)
 }
 
 // NextRound は次のラウンドを配る。
@@ -629,7 +707,7 @@ func (g *Rikken) GiveUp() {
 		}
 	}
 	g.winnerIdx = best
-	g.addLog(0, "giveup", "投了しました", nil)
+	g.addLog(0, "giveup", "rikken.log.giveup", nil, nil)
 }
 
 // CpuPlay は CPU の手番を進める。
@@ -768,8 +846,8 @@ func (g *Rikken) GetHint() *RikkenHint {
 }
 
 // addLog は棋譜に 1 行足す。
-func (g *Rikken) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.appendLog(playerIdx, actionType, detail, cards)
+func (g *Rikken) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- Getters ---

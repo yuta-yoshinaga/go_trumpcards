@@ -46,5 +46,11 @@
   "errNothingToUndo": "There is no move to undo.",
   "errSnapshotArrayTooLarge": "The snapshot array exceeds the maximum allowed size.",
   "errSnapshotPileTooLarge": "A snapshot pile exceeds the maximum allowed size.",
-  "errInputArrayTooLarge": "The input array exceeds the maximum allowed size."
+  "errInputArrayTooLarge": "The input array exceeds the maximum allowed size.",
+  "log.draw": "Drew a card",
+  "log.moveWasteToTableau": "Waste → tableau column {{column}}",
+  "log.moveWasteToFoundation": "Waste → foundation {{foundation}}",
+  "log.moveTableauToTableau": "Tableau column {{from}} → tableau column {{to}} ({{count}} cards)",
+  "log.moveTableauToFoundation": "Tableau column {{column}} → foundation {{foundation}}",
+  "log.giveup": "Gave up"
 }

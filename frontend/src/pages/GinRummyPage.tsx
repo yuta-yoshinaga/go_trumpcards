@@ -328,7 +328,7 @@ function GinRummyPageContent() {
                       <div key={`meld-${meldIdx}`} className="mb-1">
                         <span
                           data-testid={`gr-meld-badge-${meldIdx}`}
-                          className="inline-block rounded border border-ds-secondary px-1.5 py-0.5 text-ds-text-primary text-xs mb-0.5"
+                          className="inline-block rounded border border-ds-border-subtle px-1.5 py-0.5 text-ds-text-primary text-xs mb-0.5"
                         >
                           {ginRummyMeldLabel(meld.cards)}
                         </span>
@@ -428,7 +428,7 @@ function GinRummyPageContent() {
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
                       <span
                         data-testid="ginrummy-breakdown-outcome"
-                        className="inline-block rounded border border-ds-secondary px-1.5 py-0.5 text-ds-text-primary text-xs"
+                        className="inline-block rounded border border-ds-border-subtle px-1.5 py-0.5 text-ds-text-primary text-xs"
                       >
                         {t(`breakdown.outcome.${scoreBreakdown.outcome}`)}
                       </span>

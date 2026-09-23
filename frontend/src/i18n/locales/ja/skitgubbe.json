@@ -29,5 +29,6 @@
   "tutorial.stunsa": "同じランクなら stunsa。札は場に残ったまま同じ人がもう一度リードし、決着した時点で全部が勝者のものになります",
   "you": "あなた",
   "yourHand": "あなたの手札",
-  "finishedBadge": "セーフ"
+  "finishedBadge": "セーフ",
+  "duelLeaderBadge": "リード"
 }

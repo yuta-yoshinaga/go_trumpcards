@@ -106,6 +106,28 @@ describe('MusPage', () => {
     expect(screen.getByText('アマラコ')).toBeInTheDocument();
   });
 
+  it('labels CPU players by team and changes the teammate when humanTeam changes', async () => {
+    renderWithProviders(<MusPage />);
+    await waitFor(() => expect(screen.getByTestId('mus-player-2')).toBeInTheDocument());
+
+    expect(screen.getByTestId('mus-player-0')).toHaveTextContent('あなた: 4枚');
+    expect(screen.getByTestId('mus-player-0')).not.toHaveTextContent('チーム');
+    expect(screen.getByTestId('mus-player-2')).toHaveTextContent('CPU 2 (チーム0, 味方): 4枚');
+    expect(screen.getByTestId('mus-player-2').className).toContain('text-ds-accent');
+    expect(screen.getByTestId('mus-player-1')).toHaveTextContent('CPU 1 (チーム1, 相手): 4枚');
+    expect(screen.getByTestId('mus-player-1')).not.toHaveTextContent('味方');
+
+    mockExec.mockResolvedValue(makeMusState({ humanTeam: 1 }));
+    renderWithProviders(<MusPage />);
+    await waitFor(() => expect(screen.getAllByTestId('mus-player-1').length).toBeGreaterThan(0));
+
+    const teammateRows = screen.getAllByTestId('mus-player-1');
+    const opponentRows = screen.getAllByTestId('mus-player-2');
+    expect(teammateRows.at(-1)).toHaveTextContent('CPU 1 (チーム1, 味方): 4枚');
+    expect(opponentRows.at(-1)).toHaveTextContent('CPU 2 (チーム0, 相手): 4枚');
+    expect(opponentRows.at(-1)).not.toHaveTextContent('味方');
+  });
+
   it('renders mus / corte buttons in the mus phase and dispatches mus', async () => {
     mockExec.mockResolvedValue(musPhaseState);
     renderWithProviders(<MusPage />);

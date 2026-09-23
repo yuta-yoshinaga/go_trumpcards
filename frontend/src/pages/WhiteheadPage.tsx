@@ -31,6 +31,7 @@ import { useWhiteheadGame } from '../hooks/useWhiteheadGame';
 import { useWhiteheadStats, whiteheadWinRate } from '../hooks/useWhiteheadStats';
 import { useWhiteheadTimer } from '../hooks/useWhiteheadTimer';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
+import { HINT_FROM_RING, HINT_TO_RING } from '../styles/cardStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { WhiteheadResponse } from '../types/card';
 import { WhiteheadPhase, WhiteheadScoringMode, WhiteheadVegas } from '../types/phases';
@@ -247,6 +248,7 @@ function WhiteheadPageContent() {
   const isGameClear = state.phase === WhiteheadPhase.GAME_CLEAR;
   const isGameOver = state.phase === WhiteheadPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
+  const foundationCount = isGameOver ? state.foundation.reduce((sum, pile) => sum + pile.length, 0) : 0;
   const isVegas = state.scoringMode === WhiteheadScoringMode.VEGAS;
   const currentStat = getStat(state.drawCount, state.scoringMode);
 
@@ -259,8 +261,6 @@ function WhiteheadPageContent() {
   // Ring highlight tying the hint to the real board cards, mirroring CruelPage:
   // blue on the source, green on the destination. `hint` is fetched via the hint
   // command and clears on the next move, so the rings clear when acted upon.
-  const HINT_FROM_RING = 'ring-2 ring-ds-info motion-safe:animate-pulse';
-  const HINT_TO_RING = 'ring-2 ring-ds-success motion-safe:animate-pulse';
   const isHintFromWaste = hint !== null && hint.fromZone === 'waste';
   const isHintFromTableau = (col: number, cardIdx: number) =>
     hint !== null && hint.fromZone === 'tableau' && hint.fromCol === col && hint.cardIndex === cardIdx;
@@ -586,6 +586,15 @@ function WhiteheadPageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
+
+            {isGameOver && (
+              <p data-testid="whitehead-gameover-summary" className="text-ds-text-muted text-sm text-center mt-1">
+                {t('gameOverSummary', {
+                  count: foundationCount,
+                  percent: Math.round((foundationCount / 52) * 100),
+                })}
+              </p>
+            )}
 
             {/* Personal-best badge on the clear screen (#3031). */}
             {isGameClear && bestUpdate && (bestUpdate.newBestTime || bestUpdate.newFewestMoves) && (

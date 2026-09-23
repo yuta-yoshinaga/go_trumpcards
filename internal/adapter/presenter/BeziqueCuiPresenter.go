@@ -67,6 +67,13 @@ func (p *BeziqueCuiPresenter) Output(b interfaces.BeziqueGame, lastErr error) st
 		sb.WriteString(i18n.Tf("bezique.scoreLine",
 			"p0", strconv.Itoa(b.GetMatchScore(0)),
 			"p1", strconv.Itoa(b.GetMatchScore(1))) + "\n")
+		sb.WriteString(i18n.Tf("bezique.trickPoints",
+			"ace", strconv.Itoa(domain.BeziqueCardPoints(domain.NewCard(domain.CardDesignSpade, 1, false))),
+			"ten", strconv.Itoa(domain.BeziqueCardPoints(domain.NewCard(domain.CardDesignSpade, 10, false))),
+			"king", strconv.Itoa(domain.BeziqueCardPoints(domain.NewCard(domain.CardDesignSpade, 13, false))),
+			"queen", strconv.Itoa(domain.BeziqueCardPoints(domain.NewCard(domain.CardDesignSpade, 12, false))),
+			"jack", strconv.Itoa(domain.BeziqueCardPoints(domain.NewCard(domain.CardDesignSpade, 11, false))),
+			"other", strconv.Itoa(domain.BeziqueCardPoints(domain.NewCard(domain.CardDesignSpade, 9, false)))) + "\n")
 
 		for i := 0; i < b.GetPlayerCnt(); i++ {
 			sb.WriteString(beziquePlayerStr(b.GetPlayer(i), i, b.GetDealPoints(i), b.GetMatchScore(i)))

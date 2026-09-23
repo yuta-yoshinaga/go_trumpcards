@@ -51,5 +51,7 @@
     "9": "Kabu, strongest"
   },
   "rankAriaLabelNamed": "{{hand}} score {{rank}} ({{name}})",
-  "rankAriaLabelPlain": "{{hand}} score {{rank}}"
+  "rankAriaLabelPlain": "{{hand}} score {{rank}}",
+  "rankRuleSummary": "How the score is counted",
+  "rankRule": "Your score is the remainder after adding the card points (10 counts as 0) and dividing the total by 10."
 }

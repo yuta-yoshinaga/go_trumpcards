@@ -36,6 +36,8 @@ func setupSheepsheadWebMock() *interfaces.MockSheepsheadGame {
 	m.On("GetPlayableIndices", 0).Return([]int{0})
 	m.On("IsHumanTurn").Return(true)
 	m.On("GetRoundPickerPoints").Return(0)
+	m.On("GetLivePickerPoints").Return(17)
+	m.On("GetLiveDefenderPoints").Return(103)
 	m.On("GetRoundMultiplier").Return(1)
 	m.On("GetRoundPickerWon").Return(false)
 	m.On("GetWinnerIdx").Return(-1)
@@ -77,6 +79,8 @@ func TestSheepsheadWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, -1, resObj.PickerIdx)
 		assert.Equal(t, -1, resObj.PartnerIdx)
 		assert.Equal(t, "sheepshead.pickPhase", resObj.MessageCode)
+		assert.Equal(t, 17, resObj.LivePickerPoints)
+		assert.Equal(t, 103, resObj.LiveDefenderPoints)
 		// human cards visible, CPU hidden
 		assert.Len(t, resObj.Players[0].Cards, 1)
 		assert.Len(t, resObj.Players[1].Cards, 0)
@@ -209,6 +213,16 @@ func TestSheepsheadWebPresenter_Output(t *testing.T) {
 		assert.Empty(t, resObj.MessageCode)
 	})
 
+	t.Run("coded error uses message code", func(t *testing.T) {
+		m, _ := setupSheepsheadWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "sheepshead.errSuitNotCallable", nil)
+		result := p.Output(m, err)
+		var resObj controller.SheepsheadWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "sheepshead.errSuitNotCallable", resObj.MessageCode)
+	})
+
 	t.Run("game end human wins", func(t *testing.T) {
 		m, _ := setupSheepsheadWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
@@ -280,7 +294,7 @@ func TestSheepsheadWebPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockSheepsheadGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "pick", Detail: "You picks up the blind"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "pick", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, `"actionType":"pick"`)

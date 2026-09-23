@@ -124,7 +124,7 @@ func TestPokerSquaresCuiPresenter_ActionLog_Complete(t *testing.T) {
 	pg.On("GetPhase").Return(domain.PokerSquaresPhaseComplete)
 	pg.On("CanUndo").Return(true).Maybe()
 	pg.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, ActionType: "place", Detail: "test"},
+		{TurnNumber: 1, ActionType: "place", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	p := &PokerSquaresCuiPresenter{}
 	out := p.ActionLogOutput(pg)

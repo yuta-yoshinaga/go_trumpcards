@@ -1,5 +1,10 @@
 {
   "helpTitle": "Poker Squares",
+  "helpPlace": "  p <row> <col>            place a card (0-4)",
+  "helpUndo": "  u                        undo",
+  "helpGiveUp": "  g                        give up",
+  "helpHint": "  h                        hint (best placement for the current card)",
+  "helpLog": "  l                        action log",
   "cellEmpty": "({{r}},{{c}}) .....",
   "cellCard": "({{r}},{{c}}) {{card}}",
   "rowScore": "   => row score: {{score}}",
@@ -14,5 +19,7 @@
   "gameComplete": "Game complete! Total score: {{score}}",
   "undoUnavailable": "(nothing to undo)",
   "rowPartialHand": " (partial: {{hand}})",
-  "colPartialHand": " (partial: {{hand}})"
+  "colPartialHand": " (partial: {{hand}})",
+  "log.place": "Move: {{value1}}, {{value2}}",
+  "log.giveup": "Gave up"
 }

@@ -1,4 +1,4 @@
-//go:build !js || !wasm || casino
+//go:build !js || !wasm || extra6
 
 // Package domain トレセッテ (Tressette) のドメインモデル。
 //
@@ -156,7 +156,7 @@ func (g *Tressette) PlayerPlay(cardIndex int) error {
 
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "tressette.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
@@ -206,14 +206,15 @@ func (g *Tressette) ResolveTrick() {
 
 	team := TressetteTeamOf(winnerIdx)
 	g.teamRoundThirds[team] += thirds
-	bonus := ""
 	if g.trickNumber >= TressetteTrickCount {
 		g.teamRoundThirds[team] += TressetteUltimaThirds
-		bonus = " +ultima"
 	}
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (+%d/3%s)", playerName(g.players, winnerIdx), g.trickNumber, thirds, bonus),
-		trickCards)
+	params := map[string]string{"name": playerName(g.players, winnerIdx), "trick": fmt.Sprint(g.trickNumber), "thirds": fmt.Sprint(thirds)}
+	if g.trickNumber >= TressetteTrickCount {
+		g.appendLog(winnerIdx, "trick_win", "tressette.log.trickWinLast", params, trickCards)
+	} else {
+		g.appendLog(winnerIdx, "trick_win", "tressette.log.trickWin", params, trickCards)
+	}
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= TressetteTrickCount {
@@ -244,9 +245,7 @@ func (g *Tressette) ScoreRound() {
 	for t := 0; t < TressetteTeamCnt; t++ {
 		g.teamScores[t] += g.teamRoundThirds[t] / 3
 	}
-	g.appendLog(-1, "round_score",
-		fmt.Sprintf("round %d: TeamA=%d (+%d/3), TeamB=%d (+%d/3)",
-			g.roundNumber, g.teamScores[0], g.teamRoundThirds[0], g.teamScores[1], g.teamRoundThirds[1]), nil)
+	g.appendLog(-1, "round_score", "tressette.log.roundScore", map[string]string{"round": fmt.Sprint(g.roundNumber), "teamAScore": fmt.Sprint(g.teamScores[0]), "teamAThirds": fmt.Sprint(g.teamRoundThirds[0]), "teamBScore": fmt.Sprint(g.teamScores[1]), "teamBThirds": fmt.Sprint(g.teamRoundThirds[1])}, nil)
 
 	leader, other := 0, 1
 	if g.teamScores[1] > g.teamScores[0] {
@@ -256,7 +255,7 @@ func (g *Tressette) ScoreRound() {
 		g.gameEndFlag = true
 		g.winnerTeam = leader
 		g.phase = TressettePhaseGameEnd
-		g.appendLog(-1, "game_end", fmt.Sprintf("Team %s wins the game!", teamName(leader)), nil)
+		g.appendLog(-1, "game_end", "tressette.log.gameEnd", map[string]string{"team": teamName(leader)}, nil)
 	}
 }
 
@@ -348,7 +347,7 @@ func (g *Tressette) playCard(playerIdx int, card *Card) {
 		PlayerIdx: playerIdx,
 		Card:      card,
 	})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "tressette.log.play", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(g.currentTrick) == TressettePlayerCnt {
 		g.phase = TressettePhaseTrickEnd
@@ -358,6 +357,11 @@ func (g *Tressette) playCard(playerIdx int, card *Card) {
 }
 
 // validatePlay カードのプレイが有効か検証する (マストフォロー)
+// appendLog records a Tressette action with a locale-independent detail code.
+func (g *Tressette) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
+}
+
 func (g *Tressette) validatePlay(playerIdx int, card *Card) error {
 	return validateFollowSuit(g.currentTrick, g.players, playerIdx, card)
 }
@@ -400,14 +404,6 @@ func tressetteSortHand(p *TressettePlayer) {
 		}
 		return tressetteStrength(ci.GetValue()) < tressetteStrength(cj.GetValue())
 	})
-}
-
-// teamName チーム表示名 (0=A, 1=B)
-func teamName(team int) string {
-	if team == 0 {
-		return "A"
-	}
-	return "B"
 }
 
 // --- Card helpers ---

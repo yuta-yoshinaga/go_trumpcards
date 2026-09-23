@@ -37,7 +37,7 @@ func TestAcesUpCuiPresenterOutput_Playing(t *testing.T) {
 
 	result := p.Output(g, nil)
 	assert.Contains(t, result, "Aces Up")
-	assert.Contains(t, result, "Stock: 44枚")
+	assert.Contains(t, result, "ストック: 44枚")
 	// 分母が無いと、48 枚捨てれば勝ちというクリア条件も進捗も読めない。
 	// 期待値は定数から作る —— 48 を書き写すと、デッキや列数を変えたとき嘘になる。
 	assert.Contains(t, result, i18n.Tf("acesup.discardLine",

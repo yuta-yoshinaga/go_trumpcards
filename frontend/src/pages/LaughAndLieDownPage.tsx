@@ -192,6 +192,7 @@ function LaughAndLieDownPageContent() {
                 {t('yourHand')}
                 {' · '}
                 {t('won', { n: human?.wonCount ?? 0 })}
+                {human?.laidDown && ` · ${t('laidDown')}`}
                 {ended && ` · ${t('score', { n: human?.score ?? 0 })}`}
                 {/* **既に訳文もサーバのデータもあったのに、画面が一度も読んでいなかった**
                     (#5576)。最終点差の理由の一つがどこにも出ないまま終わっていた。 */}
@@ -241,7 +242,9 @@ function LaughAndLieDownPageContent() {
                           onClick={() => setThreeArmed(threeArmed === i ? null : i)}
                           className={[
                             'mt-1 px-2 py-1 rounded text-[10px] min-h-11',
-                            threeArmed === i ? 'bg-ds-accent text-ds-on-accent' : 'bg-ds-surface-2 text-ds-text',
+                            threeArmed === i
+                              ? 'bg-ds-accent text-ds-text-on-accent'
+                              : 'bg-ds-surface-elevated text-ds-text-primary',
                             // **ヒントが 3 枚取りを勧めているなら、そのボタンも
                             // 示す。**カードを光らせるだけでは、さらにこれを
                             // 押す必要があることが伝わらない (#4884)。

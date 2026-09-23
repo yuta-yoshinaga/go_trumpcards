@@ -20,6 +20,8 @@
   "pileGoesTo": "{{name}} takes the whole pile by winning the next trick too.",
   "promptTrump": "{{name}} calls the trump (only the first {{n}} cards are dealt so far).",
   "promptTrumpHelp": "trump <1-4> ... 1=S 2=C 3=H 4=D",
+  "suitBreakdown": "First five suit counts: {{counts}}",
+  "suitCount": "{{suit}} {{n}}",
   "promptPlay": "Turn: {{name}}",
   "playableList": "Playable: {{cards}}",
   "promptPlayHelp": "play <idx> ... play a card",
@@ -41,5 +43,13 @@
   "hintReasonKeepLead": "win the next one too and the pile is yours",
   "hintReasonNextHand": "move on to the next hand",
   "errCardRange": "That card number is out of range.",
-  "errTrumpSuit": "Invalid trump suit (1=spade 2=club 3=heart 4=diamond)."
+  "errTrumpSuit": "Invalid trump suit (1=spade 2=club 3=heart 4=diamond).",
+  "log.deal": "hand {{hand}}: dealer={{dealer}}, {{cards}} cards each",
+  "log.trump": "player {{player}} calls {{suit}}",
+  "log.play": "player {{player}} plays {{card}}",
+  "log.trickWin": "player {{player}} wins trick {{trick}}",
+  "log.collectTwoInARow": "player {{player}} gathers {{cards}} card(s) (two in a row), {{tens}} ten(s)",
+  "log.collectLastTrick": "player {{player}} gathers {{cards}} card(s) (last trick), {{tens}} ten(s)",
+  "log.handEnd": "hand {{hand}}: team {{team}} wins (tens {{tens}}, kot={{kot}})",
+  "log.gameEnd": "team {{team}} takes the match"
 }

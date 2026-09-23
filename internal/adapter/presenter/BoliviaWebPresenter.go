@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra
+//go:build !js || !wasm || extra7
 
 package presenter
 
@@ -22,6 +22,7 @@ func (p *BoliviaWebPresenter) Output(g interfaces.BoliviaGame, lastErr error) st
 	resObj.IsFrozen = g.GetIsFrozen()
 	resObj.GameEndFlag = g.GetGameEndFlag()
 	resObj.WinnerIdx = g.GetWinnerIdx()
+	resObj.CanGoOut = g.CanGoOut()
 
 	top := g.GetDiscardTop()
 	if top != nil {
@@ -102,6 +103,9 @@ func (p *BoliviaWebPresenter) buildPlayersOutput(g interfaces.BoliviaGame) []*co
 // buildMessage ゲーム結果メッセージを構築
 func (p *BoliviaWebPresenter) buildMessage(g interfaces.BoliviaGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

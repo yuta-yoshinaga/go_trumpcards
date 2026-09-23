@@ -1,4 +1,4 @@
-//go:build !js || !wasm || solo
+//go:build !js || !wasm || extra7
 
 package presenter
 
@@ -103,6 +103,9 @@ func (p *EuchreWebPresenter) buildPlayersOutput(e interfaces.EuchreGame) []*cont
 // buildMessage ゲーム結果メッセージを構築
 func (p *EuchreWebPresenter) buildMessage(e interfaces.EuchreGame, trick []*domain.TrickCard, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if e.GetGameEndFlag() {

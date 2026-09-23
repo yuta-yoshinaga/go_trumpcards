@@ -5,6 +5,7 @@ package domain_test
 import (
 	"encoding/json"
 	"errors"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -43,6 +44,16 @@ func TestPrimero_ResetDealsRound(t *testing.T) {
 	assert.Equal(t, sumBets, g.GetPot())
 	assert.GreaterOrEqual(t, g.GetPot(), cfg.Ante*cfg.PlayerCount)
 	assert.Equal(t, domain.PrimeroHandSize, g.GetPlayer(0).GetCardsSize())
+	var dealLog *domain.ActionLogEntry
+	for _, entry := range g.GetActionLog() {
+		if entry.ActionType == "deal" {
+			dealLog = entry
+			break
+		}
+	}
+	require.NotNil(t, dealLog)
+	assert.Equal(t, "primero.log.deal", dealLog.DetailCode)
+	assert.Equal(t, map[string]string{"round": "1", "ante": "10", "pot": strconv.Itoa(cfg.Ante * cfg.PlayerCount)}, dealLog.DetailParams)
 	// Human paid the ante; before any of their own bets, roundBet = ante.
 	assert.Equal(t, cfg.Ante, g.GetPlayer(0).GetRoundBet())
 }
@@ -432,4 +443,22 @@ func TestPrimero_UnmarshalDefaults(t *testing.T) {
 	require.NoError(t, json.Unmarshal([]byte(`{"cf":{"pc":3,"an":10,"sc":200,"tr":10},"ps":[{"ch":200},{"ch":200},{"ch":200}],"ph":0,"rn":1}`), &g))
 	assert.Equal(t, 3, g.GetPlayerCnt())
 	assert.NotNil(t, g.GetActionLog())
+}
+
+// TestPrimero_GetTargetRounds は getter が設定値をそのまま返すことを固定する。
+// 画面 (Web の情報行と CUI の roundLine) はここからマッチの長さを読むので、
+// 既定値を返すだけの実装だと「設定したのに表示が変わらない」になる。
+func TestPrimero_GetTargetRounds(t *testing.T) {
+	g := domain.NewDefaultPrimero()
+	assert.Equal(t, g.GetConfig().TargetRounds, g.GetTargetRounds(), "既定では設定値と一致する")
+
+	// 既定と違う値に変えて追従することを見る。1 値だけだと定数を返す実装でも通る。
+	cfg := g.GetConfig()
+	cfg.TargetRounds = domain.PrimeroMinTargetRounds
+	g.SetConfig(cfg)
+	assert.Equal(t, domain.PrimeroMinTargetRounds, g.GetTargetRounds())
+
+	cfg.TargetRounds = domain.PrimeroMaxTargetRounds
+	g.SetConfig(cfg)
+	assert.Equal(t, domain.PrimeroMaxTargetRounds, g.GetTargetRounds())
 }

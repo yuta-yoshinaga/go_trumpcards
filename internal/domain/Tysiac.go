@@ -20,9 +20,9 @@ package domain
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // TysiacPlayerCnt プレイヤー数 (人間 1 + CPU 2)
@@ -101,10 +101,14 @@ type Tysiac struct {
 	playerScores     [TysiacPlayerCnt]int  // 累積ゲーム点
 	roundCardPts     [TysiacPlayerCnt]int  // 現ラウンドのプレイヤー別カード得点
 	roundMarriage    [TysiacPlayerCnt]int  // 現ラウンドのプレイヤー別結婚点
-	lastTrickWinner  int                   // 最終トリック勝者 (-1=未確定)
+	lastTrickWinner  int                   // 直前トリックの勝者 (-1=未確定)
 	gameEndFlag      bool
 	winnerPlayer     int // -1=未確定
 	actionLogBase
+}
+
+func (g *Tysiac) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // NewTysiac コンストラクタ
@@ -251,12 +255,10 @@ func (g *Tysiac) CpuBid() {
 func (g *Tysiac) applyBid(playerIdx int, raise bool) {
 	if raise {
 		g.currentBid += TysiacBidStep
-		g.appendLog(playerIdx, "bid",
-			fmt.Sprintf("%s bids %d", playerName(g.players, playerIdx), g.currentBid), nil)
+		g.appendLog(playerIdx, "bid", "tysiac.log.bid", map[string]string{"name": playerName(g.players, playerIdx), "bid": strconv.Itoa(g.currentBid)}, nil)
 	} else {
 		g.bidPassed[playerIdx] = true
-		g.appendLog(playerIdx, "bid_pass",
-			fmt.Sprintf("%s passes", playerName(g.players, playerIdx)), nil)
+		g.appendLog(playerIdx, "bid_pass", "tysiac.log.bidPass", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 	}
 
 	if g.activeBidders() <= 1 {
@@ -293,8 +295,7 @@ func (g *Tysiac) finalizeAuction() {
 	}
 	g.declarerIdx = declarer
 	g.contract = g.currentBid
-	g.appendLog(declarer, "declarer",
-		fmt.Sprintf("%s is declarer with contract %d", playerName(g.players, declarer), g.contract), nil)
+	g.appendLog(declarer, "declarer", "tysiac.log.declarer", map[string]string{"name": playerName(g.players, declarer), "contract": strconv.Itoa(g.contract)}, nil)
 
 	g.startTalon()
 }
@@ -375,8 +376,7 @@ func (g *Tysiac) startTalon() {
 	}
 	g.talon = nil
 	tysiacSortHand(g.players[g.declarerIdx])
-	g.appendLog(g.declarerIdx, "talon_take",
-		fmt.Sprintf("%s takes the talon", playerName(g.players, g.declarerIdx)), nil)
+	g.appendLog(g.declarerIdx, "talon_take", "tysiac.log.talonTake", map[string]string{"name": playerName(g.players, g.declarerIdx)}, nil)
 	g.discardCount = 0
 	g.currentPlayerIdx = g.declarerIdx
 
@@ -398,7 +398,7 @@ func (g *Tysiac) PlayerDiscard(cardIndex int) error {
 	}
 	declarer := g.players[g.declarerIdx]
 	if cardIndex < 0 || cardIndex >= declarer.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "tysiac.errCardIndexOutOfRange", nil)
 	}
 	g.giveDiscard(cardIndex)
 	if g.discardCount >= TysiacTalonSize-1 {
@@ -415,8 +415,7 @@ func (g *Tysiac) giveDiscard(cardIndex int) {
 	card := g.players[g.declarerIdx].RemoveCard(cardIndex)
 	g.players[recipient].AddCard(card)
 	tysiacSortHand(g.players[recipient])
-	g.appendLog(g.declarerIdx, "discard",
-		fmt.Sprintf("%s gives a card to %s", playerName(g.players, g.declarerIdx), playerName(g.players, recipient)), nil)
+	g.appendLog(g.declarerIdx, "discard", "tysiac.log.discard", map[string]string{"from": playerName(g.players, g.declarerIdx), "to": playerName(g.players, recipient)}, nil)
 	g.discardCount++
 }
 
@@ -483,7 +482,7 @@ func (g *Tysiac) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "tysiac.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
@@ -542,15 +541,13 @@ func (g *Tysiac) maybeDeclareMarriage(playerIdx int, card *Card) {
 	g.trumpSuit = suit
 	pts := tysiacMarriagePoints(suit)
 	g.roundMarriage[playerIdx] += pts
-	g.appendLog(playerIdx, "marriage",
-		fmt.Sprintf("%s declares a %s marriage (+%d, trump=%s)",
-			playerName(g.players, playerIdx), tysiacSuitName(suit), pts, tysiacSuitName(suit)), nil)
+	g.appendLog(playerIdx, "marriage", "tysiac.log.marriage", map[string]string{"name": playerName(g.players, playerIdx), "suitKey": suitKeyOf(suit), "points": strconv.Itoa(pts)}, nil)
 }
 
 // playCard カードをプレイする共通処理。
 func (g *Tysiac) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "tysiac.log.play", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(g.currentTrick) == TysiacPlayerCnt {
 		g.phase = TysiacPhaseTrickEnd
@@ -573,12 +570,11 @@ func (g *Tysiac) ResolveTrick() {
 	}
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.roundCardPts[winnerIdx] += pts
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (+%d)", playerName(g.players, winnerIdx), g.trickNumber, pts), trickCards)
+	g.appendLog(winnerIdx, "trick_win", "tysiac.log.trickWin", map[string]string{"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber), "points": strconv.Itoa(pts)}, trickCards)
 
 	g.leadPlayerIdx = winnerIdx
+	g.lastTrickWinner = winnerIdx
 	if g.trickNumber >= TysiacTrickCount {
-		g.lastTrickWinner = winnerIdx
 		g.phase = TysiacPhaseRoundEnd
 	} else {
 		g.phase = TysiacPhaseTrickEnd
@@ -613,9 +609,7 @@ func (g *Tysiac) ScoreRound() {
 			g.playerScores[i] += tysiacRoundTo10(total)
 		}
 	}
-	g.appendLog(-1, "round_score",
-		fmt.Sprintf("round %d scored: declarer(%s) contract=%d",
-			g.roundNumber, playerName(g.players, g.declarerIdx), g.contract), nil)
+	g.appendLog(-1, "round_score", "tysiac.log.roundScore", map[string]string{"round": strconv.Itoa(g.roundNumber), "declarer": playerName(g.players, g.declarerIdx), "contract": strconv.Itoa(g.contract)}, nil)
 	g.checkGameEnd()
 }
 
@@ -637,7 +631,7 @@ func (g *Tysiac) checkGameEnd() {
 		g.gameEndFlag = true
 		g.winnerPlayer = leader
 		g.phase = TysiacPhaseGameEnd
-		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
+		g.appendLog(-1, "game_end", "tysiac.log.gameEnd", map[string]string{"name": playerName(g.players, leader)}, nil)
 	}
 }
 
@@ -651,12 +645,12 @@ func (g *Tysiac) validatePlay(playerIdx int, card *Card) error {
 	leadSuit := g.currentTrick[0].Card.GetDesign()
 	hasLeadSuit := g.playerHasSuit(playerIdx, leadSuit)
 	if hasLeadSuit && card.GetDesign() != leadSuit {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+		return NewDomainErrorCode(ErrInvalidPlay, "tysiac.errFollowLeadSuit", nil)
 	}
 	if !hasLeadSuit {
 		hasTrump := g.trumpSuit != 0 && g.playerHasSuit(playerIdx, g.trumpSuit)
 		if hasTrump && card.GetDesign() != g.trumpSuit {
-			return NewDomainError(ErrInvalidPlay, "切り札を出してください")
+			return NewDomainErrorCode(ErrInvalidPlay, "tysiac.errMustPlayTrump", nil)
 		}
 	}
 	// オーバートランプ義務: 切り札を出す場合 (ボイド時の強制切り札でも切り札リードへの
@@ -665,7 +659,7 @@ func (g *Tysiac) validatePlay(playerIdx int, card *Card) error {
 		highestTrump := g.highestTrumpRankInTrick()
 		if highestTrump > 0 && g.canOvertrump(playerIdx, highestTrump) &&
 			g.tysiacRank(card) <= highestTrump {
-			return NewDomainError(ErrInvalidPlay, "高い切り札で勝ってください")
+			return NewDomainErrorCode(ErrInvalidPlay, "tysiac.errMustOvertrump", nil)
 		}
 	}
 	return nil
@@ -799,22 +793,6 @@ func tysiacMarriagePoints(suit int) int {
 // tysiacSuits スート一覧を返す。
 func tysiacSuits() []int {
 	return []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond}
-}
-
-// tysiacSuitName スート表示名 (英語) を返す。
-func tysiacSuitName(suit int) string {
-	switch suit {
-	case CardDesignSpade:
-		return "Spades"
-	case CardDesignClover:
-		return "Clubs"
-	case CardDesignHeart:
-		return "Hearts"
-	case CardDesignDiamond:
-		return "Diamonds"
-	default:
-		return "None"
-	}
 }
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す。
@@ -1015,6 +993,9 @@ func (g *Tysiac) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 // GetCurrentTrick 現在のトリック取得
 func (g *Tysiac) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
+// GetLastTrickWinner 直前トリックの勝者を取得する (-1=なし)
+func (g *Tysiac) GetLastTrickWinner() int { return g.lastTrickWinner }
+
 // SetCurrentTrick トリック設定 (テスト用)
 func (g *Tysiac) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
 
@@ -1032,6 +1013,20 @@ func (g *Tysiac) GetForehandIdx() int { return g.forehandIdx }
 
 // GetDeclarerIdx declarer インデックス取得 (-1=未確定)
 func (g *Tysiac) GetDeclarerIdx() int { return g.declarerIdx }
+
+// GetTalonRecipientIdx returns the opponent receiving the next discarded card.
+func (g *Tysiac) GetTalonRecipientIdx() int {
+	if g.declarerIdx < 0 || g.discardCount < 0 {
+		return -1
+	}
+	recipients := g.opponentsOf(g.declarerIdx)
+	// The recipient list is the actual exchange range (one card per opponent),
+	// so its length check is sufficient and also covers the completed exchange.
+	if g.discardCount >= len(recipients) {
+		return -1
+	}
+	return recipients[g.discardCount]
+}
 
 // SetDeclarerIdx declarer インデックス設定 (テスト用)
 func (g *Tysiac) SetDeclarerIdx(idx int) { g.declarerIdx = idx }

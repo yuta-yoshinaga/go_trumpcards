@@ -111,6 +111,10 @@ func (p *SirTommyCuiPresenter) Output(g interfaces.SirTommyGame, lastErr error) 
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(g.GetMoveCount())) + "\n")
 		case domain.SirTommyPhaseGameOver:
 			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
+			foundations := g.GetFoundations()
+			b.WriteString(color.Yellow(cuiSolitaireGameOverSummary(
+				cuiCountPileCards(foundations[:]...),
+				domain.SirTommyFoundationCnt*domain.CardValueMax)) + "\n")
 		}
 	})
 }

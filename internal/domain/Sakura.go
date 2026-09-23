@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // SakuraPhase はゲームフェーズ。
@@ -80,6 +81,11 @@ type Sakura struct {
 	lastResult *SakuraRoundResult
 
 	actionLogBase
+}
+
+// appendLog records a Sakura action with a locale-independent detail code.
+func (g *Sakura) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // NewSakura はコンストラクタ。
@@ -234,8 +240,9 @@ func (g *Sakura) startRound() {
 	}
 	g.stock = append([]*Card(nil), deck[pos:]...)
 
-	g.appendLog(-1, "deal", fmt.Sprintf("round %d dealt (field %d, stock %d)",
-		g.round, len(g.field), len(g.stock)), append([]*Card(nil), g.field...))
+	g.appendLog(-1, "deal", "sakura.log.deal", map[string]string{
+		"round": strconv.Itoa(g.round), "field": strconv.Itoa(len(g.field)), "stock": strconv.Itoa(len(g.stock)),
+	}, append([]*Card(nil), g.field...))
 }
 
 // --- 捕獲 ---
@@ -357,15 +364,17 @@ func (g *Sakura) applyTurn(seat, handIdx, fieldIdx int) {
 		return
 	}
 	took := g.placeCard(seat, card, fieldIdx)
-	g.appendLog(seat, "play", fmt.Sprintf("%s plays %s (%s)",
-		g.playerName(seat), sakuraCardStr(card), sakuraTookWord(took)), []*Card{card})
+	g.appendLog(seat, "play", "sakura.log.play", map[string]string{
+		"player": g.playerName(seat), "card": sakuraCardStr(card), "tookKey": sakuraTookKey(took),
+	}, []*Card{card})
 
 	if len(g.stock) > 0 {
 		drawn := g.stock[0]
 		g.stock = g.stock[1:]
 		tookDraw := g.placeCard(seat, drawn, -1)
-		g.appendLog(seat, "draw", fmt.Sprintf("%s flips %s (%s)",
-			g.playerName(seat), sakuraCardStr(drawn), sakuraTookWord(tookDraw)), []*Card{drawn})
+		g.appendLog(seat, "draw", "sakura.log.draw", map[string]string{
+			"player": g.playerName(seat), "card": sakuraCardStr(drawn), "tookKey": sakuraTookKey(tookDraw),
+		}, []*Card{drawn})
 	}
 
 	g.advanceTurn()
@@ -428,11 +437,12 @@ func (g *Sakura) finishRound() {
 	g.lastResult = result
 	g.phase = SakuraPhaseRoundEnd
 	if result.Winner >= 0 {
-		g.appendLog(result.Winner, "round",
-			fmt.Sprintf("%s takes round %d with %d points",
-				g.playerName(result.Winner), g.round, result.Seats[result.Winner].Total), nil)
+		g.appendLog(result.Winner, "round", "sakura.log.roundWin", map[string]string{
+			"player": g.playerName(result.Winner), "round": strconv.Itoa(g.round),
+			"points": strconv.Itoa(result.Seats[result.Winner].Total),
+		}, nil)
 	} else {
-		g.appendLog(-1, "round", fmt.Sprintf("round %d is a tie", g.round), nil)
+		g.appendLog(-1, "round", "sakura.log.roundTie", map[string]string{"round": strconv.Itoa(g.round)}, nil)
 	}
 
 	if g.round >= g.config.Rounds {
@@ -470,10 +480,11 @@ func (g *Sakura) finishGame() {
 	g.gameEndFlag = true
 	g.phase = SakuraPhaseGameEnd
 	if g.winner >= 0 {
-		g.appendLog(g.winner, "gameEnd", fmt.Sprintf("%s wins with %d points",
-			g.playerName(g.winner), g.players[g.winner].GetScore()), nil)
+		g.appendLog(g.winner, "gameEnd", "sakura.log.gameWin", map[string]string{
+			"player": g.playerName(g.winner), "points": strconv.Itoa(g.players[g.winner].GetScore()),
+		}, nil)
 	} else {
-		g.appendLog(-1, "gameEnd", "the game ends in a tie", nil)
+		g.appendLog(-1, "gameEnd", "sakura.log.gameTie", nil, nil)
 	}
 }
 
@@ -581,12 +592,12 @@ func sakuraCardStr(c *Card) string {
 	return fmt.Sprintf("%d月%s", c.GetDesign(), KoiKoiCardGlyph(c))
 }
 
-// sakuraTookWord は獲得したかどうかの語を返す。
-func sakuraTookWord(took bool) string {
+// sakuraTookKey は獲得したかどうかの i18n キーを返す。
+func sakuraTookKey(took bool) string {
 	if took {
-		return "captured"
+		return "sakura.log.took.captured"
 	}
-	return "discarded"
+	return "sakura.log.took.discarded"
 }
 
 // --- JSON ---

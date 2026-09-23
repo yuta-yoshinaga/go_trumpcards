@@ -1,4 +1,4 @@
-//go:build !js || !wasm || casino
+//go:build !js || !wasm || extra6
 
 package interfaces
 
@@ -52,4 +52,6 @@ type MississippiStudGame interface {
 	GetTotalPayout() int
 	// GetChips チップを取得する
 	GetChips() int
+	// GetChipsRefilled 直前の Reset が残高を補充したかを返す
+	GetChipsRefilled() bool
 }

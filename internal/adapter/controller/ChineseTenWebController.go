@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra2
+//go:build !js || !wasm || extra6
 
 package controller
 
@@ -63,6 +63,8 @@ type ChineseTenWebOutput struct {
 	StockCount       int                          `json:"stockCount"`
 	// PendingCard は選択待ちの札。SelectableIndices と対で使う。
 	PendingCard *ChineseTenWebOutputCard `json:"pendingCard,omitempty"`
+	// PendingFlip は選択待ちの札が山札めくりに由来するか。
+	PendingFlip bool `json:"pendingFlip,omitempty"`
 	// SelectableIndices は選択フェーズで取れる場札の添字。捕獲規則
 	// (A〜9 は合計10・10〜K は同ランク) をクライアントに再実装させない。
 	SelectableIndices []int `json:"selectableIndices"`

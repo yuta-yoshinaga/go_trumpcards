@@ -287,6 +287,9 @@ function EscobaPageContent() {
                 </div>
               )}
               <div className="text-center text-xs text-ds-text-muted mb-2">{t('label.tableCards')}</div>
+              <div className="text-center text-xs text-ds-text-muted mb-2" data-testid="escoba-card-values">
+                {t('label.cardValues')}
+              </div>
               <div className="flex justify-center gap-2 min-h-[60px] flex-wrap">
                 {state.tableCards.length === 0 ? (
                   <span className="text-ds-text-muted text-sm self-center">{t('label.tableEmpty')}</span>

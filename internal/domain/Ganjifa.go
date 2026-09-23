@@ -342,8 +342,7 @@ func (g *Ganjifa) startRound() {
 	g.leadPlayerIdx = (g.dealerIdx + 1) % GanjifaPlayerCnt
 	g.currentPlayerIdx = g.leadPlayerIdx
 	g.phase = GanjifaPhasePlay
-	g.appendLog(-1, "deal",
-		fmt.Sprintf("ラウンド %d 開始 (切り札 %d)", g.roundNumber, g.trumpSuit), nil)
+	g.appendLog(-1, "deal", "ganjifa.log.deal", map[string]string{"round": fmt.Sprintf("%d", g.roundNumber), "trump": fmt.Sprintf("%d", g.trumpSuit)}, nil)
 }
 
 // shuffle 山札をシャッフルする。
@@ -411,8 +410,8 @@ func (g *Ganjifa) sortAllHands() {
 }
 
 // appendLog 棋譜に 1 行追加する。
-func (g *Ganjifa) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.appendLogAt(len(g.actionLog)+1, playerIdx, actionType, detail, cards)
+func (g *Ganjifa) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCodeAt(len(g.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // finishMatch マッチを終え、獲得トリック数の累計が最大のプレイヤーを勝者にする。
@@ -435,7 +434,7 @@ func (g *Ganjifa) finishMatch() {
 	} else {
 		g.winnerPlayer = winner
 	}
-	g.appendLog(-1, "gameend", "マッチ終了", nil)
+	g.appendLog(-1, "gameend", "ganjifa.log.gameEnd", nil, nil)
 }
 
 // IsHumanTurn 人間のプレイ手番か。
@@ -456,7 +455,7 @@ func (g *Ganjifa) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "ganjifa.errCardIndexOutOfRange", nil)
 	}
 	if err := g.validatePlay(g.currentPlayerIdx, player.GetCard(cardIndex)); err != nil {
 		return err
@@ -487,14 +486,14 @@ func (g *Ganjifa) CpuPlay() {
 // validatePlay マストフォローを検証する。
 func (g *Ganjifa) validatePlay(playerIdx int, card *Card) error {
 	if card == nil {
-		return NewDomainError(ErrInvalidCard, "カードがありません")
+		return NewDomainErrorCode(ErrInvalidCard, "ganjifa.errCardMissing", nil)
 	}
 	if len(g.currentTrick) == 0 {
 		return nil
 	}
 	leadSuit := g.currentTrick[0].Card.GetDesign()
 	if g.playerHasSuit(playerIdx, leadSuit) && card.GetDesign() != leadSuit {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+		return NewDomainErrorCode(ErrInvalidPlay, "ganjifa.errFollowLeadSuit", nil)
 	}
 	return nil
 }
@@ -536,7 +535,7 @@ func (g *Ganjifa) GetPlayableIndices(playerIdx int) []int { return g.GetValidPla
 // playCard 1 枚を場に出し、トリックが揃えばフェーズを進める。
 func (g *Ganjifa) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", "", []*Card{card})
+	g.appendLog(playerIdx, "play", "ganjifa.log.play", nil, []*Card{card})
 	if len(g.currentTrick) < GanjifaPlayerCnt {
 		g.currentPlayerIdx = (g.currentPlayerIdx + 1) % GanjifaPlayerCnt
 		return
@@ -556,7 +555,7 @@ func (g *Ganjifa) ResolveTrick() {
 	}
 	g.players[winnerIdx].AddTrick(cards)
 	g.roundTricks[winnerIdx]++
-	g.appendLog(winnerIdx, "trickwin", fmt.Sprintf("トリック %d を獲得", g.trickNumber), cards)
+	g.appendLog(winnerIdx, "trickwin", "ganjifa.log.trickWin", map[string]string{"trick": fmt.Sprintf("%d", g.trickNumber)}, cards)
 
 	g.leadPlayerIdx = winnerIdx
 	g.currentPlayerIdx = winnerIdx
@@ -663,7 +662,7 @@ func (g *Ganjifa) settleRound() {
 	for i := range g.playerScores {
 		g.playerScores[i] += g.roundTricks[i]
 	}
-	g.appendLog(-1, "settle", fmt.Sprintf("ラウンド %d 終了", g.roundNumber), nil)
+	g.appendLog(-1, "settle", "ganjifa.log.settle", map[string]string{"round": fmt.Sprintf("%d", g.roundNumber)}, nil)
 }
 
 // ScoreRound ラウンドを締め、規定局数ならマッチを終える。

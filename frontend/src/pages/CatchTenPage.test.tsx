@@ -57,6 +57,35 @@ beforeEach(() => {
 });
 
 describe('CatchTenPage', () => {
+  it('badges trump honors, but not non-trumps or cards before trump is known', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        trumpSuit: 1,
+        players: [
+          {
+            ...makeState().players[0],
+            cards: [card('SPADE', 11), card('HEART', 11), card('SPADE', 9)],
+          },
+          ...makeState().players.slice(1),
+        ],
+      }),
+    );
+    renderWithProviders(<CatchTenPage />);
+    await waitFor(() => expect(screen.getByTestId('card-role-badge-0')).toHaveTextContent('★'));
+    expect(screen.getByRole('button', { name: /♠ J.*11/ })).toBeInTheDocument();
+    expect(screen.queryByTestId('card-role-badge-1')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('card-role-badge-2')).not.toBeInTheDocument();
+
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [{ ...makeState().players[0], cards: [card('SPADE', 11)] }, ...makeState().players.slice(1)],
+      }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(screen.queryByTestId('card-role-badge-0')).not.toBeInTheDocument());
+  });
+
   it('calls reset on mount with default config', async () => {
     renderWithProviders(<CatchTenPage />);
     // useTrickGameBase fires the mount reset with four positional args.

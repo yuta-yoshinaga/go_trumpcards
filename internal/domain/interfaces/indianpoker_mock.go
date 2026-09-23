@@ -37,6 +37,15 @@ func (_m *MockIndianPokerGame) GetEstimatedStrength(idx int) int {
 	return ret.Int(0)
 }
 
+// GetHint モック
+func (_m *MockIndianPokerGame) GetHint() *domain.IndianPokerHint {
+	ret := _m.Called()
+	if val, ok := ret.Get(0).(*domain.IndianPokerHint); ok {
+		return val
+	}
+	return nil
+}
+
 // GetPlayers モック
 func (_m *MockIndianPokerGame) GetPlayers() []*domain.IndianPokerPlayer {
 	ret := _m.Called()

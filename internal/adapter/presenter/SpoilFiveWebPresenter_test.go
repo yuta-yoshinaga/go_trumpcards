@@ -140,6 +140,15 @@ func TestSpoilFiveWebPresenter_Output(t *testing.T) {
 		assert.Empty(t, resObj.MessageCode)
 	})
 
+	t.Run("game coded error uses message code", func(t *testing.T) {
+		m, _ := setupSpoilFiveWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "spoilfive.errCardIndexOutOfRange", nil)
+		var resObj controller.SpoilFiveWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, err)), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "spoilfive.errCardIndexOutOfRange", resObj.MessageCode)
+	})
+
 	t.Run("game end human wins", func(t *testing.T) {
 		m, _ := setupSpoilFiveWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
@@ -210,7 +219,7 @@ func TestSpoilFiveWebPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockSpoilFiveGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You plays ♠K"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, `"actionType":"play"`)

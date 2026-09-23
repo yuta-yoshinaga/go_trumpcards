@@ -50,9 +50,9 @@ func TestFortyAndEightCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(fg, nil)
 		assert.Contains(t, result, "Forty and Eight")
-		assert.Contains(t, result, "Foundation")
-		assert.Contains(t, result, "Stock: 64枚")
-		assert.Contains(t, result, "Waste: [空]")
+		assert.Contains(t, result, "組札")
+		assert.Contains(t, result, "ストック: 64枚")
+		assert.Contains(t, result, "ウェイスト: [空]")
 		assert.Contains(t, result, "列0:")
 		assert.Contains(t, result, "手数: 0")
 		assert.Contains(t, result, "操作: m で移動")
@@ -69,8 +69,8 @@ func TestFortyAndEightCuiPresenter_Output(t *testing.T) {
 
 		p := new(FortyAndEightCuiPresenter)
 		result := p.Output(fg, nil)
-		assert.Contains(t, result, "Waste:")
-		assert.NotContains(t, result, "Waste: [空]")
+		assert.Contains(t, result, "ウェイスト:")
+		assert.NotContains(t, result, "ウェイスト: [空]")
 	})
 
 	t.Run("redeal used label", func(t *testing.T) {
@@ -151,7 +151,7 @@ func TestFortyAndEightCuiPresenter_Output(t *testing.T) {
 
 		p := new(FortyAndEightCuiPresenter)
 		result := p.Output(fg, nil)
-		assert.Contains(t, result, "SPADE 1")
+		assert.Contains(t, result, "♠1")
 	})
 }
 
@@ -170,7 +170,7 @@ func TestFortyAndEightCuiPresenter_HintOutput(t *testing.T) {
 		result := p.HintOutput(fg)
 		assert.Contains(t, result, "ヒント")
 		assert.Contains(t, result, "タブロー列0")
-		assert.Contains(t, result, "ファンデーション")
+		assert.Contains(t, result, "組札")
 	})
 
 	t.Run("waste hint", func(t *testing.T) {
@@ -213,7 +213,7 @@ func TestFortyAndEightCuiPresenter_ActionLogOutput(t *testing.T) {
 		fg := new(interfaces.MockFortyAndEightGame)
 		fg.On("GetPhase").Return(domain.FortyAndEightPhaseGameOver)
 		fg.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "draw", Detail: "test"},
+			{TurnNumber: 1, ActionType: "draw", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 
 		p := new(FortyAndEightCuiPresenter)

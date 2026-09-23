@@ -23,6 +23,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { BalootResponse } from '../types/card';
 import { BalootMode, BalootPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { balootCardPoints } from '../utils/balootPoints';
 import { cardAlt } from '../utils/cardAlt';
 import { BALOOT_HELP, parseBalootCommand } from '../utils/cli/commands/balootCommands';
 import { formatBalootState } from '../utils/cli/formatters/balootFormatter';
@@ -289,9 +290,18 @@ function BalootPageContent() {
                       onClick={() => handlePlay(idx)}
                       disabled={loading || !isHumanTurn}
                       aria-label={t('actions.playAria', { card: cardAlt(card) })}
-                      className={`disabled:opacity-50 ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
+                      className={`relative disabled:opacity-50 ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
                     >
                       <CardImage card={card} width={cardWidth} />
+                      {state.mode !== BalootMode.NONE && (
+                        <span
+                          data-testid={`bl-points-${idx.toString()}`}
+                          aria-hidden="true"
+                          className="absolute top-0 right-0 rounded-bl px-1 text-[10px] leading-tight bg-black/70 text-white"
+                        >
+                          {balootCardPoints(card, state.mode, state.trumpSuit)}
+                        </span>
+                      )}
                     </button>
                   ))}
                 </div>

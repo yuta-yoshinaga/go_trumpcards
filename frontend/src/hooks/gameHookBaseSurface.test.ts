@@ -34,6 +34,7 @@ vi.mock('../api/gameApi', () => {
     'seahaventowersApi',
     'spiderApi',
     'spideretteApi',
+    'willothewispApi',
     'tripeaksApi',
     'hintApi',
   ];
@@ -69,6 +70,7 @@ import { useTressetteGame } from './useTressetteGame';
 import { useTriPeaksGame } from './useTriPeaksGame';
 import { useTwoTenJackGame } from './useTwoTenJackGame';
 import { useWhistGame } from './useWhistGame';
+import { useWillOTheWispGame } from './useWillOTheWispGame';
 
 function wrapper({ children }: { children: ReactNode }) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -171,6 +173,7 @@ describe('solitaire hooks expose the full useSolitaireGameBase surface', () => {
     ['useSeahavenTowersGame', useSeahavenTowersGame],
     ['useSpiderGame', useSpiderGame],
     ['useSpideretteGame', useSpideretteGame],
+    ['useWillOTheWispGame', useWillOTheWispGame],
     ['useTriPeaksGame', useTriPeaksGame],
   ])('%s forwards every base field', (_name, hook) => {
     const keys = keysOf(hook as () => object);

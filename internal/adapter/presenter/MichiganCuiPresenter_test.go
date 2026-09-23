@@ -23,6 +23,20 @@ func TestMichiganCuiPresenter_OutputBetPhase(t *testing.T) {
 	assert.Contains(t, out, "ブードル")
 }
 
+func TestMichiganCuiPresenter_OutputShowsConfiguredTargetRounds(t *testing.T) {
+	p := new(presenter.MichiganCuiPresenter)
+	for _, tc := range []struct {
+		targetRounds int
+		want         string
+	}{{4, "ラウンド: 1 / 4"}, {12, "ラウンド: 1 / 12"}} {
+		g := domain.NewDefaultMichigan()
+		cfg := g.GetConfig()
+		cfg.TargetRounds = tc.targetRounds
+		g.SetConfig(cfg)
+		assert.Contains(t, p.Output(g, nil), tc.want)
+	}
+}
+
 func TestMichiganCuiPresenter_OutputBetHint(t *testing.T) {
 	p := new(presenter.MichiganCuiPresenter)
 
@@ -32,7 +46,7 @@ func TestMichiganCuiPresenter_OutputBetHint(t *testing.T) {
 	g.GetPlayer(0).AddCard(domain.NewCard(bc.GetDesign(), bc.GetValue(), false))
 	out := p.Output(g, nil)
 	assert.Contains(t, out, "推奨")
-	assert.Contains(t, out, "boodle0")
+	assert.Contains(t, out, "ブードル0")
 
 	// None: an empty human hand holds no boodle cards → the even-spread tip shows.
 	g2 := domain.NewDefaultMichigan()
@@ -56,8 +70,8 @@ func TestMichiganCuiPresenter_BetHintWarnsAboutClaimedBoodles(t *testing.T) {
 	g.GetBoodle(1).SetClaimedBy(2)
 	out := p.Output(g, nil)
 	assert.Contains(t, out, "回収できません")
-	assert.Contains(t, out, "boodle1")
-	assert.NotContains(t, out, "boodle0")
+	assert.Contains(t, out, "ブードル1")
+	assert.NotContains(t, out, "ブードル0")
 
 	// **確定済みは推奨から外れる。**札を持っていても回収できない以上、
 	// 「厚めに賭けろ」と案内してはいけない。

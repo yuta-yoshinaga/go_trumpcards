@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra3
+//go:build !js || !wasm || extra6
 
 package presenter
 
@@ -76,6 +76,13 @@ func (p *SkatWebPresenter) buildBaseOutput(s interfaces.SkatGame) *controller.Sk
 	}
 	resObj.GameEndFlag = s.GetGameEndFlag()
 	resObj.LeadPlayerIdx = s.GetLeadPlayerIdx()
+	resObj.PlayableIndices = make([]int, 0)
+	resObj.TrumpIndices = make([]int, 0)
+	if s.GetPhase() == domain.SkatPhasePlay && s.IsHumanTurn() {
+		playerIdx := s.GetCurrentPlayerIdx()
+		resObj.PlayableIndices = intSliceOrEmpty(s.GetValidPlayIndices(playerIdx))
+		resObj.TrumpIndices = intSliceOrEmpty(s.GetTrumpIndices(playerIdx))
+	}
 
 	// Skat is exposed only when face-up to the declarer (post-pickup before
 	// discard) or once revealed at round end.

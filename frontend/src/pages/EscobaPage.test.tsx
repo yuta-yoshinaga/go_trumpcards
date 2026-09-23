@@ -50,6 +50,12 @@ describe('EscobaPage', () => {
     expect(screen.getByTestId('table-card-1')).toBeInTheDocument();
   });
 
+  it('shows Escoba card values for capture totals', async () => {
+    renderWithProviders(<EscobaPage />);
+    await waitFor(() => expect(screen.getByTestId('escoba-card-values')).toBeInTheDocument());
+    expect(screen.getByTestId('escoba-card-values')).toHaveTextContent('捕獲判定では、J=8、Q=9、K=10として数えます。');
+  });
+
   it('renders per-player scores and stock', async () => {
     renderWithProviders(<EscobaPage />);
     await waitFor(() => expect(screen.getByTestId('player-score-0')).toBeInTheDocument());

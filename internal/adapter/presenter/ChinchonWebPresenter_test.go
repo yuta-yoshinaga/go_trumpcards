@@ -47,6 +47,7 @@ func TestChinchonWebPresenter_Output(t *testing.T) {
 		var parsed controller.ChinchonWebOutput
 		require.NoError(t, json.Unmarshal([]byte(out), &parsed))
 		assert.Equal(t, 0, parsed.Phase)
+		assert.Empty(t, parsed.LayoffableIndices)
 		assert.Len(t, parsed.Players, 2)
 		// CPU hand hidden during play.
 		assert.Empty(t, parsed.Players[1].Cards)
@@ -69,6 +70,7 @@ func TestChinchonWebPresenter_Output(t *testing.T) {
 			domain.NewCard(domain.CardDesignSpade, 2, false),
 			domain.NewCard(domain.CardDesignSpade, 3, false),
 		}})
+		m.On("GetLayoffableIndices").Return([]int{0})
 		m.On("GetConfig").Return(domain.DefaultChinchonConfig())
 		m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 		m.On("GetPlayerCnt").Return(2)
@@ -79,6 +81,7 @@ func TestChinchonWebPresenter_Output(t *testing.T) {
 		require.NoError(t, json.Unmarshal([]byte(out), &parsed))
 		assert.Len(t, parsed.KnockerMelds, 1)
 		assert.Len(t, parsed.Players[1].Cards, 1)
+		assert.Equal(t, []int{0}, parsed.LayoffableIndices)
 	})
 
 	t.Run("game end with human winner", func(t *testing.T) {
@@ -104,6 +107,7 @@ func TestChinchonWebPresenter_Output(t *testing.T) {
 		var parsed controller.ChinchonWebOutput
 		require.NoError(t, json.Unmarshal([]byte(out), &parsed))
 		assert.Equal(t, "chinchon.discardPhase", parsed.MessageCode)
+		assert.Empty(t, parsed.LayoffableIndices)
 	})
 
 	t.Run("round end message", func(t *testing.T) {
@@ -120,6 +124,15 @@ func TestChinchonWebPresenter_Output(t *testing.T) {
 		var parsed controller.ChinchonWebOutput
 		require.NoError(t, json.Unmarshal([]byte(out), &parsed))
 		assert.Equal(t, "boom", parsed.Message)
+	})
+
+	t.Run("coded error sets code and clears message", func(t *testing.T) {
+		m, _ := setupChinchonWebMock(domain.ChinchonPhaseDraw, false, -1, -1)
+		out := p.Output(m, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "chinchon.errDiscardPileEmpty", nil))
+		var parsed controller.ChinchonWebOutput
+		require.NoError(t, json.Unmarshal([]byte(out), &parsed))
+		assert.Empty(t, parsed.Message)
+		assert.Equal(t, "chinchon.errDiscardPileEmpty", parsed.MessageCode)
 	})
 }
 

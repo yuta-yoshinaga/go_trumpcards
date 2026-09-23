@@ -19,6 +19,8 @@ const buryPhaseState = makeSheepsheadState({ phase: 1, pickerIdx: 0, currentPlay
 const callPhaseState = makeSheepsheadState({ phase: 2, pickerIdx: 0, currentPlayerIdx: 0, callableSuits: [1, 2] });
 const trickEndState = makeSheepsheadState({
   phase: 4,
+  livePickerPoints: 23,
+  liveDefenderPoints: 97,
   currentTrick: [
     { playerIdx: 0, card: { design: 'SPADE', value: 1 } },
     { playerIdx: 1, card: { design: 'SPADE', value: 13 } },
@@ -159,6 +161,23 @@ describe('SheepsheadPage', () => {
     mockExec.mockResolvedValue(trickEndState);
     renderWithProviders(<SheepsheadPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
+  });
+
+  it('shows live card-point progress with polite announcements during play and trick end', async () => {
+    mockExec.mockResolvedValue(makeSheepsheadState({ livePickerPoints: 23, liveDefenderPoints: 97 }));
+    renderWithProviders(<SheepsheadPage />);
+    const livePoints = await screen.findByTestId('sh-live-points');
+    expect(livePoints).toHaveTextContent('現在の獲得点');
+    expect(livePoints).toHaveTextContent('ピッカー組: 23点（勝利ライン 61点）');
+    expect(livePoints).toHaveTextContent('守備組: 97点');
+    expect(livePoints).toHaveAttribute('aria-live', 'polite');
+  });
+
+  it('does not show live card-point progress outside play or trick end', async () => {
+    mockExec.mockResolvedValue(pickPhaseState);
+    renderWithProviders(<SheepsheadPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('sh-live-points')).not.toBeInTheDocument();
   });
 
   it('renders round end with the next round button and the round result', async () => {

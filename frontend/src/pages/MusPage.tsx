@@ -236,11 +236,28 @@ function MusPageContent() {
 
             {/* Players */}
             <div className="mb-2 p-2 rounded bg-black/30">
-              {state.players.map((p) => (
-                <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                  {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })}
-                </div>
-              ))}
+              {state.players.map((p) => {
+                // This rule pairs with Go's domain.MusTeamOf: player index modulo the team count.
+                const teamCount = state.amarrakos.length;
+                const playerTeam = teamCount === 0 ? 0 : p.id % teamCount;
+                const isTeammate = playerTeam === state.humanTeam;
+                return (
+                  <div
+                    key={p.id}
+                    className={`text-sm py-0.5 ${!p.isHuman && isTeammate ? 'text-ds-accent' : 'text-ds-text-muted'}`}
+                    data-testid={`mus-player-${p.id}`}
+                  >
+                    {p.isHuman
+                      ? `${playerName(p.id, p.isHuman)}: ${t('cards', { count: p.cardCount })}`
+                      : t('playerLine', {
+                          name: playerName(p.id, p.isHuman),
+                          team: playerTeam,
+                          role: t(isTeammate ? 'partner' : 'opponent'),
+                          cards: p.cardCount,
+                        })}
+                  </div>
+                );
+              })}
             </div>
 
             {/* Round (betting) results */}

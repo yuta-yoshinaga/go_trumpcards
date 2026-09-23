@@ -134,6 +134,18 @@ func TestNapWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "nap.roundEnd", resObj.MessageCode)
 	})
 
+	t.Run("passed out round end message code", func(t *testing.T) {
+		m, _ := setupNapWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDeclarerIdx")
+		m.On("GetPhase").Return(domain.NapPhaseRoundEnd)
+		m.On("GetDeclarerIdx").Return(-1)
+		result := p.Output(m, nil)
+		var resObj controller.NapWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Equal(t, "nap.roundEnd.passedOut", resObj.MessageCode)
+	})
+
 	t.Run("error message takes priority", func(t *testing.T) {
 		m, _ := setupNapWebMockWithPlayers()
 		result := p.Output(m, errors.New("boom"))
@@ -141,6 +153,15 @@ func TestNapWebPresenter_Output(t *testing.T) {
 		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
 		assert.Equal(t, "boom", resObj.Message)
 		assert.Empty(t, resObj.MessageCode)
+	})
+
+	t.Run("coded error uses message code", func(t *testing.T) {
+		m, _ := setupNapWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "nap.errCardIndexOutOfRange", nil)
+		var resObj controller.NapWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, err)), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "nap.errCardIndexOutOfRange", resObj.MessageCode)
 	})
 
 	t.Run("game end human wins", func(t *testing.T) {
@@ -213,7 +234,7 @@ func TestNapWebPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockNapGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You plays ♠K"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, `"actionType":"play"`)

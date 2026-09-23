@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { simplesimonApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CardImage } from '../components/CardImage';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
@@ -11,7 +12,9 @@ import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
@@ -102,6 +105,97 @@ function SimpleSimonPageContent() {
     setAutoMoveNotice(null);
   }, [state?.moveCount]);
 
+  const isPlayingForKbd = state?.phase === SimpleSimonPhase.PLAYING;
+
+  // Double-click a grabbable run: auto-move it to the best legal destination
+  // (same-suit link > rank-only link > empty column). If none exists, deselect
+  // and show a notice. Single-click selection is preserved via the e.detail
+  // guard in the card's onClick.
+  const autoMoveCard = useCallback(
+    (col: number, idx: number) => {
+      if (!state || !isPlayingForKbd || !isGrabbable(state.columns[col], idx)) return;
+      const toCol = simpleSimonAutoMoveTarget(state.columns, col, idx);
+      if (toCol === null) {
+        setSelected(null);
+        setAutoMoveNotice(t('noAutoMove'));
+        return;
+      }
+      setAutoMoveNotice(null);
+      exec('m', { fromCol: col, cardIndex: idx, toCol });
+      setSelected(null);
+    },
+    [exec, isPlayingForKbd, state, t],
+  );
+
+  // Click a card: select it as the source, or — if a source in another column
+  // is already selected — move that run onto this column.
+  const clickCard = useCallback(
+    (col: number, idx: number) => {
+      if (!state || !isPlayingForKbd) return;
+      if (selected && selected.col !== col) {
+        exec('m', { fromCol: selected.col, cardIndex: selected.idx, toCol: col });
+        setSelected(null);
+        return;
+      }
+      if (!isGrabbable(state.columns[col], idx)) return;
+      setSelected({ col, idx });
+    },
+    [exec, isPlayingForKbd, selected, state],
+  );
+
+  const clickColumn = useCallback(
+    (col: number) => {
+      if (!isPlayingForKbd || !selected || selected.col === col) return;
+      exec('m', { fromCol: selected.col, cardIndex: selected.idx, toCol: col });
+      setSelected(null);
+    },
+    [exec, isPlayingForKbd, selected],
+  );
+
+  const handleKeyboardColumn = useCallback(
+    (col: number) => {
+      if (!state || !isPlayingForKbd) return;
+      if (selected) {
+        clickColumn(col);
+        return;
+      }
+      const idx = movableFromIndex(state.columns[col]);
+      if (idx < state.columns[col].length) clickCard(col, idx);
+    },
+    [clickCard, clickColumn, isPlayingForKbd, selected, state],
+  );
+
+  const confirmKeyboardMove = useCallback(() => {
+    if (selected) autoMoveCard(selected.col, selected.idx);
+  }, [autoMoveCard, selected]);
+
+  const clearKeyboardSelection = useCallback(() => {
+    setSelected(null);
+    setAutoMoveNotice(null);
+  }, []);
+
+  useCardKeyboardNav({
+    cardCount: 10,
+    onToggle: handleKeyboardColumn,
+    onConfirm: confirmKeyboardMove,
+    onClear: clearKeyboardSelection,
+    enabled: !!isPlayingForKbd && !loading,
+  });
+
+  const actionBindings = useMemo(
+    () => [
+      { key: 'h', action: () => exec('hint'), label: 'hint' },
+      { key: 'g', action: confirmGiveUpAction, label: 'giveUp' },
+      { key: 'z', action: () => exec('u'), label: 'undo' },
+    ],
+    [confirmGiveUpAction, exec],
+  );
+
+  useActionKeyboardNav({
+    bindings: actionBindings,
+    enabled: !!isPlayingForKbd && !loading,
+  });
+
   const phaseNames = usePhaseNames('simplesimon', SS_PHASE_KEYS);
   const { cardWidth } = useCardDimensions();
   const w = Math.round(cardWidth * 0.58);
@@ -123,45 +217,6 @@ function SimpleSimonPageContent() {
     hideActionLog();
     setSelected(null);
     exec('reset');
-  };
-
-  // Double-click a grabbable run: auto-move it to the best legal destination
-  // (same-suit link > rank-only link > empty column). If none exists, deselect
-  // and show a notice. Single-click selection is preserved via the e.detail
-  // guard in the card's onClick.
-  const autoMoveCard = (col: number, idx: number) => {
-    if (!canAct || !isGrabbable(state.columns[col], idx)) return;
-    const toCol = simpleSimonAutoMoveTarget(state.columns, col, idx);
-    if (toCol === null) {
-      setSelected(null);
-      setAutoMoveNotice(t('noAutoMove'));
-      return;
-    }
-    setAutoMoveNotice(null);
-    exec('m', { fromCol: col, cardIndex: idx, toCol });
-    setSelected(null);
-  };
-
-  // Click a card: select it as the source, or — if a source in another column is
-  // already selected — move that run onto this column.
-  const clickCard = (col: number, idx: number) => {
-    if (!canAct) return;
-    if (selected && selected.col !== col) {
-      exec('m', { fromCol: selected.col, cardIndex: selected.idx, toCol: col });
-      setSelected(null);
-      return;
-    }
-    // Only a valid movable run (same-suit descending to the tail) can be grabbed
-    // as a source; ignore clicks on cards above the run boundary.
-    if (!isGrabbable(state.columns[col], idx)) return;
-    setSelected({ col, idx });
-  };
-
-  // Click an (empty) column: move the selected run onto it.
-  const clickColumn = (col: number) => {
-    if (!canAct || !selected || selected.col === col) return;
-    exec('m', { fromCol: selected.col, cardIndex: selected.idx, toCol: col });
-    setSelected(null);
   };
 
   const renderColumn = (column: Card[], col: number) => {
@@ -288,6 +343,7 @@ function SimpleSimonPageContent() {
               className={btnSecondary}
               onClick={() => exec('u')}
               disabled={loading}
+              aria-keyshortcuts="z"
               data-testid="undo-button"
             >
               {t('undo')}
@@ -299,6 +355,7 @@ function SimpleSimonPageContent() {
               className={btnPrimary}
               onClick={() => exec('hint')}
               disabled={loading}
+              aria-keyshortcuts="h"
               data-testid="hint-button"
             >
               {t('hint')}
@@ -310,6 +367,7 @@ function SimpleSimonPageContent() {
               className={btnSecondary}
               onClick={confirmGiveUpAction}
               disabled={loading}
+              aria-keyshortcuts="g"
               data-testid="giveup-button"
             >
               {t('giveup')}
@@ -323,6 +381,7 @@ function SimpleSimonPageContent() {
             dataTutorial="ss-reset-button"
           />
         </div>
+        <ActionShortcutsPanel bindings={actionBindings} includeCardNav data-testid="simple-simon-kbd-shortcuts" />
       </GameFooter>
     </GamePageShell>
   );

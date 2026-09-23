@@ -28,14 +28,12 @@ func (p *SlapjackWebPresenter) Output(g interfaces.SlapjackGame, lastErr error) 
 	last := g.GetLastEvent()
 	resObj.LastEventKind = int(last.Kind)
 	resObj.LastEventPlayerIdx = last.PlayerIdx
+	resObj.LastEventCardsWon = last.CardsWon
 
 	resObj.Players = make([]*controller.SlapjackWebPlayer, 0, g.GetPlayerCnt())
 	for i := range g.GetPlayerCnt() {
 		player := g.GetPlayer(i)
-		name := "あなた"
-		if !player.GetIsHuman() {
-			name = "CPU"
-		}
+		name := webPlayerName(player.GetIsHuman(), i)
 		resObj.Players = append(resObj.Players, &controller.SlapjackWebPlayer{
 			Name:      name,
 			IsHuman:   player.GetIsHuman(),

@@ -148,6 +148,23 @@ describe('ViraPage', () => {
     expect(banner).not.toHaveTextContent('ミゼール');
   });
 
+  it('shows the automatic trump note after a non-pass, non-Misère contract is made', async () => {
+    mockExec.mockResolvedValue(
+      makeViraState({ phase: 1, declarerIdx: 0, contract: 1, trumpSuit: 3, isHumanBidTurn: false }),
+    );
+    renderWithProviders(<ViraPage />);
+    const note = await screen.findByTestId('vira-trump-note');
+    expect(note).toHaveTextContent('切り札は宣言者の最長スートから自動で決まります（選択操作はありません）');
+    expect(note).not.toHaveTextContent('trumpAutoNote');
+  });
+
+  it('does not show the automatic trump note for a Misère contract', async () => {
+    mockExec.mockResolvedValue(makeViraState({ phase: 1, declarerIdx: 0, contract: 3, isHumanBidTurn: false }));
+    renderWithProviders(<ViraPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('vira-trump-note')).not.toBeInTheDocument();
+  });
+
   it('explains via tooltip and aria-label why a too-low bid is disabled', async () => {
     // 席 0 が Solo(2) を出している。Gask(1) はそれより下なので押せない。
     mockExec.mockResolvedValue(makeViraState({ bids: [2, 0, 0] }));

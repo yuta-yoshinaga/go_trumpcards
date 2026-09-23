@@ -44,6 +44,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"strconv"
 )
 
 // KoiKoiPlayerCnt はこいこいのプレイヤー数 (固定 2)。
@@ -466,8 +467,9 @@ func (g *KoiKoi) startRound() {
 	g.state.drawPile = append([]*Card(nil), deck[pos:]...)
 
 	g.sortHumanHand()
-	g.appendLog(-1, "deal", fmt.Sprintf("round %d dealt (field %d, draw %d)",
-		g.state.roundNumber, len(g.state.fieldCards), len(g.state.drawPile)),
+	g.appendLog(-1, "deal", "koikoi.log.roundDealt", map[string]string{
+		"round": strconv.Itoa(g.state.roundNumber), "field": strconv.Itoa(len(g.state.fieldCards)), "draw": strconv.Itoa(len(g.state.drawPile)),
+	},
 		append([]*Card(nil), g.state.fieldCards...))
 }
 
@@ -618,8 +620,9 @@ func (g *KoiKoi) applyTurn(playerIdx, handIdx, fieldIdx int) {
 	beforeField := len(g.state.fieldCards)
 	g.koikoiPlaceCard(playerIdx, card, fieldIdx)
 	handCaptured := len(g.state.fieldCards) <= beforeField
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s (%s)",
-		g.playerName(playerIdx), koikoiCardStr(card), koikoiCapturedWord(handCaptured)), []*Card{card})
+	g.appendLog(playerIdx, "play", "koikoi.log.play", map[string]string{
+		"name": g.playerName(playerIdx), "card": koikoiCardStr(card), "capturedKey": koikoiCapturedKey(handCaptured),
+	}, []*Card{card})
 
 	// めくり札。
 	if len(g.state.drawPile) > 0 {
@@ -628,8 +631,9 @@ func (g *KoiKoi) applyTurn(playerIdx, handIdx, fieldIdx int) {
 		before2 := len(g.state.fieldCards)
 		g.koikoiPlaceCard(playerIdx, drawn, -1)
 		drawCaptured := len(g.state.fieldCards) <= before2
-		g.appendLog(playerIdx, "draw", fmt.Sprintf("%s draws %s (%s)",
-			g.playerName(playerIdx), koikoiCardStr(drawn), koikoiCapturedWord(drawCaptured)), []*Card{drawn})
+		g.appendLog(playerIdx, "draw", "koikoi.log.draw", map[string]string{
+			"name": g.playerName(playerIdx), "card": koikoiCardStr(drawn), "capturedKey": koikoiCapturedKey(drawCaptured),
+		}, []*Card{drawn})
 	}
 
 	// 役判定。
@@ -639,8 +643,9 @@ func (g *KoiKoi) applyTurn(playerIdx, handIdx, fieldIdx int) {
 		g.state.pendingYaku = yakus
 		g.state.pendingPoints = total
 		g.state.phase = KoiKoiPhaseKoiKoiDecision
-		g.appendLog(playerIdx, "yaku",
-			fmt.Sprintf("%s forms a yaku worth %d", g.playerName(playerIdx), total), nil)
+		g.appendLog(playerIdx, "yaku", "koikoi.log.formsYaku", map[string]string{
+			"name": g.playerName(playerIdx), "points": strconv.Itoa(total),
+		}, nil)
 		return
 	}
 	g.advanceTurn()
@@ -681,7 +686,7 @@ func (g *KoiKoi) applyDecision(playerIdx int, koikoi bool) {
 		player.SetCalledKoiKoi(true)
 		player.SetLastYakuPoints(g.state.pendingPoints)
 		g.state.koikoiCount++
-		g.appendLog(playerIdx, "koikoi", fmt.Sprintf("%s calls Koi-Koi", g.playerName(playerIdx)), nil)
+		g.appendLog(playerIdx, "koikoi", "koikoi.log.callsKoiKoi", map[string]string{"name": g.playerName(playerIdx)}, nil)
 		g.state.pendingYaku = nil
 		g.state.pendingPoints = 0
 		g.state.phase = KoiKoiPhasePlay
@@ -689,7 +694,7 @@ func (g *KoiKoi) applyDecision(playerIdx int, koikoi bool) {
 		return
 	}
 	// 勝負 (あがり)。手札が無い場合も強制的にここで確定する。
-	g.appendLog(playerIdx, "shobu", fmt.Sprintf("%s stops (Shobu)", g.playerName(playerIdx)), nil)
+	g.appendLog(playerIdx, "shobu", "koikoi.log.stopsShobu", map[string]string{"name": g.playerName(playerIdx)}, nil)
 	g.endRound(playerIdx)
 }
 
@@ -724,11 +729,12 @@ func (g *KoiKoi) endRound(winnerIdx int) {
 		result.BasePoints = base
 		result.Total = total
 		g.players[winnerIdx].AddScore(total)
-		g.appendLog(winnerIdx, "roundWin",
-			fmt.Sprintf("%s wins round with %d points (x%d)", g.playerName(winnerIdx), total, multiplier), nil)
+		g.appendLog(winnerIdx, "roundWin", "koikoi.log.roundWin", map[string]string{
+			"name": g.playerName(winnerIdx), "total": strconv.Itoa(total), "multiplier": strconv.Itoa(multiplier),
+		}, nil)
 	} else {
 		result.Yaku = make([]KoiKoiYaku, 0)
-		g.appendLog(-1, "draw", "round drawn (no winner)", nil)
+		g.appendLog(-1, "draw", "koikoi.log.roundDraw", nil, nil)
 	}
 	g.state.lastRoundResult = result
 
@@ -771,7 +777,7 @@ func (g *KoiKoi) finishGame() {
 	g.state.winner = best
 	g.state.gameEndFlag = true
 	g.state.phase = KoiKoiPhaseGameEnd
-	g.appendLog(-1, "gameEnd", fmt.Sprintf("game ended (winner %d)", best), nil)
+	g.appendLog(-1, "gameEnd", "koikoi.log.gameEnded", map[string]string{"winner": strconv.Itoa(best)}, nil)
 }
 
 // --- CPU AI ---
@@ -888,8 +894,8 @@ func (g *KoiKoi) playerName(idx int) string {
 	return "CPU"
 }
 
-func (g *KoiKoi) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.state.appendLog(playerIdx, actionType, detail, cards)
+func (g *KoiKoi) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.state.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // koikoiCardStr は札を "松·光" のように表す (ログ/デバッグ用)。
@@ -900,11 +906,12 @@ func koikoiCardStr(c *Card) string {
 	return koikoiMonthKanji(c.GetDesign()) + "·" + koikoiCategoryShort(koikoiInfo(c).category)
 }
 
-func koikoiCapturedWord(captured bool) string {
+// koikoiCapturedKey は取れたかどうかの i18n キーを返す。
+func koikoiCapturedKey(captured bool) string {
 	if captured {
-		return "captures"
+		return "koikoi.log.result.captured"
 	}
-	return "to field"
+	return "koikoi.log.result.toField"
 }
 
 // koikoiMonthKanji は月番号を月札の代表漢字にする。

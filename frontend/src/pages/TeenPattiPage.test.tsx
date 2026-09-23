@@ -106,6 +106,13 @@ describe('TeenPattiPage', () => {
     // The accept/decline buttons live inside the emphasized panel, not the footer.
     const accept = within(panel).getByRole('button', { name: '承諾' });
     const decline = within(panel).getByRole('button', { name: '拒否' });
+    expect(accept).toHaveAttribute('title', '承諾すると手役を比較し、負けた側はその場でフォールドします。');
+    expect(accept).toHaveAttribute('aria-describedby', 'teenpatti-accept-desc');
+    expect(decline).toHaveAttribute('title', '拒否すると手役を比較せず、ゲームを続行します。');
+    expect(decline).toHaveAttribute('aria-describedby', 'teenpatti-refuse-desc');
+    const consequences = within(panel).getByTestId('teenpatti-sideshow-consequences');
+    expect(consequences).toHaveTextContent('承諾: 承諾すると手役を比較し、負けた側はその場でフォールドします。');
+    expect(consequences).toHaveTextContent('拒否: 拒否すると手役を比較せず、ゲームを続行します。');
     mockExec.mockClear();
     fireEvent.click(accept);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('respond', { accept: true }));

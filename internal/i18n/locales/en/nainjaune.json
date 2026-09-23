@@ -13,6 +13,7 @@
   "box.queen": "queen of spades",
   "box.king": "king of hearts",
   "box.dwarf": "7 of diamonds (the dwarf)",
+  "box.unknown": "-",
   "promptLead": "The run is stopped. p <i> to lead any card",
   "promptFollow": "p <i> to play a {{rank}} -- any suit",
   "promptNext": "n for the next deal",
@@ -28,5 +29,12 @@
   "hintReasonFollow": "this continues the run",
   "hintReasonBox": "this card claims a box",
   "helpExampleNext": "  n                        read the trick result, then continue",
-  "helpHint": "  h                        show a hint"
+  "helpHint": "  h                        show a hint",
+  "log.deal": "{{talon}} cards left in the talon",
+  "log.play": "plays a card",
+  "log.stopKing": "a king ends the run; the same player leads again",
+  "log.award": "takes the {{box}} box ({{chips}})",
+  "log.stopBlocked": "nobody can continue; the run restarts here",
+  "log.dealEnd": "goes out and collects {{points}} points",
+  "log.gameEnd": "finishes with the most chips"
 }

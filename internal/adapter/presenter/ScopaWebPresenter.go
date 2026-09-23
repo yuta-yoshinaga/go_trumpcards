@@ -1,4 +1,4 @@
-//go:build !js || !wasm || classic
+//go:build !js || !wasm || extra7
 
 package presenter
 
@@ -130,10 +130,7 @@ func (swp *ScopaWebPresenter) buildResultMessage(sg interfaces.ScopaGame) string
 		if p == nil {
 			continue
 		}
-		name := fmt.Sprintf("CPU %d", i)
-		if p.GetIsHuman() {
-			name = "You"
-		}
+		name := webPlayerName(p.GetIsHuman(), i)
 		msg += fmt.Sprintf("%s:%dpt ", name, p.GetTotalScore())
 	}
 	return msg

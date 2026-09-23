@@ -163,6 +163,16 @@ func TestMusWebPresenter_Output(t *testing.T) {
 		assert.Empty(t, resObj.MessageCode)
 	})
 
+	t.Run("coded error uses message code", func(t *testing.T) {
+		m, _ := setupMusWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "mus.errInvalidAction", nil)
+		result := p.Output(m, err)
+		var resObj controller.MusWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "mus.errInvalidAction", resObj.MessageCode)
+	})
+
 	t.Run("game end human team wins", func(t *testing.T) {
 		m, _ := setupMusWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
@@ -269,7 +279,7 @@ func TestMusWebPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockMusGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "mus", Detail: "You wants mus"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "mus", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, `"actionType":"mus"`)

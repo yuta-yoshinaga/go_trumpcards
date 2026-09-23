@@ -85,6 +85,28 @@ func TestNewSamba(t *testing.T) {
 	assert.Equal(t, 2, g.GetTeamCount())
 }
 
+func TestSamba_DomainErrorsExposeMessageCodes(t *testing.T) {
+	g := newTestSamba()
+	g.SetPhase(domain.SambaPhaseDraw)
+	cases := []struct {
+		name  string
+		setup func()
+		code  string
+	}{
+		{"empty discard", func() { g.SetDiscardPile(nil) }, "samba.errDiscardPileEmpty"},
+		{"black three", func() { g.SetDiscardPile([]*domain.Card{sambaCard(domain.CardDesignSpade, 3)}) }, "samba.errBlackThreeCannotTakeDiscardPile"},
+		{"wild card", func() { g.SetDiscardPile([]*domain.Card{sambaCard(domain.CardDesignJoker, domain.CardValueJoker)}) }, "samba.errWildCardCannotTakeDiscardPile"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			tc.setup()
+			code, params := domain.ErrorMessageCode(g.PlayerDrawFromDiscard([]int{0, 1}))
+			assert.Equal(t, tc.code, code)
+			assert.Nil(t, params)
+		})
+	}
+}
+
 func TestSamba_Reset(t *testing.T) {
 	g := newTestSamba()
 	g.Reset()
@@ -197,6 +219,37 @@ func TestSambaPlayer_CompletedCounts(t *testing.T) {
 	assert.True(t, p.HasSamba())
 }
 
+func TestSamba_GetTeamCompletedMeldCount_MatchesGoOutRequirement(t *testing.T) {
+	tests := []struct {
+		name         string
+		melds        int
+		wantCanGoOut bool
+	}{
+		{name: "zero", melds: 0, wantCanGoOut: false},
+		{name: "one", melds: 1, wantCanGoOut: false},
+		{name: "two", melds: 2, wantCanGoOut: true},
+		{name: "more than two", melds: 3, wantCanGoOut: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := newTestSamba()
+			for i := 0; i < tt.melds; i++ {
+				g.GetPlayer(i % 2 * 2).AddMeld(sambaSevenSet(5 + i))
+			}
+			assert.Equal(t, tt.melds, g.GetTeamCompletedMeldCount(0))
+
+			setupSambaDiscardPhase(g, 0)
+			err := g.PlayerGoOut()
+			if tt.wantCanGoOut {
+				assert.NoError(t, err)
+			} else {
+				assert.ErrorIs(t, err, domain.ErrInvalidPlay)
+			}
+		})
+	}
+}
+
 // --- Phase guards ---
 
 func TestSamba_DrawFromStock_Guards(t *testing.T) {
@@ -221,6 +274,8 @@ func TestSamba_DrawFromStock_Success(t *testing.T) {
 	before := g.GetPlayer(0).GetCardsSize()
 	drawBefore := g.GetDrawPileCount()
 	require.NoError(t, g.PlayerDrawFromStock())
+	entry := findActionLogEntry(t, g.GetActionLog(), "samba.log.drawStock")
+	assert.Contains(t, entry.DetailParams, "name")
 	assert.Equal(t, domain.SambaPhaseMeld, g.GetPhase())
 	assert.GreaterOrEqual(t, g.GetPlayer(0).GetCardsSize(), before)
 	assert.Less(t, g.GetDrawPileCount(), drawBefore)

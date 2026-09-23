@@ -12,10 +12,17 @@
   "deckLine": "山札: 残り{{count}}枚",
   "gameEnd": "ゲーム終了！",
   "scoreEntry": "  {{name}}: {{score}}点",
+  "lastTake": "最後に捕獲した{{name}}が残り山札{{count}}枚を獲得しました",
   "promptCurrentTurn": "手番: {{name}}",
   "promptHelp": "p <hand> で手札を場に出す (同ランクまたはJで場札を捕獲)",
   "result.scores": "ゲーム終了。スコア: {{scores}}",
   "provisional": "{{name}} 暫定: {{score}}点",
   "provisionalNote": "※ カード点とピシュティ賞は確定済み。最多捕獲(+3)だけが残りの札で入れ替わりえます",
-  "helpExamplePlay": "  p 0                      手札の 0 番のカードを出す"
+  "helpExamplePlay": "  p 0                      手札の 0 番のカードを出す",
+  "log.dealtPileCards": "山札から{{count}}枚を配りました",
+  "log.pisti": "Pişti +{{bonus}}（{{count}}枚捕獲）",
+  "log.captured": "{{count}}枚を捕獲しました",
+  "log.playedOntoPile": "場に出しました",
+  "log.lastTake": "最後に取った札: {{count}}枚",
+  "log.gameEnded": "ゲーム終了（最高得点 {{score}}）"
 }

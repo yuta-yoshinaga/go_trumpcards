@@ -172,20 +172,37 @@ describe('AuldLangSynePage', () => {
     fireEvent.click(screen.getByTestId('als-waste-button-0'));
     await waitFor(() => expect(screen.getByTestId('als-waste-button-0')).toHaveAttribute('aria-pressed', 'true'));
 
-    fireEvent.click(screen.getByRole('button', { name: /ファンデーション 0/ }));
+    fireEvent.click(screen.getByRole('button', { name: /組札 0/ }));
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'waste', idx: 0 }, { zone: 'foundation', idx: 0 }),
     );
+  });
+
+  it('enables and highlights only foundations that accept the selected waste rank', async () => {
+    const targetState: AuldLangSyneResponse = {
+      ...playingState,
+      foundations: [[card('SPADE', 1)], [card('HEART', 2)], [card('DIAMOND', 1)], [card('CLOVER', 1)]],
+    };
+    mockExec.mockResolvedValue(targetState);
+    renderWithProviders(<AuldLangSynePage />);
+
+    fireEvent.click(await screen.findByTestId('als-waste-button-0'));
+    const legalFoundation = screen.getByRole('button', { name: /組札 0/ });
+    const illegalFoundation = screen.getByRole('button', { name: /組札 1/ });
+    expect(legalFoundation).toBeEnabled();
+    expect(illegalFoundation).toBeDisabled();
+    expect(legalFoundation).toHaveAttribute('data-legal-target', 'true');
+    expect(illegalFoundation).not.toHaveAttribute('data-legal-target');
   });
 
   // A foundation click with nothing selected must not fire a move: there is no
   // stock source here, so the selection is the only thing that can supply a card.
   it('does not move when no waste is selected', async () => {
     renderWithProviders(<AuldLangSynePage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: /ファンデーション 0/ })).toBeDisabled());
+    await waitFor(() => expect(screen.getByRole('button', { name: /組札 0/ })).toBeDisabled());
 
     mockExec.mockClear();
-    fireEvent.click(screen.getByRole('button', { name: /ファンデーション 0/ }));
+    fireEvent.click(screen.getByRole('button', { name: /組札 0/ }));
     // Without this await the assertion passes whether or not a move fired — the
     // dispatch has not been flushed yet (#4439).
     await flushPendingDispatch();
@@ -195,7 +212,7 @@ describe('AuldLangSynePage', () => {
     // assertion above is testing the guard rather than a broken click path.
     fireEvent.click(screen.getByTestId('als-waste-button-0'));
     await waitFor(() => expect(screen.getByTestId('als-waste-button-0')).toHaveAttribute('aria-pressed', 'true'));
-    fireEvent.click(screen.getByRole('button', { name: /ファンデーション 0/ }));
+    fireEvent.click(screen.getByRole('button', { name: /組札 0/ }));
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'waste', idx: 0 }, { zone: 'foundation', idx: 0 }),
     );

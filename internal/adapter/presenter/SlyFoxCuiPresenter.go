@@ -113,6 +113,9 @@ func (p *SlyFoxCuiPresenter) Output(c interfaces.SlyFoxGame, lastErr error) stri
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(c.GetMoveCount())) + "\n")
 		case domain.SlyFoxPhaseGameOver:
 			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
+			fnd := c.GetFoundation()
+			b.WriteString(color.Yellow(cuiSolitaireGameOverSummary(
+				cuiCountPileCards(fnd[:]...), domain.SlyFoxTotalCards)) + "\n")
 		}
 	})
 }

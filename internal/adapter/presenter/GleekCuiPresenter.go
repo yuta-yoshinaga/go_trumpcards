@@ -164,21 +164,10 @@ func (p *GleekCuiPresenter) writePrompt(b *strings.Builder, g interfaces.GleekGa
 		for i, delta := range g.GetRoundDelta() {
 			b.WriteString(i18n.Tf("gleek.promptRoundDelta",
 				"name", cuiPlayerName(g.GetPlayer(i), i),
-				"delta", gleekSignedScore(delta)) + "\n")
+				"delta", cuiSignedScore(delta)) + "\n")
 		}
 		b.WriteString(i18n.T("gleek.promptRoundEndHelp") + "\n")
 	}
-}
-
-// gleekSignedScore は増減を符号付きで表す。正には + を付け、0 は ±0 とする。
-func gleekSignedScore(n int) string {
-	if n > 0 {
-		return "+" + strconv.Itoa(n)
-	}
-	if n == 0 {
-		return "±0"
-	}
-	return strconv.Itoa(n)
 }
 
 // gleekStockLine 表向きの札と落札の行を組み立てる。
@@ -201,22 +190,24 @@ func gleekStockLine(g interfaces.GleekGame) string {
 // **段階の点は盤に出さないと見えない。** 競りとトリックの間で動いた点を出さないと、
 // 累積点だけが理由なく増減しているように見える。
 func gleekStageLine(g interfaces.GleekGame) string {
-	if g.GetRuffWinnerIdx() < 0 && len(g.GetMelds()) == 0 {
+	ruffs := g.GetRuffs()
+	ruffWinnerIdx := g.GetRuffWinnerIdx()
+	if len(ruffs) == 0 && len(g.GetMelds()) == 0 {
 		return ""
 	}
 	var b strings.Builder
-	if idx := g.GetRuffWinnerIdx(); idx >= 0 {
-		total := 0
-		suit := -1
-		for _, r := range g.GetRuffs() {
-			if r != nil && r.PlayerIdx == idx {
-				total, suit = r.Total, r.Suit
-			}
+	for _, r := range ruffs {
+		if r == nil {
+			continue
 		}
-		b.WriteString(i18n.Tf("gleek.ruffLine",
-			"name", cuiPlayerName(g.GetPlayer(idx), idx),
-			"total", strconv.Itoa(total),
-			"suit", gleekSuitLabel(suit)) + "\n")
+		key := "gleek.ruffOtherLine"
+		if r.PlayerIdx == ruffWinnerIdx {
+			key = "gleek.ruffLine"
+		}
+		b.WriteString(i18n.Tf(key,
+			"name", cuiPlayerName(g.GetPlayer(r.PlayerIdx), r.PlayerIdx),
+			"total", strconv.Itoa(r.Total),
+			"suit", gleekSuitLabel(r.Suit)) + "\n")
 	}
 	for _, m := range g.GetMelds() {
 		if m == nil {

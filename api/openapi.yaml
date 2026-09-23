@@ -50,6 +50,8 @@ tags:
     description: Ban Luck (バンラック) game
   - name: montebank
     description: Monte Bank (モンテバンク) game
+  - name: tehonbiki
+    description: Tehonbiki (手本引き) game
   - name: speculation
     description: Speculation (スペキュレーション) game
   - name: cincinnati
@@ -142,12 +144,16 @@ tags:
     description: Mao (マオ) — Crazy Eights shedding game with magic cards (2/A/8) plus a secret hidden rule
   - name: spanish21
     description: Spanish 21 (スパニッシュ21) — BlackJack variant with 48-card deck and bonus payouts
+  - name: doubleexposure
+    description: Double Exposure Blackjack (ダブルエクスポージャー・ブラックジャック) game
   - name: canasta
     description: Canasta (カナスタ) game
   - name: handandfoot
     description: Hand and Foot (ハンド・アンド・フット) — 4-player team Canasta variant
   - name: burraco
     description: Burraco (ブラーコ) — Canasta-derived rummy with pozzetto reserve hands
+  - name: biriba
+    description: Biriba (ビリバ) — Greek partnership rummy using same-suit sequences
   - name: pinochle
     description: Pinochle (ピノクル) game
   - name: spider
@@ -362,6 +368,8 @@ tags:
     description: Pontoon game - the British ancestor of blackjack; the banker's hand is face down, a five-card trick beats 21, and the banker keeps the bank while winning
   - name: settemezzo
     description: Sette e Mezzo game - the Italian 7.5 game on a 40-card deck; totals are carried in HALVES so the half-point cards compare exactly
+  - name: quinze
+    description: Quinze game - an 18th-century French banking game on a standard 52-card deck; players draw toward 15 and ties go to the banker
   - name: niuniu
     description: Niu Niu game - the Chinese bull game where three of five cards must sum to a multiple of ten, and the remaining pair's last digit is the rank
   - name: chineseten
@@ -456,6 +464,8 @@ tags:
     description: Perseverance (パーシビアランス) game - Baker's Dozen variant; the four aces start on the foundations, leaving 12 tableau columns of 4, the tableau builds down in suit, same-suit runs move as a unit, and two unshuffled redeals are allowed
   - name: tonk
     description: Tonk (トンク) game - 2-player rummy variant with 5-card hands; instant Tonk win on a 49 or 50 point initial deal, knock when deadwood is 5 or less
+  - name: tongits
+    description: Tongits (トンギッツ) game - 3-player Filipino rummy; 13 cards to the dealer and 12 to each opponent, melds are exposed on the table, sapaw extends any player's meld, emptying your hand wins outright, and a challenge compares all three hands on remaining points
   - name: thirtyone
     description: Thirty-One (サーティワン / Scat) game - 4-player draw-and-discard survival game; build the highest single-suit total (A=11, J/Q/K=10), knock to stand pat, lowest score loses a life, hitting exactly 31 wins the round instantly
   - name: yaniv
@@ -510,6 +520,8 @@ tags:
     description: Coinche (コワンシュ) game - the bidding form of Belote, where all 32 cards are dealt and the table then runs a contract auction (80-160 by tens, or Capot at 250) followed by coinche/surcoinche doubling; the round is judged against the declared target rather than against the opponents
   - name: spiderette
     description: Spiderette (スパイダレット) game - single-player solitaire combining Klondike's 7-column staircase deal with Spider's same-suit descending move rules on a single 52-card deck; clear all 4 suits to win
+  - name: willothewisp
+    description: Will o' the Wisp (ウィル・オ・ザ・ウィスプ) game - Spiderette variant with 21 face-up cards in 7 columns, rank-descending tableau moves, and four same-suit K-through-A clears
   - name: mighty
     description: Mighty (マイティ) game - Korean 5-player trick-taking card game with bidding for point cards (10/J/Q/K/A, 20 max) and a separate No-Trump axis; declarer names a trump suit and a secret partner card; special cards Mighty (♠A normally; ♦A under spade trump), Joker (second-highest when not led, with a Joker-lead demand-suit rule and a Joker Call card ♣3/♠3 forcing the Joker)
   - name: oasispoker
@@ -530,6 +542,8 @@ tags:
     description: Call Break (コールブレイク) game - 4-player Spades-style trick-taking game from South Asia; spades are permanent trump, must-trump-if-void rule, int×10 scoring (bid hit = bid*10 + overtricks, miss = -bid*10); 5 rounds fixed, highest cumulative score wins
   - name: tarneeb
     description: Tarneeb (ターニーブ) game - 4-player Middle-Eastern partnership trick-taking. Bid 7..13 or pass; bid winner declares trump suit; bidder team scores +tricks on success / -bid on failure, defender team always scores +tricks; first team to PointLimit wins.
+  - name: omi
+    description: Omi (オミ) game - 4-player partnership trick-taking on a 32-card deck. Deal 4 cards, the dealer's right-hand neighbour declares trump, deal 4 more, then play 8 tricks; 5+ tricks scores 1 point, all 8 scores 2, and 4-4 scores 0 for both teams.
   - name: highcardflush
     description: High Card Flush (ハイカードフラッシュ) game - single-player casino table game. Both player and dealer get 7 cards; longest same-suit subset (flush length) decides the winner (ties broken by high card within the flush). Player places an Ante and optional Flush Bonus / Straight Flush Bonus side bets, then chooses Raise (1x/2x/3x capped by flush length) or Fold. Dealer qualifies on 3+ card flush with 9-high or better.
   - name: briscola
@@ -688,6 +702,8 @@ tags:
     description: Hachi-Hachi (八八) game
   - name: indianrummy
     description: Indian Rummy (インドラミー) game
+  - name: marriage
+    description: Marriage (マリッジ) game
   - name: jass
     description: Jass (ヤス／シーバー) game
   - name: kingalbert
@@ -710,6 +726,8 @@ tags:
     description: Sakura / Higo-bana (さくら／肥後花) game
   - name: zwanzigerrufen
     description: Zwanzigerrufen (ツヴァンツィガールーフェン) game
+  - name: tapptarock
+    description: Tapp Tarock (タップ・タロック) game
   - name: troggu
     description: Troggu (トロッグ) game
   - name: horse
@@ -754,6 +772,18 @@ tags:
     description: Tarocchini (タロッキーニ) game
   - name: vira
     description: Vira (ヴィーラ) game
+  - name: citadel
+    description: Citadel (シタデル) game - Beleaguered Castle variant with 8 tableau columns where eligible cards auto-build to foundations during the initial deal and empty columns accept any card
+  - name: batak
+    description: Batak (バタック) game - Turkish trick-taking auction game with spade trumps and asymmetric scoring
+  - name: binokel
+    description: Binokel (ビノクル) game - 3-player trick-taking and melding game with 48 cards and Dabb
+  - name: marjapussi
+    description: Marjapussi (マルツプッシ) game - Finnish 4-player partnership trick-taking game with 36 cards, marriages and berry bag (pussi)
+  - name: basset
+    description: Basset (バセット) game
+  - name: matrimony
+    description: Matrimony (マトリモニー) game
 
 paths:
   /blackjack/exec:
@@ -4104,6 +4134,81 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BurracoResponse'
+
+  /biriba/exec:
+    post:
+      tags:
+        - biriba
+      summary: Execute a Biriba game command
+      description: |
+        Send a command to advance the Biriba (ビリバ) game session identified by
+        `sessionId`. Biriba is a four-player partnership rummy game using two
+        52-card decks and two Jokers (106 cards). Each player receives 11 cards
+        and two pozzetto reserve hands are set aside. Melds are same-suit rank
+        sequences; Jokers and 2s are wild. The first team to empty its initial
+        hand takes a pozzetto, and a seven-card sequence without a wild is a pure
+        Biriba. Going out after using both pozzetto hands earns the additional bonus.
+
+        | Phase        | Value | Description |
+        |--------------|-------|-------------|
+        | Draw         | `0`   | Draw from stock or pick up discard pile |
+        | Meld         | `1`   | Meld sequences or skip |
+        | Discard      | `2`   | Discard a card or go out |
+        | RoundEnd     | `3`   | Round scored; advance with `nextround` |
+        | GameEnd      | `4`   | A team reached the point limit |
+
+        Burraco differs from Biriba: Burraco uses same-rank sets, while Biriba
+        uses same-suit sequences; they are not merely different names.
+
+        | Command        | Aliases | Description |
+        |----------------|---------|-------------|
+        | `reset`        | `r`     | Start / restart a game |
+        | `drawstock`    | `ds`    | Draw a card from the stock pile |
+        | `drawdiscard`  | `dd`    | Pick up the discard pile (requires `naturalPairIndices`) |
+        | `meld`         | `m`     | Meld sequences (requires `meldGroups`) |
+        | `skipmeld`     | `sm`    | Skip meld phase |
+        | `discard`      | `d`     | Discard a card (requires `cardIndex`) |
+        | `goout`        | `go`    | Go out after both pozzetto hands are used |
+        | `nextround`    | `nr`    | Score the round and start the next |
+        | `hint`         | `h`     | Get a hint for the next move |
+        | `log`          | `l`     | View action log |
+      operationId: biribaExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BiribaRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              meld:
+                summary: Meld a same-suit sequence
+                value:
+                  command: meld
+                  meldGroups: [[0, 1, 2]]
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/BiribaResponse'
+                  - $ref: '#/components/schemas/ActionLogResponse'
+                description: |
+                  The shape depends on the command. Ordinary commands return the game
+                  state; `log` returns the action log instead.
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BiribaResponse'
 
   /pinochle/exec:
     post:
@@ -7697,6 +7802,101 @@ paths:
         session identified by `sessionId`. A single-player patience played with
         **two 52-card decks (104 cards)**.
 
+        Sixteen single-card tableau slots are dealt face up; the other 88 cards
+        form the stock.
+
+        **The four foundations follow suit and wrap.** The two spade foundations
+        start at Q and build downward; the two diamond foundations start at J
+        and build upward. Each direction passes through all thirteen ranks, and
+        the other copy of each starting card joins its matching foundation.
+
+        A tableau slot holds exactly one card and refills from the stock or the
+        waste. When the stock is exhausted, the waste is collected for a redeal,
+        up to three times.
+
+        Move zones:
+
+        * `from`: `{zone: "tableau", col: 0..15}`, `{zone: "waste"}` or
+          `{zone: "stock"}`
+        * `to`: `{zone: "foundation"}` (the server picks the pile) or
+          `{zone: "tableau", col: 0..15}` for an empty slot
+      operationId: royalcotillionExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, draw, d, move, m, giveup, g, hint, h, autocomplete, ac, undo, u, undo_n, log, l]
+                sessionId:
+                  type: string
+                from:
+                  $ref: '#/components/schemas/RoyalCotillionMoveZone'
+                to:
+                  $ref: '#/components/schemas/RoyalCotillionMoveZone'
+                n:
+                  type: integer
+                  description: Number of moves to undo (for `undo_n` command)
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              tableauToFoundation:
+                summary: Send the card in slot 3 to a foundation
+                value:
+                  command: move
+                  sessionId: my-session-001
+                  from:
+                    zone: tableau
+                    col: 3
+                  to:
+                    zone: foundation
+              fillSlotFromStock:
+                summary: Refill the emptied slot 3 straight from the stock
+                value:
+                  command: move
+                  sessionId: my-session-001
+                  from:
+                    zone: stock
+                  to:
+                    zone: tableau
+                    col: 3
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/RoyalCotillionResponse'
+                  - $ref: '#/components/schemas/ActionLogResponse'
+                description: |
+                  The shape depends on the command. Ordinary commands return the game
+                  state; `log` returns the action log instead.
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoyalCotillionResponse'
+  /matrimony/exec:
+    post:
+      tags:
+        - matrimony
+      summary: Execute a Matrimony game command
+      description: |
+        Send a command to advance the Matrimony (マトリモニー) game
+        session identified by `sessionId`. A single-player patience played with
+        **two 52-card decks (104 cards)**.
+
         Sixteen single-card tableau slots and four reserve piles of three (28
         cards in all) are dealt face up; the other 76 form the stock.
 
@@ -7715,7 +7915,7 @@ paths:
           `{zone: "waste"}` or `{zone: "stock"}`
         * `to`: `{zone: "foundation"}` (the server picks the pile) or
           `{zone: "tableau", col: 0..15}` for an empty slot
-      operationId: royalcotillionExec
+      operationId: matrimonyExec
       requestBody:
         required: true
         content:
@@ -12851,6 +13051,100 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BeleagueredCastleResponse'
+  /citadel/exec:
+    post:
+      tags:
+        - citadel
+      summary: Execute a Citadel game command
+      description: |
+        Send a command to advance the Citadel (シタデル) game
+        session identified by `sessionId`. Citadel is a
+        single-player open-information solitaire and a variant of Beleaguered
+        Castle using a single 52-card deck. The 4 aces are pre-seeded onto the
+        foundations at deal time. Remaining cards are dealt one by one: cards
+        that can build onto foundations (by suit Ace→King) are immediately placed
+        there, and only unplaceable cards are dealt across 8 tableau columns
+        (columns vary in length up to 6 cards, and foundations may start beyond
+        Aces, or the game may even clear directly on deal).
+        Foundations build up by suit Ace→King. Tableau builds rank-only descending
+        (suit doesn't matter); only single-card moves are allowed. Empty columns
+        accept any card. No stock or waste pile.
+
+        The game proceeds through these phases:
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Playing   | `0`   | Game in progress |
+        | GameClear | `1`   | All foundations complete |
+        | GameOver  | `2`   | Player gave up |
+
+        | Command        | Aliases | Description |
+        |----------------|---------|-------------|
+        | `reset`        | `r`     | Start / restart a game |
+        | `move`         | `m`     | Move a card between tableau/foundation |
+        | `undo`         | `u`     | Undo the last action |
+        | `giveup`       | `g`     | Give up the current game |
+        | `hint`         | `h`     | Show a hint for the next move |
+        | `autocomplete` | `ac`    | Auto-move cards to foundations |
+        | `log`          | `l`     | View action log |
+      operationId: citadelExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, move, m, undo, u, undo_n, giveup, g, hint, h, autocomplete, ac, log, l]
+                from:
+                  $ref: '#/components/schemas/BeleagueredCastleMoveZone'
+                to:
+                  $ref: '#/components/schemas/BeleagueredCastleMoveZone'
+                n:
+                  type: integer
+                  description: Number of times to undo (for undo_n command)
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              move:
+                summary: Move tableau column 0's top card to column 5
+                value:
+                  command: move
+                  from:
+                    zone: tableau
+                    col: 0
+                  to:
+                    zone: tableau
+                    col: 5
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/CitadelResponse'
+                  - $ref: '#/components/schemas/ActionLogResponse'
+                description: |
+                  The shape depends on the command. Ordinary commands return the game
+                  state; `log` returns the action log instead.
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CitadelResponse'
   /fortress/exec:
     post:
       tags:
@@ -15731,6 +16025,60 @@ paths:
               schema:
                 $ref: '#/components/schemas/BlackJackResponse'
 
+  /doubleexposure/exec:
+    post:
+      tags:
+        - doubleexposure
+      summary: Execute a Double Exposure Blackjack game command
+      description: |
+        Send a command to advance the Double Exposure Blackjack (ダブルエクスポージャー・ブラックジャック) game session
+        identified by `sessionId`. Double Exposure Blackjack exposes both dealer cards
+        from the initial deal, including the dealer's score. It uses a 6-8-deck shoe.
+        Ordinary ties go to the
+        dealer, except natural BJ versus natural BJ, which the player wins. A player
+        natural BJ pays even money (1:1), not the standard 3:2. Hit, stand, double,
+        split, and bust rules otherwise match `/blackjack/exec`.
+
+        See the BlackJack endpoint for the full command reference; the request
+        and response payloads are byte-for-byte compatible.
+      operationId: doubleexposureExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlackJackRequest'
+            examples:
+              reset:
+                summary: Start a new Double Exposure Blackjack game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bet:
+                summary: Place a bet
+                value:
+                  command: bet
+                  amount: 100
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/BlackJackResponse'
+                  - $ref: '#/components/schemas/ActionLogResponse'
+                description: |
+                  The shape depends on the command. Ordinary commands return the game
+                  state; `log` returns the action log instead.
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlackJackResponse'
+
   /calculation/exec:
     post:
       tags:
@@ -17549,6 +17897,217 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SetteEMezzoResponse'
+  /quinze/exec:
+    post:
+      tags:
+        - quinze
+      summary: Execute a Quinze game command
+      description: |
+        Send a command to advance the Quinze (カーンズ) game session identified by
+        `sessionId`. It is an 18th-century French banking game on a standard
+        52-card deck. Aces count as 1, number cards at face value, and J/Q/K as
+        10. Players and the banker draw or stand without exceeding 15; 15 is
+        not a bust, and ties go to the banker.
+      operationId: quinzeExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, bet, b, deal, hit, h, stand, s, bankerhit, bh, bankerstand, bs, log, l]
+                sessionId:
+                  type: string
+                amount:
+                  type: integer
+                  description: Stake for `bet`.
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  messageParams:
+                    type: object
+                    additionalProperties:
+                      type: string
+                  entries:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
+                  seats:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        isCpu:
+                          type: boolean
+                        hand:
+                          type: object
+                          properties:
+                            cards:
+                              type: array
+                              items:
+                                $ref: '#/components/schemas/Card'
+                                nullable: true
+                            bet:
+                              type: integer
+                            totalPoints:
+                              type: integer
+                            totalLabel:
+                              type: string
+                            stood:
+                              type: boolean
+                            payout:
+                              type: integer
+                            hidden:
+                              type: boolean
+                  bankerHand:
+                    type: object
+                    properties:
+                      cards:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Card'
+                          nullable: true
+                      bet:
+                        type: integer
+                      totalPoints:
+                        type: integer
+                      totalLabel:
+                        type: string
+                      stood:
+                        type: boolean
+                      payout:
+                        type: integer
+                      hidden:
+                        type: boolean
+                  bankerIdx:
+                    type: integer
+                  isHumanBanker:
+                    type: boolean
+                  chips:
+                    type: integer
+                  activeSeat:
+                    type: integer
+                  nextBanker:
+                    type: integer
+                  lastResult:
+                    type: string
+                  phase:
+                    type: integer
+                  targetPoints:
+                    type: integer
+                  cpuStandPoints:
+                    type: integer
+                  canHit:
+                    type: boolean
+                  canStand:
+                    type: boolean
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  messageParams:
+                    type: object
+                    additionalProperties:
+                      type: string
+                  entries:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ActionLogEntry'
+                  seats:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        isCpu:
+                          type: boolean
+                        hand:
+                          type: object
+                          properties:
+                            cards:
+                              type: array
+                              items:
+                                $ref: '#/components/schemas/Card'
+                                nullable: true
+                            bet:
+                              type: integer
+                            totalPoints:
+                              type: integer
+                            totalLabel:
+                              type: string
+                            stood:
+                              type: boolean
+                            payout:
+                              type: integer
+                            hidden:
+                              type: boolean
+                  bankerHand:
+                    type: object
+                    properties:
+                      cards:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Card'
+                          nullable: true
+                      bet:
+                        type: integer
+                      totalPoints:
+                        type: integer
+                      totalLabel:
+                        type: string
+                      stood:
+                        type: boolean
+                      payout:
+                        type: integer
+                      hidden:
+                        type: boolean
+                  bankerIdx:
+                    type: integer
+                  isHumanBanker:
+                    type: boolean
+                  chips:
+                    type: integer
+                  activeSeat:
+                    type: integer
+                  nextBanker:
+                    type: integer
+                  lastResult:
+                    type: string
+                  phase:
+                    type: integer
+                  targetPoints:
+                    type: integer
+                  cpuStandPoints:
+                    type: integer
+                  canHit:
+                    type: boolean
+                  canStand:
+                    type: boolean
+                  message:
+                    type: string
+                  messageCode:
+                    type: string
   /chineseten/exec:
     post:
       tags:
@@ -21965,6 +22524,34 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/NertzResponse'
+  /tongits/exec:
+    post:
+      tags:
+        - tongits
+      summary: Execute a Tongits game command
+      description: Execute a Tongits command for the session identified by `sessionId`.
+      operationId: tongitsExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TongitsRequest'
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/TongitsResponse'
+                  - $ref: '#/components/schemas/ActionLogResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TongitsResponse'
   /tonk/exec:
     post:
       tags:
@@ -23489,6 +24076,42 @@ paths:
               schema:
                 $ref: '#/components/schemas/SpideretteResponse'
 
+  /willothewisp/exec:
+    post:
+      tags:
+        - willothewisp
+      summary: Execute a Will o' the Wisp game command
+      description: |
+        Send a command to advance the Will o' the Wisp (ウィル・オ・ザ・ウィスプ)
+        session identified by `sessionId`. Will o' the Wisp is a Spiderette variant
+        using one standard 52-card deck. Seven tableau columns start with three
+        face-up cards each; the remaining 31 cards form the stock. Deal one card
+        to every column four times, then deal the final three cards to the leftmost
+        three columns. Tableau cards build in descending rank regardless of suit,
+        same-suit descending runs move together, empty columns accept any card or
+        run, and completed same-suit K-through-A sequences are removed.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpideretteRequest'
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/SpideretteResponse'
+                  - $ref: '#/components/schemas/ActionLogResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpideretteResponse'
+
   /mighty/exec:
     post:
       tags:
@@ -24407,6 +25030,81 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GapsResponse'
+
+  /omi/exec:
+    post:
+      tags:
+        - omi
+      summary: Execute an Omi (オミ) game command
+      description: |
+        Send a command to advance the Omi game session identified by `sessionId`.
+        Omi is a 4-player partnership trick-taking game using a 32-card deck
+        (7-A). Each player receives 4 cards first; the dealer's right-hand
+        neighbour must declare trump with no pass, then the remaining 4 cards
+        are dealt. Players play 8 tricks, following suit when possible.
+
+        | Phase       | Value | Description |
+        |-------------|-------|-------------|
+        | CallTrump   | `0`   | Four cards are dealt; the designated caller declares trump |
+        | Play        | `1`   | Eight-trick play; follow suit when possible |
+        | TrickEnd    | `2`   | Trick resolved; call `next` to continue |
+        | RoundEnd    | `3`   | Score the round; call `nextround` |
+        | GameEnd     | `4`   | A team reached the point limit |
+
+        Scoring is 1 point for 5 or more tricks, a total of 2 points for all
+        8 tricks (Omi), and 0 points for a 4-4 draw for both teams.
+
+        | Command           | Aliases | Description |
+        |-------------------|---------|-------------|
+        | `reset`           | `r`     | Restart with optional config |
+        | `trump`            | `t`, `c`, `call` | Declare trump (1=♠, 2=♣, 3=♥, 4=♦) |
+        | `play`             | `p`     | Play a card at `cardIndex` |
+        | `next`             | `n`     | Advance to the next trick |
+        | `nextround`        | `nr`    | Score the round and start the next |
+        | `setdifficulty`    | `sd`    | Set CPU difficulty (0-2) |
+        | `setlimit`         | `sl`    | Set the point limit |
+        | `hint`             | `h`     | Get a suggested move |
+        | `log`              | `l`     | View the action log |
+      operationId: omiExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OmiRequest'
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              trump:
+                summary: Declare spades as trump
+                value:
+                  command: trump
+                  suit: 1
+                  sessionId: my-session-001
+              play:
+                summary: Play card at index 2
+                value:
+                  command: play
+                  cardIndex: 2
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/OmiResponse'
+                  - $ref: '#/components/schemas/ActionLogResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OmiResponse'
 
   /highcardflush/exec:
     post:
@@ -30674,6 +31372,67 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/IndianRummyResponse'
+  /marriage/exec:
+    post:
+      tags:
+        - marriage
+      summary: Execute a Marriage (マリッジ) game command
+      description: |
+        Send a command to advance the Marriage game session identified by `sessionId`.
+        Marriage is a 21-card Nepalese/North Indian rummy using three standard decks and six printed jokers.
+      operationId: marriageExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                cardIndex:
+                  type: integer
+                config:
+                  type: object
+                  properties:
+                    playerCount:
+                      type: integer
+                    cpuDifficulty:
+                      type: integer
+                    targetRounds:
+                      type: integer
+                command:
+                  type: string
+                  enum: [drawstock, drawdiscard, discard, declare, nextround, setplayers, setdifficulty, setrounds, log, reset, quit, help]
+                  description: The Marriage game command to execute.
+                amount:
+                  type: integer
+                  description: Optional numeric argument for commands that require one.
+                sessionId:
+                  type: string
+                  description: Client-supplied session identifier.
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/MarriageResponse'
+                  - $ref: '#/components/schemas/ActionLogResponse'
+        '400':
+          description: Bad request (unsupported command, invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarriageResponse'
   /jass/exec:
     post:
       tags:
@@ -33414,6 +34173,417 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ZhengResponse'
+  /batak/exec:
+    post:
+      tags:
+        - batak
+      summary: Execute a Batak (バタック) game command
+      description: |
+        Send a command to advance the Batak game session identified by
+        `sessionId`. Batak is a 4-player Turkish trick-taking auction game with
+        spades as permanent trumps. Players participate in a single-round auction
+        bidding 5..13 or pass (0). The highest bidder becomes the declarer (親)
+        and leads the first trick. If all pass, the last speaker is forced to
+        declare at minimum bid 5. Must follow led suit; if void in the led suit
+        and holding spades, you must trump with a spade. Scoring uses raw
+        integers: declarer scores +bid on make or -bid on set; defenders score
+        +1 per trick won. The game runs for 5 rounds by default and the highest
+        cumulative score wins.
+
+        Phases:
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Bid       | `0`   | Clockwise auction; declare 5..13 or pass (0) |
+        | Play      | `1`   | 13-trick play (must follow / must trump if void) |
+        | TrickEnd  | `2`   | Trick resolved; call `n`/`next` to continue |
+        | RoundEnd  | `3`   | Round scored; call `nr`/`nextround` |
+        | GameEnd   | `4`   | MaxRounds reached; highest cumulative score wins |
+
+        Commands:
+
+        | Command       | Aliases       | Description |
+        |---------------|---------------|-------------|
+        | `reset` / `r` |               | Restart with optional config |
+        | `bid` / `b`   |               | Place bid (5..13 or 0 to pass) |
+        | `pass`        |               | Pass (declare bid 0) |
+        | `play` / `p`  |               | Play card at index |
+        | `next` / `n`  |               | Advance to next trick |
+        | `nextround` / `nr` |          | Score round and start next |
+        | `hint` / `h`  |               | Suggested move |
+        | `log` / `l`   |               | View action log |
+      operationId: batakExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, bid, b, pass, play, p, next, n, nextround, nr, hint, h, log, l]
+                bid:
+                  type: integer
+                  description: Bid amount for `bid`/`b` (5..13, or 0 to pass)
+                cardIndex:
+                  type: integer
+                  description: Card index for `play`/`p`
+                config:
+                  $ref: '#/components/schemas/BatakConfig'
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bid:
+                summary: Declare bid 5
+                value:
+                  command: b
+                  bid: 5
+                  sessionId: my-session-001
+              pass:
+                summary: Pass in auction
+                value:
+                  command: pass
+                  sessionId: my-session-001
+              play:
+                summary: Play hand[0]
+                value:
+                  command: p
+                  cardIndex: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/BatakResponse'
+                  - $ref: '#/components/schemas/ActionLogResponse'
+                description: |
+                  The shape depends on the command. Ordinary commands return the game
+                  state; `log` returns the action log instead.
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatakResponse'
+  /binokel/exec:
+    post:
+      tags:
+        - binokel
+      summary: Execute a Binokel (ビノクル) game command
+      description: |
+        Send a command to advance the Binokel game session identified by
+        `sessionId`. Binokel is a 3-player trick-taking and melding game from
+        Southwestern Germany (Württemberg), played with a 48-card deck (A, 10,
+        K, Q, J, 7 × 2). Each player receives 15 cards and 3 cards form the
+        widow (Dabb). Players bid in 10-point increments starting at 150. The
+        highest bidder wins the auction, takes the 3-card Dabb into hand,
+        discards 3 cards back to Dabb (which count toward trick points), and
+        calls the trump suit. Melds are declared and scored (Dix, Marriages,
+        Binokel, Arounds, Non-trump Run, Trump Run, Rundgang, and double
+        melds). Then 15 tricks are played with strict follow rules (must
+        follow, must head/win, must trump if void). Declarer scores meld and
+        trick points if meeting or exceeding the bid, or loses the bid amount.
+        The game ends when a player reaches the point limit (default 1000).
+
+        Phases:
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Bid       | `0`   | Bidding phase (150+, step 10, or pass) |
+        | Dabb      | `1`   | Declarer takes Dabb and discards 3 cards |
+        | Trump     | `2`   | Declarer calls trump suit (1=S, 2=C, 3=H, 4=D) |
+        | Meld      | `3`   | All players declare melds; confirm to proceed |
+        | Play      | `4`   | 15-trick play phase |
+        | TrickEnd  | `5`   | Trick ended; call `next` / `n` |
+        | RoundEnd  | `6`   | Round ended; call `nextround` / `nr` |
+        | GameEnd   | `7`   | Point limit reached; winner determined |
+
+        Commands:
+
+        | Command            | Aliases | Description |
+        |--------------------|---------|-------------|
+        | `reset` / `r`      |         | Restart with optional config |
+        | `bid` / `b`        |         | Place bid (150+, step 10) |
+        | `pass` / `pa`      |         | Pass in auction |
+        | `discard` / `d`    |         | Discard 3 cards to Dabb |
+        | `trump` / `t`      |         | Call trump suit (1-4) |
+        | `meld` / `m`       |         | Confirm melds |
+        | `play` / `p`       |         | Play card at index |
+        | `next` / `n`       |         | Advance to next trick |
+        | `nextround` / `nr` |         | Advance to next round |
+        | `hint` / `h`       |         | Suggested move |
+        | `log` / `l`        |         | View action log |
+      operationId: binokelExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, bid, b, pass, pa, discard, d, trump, t, meld, m, play, p, next, n, nextround, nr, hint, h, log, l]
+                bidAmount:
+                  type: integer
+                  description: Bid amount for `bid`/`b` (150+, step 10)
+                suit:
+                  type: integer
+                  description: Trump suit (1=Spade, 2=Clover, 3=Heart, 4=Diamond)
+                cardIndex:
+                  type: integer
+                  description: Card index for `play`/`p`
+                discardIndices:
+                  type: array
+                  items:
+                    type: integer
+                  description: 3 card indices to discard to Dabb
+                cardIndices:
+                  type: array
+                  items:
+                    type: integer
+                  description: Alternative field for discard indices
+                config:
+                  $ref: '#/components/schemas/BinokelConfig'
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              bid:
+                summary: Bid 160
+                value:
+                  command: b
+                  bidAmount: 160
+                  sessionId: my-session-001
+              pass:
+                summary: Pass
+                value:
+                  command: pa
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/BinokelResponse'
+                  - $ref: '#/components/schemas/ActionLogResponse'
+                description: |
+                  The shape depends on the command. Ordinary commands return the game
+                  state; `log` returns the action log instead.
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BinokelResponse'
+  /marjapussi/exec:
+    post:
+      tags:
+        - marjapussi
+      summary: Execute a Marjapussi (マルヤプッシ) game command
+      description: |
+        Send a command to advance the Marjapussi game session identified by
+        `sessionId`. Marjapussi is a 4-player 2-vs-2 partnership trick-taking
+        game from Finland played with a 36-card deck (6-A in 4 suits).
+        Each player receives 8 cards, and 4 cards form the berry bag (pussi).
+        Play starts immediately without bidding. Holding both K and Q of a
+        suit on lead allows declaring a marriage to set trump and score 20 or
+        40 points. Must follow suit; if void, must trump. The team taking
+        the 8th trick wins the pussi cards. The first team to 500 points wins.
+
+        Phases:
+
+        | Phase     | Value | Description |
+        |-----------|-------|-------------|
+        | Play      | `0`   | Trick-taking play phase |
+        | TrickEnd  | `1`   | Trick ended; call `next` / `n` |
+        | RoundEnd  | `2`   | Round ended; call `nextround` / `nr` |
+        | GameEnd   | `3`   | Target points reached; winner determined |
+
+        Commands:
+
+        | Command            | Aliases | Description |
+        |--------------------|---------|-------------|
+        | `reset` / `r`      |         | Restart with optional config |
+        | `play` / `p`       |         | Play card at `cardIndex` |
+        | `next` / `n`       |         | Advance to next trick |
+        | `nextround` / `nr` |         | Advance to next round |
+        | `setdifficulty` / `sd` |     | CPU difficulty (0=Easy, 1=Normal, 2=Hard) |
+        | `hint` / `h`       |         | Suggested move |
+        | `log` / `l`        |         | View action log |
+      operationId: marjapussiExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - command
+                - sessionId
+              properties:
+                command:
+                  type: string
+                  enum: [reset, r, play, p, next, n, nextround, nr, setdifficulty, sd, hint, h, log, l]
+                cardIndex:
+                  type: integer
+                  description: Card index for `play`/`p`
+                config:
+                  $ref: '#/components/schemas/MarjapussiConfig'
+                sessionId:
+                  type: string
+            examples:
+              reset:
+                summary: Start a new game
+                value:
+                  command: reset
+                  sessionId: my-session-001
+              play:
+                summary: Play a card
+                value:
+                  command: p
+                  cardIndex: 0
+                  sessionId: my-session-001
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/MarjapussiResponse'
+                  - $ref: '#/components/schemas/ActionLogResponse'
+                description: |
+                  The shape depends on the command. Ordinary commands return the game
+                  state; `log` returns the action log instead.
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarjapussiResponse'
+  /basset/exec:
+    post:
+      tags:
+        - basset
+      summary: Execute a Basset game command
+      description: |
+        Send a command to advance a Basset session. Basset is a banking game
+        descended from Faro: the player bets on one of 13 ranks, the bank deals
+        two cards, and a winning player chooses to take the payout or press on
+        with paroli at multipliers 1, 7, 15, 33, and 67.
+      operationId: bassetExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BassetRequest'
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BassetResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BassetResponse'
+  /tehonbiki/exec:
+    post:
+      tags:
+        - tehonbiki
+      summary: Execute a Tehonbiki game command
+      description: |
+        Send a command to advance a Tehonbiki (手本引き) session identified by
+        `sessionId`. The parent secretly chooses one stock-card number from 1
+        through 6. Children predict the number and choose how many numbers to
+        cover before the parent card is revealed.
+
+        This implementation uses a repository house table, not historical
+        payouts: single (one number) pays a 4.5x profit, double (two numbers)
+        pays 1.8x, and triple or half (three numbers) pays 0.9x. Each profit
+        multiplier is the fair odds `(6-k)/k` with ten percent of the winning
+        profit removed.
+      operationId: tehonbikiExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TehonbikiRequest'
+      responses:
+        '200':
+          description: Command processed successfully
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/TehonbikiResponse'
+                  - $ref: '#/components/schemas/ActionLogResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TehonbikiResponse'
+  /tapptarock/exec:
+    post:
+      tags:
+        - tapptarock
+      summary: Execute a Tapp Tarock game command
+      description: |
+        Send a command to advance a Tapp Tarock session identified by `sessionId`.
+        Tapp Tarock is a fixed three-player tarock trick-taking game. The highest
+        bidder plays one against two from the outset; unlike Zwanzigerrufen, no
+        partner is called. This repository's contract table and settlement are
+        house rules, not claims about historical detail.
+      operationId: tapptarockExec
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TappTarockRequest'
+      responses:
+        '200':
+          description: Current game state
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/TappTarockResponse'
+                  - $ref: '#/components/schemas/ActionLogResponse'
+        '400':
+          description: Bad request (unsupported command, missing/invalid parameters, or session error)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TappTarockResponse'
 components:
   schemas:
     # -------------------------------------------------------------------------
@@ -33642,6 +34812,140 @@ components:
           type: object
           additionalProperties:
             type: string
+
+    TappTarockRequest:
+      type: object
+      required: [command, sessionId]
+      properties:
+        command:
+          type: string
+          enum: [reset, r, bid, b, pass, discard, d, play, p, next, n, nextround, nr, hint, h, log, l, quit, q]
+        n:
+          type: integer
+          description: Optional shared input field; not used by Tapp Tarock commands.
+        cardIndex:
+          type: integer
+          description: 0-based hand index for play.
+        cardIndices:
+          type: array
+          description: Six 0-based hand indices to bury in the tapp during discard.
+          items:
+            type: integer
+        bid:
+          type: string
+          enum: [dreier, solo]
+          description: Contract to declare. Required for bid; trischaken is created only when all players pass.
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+              description: 0=Easy, 1=Normal, 2=Hard.
+              minimum: 0
+              maximum: 2
+            targetDeals:
+              type: integer
+              description: Number of deals in the match (1-12, default 4).
+              minimum: 1
+              maximum: 12
+        sessionId:
+          type: string
+
+    TappTarockResponse:
+      type: object
+      description: Response payload for /tapptarock/exec.
+      properties:
+        entries:
+          type: array
+          description: Present only in the reply to the log command.
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id: {type: integer}
+              isHuman: {type: boolean}
+              cardCount: {type: integer}
+              cards:
+                type: array
+                items: {$ref: '#/components/schemas/Card'}
+              trickCount: {type: integer}
+              cardPoints: {type: integer}
+              score: {type: integer}
+              isDeclarer: {type: boolean}
+        phase:
+          type: integer
+          description: "0=Bid, 1=Talon, 2=Play, 3=TrickEnd, 4=RoundEnd, 5=GameEnd"
+          enum: [0, 1, 2, 3, 4, 5]
+        roundNumber: {type: integer}
+        totalRounds: {type: integer}
+        trickNumber: {type: integer}
+        currentPlayerIdx: {type: integer}
+        dealerIdx: {type: integer}
+        bidPlayerIdx: {type: integer}
+        highestBid: {type: integer}
+        declarerIdx: {type: integer}
+        contract: {type: integer}
+        contractName: {type: string}
+        talonCount: {type: integer}
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx: {type: integer}
+              card: {$ref: '#/components/schemas/Card'}
+        lastTrickWinner: {type: integer}
+        lastTrickCards:
+          type: array
+          items: {$ref: '#/components/schemas/Card'}
+        outcome: {type: integer}
+        breakdown:
+          type: object
+          nullable: true
+          properties:
+            contract: {type: integer}
+            teamPoints: {type: integer}
+            threshold: {type: integer}
+            won: {type: boolean}
+            solo: {type: boolean}
+            base: {type: integer}
+            seats:
+              type: array
+              items: {type: integer}
+            loser: {type: integer}
+            name: {type: string}
+        playableIndices:
+          type: array
+          items: {type: integer}
+        discardableIndices:
+          type: array
+          items: {type: integer}
+        gameEndFlag: {type: boolean}
+        winnerPlayer: {type: integer}
+        isHumanTurn: {type: boolean}
+        hint:
+          type: object
+          nullable: true
+          properties:
+            bid: {type: integer, nullable: true}
+            cardIndex: {type: integer, nullable: true}
+            discardIndices:
+              type: array
+              items: {type: integer}
+            reason: {type: string}
+        config:
+          type: object
+          properties:
+            cpuDifficulty: {type: integer}
+            targetDeals: {type: integer}
+        message: {type: string}
+        messageCode: {type: string}
+        messageParams:
+          type: object
+          additionalProperties: {type: string}
 
     NapoleonsSquareMoveZone:
       type: object
@@ -34417,6 +35721,11 @@ components:
           type: integer
         pendingCard:
           $ref: '#/components/schemas/ChineseTenCard'
+        pendingFlip:
+          type: boolean
+          description: |
+            True when pendingCard came off the stock flip that follows a play,
+            not from the hand. The label the client shows differs.
         selectableIndices:
           type: array
           description: |
@@ -41978,6 +43287,14 @@ components:
           minimum: 0
           maximum: 1
           example: 0.75
+        lowProbability:
+          type: number
+          format: double
+          description: |
+            Hi-Lo only: the share of the low half this hand expects to take.
+            Absent for high-only games, where winProbability is the whole pot.
+          minimum: 0
+          maximum: 1
         handOdds:
           type: array
           items:
@@ -42016,7 +43333,6 @@ components:
         - turnNumber
         - playerIdx
         - actionType
-        - detail
       properties:
         turnNumber:
           type: integer
@@ -42031,10 +43347,16 @@ components:
           type: string
           description: Type of action (e.g., "hit", "stand", "bet", "play", "draw", "doubt", "fold")
           example: hit
-        detail:
+        detailCode:
           type: string
-          description: Human-readable description of the action
-          example: "Player 0 hit and drew ♠A"
+          description: i18n key for the action description; resolved by the client (empty for not-yet-migrated games)
+          example: clocksolitaire.log.step
+        detailParams:
+          type: object
+          description: Interpolation parameters for detailCode
+          additionalProperties:
+            type: string
+          example: {pile: "5"}
         cards:
           type: array
           description: Cards involved in the action (optional; revealed even if originally hidden)
@@ -42162,6 +43484,12 @@ components:
             True when the omnibus rule is enabled and this player captured the
             J♦ (-10). Always false while the rule is off.
           example: false
+        voidSuits:
+          type: array
+          description: Card-design values for suits this player has proven void in this deal (1=spades, 2=clubs, 3=hearts, 4=diamonds).
+          items:
+            type: integer
+          example: [2, 3]
 
     HeartsTrickCard:
       type: object
@@ -43917,6 +45245,142 @@ components:
     # -------------------------------------------------------------------------
     # Tarneeb
     # -------------------------------------------------------------------------
+    OmiRequest:
+      type: object
+      description: Omi game command input
+      required:
+        - command
+        - sessionId
+      properties:
+        command:
+          type: string
+          description: "Game command. Accepted values include reset, trump, play, next, nextround, setdifficulty, setlimit, hint, and log, with the aliases documented on the endpoint."
+        suit:
+          type: integer
+          description: "Trump suit (1=♠, 2=♣, 3=♥, 4=♦). Required for trump/call."
+          minimum: 1
+          maximum: 4
+        cardIndex:
+          type: integer
+          description: Card index to play (0-based)
+        n:
+          type: integer
+          description: Common optional numeric input (unused by Omi)
+        config:
+          type: object
+          description: Optional game configuration, used by reset
+          properties:
+            cpuDifficulty:
+              type: integer
+              minimum: 0
+              maximum: 2
+            pointLimit:
+              type: integer
+              minimum: 1
+              maximum: 1000
+        sessionId:
+          type: string
+          description: Client-generated session identifier
+
+    OmiResponse:
+      type: object
+      description: Current state of the Omi game
+      properties:
+        players:
+          type: array
+          description: Four players, including the human player
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              team:
+                type: integer
+              trickCount:
+                type: integer
+        phase:
+          type: integer
+          description: "Game phase: 0=CallTrump, 1=Play, 2=TrickEnd, 3=RoundEnd, 4=GameEnd"
+          enum: [0, 1, 2, 3, 4]
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        trumpCallerIdx:
+          type: integer
+        bidPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        trumpSuit:
+          type: integer
+          description: "Trump suit (1=♠, 2=♣, 3=♥, 4=♦, 0=not yet decided)"
+        dealStage:
+          type: integer
+          description: Deal stage, distinguishing the first 4-card deal from the second 4-card deal
+        makerTeam:
+          type: integer
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        teamScores:
+          type: array
+          items:
+            type: integer
+        teamTricks:
+          type: array
+          items:
+            type: integer
+        gameEndFlag:
+          type: boolean
+        winnerTeam:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        hint:
+          type: object
+          nullable: true
+          properties:
+            cardIndex:
+              type: integer
+              nullable: true
+            suit:
+              type: integer
+              nullable: true
+            reason:
+              type: string
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            pointLimit:
+              type: integer
+
     TarneebConfig:
       type: object
       description: Tarneeb game configuration
@@ -44513,6 +45977,11 @@ components:
       type: object
       description: Current state of the Two Ten Jack game
       properties:
+        validPlayIndices:
+          type: array
+          description: Hand indices the human may legally play this trick
+          items:
+            type: integer
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -45502,6 +46971,11 @@ components:
                 type: array
                 items:
                   $ref: '#/components/schemas/Card'
+        layoffableIndices:
+          type: array
+          description: Indices of hand cards that can be laid off during the layoff phase
+          items:
+            type: integer
         config:
           type: object
           properties:
@@ -45600,6 +47074,9 @@ components:
         round:
           type: integer
           description: Current round number (1 to 11)
+        maxRound:
+          type: integer
+          description: Maximum number of rounds in the game
         wildRank:
           type: integer
           description: The wild card rank for the current round
@@ -45787,6 +47264,79 @@ components:
           description: Interpolation parameters for the message template keyed by placeholder name.
 
     # -------------------------------------------------------------------------
+    TongitsRequest:
+      type: object
+      required: [command, sessionId]
+      properties:
+        command:
+          type: string
+          enum: [reset, r, drawstock, ds, drawdiscard, dd, discard, d, meld, m, sapaw, sp, challenge, c, nextround, nr, log, l]
+        cardIndex:
+          type: integer
+        indices:
+          type: array
+          items: {type: integer}
+        targetPlayerIdx:
+          type: integer
+        meldIdx:
+          type: integer
+        agreed:
+          type: array
+          items: {type: boolean}
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            pointLimit:
+              type: integer
+        sessionId:
+          type: string
+
+    TongitsResponse:
+      type: object
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id: {type: integer}
+              isHuman: {type: boolean}
+              cardCount: {type: integer}
+              cards:
+                type: array
+                items: {$ref: '#/components/schemas/Card'}
+              melds:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    cards:
+                      type: array
+                      items: {$ref: '#/components/schemas/Card'}
+              roundScore: {type: integer}
+              cumulativeScore: {type: integer}
+        phase: {type: integer}
+        roundNumber: {type: integer}
+        currentPlayerIdx: {type: integer}
+        discardTop: {$ref: '#/components/schemas/Card'}
+        drawPileCount: {type: integer}
+        gameEndFlag: {type: boolean}
+        winnerIdx: {type: integer}
+        isTongits: {type: boolean}
+        remainingPoints: {type: integer}
+        config:
+          type: object
+          properties:
+            cpuDifficulty: {type: integer}
+            pointLimit: {type: integer}
+        message: {type: string}
+        messageCode: {type: string}
+        messageParams:
+          type: object
+          additionalProperties: {type: string}
+
     # Tonk types
     # -------------------------------------------------------------------------
     TonkRequest:
@@ -47021,6 +48571,110 @@ components:
           description: Interpolation parameters for the message template keyed by placeholder name.
 
     # -------------------------------------------------------------------------
+    # Biriba types
+    # -------------------------------------------------------------------------
+    BiribaRequest:
+      type: object
+      required: [command, sessionId]
+      properties:
+        command:
+          type: string
+          description: Accepted commands include reset, drawstock, drawdiscard, meld, skipmeld, discard, goout, nextround, log, and hint.
+          enum: [reset, r, drawstock, ds, drawdiscard, dd, meld, m, skipmeld, sm, discard, d, goout, go, nextround, nr, log, l, hint, h]
+        n:
+          type: integer
+          description: Optional numeric argument shared by Web inputs.
+        cardIndex:
+          type: integer
+          description: Card index required for `discard`.
+        naturalPairIndices:
+          type: array
+          description: Two natural-card indices required for `drawdiscard`.
+          items: {type: integer}
+        meldGroups:
+          type: array
+          description: Card-index groups forming same-suit sequences for `meld`.
+          items:
+            type: array
+            items: {type: integer}
+        config:
+          type: object
+          properties:
+            cpuDifficulty: {type: integer, minimum: 0, maximum: 2}
+            pointLimit: {type: integer, minimum: 1, maximum: 100000}
+        sessionId:
+          type: string
+          description: Client-generated session identifier (max 256 characters)
+          example: my-session-001
+
+    BiribaResponse:
+      type: object
+      description: Current state of the Biriba game
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id: {type: integer}
+              isHuman: {type: boolean}
+              cardCount: {type: integer}
+              cards:
+                type: array
+                items: {$ref: '#/components/schemas/Card'}
+              melds:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    cards:
+                      type: array
+                      items: {$ref: '#/components/schemas/Card'}
+                    isNatural: {type: boolean}
+                    isBiriba: {type: boolean}
+                    rank: {type: integer}
+              red3Count: {type: integer}
+              red3s:
+                type: array
+                items: {$ref: '#/components/schemas/Card'}
+              roundScore: {type: integer}
+              cumulativeScore: {type: integer}
+              hasBiriba: {type: boolean}
+              hasInitMeld: {type: boolean}
+              tookPozzetto: {type: boolean}
+        phase: {type: integer, enum: [0, 1, 2, 3, 4]}
+        roundNumber: {type: integer}
+        currentPlayerIdx: {type: integer}
+        discardTop: {$ref: '#/components/schemas/Card'}
+        discardPile:
+          type: array
+          items: {$ref: '#/components/schemas/Card'}
+        drawPileCount: {type: integer}
+        discardPileCount: {type: integer}
+        pozzettoCount: {type: integer}
+        isFrozen: {type: boolean}
+        gameEndFlag: {type: boolean}
+        winnerIdx: {type: integer}
+        hint:
+          type: object
+          properties:
+            action: {type: string}
+            indices:
+              type: array
+              items: {type: integer}
+            reason: {type: string}
+        config:
+          type: object
+          properties:
+            cpuDifficulty: {type: integer}
+            pointLimit: {type: integer}
+        message: {type: string}
+        messageCode: {type: string}
+        messageParams:
+          type: object
+          additionalProperties: {type: string}
+
+    # -------------------------------------------------------------------------
     # Pinochle types
     # -------------------------------------------------------------------------
     PinochleRequest:
@@ -48234,6 +49888,18 @@ components:
             $ref: '#/components/schemas/ActionLogEntry'
         variantName:
           type: string
+        hands:
+          type: integer
+          description: Number of completed hands in the session
+          example: 0
+        winRate:
+          type: integer
+          description: Session win rate percentage
+          example: 0
+        net:
+          type: integer
+          description: Session net payout minus bets
+          example: 0
         handKey:
           type: string
           description: "i18n key of the hand ranking. Translate this rather than the prose in `handName`."
@@ -50778,6 +52444,21 @@ components:
         - cpuActions
         - message
       properties:
+        discardPreviews:
+          type: array
+          description: >-
+            The server's own evaluation of each discard candidate, from the
+            same evaluator the CPU uses. Present only during the discard
+            phase; the client renders `recommended` rather than re-deriving it.
+          items:
+            type: object
+            properties:
+              cardIdx:
+                type: integer
+              handRank:
+                type: integer
+              recommended:
+                type: boolean
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -51068,6 +52749,13 @@ components:
                 type: integer
               pileIndex:
                 type: integer
+              card:
+                allOf:
+                  - $ref: '#/components/schemas/Card'
+                description: >-
+                  The card actually played. `cardIndex` is its position in the
+                  hand at the moment it left, which no longer points at it once
+                  the hand closes up, so the card itself is what the screen shows.
         hint:
           type: object
           description: Hint for the human player (present when hint command is used)
@@ -54385,6 +56073,12 @@ components:
               type: array
               items:
                 type: integer
+            contract:
+              type: integer
+              description: >-
+                Contract the hint recommends during the select-contract phase
+                (0=No Tricks .. 6=King Trump), or -1 while playing. 0 is a real
+                contract, so this field is always present, never omitted when zero.
             reason:
               type: string
         config:
@@ -55427,10 +57121,17 @@ components:
       properties:
         fromZone:
           type: string
-          enum: [stock, waste]
+          enum: [stock, waste, stockToWaste]
+          description: >-
+            `stock`/`waste` name where a card goes to a foundation from.
+            `stockToWaste` is the advice given when no foundation move
+            exists, which is the ordinary case: it names which waste to
+            bury the stock's top card on.
         wasteIdx:
           type: integer
-          description: Waste pile index (-1 if fromZone is `stock`)
+          description: >-
+            Waste pile index. -1 when `fromZone` is `stock`; the destination
+            pile when it is `stockToWaste`.
         foundationIdx:
           type: integer
           description: Target foundation index (0..3)
@@ -55599,6 +57300,13 @@ components:
           type: integer
         nobs:
           type: integer
+        cards:
+          type: array
+          description: >-
+            The cards this row or column scored with, in placement order.
+            Contains the non-empty cards currently placed in the row or column.
+          items:
+            $ref: '#/components/schemas/Card'
         total:
           type: integer
     DiplomatMoveZone:
@@ -56677,6 +58385,16 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/MendikotTrickCard'
+        lastTrick:
+          type: array
+          description: >-
+            The trick just resolved, kept until the next trick starts so the
+            winning card can be marked. Empty at other times.
+          items:
+            $ref: '#/components/schemas/MendikotTrickCard'
+        lastTrickWinner:
+          type: integer
+          description: Seat that took lastTrick, or -1 when there is none.
         validPlays:
           type: array
           description: Hand indices you may legally play. Following suit is compulsory.
@@ -56790,6 +58508,12 @@ components:
         lastPickupSize:
           type: integer
           description: How many cards that pickup was worth.
+        lastFinishedIdx:
+          type: integer
+          description: "Seat that most recently went out, or -1 when none has"
+        lastFinishedRank:
+          type: integer
+          description: Finishing position of that seat; 0 when none has gone out.
         currentPlayerIdx:
           type: integer
         leadPlayerIdx:
@@ -56891,6 +58615,16 @@ components:
       type: object
       description: Response payload for /teendopaanch/exec
       properties:
+        lastTrick:
+          type: array
+          description: >-
+            The trick just resolved, kept until the next trick starts so the
+            winning card can be marked. Empty at other times.
+          items:
+            $ref: '#/components/schemas/TeenDoPaanchTrickCard'
+        lastTrickWinner:
+          type: integer
+          description: Seat that took the trick just resolved, or -1 before the first one
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -57227,6 +58961,16 @@ components:
           description: >-
             How many cards changed hands for last round's shortfall. Falling
             short of your target costs your best cards; nothing else shows it.
+        lastExchangeLost:
+          type: array
+          description: Cards the human handed over in that exchange; empty when none moved.
+          items:
+            $ref: '#/components/schemas/Card'
+        lastExchangeReceived:
+          type: array
+          description: Cards the human got back in that exchange; empty when none moved.
+          items:
+            $ref: '#/components/schemas/Card'
         currentPlayerIdx:
           type: integer
         leadPlayerIdx:
@@ -57347,6 +59091,13 @@ components:
           description: >-
             Cards left in the stock: 26 at the deal, two fewer after each
             draw-phase trick, and 0 from the auction onwards.
+        drawnIndices:
+          type: array
+          description: >-
+            Hand positions of the cards drawn after the last draw-phase
+            trick, so they can be marked. Empty outside the draw phase.
+          items:
+            type: integer
         trumpSuit:
           type: integer
           description: 0 means no-trump -- during the draw phase and for a no-trump contract.
@@ -58726,6 +60477,12 @@ components:
                 type: boolean
               chips:
                 type: integer
+              folded:
+                type: boolean
+                description: "The seat has folded out of the current hand."
+              allIn:
+                type: boolean
+                description: "The seat is all in and cannot act again this hand."
               cards:
                 type: array
                 description: >-
@@ -58760,6 +60517,12 @@ components:
         disciplineName:
           type: string
           description: "holdem | omahaHiLo | razz | stud | studHiLo"
+        disciplinePosition:
+          type: integer
+          description: 1-based position of the current discipline in the rotation.
+        disciplineTotal:
+          type: integer
+          description: How many disciplines the rotation has (5 for H.O.R.S.E., 8 for Eight-Game Mix).
         handInDiscipline:
           type: integer
         handNumber:
@@ -59692,6 +61455,11 @@ components:
             $ref: '#/components/schemas/Card'
         dealerScore:
           type: integer
+        dealerHoleRevealed:
+          type: boolean
+          description: >-
+            False while the hand is still being played, when dealerCards holds
+            only the up-card and dealerScore is withheld.
         dealerPushed22:
           type: boolean
           description: The dealer busted with exactly 22, so surviving hands push.
@@ -60331,6 +62099,13 @@ components:
           description: >-
             The side-bet half of payout; 0 when no side bet was placed or it
             missed.
+        sideBandProbabilities:
+          type: array
+          description: >-
+            Theoretical hit chance of each side-bet band, in band order.
+            Always seven entries summing to 1.
+          items:
+            type: number
         chips:
           type: integer
         betAmount:
@@ -60954,6 +62729,26 @@ components:
       type: object
       description: Response payload for /rams/exec
       properties:
+        missPenalty:
+          type: integer
+          description: >-
+            Chips a player who took no trick pays on top of the pot. Sent so
+            the screen can name the amount instead of hardcoding it.
+        roundSettlement:
+          type: array
+          description: >-
+            Per-seat chip movement for the round that just ended: the miss
+            penalty paid and the share of the pot received. Empty outside
+            the round-end phase.
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              penalty:
+                type: integer
+              payout:
+                type: integer
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -61427,6 +63222,9 @@ components:
       type: object
       description: Response payload for /germanwhist/exec
       properties:
+        winThreshold:
+          type: integer
+          description: Tricks needed to win the second half (GermanWhistWinTricks)
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -61529,6 +63327,9 @@ components:
             type: boolean
         stockCount:
           type: integer
+        redealCount:
+          type: integer
+          description: Number of stock redeals used (Matrimony allows at most three).
         waste:
           type: array
           items:
@@ -65173,6 +66974,12 @@ components:
         roundPickerPoints:
           type: integer
           description: Card points accumulated by the picker team this round (including buried)
+        livePickerPoints:
+          type: integer
+          description: Card points held by the picker team so far, including buried cards
+        liveDefenderPoints:
+          type: integer
+          description: Complementary defender card points; together with livePickerPoints this is always 120
         roundMultiplier:
           type: integer
           description: "Chip stake multiplier for this round: 1=normal, 2=Schneider, 3=Schwarz"
@@ -66480,6 +68287,18 @@ components:
           items:
             type: integer
           description: Marriage bonus points per player auto-detected at deal for the current round
+        roundMarriageSuits:
+          type: array
+          description: Marriage bonuses by player and suit, including the awarded points
+          items:
+            type: array
+            items:
+              type: object
+              properties:
+                suit:
+                  type: integer
+                points:
+                  type: integer
         lastTrickWinner:
           type: integer
           description: Index of the player who won the last (10th) trick (-1 if not yet completed)
@@ -67414,9 +69233,10 @@ components:
               type: integer
               minimum: 0
               maximum: 2
-            targetScore:
+            targetPoints:
               type: integer
               minimum: 1
+              maximum: 1000
         sessionId:
           type: string
           description: Client-generated session identifier (max 256 characters)
@@ -70013,6 +71833,169 @@ components:
             type: string
           description: Interpolation parameters for the message template keyed by placeholder name.
 
+    TehonbikiRequest:
+      type: object
+      required: [command, sessionId]
+      properties:
+        command:
+          type: string
+          enum: [reset, r, bet, b, next, hint, log, l, quit, q]
+        numbers:
+          type: array
+          items:
+            type: integer
+            minimum: 1
+            maximum: 6
+          description: Numbers covered by the wager.
+        betType:
+          type: string
+          enum: ['', single, double, triple, half]
+        bet:
+          type: integer
+          minimum: 10
+          maximum: 500
+          description: Chip amount to wager.
+        sessionId:
+          type: string
+
+    TehonbikiResponse:
+      type: object
+      description: Current state of the Tehonbiki game
+      properties:
+        entries:
+          type: array
+          description: Present only in the reply to the `log` command.
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
+        phase:
+          type: integer
+          description: "Game phase: 0 Bet, 1 Result, 2 GameEnd"
+          enum: [0, 1, 2]
+        parentCard:
+          type: integer
+          nullable: true
+          minimum: 1
+          maximum: 6
+          description: The parent's revealed number; omitted during betting.
+        numbers:
+          type: array
+          items:
+            type: integer
+        betType:
+          type: string
+          enum: ['', single, double, triple, half]
+        bet:
+          type: integer
+        result:
+          type: integer
+          description: "0 none, 1 win, 2 lose"
+          enum: [0, 1, 2]
+        payout:
+          type: integer
+        chips:
+          type: integer
+        roundNumber:
+          type: integer
+        remainingCards:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        payoutNum:
+          type: integer
+        payoutDen:
+          type: integer
+        config:
+          type: object
+          nullable: true
+          properties:
+            initialChips:
+              type: integer
+            defaultBet:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+        reason:
+          type: string
+
+    BassetRequest:
+      type: object
+      required: [command, sessionId]
+      properties:
+        command:
+          type: string
+          enum: [reset, r, bet, b, deal, d, take, takeWinnings, paroli, pressParoli, next, n, log, l]
+        rank:
+          type: integer
+        amount:
+          type: integer
+        sessionId:
+          type: string
+        n:
+          type: integer
+
+    BassetResponse:
+      type: object
+      description: Current state of the Basset game
+      properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
+        phase:
+          type: integer
+          description: "Game phase: 1 Betting, 2 Turn, 3 Decision, 4 RoundEnd, 5 GameEnd"
+          enum: [1, 2, 3, 4, 5]
+          example: 1
+        chips:
+          type: integer
+        bet:
+          type: object
+          nullable: true
+          properties:
+            rank:
+              type: integer
+            amount:
+              type: integer
+            stage:
+              type: integer
+        bankerCard:
+          $ref: '#/components/schemas/Card'
+          nullable: true
+        playerCard:
+          $ref: '#/components/schemas/Card'
+          nullable: true
+        hit:
+          type: boolean
+        turnsPlayed:
+          type: integer
+        turnsTotal:
+          type: integer
+        remaining:
+          type: integer
+        remainingByRank:
+          type: array
+          items:
+            type: integer
+        totalPayout:
+          type: integer
+        gameEndFlag:
+          type: boolean
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
     FaroRequest:
       type: object
       required:
@@ -70993,6 +72976,12 @@ components:
           properties:
             fan:
               type: integer
+            movesAfter:
+              type: integer
+              description: >-
+                Legal moves that would remain after playing the recommended fan.
+                This is the score the recommendation was chosen by, so a larger
+                value is what makes one fan better than another.
         message:
           type: string
         messageCode:
@@ -71591,6 +73580,7 @@ components:
         ante: { type: integer }
         bettingLimit: { type: integer }
         raiseCount: { type: integer }
+        maxRaises: { type: integer }
         maxBetAmount: { type: integer }
         roundResults:
           type: array
@@ -71829,6 +73819,12 @@ components:
           type: integer
         centralPileSize:
           type: integer
+        lastCardPlayerIdx:
+          type: integer
+          description: |
+            Seat that played lastCardPlayed, or -1. Not derivable from
+            currentPlayerIdx: the turn moves on in the same call that sets
+            the card, so reading it back would name the wrong seat.
         lastCardPlayed:
           nullable: true
           allOf:
@@ -71848,6 +73844,67 @@ components:
           type: object
 
     BeleagueredCastleResponse:
+      type: object
+      properties:
+        entries:
+          type: array
+          description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
+          items:
+            $ref: '#/components/schemas/ActionLogEntry'
+        tableau:
+          type: array
+          description: 8 tableau columns, each an array of cards (with face-up flag)
+          items:
+            type: array
+            items:
+              type: object
+              properties:
+                card:
+                  nullable: true
+                  allOf:
+                    - $ref: '#/components/schemas/Card'
+                faceUp:
+                  type: boolean
+        foundation:
+          type: array
+          description: 4 foundation piles (cards by suit, A→K). Pre-seeded with the four aces at deal time.
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/Card'
+        moveCount:
+          type: integer
+        canUndo:
+          type: boolean
+        isStalemate:
+          type: boolean
+        undoToEscape:
+          type: integer
+        phase:
+          type: integer
+          description: "0=Playing, 1=GameClear, 2=GameOver"
+        hint:
+          type: object
+          nullable: true
+          properties:
+            fromCol:
+              type: integer
+            cardIndex:
+              type: integer
+            toZone:
+              type: string
+            toCol:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    CitadelResponse:
       type: object
       properties:
         entries:
@@ -72130,6 +74187,8 @@ components:
           type: boolean
         winnerIdx:
           type: integer
+        canGoOut:
+          type: boolean
         config:
           type: object
           properties:
@@ -72490,6 +74549,12 @@ components:
         config:
           type: object
           properties:
+            jokerPenalty:
+              type: integer
+              description: >-
+                Points charged for each joker left in hand at round end
+                (CariocaJokerPenalty), so the screen names the figure rather
+                than hardcoding it.
             playerCount:
               type: integer
             cpuDifficulty:
@@ -73595,6 +75660,7 @@ components:
         ante: { type: integer }
         bettingLimit: { type: integer }
         raiseCount: { type: integer }
+        maxRaises: { type: integer }
         maxBetAmount: { type: integer }
         roundResults:
           type: array
@@ -74601,6 +76667,15 @@ components:
       additionalProperties: true
       description: Game state after the command was processed.
       properties:
+        declarerCaptured:
+          type: integer
+          description: >-
+            Card points the declarer took, in whole points and including the
+            chien when they own it -- the same figure the target is compared
+            against. Not the halved `players[].cardPoints`.
+        target:
+          type: integer
+          description: Card points the declarer needed, set by the bout count
         messageCode:
           type: string
         players:
@@ -75064,6 +77139,9 @@ components:
           type: integer
         moveCount:
           type: integer
+        chainCombo:
+          type: integer
+          description: Consecutive removals without drawing from the stock.
         canUndo:
           type: boolean
         isStalemate:
@@ -75321,6 +77399,8 @@ components:
                 type: integer
               deadwood:
                 type: integer
+              maal:
+                type: integer
               hasPureSequence:
                 type: boolean
         phase:
@@ -75345,6 +77425,11 @@ components:
           type: integer
         declarerIdx:
           type: integer
+        declarableDiscards:
+          type: array
+          description: "Hand indices whose discard would leave a valid declaration. Empty outside the human player's discard turn."
+          items:
+            type: integer
         config:
           type: object
           properties:
@@ -75357,12 +77442,6 @@ components:
         hasPureSequence:
           type: boolean
           description: "Whether this seat holds the pure sequence a valid declaration requires."
-        humanHasPureSequence:
-          type: boolean
-          description: "Whether the human holds that pure sequence. Shown every turn, as the CUI does."
-        humanDeadwood:
-          type: integer
-          description: "Deadwood points left in the human's hand."
         wildJoker:
           $ref: '#/components/schemas/Card'
           description: "Card turned up as the wild joker for this deal."
@@ -75372,11 +77451,90 @@ components:
         message:
           type: string
 
+    MarriageResponse:
+      type: object
+      additionalProperties: true
+      description: Game state after the command was processed.
+      properties:
+        messageCode:
+          type: string
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              roundScore:
+                type: integer
+              cumulativeScore:
+                type: integer
+              deadwood:
+                type: integer
+              maal:
+                type: integer
+              hasPureSequence:
+                type: boolean
+        canDeclare:
+          type: boolean
+          description: "True while the human seat can declare by discarding one card."
+        phase:
+          type: integer
+          enum: [0, 1, 2, 3]
+        roundNumber:
+          type: integer
+        targetRounds:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        declarerIdx:
+          type: integer
+        declarationValid:
+          type: boolean
+        wildJoker:
+          $ref: '#/components/schemas/Card'
+        wildRank:
+          type: integer
+        drawPileCount:
+          type: integer
+        discardTop:
+          $ref: '#/components/schemas/Card'
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+        config:
+          type: object
+          properties:
+            playerCount:
+              type: integer
+            cpuDifficulty:
+              type: integer
+            targetRounds:
+              type: integer
+        message:
+          type: string
+
     JassResponse:
       type: object
       additionalProperties: true
       description: Game state after the command was processed.
       properties:
+        validPlayIndices:
+          type: array
+          description: Hand indices the human may legally play this trick
+          items:
+            type: integer
         messageCode:
           type: string
         players:
@@ -75639,6 +77797,9 @@ components:
         partnerRevealed:
           type: boolean
           description: "True once the called king has been played and the partner is known."
+        teamPoints:
+          type: integer
+          description: "Card points captured by the declarer and the called partner together. This is the total the contract is settled against, so it can exceed the declarer's own cardPoints."
         talonCount:
           type: integer
           description: "Cards left in the talon."
@@ -76511,6 +78672,12 @@ components:
                       type: array
                       items:
                         $ref: '#/components/schemas/Card'
+                    chipUnits:
+                      type: integer
+                      description: >-
+                        Chip units this meld earns (PanMeldChipUnits): a valle set,
+                        a run or a set of four or more each count one, so a meld can
+                        be worth two.
               meldedCount:
                 type: integer
               chips:
@@ -76720,6 +78887,9 @@ components:
               cardThirds:
                 type: integer
                 description: "Card points of this seat's captured pile, in thirds. Scoring counts cards in groups of three, so a pile is rarely a whole number of points; cardPoints carries the same figure in readable form."
+              scartoThirds:
+                type: integer
+                description: "Of cardThirds, the part the dealer buried in the scarto rather than won in a trick. Zero for every seat but the dealer."
         scartoCount:
           type: integer
           description: "Cards the dealer has buried so far this deal."
@@ -77273,6 +79443,22 @@ components:
       additionalProperties: true
       description: Game state after the command was processed.
       properties:
+        roundResult:
+          type: object
+          description: >-
+            Outcome of the round just scored, taken from ScoreRound rather than
+            re-parsed from the action log. Absent outside the round-end phase.
+          properties:
+            declarerTeam:
+              type: integer
+            teamPoints:
+              type: integer
+            contractBid:
+              type: integer
+            made:
+              type: boolean
+            scoreDelta:
+              type: integer
         messageCode:
           type: string
         players:
@@ -77495,6 +79681,13 @@ components:
       additionalProperties: true
       description: Game state after the command was processed.
       properties:
+        completedMelds:
+          type: array
+          description: >-
+            Canastas/sambas each team has completed, indexed by team. Going out
+            needs SambaGoOutRequiredMelds of them.
+          items:
+            type: integer
         messageCode:
           type: string
         teamScores:
@@ -77522,6 +79715,12 @@ components:
         config:
           type: object
           properties:
+            goOutRequiredMelds:
+              type: integer
+              description: >-
+                Completed canastas/sambas a team needs before it may go out
+                (SambaGoOutRequiredMelds), sent so the progress indicator
+                cannot disagree with what canGoOut enforces.
             cpuDifficulty:
               type: integer
             pointLimit:
@@ -77705,6 +79904,8 @@ components:
         stockCount:
           type: integer
         completedSuits:
+          type: integer
+        completedSuitMask:
           type: integer
         phase:
           type: integer
@@ -77921,6 +80122,21 @@ components:
     SkatResponse:
       type: object
       properties:
+        playableIndices:
+          type: array
+          description: >-
+            Hand indices the human may legally play. Empty outside the play
+            phase and on any turn but theirs.
+          items:
+            type: integer
+        trumpIndices:
+          type: array
+          description: >-
+            Hand indices that count as trump under the declared contract --
+            the suit plus every jack, or the jacks alone in a Grand. Empty on
+            the same terms as playableIndices.
+          items:
+            type: integer
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -78085,6 +80301,9 @@ components:
     SlapjackResponse:
       type: object
       properties:
+        lastEventCardsWon:
+          type: integer
+          description: Cards the last correct slap took, or 0 when none has happened
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -78765,6 +80984,11 @@ components:
           $ref: '#/components/schemas/Card'
         pending:
           $ref: '#/components/schemas/Card'
+        suggestedWildSlot:
+          type: integer
+          description: |
+            Zero-based slot the domain recommends for a wild, or -1 when every
+            slot is face up. The CUI and the Web hint both read this one value.
         moveCount:
           type: integer
         winner:
@@ -78784,6 +81008,12 @@ components:
       additionalProperties: true
       description: Game state after the command was processed.
       properties:
+        talonRecipientIdx:
+          type: integer
+          description: >-
+            Seat the next discarded card goes to, following the order
+            giveDiscard uses (opponentsOf the declarer, indexed by
+            discardCount). -1 outside the talon phase.
         messageCode:
           type: string
         players:
@@ -79178,6 +81408,8 @@ components:
         stockCount:
           type: integer
         completedSuits:
+          type: integer
+        completedSuitMask:
           type: integer
         phase:
           type: integer
@@ -79596,3 +81828,411 @@ components:
               type: integer
         message:
           type: string
+
+    # -------------------------------------------------------------------------
+    # Batak
+    # -------------------------------------------------------------------------
+    BatakConfig:
+      type: object
+      description: Batak game configuration
+      properties:
+        cpuDifficulty:
+          type: integer
+          description: CPU difficulty level (0 = Easy, 1 = Normal, 2 = Hard)
+          enum: [0, 1, 2]
+          default: 1
+        maxRounds:
+          type: integer
+          description: Number of rounds to play
+          default: 5
+          minimum: 1
+          maximum: 50
+
+    BatakResponse:
+      type: object
+      description: |
+        Current state of the Batak game. Scores are raw integers.
+      properties:
+        players:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              isHuman:
+                type: boolean
+              cardCount:
+                type: integer
+              cards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              bid:
+                type: integer
+              roundScore:
+                type: integer
+                description: Round score
+              cumulativeScore:
+                type: integer
+                description: Cumulative score
+              trickCount:
+                type: integer
+        phase:
+          type: integer
+          description: "0 = Bid, 1 = Play, 2 = TrickEnd, 3 = RoundEnd, 4 = GameEnd"
+          enum: [0, 1, 2, 3, 4]
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        bidPlayerIdx:
+          type: integer
+        declarerIdx:
+          type: integer
+          description: Player index of the declarer (-1 if undecided)
+        highBid:
+          type: integer
+          description: Current highest bid (0 if none)
+        minLegalBid:
+          type: integer
+          description: Minimum legal bid for the human player (5..13, 0 if pass-only or not human turn)
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        spadesBroken:
+          type: boolean
+        gameEndFlag:
+          type: boolean
+        winnerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        validPlayIndices:
+          type: array
+          description: Indices in the human player's hand legal to play this turn
+          items:
+            type: integer
+        config:
+          type: object
+          properties:
+            cpuDifficulty:
+              type: integer
+            maxRounds:
+              type: integer
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+        hint:
+          type: object
+          nullable: true
+          properties:
+            cardIndex:
+              type: integer
+              nullable: true
+            bid:
+              type: integer
+              nullable: true
+            reason:
+              type: string
+
+    BinokelConfig:
+      type: object
+      properties:
+        cpuDifficulty:
+          type: integer
+          description: "0 = Easy, 1 = Normal, 2 = Hard"
+          enum: [0, 1, 2]
+        pointLimit:
+          type: integer
+          description: Target score to end the game (default 1000)
+
+    BinokelPlayer:
+      type: object
+      properties:
+        id:
+          type: integer
+        isHuman:
+          type: boolean
+        cardCount:
+          type: integer
+        cards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        score:
+          type: integer
+        trickCount:
+          type: integer
+        bid:
+          type: integer
+        hasPassed:
+          type: boolean
+        meldScore:
+          type: integer
+        trickPoints:
+          type: integer
+
+    BinokelMeld:
+      type: object
+      properties:
+        type:
+          type: integer
+        points:
+          type: integer
+        cards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+
+    BinokelMeldTableEntry:
+      type: object
+      properties:
+        type:
+          type: integer
+        points:
+          type: integer
+
+    BinokelHint:
+      type: object
+      nullable: true
+      properties:
+        cardIndex:
+          type: integer
+          nullable: true
+        bidAmount:
+          type: integer
+          nullable: true
+        pass:
+          type: boolean
+          nullable: true
+        suit:
+          type: integer
+          nullable: true
+        reason:
+          type: string
+
+    BinokelResponse:
+      type: object
+      description: |
+        Current state of the Binokel game.
+      properties:
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/BinokelPlayer'
+        phase:
+          type: integer
+          description: "0 = Bid, 1 = Dabb, 2 = Trump, 3 = Meld, 4 = Play, 5 = TrickEnd, 6 = RoundEnd, 7 = GameEnd"
+          enum: [0, 1, 2, 3, 4, 5, 6, 7]
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        bidPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        trumpSuit:
+          type: integer
+        highestBid:
+          type: integer
+        highestBidder:
+          type: integer
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        scores:
+          type: array
+          items:
+            type: integer
+        gameEndFlag:
+          type: boolean
+        winnerPlayer:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        playerMelds:
+          type: array
+          items:
+            type: array
+            items:
+              $ref: '#/components/schemas/BinokelMeld'
+        dabb:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        dabbDiscarded:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        validPlayIndices:
+          type: array
+          items:
+            type: integer
+        hint:
+          $ref: '#/components/schemas/BinokelHint'
+        meldTable:
+          type: array
+          items:
+            $ref: '#/components/schemas/BinokelMeldTableEntry'
+        config:
+          $ref: '#/components/schemas/BinokelConfig'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string
+
+    MarjapussiConfig:
+      type: object
+      properties:
+        cpuDifficulty:
+          type: integer
+          description: "0 = Easy, 1 = Normal, 2 = Hard"
+          enum: [0, 1, 2]
+          default: 1
+        targetPoints:
+          type: integer
+          description: Target score to end the game (default 500)
+          default: 500
+
+    MarjapussiPlayer:
+      type: object
+      properties:
+        id:
+          type: integer
+        teamId:
+          type: integer
+        isHuman:
+          type: boolean
+        cardCount:
+          type: integer
+        cards:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        trickCount:
+          type: integer
+        score:
+          type: integer
+
+    MarjapussiHint:
+      type: object
+      properties:
+        cardIndices:
+          type: array
+          items:
+            type: integer
+        reason:
+          type: string
+
+    MarjapussiResponse:
+      type: object
+      description: |
+        Current state of the Marjapussi game.
+      properties:
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/MarjapussiPlayer'
+        phase:
+          type: integer
+          description: "0 = Play, 1 = TrickEnd, 2 = RoundEnd, 3 = GameEnd"
+          enum: [0, 1, 2, 3]
+        roundNumber:
+          type: integer
+        trickNumber:
+          type: integer
+        currentPlayerIdx:
+          type: integer
+        leadPlayerIdx:
+          type: integer
+        dealerIdx:
+          type: integer
+        trumpSuit:
+          type: integer
+          description: "0 = None, 1 = Spade, 2 = Clover, 3 = Heart, 4 = Diamond"
+        currentTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        teamScores:
+          type: array
+          items:
+            type: integer
+        playerScores:
+          type: array
+          items:
+            type: integer
+        roundCardPoints:
+          type: array
+          items:
+            type: integer
+        roundMarriage:
+          type: array
+          items:
+            type: integer
+        pussiCount:
+          type: integer
+        pussi:
+          type: array
+          items:
+            $ref: '#/components/schemas/Card'
+        pussiWinnerTeam:
+          type: integer
+        lastTrickWinner:
+          type: integer
+        playableIndices:
+          type: array
+          items:
+            type: integer
+        gameEndFlag:
+          type: boolean
+        winnerPlayer:
+          type: integer
+        winnerTeam:
+          type: integer
+        isHumanTurn:
+          type: boolean
+        hint:
+          $ref: '#/components/schemas/MarjapussiHint'
+        config:
+          $ref: '#/components/schemas/MarjapussiConfig'
+        message:
+          type: string
+        messageCode:
+          type: string
+        messageParams:
+          type: object
+          additionalProperties:
+            type: string

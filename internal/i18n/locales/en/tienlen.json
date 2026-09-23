@@ -13,7 +13,6 @@
   "tableEmpty": "Table: empty (free lead)",
   "gameEnd": "Game Over!",
   "rankN": "Rank {{rank}}",
-  "playerYou": "You",
   "yourTurn": "Your turn",
   "comboRulesHint": "Ranks: run > triple > pair > single. Match the table's count and type and beat its rank (runs compare by length then top rank).",
   "actionPass": "pass",
@@ -25,5 +24,8 @@
   "comboThreePairRun": "Three-pair run",
   "comboFourOfAKind": "Four of a kind",
   "comboInvalid": "Unknown",
-  "helpLog": "  l                    show the action log"
+  "helpLog": "  l                    show the action log",
+  "log.pass": "pass",
+  "log.play": "played {{count}} card(s)",
+  "log.finish": "player {{player}} finished (rank {{rank}})"
 }

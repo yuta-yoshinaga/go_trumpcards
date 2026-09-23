@@ -27,6 +27,15 @@ func (tp *ThreeCardRummyCuiPresenter) Output(tc interfaces.ThreeCardRummyGame, l
 		// **低いほど強い** はこのゲーム最大の意外性。賭ける前に必ず読ませる。
 		sb.WriteString(i18n.T("threecardrummy.scoringNote") + "\n")
 		sb.WriteString(i18n.T("threecardrummy.qualifyNote") + "\n")
+		sb.WriteString(i18n.T("threecardrummy.payoutRef.title") + "\n")
+		sb.WriteString(i18n.T("threecardrummy.payoutRef.anteBonusHeader") + "\n")
+		sb.WriteString(i18n.T("threecardrummy.payoutRef.anteBonusPerfect") + "\n")
+		sb.WriteString(i18n.T("threecardrummy.payoutRef.anteBonusVeryLow") + "\n")
+		sb.WriteString(i18n.T("threecardrummy.payoutRef.anteBonusLow") + "\n")
+		sb.WriteString(i18n.T("threecardrummy.payoutRef.lowBonusHeader") + "\n")
+		sb.WriteString(i18n.T("threecardrummy.payoutRef.lowBonusPerfect") + "\n")
+		sb.WriteString(i18n.T("threecardrummy.payoutRef.lowBonusVeryLow") + "\n")
+		sb.WriteString(i18n.T("threecardrummy.payoutRef.lowBonusLow") + "\n")
 	}
 
 	playerHand := tc.GetPlayerHand()
@@ -69,7 +78,7 @@ func (tp *ThreeCardRummyCuiPresenter) Output(tc interfaces.ThreeCardRummyGame, l
 	sb.WriteString("----------\n")
 
 	if lastErr != nil {
-		sb.WriteString(i18n.MarkErrorLine(color.Red(lastErr.Error())) + "\n")
+		cuiErrorBlock(&sb, lastErr)
 	}
 
 	// **賭けた額を覚えておかせない。** Web はアクション中ずっと内訳を出して

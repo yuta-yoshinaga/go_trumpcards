@@ -22,6 +22,13 @@ func TestSevenTwentySeven_ResetDealsTwoCardsAndOpensTheDrawPhase(t *testing.T) {
 	assert.Positive(t, g.GetPot(), "アンティがポットに入っていない")
 }
 
+func TestSevenTwentySevenActionLogUsesDetailCode(t *testing.T) {
+	g := newTestS27()
+	entry := g.GetActionLog()[0]
+	assert.Equal(t, "seventwentyseven.log.deal", entry.DetailCode)
+	assert.NotEmpty(t, entry.DetailParams["round"])
+}
+
 // **止まった人には二度と配られない。** ここが効いていないと「止まる」判断に
 // 意味が無くなり、超過が事故でしか起きなくなる。
 func TestSevenTwentySeven_StandingPatStopsTheCards(t *testing.T) {

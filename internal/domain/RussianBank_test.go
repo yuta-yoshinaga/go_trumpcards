@@ -258,14 +258,27 @@ func TestRussianBank_MoveMechanics(t *testing.T) {
 		g.players[0].pushWaste(rbCard(CardDesignClover, 1))    // own waste A
 		g.players[1].pushReserve(rbCard(CardDesignHeart, 1))   // opp reserve A
 		g.players[1].pushWaste(rbCard(CardDesignSpade, 1))     // opp waste A
+		g.tableau[0] = []*Card{rbCard(CardDesignHeart, 1)}     // tableau A
 		for _, src := range []RussianBankSource{
 			{Zone: RussianBankZoneReserve},
 			{Zone: RussianBankZoneWaste},
 			{Zone: RussianBankZoneReserve, FromOpponent: true},
 			{Zone: RussianBankZoneWaste, FromOpponent: true},
+			{Zone: RussianBankZoneTableau, Col: 0},
 		} {
 			if err := g.MoveToFoundation(src); err != nil {
-				t.Errorf("MoveToFoundation(%s): %v", rbSourceName(src), err)
+				t.Errorf("MoveToFoundation(%+v): %v", src, err)
+			}
+		}
+		entry := g.GetActionLog()[len(g.GetActionLog())-1]
+		if entry.DetailCode != "russianbank.log.toFoundationTableau" || entry.DetailParams["col"] != "0" {
+			t.Errorf("tableau source log = %+v", entry)
+		}
+		for _, candidate := range g.GetActionLog() {
+			if candidate.DetailCode == "russianbank.log.toFoundation" {
+				if candidate.DetailParams["sourceKey"] == "" || candidate.DetailParams["source"] != "" {
+					t.Errorf("foundation source params = %+v", candidate.DetailParams)
+				}
 			}
 		}
 	})
@@ -297,6 +310,10 @@ func TestRussianBank_MoveMechanics(t *testing.T) {
 		}
 		if len(g.tableau[1]) != 2 || len(g.tableau[0]) != 0 {
 			t.Errorf("unexpected tableau state: %d / %d", len(g.tableau[0]), len(g.tableau[1]))
+		}
+		entry := g.GetActionLog()[len(g.GetActionLog())-1]
+		if entry.DetailCode != "russianbank.log.toTableauTableau" || entry.DetailParams["col"] != "0" {
+			t.Errorf("tableau source log = %+v", entry)
 		}
 		// Moving a column onto itself is rejected.
 		if err := g.MoveToTableau(RussianBankSource{Zone: RussianBankZoneTableau, Col: 1}, 1); err == nil {
@@ -363,6 +380,47 @@ func TestRussianBank_StalemateEndsGame(t *testing.T) {
 	}
 }
 
+func TestRussianBank_StalemateUsesStopPointsAsTieBreaker(t *testing.T) {
+	g := newRbGame()
+	rbClearBoard(g)
+	g.current = 0
+	g.players[0].pushReserve(rbCard(CardDesignSpade, 13))
+	g.players[1].pushReserve(rbCard(CardDesignClover, 12))
+	g.stopPoints[1] = 1
+	_ = g.Discard()
+	_ = g.Discard()
+	if g.GetWinner() != 1 {
+		t.Fatalf("winner = %d, want 1 from stop-point tie-break", g.GetWinner())
+	}
+}
+
+func TestRussianBank_StalemateStopPointTieBreakCases(t *testing.T) {
+	for _, tc := range []struct {
+		name       string
+		stop0      int
+		stop1      int
+		wantWinner int
+	}{
+		{name: "seat zero has more stop points", stop0: 1, stop1: 0, wantWinner: 0},
+		{name: "equal stop points is a draw", stop0: 0, stop1: 0, wantWinner: -1},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			g := newRbGame()
+			rbClearBoard(g)
+			g.current = 0
+			g.players[0].pushReserve(rbCard(CardDesignSpade, 13))
+			g.players[1].pushReserve(rbCard(CardDesignClover, 12))
+			g.stopPoints[0] = tc.stop0
+			g.stopPoints[1] = tc.stop1
+			_ = g.Discard()
+			_ = g.Discard()
+			if g.GetWinner() != tc.wantWinner {
+				t.Errorf("winner = %d, want %d", g.GetWinner(), tc.wantWinner)
+			}
+		})
+	}
+}
+
 // **送り先はスートで決まる。**画面が「どこへ行くのか」を示せるよう、各台が
 // 次に受ける札そのものを渡す ── 規則をクライアントに書き写すと必ずずれる (#6473)。
 func TestRussianBank_GetFoundationNextDescribesEachPile(t *testing.T) {
@@ -396,4 +454,17 @@ func TestRussianBank_GetFoundationNextDescribesEachPile(t *testing.T) {
 		assert.True(t, g.rbCanPlaceFoundation(NewCard(design, n.Value, false), i),
 			"pile %d says it accepts %d of design %d but rbCanPlaceFoundation disagrees", i, n.Value, design)
 	}
+}
+func TestRussianBank_ActionLogUsesDetailCode(t *testing.T) {
+	g := NewDefaultRussianBank()
+	g.Reset()
+	var entry *ActionLogEntry
+	for _, candidate := range g.GetActionLog() {
+		if candidate.DetailCode == "russianbank.log.newGame" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Empty(t, entry.DetailParams)
 }

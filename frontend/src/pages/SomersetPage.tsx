@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { SomersetMoveZone, somersetApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -26,6 +26,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useSomersetGame } from '../hooks/useSomersetGame';
+import { somersetWinRate, useSomersetStats } from '../hooks/useSomersetStats';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { SomersetResponse } from '../types/card';
@@ -136,6 +137,23 @@ function SomersetPageContent() {
   }, [isMobile, windowWidth, cardWidth, cardHeight, cardOverlap, tableauColCnt]);
 
   const isPlayingForKbd = state?.phase === SomersetPhase.PLAYING;
+  const { stats, recordResult } = useSomersetStats();
+  const [bestUpdate, setBestUpdate] = useState(false);
+  const recordedRef = useRef(false);
+  const currentPhase = state?.phase;
+  const currentMoves = state?.moveCount;
+  useEffect(() => {
+    const ended = currentPhase === SomersetPhase.GAME_CLEAR || currentPhase === SomersetPhase.GAME_OVER;
+    if (!ended) {
+      recordedRef.current = false;
+      return;
+    }
+    if (recordedRef.current) return;
+    recordedRef.current = true;
+    const won = currentPhase === SomersetPhase.GAME_CLEAR;
+    const update = recordResult({ won, moves: currentMoves ?? 0 });
+    setBestUpdate(won ? update : false);
+  }, [currentPhase, currentMoves, recordResult]);
 
   const dispatchMove = useCallback(
     (source: SomersetMoveZone, target: SomersetMoveZone) => {
@@ -442,6 +460,16 @@ function SomersetPageContent() {
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}
             />
+
+            {isGameClear && bestUpdate && (
+              <div
+                data-testid="somerset-best-badge"
+                role="status"
+                className="text-center text-ds-success font-semibold text-sm mb-2"
+              >
+                {t('stats.newBest')}
+              </div>
+            )}
           </div>
 
           <SettingsPanel
@@ -456,6 +484,10 @@ function SomersetPageContent() {
           <GameFooter className={`${gameTheme.somerset.footer} px-4 py-2.5`}>
             <ErrorAlert message={error ?? hintError} onRetry={retry} />
             <div className="flex gap-2 items-center flex-wrap">
+              <div data-testid="somerset-stats-panel" className="w-full text-game-text-muted text-xs">
+                {t('stats.winRate', { rate: somersetWinRate(stats) })} ({stats.wins}/{stats.plays})
+                {stats.fewestMoves !== null && <> · {t('stats.fewestMoves', { moves: stats.fewestMoves })}</>}
+              </div>
               {isPlaying && (
                 <div data-tutorial="somerset-controls">
                   <button

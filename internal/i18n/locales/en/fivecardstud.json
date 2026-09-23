@@ -27,7 +27,7 @@
   "tableSizeRequired": "Table size is required (2-6).",
   "invalidTableSize": "Invalid table size: {{val}}. Please enter 2-6.",
   "outputTitle": "Five Card Stud",
-  "tournamentLine": "Tournament hand #{{hand}} Ante:{{ante}} BringIn:{{bringIn}} (level-up every {{levelup}} hands)",
+  "tournamentLine": "Tournament hand #{{hand}} Ante:{{ante}} BringIn:{{bringIn}} (ante level {{level}}, next level in {{remaining}} hands; level-up every {{levelup}} hands)",
   "rebuyLine": "Rebuy: {{chips}} chips (max {{max}}, through hand {{period}})",
   "addonLine": "Add-on: {{chips}} chips (offered after hand {{after}})",
   "tableMax": "Table: {{n}}-max",
@@ -58,5 +58,18 @@
   "helpExampleFold": "  f                    fold this hand",
   "helpLog": "  l                    show the action log",
   "sokoRanking": "Hand ranking: {{list}} (the bracketed four-card hands are Soko's own, sitting between One Pair and Two Pair)",
-  "sokoRankingInserted": "[{{name}}]"
+  "sokoRankingInserted": "[{{name}}]",
+  "log.postsAnte": "posts ante {{amount}}",
+  "log.bringsIn": "brings in {{amount}}",
+  "log.dealtThirdStreet": "dealt third street",
+  "log.dealtFourthStreet": "dealt fourth street",
+  "log.dealtFifthStreet": "dealt fifth street",
+  "log.showdown": "showdown",
+  "log.fold": "fold",
+  "log.check": "check",
+  "log.call": "call {{amount}}",
+  "log.bet": "bet {{amount}}",
+  "log.raise": "raise to {{amount}}",
+  "log.allIn": "all in {{amount}}",
+  "log.rebuy": "rebuy"
 }

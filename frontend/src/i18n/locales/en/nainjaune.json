@@ -12,6 +12,7 @@
   "seat": "{{name}}: {{chips}} chips, {{n}} card(s) worth {{pts}}",
   "opponentHandAriaLabel": "{{name}} holds {{n}} face-down card(s)",
   "played": "Played",
+  "runStopped": "stopped",
   "yourHand": "Your hand",
   "yourChips": "{{n}} chips",
   "yourPoints": "worth {{n}}",

@@ -392,8 +392,10 @@ func TestBigBen_ActionLogUsesZeroBasedIndices(t *testing.T) {
 
 	log := gc.GetActionLog()
 	require.Len(t, log, 2)
-	assert.Equal(t, "タブロー列1→文字盤1", log[0].Detail)
-	assert.Equal(t, "タブロー列2→タブロー列0", log[1].Detail)
+	assert.Equal(t, "bigben.log.move", log[0].DetailCode)
+	assert.Equal(t, map[string]string{"value1": "1", "value2": "1"}, log[0].DetailParams)
+	assert.Equal(t, "bigben.log.move", log[1].DetailCode)
+	assert.Equal(t, map[string]string{"value1": "2", "value2": "0"}, log[1].DetailParams)
 }
 
 func TestBigBen_JSONRoundTrip(t *testing.T) {

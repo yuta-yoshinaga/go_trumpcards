@@ -25,6 +25,9 @@ const betPhaseState: VideoPokerResponse = {
   handName: '',
   heldIndices: [false, false, false, false, false],
   variantName: 'jacksorbetter',
+  hands: 0,
+  winRate: 0,
+  net: 0,
   message: '',
 };
 
@@ -39,6 +42,9 @@ const drawPhaseState: VideoPokerResponse = {
   handName: '',
   heldIndices: [false, false, false, false, false],
   variantName: 'jacksorbetter',
+  hands: 0,
+  winRate: 0,
+  net: 0,
   message: '',
 };
 
@@ -55,6 +61,9 @@ const resultPhaseWin: VideoPokerResponse = {
   message: 'Jacks or Better! You win!',
   messageCode: 'videopoker.result.win',
   variantName: 'jacksorbetter',
+  hands: 0,
+  winRate: 0,
+  net: 0,
   messageParams: { handName: 'Jacks or Better', payout: '1' },
 };
 
@@ -70,6 +79,9 @@ const resultPhaseLose: VideoPokerResponse = {
   heldIndices: [false, false, false, false, false],
   message: 'No winning hand.',
   variantName: 'jacksorbetter',
+  hands: 0,
+  winRate: 0,
+  net: 0,
   messageCode: 'videopoker.result.lose',
 };
 

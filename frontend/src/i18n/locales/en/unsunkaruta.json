@@ -37,6 +37,7 @@
   "dealerBadge": "Dealer",
   "mustFollow": "Declared - follow the led suit (anything goes if you are void).",
   "canDeclare": "You lead. \"Play and declare\" makes this trick must-follow for everyone.",
+  "roundSuitMark": "Round suit: 1 is the strongest rank in this suit",
   "playButton": "Play",
   "declareButton": "Play and declare",
   "nextTrick": "Next trick",

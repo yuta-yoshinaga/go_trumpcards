@@ -270,7 +270,14 @@ func (p *Pineapple) continueReset() error {
 
 // postBlinds ブラインド投入
 func (p *Pineapple) postBlinds() {
-	postBlindsFor(p.players, p.dealerIdx, p.config.SmallBlind, p.config.BigBlind, &p.pot, &p.lastBet, p.actedFlags, p)
+	postBlindsFor(p.players, p.dealerIdx, p.config.SmallBlind, p.config.BigBlind, &p.pot, &p.lastBet, p.actedFlags,
+		func(playerIdx int, label string, amount int) {
+			code := "pineapple.log.smallBlind"
+			if label == "big blind" {
+				code = "pineapple.log.bigBlind"
+			}
+			p.appendLog(playerIdx, "blind", code, map[string]string{"amount": fmt.Sprint(amount)}, nil)
+		})
 }
 
 // PlayerAction 人間プレイヤーのアクション実行
@@ -357,7 +364,7 @@ func (p *Pineapple) DiscardCards(cardIdxs []int) error {
 	sort.Sort(sort.Reverse(sort.IntSlice(sorted)))
 	for _, idx := range sorted {
 		p.removeCard(humanIdx, idx)
-		p.appendLog(humanIdx, "discard", "discard", nil)
+		p.appendLog(humanIdx, "discard", "pineapple.log.discard", nil, nil)
 	}
 
 	if pl.GetCardsSize() <= 2 {
@@ -411,7 +418,7 @@ func (p *Pineapple) startBettingAfterDiscard() {
 		if card := p.trumpCards.DrawCard(); card != nil {
 			p.communityCards = append(p.communityCards, card)
 		}
-		p.appendLog(-1, "deal", "dealt turn", p.communityCards[3:])
+		p.appendLog(-1, "deal", "pineapple.log.dealtTurn", nil, p.communityCards[3:])
 	} else {
 		p.phase = PineapplePhaseFlop
 	}
@@ -551,7 +558,7 @@ func (p *Pineapple) advancePhase() {
 				p.communityCards = append(p.communityCards, card)
 			}
 		}
-		p.appendLog(-1, "deal", "dealt flop", p.communityCards)
+		p.appendLog(-1, "deal", "pineapple.log.dealtFlop", nil, p.communityCards)
 		if p.discardAfterFlopBetting {
 			// Crazy Pineapple: ディスカードはフロップベッティング後。
 			// ここではフロップベッティングを開始する。
@@ -572,17 +579,17 @@ func (p *Pineapple) advancePhase() {
 		if card != nil {
 			p.communityCards = append(p.communityCards, card)
 		}
-		p.appendLog(-1, "deal", "dealt turn", p.communityCards[3:])
+		p.appendLog(-1, "deal", "pineapple.log.dealtTurn", nil, p.communityCards[3:])
 	case PineapplePhaseTurn:
 		p.phase = PineapplePhaseRiver
 		card := p.trumpCards.DrawCard()
 		if card != nil {
 			p.communityCards = append(p.communityCards, card)
 		}
-		p.appendLog(-1, "deal", "dealt river", p.communityCards[4:])
+		p.appendLog(-1, "deal", "pineapple.log.dealtRiver", nil, p.communityCards[4:])
 	case PineapplePhaseRiver:
 		p.phase = PineapplePhaseShowdown
-		p.appendLog(-1, "showdown", "showdown", nil)
+		p.appendLog(-1, "showdown", "pineapple.log.showdown", nil, nil)
 		p.resolveShowdown()
 		return
 	}
@@ -633,7 +640,7 @@ func (p *Pineapple) enterDiscardPhase() {
 		for pl.GetCardsSize() > 2 {
 			discardIdx := p.cpuDiscard(i)
 			p.removeCard(i, discardIdx)
-			p.appendLog(i, "discard", "discard", nil)
+			p.appendLog(i, "discard", "pineapple.log.discard", nil, nil)
 		}
 		p.discardDone[i] = true
 	}
@@ -832,8 +839,7 @@ type PineappleDiscardPreview struct {
 // 「3枚のうちどれを捨てるか」を横並びで比べられるようにするためのもの (#4686)。
 //
 // **ボードを見て役を名乗れるときしか返さない。**
-//   - プレーンな Pineapple のディスカードはフロップ前なので nil。残る2枚だけでは
-//     役が決まらない。代わりにスーテッド/コネクターの手掛かりが出る (#4685)。
+//   - コミュニティカードが3枚未満のときは nil を返す。
 //   - Irish Poker は2枚捨てなので「1枚捨てたら残る手」の前提が成り立たず nil。
 //
 // 判定は CPU の捨て方 (cpuDiscard) と同じ bestRankWithBoard を通す。別実装に
@@ -994,7 +1000,7 @@ func (p *Pineapple) Rebuy() error {
 		if pl.GetIsHuman() && pl.GetChips() <= 0 && p.rebuyCounts[i] < p.config.RebuyMaxCount {
 			pl.AddChips(p.config.RebuyChips)
 			p.rebuyCounts[i]++
-			p.appendLog(i, "rebuy", "rebuy", nil)
+			p.appendLog(i, "rebuy", "pineapple.log.rebuy", nil, nil)
 			break
 		}
 	}
@@ -1198,18 +1204,23 @@ func (p *Pineapple) GetDiscardDone() []bool {
 func (p *Pineapple) logAction(playerIdx, action, amount int) {
 	switch action {
 	case PineappleActionFold:
-		p.appendLog(playerIdx, "fold", "fold", nil)
+		p.appendLog(playerIdx, "fold", "pineapple.log.fold", nil, nil)
 	case PineappleActionCheck:
-		p.appendLog(playerIdx, "check", "check", nil)
+		p.appendLog(playerIdx, "check", "pineapple.log.check", nil, nil)
 	case PineappleActionCall:
-		p.appendLog(playerIdx, "call", fmt.Sprintf("call %d", p.players[playerIdx].GetCurrentBet()), nil)
+		p.appendLog(playerIdx, "call", "pineapple.log.call", map[string]string{"amount": fmt.Sprint(p.players[playerIdx].GetCurrentBet())}, nil)
 	case PineappleActionBet:
-		p.appendLog(playerIdx, "bet", fmt.Sprintf("bet %d", amount), nil)
+		p.appendLog(playerIdx, "bet", "pineapple.log.bet", map[string]string{"amount": fmt.Sprint(amount)}, nil)
 	case PineappleActionRaise:
-		p.appendLog(playerIdx, "raise", fmt.Sprintf("raise to %d", amount), nil)
+		p.appendLog(playerIdx, "raise", "pineapple.log.raise", map[string]string{"amount": fmt.Sprint(amount)}, nil)
 	case PineappleActionAllIn:
-		p.appendLog(playerIdx, "allin", fmt.Sprintf("all in %d", p.players[playerIdx].GetCurrentBet()), nil)
+		p.appendLog(playerIdx, "allin", "pineapple.log.allIn", map[string]string{"amount": fmt.Sprint(p.players[playerIdx].GetCurrentBet())}, nil)
 	}
+}
+
+// appendLog records a Pineapple action with a locale-independent detail code.
+func (p *Pineapple) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	p.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // pineappleJSON is the JSON wire format for Pineapple.

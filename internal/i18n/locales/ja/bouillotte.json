@@ -6,7 +6,7 @@
   "helpSetAnte": "  sa <n>                    アンティ額",
   "helpSetChips": "  sc <n>                    初期チップ",
   "helpSetRounds": "  st <n>                    実施ラウンド数",
-  "roundLine": "ラウンド: {{round}}  ポット: {{pot}}  アンティ: {{ante}}",
+  "roundLine": "ラウンド: {{round}} / {{total}}  ポット: {{pot}}  アンティ: {{ante}}",
   "retourneLine": "ルトゥルヌ（共有カード）: {{card}}",
   "playerLine": "{{name}}  チップ {{chips}}  賭け {{bet}}  [{{status}}]",
   "statusOut": "脱落",
@@ -32,10 +32,16 @@
   "actionRaise": "レイズ",
   "actionFold": "フォールド",
   "hintNone": "ヒントはありません。",
-  "hint": "[HINT: {{action}}（{{reason}}）]",
+  "hint": "[ヒント: {{action}}（{{reason}}）]",
   "hintReasonStrongHand": "強い手 — 攻める価値あり",
   "hintReasonMediumHand": "そこそこの手 — 様子を見てコール",
   "hintReasonWeakHand": "弱い手 — 降りるのが無難",
   "helpExampleCall": "  c                         現在のベットにコールする",
-  "helpHint": "  h                         助言を表示"
+  "helpHint": "  h                         助言を表示",
+  "log.deal": "ラウンド{{round}}: アンティ{{ante}}、ポット{{pot}}、ルトゥルヌを表向きにしました",
+  "log.call": "{{player}}が{{amount}}をコールしました (ポット{{pot}})",
+  "log.raise": "{{player}}が{{newBet}}までレイズし、{{amount}}を支払いました (ポット{{pot}})",
+  "log.fold": "{{player}}がフォールドしました",
+  "log.win": "{{player}}がポット{{pot}}を獲得しました",
+  "log.gameEnd": "{{player}}がゲームに勝利しました"
 }

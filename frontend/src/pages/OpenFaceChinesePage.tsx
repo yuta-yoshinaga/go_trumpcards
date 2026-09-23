@@ -4,6 +4,7 @@ import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
+import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
@@ -30,6 +31,7 @@ import { formatOpenfacechineseState } from '../utils/cli/formatters/openfacechin
 import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
 import { ofcPlacementFouls } from '../utils/ofcFoulRisk';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Row indices accepted by the backend `place` command. */
 const ROW_FRONT = 0;
@@ -172,6 +174,12 @@ function OpenFaceChinesePageContent() {
     exec('reset');
   };
 
+  const difficultyOptions = [
+    { value: '0', label: t('settings.difficulty.easy') },
+    { value: '1', label: t('settings.difficulty.normal') },
+    { value: '2', label: t('settings.difficulty.hard') },
+  ];
+
   const handlePlace = (row: number) => exec('place', { row });
   const handleNext = () => exec('nextround');
   const handleHint = () => exec('hint');
@@ -252,6 +260,34 @@ function OpenFaceChinesePageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
+      <SettingsPanel
+        title={tc('settings.title')}
+        groups={[
+          {
+            items: [
+              {
+                type: 'select',
+                id: 'ofc-difficulty',
+                label: t('settings.cpuDifficulty'),
+                value: String(state.config.cpuDifficulty),
+                options: difficultyOptions,
+                onSelect: (v: string) =>
+                  exec('reset', { config: { cpuDifficulty: Number(v), playerCount: state.config.playerCount } }),
+              },
+              {
+                type: 'select',
+                id: 'ofc-player-count',
+                label: t('settings.playerCount'),
+                value: String(state.config.playerCount),
+                options: [2, 3, 4].map((n) => ({ value: String(n), label: String(n) })),
+                onSelect: (v: string) =>
+                  exec('reset', { config: { cpuDifficulty: state.config.cpuDifficulty, playerCount: Number(v) } }),
+              },
+              hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
+            ],
+          },
+        ]}
+      />
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -282,7 +318,7 @@ function OpenFaceChinesePageContent() {
                 <span className="text-ds-text-primary text-sm">{t('placePrompt')}</span>
                 {/* 反則になる段は色だけでなく文言でも知らせる (色は SR に届かない)。 */}
                 <span
-                  className={anyFoulRisk ? 'text-ds-danger text-xs' : 'sr-only'}
+                  className={anyFoulRisk ? 'text-ds-error text-xs' : 'sr-only'}
                   role="status"
                   aria-live="polite"
                   data-testid="ofc-foul-risk-warning"
@@ -299,7 +335,7 @@ function OpenFaceChinesePageContent() {
                 <div className="flex flex-wrap justify-center gap-2 mt-1">
                   <button
                     type="button"
-                    className={[btnSuccess, foulRisk.front ? 'ring-2 ring-ds-danger' : ''].filter(Boolean).join(' ')}
+                    className={[btnSuccess, foulRisk.front ? 'ring-2 ring-ds-error' : ''].filter(Boolean).join(' ')}
                     onClick={() => handlePlace(ROW_FRONT)}
                     disabled={loading || frontFull}
                     aria-disabled={frontFull}
@@ -310,7 +346,7 @@ function OpenFaceChinesePageContent() {
                   </button>
                   <button
                     type="button"
-                    className={[btnSuccess, foulRisk.middle ? 'ring-2 ring-ds-danger' : ''].filter(Boolean).join(' ')}
+                    className={[btnSuccess, foulRisk.middle ? 'ring-2 ring-ds-error' : ''].filter(Boolean).join(' ')}
                     onClick={() => handlePlace(ROW_MIDDLE)}
                     disabled={loading || middleFull}
                     aria-disabled={middleFull}
@@ -321,7 +357,7 @@ function OpenFaceChinesePageContent() {
                   </button>
                   <button
                     type="button"
-                    className={[btnSuccess, foulRisk.back ? 'ring-2 ring-ds-danger' : ''].filter(Boolean).join(' ')}
+                    className={[btnSuccess, foulRisk.back ? 'ring-2 ring-ds-error' : ''].filter(Boolean).join(' ')}
                     onClick={() => handlePlace(ROW_BACK)}
                     disabled={loading || backFull}
                     aria-disabled={backFull}
@@ -334,14 +370,6 @@ function OpenFaceChinesePageContent() {
                     {t('hint.button')}
                   </button>
                 </div>
-                <label className="flex items-center gap-1 text-ds-text-primary text-xs justify-center mt-2 cursor-pointer min-h-[44px]">
-                  <input
-                    type="checkbox"
-                    checked={frontendHintEnabled}
-                    onChange={(e) => setFrontendHintEnabled(e.target.checked)}
-                  />
-                  {tc('hint.toggle', { ns: 'tutorial' })}
-                </label>
                 <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
                 {state.hint && isRequestedHint(state) && (
                   <p className="text-center text-sm text-ds-accent mt-1" data-testid="ofc-hint">

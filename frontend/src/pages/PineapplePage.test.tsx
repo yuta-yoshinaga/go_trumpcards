@@ -130,6 +130,11 @@ const discardState: PineappleResponse = {
   phase: 8,
   isDiscardPhase: true,
   discardDone: [false, true, true, true],
+  discardPreviews: [
+    { cardIdx: 0, handRank: 1, recommended: true },
+    { cardIdx: 1, handRank: 1, recommended: true },
+    { cardIdx: 2, handRank: 1, recommended: true },
+  ],
   communityCards: [
     { design: 'SPADE', value: 10 },
     { design: 'HEART', value: 5 },
@@ -421,6 +426,11 @@ describe('PineapplePage', () => {
         { design: 'DIAMOND', value: 8 },
       ],
       discardDone: [false, true, true, true],
+      discardPreviews: [
+        { cardIdx: 0, handRank: 1, recommended: false },
+        { cardIdx: 1, handRank: 1, recommended: false },
+        { cardIdx: 2, handRank: 1, recommended: true },
+      ],
     };
     mockIrishExec.mockResolvedValue(irishDiscardState);
     renderWithProviders(<PineapplePage variant="irishpoker" />);
@@ -462,6 +472,11 @@ describe('PineapplePage', () => {
         { design: 'DIAMOND', value: 8 },
       ],
       discardDone: [false, true, true, true],
+      discardPreviews: [
+        { cardIdx: 0, handRank: 1, recommended: true },
+        { cardIdx: 1, handRank: 1, recommended: true },
+        { cardIdx: 2, handRank: 1, recommended: true },
+      ],
     };
     mockIrishExec.mockResolvedValue(irishDiscardState);
     renderWithProviders(<PineapplePage variant="irishpoker" />);
@@ -505,6 +520,7 @@ describe('PineapplePage', () => {
         { design: 'DIAMOND', value: 8 },
       ],
       discardDone: [false, true, true, true],
+      discardPreviews: [],
     };
     mockIrishExec.mockResolvedValue(irishDiscardState);
     renderWithProviders(<PineapplePage variant="irishpoker" />);
@@ -537,6 +553,11 @@ describe('PineapplePage', () => {
         { design: 'DIAMOND', value: 8 },
       ],
       discardDone: [false, true, true, true],
+      discardPreviews: [
+        { cardIdx: 0, handRank: 1, recommended: false },
+        { cardIdx: 1, handRank: 1, recommended: false },
+        { cardIdx: 2, handRank: 1, recommended: true },
+      ],
     };
     mockIrishExec.mockResolvedValue(irishDiscardState);
     renderWithProviders(<PineapplePage variant="irishpoker" />);
@@ -577,6 +598,11 @@ describe('PineapplePage', () => {
         { design: 'DIAMOND', value: 8 },
       ],
       discardDone: [false, true, true, true],
+      discardPreviews: [
+        { cardIdx: 0, handRank: 1, recommended: false },
+        { cardIdx: 1, handRank: 1, recommended: false },
+        { cardIdx: 2, handRank: 3, recommended: true },
+      ],
     };
     mockIrishExec.mockResolvedValue(irishDiscardState);
     renderWithProviders(<PineapplePage variant="irishpoker" />);
@@ -784,6 +810,11 @@ describe('PineapplePage', () => {
         { design: 'DIAMOND', value: 8 },
       ],
       discardDone: [false, true, true, true],
+      discardPreviews: [
+        { cardIdx: 0, handRank: 1, recommended: false },
+        { cardIdx: 1, handRank: 1, recommended: false },
+        { cardIdx: 2, handRank: 3, recommended: true },
+      ],
     };
     mockCrazyExec.mockResolvedValue(crazyDiscardState);
     renderWithProviders(<PineapplePage variant="crazypineapple" />);
@@ -820,11 +851,35 @@ describe('PineapplePage', () => {
         { design: 'DIAMOND', value: 8 },
       ],
       discardDone: [false, true, true, true],
+      discardPreviews: [
+        { cardIdx: 0, handRank: 1, recommended: true },
+        { cardIdx: 1, handRank: 1, recommended: true },
+        { cardIdx: 2, handRank: 1, recommended: true },
+      ],
     };
     mockCrazyExec.mockResolvedValue(crazyDiscardState);
     renderWithProviders(<PineapplePage variant="crazypineapple" />);
     await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
     expect(screen.getAllByTestId('cp-discard-recommended')).toHaveLength(3);
+  });
+
+  it('uses the server recommended flag for Crazy Pineapple badges', async () => {
+    const serverRecommendationState: PineappleResponse = {
+      ...discardState,
+      discardPreviews: [
+        { cardIdx: 0, handRank: 3, recommended: false },
+        { cardIdx: 1, handRank: 1, recommended: true },
+        { cardIdx: 2, handRank: 9, recommended: false },
+      ],
+    };
+    mockCrazyExec.mockResolvedValue(serverRecommendationState);
+    renderWithProviders(<PineapplePage variant="crazypineapple" />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    const labels = screen.getAllByTestId('cp-discard-candidate');
+    expect(screen.getAllByTestId('cp-discard-recommended')).toHaveLength(1);
+    expect(labels[1].previousElementSibling).toHaveClass('ring-2', 'ring-ds-info');
+    expect(labels[0].previousElementSibling).not.toHaveClass('ring-ds-info');
+    expect(labels[2].previousElementSibling).not.toHaveClass('ring-ds-info');
   });
 
   it('shows no Crazy Pineapple recommended badge when the board is too small', async () => {
@@ -845,6 +900,7 @@ describe('PineapplePage', () => {
       ],
       communityCards: [],
       discardDone: [false, true, true, true],
+      discardPreviews: [],
     };
     mockCrazyExec.mockResolvedValue(crazyNoBoardState);
     renderWithProviders(<PineapplePage variant="crazypineapple" />);
@@ -852,11 +908,12 @@ describe('PineapplePage', () => {
     expect(screen.queryByTestId('cp-discard-recommended')).not.toBeInTheDocument();
   });
 
-  it('does not show a recommended badge for the plain Pineapple variant', async () => {
+  it('shows candidate labels and a recommended badge for the plain Pineapple variant with a board', async () => {
     mockExec.mockResolvedValue(discardState);
     renderWithProviders(<PineapplePage />);
     await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
-    expect(screen.queryByTestId('cp-discard-recommended')).not.toBeInTheDocument();
+    expect(screen.getAllByTestId('cp-discard-candidate').length).toBeGreaterThan(0);
+    expect(screen.getAllByTestId('cp-discard-recommended').length).toBeGreaterThan(0);
   });
 
   it('omits Crazy Pineapple candidate labels when the board is too small to evaluate', async () => {
@@ -877,6 +934,7 @@ describe('PineapplePage', () => {
       ],
       communityCards: [], // keep(2) + board(0) < 5 → no hand can be evaluated
       discardDone: [false, true, true, true],
+      discardPreviews: [],
     };
     mockCrazyExec.mockResolvedValue(crazyNoBoardState);
     renderWithProviders(<PineapplePage variant="crazypineapple" />);
@@ -898,49 +956,6 @@ describe('PineapplePage', () => {
     const cardButtons = screen.getAllByRole('button').filter((btn) => btn.getAttribute('aria-pressed') !== null);
     fireEvent.click(cardButtons[0]);
     expect(screen.queryByTestId('irishpoker-discard-preview')).not.toBeInTheDocument();
-  });
-
-  it('annotates each Pineapple hole card with the keep-2 feature during discard', async () => {
-    const pineappleDiscardState: PineappleResponse = {
-      ...discardState,
-      players: [
-        humanPlayer({
-          cards: [
-            { design: 'SPADE', value: 5 },
-            { design: 'SPADE', value: 9 },
-            { design: 'HEART', value: 5 },
-          ],
-        }),
-        cpuPlayer(1),
-        cpuPlayer(2),
-        cpuPlayer(3),
-      ],
-    };
-    mockExec.mockResolvedValue(pineappleDiscardState);
-    renderWithProviders(<PineapplePage />);
-    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
-    const notes = screen.getAllByTestId('pn-discard-keep-feature');
-    expect(notes).toHaveLength(3); // one per hole card
-    // Discard S5 → keep S9,H5: no pair/suited/connector → high card.
-    expect(notes[0]).toHaveTextContent('残り2枚: ハイカード');
-    // Discard S9 → keep S5,H5: a pair.
-    expect(notes[1]).toHaveTextContent('残り2枚: ペア');
-    // Discard H5 → keep S5,S9: same suit but not adjacent → suited.
-    expect(notes[2]).toHaveTextContent('残り2枚: スーテッド');
-  });
-
-  it('does not show Pineapple keep-feature notes outside the discard phase', async () => {
-    mockExec.mockResolvedValue(preFlopState);
-    renderWithProviders(<PineapplePage />);
-    await waitFor(() => expect(screen.getByText('あなたの手札')).toBeInTheDocument());
-    expect(screen.queryByTestId('pn-discard-keep-feature')).not.toBeInTheDocument();
-  });
-
-  it('does not show Pineapple keep-feature notes for the Crazy Pineapple variant', async () => {
-    mockCrazyExec.mockResolvedValue({ ...discardState, initialDealCount: 3 });
-    renderWithProviders(<PineapplePage variant="crazypineapple" />);
-    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
-    expect(screen.queryByTestId('pn-discard-keep-feature')).not.toBeInTheDocument();
   });
 
   it('cancels the discard confirm step and returns to selection', async () => {
@@ -1060,6 +1075,11 @@ describe('PineapplePage', () => {
         { design: 'DIAMOND', value: 8 },
       ],
       discardDone: [false, true, true, true],
+      discardPreviews: [
+        { cardIdx: 0, handRank: 1, recommended: false },
+        { cardIdx: 1, handRank: 1, recommended: false },
+        { cardIdx: 2, handRank: 3, recommended: true },
+      ],
     };
     mockIrishExec.mockResolvedValue(st);
     renderWithProviders(<PineapplePage variant="irishpoker" />);
@@ -1128,6 +1148,11 @@ describe('PineapplePage', () => {
         { design: 'DIAMOND', value: 8 },
       ],
       discardDone: [false, true, true, true],
+      discardPreviews: [
+        { cardIdx: 0, handRank: 1, recommended: false },
+        { cardIdx: 1, handRank: 1, recommended: false },
+        { cardIdx: 2, handRank: 3, recommended: true },
+      ],
     };
     mockCrazyExec.mockResolvedValue(crazyDiscardState);
     renderWithProviders(<PineapplePage variant="crazypineapple" />);
@@ -1155,34 +1180,6 @@ describe('PineapplePage', () => {
     // A key looked up in the wrong namespace comes back as the identifier itself,
     // which would still satisfy every assertion above except this one.
     expect(live2.textContent).not.toContain('cpPreviewAria');
-  });
-
-  it('announces the keep-2 feature of the card the player selects to discard', async () => {
-    const pineappleDiscardState: PineappleResponse = {
-      ...discardState,
-      players: [
-        humanPlayer({
-          cards: [
-            { design: 'SPADE', value: 5 },
-            { design: 'SPADE', value: 9 },
-            { design: 'HEART', value: 5 },
-          ],
-        }),
-        cpuPlayer(1),
-        cpuPlayer(2),
-        cpuPlayer(3),
-      ],
-    };
-    mockExec.mockResolvedValue(pineappleDiscardState);
-    renderWithProviders(<PineapplePage />);
-    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
-    // The per-card notes are visual only; selecting one must also say what the
-    // choice leaves behind, or the whole comparison is unavailable by ear.
-    const cardButtons = screen.getAllByRole('button').filter((btn) => btn.getAttribute('aria-pressed') !== null);
-    fireEvent.click(cardButtons[1]); // discard S9 -> keep S5,H5 = a pair
-    const live = await screen.findByTestId('pn-keep-feature-announce');
-    expect(live).toHaveTextContent('ペア');
-    expect(live).toHaveClass('sr-only');
   });
 
   // 複数枚のカードを捨てるゲーム（Irish Poker 等）の場合のみ、選択枚数カウントを表示する。

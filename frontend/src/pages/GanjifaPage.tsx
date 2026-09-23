@@ -129,6 +129,7 @@ function GanjifaPageContent() {
   const canPlay = isPlayPhase && isHumanTurn;
   const trumpLabel = formatGanjifaSuit(state.trumpSuit);
   const trumpIsStrong = isGanjifaStrongSuit(state.trumpSuit);
+  const dealer = state.players[state.dealerIdx];
 
   const handleManualReset = () => {
     hideActionLog();
@@ -190,6 +191,15 @@ function GanjifaPageContent() {
               <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
               <span className="mr-4">{t('trump', { suit: trumpLabel })}</span>
               <span>{t('target', { rounds: state.config.targetRounds })}</span>
+            </div>
+
+            {dealer && (
+              <div className="text-center text-ds-text-muted text-sm mb-1" data-testid="ganjifa-dealer">
+                {t('dealer', { name: playerName(dealer.id, dealer.isHuman) })}
+              </div>
+            )}
+            <div className="text-center text-ds-text-muted text-sm mb-2" data-testid="ganjifa-trump-auto-note">
+              {t('trumpAutoNote')}
             </div>
 
             {/*

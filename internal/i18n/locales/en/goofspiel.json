@@ -1,4 +1,11 @@
 {
+  "log.start": "Started Goofspiel ({{players}} players)",
+  "log.prize": "Prize card {{rank}} was revealed",
+  "log.tieCarry": "Tie. Prize card {{rank}} carries over",
+  "log.tieDiscard": "Tie. Prize card {{rank}} was discarded",
+  "log.win": "Scored {{points}} points",
+  "log.result": "Finished with the highest score: {{points}} points",
+  "log.giveup": "Gave up",
   "helpTitle": "Goofspiel (GOPS)",
   "helpBid": "  b <idx>              Bid the card at idx, face down",
   "helpNext": "  n                    Turn the next prize card",

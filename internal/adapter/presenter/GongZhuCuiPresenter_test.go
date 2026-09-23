@@ -66,7 +66,7 @@ func TestGongZhuCuiPresenter_Output(t *testing.T) {
 			domain.NewCard(domain.CardDesignDiamond, 8, false), // plain -> not shown
 		})
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "獲得: SPADE 12 HEART 5")
+		assert.Contains(t, result, "獲得: ♠12 ♥5")
 		// Only the one capturing player gets a line; the others took nothing.
 		assert.Equal(t, 1, strings.Count(result, "獲得:"))
 	})
@@ -117,14 +117,14 @@ func TestGongZhuCuiPresenter_HintOutput(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 11, false))
 		m.On("GetHint").Return(&domain.GongZhuHint{CardIndices: []int{0}, Reason: "expose_sheep"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 
 	t.Run("expose none hint (empty indices)", func(t *testing.T) {
 		m, _ := setupGongZhuCuiMockWithPlayers()
 		m.On("GetHint").Return(&domain.GongZhuHint{CardIndices: []int{}, Reason: "expose_none"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 
 	t.Run("no hint", func(t *testing.T) {
@@ -140,7 +140,7 @@ func TestGongZhuCuiPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockGongZhuGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "plays ♠5"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
 	m.On("GetPlayer", mock.Anything).Return(domain.NewGongZhuPlayer(true)).Maybe()

@@ -105,6 +105,35 @@ func TestCarioca_ValidateContractSlot_UnknownKind(t *testing.T) {
 	}
 }
 
+func TestCarioca_ContractSlotErrorsUseSeparateCodes(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		round    int
+		cards    []*Card
+		indices  [][]int
+		wantCode string
+	}{
+		{"set", 1, []*Card{cariocaCard(1, 5), cariocaCard(2, 6), cariocaCard(3, 7), cariocaCard(4, 8), cariocaCard(1, 9), cariocaCard(2, 10)}, [][]int{{0, 1, 2}, {3, 4, 5}}, "carioca.errContractSlotSet"},
+		{"run", 2, []*Card{cariocaCard(1, 5), cariocaCard(2, 5), cariocaCard(3, 5), cariocaCard(1, 5), cariocaCard(1, 7), cariocaCard(1, 9), cariocaCard(1, 11)}, [][]int{{0, 1, 2}, {3, 4, 5, 6}}, "carioca.errContractSlotRun"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			g := helperCariocaHand(t)
+			g.SetRoundNumber(tc.round)
+			g.SetPhase(CariocaPhasePlay)
+			p := g.GetPlayer(0)
+			cariocaSetHand(p, tc.cards)
+			err := g.PlayerMeldContract(tc.indices)
+			if err == nil {
+				t.Fatal("expected invalid contract slot error")
+			}
+			code, _ := ErrorMessageCode(err)
+			if code != tc.wantCode {
+				t.Fatalf("code = %q, want %q", code, tc.wantCode)
+			}
+		})
+	}
+}
+
 // --- canAddToCariocaMeld exhaustive ---
 
 func TestCarioca_CanAddToMeld_Extended(t *testing.T) {

@@ -347,7 +347,7 @@ func (s *SixBidSolo) beginHand() {
 	s.bidIdx = (s.dealerIdx + 1) % SixBidSoloPlayerCnt
 	s.currentIdx = s.bidIdx
 	s.trickLeader = s.bidIdx
-	s.addLog(-1, "deal", "hand "+strconv.Itoa(s.handNumber), nil)
+	s.addLog(-1, "deal", "sixbidsolo.log.deal", map[string]string{"hand": strconv.Itoa(s.handNumber)}, nil)
 }
 
 // dealRound は 4 → 3 → ウィドウ 3 → 4 の順に配る。
@@ -445,7 +445,7 @@ func (s *SixBidSolo) Bid(player int, kind SixBidSoloBidKind) error {
 	b := &SixBidSoloBid{Player: player, Kind: kind}
 	s.bids = append(s.bids, b)
 	s.highBid = b
-	s.addLog(player, "bid", sixBidSoloBidName(kind), nil)
+	s.addSixBidSoloBidLog(player, kind)
 	s.advanceBid()
 	return nil
 }
@@ -457,7 +457,7 @@ func (s *SixBidSolo) PassBid(player int) error {
 	}
 	s.passed[player] = true
 	s.bids = append(s.bids, &SixBidSoloBid{Player: player, Kind: SixBidSoloBidPass})
-	s.addLog(player, "pass", "", nil)
+	s.addLog(player, "pass", "sixbidsolo.log.pass", nil, nil)
 	s.advanceBid()
 	return nil
 }
@@ -530,7 +530,7 @@ func (s *SixBidSolo) Declare(player, suit int, called *Card) error {
 			return err
 		}
 	}
-	s.addLog(player, "declare", sixBidSoloBidName(s.highBid.Kind)+" "+sixBidSoloSuitName(suit), nil)
+	s.addSixBidSoloDeclareLog(player, s.highBid.Kind, suit)
 	s.startPlay()
 	return nil
 }
@@ -679,7 +679,7 @@ func (s *SixBidSolo) PlayCard(player, idx int) error {
 	c := p.GetCard(idx)
 	p.RemoveCard(idx)
 	s.trick = append(s.trick, c)
-	s.addLog(player, "play", "", []*Card{c})
+	s.addLog(player, "play", "sixbidsolo.log.play", nil, []*Card{c})
 
 	// **公開の条件は「他の 2 人が 1 枚ずつ出したら」。**単に 2 枚出たら、
 	// ではない。落札者がリードする配席もあるので、宣言者以外が何人打ったかを
@@ -725,7 +725,7 @@ func (s *SixBidSolo) resolveTrick() {
 	}
 	s.points[winner] += pts
 	s.tricksWon[winner]++
-	s.addLog(winner, "trickWin", strconv.Itoa(pts)+"pt", s.trick)
+	s.addLog(winner, "trickWin", "sixbidsolo.log.trickWin", map[string]string{"points": strconv.Itoa(pts)}, s.trick)
 
 	s.trick = make([]*Card, 0, SixBidSoloPlayerCnt)
 	s.trickNumber++
@@ -828,7 +828,7 @@ func (s *SixBidSolo) finishHand() {
 		Deltas:         deltas,
 	}
 	s.phase = SixBidSoloPhaseHandEnd
-	s.addLog(dec, "settle", strconv.Itoa(declarerPts)+"/"+strconv.Itoa(target), nil)
+	s.addLog(dec, "settle", "sixbidsolo.log.settle", map[string]string{"points": strconv.Itoa(declarerPts), "target": strconv.Itoa(target)}, nil)
 	s.checkGameEnd()
 }
 
@@ -1189,8 +1189,8 @@ func (s *SixBidSolo) SetConfig(c SixBidSoloConfig) { s.config = c }
 func (s *SixBidSolo) GetActionLog() []*ActionLogEntry { return s.actionLog }
 
 // addLog は棋譜を 1 件追加する。
-func (s *SixBidSolo) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	s.appendLogAt(0, playerIdx, actionType, detail, cards)
+func (s *SixBidSolo) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	s.appendLogCodeAt(0, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // sixBidSoloBidName はビッドの内部名を返す (棋譜用)。
@@ -1210,6 +1210,102 @@ func sixBidSoloBidName(k SixBidSoloBidKind) string {
 		return "callSolo"
 	}
 	return "pass"
+}
+
+func sixBidSoloBidLogCode(kind SixBidSoloBidKind) string {
+	switch kind {
+	case SixBidSoloBidSolo:
+		return "sixbidsolo.log.bidSolo"
+	case SixBidSoloBidHeartSolo:
+		return "sixbidsolo.log.bidHeartSolo"
+	case SixBidSoloBidMisere:
+		return "sixbidsolo.log.bidMisere"
+	case SixBidSoloBidGuarantee:
+		return "sixbidsolo.log.bidGuarantee"
+	case SixBidSoloBidSpreadMisere:
+		return "sixbidsolo.log.bidSpreadMisere"
+	default:
+		return "sixbidsolo.log.bidCallSolo"
+	}
+}
+
+func sixBidSoloDeclareLogCode(kind SixBidSoloBidKind, suit int) string {
+	switch kind {
+	case SixBidSoloBidSolo:
+		switch suit {
+		case CardDesignSpade:
+			return "sixbidsolo.log.declareSoloS"
+		case CardDesignClover:
+			return "sixbidsolo.log.declareSoloC"
+		case CardDesignHeart:
+			return "sixbidsolo.log.declareSoloH"
+		default:
+			return "sixbidsolo.log.declareSoloD"
+		}
+	case SixBidSoloBidHeartSolo:
+		switch suit {
+		case CardDesignSpade:
+			return "sixbidsolo.log.declareHeartSoloS"
+		case CardDesignClover:
+			return "sixbidsolo.log.declareHeartSoloC"
+		case CardDesignHeart:
+			return "sixbidsolo.log.declareHeartSoloH"
+		default:
+			return "sixbidsolo.log.declareHeartSoloD"
+		}
+	case SixBidSoloBidMisere:
+		switch suit {
+		case CardDesignSpade:
+			return "sixbidsolo.log.declareMisereS"
+		case CardDesignClover:
+			return "sixbidsolo.log.declareMisereC"
+		case CardDesignHeart:
+			return "sixbidsolo.log.declareMisereH"
+		default:
+			return "sixbidsolo.log.declareMisereD"
+		}
+	case SixBidSoloBidGuarantee:
+		switch suit {
+		case CardDesignSpade:
+			return "sixbidsolo.log.declareGuaranteeS"
+		case CardDesignClover:
+			return "sixbidsolo.log.declareGuaranteeC"
+		case CardDesignHeart:
+			return "sixbidsolo.log.declareGuaranteeH"
+		default:
+			return "sixbidsolo.log.declareGuaranteeD"
+		}
+	case SixBidSoloBidSpreadMisere:
+		switch suit {
+		case CardDesignSpade:
+			return "sixbidsolo.log.declareSpreadMisereS"
+		case CardDesignClover:
+			return "sixbidsolo.log.declareSpreadMisereC"
+		case CardDesignHeart:
+			return "sixbidsolo.log.declareSpreadMisereH"
+		default:
+			return "sixbidsolo.log.declareSpreadMisereD"
+		}
+	default:
+		switch suit {
+		case CardDesignSpade:
+			return "sixbidsolo.log.declareCallSoloS"
+		case CardDesignClover:
+			return "sixbidsolo.log.declareCallSoloC"
+		case CardDesignHeart:
+			return "sixbidsolo.log.declareCallSoloH"
+		default:
+			return "sixbidsolo.log.declareCallSoloD"
+		}
+	}
+}
+
+func (s *SixBidSolo) addSixBidSoloBidLog(player int, kind SixBidSoloBidKind) {
+	s.addLog(player, "bid", sixBidSoloBidLogCode(kind), nil, nil)
+}
+
+func (s *SixBidSolo) addSixBidSoloDeclareLog(player int, kind SixBidSoloBidKind, suit int) {
+	s.addLog(player, "declare", sixBidSoloDeclareLogCode(kind, suit), nil, nil)
 }
 
 // sixBidSoloSuitName はスートの内部名を返す (棋譜用)。

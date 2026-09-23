@@ -228,7 +228,7 @@ describe('FortressPage', () => {
   // 合法な移動先のリング表示 (#4799)。「選ぶまで光らない」側も踏まないと、
   // 常時全部を光らせる実装でも通ってしまう。
   describe('legal target highlighting', () => {
-    /** リングが付いた列の見出し (`#0` など)。ファンデーションは見出しを持たない。 */
+    /** リングが付いた列の見出し (`#0` など)。組札は見出しを持たない。 */
     const markedColumns = () =>
       [...document.querySelectorAll('[data-legal-target="true"]')]
         .map((el) => el.querySelector('[aria-hidden="true"]')?.textContent ?? '')
@@ -271,7 +271,7 @@ describe('FortressPage', () => {
       expect(document.querySelectorAll('[data-legal-target="true"]')).toHaveLength(13);
     });
 
-    // ファンデーションは A の上に同スートの 2 だけ。♠5 では光らない。
+    // 組札は A の上に同スートの 2 だけ。♠5 では光らない。
     it('marks a foundation only for the card that continues it', async () => {
       mockExec.mockResolvedValue(playingState);
       const { unmount } = renderWithProviders(<FortressPage />);
@@ -398,6 +398,59 @@ describe('FortressPage destination preview', () => {
     // **同じ要素**の中身が変わる (別の要素が現れるのではない) ことが読み上げの条件。
     await waitFor(() => expect(region).toHaveTextContent(/→/));
     expect(region.textContent).toBe('ヒントがあります: タブロー列1 → 組札');
+  });
+
+  describe('hint card highlighting', () => {
+    const hintedState: FortressResponse = {
+      ...playingState,
+      hint: { fromCol: 0, cardIndex: 1, toZone: 'tableau', toCol: 1 },
+    };
+
+    const renderHintedState = async () => {
+      mockExec.mockResolvedValue(playingState);
+      renderWithProviders(<FortressPage />);
+      await screen.findByRole('button', { name: '♠ 5' });
+      mockExec.mockResolvedValue(hintedState);
+      fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+      await waitFor(() => expect(screen.getByTestId('fortress-hint-live')).toHaveTextContent(/→/));
+    };
+
+    it('marks the hinted source card and the last card in the hinted tableau destination', async () => {
+      await renderHintedState();
+
+      const source = await screen.findByRole('button', { name: '♠ 5' });
+      const destination = screen.getByRole('button', { name: '♠ 6' });
+      expect(source.closest('[data-hint-from="true"]')).not.toBeNull();
+      expect(destination.closest('[data-hint-to="true"]')).not.toBeNull();
+    });
+
+    it('does not mark any card when no hint is available', async () => {
+      mockExec.mockResolvedValue(playingState);
+      renderWithProviders(<FortressPage />);
+
+      await screen.findByRole('button', { name: '♠ 5' });
+      expect(document.querySelectorAll('[data-hint-from], [data-hint-to]')).toHaveLength(0);
+    });
+
+    it('does not mark cards that are not part of the hinted move', async () => {
+      await renderHintedState();
+
+      const source = await screen.findByRole('button', { name: '♠ 5' });
+      const unrelated = screen.getByRole('button', { name: '♠ K' });
+      expect(source.closest('[data-hint-from="true"]')).not.toBeNull();
+      expect(unrelated).not.toHaveAttribute('data-hint-from');
+      expect(unrelated).not.toHaveAttribute('data-hint-to');
+    });
+
+    it('keeps the selected ring and hint ring visible together', async () => {
+      await renderHintedState();
+
+      const source = await screen.findByRole('button', { name: '♠ 5' });
+      fireEvent.click(source);
+      await waitFor(() => expect(source).toHaveAttribute('aria-pressed', 'true'));
+      expect(source.className).toContain('ring-ds-warning');
+      expect(source.closest('[data-hint-from="true"]')?.className).toContain('ring-ds-info');
+    });
   });
 
   // hover と選択で同じ集合を指す ── プレビューが嘘をつかないことの検証。

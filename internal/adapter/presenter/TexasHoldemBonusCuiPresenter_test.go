@@ -44,7 +44,7 @@ func TestTexasHoldemBonusCuiPresenter_Output_BetPhase(t *testing.T) {
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "チップ: 1000")
-	assert.Contains(t, result, "フェーズ: BET")
+	assert.Contains(t, result, "フェーズ: 賭け")
 }
 
 func TestTexasHoldemBonusCuiPresenter_Output_PreFlopPhase(t *testing.T) {
@@ -79,7 +79,7 @@ func TestTexasHoldemBonusCuiPresenter_Output_PreFlopPhase(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "フェーズ: PRE-FLOP")
+	assert.Contains(t, result, "フェーズ: プリフロップ")
 	assert.Contains(t, result, "PLAYER")
 	assert.Contains(t, result, "DEALER")
 	// Dealer cards hidden in pre-flop
@@ -122,7 +122,7 @@ func TestTexasHoldemBonusCuiPresenter_Output_FlopPhase(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "フェーズ: FLOP")
+	assert.Contains(t, result, "フェーズ: フロップ")
 	assert.Contains(t, result, "BOARD")
 }
 
@@ -164,7 +164,7 @@ func TestTexasHoldemBonusCuiPresenter_Output_EndPhase_PlayerWins(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "フェーズ: END")
+	assert.Contains(t, result, "フェーズ: 終了")
 	assert.Contains(t, result, "プレイヤーの勝ち")
 	assert.Contains(t, result, "合計払戻し: 600")
 }
@@ -317,7 +317,7 @@ func TestTexasHoldemBonusCuiPresenter_PhaseStr_Unknown(t *testing.T) {
 	m.On("GetGameEndFlag").Return(false).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "フェーズ: UNKNOWN")
+	assert.Contains(t, result, "フェーズ: 不明")
 }
 
 // **アクション中はアンテ額も実コストも画面のどこにも出ていなかった (#4698)。**

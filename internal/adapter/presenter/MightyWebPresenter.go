@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra5
+//go:build !js || !wasm || extra6
 
 package presenter
 
@@ -129,6 +129,9 @@ func (p *MightyWebPresenter) buildPlayersOutput(m interfaces.MightyGame) []*cont
 // buildMessage ゲーム結果メッセージを構築
 func (p *MightyWebPresenter) buildMessage(m interfaces.MightyGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if m.GetGameEndFlag() {

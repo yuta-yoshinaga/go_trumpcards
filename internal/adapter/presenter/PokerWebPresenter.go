@@ -58,7 +58,7 @@ func (pwp *PokerWebPresenter) buildOutput(p interfaces.PokerGame, lastErr error)
 				Probability: ho.Probability,
 			}
 		}
-		resObj.Equity = &controller.HoldemWebOutputEquity{WinProbability: eq.Equity, HandOdds: handOdds}
+		resObj.Equity = &controller.HoldemWebOutputEquity{WinProbability: eq.Equity, LowProbability: eq.LowProbability, HandOdds: handOdds}
 		potOdds := p.GetPotOdds()
 		resObj.PotOdds = &potOdds
 	}

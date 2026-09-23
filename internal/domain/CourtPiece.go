@@ -1,4 +1,4 @@
-//go:build !js || !wasm || casino
+//go:build !js || !wasm || extra6
 
 // Package domain コートピース (Court Piece / Rang / Hokm) のドメインモデル。
 //
@@ -17,8 +17,8 @@ package domain
 
 import (
 	"encoding/json"
-	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // CourtPieceHandSize 各プレイヤーの手札枚数
@@ -161,8 +161,9 @@ func (c *CourtPiece) startRound() {
 	}
 	courtPieceSortHand(caller)
 
-	c.appendLog(c.callerIdx, "deal",
-		fmt.Sprintf("%s peeks at the first %d cards", playerName(c.players, c.callerIdx), CourtPiecePeekSize), nil)
+	c.appendLog(c.callerIdx, "deal", "courtpiece.log.deal", map[string]string{
+		"name": playerName(c.players, c.callerIdx), "count": strconv.Itoa(CourtPiecePeekSize),
+	}, nil)
 	c.currentPlayerIdx = c.callerIdx
 	c.phase = CourtPiecePhaseTrumpDeclaration
 }
@@ -201,7 +202,7 @@ func (c *CourtPiece) PlayerDeclareTrump(suit int) error {
 		return ErrNotHumanTurn
 	}
 	if !isValidSuit(suit) {
-		return NewDomainError(ErrInvalidPlay, "トランプスートは ♠/♣/♥/♦ から選んでください")
+		return NewDomainErrorCode(ErrInvalidPlay, "courtpiece.errTrumpSuitOutOfRange", nil)
 	}
 	c.applyTrumpDeclaration(suit)
 	return nil
@@ -222,8 +223,9 @@ func (c *CourtPiece) CpuDeclareTrump() {
 // applyTrumpDeclaration トランプスートを設定し、残りを配ってプレイフェーズへ遷移する。
 func (c *CourtPiece) applyTrumpDeclaration(suit int) {
 	c.trumpSuit = suit
-	c.appendLog(c.callerIdx, "trump",
-		fmt.Sprintf("%s declares %s as trump", playerName(c.players, c.callerIdx), suitName(suit)), nil)
+	c.appendLog(c.callerIdx, "trump", "courtpiece.log.trump", map[string]string{
+		"name": playerName(c.players, c.callerIdx), "suitKey": suitKeyOf(suit),
+	}, nil)
 
 	// Stage 2: 残りのカードを配り切る。
 	c.dealRemaining()
@@ -250,7 +252,7 @@ func (c *CourtPiece) PlayerPlay(cardIndex int) error {
 
 	player := c.players[c.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "courtpiece.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
@@ -294,8 +296,9 @@ func (c *CourtPiece) ResolveTrick() {
 		trickCards[i] = tc.Card
 	}
 	c.players[winnerIdx].AddTrick(trickCards)
-	c.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", playerName(c.players, winnerIdx), c.trickNumber), trickCards)
+	c.appendLog(winnerIdx, "trick_win", "courtpiece.log.trickWin", map[string]string{
+		"name": playerName(c.players, winnerIdx), "trick": strconv.Itoa(c.trickNumber),
+	}, trickCards)
 
 	c.leadPlayerIdx = winnerIdx
 	if c.trickNumber >= CourtPieceHandSize {
@@ -367,13 +370,14 @@ func (c *CourtPiece) ScoreRound() {
 		c.callerIdx = (c.callerIdx + 1) % CourtPiecePlayerCnt
 	}
 
-	label := "Sar"
+	labelKey := "courtpiece.sar"
 	if isCourt {
-		label = "Court"
+		labelKey = "courtpiece.court"
 	}
-	c.appendLog(-1, "round_score",
-		fmt.Sprintf("Team %d wins the round (%s, tricks=%d, +%d, total=%d)",
-			winningTeam, label, teamTricks[winningTeam], delta, c.teamScores[winningTeam]), nil)
+	c.appendLog(-1, "round_score", "courtpiece.log.roundScore", map[string]string{
+		"team": strconv.Itoa(winningTeam), "labelKey": labelKey, "tricks": strconv.Itoa(teamTricks[winningTeam]),
+		"points": strconv.Itoa(delta), "total": strconv.Itoa(c.teamScores[winningTeam]),
+	}, nil)
 
 	for _, p := range c.players {
 		if p.GetTeam() == winningTeam {
@@ -410,7 +414,7 @@ func (c *CourtPiece) checkGameEnd(lastWinner int) {
 	default:
 		c.winnerTeam = lastWinner
 	}
-	c.appendLog(-1, "game_end", fmt.Sprintf("Team %d wins the game!", c.winnerTeam), nil)
+	c.appendLog(-1, "game_end", "courtpiece.log.gameEnd", map[string]string{"team": strconv.Itoa(c.winnerTeam)}, nil)
 }
 
 // --- State getters ---
@@ -560,13 +564,19 @@ func (c *CourtPiece) playCard(playerIdx int, card *Card) {
 		PlayerIdx: playerIdx,
 		Card:      card,
 	})
-	c.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", playerName(c.players, playerIdx), cardStr(card)), []*Card{card})
+	c.appendLog(playerIdx, "play", "courtpiece.log.play", map[string]string{
+		"name": playerName(c.players, playerIdx), "card": cardStr(card),
+	}, []*Card{card})
 	if len(c.currentTrick) == CourtPiecePlayerCnt {
 		c.phase = CourtPiecePhaseTrickEnd
 		return
 	}
 	c.currentPlayerIdx = (c.currentPlayerIdx + 1) % CourtPiecePlayerCnt
+}
+
+// appendLog records a Court Piece action with a locale-independent detail code.
+func (c *CourtPiece) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	c.appendLogCodeAt(len(c.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // validatePlay カードのプレイがルール上有効か検証する。

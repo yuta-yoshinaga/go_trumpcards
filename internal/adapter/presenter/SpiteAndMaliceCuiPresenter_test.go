@@ -88,10 +88,10 @@ func TestSpiteAndMaliceCuiPresenter_Output(t *testing.T) {
 		g := new(interfaces.MockSpiteAndMaliceGame)
 		setupSpiteAndMaliceCuiMockDefaults(g)
 		result := new(SpiteAndMaliceCuiPresenter).Output(g, nil)
-		// 人間の手札 (SPADE 5) は公開
-		assert.Contains(t, result, "SPADE 5")
-		// CPU の手札 (DIAMOND 3) は非公開、枚数のみ
-		assert.NotContains(t, result, "DIAMOND 3")
+		// 人間の手札 (♠5) は公開
+		assert.Contains(t, result, "♠5")
+		// CPU の手札 (♦3) は非公開、枚数のみ
+		assert.NotContains(t, result, "♦3")
 		assert.Contains(t, result, "手札: 1枚")
 	})
 
@@ -113,9 +113,9 @@ func TestSpiteAndMaliceCuiPresenter_Output(t *testing.T) {
 		g.On("GetPlayer", 1).Return(cpu).Maybe()
 		result := new(SpiteAndMaliceCuiPresenter).Output(g, nil)
 		// CPU のターンであっても、人間の手札は公開され続ける
-		assert.Contains(t, result, "SPADE 5")
+		assert.Contains(t, result, "♠5")
 		// CPU の手札は依然として非公開
-		assert.NotContains(t, result, "DIAMOND 3")
+		assert.NotContains(t, result, "♦3")
 	})
 
 	t.Run("human wins", func(t *testing.T) {
@@ -209,7 +209,9 @@ func TestSpiteAndMaliceCuiPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("game over", func(t *testing.T) {
 		g := new(interfaces.MockSpiteAndMaliceGame)
 		g.On("GetPhase").Return(domain.SpiteAndMalicePhaseGameOver)
-		g.On("GetActionLog").Return([]*domain.ActionLogEntry{{TurnNumber: 1, ActionType: "playHand", Detail: "test"}})
+		g.On("GetActionLog").Return([]*domain.ActionLogEntry{
+			{TurnNumber: 1, ActionType: "play", DetailCode: "spiteandmalice.log.playHand", DetailParams: map[string]string{"player": "1", "foundation": "1"}},
+		})
 		assert.NotEmpty(t, new(SpiteAndMaliceCuiPresenter).ActionLogOutput(g))
 	})
 }
@@ -228,8 +230,8 @@ func TestSpiteAndMaliceCuiPresenter_MarksTheWildKing(t *testing.T) {
 
 	result := new(SpiteAndMaliceCuiPresenter).Output(g, nil)
 	mark := i18n.T("spiteandmalice.wildMark")
-	assert.Contains(t, result, "CLOVER 13"+mark)
+	assert.Contains(t, result, "♣13"+mark)
 	// **K 以外には付かない。**全部に付いたら区別にならない。
-	assert.NotContains(t, result, "SPADE 5"+mark)
+	assert.NotContains(t, result, "♠5"+mark)
 	assert.Equal(t, 1, strings.Count(result, mark))
 }

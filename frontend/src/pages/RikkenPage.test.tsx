@@ -101,6 +101,7 @@ const playState: RikkenResponse = {
   validPlays: [1, 4],
   contract: RikkenContract.RIK,
   declarerIdx: 0,
+  calledCard: { design: 'SPADE', value: 1 },
   trumpSuit: 3,
   currentTrick: [{ playerIdx: 1, card: { design: 'CLOVER', value: 13 } }],
   declarerTricks: 3,
@@ -207,6 +208,18 @@ describe('RikkenPage', () => {
     expect(screen.getByTestId('rikken-contract')).toHaveTextContent('リク');
     expect(screen.getByTestId('rikken-contract')).toHaveTextContent('ハート');
     expect(screen.getByTestId('rikken-declarer')).toHaveTextContent('#0');
+  });
+
+  it('shows the called card only for Rik', async () => {
+    mockApi.mockResolvedValue(playState);
+    const { unmount } = renderWithProviders(<RikkenPage />);
+    await waitFor(() => expect(screen.getByTestId('rikken-called-card')).toHaveTextContent('指名した札'));
+    unmount();
+
+    mockApi.mockResolvedValue({ ...playState, contract: RikkenContract.SOLO });
+    renderWithProviders(<RikkenPage />);
+    await waitFor(() => expect(screen.getByTestId('rikken-contract')).toBeInTheDocument());
+    expect(screen.queryByTestId('rikken-called-card')).not.toBeInTheDocument();
   });
 
   // **相方は公開されるまで伏せる。**
@@ -353,5 +366,29 @@ describe('RikkenPage', () => {
     mockApi.mockResolvedValue(playState);
     renderWithProviders(<RikkenPage />);
     await waitFor(() => expect(screen.getByTestId('rikken-trick')).toBeInTheDocument());
+  });
+
+  it('shows the previous trick separately with its winner', async () => {
+    mockApi.mockResolvedValue({
+      ...playState,
+      lastTrick: [{ playerIdx: 2, card: { design: 'CLOVER', value: 13 } }],
+      lastTrickWinner: 2,
+    });
+    renderWithProviders(<RikkenPage />);
+
+    const previous = await screen.findByTestId('rikken-previous-trick');
+    expect(previous).toHaveTextContent('前のトリック');
+    expect(previous.querySelector('div.my-3 > div')).toHaveTextContent('→ CPU 2 が獲得');
+    expect(screen.getByTestId('trick-winner-badge')).toHaveTextContent(/^WIN$/);
+    expect(previous.querySelectorAll('[data-testid="animated-card"]')).toHaveLength(1);
+    expect(screen.getByTestId('rikken-trick')).toBeInTheDocument();
+  });
+
+  it('does not show a previous trick block when there is no previous trick', async () => {
+    mockApi.mockResolvedValue({ ...playState, lastTrick: [], lastTrickWinner: -1 });
+    renderWithProviders(<RikkenPage />);
+
+    await waitFor(() => expect(screen.getByTestId('rikken-contract')).toBeInTheDocument());
+    expect(screen.queryByTestId('rikken-previous-trick')).not.toBeInTheDocument();
   });
 });

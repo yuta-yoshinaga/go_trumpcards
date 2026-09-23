@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { Card } from '../types/card';
-import { cassinoTakeCandidates } from './cassinoTakeCandidates';
+import { cassinoBuildTakeCandidates, cassinoTakeCandidates } from './cassinoTakeCandidates';
 
 const c = (value: number): Card => ({ design: 'SPADE', value });
+
+const build = (value: number) => ({ ownerIdx: 1, value, groups: [[c(value)]], isMulti: false });
 
 describe('cassinoTakeCandidates', () => {
   it('returns empty for empty table', () => {
@@ -35,5 +37,21 @@ describe('cassinoTakeCandidates', () => {
   it('returns empty when no subset sums to target', () => {
     const r = cassinoTakeCandidates([c(2), c(2), c(3)], 9);
     expect(r.indices.size).toBe(0);
+  });
+});
+
+describe('cassinoBuildTakeCandidates', () => {
+  it('matches builds only when their declared value equals the hand value', () => {
+    const r = cassinoBuildTakeCandidates([build(8), build(9)], 8);
+    expect(Array.from(r.indices)).toEqual([0]);
+  });
+
+  it('does not use table-card sums to match a build', () => {
+    const r = cassinoBuildTakeCandidates([build(8)], 5);
+    expect(r.indices.size).toBe(0);
+  });
+
+  it('returns no candidates without a selected hand value', () => {
+    expect(cassinoBuildTakeCandidates([build(8)], 0).indices.size).toBe(0);
   });
 });

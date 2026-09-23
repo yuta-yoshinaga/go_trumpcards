@@ -62,6 +62,7 @@ export interface FreeBetResponse extends BaseGameResponse {
   activeHand: number;
   dealerCards: Card[];
   dealerScore: number;
+  dealerHoleRevealed: boolean;
   /**
    * The dealer busted with exactly **22**, so every surviving hand pushes.
    *

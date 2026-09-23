@@ -28,5 +28,8 @@
   "hintAny": "nothing combines yet; any empty cell will do",
   "gameComplete": "Game over. Total score: {{score}} (target {{target}})",
   "helpExampleHint": "  h                        ask for a move",
-  "partialHeader": "--- so far (points already locked in without the starter; the starter can only add) ---"
+  "partialHeader": "--- so far (points already locked in without the starter; the starter can only add) ---",
+  "log.place": "Placed at ({{row}},{{col}})",
+  "log.starter": "Turned the starter",
+  "log.giveUp": "Gave up"
 }

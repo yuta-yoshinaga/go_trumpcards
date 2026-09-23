@@ -312,3 +312,42 @@ describe('EstimationPage round delta', () => {
     expect(screen.queryByTestId('est-round-delta-0')).not.toBeInTheDocument();
   });
 });
+
+// **ディーラー（親）バッジは dealerIdx と一致する席にだけ出る。**
+// CPU が親のときも、人間が親のときも正しく表示される。
+describe('EstimationPage dealer badge', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+  });
+
+  it('shows est-dealer-2 only when dealerIdx is 2', async () => {
+    mockExec.mockResolvedValue(makeState({ dealerIdx: 2 }));
+    renderWithProviders(<EstimationPage />);
+
+    // 対象席のバッジが存在する
+    expect(await screen.findByTestId('est-dealer-2')).toBeInTheDocument();
+    // 他の席にはバッジが無い
+    expect(screen.queryByTestId('est-dealer-0')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('est-dealer-1')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('est-dealer-3')).not.toBeInTheDocument();
+  });
+
+  it('shows est-dealer-0 when dealerIdx is 0 (human is dealer)', async () => {
+    mockExec.mockResolvedValue(makeState({ dealerIdx: 0 }));
+    renderWithProviders(<EstimationPage />);
+
+    expect(await screen.findByTestId('est-dealer-0')).toBeInTheDocument();
+  });
+
+  // **バッジの文言がキー名ではなく実際の日本語に解決している。**
+  // t() の戻り値と比較するのは自己成就する assert になるため、
+  // 期待値はリテラル文字列で固定する。
+  it('shows the Japanese label "親" for the dealer badge', async () => {
+    mockExec.mockResolvedValue(makeState({ dealerIdx: 2 }));
+    renderWithProviders(<EstimationPage />);
+
+    const badge = await screen.findByTestId('est-dealer-2');
+    expect(badge).toHaveTextContent('親');
+  });
+});

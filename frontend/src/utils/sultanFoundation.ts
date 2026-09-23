@@ -7,6 +7,9 @@ import { suitSymbol } from './cardAlt';
  */
 export const SULTAN_FOUNDATION_FULL = 13;
 
+/** Highest card value used by Sultan's King-based foundations. */
+export const SULTAN_CARD_VALUE_MAX = 13;
+
 /** Display metadata for a single Sultan foundation pile. */
 export interface SultanFoundationInfo {
   /** Suit symbol (♠♥♦♣) of the King base, or an empty string when the pile has no base. */
@@ -34,4 +37,23 @@ export function sultanFoundationInfo(pile: Card[]): SultanFoundationInfo {
     count: pile.length,
     complete: pile.length >= SULTAN_FOUNDATION_FULL,
   };
+}
+
+/**
+ * Determine whether a card can be placed on at least one Sultan foundation.
+ *
+ * Sultan has two foundations for each suit, so a card is playable when any
+ * foundation accepts it. Foundations are seeded with a King and then build
+ * K→A→2…→Q in the same suit.
+ */
+export function canPlaceCardOnSultanFoundation(card: Card, foundations: Card[][]): boolean {
+  return foundations.some((pile) => {
+    if (pile.length === 0) return false;
+
+    const topCard = pile[pile.length - 1];
+    if (card.design !== topCard.design) return false;
+    if (topCard.value === SULTAN_CARD_VALUE_MAX) return card.value === 1;
+    if (topCard.value >= SULTAN_FOUNDATION_FULL - 1) return false;
+    return card.value === topCard.value + 1;
+  });
 }

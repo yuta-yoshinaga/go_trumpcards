@@ -1,5 +1,10 @@
 {
   "helpTitle": "Pitch",
+  "errDealerCannotPass": "The dealer cannot pass when everyone has passed.",
+  "errBidRange": "The bid must be pass (0) or between {{min}} and {{max}}.",
+  "errBidMustExceedCurrent": "The bid must exceed the current high bid of {{bid}}.",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errFollowLeadSuitOrTrump": "You must follow the lead suit or play a trump.",
   "bidPending": "no bid",
   "bidPass": "pass",
   "trumpUndecided": "(undecided)",
@@ -10,6 +15,7 @@
   "gameEnd": "Game over! {{name}} wins!",
   "promptBid": "Bid phase — {{name}} to act",
   "promptBidHelp": "b <n> — declare a bid (0=pass, 2-4)",
+  "dealerMustBid": "The dealer cannot pass when everyone has passed. Declare a bid from 2 to 4.",
   "promptPlay": "Turn: {{name}}",
   "promptPlayHelp": "play <idx> — play a card",
   "previousTrick": "Previous trick",
@@ -35,5 +41,7 @@
   "helpExamplePlay": "  p 0                  play hand card 0",
   "helpHint": "  h                    show a hint",
   "scoringLine": "Points: High={{high}} / Low={{low}} / Jack={{jack}} / Game={{game}}",
-  "scoringNobody": "nobody"
+  "scoringNobody": "nobody",
+  "log.bid": "{{name}} bids {{bid}}", "log.stuck": "{{name}} is stuck with {{bid}}", "log.bidWon": "{{name}} wins the bid at {{bid}} (will lead first card to set trump)", "log.trumpSet": "Trump is {{suit}}", "log.play": "{{name}} plays {{card}}", "log.trickWin": "{{name}} wins trick {{trick}}", "log.setBack": "{{name}} set back: bid={{bid}} earned={{earned}} -> {{score}}", "log.bidMade": "{{name}} makes bid: bid={{bid}} earned={{earned}} -> {{score}}", "log.nonBidderScore": "{{name}} scores {{score}}", "log.cumulativeScore": "{{name}}: total={{total}}", "log.scoreHigh": "{{name}} scores High", "log.scoreLow": "{{name}} scores Low", "log.scoreJack": "{{name}} scores Jack", "log.scoreGame": "{{name}} scores Game ({{pip}} pip)", "log.gameEnd": "{{name}} wins the game!",
+  "log.bidPass": "{{name}} passes"
 }

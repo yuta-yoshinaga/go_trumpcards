@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"strconv"
 )
 
 // SevensPlayerCnt 7並べプレイヤー数
@@ -453,7 +454,7 @@ func (s *Sevens) PlayerPlay(idx int) error {
 		}
 		player.IncrPassesUsed()
 		player.SetLastPlayedJoker(false)
-		s.appendLog(s.currentTurn, "pass", "pass", nil)
+		s.appendLog(s.currentTurn, "pass", "sevens.log.pass", nil, nil)
 		s.humanAction = &SevensCpuAction{
 			PlayerIdx:  s.currentTurn,
 			PlayedCard: nil,
@@ -479,12 +480,12 @@ func (s *Sevens) PlayerPlay(idx int) error {
 	playedCard := player.RemoveCard(idx)
 	reclaimed := s.reclaimJokerIfNeeded(s.currentTurn, card.GetDesign(), card.GetValue())
 	player.SetLastPlayedJoker(false)
-	s.appendLog(s.currentTurn, "play", fmt.Sprintf("played %s", cardLogStr(playedCard)), []*Card{playedCard})
+	s.appendLog(s.currentTurn, "play", "sevens.log.play", map[string]string{"card": cardLogStr(playedCard)}, []*Card{playedCard})
 	s.humanAction = &SevensCpuAction{PlayerIdx: s.currentTurn, PlayedCard: playedCard, JokerReclaimed: reclaimed}
 
 	if player.GetCardsSize() == 0 {
 		s.assignRank(s.currentTurn)
-		s.appendLog(-1, "finish", fmt.Sprintf("player %d finished (rank %d)", s.currentTurn, player.GetRank()), nil)
+		s.appendLog(-1, "finish", "sevens.log.finish", map[string]string{"player": strconv.Itoa(s.currentTurn), "rank": strconv.Itoa(player.GetRank())}, nil)
 	}
 	if !s.checkGameEnd() {
 		s.advanceTurn()
@@ -526,7 +527,7 @@ func (s *Sevens) PlayerPlayJoker(cardIdx, targetSuit, targetValue int) error {
 	playedCard := player.RemoveCard(cardIdx)
 	s.recordJokerCard(playedCard, targetSuit, targetValue)
 	player.SetLastPlayedJoker(true)
-	s.appendLog(s.currentTurn, "joker", fmt.Sprintf("played joker as %s %d", suitLogStr(targetSuit), targetValue), []*Card{playedCard})
+	s.appendLog(s.currentTurn, "joker", "sevens.log.joker", map[string]string{"suitKey": suitKeyOf(targetSuit), "value": strconv.Itoa(targetValue)}, []*Card{playedCard})
 	s.humanAction = &SevensCpuAction{
 		PlayerIdx:   s.currentTurn,
 		PlayedCard:  playedCard,
@@ -536,7 +537,7 @@ func (s *Sevens) PlayerPlayJoker(cardIdx, targetSuit, targetValue int) error {
 
 	if player.GetCardsSize() == 0 {
 		s.assignRank(s.currentTurn)
-		s.appendLog(-1, "finish", fmt.Sprintf("player %d finished (rank %d)", s.currentTurn, player.GetRank()), nil)
+		s.appendLog(-1, "finish", "sevens.log.finish", map[string]string{"player": strconv.Itoa(s.currentTurn), "rank": strconv.Itoa(player.GetRank())}, nil)
 	}
 	if !s.checkGameEnd() {
 		s.advanceTurn()
@@ -1006,11 +1007,11 @@ func (s *Sevens) CpuPlay() {
 		if card.GetDesign() == CardDesignJoker {
 			s.recordJokerCard(playedCard, targetSuit, targetValue)
 			player.SetLastPlayedJoker(true)
-			s.appendLog(playerIdx, "joker", fmt.Sprintf("played joker as %s %d", suitLogStr(targetSuit), targetValue), []*Card{playedCard})
+			s.appendLog(playerIdx, "joker", "sevens.log.joker", map[string]string{"suitKey": suitKeyOf(targetSuit), "value": strconv.Itoa(targetValue)}, []*Card{playedCard})
 		} else {
 			reclaimed = s.reclaimJokerIfNeeded(playerIdx, card.GetDesign(), card.GetValue())
 			player.SetLastPlayedJoker(false)
-			s.appendLog(playerIdx, "play", fmt.Sprintf("played %s", cardLogStr(playedCard)), []*Card{playedCard})
+			s.appendLog(playerIdx, "play", "sevens.log.play", map[string]string{"card": cardLogStr(playedCard)}, []*Card{playedCard})
 		}
 		action := &SevensCpuAction{
 			PlayerIdx:      playerIdx,
@@ -1023,7 +1024,7 @@ func (s *Sevens) CpuPlay() {
 
 		if player.GetCardsSize() == 0 {
 			s.assignRank(playerIdx)
-			s.appendLog(-1, "finish", fmt.Sprintf("player %d finished (rank %d)", playerIdx, player.GetRank()), nil)
+			s.appendLog(-1, "finish", "sevens.log.finish", map[string]string{"player": strconv.Itoa(playerIdx), "rank": strconv.Itoa(player.GetRank())}, nil)
 		}
 		if !s.checkGameEnd() {
 			s.advanceTurn()
@@ -1032,7 +1033,7 @@ func (s *Sevens) CpuPlay() {
 		// パス
 		player.IncrPassesUsed()
 		player.SetLastPlayedJoker(false)
-		s.appendLog(playerIdx, "pass", "pass", nil)
+		s.appendLog(playerIdx, "pass", "sevens.log.pass", nil, nil)
 		action := &SevensCpuAction{
 			PlayerIdx:  playerIdx,
 			PlayedCard: nil,
@@ -1043,7 +1044,7 @@ func (s *Sevens) CpuPlay() {
 	} else {
 		// パスも不可 → 失格
 		s.eliminatePlayer(playerIdx)
-		s.appendLog(-1, "finish", fmt.Sprintf("player %d finished (rank %d)", playerIdx, player.GetRank()), nil)
+		s.appendLog(-1, "finish", "sevens.log.finish", map[string]string{"player": strconv.Itoa(playerIdx), "rank": strconv.Itoa(player.GetRank())}, nil)
 		if !s.checkGameEnd() {
 			s.advanceTurn()
 		}
@@ -1086,7 +1087,7 @@ func (s *Sevens) AutoHandleNoOption() {
 		s.cpuActions = append(s.cpuActions, action)
 	}
 	s.eliminatePlayer(playerIdx)
-	s.appendLog(-1, "finish", fmt.Sprintf("player %d finished (rank %d)", playerIdx, s.players[playerIdx].GetRank()), nil)
+	s.appendLog(-1, "finish", "sevens.log.finish", map[string]string{"player": strconv.Itoa(playerIdx), "rank": strconv.Itoa(s.players[playerIdx].GetRank())}, nil)
 	if !s.checkGameEnd() {
 		s.advanceTurn()
 	}
@@ -1176,28 +1177,12 @@ func (s *Sevens) SetConfig(config SevensConfig) {
 	s.config = config
 }
 
-// suitLogStr スートを棋譜用文字列に変換
-func suitLogStr(suit int) string {
-	switch suit {
-	case CardDesignSpade:
-		return "spade"
-	case CardDesignClover:
-		return "clover"
-	case CardDesignHeart:
-		return "heart"
-	case CardDesignDiamond:
-		return "diamond"
-	default:
-		return "joker"
-	}
-}
-
 // cardLogStr カードを棋譜用文字列に変換
 func cardLogStr(card *Card) string {
 	if card.GetDesign() == CardDesignJoker {
-		return "joker"
+		return "JK"
 	}
-	return fmt.Sprintf("%s %d", suitLogStr(card.GetDesign()), card.GetValue())
+	return cardStr(card)
 }
 
 // sevensJSON is the JSON wire format for Sevens.
@@ -1216,6 +1201,10 @@ type sevensJSON struct {
 }
 
 // MarshalJSON implements json.Marshaler.
+func (s *Sevens) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	s.appendLogCodeAt(len(s.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
+}
+
 func (s *Sevens) MarshalJSON() ([]byte, error) {
 	return json.Marshal(sevensJSON{
 		TrumpCards:  s.trumpCards,

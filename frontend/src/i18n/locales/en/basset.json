@@ -1,0 +1,27 @@
+{
+  "chips": "Chips: {{count}}",
+  "turns": "Turns: {{played}}/{{total}}",
+  "remaining": "Cards left: {{count}}",
+  "bet": "Bet",
+  "noBet": "No bet placed",
+  "bankerCard": "Banker card",
+  "playerCard": "Player card",
+  "placeBet": "Place bet",
+  "deal": "Deal two cards",
+  "take": "Take winnings",
+  "paroli": "Press paroli",
+  "next": "Next deal",
+  "phase": {
+    "betting": "Betting",
+    "turn": "Turn",
+    "decision": "Decision",
+    "roundEnd": "Round end",
+    "gameEnd": "Game over"
+  },
+  "tutorial": {
+    "info": "Choose a rank and stake chips.",
+    "layout": "The banker card is shown first and the player card second.",
+    "deal": "A player hit opens the paroli decision.",
+    "resetButton": "Reset the deal."
+  }
+}

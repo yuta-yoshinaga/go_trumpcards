@@ -79,8 +79,8 @@ func TestMightyCuiPresenter_Output(t *testing.T) {
 		// Header block always rendered.
 		assert.Contains(t, result, "==========")
 		// Human cards are listed with indexes.
-		assert.Contains(t, result, "[0]SPADE 1")
-		assert.Contains(t, result, "[1]HEART 5")
+		assert.Contains(t, result, "[0]♠1")
+		assert.Contains(t, result, "[1]♥5")
 		// Human name "あなた" (cui_common.json) appears for player 0.
 		assert.Contains(t, result, "あなた")
 		// CPU player name appears.
@@ -109,7 +109,7 @@ func TestMightyCuiPresenter_Output(t *testing.T) {
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPartnerCard")
 		m.On("GetPartnerCard").Return(domain.NewCard(domain.CardDesignHeart, 13, false))
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "HEART 13")
+		assert.Contains(t, result, "♥13")
 		assert.Contains(t, result, "(非公開)")
 	})
 
@@ -120,7 +120,7 @@ func TestMightyCuiPresenter_Output(t *testing.T) {
 		m.On("GetPartnerCard").Return(domain.NewCard(domain.CardDesignDiamond, 1, false))
 		m.On("GetPartnerRevealed").Return(true)
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "DIAMOND 1")
+		assert.Contains(t, result, "♦1")
 		assert.Contains(t, result, "(公開済み)")
 	})
 
@@ -164,8 +164,8 @@ func TestMightyCuiPresenter_Output(t *testing.T) {
 		}
 		m.On("GetCurrentTrick").Return(trick)
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "CLOVER 3")
-		assert.Contains(t, result, "CLOVER 7")
+		assert.Contains(t, result, "♣3")
+		assert.Contains(t, result, "♣7")
 	})
 
 	t.Run("joker trick card renders as 'Joker'", func(t *testing.T) {
@@ -224,8 +224,8 @@ func TestMightyCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "キティのカード")
 		// The kitty cards are shown at their positions in the declarer's hand,
 		// matching the indices the `e` (exchange) command consumes.
-		assert.Contains(t, result, "[1]HEART 5")
-		assert.Contains(t, result, "[2]CLOVER 9")
+		assert.Contains(t, result, "[1]♥5")
+		assert.Contains(t, result, "[2]♣9")
 	})
 
 	t.Run("kitty line omitted when declarer is missing", func(t *testing.T) {
@@ -265,6 +265,23 @@ func TestMightyCuiPresenter_Output(t *testing.T) {
 			assert.Contains(t, result, c.prompt, "phase %v", c.phase)
 		}
 	})
+}
+
+func TestMightyCuiPresenter_ShowsTheConfiguredFinishLines(t *testing.T) {
+	i18n.SetLang("ja")
+	p := new(presenter.MightyCuiPresenter)
+	build := func(pointLimit int) string {
+		m, _ := setupMightyCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetConfig")
+		cfg := domain.DefaultMightyConfig()
+		cfg.PointLimit = pointLimit
+		m.On("GetConfig").Return(cfg)
+		return p.Output(m, nil)
+	}
+
+	assert.Contains(t, build(100), "決着ライン: +100点（宣言側の累計が+100点で勝利、-100点で即敗北）")
+	assert.Contains(t, build(300), "決着ライン: +300点（宣言側の累計が+300点で勝利、-300点で即敗北）")
+	assert.NotContains(t, build(300), "決着ライン: +100点")
 }
 
 func TestMightyCuiPresenter_HintOutput(t *testing.T) {
@@ -357,7 +374,7 @@ func TestMightyCuiPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("with entries", func(t *testing.T) {
 		m := new(interfaces.MockMightyGame)
 		entries := []*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "played SPADE 5"},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		}
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetActionLog").Return(entries)

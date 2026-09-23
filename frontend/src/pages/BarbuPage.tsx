@@ -20,6 +20,8 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { gameTheme } from '../styles/gameTheme';
 import type { BarbuResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
+import { suitName } from '../utils/cardUtils';
 import {
   BARBU_HELP,
   type BarbuCliArgs,
@@ -192,7 +194,7 @@ function BarbuPageContent() {
                 name: state.dealerIdx === 0 ? tc('player.you') : tc('player.cpu', { id: state.dealerIdx }),
               })}
               {state.currentContract >= 0 && (
-                <span className="ml-2 text-ds-text">
+                <span className="ml-2 text-ds-text-primary">
                   · {t('label.contract')}: {t(`contract.${state.currentContract}`)}
                   {state.trumpSuit >= 1 && ` (${SUIT_SYMBOLS[state.trumpSuit]})`}
                 </span>
@@ -279,7 +281,7 @@ function BarbuPageContent() {
                     {[1, 2, 3, 4].map((suit) => {
                       const vals = expandPlaced(state.tablePlaced[suit] ?? 0);
                       return (
-                        <div key={suit} className="text-sm text-ds-text text-center">
+                        <div key={suit} className="text-sm text-ds-text-primary text-center">
                           <span className="mr-2">{SUIT_SYMBOLS[suit]}</span>
                           {vals.length === 0 ? <span className="text-ds-text-muted">—</span> : vals.join(' · ')}
                         </div>
@@ -339,16 +341,22 @@ function BarbuPageContent() {
                       // GetPlayableIndices は全インデックスを返すので、空になるのは
                       // 人間の手番でないとき (＝ボタン自体が押せない) だけ。
                       state.playableIndices.length === 0 || state.playableIndices.includes(i);
+                  const isTrump =
+                    state.currentContract === CONTRACT_TRUMPS &&
+                    state.trumpSuit >= 1 &&
+                    c.design === suitName(state.trumpSuit);
                   return (
                     <button
                       key={i}
                       type="button"
                       onClick={() => isHumanPlay && setHandIndex(handIndex === i ? null : i)}
                       disabled={!isHumanPlay || !playable}
-                      className={`rounded transition-all ${
+                      className={`rounded border-2 transition-all ${isTrump ? 'border-ds-accent' : 'border-transparent'} ${
                         handIndex === i ? 'ring-2 ring-ds-info -translate-y-2' : ''
                       } ${isHumanPlay && playable ? 'cursor-pointer hover:opacity-90' : 'opacity-50 cursor-default'}`}
                       data-testid={`hand-card-${i}`}
+                      data-trump={isTrump ? 'true' : undefined}
+                      aria-label={isTrump ? `${cardAlt(c)} (${t('label.trumpCard')})` : cardAlt(c)}
                     >
                       <AnimatedCard card={c} width={cardWidth} />
                     </button>
@@ -388,7 +396,7 @@ function BarbuPageContent() {
                     {state.dealHistory.map((d, i) => (
                       <tr key={i} className="border-t border-white/10">
                         <td className="px-2 py-1 text-center">{i + 1}</td>
-                        <td className="px-2 py-1 whitespace-nowrap text-ds-text">
+                        <td className="px-2 py-1 whitespace-nowrap text-ds-text-primary">
                           {t(`contract.${d.contract}`)}
                           {d.contract === CONTRACT_TRUMPS && d.trumpSuit >= 1 && ` (${SUIT_SYMBOLS[d.trumpSuit]})`}
                         </td>

@@ -22,7 +22,7 @@ func TestClockSolitaireCuiPresenterOutput_Playing(t *testing.T) {
 	result := p.Output(gg, nil)
 	assert.Contains(t, result, "Clock Solitaire")
 	assert.Contains(t, result, "ステップ: 0")
-	// Current card is SPADE 5 → placement hint points to the 5 o'clock pile.
+	// Current card is ♠5 → placement hint points to the 5 o'clock pile.
 	assert.Contains(t, result, "5時の山へ")
 }
 
@@ -124,16 +124,21 @@ func TestClockSolitaireCuiPresenterOutput_GameOver(t *testing.T) {
 }
 
 func TestClockSolitaireCuiPresenterActionLog(t *testing.T) {
-	gg := new(interfaces.MockClockSolitaireGame)
-	gg.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, Detail: "テスト"},
-	})
+	defer i18n.SetLang("ja")
+	for _, tc := range []struct{ lang, want string }{
+		{lang: "ja", want: "テスト用の棋譜行 1"},
+		{lang: "en", want: "test log entry 1"},
+	} {
+		i18n.SetLang(tc.lang)
+		gg := new(interfaces.MockClockSolitaireGame)
+		gg.On("GetActionLog").Return([]*domain.ActionLogEntry{
+			{TurnNumber: 1, ActionType: "step", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
+		})
 
-	p := &ClockSolitaireCuiPresenter{}
-	result := p.ActionLogOutput(gg)
-
-	assert.Contains(t, result, "Action Log")
-	assert.Contains(t, result, "テスト")
+		result := (&ClockSolitaireCuiPresenter{}).ActionLogOutput(gg)
+		assert.Contains(t, result, tc.want)
+		assert.NotContains(t, result, "clocksolitaire.log.")
+	}
 }
 
 // #5523: 「あと何山で揃うか」は CLI ターミナルを開いたときだけ見える隠れた

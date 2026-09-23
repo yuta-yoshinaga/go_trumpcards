@@ -51,6 +51,49 @@ func TestIndianPoker_GetEstimatedStrength(t *testing.T) {
 	assert.GreaterOrEqual(t, s, 50)
 }
 
+func TestIndianPoker_GetHint(t *testing.T) {
+	tests := []struct {
+		name           string
+		visibleRank    int
+		pot            int
+		lastBet        int
+		currentBet     int
+		expectedAction int
+		expectedReason string
+	}{
+		{name: "pot odds short folds", visibleRank: 13, pot: 40, lastBet: 50, currentBet: 10, expectedAction: IndianPokerActionFold, expectedReason: "pot_odds_short"},
+		{name: "pot odds sufficient calls", visibleRank: 10, pot: 100, lastBet: 50, currentBet: 10, expectedAction: IndianPokerActionCall, expectedReason: "pot_odds_ok"},
+		{name: "strong equity raises", visibleRank: 2, pot: 40, lastBet: 50, currentBet: 10, expectedAction: IndianPokerActionRaise, expectedReason: "strong_hand"},
+		{name: "free weak look checks", visibleRank: 13, pot: 40, lastBet: 10, currentBet: 10, expectedAction: IndianPokerActionCheck, expectedReason: "free_look"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ip, players := newIndianPokerTestGame(defaultTestConfig())
+			ip.SetPhase(IndianPokerPhaseBetting)
+			ip.SetCurrentTurn(0)
+			ip.SetPot(tt.pot)
+			ip.SetLastBet(tt.lastBet)
+			players[0].SetCurrentBet(tt.currentBet)
+			// Only visible opponent cards are changed; the test does not depend on a deal.
+			players[1].AddCard(NewCard(CardDesignClover, tt.visibleRank, false))
+
+			hint := ip.GetHint()
+			assert.Equal(t, tt.expectedAction, hint.Action)
+			assert.Equal(t, tt.expectedReason, hint.Reason)
+		})
+	}
+
+	t.Run("not human turn and folded player have no hint", func(t *testing.T) {
+		ip, players := newIndianPokerTestGame(defaultTestConfig())
+		ip.SetPhase(IndianPokerPhaseBetting)
+		ip.SetCurrentTurn(1)
+		assert.Equal(t, &IndianPokerHint{Reason: "none"}, ip.GetHint())
+		ip.SetCurrentTurn(0)
+		players[0].SetFolded(true)
+		assert.Equal(t, &IndianPokerHint{Reason: "none"}, ip.GetHint())
+	})
+}
+
 func TestIndianPokerPhaseConstants(t *testing.T) {
 	assert.Equal(t, 0, IndianPokerPhaseInit)
 	assert.Equal(t, 1, IndianPokerPhaseAnte)
@@ -1070,13 +1113,17 @@ func TestIndianPokerLogAction(t *testing.T) {
 	assert.Equal(t, "fold", log[0].ActionType)
 	assert.Equal(t, "check", log[1].ActionType)
 	assert.Equal(t, "call", log[2].ActionType)
-	assert.Contains(t, log[2].Detail, "call 20")
+	assert.Equal(t, "indianpoker.log.call", log[2].DetailCode)
+	assert.Equal(t, map[string]string{"amount": "20"}, log[2].DetailParams)
 	assert.Equal(t, "bet", log[3].ActionType)
-	assert.Contains(t, log[3].Detail, "bet 30")
+	assert.Equal(t, "indianpoker.log.bet", log[3].DetailCode)
+	assert.Equal(t, map[string]string{"amount": "30"}, log[3].DetailParams)
 	assert.Equal(t, "raise", log[4].ActionType)
-	assert.Contains(t, log[4].Detail, "raise to 50")
+	assert.Equal(t, "indianpoker.log.raiseTo", log[4].DetailCode)
+	assert.Equal(t, map[string]string{"amount": "50"}, log[4].DetailParams)
 	assert.Equal(t, "allin", log[5].ActionType)
-	assert.Contains(t, log[5].Detail, "all in 100")
+	assert.Equal(t, "indianpoker.log.allIn", log[5].DetailCode)
+	assert.Equal(t, map[string]string{"amount": "100"}, log[5].DetailParams)
 }
 
 // --- cpuDecide: raise count limit ---

@@ -86,6 +86,9 @@ const CONTRACT_NAME: Record<number, string> = {
   4: 'misere',
 };
 
+/** Id of the shared note explaining why a contract cannot be bid. */
+const BID_TOO_LOW_ID = 'troggu-bid-too-low-note';
+
 /** CPU difficulty options. */
 const CPU_DIFFICULTY_OPTIONS = [0, 1, 2] as const;
 
@@ -167,6 +170,14 @@ function TrogguPageContent() {
 
   const isHumanTurn = state.isHumanTurn && !isGameEnd;
   const humanWon = isGameEnd && state.winnerPlayer === (human?.id ?? 0);
+  const bidOptions = CONTRACTS.map((contract) => ({
+    contract,
+    tooLow: CONTRACT_VALUE[contract] <= state.highestBid,
+  }));
+  const hasUnbeatableContract = bidOptions.some(({ tooLow }) => tooLow);
+  const bidTooLowMessage = t('bidTooLow', {
+    high: t(`contract.${CONTRACT_NAME[state.highestBid]}`, { target: state.soloTarget }),
+  });
   const phaseName = isGameEnd
     ? t('phase.gameEnd')
     : isRoundEnd
@@ -352,29 +363,35 @@ function TrogguPageContent() {
           <GameFooter className={`${gameTheme.troggu.footer} px-4 py-2.5`}>
             <ActionShortcutsPanel bindings={actionBindings} data-testid="tg-kbd-shortcuts" />
             <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="tg-actions">
+              {isBid && isHumanTurn && hasUnbeatableContract && (
+                <span id={BID_TOO_LOW_ID} className="sr-only">
+                  {bidTooLowMessage}
+                </span>
+              )}
               {isBid &&
                 isHumanTurn &&
-                CONTRACTS.map((c) => (
-                  <button
-                    key={c}
-                    type="button"
-                    className={btnSecondary}
-                    onClick={() => callApi('bid', { bid: c })}
-                    // **今の最高入札を超えられない契約は押させない。**押せても
-                    // サーバーに却下されるだけで、画面は入札のまま動かない (#5808)。
-                    disabled={loading || CONTRACT_VALUE[c] <= state.highestBid}
-                    title={
-                      CONTRACT_VALUE[c] <= state.highestBid
-                        ? t('bidTooLow', {
-                            high: t(`contract.${CONTRACT_NAME[state.highestBid]}`, { target: state.soloTarget }),
-                          })
-                        : undefined
-                    }
-                    data-testid={`tg-bid-${c}`}
-                  >
-                    {t(`contract.${c}`, { target: state.soloTarget })}
-                  </button>
-                ))}
+                bidOptions.map(({ contract: c, tooLow }) => {
+                  return (
+                    <button
+                      key={c}
+                      type="button"
+                      className={`${btnSecondary} aria-disabled:opacity-70 aria-disabled:cursor-not-allowed aria-disabled:saturate-50`}
+                      onClick={() => {
+                        if (tooLow) return;
+                        callApi('bid', { bid: c });
+                      }}
+                      // **今の最高入札を超えられない契約は押させない。**押せても
+                      // サーバーに却下されるだけで、画面は入札のまま動かない (#5808)。
+                      disabled={loading}
+                      aria-disabled={tooLow || undefined}
+                      title={tooLow ? bidTooLowMessage : undefined}
+                      aria-describedby={tooLow ? BID_TOO_LOW_ID : undefined}
+                      data-testid={`tg-bid-${c}`}
+                    >
+                      {t(`contract.${c}`, { target: state.soloTarget })}
+                    </button>
+                  );
+                })}
               {isBid && isHumanTurn && (
                 <button
                   type="button"

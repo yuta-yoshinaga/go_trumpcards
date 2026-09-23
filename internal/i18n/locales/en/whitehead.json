@@ -1,4 +1,12 @@
 {
+  "log.recycle": "Discard pile recycled into stock",
+  "log.draw": "Drew a card from the stock",
+  "log.wasteToTableau": "Waste → tableau column {{column}}",
+  "log.wasteToFoundation": "Waste → foundation",
+  "log.tableauToTableau": "Tableau column {{fromColumn}} → tableau column {{toColumn}}",
+  "log.tableauToFoundation": "Tableau column {{column}} → foundation",
+  "log.giveup": "Gave up",
+  "log.autocomplete": "Ran autocomplete",
   "helpTitle": "Whitehead",
   "helpDraw": "  d                    draw from stock",
   "helpMove": "  m w t <col>          move waste to tableau",

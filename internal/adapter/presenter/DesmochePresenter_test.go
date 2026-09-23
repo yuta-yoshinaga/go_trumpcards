@@ -178,7 +178,7 @@ func TestDesmocheCuiPresenter_NamesTheMeldKind(t *testing.T) {
 	out := new(DesmocheCuiPresenter).Output(g, nil)
 	assert.Contains(t, out, i18n.Tf("desmoche.meldLine",
 		"idx", "0", "kind", i18n.T("desmoche.run"), "owner", "1",
-		"cards", "SPADE 5 SPADE 6 SPADE 7"))
+		"cards", "♠5 ♠6 ♠7"))
 }
 
 func TestDesmocheCuiPresenter_PromptsPerPhase(t *testing.T) {

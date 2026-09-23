@@ -47,5 +47,16 @@
   "chaseDealer": "the dealer is strong, so keep drawing",
   "splitAces": "aces are always worth splitting",
   "helpExampleBet": "  bet 100              bet 100 chips",
-  "helpSort": "  s                    sort the hand"
+  "helpSort": "  s                    sort the hand",
+  "log.start": "extra bet blackjack begins",
+  "log.gameEnd": "out of chips",
+  "log.bet": "ante {{ante}}, bustIt {{bustIt}}",
+  "log.deal": "cards dealt",
+  "log.attack": "double attack {{amount}}",
+  "log.hit": "hit",
+  "log.stand": "stand",
+  "log.double": "double to {{bet}}",
+  "log.split": "split into {{hands}} hands",
+  "log.dealer": "dealer plays",
+  "log.result": "payout {{payout}}"
 }

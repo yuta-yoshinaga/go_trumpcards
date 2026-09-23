@@ -34,6 +34,7 @@
   "button.raise": "レイズ",
   "button.vertical": "縦を使う",
   "button.horizontal": "横を使う",
+  "touchLineHint": "もう一度タップで確定",
   "button.next": "次のハンドへ",
   "kbd.check": "K",
   "kbd.call": "C",

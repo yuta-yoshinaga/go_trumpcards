@@ -111,7 +111,7 @@ func TestPinochleCuiPresenter_Output(t *testing.T) {
 		m, players := setupPinochleCuiMockWithPlayers()
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "[0]SPADE 1")
+		assert.Contains(t, result, "[0]♠1")
 	})
 
 	t.Run("shows legal-play legend on human play turn", func(t *testing.T) {
@@ -141,7 +141,7 @@ func TestPinochleCuiPresenter_Output(t *testing.T) {
 		m.On("GetCurrentTrick").Return(trick)
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "テーブル:")
-		assert.Contains(t, result, "SPADE 1")
+		assert.Contains(t, result, "♠1")
 	})
 
 	t.Run("shows melds in meld phase", func(t *testing.T) {
@@ -161,6 +161,14 @@ func TestPinochleCuiPresenter_Output(t *testing.T) {
 		m, _ := setupPinochleCuiMockWithPlayers()
 		result := p.Output(m, errors.New("invalid bid"))
 		assert.Contains(t, result, "invalid bid")
+	})
+
+	t.Run("resolves coded error message", func(t *testing.T) {
+		m, _ := setupPinochleCuiMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrWrongPhase, "pinochle.errWrongPhase", nil)
+		result := p.Output(m, err)
+		assert.Contains(t, result, i18n.T("pinochle.errWrongPhase"))
+		assert.NotContains(t, result, "pinochle.errWrongPhase")
 	})
 
 	t.Run("shows game end message", func(t *testing.T) {
@@ -306,7 +314,7 @@ func TestPinochleCuiPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("with entries returns log", func(t *testing.T) {
 		m := new(interfaces.MockPinochleGame)
 		entries := []*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "bid", Detail: "bid 25"},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "bid", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		}
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetActionLog").Return(entries)

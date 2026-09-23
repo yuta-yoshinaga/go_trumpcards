@@ -107,6 +107,8 @@ export interface HoldemResponse extends BaseGameResponse {
 /** Equity calculation result for Hold'em hand. */
 export interface HoldemEquity {
   winProbability: number;
+  /** Expected share of the low half in Omaha Hi-Lo; absent for high-only games. */
+  lowProbability?: number;
   handOdds: HoldemHandOdds[];
 }
 

@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // helperCariocaHand 既定構成の Carioca を Reset 済みで返す。
@@ -68,6 +70,29 @@ func TestCarioca_Reset_DealsHand(t *testing.T) {
 	}
 	if g.GetPhase() != CariocaPhaseDraw {
 		t.Errorf("phase = %d, want PhaseDraw", g.GetPhase())
+	}
+}
+
+func TestCarioca_DomainErrorsHaveMessageCodes(t *testing.T) {
+	g := helperCariocaHand(t)
+	g.SetDiscardPile(nil)
+	if err := g.PlayerDrawFromDiscard(); err == nil {
+		t.Fatal("expected discard error")
+	} else if code, _ := ErrorMessageCode(err); code != "carioca.errDiscardPileEmpty" {
+		t.Fatalf("code = %q", code)
+	}
+
+	g.SetPhase(CariocaPhasePlay)
+	if err := g.PlayerMeldContract(nil); err == nil {
+		t.Fatal("expected contract error")
+	} else if code, _ := ErrorMessageCode(err); code != "carioca.errContractMeldCount" {
+		t.Fatalf("code = %q", code)
+	}
+
+	if err := g.PlayerMeldExtra([]int{0}); err == nil {
+		t.Fatal("expected extra meld error")
+	} else if code, _ := ErrorMessageCode(err); code != "carioca.errExtraMeldContractRequired" {
+		t.Fatalf("code = %q", code)
 	}
 }
 
@@ -143,6 +168,17 @@ func TestCarioca_PlayerDrawFromStock_ProgressesPhase(t *testing.T) {
 	if g.GetPlayer(0).GetCardsSize() != CariocaHandSize+1 {
 		t.Errorf("hand should grow by 1 after draw")
 	}
+	var entry *ActionLogEntry
+	for _, candidate := range g.GetActionLog() {
+		if candidate.ActionType == "draw_stock" {
+			entry = candidate
+		}
+	}
+	if entry == nil {
+		t.Fatal("draw_stock log entry not found")
+	}
+	assert.Equal(t, "carioca.log.drawStock", entry.DetailCode)
+	assert.Equal(t, map[string]string{"name": "You"}, entry.DetailParams)
 }
 
 func TestCarioca_PlayerDrawFromStock_RejectsWrongPhase(t *testing.T) {
@@ -555,12 +591,51 @@ func TestCarioca_CpuPlay_NoOpForHumanTurn(t *testing.T) {
 }
 
 func TestCarioca_CpuPlay_DrawAndDiscard(t *testing.T) {
-	g := helperCariocaHand(t)
+	g := NewDefaultCarioca()
+	g.Reset()
+	// R1 は同ランク 3 枚のセットを 2 つ要求する。各ランクを 1 枚ずつ
+	// 配置するため、山札から何を 1 枚引いても同じランクは最大 2 枚となり、
+	// コントラクトを満たせない。
+	cariocaSetHand(g.GetPlayer(1), []*Card{
+		cariocaCard(CardDesignSpade, 2), cariocaCard(CardDesignHeart, 3),
+		cariocaCard(CardDesignDiamond, 4), cariocaCard(CardDesignClover, 5),
+		cariocaCard(CardDesignSpade, 6), cariocaCard(CardDesignHeart, 7),
+		cariocaCard(CardDesignDiamond, 8), cariocaCard(CardDesignClover, 9),
+		cariocaCard(CardDesignSpade, 10), cariocaCard(CardDesignHeart, 11),
+		cariocaCard(CardDesignDiamond, 12), cariocaCard(CardDesignClover, 13),
+	})
+	for i := 0; i < g.GetPlayerCnt(); i++ {
+		if g.GetPlayer(i).IsContractMet() {
+			t.Fatalf("precondition: player %d must not have met the contract", i)
+		}
+	}
 	g.SetCurrentPlayerIdx(1)
 	g.CpuPlay() // draw
 	g.CpuPlay() // play+discard
 	if g.GetCurrentPlayerIdx() != 2 {
 		t.Errorf("after CPU 1 turn, currentPlayerIdx = %d, want 2", g.GetCurrentPlayerIdx())
+	}
+}
+
+func TestCarioca_CpuPlay_FinishesRoundWithoutAdvancingTurn(t *testing.T) {
+	g := NewDefaultCarioca()
+	g.Reset()
+	g.SetCurrentPlayerIdx(1)
+	g.SetPhase(CariocaPhasePlay)
+	cpu := g.GetPlayer(1)
+	cariocaSetHand(cpu, []*Card{cariocaCard(CardDesignSpade, 5)})
+	cpu.SetContractMet(true)
+	cpu.SetMelds([][]*Card{{
+		cariocaCard(CardDesignSpade, 2), cariocaCard(CardDesignSpade, 3), cariocaCard(CardDesignSpade, 4),
+	}})
+
+	g.CpuPlay()
+
+	if g.GetCurrentPlayerIdx() != 1 {
+		t.Errorf("currentPlayerIdx = %d, want 1 after CPU goes out", g.GetCurrentPlayerIdx())
+	}
+	if g.GetRoundWinnerIdx() != 1 {
+		t.Errorf("roundWinnerIdx = %d, want 1", g.GetRoundWinnerIdx())
 	}
 }
 

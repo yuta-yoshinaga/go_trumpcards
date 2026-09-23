@@ -33,6 +33,15 @@ beforeEach(() => {
 });
 
 describe('BaccaratBanquePage', () => {
+  it('sends selected difficulty and starting chips when resetting', async () => {
+    mockExec.mockResolvedValue(makeBaccaratBanqueState({ gameEndFlag: true, phase: 'gameEnd' }));
+    renderWithProviders(<BaccaratBanquePage />);
+    fireEvent.change(await screen.findByTestId('baccaratbanque-cpuDifficulty'), { target: { value: '2' } });
+    fireEvent.change(screen.getByTestId('baccaratbanque-startChips'), { target: { value: '5000' } });
+    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', { cpuDifficulty: 2, startChips: 5000 }));
+  });
+
   it('calls reset on mount', async () => {
     renderWithProviders(<BaccaratBanquePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

@@ -32,5 +32,9 @@
   "helpExamplePass": "  p                    出せる札が無いときはパスする",
   "helpLog": "  l                    行動ログを表示",
   "noPlayable": "出せる札がありません。p でパスしてください",
-  "actionReclaimedJoker": "  ↳ {{name}} がジョーカーを回収しました (手札に戻ります)"
+  "actionReclaimedJoker": "  ↳ {{name}} がジョーカーを回収しました (手札に戻ります)",
+  "log.pass": "パス",
+  "log.play": "{{card}}を出した",
+  "log.finish": "プレイヤー{{player}}が{{rank}}位で上がった",
+  "log.joker": "ジョーカーを{{suit}} {{value}}として出した"
 }

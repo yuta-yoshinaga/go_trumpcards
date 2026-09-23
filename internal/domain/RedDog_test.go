@@ -20,6 +20,20 @@ func TestNewDefaultRedDog(t *testing.T) {
 	assert.Nil(t, rd.GetThirdCard())
 }
 
+func TestRedDog_ActionLogUsesDetailCode(t *testing.T) {
+	rd := domain.NewDefaultRedDog()
+	require.NoError(t, rd.Bet(100))
+	var entry *domain.ActionLogEntry
+	for _, candidate := range rd.GetActionLog() {
+		if candidate.DetailCode == "reddog.log.bet" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, map[string]string{"amount": "100"}, entry.DetailParams)
+}
+
 func TestRedDog_Reset(t *testing.T) {
 	rd := domain.NewDefaultRedDog()
 	require.NoError(t, rd.Bet(100))

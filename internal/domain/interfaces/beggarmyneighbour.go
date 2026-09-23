@@ -39,6 +39,8 @@ type BeggarMyNeighbourGame interface {
 	GetCentralPileSize() int
 	// GetLastCardPlayed 最後に出されたカードを取得する
 	GetLastCardPlayed() *domain.Card
+	// GetLastCardPlayerIdx 最後の札を出した席を取得する (-1=まだ無い)
+	GetLastCardPlayerIdx() int
 	// GetRoundsPlayed 消化ラウンド数を取得する
 	GetRoundsPlayed() int
 }

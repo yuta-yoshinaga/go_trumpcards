@@ -278,6 +278,18 @@ func TestBeleagueredCastle_GiveUp(t *testing.T) {
 	assert.Equal(t, domain.BeleagueredCastlePhaseGameOver, bc.GetPhase())
 }
 
+func TestBeleagueredCastle_GiveUp_ActionLogUsesDetailCode(t *testing.T) {
+	bc := setupPlayingBeleagueredCastle()
+	bc.GiveUp()
+	for _, entry := range bc.GetActionLog() {
+		if entry.DetailCode == "beleagueredcastle.log.giveUp" {
+			assert.Nil(t, entry.DetailParams)
+			return
+		}
+	}
+	t.Fatal("give up action log entry not found")
+}
+
 func TestBeleagueredCastle_Hint(t *testing.T) {
 	t.Run("nil when not playing", func(t *testing.T) {
 		bc := newTestBeleagueredCastle()

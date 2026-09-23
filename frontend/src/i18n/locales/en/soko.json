@@ -57,6 +57,7 @@
     "weakHandRank": "Weak hand — fold recommended"
   },
   "frontendHint": {
+    "sokoRaiseFourCard": "You have a four-card Soko hand — raise; it beats a pair",
     "fivecardstudRaisePair": "You have a pair — put money in",
     "fivecardstudCallHigh": "You hold a high card — worth paying to see another",
     "fivecardstudCheckFree": "Nothing made yet — check while it is free",

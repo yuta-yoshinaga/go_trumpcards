@@ -49,10 +49,10 @@ func TestSultanCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(sg, nil)
 		assert.Contains(t, result, "Sultan of Turkey")
-		assert.Contains(t, result, "Foundation")
-		assert.Contains(t, result, "Divan")
-		assert.Contains(t, result, "Stock: 88枚")
-		assert.Contains(t, result, "Waste: [空]")
+		assert.Contains(t, result, "組札")
+		assert.Contains(t, result, "ディヴァン")
+		assert.Contains(t, result, "ストック: 88枚")
+		assert.Contains(t, result, "ウェイスト: [空]")
 		assert.Contains(t, result, "リディール残: 2回")
 		assert.Contains(t, result, "手数: 0")
 		assert.Contains(t, result, "操作: m で移動")
@@ -66,8 +66,8 @@ func TestSultanCuiPresenter_Output(t *testing.T) {
 
 		p := new(SultanCuiPresenter)
 		result := p.Output(sg, nil)
-		assert.Contains(t, result, "Waste:")
-		assert.NotContains(t, result, "Waste: [空]")
+		assert.Contains(t, result, "ウェイスト:")
+		assert.NotContains(t, result, "ウェイスト: [空]")
 	})
 
 	t.Run("nil divan slot", func(t *testing.T) {
@@ -175,7 +175,7 @@ func TestSultanCuiPresenter_HintOutput(t *testing.T) {
 		result := p.HintOutput(sg)
 		assert.Contains(t, result, "ヒント")
 		assert.Contains(t, result, "ディヴァン")
-		assert.Contains(t, result, "ファンデーション")
+		assert.Contains(t, result, "組札")
 	})
 
 	t.Run("waste hint", func(t *testing.T) {
@@ -185,7 +185,7 @@ func TestSultanCuiPresenter_HintOutput(t *testing.T) {
 		p := new(SultanCuiPresenter)
 		result := p.HintOutput(sg)
 		assert.Contains(t, result, "ウェイスト")
-		assert.Contains(t, result, "ファンデーション")
+		assert.Contains(t, result, "組札")
 	})
 
 	t.Run("no hint", func(t *testing.T) {
@@ -212,7 +212,7 @@ func TestSultanCuiPresenter_ActionLogOutput(t *testing.T) {
 		sg := new(interfaces.MockSultanGame)
 		sg.On("GetPhase").Return(domain.SultanPhaseGameOver)
 		sg.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "draw", Detail: "test"},
+			{TurnNumber: 1, ActionType: "draw", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 
 		p := new(SultanCuiPresenter)

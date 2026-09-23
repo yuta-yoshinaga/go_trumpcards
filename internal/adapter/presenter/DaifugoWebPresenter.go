@@ -148,12 +148,7 @@ func (dwp *DaifugoWebPresenter) buildResultMessage(dg interfaces.DaifugoGame) st
 		if rank < daifugoRankMin || rank > daifugoRankMax {
 			continue
 		}
-		var name string
-		if player.GetIsHuman() {
-			name = "あなた"
-		} else {
-			name = fmt.Sprintf("CPU %d", i)
-		}
+		name := webPlayerName(player.GetIsHuman(), i)
 		msg += fmt.Sprintf("%s:%s ", name, daifugoRankName(rank))
 	}
 	return msg

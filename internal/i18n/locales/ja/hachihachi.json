@@ -5,6 +5,7 @@
   "helpSetDifficulty": "  sd <0-2>             CPU難易度設定 (0=易, 1=普, 2=難)",
   "roundLine": "ラウンド: {{round}}/{{total}}  山札: {{deck}}",
   "fieldLine": "場: {{field}}",
+  "drawCapture": "めくり札 {{card}} が {{captured}} を獲得しました",
   "playerLine": "{{name}}: 手札{{hand}}枚  取り札: {{captured}}  素点: {{raw}}  累計: {{score}}  役: {{yaku}}",
   "promptPlay": "手番: {{name}}",
   "promptGameEnd": "ゲーム終了。nr で新しいゲームを始めます。",
@@ -14,7 +15,7 @@
   "roundBestMark": "★このラウンドの一番手",
   "roundDraw": "引き分け。",
   "hintNone": "ヒントはありません。",
-  "hintCard": "[HINT: {{card}} ({{reason}})]",
+  "hintCard": "[ヒント: {{card}} ({{reason}})]",
   "hintReasonCapture": "同月の札を捕獲して素点を稼ぐ",
   "hintReasonDiscard": "捕獲できないので価値の低い札を捨てる",
   "result.scores": "ゲーム終了！ 得点: {{scores}}",
@@ -25,5 +26,13 @@
   "yaku.inoshikacho": "猪鹿蝶",
   "yaku.akatan": "赤短",
   "yaku.aotan": "青短",
-  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す"
+  "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
+  "log.roundDealt": "ラウンド{{round}}を配りました（場{{field}}枚、山札{{draw}}枚）",
+  "log.plays": "{{name}}が{{card}}を出しました（{{result}}）",
+  "log.draws": "{{name}}が{{card}}をめくりました（{{result}}）",
+  "log.roundSettled": "ラウンド{{round}}を精算しました（最高 {{best}}）",
+  "log.sweepsLeftover": "{{name}}が残りの場札{{count}}枚を取りました",
+  "log.gameEnded": "ゲーム終了（勝者 {{winner}}）",
+  "log.result.captured": "取りました",
+  "log.result.toField": "場に置きました"
 }

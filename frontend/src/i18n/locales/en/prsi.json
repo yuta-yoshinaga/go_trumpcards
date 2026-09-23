@@ -41,5 +41,7 @@
   "pendingSkips": "Skips pending: {{count}} — stack an Ace/Jack or lose your turn",
   "cardAriaPlayable": "{{card}}, playable",
   "cardAriaIllegal": "{{card}}, cannot be played",
-  "cardAriaPenalty": "{{card}}, cannot be played (only a 7 answers the seven penalty)"
+  "cardAriaPenalty": "{{card}}, cannot be played (only a 7 answers the seven penalty)",
+  "lastCardBadge": "Last card!",
+  "lastCardBadgeAria": "{{name}} has 1 card left"
 }

@@ -34,7 +34,7 @@ func TestPenguinCuiPresenterOutputBaseRankLabels(t *testing.T) {
 		g.SetPhase(domain.PenguinPhasePlaying)
 		g.SetBaseRank(rank)
 		result := p.Output(g, nil)
-		assert.Contains(t, result, "BaseRank: "+label)
+		assert.Contains(t, result, "ベースランク: "+label)
 	}
 }
 
@@ -94,7 +94,7 @@ func TestPenguinCuiPresenterOutputFreeCellsOccupied(t *testing.T) {
 
 	result := p.Output(g, nil)
 
-	assert.Contains(t, result, "SPADE 5")
+	assert.Contains(t, result, "♠5")
 }
 
 func TestPenguinCuiPresenterOutputEmptyFreeCells(t *testing.T) {
@@ -123,7 +123,7 @@ func TestPenguinCuiPresenterOutputFoundationWithCards(t *testing.T) {
 
 	result := p.Output(g, nil)
 
-	assert.Contains(t, result, "SPADE 1")
+	assert.Contains(t, result, "♠1")
 }
 
 func TestPenguinCuiPresenterOutputEmptyTableau(t *testing.T) {
@@ -209,7 +209,7 @@ func TestPenguinCuiPresenterHintToFoundation(t *testing.T) {
 	result := p.HintOutput(mg)
 
 	assert.Contains(t, result, "タブロー列")
-	assert.Contains(t, result, "ファンデーション")
+	assert.Contains(t, result, "組札")
 }
 
 func TestPenguinCuiPresenterHintToFreeCell(t *testing.T) {

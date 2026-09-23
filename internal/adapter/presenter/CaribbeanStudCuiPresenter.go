@@ -29,6 +29,7 @@ func (cp *CaribbeanStudCuiPresenter) Output(cs interfaces.CaribbeanStudGame, las
 	// 賭け終わった後は出さない -- もう選べないものの説明は場所を取るだけ。
 	if cs.GetPhase() == domain.CaribbeanStudPhaseBet {
 		sb.WriteString(i18n.T("caribbeanstud.jackpotHelp") + "\n")
+		sb.WriteString(i18n.T("caribbeanstud.dealerQualifyHelp") + "\n")
 	}
 
 	playerHand := cs.GetPlayerHand()

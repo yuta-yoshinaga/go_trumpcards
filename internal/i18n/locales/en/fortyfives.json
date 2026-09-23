@@ -12,6 +12,7 @@
   "contractLine": "Declarer: {{name}} (Team {{team}}) — {{contract}}",
   "playerLine": "{{name}} (Team {{team}}, {{role}}): {{cards}} cards  Team Score: {{score}}  Tricks: {{tricks}}",
   "topTrumpLegend": "!! = top trump (five and jack of trumps, ace of hearts); exempt from following suit",
+  "trumpOrder": "Trump order: {{order}} (the top three are exempt from following suit)",
   "roleDeclarer": "Declarer",
   "roleDefender": "Defender",
   "bid.pass": "Pass",
@@ -47,5 +48,19 @@
   "contractFailed": "can no longer be made",
   "contractNeedMore": "{{remaining}} more needed",
   "helpExampleBid": "  pass                      drop out of the bidding",
-  "helpHint": "  h                         show a hint"
+  "helpHint": "  h                         show a hint",
+  "errInvalidBid": "The bid is invalid.",
+  "errBidMustExceedCurrent": "The bid must exceed the current bid.",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errMustFollowTrump": "You must follow trump.",
+  "errMustFollowLeadSuit": "You must follow the lead suit.",
+  "log.bid": "{{name}} bids {{bid}}",
+  "log.pass": "{{name}} passes",
+  "log.passedOut": "all players passed; round is void",
+  "log.contract": "{{name}} (team {{team}}) bids {{bid}}, trump {{trump}}",
+  "log.play": "{{name}} plays {{card}}",
+  "log.trickWin": "{{name}} wins trick {{trick}} (+{{points}})",
+  "log.roundScore": "round {{round}}: team {{team}} bid {{bid}}, got {{got}}; team {{otherTeam}} got {{otherGot}}",
+  "log.jink": "Jink! team {{team}} sweeps and wins",
+  "log.gameEnd": "Team {{team}} wins the match!"
 }

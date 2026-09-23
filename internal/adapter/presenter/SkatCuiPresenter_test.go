@@ -272,8 +272,27 @@ func TestSkatCuiPresenter_PlayerSummaryRoles(t *testing.T) {
 	i18n.SetLang("ja")
 	outJa := p.Output(m, nil)
 	assert.Contains(t, outJa, "[宣言者]")
-	assert.Contains(t, outJa, "bid=パス")
+	assert.Contains(t, outJa, "ビッド=パス")
 	assert.NotContains(t, outJa, "[Declarer]")
+}
+
+func TestSkatCuiPresenter_Output_PlayerSummaryUsesLocaleLabels(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.SkatCuiPresenter)
+	for _, tc := range []struct {
+		lang string
+		want string
+	}{
+		{lang: "ja", want: "ビッド="},
+		{lang: "en", want: "bid="},
+	} {
+		i18n.SetLang(tc.lang)
+		out := p.Output(setupSkatCuiMock(), nil)
+		assert.Contains(t, out, tc.want)
+	}
+	i18n.SetLang("ja")
 }
 
 // TestSkatCuiPresenter_HintOutputAllBranches covers every hint-render branch:

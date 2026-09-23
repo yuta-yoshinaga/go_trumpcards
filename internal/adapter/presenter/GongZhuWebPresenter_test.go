@@ -207,6 +207,16 @@ func TestGongZhuWebPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestGongZhuWebPresenter_CodedError(t *testing.T) {
+	m, _ := setupGongZhuWebMockWithPlayers()
+	err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "gongzhu.errHeartsNotBroken", nil)
+	result := new(presenter.GongZhuWebPresenter).Output(m, err)
+	var output controller.GongZhuWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(result), &output))
+	assert.Empty(t, output.Message)
+	assert.Equal(t, "gongzhu.errHeartsNotBroken", output.MessageCode)
+}
+
 func TestGongZhuWebPresenter_HintOutput(t *testing.T) {
 	p := new(presenter.GongZhuWebPresenter)
 
@@ -238,7 +248,7 @@ func TestGongZhuWebPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockGongZhuGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "plays ♠5"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, `"actionType":"play"`)

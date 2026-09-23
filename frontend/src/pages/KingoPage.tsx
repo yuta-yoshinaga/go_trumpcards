@@ -79,8 +79,11 @@ function KingoPageContent() {
   const handleBet = useCallback((bet: number) => execApi('bet', { amount: bet }), [execApi]);
 
   const actionBindings = useMemo(
-    () => [{ key: 'n', action: () => execApi('next'), enabled: isResult && !gameOver }],
-    [execApi, isResult, gameOver],
+    () => [
+      { key: 'n', action: () => execApi('next'), enabled: isResult && !gameOver },
+      { key: 'd', action: () => execApi('deal'), enabled: canAct && isBanker },
+    ],
+    [canAct, execApi, isBanker, isResult, gameOver],
   );
   useActionKeyboardNav({ bindings: actionBindings, enabled: !!state && !loading });
 
@@ -179,7 +182,7 @@ function KingoPageContent() {
                     {seat.wonAmount !== 0 && (
                       <span
                         data-testid={`kingo-won-${i}`}
-                        className={seat.wonAmount > 0 ? 'text-ds-success' : 'text-ds-danger'}
+                        className={seat.wonAmount > 0 ? 'text-ds-success' : 'text-ds-error'}
                       >
                         {' · '}
                         {t('label.won', { amount: seat.wonAmount })}

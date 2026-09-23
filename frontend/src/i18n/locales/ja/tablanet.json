@@ -26,7 +26,8 @@
   "result": {
     "title": "最終得点",
     "winner": "勝者: {{names}}",
-    "score": "{{name}}: {{score}}点"
+    "score": "{{name}}: {{score}}点",
+    "detail": "内訳: A {{aces}}枚 / J {{jacks}}枚 / タブラ {{tablas}}回 / 10♦ {{tenDiamonds}} / 2♣ {{twoClubs}} / 最多枚数 {{mostCards}}"
   },
   "settings": {
     "title": "設定",

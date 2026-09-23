@@ -14,7 +14,7 @@
   "promptDecisionInfo": "Shobu locks in {{confirmed}} pts (x{{mult}}) — current totals: you {{you}} vs opponent {{opp}}.",
   "promptGameEnd": "Game over. Type nr to start a new game.",
   "promptHelp": "p <h> [f] to play (f = field card on a 2-way match). kk=Koi-Koi, sb=Shobu, nr=next",
-  "roundWin": "{{name}} wins the round! {{yaku}} -> {{total}} pts (x{{mult}})",
+  "roundWin": "{{name}} wins the round! {{yaku}} -> {{base}} pts x {{mult}} = {{total}} pts",
   "roundDraw": "Round drawn (no yaku).",
   "hintNone": "No hint available.",
   "hintCard": "[HINT: {{card}} ({{reason}})]",
@@ -38,5 +38,16 @@
   "yaku.kasu": "Kasu (Chaff)",
   "yaku.hanami": "Hanami-zake (Flower Viewing)",
   "yaku.tsukimi": "Tsukimi-zake (Moon Viewing)",
-  "helpExamplePlay": "  p 0                  play hand card 0"
+  "helpExamplePlay": "  p 0                  play hand card 0",
+  "log.roundDealt": "Round {{round}} dealt (field {{field}}, draw {{draw}})",
+  "log.play": "{{name}} plays {{card}} ({{captured}})",
+  "log.draw": "{{name}} draws {{card}} ({{captured}})",
+  "log.formsYaku": "{{name}} forms a yaku worth {{points}}",
+  "log.callsKoiKoi": "{{name}} calls Koi-Koi",
+  "log.stopsShobu": "{{name}} stops (Shobu)",
+  "log.roundWin": "{{name}} wins round with {{total}} points (x{{multiplier}})",
+  "log.roundDraw": "Round drawn (no winner)",
+  "log.gameEnded": "Game ended (winner {{winner}})",
+  "log.result.captured": "captures",
+  "log.result.toField": "to field"
 }

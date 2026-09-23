@@ -1,10 +1,11 @@
-//go:build !js || !wasm || extra2
+//go:build !js || !wasm || extra6
 
 package domain
 
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 )
 
 // TichuPlayerCnt ティチュープレイヤー数
@@ -169,14 +170,14 @@ func (t *Tichu) executeDeclare(declType int) {
 		t.round.cpuActions = append(t.round.cpuActions, action)
 	}
 
-	detail := "no declaration"
+	detailCode := "tichu.log.declareNone"
 	switch declType {
 	case TichuDeclTichu:
-		detail = "Tichu"
+		detailCode = "tichu.log.declareTichu"
 	case TichuDeclGrand:
-		detail = "Grand Tichu"
+		detailCode = "tichu.log.declareGrandTichu"
 	}
-	t.appendLog(idx, "declare", detail, nil)
+	t.appendLog(idx, "declare", detailCode, nil, nil)
 
 	t.round.declCount++
 	if t.round.declCount >= TichuPlayerCnt {
@@ -207,7 +208,7 @@ func (t *Tichu) PlayerPlay(indices []int) error {
 		// 消すのは人間の手が実際に通ったときだけ。理由は PlayerDeclare のコメントを参照。
 		t.round.dogLeadPassed = false
 		t.round.humanAction = &TichuCpuAction{PlayerIdx: t.round.currentTurn, IsPass: true}
-		t.appendLog(t.round.currentTurn, "pass", "pass", nil)
+		t.appendLog(t.round.currentTurn, "pass", "tichu.log.pass", nil, nil)
 		t.handlePass()
 		return nil
 	}
@@ -240,7 +241,7 @@ func (t *Tichu) PlayerPlay(indices []int) error {
 	cards := player.RemoveCards(indices)
 	combo.Cards = cards
 	t.round.humanAction = &TichuCpuAction{PlayerIdx: t.round.currentTurn, PlayedCards: cards}
-	t.appendLog(t.round.currentTurn, "play", fmt.Sprintf("played %d card(s)", len(cards)), cards)
+	t.appendLog(t.round.currentTurn, "play", "tichu.log.play", map[string]string{"count": strconv.Itoa(len(cards))}, cards)
 	t.playCombo(t.round.currentTurn, combo)
 	return nil
 }
@@ -273,7 +274,7 @@ func (t *Tichu) playCombo(idx int, combo *TichuCombo) {
 	if combo.Type == TichuComboDog {
 		t.round.dogLeadPassed = true
 		t.round.dogLeadFrom = idx
-		t.appendLog(idx, "dog", "lead passed to partner", nil)
+		t.appendLog(idx, "dog", "tichu.log.dog", nil, nil)
 		if player.GetCardsSize() == 0 {
 			t.markFinished(idx)
 		}
@@ -473,7 +474,7 @@ func (t *Tichu) endDeal(oneTwo bool) {
 	}
 
 	t.round.scores = scores
-	t.appendLog(-1, "end", "deal over", nil)
+	t.appendLog(-1, "end", "tichu.log.end", nil, nil)
 }
 
 // settleLastPlayer 最後に残ったプレイヤーの手札とトリックを精算する
@@ -525,7 +526,7 @@ func (t *Tichu) CpuPlay() {
 	if len(indices) == 0 {
 		action := &TichuCpuAction{PlayerIdx: idx, IsPass: true}
 		t.round.cpuActions = append(t.round.cpuActions, action)
-		t.appendLog(idx, "pass", "pass", nil)
+		t.appendLog(idx, "pass", "tichu.log.pass", nil, nil)
 		t.handlePass()
 		return
 	}
@@ -547,7 +548,7 @@ func (t *Tichu) CpuPlay() {
 	combo.Cards = cards
 	action := &TichuCpuAction{PlayerIdx: idx, PlayedCards: cards}
 	t.round.cpuActions = append(t.round.cpuActions, action)
-	t.appendLog(idx, "play", fmt.Sprintf("played %d card(s)", len(cards)), cards)
+	t.appendLog(idx, "play", "tichu.log.play", map[string]string{"count": strconv.Itoa(len(cards))}, cards)
 	t.playCombo(idx, combo)
 }
 
@@ -637,8 +638,8 @@ func (t *Tichu) HasPendingAction() bool { return false }
 func (t *Tichu) GetActionLog() []*ActionLogEntry { return t.round.actionLog }
 
 // appendLog 棋譜にエントリを追加する
-func (t *Tichu) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	t.round.appendLog(playerIdx, actionType, detail, cards)
+func (t *Tichu) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	t.round.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- JSON Serialization ---

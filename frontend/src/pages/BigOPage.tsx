@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { bigOApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { BettingControls } from '../components/BettingControls';
 import { CpuAccordion } from '../components/CpuAccordion';
 import { CpuActionLog } from '../components/CpuActionLog';
@@ -147,6 +148,7 @@ function BigOPageContent() {
     isAddonPhase,
     humanRebuyCount,
     cpuPlayers,
+    actionBindings,
   } = useCommunityPokerGame({
     game: 'bigo',
     exec: bigOApi.exec,
@@ -261,6 +263,7 @@ function BigOPageContent() {
                     faceDownCount={5}
                     showHandName={isShowdown}
                     usedHoleIdx={cpuUsedHoleIdx}
+                    usedHoleLabel={t('cardUsed')}
                     extraInfo={
                       player.totalHands > 0 ? (
                         <HudStats
@@ -577,6 +580,7 @@ function BigOPageContent() {
               dataTutorial="bo-reset-button"
               className="min-w-[90px]"
             />
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="bigo-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

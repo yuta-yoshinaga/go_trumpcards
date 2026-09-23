@@ -170,13 +170,13 @@ func TestDiplomatCuiPresenter_HintOutput(t *testing.T) {
 	}{
 		{"tableau to a foundation",
 			&domain.DiplomatHint{FromZone: "tableau", FromIdx: 1, ToZone: "foundation", ToIdx: 2},
-			[]string{"タブロー列1", "基礎札2"}},
+			[]string{"タブロー列1", "組札2"}},
 		{"between piles",
 			&domain.DiplomatHint{FromZone: "tableau", FromIdx: 0, ToZone: "tableau", ToIdx: 5},
 			[]string{"タブロー列0", "タブロー列5"}},
 		{"waste to a foundation",
 			&domain.DiplomatHint{FromZone: "waste", FromIdx: -1, ToZone: "foundation", ToIdx: 0},
-			[]string{"捨て札", "基礎札0"}},
+			[]string{"捨て札", "組札0"}},
 		{"draw from the stock",
 			&domain.DiplomatHint{FromZone: "stock", FromIdx: -1, ToZone: "waste", ToIdx: -1},
 			[]string{"山札", i18n.T("diplomat.hintToWaste")}},
@@ -213,7 +213,7 @@ func TestDiplomatCuiPresenter_ActionLogOutput(t *testing.T) {
 		g := new(interfaces.MockDiplomatGame)
 		g.On("GetPhase").Return(domain.DiplomatPhaseGameOver)
 		g.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "move", Detail: "test"},
+			{TurnNumber: 1, ActionType: "move", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 
 		assert.Contains(t, new(DiplomatCuiPresenter).ActionLogOutput(g), "move")

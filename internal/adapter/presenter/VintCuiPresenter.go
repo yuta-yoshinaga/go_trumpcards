@@ -89,6 +89,21 @@ func (p *VintCuiPresenter) Output(g interfaces.VintGame, lastErr error) string {
 				"value", strconv.Itoa(domain.VintTrickValue(hb.Denom, hb.Level))) + "\n")
 		}
 
+		for _, bid := range g.GetBids() {
+			if bid == nil {
+				continue
+			}
+			name := cuiPlayerName(g.GetPlayer(bid.Player), bid.Player)
+			if bid.Level == 0 {
+				b.WriteString(i18n.Tf("vint.bidHistoryPass", "name", name) + "\n")
+			} else {
+				b.WriteString(i18n.Tf("vint.bidHistoryEntry",
+					"name", name,
+					"level", strconv.Itoa(bid.Level),
+					"denom", vintDenomName(bid.Denom)) + "\n")
+			}
+		}
+
 		for i := range g.GetPlayers() {
 			b.WriteString(vintPlayerStr(g, i))
 		}

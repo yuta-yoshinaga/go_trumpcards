@@ -29,11 +29,27 @@ func setupHeartsWebMock() *interfaces.MockHeartsGame {
 	m.On("GetLeadPlayerIdx").Return(0)
 	m.On("GetConfig").Return(domain.DefaultHeartsConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	m.On("GetVoidSuits").Return([domain.HeartsPlayerCnt][domain.CardDesignMax + 1]bool{})
 	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
 	// **base だけに置く。**removeMockCall は最初の 1 件しか外さない。
 	m.On("GetHint").Return(nil).Maybe()
 
 	return m
+}
+
+func TestHeartsWebPresenter_VoidSuits(t *testing.T) {
+	p := new(presenter.HeartsWebPresenter)
+	m, _ := setupHeartsWebMockWithPlayers()
+	voidSuits := [domain.HeartsPlayerCnt][domain.CardDesignMax + 1]bool{}
+	voidSuits[1][domain.CardDesignClover] = true
+	m.ExpectedCalls = removeWebMockCall(m.ExpectedCalls, "GetVoidSuits")
+	m.On("GetVoidSuits").Return(voidSuits)
+
+	var out controller.HeartsWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(p.Output(m, nil)), &out))
+	assert.Equal(t, []int{domain.CardDesignClover}, out.Players[1].VoidSuits)
+	assert.NotNil(t, out.Players[0].VoidSuits)
+	assert.Empty(t, out.Players[0].VoidSuits)
 }
 
 func setupHeartsWebMockWithPlayers() (*interfaces.MockHeartsGame, []*domain.HeartsPlayer) {
@@ -263,6 +279,17 @@ func TestHeartsWebPresenter_Output(t *testing.T) {
 		assert.Empty(t, resObj.MessageCode)
 	})
 
+	t.Run("coded error message", func(t *testing.T) {
+		m, _ := setupHeartsWebMockWithPlayers()
+		result := p.Output(m, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "hearts.errFollowLeadSuit", nil))
+		var resObj controller.HeartsWebOutput
+		_ = json.Unmarshal([]byte(result), &resObj)
+
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "hearts.errFollowLeadSuit", resObj.MessageCode)
+		assert.Nil(t, resObj.MessageParams)
+	})
+
 	t.Run("game end human wins", func(t *testing.T) {
 		m, _ := setupHeartsWebMockWithPlayers()
 		m.ExpectedCalls = removeWebMockCall(m.ExpectedCalls, "GetGameEndFlag")
@@ -454,14 +481,14 @@ func TestHeartsWebPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("with entries", func(t *testing.T) {
 		m := new(interfaces.MockHeartsGame)
 		entries := []*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "played SPADE 5", Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, true)}},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}, Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, true)}},
 		}
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetActionLog").Return(entries)
 
 		result := p.ActionLogOutput(m)
 		assert.Contains(t, result, `"actionType":"play"`)
-		assert.Contains(t, result, `"detail":"played SPADE 5"`)
+		assert.Contains(t, result, `"detailCode":"test.log.stub"`)
 		assert.Contains(t, result, `"turnNumber":1`)
 		assert.Contains(t, result, `"playerIdx":0`)
 		m.AssertExpectations(t)
@@ -531,6 +558,7 @@ func TestHeartsWebPresenterOutputCarriesTheHint(t *testing.T) {
 
 	result := new(presenter.HeartsWebPresenter).Output(htg, nil)
 	assert.Contains(t, result, `"hint"`, "Output must carry the hint -- the frontend reads state.hint")
+	assert.NotContains(t, result, `"contract"`, "shared card hints must not expose King's contract field")
 	// **Output は「頼んだヒント」の印を付けない。**付けると CLI が毎回 HINT 行を出す。
 	assert.NotContains(t, result, "hearts.hintRequested")
 }

@@ -68,6 +68,21 @@ func TestNewPoker(t *testing.T) {
 	assert.Equal(t, players, pk.GetPlayers())
 }
 
+func TestPoker_ActionLogUsesDetailCode(t *testing.T) {
+	pk, _ := setupPokerForHumanAction(PokerPhaseSecondBet)
+	pk.SetLastBet(20)
+	require.NoError(t, pk.PlayerAction(PokerActionCall, 0, 0))
+	var entry *ActionLogEntry
+	for _, candidate := range pk.GetActionLog() {
+		if candidate.DetailCode == "poker.log.call" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, "20", entry.DetailParams["amount"])
+}
+
 // ---------------------------------------------------------------------------
 // TestPoker_Reset
 // ---------------------------------------------------------------------------
@@ -3201,7 +3216,8 @@ func TestPoker_ActionLog_Exchange(t *testing.T) {
 	for _, e := range log {
 		if e.ActionType == "exchange" && e.PlayerIdx == 0 {
 			found = true
-			assert.Contains(t, e.Detail, "1 card(s)")
+			assert.Equal(t, "poker.log.exchange", e.DetailCode)
+			assert.Equal(t, "1", e.DetailParams["cards"])
 			break
 		}
 	}

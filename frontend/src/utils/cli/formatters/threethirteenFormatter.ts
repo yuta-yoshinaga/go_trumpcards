@@ -13,7 +13,7 @@ export function formatThreeThirteenState(state: ThreeThirteenResponse): string {
   const lines: string[] = [];
 
   lines.push(formatHeader('Three Thirteen'));
-  lines.push(`round: ${state.round}/11  phase: ${PHASE_NAMES[state.phase] ?? 'UNKNOWN'}`);
+  lines.push(`round: ${state.round}/${state.maxRound}  phase: ${PHASE_NAMES[state.phase] ?? 'UNKNOWN'}`);
   lines.push(`wild: ${state.wildRank}  deal: ${state.dealCount}`);
   lines.push(`discard: ${state.discardTop ? formatCard(state.discardTop) : '[  ]'} | stock: ${state.drawPileCount}`);
   lines.push('');

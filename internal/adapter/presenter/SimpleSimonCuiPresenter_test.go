@@ -48,7 +48,7 @@ func TestSimpleSimonCuiPresenter_Output(t *testing.T) {
 	t.Run("hint output", func(t *testing.T) {
 		// A board where col1's 8♠ can move onto col0's 9♠.
 		js := `{"co":[[{"d":1,"v":9,"w":true}],[{"d":1,"v":8,"w":true}]],"ph":0}`
-		assert.Contains(t, p.HintOutput(ssState(t, js)), "HINT")
+		assert.Contains(t, p.HintOutput(ssState(t, js)), "ヒント")
 		// No hint once ended.
 		assert.NotEmpty(t, p.HintOutput(ssState(t, `{"ph":2}`)))
 	})
@@ -74,8 +74,8 @@ func TestSimpleSimonCuiPresenter_ShowsTheRunBoundary(t *testing.T) {
 		out := p.Output(ssState(t, js), nil)
 
 		// 区切りは run の直前に入る。♠K の後、♥5 の前。
-		assert.Contains(t, out, presenter.CuiRunMark+" "+color.Red("HEART 5"))
-		assert.NotContains(t, out, presenter.CuiRunMark+" "+color.Red("HEART 4"))
+		assert.Contains(t, out, presenter.CuiRunMark+" "+color.Red("♥5"))
+		assert.NotContains(t, out, presenter.CuiRunMark+" "+color.Red("♥4"))
 	})
 
 	// **run が末尾1枚だけの列でも境界を示す。**「掴めるのは1枚だけ」が分かる。
@@ -83,7 +83,7 @@ func TestSimpleSimonCuiPresenter_ShowsTheRunBoundary(t *testing.T) {
 		single := `{"co":[[{"d":1,"v":13,"w":true},{"d":3,"v":2,"w":true}]],"ph":0}`
 		out := p.Output(ssState(t, single), nil)
 
-		assert.Contains(t, out, presenter.CuiRunMark+" "+color.Red("HEART 2"))
+		assert.Contains(t, out, presenter.CuiRunMark+" "+color.Red("♥2"))
 	})
 
 	// 列全体が run なら先頭に印は要らない (全部掴める)。
@@ -101,8 +101,8 @@ func TestSimpleSimonCuiPresenter_ShowsTheRunBoundary(t *testing.T) {
 			`{"d":3,"v":4,"w":true}]],"ph":0}`
 		out := p.Output(ssState(t, mixed), nil)
 
-		assert.Contains(t, out, presenter.CuiRunMark+" "+color.Red("HEART 5"))
-		assert.NotContains(t, out, presenter.CuiRunMark+" SPADE 6")
+		assert.Contains(t, out, presenter.CuiRunMark+" "+color.Red("♥5"))
+		assert.NotContains(t, out, presenter.CuiRunMark+" ♠6")
 	})
 
 	// 空列の表示は変えない (受け入れ条件3)。

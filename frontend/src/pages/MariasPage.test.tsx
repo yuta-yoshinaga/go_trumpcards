@@ -15,6 +15,7 @@ const mockExec = vi.mocked(mariasApi.exec);
 const playPhaseState = makeMariasState();
 const trickEndState = makeMariasState({
   phase: 1,
+  lastTrickWinner: 1,
   currentTrick: [
     { playerIdx: 0, card: { design: 'HEART', value: 12 } },
     { playerIdx: 1, card: { design: 'CLOVER', value: 13 } },
@@ -24,6 +25,7 @@ const roundEndState = makeMariasState({
   phase: 2,
   roundCardPoints: [55, 35, 30],
   roundMarriage: [40, 0, 0],
+  roundMarriageSuits: [[{ suit: 3, points: 40 }], [], []],
 });
 const gameEndState = makeMariasState({
   phase: 3,
@@ -68,10 +70,12 @@ describe('MariasPage', () => {
   // レンダー手札を走査して K と Q の両方を持っているかを見ていたので、どちらかを
   // 出した瞬間に消え、「出したのでボーナスを失った」という誤解を与えていた。
   it('shows the settled marriage bonus during play', async () => {
-    mockExec.mockResolvedValue(makeMariasState({ roundMarriage: [40, 0, 0] }));
+    mockExec.mockResolvedValue(
+      makeMariasState({ roundMarriage: [40, 0, 0], roundMarriageSuits: [[{ suit: 3, points: 40 }], [], []] }),
+    );
     renderWithProviders(<MariasPage />);
     const banner = await screen.findByTestId('marias-marriage');
-    expect(banner).toHaveTextContent('40');
+    expect(banner).toHaveTextContent('ハート: 40');
   });
 
   // **これがこの issue の本体。**K を場に出しても点数は動かないので、バナーも
@@ -150,6 +154,16 @@ describe('MariasPage', () => {
     mockExec.mockResolvedValue(trickEndState);
     renderWithProviders(<MariasPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
+    expect(screen.getByTestId('trick-winner-badge')).toHaveTextContent('CPU 1 が獲得');
+  });
+
+  it('does not render a winner badge while a trick is in progress', async () => {
+    mockExec.mockResolvedValue(
+      makeMariasState({ phase: 0, lastTrickWinner: 1, currentTrick: trickEndState.currentTrick.slice(0, 1) }),
+    );
+    renderWithProviders(<MariasPage />);
+    await waitFor(() => expect(screen.getByTestId('trick-display-cards')).toBeInTheDocument());
+    expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument();
   });
 
   it('renders round end with the next round button and the round result', async () => {
@@ -157,6 +171,7 @@ describe('MariasPage', () => {
     renderWithProviders(<MariasPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
     expect(screen.getByText('ラウンド結果')).toBeInTheDocument();
+    expect(screen.getByText(/ハート: 40/)).toBeInTheDocument();
   });
 
   it('shows the Soloist-vs-Defenders total comparison, highlighting the winning Soloist', async () => {

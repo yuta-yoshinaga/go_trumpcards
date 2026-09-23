@@ -27,6 +27,17 @@ beforeEach(() => {
 });
 
 describe('ContinentalRummyPage', () => {
+  it('sends selected difficulty and rounds when resetting', async () => {
+    mockExec.mockResolvedValue(makeContinentalRummyState({ gameEndFlag: true, phase: 'gameEnd' }));
+    renderWithProviders(<ContinentalRummyPage />);
+    fireEvent.change(await screen.findByTestId('continentalrummy-cpuDifficulty'), { target: { value: '2' } });
+    fireEvent.change(screen.getByTestId('continentalrummy-totalRounds'), { target: { value: '10' } });
+    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', { config: { cpuDifficulty: 2, totalRounds: 10 } }),
+    );
+  });
+
   it('calls reset on mount', async () => {
     renderWithProviders(<ContinentalRummyPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

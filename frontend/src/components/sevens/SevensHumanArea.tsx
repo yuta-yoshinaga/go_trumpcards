@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { useCardDimensions } from '../../hooks/useCardDimensions';
 import { focusRingWhite } from '../../styles/buttonStyles';
-import { playableCardStyle } from '../../styles/cardStyles';
+import { playableCardStyle, selectedCardStyle } from '../../styles/cardStyles';
 import type { Card, SevensPlayerData } from '../../types/card';
 import { valueName } from '../../utils/cardUtils';
 import { playerName } from '../../utils/playerUtils';
@@ -20,6 +20,7 @@ export interface HumanAreaProps {
   endStopEnabled: boolean;
   jokerConsecutiveBanned: boolean;
   loading: boolean;
+  jokerCardIdx: number | null;
   onPlay: (idx: number) => void;
 }
 
@@ -33,6 +34,7 @@ function HumanArea({
   endStopEnabled,
   jokerConsecutiveBanned,
   loading,
+  jokerCardIdx,
   onPlay,
 }: HumanAreaProps) {
   const { t } = useTranslation('sevens');
@@ -111,16 +113,28 @@ function HumanArea({
               // card (useCardKeyboardNav maps digit 0 → index 9); advertise the
               // shortcut only where it is a legal move this turn.
               aria-keyshortcuts={playable && i <= 9 ? String((i + 1) % 10) : undefined}
-              data-testid={playable ? 'playable-card' : undefined}
               style={{
                 background: 'none',
                 padding: 0,
                 cursor: playable ? 'pointer' : 'default',
                 borderRadius: 8,
                 ...playableCardStyle(playable),
+                // selectedCardStyle is the repo-wide "this hand card is selected"
+                // idiom (Daifugo, PlayerHandSection, MobileHandGrid, Doubt). It
+                // replaces both properties playableCardStyle sets, so a selected
+                // joker does not keep the green playable glow underneath a second
+                // marker. Spread only when selected -- selectedCardStyle(false)
+                // would clobber the playable border on every other card.
+                ...(i === jokerCardIdx ? selectedCardStyle(true) : {}),
                 opacity: isCurrentTurn && !playable ? 0.5 : 1,
                 boxSizing: 'border-box',
               }}
+              // Kept as its own attribute rather than folded into data-testid:
+              // eight unit assertions and frontend/e2e/sevens.spec.ts locate cards
+              // by [data-testid="playable-card"], and a selected joker must stay in
+              // that set.
+              data-joker-selected={i === jokerCardIdx ? 'true' : undefined}
+              data-testid={playable ? 'playable-card' : undefined}
             >
               <CardImage card={card} width={cardWidth} />
             </button>

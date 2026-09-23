@@ -54,6 +54,15 @@ func TestBriscola_Reset(t *testing.T) {
 	if b.GetLeadPlayerIdx() != 1 {
 		t.Errorf("lead = %d, want 1", b.GetLeadPlayerIdx())
 	}
+	for _, entry := range b.GetActionLog() {
+		if entry.DetailCode == "briscola.log.trump" {
+			if entry.DetailParams["card"] == "" {
+				t.Fatalf("trump log = %#v, want code params and empty Detail", entry)
+			}
+			return
+		}
+	}
+	t.Fatal("briscola.log.trump entry not found")
 }
 
 func TestBriscola_CardPointsAndRank(t *testing.T) {
@@ -194,6 +203,13 @@ func TestBriscola_ResolveTrick_AwardsPoints(t *testing.T) {
 	}
 	if got := b.GetPlayer(0).GetTrickCount(); got != 1 {
 		t.Errorf("p0 trick count = %d, want 1", got)
+	}
+	if got := b.GetLastTrickPoints(); got != 15 {
+		t.Errorf("last trick points = %d, want 15", got)
+	}
+	b.Reset()
+	if got := b.GetLastTrickPoints(); got != 0 {
+		t.Errorf("last trick points after reset = %d, want 0", got)
 	}
 }
 

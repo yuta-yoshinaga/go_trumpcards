@@ -176,7 +176,9 @@ function ChineseTenPageContent() {
                 alt={cardAlt(card)} が担うので、aria-label を重ねない。 */}
             {choosing && state.pendingCard && (
               <div className="text-center mb-4">
-                <div className="text-game-text-muted text-xs mb-1">{t('pendingLine')}</div>
+                <div className="text-game-text-muted text-xs mb-1">
+                  {state.pendingFlip ? t('pendingFlipLine') : t('pendingLine')}
+                </div>
                 <div className="flex justify-center">{renderCard(state.pendingCard, 'pending-card')}</div>
               </div>
             )}

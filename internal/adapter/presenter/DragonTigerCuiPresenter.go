@@ -24,6 +24,10 @@ func (dp *DragonTigerCuiPresenter) Output(dt interfaces.DragonTigerGame, lastErr
 	return buildCuiOutput(i18n.T("dragontiger.outputTitle"), func(b *strings.Builder) {
 		b.WriteString(i18n.Tf("dragontiger.chipsLine", "chips", strconv.Itoa(dt.GetChips())) + "\n")
 		b.WriteString(i18n.Tf("dragontiger.phaseLine", "phase", dp.phaseStr(dt.GetPhase())) + "\n")
+		if dt.GetPhase() == domain.DragonTigerPhaseBet && dt.GetChipsRefilled() {
+			b.WriteString(color.Yellow(i18n.Tf("dragontiger.bankrollRefilled",
+				"chips", strconv.Itoa(domain.DragonTigerDefaultChips))) + "\n")
+		}
 
 		if dt.GetBetAmount() > 0 {
 			b.WriteString(i18n.Tf("dragontiger.betLine",

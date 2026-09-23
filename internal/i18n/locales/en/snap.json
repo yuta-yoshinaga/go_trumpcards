@@ -9,7 +9,8 @@
   "topLine": "Top card: {{card}}",
   "pileEmpty": "Pile: empty",
   "availableLine": "*** SNAP IS ON! press n ***",
-  "playerLine": "{{name}}: {{stock}} in stock",
+  "playerLine": "{{name}}: {{stock}} in stock{{role}}",
+  "roleOut": " (out of cards)",
   "eventStep": "{{name}} turned a card over.",
   "eventSnapCorrect": "{{name}} called snap and took the pile!",
   "eventSnapWrong": "{{name}} called wrongly and paid a card.",
@@ -28,5 +29,6 @@
   "hintReasonStep": "It is your turn to turn a card",
   "hintReasonWait": "No match yet -- calling wrongly costs a card",
   "helpExampleStep": "  s                    turn the next card",
-  "helpHint": "  h                    show a hint"
+  "helpHint": "  h                    show a hint",
+  "log.start": "Started Snap ({{players}} players)", "log.step": "Turned over one card", "log.snap": "Snap! Won {{count}} cards", "log.penaltyCard": "Gave up one card as a false-call penalty", "log.penaltyEmpty": "Made a false call but had no card to give", "log.eliminate": "Ran out of stock", "log.resultWin": "Collected all cards", "log.resultStalemate": "Could not continue (all cards are on the table)", "log.giveup": "Gave up"
 }

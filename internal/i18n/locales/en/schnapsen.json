@@ -32,5 +32,22 @@
   "suitHeart": "Hearts",
   "suitDiamond": "Diamonds",
   "helpExamplePlay": "  p 0                  play hand card 0",
-  "helpHint": "  h                    show a hint"
+  "helpHint": "  h                    show a hint",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errMarriageLeadOnly": "You can declare a marriage only when leading.",
+  "errMarriageUnavailable": "That card cannot be used to declare a marriage.",
+  "log.trickWinYou": "You wins trick {{trick}} ({{points}} pt)",
+  "log.trickWinCpu": "CPU {{playerIdx}} wins trick {{trick}} ({{points}} pt)",
+  "log.trump": "Trump: {{card}}",
+  "log.marriageYouSpade": "You declares marriage in Spade (+{{bonus}})",
+  "log.marriageYouClover": "You declares marriage in Club (+{{bonus}})",
+  "log.marriageYouHeart": "You declares marriage in Heart (+{{bonus}})",
+  "log.marriageYouDiamond": "You declares marriage in Diamond (+{{bonus}})",
+  "log.marriageCpuSpade": "CPU 1 declares marriage in Spade (+{{bonus}})",
+  "log.marriageCpuClover": "CPU 1 declares marriage in Club (+{{bonus}})",
+  "log.marriageCpuHeart": "CPU 1 declares marriage in Heart (+{{bonus}})",
+  "log.marriageCpuDiamond": "CPU 1 declares marriage in Diamond (+{{bonus}})",
+  "log.playYou": "You plays {{card}}",
+  "log.playCpu": "CPU {{playerIdx}} plays {{card}}",
+  "log.gameEnd": "Game end: {{p0}}-{{p1}}"
 }

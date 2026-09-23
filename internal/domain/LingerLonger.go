@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // LingerLongerPhase はリンガーロンガーのフェーズ。
@@ -136,8 +137,10 @@ func (l *LingerLonger) Reset() {
 
 	l.leadPlayerIdx = 0
 	l.currentPlayerIdx = 0
-	l.addLog(-1, "start", fmt.Sprintf("リンガーロンガーを開始しました（%d 人、%d 枚ずつ）",
-		l.config.PlayerCnt, l.config.PlayerCnt), nil)
+	l.addLog(-1, "start", "lingerlonger.log.start", map[string]string{
+		"players":        strconv.Itoa(l.config.PlayerCnt),
+		"cardsPerPlayer": strconv.Itoa(l.config.PlayerCnt),
+	}, nil)
 }
 
 // sortAllHands は手札をスート・ランク順に整える。
@@ -221,17 +224,17 @@ func (l *LingerLonger) play(playerIdx, cardIndex int) error {
 	}
 	if !lingerLongerContains(l.GetValidPlayIndices(playerIdx), cardIndex) {
 		if cardIndex < 0 || cardIndex >= l.players[playerIdx].GetCardsSize() {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+			return NewDomainErrorCode(ErrInvalidCard, "lingerlonger.errCardIndexOutOfRange", nil)
 		}
 		return errors.New("must follow the led suit")
 	}
 
 	card := l.players[playerIdx].RemoveCard(cardIndex)
 	if card == nil {
-		return NewDomainError(ErrInvalidCard, "カードがありません")
+		return NewDomainErrorCode(ErrInvalidCard, "lingerlonger.errCardMissing", nil)
 	}
 	l.currentTrick = append(l.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	l.addLog(playerIdx, "play", "カードを出しました", []*Card{card})
+	l.addLog(playerIdx, "play", "lingerlonger.log.play", nil, []*Card{card})
 
 	if l.trickComplete() {
 		l.resolveTrick()
@@ -269,7 +272,7 @@ func (l *LingerLonger) resolveTrick() {
 		cards = append(cards, tc.Card)
 	}
 	l.players[winner].AddTrickWon()
-	l.addLog(winner, "trick", "トリックを取りました（得点にはなりません）", cards)
+	l.addLog(winner, "trick", "lingerlonger.log.trick", nil, cards)
 	l.discarded += len(cards)
 	l.currentTrick = nil
 	l.trickNumber++
@@ -281,7 +284,7 @@ func (l *LingerLonger) resolveTrick() {
 		l.players[winner].AddCard(c)
 		l.lastDrawIdx = winner
 		l.sortAllHands()
-		l.addLog(winner, "draw", "山札から 1 枚補充しました", []*Card{c})
+		l.addLog(winner, "draw", "lingerlonger.log.draw", nil, []*Card{c})
 	}
 
 	// **脱落判定は補充のあと。** 先に見ると、勝って補充する人まで落としてしまいます。
@@ -310,7 +313,7 @@ func (l *LingerLonger) eliminateEmptyHands(from int) {
 		}
 		l.eliminatedCnt++
 		p.SetEliminatedAt(l.eliminatedCnt)
-		l.addLog(i, "eliminate", fmt.Sprintf("手札が尽きて %d 番目に脱落しました", l.eliminatedCnt), nil)
+		l.addLog(i, "eliminate", "lingerlonger.log.eliminate", map[string]string{"rank": strconv.Itoa(l.eliminatedCnt)}, nil)
 	}
 }
 
@@ -406,11 +409,12 @@ func (l *LingerLonger) finish(winner int, reason string) {
 	l.gameEndFlag = true
 	l.winnerIdx = winner
 	l.winReason = reason
-	detail := "最後まで手札を持ち続けました"
-	if reason == LingerLongerWinLastTrick {
-		detail = "全員が同時に手札を出し切り、最後のトリックを取りました"
+	switch reason {
+	case LingerLongerWinLastTrick:
+		l.addLog(winner, "result", "lingerlonger.log.resultLastTrick", nil, nil)
+	default:
+		l.addLog(winner, "result", "lingerlonger.log.resultLasted", nil, nil)
 	}
-	l.addLog(winner, "result", detail, nil)
 }
 
 // GetWinReason は決着の理由をロケール非依存のキーで返す。決着前は空。
@@ -432,7 +436,7 @@ func (l *LingerLonger) GiveUp() {
 	}
 	l.winnerIdx = best
 	l.winReason = LingerLongerWinGiveUp
-	l.addLog(0, "giveup", "投了しました", nil)
+	l.addLog(0, "giveup", "lingerlonger.log.giveUp", nil, nil)
 }
 
 // chooseCpuCard は CPU の手。
@@ -503,8 +507,8 @@ func (l *LingerLonger) GetHint() *LingerLongerHint {
 }
 
 // addLog は棋譜に 1 行足す。
-func (l *LingerLonger) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	l.appendLog(playerIdx, actionType, detail, cards)
+func (l *LingerLonger) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	l.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- アクセサ ---------------------------------------------------------------

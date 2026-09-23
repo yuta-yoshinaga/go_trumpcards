@@ -51,9 +51,15 @@ describe('SpoilFivePage', () => {
     renderWithProviders(<SpoilFivePage />);
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', {
-        config: { cpuDifficulty: 1 },
+        config: { cpuDifficulty: 1, targetPoints: 30 },
       }),
     );
+  });
+
+  it.each([20, 40])('shows the target points from each game state: %s', async (targetPoints) => {
+    mockExec.mockResolvedValue(makeSpoilFiveState({ config: { cpuDifficulty: 1, targetPoints } }));
+    renderWithProviders(<SpoilFivePage />);
+    expect(await screen.findByTestId('spoilfive-target')).toHaveTextContent(`目標 ${targetPoints}点`);
   });
 
   it('renders the play phase with the human cards', async () => {

@@ -319,6 +319,16 @@ func TestTrucoCallAndDeclineAwardsPriorStake(t *testing.T) {
 	if g.GetHandStake() != 1 {
 		t.Errorf("decline at base awards %d, want 1", g.GetHandStake())
 	}
+	var entry *ActionLogEntry
+	for _, candidate := range g.GetActionLog() {
+		if candidate.DetailCode == "truco.log.decline" {
+			entry = candidate
+			break
+		}
+	}
+	if entry == nil || entry.DetailParams["points"] != "1" {
+		t.Errorf("decline action log = %#v, want code params and empty detail", entry)
+	}
 }
 
 func TestTrucoDeclineAfterAcceptedTruco(t *testing.T) {

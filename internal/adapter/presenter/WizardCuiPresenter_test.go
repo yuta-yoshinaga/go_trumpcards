@@ -103,8 +103,8 @@ func TestWizardCuiPresenter_Output(t *testing.T) {
 			{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 5, false)},
 		})
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "[0]HEART 9"+presenter.WizardLegalMark)
-		assert.NotContains(t, result, "[1]SPADE 3"+presenter.WizardLegalMark)
+		assert.Contains(t, result, "[0]♥9"+presenter.WizardLegalMark)
+		assert.NotContains(t, result, "[1]♠3"+presenter.WizardLegalMark)
 		assert.Contains(t, result, "[2]Wizard"+presenter.WizardLegalMark)
 		assert.Contains(t, result, "[3]Jester"+presenter.WizardLegalMark)
 		// 凡例が無いと印の意味が分からない。
@@ -157,6 +157,26 @@ func TestWizardCuiPresenter_Output(t *testing.T) {
 		m.On("GetPhase").Return(domain.WizardPhaseBid)
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "ビッドフェーズ")
+		assert.Contains(t, result, "合計ビッド: 0/1 (アンダー)")
+	})
+
+	t.Run("bid total reports exact at the hand-size boundary", func(t *testing.T) {
+		m, players := setupWizardCuiMockWithPlayers()
+		players[0].SetBid(1)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.WizardPhaseBid)
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "合計ビッド: 1/1 (ぴったり)")
+	})
+
+	t.Run("bid total reports over", func(t *testing.T) {
+		m, players := setupWizardCuiMockWithPlayers()
+		players[0].SetBid(1)
+		players[1].SetBid(1)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.WizardPhaseBid)
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "合計ビッド: 2/1 (オーバー)")
 	})
 
 	t.Run("bid phase with restriction", func(t *testing.T) {
@@ -272,7 +292,7 @@ func TestWizardCuiPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.WizardCuiPresenter)
 	m := setupWizardCuiMock()
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "bid", Detail: "You bids 3"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "bid", DetailCode: "wizard.log.bid", DetailParams: map[string]string{"name": "You", "bid": "3"}},
 	})
 	result := p.ActionLogOutput(m)
 	assert.NotEmpty(t, result)

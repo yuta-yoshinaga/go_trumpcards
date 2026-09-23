@@ -1,4 +1,5 @@
 import type { Card } from '../types/card';
+import type { CassinoBuild } from '../types/games/cassino';
 
 /**
  * Cards on the Cassino table that participate in at least one subset
@@ -49,6 +50,26 @@ export function cassinoTakeCandidates(tableCards: readonly Card[], targetValue: 
       }
     }
   }
+
+  return { indices };
+}
+
+/**
+ * Builds whose declared value exactly matches the player's selected hand-card value.
+ *
+ * Unlike table cards, builds cannot be captured by summing their constituent cards;
+ * Cassino's domain validation requires an exact match with the build's declared value.
+ */
+export function cassinoBuildTakeCandidates(
+  builds: readonly CassinoBuild[],
+  targetValue: number,
+): { indices: Set<number> } {
+  const indices = new Set<number>();
+  if (targetValue <= 0) return { indices };
+
+  builds.forEach((build, index) => {
+    if (build.value === targetValue) indices.add(index);
+  });
 
   return { indices };
 }

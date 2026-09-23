@@ -67,5 +67,15 @@
   "errDeclarationSum": "合計 {{sum}} は宣言値 {{val}} と一致しません。",
   "errGroupCannotBeRaised": "グループ宣言は上げられません。",
   "errRaiseMustGoUp": "宣言値 {{val}} より大きい値にしてください。",
-  "errKeepBackingCard": "値 {{val}} の札は宣言を取るために残しておく必要があります。"
+  "errKeepBackingCard": "値 {{val}} の札は宣言を取るために残しておく必要があります。",
+  "log.deal": "ラウンド{{round}}: 親={{dealer}}、場={{table}}",
+  "log.capture": "プレイヤー{{player}}が{{cards}}枚を取る",
+  "log.xeri": "プレイヤー{{player}}が場をさらう",
+  "log.trail": "プレイヤー{{player}}がカードを場に出す",
+  "log.declare": "プレイヤー{{player}}が{{value}}を宣言",
+  "log.group": "プレイヤー{{player}}が{{value}}をグループ化",
+  "log.raise": "プレイヤー{{player}}が{{value}}に上げる",
+  "log.sweep": "プレイヤー{{player}}が場に残った{{cards}}枚を取る",
+  "log.roundEnd": "ラウンド{{round}}: {{score0}} - {{score1}}",
+  "log.gameEnd": "プレイヤー{{player}}がマッチに勝利"
 }

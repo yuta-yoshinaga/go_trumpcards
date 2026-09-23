@@ -91,12 +91,7 @@ func (p *ZhengWebPresenter) buildRankings(zg interfaces.ZhengGame) string {
 		if rank < 1 || rank > 4 {
 			continue
 		}
-		var name string
-		if player.GetIsHuman() {
-			name = i18n.T("zheng.playerYou")
-		} else {
-			name = fmt.Sprintf("CPU %d", i)
-		}
+		name := webPlayerName(player.GetIsHuman(), i)
 		fmt.Fprintf(&b, "%s:%s ", name, i18n.Tf("zheng.rankN", "rank", strconv.Itoa(rank)))
 	}
 	return b.String()
@@ -105,4 +100,9 @@ func (p *ZhengWebPresenter) buildRankings(zg interfaces.ZhengGame) string {
 // ActionLogOutput 棋譜をJSON出力
 func (p *ZhengWebPresenter) ActionLogOutput(zg interfaces.ZhengGame) string {
 	return actionLogOutputJSON(zg)
+}
+
+// HintOutput は Web ではヒント専用の応答を持たないので通常の状態を返す。
+func (p *ZhengWebPresenter) HintOutput(zg interfaces.ZhengGame) string {
+	return p.Output(zg, nil)
 }

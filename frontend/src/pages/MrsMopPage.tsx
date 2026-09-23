@@ -31,6 +31,7 @@ import { useResponsiveTableau } from '../hooks/useResponsiveTableau';
 import { useSolitaireDragDrop } from '../hooks/useSolitaireDragDrop';
 import { useSound } from '../providers/SoundProvider';
 import { btnDanger, btnPrimary, btnSuccess, focusRingWhite } from '../styles/buttonStyles';
+import { HINT_FROM_RING, HINT_TO_RING } from '../styles/cardStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { MrsMopResponse } from '../types/card';
 import { MrsMopPhase } from '../types/phases';
@@ -331,7 +332,10 @@ function MrsMopPageContent() {
                       ? spiderMovableRun(col, selectedSource.cardIndex)
                       : null;
                   return (
-                    <div key={`col-${colIdx.toString()}`} className="flex-1 min-w-0">
+                    <div
+                      key={`col-${colIdx.toString()}`}
+                      className={`flex-1 min-w-0 rounded ${hint !== null && hint.toCol === colIdx ? HINT_TO_RING : ''}`}
+                    >
                       <DropZone
                         isDropTarget={dnd.isDropTarget(tableauColZone)}
                         onDragOver={dnd.handleDragOver(tableauColZone)}
@@ -363,11 +367,13 @@ function MrsMopPageContent() {
                               const inSelectedRun = selectedRun?.includes(cardIdx) ?? false;
                               const ringClass = isSourceSelected(colIdx, cardIdx)
                                 ? 'ring-2 ring-ds-warning'
-                                : inMovableRun
-                                  ? 'ring-2 ring-ds-success'
-                                  : inSelectedRun
-                                    ? 'ring-2 ring-ds-info'
-                                    : '';
+                                : hint !== null && hint.fromCol === colIdx && hint.cardIndex === cardIdx
+                                  ? HINT_FROM_RING
+                                  : inMovableRun
+                                    ? 'ring-2 ring-ds-success'
+                                    : inSelectedRun
+                                      ? 'ring-2 ring-ds-info'
+                                      : '';
                               return (
                                 <div
                                   key={`tc-${colIdx.toString()}-${cardIdx.toString()}`}

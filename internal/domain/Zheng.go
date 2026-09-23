@@ -126,7 +126,7 @@ func (z *Zheng) PlayerPlay(indices []int) error {
 		}
 		z.round.passCount++
 		z.round.humanAction = &ZhengAction{PlayerIdx: z.round.currentTurn, PlayedCards: nil}
-		z.appendLog(z.round.currentTurn, "pass", "pass", nil)
+		z.appendLog(z.round.currentTurn, "pass", "zheng.log.pass", nil, nil)
 		z.advanceTurn()
 		z.checkPassClear()
 		return nil
@@ -165,7 +165,7 @@ func (z *Zheng) PlayerPlay(indices []int) error {
 	cards := player.RemoveCards(indices)
 	playType := zhengClassifyPlay(cards)
 	z.round.humanAction = &ZhengAction{PlayerIdx: z.round.currentTurn, PlayedCards: cards}
-	z.appendLog(z.round.currentTurn, "play", fmt.Sprintf("played %d card(s)", len(cards)), cards)
+	z.appendLog(z.round.currentTurn, "play", "zheng.log.play", map[string]string{"count": fmt.Sprintf("%d", len(cards))}, cards)
 	z.playCards(z.round.currentTurn, cards, playType)
 	return nil
 }
@@ -202,7 +202,7 @@ func (z *Zheng) CpuPlay() {
 		z.round.passCount++
 		action := &ZhengAction{PlayerIdx: playerIdx, PlayedCards: nil}
 		z.round.cpuActions = append(z.round.cpuActions, action)
-		z.appendLog(playerIdx, "pass", "pass", nil)
+		z.appendLog(playerIdx, "pass", "zheng.log.pass", nil, nil)
 		z.advanceTurn()
 		z.checkPassClear()
 	} else {
@@ -210,7 +210,7 @@ func (z *Zheng) CpuPlay() {
 		playType := zhengClassifyPlay(cards)
 		action := &ZhengAction{PlayerIdx: playerIdx, PlayedCards: cards}
 		z.round.cpuActions = append(z.round.cpuActions, action)
-		z.appendLog(playerIdx, "play", fmt.Sprintf("played %d card(s)", len(cards)), cards)
+		z.appendLog(playerIdx, "play", "zheng.log.play", map[string]string{"count": fmt.Sprintf("%d", len(cards))}, cards)
 		z.playCards(playerIdx, cards, playType)
 	}
 }
@@ -264,7 +264,7 @@ func (z *Zheng) finishPlayer(idx int) {
 	rank := z.countFinished() + 1
 	z.players[idx].SetIsFinished(true)
 	z.players[idx].SetRank(rank)
-	z.appendLog(idx, "finish", fmt.Sprintf("player %d finished (rank %d)", idx, rank), nil)
+	z.appendLog(idx, "finish", "zheng.log.finish", map[string]string{"player": fmt.Sprintf("%d", idx), "rank": fmt.Sprintf("%d", rank)}, nil)
 }
 
 // checkGameEnd ゲーム終了チェック
@@ -294,6 +294,93 @@ func (z *Zheng) HasPendingAction() bool { return false }
 // IsHumanTurn 現在の手番が人間かどうか
 func (z *Zheng) IsHumanTurn() bool {
 	return z.players[z.round.currentTurn].GetIsHuman()
+}
+
+// HasPlayableResponse は現在の手番の手札に場を上回る組み合わせがあるかを返す。
+// 判定は CUI や Web に複製せず、実際の合法手判定を使う。
+func (z *Zheng) HasPlayableResponse() bool {
+	if z.round.gameEndFlag || z.round.currentTurn < 0 || z.round.currentTurn >= len(z.players) {
+		return false
+	}
+	player := z.players[z.round.currentTurn]
+	if player == nil || len(z.round.tableCards) == 0 {
+		return false
+	}
+	cards := make([]*Card, 0, player.GetCardsSize())
+	for i := 0; i < player.GetCardsSize(); i++ {
+		cards = append(cards, player.GetCard(i))
+	}
+
+	// A response must have the table's count, except for a four-card bomb and
+	// the two-joker bomb.  Cards of the same rank are interchangeable for all
+	// Zheng evaluations, so enumerate rank multiplicities rather than card
+	// subsets.  The actual legality check remains the single source of truth.
+	lengths := []int{len(z.round.tableCards), 4, 2}
+	if z.round.tablePlayType == ZhengPlayJokerBomb {
+		return false
+	}
+	seenLengths := make(map[int]struct{}, len(lengths))
+	groups := make(map[struct {
+		joker bool
+		value int
+	}]int)
+	groupCards := make([][]*Card, 0, len(cards))
+	for _, card := range cards {
+		key := struct {
+			joker bool
+			value int
+		}{joker: card.GetDesign() == CardDesignJoker, value: card.GetValue()}
+		idx, ok := groups[key]
+		if !ok {
+			idx = len(groupCards)
+			groups[key] = idx
+			groupCards = append(groupCards, nil)
+		}
+		groupCards[idx] = append(groupCards[idx], card)
+	}
+	for _, length := range lengths {
+		if length <= 0 {
+			continue
+		}
+		if _, ok := seenLengths[length]; ok {
+			continue
+		}
+		seenLengths[length] = struct{}{}
+		if zhengHasPlayableResponseCandidates(groupCards, length, z.round.tableCards, z.round.tablePlayType) {
+			return true
+		}
+	}
+	return false
+}
+
+func zhengHasPlayableResponseCandidates(groups [][]*Card, target int, tableCards []*Card, tablePlayType ZhengPlayType) bool {
+	var visit func(int, int, []*Card) bool
+	visit = func(groupIndex, remaining int, candidate []*Card) bool {
+		if remaining == 0 {
+			return zhengIsPlayable(candidate, tableCards, tablePlayType)
+		}
+		if groupIndex == len(groups) || remaining < 0 {
+			return false
+		}
+		group := groups[groupIndex]
+		maxCount := len(group)
+		if maxCount > remaining {
+			maxCount = remaining
+		}
+		for count := 0; count <= maxCount; count++ {
+			next := candidate
+			if count > 0 {
+				next = make([]*Card, len(candidate), len(candidate)+count)
+				copy(next, candidate)
+				next = append(next, group[:count]...)
+			}
+			if visit(groupIndex+1, remaining-count, next) {
+				return true
+			}
+		}
+		return false
+	}
+	return visit(0, target, nil)
 }
 
 // GetCurrentTurn 現在の手番プレイヤーインデックス取得
@@ -338,8 +425,8 @@ func (z *Zheng) SetConfig(config ZhengConfig) { z.config = config }
 func (z *Zheng) GetActionLog() []*ActionLogEntry { return z.round.actionLog }
 
 // appendLog 棋譜にエントリを追加する
-func (z *Zheng) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	z.round.appendLog(playerIdx, actionType, detail, cards)
+func (z *Zheng) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	z.round.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- JSON Serialization ---

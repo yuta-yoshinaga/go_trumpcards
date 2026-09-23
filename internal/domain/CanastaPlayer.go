@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra
+//go:build !js || !wasm || extra7
 
 package domain
 
@@ -17,6 +17,9 @@ func (m *CanastaMeld) IsCanasta() bool {
 
 // IsBurraco は IsCanasta のエイリアス（Burraco モードでの呼称）。
 func (m *CanastaMeld) IsBurraco() bool { return m.IsCanasta() }
+
+// IsBiriba は IsCanasta のエイリアス（Biriba モードでの呼称）。
+func (m *CanastaMeld) IsBiriba() bool { return m.IsCanasta() }
 
 // GetRank メルドのランク（ナチュラルカードのランク）を返す
 func (m *CanastaMeld) GetRank() int {
@@ -98,6 +101,9 @@ func (p *CanastaPlayer) HasCanasta() bool {
 
 // HasBurraco は HasCanasta のエイリアス（Burraco モードでの呼称）。
 func (p *CanastaPlayer) HasBurraco() bool { return p.HasCanasta() }
+
+// HasBiriba は HasCanasta のエイリアス（Biriba モードでの呼称）。
+func (p *CanastaPlayer) HasBiriba() bool { return p.HasCanasta() }
 
 // GetTookPozzetto ポゼット獲得済みフラグ取得 (Burraco モードのみ)
 func (p *CanastaPlayer) GetTookPozzetto() bool { return p.tookPozzetto }

@@ -106,13 +106,15 @@ func (p *FrenchTarotWebPresenter) buildBase(g interfaces.FrenchTarotGame) *contr
 	resObj.ChienRevealed = g.GetChienRevealed()
 	resObj.StashOwner = g.GetStashOwner()
 	resObj.Outcome = int(g.GetOutcome())
+	resObj.Target = g.GetTarget()
+	resObj.DeclarerCaptured = g.GetDeclarerCapturedPoints()
 	// 精算に乗っているのに画面にだけ出ていなかった (#6509)。
 	resObj.PetitAuBoutDelta = g.GetPetitAuBoutDelta()
 	resObj.Result = int(g.GetResult())
 	resObj.GameEndFlag = g.GetGameEndFlag()
 	resObj.WinnerPlayer = g.GetWinnerPlayer()
 	resObj.PlayerScores = g.GetPlayerScores()
-	resObj.LastTrickWinner = -1
+	resObj.LastTrickWinner = g.GetLastTrickWinner()
 	resObj.IsHumanTurn = g.IsHumanTurn()
 	resObj.IsHumanBidTurn = g.IsHumanBidTurn()
 	resObj.IsHumanDiscard = g.IsHumanDiscardTurn()
@@ -183,6 +185,9 @@ func (p *FrenchTarotWebPresenter) buildPlayersOutput(g interfaces.FrenchTarotGam
 // buildMessage ゲーム結果/フェーズメッセージを構築
 func (p *FrenchTarotWebPresenter) buildMessage(g interfaces.FrenchTarotGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

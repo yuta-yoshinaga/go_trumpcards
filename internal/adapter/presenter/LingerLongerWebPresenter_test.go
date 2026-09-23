@@ -86,6 +86,13 @@ func TestLingerLongerWebPresenterMessages(t *testing.T) {
 		assert.Empty(t, m["messageCode"])
 	})
 
+	t.Run("コード付きエラーはコードを返す", func(t *testing.T) {
+		err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "lingerlonger.errCardIndexOutOfRange", nil)
+		m := decodeLingerLonger(t, p.Output(newLingerLongerForWeb(t), err))
+		assert.Empty(t, m["message"])
+		assert.Equal(t, "lingerlonger.errCardIndexOutOfRange", m["messageCode"])
+	})
+
 	t.Run("プレイ中は山札と手札の枚数を出す", func(t *testing.T) {
 		l := newLingerLongerForWeb(t)
 		m := decodeLingerLonger(t, p.Output(l, nil))

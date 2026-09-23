@@ -102,18 +102,27 @@ func TestTrappolaWebPresenter_Output(t *testing.T) {
 	})
 
 	t.Run("trick end / round end message codes", func(t *testing.T) {
-		for phase, code := range map[domain.TrappolaPhase]string{
-			domain.TrappolaPhaseTrickEnd: "trappola.trickEnd",
-			domain.TrappolaPhaseRoundEnd: "trappola.roundEnd",
-		} {
-			m, _ := setupTrappolaWebMockWithPlayers()
-			m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
-			m.On("GetPhase").Return(phase)
-			result := p.Output(m, nil)
-			var resObj controller.TrappolaWebOutput
-			assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
-			assert.Equal(t, code, resObj.MessageCode)
-		}
+		m, _ := setupTrappolaWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.TrappolaPhaseTrickEnd)
+		result := p.Output(m, nil)
+		var resObj controller.TrappolaWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Equal(t, "trappola.trickEnd", resObj.MessageCode)
+
+		m, _ = setupTrappolaWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTeamRoundThirds")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLeadPlayerIdx")
+		m.On("GetPhase").Return(domain.TrappolaPhaseRoundEnd)
+		m.On("GetTeamRoundThirds").Return([domain.TrappolaTeamCnt]int{7, 4})
+		m.On("GetLeadPlayerIdx").Return(1)
+		result = p.Output(m, nil)
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Equal(t, "trappola.roundBreakdown", resObj.MessageCode)
+		assert.Equal(t, map[string]string{
+			"a": "A", "athird": "7", "b": "B", "bthird": "4", "lastteam": "B",
+		}, resObj.MessageParams)
 	})
 
 	t.Run("error message takes priority", func(t *testing.T) {
@@ -123,6 +132,24 @@ func TestTrappolaWebPresenter_Output(t *testing.T) {
 		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
 		assert.Equal(t, "boom", resObj.Message)
 		assert.Empty(t, resObj.MessageCode)
+	})
+
+	t.Run("coded error uses message code", func(t *testing.T) {
+		m, _ := setupTrappolaWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "shared.errCardIndexOutOfRange", nil)
+		var resObj controller.TrappolaWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, err)), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "shared.errCardIndexOutOfRange", resObj.MessageCode)
+	})
+
+	t.Run("game coded error uses message code", func(t *testing.T) {
+		m, _ := setupTrappolaWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "trappola.errCardIndexOutOfRange", nil)
+		var resObj controller.TrappolaWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, err)), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "trappola.errCardIndexOutOfRange", resObj.MessageCode)
 	})
 
 	t.Run("game end human team wins", func(t *testing.T) {
@@ -235,7 +262,7 @@ func TestTrappolaWebPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockTrappolaGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "plays ♠5"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, `"actionType":"play"`)

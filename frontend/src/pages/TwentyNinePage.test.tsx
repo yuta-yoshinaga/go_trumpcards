@@ -156,6 +156,36 @@ describe('TwentyNinePage', () => {
     await waitFor(() => expect(screen.getByText(/切り札: 非公開/)).toBeInTheDocument());
   });
 
+  it('shows the hidden trump to the human declarer with a private-visibility notice', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, trumpRevealed: false });
+    renderWithProviders(<TwentyNinePage />);
+    await waitFor(() => expect(screen.getByText('切り札: ♥（あなたのみ表示）')).toBeInTheDocument());
+  });
+
+  it('keeps the hidden trump hidden from the human defender', async () => {
+    mockExec.mockResolvedValue(
+      makeTwentyNineState({
+        phase: 1,
+        declarerIdx: 1,
+        trumpSuit: 3,
+        trumpRevealed: false,
+        isHumanBidTurn: false,
+        isHumanTurn: false,
+      }),
+    );
+    renderWithProviders(<TwentyNinePage />);
+    await waitFor(() => expect(screen.getByText('切り札: 非公開')).toBeInTheDocument());
+  });
+
+  it.each([
+    ['human declarer', playPhaseState],
+    ['human defender', makeTwentyNineState({ phase: 1, declarerIdx: 1, trumpSuit: 3, isHumanBidTurn: false })],
+  ])('shows the revealed trump to the %s', async (_perspective, state) => {
+    mockExec.mockResolvedValue({ ...state, trumpRevealed: true });
+    renderWithProviders(<TwentyNinePage />);
+    await waitFor(() => expect(screen.getByText('切り札: ♥')).toBeInTheDocument());
+  });
+
   it('renders the play phase with the human cards and the declarer badge', async () => {
     mockExec.mockResolvedValue(playPhaseState);
     renderWithProviders(<TwentyNinePage />);

@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra4
+//go:build !js || !wasm || extra7
 
 // Package domain シープスヘッド (Sheepshead) のドメインモデル。
 //
@@ -15,9 +15,9 @@ package domain
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // SheepsheadPlayerCnt プレイヤー数 (人間 1 + CPU 4)
@@ -92,6 +92,10 @@ type Sheepshead struct {
 	gameEndFlag      bool
 	winnerIdx        int // ゲーム勝者 (-1 = 未確定)
 	actionLogBase
+}
+
+func (g *Sheepshead) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // NewSheepshead コンストラクタ
@@ -198,7 +202,7 @@ func (g *Sheepshead) PlayerPick(pick bool) error {
 		return ErrNotHumanTurn
 	}
 	if !pick && g.passCount >= SheepsheadPlayerCnt-1 {
-		return NewDomainError(ErrInvalidPlay, "最後のプレイヤーはパスできません")
+		return NewDomainErrorCode(ErrInvalidPlay, "sheepshead.errLastPlayerCannotPass", nil)
 	}
 	g.resolvePick(g.currentPlayerIdx, pick)
 	return nil
@@ -215,7 +219,7 @@ func (g *Sheepshead) resolvePick(playerIdx int, pick bool) {
 		return
 	}
 	g.passCount++
-	g.appendLog(playerIdx, "pass", fmt.Sprintf("%s passes", playerName(g.players, playerIdx)), nil)
+	g.appendLog(playerIdx, "pass", "sheepshead.log.pass", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 	g.currentPlayerIdx = (g.currentPlayerIdx + 1) % SheepsheadPlayerCnt
 }
 
@@ -228,7 +232,7 @@ func (g *Sheepshead) becomePicker(playerIdx int) {
 	}
 	g.blind = nil
 	sheepsheadSortHand(picker)
-	g.appendLog(playerIdx, "pick", fmt.Sprintf("%s picks up the blind", playerName(g.players, playerIdx)), nil)
+	g.appendLog(playerIdx, "pick", "sheepshead.log.pick", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 	g.currentPlayerIdx = playerIdx
 	g.phase = SheepsheadPhaseBury
 }
@@ -254,16 +258,16 @@ func (g *Sheepshead) PlayerBury(indices []int) error {
 // validateBury 埋め札インデックスの妥当性を検証する。
 func (g *Sheepshead) validateBury(indices []int) error {
 	if len(indices) != SheepsheadBurySize {
-		return NewDomainError(ErrInvalidPlay, "埋める札はちょうど 2 枚です")
+		return NewDomainErrorCode(ErrInvalidPlay, "sheepshead.errBuryCount", nil)
 	}
 	picker := g.players[g.pickerIdx]
 	seen := make(map[int]bool, len(indices))
 	for _, idx := range indices {
 		if idx < 0 || idx >= picker.GetCardsSize() {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+			return NewDomainErrorCode(ErrInvalidCard, "sheepshead.errCardIndexOutOfRange", nil)
 		}
 		if seen[idx] {
-			return NewDomainError(ErrInvalidPlay, "同じ札を 2 回指定できません")
+			return NewDomainErrorCode(ErrInvalidPlay, "sheepshead.errDuplicateCard", nil)
 		}
 		seen[idx] = true
 	}
@@ -274,12 +278,12 @@ func (g *Sheepshead) validateBury(indices []int) error {
 func (g *Sheepshead) applyBury(indices []int) {
 	picker := g.players[g.pickerIdx]
 	g.buried = picker.RemoveCards(indices)
-	g.appendLog(g.pickerIdx, "bury", fmt.Sprintf("%s buries %d cards", playerName(g.players, g.pickerIdx), len(g.buried)), nil)
+	g.appendLog(g.pickerIdx, "bury", "sheepshead.log.bury", map[string]string{"name": playerName(g.players, g.pickerIdx), "cards": strconv.Itoa(len(g.buried))}, nil)
 
 	if len(g.callableSuits()) == 0 {
 		// 呼べる札がない: ピッカーは単独で戦う。
 		g.partnerIdx = -1
-		g.appendLog(g.pickerIdx, "alone", fmt.Sprintf("%s plays alone", playerName(g.players, g.pickerIdx)), nil)
+		g.appendLog(g.pickerIdx, "alone", "sheepshead.log.alone", map[string]string{"name": playerName(g.players, g.pickerIdx)}, nil)
 		g.beginPlay()
 		return
 	}
@@ -298,7 +302,7 @@ func (g *Sheepshead) PlayerCall(suit int) error {
 		return ErrNotHumanTurn
 	}
 	if !g.isCallableSuit(suit) {
-		return NewDomainError(ErrInvalidPlay, "そのスートは呼べません")
+		return NewDomainErrorCode(ErrInvalidPlay, "sheepshead.errSuitNotCallable", nil)
 	}
 	g.applyCall(suit)
 	return nil
@@ -308,8 +312,7 @@ func (g *Sheepshead) PlayerCall(suit int) error {
 func (g *Sheepshead) applyCall(suit int) {
 	g.calledSuit = suit
 	g.partnerIdx = g.holderOfCalledAce(suit)
-	g.appendLog(g.pickerIdx, "call",
-		fmt.Sprintf("%s calls the %s Ace", playerName(g.players, g.pickerIdx), suitStr(suit)), nil)
+	g.appendLog(g.pickerIdx, "call", "sheepshead.log.call", map[string]string{"name": playerName(g.players, g.pickerIdx), "suitKey": suitKeyOf(suit)}, nil)
 	g.beginPlay()
 }
 
@@ -335,7 +338,7 @@ func (g *Sheepshead) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "sheepshead.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
@@ -390,14 +393,13 @@ func (g *Sheepshead) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Sheepshead) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "sheepshead.log.play", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	// 呼びカードがプレイされたら相棒が判明する。
 	if g.calledSuit != 0 && !g.partnerRevealed &&
 		card.GetValue() == 1 && card.GetDesign() == g.calledSuit && !sheepsheadIsTrump(card) {
 		g.partnerRevealed = true
-		g.appendLog(playerIdx, "partner_reveal",
-			fmt.Sprintf("%s is the picker's partner", playerName(g.players, playerIdx)), nil)
+		g.appendLog(playerIdx, "partner_reveal", "sheepshead.log.partnerReveal", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 	}
 
 	if len(g.currentTrick) == SheepsheadPlayerCnt {
@@ -420,8 +422,7 @@ func (g *Sheepshead) ResolveTrick() {
 		pts += sheepsheadCardPoints(tc.Card.GetValue())
 	}
 	g.players[winnerIdx].AddTrick(trickCards)
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (%d pts)", playerName(g.players, winnerIdx), g.trickNumber, pts), trickCards)
+	g.appendLog(winnerIdx, "trick_win", "sheepshead.log.trickWin", map[string]string{"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber), "points": strconv.Itoa(pts)}, trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	// Clear the resolved trick so a spurious second ResolveTrick call cannot
@@ -465,15 +466,13 @@ func (g *Sheepshead) ScoreRound() {
 	g.roundPickerWon = pickerWon
 	g.settleChips(pickerWon, mult)
 
-	g.appendLog(-1, "round_score",
-		fmt.Sprintf("round %d: picker team %d pts (%s, x%d)",
-			g.roundNumber, pickerPts, sheepsheadOutcomeStr(pickerWon), mult), nil)
+	g.appendLog(-1, "round_score", "sheepshead.log.roundScore", map[string]string{"round": strconv.Itoa(g.roundNumber), "points": strconv.Itoa(pickerPts), "outcomeKey": sheepsheadOutcomeKey(pickerWon), "multiplier": strconv.Itoa(mult)}, nil)
 
 	if w := g.chipLeaderAtTarget(); w >= 0 {
 		g.gameEndFlag = true
 		g.winnerIdx = w
 		g.phase = SheepsheadPhaseGameEnd
-		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(g.players, w)), nil)
+		g.appendLog(-1, "game_end", "sheepshead.log.gameEnd", map[string]string{"name": playerName(g.players, w)}, nil)
 	}
 }
 
@@ -555,7 +554,7 @@ func (g *Sheepshead) validatePlay(playerIdx int, card *Card) error {
 	}
 	leadSuit := sheepsheadSuitID(g.currentTrick[0].Card)
 	if sheepsheadSuitID(card) != leadSuit && g.playerHasSuit(playerIdx, leadSuit) {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+		return NewDomainErrorCode(ErrInvalidPlay, "sheepshead.errFollowLeadSuit", nil)
 	}
 	return nil
 }
@@ -804,12 +803,12 @@ func sheepsheadMultiplier(loserPoints int, loserNoTrick bool) int {
 	return 1
 }
 
-// sheepsheadOutcomeStr 勝敗の表示文字列。
-func sheepsheadOutcomeStr(pickerWon bool) string {
+// sheepsheadOutcomeKey は勝敗の i18n キーを返す。
+func sheepsheadOutcomeKey(pickerWon bool) string {
 	if pickerWon {
-		return "picker team wins"
+		return "sheepshead.log.outcome.pickerWins"
 	}
-	return "defenders win"
+	return "sheepshead.log.outcome.defendersWin"
 }
 
 // --- State getters ---
@@ -879,6 +878,13 @@ func (g *Sheepshead) IsPartnerRevealed() bool { return g.partnerRevealed }
 
 // GetPassCount 現ピックフェーズのパス人数取得
 func (g *Sheepshead) GetPassCount() int { return g.passCount }
+
+// GetLivePickerPoints はプレイ中を含むピッカー組の暫定カードポイントを返す。
+func (g *Sheepshead) GetLivePickerPoints() int { return g.pickerTeamPoints() }
+
+// GetLiveDefenderPoints はプレイ中を含む守備組の暫定カードポイントを返す。
+// 埋め札を含むピッカー組の点と合わせて常に 120 点になる。
+func (g *Sheepshead) GetLiveDefenderPoints() int { return SheepsheadTotalPoints - g.pickerTeamPoints() }
 
 // GetRoundPickerPoints 直近ラウンドのピッカー組得点取得
 func (g *Sheepshead) GetRoundPickerPoints() int { return g.roundPickerPts }

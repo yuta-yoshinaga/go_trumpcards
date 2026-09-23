@@ -5,6 +5,8 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
 
@@ -161,6 +163,18 @@ func TestSchnapsen_ResolveTrick_AddsPointsAndWinsAt66(t *testing.T) {
 	if s.GetWinnerIdx() != 0 {
 		t.Errorf("winner = %d, want 0", s.GetWinnerIdx())
 	}
+	var trickLog *domain.ActionLogEntry
+	for _, entry := range s.GetActionLog() {
+		if entry.ActionType == "trick_win" {
+			trickLog = entry
+			break
+		}
+	}
+	if trickLog == nil {
+		t.Fatal("trick_win log entry not found")
+	}
+	assert.Equal(t, "schnapsen.log.trickWinYou", trickLog.DetailCode)
+	assert.Equal(t, map[string]string{"playerIdx": "0", "trick": "1", "points": "13"}, trickLog.DetailParams)
 }
 
 func TestSchnapsen_ResolveTrick_GuardWrongPhase(t *testing.T) {

@@ -22,6 +22,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { AUTO_FLIP_DELAY_MS, CPU_DIFFICULTY_OPTIONS, useSpeedGame } from '../hooks/useSpeedGame';
 import { useSpeedTimer } from '../hooks/useSpeedTimer';
+import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnOutline } from '../styles/buttonStyles';
 import { focusRingCard, playableRingStyle, selectedCardStyle } from '../styles/cardStyles';
 import type { SpeedResponse } from '../types/card';
@@ -231,6 +232,13 @@ function SpeedPageContent() {
                 {t('drawPile')}: {cpuPlayer.drawPileSize}
               </span>
             </div>
+            {state.cpuActions && state.cpuActions.length > 0 && (
+              <p className="text-center text-sm text-ds-info" data-testid="speed-cpu-actions" role="status">
+                {state.cpuActions
+                  .map((action) => t('cpuAction', { card: cardAlt(action.card), pile: action.pileIndex + 1 }))
+                  .join(' / ')}
+              </p>
+            )}
 
             {/* Center piles — clickable for play (normal) or flip (stuck) */}
             <div className="relative flex items-center justify-center gap-6" data-tutorial="sp-center-piles">
@@ -328,7 +336,7 @@ function SpeedPageContent() {
             {/* Stuck message, flip button, and inline auto-flip toggle */}
             {isStuck && (
               <div
-                className="flex flex-col items-center gap-2 bg-ds-warning/10 ring-2 ring-ds-warning rounded-lg p-3"
+                className={`flex flex-col items-center gap-2 ${badgeWarningColors} ring-2 ring-ds-warning rounded-lg p-3`}
                 data-testid="stuck-emphasis-container"
                 role="status"
                 aria-live="polite"
@@ -410,7 +418,7 @@ function SpeedPageContent() {
               {tc('button.hint')}
             </button>
             <ActionLogSection
-              isEndPhase={!!isGameEnd}
+              isEndPhase={isGameEnd}
               actionLog={actionLog}
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}

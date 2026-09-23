@@ -24,6 +24,8 @@ func setupPontoonWebMockDefaults(g *interfaces.MockPontoonGame) {
 	g.On("GetActiveHand").Return(0).Maybe()
 	g.On("GetNextBanker").Return(-1).Maybe()
 	g.On("GetLastResult").Return("").Maybe()
+	g.On("GetLastResultCode").Return("").Maybe()
+	g.On("GetLastResultParams").Return(nil).Maybe()
 	g.On("GetGameEndFlag").Return(false).Maybe()
 	g.On("CanStick").Return(true).Maybe()
 	g.On("CanTwist").Return(true).Maybe()
@@ -225,12 +227,16 @@ func TestPontoonWebPresenter_Output(t *testing.T) {
 		setupPontoonWebMockDefaults(g)
 		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetPhase")
 		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetLastResult")
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetLastResultCode")
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetLastResultParams")
 		g.On("GetPhase").Return(domain.PontoonPhaseEnd)
 		g.On("GetLastResult").Return("親は 19")
+		g.On("GetLastResultCode").Return("pontoon.log.resultTotal")
+		g.On("GetLastResultParams").Return(map[string]string{"total": "19"})
 
 		result := parsePontoonOutput(t, new(PontoonWebPresenter).Output(g, nil))
-		assert.Equal(t, "pontoon.roundOver", result.MessageCode)
-		assert.Equal(t, "親は 19", result.Message)
+		assert.Equal(t, "pontoon.log.resultTotal", result.MessageCode)
+		assert.Empty(t, result.Message)
 	})
 
 	// The bank changing hands is the headline event of the round, so it gets its
@@ -240,11 +246,17 @@ func TestPontoonWebPresenter_Output(t *testing.T) {
 		setupPontoonWebMockDefaults(g)
 		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetPhase")
 		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetNextBanker")
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetLastResultCode")
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetLastResultParams")
 		g.On("GetPhase").Return(domain.PontoonPhaseEnd)
 		g.On("GetNextBanker").Return(0)
+		g.On("GetLastResultCode").Return("pontoon.log.resultBust")
+		g.On("GetLastResultParams").Return(map[string]string{"total": "18"})
 
 		result := parsePontoonOutput(t, new(PontoonWebPresenter).Output(g, nil))
 		assert.Equal(t, "pontoon.bankPasses", result.MessageCode)
+		assert.Equal(t, "pontoon.log.resultBust", result.MessageParams["resultKey"])
+		assert.Equal(t, "18", result.MessageParams["total"])
 		assert.Equal(t, "0", result.MessageParams["seat"])
 	})
 }
@@ -260,7 +272,7 @@ func TestPontoonWebPresenter_ActionLogOutput(t *testing.T) {
 		g := new(interfaces.MockPontoonGame)
 		g.On("GetGameEndFlag").Return(true)
 		g.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "deal", Detail: "test"},
+			{TurnNumber: 1, ActionType: "deal", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 		assert.Contains(t, new(PontoonWebPresenter).ActionLogOutput(g), "deal")
 	})

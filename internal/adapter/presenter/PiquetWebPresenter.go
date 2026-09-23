@@ -19,6 +19,14 @@ func (p *PiquetWebPresenter) Output(g interfaces.PiquetGame, lastErr error) stri
 		resObj.Message = lastErr.Error()
 	} else {
 		resObj.MessageCode = piquetPhaseMessageCode(g.GetPhase())
+		if trickWin := piquetLatestTrickWin(g.GetActionLog()); trickWin != nil {
+			resObj.MessageParams = map[string]string{"cards": cuiCardSliceStr(trickWin.Cards)}
+			if trickWin.PlayerIdx == g.GetElderIdx() {
+				resObj.MessageCode = "piquet.trickWin.elder"
+			} else if trickWin.PlayerIdx == g.GetYoungerIdx() {
+				resObj.MessageCode = "piquet.trickWin.younger"
+			}
+		}
 	}
 
 	// 合法プレイインデックス (人間ターンのみ)
@@ -41,6 +49,28 @@ func (p *PiquetWebPresenter) Output(g interfaces.PiquetGame, lastErr error) stri
 	}
 
 	return marshalOrError(resObj)
+}
+
+func piquetLatestTrickWin(entries []*domain.ActionLogEntry) *domain.ActionLogEntry {
+	if len(entries) == 0 {
+		return nil
+	}
+	for i := len(entries) - 1; i >= 0; i-- {
+		if entries[i] == nil {
+			return nil
+		}
+		switch entries[i].ActionType {
+		case "trick_point", "last_trick_bonus", "pique":
+			// These are the non-winning entries resolveTrick can append for the same trick.
+			continue
+		case "trick_win":
+			return entries[i]
+		default:
+			// Do not reuse a trick_win from an earlier trick, deal, or phase.
+			return nil
+		}
+	}
+	return nil
 }
 
 // HintOutput ヒントをJSON出力

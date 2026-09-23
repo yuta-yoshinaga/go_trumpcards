@@ -3,6 +3,9 @@
   "helpFlip": "  f <pos>              flip a card",
   "helpNext": "  n                    next turn",
   "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy forgets often, 1=Normal, 2=Hard rarely forgets)",
+  "helpSetPairCount": "  sp [6-26]            set pair count",
+  "pairCountRequired": "Pair count is required (6-26).",
+  "invalidPairCount": "Invalid pair count: {{val}}. Please enter 6-26.",
   "playerLine": "{{name}}: {{pairs}} pair(s)",
   "visitedLegend": "Legend: !? = seen card matching the face-up one / *? = seen before / ?? = unseen",
   "promptFlip1": "{{name}} — pick the first card",
@@ -14,5 +17,7 @@
   "gameEnd": "Game over! {{name}} wins!",
   "progressLine": "Remaining: {{remaining}} / {{total}} pairs",
   "visitedCountLegend": "Seen cells: {{count}}",
-  "helpExampleFlip": "  f 0                  turn over the card at position 0"
+  "helpExampleFlip": "  f 0                  turn over the card at position 0",
+  "log.match": "Move: {{value1}}, {{value2}}",
+  "log.miss": "Move: {{value1}}, {{value2}}"
 }

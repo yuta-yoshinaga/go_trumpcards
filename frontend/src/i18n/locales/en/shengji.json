@@ -18,6 +18,8 @@
   "comboSingle": "single",
   "comboPair": "pair",
   "comboTractor": "tractor (consecutive pairs)",
+  "comboPreview": "Selected combo",
+  "invalidCombo": "These cards do not form a valid combo",
   "declareRules": "Declare trump by showing a level card. ONLY A STRONGER SHOWING OVERRIDES (a pair beats a single). If everyone passes there is no trump suit.",
   "declareButton": "Declare {{suit}} (x{{strength}})",
   "passButton": "Pass",

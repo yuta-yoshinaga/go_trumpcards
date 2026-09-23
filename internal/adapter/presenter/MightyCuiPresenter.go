@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra5
+//go:build !js || !wasm || extra6
 
 package presenter
 
@@ -132,6 +132,9 @@ func (p *MightyCuiPresenter) Output(m interfaces.MightyGame, lastErr error) stri
 			b.WriteString(i18n.Tf("mighty.highestBid", "bid", strconv.Itoa(m.GetHighestBid())))
 			b.WriteString("\n")
 		}
+
+		b.WriteString(i18n.Tf("mighty.pointLimitLine",
+			"limit", strconv.Itoa(m.GetConfig().PointLimit)) + "\n")
 
 		for i := 0; i < m.GetPlayerCnt(); i++ {
 			b.WriteString(mightyPlayerStr(m.GetPlayer(i), i, m.GetPartnerRevealed()))

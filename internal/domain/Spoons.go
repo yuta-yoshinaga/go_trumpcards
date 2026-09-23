@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra2
+//go:build !js || !wasm || extra6
 
 package domain
 
@@ -199,7 +199,10 @@ func (g *Spoons) dealRound() {
 		g.feederIdx = active[0]
 		g.currentPlayerIdx = active[0]
 	}
-	g.appendLog(-1, "deal", fmt.Sprintf("round %d dealt, %d spoons", g.roundNumber, g.spoonsRemaining), nil)
+	g.appendLog(-1, "deal", "spoons.log.deal", map[string]string{
+		"round":  fmt.Sprintf("%d", g.roundNumber),
+		"spoons": fmt.Sprintf("%d", g.spoonsRemaining),
+	}, nil)
 }
 
 // drawAll はトランプから全カードを取り出してスライスで返す。
@@ -432,7 +435,7 @@ func (g *Spoons) doPass(idx, cardIndex int) {
 	if passed != nil {
 		cardArg = []*Card{passed}
 	}
-	g.appendLog(idx, "pass", "pass a card to the left", cardArg)
+	g.appendLog(idx, "pass", "spoons.log.pass", nil, cardArg)
 	g.passCount++
 
 	// フォーオブアカインド: 揃ったら即グラブしウィンドウを開く。
@@ -477,7 +480,7 @@ func (g *Spoons) openGrabWindow(idx int) {
 	g.phase = SpoonsPhaseGrab
 	g.grabWindowOpen = true
 	g.firstGrabberIdx = idx
-	g.appendLog(idx, "four", "four of a kind! grab a spoon", nil)
+	g.appendLog(idx, "four", "spoons.log.four", nil, nil)
 	g.grabSpoon(idx)
 	g.cpuRace(true)
 	g.maybeCloseGrabWindow()
@@ -514,7 +517,7 @@ func (g *Spoons) grabSpoon(idx int) {
 	}
 	p.SetHasSpoon(true)
 	g.spoonsRemaining--
-	g.appendLog(idx, "grab", "grabbed a spoon", nil)
+	g.appendLog(idx, "grab", "spoons.log.grab", nil, nil)
 }
 
 // maybeCloseGrabWindow はスプーンが尽きたらラウンドを締めて文字を付与する。
@@ -536,11 +539,13 @@ func (g *Spoons) endRound() {
 		if !p.GetHasSpoon() {
 			loser = idx
 			eliminated := p.AddLetter()
-			detail := fmt.Sprintf("missed spoon, +1 letter (now %d)", p.GetLetters())
+			code := "spoons.log.missedSpoon"
+			params := map[string]string{"letters": fmt.Sprintf("%d", p.GetLetters())}
 			if eliminated {
-				detail = "missed spoon, eliminated (SPOONS)"
+				code = "spoons.log.missedSpoonEliminated"
+				params = nil
 			}
-			g.appendLog(idx, "letter", detail, nil)
+			g.appendLog(idx, "letter", code, params, nil)
 		}
 	}
 	g.roundLoserIdx = loser
@@ -581,10 +586,15 @@ func (g *Spoons) endGame(winner int) {
 	if winner >= 0 && winner < SpoonsPlayerCnt && g.players[winner] != nil {
 		g.players[winner].SetIsFinished(true)
 	}
-	g.appendLog(winner, "gameEnd", "game over", nil)
+	g.appendLog(winner, "gameEnd", "spoons.log.gameEnd", nil, nil)
 }
 
 // --- 内部ヘルパ ---
+
+// appendLog records a Spoons action with a locale-independent detail code.
+func (g *Spoons) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
+}
 
 // activeIndices は脱落していないプレイヤーのインデックスを昇順で返す。
 func (g *Spoons) activeIndices() []int {

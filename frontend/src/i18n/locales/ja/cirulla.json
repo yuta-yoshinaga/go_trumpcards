@@ -20,6 +20,7 @@
   "chooseCapture": "取る組を選んでください",
   "noCapture": "この札では取れません。場に置けます。",
   "takeGroup": "場の {{cards}} を取る",
+  "captureAvailable": "取れる組があります",
   "layOffButton": "場に置く",
   "score": "{{n}} 点",
   "taken": "取り札 {{n}} 枚（デナリ {{denari}}）",

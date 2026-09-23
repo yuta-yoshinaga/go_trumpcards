@@ -166,14 +166,14 @@ func TestKnockoutWhistCuiPresenter_HintOutput(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 13, false))
 		m.On("GetHint").Return(&domain.KnockoutWhistHint{CardIndices: []int{0}, Reason: "lead_high"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 
 	t.Run("hint no card indices", func(t *testing.T) {
 		m, _ := setupKnockoutWhistCuiMockWithPlayers()
 		m.On("GetHint").Return(&domain.KnockoutWhistHint{CardIndices: nil, Reason: "follow_win"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 }
 
@@ -182,7 +182,7 @@ func TestKnockoutWhistCuiPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockKnockoutWhistGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You plays ♠K"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
 	m.On("GetPlayer", mock.Anything).Return(domain.NewKnockoutWhistPlayer(true)).Maybe()

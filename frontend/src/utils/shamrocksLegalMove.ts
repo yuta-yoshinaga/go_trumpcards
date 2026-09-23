@@ -8,9 +8,9 @@ function fanTop(fan: Card[]): Card | undefined {
   return fan.length > 0 ? fan[fan.length - 1] : undefined;
 }
 
-/** Whether the card can move to any foundation: an empty pile takes an Ace,
- * otherwise it builds up in the same suit (value + 1). */
-function fitsFoundation(card: Card, foundation: Card[][]): boolean {
+/** Whether a card can be placed on at least one Shamrocks foundation.
+ * An empty pile takes an Ace; otherwise it builds up in the same suit. */
+export function fitsFoundation(card: Card, foundation: Card[][]): boolean {
   for (const pile of foundation) {
     if (pile.length === 0) {
       if (card.value === 1) return true;

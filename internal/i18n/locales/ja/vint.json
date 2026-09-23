@@ -8,6 +8,8 @@
   "noDummyNote": "【ダミーはありません。】味方の手札も最後まで伏せられます。",
   "scoreLine": "チーム0: 線下 {{b0}} 線上 {{a0}} ゲーム {{g0}} / チーム1: 線下 {{b1}} 線上 {{a1}} ゲーム {{g1}}",
   "contractLine": "契約: {{level}} {{denom}}  トリック単価 {{value}}",
+  "bidHistoryEntry": "{{name}}: {{level}} {{denom}}",
+  "bidHistoryPass": "{{name}}: パス",
   "noTrump": "NT",
   "hiddenHand": "非公開 {{count}}枚",
   "dealerTag": "[親]",
@@ -34,5 +36,6 @@
   "handSet": "宣言失敗。不足数 × レベル × 500 が相手の線上へ",
   "result.humanWin": "ラバー終了！ あなたのチームの勝ち！",
   "result.cpuWin": "ラバー終了！ 相手チームの勝ち！",
-  "helpExamplePlay": "  p 0                       手札の 0 番のカードを出す"
+  "helpExamplePlay": "  p 0                       手札の 0 番のカードを出す",
+  "log.deal": "{{cards}} 枚ずつ", "log.bid": "{{level}} の {{denom}} をビッドしました", "log.pass": "パスしました", "log.redeal": "全員がパスしました", "log.contract": "{{level}} の {{denom}} を取りました", "log.play": "カードを出しました", "log.trick": "トリック {{trick}} を取りました", "log.set": "{{target}} に {{short}} 足りません", "log.made": "{{target}} のうち {{tricks}} を取りました", "log.rubber": "チーム {{team}} がラバーを取りました", "log.game": "チーム {{team}} がゲームを取りました"
 }

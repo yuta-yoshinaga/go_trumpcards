@@ -67,5 +67,15 @@
   "errDeclarationSum": "The total {{sum}} does not match the declared value {{val}}.",
   "errGroupCannotBeRaised": "A group declaration cannot be raised.",
   "errRaiseMustGoUp": "A raise must go above {{val}}.",
-  "errKeepBackingCard": "You must keep a card worth {{val}} to capture your own declaration."
+  "errKeepBackingCard": "You must keep a card worth {{val}} to capture your own declaration.",
+  "log.deal": "round {{round}}: dealer={{dealer}}, table={{table}}",
+  "log.capture": "player {{player}} captures {{cards}} card(s)",
+  "log.xeri": "player {{player}} sweeps the table",
+  "log.trail": "player {{player}} lays a card",
+  "log.declare": "player {{player}} declares {{value}}",
+  "log.group": "player {{player}} groups {{value}}",
+  "log.raise": "player {{player}} raises to {{value}}",
+  "log.sweep": "player {{player}} takes the {{cards}} card(s) left on the table",
+  "log.roundEnd": "round {{round}}: {{score0}} - {{score1}}",
+  "log.gameEnd": "player {{player}} wins the match"
 }

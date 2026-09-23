@@ -15,6 +15,25 @@ import (
 // IndianPokerCuiPresenter renders the Indian Poker CUI view.
 type IndianPokerCuiPresenter struct{}
 
+// HintOutput emits the current hint.
+func (p *IndianPokerCuiPresenter) HintOutput(ip interfaces.IndianPokerGame) string {
+	hint := ip.GetHint()
+	if hint == nil || hint.Reason == "none" {
+		return i18n.T("indianpoker.hintNone") + "\n"
+	}
+	reason := hintReasonStr(hint.Reason, indianPokerHintReasonKeys)
+	return color.Yellow(i18n.Tf("indianpoker.hintAction",
+		"action", cuiBettingActionName(hint.Action), "reason", reason)) + "\n"
+}
+
+var indianPokerHintReasonKeys = map[string]string{
+	"strong_hand":    "indianpoker.hintReasonStrong",
+	"free_look":      "indianpoker.hintReasonFreeLook",
+	"pot_odds_short": "indianpoker.hintReasonPotOddsShort",
+	"pot_odds_ok":    "indianpoker.hintReasonPotOddsOK",
+	"none":           "indianpoker.hintNone",
+}
+
 // ActionLogOutput emits the action-log transcript as plain text.
 func (p *IndianPokerCuiPresenter) ActionLogOutput(ip interfaces.IndianPokerGame) string {
 	return actionLogOutputTextForSeats[*domain.IndianPokerPlayer](ip)

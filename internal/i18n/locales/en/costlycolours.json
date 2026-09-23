@@ -60,5 +60,15 @@
   "errNotYourTurn": "It is not your turn.",
   "errCardRange": "Invalid card index: {{idx}}",
   "errWouldExceed": "That card would take the count past 31 (total {{total}}).",
-  "mogDiscard": "Accepting gives away {{card}}."
+  "mogDiscard": "Accepting gives away {{card}}.",
+  "log.deal": "deal {{deal}}: dealer={{dealer}}, turn-up shown",
+  "log.heels": "player {{player}} pegs {{points}} for his heels",
+  "log.mogRefused": "player {{refuser}} refuses; player {{player}} pegs {{points}}",
+  "log.mog": "player {{player}} and {{other}} exchange a card",
+  "log.peg": "player {{player}} pegs {{points}} ({{reasons}})",
+  "log.play": "player {{player}} plays, total {{total}}",
+  "log.go": "player {{goer}} says go; player {{player}} pegs {{points}}",
+  "log.latter": "player {{player}} pegs {{points}} for the latter",
+  "log.show": "deal {{deal}} show: {{first}} - {{second}}",
+  "log.gameEnd": "player {{player}} wins the match"
 }

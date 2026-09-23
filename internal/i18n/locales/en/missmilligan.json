@@ -48,5 +48,9 @@
   "errWaivedSingleOnly": "Only a single waived card can go to a foundation",
   "errNotPlaying": "The game is not in the playing phase",
   "errNoAutoMove": "No card can be auto-completed",
-  "errNothingToUndo": "Nothing to undo"
+  "errNothingToUndo": "Nothing to undo",
+  "log.deal": "Dealt cards",
+  "log.move": "Move: {{value1}}, {{value2}}, {{value3}}",
+  "log.waive": "Move: {{value1}}, {{value2}}",
+  "log.giveup": "Gave up"
 }

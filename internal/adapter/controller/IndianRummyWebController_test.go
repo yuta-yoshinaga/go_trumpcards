@@ -16,10 +16,11 @@ import (
 
 func mustIndianRummyOutputJSON(msg string) string {
 	out := &controller.IndianRummyWebOutput{
-		Players:       []*controller.IndianRummyWebOutputPlayer{},
-		WinnerIdx:     -1,
-		DeclarerIdx:   -1,
-		WebOutputBase: controller.WebOutputBase{Message: msg},
+		Players:            []*controller.IndianRummyWebOutputPlayer{},
+		DeclarableDiscards: []int{},
+		WinnerIdx:          -1,
+		DeclarerIdx:        -1,
+		WebOutputBase:      controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {

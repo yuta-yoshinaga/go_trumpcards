@@ -1,0 +1,63 @@
+import { describe, expect, it } from 'vitest';
+import type { MatrimonyResponse } from '../../types/games/matrimony';
+import { getMatrimonyHint } from './matrimonyHint';
+
+function makeState(overrides?: Partial<MatrimonyResponse>): MatrimonyResponse {
+  return {
+    tableau: Array.from({ length: 16 }, () => null),
+    foundation: Array.from({ length: 4 }, () => []),
+    stockCount: 88,
+    redealCount: 0,
+    waste: [],
+    phase: 0,
+    moveCount: 0,
+    canUndo: false,
+    isStalemate: false,
+    message: '',
+    ...overrides,
+  };
+}
+
+describe('getMatrimonyHint', () => {
+  it('returns null when not in playing phase', () => {
+    expect(getMatrimonyHint(makeState({ phase: 1 }))).toBeNull();
+  });
+
+  it('returns null in stalemate', () => {
+    expect(getMatrimonyHint(makeState({ isStalemate: true }))).toBeNull();
+  });
+
+  it('returns null when no server hint', () => {
+    expect(getMatrimonyHint(makeState())).toBeNull();
+  });
+
+  it('maps a foundation hint', () => {
+    const r = getMatrimonyHint(
+      makeState({ hint: { fromZone: 'tableau', fromIdx: 2, toZone: 'foundation', toIdx: 0 } }),
+    );
+    expect(r).toEqual({ targetAction: 'play.foundation', reason: 'hintReason.toFoundation', confidence: 'strong' });
+  });
+
+  it('maps a tableau hint', () => {
+    const r = getMatrimonyHint(makeState({ hint: { fromZone: 'tableau', fromIdx: 1, toZone: 'tableau', toIdx: 4 } }));
+    expect(r).toEqual({ targetAction: 'play.tableau', reason: 'hintReason.toTableau', confidence: 'strong' });
+  });
+
+  // Filling a gap straight from the stock spends a stock card without turning
+  // it, which with a single pass is a real decision -- so it reads differently
+  // from an ordinary draw.
+  it('gives a stock gap-fill its own reason', () => {
+    const r = getMatrimonyHint(makeState({ hint: { fromZone: 'stock', fromIdx: -1, toZone: 'tableau', toIdx: 3 } }));
+    expect(r).toEqual({ targetAction: 'play.fillGap', reason: 'hintReason.fillGap', confidence: 'strong' });
+  });
+
+  it('downgrades an ordinary draw to moderate', () => {
+    const r = getMatrimonyHint(makeState({ hint: { fromZone: 'stock', fromIdx: -1, toZone: 'waste', toIdx: -1 } }));
+    expect(r).toEqual({ targetAction: 'play.draw', reason: 'hintReason.draw', confidence: 'moderate' });
+  });
+
+  it('prefers the foundation reason over the waste source', () => {
+    const r = getMatrimonyHint(makeState({ hint: { fromZone: 'waste', fromIdx: -1, toZone: 'foundation', toIdx: 1 } }));
+    expect(r?.reason).toBe('hintReason.toFoundation');
+  });
+});

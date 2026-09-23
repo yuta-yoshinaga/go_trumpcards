@@ -112,6 +112,16 @@ func TestNap_AllPassVoidsRound(t *testing.T) {
 	if g.GetDeclarerIdx() != -1 || g.GetPhase() != NapPhaseRoundEnd {
 		t.Errorf("all-pass: declarer=%d phase=%d, want -1 / RoundEnd", g.GetDeclarerIdx(), g.GetPhase())
 	}
+	var found *ActionLogEntry
+	for _, entry := range g.GetActionLog() {
+		if entry.DetailCode == "nap.log.passedOut" {
+			found = entry
+			break
+		}
+	}
+	if assert.NotNil(t, found) {
+		assert.Nil(t, found.DetailParams)
+	}
 }
 
 func TestNap_TrickWinnerTrumpBeatsLead(t *testing.T) {

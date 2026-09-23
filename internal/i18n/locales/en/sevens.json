@@ -32,5 +32,9 @@
   "helpExamplePass": "  p                    pass when you cannot play",
   "helpLog": "  l                    show the action log",
   "noPlayable": "No playable card -- pass with p",
-  "actionReclaimedJoker": "  -> {{name}} reclaimed the joker (it returns to their hand)"
+  "actionReclaimedJoker": "  -> {{name}} reclaimed the joker (it returns to their hand)",
+  "log.pass": "pass",
+  "log.play": "played {{card}}",
+  "log.finish": "player {{player}} finished (rank {{rank}})",
+  "log.joker": "played joker as {{suit}} {{value}}"
 }

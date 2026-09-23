@@ -324,6 +324,37 @@ describe('IsraeliWhistPage', () => {
     expect(screen.getByTestId('iw-seat-2')).toHaveTextContent('未宣言');
   });
 
+  it('shows signed round deltas only when the round ends', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 3,
+        players: [
+          seat(0, { roundScore: 59 }),
+          seat(1, { roundScore: -20 }),
+          seat(2, { roundScore: 0 }),
+          seat(3, { roundScore: 25 }),
+        ],
+      } as Partial<IsraeliWhistResponse>),
+    );
+    renderWithProviders(<IsraeliWhistPage />);
+
+    expect(await screen.findByTestId('iw-round-delta-0')).toHaveTextContent('今回 +59');
+    expect(screen.getByTestId('iw-round-delta-1')).toHaveTextContent('今回 -20');
+    expect(screen.getByTestId('iw-round-delta-2')).toHaveTextContent('今回 ±0');
+    expect(screen.getByTestId('iw-round-delta-1').className).toContain('text-ds-error');
+    expect(screen.getByTestId('iw-round-delta-0').className).toContain('text-ds-success');
+  });
+
+  it('does not show round deltas before the round ends', async () => {
+    mockExec.mockResolvedValue(
+      playing({ players: [seat(0, { roundScore: 59 }), seat(1), seat(2), seat(3)] } as Partial<IsraeliWhistResponse>),
+    );
+    renderWithProviders(<IsraeliWhistPage />);
+
+    await screen.findByTestId('iw-seat-0');
+    expect(screen.queryByTestId('iw-round-delta-0')).not.toBeInTheDocument();
+  });
+
   // オークション中と決着後で表示が入れ替わる。両側を踏む。
   it('shows the standing bid, then the trump', async () => {
     mockExec.mockResolvedValue(makeState({ highBid: 6, highSuit: 1 }));

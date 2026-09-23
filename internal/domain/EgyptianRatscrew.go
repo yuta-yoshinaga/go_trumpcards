@@ -2,8 +2,8 @@ package domain
 
 import (
 	"encoding/json"
-	"fmt"
 	"math/rand"
+	"strconv"
 	"time"
 )
 
@@ -292,7 +292,7 @@ func (g *EgyptianRatscrew) Step() error {
 	}
 	g.centerPile = append(g.centerPile, c)
 	g.lastEvent = EgyptianRatscrewLastEvent{Kind: EgyptianRatscrewEventStep, PlayerIdx: g.currentTurnIdx}
-	g.appendLog(g.currentTurnIdx, "step", fmt.Sprintf("flip from stock (top=%d)", c.GetValue()), []*Card{c})
+	g.appendLogCode(g.currentTurnIdx, "step", "egyptianratscrew.log.flipFromStock", map[string]string{"top": strconv.Itoa(c.GetValue())}, []*Card{c})
 
 	// 場の上 2 枚 / 上 3 枚で slap が成立した場合は、絵札判定より先にスラップレースを開始する。
 	// (例: 絵札ペアでもまずペアスラップで処理する)
@@ -412,7 +412,14 @@ func (g *EgyptianRatscrew) applyCorrectSlap(playerIdx int, reason EgyptianRatscr
 		PlayerIdx:  playerIdx,
 		SlapReason: reason,
 	}
-	g.appendLog(playerIdx, "slap", fmt.Sprintf("correct slap (%s), +%d cards", slapReasonLabel(reason), len(got)), nil)
+	detailCode := "egyptianratscrew.log.correctSlapNone"
+	switch reason {
+	case EgyptianRatscrewSlapReasonPair:
+		detailCode = "egyptianratscrew.log.correctSlapPair"
+	case EgyptianRatscrewSlapReasonSandwich:
+		detailCode = "egyptianratscrew.log.correctSlapSandwich"
+	}
+	g.appendLogCode(playerIdx, "slap", detailCode, map[string]string{"cards": strconv.Itoa(len(got))}, nil)
 	g.pending = EgyptianRatscrewPending{Kind: EgyptianRatscrewPendingNone}
 	g.maybeScheduleCpuStep()
 }
@@ -431,7 +438,7 @@ func (g *EgyptianRatscrew) applyWrongSlap(playerIdx int) {
 		moved++
 	}
 	g.lastEvent = EgyptianRatscrewLastEvent{Kind: EgyptianRatscrewEventSlapWrong, PlayerIdx: playerIdx}
-	g.appendLog(playerIdx, "slap", fmt.Sprintf("wrong slap, -%d cards", moved), nil)
+	g.appendLogCode(playerIdx, "slap", "egyptianratscrew.log.wrongSlap", map[string]string{"cards": strconv.Itoa(moved)}, nil)
 	if !offender.HasStock() {
 		g.endGame(opp)
 		return
@@ -456,7 +463,7 @@ func (g *EgyptianRatscrew) applyChanceWin(winnerIdx int) {
 	g.chanceRemaining = 0
 	g.chanceFromIdx = -1
 	g.lastEvent = EgyptianRatscrewLastEvent{Kind: EgyptianRatscrewEventChanceWin, PlayerIdx: winnerIdx}
-	g.appendLog(winnerIdx, "chance", fmt.Sprintf("chance win, +%d cards", len(got)), nil)
+	g.appendLogCode(winnerIdx, "chance", "egyptianratscrew.log.chanceWin", map[string]string{"cards": strconv.Itoa(len(got))}, nil)
 	g.pending = EgyptianRatscrewPending{Kind: EgyptianRatscrewPendingNone}
 	g.maybeScheduleCpuStep()
 }

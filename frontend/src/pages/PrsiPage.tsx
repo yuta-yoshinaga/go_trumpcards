@@ -153,6 +153,9 @@ function PrsiPageContent() {
   const humanPlayer = state.players.find((p) => p.isHuman);
   const isPlayPhase = state.phase === PrsiPhase.PLAY;
   const isGameEnd = state.phase === PrsiPhase.GAME_END || state.gameEndFlag;
+  // 残り 1 枚は次の一手で勝敗が決まる。ページはこれまで枚数を素の数字でしか
+  // 出しておらず、hasPenalty には警告バッジがあるのにここには無かった。
+  const atOneCard = (cardCount: number) => cardCount === 1 && !isGameEnd;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
   const hasPenalty = state.penaltyDrawCount > 0;
   // **エース/ジャックのスキップも重ねられる。**7 の累積ペナルティは「+N」バッジと
@@ -298,6 +301,18 @@ function PrsiPageContent() {
                     <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
                       <div className="text-ds-text-muted text-sm">
                         {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })}
+                        {atOneCard(p.cardCount) && (
+                          <span
+                            data-testid={`prsi-cpu-${p.id.toString()}-last-card-badge`}
+                            role="status"
+                            // role="status" のライブ領域が読み上げるのはバッジの中身だけで、
+                            // 同じ行にある席名は読まれない。誰が残り 1 枚なのかを名前ごと持たせる。
+                            aria-label={t('lastCardBadgeAria', { name: playerName(p.id, p.isHuman) })}
+                            className={`ml-2 inline-block px-2 py-0.5 rounded text-xs font-bold ${badgeWarningColors}`}
+                          >
+                            {t('lastCardBadge')}
+                          </span>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -306,6 +321,17 @@ function PrsiPageContent() {
           </div>
 
           <GameFooter className={`${gameTheme.prsi.footer} px-4 py-2.5`}>
+            {humanPlayer && atOneCard(humanPlayer.cardCount) && (
+              <span
+                data-testid="prsi-human-last-card-badge"
+                role="status"
+                aria-label={t('lastCardBadgeAria', { name: playerName(humanPlayer.id, true) })}
+                className={`mb-1 inline-block px-2 py-0.5 rounded text-xs font-bold ${badgeWarningColors}`}
+              >
+                {t('lastCardBadge')}
+              </span>
+            )}
+
             {humanPlayer && (
               <div className="flex flex-wrap gap-1 mb-2" data-tutorial="prsi-player-hand">
                 {humanPlayer.cards.map((card, idx) => {

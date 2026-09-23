@@ -7,15 +7,15 @@ package domain
 // in every worker binary.
 func validateIndexList(indices []int, size int) error {
 	if len(indices) == 0 {
-		return NewDomainError(ErrInvalidCard, "インデックスが空です")
+		return NewDomainErrorCode(ErrInvalidCard, "shared.errEmptyIndexList", nil)
 	}
 	seen := make(map[int]bool)
 	for _, idx := range indices {
 		if idx < 0 || idx >= size {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+			return NewDomainErrorCode(ErrInvalidCard, "shared.errCardIndexOutOfRange", nil)
 		}
 		if seen[idx] {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが重複しています")
+			return NewDomainErrorCode(ErrInvalidCard, "shared.errDuplicateCardIndex", nil)
 		}
 		seen[idx] = true
 	}

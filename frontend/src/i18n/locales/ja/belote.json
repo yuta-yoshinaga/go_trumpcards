@@ -21,6 +21,7 @@
   "trick": "トリック {{n}}",
   "cards": "{{count}}枚",
   "teamScores": "チームスコア",
+  "targetScore": "目標: {{score}}点",
   "team": "チーム{{n}}",
   "teamYou": "チーム{{n}} (あなた)",
   "trumpSuit": "切り札: {{suit}}",

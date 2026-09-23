@@ -10,6 +10,7 @@
   "helpSetChips": "  sc <n>               starting chips",
   "helpSetRounds": "  st <n>               number of rounds",
   "roundLine": "Round: {{round}}  Pot: {{pot}}  Ante: {{ante}}",
+  "drawRound": "Draw {{n}}",
   "playerLine": "{{name}}  chips {{chips}}  bet {{bet}}  [{{status}}]",
   "statusOut": "out",
   "statusDrawing": "still drawing",
@@ -38,5 +39,13 @@
   "hintReasonExactlySeven": "exactly 7 — drawing can only break it",
   "hintReasonExactlyTwentySeven": "exactly 27 — drawing can only break it",
   "hintReasonStandPat": "standing is safer here; one card could put you over",
-  "hintReasonBustBoth": "you are over on both sides; drawing costs nothing but gains nothing"
+  "hintReasonBustBoth": "you are over on both sides; drawing costs nothing but gains nothing",
+  "log.deal": "Round {{round}}: ante {{ante}}, pot {{pot}}",
+  "log.declareDraw": "player {{player}} asks for a card",
+  "log.declareStand": "player {{player}} stands pat",
+  "log.deckEmpty": "the deck ran out; everyone stands pat",
+  "log.draw": "{{player}} takes a card",
+  "log.resultCarry": "everyone busted both ways; pot {{pot}} carries over",
+  "log.win": "{{player}} takes {{amount}}",
+  "log.gameEnd": "{{player}} wins the game"
 }

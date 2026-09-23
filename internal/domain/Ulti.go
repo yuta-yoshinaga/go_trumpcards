@@ -172,7 +172,7 @@ type Ulti struct {
 	discards         []*Card      // デクレアラーが伏せて捨てた 2 枚
 	playerCoins      [UltiPlayerCnt]int
 	lastDealCoins    [UltiPlayerCnt]int // 直近ディールの精算 (符号付き増減、ゼロサム)
-	lastTrickWinner  int                // 最終トリック勝者 (-1=未確定)
+	lastTrickWinner  int                // 直前トリックの勝者 (-1=未確定)
 	outcome          UltiOutcome        // 直近ディールの結果
 	result           UltiResult         // 人間視点のマッチ結果
 	scored           bool               // 当該ディールの得点計算済みか (RoundEnd 突入時に一度だけ)
@@ -294,10 +294,10 @@ func (g *Ulti) PlayerBid(contract UltiContract, trumpSuit int) error {
 		return ErrNotHumanTurn
 	}
 	if !ultiValidContract(contract) {
-		return NewDomainError(ErrInvalidPlay, "コントラクトを選んでください (party/betli/durchmarsch/ulti)")
+		return NewDomainErrorCode(ErrInvalidPlay, "ulti.errInvalidContract", nil)
 	}
 	if ultiContractNeedsTrump(contract) && !ultiValidSuit(trumpSuit) {
-		return NewDomainError(ErrInvalidPlay, "Party / Ulti では切り札スートを選んでください (1..4)")
+		return NewDomainErrorCode(ErrInvalidPlay, "ulti.errContractTrumpSuitRequired", nil)
 	}
 	g.applyBid(contract, trumpSuit)
 	return nil
@@ -321,8 +321,7 @@ func (g *Ulti) applyBid(contract UltiContract, trumpSuit int) {
 	g.talon = make([]*Card, 0)
 	g.talonTaken = true
 	g.sortAllHands()
-	g.appendLog(g.declarerIdx, "bid",
-		fmt.Sprintf("%s declares %s (trump %s)", playerName(g.players, g.declarerIdx), ultiContractName(contract), ultiSuitName(g.trumpSuit)), nil)
+	g.appendLog(g.declarerIdx, "bid", "ulti.log.bid", map[string]string{"name": playerName(g.players, g.declarerIdx), "contractKey": ultiContractKey(contract), "trumpKey": trumpKeyOf(g.trumpSuit)}, nil)
 	g.phase = UltiPhaseDiscard
 }
 
@@ -341,15 +340,15 @@ func (g *Ulti) PlayerDiscard(cardIndices []int) error {
 	}
 	player := g.players[g.declarerIdx]
 	if len(cardIndices) != UltiDiscardSize {
-		return NewDomainError(ErrInvalidPlay, "ちょうど 2 枚を捨ててください")
+		return NewDomainErrorCode(ErrInvalidPlay, "ulti.errDiscardCount", nil)
 	}
 	seen := map[int]bool{}
 	for _, idx := range cardIndices {
 		if idx < 0 || idx >= player.GetCardsSize() {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+			return NewDomainErrorCode(ErrInvalidCard, "ulti.errCardIndexOutOfRange", nil)
 		}
 		if seen[idx] {
-			return NewDomainError(ErrInvalidPlay, "同じカードを 2 回選べません")
+			return NewDomainErrorCode(ErrInvalidPlay, "ulti.errDuplicateCard", nil)
 		}
 		seen[idx] = true
 	}
@@ -360,8 +359,7 @@ func (g *Ulti) PlayerDiscard(cardIndices []int) error {
 	for _, idx := range sorted {
 		g.discards = append(g.discards, player.RemoveCard(idx))
 	}
-	g.appendLog(g.declarerIdx, "discard",
-		fmt.Sprintf("%s discards %d cards", playerName(g.players, g.declarerIdx), len(g.discards)), append([]*Card(nil), g.discards...))
+	g.appendLog(g.declarerIdx, "discard", "ulti.log.discard", map[string]string{"name": playerName(g.players, g.declarerIdx), "count": fmt.Sprintf("%d", len(g.discards))}, append([]*Card(nil), g.discards...))
 	g.startPlay()
 	return nil
 }
@@ -391,7 +389,7 @@ func (g *Ulti) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "ulti.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
@@ -425,7 +423,7 @@ func (g *Ulti) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Ulti) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "ulti.log.play", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(g.currentTrick) == UltiPlayerCnt {
 		g.phase = UltiPhaseTrickEnd
@@ -445,12 +443,15 @@ func (g *Ulti) ResolveTrick() {
 		trickCards[i] = tc.Card
 	}
 	g.players[winnerIdx].AddTrick(trickCards)
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), trickCards)
+	g.appendLog(winnerIdx, "trick_win", "ulti.log.trickWin", map[string]string{"name": playerName(g.players, winnerIdx), "trick": fmt.Sprintf("%d", g.trickNumber)}, trickCards)
 
 	g.leadPlayerIdx = winnerIdx
+	// **どのトリックの勝者も憶えておく。** 以前は最終トリックのぶんしか入れて
+	// おらず、しかもその枝は同時に RoundEnd へ移るので、TrickEnd の画面では
+	// この値がいつも -1 だった。King (King.go:333) は毎トリック入れており、
+	// getter の説明「直前トリックの勝者」もそちらの意味で書かれている。
+	g.lastTrickWinner = winnerIdx
 	if g.trickNumber >= UltiTrickCount {
-		g.lastTrickWinner = winnerIdx
 		g.phase = UltiPhaseRoundEnd
 		g.enterRoundEnd()
 	} else {
@@ -477,9 +478,7 @@ func (g *Ulti) enterRoundEnd() {
 	g.scored = true
 	g.outcome = g.evalOutcome()
 	g.applyScores(g.outcome)
-	g.appendLog(-1, "round_score",
-		fmt.Sprintf("round %d: declarer(%s) %s %s",
-			g.roundNumber, playerName(g.players, g.declarerIdx), ultiContractName(g.contract), ultiOutcomeName(g.outcome)), nil)
+	g.appendLog(-1, "round_score", "ulti.log.roundScore", map[string]string{"round": fmt.Sprintf("%d", g.roundNumber), "name": playerName(g.players, g.declarerIdx), "contractKey": ultiContractKey(g.contract), "outcomeKey": ultiOutcomeKey(g.outcome)}, nil)
 	g.checkGameEnd()
 }
 
@@ -595,7 +594,12 @@ func (g *Ulti) checkGameEnd() {
 	g.winnerPlayer = leader
 	g.phase = UltiPhaseGameEnd
 	g.result = g.humanResult(leader, tie)
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
+	g.appendLog(-1, "game_end", "ulti.log.gameEnd", map[string]string{"name": playerName(g.players, leader)}, nil)
+}
+
+// appendLog records an Ulti action with a locale-independent detail code.
+func (g *Ulti) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // humanResult 人間 (seat 0) の視点でマッチ結果を返す。単独トップなら Win、トップ同点なら None、他は Lose。
@@ -632,7 +636,7 @@ func (g *Ulti) validatePlay(playerIdx int, card *Card) error {
 			return nil
 		}
 	}
-	return NewDomainError(ErrInvalidPlay, "リードスートに従う (またはオーバートランプする) 必要があります")
+	return NewDomainErrorCode(ErrInvalidPlay, "ulti.errFollowLeadOrOvertrump", nil)
 }
 
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す。
@@ -821,47 +825,31 @@ func ultiSortHand(p *UltiPlayer, trump int, contract UltiContract) {
 	}
 }
 
-// ultiContractName コントラクトの表示名を返す。
-func ultiContractName(contract UltiContract) string {
+// ultiContractKey コントラクトの i18n キーを返す。
+func ultiContractKey(contract UltiContract) string {
 	switch contract {
 	case UltiContractParty:
-		return "party"
+		return "ulti.contractParty"
 	case UltiContractBetli:
-		return "betli"
+		return "ulti.contractBetli"
 	case UltiContractDurchmarsch:
-		return "durchmarsch"
+		return "ulti.contractDurchmarsch"
 	case UltiContractUlti:
-		return "ulti"
+		return "ulti.contractUlti"
 	default:
-		return "-"
+		return "ulti.contractNone"
 	}
 }
 
-// ultiSuitName スートの表示名を返す。
-func ultiSuitName(suit int) string {
-	switch suit {
-	case CardDesignSpade:
-		return "spades"
-	case CardDesignClover:
-		return "clubs"
-	case CardDesignHeart:
-		return "hearts"
-	case CardDesignDiamond:
-		return "diamonds"
-	default:
-		return "-"
-	}
-}
-
-// ultiOutcomeName 結果の表示名を返す。
-func ultiOutcomeName(o UltiOutcome) string {
+// ultiOutcomeKey は結果の i18n キーを返す。
+func ultiOutcomeKey(o UltiOutcome) string {
 	switch o {
 	case UltiOutcomeWin:
-		return "win"
+		return "ulti.log.outcome.win"
 	case UltiOutcomeLoss:
-		return "loss"
+		return "ulti.log.outcome.loss"
 	default:
-		return "-"
+		return "ulti.log.outcome.unknown"
 	}
 }
 
@@ -1152,6 +1140,9 @@ func (g *Ulti) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
 func (g *Ulti) GetCurrentTrick() []*TrickCard { return g.currentTrick }
+
+// GetLastTrickWinner 直前トリックの勝者を返す (-1 = なし)。
+func (g *Ulti) GetLastTrickWinner() int { return g.lastTrickWinner }
 
 // SetCurrentTrick トリック設定 (テスト用)
 func (g *Ulti) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }

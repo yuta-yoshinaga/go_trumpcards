@@ -221,7 +221,9 @@ func TestBaccaratWebPresenter_ActionLogOutput(t *testing.T) {
 		m := new(interfaces.MockBaccaratGame)
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "bet", Detail: "bet 100 on player"},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "bet", DetailCode: "baccarat.log.bet", DetailParams: map[string]string{
+				"amount": "100", "type": "player",
+			}},
 		})
 		jsonStr := p.ActionLogOutput(m)
 		var out controller.ActionLogWebOutput

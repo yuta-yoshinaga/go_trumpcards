@@ -179,7 +179,6 @@ func TestSkatJSONCarriesEveryField(t *testing.T) {
 		winnerSide:       1,
 		gameEndFlag:      true,
 	}
-	s.round.actionLog = []*ActionLogEntry{{PlayerIdx: 0, ActionType: "bid", Detail: "18"}}
 
 	blob, err := json.Marshal(s)
 	if err != nil {

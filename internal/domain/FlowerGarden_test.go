@@ -91,6 +91,10 @@ func TestFlowerGarden_MoveTableauToTableau(t *testing.T) {
 		err := fg.MoveTableauToTableau(0, 0, 1)
 		assert.NoError(t, err)
 		assert.Equal(t, 0, len(fg.GetTableau()[0]))
+		log := fg.GetActionLog()
+		require.NotEmpty(t, log)
+		assert.Equal(t, "flowergarden.log.tableauToTableau", log[len(log)-1].DetailCode)
+		assert.Equal(t, map[string]string{"fromCol": "0", "toCol": "1"}, log[len(log)-1].DetailParams)
 		assert.Equal(t, 2, len(fg.GetTableau()[1]))
 	})
 
@@ -285,6 +289,10 @@ func TestFlowerGarden_GiveUp(t *testing.T) {
 	fg.GiveUp()
 	assert.Equal(t, domain.FlowerGardenPhaseGameOver, fg.GetPhase())
 	assert.True(t, fg.GetGameEndFlag())
+	log := fg.GetActionLog()
+	require.NotEmpty(t, log)
+	entry := log[len(log)-1]
+	assert.Equal(t, "flowergarden.log.giveup", entry.DetailCode)
 }
 
 func TestFlowerGarden_Hint(t *testing.T) {

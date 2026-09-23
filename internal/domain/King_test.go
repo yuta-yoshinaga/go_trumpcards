@@ -165,6 +165,15 @@ func TestKing_SelectContract_MarksUsedAndStartsPlay(t *testing.T) {
 	assert.Equal(t, domain.KingContractNoHearts, g.GetCurrentContract())
 	assert.Equal(t, -1, g.GetTrumpSuit())
 	assert.Equal(t, 0, g.GetCurrentTurn(), "dealer leads first trick")
+	var contractLog *domain.ActionLogEntry
+	for _, entry := range g.GetActionLog() {
+		if entry.DetailCode == "king.log.selectContract" {
+			contractLog = entry
+			break
+		}
+	}
+	require.NotNil(t, contractLog)
+	assert.Equal(t, map[string]string{"dealer": "0", "contractKey": "king.contractShort.noHearts"}, contractLog.DetailParams)
 	used := g.GetUsedContracts()
 	assert.True(t, used[domain.KingContractNoHearts])
 
@@ -492,9 +501,12 @@ func TestKing_Getters(t *testing.T) {
 
 func TestKing_GetHint(t *testing.T) {
 	g := newTestKing()
-	// Not play phase -> nil.
+	// Contract selection returns a contract recommendation for a human dealer.
 	g.SetPhase(domain.KingPhaseSelectContract)
-	assert.Nil(t, g.GetHint())
+	selectionHint := g.GetHint()
+	require.NotNil(t, selectionHint)
+	assert.GreaterOrEqual(t, selectionHint.Contract, 0)
+	assert.Contains(t, selectionHint.Reason, "select_")
 
 	// Play phase, human turn, negative contract -> avoid_low.
 	g.SetPhase(domain.KingPhasePlay)

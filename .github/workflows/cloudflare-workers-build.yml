@@ -18,7 +18,7 @@ on:
       - 'internal/**'
 
 # **同じ ref の古いビルドを打ち切る。**このワークフローは `internal/**` の変更で
-# 発火し、8 つの Worker を TinyGo でビルドする —— CI の中で最も 1 ジョブが重い。
+# 発火し、10 個の Worker を TinyGo でビルドする —— CI の中で最も 1 ジョブが重い。
 # バックエンドを触る PR は押すたびに当時 6 ジョブを二重に積んでいた。
 #
 # サイズ検査が目的で成果物を配布しないので、途中で切っても失われるものはない。
@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        worker: [casino, classic, solo, extra, extra2, extra3, extra4, extra5]
+        worker: [casino, classic, solo, extra, extra2, extra3, extra4, extra5, extra6, extra7]
     steps:
       - uses: actions/checkout@v6
 
@@ -44,7 +44,7 @@ jobs:
 
       - uses: acifani/setup-tinygo@v2
         with:
-          tinygo-version: '0.40.1'
+          tinygo-version: '0.42.0'
 
       - name: Install wasm-opt
         run: sudo apt-get install -y binaryen

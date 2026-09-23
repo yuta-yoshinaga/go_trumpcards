@@ -29,5 +29,22 @@
   "helpHint": "  h                    show a hint",
   "noteCutthroat": "  * This is cutthroat Spades: all four players score individually, with no partnerships",
   "nilOk": "Nil still alive",
-  "nilFail": "Nil broken (took a trick)"
+  "nilFail": "Nil broken (took a trick)",
+  "bidRemaining": "{{remaining}} more trick(s) to make bid",
+  "bidMade": "Bid made ({{bags}} bags)",
+  "errBidOutOfRange": "Bid must be between 0 and {{max}}.",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errLeadTwoOfClubs": "You must lead the 2 of Clubs on the first trick.",
+  "errSpadesNotBroken": "Spades have not been broken yet.",
+  "errFollowLeadSuit": "You must follow the lead suit.",
+  "log.bid": "{{name}} bids {{bid}}",
+  "log.trickWin": "{{name}} wins trick {{trick}}",
+  "log.nilSuccess": "{{name}} nil success! +{{bonus}}",
+  "log.nilFail": "{{name}} nil failed! -{{penalty}} ({{tricks}} tricks taken)",
+  "log.bagPenalty": "{{name}} bag penalty! -{{penalty}}",
+  "log.roundScore": "{{name}}: bid={{bid}} tricks={{tricks}} round={{round}} bags={{bags}}",
+  "log.cumulativeScore": "{{name}}: total={{total}}",
+  "log.play": "{{name}} plays {{card}}",
+  "log.gameEnd": "{{name}} wins the game!",
+  "log.bidNil": "{{name}} bids Nil"
 }

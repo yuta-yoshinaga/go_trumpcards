@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
 
@@ -100,6 +102,31 @@ func TestBidWhistConfig_Validate(t *testing.T) {
 	}
 	if err := (domain.BidWhistConfig{CpuDifficulty: 9, TargetScore: 7}).Validate(); err == nil {
 		t.Error("out-of-range difficulty should be invalid")
+	}
+}
+
+func TestBidWhist_BidActionLogUsesSeparateTranslatedDirection(t *testing.T) {
+	g := newBidWhistForTest()
+	g.SetBidPlayerIdx(0)
+	g.SetPhase(domain.BidWhistPhaseBid)
+	if err := g.PlayerBid(3, domain.BidWhistDirectionUptown); err != nil {
+		t.Fatalf("PlayerBid: %v", err)
+	}
+	var entry *domain.ActionLogEntry
+	for _, candidate := range g.GetActionLog() {
+		if candidate.DetailCode == "bidwhist.log.bid" {
+			entry = candidate
+			break
+		}
+	}
+	if entry == nil {
+		t.Fatal("bid log entry not found")
+	}
+	if entry.DetailParams["tricks"] != "3" || entry.DetailParams["directionKey"] != "bidwhist.dirUptown" {
+		t.Fatalf("unexpected bid params: %+v", entry.DetailParams)
+	}
+	if _, ok := entry.DetailParams["bid"]; ok {
+		t.Fatalf("legacy bid parameter remains: %+v", entry.DetailParams)
 	}
 }
 
@@ -286,6 +313,8 @@ func TestBidWhist_HumanBidValidationAndFlow(t *testing.T) {
 		if err := g.PlayerPass(); err != nil {
 			t.Errorf("pass failed: %v", err)
 		}
+		entry := findActionLogEntry(t, g.GetActionLog(), "bidwhist.log.pass")
+		assert.NotEmpty(t, entry.DetailParams["name"])
 	}
 }
 

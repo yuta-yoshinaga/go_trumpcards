@@ -162,7 +162,7 @@ func TestCribbageSquaresWebPresenter_ActionLog_Complete(t *testing.T) {
 	pg.On("GetHint").Return((*domain.CribbageSquaresHint)(nil)).Maybe()
 	pg.On("GetGameEndFlag").Return(true)
 	pg.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, ActionType: "place", Detail: "test"},
+		{TurnNumber: 1, ActionType: "place", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	p := &CribbageSquaresWebPresenter{}
 	result := p.ActionLogOutput(pg)
@@ -243,4 +243,7 @@ func TestCribbageSquaresWebPresenter_CarriesThePartialDetails(t *testing.T) {
 	assert.Equal(t, 2, out.RowPartialDetails[0].Fifteens)
 	assert.Equal(t, 0, out.RowPartialDetails[1].Total, "何も置いていない行に点が付いている")
 	assert.Len(t, out.ColPartialDetails, domain.CribbageSquaresGridSize)
+	encoded, err := json.Marshal(out.RowPartialDetails[0])
+	assert.NoError(t, err)
+	assert.NotContains(t, string(encoded), `"cards"`)
 }

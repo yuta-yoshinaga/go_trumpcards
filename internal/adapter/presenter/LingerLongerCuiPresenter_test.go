@@ -28,6 +28,7 @@ func TestLingerLongerCuiPresenterOutput(t *testing.T) {
 
 	assert.Contains(t, out, i18n.T("lingerlonger.helpTitle"))
 	assert.Contains(t, out, fixedPart("lingerlonger.header"))
+	assert.Contains(t, out, "脱落 0 / 全 4 人")
 	// **山札の残りと「場から消えた札」は別の数字。**トリックが解決するたびに
 	// 増える、二度と戻らない枚数のほうが終盤の脱落ペースを決める。
 	assert.Contains(t, out, "場から消えた札: 0枚")
@@ -53,6 +54,35 @@ func TestLingerLongerCuiPresenterOutput(t *testing.T) {
 		domain.DefaultLingerLongerConfig().PlayerCnt, "全員の席行に手札と獲得回数が出る")
 	// 山札の残りは常に見えている。
 	assert.Contains(t, out, strconv.Itoa(l.GetStockSize()))
+}
+
+func TestLingerLongerCuiPresenterShowsEliminatedSummary(t *testing.T) {
+	p := new(LingerLongerCuiPresenter)
+	l := newLingerLongerForCui(t)
+	l.DrainStockForTest()
+	l.SetLeadPlayerIdxForTest(0)
+	l.SetCurrentPlayerIdxForTest(0)
+	l.GiveHandForTest(0, domain.NewCard(domain.CardDesignSpade, 13, false),
+		domain.NewCard(domain.CardDesignSpade, 12, false))
+	for i := 1; i < l.GetPlayerCnt(); i++ {
+		l.GiveHandForTest(i, domain.NewCard(domain.CardDesignSpade, 2+i, false))
+	}
+	for i := range l.GetPlayerCnt() {
+		require.NoError(t, l.PlayForTest(i, 0))
+	}
+
+	assert.Equal(t, 3, l.GetEliminatedCnt())
+	assert.Contains(t, p.Output(l, nil), "脱落 3 / 全 4 人")
+}
+
+func TestLingerLongerCuiPresenterShowsEliminatedSummaryWithEmptyStock(t *testing.T) {
+	p := new(LingerLongerCuiPresenter)
+	l := newLingerLongerForCui(t)
+	l.DrainStockForTest()
+
+	out := p.Output(l, nil)
+	assert.Contains(t, out, "脱落 0 / 全 4 人")
+	assert.Contains(t, out, i18n.T("lingerlonger.noStockLine"))
 }
 
 // **補充した席と脱落した席を印で出す。** どちらも盤面に痕跡が残らない。

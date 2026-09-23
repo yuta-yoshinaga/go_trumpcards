@@ -17,6 +17,7 @@
   },
   "pile": "The pile",
   "lastPickup": "{{name}} just picked up {{n}} cards.",
+  "lastFinished": "{{name}} just finished in {{rank}} place.",
   "actions": {
     "reset": "Reset",
     "giveUp": "Give up",

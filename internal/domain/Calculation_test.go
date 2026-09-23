@@ -95,6 +95,9 @@ func TestCalculation_PlayStockToFoundation_Valid(t *testing.T) {
 	assert.Equal(t, 0, c.GetStockCount())
 	assert.Equal(t, 1, c.GetMoveCount())
 	require.Len(t, c.GetActionLog(), 1)
+	log := c.GetActionLog()[0]
+	assert.Equal(t, "calculation.log.stockToFoundation", log.DetailCode)
+	assert.Equal(t, map[string]string{"foundation": "1"}, log.DetailParams)
 }
 
 func TestCalculation_PlayStockToFoundation_InvalidValue(t *testing.T) {
@@ -370,6 +373,81 @@ func TestCalculation_GetHint_NoneAvailable(t *testing.T) {
 	}
 	c.SetWastes(w)
 	assert.Nil(t, c.GetHint())
+}
+
+func TestCalculation_GetHint_StockToSafestWaste(t *testing.T) {
+	c := newTestCalculation()
+	setStockWithTop(c, NewCard(CardDesignSpade, 11, false))
+	c.SetWastes([CalculationWasteCnt][]*Card{
+		{NewCard(CardDesignHeart, 13, false)},
+		{NewCard(CardDesignHeart, 9, false)},
+		{NewCard(CardDesignHeart, 11, false)},
+		{NewCard(CardDesignHeart, 12, false)},
+	})
+
+	h := c.GetHint()
+	require.NotNil(t, h)
+	assert.Equal(t, "stockToWaste", h.FromZone)
+	assert.Equal(t, 0, h.WasteIdx) // K is outside the look-ahead window.
+	assert.Equal(t, -1, h.FoundationIdx)
+}
+
+func TestCalculation_GetHint_StockToEmptyWaste(t *testing.T) {
+	c := newTestCalculation()
+	setStockWithTop(c, NewCard(CardDesignSpade, 13, false))
+	c.SetWastes([CalculationWasteCnt][]*Card{
+		{},
+		{NewCard(CardDesignHeart, 11, false)},
+		{NewCard(CardDesignDiamond, 12, false)},
+		{NewCard(CardDesignClover, 13, false)},
+	})
+
+	h := c.GetHint()
+	require.NotNil(t, h)
+	assert.Equal(t, "stockToWaste", h.FromZone)
+	assert.Equal(t, 0, h.WasteIdx)
+}
+
+func TestCalculation_GetHint_StockToWasteRankOutsideLookAhead(t *testing.T) {
+	c := newTestCalculation()
+	setStockWithTop(c, NewCard(CardDesignSpade, 13, false))
+	c.SetWastes([CalculationWasteCnt][]*Card{
+		{NewCard(CardDesignHeart, 13, false)},
+		{NewCard(CardDesignDiamond, 3, false)},
+		{NewCard(CardDesignClover, 13, false)},
+		{NewCard(CardDesignSpade, 13, false)},
+	})
+
+	h := c.GetHint()
+	require.NotNil(t, h)
+	assert.Equal(t, "stockToWaste", h.FromZone)
+	assert.Equal(t, 0, h.WasteIdx)
+}
+
+func TestCalculation_GetHint_StockToWasteUsesEarliestFoundationNeed(t *testing.T) {
+	c := newTestCalculation()
+	setStockWithTop(c, NewCard(CardDesignSpade, 13, false))
+	var foundations [CalculationFoundationCnt][]*Card
+	foundations[0] = []*Card{NewCard(CardDesignSpade, 1, false)}
+	foundations[1] = []*Card{NewCard(CardDesignSpade, 6, false)}
+	for fIdx := 2; fIdx < CalculationFoundationCnt; fIdx++ {
+		foundations[fIdx] = make([]*Card, CardValueMax)
+		for rank := range foundations[fIdx] {
+			foundations[fIdx][rank] = NewCard(CardDesignSpade, rank+1, false)
+		}
+	}
+	c.SetFoundations(foundations)
+	c.SetWastes([CalculationWasteCnt][]*Card{
+		{NewCard(CardDesignHeart, 3, false)},
+		{NewCard(CardDesignDiamond, 4, false)},
+		{NewCard(CardDesignClover, 5, false)},
+		{NewCard(CardDesignSpade, 5, false)},
+	})
+
+	h := c.GetHint()
+	require.NotNil(t, h)
+	assert.Equal(t, "stockToWaste", h.FromZone)
+	assert.Equal(t, 2, h.WasteIdx)
 }
 
 func TestCalculation_Stalemate_DetectionEmptyStock(t *testing.T) {

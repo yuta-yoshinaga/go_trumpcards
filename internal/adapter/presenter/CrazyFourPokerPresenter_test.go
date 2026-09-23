@@ -6,12 +6,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
@@ -79,6 +81,112 @@ func TestCrazyFourPokerCuiPresenter_ShowsBetsAndResult(t *testing.T) {
 	assert.Contains(t, out, "Queens Up 20")
 	assert.Contains(t, out, "決着:")
 	assert.NotContains(t, out, "crazyfourpoker.")
+}
+
+func TestCrazyFourPokerCuiPresenterResultBreakdownBranches(t *testing.T) {
+	card := domain.NewCard(domain.CardDesignHeart, 2, true)
+	for _, tt := range []struct {
+		name      string
+		superBet  int
+		queensBet int
+		rank      int
+		best      []*domain.Card
+		wantLines []string
+		dontLines []string
+	}{
+		{
+			name:      "neither side bet",
+			wantLines: []string{"本戦（Ante + Play）: 100", "決着: あなたの勝ち（収支 -50）"},
+			dontLines: []string{"Super Bonus:", "Queens Up:"},
+		},
+		{
+			name:     "super bonus hit names the hand",
+			superBet: 50, rank: domain.FourCardHandFourOfAKind, best: []*domain.Card{card, card, card, card},
+			wantLines: []string{"Super Bonus（Four of a Kind）: 1500", "決着: あなたの勝ち（収支 -100）"},
+			dontLines: []string{"Queens Up:"},
+		},
+		{
+			name:     "super miss and queens miss",
+			superBet: 50, queensBet: 20, rank: domain.FourCardHandHighCard, best: []*domain.Card{card, card, card, card},
+			wantLines: []string{"Super Bonus（High Card）: 0", "Queens Up: -20", "決着: あなたの勝ち（収支 -120）"},
+		},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			g := new(interfaces.MockCrazyFourPokerGame)
+			g.On("GetPhase").Return(domain.CrazyFourPokerPhaseResult)
+			g.On("GetAnteBet").Return(50)
+			g.On("GetSuperBet").Return(tt.superBet)
+			g.On("GetQueensUpBet").Return(tt.queensBet)
+			g.On("GetPlayBet").Return(50)
+			g.On("GetPayout").Return(50)
+			g.On("GetResult").Return(domain.CrazyFourPokerResultWin)
+			g.On("GetPlayerHandRank").Return(tt.rank)
+			g.On("GetPlayerBest").Return(tt.best)
+			g.On("GetGameEndFlag").Return(false)
+
+			var sb strings.Builder
+			new(CrazyFourPokerCuiPresenter).writeResult(&sb, g)
+			out := sb.String()
+			for _, want := range tt.wantLines {
+				assert.Contains(t, out, want)
+			}
+			for _, dont := range tt.dontLines {
+				assert.NotContains(t, out, dont)
+			}
+		})
+	}
+}
+
+func TestCrazyFourPokerCuiPresenterOnlyShowsPayingPairSideBets(t *testing.T) {
+	aceSpade := domain.NewCard(domain.CardDesignSpade, 1, true)
+	aceHeart := domain.NewCard(domain.CardDesignHeart, 1, true)
+	fiveSpade := domain.NewCard(domain.CardDesignSpade, 5, true)
+	fiveHeart := domain.NewCard(domain.CardDesignHeart, 5, true)
+	queenSpade := domain.NewCard(domain.CardDesignSpade, 12, true)
+	queenHeart := domain.NewCard(domain.CardDesignHeart, 12, true)
+	jackSpade := domain.NewCard(domain.CardDesignSpade, 11, true)
+	jackHeart := domain.NewCard(domain.CardDesignHeart, 11, true)
+	king := domain.NewCard(domain.CardDesignClover, 13, true)
+	for _, tt := range []struct {
+		name      string
+		best      []*domain.Card
+		superHit  bool
+		queensHit bool
+	}{
+		{name: "ace pair pays both side bets", best: []*domain.Card{aceSpade, aceHeart, fiveSpade, king}, superHit: true, queensHit: true},
+		{name: "five pair does not pay Super Bonus", best: []*domain.Card{fiveSpade, fiveHeart, aceSpade, king}},
+		{name: "queen pair pays Queens Up", best: []*domain.Card{queenSpade, queenHeart, aceSpade, king}, queensHit: true},
+		{name: "jack pair does not pay Queens Up", best: []*domain.Card{jackSpade, jackHeart, aceSpade, king}},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.superHit, domain.CrazyFourPokerPairAtLeast(tt.best, domain.CrazyFourPokerSuperBonusMinPair))
+			g := new(interfaces.MockCrazyFourPokerGame)
+			g.On("GetPhase").Return(domain.CrazyFourPokerPhaseResult)
+			g.On("GetAnteBet").Return(50)
+			g.On("GetSuperBet").Return(50)
+			g.On("GetQueensUpBet").Return(20)
+			g.On("GetPlayBet").Return(50)
+			g.On("GetPayout").Return(50)
+			g.On("GetResult").Return(domain.CrazyFourPokerResultWin)
+			g.On("GetPlayerHandRank").Return(domain.FourCardHandPair)
+			g.On("GetPlayerBest").Return(tt.best)
+			g.On("GetGameEndFlag").Return(false)
+
+			var sb strings.Builder
+			new(CrazyFourPokerCuiPresenter).writeResult(&sb, g)
+			out := sb.String()
+			if tt.superHit {
+				assert.Contains(t, out, "Super Bonus（Pair）: 50")
+			} else {
+				assert.Contains(t, out, "Super Bonus（Pair）: 0")
+			}
+			if tt.queensHit {
+				assert.Contains(t, out, "Queens Up: 20")
+			} else {
+				assert.Contains(t, out, "Queens Up: -20")
+			}
+		})
+	}
 }
 
 func TestCrazyFourPokerCuiPresenter_ShowsErrorsAndUnknownPhase(t *testing.T) {

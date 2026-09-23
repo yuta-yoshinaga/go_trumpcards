@@ -39,11 +39,12 @@ type FreeBetWebOutputHand struct {
 
 // FreeBetBlackjackWebOutput フリーベット・ブラックジャックWebアウトプット
 type FreeBetBlackjackWebOutput struct {
-	Phase       int                     `json:"phase"`
-	Hands       []*FreeBetWebOutputHand `json:"hands"`
-	ActiveHand  int                     `json:"activeHand"`
-	DealerCards []*WebOutputCard        `json:"dealerCards"`
-	DealerScore int                     `json:"dealerScore"`
+	Phase              int                     `json:"phase"`
+	Hands              []*FreeBetWebOutputHand `json:"hands"`
+	ActiveHand         int                     `json:"activeHand"`
+	DealerCards        []*WebOutputCard        `json:"dealerCards"`
+	DealerScore        int                     `json:"dealerScore"`
+	DealerHoleRevealed bool                    `json:"dealerHoleRevealed"`
 	// DealerPushed22 はディーラーが 22 でバストしたか。**無料ダブル / 無料スプリットの対価。**
 	DealerPushed22 bool `json:"dealerPushed22"`
 	// CanFreeDouble / CanFreeSplit はサーバが判定する。ページは再計算しないこと。

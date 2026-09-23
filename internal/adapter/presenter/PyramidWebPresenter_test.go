@@ -270,7 +270,7 @@ func TestPyramidWebPresenterActionLogOutput_GameOver(t *testing.T) {
 	pg.On("GetPhase").Return(domain.PyramidPhaseGameOver)
 	pg.On("GetGameEndFlag").Return(true)
 	pg.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, ActionType: "draw", Detail: "test"},
+		{TurnNumber: 1, ActionType: "draw", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 
 	p := &PyramidWebPresenter{}

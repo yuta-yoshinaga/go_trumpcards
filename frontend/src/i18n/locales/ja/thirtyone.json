@@ -27,6 +27,7 @@
     "knocked": "ノック!",
     "out": "脱落",
     "suitScores": "スート別合計",
+    "suitScoresForCpu": "{{player}}のスート別合計",
     "selectCard": "捨てるカードを選んでください",
     "knockBannerLastTurn": "{{knocker}}がノック — あなたの最後のターン",
     "knockBannerActive": "{{knocker}}がノック中"

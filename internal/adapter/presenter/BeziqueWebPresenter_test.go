@@ -156,6 +156,17 @@ func TestBeziqueWebPresenter_Output_Error(t *testing.T) {
 	assert.Equal(t, "boom", out.Message)
 }
 
+func TestBeziqueWebPresenter_Output_CodedError(t *testing.T) {
+	p := new(presenter.BeziqueWebPresenter)
+	m, _ := setupBeziqueWebMockWithPlayers(nil)
+	err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "shared.errCardIndexOutOfRange", nil)
+	got := p.Output(m, err)
+	var out controller.BeziqueWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(got), &out))
+	assert.Empty(t, out.Message)
+	assert.Equal(t, "shared.errCardIndexOutOfRange", out.MessageCode)
+}
+
 func TestBeziqueWebPresenter_HintOutput_Card(t *testing.T) {
 	p := new(presenter.BeziqueWebPresenter)
 	trump := domain.NewCard(domain.CardDesignSpade, 13, false)

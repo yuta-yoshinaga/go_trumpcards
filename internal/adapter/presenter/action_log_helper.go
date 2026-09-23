@@ -16,6 +16,19 @@ type gameEndLogger interface {
 	GetActionLog() []*domain.ActionLogEntry
 }
 
+// latestAction returns the last log entry only when it has the requested type.
+// Presenters use this to derive transient messages without mutating the game.
+func latestAction(entries []*domain.ActionLogEntry, actionType string) *domain.ActionLogEntry {
+	if len(entries) == 0 {
+		return nil
+	}
+	entry := entries[len(entries)-1]
+	if entry == nil || entry.ActionType != actionType {
+		return nil
+	}
+	return entry
+}
+
 // actionLogOutputText returns the action log as plain text, or an empty log if the game is not finished.
 func actionLogOutputText(game gameEndLogger) string {
 	if !game.GetGameEndFlag() {
@@ -86,11 +99,12 @@ func actionLogToJSON(entries []*domain.ActionLogEntry) string {
 	}
 	for i, e := range entries {
 		out.Entries[i] = &controller.ActionLogWebEntry{
-			TurnNumber: e.TurnNumber,
-			PlayerIdx:  e.PlayerIdx,
-			ActionType: e.ActionType,
-			Detail:     e.Detail,
-			Cards:      cardsToOutput(e.Cards),
+			TurnNumber:   e.TurnNumber,
+			PlayerIdx:    e.PlayerIdx,
+			ActionType:   e.ActionType,
+			DetailCode:   e.DetailCode,
+			DetailParams: e.DetailParams,
+			Cards:        cardsToOutput(e.Cards),
 		}
 	}
 	return marshalOrError(out)
@@ -126,7 +140,8 @@ func actionLogToTextWithNames(entries []*domain.ActionLogEntry, nameOf func(idx 
 				player = i18n.Tf("cuiActionLogPlayer", "idx", strconv.Itoa(e.PlayerIdx))
 			}
 		}
-		fmt.Fprintf(&sb, "T%d [%s] %s: %s", e.TurnNumber, player, e.ActionType, e.Detail)
+		detail := i18n.Tf(e.DetailCode, i18nPairs(e.DetailParams)...)
+		fmt.Fprintf(&sb, "T%d [%s] %s: %s", e.TurnNumber, player, e.ActionType, detail)
 		if len(e.Cards) > 0 {
 			cardStrs := make([]string, len(e.Cards))
 			for i, c := range e.Cards {
@@ -137,4 +152,21 @@ func actionLogToTextWithNames(entries []*domain.ActionLogEntry, nameOf func(idx 
 		sb.WriteString("\n")
 	}
 	return sb.String()
+}
+
+// latestActions returns the consecutive matching entries at the end of the log.
+func latestActions(entries []*domain.ActionLogEntry, actionType string) []*domain.ActionLogEntry {
+	end := len(entries)
+	start := end
+	for start > 0 {
+		entry := entries[start-1]
+		if entry == nil || entry.ActionType != actionType {
+			break
+		}
+		start--
+	}
+	if start == end {
+		return nil
+	}
+	return entries[start:end]
 }

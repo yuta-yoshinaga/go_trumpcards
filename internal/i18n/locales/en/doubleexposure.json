@@ -1,0 +1,11 @@
+{
+  "helpTitle": "Double Exposure Blackjack",
+  "helpExampleH": "  h                    take one more card",
+  "payoutRef.title": "Payouts",
+  "payoutRef.blackjack": "Blackjack (1:1)",
+  "payoutRef.win": "Win (1:1)",
+  "payoutRef.insurance": "Insurance (2:1)",
+  "payoutRef.push": "Dealer wins ties",
+  "payoutRef.surrender": "Surrender (half the bet returned)",
+  "payoutRef.bust": "Bust (over 21: lose)"
+}

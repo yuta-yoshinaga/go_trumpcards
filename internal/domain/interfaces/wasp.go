@@ -27,6 +27,8 @@ type WaspGame interface {
 	GetTableau() [domain.WaspTableauCnt][]*domain.KlondikeTableauCard
 	// GetCompletedSuits 完成スート数を取得する
 	GetCompletedSuits() int
+	// GetCompletedSuitMask 完成したスートのビットマスクを取得する
+	GetCompletedSuitMask() int
 	// AllFaceUp 全カードが表向きかを返す
 	AllFaceUp() bool
 	// IsStalemate 手詰まり状態を取得する

@@ -13,6 +13,7 @@
   "box.queen": "♠Q",
   "box.king": "♥K",
   "box.dwarf": "♦7（黄色い小人）",
+  "box.unknown": "-",
   "promptLead": "並びが止まっています。p <i> で好きな札から始めてください",
   "promptFollow": "p <i> で {{rank}} の札を出してください（スートは問いません）",
   "promptNext": "n で次のディールへ",
@@ -28,5 +29,12 @@
   "hintReasonFollow": "並びの続きになる札です",
   "hintReasonBox": "この札は区画のチップを取れます",
   "helpExampleNext": "  n                        トリックの決着を見てから次へ",
-  "helpHint": "  h                        助言を表示"
+  "helpHint": "  h                        助言を表示",
+  "log.deal": "山札は残り {{talon}} 枚です",
+  "log.play": "札を出しました",
+  "log.stopKing": "キングで並びが止まり、同じ人が次を出します",
+  "log.award": "{{box}} の箱を取りました（{{chips}}）",
+  "log.stopBlocked": "誰も続けられないので、ここから再開します",
+  "log.dealEnd": "上がって {{points}} 点を受け取りました",
+  "log.gameEnd": "最もチップを持って終わりました"
 }

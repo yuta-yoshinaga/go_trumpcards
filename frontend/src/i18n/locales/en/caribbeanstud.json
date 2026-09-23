@@ -2,6 +2,8 @@
   "title": "Caribbean Stud Poker",
   "jackpotHelpTitle": "What is the jackpot?",
   "jackpotHelp": "The jackpot side bet is optional. It pays out — regardless of whether you beat the dealer — when your hand is a flush or better (flush, full house, four of a kind, straight flush, or royal flush).",
+  "dealerQualifyHelpTitle": "What is Dealer Qualify?",
+  "dealerQualifyHelp": "If the dealer does not have a pair or better, or Ace-King high, they do not qualify. When not qualified, the ante pays 1:1 and the play bet pushes (is returned).",
   "player": "Player",
   "dealer": "Dealer",
   "label": {
@@ -72,6 +74,7 @@
   },
   "dealerQualified": "Qualified",
   "dealerNotQualified": "Not Qualified",
+  "dealerNotQualifiedNote": "Dealer did not qualify: Ante pays 1:1, play bet pushes.",
   "tutorial": {
     "betControls": "Set your ante and optional jackpot side bet, then press Bet.",
     "actionButtons": "Choose Call to bet 2x your ante, or Fold to forfeit.",

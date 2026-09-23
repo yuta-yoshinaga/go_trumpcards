@@ -37,7 +37,7 @@ func TestCaribbeanStudCuiPresenter_Output_BetPhase(t *testing.T) {
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "チップ: 1000")
-	assert.Contains(t, result, "フェーズ: BET")
+	assert.Contains(t, result, "フェーズ: 賭け")
 }
 
 func TestCaribbeanStudCuiPresenter_Output_ActionPhase(t *testing.T) {
@@ -74,11 +74,11 @@ func TestCaribbeanStudCuiPresenter_Output_ActionPhase(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "フェーズ: ACTION")
+	assert.Contains(t, result, "フェーズ: アクション")
 	assert.Contains(t, result, "PLAYER")
 	// First dealer card is visible
 	assert.Contains(t, result, "DEALER")
-	assert.Contains(t, result, "HEART 13")
+	assert.Contains(t, result, "♥13")
 	// Remaining cards hidden
 	assert.Contains(t, result, "??")
 }
@@ -117,10 +117,10 @@ func TestCaribbeanStudCuiPresenter_Output_EndPhase_PlayerWins(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "フェーズ: END")
+	assert.Contains(t, result, "フェーズ: 終了")
 	assert.Contains(t, result, "プレイヤーの勝ち")
 	assert.Contains(t, result, "DEALER")
-	assert.Contains(t, result, "(Qualified)")
+	assert.Contains(t, result, "(クオリファイ)")
 	assert.Contains(t, result, "合計払戻し: 1000")
 	assert.NotContains(t, result, "ジャックポット:")
 	assert.NotContains(t, result, "ジャックポット配当:")
@@ -320,9 +320,15 @@ func TestCaribbeanStudCuiPresenter_Output_JackpotIsExplainedBeforeBetting(t *tes
 	// Web の説明と揃っていること: フラッシュ以上で、勝敗に関係なく配当。
 	assert.Contains(t, i18n.T("caribbeanstud.jackpotHelp"), "フラッシュ")
 
+	// Dealer qualify help check using literal strings as requested
+	assert.Contains(t, betOut, "ディーラークオリファイ: ディーラーがペア以上またはA-Kハイを持たない場合、未クオリファイとなります。未クオリファイ時はアンテのみ1:1で配当され、プレイベットはプッシュで返却されます")
+
 	// **賭け終わった後には出さない。**もう選べないものの説明は場所を取るだけ。
-	assert.NotContains(t, outputInPhase(domain.CaribbeanStudPhaseAction),
-		i18n.T("caribbeanstud.jackpotHelp"))
-	assert.NotContains(t, outputInPhase(domain.CaribbeanStudPhaseEnd),
-		i18n.T("caribbeanstud.jackpotHelp"))
+	actionOut := outputInPhase(domain.CaribbeanStudPhaseAction)
+	assert.NotContains(t, actionOut, i18n.T("caribbeanstud.jackpotHelp"))
+	assert.NotContains(t, actionOut, "ディーラークオリファイ: ディーラーがペア以上またはA-Kハイを持たない場合、未クオリファイとなります。未クオリファイ時はアンテのみ1:1で配当され、プレイベットはプッシュで返却されます")
+
+	endOut := outputInPhase(domain.CaribbeanStudPhaseEnd)
+	assert.NotContains(t, endOut, i18n.T("caribbeanstud.jackpotHelp"))
+	assert.NotContains(t, endOut, "ディーラークオリファイ: ディーラーがペア以上またはA-Kハイを持たない場合、未クオリファイとなります。未クオリファイ時はアンテのみ1:1で配当され、プレイベットはプッシュで返却されます")
 }

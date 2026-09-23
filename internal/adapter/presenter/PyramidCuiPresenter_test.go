@@ -65,7 +65,7 @@ func TestPyramidCuiPresenterOutput_Playing(t *testing.T) {
 
 	result := p.Output(pg, nil)
 	assert.Contains(t, result, "Pyramid")
-	assert.Contains(t, result, "Stock: 24枚")
+	assert.Contains(t, result, "ストック: 24枚")
 	assert.Contains(t, result, "手数: 0")
 }
 
@@ -230,7 +230,7 @@ func TestPyramidCuiPresenterOutput_StalemateAndNonEmptyWaste(t *testing.T) {
 	p := &PyramidCuiPresenter{}
 	result := p.Output(pg, nil)
 	assert.Contains(t, result, "手詰まりです")
-	assert.Contains(t, result, "Waste: ")
+	assert.Contains(t, result, "ウェイスト: ")
 }
 
 func TestPyramidCuiPresenterActionLogOutput(t *testing.T) {

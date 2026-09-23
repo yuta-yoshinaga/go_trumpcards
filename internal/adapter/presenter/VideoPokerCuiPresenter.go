@@ -24,6 +24,11 @@ func (vpp *VideoPokerCuiPresenter) Output(vp interfaces.VideoPokerGame, lastErr 
 	sb.WriteString("----------\n")
 	sb.WriteString(i18n.Tf("videopoker.chipsLine", "chips", strconv.Itoa(vp.GetChips())) + "\n")
 	sb.WriteString(i18n.Tf("videopoker.phaseLine", "phase", vpp.phaseStr(vp.GetPhase())) + "\n")
+	stats := videoPokerSessionStats(vp)
+	sb.WriteString(i18n.Tf("videopoker.statsSummary",
+		"hands", strconv.Itoa(stats.hands),
+		"winRate", strconv.Itoa(stats.winRate),
+		"net", formatSigned(stats.net)) + "\n")
 
 	hand := vp.GetHand()
 	if len(hand) > 0 {
@@ -84,6 +89,13 @@ func (vpp *VideoPokerCuiPresenter) Output(vp interfaces.VideoPokerGame, lastErr 
 	}
 
 	return sb.String()
+}
+
+func formatSigned(value int) string {
+	if value >= 0 {
+		return "+" + strconv.Itoa(value)
+	}
+	return strconv.Itoa(value)
 }
 
 // ActionLogOutput 棋譜をテキスト出力

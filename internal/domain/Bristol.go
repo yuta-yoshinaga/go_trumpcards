@@ -5,7 +5,7 @@ package domain
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
+	"strconv"
 )
 
 // BristolPhase ブリストルゲームフェーズ
@@ -135,7 +135,7 @@ func (b *Bristol) Draw() error {
 		drawn = append(drawn, card)
 	}
 	b.moveCount++
-	b.appendLog("draw", "ストックからファンにカードを配りました", drawn)
+	b.appendLog("draw", "bristol.log.draw", nil, drawn)
 	return nil
 }
 
@@ -165,7 +165,7 @@ func (b *Bristol) MoveTableauToTableau(fromCol, toCol int) error {
 	b.tableau[toCol] = append(b.tableau[toCol], card)
 	b.tableau[fromCol] = fromCards[:len(fromCards)-1]
 	b.moveCount++
-	b.appendLog("move", fmt.Sprintf("タブロー列%d→タブロー列%d", fromCol, toCol), []*Card{card})
+	b.appendLog("move", "bristol.log.tableauToTableau", map[string]string{"fromCol": strconv.Itoa(fromCol), "toCol": strconv.Itoa(toCol)}, []*Card{card})
 	return nil
 }
 
@@ -190,7 +190,7 @@ func (b *Bristol) MoveTableauToFoundation(col int) error {
 	b.tableau[col] = fromCards[:len(fromCards)-1]
 	b.foundation[fIdx] = append(b.foundation[fIdx], card)
 	b.moveCount++
-	b.appendLog("move", fmt.Sprintf("タブロー列%d→ファウンデーション", col), []*Card{card})
+	b.appendLog("move", "bristol.log.tableauToFoundation", map[string]string{"col": strconv.Itoa(col)}, []*Card{card})
 	b.checkGameClear()
 	return nil
 }
@@ -218,7 +218,7 @@ func (b *Bristol) MoveFanToTableau(fanIdx, toCol int) error {
 	b.fan[fanIdx] = pile[:len(pile)-1]
 	b.tableau[toCol] = append(b.tableau[toCol], card)
 	b.moveCount++
-	b.appendLog("move", fmt.Sprintf("ファン%d→タブロー列%d", fanIdx, toCol), []*Card{card})
+	b.appendLog("move", "bristol.log.fanToTableau", map[string]string{"fanIdx": strconv.Itoa(fanIdx), "toCol": strconv.Itoa(toCol)}, []*Card{card})
 	return nil
 }
 
@@ -243,7 +243,7 @@ func (b *Bristol) MoveFanToFoundation(fanIdx int) error {
 	b.fan[fanIdx] = pile[:len(pile)-1]
 	b.foundation[fIdx] = append(b.foundation[fIdx], card)
 	b.moveCount++
-	b.appendLog("move", fmt.Sprintf("ファン%d→ファウンデーション", fanIdx), []*Card{card})
+	b.appendLog("move", "bristol.log.fanToFoundation", map[string]string{"fanIdx": strconv.Itoa(fanIdx)}, []*Card{card})
 	b.checkGameClear()
 	return nil
 }
@@ -252,7 +252,7 @@ func (b *Bristol) MoveFanToFoundation(fanIdx int) error {
 func (b *Bristol) GiveUp() {
 	if b.phase == BristolPhasePlaying {
 		b.phase = BristolPhaseGameOver
-		b.appendLog("giveup", "ギブアップしました", nil)
+		b.appendLog("giveup", "bristol.log.giveUp", nil, nil)
 	}
 }
 
@@ -360,7 +360,7 @@ func (b *Bristol) AutoComplete() error {
 		b.history = b.history[:len(b.history)-1]
 		return errors.New("no card can be auto-completed")
 	}
-	b.appendLog("autocomplete", "オートコンプリートを実行しました", nil)
+	b.appendLog("autocomplete", "bristol.log.autoComplete", nil, nil)
 	b.checkGameClear()
 	return nil
 }
@@ -574,8 +574,8 @@ func (b *Bristol) restoreSnapshot(snap *bristolSnapshot) {
 	b.moveCount = snap.moveCount
 }
 
-func (b *Bristol) appendLog(actionType, detail string, cards []*Card) {
-	b.appendLogAt(b.moveCount, 0, actionType, detail, cards)
+func (b *Bristol) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	b.appendLogCodeAt(b.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // bristolJSON is the JSON wire format for Bristol.

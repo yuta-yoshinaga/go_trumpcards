@@ -69,6 +69,7 @@
   "exchangeGuide": "Tap cards to select them, then press Exchange",
   "exchangeKbdHint": "Keyboard: number keys (1-9, 0) select, Enter exchanges, Esc clears",
   "exchangeFeeInfo": "Fee: ante × {{ante}} per card = {{fee}}",
+  "buy6thFeeInfo": "Buy 6th Card fee: equal to ante = {{fee}}",
   "exchangeFeeHighRisk": "High-cost warning",
   "exchangeSelected": "Selected: {{count}}",
   "selectGuide": "Choose one card to discard from your 6 cards",

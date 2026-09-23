@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // FreeCellPhase フリーセルゲームフェーズ
@@ -172,7 +173,7 @@ func (f *FreeCell) MoveTableauToTableau(fromCol, cardIndex, toCol int) error {
 	f.moveCount++
 	movedCards := make([]*Card, len(movingCards))
 	copy(movedCards, movingCards)
-	f.appendLog("move", fmt.Sprintf("タブロー列%d→タブロー列%d", fromCol, toCol), movedCards)
+	f.appendLog("move", "freecell.log.tableauToTableau", map[string]string{"fromCol": strconv.Itoa(fromCol), "toCol": strconv.Itoa(toCol)}, movedCards)
 	f.checkStalemate()
 	return nil
 }
@@ -201,7 +202,7 @@ func (f *FreeCell) MoveTableauToFoundation(col int) error {
 	f.tableau[col] = fromCards[:len(fromCards)-1]
 	f.foundation[fIdx] = append(f.foundation[fIdx], card)
 	f.moveCount++
-	f.appendLog("move", fmt.Sprintf("タブロー列%d→ファンデーション", col), []*Card{card})
+	f.appendLog("move", "freecell.log.tableauToFoundation", map[string]string{"col": strconv.Itoa(col)}, []*Card{card})
 	f.checkGameClear()
 	f.checkStalemate()
 	return nil
@@ -230,7 +231,7 @@ func (f *FreeCell) MoveTableauToFreeCell(col, cell int) error {
 	f.tableau[col] = fromCards[:len(fromCards)-1]
 	f.freeCells[cell] = card
 	f.moveCount++
-	f.appendLog("move", fmt.Sprintf("タブロー列%d→フリーセル%d", col, cell), []*Card{card})
+	f.appendLog("move", "freecell.log.tableauToFreeCell", map[string]string{"col": strconv.Itoa(col), "cell": strconv.Itoa(cell)}, []*Card{card})
 	f.checkStalemate()
 	return nil
 }
@@ -257,7 +258,7 @@ func (f *FreeCell) MoveFreeCellToTableau(cell, col int) error {
 	f.freeCells[cell] = nil
 	f.tableau[col] = append(f.tableau[col], card)
 	f.moveCount++
-	f.appendLog("move", fmt.Sprintf("フリーセル%d→タブロー列%d", cell, col), []*Card{card})
+	f.appendLog("move", "freecell.log.freeCellToTableau", map[string]string{"cell": strconv.Itoa(cell), "col": strconv.Itoa(col)}, []*Card{card})
 	f.checkStalemate()
 	return nil
 }
@@ -285,7 +286,7 @@ func (f *FreeCell) MoveFreeCellToFoundation(cell int) error {
 	f.freeCells[cell] = nil
 	f.foundation[fIdx] = append(f.foundation[fIdx], card)
 	f.moveCount++
-	f.appendLog("move", fmt.Sprintf("フリーセル%d→ファンデーション", cell), []*Card{card})
+	f.appendLog("move", "freecell.log.freeCellToFoundation", map[string]string{"cell": strconv.Itoa(cell)}, []*Card{card})
 	f.checkGameClear()
 	f.checkStalemate()
 	return nil
@@ -295,7 +296,7 @@ func (f *FreeCell) MoveFreeCellToFoundation(cell int) error {
 func (f *FreeCell) GiveUp() {
 	if f.phase == FreeCellPhasePlaying {
 		f.phase = FreeCellPhaseGameOver
-		f.appendLog("giveup", "ギブアップしました", nil)
+		f.appendLog("giveup", "freecell.log.giveUp", nil, nil)
 	}
 }
 
@@ -537,7 +538,7 @@ func (f *FreeCell) AutoComplete() error {
 			break
 		}
 	}
-	f.appendLog("autocomplete", "オートコンプリートを実行しました", nil)
+	f.appendLog("autocomplete", "freecell.log.autoComplete", nil, nil)
 	f.checkGameClear()
 	f.checkStalemate()
 	return nil
@@ -570,6 +571,31 @@ func (f *FreeCell) UndoToEscape() int {
 // UndoN n回連続でアンドゥを実行する。
 func (f *FreeCell) UndoN(n int) error {
 	return undoN(f, n)
+}
+
+// CanAutoComplete はいまオートコンプリートを押せば最後まで通るかを返す。
+//
+// Web の freeCellAutoCompleteReady と同じく、各タブロー列が下から上へ厳密に
+// 降順であることを調べる。フリーセルは単札で常に露出しており詰まらせないため
+// 見ない。同ランクは技術的には掃ける場合もあるが、掃除が詰まらないと約束しない
+// ため意図的に保守的に false とする。
+func (f *FreeCell) CanAutoComplete() bool {
+	if f.phase != FreeCellPhasePlaying {
+		return false
+	}
+	for _, col := range f.tableau {
+		var below *Card
+		for _, card := range col {
+			if card == nil {
+				continue
+			}
+			if below != nil && below.GetValue() <= card.GetValue() {
+				return false
+			}
+			below = card
+		}
+	}
+	return true
 }
 
 // --- State getters/setters ---
@@ -754,8 +780,8 @@ func (f *FreeCell) checkStalemate() {
 }
 
 // appendLog 棋譜エントリを追加
-func (f *FreeCell) appendLog(actionType, detail string, cards []*Card) {
-	f.appendLogAt(f.moveCount, 0, actionType, detail, cards)
+func (f *FreeCell) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	f.appendLogCodeAt(f.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // freeCellJSON is the JSON wire format for FreeCell.

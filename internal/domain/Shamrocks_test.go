@@ -14,6 +14,14 @@ import (
 
 func llCardSH(design, value int) *Card { return NewCard(design, value, true) }
 
+func TestShamrocks_ActionLogUsesDetailCode(t *testing.T) {
+	g := NewDefaultShamrocks()
+	g.Reset()
+	entry := g.GetActionLog()[0]
+	assert.Equal(t, "shamrocks.log.deal", entry.DetailCode)
+	assert.Empty(t, entry.DetailParams)
+}
+
 func newLlGameSH() *Shamrocks {
 	g := NewDefaultShamrocks()
 	g.Reset()

@@ -52,9 +52,9 @@ func TestWhiteheadCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(kg, nil)
 		assert.Contains(t, result, "Whitehead")
-		assert.Contains(t, result, "Foundation")
-		assert.Contains(t, result, "Stock: 24枚")
-		assert.Contains(t, result, "Waste: [空]")
+		assert.Contains(t, result, "組札")
+		assert.Contains(t, result, "ストック: 24枚")
+		assert.Contains(t, result, "ウェイスト: [空]")
 		assert.Contains(t, result, "列0:")
 		assert.Contains(t, result, "手数: 0")
 		// Header surfaces draw mode, scoring mode, and the running score.
@@ -77,8 +77,8 @@ func TestWhiteheadCuiPresenter_Output(t *testing.T) {
 		result := p.Output(kg, nil)
 		assert.Contains(t, result, "ドロー: 3枚")
 		// All three shown, the top (last) card marked playable.
-		assert.Contains(t, result, "SPADE 2")
-		assert.Contains(t, result, "CLOVER 9*")
+		assert.Contains(t, result, "♠2")
+		assert.Contains(t, result, "♣9*")
 		assert.Contains(t, result, "末尾*のみ操作可")
 	})
 
@@ -108,7 +108,7 @@ func TestWhiteheadCuiPresenter_Output(t *testing.T) {
 
 		p := new(WhiteheadCuiPresenter)
 		result := p.Output(kg, nil)
-		assert.Contains(t, result, "Waste: HEART 5")
+		assert.Contains(t, result, "ウェイスト: ♥5")
 	})
 
 	t.Run("with error", func(t *testing.T) {
@@ -135,11 +135,16 @@ func TestWhiteheadCuiPresenter_Output(t *testing.T) {
 		kg := new(interfaces.MockWhiteheadGame)
 		setupWhiteheadCuiMockDefaults(kg)
 		kg.ExpectedCalls = filterCallsWH(kg.ExpectedCalls, "GetPhase")
+		kg.ExpectedCalls = filterCallsWH(kg.ExpectedCalls, "GetFoundation")
 		kg.On("GetPhase").Return(domain.WhiteheadPhaseGameOver)
+		var foundation [domain.WhiteheadFoundationCnt][]*domain.Card
+		foundation[0] = []*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)}
+		kg.On("GetFoundation").Return(foundation)
 
 		p := new(WhiteheadCuiPresenter)
 		result := p.Output(kg, nil)
 		assert.Contains(t, result, "ゲームオーバー")
+		assert.Contains(t, result, "組札 1/52 枚（2%）まで到達")
 	})
 
 	t.Run("stalemate", func(t *testing.T) {
@@ -177,7 +182,7 @@ func TestWhiteheadCuiPresenter_Output(t *testing.T) {
 
 		p := new(WhiteheadCuiPresenter)
 		result := p.Output(kg, nil)
-		assert.Contains(t, result, "SPADE 1")
+		assert.Contains(t, result, "♠1")
 	})
 
 	t.Run("face down card shows ??", func(t *testing.T) {
@@ -216,7 +221,7 @@ func TestWhiteheadCuiPresenter_HintOutput(t *testing.T) {
 		p := new(WhiteheadCuiPresenter)
 		result := p.HintOutput(kg)
 		assert.Contains(t, result, "タブロー列0[2]")
-		assert.Contains(t, result, "ファンデーション")
+		assert.Contains(t, result, "組札")
 	})
 
 	t.Run("waste to tableau hint", func(t *testing.T) {
@@ -253,7 +258,7 @@ func TestWhiteheadCuiPresenter_ActionLogOutput(t *testing.T) {
 		kg := new(interfaces.MockWhiteheadGame)
 		kg.On("GetPhase").Return(domain.WhiteheadPhaseGameClear)
 		kg.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "draw", Detail: "test", Cards: nil},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "draw", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}, Cards: nil},
 		})
 
 		p := new(WhiteheadCuiPresenter)

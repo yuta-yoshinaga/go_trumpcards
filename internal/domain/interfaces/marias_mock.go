@@ -105,6 +105,12 @@ func (_m *MockMariasGame) GetCurrentTrick() []*domain.TrickCard {
 	return nil
 }
 
+// GetLastTrickWinner モック
+func (_m *MockMariasGame) GetLastTrickWinner() int {
+	ret := _m.Called()
+	return ret.Get(0).(int)
+}
+
 // GetLeadPlayerIdx モック
 func (_m *MockMariasGame) GetLeadPlayerIdx() int {
 	ret := _m.Called()
@@ -145,6 +151,12 @@ func (_m *MockMariasGame) GetRoundCardPoints() [domain.MariasPlayerCnt]int {
 func (_m *MockMariasGame) GetRoundMarriage() [domain.MariasPlayerCnt]int {
 	ret := _m.Called()
 	return ret.Get(0).([domain.MariasPlayerCnt]int)
+}
+
+// GetRoundMarriageSuits モック
+func (_m *MockMariasGame) GetRoundMarriageSuits() [domain.MariasPlayerCnt][]domain.MariasMarriage {
+	ret := _m.Called()
+	return ret.Get(0).([domain.MariasPlayerCnt][]domain.MariasMarriage)
 }
 
 // GetWinnerPlayer モック

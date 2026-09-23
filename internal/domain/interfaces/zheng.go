@@ -13,6 +13,8 @@ type ZhengGame interface {
 	GetGameEndFlag() bool
 	// IsHumanTurn 現在の手番が人間かを返す
 	IsHumanTurn() bool
+	// HasPlayableResponse は場を上回る合法な組み合わせがあるかを返す
+	HasPlayableResponse() bool
 	// PlayerPlay プレイヤーがカードを出す
 	PlayerPlay(indices []int) error
 	// CpuPlay CPUプレイヤーが1ターン実行する

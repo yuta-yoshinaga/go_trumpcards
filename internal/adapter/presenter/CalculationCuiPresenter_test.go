@@ -121,7 +121,15 @@ func TestCalculationCuiPresenter_HintOutput(t *testing.T) {
 		g.On("GetHint").Return(&domain.CalculationHint{FromZone: "stock", WasteIdx: -1, FoundationIdx: 2})
 		result := new(CalculationCuiPresenter).HintOutput(g)
 		assert.Contains(t, result, "ストック")
-		assert.Contains(t, result, "ファンデーション2")
+		assert.Contains(t, result, "組札2")
+	})
+
+	t.Run("stock to waste hint", func(t *testing.T) {
+		g := new(interfaces.MockCalculationGame)
+		g.On("GetHint").Return(&domain.CalculationHint{FromZone: "stockToWaste", WasteIdx: 3, FoundationIdx: -1})
+		result := new(CalculationCuiPresenter).HintOutput(g)
+		assert.Contains(t, result, "ストック")
+		assert.Contains(t, result, "ウェイスト3")
 	})
 
 	t.Run("waste hint", func(t *testing.T) {
@@ -129,7 +137,7 @@ func TestCalculationCuiPresenter_HintOutput(t *testing.T) {
 		g.On("GetHint").Return(&domain.CalculationHint{FromZone: "waste", WasteIdx: 1, FoundationIdx: 0})
 		result := new(CalculationCuiPresenter).HintOutput(g)
 		assert.Contains(t, result, "ウェイスト1")
-		assert.Contains(t, result, "ファンデーション0")
+		assert.Contains(t, result, "組札0")
 	})
 
 	t.Run("no hint", func(t *testing.T) {
@@ -157,7 +165,9 @@ func TestCalculationCuiPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("game over", func(t *testing.T) {
 		g := new(interfaces.MockCalculationGame)
 		g.On("GetPhase").Return(domain.CalculationPhaseGameOver)
-		g.On("GetActionLog").Return([]*domain.ActionLogEntry{{TurnNumber: 1, ActionType: "move", Detail: "test"}})
+		g.On("GetActionLog").Return([]*domain.ActionLogEntry{
+			{TurnNumber: 1, ActionType: "move", DetailCode: "calculation.log.stockToFoundation", DetailParams: map[string]string{"foundation": "1"}},
+		})
 		assert.NotEmpty(t, new(CalculationCuiPresenter).ActionLogOutput(g))
 	})
 }
@@ -287,7 +297,7 @@ func TestCalculationCuiPresenter_Output_WasteRanks(t *testing.T) {
 	assert.NotContains(t, wasteLine(0), "8")
 	// 既存の wasteFilled 表示は残っている。
 	assert.Contains(t, wasteLine(0), "(5枚)")
-	assert.Contains(t, wasteLine(0), "SPADE 1")
+	assert.Contains(t, wasteLine(0), "♠1")
 
 	// 2 枚の山: 3 枚未満でも壊れず、2 枚とも並び順どおり出る。
 	assert.Contains(t, wasteLine(1), "J・Q")

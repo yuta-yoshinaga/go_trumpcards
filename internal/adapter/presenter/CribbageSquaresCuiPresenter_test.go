@@ -174,7 +174,7 @@ func TestCribbageSquaresCuiPresenter_ActionLog_Complete(t *testing.T) {
 	pg := new(interfaces.MockCribbageSquaresGame)
 	pg.On("GetPhase").Return(domain.CribbageSquaresPhaseComplete)
 	pg.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, ActionType: "place", Detail: "test"},
+		{TurnNumber: 1, ActionType: "place", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	p := &CribbageSquaresCuiPresenter{}
 	out := p.ActionLogOutput(pg)

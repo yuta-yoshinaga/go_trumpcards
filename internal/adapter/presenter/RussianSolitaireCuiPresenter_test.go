@@ -37,7 +37,7 @@ func TestRussianSolitaireCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(rg, nil)
 		assert.Contains(t, result, "Russian Solitaire")
-		assert.Contains(t, result, "Foundation")
+		assert.Contains(t, result, "組札")
 		assert.Contains(t, result, "列0:")
 		assert.Contains(t, result, "手数: 0")
 		assert.Contains(t, result, "ヒント: タブローに置けるのは「移動先と同じスートで1つ下の数字」の札だけです。空の列にはKしか置けません。")
@@ -114,7 +114,7 @@ func TestRussianSolitaireCuiPresenter_Output(t *testing.T) {
 
 		p := new(RussianSolitaireCuiPresenter)
 		result := p.Output(rg, nil)
-		assert.Contains(t, result, "SPADE 1")
+		assert.Contains(t, result, "♠1")
 	})
 }
 
@@ -131,7 +131,7 @@ func TestRussianSolitaireCuiPresenter_HintOutput(t *testing.T) {
 		p := new(RussianSolitaireCuiPresenter)
 		result := p.HintOutput(rg)
 		assert.Contains(t, result, "ヒント")
-		assert.Contains(t, result, "ファンデーション")
+		assert.Contains(t, result, "組札")
 	})
 
 	t.Run("hint to tableau", func(t *testing.T) {
@@ -172,7 +172,7 @@ func TestRussianSolitaireCuiPresenter_ActionLogOutput(t *testing.T) {
 		rg := new(interfaces.MockRussianSolitaireGame)
 		rg.On("GetPhase").Return(domain.RussianSolitairePhaseGameOver)
 		rg.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "move", Detail: "test"},
+			{TurnNumber: 1, ActionType: "move", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 
 		p := new(RussianSolitaireCuiPresenter)

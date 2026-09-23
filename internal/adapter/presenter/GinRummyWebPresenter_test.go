@@ -357,6 +357,16 @@ func TestGinRummyWebPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestGinRummyWebPresenter_CodedError(t *testing.T) {
+	m, _ := setupGinRummyWebMockWithPlayers()
+	err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "ginrummy.errDiscardPileEmpty", nil)
+	result := new(presenter.GinRummyWebPresenter).Output(m, err)
+	var output controller.GinRummyWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(result), &output))
+	assert.Empty(t, output.Message)
+	assert.Equal(t, "ginrummy.errDiscardPileEmpty", output.MessageCode)
+}
+
 // **レイオフフェーズの主題そのもの。**ディスカードフェーズは meldedIndices で
 // メルド/デッドウッドを見せているのに、レイオフには補助が無かった (#4823)。
 func TestGinRummyWebPresenter_LayoffTargets(t *testing.T) {
@@ -385,14 +395,14 @@ func TestGinRummyWebPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("with entries", func(t *testing.T) {
 		m := new(interfaces.MockGinRummyGame)
 		entries := []*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "draw_stock", Detail: "drew from stock", Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, true)}},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "draw_stock", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}, Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, true)}},
 		}
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetActionLog").Return(entries)
 
 		result := p.ActionLogOutput(m)
 		assert.Contains(t, result, `"actionType":"draw_stock"`)
-		assert.Contains(t, result, `"detail":"drew from stock"`)
+		assert.Contains(t, result, `"detailCode":"test.log.stub"`)
 		assert.Contains(t, result, `"turnNumber":1`)
 		assert.Contains(t, result, `"playerIdx":0`)
 		m.AssertExpectations(t)
@@ -416,4 +426,10 @@ func TestGinRummyWebPresenter_ActionLogOutput(t *testing.T) {
 		assert.Contains(t, result, `"entries":[]`)
 		m.AssertExpectations(t)
 	})
+}
+
+func TestGinRummyWebPresenter_HintOutput(t *testing.T) {
+	p := new(presenter.GinRummyWebPresenter)
+	m, _ := setupGinRummyWebMockWithPlayers()
+	assert.Equal(t, p.Output(m, nil), p.HintOutput(m))
 }

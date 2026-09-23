@@ -12,6 +12,7 @@
   "tableEmpty": "  (まだメルドはありません)",
   "meldLine": "  [{{idx}}] {{cards}}",
   "playerLine": "{{name}}: 累積{{cum}}点 ラウンド{{round}}点 {{cards}}枚",
+  "deadwoodLine": "  デッドウッド: {{value}}点",
   "gameEnd": "ゲーム終了！ {{name}}の勝利です！",
   "promptTurn": "手番: {{name}}",
   "promptDrawHelp": "dr・・・山札から1枚引く (ターン終了)",
@@ -23,5 +24,17 @@
   "turnPhase": "あなたの手番です。引くかプレイしてください。",
   "roundEnd": "ラウンド終了。次のラウンドへ進んでください。",
   "promptLayoffNone": "レイオフ不可: 場にメルドがありません",
-  "helpExampleDraw": "  dr                   山札から 1 枚引いて手番を終える"
+  "helpExampleDraw": "  dr                   山札から 1 枚引いて手番を終える",
+  "errInvalidMeldIndex": "対象メルドが不正です",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errHandCardRequired": "手札から少なくとも1枚出す必要があります",
+  "errInvalidMeld": "無効なメルドが含まれています",
+  "errTableCardsMismatch": "場のカード構成が一致しません",
+  "errEmptyMeld": "空のメルドは指定できません",
+  "errInvalidCard": "無効なカードが指定されました",
+  "log.draw": "{{name}}が山札から引く",
+  "log.play": "{{name}}が{{count}}枚のカードを場に出す",
+  "log.roundWin": "{{name}}が上がる（ラウンド{{round}}）",
+  "log.roundDraw": "ラウンド終了（山札切れ）",
+  "log.gameEnd": "{{name}}が{{points}}点でゲームに勝利！"
 }

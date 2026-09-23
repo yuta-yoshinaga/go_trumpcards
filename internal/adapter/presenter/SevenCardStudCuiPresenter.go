@@ -50,6 +50,10 @@ func (p *SevenCardStudCuiPresenter) Output(s interfaces.SevenCardStudGame, lastE
 				"ante", strconv.Itoa(cfg.Ante),
 				"bringIn", strconv.Itoa(cfg.BringIn),
 				"levelup", strconv.Itoa(cfg.AnteLevelHands)) + "\n")
+			if cfg.AnteLevelHands > 0 && s.GetHandCount() > 1 && (s.GetHandCount()-1)%cfg.AnteLevelHands == 0 {
+				previous := s.GetPreviousAnte()
+				b.WriteString(i18n.Tf("sevencardstud.anteLevelUp", "from", strconv.Itoa(previous), "to", strconv.Itoa(cfg.Ante)) + "\n")
+			}
 			if cfg.RebuyEnabled {
 				b.WriteString(i18n.Tf("sevencardstud.rebuyLine",
 					"chips", strconv.Itoa(cfg.RebuyChips),
@@ -405,6 +409,11 @@ func (p *SevenCardStudCuiPresenter) HintOutput(s interfaces.SevenCardStudGame) s
 	if s.GetIsLowball() {
 		return razzHintOutput(s)
 	}
+	if s.GetIsChicago() {
+		if out := chicagoSpadeLockHint(s); out != "" {
+			return out
+		}
+	}
 	if s.GetIsHiLo() {
 		return sevenCardStudHiLoHintOutput(s)
 	}
@@ -422,6 +431,43 @@ func (p *SevenCardStudCuiPresenter) HintOutput(s interfaces.SevenCardStudGame) s
 	}
 	return color.Yellow(i18n.Tf("sevencardstud.hint",
 		"action", action, "reason", i18n.T(reasonKey))) + "\n"
+}
+
+func chicagoSpadeLockHint(s interfaces.SevenCardStudGame) string {
+	if !razzBettingPhases[s.GetPhase()] {
+		return ""
+	}
+	player := s.GetPlayer(s.GetCurrentTurn())
+	if player == nil || player.GetFolded() || player.GetAllIn() || len(player.GetAllCards()) == 0 {
+		return ""
+	}
+	if !hasAceOfSpadesInHole(player.GetHoleCards()) {
+		return ""
+	}
+	owed := s.GetLastBet() - player.GetCurrentBet()
+	if owed < 0 {
+		owed = 0
+	}
+	actionKey := "sevencardstud.hintCheck"
+	if owed > 0 {
+		actionKey = "sevencardstud.hintCall"
+	}
+	return color.Yellow(i18n.Tf("sevencardstud.hint",
+		"action", i18n.T(actionKey),
+		"reason", hintReasonStr("spade_lock", sevenCardStudHintReasonKeys))) + "\n"
+}
+
+func hasAceOfSpadesInHole(cards []*domain.Card) bool {
+	for _, card := range cards {
+		if card.GetDesign() == domain.CardDesignSpade && card.GetValue() == 1 {
+			return true
+		}
+	}
+	return false
+}
+
+var sevenCardStudHintReasonKeys = map[string]string{
+	"spade_lock": "sevencardstud.hintReasonSpadeLock",
 }
 
 // sevenCardStudLowQualifier は Hi-Lo でローに数える上限 (8 or Better)。

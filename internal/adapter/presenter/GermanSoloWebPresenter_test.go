@@ -20,6 +20,7 @@ func setupGermanSoloWebMock() *interfaces.MockGermanSoloGame {
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
 	m.On("GetCurrentTrick").Return(([]*domain.TrickCard)(nil))
+	m.On("GetLastTrickWinner").Return(-1)
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.GermanSoloPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -210,6 +211,29 @@ func TestGermanSoloWebPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestGermanSoloWebPresenter_CodedError(t *testing.T) {
+	m, _ := setupGermanSoloWebMockWithPlayers()
+	err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "germansolo.errFollowLeadSuit", nil)
+	result := new(presenter.GermanSoloWebPresenter).Output(m, err)
+	var output controller.GermanSoloWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(result), &output))
+	assert.Empty(t, output.Message)
+	assert.Equal(t, "germansolo.errFollowLeadSuit", output.MessageCode)
+}
+
+func TestGermanSoloWebPresenter_IncludesLastTrickWinner(t *testing.T) {
+	m, _ := setupGermanSoloWebMockWithPlayers()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLastTrickWinner")
+	m.On("GetLastTrickWinner").Return(3)
+	var output controller.GermanSoloWebOutput
+	if err := json.Unmarshal([]byte((&presenter.GermanSoloWebPresenter{}).Output(m, nil)), &output); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	if output.LastTrickWinner != 3 {
+		t.Errorf("lastTrickWinner = %d, want 3", output.LastTrickWinner)
+	}
+}
+
 func TestGermanSoloWebPresenter_HintOutput(t *testing.T) {
 	p := new(presenter.GermanSoloWebPresenter)
 
@@ -241,7 +265,7 @@ func TestGermanSoloWebPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockGermanSoloGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You plays ♠K"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, `"actionType":"play"`)

@@ -48,6 +48,16 @@ func TestLooWebPresenter_Error(t *testing.T) {
 	assert.Equal(t, "boom", decoded["message"])
 }
 
+func TestLooWebPresenter_CodedError(t *testing.T) {
+	g := domain.NewDefaultLoo()
+	g.Reset()
+	err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "loo.errCardIndexOutOfRange", nil)
+	var decoded map[string]any
+	require.NoError(t, json.Unmarshal([]byte(new(presenter.LooWebPresenter).Output(g, err)), &decoded))
+	assert.Empty(t, decoded["message"])
+	assert.Equal(t, "loo.errCardIndexOutOfRange", decoded["messageCode"])
+}
+
 func TestLooWebPresenter_RoundEnd(t *testing.T) {
 	g := domain.NewDefaultLoo()
 	g.Reset()

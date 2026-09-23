@@ -66,5 +66,11 @@
   "handName.kkeut2": "2 kkeut",
   "handName.kkeut1": "1 kkeut",
   "handName.mangtong": "Mangtong (0 kkeut)",
-  "handName.none": "-"
+  "handName.none": "-",
+  "log.deal": "hand {{hand}}: dealer={{dealer}}, ante={{ante}}, pot={{pot}}",
+  "log.fold": "player {{player}} folds",
+  "log.call": "player {{player}} calls to {{bet}}",
+  "log.raise": "player {{player}} raises to {{bet}}",
+  "log.showdown": "hand {{hand}}: pot {{pot}} to {{winners}}",
+  "log.gameEnd": "player {{winner}} takes the table"
 }

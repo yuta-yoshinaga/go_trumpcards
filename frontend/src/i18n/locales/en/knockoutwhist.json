@@ -31,6 +31,7 @@
   "spectatorBanner": "You've been knocked out — spectating ({{n}} left)",
   "leader": "Leader",
   "roundWinner": "Round winner",
+  "dogboneWarning": "0 tricks next round means elimination",
   "playButton": "Play",
   "nextTrick": "Next Trick",
   "nextRound": "Next Round",

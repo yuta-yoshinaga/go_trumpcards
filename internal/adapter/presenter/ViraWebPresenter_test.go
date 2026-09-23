@@ -178,6 +178,24 @@ func TestViraWebPresenter_Output(t *testing.T) {
 		assert.Empty(t, resObj.MessageCode)
 	})
 
+	t.Run("coded error sets code and clears message", func(t *testing.T) {
+		m, _ := setupViraWebMockWithPlayers()
+		result := p.Output(m, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "vira.errFollowLeadSuit", nil))
+		var resObj controller.ViraWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "vira.errFollowLeadSuit", resObj.MessageCode)
+	})
+
+	t.Run("target rounds coded error sets code and clears message", func(t *testing.T) {
+		m, _ := setupViraWebMockWithPlayers()
+		result := p.Output(m, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "vira.errTargetRoundsNotMultiple", map[string]string{"min": "3", "rounds": "4"}))
+		var resObj controller.ViraWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "vira.errTargetRoundsNotMultiple", resObj.MessageCode)
+	})
+
 	t.Run("game end human wins", func(t *testing.T) {
 		m, _ := setupViraWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
@@ -258,7 +276,7 @@ func TestViraWebPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockViraGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You plays ♠K"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	assert.Contains(t, p.ActionLogOutput(m), `"actionType":"play"`)
 }

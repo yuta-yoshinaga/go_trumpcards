@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // PrsiPlayerCnt プルシープレイヤー数 (1 human + 3 CPU)
@@ -152,12 +153,12 @@ func (g *Prsi) PlayerPlay(cardIndex int) error {
 
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "prsi.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
 	if !g.isValidPlay(card) {
-		return NewDomainError(ErrInvalidPlay, "そのカードは出せません")
+		return NewDomainErrorCode(ErrInvalidPlay, "prsi.errCardNotPlayable", nil)
 	}
 
 	played := player.RemoveCard(cardIndex)
@@ -274,6 +275,10 @@ func (g *Prsi) GetConfig() PrsiConfig { return g.config }
 // SetConfig 設定変更
 func (g *Prsi) SetConfig(cfg PrsiConfig) { g.config = cfg }
 
+func (g *Prsi) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
+}
+
 // --- Private methods ---
 
 // isValidPlay カードがプレイ可能か判定
@@ -296,19 +301,19 @@ func (g *Prsi) isValidPlay(card *Card) bool {
 func (g *Prsi) playCard(playerIdx int, card *Card) {
 	g.discardPile = append(g.discardPile, card)
 
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "prsi.log.play", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	// アクションカードの状態更新
 	switch card.GetValue() {
 	case PrsiSevenValue:
 		g.penaltyDrawCount += PrsiSevenDrawAmount
-		g.appendLog(playerIdx, "seven", fmt.Sprintf("Draw stack is now %d", g.penaltyDrawCount), nil)
+		g.appendLog(playerIdx, "seven", "prsi.log.drawStack", map[string]string{"count": strconv.Itoa(g.penaltyDrawCount)}, nil)
 	case PrsiAceValue:
 		g.pendingSkips++
-		g.appendLog(playerIdx, "skip", "Next player is skipped (Ace)", nil)
+		g.appendLog(playerIdx, "skip", "prsi.log.skipAce", nil, nil)
 	case PrsiUnderValue:
 		g.pendingSkips++
-		g.appendLog(playerIdx, "skip", "Next player is skipped (Under)", nil)
+		g.appendLog(playerIdx, "skip", "prsi.log.skipUnder", nil, nil)
 	}
 
 	// 手札が空になったら勝利 (即時終了)
@@ -317,7 +322,7 @@ func (g *Prsi) playCard(playerIdx int, card *Card) {
 		g.winnerIdx = playerIdx
 		g.gameEndFlag = true
 		g.phase = PrsiPhaseGameEnd
-		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(g.players, playerIdx)), nil)
+		g.appendLog(-1, "game_end", "prsi.log.gameWin", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 		return
 	}
 
@@ -336,7 +341,7 @@ func (g *Prsi) advanceTurn() {
 func (g *Prsi) drawCard(playerIdx int) error {
 	if g.penaltyDrawCount > 0 {
 		drawn := g.drawCards(playerIdx, g.penaltyDrawCount)
-		g.appendLog(playerIdx, "take_penalty", fmt.Sprintf("%s takes %d penalty cards", playerName(g.players, playerIdx), drawn), nil)
+		g.appendLog(playerIdx, "take_penalty", "prsi.log.takePenalty", map[string]string{"name": playerName(g.players, playerIdx), "count": strconv.Itoa(drawn)}, nil)
 		g.penaltyDrawCount = 0
 		g.sortHand(playerIdx)
 		g.advanceTurn()
@@ -349,7 +354,7 @@ func (g *Prsi) drawCard(playerIdx int) error {
 
 	if len(g.drawPile) == 0 {
 		// 引けるカードがない→パス
-		g.appendLog(playerIdx, "pass", fmt.Sprintf("%s passes (no cards to draw)", playerName(g.players, playerIdx)), nil)
+		g.appendLog(playerIdx, "pass", "prsi.log.pass", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 		g.advanceTurn()
 		return nil
 	}
@@ -359,7 +364,7 @@ func (g *Prsi) drawCard(playerIdx int) error {
 	g.players[playerIdx].AddCard(card)
 	g.sortHand(playerIdx)
 
-	g.appendLog(playerIdx, "draw", fmt.Sprintf("%s draws a card", playerName(g.players, playerIdx)), nil)
+	g.appendLog(playerIdx, "draw", "prsi.log.draw", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 
 	// プルシーでは引いたら手番終了 (引いたカードを即座に出すことはできない)
 	g.advanceTurn()

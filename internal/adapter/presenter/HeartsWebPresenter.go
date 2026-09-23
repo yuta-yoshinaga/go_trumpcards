@@ -1,4 +1,4 @@
-//go:build !js || !wasm || classic
+//go:build !js || !wasm || extra7
 
 package presenter
 
@@ -73,8 +73,19 @@ func (p *HeartsWebPresenter) buildPlayersOutput(h interfaces.HeartsGame) []*cont
 			TrickCount:      player.GetTrickCount(),
 			PenaltyCards:    heartsPenaltyCardsOutput(player),
 			TookOmnibusJD:   omnibus && heartsPlayerTookOmnibusJD(player),
+			VoidSuits:       heartsVoidSuitsOutput(h.GetVoidSuits()[i]),
 		}
 		out = append(out, pObj)
+	}
+	return out
+}
+
+func heartsVoidSuitsOutput(voidSuits [domain.CardDesignMax + 1]bool) []int {
+	out := make([]int, 0)
+	for suit := domain.CardDesignSpade; suit <= domain.CardDesignMax; suit++ {
+		if voidSuits[suit] {
+			out = append(out, suit)
+		}
 	}
 	return out
 }
@@ -136,6 +147,9 @@ func isHeartsPenaltyCard(card *domain.Card) bool {
 // buildMessage ゲーム結果メッセージを構築
 func (p *HeartsWebPresenter) buildMessage(h interfaces.HeartsGame, trick []*domain.TrickCard, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if h.GetGameEndFlag() {

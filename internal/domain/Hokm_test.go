@@ -564,6 +564,15 @@ func TestHokm_ActionLog(t *testing.T) {
 		kinds[e.ActionType] = true
 	}
 	assert.True(t, kinds["trump"])
+	var trumpLog *ActionLogEntry
+	for _, entry := range h.actionLog {
+		if entry.DetailCode == "hokm.log.declareTrump" {
+			trumpLog = entry
+			break
+		}
+	}
+	require.NotNil(t, trumpLog)
+	assert.Equal(t, map[string]string{"suit": "1"}, trumpLog.DetailParams)
 }
 
 // **親は負けたときだけ交代する** (#5753)。次に切り札を選ぶ席が変わるかどうかを

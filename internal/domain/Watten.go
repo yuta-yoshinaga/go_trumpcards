@@ -30,6 +30,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // WattenPlayerCnt ヴァッテンのプレイヤー数
@@ -242,10 +243,10 @@ func (g *Watten) PlayerDeclare(rank, suit int) error {
 		return ErrNotHumanTurn
 	}
 	if !isValidSchlagRank(rank) {
-		return NewDomainError(ErrInvalidPlay, "無効な Schlag ランクです")
+		return NewDomainErrorCode(ErrInvalidPlay, "watten.errInvalidSchlagRank", nil)
 	}
 	if suit < CardDesignSpade || suit > CardDesignDiamond {
-		return NewDomainError(ErrInvalidPlay, "無効な切り札スートです")
+		return NewDomainErrorCode(ErrInvalidPlay, "watten.errInvalidCriticalSuit", nil)
 	}
 	g.doDeclare(g.dealerIdx, rank, suit)
 	return nil
@@ -267,9 +268,7 @@ func (g *Watten) CpuDeclare() {
 func (g *Watten) doDeclare(playerIdx, rank, suit int) {
 	g.schlagRank = rank
 	g.criticalSuit = suit
-	g.appendLog(playerIdx, "declare",
-		fmt.Sprintf("%s declares Schlag=%d critical=%s",
-			playerName(g.players, playerIdx), rank, suitStr(suit)), nil)
+	g.appendLog(playerIdx, "declare", "watten.log.declare", map[string]string{"player": playerName(g.players, playerIdx), "rank": strconv.Itoa(rank), "suitKey": suitKeyOf(suit)}, nil)
 	g.sortAllHands()
 	g.startPlayPhase()
 }
@@ -298,7 +297,7 @@ func (g *Watten) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "watten.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
@@ -337,8 +336,7 @@ func (g *Watten) CpuPlay() {
 // playCard カードをプレイする共通処理
 func (g *Watten) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "watten.log.play", map[string]string{"player": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(g.currentTrick) == WattenPlayerCnt {
 		g.phase = WattenPhaseTrickEnd
@@ -361,8 +359,7 @@ func (g *Watten) ResolveTrick() {
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.teamTricks[winnerTeam]++
 	g.leadPlayerIdx = winnerIdx
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), trickCards)
+	g.appendLog(winnerIdx, "trick_win", "watten.log.trickWin", map[string]string{"player": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber)}, trickCards)
 
 	if g.trickNumber >= WattenHandSize {
 		g.enterRoundEnd(g.dealWinnerByTricks())
@@ -423,7 +420,7 @@ func (g *Watten) PlayerRaise() error {
 		return ErrNotHumanTurn
 	}
 	if !g.canRaise(g.currentPlayerIdx) {
-		return NewDomainError(ErrWrongPhase, "今はレイズできません")
+		return NewDomainErrorCode(ErrWrongPhase, "watten.errCannotRaiseNow", nil)
 	}
 	g.callRaise(g.players[g.currentPlayerIdx].GetTeam())
 	return nil
@@ -436,8 +433,7 @@ func (g *Watten) callRaise(team int) {
 	oppTeam := 1 - team
 	g.responderIdx = g.teamRepresentative(oppTeam)
 	g.phase = WattenPhaseRespond
-	g.appendLog(g.teamRepresentative(team), "raise",
-		fmt.Sprintf("Team %d raises stake to %d", team, g.pendingStake), nil)
+	g.appendLog(g.teamRepresentative(team), "raise", "watten.log.raise", map[string]string{"team": strconv.Itoa(team), "stake": strconv.Itoa(g.pendingStake)}, nil)
 }
 
 // teamRepresentative チームの代表応答プレイヤーを返す (チーム 0 → 人間 0, チーム 1 → 1)。
@@ -493,9 +489,7 @@ func (g *Watten) respond(responder int, hold bool) {
 		g.phase = WattenPhasePlay
 		// レイズしたチームのリードプレイヤーに手番を戻す。
 		g.currentPlayerIdx = g.leadPlayerIdx
-		g.appendLog(responder, "hold",
-			fmt.Sprintf("%s holds (stake %d, team %d leads)",
-				playerName(g.players, responder), g.stake, raiser), nil)
+		g.appendLog(responder, "hold", "watten.log.hold", map[string]string{"player": playerName(g.players, responder), "stake": strconv.Itoa(g.stake), "team": strconv.Itoa(raiser)}, nil)
 		return
 	}
 	// fold: レイズしたチームが直前の確定ステークでディールを取る。
@@ -503,9 +497,7 @@ func (g *Watten) respond(responder int, hold bool) {
 	g.pendingStake = 0
 	g.raiserTeam = -1
 	g.responderIdx = -1
-	g.appendLog(responder, "fold",
-		fmt.Sprintf("%s folds; team %d wins deal (%d pt)",
-			playerName(g.players, responder), raiser, g.stake), nil)
+	g.appendLog(responder, "fold", "watten.log.fold", map[string]string{"player": playerName(g.players, responder), "team": strconv.Itoa(raiser), "points": strconv.Itoa(g.stake)}, nil)
 	g.enterRoundEnd(raiser)
 }
 
@@ -527,9 +519,7 @@ func (g *Watten) scoreDeal() {
 	}
 	g.scored = true
 	g.teamScores[g.dealWinnerTeam] += g.stake
-	g.appendLog(-1, "deal_score",
-		fmt.Sprintf("Team %d wins deal +%d (match %d-%d)",
-			g.dealWinnerTeam, g.stake, g.teamScores[0], g.teamScores[1]), nil)
+	g.appendLog(-1, "deal_score", "watten.log.dealScore", map[string]string{"team": strconv.Itoa(g.dealWinnerTeam), "stake": strconv.Itoa(g.stake), "team0": strconv.Itoa(g.teamScores[0]), "team1": strconv.Itoa(g.teamScores[1])}, nil)
 	g.checkGameEnd()
 }
 
@@ -557,11 +547,14 @@ func (g *Watten) checkGameEnd() {
 			} else {
 				g.result = WattenResultLose
 			}
-			g.appendLog(-1, "game_end",
-				fmt.Sprintf("Team %d wins the match!", g.winnerTeam), nil)
+			g.appendLog(-1, "game_end", "watten.log.gameEnd", map[string]string{"team": strconv.Itoa(g.winnerTeam)}, nil)
 			return
 		}
 	}
+}
+
+func (g *Watten) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- Ranking ---
@@ -711,7 +704,7 @@ func (g *Watten) validatePlay(playerIdx int, card *Card) error {
 	if g.isTrump(lead) {
 		// トランプがリード: トランプ保有者はトランプを出す。
 		if g.playerHasTrump(player) && !g.isTrump(card) {
-			return NewDomainError(ErrInvalidPlay, "トランプに従ってください")
+			return NewDomainErrorCode(ErrInvalidPlay, "watten.errMustFollowTrump", nil)
 		}
 		return nil
 	}
@@ -719,7 +712,7 @@ func (g *Watten) validatePlay(playerIdx int, card *Card) error {
 	leadSuit := lead.GetDesign()
 	if g.playerHasPlainSuit(player, leadSuit) {
 		if g.isTrump(card) || card.GetDesign() != leadSuit {
-			return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+			return NewDomainErrorCode(ErrInvalidPlay, "watten.errMustFollowLeadSuit", nil)
 		}
 	}
 	return nil
@@ -1296,62 +1289,62 @@ func (g *Watten) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if j.Phase < WattenPhaseDeclare || j.Phase > WattenPhaseGameEnd {
-		return NewDomainError(ErrInvalidPlay, "無効なフェーズです")
+		return NewDomainErrorCode(ErrInvalidPlay, "watten.errInvalidPhase", nil)
 	}
 	if len(j.Players) != WattenPlayerCnt {
-		return NewDomainError(ErrInvalidPlay, "プレイヤー数が不正です")
+		return NewDomainErrorCode(ErrInvalidPlay, "watten.errInvalidPlayerCount", nil)
 	}
 	for i, p := range j.Players {
 		if p == nil {
-			return NewDomainError(ErrInvalidPlay, fmt.Sprintf("プレイヤー %d が nil です", i))
+			return NewDomainErrorCode(ErrInvalidPlay, "watten.errPlayerNil", map[string]string{"idx": fmt.Sprintf("%d", i)})
 		}
 		if t := p.GetTeam(); t < 0 || t >= WattenTeamCnt {
-			return NewDomainError(ErrInvalidPlay, fmt.Sprintf("プレイヤー %d のチームが範囲外です", i))
+			return NewDomainErrorCode(ErrInvalidPlay, "watten.errPlayerTeamOutOfRange", map[string]string{"idx": fmt.Sprintf("%d", i)})
 		}
 	}
 	if len(j.CurrentTrick) > WattenPlayerCnt {
-		return NewDomainError(ErrInvalidPlay, "トリックカードが多すぎます")
+		return NewDomainErrorCode(ErrInvalidPlay, "watten.errTooManyTrickCards", nil)
 	}
 	for i, tc := range j.CurrentTrick {
 		if tc == nil || tc.Card == nil {
-			return NewDomainError(ErrInvalidPlay, fmt.Sprintf("トリックカード %d が nil です", i))
+			return NewDomainErrorCode(ErrInvalidPlay, "watten.errTrickCardNil", map[string]string{"idx": fmt.Sprintf("%d", i)})
 		}
 		if tc.PlayerIdx < 0 || tc.PlayerIdx >= WattenPlayerCnt {
-			return NewDomainError(ErrInvalidPlay, "トリックカードのプレイヤーインデックスが範囲外です")
+			return NewDomainErrorCode(ErrInvalidPlay, "watten.errTrickPlayerIndexOutOfRange", nil)
 		}
 	}
 	if len(j.ActionLog) > wattenMaxSliceLen {
-		return NewDomainError(ErrInvalidPlay, "アクションログが大きすぎます")
+		return NewDomainErrorCode(ErrInvalidPlay, "watten.errActionLogTooLarge", nil)
 	}
 	// 未宣言 (0) は許可。宣言済みの場合のみ範囲チェック。
 	if j.SchlagRank != 0 && !isValidSchlagRank(j.SchlagRank) {
-		return NewDomainError(ErrInvalidPlay, "無効な Schlag ランクです")
+		return NewDomainErrorCode(ErrInvalidPlay, "watten.errInvalidSchlagRank", nil)
 	}
 	if j.CriticalSuit != 0 && (j.CriticalSuit < CardDesignSpade || j.CriticalSuit > CardDesignDiamond) {
-		return NewDomainError(ErrInvalidPlay, "無効な切り札スートです")
+		return NewDomainErrorCode(ErrInvalidPlay, "watten.errInvalidCriticalSuit", nil)
 	}
 	// 宣言後は Schlag/critical が必須。
 	if j.Phase != WattenPhaseDeclare && (j.SchlagRank == 0 || j.CriticalSuit == 0) {
-		return NewDomainError(ErrInvalidPlay, "宣言後は Schlag と切り札が必要です")
+		return NewDomainErrorCode(ErrInvalidPlay, "watten.errDeclarationRequired", nil)
 	}
 	// 0 起点で必須のインデックス。
 	if j.CurrentPlayerIdx < 0 || j.CurrentPlayerIdx >= WattenPlayerCnt {
-		return NewDomainError(ErrInvalidPlay, "currentPlayerIdx が範囲外です")
+		return NewDomainErrorCode(ErrInvalidPlay, "watten.errCurrentPlayerIndexOutOfRange", nil)
 	}
 	if j.DealerIdx < 0 || j.DealerIdx >= WattenPlayerCnt {
-		return NewDomainError(ErrInvalidPlay, "dealerIdx が範囲外です")
+		return NewDomainErrorCode(ErrInvalidPlay, "watten.errDealerIndexOutOfRange", nil)
 	}
 	// -1 センチネル許可のプレイヤーインデックス (0..WattenPlayerCnt-1)。
 	for _, v := range []int{j.LeadPlayerIdx, j.ResponderIdx} {
 		if v < -1 || v >= WattenPlayerCnt {
-			return NewDomainError(ErrInvalidPlay, "プレイヤーインデックスが範囲外です")
+			return NewDomainErrorCode(ErrInvalidPlay, "watten.errPlayerIndexOutOfRange", nil)
 		}
 	}
 	// -1 センチネル許可のチームインデックス (0..WattenTeamCnt-1)。teamScores/teamTricks
 	// を直接インデックスするため WattenTeamCnt で検証する (WattenPlayerCnt ではない)。
 	for _, v := range []int{j.RaiserTeam, j.DealWinnerTeam, j.WinnerTeam} {
 		if v < -1 || v >= WattenTeamCnt {
-			return NewDomainError(ErrInvalidPlay, "チームインデックスが範囲外です")
+			return NewDomainErrorCode(ErrInvalidPlay, "watten.errTeamIndexOutOfRange", nil)
 		}
 	}
 

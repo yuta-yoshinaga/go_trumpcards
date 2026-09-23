@@ -1,4 +1,4 @@
-//go:build !js || !wasm || casino
+//go:build !js || !wasm || extra6
 
 // Package domain エカルテ (Écarté) のドメインモデル。
 //
@@ -20,8 +20,8 @@ package domain
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"sort"
+	"strconv"
 )
 
 // EcarteHandSize 各プレイヤーの手札枚数
@@ -180,12 +180,11 @@ func (e *Ecarte) startDeal() {
 	e.trumpCard = e.trumpCards.DrawCard()
 	if e.trumpCard != nil {
 		e.trumpSuit = e.trumpCard.GetDesign()
-		e.appendLog(-1, "trump", fmt.Sprintf("Trump: %s", cardStr(e.trumpCard)), []*Card{e.trumpCard})
+		e.appendLog(-1, "trump", "ecarte.log.trump", map[string]string{"card": cardStr(e.trumpCard)}, []*Card{e.trumpCard})
 		// 表向きが切り札 King なら親に 1 点。
 		if e.trumpCard.GetValue() == 13 {
 			e.dealPoints[e.dealerIdx]++
-			e.appendLog(e.dealerIdx, "king_turn",
-				fmt.Sprintf("%s scores the turned King (+1)", playerName(e.players, e.dealerIdx)), nil)
+			e.appendLog(e.dealerIdx, "king_turn", "ecarte.log.kingTurn", map[string]string{"name": playerName(e.players, e.dealerIdx)}, nil)
 		}
 	}
 	e.sortAllHands()
@@ -202,7 +201,7 @@ func (e *Ecarte) PlayerPropose() error {
 	if err := e.checkNeg(EcarteNegElderDecide); err != nil {
 		return err
 	}
-	e.appendLog(e.currentPlayerIdx, "propose", fmt.Sprintf("%s proposes", playerName(e.players, e.currentPlayerIdx)), nil)
+	e.appendLog(e.currentPlayerIdx, "propose", "ecarte.log.propose", map[string]string{"name": playerName(e.players, e.currentPlayerIdx)}, nil)
 	e.negStep = EcarteNegDealerRespond
 	e.currentPlayerIdx = e.dealerIdx
 	return nil
@@ -213,7 +212,7 @@ func (e *Ecarte) PlayerStand() error {
 	if err := e.checkNeg(EcarteNegElderDecide); err != nil {
 		return err
 	}
-	e.appendLog(e.currentPlayerIdx, "stand", fmt.Sprintf("%s stands", playerName(e.players, e.currentPlayerIdx)), nil)
+	e.appendLog(e.currentPlayerIdx, "stand", "ecarte.log.stand", map[string]string{"name": playerName(e.players, e.currentPlayerIdx)}, nil)
 	e.startPlay()
 	return nil
 }
@@ -225,11 +224,11 @@ func (e *Ecarte) PlayerRespond(accept bool) error {
 	}
 	if !accept {
 		e.refusalByDealer = true
-		e.appendLog(e.currentPlayerIdx, "refuse", fmt.Sprintf("%s refuses", playerName(e.players, e.currentPlayerIdx)), nil)
+		e.appendLog(e.currentPlayerIdx, "refuse", "ecarte.log.refuse", map[string]string{"name": playerName(e.players, e.currentPlayerIdx)}, nil)
 		e.startPlay()
 		return nil
 	}
-	e.appendLog(e.currentPlayerIdx, "accept", fmt.Sprintf("%s accepts", playerName(e.players, e.currentPlayerIdx)), nil)
+	e.appendLog(e.currentPlayerIdx, "accept", "ecarte.log.accept", map[string]string{"name": playerName(e.players, e.currentPlayerIdx)}, nil)
 	e.negStep = EcarteNegElderDiscard
 	e.currentPlayerIdx = e.elderIdx()
 	return nil
@@ -267,12 +266,12 @@ func (e *Ecarte) checkNeg(step EcarteNegStep) error {
 func (e *Ecarte) applyDiscard(playerIdx int, indices []int) error {
 	p := e.players[playerIdx]
 	if len(indices) > e.trumpCards.GetRemainingCount() {
-		return NewDomainError(ErrInvalidCard, "山札の残り枚数を超えて交換できません")
+		return NewDomainErrorCode(ErrInvalidCard, "ecarte.errExchangeExceedsStock", nil)
 	}
 	seen := make(map[int]bool, len(indices))
 	for _, idx := range indices {
 		if idx < 0 || idx >= p.GetCardsSize() || seen[idx] {
-			return NewDomainError(ErrInvalidCard, "捨て札のインデックスが不正です")
+			return NewDomainErrorCode(ErrInvalidCard, "ecarte.errDiscardIndexInvalid", nil)
 		}
 		seen[idx] = true
 	}
@@ -291,8 +290,7 @@ func (e *Ecarte) applyDiscard(playerIdx int, indices []int) error {
 		}
 	}
 	e.sortHand(p)
-	e.appendLog(playerIdx, "discard",
-		fmt.Sprintf("%s exchanges %d card(s)", playerName(e.players, playerIdx), n), nil)
+	e.appendLog(playerIdx, "discard", "ecarte.log.discard", map[string]string{"name": playerName(e.players, playerIdx), "count": strconv.Itoa(n)}, nil)
 
 	if e.negStep == EcarteNegElderDiscard {
 		e.negStep = EcarteNegDealerDiscard
@@ -314,7 +312,7 @@ func (e *Ecarte) startPlay() {
 	for i, p := range e.players {
 		if e.handHasTrumpKing(p) {
 			e.dealPoints[i]++
-			e.appendLog(i, "king", fmt.Sprintf("%s declares the King of trumps (+1)", playerName(e.players, i)), nil)
+			e.appendLog(i, "king", "ecarte.log.king", map[string]string{"name": playerName(e.players, i)}, nil)
 		}
 	}
 	e.phase = EcartePhasePlay
@@ -350,7 +348,7 @@ func (e *Ecarte) PlayerPlay(cardIndex int) error {
 	}
 	player := e.players[e.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "ecarte.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := e.validatePlay(e.currentPlayerIdx, card); err != nil {
@@ -395,17 +393,17 @@ func (e *Ecarte) CpuExchange() {
 		if e.cpuWantsExchange(idx) {
 			_ = e.PlayerProposeCPU()
 		} else {
-			e.appendLog(idx, "stand", fmt.Sprintf("%s stands", playerName(e.players, idx)), nil)
+			e.appendLog(idx, "stand", "ecarte.log.stand", map[string]string{"name": playerName(e.players, idx)}, nil)
 			e.startPlay()
 		}
 	case EcarteNegDealerRespond:
 		if e.cpuWantsExchange(idx) {
-			e.appendLog(idx, "accept", fmt.Sprintf("%s accepts", playerName(e.players, idx)), nil)
+			e.appendLog(idx, "accept", "ecarte.log.accept", map[string]string{"name": playerName(e.players, idx)}, nil)
 			e.negStep = EcarteNegElderDiscard
 			e.currentPlayerIdx = e.elderIdx()
 		} else {
 			e.refusalByDealer = true
-			e.appendLog(idx, "refuse", fmt.Sprintf("%s refuses", playerName(e.players, idx)), nil)
+			e.appendLog(idx, "refuse", "ecarte.log.refuse", map[string]string{"name": playerName(e.players, idx)}, nil)
 			e.startPlay()
 		}
 	case EcarteNegElderDiscard, EcarteNegDealerDiscard:
@@ -415,7 +413,7 @@ func (e *Ecarte) CpuExchange() {
 
 // PlayerProposeCPU は CPU 用の propose 内部実装 (検証なし)。
 func (e *Ecarte) PlayerProposeCPU() error {
-	e.appendLog(e.currentPlayerIdx, "propose", fmt.Sprintf("%s proposes", playerName(e.players, e.currentPlayerIdx)), nil)
+	e.appendLog(e.currentPlayerIdx, "propose", "ecarte.log.propose", map[string]string{"name": playerName(e.players, e.currentPlayerIdx)}, nil)
 	e.negStep = EcarteNegDealerRespond
 	e.currentPlayerIdx = e.dealerIdx
 	return nil
@@ -424,7 +422,7 @@ func (e *Ecarte) PlayerProposeCPU() error {
 // playCard カードをプレイする共通処理。2枚出そろったらトリックを解決する。
 func (e *Ecarte) playCard(playerIdx int, card *Card) {
 	e.currentTrick = append(e.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	e.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(e.players, playerIdx), cardStr(card)), []*Card{card})
+	e.appendLog(playerIdx, "play", "ecarte.log.play", map[string]string{"name": playerName(e.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 	if len(e.currentTrick) == EcartePlayerCnt {
 		e.resolveTrick()
 		return
@@ -441,8 +439,7 @@ func (e *Ecarte) resolveTrick() {
 	}
 	e.players[winnerIdx].AddTrick(trickCards)
 	e.leadPlayerIdx = winnerIdx
-	e.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", playerName(e.players, winnerIdx), e.trickNumber), trickCards)
+	e.appendLog(winnerIdx, "trick_win", "ecarte.log.trickWin", map[string]string{"name": playerName(e.players, winnerIdx), "trick": strconv.Itoa(e.trickNumber)}, trickCards)
 
 	if e.allHandsEmpty() {
 		e.scoreDeal()
@@ -478,9 +475,7 @@ func (e *Ecarte) scoreDeal() {
 		e.players[i].SetRoundScore(e.dealPoints[i])
 		e.players[i].CommitRoundScore()
 	}
-	e.appendLog(-1, "deal_score",
-		fmt.Sprintf("Deal %d: tricks %d-%d, deal %d-%d (match %d-%d)", e.roundNumber,
-			tricks[0], tricks[1], e.dealPoints[0], e.dealPoints[1], e.matchScore[0], e.matchScore[1]), nil)
+	e.appendLog(-1, "deal_score", "ecarte.log.dealScore", map[string]string{"deal": strconv.Itoa(e.roundNumber), "tricks0": strconv.Itoa(tricks[0]), "tricks1": strconv.Itoa(tricks[1]), "deal0": strconv.Itoa(e.dealPoints[0]), "deal1": strconv.Itoa(e.dealPoints[1]), "match0": strconv.Itoa(e.matchScore[0]), "match1": strconv.Itoa(e.matchScore[1])}, nil)
 
 	if e.matchScore[0] >= e.config.TargetScore || e.matchScore[1] >= e.config.TargetScore {
 		e.finishGame()
@@ -501,7 +496,11 @@ func (e *Ecarte) finishGame() {
 	default:
 		e.winnerIdx = e.leadPlayerIdx
 	}
-	e.appendLog(-1, "game_end", fmt.Sprintf("Game end: %d-%d", e.matchScore[0], e.matchScore[1]), nil)
+	e.appendLog(-1, "game_end", "ecarte.log.gameEnd", map[string]string{"score0": strconv.Itoa(e.matchScore[0]), "score1": strconv.Itoa(e.matchScore[1])}, nil)
+}
+
+func (e *Ecarte) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	e.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // allHandsEmpty 全プレイヤーの手札が空かを返す
@@ -512,13 +511,13 @@ func (e *Ecarte) allHandsEmpty() bool {
 // validatePlay マストフォロー (フォロー→勝てるなら勝つ→出せないなら切り札) を検証する。
 func (e *Ecarte) validatePlay(playerIdx int, card *Card) error {
 	if card == nil {
-		return NewDomainError(ErrInvalidCard, "カードが nil です")
+		return NewDomainErrorCode(ErrInvalidCard, "ecarte.errCardNil", nil)
 	}
 	if len(e.currentTrick) == 0 {
 		return nil
 	}
 	if !e.cardSatisfiesFollow(playerIdx, card) {
-		return NewDomainError(ErrInvalidCard, "フォロールール (勝てるなら勝つ・切り札) に従ってください")
+		return NewDomainErrorCode(ErrInvalidCard, "ecarte.errFollowRule", nil)
 	}
 	return nil
 }

@@ -58,6 +58,10 @@ export interface BhabhiResponse extends BaseGameResponse {
   lastPickupIdx: number;
   /** How many cards that pickup was worth. */
   lastPickupSize: number;
+  /** Seat that most recently emptied its hand, or `-1` when none has. */
+  lastFinishedIdx: number;
+  /** Rank of the seat that most recently emptied its hand, or `0` when none has. */
+  lastFinishedRank: number;
   currentPlayerIdx: number;
   leadPlayerIdx: number;
   /** Hand indices you may legally play. Following suit is compulsory. */

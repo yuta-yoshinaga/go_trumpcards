@@ -53,6 +53,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"strconv"
 )
 
 // HachiHachiPlayerCnt は八八のプレイヤー数 (固定 3)。
@@ -478,8 +479,7 @@ func (g *HachiHachi) startRound() {
 	g.state.drawPile = append([]*Card(nil), deck[pos:]...)
 
 	g.sortHumanHand()
-	g.appendLog(-1, "deal", fmt.Sprintf("round %d dealt (field %d, draw %d)",
-		g.state.roundNumber, len(g.state.fieldCards), len(g.state.drawPile)),
+	g.appendLog(-1, "deal", "hachihachi.log.roundDealt", map[string]string{"round": strconv.Itoa(g.state.roundNumber), "field": strconv.Itoa(len(g.state.fieldCards)), "draw": strconv.Itoa(len(g.state.drawPile))},
 		append([]*Card(nil), g.state.fieldCards...))
 }
 
@@ -525,11 +525,11 @@ func (g *HachiHachi) hachihachiBestFieldMatch(matches []int) int {
 //   - 一致 3 枚: すべて捕獲 (場の同月 4 枚目)。
 //
 // 捕獲した場合は lastCapturer を playerIdx に更新する。
-func (g *HachiHachi) hachihachiPlaceCard(playerIdx int, card *Card, chosen int) {
+func (g *HachiHachi) hachihachiPlaceCard(playerIdx int, card *Card, chosen int) []*Card {
 	matches := g.hachihachiFieldMatches(card)
 	if len(matches) == 0 {
 		g.state.fieldCards = append(g.state.fieldCards, card)
-		return
+		return nil
 	}
 	var take []int
 	switch {
@@ -557,6 +557,7 @@ func (g *HachiHachi) hachihachiPlaceCard(playerIdx int, card *Card, chosen int) 
 	g.removeFieldByIndex(take)
 	g.players[playerIdx].AddCaptured(captured)
 	g.state.lastCapturer = playerIdx
+	return captured
 }
 
 // removeFieldByIndex は降順に並べ替えてから場札を削除する。
@@ -615,18 +616,20 @@ func (g *HachiHachi) applyTurn(playerIdx, handIdx, fieldIdx int) {
 	beforeField := len(g.state.fieldCards)
 	g.hachihachiPlaceCard(playerIdx, card, fieldIdx)
 	handCaptured := len(g.state.fieldCards) <= beforeField
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s (%s)",
-		g.playerName(playerIdx), hachihachiCardStr(card), hachihachiCapturedWord(handCaptured)), []*Card{card})
+	g.appendLog(playerIdx, "play", "hachihachi.log.plays", map[string]string{"name": g.playerName(playerIdx), "card": hachihachiCardStr(card), "resultKey": hachihachiCapturedKey(handCaptured)}, []*Card{card})
 
 	// めくり札。
 	if len(g.state.drawPile) > 0 {
 		drawn := g.state.drawPile[0]
 		g.state.drawPile = g.state.drawPile[1:]
 		before2 := len(g.state.fieldCards)
-		g.hachihachiPlaceCard(playerIdx, drawn, -1)
+		drawnCaptured := g.hachihachiPlaceCard(playerIdx, drawn, -1)
 		drawCaptured := len(g.state.fieldCards) <= before2
-		g.appendLog(playerIdx, "draw", fmt.Sprintf("%s draws %s (%s)",
-			g.playerName(playerIdx), hachihachiCardStr(drawn), hachihachiCapturedWord(drawCaptured)), []*Card{drawn})
+		drawLogCards := []*Card{drawn}
+		if drawCaptured {
+			drawLogCards = append(drawLogCards, drawnCaptured[1:]...)
+		}
+		g.appendLog(playerIdx, "draw", "hachihachi.log.draws", map[string]string{"name": g.playerName(playerIdx), "card": hachihachiCardStr(drawn), "resultKey": hachihachiCapturedKey(drawCaptured)}, drawLogCards)
 	}
 
 	g.advanceTurn()
@@ -674,8 +677,7 @@ func (g *HachiHachi) endRound() {
 		best = -1
 	}
 	g.state.lastRoundResult = &HachiHachiRoundResult{Scores: scores, Best: best}
-	g.appendLog(best, "roundEnd",
-		fmt.Sprintf("round %d settled (best %d)", g.state.roundNumber, best), nil)
+	g.appendLog(best, "roundEnd", "hachihachi.log.roundSettled", map[string]string{"round": strconv.Itoa(g.state.roundNumber), "best": strconv.Itoa(best)}, nil)
 
 	if g.state.roundNumber >= g.config.TargetRounds {
 		g.finishGame()
@@ -696,8 +698,7 @@ func (g *HachiHachi) sweepFieldToLastCapturer() {
 		target = g.state.currentTurn
 	}
 	g.players[target].AddCaptured(append([]*Card(nil), g.state.fieldCards...))
-	g.appendLog(target, "sweep",
-		fmt.Sprintf("%s sweeps %d leftover field card(s)", g.playerName(target), len(g.state.fieldCards)),
+	g.appendLog(target, "sweep", "hachihachi.log.sweepsLeftover", map[string]string{"name": g.playerName(target), "count": strconv.Itoa(len(g.state.fieldCards))},
 		append([]*Card(nil), g.state.fieldCards...))
 	g.state.fieldCards = make([]*Card, 0)
 }
@@ -724,7 +725,7 @@ func (g *HachiHachi) finishGame() {
 	g.state.winner = best
 	g.state.gameEndFlag = true
 	g.state.phase = HachiHachiPhaseGameEnd
-	g.appendLog(-1, "gameEnd", fmt.Sprintf("game ended (winner %d)", best), nil)
+	g.appendLog(-1, "gameEnd", "hachihachi.log.gameEnded", map[string]string{"winner": strconv.Itoa(best)}, nil)
 }
 
 // --- CPU AI ---
@@ -815,8 +816,8 @@ func (g *HachiHachi) playerName(idx int) string {
 	return fmt.Sprintf("CPU%d", idx)
 }
 
-func (g *HachiHachi) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.state.appendLog(playerIdx, actionType, detail, cards)
+func (g *HachiHachi) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.state.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // hachihachiCardStr は札を "松·光" のように表す (ログ/デバッグ用)。
@@ -827,11 +828,12 @@ func hachihachiCardStr(c *Card) string {
 	return hachihachiMonthKanji(c.GetDesign()) + "·" + hachihachiCategoryShort(hachihachiInfo(c).category)
 }
 
-func hachihachiCapturedWord(captured bool) string {
+// hachihachiCapturedKey は取れたかどうかの i18n キーを返す。
+func hachihachiCapturedKey(captured bool) string {
 	if captured {
-		return "captures"
+		return "hachihachi.log.result.captured"
 	}
-	return "to field"
+	return "hachihachi.log.result.toField"
 }
 
 // hachihachiMonthKanji は月番号を月札の代表漢字にする。

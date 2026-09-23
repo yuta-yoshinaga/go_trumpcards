@@ -28,5 +28,6 @@
   "helpRedeal": "  d                        貧民（A/K/Q/J のみ）の手札を捨てて配り直す",
   "promptRedeal": "手札が A/K/Q/J だけです。d で配り直しを要求できます",
   "helpExampleFold": "  f                        この局を降りる",
-  "helpHint": "  h                        助言を表示"
+  "helpHint": "  h                        助言を表示",
+  "log.deal": "ハンド {{hand}} を配りました", "log.play": "カードを出しました", "log.trick": "トリック {{trick}} を取りました", "log.redeal": "貧民の手札で配り直しを要求しました", "log.toep": "toep を宣言しました。賭け点は {{stake}} です", "log.fold": "{{stake}} 点で降りました", "log.stay": "残りました", "log.hand": "ハンド {{hand}} を {{stake}} 点で清算しました", "log.game": "ゲーム終了", "log.out": "脱落しました"
 }

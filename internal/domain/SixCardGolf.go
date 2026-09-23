@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // SixCardGolfPhase ゲームフェーズ
@@ -143,8 +144,8 @@ type SixCardGolf struct {
 	finalTurnDone    []bool
 	gameEndFlag      bool
 	winnerIdx        int
-	actionLog        []*ActionLogEntry
-	rng              *rand.Rand
+	actionLogBase
+	rng *rand.Rand
 }
 
 // NewSixCardGolf コンストラクタ
@@ -253,14 +254,14 @@ func (g *SixCardGolf) FlipInitial(pos int) error {
 	}
 	p := g.players[g.currentPlayerIdx]
 	if pos < 0 || pos >= SixCardGolfGridSize {
-		return NewDomainError(ErrInvalidCard, "位置が範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "sixcardgolf.errCardIndexOutOfRange", nil)
 	}
 	if p.Grid[pos].FaceUp {
-		return NewDomainError(ErrInvalidPlay, "既に表向きです")
+		return NewDomainErrorCode(ErrInvalidPlay, "sixcardgolf.errAlreadyFaceUp", nil)
 	}
 
 	p.Grid[pos].FaceUp = true
-	g.appendLog("flipInitial", fmt.Sprintf("プレイヤー%dが位置%dをめくった", g.currentPlayerIdx, pos), []*Card{p.Grid[pos].Card})
+	g.appendLog("flipInitial", "sixcardgolf.log.flipInitial", map[string]string{"player": strconv.Itoa(g.currentPlayerIdx), "position": strconv.Itoa(pos)}, []*Card{p.Grid[pos].Card})
 
 	if p.FaceUpCount() >= SixCardGolfInitialFlips {
 		g.currentPlayerIdx++
@@ -287,14 +288,14 @@ func (g *SixCardGolf) DrawStock() error {
 		g.refillDrawPile()
 	}
 	if len(g.drawPile) == 0 {
-		return NewDomainError(ErrInvalidPlay, "山札がありません")
+		return NewDomainErrorCode(ErrInvalidPlay, "sixcardgolf.errStockEmpty", nil)
 	}
 
 	g.drawnCard = g.drawPile[len(g.drawPile)-1]
 	g.drawPile = g.drawPile[:len(g.drawPile)-1]
 	g.drawnFromDiscard = false
 	g.phase = SixCardGolfPhaseDrawPending
-	g.appendLog("drawStock", fmt.Sprintf("プレイヤー%dが山札から引いた", g.currentPlayerIdx), []*Card{g.drawnCard})
+	g.appendLog("drawStock", "sixcardgolf.log.drawStock", map[string]string{"player": strconv.Itoa(g.currentPlayerIdx)}, []*Card{g.drawnCard})
 	return nil
 }
 
@@ -310,14 +311,14 @@ func (g *SixCardGolf) DrawDiscard() error {
 		return ErrNotHumanTurn
 	}
 	if len(g.discardPile) == 0 {
-		return NewDomainError(ErrInvalidPlay, "捨て札がありません")
+		return NewDomainErrorCode(ErrInvalidPlay, "sixcardgolf.errDiscardPileEmpty", nil)
 	}
 
 	g.drawnCard = g.discardPile[len(g.discardPile)-1]
 	g.discardPile = g.discardPile[:len(g.discardPile)-1]
 	g.drawnFromDiscard = true
 	g.phase = SixCardGolfPhaseDrawPending
-	g.appendLog("drawDiscard", fmt.Sprintf("プレイヤー%dが捨て札から引いた", g.currentPlayerIdx), []*Card{g.drawnCard})
+	g.appendLog("drawDiscard", "sixcardgolf.log.drawDiscard", map[string]string{"player": strconv.Itoa(g.currentPlayerIdx)}, []*Card{g.drawnCard})
 	return nil
 }
 
@@ -333,7 +334,7 @@ func (g *SixCardGolf) SwapCard(pos int) error {
 		return ErrNotHumanTurn
 	}
 	if pos < 0 || pos >= SixCardGolfGridSize {
-		return NewDomainError(ErrInvalidCard, "位置が範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "sixcardgolf.errCardIndexOutOfRange", nil)
 	}
 
 	p := g.players[g.currentPlayerIdx]
@@ -341,7 +342,7 @@ func (g *SixCardGolf) SwapCard(pos int) error {
 	p.Grid[pos].Card = g.drawnCard
 	p.Grid[pos].FaceUp = true
 	g.discardPile = append(g.discardPile, old)
-	g.appendLog("swap", fmt.Sprintf("プレイヤー%dが位置%dを交換", g.currentPlayerIdx, pos), []*Card{g.drawnCard, old})
+	g.appendLog("swap", "sixcardgolf.log.swap", map[string]string{"player": strconv.Itoa(g.currentPlayerIdx), "position": strconv.Itoa(pos)}, []*Card{g.drawnCard, old})
 
 	g.drawnCard = nil
 	g.canFlip = false
@@ -362,7 +363,7 @@ func (g *SixCardGolf) DiscardDrawn() error {
 	}
 
 	g.discardPile = append(g.discardPile, g.drawnCard)
-	g.appendLog("discard", fmt.Sprintf("プレイヤー%dが引いたカードを捨てた", g.currentPlayerIdx), []*Card{g.drawnCard})
+	g.appendLog("discard", "sixcardgolf.log.discard", map[string]string{"player": strconv.Itoa(g.currentPlayerIdx)}, []*Card{g.drawnCard})
 	g.drawnCard = nil
 
 	if !g.drawnFromDiscard {
@@ -392,22 +393,22 @@ func (g *SixCardGolf) FlipCard(pos int) error {
 		return ErrGameEnded
 	}
 	if !g.canFlip {
-		return NewDomainError(ErrInvalidPlay, "めくれません")
+		return NewDomainErrorCode(ErrInvalidPlay, "sixcardgolf.errCannotFlip", nil)
 	}
 	if g.players[g.currentPlayerIdx].IsCpu {
 		return ErrNotHumanTurn
 	}
 	if pos < 0 || pos >= SixCardGolfGridSize {
-		return NewDomainError(ErrInvalidCard, "位置が範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "sixcardgolf.errCardIndexOutOfRange", nil)
 	}
 
 	p := g.players[g.currentPlayerIdx]
 	if p.Grid[pos].FaceUp {
-		return NewDomainError(ErrInvalidPlay, "既に表向きです")
+		return NewDomainErrorCode(ErrInvalidPlay, "sixcardgolf.errAlreadyFaceUp", nil)
 	}
 
 	p.Grid[pos].FaceUp = true
-	g.appendLog("flip", fmt.Sprintf("プレイヤー%dが位置%dをめくった", g.currentPlayerIdx, pos), []*Card{p.Grid[pos].Card})
+	g.appendLog("flip", "sixcardgolf.log.flip", map[string]string{"player": strconv.Itoa(g.currentPlayerIdx), "position": strconv.Itoa(pos)}, []*Card{p.Grid[pos].Card})
 
 	g.canFlip = false
 	g.advanceTurn()
@@ -420,7 +421,7 @@ func (g *SixCardGolf) SkipFlip() error {
 		return ErrGameEnded
 	}
 	if !g.canFlip {
-		return NewDomainError(ErrInvalidPlay, "スキップ不可")
+		return NewDomainErrorCode(ErrInvalidPlay, "sixcardgolf.errCannotSkip", nil)
 	}
 	g.canFlip = false
 	g.advanceTurn()
@@ -465,7 +466,7 @@ func (g *SixCardGolf) cpuSetup() {
 		}
 		if !p.Grid[i].FaceUp {
 			p.Grid[i].FaceUp = true
-			g.appendLog("flipInitial", fmt.Sprintf("CPU%dが位置%dをめくった", g.currentPlayerIdx, i), []*Card{p.Grid[i].Card})
+			g.appendLog("flipInitial", "sixcardgolf.log.flipInitialCpu", map[string]string{"player": strconv.Itoa(g.currentPlayerIdx), "position": strconv.Itoa(i)}, []*Card{p.Grid[i].Card})
 			flipped++
 		}
 	}
@@ -483,7 +484,7 @@ func (g *SixCardGolf) cpuDraw() {
 		g.drawnCard = g.discardPile[len(g.discardPile)-1]
 		g.discardPile = g.discardPile[:len(g.discardPile)-1]
 		g.drawnFromDiscard = true
-		g.appendLog("drawDiscard", fmt.Sprintf("CPU%dが捨て札から引いた", g.currentPlayerIdx), []*Card{g.drawnCard})
+		g.appendLog("drawDiscard", "sixcardgolf.log.drawDiscardCpu", map[string]string{"player": strconv.Itoa(g.currentPlayerIdx)}, []*Card{g.drawnCard})
 	} else {
 		if len(g.drawPile) == 0 {
 			g.refillDrawPile()
@@ -494,7 +495,7 @@ func (g *SixCardGolf) cpuDraw() {
 		g.drawnCard = g.drawPile[len(g.drawPile)-1]
 		g.drawPile = g.drawPile[:len(g.drawPile)-1]
 		g.drawnFromDiscard = false
-		g.appendLog("drawStock", fmt.Sprintf("CPU%dが山札から引いた", g.currentPlayerIdx), []*Card{g.drawnCard})
+		g.appendLog("drawStock", "sixcardgolf.log.drawStockCpu", map[string]string{"player": strconv.Itoa(g.currentPlayerIdx)}, []*Card{g.drawnCard})
 	}
 	g.phase = SixCardGolfPhaseDrawPending
 }
@@ -538,13 +539,13 @@ func (g *SixCardGolf) cpuSwapOrDiscard() {
 		p.Grid[bestPos].Card = g.drawnCard
 		p.Grid[bestPos].FaceUp = true
 		g.discardPile = append(g.discardPile, old)
-		g.appendLog("swap", fmt.Sprintf("CPU%dが位置%dを交換", g.currentPlayerIdx, bestPos), []*Card{g.drawnCard, old})
+		g.appendLog("swap", "sixcardgolf.log.swapCpu", map[string]string{"player": strconv.Itoa(g.currentPlayerIdx), "position": strconv.Itoa(bestPos)}, []*Card{g.drawnCard, old})
 		g.drawnCard = nil
 		g.canFlip = false
 		g.advanceTurn()
 	} else {
 		g.discardPile = append(g.discardPile, g.drawnCard)
-		g.appendLog("discard", fmt.Sprintf("CPU%dが引いたカードを捨てた", g.currentPlayerIdx), []*Card{g.drawnCard})
+		g.appendLog("discard", "sixcardgolf.log.discardCpu", map[string]string{"player": strconv.Itoa(g.currentPlayerIdx)}, []*Card{g.drawnCard})
 		g.drawnCard = nil
 		if !g.drawnFromDiscard {
 			g.canFlip = true
@@ -562,7 +563,7 @@ func (g *SixCardGolf) cpuFlipAfterDiscard() {
 	for i := 0; i < SixCardGolfGridSize; i++ {
 		if !p.Grid[i].FaceUp {
 			p.Grid[i].FaceUp = true
-			g.appendLog("flip", fmt.Sprintf("CPU%dが位置%dをめくった", g.currentPlayerIdx, i), []*Card{p.Grid[i].Card})
+			g.appendLog("flip", "sixcardgolf.log.flipCpu", map[string]string{"player": strconv.Itoa(g.currentPlayerIdx), "position": strconv.Itoa(i)}, []*Card{p.Grid[i].Card})
 			break
 		}
 	}
@@ -595,7 +596,7 @@ func (g *SixCardGolf) advanceTurn() {
 	p := g.players[g.currentPlayerIdx]
 	if p.AllFaceUp() && g.finalTurnTrigger < 0 {
 		g.finalTurnTrigger = g.currentPlayerIdx
-		g.appendLog("trigger", fmt.Sprintf("プレイヤー%dが全カードを公開！最終ターン開始", g.currentPlayerIdx), nil)
+		g.appendLog("trigger", "sixcardgolf.log.trigger", map[string]string{"player": strconv.Itoa(g.currentPlayerIdx)}, nil)
 	}
 
 	if g.finalTurnTrigger >= 0 {
@@ -643,10 +644,10 @@ func (g *SixCardGolf) scoreRound() {
 		g.gameEndFlag = true
 		g.winnerIdx = g.findWinner()
 		g.phase = SixCardGolfPhaseGameOver
-		g.appendLog("gameOver", fmt.Sprintf("ゲーム終了！プレイヤー%dの勝利", g.winnerIdx), nil)
+		g.appendLog("gameOver", "sixcardgolf.log.gameOver", map[string]string{"player": strconv.Itoa(g.winnerIdx)}, nil)
 	} else {
 		g.phase = SixCardGolfPhaseRoundOver
-		g.appendLog("roundOver", fmt.Sprintf("ラウンド%d終了", g.roundNumber), nil)
+		g.appendLog("roundOver", "sixcardgolf.log.roundOver", map[string]string{"round": strconv.Itoa(g.roundNumber)}, nil)
 	}
 }
 
@@ -793,14 +794,8 @@ func (g *SixCardGolf) refillDrawPile() {
 }
 
 // appendLog 棋譜追加
-func (g *SixCardGolf) appendLog(actionType, detail string, cards []*Card) {
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: g.roundNumber,
-		PlayerIdx:  g.currentPlayerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+func (g *SixCardGolf) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCodeAt(g.roundNumber, g.currentPlayerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- Getters ---

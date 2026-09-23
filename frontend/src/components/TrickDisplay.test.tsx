@@ -80,6 +80,22 @@ describe('TrickDisplay', () => {
     expect(foes).toHaveLength(1);
   });
 
+  it('falls back to the previous trick when the current trick is empty', () => {
+    render(
+      <TrickDisplay
+        currentTrick={[]}
+        lastTrick={trick}
+        lastTrickWinner={1}
+        players={players}
+        cardWidth={40}
+        label="前のトリック"
+      />,
+    );
+    expect(screen.getByText('前のトリック')).toBeInTheDocument();
+    expect(screen.getByTestId('trick-winner-badge')).toHaveTextContent('WIN');
+    expect(screen.getAllByTestId('animated-card')).toHaveLength(2);
+  });
+
   it('omits team coloring when only one team appears in the players list', () => {
     const singleTeamPlayers: TrickDisplayPlayer[] = players.map((p) => ({ ...p, team: 0 }));
     const { container } = render(
@@ -114,6 +130,20 @@ describe('TrickDisplay', () => {
   it('defaults the winner badge text to WIN', () => {
     render(<TrickDisplay currentTrick={trick} players={players} cardWidth={40} label="label" winnerIdx={0} />);
     expect(screen.getByTestId('trick-winner-badge')).toHaveTextContent('WIN');
+  });
+
+  it('renders an accessible custom card role marker', () => {
+    render(
+      <TrickDisplay
+        currentTrick={trick}
+        players={players}
+        cardWidth={40}
+        label="label"
+        cardBadgeFor={(card) => (card.design === 'SPADE' ? { glyph: '↺', title: 'Round suit: 1 is strongest' } : null)}
+      />,
+    );
+    expect(screen.getByTitle('Round suit: 1 is strongest')).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: /Round suit: 1 is strongest/ })).toBeInTheDocument();
   });
 });
 

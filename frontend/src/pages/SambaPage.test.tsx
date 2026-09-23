@@ -108,6 +108,45 @@ describe('SambaPage', () => {
     renderWithProviders(<SambaPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '捨てる' })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: '上がる' })).toBeInTheDocument();
+    expect(screen.getByTestId('sa-go-out-progress')).toHaveTextContent('完成メルド 0/2');
+    expect(screen.getByRole('button', { name: '上がる' })).toHaveAttribute(
+      'title',
+      '上がるにはチームで完成メルドが2個必要です',
+    );
+  });
+
+  it.each([
+    [0, '完成メルド 0/2', '上がるにはチームで完成メルドが2個必要です'],
+    [1, '完成メルド 1/2', '上がるにはチームで完成メルドが2個必要です'],
+    [2, '完成メルド 2/2', undefined],
+  ] as const)('shows go-out progress for %d completed melds', async (completed, progress, title) => {
+    mockExec.mockResolvedValue(makeSambaState({ phase: 2, completedMelds: [completed, 0] }));
+    renderWithProviders(<SambaPage />);
+    await waitFor(() => expect(screen.getByTestId('sa-go-out-progress')).toHaveTextContent(progress));
+    const goOut = screen.getByRole('button', { name: '上がる' });
+    if (title) {
+      expect(goOut).toHaveAttribute('title', title);
+    } else {
+      expect(goOut).toBeEnabled();
+      fireEvent.click(goOut);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('goout'));
+    }
+  });
+
+  it('uses the server-provided go-out requirement for progress and tooltip', async () => {
+    mockExec.mockResolvedValue(
+      makeSambaState({
+        phase: 2,
+        completedMelds: [2, 0],
+        config: { ...makeSambaState().config, goOutRequiredMelds: 3 },
+      }),
+    );
+    renderWithProviders(<SambaPage />);
+    await waitFor(() => expect(screen.getByTestId('sa-go-out-progress')).toHaveTextContent('完成メルド 2/3'));
+    expect(screen.getByRole('button', { name: '上がる' })).toHaveAttribute(
+      'title',
+      '上がるにはチームで完成メルドが3個必要です',
+    );
   });
 
   it('shows next round button at round end', async () => {
@@ -152,6 +191,12 @@ describe('SambaPage', () => {
     mockExec.mockResolvedValue(makeSambaState({ isFrozen: true }));
     renderWithProviders(<SambaPage />);
     await waitFor(() => expect(screen.getByTestId('sa-frozen-badge')).toBeInTheDocument());
+    expect(screen.getByTestId('sa-discard-pile')).toHaveClass(
+      'bg-ds-surface',
+      'border-ds-border-subtle',
+      'ring-2',
+      'ring-ds-info',
+    );
     expect(screen.getByTestId('sa-draw-discard-reason')).toHaveTextContent(
       'フリーズ中はワイルドカードでの代用ができません',
     );

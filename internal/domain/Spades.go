@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // SpadesPlayerCnt スペードプレイヤー数
@@ -159,15 +160,11 @@ func (s *Spades) PlayerBid(bid int) error {
 		return ErrNotHumanTurn
 	}
 	if bid < 0 || bid > SpadesHandSize {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("ビッドは0〜%dで指定してください", SpadesHandSize))
+		return NewDomainErrorCode(ErrInvalidPlay, "spades.errBidOutOfRange", map[string]string{"max": fmt.Sprintf("%d", SpadesHandSize)})
 	}
 
 	s.players[humanIdx].SetBid(bid)
-	bidStr := fmt.Sprintf("%d", bid)
-	if bid == 0 {
-		bidStr = "Nil"
-	}
-	s.appendLog(humanIdx, "bid", fmt.Sprintf("%s bids %s", playerName(s.players, humanIdx), bidStr), nil)
+	s.appendBidLog(humanIdx, bid)
 
 	s.bidPlayerIdx++
 	s.checkBidComplete()
@@ -188,14 +185,19 @@ func (s *Spades) CpuBid() {
 
 	bid := s.cpuSelectBid(s.bidPlayerIdx)
 	s.players[s.bidPlayerIdx].SetBid(bid)
-	bidStr := fmt.Sprintf("%d", bid)
-	if bid == 0 {
-		bidStr = "Nil"
-	}
-	s.appendLog(s.bidPlayerIdx, "bid", fmt.Sprintf("%s bids %s", playerName(s.players, s.bidPlayerIdx), bidStr), nil)
+	s.appendBidLog(s.bidPlayerIdx, bid)
 
 	s.bidPlayerIdx++
 	s.checkBidComplete()
+}
+
+// appendBidLog records a Spades bid without mixing the nil label into numeric bid parameters.
+func (s *Spades) appendBidLog(playerIdx, bid int) {
+	if bid == 0 {
+		s.appendLog(playerIdx, "bid", "spades.log.bidNil", map[string]string{"name": playerName(s.players, playerIdx)}, nil)
+		return
+	}
+	s.appendLog(playerIdx, "bid", "spades.log.bid", map[string]string{"name": playerName(s.players, playerIdx), "bid": fmt.Sprintf("%d", bid)}, nil)
 }
 
 // PlayerPlay 人間プレイヤーがカードをプレイする
@@ -212,7 +214,7 @@ func (s *Spades) PlayerPlay(cardIndex int) error {
 
 	player := s.players[s.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "spades.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
@@ -261,7 +263,7 @@ func (s *Spades) ResolveTrick() {
 	s.players[winnerIdx].AddTrick(trickCards)
 
 	winnerName := playerName(s.players, winnerIdx)
-	s.appendLog(winnerIdx, "trick_win", fmt.Sprintf("%s wins trick %d", winnerName, s.trickNumber), trickCards)
+	s.appendLog(winnerIdx, "trick_win", "spades.log.trickWin", map[string]string{"name": winnerName, "trick": strconv.Itoa(s.trickNumber)}, trickCards)
 
 	s.leadPlayerIdx = winnerIdx
 
@@ -298,10 +300,10 @@ func (s *Spades) ScoreRound() {
 			// ニルビッド
 			if tricks == 0 {
 				p.roundScore = s.config.NilBonus
-				s.appendLog(i, "nil_success", fmt.Sprintf("%s nil success! +%d", playerName(s.players, i), s.config.NilBonus), nil)
+				s.appendLog(i, "nil_success", "spades.log.nilSuccess", map[string]string{"name": playerName(s.players, i), "bonus": strconv.Itoa(s.config.NilBonus)}, nil)
 			} else {
 				p.roundScore = -s.config.NilBonus
-				s.appendLog(i, "nil_fail", fmt.Sprintf("%s nil failed! -%d (%d tricks taken)", playerName(s.players, i), s.config.NilBonus, tricks), nil)
+				s.appendLog(i, "nil_fail", "spades.log.nilFail", map[string]string{"name": playerName(s.players, i), "penalty": strconv.Itoa(s.config.NilBonus), "tricks": strconv.Itoa(tricks)}, nil)
 			}
 		} else if tricks >= bid {
 			// ビッド成功
@@ -314,15 +316,14 @@ func (s *Spades) ScoreRound() {
 				penalty := (p.bags / s.config.BagPenaltyThreshold) * 100
 				p.roundScore -= penalty
 				p.bags %= s.config.BagPenaltyThreshold
-				s.appendLog(i, "bag_penalty", fmt.Sprintf("%s bag penalty! -%d", playerName(s.players, i), penalty), nil)
+				s.appendLog(i, "bag_penalty", "spades.log.bagPenalty", map[string]string{"name": playerName(s.players, i), "penalty": strconv.Itoa(penalty)}, nil)
 			}
 		} else {
 			// ビッド失敗
 			p.roundScore = -bid * 10
 		}
 
-		s.appendLog(i, "round_score", fmt.Sprintf("%s: bid=%d tricks=%d round=%d bags=%d",
-			playerName(s.players, i), bid, tricks, p.roundScore, p.bags), nil)
+		s.appendLog(i, "round_score", "spades.log.roundScore", map[string]string{"name": playerName(s.players, i), "bid": strconv.Itoa(bid), "tricks": strconv.Itoa(tricks), "round": strconv.Itoa(p.roundScore), "bags": strconv.Itoa(p.bags)}, nil)
 	}
 
 	// 累積スコアに加算
@@ -332,8 +333,7 @@ func (s *Spades) ScoreRound() {
 
 	// スコアログ
 	for i := 0; i < SpadesPlayerCnt; i++ {
-		s.appendLog(i, "cumulative_score", fmt.Sprintf("%s: total=%d",
-			playerName(s.players, i), s.players[i].cumulativeScore), nil)
+		s.appendLog(i, "cumulative_score", "spades.log.cumulativeScore", map[string]string{"name": playerName(s.players, i), "total": strconv.Itoa(s.players[i].cumulativeScore)}, nil)
 	}
 
 	// ゲーム終了判定
@@ -465,7 +465,7 @@ func (s *Spades) playCard(playerIdx int, card *Card) {
 		s.spadesBroken = true
 	}
 
-	s.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(s.players, playerIdx), cardStr(card)), []*Card{card})
+	s.appendLog(playerIdx, "play", "spades.log.play", map[string]string{"name": playerName(s.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(s.currentTrick) == SpadesPlayerCnt {
 		s.phase = SpadesPhaseTrickEnd
@@ -480,7 +480,7 @@ func (s *Spades) validatePlay(playerIdx int, card *Card) error {
 	if s.trickNumber == 1 && len(s.currentTrick) == 0 {
 		if card.GetDesign() != CardDesignClover || card.GetValue() != 2 {
 			if s.playerHasCard(playerIdx, CardDesignClover, 2) {
-				return NewDomainError(ErrInvalidPlay, "最初のトリックは2♣でリードしてください")
+				return NewDomainErrorCode(ErrInvalidPlay, "spades.errLeadTwoOfClubs", nil)
 			}
 		}
 	}
@@ -489,7 +489,7 @@ func (s *Spades) validatePlay(playerIdx int, card *Card) error {
 		// リード: スペードが壊れていない場合、スペードでリードできない（他にカードがある場合）
 		if !s.spadesBroken && card.GetDesign() == CardDesignSpade {
 			if s.playerHasNonSpade(playerIdx) {
-				return NewDomainError(ErrInvalidPlay, "スペードはまだブレイクされていません")
+				return NewDomainErrorCode(ErrInvalidPlay, "spades.errSpadesNotBroken", nil)
 			}
 		}
 		return nil
@@ -499,7 +499,7 @@ func (s *Spades) validatePlay(playerIdx int, card *Card) error {
 	leadSuit := s.currentTrick[0].Card.GetDesign()
 	if card.GetDesign() != leadSuit {
 		if s.playerHasSuit(playerIdx, leadSuit) {
-			return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+			return NewDomainErrorCode(ErrInvalidPlay, "spades.errFollowLeadSuit", nil)
 		}
 	}
 
@@ -575,7 +575,12 @@ func (s *Spades) checkGameEnd() {
 			s.winnerIdx = i
 		}
 	}
-	s.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(s.players, s.winnerIdx)), nil)
+	s.appendLog(-1, "game_end", "spades.log.gameEnd", map[string]string{"name": playerName(s.players, s.winnerIdx)}, nil)
+}
+
+// appendLog records a Spades action with a locale-independent detail code.
+func (s *Spades) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	s.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // sortAllHands 全プレイヤーの手札をソートする

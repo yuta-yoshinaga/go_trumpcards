@@ -50,7 +50,7 @@ public/                        # Built frontend assets served by Go web server
 
 - **Presenter pattern**: `internal/usecase/presenter/` defines output interfaces (e.g., `BlackJackPresenter`). `internal/adapter/presenter/` provides concrete implementations (CUI vs Web). Presenters are injected into interactors.
 - **Mock presenters**: `*_mock.go` files in `internal/usecase/presenter/` are used in tests to avoid I/O.
-- **Web API**: 368 endpoints, one per game. Each accepts JSON with a `command` field and the game state; the full list is in [Web API endpoints](#web-api-endpoints) below.
+- **Web API**: 383 endpoints, one per game. Each accepts JSON with a `command` field and the game state; the full list is in [Web API endpoints](#web-api-endpoints) below.
 - **Swagger UI**: Available at `/swagger/` -- serves the OpenAPI spec (`api/openapi.yaml`) via Swagger UI for interactive API documentation and testing. The spec is embedded into the binary with `go:embed`; the Swagger UI frontend is loaded from a CDN. Both routes accept `GET` and `HEAD` (HEAD returns headers only).
 - **SPA fallback**: All other GET/HEAD requests are served from `public/` via `http.FileServer`; unknown paths fall back to `public/index.html` so externally shared deep-links (e.g., `/blackjack`, `/poker`) reach the React HashRouter SPA instead of returning a bare 404. See `internal/infrastructure/web/spa.go`.
 
@@ -70,13 +70,13 @@ Go source (//go:build js && wasm)
   → wrangler deploy (Cloudflare Workers)
 ```
 
-Build commands: `make build-worker-{casino,classic,solo,extra,extra2,extra3,extra4,extra5}` or `make build-workers`.
+Build commands: `make build-worker-{casino,classic,solo,extra,extra2,extra3,extra4,extra5,extra6,extra7}` or `make build-workers`.
 
 ### Size buckets
 
-Games are distributed across **eight** Workers to stay under the 1 MB gzip size limit per Worker
-(`casino`, `classic`, `solo`, `extra`, `extra2`, `extra3`, `extra4`, `extra5`; see [ADR-0032](adr/0032-fourth-worker-capacity.md)
-[ADR-0036](adr/0036-fifth-sixth-worker-capacity.md) and [ADR-0037](adr/0037-seventh-worker-capacity.md)). A `Category` is purely a binary-size
+Games are distributed across **ten** Workers to stay under the 1 MB gzip size limit per Worker
+(`casino`, `classic`, `solo`, `extra`, `extra2`, `extra3`, `extra4`, `extra5`, `extra6`, `extra7`; see [ADR-0032](adr/0032-fourth-worker-capacity.md)
+[ADR-0036](adr/0036-fifth-sixth-worker-capacity.md), [ADR-0037](adr/0037-seventh-worker-capacity.md), and ADR-0041). A `Category` is purely a binary-size
 bucket, **not** a user-facing taxonomy, and games move between buckets whenever one nears the
 limit.
 
@@ -116,13 +116,13 @@ constant in `frontend/src/api/gameApi.ts`. For the full set of registration poin
 
 ### TinyGo constraints
 
-- `go.mod` specifies `go 1.25.8` (TinyGo's latest supported Go version) with `toolchain go1.26.0` for local development
+- `go.mod` specifies `go 1.25.8` (the oldest Go that TinyGo 0.42.0 supports; it accepts 1.25–1.27) with `toolchain go1.26.0` for local development
 - Mock files require `//go:build test` tag to exclude `testify/mock` from WASM builds
 - `net/http` method-prefixed routing (`"POST /path"`) is not supported; Worker entry points use plain `"/path"` patterns
 
 ## Web API endpoints
 
-One `POST /<game>/exec` per registered game -- **368** in total. Every endpoint takes JSON with a
+One `POST /<game>/exec` per registered game -- **383** in total. Every endpoint takes JSON with a
 `command` field plus the game state, and returns that game's Web presenter output.
 
 One row per game, so adding a game is a one-line diff. This used to be a single inline paragraph
@@ -237,6 +237,7 @@ previously spelled out in words and maintained entirely by hand, with nothing ch
 | `POST /president/exec` | President / Scum |
 | `POST /cassino/exec` | Cassino |
 | `POST /spanish21/exec` | Spanish 21 |
+| `POST /doubleexposure/exec` | Double Exposure Blackjack |
 | `POST /calculation/exec` | Calculation |
 | `POST /sirtommy/exec` | Sir Tommy |
 | `POST /auldlangsyne/exec` | Auld Lang Syne |
@@ -249,6 +250,7 @@ previously spelled out in words and maintained entirely by hand, with nothing ch
 | `POST /egyptianratscrew/exec` | Egyptian Ratscrew |
 | `POST /bakersdozen/exec` | Baker's Dozen |
 | `POST /tonk/exec` | Tonk |
+| `POST /tongits/exec` | Tongits |
 | `POST /casinowar/exec` | Casino War |
 | `POST /pitch/exec` | Pitch / Setback |
 | `POST /dragontiger/exec` | Dragon Tiger |
@@ -274,6 +276,7 @@ previously spelled out in words and maintained entirely by hand, with nothing ch
 | `POST /mississippistud/exec` | Mississippi Stud |
 | `POST /belote/exec` | Belote |
 | `POST /spiderette/exec` | Spiderette |
+| `POST /willothewisp/exec` | Will o' the Wisp |
 | `POST /mighty/exec` | Mighty |
 | `POST /oasispoker/exec` | Oasis Poker |
 | `POST /beleagueredcastle/exec` | Beleaguered Castle |
@@ -281,6 +284,7 @@ previously spelled out in words and maintained entirely by hand, with nothing ch
 | `POST /casinoholdem/exec` | Casino Hold'em |
 | `POST /callbreak/exec` | Call Break |
 | `POST /tarneeb/exec` | Tarneeb |
+| `POST /omi/exec` | Omi |
 | `POST /highcardflush/exec` | High Card Flush |
 | `POST /briscola/exec` | Briscola |
 | `POST /gaps/exec` | Gaps / Montana |
@@ -303,6 +307,7 @@ previously spelled out in words and maintained entirely by hand, with nothing ch
 | `POST /fivehundred/exec` | 500 |
 | `POST /schnapsen/exec` | Schnapsen / Sixty-Six |
 | `POST /burraco/exec` | Burraco |
+| `POST /biriba/exec` | Biriba |
 | `POST /yaniv/exec` | Yaniv |
 | `POST /gongzhu/exec` | Gong Zhu |
 | `POST /bristol/exec` | Bristol |
@@ -357,6 +362,7 @@ previously spelled out in words and maintained entirely by hand, with nothing ch
 | `POST /cribbagesquares/exec` | Cribbage Squares |
 | `POST /diplomat/exec` | Diplomat |
 | `POST /royalcotillion/exec` | Royal Cotillion |
+| `POST /matrimony/exec` | Matrimony |
 | `POST /crazyquilt/exec` | Crazy Quilt |
 | `POST /germanwhist/exec` | German Whist |
 | `POST /slobberhannes/exec` | Slobberhannes |
@@ -430,6 +436,7 @@ previously spelled out in words and maintained entirely by hand, with nothing ch
 | `POST /carioca/exec` | Carioca / カリオカ |
 | `POST /samba/exec` | Samba / サンバ |
 | `POST /indianrummy/exec` | Indian Rummy / インドラミー |
+| `POST /marriage/exec` | Marriage / マリッジ |
 | `POST /machiavelli/exec` | Machiavelli / マキャヴェッリ |
 | `POST /anaconda/exec` | Anaconda / Pass the Trash |
 | `POST /pan/exec` | Panguingue / Pan |
@@ -440,6 +447,7 @@ previously spelled out in words and maintained entirely by hand, with nothing ch
 | `POST /tusac/exec` | Tu Sac |
 | `POST /sakura/exec` | Sakura |
 | `POST /zwanzigerrufen/exec` | Zwanzigerrufen |
+| `POST /tapptarock/exec` | Tapp Tarock |
 | `POST /troggu/exec` | Troggu |
 | `POST /horse/exec` | H.O.R.S.E. |
 | `POST /rook/exec` | Rook |
@@ -467,6 +475,7 @@ previously spelled out in words and maintained entirely by hand, with nothing ch
 | `POST /braid/exec` | Braid |
 | `POST /pontoon/exec` | Pontoon |
 | `POST /settemezzo/exec` | Sette e Mezzo |
+| `POST /quinze/exec` | Quinze |
 | `POST /niuniu/exec` | Niu Niu |
 | `POST /bura/exec` | Bura |
 | `POST /mushi/exec` | Mushi |
@@ -504,3 +513,9 @@ previously spelled out in words and maintained entirely by hand, with nothing ch
 | `POST /sjavs/exec` | Sjavs |
 | `POST /skitgubbe/exec` | Skitgubbe |
 | `POST /trex/exec` | Trex |
+| `POST /citadel/exec` | Citadel |
+| `POST /batak/exec` | Batak |
+| `POST /binokel/exec` | Binokel |
+| `POST /marjapussi/exec` | Marjapussi |
+| `POST /basset/exec` | Basset |
+| `POST /tehonbiki/exec` | Tehonbiki |

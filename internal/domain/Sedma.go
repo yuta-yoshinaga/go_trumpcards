@@ -15,6 +15,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // SedmaPlayerCnt プレイヤー数 (人間 1 + CPU 3)
@@ -140,6 +141,11 @@ func (g *Sedma) startRound() {
 	g.phase = SedmaPhasePlay
 }
 
+// appendLog records a Sedma action with a locale-independent detail code.
+func (g *Sedma) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
+}
+
 // deal 各プレイヤーへ 8 枚を配る。
 func (g *Sedma) deal() {
 	for i := 0; i < SedmaHandSize; i++ {
@@ -165,7 +171,7 @@ func (g *Sedma) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "sedma.errCardIndexOutOfRange", nil)
 	}
 	played := player.RemoveCard(cardIndex)
 	g.playCard(g.currentPlayerIdx, played)
@@ -195,7 +201,10 @@ func (g *Sedma) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Sedma) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "sedma.log.play", map[string]string{
+		"name": playerName(g.players, playerIdx),
+		"card": cardStr(card),
+	}, []*Card{card})
 
 	if len(g.currentTrick) == SedmaPlayerCnt {
 		g.phase = SedmaPhaseTrickEnd
@@ -219,13 +228,18 @@ func (g *Sedma) ResolveTrick() {
 	g.players[winnerIdx].AddTrick(trickCards)
 	team := SedmaTeamOf(winnerIdx)
 	g.roundCardPts[team] += pts
-	bonus := ""
+	code := "sedma.log.trickWin"
 	if g.trickNumber >= SedmaTrickCount {
 		g.roundCardPts[team] += SedmaLastTrickBonus
-		bonus = fmt.Sprintf(" +%d last", SedmaLastTrickBonus)
+		code = "sedma.log.trickWinLast"
 	}
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s captures trick %d (+%d%s)", playerName(g.players, winnerIdx), g.trickNumber, pts, bonus), trickCards)
+	detailParams := map[string]string{
+		"name":   playerName(g.players, winnerIdx),
+		"trick":  fmt.Sprintf("%d", g.trickNumber),
+		"points": fmt.Sprintf("%d", pts),
+		"bonus":  strconv.Itoa(SedmaLastTrickBonus),
+	}
+	g.appendLog(winnerIdx, "trick_win", code, detailParams, trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= SedmaTrickCount {
@@ -254,10 +268,13 @@ func (g *Sedma) ScoreRound() {
 	for t := 0; t < SedmaTeamCnt; t++ {
 		g.teamScores[t] += g.roundCardPts[t]
 	}
-	g.appendLog(-1, "round_score",
-		fmt.Sprintf("round %d: A=%d (round %d), B=%d (round %d)",
-			g.roundNumber, g.teamScores[0], g.roundCardPts[0],
-			g.teamScores[1], g.roundCardPts[1]), nil)
+	g.appendLog(-1, "round_score", "sedma.log.roundScore", map[string]string{
+		"round":  fmt.Sprintf("%d", g.roundNumber),
+		"teamA":  fmt.Sprintf("%d", g.teamScores[0]),
+		"roundA": fmt.Sprintf("%d", g.roundCardPts[0]),
+		"teamB":  fmt.Sprintf("%d", g.teamScores[1]),
+		"roundB": fmt.Sprintf("%d", g.roundCardPts[1]),
+	}, nil)
 
 	leader, other := 0, 1
 	if g.teamScores[1] > g.teamScores[0] {
@@ -267,7 +284,11 @@ func (g *Sedma) ScoreRound() {
 		g.gameEndFlag = true
 		g.winnerTeam = leader
 		g.phase = SedmaPhaseGameEnd
-		g.appendLog(-1, "game_end", fmt.Sprintf("Team %s wins the match!", SedmaTeamName(leader)), nil)
+		code := "sedma.log.gameEndTeamA"
+		if leader == 1 {
+			code = "sedma.log.gameEndTeamB"
+		}
+		g.appendLog(-1, "game_end", code, nil, nil)
 	}
 }
 

@@ -46,7 +46,8 @@ func (p *MariasWebPresenter) buildBase(g interfaces.MariasGame) *controller.Mari
 	resObj.PlayerScores = g.GetPlayerScores()
 	resObj.RoundCardPoints = g.GetRoundCardPoints()
 	resObj.RoundMarriage = g.GetRoundMarriage()
-	resObj.LastTrickWinner = -1
+	resObj.RoundMarriageSuits = g.GetRoundMarriageSuits()
+	resObj.LastTrickWinner = g.GetLastTrickWinner()
 	resObj.IsHumanTurn = g.IsHumanTurn()
 
 	resObj.PlayableIndices = p.playableIndices(g)
@@ -100,6 +101,9 @@ func (p *MariasWebPresenter) buildPlayersOutput(g interfaces.MariasGame) []*cont
 // buildMessage ゲーム結果メッセージを構築
 func (p *MariasWebPresenter) buildMessage(g interfaces.MariasGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

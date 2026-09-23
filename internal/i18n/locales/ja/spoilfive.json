@@ -4,6 +4,7 @@
   "helpNext": "  n                         次のトリックへ",
   "helpNextRound": "  nr                        次のラウンドへ",
   "helpSetDifficulty": "  sd [0-2]                  CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
+  "target": "目標: {{n}}点",
   "round": "ラウンド: {{round}}  トリック: {{trick}}  切り札: {{trump}}  ポット: {{pot}}",
   "playerLine": "{{name}}: {{cards}}枚  今ラウンドのトリック: {{roundTricks}}  得点: {{score}}",
   "gameEnd": "ゲーム終了！{{name}}が目標点に到達してマッチ勝利！",
@@ -15,7 +16,7 @@
   "promptSpoil": "流局 (Spoil)！誰も3トリックに届かず、ポット{{pot}}は次ラウンドへ持ち越し",
   "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
   "hintNone": "ヒントはありません。",
-  "hintCard": "[HINT: {{cards}} ({{reason}})]",
+  "hintCard": "[ヒント: {{cards}} ({{reason}})]",
   "hintReasonLeadHigh": "高い札でリードしてトリックを取りにいく",
   "hintReasonTakeTrick": "このトリックを取りにいく（3トリックでポット獲得）",
   "hintReasonDiscardLow": "取れないので低い札を捨てる",
@@ -24,5 +25,14 @@
   "topTrumpLine": "強さ順: {{cards}} > その他の切り札 > 非切り札",
   "helpExamplePlay": "  play 0                   手札の 0 番のカードを出す",
   "helpExampleNext": "  n                        トリックの決着を見てから次のトリックへ",
-  "helpHint": "  h                         助言を表示"
+  "helpHint": "  h                         助言を表示",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errMustFollowTrump": "切り札に従ってください",
+  "errMustFollowSuit": "リードスートに従ってください",
+  "log.roundStart": "ラウンド{{round}}: 切り札{{trump}}、ポット{{pot}}、{{name}}がリード",
+  "log.play": "{{name}}が{{card}}を出しました",
+  "log.trickWin": "{{name}}がトリック{{trick}}を取りました",
+  "log.roundWin": "{{name}}がポット{{pot}}を獲得しました",
+  "log.spoil": "流局！ポット{{pot}}は持ち越しです",
+  "log.gameEnd": "{{name}}がマッチに勝利しました！"
 }

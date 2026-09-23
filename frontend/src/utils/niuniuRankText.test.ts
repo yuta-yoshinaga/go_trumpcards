@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import i18n from '../i18n';
-import { niuniuBankerResultText, niuniuRankText } from './niuniuRankText';
+import { niuniuBankerResultText, niuniuMultiplier, niuniuRankText } from './niuniuRankText';
 
 describe('niuniuRankText', () => {
   it('names each rank the server can send', () => {
@@ -45,5 +45,27 @@ describe('niuniuBankerResultText', () => {
     await i18n.changeLanguage('en');
     expect(niuniuBankerResultText('niuniu')).toBe('Banker: Niu Niu');
     await i18n.changeLanguage('ja');
+  });
+});
+
+describe('niuniuMultiplier', () => {
+  it('returns the correct multiplier for each rank', () => {
+    expect(niuniuMultiplier('none')).toBe(1);
+    expect(niuniuMultiplier('n1')).toBe(1);
+    expect(niuniuMultiplier('n2')).toBe(1);
+    expect(niuniuMultiplier('n3')).toBe(1);
+    expect(niuniuMultiplier('n4')).toBe(1);
+    expect(niuniuMultiplier('n5')).toBe(1);
+    expect(niuniuMultiplier('n6')).toBe(1);
+    expect(niuniuMultiplier('n7')).toBe(2);
+    expect(niuniuMultiplier('n8')).toBe(2);
+    expect(niuniuMultiplier('n9')).toBe(2);
+    expect(niuniuMultiplier('niuniu')).toBe(3);
+  });
+
+  it('returns 1 for unknown keys', () => {
+    expect(niuniuMultiplier('')).toBe(1);
+    expect(niuniuMultiplier('n10')).toBe(1);
+    expect(niuniuMultiplier('unknown')).toBe(1);
   });
 });

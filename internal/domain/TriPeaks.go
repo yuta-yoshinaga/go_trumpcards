@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // TriPeaksPhase トリピークスゲームフェーズ
@@ -195,7 +196,7 @@ func (t *TriPeaks) Draw() error {
 	t.moveCount++
 	// **引くと連鎖は切れるが、稼いだ点は残る。**
 	t.chain = 0
-	t.appendLog("draw", "ストックからカードを引きました", []*Card{card})
+	t.appendLog("draw", "tripeaks.log.draw", nil, []*Card{card})
 	t.checkStalemate()
 	return nil
 }
@@ -234,8 +235,7 @@ func (t *TriPeaks) Remove(row, col int) error {
 	t.chain++
 	t.score += t.chain*TriPeaksPointsPerChain +
 		(t.peaksCleared()-peaksBefore)*TriPeaksPeakBonus
-	t.appendLog("remove", fmt.Sprintf("カード除去: (%d,%d)", row, col),
-		[]*Card{tc.Card})
+	t.appendLog("remove", "tripeaks.log.remove", map[string]string{"row": strconv.Itoa(row), "col": strconv.Itoa(col)}, []*Card{tc.Card})
 	t.checkGameClear()
 	t.checkStalemate()
 	return nil
@@ -245,7 +245,7 @@ func (t *TriPeaks) Remove(row, col int) error {
 func (t *TriPeaks) GiveUp() {
 	if t.phase == TriPeaksPhasePlaying {
 		t.phase = TriPeaksPhaseGameOver
-		t.appendLog("giveup", "ギブアップしました", nil)
+		t.appendLog("giveup", "tripeaks.log.giveUp", nil, nil)
 	}
 }
 
@@ -544,8 +544,8 @@ func (t *TriPeaks) restoreSnapshot(snap *triPeaksSnapshot) {
 }
 
 // appendLog 棋譜エントリを追加
-func (t *TriPeaks) appendLog(actionType, detail string, cards []*Card) {
-	t.appendLogAt(t.moveCount, 0, actionType, detail, cards)
+func (t *TriPeaks) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	t.appendLogCodeAt(t.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // triPeaksJSON is the JSON wire format for TriPeaks.

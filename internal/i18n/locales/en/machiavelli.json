@@ -12,6 +12,7 @@
   "tableEmpty": "  (no melds yet)",
   "meldLine": "  [{{idx}}] {{cards}}",
   "playerLine": "{{name}}: cumulative {{cum}} round {{round}} cards {{cards}}",
+  "deadwoodLine": "  Deadwood: {{value}} points",
   "gameEnd": "Game over! {{name}} wins!",
   "promptTurn": "{{name}} to act",
   "promptDrawHelp": "dr: draw one card from stock (ends turn)",
@@ -23,5 +24,17 @@
   "turnPhase": "Your turn. Draw or play.",
   "roundEnd": "Round complete. Advance to the next round.",
   "promptLayoffNone": "Layoff unavailable: no melds on the table",
-  "helpExampleDraw": "  dr                   draw from the stock and end the turn"
+  "helpExampleDraw": "  dr                   draw from the stock and end the turn",
+  "errInvalidMeldIndex": "The target meld is invalid.",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errHandCardRequired": "You must play at least one card from your hand.",
+  "errInvalidMeld": "The play contains an invalid meld.",
+  "errTableCardsMismatch": "The table's card composition does not match.",
+  "errEmptyMeld": "An empty meld cannot be specified.",
+  "errInvalidCard": "An invalid card was specified.",
+  "log.draw": "{{name}} draws from stock",
+  "log.play": "{{name}} plays {{count}} card(s) to the table",
+  "log.roundWin": "{{name}} goes out (round {{round}})",
+  "log.roundDraw": "Round ends (stock exhausted)",
+  "log.gameEnd": "{{name}} wins the game with {{points}} points!"
 }

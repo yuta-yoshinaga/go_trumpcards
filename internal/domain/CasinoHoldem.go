@@ -5,6 +5,7 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 )
 
 // カジノホールデムフェーズ定数
@@ -142,7 +143,9 @@ func (c *CasinoHoldem) Bet(ante, bonus int) error {
 	}
 	c.anteBet = ante
 	c.bonusBet = bonus
-	c.appendLog(0, "bet", fmt.Sprintf("ante=%d bonus=%d", ante, bonus), nil)
+	c.appendLog(0, "bet", "casinoholdem.log.bet", map[string]string{
+		"ante": strconv.Itoa(ante), "bonus": strconv.Itoa(bonus),
+	}, nil)
 
 	c.dealHole()
 	c.dealFlop()
@@ -160,7 +163,7 @@ func (c *CasinoHoldem) Call() error {
 		return NewDomainError(ErrInsufficientChips, "Insufficient chips for call bet.")
 	}
 	c.callBet = bet
-	c.appendLog(0, "call", fmt.Sprintf("call bet=%d", bet), nil)
+	c.appendLog(0, "call", "casinoholdem.log.call", map[string]string{"bet": strconv.Itoa(bet)}, nil)
 
 	c.dealTurnAndRiver()
 	c.resolve()
@@ -173,7 +176,7 @@ func (c *CasinoHoldem) Fold() error {
 	if c.phase != CasinoHoldemPhaseFlop {
 		return NewDomainError(ErrWrongPhase, "Fold is only allowed during the flop phase.")
 	}
-	c.appendLog(0, "fold", "player folds", nil)
+	c.appendLog(0, "fold", "casinoholdem.log.fold", nil, nil)
 
 	c.result = GameResultLose
 	c.evaluateBonus()
@@ -182,7 +185,7 @@ func (c *CasinoHoldem) Fold() error {
 	}
 	c.gameEndFlag = true
 	c.phase = CasinoHoldemPhaseEnd
-	c.appendLog(-1, "result", "player folded", nil)
+	c.appendLog(-1, "result", "casinoholdem.log.resultFolded", nil, nil)
 	return nil
 }
 
@@ -194,7 +197,7 @@ func (c *CasinoHoldem) dealHole() {
 		c.playerHand = append(c.playerHand, c.trumpCards.DrawCard())
 		c.dealerHand = append(c.dealerHand, c.trumpCards.DrawCard())
 	}
-	c.appendLog(-1, "deal", "dealt 2 hole cards each", nil)
+	c.appendLog(-1, "deal", "casinoholdem.log.deal", nil, nil)
 }
 
 // dealFlop 3枚のフロップを配る。
@@ -204,14 +207,14 @@ func (c *CasinoHoldem) dealFlop() {
 		c.community = append(c.community, c.trumpCards.DrawCard())
 	}
 	c.updatePlayerCurrentRank()
-	c.appendLog(-1, "flop", "flop dealt", nil)
+	c.appendLog(-1, "flop", "casinoholdem.log.flop", nil, nil)
 }
 
 // dealTurnAndRiver 残り 2 枚（ターン＋リバー）を一気に公開する。
 func (c *CasinoHoldem) dealTurnAndRiver() {
 	c.community = append(c.community, c.trumpCards.DrawCard())
 	c.community = append(c.community, c.trumpCards.DrawCard())
-	c.appendLog(-1, "turn_river", "turn and river dealt", nil)
+	c.appendLog(-1, "turn_river", "casinoholdem.log.turnRiver", nil, nil)
 }
 
 // updatePlayerCurrentRank プレイヤーの現在の最良ハンドランクを更新する。
@@ -256,16 +259,16 @@ func (c *CasinoHoldem) resolve() {
 	c.gameEndFlag = true
 	c.phase = CasinoHoldemPhaseEnd
 
-	var resultStr string
+	var resultCode string
 	switch c.result {
 	case GameResultWin:
-		resultStr = "player wins"
+		resultCode = "casinoholdem.log.resultPlayerWins"
 	case GameResultDraw:
-		resultStr = "push"
+		resultCode = "casinoholdem.log.resultPush"
 	default:
-		resultStr = "dealer wins"
+		resultCode = "casinoholdem.log.resultDealerWins"
 	}
-	c.appendLog(-1, "result", resultStr, nil)
+	c.appendLog(-1, "result", resultCode, nil, nil)
 }
 
 // compareBest プレイヤーとディーラーの最良5枚を比較する
@@ -277,6 +280,11 @@ func (c *CasinoHoldem) compareBest() int {
 		return -1
 	}
 	return compareHighCardsSlice(c.playerBest, c.dealerBest)
+}
+
+// appendLog は行動ログを追加する。
+func (c *CasinoHoldem) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	c.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // calculatePayouts 勝敗・ディーラークオリファイに基づくアンテ／コール配当

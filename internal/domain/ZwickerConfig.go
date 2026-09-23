@@ -7,8 +7,12 @@ type ZwickerCpuDifficulty int
 
 // Zwicker の CPU 難易度定数
 const (
-	// ZwickerCpuDifficultyNormal 中難易度 (v1 はこれのみ)
-	ZwickerCpuDifficultyNormal ZwickerCpuDifficulty = iota
+	// ZwickerCpuDifficultyEasy 低難易度。
+	ZwickerCpuDifficultyEasy ZwickerCpuDifficulty = iota
+	// ZwickerCpuDifficultyNormal 中難易度。
+	ZwickerCpuDifficultyNormal
+	// ZwickerCpuDifficultyHard 高難易度。
+	ZwickerCpuDifficultyHard
 )
 
 // ZwickerConfig ツヴィッカーのゲーム設定
@@ -29,7 +33,7 @@ func DefaultZwickerConfig() ZwickerConfig {
 // Validate 設定値のドメインバリデーション
 func (c ZwickerConfig) Validate() error {
 	if err := ValidateRange("CPU difficulty", int(c.CpuDifficulty),
-		int(ZwickerCpuDifficultyNormal), int(ZwickerCpuDifficultyNormal)); err != nil {
+		int(ZwickerCpuDifficultyEasy), int(ZwickerCpuDifficultyHard)); err != nil {
 		return err
 	}
 	return ValidateRange("target score", c.TargetScore, 1, 1000)

@@ -12,10 +12,10 @@
   "gateLine": "ゲート: {{card}}",
   "resultLine": "{{result}}（収支 {{net}}）",
   "gameEndLine": "終了。手持ちは {{chips}} でした",
-  "phaseBet": "BET",
-  "phaseResult": "RESULT",
-  "phaseGameEnd": "GAME END",
-  "phaseUnknown": "UNKNOWN",
+  "phaseBet": "賭け",
+  "phaseResult": "結果",
+  "phaseGameEnd": "ゲーム終了",
+  "phaseUnknown": "不明",
   "result.none": "未決着",
   "result.win": "的中（3:1）",
   "result.lose": "外れ",
@@ -25,5 +25,9 @@
   "reason.allDuplicated": "どのスートも場札に2枚以上出ているので、どれを選んでも不利です",
   "result.gameEnd": "山が尽きました",
   "helpExampleBet": "  bet 1 100         1 番の場札に 100 賭ける",
-  "layoutRemaining": "（山残り{{remaining}}枚）"
+  "layoutRemaining": "（山残り{{remaining}}枚）",
+  "log.reset": "ゲームをリセットしました",
+  "log.bet": "レイアウト{{value2}}に{{value1}}をベットしました",
+  "log.gate": "ゲートが公開されました。払戻し {{value1}}",
+  "log.gameEnd": "チップ{{value1}}で終了しました"
 }

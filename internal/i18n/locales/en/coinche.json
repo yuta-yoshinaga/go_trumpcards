@@ -38,5 +38,16 @@
   "helpExamplePlay": "  p 0                  play the card at index 0",
   "helpExampleBid": "  b 120 1              bid 120 with spades as trump",
   "helpHint": "  h                    show a hint",
-  "dixDeDerNotice": "Last trick: Dix de Der +{{points}} to the winning team"
+  "dixDeDerNotice": "Last trick: Dix de Der +{{points}} to the winning team",
+  "errTrumpSuitRequired": "Choose a trump suit.",
+  "errBidRange": "That target cannot be bid.",
+  "errBidHigherThanHighest": "The bid must be higher than the current contract.",
+  "errSurcoincheNotAllowed": "You cannot redouble.",
+  "errCoincheNotAllowed": "You cannot double.",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errMustFollowTrump": "You must follow the lead suit (trump).",
+  "errMustOvertrump": "You must overtrump (obligation à monter).",
+  "errFollowLeadSuit": "You must follow the lead suit.",
+  "errMustPlayTrump": "You must play a trump (obligation à couper).",
+  "log.bid": "{{name}} bids {{points}} in {{suit}}", "log.pass": "{{name}} passes", "log.forcedBid": "{{name}} must take {{points}} in {{suit}} (all passed)", "log.contract": "Contract: {{points}} in {{suit}} by team {{team}}", "log.coinche": "{{name}} coinches (x2)", "log.surcoinche": "{{name}} surcoinches (x4)", "log.trickWin": "{{name}} wins trick {{trick}} ({{points}} pts)", "log.dixDeDer": "{{name}} wins last trick +{{points}} (Dix de Der)", "log.contractMade": "Team {{team}} makes {{contract}} (took {{taken}}, x{{multiplier}}): +{{gain}}", "log.dedans": "Team {{team}} is dedans on {{contract}} (took {{taken}}, x{{multiplier}}): team {{defender}} +{{gain}}", "log.beloteBonus": "Team {{team}} keeps Belote/Rebelote: +{{bonus}}", "log.teamScore": "Team {{team}}: {{points}} card points (total {{total}})", "log.play": "{{name}} plays {{card}}", "log.beloteRebelote": "{{name}} declares Belote/Rebelote (+{{points}})", "log.gameEnd": "Team {{team}} wins the game!"
 }

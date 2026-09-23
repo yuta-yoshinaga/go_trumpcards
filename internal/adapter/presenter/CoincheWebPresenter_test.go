@@ -96,6 +96,15 @@ func TestCoincheWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "invalid play", resObj.Message)
 	})
 
+	t.Run("coded error uses message code", func(t *testing.T) {
+		m, _ := setupCoincheWebMockWithPlayers()
+		result := p.Output(m, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "coinche.errBidRange", nil))
+		var resObj controller.CoincheWebOutput
+		_ = json.Unmarshal([]byte(result), &resObj)
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "coinche.errBidRange", resObj.MessageCode)
+	})
+
 	t.Run("game-end message", func(t *testing.T) {
 		m, _ := setupCoincheWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")

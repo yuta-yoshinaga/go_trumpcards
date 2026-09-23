@@ -27,5 +27,8 @@
   "hintWaste": "Hint: waste {{waste}} → foundation {{foundation}}",
   "helpExampleHint": "  h                   ask for a move",
   "invalidUndoCount": "Invalid undo count: {{val}} (give a whole number of 1 or more)",
-  "noUndoToEscape": "Not in a dead end or cannot escape via undo"
+  "noUndoToEscape": "Not in a dead end or cannot escape via undo",
+  "log.deal": "Dealt {{count}} cards",
+  "log.move": "Waste {{waste}} → foundation {{foundation}}",
+  "log.giveUp": "Gave up"
 }

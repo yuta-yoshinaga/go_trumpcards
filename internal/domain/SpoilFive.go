@@ -17,9 +17,9 @@ package domain
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // SpoilFivePlayerCnt プレイヤー数 (人間 1 + CPU 4)
@@ -141,9 +141,7 @@ func (g *SpoilFive) startRound() {
 
 	g.currentPlayerIdx = g.leadPlayerIdx
 	g.phase = SpoilFivePhasePlay
-	g.appendLog(g.leadPlayerIdx, "round_start",
-		fmt.Sprintf("round %d: trump %d, pot %d, %s leads",
-			g.roundNumber, g.trumpSuit, g.pot, playerName(g.players, g.leadPlayerIdx)), nil)
+	g.appendLog(g.leadPlayerIdx, "round_start", "spoilfive.log.roundStart", map[string]string{"round": strconv.Itoa(g.roundNumber), "trump": strconv.Itoa(g.trumpSuit), "pot": strconv.Itoa(g.pot), "name": playerName(g.players, g.leadPlayerIdx)}, nil)
 }
 
 // deal 各プレイヤーへ 5 枚を配る。
@@ -171,7 +169,7 @@ func (g *SpoilFive) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "spoilfive.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
@@ -205,7 +203,7 @@ func (g *SpoilFive) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *SpoilFive) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "spoilfive.log.play", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(g.currentTrick) == SpoilFivePlayerCnt {
 		g.phase = SpoilFivePhaseTrickEnd
@@ -226,8 +224,7 @@ func (g *SpoilFive) ResolveTrick() {
 	}
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.players[winnerIdx].IncRoundTricks()
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), trickCards)
+	g.appendLog(winnerIdx, "trick_win", "spoilfive.log.trickWin", map[string]string{"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber)}, trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.players[winnerIdx].GetRoundTricks() >= SpoilFiveWinTricks {
@@ -261,12 +258,11 @@ func (g *SpoilFive) ScoreRound() {
 	}
 	if g.roundWinnerIdx >= 0 {
 		g.players[g.roundWinnerIdx].SetScore(g.players[g.roundWinnerIdx].GetScore() + g.pot)
-		g.appendLog(g.roundWinnerIdx, "round_win",
-			fmt.Sprintf("%s wins the pot of %d", playerName(g.players, g.roundWinnerIdx), g.pot), nil)
+		g.appendLog(g.roundWinnerIdx, "round_win", "spoilfive.log.roundWin", map[string]string{"name": playerName(g.players, g.roundWinnerIdx), "pot": strconv.Itoa(g.pot)}, nil)
 		g.pot = 0
 		g.checkGameEnd()
 	} else {
-		g.appendLog(-1, "spoil", fmt.Sprintf("spoiled! pot of %d carries over", g.pot), nil)
+		g.appendLog(-1, "spoil", "spoilfive.log.spoil", map[string]string{"pot": strconv.Itoa(g.pot)}, nil)
 	}
 }
 
@@ -283,8 +279,12 @@ func (g *SpoilFive) checkGameEnd() {
 		g.gameEndFlag = true
 		g.winnerPlayer = leader
 		g.phase = SpoilFivePhaseGameEnd
-		g.appendLog(leader, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
+		g.appendLog(leader, "game_end", "spoilfive.log.gameEnd", map[string]string{"name": playerName(g.players, leader)}, nil)
 	}
+}
+
+func (g *SpoilFive) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCodeAt(len(g.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- Trick / play helpers ---
@@ -337,11 +337,11 @@ func (g *SpoilFive) validatePlay(playerIdx int, card *Card) error {
 	// 義務札がある: フォローしているか (切り札リードなら切り札、非切り札なら同スート) を確認。
 	if leadIsTrump {
 		if !g.isTrumpCard(card) {
-			return NewDomainError(ErrInvalidPlay, "切り札に従ってください")
+			return NewDomainErrorCode(ErrInvalidPlay, "spoilfive.errMustFollowTrump", nil)
 		}
 	} else {
 		if card.GetDesign() != leadSuit || g.isTrumpCard(card) {
-			return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+			return NewDomainErrorCode(ErrInvalidPlay, "spoilfive.errMustFollowSuit", nil)
 		}
 	}
 	return nil

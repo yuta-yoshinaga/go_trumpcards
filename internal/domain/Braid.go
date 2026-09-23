@@ -216,16 +216,12 @@ func (b *Braid) ChooseDirection(ascending bool) error {
 	} else {
 		b.direction = BraidDirectionDescending
 	}
-	b.afterMove("direction", b.directionDetail(), nil)
-	return nil
-}
-
-// directionDetail 棋譜に残す向きの説明
-func (b *Braid) directionDetail() string {
+	directionCode := "braid.log.directionDescending"
 	if b.direction == BraidDirectionAscending {
-		return "基礎札を昇順に決めた"
+		directionCode = "braid.log.directionAscending"
 	}
-	return "基礎札を降順に決めた"
+	b.afterMove("direction", directionCode, nil, nil)
+	return nil
 }
 
 // Draw 山札から捨て札へ 1 枚めくる。山札が空ならめくり直す（2 回まで）。
@@ -241,14 +237,14 @@ func (b *Braid) Draw() error {
 		b.stock = b.waste
 		b.waste = nil
 		b.passesUsed++
-		b.afterMove("redeal", "捨て札を山札に戻した", nil)
+		b.afterMove("redeal", "braid.log.redealDetail", nil, nil)
 		return nil
 	}
 	b.takeSnapshot()
 	card := b.stock[0]
 	b.stock = b.stock[1:]
 	b.waste = append(b.waste, card)
-	b.afterMove("draw", "山札から1枚めくった", card)
+	b.afterMove("draw", "braid.log.drawDetail", nil, card)
 	return nil
 }
 
@@ -274,7 +270,7 @@ func (b *Braid) MoveBraidToFoundation() error {
 	b.takeSnapshot()
 	b.braid = b.braid[:len(b.braid)-1]
 	b.foundation[fIdx] = append(b.foundation[fIdx], card)
-	b.afterMove("move", fmt.Sprintf("ブレイド→基礎札%d", fIdx), card)
+	b.afterMove("move", "braid.log.move", map[string]string{"value1": fmt.Sprint(fIdx)}, card)
 	return nil
 }
 
@@ -300,7 +296,7 @@ func (b *Braid) MoveFieldToFoundation(idx int) error {
 	b.fields[idx] = nil
 	b.foundation[fIdx] = append(b.foundation[fIdx], card)
 	b.refillFields()
-	b.afterMove("move", fmt.Sprintf("ブレイド札%d→基礎札%d", idx, fIdx), card)
+	b.afterMove("move", "braid.log.move", map[string]string{"value1": fmt.Sprint(idx), "value2": fmt.Sprint(fIdx)}, card)
 	return nil
 }
 
@@ -323,7 +319,7 @@ func (b *Braid) MoveHelperToFoundation(idx int) error {
 	b.takeSnapshot()
 	b.helpers[idx] = nil
 	b.foundation[fIdx] = append(b.foundation[fIdx], card)
-	b.afterMove("move", fmt.Sprintf("ヘルパー%d→基礎札%d", idx, fIdx), card)
+	b.afterMove("move", "braid.log.move", map[string]string{"value1": fmt.Sprint(idx), "value2": fmt.Sprint(fIdx)}, card)
 	return nil
 }
 
@@ -343,7 +339,7 @@ func (b *Braid) MoveWasteToFoundation() error {
 	b.takeSnapshot()
 	b.popWaste()
 	b.foundation[fIdx] = append(b.foundation[fIdx], card)
-	b.afterMove("move", fmt.Sprintf("捨て札→基礎札%d", fIdx), card)
+	b.afterMove("move", "braid.log.move", map[string]string{"value1": fmt.Sprint(fIdx)}, card)
 	return nil
 }
 
@@ -367,7 +363,7 @@ func (b *Braid) MoveWasteToHelper(idx int) error {
 	b.takeSnapshot()
 	b.popWaste()
 	b.helpers[idx] = card
-	b.afterMove("move", fmt.Sprintf("捨て札→ヘルパー%d", idx), card)
+	b.afterMove("move", "braid.log.move", map[string]string{"value1": fmt.Sprint(idx)}, card)
 	return nil
 }
 
@@ -375,7 +371,7 @@ func (b *Braid) MoveWasteToHelper(idx int) error {
 func (b *Braid) GiveUp() {
 	if b.phase == BraidPhasePlaying {
 		b.phase = BraidPhaseGameOver
-		b.appendLog("giveup", "ギブアップしました", nil)
+		b.appendLog("giveup", "braid.log.giveup", nil, nil)
 	}
 }
 
@@ -662,8 +658,8 @@ func (b *Braid) refillFields() {
 }
 
 // afterMove 手数・棋譜・終了判定をまとめて進める
-func (b *Braid) afterMove(actionType, detail string, card *Card) {
-	afterMove(&b.moveCount, b, actionType, detail, card)
+func (b *Braid) afterMove(actionType, detailCode string, detailParams map[string]string, card *Card) {
+	afterMove(&b.moveCount, b, actionType, detailCode, detailParams, card)
 }
 
 // checkGameClear 8 つの基礎札がすべて 13 枚になったか
@@ -708,8 +704,8 @@ func (b *Braid) takeSnapshot() {
 }
 
 // appendLog 棋譜エントリを追加
-func (b *Braid) appendLog(actionType, detail string, cards []*Card) {
-	b.appendLogAt(b.moveCount, 0, actionType, detail, cards)
+func (b *Braid) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	b.appendLogCodeAt(b.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // braidSnapshotJSON is the wire format for a single undo snapshot.

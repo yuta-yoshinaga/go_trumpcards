@@ -23,7 +23,7 @@
   "gameEndTeam1": "ゲーム終了！ 相手チームの勝利です（{{t0}} - {{t1}}）。",
   "gameEndTie": "ゲーム終了！ 同点です（{{t0}} - {{t1}}）。",
   "hintNone": "ヒントはありません。",
-  "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
+  "hintCard": "[ヒント: [{{idx}}]{{card}} ({{reason}})]",
   "hintReasonChaseTen": "10 が出ている。このトリックは取りに行く",
   "hintReasonFeedPartner": "味方が勝っている。10 を乗せてよい",
   "hintReasonDuck": "取れない。10 は温存して安い札を捨てる",
@@ -33,5 +33,15 @@
   "suitDiamond": "ダイヤ",
   "helpExampleGiveUp": "  g                    この局を投了する",
   "helpHint": "  h                    助言を表示",
-  "warnSetsTrump": "！ この 1 枚のスートが、このハンドの切り札になります（フォローできないため）。"
+  "warnSetsTrump": "！ この 1 枚のスートが、このハンドの切り札になります（フォローできないため）。",
+  "log.handStart": "ハンド{{hand}} を開始（切り札は未定）",
+  "log.play": "{{card}}",
+  "log.trump": "フォローできず、切り札を {{suit}} に決めた",
+  "log.ten": "10 を {{count}} 枚獲得",
+  "log.handEndTens": "チーム{{team}} が 10 の枚数で +{{points}}（10: {{tens0}}-{{tens1}} / トリック: {{tricks0}}-{{tricks1}}）",
+  "log.handEndTricks": "チーム{{team}} が トリックで +{{points}}（10: {{tens0}}-{{tens1}} / トリック: {{tricks0}}-{{tricks1}}）",
+  "log.handEndMendikot": "チーム{{team}} が Mendikot で +{{points}}（10: {{tens0}}-{{tens1}} / トリック: {{tricks0}}-{{tricks1}}）",
+  "log.handEndWhitewash": "チーム{{team}} が Whitewash で +{{points}}（10: {{tens0}}-{{tens1}} / トリック: {{tricks0}}-{{tricks1}}）",
+  "log.result": "最終得点 {{team0}} - {{team1}}",
+  "log.giveUp": "ギブアップしました"
 }

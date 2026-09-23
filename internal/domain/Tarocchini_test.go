@@ -213,6 +213,15 @@ func TestTarocchini_ScartoReturnsTheDealerToFifteen(t *testing.T) {
 	assert.Equal(t, TarocchiniHandSize, dealer.GetCardsSize())
 	assert.Equal(t, TarocchiniSurplus, g.GetScartoSize())
 	assert.Equal(t, TarocchiniPhasePlay, g.GetPhase())
+	var scartoLog *ActionLogEntry
+	for _, entry := range g.GetActionLog() {
+		if entry.DetailCode == "tarocchini.log.scarto" {
+			scartoLog = entry
+			break
+		}
+	}
+	require.NotNil(t, scartoLog)
+	assert.Equal(t, map[string]string{"count": "2"}, scartoLog.DetailParams)
 }
 
 // 捨札はそのまま得点になるので、切り札とマットは伏せられない。

@@ -1,4 +1,5 @@
 {
+  "autoCompleteReady": "Auto-complete is available (ac)",
   "helpTitle": "FreeCell",
   "helpMove": "  m t <col> t <col>    move tableau top card to tableau",
   "helpMoveTF": "  m t <col> f          move tableau to foundation",
@@ -25,5 +26,6 @@
   "helpExampleMoveCell": "  m t 0 c 0            park the top of column 0 in free cell 0",
   "helpExampleHint": "  h                    ask for a move",
   "helpExampleAuto": "  ac                   send everything that can go to a foundation",
-  "helpUndo": "  u undo one move"
+  "helpUndo": "  u undo one move",
+  "log.tableauToTableau": "Tableau column {{fromCol}}→tableau column {{toCol}}", "log.tableauToFoundation": "Tableau column {{col}}→foundation", "log.tableauToFreeCell": "Tableau column {{col}}→free cell {{cell}}", "log.freeCellToTableau": "Free cell {{cell}}→tableau column {{col}}", "log.freeCellToFoundation": "Free cell {{cell}}→foundation", "log.giveUp": "Gave up", "log.autoComplete": "Ran auto-complete"
 }

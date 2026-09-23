@@ -25,6 +25,7 @@
   "captured": "Captured: {{count}}",
   "score": "Score: {{score}}",
   "points": "Now: {{points}}",
+  "goCount": "Go {{count}}",
   "turnYours": "Your turn — pick a hand card to capture a field card.",
   "turnCpu": "CPU is playing…",
   "gwang": "Gwang",

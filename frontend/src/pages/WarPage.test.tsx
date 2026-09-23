@@ -144,6 +144,29 @@ describe('WarPage', () => {
     expect(screen.getAllByText(/2/).length).toBeGreaterThan(0);
   });
 
+  it('warns when the round limit reaches 90 percent', async () => {
+    mockExec.mockResolvedValueOnce({
+      ...baseState,
+      roundsPlayed: 450,
+    });
+    renderWithProviders(<WarPage />);
+    await waitFor(() =>
+      expect(screen.getByText('ラウンド: 450 / 500（上限で保有枚数の多い方が勝ち）')).toBeInTheDocument(),
+    );
+    expect(screen.getByText('ラウンド: 450 / 500（上限で保有枚数の多い方が勝ち）')).toHaveClass('text-ds-warning');
+    expect(document.body.textContent).not.toContain('{{');
+  });
+
+  it('does not warn one round before the 90 percent threshold', async () => {
+    mockExec.mockResolvedValueOnce({
+      ...baseState,
+      roundsPlayed: 449,
+    });
+    renderWithProviders(<WarPage />);
+    await waitFor(() => expect(screen.getByText(/ラウンド: 449 \/ 500$/)).toBeInTheDocument());
+    expect(screen.queryByText('ラウンド: 449 / 500（上限で保有枚数の多い方が勝ち）')).not.toBeInTheDocument();
+  });
+
   it('shows buried count when a war resolves', async () => {
     mockExec.mockResolvedValueOnce({
       ...baseState,

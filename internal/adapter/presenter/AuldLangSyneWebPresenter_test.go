@@ -146,7 +146,7 @@ func TestAuldLangSyneWebPresenter_ActionLogOutput(t *testing.T) {
 	// once the game is over.
 	g.On("GetGameEndFlag").Return(true)
 	g.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, ActionType: "deal", Detail: "4枚を配りました"},
+		{TurnNumber: 1, ActionType: "deal", DetailCode: "auldlangsyne.log.deal", DetailParams: map[string]string{"count": "4"}},
 	})
 	p := new(AuldLangSyneWebPresenter)
 

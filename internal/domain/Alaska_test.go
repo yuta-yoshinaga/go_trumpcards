@@ -481,6 +481,18 @@ func TestAlaska_GiveUp(t *testing.T) {
 	})
 }
 
+func TestAlaska_GiveUp_ActionLogUsesDetailCode(t *testing.T) {
+	y := setupPlayingAlaska()
+	y.GiveUp()
+	for _, entry := range y.GetActionLog() {
+		if entry.DetailCode == "alaska.log.giveUp" {
+			assert.Nil(t, entry.DetailParams)
+			return
+		}
+	}
+	t.Fatal("give up action log entry not found")
+}
+
 func TestAlaska_GetHint(t *testing.T) {
 	t.Run("hint to foundation", func(t *testing.T) {
 		r := newTestAlaska()

@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import i18n from 'i18next';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ActionLogEntry } from '../types/card';
 import { ActionLogPanel } from './ActionLogPanel';
@@ -33,6 +34,127 @@ describe('ActionLogPanel', () => {
     expect(screen.getByText(/T2 \[SYSTEM\] deal: dealt cards/)).toBeInTheDocument();
     // Turn 3: Player 1, empty cards array (no card bracket appended)
     expect(screen.getByText(/T3 \[Player 1\] stand: stood/)).toBeInTheDocument();
+  });
+
+  it('translates detailCode with detailParams', () => {
+    render(
+      <ActionLogPanel
+        entries={[
+          {
+            turnNumber: 4,
+            playerIdx: 0,
+            actionType: 'play',
+            detail: 'fallback',
+            detailCode: 'player.cpu',
+            detailParams: { id: '7' },
+          },
+        ]}
+        onClose={vi.fn()}
+      />,
+    );
+    expect(screen.getByText(/T4 \[Player 0\] play: CPU 7/)).toBeInTheDocument();
+  });
+
+  it('resolves Key-suffixed detail params before translating', () => {
+    render(
+      <ActionLogPanel
+        entries={[
+          {
+            turnNumber: 4,
+            playerIdx: 0,
+            actionType: 'trump',
+            detail: 'fallback',
+            detailCode: 'sjavs.log.trump',
+            detailParams: { suitKey: 'common.suit.spade' },
+          },
+        ]}
+        onClose={vi.fn()}
+      />,
+    );
+    expect(screen.getByText(/T4 \[Player 0\] trump: 切り札のスート スペード を宣言しました/)).toBeInTheDocument();
+  });
+
+  it('passes sibling params when resolving a nested Key detail', async () => {
+    i18n.addResourceBundle(
+      'ja',
+      'common',
+      {
+        'test.actionLogNestedOuter': '{{inner}}（続き{{seat}}）',
+        'test.actionLogNestedInner': '中身（{{total}}）',
+      },
+      true,
+      true,
+    );
+    i18n.addResourceBundle(
+      'en',
+      'common',
+      {
+        'test.actionLogNestedOuter': '{{inner}} (cont {{seat}})',
+        'test.actionLogNestedInner': 'inner ({{total}})',
+      },
+      true,
+      true,
+    );
+    const entry = {
+      turnNumber: 4,
+      playerIdx: 0,
+      actionType: 'result',
+      detail: 'fallback',
+      detailCode: 'test.actionLogNestedOuter',
+      detailParams: { innerKey: 'test.actionLogNestedInner', total: '18', seat: '2' },
+    } as const;
+    const { rerender } = render(<ActionLogPanel entries={[entry]} onClose={vi.fn()} />);
+    const log = screen.getByText(/T4 \[Player 0\] result:/);
+    expect(log).toHaveTextContent('中身（18）（続き2）');
+    expect(log).not.toHaveTextContent('{{total}}');
+    await i18n.changeLanguage('en');
+    rerender(<ActionLogPanel entries={[entry]} onClose={vi.fn()} />);
+    expect(log).toHaveTextContent('inner (18) (cont 2)');
+    expect(log).not.toHaveTextContent('{{total}}');
+    await i18n.changeLanguage('ja');
+  });
+
+  it('translates a migrated Clock Solitaire log detail when the legacy detail is empty', () => {
+    render(
+      <ActionLogPanel
+        entries={[
+          {
+            turnNumber: 1,
+            playerIdx: 0,
+            actionType: 'step',
+            detail: '',
+            detailCode: 'clocksolitaire.log.step',
+            detailParams: { pile: '5' },
+          },
+        ]}
+        onClose={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText(/T1 \[Player 0\] step: カードを5番パイルに配置/)).toBeInTheDocument();
+    expect(screen.queryByText(/clocksolitaire\.log\.step/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/T1 \[Player 0\] step:$/)).not.toBeInTheDocument();
+  });
+
+  it('uses detail when detailCode is absent or untranslated', () => {
+    render(
+      <ActionLogPanel
+        entries={[
+          { turnNumber: 5, playerIdx: 0, actionType: 'play', detail: 'legacy detail' },
+          {
+            turnNumber: 6,
+            playerIdx: 0,
+            actionType: 'pass',
+            detail: 'untranslated fallback',
+            detailCode: 'missing.actionLog.detail',
+          },
+        ]}
+        onClose={vi.fn()}
+      />,
+    );
+    expect(screen.getByText(/T5 \[Player 0\] play: legacy detail/)).toBeInTheDocument();
+    expect(screen.getByText(/T6 \[Player 0\] pass: untranslated fallback/)).toBeInTheDocument();
+    expect(screen.queryByText(/missing\.actionLog\.detail/)).not.toBeInTheDocument();
   });
 
   it('shows empty message when entries is empty', () => {

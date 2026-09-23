@@ -93,3 +93,54 @@ func TestPishtiWebPresenter_ServesTheProvisionalScore(t *testing.T) {
 	// 何も捕っていない席は 0。
 	assert.Equal(t, 0, out.Players[1].ProvisionalScore)
 }
+
+func TestPishtiWebPresenter_AnnouncesLastTake(t *testing.T) {
+	p := new(presenter.PishtiWebPresenter)
+	for _, tc := range []struct {
+		name string
+		idx  int
+		code string
+	}{
+		{name: "human", idx: 0, code: "pishti.result.scoresWithLastTakeHuman"},
+		{name: "cpu", idx: 1, code: "pishti.result.scoresWithLastTakeCpu"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			g := newPishtiForPresenter()
+			pishtiSetField(g, map[string]any{
+				"lc": tc.idx,
+				"ge": true,
+				"al": []*domain.ActionLogEntry{{ActionType: "lastTake", Cards: []*domain.Card{
+					domain.NewCard(domain.CardDesignSpade, 2, false),
+					domain.NewCard(domain.CardDesignHeart, 3, false),
+				}}},
+			})
+			var out controller.PishtiWebOutput
+			require.NoError(t, json.Unmarshal([]byte(p.Output(g, nil)), &out))
+			assert.Equal(t, tc.code, out.MessageCode)
+			assert.Equal(t, "2", out.MessageParams["count"])
+			if tc.idx == 1 {
+				assert.Equal(t, "1", out.MessageParams["id"])
+			} else {
+				assert.NotContains(t, out.MessageParams, "id")
+			}
+		})
+	}
+
+	for _, tc := range []struct {
+		name   string
+		fields map[string]any
+	}{
+		{name: "no capturer", fields: map[string]any{"lc": -1, "ge": true}},
+		{name: "empty leftover", fields: map[string]any{
+			"lc": 0, "ge": true, "al": []*domain.ActionLogEntry{{ActionType: "lastTake"}},
+		}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			g := newPishtiForPresenter()
+			pishtiSetField(g, tc.fields)
+			var out controller.PishtiWebOutput
+			require.NoError(t, json.Unmarshal([]byte(p.Output(g, nil)), &out))
+			assert.Equal(t, "pishti.result.scores", out.MessageCode)
+		})
+	}
+}

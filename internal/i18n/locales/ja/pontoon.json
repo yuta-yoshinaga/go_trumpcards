@@ -30,6 +30,7 @@
   "bankPasses": "{{name}} がポンツーンで親を取りました",
   "helpExampleBet": "  b 100                   100 チップを賭ける",
   "cpuStickLine": "親は合計 {{cpuMin}} 以上になるまで引きます。CPU 席は {{min}} 以上で止まります（4枚のときだけ {{cpuMin}} 未満でももう1枚引きます）。",
+  "helpTieRule": "同点は親の勝ちなので、親と同じ点で止まっても負けます。",
   "errActionLogTooLarge": "アクションログが最大サイズを超えています",
   "errBankerAlreadyBust": "親はすでにバーストしています",
   "errBankerDoesNotBet": "親はベットしません",
@@ -50,5 +51,16 @@
   "errNotHumanTurn": "あなたの手番ではありません",
   "errNotPlayerTurn": "プレイヤーの手番ではありません",
   "errSplitRequiresEqualRank": "スプリットは同じランクのカードが2枚必要です",
-  "errTooManyHands": "これ以上手札を分割できません（最大 {{Max}}）"
+  "errTooManyHands": "これ以上手札を分割できません（最大 {{Max}}）",
+  "log.deal": "全員に裏向き2枚を配った",
+  "log.pontoon": "親がポンツーン",
+  "log.stick": "スティック",
+  "log.twist": "ツイスト",
+  "log.buy": "バイ（+{{amount}}）",
+  "log.split": "スプリット",
+  "log.bankerTwist": "親がカードを引いた",
+  "log.resultPontoon": "親がポンツーン",
+  "log.resultFiveCard": "親がファイブカード・トリック",
+  "log.resultBust": "親がバースト（{{total}}）",
+  "log.resultTotal": "親は {{total}}"
 }

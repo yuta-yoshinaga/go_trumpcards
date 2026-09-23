@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // RookPlayerCnt ルークのプレイヤー数
@@ -103,7 +104,17 @@ type Rook struct {
 	teamScores  [RookTeamCnt]int
 	gameEndFlag bool
 	winnerTeam  int // 勝利チーム (-1 = 未確定)
+	roundResult *RookRoundResult
 	actionLogBase
+}
+
+// RookRoundResult is the authoritative scoring outcome of the latest round.
+type RookRoundResult struct {
+	DeclarerTeam int
+	TeamPoints   int
+	ContractBid  int
+	Made         bool
+	ScoreDelta   int
 }
 
 // NewRook コンストラクタ
@@ -169,6 +180,7 @@ func (g *Rook) NextRound() {
 
 // startRound ラウンドの状態を初期化して配り直す
 func (g *Rook) startRound() {
+	g.roundResult = nil
 	g.trickNumber = 0
 	g.currentTrick = nil
 	g.leadPlayerIdx = -1
@@ -232,10 +244,10 @@ func (g *Rook) PlayerBid(bid int) error {
 		return ErrNotHumanTurn
 	}
 	if !g.validBid(bid) {
-		return NewDomainError(ErrInvalidPlay, "無効なビッドです")
+		return NewDomainErrorCode(ErrInvalidPlay, "rook.errInvalidBid", nil)
 	}
 	if bid <= g.highestBid {
-		return NewDomainError(ErrInvalidPlay, "現在のビッドより高い必要があります")
+		return NewDomainErrorCode(ErrInvalidPlay, "rook.errHigherBidRequired", nil)
 	}
 	g.applyBid(humanIdx, bid)
 	return nil
@@ -285,7 +297,7 @@ func (g *Rook) applyBid(idx, bid int) {
 	g.players[idx].SetBid(bid)
 	g.highestBid = bid
 	g.highestBidder = idx
-	g.appendLog(idx, "bid", fmt.Sprintf("%s bids %d", playerName(g.players, idx), bid), nil)
+	g.appendLogCode(idx, "bid", "rook.log.bid", map[string]string{"name": playerName(g.players, idx), "points": strconv.Itoa(bid)}, nil)
 	g.advanceBid()
 }
 
@@ -293,7 +305,7 @@ func (g *Rook) applyBid(idx, bid int) {
 func (g *Rook) applyPass(idx int) {
 	g.passed[idx] = true
 	g.players[idx].SetPassed(true)
-	g.appendLog(idx, "pass", fmt.Sprintf("%s passes", playerName(g.players, idx)), nil)
+	g.appendLogCode(idx, "pass", "rook.log.pass", map[string]string{"name": playerName(g.players, idx)}, nil)
 	g.advanceBid()
 }
 
@@ -322,7 +334,7 @@ func (g *Rook) advanceBid() {
 
 // redeal 全員パスした場合、同じラウンドを配り直す
 func (g *Rook) redeal() {
-	g.appendLog(-1, "redeal", "All players passed. Redealing.", nil)
+	g.appendLogCode(-1, "redeal", "rook.log.redeal", nil, nil)
 	g.passed = [RookPlayerCnt]bool{}
 	g.highestBid = 0
 	g.highestBidder = -1
@@ -343,8 +355,7 @@ func (g *Rook) finalizeBid() {
 		g.players[g.declarerIdx].AddCard(c)
 	}
 	g.nest = nil
-	g.appendLog(g.declarerIdx, "win_bid",
-		fmt.Sprintf("%s wins the auction for %d", playerName(g.players, g.declarerIdx), g.contractBid), nil)
+	g.appendLogCode(g.declarerIdx, "win_bid", "rook.log.winBid", map[string]string{"name": playerName(g.players, g.declarerIdx), "bid": strconv.Itoa(g.contractBid)}, nil)
 	g.sortAllHands()
 	g.phase = RookPhaseNestExchange
 	g.currentPlayerIdx = g.declarerIdx
@@ -383,19 +394,19 @@ func (g *Rook) CpuExchange() {
 // 最終トリックの勝者に加算するために記録する。
 func (g *Rook) doExchange(discardIndices []int, trumpColor int) error {
 	if trumpColor < 1 || trumpColor > RookColorCnt {
-		return NewDomainError(ErrInvalidPlay, "切り札色は1〜4で指定してください")
+		return NewDomainErrorCode(ErrInvalidPlay, "rook.errInvalidTrumpColor", nil)
 	}
 	player := g.players[g.declarerIdx]
 	if len(discardIndices) != RookNestSize {
-		return NewDomainError(ErrInvalidCard, "5枚捨ててください")
+		return NewDomainErrorCode(ErrInvalidCard, "rook.errDiscardFiveCards", nil)
 	}
 	seen := make(map[int]bool, RookNestSize)
 	for _, idx := range discardIndices {
 		if idx < 0 || idx >= player.GetCardsSize() {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+			return NewDomainErrorCode(ErrInvalidCard, "rook.errCardIndexOutOfRange", nil)
 		}
 		if seen[idx] {
-			return NewDomainError(ErrInvalidCard, "同じカードは選べません")
+			return NewDomainErrorCode(ErrInvalidCard, "rook.errDuplicateCardIndex", nil)
 		}
 		seen[idx] = true
 	}
@@ -406,8 +417,7 @@ func (g *Rook) doExchange(discardIndices []int, trumpColor int) error {
 		g.nestPoints += rookCardPoints(c)
 	}
 	g.trumpColor = trumpColor
-	g.appendLog(g.declarerIdx, "exchange",
-		fmt.Sprintf("%s discards %d cards, trump=%s", playerName(g.players, g.declarerIdx), len(discarded), rookColorName(trumpColor)), discarded)
+	g.appendLogCode(g.declarerIdx, "exchange", "rook.log.exchange", map[string]string{"name": playerName(g.players, g.declarerIdx), "count": strconv.Itoa(len(discarded)), "trumpKey": rookColorLogKey(trumpColor)}, discarded)
 	g.sortAllHands()
 	g.startPlayPhase()
 	return nil
@@ -437,7 +447,7 @@ func (g *Rook) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "rook.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
@@ -470,8 +480,16 @@ func (g *Rook) CpuPlay() {
 // playCard カードをプレイする共通処理
 func (g *Rook) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), rookCardLabel(card)), []*Card{card})
+	params := map[string]string{"name": playerName(g.players, playerIdx)}
+	detailCode := "rook.log.play"
+	if card.GetDesign() == RookBirdDesign {
+		detailCode = "rook.log.playBird"
+		params["birdKey"] = "rook.birdName"
+	} else {
+		params["colorKey"] = rookColorLogKey(card.GetDesign())
+		params["value"] = strconv.Itoa(card.GetValue())
+	}
+	g.appendLogCode(playerIdx, "play", detailCode, params, []*Card{card})
 	if len(g.currentTrick) == RookPlayerCnt {
 		g.phase = RookPhaseTrickEnd
 	} else {
@@ -496,14 +514,12 @@ func (g *Rook) ResolveTrick() {
 	g.players[winnerIdx].AddPoints(trickPts)
 	if g.trickNumber >= RookTrickCnt {
 		g.players[winnerIdx].AddPoints(g.nestPoints)
-		g.appendLog(winnerIdx, "trick_win",
-			fmt.Sprintf("%s wins the last trick %d (+%d nest)", playerName(g.players, winnerIdx), g.trickNumber, g.nestPoints), cards)
+		g.appendLogCode(winnerIdx, "trick_win", "rook.log.lastTrick", map[string]string{"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber), "nest": strconv.Itoa(g.nestPoints)}, cards)
 		g.leadPlayerIdx = winnerIdx
 		g.phase = RookPhaseRoundEnd
 		return
 	}
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (+%d)", playerName(g.players, winnerIdx), g.trickNumber, trickPts), cards)
+	g.appendLogCode(winnerIdx, "trick_win", "rook.log.trickWin", map[string]string{"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber), "points": strconv.Itoa(trickPts)}, cards)
 	g.leadPlayerIdx = winnerIdx
 	g.phase = RookPhaseTrickEnd
 }
@@ -530,19 +546,18 @@ func (g *Rook) ScoreRound() {
 	defPoints := g.teamPoints(defTeam)
 
 	if declPoints >= g.contractBid {
+		g.roundResult = &RookRoundResult{DeclarerTeam: declTeam, TeamPoints: declPoints, ContractBid: g.contractBid, Made: true, ScoreDelta: declPoints}
 		g.teamScores[declTeam] += declPoints
-		g.appendLog(-1, "contract_made",
-			fmt.Sprintf("Team %d makes the bid (%d/%d). +%d", declTeam, declPoints, g.contractBid, declPoints), nil)
+		g.appendLogCode(-1, "contract_made", "rook.log.contractMade", map[string]string{"team": strconv.Itoa(declTeam), "points": strconv.Itoa(declPoints), "bid": strconv.Itoa(g.contractBid)}, nil)
 	} else {
+		g.roundResult = &RookRoundResult{DeclarerTeam: declTeam, TeamPoints: declPoints, ContractBid: g.contractBid, Made: false, ScoreDelta: -g.contractBid}
 		g.teamScores[declTeam] -= g.contractBid
-		g.appendLog(-1, "contract_failed",
-			fmt.Sprintf("Team %d is set (%d/%d). -%d", declTeam, declPoints, g.contractBid, g.contractBid), nil)
+		g.appendLogCode(-1, "contract_failed", "rook.log.contractFailed", map[string]string{"team": strconv.Itoa(declTeam), "points": strconv.Itoa(declPoints), "bid": strconv.Itoa(g.contractBid)}, nil)
 	}
 	g.teamScores[defTeam] += defPoints
 
 	for ti := range RookTeamCnt {
-		g.appendLog(-1, "team_score",
-			fmt.Sprintf("Team %d: %d points", ti, g.teamScores[ti]), nil)
+		g.appendLogCode(-1, "team_score", "rook.log.teamScore", map[string]string{"team": strconv.Itoa(ti), "points": strconv.Itoa(g.teamScores[ti])}, nil)
 	}
 	g.checkGameEnd(declTeam)
 }
@@ -570,7 +585,7 @@ func (g *Rook) endGame(team int) {
 	g.gameEndFlag = true
 	g.phase = RookPhaseGameEnd
 	g.winnerTeam = team
-	g.appendLog(-1, "game_end", fmt.Sprintf("Team %d wins the game!", team), nil)
+	g.appendLogCode(-1, "game_end", "rook.log.gameEnd", map[string]string{"team": strconv.Itoa(team)}, nil)
 }
 
 // --- Card ranking / points ---
@@ -672,7 +687,7 @@ func (g *Rook) validatePlay(playerIdx int, card *Card) error {
 	}
 	ls := g.leadSuit()
 	if g.effectiveSuit(card) != ls && g.playerHasSuit(playerIdx, ls) {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+		return NewDomainErrorCode(ErrInvalidPlay, "rook.errFollowLeadSuit", nil)
 	}
 	return nil
 }
@@ -1113,6 +1128,9 @@ func (g *Rook) GetTeamPoints(team int) int {
 	return g.teamPoints(team)
 }
 
+// GetRoundResult returns the result produced by the latest ScoreRound call.
+func (g *Rook) GetRoundResult() *RookRoundResult { return g.roundResult }
+
 // IsHumanTurn 現在の手番が人間かどうか
 func (g *Rook) IsHumanTurn() bool {
 	return isHumanTurn(g.players, g.currentPlayerIdx)
@@ -1163,32 +1181,6 @@ func (g *Rook) sortHand(p *RookPlayer) {
 	for _, c := range cards {
 		p.AddCard(c)
 	}
-}
-
-// rookColorName 色番号を英字ラベルにする (ログ用)
-func rookColorName(color int) string {
-	switch color {
-	case 1:
-		return "Red"
-	case 2:
-		return "Yellow"
-	case 3:
-		return "Green"
-	case 4:
-		return "Black"
-	}
-	return "?"
-}
-
-// rookCardLabel カードのログ表示文字列 (ルーク鳥対応)
-func rookCardLabel(c *Card) string {
-	if c == nil {
-		return "??"
-	}
-	if c.GetDesign() == RookBirdDesign {
-		return "Rook"
-	}
-	return fmt.Sprintf("%s%d", rookColorName(c.GetDesign()), c.GetValue())
 }
 
 // --- JSON ---
@@ -1347,4 +1339,20 @@ func (g *Rook) UnmarshalJSON(data []byte) error {
 		g.actionLog = make([]*ActionLogEntry, 0)
 	}
 	return nil
+}
+
+// rookColorLogKey はルークの切り札色をログ用の翻訳キーに変換する。
+func rookColorLogKey(color int) string {
+	switch color {
+	case 1:
+		return "rook.colorRed"
+	case 2:
+		return "rook.colorYellow"
+	case 3:
+		return "rook.colorGreen"
+	case 4:
+		return "rook.colorBlack"
+	default:
+		return "rook.colorUnknown"
+	}
 }

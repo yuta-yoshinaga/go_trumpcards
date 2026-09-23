@@ -57,10 +57,19 @@ func (m *MockTeenDoPaanchGame) GetLastExchangePairs() []domain.TeenDoPaanchExcha
 }
 func (m *MockTeenDoPaanchGame) GetCurrentPlayerIdx() int { return m.Called().Int(0) }
 func (m *MockTeenDoPaanchGame) GetLeadPlayerIdx() int    { return m.Called().Int(0) }
+func (m *MockTeenDoPaanchGame) GetLastTrickWinner() int  { return m.Called().Int(0) }
 func (m *MockTeenDoPaanchGame) GetPlayerCnt() int        { return m.Called().Int(0) }
 func (m *MockTeenDoPaanchGame) GetWinnerIdx() int        { return m.Called().Int(0) }
 
 func (m *MockTeenDoPaanchGame) GetCurrentTrick() []*domain.TrickCard {
+	args := m.Called()
+	if v := args.Get(0); v != nil {
+		return v.([]*domain.TrickCard)
+	}
+	return nil
+}
+
+func (m *MockTeenDoPaanchGame) GetLastTrick() []*domain.TrickCard {
 	args := m.Called()
 	if v := args.Get(0); v != nil {
 		return v.([]*domain.TrickCard)

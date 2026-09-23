@@ -172,6 +172,12 @@ func (_m *MockGermanSoloGame) GetCurrentTrick() []*domain.TrickCard {
 	return nil
 }
 
+// GetLastTrickWinner モック
+func (_m *MockGermanSoloGame) GetLastTrickWinner() int {
+	ret := _m.Called()
+	return ret.Get(0).(int)
+}
+
 // GetLeadPlayerIdx モック
 func (_m *MockGermanSoloGame) GetLeadPlayerIdx() int {
 	ret := _m.Called()

@@ -158,6 +158,52 @@ func TestRookCuiPresenter_ActionLog(t *testing.T) {
 	}
 }
 
+func TestRookCuiPresenter_RoundResultOnlyAtRoundEnd(t *testing.T) {
+	p := &presenter.RookCuiPresenter{}
+
+	tests := []struct {
+		name       string
+		phase      domain.RookPhase
+		teamPoints int
+		want       string
+		notWant    string
+	}{
+		{name: "made", phase: domain.RookPhaseRoundEnd, teamPoints: 85, want: "契約達成（+85）", notWant: "セット（契約未達）"},
+		{name: "failed", phase: domain.RookPhaseRoundEnd, teamPoints: 60, want: "セット（契約未達）（-80）", notWant: "契約達成"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := newRookGame()
+			g.SetDeclarerIdx(0)
+			g.SetContractBid(80)
+			g.GetPlayer(0).SetPoints(tt.teamPoints)
+			g.SetPhase(tt.phase)
+			g.ScoreRound()
+
+			out := p.Output(g, nil)
+			if !strings.Contains(out, tt.want) || strings.Contains(out, tt.notWant) {
+				t.Fatalf("round result output = %q", out)
+			}
+		})
+	}
+
+	t.Run("not shown outside round end", func(t *testing.T) {
+		g := newRookGame()
+		g.SetDeclarerIdx(0)
+		g.SetContractBid(80)
+		g.GetPlayer(0).SetPoints(85)
+		g.SetPhase(domain.RookPhaseRoundEnd)
+		g.ScoreRound()
+		g.SetPhase(domain.RookPhasePlay)
+
+		out := p.Output(g, nil)
+		if strings.Contains(out, "契約達成") || strings.Contains(out, "ラウンド結果") {
+			t.Fatalf("round result leaked outside round end: %q", out)
+		}
+	})
+}
+
 func TestRookCuiPresenter_BidAndHintVariants(t *testing.T) {
 	p := &presenter.RookCuiPresenter{}
 

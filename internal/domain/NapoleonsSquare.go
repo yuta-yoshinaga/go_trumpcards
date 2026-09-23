@@ -177,7 +177,7 @@ func (ns *NapoleonsSquare) Draw() error {
 	card := ns.stock[0]
 	ns.stock = ns.stock[1:]
 	ns.waste = append(ns.waste, card)
-	ns.afterMove("draw", "山札→ウェイスト", card)
+	ns.afterMove("draw", "napoleonssquare.log.draw", nil, card)
 	return nil
 }
 
@@ -200,7 +200,7 @@ func (ns *NapoleonsSquare) MoveWasteToTableau(col int) error {
 	ns.waste = ns.waste[:len(ns.waste)-1]
 	ns.tableau[col] = append(ns.tableau[col],
 		&NapoleonsSquareTableauCard{Card: card, FaceUp: true})
-	ns.afterMove("move", fmt.Sprintf("ウェイスト→タブロー列%d", col), card)
+	ns.afterMove("move", "napoleonssquare.log.moveWasteToTableau", map[string]string{"column": fmt.Sprint(col)}, card)
 	return nil
 }
 
@@ -220,7 +220,7 @@ func (ns *NapoleonsSquare) MoveWasteToFoundation() error {
 	ns.takeSnapshot()
 	ns.waste = ns.waste[:len(ns.waste)-1]
 	ns.foundation[fIdx] = append(ns.foundation[fIdx], card)
-	ns.afterMove("move", fmt.Sprintf("ウェイスト→基礎札%d", fIdx), card)
+	ns.afterMove("move", "napoleonssquare.log.moveWasteToFoundation", map[string]string{"foundation": fmt.Sprint(fIdx)}, card)
 	return nil
 }
 
@@ -260,8 +260,7 @@ func (ns *NapoleonsSquare) MoveTableauToTableau(fromCol, cardIndex, toCol int) e
 	moved := append([]*NapoleonsSquareTableauCard(nil), group...)
 	ns.tableau[fromCol] = fromCards[:cardIndex]
 	ns.tableau[toCol] = append(ns.tableau[toCol], moved...)
-	ns.afterMove("move",
-		fmt.Sprintf("タブロー列%d→タブロー列%d(%d枚)", fromCol, toCol, len(moved)),
+	ns.afterMove("move", "napoleonssquare.log.moveTableauToTableau", map[string]string{"from": fmt.Sprint(fromCol), "to": fmt.Sprint(toCol), "count": fmt.Sprint(len(moved))},
 		moved[0].Card)
 	return nil
 }
@@ -286,7 +285,7 @@ func (ns *NapoleonsSquare) MoveTableauToFoundation(col int) error {
 	ns.takeSnapshot()
 	ns.tableau[col] = fromCards[:len(fromCards)-1]
 	ns.foundation[fIdx] = append(ns.foundation[fIdx], card)
-	ns.afterMove("move", fmt.Sprintf("タブロー列%d→基礎札%d", col, fIdx), card)
+	ns.afterMove("move", "napoleonssquare.log.moveTableauToFoundation", map[string]string{"column": fmt.Sprint(col), "foundation": fmt.Sprint(fIdx)}, card)
 	return nil
 }
 
@@ -294,7 +293,7 @@ func (ns *NapoleonsSquare) MoveTableauToFoundation(col int) error {
 func (ns *NapoleonsSquare) GiveUp() {
 	if ns.phase == NapoleonsSquarePhasePlaying {
 		ns.phase = NapoleonsSquarePhaseGameOver
-		ns.appendLog("giveup", "ギブアップしました", nil)
+		ns.appendLog("giveup", "napoleonssquare.log.giveup", nil, nil)
 	}
 }
 
@@ -535,8 +534,8 @@ func (ns *NapoleonsSquare) findFoundation(card *Card) int {
 }
 
 // afterMove 手数・棋譜・終了判定をまとめて進める
-func (ns *NapoleonsSquare) afterMove(actionType, detail string, card *Card) {
-	afterMove(&ns.moveCount, ns, actionType, detail, card)
+func (ns *NapoleonsSquare) afterMove(actionType, detailCode string, detailParams map[string]string, card *Card) {
+	afterMove(&ns.moveCount, ns, actionType, detailCode, detailParams, card)
 }
 
 // checkGameClear 8 つの基礎札がすべて K まで積み上がったか
@@ -578,8 +577,8 @@ func (ns *NapoleonsSquare) takeSnapshot() {
 }
 
 // appendLog 棋譜エントリを追加
-func (ns *NapoleonsSquare) appendLog(actionType, detail string, cards []*Card) {
-	ns.appendLogAt(ns.moveCount, 0, actionType, detail, cards)
+func (ns *NapoleonsSquare) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	ns.appendLogCodeAt(ns.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // napoleonsSquareMaxSliceLen caps slice sizes during deserialisation.

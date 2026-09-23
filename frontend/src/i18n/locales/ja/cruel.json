@@ -58,5 +58,10 @@
       "unknownCommand": "不明なコマンド: {{cmd}}"
     }
   },
-  "foundationProgress": "進捗: {{total}}/52"
+  "foundationProgress": "進捗: {{total}}/52",
+  "stats": {
+    "winRate": "勝率 {{rate}}%",
+    "fewestMoves": "最少 {{moves}}手",
+    "newBest": "自己ベスト更新！"
+  }
 }

@@ -20,6 +20,7 @@
   "pool.sequence": "Sequence",
   "pool.pocher": "Pocher",
   "pool.centre": "Centre",
+  "pool.unknown": "-",
   "promptStaking": "settling the pools",
   "promptPochen": "b to bet (currently {{target}}) / f to fold",
   "yourCombo": "Your set: {{size}} of a kind, rank {{rank}}",
@@ -42,5 +43,14 @@
   "hintReasonFold": "you have no set and it costs to stay",
   "hintReasonPlay": "the lowest card you can legally play",
   "helpExamplePlay": "  p 0                      play hand card 0",
-  "helpHint": "  h                        show a hint"
+  "helpHint": "  h                        show a hint",
+  "log.deal": "pay suit is {{suit}}",
+  "log.staking": "takes the {{pool}} pool ({{amount}})",
+  "log.bet": "bets {{amount}}",
+  "log.fold": "folds",
+  "log.pochen": "wins the pochen pot ({{pot}})",
+  "log.play": "plays a card",
+  "log.stop": "the run is stopped and restarts here",
+  "log.dealEnd": "goes out, takes the centre pot ({{centre}}) and {{paid}} for the cards left",
+  "log.gameEnd": "finishes with the most chips"
 }

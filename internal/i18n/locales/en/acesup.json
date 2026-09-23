@@ -20,5 +20,9 @@
   "markerLegend": "Markers: * = removable / > = movable to an empty column",
   "usageCol": "Usage: {{cmd}} <col>",
   "helpExampleHint": "  h                         ask for a move",
-  "helpUndo": "  u                        undo one move"
+  "helpUndo": "  u                        undo one move",
+  "log.dealt": "dealt one card to each column",
+  "log.remove": "removed card: column {{column}}",
+  "log.move": "moved card: column {{from}}→column {{to}}",
+  "log.giveUp": "gave up"
 }

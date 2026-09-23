@@ -47,7 +47,7 @@ func (p *CalabresellaWebPresenter) buildBase(g interfaces.CalabresellaGame) *con
 	resObj.WinnerPlayer = g.GetWinnerPlayer()
 	resObj.PlayerScores = g.GetPlayerScores()
 	resObj.RoundThirds = g.GetRoundThirds()
-	resObj.LastTrickWinner = -1
+	resObj.LastTrickWinner = g.GetLastTrickWinner()
 	resObj.IsHumanTurn = g.IsHumanTurn()
 
 	resObj.PlayableIndices = p.playableIndices(g)
@@ -127,6 +127,9 @@ func (p *CalabresellaWebPresenter) buildPlayersOutput(g interfaces.CalabresellaG
 // buildMessage ゲーム結果メッセージを構築
 func (p *CalabresellaWebPresenter) buildMessage(g interfaces.CalabresellaGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

@@ -67,6 +67,10 @@ func TestPyramid_Draw_Success(t *testing.T) {
 	assert.Equal(t, stockBefore-1, p.GetStockCount())
 	assert.Len(t, p.GetWaste(), 1)
 	assert.Equal(t, 1, p.GetMoveCount())
+	log := p.GetActionLog()
+	require.Len(t, log, 1)
+	assert.Equal(t, "pyramid.log.draw", log[0].DetailCode)
+	assert.Nil(t, log[0].DetailParams)
 }
 
 func TestPyramid_Draw_EmptyStock(t *testing.T) {

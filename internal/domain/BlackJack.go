@@ -5,6 +5,7 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 )
 
 // ブラックジャックフェーズ定数
@@ -64,6 +65,10 @@ type BlackJack struct {
 	bonusKeys []string // 当ラウンドで成立したバリアントボーナスのi18nキー (Spanish 21 等)
 }
 
+func (b *BlackJack) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	b.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
+}
+
 // NewDefaultBlackJack デフォルト設定のブラックジャックを生成するファクトリ関数
 func NewDefaultBlackJack() *BlackJack {
 	bj := NewBlackJack(NewTrumpCards(0), NewBlackJackPlayer(), NewBlackJackPlayer())
@@ -78,6 +83,19 @@ func NewDefaultBlackJack() *BlackJack {
 func NewSpanish21BlackJack() *BlackJack {
 	variant := Spanish21Variant()
 	bj := NewBlackJack(variant.DeckBuilder(BJDefaultDecks), NewBlackJackPlayer(), NewBlackJackPlayer())
+	bj.player.SetChips(BJDefaultChips)
+	bj.dealer.SetChips(BJDefaultChips)
+	bj.deckCount = BJDefaultDecks
+	bj.config = DefaultBlackJackConfig()
+	bj.config.Variant = variant.Name
+	bj.variant = variant
+	return bj
+}
+
+// NewDoubleExposureBlackJack ダブルエクスポージャー・ブラックジャックを生成するファクトリ関数
+func NewDoubleExposureBlackJack() *BlackJack {
+	variant := DoubleExposureVariant()
+	bj := NewBlackJack(NewTrumpCardsWithDecks(BJDefaultDecks, 0), NewBlackJackPlayer(), NewBlackJackPlayer())
 	bj.player.SetChips(BJDefaultChips)
 	bj.dealer.SetChips(BJDefaultChips)
 	bj.deckCount = BJDefaultDecks
@@ -226,7 +244,7 @@ func (b *BlackJack) PlayerBet(amount, ppBet, t3Bet, handCount int) error {
 		return ErrDeckExhausted
 	}
 	b.phase = BJPhaseDeal
-	b.appendLog(0, "bet", fmt.Sprintf("bet %d chips", amount), nil)
+	b.appendLog(0, "bet", "blackjack.log.bet", map[string]string{"amount": strconv.Itoa(amount)}, nil)
 
 	// サイドベット判定（ハンド0のみ）
 	b.evaluateSideBets()
@@ -254,7 +272,8 @@ func (b *BlackJack) PlayerBet(amount, ppBet, t3Bet, handCount int) error {
 	}
 
 	// ディーラーの表向きカード(1枚目)がエースならインシュランス可能
-	if b.dealer.GetCard(0) != nil && b.dealer.GetCard(0).GetValue() == 1 {
+	insuranceDisabled := b.variant != nil && b.variant.InsuranceDisabled
+	if b.dealer.GetCard(0) != nil && b.dealer.GetCard(0).GetValue() == 1 && !insuranceDisabled {
 		b.insuranceAvailable = true
 		b.phase = BJPhaseInsurance
 		b.cpuInsurance()
@@ -280,7 +299,7 @@ func (b *BlackJack) PlayerInsurance() error {
 		return NewDomainError(ErrInsufficientChips, "Insufficient chips for insurance.")
 	}
 	b.insuranceBet = cost
-	b.appendLog(0, "insurance", "insurance", nil)
+	b.appendLog(0, "insurance", "blackjack.log.insurance", nil, nil)
 	b.afterInsurance()
 	return nil
 }
@@ -290,7 +309,7 @@ func (b *BlackJack) PlayerDeclineInsurance() error {
 	if b.phase != BJPhaseInsurance {
 		return NewDomainError(ErrWrongPhase, "Insurance decline is not available now.")
 	}
-	b.appendLog(0, "insurance", "decline insurance", nil)
+	b.appendLog(0, "insurance", "blackjack.log.declineInsurance", nil, nil)
 	b.afterInsurance()
 	return nil
 }
@@ -321,7 +340,7 @@ func (b *BlackJack) PlayerHit() error {
 	}
 	hand.AddCard(card)
 	b.updateRunningCount(card)
-	b.appendLog(0, "hit", "hit", []*Card{card})
+	b.appendLog(0, "hit", "blackjack.log.hit", nil, []*Card{card})
 	if hand.GetScore() >= 22 {
 		// バースト
 		hand.SetBusted(true)
@@ -340,7 +359,7 @@ func (b *BlackJack) PlayerStand() error {
 		return NewDomainError(ErrHandFinished, "This hand is already finished.")
 	}
 	hand.SetStood(true)
-	b.appendLog(0, "stand", "stand", nil)
+	b.appendLog(0, "stand", "blackjack.log.stand", nil, nil)
 	b.advanceHand()
 	return nil
 }
@@ -377,7 +396,7 @@ func (b *BlackJack) PlayerDoubleDown() error {
 	}
 	hand.AddCard(card)
 	b.updateRunningCount(card)
-	b.appendLog(0, "doubledown", "double down", []*Card{card})
+	b.appendLog(0, "doubledown", "blackjack.log.doubleDown", nil, []*Card{card})
 	if hand.GetScore() >= 22 {
 		hand.SetBusted(true)
 	} else {
@@ -457,7 +476,7 @@ func (b *BlackJack) PlayerSplit() error {
 
 	// 新しいハンドを挿入
 	b.playerHands = append(b.playerHands[:b.currentHandIdx+1], append([]*BlackJackHand{newHand}, b.playerHands[b.currentHandIdx+1:]...)...)
-	b.appendLog(0, "split", "split", nil)
+	b.appendLog(0, "split", "blackjack.log.split", nil, nil)
 
 	// エースのスプリットの場合、両ハンドを自動スタンド
 	if firstCard.GetValue() == 1 {
@@ -550,7 +569,7 @@ func (b *BlackJack) PlayerSurrender() error {
 	halfBet := hand.GetBet() / 2
 	b.player.AddChips(halfBet)
 	hand.SetSurrendered(true)
-	b.appendLog(0, "surrender", "surrender", nil)
+	b.appendLog(0, "surrender", "blackjack.log.surrender", nil, nil)
 	b.advanceHand()
 	return nil
 }
@@ -712,7 +731,7 @@ func (b *BlackJack) PlayerEarlySurrender() error {
 	halfBet := hand.GetBet() / 2
 	b.player.AddChips(halfBet)
 	hand.SetSurrendered(true)
-	b.appendLog(0, "surrender", "early surrender", nil)
+	b.appendLog(0, "surrender", "blackjack.log.earlySurrender", nil, nil)
 	b.advanceEarlySurrender()
 	return nil
 }

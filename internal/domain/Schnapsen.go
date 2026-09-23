@@ -22,7 +22,7 @@ package domain
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
+	"strconv"
 )
 
 // SchnapsenPlayerCnt シュナプセンのプレイヤー数 (2人固定)
@@ -188,7 +188,7 @@ func (s *Schnapsen) PlayerPlay(cardIndex int) error {
 
 	player := s.players[s.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "schnapsen.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
@@ -262,9 +262,12 @@ func (s *Schnapsen) ResolveTrick() {
 	s.players[winnerIdx].AddTrick(trickCards)
 	s.playerPoints[winnerIdx] += trickPoints
 
-	s.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (%d pt)", playerName(s.players, winnerIdx), s.trickNumber, trickPoints),
-		trickCards)
+	trickCode := "schnapsen.log.trickWinCpu"
+	if s.players[winnerIdx].GetIsHuman() {
+		trickCode = "schnapsen.log.trickWinYou"
+	}
+	s.appendLog(winnerIdx, "trick_win", trickCode,
+		map[string]string{"playerIdx": strconv.Itoa(winnerIdx), "trick": strconv.Itoa(s.trickNumber), "points": strconv.Itoa(trickPoints)}, trickCards)
 
 	s.leadPlayerIdx = winnerIdx
 
@@ -462,7 +465,7 @@ func (s *Schnapsen) dealInitial() {
 	s.trumpCard = s.trumpCards.DrawCard()
 	if s.trumpCard != nil {
 		s.trumpSuit = s.trumpCard.GetDesign()
-		s.appendLog(-1, "trump", fmt.Sprintf("Trump: %s", cardStr(s.trumpCard)), []*Card{s.trumpCard})
+		s.appendLog(-1, "trump", "schnapsen.log.trump", map[string]string{"card": cardStr(s.trumpCard)}, []*Card{s.trumpCard})
 	}
 }
 
@@ -478,15 +481,15 @@ func (s *Schnapsen) startPlayPhase() {
 // declareMarriage マリアージュを宣言してボーナス加点し、指定の K/Q をリードする共通処理。
 func (s *Schnapsen) declareMarriage(playerIdx, cardIndex int) error {
 	if len(s.currentTrick) != 0 {
-		return NewDomainError(ErrInvalidPlay, "マリアージュはリード時のみ宣言できます")
+		return NewDomainErrorCode(ErrInvalidPlay, "schnapsen.errMarriageLeadOnly", nil)
 	}
 	player := s.players[playerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "schnapsen.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if !s.isMarriageStarter(player, card) {
-		return NewDomainError(ErrInvalidPlay, "そのカードでマリアージュは宣言できません")
+		return NewDomainErrorCode(ErrInvalidPlay, "schnapsen.errMarriageUnavailable", nil)
 	}
 
 	suit := card.GetDesign()
@@ -496,8 +499,31 @@ func (s *Schnapsen) declareMarriage(playerIdx, cardIndex int) error {
 	}
 	s.marriageDeclared[suit] = true
 	s.playerPoints[playerIdx] += bonus
-	s.appendLog(playerIdx, "marriage",
-		fmt.Sprintf("%s declares marriage in %s (+%d)", playerName(s.players, playerIdx), suitStr(suit), bonus), nil)
+	marriageCode := "schnapsen.log.marriageCpuSpade"
+	if playerIdx == 0 {
+		marriageCode = "schnapsen.log.marriageYouSpade"
+	}
+	switch suit {
+	case CardDesignClover:
+		if playerIdx == 0 {
+			marriageCode = "schnapsen.log.marriageYouClover"
+		} else {
+			marriageCode = "schnapsen.log.marriageCpuClover"
+		}
+	case CardDesignHeart:
+		if playerIdx == 0 {
+			marriageCode = "schnapsen.log.marriageYouHeart"
+		} else {
+			marriageCode = "schnapsen.log.marriageCpuHeart"
+		}
+	case CardDesignDiamond:
+		if playerIdx == 0 {
+			marriageCode = "schnapsen.log.marriageYouDiamond"
+		} else {
+			marriageCode = "schnapsen.log.marriageCpuDiamond"
+		}
+	}
+	s.appendLog(playerIdx, "marriage", marriageCode, map[string]string{"bonus": strconv.Itoa(bonus)}, nil)
 
 	// 宣言だけで 66 点に達したら即ラウンド終了 (カードは出さない)
 	if s.playerPoints[playerIdx] >= SchnapsenWinThreshold {
@@ -539,9 +565,11 @@ func (s *Schnapsen) playCard(playerIdx int, card *Card) {
 		PlayerIdx: playerIdx,
 		Card:      card,
 	})
-	s.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", playerName(s.players, playerIdx), cardStr(card)),
-		[]*Card{card})
+	playCode := "schnapsen.log.playCpu"
+	if s.players[playerIdx].GetIsHuman() {
+		playCode = "schnapsen.log.playYou"
+	}
+	s.appendLog(playerIdx, "play", playCode, map[string]string{"playerIdx": strconv.Itoa(playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(s.currentTrick) == SchnapsenPlayerCnt {
 		s.phase = SchnapsenPhaseTrickEnd
@@ -678,8 +706,12 @@ func (s *Schnapsen) finishGame() {
 	s.gameEndFlag = true
 	s.phase = SchnapsenPhaseGameEnd
 	s.winnerIdx = s.determineWinner()
-	detail := fmt.Sprintf("Game end: %d-%d", s.playerPoints[0], s.playerPoints[1])
-	s.appendLog(-1, "game_end", detail, nil)
+	s.appendLog(-1, "game_end", "schnapsen.log.gameEnd", map[string]string{"p0": strconv.Itoa(s.playerPoints[0]), "p1": strconv.Itoa(s.playerPoints[1])}, nil)
+}
+
+// appendLog records a Schnapsen action with a locale-independent detail code.
+func (s *Schnapsen) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	s.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // determineWinner 勝者を決定する。66 点に達した側が勝ち。

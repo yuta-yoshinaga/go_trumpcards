@@ -23,7 +23,8 @@
     "humanStats": "Hand {{cards}} / Captured {{captured}} / Escoba {{escoba}}",
     "playerScore": "P{{id}}: {{score}} pt",
     "escobaBadge": "Escoba!",
-    "escobaBadgeOwn": "Escoba! You"
+    "escobaBadgeOwn": "Escoba! You",
+    "cardValues": "For captures, count J=8, Q=9, and K=10."
   },
   "captured": {
     "title": "Captured cards",

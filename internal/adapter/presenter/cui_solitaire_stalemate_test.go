@@ -252,6 +252,18 @@ func TestSolitaireCuiUndoToEscapeHint(t *testing.T) {
 
 		assertEscapeHint(t, new(SpideretteCuiPresenter).Output(m, nil))
 	})
+	t.Run("WillOTheWisp", func(t *testing.T) {
+		m := new(interfaces.MockWillOTheWispGame)
+		setupWillOTheWispCuiMockDefaults(m)
+		m.ExpectedCalls = filterCalls(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = filterCalls(m.ExpectedCalls, "IsStalemate")
+		m.ExpectedCalls = filterCalls(m.ExpectedCalls, "UndoToEscape")
+		m.On("GetPhase").Return(domain.WillOTheWispPhasePlaying)
+		m.On("IsStalemate").Return(true)
+		m.On("UndoToEscape").Return(escapeMoves)
+
+		assertEscapeHint(t, new(WillOTheWispCuiPresenter).Output(m, nil))
+	})
 	t.Run("StreetsAndAlleys", func(t *testing.T) {
 		m := new(interfaces.MockStreetsAndAlleysGame)
 		setupStreetsAndAlleysCuiMockDefaults(m)

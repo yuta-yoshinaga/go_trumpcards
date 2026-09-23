@@ -12,6 +12,7 @@ export type GameKey =
   // Table games
   | 'blackjack'
   | 'spanish21'
+  | 'doubleexposure'
   | 'baccarat'
   | 'threecard'
   | 'threecardrummy'
@@ -34,6 +35,7 @@ export type GameKey =
   | 'tusac'
   | 'sakura'
   | 'zwanzigerrufen'
+  | 'tapptarock'
   | 'troggu'
   | 'horse'
   | 'dragontiger'
@@ -49,6 +51,7 @@ export type GameKey =
   | 'freebet'
   | 'banluck'
   | 'montebank'
+  | 'tehonbiki'
   | 'speculation'
   | 'cincinnati'
   | 'ironcross'
@@ -96,6 +99,8 @@ export type GameKey =
   | 'marias'
   | 'king'
   | 'tysiac'
+  | 'marjapussi'
+  | 'omi'
   | 'calabresella'
   | 'ombre'
   | 'quadrille'
@@ -138,6 +143,7 @@ export type GameKey =
   | 'ristikontra'
   | 'cuarenta'
   | 'faro'
+  | 'basset'
   | 'openfacechinese'
   | 'russianbank'
   | 'pitch'
@@ -151,8 +157,10 @@ export type GameKey =
   | 'whist'
   | 'catchten'
   | 'pinochle'
+  | 'binokel'
   | 'piquet'
   | 'callbreak'
+  | 'batak'
   | 'tarneeb'
   | 'briscola'
   | 'brusquembille'
@@ -241,6 +249,7 @@ export type GameKey =
   | 'seahaventowers'
   | 'spider'
   | 'spiderette'
+  | 'willothewisp'
   | 'pyramid'
   | 'gaps'
   | 'tripeaks'
@@ -254,6 +263,7 @@ export type GameKey =
   | 'somerset'
   | 'fortress'
   | 'beleagueredcastle'
+  | 'citadel'
   | 'streetsandalleys'
   | 'kingalbert'
   | 'flowergarden'
@@ -295,6 +305,7 @@ export type GameKey =
   | 'cribbagesquares'
   | 'diplomat'
   | 'royalcotillion'
+  | 'matrimony'
   | 'crazyquilt'
   | 'auldlangsyne'
   | 'bisley'
@@ -310,6 +321,7 @@ export type GameKey =
   | 'braid'
   | 'pontoon'
   | 'settemezzo'
+  | 'quinze'
   | 'niuniu'
   | 'bura'
   | 'mushi'
@@ -350,11 +362,13 @@ export type GameKey =
   // Counting/Rummy
   | 'ginrummy'
   | 'indianrummy'
+  | 'marriage'
   | 'machiavelli'
   | 'conquian'
   | 'chinchon'
   | 'threethirteen'
   | 'tonk'
+  | 'tongits'
   | 'thirtyone'
   | 'yaniv'
   | 'gongzhu'
@@ -368,6 +382,7 @@ export type GameKey =
   | 'samba'
   | 'handandfoot'
   | 'burraco'
+  | 'biriba'
   | 'cribbage'
   | 'sevenbridge'
   | 'contractrummy'
@@ -580,6 +595,10 @@ const FARO = {
   bg: 'bg-game-bg-faro',
   footer: 'bg-game-bg-faro-dark border-white/20',
 } as const;
+const BASSET = {
+  bg: 'bg-game-bg-faro',
+  footer: 'bg-game-bg-faro-dark border-white/20',
+} as const;
 const ALLFOURS = {
   bg: 'bg-game-bg-allfours',
   footer: 'bg-game-bg-allfours-dark border-white/20',
@@ -633,6 +652,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   // Table games
   blackjack: BRIGHT_GREEN,
   spanish21: BRIGHT_GREEN,
+  doubleexposure: BRIGHT_GREEN,
   baccarat: CASINO,
   threecard: CASINO,
   threecardrummy: CASINO,
@@ -655,6 +675,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   tusac: CASINO,
   sakura: GREEN,
   zwanzigerrufen: GREEN,
+  tapptarock: GREEN,
   troggu: GREEN,
   horse: CASINO,
   dragontiger: CASINO,
@@ -670,6 +691,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   freebet: BRIGHT_GREEN,
   banluck: CASINO,
   montebank: GREEN,
+  tehonbiki: GREEN,
   speculation: GREEN,
   cincinnati: CASINO,
   ironcross: CASINO,
@@ -717,6 +739,8 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   marias: MARIAS,
   king: KING,
   tysiac: TYSIAC,
+  marjapussi: TYSIAC,
+  omi: BLUE,
   calabresella: CALABRESELLA,
   ombre: OMBRE,
   quadrille: OMBRE,
@@ -759,6 +783,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   ristikontra: PISHTI,
   cuarenta: CUARENTA,
   faro: FARO,
+  basset: BASSET,
   openfacechinese: CASINO,
   russianbank: GREEN,
   pitch: BLUE,
@@ -772,6 +797,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   whist: BLUE,
   catchten: CATCHTEN,
   pinochle: BLUE,
+  binokel: BLUE,
   piquet: BLUE,
   ramsch: BLUE,
   skat: BLUE,
@@ -787,6 +813,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   fivehundred: BLUE,
   rook: BLUE,
   callbreak: BLUE,
+  batak: BLUE,
   tarneeb: BLUE,
   briscola: BLUE,
   brusquembille: BLUE,
@@ -862,6 +889,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   seahaventowers: CASINO,
   spider: CASINO,
   spiderette: CASINO,
+  willothewisp: CASINO,
   pyramid: CASINO,
   gaps: CASINO,
   tripeaks: CASINO,
@@ -875,6 +903,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   somerset: CASINO,
   fortress: CASINO,
   beleagueredcastle: CASINO,
+  citadel: CASINO,
   streetsandalleys: CASINO,
   kingalbert: CASINO,
   flowergarden: CASINO,
@@ -916,6 +945,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   cribbagesquares: CASINO,
   diplomat: CASINO,
   royalcotillion: CASINO,
+  matrimony: CASINO,
   crazyquilt: CASINO,
   auldlangsyne: CASINO,
   bisley: CASINO,
@@ -931,6 +961,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   braid: CASINO,
   pontoon: CASINO,
   settemezzo: CASINO,
+  quinze: CASINO,
   niuniu: CASINO,
   bura: CASINO,
   mushi: GREEN,
@@ -971,11 +1002,13 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   // Counting/Rummy
   ginrummy: BLUE,
   indianrummy: INDIANRUMMY,
+  marriage: INDIANRUMMY,
   machiavelli: MACHIAVELLI,
   conquian: BLUE,
   chinchon: GREEN,
   threethirteen: BLUE,
   tonk: BLUE,
+  tongits: BLUE,
   thirtyone: CASINO,
   yaniv: BLUE,
   gongzhu: GREEN,
@@ -989,6 +1022,7 @@ export const gameTheme: Record<GameKey, GameThemeClasses> = {
   samba: SAMBA,
   handandfoot: BLUE,
   burraco: GREEN,
+  biriba: GREEN,
   cribbage: BLUE,
   sevenbridge: BLUE,
   contractrummy: BLUE,

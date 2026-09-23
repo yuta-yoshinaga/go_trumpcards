@@ -31,6 +31,9 @@ const betPhaseState: VideoPokerResponse = {
   handName: '',
   heldIndices: [false, false, false, false, false],
   variantName: 'jokerpoker',
+  hands: 0,
+  winRate: 0,
+  net: 0,
   message: '',
 };
 

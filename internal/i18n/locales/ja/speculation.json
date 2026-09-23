@@ -14,6 +14,7 @@
   "holdsLine": "【最高札 {{card}}】",
   "offerToYou": "{{buyer}} があなたの札に {{amount}} を提示しています。a で売る、d で断る。",
   "offerFromYou": "{{owner}} は最高札を {{amount}} で譲るそうです。a で買う、bid <額> で上乗せ、d で見送る。",
+  "minRaise": "上乗せするなら {{amount}} 以上を指定してください。",
   "phaseFlip": "めくり",
   "phaseAuction": "競り",
   "phaseResult": "ラウンド結果",
@@ -28,5 +29,16 @@
   "hintHold": "持ち続けましょう: 残りが少なく、この札のままポットを取れそうです",
   "hintBuy": "買い時です: 残りが少なく、この札がそのままポットを取りそうです",
   "hintPass": "見送りましょう: 伏せ札がまだ多く、買っても上を出されかねません",
-  "hintNone": "いま助言できることはありません"
+  "hintNone": "いま助言できることはありません",
+  "log.deal": "切り札={{trump}} ポット={{pot}}",
+  "log.flip": "{{card}}",
+  "log.lead": "{{card}}",
+  "log.offer": "{{amount}}（席 {{seat}} へ）",
+  "log.asking": "{{amount}}",
+  "log.buy": "{{card}} を {{amount}} で購入",
+  "log.decline": "{{amount}} を辞退",
+  "log.bid": "{{amount}}",
+  "log.win": "ポット={{pot}}",
+  "log.void": "切り札なし。各席に {{share}} を返却",
+  "log.gameEnd": "ラウンド数={{rounds}}"
 }

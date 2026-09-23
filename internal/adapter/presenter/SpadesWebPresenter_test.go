@@ -81,6 +81,16 @@ func TestSpadesWebPresenter_Output(t *testing.T) {
 		assert.Empty(t, resObj.CurrentTrick)
 	})
 
+	t.Run("coded error", func(t *testing.T) {
+		m, _ := setupSpadesWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "spades.errFollowLeadSuit", nil)
+		result := p.Output(m, err)
+		var resObj controller.SpadesWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "spades.errFollowLeadSuit", resObj.MessageCode)
+	})
+
 	t.Run("human cards shown, CPU cards hidden", func(t *testing.T) {
 		m, players := setupSpadesWebMockWithPlayers()
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
@@ -372,14 +382,14 @@ func TestSpadesWebPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("with entries", func(t *testing.T) {
 		m := new(interfaces.MockSpadesGame)
 		entries := []*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "played SPADE 5", Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, true)}},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}, Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, true)}},
 		}
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetActionLog").Return(entries)
 
 		result := p.ActionLogOutput(m)
 		assert.Contains(t, result, `"actionType":"play"`)
-		assert.Contains(t, result, `"detail":"played SPADE 5"`)
+		assert.Contains(t, result, `"detailCode":"test.log.stub"`)
 		assert.Contains(t, result, `"turnNumber":1`)
 		assert.Contains(t, result, `"playerIdx":0`)
 		m.AssertExpectations(t)

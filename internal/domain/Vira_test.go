@@ -311,6 +311,22 @@ func TestVira_BidLadderAndValues(t *testing.T) {
 	}
 }
 
+func TestVira_ActionLogUsesDetailCode(t *testing.T) {
+	g := newTestVira(t)
+	g.SetCurrentPlayerIdx(0)
+	require.NoError(t, g.PlayerBid(ViraBidPass))
+
+	var entry *ActionLogEntry
+	for _, candidate := range g.GetActionLog() {
+		if candidate.DetailCode == "vira.log.bid" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, map[string]string{"bidKey": "vira.bidShort.pass"}, entry.DetailParams)
+}
+
 func TestVira_TrickWinner(t *testing.T) {
 	cases := []struct {
 		name  string
@@ -518,11 +534,6 @@ func TestVira_SettlementMovesThePot(t *testing.T) {
 		assert.Zero(t, g.GetLastRoundPotWon())
 		assert.Equal(t, [ViraPlayerCnt]int{100, 100, 100}, g.GetPlayerScores())
 	})
-}
-
-func TestVira_MadeLabel(t *testing.T) {
-	assert.Equal(t, "成功", viraMadeLabel(true))
-	assert.Equal(t, "失敗", viraMadeLabel(false))
 }
 
 func TestVira_NextRoundRedealsAndRotatesTheDealer(t *testing.T) {

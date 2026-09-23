@@ -479,8 +479,14 @@ function GongZhuPageContent() {
             <div data-testid="gongzhu-hint-live" role="status" aria-live="polite">
               {hint && (
                 <div className="text-ds-warning text-sm mb-2">
-                  {t('hintAvailable')}: {hint.cardIndices.map((i) => `[${i}]`).join(', ')} (
-                  {t(`hintReason.${hint.reason}`)})
+                  {t('hintAvailable')}:{' '}
+                  {hint.cardIndices
+                    .map((i) => {
+                      const c = humanPlayer?.cards[i];
+                      return c ? `[${i}] ${cardAlt(c)}` : `[${i}]`;
+                    })
+                    .join(', ')}{' '}
+                  ({t(`hintReason.${hint.reason}`)})
                 </div>
               )}
             </div>

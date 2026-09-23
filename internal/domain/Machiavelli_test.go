@@ -78,6 +78,21 @@ func TestMachiavelli_Reset(t *testing.T) {
 	assert.Equal(t, 1, g.GetCurrentPlayerIdx()) // ディーラー（席 0）の左隣
 }
 
+func TestMachiavelliActionLogUsesDetailCode(t *testing.T) {
+	g := newTestMachiavelli(4)
+	g.Reset()
+	g.SetCurrentPlayerIdx(0)
+	assert.NoError(t, g.PlayerDraw())
+	for _, entry := range g.GetActionLog() {
+		if entry.ActionType == "draw" {
+			assert.Equal(t, "machiavelli.log.draw", entry.DetailCode)
+			assert.Equal(t, "You", entry.DetailParams["name"])
+			return
+		}
+	}
+	t.Fatal("draw log entry not found")
+}
+
 func TestMachiavelliConfig_Validate(t *testing.T) {
 	assert.NoError(t, domain.DefaultMachiavelliConfig().Validate())
 

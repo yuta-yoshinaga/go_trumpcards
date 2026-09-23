@@ -38,7 +38,7 @@ func TestYukonCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(yg, nil)
 		assert.Contains(t, result, "Yukon")
-		assert.Contains(t, result, "Foundation")
+		assert.Contains(t, result, "組札")
 		assert.Contains(t, result, "列0:")
 		// **Yukon 固有の一括移動ルールを常時出す (#4788)。**盤面は Klondike と
 		// 見分けが付かないので、Klondike の感覚だと「揃った並びしか動かせない」
@@ -128,7 +128,7 @@ func TestYukonCuiPresenter_Output(t *testing.T) {
 
 		p := new(YukonCuiPresenter)
 		result := p.Output(yg, nil)
-		assert.Contains(t, result, "SPADE 1")
+		assert.Contains(t, result, "♠1")
 	})
 }
 
@@ -145,7 +145,7 @@ func TestYukonCuiPresenter_HintOutput(t *testing.T) {
 		p := new(YukonCuiPresenter)
 		result := p.HintOutput(yg)
 		assert.Contains(t, result, "ヒント")
-		assert.Contains(t, result, "ファンデーション")
+		assert.Contains(t, result, "組札")
 		// Foundation moves carry the high-priority confidence label.
 		assert.Contains(t, result, "優先度: 高")
 	})
@@ -190,7 +190,7 @@ func TestYukonCuiPresenter_ActionLogOutput(t *testing.T) {
 		yg := new(interfaces.MockYukonGame)
 		yg.On("GetPhase").Return(domain.YukonPhaseGameOver)
 		yg.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "move", Detail: "test"},
+			{TurnNumber: 1, ActionType: "move", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 
 		p := new(YukonCuiPresenter)

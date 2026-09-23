@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ironcrossApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, IronCrossResponse } from '../types/card';
 import { IronCrossPhase } from '../types/phases';
@@ -330,6 +331,135 @@ describe('IronCrossPage', () => {
     mockApi.mockClear();
     fireEvent.click(screen.getByTestId('ic-horizontal'));
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('horizontal'));
+  });
+
+  it('タッチの1回目は確定せず、mouseLeave後も選択プレビューを残す', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: IronCrossPhase.CHOOSE_LINE,
+        isChoosing: true,
+        isHumanTurn: false,
+        cross: [card(13), card(12), card(11), card(10), card(9)],
+        revealedCount: 5,
+      }),
+    );
+    renderWithProviders(<IronCrossPage />);
+    await waitFor(() => expect(screen.getByTestId('ic-vertical')).toBeInTheDocument());
+    mockApi.mockClear();
+
+    const vertical = screen.getByTestId('ic-vertical');
+    fireEvent.pointerDown(vertical, { pointerType: 'touch' });
+    fireEvent.click(vertical);
+    await flushPendingDispatch();
+
+    expect(mockApi).not.toHaveBeenCalledWith('vertical');
+    expect(vertical).toHaveAttribute('data-armed', 'true');
+    expect(screen.getByTestId('ic-cross-0')).toHaveAttribute('data-previewed', 'true');
+    expect(screen.getByTestId('ic-cross-1')).toHaveAttribute('data-previewed', 'true');
+    expect(screen.getByTestId('ic-cross-2')).toHaveAttribute('data-previewed', 'true');
+    fireEvent.mouseLeave(vertical);
+    expect(screen.getByTestId('ic-cross-0')).toHaveAttribute('data-previewed', 'true');
+    expect(screen.getByTestId('ic-touch-hint')).toBeInTheDocument();
+  });
+
+  it('armedした縦と異なる横をマウスでプレビューするとタッチ案内を隠す', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: IronCrossPhase.CHOOSE_LINE,
+        isChoosing: true,
+        isHumanTurn: false,
+        cross: [card(13), card(12), card(11), card(10), card(9)],
+        revealedCount: 5,
+      }),
+    );
+    renderWithProviders(<IronCrossPage />);
+    await waitFor(() => expect(screen.getByTestId('ic-vertical')).toBeInTheDocument());
+
+    const vertical = screen.getByTestId('ic-vertical');
+    fireEvent.pointerDown(vertical, { pointerType: 'touch' });
+    fireEvent.click(vertical);
+    fireEvent.mouseEnter(screen.getByTestId('ic-horizontal'));
+
+    expect(screen.queryByTestId('ic-touch-hint')).toBeNull();
+    expect(vertical).toHaveAttribute('data-armed', 'true');
+  });
+
+  it('同じボタンをタッチで2回押すと1回だけ確定する', async () => {
+    mockApi.mockResolvedValue(withState({ phase: IronCrossPhase.CHOOSE_LINE, isChoosing: true, isHumanTurn: false }));
+    renderWithProviders(<IronCrossPage />);
+    await waitFor(() => expect(screen.getByTestId('ic-vertical')).toBeInTheDocument());
+    mockApi.mockClear();
+
+    const vertical = screen.getByTestId('ic-vertical');
+    fireEvent.pointerDown(vertical, { pointerType: 'touch' });
+    fireEvent.click(vertical);
+    fireEvent.pointerDown(vertical, { pointerType: 'touch' });
+    fireEvent.click(vertical);
+
+    await waitFor(() => {
+      expect(mockApi).toHaveBeenCalledTimes(1);
+      expect(mockApi).toHaveBeenCalledWith('vertical');
+    });
+  });
+
+  it('タッチで縦から横へ移ると確定せず、横がarmedになる', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: IronCrossPhase.CHOOSE_LINE,
+        isChoosing: true,
+        isHumanTurn: false,
+        cross: [card(13), card(12), card(11), card(10), card(9)],
+        revealedCount: 5,
+      }),
+    );
+    renderWithProviders(<IronCrossPage />);
+    await waitFor(() => expect(screen.getByTestId('ic-vertical')).toBeInTheDocument());
+    mockApi.mockClear();
+
+    const vertical = screen.getByTestId('ic-vertical');
+    const horizontal = screen.getByTestId('ic-horizontal');
+    fireEvent.pointerDown(vertical, { pointerType: 'touch' });
+    fireEvent.click(vertical);
+    fireEvent.pointerDown(horizontal, { pointerType: 'touch' });
+    fireEvent.click(horizontal);
+    await flushPendingDispatch();
+
+    expect(mockApi).not.toHaveBeenCalledWith('vertical');
+    expect(mockApi).not.toHaveBeenCalledWith('horizontal');
+    expect(vertical).not.toHaveAttribute('data-armed');
+    expect(horizontal).toHaveAttribute('data-armed', 'true');
+    expect(screen.getByTestId('ic-cross-3')).toHaveAttribute('data-previewed', 'true');
+    expect(screen.getByTestId('ic-cross-4')).toHaveAttribute('data-previewed', 'true');
+  });
+
+  it('マウスのクリックは1回で確定する', async () => {
+    mockApi.mockResolvedValue(withState({ phase: IronCrossPhase.CHOOSE_LINE, isChoosing: true, isHumanTurn: false }));
+    renderWithProviders(<IronCrossPage />);
+    await waitFor(() => expect(screen.getByTestId('ic-vertical')).toBeInTheDocument());
+    mockApi.mockClear();
+
+    const vertical = screen.getByTestId('ic-vertical');
+    fireEvent.pointerDown(vertical, { pointerType: 'mouse' });
+    fireEvent.click(vertical);
+
+    await waitFor(() => {
+      expect(mockApi).toHaveBeenCalledTimes(1);
+      expect(mockApi).toHaveBeenCalledWith('vertical');
+    });
+  });
+
+  it('pointerDownなしのクリックは1回で確定する', async () => {
+    mockApi.mockResolvedValue(withState({ phase: IronCrossPhase.CHOOSE_LINE, isChoosing: true, isHumanTurn: false }));
+    renderWithProviders(<IronCrossPage />);
+    await waitFor(() => expect(screen.getByTestId('ic-vertical')).toBeInTheDocument());
+    mockApi.mockClear();
+
+    fireEvent.click(screen.getByTestId('ic-vertical'));
+
+    await waitFor(() => {
+      expect(mockApi).toHaveBeenCalledTimes(1);
+      expect(mockApi).toHaveBeenCalledWith('vertical');
+    });
   });
 
   // **チェックとコールは場況で入れ替わる。** サーバの toCall に従う。

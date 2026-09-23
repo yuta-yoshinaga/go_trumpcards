@@ -34,6 +34,11 @@
     "tableau": "Tableau column {{col}}",
     "foundation": "Foundation"
   },
+  "stats": {
+    "winRate": "Win rate {{rate}}%",
+    "fewestMoves": "{{moves}} moves",
+    "newBest": "New personal best!"
+  },
   "hintReason": {
     "toFoundation": "Send this card to the foundation to free up the column.",
     "toTableau": "Apply the suggested tableau move to unlock buried cards."

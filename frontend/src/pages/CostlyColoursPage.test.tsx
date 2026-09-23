@@ -21,6 +21,25 @@ beforeEach(() => {
 });
 
 describe('CostlyColoursPage', () => {
+  it('marks J and 2 even during the MOG phase', async () => {
+    mockExec.mockResolvedValue(
+      makeCostlyColoursState({
+        players: [
+          {
+            ...makeCostlyColoursState().players[0],
+            cards: [
+              { design: 'HEART', value: 11 },
+              { design: 'CLOVER', value: 2 },
+            ],
+          },
+          makeCostlyColoursState().players[1],
+        ],
+      }),
+    );
+    renderWithProviders(<CostlyColoursPage />);
+    expect(await screen.findAllByText('★')).toHaveLength(2);
+    expect(screen.getAllByTitle('J・2: 持っているだけで得点になる札')).toHaveLength(2);
+  });
   it('calls reset on mount with the configured target', async () => {
     renderWithProviders(<CostlyColoursPage />);
     // **既定は Cotton の 61 点。**

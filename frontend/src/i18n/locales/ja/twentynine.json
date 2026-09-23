@@ -20,6 +20,7 @@
   "trumpRevealBanner": "切り札公開: {{suit}}",
   "noTrump": "なし",
   "hiddenTrump": "非公開",
+  "trumpVisibleToYou": "{{suit}}（あなたのみ表示）",
   "cards": "{{count}}枚",
   "tricks": "{{count}}トリック",
   "currentTrick": "現在のトリック",

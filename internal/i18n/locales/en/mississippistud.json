@@ -5,6 +5,7 @@
   "helpPlay": "  p <1|2|3>            play (1x/2x/3x ante)",
   "helpFold": "  f                    fold",
   "chipsLine": "chips: {{chips}}",
+  "chipsRefilled": "Your balance fell below the minimum round cost, so it was topped up to {{chips}}",
   "phaseLine": "phase: {{phase}}",
   "anteLine": "ante: {{amount}}",
   "handLine": "hand: {{hand}}",
@@ -33,5 +34,13 @@
   "helpExampleBet": "  b 10                 ante 10 and get a hand",
   "helpExamplePlay": "  p 1                  play at 1x the ante",
   "helpHint": "  h                    show a hint",
-  "payoutMultiplierLine": "Payout odds: {{multiplier}}:1"
+  "payoutMultiplierLine": "Payout odds: {{multiplier}}:1",
+  "log.ante": "ante={{amount}}",
+  "log.play": "street={{street}} x{{multiplier}} (-{{cost}} chips)",
+  "log.fold": "player folds",
+  "log.deal": "dealt 2 hole + 3 community cards",
+  "log.folded": "folded; wager={{wager}} lost",
+  "log.resultWin": "player wins rank={{rank}} total={{total}}",
+  "log.resultPush": "push rank={{rank}} total={{total}}",
+  "log.resultLose": "player loses rank={{rank}} total={{total}}"
 }

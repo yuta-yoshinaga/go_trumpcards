@@ -25,6 +25,20 @@ func TestBouillotteCuiPresenter_OutputBettingPhase(t *testing.T) {
 	assert.Contains(t, out, "ルトゥルヌ")
 }
 
+func TestBouillotteCuiPresenter_OutputShowsConfiguredTargetRounds(t *testing.T) {
+	p := new(presenter.BouillotteCuiPresenter)
+	for _, tc := range []struct {
+		targetRounds int
+		want         string
+	}{{4, "ラウンド: 1 / 4"}, {12, "ラウンド: 1 / 12"}} {
+		g := domain.NewDefaultBouillotte()
+		cfg := g.GetConfig()
+		cfg.TargetRounds = tc.targetRounds
+		g.SetConfig(cfg)
+		assert.Contains(t, p.Output(g, nil), tc.want)
+	}
+}
+
 func TestBouillotteCuiPresenter_OutputError(t *testing.T) {
 	g := domain.NewDefaultBouillotte()
 	p := new(presenter.BouillotteCuiPresenter)

@@ -160,6 +160,15 @@ func TestAluetteWebPresenter_Output(t *testing.T) {
 		assert.Empty(t, res.MessageCode)
 	})
 
+	t.Run("coded error returns message code", func(t *testing.T) {
+		m, _ := setupAluetteWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "aluette.errCardIndexOutOfRange", nil)
+		var res controller.AluetteWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, err)), &res))
+		assert.Empty(t, res.Message)
+		assert.Equal(t, "aluette.errCardIndexOutOfRange", res.MessageCode)
+	})
+
 	// 勝敗はチーム単位。人間の席番号ではなく、人間の属するチームで判定する。
 	t.Run("game end reports the human's team, a rival team, or a draw", func(t *testing.T) {
 		cases := map[int]string{
@@ -248,7 +257,7 @@ func TestAluetteWebPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockAluetteGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "Monsieur"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	assert.Contains(t, p.ActionLogOutput(m), `"actionType":"play"`)
 }

@@ -15,8 +15,8 @@
   "promptPlay": "play <idx> ... Play a card",
   "promptTrump": "You are the hakem. Choose the trump suit from your first five cards (t <1-4>).",
   "promptTrumpWait": "The hakem is choosing trump from their first five cards.",
-  "promptHandEnd": "Hand over -- seven tricks settled it.",
-  "promptHandEndKot": "Hand over -- the other team took no trick at all, so that is a Kot: 2 points.",
+  "promptHandEnd": "Team {{team}} reached {{need}} tricks and took the hand (+1).",
+  "promptHandEndKot": "Team {{team}} let the others take nothing at all — that is a Kot, +2.",
   "promptNext": "next ... Start the next hand",
   "gameEndTeam0": "Game over! Your team wins ({{t0}} - {{t1}})!",
   "gameEndTeam1": "Game over! The other team wins ({{t0}} - {{t1}}).",
@@ -34,5 +34,13 @@
   "helpExamplePlay": "  p 0                  play hand card 0",
   "helpHint": "  h                    show a hint",
   "hakemMoves": "The hakem passes to the next seat, so a different seat calls the trump.",
-  "hakemStays": "The hakem keeps the deal and calls the trump again."
+  "hakemStays": "The hakem keeps the deal and calls the trump again.",
+  "log.deal": "Hand {{hand}} started (dealer: {{hakem}})",
+  "log.declareTrump": "Declared {{suit}} as trump",
+  "log.play": "{{card}}",
+  "log.kot": "Team {{team}} won by Kot (the opponents took 0 tricks) for +{{points}}",
+  "log.handWin": "Team {{team}} won the hand for +{{points}}",
+  "log.hakemChanged": "The deal moved to player {{hakem}}",
+  "log.result": "Final score {{team0}} - {{team1}}",
+  "log.giveUp": "Gave up"
 }

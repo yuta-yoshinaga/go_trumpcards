@@ -76,6 +76,15 @@ func TestTeenPatti_SeeBetRaiseFold(t *testing.T) {
 	potBefore := g.GetPot()
 	require.NoError(t, g.PlayerBet()) // seen pays 2*stake
 	assert.Equal(t, potBefore+g.GetStake()*2, g.GetPot())
+	var seeEntry *domain.ActionLogEntry
+	for _, entry := range g.GetActionLog() {
+		if entry.DetailCode == "teenpatti.log.see" {
+			seeEntry = entry
+			break
+		}
+	}
+	require.NotNil(t, seeEntry)
+	assert.Equal(t, map[string]string{"name": "You"}, seeEntry.DetailParams)
 
 	g.SetCurrentPlayerIdx(0)
 	assert.Error(t, g.PlayerRaise(g.GetStake())) // not greater

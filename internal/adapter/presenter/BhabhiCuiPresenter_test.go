@@ -101,6 +101,26 @@ func TestBhabhiCuiPresenterReportsTheLastPickup(t *testing.T) {
 	assert.Contains(t, p.Output(b, nil), fixedPart("bhabhi.lastPickup"))
 }
 
+func TestBhabhiCuiPresenterReportsTheLastFinish(t *testing.T) {
+	p := new(BhabhiCuiPresenter)
+	b := newBhabhiForCui(t)
+	b.SetLeadIdxForTest(0)
+	b.SetCurrentIdxForTest(0)
+	bhabhiCuiHand(b, 0, domain.NewCard(domain.CardDesignSpade, 5, false))
+	for i := 1; i < domain.BhabhiDefaultPlayers; i++ {
+		bhabhiCuiHand(b, i, domain.NewCard(domain.CardDesignSpade, i+5, false), domain.NewCard(domain.CardDesignHeart, i+2, false))
+	}
+	require.NoError(t, b.PlayForTest(0, 0))
+	out := p.Output(b, nil)
+	assert.Contains(t, out, fixedPart("bhabhi.lastFinished"))
+	assert.Contains(t, out, "1番目に上がりました")
+
+	require.NoError(t, b.PlayForTest(1, 0))
+	require.NoError(t, b.PlayForTest(2, 0))
+	require.NoError(t, b.PlayForTest(3, 0))
+	assert.NotContains(t, p.Output(b, nil), "直前に")
+}
+
 // bhabhiCuiHand は playerIdx の手札を cards ちょうどに置き換える。
 func bhabhiCuiHand(b *domain.Bhabhi, playerIdx int, cards ...*domain.Card) {
 	p := b.GetPlayer(playerIdx)
@@ -150,7 +170,7 @@ func TestBhabhiCuiPresenterHint(t *testing.T) {
 	b.SetCurrentIdxForTest(0)
 
 	out := p.HintOutput(b)
-	assert.Contains(t, out, "HINT")
+	assert.Contains(t, out, "ヒント")
 	for id := range bhabhiHintReasonKeys {
 		assert.NotContains(t, out, id, "識別子がそのまま漏れていない")
 	}

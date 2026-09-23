@@ -161,13 +161,13 @@ func TestRoyalCotillionCuiPresenter_HintOutput(t *testing.T) {
 	}{
 		{"tableau to a foundation",
 			&domain.RoyalCotillionHint{FromZone: "tableau", FromIdx: 1, ToZone: "foundation", ToIdx: 2},
-			[]string{"タブロー枠1", "基礎札2"}},
+			[]string{"タブロー枠1", "組札2"}},
 		{"between piles",
 			&domain.RoyalCotillionHint{FromZone: "tableau", FromIdx: 0, ToZone: "tableau", ToIdx: 5},
 			[]string{"タブロー枠0", "タブロー枠5"}},
 		{"waste to a foundation",
 			&domain.RoyalCotillionHint{FromZone: "waste", FromIdx: -1, ToZone: "foundation", ToIdx: 0},
-			[]string{"捨て札", "基礎札0"}},
+			[]string{"捨て札", "組札0"}},
 		{"stock into a gap",
 			&domain.RoyalCotillionHint{FromZone: "stock", FromIdx: -1, ToZone: "tableau", ToIdx: 3},
 			[]string{"山札", "タブロー枠3"}},
@@ -207,7 +207,7 @@ func TestRoyalCotillionCuiPresenter_ActionLogOutput(t *testing.T) {
 		g := new(interfaces.MockRoyalCotillionGame)
 		g.On("GetPhase").Return(domain.RoyalCotillionPhaseGameOver)
 		g.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "move", Detail: "test"},
+			{TurnNumber: 1, ActionType: "move", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 
 		assert.Contains(t, new(RoyalCotillionCuiPresenter).ActionLogOutput(g), "move")

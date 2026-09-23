@@ -121,6 +121,24 @@ describe('ShamrocksPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('ff', 2));
   });
 
+  it('rings and enables only foundations that accept the selected fan', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        fans: [[card('SPADE', 2)]],
+        foundation: [[card('SPADE', 1)], [card('HEART', 5)], [], []],
+      }),
+    );
+    renderWithProviders(<ShamrocksPage />);
+    fireEvent.click(await screen.findByTestId('fan-0'));
+
+    const valid = screen.getByTestId('foundation-0');
+    const invalid = screen.getByTestId('foundation-1');
+    expect(valid.className).toContain('ring-ds-success');
+    expect(valid).toBeEnabled();
+    expect(invalid.className).not.toContain('ring-ds-success');
+    expect(invalid).toBeDisabled();
+  });
+
   it('auto-completes, undoes, hints', async () => {
     mockExec.mockResolvedValue(makeState({ canUndo: true }));
     renderWithProviders(<ShamrocksPage />);
@@ -153,7 +171,7 @@ describe('ShamrocksPage', () => {
 
   // #5678: どの扇が動かせるかは、ヒント (4秒で消える) を押さないと分からなかった。
   // 既定の盤面 ♠9 / ♠8 / ♦A は Shamrocks では**3 つとも動く**。ランクが 1 つ違えば
-  // 上でも下でもよいので ♠9→♠8 も ♠8→♠9 も合法で、♦A は空のファウンデーションへ行ける。
+  // 上でも下でもよいので ♠9→♠8 も ♠8→♠9 も合法で、♦A は空の組札へ行ける。
   // (ラ・ベル・リュシーは同スート降順のみなので ♠9 は動けない。そちらの期待値のまま
   //  クローンすると、通ってしまうのに間違っているテストになる。)
   it('marks the fans that can move without asking for a hint', async () => {

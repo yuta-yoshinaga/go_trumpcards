@@ -67,6 +67,45 @@ func TestBaccaratBanque_SettlesEachSideSeparately(t *testing.T) {
 	}
 	assert.NotEqual(t, outcomes[BaccaratBanqueRightIdx], outcomes[BaccaratBanqueLeftIdx],
 		"左右が同じ勘定になっている ── 別々に決着していない")
+	var settleLog *ActionLogEntry
+	for _, entry := range b.GetActionLog() {
+		if entry.ActionType == "settle" {
+			settleLog = entry
+		}
+	}
+	if settleLog == nil {
+		t.Fatal("settle action was not logged")
+	}
+	assert.Equal(t, "baccaratbanque.log.settle", settleLog.DetailCode)
+	assert.Equal(t, "2", settleLog.DetailParams["coup"])
+}
+
+func TestBaccaratBanque_SettleLogFormatsPositiveDeltaWithPlus(t *testing.T) {
+	b := NewDefaultBaccaratBanque()
+	// 右 = 2、左 = 3、親 = 8。親が左右に勝つため、増減は正になる。
+	for _, idx := range []int{BaccaratBanqueRightIdx, BaccaratBanqueLeftIdx, BaccaratBanqueBankerIdx} {
+		b.GetPlayer(idx).Reset()
+	}
+	b.GetPlayer(BaccaratBanqueRightIdx).AddCard(bbCard(CardDesignSpade, 2))
+	b.GetPlayer(BaccaratBanqueLeftIdx).AddCard(bbCard(CardDesignHeart, 3))
+	b.GetPlayer(BaccaratBanqueBankerIdx).AddCard(bbCard(CardDesignDiamond, 8))
+	b.GetPlayer(BaccaratBanqueRightIdx).SetBet(100)
+	b.GetPlayer(BaccaratBanqueLeftIdx).SetBet(100)
+	b.SettleForTest()
+
+	res := b.GetLastResult()
+	require.NotNil(t, res)
+	require.Positive(t, res.BankerDelta)
+
+	var settleLog *ActionLogEntry
+	for _, entry := range b.GetActionLog() {
+		if entry.DetailCode == "baccaratbanque.log.settle" {
+			settleLog = entry
+			break
+		}
+	}
+	require.NotNil(t, settleLog)
+	assert.Equal(t, "+200", settleLog.DetailParams["delta"])
 }
 
 // **チップは湧かない。** バンカーの増減と子の増減は打ち消し合う。

@@ -10,6 +10,7 @@
   "phase.play": "In progress",
   "phase.handEnd": "Hand over",
   "phase.end": "Finished",
+  "doubleVictory": "Double victory",
   "bid": "Bid {{n}}",
   "pass": "Pass",
   "bidPrompt": "Bid your longest trump suit (at least {{min}}; yours is {{longest}})",

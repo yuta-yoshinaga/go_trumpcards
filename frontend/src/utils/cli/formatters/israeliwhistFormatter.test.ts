@@ -119,4 +119,34 @@ describe('formatIsraeliWhistState', () => {
   it('appends the server message', () => {
     expect(formatIsraeliWhistState(state({ message: 'hello' }))).toContain('hello');
   });
+
+  it('shows the round score delta when the round ends, and not during play', () => {
+    // 1件はプラス (固定文字列で通らないよう異なる値)
+    const outPositive = formatIsraeliWhistState(
+      state({
+        phase: 3, // ROUND_END
+        players: [seat(0, { roundScore: 11 }), seat(1), seat(2), seat(3)],
+      } as Partial<IsraeliWhistResponse>),
+    );
+    expect(outPositive).toContain('this round +11');
+
+    // 1件はマイナスか±0
+    const outNegative = formatIsraeliWhistState(
+      state({
+        phase: 3, // ROUND_END
+        players: [seat(0, { roundScore: -10 }), seat(1), seat(2), seat(3)],
+      } as Partial<IsraeliWhistResponse>),
+    );
+    expect(outNegative).toContain('this round -10');
+
+    // プレイ中には出ない
+    const outPlay = formatIsraeliWhistState(
+      state({
+        phase: 2, // PLAY
+        players: [seat(0, { roundScore: 11 }), seat(1), seat(2), seat(3)],
+      } as Partial<IsraeliWhistResponse>),
+    );
+    expect(outPlay).not.toContain('this round +11');
+    expect(outPlay).not.toContain('this round');
+  });
 });

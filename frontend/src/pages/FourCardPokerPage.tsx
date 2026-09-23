@@ -433,7 +433,7 @@ function FourCardPokerPageContent() {
                       disabled={loading}
                       data-testid={`play-${mult}x`}
                     >
-                      {t('button.playMult', { mult })}
+                      {t('button.playMult', { mult, amount: state.anteBet * mult })}
                     </button>
                   ))}
                   <button type="button" className={btnDanger} onClick={handleFold} disabled={loading}>

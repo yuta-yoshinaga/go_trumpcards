@@ -1,4 +1,4 @@
-//go:build !js || !wasm || classic
+//go:build !js || !wasm || extra7
 
 package presenter
 
@@ -88,6 +88,9 @@ func (p *BrusquembilleWebPresenter) buildPlayersOutput(b interfaces.Brusquembill
 // buildMessage ゲーム結果メッセージを構築
 func (p *BrusquembilleWebPresenter) buildMessage(b interfaces.BrusquembilleGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if b.GetGameEndFlag() {

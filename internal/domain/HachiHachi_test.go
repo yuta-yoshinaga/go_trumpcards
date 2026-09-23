@@ -232,6 +232,14 @@ func TestHachiHachiCapture(t *testing.T) {
 	g.SetFieldCards([]*domain.Card{hachihachiCard(3, 4), hachihachiCard(7, 3)})
 	require.NoError(t, g.PlayerPlay(0, -1))
 	assert.GreaterOrEqual(t, human.CapturedCount(), 2)
+	for _, entry := range g.GetActionLog() {
+		if entry.DetailCode == "hachihachi.log.plays" {
+			assert.Equal(t, "You", entry.DetailParams["name"])
+			assert.Equal(t, "hachihachi.log.result.captured", entry.DetailParams["resultKey"])
+			return
+		}
+	}
+	t.Fatal("Hachi-Hachi play action log entry not found")
 }
 
 func TestHachiHachiNextRound_GuardedToRoundEnd(t *testing.T) {

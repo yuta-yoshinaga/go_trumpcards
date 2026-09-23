@@ -67,7 +67,7 @@ func TestCuckooCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "ラウンド: 1")
 		assert.Contains(t, result, "ライフ 3")
 		// Human card is shown, opponent card hidden.
-		assert.Contains(t, result, "SPADE 5")
+		assert.Contains(t, result, "♠5")
 		assert.Contains(t, result, "非公開")
 	})
 
@@ -120,7 +120,7 @@ func TestCuckooCuiPresenter_ActionLogOutput(t *testing.T) {
 
 	m := new(interfaces.MockCuckooGame)
 	entries := []*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "keep", Detail: "You keep"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "keep", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	}
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return(entries)

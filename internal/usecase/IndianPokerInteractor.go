@@ -22,6 +22,8 @@ type IndianPokerInteractorIF interface {
 	GetConfig() domain.IndianPokerConfig
 	// ActionLog 棋譜を出力する
 	ActionLog() string
+	// Hint ヒントを出力する
+	Hint() string
 }
 
 // IndianPokerInteractor インディアンポーカーインタラクタークラス
@@ -67,6 +69,11 @@ func (ipi *IndianPokerInteractor) GetConfig() domain.IndianPokerConfig {
 // ActionLog 棋譜を出力する
 func (ipi *IndianPokerInteractor) ActionLog() string {
 	return ipi.ipp.ActionLogOutput(ipi.Game)
+}
+
+// Hint ヒントを出力する
+func (ipi *IndianPokerInteractor) Hint() string {
+	return ipi.ipp.HintOutput(ipi.Game)
 }
 
 // RestoreIndianPokerInteractor deserialises JSON into an IndianPokerInteractor.

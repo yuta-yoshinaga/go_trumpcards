@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // LooPlayerCnt はルーのプレイヤー数 (固定 4, 個人戦)。
@@ -90,6 +91,10 @@ type Loo struct {
 	lastDealDetail   *LooDealDetail
 	actionLogBase
 	scored bool // 現ディールが精算済みか (二重精算防止)
+}
+
+func (g *Loo) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // NewLoo はコンストラクタ。
@@ -182,7 +187,7 @@ func (g *Loo) startDeal() {
 		g.pot += ante
 	}
 	g.potStart = g.pot
-	g.appendLog(-1, "ante", fmt.Sprintf("each antes %d; pot is %d", ante, g.pot), nil)
+	g.appendLog(-1, "ante", "loo.log.ante", map[string]string{"ante": strconv.Itoa(ante), "pot": strconv.Itoa(g.pot)}, nil)
 
 	g.trumpCards = newLooDeck()
 	g.trumpCards.Shuffle()
@@ -193,7 +198,7 @@ func (g *Loo) startDeal() {
 	g.turnUp = g.trumpCards.DrawCard()
 	if g.turnUp != nil {
 		g.trumpSuit = g.turnUp.GetDesign()
-		g.appendLog(-1, "trump_set", fmt.Sprintf("Trump is %s (turn-up %s)", suitName(g.trumpSuit), cardStr(g.turnUp)), []*Card{g.turnUp})
+		g.appendLog(-1, "trump_set", "loo.log.trumpSet", map[string]string{"suitKey": suitKeyOf(g.trumpSuit), "turnUp": cardStr(g.turnUp)}, []*Card{g.turnUp})
 	}
 
 	// decide 手番は forehand (dealer の次) から。
@@ -248,9 +253,9 @@ func (g *Loo) applyDecide(idx int, play bool) {
 	g.players[idx].SetPlaying(play)
 	g.decideDone[idx] = true
 	if play {
-		g.appendLog(idx, "decide", fmt.Sprintf("%s plays", playerName(g.players, idx)), nil)
+		g.appendLog(idx, "decide", "loo.log.decidePlay", map[string]string{"name": playerName(g.players, idx)}, nil)
 	} else {
-		g.appendLog(idx, "decide", fmt.Sprintf("%s passes", playerName(g.players, idx)), nil)
+		g.appendLog(idx, "decide", "loo.log.decidePass", map[string]string{"name": playerName(g.players, idx)}, nil)
 	}
 	for k := 1; k <= LooPlayerCnt; k++ {
 		ni := (idx + k) % LooPlayerCnt
@@ -269,12 +274,12 @@ func (g *Loo) resolveDecide() {
 	switch len(active) {
 	case 0:
 		// 誰も参加しなかった: ポットは繰り越し、このディールは精算 (looed なし)。
-		g.appendLog(-1, "all_pass", "all players passed; pot carries over", nil)
+		g.appendLog(-1, "all_pass", "loo.log.allPass", nil, nil)
 		g.enterRoundEnd()
 	case 1:
 		// 1 人だけ参加: プレイせずにポットを総取り (トリックは戦われない)。
 		winner := active[0]
-		g.appendLog(winner, "walkover", fmt.Sprintf("%s is the only player and takes the pot", playerName(g.players, winner)), nil)
+		g.appendLog(winner, "walkover", "loo.log.walkover", map[string]string{"name": playerName(g.players, winner)}, nil)
 		g.enterRoundEnd()
 	default:
 		g.startPlayPhase(active[0])
@@ -337,7 +342,7 @@ func (g *Loo) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "loo.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
@@ -379,7 +384,7 @@ func (g *Loo) CpuPlay() {
 // playCard はカードをプレイする共通処理。
 func (g *Loo) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "loo.log.play", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(g.currentTrick) == len(g.activePlayers()) {
 		g.phase = LooPhaseTrickEnd
@@ -402,8 +407,7 @@ func (g *Loo) ResolveTrick() {
 	g.roundTricks[winnerIdx]++
 	g.lastTrick = g.currentTrick
 	g.lastTrickWinner = winnerIdx
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), trickCards)
+	g.appendLog(winnerIdx, "trick_win", "loo.log.trickWin", map[string]string{"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber)}, trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= LooTrickCount {
@@ -478,13 +482,13 @@ func (g *Loo) ScoreRound() {
 	switch len(active) {
 	case 0:
 		// 誰も参加せず: ポットは繰り越し (変更なし)。
-		g.appendLog(-1, "settle", fmt.Sprintf("no players; pot %d carries over", g.pot), nil)
+		g.appendLog(-1, "settle", "loo.log.settleNoPlayers", map[string]string{"pot": strconv.Itoa(g.pot)}, nil)
 	case 1:
 		// 1 人だけ参加: プレイせずにポット総取り。
 		winner := active[0]
 		g.players[winner].AddChips(g.pot)
 		gained[winner] += g.pot
-		g.appendLog(winner, "settle", fmt.Sprintf("%s takes the whole pot %d", playerName(g.players, winner), g.pot), nil)
+		g.appendLog(winner, "settle", "loo.log.settleWinner", map[string]string{"name": playerName(g.players, winner), "pot": strconv.Itoa(g.pot)}, nil)
 		g.pot = 0
 	default:
 		// 参加者でトリックに応じてポットを分配 (1 トリック = ポット/トリック数)。
@@ -509,8 +513,7 @@ func (g *Loo) ScoreRound() {
 				gained[idx] -= penalty
 				g.pot += penalty
 				looed = append(looed, idx)
-				g.appendLog(idx, "looed",
-					fmt.Sprintf("%s is looed and pays %d to the pot", playerName(g.players, idx), penalty), nil)
+				g.appendLog(idx, "looed", "loo.log.looed", map[string]string{"name": playerName(g.players, idx), "penalty": strconv.Itoa(penalty)}, nil)
 			}
 		}
 	}
@@ -525,8 +528,7 @@ func (g *Loo) ScoreRound() {
 		PotCarry:  g.pot,
 	}
 	for i := 0; i < LooPlayerCnt; i++ {
-		g.appendLog(i, "cumulative_chips",
-			fmt.Sprintf("%s: total=%d", playerName(g.players, i), g.players[i].GetChips()), nil)
+		g.appendLog(i, "cumulative_chips", "loo.log.cumulativeChips", map[string]string{"name": playerName(g.players, i), "total": strconv.Itoa(g.players[i].GetChips())}, nil)
 	}
 }
 
@@ -545,22 +547,22 @@ func (g *Loo) validatePlay(playerIdx int, card *Card) error {
 
 	if hasLead {
 		if card.GetDesign() != leadSuit {
-			return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+			return NewDomainErrorCode(ErrInvalidPlay, "loo.errFollowLeadSuit", nil)
 		}
 		// マストヘッド: 現在勝っている札を上回れるなら上回る義務がある。
 		if g.canBeatWithSuit(playerIdx, leadSuit) && !g.beatsCurrentBest(card) {
-			return NewDomainError(ErrInvalidPlay, "勝てる札を出す必要があります (マストヘッド)")
+			return NewDomainErrorCode(ErrInvalidPlay, "loo.errMustHead", nil)
 		}
 		return nil
 	}
 	// リードスートなし。切り札を持つなら切り札を出さなければならない。
 	if hasTrump {
 		if card.GetDesign() != g.trumpSuit {
-			return NewDomainError(ErrInvalidPlay, "切り札を出してください")
+			return NewDomainErrorCode(ErrInvalidPlay, "loo.errPlayTrump", nil)
 		}
 		// マストヘッド: 切り札で現在の勝者を上回れるなら上回る義務がある。
 		if g.canBeatWithSuit(playerIdx, g.trumpSuit) && !g.beatsCurrentBest(card) {
-			return NewDomainError(ErrInvalidPlay, "勝てる切り札を出す必要があります (マストヘッド)")
+			return NewDomainErrorCode(ErrInvalidPlay, "loo.errMustHeadTrump", nil)
 		}
 		return nil
 	}

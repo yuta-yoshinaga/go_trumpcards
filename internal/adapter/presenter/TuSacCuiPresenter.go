@@ -33,6 +33,7 @@ func (cp *TuSacCuiPresenter) Output(c interfaces.TuSacGame, lastErr error) strin
 			"total", strconv.Itoa(c.GetConfig().Rounds)) + "\n")
 		sb.WriteString(i18n.Tf("tusac.stockLine",
 			"stock", strconv.Itoa(c.GetStockCount()),
+			"discardCount", strconv.Itoa(c.GetDiscardCount()),
 			"discard", tuSacCardStr(c.GetDiscardTop())) + "\n")
 		// **5 枚の卒を揃える価値は、狙う前に知りたい** (#5784)。点数は
 		// ドメインの TuSacMeldPoints から作るので、写した表にならない。

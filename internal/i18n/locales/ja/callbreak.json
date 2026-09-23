@@ -21,9 +21,20 @@
   "promptRoundEnd": "ラウンド終了",
   "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
   "hintNone": "ヒントはありません。",
-  "hintBid": "[HINT: ビッド {{bid}} を推奨 ({{reason}})]",
-  "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
+  "hintBid": "[ヒント: ビッド {{bid}} を推奨 ({{reason}})]",
+  "hintCard": "[ヒント: [{{idx}}]{{card}} ({{reason}})]",
   "hintReasonTrumpCut": "スペードでカット",
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "errBidRange": "ビッドは {{min}}〜{{max}} で指定してください",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errSpadesNotBroken": "スペードはまだブレイクされていません",
+  "errFollowLeadSuit": "リードスートに従ってください",
+  "errMustTrump": "リードスートが無い場合はスペードで切らなければなりません",
+  "log.bid": "{{name}} が {{bid}} をビッド",
+  "log.trickWin": "{{name}} がトリック {{trick}} を獲得",
+  "log.roundScore": "{{name}}: ビッド={{bid}} トリック={{tricks}} ラウンド={{round}}",
+  "log.cumulativeScore": "{{name}}: 合計={{total}}",
+  "log.play": "{{name}} が {{card}} をプレイ",
+  "log.gameEnd": "{{name}} の勝利でゲーム終了です！"
 }

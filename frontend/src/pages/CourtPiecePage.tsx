@@ -236,6 +236,10 @@ function CourtPiecePageContent() {
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
                   dataTutorial="courtpiece-trick-display"
+                  // ResolveTrick stores the winner in leadPlayerIdx and keeps it
+                  // until NextTrick starts the following trick.
+                  winnerIdx={isTrickEnd ? state.leadPlayerIdx : undefined}
+                  winnerLabel={t('trickWinnerBadge')}
                 />
               </div>
 

@@ -231,6 +231,14 @@ function BuraPageContent() {
           <GameFooter className={`${gameTheme.bura.footer} px-4 py-2.5`}>
             <ErrorAlert message={error} onRetry={retry} />
             <div className="flex gap-2 items-center flex-wrap" data-tutorial="bura-controls">
+              {!ended && (human?.points ?? 0) < state.winThreshold && (
+                <div
+                  role="status"
+                  className="basis-full rounded bg-ds-warning px-3 py-2 text-sm text-ds-text-on-accent"
+                >
+                  {t('claimWarning')}
+                </div>
+              )}
               <button
                 type="button"
                 className={btnPrimary}

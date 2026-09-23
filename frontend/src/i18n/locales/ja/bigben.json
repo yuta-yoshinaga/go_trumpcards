@@ -10,7 +10,8 @@
   "foundation": "文字盤",
   "frontendHint": {
     "tableau": "タブロー列{{col}}",
-    "foundation": "文字盤{{idx}}"
+    "foundation": "文字盤{{idx}}",
+    "stock": "山札"
   },
   "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
   "gameOver": "ゲームオーバー",

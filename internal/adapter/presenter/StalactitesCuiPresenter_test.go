@@ -23,7 +23,7 @@ func TestStalactitesCuiPresenterOutputPlaying(t *testing.T) {
 
 	assert.Contains(t, result, "Stalactites")
 	assert.Contains(t, result, "セル:")
-	assert.Contains(t, result, "Foundation:")
+	assert.Contains(t, result, "組札:")
 	assert.Contains(t, result, "手数:")
 }
 
@@ -160,7 +160,7 @@ func TestStalactitesCuiPresenterOutputCellsOccupied(t *testing.T) {
 	result := p.Output(f, nil)
 
 	assert.Contains(t, result, "セル:")
-	assert.Contains(t, result, "SPADE 5")
+	assert.Contains(t, result, "♠5")
 }
 
 func TestStalactitesCuiPresenterOutputFoundationWithCards(t *testing.T) {
@@ -175,11 +175,11 @@ func TestStalactitesCuiPresenterOutputFoundationWithCards(t *testing.T) {
 
 	result := p.Output(f, nil)
 
-	assert.Contains(t, result, "Foundation:")
+	assert.Contains(t, result, "組札:")
 	// The card was built from the deal's base rank, so the expectation has to
-	// be too -- asserting a literal "SPADE 1" passed only when the shuffle made
+	// be too -- asserting a literal "♠1" passed only when the shuffle made
 	// Ace the base rank, i.e. roughly one run in thirteen.
-	assert.Contains(t, result, fmt.Sprintf("SPADE %d", f.GetBaseRank()))
+	assert.Contains(t, result, fmt.Sprintf("♠%d", f.GetBaseRank()))
 }
 
 func TestStalactitesCuiPresenterOutputEmptyTableau(t *testing.T) {

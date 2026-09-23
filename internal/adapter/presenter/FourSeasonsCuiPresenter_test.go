@@ -140,7 +140,9 @@ func TestFourSeasonsCuiPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("emitted once ended", func(t *testing.T) {
 		g := new(interfaces.MockFourSeasonsGame)
 		g.On("GetPhase").Return(domain.FourSeasonsPhaseGameOver)
-		g.On("GetActionLog").Return([]*domain.ActionLogEntry{{TurnNumber: 1, ActionType: "draw", Detail: "引きました"}})
+		g.On("GetActionLog").Return([]*domain.ActionLogEntry{
+			{TurnNumber: 1, ActionType: "draw", DetailCode: "fourseasons.log.draw"},
+		})
 		assert.Contains(t, new(FourSeasonsCuiPresenter).ActionLogOutput(g), "draw")
 	})
 }
@@ -161,8 +163,8 @@ func TestFourSeasonsCuiPresenter_TableauAnnouncesTheNextRank(t *testing.T) {
 	out := new(FourSeasonsCuiPresenter).Output(g, nil)
 
 	// 列ごとに突き合わせる。ランク名がどこかにある、では隣の列の値でも通る。
-	assert.Contains(t, plainFourSeasons(out), "[T0] HEART 12 (1枚) → 次に置けるのは J")
-	assert.Contains(t, out, "[T1] SPADE 1 (1枚) → 次に置けるのは K")
+	assert.Contains(t, plainFourSeasons(out), "[T0] ♥12 (1枚) → 次に置けるのは J")
+	assert.Contains(t, out, "[T1] ♠1 (1枚) → 次に置けるのは K")
 	// 空列は現状のまま。
 	assert.Contains(t, out, "[T2] [空]")
 	assert.NotContains(t, out, "[空] → 次に置けるのは")

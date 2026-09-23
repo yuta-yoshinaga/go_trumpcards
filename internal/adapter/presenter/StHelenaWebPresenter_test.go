@@ -84,6 +84,21 @@ func TestStHelenaWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "boom", result.Message)
 	})
 
+	t.Run("error message code", func(t *testing.T) {
+		cg := new(interfaces.MockStHelenaGame)
+		setupStHelenaOutputMock(cg)
+		p := new(StHelenaWebPresenter)
+
+		result := parseStHelenaOutput(t, p.Output(cg,
+			domain.NewDomainErrorCode(domain.ErrInvalidPlay, "sthelena.errSomething", nil)))
+		assert.Equal(t, "sthelena.errSomething", result.MessageCode)
+		assert.Empty(t, result.Message)
+
+		result = parseStHelenaOutput(t, p.Output(cg, errors.New("test error")))
+		assert.Equal(t, "test error", result.Message)
+		assert.Empty(t, result.MessageCode)
+	})
+
 	t.Run("game clear", func(t *testing.T) {
 		cg := new(interfaces.MockStHelenaGame)
 		setupStHelenaOutputMock(cg)
@@ -188,7 +203,7 @@ func TestStHelenaWebPresenter_ActionLogOutput(t *testing.T) {
 		cg.On("GetPhase").Return(domain.StHelenaPhaseGameOver)
 		cg.On("GetGameEndFlag").Return(true)
 		cg.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "redeal", Detail: "test"},
+			{TurnNumber: 1, ActionType: "redeal", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 		p := new(StHelenaWebPresenter)
 		assert.Contains(t, p.ActionLogOutput(cg), "redeal")

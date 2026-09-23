@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra2
+//go:build !js || !wasm || extra6
 
 // Package domain ソッタ (Sutda / 섯다) のドメインモデル。
 package domain
@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // フェーズ。
@@ -166,8 +167,7 @@ func (s *Sutda) startHand() {
 
 	s.currentPlayer = (s.dealerIdx + 1) % len(s.players)
 	s.phase = SutdaPhaseBet
-	s.appendLog(-1, "deal", fmt.Sprintf("hand %d: dealer=%d, ante=%d, pot=%d",
-		s.handNumber, s.dealerIdx, SutdaAnte, s.pot), nil)
+	s.appendLog(-1, "deal", "sutda.log.deal", map[string]string{"hand": strconv.Itoa(s.handNumber), "dealer": strconv.Itoa(s.dealerIdx), "ante": strconv.Itoa(SutdaAnte), "pot": strconv.Itoa(s.pot)}, nil)
 }
 
 // draw は山から 1 枚引く。
@@ -229,10 +229,10 @@ func (s *Sutda) applyAction(playerIdx int, action string) error {
 	switch action {
 	case SutdaActionFold:
 		p.SetFolded(true)
-		s.appendLog(playerIdx, "fold", fmt.Sprintf("player %d folds", playerIdx), nil)
+		s.appendLog(playerIdx, "fold", "sutda.log.fold", map[string]string{"player": strconv.Itoa(playerIdx)}, nil)
 	case SutdaActionCall:
 		s.putIn(playerIdx, s.currentBet-p.GetBet())
-		s.appendLog(playerIdx, "call", fmt.Sprintf("player %d calls to %d", playerIdx, s.currentBet), nil)
+		s.appendLog(playerIdx, "call", "sutda.log.call", map[string]string{"player": strconv.Itoa(playerIdx), "bet": strconv.Itoa(s.currentBet)}, nil)
 	case SutdaActionRaise:
 		if !s.CanRaise(playerIdx) {
 			return NewDomainErrorCode(ErrInvalidPlay, "sutda.errCannotRaise", nil)
@@ -245,7 +245,7 @@ func (s *Sutda) applyAction(playerIdx int, action string) error {
 		for i := range s.actedThisRound {
 			s.actedThisRound[i] = false
 		}
-		s.appendLog(playerIdx, "raise", fmt.Sprintf("player %d raises to %d", playerIdx, s.currentBet), nil)
+		s.appendLog(playerIdx, "raise", "sutda.log.raise", map[string]string{"player": strconv.Itoa(playerIdx), "bet": strconv.Itoa(s.currentBet)}, nil)
 	default:
 		return NewDomainErrorCode(ErrInvalidPlay, "sutda.errUnknownAction",
 			map[string]string{"action": action})
@@ -364,7 +364,7 @@ func (s *Sutda) showdown() {
 	}
 
 	s.lastResult = &SutdaHandResult{Winners: winners, Pot: s.pot, Hands: hands, Folded: folded}
-	s.appendLog(-1, "showdown", fmt.Sprintf("hand %d: pot %d to %v", s.handNumber, s.pot, winners), nil)
+	s.appendLog(-1, "showdown", "sutda.log.showdown", map[string]string{"hand": strconv.Itoa(s.handNumber), "pot": strconv.Itoa(s.pot), "winners": fmt.Sprint(winners)}, nil)
 	// **配り終えたポットは 0 に戻す。** 残したままだと、勝者のチップと場の
 	// 両方に同じ額が乗って合計が増える ── 卓からチップが湧く。勝った額は
 	// lastResult.Pot が持っている。
@@ -413,7 +413,11 @@ func (s *Sutda) finishGame(winner int) {
 	s.gameEndFlag = true
 	s.winnerIdx = winner
 	s.phase = SutdaPhaseGameEnd
-	s.appendLog(-1, "gameEnd", fmt.Sprintf("player %d takes the table", winner), nil)
+	s.appendLog(-1, "gameEnd", "sutda.log.gameEnd", map[string]string{"winner": strconv.Itoa(winner)}, nil)
+}
+
+func (s *Sutda) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	s.appendLogCodeAt(len(s.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // IsHumanTurn は人間の手番かを返す。

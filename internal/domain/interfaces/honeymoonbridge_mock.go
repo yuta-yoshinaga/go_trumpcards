@@ -46,10 +46,17 @@ func (m *MockHoneymoonBridgeGame) NextBid() (int, int) {
 	return args.Int(0), args.Int(1)
 }
 
-func (m *MockHoneymoonBridgeGame) IsHumanTurn() bool     { return m.Called().Bool(0) }
-func (m *MockHoneymoonBridgeGame) IsHumanBidTurn() bool  { return m.Called().Bool(0) }
-func (m *MockHoneymoonBridgeGame) GetRoundNumber() int   { return m.Called().Int(0) }
-func (m *MockHoneymoonBridgeGame) GetTrickNumber() int   { return m.Called().Int(0) }
+func (m *MockHoneymoonBridgeGame) IsHumanTurn() bool    { return m.Called().Bool(0) }
+func (m *MockHoneymoonBridgeGame) IsHumanBidTurn() bool { return m.Called().Bool(0) }
+func (m *MockHoneymoonBridgeGame) GetRoundNumber() int  { return m.Called().Int(0) }
+func (m *MockHoneymoonBridgeGame) GetTrickNumber() int  { return m.Called().Int(0) }
+func (m *MockHoneymoonBridgeGame) GetDrawnIndices() []int {
+	args := m.Called()
+	if v := args.Get(0); v != nil {
+		return v.([]int)
+	}
+	return nil
+}
 func (m *MockHoneymoonBridgeGame) GetStockSize() int     { return m.Called().Int(0) }
 func (m *MockHoneymoonBridgeGame) GetTrumpSuit() int     { return m.Called().Int(0) }
 func (m *MockHoneymoonBridgeGame) GetDeclarerIdx() int   { return m.Called().Int(0) }

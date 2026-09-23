@@ -16,6 +16,7 @@
   "round": "Round {{n}}",
   "trick": "Trick {{n}}",
   "trump": "Trump: {{suit}}",
+  "trumpTitle": "Trump",
   "cards": "{{count}} cards",
   "tricks": "{{count}} tricks",
   "currentTrick": "Current Trick",

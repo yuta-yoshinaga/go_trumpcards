@@ -56,6 +56,24 @@ func TestSetteEMezzo_Reset(t *testing.T) {
 	}
 }
 
+func TestSetteEMezzo_BankerChangedIsTransientAndOnlyReportsAnActualChange(t *testing.T) {
+	s := newTestSetteEMezzo()
+	s.nextBanker = 0
+	s.Reset()
+	assert.True(t, s.GetBankerChanged())
+
+	data, err := json.Marshal(s)
+	require.NoError(t, err)
+	restored := NewDefaultSetteEMezzo()
+	restored.bankerChanged = true
+	require.NoError(t, json.Unmarshal(data, restored))
+	assert.False(t, restored.GetBankerChanged(), "transient announcement must not be persisted")
+
+	s.nextBanker = s.banker
+	s.Reset()
+	assert.False(t, s.GetBankerChanged(), "selecting the current banker is not a change")
+}
+
 // A brand-new session must open on the ordinary flow -- place a bet -- rather
 // than on "you deal". The zero value of `banker` is the human seat, so leaving
 // it unset would put every new player in the banker's chair before they had
@@ -646,9 +664,16 @@ func TestSetteEMezzo_ActionLog(t *testing.T) {
 	if len(log) == 0 {
 		t.Fatal("the deal should be logged")
 	}
-	if log[0].ActionType != "deal" {
-		t.Errorf("log[0].ActionType = %q, want deal", log[0].ActionType)
+	var dealLog *ActionLogEntry
+	for _, entry := range log {
+		if entry.ActionType == "deal" {
+			dealLog = entry
+		}
 	}
+	if dealLog == nil {
+		t.Fatal("deal action was not logged")
+	}
+	assert.Equal(t, "setteemezzo.log.deal", dealLog.DetailCode)
 }
 
 func TestSetteEMezzo_JSONRoundTrip(t *testing.T) {

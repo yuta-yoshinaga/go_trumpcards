@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // DehlaPakadPlayerCnt はプレイヤー数。
@@ -178,8 +179,7 @@ func (d *DehlaPakad) startHand() {
 	d.leadPlayer = DehlaPakadNextSeat(d.dealerIdx)
 	d.currentPlayer = d.leadPlayer
 	d.phase = DehlaPakadPhaseSelectTrump
-	d.appendLog(-1, "deal", fmt.Sprintf("hand %d: dealer=%d, %d cards each",
-		d.handNumber, d.dealerIdx, DehlaPakadFirstBatch), nil)
+	d.appendLog(-1, "deal", "dehlapakad.log.deal", map[string]string{"hand": strconv.Itoa(d.handNumber), "dealer": strconv.Itoa(d.dealerIdx), "cards": strconv.Itoa(DehlaPakadFirstBatch)}, nil)
 }
 
 // dealBatch は各席に n 枚ずつ配る (親の右隣から反時計回り)。
@@ -224,8 +224,7 @@ func (d *DehlaPakad) applySelectTrump(suit int) error {
 		dehlaPakadSortHand(p, d.trumpSuit)
 	}
 	d.phase = DehlaPakadPhasePlay
-	d.appendLog(d.GetTrumpChooserIdx(), "trump",
-		fmt.Sprintf("player %d calls %s", d.GetTrumpChooserIdx(), DehlaPakadSuitName(suit)), nil)
+	d.appendLog(d.GetTrumpChooserIdx(), "trump", "dehlapakad.log.trump", map[string]string{"player": strconv.Itoa(d.GetTrumpChooserIdx()), "suitKey": suitKeyOf(suit)}, nil)
 	return nil
 }
 
@@ -293,8 +292,7 @@ func (d *DehlaPakad) applyPlay(playerIdx, cardIndex int) error {
 	}
 	played := player.RemoveCard(cardIndex)
 	d.currentTrick = append(d.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: played})
-	d.appendLog(playerIdx, "play",
-		fmt.Sprintf("player %d plays %s", playerIdx, cardStr(played)), []*Card{played})
+	d.appendLog(playerIdx, "play", "dehlapakad.log.play", map[string]string{"player": strconv.Itoa(playerIdx), "card": cardStr(played)}, []*Card{played})
 
 	if len(d.currentTrick) < DehlaPakadPlayerCnt {
 		d.currentPlayer = DehlaPakadNextSeat(d.currentPlayer)
@@ -346,8 +344,7 @@ func (d *DehlaPakad) resolveTrick() {
 	d.lastTrick = d.currentTrick
 	d.lastTrickWinner = winner
 	d.currentTrick = nil
-	d.appendLog(winner, "trick_win",
-		fmt.Sprintf("player %d wins trick %d", winner, d.trickNumber), nil)
+	d.appendLog(winner, "trick_win", "dehlapakad.log.trickWin", map[string]string{"player": strconv.Itoa(winner), "trick": strconv.Itoa(d.trickNumber)}, nil)
 
 	lastTrick := d.trickNumber >= DehlaPakadTrickCount
 	if winner == d.prevTrickWinner || lastTrick {
@@ -377,13 +374,11 @@ func (d *DehlaPakad) collectCentrePile(winner int, lastTrick bool) {
 	}
 	d.teamTens[DehlaPakadTeamOf(winner)] += tens
 	d.players[winner].AddTrick(d.centrePile)
-	reason := "two in a row"
+	detailCode := "dehlapakad.log.collectTwoInARow"
 	if lastTrick && winner != d.prevTrickWinner {
-		reason = "last trick"
+		detailCode = "dehlapakad.log.collectLastTrick"
 	}
-	d.appendLog(winner, "collect",
-		fmt.Sprintf("player %d gathers %d card(s) (%s), %d ten(s)",
-			winner, len(d.centrePile), reason, tens), d.centrePile)
+	d.appendLog(winner, "collect", detailCode, map[string]string{"player": strconv.Itoa(winner), "cards": strconv.Itoa(len(d.centrePile)), "tens": strconv.Itoa(tens)}, d.centrePile)
 	d.centrePile = nil
 }
 
@@ -459,18 +454,21 @@ func (d *DehlaPakad) finishHand() {
 	}
 
 	d.phase = DehlaPakadPhaseHandEnd
-	d.appendLog(-1, "handEnd", fmt.Sprintf("hand %d: team %d wins (tens %v, kot=%v)",
-		d.handNumber, result.WinnerTeam, result.TeamTens, result.Kot), nil)
+	d.appendLog(-1, "handEnd", "dehlapakad.log.handEnd", map[string]string{"hand": strconv.Itoa(d.handNumber), "team": strconv.Itoa(result.WinnerTeam), "tens": fmt.Sprint(result.TeamTens), "kot": fmt.Sprint(result.Kot)}, nil)
 
 	for team := 0; team < DehlaPakadTeamCnt; team++ {
 		if d.teamKots[team] >= d.config.TargetKots {
 			d.gameEndFlag = true
 			d.winnerTeam = team
 			d.phase = DehlaPakadPhaseGameEnd
-			d.appendLog(-1, "gameEnd", fmt.Sprintf("team %d takes the match", team), nil)
+			d.appendLog(-1, "gameEnd", "dehlapakad.log.gameEnd", map[string]string{"team": strconv.Itoa(team)}, nil)
 			return
 		}
 	}
+}
+
+func (d *DehlaPakad) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	d.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // judgeHand は 10 の枚数からハンドの勝者を決める。

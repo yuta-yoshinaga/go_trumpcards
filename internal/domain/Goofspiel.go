@@ -167,7 +167,7 @@ func (g *Goofspiel) Reset() {
 	g.winnerIdx = -1
 	g.actionLog = nil
 
-	g.addLog(-1, "start", fmt.Sprintf("ゴフスピールを開始しました（%d 人）", g.config.PlayerCnt), nil)
+	g.addLog(-1, "start", "goofspiel.log.start", map[string]string{"players": fmt.Sprintf("%d", g.config.PlayerCnt)}, nil)
 	g.revealPrize()
 }
 
@@ -182,8 +182,7 @@ func (g *Goofspiel) revealPrize() {
 	g.roundNumber++
 	g.phase = GoofspielPhaseBid
 	g.bids = make([]*Card, len(g.players))
-	g.addLog(-1, "prize", fmt.Sprintf("賞札 %d が公開されました", goofspielRank(g.currentPrize)),
-		[]*Card{g.currentPrize})
+	g.addLog(-1, "prize", "goofspiel.log.prize", map[string]string{"rank": fmt.Sprintf("%d", goofspielRank(g.currentPrize))}, []*Card{g.currentPrize})
 }
 
 // PrizeValue はいま懸かっている得点を返す (持ち越しを含む)。
@@ -311,18 +310,16 @@ func (g *Goofspiel) resolve() {
 		g.lastGained = 0
 		if g.config.TieRule == GoofspielTieCarryOver {
 			g.carriedPrizes = append(g.carriedPrizes, g.currentPrize)
-			g.addLog(-1, "tie", fmt.Sprintf("同点。賞札 %d は次に持ち越します",
-				goofspielRank(g.currentPrize)), nil)
+			g.addLog(-1, "tie", "goofspiel.log.tieCarry", map[string]string{"rank": fmt.Sprintf("%d", goofspielRank(g.currentPrize))}, nil)
 		} else {
-			g.addLog(-1, "tie", fmt.Sprintf("同点。賞札 %d は流れました",
-				goofspielRank(g.currentPrize)), nil)
+			g.addLog(-1, "tie", "goofspiel.log.tieDiscard", map[string]string{"rank": fmt.Sprintf("%d", goofspielRank(g.currentPrize))}, nil)
 		}
 	default:
 		g.players[winner].AddScore(prize)
 		g.lastWinnerIdx = winner
 		g.lastGained = prize
 		g.carriedPrizes = nil
-		g.addLog(winner, "win", fmt.Sprintf("%d 点を獲得しました", prize), nil)
+		g.addLog(winner, "win", "goofspiel.log.win", map[string]string{"points": fmt.Sprintf("%d", prize)}, nil)
 	}
 
 	g.currentPrize = nil
@@ -354,8 +351,7 @@ func (g *Goofspiel) finish() {
 	g.phase = GoofspielPhaseGameEnd
 	g.gameEndFlag = true
 	g.winnerIdx = g.leaderIdx()
-	g.addLog(g.winnerIdx, "result",
-		fmt.Sprintf("%d 点でいちばん多く取りました", g.players[g.winnerIdx].GetScore()), nil)
+	g.addLog(g.winnerIdx, "result", "goofspiel.log.result", map[string]string{"points": fmt.Sprintf("%d", g.players[g.winnerIdx].GetScore())}, nil)
 }
 
 // leaderIdx は得点のいちばん高い席を返す (同点なら若い席)。
@@ -386,7 +382,7 @@ func (g *Goofspiel) GiveUp() {
 		best = 0
 	}
 	g.winnerIdx = best
-	g.addLog(0, "giveup", "投了しました", nil)
+	g.addLog(0, "giveup", "goofspiel.log.giveup", nil, nil)
 }
 
 // chooseCpuCard は CPU の入札を選ぶ。
@@ -440,8 +436,8 @@ func (g *Goofspiel) GetHint() *GoofspielHint {
 }
 
 // addLog は棋譜に 1 行足す。
-func (g *Goofspiel) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.appendLog(playerIdx, actionType, detail, cards)
+func (g *Goofspiel) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // GetConfig は設定を返す。

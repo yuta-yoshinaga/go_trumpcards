@@ -150,6 +150,14 @@ function DilotiPageContent() {
   const declareCands = selectedHandIdx !== null ? (state.declareOptions[selectedHandIdx] ?? []) : [];
   const mayTrail = selectedHandIdx !== null && (state.canTrail[selectedHandIdx] ?? false);
   const handValidIndices = canPlay ? humanPlayer?.cards.map((_, i) => i) : undefined;
+  const moveKinds = canPlay
+    ? state.takeOptions.map((takesForCard, i) => {
+        const canTake = takesForCard.length > 0;
+        const canDeclare = (state.declareOptions[i] ?? []).length > 0;
+        const canLayOff = state.canTrail[i] ?? false;
+        return canTake || canDeclare || canLayOff ? { canTake, canDeclare, canLayOff } : null;
+      })
+    : undefined;
 
   /** Renders a capture target list as "1, 2, decl 0". */
   const takeLabel = (tableIdxs: number[], declIdxs: number[]) =>
@@ -381,17 +389,34 @@ function DilotiPageContent() {
 
           <GameFooter className={`${gameTheme.diloti.footer} px-4 py-2.5`}>
             {humanPlayer && (
-              <PlayerHandSection
-                humanPlayer={humanPlayer}
-                selectedCardIndices={selectedHandIdx === null ? [] : [selectedHandIdx]}
-                toggleCard={selectHand}
-                cardWidth={cardWidth}
-                isMobile={isMobile}
-                dataTutorialPrefix="diloti"
-                validIndices={handValidIndices}
-                legalIndices={handValidIndices}
-                restrictedTooltip={t('restrictedTooltip')}
-              />
+              <div data-testid="diloti-move-markers">
+                <PlayerHandSection
+                  humanPlayer={humanPlayer}
+                  selectedCardIndices={selectedHandIdx === null ? [] : [selectedHandIdx]}
+                  toggleCard={selectHand}
+                  cardWidth={cardWidth}
+                  isMobile={isMobile}
+                  dataTutorialPrefix="diloti"
+                  validIndices={handValidIndices}
+                  legalIndices={handValidIndices}
+                  restrictedTooltip={t('restrictedTooltip')}
+                  cardBadgeFor={(idx) => {
+                    const kind = moveKinds?.[idx];
+                    if (!kind) return null;
+                    const labels = [
+                      kind.canTake ? t('action.capture') : '',
+                      kind.canDeclare ? t('action.declare') : '',
+                      kind.canLayOff ? t('action.trail') : '',
+                    ].filter(Boolean);
+                    return {
+                      glyph: [kind.canTake ? '取' : '', kind.canDeclare ? '宣' : '', kind.canLayOff ? '置' : '']
+                        .filter(Boolean)
+                        .join('/'),
+                      title: labels.join(' / '),
+                    };
+                  }}
+                />
+              </div>
             )}
 
             <ErrorAlert message={error} onRetry={retry} />

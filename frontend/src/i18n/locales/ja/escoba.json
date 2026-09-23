@@ -23,7 +23,8 @@
     "humanStats": "手札{{cards}}枚 / 捕獲{{captured}}枚 / エスコバ{{escoba}}",
     "playerScore": "P{{id}}: {{score}}pt",
     "escobaBadge": "エスコバ！",
-    "escobaBadgeOwn": "エスコバ！ あなた"
+    "escobaBadgeOwn": "エスコバ！ あなた",
+    "cardValues": "捕獲判定では、J=8、Q=9、K=10として数えます。"
   },
   "captured": {
     "title": "獲得した札",

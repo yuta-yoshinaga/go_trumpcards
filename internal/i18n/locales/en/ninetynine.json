@@ -1,4 +1,11 @@
 {
+  "log.trickWin": "{{player}} wins trick {{trick}}",
+  "log.bidSuccess": "{{player}} declared {{bid}}, took {{tricks}}: +{{score}} (bonus +{{bonus}})",
+  "log.bidFail": "{{player}} declared {{bid}}, took {{tricks}}: 0",
+  "log.cumulativeScore": "{{player}}: total={{total}}",
+  "log.bid": "{{player}} buries 3 and declares {{bid}}",
+  "log.play": "{{player}} plays {{card}}",
+  "log.gameEnd": "{{player}} wins the game!",
   "helpTitle": "Ninety-Nine",
   "helpBid": "  b <i> <j> <k>        bury 3 cards to declare a bid",
   "helpPlay": "  p <idx>              play a card",
@@ -10,7 +17,7 @@
   "trumpSuit": "Trump: {{suit}}",
   "dealer": "Dealer: {{name}}",
   "bidPending": "no bid",
-  "playerLine": "{{name}}: declared={{bid}} won {{tricks}} tricks, cum {{cum}}pt deal {{round}}pt {{cards}} cards",
+  "playerLine": "{{name}}: declared={{bid}} won {{tricks}} tricks, cum {{cum}}pt deal {{round}}pt {{cards}} cards buried {{buried}}",
   "gameEnd": "Game over! {{name}} wins!",
   "promptBid": "Bid phase — {{name}} to act",
   "promptBidHelp": "b <i> <j> <k> — bury 3 cards (suit sum ♦=0/♠=1/♥=2/♣=3 = declared tricks)",
@@ -25,5 +32,8 @@
   "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
   "helpExamplePlay": "  p 0                  play hand card 0",
   "helpHint": "  h                    show a hint",
-  "successBonusLine": "Success bonus: +{{bonus}} to each player who made their bid (higher when fewer do)"
+  "successBonusLine": "Success bonus: +{{bonus}} to each player who made their bid (higher when fewer do)",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errBuryCount": "You must specify {{count}} cards to bury.",
+  "errDuplicateCardIndex": "You cannot specify the same card more than once."
 }

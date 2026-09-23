@@ -56,6 +56,7 @@ function makeState(overrides?: Partial<TwoTenJackResponse>): TwoTenJackResponse 
     gameEndFlag: false,
     winnerTeam: -1,
     leadPlayerIdx: 0,
+    validPlayIndices: [],
     message: '',
     config: { cpuDifficulty: 1, pointLimit: 50 },
     ...overrides,

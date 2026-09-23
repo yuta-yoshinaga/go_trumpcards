@@ -52,7 +52,7 @@ func (p *QuodlibetCuiPresenter) writeHeader(b *strings.Builder, g interfaces.Quo
 
 // quodlibetContractLabel はコントラクトの訳名を返す。
 func quodlibetContractLabel(contract int) string {
-	return i18n.T("quodlibet.contractName." + domain.QuodlibetContractName(contract))
+	return i18n.T(domain.QuodlibetContractKey(contract))
 }
 
 // writeSeats は席ごとの罰点と手札を書く。

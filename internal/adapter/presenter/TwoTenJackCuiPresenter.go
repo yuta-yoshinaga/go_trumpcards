@@ -40,13 +40,13 @@ func twoTenJackPlayerStr(player *domain.TwoTenJackPlayer, i int) string {
 func twoTenJackSuitLabel(suit int) string {
 	switch suit {
 	case domain.CardDesignSpade:
-		return "SPADE"
+		return i18n.T("common.suit.spade")
 	case domain.CardDesignClover:
-		return "CLUB"
+		return i18n.T("common.suit.club")
 	case domain.CardDesignHeart:
-		return "HEART"
+		return i18n.T("common.suit.heart")
 	case domain.CardDesignDiamond:
-		return "DIAMOND"
+		return i18n.T("common.suit.diamond")
 	}
 	return i18n.T("twotenjack.trumpUnset")
 }

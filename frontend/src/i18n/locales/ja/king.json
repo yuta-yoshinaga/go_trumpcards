@@ -79,7 +79,14 @@
     "avoid_low": "失点を避けるため低い札を出す",
     "win_high": "安全に勝てるので高い札で取りに行く",
     "avoidLow": "失点を避けるため低い札を出す",
-    "winHigh": "安全に勝てるので高い札で取りに行く"
+    "winHigh": "安全に勝てるので高い札で取りに行く",
+    "select_no_tricks": "強い札が少なく、トリックを避けやすい手札",
+    "select_no_hearts": "ハートが少ない手札",
+    "select_no_queens": "クイーンを持っていない手札",
+    "select_king_heart": "ハートのキングを安全に処理しやすい手札",
+    "select_no_last_two": "低い札が多く、最後の2トリックを避けやすい手札",
+    "select_no_men": "ジャックやキングが少ない手札",
+    "select_king_trump": "強い札と長いスートがある手札"
   },
   "tutorial": {
     "trickDisplay": "現在のトリックです。リードされたスートにマストフォロー。フォローできないときは任意の札を出せます。各コントラクトごとに避けるべき罰則カードが異なります。",
@@ -89,5 +96,6 @@
     "resetButton": "リセットボタンで新しいゲームを始められます。"
   },
   "hintRequested": "ヒントがあります",
-  "noHint": "ヒントはありません"
+  "noHint": "ヒントはありません",
+  "hintContract": "おすすめ: {{contract}} — {{reason}}"
 }

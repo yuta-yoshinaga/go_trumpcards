@@ -7,6 +7,10 @@
   "header": "Hand: {{hand}}  Baza: {{baza}}  Target: {{target}}",
   "matchLine": "Match: You={{p0}}  CPU={{p1}}",
   "stakeLine": "Stake: {{stake}}  ({{level}})",
+  "manoLine": "Mano: {{name}}",
+  "historyTitle": "Baza history",
+  "historyWinner": "Baza {{baza}}: {{name}} wins",
+  "historyParda": "Baza {{baza}}: Parda (tie)",
   "playerLine": "{{name}}: {{tricks}} bazas won, {{cards}} cards",
   "levelNone": "None",
   "levelTruco": "Truco",
@@ -32,5 +36,16 @@
   "hintReasonFollowDump": "dump a weak card",
   "helpExamplePlay": "  p 0                  play hand card 0",
   "helpHint": "  h                    show a hint",
-  "helpLog": "  l                    show the action log"
+  "helpLog": "  l                    show the action log",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errCannotRaiseNow": "You cannot raise any further.",
+  "log.truco": "{{name}} calls {{level}}",
+  "log.accept": "{{name}} accepts (stake {{stake}})",
+  "log.decline": "{{name}} declines; {{winner}} wins hand ({{points}} pt)",
+  "log.play": "{{name}} plays {{card}}",
+  "log.bazaTie": "Baza {{baza}}: parda",
+  "log.bazaWin": "{{name}} wins baza {{baza}}",
+  "log.handEnd": "Hand {{hand}}: {{name}} +{{points}} (match {{p0}}-{{p1}})",
+  "log.gameEnd": "Match end: {{p0}}-{{p1}}",
+  "log.deal": "Hand {{hand}} dealt (dealer={{dealer}})"
 }

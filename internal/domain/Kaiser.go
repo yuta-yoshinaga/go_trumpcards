@@ -30,6 +30,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // KaiserPlayerCnt はプレイヤー数 (4 人 2 対 2)。
@@ -304,7 +305,7 @@ func (k *Kaiser) beginHand() {
 	k.kitty = append([]*Card(nil), k.deck[pos:]...)
 
 	k.bidIdx = (k.dealerIdx + 1) % KaiserPlayerCnt
-	k.addLog(-1, "deal", fmt.Sprintf("8 cards each with a kitty of %d", len(k.kitty)), nil)
+	k.addLog(-1, "deal", "kaiser.log.deal", map[string]string{"kitty": strconv.Itoa(len(k.kitty))}, nil)
 }
 
 // checkBidTurn はビッドできる状態かを確かめる。
@@ -358,7 +359,7 @@ func (k *Kaiser) Bid(player, value int, contract KaiserContract) error {
 	k.bids = append(k.bids, bid)
 	k.highBid = bid
 	k.passCount = 0
-	k.addLog(player, "bid", fmt.Sprintf("bids %d", value), nil)
+	k.addLog(player, "bid", "kaiser.log.bid", map[string]string{"value": strconv.Itoa(value)}, nil)
 	k.advanceBid()
 	return nil
 }
@@ -370,7 +371,7 @@ func (k *Kaiser) PassBid(player int) error {
 	}
 	k.bids = append(k.bids, &KaiserBid{Player: player, Value: 0})
 	k.passCount++
-	k.addLog(player, "pass", "passes", nil)
+	k.addLog(player, "pass", "kaiser.log.pass", nil, nil)
 	k.advanceBid()
 	return nil
 }
@@ -383,7 +384,7 @@ func (k *Kaiser) advanceBid() {
 	}
 	if k.highBid == nil && k.passCount >= KaiserPlayerCnt {
 		// **全員パスなら配り直し。**同じディーラーでもう一度配る。
-		k.addLog(-1, "redeal", "everybody passed", nil)
+		k.addLog(-1, "redeal", "kaiser.log.redeal", nil, nil)
 		k.handNumber--
 		k.beginHand()
 		return
@@ -402,7 +403,7 @@ func (k *Kaiser) settleBid() {
 	k.kitty = nil
 	k.phase = KaiserPhaseDiscard
 	k.currentIdx = k.declarerIdx
-	k.addLog(k.declarerIdx, "take_kitty", "takes the kitty", nil)
+	k.addLog(k.declarerIdx, "take_kitty", "kaiser.log.takeKitty", nil, nil)
 }
 
 // SetTrump は落札者が切札を指定する。
@@ -422,7 +423,7 @@ func (k *Kaiser) SetTrump(player, suit int) error {
 		return fmt.Errorf("bad suit: %d", suit)
 	}
 	k.trumpSuit = suit
-	k.addLog(player, "set_trump", fmt.Sprintf("names suit %d trump", suit), nil)
+	k.addLog(player, "set_trump", "kaiser.log.setTrump", map[string]string{"suit": strconv.Itoa(suit)}, nil)
 	return nil
 }
 
@@ -477,7 +478,7 @@ func (k *Kaiser) Discard(player int, idxs []int) error {
 	// **リードは落札者。**ディーラーの左隣ではない。
 	k.trickLeader = k.declarerIdx
 	k.currentIdx = k.declarerIdx
-	k.addLog(player, "discard", "discards two cards", nil)
+	k.addLog(player, "discard", "kaiser.log.discard", nil, nil)
 	return nil
 }
 
@@ -531,7 +532,7 @@ func (k *Kaiser) PlayCard(player, idx int) error {
 	card := p.GetCard(idx)
 	p.RemoveCard(idx)
 	k.trick = append(k.trick, card)
-	k.addLog(player, "play", "plays a card", []*Card{card})
+	k.addLog(player, "play", "kaiser.log.play", nil, []*Card{card})
 
 	if len(k.trick) < KaiserPlayerCnt {
 		k.currentIdx = (player + 1) % KaiserPlayerCnt
@@ -581,7 +582,7 @@ func (k *Kaiser) resolveTrick() {
 	k.trick = nil
 	k.trickLeader = winner
 	k.currentIdx = winner
-	k.addLog(winner, "trick", fmt.Sprintf("takes trick %d", k.trickNumber), nil)
+	k.addLog(winner, "trick", "kaiser.log.trick", map[string]string{"trick": strconv.Itoa(k.trickNumber)}, nil)
 
 	if k.trickNumber >= KaiserHandSize {
 		k.finishHand()
@@ -601,19 +602,19 @@ func (k *Kaiser) finishHand() {
 		if k.contract != KaiserContractTrump {
 			k.targetScore = KaiserNoTrumpTargetScore
 		}
-		k.addLog(k.declarerIdx, "hand_end", fmt.Sprintf("makes %d for a bid of %d", k.handPoints[declTeam], bid), nil)
+		k.addLog(k.declarerIdx, "hand_end", "kaiser.log.handEndMade", map[string]string{"points": strconv.Itoa(k.handPoints[declTeam]), "bid": strconv.Itoa(bid)}, nil)
 	} else {
 		k.bidMade = false
 		// **未達なら宣言額をそのままマイナス。**取った点は入らない。
 		k.scores[declTeam] -= bid
-		k.addLog(k.declarerIdx, "set", fmt.Sprintf("is set for %d", bid), nil)
+		k.addLog(k.declarerIdx, "set", "kaiser.log.set", map[string]string{"bid": strconv.Itoa(bid)}, nil)
 	}
 
 	// **45 点以上の側は自分がビッドしない限り加点できない。**
 	if k.scores[defTeam] < KaiserMustBidThreshold {
 		k.scores[defTeam] += k.handPoints[defTeam]
 	} else {
-		k.addLog(-1, "must_bid", fmt.Sprintf("team %d must bid to score from here", defTeam), nil)
+		k.addLog(-1, "must_bid", "kaiser.log.mustBid", map[string]string{"team": strconv.Itoa(defTeam)}, nil)
 	}
 
 	k.phase = KaiserPhaseHandEnd
@@ -637,7 +638,7 @@ func (k *Kaiser) checkGameEnd() {
 	}
 	k.gameEndFlag = true
 	k.phase = KaiserPhaseGameEnd
-	k.addLog(-1, "game_end", fmt.Sprintf("team %d wins", k.winnerTeam), nil)
+	k.addLog(-1, "game_end", "kaiser.log.gameEnd", map[string]string{"team": strconv.Itoa(k.winnerTeam)}, nil)
 }
 
 // NextHand は次の局を配る。
@@ -933,8 +934,8 @@ func (k *Kaiser) GetConfig() KaiserConfig { return k.config }
 func (k *Kaiser) SetConfig(c KaiserConfig) { k.config = c }
 
 // addLog は棋譜を 1 行足す。
-func (k *Kaiser) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	k.appendLog(playerIdx, actionType, detail, cards)
+func (k *Kaiser) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	k.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // SetPhaseForTest はテスト用にフェーズを設定する。

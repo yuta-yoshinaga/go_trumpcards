@@ -123,7 +123,7 @@ func (m *MonteCarlo) Remove(r1, c1, r2, c2 int) error {
 	m.board[r1][c1] = nil
 	m.board[r2][c2] = nil
 	m.removedCount += 2
-	m.appendLog("remove", fmt.Sprintf("(%d,%d) と (%d,%d) を取り除いた", r1, c1, r2, c2), []*Card{a, b})
+	m.appendLog("remove", "montecarlo.log.remove", map[string]string{"value1": fmt.Sprint(r1), "value2": fmt.Sprint(c1), "value3": fmt.Sprint(r2), "value4": fmt.Sprint(c2)}, []*Card{a, b})
 	m.checkGameClear()
 	m.checkMonteCarloStalemate()
 	return nil
@@ -138,7 +138,7 @@ func (m *MonteCarlo) Deal() error {
 	m.compressBoard()
 	m.fillBoardFromStock()
 	m.dealCount++
-	m.appendLog("deal", "山札からの補充", nil)
+	m.appendLog("deal", "montecarlo.log.deal", nil, nil)
 	m.checkGameClear()
 	m.checkMonteCarloStalemate()
 	return nil
@@ -175,7 +175,7 @@ func (m *MonteCarlo) CanUndo() bool {
 func (m *MonteCarlo) GiveUp() {
 	if m.phase == MonteCarloPhasePlaying {
 		m.phase = MonteCarloPhaseGameOver
-		m.appendLog("giveup", "ギブアップしました", nil)
+		m.appendLog("giveup", "montecarlo.log.giveup", nil, nil)
 	}
 }
 
@@ -403,13 +403,14 @@ func (m *MonteCarlo) takeSnapshot() {
 }
 
 // appendLog は棋譜エントリを追加する。
-func (m *MonteCarlo) appendLog(actionType, detail string, cards []*Card) {
+func (m *MonteCarlo) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	m.actionLog = append(m.actionLog, &ActionLogEntry{
-		TurnNumber: m.removedCount/2 + m.dealCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
+		TurnNumber:   m.removedCount/2 + m.dealCount,
+		PlayerIdx:    0,
+		ActionType:   actionType,
+		DetailCode:   detailCode,
+		DetailParams: detailParams,
+		Cards:        cards,
 	})
 }
 

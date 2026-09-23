@@ -28,6 +28,7 @@ func makeSpoilFivePlayers() []*domain.SpoilFivePlayer {
 
 func setupSpoilFiveCuiMock() *interfaces.MockSpoilFiveGame {
 	m := new(interfaces.MockSpoilFiveGame)
+	m.On("GetConfig").Return(domain.DefaultSpoilFiveConfig())
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
 	m.On("GetTrumpSuit").Return(domain.CardDesignSpade)
@@ -115,6 +116,17 @@ func TestSpoilFiveCuiPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestSpoilFiveCuiPresenter_OutputIncludesTargetPoints(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+
+	m, _ := setupSpoilFiveCuiMockWithPlayers()
+	out := new(presenter.SpoilFiveCuiPresenter).Output(m, nil)
+
+	assert.Contains(t, out, "目標: 30点")
+}
+
 func TestSpoilFiveCuiPresenter_HintOutput(t *testing.T) {
 	orig := color.NoColor()
 	color.SetNoColor(true)
@@ -133,14 +145,14 @@ func TestSpoilFiveCuiPresenter_HintOutput(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 13, false))
 		m.On("GetHint").Return(&domain.SpoilFiveHint{CardIndices: []int{0}, Reason: "lead_high"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 
 	t.Run("hint no card indices", func(t *testing.T) {
 		m, _ := setupSpoilFiveCuiMockWithPlayers()
 		m.On("GetHint").Return(&domain.SpoilFiveHint{CardIndices: nil, Reason: "take_trick"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 }
 
@@ -149,7 +161,7 @@ func TestSpoilFiveCuiPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockSpoilFiveGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You plays ♠K"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
 	m.On("GetPlayer", mock.Anything).Return(domain.NewSpoilFivePlayer(true)).Maybe()

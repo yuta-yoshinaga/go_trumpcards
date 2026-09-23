@@ -12,6 +12,7 @@
     "ante": "Ante",
     "bonus": "AA Bonus",
     "callBet": "Call",
+    "callAmount": "Call amount",
     "handRank": "Hand"
   },
   "button": {

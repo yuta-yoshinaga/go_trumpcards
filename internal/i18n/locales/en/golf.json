@@ -7,6 +7,7 @@
   "exposedCard": "({{col}}){{card}}",
   "playableCard": "({{col}}){{card}}*",
   "stockLine": "Stock: {{count}}",
+  "combo": "Combo ×{{count}}",
   "wasteCard": " | Waste: {{card}}",
   "wasteEmpty": " | Waste: [empty]",
   "holeScore": "Hole {{hole}}/{{holes}}  this deal: {{score}}  total: {{total}}",
@@ -17,5 +18,8 @@
   "helpExampleHint": "  h                        ask for a move",
   "helpUndo": "  u                        undo one move",
   "helpResetNine": "  r9                       reset 9-hole score",
-  "nineHoleStart": "9-hole scoring started"
+  "nineHoleStart": "9-hole scoring started",
+  "log.draw": "Draw a card from the stock",
+  "log.remove": "Remove card: column {{col}}",
+  "log.giveUp": "Give up"
 }

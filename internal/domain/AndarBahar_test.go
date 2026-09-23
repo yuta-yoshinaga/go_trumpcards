@@ -3,6 +3,7 @@
 package domain
 
 import (
+	"math/rand"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -15,6 +16,14 @@ func newAndarBaharForTest(t *testing.T) *AndarBahar {
 	require.Equal(t, AndarBaharPhaseBet, ab.GetPhase())
 	require.NotNil(t, ab.GetJoker(), "ベット前に基準札が公開されている")
 	return ab
+}
+
+func TestAndarBaharActionLogUsesDetailCode(t *testing.T) {
+	ab := &AndarBahar{}
+	ab.appendLogCode(0, "bet", "andarbahar.log.bet", map[string]string{"column": "アンダー", "amount": "100"}, nil)
+	entry := ab.GetActionLog()[0]
+	assert.Equal(t, "andarbahar.log.bet", entry.DetailCode)
+	assert.Equal(t, map[string]string{"column": "アンダー", "amount": "100"}, entry.DetailParams)
 }
 
 // **先に配る列は基準札の色で決まる。** 黒ならアンダー、赤ならバハール。
@@ -216,6 +225,59 @@ func TestAndarBaharSideBandsCoverEveryCount(t *testing.T) {
 	assert.False(t, ok)
 }
 
+func TestAndarBaharSideProbabilitiesSumToOne(t *testing.T) {
+	t.Parallel()
+
+	var total float64
+	for band := AndarBaharSideFirst; band <= AndarBaharSide36Plus; band++ {
+		probability, ok := AndarBaharSideProbability(band)
+		require.True(t, ok, "band %d", band)
+		total += probability
+	}
+	assert.InDelta(t, 1, total, 1e-9)
+
+	for _, band := range []int{AndarBaharSideNone, AndarBaharSide36Plus + 1} {
+		_, ok := AndarBaharSideProbability(band)
+		assert.False(t, ok, "band %d", band)
+	}
+}
+
+func TestAndarBaharSideProbabilitiesMatchMonteCarlo(t *testing.T) {
+	t.Parallel()
+
+	const trials = 200_000
+	rng := rand.New(rand.NewSource(7430))
+	counts := make([]int, AndarBaharSide36Plus+1)
+	deck := make([]bool, 51)
+	for range trials {
+		for i := range deck {
+			deck[i] = i < 3
+		}
+		rng.Shuffle(len(deck), func(i, j int) { deck[i], deck[j] = deck[j], deck[i] })
+		for i, match := range deck {
+			if match {
+				band := AndarBaharSideNone
+				for candidate := AndarBaharSideFirst; candidate <= AndarBaharSide36Plus; candidate++ {
+					lo, hi, ok := AndarBaharSideBand(candidate)
+					if ok && i+1 >= lo && i+1 <= hi {
+						band = candidate
+						break
+					}
+				}
+				require.NotEqual(t, AndarBaharSideNone, band)
+				counts[band]++
+				break
+			}
+		}
+	}
+
+	for band, count := range counts {
+		probability, ok := AndarBaharSideProbability(band)
+		require.True(t, ok, "band %d", band)
+		assert.InDelta(t, probability, float64(count)/trials, 0.005, "band %d", band)
+	}
+}
+
 func TestAndarBaharBetRejectsBadInput(t *testing.T) {
 	ab := newAndarBaharForTest(t)
 
@@ -314,8 +376,8 @@ func TestAndarBaharGetters(t *testing.T) {
 	ab.SetPhase(AndarBaharPhaseBet)
 	assert.Equal(t, AndarBaharPhaseBet, ab.GetPhase())
 
-	assert.Equal(t, "andar", andarBaharColumnName(AndarBaharBetAndar))
-	assert.Equal(t, "bahar", andarBaharColumnName(AndarBaharBetBahar))
-	assert.Equal(t, "unknown", andarBaharColumnName(99))
+	assert.Equal(t, "andarbahar.columnAndar", andarBaharColumnKey(AndarBaharBetAndar))
+	assert.Equal(t, "andarbahar.columnBahar", andarBaharColumnKey(AndarBaharBetBahar))
+	assert.Equal(t, "andarbahar.columnUnknown", andarBaharColumnKey(99))
 	assert.Zero(t, andarBaharRank(nil))
 }

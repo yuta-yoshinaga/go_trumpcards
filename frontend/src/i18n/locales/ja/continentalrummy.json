@@ -1,4 +1,9 @@
 {
+  "settings": {
+    "cpuDifficulty": "CPU難易度",
+    "totalRounds": "ラウンド数",
+    "difficulty": { "0": "Easy", "1": "Normal", "2": "Hard" }
+  },
   "title": "コンチネンタル・ラミー",
   "noSets": "**セットは 1 つも組になりません。** 15 枚すべてを同スートの連番で組みます。",
   "discardNotice": "まだ上がれません。手札を押して 1 枚捨ててください。",

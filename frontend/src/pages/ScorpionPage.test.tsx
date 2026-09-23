@@ -44,6 +44,7 @@ const playingState: ScorpionResponse = {
   ],
   stockCount: 3,
   completedSuits: 0,
+  completedSuitMask: 0,
   phase: 0,
   moveCount: 0,
   canUndo: false,
@@ -57,6 +58,7 @@ const gameClearState: ScorpionResponse = {
   phase: 1,
   moveCount: 42,
   completedSuits: 4,
+  completedSuitMask: 15,
   messageCode: 'scorpion.gameClear',
   messageParams: { moveCount: '42' },
 };
@@ -75,6 +77,13 @@ beforeEach(() => {
 });
 
 describe('ScorpionPage', () => {
+  it('passes the completed suit mask to the badge', async () => {
+    mockExec.mockResolvedValue({ ...playingState, completedSuitMask: 12 });
+    renderWithProviders(<ScorpionPage />);
+    await waitFor(() => expect(screen.getByTestId('suit-progress')).toHaveAttribute('aria-label', '2/4'));
+    expect(screen.getAllByTestId('suit-done')).toHaveLength(2);
+  });
+
   it('renders heading', async () => {
     renderWithProviders(<ScorpionPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -151,6 +160,25 @@ describe('ScorpionPage', () => {
     expect(screen.getByRole('button', { name: '配る' })).toBeDisabled();
   });
 
+  it('shows autocomplete readiness and disables the button until all cards are face up', async () => {
+    renderWithProviders(<ScorpionPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const autocompleteButton = screen.getByTestId('autocomplete-button');
+    expect(autocompleteButton).toHaveAttribute('title', 'すべてのカードが表向きになるとクリックできます');
+    expect(autocompleteButton).toBeDisabled();
+
+    mockExec.mockResolvedValue({
+      ...playingState,
+      stockCount: 0,
+      tableau: playingState.tableau.map((column) => column.map((cell) => ({ ...cell, faceUp: true }))),
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.getByTestId('autocomplete-button')).not.toHaveAttribute('title');
+    expect(screen.getByTestId('autocomplete-button')).toBeEnabled();
+  });
+
   it('clicking deal with empty columns triggers shake on empty placeholders and skips API', async () => {
     const stateWithEmptyCol: ScorpionResponse = {
       ...playingState,
@@ -225,6 +253,11 @@ describe('ScorpionPage', () => {
   });
 
   it('autocomplete button triggers autocomplete command', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      stockCount: 0,
+      tableau: playingState.tableau.map((column) => column.map((cell) => ({ ...cell, faceUp: true }))),
+    });
     renderWithProviders(<ScorpionPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     const btn = screen.getByRole('button', { name: '自動完成' });

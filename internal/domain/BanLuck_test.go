@@ -16,6 +16,13 @@ func newBanLuckForTest(t *testing.T) *BanLuck {
 	return g
 }
 
+func TestBanLuckActionLogUsesDetailCode(t *testing.T) {
+	g := newBanLuckForTest(t)
+	entry := g.GetActionLog()[0]
+	assert.Equal(t, "banluck.log.reset", entry.DetailCode)
+	assert.Empty(t, entry.DetailParams)
+}
+
 // blStackNext は次に引かれる札を指定する。
 //
 // **引く札を配りに委ねると検査が配り依存になる。** 役の判定も親の義務ヒットも

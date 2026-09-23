@@ -21,6 +21,18 @@ func newPiedmonteseTarotForTest(t *testing.T, seats int) *PiedmonteseTarot {
 	return g
 }
 
+func TestPiedmonteseTarot_ActionLogUsesDetailCode(t *testing.T) {
+	g := newPiedmonteseTarotForTest(t, 4)
+	dealer := g.GetPlayers()[g.GetDealerIdx()]
+	dealer.Reset()
+	dealer.AddCard(NewCard(CardDesignHeart, 2, false))
+	dealer.AddCard(NewCard(CardDesignSpade, 3, false))
+	assert.NoError(t, g.PlayerScarto([]int{0, 1}))
+	entry := g.GetActionLog()[0]
+	assert.Equal(t, "piedmontesetarot.log.scarto", entry.DetailCode)
+	assert.Equal(t, map[string]string{"name": "You", "count": "2"}, entry.DetailParams)
+}
+
 // piedmonteseTarotPlayHand は 1 ディールを最後まで打つ。合法手の先頭を出し続ける
 // 乱暴な打ち方だが、**規則を書き直さずに** 1 ディールを通せる唯一の打ち方でもある。
 func piedmonteseTarotPlayHand(t *testing.T, g *PiedmonteseTarot) {
@@ -169,6 +181,11 @@ func TestPiedmonteseTarot_EveryCardIsAccountedForAfterADeal(t *testing.T) {
 				total += v
 			}
 			assert.Equal(t, PiedmonteseTarotTotalThirds, total, "%d 人卓で札の取り分が合わない", seats)
+			// **スカルト分はディーラーの取り分の一部。** 上の恒等式で書くと
+			// 何を入れても通るので、独立に読める 2 つの上界で挟む。
+			assert.LessOrEqual(t, g.GetScartoThirds(), g.CapturedThirds()[g.GetDealerIdx()],
+				"%d 人卓でスカルト分が親の取り分を超えている", seats)
+			assert.GreaterOrEqual(t, g.GetScartoThirds(), 0, "%d 人卓でスカルト分が負", seats)
 
 			sum := 0
 			for _, v := range g.GetDealScores() {
@@ -177,6 +194,25 @@ func TestPiedmonteseTarot_EveryCardIsAccountedForAfterADeal(t *testing.T) {
 			assert.Zero(t, sum, "%d 人卓のディール精算が釣り合っていない", seats)
 		}
 	}
+}
+
+func TestPiedmonteseTarot_ScartoBreakdownAlsoSumsWithoutScarto(t *testing.T) {
+	g := newPiedmonteseTarotForTest(t, 4)
+	piedmonteseTarotPlayHand(t, g)
+	dealer := g.GetDealerIdx()
+	scarto := append([]*Card(nil), g.scarto...)
+	assert.NotEmpty(t, scarto)
+	assert.Positive(t, g.GetScartoThirds())
+	for _, c := range scarto {
+		g.players[dealer].AddTrick([]*Card{c})
+	}
+	g.scarto = nil
+	total := 0
+	for _, thirds := range g.CapturedThirds() {
+		total += thirds
+	}
+	assert.Equal(t, PiedmonteseTarotTotalThirds, total)
+	assert.Zero(t, g.GetScartoThirds())
 }
 
 // **Matto は取られない。** 出した本人の獲得札に残り、トリックは他の札で決まる。
@@ -200,6 +236,31 @@ func TestPiedmonteseTarot_TheMattoStaysWithItsOwner(t *testing.T) {
 	assert.Equal(t, 3, countPiedmonteseTarotCards(g.GetPlayers()[2]), "♥9 の席が 3 枚取る")
 	assert.Equal(t, 1, countPiedmonteseTarotCards(g.GetPlayers()[1]), "Matto は出した本人に残る")
 	assert.Zero(t, countPiedmonteseTarotCards(g.GetPlayers()[0]))
+}
+
+// **最終でないトリックの勝者も直後に記録する。** この値は TrickEnd 中に
+// フロントが表示するため、最終トリックだけ記録しても不十分。
+func TestPiedmonteseTarot_RecordsWinnerAfterAnOrdinaryTrick(t *testing.T) {
+	t.Parallel()
+	cfg := DefaultPiedmonteseTarotConfig()
+	players := newPiedmonteseTarotPlayers(cfg.Seats)
+	g := NewPiedmonteseTarot(players, cfg)
+	for i, p := range players {
+		p.AddCard(NewCard(CardDesignHeart, i+2, false))
+	}
+	g.currentTrick = []*TrickCard{
+		{PlayerIdx: 0, Card: NewCard(CardDesignHeart, 2, false)},
+		{PlayerIdx: 1, Card: NewCard(CardDesignHeart, 3, false)},
+		{PlayerIdx: 2, Card: NewCard(CardDesignHeart, 9, false)},
+		{PlayerIdx: 3, Card: NewCard(CardDesignHeart, 4, false)},
+	}
+	g.trickNumber = 1
+	g.phase = PiedmonteseTarotPhaseTrickEnd
+
+	g.ResolveTrick()
+
+	assert.Equal(t, PiedmonteseTarotPhaseTrickEnd, g.GetPhase())
+	assert.Equal(t, 2, g.GetLastTrickWinner())
 }
 
 // countPiedmonteseTarotCards は獲得トリックの札数を返す。

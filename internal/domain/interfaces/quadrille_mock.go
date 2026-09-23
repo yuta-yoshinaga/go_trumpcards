@@ -172,6 +172,12 @@ func (_m *MockQuadrilleGame) GetCurrentTrick() []*domain.TrickCard {
 	return nil
 }
 
+// GetLastTrickWinner モック
+func (_m *MockQuadrilleGame) GetLastTrickWinner() int {
+	ret := _m.Called()
+	return ret.Get(0).(int)
+}
+
 // GetLeadPlayerIdx モック
 func (_m *MockQuadrilleGame) GetLeadPlayerIdx() int {
 	ret := _m.Called()

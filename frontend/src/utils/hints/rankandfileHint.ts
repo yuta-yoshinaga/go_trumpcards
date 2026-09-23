@@ -20,7 +20,7 @@ export function getRankAndFileHint(state: RankAndFileResponse): HintResult | nul
     return { targetAction: 'draw', reason: 'frontendHint.rankandfileDraw', confidence: 'moderate' };
   }
 
-  // **列 0 は正当な列。**真偽値で見ると先頭の山だけ落ちる。ファウンデーション
+  // **列 0 は正当な列。**真偽値で見ると先頭の山だけ落ちる。組札
   // など列を持たないゾーンは -1 で届くので、そこはゾーン名だけにする。
   const target = hint.toCol >= 0 ? `${hint.toZone}-${hint.toCol}` : hint.toZone;
   return { targetAction: target, reason: 'frontendHint.rankandfileMove', confidence: 'moderate' };

@@ -1,9 +1,10 @@
-//go:build !js || !wasm || casino
+//go:build !js || !wasm || extra6
 
 package presenter
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -133,6 +134,9 @@ func (p *DoppelkopfWebPresenter) buildPlayersOutput(g interfaces.DoppelkopfGame)
 // buildMessage ゲーム結果メッセージを構築
 func (p *DoppelkopfWebPresenter) buildMessage(g interfaces.DoppelkopfGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {
@@ -145,7 +149,18 @@ func (p *DoppelkopfWebPresenter) buildMessage(g interfaces.DoppelkopfGame, lastE
 		}
 		return "", "doppelkopf.playPhase.follow", nil
 	case domain.DoppelkopfPhaseTrickEnd:
-		return "", "doppelkopf.trickEnd", nil
+		winnerIdx := g.GetLeadPlayerIdx()
+		messageCode := "doppelkopf.trickEnd.cpuWin"
+		if winnerIdx >= 0 && winnerIdx < g.GetPlayerCnt() {
+			if winner := g.GetPlayer(winnerIdx); winner != nil && winner.GetIsHuman() {
+				messageCode = "doppelkopf.trickEnd.humanWin"
+			}
+		}
+		params := map[string]string{"points": strconv.Itoa(g.GetLastTrickPoints())}
+		if messageCode == "doppelkopf.trickEnd.cpuWin" {
+			params["winnerId"] = strconv.Itoa(winnerIdx)
+		}
+		return "", messageCode, params
 	case domain.DoppelkopfPhaseRoundEnd:
 		return "", "doppelkopf.roundEnd", nil
 	}

@@ -9,8 +9,8 @@
   "columnLabel": "列{{col}}: ",
   "columnEmpty": "[空]",
   "topCard": "[{{card}}]",
-  "stockLine": "Stock: {{count}}枚",
-  "discardLine": " | Discard: {{count}}/{{goal}}枚",
+  "stockLine": "ストック: {{count}}枚",
+  "discardLine": " | 捨札: {{count}}/{{goal}}枚",
   "redealLine": " | 配り直し: {{count}}回",
   "hintRemove": "ヒント: 露出4枚が揃っています。rm で捨てましょう",
   "hintMove": "ヒント: 列{{col}}を、同じランクの左の山へ重ねましょう",
@@ -26,5 +26,10 @@
   "loopDetected": "同じ盤面が繰り返しています。これ以上は進みません",
   "helpExampleHint": "  h                         次の一手を教えてもらう",
   "helpUndo": "  u                        1手戻す",
-  "helpLog": "  l                        棋譜を表示"
+  "helpLog": "  l                        棋譜を表示",
+  "log.draw": "各列にカードを配りました",
+  "log.remove": "4枚のランクが揃ったので取り除きました",
+  "log.move": "カード移動: 列{{fromCol}}→列{{toCol}}",
+  "log.redeal": "集めて配り直しました ({{count}}回目)",
+  "log.giveUp": "ギブアップしました"
 }

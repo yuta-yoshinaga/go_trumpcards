@@ -20,6 +20,15 @@ func nertzGameForTest(t *testing.T) *domain.Nertz {
 	return g
 }
 
+func findNertzActionLogEntry(entries []*domain.ActionLogEntry, code string) *domain.ActionLogEntry {
+	for _, entry := range entries {
+		if entry.DetailCode == code {
+			return entry
+		}
+	}
+	return nil
+}
+
 func TestNewDefaultNertz(t *testing.T) {
 	g := domain.NewDefaultNertz()
 	require.NotNil(t, g)
@@ -89,6 +98,9 @@ func TestNertz_DrawStock_DefaultDraw3(t *testing.T) {
 	p := g.GetPlayers()[0]
 	stockBefore := p.StockSize()
 	require.NoError(t, g.DrawStock(0))
+	entry := findNertzActionLogEntry(g.GetActionLog(), "nertz.log.draw")
+	require.NotNil(t, entry)
+	assert.Empty(t, entry.DetailParams)
 	assert.Equal(t, stockBefore-3, p.StockSize())
 	assert.Equal(t, 3, p.WasteSize())
 }

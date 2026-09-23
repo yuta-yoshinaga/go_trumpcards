@@ -47,5 +47,14 @@
   "helpExampleCall": "  c                    call the current bet",
   "helpHint": "  h                    show a hint",
   "helpLog": "  l                    show the action log",
-  "completeBadugiWarning": "✨ Badugi complete ({{size}} cards). Drawing now can only weaken it"
+  "completeBadugiWarning": "✨ Badugi complete ({{size}} cards). Drawing now can only weaken it",
+  "log.ante": "ante {{amount}} chips",
+  "log.exchange": "draw {{draw}}: exchange {{count}} card(s)",
+  "log.showdown": "showdown: {{hand}}",
+  "log.fold": "fold",
+  "log.check": "check",
+  "log.call": "call {{amount}}",
+  "log.bet": "bet {{amount}}",
+  "log.raise": "raise to {{amount}}",
+  "log.allIn": "all in {{amount}}"
 }

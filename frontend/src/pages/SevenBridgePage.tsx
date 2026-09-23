@@ -240,6 +240,15 @@ function SevenBridgePageContent() {
               <div>
                 <div className="my-3 p-2 rounded bg-black/30">
                   <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
+                  {/* This page has no skeleton early-return -- it renders with
+                      state?. throughout -- so omit the line entirely when state
+                      is null. A ?? 0 fallback would announce "target: 0", and
+                      the score rows below render nothing in that case. */}
+                  {state && (
+                    <div data-testid="sb-target-score" className="text-ds-text-muted text-sm mb-1">
+                      {t('target', { points: state.config.pointLimit })}
+                    </div>
+                  )}
                   <table className="w-full text-sm text-ds-text-muted">
                     <thead>
                       <tr>

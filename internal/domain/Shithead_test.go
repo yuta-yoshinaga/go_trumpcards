@@ -187,6 +187,7 @@ func TestShitheadApplyPlay_TenBurnsPile(t *testing.T) {
 	require.NoError(t, err)
 	assert.Empty(t, s.GetDiscardPile(), "10 burns the pile")
 	assert.True(t, s.GetHumanAction().Burned)
+	assert.Len(t, shitheadLogsByCode(s.GetActionLog(), "shithead.log.burned"), 1)
 	// same player goes again on burn (still human)
 	assert.Equal(t, 0, s.GetCurrentTurn())
 }
@@ -275,6 +276,60 @@ func TestShitheadApplyPlay_MultipleSameValue(t *testing.T) {
 	assert.Equal(t, 0, s.GetPlayer(0).GetCardsSize())
 }
 
+func TestShitheadPlayLogsUseSourceAndCardCount(t *testing.T) {
+	tests := []struct {
+		name     string
+		source   string
+		oneCode  string
+		manyCode string
+	}{
+		{name: "hand", source: ShitheadSourceHand, oneCode: "shithead.log.playOneFromHand", manyCode: "shithead.log.playManyFromHand"},
+		{name: "face up", source: ShitheadSourceFaceUp, oneCode: "shithead.log.playOneFromFaceUp", manyCode: "shithead.log.playManyFromFaceUp"},
+		{name: "face down", source: ShitheadSourceFaceDown, oneCode: "shithead.log.playOneFromFaceDown", manyCode: "shithead.log.playManyFromFaceDown"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name+" one", func(t *testing.T) {
+			s := newTestShithead(DefaultShitheadConfig())
+			resetEmpty(s)
+			s.GetPlayer(0).AddCard(NewCard(CardDesignDiamond, 5, false))
+
+			s.applyPlay(0, []*Card{NewCard(CardDesignSpade, 5, false)}, tt.source, true)
+
+			playLogs := shitheadLogsByCode(s.GetActionLog(), tt.oneCode)
+			require.Len(t, playLogs, 1)
+			assert.Equal(t, map[string]string{"card": "♠5"}, playLogs[0].DetailParams)
+			assert.Empty(t, shitheadLogsByCode(s.GetActionLog(), "shithead.log.burned"))
+			assert.Empty(t, shitheadLogsByCode(s.GetActionLog(), "shithead.log.skipped"))
+		})
+
+		t.Run(tt.name+" many", func(t *testing.T) {
+			s := newTestShithead(DefaultShitheadConfig())
+			resetEmpty(s)
+			s.GetPlayer(0).AddCard(NewCard(CardDesignDiamond, 5, false))
+
+			s.applyPlay(0, []*Card{
+				NewCard(CardDesignSpade, 6, false),
+				NewCard(CardDesignHeart, 6, false),
+			}, tt.source, true)
+
+			playLogs := shitheadLogsByCode(s.GetActionLog(), tt.manyCode)
+			require.Len(t, playLogs, 1)
+			assert.Equal(t, map[string]string{"count": "2", "value": "6"}, playLogs[0].DetailParams)
+		})
+	}
+}
+
+func shitheadLogsByCode(entries []*ActionLogEntry, detailCode string) []*ActionLogEntry {
+	var matches []*ActionLogEntry
+	for _, entry := range entries {
+		if entry.DetailCode == detailCode {
+			matches = append(matches, entry)
+		}
+	}
+	return matches
+}
+
 func TestShitheadApplyPlay_RefillFromStock(t *testing.T) {
 	s := newTestShithead(DefaultShitheadConfig())
 	resetEmpty(s)
@@ -338,6 +393,14 @@ func TestShitheadAdvanceTurn_SkipsFinishedPlayers(t *testing.T) {
 	s.round.currentTurn = 0
 	s.advanceTurn()
 	assert.Equal(t, 2, s.GetCurrentTurn())
+}
+
+func TestShitheadActionLogUsesDetailCode(t *testing.T) {
+	s := &Shithead{}
+	s.appendLog(0, "pickup", "shithead.log.pickup", nil, nil)
+	entry := s.GetActionLog()[0]
+	assert.Equal(t, "shithead.log.pickup", entry.DetailCode)
+	assert.Empty(t, entry.DetailParams)
 }
 
 func TestShitheadCheckGameEnd_AssignsLastRank(t *testing.T) {

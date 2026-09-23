@@ -29,7 +29,11 @@ export function formatFreeBetState(state: FreeBetResponse): string {
 
   if (state.dealerCards.length > 0) {
     lines.push(formatSeparator());
-    lines.push(`Dealer: ${state.dealerCards.map(formatCard).join(' ')} = ${state.dealerScore}`);
+    if (state.dealerHoleRevealed) {
+      lines.push(`Dealer: ${state.dealerCards.map(formatCard).join(' ')} = ${state.dealerScore}`);
+    } else {
+      lines.push(`Dealer: ${formatCard(state.dealerCards[0])} (hole card hidden)`);
+    }
   }
 
   state.hands.forEach((h, i) => {

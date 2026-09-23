@@ -147,6 +147,15 @@ func TestHandAndFootWebPresenter_Output(t *testing.T) {
 		assert.Empty(t, resObj.MessageCode)
 	})
 
+	t.Run("domain error uses message code", func(t *testing.T) {
+		m, _ := setupHandAndFootWebMockWithPlayers()
+		result := p.Output(m, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "handandfoot.errCardIndexOutOfRange", nil))
+		var resObj controller.HandAndFootWebOutput
+		_ = json.Unmarshal([]byte(result), &resObj)
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "handandfoot.errCardIndexOutOfRange", resObj.MessageCode)
+	})
+
 	t.Run("game end human team wins", func(t *testing.T) {
 		m, _ := setupHandAndFootWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
@@ -213,7 +222,7 @@ func TestHandAndFootWebPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("with entries", func(t *testing.T) {
 		m := new(interfaces.MockHandAndFootGame)
 		entries := []*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "draw_stock", Detail: "drew", Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, true)}},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "draw_stock", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}, Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, true)}},
 		}
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetActionLog").Return(entries)

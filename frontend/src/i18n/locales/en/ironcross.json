@@ -34,6 +34,7 @@
   "button.raise": "Raise",
   "button.vertical": "Play vertical",
   "button.horizontal": "Play horizontal",
+  "touchLineHint": "Tap again to confirm",
   "button.next": "Next hand",
   "kbd.check": "K",
   "kbd.call": "C",

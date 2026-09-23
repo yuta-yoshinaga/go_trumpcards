@@ -118,6 +118,11 @@ func (p *GoFishWebPresenter) ActionLogOutput(gf interfaces.GoFishGame) string {
 	return actionLogOutputJSON(gf)
 }
 
+// HintOutput emits the normal state output for the client-side hint system.
+func (p *GoFishWebPresenter) HintOutput(gf interfaces.GoFishGame) string {
+	return p.Output(gf, nil)
+}
+
 // booksToOutput ブック配列をWeb出力形式に変換する
 func booksToOutput(books [][]*domain.Card) []*controller.GoFishWebOutputBook {
 	result := make([]*controller.GoFishWebOutputBook, 0, len(books))

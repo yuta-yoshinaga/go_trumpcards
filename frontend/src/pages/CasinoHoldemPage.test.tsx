@@ -44,6 +44,7 @@ const flopState: CasinoHoldemResponse = {
   community: [card('SPADE', 12), card('SPADE', 11), card('SPADE', 10)],
   anteBet: 100,
   chips: 900,
+  callBet: 200,
 };
 
 const endPlayerWins: CasinoHoldemResponse = {
@@ -140,6 +141,28 @@ describe('CasinoHoldemPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
     await waitFor(() => expect(screen.getByRole('button', { name: /コール/ })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
+    expect(screen.getByTestId('ch-flop-call-bet')).toHaveTextContent('コール額: 200');
+  });
+
+  it('shows the server-provided call amount for a different ante', async () => {
+    mockApi.mockResolvedValue({ ...flopState, anteBet: 150, callBet: 300 });
+    renderWithProviders(<CasinoHoldemPage />);
+    const callAmount = await screen.findByTestId('ch-flop-call-bet');
+    expect(callAmount).toHaveTextContent('コール額: 300');
+  });
+
+  it('does not show the flop call amount outside the flop phase', async () => {
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<CasinoHoldemPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    expect(screen.queryByTestId('ch-flop-call-bet')).not.toBeInTheDocument();
+  });
+
+  it('does not show the flop call amount in the end phase', async () => {
+    mockApi.mockResolvedValue(endPlayerWins);
+    renderWithProviders(<CasinoHoldemPage />);
+    await waitFor(() => expect(screen.getByTestId('payout-breakdown')).toBeInTheDocument());
+    expect(screen.getByTestId('payout-breakdown').querySelector('[data-testid="ch-flop-call-bet"]')).toBeNull();
   });
 
   it('shows end phase with player wins', async () => {

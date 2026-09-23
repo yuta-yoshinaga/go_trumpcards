@@ -20,5 +20,9 @@
   "targetsNone": "Column {{col}} has nowhere to go",
   "targetTableau": "column {{col}}",
   "targetFoundation": "foundation {{idx}}",
-  "helpTargets": "  t <col>                  list where that column's card can go"
+  "helpTargets": "  t <col>                  list where that column's card can go",
+  "log.moveTableauToTableau": "Move from tableau column {{fromCol}} to tableau column {{toCol}}",
+  "log.moveTableauToFoundation": "Move from tableau column {{col}} to foundation",
+  "log.giveUp": "Gave up",
+  "log.autoComplete": "Ran auto-complete"
 }

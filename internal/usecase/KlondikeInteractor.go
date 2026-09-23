@@ -10,6 +10,8 @@ import (
 
 // KlondikeInteractorIF クロンダイクインタラクターインタフェース
 type KlondikeInteractorIF interface {
+	// GetConfig 現在の設定を取得
+	GetConfig() domain.KlondikeConfig
 	// Snapshot serialises game state for KV persistence.
 	Snapshot() ([]byte, error)
 	// Reset ゲーム初期化
@@ -45,6 +47,11 @@ type KlondikeInteractor struct {
 	GameBase[interfaces.KlondikeGame]
 	kp presenter.KlondikePresenter
 	solitaireActions[interfaces.KlondikeGame]
+}
+
+// GetConfig 現在の設定を取得
+func (ki *KlondikeInteractor) GetConfig() domain.KlondikeConfig {
+	return ki.Game.GetConfig()
 }
 
 // NewKlondikeInteractor コンストラクタ

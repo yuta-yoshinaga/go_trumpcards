@@ -1,4 +1,4 @@
-//go:build !js || !wasm || classic
+//go:build !js || !wasm || extra7
 
 package presenter
 
@@ -96,6 +96,9 @@ func (p *ManilleWebPresenter) buildPlayersOutput(g interfaces.ManilleGame) []*co
 // buildMessage ゲーム結果メッセージを構築
 func (p *ManilleWebPresenter) buildMessage(g interfaces.ManilleGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

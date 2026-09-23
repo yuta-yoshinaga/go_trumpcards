@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra4
+//go:build !js || !wasm || extra7
 
 package presenter
 
@@ -131,6 +131,9 @@ func (p *SchafkopfWebPresenter) buildPlayersOutput(g interfaces.SchafkopfGame) [
 // buildMessage ゲーム結果メッセージを構築
 func (p *SchafkopfWebPresenter) buildMessage(g interfaces.SchafkopfGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

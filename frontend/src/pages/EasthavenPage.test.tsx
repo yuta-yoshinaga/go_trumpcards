@@ -58,6 +58,10 @@ beforeEach(() => {
 });
 
 describe('EasthavenPage', () => {
+  it('shows the persistent double-click foundation hint', async () => {
+    renderWithProviders(<EasthavenPage />);
+    expect(await screen.findByTestId('eh-doubleclick-hint')).toHaveTextContent('ダブルクリック');
+  });
   it('renders heading', async () => {
     renderWithProviders(<EasthavenPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());

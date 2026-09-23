@@ -28,7 +28,7 @@
   "teamScore": "チーム{{n}}: {{score}}",
   "dealerBadge": "親",
   "papiNote": "パパ4枚は同格 —— 同じトリックに複数出たら、後から出した方が勝ちます",
-  "scartoPrompt": "捨てる{{count}}枚を選んでください（切札とマットは選べません）",
+  "scartoPrompt": "{{count}}/{{total}} 枚選択中。捨てるカードを選んでください（切札とマットは選べません）",
   "scartoButton": "捨てる",
   "scartoDone": "スカルト済み: {{count}}枚",
   "playButton": "出す",

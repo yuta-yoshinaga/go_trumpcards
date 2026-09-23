@@ -31,6 +31,7 @@
   "points": "{{points}} pts",
   "score": "Score: {{score}}",
   "currentTrick": "Current Trick",
+  "previousTrickWinner": "Won by {{name}}",
   "players": "Players",
   "you": "You",
   "cpu": "CPU {{id}}",
@@ -64,7 +65,7 @@
     "title": "Deal Result",
     "outcome": "Result: {{outcome}}",
     "declarer": "Declarer: {{name}}",
-    "captured": "Captured: {{points}} pts"
+    "captured": "Declarer-side points: {{points}} pts"
   },
   "hintAvailable": "Hint",
   "hint": {

@@ -164,7 +164,7 @@ func (l *LaughAndLieDown) Reset() {
 	l.layout = append([]*Card(nil), deck[pos:]...)
 
 	l.currentIdx = (l.dealerIdx + 1) % len(l.players)
-	l.addLog(-1, "deal", "cards dealt", nil)
+	l.addLog(-1, "deal", "laughandliedown.log.deal", nil, nil)
 	l.skipPlayersWhoCannotCapture()
 }
 
@@ -254,7 +254,7 @@ func (l *LaughAndLieDown) PlayCard(player, handIdx, takeCount int) error {
 	taken := l.removeFromLayout(rank, takeCount)
 	l.won[player] = append(l.won[player], card)
 	l.won[player] = append(l.won[player], taken...)
-	l.addLog(player, "capture", fmt.Sprintf("captures %d card(s)", len(taken)+1), append([]*Card{card}, taken...))
+	l.addLog(player, "capture", "laughandliedown.log.capture", map[string]string{"count": fmt.Sprintf("%d", len(taken)+1)}, append([]*Card{card}, taken...))
 
 	l.advance()
 	return nil
@@ -321,7 +321,7 @@ func (l *LaughAndLieDown) lieDown(player int) {
 	l.layout = append(l.layout, thrown...)
 	l.laidDown[player] = true
 	p.SetIsFinished(true)
-	l.addLog(player, "liedown", fmt.Sprintf("lies down, adding %d card(s) to the table", len(thrown)), thrown)
+	l.addLog(player, "liedown", "laughandliedown.log.lieDown", map[string]string{"count": fmt.Sprintf("%d", len(thrown))}, thrown)
 }
 
 // playersHoldingCards は手札が残っている人数と、その最後の 1 人を返す。
@@ -370,7 +370,7 @@ func (l *LaughAndLieDown) finish(lastIn int) {
 	l.layout = nil
 	l.won[l.dealerIdx] = append(l.won[l.dealerIdx], residue...)
 	if len(residue) > 0 {
-		l.addLog(l.dealerIdx, "residue", fmt.Sprintf("takes the %d leftover card(s)", len(residue)), residue)
+		l.addLog(l.dealerIdx, "residue", "laughandliedown.log.residue", map[string]string{"count": fmt.Sprintf("%d", len(residue))}, residue)
 	}
 
 	l.settle()
@@ -496,13 +496,14 @@ func (l *LaughAndLieDown) SetLayoutForTest(cards []*Card) { l.layout = cards }
 func (l *LaughAndLieDown) SetCurrentPlayerForTest(idx int) { l.currentIdx = idx }
 
 // addLog は棋譜に 1 件追加する。
-func (l *LaughAndLieDown) addLog(player int, action, detail string, cards []*Card) {
+func (l *LaughAndLieDown) addLog(player int, action, detailCode string, detailParams map[string]string, cards []*Card) {
 	l.actionLog = append(l.actionLog, &ActionLogEntry{
-		TurnNumber: len(l.actionLog) + 1,
-		PlayerIdx:  player,
-		ActionType: action,
-		Detail:     detail,
-		Cards:      cards,
+		TurnNumber:   len(l.actionLog) + 1,
+		PlayerIdx:    player,
+		ActionType:   action,
+		DetailCode:   detailCode,
+		DetailParams: detailParams,
+		Cards:        cards,
 	})
 }
 

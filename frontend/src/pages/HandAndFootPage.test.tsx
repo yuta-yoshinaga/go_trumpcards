@@ -360,6 +360,12 @@ describe('HandAndFootPage', () => {
     mockExec.mockResolvedValue({ ...drawPhaseState, isFrozen: true });
     renderWithProviders(<HandAndFootPage />);
     await waitFor(() => expect(screen.getByTestId('hf-frozen-badge')).toBeInTheDocument());
+    expect(screen.getByTestId('hf-discard-pile')).toHaveClass(
+      'bg-ds-surface',
+      'border-ds-border-subtle',
+      'ring-2',
+      'ring-ds-info',
+    );
     expect(screen.getByTestId('hf-draw-discard-reason')).toHaveTextContent(
       'フリーズ中はワイルドカードでの代用ができません',
     );
@@ -393,6 +399,20 @@ describe('HandAndFootPage', () => {
     fireEvent.click(handCards[2]);
     expect(screen.getByTestId('hf-draw-discard-reason')).toHaveTextContent('選択は2枚までです');
     expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeDisabled();
+  });
+
+  it('includes the four core rules in the tutorial', async () => {
+    renderWithProviders(<HandAndFootPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'チュートリアル' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'チュートリアル' }));
+    const next = () => fireEvent.click(screen.getByRole('button', { name: '次へ' }));
+    next();
+    next();
+    next();
+    next();
+    expect(screen.getByRole('dialog')).toHaveTextContent(
+      '凍結中の捨て札を取るには、同ランクのナチュラルカードを2枚使います。',
+    );
   });
 
   afterEach(() => {

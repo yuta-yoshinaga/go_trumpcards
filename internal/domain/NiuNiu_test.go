@@ -5,6 +5,8 @@ package domain
 import (
 	"encoding/json"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // newTestNiuNiu returns a freshly reset NiuNiu.
@@ -433,6 +435,45 @@ func TestNiuNiu_SettleCreditsTheHumanStack(t *testing.T) {
 	}
 	if n.GetLastResult() == "" {
 		t.Error("the settlement should be summarised")
+	}
+	var resultLog *ActionLogEntry
+	for _, entry := range n.GetActionLog() {
+		if entry.ActionType == "result" {
+			resultLog = entry
+			break
+		}
+	}
+	if resultLog == nil {
+		t.Fatal("settlement should append a result log entry")
+	}
+	if resultLog.DetailCode == "niuniu.log.resultN" && resultLog.DetailParams["n"] == "" {
+		t.Error("rank N result should contain n")
+	}
+	if _, ok := resultLog.DetailParams["rank"]; ok {
+		t.Error("result log should not contain the raw rank")
+	}
+}
+
+func TestNiuNiu_SettleResultCodesCoverAllRanks(t *testing.T) {
+	tests := []struct {
+		name   string
+		banker []int
+		code   string
+		params map[string]string
+	}{
+		{"none", []int{1, 1, 2, 2, 3}, "niuniu.log.resultNone", nil},
+		{"niuniu", []int{10, 10, 10, 5, 5}, "niuniu.log.resultNiuNiu", nil},
+		{"n7", []int{1, 2, 7, 3, 4}, "niuniu.log.resultN", map[string]string{"n": "7"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			n := newTestNiuNiu()
+			setupNiuNiuRound(n, nnHandOf(1, 1, 2, 2, 3), nnHandOf(tt.banker...), 100)
+			n.settle()
+			entry := n.GetActionLog()[len(n.GetActionLog())-1]
+			assert.Equal(t, tt.code, entry.DetailCode)
+			assert.Equal(t, tt.params, entry.DetailParams)
+		})
 	}
 }
 

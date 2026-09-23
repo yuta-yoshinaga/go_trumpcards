@@ -2,7 +2,7 @@
   "helpTitle": "German Whist (ジャーマンホイスト)",
   "helpPlay": "  p <idx>              カードを出す",
   "helpGiveUp": "  g                    投了する",
-  "header": "トリック: {{trick}}/26  山札: {{stock}}枚  ({{phase}})",
+  "header": "トリック: {{trick}}/26  山札: {{stock}}枚  勝利条件: 後半{{target}}トリック  ({{phase}})",
   "phaseFirst": "前半: 表向きの札を取り合う (得点にならない)",
   "phaseSecond": "後半: 取ったトリックがそのまま得点",
   "trumpLine": "切り札: {{suit}}",
@@ -15,7 +15,7 @@
   "promptCurrentPlayer": "手番: {{name}}",
   "promptPlay": "play <idx>・・・カードを出す",
   "hintNone": "ヒントはありません。",
-  "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
+  "hintCard": "[ヒント: [{{idx}}]{{card}} ({{reason}})]",
   "hintReasonTakeUpCard": "表向きの札が欲しいので取りに行く",
   "hintReasonDuck": "表向きの札は要らないのでわざと負ける",
   "hintReasonWinTrick": "後半は得点になるので取りに行く",
@@ -24,5 +24,11 @@
   "suitHeart": "ハート",
   "suitDiamond": "ダイヤ",
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "log.trump": "切り札: {{card}}",
+  "log.play": "{{card}}を出しました",
+  "log.trickWin": "トリック{{trick}} を獲得",
+  "log.secondHalfStart": "後半（得点になるトリック）開始",
+  "log.result": "後半トリック {{p0}} - {{p1}}",
+  "log.giveUp": "ギブアップしました"
 }

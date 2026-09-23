@@ -19,5 +19,11 @@
   "hintLine": "Hint: {{from}} → {{to}}",
   "helpExampleHint": "  h                    ask for a move",
   "helpExampleAuto": "  ac                   send everything that can go to a foundation",
-  "helpUndo": "  u undo one move"
+  "helpUndo": "  u undo one move",
+  "log.tableauToTableau": "Tableau column {{from}}→tableau column {{to}}",
+  "log.tableauToFoundation": "Tableau column {{column}}→Foundation",
+  "log.reserveToTableau": "Reserve{{reserve}}→tableau column {{column}}",
+  "log.reserveToFoundation": "Reserve{{reserve}}→Foundation",
+  "log.giveup": "Gave up",
+  "log.autocomplete": "Auto-completed"
 }

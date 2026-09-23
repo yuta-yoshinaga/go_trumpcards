@@ -110,11 +110,12 @@ func (p *KoenigrufenWebPresenter) buildBase(g interfaces.KoenigrufenGame) *contr
 	resObj.TalonCount = g.GetTalonCount()
 	resObj.StashOwner = g.GetStashOwner()
 	resObj.Outcome = int(g.GetOutcome())
+	resObj.TeamPoints = g.GetTeamPoints()
 	resObj.Result = int(g.GetResult())
 	resObj.GameEndFlag = g.GetGameEndFlag()
 	resObj.WinnerPlayer = g.GetWinnerPlayer()
 	resObj.PlayerScores = g.GetPlayerScores()
-	resObj.LastTrickWinner = -1
+	resObj.LastTrickWinner = g.GetLastTrickWinner()
 	resObj.IsHumanTurn = g.IsHumanTurn()
 	resObj.IsHumanBidTurn = g.IsHumanBidTurn()
 	resObj.IsHumanCall = g.IsHumanCallTurn()
@@ -198,6 +199,9 @@ func (p *KoenigrufenWebPresenter) buildPlayersOutput(g interfaces.KoenigrufenGam
 // buildMessage ゲーム結果/フェーズメッセージを構築
 func (p *KoenigrufenWebPresenter) buildMessage(g interfaces.KoenigrufenGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

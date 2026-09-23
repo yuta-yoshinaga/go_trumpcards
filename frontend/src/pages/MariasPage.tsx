@@ -32,7 +32,7 @@ import { MARIAS_HELP, parseMariasCommand } from '../utils/cli/commands/mariasCom
 import { formatMariasState } from '../utils/cli/formatters/mariasFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
-import { playerName } from '../utils/playerUtils';
+import { findPlayerName, playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 unused). */
@@ -138,6 +138,13 @@ function MariasPageContent() {
 
   const canPlay = isPlayPhase && isHumanTurn;
   const trumpSymbol = SUIT_SYMBOLS[state.trumpSuit] ?? '?';
+  const marriageDetails = (playerIdx: number) =>
+    (state.roundMarriageSuits[playerIdx] ?? [])
+      .map(
+        (marriage) =>
+          `${t(`suitName.${['', 'spade', 'club', 'heart', 'diamond'][marriage.suit] ?? ''}`)}: ${marriage.points}`,
+      )
+      .join(', ');
 
   // **結婚ボーナスは配った時点で確定している。**`detectMarriages` はラウンド
   // 開始時に一度だけ走って `roundMarriage` に加点し、以後 K・Q を場に出しても
@@ -226,6 +233,12 @@ function MariasPageContent() {
                   players={state.players}
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
+                  winnerIdx={isTrickEnd ? state.lastTrickWinner : undefined}
+                  winnerLabel={
+                    isTrickEnd
+                      ? t('previousTrickWinner', { name: findPlayerName(state.players, state.lastTrickWinner) })
+                      : undefined
+                  }
                   dataTutorial="marias-trick-display"
                 />
               </div>
@@ -290,6 +303,7 @@ function MariasPageContent() {
                               name: playerName(p.id, p.isHuman),
                               points: state.roundMarriage[p.id] ?? 0,
                             })}
+                            <span className="ml-1">({marriageDetails(p.id)})</span>
                           </div>
                         )}
                       </div>
@@ -351,7 +365,7 @@ function MariasPageContent() {
                 role="status"
                 aria-live="polite"
               >
-                {t('marriageEarned', { points: marriagePoints })}
+                {t('marriageEarned', { points: marriagePoints, details: marriageDetails(humanIdx) })}
               </div>
             )}
             {humanPlayer && (

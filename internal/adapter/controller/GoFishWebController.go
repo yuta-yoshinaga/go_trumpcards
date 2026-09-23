@@ -113,6 +113,8 @@ func goFishDispatch(bc *baseController, w http.ResponseWriter, gi usecase.GoFish
 			return true
 		}
 		bc.writePresenterResponse(w, gi.Ask(*param.TargetIdx, *param.Rank))
+	case "hint":
+		bc.writePresenterResponse(w, gi.Hint())
 	default:
 		return dispatchLog(param.Command, bc, w, gi.ActionLog)
 	}

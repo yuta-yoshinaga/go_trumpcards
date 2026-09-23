@@ -881,6 +881,8 @@ func TestRankAndFile_ActionLog(t *testing.T) {
 	log := ft.GetActionLog()
 	assert.Equal(t, 1, len(log))
 	assert.Equal(t, "draw", log[0].ActionType)
+	assert.Equal(t, "rankandfile.log.draw", log[0].DetailCode)
+	assert.Nil(t, log[0].DetailParams)
 }
 
 // --- Rank and File's three divergences from Forty Thieves ---
@@ -984,7 +986,47 @@ func TestRankAndFile_SequenceStartsStopsAtTheBreakAndAtHiddenCards(t *testing.T)
 
 	assert.Equal(t, []int{3, 2}, ft.SequenceStarts(0), "top card first, stopping where the sequence breaks")
 	assert.Empty(t, ft.SequenceStarts(1), "an empty column has no sequence start")
+	assert.Nil(t, ft.SequenceStarts(-1), "a negative column is out of range")
 	assert.Nil(t, ft.SequenceStarts(domain.RankAndFileTableauCnt), "out of range is nil, not a panic")
+}
+
+func TestRankAndFile_LegalTargetsHandlesAvailableUnavailableAndUnmovable(t *testing.T) {
+	build := func() *domain.RankAndFile {
+		ft := setupPlayingRankAndFile()
+		clearRFTableau(ft)
+		var tableau [domain.RankAndFileTableauCnt][]*domain.RankAndFileTableauCard
+		tableau[0] = []*domain.RankAndFileTableauCard{makeRFTableauCard(domain.CardDesignHeart, 5)}
+		tableau[1] = []*domain.RankAndFileTableauCard{makeRFTableauCard(domain.CardDesignSpade, 6)}
+		for col := 2; col < domain.RankAndFileTableauCnt; col++ {
+			tableau[col] = []*domain.RankAndFileTableauCard{makeRFTableauCard(domain.CardDesignSpade, 4)}
+		}
+		ft.SetTableau(tableau)
+		return ft
+	}
+
+	t.Run("returns legal destinations", func(t *testing.T) {
+		assert.Equal(t, []int{1}, build().LegalTargets(0, 0))
+	})
+	t.Run("returns none when no column accepts the card", func(t *testing.T) {
+		ft := build()
+		tableau := ft.GetTableau()
+		tableau[1] = []*domain.RankAndFileTableauCard{makeRFTableauCard(domain.CardDesignSpade, 4)}
+		ft.SetTableau(tableau)
+		assert.Empty(t, ft.LegalTargets(0, 0))
+	})
+	t.Run("returns none for an invalid or out of range selection", func(t *testing.T) {
+		ft := build()
+		assert.Nil(t, ft.LegalTargets(-1, -1))
+		assert.Nil(t, ft.LegalTargets(0, 1))
+		assert.Nil(t, ft.LegalTargets(domain.RankAndFileTableauCnt, 0))
+	})
+	t.Run("returns none when the selected column is empty", func(t *testing.T) {
+		ft := build()
+		tableau := ft.GetTableau()
+		tableau[0] = nil
+		ft.SetTableau(tableau)
+		assert.Nil(t, ft.LegalTargets(0, -1))
+	})
 }
 
 // **CUI の短縮形が届くこと。**`m <from> <to>` は cardIndex に -1 を渡す

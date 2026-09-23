@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { baseballpokerApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BaseballPokerResponse, Card } from '../types/card';
 import { BaseballPhase } from '../types/phases';
@@ -288,6 +289,80 @@ describe('BaseballPokerPage', () => {
     await waitFor(() => expect(screen.getByTestId('bb-hand')).toBeInTheDocument());
     expect(screen.queryByTestId('bb-check')).not.toBeInTheDocument();
     expect(screen.queryByTestId('bb-pay')).not.toBeInTheDocument();
+  });
+
+  describe('キーボードショートカット', () => {
+    it('買い増し中は p で pay、b で buyfold を送り、通常時は無効にする', async () => {
+      mockApi.mockResolvedValue(
+        withState({ phase: BaseballPhase.BUY_IN, isBuying: true, isHumanTurn: false, buyerSeat: 0, buyCost: 80 }),
+      );
+      const { unmount } = renderWithProviders(<BaseballPokerPage />);
+      await waitFor(() => expect(screen.getByTestId('bb-pay')).toBeInTheDocument());
+
+      mockApi.mockClear();
+      fireEvent.keyDown(document, { key: 'p' });
+      await waitFor(() => expect(mockApi).toHaveBeenCalledWith('pay'));
+      expect(mockApi).not.toHaveBeenCalledWith('buyfold');
+
+      mockApi.mockClear();
+      fireEvent.keyDown(document, { key: 'b' });
+      await waitFor(() => expect(mockApi).toHaveBeenCalledWith('buyfold'));
+      expect(mockApi).not.toHaveBeenCalledWith('fold');
+      unmount();
+
+      mockApi.mockResolvedValue(base);
+      renderWithProviders(<BaseballPokerPage />);
+      await waitFor(() => expect(screen.getByTestId('bb-check')).toBeInTheDocument());
+      mockApi.mockClear();
+      fireEvent.keyDown(document, { key: 'p' });
+      fireEvent.keyDown(document, { key: 'b' });
+      await flushPendingDispatch();
+      expect(mockApi).not.toHaveBeenCalled();
+    });
+
+    it('betting 中で手番なら f で fold を送り、手番外では無効にする', async () => {
+      mockApi.mockResolvedValue(base);
+      const { unmount } = renderWithProviders(<BaseballPokerPage />);
+      await waitFor(() => expect(screen.getByTestId('bb-fold')).toBeInTheDocument());
+
+      mockApi.mockClear();
+      fireEvent.keyDown(document, { key: 'f' });
+      await waitFor(() => expect(mockApi).toHaveBeenCalledWith('fold'));
+      unmount();
+
+      mockApi.mockResolvedValue(withState({ isHumanTurn: false, turnSeat: 1 }));
+      renderWithProviders(<BaseballPokerPage />);
+      await waitFor(() => expect(screen.queryByTestId('bb-fold')).not.toBeInTheDocument());
+      mockApi.mockClear();
+      fireEvent.keyDown(document, { key: 'f' });
+      await flushPendingDispatch();
+      expect(mockApi).not.toHaveBeenCalled();
+    });
+
+    it('既存の k / c / n は従来どおり対応する', async () => {
+      mockApi.mockResolvedValue(base);
+      const { unmount } = renderWithProviders(<BaseballPokerPage />);
+      await waitFor(() => expect(screen.getByTestId('bb-check')).toBeInTheDocument());
+      mockApi.mockClear();
+      fireEvent.keyDown(document, { key: 'k' });
+      await waitFor(() => expect(mockApi).toHaveBeenCalledWith('check'));
+      unmount();
+
+      mockApi.mockResolvedValue(withState({ toCall: 20, currentBet: 20 }));
+      const callView = renderWithProviders(<BaseballPokerPage />);
+      await waitFor(() => expect(screen.getByTestId('bb-call')).toBeInTheDocument());
+      mockApi.mockClear();
+      fireEvent.keyDown(document, { key: 'c' });
+      await waitFor(() => expect(mockApi).toHaveBeenCalledWith('call'));
+      callView.unmount();
+
+      mockApi.mockResolvedValue(withState({ phase: BaseballPhase.SHOWDOWN, isHumanTurn: false }));
+      renderWithProviders(<BaseballPokerPage />);
+      await waitFor(() => expect(screen.getByRole('button', { name: '次のハンドへ' })).toBeInTheDocument());
+      mockApi.mockClear();
+      fireEvent.keyDown(document, { key: 'n' });
+      await waitFor(() => expect(mockApi).toHaveBeenCalledWith('next'));
+    });
   });
 
   it('ショーダウンで獲得額とワイルド使用を出し、次のハンドへ進める', async () => {

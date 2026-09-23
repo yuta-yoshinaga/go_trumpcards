@@ -452,8 +452,13 @@ func TestChineseTen_TheTurnedCardAlsoOffersAChoice(t *testing.T) {
 	// The hand card took the king outright; the flip found two fives and asks.
 	require.Equal(t, ChineseTenPhaseSelect, c.GetPhase(), "the turned five offers a choice")
 	require.Len(t, c.GetSelectableIndices(), 2)
+	// **画面はこの真偽で「出した札」と「めくれた札」を出し分ける。**この選択は
+	// 手札由来ではなく山札めくり由来なので、true でなければラベルが嘘になる。
+	assert.True(t, c.GetPendingFlip(), "この選択待ちは山札めくり由来")
 
 	require.NoError(t, c.SelectCapture(0, c.GetSelectableIndices()[0]))
+	// 消費したら降りる。次の手札由来の選択に持ち越すと今度は逆向きに嘘をつく。
+	assert.False(t, c.GetPendingFlip(), "選択を解決したら降りる")
 	// Four cards: the king pair from the hand, the five pair from the flip.
 	assert.Len(t, c.GetCaptured(0), 4)
 	// Resolving a FLIP's choice must not turn another card.

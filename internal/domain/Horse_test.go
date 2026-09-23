@@ -277,15 +277,25 @@ func TestHorse_Reset(t *testing.T) {
 	assert.Equal(t, "YOU", g.GetSeatName(0))
 	assert.False(t, g.GetGameEndFlag())
 	assert.NotEmpty(t, g.GetActionLog())
+	var resetLog *ActionLogEntry
+	for _, entry := range g.GetActionLog() {
+		if entry.DetailCode == "horse.log.reset" {
+			resetLog = entry
+			break
+		}
+	}
+	require.NotNil(t, resetLog)
+	assert.Empty(t, resetLog.DetailParams)
 }
 
 func TestHorse_PhaseGuards(t *testing.T) {
 	t.Parallel()
-	g := newHorseForTest(t)
+	g := NewHorse(HorseConfig{Seats: 4, InitialChips: 5000, HandsPerDiscipline: 2})
+	g.Reset()
 	assert.ErrorIs(t, g.NextHand(), errHorseWrongPhase, "ハンド中に次へ進めてしまう")
 
 	horseFoldOutHand(t, g)
-	assert.Equal(t, HorsePhaseHandEnd, g.GetPhase())
+	require.Equal(t, HorsePhaseHandEnd, g.GetPhase())
 	assert.ErrorIs(t, g.PlayerAction(HoldemActionFold, 0, 0), errHorseWrongPhase,
 		"決着後に手を受け付けてしまう")
 
@@ -323,6 +333,39 @@ func TestHorse_Accessors(t *testing.T) {
 
 	g.SetConfig(HorseConfig{Seats: 4, InitialChips: 500, HandsPerDiscipline: 1})
 	assert.Equal(t, 500, g.GetConfig().InitialChips)
+}
+
+func TestHorse_SeatStatusesAreReadFromEveryHorseDiscipline(t *testing.T) {
+	for _, discipline := range []HorseDiscipline{HorseHoldem, HorseOmahaHiLo, HorseStud, HorseTripleDraw} {
+		t.Run(HorseDisciplineName(discipline), func(t *testing.T) {
+			g := NewHorse(HorseConfig{Seats: 4, InitialChips: HorseDefaultChips, HandsPerDiscipline: 1})
+			g.discipline = discipline
+			g.startHand()
+			require.NotNil(t, g.table)
+			// 配られた直後に種目側の Reset が局を終える場合があるため、
+			// 他席の状態ではなく、設定した席の値だけを検証する。
+			g.horseStatusPlayer(1).SetFolded(true)
+			assert.True(t, g.GetSeatFolded(1))
+			g.horseStatusPlayer(1).SetFolded(false)
+			assert.False(t, g.GetSeatFolded(1))
+			g.horseStatusPlayer(2).SetAllIn(true)
+			assert.True(t, g.GetSeatAllIn(2))
+			g.horseStatusPlayer(2).SetAllIn(false)
+			assert.False(t, g.GetSeatAllIn(2))
+		})
+	}
+}
+
+func TestHorse_SeatStatusesAreFalseWithoutTableOrForUnseatedSeat(t *testing.T) {
+	g := NewHorse(HorseConfig{Seats: 4, InitialChips: HorseDefaultChips})
+	g.seatMap = []int{0, 1, 2, 3}
+
+	assert.False(t, g.GetSeatFolded(0))
+	assert.False(t, g.GetSeatAllIn(0))
+
+	g.SetDisciplineForTest(HorseHoldem)
+	assert.False(t, g.GetSeatFolded(-1))
+	assert.False(t, g.GetSeatAllIn(99))
 }
 
 func TestHorse_WinnerSeat(t *testing.T) {

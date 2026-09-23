@@ -201,7 +201,7 @@ func TestMonteCarloCuiPresenter_ActionLogOutput(t *testing.T) {
 		g := new(interfaces.MockMonteCarloGame)
 		g.On("GetPhase").Return(domain.MonteCarloPhaseGameOver)
 		g.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "remove", Detail: "test"},
+			{TurnNumber: 1, ActionType: "remove", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 
 		p := new(MonteCarloCuiPresenter)

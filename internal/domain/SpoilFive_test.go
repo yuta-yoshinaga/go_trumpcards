@@ -12,6 +12,15 @@ import (
 
 func sfCard(design, value int) *Card { return NewCard(design, value, false) }
 
+func TestSpoilFive_ActionLogUsesDetailCode(t *testing.T) {
+	g := newSfGame(true)
+	g.Reset()
+	entry := g.GetActionLog()[0]
+	assert.Equal(t, "spoilfive.log.roundStart", entry.DetailCode)
+	assert.Contains(t, entry.DetailParams, "round")
+	assert.Contains(t, entry.DetailParams, "name")
+}
+
 func newSfGame(human bool) *SpoilFive {
 	players := make([]*SpoilFivePlayer, SpoilFivePlayerCnt)
 	players[0] = NewSpoilFivePlayer(human)

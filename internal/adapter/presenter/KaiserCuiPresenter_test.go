@@ -37,6 +37,7 @@ func setupKaiserCuiMock(phase domain.KaiserPhase, trump int, contract domain.Kai
 	m.On("IsBidMade").Return(true)
 	m.On("GetTargetScore").Return(domain.KaiserTargetScore)
 	m.On("GetHighBid").Return(highBid)
+	m.On("GetBids").Return([]*domain.KaiserBid{}).Maybe()
 	m.On("GetHeartFiveBy").Return(-1).Maybe()
 	m.On("GetSpadeThreeBy").Return(-1).Maybe()
 	m.On("GetPlayers").Return(players)
@@ -122,6 +123,7 @@ func TestKaiserCuiPresenter_TellsASetHandApart(t *testing.T) {
 	m := setupKaiserCuiMock(domain.KaiserPhaseHandEnd, domain.CardDesignHeart, domain.KaiserContractTrump,
 		&domain.KaiserBid{Player: 1, Value: 8})
 	m.ExpectedCalls = nil
+	m.On("GetBids").Return([]*domain.KaiserBid{}).Maybe()
 	players := makeKaiserPlayers(nil, nil, nil, nil)
 	m.On("GetPhase").Return(domain.KaiserPhaseHandEnd)
 	m.On("GetHandNumber").Return(1)
@@ -157,6 +159,7 @@ func TestKaiserCuiPresenter_ErrorAndGameEnd(t *testing.T) {
 	assert.Contains(t, new(presenter.KaiserCuiPresenter).Output(m, errors.New("boom")), "boom")
 
 	end := new(interfaces.MockKaiserGame)
+	end.On("GetBids").Return([]*domain.KaiserBid{}).Maybe()
 	players := makeKaiserPlayers(nil, nil, nil, nil)
 	end.On("GetPhase").Return(domain.KaiserPhaseGameEnd)
 	end.On("GetHandNumber").Return(9)
@@ -371,5 +374,51 @@ func TestKaiserCuiPresenter_TracksTheTwoSpecialCards(t *testing.T) {
 
 		assert.Contains(t, out, i18n.Tf("kaiser.heartFiveTaken", "name", i18n.T("kaiser.notTakenYet")))
 		assert.Contains(t, out, i18n.Tf("kaiser.spadeThreeTaken", "name", i18n.T("kaiser.notTakenYet")))
+	})
+}
+
+// #7387: 競りの履歴は公開情報で、相方がいくつで入札し誰が降りたかは続けるか降りるかの
+// 判断そのもの。CUI でも 1 行ずつ表示し、パスは 0 ではなくパスと出す。
+func TestKaiserCuiPresenter_BiddingHistory(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	defer i18n.SetLang("ja")
+
+	p := new(presenter.KaiserCuiPresenter)
+
+	t.Run("lists all bids and passes in Japanese and English", func(t *testing.T) {
+		m := setupKaiserCuiMock(domain.KaiserPhaseBid, 0, domain.KaiserContractTrump, nil)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetBids")
+		m.On("GetBids").Return([]*domain.KaiserBid{
+			{Player: 0, Value: 8, Contract: domain.KaiserContractTrump},
+			{Player: 1, Value: 0, Contract: domain.KaiserContractTrump},
+			{Player: 2, Value: 10, Contract: domain.KaiserContractNoTrump},
+		})
+
+		i18n.SetLang("ja")
+		outJa := p.Output(m, nil)
+		assert.Contains(t, outJa, "あなた: 8 切札あり")
+		assert.Contains(t, outJa, "CPU 1: パス")
+		assert.Contains(t, outJa, "CPU 2: 10 ノートランプ")
+		assert.NotContains(t, outJa, "CPU 1: 0")
+		assert.NotContains(t, outJa, "{{")
+
+		i18n.SetLang("en")
+		outEn := p.Output(m, nil)
+		assert.Contains(t, outEn, "You: 8 with trump")
+		assert.Contains(t, outEn, "CPU 1: pass")
+		assert.Contains(t, outEn, "CPU 2: 10 no trump")
+		assert.NotContains(t, outEn, "CPU 1: 0")
+		assert.NotContains(t, outEn, "{{")
+	})
+
+	t.Run("shows no history before the first bid", func(t *testing.T) {
+		m := setupKaiserCuiMock(domain.KaiserPhaseBid, 0, domain.KaiserContractTrump, nil)
+		i18n.SetLang("ja")
+		out := p.Output(m, nil)
+		assert.NotContains(t, out, "パス")
+		assert.NotContains(t, out, "切札あり")
+		assert.NotContains(t, out, "ノートランプ")
 	})
 }

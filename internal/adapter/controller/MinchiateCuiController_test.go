@@ -13,7 +13,15 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	mockUsecases "github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/usecase"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
+
+type minchiateCuiTestPresenter struct{}
+
+func (minchiateCuiTestPresenter) Output(interfaces.MinchiateGame, error) string   { return "" }
+func (minchiateCuiTestPresenter) ActionLogOutput(interfaces.MinchiateGame) string { return "" }
+func (minchiateCuiTestPresenter) HintOutput(interfaces.MinchiateGame) string      { return "" }
 
 func TestMinchiateCuiController_Exec(t *testing.T) {
 	mockOutput := `{"phase":0}`
@@ -115,6 +123,30 @@ func TestMinchiateCuiController_Exec(t *testing.T) {
 
 	t.Run("setdifficulty invalid", func(t *testing.T) {
 		assert.Contains(t, controller.NewMinchiateCuiController(newMock()).Exec("sd 9"), msgInvalidCpuDifficultyPrefix())
+	})
+
+	t.Run("settargetrounds validates, sets, and survives reset", func(t *testing.T) {
+		interactor := usecase.NewMinchiateInteractor(domain.NewDefaultMinchiate(), minchiateCuiTestPresenter{})
+		c := controller.NewMinchiateCuiController(interactor)
+
+		assert.Equal(t, "", c.Exec("str 8"))
+		assert.Equal(t, 8, interactor.GetConfig().TargetRounds)
+		assert.Equal(t, "", c.Exec("r"))
+		assert.Equal(t, 8, interactor.GetConfig().TargetRounds)
+	})
+
+	t.Run("settargetrounds rejects invalid values", func(t *testing.T) {
+		for _, tc := range []struct {
+			command string
+			want    string
+		}{
+			{"str", "\x1eERR\x1e目標ラウンド数を指定してください (4-100)。"},
+			{"str 0", "\x1eERR\x1e無効な目標ラウンド数です: 0。4-100 の4の倍数を指定してください。"},
+			{"str 3", "\x1eERR\x1e無効な目標ラウンド数です: 3。4-100 の4の倍数を指定してください。"},
+			{"str 6", "\x1eERR\x1e無効な目標ラウンド数です: 6。4-100 の4の倍数を指定してください。"},
+		} {
+			assert.Equal(t, tc.want, controller.NewMinchiateCuiController(newMock()).Exec(tc.command))
+		}
 	})
 
 	t.Run("hint / log", func(t *testing.T) {

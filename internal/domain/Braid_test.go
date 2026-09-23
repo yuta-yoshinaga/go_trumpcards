@@ -172,6 +172,20 @@ func TestBraid_ChooseDirection(t *testing.T) {
 			if b.IsAwaitingDirection() {
 				t.Error("should no longer await the direction")
 			}
+			log := b.GetActionLog()
+			if len(log) != 1 {
+				t.Fatalf("log = %d entries, want 1", len(log))
+			}
+			wantCode := "braid.log.directionDescending"
+			if tt.ascending {
+				wantCode = "braid.log.directionAscending"
+			}
+			if log[0].DetailCode != wantCode {
+				t.Errorf("direction log code = %q, want %q", log[0].DetailCode, wantCode)
+			}
+			if log[0].DetailParams != nil {
+				t.Errorf("direction log params = %#v, want nil", log[0].DetailParams)
+			}
 			// 二度目は通らない。
 			if err := b.ChooseDirection(tt.ascending); err == nil {
 				t.Error("choosing the direction twice should fail")

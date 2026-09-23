@@ -55,6 +55,10 @@ type MendikotGame interface {
 	GetDealerIdx() int
 	// GetCurrentTrick 現在のトリックを取得する
 	GetCurrentTrick() []*domain.TrickCard
+	// GetLastTrick 直前に解決したトリックを取得する
+	GetLastTrick() []*domain.TrickCard
+	// GetLastTrickWinner 直前に解決したトリックの勝者を取得する (-1: まだ無い)
+	GetLastTrickWinner() int
 	// GetValidPlayIndices プレイ可能なカードのインデックスリストを返す
 	GetValidPlayIndices(playerIdx int) []int
 	// WillSetTrump その席が今出す札で切り札が決まってしまうかを返す

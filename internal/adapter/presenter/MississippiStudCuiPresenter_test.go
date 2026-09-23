@@ -12,8 +12,13 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
-func setupMississippiStudCuiMockDefaults(m *interfaces.MockMississippiStudGame) {
+func setupMississippiStudCuiMockDefaults(m *interfaces.MockMississippiStudGame, refilled ...bool) {
+	refilledValue := false
+	if len(refilled) > 0 {
+		refilledValue = refilled[0]
+	}
 	m.On("GetChips").Return(1000).Maybe()
+	m.On("GetChipsRefilled").Return(refilledValue).Maybe()
 	m.On("GetPhase").Return(domain.MississippiStudPhaseAnte).Maybe()
 	m.On("GetPlayerHand").Return(([]*domain.Card)(nil)).Maybe()
 	m.On("GetCommunityCards").Return(([]*domain.Card)(nil)).Maybe()
@@ -40,7 +45,7 @@ func TestMississippiStudCuiPresenter_Output_AntePhase(t *testing.T) {
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "1000")
-	assert.Contains(t, result, "ANTE")
+	assert.Contains(t, result, "アンティ")
 	// No bet placed yet → no fold-loss note.
 	assert.NotContains(t, result, strings.Split(i18n.T("mississippistud.foldLossLine"), "{{")[0])
 }
@@ -52,6 +57,19 @@ func TestMississippiStudCuiPresenter_Output_Error(t *testing.T) {
 
 	result := p.Output(m, errors.New("nope"))
 	assert.Contains(t, result, "nope")
+}
+
+func TestMississippiStudCuiPresenter_ChipsRefilledNotice(t *testing.T) {
+	m := new(interfaces.MockMississippiStudGame)
+	setupMississippiStudCuiMockDefaults(m, true)
+
+	out := new(MississippiStudCuiPresenter).Output(m, nil)
+	assert.Contains(t, out, "残高が最低ラウンドコストを下回ったため、1000コインを補充しました")
+
+	ordinary := new(interfaces.MockMississippiStudGame)
+	setupMississippiStudCuiMockDefaults(ordinary)
+	ordinary.On("GetPhase").Return(domain.MississippiStudPhaseThirdSt)
+	assert.NotContains(t, new(MississippiStudCuiPresenter).Output(ordinary, nil), "残高が最低ラウンドコストを下回ったため")
 }
 
 // 1x/2x/3x/フォールドの判断材料そのものなのに、hint を打たないと役が分からなかった。
@@ -145,7 +163,7 @@ func TestMississippiStudCuiPresenter_Output_ThirdSt(t *testing.T) {
 	m.On("GetTotalPayout").Return(0)
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "3RD")
+	assert.Contains(t, result, "3rd ストリート")
 	assert.Contains(t, result, "??") // community masked
 	// During the street, the accumulated bet and fold-loss note are shown.
 	assert.Contains(t, result, strings.Split(i18n.T("mississippistud.foldLossLine"), "{{")[0])

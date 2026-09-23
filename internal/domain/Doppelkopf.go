@@ -1,4 +1,4 @@
-//go:build !js || !wasm || casino
+//go:build !js || !wasm || extra6
 
 // Package domain ドッペルコップ (Doppelkopf) のドメインモデル。
 //
@@ -71,6 +71,7 @@ type Doppelkopf struct {
 	currentPlayerIdx int
 	currentTrick     []*TrickCard
 	leadPlayerIdx    int
+	lastTrickPoints  int
 	dealerIdx        int
 	reTeam           [DoppelkopfPlayerCnt]bool // Re チームのメンバー
 	soloRe           bool                      // 1 人が ♣Q を 2 枚持つソロ Re
@@ -110,6 +111,7 @@ func NewDefaultDoppelkopf() *Doppelkopf {
 func (g *Doppelkopf) Reset() {
 	g.gameEndFlag = false
 	g.winnerIdx = -1
+	g.lastTrickPoints = 0
 	g.roundNumber = 1
 	g.dealerIdx = 0
 	for _, p := range g.players {
@@ -133,6 +135,7 @@ func (g *Doppelkopf) NextRound() {
 func (g *Doppelkopf) startRound() {
 	g.trickNumber = 1
 	g.currentTrick = nil
+	g.lastTrickPoints = 0
 	g.reTeam = [DoppelkopfPlayerCnt]bool{}
 	g.soloRe = false
 	g.teamsRevealed = false
@@ -189,7 +192,7 @@ func (g *Doppelkopf) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "doppelkopf.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
@@ -214,7 +217,7 @@ func (g *Doppelkopf) PlayerAnnounce() error {
 		return ErrNotHumanTurn
 	}
 	if !g.canAnnounce(human) {
-		return NewDomainError(ErrInvalidPlay, "宣言できる時間ではありません")
+		return NewDomainErrorCode(ErrInvalidPlay, "doppelkopf.errAnnounceUnavailable", nil)
 	}
 	g.applyAnnounce(human)
 	return nil
@@ -235,10 +238,10 @@ func (g *Doppelkopf) canAnnounce(playerIdx int) bool {
 func (g *Doppelkopf) applyAnnounce(playerIdx int) {
 	if g.reTeam[playerIdx] {
 		g.reAnnounced = true
-		g.appendLog(playerIdx, "announce_re", fmt.Sprintf("%s announces Re", playerName(g.players, playerIdx)), nil)
+		g.appendLog(playerIdx, "announce_re", "doppelkopf.log.announceRe", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 	} else {
 		g.kontraAnnounced = true
-		g.appendLog(playerIdx, "announce_kontra", fmt.Sprintf("%s announces Kontra", playerName(g.players, playerIdx)), nil)
+		g.appendLog(playerIdx, "announce_kontra", "doppelkopf.log.announceKontra", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 	}
 }
 
@@ -270,7 +273,7 @@ func (g *Doppelkopf) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Doppelkopf) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "doppelkopf.log.play", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(g.currentTrick) == DoppelkopfPlayerCnt {
 		g.phase = DoppelkopfPhaseTrickEnd
@@ -292,8 +295,8 @@ func (g *Doppelkopf) ResolveTrick() {
 		pts += dkCardPoints(tc.Card.GetValue())
 	}
 	g.players[winnerIdx].AddTrick(trickCards)
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (%d pts)", playerName(g.players, winnerIdx), g.trickNumber, pts), trickCards)
+	g.lastTrickPoints = pts
+	g.appendLog(winnerIdx, "trick_win", "doppelkopf.log.trickWin", map[string]string{"name": playerName(g.players, winnerIdx), "trick": fmt.Sprintf("%d", g.trickNumber), "points": fmt.Sprintf("%d", pts)}, trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	// Clear the resolved trick so a spurious second ResolveTrick call cannot
@@ -338,15 +341,13 @@ func (g *Doppelkopf) ScoreRound() {
 	g.roundGamePts = gamePts
 	g.settleChips(reWon, gamePts)
 
-	g.appendLog(-1, "round_score",
-		fmt.Sprintf("round %d: Re %d pts (%s, %d game pts)",
-			g.roundNumber, rePts, dkOutcomeStr(reWon), gamePts), nil)
+	g.appendLog(-1, "round_score", "doppelkopf.log.roundScore", map[string]string{"round": fmt.Sprintf("%d", g.roundNumber), "rePoints": fmt.Sprintf("%d", rePts), "outcomeKey": dkOutcomeKey(reWon), "gamePoints": fmt.Sprintf("%d", gamePts)}, nil)
 
 	if w := g.chipLeaderAtTarget(); w >= 0 {
 		g.gameEndFlag = true
 		g.winnerIdx = w
 		g.phase = DoppelkopfPhaseGameEnd
-		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(g.players, w)), nil)
+		g.appendLog(-1, "game_end", "doppelkopf.log.gameEnd", map[string]string{"name": playerName(g.players, w)}, nil)
 	}
 }
 
@@ -433,7 +434,7 @@ func (g *Doppelkopf) validatePlay(playerIdx int, card *Card) error {
 	}
 	leadSuit := dkSuitID(g.currentTrick[0].Card)
 	if dkSuitID(card) != leadSuit && g.playerHasSuit(playerIdx, leadSuit) {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+		return NewDomainErrorCode(ErrInvalidPlay, "doppelkopf.errFollowLeadSuit", nil)
 	}
 	return nil
 }
@@ -638,12 +639,12 @@ func dkGamePoints(loserPoints int, loserNoTrick bool) int {
 	return pts
 }
 
-// dkOutcomeStr 勝敗の表示文字列。
-func dkOutcomeStr(reWon bool) string {
+// dkOutcomeKey は勝敗の i18n キーを返す。
+func dkOutcomeKey(reWon bool) string {
 	if reWon {
-		return "Re wins"
+		return "doppelkopf.log.outcome.reWins"
 	}
-	return "Kontra wins"
+	return "doppelkopf.log.outcome.kontraWins"
 }
 
 // --- State getters ---
@@ -680,6 +681,9 @@ func (g *Doppelkopf) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = tric
 
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
 func (g *Doppelkopf) GetLeadPlayerIdx() int { return g.leadPlayerIdx }
+
+// GetLastTrickPoints returns the points scored by the most recently resolved trick.
+func (g *Doppelkopf) GetLastTrickPoints() int { return g.lastTrickPoints }
 
 // SetLeadPlayerIdx リードプレイヤーインデックス設定 (テスト用)
 func (g *Doppelkopf) SetLeadPlayerIdx(idx int) { g.leadPlayerIdx = idx }
@@ -929,6 +933,7 @@ type doppelkopfJSON struct {
 	CurrentPlayerIdx int                       `json:"ci"`
 	CurrentTrick     []*TrickCard              `json:"ct"`
 	LeadPlayerIdx    int                       `json:"li"`
+	LastTrickPoints  int                       `json:"lp"`
 	DealerIdx        int                       `json:"di"`
 	ReTeam           [DoppelkopfPlayerCnt]bool `json:"rt"`
 	SoloRe           bool                      `json:"sr"`
@@ -955,6 +960,7 @@ func (g *Doppelkopf) MarshalJSON() ([]byte, error) {
 		CurrentPlayerIdx: g.currentPlayerIdx,
 		CurrentTrick:     g.currentTrick,
 		LeadPlayerIdx:    g.leadPlayerIdx,
+		LastTrickPoints:  g.lastTrickPoints,
 		DealerIdx:        g.dealerIdx,
 		ReTeam:           g.reTeam,
 		SoloRe:           g.soloRe,
@@ -1004,6 +1010,7 @@ func (g *Doppelkopf) UnmarshalJSON(data []byte) error {
 		g.currentTrick = make([]*TrickCard, 0)
 	}
 	g.leadPlayerIdx = j.LeadPlayerIdx
+	g.lastTrickPoints = j.LastTrickPoints
 	g.dealerIdx = j.DealerIdx
 	g.reTeam = j.ReTeam
 	g.soloRe = j.SoloRe
@@ -1020,4 +1027,8 @@ func (g *Doppelkopf) UnmarshalJSON(data []byte) error {
 		g.actionLog = make([]*ActionLogEntry, 0)
 	}
 	return nil
+}
+
+func (g *Doppelkopf) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }

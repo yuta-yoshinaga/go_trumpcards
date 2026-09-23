@@ -14,6 +14,18 @@ import (
 
 func newBauernschnapsen() *domain.Bauernschnapsen { return domain.NewDefaultBauernschnapsen() }
 
+func TestBauernschnapsen_ActionLogUsesDetailCode(t *testing.T) {
+	g := newBauernschnapsen()
+	g.Reset()
+	for _, entry := range g.GetActionLog() {
+		if entry.DetailCode == "bauernschnapsen.log.deal" {
+			assert.Empty(t, entry.DetailParams)
+			return
+		}
+	}
+	t.Fatal("deal action log entry not found")
+}
+
 func TestBauernschnapsen_DeckAndPoints(t *testing.T) {
 	g := newBauernschnapsen()
 	deck := g.GetConfigDeckHelper()

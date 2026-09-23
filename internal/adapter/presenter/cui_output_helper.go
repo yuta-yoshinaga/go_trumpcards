@@ -3,6 +3,7 @@ package presenter
 import (
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -73,9 +74,20 @@ func i18nPairs(params map[string]string) []string {
 		keys = append(keys, k)
 	}
 	sort.Strings(keys)
+	plainPairs := make([]string, 0, len(params)*2)
+	for _, k := range keys {
+		if !strings.HasSuffix(k, "Key") {
+			plainPairs = append(plainPairs, k, params[k])
+		}
+	}
 	pairs := make([]string, 0, len(params)*2)
 	for _, k := range keys {
-		pairs = append(pairs, k, params[k])
+		value := params[k]
+		if strings.HasSuffix(k, "Key") {
+			k = strings.TrimSuffix(k, "Key")
+			value = i18n.Tf(value, plainPairs...)
+		}
+		pairs = append(pairs, k, value)
 	}
 	return pairs
 }
@@ -110,4 +122,18 @@ func hintReasonStr(reason string, gameKeys map[string]string) string {
 		return i18n.T(key)
 	}
 	return reason
+}
+
+// joinInts formats an int slice as a space-separated string.
+//
+// This lives here, in the untagged shared helper file, rather than beside a
+// single game: it started in FiveHundredCuiPresenter.go, which is tagged
+// `!js || !wasm || solo`, so any other game calling it built fine under
+// `go build ./...` and then failed only the workers that exclude solo.
+func joinInts(xs []int) string {
+	parts := make([]string, len(xs))
+	for i, x := range xs {
+		parts[i] = strconv.Itoa(x)
+	}
+	return strings.Join(parts, " ")
 }

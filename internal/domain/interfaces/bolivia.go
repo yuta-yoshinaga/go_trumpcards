@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra
+//go:build !js || !wasm || extra7
 
 package interfaces
 
@@ -23,6 +23,8 @@ type BoliviaGame interface {
 	PlayerDiscard(cardIndex int) error
 	// PlayerGoOut プレイヤーが上がる
 	PlayerGoOut() error
+	// CanGoOut 現在の手番プレイヤーが上がれるかを返す
+	CanGoOut() bool
 	// CpuPlay CPUプレイヤーが1ターン実行する
 	CpuPlay()
 

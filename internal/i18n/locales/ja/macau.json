@@ -35,5 +35,21 @@
   "magicSeven": "  7                    次のプレイヤーをスキップ",
   "magicEight": "  8                    ワイルド — 好きなスートを指定、いつでも出せる",
   "magicJack": "  J                    プレイ方向を反転 (リバース)",
-  "magicNote": "  手札が残り1枚になったら「マカオ!」を宣言 (忘れると2枚ペナルティ)"
+  "magicNote": "  手札が残り1枚になったら「マカオ!」を宣言 (忘れると2枚ペナルティ)",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errCardNotPlayable": "そのカードは出せません",
+  "errSuitOutOfRange": "スートは1〜4で指定してください",
+  "log.chooseSuit": "{{name}}が{{suit}}を選択",
+  "log.declare": "{{name}}がマカオを宣言！",
+  "log.penalty": "{{name}}はマカオの宣言を忘れました！ ({{cards}}枚のペナルティ)",
+  "log.handScore": "{{name}}: 残り{{score}}点",
+  "log.roundWin": "{{name}}がラウンド{{round}}に勝利 (+{{points}}点)",
+  "log.play": "{{name}}が{{card}}を出した",
+  "log.drawTwo": "ドロースタックは{{count}}枚",
+  "log.skip": "次のプレイヤーをスキップ",
+  "log.reverse": "プレイ方向を反転",
+  "log.takePenalty": "{{name}}がペナルティカードを{{cards}}枚引き受けた",
+  "log.pass": "{{name}}は引けるカードがなくパス",
+  "log.draw": "{{name}}がカードを1枚引いた",
+  "log.gameEnd": "{{name}}がゲームに勝利！"
 }

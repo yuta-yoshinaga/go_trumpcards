@@ -9,6 +9,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { HintTooltip } from '../components/hint/HintTooltip';
+import { LiveAnnouncement } from '../components/LiveAnnouncement';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -152,6 +153,13 @@ function LingerLongerPageContent() {
               <span data-testid="ll-discarded">{t('header.discarded', { n: String(state.discarded) })}</span>
             </div>
 
+            <div className="mb-3 text-center text-ds-text-primary" role="status" data-testid="ll-eliminated-summary">
+              {t('header.eliminatedSummary', {
+                eliminated: String(state.eliminatedCnt),
+                total: String(state.players.length),
+              })}
+            </div>
+
             {/* **取っても得点にならない規則が要。** 先に出す。 */}
             <div
               className="mb-3 rounded bg-black/30 px-3 py-2 text-ds-text-primary text-center"
@@ -227,6 +235,7 @@ function LingerLongerPageContent() {
                 {t('result.eliminated')}
               </div>
             )}
+            <LiveAnnouncement message={isEliminated ? t('result.eliminated') : ''} />
 
             {human && human.cards.length > 0 && (
               <div className="mt-4" data-tutorial="ll-hand">

@@ -16,6 +16,8 @@ type IndianPokerGame interface {
 	GetPhase() int
 	// GetEstimatedStrength は player idx の推定勝率 (0-100) を返す
 	GetEstimatedStrength(idx int) int
+	// GetHint は人間への推奨手を取得する
+	GetHint() *domain.IndianPokerHint
 	// GetPlayers プレイヤー一覧を取得する
 	GetPlayers() []*domain.IndianPokerPlayer
 	// GetPlayer 指定インデックスのプレイヤーを取得する

@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra3
+//go:build !js || !wasm || extra6
 
 package presenter
 
@@ -12,6 +12,18 @@ import (
 
 // JassWebPresenter ヤス(シーバー)Webプレゼンタークラス
 type JassWebPresenter struct{}
+
+// validPlayIndices returns the legal cards in the human player's hand.
+func (p *JassWebPresenter) validPlayIndices(g interfaces.JassGame) []int {
+	if g.GetPhase() != domain.JassPhasePlay || !g.IsHumanTurn() {
+		return make([]int, 0)
+	}
+	idx := g.GetValidPlayIndices(g.GetCurrentPlayerIdx())
+	if idx == nil {
+		return make([]int, 0)
+	}
+	return idx
+}
 
 // Output ゲーム状態をJSON出力
 func (p *JassWebPresenter) Output(g interfaces.JassGame, lastErr error) string {
@@ -55,6 +67,7 @@ func (p *JassWebPresenter) buildBase(g interfaces.JassGame) *controller.JassWebO
 	resObj.GameEndFlag = g.GetGameEndFlag()
 	resObj.WinnerTeam = g.GetWinnerTeam()
 	resObj.LeadPlayerIdx = g.GetLeadPlayerIdx()
+	resObj.ValidPlayIndices = p.validPlayIndices(g)
 
 	cfg := g.GetConfig()
 	resObj.Config = controller.JassWebOutputConfig{
@@ -100,6 +113,9 @@ func (p *JassWebPresenter) buildPlayersOutput(g interfaces.JassGame) []*controll
 
 func (p *JassWebPresenter) buildMessage(g interfaces.JassGame, trick []*domain.TrickCard, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

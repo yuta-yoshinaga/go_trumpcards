@@ -34,6 +34,17 @@ func TestNapoleon_NewNapoleon(t *testing.T) {
 	assert.False(t, n.GetGameEndFlag())
 }
 
+func TestNapoleon_TrumpLogUsesSuitKey(t *testing.T) {
+	n := newTestNapoleon()
+	n.SetPhase(domain.NapoleonPhaseTrumpDeclaration)
+	n.SetNapoleonIdx(0)
+	require.NoError(t, n.PlayerDeclareTrump(domain.CardDesignHeart, domain.CardDesignSpade, 1))
+
+	entry := n.GetActionLog()[0]
+	assert.Equal(t, "common.suit.heart", entry.DetailParams["suitKey"])
+	assert.NotContains(t, entry.DetailParams, "suit")
+}
+
 func TestNapoleon_Reset(t *testing.T) {
 	n := newTestNapoleon()
 	n.Reset()
@@ -75,6 +86,14 @@ func TestNapoleon_PlayerBid(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, 12, n.GetPlayer(0).GetBid())
 		assert.Equal(t, 12, n.GetHighestBid())
+		var bidLog *domain.ActionLogEntry
+		for _, entry := range n.GetActionLog() {
+			if entry.DetailCode == "napoleon.log.bid" {
+				bidLog = entry
+			}
+		}
+		require.NotNil(t, bidLog)
+		assert.Equal(t, map[string]string{"name": "You", "bid": "12"}, bidLog.DetailParams)
 	})
 
 	t.Run("pass (bid 0)", func(t *testing.T) {

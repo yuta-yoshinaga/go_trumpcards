@@ -282,6 +282,10 @@ func TestEightOffMoveTableauToFoundation(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(e.tableau[0]))
 	assert.Equal(t, 1, len(e.foundation[0]))
+	log := e.GetActionLog()
+	assert.Len(t, log, 1)
+	assert.Equal(t, "eightoff.log.moveTableauToFoundation", log[0].DetailCode)
+	assert.Equal(t, map[string]string{"col": "0"}, log[0].DetailParams)
 }
 
 func TestEightOffMoveTableauToFoundationSequence(t *testing.T) {

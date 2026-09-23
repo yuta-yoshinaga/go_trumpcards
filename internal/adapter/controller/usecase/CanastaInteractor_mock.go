@@ -57,6 +57,10 @@ func (_m *MockCanastaInteractor) ActionLog() string {
 	return _m.Called().String(0)
 }
 
+func (_m *MockCanastaInteractor) Hint() string {
+	return _m.Called().String(0)
+}
+
 // Snapshot モック
 func (_m *MockCanastaInteractor) Snapshot() ([]byte, error) {
 	ret := _m.Called()

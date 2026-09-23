@@ -128,6 +128,12 @@ func (_m *MockUltiGame) GetCurrentTrick() []*domain.TrickCard {
 	return nil
 }
 
+// GetLastTrickWinner モック
+func (_m *MockUltiGame) GetLastTrickWinner() int {
+	ret := _m.Called()
+	return ret.Get(0).(int)
+}
+
 // GetLeadPlayerIdx モック
 func (_m *MockUltiGame) GetLeadPlayerIdx() int {
 	ret := _m.Called()

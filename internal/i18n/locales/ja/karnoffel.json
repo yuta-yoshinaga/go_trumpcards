@@ -32,5 +32,9 @@
   "result.humanWin": "ゲーム終了！ あなたのチームの勝ちです！",
   "result.cpuWin": "ゲーム終了！ 相手チームの勝ちです。",
   "helpExamplePlay": "  p 0                       手札の 0 番のカードを出す",
-  "helpExampleNext": "  n                         トリックの決着を見てから次へ"
+  "helpExampleNext": "  n                         トリックの決着を見てから次へ",
+  "log.deal": "第{{hand}}局 選ばれたスート{{suit}}",
+  "log.play": "カードを出しました",
+  "log.trickWin": "トリックを取りました",
+  "log.handEnd": "{{team0}}-{{team1}}"
 }

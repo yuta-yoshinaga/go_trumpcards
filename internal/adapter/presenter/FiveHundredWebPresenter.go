@@ -1,4 +1,4 @@
-//go:build !js || !wasm || solo
+//go:build !js || !wasm || extra7
 
 package presenter
 
@@ -126,6 +126,9 @@ func (p *FiveHundredWebPresenter) buildPlayersOutput(g interfaces.FiveHundredGam
 // buildMessage ゲーム結果/フェーズメッセージを構築
 func (p *FiveHundredWebPresenter) buildMessage(g interfaces.FiveHundredGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

@@ -22,11 +22,22 @@ test.describe('Free Bet Blackjack E2E', () => {
     await deal.click();
     await waitForLoaded(page);
 
-    // 伏せ札は無いので、配った時点でディーラーの点数が出る。
+    // **ナチュラルが出るとその場で決着する。** `Deal` は
+    // `hand.IsBlackJack() || dealerHand.IsBlackJack()` で `settle()` を呼び、
+    // Play を経ずに Result へ飛ぶ (約 9% の配り)。だから「配った直後は必ず
+    // 伏せている」とは書けない —— 書くと 11 回に 1 回落ちる。
+    // どの配りでも成り立つのは「伏せている ⟺ まだ決着していない」のほう。
+    const settledOnTheDeal = await page.getByTestId('fb-result').isVisible();
+    await expect(page.getByTestId(settledOnTheDeal ? 'fb-dealer-score' : 'fb-dealer-hidden')).toBeVisible({
+      timeout: TIMEOUT_TRANSITION,
+    });
+
+    if (!settledOnTheDeal) {
+      await standOut(page);
+    }
+
+    // 決着後はディーラーの札と点数が公開される。
     await expect(page.getByTestId('fb-dealer-score')).toBeVisible({ timeout: TIMEOUT_TRANSITION });
-
-    await standOut(page);
-
     await expect(page.getByTestId('fb-result')).toBeVisible({ timeout: TIMEOUT_TRANSITION });
     const next = page.getByRole('button', { name: '次のラウンド' });
     await expect(next).toBeVisible({ timeout: TIMEOUT_ACTION });

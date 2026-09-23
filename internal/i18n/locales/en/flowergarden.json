@@ -18,5 +18,11 @@
   "hintLine": "Hint: {{from}} → {{to}}",
   "helpExampleHint": "  h                    ask for a move",
   "helpExampleAuto": "  ac                   send everything that can go to a foundation",
-  "helpUndo": "  u undo one move"
+  "helpUndo": "  u undo one move",
+  "log.tableauToTableau": "Flower-bed column {{fromCol}}→flower-bed column {{toCol}}",
+  "log.tableauToFoundation": "Flower-bed column {{col}}→foundation",
+  "log.reserveToTableau": "Reserve {{reserveIdx}}→flower-bed column {{toCol}}",
+  "log.reserveToFoundation": "Reserve {{reserveIdx}}→foundation",
+  "log.giveup": "You gave up",
+  "log.autocomplete": "Auto-complete executed"
 }

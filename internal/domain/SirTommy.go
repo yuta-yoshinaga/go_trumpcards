@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // SirTommyPhase サー・トミーのゲームフェーズ
@@ -127,7 +128,7 @@ func (s *SirTommy) PlayStockToFoundation(fIdx int) error {
 	s.stock = s.stock[:len(s.stock)-1]
 	s.foundations[fIdx] = append(s.foundations[fIdx], card)
 	s.moveCount++
-	s.appendLog("move", fmt.Sprintf("ストック→ファンデーション%d", fIdx+1), []*Card{card})
+	s.appendLog("move", "sirtommy.log.stockToFoundation", map[string]string{"foundation": strconv.Itoa(fIdx + 1)}, []*Card{card})
 	s.checkGameClear()
 	s.checkStalemate()
 	return nil
@@ -149,7 +150,7 @@ func (s *SirTommy) PlayStockToWaste(wasteIdx int) error {
 	s.stock = s.stock[:len(s.stock)-1]
 	s.wastes[wasteIdx] = append(s.wastes[wasteIdx], card)
 	s.moveCount++
-	s.appendLog("move", fmt.Sprintf("ストック→ウェイスト%d", wasteIdx+1), []*Card{card})
+	s.appendLog("move", "sirtommy.log.stockToWaste", map[string]string{"waste": strconv.Itoa(wasteIdx + 1)}, []*Card{card})
 	s.checkStalemate()
 	return nil
 }
@@ -176,7 +177,7 @@ func (s *SirTommy) PlayWasteToFoundation(wasteIdx, fIdx int) error {
 	s.wastes[wasteIdx] = s.wastes[wasteIdx][:len(s.wastes[wasteIdx])-1]
 	s.foundations[fIdx] = append(s.foundations[fIdx], card)
 	s.moveCount++
-	s.appendLog("move", fmt.Sprintf("ウェイスト%d→ファンデーション%d", wasteIdx+1, fIdx+1), []*Card{card})
+	s.appendLog("move", "sirtommy.log.wasteToFoundation", map[string]string{"waste": strconv.Itoa(wasteIdx + 1), "foundation": strconv.Itoa(fIdx + 1)}, []*Card{card})
 	s.checkGameClear()
 	s.checkStalemate()
 	return nil
@@ -186,7 +187,7 @@ func (s *SirTommy) PlayWasteToFoundation(wasteIdx, fIdx int) error {
 func (s *SirTommy) GiveUp() {
 	if s.phase == SirTommyPhasePlaying {
 		s.phase = SirTommyPhaseGameOver
-		s.appendLog("giveup", "ギブアップしました", nil)
+		s.appendLog("giveup", "sirtommy.log.giveUp", nil, nil)
 	}
 }
 
@@ -447,8 +448,8 @@ func (s *SirTommy) restoreSnapshot(snap *sirTommySnapshot) {
 }
 
 // appendLog 棋譜エントリを追加
-func (s *SirTommy) appendLog(actionType, detail string, cards []*Card) {
-	s.appendLogAt(s.moveCount, 0, actionType, detail, cards)
+func (s *SirTommy) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	s.appendLogCodeAt(s.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // sirTommyMaxSliceLen caps slice sizes during deserialisation.

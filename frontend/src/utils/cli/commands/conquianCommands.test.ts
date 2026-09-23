@@ -13,12 +13,25 @@ describe('parseConquianCommand', () => {
   });
 
   it('parses meld with indices', () => {
-    expect(parseConquianCommand('meld 0 1 2')).toEqual({ args: ['meld', undefined, undefined, [[0, 1, 2]]] });
-    expect(parseConquianCommand('m 3 4 5')).toEqual({ args: ['meld', undefined, undefined, [[3, 4, 5]]] });
+    expect(parseConquianCommand('meld 0 1 2')).toEqual({ args: ['meld', undefined, undefined, [[0, 1, 2]], [-1]] });
+    expect(parseConquianCommand('m 3 4 5')).toEqual({ args: ['meld', undefined, undefined, [[3, 4, 5]], [-1]] });
   });
 
   it('parses meld without indices as empty group', () => {
-    expect(parseConquianCommand('meld')).toEqual({ args: ['meld', undefined, undefined, [[]]] });
+    expect(parseConquianCommand('meld')).toEqual({ args: ['meld', undefined, undefined, [[]], [-1]] });
+  });
+
+  it('parses an explicit extension target per group', () => {
+    expect(parseConquianCommand('meld 0,1,2;3@1')).toEqual({
+      args: ['meld', undefined, undefined, [[0, 1, 2], [3]], [-1, 1]],
+    });
+  });
+
+  it('rejects malformed extension targets', () => {
+    for (const input of ['m 3@x', 'm 3@']) {
+      const result = parseConquianCommand(input);
+      expect(result).toEqual({ error: 'Usage: meld <idx...>[;<idx...>@<meldIndex>]' });
+    }
   });
 
   it('parses discard with index', () => {

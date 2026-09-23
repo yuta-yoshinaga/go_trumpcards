@@ -270,7 +270,7 @@ func TestScorpionCuiPresenter_ActionLogOutput(t *testing.T) {
 		sg := new(interfaces.MockScorpionGame)
 		sg.On("GetPhase").Return(domain.ScorpionPhaseGameOver)
 		sg.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "move", Detail: "test"},
+			{TurnNumber: 1, ActionType: "move", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 
 		p := new(ScorpionCuiPresenter)

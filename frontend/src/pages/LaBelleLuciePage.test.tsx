@@ -17,7 +17,7 @@ const card = (design: Card['design'], value: number): Card => ({ design, value }
 function makeState(overrides: Partial<LaBelleLucieResponse> = {}): LaBelleLucieResponse {
   return {
     fans: [[card('SPADE', 9)], [card('SPADE', 8)], [card('DIAMOND', 1)]],
-    // ♠8 は ♠9 に載り、♦A はファウンデーションへ行ける。♠9 の行き先は無い。
+    // ♠8 は ♠9 に載り、♦A は組札へ行ける。♠9 の行き先は無い。
     movableFans: [false, true, true],
     foundation: [[], [], [], []],
     redealsLeft: 3,
@@ -210,7 +210,7 @@ describe('LaBelleLuciePage', () => {
   });
 
   // #5678: どの扇が動かせるかは、ヒント (4秒で消える) を押さないと分からなかった。
-  // 既定の盤面: ♠9 / ♠8 / ♦A — ♠8 は ♠9 の上へ、♦A は空のファウンデーションへ動ける。
+  // 既定の盤面: ♠9 / ♠8 / ♦A — ♠8 は ♠9 の上へ、♦A は空の組札へ動ける。
   it('marks the fans that can move without asking for a hint', async () => {
     renderWithProviders(<LaBelleLuciePage />);
 
@@ -219,6 +219,40 @@ describe('LaBelleLuciePage', () => {
     expect(screen.getByTestId('fan-2')).toHaveAttribute('data-movable', 'true');
     // ♠9 の行き先 (♠10) は無い。
     expect(screen.getByTestId('fan-0')).not.toHaveAttribute('data-movable');
+  });
+
+  it('describes fan identity, top card, and movable state in accessible labels', async () => {
+    renderWithProviders(<LaBelleLuciePage />);
+
+    await waitFor(() => expect(screen.getByTestId('fan-0')).toBeInTheDocument());
+    expect(screen.getByTestId('fan-1')).toHaveAccessibleName('扇 2、最上段は♠ 8、移動可能');
+    expect(screen.getByTestId('fan-0')).toHaveAccessibleName('扇 1、最上段は♠ 9');
+  });
+
+  it('describes hint source and destination only while the hint is shown', async () => {
+    mockExec.mockResolvedValue(makeState({ hint: { fromFan: 1, toFan: 0, toFoundation: false } }));
+    renderWithProviders(<LaBelleLuciePage />);
+    await screen.findByTestId('hint-button');
+
+    expect(screen.getByTestId('fan-1')).toHaveAccessibleName('扇 2、最上段は♠ 8、移動可能');
+    expect(screen.getByTestId('fan-0')).toHaveAccessibleName('扇 1、最上段は♠ 9');
+
+    fireEvent.click(screen.getByTestId('hint-button'));
+    await waitFor(() => expect(screen.getByTestId('fan-1')).toHaveAccessibleName('扇 2、最上段は♠ 8、ヒントの元'));
+    expect(screen.getByTestId('fan-0')).toHaveAccessibleName('扇 1、最上段は♠ 9、ヒントの先');
+  });
+
+  it('describes empty fans and does not expose translation keys', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ fans: [[card('SPADE', 9)], [], [card('DIAMOND', 1)]], movableFans: [false, false, true] }),
+    );
+    renderWithProviders(<LaBelleLuciePage />);
+
+    await waitFor(() => expect(screen.getByTestId('fan-1')).toBeInTheDocument());
+    expect(screen.getByTestId('fan-1')).toHaveAccessibleName('扇 2、空');
+    for (const fan of [screen.getByTestId('fan-0'), screen.getByTestId('fan-1'), screen.getByTestId('fan-2')]) {
+      expect(fan.getAttribute('aria-label')).not.toMatch(/fan.*Aria/i);
+    }
   });
 
   it('marks nothing when the board is stuck', async () => {

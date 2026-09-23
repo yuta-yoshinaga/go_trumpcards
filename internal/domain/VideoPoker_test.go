@@ -3,10 +3,12 @@
 package domain
 
 import (
+	"encoding/json"
 	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // --- Helper ---
@@ -71,6 +73,18 @@ func TestVideoPoker_Bet_Success(t *testing.T) {
 	assert.Equal(t, 3, vp.GetBetAmount())
 	assert.Len(t, vp.GetHand(), VideoPokerHandSize)
 	assert.Equal(t, VideoPokerDefaultChips-3, vp.GetChips())
+}
+
+func TestVideoPoker_Bet_ActionLogUsesDetailCode(t *testing.T) {
+	vp := newTestVideoPoker()
+	require.NoError(t, vp.Bet(3))
+	for _, entry := range vp.GetActionLog() {
+		if entry.DetailCode == "videopoker.log.bet" {
+			assert.Equal(t, map[string]string{"amount": "3"}, entry.DetailParams)
+			return
+		}
+	}
+	t.Fatal("bet action log entry not found")
 }
 
 func TestVideoPoker_Bet_WrongPhase(t *testing.T) {
@@ -173,6 +187,41 @@ func TestVideoPoker_Hold_EmptyIndices(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, VideoPokerPhaseResult, vp.GetPhase())
 	// All cards replaced (we can't assert specific cards due to shuffle)
+}
+
+func TestVideoPoker_SessionStats_RecordResultsAndRoundTrip(t *testing.T) {
+	vp := newTestVideoPoker()
+	vp.SetChips(100)
+	vp.SetPhase(VideoPokerPhaseDraw)
+	vp.SetBetAmount(3)
+	vp.SetHand(makeHand([][2]int{
+		{CardDesignSpade, 1}, {CardDesignSpade, 10}, {CardDesignSpade, 11},
+		{CardDesignSpade, 12}, {CardDesignSpade, 13},
+	}))
+	require.NoError(t, vp.Hold([]int{0, 1, 2, 3, 4}))
+
+	vp.Reset()
+	vp.SetPhase(VideoPokerPhaseDraw)
+	vp.SetBetAmount(2)
+	vp.SetHand(makeHand([][2]int{
+		{CardDesignSpade, 2}, {CardDesignHeart, 5}, {CardDesignClover, 7},
+		{CardDesignDiamond, 9}, {CardDesignSpade, 10},
+	}))
+	require.NoError(t, vp.Hold([]int{0, 1, 2, 3, 4}))
+
+	assert.Equal(t, 2, vp.GetHands())
+	assert.Equal(t, 1, vp.GetWins(), "a losing hand must not increment wins")
+	assert.Equal(t, 5, vp.GetTotalBet())
+	assert.Equal(t, 750, vp.GetTotalPayout())
+
+	data, err := json.Marshal(vp)
+	require.NoError(t, err)
+	var restored VideoPoker
+	require.NoError(t, json.Unmarshal(data, &restored))
+	assert.Equal(t, vp.GetHands(), restored.GetHands())
+	assert.Equal(t, vp.GetWins(), restored.GetWins())
+	assert.Equal(t, vp.GetTotalBet(), restored.GetTotalBet())
+	assert.Equal(t, vp.GetTotalPayout(), restored.GetTotalPayout())
 }
 
 // --- Payout: Royal Flush ---

@@ -601,6 +601,46 @@ func gameHelpLocales(t *testing.T) map[string]map[string]string {
 
 var cachedHelpLocales map[string]map[string]string
 
+func TestFormerHandAuthoredHelpUsesLocaleKeys(t *testing.T) {
+	t.Cleanup(func() { i18n.SetLang("en") })
+	wantJapanese := map[string]string{
+		"canasta":      "山札から引く",
+		"biriba":       "山札から引く",
+		"burraco":      "山札から引く",
+		"durak":        "カードで攻撃する",
+		"bridge":       "カードを出す",
+		"pokersquares": "カードを配置",
+	}
+	wantEnglish := map[string]string{
+		"canasta":      "draw from stock",
+		"biriba":       "draw from stock",
+		"burraco":      "draw from stock",
+		"durak":        "attack with card",
+		"bridge":       "play a card",
+		"pokersquares": "place a card",
+	}
+
+	for _, lang := range []string{"en", "ja"} {
+		i18n.SetLang(lang)
+		var want map[string]string
+		if lang == "en" {
+			want = wantEnglish
+		} else {
+			want = wantJapanese
+		}
+		for _, entry := range gameRegistry {
+			expected, ok := want[entry.Name]
+			if !ok {
+				continue
+			}
+			lines := strings.Join(entry.NewCui().HelpLines(), "\n")
+			if !strings.Contains(lines, expected) {
+				t.Errorf("%s help in %s does not contain localized command %q:\n%s", entry.Name, lang, expected, lines)
+			}
+		}
+	}
+}
+
 // TestCuiHelpHasNoDuplicateLines asserts that no game's rendered help lists the
 // same command line twice.
 //
@@ -699,6 +739,44 @@ func TestBuildCuiHelp_omitsNotesWhenEmpty(t *testing.T) {
 	}
 }
 
+func TestEscobaHelpIncludesCardValues(t *testing.T) {
+	original := i18n.Lang()
+	t.Cleanup(func() { i18n.SetLang(original) })
+
+	var escoba *GameRegistryEntry
+	for _, entry := range GameRegistry() {
+		if entry.Name == "escoba" {
+			entryCopy := entry
+			escoba = &entryCopy
+			break
+		}
+	}
+	if escoba == nil {
+		t.Fatal("escoba is missing from the game registry")
+	}
+
+	tests := []struct {
+		lang string
+		want string
+	}{
+		{lang: "en", want: "  Count J=8 / Q=9 / K=10 when calculating capture totals"},
+		{lang: "ja", want: "  捕獲の合計は J=8 / Q=9 / K=10 として数える"},
+	}
+	for _, tt := range tests {
+		i18n.SetLang(tt.lang)
+		found := false
+		for _, line := range escoba.NewCui().HelpLines() {
+			if line == tt.want {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Errorf("help escoba (%s) does not contain %q", tt.lang, tt.want)
+		}
+	}
+}
+
 // #5498: この実装にはチーム/パートナーの概念が無く、ScoreRound はビッド・トリック・
 // ニルボーナス・バッグペナルティを4人それぞれ個別に計算する。つまりカットスロート
 // 方式なのに、そう書かれた場所がどこにも無かった。**標準スペードを知っている
@@ -722,5 +800,49 @@ func TestSpadesHelpSaysItIsCutthroat(t *testing.T) {
 	}
 	if !strings.Contains(lines, note) {
 		t.Errorf("spades help should say the game is cutthroat (no partnerships); got:\n%s", lines)
+	}
+}
+
+func TestCrazyEightsHelpIncludesPointLegendInBothLocales(t *testing.T) {
+	original := i18n.Lang()
+	t.Cleanup(func() { i18n.SetLang(original) })
+
+	var crazyeights *GameRegistryEntry
+	for _, e := range GameRegistry() {
+		if e.Name == "crazyeights" {
+			entry := e
+			crazyeights = &entry
+			break
+		}
+	}
+	if crazyeights == nil {
+		t.Fatal("crazyeights is not registered")
+	}
+
+	wantByLang := map[string][]string{
+		"ja": {
+			"  8                    50点",
+			"  A                     1点",
+			"  J / Q / K            10点",
+			"  その他               額面どおり",
+		},
+		"en": {
+			"  8                    50 points",
+			"  A                     1 point",
+			"  J / Q / K            10 points",
+			"  Other                face value",
+		},
+	}
+	for _, lang := range []string{"ja", "en"} {
+		i18n.SetLang(lang)
+		lines := strings.Join(crazyeights.NewCui().HelpLines(), "\n")
+		for _, want := range wantByLang[lang] {
+			if !strings.Contains(lines, want) {
+				t.Errorf("help crazyeights (%s) does not contain %q", lang, want)
+			}
+		}
+		if strings.Contains(lines, "{{") {
+			t.Errorf("help crazyeights (%s) contains an unresolved template: %s", lang, lines)
+		}
 	}
 }

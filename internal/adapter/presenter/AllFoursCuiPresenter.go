@@ -27,7 +27,7 @@ func allFoursSuitName(suit int) string {
 }
 
 // allFoursPlayerStr returns the display string for a single All Fours player.
-func allFoursPlayerStr(player *domain.AllFoursPlayer, i int) string {
+func allFoursPlayerStr(player *domain.AllFoursPlayer, i int, legalIndices []int) string {
 	var b strings.Builder
 	b.WriteString(i18n.Tf("allfours.playerLine",
 		"name", cuiPlayerName(player, i),
@@ -40,6 +40,14 @@ func allFoursPlayerStr(player *domain.AllFoursPlayer, i int) string {
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
 		b.WriteString(cuiIndexedCardListStr(player))
 		b.WriteString("\n")
+		if len(legalIndices) > 0 {
+			parts := make([]string, len(legalIndices))
+			for k, idx := range legalIndices {
+				parts[k] = "[" + strconv.Itoa(idx) + "]"
+			}
+			b.WriteString(i18n.Tf("allfours.legalPlayLegend",
+				"indices", strings.Join(parts, " ")) + "\n")
+		}
 	}
 	return b.String()
 }
@@ -87,7 +95,12 @@ func (p *AllFoursCuiPresenter) Output(s interfaces.AllFoursGame, lastErr error) 
 			"turnup", turnUp) + "\n")
 
 		for i := 0; i < s.GetPlayerCnt(); i++ {
-			b.WriteString(allFoursPlayerStr(s.GetPlayer(i), i))
+			var legalIndices []int
+			if s.GetPhase() == domain.AllFoursPhasePlay &&
+				i == s.GetCurrentPlayerIdx() && s.GetPlayer(i).GetIsHuman() {
+				legalIndices = s.GetValidPlayIndices(i)
+			}
+			b.WriteString(allFoursPlayerStr(s.GetPlayer(i), i, legalIndices))
 		}
 
 		b.WriteString("----------\n")

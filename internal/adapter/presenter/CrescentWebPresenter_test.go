@@ -186,7 +186,7 @@ func TestCrescentWebPresenter_ActionLogOutput(t *testing.T) {
 		cg.On("GetPhase").Return(domain.CrescentPhaseGameOver)
 		cg.On("GetGameEndFlag").Return(true)
 		cg.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "redeal", Detail: "test"},
+			{TurnNumber: 1, ActionType: "redeal", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 		p := new(CrescentWebPresenter)
 		assert.Contains(t, p.ActionLogOutput(cg), "redeal")

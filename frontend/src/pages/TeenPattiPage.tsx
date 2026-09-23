@@ -291,6 +291,8 @@ function TeenPattiPageContent() {
                       className={btnSuccess}
                       onClick={() => handleRespondSideShow(true)}
                       disabled={loading}
+                      title={t('consequence.accept')}
+                      aria-describedby="teenpatti-accept-desc"
                     >
                       {t('acceptButton')}
                     </button>
@@ -299,9 +301,29 @@ function TeenPattiPageContent() {
                       className={btnDanger}
                       onClick={() => handleRespondSideShow(false)}
                       disabled={loading}
+                      title={t('consequence.refuse')}
+                      aria-describedby="teenpatti-refuse-desc"
                     >
                       {t('declineButton')}
                     </button>
+                    <span id="teenpatti-accept-desc" className="sr-only">
+                      {t('consequence.accept')}
+                    </span>
+                    <span id="teenpatti-refuse-desc" className="sr-only">
+                      {t('consequence.refuse')}
+                    </span>
+                    <div
+                      className="sm:hidden basis-full text-xs text-ds-text-muted mt-1 space-y-0.5"
+                      data-testid="teenpatti-sideshow-consequences"
+                      aria-hidden="true"
+                    >
+                      <div>
+                        {t('acceptButton')}: {t('consequence.accept')}
+                      </div>
+                      <div>
+                        {t('declineButton')}: {t('consequence.refuse')}
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>

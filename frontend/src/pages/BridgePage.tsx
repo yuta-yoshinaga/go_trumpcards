@@ -392,6 +392,8 @@ function BridgePageContent() {
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
                   dataTutorial="br-trick-display"
+                  winnerIdx={isTrickEnd ? state.leadPlayerIdx : undefined}
+                  winnerLabel={t('trickWinnerBadge')}
                 />
 
                 {/* Dummy hand */}

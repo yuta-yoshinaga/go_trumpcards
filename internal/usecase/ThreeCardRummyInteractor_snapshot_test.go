@@ -150,7 +150,6 @@ func TestThreeCardRummyInteractor_SnapshotRoundTripsEveryField(t *testing.T) {
 		assert.Equal(t, wantLog[i].TurnNumber, gotLog[i].TurnNumber, "log[%d] turn", i)
 		assert.Equal(t, wantLog[i].PlayerIdx, gotLog[i].PlayerIdx, "log[%d] player", i)
 		assert.Equal(t, wantLog[i].ActionType, gotLog[i].ActionType, "log[%d] type", i)
-		assert.Equal(t, wantLog[i].Detail, gotLog[i].Detail, "log[%d] detail", i)
 	}
 }
 

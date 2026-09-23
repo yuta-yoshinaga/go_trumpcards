@@ -20,6 +20,8 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import i18n from '../i18n';
+import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { TichuResponse } from '../types/card';
@@ -28,6 +30,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
+import { resolveMessageCode } from '../utils/resolveMessageCode';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { tichuBombIndices } from '../utils/tichuBomb';
 import { classifyTichuCombo } from '../utils/tichuCombo';
@@ -83,7 +86,8 @@ function parseTichuCommand(input: string): CliParseResult<[ApiArgs]> {
   }
 }
 
-function formatTichuState(state: TichuResponse): string {
+/** Formats Tichu state for the CLI terminal, including localized result messages. */
+export function formatTichuState(state: TichuResponse): string {
   const lines: string[] = [`Phase: ${state.phase}`];
   for (const p of state.players) {
     const name = p.isHuman ? 'You' : `CPU ${p.id}`;
@@ -92,7 +96,8 @@ function formatTichuState(state: TichuResponse): string {
   if (state.tableCards.length > 0) {
     lines.push(`Table: ${state.tableCombo} (${state.tableCards.length} cards)`);
   }
-  if (state.message) lines.push(state.message);
+  const message = resolveMessageCode(i18n.t, state.messageCode, state.messageParams, state.message);
+  if (message) lines.push(message);
   return lines.join('\n');
 }
 
@@ -274,6 +279,14 @@ function TichuPageContent() {
               <span className={humanTeam === 1 ? 'font-bold text-ds-accent' : ''}>
                 {t('label.teamB')}: {state.scores[1]}
               </span>
+              {humanPlayer && humanPlayer.declType > 0 && (
+                <span
+                  className={`rounded px-1.5 py-0.5 text-xs font-semibold ${badgeWarningColors}`}
+                  data-testid="tichu-declaration-badge"
+                >
+                  {declLabel(humanPlayer.declType)}
+                </span>
+              )}
               {state.isOneTwo && <span className="text-xs opacity-75">{t('label.oneTwo')}</span>}
             </div>
           )}
@@ -305,7 +318,7 @@ function TichuPageContent() {
                 <span className="text-ds-text-primary text-xs ml-2">{state.tableCombo}</span>
               </>
             ) : (
-              <span className="text-ds-text-secondary text-sm">{t('label.table')}: ---</span>
+              <span className="text-ds-text-muted text-sm">{t('label.table')}: ---</span>
             )}
           </div>
 
@@ -366,14 +379,14 @@ function TichuPageContent() {
                       {t('invalidCombo')}
                     </span>
                   ) : (
-                    <span className="text-ds-text-secondary">
+                    <span className="text-ds-text-muted">
                       {t('comboPreview')}:{' '}
                       <span className="font-medium text-ds-accent">
                         {t(`combo.${selectedCombo.type}`)}
                         {selectedCombo.length > 0 ? ` (${selectedCombo.length})` : ''}
                       </span>
                       {selectedCombo.type === 'dog' && (
-                        <span className="ml-1 text-ds-text-secondary" data-testid="tichu-dog-note">
+                        <span className="ml-1 text-ds-text-muted" data-testid="tichu-dog-note">
                           ({t('dogLeadNote')})
                         </span>
                       )}

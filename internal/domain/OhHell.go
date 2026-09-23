@@ -147,14 +147,14 @@ func (o *OhHell) PlayerBid(bid int) error {
 		return ErrNotHumanTurn
 	}
 	if bid < 0 || bid > o.handSize {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("ビッドは0〜%dで指定してください", o.handSize))
+		return NewDomainErrorCode(ErrInvalidPlay, "ohhell.errBidOutOfRange", map[string]string{"max": fmt.Sprintf("%d", o.handSize)})
 	}
 	if o.isRestrictedBid(bid) {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("ディーラーはビッド%dを選べません（合計がトリック数と一致するため）", bid))
+		return NewDomainErrorCode(ErrInvalidPlay, "ohhell.errRestrictedBid", map[string]string{"bid": fmt.Sprintf("%d", bid)})
 	}
 
 	o.players[humanIdx].SetBid(bid)
-	o.appendLog(humanIdx, "bid", fmt.Sprintf("%s bids %d", playerName(o.players, humanIdx), bid), nil)
+	o.appendLog(humanIdx, "bid", "ohhell.log.bid", map[string]string{"name": playerName(o.players, humanIdx), "bid": fmt.Sprint(bid)}, nil)
 
 	o.advanceBid()
 	return nil
@@ -174,7 +174,7 @@ func (o *OhHell) CpuBid() {
 
 	bid := o.cpuSelectBid(o.bidPlayerIdx)
 	o.players[o.bidPlayerIdx].SetBid(bid)
-	o.appendLog(o.bidPlayerIdx, "bid", fmt.Sprintf("%s bids %d", playerName(o.players, o.bidPlayerIdx), bid), nil)
+	o.appendLog(o.bidPlayerIdx, "bid", "ohhell.log.bid", map[string]string{"name": playerName(o.players, o.bidPlayerIdx), "bid": fmt.Sprint(bid)}, nil)
 
 	o.advanceBid()
 }
@@ -193,7 +193,7 @@ func (o *OhHell) PlayerPlay(cardIndex int) error {
 
 	player := o.players[o.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "ohhell.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
@@ -242,7 +242,7 @@ func (o *OhHell) ResolveTrick() {
 	o.players[winnerIdx].AddTrick(trickCards)
 
 	winnerName := playerName(o.players, winnerIdx)
-	o.appendLog(winnerIdx, "trick_win", fmt.Sprintf("%s wins trick %d", winnerName, o.trickNumber), trickCards)
+	o.appendLog(winnerIdx, "trick_win", "ohhell.log.trickWin", map[string]string{"name": winnerName, "trick": fmt.Sprint(o.trickNumber)}, trickCards)
 
 	o.leadPlayerIdx = winnerIdx
 
@@ -278,8 +278,7 @@ func (o *OhHell) ScoreRound() {
 		if tricks == bid {
 			// ビッド的中: 10 + bid ポイント
 			p.roundScore = 10 + bid
-			o.appendLog(i, "bid_success", fmt.Sprintf("%s bid %d, took %d: +%d",
-				playerName(o.players, i), bid, tricks, p.roundScore), nil)
+			o.appendLog(i, "bid_success", "ohhell.log.bidSuccess", map[string]string{"name": playerName(o.players, i), "bid": fmt.Sprint(bid), "tricks": fmt.Sprint(tricks), "points": fmt.Sprint(p.roundScore)}, nil)
 		} else {
 			switch o.config.ScoringVariant {
 			case OhHellScoringPenalty:
@@ -288,12 +287,10 @@ func (o *OhHell) ScoreRound() {
 					diff = -diff
 				}
 				p.roundScore = -diff
-				o.appendLog(i, "bid_fail", fmt.Sprintf("%s bid %d, took %d: %d",
-					playerName(o.players, i), bid, tricks, p.roundScore), nil)
+				o.appendLog(i, "bid_fail", "ohhell.log.bidFail", map[string]string{"name": playerName(o.players, i), "bid": fmt.Sprint(bid), "tricks": fmt.Sprint(tricks), "points": fmt.Sprint(p.roundScore)}, nil)
 			default:
 				p.roundScore = 0
-				o.appendLog(i, "bid_fail", fmt.Sprintf("%s bid %d, took %d: 0",
-					playerName(o.players, i), bid, tricks), nil)
+				o.appendLog(i, "bid_fail", "ohhell.log.bidFailZero", map[string]string{"name": playerName(o.players, i), "bid": fmt.Sprint(bid), "tricks": fmt.Sprint(tricks)}, nil)
 			}
 		}
 	}
@@ -305,8 +302,7 @@ func (o *OhHell) ScoreRound() {
 
 	// スコアログ
 	for i := range OhHellPlayerCnt {
-		o.appendLog(i, "cumulative_score", fmt.Sprintf("%s: total=%d",
-			playerName(o.players, i), o.players[i].cumulativeScore), nil)
+		o.appendLog(i, "cumulative_score", "ohhell.log.cumulativeScore", map[string]string{"name": playerName(o.players, i), "total": fmt.Sprint(o.players[i].cumulativeScore)}, nil)
 	}
 
 	// ゲーム終了判定
@@ -554,7 +550,7 @@ func (o *OhHell) playCard(playerIdx int, card *Card) {
 		Card:      card,
 	})
 
-	o.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(o.players, playerIdx), cardStr(card)), []*Card{card})
+	o.appendLog(playerIdx, "play", "ohhell.log.play", map[string]string{"name": playerName(o.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(o.currentTrick) == OhHellPlayerCnt {
 		o.phase = OhHellPhaseTrickEnd
@@ -574,7 +570,7 @@ func (o *OhHell) validatePlay(playerIdx int, card *Card) error {
 	leadSuit := o.currentTrick[0].Card.GetDesign()
 	if card.GetDesign() != leadSuit {
 		if o.playerHasSuit(playerIdx, leadSuit) {
-			return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+			return NewDomainErrorCode(ErrInvalidPlay, "ohhell.errFollowLeadSuit", nil)
 		}
 	}
 
@@ -601,7 +597,11 @@ func (o *OhHell) determineWinner() {
 			o.winnerIdx = i
 		}
 	}
-	o.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(o.players, o.winnerIdx)), nil)
+	o.appendLog(-1, "game_end", "ohhell.log.gameEnd", map[string]string{"name": playerName(o.players, o.winnerIdx)}, nil)
+}
+
+func (o *OhHell) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	o.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // sortAllHands 全プレイヤーの手札をソートする

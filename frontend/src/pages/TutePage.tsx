@@ -27,6 +27,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { TuteResponse } from '../types/card';
 import { TutePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { suitName } from '../utils/cardUtils';
 import { parseTuteCommand, TUTE_HELP } from '../utils/cli/commands/tuteCommands';
 import { formatTuteState } from '../utils/cli/formatters/tuteFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -149,6 +150,15 @@ function TutePageContent() {
   );
   const humanTeam = humanIdx % 2;
   const trumpSymbol = SUIT_SYMBOLS[state.trumpSuit] ?? '?';
+  // Trump suit is 0 before the last dealt card establishes it.
+  const trumpDesign = suitName(state.trumpSuit);
+  const trumpIndices =
+    humanPlayer && trumpDesign
+      ? humanPlayer.cards.reduce<number[]>((indices, card, index) => {
+          if (card.design === trumpDesign) indices.push(index);
+          return indices;
+        }, [])
+      : [];
 
   const handleManualReset = () => {
     hideActionLog();
@@ -339,6 +349,8 @@ function TutePageContent() {
                 dataTutorialPrefix="tute"
                 validIndices={canPlay ? state.playableIndices : undefined}
                 restrictedTooltip={t('playButton')}
+                trumpIndices={trumpIndices}
+                trumpTitle={t('trumpTitle')}
               />
             )}
 

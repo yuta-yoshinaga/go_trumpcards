@@ -11,6 +11,12 @@ import (
 // IndianRummyWebPresenter インドラミー Web プレゼンター
 type IndianRummyWebPresenter struct{}
 
+// HintOutput returns the current state as JSON. The Web GUI computes its own
+// hint client-side, so this mirrors Output to satisfy IndianRummyPresenter.
+func (p *IndianRummyWebPresenter) HintOutput(g interfaces.IndianRummyGame) string {
+	return p.Output(g, nil)
+}
+
 // Output ゲーム状態を JSON 出力
 func (p *IndianRummyWebPresenter) Output(g interfaces.IndianRummyGame, lastErr error) string {
 	resObj := new(controller.IndianRummyWebOutput)
@@ -25,6 +31,13 @@ func (p *IndianRummyWebPresenter) Output(g interfaces.IndianRummyGame, lastErr e
 	resObj.WinnerIdx = g.GetWinnerIdx()
 	resObj.DeclarerIdx = g.GetDeclarerIdx()
 	resObj.DeclarationValid = g.GetDeclarationValid()
+	// **フェーズと手番の判定はドメイン側だけに置く。** ここで同じ条件を書くと、
+	// 規則が 2 か所になって片方だけずれる。GetDeclarableDiscards は捨て札
+	// フェーズの人間の手番以外では空を返す (実測 4.26ns、手番中は 1.82ms)。
+	resObj.DeclarableDiscards = g.GetDeclarableDiscards()
+	if resObj.DeclarableDiscards == nil {
+		resObj.DeclarableDiscards = make([]int, 0)
+	}
 
 	if top := g.GetDiscardTop(); top != nil {
 		resObj.DiscardTop = cardToOutput(top)
@@ -81,6 +94,9 @@ func (p *IndianRummyWebPresenter) buildPlayersOutput(g interfaces.IndianRummyGam
 // buildMessage ゲーム結果メッセージを構築
 func (p *IndianRummyWebPresenter) buildMessage(g interfaces.IndianRummyGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

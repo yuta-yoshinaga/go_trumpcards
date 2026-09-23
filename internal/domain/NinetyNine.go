@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // NinetyNinePlayerCnt ナインティナインプレイヤー数 (1 human + 2 CPU)
@@ -91,6 +92,11 @@ type NinetyNine struct {
 	gameEndFlag       bool
 	winnerIdx         int
 	actionLogBase
+}
+
+// appendLog records a Ninety-Nine action with a locale-independent detail code.
+func (o *NinetyNine) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	o.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // NewNinetyNine コンストラクタ
@@ -217,7 +223,7 @@ func (o *NinetyNine) PlayerPlay(cardIndex int) error {
 
 	player := o.players[o.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "ninetynine.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
@@ -266,7 +272,7 @@ func (o *NinetyNine) ResolveTrick() {
 	o.players[winnerIdx].AddTrick(trickCards)
 
 	winnerName := playerName(o.players, winnerIdx)
-	o.appendLog(winnerIdx, "trick_win", fmt.Sprintf("%s wins trick %d", winnerName, o.trickNumber), trickCards)
+	o.appendLog(winnerIdx, "trick_win", "ninetynine.log.trickWin", map[string]string{"player": winnerName, "trick": strconv.Itoa(o.trickNumber)}, trickCards)
 
 	o.leadPlayerIdx = winnerIdx
 
@@ -320,12 +326,10 @@ func (o *NinetyNine) ScoreRound() {
 		bid := p.GetBid()
 		if tricks == bid {
 			p.SetRoundScore(10 + bid + bonus)
-			o.appendLog(i, "bid_success", fmt.Sprintf("%s declared %d, took %d: +%d (bonus +%d)",
-				playerName(o.players, i), bid, tricks, p.GetRoundScore(), bonus), nil)
+			o.appendLog(i, "bid_success", "ninetynine.log.bidSuccess", map[string]string{"player": playerName(o.players, i), "bid": strconv.Itoa(bid), "tricks": strconv.Itoa(tricks), "score": strconv.Itoa(p.GetRoundScore()), "bonus": strconv.Itoa(bonus)}, nil)
 		} else {
 			p.SetRoundScore(0)
-			o.appendLog(i, "bid_fail", fmt.Sprintf("%s declared %d, took %d: 0",
-				playerName(o.players, i), bid, tricks), nil)
+			o.appendLog(i, "bid_fail", "ninetynine.log.bidFail", map[string]string{"player": playerName(o.players, i), "bid": strconv.Itoa(bid), "tricks": strconv.Itoa(tricks)}, nil)
 		}
 	}
 
@@ -334,8 +338,7 @@ func (o *NinetyNine) ScoreRound() {
 	}
 
 	for i := range NinetyNinePlayerCnt {
-		o.appendLog(i, "cumulative_score", fmt.Sprintf("%s: total=%d",
-			playerName(o.players, i), o.players[i].GetCumulativeScore()), nil)
+		o.appendLog(i, "cumulative_score", "ninetynine.log.cumulativeScore", map[string]string{"player": playerName(o.players, i), "total": strconv.Itoa(o.players[i].GetCumulativeScore())}, nil)
 	}
 
 	// ゲーム終了判定: いずれかが TargetScore 以上に達したら終了
@@ -494,16 +497,16 @@ func (o *NinetyNine) deal() {
 // validateBuryIndices 伏せる3枚のインデックスを検証し、昇順スライスを返す
 func (o *NinetyNine) validateBuryIndices(playerIdx int, indices []int) ([]int, error) {
 	if len(indices) != NinetyNineBurySize {
-		return nil, NewDomainError(ErrInvalidPlay, fmt.Sprintf("伏せるカードは%d枚指定してください", NinetyNineBurySize))
+		return nil, NewDomainErrorCode(ErrInvalidPlay, "ninetynine.errBuryCount", map[string]string{"count": fmt.Sprintf("%d", NinetyNineBurySize)})
 	}
 	player := o.players[playerIdx]
 	seen := make(map[int]bool, NinetyNineBurySize)
 	for _, idx := range indices {
 		if idx < 0 || idx >= player.GetCardsSize() {
-			return nil, NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+			return nil, NewDomainErrorCode(ErrInvalidCard, "ninetynine.errCardIndexOutOfRange", nil)
 		}
 		if seen[idx] {
-			return nil, NewDomainError(ErrInvalidPlay, "同じカードを重複して指定できません")
+			return nil, NewDomainErrorCode(ErrInvalidPlay, "ninetynine.errDuplicateCardIndex", nil)
 		}
 		seen[idx] = true
 	}
@@ -528,7 +531,7 @@ func (o *NinetyNine) applyBury(playerIdx int, descIndices []int) {
 	}
 	player.SetBuried(buried)
 	player.SetBid(bid)
-	o.appendLog(playerIdx, "bid", fmt.Sprintf("%s buries 3 and declares %d", playerName(o.players, playerIdx), bid), buried)
+	o.appendLog(playerIdx, "bid", "ninetynine.log.bid", map[string]string{"player": playerName(o.players, playerIdx), "bid": strconv.Itoa(bid)}, buried)
 }
 
 // advanceBid ビッドプレイヤーを次に進める
@@ -562,7 +565,7 @@ func (o *NinetyNine) playCard(playerIdx int, card *Card) {
 		Card:      card,
 	})
 
-	o.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(o.players, playerIdx), cardStr(card)), []*Card{card})
+	o.appendLog(playerIdx, "play", "ninetynine.log.play", map[string]string{"player": playerName(o.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(o.currentTrick) == NinetyNinePlayerCnt {
 		o.phase = NinetyNinePhaseTrickEnd
@@ -602,7 +605,7 @@ func (o *NinetyNine) determineWinner() {
 		}
 	}
 	o.winnerIdx = best
-	o.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(o.players, o.winnerIdx)), nil)
+	o.appendLog(-1, "game_end", "ninetynine.log.gameEnd", map[string]string{"player": playerName(o.players, o.winnerIdx)}, nil)
 }
 
 // ninetyNineBeats プレイヤー a がプレイヤー b に勝るか (タイブレーク込み)

@@ -1,4 +1,5 @@
 {
+  "autoCompleteReady": "オートコンプリート可能です (ac)",
   "helpTitle": "FreeCell (フリーセル)",
   "helpMove": "  m t <col> t <col>    move tableau top card to tableau",
   "helpMoveTF": "  m t <col> f          move tableau to foundation",
@@ -11,12 +12,12 @@
   "helpGiveUp": "  g                    give up",
   "helpHint": "  h                    hint",
   "helpAutoComplete": "  ac                   auto-complete",
-  "freeCellHeader": "FreeCells: ",
-  "foundationHeader": "Foundation: ",
+  "freeCellHeader": "フリーセル: ",
+  "foundationHeader": "組札: ",
   "columnLabel": "列{{col}}:",
   "hintFromTableau": "タブロー列{{col}}[{{idx}}]",
   "hintFromFreeCell": "フリーセル{{col}}",
-  "hintToFoundation": "ファンデーション",
+  "hintToFoundation": "組札",
   "hintToTableau": "タブロー列{{col}}",
   "hintToFreeCell": "フリーセル{{col}}",
   "hintLine": "ヒント: {{from}} → {{to}}",
@@ -25,5 +26,6 @@
   "helpExampleMoveCell": "  m t 0 c 0            列 0 の一番上を空きセル 0 へ逃がす",
   "helpExampleHint": "  h                    次の一手を教えてもらう",
   "helpExampleAuto": "  ac                   組札へ送れる札を自動で送る",
-  "helpUndo": "  u 1手戻す"
+  "helpUndo": "  u 1手戻す",
+  "log.tableauToTableau": "タブロー列{{fromCol}}→タブロー列{{toCol}}", "log.tableauToFoundation": "タブロー列{{col}}→組札", "log.tableauToFreeCell": "タブロー列{{col}}→フリーセル{{cell}}", "log.freeCellToTableau": "フリーセル{{cell}}→タブロー列{{col}}", "log.freeCellToFoundation": "フリーセル{{cell}}→組札", "log.giveUp": "ギブアップしました", "log.autoComplete": "オートコンプリートを実行しました"
 }

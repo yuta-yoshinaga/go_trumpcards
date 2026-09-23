@@ -129,6 +129,9 @@ func gongZhuCapturedPointCards(player *domain.GongZhuPlayer) []*controller.WebOu
 // buildMessage ゲーム結果メッセージを構築
 func (p *GongZhuWebPresenter) buildMessage(g interfaces.GongZhuGame, trick []*domain.TrickCard, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

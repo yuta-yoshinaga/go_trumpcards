@@ -181,7 +181,7 @@ func (c *RoyalCotillion) Draw() error {
 	card := c.stock[0]
 	c.stock = c.stock[1:]
 	c.waste = append(c.waste, card)
-	c.afterMove("draw", "山札から1枚めくった", card)
+	c.afterMove("draw", "royalcotillion.log.drawDetail", nil, card)
 	return nil
 }
 
@@ -204,7 +204,7 @@ func (c *RoyalCotillion) MoveTableauToFoundation(slot int) error {
 	c.takeSnapshot()
 	c.tableau[slot] = nil
 	c.foundation[fIdx] = append(c.foundation[fIdx], card)
-	c.afterMove("move", fmt.Sprintf("タブロー枠%d→基礎札%d", slot, fIdx), card)
+	c.afterMove("move", "royalcotillion.log.move", map[string]string{"value1": fmt.Sprint(slot), "value2": fmt.Sprint(fIdx)}, card)
 	return nil
 }
 
@@ -227,7 +227,7 @@ func (c *RoyalCotillion) MoveReserveToFoundation(pile int) error {
 	c.takeSnapshot()
 	c.reserve[pile] = dropLast(c.reserve[pile])
 	c.foundation[fIdx] = append(c.foundation[fIdx], card)
-	c.afterMove("move", fmt.Sprintf("リザーブ%d→基礎札%d", pile, fIdx), card)
+	c.afterMove("move", "royalcotillion.log.move", map[string]string{"value1": fmt.Sprint(pile), "value2": fmt.Sprint(fIdx)}, card)
 	return nil
 }
 
@@ -247,7 +247,7 @@ func (c *RoyalCotillion) MoveWasteToFoundation() error {
 	c.takeSnapshot()
 	c.popWaste()
 	c.foundation[fIdx] = append(c.foundation[fIdx], card)
-	c.afterMove("move", fmt.Sprintf("捨て札→基礎札%d", fIdx), card)
+	c.afterMove("move", "royalcotillion.log.move", map[string]string{"value1": fmt.Sprint(fIdx)}, card)
 	return nil
 }
 
@@ -271,7 +271,7 @@ func (c *RoyalCotillion) MoveWasteToTableau(slot int) error {
 	c.takeSnapshot()
 	c.popWaste()
 	c.tableau[slot] = card
-	c.afterMove("move", fmt.Sprintf("捨て札→タブロー枠%d", slot), card)
+	c.afterMove("move", "royalcotillion.log.move", map[string]string{"value1": fmt.Sprint(slot)}, card)
 	return nil
 }
 
@@ -296,7 +296,7 @@ func (c *RoyalCotillion) MoveStockToTableau(slot int) error {
 	card := c.stock[0]
 	c.stock = c.stock[1:]
 	c.tableau[slot] = card
-	c.afterMove("move", fmt.Sprintf("山札→タブロー枠%d", slot), card)
+	c.afterMove("move", "royalcotillion.log.move", map[string]string{"value1": fmt.Sprint(slot)}, card)
 	return nil
 }
 
@@ -304,7 +304,7 @@ func (c *RoyalCotillion) MoveStockToTableau(slot int) error {
 func (c *RoyalCotillion) GiveUp() {
 	if c.phase == RoyalCotillionPhasePlaying {
 		c.phase = RoyalCotillionPhaseGameOver
-		c.appendLog("giveup", "ギブアップしました", nil)
+		c.appendLog("giveup", "royalcotillion.log.giveup", nil, nil)
 	}
 }
 
@@ -558,8 +558,8 @@ func (c *RoyalCotillion) findFoundation(card *Card) int {
 }
 
 // afterMove 手数・棋譜・終了判定をまとめて進める
-func (c *RoyalCotillion) afterMove(actionType, detail string, card *Card) {
-	afterMove(&c.moveCount, c, actionType, detail, card)
+func (c *RoyalCotillion) afterMove(actionType, detailCode string, detailParams map[string]string, card *Card) {
+	afterMove(&c.moveCount, c, actionType, detailCode, detailParams, card)
 }
 
 // checkGameClear 8 つの基礎札がすべて 13 枚積まれたか
@@ -601,8 +601,8 @@ func (c *RoyalCotillion) takeSnapshot() {
 }
 
 // appendLog 棋譜エントリを追加
-func (c *RoyalCotillion) appendLog(actionType, detail string, cards []*Card) {
-	c.appendLogAt(c.moveCount, 0, actionType, detail, cards)
+func (c *RoyalCotillion) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	c.appendLogCodeAt(c.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // royalCotillionSnapshotJSON is the wire format for a single undo snapshot.

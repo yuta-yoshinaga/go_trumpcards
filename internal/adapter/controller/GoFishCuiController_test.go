@@ -19,6 +19,7 @@ func newGoFishCuiController() (*controller.GoFishCuiController, *mockusecase.Moc
 	giMock.On("Reset", mock.Anything).Return("reset output")
 	giMock.On("Ask", 1, 3).Return("ask output")
 	giMock.On("ActionLog").Return("action log output")
+	giMock.On("Hint").Return("hint output")
 	return controller.NewGoFishCuiController(giMock), giMock
 }
 
@@ -68,4 +69,10 @@ func TestGoFishCuiController_ActionLog(t *testing.T) {
 	ctrl, _ := newGoFishCuiController()
 	result := ctrl.Exec("log")
 	assert.Equal(t, "action log output", result)
+}
+
+func TestGoFishCuiController_Hint(t *testing.T) {
+	ctrl, _ := newGoFishCuiController()
+	assert.Equal(t, "hint output", ctrl.Exec("h"))
+	assert.Equal(t, "hint output", ctrl.Exec("hint"))
 }

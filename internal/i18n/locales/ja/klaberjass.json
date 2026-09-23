@@ -39,5 +39,20 @@
   "result.humanWin": "ゲーム終了！ あなたの勝ち！",
   "result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
   "lastTrickBonus": "最終トリック: {{name}} に +{{points}}点",
-  "helpExamplePlay": "  p 0                       手札の 0 番のカードを出す"
+  "helpExamplePlay": "  p 0                       手札の 0 番のカードを出す",
+  "log.deal": "6 枚ずつ配り、札を 1 枚めくりました",
+  "log.pass": "パスしました",
+  "log.schmeiss": "流しを提案しました",
+  "log.schmeissAccept": "流しに同意しました",
+  "log.schmeissRefuse": "流しを拒否しました",
+  "log.redeal": "誰もディールを取りませんでした",
+  "log.makeTrump": "スート {{suit}} を切り札にしました",
+  "log.dix": "切り札の 7 とめくり札を交換しました",
+  "log.sequence": "シーケンスで {{points}} 点を得ました",
+  "log.play": "札を出しました",
+  "log.bela": "ベラを宣言しました",
+  "log.trick": "トリックで {{points}} 点を取りました",
+  "log.handEnd": "{{maker}} 対 {{opponent}} で達成しました",
+  "log.bete": "ベーテとなり、{{points}} 点を相手に渡しました",
+  "log.gameEnd": "ゲームに勝ちました"
 }

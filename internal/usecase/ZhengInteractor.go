@@ -20,6 +20,8 @@ type ZhengInteractorIF interface {
 	ResetWithConfig(config domain.ZhengConfig) string
 	// GetConfig 現在の設定を返す
 	GetConfig() domain.ZhengConfig
+	// Hint ヒントを出力する
+	Hint() string
 	// ActionLog 棋譜を出力する
 	ActionLog() string
 }
@@ -62,6 +64,9 @@ func (zi *ZhengInteractor) Play(indices []int) string {
 func (zi *ZhengInteractor) GetConfig() domain.ZhengConfig {
 	return zi.Game.GetConfig()
 }
+
+// Hint ヒントを出力する
+func (zi *ZhengInteractor) Hint() string { return zi.zp.HintOutput(zi.Game) }
 
 // ResetWithConfig 設定を変更してゲームを初期化
 func (zi *ZhengInteractor) ResetWithConfig(config domain.ZhengConfig) string {

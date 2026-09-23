@@ -172,7 +172,7 @@ func TestLobaCuiPresenter_NamesTheMeldKind(t *testing.T) {
 	// NotContains は原理的に通らない。メルド行そのものを組み立てて照合する。
 	assert.Contains(t, out, i18n.Tf("loba.meldLine",
 		"idx", "0", "kind", i18n.T("loba.escalera"), "owner", "1",
-		"cards", "SPADE 5 SPADE 6 SPADE 7"))
+		"cards", "♠5 ♠6 ♠7"))
 }
 
 func TestLobaCuiPresenter_PromptsPerPhase(t *testing.T) {

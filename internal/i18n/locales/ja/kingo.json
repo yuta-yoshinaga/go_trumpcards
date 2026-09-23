@@ -26,5 +26,8 @@
   "reason.roundIsOver": "このラウンドは決着しました",
   "result.gameEnd": "ゲームが終わりました",
   "helpExampleBet": "  bet 100             100 チップを賭ける",
-  "rankWithValue": "{{rank}}（{{value}}）"
+  "rankWithValue": "{{rank}}（{{value}}）",
+  "log.banker": "親を引き受けました",
+  "log.bet": "ベットしました",
+  "log.deal": "{{rank}}を配りました"
 }

@@ -112,6 +112,9 @@ describe('LobaPage', () => {
 
   it('lays off exactly one card onto a chosen meld', async () => {
     // 手札の添字と場の添字は別物なので、両方を選ばないと押せない。
+    mockExec.mockResolvedValue(
+      makeState({ players: [seat(0, true, { hasMelded: true }), seat(1, false), seat(2, false), seat(3, false)] }),
+    );
     renderWithProviders(<LobaPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
 
@@ -283,15 +286,47 @@ describe('LobaPage', () => {
       await waitFor(() => expect(hint()).toBeInTheDocument());
     });
 
-    // **足りているときは黙る。**出したままだと、押せる状態でも押せないように読める。
-    it('goes away once a meld is chosen', async () => {
+    it('explains and disables lay-off before the human has melded', async () => {
+      renderWithProviders(<LobaPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+      selectCards([3]);
+      const layOff = screen.getByRole('button', { name: '付ける' });
+      expect(layOff).toBeDisabled();
+      expect(screen.getByTestId('loba-layoff-hint')).toHaveTextContent('先に自分のメルドを出してください');
+    });
+
+    it('keeps the prerequisite warning until the human has melded', async () => {
       renderWithProviders(<LobaPage />);
       await waitFor(() => expect(mockExec).toHaveBeenCalled());
 
       selectCards([3]);
       await waitFor(() => expect(hint()).toBeInTheDocument());
       fireEvent.click(screen.getAllByTestId('loba-meld')[0]);
-      await waitFor(() => expect(hint()).not.toBeInTheDocument());
+      expect(hint()).toHaveTextContent('先に自分のメルドを出してください');
+    });
+
+    it('shows the target hint for a melded human before a meld is selected', async () => {
+      mockExec.mockResolvedValue(
+        makeState({ players: [seat(0, true, { hasMelded: true }), seat(1, false), seat(2, false), seat(3, false)] }),
+      );
+      renderWithProviders(<LobaPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+      selectCards([3]);
+      expect(screen.getByTestId('loba-layoff-hint')).toHaveTextContent('付ける先のメルドもクリックしてください');
+    });
+
+    it('hides the target hint and enables lay-off once a meld is selected', async () => {
+      mockExec.mockResolvedValue(
+        makeState({ players: [seat(0, true, { hasMelded: true }), seat(1, false), seat(2, false), seat(3, false)] }),
+      );
+      renderWithProviders(<LobaPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+      selectCards([3]);
+      fireEvent.click(screen.getAllByTestId('loba-meld')[0]);
+      expect(hint()).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '付ける' })).toBeEnabled();
     });
 
     // 2 枚以上を選んでいる人はメルドを作ろうとしている。付ける話をしない。

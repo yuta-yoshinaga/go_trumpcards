@@ -186,28 +186,28 @@ func TestTuteCuiPresenter_HintOutput(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 13, false))
 		m.On("GetHint").Return(&domain.TuteHint{CardIndices: []int{0}, Reason: "lead_low"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 
 	t.Run("hint no card indices", func(t *testing.T) {
 		m, _ := setupTuteCuiMockWithPlayers()
 		m.On("GetHint").Return(&domain.TuteHint{CardIndices: nil, Reason: "follow_win"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 
 	t.Run("marriage hint", func(t *testing.T) {
 		m, _ := setupTuteCuiMockWithPlayers()
 		m.On("GetHint").Return(&domain.TuteHint{Marriage: domain.CardDesignSpade, Reason: "declare_marriage"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 
 	t.Run("tute hint", func(t *testing.T) {
 		m, _ := setupTuteCuiMockWithPlayers()
 		m.On("GetHint").Return(&domain.TuteHint{Reason: "declare_tute"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 }
 
@@ -216,7 +216,7 @@ func TestTuteCuiPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockTuteGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You plays ♠K"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
 	m.On("GetPlayer", mock.Anything).Return(domain.NewTutePlayer(true)).Maybe()

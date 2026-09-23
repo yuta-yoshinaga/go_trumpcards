@@ -3,6 +3,8 @@
   "declareGuide": "切り札を宣言するか、相方に委ねてください",
   "doubleGuide": "倍付けしますか？",
   "playGuide": "出せる札だけが選べます（勝てるなら勝つ義務があります）",
+  "previousTrick": "前のトリック",
+  "previousTrickWinner": "→ {{name}} が獲得",
   "label": {
     "you": "あなた",
     "partner": "相方",

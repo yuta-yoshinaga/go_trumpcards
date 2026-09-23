@@ -9,6 +9,9 @@
   "helpPlay": "  play <n>             Play a card",
   "helpScarto": "  scarto <i0> ...      Discard the surplus (dealer only)",
   "helpSetDifficulty": "  sd <0-2>             CPU difficulty (0=Easy 1=Normal 2=Hard)",
+  "helpSetTargetRounds": "  str <4-100>           set target match rounds (multiple of 4)",
+  "targetRoundsRequired": "Target rounds is required (4-100).",
+  "invalidTargetRounds": "Invalid target rounds: {{val}}. Please enter a multiple of 4 from 4-100.",
   "helpTitle": "Minchiate",
   "hintCard": "[HINT: {{cards}} ({{reason}})]",
   "hintNone": "No hint available.",
@@ -36,5 +39,16 @@
   "mattoNote": "The Matto (Fool) is special: it never wins a trick, is exempt from following suit, and never sets the led suit",
   "helpExamplePlay": "  play 0               play hand card 0",
   "helpExampleNext": "  n                    read the trick result, then continue",
-  "helpHint": "  h                    show a hint"
+  "helpHint": "  h                    show a hint",
+  "errScartoCardCount": "Choose {{count}} cards to discard.",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errDuplicateScarto": "You cannot choose the same card twice.",
+  "errCannotDiscardTrumpOrMatto": "Trumps and the Matto cannot be discarded.",
+  "errFollowLeadSuit": "You must follow the led suit.",
+  "errTargetRoundsNotMultiple": "The number of rounds must be a multiple of {{min}}: {{rounds}}.",
+  "log.matchEnd": "Match over",
+  "log.scarto": "Discarded {{count}} cards",
+  "log.play": "",
+  "log.trickWin": "Won trick {{trick}}",
+  "log.settle": "Round {{round}} over"
 }

@@ -176,6 +176,13 @@ function OichoKabuPageContent() {
 
             {state.playerHand.length > 0 && (
               <div className="mb-4" data-tutorial="ok-results">
+                <details
+                  className="mx-auto mb-2 max-w-md rounded bg-black/30 p-2 text-left"
+                  data-testid="oichokabu-rank-help"
+                >
+                  <summary className="cursor-pointer text-sm text-ds-text-muted">{t('rankRuleSummary')}</summary>
+                  <p className="mt-1 text-sm text-ds-text-muted">{t('rankRule')}</p>
+                </details>
                 <div
                   className="text-ds-warning font-bold text-center mb-1"
                   role="img"

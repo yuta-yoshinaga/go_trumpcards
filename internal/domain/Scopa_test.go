@@ -111,6 +111,15 @@ func TestScopaPlayerPlay_Lay(t *testing.T) {
 	if s.GetPlayer(0).CapturedCount() != 0 {
 		t.Error("laying must not capture")
 	}
+	var found *ActionLogEntry
+	for _, entry := range s.GetActionLog() {
+		if entry.DetailCode == "scopa.log.lay" {
+			found = entry
+		}
+	}
+	if found == nil || len(found.DetailParams) != 0 {
+		t.Fatalf("lay log = %#v, want code with empty detail and params", found)
+	}
 }
 
 func TestScopaPlayerPlay_InvalidSelection(t *testing.T) {

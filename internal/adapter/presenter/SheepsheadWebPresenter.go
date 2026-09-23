@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra4
+//go:build !js || !wasm || extra7
 
 package presenter
 
@@ -51,6 +51,8 @@ func (p *SheepsheadWebPresenter) buildBase(g interfaces.SheepsheadGame) *control
 	resObj.CalledSuit = g.GetCalledSuit()
 	resObj.PartnerRevealed = g.IsPartnerRevealed()
 	resObj.RoundPickerPoints = g.GetRoundPickerPoints()
+	resObj.LivePickerPoints = g.GetLivePickerPoints()
+	resObj.LiveDefenderPoints = g.GetLiveDefenderPoints()
 	resObj.RoundMultiplier = g.GetRoundMultiplier()
 	resObj.RoundPickerWon = g.GetRoundPickerWon()
 
@@ -136,6 +138,9 @@ func (p *SheepsheadWebPresenter) buildPlayersOutput(g interfaces.SheepsheadGame)
 // buildMessage ゲーム結果メッセージを構築
 func (p *SheepsheadWebPresenter) buildMessage(g interfaces.SheepsheadGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

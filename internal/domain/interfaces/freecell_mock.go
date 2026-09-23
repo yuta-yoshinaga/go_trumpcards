@@ -55,6 +55,11 @@ func (_m *MockFreeCellGame) GetHint() *domain.FreeCellHint {
 	return v.(*domain.FreeCellHint)
 }
 
+// CanAutoComplete mocks the CanAutoComplete call.
+func (_m *MockFreeCellGame) CanAutoComplete() bool {
+	return _m.Called().Bool(0)
+}
+
 func (_m *MockFreeCellGame) AutoComplete() error {
 	ret := _m.Called()
 	return ret.Error(0)

@@ -98,6 +98,15 @@ func TestCasinoWar_Bet_Success_NaturalFlow(t *testing.T) {
 	assert.NotNil(t, cw.GetDealerCard())
 	assert.Equal(t, domain.CasinoWarPhaseInitialDealt, cw.GetPhase())
 	assert.Equal(t, domain.CasinoWarDefaultChips-100, cw.GetChips())
+	var entry *domain.ActionLogEntry
+	for _, candidate := range cw.GetActionLog() {
+		if candidate.ActionType == "bet" {
+			entry = candidate
+		}
+	}
+	assert.NotNil(t, entry)
+	assert.Equal(t, "casinowar.log.bet", entry.DetailCode)
+	assert.Equal(t, map[string]string{"amount": "100"}, entry.DetailParams)
 }
 
 func TestCasinoWar_ResolveInitial_PlayerWins(t *testing.T) {

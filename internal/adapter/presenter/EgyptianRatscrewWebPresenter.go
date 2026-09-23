@@ -42,10 +42,7 @@ func (p *EgyptianRatscrewWebPresenter) Output(g interfaces.EgyptianRatscrewGame,
 		if player == nil {
 			continue
 		}
-		name := "あなた"
-		if !player.GetIsHuman() {
-			name = "CPU"
-		}
+		name := webPlayerName(player.GetIsHuman(), i)
 		resObj.Players = append(resObj.Players, &controller.EgyptianRatscrewWebPlayer{
 			Name:      name,
 			IsHuman:   player.GetIsHuman(),

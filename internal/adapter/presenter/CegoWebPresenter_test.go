@@ -20,6 +20,15 @@ func newCegoGame() *domain.Cego {
 func TestCegoWebPresenter_Output(t *testing.T) {
 	g := newCegoGame()
 	g.Reset()
+	g.SetTrickNumber(1)
+	g.SetPhase(domain.CegoPhaseTrickEnd)
+	g.SetCurrentTrick([]*domain.TrickCard{
+		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignSpade, 3, false)},
+		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 7, false)},
+		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignSpade, 5, false)},
+		{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignSpade, 4, false)},
+	})
+	g.ResolveTrick()
 	p := &presenter.CegoWebPresenter{}
 
 	var parsed controller.CegoWebOutput
@@ -40,6 +49,9 @@ func TestCegoWebPresenter_Output(t *testing.T) {
 	}
 	if parsed.BlindCount != domain.CegoBlindSize {
 		t.Errorf("blindCount = %d, want %d", parsed.BlindCount, domain.CegoBlindSize)
+	}
+	if parsed.LastTrickWinner == -1 {
+		t.Error("lastTrickWinner should be present in JSON after resolving a trick")
 	}
 }
 
@@ -136,6 +148,19 @@ func TestCegoWebPresenter_Error(t *testing.T) {
 	out := p.Output(g, errors.New("boom"))
 	if !strings.Contains(out, "boom") {
 		t.Errorf("error message not propagated: %s", out)
+	}
+}
+
+func TestCegoWebPresenter_CodedError(t *testing.T) {
+	g := newCegoGame()
+	p := &presenter.CegoWebPresenter{}
+	err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "cego.errInvalidBid", nil)
+	var out controller.CegoWebOutput
+	if err := json.Unmarshal([]byte(p.Output(g, err)), &out); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	if out.MessageCode != "cego.errInvalidBid" || out.Message != "" {
+		t.Errorf("coded error output = message %q, code %q", out.Message, out.MessageCode)
 	}
 }
 

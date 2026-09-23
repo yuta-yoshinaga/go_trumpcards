@@ -32,5 +32,22 @@
   "hintTrump": "[HINT: choose {{suit}} ({{reason}})]",
   "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
   "helpExamplePlay": "  p 0                  play hand card 0",
-  "helpHint": "  h                    show a hint"
+  "helpHint": "  h                    show a hint",
+  "errInvalidSuit": "The suit is invalid.",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errFollowLeadSuit": "You must follow the lead suit.",
+  "errInvalidPhase": "Invalid phase.",
+  "errInvalidTrumpSuit": "Invalid trump suit.",
+  "errInvalidPlayerCount": "Invalid player count.",
+  "errPlayerNil": "Player is nil.",
+  "errTrickCardNil": "Trick card is nil.",
+  "log.schieben": "{{name}} schiebt (passes to partner)",
+  "log.chooseTrump": "{{name}} chooses {{suit}} as trump",
+  "log.trickWin": "{{name}} wins trick {{trick}} ({{points}} pts)",
+  "log.lastTrick": "{{name}} wins last trick +{{points}}",
+  "log.teamScore": "Team {{team}}: {{card}} card + {{weis}} weis + {{stock}} stock = {{total}} (total {{score}})",
+  "log.weis": "Team {{team}} wins Weis (+{{points}})",
+  "log.stock": "{{name}} has Stöck (+{{points}} for team {{team}})",
+  "log.play": "{{name}} plays {{card}}",
+  "log.gameEnd": "Team {{team}} wins the game!"
 }

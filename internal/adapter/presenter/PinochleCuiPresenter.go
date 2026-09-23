@@ -223,7 +223,11 @@ func (p *PinochleCuiPresenter) ActionLogOutput(g interfaces.PinochleGame) string
 // buildCuiMessage writes the per-phase prompt or end-of-game banner.
 func (p *PinochleCuiPresenter) buildCuiMessage(b *strings.Builder, g interfaces.PinochleGame, lastErr error) {
 	if lastErr != nil {
-		fmt.Fprintln(b, i18n.Tf("pinochle.errorPrefix", "err", lastErr.Error()))
+		text := lastErr.Error()
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			text = i18n.Tf(code, i18nPairs(params)...)
+		}
+		fmt.Fprintln(b, i18n.Tf("pinochle.errorPrefix", "err", text))
 		return
 	}
 	if g.GetGameEndFlag() {

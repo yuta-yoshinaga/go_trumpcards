@@ -38,6 +38,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // LobaPlayerCnt はプレイヤー数 (4 人。原典は 2〜5 人)。
@@ -115,6 +116,19 @@ type LobaMeld struct {
 
 // lobaIsJoker は c がジョーカーかを返す。
 func lobaIsJoker(c *Card) bool { return c != nil && c.GetDesign() == CardDesignJoker }
+
+// lobaHandIsAllJokers は p の手札が空でなく、すべてジョーカーかを返す。
+func lobaHandIsAllJokers(p *LobaPlayer) bool {
+	if p == nil || p.GetCardsSize() == 0 {
+		return false
+	}
+	for i := range p.GetCardsSize() {
+		if !lobaIsJoker(p.GetCard(i)) {
+			return false
+		}
+	}
+	return true
+}
 
 // LobaValidateMeld は cards が正しいメルドかを判定し、種別を返す。
 //
@@ -343,7 +357,7 @@ func (l *Loba) dealRound() {
 
 	l.currentIdx = l.nextActive(l.dealerIdx)
 	l.phase = LobaPhaseDraw
-	l.addLog(-1, "deal", "cards dealt", nil)
+	l.addLog(-1, "deal", "loba.log.deal", nil, nil)
 }
 
 // nextActive は idx の次の、脱落していないプレイヤーを返す。
@@ -372,7 +386,7 @@ func (l *Loba) DrawFromStock(player int) error {
 	l.stock = l.stock[1:]
 	l.GetPlayer(player).AddCard(card)
 	l.beginAct(player)
-	l.addLog(player, "draw", "draws from the stock", nil)
+	l.addLog(player, "draw", "loba.log.drawStock", nil, nil)
 	return nil
 }
 
@@ -388,7 +402,7 @@ func (l *Loba) DrawFromDiscard(player int) error {
 	l.discard = l.discard[:len(l.discard)-1]
 	l.GetPlayer(player).AddCard(card)
 	l.beginAct(player)
-	l.addLog(player, "draw", "takes the discard", []*Card{card})
+	l.addLog(player, "draw", "loba.log.drawDiscard", nil, []*Card{card})
 	return nil
 }
 
@@ -428,7 +442,7 @@ func (l *Loba) recycleDiscard() {
 	l.stock = append([]*Card(nil), rest...)
 	lobaShuffle(l.stock)
 	l.discard = []*Card{top}
-	l.addLog(-1, "recycle", "the discard pile is turned back into the stock", nil)
+	l.addLog(-1, "recycle", "loba.log.recycle", nil, nil)
 }
 
 // Meld は手札の添字集合をメルドとして場に出す。
@@ -447,7 +461,7 @@ func (l *Loba) Meld(player int, handIdxs []int) error {
 	l.removeFromHand(player, handIdxs)
 	l.melds = append(l.melds, &LobaMeld{Owner: player, Kind: kind, Cards: cards})
 	l.hasMelded[player] = true
-	l.addLog(player, "meld", fmt.Sprintf("puts down %d card(s)", len(cards)), cards)
+	l.addLog(player, "meld", "loba.log.meld", map[string]string{"count": strconv.Itoa(len(cards))}, cards)
 	l.checkGoneOut(player)
 	return nil
 }
@@ -478,7 +492,7 @@ func (l *Loba) LayOff(player, handIdx, meldIdx int) error {
 
 	p.RemoveCard(handIdx)
 	meld.Cards = append(meld.Cards, card)
-	l.addLog(player, "layoff", fmt.Sprintf("adds to meld %d", meldIdx), []*Card{card})
+	l.addLog(player, "layoff", "loba.log.layoff", map[string]string{"meld": strconv.Itoa(meldIdx)}, []*Card{card})
 	l.checkGoneOut(player)
 	return nil
 }
@@ -520,14 +534,15 @@ func (l *Loba) Discard(player, handIdx int) error {
 		return fmt.Errorf("card index %d out of range", handIdx)
 	}
 	card := p.GetCard(handIdx)
-	// **ジョーカーは通常は捨てられない。**手札が 1 枚だけのときだけ例外。
-	if lobaIsJoker(card) && p.GetCardsSize() > 1 {
+	// **ジョーカーは通常は捨てられない。**ただし、打てる手が 1 つも無い状態に
+	// プレイヤーを追い込まないため、手札 1 枚のときと全てジョーカーのときは例外。
+	if lobaIsJoker(card) && p.GetCardsSize() > 1 && !lobaHandIsAllJokers(p) {
 		return fmt.Errorf("a joker cannot be discarded")
 	}
 
 	p.RemoveCard(handIdx)
 	l.discard = append(l.discard, card)
-	l.addLog(player, "discard", "discards", []*Card{card})
+	l.addLog(player, "discard", "loba.log.discard", nil, []*Card{card})
 
 	if p.GetCardsSize() == 0 {
 		l.finishRound(player)
@@ -597,7 +612,7 @@ func (l *Loba) finishRound(winner int) {
 	l.roundClean = l.wentOutInOneGo(winner)
 	if l.roundClean {
 		l.scores[winner] -= LobaGoOutCleanBonus
-		l.addLog(winner, "clean", "goes out in one go", nil)
+		l.addLog(winner, "clean", "loba.log.clean", nil, nil)
 	}
 
 	for i, p := range l.players {
@@ -610,12 +625,12 @@ func (l *Loba) finishRound(winner int) {
 		}
 		l.scores[i] += pts
 	}
-	l.addLog(winner, "round_end", fmt.Sprintf("wins round %d", l.roundNo+1), nil)
+	l.addLog(winner, "round_end", "loba.log.roundEnd", map[string]string{"round": strconv.Itoa(l.roundNo + 1)}, nil)
 
 	for i := range l.players {
 		if !l.eliminated[i] && l.scores[i] >= LobaKnockOut {
 			l.eliminated[i] = true
-			l.addLog(i, "eliminated", fmt.Sprintf("reaches %d and is out", l.scores[i]), nil)
+			l.addLog(i, "eliminated", "loba.log.eliminated", map[string]string{"score": strconv.Itoa(l.scores[i])}, nil)
 		}
 	}
 
@@ -650,7 +665,7 @@ func (l *Loba) checkGameEnd() {
 		l.winnerIdx = last
 		l.gameEndFlag = true
 		l.phase = LobaPhaseGameEnd
-		l.addLog(last, "game_end", "is the last player standing", nil)
+		l.addLog(last, "game_end", "loba.log.gameEnd", nil, nil)
 	}
 }
 
@@ -714,7 +729,8 @@ func (l *Loba) findMeld(idx int) []int {
 	return nil
 }
 
-// pickDiscard は捨てる札を選ぶ。ジョーカーは (手札 1 枚のときを除き) 捨てない。
+// pickDiscard は捨てる札を選ぶ。ジョーカーは (手札 1 枚または全てジョーカーの
+// ときを除き) 捨てない。候補がない場合は合法そうな添字 0 でごまかさず、-1 を返す。
 //
 // **単純に「最も点の高い札」を捨てると、手札が一生メルドに育たない。**引いて
 // 捨てるだけで枚数が減らないので、誰も上がらずラウンドが終わらなくなる
@@ -728,7 +744,7 @@ func (l *Loba) pickDiscard(idx int) int {
 	best, bestUse, bestPts := -1, 99, -1
 	for i := range p.GetCardsSize() {
 		c := p.GetCard(i)
-		if lobaIsJoker(c) && p.GetCardsSize() > 1 {
+		if lobaIsJoker(c) && p.GetCardsSize() > 1 && !lobaHandIsAllJokers(p) {
 			continue
 		}
 		use := l.discardUsefulness(idx, i)
@@ -737,9 +753,6 @@ func (l *Loba) pickDiscard(idx int) int {
 		if best == -1 || use < bestUse || (use == bestUse && pts > bestPts) {
 			best, bestUse, bestPts = i, use, pts
 		}
-	}
-	if best < 0 {
-		return 0
 	}
 	return best
 }
@@ -871,8 +884,8 @@ func (l *Loba) SetScoreForTest(idx, score int) { l.scores[idx] = score }
 func (l *Loba) SetHasMeldedForTest(idx int, v bool) { l.hasMelded[idx] = v }
 
 // addLog は棋譜に 1 件追加する。
-func (l *Loba) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	l.appendLog(playerIdx, actionType, detail, cards)
+func (l *Loba) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	l.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // lobaJSON is the JSON wire format for Loba.

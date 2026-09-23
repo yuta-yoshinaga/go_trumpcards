@@ -34,5 +34,11 @@
   "rankNiuNiu": "牛牛",
   "rankN": "牛{{n}}",
   "bankerResult": "親: {{rank}}",
-  "comboAriaLabel": "牛の3枚: {{cards}}"
+  "comboAriaLabel": "牛の3枚: {{cards}}",
+  "payoutRef": {
+    "title": "役と配当",
+    "row": "{{rank}} ... {{multiplier}}倍",
+    "n7ton9": "牛7〜牛9",
+    "others": "それ以外"
+  }
 }

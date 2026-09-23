@@ -13,9 +13,9 @@ package domain
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // SoloWhistPlayerCnt プレイヤー数 (人間 1 + CPU 3)
@@ -233,14 +233,16 @@ func (g *SoloWhist) applyBid(idx int, bid SoloWhistBid) error {
 	high, _ := g.highestBid()
 	// パス以外は現在の最高入札を上回る必要がある。
 	if bid != SoloWhistBidPass && bid <= high {
-		return NewDomainError(ErrInvalidPlay, "現在の入札を上回る必要があります")
+		return NewDomainErrorCode(ErrInvalidPlay, "solowhist.errBidMustExceed", nil)
 	}
 	g.bids[idx] = bid
 	g.bidDone[idx] = true
 	if bid != SoloWhistBidPass {
-		g.appendLog(idx, "bid", fmt.Sprintf("%s bids %s", playerName(g.players, idx), soloWhistBidName(bid)), nil)
+		g.appendLog(idx, "bid", "solowhist.log.bid", map[string]string{
+			"name": playerName(g.players, idx), "bidKey": SoloWhistBidKey(bid),
+		}, nil)
 	} else {
-		g.appendLog(idx, "bid", fmt.Sprintf("%s passes", playerName(g.players, idx)), nil)
+		g.appendLog(idx, "bid", "solowhist.log.bidPass", map[string]string{"name": playerName(g.players, idx)}, nil)
 	}
 	// 次の未入札プレイヤーへ。
 	for k := 1; k <= SoloWhistPlayerCnt; k++ {
@@ -261,7 +263,7 @@ func (g *SoloWhist) resolveBidding() {
 		// 全員パス: ラウンドを流す。
 		g.declarerIdx = -1
 		g.phase = SoloWhistPhaseRoundEnd
-		g.appendLog(-1, "passed_out", "all players passed; round is void", nil)
+		g.appendLog(-1, "passed_out", "solowhist.log.passedOut", nil, nil)
 		return
 	}
 	g.declarerIdx = idx
@@ -271,8 +273,10 @@ func (g *SoloWhist) resolveBidding() {
 	} else {
 		g.trumpSuit = g.longestSuit(idx)
 	}
-	g.appendLog(idx, "contract",
-		fmt.Sprintf("%s declares %s (trump %d)", playerName(g.players, idx), soloWhistBidName(bid), g.trumpSuit), nil)
+	g.appendLog(idx, "contract", "solowhist.log.contract", map[string]string{
+		"name": playerName(g.players, idx), "contractKey": SoloWhistBidKey(bid),
+		"trump": strconv.Itoa(g.trumpSuit),
+	}, nil)
 	g.leadPlayerIdx = (g.dealerIdx + 1) % SoloWhistPlayerCnt
 	g.currentPlayerIdx = g.leadPlayerIdx
 	g.phase = SoloWhistPhasePlay
@@ -327,7 +331,7 @@ func (g *SoloWhist) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "solowhist.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
@@ -361,7 +365,9 @@ func (g *SoloWhist) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *SoloWhist) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "solowhist.log.play", map[string]string{
+		"name": playerName(g.players, playerIdx), "card": cardStr(card),
+	}, []*Card{card})
 
 	if len(g.currentTrick) == SoloWhistPlayerCnt {
 		g.phase = SoloWhistPhaseTrickEnd
@@ -382,8 +388,9 @@ func (g *SoloWhist) ResolveTrick() {
 	}
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.roundTricks[winnerIdx]++
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), trickCards)
+	g.appendLog(winnerIdx, "trick_win", "solowhist.log.trickWin", map[string]string{
+		"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber),
+	}, trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= SoloWhistTrickCount {
@@ -421,10 +428,11 @@ func (g *SoloWhist) ScoreRound() {
 				}
 			}
 		}
-		g.appendLog(-1, "round_score",
-			fmt.Sprintf("round %d: %s %s (%d tricks)",
-				g.roundNumber, soloWhistBidName(g.contract),
-				map[bool]string{true: "made", false: "failed"}[won], g.roundTricks[g.declarerIdx]), nil)
+		g.appendLog(-1, "round_score", "solowhist.log.roundScore", map[string]string{
+			"round": strconv.Itoa(g.roundNumber), "contractKey": SoloWhistBidKey(g.contract),
+			"outcomeKey": soloWhistOutcomeKey(won),
+			"tricks":     strconv.Itoa(g.roundTricks[g.declarerIdx]),
+		}, nil)
 		g.checkGameEnd()
 	}
 }
@@ -457,8 +465,13 @@ func (g *SoloWhist) checkGameEnd() {
 		g.gameEndFlag = true
 		g.winnerPlayer = leader
 		g.phase = SoloWhistPhaseGameEnd
-		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
+		g.appendLog(-1, "game_end", "solowhist.log.gameEnd", map[string]string{"name": playerName(g.players, leader)}, nil)
 	}
+}
+
+// appendLog records a Solo Whist action with a locale-independent detail code.
+func (g *SoloWhist) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCodeAt(len(g.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- Trick / play helpers ---
@@ -921,16 +934,24 @@ func (g *SoloWhist) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// soloWhistBidName 入札種別の表示名を返す。
-func soloWhistBidName(b SoloWhistBid) string {
+// SoloWhistBidKey は入札種別の i18n キーを返す。棋譜と presenter の両方が引く。
+func SoloWhistBidKey(b SoloWhistBid) string {
 	switch b {
 	case SoloWhistBidSolo:
-		return "Solo"
+		return "solowhist.bid.solo"
 	case SoloWhistBidMisere:
-		return "Misère"
+		return "solowhist.bid.misere"
 	case SoloWhistBidAbundance:
-		return "Abundance"
+		return "solowhist.bid.abundance"
 	default:
-		return "Pass"
+		return "solowhist.bid.pass"
 	}
+}
+
+// soloWhistOutcomeKey は宣言を達成したかの i18n キーを返す。
+func soloWhistOutcomeKey(won bool) string {
+	if won {
+		return "solowhist.log.outcome.made"
+	}
+	return "solowhist.log.outcome.failed"
 }

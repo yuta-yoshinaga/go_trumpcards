@@ -26,4 +26,5 @@ export interface SlapjackResponse extends BaseGameResponse {
   pendingDeadlineMs: number;
   lastEventKind: number;
   lastEventPlayerIdx: number;
+  lastEventCardsWon?: number;
 }

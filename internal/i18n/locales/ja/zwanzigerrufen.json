@@ -35,7 +35,7 @@
   "roundLoss": "{{name}} 側の失敗。{{points}}点（必要 {{threshold}}点超）",
   "roundTrischaken": "トリシャーケン: {{name}} が最も多く取りました（{{points}}点）。最多失点者の負けです。",
   "hintNone": "ヒントはありません。",
-  "hintCard": "[HINT: {{cards}} ({{reason}})]",
+  "hintCard": "[ヒント: {{cards}} ({{reason}})]",
   "hintReasonPass": "切り札が足りないのでパスする",
   "hintReasonBid": "切り札が多いので入札する",
   "hintReasonBury": "点の低い札を伏せる",
@@ -43,5 +43,18 @@
   "hintReasonAvoidPoints": "トリシャーケンなので点を取らない",
   "result.scores": "ゲーム終了！ 得点: {{scores}}",
   "helpExamplePlay": "  play 0                    手札の 0 番のカードを出す",
-  "helpHint": "  h                         助言を表示"
+  "helpHint": "  h                         助言を表示",
+  "log.deal": "ディール{{deal}}: 各12枚、場札{{talon}}枚",
+  "log.bid": "{{name}}が{{bid}}をビッド",
+  "log.pass": "{{name}}がパス",
+  "log.trischaken": "全員パス: トリシャーケン",
+  "log.playsSolo": "{{name}}がソロをプレイ",
+  "log.callsTrump": "{{name}}が{{trump}}番を呼ぶ",
+  "log.playsAlone": "{{name}}が呼べる切り札をすべて持ち、単独でプレイ",
+  "log.buriesCards": "{{name}}が{{count}}枚を伏せる",
+  "log.playsCard": "{{name}}が{{card}}をプレイ",
+  "log.holdsCalledTrump": "{{name}}が呼ばれた切り札を持っている",
+  "log.takesTrick": "{{name}}がトリック{{trick}}を取る",
+  "log.dealScored": "ディール{{deal}}の得点（{{contract}}）",
+  "log.matchOver": "マッチ終了"
 }

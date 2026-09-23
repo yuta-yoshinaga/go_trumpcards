@@ -55,6 +55,8 @@
   },
   "tablePlayLabel": "場の役",
   "selectedPlayLabel": "選択中",
+  "actionPlayed": "{{name}}が出しました: {{cards}}",
+  "actionPassed": "{{name}}がパスしました",
   "invalidCombo": "無効な組み合わせ",
   "frontendHint": {
     "bigtwoLead": "場が空いている。一番弱い札から捌こう",

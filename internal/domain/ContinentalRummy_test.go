@@ -485,3 +485,19 @@ func TestContinentalRummy_FirstTurnBonusSurvivesIntoLaterRounds(t *testing.T) {
 	assert.Equal(t, ContinentalRummyFirstTurnPoints, firstTurn,
 		"2 ラウンド目で「最初の手番で」の加点が消えている -- 棋譜を数えている")
 }
+
+func TestContinentalRummy_ActionLogUsesDetailCode(t *testing.T) {
+	c := newContGame(t)
+	c.SetPhaseForTest(ContinentalRummyPhaseDraw)
+	c.SetCurrentIdxForTest(ContinentalRummyHumanIdx)
+	require.NoError(t, c.DrawStock())
+
+	var entry *ActionLogEntry
+	for _, candidate := range c.GetActionLog() {
+		if candidate.DetailCode == "continentalrummy.log.draw" {
+			entry = candidate
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, map[string]string{"seat": "0"}, entry.DetailParams)
+}

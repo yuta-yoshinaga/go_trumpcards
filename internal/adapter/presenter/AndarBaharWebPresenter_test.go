@@ -85,14 +85,15 @@ func TestAndarBaharWebPresenter_Output_Fields(t *testing.T) {
 	fillAndarBaharCuiDefaults(m)
 
 	var out struct {
-		Joker       *map[string]any `json:"joker"`
-		BetTarget   int             `json:"betTarget"`
-		SideBand    int             `json:"sideBand"`
-		SideAmount  int             `json:"sideAmount"`
-		BetAmount   int             `json:"betAmount"`
-		Payout      int             `json:"payout"`
-		Result      int             `json:"result"`
-		MessageCode string          `json:"messageCode"`
+		Joker                 *map[string]any `json:"joker"`
+		BetTarget             int             `json:"betTarget"`
+		SideBand              int             `json:"sideBand"`
+		SideAmount            int             `json:"sideAmount"`
+		BetAmount             int             `json:"betAmount"`
+		Payout                int             `json:"payout"`
+		Result                int             `json:"result"`
+		MessageCode           string          `json:"messageCode"`
+		SideBandProbabilities []float64       `json:"sideBandProbabilities"`
 	}
 	require.NoError(t, json.Unmarshal([]byte(new(AndarBaharWebPresenter).Output(m, nil)), &out))
 
@@ -104,6 +105,8 @@ func TestAndarBaharWebPresenter_Output_Fields(t *testing.T) {
 	assert.Equal(t, 190, out.Payout)
 	assert.Equal(t, int(domain.GameResultWin), out.Result)
 	assert.Equal(t, "andarbahar.result.win", out.MessageCode)
+	assert.Len(t, out.SideBandProbabilities, domain.AndarBaharSide36Plus+1)
+	assert.InDelta(t, 0.0588235294, out.SideBandProbabilities[domain.AndarBaharSideFirst], 1e-9)
 }
 
 func TestAndarBaharWebPresenter_Output_LoseMessage(t *testing.T) {

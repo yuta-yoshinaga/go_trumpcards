@@ -265,7 +265,7 @@ func (b *BlackJack) resolvePayoutsCpu() {
 			result := b.judgeCpuHand(hand)
 			bonus := b.payoutHandWithVariant(cpu.GetPlayer(), hand, hand.IsFromSplit(), result)
 			if bonus != nil {
-				b.appendLog(cpuLogIdx, "bonus", bonus.NameKey, nil)
+				b.appendLog(cpuLogIdx, "bonus", bonus.NameKey, nil, nil)
 			}
 		}
 	}

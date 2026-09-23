@@ -347,8 +347,15 @@ function CasinoWarPageContent() {
               </div>
             )}
             {isTieDecision && (
-              <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="cw-action-buttons">
+              <div
+                className="flex flex-col items-center gap-2 pb-2"
+                data-tutorial="cw-action-buttons"
+                data-testid="cw-action-buttons"
+              >
                 <p className="text-ds-text-muted text-sm">{t('tieGuide')}</p>
+                <p className="text-ds-text-muted text-sm" data-testid="cw-war-tie-rule">
+                  {t('warTieRule')}
+                </p>
                 <span
                   data-testid="war-cost-badge"
                   className={`inline-flex items-center rounded-full px-2 py-0.5 font-bold text-xs ${badgeWarningColors}`}

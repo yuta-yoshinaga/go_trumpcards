@@ -81,6 +81,38 @@ describe('HasenpfefferPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('announces when the human must bid', async () => {
+    mockExec.mockResolvedValue(makeState({ mustBid: true }));
+    renderWithProviders(<HasenpfefferPage />);
+
+    const visible = await screen.findByTestId('hpf-must-bid');
+    const live = await waitFor(() => {
+      const element = [...document.querySelectorAll('[role="status"][aria-live="polite"][aria-atomic="true"]')].find(
+        (candidate) => candidate.textContent === visible.textContent,
+      );
+      expect(element).not.toBeUndefined();
+      return element;
+    });
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toHaveAttribute('aria-atomic', 'true');
+  });
+
+  it('marks only the dealer seat', async () => {
+    mockExec.mockResolvedValue(makeState({ dealerIdx: 2 }));
+    renderWithProviders(<HasenpfefferPage />);
+
+    expect(await screen.findByTestId('hpf-seat-2')).toHaveTextContent('/ 親');
+    expect(screen.getByTestId('hpf-seat-0')).not.toHaveTextContent('/ 親');
+  });
+
+  it('moves the dealer mark when dealerIdx changes', async () => {
+    mockExec.mockResolvedValue(makeState({ dealerIdx: 1 }));
+    renderWithProviders(<HasenpfefferPage />);
+
+    expect(await screen.findByTestId('hpf-seat-1')).toHaveTextContent('/ 親');
+    expect(screen.getByTestId('hpf-seat-3')).not.toHaveTextContent('/ 親');
+  });
+
   // **ジョーカーが最強という序列は知らないと打ち方が変わる。**
   it('states the joker ranking', async () => {
     renderWithProviders(<HasenpfefferPage />);

@@ -23,9 +23,9 @@
   "phaseUnknown": "UNKNOWN",
   "columnAndar": "Andar",
   "columnBahar": "Bahar",
-  "columnUnknown": "UNKNOWN",
+  "columnUnknown": "Unknown",
   "bandListTitle": "Side bet bands (bet on how many cards it takes):",
-  "bandListLine": "  {{band}}: {{range}}  pays {{payout}}x",
+  "bandListLine": "  {{band}}: {{range}}  pays {{payout}}x ({{probability}})",
   "bandExact": "exactly {{n}}",
   "bandRange": "{{lo}}-{{hi}} cards",
   "bandUnknown": "UNKNOWN",
@@ -33,5 +33,9 @@
   "andarBaharHintBaharFirst": "Bahar is dealt first: it wins 51.50% of the time but only pays 0.9:1",
   "andarBaharHintWaitNextRound": "The round is settled. Start the next one",
   "helpExampleBet": "  b 100 a                       bet 100 on Andar",
-  "payoutBreakdownLine": "  breakdown: main {{main}} / side {{side}}"
+  "payoutBreakdownLine": "  breakdown: main {{main}} / side {{side}}",
+  "log.joker": "The reference card {{column}} was revealed",
+  "log.bet": "Bet {{amount}} on {{column}}",
+  "log.match": "A rank matching the reference card appeared in {{column}} (card {{count}})",
+  "log.result": "{{column}} wins. Payout {{payout}}"
 }

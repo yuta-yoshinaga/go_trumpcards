@@ -14,7 +14,8 @@
     "faceDown": "伏せ札",
     "finalTurn": "最終ターン",
     "columnScore": "{{score}}pt",
-    "columnScoreUncertain": "{{score}}+? pt"
+    "columnScoreUncertain": "{{score}}+? pt",
+    "columnScorePair": "0pt (ペア)"
   },
   "button": {
     "flipInitial": "めくる",

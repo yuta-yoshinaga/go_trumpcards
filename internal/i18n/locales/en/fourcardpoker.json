@@ -1,4 +1,12 @@
 {
+  "log.bet": "ante={{ante}} acesup={{acesUp}}",
+  "log.play": "play bet={{bet}} (x{{multiplier}} ante)",
+  "log.fold": "player folds",
+  "log.playerFolded": "player folded",
+  "log.deal": "dealt 5 to player and 6 to dealer",
+  "log.playerWins": "player wins",
+  "log.dealerWins": "dealer wins",
+  "log.push": "push",
   "helpTitle": "Four Card Poker",
   "helpBet": "  b <ante> [acesup]    bet (ante required, Aces Up optional)",
   "helpPlay": "  p [1|2|3]            play (1x-3x ante; default 1x)",

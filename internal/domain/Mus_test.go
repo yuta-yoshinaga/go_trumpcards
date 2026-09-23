@@ -143,6 +143,10 @@ func TestMus_MusCutStartsBetting(t *testing.T) {
 	if err := g.PlayerMus(false); err != nil { // cut
 		t.Fatalf("mus err: %v", err)
 	}
+	log := g.GetActionLog()
+	if len(log) == 0 || log[len(log)-1].DetailCode != "mus.log.corte" {
+		t.Fatalf("cut action log = %+v", log)
+	}
 	if g.GetPhase() != MusPhaseGrande {
 		t.Errorf("phase = %v, want Grande after cut", g.GetPhase())
 	}
@@ -772,11 +776,11 @@ func TestMus_ActionNameAll(t *testing.T) {
 	}
 }
 
-func TestMus_RoundNameAll(t *testing.T) {
-	wants := []string{"Grande", "Chica", "Pares", "Juego", "?"}
+func TestMus_RoundKeyAll(t *testing.T) {
+	wants := []string{"mus.roundGrande", "mus.roundChica", "mus.roundPares", "mus.roundJuego", "mus.roundUnknown"}
 	for ri, want := range wants {
-		if got := musRoundName(ri); got != want {
-			t.Errorf("musRoundName(%d) = %q, want %q", ri, got, want)
+		if got := musRoundKey(ri); got != want {
+			t.Errorf("musRoundKey(%d) = %q, want %q", ri, got, want)
 		}
 	}
 }

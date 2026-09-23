@@ -50,10 +50,10 @@ func TestDoubleKlondikeCuiPresenter_Output(t *testing.T) {
 		// Waste holds an Ace -> foundation hint.
 		js := `{"wa":[{"d":1,"v":1,"w":true}],"ph":0}`
 		out := p.HintOutput(dkState(t, js))
-		assert.Contains(t, out, "HINT")
+		assert.Contains(t, out, "ヒント")
 		// Zone identifiers are localised (ja), not raw "waste"/"foundation".
 		assert.Contains(t, out, "ウェイスト")
-		assert.Contains(t, out, "ファウンデーション")
+		assert.Contains(t, out, "組札")
 		assert.NotContains(t, out, "waste")
 		assert.NotContains(t, out, "foundation")
 		assert.NotEmpty(t, p.HintOutput(dkState(t, `{"ph":2}`)))
@@ -92,5 +92,22 @@ func TestDoubleKlondikeCuiPresenter_ShowsWhetherUndoIsAvailable(t *testing.T) {
 		out := p.Output(g, nil)
 		assert.Contains(t, out, i18n.T("cuiSolitaireUndoAvailable"))
 		assert.NotContains(t, out, i18n.T("cuiSolitaireUndoUnavailable"))
+	})
+}
+
+func TestDoubleKlondikeCuiPresenter_ShowsProgress(t *testing.T) {
+	p := new(presenter.DoubleKlondikeCuiPresenter)
+
+	t.Run("zero cards on foundation", func(t *testing.T) {
+		g := domain.NewDefaultDoubleKlondike()
+		g.Reset()
+		out := p.Output(g, nil)
+		assert.Contains(t, out, "組札: 0/104枚")
+	})
+
+	t.Run("two cards on foundation", func(t *testing.T) {
+		js := `{"ph":0,"fd":[[{"d":1,"v":1},{"d":1,"v":2}]]}`
+		out := p.Output(dkState(t, js), nil)
+		assert.Contains(t, out, "組札: 2/104枚")
 	})
 }

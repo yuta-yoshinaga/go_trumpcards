@@ -53,6 +53,10 @@
   "betNotice": "あなたの番です — シー／ベット／レイズ／フォールドを選んでください。",
   "sideShowTitle": "サイドショー要求",
   "sideShowPending": "{{requester}} が {{target}} にサイドショーを要求しました。承諾か拒否を選んでください。",
+  "consequence": {
+    "accept": "承諾すると手役を比較し、負けた側はその場でフォールドします。",
+    "refuse": "拒否すると手役を比較せず、ゲームを続行します。"
+  },
   "sideShowResult": {
     "title": "サイドショー結果",
     "outcome": "{{winner}}（{{winnerHand}}）が {{loser}}（{{loserHand}}）に勝ち、{{loser}} がフォールドしました。"

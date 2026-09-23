@@ -1,0 +1,90 @@
+{
+  "discardTop": "捨て札",
+  "discardPileViewer": "捨て札の山を見る ({{count}}枚)",
+  "discardPileEmpty": "捨て札の山は空です。",
+  "discardPileOrderHint": "古い順（下 → 上）に並んでいます。",
+  "phase": {
+    "draw": "ドロー",
+    "meld": "メルド",
+    "discard": "ディスカード",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "drawPhase": "山札からカードを引くか、捨て札の山を取ってください。",
+  "meldPhase": "メルドを出すか、スキップしてください。",
+  "discardPhase": "カードを1枚捨てるか、上がってください。",
+  "roundEnd": "ラウンド終了。次のラウンドに進んでください。",
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "pointLimit": "目標スコア",
+    "easy": "簡単",
+    "normal": "普通",
+    "hard": "難しい"
+  },
+  "round": "ラウンド {{n}}",
+  "drawPile": "山札: {{count}}枚",
+  "discardPile": "捨て札: {{count}}枚",
+  "handCards": "{{count}}枚",
+  "pozzetto": "ポゼット: 残り{{count}}山",
+  "tookPozzetto": "ポゼット獲得済",
+  "pozzettoTakenBanner": "{{player}} がポゼットを獲得！",
+  "frozen": "フリーズ中",
+  "melds": "メルド",
+  "red3s": "赤3",
+  "naturalBiriba": "ナチュラルビリバ",
+  "mixedBiriba": "ミックスビリバ",
+  "drawStockButton": "山札から引く",
+  "drawFreezeGuide": "捨て札はフリーズ中: 上の1枚しか取れず、ワイルドカードで取り込むことはできません。",
+  "drawDiscardButton": "捨て札を取る",
+  "meldButton": "メルドする",
+  "skipMeldButton": "スキップ",
+  "discardButton": "捨てる",
+  "goOutButton": "上がる",
+  "nextRound": "次のラウンド",
+  "selectPair": "捨て札のトップと一致するナチュラルカード2枚を選択してください",
+  "drawDiscardReason": {
+    "selectTwo": "手札から捨て札のトップと一致するナチュラルカード2枚を選択してください",
+    "frozen": "フリーズ中はワイルドカードでの代用ができません",
+    "selectOneMore": "もう1枚選択してください",
+    "tooMany": "選択は2枚までです",
+    "wildInPair": "ワイルドカード（ジョーカー・2）は使えません。ナチュラルカード2枚を選んでください",
+    "rankMismatch": "2枚とも捨て札のトップと一致する必要があります",
+    "pileEmpty": "捨て札の山が空です",
+    "blackThreeTop": "黒3がトップのときは捨て札の山を取れません"
+  },
+  "frozenIndicator": "❄️ フリーズ",
+  "selectMeld": "メルドするカードを選択してください",
+  "result": {
+    "humanWin": "あなたの勝利！",
+    "cpuWin": "CPU {{cpuId}} の勝利！"
+  },
+  "score": {
+    "cumulative": "累積",
+    "round": "ラウンド"
+  },
+  "tutorial": {
+    "drawArea": "山札と捨て札エリアです。ここからカードを引きます。",
+    "playerHand": "あなたの手札です。メルドやディスカードするカードを選びます。",
+    "meldArea": "メルドエリアです。出したメルドがここに表示されます。",
+    "actionButtons": "アクションボタンです。フェーズに応じた操作ができます。"
+  },
+  "hint": {
+    "drawStock": "山札から引くことを推奨",
+    "takeDiscardPile": "捨て札の山をまとめて引き取る選択も有効",
+    "meldInitial": "初回メルド条件を満たしてメルド推奨",
+    "meldExtend": "既存メルドに追加カードを出すと得点が伸びます",
+    "discardHighSafe": "相手に使われにくい高ランクのカードを捨てる",
+    "hintReasonDrawStock": "捨て札のトップと一致する2枚がないため山札から引く",
+    "hintReasonDrawDiscard": "捨て札トップと一致するナチュラルカード2枚があるため山を取る",
+    "hintReasonMeld": "メルド可能な組み合わせがある",
+    "hintReasonNoMeld": "有効なメルドがないためスキップ",
+    "hintReasonDiscard": "最も不要なカードを捨てる"
+  },
+  "sort": {
+    "label": "手札の並べ替え",
+    "original": "元の順",
+    "rank": "ランク順",
+    "suit": "スート順"
+  }
+}

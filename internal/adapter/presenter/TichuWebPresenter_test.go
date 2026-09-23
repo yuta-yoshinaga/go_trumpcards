@@ -56,7 +56,37 @@ func TestTichuWebPresenter_PlayAndEnd(t *testing.T) {
 	require.NoError(t, json.Unmarshal([]byte(p.Output(tg, nil)), &end))
 	assert.Equal(t, "end", end.Phase)
 	assert.True(t, end.GameEndFlag)
-	assert.NotEmpty(t, end.Message)
+	assert.Empty(t, end.Message)
+	assert.Equal(t, "tichu.result.summary", end.MessageCode)
+	assert.Contains(t, []string{"tichu.teamA", "tichu.teamB", "tichu.draw"}, end.MessageParams["winnerKey"])
+}
+
+func TestTichuWebPresenter_Output_GameEndWinnerKeys(t *testing.T) {
+	for _, tc := range []struct {
+		name      string
+		scores    [2]int
+		winnerKey string
+		scoreA    string
+		scoreB    string
+	}{
+		{name: "team A wins", scores: [2]int{100, 50}, winnerKey: "tichu.teamA", scoreA: "100", scoreB: "50"},
+		{name: "team B wins", scores: [2]int{50, 100}, winnerKey: "tichu.teamB", scoreA: "50", scoreB: "100"},
+		{name: "draw", scores: [2]int{75, 75}, winnerKey: "tichu.draw", scoreA: "75", scoreB: "75"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			tg := newTichuAllCpu()
+			tg.SetPhaseForTest(domain.TichuPhaseEnd)
+			tg.SetScores(tc.scores)
+			tg.SetGameEndFlag(true)
+
+			var resp controller.TichuWebOutput
+			require.NoError(t, json.Unmarshal([]byte(new(presenter.TichuWebPresenter).Output(tg, nil)), &resp))
+			assert.Equal(t, tc.winnerKey, resp.MessageParams["winnerKey"])
+			assert.Equal(t, tc.scoreA, resp.MessageParams["scoreA"])
+			assert.Equal(t, tc.scoreB, resp.MessageParams["scoreB"])
+			assert.Empty(t, resp.Message)
+		})
+	}
 }
 
 func TestTichuWebPresenter_Error(t *testing.T) {

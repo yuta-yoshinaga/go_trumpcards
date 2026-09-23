@@ -34,5 +34,6 @@
   "hintReasonPass": "出せる札が1枚もありません",
   "helpExamplePlay": "  p 0                      手札の 0 番のカードを出す",
   "helpHint": "  h                        助言を表示",
-  "penaltyMark": "(失{{points}})"
+  "penaltyMark": "(失{{points}})",
+  "log.firstKingdom": "最初の王国を所有します（ハートの 7 を配られました）", "log.contract": "契約 {{contract}} を選びました", "log.play": "カードを出しました", "log.pass": "出せないためパスしました", "log.extend": "場を伸ばしました", "log.out": "{{position}} 位で上がりました", "log.trick": "{{penalty}} 点のトリックを取りました", "log.dealEnd": "ディール {{deal}}/{{total}} を清算しました", "log.gameEnd": "20 ディールすべてを終えました", "log.nextKingdom": "王国を引き継ぎました"
 }

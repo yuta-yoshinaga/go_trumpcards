@@ -32,6 +32,37 @@ func scartoNewReset() *domain.Scarto {
 	return g
 }
 
+func TestScartoActionLogUsesDetailCode(t *testing.T) {
+	g := scartoNewReset()
+	scartoSetHand(g, 0,
+		scartoSuitCard(domain.CardDesignHeart, 2),
+		scartoSuitCard(domain.CardDesignSpade, 3),
+		scartoSuitCard(domain.CardDesignDiamond, 4),
+	)
+	g.SetDealerIdx(0)
+	g.SetPhase(domain.ScartoPhaseScarto)
+	require.NoError(t, g.PlayerScarto([]int{0, 1, 2}))
+	entry := g.GetActionLog()[len(g.GetActionLog())-1]
+	assert.Equal(t, "scarto.log.scarto", entry.DetailCode)
+	assert.Equal(t, map[string]string{"name": "You", "count": "3"}, entry.DetailParams)
+}
+
+func TestScartoLastTrickWinnerIsSetOnEveryTrick(t *testing.T) {
+	g := scartoNewReset()
+	g.SetTrickNumber(1)
+	g.SetPhase(domain.ScartoPhaseTrickEnd)
+	g.SetCurrentTrick([]*domain.TrickCard{
+		{PlayerIdx: 0, Card: scartoSuitCard(domain.CardDesignSpade, 13)},
+		{PlayerIdx: 1, Card: scartoTrumpCard(2)},
+		{PlayerIdx: 2, Card: scartoSuitCard(domain.CardDesignSpade, 12)},
+	})
+
+	g.ResolveTrick()
+
+	assert.NotEqual(t, -1, g.GetLastTrickWinner())
+	assert.Equal(t, g.GetLeadPlayerIdx(), g.GetLastTrickWinner())
+}
+
 func scartoSetHand(g *domain.Scarto, idx int, cards ...*domain.Card) {
 	p := g.GetPlayer(idx)
 	p.Reset()

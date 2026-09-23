@@ -18,6 +18,25 @@ func newDilotiGame(t *testing.T) *Diloti {
 	return d
 }
 
+func findMigratedActionLogEntry(entries []*ActionLogEntry, code string) *ActionLogEntry {
+	for _, entry := range entries {
+		if entry.DetailCode == code {
+			return entry
+		}
+	}
+	return nil
+}
+
+// **未知の手は入力文字列をそのまま返す。** 翻訳キーへ変換すると、入力の情報が失われる。
+func TestDiloti_UnknownActionKeepsRawInput(t *testing.T) {
+	d := newDilotiGame(t)
+	err := d.applyPlay(0, 0, "unexpected", nil, nil, 0)
+	require.ErrorIs(t, err, ErrInvalidPlay)
+	code, params := ErrorMessageCode(err)
+	assert.Equal(t, "diloti.errUnknownAction", code)
+	assert.Equal(t, map[string]string{"action": "unexpected"}, params)
+}
+
 // **開幕は人間の手番。** 非親が先に打つ規則なので、親を席 1 にしてある ──
 // 親を 0 にすると人間は最初の 4 枚に一度も手を出せない。
 func TestDiloti_ResetDealsAndStartsWithTheHuman(t *testing.T) {
@@ -68,6 +87,9 @@ func TestDiloti_XeriRequiresClearingTheTable(t *testing.T) {
 	// 1 手目はクセリにならない。
 	d.firstPlayDone = false
 	require.NoError(t, d.applyPlay(0, 0, DilotiActionCapture, []int{0}, nil, 0))
+	entry := findMigratedActionLogEntry(d.GetActionLog(), "diloti.log.capture")
+	require.NotNil(t, entry)
+	assert.Equal(t, map[string]string{"player": "0", "cards": "1"}, entry.DetailParams)
 	assert.Equal(t, 0, d.GetPlayer(0).GetXeri(), "局の初手がクセリに数えられている")
 	assert.Empty(t, d.GetTable())
 

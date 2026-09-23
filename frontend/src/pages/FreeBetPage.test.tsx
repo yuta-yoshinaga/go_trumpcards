@@ -51,6 +51,7 @@ const base: FreeBetResponse = {
   activeHand: 0,
   dealerCards: [],
   dealerScore: 0,
+  dealerHoleRevealed: false,
   dealerPushed22: false,
   canFreeDouble: false,
   canFreeSplit: false,
@@ -69,8 +70,9 @@ const playing = (over: Partial<FreeBetResponse> = {}): FreeBetResponse =>
   withState({
     phase: FreeBetPhase.PLAY,
     anteBet: 50,
-    dealerCards: [card(6), card(9)],
+    dealerCards: [card(6)],
     dealerScore: 15,
+    dealerHoleRevealed: false,
     hands: [hand()],
     ...over,
   });
@@ -89,6 +91,30 @@ beforeEach(() => {
 });
 
 describe('FreeBetPage', () => {
+  it('プレイ中はディーラーの点数を隠し、伏せ札を表示する', async () => {
+    mockApi.mockResolvedValue(playing());
+    renderWithProviders(<FreeBetPage />);
+    await waitFor(() => expect(screen.getByTestId('fb-dealer-cards')).toBeInTheDocument());
+    expect(screen.queryByTestId('fb-dealer-score')).not.toBeInTheDocument();
+    expect(screen.getByTestId('fb-dealer-hidden')).toBeInTheDocument();
+    expect(screen.getByTestId('fb-dealer-cards').querySelectorAll('img')).toHaveLength(2);
+  });
+
+  it('決着後はディーラーの全札と点数を表示する', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: FreeBetPhase.RESULT,
+        dealerCards: [card(6), card(9), card(5)],
+        dealerScore: 20,
+        dealerHoleRevealed: true,
+        hands: [hand({ result: FREE_BET_RESULT.win })],
+      }),
+    );
+    renderWithProviders(<FreeBetPage />);
+    await waitFor(() => expect(screen.getByTestId('fb-dealer-score')).toHaveTextContent('20'));
+    expect(screen.getByTestId('fb-dealer-cards').querySelectorAll('img')).toHaveLength(3);
+  });
+
   it('マウント時に reset を呼ぶ', async () => {
     mockApi.mockResolvedValue(base);
     renderWithProviders(<FreeBetPage />);
@@ -364,7 +390,7 @@ describe('FreeBetPage', () => {
   // ディーラーに札が配られたときだけスコアを出す。この分岐は E2E からしか
   // 踏まれておらず、単体では一度も描かれていなかった。
   it('shows fb-dealer-score once the dealer has cards', async () => {
-    mockApi.mockResolvedValue(playing());
+    mockApi.mockResolvedValue(playing({ dealerHoleRevealed: true, dealerCards: [card(6), card(9)] }));
     renderWithProviders(<FreeBetPage />);
     expect(await screen.findByTestId('fb-dealer-score')).toBeInTheDocument();
   });

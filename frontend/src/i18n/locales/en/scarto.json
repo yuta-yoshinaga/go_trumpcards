@@ -22,6 +22,7 @@
   "points": "{{points}} pts",
   "score": "Score: {{score}}",
   "currentTrick": "Current trick",
+  "previousTrickWinner": "Won by {{name}}",
   "players": "Players",
   "you": "You",
   "cpu": "CPU {{id}}",

@@ -108,6 +108,34 @@ describe('TrucoPage', () => {
     expect(screen.getByTestId('truco-stake')).toBeInTheDocument();
   });
 
+  it('moves the mano badge when the mano seat changes', async () => {
+    mockExec.mockResolvedValue(makeState({ manoIdx: 0 }));
+    const { unmount } = renderWithProviders(<TrucoPage />);
+    const mano = await screen.findByTestId('truco-mano');
+    expect(mano).toHaveTextContent('先手: あなた');
+    unmount();
+
+    mockExec.mockResolvedValue(makeState({ manoIdx: 1 }));
+    renderWithProviders(<TrucoPage />);
+    expect(await screen.findByTestId('truco-mano')).toHaveTextContent('先手: CPU');
+  });
+
+  it('shows baza winners and distinguishes parda in the trick history', async () => {
+    mockExec.mockResolvedValue(makeState({ trickResults: [0, -1, 1] }));
+    renderWithProviders(<TrucoPage />);
+    const history = await screen.findByTestId('truco-trick-history');
+    expect(history).toHaveTextContent('1バサ: あなたの勝ち');
+    expect(history).toHaveTextContent('2バサ: パルダ（引き分け）');
+    expect(history).toHaveTextContent('3バサ: CPUの勝ち');
+    expect(history.querySelectorAll('[data-testid="truco-trick-history-row"]')).toHaveLength(3);
+  });
+
+  it('hides the trick history before any baza is complete', async () => {
+    renderWithProviders(<TrucoPage />);
+    await waitFor(() => expect(screen.getByTestId('truco-header')).toBeInTheDocument());
+    expect(screen.queryByTestId('truco-trick-history')).not.toBeInTheDocument();
+  });
+
   it('exposes the tutorial target elements for the guided tour', async () => {
     // A card on the table so the trick area (conditionally rendered) is present.
     mockExec.mockResolvedValue(makeState({ currentTrick: [{ playerIdx: 1, card: card('CLOVER', 4) }] }));

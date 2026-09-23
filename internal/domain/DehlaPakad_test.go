@@ -4,6 +4,7 @@ package domain
 
 import (
 	"encoding/json"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -56,6 +57,10 @@ func TestDehlaPakad_DealsFiveBeforeTheTrumpIsCalled(t *testing.T) {
 	require.NoError(t, d.SelectTrump(CardDesignHeart))
 	assert.Equal(t, CardDesignHeart, d.GetTrumpSuit())
 	assert.Equal(t, DehlaPakadPhasePlay, d.GetPhase())
+	logs := d.GetActionLog()
+	trumpLog := logs[len(logs)-1]
+	assert.Equal(t, "dehlapakad.log.trump", trumpLog.DetailCode)
+	assert.Equal(t, map[string]string{"player": strconv.Itoa(d.GetTrumpChooserIdx()), "suitKey": "common.suit.heart"}, trumpLog.DetailParams)
 	total := 0
 	for i, p := range d.GetPlayers() {
 		assert.Equal(t, DehlaPakadHandSize, p.GetCardsSize(), "席 %d の手札", i)
@@ -134,6 +139,15 @@ func TestDehlaPakad_CardsAreOnlyGatheredOnTwoConsecutiveTricks(t *testing.T) {
 	assert.Empty(t, d.GetCentrePile(), "2 連勝したのに引き取っていない")
 	assert.Equal(t, 1, d.GetTeamTens()[DehlaPakadTeamOf(1)], "10 が相手の組に入っている")
 	assert.Equal(t, 0, d.GetTeamTens()[DehlaPakadTeamOf(0)])
+	var collectLog *ActionLogEntry
+	for _, entry := range d.GetActionLog() {
+		if entry.DetailCode == "dehlapakad.log.collectTwoInARow" {
+			collectLog = entry
+			break
+		}
+	}
+	require.NotNil(t, collectLog)
+	assert.Equal(t, map[string]string{"player": "1", "cards": "12", "tens": "1"}, collectLog.DetailParams)
 }
 
 // **最終トリックだけは無条件で引き取る。** そうしないと山が宙に浮く。
@@ -149,6 +163,15 @@ func TestDehlaPakad_TheLastTrickTakesThePileRegardless(t *testing.T) {
 	assert.Empty(t, d.GetCentrePile(), "最終トリックで山が残っている")
 	assert.Equal(t, 1, d.GetTeamTens()[DehlaPakadTeamOf(1)])
 	assert.Equal(t, DehlaPakadPhaseHandEnd, d.GetPhase())
+	var collectLog *ActionLogEntry
+	for _, entry := range d.GetActionLog() {
+		if entry.DetailCode == "dehlapakad.log.collectLastTrick" {
+			collectLog = entry
+			break
+		}
+	}
+	require.NotNil(t, collectLog)
+	assert.Equal(t, map[string]string{"player": "1", "cards": "5", "tens": "1"}, collectLog.DetailParams)
 }
 
 // **判定は左右非対称。** 親でない組は 10 が 2 枚で勝ち、親側は 3 枚要る。

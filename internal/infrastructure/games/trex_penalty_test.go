@@ -23,6 +23,11 @@ import (
 // each contract's condition is still spelled the way the domain scores it --
 // because a Go test cannot execute TypeScript. It catches a rule being changed
 // on one side, which is the failure that actually happens.
+//
+// The mirror returns the penalty amount rather than a boolean since #7231, so
+// the no-penalty branch reads `return 0`. The amounts themselves are guarded
+// separately by TestTrexPenalties_GoldenValues; this test only watches which
+// cards each contract picks out.
 func TestTrexPenaltyMirrorMatchesTheDomain(t *testing.T) {
 	path := filepath.Join("..", "..", "..", "frontend", "src", "utils", "trexPenaltyCards.ts")
 	raw, err := os.ReadFile(path)
@@ -57,10 +62,10 @@ func TestTrexPenaltyMirrorMatchesTheDomain(t *testing.T) {
 		}
 	}
 
-	// 個別札の減点が無い契約は false を返し続けること。default 節が消えると、
+	// 個別札の減点が無い契約は 0 を返し続けること。default 節が消えると、
 	// Tricks / Trix で無関係な札に印が付く。
-	if !regexp.MustCompile(`default:\s*\n\s*return false;`).MatchString(src) {
-		t.Errorf("%s: the default branch that returns false is gone", path)
+	if !regexp.MustCompile(`default:\s*\n\s*return 0;`).MatchString(src) {
+		t.Errorf("%s: the default branch that returns 0 is gone", path)
 	}
 	for _, c := range []domain.TrexContract{domain.TrexContractTricks, domain.TrexContractTrix, domain.TrexContractNone} {
 		if domain.TrexCardPenalty(c, king) != 0 {

@@ -88,7 +88,7 @@ func TestShamrocksCuiPresenter_Output(t *testing.T) {
 		assert.NotEmpty(t, p.HintOutput(g))
 		// Foundation hint for an exposed Ace.
 		ace := llStateSH(t, `{"fn":[[{"d":1,"v":1,"w":true}]],"ph":0}`)
-		assert.Contains(t, p.HintOutput(ace), "HINT")
+		assert.Contains(t, p.HintOutput(ace), "ヒント")
 		// No hint once the game has ended.
 		assert.Contains(t, p.HintOutput(llStateSH(t, `{"ph":2}`)), "")
 	})

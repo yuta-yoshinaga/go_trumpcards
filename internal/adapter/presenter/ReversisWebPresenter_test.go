@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func newReversisForWeb(t *testing.T) *domain.Reversis {
@@ -71,6 +72,38 @@ func TestReversisWebPresenterPlayMessageCarriesThePool(t *testing.T) {
 	m := decodeReversis(t, p.Output(r, nil))
 	assert.Equal(t, "reversis.play", m["messageCode"])
 	assert.Equal(t, "20", m["messageParams"].(map[string]any)["pool"])
+}
+
+func TestReversisWebPresenterMarkedMessageIsTransient(t *testing.T) {
+	p := new(ReversisWebPresenter)
+	r := newReversisForWeb(t)
+	r.SetActionLogForTest([]*domain.ActionLogEntry{{ActionType: "marked", PlayerIdx: 0, Cards: []*domain.Card{
+		domain.NewCard(domain.CardDesignHeart, domain.ReversisQuinolaValue, true),
+	}}})
+
+	m := decodeReversis(t, p.Output(r, nil))
+	assert.Equal(t, "reversis.marked", m["messageCode"])
+	params := m["messageParams"].(map[string]any)
+	assert.Equal(t, i18n.T("cuiPlayerYou"), params["name"])
+	assert.Equal(t, "5", params["penalty"])
+	assert.Equal(t, "5", params["stake"])
+
+	r.SetActionLogForTest([]*domain.ActionLogEntry{{ActionType: "play"}})
+	assert.Equal(t, "reversis.play", decodeReversis(t, p.Output(r, nil))["messageCode"])
+}
+
+func TestReversisWebPresenterCombinesConsecutiveMarkedMessages(t *testing.T) {
+	p := new(ReversisWebPresenter)
+	r := newReversisForWeb(t)
+	r.SetActionLogForTest([]*domain.ActionLogEntry{
+		{ActionType: "marked", PlayerIdx: 0, Cards: []*domain.Card{domain.NewCard(domain.CardDesignHeart, domain.ReversisQuinolaValue, true)}},
+		{ActionType: "marked", PlayerIdx: 0, Cards: []*domain.Card{domain.NewCard(domain.CardDesignDiamond, 1, true)}},
+	})
+
+	params := decodeReversis(t, p.Output(r, nil))["messageParams"].(map[string]any)
+	assert.Equal(t, "♥J, ♦A", params["mark"])
+	assert.Equal(t, "10", params["penalty"])
+	assert.Equal(t, "10", params["stake"])
 }
 
 func TestReversisWebPresenterRoundEndMessage(t *testing.T) {

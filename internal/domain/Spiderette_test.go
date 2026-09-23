@@ -201,6 +201,15 @@ func TestSpideretteMoveTableauToTableau(t *testing.T) {
 	result := s.GetTableau()
 	assert.Len(t, result[0], 0)
 	assert.Len(t, result[1], 2)
+	var entry *ActionLogEntry
+	for _, candidate := range s.GetActionLog() {
+		if candidate.DetailCode == "spiderette.log.move" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, map[string]string{"from": "0", "to": "1"}, entry.DetailParams)
 }
 
 func TestSpideretteMoveTableauToTableau_Shorthand(t *testing.T) {

@@ -392,6 +392,16 @@ func TestAnaconda_ActionLog(t *testing.T) {
 	g := domain.NewDefaultAnaconda()
 	require.NoError(t, g.Pass([]int{0, 1, 2}))
 	assert.NotEmpty(t, g.GetActionLog())
+	found := false
+	for _, e := range g.GetActionLog() {
+		if e.ActionType == "pass" {
+			assert.Equal(t, "anaconda.log.pass", e.DetailCode)
+			assert.Contains(t, e.DetailParams, "count")
+			found = true
+			break
+		}
+	}
+	assert.True(t, found, "expected pass action log entry")
 }
 
 // --- JSON ---
@@ -466,4 +476,22 @@ func TestAnaconda_UnmarshalDefaults(t *testing.T) {
 	require.NoError(t, json.Unmarshal([]byte(`{"cf":{"pc":3,"an":10,"sc":200,"tr":10},"ps":[{"ch":200},{"ch":200},{"ch":200}],"ph":0,"rn":1}`), &g))
 	assert.Equal(t, 3, g.GetPlayerCnt())
 	assert.NotNil(t, g.GetActionLog())
+}
+
+// TestAnaconda_GetTargetRounds は getter が設定値をそのまま返すことを固定する。
+// 画面 (Web の情報行と CUI の roundLine) はここからマッチの長さを読むので、
+// 既定値を返すだけの実装だと「設定したのに表示が変わらない」になる。
+func TestAnaconda_GetTargetRounds(t *testing.T) {
+	g := domain.NewDefaultAnaconda()
+	assert.Equal(t, g.GetConfig().TargetRounds, g.GetTargetRounds(), "既定では設定値と一致する")
+
+	// 既定と違う値に変えて追従することを見る。1 値だけだと定数を返す実装でも通る。
+	cfg := g.GetConfig()
+	cfg.TargetRounds = domain.AnacondaMinTargetRounds
+	g.SetConfig(cfg)
+	assert.Equal(t, domain.AnacondaMinTargetRounds, g.GetTargetRounds())
+
+	cfg.TargetRounds = domain.AnacondaMaxTargetRounds
+	g.SetConfig(cfg)
+	assert.Equal(t, domain.AnacondaMaxTargetRounds, g.GetTargetRounds())
 }

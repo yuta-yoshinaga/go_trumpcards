@@ -46,6 +46,7 @@ func TestMississippiStud_Reset_RefillChips(t *testing.T) {
 	m.SetChips(20) // ante=10 + 3*1x = 4*10 = 40 必要
 	m.Reset()
 	assert.Equal(t, domain.MississippiStudDefaultChips, m.GetChips())
+	assert.True(t, m.GetChipsRefilled())
 }
 
 func TestMississippiStud_Reset_NoRefillAboveThreshold(t *testing.T) {
@@ -54,6 +55,10 @@ func TestMississippiStud_Reset_NoRefillAboveThreshold(t *testing.T) {
 	m.SetChips(500)
 	m.Reset()
 	assert.Equal(t, 500, m.GetChips())
+	assert.False(t, m.GetChipsRefilled())
+	m.SetChips(500)
+	m.Reset()
+	assert.False(t, m.GetChipsRefilled())
 }
 
 func TestMississippiStud_Bet_WrongPhase(t *testing.T) {
@@ -106,6 +111,16 @@ func TestMississippiStud_Bet_Success(t *testing.T) {
 	assert.Len(t, m.GetPlayerHand(), 2)
 	assert.Len(t, m.GetCommunityCards(), 3)
 	assert.Equal(t, domain.MississippiStudDefaultChips-100, m.GetChips())
+	var anteLog *domain.ActionLogEntry
+	for _, entry := range m.GetActionLog() {
+		if entry.ActionType == "ante" {
+			anteLog = entry
+			break
+		}
+	}
+	require.NotNil(t, anteLog)
+	assert.Equal(t, "mississippistud.log.ante", anteLog.DetailCode)
+	assert.Equal(t, map[string]string{"amount": "100"}, anteLog.DetailParams)
 	// すべてのコミュニティは伏せ
 	revealed := m.GetCommunityRevealed()
 	for _, r := range revealed {

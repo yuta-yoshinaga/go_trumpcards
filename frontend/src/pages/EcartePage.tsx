@@ -173,6 +173,10 @@ function EcartePageContent() {
     discardCount === 0 ? 'discardReasonEmpty' : discardExceedsStock ? 'discardReasonExceed' : null;
 
   const trumpSymbol = state.trumpSuit >= 1 && state.trumpSuit <= 4 ? SUIT_SYMBOLS[state.trumpSuit] : t('noTrump');
+  // 宣言ボーナスは自分が宣言できるときだけ意味があり、相手の手札は見えないため人間の手札だけを見る。
+  const hasTrumpKingBonus =
+    state.trumpCard?.value === 13 ||
+    humanPlayer?.cards.some((card) => card.design === state.trumpCard?.design && card.value === 13) === true;
 
   const handleManualReset = () => {
     hideActionLog();
@@ -280,6 +284,11 @@ function EcartePageContent() {
                       })}
                     </div>
                   ))}
+                  {hasTrumpKingBonus && (
+                    <div className="mt-1 text-ds-accent text-xs" data-testid="ecarte-score-rules">
+                      {t('scoreRules.kingBonus')}
+                    </div>
+                  )}
                 </div>
 
                 {(isRoundEnd || isGameEnd) && (

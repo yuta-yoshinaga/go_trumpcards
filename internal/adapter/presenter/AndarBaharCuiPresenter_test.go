@@ -47,7 +47,7 @@ func TestAndarBaharCuiPresenter_Output_BetPhase(t *testing.T) {
 
 	result := new(AndarBaharCuiPresenter).Output(m, nil)
 	assert.Contains(t, result, "チップ: 1000")
-	assert.Contains(t, result, "フェーズ: BET")
+	assert.Contains(t, result, "フェーズ: 賭け")
 	// **先に配る列は賭ける前に見えている必要がある。** 配当が下がる側だからです。
 	assert.Contains(t, result, "先に配る列: アンダー")
 	assert.Contains(t, result, "0.9:1")
@@ -96,7 +96,7 @@ func TestAndarBaharCuiPresenter_Output_Result(t *testing.T) {
 	fillAndarBaharCuiDefaults(m)
 
 	result := new(AndarBaharCuiPresenter).Output(m, nil)
-	assert.Contains(t, result, "フェーズ: END")
+	assert.Contains(t, result, "フェーズ: 終了")
 	assert.Contains(t, result, "バハール に基準札と同じランクが出ました")
 	assert.Contains(t, result, "払い戻し: 190")
 	assert.Contains(t, result, "ベット: 100 (アンダー)")
@@ -185,9 +185,9 @@ func TestAndarBaharCuiPresenter_HintAndActionLog(t *testing.T) {
 
 func TestAndarBaharCuiPresenter_UnknownValues(t *testing.T) {
 	p := new(AndarBaharCuiPresenter)
-	assert.Equal(t, "UNKNOWN", p.phaseStr(99))
-	assert.Equal(t, "UNKNOWN", p.columnStr(99))
-	assert.Equal(t, "UNKNOWN", p.bandStr(99))
+	assert.Equal(t, "不明", p.phaseStr(99))
+	assert.Equal(t, "不明", p.columnStr(99))
+	assert.Equal(t, "不明", p.bandStr(99))
 	assert.Equal(t, "1 枚ちょうど", p.bandStr(domain.AndarBaharSideFirst))
 	assert.Equal(t, "(なし)", p.columnCards(nil))
 }
@@ -208,13 +208,13 @@ func TestAndarBaharCuiPresenterListsTheSideBandsBeforeBetting(t *testing.T) {
 		// **期待値は書き下す。**`andarBaharPayoutStr` から組み立てると、その関数を
 		// 壊しても両辺が同時に変わって通ってしまう。
 		for _, want := range []string{
-			"  0: 1 枚ちょうど  払戻 15.0 倍",
-			"  1: 2〜5 枚  払戻 4.2 倍",
-			"  2: 6〜10 枚  払戻 4.1 倍",
-			"  3: 11〜15 枚  払戻 5.2 倍",
-			"  4: 16〜25 枚  払戻 4.1 倍",
-			"  5: 26〜35 枚  払戻 9.0 倍",
-			"  6: 36〜51 枚  払戻 33.0 倍",
+			"  0: 1 枚ちょうど  払戻 15.0 倍（5.88%）",
+			"  1: 2〜5 枚  払戻 4.2 倍（21.22%）",
+			"  2: 6〜10 枚  払戻 4.1 倍（21.70%）",
+			"  3: 11〜15 枚  払戻 5.2 倍（16.90%）",
+			"  4: 16〜25 枚  払戻 4.1 倍（21.80%）",
+			"  5: 26〜35 枚  払戻 9.0 倍（9.80%）",
+			"  6: 36〜51 枚  払戻 33.0 倍（2.69%）",
 		} {
 			assert.Contains(t, out, want)
 		}

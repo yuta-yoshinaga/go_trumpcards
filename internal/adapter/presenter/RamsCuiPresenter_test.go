@@ -3,15 +3,18 @@
 package presenter
 
 import (
+	"encoding/json"
 	"regexp"
 	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
@@ -92,6 +95,85 @@ func TestRamsCuiPresenterRoundEnd(t *testing.T) {
 	out := p.Output(r, nil)
 	assert.Contains(t, out, i18n.T("rams.promptRoundEnd"))
 	assert.Contains(t, out, i18n.T("rams.promptNext"))
+	assert.Equal(t, out, p.Output(r, nil), "描画はゲーム状態を消費しない")
+}
+
+func TestRamsCuiPresenterRoundSettlementIsPureAndSurvivesJSON(t *testing.T) {
+	p := new(RamsCuiPresenter)
+	r := newRamsForCui(t)
+	r.GetPlayer(0).SetInRound(true)
+	r.GetPlayer(0).SetRoundTricks(1)
+	r.FinishRoundForTest()
+
+	out := p.Output(r, nil)
+	payout := i18n.Tf("rams.roundPayout", "name", cuiPlayerName(r.GetPlayer(0), 0), "amount", "12")
+	settlement := i18n.Tf("rams.roundSettlement", "penalties", "", "payouts", payout)
+	require.Contains(t, out, settlement)
+	assert.Equal(t, 1, strings.Count(out, settlement))
+	assert.Equal(t, out, p.Output(r, nil))
+
+	b, err := json.Marshal(r)
+	require.NoError(t, err)
+	restored := domain.NewDefaultRams()
+	require.NoError(t, json.Unmarshal(b, restored))
+	assert.Equal(t, out, p.Output(restored, nil))
+
+	r.NextRound()
+	assert.NotContains(t, p.Output(r, nil), settlement)
+}
+
+func TestRamsRoundSettlementLineCoversPenaltyPayoutCombinations(t *testing.T) {
+	player := domain.NewRamsPlayer(false)
+	for _, tt := range []struct {
+		name    string
+		entries []*domain.ActionLogEntry
+		want    string
+	}{
+		{
+			name: "penalty only",
+			entries: []*domain.ActionLogEntry{{ActionType: "deal"},
+				{PlayerIdx: 0, ActionType: "penalty", DetailCode: "rams.log.penalty", DetailParams: map[string]string{"amount": "5", "tricks": "0"}}},
+			want: "精算: 支払い CPU 0 -5 / 受け取り ",
+		},
+		{
+			name: "payout only",
+			entries: []*domain.ActionLogEntry{{ActionType: "deal"},
+				{PlayerIdx: 0, ActionType: "payout", DetailCode: "rams.log.payout", DetailParams: map[string]string{"amount": "12", "tricks": "1"}}},
+			want: "精算: 支払い  / 受け取り CPU 0 +12",
+		},
+		{
+			name: "multiple penalties and payouts",
+			entries: []*domain.ActionLogEntry{{ActionType: "deal"},
+				{PlayerIdx: 0, ActionType: "penalty", DetailCode: "rams.log.penalty", DetailParams: map[string]string{"amount": "5", "tricks": "0"}},
+				{PlayerIdx: 1, ActionType: "penalty", DetailCode: "rams.log.penalty", DetailParams: map[string]string{"amount": "5", "tricks": "0"}},
+				{PlayerIdx: 2, ActionType: "payout", DetailCode: "rams.log.payout", DetailParams: map[string]string{"amount": "20", "tricks": "2"}},
+				{PlayerIdx: 3, ActionType: "payout", DetailCode: "rams.log.payout", DetailParams: map[string]string{"amount": "10", "tricks": "1"}}},
+			want: "精算: 支払い CPU 0 -5, CPU 1 -5 / 受け取り CPU 2 +20, CPU 3 +10",
+		},
+		{
+			name:    "no deal yet",
+			entries: []*domain.ActionLogEntry{{PlayerIdx: 0, ActionType: "penalty", DetailCode: "rams.log.penalty", DetailParams: map[string]string{"amount": "5", "tricks": "0"}}},
+			want:    "精算: 支払い CPU 0 -5 / 受け取り ",
+		},
+		{
+			name:    "no settlement",
+			entries: []*domain.ActionLogEntry{{ActionType: "deal"}, {PlayerIdx: 0, ActionType: "play"}},
+			want:    "",
+		},
+		{
+			name: "negative player is ignored",
+			entries: []*domain.ActionLogEntry{{ActionType: "deal"},
+				{PlayerIdx: -1, ActionType: "penalty", DetailCode: "rams.log.penalty", DetailParams: map[string]string{"amount": "5", "tricks": "0"}}},
+			want: "",
+		},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			g := new(interfaces.MockRamsGame)
+			g.On("GetActionLog").Return(tt.entries)
+			g.On("GetPlayer", mock.AnythingOfType("int")).Return(player)
+			assert.Equal(t, tt.want, ramsPlain(ramsRoundSettlementLine(g)))
+		})
+	}
 }
 
 func TestRamsCuiPresenterError(t *testing.T) {
@@ -118,13 +200,24 @@ func TestRamsCuiPresenterGameEnd(t *testing.T) {
 	})
 }
 
+func TestRamsCuiPresenterShowsSettlementOnFinalRound(t *testing.T) {
+	r := newRamsForCui(t)
+	r.SetConfig(domain.RamsConfig{PlayerCnt: domain.RamsPlayerCntDefault, Rounds: 1})
+	r.GetPlayer(0).SetInRound(true)
+	r.GetPlayer(0).SetRoundTricks(1)
+	r.FinishRoundForTest()
+
+	assert.True(t, r.GetGameEndFlag())
+	assert.Contains(t, ramsPlain(ramsRoundSettlementLine(r)), "精算:")
+}
+
 // **選択フェーズのヒントは札ではなく参加可否。** 書式そのものが違う。
 func TestRamsCuiPresenterHintInDecidePhase(t *testing.T) {
 	p := new(RamsCuiPresenter)
 	r := newRamsForCui(t)
 
 	out := p.HintOutput(r)
-	assert.Contains(t, out, "HINT")
+	assert.Contains(t, out, "ヒント")
 	// 参加/降りのどちらかの文言が出て、生のキーは出ない。
 	assert.True(t,
 		strings.Contains(out, i18n.T("rams.hintReasonPlayIn")) ||

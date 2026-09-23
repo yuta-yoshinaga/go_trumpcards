@@ -18,5 +18,7 @@
   "hintLineRemoveCard": "Hint: remove {{card1}} in col{{col1}} and {{card2}} in col{{col2}} (they make 14)",
   "helpExampleHint": "  h                   ask for the next move",
   "removablePairs": "Removable pairs: {{count}}",
-  "usageMC1C2": "Usage: m <col1> <col2> (e.g. m 0 3)"
+  "usageMC1C2": "Usage: m <col1> <col2> (e.g. m 0 3)",
+  "log.remove": "Move: {{value1}}, {{value2}}",
+  "log.giveup": "Gave up"
 }

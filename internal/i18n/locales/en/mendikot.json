@@ -33,5 +33,15 @@
   "suitDiamond": "Diamonds",
   "helpExampleGiveUp": "  g                    give the round up",
   "helpHint": "  h                    show a hint",
-  "warnSetsTrump": "! THE SUIT YOU PLAY NOW BECOMES THE TRUMP for this hand (you cannot follow)."
+  "warnSetsTrump": "! THE SUIT YOU PLAY NOW BECOMES THE TRUMP for this hand (you cannot follow).",
+  "log.handStart": "Hand {{hand}} starts (trump undecided)",
+  "log.play": "{{card}}",
+  "log.trump": "Unable to follow suit; {{suit}} is now trump",
+  "log.ten": "Took {{count}} ten(s)",
+  "log.handEndTens": "Team {{team}} wins on tens for +{{points}} (tens: {{tens0}}-{{tens1}} / tricks: {{tricks0}}-{{tricks1}})",
+  "log.handEndTricks": "Team {{team}} wins on tricks for +{{points}} (tens: {{tens0}}-{{tens1}} / tricks: {{tricks0}}-{{tricks1}})",
+  "log.handEndMendikot": "Team {{team}} scores +{{points}} for Mendikot (tens: {{tens0}}-{{tens1}} / tricks: {{tricks0}}-{{tricks1}})",
+  "log.handEndWhitewash": "Team {{team}} scores +{{points}} for a Whitewash (tens: {{tens0}}-{{tens1}} / tricks: {{tricks0}}-{{tricks1}})",
+  "log.result": "Final score {{team0}} - {{team1}}",
+  "log.giveUp": "Gave up"
 }

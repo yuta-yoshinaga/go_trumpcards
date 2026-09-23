@@ -34,5 +34,11 @@
   "chanceTrigger": "発動カード: {{card}}",
   "difficultyRequired": "CPU難易度を指定してください (0=Easy, 1=Normal, 2=Hard)。",
   "difficultyInvalid": "CPU難易度が不正です: %s。0〜2 を指定してください。",
-  "helpExampleStep": "  s                    次の 1 枚をめくる"
+  "helpExampleStep": "  s                    次の 1 枚をめくる",
+  "log.flipFromStock": "ストックからめくりました（トップ={{top}}）",
+  "log.correctSlapPair": "正しいスラップ（ペア）、+{{cards}}枚",
+  "log.correctSlapSandwich": "正しいスラップ（サンドイッチ）、+{{cards}}枚",
+  "log.correctSlapNone": "正しいスラップ（なし）、+{{cards}}枚",
+  "log.wrongSlap": "誤ったスラップ、-{{cards}}枚",
+  "log.chanceWin": "チャンス勝利、+{{cards}}枚"
 }

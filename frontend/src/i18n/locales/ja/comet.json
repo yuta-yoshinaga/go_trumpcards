@@ -31,6 +31,7 @@
   "winner": "{{name}} の勝ち！",
   "nextRound": "次の局へ",
   "restrictedTooltip": "いまは出せません",
+  "wildMark": "ワイルド（コメット）: どのランクの代わりにもなります",
   "hintAvailable": "ヒント",
   "hint": {
     "go_out": "これを出せば上がりです",

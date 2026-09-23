@@ -34,7 +34,7 @@ func (s *FiveCardStud) Rebuy() error {
 		if p.GetIsHuman() && p.GetChips() <= 0 && s.rebuyCounts[i] < s.config.RebuyMaxCount {
 			p.AddChips(s.config.RebuyChips)
 			s.rebuyCounts[i]++
-			s.appendLog(i, "rebuy", "rebuy", nil)
+			s.appendLog(i, "rebuy", "fivecardstud.log.rebuy", nil, nil)
 			break
 		}
 	}

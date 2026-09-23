@@ -20,6 +20,7 @@ func setupQuadrilleWebMock() *interfaces.MockQuadrilleGame {
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
 	m.On("GetCurrentTrick").Return(([]*domain.TrickCard)(nil))
+	m.On("GetLastTrickWinner").Return(-1)
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.QuadrillePhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -88,6 +89,17 @@ func TestQuadrilleWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 1, resObj.ForehandIdx)
 		assert.Equal(t, int(domain.QuadrilleBidEntrar), resObj.WinningBid)
 		assert.True(t, resObj.IsHumanTurn)
+	})
+
+	t.Run("includes the last trick winner", func(t *testing.T) {
+		m, _ := setupQuadrilleWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLastTrickWinner")
+		m.On("GetLastTrickWinner").Return(2)
+
+		result := p.Output(m, nil)
+		var resObj controller.QuadrilleWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Equal(t, 2, resObj.LastTrickWinner)
 	})
 
 	t.Run("config values", func(t *testing.T) {
@@ -207,6 +219,16 @@ func TestQuadrilleWebPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestQuadrilleWebPresenter_CodedError(t *testing.T) {
+	m, _ := setupQuadrilleWebMockWithPlayers()
+	err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "quadrille.errFollowLeadSuit", nil)
+	result := new(presenter.QuadrilleWebPresenter).Output(m, err)
+	var output controller.QuadrilleWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(result), &output))
+	assert.Empty(t, output.Message)
+	assert.Equal(t, "quadrille.errFollowLeadSuit", output.MessageCode)
+}
+
 func TestQuadrilleWebPresenter_HintOutput(t *testing.T) {
 	p := new(presenter.QuadrilleWebPresenter)
 
@@ -238,7 +260,7 @@ func TestQuadrilleWebPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockQuadrilleGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You plays ♠K"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, `"actionType":"play"`)

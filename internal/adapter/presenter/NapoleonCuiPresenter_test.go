@@ -78,8 +78,8 @@ func TestNapoleonCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "ラウンド: 1")
 		assert.Contains(t, result, "トリック: 1")
 		assert.Contains(t, result, "あなた: ビッド=未ビッド 獲得0トリック 絵札0枚 累積0点 ラウンド0点 2枚")
-		assert.Contains(t, result, "[0]SPADE 1")
-		assert.Contains(t, result, "[1]HEART 5")
+		assert.Contains(t, result, "[0]♠1")
+		assert.Contains(t, result, "[1]♥5")
 		assert.Contains(t, result, "CPU 1: ビッド=未ビッド 獲得0トリック 絵札0枚 累積0点 ラウンド0点 1枚")
 		assert.Contains(t, result, "手番: あなた")
 		assert.Contains(t, result, "p <idx>")
@@ -100,7 +100,7 @@ func TestNapoleonCuiPresenter_Output(t *testing.T) {
 		m.On("GetAdjutantCard").Return(domain.NewCard(domain.CardDesignHeart, 13, false))
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "副官カード: HEART 13")
+		assert.Contains(t, result, "副官カード: ♥13")
 		assert.Contains(t, result, "(非公開)")
 	})
 
@@ -112,7 +112,7 @@ func TestNapoleonCuiPresenter_Output(t *testing.T) {
 		m.On("GetAdjutantRevealed").Return(true)
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "副官カード: DIAMOND 1")
+		assert.Contains(t, result, "副官カード: ♦1")
 		assert.Contains(t, result, "(公開済み)")
 	})
 
@@ -226,7 +226,7 @@ func TestNapoleonCuiPresenter_Output(t *testing.T) {
 		m.On("GetCurrentTrick").Return(trick)
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "トリック: あなた=CLOVER 3, CPU 1=CLOVER 7")
+		assert.Contains(t, result, "トリック: あなた=♣3, CPU 1=♣7")
 	})
 
 	t.Run("no trick cards hides trick section", func(t *testing.T) {
@@ -291,13 +291,34 @@ func TestNapoleonCuiPresenter_Output(t *testing.T) {
 	})
 
 	t.Run("trump declaration phase", func(t *testing.T) {
-		m, _ := setupNapoleonCuiMockWithPlayers()
+		m, players := setupNapoleonCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("IsHumanDeclareTurn").Return(true)
 		m.On("GetPhase").Return(domain.NapoleonPhaseTrumpDeclaration)
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
 
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "切り札宣言フェーズ")
 		assert.Contains(t, result, "t <suit> <adjSuit> <adjVal>")
+		assert.Contains(t, result, "  suit: 1=♠ 2=♣ 3=♥ 4=♦")
+		assert.Contains(t, result, "自分の手札のカードを指名すると自分が副官になります")
+		assert.Contains(t, result, "[0]♥7")
+		assert.NotContains(t, result, "{{")
+	})
+
+	t.Run("trump declaration phase does not show hand note for CPU Napoleon", func(t *testing.T) {
+		m, players := setupNapoleonCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("IsHumanDeclareTurn").Return(false)
+		m.On("GetPhase").Return(domain.NapoleonPhaseTrumpDeclaration)
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+
+		result := p.Output(m, nil)
+		assert.NotContains(t, result, "自分の手札のカードを指名すると自分が副官になります")
+		assert.Contains(t, result, "切り札宣言フェーズ")
+		assert.Contains(t, result, "t <suit> <adjSuit> <adjVal>")
+		assert.Contains(t, result, "  suit: 1=♠ 2=♣ 3=♥ 4=♦")
+		assert.NotContains(t, result, "{{")
 	})
 
 	t.Run("kitty exchange phase", func(t *testing.T) {
@@ -362,7 +383,7 @@ func TestNapoleonCuiPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("with entries", func(t *testing.T) {
 		m := new(interfaces.MockNapoleonGame)
 		entries := []*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "played SPADE 5"},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		}
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetActionLog").Return(entries)
@@ -373,7 +394,7 @@ func TestNapoleonCuiPresenter_ActionLogOutput(t *testing.T) {
 		assert.Contains(t, result, "棋譜")
 		assert.Contains(t, result, "play")
 		assert.Contains(t, result, "あなた", "棋譜の座席名が他の行と揃っていない")
-		assert.Contains(t, result, "played SPADE 5")
+		assert.Contains(t, result, "テスト用の棋譜行 1")
 		m.AssertExpectations(t)
 	})
 
@@ -421,7 +442,7 @@ func TestNapoleonCuiPresenter_HintOutput(t *testing.T) {
 
 		p := new(presenter.NapoleonCuiPresenter)
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 		assert.Contains(t, result, "ビッド 14")
 		assert.Contains(t, result, "戦略的なビッド")
 	})
@@ -440,7 +461,7 @@ func TestNapoleonCuiPresenter_HintOutput(t *testing.T) {
 
 		p := new(presenter.NapoleonCuiPresenter)
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 		assert.Contains(t, result, "切り札 ♠")
 		assert.Contains(t, result, "戦略的な宣言")
 	})
@@ -462,7 +483,7 @@ func TestNapoleonCuiPresenter_HintOutput(t *testing.T) {
 
 		p := new(presenter.NapoleonCuiPresenter)
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 		assert.Contains(t, result, "を捨てる")
 		assert.Contains(t, result, "戦略的な捨て")
 	})
@@ -513,7 +534,7 @@ func TestNapoleonCuiPresenter_HintOutput(t *testing.T) {
 
 		p := new(presenter.NapoleonCuiPresenter)
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 		assert.Contains(t, result, "リードスートに追随")
 	})
 

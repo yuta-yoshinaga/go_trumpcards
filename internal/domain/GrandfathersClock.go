@@ -196,7 +196,7 @@ func (gc *GrandfathersClock) MoveTableauToFoundation(col, fIdx int) error {
 	gc.takeSnapshot()
 	gc.popTop(col)
 	gc.foundation[fIdx] = append(gc.foundation[fIdx], card)
-	gc.afterMove("move", fmt.Sprintf("タブロー列%d→文字盤%d", col, fIdx), card)
+	gc.afterMove("move", "grandfathersclock.log.move", map[string]string{"value1": fmt.Sprint(col), "value2": fmt.Sprint(fIdx)}, card)
 	return nil
 }
 
@@ -222,7 +222,7 @@ func (gc *GrandfathersClock) MoveTableauToTableau(fromCol, toCol int) error {
 	gc.popTop(fromCol)
 	gc.tableau[toCol] = append(gc.tableau[toCol],
 		&GrandfathersClockTableauCard{Card: card, FaceUp: true})
-	gc.afterMove("move", fmt.Sprintf("タブロー列%d→タブロー列%d", fromCol, toCol), card)
+	gc.afterMove("move", "grandfathersclock.log.move", map[string]string{"value1": fmt.Sprint(fromCol), "value2": fmt.Sprint(toCol)}, card)
 	return nil
 }
 
@@ -230,7 +230,7 @@ func (gc *GrandfathersClock) MoveTableauToTableau(fromCol, toCol int) error {
 func (gc *GrandfathersClock) GiveUp() {
 	if gc.phase == GrandfathersClockPhasePlaying {
 		gc.phase = GrandfathersClockPhaseGameOver
-		gc.appendLog("giveup", "ギブアップしました", nil)
+		gc.appendLog("giveup", "grandfathersclock.log.giveup", nil, nil)
 	}
 }
 
@@ -461,11 +461,8 @@ func grandfathersClockNextRank(v int) int {
 }
 
 // afterMove 手数・棋譜・終了判定をまとめて進める
-func (gc *GrandfathersClock) afterMove(actionType, detail string, card *Card) {
-	gc.moveCount++
-	gc.appendLog(actionType, detail, []*Card{card})
-	gc.checkGameClear()
-	gc.checkStalemate()
+func (gc *GrandfathersClock) afterMove(actionType, detailCode string, detailParams map[string]string, card *Card) {
+	afterMove(&gc.moveCount, gc, actionType, detailCode, detailParams, card)
 }
 
 // checkGameClear 12 の文字盤すべてが目標ランクに達したか
@@ -505,8 +502,8 @@ func (gc *GrandfathersClock) takeSnapshot() {
 }
 
 // appendLog 棋譜エントリを追加
-func (gc *GrandfathersClock) appendLog(actionType, detail string, cards []*Card) {
-	gc.appendLogAt(gc.moveCount, 0, actionType, detail, cards)
+func (gc *GrandfathersClock) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	gc.appendLogCodeAt(gc.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // grandfathersClockMaxSliceLen caps slice sizes during deserialisation.

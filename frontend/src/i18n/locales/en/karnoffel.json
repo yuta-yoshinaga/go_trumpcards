@@ -53,6 +53,8 @@
   "rankBadge": {
     "karnoffel": "Karnöffel",
     "devil": "Devil",
+    "devilLead": "Devil (led)",
+    "devilFollow": "Devil (followed — weakest)",
     "pope": "Pope",
     "kaiser": "Kaiser",
     "oberstecher": "Ober",

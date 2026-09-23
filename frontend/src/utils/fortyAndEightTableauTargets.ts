@@ -7,7 +7,7 @@ import type { FortyAndEightTableauCard } from '../types/games/fortyandeight';
  *
  * Sync: `FortyAndEight.canPlaceOnTableau` (`internal/domain/FortyAndEight.go`).
  *
- * - ファンデーションと向きが逆: ファンデーションは同スート昇順 (+1) だが、
+ * - 組札と向きが逆: 組札は同スート昇順 (+1) だが、
  *   タブローは同スート降順 (-1)。(`card.design === topCard.design && card.value === topCard.value - 1`)
  * - 空列は任意: 空の列にはどのカードでも置ける。
  * - 選択元の列は自動的に除外: 選択中カードが置かれている列の最上段カードは

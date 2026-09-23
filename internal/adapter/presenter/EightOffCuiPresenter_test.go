@@ -20,8 +20,8 @@ func TestEightOffCuiPresenterOutputPlaying(t *testing.T) {
 	result := p.Output(e, nil)
 
 	assert.Contains(t, result, "Eight Off")
-	assert.Contains(t, result, "FreeCells:")
-	assert.Contains(t, result, "Foundation:")
+	assert.Contains(t, result, "フリーセル:")
+	assert.Contains(t, result, "組札:")
 	assert.Contains(t, result, "手数:")
 }
 
@@ -104,8 +104,8 @@ func TestEightOffCuiPresenterOutputFreeCellsOccupied(t *testing.T) {
 
 	result := p.Output(e, nil)
 
-	assert.Contains(t, result, "FreeCells:")
-	assert.Contains(t, result, "SPADE 5")
+	assert.Contains(t, result, "フリーセル:")
+	assert.Contains(t, result, "♠5")
 }
 
 func TestEightOffCuiPresenterOutputFoundationWithCards(t *testing.T) {
@@ -120,8 +120,8 @@ func TestEightOffCuiPresenterOutputFoundationWithCards(t *testing.T) {
 
 	result := p.Output(e, nil)
 
-	assert.Contains(t, result, "Foundation:")
-	assert.Contains(t, result, "SPADE 1")
+	assert.Contains(t, result, "組札:")
+	assert.Contains(t, result, "♠1")
 }
 
 func TestEightOffCuiPresenterOutputEmptyTableau(t *testing.T) {

@@ -116,7 +116,7 @@ func (g *Kingo) startRound() {
 	for _, p := range g.players {
 		p.ResetForRound()
 	}
-	g.appendLog(g.banker, "banker", "takes the bank", nil)
+	g.appendLog(g.banker, "banker", "kingo.log.banker", nil, nil)
 
 	// **張れない人間がいたらここで終える。** 精算のときだけ見ていると、
 	// 張れないのに張りを待つ盤面で止まる ── 人間は張ることも進むことも
@@ -163,7 +163,7 @@ func (g *Kingo) PlaceBet(amount int) error {
 		return errKingoBetAmount
 	}
 	p.SetBet(amount)
-	g.appendLog(human, "bet", "places a bet", nil)
+	g.appendLog(human, "bet", "kingo.log.bet", nil, nil)
 	g.deal()
 	g.resolve()
 	return nil
@@ -198,7 +198,7 @@ func (g *Kingo) deal() {
 		}
 	}
 	for i, p := range g.players {
-		g.appendLog(i, "deal", KingoRankName(p.GetRank()), p.GetCards())
+		g.appendLog(i, "deal", "kingo.log.deal", map[string]string{"rankKey": "kingo.rank." + KingoRankName(p.GetRank())}, p.GetCards())
 	}
 }
 
@@ -370,14 +370,15 @@ func (g *Kingo) GetRemainingCards() int { return len(g.deck) }
 func (g *Kingo) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // appendLog は棋譜に 1 行足す。
-func (g *Kingo) appendLog(seat int, actionType, detail string, cards []*Card) {
+func (g *Kingo) appendLog(seat int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	g.turnNumber++
 	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: g.turnNumber,
-		PlayerIdx:  seat,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
+		TurnNumber:   g.turnNumber,
+		PlayerIdx:    seat,
+		ActionType:   actionType,
+		DetailCode:   detailCode,
+		DetailParams: detailParams,
+		Cards:        cards,
 	})
 }
 

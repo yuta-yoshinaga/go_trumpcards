@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // KingAlbertPhase King Albert game phase
@@ -167,7 +168,7 @@ func (ka *KingAlbert) MoveTableauToTableau(fromCol, cardIndex, toCol int) error 
 	ka.tableau[toCol] = append(ka.tableau[toCol], tc)
 	ka.tableau[fromCol] = fromCards[:cardIndex]
 	ka.moveCount++
-	ka.appendLog("move", fmt.Sprintf("タブロー列%d→タブロー列%d", fromCol, toCol), []*Card{tc.Card})
+	ka.appendLog("move", "kingalbert.log.tableauToTableau", map[string]string{"from": strconv.Itoa(fromCol), "to": strconv.Itoa(toCol)}, []*Card{tc.Card})
 	ka.checkStalemate()
 	return nil
 }
@@ -194,7 +195,7 @@ func (ka *KingAlbert) MoveTableauToFoundation(col int) error {
 	ka.tableau[col] = fromCards[:len(fromCards)-1]
 	ka.foundation[fIdx] = append(ka.foundation[fIdx], card)
 	ka.moveCount++
-	ka.appendLog("move", fmt.Sprintf("タブロー列%d→ファンデーション", col), []*Card{card})
+	ka.appendLog("move", "kingalbert.log.tableauToFoundation", map[string]string{"column": strconv.Itoa(col)}, []*Card{card})
 	ka.checkGameClear()
 	ka.checkStalemate()
 	return nil
@@ -222,7 +223,7 @@ func (ka *KingAlbert) MoveReserveToTableau(reserveIdx, toCol int) error {
 	ka.reserve[reserveIdx] = nil
 	ka.tableau[toCol] = append(ka.tableau[toCol], &KingAlbertTableauCard{Card: card, FaceUp: true})
 	ka.moveCount++
-	ka.appendLog("move", fmt.Sprintf("リザーブ%d→タブロー列%d", reserveIdx, toCol), []*Card{card})
+	ka.appendLog("move", "kingalbert.log.reserveToTableau", map[string]string{"reserve": strconv.Itoa(reserveIdx), "column": strconv.Itoa(toCol)}, []*Card{card})
 	ka.checkStalemate()
 	return nil
 }
@@ -247,7 +248,7 @@ func (ka *KingAlbert) MoveReserveToFoundation(reserveIdx int) error {
 	ka.reserve[reserveIdx] = nil
 	ka.foundation[fIdx] = append(ka.foundation[fIdx], card)
 	ka.moveCount++
-	ka.appendLog("move", fmt.Sprintf("リザーブ%d→ファンデーション", reserveIdx), []*Card{card})
+	ka.appendLog("move", "kingalbert.log.reserveToFoundation", map[string]string{"reserve": strconv.Itoa(reserveIdx)}, []*Card{card})
 	ka.checkGameClear()
 	ka.checkStalemate()
 	return nil
@@ -257,7 +258,7 @@ func (ka *KingAlbert) MoveReserveToFoundation(reserveIdx int) error {
 func (ka *KingAlbert) GiveUp() {
 	if ka.phase == KingAlbertPhasePlaying {
 		ka.phase = KingAlbertPhaseGameOver
-		ka.appendLog("giveup", "ギブアップしました", nil)
+		ka.appendLog("giveup", "kingalbert.log.giveup", nil, nil)
 	}
 }
 
@@ -432,7 +433,7 @@ func (ka *KingAlbert) AutoComplete() error {
 			break
 		}
 	}
-	ka.appendLog("autocomplete", "オートコンプリートを実行しました", nil)
+	ka.appendLog("autocomplete", "kingalbert.log.autocomplete", nil, nil)
 	ka.checkGameClear()
 	ka.checkStalemate()
 	return nil
@@ -614,8 +615,8 @@ func (ka *KingAlbert) restoreSnapshot(snap *kingAlbertSnapshot) {
 }
 
 // appendLog 棋譜エントリを追加
-func (ka *KingAlbert) appendLog(actionType, detail string, cards []*Card) {
-	ka.appendLogAt(ka.moveCount, 0, actionType, detail, cards)
+func (ka *KingAlbert) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	ka.appendLogCodeAt(ka.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // kingAlbertJSON is the JSON wire format for KingAlbert.

@@ -242,12 +242,21 @@ function FaroPageContent() {
               <div className="grid grid-cols-7 gap-2 justify-items-center">
                 {RANKS.map((rank) => {
                   const bet = betFor(rank);
+                  // **ドメインが拒むのは新規の資金だけ** (Faro.PlayerPlaceBet)。
+                  // 既にベットがあるランクは、途中で 0 枚になっても額や copper を
+                  // 調整できる。ここで一律に無効化すると、クリアして掛け直す道が
+                  // 新規扱いで拒まれるため、そのチップは取り戻せなくなる。
+                  const canBet = remaining[rank] > 0 || bet !== undefined;
                   return (
                     <button
                       key={`rank-${rank}`}
                       type="button"
-                      onClick={() => isBetting && exec('bet', { rank, amount: chipAmount, copper })}
-                      disabled={!isBetting || loading}
+                      onClick={() => {
+                        if (isBetting && !loading && canBet) {
+                          void exec('bet', { rank, amount: chipAmount, copper });
+                        }
+                      }}
+                      disabled={!isBetting || loading || !canBet}
                       className={`relative w-12 h-14 rounded border text-lg font-bold transition-all ${
                         bet?.copper
                           ? 'border-ds-accent bg-ds-accent/20 text-ds-accent'

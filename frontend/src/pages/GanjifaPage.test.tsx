@@ -93,6 +93,24 @@ describe('GanjifaPage', () => {
     expect(await screen.findByText(/Shamsher/)).toBeInTheDocument();
   });
 
+  it('shows the dealer name for each dealer index', async () => {
+    mockExec.mockResolvedValue(makeGanjifaState({ dealerIdx: 0 }));
+    const { unmount } = renderWithProviders(<GanjifaPage />);
+    expect(await screen.findByTestId('ganjifa-dealer')).toHaveTextContent('ディーラー: あなた');
+    unmount();
+
+    mockExec.mockResolvedValue(makeGanjifaState({ dealerIdx: 1 }));
+    renderWithProviders(<GanjifaPage />);
+    expect(await screen.findByTestId('ganjifa-dealer')).toHaveTextContent('ディーラー: CPU 1');
+  });
+
+  it('explains that trump is chosen automatically from the dealer hand', async () => {
+    renderWithProviders(<GanjifaPage />);
+    expect(await screen.findByTestId('ganjifa-trump-auto-note')).toHaveTextContent(
+      '切り札はディーラーの手札で最も多いスートから自動で決まります（選択操作はありません）',
+    );
+  });
+
   it('plays the selected card', async () => {
     renderWithProviders(<GanjifaPage />);
     const playButton = await screen.findByRole('button', { name: '出す' });

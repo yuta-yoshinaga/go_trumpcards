@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra2
+//go:build !js || !wasm || extra
 
 package domain
 
@@ -131,10 +131,15 @@ type SetteEMezzo struct {
 	chips      ChipHolder
 	activeSeat int
 	phase      int
+	// bankerChanged is transient: persisting it would announce the same change
+	// again after every reload instead of only after the Reset that caused it.
+	bankerChanged bool
 	// nextBanker はこの局で 7.5 を出した最初のプレイヤー（いなければ -1）。
-	nextBanker int
-	lastResult string
-	actionLog  []*ActionLogEntry
+	nextBanker       int
+	lastResult       string
+	lastResultCode   string
+	lastResultParams map[string]string
+	actionLog        []*ActionLogEntry
 }
 
 // setteEMezzoOpeningBanker 最初の局の親。
@@ -164,6 +169,7 @@ func NewDefaultSetteEMezzo() *SetteEMezzo {
 
 // Reset 新しい局を始める。親は前局から引き継ぐ。
 func (s *SetteEMezzo) Reset() {
+	s.bankerChanged = false
 	if s.chips.GetChips() < SetteEMezzoMinBet {
 		s.chips.SetChips(SetteEMezzoDefaultChips)
 	}
@@ -174,6 +180,7 @@ func (s *SetteEMezzo) Reset() {
 		}
 	}
 	if s.nextBanker >= 0 && s.nextBanker < len(s.seats) {
+		s.bankerChanged = s.nextBanker != s.banker
 		s.banker = s.nextBanker
 	}
 	s.nextBanker = -1
@@ -186,6 +193,8 @@ func (s *SetteEMezzo) Reset() {
 	s.activeSeat = 0
 	s.phase = SetteEMezzoPhaseBet
 	s.lastResult = ""
+	s.lastResultCode = ""
+	s.lastResultParams = nil
 	s.actionLog = nil
 }
 
@@ -241,7 +250,7 @@ func (s *SetteEMezzo) deal(humanBet int) {
 		seat.hand = &SetteEMezzoHand{cards: s.drawOne(), bet: bet}
 	}
 	s.bankerHand = &SetteEMezzoHand{cards: s.drawOne()}
-	s.appendLog("deal", "全員に1枚ずつ配った", nil)
+	s.appendLog("deal", "setteemezzo.log.deal", nil, nil)
 
 	s.phase = SetteEMezzoPhasePlayerTurn
 	s.activeSeat = 0
@@ -336,7 +345,7 @@ func (s *SetteEMezzo) Hit() error {
 		return errors.New("settemezzo: the deck is empty")
 	}
 	s.autoAssignMatta(h)
-	s.appendLog("hit", "1枚引いた", h.cards)
+	s.appendLog("hit", "setteemezzo.log.hit", nil, h.cards)
 	// バーストしたか、ちょうど 7.5 に届いたらその手は終わり。7.5 は「見せて
 	// 手番を終える」手であって、即座の勝ちではない。
 	if s.handHalves(h) >= SetteEMezzoTargetHalves {
@@ -353,7 +362,7 @@ func (s *SetteEMezzo) Stand() error {
 		return err
 	}
 	h.stood = true
-	s.appendLog("stand", "スタンド", h.cards)
+	s.appendLog("stand", "setteemezzo.log.stand", nil, h.cards)
 	s.nextSeat()
 	return nil
 }
@@ -373,7 +382,7 @@ func (s *SetteEMezzo) SetMattaValue(halves int) error {
 		return errors.New("settemezzo: the matta is worth 0.5 or a whole number from 1 to 7")
 	}
 	h.mattaHalves = halves
-	s.appendLog("matta", fmt.Sprintf("マッタを %s 点にした", setteEMezzoFormatHalves(halves)), h.cards)
+	s.appendLog("matta", "setteemezzo.log.matta", map[string]string{"value": setteEMezzoFormatHalves(halves)}, h.cards)
 	return nil
 }
 
@@ -420,7 +429,7 @@ func (s *SetteEMezzo) BankerHit() error {
 		return errors.New("settemezzo: the deck is empty")
 	}
 	s.autoAssignMatta(s.bankerHand)
-	s.appendLog("bankerHit", "親が1枚引いた", s.bankerHand.cards)
+	s.appendLog("bankerHit", "setteemezzo.log.bankerHit", nil, s.bankerHand.cards)
 	if s.handHalves(s.bankerHand) >= SetteEMezzoTargetHalves {
 		s.settle()
 	}
@@ -460,7 +469,14 @@ func (s *SetteEMezzo) settle() {
 	}
 	s.phase = SetteEMezzoPhaseEnd
 	s.lastResult = s.describeResult(bankerHalves, bankerBust)
-	s.appendLog("result", s.lastResult, s.bankerHand.cards)
+	resultCode := "setteemezzo.log.bankerTotal"
+	if bankerBust {
+		resultCode = "setteemezzo.log.bankerBust"
+	}
+	resultParams := map[string]string{"total": setteEMezzoFormatHalves(bankerHalves)}
+	s.appendLog("result", resultCode, resultParams, s.bankerHand.cards)
+	s.lastResultCode = resultCode
+	s.lastResultParams = resultParams
 }
 
 // settleHand 1 つの手の増減（賭け金を除いた純増減）。同点は親の勝ち。
@@ -577,8 +593,17 @@ func (s *SetteEMezzo) GetActiveSeat() int { return s.activeSeat }
 // GetNextBanker 次局の親（未定なら -1）
 func (s *SetteEMezzo) GetNextBanker() int { return s.nextBanker }
 
+// GetBankerChanged reports whether the immediately preceding Reset changed the banker.
+func (s *SetteEMezzo) GetBankerChanged() bool { return s.bankerChanged }
+
 // GetLastResult 直近の精算の要約
 func (s *SetteEMezzo) GetLastResult() string { return s.lastResult }
+
+// GetLastResultCode 直近の精算メッセージコードを取得する
+func (s *SetteEMezzo) GetLastResultCode() string { return s.lastResultCode }
+
+// GetLastResultParams 直近の精算メッセージパラメータを取得する
+func (s *SetteEMezzo) GetLastResultParams() map[string]string { return s.lastResultParams }
 
 // GetActionLog 棋譜取得
 func (s *SetteEMezzo) GetActionLog() []*ActionLogEntry { return s.actionLog }
@@ -605,13 +630,14 @@ func (s *SetteEMezzo) CanSetMatta() bool {
 }
 
 // appendLog 棋譜エントリを追加
-func (s *SetteEMezzo) appendLog(actionType, detail string, cards []*Card) {
+func (s *SetteEMezzo) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	s.actionLog = append(s.actionLog, &ActionLogEntry{
-		TurnNumber: len(s.actionLog),
-		PlayerIdx:  s.activeSeat,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      append([]*Card(nil), cards...),
+		TurnNumber:   len(s.actionLog),
+		PlayerIdx:    s.activeSeat,
+		ActionType:   actionType,
+		DetailCode:   detailCode,
+		DetailParams: detailParams,
+		Cards:        append([]*Card(nil), cards...),
 	})
 }
 
@@ -749,6 +775,9 @@ func (s *SetteEMezzo) UnmarshalJSON(data []byte) error {
 	s.activeSeat = j.ActiveSeat
 	s.phase = j.Phase
 	s.nextBanker = j.NextBanker
+	// bankerChanged is intentionally absent from the snapshot, so restored
+	// games must never retain a stale in-memory announcement.
+	s.bankerChanged = false
 	s.lastResult = j.LastResult
 	s.actionLog = j.ActionLog
 	return nil

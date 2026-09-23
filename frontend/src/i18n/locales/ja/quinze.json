@@ -1,0 +1,48 @@
+{
+  "phase": {
+    "bet": "ベット",
+    "playerTurn": "あなたの手番",
+    "bankerTurn": "親の手番",
+    "end": "精算"
+  },
+  "chips": "チップ",
+  "banker": "親",
+  "bankerIsYou": "あなた",
+  "bankerHand": "親の手",
+  "bet": "賭け金",
+  "total": "合計",
+  "target": "目標",
+  "actions": {
+    "hit": "引く",
+    "stand": "止める",
+    "bankerHit": "親として引く",
+    "bankerStand": "親として止める",
+    "deal": "配る",
+    "nextRound": "次の局へ"
+  },
+  "betLabel": "賭け金を選んでください",
+  "betAmount": "{{amount}}",
+  "dealAsBanker": "あなたが親です。配ってください",
+  "placeBet": "賭け金を選んでください",
+  "yourTurn": "引くか止めるかを選んでください",
+  "bankerTurn": "親として引くか止めるかを決めてください",
+  "roundOver": "{{result}}",
+  "bankPasses": "ちょうど15で親が移りました",
+  "landscapeBanner": "横画面での表示を推奨します",
+  "seatAriaLabel": "{{name}} の手 合計{{total}}",
+  "hiddenHandAriaLabel": "{{name}} の手は伏せられています {{count}}枚",
+  "bankerHandAriaLabel": "親の手 合計{{total}}",
+  "hiddenBankerHandAriaLabel": "親の手は伏せられています {{count}}枚",
+  "tutorial": {
+    "faceCards": "**J・Q・Kは10点**です。Aは1点、数字札は額面どおりに数えます。",
+    "target": "目標は**15**。超えたらバーストです。**同点は親の勝ち**なので、親と同じ点で止まっても負けます。",
+    "banker": "**ちょうど15を出したプレイヤーが次の局の親になります。** 毎局まわるのではありません。",
+    "controls": "引く・止める・次の局などの操作ボタンです。"
+  },
+  "frontendHint": {
+    "quinzeExact": "ちょうど 15 です。バンクが動く唯一の目なので、ここで止めましょう",
+    "quinzeHitLow": "15 まで距離があります。もう 1 枚引きましょう",
+    "quinzeStandClose": "15 に近く、引くとバーストするおそれがあります"
+  },
+  "cpuStand": "相手は {{total}} 点で止まる"
+}

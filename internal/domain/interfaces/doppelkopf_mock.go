@@ -117,6 +117,12 @@ func (_m *MockDoppelkopfGame) GetLeadPlayerIdx() int {
 	return ret.Get(0).(int)
 }
 
+// GetLastTrickPoints モック
+func (_m *MockDoppelkopfGame) GetLastTrickPoints() int {
+	ret := _m.Called()
+	return ret.Get(0).(int)
+}
+
 // GetDealerIdx モック
 func (_m *MockDoppelkopfGame) GetDealerIdx() int {
 	ret := _m.Called()

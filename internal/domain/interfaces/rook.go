@@ -79,6 +79,8 @@ type RookGame interface {
 	GetTeamScore(team int) int
 	// GetTeamPoints チームがこのラウンドで獲得した得点札の合計を取得する
 	GetTeamPoints(team int) int
+	// GetRoundResult ScoreRound が確定した直近ラウンドの結果を取得する
+	GetRoundResult() *domain.RookRoundResult
 	// GetWinnerTeam 勝利チームを取得する (-1 = 未確定)
 	GetWinnerTeam() int
 	// GetPlayerCnt プレイヤー数を取得する

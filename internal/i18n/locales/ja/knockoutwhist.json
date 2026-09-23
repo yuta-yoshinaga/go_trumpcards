@@ -5,7 +5,7 @@
   "helpNextRound": "  nr                        次のラウンドへ",
   "helpSetDifficulty": "  sd [0-2]                  CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
   "round": "ラウンド: {{round}}  手札: {{handSize}}枚  トリック: {{trick}}  切り札: {{trump}}",
-  "playerLine": "{{name}}: {{cards}}枚  今ラウンドのトリック: {{roundTricks}}  Dogbone: {{dogbones}}",
+  "playerLine": "{{name}}: {{cards}}枚  今ラウンドのトリック: {{roundTricks}}  ドッグボーン: {{dogbones}}",
   "playerLineEliminated": "{{name}}: 脱落",
   "gameEnd": "ゲーム終了！{{name}}が生き残ってマッチ勝利！",
   "promptPlay": "手番: {{name}}",
@@ -21,7 +21,7 @@
   "promptTrumpSelect": "{{name}} がラウンド勝者です。次ラウンドの切り札を選んでください。",
   "promptTrumpSelectHelp": "st <1-4>・・・切り札を選択 (1=♠ 2=♣ 3=♥ 4=♦)",
   "hintNone": "ヒントはありません。",
-  "hintCard": "[HINT: {{cards}} ({{reason}})]",
+  "hintCard": "[ヒント: {{cards}} ({{reason}})]",
   "hintReasonLeadHigh": "高い札でリードしてトリックを取りにいく",
   "hintReasonFollowWin": "トリックを取って生き残る（トリック数が重要）",
   "hintReasonFollowDuck": "取れないのでリードスートの低い札で受ける",
@@ -30,5 +30,14 @@
   "winnerMark": "★(勝者) ",
   "helpExamplePlay": "  play 0                   手札の 0 番のカードを出す",
   "helpExampleNext": "  n                        トリックの決着を見てから次のトリックへ",
-  "helpHint": "  h                         助言を表示"
+  "helpHint": "  h                         助言を表示",
+  "errTrumpSuitOutOfRange": "切り札スートが範囲外です",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "log.trumpSelect": "{{round}}ラウンド目: 1人{{cards}}枚、{{name}}が切り札を選択",
+  "log.roundStart": "{{round}}ラウンド目: 1人{{cards}}枚、切り札{{trump}}、{{name}}がリード",
+  "log.play": "{{name}}が{{card}}を出す",
+  "log.trickWin": "{{name}}が{{trick}}トリックに勝利",
+  "log.dogbone": "{{name}}がドッグボーンを使って生き残る",
+  "log.eliminated": "{{name}}が脱落",
+  "log.gameEnd": "{{name}}がマッチに勝利！"
 }

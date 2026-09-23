@@ -38,7 +38,7 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 
 const SAIL_CNT = 8;
 const CORNER_CNT = 4;
-/** 中央基礎札の完成枚数。domain の `WindmillCenterTarget = CardValueMax * 4`。 */
+/** 中央組札の完成枚数。domain の `WindmillCenterTarget = CardValueMax * 4`。 */
 const CENTER_TARGET = 13 * 4;
 /** 四隅それぞれの完成枚数。domain の `WindmillCornerTarget`。 */
 const CORNER_TARGET = 13;
@@ -208,6 +208,7 @@ function WindmillPageContent() {
     // 元」を兼ねていて、transferBlocked が禁じるのは後者だけ。ボタンごと無効に
     // すると、影響を受けないはずの「四隅へ置く」手まで潰れる。
     const blockedAsSource = selectedSource === null && state.transferBlocked;
+    const cornerLabel = t('cornerAriaLabel', { idx, count: pile.length });
     return (
       <div key={`corner-${idx.toString()}`} className="text-center">
         <div className="text-game-text-muted text-xs mb-1" aria-hidden="true">
@@ -227,7 +228,7 @@ function WindmillPageContent() {
               }
               disabled={!isPlaying || loading || isAutoCompleting || blockedAsSource}
               title={blockedAsSource ? t('transferBlocked') : undefined}
-              aria-label={t('cornerAriaLabel', { idx, count: pile.length })}
+              aria-label={blockedAsSource ? `${cornerLabel}。${t('transferBlocked')}` : cornerLabel}
               aria-pressed={isSourceSelected('corner', idx)}
               draggable={isPlaying && !loading && !blockedAsSource}
               onDragStart={dnd.handleDragStart(cornerZone)}
@@ -380,9 +381,13 @@ function WindmillPageContent() {
             </div>
 
             {/* The block is invisible in the layout, so the board has to state it. */}
-            {isPlaying && state.transferBlocked && (
-              <p className="text-ds-warning text-sm text-center mb-2">{t('transferBlocked')}</p>
-            )}
+            <div
+              role="status"
+              aria-live="polite"
+              className={isPlaying && state.transferBlocked ? 'text-ds-warning text-sm text-center mb-2' : 'sr-only'}
+            >
+              {isPlaying && state.transferBlocked ? t('transferBlocked') : ''}
+            </div>
 
             <div className="flex flex-wrap justify-center gap-1 sm:gap-2" data-tutorial="wm-sails">
               {Array.from({ length: SAIL_CNT }, (_, i) => i).map(renderSail)}

@@ -58,6 +58,7 @@ func (m *MockChinchonGame) GetKnockerIdx() int     { return m.Called().Int(0) }
 func (m *MockChinchonGame) GetKnockerMelds() [][]*domain.Card {
 	return m.Called().Get(0).([][]*domain.Card)
 }
+func (m *MockChinchonGame) GetLayoffableIndices() []int { return m.Called().Get(0).([]int) }
 func (m *MockChinchonGame) GetActionLog() []*domain.ActionLogEntry {
 	return m.Called().Get(0).([]*domain.ActionLogEntry)
 }

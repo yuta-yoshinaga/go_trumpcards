@@ -19,6 +19,7 @@
   "phase.play": "進行中",
   "ranking": "序列: 10 > 9 > 8 > 7 > A > K > Q > J（10が最強・Jが最弱）",
   "redeal": "配り直し（貧民）",
+  "redealHint": "手札が A/K/Q/J だけなので配り直しを要求できます",
   "stake": "賭け点",
   "stay": "追随する",
   "toep": "toep（賭け点+1）",

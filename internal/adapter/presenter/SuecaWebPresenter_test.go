@@ -127,6 +127,24 @@ func TestSuecaWebPresenter_Output(t *testing.T) {
 		assert.Empty(t, resObj.MessageCode)
 	})
 
+	t.Run("coded error uses message code", func(t *testing.T) {
+		m, _ := setupSuecaWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "shared.errCardIndexOutOfRange", nil)
+		var resObj controller.SuecaWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, err)), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "shared.errCardIndexOutOfRange", resObj.MessageCode)
+	})
+
+	t.Run("game coded error uses message code", func(t *testing.T) {
+		m, _ := setupSuecaWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "sueca.errCardIndexOutOfRange", nil)
+		var resObj controller.SuecaWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, err)), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "sueca.errCardIndexOutOfRange", resObj.MessageCode)
+	})
+
 	t.Run("game end human team wins", func(t *testing.T) {
 		m, _ := setupSuecaWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
@@ -201,7 +219,7 @@ func TestSuecaWebPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockSuecaGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You plays ♠K"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, `"actionType":"play"`)

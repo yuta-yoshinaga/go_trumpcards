@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // BridgePlayerCnt ブリッジプレイヤー数
@@ -258,7 +259,7 @@ func (b *Bridge) executeBid(playerIdx int, bidType BridgeBidType, level int, sui
 	case BridgeBidRedouble:
 		return b.doBidRedouble(playerIdx)
 	default:
-		return NewDomainError(ErrInvalidPlay, "無効なビッド種類です")
+		return NewDomainErrorCode(ErrInvalidPlay, "bridge.errInvalidBidType", nil)
 	}
 }
 
@@ -268,12 +269,12 @@ func (b *Bridge) doBidPass(playerIdx int) error {
 		PlayerIdx: playerIdx,
 		BidType:   BridgeBidPass,
 	})
-	b.appendLog(playerIdx, "pass", fmt.Sprintf("%s passes", b.playerName(playerIdx)), nil)
+	b.appendLog(playerIdx, "pass", "bridge.log.pass", map[string]string{"name": b.playerName(playerIdx)}, nil)
 	b.passCount++
 
 	// 4連続パス (誰もビッドしていない) = リディール
 	if b.passCount >= 4 && b.contractLevel == 0 {
-		b.appendLog(-1, "redeal", "All pass — redeal", nil)
+		b.appendLog(-1, "redeal", "bridge.log.redeal", nil, nil)
 		b.dealerIdx = (b.dealerIdx + 1) % BridgePlayerCnt
 		for _, p := range b.players {
 			p.ResetRound()
@@ -335,15 +336,15 @@ func (b *Bridge) BridgeCanRedouble(playerIdx int) bool {
 // doBidNormal 通常ビッドする
 func (b *Bridge) doBidNormal(playerIdx int, level int, suit int) error {
 	if level < 1 || level > 7 {
-		return NewDomainError(ErrInvalidPlay, "ビッドレベルは1-7です")
+		return NewDomainErrorCode(ErrInvalidPlay, "bridge.errBidLevelRange", nil)
 	}
 	if suit < BridgeBidSuitClub || suit > BridgeBidSuitNT {
-		return NewDomainError(ErrInvalidPlay, "無効なビッドスートです")
+		return NewDomainErrorCode(ErrInvalidPlay, "bridge.errInvalidBidSuit", nil)
 	}
 
 	// 現在のコントラクトより高いビッドのみ有効
 	if !b.isHigherBid(level, suit) {
-		return NewDomainError(ErrInvalidPlay, "現在のコントラクトより高いビッドが必要です")
+		return NewDomainErrorCode(ErrInvalidPlay, "bridge.errBidHigherThanContract", nil)
 	}
 
 	b.bidHistory = append(b.bidHistory, &BridgeBidEntry{
@@ -361,8 +362,7 @@ func (b *Bridge) doBidNormal(playerIdx int, level int, suit int) error {
 	b.passCount = 0
 
 	suitName := b.bidSuitName(suit)
-	b.appendLog(playerIdx, "bid",
-		fmt.Sprintf("%s bids %d%s", b.playerName(playerIdx), level, suitName), nil)
+	b.appendLog(playerIdx, "bid", "bridge.log.bid", map[string]string{"name": b.playerName(playerIdx), "level": strconv.Itoa(level), "suit": suitName}, nil)
 
 	b.advanceBidPlayer()
 	return nil
@@ -371,14 +371,14 @@ func (b *Bridge) doBidNormal(playerIdx int, level int, suit int) error {
 // doBidDouble ダブルする
 func (b *Bridge) doBidDouble(playerIdx int) error {
 	if b.contractLevel == 0 {
-		return NewDomainError(ErrInvalidPlay, "ビッドがない状態ではダブルできません")
+		return NewDomainErrorCode(ErrInvalidPlay, "bridge.errCannotDoubleWithoutBid", nil)
 	}
 	if b.doubled != 0 {
-		return NewDomainError(ErrInvalidPlay, "既にダブル/リダブルされています")
+		return NewDomainErrorCode(ErrInvalidPlay, "bridge.errAlreadyDoubled", nil)
 	}
 	// 相手チームのビッドのみダブル可能
 	if b.players[playerIdx].GetTeam() == b.lastBidTeam {
-		return NewDomainError(ErrInvalidPlay, "自分のチームのビッドはダブルできません")
+		return NewDomainErrorCode(ErrInvalidPlay, "bridge.errCannotDoubleOwnTeam", nil)
 	}
 
 	b.bidHistory = append(b.bidHistory, &BridgeBidEntry{
@@ -388,8 +388,7 @@ func (b *Bridge) doBidDouble(playerIdx int) error {
 	b.doubled = 1
 	b.passCount = 0
 
-	b.appendLog(playerIdx, "double",
-		fmt.Sprintf("%s doubles", b.playerName(playerIdx)), nil)
+	b.appendLog(playerIdx, "double", "bridge.log.double", map[string]string{"name": b.playerName(playerIdx)}, nil)
 
 	b.advanceBidPlayer()
 	return nil
@@ -398,11 +397,11 @@ func (b *Bridge) doBidDouble(playerIdx int) error {
 // doBidRedouble リダブルする
 func (b *Bridge) doBidRedouble(playerIdx int) error {
 	if b.doubled != 1 {
-		return NewDomainError(ErrInvalidPlay, "ダブルされていない状態ではリダブルできません")
+		return NewDomainErrorCode(ErrInvalidPlay, "bridge.errCannotRedoubleWithoutDouble", nil)
 	}
 	// ダブルされた側のチームのみリダブル可能
 	if b.players[playerIdx].GetTeam() != b.lastBidTeam {
-		return NewDomainError(ErrInvalidPlay, "相手チームのダブルにのみリダブルできます")
+		return NewDomainErrorCode(ErrInvalidPlay, "bridge.errCannotRedoubleOwnTeam", nil)
 	}
 
 	b.bidHistory = append(b.bidHistory, &BridgeBidEntry{
@@ -412,8 +411,7 @@ func (b *Bridge) doBidRedouble(playerIdx int) error {
 	b.doubled = 2
 	b.passCount = 0
 
-	b.appendLog(playerIdx, "redouble",
-		fmt.Sprintf("%s redoubles", b.playerName(playerIdx)), nil)
+	b.appendLog(playerIdx, "redouble", "bridge.log.redouble", map[string]string{"name": b.playerName(playerIdx)}, nil)
 
 	b.advanceBidPlayer()
 	return nil
@@ -448,13 +446,12 @@ func (b *Bridge) finishAuction() {
 	b.trumpSuit = b.bidSuitToCardDesign(b.contractSuit)
 
 	suitName := b.bidSuitName(b.contractSuit)
-	b.appendLog(-1, "contract",
-		fmt.Sprintf("Contract: %d%s by %s", b.contractLevel, suitName, b.playerName(b.declarerIdx)), nil)
+	b.appendLog(-1, "contract", "bridge.log.contract", map[string]string{"level": strconv.Itoa(b.contractLevel), "suit": suitName, "name": b.playerName(b.declarerIdx)}, nil)
 	switch b.doubled {
 	case 1:
-		b.appendLog(-1, "doubled", "Doubled", nil)
+		b.appendLog(-1, "doubled", "bridge.log.doubled", nil, nil)
 	case 2:
-		b.appendLog(-1, "redoubled", "Redoubled", nil)
+		b.appendLog(-1, "redoubled", "bridge.log.redoubled", nil, nil)
 	}
 
 	// オープニングリード: デクレアラーの左隣
@@ -504,7 +501,7 @@ func (b *Bridge) PlayerPlay(cardIndex int) error {
 
 	player := b.players[actingPlayer]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "bridge.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
@@ -573,8 +570,7 @@ func (b *Bridge) ResolveTrick() {
 	b.players[winnerIdx].AddTrick(trickCards)
 
 	winnerName := b.playerName(winnerIdx)
-	b.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", winnerName, b.trickNumber), trickCards)
+	b.appendLog(winnerIdx, "trick_win", "bridge.log.trickWin", map[string]string{"name": winnerName, "trick": strconv.Itoa(b.trickNumber)}, trickCards)
 
 	b.leadPlayerIdx = winnerIdx
 
@@ -613,29 +609,25 @@ func (b *Bridge) ScoreRound() {
 	declarerTricks := teamTricks[declarerTeam]
 	requiredTricks := b.contractLevel + 6 // レベル + ブック (6)
 
-	b.appendLog(-1, "tricks",
-		fmt.Sprintf("Declarer team tricks: %d (needed: %d)", declarerTricks, requiredTricks), nil)
+	b.appendLog(-1, "tricks", "bridge.log.tricks", map[string]string{"declarer": strconv.Itoa(declarerTricks), "needed": strconv.Itoa(requiredTricks)}, nil)
 
 	if declarerTricks >= requiredTricks {
 		// コントラクト達成
 		overtricks := declarerTricks - requiredTricks
 		points := b.calcMadeContractScore(declarerTeam, overtricks)
 		b.teamScores[declarerTeam] += points
-		b.appendLog(-1, "contract_made",
-			fmt.Sprintf("Contract made! +%d points for team %d", points, declarerTeam), nil)
+		b.appendLog(-1, "contract_made", "bridge.log.contractMade", map[string]string{"points": strconv.Itoa(points), "team": strconv.Itoa(declarerTeam)}, nil)
 	} else {
 		// コントラクト失敗
 		undertricks := requiredTricks - declarerTricks
 		penalty := b.calcUndertrickPenalty(declarerTeam, undertricks)
 		b.teamScores[defenderTeam] += penalty
-		b.appendLog(-1, "contract_down",
-			fmt.Sprintf("Contract down %d! +%d points for team %d", undertricks, penalty, defenderTeam), nil)
+		b.appendLog(-1, "contract_down", "bridge.log.contractDown", map[string]string{"undertricks": strconv.Itoa(undertricks), "points": strconv.Itoa(penalty), "team": strconv.Itoa(defenderTeam)}, nil)
 	}
 
 	// スコアログ
 	for ti := range BridgeTeamCnt {
-		b.appendLog(-1, "team_score",
-			fmt.Sprintf("Team %d: %d points (tricks: %d)", ti, b.teamScores[ti], teamTricks[ti]), nil)
+		b.appendLog(-1, "team_score", "bridge.log.teamScore", map[string]string{"team": strconv.Itoa(ti), "points": strconv.Itoa(b.teamScores[ti]), "tricks": strconv.Itoa(teamTricks[ti])}, nil)
 	}
 
 	b.checkGameEnd()
@@ -817,8 +809,7 @@ func (b *Bridge) checkGameEnd() {
 			}
 
 			b.winnerTeam = ti
-			b.appendLog(-1, "rubber_end",
-				fmt.Sprintf("Team %d wins the rubber!", ti), nil)
+			b.appendLog(-1, "rubber_end", "bridge.log.rubberEnd", map[string]string{"team": strconv.Itoa(ti)}, nil)
 			return
 		}
 	}
@@ -911,6 +902,16 @@ func (b *Bridge) GetDoubled() int { return b.doubled }
 
 // SetDoubled ダブル状態設定 (テスト用)
 func (b *Bridge) SetDoubled(d int) { b.doubled = d }
+
+// GetLastBidTeam 最後にビッドしたチーム取得 (-1=なし)
+func (b *Bridge) GetLastBidTeam() int { return b.lastBidTeam }
+
+// SetLastBidTeam 最後にビッドしたチーム設定 (テスト用)
+//
+// リダブルは**ダブルされた側だけ**が行える。相手側が試みたときの分岐は、
+// 人間以外がビッドした局面でしか起きない (PlayerBid は人間の手番しか通さない)
+// ため、この setter を通さずには到達できない。
+func (b *Bridge) SetLastBidTeam(team int) { b.lastBidTeam = team }
 
 // GetDeclarerIdx デクレアラーインデックス取得
 func (b *Bridge) GetDeclarerIdx() int { return b.declarerIdx }
@@ -1078,14 +1079,12 @@ func (b *Bridge) playCard(playerIdx int, card *Card) {
 		Card:      card,
 	})
 
-	b.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", b.playerName(playerIdx), cardStr(card)), []*Card{card})
+	b.appendLog(playerIdx, "play", "bridge.log.play", map[string]string{"name": b.playerName(playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	// オープニングリード後にダミーの手札を公開
 	if !b.openingLeadDone && len(b.currentTrick) == 1 {
 		b.openingLeadDone = true
-		b.appendLog(-1, "dummy_revealed",
-			fmt.Sprintf("Dummy's hand (player %d) is revealed", b.dummyIdx), nil)
+		b.appendLog(-1, "dummy_revealed", "bridge.log.dummyRevealed", map[string]string{"player": strconv.Itoa(b.dummyIdx)}, nil)
 	}
 
 	if len(b.currentTrick) == BridgePlayerCnt {
@@ -1093,6 +1092,10 @@ func (b *Bridge) playCard(playerIdx int, card *Card) {
 	} else {
 		b.currentPlayerIdx = (b.currentPlayerIdx + 1) % BridgePlayerCnt
 	}
+}
+
+func (b *Bridge) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	b.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // validatePlay カードのプレイが有効か検証する
@@ -1105,7 +1108,7 @@ func (b *Bridge) validatePlay(playerIdx int, card *Card) error {
 	leadSuit := b.currentTrick[0].Card.GetDesign()
 	if card.GetDesign() != leadSuit {
 		if b.playerHasSuit(playerIdx, leadSuit) {
-			return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+			return NewDomainErrorCode(ErrInvalidPlay, "bridge.errFollowLeadSuit", nil)
 		}
 	}
 

@@ -90,6 +90,7 @@ func (p *ScorpionWebPresenter) buildBase(s interfaces.ScorpionGame) *controller.
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, s, int(s.GetPhase()))
 	resObj.StockCount = s.GetStockCount()
 	resObj.CompletedSuits = s.GetCompletedSuits()
+	resObj.CompletedSuitMask = s.GetCompletedSuitMask()
 
 	tableau := s.GetTableau()
 	resObj.Tableau = make([][]*controller.KlondikeWebOutputTableauCard, domain.ScorpionTableauCnt)

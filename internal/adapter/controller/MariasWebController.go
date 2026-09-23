@@ -38,25 +38,26 @@ type MariasWebOutputPlayer struct {
 
 // MariasWebOutput マリアーシュのWebアウトプット
 type MariasWebOutput struct {
-	Players          []*MariasWebOutputPlayer    `json:"players"`
-	Phase            int                         `json:"phase"`
-	RoundNumber      int                         `json:"roundNumber"`
-	TrickNumber      int                         `json:"trickNumber"`
-	CurrentPlayerIdx int                         `json:"currentPlayerIdx"`
-	LeadPlayerIdx    int                         `json:"leadPlayerIdx"`
-	DealerIdx        int                         `json:"dealerIdx"`
-	SoloistIdx       int                         `json:"soloistIdx"`
-	TrumpSuit        int                         `json:"trumpSuit"`
-	CurrentTrick     []*WebOutputTrickCard       `json:"currentTrick"`
-	PlayerScores     [domain.MariasPlayerCnt]int `json:"playerScores"`
-	RoundCardPoints  [domain.MariasPlayerCnt]int `json:"roundCardPoints"`
-	RoundMarriage    [domain.MariasPlayerCnt]int `json:"roundMarriage"`
-	LastTrickWinner  int                         `json:"lastTrickWinner"`
-	PlayableIndices  []int                       `json:"playableIndices"`
-	GameEndFlag      bool                        `json:"gameEndFlag"`
-	WinnerPlayer     int                         `json:"winnerPlayer"`
-	IsHumanTurn      bool                        `json:"isHumanTurn"`
-	Hint             *WebOutputCardHint          `json:"hint,omitempty"`
+	Players            []*MariasWebOutputPlayer                        `json:"players"`
+	Phase              int                                             `json:"phase"`
+	RoundNumber        int                                             `json:"roundNumber"`
+	TrickNumber        int                                             `json:"trickNumber"`
+	CurrentPlayerIdx   int                                             `json:"currentPlayerIdx"`
+	LeadPlayerIdx      int                                             `json:"leadPlayerIdx"`
+	DealerIdx          int                                             `json:"dealerIdx"`
+	SoloistIdx         int                                             `json:"soloistIdx"`
+	TrumpSuit          int                                             `json:"trumpSuit"`
+	CurrentTrick       []*WebOutputTrickCard                           `json:"currentTrick"`
+	PlayerScores       [domain.MariasPlayerCnt]int                     `json:"playerScores"`
+	RoundCardPoints    [domain.MariasPlayerCnt]int                     `json:"roundCardPoints"`
+	RoundMarriage      [domain.MariasPlayerCnt]int                     `json:"roundMarriage"`
+	RoundMarriageSuits [domain.MariasPlayerCnt][]domain.MariasMarriage `json:"roundMarriageSuits"`
+	LastTrickWinner    int                                             `json:"lastTrickWinner"`
+	PlayableIndices    []int                                           `json:"playableIndices"`
+	GameEndFlag        bool                                            `json:"gameEndFlag"`
+	WinnerPlayer       int                                             `json:"winnerPlayer"`
+	IsHumanTurn        bool                                            `json:"isHumanTurn"`
+	Hint               *WebOutputCardHint                              `json:"hint,omitempty"`
 	WebOutputBase
 	Config MariasWebOutputConfig `json:"config"`
 }

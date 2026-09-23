@@ -104,7 +104,7 @@ func TestCatchTenCuiPresenter_HintOutput(t *testing.T) {
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.CatchTenHint{CardIndex: &cardIdx, Reason: "trump_cut"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 
 	t.Run("no hint", func(t *testing.T) {
@@ -119,7 +119,7 @@ func TestCatchTenCuiPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.CatchTenCuiPresenter)
 	m := setupCatchTenWebMock()
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "test"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	assert.NotEmpty(t, p.ActionLogOutput(m))
 }

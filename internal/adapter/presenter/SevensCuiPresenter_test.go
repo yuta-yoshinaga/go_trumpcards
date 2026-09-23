@@ -23,7 +23,7 @@ func makeSevensPlayersForPresenter() []*domain.SevensPlayer {
 	}
 }
 
-// setupSevensCuiTest creates a Sevens game with standard setup (player[0] SPADE 6, players[1-3] HEART 2).
+// setupSevensCuiTest creates a Sevens game with standard setup (player[0] ♠6, players[1-3] ♥2).
 func setupSevensCuiTest() (*domain.Sevens, []*domain.SevensPlayer) {
 	tc := domain.NewTrumpCards(0)
 	players := makeSevensPlayersForPresenter()
@@ -52,7 +52,7 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 		result := tsp.Output(s, nil)
 		assert.Contains(t, result, "Sevens (7並べ)")
 		assert.Contains(t, result, "あなた: 2枚")
-		assert.Contains(t, result, "[0]SPADE 6")
+		assert.Contains(t, result, "[0]♠6")
 		assert.Contains(t, result, "CPU 1: 1枚")
 		assert.Contains(t, result, "ボード:")
 		// Only the seed 7 is on the board initially (positions 1..13 shown).
@@ -147,8 +147,8 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
 
 		result := tsp.Output(s, nil)
-		assert.Contains(t, result, "[0]JOKER")
-		assert.Contains(t, result, "[1]SPADE 6")
+		assert.Contains(t, result, "[0]🃏0")
+		assert.Contains(t, result, "[1]♠6")
 	})
 
 	t.Run("success Output rule header with tunnel", func(t *testing.T) {
@@ -232,10 +232,10 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
 		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 2, false))
-		_ = s.PlayerPlayJoker(0, domain.CardDesignSpade, 6) // joker → SPADE 6
+		_ = s.PlayerPlayJoker(0, domain.CardDesignSpade, 6) // joker → ♠6
 
 		result := tsp.Output(s, nil)
-		assert.Contains(t, result, "JOKER")
+		assert.Contains(t, result, "🃏0")
 		assert.Contains(t, result, "SPADE 6")
 		assert.Contains(t, result, "を出しました")
 	})
@@ -256,7 +256,7 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 		players[0].AddCard(domain.NewCard(99, 1, false))
 		result := tsp.Output(s, nil)
 		assert.Contains(t, result, "??")
-		assert.Contains(t, result, "UNKNOWN")
+		assert.Contains(t, result, "🃏1")
 	})
 
 	t.Run("success Output getCardStr all designs", func(t *testing.T) {
@@ -265,9 +265,9 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
 		players[0].AddCard(domain.NewCard(domain.CardDesignDiamond, 6, false))
 		result := tsp.Output(s, nil)
-		assert.Contains(t, result, "CLOVER 6")
-		assert.Contains(t, result, "HEART 8")
-		assert.Contains(t, result, "DIAMOND 6")
+		assert.Contains(t, result, "♣6")
+		assert.Contains(t, result, "♥8")
+		assert.Contains(t, result, "♦6")
 	})
 
 	t.Run("success Output getSuitName all suits via joker play", func(t *testing.T) {
@@ -314,7 +314,7 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 			PlayedCard: nil,
 		})
 		result := tsp.Output(s, nil)
-		assert.Contains(t, result, "UNKNOWN")
+		assert.Contains(t, result, "不明")
 	})
 
 	t.Run("success Output human action pass", func(t *testing.T) {
@@ -336,7 +336,7 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 			PlayedCard: domain.NewCard(domain.CardDesignSpade, 8, false),
 		})
 		result := tsp.Output(s, nil)
-		assert.Contains(t, result, "SPADE 8")
+		assert.Contains(t, result, "♠8")
 		assert.Contains(t, result, "を出しました")
 	})
 
@@ -352,7 +352,7 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 		})
 		result := tsp.Output(s, nil)
 		assert.Contains(t, result, "[CPUの行動]")
-		assert.Contains(t, result, "JOKER")
+		assert.Contains(t, result, "🃏0")
 		assert.Contains(t, result, "SPADE 8")
 		assert.Contains(t, result, "を出しました")
 	})
@@ -380,7 +380,7 @@ func TestSevensCuiPresenter_Method(t *testing.T) {
 		})
 		result := tsp.Output(s, nil)
 		assert.Contains(t, result, "[CPUの行動]")
-		assert.Contains(t, result, "HEART 8")
+		assert.Contains(t, result, "♥8")
 		assert.Contains(t, result, "を出しました")
 	})
 
@@ -567,7 +567,7 @@ func TestSevensCuiPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("with entries", func(t *testing.T) {
 		mockGame := new(interfaces.MockSevensGame)
 		entries := []*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "played 7 of hearts"},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		}
 		mockGame.On("GetGameEndFlag").Return(true)
 		mockGame.On("GetActionLog").Return(entries)
@@ -578,7 +578,7 @@ func TestSevensCuiPresenter_ActionLogOutput(t *testing.T) {
 
 		assert.Contains(t, result, "棋譜")
 		assert.Contains(t, result, "play")
-		assert.Contains(t, result, "played 7 of hearts")
+		assert.Contains(t, result, "テスト用の棋譜行 1")
 		mockGame.AssertExpectations(t)
 	})
 
@@ -715,8 +715,8 @@ func TestSevensCuiPresenter_PlayableMarks(t *testing.T) {
 	t.Run("stars the playable card and leaves the others bare", func(t *testing.T) {
 		s := newGame(card(domain.CardDesignSpade, 6), card(domain.CardDesignSpade, 11))
 		out := tsp.Output(s, nil)
-		assert.Contains(t, out, "[0]SPADE 6"+presenter.CuiLegalMark)
-		assert.NotContains(t, out, "[1]SPADE 11"+presenter.CuiLegalMark)
+		assert.Contains(t, out, "[0]♠6"+presenter.CuiLegalMark)
+		assert.NotContains(t, out, "[1]♠11"+presenter.CuiLegalMark)
 	})
 
 	// **1枚も出せないときに無印にすると「判定していない」と区別が付かない。**

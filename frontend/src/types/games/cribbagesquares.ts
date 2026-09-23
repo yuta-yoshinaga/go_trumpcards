@@ -11,6 +11,18 @@ export interface CribbageSquaresBoardCell {
 
 /** One hand's cribbage score breakdown (sync: `domain.CribbageScoreDetail`). */
 export interface CribbageSquaresScore {
+  /** The cards in the scored row or column. */
+  cards?: Card[];
+  fifteens: number;
+  pairs: number;
+  runs: number;
+  flush: number;
+  nobs: number;
+  total: number;
+}
+
+/** Locked-in score breakdown before the starter is revealed. */
+export interface CribbageSquaresPartialScore {
   fifteens: number;
   pairs: number;
   runs: number;
@@ -62,9 +74,9 @@ export interface CribbageSquaresResponse extends BaseGameResponse {
    * `rowDetails` stays 0 until the 16th card is placed, so this is the only
    * breakdown there is during play. A lower bound: the starter can only add.
    */
-  rowPartialDetails: CribbageSquaresScore[];
+  rowPartialDetails: CribbageSquaresPartialScore[];
   /** The same locked-in breakdown per column. */
-  colPartialDetails: CribbageSquaresScore[];
+  colPartialDetails: CribbageSquaresPartialScore[];
   /** Sum of all row and column scores. */
   totalScore: number;
   /** Total needed to clear the game (61). Sent so the page holds no copy. */

@@ -45,9 +45,9 @@ func TestBasraCuiPresenter_AnnotatesCaptureOptions(t *testing.T) {
 
 	out := new(presenter.BasraCuiPresenter).Output(g, nil)
 	// ♠5 は場[0] の ♣5 を取れる。
-	assert.Contains(t, out, "[0]SPADE 5 → 場[0]")
+	assert.Contains(t, out, "[0]♠5 → 場[0]")
 	// 何も取れない札には注記が付かない (受け入れ条件2)。
-	assert.NotContains(t, out, "[1]HEART 9 →")
+	assert.NotContains(t, out, "[1]♥9 →")
 }
 
 // CPU の手番でも人間の手札の注記は出す (手札はもともと公開されている)。

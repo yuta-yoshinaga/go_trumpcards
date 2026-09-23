@@ -63,6 +63,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"strconv"
 )
 
 // GoStopPlayerCnt はゴーストップのプレイヤー数 (固定 2)。
@@ -590,8 +591,7 @@ func (g *GoStop) startRound() {
 	g.state.drawPile = append([]*Card(nil), deck[pos:]...)
 
 	g.sortHumanHand()
-	g.appendLog(-1, "deal", fmt.Sprintf("round %d dealt (field %d, draw %d)",
-		g.state.roundNumber, len(g.state.fieldCards), len(g.state.drawPile)),
+	g.appendLog(-1, "deal", "gostop.log.deal", map[string]string{"round": strconv.Itoa(g.state.roundNumber), "field": strconv.Itoa(len(g.state.fieldCards)), "draw": strconv.Itoa(len(g.state.drawPile))},
 		append([]*Card(nil), g.state.fieldCards...))
 }
 
@@ -740,8 +740,7 @@ func (g *GoStop) applyTurn(playerIdx, handIdx, fieldIdx int) {
 	beforeField := len(g.state.fieldCards)
 	g.gostopPlaceCard(playerIdx, card, fieldIdx)
 	handCaptured := len(g.state.fieldCards) <= beforeField
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s (%s)",
-		g.playerName(playerIdx), gostopCardStr(card), gostopCapturedWord(handCaptured)), []*Card{card})
+	g.appendLog(playerIdx, "play", "gostop.log.play", map[string]string{"name": g.playerName(playerIdx), "card": gostopCardStr(card), "resultKey": gostopCapturedKey(handCaptured)}, []*Card{card})
 
 	// めくり札。
 	if len(g.state.drawPile) > 0 {
@@ -750,8 +749,7 @@ func (g *GoStop) applyTurn(playerIdx, handIdx, fieldIdx int) {
 		before2 := len(g.state.fieldCards)
 		g.gostopPlaceCard(playerIdx, drawn, -1)
 		drawCaptured := len(g.state.fieldCards) <= before2
-		g.appendLog(playerIdx, "draw", fmt.Sprintf("%s draws %s (%s)",
-			g.playerName(playerIdx), gostopCardStr(drawn), gostopCapturedWord(drawCaptured)), []*Card{drawn})
+		g.appendLog(playerIdx, "draw", "gostop.log.draw", map[string]string{"name": g.playerName(playerIdx), "card": gostopCardStr(drawn), "resultKey": gostopCapturedKey(drawCaptured)}, []*Card{drawn})
 	}
 
 	// 得点判定。
@@ -760,8 +758,7 @@ func (g *GoStop) applyTurn(playerIdx, handIdx, fieldIdx int) {
 		g.state.pendingBreakdown = bd
 		g.state.pendingPoints = bd.Base
 		g.state.phase = GoStopPhaseGoDecision
-		g.appendLog(playerIdx, "score",
-			fmt.Sprintf("%s reaches %d points", g.playerName(playerIdx), bd.Base), nil)
+		g.appendLog(playerIdx, "score", "gostop.log.score", map[string]string{"name": g.playerName(playerIdx), "points": strconv.Itoa(bd.Base)}, nil)
 		return
 	}
 	g.advanceTurn()
@@ -802,7 +799,7 @@ func (g *GoStop) applyDecision(playerIdx int, goDecision bool) {
 		player.IncGoCount()
 		player.SetCalledGo(true)
 		player.SetLastScorePoints(g.state.pendingPoints)
-		g.appendLog(playerIdx, "go", fmt.Sprintf("%s calls Go (x%d)", g.playerName(playerIdx), player.GetGoCount()), nil)
+		g.appendLog(playerIdx, "go", "gostop.log.go", map[string]string{"name": g.playerName(playerIdx), "count": strconv.Itoa(player.GetGoCount())}, nil)
 		g.state.pendingBreakdown = nil
 		g.state.pendingPoints = 0
 		g.state.phase = GoStopPhasePlay
@@ -810,7 +807,7 @@ func (g *GoStop) applyDecision(playerIdx int, goDecision bool) {
 		return
 	}
 	// ストップ (あがり)。手札が無い場合も強制的にここで確定する。
-	g.appendLog(playerIdx, "stop", fmt.Sprintf("%s stops", g.playerName(playerIdx)), nil)
+	g.appendLog(playerIdx, "stop", "gostop.log.stop", map[string]string{"name": g.playerName(playerIdx)}, nil)
 	g.endRound(playerIdx)
 }
 
@@ -869,10 +866,9 @@ func (g *GoStop) endRound(winnerIdx int) {
 		result.GoBak = goBak
 		result.GoCount = winner.GetGoCount()
 		winner.AddScore(total)
-		g.appendLog(winnerIdx, "roundWin",
-			fmt.Sprintf("%s wins round with %d points (bak x%d)", g.playerName(winnerIdx), total, bakMult), nil)
+		g.appendLog(winnerIdx, "roundWin", "gostop.log.roundWin", map[string]string{"name": g.playerName(winnerIdx), "points": strconv.Itoa(total), "bak": strconv.Itoa(bakMult)}, nil)
 	} else {
-		g.appendLog(-1, "draw", "round drawn (no winner)", nil)
+		g.appendLog(-1, "draw", "gostop.log.roundDraw", nil, nil)
 	}
 	g.state.lastRoundResult = result
 
@@ -915,7 +911,7 @@ func (g *GoStop) finishGame() {
 	g.state.winner = best
 	g.state.gameEndFlag = true
 	g.state.phase = GoStopPhaseGameEnd
-	g.appendLog(-1, "gameEnd", fmt.Sprintf("game ended (winner %d)", best), nil)
+	g.appendLog(-1, "gameEnd", "gostop.log.gameEnd", map[string]string{"winner": strconv.Itoa(best)}, nil)
 }
 
 // --- CPU AI ---
@@ -1026,8 +1022,8 @@ func (g *GoStop) playerName(idx int) string {
 	return "CPU"
 }
 
-func (g *GoStop) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.state.appendLog(playerIdx, actionType, detail, cards)
+func (g *GoStop) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.state.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // gostopCardStr は札を "松·光" のように表す (ログ/デバッグ用)。
@@ -1038,11 +1034,12 @@ func gostopCardStr(c *Card) string {
 	return gostopMonthKanji(c.GetDesign()) + "·" + gostopCategoryShort(gostopInfo(c).category)
 }
 
-func gostopCapturedWord(captured bool) string {
+// gostopCapturedKey は取れたかどうかの i18n キーを返す。
+func gostopCapturedKey(captured bool) string {
 	if captured {
-		return "captures"
+		return "gostop.log.result.captured"
 	}
-	return "to field"
+	return "gostop.log.result.toField"
 }
 
 // gostopMonthKanji は月番号を月札の代表漢字にする。

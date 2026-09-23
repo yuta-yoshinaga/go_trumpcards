@@ -2,6 +2,7 @@
   "title": "Casino War",
   "betGuide": "Place an ante; one card is dealt to you and one to the dealer.",
   "tieGuide": "Tie! Surrender (lose half ante) or go to War (match ante and re-draw).",
+  "warTieRule": "If War results in another tie, the player wins.",
   "warCost": "War = {{amount}} extra chips",
   "insufficientChips": "Not enough chips",
   "previousBet": "Use last bet ({{amount}})",

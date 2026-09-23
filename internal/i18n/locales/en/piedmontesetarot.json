@@ -28,6 +28,7 @@
   "roundEndTotal": "Card points on the table: {{total}} (of 78)",
   "roundEndFormulaLine": "change = seats x your card points - table total (zero sum)",
   "roundEndEarned": "{{name}}: took {{points}} -> change {{scaled}}",
+  "roundEndScarto": "{{name}}: scarto {{points}}",
   "promptRoundEndHelp": "nr / nextround ... next deal",
   "hintNone": "No hint available.",
   "hintCard": "[HINT: {{cards}} ({{reason}})]",
@@ -42,9 +43,15 @@
   "discardableLegend": "* honours (trump 1/21, Matto) and court cards cannot be discarded",
   "playableList": "Playable: {{cards}}",
   "errScartoCount": "Discard exactly {{n}} card(s).",
-  "errCardRange": "That card number is out of range.",
+  "errCardRange": "That card index is out of range.",
   "errDuplicateCard": "You cannot pick the same card twice.",
   "errDiscardHonour": "Honours (trump 1, trump 21 and the Matto) cannot be buried.",
   "errDiscardTrump": "Trumps cannot be buried unless you have no choice.",
-  "errDiscardCourt": "Court cards cannot be buried."
+  "errDiscardCourt": "Court cards cannot be buried.",
+  "log.scarto": "{{name}} discards {{count}} cards (scarto)",
+  "log.play": "{{name}} plays {{card}}",
+  "log.trickWin": "{{name}} wins trick {{trick}}",
+  "log.roundScore": "deal {{round}}: captured thirds {{thirds}} -> deal scores {{scores}}",
+  "log.gameEndDraw": "the match ends in a draw",
+  "log.gameEnd": "{{name}} wins the match!"
 }

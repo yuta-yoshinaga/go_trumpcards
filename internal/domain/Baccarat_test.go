@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewBaccarat(t *testing.T) {
@@ -208,6 +209,15 @@ func TestBaccarat_Bet_Success(t *testing.T) {
 	assert.LessOrEqual(t, len(b.GetPlayerHand()), 3)
 	assert.LessOrEqual(t, len(b.GetBankerHand()), 3)
 	assert.NotNil(t, b.GetActionLog())
+	var betLog *ActionLogEntry
+	for _, entry := range b.GetActionLog() {
+		if entry.DetailCode == "baccarat.log.bet" {
+			betLog = entry
+			break
+		}
+	}
+	require.NotNil(t, betLog)
+	assert.Equal(t, map[string]string{"amount": "100", "typeKey": "baccarat.sidePlayer"}, betLog.DetailParams)
 	// history should have one entry
 	assert.Len(t, b.GetHistory(), 1)
 }
@@ -458,10 +468,10 @@ func TestBaccarat_Natural(t *testing.T) {
 }
 
 func TestBaccarat_BetTypeName(t *testing.T) {
-	assert.Equal(t, "player", betTypeName(BaccaratBetPlayer))
-	assert.Equal(t, "banker", betTypeName(BaccaratBetBanker))
-	assert.Equal(t, "tie", betTypeName(BaccaratBetTie))
-	assert.Equal(t, "unknown", betTypeName(99))
+	assert.Equal(t, "baccarat.sidePlayer", betTypeKey(BaccaratBetPlayer))
+	assert.Equal(t, "baccarat.sideBanker", betTypeKey(BaccaratBetBanker))
+	assert.Equal(t, "baccarat.sideTie", betTypeKey(BaccaratBetTie))
+	assert.Equal(t, "baccarat.sideUnknown", betTypeKey(99))
 }
 
 func TestBaccarat_Getters(t *testing.T) {
@@ -496,7 +506,7 @@ func TestBaccarat_FullGame_PlayerWins(t *testing.T) {
 
 func TestBaccarat_FullGame_AllBetTypes(t *testing.T) {
 	for _, bt := range []int{BaccaratBetPlayer, BaccaratBetBanker, BaccaratBetTie} {
-		t.Run(betTypeName(bt), func(t *testing.T) {
+		t.Run(betTypeKey(bt), func(t *testing.T) {
 			b := NewDefaultBaccarat()
 			err := b.Bet(100, bt, 0, 0)
 			assert.NoError(t, err)

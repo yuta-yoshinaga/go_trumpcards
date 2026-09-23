@@ -65,6 +65,11 @@ type CaribbeanStud struct {
 	actionLogBase
 }
 
+// appendLog records a Caribbean Stud action with a locale-independent detail code.
+func (cs *CaribbeanStud) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	cs.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
+}
+
 // NewCaribbeanStud コンストラクタ
 func NewCaribbeanStud(trumpCards *TrumpCards) *CaribbeanStud {
 	trumpCards.Shuffle()
@@ -127,7 +132,7 @@ func (cs *CaribbeanStud) Bet(ante, jackpot int) error {
 	}
 	cs.anteBet = ante
 	cs.jackpotBet = jackpot
-	cs.appendLog(0, "bet", fmt.Sprintf("ante=%d jackpot=%d", ante, jackpot), nil)
+	cs.appendLog(0, "bet", "caribbeanstud.log.bet", map[string]string{"ante": fmt.Sprintf("%d", ante), "jackpot": fmt.Sprintf("%d", jackpot)}, nil)
 
 	cs.deal()
 	cs.phase = CaribbeanStudPhaseAction
@@ -144,7 +149,7 @@ func (cs *CaribbeanStud) Play() error {
 		return NewDomainError(ErrInsufficientChips, "Insufficient chips for play bet.")
 	}
 	cs.playBet = playBet
-	cs.appendLog(0, "play", fmt.Sprintf("play bet=%d", cs.playBet), nil)
+	cs.appendLog(0, "play", "caribbeanstud.log.play", map[string]string{"bet": fmt.Sprintf("%d", cs.playBet)}, nil)
 
 	cs.resolve()
 	return nil
@@ -155,7 +160,7 @@ func (cs *CaribbeanStud) Fold() error {
 	if cs.phase != CaribbeanStudPhaseAction {
 		return NewDomainError(ErrWrongPhase, "Fold is only allowed during the action phase.")
 	}
-	cs.appendLog(0, "fold", "player folds", nil)
+	cs.appendLog(0, "fold", "caribbeanstud.log.playerFolds", nil, nil)
 
 	cs.result = GameResultLose
 	cs.playerHandRank = evalFiveCardHand(cs.playerHand)
@@ -168,7 +173,7 @@ func (cs *CaribbeanStud) Fold() error {
 
 	cs.gameEndFlag = true
 	cs.phase = CaribbeanStudPhaseEnd
-	cs.appendLog(-1, "result", "player folded", nil)
+	cs.appendLog(-1, "result", "caribbeanstud.log.playerFolded", nil, nil)
 	return nil
 }
 
@@ -180,7 +185,7 @@ func (cs *CaribbeanStud) deal() {
 		cs.playerHand = append(cs.playerHand, cs.trumpCards.DrawCard())
 		cs.dealerHand = append(cs.dealerHand, cs.trumpCards.DrawCard())
 	}
-	cs.appendLog(-1, "deal", "dealt 5 cards each", nil)
+	cs.appendLog(-1, "deal", "caribbeanstud.log.deal", nil, nil)
 }
 
 // resolve ゲーム解決（Play後の処理）
@@ -216,16 +221,14 @@ func (cs *CaribbeanStud) resolve() {
 	cs.gameEndFlag = true
 	cs.phase = CaribbeanStudPhaseEnd
 
-	var resultStr string
 	switch cs.result {
 	case GameResultWin:
-		resultStr = "player wins"
+		cs.appendLog(-1, "result", "caribbeanstud.log.playerWins", nil, nil)
 	case GameResultDraw:
-		resultStr = "push"
+		cs.appendLog(-1, "result", "caribbeanstud.log.push", nil, nil)
 	default:
-		resultStr = "dealer wins"
+		cs.appendLog(-1, "result", "caribbeanstud.log.dealerWins", nil, nil)
 	}
-	cs.appendLog(-1, "result", resultStr, nil)
 }
 
 // compareHands プレイヤーとディーラーのハンドを比較する

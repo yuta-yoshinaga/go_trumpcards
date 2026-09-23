@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { buraApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -131,6 +131,17 @@ describe('BuraPage', () => {
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: '役を宣言' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('declare'));
+  });
+
+  it('shows the claim risk until the human reaches the threshold', async () => {
+    renderWithProviders(<BuraPage />);
+    expect(await screen.findByText('到達していなければその場で負けます')).toBeInTheDocument();
+
+    cleanup();
+    mockExec.mockResolvedValue(makeState({ players: [human({ points: 31 }), cpu()] }));
+    renderWithProviders(<BuraPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '31点を宣言' })).toBeInTheDocument());
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 
   it('reports a draw distinctly from a loss', async () => {

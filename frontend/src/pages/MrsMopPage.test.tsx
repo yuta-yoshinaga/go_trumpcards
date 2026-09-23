@@ -434,6 +434,29 @@ describe('MrsMopPage', () => {
   // #5955: ヒントは無言で現れていた。**空のまま先にマウントしてある**領域の中身が
   // 変わることが読み上げの条件なので、hint がある間だけ現れる内側の div ではなく、
   // 常設のラッパーがライブ領域でなければならない。
+  it('shows hint rings on source and destination cards after fetching a hint', async () => {
+    mockExec.mockResolvedValue({ ...playingState, hint: { fromCol: 0, cardIndex: 0, toCol: 3 } });
+    renderWithProviders(<MrsMopPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => {
+      const sourceCard = screen.getByAltText('♠ K').closest('button');
+      expect(sourceCard?.className).toContain('ring-ds-info');
+      const targetCol = screen.getByTestId('spd-empty-col-3').closest('.flex-1');
+      expect(targetCol?.className).toContain('ring-ds-success');
+    });
+  });
+
+  it('does not show hint rings when there is no hint', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<MrsMopPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+    const sourceCard = screen.getByAltText('♠ K').closest('button');
+    expect(sourceCard?.className).not.toContain('ring-ds-info');
+    const targetCol = screen.getByTestId('spd-empty-col-3').closest('div');
+    expect(targetCol?.className).not.toContain('ring-ds-success');
+  });
+
   it('announces the hint through a region that was already mounted', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<MrsMopPage />);

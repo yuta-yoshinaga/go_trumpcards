@@ -33,5 +33,16 @@
   "helpLog": "  l                    show the action log",
   "rankRefTitle": "Card strength (strongest first)",
   "rankRefOrder": "3 > 2 > A > K > Q > J > 10 > 9 > 8 > 7 > 6 > 5 > 4",
-  "rankRefNote": "Suits do not matter. Equal cards tie the trick. All 52 cards are used."
+  "rankRefNote": "Suits do not matter. Equal cards tie the trick. All 52 cards are used.",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errCannotRaiseNow": "You cannot raise any further.",
+  "log.put": "{{name}} calls {{level}}",
+  "log.accept": "{{name}} accepts (stake {{stake}})",
+  "log.decline": "{{name}} declines; {{winner}} wins hand ({{points}} pt)",
+  "log.play": "{{name}} plays {{card}}",
+  "log.bazaTie": "Baza {{baza}}: parda",
+  "log.bazaWin": "{{name}} wins baza {{baza}}",
+  "log.handEnd": "Hand {{hand}}: {{name}} +{{points}} (match {{p0}}-{{p1}})",
+  "log.gameEnd": "Match end: {{p0}}-{{p1}}",
+  "log.deal": "Hand {{hand}} dealt (dealer={{dealer}})"
 }

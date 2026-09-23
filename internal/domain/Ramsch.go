@@ -1,10 +1,10 @@
-//go:build !js || !wasm || extra3
+//go:build !js || !wasm || extra6
 
 package domain
 
 import (
-	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // RamschPlayerCnt 3 active players
@@ -199,8 +199,7 @@ func (s *Ramsch) startRound() {
 	s.round.currentPlayerIdx = s.round.forehandIdx
 	s.round.phase = RamschPhasePlay
 
-	s.appendLog(-1, "round_start",
-		fmt.Sprintf("Round %d: dealer=%s", s.round.roundNumber, playerName(s.players, s.round.dealerIdx)), nil)
+	s.appendLog(-1, "round_start", "ramsch.log.roundStart", map[string]string{"round": strconv.Itoa(s.round.roundNumber), "dealer": playerName(s.players, s.round.dealerIdx)}, nil)
 
 	s.runCpuTurns()
 }
@@ -293,8 +292,7 @@ func (s *Ramsch) CpuPlay() {
 // playCard appends the card to the current trick and advances the turn.
 func (s *Ramsch) playCard(playerIdx int, card *Card) {
 	s.round.currentTrick = append(s.round.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	s.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", playerName(s.players, playerIdx), cardStr(card)), []*Card{card})
+	s.appendLog(playerIdx, "play", "ramsch.log.play", map[string]string{"player": playerName(s.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 	if len(s.round.currentTrick) == RamschPlayerCnt {
 		s.round.phase = RamschPhaseTrickEnd
 		return
@@ -320,8 +318,7 @@ func (s *Ramsch) ResolveTrick() {
 	}
 	s.players[winnerIdx].AddTrick(cards)
 	s.players[winnerIdx].SetCardPoints(s.players[winnerIdx].GetCardPoints() + pts)
-	s.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (%d card points)", playerName(s.players, winnerIdx), s.round.trickNumber, pts), cards)
+	s.appendLog(winnerIdx, "trick_win", "ramsch.log.trickWin", map[string]string{"player": playerName(s.players, winnerIdx), "trick": strconv.Itoa(s.round.trickNumber), "points": strconv.Itoa(pts)}, cards)
 	s.round.leadPlayerIdx = winnerIdx
 
 	if s.round.trickNumber < RamschTricksPerRound {
@@ -337,9 +334,7 @@ func (s *Ramsch) ResolveTrick() {
 	}
 	if skatPts > 0 || len(s.round.skat) > 0 {
 		s.players[winnerIdx].SetCardPoints(s.players[winnerIdx].GetCardPoints() + skatPts)
-		s.appendLog(winnerIdx, "skat_award",
-			fmt.Sprintf("%s takes the skat (%d card points)", playerName(s.players, winnerIdx), skatPts),
-			s.round.skat)
+		s.appendLog(winnerIdx, "skat_award", "ramsch.log.skatAward", map[string]string{"player": playerName(s.players, winnerIdx), "points": strconv.Itoa(skatPts)}, s.round.skat)
 	}
 
 	// **Durchmarsch**: 10 トリック全部を 1 人が取ったか。
@@ -429,9 +424,7 @@ func (s *Ramsch) ScoreRound() {
 			p.SetRoundScore(-RamschTotalCardPoints)
 			p.IncRoundsLost()
 		}
-		s.appendLog(winner, "durchmarsch",
-			fmt.Sprintf("%s takes every trick (Durchmarsch): the others lose %d each",
-				playerName(s.players, winner), RamschTotalCardPoints), nil)
+		s.appendLog(winner, "durchmarsch", "ramsch.log.durchmarsch", map[string]string{"player": playerName(s.players, winner), "points": strconv.Itoa(RamschTotalCardPoints)}, nil)
 	} else {
 		worst := 0
 		for i := 1; i < RamschPlayerCnt; i++ {
@@ -460,9 +453,7 @@ func (s *Ramsch) ScoreRound() {
 			if penalised {
 				p.SetRoundScore(-s.GetCardPoints(i))
 				p.IncRoundsLost()
-				s.appendLog(i, "round_result",
-					fmt.Sprintf("%s took the most card points (-%d)",
-						playerName(s.players, i), s.GetCardPoints(i)), nil)
+				s.appendLog(i, "round_result", "ramsch.log.roundResult", map[string]string{"player": playerName(s.players, i), "points": strconv.Itoa(s.GetCardPoints(i))}, nil)
 				continue
 			}
 			p.SetRoundScore(0)
@@ -472,8 +463,7 @@ func (s *Ramsch) ScoreRound() {
 
 	for i, p := range s.players {
 		p.CommitRoundScore()
-		s.appendLog(i, "cumulative_score",
-			fmt.Sprintf("%s total=%d", playerName(s.players, i), p.GetCumulativeScore()), nil)
+		s.appendLog(i, "cumulative_score", "ramsch.log.cumulativeScore", map[string]string{"player": playerName(s.players, i), "total": strconv.Itoa(p.GetCumulativeScore())}, nil)
 	}
 
 	s.checkGameEnd()
@@ -674,9 +664,7 @@ func (s *Ramsch) checkGameEnd() {
 		}
 		s.round.gameEndFlag = true
 		s.round.phase = RamschPhaseGameEnd
-		s.appendLog(-1, "game_end",
-			fmt.Sprintf("%s hits %d penalty points; the match ends and the lowest total wins",
-				playerName(s.players, s.findIndex(p)), -p.GetCumulativeScore()), nil)
+		s.appendLog(-1, "game_end", "ramsch.log.gameEnd", map[string]string{"player": playerName(s.players, s.findIndex(p)), "points": strconv.Itoa(-p.GetCumulativeScore())}, nil)
 		return
 	}
 }
@@ -748,8 +736,8 @@ func ramschHintReasonFor(s *Ramsch, playerIdx, cardIdx int) string {
 }
 
 // appendLog appends an entry to the round action log.
-func (s *Ramsch) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	s.round.appendLog(playerIdx, actionType, detail, cards)
+func (s *Ramsch) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	s.round.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // sortAllHands sorts every player's hand.

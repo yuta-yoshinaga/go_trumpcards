@@ -1,4 +1,8 @@
 {
+  "log.deal": "カードを配りました",
+  "log.place": "取らずに場へ置きました",
+  "log.capture": "ペアを取りました",
+  "log.gameEnd": "ゲーム終了",
   "helpTitle": "撿紅點 (チャイニーズ・テン)",
   "helpPlay": "  p <i>                    手札の札を出す",
   "helpSelect": "  s <i>                    取れる場札が複数のとき、どれを取るか選ぶ",

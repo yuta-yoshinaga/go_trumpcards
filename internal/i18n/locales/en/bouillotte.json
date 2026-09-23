@@ -6,7 +6,7 @@
   "helpSetAnte": "  sa <n>                    Ante amount",
   "helpSetChips": "  sc <n>                    Starting chips",
   "helpSetRounds": "  st <n>                    Target rounds",
-  "roundLine": "Round: {{round}}  Pot: {{pot}}  Ante: {{ante}}",
+  "roundLine": "Round: {{round}} / {{total}}  Pot: {{pot}}  Ante: {{ante}}",
   "retourneLine": "Retourne (shared card): {{card}}",
   "playerLine": "{{name}}  chips {{chips}}  bet {{bet}}  [{{status}}]",
   "statusOut": "OUT",
@@ -37,5 +37,11 @@
   "hintReasonMediumHand": "decent hand — call and see",
   "hintReasonWeakHand": "weak hand — better to fold",
   "helpExampleCall": "  c                         call the current bet",
-  "helpHint": "  h                         show a hint"
+  "helpHint": "  h                         show a hint",
+  "log.deal": "Round {{round}}: ante {{ante}}, pot {{pot}}, retourne up",
+  "log.call": "{{player}} calls {{amount}} (pot {{pot}})",
+  "log.raise": "{{player}} raises to {{newBet}}, pays {{amount}} (pot {{pot}})",
+  "log.fold": "{{player}} folds",
+  "log.win": "{{player}} wins the pot ({{pot}})",
+  "log.gameEnd": "{{player}} wins the game"
 }

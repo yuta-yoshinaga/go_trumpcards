@@ -8,6 +8,7 @@
   "cardCount": "{{count}} cards",
   "selectToPlay": "Click cards to select",
   "tableCards": "Table",
+  "tablePlayLabel": "Combo",
   "tableEmpty": "(empty)",
   "tablePlayedBy": "Played by {{name}}",
   "playButton": "Play Selected",
@@ -47,7 +48,7 @@
     "pair": "Pair",
     "triple": "Triple",
     "straight": "Straight",
-    "threePairRun": "Three Consecutive Pairs",
+    "threePairRun": "Three-pair run",
     "fourOfAKind": "Four of a Kind"
   },
   "frontendHint": {

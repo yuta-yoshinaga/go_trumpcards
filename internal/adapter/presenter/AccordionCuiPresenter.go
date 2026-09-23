@@ -77,7 +77,8 @@ func (p *AccordionCuiPresenter) HintOutput(a interfaces.AccordionGame) string {
 	}
 	return i18n.Tf("accordion.hintLine",
 		"from", strconv.Itoa(hint.FromIdx),
-		"to", strconv.Itoa(hint.ToIdx)) + "\n"
+		"to", strconv.Itoa(hint.ToIdx),
+		"reason", i18n.T("accordion.hintReasonOffset"+strconv.Itoa(hint.FromIdx-hint.ToIdx))) + "\n"
 }
 
 // ActionLogOutput emits the action-log transcript as plain text.

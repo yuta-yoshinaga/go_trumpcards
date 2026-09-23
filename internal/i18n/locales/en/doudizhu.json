@@ -18,5 +18,11 @@
   "currentBidder": "Current bidder: {{name}}",
   "promptBid": "Place your bid (b 0-3, 0 = pass)",
   "helpExampleBid": "  b 0                  pass on becoming the landlord",
-  "helpLog": "  l                    show the action log"
+  "helpLog": "  l                    show the action log",
+  "log.bid": "bid {{value}}",
+  "log.pass": "pass",
+  "log.landlord": "player {{player}} is the landlord",
+  "log.playPass": "pass",
+  "log.play": "played {{count}} card(s)",
+  "log.end": "game over"
 }

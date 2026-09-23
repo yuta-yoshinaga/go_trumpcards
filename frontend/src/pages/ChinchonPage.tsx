@@ -343,7 +343,7 @@ function ChinchonPageContent() {
                       <div key={`meld-${meldIdx}`} className="mb-1">
                         <span
                           data-testid={`ch-meld-badge-${meldIdx}`}
-                          className="inline-block rounded border border-ds-secondary px-1.5 py-0.5 text-ds-text-primary text-xs mb-0.5"
+                          className="inline-block rounded border border-ds-border-subtle px-1.5 py-0.5 text-ds-text-primary text-xs mb-0.5"
                         >
                           {chinchonMeldLabel(meld.cards)}
                         </span>
@@ -491,12 +491,16 @@ function ChinchonPageContent() {
                     aria-pressed={selectedCardIndices.includes(idx)}
                     data-testid={`chinchon-hand-card-${idx}`}
                     data-meld={isDiscardPhase ? (meldedIndices.has(idx) ? 'meld' : 'deadwood') : undefined}
+                    data-layoffable={
+                      isLayoffPhase ? (state.layoffableIndices.includes(idx) ? 'true' : 'false') : undefined
+                    }
                     className={`transition-transform ${focusRingCard}`}
                     style={{
                       background: 'none',
                       padding: 0,
                       borderRadius: 8,
                       ...(isDiscardPhase ? meldCardStyle(meldedIndices.has(idx)) : undefined),
+                      ...(isLayoffPhase ? meldCardStyle(state.layoffableIndices.includes(idx)) : undefined),
                       ...selectedCardStyle(selectedCardIndices.includes(idx)),
                       boxSizing: 'border-box',
                     }}

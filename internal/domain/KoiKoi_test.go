@@ -495,6 +495,15 @@ func TestKoiKoiAccessors(t *testing.T) {
 	assert.Equal(t, 0, pts)
 	assert.Equal(t, domain.KoiKoiCpuDifficultyNormal, g.GetConfig().CpuDifficulty)
 	assert.NotNil(t, g.GetActionLog())
+	var deal *domain.ActionLogEntry
+	for _, entry := range g.GetActionLog() {
+		if entry.DetailCode == "koikoi.log.roundDealt" {
+			deal = entry
+			break
+		}
+	}
+	require.NotNil(t, deal)
+	assert.Equal(t, map[string]string{"round": "1", "field": "8", "draw": "24"}, deal.DetailParams)
 	assert.Equal(t, -1, g.GetWinner())
 	assert.Equal(t, -1, g.GetRoundWinner())
 	assert.Equal(t, 0, g.GetKoikoiCount())

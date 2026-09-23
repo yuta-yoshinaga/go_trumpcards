@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // Kalooki（カルーキ）はジャマイカ／英国系のジョーカーワイルド・ラミー。
@@ -213,28 +214,28 @@ func (g *Kalooki) drawFromStock() error {
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", playerName(g.players, g.currentPlayerIdx)), nil)
+	g.appendLog(g.currentPlayerIdx, "draw_stock", "kalooki.log.drawStock", map[string]string{"player": playerName(g.players, g.currentPlayerIdx)}, nil)
 	g.phase = KalookiPhaseMeld
 	return nil
 }
 
 func (g *Kalooki) drawFromDiscard() error {
 	if len(g.discardPile) == 0 {
-		return NewDomainError(ErrInvalidPlay, "捨て札が空です")
+		return NewDomainErrorCode(ErrInvalidPlay, "kalooki.errDiscardPileEmpty", nil)
 	}
 	card := g.discardPile[len(g.discardPile)-1]
 	g.discardPile = g.discardPile[:len(g.discardPile)-1]
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s draws %s from discard", playerName(g.players, g.currentPlayerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(g.currentPlayerIdx, "draw_discard", "kalooki.log.drawDiscard", map[string]string{"player": playerName(g.players, g.currentPlayerIdx), "card": cardStr(card)}, []*Card{card})
 	g.phase = KalookiPhaseMeld
 	return nil
 }
 
 // recycleDiscardIntoStock 山札が空のとき捨て札トップ 1 枚を残して残りを山札へ戻しシャッフルする。
 func (g *Kalooki) recycleDiscardIntoStock() bool {
-	return recycleDiscardIntoStock(&g.discardPile, &g.drawPile, g)
+	return recycleDiscardIntoStock(&g.discardPile, &g.drawPile, g, "kalooki.log.recycle")
 }
 
 // PlayerMeld 人間プレイヤーがメルド群を場に出す。
@@ -256,7 +257,7 @@ func (g *Kalooki) PlayerMeld(meldGroups [][]int) error {
 func (g *Kalooki) applyMeld(meldGroups [][]int) error {
 	player := g.players[g.currentPlayerIdx]
 	if len(meldGroups) == 0 {
-		return NewDomainError(ErrInvalidPlay, "メルドが指定されていません")
+		return NewDomainErrorCode(ErrInvalidPlay, "kalooki.errMeldRequired", nil)
 	}
 
 	// 全インデックスの検証と（グループ間も含む）重複チェック
@@ -264,21 +265,21 @@ func (g *Kalooki) applyMeld(meldGroups [][]int) error {
 	groupCards := make([][]*Card, len(meldGroups))
 	for gi, indices := range meldGroups {
 		if len(indices) < KalookiMeldMinSize {
-			return NewDomainError(ErrInvalidPlay, fmt.Sprintf("メルドには最低 %d 枚必要です", KalookiMeldMinSize))
+			return NewDomainErrorCode(ErrInvalidPlay, "kalooki.errMeldMinimumCards", map[string]string{"min": strconv.Itoa(KalookiMeldMinSize)})
 		}
 		cards := make([]*Card, 0, len(indices))
 		for _, idx := range indices {
 			if idx < 0 || idx >= player.GetCardsSize() {
-				return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+				return NewDomainErrorCode(ErrInvalidCard, "kalooki.errCardIndexOutOfRange", nil)
 			}
 			if allSeen[idx] {
-				return NewDomainError(ErrInvalidCard, "カードインデックスが重複しています")
+				return NewDomainErrorCode(ErrInvalidCard, "kalooki.errDuplicateCardIndex", nil)
 			}
 			allSeen[idx] = true
 			cards = append(cards, player.GetCard(idx))
 		}
 		if !kalookiIsValidMeld(cards) {
-			return NewDomainError(ErrInvalidPlay, "有効なメルド（セットまたはラン）ではありません")
+			return NewDomainErrorCode(ErrInvalidPlay, "kalooki.errInvalidMeld", nil)
 		}
 		groupCards[gi] = cards
 	}
@@ -290,7 +291,7 @@ func (g *Kalooki) applyMeld(meldGroups [][]int) error {
 			total += kalookiMeldValue(cards)
 		}
 		if total < g.config.OpeningThreshold {
-			return NewDomainError(ErrInvalidPlay, fmt.Sprintf("オープニングには合計 %d 点必要です（現在 %d 点）", g.config.OpeningThreshold, total))
+			return NewDomainErrorCode(ErrInvalidPlay, "kalooki.errOpeningMinimumNotMet", map[string]string{"min": strconv.Itoa(g.config.OpeningThreshold), "score": strconv.Itoa(total)})
 		}
 		player.SetHasOpened(true)
 	}
@@ -313,7 +314,7 @@ func (g *Kalooki) applyMeld(meldGroups [][]int) error {
 		player.RemoveCard(idx)
 	}
 
-	g.appendLog(g.currentPlayerIdx, "meld", fmt.Sprintf("%s melds %d group(s)", playerName(g.players, g.currentPlayerIdx), len(groupCards)), nil)
+	g.appendLog(g.currentPlayerIdx, "meld", "kalooki.log.meld", map[string]string{"player": playerName(g.players, g.currentPlayerIdx), "groups": strconv.Itoa(len(groupCards))}, nil)
 
 	if player.GetCardsSize() == 0 {
 		g.finishRound(g.currentPlayerIdx)
@@ -339,31 +340,31 @@ func (g *Kalooki) PlayerLayoff(targetPlayerIdx, meldIdx, cardIndex int) error {
 func (g *Kalooki) applyLayoff(targetPlayerIdx, meldIdx, cardIndex int) error {
 	current := g.players[g.currentPlayerIdx]
 	if !current.HasOpened() {
-		return NewDomainError(ErrInvalidPlay, "レイオフはオープン後にのみ可能です")
+		return NewDomainErrorCode(ErrInvalidPlay, "kalooki.errLayoffOpenRequired", nil)
 	}
 	if targetPlayerIdx < 0 || targetPlayerIdx >= len(g.players) {
-		return NewDomainError(ErrInvalidPlay, "対象プレイヤーが不正です")
+		return NewDomainErrorCode(ErrInvalidPlay, "kalooki.errTargetPlayerInvalid", nil)
 	}
 	target := g.players[targetPlayerIdx]
 	if !target.HasOpened() {
-		return NewDomainError(ErrInvalidPlay, "対象プレイヤーがまだオープンしていません")
+		return NewDomainErrorCode(ErrInvalidPlay, "kalooki.errTargetNotOpen", nil)
 	}
 	if meldIdx < 0 || meldIdx >= target.GetMeldCount() {
-		return NewDomainError(ErrInvalidPlay, "対象メルドが不正です")
+		return NewDomainErrorCode(ErrInvalidPlay, "kalooki.errTargetMeldInvalid", nil)
 	}
 	if cardIndex < 0 || cardIndex >= current.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "kalooki.errCardIndexOutOfRange", nil)
 	}
 
 	card := current.GetCard(cardIndex)
 	meld := target.GetMeld(meldIdx)
 	if !canAddToKalookiMeld(meld, card) {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("%s はそのメルドに追加できません", cardStr(card)))
+		return NewDomainErrorCode(ErrInvalidPlay, "kalooki.errLayoffCardCannotAdd", map[string]string{"card": cardStr(card)})
 	}
 	target.AddCardToMeld(meldIdx, card)
 	current.RemoveCard(cardIndex)
 
-	g.appendLog(g.currentPlayerIdx, "layoff", fmt.Sprintf("%s lays off %s on player %d's meld", playerName(g.players, g.currentPlayerIdx), cardStr(card), targetPlayerIdx), []*Card{card})
+	g.appendLog(g.currentPlayerIdx, "layoff", "kalooki.log.layoff", map[string]string{"player": playerName(g.players, g.currentPlayerIdx), "card": cardStr(card), "targetPlayer": strconv.Itoa(targetPlayerIdx)}, []*Card{card})
 	if current.GetCardsSize() == 0 {
 		g.finishRound(g.currentPlayerIdx)
 	}
@@ -387,12 +388,12 @@ func (g *Kalooki) PlayerDiscard(cardIndex int) error {
 func (g *Kalooki) applyDiscard(cardIndex int) error {
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "kalooki.errCardIndexOutOfRange", nil)
 	}
 
 	discarded := player.RemoveCard(cardIndex)
 	g.discardPile = append(g.discardPile, discarded)
-	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+	g.appendLog(g.currentPlayerIdx, "discard", "kalooki.log.discard", map[string]string{"player": playerName(g.players, g.currentPlayerIdx), "card": cardStr(discarded)}, []*Card{discarded})
 
 	if player.GetCardsSize() == 0 {
 		g.finishRound(g.currentPlayerIdx)
@@ -594,9 +595,9 @@ func (g *Kalooki) finishRound(winnerIdx int) {
 	}
 
 	if winnerIdx >= 0 {
-		g.appendLog(winnerIdx, "round_win", fmt.Sprintf("%s goes out!", playerName(g.players, winnerIdx)), nil)
+		g.appendLog(winnerIdx, "round_win", "kalooki.log.roundWin", map[string]string{"player": playerName(g.players, winnerIdx)}, nil)
 	} else {
-		g.appendLog(-1, "draw", "Round ends in a draw (stock empty)", nil)
+		g.appendLog(-1, "draw", "kalooki.log.draw", nil, nil)
 	}
 
 	g.phase = KalookiPhaseRoundEnd
@@ -625,7 +626,11 @@ func (g *Kalooki) finalizeGameEnd() {
 			}
 		}
 	}
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(g.players, g.winnerIdx)), nil)
+	g.appendLog(-1, "game_end", "kalooki.log.gameEnd", map[string]string{"player": playerName(g.players, g.winnerIdx)}, nil)
+}
+
+func (g *Kalooki) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- Getters / Setters ---

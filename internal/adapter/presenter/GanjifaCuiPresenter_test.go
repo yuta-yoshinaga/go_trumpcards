@@ -25,6 +25,7 @@ func setupGanjifaCuiMock() *interfaces.MockGanjifaGame {
 	m.On("GetTrickNumber").Return(1)
 	m.On("GetTrumpSuit").Return(1)
 	m.On("GetCurrentTrick").Return(([]*domain.TrickCard)(nil))
+	m.On("GetDealerIdx").Return(0)
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.GanjifaPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -58,6 +59,8 @@ func TestGanjifaCuiPresenter_Output(t *testing.T) {
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "ガンジファ")
 		assert.Contains(t, result, "[0]")
+		assert.Contains(t, result, "ディーラー: あなた")
+		assert.Contains(t, result, "切り札はディーラーの手札で最も多いスートから自動で決まります（選択操作はありません）")
 	})
 
 	// The whole point of the game is that ranks read in opposite directions, so
@@ -199,7 +202,7 @@ func TestGanjifaCuiPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockGanjifaGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You plays Taj 12"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
 	m.On("GetPlayer", mock.Anything).Return(domain.NewGanjifaPlayer(true)).Maybe()

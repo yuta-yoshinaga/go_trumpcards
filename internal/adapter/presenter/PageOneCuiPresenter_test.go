@@ -77,9 +77,9 @@ func TestPageOneCuiPresenter_Output(t *testing.T) {
 		m.On("GetDiscardTop").Return(top)
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "捨て札: HEART 7")
+		assert.Contains(t, result, "捨て札: ♥7")
 		// Play condition references the matchable discard top during the play phase.
-		assert.Contains(t, result, "出せる条件: HEART 7")
+		assert.Contains(t, result, "出せる条件: ♥7")
 	})
 
 	t.Run("must declare phase", func(t *testing.T) {
@@ -126,7 +126,7 @@ func TestPageOneCuiPresenter_Output(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
 		players[0].SetHasDeclared(true)
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "[PAGE ONE!]")
+		assert.Contains(t, result, "[ページワン!]")
 	})
 
 	t.Run("last-card warning shown for undeclared single-card player", func(t *testing.T) {
@@ -147,7 +147,7 @@ func TestPageOneCuiPresenter_Output(t *testing.T) {
 		players[0].SetHasDeclared(true)
 		result := p.Output(m, nil)
 		assert.NotContains(t, result, "残り1枚！")
-		assert.Contains(t, result, "[PAGE ONE!]")
+		assert.Contains(t, result, "[ページワン!]")
 	})
 
 	t.Run("penalty line shown for CPU", func(t *testing.T) {
@@ -188,13 +188,25 @@ func TestPageOneCuiPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestPageOneCuiPresenter_Output_TranslatesCodedError(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+
+	m, _ := setupPageOneCuiMockWithPlayers()
+	p := new(presenter.PageOneCuiPresenter)
+	out := p.Output(m, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "pageone.errInvalidPlay", nil))
+	assert.Contains(t, out, "そのカードは出せません")
+	assert.NotContains(t, out, "pageone.errInvalidPlay")
+}
+
 func TestPageOneCuiPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.PageOneCuiPresenter)
 
 	t.Run("with entries", func(t *testing.T) {
 		m := new(interfaces.MockPageOneGame)
 		entries := []*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You plays SPADE 5"},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		}
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetActionLog").Return(entries)
@@ -230,7 +242,7 @@ func TestPageOneCuiPresenter_HintOutput(t *testing.T) {
 		m.On("IsValidPlay", unplayable).Return(false)
 
 		out := p.HintOutput(m)
-		assert.Contains(t, out, i18n.Tf("pageone.hintPlayable", "cards", "[0]HEART 5"))
+		assert.Contains(t, out, i18n.Tf("pageone.hintPlayable", "cards", "[0]♥5"))
 		assert.NotContains(t, out, "[1]")
 	})
 

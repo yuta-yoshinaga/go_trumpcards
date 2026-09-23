@@ -116,6 +116,32 @@ describe('PerseverancePage', () => {
     expect(screen.queryByTestId('bd-last-card-0')).not.toBeInTheDocument();
   });
 
+  it('marks every card that starts a run, but not a card that cannot be grabbed', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<PerseverancePage />);
+
+    const movable = await screen.findByRole('button', { name: '♠ 5' });
+    const blocked = screen.getByRole('button', { name: '♠ K' });
+    expect(movable.className).toContain('ring-1');
+    expect(movable.className).toContain('ring-ds-success/60');
+    expect(blocked.className).not.toContain('ring-ds-success');
+  });
+
+  it('gives selection and warning rings priority over the subtle grab ring', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<PerseverancePage />);
+
+    const movable = await screen.findByRole('button', { name: '♠ 5' });
+    fireEvent.click(movable);
+    expect(movable.className).toContain('ring-2 ring-ds-warning');
+    expect(movable.className).not.toContain('ring-1');
+
+    const last = screen.getByTestId('bd-last-card-1');
+    expect(last.className).toContain('ring-2');
+    expect(last.className).toContain('ring-ds-warning/60');
+    expect(last.className).not.toContain('ring-ds-success');
+  });
+
   it('persistently marks single-card columns with a dashed warning ring and tooltip', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<PerseverancePage />);

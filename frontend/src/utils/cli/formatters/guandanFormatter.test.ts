@@ -84,8 +84,11 @@ describe('formatGuandanState', () => {
 
   it('reports the table, empty or otherwise', () => {
     expect(formatGuandanState(makeState())).toContain('table: clear');
-    const out = formatGuandanState(makeState({ lastCombo: { kind: 8, rank: 9, size: 4 }, lastPlayerIdx: 2 }));
+    const out = formatGuandanState(
+      makeState({ lastCombo: { kind: 8, rank: 9, size: 4, cards: [card('HEART', 9)] }, lastPlayerIdx: 2 }),
+    );
     expect(out).toContain('table: bomb (4 cards) played by seat 2');
+    expect(out).toContain('♥9');
   });
 
   it('names every combination it can be handed', () => {
@@ -102,7 +105,9 @@ describe('formatGuandanState', () => {
       'joker bomb',
     ];
     names.forEach((name, i) => {
-      const out = formatGuandanState(makeState({ lastCombo: { kind: i + 1, rank: 5, size: 1 }, lastPlayerIdx: 1 }));
+      const out = formatGuandanState(
+        makeState({ lastCombo: { kind: i + 1, rank: 5, size: 1, cards: [] }, lastPlayerIdx: 1 }),
+      );
       expect(out).toContain(`table: ${name}`);
     });
   });

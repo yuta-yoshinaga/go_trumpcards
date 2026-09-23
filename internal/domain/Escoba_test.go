@@ -189,6 +189,20 @@ func TestEscoba_GettersAndNextRoundNoop(t *testing.T) {
 	assert.Nil(t, e.GetValidCaptures(99))
 }
 
+func TestEscoba_ActionLogUsesDetailCode(t *testing.T) {
+	e := newTestEscoba(true)
+	e.Reset()
+
+	var entry *domain.ActionLogEntry
+	for _, candidate := range e.GetActionLog() {
+		if candidate.DetailCode == "escoba.log.deal" {
+			entry = candidate
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, map[string]string{"round": "1", "cards": "3"}, entry.DetailParams)
+}
+
 func TestEscoba_JSONRoundTrip(t *testing.T) {
 	e := newTestEscoba(true)
 	e.Reset()

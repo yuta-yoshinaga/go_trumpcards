@@ -90,6 +90,14 @@ func TestBasraRankCaptureIsBasra(t *testing.T) {
 	assert.Equal(t, 2, g.GetPlayer(0).CapturedCount())
 	assert.Equal(t, 1, g.GetPlayer(0).GetBasraCount(), "clearing the table is a Basra")
 	assert.Equal(t, 0, g.GetLastCaptureIdx())
+	for _, entry := range g.GetActionLog() {
+		if entry.DetailCode == "basra.log.scoresBasra" {
+			assert.Equal(t, "You", entry.DetailParams["name"])
+			assert.Equal(t, "1", entry.DetailParams["count"])
+			return
+		}
+	}
+	t.Fatal("Basra action log entry not found")
 }
 
 func TestBasraSumCapture(t *testing.T) {

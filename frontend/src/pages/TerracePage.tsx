@@ -83,6 +83,7 @@ function TerracePageContent() {
   } = useGamePageSetup('terrace');
   const game = useTerraceGame();
   const { state, loading, error, retry, hintError, selectedSource, hint, isAutoCompleting } = game;
+  const isTerraceSourceSelected = selectedSource?.zone === 'reserve';
 
   const {
     hint: frontendHint,
@@ -118,6 +119,7 @@ function TerracePageContent() {
 
   const dispatchMove = useCallback(
     (source: TerraceMoveZone, target: TerraceMoveZone) => {
+      if (source.zone === 'reserve' && target.zone === 'tableau') return;
       void game.exec('move', source, target);
     },
     [game],
@@ -218,7 +220,7 @@ function TerracePageContent() {
                           game.handleSelectSource(pileZone);
                         }
                       }}
-                      disabled={!isPlaying || loading || (!isTop && !selectedSource)}
+                      disabled={!isPlaying || loading || isTerraceSourceSelected || (!isTop && !selectedSource)}
                       aria-label={cardAlt(card)}
                       aria-pressed={isTop ? isSourceSelected('tableau', pileIdx) : undefined}
                       draggable={isTop && isPlaying && !loading}

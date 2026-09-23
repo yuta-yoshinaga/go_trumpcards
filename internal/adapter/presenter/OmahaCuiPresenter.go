@@ -91,6 +91,10 @@ func (p *OmahaCuiPresenter) Output(o interfaces.OmahaGame, lastErr error) string
 			"name", cuiPlayerName(o.GetPlayer(dealerIdx), dealerIdx)) + "\n")
 
 		cc := o.GetCommunityCards()
+		if o.GetPhase() == domain.OmahaPhasePreFlop && o.GetPreflopCommunityCount() > 0 {
+			b.WriteString(i18n.Tf("omaha.preflopCommunityNotice",
+				"count", strconv.Itoa(o.GetPreflopCommunityCount())) + "\n")
+		}
 		if len(cc) == 0 {
 			b.WriteString(i18n.T("omaha.communityNone") + "\n")
 		} else {

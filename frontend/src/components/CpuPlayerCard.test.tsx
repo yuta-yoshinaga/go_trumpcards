@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import type { Card } from '../types/card';
 import { CpuPlayerCard } from './CpuPlayerCard';
@@ -191,9 +191,45 @@ describe('CpuPlayerCard', () => {
     expect(used[0].querySelector('img')).toHaveAttribute('alt', '♠ A');
   });
 
-  it('does not ring any card when usedHoleIdx is absent', () => {
-    render(<CpuPlayerCard player={makePlayer()} showCards={true} faceDownCount={2} showHandName={false} />);
-    expect(screen.queryByTestId('cpu-hole-used')).not.toBeInTheDocument();
+  it('adds a non-color marker and the supplied label to used hole cards', () => {
+    render(
+      <CpuPlayerCard
+        player={makePlayer()}
+        showCards={true}
+        faceDownCount={2}
+        showHandName={false}
+        usedHoleIdx={[0]}
+        usedHoleLabel="使用"
+      />,
+    );
+    const used = screen.getByTestId('cpu-hole-used');
+    const indicator = within(used).getByTestId('cpu-hole-used-indicator');
+    expect(indicator).toHaveAttribute('aria-label', '使用');
+    expect(indicator).toHaveTextContent('✓');
+  });
+
+  it('does not add the marker when the label is absent', () => {
+    render(
+      <CpuPlayerCard player={makePlayer()} showCards={true} faceDownCount={2} showHandName={false} usedHoleIdx={[0]} />,
+    );
+    expect(screen.getByTestId('cpu-hole-used')).toBeInTheDocument();
+    expect(screen.queryByTestId('cpu-hole-used-indicator')).not.toBeInTheDocument();
+  });
+
+  it('does not add the marker to an unused card', () => {
+    render(
+      <CpuPlayerCard
+        player={makePlayer()}
+        showCards={true}
+        faceDownCount={2}
+        showHandName={false}
+        usedHoleIdx={[0]}
+        usedHoleLabel="使用"
+      />,
+    );
+    expect(screen.getByTestId('cpu-hole-used')).toBeInTheDocument();
+    const unused = screen.getByAltText('♥ K').parentElement;
+    expect(unused).not.toContainElement(screen.queryByTestId('cpu-hole-used-indicator'));
   });
 
   it('does not ring cards for a folded player even when usedHoleIdx is provided', () => {

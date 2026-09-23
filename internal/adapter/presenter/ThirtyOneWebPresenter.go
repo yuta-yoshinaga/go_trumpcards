@@ -1,4 +1,4 @@
-//go:build !js || !wasm || solo
+//go:build !js || !wasm || extra7
 
 package presenter
 
@@ -79,6 +79,9 @@ func (p *ThirtyOneWebPresenter) buildPlayersOutput(g interfaces.ThirtyOneGame) [
 // buildMessage ゲーム結果メッセージを構築
 func (p *ThirtyOneWebPresenter) buildMessage(g interfaces.ThirtyOneGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

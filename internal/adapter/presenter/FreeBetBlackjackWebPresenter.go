@@ -20,8 +20,16 @@ func (cp *FreeBetBlackjackWebPresenter) Output(c interfaces.FreeBetBlackjackGame
 	resObj.Phase = int(c.GetPhase())
 	resObj.Hands = freeBetHandsToOutput(c)
 	resObj.ActiveHand = c.GetActiveHandIdx()
-	resObj.DealerCards = cardsToOutputOrEmpty(c.GetDealerCards())
-	resObj.DealerScore = c.GetDealerScore()
+	dealerCards := c.GetDealerCards()
+	resObj.DealerHoleRevealed = c.IsDealerHoleRevealed()
+	if resObj.DealerHoleRevealed {
+		resObj.DealerCards = cardsToOutputOrEmpty(dealerCards)
+		resObj.DealerScore = c.GetDealerScore()
+	} else if len(dealerCards) > 0 {
+		resObj.DealerCards = cardsToOutputOrEmpty(dealerCards[:1])
+	} else {
+		resObj.DealerCards = cardsToOutputOrEmpty(nil)
+	}
 	resObj.DealerPushed22 = c.IsDealerPushed22()
 	resObj.CanFreeDouble = c.CanFreeDouble()
 	resObj.CanFreeSplit = c.CanFreeSplit()

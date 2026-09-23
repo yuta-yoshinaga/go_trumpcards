@@ -20,6 +20,7 @@
     "tieRule": "On a tie",
     "tieDiscard": "Discard",
     "tieCarry": "Carry over",
+    "tieRuleTip": "Discard loses a tied prize. Carry over adds that prize to the next prize's points.",
     "reset": "Reset",
     "giveUp": "Give up",
     "bidAria": "Bid {{card}}"

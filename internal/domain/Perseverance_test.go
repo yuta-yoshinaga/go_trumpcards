@@ -588,6 +588,15 @@ func TestPerseverance_ActionLog(t *testing.T) {
 	require.NoError(t, bd.MoveTableauToFoundation(0))
 	log := bd.GetActionLog()
 	assert.NotEmpty(t, log)
+	var entry *domain.ActionLogEntry
+	for _, candidate := range log {
+		if candidate.DetailCode == "perseverance.log.tableauToFoundation" {
+			entry = candidate
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, "perseverance.log.tableauToFoundation", entry.DetailCode)
+	assert.Equal(t, "0", entry.DetailParams["column"])
 }
 
 // #5581: 13 列 + 4 組札を押して試すのは現実的でない。判定は既存の

@@ -128,6 +128,12 @@ func (_m *MockTysiacGame) GetCurrentTrick() []*domain.TrickCard {
 	return nil
 }
 
+// GetLastTrickWinner モック
+func (_m *MockTysiacGame) GetLastTrickWinner() int {
+	ret := _m.Called()
+	return ret.Get(0).(int)
+}
+
 // GetLeadPlayerIdx モック
 func (_m *MockTysiacGame) GetLeadPlayerIdx() int {
 	ret := _m.Called()
@@ -150,6 +156,12 @@ func (_m *MockTysiacGame) GetForehandIdx() int {
 func (_m *MockTysiacGame) GetDeclarerIdx() int {
 	ret := _m.Called()
 	return ret.Get(0).(int)
+}
+
+// GetTalonRecipientIdx モック
+func (_m *MockTysiacGame) GetTalonRecipientIdx() int {
+	ret := _m.Called()
+	return ret.Int(0)
 }
 
 // GetContract モック

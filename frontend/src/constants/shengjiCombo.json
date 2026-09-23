@@ -1,0 +1,1013 @@
+[
+  {
+    "name": "clover and plain suit mixed",
+    "cards": [
+      {
+        "design": "CLOVER",
+        "value": 7
+      },
+      {
+        "design": "SPADE",
+        "value": 7
+      }
+    ],
+    "level": 5,
+    "trumpSuit": 2,
+    "kind": 0,
+    "rank": 0,
+    "size": 0,
+    "trump": false
+  },
+  {
+    "name": "clover pair is plain",
+    "cards": [
+      {
+        "design": "CLOVER",
+        "value": 7
+      },
+      {
+        "design": "CLOVER",
+        "value": 7
+      }
+    ],
+    "level": 5,
+    "trumpSuit": 1,
+    "kind": 2,
+    "rank": 7,
+    "size": 2,
+    "trump": false
+  },
+  {
+    "name": "clover pair is trump",
+    "cards": [
+      {
+        "design": "CLOVER",
+        "value": 7
+      },
+      {
+        "design": "CLOVER",
+        "value": 7
+      }
+    ],
+    "level": 5,
+    "trumpSuit": 2,
+    "kind": 2,
+    "rank": 107,
+    "size": 2,
+    "trump": true
+  },
+  {
+    "name": "diamond and plain suit mixed",
+    "cards": [
+      {
+        "design": "DIAMOND",
+        "value": 7
+      },
+      {
+        "design": "SPADE",
+        "value": 7
+      }
+    ],
+    "level": 5,
+    "trumpSuit": 4,
+    "kind": 0,
+    "rank": 0,
+    "size": 0,
+    "trump": false
+  },
+  {
+    "name": "diamond pair is plain",
+    "cards": [
+      {
+        "design": "DIAMOND",
+        "value": 7
+      },
+      {
+        "design": "DIAMOND",
+        "value": 7
+      }
+    ],
+    "level": 5,
+    "trumpSuit": 1,
+    "kind": 2,
+    "rank": 7,
+    "size": 2,
+    "trump": false
+  },
+  {
+    "name": "diamond pair is trump",
+    "cards": [
+      {
+        "design": "DIAMOND",
+        "value": 7
+      },
+      {
+        "design": "DIAMOND",
+        "value": 7
+      }
+    ],
+    "level": 5,
+    "trumpSuit": 4,
+    "kind": 2,
+    "rank": 107,
+    "size": 2,
+    "trump": true
+  },
+  {
+    "name": "four plain pair tractor",
+    "cards": [
+      {
+        "design": "DIAMOND",
+        "value": 2
+      },
+      {
+        "design": "DIAMOND",
+        "value": 2
+      },
+      {
+        "design": "DIAMOND",
+        "value": 3
+      },
+      {
+        "design": "DIAMOND",
+        "value": 3
+      },
+      {
+        "design": "DIAMOND",
+        "value": 4
+      },
+      {
+        "design": "DIAMOND",
+        "value": 4
+      },
+      {
+        "design": "DIAMOND",
+        "value": 6
+      },
+      {
+        "design": "DIAMOND",
+        "value": 6
+      }
+    ],
+    "level": 5,
+    "trumpSuit": 1,
+    "kind": 3,
+    "rank": 6,
+    "size": 8,
+    "trump": false
+  },
+  {
+    "name": "heart and plain suit mixed",
+    "cards": [
+      {
+        "design": "HEART",
+        "value": 7
+      },
+      {
+        "design": "SPADE",
+        "value": 7
+      }
+    ],
+    "level": 5,
+    "trumpSuit": 3,
+    "kind": 0,
+    "rank": 0,
+    "size": 0,
+    "trump": false
+  },
+  {
+    "name": "heart pair is plain",
+    "cards": [
+      {
+        "design": "HEART",
+        "value": 7
+      },
+      {
+        "design": "HEART",
+        "value": 7
+      }
+    ],
+    "level": 5,
+    "trumpSuit": 1,
+    "kind": 2,
+    "rank": 7,
+    "size": 2,
+    "trump": false
+  },
+  {
+    "name": "heart pair is trump",
+    "cards": [
+      {
+        "design": "HEART",
+        "value": 7
+      },
+      {
+        "design": "HEART",
+        "value": 7
+      }
+    ],
+    "level": 5,
+    "trumpSuit": 3,
+    "kind": 2,
+    "rank": 107,
+    "size": 2,
+    "trump": true
+  },
+  {
+    "name": "invalid empty",
+    "cards": [],
+    "level": 5,
+    "trumpSuit": 1,
+    "kind": 0,
+    "rank": 0,
+    "size": 0,
+    "trump": false
+  },
+  {
+    "name": "invalid level pair and joker pair",
+    "cards": [
+      {
+        "design": "HEART",
+        "value": 5
+      },
+      {
+        "design": "HEART",
+        "value": 5
+      },
+      {
+        "design": "JOKER",
+        "value": 1
+      },
+      {
+        "design": "JOKER",
+        "value": 1
+      }
+    ],
+    "level": 5,
+    "trumpSuit": 1,
+    "kind": 0,
+    "rank": 0,
+    "size": 0,
+    "trump": false
+  },
+  {
+    "name": "invalid mixed jokers",
+    "cards": [
+      {
+        "design": "JOKER",
+        "value": 1
+      },
+      {
+        "design": "JOKER",
+        "value": 2
+      }
+    ],
+    "level": 5,
+    "trumpSuit": 1,
+    "kind": 0,
+    "rank": 0,
+    "size": 0,
+    "trump": false
+  },
+  {
+    "name": "invalid mixed level and plain",
+    "cards": [
+      {
+        "design": "HEART",
+        "value": 5
+      },
+      {
+        "design": "HEART",
+        "value": 7
+      }
+    ],
+    "level": 5,
+    "trumpSuit": 1,
+    "kind": 0,
+    "rank": 0,
+    "size": 0,
+    "trump": false
+  },
+  {
+    "name": "invalid mixed plain suits",
+    "cards": [
+      {
+        "design": "HEART",
+        "value": 7
+      },
+      {
+        "design": "DIAMOND",
+        "value": 7
+      }
+    ],
+    "level": 5,
+    "trumpSuit": 1,
+    "kind": 0,
+    "rank": 0,
+    "size": 0,
+    "trump": false
+  },
+  {
+    "name": "invalid mixed trump and plain",
+    "cards": [
+      {
+        "design": "HEART",
+        "value": 7
+      },
+      {
+        "design": "SPADE",
+        "value": 7
+      }
+    ],
+    "level": 5,
+    "trumpSuit": 1,
+    "kind": 0,
+    "rank": 0,
+    "size": 0,
+    "trump": false
+  },
+  {
+    "name": "invalid nonconsecutive pairs",
+    "cards": [
+      {
+        "design": "HEART",
+        "value": 2
+      },
+      {
+        "design": "HEART",
+        "value": 2
+      },
+      {
+        "design": "HEART",
+        "value": 4
+      },
+      {
+        "design": "HEART",
+        "value": 4
+      }
+    ],
+    "level": 5,
+    "trumpSuit": 1,
+    "kind": 0,
+    "rank": 0,
+    "size": 0,
+    "trump": false
+  },
+  {
+    "name": "invalid odd plain cards",
+    "cards": [
+      {
+        "design": "HEART",
+        "value": 2
+      },
+      {
+        "design": "HEART",
+        "value": 2
+      },
+      {
+        "design": "HEART",
+        "value": 3
+      }
+    ],
+    "level": 5,
+    "trumpSuit": 1,
+    "kind": 0,
+    "rank": 0,
+    "size": 0,
+    "trump": false
+  },
+  {
+    "name": "invalid same rank different suits",
+    "cards": [
+      {
+        "design": "HEART",
+        "value": 7
+      },
+      {
+        "design": "SPADE",
+        "value": 7
+      }
+    ],
+    "level": 5,
+    "trumpSuit": 1,
+    "kind": 0,
+    "rank": 0,
+    "size": 0,
+    "trump": false
+  },
+  {
+    "name": "level ace sequence below ace",
+    "cards": [
+      {
+        "design": "HEART",
+        "value": 12
+      },
+      {
+        "design": "HEART",
+        "value": 12
+      },
+      {
+        "design": "HEART",
+        "value": 13
+      },
+      {
+        "design": "HEART",
+        "value": 13
+      }
+    ],
+    "level": 14,
+    "trumpSuit": 1,
+    "kind": 3,
+    "rank": 13,
+    "size": 4,
+    "trump": false
+  },
+  {
+    "name": "level four sequence around level",
+    "cards": [
+      {
+        "design": "HEART",
+        "value": 3
+      },
+      {
+        "design": "HEART",
+        "value": 3
+      },
+      {
+        "design": "HEART",
+        "value": 5
+      },
+      {
+        "design": "HEART",
+        "value": 5
+      }
+    ],
+    "level": 4,
+    "trumpSuit": 1,
+    "kind": 3,
+    "rank": 5,
+    "size": 4,
+    "trump": false
+  },
+  {
+    "name": "level six sequence around level",
+    "cards": [
+      {
+        "design": "HEART",
+        "value": 5
+      },
+      {
+        "design": "HEART",
+        "value": 5
+      },
+      {
+        "design": "HEART",
+        "value": 7
+      },
+      {
+        "design": "HEART",
+        "value": 7
+      }
+    ],
+    "level": 6,
+    "trumpSuit": 1,
+    "kind": 3,
+    "rank": 7,
+    "size": 4,
+    "trump": false
+  },
+  {
+    "name": "no trump level pair",
+    "cards": [
+      {
+        "design": "DIAMOND",
+        "value": 5
+      },
+      {
+        "design": "DIAMOND",
+        "value": 5
+      }
+    ],
+    "level": 5,
+    "trumpSuit": 0,
+    "kind": 2,
+    "rank": 200,
+    "size": 2,
+    "trump": true
+  },
+  {
+    "name": "no trump mixed plain and trump",
+    "cards": [
+      {
+        "design": "HEART",
+        "value": 9
+      },
+      {
+        "design": "JOKER",
+        "value": 1
+      }
+    ],
+    "level": 5,
+    "trumpSuit": 0,
+    "kind": 0,
+    "rank": 0,
+    "size": 0,
+    "trump": false
+  },
+  {
+    "name": "no trump plain single",
+    "cards": [
+      {
+        "design": "CLOVER",
+        "value": 9
+      }
+    ],
+    "level": 5,
+    "trumpSuit": 0,
+    "kind": 1,
+    "rank": 9,
+    "size": 1,
+    "trump": false
+  },
+  {
+    "name": "off level cards same rank different suits invalid",
+    "cards": [
+      {
+        "design": "HEART",
+        "value": 5
+      },
+      {
+        "design": "DIAMOND",
+        "value": 5
+      }
+    ],
+    "level": 5,
+    "trumpSuit": 1,
+    "kind": 0,
+    "rank": 0,
+    "size": 0,
+    "trump": false
+  },
+  {
+    "name": "pair black jokers",
+    "cards": [
+      {
+        "design": "JOKER",
+        "value": 1
+      },
+      {
+        "design": "JOKER",
+        "value": 1
+      }
+    ],
+    "level": 5,
+    "trumpSuit": 1,
+    "kind": 2,
+    "rank": 400,
+    "size": 2,
+    "trump": true
+  },
+  {
+    "name": "pair off suit level",
+    "cards": [
+      {
+        "design": "HEART",
+        "value": 5
+      },
+      {
+        "design": "HEART",
+        "value": 5
+      }
+    ],
+    "level": 5,
+    "trumpSuit": 1,
+    "kind": 2,
+    "rank": 200,
+    "size": 2,
+    "trump": true
+  },
+  {
+    "name": "pair plain high",
+    "cards": [
+      {
+        "design": "HEART",
+        "value": 12
+      },
+      {
+        "design": "HEART",
+        "value": 12
+      }
+    ],
+    "level": 5,
+    "trumpSuit": 1,
+    "kind": 2,
+    "rank": 12,
+    "size": 2,
+    "trump": false
+  },
+  {
+    "name": "pair plain low",
+    "cards": [
+      {
+        "design": "HEART",
+        "value": 2
+      },
+      {
+        "design": "HEART",
+        "value": 2
+      }
+    ],
+    "level": 5,
+    "trumpSuit": 1,
+    "kind": 2,
+    "rank": 2,
+    "size": 2,
+    "trump": false
+  },
+  {
+    "name": "pair red jokers",
+    "cards": [
+      {
+        "design": "JOKER",
+        "value": 2
+      },
+      {
+        "design": "JOKER",
+        "value": 2
+      }
+    ],
+    "level": 5,
+    "trumpSuit": 1,
+    "kind": 2,
+    "rank": 500,
+    "size": 2,
+    "trump": true
+  },
+  {
+    "name": "pair trump level",
+    "cards": [
+      {
+        "design": "SPADE",
+        "value": 5
+      },
+      {
+        "design": "SPADE",
+        "value": 5
+      }
+    ],
+    "level": 5,
+    "trumpSuit": 1,
+    "kind": 2,
+    "rank": 300,
+    "size": 2,
+    "trump": true
+  },
+  {
+    "name": "pair trump suit",
+    "cards": [
+      {
+        "design": "SPADE",
+        "value": 7
+      },
+      {
+        "design": "SPADE",
+        "value": 7
+      }
+    ],
+    "level": 5,
+    "trumpSuit": 1,
+    "kind": 2,
+    "rank": 107,
+    "size": 2,
+    "trump": true
+  },
+  {
+    "name": "single ace plain",
+    "cards": [
+      {
+        "design": "HEART",
+        "value": 1
+      }
+    ],
+    "level": 5,
+    "trumpSuit": 1,
+    "kind": 1,
+    "rank": 14,
+    "size": 1,
+    "trump": false
+  },
+  {
+    "name": "single black joker",
+    "cards": [
+      {
+        "design": "JOKER",
+        "value": 1
+      }
+    ],
+    "level": 5,
+    "trumpSuit": 1,
+    "kind": 1,
+    "rank": 400,
+    "size": 1,
+    "trump": true
+  },
+  {
+    "name": "single level off suit",
+    "cards": [
+      {
+        "design": "HEART",
+        "value": 5
+      }
+    ],
+    "level": 5,
+    "trumpSuit": 1,
+    "kind": 1,
+    "rank": 200,
+    "size": 1,
+    "trump": true
+  },
+  {
+    "name": "single level trump suit",
+    "cards": [
+      {
+        "design": "SPADE",
+        "value": 5
+      }
+    ],
+    "level": 5,
+    "trumpSuit": 1,
+    "kind": 1,
+    "rank": 300,
+    "size": 1,
+    "trump": true
+  },
+  {
+    "name": "single plain",
+    "cards": [
+      {
+        "design": "HEART",
+        "value": 7
+      }
+    ],
+    "level": 5,
+    "trumpSuit": 1,
+    "kind": 1,
+    "rank": 7,
+    "size": 1,
+    "trump": false
+  },
+  {
+    "name": "single red joker",
+    "cards": [
+      {
+        "design": "JOKER",
+        "value": 2
+      }
+    ],
+    "level": 5,
+    "trumpSuit": 1,
+    "kind": 1,
+    "rank": 500,
+    "size": 1,
+    "trump": true
+  },
+  {
+    "name": "single trump suit",
+    "cards": [
+      {
+        "design": "SPADE",
+        "value": 7
+      }
+    ],
+    "level": 5,
+    "trumpSuit": 1,
+    "kind": 1,
+    "rank": 107,
+    "size": 1,
+    "trump": true
+  },
+  {
+    "name": "three plain pair tractor",
+    "cards": [
+      {
+        "design": "CLOVER",
+        "value": 8
+      },
+      {
+        "design": "CLOVER",
+        "value": 8
+      },
+      {
+        "design": "CLOVER",
+        "value": 9
+      },
+      {
+        "design": "CLOVER",
+        "value": 9
+      },
+      {
+        "design": "CLOVER",
+        "value": 10
+      },
+      {
+        "design": "CLOVER",
+        "value": 10
+      }
+    ],
+    "level": 5,
+    "trumpSuit": 1,
+    "kind": 3,
+    "rank": 10,
+    "size": 6,
+    "trump": false
+  },
+  {
+    "name": "tractor three plain crossing level",
+    "cards": [
+      {
+        "design": "HEART",
+        "value": 3
+      },
+      {
+        "design": "HEART",
+        "value": 3
+      },
+      {
+        "design": "HEART",
+        "value": 4
+      },
+      {
+        "design": "HEART",
+        "value": 4
+      },
+      {
+        "design": "HEART",
+        "value": 6
+      },
+      {
+        "design": "HEART",
+        "value": 6
+      }
+    ],
+    "level": 5,
+    "trumpSuit": 1,
+    "kind": 3,
+    "rank": 6,
+    "size": 6,
+    "trump": false
+  },
+  {
+    "name": "tractor two diamond",
+    "cards": [
+      {
+        "design": "DIAMOND",
+        "value": 11
+      },
+      {
+        "design": "DIAMOND",
+        "value": 11
+      },
+      {
+        "design": "DIAMOND",
+        "value": 12
+      },
+      {
+        "design": "DIAMOND",
+        "value": 12
+      }
+    ],
+    "level": 5,
+    "trumpSuit": 1,
+    "kind": 3,
+    "rank": 12,
+    "size": 4,
+    "trump": false
+  },
+  {
+    "name": "tractor two plain above level",
+    "cards": [
+      {
+        "design": "HEART",
+        "value": 6
+      },
+      {
+        "design": "HEART",
+        "value": 6
+      },
+      {
+        "design": "HEART",
+        "value": 7
+      },
+      {
+        "design": "HEART",
+        "value": 7
+      }
+    ],
+    "level": 5,
+    "trumpSuit": 1,
+    "kind": 3,
+    "rank": 7,
+    "size": 4,
+    "trump": false
+  },
+  {
+    "name": "tractor two plain around level",
+    "cards": [
+      {
+        "design": "HEART",
+        "value": 4
+      },
+      {
+        "design": "HEART",
+        "value": 4
+      },
+      {
+        "design": "HEART",
+        "value": 6
+      },
+      {
+        "design": "HEART",
+        "value": 6
+      }
+    ],
+    "level": 5,
+    "trumpSuit": 1,
+    "kind": 3,
+    "rank": 6,
+    "size": 4,
+    "trump": false
+  },
+  {
+    "name": "tractor two plain below level",
+    "cards": [
+      {
+        "design": "HEART",
+        "value": 2
+      },
+      {
+        "design": "HEART",
+        "value": 2
+      },
+      {
+        "design": "HEART",
+        "value": 3
+      },
+      {
+        "design": "HEART",
+        "value": 3
+      }
+    ],
+    "level": 5,
+    "trumpSuit": 1,
+    "kind": 3,
+    "rank": 3,
+    "size": 4,
+    "trump": false
+  },
+  {
+    "name": "tractor two trump suit",
+    "cards": [
+      {
+        "design": "SPADE",
+        "value": 7
+      },
+      {
+        "design": "SPADE",
+        "value": 7
+      },
+      {
+        "design": "SPADE",
+        "value": 8
+      },
+      {
+        "design": "SPADE",
+        "value": 8
+      }
+    ],
+    "level": 5,
+    "trumpSuit": 1,
+    "kind": 3,
+    "rank": 108,
+    "size": 4,
+    "trump": true
+  },
+  {
+    "name": "trump suit level mixed invalid",
+    "cards": [
+      {
+        "design": "SPADE",
+        "value": 5
+      },
+      {
+        "design": "SPADE",
+        "value": 7
+      }
+    ],
+    "level": 5,
+    "trumpSuit": 1,
+    "kind": 0,
+    "rank": 0,
+    "size": 0,
+    "trump": false
+  }
+]

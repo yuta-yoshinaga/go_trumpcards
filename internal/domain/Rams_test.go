@@ -630,4 +630,22 @@ func TestRams_UnmarshalRejectsBadConfig(t *testing.T) {
 func TestRams_ActionLog(t *testing.T) {
 	r := newTestRams(t)
 	assert.NotEmpty(t, r.GetActionLog())
+
+	var deal *ActionLogEntry
+	for _, entry := range r.GetActionLog() {
+		if entry.DetailCode == "rams.log.roundStart" {
+			deal = entry
+		}
+	}
+	require.NotNil(t, deal)
+	assert.Equal(t, map[string]string{"round": "1", "pot": "12"}, deal.DetailParams)
+
+	r.GiveUp()
+	var giveUp *ActionLogEntry
+	for _, entry := range r.GetActionLog() {
+		if entry.DetailCode == "rams.log.giveUp" {
+			giveUp = entry
+		}
+	}
+	require.NotNil(t, giveUp)
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"strconv"
 )
 
 // AllFoursPlayerCnt All Fours プレイヤー数 (1 human vs 1 CPU)
@@ -79,6 +80,11 @@ type AllFours struct {
 	actionLogBase
 }
 
+// appendLog records an All Fours action with a locale-independent detail code.
+func (a *AllFours) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	a.appendLogCodeAt(len(a.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
+}
+
 // NewAllFours コンストラクタ
 func NewAllFours(trumpCards *TrumpCards, players []*AllFoursPlayer, config AllFoursConfig) *AllFours {
 	return &AllFours{
@@ -133,13 +139,11 @@ func (a *AllFours) startDeal() {
 	a.turnUp = a.trumpCards.DrawCard()
 	if a.turnUp != nil {
 		a.trumpSuit = a.turnUp.GetDesign()
-		a.appendLog(-1, "turn_up",
-			fmt.Sprintf("Turn-up: %s (trump %s)", cardStr(a.turnUp), allFoursSuitGlyph(a.trumpSuit)), []*Card{a.turnUp})
+		a.appendLog(-1, "turn_up", "allfours.log.turnUp", map[string]string{"card": cardStr(a.turnUp), "suit": allFoursSuitGlyph(a.trumpSuit)}, []*Card{a.turnUp})
 	}
 	a.sortAllHands()
 	a.phase = AllFoursPhaseBeg
-	a.appendLog(AllFoursNonDealerIdx, "beg_phase",
-		fmt.Sprintf("%s to stand or beg", playerName(a.players, AllFoursNonDealerIdx)), nil)
+	a.appendLog(AllFoursNonDealerIdx, "beg_phase", "allfours.log.begPhase", map[string]string{"name": playerName(a.players, AllFoursNonDealerIdx)}, nil)
 }
 
 // dealHands 各プレイヤーへ n 枚配る
@@ -193,13 +197,11 @@ func (a *AllFours) CpuBeg() {
 // applyBeg beg/stand の結果を反映する
 func (a *AllFours) applyBeg(beg bool) {
 	if !beg {
-		a.appendLog(AllFoursNonDealerIdx, "stand",
-			fmt.Sprintf("%s stands", playerName(a.players, AllFoursNonDealerIdx)), nil)
+		a.appendLog(AllFoursNonDealerIdx, "stand", "allfours.log.stand", map[string]string{"name": playerName(a.players, AllFoursNonDealerIdx)}, nil)
 		a.startPlay()
 		return
 	}
-	a.appendLog(AllFoursNonDealerIdx, "beg",
-		fmt.Sprintf("%s begs", playerName(a.players, AllFoursNonDealerIdx)), nil)
+	a.appendLog(AllFoursNonDealerIdx, "beg", "allfours.log.beg", map[string]string{"name": playerName(a.players, AllFoursNonDealerIdx)}, nil)
 	a.phase = AllFoursPhaseGift
 	// 親がCPUの場合は即応答 (デフォルト構成)。人間親なら respond を待つ。
 	if !a.players[AllFoursDealerIdx].GetIsHuman() {
@@ -230,9 +232,7 @@ func (a *AllFours) applyGiftResponse(run bool) {
 		// 集計の最初に加算される (gift は最も早く確定する得点とみなす)。
 		a.players[AllFoursNonDealerIdx].SetRoundScore(a.players[AllFoursNonDealerIdx].GetRoundScore() + 1)
 		a.giftAward = AllFoursNonDealerIdx
-		a.appendLog(AllFoursNonDealerIdx, "gift",
-			fmt.Sprintf("%s gifts 1 point to %s (take-it)",
-				playerName(a.players, AllFoursDealerIdx), playerName(a.players, AllFoursNonDealerIdx)), nil)
+		a.appendLog(AllFoursNonDealerIdx, "gift", "allfours.log.gift", map[string]string{"dealer": playerName(a.players, AllFoursDealerIdx), "elder": playerName(a.players, AllFoursNonDealerIdx)}, nil)
 		a.startPlay()
 		return
 	}
@@ -249,15 +249,13 @@ func (a *AllFours) runTheCards() {
 		a.lastRunCount = a.runCount
 		if a.runCount > AllFoursMaxRuns || a.trumpCards.GetRemainingCount() < AllFoursPlayerCnt*AllFoursRunDeal+1 {
 			// デッキが尽きた / 上限到達 → 全カードを再配布する。
-			a.appendLog(-1, "redeal",
-				"Deck exhausted on run; re-dealing the hand", nil)
+			a.appendLog(-1, "redeal", "allfours.log.redeal", nil, nil)
 			a.redeal()
 			return
 		}
 		a.dealHands(AllFoursRunDeal)
 		newTurnUp := a.trumpCards.DrawCard()
-		a.appendLog(-1, "run",
-			fmt.Sprintf("Run the cards: new turn-up %s", cardStr(newTurnUp)), []*Card{newTurnUp})
+		a.appendLog(-1, "run", "allfours.log.run", map[string]string{"card": cardStr(newTurnUp)}, []*Card{newTurnUp})
 		if newTurnUp == nil {
 			a.redeal()
 			return
@@ -265,8 +263,7 @@ func (a *AllFours) runTheCards() {
 		if newTurnUp.GetDesign() != a.trumpSuit {
 			a.turnUp = newTurnUp
 			a.trumpSuit = newTurnUp.GetDesign()
-			a.appendLog(-1, "trump_set",
-				fmt.Sprintf("New trump %s", allFoursSuitGlyph(a.trumpSuit)), nil)
+			a.appendLog(-1, "trump_set", "allfours.log.trumpSet", map[string]string{"suit": allFoursSuitGlyph(a.trumpSuit)}, nil)
 			a.sortAllHands()
 			a.startPlay()
 			return
@@ -299,8 +296,7 @@ func (a *AllFours) redeal() {
 	}
 	a.sortAllHands()
 	a.phase = AllFoursPhaseBeg
-	a.appendLog(AllFoursNonDealerIdx, "beg_phase",
-		fmt.Sprintf("%s to stand or beg (re-deal)", playerName(a.players, AllFoursNonDealerIdx)), nil)
+	a.appendLog(AllFoursNonDealerIdx, "beg_phase", "allfours.log.begPhaseRedeal", map[string]string{"name": playerName(a.players, AllFoursNonDealerIdx)}, nil)
 }
 
 // startPlay プレイフェーズを開始する。非親 (elder hand) が最初にリードする。
@@ -310,9 +306,7 @@ func (a *AllFours) startPlay() {
 	a.trickNumber = 1
 	a.currentTrick = nil
 	a.phase = AllFoursPhasePlay
-	a.appendLog(AllFoursNonDealerIdx, "play_start",
-		fmt.Sprintf("Trump is %s. %s leads.",
-			allFoursSuitGlyph(a.trumpSuit), playerName(a.players, AllFoursNonDealerIdx)), nil)
+	a.appendLog(AllFoursNonDealerIdx, "play_start", "allfours.log.playStart", map[string]string{"suit": allFoursSuitGlyph(a.trumpSuit), "name": playerName(a.players, AllFoursNonDealerIdx)}, nil)
 }
 
 // PlayerPlay 人間プレイヤーがカードをプレイする
@@ -328,7 +322,7 @@ func (a *AllFours) PlayerPlay(cardIndex int) error {
 	}
 	player := a.players[a.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "allfours.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := a.validatePlay(a.currentPlayerIdx, card); err != nil {
@@ -362,8 +356,7 @@ func (a *AllFours) CpuPlay() {
 // playCard カードをプレイする共通処理
 func (a *AllFours) playCard(playerIdx int, card *Card) {
 	a.currentTrick = append(a.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	a.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", playerName(a.players, playerIdx), cardStr(card)), []*Card{card})
+	a.appendLog(playerIdx, "play", "allfours.log.play", map[string]string{"name": playerName(a.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 	if len(a.currentTrick) == AllFoursPlayerCnt {
 		a.phase = AllFoursPhaseTrickEnd
 	} else {
@@ -386,7 +379,7 @@ func (a *AllFours) validatePlay(playerIdx int, card *Card) error {
 		return nil // トランプはいつでも合法
 	}
 	if a.playerHasSuit(playerIdx, leadSuit) {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従うかトランプを切ってください")
+		return NewDomainErrorCode(ErrInvalidPlay, "allfours.errMustFollowLeadSuit", nil)
 	}
 	return nil
 }
@@ -407,8 +400,7 @@ func (a *AllFours) ResolveTrick() {
 		trickCards[i] = tc.Card
 	}
 	a.players[winnerIdx].AddTrick(trickCards)
-	a.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", playerName(a.players, winnerIdx), a.trickNumber), trickCards)
+	a.appendLog(winnerIdx, "trick_win", "allfours.log.trickWin", map[string]string{"name": playerName(a.players, winnerIdx), "trick": strconv.Itoa(a.trickNumber)}, trickCards)
 	a.leadPlayerIdx = winnerIdx
 	if a.players[AllFoursNonDealerIdx].GetCardsSize() == 0 &&
 		a.players[AllFoursDealerIdx].GetCardsSize() == 0 {
@@ -507,8 +499,21 @@ func (a *AllFours) ScoreRound() {
 	for _, aw := range awards {
 		base[aw.player]++
 		a.players[aw.player].SetRoundScore(a.players[aw.player].GetRoundScore() + 1)
-		a.appendLog(aw.player, "score_"+aw.kind,
-			fmt.Sprintf("%s scores %s", playerName(a.players, aw.player), aw.kind), nil)
+		var detailCode string
+		switch aw.kind {
+		case "gift":
+			detailCode = "allfours.log.scoreGift"
+		case "high":
+			detailCode = "allfours.log.scoreHigh"
+		case "low":
+			detailCode = "allfours.log.scoreLow"
+		case "jack":
+			detailCode = "allfours.log.scoreJack"
+		default:
+			// awards に入る kind は gift/high/low/jack/game の 5 つだけなので、残りは game。
+			detailCode = "allfours.log.scoreGame"
+		}
+		a.appendLog(aw.player, "score_"+aw.kind, detailCode, map[string]string{"name": playerName(a.players, aw.player)}, nil)
 		if winner < 0 && base[aw.player] >= limit {
 			winner = aw.player
 		}
@@ -516,15 +521,14 @@ func (a *AllFours) ScoreRound() {
 
 	for i := 0; i < AllFoursPlayerCnt; i++ {
 		a.players[i].CommitRoundScore()
-		a.appendLog(i, "cumulative_score",
-			fmt.Sprintf("%s: total=%d", playerName(a.players, i), a.players[i].GetCumulativeScore()), nil)
+		a.appendLog(i, "cumulative_score", "allfours.log.cumulativeScore", map[string]string{"name": playerName(a.players, i), "total": strconv.Itoa(a.players[i].GetCumulativeScore())}, nil)
 	}
 
 	if winner >= 0 {
 		a.gameEndFlag = true
 		a.phase = AllFoursPhaseGameEnd
 		a.winnerIdx = winner
-		a.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(a.players, winner)), nil)
+		a.appendLog(-1, "game_end", "allfours.log.gameEnd", map[string]string{"name": playerName(a.players, winner)}, nil)
 	}
 }
 

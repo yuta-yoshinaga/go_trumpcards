@@ -10,8 +10,9 @@ import (
 
 // HoldemEquityResult エクイティ計算結果
 type HoldemEquityResult struct {
-	Equity   float64          // 勝率 (0.0 - 1.0)
-	HandOdds []HoldemHandOdds // 各ハンドランクの確率
+	Equity         float64          // 勝率、Hi-Lo ではポットの期待取り分 (0.0 - 1.0)
+	LowProbability float64          `json:",omitempty"` // Hi-Lo のロー側の期待取り分 (0.0 - 1.0)
+	HandOdds       []HoldemHandOdds // 各ハンドランクの確率
 }
 
 // HoldemHandOdds 各ハンドランクの確率
@@ -77,10 +78,16 @@ func evalBestFromSeven(cards []*Card) (int, []*Card) {
 }
 
 // equityWorkerFn シミュレーションワーカー関数の型
-type equityWorkerFn func(sims int, rng *rand.Rand) (wins float64, handCounts []int)
+// wins: ハイ側またはポット全体の期待取り分合計
+// lowWins: Hi-Lo のロー側取り分合計 (Hi 専用ゲームでは 0)
+// handCounts: ハンドランク別出現回数
+type equityWorkerFn func(sims int, rng *rand.Rand) (wins float64, lowWins float64, handCounts []int)
 
-// runParallelSimulations モンテカルロシミュレーションを複数ワーカーで並列実行
-func runParallelSimulations(totalSims int, rng *rand.Rand, worker equityWorkerFn) (float64, []int) {
+// runParallelSimulations モンテカルロシミュレーションを複数ワーカーで並列実行。
+// 戻り値: (totalWins, totalLowWins, totalHandCounts)。
+// totalLowWins は Omaha Hi-Lo などのスプリットポットゲームでロー側の統計を集計するために使用し、
+// ハイ専用ゲームでは 0 が返る。
+func runParallelSimulations(totalSims int, rng *rand.Rand, worker equityWorkerFn) (float64, float64, []int) {
 	numWorkers := runtime.NumCPU()
 	if numWorkers > totalSims {
 		numWorkers = totalSims
@@ -98,6 +105,7 @@ func runParallelSimulations(totalSims int, rng *rand.Rand, worker equityWorkerFn
 
 	type workerResult struct {
 		wins       float64
+		lowWins    float64
 		handCounts []int
 	}
 	results := make([]workerResult, numWorkers)
@@ -114,16 +122,18 @@ func runParallelSimulations(totalSims int, rng *rand.Rand, worker equityWorkerFn
 				localSims = totalSims - simsPerWorker*(numWorkers-1)
 			}
 
-			wins, handCounts := worker(localSims, localRng)
-			results[workerIdx] = workerResult{wins: wins, handCounts: handCounts}
+			wins, lowWins, handCounts := worker(localSims, localRng)
+			results[workerIdx] = workerResult{wins: wins, lowWins: lowWins, handCounts: handCounts}
 		}(w)
 	}
 	wg.Wait()
 
 	totalWins := 0.0
+	totalLowWins := 0.0
 	var totalHandCounts []int
 	for _, r := range results {
 		totalWins += r.wins
+		totalLowWins += r.lowWins
 		if totalHandCounts == nil {
 			totalHandCounts = make([]int, len(r.handCounts))
 		}
@@ -131,5 +141,5 @@ func runParallelSimulations(totalSims int, rng *rand.Rand, worker equityWorkerFn
 			totalHandCounts[i] += c
 		}
 	}
-	return totalWins, totalHandCounts
+	return totalWins, totalLowWins, totalHandCounts
 }

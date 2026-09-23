@@ -42,7 +42,7 @@ func TestCasinoHoldemCuiPresenter_Output_BetPhase(t *testing.T) {
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "チップ: 1000")
-	assert.Contains(t, result, "フェーズ: BET")
+	assert.Contains(t, result, "フェーズ: 賭け")
 }
 
 func TestCasinoHoldemCuiPresenter_Output_FlopPhase(t *testing.T) {
@@ -78,7 +78,7 @@ func TestCasinoHoldemCuiPresenter_Output_FlopPhase(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "フェーズ: FLOP")
+	assert.Contains(t, result, "フェーズ: フロップ")
 	assert.Contains(t, result, "BOARD")
 	assert.Contains(t, result, "PLAYER")
 	assert.Contains(t, result, "DEALER")
@@ -121,7 +121,7 @@ func TestCasinoHoldemCuiPresenter_Output_EndPhase_PlayerWinsCall(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "フェーズ: END")
+	assert.Contains(t, result, "フェーズ: 終了")
 	assert.Contains(t, result, "プレイヤーの勝ち")
 	assert.Contains(t, result, "合計払戻し: 600")
 	assert.Contains(t, result, "ディーラークオリファイ")
@@ -308,7 +308,7 @@ func TestCasinoHoldemCuiPresenter_PhaseStr_Unknown(t *testing.T) {
 	m.On("GetGameEndFlag").Return(false).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "フェーズ: UNKNOWN")
+	assert.Contains(t, result, "フェーズ: 不明")
 }
 
 func TestCasinoHoldemCuiPresenter_HintOutput(t *testing.T) {

@@ -70,6 +70,18 @@ func TestThreeCardRummyCuiPresenter_Output_BetPhaseExplainsTheInvertedRule(t *te
 	assert.Contains(t, out, "3枚の合計が低いほど強く、0点が最強")
 	assert.Contains(t, out, "絵札=10、A=1")
 	assert.Contains(t, out, "ディーラーは合計20点以下でクオリファイします")
+	for _, payout := range []string{"9:1", "3:1", "1:1", "100:1", "20:1", "4:1"} {
+		assert.Contains(t, out, payout)
+	}
+}
+
+func TestThreeCardRummyCuiPresenter_Output_TranslatesCodedError(t *testing.T) {
+	p := new(ThreeCardRummyCuiPresenter)
+	g := tcrGame(t, domain.ThreeCardRummyPhaseBet)
+
+	out := p.Output(g, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "threecardrummy.errCannotRebet", nil))
+	assert.Contains(t, out, "まだ賭けていないので再ベットできません")
+	assert.NotContains(t, out, "threecardrummy.errCannotRebet")
 }
 
 func TestThreeCardRummyCuiPresenter_Output_ScoringNotesOnlyInTheBetPhase(t *testing.T) {
@@ -107,9 +119,9 @@ func TestThreeCardRummyCuiPresenter_Output_PlayerScoreShownFromTheActionPhase(t 
 	assert.Contains(t, out, "あなた")
 	// **点数がそのまま強さ。** 役名ではなく数字を出す。
 	assert.Contains(t, out, "点数: 17（低いほど強い）")
-	assert.Contains(t, out, "SPADE 2")
-	assert.Contains(t, out, "HEART 6")
-	assert.Contains(t, out, "CLOVER 9")
+	assert.Contains(t, out, "♠2")
+	assert.Contains(t, out, "♥6")
+	assert.Contains(t, out, "♣9")
 }
 
 func TestThreeCardRummyCuiPresenter_Output_ScoreIsSetAtDealTime(t *testing.T) {
@@ -171,9 +183,9 @@ func TestThreeCardRummyCuiPresenter_Output_DealerIsHiddenUntilTheEnd(t *testing.
 			out := p.Output(g, nil)
 
 			// 伏せたままの 3 枚も、その点数も出してはいけない。
-			assert.NotContains(t, out, "DIAMOND 4")
-			assert.NotContains(t, out, "CLOVER 8")
-			assert.NotContains(t, out, "SPADE 13")
+			assert.NotContains(t, out, "♦4")
+			assert.NotContains(t, out, "♣8")
+			assert.NotContains(t, out, "♠13")
 			assert.NotContains(t, out, "点数: 22")
 			assert.NotContains(t, out, "クオリファイせず")
 		})
@@ -199,9 +211,9 @@ func TestThreeCardRummyCuiPresenter_Output_DealerRevealedAtTheEnd(t *testing.T) 
 
 		assert.Contains(t, out, "ディーラー")
 		assert.Contains(t, out, "点数: 19（低いほど強い）")
-		assert.Contains(t, out, "DIAMOND 4")
-		assert.Contains(t, out, "CLOVER 6")
-		assert.Contains(t, out, "SPADE 9")
+		assert.Contains(t, out, "♦4")
+		assert.Contains(t, out, "♣6")
+		assert.Contains(t, out, "♠9")
 		assert.Contains(t, out, "ディーラー: クオリファイ")
 		// 「クオリファイ」は「クオリファイせず」の接頭辞なので、否定側も見る。
 		assert.NotContains(t, out, "クオリファイせず")
@@ -417,8 +429,8 @@ func TestThreeCardRummyCuiPresenter_ActionLogOutput(t *testing.T) {
 		out := p.ActionLogOutput(g)
 
 		assert.Contains(t, out, "棋譜")
-		assert.Contains(t, out, "player folds")
-		assert.Contains(t, out, "player folded")
+		assert.Contains(t, out, i18n.T("threecardrummy.log.fold"))
+		assert.Contains(t, out, i18n.T("threecardrummy.log.playerFolded"))
 		assert.NotContains(t, out, "棋譜はありません")
 	})
 }

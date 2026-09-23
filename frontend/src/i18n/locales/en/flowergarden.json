@@ -6,6 +6,7 @@
   "emptyReserveSlot": "Empty reserve slot {{idx}}",
   "foundation": "Foundation",
   "foundationAriaLabel": "{{suit}} foundation {{count}} cards",
+  "foundationProgress": "{{count}}/13",
   "frontendHint": {
     "tableau": "Flower bed {{col}}",
     "reserve": "Bouquet {{col}}",

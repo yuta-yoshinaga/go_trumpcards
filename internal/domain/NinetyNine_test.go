@@ -575,6 +575,23 @@ func TestNinetyNine_GetValidPlayIndices(t *testing.T) {
 	assert.Equal(t, []int{0}, valid) // only the heart
 }
 
+func TestNinetyNine_ActionLogUsesDetailCode(t *testing.T) {
+	o := newTestNinetyNine()
+	o.Reset()
+	o.SetBidPlayerIdx(1)
+	o.CpuBid()
+
+	var entry *domain.ActionLogEntry
+	for _, candidate := range o.GetActionLog() {
+		if candidate.DetailCode == "ninetynine.log.bid" {
+			entry = candidate
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Contains(t, entry.DetailParams, "player")
+	assert.Contains(t, entry.DetailParams, "bid")
+}
+
 // --- JSON round trip + unmarshal hardening ---
 
 func TestNinetyNine_JSON_RoundTrip(t *testing.T) {

@@ -9,6 +9,7 @@
   "promptPlay": "Turn: {{name}}",
   "resultWinner": "Winner: {{names}}",
   "resultScores": "Final scores: {{scores}}",
+  "resultDetail": "Breakdown: A {{aces}} / J {{jacks}} / tablas {{tablas}} / 10♦ {{tenDiamonds}} / 2♣ {{twoClubs}} / most cards {{mostCards}}",
   "promptGameEnd": "Game over. Use nr to start a new game.",
   "promptHelp": "p <h> [t...] to play (omit t to trail; a Jack sweeps the table)",
   "hintNone": "No hint available.",
@@ -20,5 +21,12 @@
   "result.scores": "Game over! Scores: {{scores}}",
   "captureHint": "{{hand}} → table {{table}}",
   "helpExamplePlay": "  p 0                       lay hand card 0 on the table, capturing nothing",
-  "helpExampleNext": "  nr                        start a new game"
+  "helpExampleNext": "  nr                        start a new game",
+  "log.dealtTableCards": "dealt {{count}} table cards",
+  "log.trails": "{{name}} trails {{card}}",
+  "log.scoresTabla": "{{name}} scores a Tabla! captured {{count}} card(s)",
+  "log.sweepsWithJack": "{{name}} sweeps {{count}} card(s) with a Jack",
+  "log.captures": "{{name}} captures {{count}} card(s)",
+  "log.lastTake": "last-take: {{count}} card(s)",
+  "log.gameEnded": "game ended (top score {{score}})"
 }

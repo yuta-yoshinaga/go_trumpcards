@@ -1,0 +1,11 @@
+{
+  "log.start": "フリーベット・ブラックジャック開始",
+  "log.outOfChips": "チップ切れ",
+  "log.deal": "アンテ {{ante}}",
+  "log.hit": "ヒット",
+  "log.stand": "スタンド",
+  "log.freeDouble": "フリーダブル {{amount}} まで",
+  "log.freeSplit": "{{hands}} ハンドにフリースプリット",
+  "log.dealerPlays": "ディーラーがプレイ",
+  "log.payout": "配当 {{payout}}"
+}

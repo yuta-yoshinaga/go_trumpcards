@@ -1,4 +1,11 @@
 {
+  "log.trickWin": "{{player}}が{{trick}}トリックを取りました",
+  "log.bidSuccess": "{{player}}が{{bid}}を宣言し、{{tricks}}トリックを取りました: +{{score}}（ボーナス +{{bonus}}）",
+  "log.bidFail": "{{player}}が{{bid}}を宣言し、{{tricks}}トリックを取りました: 0",
+  "log.cumulativeScore": "{{player}}: 合計={{total}}",
+  "log.bid": "{{player}}が3枚を伏せて{{bid}}を宣言しました",
+  "log.play": "{{player}}が{{card}}を出しました",
+  "log.gameEnd": "{{player}}がゲームに勝ちました！",
   "helpTitle": "Ninety-Nine (ナインティナイン)",
   "helpBid": "  b <i> <j> <k>        3枚を伏せてビッド宣言",
   "helpPlay": "  p <idx>              カードを出す",
@@ -10,7 +17,7 @@
   "trumpSuit": "切り札: {{suit}}",
   "dealer": "ディーラー: {{name}}",
   "bidPending": "未宣言",
-  "playerLine": "{{name}}: 宣言={{bid}} 獲得{{tricks}}トリック 累積{{cum}}点 ディール{{round}}点 {{cards}}枚",
+  "playerLine": "{{name}}: 宣言={{bid}} 獲得{{tricks}}トリック 累積{{cum}}点 ディール{{round}}点 {{cards}}枚 伏せ{{buried}}枚",
   "gameEnd": "ゲーム終了！ {{name}}の勝利です！",
   "promptBid": "ビッドフェーズ: {{name}}の番",
   "promptBidHelp": "b <i> <j> <k>・・・3枚を伏せて宣言 (♦=0/♠=1/♥=2/♣=3 の合計が宣言トリック数)",
@@ -21,9 +28,12 @@
   "promptRoundEnd": "ディール終了",
   "promptRoundEndHelp": "nr / nextround・・・次のディールへ",
   "hintNone": "ヒントはありません。",
-  "hintBury": "[HINT: 伏せ札 {{indices}} を推奨 ({{reason}})]",
-  "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
+  "hintBury": "[ヒント: 伏せ札 {{indices}} を推奨 ({{reason}})]",
+  "hintCard": "[ヒント: [{{idx}}]{{card}} ({{reason}})]",
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
   "helpHint": "  h                    助言を表示",
-  "successBonusLine": "的中ボーナス: 的中者ひとりにつき +{{bonus}}点 (単独的中ほど高い)"
+  "successBonusLine": "的中ボーナス: 的中者ひとりにつき +{{bonus}}点 (単独的中ほど高い)",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errBuryCount": "伏せるカードは{{count}}枚指定してください",
+  "errDuplicateCardIndex": "同じカードを重複して指定できません"
 }

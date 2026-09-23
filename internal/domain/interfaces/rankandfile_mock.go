@@ -116,6 +116,13 @@ func (_m *MockRankAndFileGame) SequenceStarts(col int) []int {
 	return v
 }
 
+// LegalTargets モック
+func (_m *MockRankAndFileGame) LegalTargets(fromCol, cardIndex int) []int {
+	ret := _m.Called(fromCol, cardIndex)
+	v, _ := ret.Get(0).([]int)
+	return v
+}
+
 func (_m *MockRankAndFileGame) GetFoundation() [domain.RankAndFileFoundationCnt][]*domain.Card {
 	ret := _m.Called()
 	return ret.Get(0).([domain.RankAndFileFoundationCnt][]*domain.Card)

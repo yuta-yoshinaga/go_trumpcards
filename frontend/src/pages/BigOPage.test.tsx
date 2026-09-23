@@ -374,6 +374,8 @@ describe('BigOPage', () => {
     // Omaha-style: exactly 2 hole cards are used; the rest are labeled unused.
     expect(screen.getAllByTestId('bigo-hole-used').length).toBe(2);
     expect(screen.getAllByTestId('bigo-hole-unused').length).toBeGreaterThan(0);
+    expect(screen.getAllByLabelText('使用')).toHaveLength(2);
+    expect(screen.getAllByTestId('bigo-hole-used')).toHaveLength(screen.getAllByLabelText('使用').length);
   });
 
   it('omits used/unused labels when the human has folded', async () => {
@@ -1620,5 +1622,12 @@ describe('BigOPage', () => {
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', undefined, expect.objectContaining({ bettingLimit: 2 })),
     );
+  });
+
+  it('renders action shortcuts panel during betting phase', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<BigOPage />);
+    const panel = await screen.findByTestId('bigo-kbd-shortcuts');
+    expect(panel).toBeInTheDocument();
   });
 });

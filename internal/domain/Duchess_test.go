@@ -498,10 +498,14 @@ func TestDuchess_ActionLogUsesZeroBasedIndices(t *testing.T) {
 
 	log := d.GetActionLog()
 	require.Len(t, log, 4)
-	assert.Equal(t, "開始ランクを5に決定（リザーブ0）", log[0].Detail)
-	assert.Equal(t, "リザーブ1→基礎札2", log[1].Detail, "heart is foundation 2, 0-indexed")
-	assert.Equal(t, "タブロー列1→タブロー列0(1枚)", log[2].Detail)
-	assert.Equal(t, "山札→ウェイスト", log[3].Detail)
+	assert.Equal(t, "duchess.log.base", log[0].DetailCode)
+	assert.Equal(t, map[string]string{"value1": "5", "value2": "0"}, log[0].DetailParams)
+	assert.Equal(t, "duchess.log.move", log[1].DetailCode)
+	assert.Equal(t, map[string]string{"value1": "1", "value2": "2"}, log[1].DetailParams,
+		"heart is foundation 2, 0-indexed")
+	assert.Equal(t, "duchess.log.move", log[2].DetailCode)
+	assert.Equal(t, map[string]string{"value1": "1", "value2": "0", "value3": "1"}, log[2].DetailParams)
+	assert.Equal(t, "duchess.log.drawDetail", log[3].DetailCode)
 }
 
 func TestDuchess_JSONRoundTrip(t *testing.T) {

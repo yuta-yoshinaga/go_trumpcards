@@ -1,11 +1,11 @@
-//go:build !js || !wasm || extra3
+//go:build !js || !wasm || extra6
 
 package domain
 
 import (
 	"encoding/json"
-	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // BelotePlayerCnt ベロートプレイヤー数
@@ -131,6 +131,10 @@ func (b *Belote) Reset() {
 	}
 
 	b.beginRound()
+}
+
+func (b *Belote) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	b.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // NextRound 次のラウンドを開始する
@@ -262,7 +266,7 @@ func (b *Belote) PlayerPickUp(orderUp bool) error {
 	if orderUp {
 		b.doOrderUp(humanIdx)
 	} else {
-		b.appendLog(humanIdx, "pass", fmt.Sprintf("%s passes", playerName(b.players, humanIdx)), nil)
+		b.appendLog(humanIdx, "pass", "belote.log.pass", map[string]string{"name": playerName(b.players, humanIdx)}, nil)
 		b.advanceBidPickUp()
 	}
 	return nil
@@ -283,7 +287,7 @@ func (b *Belote) CpuPickUp() {
 	if b.cpuSelectPickUp(b.bidPlayerIdx) {
 		b.doOrderUp(b.bidPlayerIdx)
 	} else {
-		b.appendLog(b.bidPlayerIdx, "pass", fmt.Sprintf("%s passes", playerName(b.players, b.bidPlayerIdx)), nil)
+		b.appendLog(b.bidPlayerIdx, "pass", "belote.log.pass", map[string]string{"name": playerName(b.players, b.bidPlayerIdx)}, nil)
 		b.advanceBidPickUp()
 	}
 }
@@ -293,8 +297,7 @@ func (b *Belote) doOrderUp(playerIdx int) {
 	b.trumpSuit = b.faceUpCard.GetDesign()
 	b.makerTeam = b.players[playerIdx].GetTeam()
 	b.makerPlayerIdx = playerIdx
-	b.appendLog(playerIdx, "order_up",
-		fmt.Sprintf("%s takes %s as trump", playerName(b.players, playerIdx), cardStr(b.faceUpCard)),
+	b.appendLog(playerIdx, "order_up", "belote.log.orderUp", map[string]string{"name": playerName(b.players, playerIdx), "card": cardStr(b.faceUpCard)},
 		[]*Card{b.faceUpCard})
 
 	b.dealRemainder(playerIdx)
@@ -327,10 +330,10 @@ func (b *Belote) PlayerCallTrump(suit int) error {
 		return ErrNotHumanTurn
 	}
 	if b.faceUpCard != nil && suit == b.faceUpCard.GetDesign() {
-		return NewDomainError(ErrInvalidPlay, "ラウンド1の表向きスートは選べません")
+		return NewDomainErrorCode(ErrInvalidPlay, "belote.errFaceUpSuit", nil)
 	}
 	if suit < CardDesignSpade || suit > CardDesignDiamond {
-		return NewDomainError(ErrInvalidPlay, "無効なスートです")
+		return NewDomainErrorCode(ErrInvalidPlay, "belote.errInvalidSuit", nil)
 	}
 	b.doCallTrump(humanIdx, suit)
 	return nil
@@ -348,7 +351,7 @@ func (b *Belote) PlayerPassCall() error {
 	if humanIdx < 0 || b.bidPlayerIdx != humanIdx {
 		return ErrNotHumanTurn
 	}
-	b.appendLog(humanIdx, "pass", fmt.Sprintf("%s passes", playerName(b.players, humanIdx)), nil)
+	b.appendLog(humanIdx, "pass", "belote.log.pass", map[string]string{"name": playerName(b.players, humanIdx)}, nil)
 	b.advanceBidCallTrump()
 	return nil
 }
@@ -366,7 +369,7 @@ func (b *Belote) CpuCallTrump() {
 	if suit > 0 {
 		b.doCallTrump(b.bidPlayerIdx, suit)
 	} else {
-		b.appendLog(b.bidPlayerIdx, "pass", fmt.Sprintf("%s passes", playerName(b.players, b.bidPlayerIdx)), nil)
+		b.appendLog(b.bidPlayerIdx, "pass", "belote.log.pass", map[string]string{"name": playerName(b.players, b.bidPlayerIdx)}, nil)
 		b.advanceBidCallTrump()
 	}
 }
@@ -376,9 +379,7 @@ func (b *Belote) doCallTrump(playerIdx int, suit int) {
 	b.trumpSuit = suit
 	b.makerTeam = b.players[playerIdx].GetTeam()
 	b.makerPlayerIdx = playerIdx
-	suitName := suitStr(suit)
-	b.appendLog(playerIdx, "call_trump",
-		fmt.Sprintf("%s calls %s as trump", playerName(b.players, playerIdx), suitName), nil)
+	b.appendLog(playerIdx, "call_trump", "belote.log.callTrump", map[string]string{"name": playerName(b.players, playerIdx), "suitKey": suitKeyOf(suit)}, nil)
 
 	b.dealRemainder(playerIdx)
 	b.startPlayPhase()
@@ -393,7 +394,7 @@ func (b *Belote) advanceBidCallTrump() {
 	startIdx := (b.dealerIdx + 1) % BelotePlayerCnt
 	if b.bidPlayerIdx == startIdx {
 		// パスアウト: ディーラーを次に進めて再配布
-		b.appendLog(-1, "pass_out", "All players passed; redealing", nil)
+		b.appendLog(-1, "pass_out", "belote.log.passOut", nil, nil)
 		b.dealerIdx = (b.dealerIdx + 1) % BelotePlayerCnt
 		for _, p := range b.players {
 			p.ResetRound()
@@ -418,7 +419,7 @@ func (b *Belote) PlayerPlay(cardIndex int) error {
 
 	player := b.players[b.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "belote.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
@@ -470,8 +471,7 @@ func (b *Belote) ResolveTrick() {
 	b.roundPoints[b.players[winnerIdx].GetTeam()] += trickPoints
 
 	winnerName := playerName(b.players, winnerIdx)
-	b.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (%d pts)", winnerName, b.trickNumber, trickPoints),
+	b.appendLog(winnerIdx, "trick_win", "belote.log.trickWin", map[string]string{"name": winnerName, "trick": strconv.Itoa(b.trickNumber), "points": strconv.Itoa(trickPoints)},
 		trickCards)
 
 	b.leadPlayerIdx = winnerIdx
@@ -480,8 +480,7 @@ func (b *Belote) ResolveTrick() {
 	if b.trickNumber >= BeloteHandSize {
 		// Dix de Der
 		b.roundPoints[b.players[winnerIdx].GetTeam()] += b.config.DixDeDer
-		b.appendLog(winnerIdx, "dix_de_der",
-			fmt.Sprintf("%s wins last trick +%d (Dix de Der)", winnerName, b.config.DixDeDer), nil)
+		b.appendLog(winnerIdx, "dix_de_der", "belote.log.dixDeDer", map[string]string{"name": winnerName, "points": strconv.Itoa(b.config.DixDeDer)}, nil)
 		b.phase = BelotePhaseRoundEnd
 	} else {
 		b.phase = BelotePhaseTrickEnd
@@ -515,23 +514,18 @@ func (b *Belote) ScoreRound() {
 		// メイカー勝利
 		b.teamScores[maker] += makerPts
 		b.teamScores[defender] += defenderPts
-		b.appendLog(-1, "maker_win",
-			fmt.Sprintf("Team %d (maker) wins the round: %d vs %d",
-				maker, makerPts, defenderPts), nil)
+		b.appendLog(-1, "maker_win", "belote.log.makerWin", map[string]string{"team": strconv.Itoa(maker), "makerPoints": strconv.Itoa(makerPts), "defenderPoints": strconv.Itoa(defenderPts)}, nil)
 	case makerPts == defenderPts:
 		// 同点 = メイカー側 dedans (Litige); 防衛側がカード点を総取り
 		b.teamScores[defender] += defenderPts + b.roundPoints[maker]
 		// Belote ボーナスはどちらの宣言でも自チームに残る
 		b.teamScores[maker] += b.roundBeloteBonus[maker]
-		b.appendLog(-1, "litige",
-			fmt.Sprintf("Litige (tie %d-%d): defenders take maker's card points",
-				makerPts, defenderPts), nil)
+		b.appendLog(-1, "litige", "belote.log.litige", map[string]string{"makerPoints": strconv.Itoa(makerPts), "defenderPoints": strconv.Itoa(defenderPts)}, nil)
 	default:
 		// メイカー dedans: 防衛側がカード点を総取り
 		b.teamScores[defender] += defenderPts + b.roundPoints[maker]
 		b.teamScores[maker] += b.roundBeloteBonus[maker]
-		b.appendLog(-1, "dedans",
-			fmt.Sprintf("Team %d (maker) is dedans: %d < %d", maker, makerPts, defenderPts), nil)
+		b.appendLog(-1, "dedans", "belote.log.dedans", map[string]string{"team": strconv.Itoa(maker), "makerPoints": strconv.Itoa(makerPts), "defenderPoints": strconv.Itoa(defenderPts)}, nil)
 	}
 
 	// Capot ボーナス (全 8 トリック獲得)
@@ -544,18 +538,14 @@ func (b *Belote) ScoreRound() {
 	switch makerTricks {
 	case BeloteHandSize:
 		b.teamScores[maker] += 90
-		b.appendLog(-1, "capot",
-			fmt.Sprintf("Team %d capot (+90)", maker), nil)
+		b.appendLog(-1, "capot", "belote.log.capot", map[string]string{"team": strconv.Itoa(maker)}, nil)
 	case 0:
 		b.teamScores[defender] += 90
-		b.appendLog(-1, "capot_defender",
-			fmt.Sprintf("Team %d capot against maker (+90)", defender), nil)
+		b.appendLog(-1, "capot_defender", "belote.log.capotDefender", map[string]string{"team": strconv.Itoa(defender)}, nil)
 	}
 
 	for ti := range BeloteTeamCnt {
-		b.appendLog(-1, "team_score",
-			fmt.Sprintf("Team %d: %d points (total %d)",
-				ti, b.roundPoints[ti]+b.roundBeloteBonus[ti], b.teamScores[ti]), nil)
+		b.appendLog(-1, "team_score", "belote.log.teamScore", map[string]string{"team": strconv.Itoa(ti), "points": strconv.Itoa(b.roundPoints[ti] + b.roundBeloteBonus[ti]), "total": strconv.Itoa(b.teamScores[ti])}, nil)
 	}
 
 	b.checkGameEnd()
@@ -819,8 +809,7 @@ func (b *Belote) playCard(playerIdx int, card *Card) {
 		Card:      card,
 	})
 	b.maybeDeclareBeloteRebelote(playerIdx, card)
-	b.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", playerName(b.players, playerIdx), cardStr(card)), []*Card{card})
+	b.appendLog(playerIdx, "play", "belote.log.play", map[string]string{"name": playerName(b.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(b.currentTrick) == BelotePlayerCnt {
 		b.phase = BelotePhaseTrickEnd
@@ -852,9 +841,7 @@ func (b *Belote) maybeDeclareBeloteRebelote(playerIdx int, card *Card) {
 		team := b.players[playerIdx].GetTeam()
 		b.roundBeloteBonus[team] += BeloteRebeloteBonus
 		b.beloteDeclared = true
-		b.appendLog(playerIdx, "belote_rebelote",
-			fmt.Sprintf("%s declares Belote/Rebelote (+%d)",
-				playerName(b.players, playerIdx), BeloteRebeloteBonus), nil)
+		b.appendLog(playerIdx, "belote_rebelote", "belote.log.beloteRebelote", map[string]string{"name": playerName(b.players, playerIdx), "points": strconv.Itoa(BeloteRebeloteBonus)}, nil)
 	}
 }
 
@@ -880,12 +867,12 @@ func (b *Belote) validatePlay(playerIdx int, card *Card) error {
 		// リードがトランプ: トランプを必ず出す。出すなら可能な限りオーバートランプ。
 		if hasLead {
 			if cardSuit != b.trumpSuit {
-				return NewDomainError(ErrInvalidPlay, "リードスート (切り札) に従ってください")
+				return NewDomainErrorCode(ErrInvalidPlay, "belote.errMustFollowTrump", nil)
 			}
 			highest := b.highestTrumpInTrick()
 			canOverTrump := b.playerCanBeatTrump(player, highest)
 			if canOverTrump && beloteTrumpRank(card.GetValue()) <= highest {
-				return NewDomainError(ErrInvalidPlay, "オーバートランプしてください (obligation à monter)")
+				return NewDomainErrorCode(ErrInvalidPlay, "belote.errMustOvertrump", nil)
 			}
 			return nil
 		}
@@ -896,7 +883,7 @@ func (b *Belote) validatePlay(playerIdx int, card *Card) error {
 	// リードが非トランプ
 	if hasLead {
 		if cardSuit != leadSuit {
-			return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+			return NewDomainErrorCode(ErrInvalidPlay, "belote.errFollowLeadSuit", nil)
 		}
 		return nil
 	}
@@ -910,14 +897,14 @@ func (b *Belote) validatePlay(playerIdx int, card *Card) error {
 	if hasTrump && !partnerWinning {
 		// トランプ義務
 		if cardSuit != b.trumpSuit {
-			return NewDomainError(ErrInvalidPlay, "切り札を出してください (obligation à couper)")
+			return NewDomainErrorCode(ErrInvalidPlay, "belote.errMustPlayTrump", nil)
 		}
 		// オーバートランプ義務 (トリックに既に切り札が出ている場合)
 		if trickHasTrump {
 			highest := b.highestTrumpInTrick()
 			canOverTrump := b.playerCanBeatTrump(player, highest)
 			if canOverTrump && beloteTrumpRank(card.GetValue()) <= highest {
-				return NewDomainError(ErrInvalidPlay, "オーバートランプしてください (obligation à monter)")
+				return NewDomainErrorCode(ErrInvalidPlay, "belote.errMustOvertrump", nil)
 			}
 		}
 		return nil
@@ -1036,8 +1023,7 @@ func (b *Belote) checkGameEnd() {
 			} else {
 				b.winnerTeam = 1
 			}
-			b.appendLog(-1, "game_end",
-				fmt.Sprintf("Team %d wins the game!", b.winnerTeam), nil)
+			b.appendLog(-1, "game_end", "belote.log.gameEnd", map[string]string{"team": strconv.Itoa(b.winnerTeam)}, nil)
 			return
 		}
 	}

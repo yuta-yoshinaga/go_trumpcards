@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ironcrossApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -89,12 +89,17 @@ function IronCrossPageContent() {
   // 押す前に十字の上で示す。位置はサーバの verticalIndexes / horizontalIndexes
   // をそのまま使う——ページで並びを決め直すと、腕を取り違えても誰も気づかない。
   const [previewLine, setPreviewLine] = useState<'vertical' | 'horizontal' | null>(null);
+  const [armedLine, setArmedLine] = useState<'vertical' | 'horizontal' | null>(null);
+  const pointerTypeRef = useRef<string>('');
 
   // **列を選ぶ場面が終わったら畳む。** クリックでボタンが消えるとき、環境に
   // よっては mouseleave も blur も飛ばない (Safari はクリックでフォーカスしない)。
   // 残したままだと、次の手で誰も触っていないのに光ったままになる。
   useEffect(() => {
-    if (!isChoosing) setPreviewLine(null);
+    if (!isChoosing) {
+      setPreviewLine(null);
+      setArmedLine(null);
+    }
   }, [isChoosing]);
 
   const handleBet = useCallback(() => execApi('bet', { amount }), [execApi, amount]);
@@ -134,6 +139,7 @@ function IronCrossPageContent() {
   /** Renders one slot of the cross, or a placeholder while it is face down. */
   const previewIndexes =
     previewLine === 'vertical' ? state.verticalIndexes : previewLine === 'horizontal' ? state.horizontalIndexes : [];
+  const isArmedLineHovered = armedLine !== null && armedLine === previewLine;
 
   const crossSlot = (index: number) => {
     const card: Card | null = state.cross[index] ?? null;
@@ -308,35 +314,58 @@ function IronCrossPageContent() {
                     {t('label.chooseLine')}
                   </p>
                   <div className="flex gap-2 flex-wrap justify-center">
-                    <button
-                      type="button"
-                      className={btnSuccess}
-                      data-testid="ic-vertical"
-                      data-hint-action="line"
-                      onClick={() => execApi('vertical')}
-                      disabled={loading}
-                      onMouseEnter={() => setPreviewLine('vertical')}
-                      onMouseLeave={() => setPreviewLine(null)}
-                      onFocus={() => setPreviewLine('vertical')}
-                      onBlur={() => setPreviewLine(null)}
-                    >
-                      {t('button.vertical')}
-                    </button>
-                    <button
-                      type="button"
-                      className={btnSuccess}
-                      data-testid="ic-horizontal"
-                      data-hint-action="line"
-                      onClick={() => execApi('horizontal')}
-                      disabled={loading}
-                      onMouseEnter={() => setPreviewLine('horizontal')}
-                      onMouseLeave={() => setPreviewLine(null)}
-                      onFocus={() => setPreviewLine('horizontal')}
-                      onBlur={() => setPreviewLine(null)}
-                    >
-                      {t('button.horizontal')}
-                    </button>
+                    {(['vertical', 'horizontal'] as const).map((line) => {
+                      const isArmed = armedLine === line;
+                      return (
+                        <button
+                          type="button"
+                          key={line}
+                          className={btnSuccess}
+                          data-testid={`ic-${line}`}
+                          data-hint-action="line"
+                          data-armed={isArmed ? 'true' : undefined}
+                          onPointerDown={(event) => {
+                            pointerTypeRef.current = event.pointerType;
+                          }}
+                          onClick={() => {
+                            if (pointerTypeRef.current === 'touch') {
+                              if (isArmed) {
+                                execApi(line);
+                                setArmedLine(null);
+                              } else {
+                                setArmedLine(line);
+                                setPreviewLine(line);
+                              }
+                            } else {
+                              execApi(line);
+                            }
+                            pointerTypeRef.current = '';
+                          }}
+                          disabled={loading}
+                          onMouseEnter={() => setPreviewLine(line)}
+                          onMouseLeave={() => {
+                            if (!isArmed) setPreviewLine(null);
+                          }}
+                          onFocus={() => setPreviewLine(line)}
+                          onBlur={() => {
+                            if (!isArmed) setPreviewLine(null);
+                          }}
+                        >
+                          {t(`button.${line}`)}
+                        </button>
+                      );
+                    })}
                   </div>
+                  {isArmedLineHovered && (
+                    <div className="sr-only" role="status" aria-live="polite">
+                      {t('touchLineHint')}
+                    </div>
+                  )}
+                  {isArmedLineHovered && (
+                    <p className="text-ds-text-muted text-sm" data-testid="ic-touch-hint">
+                      {t('touchLineHint')}
+                    </p>
+                  )}
                 </>
               )}
 

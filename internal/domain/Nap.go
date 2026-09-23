@@ -94,6 +94,10 @@ type Nap struct {
 	actionLogBase
 }
 
+func (g *Nap) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
+}
+
 // NewNap コンストラクタ
 func NewNap(trumpCards *TrumpCards, players []*NapPlayer, config NapConfig) *Nap {
 	return &Nap{trumpCards: trumpCards, players: players, config: config, winnerPlayer: -1, declarerIdx: -1}
@@ -210,18 +214,18 @@ func (g *Nap) CpuBid() {
 // applyBid 入札を記録し、次の入札者へ進める。全員入札したら契約を確定する。
 func (g *Nap) applyBid(idx int, bid NapBid) error {
 	if bid != NapBidPass && (bid < NapBidTwo || bid > NapBidNap) {
-		return NewDomainError(ErrInvalidPlay, "入札値が不正です")
+		return NewDomainErrorCode(ErrInvalidPlay, "nap.errInvalidBid", nil)
 	}
 	high, _ := g.highestBid()
 	if bid != NapBidPass && bid <= high {
-		return NewDomainError(ErrInvalidPlay, "現在の入札を上回る必要があります")
+		return NewDomainErrorCode(ErrInvalidPlay, "nap.errBidMustExceed", nil)
 	}
 	g.bids[idx] = bid
 	g.bidDone[idx] = true
 	if bid != NapBidPass {
-		g.appendLog(idx, "bid", fmt.Sprintf("%s bids %s", playerName(g.players, idx), napBidName(bid)), nil)
+		g.appendLog(idx, "bid", "nap.log.bid", map[string]string{"name": playerName(g.players, idx), "bidKey": NapBidKey(bid)}, nil)
 	} else {
-		g.appendLog(idx, "bid", fmt.Sprintf("%s passes", playerName(g.players, idx)), nil)
+		g.appendLog(idx, "bid", "nap.log.pass", map[string]string{"name": playerName(g.players, idx)}, nil)
 	}
 	for k := 1; k <= NapPlayerCnt; k++ {
 		ni := (idx + k) % NapPlayerCnt
@@ -240,14 +244,13 @@ func (g *Nap) resolveBidding() {
 	if idx < 0 || bid == NapBidPass {
 		g.declarerIdx = -1
 		g.phase = NapPhaseRoundEnd
-		g.appendLog(-1, "passed_out", "all players passed; round is void", nil)
+		g.appendLog(-1, "passed_out", "nap.log.passedOut", nil, nil)
 		return
 	}
 	g.declarerIdx = idx
 	g.contract = bid
 	g.trumpSuit = g.longestSuit(idx)
-	g.appendLog(idx, "contract",
-		fmt.Sprintf("%s declares %s (trump %d)", playerName(g.players, idx), napBidName(bid), g.trumpSuit), nil)
+	g.appendLog(idx, "contract", "nap.log.contract", map[string]string{"name": playerName(g.players, idx), "contractKey": NapBidKey(bid), "trump": fmt.Sprintf("%d", g.trumpSuit)}, nil)
 	g.leadPlayerIdx = idx // declarer leads in Nap
 	g.currentPlayerIdx = g.leadPlayerIdx
 	g.phase = NapPhasePlay
@@ -304,7 +307,7 @@ func (g *Nap) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "nap.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
@@ -338,7 +341,7 @@ func (g *Nap) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Nap) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "nap.log.play", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(g.currentTrick) == NapPlayerCnt {
 		g.phase = NapPhaseTrickEnd
@@ -359,8 +362,7 @@ func (g *Nap) ResolveTrick() {
 	}
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.roundTricks[winnerIdx]++
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), trickCards)
+	g.appendLog(winnerIdx, "trick_win", "nap.log.trickWin", map[string]string{"name": playerName(g.players, winnerIdx), "trick": fmt.Sprintf("%d", g.trickNumber)}, trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= NapTrickCount {
@@ -398,11 +400,7 @@ func (g *Nap) ScoreRound() {
 				}
 			}
 		}
-		g.appendLog(-1, "round_score",
-			fmt.Sprintf("round %d: %s %s (%d/%d tricks)",
-				g.roundNumber, napBidName(g.contract),
-				map[bool]string{true: "made", false: "failed"}[won],
-				g.roundTricks[g.declarerIdx], napBidTarget(g.contract)), nil)
+		g.appendLog(-1, "round_score", "nap.log.roundScore", map[string]string{"round": fmt.Sprintf("%d", g.roundNumber), "contractKey": NapBidKey(g.contract), "resultKey": napOutcomeKey(won), "won": fmt.Sprintf("%d", g.roundTricks[g.declarerIdx]), "target": fmt.Sprintf("%d", napBidTarget(g.contract))}, nil)
 		g.checkGameEnd()
 	}
 }
@@ -453,7 +451,7 @@ func (g *Nap) checkGameEnd() {
 		g.gameEndFlag = true
 		g.winnerPlayer = leader
 		g.phase = NapPhaseGameEnd
-		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
+		g.appendLog(-1, "game_end", "nap.log.gameEnd", map[string]string{"name": playerName(g.players, leader)}, nil)
 	}
 }
 
@@ -906,18 +904,26 @@ func (g *Nap) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-// napBidName 入札種別の表示名を返す。
-func napBidName(b NapBid) string {
+// NapBidKey は入札種別の i18n キーを返す。棋譜と presenter の両方が引く。
+func NapBidKey(b NapBid) string {
 	switch b {
 	case NapBidTwo:
-		return "Two"
+		return "nap.bid.two"
 	case NapBidThree:
-		return "Three"
+		return "nap.bid.three"
 	case NapBidFour:
-		return "Four"
+		return "nap.bid.four"
 	case NapBidNap:
-		return "Nap"
+		return "nap.bid.nap"
 	default:
-		return "Pass"
+		return "nap.bid.pass"
 	}
+}
+
+// napOutcomeKey は宣言を達成したかの i18n キーを返す。
+func napOutcomeKey(won bool) string {
+	if won {
+		return "nap.log.outcome.made"
+	}
+	return "nap.log.outcome.failed"
 }

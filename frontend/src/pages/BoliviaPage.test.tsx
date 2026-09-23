@@ -110,6 +110,20 @@ describe('BoliviaPage', () => {
     expect(screen.getByRole('button', { name: '上がる' })).toBeInTheDocument();
   });
 
+  it('disables go out when the server says it is unavailable', async () => {
+    mockExec.mockResolvedValue(makeBoliviaState({ phase: 2, canGoOut: false }));
+    renderWithProviders(<BoliviaPage />);
+    const button = await screen.findByRole('button', { name: '上がる' });
+    expect(button).toBeDisabled();
+  });
+
+  it('enables go out when the server says it is available', async () => {
+    mockExec.mockResolvedValue(makeBoliviaState({ phase: 2, canGoOut: true }));
+    renderWithProviders(<BoliviaPage />);
+    const button = await screen.findByRole('button', { name: '上がる' });
+    expect(button).toBeEnabled();
+  });
+
   it('shows next round button at round end', async () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<BoliviaPage />);

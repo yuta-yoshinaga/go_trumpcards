@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra2
+//go:build !js || !wasm || extra6
 
 // Package domain — 撿紅點 (Chinese Ten) のドメインモデル。
 //
@@ -199,7 +199,7 @@ func (c *ChineseTen) Reset() {
 	c.stock = append([]*Card(nil), deck[pos:]...)
 
 	c.currentIdx = 0
-	c.addLog(-1, "deal", "cards dealt", nil)
+	c.addLog(-1, "deal", "chineseten.log.deal", nil, nil)
 }
 
 // PlayCard は player が手札 handIdx の札を出す。
@@ -234,7 +234,7 @@ func (c *ChineseTen) resolve(player int, card *Card, fromFlip bool) {
 	switch len(matches) {
 	case 0:
 		c.layout = append(c.layout, card)
-		c.addLog(player, "place", "no capture; the card joins the layout", []*Card{card})
+		c.addLog(player, "place", "chineseten.log.place", nil, []*Card{card})
 	case 1:
 		c.capture(player, card, matches[0])
 	default:
@@ -305,7 +305,7 @@ func (c *ChineseTen) capture(player int, card *Card, layoutIdx int) {
 	c.layout = append(c.layout[:layoutIdx], c.layout[layoutIdx+1:]...)
 	c.captured[player] = append(c.captured[player], taken...)
 	c.scores[player] += ChineseTenCardPoints(taken[0]) + ChineseTenCardPoints(taken[1])
-	c.addLog(player, "capture", "captures a pair", taken)
+	c.addLog(player, "capture", "chineseten.log.capture", nil, taken)
 }
 
 // afterResolve は 1 枚ぶんの処理後の進行 (山札めくり → 手番交代)。
@@ -349,12 +349,12 @@ func (c *ChineseTen) finishGame() {
 	default:
 		c.winnerIdx = -1
 	}
-	c.addLog(-1, "game", "game over", nil)
+	c.addLog(-1, "game", "chineseten.log.gameEnd", nil, nil)
 }
 
 // addLog は棋譜へ 1 行追加する。
-func (c *ChineseTen) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	c.appendLog(playerIdx, actionType, detail, cards)
+func (c *ChineseTen) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	c.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // ---- CPU ----
@@ -457,6 +457,9 @@ func (c *ChineseTen) GetCurrentPlayerIdx() int { return c.currentIdx }
 
 // GetPendingCard は選択待ちの札を返す (無ければ nil)。
 func (c *ChineseTen) GetPendingCard() *Card { return c.pending }
+
+// GetPendingFlip は選択待ちの札が山札めくりに由来するかを返す。
+func (c *ChineseTen) GetPendingFlip() bool { return c.pendingFlip }
 
 // GetSelectableIndices は選択フェーズで取れる場札の添字を返す。
 func (c *ChineseTen) GetSelectableIndices() []int {

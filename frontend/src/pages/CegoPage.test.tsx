@@ -79,6 +79,7 @@ const exchangePhaseState = makeCegoState({
 const trickEndState = makeCegoState({
   phase: 4,
   isHumanTurn: false,
+  lastTrickWinner: 1,
   currentTrick: [
     { playerIdx: 0, card: suit(7, 'HEART', '♥', 'Q') },
     { playerIdx: 1, card: suit(8, 'CLOVER', '♣', 'K') },
@@ -123,6 +124,7 @@ const gameEndDrawState = makeCegoState({
 });
 
 const cpuTurnState = makeCegoState({ currentPlayerIdx: 1, isHumanTurn: false });
+const cpuBidState = makeCegoState({ phase: 0, bidPlayerIdx: 1, isHumanBidTurn: false });
 
 beforeEach(() => {
   mockExec.mockReset();
@@ -130,6 +132,17 @@ beforeEach(() => {
 });
 
 describe('CegoPage', () => {
+  it('shows the CPU name when a CPU is bidding', async () => {
+    mockExec.mockResolvedValue(cpuBidState);
+    renderWithProviders(<CegoPage />);
+    await waitFor(() => expect(screen.getByTestId('cego-bid-prompt')).toHaveTextContent('CPU 1が入札中'));
+  });
+
+  it('shows the human name when the human is bidding', async () => {
+    mockExec.mockResolvedValue(makeCegoState({ phase: 0, bidPlayerIdx: 0, isHumanBidTurn: true }));
+    renderWithProviders(<CegoPage />);
+    await waitFor(() => expect(screen.getByTestId('cego-bid-prompt')).toHaveTextContent('あなたが入札中'));
+  });
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<CegoPage />);
@@ -296,6 +309,16 @@ describe('CegoPage', () => {
     mockExec.mockResolvedValue(trickEndState);
     renderWithProviders(<CegoPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
+    expect(screen.getByTestId('trick-winner-badge')).toHaveTextContent('CPU 1 が獲得');
+  });
+
+  it('does not render a winner badge while a trick is in progress', async () => {
+    mockExec.mockResolvedValue(
+      makeCegoState({ phase: 3, lastTrickWinner: 1, currentTrick: trickEndState.currentTrick.slice(0, 1) }),
+    );
+    renderWithProviders(<CegoPage />);
+    await waitFor(() => expect(screen.getByTestId('trick-display-cards')).toBeInTheDocument());
+    expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument();
   });
 
   it('renders round end with the next deal button and the deal result', async () => {

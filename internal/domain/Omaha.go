@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"strconv"
 )
 
 // オマハフェーズ定数 (Holdemと共通)
@@ -252,7 +253,7 @@ func (o *Omaha) continueReset() error {
 		}
 	}
 	if o.preflopCommunity > 0 {
-		o.appendLog(-1, "deal", "exposed the first flop card", o.communityCards)
+		o.appendLog(-1, "deal", "omaha.log.exposedFirstFlopCard", nil, o.communityCards)
 	}
 
 	o.phase = OmahaPhasePreFlop
@@ -266,7 +267,14 @@ func (o *Omaha) continueReset() error {
 
 // postBlinds ブラインド投入
 func (o *Omaha) postBlinds() {
-	postBlindsFor(o.players, o.dealerIdx, o.config.SmallBlind, o.config.BigBlind, &o.pot, &o.lastBet, o.actedFlags, o)
+	postBlindsFor(o.players, o.dealerIdx, o.config.SmallBlind, o.config.BigBlind, &o.pot, &o.lastBet, o.actedFlags,
+		func(playerIdx int, label string, amount int) {
+			code := "omaha.log.smallBlind"
+			if label == "big blind" {
+				code = "omaha.log.bigBlind"
+			}
+			o.appendLog(playerIdx, "blind", code, map[string]string{"amount": strconv.Itoa(amount)}, nil)
+		})
 }
 
 // PlayerAction 人間プレイヤーのアクション実行
@@ -421,24 +429,24 @@ func (o *Omaha) advancePhase() {
 				o.communityCards = append(o.communityCards, card)
 			}
 		}
-		o.appendLog(-1, "deal", "dealt flop", o.communityCards)
+		o.appendLog(-1, "deal", "omaha.log.dealtFlop", nil, o.communityCards)
 	case OmahaPhaseFlop:
 		o.phase = OmahaPhaseTurn
 		card := o.trumpCards.DrawCard()
 		if card != nil {
 			o.communityCards = append(o.communityCards, card)
 		}
-		o.appendLog(-1, "deal", "dealt turn", o.communityCards[3:])
+		o.appendLog(-1, "deal", "omaha.log.dealtTurn", nil, o.communityCards[3:])
 	case OmahaPhaseTurn:
 		o.phase = OmahaPhaseRiver
 		card := o.trumpCards.DrawCard()
 		if card != nil {
 			o.communityCards = append(o.communityCards, card)
 		}
-		o.appendLog(-1, "deal", "dealt river", o.communityCards[4:])
+		o.appendLog(-1, "deal", "omaha.log.dealtRiver", nil, o.communityCards[4:])
 	case OmahaPhaseRiver:
 		o.phase = OmahaPhaseShowdown
-		o.appendLog(-1, "showdown", "showdown", nil)
+		o.appendLog(-1, "showdown", "omaha.log.showdown", nil, nil)
 		o.resolveShowdown()
 		return
 	}
@@ -1095,7 +1103,7 @@ func (o *Omaha) Rebuy() error {
 		if p.GetIsHuman() && p.GetChips() <= 0 && o.rebuyCounts[i] < o.config.RebuyMaxCount {
 			p.AddChips(o.config.RebuyChips)
 			o.rebuyCounts[i]++
-			o.appendLog(i, "rebuy", "rebuy", nil)
+			o.appendLog(i, "rebuy", "omaha.log.rebuy", nil, nil)
 			break
 		}
 	}
@@ -1198,7 +1206,12 @@ func (o *Omaha) GetEquity() *HoldemEquityResult {
 			activePlayers++
 		}
 	}
-	result := calcOmahaEquityWithHoleCount(humanCards, o.communityCards, activePlayers, omahaEquitySimulations, nil, o.holeCardCount())
+	var result HoldemEquityResult
+	if o.GetIsHiLo() {
+		result = calcOmahaHiLoEquityWithHoleCount(humanCards, o.communityCards, activePlayers, omahaHiLoEquitySimulations, nil, o.holeCardCount())
+	} else {
+		result = calcOmahaEquityWithHoleCount(humanCards, o.communityCards, activePlayers, omahaEquitySimulations, nil, o.holeCardCount())
+	}
 	return &result
 }
 
@@ -1324,18 +1337,23 @@ func (o *Omaha) GetHandCount() int { return o.handCount }
 func (o *Omaha) logAction(playerIdx, action, amount int) {
 	switch action {
 	case OmahaActionFold:
-		o.appendLog(playerIdx, "fold", "fold", nil)
+		o.appendLog(playerIdx, "fold", "omaha.log.fold", nil, nil)
 	case OmahaActionCheck:
-		o.appendLog(playerIdx, "check", "check", nil)
+		o.appendLog(playerIdx, "check", "omaha.log.check", nil, nil)
 	case OmahaActionCall:
-		o.appendLog(playerIdx, "call", fmt.Sprintf("call %d", o.players[playerIdx].GetCurrentBet()), nil)
+		o.appendLog(playerIdx, "call", "omaha.log.call", map[string]string{"amount": strconv.Itoa(o.players[playerIdx].GetCurrentBet())}, nil)
 	case OmahaActionBet:
-		o.appendLog(playerIdx, "bet", fmt.Sprintf("bet %d", amount), nil)
+		o.appendLog(playerIdx, "bet", "omaha.log.bet", map[string]string{"amount": strconv.Itoa(amount)}, nil)
 	case OmahaActionRaise:
-		o.appendLog(playerIdx, "raise", fmt.Sprintf("raise to %d", amount), nil)
+		o.appendLog(playerIdx, "raise", "omaha.log.raise", map[string]string{"amount": strconv.Itoa(amount)}, nil)
 	case OmahaActionAllIn:
-		o.appendLog(playerIdx, "allin", fmt.Sprintf("all in %d", o.players[playerIdx].GetCurrentBet()), nil)
+		o.appendLog(playerIdx, "allin", "omaha.log.allIn", map[string]string{"amount": strconv.Itoa(o.players[playerIdx].GetCurrentBet())}, nil)
 	}
+}
+
+// appendLog records an Omaha action with a locale-independent detail code.
+func (o *Omaha) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	o.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // omahaJSON is the JSON wire format for Omaha.

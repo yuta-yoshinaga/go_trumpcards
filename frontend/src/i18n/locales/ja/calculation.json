@@ -7,8 +7,8 @@
   "title": "カルキュレーション",
   "stock": "ストック",
   "waste": "ウェイスト",
-  "foundation": "ファンデーション",
-  "foundations": "ファンデーション",
+  "foundation": "組札",
+  "foundations": "組札",
   "moveCount": "手数",
   "stockCount": "残り",
   "stockTop": "次のカード",
@@ -25,7 +25,7 @@
   "nextRankAria": "次に置くべきカード {{rank}}",
   "upcomingRanksTooltip": "今後の必要カード: {{sequence}}",
   "upcomingRanksToggle": "先読みランク一覧",
-  "upcomingRanksDetailAria": "ファンデーション{{idx}}の先読みランク一覧: {{sequence}}",
+  "upcomingRanksDetailAria": "組札{{idx}}の先読みランク一覧: {{sequence}}",
   "wasteRanksTooltip": "ウェイスト{{idx}}（上3枚）: {{ranks}}",
   "wasteEmptyAria": "ウェイスト{{idx}}: 空",
   "stockTopAria": "山札のトップ: {{card}}",
@@ -44,12 +44,13 @@
   },
   "landscapeBanner": "横画面での表示を推奨します",
   "frontendHint": {
-    "calculationStock": "ストックのカードをファンデーションに置けます",
-    "calculationWaste": "ウェイストのカードをファンデーションに置けます"
+    "calculationStock": "ストックのカードを組札に置けます",
+    "calculationWaste": "ウェイストのカードを組札に置けます",
+    "calculationStockToWaste": "ストックのカードはウェイスト{{idx}}へ捨てるのがおすすめです"
   },
   "tutorial": {
-    "foundations": "上段の4つがファンデーション。A, 2, 3, 4 から始まり、それぞれ+1, +2, +3, +4 ずつ増やしてK(13)まで積み上げます。",
-    "stockWaste": "ストックから1枚ずつ引いて、ファンデーションかウェイストに置きます。ウェイストは4つあり、好きな順序で置けます。",
+    "foundations": "上段の4つが組札。A, 2, 3, 4 から始まり、それぞれ+1, +2, +3, +4 ずつ増やしてK(13)まで積み上げます。",
+    "stockWaste": "ストックから1枚ずつ引いて、組札かウェイストに置きます。ウェイストは4つあり、好きな順序で置けます。",
     "controls": "操作ボタン。ヒント・ギブアップ・元に戻すなどが行えます。",
     "resetButton": "新しいゲームを始めるボタンです。"
   },

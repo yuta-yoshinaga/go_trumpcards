@@ -80,9 +80,9 @@ func TestTwentyNineCuiPresenter_MarksPlayableCards(t *testing.T) {
 		m.On("GetPlayableIndices", 0).Return([]int{1})
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "[1]HEART 5*", "合法手には目印が付く")
-		assert.NotContains(t, result, "[0]SPADE 1*", "非合法手には付かない")
-		assert.NotContains(t, result, "[2]CLOVER 9*")
+		assert.Contains(t, result, "[1]♥5*", "合法手には目印が付く")
+		assert.NotContains(t, result, "[0]♠1*", "非合法手には付かない")
+		assert.NotContains(t, result, "[2]♣9*")
 	})
 
 	// **目印を出さない側も踏む。**ビッド中は制限そのものが決まっていないので、
@@ -98,8 +98,8 @@ func TestTwentyNineCuiPresenter_MarksPlayableCards(t *testing.T) {
 		m.On("GetPlayableIndices", 0).Return([]int{1})
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "[0]SPADE 1")
-		assert.NotContains(t, result, "HEART 5*", "ビッド中は目印を出さない")
+		assert.Contains(t, result, "[0]♠1")
+		assert.NotContains(t, result, "♥5*", "ビッド中は目印を出さない")
 	})
 
 	t.Run("cpu turn leaves the human hand unmarked", func(t *testing.T) {
@@ -112,7 +112,7 @@ func TestTwentyNineCuiPresenter_MarksPlayableCards(t *testing.T) {
 		m.On("GetPlayableIndices", 0).Return([]int{1})
 
 		result := p.Output(m, nil)
-		assert.NotContains(t, result, "HEART 5*", "相手の手番では目印を出さない")
+		assert.NotContains(t, result, "♥5*", "相手の手番では目印を出さない")
 	})
 }
 
@@ -177,6 +177,41 @@ func TestTwentyNineCuiPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestTwentyNineCuiPresenter_TrumpVisibility(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.TwentyNineCuiPresenter)
+
+	t.Run("human declarer sees the hidden trump with a private-visibility notice", func(t *testing.T) {
+		m, _ := setupTwentyNineCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTrumpRevealed")
+		m.On("GetTrumpRevealed").Return(false)
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "ラウンド: 1  トリック: 1  切り札: SPADE（あなたのみ表示）")
+	})
+
+	t.Run("human defender does not see the hidden trump", func(t *testing.T) {
+		m, _ := setupTwentyNineCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDeclarerIdx")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTrumpRevealed")
+		m.On("GetDeclarerIdx").Return(1)
+		m.On("GetTrumpRevealed").Return(false)
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "ラウンド: 1  トリック: 1  切り札: 非公開")
+	})
+
+	t.Run("both perspectives see the revealed trump", func(t *testing.T) {
+		for _, declarerIdx := range []int{0, 1} {
+			m, _ := setupTwentyNineCuiMockWithPlayers()
+			m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDeclarerIdx")
+			m.On("GetDeclarerIdx").Return(declarerIdx)
+			result := p.Output(m, nil)
+			assert.Contains(t, result, "ラウンド: 1  トリック: 1  切り札: SPADE")
+		}
+	})
+}
+
 func TestTwentyNineCuiPresenter_HintOutput(t *testing.T) {
 	orig := color.NoColor()
 	color.SetNoColor(true)
@@ -195,14 +230,14 @@ func TestTwentyNineCuiPresenter_HintOutput(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 13, false))
 		m.On("GetHint").Return(&domain.TwentyNineHint{CardIndices: []int{0}, Reason: "lead_low"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 
 	t.Run("hint no card indices", func(t *testing.T) {
 		m, _ := setupTwentyNineCuiMockWithPlayers()
 		m.On("GetHint").Return(&domain.TwentyNineHint{CardIndices: nil, Reason: "follow_win"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 }
 
@@ -211,7 +246,7 @@ func TestTwentyNineCuiPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockTwentyNineGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You plays ♠K"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "twentynine.log.play", DetailParams: map[string]string{"name": "You", "card": "♠K"}},
 	})
 	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
 	m.On("GetPlayer", mock.Anything).Return(domain.NewTwentyNinePlayer(true)).Maybe()

@@ -17,7 +17,7 @@
   "promptCurrentPlayer": "Turn: {{name}}",
   "promptPlay": "play <idx> ... Play a card",
   "promptTrump": "You are the dealer. Choose the trump suit (t <1-4>).",
-  "promptTrumpWait": "The dealer is choosing the trump suit.",
+  "promptTrumpWait": "{{name}} is the dealer, choosing the trump suit.",
   "promptBid": "Estimate your tricks (b <0-13>). 0 is a Dash Call.",
   "promptBidRestricted": "You bid last, so {{n}} is barred -- it would make the total 13.",
   "promptRoundEnd": "Round over.",
@@ -42,5 +42,14 @@
   "suitDiamond": "Diamonds",
   "helpExamplePlay": "  p 0                  play hand card 0",
   "helpHint": "  h                    show a hint",
-  "roundDelta": "this round: {{delta}}"
+  "roundDelta": "this round: {{delta}}",
+  "log.deal": "Started round {{round}}",
+  "log.trump": "Set trump to {{suit}}",
+  "log.dash": "Dash Call (bid 0)",
+  "log.bid": "Declared {{bid}} tricks",
+  "log.risk": "Risk (highest bid {{bid}})",
+  "log.play": "{{card}}",
+  "log.score": "Bid {{bid}} got {{got}}: {{score}}",
+  "log.result": "Final scores {{score0}}/{{score1}}/{{score2}}/{{score3}}",
+  "log.giveUp": "Gave up"
 }

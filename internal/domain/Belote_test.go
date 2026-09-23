@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
@@ -293,6 +294,14 @@ func TestBelote_PlayerCallTrump_Success(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, domain.CardDesignSpade, b.GetTrumpSuit())
 	assert.Equal(t, domain.BelotePhasePlay, b.GetPhase())
+	var callLog *domain.ActionLogEntry
+	for _, entry := range b.GetActionLog() {
+		if entry.DetailCode == "belote.log.callTrump" {
+			callLog = entry
+		}
+	}
+	require.NotNil(t, callLog)
+	assert.Equal(t, map[string]string{"name": "You", "suitKey": "common.suit.spade"}, callLog.DetailParams)
 }
 
 func TestBelote_PlayerCallTrump_FaceUpSuit_Rejected(t *testing.T) {

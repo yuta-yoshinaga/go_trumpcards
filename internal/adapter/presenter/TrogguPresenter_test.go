@@ -274,7 +274,7 @@ func TestTrogguCuiPresenter_HintOutput(t *testing.T) {
 	g := newTrogguGame()
 	out := new(presenter.TrogguCuiPresenter).HintOutput(g)
 	if g.IsHumanTurn() {
-		assert.Contains(t, out, "HINT")
+		assert.Contains(t, out, "ヒント")
 		assert.NotContains(t, out, "troggu.hintReason", "理由が訳されていない")
 		return
 	}

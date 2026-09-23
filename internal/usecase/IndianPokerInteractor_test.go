@@ -168,3 +168,11 @@ func TestIndianPokerInteractor_ActionLog(t *testing.T) {
 	assert.Equal(t, `{"entries":[]}`, result)
 	mp.AssertExpectations(t)
 }
+
+func TestIndianPokerInteractor_Hint(t *testing.T) {
+	mg := new(interfaces.MockIndianPokerGame)
+	mp := new(presenter.MockIndianPokerPresenter)
+	mp.On("HintOutput", mg).Return("hint output")
+	ipi := NewIndianPokerInteractor(mg, mp)
+	assert.Equal(t, "hint output", ipi.Hint())
+}

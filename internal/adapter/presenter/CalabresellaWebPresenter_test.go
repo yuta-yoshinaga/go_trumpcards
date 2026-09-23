@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -20,6 +21,7 @@ func setupCalabresellaWebMock() *interfaces.MockCalabresellaGame {
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
 	m.On("GetCurrentTrick").Return(([]*domain.TrickCard)(nil))
+	m.On("GetLastTrickWinner").Return(-1)
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.CalabresellaPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -78,6 +80,17 @@ func TestCalabresellaWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 1, resObj.ForehandIdx)
 		assert.Equal(t, int(domain.CalabresellaBidChiamo), resObj.WinningBid)
 		assert.True(t, resObj.IsHumanTurn)
+	})
+
+	t.Run("includes the last trick winner", func(t *testing.T) {
+		m, _ := setupCalabresellaWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLastTrickWinner")
+		m.On("GetLastTrickWinner").Return(2)
+
+		result := p.Output(m, nil)
+		var resObj controller.CalabresellaWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Equal(t, 2, resObj.LastTrickWinner)
 	})
 
 	t.Run("config values", func(t *testing.T) {
@@ -196,6 +209,15 @@ func TestCalabresellaWebPresenter_Output(t *testing.T) {
 		assert.Empty(t, resObj.MessageCode)
 	})
 
+	t.Run("coded error uses message code", func(t *testing.T) {
+		m, _ := setupCalabresellaWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "shared.errCardIndexOutOfRange", nil)
+		var resObj controller.CalabresellaWebOutput
+		require.NoError(t, json.Unmarshal([]byte(p.Output(m, err)), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "shared.errCardIndexOutOfRange", resObj.MessageCode)
+	})
+
 	t.Run("game end human wins", func(t *testing.T) {
 		m, _ := setupCalabresellaWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
@@ -267,7 +289,7 @@ func TestCalabresellaWebPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockCalabresellaGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You plays ♠K"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, `"actionType":"play"`)

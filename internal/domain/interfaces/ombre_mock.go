@@ -122,6 +122,12 @@ func (_m *MockOmbreGame) GetCurrentTrick() []*domain.TrickCard {
 	return nil
 }
 
+// GetLastTrickWinner モック
+func (_m *MockOmbreGame) GetLastTrickWinner() int {
+	ret := _m.Called()
+	return ret.Get(0).(int)
+}
+
 // GetLeadPlayerIdx モック
 func (_m *MockOmbreGame) GetLeadPlayerIdx() int {
 	ret := _m.Called()

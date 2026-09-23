@@ -39,6 +39,7 @@ func setupMariasCuiMock() *interfaces.MockMariasGame {
 	m.On("GetWinnerPlayer").Return(-1)
 	m.On("GetRoundCardPoints").Return([domain.MariasPlayerCnt]int{0, 0, 0})
 	m.On("GetRoundMarriage").Return([domain.MariasPlayerCnt]int{0, 0, 0}).Maybe()
+	m.On("GetRoundMarriageSuits").Return([domain.MariasPlayerCnt][]domain.MariasMarriage{}).Maybe()
 	m.On("GetPlayerScores").Return([domain.MariasPlayerCnt]int{0, 0, 0})
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	return m
@@ -124,14 +125,14 @@ func TestMariasCuiPresenter_HintOutput(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 13, false))
 		m.On("GetHint").Return(&domain.MariasHint{CardIndices: []int{0}, Reason: "lead_low"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 
 	t.Run("hint no card indices", func(t *testing.T) {
 		m, _ := setupMariasCuiMockWithPlayers()
 		m.On("GetHint").Return(&domain.MariasHint{CardIndices: nil, Reason: "follow_win"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 }
 
@@ -140,7 +141,7 @@ func TestMariasCuiPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockMariasGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You plays ♠K"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
 	m.On("GetPlayer", mock.Anything).Return(domain.NewMariasPlayer(true)).Maybe()
@@ -159,6 +160,7 @@ func TestMariasCuiPresenter_RoundEndCountsTheMarriagePoints(t *testing.T) {
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundCardPoints")
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundMarriage")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundMarriageSuits")
 		m.On("GetPhase").Return(domain.MariasPhaseRoundEnd)
 		m.On("GetRoundCardPoints").Return(card)
 		m.On("GetRoundMarriage").Return(marriage)
@@ -198,14 +200,16 @@ func TestMariasCuiPresenter_PlayShowsTheMarriageEarned(t *testing.T) {
 	playMock := func(marriage [domain.MariasPlayerCnt]int) *interfaces.MockMariasGame {
 		m, _ := setupMariasCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundMarriage")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundMarriageSuits")
 		m.On("GetRoundMarriage").Return(marriage)
+		m.On("GetRoundMarriageSuits").Return([domain.MariasPlayerCnt][]domain.MariasMarriage{{{Suit: domain.CardDesignSpade, Points: 40}}, {}, {}})
 		return m
 	}
 
 	t.Run("announces the human's marriage points", func(t *testing.T) {
 		out := p.Output(playMock([domain.MariasPlayerCnt]int{40, 0, 0}), nil)
 
-		assert.Contains(t, out, i18n.Tf("marias.marriageEarned", "points", "40"))
+		assert.Contains(t, out, i18n.Tf("marias.marriageEarned", "points", "40", "details", "♠ 40"))
 	})
 
 	t.Run("says nothing without a marriage", func(t *testing.T) {
@@ -216,6 +220,20 @@ func TestMariasCuiPresenter_PlayShowsTheMarriageEarned(t *testing.T) {
 		prefix, _, ok := strings.Cut(i18n.Tf("marias.marriageEarned", "points", "\x00"), "\x00")
 		require.True(t, ok)
 		assert.NotContains(t, out, prefix)
+	})
+
+	t.Run("lists multiple marriage suits with their awarded points", func(t *testing.T) {
+		m, _ := setupMariasCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundMarriage")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundMarriageSuits")
+		m.On("GetRoundMarriage").Return([domain.MariasPlayerCnt]int{60, 0, 0})
+		m.On("GetRoundMarriageSuits").Return([domain.MariasPlayerCnt][]domain.MariasMarriage{
+			{{Suit: domain.CardDesignSpade, Points: 40}, {Suit: domain.CardDesignHeart, Points: 20}},
+			{},
+			{},
+		})
+		out := p.Output(m, nil)
+		assert.Contains(t, out, "結婚成立: ♠ 40, ♥ 20（合計60点）")
 	})
 }
 

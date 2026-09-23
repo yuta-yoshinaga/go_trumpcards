@@ -4,6 +4,7 @@ package domain
 
 import (
 	"encoding/json"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -45,6 +46,21 @@ func settleBidding(t *testing.T, s *Shelem) {
 		require.NoError(t, s.PlayerDiscard([]int{0, 1, 2, 3}, CardDesignSpade))
 	}
 	require.Equal(t, ShelemPhasePlay, s.GetPhase())
+}
+
+func TestShelem_ActionLogUsesDetailCode(t *testing.T) {
+	s := newTestShelem(t)
+	s.SetBidPlayerIdxForTest(0)
+	require.NoError(t, s.PlayerBid(ShelemMinBid))
+	var entry *ActionLogEntry
+	for _, candidate := range s.GetActionLog() {
+		if candidate.DetailCode == "shelem.log.bid" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, strconv.Itoa(ShelemMinBid), entry.DetailParams["bid"])
 }
 
 // --- 配り ---

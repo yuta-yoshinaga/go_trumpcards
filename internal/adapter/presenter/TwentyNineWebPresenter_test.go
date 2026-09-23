@@ -156,6 +156,15 @@ func TestTwentyNineWebPresenter_Output(t *testing.T) {
 		assert.Empty(t, resObj.MessageCode)
 	})
 
+	t.Run("coded error uses message code", func(t *testing.T) {
+		m, _ := setupTwentyNineWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "twentynine.errCardIndexOutOfRange", nil)
+		var resObj controller.TwentyNineWebOutput
+		require.NoError(t, json.Unmarshal([]byte(p.Output(m, err)), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "twentynine.errCardIndexOutOfRange", resObj.MessageCode)
+	})
+
 	t.Run("game end human team wins", func(t *testing.T) {
 		m, _ := setupTwentyNineWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
@@ -228,7 +237,7 @@ func TestTwentyNineWebPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockTwentyNineGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You plays ♠K"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "twentynine.log.play", DetailParams: map[string]string{"name": "You", "card": "♠K"}},
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, `"actionType":"play"`)

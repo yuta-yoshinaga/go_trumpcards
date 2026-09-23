@@ -28,6 +28,25 @@ func newFfAllHuman() *FortyFives {
 	return NewFortyFives(NewTrumpCards(0), players, DefaultFortyFivesConfig())
 }
 
+func TestFortyFives_AllPassActionLogUsesDetailCode(t *testing.T) {
+	g := newFfAllHuman()
+	g.Reset()
+	for i := 0; i < FortyFivesPlayerCnt; i++ {
+		if err := g.PlayerBid(FortyFivesBidPass); err != nil {
+			t.Fatalf("pass %d err: %v", i, err)
+		}
+	}
+	for _, entry := range g.GetActionLog() {
+		if entry.DetailCode == "fortyfives.log.passedOut" {
+			if entry.DetailParams != nil {
+				t.Fatalf("passed-out entry = %#v, want empty params", entry)
+			}
+			return
+		}
+	}
+	t.Fatal("passed-out action log entry not found")
+}
+
 func ffSetHand(p *FortyFivesPlayer, cards ...*Card) {
 	p.Reset()
 	for _, c := range cards {

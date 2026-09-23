@@ -329,7 +329,8 @@ function BidEuchrePageContent() {
             )}
             {isHumanPlay && (
               <div className="text-ds-text-muted text-xs mb-2" data-testid="bideuchre-play-notice">
-                {t('playNotice')}
+                <div>{t('playNotice')}</div>
+                {state.trump === 5 && <div data-testid="bideuchre-ntlow-play-note">{t('noTrumpLowNote')}</div>}
               </div>
             )}
 

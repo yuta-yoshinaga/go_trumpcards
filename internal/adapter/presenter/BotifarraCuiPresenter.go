@@ -44,6 +44,7 @@ func (bp *BotifarraCuiPresenter) Output(b interfaces.BotifarraGame, lastErr erro
 			"total", strconv.Itoa(domain.BotifarraTotalPoints)) + "\n")
 
 		bp.writeTrick(sb, b)
+		bp.writeLastTrick(sb, b)
 		bp.writeHand(sb, b)
 		cuiErrorBlock(sb, lastErr)
 
@@ -69,6 +70,24 @@ func (bp *BotifarraCuiPresenter) writeTrick(sb *strings.Builder, b interfaces.Bo
 		sb.WriteString(i18n.Tf("botifarra.trickCardLine",
 			"seat", strconv.Itoa(tc.PlayerIdx),
 			"card", cuiCardStr(tc.Card)) + "\n")
+	}
+}
+
+// writeLastTrick は直前のトリックを書き出す。
+func (bp *BotifarraCuiPresenter) writeLastTrick(sb *strings.Builder, b interfaces.BotifarraGame) {
+	trick := b.GetLastTrick()
+	if len(trick) == 0 {
+		return
+	}
+	sb.WriteString("----------\n")
+	sb.WriteString(i18n.T("botifarra.previousTrick") + "\n")
+	for _, tc := range trick {
+		sb.WriteString(i18n.Tf("botifarra.trickCardLine",
+			"seat", strconv.Itoa(tc.PlayerIdx),
+			"card", cuiCardStr(tc.Card)) + "\n")
+	}
+	if winner := b.GetLastTrickWinner(); winner >= 0 {
+		sb.WriteString(i18n.Tf("botifarra.previousTrickWinner", "name", strconv.Itoa(winner)) + "\n")
 	}
 }
 

@@ -191,6 +191,47 @@ describe('MonteBankPage', () => {
     }
   });
 
+  it('決着後も場札をフォーカスでき、クリックしても選択は変わらない', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: MonteBankPhase.RESULT,
+        pick: 2,
+        bet: 50,
+        result: MONTE_BANK_RESULT.win,
+        layout: [
+          entry({ card: card('SPADE', 1), isPicked: false }),
+          entry({ card: card('SPADE', 7), isPicked: false }),
+          entry({ card: card('HEART', 3), isPicked: true }),
+          entry({ card: card('CLOVER', 13), isPicked: false }),
+        ],
+      }),
+    );
+    renderWithProviders(<MonteBankPage />);
+
+    await waitFor(() => expect(screen.getByTestId('mb-layout-0')).toBeInTheDocument());
+    const layoutButton = screen.getByTestId('mb-layout-0');
+    expect(layoutButton).not.toBeDisabled();
+    expect(layoutButton).toHaveAttribute('aria-disabled', 'true');
+    expect(layoutButton).not.toHaveClass('opacity-50');
+    expect(screen.getByTestId('mb-note-0')).toHaveTextContent('互角');
+    expect(screen.getByTestId('mb-remaining-0')).toHaveTextContent('9');
+
+    fireEvent.click(layoutButton);
+    expect(layoutButton).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('BETフェーズではaria-disabledを付けず場札を選択できる', async () => {
+    mockApi.mockResolvedValue(base);
+    renderWithProviders(<MonteBankPage />);
+
+    await waitFor(() => expect(screen.getByTestId('mb-layout-0')).toBeInTheDocument());
+    const layoutButton = screen.getByTestId('mb-layout-2');
+    expect(layoutButton).not.toHaveAttribute('aria-disabled');
+
+    fireEvent.click(layoutButton);
+    expect(layoutButton).toHaveAttribute('aria-pressed', 'true');
+  });
+
   it('賭ける前はゲートを出さない', async () => {
     mockApi.mockResolvedValue(base);
     renderWithProviders(<MonteBankPage />);

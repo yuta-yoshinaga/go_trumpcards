@@ -839,4 +839,35 @@ func TestRussianPoker_ActionLog(t *testing.T) {
 	require.NoError(t, rp.Bet(100))
 	log := rp.GetActionLog()
 	assert.NotEmpty(t, log)
+	var entry *domain.ActionLogEntry
+	for _, candidate := range log {
+		if candidate.DetailCode == "russianpoker.log.anteBet" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, map[string]string{"ante": "100"}, entry.DetailParams)
+}
+
+func TestRussianPoker_ResultLog_PlayerWins(t *testing.T) {
+	rp := domain.NewDefaultRussianPoker()
+	rp.SetChips(10000)
+	require.NoError(t, rp.Bet(100))
+	rp.SetPlayerHand(makeHand(
+		cd{domain.CardDesignHeart, 1}, cd{domain.CardDesignHeart, 13},
+		cd{domain.CardDesignHeart, 12}, cd{domain.CardDesignHeart, 11},
+		cd{domain.CardDesignHeart, 10},
+	))
+	rp.SetDealerHand(makeHand(
+		cd{domain.CardDesignSpade, 2}, cd{domain.CardDesignClover, 2},
+		cd{domain.CardDesignDiamond, 5}, cd{domain.CardDesignDiamond, 7},
+		cd{domain.CardDesignSpade, 9},
+	))
+	require.NoError(t, rp.Play())
+
+	logs := rp.GetActionLog()
+	resultLog := logs[len(logs)-1]
+	assert.Equal(t, "result", resultLog.ActionType)
+	assert.Equal(t, "russianpoker.log.playerWins", resultLog.DetailCode)
 }

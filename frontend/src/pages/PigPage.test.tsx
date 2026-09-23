@@ -258,6 +258,20 @@ describe('PigPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { playerCnt: 6, cpuDifficulty: 2 }));
   });
 
+  it('explains what the CPU difficulty changes', async () => {
+    renderWithProviders(<PigPage />);
+
+    const select = await screen.findByTestId('pig-difficulty-select');
+    expect(select).toHaveAttribute('aria-describedby', 'pig-difficulty-tooltip');
+
+    const helpButton = select.parentElement?.querySelector('button');
+    expect(helpButton).not.toBeNull();
+    fireEvent.click(helpButton as HTMLButtonElement);
+    expect(screen.getByRole('tooltip')).toHaveTextContent(
+      '1回の判定でCPUが合図に気づく確率です。遅い＝45%、普通＝65%、速い＝85%。',
+    );
+  });
+
   it('shows the hint when one is enabled', async () => {
     vi.mocked(useGameHint).mockReturnValue({
       hint: { targetAction: 'signal', reason: 'hint.pigSignal', confidence: 'strong' },

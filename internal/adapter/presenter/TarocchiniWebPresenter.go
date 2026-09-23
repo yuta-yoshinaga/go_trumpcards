@@ -1,4 +1,4 @@
-//go:build !js || !wasm || solo
+//go:build !js || !wasm || extra7
 
 package presenter
 
@@ -148,6 +148,9 @@ func (p *TarocchiniWebPresenter) buildPlayersOutput(g interfaces.TarocchiniGame)
 // buildMessage ゲーム結果メッセージを構築
 func (p *TarocchiniWebPresenter) buildMessage(g interfaces.TarocchiniGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

@@ -31,6 +31,7 @@
   "points": "{{points}}点",
   "score": "得点: {{score}}",
   "currentTrick": "現在のトリック",
+  "previousTrickWinner": "{{name}} が獲得",
   "players": "プレイヤー",
   "you": "あなた",
   "cpu": "CPU {{id}}",
@@ -64,7 +65,7 @@
     "title": "ディール結果",
     "outcome": "結果: {{outcome}}",
     "declarer": "デクレアラー: {{name}}",
-    "captured": "獲得点: {{points}} 点"
+    "captured": "宣言者側の獲得点: {{points}} 点"
   },
   "hintAvailable": "ヒント",
   "hint": {

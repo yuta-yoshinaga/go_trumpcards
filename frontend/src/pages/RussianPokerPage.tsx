@@ -516,6 +516,9 @@ function RussianPokerPageContent() {
                   </p>
                 </div>
                 <p className="text-ds-text-muted text-sm">{t('actionGuide')}</p>
+                <p className="text-ds-warning text-sm font-bold" data-testid="russian-buy6th-fee-line">
+                  {t('buy6thFeeInfo', { fee: state.anteBet })}
+                </p>
                 <div className="flex gap-2 flex-wrap justify-center">
                   <button type="button" className={btnSuccess} onClick={handlePlay} disabled={loading}>
                     {t('button.play')}

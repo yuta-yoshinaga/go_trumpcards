@@ -60,6 +60,15 @@ func TestShortDeck_Reset(t *testing.T) {
 		assert.True(t, p.GetChips() > 0 || p.GetAllIn())
 	}
 	assert.True(t, sd.GetPot() > 0)
+	blindCodes := map[string]bool{}
+	for _, entry := range sd.GetActionLog() {
+		if entry.ActionType == "blind" {
+			blindCodes[entry.DetailCode] = true
+			assert.Equal(t, map[string]string{"amount": entry.DetailParams["amount"]}, entry.DetailParams)
+		}
+	}
+	assert.True(t, blindCodes["shortdeck.log.smallBlind"])
+	assert.True(t, blindCodes["shortdeck.log.bigBlind"])
 }
 
 func TestShortDeck_Reset_Deals2Cards(t *testing.T) {
@@ -128,6 +137,14 @@ func TestShortDeck_PlayerAction_Bet(t *testing.T) {
 
 	err := sd.PlayerAction(domain.ShortDeckActionBet, 20, 0)
 	assert.NoError(t, err)
+	var entry *domain.ActionLogEntry
+	for _, candidate := range sd.GetActionLog() {
+		if candidate.DetailCode == "shortdeck.log.bet" && candidate.DetailParams["amount"] == "20" {
+			entry = candidate
+		}
+	}
+	assert.NotNil(t, entry)
+	assert.Equal(t, map[string]string{"amount": "20"}, entry.DetailParams)
 }
 
 func TestShortDeck_PlayerAction_GameEnded(t *testing.T) {

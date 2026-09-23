@@ -20,6 +20,7 @@ func setupMariasWebMock() *interfaces.MockMariasGame {
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
 	m.On("GetCurrentTrick").Return(([]*domain.TrickCard)(nil))
+	m.On("GetLastTrickWinner").Return(-1)
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.MariasPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -30,6 +31,7 @@ func setupMariasWebMock() *interfaces.MockMariasGame {
 	m.On("GetPlayerScores").Return([domain.MariasPlayerCnt]int{0, 0, 0})
 	m.On("GetRoundCardPoints").Return([domain.MariasPlayerCnt]int{0, 0, 0})
 	m.On("GetRoundMarriage").Return([domain.MariasPlayerCnt]int{0, 0, 0})
+	m.On("GetRoundMarriageSuits").Return([domain.MariasPlayerCnt][]domain.MariasMarriage{})
 	m.On("GetWinnerPlayer").Return(-1)
 	m.On("GetPlayableIndices", 0).Return([]int{0})
 	m.On("IsHumanTurn").Return(true)
@@ -129,6 +131,15 @@ func TestMariasWebPresenter_Output(t *testing.T) {
 		assert.Empty(t, resObj.MessageCode)
 	})
 
+	t.Run("game coded error uses message code", func(t *testing.T) {
+		m, _ := setupMariasWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "marias.errCardIndexOutOfRange", nil)
+		var resObj controller.MariasWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, err)), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "marias.errCardIndexOutOfRange", resObj.MessageCode)
+	})
+
 	t.Run("game end human wins", func(t *testing.T) {
 		m, _ := setupMariasWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
@@ -169,6 +180,19 @@ func TestMariasWebPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestMariasWebPresenter_IncludesLastTrickWinner(t *testing.T) {
+	m, _ := setupMariasWebMockWithPlayers()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLastTrickWinner")
+	m.On("GetLastTrickWinner").Return(2)
+	var output controller.MariasWebOutput
+	if err := json.Unmarshal([]byte((&presenter.MariasWebPresenter{}).Output(m, nil)), &output); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	if output.LastTrickWinner != 2 {
+		t.Errorf("lastTrickWinner = %d, want 2", output.LastTrickWinner)
+	}
+}
+
 func TestMariasWebPresenter_HintOutput(t *testing.T) {
 	p := new(presenter.MariasWebPresenter)
 
@@ -195,12 +219,29 @@ func TestMariasWebPresenter_HintOutput(t *testing.T) {
 	})
 }
 
+func TestMariasWebPresenter_OutputCarriesMarriageDetails(t *testing.T) {
+	m, _ := setupMariasWebMockWithPlayers()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundMarriageSuits")
+	m.On("GetRoundMarriageSuits").Return([domain.MariasPlayerCnt][]domain.MariasMarriage{
+		{{Suit: domain.CardDesignSpade, Points: 40}, {Suit: domain.CardDesignHeart, Points: 20}},
+		{},
+		{},
+	})
+
+	var output controller.MariasWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(new(presenter.MariasWebPresenter).Output(m, nil)), &output))
+	assert.Equal(t, []domain.MariasMarriage{
+		{Suit: domain.CardDesignSpade, Points: 40},
+		{Suit: domain.CardDesignHeart, Points: 20},
+	}, output.RoundMarriageSuits[0])
+}
+
 func TestMariasWebPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.MariasWebPresenter)
 	m := new(interfaces.MockMariasGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You plays ♠K"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, `"actionType":"play"`)

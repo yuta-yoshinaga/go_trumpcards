@@ -14,7 +14,7 @@
   },
   "you": "あなた",
   "cpu": "CPU {{id}}",
-  "round": "ラウンド {{n}}",
+  "round": "ラウンド {{n}} / {{total}}",
   "ante": "アンティ: {{amount}}",
   "chips": "チップ: {{amount}}",
   "handCount": "手札: {{count}}",

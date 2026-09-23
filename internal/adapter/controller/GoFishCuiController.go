@@ -28,6 +28,7 @@ func (c *GoFishCuiController) Exec(command string) string {
 		func(_ []string) string { return c.gi.Reset(c.gi.GetConfig()) },
 		[]string{
 			"ask", "sd", "setdifficulty",
+			"h", "hint",
 			"log", "l",
 		},
 		func(cmd string, args []string) (string, bool) {
@@ -51,6 +52,8 @@ func (c *GoFishCuiController) Exec(command string) string {
 					cfg.CpuDifficulty = domain.GoFishCpuDifficulty(v)
 					return c.gi.Reset(cfg)
 				})
+			case "h", "hint":
+				return c.gi.Hint(), true
 			default:
 				return handleCuiLog(cmd, c.gi.ActionLog)
 			}

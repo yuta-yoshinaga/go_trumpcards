@@ -24,6 +24,20 @@ func TestPrimeroCuiPresenter_OutputBettingPhase(t *testing.T) {
 	assert.Contains(t, out, "ラウンド")
 }
 
+func TestPrimeroCuiPresenter_OutputShowsConfiguredTargetRounds(t *testing.T) {
+	p := new(presenter.PrimeroCuiPresenter)
+	for _, tc := range []struct {
+		targetRounds int
+		want         string
+	}{{4, "ラウンド: 1 / 4"}, {12, "ラウンド: 1 / 12"}} {
+		g := domain.NewDefaultPrimero()
+		cfg := g.GetConfig()
+		cfg.TargetRounds = tc.targetRounds
+		g.SetConfig(cfg)
+		assert.Contains(t, p.Output(g, nil), tc.want)
+	}
+}
+
 func TestPrimeroCuiPresenter_OutputBettingShowsCallNeed(t *testing.T) {
 	g := domain.NewDefaultPrimero()
 	require.Equal(t, domain.PrimeroPhaseBetting, g.GetPhase())

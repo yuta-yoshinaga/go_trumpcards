@@ -154,7 +154,7 @@ func TestGapsCuiPresenter_GapNeeds(t *testing.T) {
 		out := p.Output(withNeed(&domain.GapsGapNeed{
 			Kind: domain.GapsNeedCard, Design: domain.CardDesignHeart, Value: 6,
 		}), nil)
-		assert.Contains(t, out, "HEART 6")
+		assert.Contains(t, out, "♥6")
 	})
 
 	t.Run("marks a blocked gap differently from an open one", func(t *testing.T) {

@@ -187,6 +187,9 @@ func (p *FrenchTarotCuiPresenter) writePrompt(b *strings.Builder, g interfaces.F
 		b.WriteString(i18n.Tf("frenchtarot.promptRoundEnd",
 			"declarer", cuiPlayerName(g.GetPlayer(g.GetDeclarerIdx()), g.GetDeclarerIdx()),
 			"outcome", frenchTarotOutcomeLabel(g.GetOutcome())) + "\n")
+		b.WriteString(i18n.Tf("frenchtarot.roundTarget",
+			"captured", strconv.Itoa(g.GetDeclarerCapturedPoints()),
+			"target", strconv.Itoa(g.GetTarget())) + "\n")
 		// **プティ・オ・ブーが乗ると、獲得点から逆算した数字と精算が合わなくなる。**
 		// ルールは実装済みで精算にも乗っているのに、どちらの画面にも出ていなかった
 		// (#6509)。発生しなかった (0) 局は行ごと出さない。

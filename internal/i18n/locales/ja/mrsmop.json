@@ -17,5 +17,9 @@
   "targetsNone": "列{{col}}の札{{idx}}から動かせる先はありません",
   "targetTableau": "列{{col}}",
   "helpTargets": "  t <col> [idx]            その列の札を置ける先を一覧する",
-  "moveUsage": "使用法: m <列> <列> または m t <列> <カードID> t <列>"
+  "moveUsage": "使用法: m <列> <列> または m t <列> <カードID> t <列>",
+  "log.moveTableauToTableau": "タブロー列{{fromCol}}→タブロー列{{toCol}}",
+  "log.giveUp": "ギブアップしました",
+  "log.autoComplete": "オートコンプリートを実行しました",
+  "log.completeSuit": "タブロー列{{col}}でスートが完成しました"
 }

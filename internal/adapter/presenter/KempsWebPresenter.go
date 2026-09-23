@@ -45,10 +45,7 @@ func (p *KempsWebPresenter) Output(g interfaces.KempsGame, lastErr error) string
 		if player == nil {
 			continue
 		}
-		name := "あなた"
-		if !player.GetIsHuman() {
-			name = "CPU"
-		}
+		name := webPlayerName(player.GetIsHuman(), i)
 		// 手札は人間 (idx 0) のみ公開する。
 		resObj.Players = append(resObj.Players, &controller.KempsWebPlayer{
 			Name:           name,

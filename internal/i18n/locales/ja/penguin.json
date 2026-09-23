@@ -11,9 +11,9 @@
   "helpGiveUp": "  g                    ギブアップ",
   "helpHint": "  h                    ヒント",
   "helpAutoComplete": "  ac                   オートコンプリート",
-  "freeCellHeader": "FreeCells: ",
-  "foundationHeader": "Foundation: ",
-  "baseRankLabel": "BaseRank: {{rank}}",
+  "freeCellHeader": "フリーセル: ",
+  "foundationHeader": "組札: ",
+  "baseRankLabel": "ベースランク: {{rank}}",
   "columnLabel": "列{{col}}:",
   "promptSourceZone": "移動元を指定してください (t = タブロー、c = フリーセル):",
   "promptToZone": "移動先を指定してください (t = タブロー、f = 組札、c = フリーセル):",
@@ -23,7 +23,7 @@
   "moveUsage": "使い方: m t <col> [<idx>] t|f|c <toCol|cell>",
   "hintFromTableau": "タブロー列{{col}}[{{idx}}]",
   "hintFromFreeCell": "フリーセル{{col}}",
-  "hintToFoundation": "ファンデーション",
+  "hintToFoundation": "組札",
   "hintToTableau": "タブロー列{{col}}",
   "hintToFreeCell": "フリーセル{{col}}",
   "hintLine": "ヒント: {{from}} → {{to}}",
@@ -32,5 +32,6 @@
   "helpExampleMoveCell": "  m t 0 c 0            列 0 の一番上を空きセル 0 へ逃がす",
   "helpExampleHint": "  h                    次の一手を教えてもらう",
   "helpExampleAuto": "  ac                   組札へ送れる札を自動で送る",
-  "helpUndo": "  u 1手戻す"
+  "helpUndo": "  u 1手戻す",
+  "log.tableauToTableau": "タブロー列{{fromCol}}→タブロー列{{toCol}}", "log.tableauToFoundation": "タブロー列{{col}}→組札", "log.tableauToFreeCell": "タブロー列{{col}}→フリーセル{{cell}}", "log.freeCellToTableau": "フリーセル{{cell}}→タブロー列{{col}}", "log.freeCellToFoundation": "フリーセル{{cell}}→組札", "log.giveUp": "ギブアップしました", "log.autoComplete": "オートコンプリートを実行しました"
 }

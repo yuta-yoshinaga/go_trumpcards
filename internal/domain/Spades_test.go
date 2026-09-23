@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
@@ -801,6 +802,15 @@ func TestSpades_ActionLog(t *testing.T) {
 	s.PlayerBid(3) //nolint:errcheck
 	assert.NotNil(t, s.GetActionLog())
 	assert.Greater(t, len(s.GetActionLog()), 0)
+	var entry *domain.ActionLogEntry
+	for _, candidate := range s.GetActionLog() {
+		if candidate.DetailCode == "spades.log.bid" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, map[string]string{"name": "You", "bid": "3"}, entry.DetailParams)
 }
 
 func TestSpades_SpadesBrokenOnPlay(t *testing.T) {

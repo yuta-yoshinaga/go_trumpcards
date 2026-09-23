@@ -177,6 +177,8 @@ function YanivPageContent() {
   const isHumanTurn = state.currentPlayerIdx === 0 && !isGameEnd && (isDraw || isDiscard);
   const human = state.players[0];
   const reveal = isGameEnd || isRoundEnd;
+  const caller = isRoundEnd ? state.players[state.callerIdx] : undefined;
+  const callerName = caller?.isHuman ? tc('player.you') : caller ? tc('player.cpu', { id: caller.id }) : '';
   const canYaniv = isHumanTurn && isDiscard && human.handTotal <= 5;
   const phaseName = isGameEnd
     ? t('phase.end')
@@ -219,6 +221,22 @@ function YanivPageContent() {
                 {error}
               </button>
             )}
+
+            <div
+              aria-atomic="true"
+              aria-live="polite"
+              data-testid="yaniv-round-result"
+              className={
+                caller
+                  ? `rounded-lg p-3 text-center font-medium ${state.isAsaf ? 'bg-ds-error text-white' : 'bg-ds-success text-white'}`
+                  : 'sr-only'
+              }
+            >
+              {caller &&
+                (state.isAsaf
+                  ? t('roundResult.asaf', { name: callerName })
+                  : t('roundResult.yaniv', { name: callerName }))}
+            </div>
 
             {/* CPU players */}
             <div className="flex justify-center gap-6 flex-wrap" data-tutorial="y-cpu-area">

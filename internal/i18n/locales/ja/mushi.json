@@ -30,5 +30,11 @@
   "cardLabel": "{{month}}月{{index}}({{category}})",
   "helpExamplePlay": "  p 0                      手札の 0 番のカードを出す",
   "helpHint": "  h                        助言を表示",
-  "wildRule": "★ の雷札はワイルド。柳以外なら何でも取れます（柳だけは取れません）"
+  "wildRule": "★ の雷札はワイルド。柳以外なら何でも取れます（柳だけは取れません）",
+  "log.wild": "ディーラーが場の稲妻札を取りました",
+  "log.deal": "ラウンド {{round}} を配りました",
+  "log.place": "揃わないので場に置きました",
+  "log.capture": "{{count}} 枚取りました",
+  "log.round": "ラウンド {{round}} を精算しました",
+  "log.game": "ゲーム終了"
 }

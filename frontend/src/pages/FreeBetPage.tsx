@@ -13,6 +13,7 @@ import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { KbdBadge } from '../components/KbdBadge';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
@@ -157,15 +158,24 @@ function FreeBetPageContent() {
 
             {state.dealerCards.length > 0 && (
               <div className="mb-3">
-                <div className="text-ds-text-primary text-center text-sm font-bold mb-1">{t('label.dealer')}</div>
+                <div className="text-ds-text-primary text-center text-sm font-bold mb-1">
+                  {state.dealerHoleRevealed ? t('label.dealer') : t('label.upCard')}
+                </div>
                 <div className="flex justify-center gap-1 flex-wrap" data-testid="fb-dealer-cards">
                   {state.dealerCards.map((card, i) => (
                     <AnimatedCard key={`dealer-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />
                   ))}
+                  {!state.dealerHoleRevealed && <AnimatedCardBack width={cardWidth} />}
                 </div>
-                <div className="text-ds-text-primary text-center text-sm mt-1" data-testid="fb-dealer-score">
-                  {state.dealerScore} {t('label.score')}
-                </div>
+                {state.dealerHoleRevealed ? (
+                  <div className="text-ds-text-primary text-center text-sm mt-1" data-testid="fb-dealer-score">
+                    {state.dealerScore} {t('label.score')}
+                  </div>
+                ) : (
+                  <p className="text-ds-text-muted text-center text-xs mt-1" data-testid="fb-dealer-hidden">
+                    {t('label.hidden')}
+                  </p>
+                )}
               </div>
             )}
 

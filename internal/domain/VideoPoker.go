@@ -5,6 +5,7 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 )
 
 // ビデオポーカーフェーズ定数
@@ -34,6 +35,10 @@ type VideoPoker struct {
 	chipsRefilled bool // Reset がこのターンに残高を補充したか (永続化しない)
 	result        GameResult
 	payout        int
+	hands         int // RESULT フェーズに到達したハンド数 (セッション通算)
+	wins          int // 払戻しが発生したハンド数 (セッション通算)
+	totalBet      int // 賭けたコインの累計 (セッション通算)
+	totalPayout   int // 払い戻されたコインの累計 (セッション通算)
 	handRank      int
 	handName      string
 	handKey       string
@@ -74,6 +79,7 @@ func NewJokerPokerVideoPoker() *VideoPoker {
 
 // Reset ゲーム初期化
 func (vp *VideoPoker) Reset() {
+	// Reset は「次のハンド」の開始なので、セッション通算の統計は維持する。
 	vp.gameEndFlag = false
 	vp.phase = VideoPokerPhaseBet
 	vp.hand = nil
@@ -111,14 +117,14 @@ func (vp *VideoPoker) Bet(amount int) error {
 		return NewDomainError(ErrInsufficientChips, "Insufficient chips.")
 	}
 	vp.betAmount = amount
-	vp.appendLog(0, "bet", fmt.Sprintf("bet %d coin(s)", amount), nil)
+	vp.appendLogCode(0, "bet", "videopoker.log.bet", map[string]string{"amount": strconv.Itoa(amount)}, nil)
 
 	// ディール: 5枚配る
 	vp.hand = make([]*Card, VideoPokerHandSize)
 	for i := range VideoPokerHandSize {
 		vp.hand[i] = vp.trumpCards.DrawCard()
 	}
-	vp.appendLog(0, "deal", "dealt 5 cards", vp.hand)
+	vp.appendLogCode(0, "deal", "videopoker.log.dealt", nil, vp.hand)
 
 	vp.phase = VideoPokerPhaseDraw
 	return nil
@@ -155,10 +161,18 @@ func (vp *VideoPoker) Hold(indices []int) error {
 			replacedCount++
 		}
 	}
-	vp.appendLog(0, "draw", fmt.Sprintf("held %d, drew %d", len(indices), replacedCount), vp.hand)
+	vp.appendLogCode(0, "draw", "videopoker.log.draw", map[string]string{"held": strconv.Itoa(len(indices)), "drew": strconv.Itoa(replacedCount)}, vp.hand)
 
 	// 役判定＆配当計算
 	vp.evaluate()
+	// Reset は次のハンドを始める操作であり、セッション自体は終わらせない。
+	// Web と同じく RESULT 到達時にだけ、確定したベットと払戻しを集計する。
+	vp.hands++
+	vp.totalBet += vp.betAmount
+	vp.totalPayout += vp.payout
+	if vp.payout > 0 {
+		vp.wins++
+	}
 	vp.phase = VideoPokerPhaseResult
 	vp.gameEndFlag = true
 	return nil
@@ -186,7 +200,7 @@ func (vp *VideoPoker) evaluate() {
 			displayName = PokerHandNames[rank]
 		}
 	}
-	vp.appendLog(0, "result", fmt.Sprintf("%s payout=%d", displayName, vp.payout), vp.hand)
+	vp.appendLogCode(0, "result", "videopoker.log.result", map[string]string{"handKey": videoPokerHandLogKey(displayName), "payout": strconv.Itoa(vp.payout)}, vp.hand)
 }
 
 // videoPokerHandKey maps a variant hand name (the English string returned by a
@@ -252,6 +266,18 @@ func (vp *VideoPoker) GetResult() GameResult { return vp.result }
 
 // GetPayout 配当金額
 func (vp *VideoPoker) GetPayout() int { return vp.payout }
+
+// GetHands は RESULT に到達したハンド数を返す。
+func (vp *VideoPoker) GetHands() int { return vp.hands }
+
+// GetWins は払戻しが発生したハンド数を返す。
+func (vp *VideoPoker) GetWins() int { return vp.wins }
+
+// GetTotalBet はセッション中に賭けたコインの累計を返す。
+func (vp *VideoPoker) GetTotalBet() int { return vp.totalBet }
+
+// GetTotalPayout はセッション中に払い戻されたコインの累計を返す。
+func (vp *VideoPoker) GetTotalPayout() int { return vp.totalPayout }
 
 // GetHandRank ハンドランク
 func (vp *VideoPoker) GetHandRank() int { return vp.handRank }
@@ -336,6 +362,10 @@ type videoPokerJSON struct {
 	GameEndFlag bool                     `json:"ge"`
 	Result      GameResult               `json:"rs"`
 	Payout      int                      `json:"po"`
+	Hands       int                      `json:"hs"`
+	Wins        int                      `json:"wn"`
+	TotalBet    int                      `json:"tb"`
+	TotalPayout int                      `json:"tp"`
 	HandRank    int                      `json:"hr"`
 	HandName    string                   `json:"hn"`
 	HandKey     string                   `json:"hk"`
@@ -360,6 +390,10 @@ func (vp *VideoPoker) MarshalJSON() ([]byte, error) {
 		GameEndFlag: vp.gameEndFlag,
 		Result:      vp.result,
 		Payout:      vp.payout,
+		Hands:       vp.hands,
+		Wins:        vp.wins,
+		TotalBet:    vp.totalBet,
+		TotalPayout: vp.totalPayout,
 		HandRank:    vp.handRank,
 		HandName:    vp.handName,
 		HandKey:     vp.handKey,
@@ -403,6 +437,10 @@ func (vp *VideoPoker) UnmarshalJSON(data []byte) error {
 	vp.gameEndFlag = j.GameEndFlag
 	vp.result = j.Result
 	vp.payout = j.Payout
+	vp.hands = j.Hands
+	vp.wins = j.Wins
+	vp.totalBet = j.TotalBet
+	vp.totalPayout = j.TotalPayout
 	vp.handRank = j.HandRank
 	vp.handName = j.HandName
 	vp.handKey = j.HandKey
@@ -423,5 +461,45 @@ func resolveVideoPokerConfig(name string) *VideoPokerVariantConfig {
 		return JokerPokerConfig()
 	default:
 		return JacksOrBetterConfig()
+	}
+}
+
+// videoPokerHandLogKey はビデオポーカーの役名をログ用の翻訳キーに変換する。
+func videoPokerHandLogKey(handName string) string {
+	switch handName {
+	case "Royal Flush":
+		return "pokerhand.royalFlush"
+	case "Natural Royal Flush":
+		return "pokerhand.naturalRoyalFlush"
+	case "Wild Royal Flush":
+		return "pokerhand.wildRoyalFlush"
+	case "Four Deuces":
+		return "pokerhand.fourDeuces"
+	case "Five of a Kind":
+		return "pokerhand.fiveOfAKind"
+	case "Straight Flush":
+		return "pokerhand.straightFlush"
+	case "Four of a Kind":
+		return "pokerhand.fourOfAKind"
+	case "Full House":
+		return "pokerhand.fullHouse"
+	case "Flush":
+		return "pokerhand.flush"
+	case "Straight":
+		return "pokerhand.straight"
+	case "Three of a Kind":
+		return "pokerhand.threeOfAKind"
+	case "Two Pair":
+		return "pokerhand.twoPair"
+	case "Jacks or Better":
+		return "pokerhand.jacksOrBetter"
+	case "Kings or Better":
+		return "pokerhand.kingsOrBetter"
+	case "One Pair":
+		return "pokerhand.pair"
+	case "High Card":
+		return "pokerhand.highCard"
+	default:
+		return "pokerhand.unknown"
 	}
 }

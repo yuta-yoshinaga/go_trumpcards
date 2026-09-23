@@ -222,6 +222,9 @@ func TestOichoKabu_GetActionLog(t *testing.T) {
 	o := domain.NewDefaultOichoKabu()
 	require.NoError(t, o.Bet(100))
 	assert.NotEmpty(t, o.GetActionLog())
+	entry := o.GetActionLog()[0]
+	assert.Equal(t, "oichokabu.log.bet", entry.DetailCode)
+	assert.Equal(t, map[string]string{"amount": "100"}, entry.DetailParams)
 }
 
 func TestOichoKabu_JSONRoundTrip(t *testing.T) {

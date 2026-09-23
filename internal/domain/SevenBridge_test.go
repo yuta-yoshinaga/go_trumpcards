@@ -78,6 +78,49 @@ func TestSevenBridge_Reset(t *testing.T) {
 	assert.Equal(t, domain.SevenBridgePivotRank, top.GetValue())
 }
 
+func TestSevenBridge_DomainErrorsHaveMessageCodes(t *testing.T) {
+	g := newTestSevenBridge()
+	g.Reset()
+	g.SetPhase(domain.SevenBridgePhaseDraw)
+	g.SetDiscardPile([]*domain.Card{})
+	if err := g.PlayerClaimPon([]int{0, 1}); err == nil {
+		t.Fatal("expected discard error")
+	} else if code, _ := domain.ErrorMessageCode(err); code != "sevenbridge.errDiscardPileEmpty" {
+		t.Fatalf("code = %q", code)
+	}
+
+	if err := g.PlayerClaimChi([]int{0}); err == nil {
+		t.Fatal("expected indices error")
+	} else if code, _ := domain.ErrorMessageCode(err); code != "sevenbridge.errChiCardIndicesRequired" {
+		t.Fatalf("code = %q", code)
+	}
+
+	g.SetPhase(domain.SevenBridgePhasePlay)
+	if err := g.PlayerMeld([]int{0}); err == nil {
+		t.Fatal("expected meld size error")
+	} else if code, _ := domain.ErrorMessageCode(err); code != "sevenbridge.errMeldMinimumCards" {
+		t.Fatalf("code = %q", code)
+	}
+}
+
+func TestSevenBridge_ChiRejectsEmptyDiscardWithCode(t *testing.T) {
+	g := newTestSevenBridge()
+	g.Reset()
+	p := g.GetPlayer(0)
+	p.Reset()
+	p.AddCard(domain.NewCard(domain.CardDesignSpade, 5, true))
+	p.AddCard(domain.NewCard(domain.CardDesignSpade, 6, true))
+	g.SetPhase(domain.SevenBridgePhaseDraw)
+	g.SetDiscardPile([]*domain.Card{})
+
+	err := g.PlayerClaimChi([]int{0, 1})
+	require.Error(t, err)
+	assert.ErrorIs(t, err, domain.ErrInvalidPlay)
+	de, ok := err.(*domain.DomainError)
+	require.True(t, ok, "expected DomainError, got %T", err)
+	assert.Equal(t, "sevenbridge.errDiscardPileEmpty", de.MessageCode())
+}
+
 func TestSevenBridge_Reset_ClearsState(t *testing.T) {
 	g := newTestSevenBridge()
 	g.Reset()
@@ -891,8 +934,16 @@ func TestSevenBridge_GetActionLog(t *testing.T) {
 	g.SetCurrentPlayerIdx(0)
 	require.NoError(t, g.PlayerMeld([]int{0, 1, 2}))
 	log := g.GetActionLog()
-	assert.NotEmpty(t, log)
-	assert.Equal(t, "meld", log[len(log)-1].ActionType)
+	var meld *domain.ActionLogEntry
+	for _, entry := range log {
+		if entry.DetailCode == "sevenbridge.log.meldsCards" {
+			meld = entry
+			break
+		}
+	}
+	require.NotNil(t, meld)
+	assert.Equal(t, "meld", meld.ActionType)
+	assert.Equal(t, map[string]string{"name": "You", "count": "3"}, meld.DetailParams)
 }
 
 func TestSevenBridge_SetRoundNumber(t *testing.T) {

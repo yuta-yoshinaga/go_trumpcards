@@ -448,3 +448,19 @@ func TestJass_Getters_Coverage(t *testing.T) {
 	g.NextRound()
 	assert.Equal(t, before+1, g.GetRoundNumber())
 }
+
+func TestJassActionLogUsesDetailCode(t *testing.T) {
+	g := newTestJass()
+	g.Reset()
+	g.SetBidPlayerIdx(0)
+	assert.NoError(t, g.PlayerSchieben())
+	var entry *domain.ActionLogEntry
+	for _, candidate := range g.GetActionLog() {
+		if candidate.DetailCode == "jass.log.schieben" {
+			entry = candidate
+			break
+		}
+	}
+	assert.NotNil(t, entry)
+	assert.Equal(t, map[string]string{"name": "You"}, entry.DetailParams)
+}

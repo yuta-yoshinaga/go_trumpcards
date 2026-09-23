@@ -8,6 +8,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -20,6 +22,7 @@ func newFrenchTarotGame() *domain.FrenchTarot {
 func TestFrenchTarotWebPresenter_Output(t *testing.T) {
 	g := newFrenchTarotGame()
 	g.Reset()
+	g.SetLastTrick(2, []*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, false)})
 	p := &presenter.FrenchTarotWebPresenter{}
 
 	var parsed controller.FrenchTarotWebOutput
@@ -41,6 +44,15 @@ func TestFrenchTarotWebPresenter_Output(t *testing.T) {
 	}
 	if parsed.ChienCount != domain.FrenchTarotChienSize {
 		t.Errorf("chienCount = %d", parsed.ChienCount)
+	}
+	if parsed.LastTrickWinner != 2 {
+		t.Errorf("lastTrickWinner = %d, want 2", parsed.LastTrickWinner)
+	}
+	if parsed.Target != domain.FrenchTarotTargetForBouts(0) {
+		t.Errorf("target = %d, want %d", parsed.Target, domain.FrenchTarotTargetForBouts(0))
+	}
+	if parsed.DeclarerCaptured != g.GetDeclarerCapturedPoints() {
+		t.Errorf("declarerCaptured = %d, want %d", parsed.DeclarerCaptured, g.GetDeclarerCapturedPoints())
 	}
 }
 
@@ -129,6 +141,18 @@ func TestFrenchTarotWebPresenter_Error(t *testing.T) {
 	out := p.Output(g, errors.New("boom"))
 	if !strings.Contains(out, "boom") {
 		t.Errorf("error message not propagated: %s", out)
+	}
+}
+
+func TestFrenchTarotWebPresenter_CodedError(t *testing.T) {
+	g := newFrenchTarotGame()
+	g.Reset()
+	p := &presenter.FrenchTarotWebPresenter{}
+	err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "frenchtarot.errInvalidBid", nil)
+	var parsed controller.FrenchTarotWebOutput
+	require.NoError(t, json.Unmarshal([]byte(p.Output(g, err)), &parsed))
+	if parsed.Message != "" || parsed.MessageCode != "frenchtarot.errInvalidBid" {
+		t.Errorf("message = %q, messageCode = %q", parsed.Message, parsed.MessageCode)
 	}
 }
 

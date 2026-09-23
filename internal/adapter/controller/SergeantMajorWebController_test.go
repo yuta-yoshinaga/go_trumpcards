@@ -18,12 +18,14 @@ func intPtrSm(v int) *int { return &v }
 
 func mustSergeantMajorOutputJSON(msg string) string {
 	out := &controller.SergeantMajorWebOutput{
-		Players:       []*controller.SergeantMajorWebOutputPlayer{},
-		CurrentTrick:  []*controller.WebOutputTrickCard{},
-		ValidPlays:    []int{},
-		DiscardCount:  domain.SergeantMajorKittySize,
-		WinnerIdx:     -1,
-		WebOutputBase: controller.WebOutputBase{Message: msg},
+		Players:              []*controller.SergeantMajorWebOutputPlayer{},
+		CurrentTrick:         []*controller.WebOutputTrickCard{},
+		ValidPlays:           []int{},
+		LastExchangeLost:     []*controller.WebOutputCard{},
+		LastExchangeReceived: []*controller.WebOutputCard{},
+		DiscardCount:         domain.SergeantMajorKittySize,
+		WinnerIdx:            -1,
+		WebOutputBase:        controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {

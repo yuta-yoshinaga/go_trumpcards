@@ -1,4 +1,14 @@
 {
+  "log.pass": "player {{player}} passes",
+  "log.place": "player {{player}} places {{card}}",
+  "log.dominoFinish": "player {{player}} goes out (rank {{rank}})",
+  "log.dominoLast": "player {{player}} is last (rank {{rank}})",
+  "log.gameEnd": "all 28 deals completed",
+  "log.deal": "deal {{deal}}/{{total}}, dealer={{dealer}}",
+  "log.selectContract": "dealer {{dealer}} selects {{contract}}",
+  "log.play": "player {{player}} plays {{card}}",
+  "log.trickWin": "player {{player}} wins trick {{trick}}",
+  "log.dealEnd": "deal {{deal}} scored ({{contract}})",
   "helpTitle": "Barbu",
   "hintNone": "No hint available",
   "hintDomino": "Recommendation: playable cards {{cards}}",
@@ -40,5 +50,6 @@
   "contractDescBarbu": "-20 for taking the K of hearts",
   "contractDescNoLastTrick": "-20 for taking the last trick",
   "contractDescTrumps": "+5 per trick (you pick trumps)",
-  "contractDescDominoes": "shed your hand first (fan-out)"
+  "contractDescDominoes": "shed your hand first (fan-out)",
+  "cUnknown": "Unknown"
 }

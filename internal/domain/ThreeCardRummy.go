@@ -91,6 +91,11 @@ func NewDefaultThreeCardRummy() *ThreeCardRummy {
 	return tc
 }
 
+// appendLog adds a locale-independent action-log entry.
+func (tc *ThreeCardRummy) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	tc.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
+}
+
 // Rebet は直前のラウンドと同じ額で賭け直す (#5513)。
 //
 // Web はラウンド終了時の額を React 側に覚えてワンクリック再ベットできるが、
@@ -98,7 +103,7 @@ func NewDefaultThreeCardRummy() *ThreeCardRummy {
 // 別に書くと、チップ不足や上限の扱いが通常のベットとずれる。
 func (tc *ThreeCardRummy) Rebet() error {
 	if tc.lastAnteBet <= 0 {
-		return NewDomainError(ErrInvalidPlay, "まだ賭けていないので再ベットできません")
+		return NewDomainErrorCode(ErrInvalidPlay, "threecardrummy.errCannotRebet", nil)
 	}
 	return tc.Bet(tc.lastAnteBet, tc.lastLowBonusBet)
 }
@@ -154,7 +159,7 @@ func (tc *ThreeCardRummy) Bet(ante, lowBonus int) error {
 	tc.lastAnteBet = ante
 	tc.lowBonusBet = lowBonus
 	tc.lastLowBonusBet = lowBonus
-	tc.appendLog(0, "bet", fmt.Sprintf("ante=%d lowbonus=%d", ante, lowBonus), nil)
+	tc.appendLog(0, "bet", "threecardrummy.log.bet", map[string]string{"ante": fmt.Sprintf("%d", ante), "lowBonus": fmt.Sprintf("%d", lowBonus)}, nil)
 
 	// ディール: 3枚ずつ配る
 	tc.deal()
@@ -172,7 +177,7 @@ func (tc *ThreeCardRummy) Play() error {
 		return NewDomainError(ErrInsufficientChips, "Insufficient chips for play bet.")
 	}
 	tc.playBet = tc.anteBet
-	tc.appendLog(0, "play", fmt.Sprintf("play bet=%d", tc.playBet), nil)
+	tc.appendLog(0, "play", "threecardrummy.log.play", map[string]string{"amount": fmt.Sprintf("%d", tc.playBet)}, nil)
 
 	tc.resolve()
 	return nil
@@ -183,7 +188,7 @@ func (tc *ThreeCardRummy) Fold() error {
 	if tc.phase != ThreeCardRummyPhaseAction {
 		return NewDomainError(ErrWrongPhase, "Fold is only allowed during the action phase.")
 	}
-	tc.appendLog(0, "fold", "player folds", nil)
+	tc.appendLog(0, "fold", "threecardrummy.log.fold", nil, nil)
 
 	tc.result = GameResultLose
 	tc.playerScore = ThreeCardRummyScore(tc.playerHand)
@@ -198,7 +203,7 @@ func (tc *ThreeCardRummy) Fold() error {
 
 	tc.gameEndFlag = true
 	tc.phase = ThreeCardRummyPhaseEnd
-	tc.appendLog(-1, "result", "player folded", nil)
+	tc.appendLog(-1, "result", "threecardrummy.log.playerFolded", nil, nil)
 	return nil
 }
 
@@ -214,7 +219,7 @@ func (tc *ThreeCardRummy) deal() {
 	// 無く、むしろ play/fold を決める唯一の材料。resolve まで 0 のままだと
 	// CUI も Web も「0 点 = 最強」を表示してしまう。
 	tc.playerScore = ThreeCardRummyScore(tc.playerHand)
-	tc.appendLog(-1, "deal", "dealt 3 cards each", nil)
+	tc.appendLog(-1, "deal", "threecardrummy.log.deal", nil, nil)
 }
 
 // resolve ゲーム解決（Play後の処理）
@@ -258,16 +263,14 @@ func (tc *ThreeCardRummy) resolve() {
 	tc.gameEndFlag = true
 	tc.phase = ThreeCardRummyPhaseEnd
 
-	var resultStr string
 	switch tc.result {
 	case GameResultWin:
-		resultStr = "player wins"
+		tc.appendLog(-1, "result", "threecardrummy.log.playerWins", nil, nil)
 	case GameResultDraw:
-		resultStr = "push"
+		tc.appendLog(-1, "result", "threecardrummy.log.push", nil, nil)
 	default:
-		resultStr = "dealer wins"
+		tc.appendLog(-1, "result", "threecardrummy.log.dealerWins", nil, nil)
 	}
-	tc.appendLog(-1, "result", resultStr, nil)
 }
 
 // checkDealerQualifies はディーラーが勝負に応じるかを返す。

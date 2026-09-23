@@ -163,6 +163,16 @@ func TestTuteWebPresenter_Output(t *testing.T) {
 		assert.Empty(t, resObj.MessageCode)
 	})
 
+	t.Run("coded error returns message code", func(t *testing.T) {
+		m, _ := setupTuteWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "tute.errInvalidMarriage", nil)
+		result := p.Output(m, err)
+		var resObj controller.TuteWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "tute.errInvalidMarriage", resObj.MessageCode)
+	})
+
 	t.Run("game end human team wins", func(t *testing.T) {
 		m, _ := setupTuteWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
@@ -248,7 +258,7 @@ func TestTuteWebPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockTuteGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You plays ♠K"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, `"actionType":"play"`)

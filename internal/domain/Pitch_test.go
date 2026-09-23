@@ -42,6 +42,29 @@ func TestNewPitch(t *testing.T) {
 	assert.Equal(t, domain.PitchTrumpUnset, p.GetTrumpSuit())
 }
 
+func TestPitch_ActionLogUsesDetailCode(t *testing.T) {
+	p := newTestPitch()
+	p.Reset()
+	require.NoError(t, p.PlayerBid(domain.PitchPassBid))
+	var entry *domain.ActionLogEntry
+	for _, candidate := range p.GetActionLog() {
+		if candidate.ActionType == "bid" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, "pitch.log.bidPass", entry.DetailCode)
+	assert.Equal(t, map[string]string{"name": "You"}, entry.DetailParams)
+
+	p = newTestPitch()
+	p.Reset()
+	require.NoError(t, p.PlayerBid(3))
+	entry = p.GetActionLog()[0]
+	assert.Equal(t, "pitch.log.bid", entry.DetailCode)
+	assert.Equal(t, map[string]string{"name": "You", "bid": "3"}, entry.DetailParams)
+}
+
 func TestNewDefaultPitch(t *testing.T) {
 	p := domain.NewDefaultPitch()
 	assert.NotNil(t, p)

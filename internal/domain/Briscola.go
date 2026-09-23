@@ -13,6 +13,7 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 )
 
 // BriscolaPlayerCnt ブリスコラのプレイヤー数 (v1は2人固定)
@@ -98,6 +99,7 @@ type Briscola struct {
 	trumpCard        *Card // 場に表向きで置かれるトランプ (山札の最後)
 	trumpSuit        int
 	leadPlayerIdx    int
+	lastTrickPoints  int
 	dealerIdx        int
 	playerPoints     []int
 	gameEndFlag      bool
@@ -108,11 +110,12 @@ type Briscola struct {
 // NewBriscola コンストラクタ
 func NewBriscola(trumpCards *TrumpCards, players []*BriscolaPlayer, config BriscolaConfig) *Briscola {
 	return &Briscola{
-		trumpCards:   trumpCards,
-		players:      players,
-		config:       config,
-		winnerIdx:    -1,
-		playerPoints: make([]int, len(players)),
+		trumpCards:      trumpCards,
+		players:         players,
+		config:          config,
+		winnerIdx:       -1,
+		lastTrickPoints: 0,
+		playerPoints:    make([]int, len(players)),
 	}
 }
 
@@ -133,6 +136,7 @@ func (b *Briscola) Reset() {
 	b.trickNumber = 0
 	b.currentTrick = nil
 	b.leadPlayerIdx = -1
+	b.lastTrickPoints = 0
 	b.currentPlayerIdx = -1
 	b.dealerIdx = 0
 	b.playerPoints = make([]int, len(b.players))
@@ -165,7 +169,7 @@ func (b *Briscola) PlayerPlay(cardIndex int) error {
 
 	player := b.players[b.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "briscola.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
@@ -214,10 +218,11 @@ func (b *Briscola) ResolveTrick() {
 
 	b.players[winnerIdx].AddTrick(trickCards)
 	b.playerPoints[winnerIdx] += trickPoints
+	b.lastTrickPoints = trickPoints
 
-	b.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (%d pt)", playerName(b.players, winnerIdx), b.trickNumber, trickPoints),
-		trickCards)
+	b.appendLogCode(winnerIdx, "trick_win", "briscola.log.trickWin", map[string]string{
+		"name": playerName(b.players, winnerIdx), "trick": strconv.Itoa(b.trickNumber), "points": strconv.Itoa(trickPoints),
+	}, trickCards)
 
 	b.leadPlayerIdx = winnerIdx
 	// Phase is already BriscolaPhaseTrickEnd (guarded at function entry); leave it.
@@ -316,6 +321,9 @@ func (b *Briscola) SetPlayerPoints(i, points int) {
 // GetLeadPlayerIdx リードプレイヤーインデックス取得
 func (b *Briscola) GetLeadPlayerIdx() int { return b.leadPlayerIdx }
 
+// GetLastTrickPoints returns the points scored by the most recently resolved trick.
+func (b *Briscola) GetLastTrickPoints() int { return b.lastTrickPoints }
+
 // SetLeadPlayerIdx リードプレイヤーインデックス設定 (テスト用)
 func (b *Briscola) SetLeadPlayerIdx(idx int) { b.leadPlayerIdx = idx }
 
@@ -385,7 +393,7 @@ func (b *Briscola) dealInitial() {
 	b.trumpCard = b.trumpCards.DrawCard()
 	if b.trumpCard != nil {
 		b.trumpSuit = b.trumpCard.GetDesign()
-		b.appendLog(-1, "trump", fmt.Sprintf("Trump: %s", cardStr(b.trumpCard)), []*Card{b.trumpCard})
+		b.appendLogCode(-1, "trump", "briscola.log.trump", map[string]string{"card": cardStr(b.trumpCard)}, []*Card{b.trumpCard})
 	}
 }
 
@@ -404,9 +412,9 @@ func (b *Briscola) playCard(playerIdx int, card *Card) {
 		PlayerIdx: playerIdx,
 		Card:      card,
 	})
-	b.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", playerName(b.players, playerIdx), cardStr(card)),
-		[]*Card{card})
+	b.appendLogCode(playerIdx, "play", "briscola.log.play", map[string]string{
+		"name": playerName(b.players, playerIdx), "card": cardStr(card),
+	}, []*Card{card})
 
 	if len(b.currentTrick) == BriscolaPlayerCnt {
 		b.phase = BriscolaPhaseTrickEnd
@@ -419,7 +427,7 @@ func (b *Briscola) playCard(playerIdx int, card *Card) {
 // Briscola には must-follow がないため、プレイヤーが手札に持つカードであれば常に有効。
 func (b *Briscola) validatePlay(_ int, card *Card) error {
 	if card == nil {
-		return NewDomainError(ErrInvalidCard, "カードが nil です")
+		return NewDomainErrorCode(ErrInvalidCard, "briscola.errCardNil", nil)
 	}
 	return nil
 }
@@ -500,8 +508,9 @@ func (b *Briscola) finishGame() {
 	b.gameEndFlag = true
 	b.phase = BriscolaPhaseGameEnd
 	b.winnerIdx = BriscolaDetermineWinner(b.playerPoints[0], b.playerPoints[1])
-	detail := fmt.Sprintf("Game end: %d-%d", b.playerPoints[0], b.playerPoints[1])
-	b.appendLog(-1, "game_end", detail, nil)
+	b.appendLogCode(-1, "game_end", "briscola.log.gameEnd", map[string]string{
+		"p0": strconv.Itoa(b.playerPoints[0]), "p1": strconv.Itoa(b.playerPoints[1]),
+	}, nil)
 }
 
 // BriscolaDetermineWinner 二人ブリスコラの勝者を決定する。

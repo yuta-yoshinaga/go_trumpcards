@@ -104,23 +104,10 @@ func (p *LiteratureCuiPresenter) Output(g interfaces.LiteratureGame, lastErr err
 			b.WriteString(literaturePlayerStr(g, i))
 		}
 
-		// **要求の履歴は公開情報。**直近だけ出す。
+		// **要求の履歴は公開情報。**盤面には直近5件だけを出し、全件は `h` で表示する。
 		if asks := g.GetAsks(); len(asks) > 0 {
 			b.WriteString(i18n.T("literature.recentAsks") + "\n")
-			start := max(0, len(asks)-5)
-			for _, a := range asks[start:] {
-				if a == nil {
-					continue
-				}
-				key := "literature.askMissLine"
-				if a.Success {
-					key = "literature.askHitLine"
-				}
-				b.WriteString("  " + i18n.Tf(key,
-					"from", strconv.Itoa(a.From),
-					"to", strconv.Itoa(a.To),
-					"card", cuiCardStr(a.Card)) + "\n")
-			}
+			writeLiteratureAsks(b, asks[len(asks)-min(5, len(asks)):])
 		}
 
 		b.WriteString("----------\n")
@@ -155,6 +142,29 @@ func (p *LiteratureCuiPresenter) Output(g interfaces.LiteratureGame, lastErr err
 		b.WriteString(i18n.Tf("literature.promptTurn", "name", cuiPlayerName(g.GetPlayer(idx), idx)) + "\n")
 		b.WriteString(i18n.T("literature.askRules") + "\n")
 		b.WriteString(i18n.T("literature.promptHelp") + "\n")
+	})
+}
+
+func writeLiteratureAsks(b *strings.Builder, asks []*domain.LiteratureAsk) {
+	for _, a := range asks {
+		if a == nil {
+			continue
+		}
+		key := "literature.askMissLine"
+		if a.Success {
+			key = "literature.askHitLine"
+		}
+		b.WriteString("  " + i18n.Tf(key,
+			"from", strconv.Itoa(a.From),
+			"to", strconv.Itoa(a.To),
+			"card", cuiCardStr(a.Card)) + "\n")
+	}
+}
+
+// AllAsksOutput renders the complete public ask history on demand.
+func (p *LiteratureCuiPresenter) AllAsksOutput(g interfaces.LiteratureGame) string {
+	return buildCuiOutput(i18n.T("literature.allAsks"), func(b *strings.Builder) {
+		writeLiteratureAsks(b, g.GetAsks())
 	})
 }
 

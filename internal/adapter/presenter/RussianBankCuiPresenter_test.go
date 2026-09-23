@@ -33,7 +33,7 @@ func TestRussianBankCuiPresenter_Output(t *testing.T) {
 		g := rbState(t, "{"+rbTwoEmptyPlayers+`,"ph":1,"cu":0}`)
 		out := p.Output(g, nil)
 		assert.Contains(t, out, "Russian Bank")
-		assert.Contains(t, out, "ファウンデーション")
+		assert.Contains(t, out, "組札")
 		assert.Contains(t, out, "あなたの手番")
 	})
 
@@ -117,7 +117,7 @@ func TestRussianBankCuiPresenter_ShowsBuriedTableauCards(t *testing.T) {
 	t.Run("lists every card in a stacked column", func(t *testing.T) {
 		out := p.Output(rbState(t, js), nil)
 
-		for _, want := range []string{"SPADE 5", "HEART 7", "CLOVER 9"} {
+		for _, want := range []string{"♠5", "♥7", "♣9"} {
 			assert.Contains(t, out, want, "埋もれた札も出す")
 		}
 	})
@@ -129,7 +129,7 @@ func TestRussianBankCuiPresenter_ShowsBuriedTableauCards(t *testing.T) {
 
 		// 既存の 1 枚列と同じく **トップだけが [] で囲まれる**。埋もれた札は
 		// その手前に下から順に並ぶ。
-		assert.Contains(t, out, "SPADE 5 "+color.Red("HEART 7")+" [CLOVER 9]")
+		assert.Contains(t, out, "♠5 "+color.Red("♥7")+" [♣9]")
 	})
 
 	// 空列の表示は従来どおり (受け入れ条件3)。
@@ -146,7 +146,7 @@ func TestRussianBankCuiPresenter_ShowsBuriedTableauCards(t *testing.T) {
 			`[{"d":1,"v":1,"w":true},{"d":1,"v":2,"w":true}],[],[],[],[],[],[],[]]}`
 		out := p.Output(rbState(t, fjs), nil)
 
-		assert.Contains(t, out, "SPADE 2")
-		assert.NotContains(t, out, "SPADE 1", "ファウンデーションの下の札は出さない")
+		assert.Contains(t, out, "♠2")
+		assert.NotContains(t, out, "♠1", "ファウンデーションの下の札は出さない")
 	})
 }

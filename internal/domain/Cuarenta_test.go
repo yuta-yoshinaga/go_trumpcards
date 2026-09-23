@@ -51,6 +51,15 @@ func TestCuarenta_DefaultConfigAndDeck(t *testing.T) {
 	}
 }
 
+func TestCuarenta_DealActionLogUsesDetailCode(t *testing.T) {
+	g := cuNewGame(DefaultCuarentaConfig())
+	g.startRound()
+	logs := g.GetActionLog()
+	entry := logs[len(logs)-1]
+	assert.Equal(t, "cuarenta.log.deal", entry.DetailCode)
+	assert.Equal(t, map[string]string{"cards": "4"}, entry.DetailParams)
+}
+
 func TestCuarentaTeamOf(t *testing.T) {
 	cases := map[int]int{0: 0, 1: 1, 2: 0, 3: 1}
 	for seat, want := range cases {

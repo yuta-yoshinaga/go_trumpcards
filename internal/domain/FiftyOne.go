@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // FiftyOnePlayerCnt プレイヤー数
@@ -47,6 +48,7 @@ var (
 
 // FiftyOne フィフティワン (51) ゲーム
 type FiftyOne struct {
+	actionLogBase
 	trumpCards    *TrumpCards
 	players       []*FiftyOnePlayer
 	tableCards    []*Card
@@ -61,7 +63,6 @@ type FiftyOne struct {
 	lastAction    string // "exchange_one", "exchange_all", "stop"
 	lastHandIdx   int
 	lastTableIdx  int
-	actionLog     []*ActionLogEntry
 }
 
 // NewFiftyOne コンストラクタ
@@ -209,8 +210,8 @@ func (fo *FiftyOne) exchangeOne(playerIdx, handIdx, tableIdx int) error {
 	fo.lastAction = "exchange_one"
 	fo.lastHandIdx = handIdx
 	fo.lastTableIdx = tableIdx
-	fo.appendLog(playerIdx, "exchange_one",
-		fmt.Sprintf("exchanged hand[%d] with table[%d]", handIdx, tableIdx),
+	fo.appendLog(playerIdx, "exchange_one", "fiftyone.log.exchangeOne",
+		map[string]string{"handIdx": strconv.Itoa(handIdx), "tableIdx": strconv.Itoa(tableIdx)},
 		[]*Card{tableCard, handCard})
 	fo.advanceTurn()
 	return nil
@@ -238,7 +239,7 @@ func (fo *FiftyOne) exchangeAll(playerIdx int) error {
 	fo.lastAction = "exchange_all"
 	fo.lastHandIdx = -1
 	fo.lastTableIdx = -1
-	fo.appendLog(playerIdx, "exchange_all", "exchanged all 5 cards", nil)
+	fo.appendLog(playerIdx, "exchange_all", "fiftyone.log.exchangeAll", nil, nil)
 	fo.advanceTurn()
 	return nil
 }
@@ -255,8 +256,8 @@ func (fo *FiftyOne) callStop(playerIdx int) error {
 	fo.lastAction = "stop"
 	fo.lastHandIdx = -1
 	fo.lastTableIdx = -1
-	fo.appendLog(playerIdx, "stop",
-		fmt.Sprintf("player %d called stop (score: %d)", playerIdx, fo.players[playerIdx].BestSuitScore()),
+	fo.appendLog(playerIdx, "stop", "fiftyone.log.callStop",
+		map[string]string{"playerIdx": strconv.Itoa(playerIdx), "score": strconv.Itoa(fo.players[playerIdx].BestSuitScore())},
 		nil)
 	fo.advanceTurn()
 	return nil
@@ -292,25 +293,17 @@ func (fo *FiftyOne) endGame() {
 
 	// 結果ログ
 	for i, p := range fo.players {
-		fo.appendLog(i, "result",
-			fmt.Sprintf("score: %d (suit: %s)", p.BestSuitScore(), fiftyOneSuitName(p.BestSuit())),
-			nil)
-	}
-}
-
-// fiftyOneSuitName スート名を返す
-func fiftyOneSuitName(design int) string {
-	switch design {
-	case CardDesignSpade:
-		return "Spade"
-	case CardDesignClover:
-		return "Clover"
-	case CardDesignHeart:
-		return "Heart"
-	case CardDesignDiamond:
-		return "Diamond"
-	default:
-		return "Unknown"
+		suit := p.BestSuit()
+		code := "fiftyone.log.resultSpade"
+		switch suit {
+		case CardDesignClover:
+			code = "fiftyone.log.resultClover"
+		case CardDesignHeart:
+			code = "fiftyone.log.resultHeart"
+		case CardDesignDiamond:
+			code = "fiftyone.log.resultDiamond"
+		}
+		fo.appendLog(i, "result", code, map[string]string{"score": strconv.Itoa(p.BestSuitScore())}, nil)
 	}
 }
 
@@ -576,18 +569,9 @@ func (fo *FiftyOne) GetConfig() FiftyOneConfig { return fo.config }
 // SetConfig 設定セット
 func (fo *FiftyOne) SetConfig(cfg FiftyOneConfig) { fo.config = cfg }
 
-// GetActionLog アクションログ取得
-func (fo *FiftyOne) GetActionLog() []*ActionLogEntry { return fo.actionLog }
-
 // appendLog アクションログ追加
-func (fo *FiftyOne) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	fo.actionLog = append(fo.actionLog, &ActionLogEntry{
-		TurnNumber: fo.turnNumber,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
-	})
+func (fo *FiftyOne) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	fo.appendLogCodeAt(fo.turnNumber, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- JSON ---

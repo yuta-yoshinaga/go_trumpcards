@@ -9,4 +9,5 @@ type RankAndFilePresenter interface {
 	GamePresenter[interfaces.RankAndFileGame]
 	// HintOutput ヒント情報を出力する
 	HintOutput(ft interfaces.RankAndFileGame) string
+	TargetsOutput(ft interfaces.RankAndFileGame, fromCol, cardIndex int) string
 }

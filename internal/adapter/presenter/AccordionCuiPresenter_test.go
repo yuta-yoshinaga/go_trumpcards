@@ -103,6 +103,16 @@ func TestAccordionCuiPresenter_HintOutput(t *testing.T) {
 		assert.Contains(t, result, "ヒント")
 		assert.Contains(t, result, "パイル3")
 		assert.Contains(t, result, "パイル0")
+		assert.Contains(t, result, "選択肢を温存できる重要な手")
+	})
+
+	t.Run("explains why an offset one hint is less preferred", func(t *testing.T) {
+		ag := new(interfaces.MockAccordionGame)
+		ag.On("GetHint").Return(&domain.AccordionHint{FromIdx: 1, ToIdx: 0})
+
+		result := (&AccordionCuiPresenter{}).HintOutput(ag)
+		assert.Contains(t, result, "選択肢を温存しにくい手")
+		assert.NotContains(t, result, "選択肢を温存できる重要な手")
 	})
 
 	t.Run("no hint", func(t *testing.T) {
@@ -112,6 +122,7 @@ func TestAccordionCuiPresenter_HintOutput(t *testing.T) {
 		p := new(AccordionCuiPresenter)
 		result := p.HintOutput(ag)
 		assert.Contains(t, result, "ヒントはありません")
+		assert.NotContains(t, result, "選択肢を温存")
 	})
 }
 
@@ -129,7 +140,7 @@ func TestAccordionCuiPresenter_ActionLogOutput(t *testing.T) {
 		ag := new(interfaces.MockAccordionGame)
 		ag.On("GetPhase").Return(domain.AccordionPhaseGameOver)
 		ag.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "move", Detail: "test"},
+			{TurnNumber: 1, ActionType: "move", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 
 		p := new(AccordionCuiPresenter)

@@ -1,9 +1,10 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { tichuApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { TichuPlayerData, TichuResponse } from '../types/card';
-import { TichuPage } from './TichuPage';
+import { formatTichuState, TichuPage } from './TichuPage';
 
 vi.mock('../api/gameApi', () => ({
   tichuApi: { exec: vi.fn() },
@@ -109,6 +110,44 @@ describe('TichuPage', () => {
     await waitFor(() => {
       expect(screen.getByText(/CPU 1/)).toBeInTheDocument();
     });
+    expect(screen.getByText(/14\s*枚\s*·\s*ティチュー/)).toBeInTheDocument();
+    expect(screen.getByText(/グランドティチュー/)).toBeInTheDocument();
+  });
+
+  it('play phase: shows the human Tichu declaration badge', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          player({ id: 0, isHuman: true, declType: 1 }),
+          player({ id: 1, team: 1 }),
+          player({ id: 2, team: 0 }),
+          player({ id: 3, team: 1 }),
+        ],
+      }),
+    );
+    renderWithProviders(<TichuPage />);
+    expect(await screen.findByTestId('tichu-declaration-badge')).toHaveTextContent('ティチュー');
+  });
+
+  it('play phase: shows the human Grand Tichu declaration badge', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          player({ id: 0, isHuman: true, declType: 2 }),
+          player({ id: 1, team: 1 }),
+          player({ id: 2, team: 0 }),
+          player({ id: 3, team: 1 }),
+        ],
+      }),
+    );
+    renderWithProviders(<TichuPage />);
+    expect(await screen.findByTestId('tichu-declaration-badge')).toHaveTextContent('グランドティチュー');
+  });
+
+  it('play phase: hides the human declaration badge when no declaration was made', async () => {
+    renderWithProviders(<TichuPage />);
+    await screen.findByTestId('tichu-score-bar');
+    expect(screen.queryByTestId('tichu-declaration-badge')).not.toBeInTheDocument();
   });
 
   it('declaration phase: all three buttons dispatch declare', async () => {
@@ -234,6 +273,29 @@ describe('TichuPage', () => {
     // Human (P0) is on team A, so Team A is emphasised.
     const teamA = screen.getByText(/チームA.*30/);
     expect(teamA).toHaveClass('text-ds-accent');
+    expect(teamA).toHaveTextContent('チームA (P0/P2)');
+  });
+
+  it('formatTichuState localizes an end-of-game message for the CLI', async () => {
+    const state = makeState({
+      phase: 'end',
+      gameEndFlag: true,
+      message: '',
+      messageCode: 'tichu.result.summary',
+      messageParams: { winnerKey: 'tichu.teamA', scoreA: '10', scoreB: '5' },
+    });
+
+    await i18n.changeLanguage('ja');
+    const japanese = formatTichuState(state);
+    expect(japanese).toContain('チームA');
+    expect(japanese).not.toContain('Team A');
+
+    await i18n.changeLanguage('en');
+    const english = formatTichuState(state);
+    expect(english).toContain('Team A');
+    expect(english).not.toContain('チームA');
+
+    await i18n.changeLanguage('ja');
   });
 
   it('end phase: hides the live score bar (only the result block shows scores)', async () => {

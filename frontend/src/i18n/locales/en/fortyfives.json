@@ -78,5 +78,9 @@
   },
   "hintRequested": "Hint available",
   "noHint": "No hint available",
-  "topTrumpTitle": "Top trump (five and jack of trumps, ace of hearts). Exempt from following suit."
+  "topTrumpTitle": "Top trump (five and jack of trumps, ace of hearts). Exempt from following suit.",
+  "trumpLegend": {
+    "title": "Trump order",
+    "caption": "Strongest on the left. The highlighted top three are special trumps exempt from following suit."
+  }
 }

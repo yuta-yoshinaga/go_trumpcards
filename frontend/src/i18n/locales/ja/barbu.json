@@ -46,6 +46,7 @@
     "board": "場",
     "boardEmpty": "場は空です",
     "yourTricks": "トリック",
+    "trumpCard": "切札のカード",
     "selectTrump": "切札スートを選んでください",
     "you": "あなた",
     "cpu": "CPU {{id}}",

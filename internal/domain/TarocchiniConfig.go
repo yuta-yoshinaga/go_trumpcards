@@ -1,4 +1,4 @@
-//go:build !js || !wasm || solo
+//go:build !js || !wasm || extra7
 
 package domain
 
@@ -41,8 +41,8 @@ func (c TarocchiniConfig) Validate() error {
 	// **プレイヤー数の倍数に限る。**ディーラーは 1 局ごとに回るので、倍数でないと
 	// 誰かが余分に親を務めたままマッチが終わり、スカルトの回数が不平等になる。
 	if c.TargetRounds%TarocchiniPlayerCnt != 0 {
-		return NewDomainError(ErrInvalidPlay,
-			fmt.Sprintf("局数は %d の倍数でなければなりません: %d", TarocchiniPlayerCnt, c.TargetRounds))
+		return NewDomainErrorCode(ErrInvalidPlay, "tarocchini.errTargetRoundsNotMultiple",
+			map[string]string{"min": fmt.Sprintf("%d", TarocchiniPlayerCnt), "rounds": fmt.Sprintf("%d", c.TargetRounds)})
 	}
 	return nil
 }

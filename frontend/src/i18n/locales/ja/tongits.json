@@ -1,0 +1,66 @@
+{
+  "phase": {
+    "draw": "ドロー",
+    "discard": "ディスカード",
+    "roundEnd": "ラウンド終了",
+    "gameEnd": "ゲーム終了"
+  },
+  "settings": {
+    "title": "設定",
+    "cpuDifficulty": "CPU難易度",
+    "pointLimit": "目標スコア",
+    "easy": "Easy",
+    "normal": "Normal",
+    "hard": "Hard"
+  },
+  "round": "ラウンド {{n}}",
+  "drawPile": "山札: {{count}}枚",
+  "discardTop": "捨て札",
+  "cards": "{{count}}枚",
+  "cumulativeScore": "累計: {{score}}",
+  "roundScore": "ラウンド: {{score}}",
+  "scores": "スコア",
+  "scoresPlayer": "プレイヤー",
+  "scoresRound": "ラウンド",
+  "scoresTotal": "累計",
+  "drawStockButton": "山札から引く",
+  "drawDiscardButton": "捨て札から引く",
+  "drawDiscardCardLabel": "捨て札から引く: {{card}}",
+  "discardButton": "捨てる",
+  "meldButton": "メルド",
+  "sapawButton": "{{player}}のメルド{{meld}}にサパウ",
+  "challengeButton": "チャレンジ",
+  "nextRound": "次のラウンド",
+  "drawPhase": "山札または捨て札から1枚引いてください",
+  "discardPhase": "メルド、サパウ、ディスカード、またはチャレンジを選びます",
+  "roundEnd": "ラウンド終了",
+  "tongitsOnDeal": "配牌Tongits成立！即勝利です",
+  "tongitsOnDealBanner": {
+    "title": "TONGITS!",
+    "points": "{{points}}点 即勝利",
+    "winner": "{{name}} の勝利"
+  },
+  "tableMelds": "公開メルド",
+  "remainingPoints": "残り点: {{value}}",
+  "challengeable": "チャレンジ可能",
+  "notChallengeable": "チャレンジできません",
+  "result": {
+    "humanWin": "あなたの勝利！",
+    "cpuWin": "CPU {{cpuId}} の勝利！"
+  },
+  "tutorial": {
+    "drawArea": "山札または捨て札から1枚引きます。",
+    "playerHand": "あなたの手札（5枚）です。メルド（3枚以上の同ランク・同スート連続）を作りましょう。",
+    "discardButton": "不要なカードを1枚捨てます。",
+    "challengeButton": "残り点が5点以下ならチャレンジできます。必要ならディスカード前にメルドやサパウを行います。",
+    "scoreTable": "各プレイヤーのスコアが表示されます。",
+    "resetButton": "リセットボタンで新しいゲームを始められます。"
+  },
+  "frontendHint": {
+    "tongitsTakeDiscard": "その札を拾うと組になり、端札が減る",
+    "tongitsDrawStock": "捨て札は組にならない。山札から引こう",
+    "tongitsChallenge": "残り点が5点以下なのでチャレンジできます",
+    "tongitsDiscardHeavy": "端札が一番減る札を捨てよう"
+  },
+  "opponentMelds": "公開メルド"
+}

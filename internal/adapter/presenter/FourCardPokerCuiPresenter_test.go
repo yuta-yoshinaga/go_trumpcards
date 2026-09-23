@@ -43,7 +43,7 @@ func TestFourCardPokerCuiPresenter_Output_BetPhase(t *testing.T) {
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "チップ: 1000")
-	assert.Contains(t, result, "フェーズ: BET")
+	assert.Contains(t, result, "フェーズ: 賭け")
 }
 
 func TestFourCardPokerCuiPresenter_Output_ActionPhase_ShowsUpcard(t *testing.T) {
@@ -85,7 +85,7 @@ func TestFourCardPokerCuiPresenter_Output_ActionPhase_ShowsUpcard(t *testing.T) 
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "フェーズ: ACTION")
+	assert.Contains(t, result, "フェーズ: アクション")
 	assert.Contains(t, result, "PLAYER")
 	assert.Contains(t, result, "DEALER")
 	assert.Contains(t, result, "アップカード")
@@ -132,7 +132,7 @@ func TestFourCardPokerCuiPresenter_Output_EndPhase_PlayerWins(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "フェーズ: END")
+	assert.Contains(t, result, "フェーズ: 終了")
 	assert.Contains(t, result, "プレイヤーの勝ち")
 	assert.Contains(t, result, "合計払戻し: 600")
 	// Non-zero buckets are itemized; the zero Aces Up bucket is omitted.
@@ -295,7 +295,7 @@ func TestFourCardPokerCuiPresenter_PhaseUnknown(t *testing.T) {
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "UNKNOWN")
+	assert.Contains(t, result, "不明")
 }
 
 func TestFourCardPokerCuiPresenter_ActionLogOutput(t *testing.T) {

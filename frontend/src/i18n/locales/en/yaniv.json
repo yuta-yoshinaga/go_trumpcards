@@ -12,6 +12,10 @@
     "roundEnd": "Round End",
     "end": "End"
   },
+  "roundResult": {
+    "yaniv": "{{name}} declared Yaniv and won the round!",
+    "asaf": "{{name}}'s Yaniv was Asaf. +30 penalty."
+  },
   "label": {
     "stock": "Stock",
     "discardPile": "Discard",

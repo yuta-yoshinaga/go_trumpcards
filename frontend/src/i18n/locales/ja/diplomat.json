@@ -12,6 +12,7 @@
   "moveCount": "手数",
   "giveup": "ギブアップ",
   "empty": "空",
+  "nextRankBadge": "次:{{rank}}",
   "foundationAriaLabel": "{{suit}} 組札{{idx}} {{count}}枚",
   "emptyFoundationAriaLabel": "空の組札{{idx}} ({{suit}}、A から)",
   "emptyPileAriaLabel": "空の列 {{pile}} (どのカードでも置けます)",

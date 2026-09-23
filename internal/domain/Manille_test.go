@@ -113,6 +113,31 @@ func TestManille_MustFollow(t *testing.T) {
 	}
 }
 
+func TestManille_ActionLogUsesDetailCode(t *testing.T) {
+	g := newManGame(true)
+	g.SetPhase(ManillePhasePlay)
+	g.SetCurrentPlayerIdx(0)
+	g.SetCurrentTrick(nil)
+	card := manCard(CardDesignClover, 13)
+	manSetHand(g.GetPlayer(0), card)
+	if err := g.PlayerPlay(0); err != nil {
+		t.Fatalf("play failed: %v", err)
+	}
+	var entry *ActionLogEntry
+	for _, candidate := range g.GetActionLog() {
+		if candidate.DetailCode == "manille.log.play" {
+			entry = candidate
+			break
+		}
+	}
+	if entry == nil {
+		t.Fatal("play action log entry not found")
+	}
+	if entry.DetailParams["card"] != cardStr(card) {
+		t.Fatalf("play detail = %#v, want card and empty legacy detail", entry)
+	}
+}
+
 func TestManille_PartnerWinningTrumpExemption(t *testing.T) {
 	g := newManGame(true)
 	g.SetPhase(ManillePhasePlay)

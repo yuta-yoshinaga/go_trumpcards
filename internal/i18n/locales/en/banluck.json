@@ -36,5 +36,11 @@
   "reason.chaseBanker": "you cannot reach the banker by standing",
   "result.gameEnd": "All rounds are finished",
   "helpExampleBet": "  bet 100              bet 100 chips",
-  "helpSort": "  s                    sort the hand"
+  "helpSort": "  s                    sort the hand",
+  "log.reset": "game reset",
+  "log.deal": "round {{round}}, banker seat {{banker}}",
+  "log.hit": "seat {{seat}} hits",
+  "log.stand": "seat {{seat}} stands",
+  "log.result": "banker seat {{banker}} nets {{amount}}",
+  "log.gameEnd": "winner seat {{winner}}"
 }

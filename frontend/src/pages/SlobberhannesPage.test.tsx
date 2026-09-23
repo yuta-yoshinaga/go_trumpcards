@@ -121,6 +121,25 @@ describe('SlobberhannesPage', () => {
     expect(screen.getByTestId('sh-seat-0')).not.toHaveTextContent('無傷');
   });
 
+  it('marks only the dealer seat', async () => {
+    mockExec.mockResolvedValue(makeState({ dealerIdx: 2 }));
+    renderWithProviders(<SlobberhannesPage />);
+
+    expect(await screen.findByTestId('sh-seat-2')).toHaveTextContent('親');
+    expect(screen.getByTestId('sh-seat-0')).not.toHaveTextContent('親');
+    expect(screen.getByTestId('sh-seat-1')).not.toHaveTextContent('親');
+    expect(screen.getByTestId('sh-seat-3')).not.toHaveTextContent('親');
+  });
+
+  it('moves the dealer mark when dealerIdx changes', async () => {
+    mockExec.mockResolvedValue(makeState({ dealerIdx: 1 }));
+    renderWithProviders(<SlobberhannesPage />);
+
+    expect(await screen.findByTestId('sh-seat-1')).toHaveTextContent('親');
+    expect(screen.getByTestId('sh-seat-0')).not.toHaveTextContent('親');
+    expect(screen.getByTestId('sh-seat-2')).not.toHaveTextContent('親');
+  });
+
   // 次のラウンドへは、ラウンド終了時にだけ現れる。
   it('offers the next-round button only at a round end', async () => {
     renderWithProviders(<SlobberhannesPage />);

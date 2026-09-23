@@ -63,6 +63,38 @@ describe('CrazyQuiltPage', () => {
     expect(screen.queryByTestId('cq-cell-64')).not.toBeInTheDocument();
   });
 
+  it('keeps every cell at the card dimensions while exposing orientation', async () => {
+    renderWithProviders(<CrazyQuiltPage />);
+    await waitFor(() => expect(screen.getByTestId('cq-cell-0')).toBeInTheDocument());
+
+    const vertical = screen.getByTestId('cq-cell-0');
+    const horizontal = screen.getByTestId('cq-cell-1');
+    expect(vertical).toHaveAttribute('data-orientation', 'vertical');
+    expect(horizontal).toHaveAttribute('data-orientation', 'horizontal');
+    expect(horizontal).toHaveStyle({ width: vertical.style.width, height: vertical.style.height });
+    expect(horizontal.querySelector('.rotate-90')).not.toBeInTheDocument();
+  });
+
+  it('shows effective orientation corner shapes on both cards and empty cells', async () => {
+    const quilt = makeQuilt();
+    quilt[0] = null;
+    mockExec.mockResolvedValue({ ...playingState, quilt });
+    renderWithProviders(<CrazyQuiltPage />);
+
+    const emptyVertical = await screen.findByTestId('cq-cell-0');
+    const horizontalCard = screen.getByTestId('cq-cell-1');
+    const emptyHorizontal = screen.getByTestId('cq-cell-5');
+
+    expect(emptyVertical).toHaveAttribute('data-orientation', 'vertical');
+    expect(horizontalCard).toHaveAttribute('data-orientation', 'horizontal');
+    expect(emptyHorizontal).toHaveAttribute('data-orientation', 'horizontal');
+    expect(emptyVertical.className).toContain('rounded-tl-lg rounded-br-lg');
+    expect(horizontalCard.className).toContain('rounded-tr-lg rounded-bl-lg');
+    expect(emptyHorizontal.className).toContain('rounded-tr-lg rounded-bl-lg');
+    expect(emptyVertical.className).not.toContain('rounded-tr-lg rounded-bl-lg');
+    expect(horizontalCard.className).not.toContain('rounded-tl-lg rounded-br-lg');
+  });
+
   // **The rule the issue got wrong.** Availability depends on the card's
   // orientation, so the server decides it and the page only obeys.
   it('only lets an available card be picked up', async () => {

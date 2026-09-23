@@ -34,6 +34,41 @@ beforeEach(() => {
 });
 
 describe('QuodlibetPage', () => {
+  it('shows every non-empty hand during Good Hunting', async () => {
+    const huntState = makeQuodlibetState({
+      currentContract: 9,
+      currentContractName: 'hunt',
+      isContractPhase: false,
+      phase: 'play',
+      players: contractState.players.map((p, i) =>
+        i === 0 ? p : { ...p, cards: [{ design: 'HEART' as const, value: i + 1, color: 'red' as const }] },
+      ),
+    });
+    mockExec.mockResolvedValue(huntState);
+    renderWithProviders(<QuodlibetPage />);
+    expect(await screen.findByTestId('quodlibet-visible-hand-1')).toBeInTheDocument();
+    expect(screen.getByTestId('quodlibet-visible-hand-2')).toBeInTheDocument();
+    expect(screen.getByTestId('quodlibet-visible-hand-3')).toBeInTheDocument();
+  });
+
+  it('keeps the hidden human hand hidden for Open Trousers', async () => {
+    const openState = makeQuodlibetState({
+      currentContract: 8,
+      currentContractName: 'open',
+      isContractPhase: false,
+      phase: 'play',
+      players: contractState.players.map((p, i) =>
+        i === 0
+          ? { ...p, cards: [] }
+          : { ...p, cards: [{ design: 'HEART' as const, value: i + 1, color: 'red' as const }] },
+      ),
+    });
+    mockExec.mockResolvedValue(openState);
+    renderWithProviders(<QuodlibetPage />);
+    expect(await screen.findByTestId('quodlibet-visible-hand-1')).toBeInTheDocument();
+    expect(screen.queryByTestId('quodlibet-visible-hand-0')).not.toBeInTheDocument();
+  });
+
   it('calls reset on mount with the configured options', async () => {
     renderWithProviders(<QuodlibetPage />);
     await waitFor(() =>

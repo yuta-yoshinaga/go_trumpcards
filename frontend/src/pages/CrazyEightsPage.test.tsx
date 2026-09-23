@@ -117,6 +117,21 @@ describe('CrazyEightsPage', () => {
     });
   });
 
+  it('shows the leftover-card penalty legend during play', async () => {
+    renderWithProviders(<CrazyEightsPage />);
+    const legend = await screen.findByTestId('crazyeights-point-legend');
+    expect(legend).toHaveTextContent('手札に残った札の失点');
+    expect(legend).toHaveTextContent('8');
+    expect(legend).toHaveTextContent('50');
+    expect(legend).toHaveTextContent('A');
+    expect(legend).toHaveTextContent('1');
+    expect(legend).toHaveTextContent('J / Q / K');
+    expect(legend).toHaveTextContent('10');
+    expect(legend).toHaveTextContent('その他');
+    expect(legend).toHaveTextContent('額面どおり');
+    expect(legend.textContent).not.toContain('{{');
+  });
+
   it('highlights legal cards and dims illegal ones on the human turn', async () => {
     // Discard top ♥7; hand has ♥J (legal — same suit) and ♠A (illegal).
     renderWithProviders(<CrazyEightsPage />);
@@ -896,6 +911,9 @@ describe('CrazyEightsPage winner highlight', () => {
     renderWithProviders(<CrazyEightsPage />);
     const row = await screen.findByTestId('ce-score-row-0');
     expect(row).toHaveAttribute('data-winner', 'true');
+    expect(row).toHaveClass('bg-ds-surface', 'border-ds-success', 'font-bold');
+    expect(row).toHaveClass('text-ds-success');
+    expect(row).not.toHaveClass('text-ds-accent');
     // スクリーンリーダーにも勝者だと分かること。色だけでは伝わらない。
     expect(row.textContent).toContain('勝者');
   });

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Card, CardDesign } from '../types/card';
-import { shamrocksHasLegalMove, shamrocksMovableFans } from './shamrocksLegalMove';
+import { fitsFoundation, shamrocksHasLegalMove, shamrocksMovableFans } from './shamrocksLegalMove';
 
 const card = (design: CardDesign, value: number): Card => ({ design, value });
 const noFoundation = (): Card[][] => [[], [], [], []];
@@ -46,5 +46,10 @@ describe('shamrocksMovableFans', () => {
   it('finds a foundation move', () => {
     const fans = [[card('SPADE', 1)]];
     expect(shamrocksMovableFans(fans, noFoundation()).has(0)).toBe(true);
+  });
+
+  it('only fits a foundation when the suit and next rank match', () => {
+    expect(fitsFoundation(card('SPADE', 1), noFoundation())).toBe(true);
+    expect(fitsFoundation(card('HEART', 2), [[card('SPADE', 1)], [], [], []])).toBe(false);
   });
 });

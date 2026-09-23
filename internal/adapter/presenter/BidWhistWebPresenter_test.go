@@ -130,6 +130,24 @@ func TestBidWhistWebPresenter_Error(t *testing.T) {
 	}
 }
 
+func TestBidWhistWebPresenter_CodedError(t *testing.T) {
+	g := newBidWhistGame()
+	g.Reset()
+	p := &presenter.BidWhistWebPresenter{}
+	out := p.Output(g, domain.NewDomainErrorCode(domain.ErrInvalidCard, "bidwhist.errCardIndexOutOfRange", nil))
+
+	var parsed controller.BidWhistWebOutput
+	if err := json.Unmarshal([]byte(out), &parsed); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	if parsed.Message != "" {
+		t.Errorf("message = %q, want empty", parsed.Message)
+	}
+	if parsed.MessageCode != "bidwhist.errCardIndexOutOfRange" {
+		t.Errorf("messageCode = %q", parsed.MessageCode)
+	}
+}
+
 func TestBidWhistWebPresenter_Hint(t *testing.T) {
 	g := newBidWhistGame()
 	g.SetContract(3, domain.BidWhistDirectionUptown, domain.CardDesignSpade)

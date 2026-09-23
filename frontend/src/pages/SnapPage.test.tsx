@@ -219,6 +219,29 @@ describe('SnapPage', () => {
     renderWithProviders(<SnapPage />);
     expect(await screen.findByTestId('hint-tooltip')).toHaveTextContent(/いま宣言/);
   });
+
+  // 札切れの席にだけ sp-out-{id} が出て、ストックを持つ席には出ない。
+  it('shows out-of-cards badge only for zero-stock seats', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          { id: 0, isHuman: true, stockSize: 0 },
+          { id: 1, isHuman: false, stockSize: 5 },
+        ],
+      }),
+    );
+    renderWithProviders(<SnapPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    // 札切れ席に sp-out-0 が出る
+    const badge = await screen.findByTestId('sp-out-0');
+    expect(badge).toBeInTheDocument();
+    // 文言が実際の日本語「札切れ」に解決していること（i18n が機能していること）
+    expect(badge).toHaveTextContent('札切れ');
+
+    // ストックを持つ席 1 には出ない（否定コントロール）
+    expect(screen.queryByTestId('sp-out-1')).not.toBeInTheDocument();
+  });
 });
 
 // **反射ゲームの核心は相手の反応速度** (#5763)。ラベルだけでは何が変わるのか

@@ -30,6 +30,7 @@ export function formatChemindeFerState(state: ChemindeFerResponse): string {
 
   lines.push(`Phase: ${PHASE_NAMES[state.phase] ?? 'UNKNOWN'}`);
   lines.push(`Coup: ${state.roundNumber}${state.config ? ` / ${state.config.rounds}` : ''}`);
+  lines.push(`Shoe: ${state.remainingCards} card(s) left`);
   lines.push(`Banker: seat ${state.bankerIdx} (bank ${state.stake})`);
 
   if (state.stake > 0) {

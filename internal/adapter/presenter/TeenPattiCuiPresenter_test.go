@@ -70,7 +70,7 @@ func TestTeenPattiCuiPresenter_Output(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 12, false))
 		result := p.Output(m, nil)
 		assert.NotEmpty(t, result)
-		assert.Contains(t, result, "SPADE")
+		assert.Contains(t, result, "♠")
 	})
 
 	t.Run("betting raise range: blind human sees full-chip ceiling", func(t *testing.T) {
@@ -151,7 +151,8 @@ func TestTeenPattiCuiPresenter_Output(t *testing.T) {
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetSideShowTarget")
 		m.On("GetSideShowTarget").Return(0) // human target
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "accept or decline")
+		assert.Contains(t, result, "accepting compares the hands and makes the loser fold immediately")
+		assert.Contains(t, result, "declining skips the comparison and play continues")
 	})
 
 	t.Run("showdown reveals all non-folded hands", func(t *testing.T) {
@@ -239,7 +240,7 @@ func TestTeenPattiCuiPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockTeenPattiGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "bet", Detail: "You bets 1"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "bet", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
 	m.On("GetPlayer", mock.Anything).Return(domain.NewTeenPattiPlayer(true, 0)).Maybe()

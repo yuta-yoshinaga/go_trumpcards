@@ -80,6 +80,8 @@ const CUCKOO_TUTORIAL_STEPS: TutorialStep[] = [
 /** Rank value of a King (A=1 … K=13). Only a King holder may refuse an incoming
  * swap; mirrors `CuckooKingValue` in `internal/domain/Cuckoo.go`. */
 const CUCKOO_KING_VALUE = 13;
+/** DOM id linking the no-King refusal reason to its button. */
+const CUCKOO_REFUSE_NO_KING_REASON_ID = 'cuckoo-refuse-no-king-reason';
 
 const CUCKOO_PHASE_KEYS: Readonly<Record<number, string>> = {
   [CuckooPhase.TURN]: 'turn',
@@ -336,9 +338,16 @@ function CuckooPageContent() {
 
             {isHumanTurn && <div className="text-ds-text-muted text-xs mb-2">{t('turnNotice')}</div>}
             {isHumanRefuseTarget && (
-              <div className="text-ds-text-muted text-xs mb-2" data-testid="cuckoo-refuse-notice">
-                {humanHasKing ? t('refuseNoticeKing') : t('refuseNoticeNoKing')}
-              </div>
+              <>
+                <div className="text-ds-text-muted text-xs mb-2" data-testid="cuckoo-refuse-notice">
+                  {humanHasKing ? t('refuseNoticeKing') : t('refuseNoticeNoKing')}
+                </div>
+                {!humanHasKing && (
+                  <p id={CUCKOO_REFUSE_NO_KING_REASON_ID} className="sr-only">
+                    {t('refuseNoKingReason')}
+                  </p>
+                )}
+              </>
             )}
 
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
@@ -367,9 +376,14 @@ function CuckooPageContent() {
                 <>
                   <button
                     type="button"
-                    className={btnWarning}
-                    onClick={() => exec('refuse')}
-                    disabled={loading || !humanHasKing}
+                    className={`${btnWarning} ${!humanHasKing ? 'aria-disabled:opacity-70 aria-disabled:cursor-not-allowed aria-disabled:saturate-50' : ''}`}
+                    onClick={() => {
+                      if (!humanHasKing) return;
+                      exec('refuse');
+                    }}
+                    disabled={loading}
+                    aria-disabled={!humanHasKing || undefined}
+                    aria-describedby={!humanHasKing ? CUCKOO_REFUSE_NO_KING_REASON_ID : undefined}
                     title={humanHasKing ? undefined : t('refuseNoKingReason')}
                     data-testid="cuckoo-refuse-button"
                   >

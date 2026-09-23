@@ -23,10 +23,12 @@ func newRollingStoneForCui(t *testing.T) *domain.RollingStone {
 
 func TestRollingStoneCuiPresenterOutput(t *testing.T) {
 	p := new(RollingStoneCuiPresenter)
-	out := p.Output(newRollingStoneForCui(t), nil)
+	r := newRollingStoneForCui(t)
+	out := p.Output(r, nil)
 
 	assert.Contains(t, out, i18n.T("rollingstone.helpTitle"))
 	assert.Contains(t, out, fixedPart("rollingstone.header"))
+	assert.Contains(t, out, "上がり 0 / 全 4 人")
 	// **勝利条件が逆さまなのが規則そのもの。** 毎回書く。
 	assert.Contains(t, out, i18n.T("rollingstone.rule"))
 	// 「手札」はルール行にも出るので、席行の並び（手札N枚 引き取りN回）で数える。
@@ -73,7 +75,7 @@ func TestRollingStoneCuiPresenterPromptsForAPickUp(t *testing.T) {
 	assert.NotContains(t, out, i18n.T("rollingstone.promptPlay"))
 	// **どのスートに追従できなかったのかまで出す** (#5764)。枚数だけでは、
 	// 場の先頭札を目で確かめないと理由が分からない。表記はこの presenter が
-	// 札を "SPADE 9" と出すのに合わせる。
+	// 札を "♠9" と出すのに合わせる。
 	assert.Contains(t, out, i18n.Tf("rollingstone.promptPickUp",
 		"suit", cuiSuitName(domain.CardDesignSpade), "n", "1"))
 
@@ -102,6 +104,7 @@ func TestRollingStoneCuiPresenterGameEndBanners(t *testing.T) {
 	}
 	require.True(t, won.GetGameEndFlag())
 	out := p.Output(won, nil)
+	assert.Contains(t, out, "上がり 1 / 全 4 人")
 	assert.Contains(t, out, i18n.T("rollingstone.gameEndYou"))
 	assert.NotContains(t, out, i18n.T("rollingstone.promptPlay"), "終局後は促さない")
 

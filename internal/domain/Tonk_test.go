@@ -279,6 +279,14 @@ func TestTonk_PlayerDrawFromStock(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, 2, g.GetPlayer(0).GetCardsSize())
 		assert.Equal(t, domain.TonkPhaseDiscard, g.GetPhase())
+		var drawLog *domain.ActionLogEntry
+		for _, entry := range g.GetActionLog() {
+			if entry.DetailCode == "tonk.log.drawStock" {
+				drawLog = entry
+			}
+		}
+		require.NotNil(t, drawLog)
+		assert.Equal(t, map[string]string{"name": "You"}, drawLog.DetailParams)
 	})
 
 	t.Run("wrong phase", func(t *testing.T) {

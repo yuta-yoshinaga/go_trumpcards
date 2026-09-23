@@ -8,7 +8,7 @@
   "result.cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！",
   "outputTitle": "Fifty-one (フィフティワン)",
   "suitScoresLine": "  スート別: {{scores}}",
-  "suitScoreEntry": "{{suit}} {{score}}",
+  "suitScoreEntry": "{{suit}} {{score}}/{{max}}",
   "suitScoreBestMark": "*",
   "humanScoreLine": " (スコア: {{score}})",
   "cpuScoreLine": ": {{count}}枚 (スコア: {{score}})",
@@ -17,10 +17,17 @@
   "tableCard": "[{{idx}}]{{card}}",
   "cuiStopCalled": "⚠ ストップ宣言中（{{name}}）— 残り1巡が最終ラウンドです",
   "gameEndHeader": "=== ゲーム終了 ===",
-  "scoreEntry": "  {{name}}: {{score}}点",
+  "scoreEntry": "  {{name}}: {{score}}/{{max}}点",
   "winHuman": "あなたの勝ち！",
   "winCpu": "CPU {{idx}}の勝ち！",
   "promptHumanTurn": "あなたのターン: p <手札番号> <場札番号> / a (全交換) / stop",
   "helpExampleAll": "  a                    手札 5 枚すべてを交換する",
-  "helpLog": "  l                    行動ログを表示"
+  "helpLog": "  l                    行動ログを表示",
+  "log.exchangeOne": "手札{{handIdx}}を場札{{tableIdx}}と交換",
+  "log.exchangeAll": "手札5枚をすべて交換",
+  "log.callStop": "プレイヤー{{playerIdx}}がストップを宣言（スコア: {{score}}）",
+  "log.resultSpade": "スコア: {{score}}（スート: スペード）",
+  "log.resultClover": "スコア: {{score}}（スート: クローバー）",
+  "log.resultHeart": "スコア: {{score}}（スート: ハート）",
+  "log.resultDiamond": "スコア: {{score}}（スート: ダイヤ）"
 }

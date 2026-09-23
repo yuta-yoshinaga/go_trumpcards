@@ -199,6 +199,6 @@ func TestConquianCuiPresenter_ShowsMeldProgress(t *testing.T) {
 
 		out := p.Output(m, nil)
 
-		assert.Contains(t, out, "SPADE 1")
+		assert.Contains(t, out, "♠1")
 	})
 }

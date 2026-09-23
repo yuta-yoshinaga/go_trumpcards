@@ -57,9 +57,6 @@ func (p *WattenPlayer) UnmarshalJSON(data []byte) error {
 	if j.TrickHolder != nil {
 		p.TrickHolder = *j.TrickHolder
 	}
-	if j.Team < 0 || j.Team >= WattenTeamCnt {
-		return NewDomainError(ErrInvalidPlay, "チームが範囲外です")
-	}
 	p.team = j.Team
 	return nil
 }

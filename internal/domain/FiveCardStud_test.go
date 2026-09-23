@@ -95,6 +95,15 @@ func TestFiveCardStud_PlayerAction_Fold(t *testing.T) {
 	s := setupFiveCardStudForHumanAction(FiveCardStudPhaseSecondStreet)
 	err := s.PlayerAction(FiveCardStudActionFold, 0, 0)
 	require.NoError(t, err)
+	var entry *ActionLogEntry
+	for _, candidate := range s.GetActionLog() {
+		if candidate.DetailCode == "fivecardstud.log.fold" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Empty(t, entry.DetailParams)
 }
 
 func TestFiveCardStud_PlayerAction_Call(t *testing.T) {

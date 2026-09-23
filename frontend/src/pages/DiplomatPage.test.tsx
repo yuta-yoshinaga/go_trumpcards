@@ -402,4 +402,141 @@ describe('DiplomatPage dead-end columns', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.queryByTestId('diplomat-dead-end-0')).not.toBeInTheDocument();
   });
+
+  it('renders permanent next rank badges on foundations and hides them when complete', async () => {
+    const fullSpadePile: Card[] = Array.from({ length: 13 }, (_, i) => card('SPADE', i + 1));
+    const stateWithFoundations: DiplomatResponse = {
+      ...playingState,
+      foundation: [
+        [card('SPADE', 1)], // fIdx 0: has ♠A -> next is 2
+        [card('CLOVER', 1), card('CLOVER', 2)], // fIdx 1: has ♣2 -> next is 3
+        [], // fIdx 2: empty ♥ -> next is A
+        [], // fIdx 3: empty ♦ -> next is A
+        fullSpadePile, // fIdx 4: full ♠ -> complete, no badge
+        [], // fIdx 5: empty ♣ -> next is A
+        [], // fIdx 6: empty ♥ -> next is A
+        [], // fIdx 7: empty ♦ -> next is A
+      ],
+    };
+    mockExec.mockResolvedValue(stateWithFoundations);
+    renderWithProviders(<DiplomatPage />);
+
+    expect(await screen.findByTestId('diplomat-foundation-next-0')).toHaveTextContent('次:2');
+    expect(screen.getByTestId('diplomat-foundation-next-1')).toHaveTextContent('次:3');
+    expect(screen.getByTestId('diplomat-foundation-next-2')).toHaveTextContent('次:A');
+    expect(screen.getByTestId('diplomat-foundation-next-3')).toHaveTextContent('次:A');
+    expect(screen.queryByTestId('diplomat-foundation-next-4')).not.toBeInTheDocument();
+  });
+
+  it('keeps all foundation buttons disabled when nothing is selected', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<DiplomatPage />);
+    await waitFor(() => expect(screen.getAllByLabelText(/空の組札\d+/).length).toBe(8));
+
+    for (let i = 0; i < 8; i++) {
+      expect(screen.getByRole('button', { name: new RegExp(`空の組札${i}`) })).toBeDisabled();
+    }
+  });
+
+  it('enables and highlights only foundations that legally accept the selected card', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<DiplomatPage />);
+    const ace = await screen.findByRole('button', { name: /^♣ A/ });
+    fireEvent.click(ace);
+    await waitFor(() => expect(ace).toHaveAttribute('aria-pressed', 'true'));
+
+    // ♣A can be placed on empty clover foundations (fIdx 1 and 5), but not on ♠, ♥, ♦ (fIdx 0, 2, 3, 4, 6, 7).
+    expect(screen.getByRole('button', { name: /空の組札1/ })).toBeEnabled();
+    expect(screen.getByRole('button', { name: /空の組札1/ })).toHaveAttribute('data-legal-target', 'true');
+    expect(screen.getByRole('button', { name: /空の組札5/ })).toBeEnabled();
+    expect(screen.getByRole('button', { name: /空の組札5/ })).toHaveAttribute('data-legal-target', 'true');
+
+    for (const illegalIdx of [0, 2, 3, 4, 6, 7]) {
+      const btn = screen.getByRole('button', { name: new RegExp(`空の組札${illegalIdx}`) });
+      expect(btn).toBeDisabled();
+      expect(btn).not.toHaveAttribute('data-legal-target');
+    }
+  });
+
+  // 選択元がウェイストの経路。タブローからの選択しか試していないと、
+  // selectedSourceCard のこの枝が一度も通らない。
+  it('reads the selected card from the waste, not only from the tableau', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      waste: [card('SPADE', 1)],
+      tableau: makeTableau([[card('HEART', 9)]]),
+      tableauDeadEnd: [false, false, false, false, false, false, false, false],
+      foundation: [[], [], [], [], [], [], [], []],
+    });
+    renderWithProviders(<DiplomatPage />);
+
+    const wasteCard = await screen.findByRole('button', { name: /^♠ A/ });
+    fireEvent.click(wasteCard);
+
+    // 空の ♠ 組札 (fIdx 0 と 4) だけが ♠A を受ける。
+    await waitFor(() => expect(screen.getByRole('button', { name: /空の組札0/ })).toBeEnabled());
+    expect(screen.getByRole('button', { name: /空の組札0/ })).toHaveAttribute('data-legal-target', 'true');
+    expect(screen.getByRole('button', { name: /空の組札1/ })).toBeDisabled();
+  });
+
+  it('handles two foundations of the same suit independently when placing the first card', async () => {
+    const twoDeckState: DiplomatResponse = {
+      ...playingState,
+      tableau: makeTableau([[card('SPADE', 1)]]),
+      tableauDeadEnd: [true, false, false, false, false, false, false, false],
+      foundation: [
+        [card('SPADE', 1)], // fIdx 0: has ♠A, needs ♠2
+        [],
+        [],
+        [],
+        [], // fIdx 4: empty ♠, needs ♠A
+        [],
+        [],
+        [],
+      ],
+    };
+    mockExec.mockResolvedValue(twoDeckState);
+    renderWithProviders(<DiplomatPage />);
+
+    // Select ♠A (tableau 0)
+    const spadeAce = await screen.findByRole('button', { name: /^♠ A/ });
+    fireEvent.click(spadeAce);
+    await waitFor(() => expect(spadeAce).toHaveAttribute('aria-pressed', 'true'));
+
+    // fIdx 0 has ♠A so it wants ♠2; fIdx 4 is empty so it wants ♠A
+    expect(screen.getByRole('button', { name: /♠ 組札0 1枚/ })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /空の組札4/ })).toBeEnabled();
+    expect(screen.getByRole('button', { name: /空の組札4/ })).toHaveAttribute('data-legal-target', 'true');
+  });
+
+  it('handles two foundations of the same suit independently when placing the second card', async () => {
+    const twoDeckState: DiplomatResponse = {
+      ...playingState,
+      tableau: makeTableau([[card('SPADE', 2)]]),
+      tableauDeadEnd: [false, false, false, false, false, false, false, false],
+      foundation: [
+        [card('SPADE', 1)], // fIdx 0: has ♠A, needs ♠2
+        [],
+        [],
+        [],
+        [], // fIdx 4: empty ♠, needs ♠A
+        [],
+        [],
+        [],
+      ],
+    };
+    mockExec.mockResolvedValue(twoDeckState);
+    renderWithProviders(<DiplomatPage />);
+
+    // Select ♠2 (tableau 0)
+    const spadeTwo = await screen.findByRole('button', { name: '♠ 2' });
+    fireEvent.click(spadeTwo);
+    await waitFor(() => expect(spadeTwo).toHaveAttribute('aria-pressed', 'true'));
+
+    // Now fIdx 0 (needs ♠2) is enabled, and fIdx 4 (needs ♠A) is disabled
+    expect(screen.getByRole('button', { name: /♠ 組札0 1枚/ })).toBeEnabled();
+    expect(screen.getByRole('button', { name: /♠ 組札0 1枚/ })).toHaveAttribute('data-legal-target', 'true');
+    expect(screen.getByRole('button', { name: /空の組札4/ })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /空の組札4/ })).not.toHaveAttribute('data-legal-target');
+  });
 });

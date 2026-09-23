@@ -22,6 +22,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useHandAndFootGame } from '../hooks/useHandAndFootGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
+import { badgeInfoColors } from '../styles/badgeStyles';
 import { btnOutline, btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -56,6 +57,15 @@ const HF_TUTORIAL_STEPS: TutorialStep[] = [
   },
   { target: '[data-tutorial="hf-meld-area"]', messageKey: 'tutorial.meldArea', placement: 'top', advanceOn: 'next' },
   { target: '[data-tutorial="hf-actions"]', messageKey: 'tutorial.actionButtons', placement: 'top', advanceOn: 'next' },
+  { target: '[data-tutorial="hf-draw-area"]', messageKey: 'tutorial.frozenRule', placement: 'top', advanceOn: 'next' },
+  { target: '[data-tutorial="hf-player-hand"]', messageKey: 'tutorial.footRule', placement: 'top', advanceOn: 'next' },
+  {
+    target: '[data-tutorial="hf-meld-area"]',
+    messageKey: 'tutorial.initialMeldRule',
+    placement: 'top',
+    advanceOn: 'next',
+  },
+  { target: '[data-tutorial="hf-actions"]', messageKey: 'tutorial.goOutRule', placement: 'top', advanceOn: 'next' },
 ];
 
 /** Hand and Foot game page. */
@@ -264,7 +274,7 @@ function HandAndFootPageContent() {
                 {state.discardTop && (
                   <div
                     className={`my-3 p-3 rounded flex items-center gap-3 relative ${
-                      state.isFrozen ? 'bg-ds-info/20 ring-2 ring-ds-info' : 'bg-black/40'
+                      state.isFrozen ? `${badgeInfoColors} ring-2 ring-ds-info` : 'bg-black/40'
                     }`}
                     data-tutorial="hf-draw-area"
                     data-testid="hf-discard-pile"

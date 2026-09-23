@@ -21,6 +21,7 @@
   "hintAvailable": "Hint available",
   "noHint": "No hint",
   "baseRank": "Base rank: {{rank}}",
+  "baseRankRule": "Foundations start at the base rank and wrap from K back to A",
   "foundationHeader": "Foundation: ",
   "reserveLine": "Reserve: {{count}} (top: {{card}})",
   "reserveEmpty": "Reserve: [empty]",
@@ -38,5 +39,15 @@
   "helpUndo": "  u                    undo one move",
   "errEmptyColumnAutoFillOnly": "While the reserve has cards, empty columns are filled automatically. You cannot place cards there manually.",
   "errNotAlternateDescending": "Cards must be placed in alternate colors and descending rank.",
-  "reserveEmptyColumnRule": "* Cannot move to an empty column while the reserve has cards (it will be filled automatically)"
+  "reserveEmptyColumnRule": "* Cannot move to an empty column while the reserve has cards (it will be filled automatically)",
+  "log.recycle": "Returned the waste to the stock",
+  "log.draw": "Drew cards from the stock",
+  "log.wasteToTableau": "Waste → tableau column {{column}}",
+  "log.wasteToFoundation": "Waste → foundation",
+  "log.tableauToTableau": "Tableau column {{from}} → tableau column {{to}}",
+  "log.tableauToFoundation": "Tableau column {{column}} → foundation",
+  "log.reserveToTableau": "Reserve → tableau column {{column}}",
+  "log.reserveToFoundation": "Reserve → foundation",
+  "log.giveUp": "Gave up",
+  "log.autocomplete": "Ran autocomplete"
 }

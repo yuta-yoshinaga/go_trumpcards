@@ -69,7 +69,7 @@ func TestGaigelCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "ガイゲル")
 		assert.Contains(t, result, "ラウンド: 1")
 		assert.Contains(t, result, "切り札: SPADE")
-		assert.Contains(t, result, "[0]SPADE 1")
+		assert.Contains(t, result, "[0]♠1")
 	})
 
 	t.Run("trump undecided", func(t *testing.T) {
@@ -94,6 +94,16 @@ func TestGaigelCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, strings.Split(i18n.T("gaigel.promptMarriageCards"), "{{")[0])
 		assert.Contains(t, result, "[0]")
 		assert.Contains(t, result, "[1]")
+		assert.Contains(t, result, "(40点)")
+
+		// A non-trump candidate receives the ordinary marriage bonus.
+		players[0].Reset()
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 13, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 12, false))
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetMarriageIndices")
+		m.On("GetMarriageIndices", 0).Return([]int{0, 1})
+		result = p.Output(m, nil)
+		assert.Contains(t, result, "(20点)")
 	})
 
 	t.Run("cpu turn does not leak marriage cards", func(t *testing.T) {
@@ -193,7 +203,7 @@ func TestGaigelCuiPresenter_ShowsTheTrumpCard(t *testing.T) {
 
 		assert.Contains(t, out, i18n.Tf("gaigel.trumpLineWithCard",
 			"suit", "SPADE",
-			"card", "SPADE 13",
+			"card", "♠13",
 			"stock", "27"))
 	})
 
@@ -205,7 +215,7 @@ func TestGaigelCuiPresenter_ShowsTheTrumpCard(t *testing.T) {
 			"suit", "SPADE", "stock", "27"))
 		// 表示カード入りの行は出ない。
 		assert.NotContains(t, out, i18n.Tf("gaigel.trumpLineWithCard",
-			"suit", "SPADE", "card", "SPADE 13", "stock", "27"))
+			"suit", "SPADE", "card", "♠13", "stock", "27"))
 	})
 }
 

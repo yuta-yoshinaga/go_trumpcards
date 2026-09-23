@@ -88,6 +88,24 @@ func (p *BostonCuiPresenter) Output(g interfaces.BostonGame, lastErr error) stri
 				"trump", bostonSuitName(g.GetTrumpSuit())) + "\n")
 		}
 
+		for _, bid := range g.GetBids() {
+			if bid == nil {
+				continue
+			}
+			name := cuiPlayerName(g.GetPlayer(bid.Player), bid.Player)
+			if bid.Level == domain.BostonBidPass {
+				b.WriteString(i18n.Tf("boston.bidHistoryPass", "name", name) + "\n")
+			} else {
+				bidStr := bostonBidLabel(bid.Level)
+				if bid.Suit > 0 {
+					bidStr += " " + bostonSuitName(bid.Suit)
+				}
+				b.WriteString(i18n.Tf("boston.bidHistoryEntry",
+					"name", name,
+					"bid", bidStr) + "\n")
+			}
+		}
+
 		for i := range g.GetPlayers() {
 			b.WriteString(bostonPlayerStr(g, i))
 		}

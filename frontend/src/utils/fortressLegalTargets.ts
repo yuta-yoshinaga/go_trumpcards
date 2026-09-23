@@ -14,7 +14,7 @@ export interface FortressLegalTargets {
  *
  * Sync: `Fortress.canPlaceOnTableau` / `canPlaceOnFoundation`.
  *
- * **タブローは同スートで隣接ランク（昇順・降順どちらも）。**ファンデーションは
+ * **タブローは同スートで隣接ランク（昇順・降順どちらも）。**組札は
  * 同スートで1つ上がるときだけ。この2つを取り違えると、置けない列を光らせる。
  *
  * この関数はサーバ側の規則を二重に持っている。クローン元 (Beleaguered Castle) は

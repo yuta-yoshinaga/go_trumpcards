@@ -84,6 +84,9 @@ func (p *SixCardGolfWebPresenter) buildPlayersOutput(g interfaces.SixCardGolfGam
 // buildMessage メッセージ構築
 func (p *SixCardGolfWebPresenter) buildMessage(g interfaces.SixCardGolfGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

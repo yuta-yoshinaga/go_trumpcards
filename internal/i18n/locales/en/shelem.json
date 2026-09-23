@@ -48,5 +48,18 @@
   "suitHeart": "Hearts",
   "suitDiamond": "Diamonds",
   "helpExamplePlay": "  p 0                  play hand card 0",
-  "helpHint": "  h                    show a hint"
+  "helpHint": "  h                    show a hint",
+  "log.roundStart": "round {{round}} started",
+  "log.shelem": "declared Shelem (all tricks)",
+  "log.bid": "bid {{bid}} points",
+  "log.pass": "passed",
+  "log.widow": "took {{cards}} widow cards ({{contract}}-point contract)",
+  "log.trump": "set trump to {{suit}}",
+  "log.play": "{{card}}",
+  "log.shelemSuccess": "Shelem succeeded. Team {{team}} gets +{{points}}",
+  "log.shelemFailure": "Shelem failed ({{took}}/{{total}} tricks). Team {{team}} gets -{{points}}",
+  "log.contractSuccess": "made the {{contract}}-point contract with {{got}} points. Team {{team}} gets +{{points}}",
+  "log.contractFailure": "failed the {{contract}}-point contract with {{got}} points. Team {{team}} gets -{{points}}",
+  "log.result": "final score {{team0}} - {{team1}}",
+  "log.giveup": "gave up"
 }

@@ -5,6 +5,7 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 )
 
 // ドラゴンタイガーフェーズ定数
@@ -40,16 +41,17 @@ const (
 // （A=1 が最弱、K=13 が最強）。タイベット未実施でタイになった場合、メイン
 // ベット額の半分が返還される（業界標準の "tie returns half" ルール）。
 type DragonTiger struct {
-	trumpCards  *TrumpCards
-	dragonCard  *Card
-	tigerCard   *Card
-	chips       ChipHolder
-	betAmount   int
-	betType     int
-	phase       int
-	gameEndFlag bool
-	result      GameResult
-	payout      int
+	trumpCards    *TrumpCards
+	dragonCard    *Card
+	tigerCard     *Card
+	chips         ChipHolder
+	betAmount     int
+	betType       int
+	phase         int
+	gameEndFlag   bool
+	chipsRefilled bool // Reset がこのターンに残高を補充したか (永続化しない)
+	result        GameResult
+	payout        int
 	actionLogBase
 	history []int // 罫線（Big Road）履歴
 }
@@ -81,8 +83,15 @@ func (dt *DragonTiger) Reset() {
 	dt.result = 0
 	dt.payout = 0
 	dt.actionLog = nil
+	// 補充は突然チップが現れるため、何も知らせないと残高が勝手に回復した
+	// ように見えてしまう。このフラグは直前の Reset で起きた事実だけを表し、
+	// presenter が同じ応答で説明するために使う。JSON には含めないので、
+	// 保存後のリロードで補充を再通知したり、古い状態に通知を持ち越したり
+	// しない。
+	dt.chipsRefilled = false
 	if dt.chips.GetChips() < DragonTigerMinBet {
 		dt.chips.SetChips(DragonTigerDefaultChips)
+		dt.chipsRefilled = true
 	}
 	dt.trumpCards = NewTrumpCards(0)
 	dt.trumpCards.Shuffle()
@@ -109,7 +118,14 @@ func (dt *DragonTiger) Bet(amount, betType int) error {
 	}
 	dt.betAmount = amount
 	dt.betType = betType
-	dt.appendLog(0, "bet", fmt.Sprintf("bet %d on %s", amount, dragonTigerBetTypeName(betType)), nil)
+	betCode := "dragontiger.log.betTie"
+	switch betType {
+	case DragonTigerBetDragon:
+		betCode = "dragontiger.log.betDragon"
+	case DragonTigerBetTiger:
+		betCode = "dragontiger.log.betTiger"
+	}
+	dt.appendLog(0, "bet", betCode, map[string]string{"amount": strconv.Itoa(amount)}, nil)
 
 	dt.deal()
 	dt.judge()
@@ -124,7 +140,7 @@ func (dt *DragonTiger) deal() {
 	if dt.tigerCard == nil {
 		dt.tigerCard = dt.trumpCards.DrawCard()
 	}
-	dt.appendLog(-1, "deal", "dealt dragon and tiger cards", []*Card{dt.dragonCard, dt.tigerCard})
+	dt.appendLog(-1, "deal", "dragontiger.log.deal", nil, []*Card{dt.dragonCard, dt.tigerCard})
 }
 
 // judge 勝敗判定＆配当計算
@@ -133,13 +149,13 @@ func (dt *DragonTiger) judge() {
 	switch {
 	case dr > tr:
 		dt.result = GameResultWin // Dragon wins
-		dt.appendLog(-1, "result", "dragon wins", nil)
+		dt.appendLog(-1, "result", "dragontiger.log.dragonWins", nil, nil)
 	case tr > dr:
 		dt.result = GameResultLose // Tiger wins (player's "lose" semantics for the dragon-default frame)
-		dt.appendLog(-1, "result", "tiger wins", nil)
+		dt.appendLog(-1, "result", "dragontiger.log.tigerWins", nil, nil)
 	default:
 		dt.result = GameResultDraw
-		dt.appendLog(-1, "result", "tie", nil)
+		dt.appendLog(-1, "result", "dragontiger.log.tie", nil, nil)
 	}
 
 	switch dt.result {
@@ -197,18 +213,8 @@ func dragonTigerRankOf(c *Card) int {
 	return c.GetValue()
 }
 
-// dragonTigerBetTypeName ベットタイプ名
-func dragonTigerBetTypeName(betType int) string {
-	switch betType {
-	case DragonTigerBetDragon:
-		return "dragon"
-	case DragonTigerBetTiger:
-		return "tiger"
-	case DragonTigerBetTie:
-		return "tie"
-	default:
-		return "unknown"
-	}
+func (dt *DragonTiger) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	dt.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- Getters ---
@@ -239,6 +245,10 @@ func (dt *DragonTiger) GetPayout() int { return dt.payout }
 
 // GetChips チップ
 func (dt *DragonTiger) GetChips() int { return dt.chips.GetChips() }
+
+// GetChipsRefilled は直前の Reset が最低ベット割れで残高を補充したかを返す。
+// 保存対象ではないので、リロード後は false に戻る。
+func (dt *DragonTiger) GetChipsRefilled() bool { return dt.chipsRefilled }
 
 // GetHistory 罫線履歴を取得する
 func (dt *DragonTiger) GetHistory() []int { return dt.history }

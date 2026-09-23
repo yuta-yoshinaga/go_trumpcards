@@ -181,6 +181,15 @@ func TestSchafkopfWebPresenter_Output(t *testing.T) {
 		assert.Empty(t, resObj.MessageCode)
 	})
 
+	t.Run("coded error", func(t *testing.T) {
+		m, _ := setupSchafkopfWebMockWithPlayers()
+		result := p.Output(m, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "schafkopf.errInvalidContract", nil))
+		var resObj controller.SchafkopfWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "schafkopf.errInvalidContract", resObj.MessageCode)
+	})
+
 	t.Run("game end human wins", func(t *testing.T) {
 		m, _ := setupSchafkopfWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
@@ -252,7 +261,7 @@ func TestSchafkopfWebPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockSchafkopfGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "pick", Detail: "You picks up the blind"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "pick", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, `"actionType":"pick"`)

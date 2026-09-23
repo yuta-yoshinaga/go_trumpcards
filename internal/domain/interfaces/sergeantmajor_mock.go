@@ -56,8 +56,22 @@ func (m *MockSergeantMajorGame) GetKittySize() int        { return m.Called().In
 func (m *MockSergeantMajorGame) IsAbsorbedKittyCard(c *domain.Card) bool {
 	return m.Called(c).Bool(0)
 }
-func (m *MockSergeantMajorGame) GetDiscardCount() int     { return m.Called().Int(0) }
-func (m *MockSergeantMajorGame) GetLastExchange() int     { return m.Called().Int(0) }
+func (m *MockSergeantMajorGame) GetDiscardCount() int { return m.Called().Int(0) }
+func (m *MockSergeantMajorGame) GetLastExchange() int { return m.Called().Int(0) }
+func (m *MockSergeantMajorGame) GetLastExchangeLost() []*domain.Card {
+	args := m.Called()
+	if v := args.Get(0); v != nil {
+		return v.([]*domain.Card)
+	}
+	return nil
+}
+func (m *MockSergeantMajorGame) GetLastExchangeReceived() []*domain.Card {
+	args := m.Called()
+	if v := args.Get(0); v != nil {
+		return v.([]*domain.Card)
+	}
+	return nil
+}
 func (m *MockSergeantMajorGame) GetSurplus(i int) int     { return m.Called(i).Int(0) }
 func (m *MockSergeantMajorGame) GetCurrentPlayerIdx() int { return m.Called().Int(0) }
 func (m *MockSergeantMajorGame) GetLeadPlayerIdx() int    { return m.Called().Int(0) }

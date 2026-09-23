@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // EstimationPhase エスティメーションのゲームフェーズ
@@ -143,7 +144,7 @@ func (e *Estimation) dealRound() {
 	e.currentPlayerIdx = e.dealerIdx
 	e.bidPlayerIdx = e.dealerIdx
 	e.leadPlayerIdx = (e.dealerIdx + 1) % EstimationPlayerCnt
-	e.appendLog(-1, "deal", fmt.Sprintf("ラウンド%d を開始", e.roundNumber), nil)
+	e.appendLog(-1, "deal", "estimation.log.deal", map[string]string{"round": strconv.Itoa(e.roundNumber)}, nil)
 }
 
 // sortAllHands 手札をスート・ランク順に並べ替える
@@ -200,7 +201,7 @@ func (e *Estimation) acceptTrump(suit int) {
 	e.trumpSuit = suit
 	e.phase = EstimationPhaseBid
 	e.bidPlayerIdx = e.dealerIdx
-	e.appendLog(e.dealerIdx, "trump", fmt.Sprintf("切り札を %d に決めた", suit), nil)
+	e.appendLog(e.dealerIdx, "trump", "estimation.log.trump", map[string]string{"suit": strconv.Itoa(suit)}, nil)
 }
 
 // longestSuit いちばん枚数の多いスート
@@ -264,9 +265,9 @@ func (e *Estimation) acceptBid(idx, bid int) {
 	p.SetBid(bid)
 	if bid == 0 {
 		p.SetCallType(EstimationCallDash)
-		e.appendLog(idx, "dash", "Dash Call（0 宣言）", nil)
+		e.appendLog(idx, "dash", "estimation.log.dash", nil, nil)
 	} else {
-		e.appendLog(idx, "bid", fmt.Sprintf("%d トリックを宣言", bid), nil)
+		e.appendLog(idx, "bid", "estimation.log.bid", map[string]string{"bid": strconv.Itoa(bid)}, nil)
 	}
 
 	// **残りを数えるのは SetBid の *後*。** `> 1` にすると 3 人目を記録した
@@ -304,7 +305,7 @@ func (e *Estimation) closeBidding() {
 	}
 	if riskIdx >= 0 && best > 0 {
 		e.players[riskIdx].SetCallType(EstimationCallRisk)
-		e.appendLog(riskIdx, "risk", fmt.Sprintf("Risk（最高宣言 %d）", best), nil)
+		e.appendLog(riskIdx, "risk", "estimation.log.risk", map[string]string{"bid": strconv.Itoa(best)}, nil)
 	}
 	e.phase = EstimationPhasePlay
 	e.leadPlayerIdx = (e.dealerIdx + 1) % EstimationPlayerCnt
@@ -394,7 +395,7 @@ func (e *Estimation) play(playerIdx, cardIndex int) error {
 	}
 	p.RemoveCard(cardIndex)
 	e.currentTrick = append(e.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	e.appendLog(playerIdx, "play", cardStr(card), []*Card{card})
+	e.appendLog(playerIdx, "play", "estimation.log.play", map[string]string{"card": cardStr(card)}, []*Card{card})
 
 	if len(e.currentTrick) < EstimationPlayerCnt {
 		e.currentPlayerIdx = (playerIdx + 1) % EstimationPlayerCnt
@@ -491,7 +492,7 @@ func (e *Estimation) finishRound() {
 		score := EstimationScoreFor(p.GetBid(), got, p.GetCallType())
 		p.SetRoundScore(score)
 		p.AddTotalScore(score)
-		e.appendLog(i, "score", fmt.Sprintf("宣言%d 獲得%d: %+d", p.GetBid(), got, score), nil)
+		e.appendLog(i, "score", "estimation.log.score", map[string]string{"bid": strconv.Itoa(p.GetBid()), "got": strconv.Itoa(got), "score": strconv.Itoa(score)}, nil)
 	}
 
 	if e.roundNumber >= e.config.Rounds {
@@ -551,9 +552,7 @@ func (e *Estimation) finishGame() {
 	} else {
 		e.winnerIdx = bestIdx
 	}
-	e.appendLog(-1, "result", fmt.Sprintf("最終得点 %d/%d/%d/%d",
-		e.players[0].GetTotalScore(), e.players[1].GetTotalScore(),
-		e.players[2].GetTotalScore(), e.players[3].GetTotalScore()), nil)
+	e.appendLog(-1, "result", "estimation.log.result", map[string]string{"score0": strconv.Itoa(e.players[0].GetTotalScore()), "score1": strconv.Itoa(e.players[1].GetTotalScore()), "score2": strconv.Itoa(e.players[2].GetTotalScore()), "score3": strconv.Itoa(e.players[3].GetTotalScore())}, nil)
 }
 
 // chooseCpuCard CPU の手。**宣言に足りなければ取りに行き、足りていれば逃げる。**
@@ -756,12 +755,12 @@ func (e *Estimation) GiveUp() {
 	e.phase = EstimationPhaseGameEnd
 	e.gameEndFlag = true
 	e.winnerIdx = 1
-	e.appendLog(0, "giveup", "ギブアップしました", nil)
+	e.appendLog(0, "giveup", "estimation.log.giveUp", nil, nil)
 }
 
 // appendLog 棋譜エントリを追加
-func (e *Estimation) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	e.appendLogAt(e.trickNumber, playerIdx, actionType, detail, cards)
+func (e *Estimation) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	e.appendLogCodeAt(e.trickNumber, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // estimationJSON is the KV snapshot format for Estimation.

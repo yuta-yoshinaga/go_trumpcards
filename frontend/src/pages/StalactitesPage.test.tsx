@@ -1,7 +1,8 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, stalactitesApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import { STALACTITE_STATS_KEY } from '../hooks/useStalactiteStats';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, StalactitesResponse } from '../types/card';
@@ -78,12 +79,47 @@ beforeEach(() => {
 });
 
 describe('StalactitesPage', () => {
+  it('shows the persistent double-click foundation hint', async () => {
+    renderWithProviders(<StalactitesPage />);
+    expect(await screen.findByTestId('st-doubleclick-hint')).toHaveTextContent('ダブルクリック');
+  });
+  afterEach(() => localStorage.clear());
+
   // --- Skeleton ---
 
   it('renders skeleton when state is null', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<StalactitesPage />);
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+  });
+
+  it('shows stats and a personal-best badge after a clear', async () => {
+    mockExec.mockResolvedValue(gameClearState);
+    renderWithProviders(<StalactitesPage />);
+    await waitFor(() =>
+      expect(screen.getByTestId('stalactites-stats-panel')).toHaveTextContent('勝率 100% (1/1) · 最少 5手'),
+    );
+    expect(screen.getByTestId('stalactites-best-badge')).toHaveTextContent('自己ベスト更新！');
+  });
+
+  it('records an ended game only once across rerenders', async () => {
+    mockExec.mockResolvedValue(gameClearState);
+    renderWithProviders(<StalactitesPage />);
+    await waitFor(() => expect(screen.getByTestId('stalactites-best-badge')).toBeInTheDocument());
+    expect(JSON.parse(localStorage.getItem(STALACTITE_STATS_KEY) ?? '{}')).toMatchObject({ plays: 1, wins: 1 });
+  });
+
+  it('records a game over as a loss without changing the fewest-moves record', async () => {
+    localStorage.setItem(STALACTITE_STATS_KEY, JSON.stringify({ plays: 1, wins: 1, fewestMoves: 5 }));
+    mockExec.mockResolvedValue({ ...gameOverState, moveCount: 99 });
+    renderWithProviders(<StalactitesPage />);
+    await waitFor(() => expect(screen.getByTestId('stalactites-stats-panel')).toHaveTextContent('勝率 50% (1/2)'));
+    expect(screen.getByTestId('stalactites-stats-panel')).toHaveTextContent('最少 5手');
+    expect(JSON.parse(localStorage.getItem(STALACTITE_STATS_KEY) ?? '{}')).toMatchObject({
+      plays: 2,
+      wins: 1,
+      fewestMoves: 5,
+    });
   });
 
   // --- Tableau ---
@@ -228,7 +264,7 @@ describe('StalactitesPage', () => {
     renderWithProviders(<StalactitesPage />);
     const btn = await screen.findByTestId('autocomplete-button');
     expect(btn).toBeDisabled();
-    expect(btn).toHaveAttribute('title', 'すべてのカードをファウンデーションへ直接送れる状態になるとクリックできます');
+    expect(btn).toHaveAttribute('title', 'すべてのカードを組札へ直接送れる状態になるとクリックできます');
   });
 
   it('give up button opens a confirm dialog and only dispatches giveup after confirm', async () => {
@@ -476,7 +512,7 @@ describe('StalactitesPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
 
     const line = await screen.findByTestId('fc-hint-line');
-    expect(line.textContent).toBe('ヒント: タブロー 2 → ファンデーション');
+    expect(line.textContent).toBe('ヒント: タブロー 2 → 組札');
   });
 
   // **未知のゾーンでも翻訳キー文字列を画面に出さない。** ドメインが新しいゾーンを
@@ -493,7 +529,7 @@ describe('StalactitesPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
 
     const line = await screen.findByTestId('fc-hint-line');
-    expect(line.textContent).toBe('ヒント: reserve 1 → ファンデーション');
+    expect(line.textContent).toBe('ヒント: reserve 1 → 組札');
     expect(line.textContent).not.toContain('frontendHint');
   });
 
@@ -676,7 +712,7 @@ describe('StalactitesPage', () => {
     await waitFor(() => expect(screen.getByText('♠')).toBeInTheDocument());
 
     for (const suit of ['♠', '♣', '♥', '♦']) {
-      expect(screen.getByRole('button', { name: `${suit} ファンデーション (空)` })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: `${suit} 組札 (空)` })).toBeInTheDocument();
     }
   });
 
@@ -685,10 +721,10 @@ describe('StalactitesPage', () => {
     renderWithProviders(<StalactitesPage />);
     await waitFor(() => expect(screen.getByText('♠')).toBeInTheDocument());
 
-    expect(screen.getByRole('button', { name: '♠ ファンデーション (1枚)' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '♥ ファンデーション (2枚)' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '♣ ファンデーション (空)' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '♦ ファンデーション (空)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♠ 組札 (1枚)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♥ 組札 (2枚)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♣ 組札 (空)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♦ 組札 (空)' })).toBeInTheDocument();
   });
 
   // --- Stalactites aria labels ---

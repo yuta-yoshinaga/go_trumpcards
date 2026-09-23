@@ -22,7 +22,8 @@ func (p *CuarentaCuiPresenter) Output(cg interfaces.CuarentaGame, lastErr error)
 		for t := 0; t < domain.CuarentaTeamCnt; t++ {
 			b.WriteString(i18n.Tf("cuarenta.teamScoreLine",
 				"team", cuiTeamLabel(t),
-				"score", strconv.Itoa(cg.GetTeamScore(t))) + "\n")
+				"score", strconv.Itoa(cg.GetTeamScore(t)),
+				"target", strconv.Itoa(cg.GetConfig().TargetScore)) + "\n")
 		}
 		// **ボーナスまでの残りをチーム単位で出す。**プレイヤー単位の捕獲数しか
 		// 出しておらず、2 人分を毎回自分で合計させていた (#4893)。

@@ -134,6 +134,21 @@ describe('BlackJackSwitchPage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', expect.any(Number)));
   });
 
+  it('shows the rules summary during the bet phase', async () => {
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<BlackJackSwitchPage />);
+    expect(await screen.findByTestId('bjswitch-rules-summary')).toHaveTextContent(
+      'プレイヤーは2ハンドをディールされ、2枚目のカードを交換できます。代償として、ナチュラルBJの配当は1:1、ディーラー22はプッシュ扱いとなります。',
+    );
+  });
+
+  it('does not show the rules summary outside the bet phase', async () => {
+    mockApi.mockResolvedValue(switchState);
+    renderWithProviders(<BlackJackSwitchPage />);
+    await screen.findByRole('button', { name: /Switch|スイッチ/ });
+    expect(screen.queryByTestId('bjswitch-rules-summary')).not.toBeInTheDocument();
+  });
+
   it('bet phase: pressing "b" dispatches a bet', async () => {
     mockApi.mockResolvedValue(betState);
     renderWithProviders(<BlackJackSwitchPage />);

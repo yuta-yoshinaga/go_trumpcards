@@ -153,13 +153,22 @@ func TestYanivWebPresenter_Output(t *testing.T) {
 		_ = json.Unmarshal([]byte(p.Output(m, errors.New("oops"))), &resObj)
 		assert.Equal(t, "oops", resObj.Message)
 	})
+
+	t.Run("coded error returns message code and no message", func(t *testing.T) {
+		m, _ := setupYanivWebMock()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "yaniv.errInvalidCombo", nil)
+		var resObj controller.YanivWebOutput
+		_ = json.Unmarshal([]byte(p.Output(m, err)), &resObj)
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "yaniv.errInvalidCombo", resObj.MessageCode)
+	})
 }
 
 func TestYanivWebPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.YanivWebPresenter)
 	m := new(interfaces.MockYanivGame)
 	entries := []*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "yaniv", Detail: "calls Yaniv"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "yaniv", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	}
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return(entries)

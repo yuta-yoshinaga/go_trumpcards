@@ -61,6 +61,8 @@ func (p *SpoilFiveCuiPresenter) Output(g interfaces.SpoilFiveGame, lastErr error
 			"trick", strconv.Itoa(g.GetTrickNumber()),
 			"trump", spoilFiveSuitSymbol(g.GetTrumpSuit()),
 			"pot", strconv.Itoa(g.GetPot())) + "\n")
+		b.WriteString(i18n.Tf("spoilfive.target",
+			"n", strconv.Itoa(g.GetConfig().TargetPoints)) + "\n")
 
 		for i := 0; i < g.GetPlayerCnt(); i++ {
 			b.WriteString(spoilFivePlayerStr(g, i))

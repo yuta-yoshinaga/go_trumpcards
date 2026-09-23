@@ -24,6 +24,7 @@ func ninetyNinePlayerStr(player *domain.NinetyNinePlayer, i int) string {
 		"cum", strconv.Itoa(player.GetCumulativeScore()),
 		"round", strconv.Itoa(player.GetRoundScore()),
 		"cards", strconv.Itoa(player.GetCardsSize()),
+		"buried", strconv.Itoa(len(player.GetBuried())),
 	))
 	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {

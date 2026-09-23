@@ -2768,6 +2768,7 @@ describe('gameApi', () => {
       winnerIdx: -1,
       declarerIdx: -1,
       declarationValid: false,
+      canDeclare: false,
       message: '',
       config: { playerCount: 4, cpuDifficulty: 1, targetRounds: 3 },
     };
@@ -3393,6 +3394,7 @@ describe('gameApi', () => {
       ['crazyeights', actionLogApi.crazyeights],
       ['ginrummy', actionLogApi.ginrummy],
       ['indianrummy', actionLogApi.indianrummy],
+      ['marriage', actionLogApi.marriage],
       ['pan', actionLogApi.pan],
       ['spider', actionLogApi.spider],
       ['indianpoker', actionLogApi.indianpoker],

@@ -34,5 +34,10 @@
   "hintDrawStock": "Drawing from the stock is the only move on your turn; the discard cannot be taken.",
   "hintGameOver": "The game is over.",
   "hintNotYourTurn": "It is not your turn right now.",
-  "helpExampleHint": "  h                   ask for a move"
+  "helpExampleHint": "  h                   ask for a move",
+  "log.draw": "Player {{player}} drew a card",
+  "log.placeWild": "Player {{player}} placed a wild at position {{position}}",
+  "log.win": "Player {{player}} wins",
+  "log.place": "Player {{player}} placed a card at position {{position}}",
+  "log.end": "Player {{player}}'s turn ended"
 }

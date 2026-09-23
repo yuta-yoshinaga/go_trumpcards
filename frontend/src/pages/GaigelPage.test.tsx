@@ -150,7 +150,30 @@ describe('GaigelPage', () => {
     expect(screen.getByTestId('card-role-badge-1')).toBeInTheDocument();
     // The non-marriage card (index 2) gets no badge.
     expect(screen.queryByTestId('card-role-badge-2')).not.toBeInTheDocument();
-    expect(screen.getByTestId('card-role-badge-0')).toHaveTextContent('💍');
+    // 切り札のマリッジは 40 点。通常の 💍 と区別が付くよう 👑 を出す。
+    expect(screen.getByTestId('card-role-badge-0')).toHaveTextContent('👑');
+    expect(screen.getByRole('button', { name: /♠ K.*40/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /♠ Q.*40/ })).toBeInTheDocument();
+  });
+
+  it('shows 20 points for a non-trump marriage and no badge for a non-candidate', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        trumpSuit: 1,
+        marriageIndices: [1],
+        players: [
+          { ...makeState().players[0], cards: [card('SPADE', 13), card('HEART', 12), card('HEART', 13)] },
+          ...makeState().players.slice(1),
+        ],
+      }),
+    );
+    renderWithProviders(<GaigelPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /♥ Q.*20/ })).toBeInTheDocument());
+    // 通常スートは 20 点で 💍 のまま。切り札の 👑 と取り違えないこと。
+    expect(screen.getByTestId('card-role-badge-1')).toHaveTextContent('💍');
+    expect(screen.getByTestId('card-role-badge-1')).not.toHaveTextContent('👑');
+    expect(screen.queryByTestId('card-role-badge-0')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('card-role-badge-2')).not.toBeInTheDocument();
   });
 
   it('shows no marriage badge when no marriage is available', async () => {

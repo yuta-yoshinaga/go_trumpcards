@@ -224,7 +224,7 @@ func (d *Daifugo) PlayerPlay(indices []int) error {
 		// パス
 		d.round.passCount++
 		d.round.humanAction = &DaifugoCpuAction{PlayerIdx: d.round.currentTurn, PlayedCards: nil}
-		d.appendLog(d.round.currentTurn, "pass", "pass", nil)
+		d.appendLog(d.round.currentTurn, "pass", "daifugo.log.pass", nil, nil)
 		d.advanceTurn()
 		d.checkPassClear()
 		return nil
@@ -270,7 +270,7 @@ func (d *Daifugo) PlayerPlay(indices []int) error {
 	// カードを出す
 	cards := player.RemoveCards(indices)
 	d.round.humanAction = &DaifugoCpuAction{PlayerIdx: d.round.currentTurn, PlayedCards: cards}
-	d.appendLog(d.round.currentTurn, "play", fmt.Sprintf("played %d card(s)", len(cards)), cards)
+	d.appendLog(d.round.currentTurn, "play", "daifugo.log.play", map[string]string{"count": fmt.Sprintf("%d", len(cards))}, cards)
 	d.playCards(d.round.currentTurn, cards, isSeq, spadeThree)
 	return nil
 }
@@ -344,7 +344,7 @@ func (d *Daifugo) CpuPlay() {
 		d.round.passCount++
 		action := &DaifugoCpuAction{PlayerIdx: playerIdx, PlayedCards: nil}
 		d.round.cpuActions = append(d.round.cpuActions, action)
-		d.appendLog(playerIdx, "pass", "pass", nil)
+		d.appendLog(playerIdx, "pass", "daifugo.log.pass", nil, nil)
 		d.advanceTurn()
 		d.checkPassClear()
 	} else {
@@ -366,7 +366,7 @@ func (d *Daifugo) CpuPlay() {
 		cards := player.RemoveCards(playIndices)
 		action := &DaifugoCpuAction{PlayerIdx: playerIdx, PlayedCards: cards}
 		d.round.cpuActions = append(d.round.cpuActions, action)
-		d.appendLog(playerIdx, "play", fmt.Sprintf("played %d card(s)", len(cards)), cards)
+		d.appendLog(playerIdx, "play", "daifugo.log.play", map[string]string{"count": fmt.Sprintf("%d", len(cards))}, cards)
 		d.playCards(playerIdx, cards, isSeq, spadeThree)
 	}
 }
@@ -488,8 +488,8 @@ func (d *Daifugo) GetSortMode() DaifugoSortMode { return d.sortMode }
 func (d *Daifugo) GetActionLog() []*ActionLogEntry { return d.round.actionLog }
 
 // appendLog 棋譜にエントリを追加する
-func (d *Daifugo) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	d.round.appendLog(playerIdx, actionType, detail, cards)
+func (d *Daifugo) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	d.round.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- JSON Serialization ---

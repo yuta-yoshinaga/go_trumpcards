@@ -91,12 +91,7 @@ func (p *TienLenWebPresenter) buildRankings(tg interfaces.TienLenGame) string {
 		if rank < 1 || rank > 4 {
 			continue
 		}
-		var name string
-		if player.GetIsHuman() {
-			name = i18n.T("tienlen.playerYou")
-		} else {
-			name = fmt.Sprintf("CPU %d", i)
-		}
+		name := webPlayerName(player.GetIsHuman(), i)
 		fmt.Fprintf(&b, "%s:%s ", name, i18n.Tf("tienlen.rankN", "rank", strconv.Itoa(rank)))
 	}
 	return b.String()

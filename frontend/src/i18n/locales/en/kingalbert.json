@@ -11,6 +11,7 @@
   "giveup": "Give Up",
   "empty": "Empty",
   "emptyReserveSlot": "Empty reserve slot {{idx}}",
+  "reserveCardAriaLabel": "{{card}} (reserve slot {{idx}})",
   "foundationAriaLabel": "{{suit}} foundation {{count}} cards",
   "emptyFoundationAriaLabel": "Empty foundation ({{suit}})",
   "landscapeBanner": "Landscape mode recommended",

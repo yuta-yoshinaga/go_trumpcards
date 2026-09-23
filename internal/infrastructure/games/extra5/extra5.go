@@ -10,7 +10,6 @@
 // deliberate: it holds whatever had to move to keep every TinyGo WASM binary
 // under the Cloudflare Workers free-tier 1 MB gzipped limit, and nothing about
 // a game's genre says it belongs here.
-//
 package extra5
 
 import (
@@ -22,14 +21,6 @@ import (
 )
 
 func init() {
-	games.RegisterKVGame("daifugo", games.CategoryExtra5,
-		func() usecase.DaifugoInteractorIF {
-			return usecase.NewDaifugoInteractor(domain.NewDefaultDaifugo(), new(presenter.DaifugoWebPresenter))
-		},
-		func(data []byte) (usecase.DaifugoInteractorIF, error) {
-			return usecase.RestoreDaifugoInteractor(data, new(presenter.DaifugoWebPresenter))
-		},
-		controller.NewDaifugoWebControllerWithProvider)
 	games.RegisterKVGame("diloti", games.CategoryExtra5,
 		func() usecase.DilotiInteractorIF {
 			return usecase.NewDilotiInteractor(domain.NewDefaultDiloti(), new(presenter.DilotiWebPresenter))
@@ -62,14 +53,6 @@ func init() {
 			return usecase.RestoreTeenDoPaanchInteractor(data, new(presenter.TeenDoPaanchWebPresenter))
 		},
 		controller.NewTeenDoPaanchWebControllerWithProvider)
-	games.RegisterKVGame("tusac", games.CategoryExtra5,
-		func() usecase.TuSacInteractorIF {
-			return usecase.NewTuSacInteractor(domain.NewDefaultTuSac(), new(presenter.TuSacWebPresenter))
-		},
-		func(data []byte) (usecase.TuSacInteractorIF, error) {
-			return usecase.RestoreTuSacInteractor(data, new(presenter.TuSacWebPresenter))
-		},
-		controller.NewTuSacWebControllerWithProvider)
 	games.RegisterKVGame("macau", games.CategoryExtra5,
 		func() usecase.MacauInteractorIF {
 			return usecase.NewMacauInteractor(domain.NewDefaultMacau(), new(presenter.MacauWebPresenter))
@@ -86,14 +69,6 @@ func init() {
 			return usecase.RestoreGleekInteractor(data, new(presenter.GleekWebPresenter))
 		},
 		controller.NewGleekWebControllerWithProvider)
-	games.RegisterKVGame("costlycolours", games.CategoryExtra5,
-		func() usecase.CostlyColoursInteractorIF {
-			return usecase.NewCostlyColoursInteractor(domain.NewDefaultCostlyColours(), new(presenter.CostlyColoursWebPresenter))
-		},
-		func(data []byte) (usecase.CostlyColoursInteractorIF, error) {
-			return usecase.RestoreCostlyColoursInteractor(data, new(presenter.CostlyColoursWebPresenter))
-		},
-		controller.NewCostlyColoursWebControllerWithProvider)
 	games.RegisterKVGame("dehlapakad", games.CategoryExtra5,
 		func() usecase.DehlaPakadInteractorIF {
 			return usecase.NewDehlaPakadInteractor(domain.NewDefaultDehlaPakad(), new(presenter.DehlaPakadWebPresenter))
@@ -150,14 +125,6 @@ func init() {
 			return usecase.RestoreDoubtInteractor(data, new(presenter.DoubtWebPresenter))
 		},
 		controller.NewDoubtWebControllerWithProvider)
-	games.RegisterKVGame("cribbage", games.CategoryExtra5,
-		func() usecase.CribbageInteractorIF {
-			return usecase.NewCribbageInteractor(domain.NewDefaultCribbage(), new(presenter.CribbageWebPresenter))
-		},
-		func(data []byte) (usecase.CribbageInteractorIF, error) {
-			return usecase.RestoreCribbageInteractor(data, new(presenter.CribbageWebPresenter))
-		},
-		controller.NewCribbageWebControllerWithProvider)
 	games.RegisterKVGame("hasenpfeffer", games.CategoryExtra5,
 		func() usecase.HasenpfefferInteractorIF {
 			return usecase.NewHasenpfefferInteractor(domain.NewDefaultHasenpfeffer(), new(presenter.HasenpfefferWebPresenter))
@@ -182,14 +149,6 @@ func init() {
 			return usecase.RestoreLooInteractor(data, new(presenter.LooWebPresenter))
 		},
 		controller.NewLooWebControllerWithProvider)
-	games.RegisterKVGame("mighty", games.CategoryExtra5,
-		func() usecase.MightyInteractorIF {
-			return usecase.NewMightyInteractor(domain.NewDefaultMighty(), new(presenter.MightyWebPresenter))
-		},
-		func(data []byte) (usecase.MightyInteractorIF, error) {
-			return usecase.RestoreMightyInteractor(data, new(presenter.MightyWebPresenter))
-		},
-		controller.NewMightyWebControllerWithProvider)
 	games.RegisterKVGame("quadrille", games.CategoryExtra5,
 		func() usecase.QuadrilleInteractorIF {
 			return usecase.NewQuadrilleInteractor(domain.NewDefaultQuadrille(), new(presenter.QuadrilleWebPresenter))
@@ -214,22 +173,6 @@ func init() {
 			return usecase.RestoreCometInteractor(data, new(presenter.CometWebPresenter))
 		},
 		controller.NewCometWebControllerWithProvider)
-	games.RegisterKVGame("kingo", games.CategoryExtra5,
-		func() usecase.KingoInteractorIF {
-			return usecase.NewKingoInteractor(domain.NewDefaultKingo(), new(presenter.KingoWebPresenter))
-		},
-		func(data []byte) (usecase.KingoInteractorIF, error) {
-			return usecase.RestoreKingoInteractor(data, new(presenter.KingoWebPresenter))
-		},
-		controller.NewKingoWebControllerWithProvider)
-	games.RegisterKVGame("oichokabu", games.CategoryExtra5,
-		func() usecase.OichoKabuInteractorIF {
-			return usecase.NewOichoKabuInteractor(domain.NewDefaultOichoKabu(), new(presenter.OichoKabuWebPresenter))
-		},
-		func(data []byte) (usecase.OichoKabuInteractorIF, error) {
-			return usecase.RestoreOichoKabuInteractor(data, new(presenter.OichoKabuWebPresenter))
-		},
-		controller.NewOichoKabuWebControllerWithProvider)
 	games.RegisterKVGame("speculation", games.CategoryExtra5,
 		func() usecase.SpeculationInteractorIF {
 			return usecase.NewSpeculationInteractor(domain.NewDefaultSpeculation(), new(presenter.SpeculationWebPresenter))
@@ -270,4 +213,60 @@ func init() {
 			return usecase.RestoreUltiInteractor(data, new(presenter.UltiWebPresenter))
 		},
 		controller.NewUltiWebControllerWithProvider)
+	games.RegisterKVGame("batak", games.CategoryExtra5,
+		func() usecase.BatakInteractorIF {
+			return usecase.NewBatakInteractor(domain.NewDefaultBatak(), new(presenter.BatakWebPresenter))
+		},
+		func(data []byte) (usecase.BatakInteractorIF, error) {
+			return usecase.RestoreBatakInteractor(data, new(presenter.BatakWebPresenter))
+		},
+		controller.NewBatakWebControllerWithProvider)
+	games.RegisterKVGame("binokel", games.CategoryExtra5,
+		func() usecase.BinokelInteractorIF {
+			return usecase.NewBinokelInteractor(domain.NewDefaultBinokel(), new(presenter.BinokelWebPresenter))
+		},
+		func(data []byte) (usecase.BinokelInteractorIF, error) {
+			return usecase.RestoreBinokelInteractor(data, new(presenter.BinokelWebPresenter))
+		},
+		controller.NewBinokelWebControllerWithProvider)
+	games.RegisterKVGame("omi", games.CategoryExtra5,
+		func() usecase.OmiInteractorIF {
+			return usecase.NewOmiInteractor(domain.NewDefaultOmi(), new(presenter.OmiWebPresenter))
+		},
+		func(data []byte) (usecase.OmiInteractorIF, error) {
+			return usecase.RestoreOmiInteractor(data, new(presenter.OmiWebPresenter))
+		},
+		controller.NewOmiWebControllerWithProvider)
+	games.RegisterKVGame("tongits", games.CategoryExtra5,
+		func() usecase.TongitsInteractorIF {
+			return usecase.NewTongitsInteractor(domain.NewDefaultTongits(), new(presenter.TongitsWebPresenter))
+		},
+		func(data []byte) (usecase.TongitsInteractorIF, error) {
+			return usecase.RestoreTongitsInteractor(data, new(presenter.TongitsWebPresenter))
+		},
+		controller.NewTongitsWebControllerWithProvider)
+	games.RegisterKVGame("kingo", games.CategoryExtra5,
+		func() usecase.KingoInteractorIF {
+			return usecase.NewKingoInteractor(domain.NewDefaultKingo(), new(presenter.KingoWebPresenter))
+		},
+		func(data []byte) (usecase.KingoInteractorIF, error) {
+			return usecase.RestoreKingoInteractor(data, new(presenter.KingoWebPresenter))
+		},
+		controller.NewKingoWebControllerWithProvider)
+	games.RegisterKVGame("oichokabu", games.CategoryExtra5,
+		func() usecase.OichoKabuInteractorIF {
+			return usecase.NewOichoKabuInteractor(domain.NewDefaultOichoKabu(), new(presenter.OichoKabuWebPresenter))
+		},
+		func(data []byte) (usecase.OichoKabuInteractorIF, error) {
+			return usecase.RestoreOichoKabuInteractor(data, new(presenter.OichoKabuWebPresenter))
+		},
+		controller.NewOichoKabuWebControllerWithProvider)
+	games.RegisterKVGame("tusac", games.CategoryExtra5,
+		func() usecase.TuSacInteractorIF {
+			return usecase.NewTuSacInteractor(domain.NewDefaultTuSac(), new(presenter.TuSacWebPresenter))
+		},
+		func(data []byte) (usecase.TuSacInteractorIF, error) {
+			return usecase.RestoreTuSacInteractor(data, new(presenter.TuSacWebPresenter))
+		},
+		controller.NewTuSacWebControllerWithProvider)
 }

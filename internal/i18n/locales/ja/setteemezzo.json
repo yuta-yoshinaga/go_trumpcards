@@ -1,0 +1,9 @@
+{
+  "log.deal": "全員に1枚ずつ配った",
+  "log.hit": "1枚引いた",
+  "log.stand": "スタンド",
+  "log.matta": "マッタを {{value}} 点にした",
+  "log.bankerHit": "親が1枚引いた",
+  "log.bankerTotal": "親は {{total}}",
+  "log.bankerBust": "親がバースト（{{total}}）"
+}

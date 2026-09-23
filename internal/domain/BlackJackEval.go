@@ -39,15 +39,15 @@ func (b *BlackJack) DealerHit() {
 		if b.dealerShouldHit() {
 			card := b.drawCard()
 			if card == nil {
-				b.appendLog(-1, "dealerstand", "dealer stand", nil)
+				b.appendLog(-1, "dealerstand", "blackjack.log.dealerStand", nil, nil)
 				b.DealerStand()
 				break
 			}
 			b.dealer.AddCard(card)
 			b.updateRunningCount(card)
-			b.appendLog(-1, "dealerhit", "dealer hit", []*Card{card})
+			b.appendLog(-1, "dealerhit", "blackjack.log.dealerHit", nil, []*Card{card})
 		} else {
-			b.appendLog(-1, "dealerstand", "dealer stand", nil)
+			b.appendLog(-1, "dealerstand", "blackjack.log.dealerStand", nil, nil)
 			b.DealerStand()
 			break
 		}
@@ -84,16 +84,14 @@ func (b *BlackJack) endGame() {
 	b.phase = BJPhaseEnd
 	// 棋譜に結果を記録
 	result := b.GameJudgment()
-	var detail string
+	detailCode := "blackjack.log.resultLose"
 	switch result {
 	case GameResultWin:
-		detail = "player wins"
+		detailCode = "blackjack.log.resultWin"
 	case GameResultDraw:
-		detail = "draw"
-	case GameResultLose:
-		detail = "player loses"
+		detailCode = "blackjack.log.resultDraw"
 	}
-	b.appendLog(-1, "result", detail, nil)
+	b.appendLog(-1, "result", detailCode, nil, nil)
 }
 
 // judgeHandCore 共通ハンド勝敗判定ロジック
@@ -133,6 +131,9 @@ func (b *BlackJack) judgeHandCore(hand *BlackJackHand, fromSplit bool) GameResul
 	if playerBJ && dealerBJ && b.variant != nil && b.variant.PlayerBJBeatsDealerBJ {
 		return GameResultWin
 	}
+	if b.variant != nil && b.variant.DealerWinsTies {
+		return GameResultLose
+	}
 
 	return GameResultDraw
 }
@@ -168,6 +169,12 @@ func (b *BlackJack) payoutHandWithVariant(player *BlackJackPlayer, hand *BlackJa
 			player.AddChips(bet + bet*bonus.MultiplierNum/bonus.MultiplierDen)
 			return bonus
 		}
+	}
+	if result == GameResultWin && hand.IsBlackJack() && !fromSplit &&
+		b.variant != nil && b.variant.BlackjackPaysEven {
+		bet := hand.GetBet()
+		player.AddChips(bet * 2)
+		return nil
 	}
 	payoutHand(player, hand, fromSplit, result)
 	return nil
@@ -214,7 +221,7 @@ func (b *BlackJack) resolvePayouts() {
 		result := b.judgeHand(hand)
 		bonus := b.payoutHandWithVariant(b.player, hand, hand.IsFromSplit(), result)
 		if bonus != nil {
-			b.appendLog(i, "bonus", bonus.NameKey, nil)
+			b.appendLog(i, "bonus", bonus.NameKey, nil, nil)
 			b.bonusKeys = append(b.bonusKeys, bonus.NameKey)
 		}
 	}
@@ -452,12 +459,16 @@ func (b *BlackJack) GetBasicStrategySuggestion() BJSuggestedAction {
 	}
 	// **バリアントを渡す。**48枚デッキのスパニッシュ21に標準デッキの基本戦略を
 	// 当てると、10 が抜けている分だけ助言がずれる (#4705)。
+	var dealerHole *Card
+	if v := b.GetVariant(); v != nil && v.DealerCardsFaceUp {
+		dealerHole = b.dealer.GetCard(1)
+	}
 	if b.phase == BJPhaseEarlySurrender {
-		action := GetVariantStrategyAction(hand, dealerUpcard, b.config.DealerHitsSoft17, b.config.Variant)
+		action := GetVariantStrategyAction(hand, dealerUpcard, dealerHole, b.config.DealerHitsSoft17, b.config.Variant)
 		if action == BJSuggestSurrender {
 			return BJSuggestSurrender
 		}
 		return BJSuggestStand // "continue" = decline early surrender
 	}
-	return GetVariantStrategyAction(hand, dealerUpcard, b.config.DealerHitsSoft17, b.config.Variant)
+	return GetVariantStrategyAction(hand, dealerUpcard, dealerHole, b.config.DealerHitsSoft17, b.config.Variant)
 }

@@ -25,6 +25,9 @@ import type { TutorialStep } from '../types/tutorial';
 import { doubleKlondikeCanPlaceOnFoundation, doubleKlondikeCanPlaceOnTableau } from '../utils/doubleKlondikeTargets';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
+/** 2 デッキの総枚数。`DoubleKlondikeTotalCards` (internal/domain/DoubleKlondike.go) と同じ。 */
+const DOUBLE_KLONDIKE_TOTAL_CARDS = 104;
+
 /** Double Klondike tutorial step definitions. */
 const DK_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="dk-board"]', messageKey: 'tutorial.board', placement: 'top', advanceOn: 'next' },
@@ -248,6 +251,7 @@ function DoubleKlondikePageContent() {
 
   // The most-recent up to 3 waste cards, oldest-first; only the last is playable.
   const wasteDisplay = state.waste.slice(-3);
+  const foundationCount = state.foundation.reduce((sum, pile) => sum + pile.length, 0);
 
   return (
     <GamePageShell
@@ -267,7 +271,10 @@ function DoubleKlondikePageContent() {
     >
       <div className="flex-1 overflow-y-auto pt-3 px-2 lg:px-6">
         <div className="text-ds-text-muted text-xs mb-1">
-          {t('stockCount', { count: state.stockCount })} · {t('moveCount', { count: state.moveCount })}
+          {t('stockCount', { count: state.stockCount })} · {t('moveCount', { count: state.moveCount })} ·{' '}
+          <span data-testid="dk-progress">
+            {t('progress', { count: foundationCount, total: DOUBLE_KLONDIKE_TOTAL_CARDS })}
+          </span>
         </div>
 
         {/* Stock / waste / foundations row. On mobile it stacks so the 8

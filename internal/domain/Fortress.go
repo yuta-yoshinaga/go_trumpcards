@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // FortressPhase Fortress game phase
@@ -153,7 +154,7 @@ func (bc *Fortress) MoveTableauToTableau(fromCol, cardIndex, toCol int) error {
 	bc.tableau[toCol] = append(bc.tableau[toCol], tc)
 	bc.tableau[fromCol] = fromCards[:cardIndex]
 	bc.moveCount++
-	bc.appendLog("move", fmt.Sprintf("タブロー列%d→タブロー列%d", fromCol, toCol), []*Card{tc.Card})
+	bc.appendLog("move", "fortress.log.moveTableauToTableau", map[string]string{"fromCol": strconv.Itoa(fromCol), "toCol": strconv.Itoa(toCol)}, []*Card{tc.Card})
 	bc.checkStalemate()
 	return nil
 }
@@ -180,7 +181,7 @@ func (bc *Fortress) MoveTableauToFoundation(col int) error {
 	bc.tableau[col] = fromCards[:len(fromCards)-1]
 	bc.foundation[fIdx] = append(bc.foundation[fIdx], card)
 	bc.moveCount++
-	bc.appendLog("move", fmt.Sprintf("タブロー列%d→ファンデーション", col), []*Card{card})
+	bc.appendLog("move", "fortress.log.moveTableauToFoundation", map[string]string{"col": strconv.Itoa(col)}, []*Card{card})
 	bc.checkGameClear()
 	bc.checkStalemate()
 	return nil
@@ -190,7 +191,7 @@ func (bc *Fortress) MoveTableauToFoundation(col int) error {
 func (bc *Fortress) GiveUp() {
 	if bc.phase == FortressPhasePlaying {
 		bc.phase = FortressPhaseGameOver
-		bc.appendLog("giveup", "ギブアップしました", nil)
+		bc.appendLog("giveup", "fortress.log.giveUp", nil, nil)
 	}
 }
 
@@ -266,7 +267,7 @@ func (bc *Fortress) AutoComplete() error {
 			break
 		}
 	}
-	bc.appendLog("autocomplete", "オートコンプリートを実行しました", nil)
+	bc.appendLog("autocomplete", "fortress.log.autoComplete", nil, nil)
 	bc.checkGameClear()
 	bc.checkStalemate()
 	return nil
@@ -436,8 +437,8 @@ func (bc *Fortress) restoreSnapshot(snap *fortressSnapshot) {
 }
 
 // appendLog 棋譜エントリを追加
-func (bc *Fortress) appendLog(actionType, detail string, cards []*Card) {
-	bc.appendLogAt(bc.moveCount, 0, actionType, detail, cards)
+func (bc *Fortress) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	bc.appendLogCodeAt(bc.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // fortressJSON is the JSON wire format for Fortress.

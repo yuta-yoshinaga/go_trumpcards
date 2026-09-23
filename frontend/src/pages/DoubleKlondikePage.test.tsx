@@ -60,6 +60,25 @@ describe('DoubleKlondikePage', () => {
     expect(screen.getByTestId('foundation-7')).toBeInTheDocument();
   });
 
+  // #7339: 9 列 104 枚の長いソリティアなのに、組札にいま何枚乗ったかが
+  // 分からなかった。進捗が組札の枚数に追従することを 2 値で確かめる。
+  it('shows how many of the 104 cards have been moved to foundations (0 cards)', async () => {
+    renderWithProviders(<DoubleKlondikePage />);
+
+    const progress = await screen.findByTestId('dk-progress');
+    expect(progress).toHaveTextContent('組札: 0/104枚');
+  });
+
+  it('updates as foundation cards are played (2 cards)', async () => {
+    const foundation: Card[][] = Array.from({ length: 8 }, () => []);
+    foundation[0] = [card('SPADE', 1), card('SPADE', 2)];
+    mockExec.mockResolvedValue(makeState({ foundation }));
+    renderWithProviders(<DoubleKlondikePage />);
+
+    const progress = await screen.findByTestId('dk-progress');
+    expect(progress).toHaveTextContent('組札: 2/104枚');
+  });
+
   it('renders face-down tableau cards as a card-back image, not "##"', async () => {
     renderWithProviders(<DoubleKlondikePage />);
     // makeState seeds a face-down card at tableau[1][0].

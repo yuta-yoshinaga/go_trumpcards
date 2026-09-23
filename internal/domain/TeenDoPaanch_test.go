@@ -208,6 +208,27 @@ func TestTeenDoPaanch_TrickWinnerOrdering(t *testing.T) {
 	assert.Equal(t, 2, g.TrickWinnerForTest())
 }
 
+func TestTeenDoPaanch_RecordsWinnerAfterAnOrdinaryTrick(t *testing.T) {
+	g := newTestTeenDoPaanch(t)
+	g.SetPhaseForTest(TeenDoPaanchPhasePlay)
+	g.SetTrumpSuitForTest(CardDesignDiamond)
+	g.SetCurrentTrickForTest([]*TrickCard{
+		{PlayerIdx: 0, Card: NewCard(CardDesignSpade, 8, false)},
+		{PlayerIdx: 1, Card: NewCard(CardDesignSpade, 13, false)},
+		{PlayerIdx: 2, Card: NewCard(CardDesignHeart, 1, false)},
+	})
+
+	g.resolveTrick()
+
+	assert.Equal(t, 1, g.GetLastTrickWinner(), "通常のトリック直後も勝者を公開する")
+	assert.Len(t, g.GetLastTrick(), TeenDoPaanchPlayerCnt)
+	assert.Equal(t, 1, g.GetLastTrick()[1].PlayerIdx)
+
+	g.SetCurrentTrickForTest([]*TrickCard{{PlayerIdx: 2, Card: NewCard(CardDesignDiamond, 8, false)}})
+	assert.Len(t, g.GetLastTrick(), TeenDoPaanchPlayerCnt, "次のトリックが始まっても直前の札を保持する")
+	assert.Equal(t, 1, g.GetLastTrick()[1].PlayerIdx)
+}
+
 // **ノルマちょうど以上で達成。多く取っても達成は達成。**
 func TestTeenDoPaanch_MeetingTheTargetCountsOnceRegardlessOfSurplus(t *testing.T) {
 	for _, tc := range []struct {
@@ -528,6 +549,8 @@ func TestTeenDoPaanch_JSONRoundTrip(t *testing.T) {
 	assert.Equal(t, g.GetRoundNumber(), restored.GetRoundNumber())
 	assert.Equal(t, g.GetTrickNumber(), restored.GetTrickNumber())
 	assert.Equal(t, g.GetFivePlayerIdx(), restored.GetFivePlayerIdx())
+	assert.Equal(t, g.GetLastTrickWinner(), restored.GetLastTrickWinner())
+	assert.Equal(t, g.GetLastTrick(), restored.GetLastTrick())
 	for i := range TeenDoPaanchPlayerCnt {
 		assert.Equal(t, g.GetPlayer(i).GetTarget(), restored.GetPlayer(i).GetTarget(), "ノルマが消えない")
 		assert.Equal(t, g.GetPlayer(i).GetMet(), restored.GetPlayer(i).GetMet(), "達成数が消えない")
@@ -567,6 +590,8 @@ func TestTeenDoPaanch_UnmarshalRejectsBrokenSnapshots(t *testing.T) {
 		{"surplus does not cancel out", func(m map[string]any) { m["sp"] = []any{2, 0, 0} }},
 		{"surplus has the wrong length", func(m map[string]any) { m["sp"] = []any{0, 0} }},
 		{"config out of range", func(m map[string]any) { m["cf"] = map[string]any{"r": 0} }},
+		{"last trick winner out of range", func(m map[string]any) { m["lw"] = TeenDoPaanchPlayerCnt }},
+		{"last trick winner below -1", func(m map[string]any) { m["lw"] = -2 }},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			m := base(t)

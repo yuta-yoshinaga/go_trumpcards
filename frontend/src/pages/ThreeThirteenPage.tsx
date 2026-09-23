@@ -22,6 +22,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, PLAYER_COUNT_OPTIONS, useThreeThirteenGame } from '../hooks/useThreeThirteenGame';
+import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -266,7 +267,17 @@ function ThreeThirteenPageContent() {
 
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
             <div className="text-ds-text-primary text-center mb-2" data-testid="threethirteen-round-banner">
-              <span className="mr-4">{t('round', { n: state.round })}</span>
+              <span className="mr-4">
+                {t('round', { n: state.round, max: state.maxRound })}
+                {state.round === state.maxRound && (
+                  <span
+                    className={`ml-2 inline-flex items-center rounded px-1.5 py-0.5 text-xs ${badgeWarningColors}`}
+                    data-testid="threethirteen-final-round-badge"
+                  >
+                    {t('finalRound')}
+                  </span>
+                )}
+              </span>
               <span className="mr-4 font-bold text-ds-accent">{t('wildRank', { rank: state.wildRank })}</span>
               <span className="mr-4">{t('dealCount', { count: state.dealCount })}</span>
               <span>{t('drawPile', { count: state.drawPileCount })}</span>

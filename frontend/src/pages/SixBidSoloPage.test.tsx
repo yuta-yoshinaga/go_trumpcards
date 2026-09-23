@@ -315,6 +315,8 @@ describe('SixBidSoloPage', () => {
     mockExec.mockResolvedValue(makeState({ calledCard: card('HEART', 13) }));
     const { unmount } = renderWithProviders(<SixBidSoloPage />);
     await waitFor(() => expect(screen.getByTestId('sixbidsolo-called')).toBeInTheDocument());
+    expect(screen.getByTestId('sixbidsolo-called')).toHaveTextContent('指名札');
+    expect(screen.getByAltText('♥ K')).toBeInTheDocument();
     unmount();
 
     mockExec.mockResolvedValue(makeState({ calledCard: null }));

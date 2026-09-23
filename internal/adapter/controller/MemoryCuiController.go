@@ -26,7 +26,7 @@ func (c *MemoryCuiController) Exec(command string) string {
 			cfg := c.mi.GetConfig()
 			return c.mi.ResetWithConfig(cfg)
 		},
-		[]string{"f", "flip", "n", "next", "sd", "setdifficulty", "log", "l"},
+		[]string{"f", "flip", "n", "next", "sd", "setdifficulty", "sp", "setpaircount", "log", "l"},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
 			case "f", "flip":
@@ -37,6 +37,12 @@ func (c *MemoryCuiController) Exec(command string) string {
 				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
 					cfg := c.mi.GetConfig()
 					cfg.CpuDifficulty = domain.MemoryCpuDifficulty(v)
+					return c.mi.ResetWithConfig(cfg)
+				})
+			case "sp", "setpaircount":
+				return cuiutil.WithParsedIntKeys(args, "memory.pairCountRequired", "memory.invalidPairCount", domain.MemoryMinPairCount, domain.MemoryMaxPairCount, func(v int) string {
+					cfg := c.mi.GetConfig()
+					cfg.PairCount = v
 					return c.mi.ResetWithConfig(cfg)
 				})
 			default:

@@ -92,6 +92,8 @@ func TestDoppelkopfCuiPresenter_Output(t *testing.T) {
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLiveRePoints")
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLiveKontraPoints")
+		m.On("GetLeadPlayerIdx").Return(0)
+		m.On("GetLastTrickPoints").Return(15)
 		m.On("GetPhase").Return(domain.DoppelkopfPhaseTrickEnd)
 		m.On("GetLiveRePoints").Return(45)
 		m.On("GetLiveKontraPoints").Return(25)
@@ -99,8 +101,22 @@ func TestDoppelkopfCuiPresenter_Output(t *testing.T) {
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "Re 45")
 		assert.Contains(t, result, "Kontra 25")
+		assert.Contains(t, result, "トリック終了: あなたが15点獲得")
 		assert.NotContains(t, result, "{{")
 		assert.NotEmpty(t, result)
+	})
+
+	t.Run("trick end prompt names a CPU winner and shows points", func(t *testing.T) {
+		m, _ := setupDoppelkopfCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetPhase").Return(domain.DoppelkopfPhaseTrickEnd)
+		m.On("GetLeadPlayerIdx").Return(2)
+		m.On("GetLastTrickPoints").Return(28)
+		i18n.SetLang("en")
+		defer i18n.SetLang("ja")
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "Trick complete: CPU 2 won 28 points")
+		assert.NotContains(t, result, "{{")
 	})
 
 	t.Run("round end prompt shows localized Kontra-wins outcome and hides live points", func(t *testing.T) {
@@ -168,14 +184,14 @@ func TestDoppelkopfCuiPresenter_HintOutput(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
 		m.On("GetHint").Return(&domain.DoppelkopfHint{CardIndices: []int{0}, Reason: "lead_low"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 
 	t.Run("hint no card indices", func(t *testing.T) {
 		m, _ := setupDoppelkopfCuiMockWithPlayers()
 		m.On("GetHint").Return(&domain.DoppelkopfHint{CardIndices: nil, Reason: "follow_win"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 }
 
@@ -184,7 +200,7 @@ func TestDoppelkopfCuiPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockDoppelkopfGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You plays ♠Q"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "doppelkopf.log.play", DetailParams: map[string]string{"name": "You", "card": "♠Q"}},
 	})
 	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
 	m.On("GetPlayer", mock.Anything).Return(domain.NewDoppelkopfPlayer(true, 0)).Maybe()
@@ -212,9 +228,9 @@ func TestDoppelkopfCuiPresenter_MarksTheTrumpsInHand(t *testing.T) {
 	t.Run("marks only the trump indices", func(t *testing.T) {
 		out := p.Output(handMock([]int{0, 2}), nil)
 
-		assert.Contains(t, out, "[0]"+color.Red("DIAMOND 9")+presenter.CuiTrumpMark)
-		assert.Contains(t, out, "[2]"+"CLOVER 12"+presenter.CuiTrumpMark)
-		assert.NotContains(t, out, "[1]"+"SPADE 1"+presenter.CuiTrumpMark)
+		assert.Contains(t, out, "[0]"+color.Red("♦9")+presenter.CuiTrumpMark)
+		assert.Contains(t, out, "[2]"+"♣12"+presenter.CuiTrumpMark)
+		assert.NotContains(t, out, "[1]"+"♠1"+presenter.CuiTrumpMark)
 	})
 
 	t.Run("explains what the mark means and how the trumps rank", func(t *testing.T) {

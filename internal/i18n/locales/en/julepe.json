@@ -31,5 +31,18 @@
   "hintReasonAlreadySafe": "You have made the required tricks; take what you can",
   "helpExampleIn": "  in                   declare that you will play this hand",
   "helpHint": "  h                    show a hint",
-  "dealerMark": "[dealer]"
+  "dealerMark": "[dealer]",
+  "beastMark": "[BEAST: double ante next round]",
+  "log.beastAnte": "Double ante for beast ({{ante}})",
+  "log.roundStarted": "Round {{round}} started (pot {{pot}})",
+  "log.passed": "Dropped out",
+  "log.played": "Played",
+  "log.allPassed": "Everyone dropped out. Carrying over pot {{pot}}",
+  "log.play": "{{card}}",
+  "log.penalty": "Fewer than {{required}} tricks ({{tricks}}) — beast, paid {{penalty}}",
+  "log.payout": "Won {{amount}} for {{tricks}} tricks",
+  "log.potDistributed": "Final round. Splitting remaining pot {{pot}} among {{players}} players",
+  "log.draw": "It's a tie",
+  "log.winner": "Winner ({{chips}} chips)",
+  "log.giveUp": "Gave up"
 }

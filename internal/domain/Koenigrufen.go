@@ -54,6 +54,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // KoenigrufenPlayerCnt プレイヤー数 (人間 1 + CPU 3)
@@ -388,10 +389,10 @@ func (g *Koenigrufen) PlayerBid(bid KoenigrufenBid) error {
 		return ErrNotHumanTurn
 	}
 	if !koenigrufenValidBid(bid) {
-		return NewDomainError(ErrInvalidPlay, "無効な入札です (rufer)")
+		return NewDomainErrorCode(ErrInvalidPlay, "koenigrufen.errInvalidBid", nil)
 	}
 	if bid <= g.highestBid {
-		return NewDomainError(ErrInvalidPlay, "現在の入札より高い入札が必要です")
+		return NewDomainErrorCode(ErrInvalidPlay, "koenigrufen.errBidHigherThanHighest", map[string]string{"bid": fmt.Sprintf("%d", g.highestBid)})
 	}
 	g.applyBid(g.bidPlayerIdx, bid)
 	return nil
@@ -434,14 +435,14 @@ func (g *Koenigrufen) CpuBid() {
 func (g *Koenigrufen) applyBid(idx int, bid KoenigrufenBid) {
 	g.highestBid = bid
 	g.highestBidder = idx
-	g.appendLog(idx, "bid", fmt.Sprintf("%s bids %s", playerName(g.players, idx), koenigrufenBidName(bid)), nil)
+	g.appendLog(idx, "bid", "koenigrufen.log.bid", map[string]string{"name": playerName(g.players, idx), "bidKey": koenigrufenBidKey(bid)}, nil)
 	g.advanceBid()
 }
 
 // applyPass パスを適用する。
 func (g *Koenigrufen) applyPass(idx int) {
 	g.passed[idx] = true
-	g.appendLog(idx, "pass", fmt.Sprintf("%s passes", playerName(g.players, idx)), nil)
+	g.appendLog(idx, "pass", "koenigrufen.log.pass", map[string]string{"name": playerName(g.players, idx)}, nil)
 	g.advanceBid()
 }
 
@@ -461,13 +462,11 @@ func (g *Koenigrufen) finalizeBid() {
 	if g.highestBidder < 0 {
 		g.declarerIdx = (g.dealerIdx + 1) % KoenigrufenPlayerCnt
 		g.contract = KoenigrufenBidRufer
-		g.appendLog(g.declarerIdx, "forced",
-			fmt.Sprintf("all passed — %s is forced to take Rufer", playerName(g.players, g.declarerIdx)), nil)
+		g.appendLog(g.declarerIdx, "forced", "koenigrufen.log.forced", map[string]string{"name": playerName(g.players, g.declarerIdx)}, nil)
 	} else {
 		g.declarerIdx = g.highestBidder
 		g.contract = g.highestBid
-		g.appendLog(g.declarerIdx, "win_bid",
-			fmt.Sprintf("%s takes the contract %s", playerName(g.players, g.declarerIdx), koenigrufenBidName(g.contract)), nil)
+		g.appendLog(g.declarerIdx, "win_bid", "koenigrufen.log.winBid", map[string]string{"name": playerName(g.players, g.declarerIdx), "contractKey": koenigrufenBidKey(g.contract)}, nil)
 	}
 	g.enterCallOrSolo()
 }
@@ -478,8 +477,7 @@ func (g *Koenigrufen) enterCallOrSolo() {
 	if g.declarerKingsHeld() == KoenigrufenSuitCnt {
 		g.calledKing = -1
 		g.partnerIdx = -1
-		g.appendLog(g.declarerIdx, "solo",
-			fmt.Sprintf("%s holds all four kings and plays solo", playerName(g.players, g.declarerIdx)), nil)
+		g.appendLog(g.declarerIdx, "solo", "koenigrufen.log.solo", map[string]string{"name": playerName(g.players, g.declarerIdx)}, nil)
 		g.finalizeCall()
 		return
 	}
@@ -501,10 +499,10 @@ func (g *Koenigrufen) PlayerCallKing(suit int) error {
 		return ErrNotHumanTurn
 	}
 	if suit < 1 || suit > KoenigrufenSuitCnt {
-		return NewDomainError(ErrInvalidPlay, "スートは 1..4 で指定してください")
+		return NewDomainErrorCode(ErrInvalidPlay, "koenigrufen.errInvalidSuit", nil)
 	}
 	if g.playerHoldsKing(g.declarerIdx, suit) {
-		return NewDomainError(ErrInvalidPlay, "自分が持つキングは呼べません")
+		return NewDomainErrorCode(ErrInvalidPlay, "koenigrufen.errKingInOwnHand", nil)
 	}
 	g.applyCallKing(suit)
 	return nil
@@ -527,8 +525,7 @@ func (g *Koenigrufen) applyCallKing(suit int) {
 	g.calledKing = suit
 	g.partnerIdx = g.findKingHolder(suit)
 	// ログにはパートナーの正体を書かず、呼んだキングのみを記録する。
-	g.appendLog(g.declarerIdx, "call_king",
-		fmt.Sprintf("%s calls the King of suit %d", playerName(g.players, g.declarerIdx), suit), nil)
+	g.appendLog(g.declarerIdx, "call_king", "koenigrufen.log.callKing", map[string]string{"name": playerName(g.players, g.declarerIdx), "suit": strconv.Itoa(suit)}, nil)
 	g.finalizeCall()
 }
 
@@ -629,15 +626,15 @@ func (g *Koenigrufen) CpuDiscard() {
 func (g *Koenigrufen) doDiscard(cardIndices []int) error {
 	player := g.players[g.declarerIdx]
 	if len(cardIndices) != KoenigrufenTalonSize {
-		return NewDomainError(ErrInvalidCard, "ちょうど 6 枚を捨ててください")
+		return NewDomainErrorCode(ErrInvalidCard, "koenigrufen.errScartoCount", map[string]string{"n": fmt.Sprintf("%d", KoenigrufenTalonSize)})
 	}
 	seen := make(map[int]bool, KoenigrufenTalonSize)
 	for _, idx := range cardIndices {
 		if idx < 0 || idx >= player.GetCardsSize() {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+			return NewDomainErrorCode(ErrInvalidCard, "koenigrufen.errCardIndexOutOfRange", nil)
 		}
 		if seen[idx] {
-			return NewDomainError(ErrInvalidCard, "同じカードを 2 回選べません")
+			return NewDomainErrorCode(ErrInvalidCard, "koenigrufen.errDuplicateCardIndex", nil)
 		}
 		seen[idx] = true
 	}
@@ -647,8 +644,7 @@ func (g *Koenigrufen) doDiscard(cardIndices []int) error {
 	discarded := player.RemoveCards(cardIndices)
 	g.stash = discarded
 	g.stashOwner = 0
-	g.appendLog(g.declarerIdx, "discard",
-		fmt.Sprintf("%s discards %d cards to the talon", playerName(g.players, g.declarerIdx), len(discarded)), discarded)
+	g.appendLog(g.declarerIdx, "discard", "koenigrufen.log.discard", map[string]string{"name": playerName(g.players, g.declarerIdx), "cards": strconv.Itoa(len(discarded))}, discarded)
 	g.sortAllHands()
 	g.startPlay()
 	return nil
@@ -667,13 +663,13 @@ func (g *Koenigrufen) validateDiscards(player *KoenigrufenPlayer, cardIndices []
 	for _, idx := range cardIndices {
 		c := player.GetCard(idx)
 		if koenigrufenIsKing(c) {
-			return NewDomainError(ErrInvalidPlay, "キングは捨てられません")
+			return NewDomainErrorCode(ErrInvalidPlay, "koenigrufen.errDiscardKing", nil)
 		}
 		if koenigrufenIsTrull(c) {
-			return NewDomainError(ErrInvalidPlay, "トゥルル (Pagat/XXI/Sküs) は捨てられません")
+			return NewDomainErrorCode(ErrInvalidPlay, "koenigrufen.errDiscardTrull", nil)
 		}
 		if koenigrufenIsTrumpLike(c) && !allowTrump {
-			return NewDomainError(ErrInvalidPlay, "切り札は (やむを得ない場合を除き) 捨てられません")
+			return NewDomainErrorCode(ErrInvalidPlay, "koenigrufen.errDiscardTrump", nil)
 		}
 	}
 	return nil
@@ -712,7 +708,7 @@ func (g *Koenigrufen) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "koenigrufen.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
@@ -749,7 +745,7 @@ func (g *Koenigrufen) playCard(playerIdx int, card *Card) {
 	if koenigrufenIsCalledKing(card, g.calledKing) {
 		g.partnerRevealed = true
 	}
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), koenigrufenCardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "koenigrufen.log.play", map[string]string{"name": playerName(g.players, playerIdx), "card": koenigrufenCardStr(card)}, []*Card{card})
 	if len(g.currentTrick) == KoenigrufenPlayerCnt {
 		g.phase = KoenigrufenPhaseTrickEnd
 	} else {
@@ -769,12 +765,11 @@ func (g *Koenigrufen) ResolveTrick() {
 		allCards = append(allCards, tc.Card)
 	}
 	g.players[winnerIdx].AddTrick(allCards)
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), allCards)
+	g.appendLog(winnerIdx, "trick_win", "koenigrufen.log.trickWin", map[string]string{"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber)}, allCards)
 
 	g.leadPlayerIdx = winnerIdx
+	g.lastTrickWinner = winnerIdx
 	if g.trickNumber >= KoenigrufenTrickCount {
-		g.lastTrickWinner = winnerIdx
 		g.lastTrickCards = allCards
 		g.phase = KoenigrufenPhaseRoundEnd
 		g.enterRoundEnd()
@@ -826,10 +821,7 @@ func (g *Koenigrufen) enterRoundEnd() {
 			g.playerScores[i] += bd.OpponentScore
 		}
 	}
-	g.appendLog(-1, "round_score",
-		fmt.Sprintf("deal %d: declarer(%s) %s teamPts=%d/%d won=%t base=%d",
-			g.roundNumber, playerName(g.players, g.declarerIdx), koenigrufenBidName(g.contract),
-			bd.TeamPoints, KoenigrufenTotalPoints, bd.Won, bd.Base), nil)
+	g.appendLog(-1, "round_score", "koenigrufen.log.roundScore", map[string]string{"deal": strconv.Itoa(g.roundNumber), "declarer": playerName(g.players, g.declarerIdx), "contractKey": koenigrufenBidKey(g.contract), "teamPoints": strconv.Itoa(bd.TeamPoints), "totalPoints": strconv.Itoa(KoenigrufenTotalPoints), "won": strconv.FormatBool(bd.Won), "base": strconv.Itoa(bd.Base)}, nil)
 	g.checkGameEnd()
 }
 
@@ -888,10 +880,10 @@ func (g *Koenigrufen) checkGameEnd() {
 	g.result = g.humanResult(leader, tie)
 	if tie {
 		g.winnerPlayer = -1
-		g.appendLog(-1, "game_end", "the match ends in a draw", nil)
+		g.appendLog(-1, "game_end", "koenigrufen.log.gameEndDraw", nil, nil)
 	} else {
 		g.winnerPlayer = leader
-		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
+		g.appendLog(-1, "game_end", "koenigrufen.log.gameEndWin", map[string]string{"name": playerName(g.players, leader)}, nil)
 	}
 }
 
@@ -1531,16 +1523,16 @@ func (g *Koenigrufen) isHumanBidTurn() bool {
 }
 
 // appendLog 棋譜にエントリを追加する。
-func (g *Koenigrufen) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.appendLogAt(len(g.actionLog)+1, playerIdx, actionType, detail, cards)
+func (g *Koenigrufen) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCodeAt(len(g.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
-// koenigrufenBidName 入札の表示名を返す。
-func koenigrufenBidName(bid KoenigrufenBid) string {
+// koenigrufenBidKey は入札の i18n キーを返す。
+func koenigrufenBidKey(bid KoenigrufenBid) string {
 	if bid == KoenigrufenBidRufer {
-		return "rufer"
+		return "koenigrufen.bidRufer"
 	}
-	return "pass"
+	return "koenigrufen.bidPass"
 }
 
 // koenigrufenCardStr カードのログ表示文字列 (切り札・スキュース対応)。
@@ -1605,6 +1597,9 @@ func (g *Koenigrufen) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
 func (g *Koenigrufen) GetCurrentTrick() []*TrickCard { return g.currentTrick }
+
+// GetLastTrickWinner 直前トリックの勝者を取得する (-1=なし)
+func (g *Koenigrufen) GetLastTrickWinner() int { return g.lastTrickWinner }
 
 // SetCurrentTrick トリック設定 (テスト用)
 func (g *Koenigrufen) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
@@ -1687,6 +1682,9 @@ func (g *Koenigrufen) SetPlayerScores(s [KoenigrufenPlayerCnt]int) { g.playerSco
 
 // GetCardPoints プレイヤー i が獲得したカードポイント合計を返す (表示用)。
 func (g *Koenigrufen) GetCardPoints(i int) int { return g.playerTrickPoints(i) }
+
+// GetTeamPoints はデクレアラー側 (デクレアラー、パートナー、タロン) の獲得点を返す。
+func (g *Koenigrufen) GetTeamPoints() int { return g.teamCaptured() }
 
 // GetOutcome 直近ディールの結果取得
 func (g *Koenigrufen) GetOutcome() KoenigrufenOutcome { return g.outcome }

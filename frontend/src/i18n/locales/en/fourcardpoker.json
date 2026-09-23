@@ -13,7 +13,7 @@
   },
   "button": {
     "bet": "Bet",
-    "playMult": "Play {{mult}}x",
+    "playMult": "Play {{mult}}x ({{amount}})",
     "fold": "Fold",
     "reset": "Reset"
   },

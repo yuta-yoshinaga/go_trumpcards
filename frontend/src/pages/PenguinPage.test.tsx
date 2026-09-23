@@ -300,6 +300,73 @@ describe('PenguinPage', () => {
     await waitFor(() => expect(cardButton.className).toContain('ring-2'));
   });
 
+  it('double-click sends a legal exposed card to its foundation', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: [[card('SPADE', 4)], [], [], [], [], [], []],
+    });
+    renderWithProviders(<PenguinPage />);
+    const cardButton = (await screen.findByAltText('♠ 4')).closest('button') as HTMLButtonElement;
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playingState);
+    fireEvent.doubleClick(cardButton);
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith(
+        'move',
+        { zone: 'tableau', col: 0, cardIndex: 0 },
+        { zone: 'foundation', col: 0 },
+      ),
+    );
+  });
+
+  it('does not select a free-cell card on the second click of a double-click', async () => {
+    renderWithProviders(<PenguinPage />);
+    const cardButton = await screen.findByTestId('pg-freecell-0');
+
+    expect(cardButton).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(cardButton, { detail: 2 });
+
+    await waitFor(() => expect(cardButton).toHaveAttribute('aria-pressed', 'false'));
+  });
+
+  it('does not select a tableau card on the second click of a double-click', async () => {
+    renderWithProviders(<PenguinPage />);
+    const cardButton = await screen.findByTestId('pg-tableau-0-0');
+
+    expect(cardButton).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(cardButton, { detail: 2 });
+
+    await waitFor(() => expect(cardButton).toHaveAttribute('aria-pressed', 'false'));
+  });
+
+  it('does not double-click a non-exposed tableau card to its foundation', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: [[card('SPADE', 4), card('SPADE', 5)], [], [], [], [], [], []],
+    });
+    renderWithProviders(<PenguinPage />);
+    const cardButton = await screen.findByTestId('pg-tableau-0-0');
+
+    mockExec.mockClear();
+    fireEvent.doubleClick(cardButton);
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
+  it('does nothing when double-clicking an exposed card with no foundation target', async () => {
+    renderWithProviders(<PenguinPage />);
+    const cardButton = (await screen.findByAltText('♠ K')).closest('button') as HTMLButtonElement;
+
+    mockExec.mockClear();
+    fireEvent.doubleClick(cardButton);
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('target selection via handleSelectTarget on foundation click when source selected', async () => {
     renderWithProviders(<PenguinPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
@@ -667,7 +734,7 @@ describe('PenguinPage hint announcement', () => {
       const region = screen.getByTestId('pg-hint-announce');
       expect(region).toHaveAttribute('role', 'status');
       expect(region).toHaveAttribute('aria-live', 'polite');
-      expect(region).toHaveTextContent('ヒント: ♠ K を タブロー 1 から ファンデーション へ移動');
+      expect(region).toHaveTextContent('ヒント: ♠ K を タブロー 1 から 組札 へ移動');
     });
   });
 
@@ -711,14 +778,14 @@ describe('PenguinPage hint announcement', () => {
     let firstRegion: HTMLElement | null = null;
     await waitFor(() => {
       firstRegion = screen.getByTestId('pg-hint-announce');
-      expect(firstRegion).toHaveTextContent('ヒント: ♠ K を タブロー 1 から ファンデーション へ移動');
+      expect(firstRegion).toHaveTextContent('ヒント: ♠ K を タブロー 1 から 組札 へ移動');
     });
 
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
 
     await waitFor(() => {
       const secondRegion = screen.getByTestId('pg-hint-announce');
-      expect(secondRegion).toHaveTextContent('ヒント: ♠ K を タブロー 1 から ファンデーション へ移動');
+      expect(secondRegion).toHaveTextContent('ヒント: ♠ K を タブロー 1 から 組札 へ移動');
       expect(secondRegion).not.toBe(firstRegion);
     });
   });
@@ -771,7 +838,7 @@ describe('PenguinPage hint announcement', () => {
 
     await waitFor(() => {
       const region = screen.getByTestId('pg-hint-announce');
-      expect(region).toHaveTextContent('ヒント: を タブロー 3 から ファンデーション へ移動');
+      expect(region).toHaveTextContent('ヒント: を タブロー 3 から 組札 へ移動');
     });
   });
 });

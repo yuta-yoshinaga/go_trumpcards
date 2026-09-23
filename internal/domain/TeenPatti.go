@@ -81,6 +81,10 @@ type TeenPatti struct {
 	actionLogBase
 }
 
+func (g *TeenPatti) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
+}
+
 // NewTeenPatti コンストラクタ
 func NewTeenPatti(trumpCards *TrumpCards, players []*TeenPattiPlayer, config TeenPattiConfig) *TeenPatti {
 	return &TeenPatti{
@@ -153,7 +157,7 @@ func (g *TeenPatti) startDeal() {
 		g.gameEndFlag = true
 		g.phase = TeenPattiPhaseGameEnd
 		g.matchWinnerIdx = g.firstAlive()
-		g.appendLog(g.matchWinnerIdx, "game_end", fmt.Sprintf("%s wins the match", playerName(g.players, g.matchWinnerIdx)), nil)
+		g.appendLog(g.matchWinnerIdx, "game_end", "teenpatti.log.gameEnd", map[string]string{"name": playerName(g.players, g.matchWinnerIdx)}, nil)
 		return
 	}
 	g.trumpCards.Replenish()
@@ -175,7 +179,7 @@ func (g *TeenPatti) startDeal() {
 	g.phase = TeenPattiPhaseBetting
 	g.currentPlayerIdx = g.nextActive(g.dealerIdx)
 	g.lastAggressorIdx = g.currentPlayerIdx
-	g.appendLog(-1, "deal", fmt.Sprintf("Deal %d: ante %d, pot %d", g.roundNumber, g.config.Ante, g.pot), nil)
+	g.appendLog(-1, "deal", "teenpatti.log.deal", map[string]string{"round": fmt.Sprintf("%d", g.roundNumber), "ante": fmt.Sprintf("%d", g.config.Ante), "pot": fmt.Sprintf("%d", g.pot)}, nil)
 }
 
 // callCost は playerIdx が現在の stake をコールするのに必要な額を返す (Blind は半額)。
@@ -194,10 +198,10 @@ func (g *TeenPatti) PlayerSee() error {
 		return err
 	}
 	if g.players[g.currentPlayerIdx].GetSeen() {
-		return NewDomainError(ErrInvalidPlay, "すでに手札を見ています")
+		return NewDomainErrorCode(ErrInvalidPlay, "teenpatti.errAlreadySeen", nil)
 	}
 	g.players[g.currentPlayerIdx].SetSeen(true)
-	g.appendLog(g.currentPlayerIdx, "see", fmt.Sprintf("%s sees their hand", playerName(g.players, g.currentPlayerIdx)), nil)
+	g.appendLog(g.currentPlayerIdx, "see", "teenpatti.log.see", map[string]string{"name": playerName(g.players, g.currentPlayerIdx)}, nil)
 	return nil
 }
 
@@ -215,7 +219,7 @@ func (g *TeenPatti) PlayerRaise(newStake int) error {
 		return err
 	}
 	if newStake <= g.stake {
-		return NewDomainError(ErrInvalidPlay, "レイズは現在の賭け単位より大きくする必要があります")
+		return NewDomainErrorCode(ErrInvalidPlay, "teenpatti.errRaiseMustExceedStake", nil)
 	}
 	return g.applyRaise(g.currentPlayerIdx, newStake)
 }
@@ -235,7 +239,7 @@ func (g *TeenPatti) PlayerShow() error {
 		return err
 	}
 	if !g.canShow(g.currentPlayerIdx) {
-		return NewDomainError(ErrInvalidPlay, "Show は残り 2 人かつ Seen のときのみ要求できます")
+		return NewDomainErrorCode(ErrInvalidPlay, "teenpatti.errShowRequiresTwoSeen", nil)
 	}
 	g.applyShow(g.currentPlayerIdx)
 	return nil
@@ -248,7 +252,7 @@ func (g *TeenPatti) PlayerRequestSideShow() error {
 		return err
 	}
 	if !g.canRequestSideShow(g.currentPlayerIdx) {
-		return NewDomainError(ErrInvalidPlay, "サイドショーは Seen 同士・残り 3 人以上のときのみ申請できます")
+		return NewDomainErrorCode(ErrInvalidPlay, "teenpatti.errSideShowRequiresSeen", nil)
 	}
 	g.applyRequestSideShow(g.currentPlayerIdx)
 	return nil
@@ -285,8 +289,7 @@ func (g *TeenPatti) applyRequestSideShow(idx int) {
 	g.sideShowTarget = target
 	g.phase = TeenPattiPhaseSideShow
 	g.currentPlayerIdx = target
-	g.appendLog(idx, "sideshow_request",
-		fmt.Sprintf("%s requests a side show with %s", playerName(g.players, idx), playerName(g.players, target)), nil)
+	g.appendLog(idx, "sideshow_request", "teenpatti.log.sideShowRequest", map[string]string{"name": playerName(g.players, idx), "target": playerName(g.players, target)}, nil)
 }
 
 // applyRespondSideShow サイドショーへの応答を適用する。
@@ -302,15 +305,14 @@ func (g *TeenPatti) applyRespondSideShow(accept bool) {
 		}
 		// 表示用に成立したサイドショーの結果を保持する (参加者のカードは deal 更新まで保持される)。
 		g.lastSideShow = &teenPattiSideShow{Requester: req, Target: tgt, Loser: loser}
-		g.appendLog(tgt, "sideshow_accept",
-			fmt.Sprintf("%s accepts; %s loses the side show", playerName(g.players, tgt), playerName(g.players, loser)), nil)
+		g.appendLog(tgt, "sideshow_accept", "teenpatti.log.sideShowAccept", map[string]string{"name": playerName(g.players, tgt), "loser": playerName(g.players, loser)}, nil)
 		g.players[loser].SetFolded(true)
 		if g.activeCount() == 1 {
 			g.endDeal([]int{g.firstActive()})
 			return
 		}
 	} else {
-		g.appendLog(tgt, "sideshow_decline", fmt.Sprintf("%s declines the side show", playerName(g.players, tgt)), nil)
+		g.appendLog(tgt, "sideshow_decline", "teenpatti.log.sideShowDecline", map[string]string{"name": playerName(g.players, tgt)}, nil)
 	}
 	// 申請者の賭けは済んでいるので、申請者の次の手番から再開する。
 	g.phase = TeenPattiPhaseBetting
@@ -368,7 +370,7 @@ func (g *TeenPatti) applyCall(idx int) error {
 	p.AddRoundBet(cost)
 	g.pot += cost
 	g.actionCount++
-	g.appendLog(idx, "bet", fmt.Sprintf("%s bets %d (pot %d)", playerName(g.players, idx), cost, g.pot), nil)
+	g.appendLog(idx, "bet", "teenpatti.log.bet", map[string]string{"name": playerName(g.players, idx), "amount": fmt.Sprintf("%d", cost), "pot": fmt.Sprintf("%d", g.pot)}, nil)
 	g.advanceOrResolve(idx)
 	return nil
 }
@@ -385,7 +387,7 @@ func (g *TeenPatti) applyRaise(idx, newStake int) error {
 		cost = newStake * 2
 	}
 	if p.GetChips() < cost {
-		return NewDomainError(ErrInvalidPlay, "チップが不足しています")
+		return NewDomainErrorCode(ErrInvalidPlay, "teenpatti.errInsufficientChips", nil)
 	}
 	g.stake = newStake
 	p.SubtractChips(cost)
@@ -393,7 +395,7 @@ func (g *TeenPatti) applyRaise(idx, newStake int) error {
 	g.pot += cost
 	g.lastAggressorIdx = idx
 	g.actionCount++
-	g.appendLog(idx, "raise", fmt.Sprintf("%s raises to %d, bets %d (pot %d)", playerName(g.players, idx), newStake, cost, g.pot), nil)
+	g.appendLog(idx, "raise", "teenpatti.log.raise", map[string]string{"name": playerName(g.players, idx), "raise": fmt.Sprintf("%d", newStake), "amount": fmt.Sprintf("%d", cost), "pot": fmt.Sprintf("%d", g.pot)}, nil)
 	g.advanceOrResolve(idx)
 	return nil
 }
@@ -401,7 +403,7 @@ func (g *TeenPatti) applyRaise(idx, newStake int) error {
 // applyFold フォールドを適用する。
 func (g *TeenPatti) applyFold(idx int) {
 	g.players[idx].SetFolded(true)
-	g.appendLog(idx, "fold", fmt.Sprintf("%s folds", playerName(g.players, idx)), nil)
+	g.appendLog(idx, "fold", "teenpatti.log.fold", map[string]string{"name": playerName(g.players, idx)}, nil)
 	if g.activeCount() == 1 {
 		g.endDeal([]int{g.firstActive()})
 		return
@@ -419,7 +421,7 @@ func (g *TeenPatti) applyShow(idx int) {
 	p.SubtractChips(cost)
 	p.AddRoundBet(cost)
 	g.pot += cost
-	g.appendLog(idx, "show", fmt.Sprintf("%s pays %d to see (pot %d)", playerName(g.players, idx), cost, g.pot), nil)
+	g.appendLog(idx, "show", "teenpatti.log.show", map[string]string{"name": playerName(g.players, idx), "amount": fmt.Sprintf("%d", cost), "pot": fmt.Sprintf("%d", g.pot)}, nil)
 	opp := g.otherActive(idx)
 	g.showdown = true
 	g.phase = TeenPattiPhaseShowdown
@@ -478,7 +480,7 @@ func (g *TeenPatti) CpuAct() {
 	// Blind の場合はまず手札を見る (簡易 AI)。
 	if !p.GetSeen() {
 		p.SetSeen(true)
-		g.appendLog(idx, "see", fmt.Sprintf("%s sees their hand", playerName(g.players, idx)), nil)
+		g.appendLog(idx, "see", "teenpatti.log.see", map[string]string{"name": playerName(g.players, idx)}, nil)
 	}
 	cat, _ := g.handEval(idx)
 	cost := g.callCost(idx)
@@ -529,7 +531,7 @@ func (g *TeenPatti) endDeal(winners []int) {
 		g.players[w].AddChips(amt)
 	}
 	g.roundWinnerIdx = winners[0]
-	g.appendLog(winners[0], "win", fmt.Sprintf("%s wins the pot (%d)", playerName(g.players, winners[0]), g.pot), nil)
+	g.appendLog(winners[0], "win", "teenpatti.log.win", map[string]string{"name": playerName(g.players, winners[0]), "pot": fmt.Sprintf("%d", g.pot)}, nil)
 
 	// チップ 0 は脱落。
 	for _, p := range g.players {
@@ -541,7 +543,7 @@ func (g *TeenPatti) endDeal(winners []int) {
 		g.gameEndFlag = true
 		g.phase = TeenPattiPhaseGameEnd
 		g.matchWinnerIdx = g.firstAlive()
-		g.appendLog(g.matchWinnerIdx, "game_end", fmt.Sprintf("%s wins the match", playerName(g.players, g.matchWinnerIdx)), nil)
+		g.appendLog(g.matchWinnerIdx, "game_end", "teenpatti.log.gameEnd", map[string]string{"name": playerName(g.players, g.matchWinnerIdx)}, nil)
 		return
 	}
 	g.phase = TeenPattiPhaseRoundEnd

@@ -195,6 +195,44 @@ func TestSchafkopfCuiPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestSchafkopfCuiPresenter_MarksPlayableCardsOnlyOnHumanPlayTurn(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.SchafkopfCuiPresenter)
+
+	setup := func(phase domain.SchafkopfPhase, currentPlayer int) *interfaces.MockSchafkopfGame {
+		m, players := setupSchafkopfCuiMockWithPlayers()
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 8, false))
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentPlayerIdx")
+		m.On("GetPhase").Return(phase)
+		m.On("GetCurrentPlayerIdx").Return(currentPlayer)
+		if phase == domain.SchafkopfPhasePlay && currentPlayer == 0 {
+			m.On("GetPlayableIndices", 0).Return([]int{0})
+		}
+		return m
+	}
+
+	t.Run("marks only the playable card on the human play turn", func(t *testing.T) {
+		out := p.Output(setup(domain.SchafkopfPhasePlay, 0), nil)
+		assert.Contains(t, out, "[0]♠7*")
+		assert.Contains(t, out, "[1]♥8")
+		assert.NotContains(t, out, "[1]♥8*")
+	})
+
+	t.Run("marks nothing on another player's turn", func(t *testing.T) {
+		out := p.Output(setup(domain.SchafkopfPhasePlay, 1), nil)
+		assert.NotContains(t, out, "*")
+	})
+
+	t.Run("marks nothing outside the play phase", func(t *testing.T) {
+		out := p.Output(setup(domain.SchafkopfPhasePick, 0), nil)
+		assert.NotContains(t, out, "*")
+	})
+}
+
 func TestSchafkopfCuiPresenter_HintOutput(t *testing.T) {
 	orig := color.NoColor()
 	color.SetNoColor(true)
@@ -212,14 +250,14 @@ func TestSchafkopfCuiPresenter_HintOutput(t *testing.T) {
 		m, _ := setupSchafkopfCuiMockWithPlayers()
 		m.On("GetHint").Return(&domain.SchafkopfHint{Pick: true, Reason: "pick_take"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 
 	t.Run("call suit hint", func(t *testing.T) {
 		m, _ := setupSchafkopfCuiMockWithPlayers()
 		m.On("GetHint").Return(&domain.SchafkopfHint{Suit: domain.CardDesignClover, Reason: "call_suit"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 
 	t.Run("play hint", func(t *testing.T) {
@@ -227,7 +265,7 @@ func TestSchafkopfCuiPresenter_HintOutput(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
 		m.On("GetHint").Return(&domain.SchafkopfHint{CardIndices: []int{0}, Reason: "lead_low"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 }
 
@@ -236,7 +274,7 @@ func TestSchafkopfCuiPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockSchafkopfGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "pick", Detail: "You picks up the blind"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "pick", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
 	m.On("GetPlayer", mock.Anything).Return(domain.NewSchafkopfPlayer(true, 0)).Maybe()

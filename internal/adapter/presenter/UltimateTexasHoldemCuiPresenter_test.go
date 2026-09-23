@@ -15,6 +15,7 @@ import (
 
 func setupUltimateTexasHoldemCuiMockDefaults(m *interfaces.MockUltimateTexasHoldemGame) {
 	m.On("GetChips").Return(1000).Maybe()
+	m.On("GetChipsRefilled").Return(false).Maybe()
 	m.On("GetPhase").Return(domain.UltimateTexasHoldemPhaseBet).Maybe()
 	m.On("GetPlayerHand").Return(([]*domain.Card)(nil)).Maybe()
 	m.On("GetDealerHand").Return(([]*domain.Card)(nil)).Maybe()
@@ -39,6 +40,14 @@ func setupUltimateTexasHoldemCuiMockDefaults(m *interfaces.MockUltimateTexasHold
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 }
 
+func TestUltimateTexasHoldemCuiPresenter_Output_ChipsRefilledNotice(t *testing.T) {
+	m := new(interfaces.MockUltimateTexasHoldemGame)
+	setupUltimateTexasHoldemCuiMockDefaults(m)
+	m.ExpectedCalls = filterCalls(m.ExpectedCalls, "GetChipsRefilled")
+	m.On("GetChipsRefilled").Return(true)
+	assert.Contains(t, new(UltimateTexasHoldemCuiPresenter).Output(m, nil), "残高が最低ベットを下回ったため、1000チップを補充しました")
+}
+
 func TestUltimateTexasHoldemCuiPresenter_Output_BetPhase(t *testing.T) {
 	p := new(UltimateTexasHoldemCuiPresenter)
 	m := new(interfaces.MockUltimateTexasHoldemGame)
@@ -49,6 +58,7 @@ func TestUltimateTexasHoldemCuiPresenter_Output_BetPhase(t *testing.T) {
 	assert.NotEmpty(t, result)
 	// Before the ante is placed (bet phase), no live bet summary is shown.
 	assert.NotContains(t, result, strings.Split(i18n.T("ultimatetexasholdem.anteLine"), "{{")[0])
+	assert.NotContains(t, result, "残高が最低ベットを下回ったため、1000チップを補充しました")
 }
 
 func TestUltimateTexasHoldemCuiPresenter_Output_PreFlopPhase_DealerHidden(t *testing.T) {
@@ -200,7 +210,7 @@ func TestUltimateTexasHoldemCuiPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockUltimateTexasHoldemGame)
 	m.On("GetGameEndFlag").Return(true).Maybe()
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "bet", Detail: "ante=100"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "bet", DetailCode: "log.anteBlindTrips", DetailParams: map[string]string{"ante": "100", "blind": "100", "trips": "0"}},
 	}).Maybe()
 
 	result := p.ActionLogOutput(m)

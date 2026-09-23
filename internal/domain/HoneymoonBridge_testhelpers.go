@@ -31,6 +31,9 @@ func (h *HoneymoonBridge) SetTrickNumberForTest(n int) { h.trickNumber = n }
 // SetStockForTest は山札を設定する
 func (h *HoneymoonBridge) SetStockForTest(cards []*Card) { h.stock = cards }
 
+// SetDrawnIndicesForTest は人間の補充札位置を設定する。
+func (h *HoneymoonBridge) SetDrawnIndicesForTest(indices []int) { h.drawnIndices = indices }
+
 // GiveTricksForTest は指定プレイヤーに空のトリックを n 個持たせる
 func (h *HoneymoonBridge) GiveTricksForTest(playerIdx, n int) {
 	for range n {

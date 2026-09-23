@@ -381,3 +381,89 @@ describe('EgyptianRatscrewPage slap sounds', () => {
     });
   });
 });
+
+// #7239: CHANCE_WIN（相手がフェイスカードを出せず山を丸ごと奪われる）で Web が完全に無言だった。
+describe('EgyptianRatscrewPage CHANCE_WIN', () => {
+  const chanceWinHumanState: EgyptianRatscrewResponse = {
+    ...baseState,
+    lastEventKind: EgyptianRatscrewEventKind.CHANCE_WIN,
+    lastEventPlayerIdx: 0, // human takes the pile
+  };
+  const chanceWinCpuState: EgyptianRatscrewResponse = {
+    ...baseState,
+    lastEventKind: EgyptianRatscrewEventKind.CHANCE_WIN,
+    lastEventPlayerIdx: 1, // cpu takes the pile
+  };
+
+  it('shows a burst and announces when the human wins the chance battle', async () => {
+    mockExec.mockResolvedValue(chanceWinHumanState);
+    renderWithProviders(<EgyptianRatscrewPage />);
+    await waitFor(() => {
+      const announce = screen.getByTestId('er-slap-announce');
+      // リテラル文字列で確認（i18n.T に依存しない）。
+      expect(announce.textContent).toContain('チャンス勝ちで山札を総取り');
+      expect(announce.textContent).toContain('あなた');
+    });
+    const burst = screen.getByTestId('slap-burst');
+    // 人間が奪ったので緑（correct）。
+    expect(burst).toHaveAttribute('data-outcome', 'correct');
+    expect(burst.textContent).toContain('チャンス勝ち！');
+  });
+
+  it('shows a burst and announces when the CPU wins the chance battle', async () => {
+    mockExec.mockResolvedValue(chanceWinCpuState);
+    renderWithProviders(<EgyptianRatscrewPage />);
+    await waitFor(() => {
+      const announce = screen.getByTestId('er-slap-announce');
+      expect(announce.textContent).toContain('チャンス勝ちで山札を総取り');
+      // CPU が奪ったとき。
+      expect(announce.textContent).toContain('CPU 1');
+    });
+    const burst = screen.getByTestId('slap-burst');
+    // CPU が奪ったので赤（wrong）。
+    expect(burst).toHaveAttribute('data-outcome', 'wrong');
+  });
+
+  // 否定対照: CHANCE_WIN が誤スラップ（赤リング）の見た目にならないこと。
+  it('does not apply the SLAP_WRONG error ring on a CHANCE_WIN event', async () => {
+    mockExec.mockResolvedValue(chanceWinCpuState);
+    renderWithProviders(<EgyptianRatscrewPage />);
+    await waitFor(() => expect(screen.getByTestId('er-slap-announce')).toBeInTheDocument());
+    // アリーナの div は SLAP_WRONG のときだけ ring-2 ring-ds-error を持つ。
+    const arena = document.querySelector('[data-tutorial="er-arena"]') as HTMLElement;
+    expect(arena.className).not.toContain('ring-2 ring-ds-error');
+  });
+
+  // 既存の SLAP_CORRECT / SLAP_WRONG の挙動が変わっていないこと。
+  it('still fires the burst and announce for a correct pair slap', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      lastEventKind: EgyptianRatscrewEventKind.SLAP_CORRECT,
+      lastEventPlayerIdx: 0,
+      lastSlapReason: EgyptianRatscrewSlapReason.PAIR,
+    });
+    renderWithProviders(<EgyptianRatscrewPage />);
+    await waitFor(() => {
+      const announce = screen.getByTestId('er-slap-announce');
+      expect(announce.textContent).toContain('スラップ成功');
+      expect(announce.textContent).toContain('ペア');
+    });
+    const burst = screen.getByTestId('slap-burst');
+    expect(burst).toHaveAttribute('data-outcome', 'correct');
+  });
+
+  it('still fires the burst and announce for a wrong slap', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      lastEventKind: EgyptianRatscrewEventKind.SLAP_WRONG,
+      lastEventPlayerIdx: 0,
+    });
+    renderWithProviders(<EgyptianRatscrewPage />);
+    await waitFor(() => {
+      const announce = screen.getByTestId('er-slap-announce');
+      expect(announce.textContent).toContain('スラップ失敗');
+    });
+    const burst = screen.getByTestId('slap-burst');
+    expect(burst).toHaveAttribute('data-outcome', 'wrong');
+  });
+});

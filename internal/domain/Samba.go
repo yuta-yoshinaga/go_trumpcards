@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra
+//go:build !js || !wasm || extra7
 
 package domain
 
@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // SambaPlayerCnt サンバのプレイヤー数 (2チーム × 2人のパートナーシップ)
@@ -216,7 +217,7 @@ func (g *Samba) autoLayRed3s(playerIdx int) {
 			if SambaIsRed3(card) {
 				player.RemoveCard(i)
 				player.AddRed3(card)
-				g.appendLog(playerIdx, "red3", fmt.Sprintf("%s lays down red 3: %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+				g.appendLog(playerIdx, "red3", "samba.log.redThree", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 				if len(g.drawPile) > 0 {
 					replacement := g.drawPile[len(g.drawPile)-1]
 					g.drawPile = g.drawPile[:len(g.drawPile)-1]
@@ -242,6 +243,9 @@ func (g *Samba) teamCompletedCount(team int) int {
 	}
 	return n
 }
+
+// GetTeamCompletedMeldCount returns the completed canasta/samba count for a team.
+func (g *Samba) GetTeamCompletedMeldCount(team int) int { return g.teamCompletedCount(team) }
 
 // canGoOut 上がり条件: チームが必要数の完成メルドを持っているか
 func (g *Samba) canGoOut(playerIdx int) bool {
@@ -269,7 +273,7 @@ func (g *Samba) PlayerDrawFromStock() error {
 	g.drawPile = g.drawPile[:len(g.drawPile)-1]
 	g.players[g.currentPlayerIdx].AddCard(card)
 
-	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", playerName(g.players, g.currentPlayerIdx)), nil)
+	g.appendLog(g.currentPlayerIdx, "draw_stock", "samba.log.drawStock", map[string]string{"name": playerName(g.players, g.currentPlayerIdx)}, nil)
 
 	if SambaIsRed3(card) {
 		g.autoLayRed3s(g.currentPlayerIdx)
@@ -301,47 +305,47 @@ func (g *Samba) PlayerDrawFromDiscard(naturalPairIndices []int) error {
 	}
 
 	if len(g.discardPile) == 0 {
-		return NewDomainError(ErrInvalidPlay, "捨て札の山が空です")
+		return NewDomainErrorCode(ErrInvalidPlay, "samba.errDiscardPileEmpty", nil)
 	}
 
 	topCard := g.discardPile[len(g.discardPile)-1]
 
 	if SambaIsBlack3(topCard) {
-		return NewDomainError(ErrInvalidPlay, "黒3がトップの場合は捨て札の山を取れません")
+		return NewDomainErrorCode(ErrInvalidPlay, "samba.errBlackThreeCannotTakeDiscardPile", nil)
 	}
 	if SambaIsWild(topCard) {
-		return NewDomainError(ErrInvalidPlay, "ワイルドカードがトップの場合は捨て札の山を取れません")
+		return NewDomainErrorCode(ErrInvalidPlay, "samba.errWildCardCannotTakeDiscardPile", nil)
 	}
 
 	if len(naturalPairIndices) != 2 {
-		return NewDomainError(ErrInvalidPlay, "ナチュラルペア（同ランクの自然カード2枚）のインデックスを指定してください")
+		return NewDomainErrorCode(ErrInvalidPlay, "samba.errNaturalPairIndicesRequired", nil)
 	}
 
 	player := g.players[g.currentPlayerIdx]
 	for _, idx := range naturalPairIndices {
 		if idx < 0 || idx >= player.GetCardsSize() {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+			return NewDomainErrorCode(ErrInvalidCard, "samba.errCardIndexOutOfRange", nil)
 		}
 	}
 	if naturalPairIndices[0] == naturalPairIndices[1] {
-		return NewDomainError(ErrInvalidCard, "同じカードは指定できません")
+		return NewDomainErrorCode(ErrInvalidCard, "samba.errSameCard", nil)
 	}
 
 	card0 := player.GetCard(naturalPairIndices[0])
 	card1 := player.GetCard(naturalPairIndices[1])
 
 	if SambaIsWild(card0) || SambaIsWild(card1) {
-		return NewDomainError(ErrInvalidPlay, "ペアはナチュラルカード（ワイルドカード以外）でなければなりません")
+		return NewDomainErrorCode(ErrInvalidPlay, "samba.errPairMustBeNatural", nil)
 	}
 	if card0.GetValue() != topCard.GetValue() || card1.GetValue() != topCard.GetValue() {
-		return NewDomainError(ErrInvalidPlay, "ペアのランクが捨て札のトップカードと一致しません")
+		return NewDomainErrorCode(ErrInvalidPlay, "samba.errPairRankMismatch", nil)
 	}
 
 	if !player.hasInitMeld {
 		meldValue := SambaCardValue(topCard) + SambaCardValue(card0) + SambaCardValue(card1)
 		minReq := g.minimumMeldValue(g.currentPlayerIdx)
 		if meldValue < minReq {
-			return NewDomainError(ErrInvalidPlay, fmt.Sprintf("初回メルドの最低点(%d)を満たしていません（現在%d点）", minReq, meldValue))
+			return NewDomainErrorCode(ErrInvalidPlay, "samba.errInitialMeldMinimumNotMet", map[string]string{"min": strconv.Itoa(minReq), "score": strconv.Itoa(meldValue)})
 		}
 	}
 
@@ -355,7 +359,7 @@ func (g *Samba) PlayerDrawFromDiscard(naturalPairIndices []int) error {
 	g.discardPile = nil
 	g.isFrozen = false
 
-	g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s picks up the discard pile (%d cards)", playerName(g.players, g.currentPlayerIdx), pileSize), []*Card{topCard})
+	g.appendLog(g.currentPlayerIdx, "draw_discard", "samba.log.drawDiscard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "cards": strconv.Itoa(pileSize)}, []*Card{topCard})
 
 	g.autoLayRed3s(g.currentPlayerIdx)
 	g.sortHand(g.currentPlayerIdx)
@@ -385,7 +389,7 @@ func (g *Samba) PlayerMeld(meldGroups [][]int) error {
 
 	if len(meldGroups) == 0 {
 		if g.drewFromDiscard {
-			return NewDomainError(ErrInvalidPlay, "捨て札の山を取った場合はトップカードをメルドに含める必要があります")
+			return NewDomainErrorCode(ErrInvalidPlay, "samba.errTopCardMustBeMelded", nil)
 		}
 		g.phase = SambaPhaseDiscard
 		return nil
@@ -397,10 +401,10 @@ func (g *Samba) PlayerMeld(meldGroups [][]int) error {
 	for _, group := range meldGroups {
 		for _, idx := range group {
 			if idx < 0 || idx >= player.GetCardsSize() {
-				return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+				return NewDomainErrorCode(ErrInvalidCard, "samba.errCardIndexOutOfRange", nil)
 			}
 			if allIndices[idx] {
-				return NewDomainError(ErrInvalidCard, "カードインデックスが重複しています")
+				return NewDomainErrorCode(ErrInvalidCard, "samba.errDuplicateCardIndex", nil)
 			}
 			allIndices[idx] = true
 		}
@@ -434,7 +438,7 @@ func (g *Samba) PlayerMeld(meldGroups [][]int) error {
 			}
 		}
 		if !found {
-			return NewDomainError(ErrInvalidPlay, "捨て札の山を取った場合はトップカードをメルドに含める必要があります")
+			return NewDomainErrorCode(ErrInvalidPlay, "samba.errTopCardMustBeMelded", nil)
 		}
 	}
 
@@ -458,7 +462,7 @@ func (g *Samba) PlayerMeld(meldGroups [][]int) error {
 	if isInitialMeld {
 		minReq := g.minimumMeldValue(g.currentPlayerIdx)
 		if totalMeldValue < minReq {
-			return NewDomainError(ErrInvalidPlay, fmt.Sprintf("初回メルドの最低点(%d)を満たしていません（現在%d点）", minReq, totalMeldValue))
+			return NewDomainErrorCode(ErrInvalidPlay, "samba.errInitialMeldMinimumNotMet", map[string]string{"min": strconv.Itoa(minReq), "score": strconv.Itoa(totalMeldValue)})
 		}
 	}
 
@@ -550,7 +554,7 @@ func (g *Samba) applyResolvedMeld(playerIdx int, res sambaMeldResolution, cards 
 		}
 		meld := &SambaMeld{Cards: cards, Kind: res.kind, IsNatural: isNatural}
 		player.AddMeld(meld)
-		g.appendLog(playerIdx, "meld", fmt.Sprintf("%s melds a %s of %d cards", playerName(g.players, playerIdx), sambaMeldKindStr(res.kind), len(cards)), cards)
+		g.appendLog(playerIdx, "meld", "samba.log.meld", map[string]string{"name": playerName(g.players, playerIdx), "typeKey": sambaMeldKindKey(res.kind), "cards": strconv.Itoa(len(cards))}, cards)
 		return
 	}
 	existing := player.melds[res.existingIdx]
@@ -560,7 +564,7 @@ func (g *Samba) applyResolvedMeld(playerIdx int, res sambaMeldResolution, cards 
 			existing.IsNatural = false
 		}
 	}
-	g.appendLog(playerIdx, "meld_add", fmt.Sprintf("%s adds %d cards to a %s meld", playerName(g.players, playerIdx), len(cards), sambaMeldKindStr(existing.Kind)), cards)
+	g.appendLog(playerIdx, "meld_add", "samba.log.meldAdd", map[string]string{"name": playerName(g.players, playerIdx), "cards": strconv.Itoa(len(cards)), "typeKey": sambaMeldKindKey(existing.Kind)}, cards)
 }
 
 // logCompletedMelds 完成したカナスタ/サンバをログに記録する
@@ -568,9 +572,9 @@ func (g *Samba) logCompletedMelds(playerIdx int) {
 	player := g.players[playerIdx]
 	for _, m := range player.melds {
 		if m.IsSamba() {
-			g.appendLog(playerIdx, "samba", fmt.Sprintf("%s completes a samba!", playerName(g.players, playerIdx)), nil)
+			g.appendLog(playerIdx, "samba", "samba.log.samba", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 		} else if m.IsCanasta() {
-			g.appendLog(playerIdx, "canasta", fmt.Sprintf("%s completes a %s canasta!", playerName(g.players, playerIdx), sambaCanastaTypeStr(m.IsNatural)), nil)
+			g.appendLog(playerIdx, "canasta", "samba.log.canasta", map[string]string{"name": playerName(g.players, playerIdx), "typeKey": sambaCanastaTypeKey(m.IsNatural)}, nil)
 		}
 	}
 }
@@ -587,7 +591,7 @@ func (g *Samba) PlayerSkipMeld() error {
 		return ErrNotHumanTurn
 	}
 	if g.drewFromDiscard {
-		return NewDomainError(ErrInvalidPlay, "捨て札の山を取った場合はトップカードをメルドに含める必要があります")
+		return NewDomainErrorCode(ErrInvalidPlay, "samba.errTopCardMustBeMelded", nil)
 	}
 
 	g.phase = SambaPhaseDiscard
@@ -608,12 +612,12 @@ func (g *Samba) PlayerDiscard(cardIndex int) error {
 
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "samba.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
 	if SambaIsRed3(card) {
-		return NewDomainError(ErrInvalidPlay, "赤3は捨てられません")
+		return NewDomainErrorCode(ErrInvalidPlay, "samba.errRedThreeCannotBeDiscarded", nil)
 	}
 
 	discarded := player.RemoveCard(cardIndex)
@@ -623,7 +627,7 @@ func (g *Samba) PlayerDiscard(cardIndex int) error {
 		g.isFrozen = true
 	}
 
-	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+	g.appendLog(g.currentPlayerIdx, "discard", "samba.log.discard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(discarded)}, []*Card{discarded})
 
 	g.advanceTurn()
 	return nil
@@ -644,22 +648,22 @@ func (g *Samba) PlayerGoOut() error {
 	player := g.players[g.currentPlayerIdx]
 
 	if !g.canGoOut(g.currentPlayerIdx) {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("上がるにはチームで%d個以上のカナスタ/サンバが必要です", SambaGoOutRequiredMelds))
+		return NewDomainErrorCode(ErrInvalidPlay, "samba.errCompletedMeldsRequiredToGoOut", map[string]string{"required": strconv.Itoa(SambaGoOutRequiredMelds)})
 	}
 
 	if player.GetCardsSize() == 1 {
 		card := player.GetCard(0)
 		if SambaIsRed3(card) {
-			return NewDomainError(ErrInvalidPlay, "赤3は捨てられません")
+			return NewDomainErrorCode(ErrInvalidPlay, "samba.errRedThreeCannotBeDiscarded", nil)
 		}
 		discarded := player.RemoveCard(0)
 		g.discardPile = append(g.discardPile, discarded)
 		if SambaIsWild(discarded) {
 			g.isFrozen = true
 		}
-		g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+		g.appendLog(g.currentPlayerIdx, "discard", "samba.log.discard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(discarded)}, []*Card{discarded})
 	} else if player.GetCardsSize() > 1 {
-		return NewDomainError(ErrInvalidPlay, "上がるには手札が0枚または1枚でなければなりません")
+		return NewDomainErrorCode(ErrInvalidPlay, "samba.errHandMustHaveAtMostOneCardToGoOut", nil)
 	}
 
 	g.goOut(g.currentPlayerIdx)
@@ -669,7 +673,7 @@ func (g *Samba) PlayerGoOut() error {
 // goOut 上がり処理
 func (g *Samba) goOut(playerIdx int) {
 	bonus := SambaGoingOutBonus
-	g.appendLog(playerIdx, "go_out", fmt.Sprintf("%s goes out! (bonus: %d)", playerName(g.players, playerIdx), bonus), nil)
+	g.appendLog(playerIdx, "go_out", "samba.log.goOut", map[string]string{"name": playerName(g.players, playerIdx), "bonus": strconv.Itoa(bonus)}, nil)
 	g.scoreRound(playerIdx, bonus)
 }
 
@@ -690,6 +694,11 @@ func (g *Samba) CpuPlay() {
 	case SambaPhaseDiscard:
 		g.cpuDiscard()
 	}
+}
+
+// appendLog records a locale-independent action-log entry.
+func (g *Samba) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // cpuDraw CPUがドローする
@@ -727,7 +736,7 @@ func (g *Samba) cpuDraw() {
 						pileSize := len(g.discardPile)
 						g.discardPile = nil
 						g.isFrozen = false
-						g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s picks up the discard pile (%d cards)", playerName(g.players, g.currentPlayerIdx), pileSize), []*Card{topCard})
+						g.appendLog(g.currentPlayerIdx, "draw_discard", "samba.log.drawDiscard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "cards": strconv.Itoa(pileSize)}, []*Card{topCard})
 						g.autoLayRed3s(g.currentPlayerIdx)
 						g.sortHand(g.currentPlayerIdx)
 						g.phase = SambaPhaseMeld
@@ -746,7 +755,7 @@ func (g *Samba) cpuDraw() {
 	card := g.drawPile[len(g.drawPile)-1]
 	g.drawPile = g.drawPile[:len(g.drawPile)-1]
 	player.AddCard(card)
-	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", playerName(g.players, g.currentPlayerIdx)), nil)
+	g.appendLog(g.currentPlayerIdx, "draw_stock", "samba.log.drawStock", map[string]string{"name": playerName(g.players, g.currentPlayerIdx)}, nil)
 
 	if SambaIsRed3(card) {
 		g.autoLayRed3s(g.currentPlayerIdx)
@@ -806,7 +815,7 @@ func (g *Samba) cpuMeld() {
 					existing.IsNatural = false
 				}
 			}
-			g.appendLog(g.currentPlayerIdx, "meld_add", fmt.Sprintf("%s adds %d cards to a %s meld", playerName(g.players, g.currentPlayerIdx), len(grp.cards), sambaMeldKindStr(existing.Kind)), grp.cards)
+			g.appendLog(g.currentPlayerIdx, "meld_add", "samba.log.meldAdd", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "cards": strconv.Itoa(len(grp.cards)), "typeKey": sambaMeldKindKey(existing.Kind)}, grp.cards)
 		} else {
 			isNatural := true
 			for _, c := range grp.cards {
@@ -817,7 +826,7 @@ func (g *Samba) cpuMeld() {
 			}
 			meld := &SambaMeld{Cards: grp.cards, Kind: grp.kind, IsNatural: isNatural}
 			player.AddMeld(meld)
-			g.appendLog(g.currentPlayerIdx, "meld", fmt.Sprintf("%s melds a %s of %d cards", playerName(g.players, g.currentPlayerIdx), sambaMeldKindStr(grp.kind), len(grp.cards)), grp.cards)
+			g.appendLog(g.currentPlayerIdx, "meld", "samba.log.meld", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "typeKey": sambaMeldKindKey(grp.kind), "cards": strconv.Itoa(len(grp.cards))}, grp.cards)
 		}
 
 		for _, c := range grp.cards {
@@ -865,7 +874,7 @@ func (g *Samba) cpuDiscard() {
 			if SambaIsWild(discarded) {
 				g.isFrozen = true
 			}
-			g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+			g.appendLog(g.currentPlayerIdx, "discard", "samba.log.discard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(discarded)}, []*Card{discarded})
 			g.goOut(g.currentPlayerIdx)
 			return
 		}
@@ -879,7 +888,7 @@ func (g *Samba) cpuDiscard() {
 		g.isFrozen = true
 	}
 
-	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+	g.appendLog(g.currentPlayerIdx, "discard", "samba.log.discard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(discarded)}, []*Card{discarded})
 	g.advanceTurn()
 }
 
@@ -1204,7 +1213,7 @@ func (g *Samba) scoreRound(goOutPlayerIdx int, goOutBonus int) {
 			team = i % SambaTeamCnt
 		}
 		teamRound[team] += score
-		g.appendLog(i, "score", fmt.Sprintf("%s contributes %d points to team %d", playerName(g.players, i), score, team), nil)
+		g.appendLog(i, "score", "samba.log.score", map[string]string{"name": playerName(g.players, i), "score": strconv.Itoa(score), "team": strconv.Itoa(team)}, nil)
 	}
 
 	for t := 0; t < SambaTeamCnt; t++ {
@@ -1229,7 +1238,7 @@ func (g *Samba) scoreRound(goOutPlayerIdx int, goOutBonus int) {
 
 // endRoundDraw 山札切れによるラウンド終了
 func (g *Samba) endRoundDraw() {
-	g.appendLog(-1, "draw", "Round ends (stock empty)", nil)
+	g.appendLog(-1, "draw", "samba.log.roundEnd", nil, nil)
 	g.scoreRound(-1, 0)
 }
 
@@ -1271,7 +1280,7 @@ func (g *Samba) checkGameEnd() {
 			g.winnerIdx = t
 		}
 	}
-	g.appendLog(-1, "game_end", fmt.Sprintf("Team %d wins the game!", g.winnerIdx), nil)
+	g.appendLog(-1, "game_end", "samba.log.gameEnd", map[string]string{"team": strconv.Itoa(g.winnerIdx)}, nil)
 }
 
 // --- Meld Validation ---
@@ -1279,14 +1288,14 @@ func (g *Samba) checkGameEnd() {
 // validateNewSet 新規セットメルドの検証
 func (g *Samba) validateNewSet(cards []*Card) error {
 	if len(cards) < 3 {
-		return NewDomainError(ErrInvalidPlay, "メルドには最低3枚のカードが必要です")
+		return NewDomainErrorCode(ErrInvalidPlay, "samba.errMeldNeedsAtLeastThreeCards", nil)
 	}
 
 	var naturalCount, wildCount int
 	rank := 0
 	for _, c := range cards {
 		if SambaIsBlack3(c) {
-			return NewDomainError(ErrInvalidPlay, "黒3はメルドできません")
+			return NewDomainErrorCode(ErrInvalidPlay, "samba.errBlackThreeCannotMeld", nil)
 		}
 		if SambaIsWild(c) {
 			wildCount++
@@ -1296,18 +1305,18 @@ func (g *Samba) validateNewSet(cards []*Card) error {
 		if rank == 0 {
 			rank = c.GetValue()
 		} else if c.GetValue() != rank {
-			return NewDomainError(ErrInvalidPlay, "セットメルドは同じランクのカードで構成する必要があります")
+			return NewDomainErrorCode(ErrInvalidPlay, "samba.errSetMeldCardsMustHaveSameRank", nil)
 		}
 	}
 
 	if naturalCount < 2 {
-		return NewDomainError(ErrInvalidPlay, "メルドにはナチュラルカードが最低2枚必要です")
+		return NewDomainErrorCode(ErrInvalidPlay, "samba.errMeldNeedsAtLeastTwoNaturalCards", nil)
 	}
 	if wildCount > 3 {
-		return NewDomainError(ErrInvalidPlay, "メルドにはワイルドカードは最大3枚までです")
+		return NewDomainErrorCode(ErrInvalidPlay, "samba.errMeldAllowsAtMostThreeWildCards", nil)
 	}
 	if wildCount > naturalCount {
-		return NewDomainError(ErrInvalidPlay, "ワイルドカードの数がナチュラルカードの数を超えてはいけません")
+		return NewDomainErrorCode(ErrInvalidPlay, "samba.errWildCardsCannotExceedNaturalCards", nil)
 	}
 	return nil
 }
@@ -1323,16 +1332,16 @@ func (g *Samba) validateSetAddition(existing *SambaMeld, cards []*Card) error {
 	}
 	for _, c := range cards {
 		if SambaIsBlack3(c) {
-			return NewDomainError(ErrInvalidPlay, "黒3はメルドできません")
+			return NewDomainErrorCode(ErrInvalidPlay, "samba.errBlackThreeCannotMeld", nil)
 		}
 		if SambaIsWild(c) {
 			wildCount++
 		} else if c.GetValue() != rank {
-			return NewDomainError(ErrInvalidPlay, fmt.Sprintf("ランク%dのメルドにランク%dのカードは追加できません", rank, c.GetValue()))
+			return NewDomainErrorCode(ErrInvalidPlay, "samba.errMeldCardRankMismatch", map[string]string{"meldRank": strconv.Itoa(rank), "cardRank": strconv.Itoa(c.GetValue())})
 		}
 	}
 	if wildCount > 3 {
-		return NewDomainError(ErrInvalidPlay, "メルドにはワイルドカードは最大3枚までです")
+		return NewDomainErrorCode(ErrInvalidPlay, "samba.errMeldAllowsAtMostThreeWildCards", nil)
 	}
 	return nil
 }
@@ -1355,31 +1364,31 @@ func (g *Samba) validateSequenceAddition(existing *SambaMeld, cards []*Card) err
 // 必ず値をソートする。
 func sambaValidateSequenceCards(cards []*Card) error {
 	if len(cards) < 3 {
-		return NewDomainError(ErrInvalidPlay, "シーケンスには最低3枚のカードが必要です")
+		return NewDomainErrorCode(ErrInvalidPlay, "samba.errSequenceNeedsAtLeastThreeCards", nil)
 	}
 	design := -1
 	vals := make([]int, 0, len(cards))
 	for _, c := range cards {
 		if SambaIsWild(c) {
-			return NewDomainError(ErrInvalidPlay, "シーケンスメルドにワイルドカードは使えません")
+			return NewDomainErrorCode(ErrInvalidPlay, "samba.errSequenceCannotUseWildCards", nil)
 		}
 		if c.GetValue() == 3 {
-			return NewDomainError(ErrInvalidPlay, "3はシーケンスメルドに使えません")
+			return NewDomainErrorCode(ErrInvalidPlay, "samba.errThreeCannotBeUsedInSequence", nil)
 		}
 		if design == -1 {
 			design = c.GetDesign()
 		} else if c.GetDesign() != design {
-			return NewDomainError(ErrInvalidPlay, "シーケンスメルドは同じスートで構成する必要があります")
+			return NewDomainErrorCode(ErrInvalidPlay, "samba.errSequenceMeldMustUseSameSuit", nil)
 		}
 		vals = append(vals, sambaSequenceValue(c))
 	}
 	sort.Ints(vals)
 	for i := 1; i < len(vals); i++ {
 		if vals[i] == vals[i-1] {
-			return NewDomainError(ErrInvalidPlay, "シーケンスメルドに同じカードは含められません")
+			return NewDomainErrorCode(ErrInvalidPlay, "samba.errSequenceMeldCannotDuplicateCard", nil)
 		}
 		if vals[i] != vals[i-1]+1 {
-			return NewDomainError(ErrInvalidPlay, "シーケンスメルドは連番でなければなりません")
+			return NewDomainErrorCode(ErrInvalidPlay, "samba.errSequenceMeldRanksMustBeConsecutive", nil)
 		}
 	}
 	return nil
@@ -1514,20 +1523,20 @@ func sambaSequenceSuit(cards []*Card) int {
 	return -1
 }
 
-// sambaMeldKindStr はメルド種別の文字列を返す。
-func sambaMeldKindStr(kind SambaMeldKind) string {
+// sambaMeldKindKey はメルド種別の i18n キーを返す。
+func sambaMeldKindKey(kind SambaMeldKind) string {
 	if kind == SambaMeldSequence {
-		return "sequence"
+		return "samba.meldTypeSequence"
 	}
-	return "set"
+	return "samba.meldTypeSet"
 }
 
-// sambaCanastaTypeStr はカナスタの種別文字列を返す。
-func sambaCanastaTypeStr(isNatural bool) string {
+// sambaCanastaTypeKey はカナスタの種別 i18n キーを返す。
+func sambaCanastaTypeKey(isNatural bool) string {
 	if isNatural {
-		return "natural"
+		return "samba.meldTypeNatural"
 	}
-	return "mixed"
+	return "samba.meldTypeMixed"
 }
 
 // --- State getters ---

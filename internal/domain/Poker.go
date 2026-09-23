@@ -8,6 +8,7 @@ import (
 	"math"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // ポーカーゲームのフェーズ定数
@@ -247,7 +248,7 @@ func (p *Poker) collectAntes() {
 		}
 		pl.SubtractChips(ante)
 		p.round.pot += ante
-		p.appendLog(i, "ante", fmt.Sprintf("ante %d chips", ante), nil)
+		p.appendLog(i, "ante", "poker.log.ante", map[string]string{"amount": strconv.Itoa(ante)}, nil)
 	}
 }
 
@@ -309,7 +310,7 @@ func (p *Poker) PlayerExchange(indices []int) error {
 		}
 	}
 	p.players[p.round.currentTurn].SetExchangeCount(len(indices))
-	p.appendLog(p.round.currentTurn, "exchange", fmt.Sprintf("exchange %d card(s)", len(indices)), nil)
+	p.appendLog(p.round.currentTurn, "exchange", "poker.log.exchange", map[string]string{"cards": strconv.Itoa(len(indices))}, nil)
 	p.round.actedFlags[p.round.currentTurn] = true
 
 	// 残りのCPU交換を実行
@@ -329,7 +330,7 @@ func (p *Poker) PlayerStand() error {
 	}
 
 	p.players[p.round.currentTurn].SetExchangeCount(0)
-	p.appendLog(p.round.currentTurn, "exchange", "exchange 0 card(s)", nil)
+	p.appendLog(p.round.currentTurn, "exchange", "poker.log.exchange", map[string]string{"cards": "0"}, nil)
 	p.round.actedFlags[p.round.currentTurn] = true
 
 	// 残りのCPU交換を実行
@@ -528,7 +529,7 @@ func (p *Poker) resolveShowdown() {
 			for j := 0; j < pl.GetCardsSize(); j++ {
 				cards[j] = pl.GetCard(j)
 			}
-			p.appendLog(i, "showdown", fmt.Sprintf("showdown: %s", pl.GetHandName()), cards)
+			p.appendLog(i, "showdown", "poker.log.showdown", map[string]string{"handKey": pokerHandLogKey(pl.GetHandRank())}, cards)
 		}
 	}
 
@@ -643,7 +644,7 @@ func (p *Poker) runCpuExchanges() {
 			}
 		}
 		p.players[p.round.currentTurn].SetExchangeCount(len(indices))
-		p.appendLog(p.round.currentTurn, "exchange", fmt.Sprintf("exchange %d card(s)", len(indices)), nil)
+		p.appendLog(p.round.currentTurn, "exchange", "poker.log.exchange", map[string]string{"cards": strconv.Itoa(len(indices))}, nil)
 		p.round.cpuExchanges = append(p.round.cpuExchanges, PokerCpuExchange{
 			PlayerIdx:     p.round.currentTurn,
 			ExchangeCount: len(indices),
@@ -1180,8 +1181,8 @@ func (p *Poker) ImportProfile(data []byte) error {
 func (p *Poker) GetActionLog() []*ActionLogEntry { return p.round.actionLog }
 
 // appendLog 棋譜にエントリを追加する
-func (p *Poker) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	p.round.appendLog(playerIdx, actionType, detail, cards)
+func (p *Poker) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	p.round.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // pokerRoundStateJSON is the JSON wire format for pokerRoundState.
@@ -1320,16 +1321,46 @@ func (p *Poker) UnmarshalJSON(data []byte) error {
 func (p *Poker) logBettingAction(playerIdx, action, amount int) {
 	switch action {
 	case PokerActionFold:
-		p.appendLog(playerIdx, "fold", "fold", nil)
+		p.appendLog(playerIdx, "fold", "poker.log.fold", nil, nil)
 	case PokerActionCheck:
-		p.appendLog(playerIdx, "check", "check", nil)
+		p.appendLog(playerIdx, "check", "poker.log.check", nil, nil)
 	case PokerActionCall:
-		p.appendLog(playerIdx, "call", fmt.Sprintf("call %d", p.players[playerIdx].GetCurrentBet()), nil)
+		p.appendLog(playerIdx, "call", "poker.log.call", map[string]string{"amount": strconv.Itoa(p.players[playerIdx].GetCurrentBet())}, nil)
 	case PokerActionBet:
-		p.appendLog(playerIdx, "bet", fmt.Sprintf("bet %d", p.players[playerIdx].GetCurrentBet()), nil)
+		p.appendLog(playerIdx, "bet", "poker.log.bet", map[string]string{"amount": strconv.Itoa(p.players[playerIdx].GetCurrentBet())}, nil)
 	case PokerActionRaise:
-		p.appendLog(playerIdx, "raise", fmt.Sprintf("raise to %d", p.players[playerIdx].GetCurrentBet()), nil)
+		p.appendLog(playerIdx, "raise", "poker.log.raise", map[string]string{"amount": strconv.Itoa(p.players[playerIdx].GetCurrentBet())}, nil)
 	case PokerActionAllIn:
-		p.appendLog(playerIdx, "allin", fmt.Sprintf("all in %d", p.players[playerIdx].GetCurrentBet()), nil)
+		p.appendLog(playerIdx, "allin", "poker.log.allIn", map[string]string{"amount": strconv.Itoa(p.players[playerIdx].GetCurrentBet())}, nil)
+	}
+}
+
+// pokerHandLogKey はポーカーの役ランクをログ用の翻訳キーに変換する。
+func pokerHandLogKey(rank int) string {
+	switch rank {
+	case PokerHandHighCard:
+		return "pokerhand.highCard"
+	case PokerHandOnePair:
+		return "pokerhand.pair"
+	case PokerHandTwoPair:
+		return "pokerhand.twoPair"
+	case PokerHandThreeOfAKind:
+		return "pokerhand.threeOfAKind"
+	case PokerHandStraight:
+		return "pokerhand.straight"
+	case PokerHandFlush:
+		return "pokerhand.flush"
+	case PokerHandFullHouse:
+		return "pokerhand.fullHouse"
+	case PokerHandFourOfAKind:
+		return "pokerhand.fourOfAKind"
+	case PokerHandStraightFlush:
+		return "pokerhand.straightFlush"
+	case PokerHandRoyalFlush:
+		return "pokerhand.royalFlush"
+	case PokerHandFiveOfAKind:
+		return "pokerhand.fiveOfAKind"
+	default:
+		return "pokerhand.unknown"
 	}
 }

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // AuldLangSynePhase オールド・ラング・サインのゲームフェーズ
@@ -126,7 +127,7 @@ func (a *AuldLangSyne) Deal() error {
 	a.takeSnapshot()
 	dealt := a.dealRow()
 	a.moveCount++
-	a.appendLog("deal", fmt.Sprintf("%d枚を配りました", len(dealt)), dealt)
+	a.appendLog("deal", "auldlangsyne.log.deal", map[string]string{"count": strconv.Itoa(len(dealt))}, dealt)
 	a.checkStalemate()
 	return nil
 }
@@ -153,7 +154,7 @@ func (a *AuldLangSyne) PlayWasteToFoundation(wasteIdx, fIdx int) error {
 	a.wastes[wasteIdx] = a.wastes[wasteIdx][:len(a.wastes[wasteIdx])-1]
 	a.foundations[fIdx] = append(a.foundations[fIdx], card)
 	a.moveCount++
-	a.appendLog("move", fmt.Sprintf("ウェイスト%d→ファンデーション%d", wasteIdx+1, fIdx+1), []*Card{card})
+	a.appendLog("move", "auldlangsyne.log.move", map[string]string{"waste": strconv.Itoa(wasteIdx + 1), "foundation": strconv.Itoa(fIdx + 1)}, []*Card{card})
 	a.checkGameClear()
 	a.checkStalemate()
 	return nil
@@ -163,7 +164,7 @@ func (a *AuldLangSyne) PlayWasteToFoundation(wasteIdx, fIdx int) error {
 func (a *AuldLangSyne) GiveUp() {
 	if a.phase == AuldLangSynePhasePlaying {
 		a.phase = AuldLangSynePhaseGameOver
-		a.appendLog("giveup", "ギブアップしました", nil)
+		a.appendLog("giveup", "auldlangsyne.log.giveUp", nil, nil)
 	}
 }
 
@@ -373,8 +374,8 @@ func (a *AuldLangSyne) restoreSnapshot(snap *auldLangSyneSnapshot) {
 }
 
 // appendLog 棋譜エントリを追加
-func (a *AuldLangSyne) appendLog(actionType, detail string, cards []*Card) {
-	a.appendLogAt(a.moveCount, 0, actionType, detail, cards)
+func (a *AuldLangSyne) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	a.appendLogCodeAt(a.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // auldLangSyneMaxSliceLen caps slice sizes during deserialisation.

@@ -75,6 +75,35 @@ describe('CucumberPage', () => {
     expect(await screen.findByText('トリック 3/7')).toBeInTheDocument();
   });
 
+  it('warns that only the final trick scores, while retaining the play status', async () => {
+    mockExec.mockResolvedValue(makeState({ trickNumber: 6, highestInTrick: 9 }));
+    renderWithProviders(<CucumberPage />);
+
+    expect(await screen.findByTestId('cu-final-trick')).toHaveTextContent(
+      'これは最終トリックです。取った人だけが失点します。',
+    );
+    expect(screen.getByTestId('cu-final-trick')).not.toHaveAttribute('role', 'status');
+    expect(
+      [...document.querySelectorAll('[role="status"][aria-live="polite"][aria-atomic="true"]')].some(
+        (node) => node.textContent === 'これは最終トリックです。取った人だけが失点します。',
+      ),
+    ).toBe(true);
+    expect(screen.getByTestId('cu-status')).toHaveTextContent('9 より高い札を出してください。');
+  });
+
+  it('does not warn before the final trick', async () => {
+    mockExec.mockResolvedValue(makeState({ trickNumber: 5 }));
+    renderWithProviders(<CucumberPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.queryByTestId('cu-final-trick')).not.toBeInTheDocument();
+    expect(
+      [...document.querySelectorAll('[role="status"][aria-live="polite"][aria-atomic="true"]')].every(
+        (node) => node.textContent === '',
+      ),
+    ).toBe(true);
+  });
+
   it('states the comparison rule and that only the last trick scores', async () => {
     renderWithProviders(<CucumberPage />);
     const rule = await screen.findByTestId('cu-rule');
@@ -188,6 +217,13 @@ describe('CucumberPage', () => {
     mockExec.mockResolvedValue(makeState({ phase: 1, lastTrickWinnerIdx: 1, lastPenalty: 13 }));
     renderWithProviders(<CucumberPage />);
     expect(await screen.findByTestId('cu-round-end')).toHaveTextContent(/CPU1 が最終トリックを取り/);
+    await waitFor(() =>
+      expect(
+        [...document.querySelectorAll('[role="status"][aria-live="polite"][aria-atomic="true"]')].some(
+          (node) => node.textContent === 'CPU1 が最終トリックを取り、13 点の失点を負いました。',
+        ),
+      ).toBe(true),
+    );
 
     mockExec.mockClear();
     fireEvent.click(screen.getByTestId('cu-next-btn'));

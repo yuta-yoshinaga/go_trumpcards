@@ -73,6 +73,9 @@ export interface MendikotResponse extends BaseGameResponse {
   leadPlayerIdx: number;
   dealerIdx: number;
   currentTrick: MendikotTrickCard[];
+  lastTrick: MendikotTrickCard[];
+  /** Seat that won the previous resolved trick, or `-1` until one resolves. */
+  lastTrickWinner: number;
   /** Hand indices you may legally play. Following suit is compulsory. */
   validPlays: number[];
   /**

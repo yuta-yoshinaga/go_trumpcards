@@ -39,6 +39,8 @@ type BriscolaGame interface {
 	GetTrumpCard() *domain.Card
 	// GetLeadPlayerIdx リードプレイヤーインデックスを取得する
 	GetLeadPlayerIdx() int
+	// GetLastTrickPoints 直前に解決したトリックの獲得点数を取得する
+	GetLastTrickPoints() int
 	// GetDealerIdx ディーラーインデックスを取得する
 	GetDealerIdx() int
 	// GetPlayerPoints プレイヤーの累積得点を取得する

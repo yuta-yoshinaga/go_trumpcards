@@ -222,6 +222,37 @@ describe('ThirtyOnePage', () => {
     expect(screen.getByTestId('draw-stock-button')).toBeDisabled();
   });
 
+  it('shows distinct, hand-consistent suit badges for the human and CPUs when the round ends', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: ThirtyOnePhase.ROUND_END,
+        players: [
+          player(0, true, [card('SPADE', 3), card('HEART', 5), card('DIAMOND', 7)]),
+          player(1, false, [card('SPADE', 1), card('SPADE', 13), card('HEART', 2)]),
+          player(2, false, []),
+          player(3, false, []),
+        ],
+      }),
+    );
+    renderWithProviders(<ThirtyOnePage />);
+
+    expect(await screen.findByTestId('suit-score-badges')).toBeInTheDocument();
+    expect(screen.getByTestId('suit-badge-DIAMOND')).toHaveTextContent('7');
+    expect(screen.getByTestId('suit-score-badges-cpu-1')).toHaveAttribute('aria-label', 'CPU 1のスート別合計');
+    expect(screen.getByTestId('suit-badge-cpu-1-SPADE')).toHaveTextContent('21');
+    expect(screen.getByTestId('suit-badge-cpu-1-HEART')).toHaveTextContent('2');
+    expect(screen.queryByTestId('suit-badge-SPADE')).toBeInTheDocument();
+    expect(screen.queryByTestId('suit-badge-cpu-1-SPADE')).toBeInTheDocument();
+  });
+
+  it('does not show CPU suit badges while the round is in progress', async () => {
+    renderWithProviders(<ThirtyOnePage />);
+
+    expect(await screen.findByTestId('suit-score-badges')).toBeInTheDocument();
+    expect(screen.queryByTestId('suit-score-badges-cpu-1')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('suit-badge-cpu-1-SPADE')).not.toBeInTheDocument();
+  });
+
   it('renders eliminated and zero-life indicators', async () => {
     mockExec.mockResolvedValue(
       makeState({

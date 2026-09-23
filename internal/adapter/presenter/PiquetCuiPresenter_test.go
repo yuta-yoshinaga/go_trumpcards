@@ -8,6 +8,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
@@ -78,6 +80,60 @@ func TestPiquetCuiPresenter_Output_WithError(t *testing.T) {
 	}
 }
 
+func TestPiquetCuiPresenter_Output_TrickWinner(t *testing.T) {
+	origLang := i18n.Lang()
+	defer i18n.SetLang(origLang)
+	origColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origColor)
+
+	g := newPiquetForPresenter(t)
+	data, _ := json.Marshal(g)
+	var raw map[string]any
+	_ = json.Unmarshal(data, &raw)
+	raw["ph"] = int(domain.PiquetPhasePlay)
+	raw["al"] = []map[string]any{{"t": 10, "p": 0, "a": "trick_win", "d": "Player", "c": []any{}}}
+	mod, _ := json.Marshal(raw)
+	g2 := &domain.Piquet{}
+	if err := json.Unmarshal(mod, g2); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+
+	i18n.SetLang("ja")
+	out := (&PiquetCuiPresenter{}).Output(g2, nil)
+	if !strings.Contains(out, "エルダー (あなた) が直前のトリック (") {
+		t.Errorf("expected Japanese trick winner text, got: %s", out)
+	}
+}
+
+func TestPiquetCuiPresenter_Output_TrickWinnerBonusesAndNilLogEntry(t *testing.T) {
+	origLang := i18n.Lang()
+	defer i18n.SetLang(origLang)
+	origColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origColor)
+
+	g := newPiquetForPresenter(t)
+	g2 := piquetPresenterStateForPhase(t, g, domain.PiquetPhasePlay, []map[string]any{
+		{"t": 10, "p": 0, "a": "trick_win", "d": "Player", "c": []any{
+			map[string]any{"d": domain.CardDesignSpade, "v": 7, "w": false},
+			map[string]any{"d": domain.CardDesignHeart, "v": 11, "w": false},
+		}},
+		{"t": 11, "p": -1, "a": "trick_point", "d": "Trick point", "c": []any{}},
+		nil,
+		{"t": 12, "p": -1, "a": "last_trick_bonus", "d": "Last trick bonus", "c": []any{}},
+		{"t": 13, "p": -1, "a": "pique", "d": "Pique", "c": []any{}},
+	})
+
+	i18n.SetLang("en")
+	out := (&PiquetCuiPresenter{}).Output(g2, nil)
+	assert.Contains(t, out, "Elder (You)")
+	assert.Contains(t, out, "♠7, ♥11")
+	assert.Contains(t, out, "Trick point +1")
+	assert.Contains(t, out, "Last trick bonus +1")
+	assert.Contains(t, out, "Pique bonus +30")
+}
+
 func TestPiquetCuiPresenter_HintOutput(t *testing.T) {
 	g := newPiquetForPresenter(t)
 	p := &PiquetCuiPresenter{}
@@ -97,12 +153,17 @@ func TestPiquetCuiPresenter_HintOutput_PlayPhase(t *testing.T) {
 }
 
 func TestPiquetCuiPresenter_ActionLogOutput(t *testing.T) {
-	g := newPiquetForPresenter(t)
+	origLang := i18n.Lang()
+	defer i18n.SetLang(origLang)
+	i18n.SetLang("ja")
+	g := driveToPhase(t, domain.PiquetPhasePlay)
+	for len(g.GetActionLog()) == 0 || g.GetActionLog()[len(g.GetActionLog())-1].ActionType != "trick_point" {
+		g.CpuPlay()
+	}
 	p := &PiquetCuiPresenter{}
 	out := p.ActionLogOutput(g)
-	if out == "" {
-		t.Error("expected non-empty log output")
-	}
+	assert.Contains(t, out, "がトリック1を取りました")
+	assert.Contains(t, out, "トリック点 +1")
 }
 
 func TestPiquetCuiPresenter_Output_DeclarationPhase(t *testing.T) {
@@ -157,7 +218,7 @@ func TestPiquetCuiPresenter_DeclResultsRendering(t *testing.T) {
 	}
 	p := &PiquetCuiPresenter{}
 	out := p.Output(g2, nil)
-	if !strings.Contains(out, "Point") && !strings.Contains(out, "Sequence") && !strings.Contains(out, "Set") {
+	if !strings.Contains(out, "ポイント") && !strings.Contains(out, "シークエンス") && !strings.Contains(out, "セット") {
 		t.Errorf("expected at least one declaration label, got: %s", out)
 	}
 }
@@ -218,15 +279,15 @@ func TestPiquetCuiPresenter_PlayerNames_ElderAndYounger(t *testing.T) {
 			name:        "ja: human Elder, CPU Younger",
 			lang:        "ja",
 			humanElder:  true,
-			wantElder:   "Elder (あなた)",
-			wantYounger: "Younger (CPU 1)",
+			wantElder:   "エルダー (あなた)",
+			wantYounger: "ヤンガー (CPU 1)",
 		},
 		{
 			name:        "ja: CPU Elder, human Younger",
 			lang:        "ja",
 			humanElder:  false,
-			wantElder:   "Elder (CPU 0)",
-			wantYounger: "Younger (あなた)",
+			wantElder:   "エルダー (CPU 0)",
+			wantYounger: "ヤンガー (あなた)",
 		},
 		{
 			name:        "en: human Elder, CPU Younger",

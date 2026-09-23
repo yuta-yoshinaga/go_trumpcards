@@ -33,7 +33,7 @@ func TestRedDogCuiPresenter_Output_BetPhase(t *testing.T) {
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "チップ: 1000")
-	assert.Contains(t, result, "BET")
+	assert.Contains(t, result, "賭け")
 }
 
 func TestRedDogCuiPresenter_Output_Error(t *testing.T) {
@@ -63,7 +63,7 @@ func TestRedDogCuiPresenter_Output_SpreadDecision(t *testing.T) {
 	m.On("GetTotalPayout").Return(0)
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "SPREAD DECISION")
+	assert.Contains(t, result, "スプレッド判断")
 	assert.Contains(t, result, "INITIAL")
 	assert.Contains(t, result, "スプレッド: 4")
 	assert.Contains(t, result, "アンテ: 100")
@@ -190,11 +190,11 @@ func TestRedDogCuiPresenter_Output_End_SpreadZero(t *testing.T) {
 func TestRedDogCuiPresenter_PhaseStr_AllBranches(t *testing.T) {
 	p := new(RedDogCuiPresenter)
 	for phase, expect := range map[int]string{
-		domain.RedDogPhaseBet:            "BET",
-		domain.RedDogPhaseInitialDealt:   "INITIAL DEALT",
-		domain.RedDogPhaseSpreadDecision: "SPREAD DECISION",
-		domain.RedDogPhaseEnd:            "END",
-		999:                              "UNKNOWN",
+		domain.RedDogPhaseBet:            "賭け",
+		domain.RedDogPhaseInitialDealt:   "初期配り済み",
+		domain.RedDogPhaseSpreadDecision: "スプレッド判断",
+		domain.RedDogPhaseEnd:            "終了",
+		999:                              "不明",
 	} {
 		assert.Equal(t, expect, p.phaseStr(phase))
 	}
@@ -337,5 +337,30 @@ func TestRedDogCuiPresenter_Output_EndPairDealShowsNoGuide(t *testing.T) {
 	out := p.Output(rd, nil)
 
 	assert.Contains(t, out, "プレイヤーの勝ち", "前提: ペアを引き当てて勝っている")
+	assert.Contains(t, out, "初手がペアだったためスプレッド判定を飛ばし、3枚目で直接判定しました（11倍配当）。")
+	assert.NotContains(t, out, "{{")
 	assert.NotContains(t, out, "当たりランク:", "ペアの局に間のランクの案内を出さない")
+}
+
+func TestRedDogCuiPresenter_Output_EndNonPairShowsNoPairGuide(t *testing.T) {
+	i18n.SetLang("ja")
+	rd := new(interfaces.MockRedDogGame)
+	rd.On("GetChips").Return(900).Maybe()
+	rd.On("GetPhase").Return(domain.RedDogPhaseEnd).Maybe()
+	rd.On("GetAnte").Return(100).Maybe()
+	rd.On("GetRaise").Return(0).Maybe()
+	rd.On("GetSpread").Return(4).Maybe()
+	rd.On("GetInitialCards").Return([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 5, false),
+		domain.NewCard(domain.CardDesignHeart, 6, false),
+	}).Maybe()
+	rd.On("GetThirdCard").Return(domain.NewCard(domain.CardDesignClover, 12, false)).Maybe()
+	rd.On("GetResult").Return(domain.GameResultLose).Maybe()
+	rd.On("GetTotalPayout").Return(0).Maybe()
+	rd.On("GetGameEndFlag").Return(true).Maybe()
+	rd.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
+
+	out := (new(RedDogCuiPresenter)).Output(rd, nil)
+	assert.NotContains(t, out, "初手がペアだったためスプレッド判定を飛ばし、3枚目で直接判定しました（11倍配当）。")
+	assert.NotContains(t, out, "{{")
 }

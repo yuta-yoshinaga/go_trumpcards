@@ -99,6 +99,15 @@ func TestAllFoursWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "invalid play", resObj.Message)
 	})
 
+	t.Run("coded error uses message code", func(t *testing.T) {
+		m, _ := setupAllFoursWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "allfours.errCardIndexOutOfRange", nil)
+		var resObj controller.AllFoursWebOutput
+		require.NoError(t, json.Unmarshal([]byte(p.Output(m, err)), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "allfours.errCardIndexOutOfRange", resObj.MessageCode)
+	})
+
 	t.Run("game end shows winner code", func(t *testing.T) {
 		m, _ := setupAllFoursWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
@@ -252,10 +261,10 @@ func TestAllFoursWebPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockAllFoursGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "stand", Detail: "You stand"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "stand", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	out := p.ActionLogOutput(m)
-	assert.Contains(t, out, "You stand")
+	assert.Contains(t, out, `"detailCode":"test.log.stub"`)
 }
 
 // **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の

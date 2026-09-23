@@ -98,6 +98,7 @@ const scartoWaitingState = makeScartoState({
 const trickEndState = makeScartoState({
   phase: 2,
   isHumanTurn: false,
+  lastTrickWinner: 1,
   currentTrick: [
     { playerIdx: 0, card: suit(12, 'HEART', '♥', 'C') },
     { playerIdx: 1, card: suit(13, 'CLOVER', '♣', 'D') },
@@ -255,6 +256,20 @@ describe('ScartoPage', () => {
     mockExec.mockResolvedValue(trickEndState);
     renderWithProviders(<ScartoPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
+    expect(screen.getByTestId('trick-winner-badge')).toHaveTextContent('CPU 1 が獲得');
+  });
+
+  it('does not render a winner badge while a trick is in progress', async () => {
+    mockExec.mockResolvedValue(
+      makeScartoState({
+        phase: 1,
+        lastTrickWinner: 1,
+        currentTrick: [{ playerIdx: 1, card: { design: 'HEART', value: 12 } }],
+      }),
+    );
+    renderWithProviders(<ScartoPage />);
+    await waitFor(() => expect(screen.getByTestId('trick-display-cards')).toBeInTheDocument());
+    expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument();
   });
 
   it('renders round end with the next deal button and the deal settlement', async () => {

@@ -387,6 +387,28 @@ func TestCaribbeanDraw_Payouts_Push(t *testing.T) {
 	assert.Equal(t, 200, cs.GetPlayPayout()) // push (return)
 }
 
+func TestCaribbeanDraw_ResultLog_Draw(t *testing.T) {
+	cs := domain.NewDefaultCaribbeanDraw()
+	require.NoError(t, cs.Bet(100, 0))
+
+	// 役位もキッカーも同じ、かつディーラーがクオリファイする手にする。
+	cs.SetPlayerHand(makeCdrHand(
+		cdrCard{domain.CardDesignSpade, 10}, cdrCard{domain.CardDesignClover, 10},
+		cdrCard{domain.CardDesignHeart, 7}, cdrCard{domain.CardDesignDiamond, 9},
+		cdrCard{domain.CardDesignSpade, 11}))
+	cs.SetDealerHand(makeCdrHand(
+		cdrCard{domain.CardDesignDiamond, 10}, cdrCard{domain.CardDesignHeart, 10},
+		cdrCard{domain.CardDesignClover, 7}, cdrCard{domain.CardDesignSpade, 9},
+		cdrCard{domain.CardDesignDiamond, 11}))
+
+	require.NoError(t, cs.Draw(nil))
+	require.NoError(t, cs.Play())
+
+	log := cs.GetActionLog()
+	require.NotEmpty(t, log)
+	assert.Equal(t, "caribbeandraw.log.resultTie", log[len(log)-1].DetailCode)
+}
+
 func TestCaribbeanDraw_PlayMultipliers(t *testing.T) {
 	tests := []struct {
 		name       string
@@ -570,6 +592,21 @@ func TestCaribbeanDraw_GetActionLog(t *testing.T) {
 	require.NoError(t, cs.Draw(nil))
 	require.NoError(t, cs.Play())
 	assert.NotEmpty(t, cs.GetActionLog())
+}
+
+func TestCaribbeanDraw_ActionLogUsesDetailCode(t *testing.T) {
+	cs := domain.NewDefaultCaribbeanDraw()
+	require.NoError(t, cs.Bet(100, 10))
+	var entry *domain.ActionLogEntry
+	for _, candidate := range cs.GetActionLog() {
+		if candidate.DetailCode == "caribbeandraw.log.bet" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, "100", entry.DetailParams["ante"])
+	assert.Equal(t, "10", entry.DetailParams["jackpot"])
 }
 
 func TestCaribbeanDraw_JSONRoundTrip(t *testing.T) {

@@ -41,6 +41,7 @@ func (p *TysiacWebPresenter) buildBase(g interfaces.TysiacGame) *controller.Tysi
 	resObj.DealerIdx = g.GetDealerIdx()
 	resObj.ForehandIdx = g.GetForehandIdx()
 	resObj.DeclarerIdx = g.GetDeclarerIdx()
+	resObj.TalonRecipientIdx = g.GetTalonRecipientIdx()
 	resObj.Contract = g.GetContract()
 	resObj.CurrentBid = g.GetCurrentBid()
 	resObj.TrumpSuit = g.GetTrumpSuit()
@@ -49,7 +50,7 @@ func (p *TysiacWebPresenter) buildBase(g interfaces.TysiacGame) *controller.Tysi
 	resObj.PlayerScores = g.GetPlayerScores()
 	resObj.RoundCardPoints = g.GetRoundCardPoints()
 	resObj.RoundMarriage = g.GetRoundMarriage()
-	resObj.LastTrickWinner = -1
+	resObj.LastTrickWinner = g.GetLastTrickWinner()
 	resObj.IsHumanTurn = g.IsHumanTurn()
 
 	resObj.PlayableIndices = p.playableIndices(g)
@@ -103,6 +104,9 @@ func (p *TysiacWebPresenter) buildPlayersOutput(g interfaces.TysiacGame) []*cont
 // buildMessage ゲーム結果メッセージを構築
 func (p *TysiacWebPresenter) buildMessage(g interfaces.TysiacGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

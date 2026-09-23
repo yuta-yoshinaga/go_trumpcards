@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // RankAndFilePhase フォーティシーブスゲームフェーズ
@@ -138,7 +139,7 @@ func (ft *RankAndFile) Draw() error {
 	ft.stock = ft.stock[:len(ft.stock)-1]
 	ft.waste = append(ft.waste, card)
 	ft.moveCount++
-	ft.appendLog("draw", "ストックからカードを引きました", []*Card{card})
+	ft.appendLog("draw", "rankandfile.log.draw", nil, []*Card{card})
 	ft.checkRankAndFileStalemate()
 	return nil
 }
@@ -162,7 +163,7 @@ func (ft *RankAndFile) MoveWasteToTableau(col int) error {
 	ft.waste = ft.waste[:len(ft.waste)-1]
 	ft.tableau[col] = append(ft.tableau[col], &RankAndFileTableauCard{Card: card, FaceUp: true})
 	ft.moveCount++
-	ft.appendLog("move", fmt.Sprintf("ウェイスト→タブロー列%d", col), []*Card{card})
+	ft.appendLog("move", "rankandfile.log.wasteToTableau", map[string]string{"column": strconv.Itoa(col)}, []*Card{card})
 	ft.checkRankAndFileStalemate()
 	return nil
 }
@@ -184,7 +185,7 @@ func (ft *RankAndFile) MoveWasteToFoundation() error {
 	ft.waste = ft.waste[:len(ft.waste)-1]
 	ft.foundation[fIdx] = append(ft.foundation[fIdx], card)
 	ft.moveCount++
-	ft.appendLog("move", "ウェイスト→ファンデーション", []*Card{card})
+	ft.appendLog("move", "rankandfile.log.wasteToFoundation", nil, []*Card{card})
 	ft.checkGameClear()
 	ft.checkRankAndFileStalemate()
 	return nil
@@ -233,7 +234,7 @@ func (ft *RankAndFile) MoveTableauToTableau(fromCol, cardIndex, toCol int) error
 	for i, m := range moving {
 		movedCards[i] = m.Card
 	}
-	ft.appendLog("move", fmt.Sprintf("タブロー列%d→タブロー列%d", fromCol, toCol), movedCards)
+	ft.appendLog("move", "rankandfile.log.tableauToTableau", map[string]string{"fromColumn": strconv.Itoa(fromCol), "toColumn": strconv.Itoa(toCol)}, movedCards)
 	ft.checkRankAndFileStalemate()
 	return nil
 }
@@ -280,7 +281,7 @@ func (ft *RankAndFile) MoveTableauToFoundation(col int) error {
 	// **札が減ったら必ずめくる。**Forty Thieves は全部表向きなので不要だった。
 	ft.autoFlipTop(col)
 	ft.moveCount++
-	ft.appendLog("move", fmt.Sprintf("タブロー列%d→ファンデーション", col), []*Card{card})
+	ft.appendLog("move", "rankandfile.log.tableauToFoundation", map[string]string{"column": strconv.Itoa(col)}, []*Card{card})
 	ft.checkGameClear()
 	ft.checkRankAndFileStalemate()
 	return nil
@@ -290,7 +291,7 @@ func (ft *RankAndFile) MoveTableauToFoundation(col int) error {
 func (ft *RankAndFile) GiveUp() {
 	if ft.phase == RankAndFilePhasePlaying {
 		ft.phase = RankAndFilePhaseGameOver
-		ft.appendLog("giveup", "ギブアップしました", nil)
+		ft.appendLog("giveup", "rankandfile.log.giveup", nil, nil)
 	}
 }
 
@@ -439,7 +440,7 @@ func (ft *RankAndFile) AutoComplete() error {
 			break
 		}
 	}
-	ft.appendLog("autocomplete", "オートコンプリートを実行しました", nil)
+	ft.appendLog("autocomplete", "rankandfile.log.autocomplete", nil, nil)
 	ft.checkGameClear()
 	return nil
 }
@@ -596,6 +597,37 @@ func (ft *RankAndFile) sequenceStarts(col int) []int {
 // 掴めるか」を判断するために使う。
 func (ft *RankAndFile) SequenceStarts(col int) []int { return ft.sequenceStarts(col) }
 
+// LegalTargets returns tableau columns that accept the selected run.
+func (ft *RankAndFile) LegalTargets(fromCol, cardIndex int) []int {
+	if fromCol < 0 || fromCol >= RankAndFileTableauCnt {
+		return nil
+	}
+	starts := ft.sequenceStarts(fromCol)
+	if cardIndex < 0 {
+		if len(starts) == 0 {
+			return nil
+		}
+		cardIndex = starts[0]
+	}
+	valid := false
+	for _, start := range starts {
+		if start == cardIndex {
+			valid = true
+			break
+		}
+	}
+	if !valid {
+		return nil
+	}
+	targets := make([]int, 0, RankAndFileTableauCnt)
+	for col := range RankAndFileTableauCnt {
+		if col != fromCol && ft.canPlaceOnTableau(ft.tableau[fromCol][cardIndex].Card, col) {
+			targets = append(targets, col)
+		}
+	}
+	return targets
+}
+
 // isRankAndFileSequence は列 col の cardIndex 以降が異色降順に並んでいるかを返す。
 //
 // 一括で動かせるのはこの並びだけで、途中で色かランクが切れたら1枚も動かない。
@@ -707,8 +739,8 @@ func (ft *RankAndFile) restoreSnapshot(snap *rankAndFileSnapshot) {
 }
 
 // appendLog 棋譜エントリを追加
-func (ft *RankAndFile) appendLog(actionType, detail string, cards []*Card) {
-	ft.appendLogAt(ft.moveCount, 0, actionType, detail, cards)
+func (ft *RankAndFile) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	ft.appendLogCodeAt(ft.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // rankAndFileJSON is the JSON wire format for RankAndFile.

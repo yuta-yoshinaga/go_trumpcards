@@ -35,6 +35,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // IndianRummyHandSize 各プレイヤーの手札枚数
@@ -70,6 +71,14 @@ const (
 	// IndianRummyPhaseGameEnd ゲーム終了フェーズ
 	IndianRummyPhaseGameEnd IndianRummyPhase = 3
 )
+
+// IndianRummyHint represents a hint for the human player.
+type IndianRummyHint struct {
+	// Action is the recommended action name.
+	Action string
+	// Reason is the identifier of the reason.
+	Reason string
+}
 
 // newIndianRummyDeck インドラミー用 108 枚デッキ（標準 52 枚デッキ×2 + ジョーカー 4 枚）を構築する。
 func newIndianRummyDeck() *TrumpCards {
@@ -123,6 +132,10 @@ func NewIndianRummy(trumpCards *TrumpCards, players []*IndianRummyPlayer, config
 		roundNumber: 0,
 		declarerIdx: -1,
 	}
+}
+
+func (g *IndianRummy) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // NewDefaultIndianRummy 標準構成（人間 1 + CPU 3、108 枚デッキ、デフォルト設定）でコンストラクトする SSoT。
@@ -280,28 +293,28 @@ func (g *IndianRummy) drawFromStock() error {
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", playerName(g.players, g.currentPlayerIdx)), nil)
+	g.appendLog(g.currentPlayerIdx, "draw_stock", "indianrummy.log.drawStock", map[string]string{"name": playerName(g.players, g.currentPlayerIdx)}, nil)
 	g.phase = IndianRummyPhaseDiscard
 	return nil
 }
 
 func (g *IndianRummy) drawFromDiscard() error {
 	if len(g.discardPile) == 0 {
-		return NewDomainError(ErrInvalidPlay, "捨て札が空です")
+		return NewDomainErrorCode(ErrInvalidPlay, "indianrummy.errDiscardPileEmpty", nil)
 	}
 	card := g.discardPile[len(g.discardPile)-1]
 	g.discardPile = g.discardPile[:len(g.discardPile)-1]
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s draws %s from discard", playerName(g.players, g.currentPlayerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(g.currentPlayerIdx, "draw_discard", "indianrummy.log.drawDiscard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(card)}, []*Card{card})
 	g.phase = IndianRummyPhaseDiscard
 	return nil
 }
 
 // recycleDiscardIntoStock 山札が空のとき捨て札トップ 1 枚を残して残りを山札へ戻しシャッフルする。
 func (g *IndianRummy) recycleDiscardIntoStock() bool {
-	return recycleDiscardIntoStock(&g.discardPile, &g.drawPile, g)
+	return recycleDiscardIntoStock(&g.discardPile, &g.drawPile, g, "indianrummy.log.recycle")
 }
 
 // PlayerDiscard 人間プレイヤーが手札 1 枚を捨ててターンを終了する
@@ -321,11 +334,11 @@ func (g *IndianRummy) PlayerDiscard(cardIndex int) error {
 func (g *IndianRummy) applyDiscard(cardIndex int) error {
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "indianrummy.errDiscardCardIndexOutOfRange", nil)
 	}
 	discarded := player.RemoveCard(cardIndex)
 	g.discardPile = append(g.discardPile, discarded)
-	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+	g.appendLog(g.currentPlayerIdx, "discard", "indianrummy.log.discard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(discarded)}, []*Card{discarded})
 	g.advanceTurn()
 	return nil
 }
@@ -348,7 +361,7 @@ func (g *IndianRummy) PlayerDeclare(cardIndex int) error {
 func (g *IndianRummy) applyDeclare(cardIndex int) error {
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "indianrummy.errDeclareCardIndexOutOfRange", nil)
 	}
 	discarded := player.RemoveCard(cardIndex)
 	g.discardPile = append(g.discardPile, discarded)
@@ -357,11 +370,11 @@ func (g *IndianRummy) applyDeclare(cardIndex int) error {
 	cards := indianRummyCollectCards(player)
 	g.declarationValid = IndianRummyValidateDeclaration(cards, g.wildRank)
 
-	status := "valid"
+	code := "indianrummy.log.declareValid"
 	if !g.declarationValid {
-		status = "invalid"
+		code = "indianrummy.log.declareInvalid"
 	}
-	g.appendLog(g.currentPlayerIdx, "declare", fmt.Sprintf("%s declares (%s)", playerName(g.players, g.currentPlayerIdx), status), nil)
+	g.appendLog(g.currentPlayerIdx, "declare", code, map[string]string{"name": playerName(g.players, g.currentPlayerIdx)}, nil)
 
 	g.enterRoundEnd()
 	return nil
@@ -439,17 +452,9 @@ func (g *IndianRummy) cpuDiscardOrDeclare() {
 
 // cpuFindDeclareCard 14 枚のうち 1 枚をフィニッシュに回して残り 13 枚が有効宣言になるカードを探す。
 func (g *IndianRummy) cpuFindDeclareCard(player *IndianRummyPlayer) (int, bool) {
-	n := player.GetCardsSize()
-	for f := 0; f < n; f++ {
-		rem := make([]*Card, 0, n-1)
-		for i := 0; i < n; i++ {
-			if i != f {
-				rem = append(rem, player.GetCard(i))
-			}
-		}
-		if IndianRummyValidateDeclaration(rem, g.wildRank) {
-			return f, true
-		}
+	declarable := declarableIndianRummyDiscards(player, g.wildRank, true)
+	if len(declarable) > 0 {
+		return declarable[0], true
 	}
 	return 0, false
 }
@@ -488,7 +493,7 @@ func (g *IndianRummy) enterRoundEnd() {
 // endRoundStockOut 山札枯渇によるラウンド終了（宣言なし・全員デッドウッド採点）。
 func (g *IndianRummy) endRoundStockOut() {
 	g.declarerIdx = -1
-	g.appendLog(-1, "stock_out", "Round ends (stock exhausted)", nil)
+	g.appendLog(-1, "stock_out", "indianrummy.log.stockOut", nil, nil)
 	g.enterRoundEnd()
 }
 
@@ -509,9 +514,9 @@ func (g *IndianRummy) scoreRound() {
 	}
 
 	if g.declarerIdx >= 0 && g.declarationValid {
-		g.appendLog(g.declarerIdx, "round_win", fmt.Sprintf("%s wins the round with a valid declaration", playerName(g.players, g.declarerIdx)), nil)
+		g.appendLog(g.declarerIdx, "round_win", "indianrummy.log.roundWin", map[string]string{"name": playerName(g.players, g.declarerIdx)}, nil)
 	} else if g.declarerIdx >= 0 {
-		g.appendLog(g.declarerIdx, "round_end", fmt.Sprintf("%s made an invalid declaration (+%d penalty)", playerName(g.players, g.declarerIdx), IndianRummyDeadwoodCap), nil)
+		g.appendLog(g.declarerIdx, "round_end", "indianrummy.log.roundEnd", map[string]string{"name": playerName(g.players, g.declarerIdx), "penalty": strconv.Itoa(IndianRummyDeadwoodCap)}, nil)
 	}
 
 	for i := range g.players {
@@ -532,7 +537,7 @@ func (g *IndianRummy) finalizeGameEnd() {
 			g.winnerIdx = i
 		}
 	}
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game with %d points!", playerName(g.players, g.winnerIdx), minScore), nil)
+	g.appendLog(-1, "game_end", "indianrummy.log.gameEnd", map[string]string{"name": playerName(g.players, g.winnerIdx), "points": strconv.Itoa(minScore)}, nil)
 }
 
 // --- Getters / Setters ---
@@ -587,6 +592,9 @@ func (g *IndianRummy) SetWildRank(r int) { g.wildRank = r }
 // GetGameEndFlag ゲーム終了フラグ
 func (g *IndianRummy) GetGameEndFlag() bool { return g.gameEndFlag }
 
+// SetGameEndFlag ゲーム終了フラグ設定（テスト用）
+func (g *IndianRummy) SetGameEndFlag(v bool) { g.gameEndFlag = v }
+
 // GetWinnerIdx 勝者インデックス（-1 未確定）
 func (g *IndianRummy) GetWinnerIdx() int { return g.winnerIdx }
 
@@ -632,6 +640,111 @@ func (g *IndianRummy) PlayerHasPureSequence(i int) bool {
 		return false
 	}
 	return IndianRummyHasPureSequence(indianRummyCollectCards(p), g.wildRank)
+}
+
+// GetDeclarableDiscards returns the hand indices whose discard leaves a valid declaration.
+func (g *IndianRummy) GetDeclarableDiscards() []int {
+	if g.phase != IndianRummyPhaseDiscard {
+		return []int{}
+	}
+	p := g.GetPlayer(g.currentPlayerIdx)
+	if p == nil || !p.GetIsHuman() {
+		return []int{}
+	}
+	return declarableIndianRummyDiscards(p, g.wildRank, false)
+}
+
+func declarableIndianRummyDiscards(player *IndianRummyPlayer, wildRank int, firstOnly bool) []int {
+	n := player.GetCardsSize()
+	declarable := make([]int, 0)
+	for f := 0; f < n; f++ {
+		rem := make([]*Card, 0, n-1)
+		for i := 0; i < n; i++ {
+			if i != f {
+				rem = append(rem, player.GetCard(i))
+			}
+		}
+		if IndianRummyValidateDeclaration(rem, wildRank) {
+			declarable = append(declarable, f)
+			if firstOnly {
+				break
+			}
+		}
+	}
+	return declarable
+}
+
+// indianRummyFitsWithHand checks if card fits with hand to form a potential meld.
+// Sync: frontend/src/utils/hints/indianRummyHint.ts (fitsWithHand)
+func indianRummyFitsWithHand(card *Card, hand []*Card, wildRank int) bool {
+	if card == nil {
+		return false
+	}
+	var natural []*Card
+	for _, c := range hand {
+		if !indianRummyIsWild(c, wildRank) {
+			natural = append(natural, c)
+		}
+	}
+
+	// Set: another card of the same value.
+	for _, c := range natural {
+		if c.GetValue() == card.GetValue() {
+			return true
+		}
+	}
+
+	// Run: same suit within two ranks (adjacent or one-gap).
+	for _, c := range natural {
+		if c.GetDesign() == card.GetDesign() {
+			diff := c.GetValue() - card.GetValue()
+			if diff < 0 {
+				diff = -diff
+			}
+			if diff == 1 || diff == 2 {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// GetHint returns the recommended action for the human player.
+// Sync: frontend/src/utils/hints/indianRummyHint.ts (getIndianRummyHint)
+func (g *IndianRummy) GetHint() *IndianRummyHint {
+	human := findHumanIdx(g.players)
+	if human < 0 || g.gameEndFlag || g.currentPlayerIdx != human {
+		return &IndianRummyHint{Reason: "none"}
+	}
+	player := g.players[human]
+	if player.GetCardsSize() == 0 {
+		return &IndianRummyHint{Reason: "none"}
+	}
+
+	switch g.phase {
+	case IndianRummyPhaseDraw:
+		// Sync: frontend/src/utils/hints/indianRummyHint.ts (getDrawHint)
+		cards := indianRummyCollectCards(player)
+		top := g.GetDiscardTop()
+		if top != nil && !indianRummyIsWild(top, g.wildRank) && indianRummyFitsWithHand(top, cards, g.wildRank) {
+			return &IndianRummyHint{Action: "drawDiscard", Reason: "draw_discard"}
+		}
+		return &IndianRummyHint{Action: "drawStock", Reason: "draw_stock"}
+
+	case IndianRummyPhaseDiscard:
+		// 判断は frontend/src/utils/hints/indianRummyHint.ts (getDiscardHint) と同じ —
+		// **ただし写しではない。** あちらは calcDeadwood が 0 になるかしか見ておらず、
+		// 「シーケンス 2 つ以上・うち 1 つはピュア」の宣言条件を検査していない。
+		// こちらは IndianRummyValidateDeclaration を通す本物の検査なので、
+		// **無効な宣言を勧めない。** フロント側の穴は #7736。
+		if _, canDeclare := g.cpuFindDeclareCard(player); canDeclare {
+			return &IndianRummyHint{Action: "declare", Reason: "declare_now"}
+		}
+		return &IndianRummyHint{Action: "discard", Reason: "discard_deadwood"}
+
+	default:
+		return &IndianRummyHint{Reason: "none"}
+	}
 }
 
 // --- Private helpers ---

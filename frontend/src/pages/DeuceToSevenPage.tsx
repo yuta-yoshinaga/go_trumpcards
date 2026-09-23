@@ -137,6 +137,7 @@ function DeuceToSevenPageContent() {
   const isBettingPhase = phase === DeuceToSevenPhase.DEAL || phase === DeuceToSevenPhase.BET;
   const isEnd = phase === DeuceToSevenPhase.END;
   const isHandOver = phase === DeuceToSevenPhase.SHOWDOWN || phase === DeuceToSevenPhase.END;
+  const isRaiseLimitReached = (state?.maxRaises ?? 0) > 0 && (state?.raiseCount ?? 0) >= (state?.maxRaises ?? 0);
   const drawIndex = state?.drawIndex ?? 0;
   const phaseLabel =
     phase === DeuceToSevenPhase.DRAW
@@ -387,6 +388,8 @@ function DeuceToSevenPageContent() {
                   onCheck={() => execAction('check', undefined, undefined, undefined, getElapsed())}
                   onFold={() => execAction('fold', undefined, undefined, undefined, getElapsed())}
                   onAllIn={() => execAction('allin', undefined, undefined, undefined, getElapsed())}
+                  raiseDisabled={isRaiseLimitReached}
+                  raiseDisabledReason={isRaiseLimitReached ? t('raiseLimitReached') : undefined}
                 />
               </div>
             )}

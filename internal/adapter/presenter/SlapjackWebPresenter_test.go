@@ -48,6 +48,26 @@ func TestSlapjackWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "bad", out.Message)
 	})
 
+	t.Run("cards won is included after a correct slap", func(t *testing.T) {
+		g := setupSlapjackTest()
+		data, err := json.Marshal(g)
+		assert.NoError(t, err)
+		var raw map[string]json.RawMessage
+		assert.NoError(t, json.Unmarshal(data, &raw))
+		lastEvent, err := json.Marshal(domain.SlapjackLastEvent{
+			Kind: domain.SlapjackEventSlapCorrect, PlayerIdx: 0, CardsWon: 4,
+		})
+		assert.NoError(t, err)
+		raw["le"] = lastEvent
+		data, err = json.Marshal(raw)
+		assert.NoError(t, err)
+		assert.NoError(t, json.Unmarshal(data, g))
+		result := p.Output(g, nil)
+		var out controller.SlapjackWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(result), &out))
+		assert.Equal(t, 4, out.LastEventCardsWon)
+	})
+
 	t.Run("game end human win", func(t *testing.T) {
 		g := setupSlapjackTest()
 		data, _ := json.Marshal(g)

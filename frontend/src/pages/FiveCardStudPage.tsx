@@ -243,6 +243,18 @@ export function FiveCardStudPageContent({ gameKey }: { gameKey: FcsPageGameKey }
       />
     );
 
+  // Reset raises the ante at a positive multiple, then increments handCount.
+  // Therefore hand n is level floor((n - 1) / period) + 1, with this many
+  // hands remaining before the next raise, matching FiveCardStud.Reset.
+  const anteLevel =
+    state.tournamentMode && state.anteLevelHands > 0 && state.handCount > 0
+      ? Math.floor((state.handCount - 1) / state.anteLevelHands) + 1
+      : 1;
+  const handsUntilAnteLevel =
+    state.tournamentMode && state.anteLevelHands > 0 && state.handCount > 0
+      ? state.anteLevelHands - ((state.handCount - 1) % state.anteLevelHands)
+      : state.anteLevelHands;
+
   return (
     <GamePageShell
       title={tc(`nav.${gameKey}`)}
@@ -271,7 +283,14 @@ export function FiveCardStudPageContent({ gameKey }: { gameKey: FcsPageGameKey }
             {tc('label.dealer')} <strong>{findPlayerName(state.players, state.dealerIdx)}</strong>
           </span>
           {state?.tournamentMode && (
-            <span>{t('handNumber', { count: state.handCount, level: state.anteLevelHands })}</span>
+            <span data-testid="fcs-tournament-info">
+              {t('handNumber', {
+                count: state.handCount,
+                level: state.anteLevelHands,
+                anteLevel,
+                remaining: handsUntilAnteLevel,
+              })}
+            </span>
           )}
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
@@ -292,7 +311,7 @@ export function FiveCardStudPageContent({ gameKey }: { gameKey: FcsPageGameKey }
             {gameKey === 'soko' && (
               <div className="mb-3 p-2 rounded bg-black/30 text-xs" data-testid="soko-hand-ranking">
                 <div className="mb-1 text-ds-text-primary">{t('ranking.title')}</div>
-                <ol className="flex flex-wrap gap-x-2 gap-y-0.5 text-ds-text-secondary">
+                <ol className="flex flex-wrap gap-x-2 gap-y-0.5 text-ds-text-muted">
                   {(t('ranking.hands', { returnObjects: true }) as string[]).map((name, i) => (
                     <li key={name} className={SOKO_INSERTED_RANKS.includes(i) ? 'font-bold text-ds-accent' : ''}>
                       {i + 1}. {name}

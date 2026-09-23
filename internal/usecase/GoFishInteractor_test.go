@@ -60,6 +60,7 @@ func TestGoFishInteractor_MockGame(t *testing.T) {
 	gfpMock := new(presenter.MockGoFishPresenter)
 	gfpMock.On("Output", mock.Anything, mock.Anything).Return(mockOutput)
 	gfpMock.On("ActionLogOutput", mock.Anything).Return(`{"log":[]}`)
+	gfpMock.On("HintOutput", mock.Anything).Return("hint output")
 
 	gameMock := new(interfaces.MockGoFishGame)
 	gameMock.On("Reset").Return()
@@ -93,6 +94,10 @@ func TestGoFishInteractor_MockGame(t *testing.T) {
 	t.Run("ActionLog returns action log output", func(t *testing.T) {
 		result := gi.ActionLog()
 		assert.Equal(t, `{"log":[]}`, result)
+	})
+	t.Run("Hint returns hint output", func(t *testing.T) {
+		assert.Equal(t, "hint output", gi.Hint())
+		gfpMock.AssertCalled(t, "HintOutput", gameMock)
 	})
 }
 

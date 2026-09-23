@@ -44,6 +44,28 @@ func TestScartoWebPresenter_Output(t *testing.T) {
 	}
 }
 
+func TestScartoWebPresenterOutputsLastTrickWinner(t *testing.T) {
+	g := newScartoGame()
+	g.Reset()
+	g.SetTrickNumber(1)
+	g.SetPhase(domain.ScartoPhaseTrickEnd)
+	g.SetCurrentTrick([]*domain.TrickCard{
+		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignSpade, 13, false)},
+		{PlayerIdx: 1, Card: domain.NewCard(domain.ScartoTrumpDesign, 2, false)},
+		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignSpade, 12, false)},
+	})
+	g.ResolveTrick()
+
+	p := &presenter.ScartoWebPresenter{}
+	var parsed controller.ScartoWebOutput
+	if err := json.Unmarshal([]byte(p.Output(g, nil)), &parsed); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	if parsed.LastTrickWinner != g.GetLastTrickWinner() {
+		t.Errorf("lastTrickWinner = %d, want %d", parsed.LastTrickWinner, g.GetLastTrickWinner())
+	}
+}
+
 // TestScartoWebPresenter_ProceduralFaces asserts a trump serializes with
 // deck:"tarot" + purple, the Excuse with label "Excuse" + gold, and suit cards
 // with the suit colour.
@@ -104,6 +126,23 @@ func TestScartoWebPresenter_Error(t *testing.T) {
 	out := p.Output(g, errors.New("boom"))
 	if !strings.Contains(out, "boom") {
 		t.Errorf("error message not propagated: %s", out)
+	}
+}
+
+func TestScartoWebPresenter_CodedErrorUsesMessageCode(t *testing.T) {
+	g := newScartoGame()
+	g.Reset()
+	p := &presenter.ScartoWebPresenter{}
+	err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "scarto.errCardIndexOutOfRange", nil)
+	var parsed controller.ScartoWebOutput
+	if unmarshalErr := json.Unmarshal([]byte(p.Output(g, err)), &parsed); unmarshalErr != nil {
+		t.Fatalf("unmarshal: %v", unmarshalErr)
+	}
+	if parsed.Message != "" {
+		t.Errorf("message = %q, want empty", parsed.Message)
+	}
+	if parsed.MessageCode != "scarto.errCardIndexOutOfRange" {
+		t.Errorf("messageCode = %q", parsed.MessageCode)
 	}
 }
 

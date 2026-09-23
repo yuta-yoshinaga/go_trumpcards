@@ -1,4 +1,4 @@
-//go:build !js || !wasm || casino
+//go:build !js || !wasm || extra6
 
 // Package domain トゥエンティナイン (Twenty-Nine / 29) のドメインモデル。
 //
@@ -244,18 +244,18 @@ func twentyNineIsValidBid(bid TwentyNineBid) bool {
 // applyBid 入札を記録し、次の入札者へ進める。全員入札したら契約を確定する。
 func (g *TwentyNine) applyBid(idx int, bid TwentyNineBid) error {
 	if !twentyNineIsValidBid(bid) {
-		return NewDomainError(ErrInvalidPlay, "入札値が不正です")
+		return NewDomainErrorCode(ErrInvalidPlay, "twentynine.errInvalidBid", nil)
 	}
 	high, _ := g.highestBid()
 	if bid != TwentyNineBidPass && bid <= high {
-		return NewDomainError(ErrInvalidPlay, "現在の入札を上回る必要があります")
+		return NewDomainErrorCode(ErrInvalidPlay, "twentynine.errBidMustExceed", nil)
 	}
 	g.bids[idx] = bid
 	g.bidDone[idx] = true
 	if bid != TwentyNineBidPass {
-		g.appendLog(idx, "bid", fmt.Sprintf("%s bids %d", playerName(g.players, idx), int(bid)), nil)
+		g.appendLog(idx, "bid", "twentynine.log.bid", map[string]string{"name": playerName(g.players, idx), "bid": fmt.Sprint(int(bid))}, nil)
 	} else {
-		g.appendLog(idx, "bid", fmt.Sprintf("%s passes", playerName(g.players, idx)), nil)
+		g.appendLog(idx, "bid", "twentynine.log.pass", map[string]string{"name": playerName(g.players, idx)}, nil)
 	}
 	for k := 1; k <= TwentyNinePlayerCnt; k++ {
 		ni := (idx + k) % TwentyNinePlayerCnt
@@ -274,7 +274,7 @@ func (g *TwentyNine) resolveBidding() {
 	if idx < 0 || bid == TwentyNineBidPass {
 		g.declarerIdx = -1
 		g.phase = TwentyNinePhaseRoundEnd
-		g.appendLog(-1, "passed_out", "all players passed; round is void", nil)
+		g.appendLog(-1, "passed_out", "twentynine.log.passedOut", nil, nil)
 		return
 	}
 	g.declarerIdx = idx
@@ -282,8 +282,7 @@ func (g *TwentyNine) resolveBidding() {
 	g.trumpSuit = g.longestSuit(idx)
 	g.trumpRevealed = false
 	g.trumpJustRevealed = false
-	g.appendLog(idx, "contract",
-		fmt.Sprintf("%s (team %s) bids %d with a hidden trump", playerName(g.players, idx), twentyNineTeamName(TwentyNineTeamOf(idx)), int(bid)), nil)
+	g.appendLog(idx, "contract", "twentynine.log.contract", map[string]string{"name": playerName(g.players, idx), "team": twentyNineTeamName(TwentyNineTeamOf(idx)), "bid": fmt.Sprint(int(bid))}, nil)
 	g.leadPlayerIdx = idx
 	g.currentPlayerIdx = g.leadPlayerIdx
 	g.phase = TwentyNinePhasePlay
@@ -335,7 +334,7 @@ func (g *TwentyNine) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "twentynine.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
@@ -378,11 +377,11 @@ func (g *TwentyNine) playCard(playerIdx int, card *Card) {
 		if card.GetDesign() != leadSuit {
 			g.trumpRevealed = true
 			g.trumpJustRevealed = true
-			g.appendLog(playerIdx, "reveal_trump", fmt.Sprintf("trump (%d) is revealed", g.trumpSuit), nil)
+			g.appendLog(playerIdx, "reveal_trump", "twentynine.log.revealTrump", map[string]string{"trump": fmt.Sprint(g.trumpSuit)}, nil)
 		}
 	}
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "twentynine.log.play", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(g.currentTrick) == TwentyNinePlayerCnt {
 		g.phase = TwentyNinePhaseTrickEnd
@@ -406,13 +405,14 @@ func (g *TwentyNine) ResolveTrick() {
 	g.players[winnerIdx].AddTrick(trickCards)
 	team := TwentyNineTeamOf(winnerIdx)
 	g.roundTeamPts[team] += pts
-	bonus := ""
+	params := map[string]string{"name": playerName(g.players, winnerIdx), "trick": fmt.Sprint(g.trickNumber), "points": fmt.Sprint(pts)}
 	if g.trickNumber >= TwentyNineTrickCount {
 		g.roundTeamPts[team]++ // 最終トリック +1
-		bonus = " +1 last"
+		params["lastBonus"] = "1"
+		g.appendLog(winnerIdx, "trick_win", "twentynine.log.trickWinLast", params, trickCards)
+	} else {
+		g.appendLog(winnerIdx, "trick_win", "twentynine.log.trickWin", params, trickCards)
 	}
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (+%d%s)", playerName(g.players, winnerIdx), g.trickNumber, pts, bonus), trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= TwentyNineTrickCount {
@@ -447,12 +447,17 @@ func (g *TwentyNine) ScoreRound() {
 		} else {
 			g.teamScores[otherTeam]++
 		}
-		g.appendLog(-1, "round_score",
-			fmt.Sprintf("round %d: team %s bid %d, got %d -> %s",
-				g.roundNumber, twentyNineTeamName(bidTeam), int(g.contract), g.roundTeamPts[bidTeam],
-				map[bool]string{true: "made", false: "set"}[made]), nil)
+		g.appendLog(-1, "round_score", "twentynine.log.roundScore", map[string]string{"round": fmt.Sprint(g.roundNumber), "team": twentyNineTeamName(bidTeam), "bid": fmt.Sprint(int(g.contract)), "points": fmt.Sprint(g.roundTeamPts[bidTeam]), "resultKey": twentyNineOutcomeKey(made)}, nil)
 		g.checkGameEnd()
 	}
+}
+
+// twentyNineOutcomeKey は宣言を達成したかの i18n キーを返す。
+func twentyNineOutcomeKey(made bool) string {
+	if made {
+		return "twentynine.log.result.made"
+	}
+	return "twentynine.log.result.set"
 }
 
 // checkGameEnd 目標ゲーム点到達でマッチ終了を判定する。
@@ -468,8 +473,12 @@ func (g *TwentyNine) checkGameEnd() {
 		g.gameEndFlag = true
 		g.winnerTeam = leader
 		g.phase = TwentyNinePhaseGameEnd
-		g.appendLog(-1, "game_end", fmt.Sprintf("Team %s wins the match!", twentyNineTeamName(leader)), nil)
+		g.appendLog(-1, "game_end", "twentynine.log.gameEnd", map[string]string{"team": twentyNineTeamName(leader)}, nil)
 	}
+}
+
+func (g *TwentyNine) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- Trick / play helpers ---

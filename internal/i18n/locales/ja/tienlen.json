@@ -13,7 +13,6 @@
   "tableEmpty": "場: なし (自由に出せます)",
   "gameEnd": "ゲーム終了！",
   "rankN": "{{rank}}位",
-  "playerYou": "あなた",
   "yourTurn": "あなたのターンです",
   "comboRulesHint": "役: 連番>3カード>ペア>シングル。場と同じ枚数・同じ種類で、より強いランクのみ出せます（連番は同枚数で最高ランク比較）。",
   "actionPass": "パス",
@@ -25,5 +24,8 @@
   "comboThreePairRun": "3連ペア",
   "comboFourOfAKind": "フォーカード",
   "comboInvalid": "不明",
-  "helpLog": "  l                    行動ログを表示"
+  "helpLog": "  l                    行動ログを表示",
+  "log.pass": "パス",
+  "log.play": "{{count}}枚のカードを出しました",
+  "log.finish": "プレイヤー{{player}}が{{rank}}位で上がりました"
 }

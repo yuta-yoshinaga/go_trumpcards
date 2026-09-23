@@ -126,6 +126,17 @@ func TestSchnapsenWebPresenter_Output_Error(t *testing.T) {
 	assert.Equal(t, "boom", out.Message)
 }
 
+func TestSchnapsenWebPresenter_Output_CodedError(t *testing.T) {
+	p := new(presenter.SchnapsenWebPresenter)
+	m, _ := setupSchnapsenWebMockWithPlayers(nil)
+	err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "schnapsen.errMarriageUnavailable", nil)
+	got := p.Output(m, err)
+	var out controller.SchnapsenWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(got), &out))
+	assert.Empty(t, out.Message)
+	assert.Equal(t, "schnapsen.errMarriageUnavailable", out.MessageCode)
+}
+
 func TestSchnapsenWebPresenter_HintOutput(t *testing.T) {
 	p := new(presenter.SchnapsenWebPresenter)
 	trump := domain.NewCard(domain.CardDesignSpade, 13, false)

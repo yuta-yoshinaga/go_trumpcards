@@ -1,7 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import i18n from 'i18next';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { actionLogApi, blackjackApi } from '../api/gameApi';
+import { actionLogApi, blackjackApi, doubleexposureApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -10,10 +10,12 @@ import { BlackJackPage } from './BlackJackPage';
 
 vi.mock('../api/gameApi', () => ({
   blackjackApi: { exec: vi.fn() },
+  doubleexposureApi: { exec: vi.fn() },
   actionLogApi: { blackjack: vi.fn() },
 }));
 
 const mockExec = vi.mocked(blackjackApi.exec);
+const mockDoubleExposureExec = vi.mocked(doubleexposureApi.exec);
 
 const betPhaseState: BlackJackResponse = {
   dealer: { chips: 1000 },
@@ -159,6 +161,7 @@ const endPhaseState: BlackJackResponse = {
 
 beforeEach(() => {
   mockExec.mockResolvedValue(betPhaseState);
+  mockDoubleExposureExec.mockResolvedValue(betPhaseState);
 });
 
 describe('BlackJackPage', () => {
@@ -357,6 +360,19 @@ describe('BlackJackPage', () => {
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
     expect(screen.queryByText('ディーラー手札')).not.toBeInTheDocument();
+  });
+
+  it('shows the Double Exposure payout rows without blackjack odds or insurance', async () => {
+    renderWithProviders(<BlackJackPage variant="doubleexposure" />);
+    await waitFor(() => expect(screen.getByText('ブラックジャック (1:1、イーブンマネー)')).toBeInTheDocument());
+    expect(screen.queryByText(/3:2/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/インシュランス \(2:1\)/)).not.toBeInTheDocument();
+  });
+
+  it('keeps the standard blackjack payout rows', async () => {
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(screen.getByText('ブラックジャック (3:2)')).toBeInTheDocument());
+    expect(screen.getByText('インシュランス (2:1)')).toBeInTheDocument();
   });
 
   it('does not expand card area with flex-1 during bet phase', async () => {
@@ -1739,6 +1755,56 @@ describe('Side Bets display', () => {
     await waitFor(() => {
       expect(screen.queryByTestId('side-bet-info-pp')).not.toBeInTheDocument();
       expect(screen.queryByTestId('side-bet-info-t3')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('payout ref side-bet rows', () => {
+    it('shows Perfect Pairs payout values (6/12/25) in the payout table during bet phase', async () => {
+      renderWithProviders(<BlackJackPage />);
+      // Open the <details> so the list is rendered
+      const summary = await screen.findByText('配当表');
+      fireEvent.click(summary);
+      // The row must contain all three multipliers
+      const list = await screen.findByTestId('bj-payout-ref-list');
+      expect(list.textContent).toContain('6');
+      expect(list.textContent).toContain('12');
+      expect(list.textContent).toContain('25');
+      expect(list.textContent).toContain('パーフェクトペア');
+    });
+
+    it('shows 21+3 payout values (5/10/30/40/100) in the payout table during bet phase', async () => {
+      renderWithProviders(<BlackJackPage />);
+      const summary = await screen.findByText('配当表');
+      fireEvent.click(summary);
+      const list = await screen.findByTestId('bj-payout-ref-list');
+      expect(list.textContent).toContain('5');
+      expect(list.textContent).toContain('10');
+      expect(list.textContent).toContain('30');
+      expect(list.textContent).toContain('40');
+      expect(list.textContent).toContain('100');
+      expect(list.textContent).toContain('ポーカー役ベット');
+    });
+
+    it('does not show raw i18n key in the payout table (i18n is resolving)', async () => {
+      renderWithProviders(<BlackJackPage />);
+      const summary = await screen.findByText('配当表');
+      fireEvent.click(summary);
+      // Wait for payout ref content to be rendered
+      const list = await screen.findByTestId('bj-payout-ref-list');
+      expect(list.textContent).toContain('パーフェクトペア');
+      expect(list.textContent).not.toContain('payoutRef.perfectPairs');
+      expect(list.textContent).not.toContain('payoutRef.twentyOnePlus3');
+    });
+
+    it('shows side-bet payout rows even when perfectPairsBet and twentyOnePlus3Bet are 0', async () => {
+      // betPhaseState already has both at 0
+      mockExec.mockResolvedValue({ ...betPhaseState, perfectPairsBet: 0, twentyOnePlus3Bet: 0 });
+      renderWithProviders(<BlackJackPage />);
+      const summary = await screen.findByText('配当表');
+      fireEvent.click(summary);
+      const list = await screen.findByTestId('bj-payout-ref-list');
+      expect(list.textContent).toContain('パーフェクトペア');
+      expect(list.textContent).toContain('ポーカー役ベット');
     });
   });
 });

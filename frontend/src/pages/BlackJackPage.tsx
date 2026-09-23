@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import type { BlackJackBetOptions, BlackJackConfigInput } from '../api/gameApi';
-import { blackjackApi, spanish21Api } from '../api/gameApi';
+import { blackjackApi, doubleexposureApi, spanish21Api } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { BjActionPhaseControls } from '../components/blackjack/BjActionPhaseControls';
@@ -47,6 +47,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { BlackJackResponse } from '../types/card';
 import { BjPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { BLACKJACK_SIDE_BET_PAYOUTS } from '../utils/blackjackSideBetPayouts';
 import { BLACKJACK_HELP, parseBlackjackCommand } from '../utils/cli/commands/blackjackCommands';
 import { formatBlackjackState } from '../utils/cli/formatters/blackjackFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -158,8 +159,8 @@ const SPANISH21_TUTORIAL_STEPS: TutorialStep[] = [
   BJ_TUTORIAL_STEPS[6], // reset button
 ];
 
-/** Variant identifier shared by BlackJack and Spanish 21 (which reuses this page). */
-export type BlackJackVariant = 'blackjack' | 'spanish21';
+/** Variant identifier shared by BlackJack and its registered variants. */
+export type BlackJackVariant = 'blackjack' | 'spanish21' | 'doubleexposure';
 
 /** Props for {@link BlackJackPage}. */
 export interface BlackJackPageProps {
@@ -179,10 +180,13 @@ export function BlackJackPage({ variant = 'blackjack' }: BlackJackPageProps) {
 
 /** Inner content of the BlackJack page, wrapped by TutorialProvider. */
 function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
-  const apiClient = variant === 'spanish21' ? spanish21Api : blackjackApi;
-  const gamePath = variant === 'spanish21' ? '/spanish21' : '/';
-  const navTitleKey = variant === 'spanish21' ? 'nav.spanish21' : 'nav.blackjack';
-  const themeKey: 'blackjack' | 'spanish21' = variant === 'spanish21' ? 'spanish21' : 'blackjack';
+  const apiClient =
+    variant === 'spanish21' ? spanish21Api : variant === 'doubleexposure' ? doubleexposureApi : blackjackApi;
+  const gamePath = variant === 'spanish21' ? '/spanish21' : variant === 'doubleexposure' ? '/doubleexposure' : '/';
+  const navTitleKey =
+    variant === 'spanish21' ? 'nav.spanish21' : variant === 'doubleexposure' ? 'nav.doubleexposure' : 'nav.blackjack';
+  const themeKey: 'blackjack' | 'spanish21' | 'doubleexposure' =
+    variant === 'spanish21' ? 'spanish21' : variant === 'doubleexposure' ? 'doubleexposure' : 'blackjack';
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup(variant);
   const phaseNames = usePhaseNames(variant, BJ_PHASE_KEYS);
@@ -397,7 +401,7 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
                   <summary className="cursor-pointer select-none px-4 py-2 text-ds-text-primary font-bold text-sm">
                     {t('payoutRef.title')}
                   </summary>
-                  <ul className="text-ds-text-muted text-sm space-y-1 px-4 pb-3">
+                  <ul data-testid="bj-payout-ref-list" className="text-ds-text-muted text-sm space-y-1 px-4 pb-3">
                     {(variant === 'spanish21'
                       ? ([
                           'blackjack',
@@ -412,10 +416,28 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
                           'bonus678',
                           'bonus777',
                         ] as const)
-                      : (['blackjack', 'win', 'insurance', 'push', 'surrender', 'bust'] as const)
+                      : variant === 'doubleexposure'
+                        ? (['blackjack', 'win', 'push', 'surrender', 'bust'] as const)
+                        : (['blackjack', 'win', 'insurance', 'push', 'surrender', 'bust'] as const)
                     ).map((key) => (
                       <li key={key}>{t(`payoutRef.${key}`)}</li>
                     ))}
+                    <li>
+                      {t('payoutRef.perfectPairs', {
+                        mixed: BLACKJACK_SIDE_BET_PAYOUTS.perfectPairs.mixed,
+                        colored: BLACKJACK_SIDE_BET_PAYOUTS.perfectPairs.colored,
+                        perfect: BLACKJACK_SIDE_BET_PAYOUTS.perfectPairs.perfect,
+                      })}
+                    </li>
+                    <li>
+                      {t('payoutRef.twentyOnePlus3', {
+                        flush: BLACKJACK_SIDE_BET_PAYOUTS.twentyOnePlus3.flush,
+                        straight: BLACKJACK_SIDE_BET_PAYOUTS.twentyOnePlus3.straight,
+                        trips: BLACKJACK_SIDE_BET_PAYOUTS.twentyOnePlus3.trips,
+                        straightFlush: BLACKJACK_SIDE_BET_PAYOUTS.twentyOnePlus3.straightFlush,
+                        suitedTrips: BLACKJACK_SIDE_BET_PAYOUTS.twentyOnePlus3.suitedTrips,
+                      })}
+                    </li>
                   </ul>
                 </details>
               </div>

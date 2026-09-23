@@ -101,6 +101,13 @@ func TestCurdsAndWhey_MoveSingleAndRun(t *testing.T) {
 	if len(g.columns[0]) != 4 {
 		t.Errorf("col0 = %d, want 4", len(g.columns[0]))
 	}
+	entries := g.GetActionLog()
+	if len(entries) == 0 || entries[len(entries)-1].DetailCode != "curdsandwhey.log.move" {
+		t.Fatalf("move log = %#v, want code and empty detail", entries)
+	}
+	if entries[len(entries)-1].DetailParams["from"] != "2" || entries[len(entries)-1].DetailParams["index"] != "0" || entries[len(entries)-1].DetailParams["to"] != "0" {
+		t.Fatalf("move params = %#v", entries[len(entries)-1].DetailParams)
+	}
 }
 
 func TestCurdsAndWhey_IllegalMoves(t *testing.T) {

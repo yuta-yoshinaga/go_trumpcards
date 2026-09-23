@@ -145,6 +145,11 @@ function DehlaPakadPageContent() {
   const isGameEnd = state.phase === DehlaPakadPhase.GAME_END || state.gameEndFlag;
   const canPlay = isPlayPhase && isHumanTurn;
   const canCallTrump = isTrumpPhase && isHumanTurn;
+  const trumpSuitDesigns = ['SPADE', 'CLOVER', 'HEART', 'DIAMOND'] as const;
+  const trumpSuitCounts = DEHLA_PAKAD_SUITS.map(
+    (suit) => humanPlayer?.cards.filter((card) => card.design === trumpSuitDesigns[suit.value - 1]).length ?? 0,
+  );
+  const trumpGlyphs = ['♠', '♣', '♥', '♦'];
 
   const handValidIndices = canPlay ? state.playableIndices : undefined;
   const tens = state.teamTens ?? [];
@@ -285,6 +290,14 @@ function DehlaPakadPageContent() {
                 {canCallTrump && (
                   <div className="mb-2 p-2 rounded bg-black/30" data-testid="dehlapakad-trump-choices">
                     <div className="text-ds-text-primary text-sm mb-1">{t('callTrump')}</div>
+                    <div className="flex flex-wrap gap-3 mb-2" data-testid="dehlapakad-trump-breakdown">
+                      {DEHLA_PAKAD_SUITS.map((suit, i) => (
+                        <span role="img" key={suit.value} aria-label={`${t(`suit.${suit.key}`)} ${trumpSuitCounts[i]}`}>
+                          {trumpGlyphs[i]}
+                          {trumpSuitCounts[i]}
+                        </span>
+                      ))}
+                    </div>
                     <div className="flex flex-wrap gap-2">
                       {DEHLA_PAKAD_SUITS.map((s) => (
                         <button

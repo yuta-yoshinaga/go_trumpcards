@@ -1,4 +1,9 @@
 {
+  "errDiscardPileEmpty": "捨て札がありません",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errKnockDeadwoodTooHigh": "デッドウッドが{{threshold}}点以下でないとノックできません（現在{{deadwood}}点）",
+  "errDuplicateCardIndex": "カードインデックスが重複しています",
+  "errLayoffCardCannotAdd": "{{card}}はレイオフできません",
   "helpTitle": "Chinchón (チンチョン)",
   "helpDrawStock": "  ds                   山札から引く",
   "helpDrawDiscard": "  dd                   捨て札から引く",
@@ -39,5 +44,16 @@
   "deadwoodLine": "デッドウッド: {{value}}点 (ノック閾値 {{threshold}}点以下)",
   "knockReady": "→ ノック可能",
   "helpExampleDraw": "  ds                   手番の最初に山札から 1 枚引く",
-  "helpExampleDiscard": "  d 0                  手札の 0 番を捨てる"
+  "helpExampleDiscard": "  d 0                  手札の 0 番を捨てる",
+  "log.drawStock": "{{name}}が山札から引いた",
+  "log.drawDiscard": "{{name}}が捨て札から{{card}}を引いた",
+  "log.discard": "{{name}}が{{card}}を捨てた",
+  "log.knock": "{{name}}がノック (デッドウッド: {{deadwood}})",
+  "log.layoff": "{{name}}が{{card}}をレイオフ",
+  "log.score": "{{name}}が{{score}}点 (合計{{total}}点)",
+  "log.eliminate": "{{name}}が脱落 ({{score}}点)",
+  "log.draw": "山札切れでラウンド終了",
+  "log.chinchon": "{{name}}がチンチョンを宣言してゲームに勝利！",
+  "log.gameEnd": "{{name}}がマッチに勝利！",
+  "log.gameEndNoSurvivor": "生存者なしでマッチ終了"
 }

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // CribbageSquaresPhase はクリベッジ・スクエアズのフェーズを表す。
@@ -139,13 +140,13 @@ func (c *CribbageSquares) Place(row, col int) error {
 	placed := c.currentCard
 	c.board[row][col] = placed
 	c.placedCount++
-	c.appendLog("place", fmt.Sprintf("(%d,%d) に配置", row, col), []*Card{placed})
+	c.appendLog("place", "cribbagesquares.log.place", map[string]string{"row": strconv.Itoa(row), "col": strconv.Itoa(col)}, []*Card{placed})
 	if c.placedCount >= CribbageSquaresTotalCells {
 		c.currentCard = nil
 		// スターターは最後にめくる。ここまで手札の 5 枚目は誰にも分からない。
 		c.starter = c.trumpCards.DrawCard()
 		c.phase = CribbageSquaresPhaseComplete
-		c.appendLog("starter", "スターターをめくった", []*Card{c.starter})
+		c.appendLog("starter", "cribbagesquares.log.starter", nil, []*Card{c.starter})
 	} else {
 		c.currentCard = c.trumpCards.DrawCard()
 	}
@@ -186,7 +187,7 @@ func (c *CribbageSquares) GiveUp() {
 	if c.phase == CribbageSquaresPhasePlaying {
 		c.phase = CribbageSquaresPhaseComplete
 		c.currentCard = nil
-		c.appendLog("giveup", "ギブアップしました", nil)
+		c.appendLog("giveup", "cribbagesquares.log.giveUp", nil, nil)
 	}
 }
 
@@ -425,13 +426,14 @@ func (c *CribbageSquares) takeSnapshot() {
 }
 
 // appendLog は棋譜エントリを追加する。
-func (c *CribbageSquares) appendLog(actionType, detail string, cards []*Card) {
+func (c *CribbageSquares) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	c.actionLog = append(c.actionLog, &ActionLogEntry{
-		TurnNumber: c.placedCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
+		TurnNumber:   c.placedCount,
+		PlayerIdx:    0,
+		ActionType:   actionType,
+		DetailCode:   detailCode,
+		DetailParams: detailParams,
+		Cards:        cards,
 	})
 }
 

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // Badugi game phase constants.
@@ -231,7 +232,7 @@ func (b *Badugi) collectAntes() {
 		}
 		pl.SubtractChips(ante)
 		b.round.pot += ante
-		b.appendLog(i, "ante", fmt.Sprintf("ante %d chips", ante), nil)
+		b.appendLog(i, "ante", "badugi.log.ante", map[string]string{"amount": strconv.Itoa(ante)}, nil)
 	}
 }
 
@@ -330,8 +331,7 @@ func (b *Badugi) applyExchange(playerIdx int, indices []int) {
 	b.muck = append(b.muck, pending...)
 	pl.SetDrawCount(drawn)
 	pl.AddToTotalDrawCount(drawn)
-	b.appendLog(playerIdx, "exchange",
-		fmt.Sprintf("draw %d: exchange %d card(s)", b.round.drawIndex, drawn), nil)
+	b.appendLog(playerIdx, "exchange", "badugi.log.exchange", map[string]string{"draw": strconv.Itoa(b.round.drawIndex), "count": strconv.Itoa(drawn)}, nil)
 }
 
 // drawOrRecycleMuck は山から 1 枚引く。山が尽きていたら捨て札を切り直して
@@ -552,7 +552,7 @@ func (b *Badugi) resolveShowdown() {
 			for j := 0; j < pl.GetCardsSize(); j++ {
 				cards[j] = pl.GetCard(j)
 			}
-			b.appendLog(i, "showdown", fmt.Sprintf("showdown: %s", pl.GetHandName()), cards)
+			b.appendLog(i, "showdown", "badugi.log.showdown", map[string]string{"handKey": badugiHandLogKey(pl.GetHandRank())}, cards)
 		}
 	}
 
@@ -886,6 +886,22 @@ func (b *Badugi) SetConfig(cfg BadugiConfig) { b.config = cfg }
 // GetLastCpuError returns the most recent CPU fallback error (test/debug).
 func (b *Badugi) GetLastCpuError() error { return b.round.lastCpuError }
 
+// badugiHandLogKey はバドゥーギの手札枚数をログ用の翻訳キーに変換する。
+func badugiHandLogKey(size int) string {
+	switch size {
+	case 1:
+		return "badugi.handRank1"
+	case 2:
+		return "badugi.handRank2"
+	case 3:
+		return "badugi.handRank3"
+	case 4:
+		return "badugi.handRank4"
+	default:
+		return "badugi.handRankUnknown"
+	}
+}
+
 // GetHumanProfile returns the meta-AI profile (may be nil).
 func (b *Badugi) GetHumanProfile() *BettingHumanProfile { return b.humanProfile }
 
@@ -914,24 +930,24 @@ func (b *Badugi) ImportProfile(data []byte) error {
 // GetActionLog returns the chronological action log for this hand.
 func (b *Badugi) GetActionLog() []*ActionLogEntry { return b.round.actionLog }
 
-func (b *Badugi) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	b.round.appendLog(playerIdx, actionType, detail, cards)
+func (b *Badugi) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	b.round.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 func (b *Badugi) logBettingAction(playerIdx, action, _ int) {
 	switch action {
 	case BadugiActionFold:
-		b.appendLog(playerIdx, "fold", "fold", nil)
+		b.appendLog(playerIdx, "fold", "badugi.log.fold", nil, nil)
 	case BadugiActionCheck:
-		b.appendLog(playerIdx, "check", "check", nil)
+		b.appendLog(playerIdx, "check", "badugi.log.check", nil, nil)
 	case BadugiActionCall:
-		b.appendLog(playerIdx, "call", fmt.Sprintf("call %d", b.players[playerIdx].GetCurrentBet()), nil)
+		b.appendLog(playerIdx, "call", "badugi.log.call", map[string]string{"amount": strconv.Itoa(b.players[playerIdx].GetCurrentBet())}, nil)
 	case BadugiActionBet:
-		b.appendLog(playerIdx, "bet", fmt.Sprintf("bet %d", b.players[playerIdx].GetCurrentBet()), nil)
+		b.appendLog(playerIdx, "bet", "badugi.log.bet", map[string]string{"amount": strconv.Itoa(b.players[playerIdx].GetCurrentBet())}, nil)
 	case BadugiActionRaise:
-		b.appendLog(playerIdx, "raise", fmt.Sprintf("raise to %d", b.players[playerIdx].GetCurrentBet()), nil)
+		b.appendLog(playerIdx, "raise", "badugi.log.raise", map[string]string{"amount": strconv.Itoa(b.players[playerIdx].GetCurrentBet())}, nil)
 	case BadugiActionAllIn:
-		b.appendLog(playerIdx, "allin", fmt.Sprintf("all in %d", b.players[playerIdx].GetCurrentBet()), nil)
+		b.appendLog(playerIdx, "allin", "badugi.log.allIn", map[string]string{"amount": strconv.Itoa(b.players[playerIdx].GetCurrentBet())}, nil)
 	}
 }
 

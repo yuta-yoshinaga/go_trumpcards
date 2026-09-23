@@ -52,6 +52,8 @@ const bidPhaseHumanTurn: SkatResponse = {
   gameValue: 0,
   gameEndFlag: false,
   leadPlayerIdx: -1,
+  playableIndices: [],
+  trumpIndices: [],
   message: '',
   config: { cpuDifficulty: 1, targetScore: 500 },
 };
@@ -109,6 +111,8 @@ const playPhaseHumanTurn: SkatResponse = {
   currentBid: 18,
   gameType: SkatGameType.SUIT,
   trumpSuit: 1, // Spade
+  playableIndices: [0, 1],
+  trumpIndices: [0],
   players: [
     {
       ...basePlayer(0, true),
@@ -126,6 +130,12 @@ const playPhaseHumanTurn: SkatResponse = {
 const playPhaseCpuTurn: SkatResponse = {
   ...playPhaseHumanTurn,
   currentPlayerIdx: 1,
+};
+
+const playPhaseRestricted: SkatResponse = {
+  ...playPhaseHumanTurn,
+  playableIndices: [0],
+  trumpIndices: [0],
 };
 
 const trickEndPhase: SkatResponse = {
@@ -528,6 +538,20 @@ describe('SkatPage', () => {
     mockExec.mockResolvedValue(playPhaseCpuTurn);
     fireEvent.click(screen.getByRole('button', { name: 'カードを出す' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0 }));
+  });
+
+  it('dims illegal cards and marks domain-provided trumps', async () => {
+    mockExec.mockResolvedValue(playPhaseRestricted);
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/skat']}>
+        <SkatPage />
+      </MemoryRouter>,
+    );
+    const heart = await screen.findByAltText('♥ K');
+    const heartButton = heart.closest('button') as HTMLButtonElement;
+    expect(heartButton).toHaveAttribute('aria-disabled', 'true');
+    expect(heartButton).not.toHaveAttribute('data-trump');
+    expect(screen.getByAltText('♠ A').closest('button')).toHaveAttribute('data-trump', 'true');
   });
 
   it('hides play button when CPU is on turn', async () => {

@@ -160,6 +160,7 @@ const talonPhaseState = makeKoenigrufenState({
 const trickEndState = makeKoenigrufenState({
   phase: 4,
   isHumanTurn: false,
+  lastTrickWinner: 1,
   currentTrick: [
     { playerIdx: 0, card: suit(7, 'HEART', '♥', 'Q') },
     { playerIdx: 1, card: suit(8, 'CLOVER', '♣', 'K') },
@@ -244,6 +245,18 @@ beforeEach(() => {
 });
 
 describe('KoenigrufenPage', () => {
+  it('shows declarer-side team points in the round result', async () => {
+    mockExec.mockResolvedValue(
+      makeKoenigrufenState({
+        phase: 5,
+        outcome: 1,
+        teamPoints: 70,
+        players: makeKoenigrufenState().players.map((p, i) => (i === 0 ? { ...p, cardPoints: 20 } : p)),
+      }),
+    );
+    renderWithProviders(<KoenigrufenPage />);
+    await waitFor(() => expect(screen.getByTestId('koenigrufen-result')).toHaveTextContent('宣言者側の獲得点: 70 点'));
+  });
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<KoenigrufenPage />);
@@ -381,6 +394,20 @@ describe('KoenigrufenPage', () => {
     mockExec.mockResolvedValue(trickEndState);
     renderWithProviders(<KoenigrufenPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
+    expect(screen.getByTestId('trick-winner-badge')).toHaveTextContent('CPU 1 が獲得');
+  });
+
+  it('does not render a winner badge while a trick is in progress', async () => {
+    mockExec.mockResolvedValue(
+      makeKoenigrufenState({
+        phase: 3,
+        lastTrickWinner: 1,
+        currentTrick: [{ playerIdx: 1, card: suit(7, 'HEART', '♥', 'Q') }],
+      }),
+    );
+    renderWithProviders(<KoenigrufenPage />);
+    await waitFor(() => expect(screen.getByTestId('trick-display-cards')).toBeInTheDocument());
+    expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument();
   });
 
   it('renders round end with the next deal button, the deal result, and the revealed partner', async () => {

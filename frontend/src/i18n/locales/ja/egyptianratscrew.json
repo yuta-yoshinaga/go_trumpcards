@@ -37,11 +37,13 @@
     "burst": {
       "pair": "ペア！",
       "sandwich": "サンドイッチ！",
-      "miss": "ミス！"
+      "miss": "ミス！",
+      "chanceWin": "チャンス勝ち！"
     },
     "slapAnnounce": {
       "correct": "{{player}}がスラップ成功（{{reason}}）",
-      "wrong": "{{player}}がスラップ失敗"
+      "wrong": "{{player}}がスラップ失敗",
+      "chanceWin": "{{player}}がチャンス勝ちで山札を総取り"
     }
   },
   "hint": {

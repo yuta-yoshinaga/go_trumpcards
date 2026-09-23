@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { bigOHiLoApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { BettingControls } from '../components/BettingControls';
 import { BoardLowBadge } from '../components/BoardLowBadge';
 import { CpuAccordion } from '../components/CpuAccordion';
@@ -35,6 +36,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { valueName } from '../utils/cardUtils';
 import { OMAHA_HELP, parseOmahaCommand } from '../utils/cli/commands/omahaCommands';
 import { formatOmahaState } from '../utils/cli/formatters/omahaFormatter';
+import { omahaLivePreviewKey } from '../utils/livePokerPreview';
 import { omahaBestFive } from '../utils/omahaBestFive';
 import { hiLoRingStyle } from '../utils/omahaHiLoRing';
 import { lowCardIndexSets } from '../utils/omahaLowCards';
@@ -137,6 +139,7 @@ function BigOHiLoPageContent() {
     handleCommand,
     handleManualReset,
     phase,
+    isActive,
     isShowdown,
     humanPlayer,
     canAct,
@@ -147,6 +150,7 @@ function BigOHiLoPageContent() {
     isAddonPhase,
     humanRebuyCount,
     cpuPlayers,
+    actionBindings,
   } = useCommunityPokerGame({
     game: 'bigohilo',
     exec: bigOHiLoApi.exec,
@@ -168,6 +172,15 @@ function BigOHiLoPageContent() {
     ? state?.roundResults?.find((r) => r.playerIdx === humanPlayer?.id)?.lowBestHand
     : undefined;
   const lowSets = lowCardIndexSets(humanLowBestHand, humanPlayer?.cards ?? [], state?.communityCards ?? []);
+  // Preview the Hi hand the player currently holds under the must-use-exactly-2
+  // rule. Big O deals five hole cards — ten pairings to weigh by eye — and Hi-Lo
+  // asks for a second read of the same ten, so this is the variant where the
+  // preview is worth the most. The other three Omaha pages already had it; this
+  // one was the straggler (#7142).
+  const liveBestHandKey = useMemo(
+    () => omahaLivePreviewKey(humanPlayer, state?.communityCards ?? [], { isActive, isShowdown }),
+    [isActive, isShowdown, humanPlayer, state?.communityCards],
+  );
 
   if (!state)
     return (
@@ -445,6 +458,17 @@ function BigOHiLoPageContent() {
                   <span aria-hidden="true">🎯</span>
                   {t('mandatoryRule')}
                 </div>
+                {liveBestHandKey && (
+                  <div className="mb-1" data-testid="bigohilo-live-besthand">
+                    <span className="text-ds-text-primary text-xs">{t('livePreview')}</span>
+                    <span
+                      className={`inline-block ml-1.5 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}
+                      data-testid="bigohilo-live-besthand-name"
+                    >
+                      {t(`hand.${liveBestHandKey}`)}
+                    </span>
+                  </div>
+                )}
                 <div className="flex flex-wrap gap-1.5 mb-2" data-tutorial="bohl-combination-rule">
                   {humanPlayer.cards?.length
                     ? humanPlayer.cards.map((card, idx) => {
@@ -630,6 +654,7 @@ function BigOHiLoPageContent() {
               dataTutorial="bohl-reset-button"
               className="min-w-[90px]"
             />
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="bigohilo-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

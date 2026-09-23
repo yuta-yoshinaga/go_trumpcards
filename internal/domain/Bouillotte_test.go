@@ -24,6 +24,14 @@ func bouillotteSetHand(p *domain.BouillottePlayer, cards ...*domain.Card) {
 	}
 }
 
+func TestBouillotteActionLogUsesDetailCode(t *testing.T) {
+	g := domain.NewDefaultBouillotte()
+	g.Reset()
+	entry := g.GetActionLog()[0]
+	assert.Equal(t, "bouillotte.log.deal", entry.DetailCode)
+	assert.NotEmpty(t, entry.DetailParams["round"])
+}
+
 // bouillotteEval3 は 3 枚 + retourne を評価するショートカット。
 func bouillotteEval3(retourne *domain.Card, cards ...*domain.Card) (int, []int) {
 	return domain.BouillotteEval(cards, retourne)
@@ -439,4 +447,22 @@ func TestBouillotte_UnmarshalDefaults(t *testing.T) {
 	require.NoError(t, json.Unmarshal([]byte(`{"cf":{"pc":3,"an":10,"sc":200,"tr":10},"ps":[{"ch":200},{"ch":200},{"ch":200}],"ph":0,"rn":1}`), &g))
 	assert.Equal(t, 3, g.GetPlayerCnt())
 	assert.NotNil(t, g.GetActionLog())
+}
+
+// TestBouillotte_GetTargetRounds は getter が設定値をそのまま返すことを固定する。
+// 画面 (Web の情報行と CUI の roundLine) はここからマッチの長さを読むので、
+// 既定値を返すだけの実装だと「設定したのに表示が変わらない」になる。
+func TestBouillotte_GetTargetRounds(t *testing.T) {
+	g := domain.NewDefaultBouillotte()
+	assert.Equal(t, g.GetConfig().TargetRounds, g.GetTargetRounds(), "既定では設定値と一致する")
+
+	// 既定と違う値に変えて追従することを見る。1 値だけだと定数を返す実装でも通る。
+	cfg := g.GetConfig()
+	cfg.TargetRounds = domain.BouillotteMinTargetRounds
+	g.SetConfig(cfg)
+	assert.Equal(t, domain.BouillotteMinTargetRounds, g.GetTargetRounds())
+
+	cfg.TargetRounds = domain.BouillotteMaxTargetRounds
+	g.SetConfig(cfg)
+	assert.Equal(t, domain.BouillotteMaxTargetRounds, g.GetTargetRounds())
 }

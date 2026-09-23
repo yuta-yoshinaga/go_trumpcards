@@ -38,25 +38,21 @@ type IndianRummyWebOutputPlayer struct {
 
 // IndianRummyWebOutput インドラミー Web アウトプット
 type IndianRummyWebOutput struct {
-	Players []*IndianRummyWebOutputPlayer `json:"players"`
-	// HumanDeadwood は人間の手札のデッドウッド採点値、HumanHasPureSequence は
-	// 必須のピュアシーケンスを満たしているか。CUI は毎ターン出しているのに Web は
-	// 狭い条件でしか出していなかった (#4824)。
-	HumanDeadwood        int            `json:"humanDeadwood"`
-	HumanHasPureSequence bool           `json:"humanHasPureSequence"`
-	Phase                int            `json:"phase"`
-	RoundNumber          int            `json:"roundNumber"`
-	TargetRounds         int            `json:"targetRounds"`
-	CurrentPlayerIdx     int            `json:"currentPlayerIdx"`
-	DealerIdx            int            `json:"dealerIdx"`
-	DiscardTop           *WebOutputCard `json:"discardTop"`
-	DrawPileCount        int            `json:"drawPileCount"`
-	WildJoker            *WebOutputCard `json:"wildJoker"`
-	WildRank             int            `json:"wildRank"`
-	GameEndFlag          bool           `json:"gameEndFlag"`
-	WinnerIdx            int            `json:"winnerIdx"`
-	DeclarerIdx          int            `json:"declarerIdx"`
-	DeclarationValid     bool           `json:"declarationValid"`
+	Players            []*IndianRummyWebOutputPlayer `json:"players"`
+	DeclarableDiscards []int                         `json:"declarableDiscards"`
+	Phase              int                           `json:"phase"`
+	RoundNumber        int                           `json:"roundNumber"`
+	TargetRounds       int                           `json:"targetRounds"`
+	CurrentPlayerIdx   int                           `json:"currentPlayerIdx"`
+	DealerIdx          int                           `json:"dealerIdx"`
+	DiscardTop         *WebOutputCard                `json:"discardTop"`
+	DrawPileCount      int                           `json:"drawPileCount"`
+	WildJoker          *WebOutputCard                `json:"wildJoker"`
+	WildRank           int                           `json:"wildRank"`
+	GameEndFlag        bool                          `json:"gameEndFlag"`
+	WinnerIdx          int                           `json:"winnerIdx"`
+	DeclarerIdx        int                           `json:"declarerIdx"`
+	DeclarationValid   bool                          `json:"declarationValid"`
 	WebOutputBase
 	Config IndianRummyWebOutputConfig `json:"config"`
 }
@@ -97,10 +93,11 @@ var NewIndianRummyWebController, NewIndianRummyWebControllerWithProvider = webCo
 
 func newIndianRummyDefaultOutput(msg string) *IndianRummyWebOutput {
 	return &IndianRummyWebOutput{
-		Players:       make([]*IndianRummyWebOutputPlayer, 0),
-		WinnerIdx:     -1,
-		DeclarerIdx:   -1,
-		WebOutputBase: WebOutputBase{Message: msg},
+		Players:            make([]*IndianRummyWebOutputPlayer, 0),
+		DeclarableDiscards: make([]int, 0),
+		WinnerIdx:          -1,
+		DeclarerIdx:        -1,
+		WebOutputBase:      WebOutputBase{Message: msg},
 	}
 }
 
@@ -125,7 +122,7 @@ func indianRummyDispatch(bc *baseController, w http.ResponseWriter, ci usecase.I
 	case "nr", "nextround":
 		bc.writePresenterResponse(w, ci.NextRound())
 	default:
-		return dispatchLog(param.Command, bc, w, ci.ActionLog)
+		return dispatchHintAndLog(param.Command, bc, w, ci.Hint, ci.ActionLog)
 	}
 	return true
 }

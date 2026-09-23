@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // HoneymoonBridgePhase はハネムーンブリッジのゲームフェーズ。
@@ -68,13 +69,15 @@ const honeymoonBridgeMaxSliceLen = 1000
 // **後半がブリッジ。** 手札が確定してから競り、契約を決めて 13 トリックを
 // 打ちます。
 type HoneymoonBridge struct {
-	players     []*HoneymoonBridgePlayer
-	config      HoneymoonBridgeConfig
-	phase       HoneymoonBridgePhase
-	trumpCards  *TrumpCards
-	stock       []*Card
-	roundNumber int
-	trickNumber int
+	players    []*HoneymoonBridgePlayer
+	config     HoneymoonBridgeConfig
+	phase      HoneymoonBridgePhase
+	trumpCards *TrumpCards
+	stock      []*Card
+	// drawnIndices は直前の引き合いで人間の手札に入った札の位置。
+	drawnIndices []int
+	roundNumber  int
+	trickNumber  int
 	// trumpSuit は契約のスート（0 = ノートランプ、競り前も 0）。
 	trumpSuit int
 	// declarerIdx は落札者 (-1 = 競り中)。
@@ -162,6 +165,7 @@ func (h *HoneymoonBridge) startRound() {
 	h.trumpSuit = 0
 	h.trickNumber = 0
 	h.currentTrick = nil
+	h.drawnIndices = nil
 	h.declarerIdx = -1
 	h.contractLevel = 0
 	h.passCount = 0
@@ -191,8 +195,7 @@ func (h *HoneymoonBridge) startRound() {
 	h.roundNumber++
 	h.leadPlayerIdx = (h.dealerIdx + 1) % HoneymoonBridgePlayerCnt
 	h.currentPlayerIdx = h.leadPlayerIdx
-	h.addLog(-1, "deal", fmt.Sprintf("ディール %d：13 枚ずつ配り、山札 %d 枚",
-		h.roundNumber, len(h.stock)), nil)
+	h.addLog(-1, "deal", "honeymoonbridge.log.deal", map[string]string{"round": strconv.Itoa(h.roundNumber), "stock": strconv.Itoa(len(h.stock))}, nil)
 }
 
 // sortAllHands は手札をスート・ランク順に整える。
@@ -292,7 +295,7 @@ func (h *HoneymoonBridge) play(playerIdx, cardIndex int) error {
 
 	card := p.RemoveCard(cardIndex)
 	h.currentTrick = append(h.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	h.addLog(playerIdx, "play", cardStr(card), []*Card{card})
+	h.addLog(playerIdx, "play", "honeymoonbridge.log.play", map[string]string{"card": cardStr(card)}, []*Card{card})
 
 	if len(h.currentTrick) < HoneymoonBridgePlayerCnt {
 		h.currentPlayerIdx = (h.currentPlayerIdx + 1) % HoneymoonBridgePlayerCnt
@@ -317,7 +320,7 @@ func (h *HoneymoonBridge) resolveTrick() {
 	h.trickNumber++
 	h.leadPlayerIdx = winner
 	h.currentPlayerIdx = winner
-	h.addLog(winner, "trick", fmt.Sprintf("トリック %d を取りました", h.trickNumber), nil)
+	h.addLog(winner, "trick", "honeymoonbridge.log.trick", map[string]string{"trick": strconv.Itoa(h.trickNumber)}, nil)
 
 	if h.phase == HoneymoonBridgePhaseDraw {
 		// **勝った人が先に引く。** 山札は必ず 2 枚ずつ減る。
@@ -334,15 +337,29 @@ func (h *HoneymoonBridge) resolveTrick() {
 
 // drawAfterTrick は勝者→敗者の順に山札から 1 枚ずつ引かせる。
 func (h *HoneymoonBridge) drawAfterTrick(winner int) {
+	var drawn *Card
 	for i := range HoneymoonBridgePlayerCnt {
 		idx := (winner + i) % HoneymoonBridgePlayerCnt
 		if len(h.stock) == 0 {
 			break
 		}
-		h.players[idx].AddCard(h.stock[0])
+		card := h.stock[0]
+		h.players[idx].AddCard(card)
+		if idx == 0 {
+			drawn = card
+		}
 		h.stock = h.stock[1:]
 	}
 	h.sortAllHands()
+	h.drawnIndices = nil
+	if drawn != nil {
+		for i := 0; i < h.players[0].GetCardsSize(); i++ {
+			if h.players[0].GetCard(i) == drawn {
+				h.drawnIndices = []int{i}
+				break
+			}
+		}
+	}
 }
 
 // trickWinner は切り札 > リードスートの順で最強札を出した人を返す。
@@ -374,11 +391,12 @@ func (h *HoneymoonBridge) trickWinner() int {
 // startBidding は引き合いを終えて競りに入る。
 func (h *HoneymoonBridge) startBidding() {
 	h.phase = HoneymoonBridgePhaseBid
+	h.drawnIndices = nil
 	h.trickNumber = 0
 	h.passCount = 0
 	// **競りは親の左隣から。**
 	h.currentPlayerIdx = (h.dealerIdx + 1) % HoneymoonBridgePlayerCnt
-	h.addLog(-1, "draw", "引き合い終了。両者 13 枚で競りに入ります", nil)
+	h.addLog(-1, "draw", "honeymoonbridge.log.draw", nil, nil)
 }
 
 // NextBid は次に出せる最小の宣言（レベル, スート）を返す。
@@ -464,7 +482,7 @@ func (h *HoneymoonBridge) bidBy(playerIdx, level, suit int) error {
 	if level == 0 {
 		h.passCount++
 		h.players[playerIdx].SetBid(0, 0)
-		h.addLog(playerIdx, "pass", "パスしました", nil)
+		h.addLog(playerIdx, "pass", "honeymoonbridge.log.pass", nil, nil)
 		// **2 回続けてパスしたら競りは締まる。**
 		if h.passCount >= HoneymoonBridgePlayerCnt {
 			h.closeBidding()
@@ -487,24 +505,16 @@ func (h *HoneymoonBridge) bidBy(playerIdx, level, suit int) error {
 	h.passCount = 0
 	h.contractLevel, h.trumpSuit, h.declarerIdx = level, suit, playerIdx
 	h.players[playerIdx].SetBid(level, suit)
-	h.addLog(playerIdx, "bid", fmt.Sprintf("%d %s を宣言", level, honeymoonBridgeContractSuitStr(suit)), nil)
+	h.addLog(playerIdx, "bid", "honeymoonbridge.log.bid", map[string]string{"level": strconv.Itoa(level), "suitKey": trumpKeyOf(suit)}, nil)
 	h.currentPlayerIdx = (h.currentPlayerIdx + 1) % HoneymoonBridgePlayerCnt
 	return nil
-}
-
-// honeymoonBridgeContractSuitStr は契約スートの表示文字列を返す。
-func honeymoonBridgeContractSuitStr(suit int) string {
-	if suit == 0 {
-		return "NT"
-	}
-	return suitStr(suit)
 }
 
 // closeBidding は競りを締めて本番のプレイへ進む。
 func (h *HoneymoonBridge) closeBidding() {
 	// **誰も宣言しなければディールは流れる。** 次のディールへ。
 	if h.declarerIdx < 0 {
-		h.addLog(-1, "passout", "両者パス。ディールをやり直します", nil)
+		h.addLog(-1, "passout", "honeymoonbridge.log.passout", nil, nil)
 		h.phase = HoneymoonBridgePhaseRoundEnd
 		h.lastMade = false
 		h.lastTricks = 0
@@ -515,9 +525,7 @@ func (h *HoneymoonBridge) closeBidding() {
 	// **リードは落札者の相手から。**
 	h.leadPlayerIdx = (h.declarerIdx + 1) % HoneymoonBridgePlayerCnt
 	h.currentPlayerIdx = h.leadPlayerIdx
-	h.addLog(h.declarerIdx, "contract",
-		fmt.Sprintf("契約 %d %s（%d トリック必要）", h.contractLevel,
-			honeymoonBridgeContractSuitStr(h.trumpSuit), h.RequiredTricks()), nil)
+	h.addLog(h.declarerIdx, "contract", "honeymoonbridge.log.contract", map[string]string{"level": strconv.Itoa(h.contractLevel), "suitKey": trumpKeyOf(h.trumpSuit), "need": strconv.Itoa(h.RequiredTricks())}, nil)
 }
 
 // RequiredTricks は契約に必要なトリック数を返す（ブック 6 + レベル）。
@@ -581,16 +589,14 @@ func (h *HoneymoonBridge) finishRound() {
 		decl.AddScore(points)
 		h.lastMade = true
 		h.lastPoints = points
-		h.addLog(h.declarerIdx, "score",
-			fmt.Sprintf("契約 %d に対し %d トリック：成立 (+%d)", need, took, points), nil)
+		h.addLog(h.declarerIdx, "score", "honeymoonbridge.log.scoreMade", map[string]string{"need": strconv.Itoa(need), "took": strconv.Itoa(took), "points": strconv.Itoa(points)}, nil)
 	} else {
 		other := (h.declarerIdx + 1) % HoneymoonBridgePlayerCnt
 		points := (need - took) * 10
 		h.players[other].AddScore(points)
 		h.lastMade = false
 		h.lastPoints = points
-		h.addLog(h.declarerIdx, "score",
-			fmt.Sprintf("契約 %d に対し %d トリック：失敗、相手に +%d", need, took, points), nil)
+		h.addLog(h.declarerIdx, "score", "honeymoonbridge.log.scoreFailed", map[string]string{"need": strconv.Itoa(need), "took": strconv.Itoa(took), "points": strconv.Itoa(points)}, nil)
 	}
 	for _, p := range h.players {
 		if p.GetScore() >= h.config.Target {
@@ -621,8 +627,7 @@ func (h *HoneymoonBridge) finishGame() {
 	default:
 		h.winnerIdx = -1
 	}
-	h.addLog(-1, "result", fmt.Sprintf("最終得点 %d - %d",
-		h.players[0].GetScore(), h.players[1].GetScore()), nil)
+	h.addLog(-1, "result", "honeymoonbridge.log.result", map[string]string{"score1": strconv.Itoa(h.players[0].GetScore()), "score2": strconv.Itoa(h.players[1].GetScore())}, nil)
 }
 
 // GiveUp は投了する。
@@ -633,7 +638,7 @@ func (h *HoneymoonBridge) GiveUp() {
 	h.phase = HoneymoonBridgePhaseGameEnd
 	h.gameEndFlag = true
 	h.winnerIdx = 1
-	h.addLog(0, "giveup", "投了しました", nil)
+	h.addLog(0, "giveup", "honeymoonbridge.log.giveup", nil, nil)
 }
 
 // chooseCpuCard は CPU の手。
@@ -706,8 +711,8 @@ func honeymoonBridgeContains(xs []int, v int) bool {
 }
 
 // addLog は棋譜に 1 行足す。
-func (h *HoneymoonBridge) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	h.appendLog(playerIdx, actionType, detail, cards)
+func (h *HoneymoonBridge) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	h.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- アクセサ ---------------------------------------------------------------
@@ -729,6 +734,9 @@ func (h *HoneymoonBridge) GetRoundNumber() int { return h.roundNumber }
 
 // GetTrickNumber は現在のトリック番号を返す。
 func (h *HoneymoonBridge) GetTrickNumber() int { return h.trickNumber }
+
+// GetDrawnIndices は直前の引き合いで人間の手札に入った札の位置を返す。
+func (h *HoneymoonBridge) GetDrawnIndices() []int { return append([]int(nil), h.drawnIndices...) }
 
 // GetStockSize は山札の残り枚数を返す。
 func (h *HoneymoonBridge) GetStockSize() int { return len(h.stock) }
@@ -802,6 +810,7 @@ type honeymoonBridgeJSON struct {
 	GameEndFlag      bool                     `json:"ge"`
 	WinnerIdx        int                      `json:"wi"`
 	ActionLog        []*ActionLogEntry        `json:"al"`
+	DrawnIndices     []int                    `json:"dx"`
 }
 
 // MarshalJSON KV スナップショット用のシリアライズ
@@ -814,6 +823,7 @@ func (h *HoneymoonBridge) MarshalJSON() ([]byte, error) {
 		LeadPlayerIdx: h.leadPlayerIdx, DealerIdx: h.dealerIdx,
 		LastMade: h.lastMade, LastTricks: h.lastTricks,
 		GameEndFlag: h.gameEndFlag, WinnerIdx: h.winnerIdx, ActionLog: h.actionLog,
+		DrawnIndices: h.drawnIndices,
 	})
 }
 
@@ -911,6 +921,7 @@ func (h *HoneymoonBridge) UnmarshalJSON(data []byte) error {
 		h.players = j.Players
 	}
 	h.config, h.phase, h.stock = j.Config, j.Phase, j.Stock
+	h.drawnIndices = append([]int(nil), j.DrawnIndices...)
 	h.roundNumber, h.trickNumber, h.trumpSuit = j.RoundNumber, j.TrickNumber, j.TrumpSuit
 	h.declarerIdx, h.contractLevel, h.passCount = j.DeclarerIdx, j.ContractLevel, j.PassCount
 	h.currentTrick, h.currentPlayerIdx = j.CurrentTrick, j.CurrentPlayerIdx

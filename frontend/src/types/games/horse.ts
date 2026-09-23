@@ -18,6 +18,10 @@ export interface HorseSeat {
   name: string;
   isHuman: boolean;
   chips: number;
+  /** Whether this seat has folded the current hand. */
+  folded: boolean;
+  /** Whether this seat has committed all available chips. */
+  allIn: boolean;
   cards: Card[];
 }
 
@@ -44,6 +48,10 @@ export interface HorseResponse extends BaseGameResponse {
   disciplineLetter: string;
   /** Stable key for the current discipline ("holdem", "omahaHiLo", ...). */
   disciplineName: string;
+  /** One-based position of the current discipline in the rotation. */
+  disciplinePosition: number;
+  /** Number of disciplines in the current rotation. */
+  disciplineTotal: number;
   handInDiscipline: number;
   handNumber: number;
   currentTurn: number;

@@ -12,13 +12,16 @@
     "trumpUndecided": "Trump: undeclared (the dealer chooses, and takes the {{kitty}} left over)",
     "rule": "Targets follow the seats: the dealer owes 8, the seat to their left 5, the next 3 -- and 8+5+3 = 16 matches the trick count. Nobody bids. Every trick past your target scores, and every one short is paid for next round in your best cards.",
     "exchange": "{{n}} cards changed hands for last round's shortfall.",
+    "exchangeLost": "Lost: {{cards}}",
+    "exchangeReceived": "Received: {{cards}}",
     "target": "target {{target}} / took {{took}}",
     "score": "total {{n}}",
     "dealer": "[dealer / target 8]",
     "you": "You",
     "cpu": "CPU{{idx}}",
     "kittyBadge": "kitty",
-    "kittyAria": "came in from the kitty"
+    "kittyAria": "came in from the kitty",
+    "exchangeReceivedBadge": "received in the exchange"
   },
   "currentTrick": "Current trick",
   "actions": {

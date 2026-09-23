@@ -27,6 +27,7 @@
   "cards": "{{count}} cards",
   "tricks": "{{count}} tricks",
   "currentTrick": "Current Trick",
+  "previousTrickWinner": "Won by {{name}}",
   "players": "Players",
   "you": "You",
   "cpu": "CPU {{id}}",
@@ -65,5 +66,5 @@
   },
   "hintRequested": "Hint available",
   "noHint": "No hint available",
-  "marriageEarned": "Marriage bonus secured: +{{points}} (playing the K or Q does not take it away)"
+  "marriageEarned": "Marriage bonus secured: +{{points}} ({{details}}; playing the K or Q does not take it away)"
 }

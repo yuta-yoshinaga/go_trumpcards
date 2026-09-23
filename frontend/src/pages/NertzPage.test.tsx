@@ -128,6 +128,36 @@ describe('NertzPage', () => {
     expect(screen.getByRole('button', { name: '35' })).toBeInTheDocument();
   });
 
+  it('renders each CPU tableau and visible waste card', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      players: [
+        playingState.players[0],
+        {
+          ...playingState.players[1],
+          tableau: [
+            [{ card: { design: 'SPADE', value: 8 }, faceUp: true }],
+            [{ card: { design: 'HEART', value: 9 }, faceUp: true }],
+            [],
+            [],
+          ],
+          wasteTop: { design: 'CLOVER', value: 4 },
+          wasteSize: 2,
+        },
+      ],
+    });
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/nertz']}>
+        <NertzPage />
+      </MemoryRouter>,
+    );
+    await waitFor(() => expect(screen.getByAltText('♠ 8')).toBeInTheDocument());
+    expect(screen.getByAltText('♥ 9')).toBeInTheDocument();
+    expect(screen.getByAltText('♣ 4')).toBeInTheDocument();
+    expect(screen.getByText('ウェイスト: 2')).toBeInTheDocument();
+    expect(screen.getByText('ストック: 35')).toBeInTheDocument();
+  });
+
   it('selects a tableau card on click and renders empty columns as placeholders', async () => {
     const foundations: NertzResponse['foundations'] = Array.from({ length: 8 }, () => ({ suit: -1, size: 0 }));
     // One foundation carries a top card (covers the foundation card-image branch).
@@ -253,7 +283,7 @@ describe('NertzPage', () => {
     mockExec.mockClear();
     mockExec.mockResolvedValue(playingState);
     // Click foundation 0 — aria-label uses the localized template (ja default in tests).
-    fireEvent.click(screen.getByLabelText(/ファウンデーション0|Foundation 0/));
+    fireEvent.click(screen.getByLabelText(/組札0|Foundation 0/));
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('m', {
         playerIdx: 0,
@@ -332,7 +362,7 @@ describe('NertzPage', () => {
     await waitFor(() => {
       const announce = screen.getByTestId('nertz-announce');
       expect(announce).toHaveAttribute('aria-live', 'polite');
-      expect(announce.textContent).toMatch(/ファウンデーション3/);
+      expect(announce.textContent).toMatch(/組札3/);
     });
   });
 
@@ -350,7 +380,7 @@ describe('NertzPage', () => {
     grown[0] = { suit: 3, size: 1, top: { design: 'HEART', value: 1 } };
     mockExec.mockClear();
     mockExec.mockResolvedValue({ ...playingState, foundations: grown });
-    fireEvent.click(screen.getByLabelText(/ファウンデーション0|Foundation 0/));
+    fireEvent.click(screen.getByLabelText(/組札0|Foundation 0/));
     await waitFor(() => expect(screen.getByTestId('nertz-announce').textContent).toMatch(/あなたが配置/));
   });
 
@@ -364,7 +394,7 @@ describe('NertzPage', () => {
     fireEvent.click(screen.getByAltText('♥ 7').closest('button') as HTMLElement);
     mockExec.mockClear();
     mockExec.mockRejectedValue(new Error('invalid move'));
-    fireEvent.click(screen.getByLabelText(/ファウンデーション0|Foundation 0/));
+    fireEvent.click(screen.getByLabelText(/組札0|Foundation 0/));
     await waitFor(() => expect(screen.getByTestId('nertz-announce').textContent).toMatch(/移動が失敗/));
   });
 
@@ -568,8 +598,8 @@ describe('NertzPage', () => {
     const toggle = await screen.findByRole('checkbox', { name: 'ヒント表示' });
     fireEvent.click(toggle);
 
-    await waitFor(() => expect(screen.getByText(/ナッツ から ファウンデーション2 へ移動/)).toBeInTheDocument());
-    expect(screen.queryByText('移動先のファウンデーションかタブローを選んでください')).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText(/ナッツ から 組札2 へ移動/)).toBeInTheDocument());
+    expect(screen.queryByText('移動先の組札かタブローを選んでください')).not.toBeInTheDocument();
   });
 
   // #5578: あと何枚で完成するかは組札の読みどころなのに、現在枚数しか出ておらず

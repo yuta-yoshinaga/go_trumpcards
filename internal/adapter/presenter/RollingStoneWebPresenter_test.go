@@ -111,6 +111,13 @@ func TestRollingStoneWebPresenterMessages(t *testing.T) {
 		assert.Empty(t, m["messageCode"])
 	})
 
+	t.Run("coded error returns message code", func(t *testing.T) {
+		err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "shared.errCardIndexOutOfRange", nil)
+		m := decodeRollingStone(t, p.Output(newRollingStoneForWeb(t), err))
+		assert.Empty(t, m["message"])
+		assert.Equal(t, "shared.errCardIndexOutOfRange", m["messageCode"])
+	})
+
 	t.Run("プレイ中は手札の枚数を出す", func(t *testing.T) {
 		m := decodeRollingStone(t, p.Output(newRollingStoneForWeb(t), nil))
 		assert.Equal(t, "rollingstone.play", m["messageCode"])

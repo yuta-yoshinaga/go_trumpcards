@@ -4,6 +4,7 @@ import { minibridgeApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, MinibridgeResponse } from '../types/card';
+import { cardAlt } from '../utils/cardAlt';
 import { MinibridgePage } from './MinibridgePage';
 
 vi.mock('../api/gameApi', () => ({
@@ -208,6 +209,38 @@ describe('MinibridgePage', () => {
     expect(await screen.findByTestId('mb-dummy')).toBeInTheDocument();
   });
 
+  it('shows a CPU-operated dummy hand in the human seat only once', async () => {
+    const dummyCard = hand[0];
+    mockExec.mockResolvedValue(
+      playing({
+        declarerIdx: 2,
+        dummyIdx: 0,
+        dummyHand: [dummyCard, hand[1]],
+      } as Partial<MinibridgeResponse>),
+    );
+    renderWithProviders(<MinibridgePage />);
+
+    expect(await screen.findByText('この手札はCPUが操作するダミーです')).toBeInTheDocument();
+    expect(screen.queryByTestId('mb-dummy')).not.toBeInTheDocument();
+    expect(screen.getAllByAltText(cardAlt(dummyCard))).toHaveLength(1);
+  });
+
+  it('keeps the separate dummy block for a human declarer', async () => {
+    const dummyCard = hand[0];
+    mockExec.mockResolvedValue(
+      playing({
+        declarerIdx: 0,
+        dummyIdx: 2,
+        dummyHand: [dummyCard, hand[1]],
+      } as Partial<MinibridgeResponse>),
+    );
+    renderWithProviders(<MinibridgePage />);
+
+    expect(await screen.findByTestId('mb-dummy')).toBeInTheDocument();
+    expect(screen.queryByText('この手札はCPUが操作するダミーです')).not.toBeInTheDocument();
+    expect(screen.getAllByAltText(cardAlt(dummyCard))).toHaveLength(2);
+  });
+
   it('plays the clicked card by its hand index', async () => {
     mockExec.mockResolvedValue(playing());
     renderWithProviders(<MinibridgePage />);
@@ -257,8 +290,13 @@ describe('MinibridgePage', () => {
     );
     renderWithProviders(<MinibridgePage />);
 
-    const dummyCards = await screen.findAllByRole('button', { name: /^ダミーの/ });
-    expect(dummyCards[0]).toBeDisabled();
+    if (dummyIdx !== 0) {
+      const dummyCards = await screen.findAllByRole('button', { name: /^ダミーの/ });
+      expect(dummyCards[0]).toBeDisabled();
+    } else {
+      expect(await screen.findByText('この手札はCPUが操作するダミーです')).toBeInTheDocument();
+      expect(screen.queryByTestId('mb-dummy')).not.toBeInTheDocument();
+    }
     // 自分の手札も押せない——盤面は CPU の手番なので、こちらが動かす札は無い。
     const ownCards = screen.getAllByRole('button', { name: /^(?!ダミーの).*を出す$/ });
     expect(ownCards[0]).toBeDisabled();

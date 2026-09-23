@@ -106,7 +106,9 @@ func (p *ThreeCardBragWebPresenter) buildPlayersOutput(g interfaces.ThreeCardBra
 		// 人間は常に公開。ショーダウン時は非フォールドの手も公開する。
 		showCards := player.GetIsHuman() || (reveal && !player.GetFolded())
 		handName := ""
-		if showCards && !player.GetIsHuman() {
+		showHandName := (player.GetIsHuman() && (player.GetSeen() || reveal)) ||
+			(!player.GetIsHuman() && reveal && !player.GetFolded())
+		if showHandName {
 			handName = threeCardBragHandName(player)
 		}
 		out = append(out, &controller.ThreeCardBragWebOutputPlayer{
@@ -128,6 +130,9 @@ func (p *ThreeCardBragWebPresenter) buildPlayersOutput(g interfaces.ThreeCardBra
 // buildMessage ゲーム結果メッセージを構築
 func (p *ThreeCardBragWebPresenter) buildMessage(g interfaces.ThreeCardBragGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

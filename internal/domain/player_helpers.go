@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // handHolder is the minimal interface for a player whose hand can be sorted in
@@ -380,7 +381,7 @@ func setHandForTest[T any, P interface {
 
 // moveFinisher is a solitaire that records a move and re-evaluates the board.
 type moveFinisher interface {
-	appendLog(actionType, detail string, cards []*Card)
+	appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card)
 	checkGameClear()
 	checkStalemate()
 }
@@ -391,13 +392,13 @@ type moveFinisher interface {
 // moveCount is passed as a pointer because these games use it as the log
 // entry's TurnNumber, so the increment has to happen before appendLog runs --
 // an order the tests pin rather than leave to reading.
-func afterMove(moveCount *int, g moveFinisher, actionType, detail string, card *Card) {
+func afterMove(moveCount *int, g moveFinisher, actionType, detailCode string, detailParams map[string]string, card *Card) {
 	*moveCount++
 	var cards []*Card
 	if card != nil {
 		cards = []*Card{card}
 	}
-	g.appendLog(actionType, detail, cards)
+	g.appendLog(actionType, detailCode, detailParams, cards)
 	g.checkGameClear()
 	g.checkStalemate()
 }
@@ -445,7 +446,7 @@ func validateFollowSuit[P handReader](trick []*TrickCard, players []P, playerIdx
 	}
 	leadSuit := trick[0].Card.GetDesign()
 	if card.GetDesign() != leadSuit && handHasSuit(players[playerIdx], leadSuit) {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+		return NewDomainErrorCode(ErrInvalidPlay, "shared.errFollowLeadSuit", nil)
 	}
 	return nil
 }
@@ -521,19 +522,16 @@ func resetRoundWithTricks[P trickRoundScorable](p P) {
 	p.SetIsFinished(false)
 }
 
-// stockRecycler is a game that can record recycling the discard pile.
-type stockRecycler interface {
-	appendLog(playerIdx int, actionType, detail string, cards []*Card)
+type codedStockRecycler interface {
+	appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card)
 }
 
 // recycleDiscardIntoStock moves everything but the top discard back under the
 // draw pile, shuffled, and logs it. Returns false when there is nothing to
 // recycle. 5 games had this written out.
 //
-// The piles are passed by pointer because the helper rewrites both. Keeping the
-// fmt.Sprintf here rather than at each call site means one copy of it instead
-// of five.
-func recycleDiscardIntoStock(discard, draw *[]*Card, g stockRecycler) bool {
+// The piles are passed by pointer because the helper rewrites both.
+func recycleDiscardIntoStock(discard, draw *[]*Card, g codedStockRecycler, detailCode string) bool {
 	if len(*discard) <= 1 {
 		return false
 	}
@@ -542,7 +540,7 @@ func recycleDiscardIntoStock(discard, draw *[]*Card, g stockRecycler) bool {
 	*discard = []*Card{top}
 	rand.Shuffle(len(rest), func(i, j int) { rest[i], rest[j] = rest[j], rest[i] })
 	*draw = append(*draw, rest...)
-	g.appendLog(-1, "recycle", fmt.Sprintf("Discard pile recycled into stock (%d cards)", len(rest)), nil)
+	g.appendLog(-1, "recycle", detailCode, map[string]string{"cards": strconv.Itoa(len(rest))}, nil)
 	return true
 }
 
@@ -717,7 +715,7 @@ func validateCardIsPlayable[P handReader](valid []int, p P, card *Card) error {
 			return nil
 		}
 	}
-	return NewDomainError(ErrInvalidPlay, "フォロー義務・切り札義務・オーバートランプ義務に反しています")
+	return NewDomainErrorCode(ErrInvalidPlay, "shared.errFollowRuleViolation", nil)
 }
 
 // endgameFollower is a game whose follow rules only apply in its second phase.
@@ -730,13 +728,13 @@ type endgameFollower interface {
 // and a trick is under way. 3 games had this written out.
 func validateEndgameFollow(trick []*TrickCard, g endgameFollower, playerIdx int, card *Card) error {
 	if card == nil {
-		return NewDomainError(ErrInvalidCard, "カードが nil です")
+		return NewDomainErrorCode(ErrInvalidCard, "shared.errCardNil", nil)
 	}
 	if !g.IsEndgame() || len(trick) == 0 {
 		return nil
 	}
 	if !g.cardSatisfiesFollow(playerIdx, card) {
-		return NewDomainError(ErrInvalidCard, "第2フェーズではフォロールールに従う必要があります")
+		return NewDomainErrorCode(ErrInvalidCard, "shared.errMustFollowEndgameRule", nil)
 	}
 	return nil
 }

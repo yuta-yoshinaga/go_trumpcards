@@ -13,6 +13,12 @@
   "winningHand": "Hand: {{hand}}",
   "yourHand": "Your Hand",
   "handNumber": "Hand #{{count}} (Level up: every {{level}} hands)",
+  "bettingLimit": {
+    "label": "Limit",
+    "fixed": "Fixed",
+    "potLimit": "Pot Limit",
+    "noLimit": "No Limit"
+  },
   "rebuy": {
     "prompt": "Rebuy? ({{chips}} chips, {{used}}/{{max}} used)",
     "accept": "Rebuy",
@@ -54,6 +60,7 @@
     "title": "Learning Mode",
     "toggle": "Learning Mode",
     "equity": "Equity",
+    "lowEquity": "Low share",
     "potOdds": "Pot Odds",
     "plusEV": "+EV (Positive Expected Value)",
     "minusEV": "-EV (Negative Expected Value)",

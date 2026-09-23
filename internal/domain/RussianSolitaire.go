@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // RussianSolitairePhase ロシアンソリティアゲームフェーズ
@@ -150,7 +151,7 @@ func (y *RussianSolitaire) MoveTableauToTableau(fromCol, cardIndex, toCol int) e
 	// 自動フリップ
 	y.autoFlipTableau(fromCol)
 	y.moveCount++
-	y.appendLog("move", fmt.Sprintf("タブロー列%d→タブロー列%d", fromCol, toCol), movedCards)
+	y.appendLog("move", "russiansolitaire.log.tableauToTableau", map[string]string{"from": strconv.Itoa(fromCol), "to": strconv.Itoa(toCol)}, movedCards)
 	y.checkRussianSolitaireStalemate()
 	return nil
 }
@@ -182,7 +183,7 @@ func (y *RussianSolitaire) MoveTableauToFoundation(col int) error {
 	// 自動フリップ
 	y.autoFlipTableau(col)
 	y.moveCount++
-	y.appendLog("move", fmt.Sprintf("タブロー列%d→ファンデーション", col), []*Card{card})
+	y.appendLog("move", "russiansolitaire.log.tableauToFoundation", map[string]string{"column": strconv.Itoa(col)}, []*Card{card})
 	y.checkGameClear()
 	y.checkRussianSolitaireStalemate()
 	return nil
@@ -192,7 +193,7 @@ func (y *RussianSolitaire) MoveTableauToFoundation(col int) error {
 func (y *RussianSolitaire) GiveUp() {
 	if y.phase == RussianSolitairePhasePlaying {
 		y.phase = RussianSolitairePhaseGameOver
-		y.appendLog("giveup", "ギブアップしました", nil)
+		y.appendLog("giveup", "russiansolitaire.log.giveUp", nil, nil)
 	}
 }
 
@@ -312,7 +313,7 @@ func (y *RussianSolitaire) AutoComplete() error {
 			break
 		}
 	}
-	y.appendLog("autocomplete", "オートコンプリートを実行しました", nil)
+	y.appendLog("autocomplete", "russiansolitaire.log.autoComplete", nil, nil)
 	y.checkGameClear()
 	return nil
 }
@@ -478,8 +479,8 @@ func (y *RussianSolitaire) restoreSnapshot(snap *russianSolitaireSnapshot) {
 }
 
 // appendLog 棋譜エントリを追加
-func (y *RussianSolitaire) appendLog(actionType, detail string, cards []*Card) {
-	y.appendLogAt(y.moveCount, 0, actionType, detail, cards)
+func (y *RussianSolitaire) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	y.appendLogCodeAt(y.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // russianSolitaireJSON is the JSON wire format for RussianSolitaire.

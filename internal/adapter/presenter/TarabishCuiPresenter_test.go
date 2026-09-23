@@ -83,13 +83,26 @@ func TestTarabishCuiPresenterMeldSummary(t *testing.T) {
 
 func TestTarabishCuiPresenterRoundEnd(t *testing.T) {
 	p := new(TarabishCuiPresenter)
-	tb := newTarabishForCui(t)
-	tb.SetPhaseForTest(domain.TarabishPhaseRoundEnd)
+	t.Run("shows the last-trick bonus breakdown for team 0", func(t *testing.T) {
+		out := tarabishPlain(p.Output(tarabishRoundEndWithBonusTeam(t, 0), nil))
+		assert.Contains(t, out, "あなたのチームが最終トリックボーナス +10 点を獲得。")
+	})
 
-	out := p.Output(tb, nil)
-	assert.Contains(t, out, i18n.T("tarabish.promptRoundEnd"))
-	assert.Contains(t, out, i18n.T("tarabish.promptNext"))
-	assert.NotContains(t, out, i18n.T("tarabish.promptPlay"))
+	t.Run("shows the last-trick bonus breakdown for team 1", func(t *testing.T) {
+		out := tarabishPlain(p.Output(tarabishRoundEndWithBonusTeam(t, 1), nil))
+		assert.Contains(t, out, "相手チームが最終トリックボーナス +10 点を獲得。")
+	})
+
+	t.Run("does not show an unrecorded bonus", func(t *testing.T) {
+		tb := newTarabishForCui(t)
+		tb.SetPhaseForTest(domain.TarabishPhaseRoundEnd)
+
+		out := p.Output(tb, nil)
+		assert.Contains(t, out, i18n.T("tarabish.promptRoundEnd"))
+		assert.Contains(t, out, i18n.T("tarabish.promptNext"))
+		assert.NotContains(t, out, "最終トリックボーナス")
+		assert.NotContains(t, out, i18n.T("tarabish.promptPlay"))
+	})
 }
 
 func TestTarabishCuiPresenterError(t *testing.T) {
@@ -117,9 +130,52 @@ func TestTarabishCuiPresenterGameEnd(t *testing.T) {
 
 			out := p.Output(tb, nil)
 			assert.Contains(t, out, fixedPart(tc.wantKey))
+			assert.NotContains(t, out, "最終トリックボーナス")
 			assert.NotContains(t, out, i18n.T("tarabish.promptPlay"))
 		})
 	}
+}
+
+func TestTarabishCuiPresenterGameEndWithBonus(t *testing.T) {
+	p := new(TarabishCuiPresenter)
+
+	t.Run("your team wins with your bonus", func(t *testing.T) {
+		tb := newTarabishForCui(t)
+		tb.SetScoreForTestUse(0, 520)
+		tb.SetScoreForTestUse(1, 300)
+		tb.FinishGameForTest()
+		tb.SetLastTrickBonusTeamForTest(0)
+
+		out := tarabishPlain(p.Output(tb, nil))
+		assert.Contains(t, out, "ゲーム終了！ あなたのチームの勝利です（520 - 300）！")
+		assert.Contains(t, out, "あなたのチームが最終トリックボーナス +10 点を獲得。")
+		assert.NotContains(t, out, "相手チームが最終トリックボーナス")
+	})
+
+	t.Run("the other team wins with their bonus", func(t *testing.T) {
+		tb := newTarabishForCui(t)
+		tb.SetScoreForTestUse(0, 300)
+		tb.SetScoreForTestUse(1, 520)
+		tb.FinishGameForTest()
+		tb.SetLastTrickBonusTeamForTest(1)
+
+		out := tarabishPlain(p.Output(tb, nil))
+		assert.Contains(t, out, "ゲーム終了！ 相手チームの勝利です（300 - 520）。")
+		assert.Contains(t, out, "相手チームが最終トリックボーナス +10 点を獲得。")
+		assert.NotContains(t, out, "あなたのチームが最終トリックボーナス")
+	})
+
+	t.Run("a tie with your bonus", func(t *testing.T) {
+		tb := newTarabishForCui(t)
+		tb.SetScoreForTestUse(0, 500)
+		tb.SetScoreForTestUse(1, 500)
+		tb.FinishGameForTest()
+		tb.SetLastTrickBonusTeamForTest(0)
+
+		out := tarabishPlain(p.Output(tb, nil))
+		assert.Contains(t, out, "ゲーム終了！ 同点です（500 - 500）。")
+		assert.Contains(t, out, "あなたのチームが最終トリックボーナス +10 点を獲得。")
+	})
 }
 
 func TestTarabishCuiPresenterHintInBidPhase(t *testing.T) {
@@ -128,7 +184,7 @@ func TestTarabishCuiPresenterHintInBidPhase(t *testing.T) {
 	tb.SetCurrentPlayerIdxForTest(0)
 
 	out := p.HintOutput(tb)
-	assert.Contains(t, out, "HINT")
+	assert.Contains(t, out, "ヒント")
 	assert.NotContains(t, out, "tarabishTakeTrump", "生のキーが出ていたら未登録")
 	assert.NotContains(t, out, "tarabishPassTrump")
 }
@@ -200,9 +256,9 @@ func TestTarabishCuiPresenterShowsCardPoints(t *testing.T) {
 
 	out := tarabishPlain(p.Output(g, nil))
 
-	assert.Contains(t, out, i18n.Tf("tarabish.handCard", "idx", "0", "card", "HEART 11", "points", "20"))
-	assert.Contains(t, out, i18n.Tf("tarabish.handCard", "idx", "1", "card", "HEART 9", "points", "14"))
-	assert.Contains(t, out, i18n.Tf("tarabish.handCard", "idx", "2", "card", "SPADE 11", "points", "2"))
+	assert.Contains(t, out, i18n.Tf("tarabish.handCard", "idx", "0", "card", "♥11", "points", "20"))
+	assert.Contains(t, out, i18n.Tf("tarabish.handCard", "idx", "1", "card", "♥9", "points", "14"))
+	assert.Contains(t, out, i18n.Tf("tarabish.handCard", "idx", "2", "card", "♠11", "points", "2"))
 	assert.NotContains(t, out, "{{")
 
 	// **切り札が決まるまでは点が定まらない。**入札中に出すと嘘になる。
@@ -212,8 +268,8 @@ func TestTarabishCuiPresenterShowsCardPoints(t *testing.T) {
 	biddingHuman.ResetRound()
 	biddingHuman.AddCard(domain.NewCard(domain.CardDesignHeart, 11, true))
 	biddingOut := tarabishPlain(p.Output(bidding, nil))
-	assert.Contains(t, biddingOut, "[0]HEART 11")
-	assert.NotContains(t, biddingOut, i18n.Tf("tarabish.handCard", "idx", "0", "card", "HEART 11", "points", "2"))
+	assert.Contains(t, biddingOut, "[0]♥11")
+	assert.NotContains(t, biddingOut, i18n.Tf("tarabish.handCard", "idx", "0", "card", "♥11", "points", "2"))
 	assert.NotContains(t, biddingOut, "点)")
 }
 

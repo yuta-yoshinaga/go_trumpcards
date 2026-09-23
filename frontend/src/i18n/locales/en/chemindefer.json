@@ -19,7 +19,7 @@
   "label.punter": "Punter",
   "label.punterSide": "Punter side",
   "label.total": "Total",
-  "label.shoe": "Shoe",
+  "label.shoe": "Shoe: {{n}} cards left",
   "label.amount": "Amount",
   "phase.stake": "Stake",
   "phase.bet": "Bet",

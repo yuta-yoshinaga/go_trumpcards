@@ -25,5 +25,12 @@
   "helpExampleMoveCell": "  m t 0 c 0            park the top of column 0 in free cell 0",
   "helpExampleHint": "  h                    ask for a move",
   "helpExampleAuto": "  ac                   send everything that can go to a foundation",
-  "helpUndo": "  u undo one move"
+  "helpUndo": "  u undo one move",
+  "log.moveTableauToTableau": "tableau column {{from}}→tableau column {{to}}",
+  "log.moveTableauToFoundation": "tableau column {{col}}→foundation",
+  "log.moveTableauToFreeCell": "tableau column {{col}}→free cell {{cell}}",
+  "log.moveFreeCellToTableau": "free cell {{cell}}→tableau column {{col}}",
+  "log.moveFreeCellToFoundation": "free cell {{cell}}→foundation",
+  "log.giveUp": "give up",
+  "log.autoComplete": "auto-complete executed"
 }

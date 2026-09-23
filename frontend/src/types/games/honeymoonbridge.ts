@@ -95,6 +95,8 @@ export interface HoneymoonBridgeResponse extends BaseGameResponse {
   currentTrick: HoneymoonBridgeTrickCard[];
   /** Hand indices you may legally play. Following suit is compulsory. */
   validPlays: number[];
+  /** Human-hand indices drawn after the most recent draw-phase trick. */
+  drawnIndices: number[];
   gameEndFlag: boolean;
   /** `-1` until decided. */
   winnerIdx: number;

@@ -15,6 +15,7 @@
   "dealer": "Dealer: {{name}}",
   "trumpLine": "Trump: {{suit}} (Maker: Team {{team}})",
   "trumpUndecided": "Trump: undecided",
+  "bowerHelp": "[R] = right bower (Jack of trump), [L] = left bower (same-colour Jack)",
   "faceUpCard": "Face-up card: {{card}}",
   "goingAlone": "Going alone: {{name}}",
   "teamScoreLine": "Team 0: {{t0}}  Team 1: {{t1}}",
@@ -45,5 +46,11 @@
   "helpExampleOrderUp": "  o                    order the dealer to pick the card up",
   "helpExampleDiscard": "  d 0                  discard a card after picking it up",
   "helpHint": "  h                    show a hint",
-  "hintScore": "  Hand strength: {{score}} (order up at {{orderUp}}+, go alone at {{goAlone}}+)"
+  "hintScore": "  Hand strength: {{score}} (order up at {{orderUp}}+, go alone at {{goAlone}}+)",
+  "errFaceUpSuit": "You cannot choose the suit of the face-up card.",
+  "errInvalidSuit": "The suit is invalid.",
+  "errDealerMustChooseSuit": "The dealer must choose a suit.",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errFollowLeadSuit": "You must follow the lead suit.",
+  "log.pass": "{{name}} passes", "log.orderUpAlone": "{{name}} orders up {{card}} and goes alone", "log.orderUp": "{{name}} orders up {{card}}", "log.callTrumpAlone": "{{name}} calls {{suit}} as trump and goes alone", "log.callTrump": "{{name}} calls {{suit}} as trump", "log.discard": "{{name}} discards a card", "log.trickWin": "{{name}} wins trick {{trick}}", "log.marchAlone": "Team {{team}} marches going alone! +4 points", "log.march": "Team {{team}} marches! +2 points", "log.makerWin": "Team {{team}} wins the round! +1 point", "log.euchred": "Team {{makerTeam}} is euchred! Team {{defenderTeam}} +2 points", "log.teamScore": "Team {{team}}: {{points}} points (tricks: {{tricks}})", "log.play": "{{name}} plays {{card}}", "log.gameEnd": "Team {{team}} wins the game!"
 }

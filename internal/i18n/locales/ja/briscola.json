@@ -19,7 +19,7 @@
   "promptTrickEnd": "トリック終了",
   "promptTrickEndHelp": "next・・・次のトリックへ",
   "hintNone": "ヒントはありません。",
-  "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
+  "hintCard": "[ヒント: [{{idx}}]{{card}} ({{reason}})]",
   "hintReasonLeadTrump": "トランプで相手のトランプを誘う",
   "hintReasonLeadLow": "0点札でリード",
   "hintReasonLeadValue": "得点札でリード",
@@ -28,5 +28,11 @@
   "hintReasonFollowDump": "低価値の札を捨てる",
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
   "helpExampleNext": "  n                    トリックの決着を見てから次へ",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errCardNil": "カードが nil です",
+  "log.trickWin": "{{name}}がトリック{{trick}}を取りました（{{points}}点）",
+  "log.trump": "切り札: {{card}}",
+  "log.play": "{{name}}が{{card}}を出しました",
+  "log.gameEnd": "ゲーム終了: {{p0}}-{{p1}}"
 }

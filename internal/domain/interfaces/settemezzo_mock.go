@@ -98,9 +98,24 @@ func (_m *MockSetteEMezzoGame) GetNextBanker() int {
 	return ret.Int(0)
 }
 
+func (_m *MockSetteEMezzoGame) GetBankerChanged() bool {
+	ret := _m.Called()
+	return ret.Bool(0)
+}
+
 func (_m *MockSetteEMezzoGame) GetLastResult() string {
 	ret := _m.Called()
 	return ret.String(0)
+}
+
+func (_m *MockSetteEMezzoGame) GetLastResultCode() string { return _m.Called().String(0) }
+
+func (_m *MockSetteEMezzoGame) GetLastResultParams() map[string]string {
+	v := _m.Called().Get(0)
+	if v == nil {
+		return nil
+	}
+	return v.(map[string]string)
 }
 
 func (_m *MockSetteEMezzoGame) GetGameEndFlag() bool {

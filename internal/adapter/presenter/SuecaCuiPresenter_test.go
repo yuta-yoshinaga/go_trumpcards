@@ -5,6 +5,7 @@ package presenter_test
 import (
 	"errors"
 	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -15,6 +16,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/ui"
 )
 
 func makeSuecaPlayers() []*domain.SuecaPlayer {
@@ -176,14 +178,14 @@ func TestSuecaCuiPresenter_HintOutput(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 13, false))
 		m.On("GetHint").Return(&domain.SuecaHint{CardIndices: []int{0}, Reason: "lead_low"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 
 	t.Run("hint no card indices", func(t *testing.T) {
 		m, _ := setupSuecaCuiMockWithPlayers()
 		m.On("GetHint").Return(&domain.SuecaHint{CardIndices: nil, Reason: "follow_win"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 }
 
@@ -192,7 +194,7 @@ func TestSuecaCuiPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockSuecaGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You plays ♠K"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
 	m.On("GetPlayer", mock.Anything).Return(domain.NewSuecaPlayer(true)).Maybe()
@@ -261,4 +263,33 @@ func TestSuecaCuiPresenter_ShowsTheRoundAward(t *testing.T) {
 		assert.NotContains(t, out, i18n.T("sueca.roundGamePointsDraw"))
 		assert.NotContains(t, out, i18n.T("sueca.gamePointsNormal"))
 	})
+}
+
+func TestSuecaCuiPresenter_HelpIncludesCardPointLegend(t *testing.T) {
+	// Sueca puts the legend in the help notes, so it does not add seven lines
+	// to every turn's output. Assert the rendered literals rather than i18n.T:
+	// using the translator for both sides would make a missing key self-validating.
+	help := ui.BuildCuiHelp(ui.CuiHelpSpec{
+		TitleKey: "sueca.helpTitle",
+		NoteKeys: []string{
+			"sueca.pointLegendTitle",
+			"sueca.pointLegendAce",
+			"sueca.pointLegendSeven",
+			"sueca.pointLegendKing",
+			"sueca.pointLegendJack",
+			"sueca.pointLegendQueen",
+			"sueca.pointLegendOthers",
+			"sueca.pointLegendNote",
+		},
+	})
+	joined := strings.Join(help, "\n")
+	// 6 行すべてをリテラルで固定する。この表は桁が揃っていることが値打ちなので、
+	// どれか 1 行のパディングを動かしたら落ちてほしい (数字の右端は全行 29 桁目)。
+	assert.Contains(t, joined, "A（エース）              11点")
+	assert.Contains(t, joined, "7                        10点")
+	assert.Contains(t, joined, "K（レイ）                 4点")
+	assert.Contains(t, joined, "J（バラーテ）             3点")
+	assert.Contains(t, joined, "Q（ダーマ）               2点")
+	assert.Contains(t, joined, "その他（2〜6）            0点")
+	assert.Contains(t, joined, "1ラウンドの合計は120点。61点以上を取ったチームの勝ち。")
 }

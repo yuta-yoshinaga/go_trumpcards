@@ -1,4 +1,4 @@
-//go:build !js || !wasm || solo
+//go:build !js || !wasm || extra7
 
 package domain
 
@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // ThirtyOnePlayerCnt ThirtyOne プレイヤー数 (人間 1 + CPU 3)
@@ -180,7 +181,7 @@ func (g *ThirtyOne) checkBlitzOnDeal() {
 			continue
 		}
 		if p.BestSuitScore() == ThirtyOneTarget {
-			g.appendLog(i, "blitz", fmt.Sprintf("%s is dealt 31!", playerName(g.players, i)), nil)
+			g.appendLog(i, "blitz", "thirtyone.log.blitz", map[string]string{"name": playerName(g.players, i)}, nil)
 			g.declareThirtyOne(i)
 			return
 		}
@@ -195,7 +196,7 @@ func (g *ThirtyOne) PlayerDrawFromStock() error {
 		return err
 	}
 	if len(g.drawPile) == 0 {
-		g.endRound("stock empty")
+		g.endRound(true)
 		return nil
 	}
 	g.drawFromStock(g.currentPlayerIdx)
@@ -208,7 +209,7 @@ func (g *ThirtyOne) PlayerDrawFromDiscard() error {
 		return err
 	}
 	if len(g.discardPile) == 0 {
-		return NewDomainError(ErrInvalidPlay, "捨て札がありません")
+		return NewDomainErrorCode(ErrInvalidPlay, "thirtyone.errDiscardPileEmpty", nil)
 	}
 	g.drawFromDiscard(g.currentPlayerIdx)
 	return nil
@@ -227,7 +228,7 @@ func (g *ThirtyOne) PlayerDiscard(cardIndex int) error {
 	}
 	p := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= p.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "thirtyone.errCardIndexOutOfRange", nil)
 	}
 	g.discardAndResolve(g.currentPlayerIdx, cardIndex)
 	return nil
@@ -245,7 +246,7 @@ func (g *ThirtyOne) PlayerKnock() error {
 		return ErrNotHumanTurn
 	}
 	if g.knockerIdx >= 0 {
-		return NewDomainError(ErrInvalidPlay, "既にノックされています")
+		return NewDomainErrorCode(ErrInvalidPlay, "thirtyone.errAlreadyKnocked", nil)
 	}
 	g.knock(g.currentPlayerIdx)
 	return nil
@@ -272,7 +273,7 @@ func (g *ThirtyOne) drawFromStock(idx int) {
 	card := g.drawPile[len(g.drawPile)-1]
 	g.drawPile = g.drawPile[:len(g.drawPile)-1]
 	g.players[idx].AddCard(card)
-	g.appendLog(idx, "draw_stock", fmt.Sprintf("%s draws from stock", playerName(g.players, idx)), nil)
+	g.appendLog(idx, "draw_stock", "thirtyone.log.drawStock", map[string]string{"name": playerName(g.players, idx)}, nil)
 	g.phase = ThirtyOnePhaseDiscard
 }
 
@@ -281,7 +282,7 @@ func (g *ThirtyOne) drawFromDiscard(idx int) {
 	card := g.discardPile[len(g.discardPile)-1]
 	g.discardPile = g.discardPile[:len(g.discardPile)-1]
 	g.players[idx].AddCard(card)
-	g.appendLog(idx, "draw_discard", fmt.Sprintf("%s draws %s from discard", playerName(g.players, idx), cardStr(card)), []*Card{card})
+	g.appendLog(idx, "draw_discard", "thirtyone.log.drawDiscard", map[string]string{"name": playerName(g.players, idx), "card": cardStr(card)}, []*Card{card})
 	g.phase = ThirtyOnePhaseDiscard
 }
 
@@ -289,10 +290,10 @@ func (g *ThirtyOne) drawFromDiscard(idx int) {
 func (g *ThirtyOne) discardAndResolve(idx, cardIndex int) {
 	discarded := g.players[idx].RemoveCard(cardIndex)
 	g.discardPile = append(g.discardPile, discarded)
-	g.appendLog(idx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, idx), cardStr(discarded)), []*Card{discarded})
+	g.appendLog(idx, "discard", "thirtyone.log.discard", map[string]string{"name": playerName(g.players, idx), "card": cardStr(discarded)}, []*Card{discarded})
 
 	if g.players[idx].BestSuitScore() == ThirtyOneTarget {
-		g.appendLog(idx, "thirty_one", fmt.Sprintf("%s reaches 31!", playerName(g.players, idx)), nil)
+		g.appendLog(idx, "thirty_one", "thirtyone.log.thirtyOne", map[string]string{"name": playerName(g.players, idx)}, nil)
 		g.declareThirtyOne(idx)
 		return
 	}
@@ -302,7 +303,7 @@ func (g *ThirtyOne) discardAndResolve(idx, cardIndex int) {
 // knock ノックを記録してターンを進める
 func (g *ThirtyOne) knock(idx int) {
 	g.knockerIdx = idx
-	g.appendLog(idx, "knock", fmt.Sprintf("%s knocks (score: %d)", playerName(g.players, idx), g.players[idx].BestSuitScore()), nil)
+	g.appendLog(idx, "knock", "thirtyone.log.knock", map[string]string{"name": playerName(g.players, idx), "score": strconv.Itoa(g.players[idx].BestSuitScore())}, nil)
 	g.advanceTurn()
 }
 
@@ -343,7 +344,7 @@ func (g *ThirtyOne) cpuDraw() {
 	}
 
 	if len(g.drawPile) == 0 {
-		g.endRound("stock empty")
+		g.endRound(true)
 		return
 	}
 	g.drawFromStock(idx)
@@ -511,14 +512,14 @@ func (g *ThirtyOne) declareThirtyOne(idx int) {
 		p.LoseLife()
 		g.roundLosers = append(g.roundLosers, i)
 	}
-	g.appendLog(idx, "round_win", fmt.Sprintf("%s wins the round with 31", playerName(g.players, idx)), nil)
+	g.appendLog(idx, "round_win", "thirtyone.log.roundWin", map[string]string{"name": playerName(g.players, idx)}, nil)
 	g.finishRound()
 }
 
 // endRound ノック後または山札切れでラウンドを精算し、最低点のプレイヤーがライフを失う
-func (g *ThirtyOne) endRound(reason string) {
-	if reason != "" {
-		g.appendLog(-1, "round_end", fmt.Sprintf("Round ends (%s)", reason), nil)
+func (g *ThirtyOne) endRound(stockEmpty bool) {
+	if stockEmpty {
+		g.appendLog(-1, "round_end", "thirtyone.log.roundEndStockEmpty", nil, nil)
 	}
 
 	minScore := -1
@@ -545,7 +546,7 @@ func (g *ThirtyOne) endRound(reason string) {
 		if p.BestSuitScore() == minScore {
 			p.LoseLife()
 			g.roundLosers = append(g.roundLosers, i)
-			g.appendLog(i, "lose_life", fmt.Sprintf("%s loses a life (score: %d)", playerName(g.players, i), minScore), nil)
+			g.appendLog(i, "lose_life", "thirtyone.log.loseLife", map[string]string{"name": playerName(g.players, i), "score": strconv.Itoa(minScore)}, nil)
 		}
 	}
 	g.finishRound()
@@ -577,7 +578,7 @@ func (g *ThirtyOne) checkGameEnd() {
 	g.gameEndFlag = true
 	g.phase = ThirtyOnePhaseGameEnd
 	g.winnerIdx = g.leaderIdx()
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(g.players, g.winnerIdx)), nil)
+	g.appendLog(-1, "game_end", "thirtyone.log.gameEnd", map[string]string{"name": playerName(g.players, g.winnerIdx)}, nil)
 }
 
 // leaderIdx 最もライフが多いプレイヤー (同点は若いインデックス) を返す
@@ -597,7 +598,7 @@ func (g *ThirtyOne) leaderIdx() int {
 func (g *ThirtyOne) advanceTurn() {
 	next := g.nextActiveIdx(g.currentPlayerIdx)
 	if g.knockerIdx >= 0 && next == g.knockerIdx {
-		g.endRound("")
+		g.endRound(false)
 		return
 	}
 	g.currentPlayerIdx = next
@@ -688,6 +689,11 @@ func (g *ThirtyOne) GetThirtyOneIdx() int { return g.thirtyOneIdx }
 
 // GetRoundWinnerIdx 直近ラウンドの勝者インデックスを取得する (-1 = 未確定)
 func (g *ThirtyOne) GetRoundWinnerIdx() int { return g.roundWinnerIdx }
+
+// appendLog records a Thirty-One action with a locale-independent detail code.
+func (g *ThirtyOne) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCodeAt(len(g.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
+}
 
 // GetRoundLosers 直近ラウンドでライフを失ったプレイヤーのインデックス一覧を取得する
 func (g *ThirtyOne) GetRoundLosers() []int { return g.roundLosers }

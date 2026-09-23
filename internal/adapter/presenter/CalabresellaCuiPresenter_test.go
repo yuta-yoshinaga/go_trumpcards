@@ -151,8 +151,8 @@ func TestCalabresellaCuiPresenter_ShowsRevealedMonte(t *testing.T) {
 		m.On("GetActionLog").Return(log)
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "モンテ（公開）:")
-		assert.Contains(t, result, "SPADE 1")
-		assert.Contains(t, result, "DIAMOND 13")
+		assert.Contains(t, result, "♠1")
+		assert.Contains(t, result, "♦13")
 	})
 
 	t.Run("hidden during the bid phase", func(t *testing.T) {
@@ -204,7 +204,7 @@ func TestCalabresellaCuiPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockCalabresellaGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You plays ♠K"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
 	m.On("GetPlayer", mock.Anything).Return(domain.NewCalabresellaPlayer(true)).Maybe()

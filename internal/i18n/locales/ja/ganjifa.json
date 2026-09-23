@@ -1,7 +1,7 @@
 {
   "gameEnd": "ゲーム終了！{{name}}がマッチ勝利！",
   "helpTitle": "ガンジファ (Ganjifa)",
-  "hintCard": "[HINT: {{cards}} ({{reason}})]",
+  "hintCard": "[ヒント: {{cards}} ({{reason}})]",
   "hintNone": "ヒントはありません。",
   "hintReasonFollowTrump": "切り札を出してこのトリックを取りに行く",
   "hintReasonFollowWeakSuit": "弱い群でフォローする —— 数字の向きが逆なので注意",
@@ -19,6 +19,8 @@
   "trickWinner": "{{name}} がトリックを獲得",
   "promptTrickEndHelp": "n / next・・・次のトリックへ",
   "round": "ラウンド: {{round}}  トリック: {{trick}}  切り札: {{trump}}",
+  "dealer": "ディーラー: {{name}}",
+  "trumpAutoNote": "切り札はディーラーの手札で最も多いスートから自動で決まります（選択操作はありません）",
   "roundEndTrickEntry": "{{name}} {{tricks}}",
   "roundEndTricks": "各プレイヤーのトリック数: {{list}}",
   "trumpGroupStrong": "切り札は強い群 — 数字が大きいほど強い",
@@ -29,5 +31,13 @@
   "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
   "helpExamplePlay": "  play 0               手札の 0 番のカードを出す",
   "helpExampleNext": "  n                    トリックの決着を見てから次のトリックへ",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errCardMissing": "カードがありません",
+  "errFollowLeadSuit": "リードスートに従ってください",
+  "log.deal": "ラウンド {{round}} 開始 (切り札 {{trump}})",
+  "log.gameEnd": "マッチ終了",
+  "log.play": "",
+  "log.trickWin": "トリック {{trick}} を獲得",
+  "log.settle": "ラウンド {{round}} 終了"
 }

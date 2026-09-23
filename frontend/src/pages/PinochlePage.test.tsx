@@ -146,6 +146,29 @@ describe('PinochlePage', () => {
     });
   });
 
+  it('shows the dealer label on the human or CPU dealer row only', async () => {
+    mockExec.mockResolvedValue({ ...bidPhaseState, dealerIdx: 0 });
+    const { container, unmount } = renderWithProviders(<PinochlePage />);
+    const playerInfo = () => container.querySelector('[data-tutorial="pn-player-info"]') as HTMLElement;
+
+    await waitFor(() => expect(within(playerInfo()).getByText(/^あなた/)).toBeInTheDocument());
+    const humanRow = within(playerInfo()).getByText(/^あなた/).parentElement as HTMLElement;
+    expect(humanRow).toHaveTextContent('ディーラー');
+    expect(within(playerInfo()).getAllByText(/ディーラー/)).toHaveLength(1);
+
+    unmount();
+    mockExec.mockResolvedValue({ ...bidPhaseState, dealerIdx: 1 });
+    const cpuRender = renderWithProviders(<PinochlePage />);
+    const cpuPlayerInfo = () => cpuRender.container.querySelector('[data-tutorial="pn-player-info"]') as HTMLElement;
+
+    await waitFor(() => expect(within(cpuPlayerInfo()).getByText(/^CPU 1/)).toBeInTheDocument());
+    const nonDealerHumanRow = within(cpuPlayerInfo()).getByText(/^あなた/).parentElement as HTMLElement;
+    const dealerCpuRow = within(cpuPlayerInfo()).getByText(/^CPU 1/).parentElement as HTMLElement;
+    expect(dealerCpuRow).toHaveTextContent('ディーラー');
+    expect(nonDealerHumanRow).not.toHaveTextContent('ディーラー');
+    expect(within(cpuPlayerInfo()).getAllByText(/ディーラー/)).toHaveLength(1);
+  });
+
   it('calls bid command when bid button is clicked', async () => {
     renderWithProviders(<PinochlePage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ビッド' })).toBeInTheDocument());

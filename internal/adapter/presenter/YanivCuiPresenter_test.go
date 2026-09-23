@@ -55,7 +55,7 @@ func TestYanivCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "ラウンド: 1")
 		assert.Contains(t, result, "山札: 39")
 		assert.Contains(t, result, "ディスカードフェーズ")
-		assert.Contains(t, result, "[0]SPADE 9")
+		assert.Contains(t, result, "[0]♠9")
 		// Header shows the configured score limit; no one is near out yet.
 		assert.Contains(t, result, strings.Split(i18n.T("yaniv.limitLine"), "{{")[0])
 		assert.NotContains(t, result, i18n.T("yaniv.nearOut"))
@@ -82,7 +82,7 @@ func TestYanivCuiPresenter_Output(t *testing.T) {
 		m.On("GetPickupCards").Return([]*domain.Card{
 			domain.NewCard(domain.CardDesignHeart, 7, false),
 		})
-		assert.Contains(t, p.Output(m, nil), "HEART 7")
+		assert.Contains(t, p.Output(m, nil), "♥7")
 	})
 
 	t.Run("draw phase commands", func(t *testing.T) {
@@ -145,7 +145,7 @@ func TestYanivCuiPresenter_ActionLogOutput(t *testing.T) {
 
 	m := new(interfaces.MockYanivGame)
 	entries := []*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "yaniv", Detail: "You call Yaniv"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "yaniv", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	}
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return(entries)

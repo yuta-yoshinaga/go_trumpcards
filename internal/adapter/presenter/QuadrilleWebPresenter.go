@@ -49,7 +49,7 @@ func (p *QuadrilleWebPresenter) buildBase(g interfaces.QuadrilleGame) *controlle
 	resObj.GameEndFlag = g.GetGameEndFlag()
 	resObj.WinnerPlayer = g.GetWinnerPlayer()
 	resObj.PlayerScores = g.GetPlayerScores()
-	resObj.LastTrickWinner = -1
+	resObj.LastTrickWinner = g.GetLastTrickWinner()
 	resObj.IsHumanTurn = g.IsHumanTurn()
 	resObj.IsHumanBidTurn = g.IsHumanBidTurn()
 	resObj.IsHumanKingCallTurn = g.IsHumanKingCallTurn()
@@ -113,6 +113,9 @@ func (p *QuadrilleWebPresenter) buildPlayersOutput(g interfaces.QuadrilleGame) [
 // buildMessage ゲーム結果メッセージを構築
 func (p *QuadrilleWebPresenter) buildMessage(g interfaces.QuadrilleGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

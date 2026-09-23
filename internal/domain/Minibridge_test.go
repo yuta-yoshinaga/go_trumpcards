@@ -17,6 +17,17 @@ func newTestMinibridge(t *testing.T) *Minibridge {
 	return m
 }
 
+func TestMinibridge_ActionLogUsesDetailCode(t *testing.T) {
+	m := newTestMinibridge(t)
+	for _, entry := range m.GetActionLog() {
+		if entry.DetailCode == "minibridge.log.start" {
+			assert.Nil(t, entry.DetailParams)
+			return
+		}
+	}
+	t.Fatal("minibridge.log.start entry not found")
+}
+
 // **4 × 13 = 52 ちょうど。** 着手前に検算した唯一の配り。
 func TestMinibridge_DealUsesTheWholeDeck(t *testing.T) {
 	assert.Equal(t, 52, MinibridgePlayerCnt*MinibridgeHandSize, "4 人 × 13 枚 = 52")

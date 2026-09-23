@@ -1,4 +1,4 @@
-//go:build !js || !wasm || casino
+//go:build !js || !wasm || extra6
 
 // Package domain オークション・フォーティファイブズ (Auction Forty-Fives) のドメインモデル。
 //
@@ -19,9 +19,9 @@ package domain
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // FortyFivesPlayerCnt プレイヤー数 (人間 1 + CPU 3)
@@ -228,18 +228,18 @@ func (g *FortyFives) CpuBid() {
 // applyBid 入札を記録し、次の入札者へ進める。全員入札したら契約を確定する。
 func (g *FortyFives) applyBid(idx int, bid FortyFivesBid) error {
 	if bid != FortyFivesBidPass && bid != FortyFivesBidFifteen && bid != FortyFivesBidTwenty && bid != FortyFivesBidTwentyFive {
-		return NewDomainError(ErrInvalidPlay, "入札値が不正です")
+		return NewDomainErrorCode(ErrInvalidPlay, "fortyfives.errInvalidBid", nil)
 	}
 	high, _ := g.highestBid()
 	if bid != FortyFivesBidPass && bid <= high {
-		return NewDomainError(ErrInvalidPlay, "現在の入札を上回る必要があります")
+		return NewDomainErrorCode(ErrInvalidPlay, "fortyfives.errBidMustExceedCurrent", nil)
 	}
 	g.bids[idx] = bid
 	g.bidDone[idx] = true
 	if bid != FortyFivesBidPass {
-		g.appendLog(idx, "bid", fmt.Sprintf("%s bids %d", playerName(g.players, idx), int(bid)), nil)
+		g.appendLog(idx, "bid", "fortyfives.log.bid", map[string]string{"name": playerName(g.players, idx), "bid": strconv.Itoa(int(bid))}, nil)
 	} else {
-		g.appendLog(idx, "bid", fmt.Sprintf("%s passes", playerName(g.players, idx)), nil)
+		g.appendLog(idx, "bid", "fortyfives.log.pass", map[string]string{"name": playerName(g.players, idx)}, nil)
 	}
 	for k := 1; k <= FortyFivesPlayerCnt; k++ {
 		ni := (idx + k) % FortyFivesPlayerCnt
@@ -258,14 +258,13 @@ func (g *FortyFives) resolveBidding() {
 	if idx < 0 || bid == FortyFivesBidPass {
 		g.declarerIdx = -1
 		g.phase = FortyFivesPhaseRoundEnd
-		g.appendLog(-1, "passed_out", "all players passed; round is void", nil)
+		g.appendLog(-1, "passed_out", "fortyfives.log.passedOut", nil, nil)
 		return
 	}
 	g.declarerIdx = idx
 	g.contract = bid
 	g.trumpSuit = g.longestSuit(idx)
-	g.appendLog(idx, "contract",
-		fmt.Sprintf("%s (team %s) bids %d, trump %d", playerName(g.players, idx), fortyFivesTeamName(FortyFivesTeamOf(idx)), int(bid), g.trumpSuit), nil)
+	g.appendLog(idx, "contract", "fortyfives.log.contract", map[string]string{"name": playerName(g.players, idx), "team": fortyFivesTeamName(FortyFivesTeamOf(idx)), "bid": strconv.Itoa(int(bid)), "trump": strconv.Itoa(g.trumpSuit)}, nil)
 	g.leadPlayerIdx = idx // declarer leads
 	g.currentPlayerIdx = g.leadPlayerIdx
 	g.phase = FortyFivesPhasePlay
@@ -319,7 +318,7 @@ func (g *FortyFives) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "fortyfives.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
@@ -353,7 +352,7 @@ func (g *FortyFives) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *FortyFives) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "fortyfives.log.play", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(g.currentTrick) == FortyFivesPlayerCnt {
 		g.phase = FortyFivesPhaseTrickEnd
@@ -375,8 +374,7 @@ func (g *FortyFives) ResolveTrick() {
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.players[winnerIdx].IncRoundTricks()
 	g.roundTeamPts[FortyFivesTeamOf(winnerIdx)] += FortyFivesPointsPerTrick
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (+%d)", playerName(g.players, winnerIdx), g.trickNumber, FortyFivesPointsPerTrick), trickCards)
+	g.appendLog(winnerIdx, "trick_win", "fortyfives.log.trickWin", map[string]string{"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber), "points": strconv.Itoa(FortyFivesPointsPerTrick)}, trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= FortyFivesTrickCount {
@@ -416,17 +414,14 @@ func (g *FortyFives) ScoreRound() {
 		} else {
 			g.teamScores[bidTeam] -= bidVal
 		}
-		g.appendLog(-1, "round_score",
-			fmt.Sprintf("round %d: team %s bid %d, got %d; team %s got %d",
-				g.roundNumber, fortyFivesTeamName(bidTeam), bidVal, g.roundTeamPts[bidTeam],
-				fortyFivesTeamName(otherTeam), g.roundTeamPts[otherTeam]), nil)
+		g.appendLog(-1, "round_score", "fortyfives.log.roundScore", map[string]string{"round": strconv.Itoa(g.roundNumber), "team": fortyFivesTeamName(bidTeam), "bid": strconv.Itoa(bidVal), "got": strconv.Itoa(g.roundTeamPts[bidTeam]), "otherTeam": fortyFivesTeamName(otherTeam), "otherGot": strconv.Itoa(g.roundTeamPts[otherTeam])}, nil)
 
 		if jink {
 			// Jink: 25 を宣言して全トリック → 即勝利。
 			g.gameEndFlag = true
 			g.winnerTeam = bidTeam
 			g.phase = FortyFivesPhaseGameEnd
-			g.appendLog(-1, "jink", fmt.Sprintf("Jink! team %s sweeps and wins", fortyFivesTeamName(bidTeam)), nil)
+			g.appendLog(-1, "jink", "fortyfives.log.jink", map[string]string{"team": fortyFivesTeamName(bidTeam)}, nil)
 			return
 		}
 		g.checkGameEnd()
@@ -457,8 +452,13 @@ func (g *FortyFives) checkGameEnd() {
 		g.gameEndFlag = true
 		g.winnerTeam = leader
 		g.phase = FortyFivesPhaseGameEnd
-		g.appendLog(-1, "game_end", fmt.Sprintf("Team %s wins the match!", fortyFivesTeamName(leader)), nil)
+		g.appendLog(-1, "game_end", "fortyfives.log.gameEnd", map[string]string{"team": fortyFivesTeamName(leader)}, nil)
 	}
+}
+
+// appendLog records a Forty-Fives action with a locale-independent detail code.
+func (g *FortyFives) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- Trick / play helpers (Spoil Five fixed-trump rank + Reneging) ---
@@ -528,11 +528,11 @@ func (g *FortyFives) validatePlay(playerIdx int, card *Card) error {
 	}
 	if leadIsTrump {
 		if !g.isTrumpCard(card) {
-			return NewDomainError(ErrInvalidPlay, "切り札に従ってください")
+			return NewDomainErrorCode(ErrInvalidPlay, "fortyfives.errMustFollowTrump", nil)
 		}
 	} else {
 		if card.GetDesign() != leadSuit || g.isTrumpCard(card) {
-			return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+			return NewDomainErrorCode(ErrInvalidPlay, "fortyfives.errMustFollowLeadSuit", nil)
 		}
 	}
 	return nil
@@ -559,26 +559,47 @@ func (g *FortyFives) trickWinner() int {
 }
 
 // fortyFivesRank Spoil Five 系の固定ランクを返す (高いほど強い)。
-func (g *FortyFives) fortyFivesRank(card *Card) int {
+func fortyFivesRank(card *Card, trumpSuit int) int {
 	d, v := card.GetDesign(), card.GetValue()
 	switch {
-	case d == g.trumpSuit && v == 5:
+	case d == trumpSuit && v == 5:
 		return 1000
-	case d == g.trumpSuit && v == 11:
+	case d == trumpSuit && v == 11:
 		return 999
 	case d == CardDesignHeart && v == 1:
 		return 998
-	case d == g.trumpSuit && v == 1:
+	case d == trumpSuit && v == 1:
 		return 997
-	case d == g.trumpSuit && v == 13:
+	case d == trumpSuit && v == 13:
 		return 996
-	case d == g.trumpSuit && v == 12:
+	case d == trumpSuit && v == 12:
 		return 995
-	case d == g.trumpSuit:
+	case d == trumpSuit:
 		return 900 + fortyFivesPip(v)
 	default:
 		return fortyFivesPip(v)
 	}
+}
+
+// fortyFivesRank returns the fixed Spoil Five rank for the supplied trump suit.
+func (g *FortyFives) fortyFivesRank(card *Card) int {
+	return fortyFivesRank(card, g.trumpSuit)
+}
+
+// FortyFivesTrumpOrder は指定の切り札スートにおける切り札の強さ順を、
+// エンジンが採点に使う fortyFivesRank そのもので並べて返す (強い順)。
+func FortyFivesTrumpOrder(trumpSuit int) []*Card {
+	cards := make([]*Card, 0, CardValueMax+1)
+	for value := 1; value <= CardValueMax; value++ {
+		cards = append(cards, NewCard(trumpSuit, value, false))
+	}
+	if trumpSuit != CardDesignHeart {
+		cards = append(cards, NewCard(CardDesignHeart, 1, false))
+	}
+	sort.SliceStable(cards, func(i, j int) bool {
+		return fortyFivesRank(cards[i], trumpSuit) > fortyFivesRank(cards[j], trumpSuit)
+	})
+	return cards
 }
 
 // fortyFivesPip 数札の相対強さ (A 高, 10-high 簡略)。

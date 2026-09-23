@@ -126,6 +126,45 @@ func TestFrenchTarotTargetForBouts(t *testing.T) {
 	assert.Equal(t, 41, domain.FrenchTarotTargetForBouts(2))
 	assert.Equal(t, 36, domain.FrenchTarotTargetForBouts(3))
 	assert.Equal(t, 36, domain.FrenchTarotTargetForBouts(3)) // clamp
+	g := domain.NewDefaultFrenchTarot()
+	g.Reset()
+	assert.Equal(t, 56, g.GetTarget())
+}
+
+func TestFrenchTarotDeclarerCapturedPointsIncludesStash(t *testing.T) {
+	g := frenchTarotNewReset()
+	g.SetDeclarerIdx(0)
+	g.GetPlayer(0).AddTrick([]*domain.Card{frenchTarotSuitCard(domain.CardDesignHeart, 14)})
+	g.SetStash([]*domain.Card{frenchTarotSuitCard(domain.CardDesignHeart, 5)}, 0)
+
+	assert.NotEqual(t, g.GetCardPoints(0)/2, g.GetDeclarerCapturedPoints())
+	assert.Equal(t, 5, g.GetDeclarerCapturedPoints())
+}
+
+func TestFrenchTarotDeclarerCapturedPointsMatchesOutcome(t *testing.T) {
+	for _, tc := range []struct {
+		name        string
+		kingCount   int
+		wantOutcome domain.FrenchTarotOutcome
+	}{
+		{name: "loss", kingCount: 5, wantOutcome: domain.FrenchTarotOutcomeLoss},
+		{name: "win", kingCount: 13, wantOutcome: domain.FrenchTarotOutcomeWin},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			g := frenchTarotNewReset()
+			g.SetDeclarerIdx(0)
+			cards := make([]*domain.Card, tc.kingCount)
+			for i := range cards {
+				cards[i] = frenchTarotSuitCard(domain.CardDesignHeart, domain.FrenchTarotKingValue)
+			}
+			g.GetPlayer(0).AddTrick(cards)
+			g.SetPhase(domain.FrenchTarotPhaseRoundEnd)
+			g.ScoreRound()
+
+			assert.Equal(t, tc.wantOutcome, g.GetOutcome())
+			assert.Equal(t, g.GetDeclarerCapturedPoints() >= g.GetTarget(), g.GetOutcome() == domain.FrenchTarotOutcomeWin)
+		})
+	}
 }
 
 func TestFrenchTarotBidMult(t *testing.T) {
@@ -283,6 +322,20 @@ func TestFrenchTarotFinalizePetiteEntersChien(t *testing.T) {
 		assert.True(t, g.GetChienRevealed())
 		assert.Equal(t, domain.FrenchTarotHandSize+domain.FrenchTarotChienSize, g.GetPlayer(0).GetCardsSize())
 	}
+}
+
+func TestFrenchTarotBidLogUsesDetailCode(t *testing.T) {
+	g := frenchTarotNewReset()
+	g.SetBidPlayerIdx(0)
+	require.NoError(t, g.PlayerBid(domain.FrenchTarotBidPetite))
+	var entry *domain.ActionLogEntry
+	for _, candidate := range g.GetActionLog() {
+		if candidate.DetailCode == "frenchtarot.log.bid" {
+			entry = candidate
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, map[string]string{"player": "You", "bidKey": "frenchtarot.bidPetite"}, entry.DetailParams)
 }
 
 func TestFrenchTarotGardeSansStashToDeclarer(t *testing.T) {
@@ -520,6 +573,39 @@ func TestFrenchTarotResolveTrickExcuseKeptByOwner(t *testing.T) {
 	assert.Equal(t, 1, g.GetPlayer(3).GetTrickCount())
 	// Player 3's captured half-points include the excuse (9).
 	assert.Equal(t, 9, g.GetCardPoints(3))
+}
+
+func TestFrenchTarotResolveTrickRecordsWinnerBeforeRoundEnd(t *testing.T) {
+	g := frenchTarotNewReset()
+	g.SetContract(domain.FrenchTarotBidPetite)
+	g.SetDeclarerIdx(0)
+	g.SetTrickNumber(1)
+	g.SetPhase(domain.FrenchTarotPhaseTrickEnd)
+	g.SetCurrentTrick(frenchTarotTrickCards(
+		&domain.TrickCard{PlayerIdx: 0, Card: frenchTarotSuitCard(domain.CardDesignSpade, 5)},
+		&domain.TrickCard{PlayerIdx: 1, Card: frenchTarotSuitCard(domain.CardDesignSpade, 9)},
+		&domain.TrickCard{PlayerIdx: 2, Card: frenchTarotTrumpCard(4)},
+		&domain.TrickCard{PlayerIdx: 3, Card: frenchTarotSuitCard(domain.CardDesignSpade, 3)},
+	))
+	g.ResolveTrick()
+	assert.NotEqual(t, -1, g.GetLastTrickWinner())
+	assert.Equal(t, g.GetLeadPlayerIdx(), g.GetLastTrickWinner())
+}
+
+func TestFrenchTarotPetitAuBoutStaysZeroDuringTrickPlay(t *testing.T) {
+	g := frenchTarotNewReset()
+	g.SetContract(domain.FrenchTarotBidPetite)
+	g.SetDeclarerIdx(0)
+	g.SetTrickNumber(1)
+	g.SetPhase(domain.FrenchTarotPhaseTrickEnd)
+	g.SetCurrentTrick(frenchTarotTrickCards(
+		&domain.TrickCard{PlayerIdx: 0, Card: frenchTarotTrumpCard(domain.FrenchTarotPetitValue)},
+		&domain.TrickCard{PlayerIdx: 1, Card: frenchTarotSuitCard(domain.CardDesignSpade, 9)},
+		&domain.TrickCard{PlayerIdx: 2, Card: frenchTarotSuitCard(domain.CardDesignSpade, 5)},
+		&domain.TrickCard{PlayerIdx: 3, Card: frenchTarotSuitCard(domain.CardDesignSpade, 3)},
+	))
+	g.ResolveTrick()
+	assert.Zero(t, g.GetPetitAuBoutDelta())
 }
 
 // --- Round-end scoring zero-sum & petit au bout ---

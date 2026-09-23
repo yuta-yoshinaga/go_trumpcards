@@ -16,6 +16,8 @@
   "round": "Round {{n}}",
   "trick": "Trick {{n}}",
   "trump": "Trump: {{suit}}",
+  "dealer": "Dealer: {{name}}",
+  "trumpAutoNote": "Trump is automatically set to the suit most common in the dealer's hand (there is no choice)",
   "noTrump": "None",
   "cards": "{{count}} cards",
   "tricks": "{{count}} tricks",

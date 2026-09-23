@@ -318,6 +318,19 @@ function SheepsheadPageContent() {
                   </div>
                 )}
 
+                {(isPlayPhase || isTrickEnd) && (
+                  <div
+                    className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                    role="status"
+                    aria-live="polite"
+                    data-testid="sh-live-points"
+                  >
+                    <div className="mb-1 text-ds-text-primary">{t('livePoints.title')}</div>
+                    <div>{t('livePoints.picker', { points: state.livePickerPoints, target: 61 })}</div>
+                    <div>{t('livePoints.defenders', { points: state.liveDefenderPoints })}</div>
+                  </div>
+                )}
+
                 {/* Round result */}
                 {(isRoundEnd || isGameEnd) && (
                   <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm">

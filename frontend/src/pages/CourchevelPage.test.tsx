@@ -1675,4 +1675,11 @@ describe('CourchevelPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.queryByTestId('cv-preflop-exposed-note')).not.toBeInTheDocument();
   });
+
+  it('renders action shortcuts panel during betting phase', async () => {
+    mockExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<CourchevelPage />);
+    const panel = await screen.findByTestId('courchevel-kbd-shortcuts');
+    expect(panel).toBeInTheDocument();
+  });
 });

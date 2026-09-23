@@ -183,6 +183,18 @@ func (_m *MockSheepsheadGame) GetPassCount() int {
 	return ret.Get(0).(int)
 }
 
+// GetLivePickerPoints モック
+func (_m *MockSheepsheadGame) GetLivePickerPoints() int {
+	ret := _m.Called()
+	return ret.Get(0).(int)
+}
+
+// GetLiveDefenderPoints モック
+func (_m *MockSheepsheadGame) GetLiveDefenderPoints() int {
+	ret := _m.Called()
+	return ret.Get(0).(int)
+}
+
 // GetRoundPickerPoints モック
 func (_m *MockSheepsheadGame) GetRoundPickerPoints() int {
 	ret := _m.Called()

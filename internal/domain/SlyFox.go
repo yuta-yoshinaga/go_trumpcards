@@ -180,7 +180,7 @@ func (c *SlyFox) DealToPile(pile int) error {
 		c.dealtThisCycle = 0
 	}
 	c.dealtThisCycle++
-	c.afterMove("deal", fmt.Sprintf("山札→リザーブ枠%d", pile), card)
+	c.afterMove("deal", "slyfox.log.deal", map[string]string{"value1": fmt.Sprint(pile)}, card)
 	return nil
 }
 
@@ -205,7 +205,7 @@ func (c *SlyFox) DealToFoundation(fIdx int) error {
 	card := c.stock[0]
 	c.stock = c.stock[1:]
 	c.foundation[fIdx] = append(c.foundation[fIdx], card)
-	c.afterMove("move", fmt.Sprintf("山札→基礎札%d", fIdx), card)
+	c.afterMove("move", "slyfox.log.move", map[string]string{"value1": fmt.Sprint(fIdx)}, card)
 	return nil
 }
 
@@ -252,7 +252,7 @@ func (c *SlyFox) MoveTableauToFoundation(pile int) error {
 	c.takeSnapshot()
 	c.tableau[pile] = dropLast(c.tableau[pile])
 	c.foundation[fIdx] = append(c.foundation[fIdx], card)
-	c.afterMove("move", fmt.Sprintf("リザーブ枠%d→基礎札%d", pile, fIdx), card)
+	c.afterMove("move", "slyfox.log.move", map[string]string{"value1": fmt.Sprint(pile), "value2": fmt.Sprint(fIdx)}, card)
 	return nil
 }
 
@@ -260,7 +260,7 @@ func (c *SlyFox) MoveTableauToFoundation(pile int) error {
 func (c *SlyFox) GiveUp() {
 	if c.phase == SlyFoxPhasePlaying {
 		c.phase = SlyFoxPhaseGameOver
-		c.appendLog("giveup", "ギブアップしました", nil)
+		c.appendLog("giveup", "slyfox.log.giveup", nil, nil)
 	}
 }
 
@@ -510,8 +510,8 @@ func (c *SlyFox) findFoundation(card *Card) int {
 }
 
 // afterMove 手数・棋譜・終了判定をまとめて進める
-func (c *SlyFox) afterMove(actionType, detail string, card *Card) {
-	afterMove(&c.moveCount, c, actionType, detail, card)
+func (c *SlyFox) afterMove(actionType, detailCode string, detailParams map[string]string, card *Card) {
+	afterMove(&c.moveCount, c, actionType, detailCode, detailParams, card)
 }
 
 // checkGameClear 8 つの基礎札がすべて 13 枚積まれたか
@@ -555,8 +555,8 @@ func (c *SlyFox) takeSnapshot() {
 }
 
 // appendLog 棋譜エントリを追加
-func (c *SlyFox) appendLog(actionType, detail string, cards []*Card) {
-	c.appendLogAt(c.moveCount, 0, actionType, detail, cards)
+func (c *SlyFox) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	c.appendLogCodeAt(c.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // slyFoxSnapshotJSON is the wire format for a single undo snapshot.

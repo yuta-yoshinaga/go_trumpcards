@@ -320,13 +320,14 @@ func (p *Pinochle) GetPlayerMelds() [PinochlePlayerCnt][]*PinochleMeld { return 
 func (p *Pinochle) GetActionLog() []*ActionLogEntry { return p.actionLog }
 
 // addLog アクションログを追加
-func (p *Pinochle) addLog(playerIdx int, actionType, detail string, cards []*Card) {
+func (p *Pinochle) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	p.actionLog = append(p.actionLog, &ActionLogEntry{
-		TurnNumber: p.trickNumber,
-		PlayerIdx:  playerIdx,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
+		TurnNumber:   p.trickNumber,
+		PlayerIdx:    playerIdx,
+		ActionType:   actionType,
+		DetailCode:   detailCode,
+		DetailParams: detailParams,
+		Cards:        cards,
 	})
 }
 
@@ -560,10 +561,10 @@ func meldTotalPoints(melds []*PinochleMeld) int {
 // PlayerBid 人間プレイヤーがビッドする
 func (p *Pinochle) PlayerBid(amount int) error {
 	if p.phase != PinochlePhaseBid {
-		return NewDomainError(ErrWrongPhase, "ビッドフェーズではありません")
+		return NewDomainErrorCode(ErrWrongPhase, "pinochle.errWrongPhase", nil)
 	}
 	if !p.players[p.bidPlayerIdx].GetIsHuman() {
-		return NewDomainError(ErrNotHumanTurn, "人間プレイヤーのターンではありません")
+		return NewDomainErrorCode(ErrNotHumanTurn, "pinochle.errNotHumanTurn", nil)
 	}
 	return p.doBid(p.bidPlayerIdx, amount)
 }
@@ -571,10 +572,10 @@ func (p *Pinochle) PlayerBid(amount int) error {
 // PlayerPass 人間プレイヤーがパスする
 func (p *Pinochle) PlayerPass() error {
 	if p.phase != PinochlePhaseBid {
-		return NewDomainError(ErrWrongPhase, "ビッドフェーズではありません")
+		return NewDomainErrorCode(ErrWrongPhase, "pinochle.errWrongPhase", nil)
 	}
 	if !p.players[p.bidPlayerIdx].GetIsHuman() {
-		return NewDomainError(ErrNotHumanTurn, "人間プレイヤーのターンではありません")
+		return NewDomainErrorCode(ErrNotHumanTurn, "pinochle.errNotHumanTurn", nil)
 	}
 	return p.doPass(p.bidPlayerIdx)
 }
@@ -582,16 +583,16 @@ func (p *Pinochle) PlayerPass() error {
 // doBid ビッドを実行
 func (p *Pinochle) doBid(playerIdx, amount int) error {
 	if amount < PinochleMinBid {
-		return NewDomainError(ErrInvalidAmount, fmt.Sprintf("ビッドは%d以上でなければなりません", PinochleMinBid))
+		return NewDomainErrorCode(ErrInvalidAmount, "pinochle.errBidMinimum", map[string]string{"min": fmt.Sprintf("%d", PinochleMinBid)})
 	}
 	if p.highestBid > 0 && amount <= p.highestBid {
-		return NewDomainError(ErrInvalidAmount, fmt.Sprintf("現在のビッド%dより大きくなければなりません", p.highestBid))
+		return NewDomainErrorCode(ErrInvalidAmount, "pinochle.errBidHigherThanHighest", map[string]string{"bid": fmt.Sprintf("%d", p.highestBid)})
 	}
 
 	p.players[playerIdx].SetBid(amount)
 	p.highestBid = amount
 	p.highestBidder = playerIdx
-	p.addLog(playerIdx, "bid", fmt.Sprintf("ビッド: %d", amount), nil)
+	p.addLog(playerIdx, "bid", "pinochle.log.bid", map[string]string{"amount": fmt.Sprintf("%d", amount)}, nil)
 	p.advanceBidder()
 	return nil
 }
@@ -606,11 +607,11 @@ func (p *Pinochle) doPass(playerIdx int) error {
 		}
 	}
 	if activeBidders <= 1 && p.highestBid > 0 {
-		return NewDomainError(ErrCannotPass, "最後のビッダーはパスできません")
+		return NewDomainErrorCode(ErrCannotPass, "pinochle.errCannotPass", nil)
 	}
 
 	p.players[playerIdx].SetHasPassed(true)
-	p.addLog(playerIdx, "pass", "パス", nil)
+	p.addLog(playerIdx, "pass", "pinochle.log.pass", nil, nil)
 	p.advanceBidder()
 	return nil
 }
@@ -641,7 +642,7 @@ func (p *Pinochle) advanceBidder() {
 			p.highestBid = PinochleMinBid
 			p.highestBidder = p.dealerIdx
 			p.players[p.dealerIdx].SetBid(PinochleMinBid)
-			p.addLog(p.dealerIdx, "forced_bid", fmt.Sprintf("強制ビッド: %d", PinochleMinBid), nil)
+			p.addLog(p.dealerIdx, "forced_bid", "pinochle.log.forcedBid", map[string]string{"amount": fmt.Sprintf("%d", PinochleMinBid)}, nil)
 		}
 		p.phase = PinochlePhaseTrump
 		p.currentPlayerIdx = p.highestBidder
@@ -782,10 +783,10 @@ func (p *Pinochle) cpuEstimateTrickPoints(playerIdx, trumpSuit int) int {
 // PlayerCallTrump 人間プレイヤーがトランプスートを宣言する
 func (p *Pinochle) PlayerCallTrump(suit int) error {
 	if p.phase != PinochlePhaseTrump {
-		return NewDomainError(ErrWrongPhase, "トランプ宣言フェーズではありません")
+		return NewDomainErrorCode(ErrWrongPhase, "pinochle.errTrumpPhase", nil)
 	}
 	if !p.players[p.currentPlayerIdx].GetIsHuman() {
-		return NewDomainError(ErrNotHumanTurn, "人間プレイヤーのターンではありません")
+		return NewDomainErrorCode(ErrNotHumanTurn, "pinochle.errNotHumanTurn", nil)
 	}
 	return p.doCallTrump(p.currentPlayerIdx, suit)
 }
@@ -793,16 +794,10 @@ func (p *Pinochle) PlayerCallTrump(suit int) error {
 // doCallTrump トランプ宣言を実行
 func (p *Pinochle) doCallTrump(playerIdx, suit int) error {
 	if suit < CardDesignSpade || suit > CardDesignDiamond {
-		return NewDomainError(ErrInvalidPlay, "無効なスートです")
+		return NewDomainErrorCode(ErrInvalidPlay, "pinochle.errInvalidSuit", nil)
 	}
 	p.trumpSuit = suit
-	suitNames := map[int]string{
-		CardDesignSpade:   "スペード",
-		CardDesignClover:  "クラブ",
-		CardDesignHeart:   "ハート",
-		CardDesignDiamond: "ダイヤ",
-	}
-	p.addLog(playerIdx, "trump", fmt.Sprintf("トランプ宣言: %s", suitNames[suit]), nil)
+	p.addLog(playerIdx, "trump", "pinochle.log.trump", map[string]string{"suitKey": suitKeyOf(suit)}, nil)
 
 	// メルドフェーズへ移行
 	p.evaluateAllMelds()
@@ -834,7 +829,7 @@ func (p *Pinochle) evaluateAllMelds() {
 		melds := evaluateMelds(hand, p.trumpSuit)
 		p.playerMelds[i] = melds
 		p.players[i].SetMeldScore(meldTotalPoints(melds))
-		p.addLog(i, "meld", fmt.Sprintf("メルド: %d点", p.players[i].GetMeldScore()), nil)
+		p.addLog(i, "meld", "pinochle.log.meld", map[string]string{"points": fmt.Sprintf("%d", p.players[i].GetMeldScore())}, nil)
 	}
 }
 
@@ -939,10 +934,10 @@ func (p *Pinochle) getValidPlayIndices(playerIdx int) []int {
 // PlayerPlay 人間プレイヤーがカードをプレイする
 func (p *Pinochle) PlayerPlay(cardIndex int) error {
 	if p.phase != PinochlePhasePlay {
-		return NewDomainError(ErrWrongPhase, "プレイフェーズではありません")
+		return NewDomainErrorCode(ErrWrongPhase, "pinochle.errPlayPhase", nil)
 	}
 	if !p.players[p.currentPlayerIdx].GetIsHuman() {
-		return NewDomainError(ErrNotHumanTurn, "人間プレイヤーのターンではありません")
+		return NewDomainErrorCode(ErrNotHumanTurn, "pinochle.errNotHumanTurn", nil)
 	}
 	return p.doPlay(p.currentPlayerIdx, cardIndex)
 }
@@ -951,13 +946,13 @@ func (p *Pinochle) PlayerPlay(cardIndex int) error {
 func (p *Pinochle) doPlay(playerIdx, cardIndex int) error {
 	player := p.players[playerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "無効なカードインデックスです")
+		return NewDomainErrorCode(ErrInvalidCard, "pinochle.errInvalidCardIndex", nil)
 	}
 
 	// バリデーション
 	validIndices := p.getValidPlayIndices(playerIdx)
 	if !slices.Contains(validIndices, cardIndex) {
-		return NewDomainError(ErrInvalidPlay, "このカードはプレイできません")
+		return NewDomainErrorCode(ErrInvalidPlay, "pinochle.errCardCannotBePlayed", nil)
 	}
 
 	card := player.RemoveCard(cardIndex)
@@ -965,7 +960,7 @@ func (p *Pinochle) doPlay(playerIdx, cardIndex int) error {
 		PlayerIdx: playerIdx,
 		Card:      card,
 	})
-	p.addLog(playerIdx, "play", "カードプレイ", []*Card{card})
+	p.addLog(playerIdx, "play", "pinochle.log.play", nil, []*Card{card})
 
 	// トリック完了チェック
 	if len(p.currentTrick) == PinochlePlayerCnt {
@@ -1153,7 +1148,7 @@ func (p *Pinochle) ResolveTrick() {
 	p.players[winner].AddTrick(trickCards)
 	p.players[winner].AddTrickPoints(trickPoints)
 
-	p.addLog(winner, "trick_win", fmt.Sprintf("トリック獲得: %d点", trickPoints), trickCards)
+	p.addLog(winner, "trick_win", "pinochle.log.trickWin", map[string]string{"points": fmt.Sprintf("%d", trickPoints)}, trickCards)
 
 	// 次のトリックまたはラウンド終了
 	if p.trickNumber >= PinochleHandSize {
@@ -1219,28 +1214,23 @@ func (p *Pinochle) scoreRound() {
 	defenderTotal := teamTrickPoints[defenderTeam] + teamMeldPoints[defenderTeam]
 	p.teamScores[defenderTeam] += defenderTotal
 
-	p.addLog(-1, "round_score",
-		fmt.Sprintf("ラウンドスコア: チーム0=%d, チーム1=%d (累計: チーム0=%d, チーム1=%d)",
-			func() int {
-				if bidderTeam == 0 {
-					if bidderTotal >= p.highestBid {
-						return bidderTotal
-					}
-					return -p.highestBid
-				}
-				return defenderTotal
-			}(),
-			func() int {
-				if bidderTeam == 1 {
-					if bidderTotal >= p.highestBid {
-						return bidderTotal
-					}
-					return -p.highestBid
-				}
-				return defenderTotal
-			}(),
-			p.teamScores[0], p.teamScores[1]),
-		nil)
+	team0Round := defenderTotal
+	team1Round := defenderTotal
+	if bidderTeam == 0 {
+		team0Round = bidderTotal
+		if bidderTotal < p.highestBid {
+			team0Round = -p.highestBid
+		}
+	} else {
+		team1Round = bidderTotal
+		if bidderTotal < p.highestBid {
+			team1Round = -p.highestBid
+		}
+	}
+	p.addLog(-1, "round_score", "pinochle.log.roundScore", map[string]string{
+		"team0": fmt.Sprintf("%d", team0Round), "team1": fmt.Sprintf("%d", team1Round),
+		"total0": fmt.Sprintf("%d", p.teamScores[0]), "total1": fmt.Sprintf("%d", p.teamScores[1]),
+	}, nil)
 
 	// ゲーム終了チェック
 	for t := range PinochleTeamCnt {

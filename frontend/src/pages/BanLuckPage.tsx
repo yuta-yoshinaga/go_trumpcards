@@ -11,6 +11,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
+import { KbdBadge } from '../components/KbdBadge';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -254,8 +255,10 @@ function BanLuckPageContent() {
                       data-hint-action="hit"
                       onClick={() => execApi('hit')}
                       disabled={loading}
+                      aria-keyshortcuts="h"
                     >
                       {t('button.hit')}
+                      <KbdBadge label={t('kbd.hit')} />
                     </button>
                     {/* **止まれるかどうかはサーバが決める。** 点数から計算し直さない。 */}
                     {!state.mustHit && (
@@ -266,8 +269,10 @@ function BanLuckPageContent() {
                         data-hint-action="stand"
                         onClick={() => execApi('stand')}
                         disabled={loading}
+                        aria-keyshortcuts="s"
                       >
                         {t('button.stand')}
+                        <KbdBadge label={t('kbd.stand')} />
                       </button>
                     )}
                   </div>

@@ -4,9 +4,11 @@ package presenter
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -71,8 +73,17 @@ func TestCrazyQuiltCuiPresenter_Output(t *testing.T) {
 
 		out := new(CrazyQuiltCuiPresenter).Output(g, nil)
 		// 凡例そのものに * が入るので、**札に付いた印**だけを数える。
-		assert.Contains(t, out, "*SPADE", "available cards carry a marker")
+		assert.Contains(t, out, "[*♠1        ]", "available vertical cards carry a marker")
+		assert.Contains(t, out, "( ♠11       )", "locked horizontal cards still show orientation")
 		assert.Contains(t, out, i18n.T("crazyquilt.availableLegend"))
+
+		board := strings.Split(out, "----------\n")[1]
+		rows := strings.Split(board, "\n")[:domain.CrazyQuiltGridSize]
+		require.Len(t, rows, domain.CrazyQuiltGridSize)
+		for _, row := range rows {
+			assert.Equal(t, crazyQuiltDisplayWidth(row), crazyQuiltDisplayWidth(rows[0]),
+				"every Crazy Quilt row has the same display width")
+		}
 	})
 
 	// 負のコントロール: 1 枚も取れない盤面では印が出ない。
@@ -85,7 +96,7 @@ func TestCrazyQuiltCuiPresenter_Output(t *testing.T) {
 		}
 
 		out := new(CrazyQuiltCuiPresenter).Output(g, nil)
-		assert.NotContains(t, out, "*SPADE", "no card is marked")
+		assert.NotContains(t, out, "[*", "no card is marked")
 		// 凡例は常に出るので、それだけは残る。
 		assert.Contains(t, out, i18n.T("crazyquilt.availableLegend"))
 	})
@@ -148,6 +159,71 @@ func TestCrazyQuiltCuiPresenter_Output(t *testing.T) {
 	}
 }
 
+func TestCrazyQuiltCellMarkKeepsColoredBoardRowsAligned(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(false)
+	defer color.SetNoColor(origNoColor)
+
+	g := new(interfaces.MockCrazyQuiltGame)
+	setupCrazyQuiltCuiMockDefaults(g)
+	var quilt [domain.CrazyQuiltCells]*domain.Card
+	for i := range quilt {
+		quilt[i] = domain.NewCard(domain.CardDesignSpade, (i%13)+1, true)
+	}
+	quilt[0] = domain.NewCard(domain.CardDesignHeart, 1, true)
+	quilt[1] = domain.NewCard(domain.CardDesignDiamond, 2, true)
+	quilt[2] = domain.NewCard(domain.CardDesignHeart, 3, true)
+	quilt[3] = domain.NewCard(domain.CardDesignDiamond, 4, true)
+	g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetQuilt")
+	g.On("GetQuilt").Return(quilt)
+	g.ExpectedCalls = filterCalls(g.ExpectedCalls, "IsAvailable")
+	for i := range domain.CrazyQuiltCells {
+		g.On("IsAvailable", i).Return(i < 2)
+	}
+
+	out := new(CrazyQuiltCuiPresenter).Output(g, nil)
+	board := strings.Split(out, "----------\n")[1]
+	rows := strings.Split(board, "\n")[:domain.CrazyQuiltGridSize]
+	stripANSI := func(s string) string {
+		return strings.ReplaceAll(strings.ReplaceAll(s, "\033[31m", ""), "\033[0m", "")
+	}
+	for _, row := range rows {
+		assert.Equal(t, crazyQuiltDisplayWidth(stripANSI(rows[0])), crazyQuiltDisplayWidth(stripANSI(row)),
+			"every colored board row has the same display width")
+	}
+	assert.Contains(t, stripANSI(rows[0]), "[*♥1        ]", "red available vertical cell is aligned")
+	assert.Contains(t, stripANSI(rows[0]), "(*♦2        )", "red available horizontal cell is aligned")
+	assert.Contains(t, stripANSI(rows[0]), "[ ♥3        ]", "red unavailable vertical cell is aligned")
+	assert.Contains(t, stripANSI(rows[0]), "( ♦4        )", "red unavailable horizontal cell is aligned")
+
+	color.SetNoColor(true)
+	out = new(CrazyQuiltCuiPresenter).Output(g, nil)
+	board = strings.Split(out, "----------\n")[1]
+	rows = strings.Split(board, "\n")[:domain.CrazyQuiltGridSize]
+	for _, row := range rows {
+		assert.Equal(t, crazyQuiltDisplayWidth(rows[0]), crazyQuiltDisplayWidth(row),
+			"every no-color board row has the same display width")
+	}
+}
+
+func TestCrazyQuiltCuiPresenter_JapaneseEmptyCellsKeepRowsAligned(t *testing.T) {
+	origLang := i18n.Lang()
+	i18n.SetLang("ja")
+	defer i18n.SetLang(origLang)
+
+	g := new(interfaces.MockCrazyQuiltGame)
+	setupCrazyQuiltCuiMockDefaults(g)
+
+	out := new(CrazyQuiltCuiPresenter).Output(g, nil)
+	board := strings.Split(out, "----------\n")[1]
+	rows := strings.Split(board, "\n")[:domain.CrazyQuiltGridSize]
+	require.Contains(t, out, "・", "Japanese empty cells are present in the mixed board")
+	for _, row := range rows {
+		assert.Equal(t, crazyQuiltDisplayWidth(rows[0]), crazyQuiltDisplayWidth(row),
+			"Japanese empty-cell markers must occupy two terminal columns")
+	}
+}
+
 func TestCrazyQuiltCuiPresenter_HintOutput(t *testing.T) {
 	for _, tc := range []struct {
 		name     string
@@ -200,7 +276,7 @@ func TestCrazyQuiltCuiPresenter_ActionLogOutput(t *testing.T) {
 		g := new(interfaces.MockCrazyQuiltGame)
 		g.On("GetPhase").Return(domain.CrazyQuiltPhaseGameOver)
 		g.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "move", Detail: "test"},
+			{TurnNumber: 1, ActionType: "move", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 
 		assert.Contains(t, new(CrazyQuiltCuiPresenter).ActionLogOutput(g), "move")

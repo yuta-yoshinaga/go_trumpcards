@@ -132,15 +132,21 @@ func GetSpanish21StrategyAction(hand *BlackJackHand, dealerUpcard *Card) BJSugge
 }
 
 // GetVariantStrategyAction はバリアントに応じた推奨アクションを返す。
-// スパニッシュ21以外は標準の基本戦略表にフォールバックする。
+// Double Exposure は、ディーラーのホールカードが渡されたときだけ専用表を使う。
 func GetVariantStrategyAction(
 	hand *BlackJackHand,
-	dealerUpcard *Card,
+	dealerUpcard, dealerHole *Card,
 	dealerHitsSoft17 bool,
 	variant BlackJackVariantName,
 ) BJSuggestedAction {
 	if variant == BJVariantSpanish21 {
 		return GetSpanish21StrategyAction(hand, dealerUpcard)
+	}
+	if variant == BJVariantDoubleExposure && dealerHole != nil {
+		dealerHand := NewBlackJackHand()
+		dealerHand.AddCard(dealerUpcard)
+		dealerHand.AddCard(dealerHole)
+		return GetDoubleExposureStrategyAction(hand, dealerHand.GetScore(), dealerHand.IsSoft())
 	}
 	return GetBasicStrategyAction(hand, dealerUpcard, dealerHitsSoft17)
 }

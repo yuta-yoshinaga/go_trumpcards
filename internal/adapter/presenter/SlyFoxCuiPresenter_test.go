@@ -137,9 +137,38 @@ func TestSlyFoxCuiPresenter_Output(t *testing.T) {
 			g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetPhase")
 			g.On("GetPhase").Return(tc.val)
 
-			assert.Contains(t, new(SlyFoxCuiPresenter).Output(g, nil), tc.want)
+			result := new(SlyFoxCuiPresenter).Output(g, nil)
+			assert.Contains(t, result, tc.want)
+			if tc.val == domain.SlyFoxPhaseGameOver {
+				assert.Contains(t, result, "組札 0/104 枚（0%）まで到達")
+			}
 		})
 	}
+
+	t.Run("game over summary counts every foundation", func(t *testing.T) {
+		g := new(interfaces.MockSlyFoxGame)
+		setupSlyFoxCuiMockDefaults(g)
+		g.ExpectedCalls = filterCalls(filterCalls(g.ExpectedCalls, "GetPhase"), "GetFoundation")
+		g.On("GetPhase").Return(domain.SlyFoxPhaseGameOver)
+		var foundation [domain.SlyFoxFoundationCnt][]*domain.Card
+		foundation[0] = []*domain.Card{
+			domain.NewCard(domain.CardDesignSpade, 1, true),
+			domain.NewCard(domain.CardDesignSpade, 2, true),
+		}
+		foundation[7] = []*domain.Card{domain.NewCard(domain.CardDesignHeart, 13, true)}
+		g.On("GetFoundation").Return(foundation)
+
+		assert.Contains(t, new(SlyFoxCuiPresenter).Output(g, nil), "組札 3/104 枚（3%）まで到達")
+	})
+
+	t.Run("game clear has no game over summary", func(t *testing.T) {
+		g := new(interfaces.MockSlyFoxGame)
+		setupSlyFoxCuiMockDefaults(g)
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetPhase")
+		g.On("GetPhase").Return(domain.SlyFoxPhaseGameClear)
+
+		assert.NotContains(t, new(SlyFoxCuiPresenter).Output(g, nil), "組札 0/104 枚（0%）まで到達")
+	})
 }
 
 func TestSlyFoxCuiPresenter_HintOutput(t *testing.T) {
@@ -150,7 +179,7 @@ func TestSlyFoxCuiPresenter_HintOutput(t *testing.T) {
 	}{
 		{"tableau to a foundation",
 			&domain.SlyFoxHint{FromZone: "tableau", FromIdx: 1, ToZone: "foundation", ToIdx: 2},
-			[]string{"リザーブ枠1", "基礎札2"}},
+			[]string{"リザーブ枠1", "組札2"}},
 		{"between piles",
 			&domain.SlyFoxHint{FromZone: "tableau", FromIdx: 0, ToZone: "tableau", ToIdx: 5},
 			[]string{"リザーブ枠0", "リザーブ枠5"}},
@@ -159,7 +188,7 @@ func TestSlyFoxCuiPresenter_HintOutput(t *testing.T) {
 			[]string{"山札", "リザーブ枠3"}},
 		{"deal straight to a foundation",
 			&domain.SlyFoxHint{FromZone: "stock", FromIdx: -1, ToZone: "foundation", ToIdx: 2},
-			[]string{"山札", "基礎札2"}},
+			[]string{"山札", "組札2"}},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			g := new(interfaces.MockSlyFoxGame)
@@ -193,7 +222,7 @@ func TestSlyFoxCuiPresenter_ActionLogOutput(t *testing.T) {
 		g := new(interfaces.MockSlyFoxGame)
 		g.On("GetPhase").Return(domain.SlyFoxPhaseGameOver)
 		g.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "move", Detail: "test"},
+			{TurnNumber: 1, ActionType: "move", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 
 		assert.Contains(t, new(SlyFoxCuiPresenter).ActionLogOutput(g), "move")
@@ -221,11 +250,11 @@ func TestSlyFoxCuiPresenter_MarksOnlyTheMovableCard(t *testing.T) {
 	out := new(SlyFoxCuiPresenter).Output(g, nil)
 
 	// 一番上だけが囲まれ、下の 2 枚は地の文で並ぶ。
-	assert.Contains(t, out, "枠0: SPADE 4  CLOVER 7  <SPADE 11>")
+	assert.Contains(t, out, "枠0: ♠4  ♣7  <♠11>")
 	// 添字はどのカードにも付かない。
-	assert.NotContains(t, out, "[0]SPADE 4")
-	assert.NotContains(t, out, "[1]CLOVER 7")
-	assert.NotContains(t, out, "[2]SPADE 11")
+	assert.NotContains(t, out, "[0]♠4")
+	assert.NotContains(t, out, "[1]♣7")
+	assert.NotContains(t, out, "[2]♠11")
 	// 読み方の説明も出す。
 	assert.Contains(t, out, i18n.T("slyfox.pileTopNote"))
 	assert.NotContains(t, out, "{{")

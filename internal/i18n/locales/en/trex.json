@@ -34,5 +34,6 @@
   "hintReasonPass": "you have no legal play",
   "helpExamplePlay": "  p 0                      play hand card 0",
   "helpHint": "  h                        show a hint",
-  "penaltyMark": "({{points}})"
+  "penaltyMark": "({{points}})",
+  "log.firstKingdom": "owns the first kingdom (dealt the seven of hearts)", "log.contract": "chooses contract {{contract}}", "log.play": "plays a card", "log.pass": "cannot play and passes", "log.extend": "extends the layout", "log.out": "goes out in position {{position}}", "log.trick": "wins the trick for {{penalty}}", "log.dealEnd": "deal {{deal}} of {{total}} settled", "log.gameEnd": "all twenty deals played", "log.nextKingdom": "takes over the kingdom"
 }

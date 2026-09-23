@@ -39,9 +39,14 @@ func (p *SnapCuiPresenter) Output(s interfaces.SnapGame, lastErr error) string {
 			if i == s.GetCurrentTurnIdx() && !s.GetGameEndFlag() {
 				marker = ">"
 			}
+			role := ""
+			if s.GetPlayer(i).GetStockSize() == 0 {
+				role = i18n.T("snap.roleOut")
+			}
 			sb.WriteString(marker + i18n.Tf("snap.playerLine",
 				"name", cuiPlayerName(s.GetPlayer(i), i),
-				"stock", strconv.Itoa(s.GetPlayer(i).GetStockSize())) + "\n")
+				"stock", strconv.Itoa(s.GetPlayer(i).GetStockSize()),
+				"role", role) + "\n")
 		}
 
 		sb.WriteString("----------\n")

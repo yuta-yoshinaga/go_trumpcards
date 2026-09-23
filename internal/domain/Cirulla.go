@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // CirullaPlayerCnt はプレイヤー数 (ヘッズアップ)。
@@ -147,8 +148,7 @@ func (c *Cirulla) startRound() {
 	}
 	c.currentPlayer = (c.dealerIdx + 1) % CirullaPlayerCnt
 	c.phase = CirullaPhasePlay
-	c.appendLog(-1, "deal", fmt.Sprintf("round %d: dealer=%d, table=%d",
-		c.roundNumber, c.dealerIdx, len(c.table)), nil)
+	c.appendLog(-1, "deal", "cirulla.log.deal", map[string]string{"round": strconv.Itoa(c.roundNumber), "dealer": strconv.Itoa(c.dealerIdx), "table": strconv.Itoa(len(c.table))}, nil)
 }
 
 // dealHands は各席へ 3 枚配り、配札ボーナスを判定する。
@@ -171,8 +171,7 @@ func (c *Cirulla) dealHands() {
 		c.lastBonus[idx] = name
 		if points > 0 {
 			c.players[idx].AddBonusPoints(points)
-			c.appendLog(idx, "bonus",
-				fmt.Sprintf("player %d scores %s for %d", idx, name, points), hand)
+			c.appendLog(idx, "bonus", "cirulla.log.bonus", map[string]string{"player": strconv.Itoa(idx), "bonusKey": cirullaBonusLogKey(name), "points": strconv.Itoa(points)}, hand)
 		}
 	}
 }
@@ -228,8 +227,7 @@ func (c *Cirulla) applyPlay(playerIdx, handIdx int, captureIdxs []int) error {
 		}
 		played := player.RemoveCard(handIdx)
 		c.table = append(c.table, played)
-		c.appendLog(playerIdx, "discard",
-			fmt.Sprintf("player %d lays %s", playerIdx, cardStr(played)), []*Card{played})
+		c.appendLog(playerIdx, "discard", "cirulla.log.discard", map[string]string{"player": strconv.Itoa(playerIdx), "card": cardStr(played)}, []*Card{played})
 		c.advance()
 		return nil
 	}
@@ -241,14 +239,13 @@ func (c *Cirulla) applyPlay(playerIdx, handIdx int, captureIdxs []int) error {
 	taken := c.removeFromTable(captureIdxs)
 	player.AddCaptured(append(taken, played))
 	c.lastCapturer = playerIdx
-	c.appendLog(playerIdx, "capture",
-		fmt.Sprintf("player %d takes %d card(s) with %s", playerIdx, len(taken), cardStr(played)),
+	c.appendLog(playerIdx, "capture", "cirulla.log.capture", map[string]string{"player": strconv.Itoa(playerIdx), "count": strconv.Itoa(len(taken)), "card": cardStr(played)},
 		append([]*Card{played}, taken...))
 
 	// **場を空にしたらスコパ。** ただし山も手札も尽きた最後の手は数えない。
 	if len(c.table) == 0 && !c.isFinalPlay() {
 		player.AddScopa()
-		c.appendLog(playerIdx, "scopa", fmt.Sprintf("player %d sweeps the table", playerIdx), nil)
+		c.appendLog(playerIdx, "scopa", "cirulla.log.scopa", map[string]string{"player": strconv.Itoa(playerIdx)}, nil)
 	}
 	c.advance()
 	return nil
@@ -316,9 +313,7 @@ func (c *Cirulla) handsEmpty() bool {
 func (c *Cirulla) finishRound() {
 	if len(c.table) > 0 && c.lastCapturer >= 0 {
 		c.players[c.lastCapturer].AddCaptured(c.table)
-		c.appendLog(c.lastCapturer, "sweep",
-			fmt.Sprintf("player %d takes the %d card(s) left on the table",
-				c.lastCapturer, len(c.table)), c.table)
+		c.appendLog(c.lastCapturer, "sweep", "cirulla.log.sweep", map[string]string{"player": strconv.Itoa(c.lastCapturer), "count": strconv.Itoa(len(c.table))}, c.table)
 		c.table = make([]*Card, 0)
 	}
 
@@ -328,8 +323,7 @@ func (c *Cirulla) finishRound() {
 		p.AddScore(result.Totals[i])
 	}
 	c.phase = CirullaPhaseRoundEnd
-	c.appendLog(-1, "roundEnd", fmt.Sprintf("round %d: %d - %d",
-		c.roundNumber, result.Totals[0], result.Totals[1]), nil)
+	c.appendLog(-1, "roundEnd", "cirulla.log.roundEnd", map[string]string{"round": strconv.Itoa(c.roundNumber), "score0": strconv.Itoa(result.Totals[0]), "score1": strconv.Itoa(result.Totals[1])}, nil)
 	c.checkGameEnd(result)
 }
 
@@ -445,7 +439,12 @@ func (c *Cirulla) finishGame(winner int) {
 	c.gameEndFlag = true
 	c.winnerIdx = winner
 	c.phase = CirullaPhaseGameEnd
-	c.appendLog(-1, "gameEnd", fmt.Sprintf("player %d wins the match", winner), nil)
+	c.appendLog(-1, "gameEnd", "cirulla.log.gameEnd", map[string]string{"player": strconv.Itoa(winner)}, nil)
+}
+
+// appendLog records a Cirulla action with a locale-independent detail code.
+func (c *Cirulla) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	c.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // IsHumanTurn は人間の手番かを返す。
@@ -685,3 +684,15 @@ func cirullaRandIntn(n int) int {
 // **場は配りで決まるので、狙った盤面は組めない。** 捕獲規則を確かめるには
 // ここで固定するしかない。
 func (c *Cirulla) SetTableForTest(cards []*Card) { c.table = cards }
+
+// cirullaBonusLogKey はチルッラのボーナス名をログ用の翻訳キーに変換する。
+func cirullaBonusLogKey(name string) string {
+	switch name {
+	case "barsega":
+		return "cirulla.bonus.barsega"
+	case "barsegon":
+		return "cirulla.bonus.barsegon"
+	default:
+		return "cirulla.bonus.unknown"
+	}
+}

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // WhistHandSize 各プレイヤーの手札枚数
@@ -142,7 +143,7 @@ func (w *Whist) PlayerPlay(cardIndex int) error {
 
 	player := w.players[w.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "whist.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
@@ -191,7 +192,9 @@ func (w *Whist) ResolveTrick() {
 	w.players[winnerIdx].AddTrick(trickCards)
 
 	winnerName := playerName(w.players, winnerIdx)
-	w.appendLog(winnerIdx, "trick_win", fmt.Sprintf("%s wins trick %d", winnerName, w.trickNumber), trickCards)
+	w.appendLog(winnerIdx, "trick_win", "whist.log.trickWin", map[string]string{
+		"name": winnerName, "trick": strconv.Itoa(w.trickNumber),
+	}, trickCards)
 
 	w.leadPlayerIdx = winnerIdx
 
@@ -241,8 +244,10 @@ func (w *Whist) ScoreRound() {
 				p.CommitRoundScore()
 			}
 		}
-		w.appendLog(-1, "round_score",
-			fmt.Sprintf("Team %d: %d points (tricks: %d, total: %d)", ti, points, teamTricks[ti], w.teamScores[ti]), nil)
+		w.appendLog(-1, "round_score", "whist.log.roundScore", map[string]string{
+			"team": strconv.Itoa(ti), "points": strconv.Itoa(points),
+			"tricks": strconv.Itoa(teamTricks[ti]), "total": strconv.Itoa(w.teamScores[ti]),
+		}, nil)
 	}
 
 	w.checkGameEnd()
@@ -374,7 +379,7 @@ func (w *Whist) dealAndSetTrump() {
 		w.trumpSuit = CardDesignSpade
 	}
 
-	w.appendLog(-1, "trump", fmt.Sprintf("Trump suit: %s", suitName(w.trumpSuit)), nil)
+	w.appendLog(-1, "trump", "whist.log.trump", map[string]string{"suitKey": suitKeyOf(w.trumpSuit)}, nil)
 }
 
 // startPlayPhase プレイフェーズ開始: ディーラーの左隣がリード
@@ -393,7 +398,9 @@ func (w *Whist) playCard(playerIdx int, card *Card) {
 		Card:      card,
 	})
 
-	w.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(w.players, playerIdx), cardStr(card)), []*Card{card})
+	w.appendLog(playerIdx, "play", "whist.log.play", map[string]string{
+		"name": playerName(w.players, playerIdx), "card": cardStr(card),
+	}, []*Card{card})
 
 	if len(w.currentTrick) == WhistPlayerCnt {
 		w.phase = WhistPhaseTrickEnd
@@ -413,7 +420,7 @@ func (w *Whist) validatePlay(playerIdx int, card *Card) error {
 	leadSuit := w.currentTrick[0].Card.GetDesign()
 	if card.GetDesign() != leadSuit {
 		if w.playerHasSuit(playerIdx, leadSuit) {
-			return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+			return NewDomainErrorCode(ErrInvalidPlay, "whist.errFollowLeadSuit", nil)
 		}
 	}
 
@@ -453,7 +460,12 @@ func (w *Whist) checkGameEnd() {
 	} else {
 		w.winnerTeam = 1
 	}
-	w.appendLog(-1, "game_end", fmt.Sprintf("Team %d wins the game!", w.winnerTeam), nil)
+	w.appendLog(-1, "game_end", "whist.log.gameEnd", map[string]string{"team": strconv.Itoa(w.winnerTeam)}, nil)
+}
+
+// appendLog records a Whist action with a locale-independent detail code.
+func (w *Whist) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	w.appendLogCodeAt(len(w.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // sortAllHands 全プレイヤーの手札をソートする

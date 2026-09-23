@@ -60,6 +60,12 @@ func (_m *MockFrenchTarotGame) GetConfig() domain.FrenchTarotConfig {
 	return _m.Called().Get(0).(domain.FrenchTarotConfig)
 }
 
+// GetTarget モック
+func (_m *MockFrenchTarotGame) GetTarget() int { return _m.Called().Int(0) }
+
+// GetDeclarerCapturedPoints モック
+func (_m *MockFrenchTarotGame) GetDeclarerCapturedPoints() int { return _m.Called().Int(0) }
+
 // SetConfig モック
 func (_m *MockFrenchTarotGame) SetConfig(cfg domain.FrenchTarotConfig) { _m.Called(cfg) }
 
@@ -92,6 +98,12 @@ func (_m *MockFrenchTarotGame) GetCurrentPlayerIdx() int { return _m.Called().In
 // GetCurrentTrick モック
 func (_m *MockFrenchTarotGame) GetCurrentTrick() []*domain.TrickCard {
 	return _m.Called().Get(0).([]*domain.TrickCard)
+}
+
+// GetLastTrickWinner モック
+func (_m *MockFrenchTarotGame) GetLastTrickWinner() int {
+	ret := _m.Called()
+	return ret.Get(0).(int)
 }
 
 // GetLeadPlayerIdx モック

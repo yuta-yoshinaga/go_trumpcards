@@ -110,6 +110,29 @@ func TestWattenCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "応答")
+		assert.Contains(t, result, "吊り上げ: 相手チーム")
+	})
+
+	t.Run("respond phase hides an unset raiser", func(t *testing.T) {
+		m, _ := setupWattenCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRaiserTeam")
+		m.On("GetPhase").Return(domain.WattenPhaseRespond)
+		m.On("GetRaiserTeam").Return(-1)
+
+		result := p.Output(m, nil)
+		assert.NotContains(t, result, "吊り上げ:")
+	})
+
+	t.Run("respond phase identifies a raise by the human team", func(t *testing.T) {
+		m, _ := setupWattenCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRaiserTeam")
+		m.On("GetPhase").Return(domain.WattenPhaseRespond)
+		m.On("GetRaiserTeam").Return(0)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "吊り上げ: 自チーム")
 	})
 
 	t.Run("phase: round end", func(t *testing.T) {
@@ -164,19 +187,26 @@ func TestWattenCuiPresenter_HintOutput(t *testing.T) {
 	t.Run("raise hint", func(t *testing.T) {
 		m := setupWattenCuiMock()
 		m.On("GetHint").Return(&domain.WattenHint{Action: "raise", Reason: "raise_strong"})
-		assert.Contains(t, p.HintOutput(m), "HINT")
+		assert.Contains(t, p.HintOutput(m), "ヒント")
 	})
 
 	t.Run("hold hint", func(t *testing.T) {
 		m := setupWattenCuiMock()
 		m.On("GetHint").Return(&domain.WattenHint{Action: "hold", Reason: "hold_ok"})
-		assert.Contains(t, p.HintOutput(m), "hold")
+		// Reason は未マップのコードなので {{reason}} にそのまま流れる。"hold" を
+		// 探すと接頭辞ではなくそちらに当たって ja/en どちらでも通るので、
+		// 訳された接頭辞そのものを見る。
+		out := p.HintOutput(m)
+		assert.Contains(t, out, "[ヒント: ホールド")
+		assert.NotContains(t, out, "[HINT:")
 	})
 
 	t.Run("fold hint", func(t *testing.T) {
 		m := setupWattenCuiMock()
 		m.On("GetHint").Return(&domain.WattenHint{Action: "fold", Reason: "fold_weak"})
-		assert.Contains(t, p.HintOutput(m), "fold")
+		out := p.HintOutput(m)
+		assert.Contains(t, out, "[ヒント: フォールド")
+		assert.NotContains(t, out, "[HINT:")
 	})
 
 	t.Run("card hint", func(t *testing.T) {
@@ -184,7 +214,7 @@ func TestWattenCuiPresenter_HintOutput(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
 		idx := 0
 		m.On("GetHint").Return(&domain.WattenHint{Action: "play", CardIndex: &idx, Reason: "follow_win"})
-		assert.Contains(t, p.HintOutput(m), "HINT")
+		assert.Contains(t, p.HintOutput(m), "ヒント")
 	})
 }
 

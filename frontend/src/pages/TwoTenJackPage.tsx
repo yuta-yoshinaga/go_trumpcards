@@ -402,6 +402,7 @@ function TwoTenJackPageContent() {
                 cardWidth={cardWidth}
                 isMobile={isMobile}
                 dataTutorialPrefix="tt"
+                validIndices={isHumanTurn ? state.validPlayIndices : undefined}
                 highlightIndices={isHumanTurn && hint?.cardIndex !== undefined ? [hint.cardIndex] : undefined}
               />
             )}

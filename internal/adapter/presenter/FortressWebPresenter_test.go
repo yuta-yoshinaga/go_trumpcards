@@ -189,7 +189,7 @@ func TestFortressWebPresenter_ActionLogOutput(t *testing.T) {
 		bg.On("GetPhase").Return(domain.FortressPhaseGameOver)
 		bg.On("GetGameEndFlag").Return(true)
 		bg.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "move", Detail: "test"},
+			{TurnNumber: 1, ActionType: "move", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 
 		p := new(FortressWebPresenter)

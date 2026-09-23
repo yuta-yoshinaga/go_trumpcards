@@ -403,15 +403,15 @@ func (g *Cinch) validateBidValue(playerIdx, bid int) error {
 	if bid == CinchPassBid {
 		// 親 (dealer) は他全員パスの場合、必ず stuck されるためパス不可。
 		if playerIdx == g.dealerIdx && g.currentBid == 0 && g.bidsCompleted() == CinchPlayerCnt-1 {
-			return NewDomainError(ErrInvalidPlay, "親 (dealer) は全員パスの場合パスできません")
+			return NewDomainErrorCode(ErrInvalidPlay, "cinch.errDealerCannotPassWhenAllPass", nil)
 		}
 		return nil
 	}
 	if bid < CinchMinBid || bid > CinchMaxBid {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("ビッドは pass(0) または %d〜%d で指定してください", CinchMinBid, CinchMaxBid))
+		return NewDomainErrorCode(ErrInvalidPlay, "cinch.errBidRange", map[string]string{"min": fmt.Sprintf("%d", CinchMinBid), "max": fmt.Sprintf("%d", CinchMaxBid)})
 	}
 	if bid <= g.currentBid {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("ビッドは現在の最高 %d を超える必要があります", g.currentBid))
+		return NewDomainErrorCode(ErrInvalidPlay, "cinch.errBidMustExceedCurrent", map[string]string{"bid": fmt.Sprintf("%d", g.currentBid)})
 	}
 	return nil
 }
@@ -423,11 +423,11 @@ func (g *Cinch) applyBid(playerIdx, bid int) {
 		g.currentBid = bid
 		g.bidWinnerIdx = playerIdx
 	}
-	logBid := fmt.Sprintf("%d", bid)
 	if bid == CinchPassBid {
-		logBid = "pass"
+		g.appendLog(playerIdx, "bid", "cinch.log.bidPass", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
+		return
 	}
-	g.appendLog(playerIdx, "bid", fmt.Sprintf("%s bids %s", playerName(g.players, playerIdx), logBid), nil)
+	g.appendLog(playerIdx, "bid", "cinch.log.bid", map[string]string{"name": playerName(g.players, playerIdx), "bid": fmt.Sprintf("%d", bid)}, nil)
 }
 
 // advanceBid は次のビッド手番へ進める。全員終わればトランプ宣言へ移る (stuck dealer も処理)。
@@ -438,7 +438,7 @@ func (g *Cinch) advanceBid() {
 		// 親に到達し、かつ全員パス済みの場合 stuck 強制。
 		if g.bidPlayerIdx == g.dealerIdx && g.currentBid == 0 && bidsDone == CinchPlayerCnt-1 {
 			g.applyBid(g.dealerIdx, CinchMinBid)
-			g.appendLog(g.dealerIdx, "stuck", fmt.Sprintf("%s is stuck with %d", playerName(g.players, g.dealerIdx), CinchMinBid), nil)
+			g.appendLog(g.dealerIdx, "stuck", "cinch.log.stuck", map[string]string{"name": playerName(g.players, g.dealerIdx), "bid": fmt.Sprintf("%d", CinchMinBid)}, nil)
 			g.startNameTrump()
 		}
 		return
@@ -466,8 +466,7 @@ func (g *Cinch) startNameTrump() {
 		g.players[g.dealerIdx].SetBid(CinchMinBid)
 	}
 	g.phase = CinchPhaseNameTrump
-	g.appendLog(g.bidWinnerIdx, "bid_won",
-		fmt.Sprintf("%s wins the bid at %d and will name trump", playerName(g.players, g.bidWinnerIdx), g.currentBid), nil)
+	g.appendLog(g.bidWinnerIdx, "bid_won", "cinch.log.bidWon", map[string]string{"name": playerName(g.players, g.bidWinnerIdx), "bid": fmt.Sprintf("%d", g.currentBid)}, nil)
 }
 
 // NameTrump は人間のビッド勝者が切り札スートを宣言する。
@@ -487,10 +486,10 @@ func (g *Cinch) NameTrump(suit int) error {
 // applyNameTrump は切り札宣言の共通処理 (human / CPU)。
 func (g *Cinch) applyNameTrump(suit int) error {
 	if suit < CardDesignSpade || suit > CardDesignDiamond {
-		return NewDomainError(ErrInvalidPlay, "切り札スートは 1〜4 で指定してください")
+		return NewDomainErrorCode(ErrInvalidPlay, "cinch.errTrumpSuitRange", nil)
 	}
 	g.trumpSuit = suit
-	g.appendLog(g.bidWinnerIdx, "trump_set", fmt.Sprintf("Trump is %s", suitName(suit)), nil)
+	g.appendLog(g.bidWinnerIdx, "trump_set", "cinch.log.trumpSet", map[string]string{"suitKey": suitKeyOf(suit)}, nil)
 	g.startPlayPhase()
 	return nil
 }
@@ -517,7 +516,7 @@ func (g *Cinch) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "cinch.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
@@ -562,7 +561,7 @@ func (g *Cinch) CpuPlay() {
 // playCard はカードをプレイする共通処理。
 func (g *Cinch) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "cinch.log.play", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(g.currentTrick) == CinchPlayerCnt {
 		g.phase = CinchPhaseTrickEnd
@@ -586,7 +585,7 @@ func (g *Cinch) validatePlay(playerIdx int, card *Card) error {
 			return nil
 		}
 		if g.playerHasTrump(playerIdx) {
-			return NewDomainError(ErrInvalidPlay, "切り札のリードには切り札で従ってください")
+			return NewDomainErrorCode(ErrInvalidPlay, "cinch.errFollowTrumpLead", nil)
 		}
 		return nil
 	}
@@ -599,7 +598,7 @@ func (g *Cinch) validatePlay(playerIdx int, card *Card) error {
 		return nil
 	}
 	if g.playerHasOffSuit(playerIdx, leadSuit) {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従うか切り札を切ってください")
+		return NewDomainErrorCode(ErrInvalidPlay, "cinch.errFollowLeadOrTrump", nil)
 	}
 	return nil
 }
@@ -641,8 +640,7 @@ func (g *Cinch) ResolveTrick() {
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.lastTrick = g.currentTrick
 	g.lastTrickWinner = winnerIdx
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d", playerName(g.players, winnerIdx), g.trickNumber), trickCards)
+	g.appendLog(winnerIdx, "trick_win", "cinch.log.trickWin", map[string]string{"name": playerName(g.players, winnerIdx), "trick": fmt.Sprintf("%d", g.trickNumber)}, trickCards)
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= CinchTotalTricks {
 		g.phase = CinchPhaseRoundEnd
@@ -718,19 +716,15 @@ func (g *Cinch) ScoreRound() {
 			if pts < g.currentBid {
 				gained[i] = -g.currentBid
 				setBack = true
-				g.appendLog(i, "set_back",
-					fmt.Sprintf("%s set back: bid=%d earned=%d -> %d",
-						playerName(g.players, i), g.currentBid, pts, -g.currentBid), nil)
+				g.appendLog(i, "set_back", "cinch.log.setBack", map[string]string{"name": playerName(g.players, i), "bid": fmt.Sprintf("%d", g.currentBid), "earned": fmt.Sprintf("%d", pts), "result": fmt.Sprintf("%d", -g.currentBid)}, nil)
 			} else {
 				gained[i] = pts
-				g.appendLog(i, "bid_made",
-					fmt.Sprintf("%s makes bid: bid=%d earned=%d -> +%d",
-						playerName(g.players, i), g.currentBid, pts, pts), nil)
+				g.appendLog(i, "bid_made", "cinch.log.bidMade", map[string]string{"name": playerName(g.players, i), "bid": fmt.Sprintf("%d", g.currentBid), "earned": fmt.Sprintf("%d", pts), "result": fmt.Sprintf("+%d", pts)}, nil)
 			}
 		} else {
 			gained[i] = pts
 			if pts > 0 {
-				g.appendLog(i, "non_bidder_score", fmt.Sprintf("%s scores %d", playerName(g.players, i), pts), nil)
+				g.appendLog(i, "non_bidder_score", "cinch.log.nonBidderScore", map[string]string{"name": playerName(g.players, i), "points": fmt.Sprintf("%d", pts)}, nil)
 			}
 		}
 	}
@@ -746,8 +740,7 @@ func (g *Cinch) ScoreRound() {
 		Gained:    gained,
 	}
 	for i := 0; i < CinchPlayerCnt; i++ {
-		g.appendLog(i, "cumulative_score",
-			fmt.Sprintf("%s: total=%d", playerName(g.players, i), g.players[i].GetTotalScore()), nil)
+		g.appendLog(i, "cumulative_score", "cinch.log.cumulativeScore", map[string]string{"name": playerName(g.players, i), "total": fmt.Sprintf("%d", g.players[i].GetTotalScore())}, nil)
 	}
 	g.checkGameEnd()
 }
@@ -768,8 +761,7 @@ func (g *Cinch) computeRoundPoints() map[int]int {
 			for _, card := range trick {
 				if pv := cinchPointValue(card, g.trumpSuit); pv > 0 {
 					points[playerIdx] += pv
-					g.appendLog(playerIdx, "score_point",
-						fmt.Sprintf("%s captures %s (%d pt)", playerName(g.players, playerIdx), cardStr(card), pv), nil)
+					g.appendLog(playerIdx, "score_point", "cinch.log.scorePoint", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card), "points": fmt.Sprintf("%d", pv)}, nil)
 				}
 			}
 		}
@@ -809,7 +801,12 @@ func (g *Cinch) finishGame(winner int) {
 	g.gameEndFlag = true
 	g.phase = CinchPhaseGameEnd
 	g.winnerIdx = winner
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(g.players, winner)), nil)
+	g.appendLog(-1, "game_end", "cinch.log.gameEnd", map[string]string{"name": playerName(g.players, winner)}, nil)
+}
+
+// appendLog records a Cinch action with a locale-independent detail code.
+func (g *Cinch) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- ヘルパー ---

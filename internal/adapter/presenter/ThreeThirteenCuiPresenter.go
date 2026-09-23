@@ -78,6 +78,7 @@ func (p *ThreeThirteenCuiPresenter) Output(g interfaces.ThreeThirteenGame, lastE
 	return buildCuiOutput(i18n.T("threethirteen.helpTitle"), func(b *strings.Builder) {
 		b.WriteString(i18n.Tf("threethirteen.header",
 			"round", strconv.Itoa(g.GetRound()),
+			"maxRound", strconv.Itoa(domain.ThreeThirteenMaxRound),
 			"wild", strconv.Itoa(g.WildRank()),
 			"stock", strconv.Itoa(g.GetDrawPileCount())) + "\n")
 

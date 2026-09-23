@@ -38,6 +38,7 @@ func setupGoFishMock() *interfaces.MockGoFishGame {
 	m.On("GetHumanAction").Return((*domain.GoFishCpuAction)(nil))
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	m.On("IsHumanTurn").Return(true)
+	m.On("GetHint").Return((*domain.GoFishHint)(nil)).Maybe()
 
 	for i := range 4 {
 		p := domain.NewGoFishPlayer(i == 0)
@@ -118,7 +119,7 @@ func TestGoFishWebPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("with entries", func(t *testing.T) {
 		m := new(interfaces.MockGoFishGame)
 		entries := []*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "ask_hit", Detail: "P0 asked P1 for rank 3"},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "ask_hit", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		}
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetActionLog").Return(entries)

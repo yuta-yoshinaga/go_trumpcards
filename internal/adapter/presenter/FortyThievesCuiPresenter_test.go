@@ -51,9 +51,9 @@ func TestFortyThievesCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(fg, nil)
 		assert.Contains(t, result, "Forty Thieves")
-		assert.Contains(t, result, "Foundation")
-		assert.Contains(t, result, "Stock: 64枚")
-		assert.Contains(t, result, "Waste: [空]")
+		assert.Contains(t, result, "組札")
+		assert.Contains(t, result, "ストック: 64枚")
+		assert.Contains(t, result, "ウェイスト: [空]")
 		assert.Contains(t, result, "列0:")
 		assert.Contains(t, result, "手数: 0")
 		assert.Contains(t, result, "操作: m で移動")
@@ -70,8 +70,8 @@ func TestFortyThievesCuiPresenter_Output(t *testing.T) {
 
 		p := new(FortyThievesCuiPresenter)
 		result := p.Output(fg, nil)
-		assert.Contains(t, result, "Waste:")
-		assert.NotContains(t, result, "Waste: [空]")
+		assert.Contains(t, result, "ウェイスト:")
+		assert.NotContains(t, result, "ウェイスト: [空]")
 	})
 
 	t.Run("with error", func(t *testing.T) {
@@ -144,7 +144,7 @@ func TestFortyThievesCuiPresenter_Output(t *testing.T) {
 		p := new(FortyThievesCuiPresenter)
 		result := p.Output(fg, nil)
 		foundationLine := fortyThievesFoundationLine(result)
-		assert.Contains(t, foundationLine, "SPADE 1")
+		assert.Contains(t, foundationLine, "♠1")
 		assert.NotContains(t, foundationLine, "[空: どのAでも可]")
 	})
 }
@@ -164,7 +164,7 @@ func TestFortyThievesCuiPresenter_HintOutput(t *testing.T) {
 		result := p.HintOutput(fg)
 		assert.Contains(t, result, "ヒント")
 		assert.Contains(t, result, "タブロー列0")
-		assert.Contains(t, result, "ファンデーション")
+		assert.Contains(t, result, "組札")
 	})
 
 	// #5525: ストックだけ残っている局面は行き詰まりではないので、
@@ -226,7 +226,7 @@ func TestFortyThievesCuiPresenter_ActionLogOutput(t *testing.T) {
 		fg := new(interfaces.MockFortyThievesGame)
 		fg.On("GetPhase").Return(domain.FortyThievesPhaseGameOver)
 		fg.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "draw", Detail: "test"},
+			{TurnNumber: 1, ActionType: "draw", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 
 		p := new(FortyThievesCuiPresenter)

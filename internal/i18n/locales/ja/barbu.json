@@ -1,4 +1,14 @@
 {
+  "log.pass": "プレイヤー{{player}}がパスしました",
+  "log.place": "プレイヤー{{player}}が{{card}}を置きました",
+  "log.dominoFinish": "プレイヤー{{player}}が上がりました（順位{{rank}}）",
+  "log.dominoLast": "プレイヤー{{player}}が最後になりました（順位{{rank}}）",
+  "log.gameEnd": "28ディールすべて完了しました",
+  "log.deal": "ディール{{deal}}/{{total}}、ディーラー={{dealer}}",
+  "log.selectContract": "ディーラー{{dealer}}が{{contract}}を選びました",
+  "log.play": "プレイヤー{{player}}が{{card}}を出しました",
+  "log.trickWin": "プレイヤー{{player}}が{{trick}}トリックを取りました",
+  "log.dealEnd": "ディール{{deal}}を{{contract}}で得点しました",
   "helpTitle": "バルブ",
   "hintNone": "ヒントはありません",
   "hintDomino": "推奨: 置けるカード {{cards}}",
@@ -40,5 +50,6 @@
   "contractDescBarbu": "K♥ を取ると −20",
   "contractDescNoLastTrick": "最後のトリックを取ると −20",
   "contractDescTrumps": "1 トリックにつき +5 (切札を選ぶ)",
-  "contractDescDominoes": "手札を早く出し切る (7 並べ)"
+  "contractDescDominoes": "手札を早く出し切る (7 並べ)",
+  "cUnknown": "不明"
 }

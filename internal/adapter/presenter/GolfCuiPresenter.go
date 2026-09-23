@@ -99,6 +99,9 @@ func (pr *GolfCuiPresenter) golfHoleLines(b *strings.Builder) {
 func (pr *GolfCuiPresenter) Output(g interfaces.GolfGame, lastErr error) string {
 	return buildCuiOutput(i18n.T("golf.helpTitle"), func(b *strings.Builder) {
 		layout := g.GetLayout()
+		moveCount := g.GetMoveCount()
+		stockCount := g.GetStockCount()
+		combo := g.GetChainCombo()
 
 		// Waste top drives the ±1 playable check for exposed tableau cards.
 		waste := g.GetWaste()
@@ -137,7 +140,7 @@ func (pr *GolfCuiPresenter) Output(g interfaces.GolfGame, lastErr error) string 
 
 		// Stock + waste
 		b.WriteString(i18n.Tf("golf.stockLine",
-			"count", strconv.Itoa(g.GetStockCount())))
+			"count", strconv.Itoa(stockCount)))
 		if len(waste) > 0 {
 			b.WriteString(i18n.Tf("golf.wasteCard",
 				"card", cuiCardStr(waste[len(waste)-1])))
@@ -158,7 +161,6 @@ func (pr *GolfCuiPresenter) Output(g interfaces.GolfGame, lastErr error) string 
 			pr.recordHole(golfRemainingCount(layout))
 			pr.dealRecorded = true
 		}
-
 		switch g.GetPhase() {
 		case domain.GolfPhasePlaying:
 			if g.IsStalemate() {
@@ -171,13 +173,16 @@ func (pr *GolfCuiPresenter) Output(g interfaces.GolfGame, lastErr error) string 
 				}
 			}
 			b.WriteString(i18n.Tf("cuiSolitaireMoves",
-				"count", strconv.Itoa(g.GetMoveCount())) +
+				"count", strconv.Itoa(moveCount)) +
 				cuiSolitaireUndoHint(g.CanUndo()) + "\n")
 		case domain.GolfPhaseGameClear:
 			b.WriteString(color.Green(i18n.T("cuiSolitaireGameClear")) + " " +
-				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(g.GetMoveCount())) + "\n")
+				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(moveCount)) + "\n")
 		case domain.GolfPhaseGameOver:
 			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
+		}
+		if combo >= 2 {
+			b.WriteString(i18n.Tf("golf.combo", "count", strconv.Itoa(combo)) + "\n")
 		}
 
 		pr.golfHoleLines(b)

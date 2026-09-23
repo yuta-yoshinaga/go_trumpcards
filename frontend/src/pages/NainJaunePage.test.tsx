@@ -106,8 +106,22 @@ describe('NainJaunePage', () => {
 
   // 止まっているかどうかで出せる札がまるで違うので、案内も変わる。
   it('tells a stopped run apart from one in progress', async () => {
+    mockExec.mockResolvedValue(makeState({ playedPile: [card('SPADE', 13)] }));
     renderWithProviders(<NainJaunePage />);
-    await waitFor(() => expect(screen.getByText(/好きな札から始められます/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('nainjaune-run-stopped')).toBeInTheDocument());
+  });
+
+  it('asks a human to lead any card when the run is stopped', async () => {
+    mockExec.mockResolvedValue(makeState({ playedPile: [card('SPADE', 13)], runRank: 0 }));
+    renderWithProviders(<NainJaunePage />);
+    expect(await screen.findByText(/好きな札から始められます/)).toBeInTheDocument();
+  });
+
+  it('shows the stopped-run status while the CPU has the turn', async () => {
+    mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1, playedPile: [card('SPADE', 13)] }));
+    renderWithProviders(<NainJaunePage />);
+    expect(await screen.findByTestId('nainjaune-run-stopped')).toHaveTextContent('停止中');
+    expect(screen.queryByText(/好きな札から始められます/)).not.toBeInTheDocument();
   });
 
   // **スートを問わない**のが Pope Joan との決定的な違い。案内にも出す。

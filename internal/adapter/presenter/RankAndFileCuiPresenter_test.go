@@ -40,6 +40,65 @@ func setupRankAndFileCuiMockDefaults(fg *interfaces.MockRankAndFileGame) {
 	fg.On("GetFoundation").Return(foundation).Maybe()
 }
 
+func TestRankAndFileCuiPresenterTargetsOutput(t *testing.T) {
+	p := &RankAndFileCuiPresenter{}
+
+	t.Run("列挙する", func(t *testing.T) {
+		fg := new(interfaces.MockRankAndFileGame)
+		fg.On("SequenceStarts", 0).Return([]int{1})
+		fg.On("LegalTargets", 0, 1).Return([]int{3, 7})
+		out := p.TargetsOutput(fg, 0, -1)
+		assert.Contains(t, out, "列3")
+		assert.Contains(t, out, "列7")
+		assert.NotContains(t, out, "{{")
+		fg.AssertExpectations(t)
+	})
+
+	t.Run("列が範囲外ならエラー", func(t *testing.T) {
+		fg := new(interfaces.MockRankAndFileGame)
+		out := p.TargetsOutput(fg, domain.RankAndFileTableauCnt, -1)
+		assert.Contains(t, out, "無効な列番号です: 10")
+		assert.Contains(t, out, "\n")
+		fg.AssertNotCalled(t, "SequenceStarts", domain.RankAndFileTableauCnt)
+	})
+
+	t.Run("掴める並びがなければ明示する", func(t *testing.T) {
+		fg := new(interfaces.MockRankAndFileGame)
+		fg.On("SequenceStarts", 0).Return([]int{})
+		out := p.TargetsOutput(fg, 0, -1)
+		assert.Equal(t, "列0の札を置ける先はありません\n", out)
+		fg.AssertExpectations(t)
+	})
+
+	t.Run("指定した掴める札なら合法手を列挙する", func(t *testing.T) {
+		fg := new(interfaces.MockRankAndFileGame)
+		fg.On("SequenceStarts", 0).Return([]int{1, 2})
+		fg.On("LegalTargets", 0, 2).Return([]int{4})
+		out := p.TargetsOutput(fg, 0, 2)
+		assert.Equal(t, "列0の札2を置ける先: 列4\n", out)
+		fg.AssertExpectations(t)
+	})
+
+	t.Run("置ける先がないときは明示する", func(t *testing.T) {
+		fg := new(interfaces.MockRankAndFileGame)
+		fg.On("SequenceStarts", 0).Return([]int{1})
+		fg.On("LegalTargets", 0, 1).Return([]int{})
+		out := p.TargetsOutput(fg, 0, -1)
+		assert.Contains(t, out, "ありません")
+		assert.NotContains(t, out, "{{")
+		fg.AssertExpectations(t)
+	})
+
+	t.Run("指定された札を掴めないときは明示する", func(t *testing.T) {
+		fg := new(interfaces.MockRankAndFileGame)
+		fg.On("SequenceStarts", 0).Return([]int{1})
+		out := p.TargetsOutput(fg, 0, 0)
+		assert.Contains(t, out, "掴めません")
+		assert.NotContains(t, out, "{{")
+		fg.AssertExpectations(t)
+	})
+}
+
 func TestRankAndFileCuiPresenter_Output(t *testing.T) {
 	origNoColor := color.NoColor()
 	color.SetNoColor(true)
@@ -52,9 +111,9 @@ func TestRankAndFileCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(fg, nil)
 		assert.Contains(t, result, "Rank and File")
-		assert.Contains(t, result, "Foundation")
-		assert.Contains(t, result, "Stock: 64枚")
-		assert.Contains(t, result, "Waste: [空]")
+		assert.Contains(t, result, "組札")
+		assert.Contains(t, result, "ストック: 64枚")
+		assert.Contains(t, result, "ウェイスト: [空]")
 		assert.Contains(t, result, "列0:")
 		assert.Contains(t, result, "手数: 0")
 		assert.Contains(t, result, "操作: m で移動")
@@ -68,8 +127,8 @@ func TestRankAndFileCuiPresenter_Output(t *testing.T) {
 
 		p := new(RankAndFileCuiPresenter)
 		result := p.Output(fg, nil)
-		assert.Contains(t, result, "Waste:")
-		assert.NotContains(t, result, "Waste: [空]")
+		assert.Contains(t, result, "ウェイスト:")
+		assert.NotContains(t, result, "ウェイスト: [空]")
 	})
 
 	t.Run("with error", func(t *testing.T) {
@@ -139,7 +198,7 @@ func TestRankAndFileCuiPresenter_Output(t *testing.T) {
 
 		p := new(RankAndFileCuiPresenter)
 		result := p.Output(fg, nil)
-		assert.Contains(t, result, "SPADE 1")
+		assert.Contains(t, result, "♠1")
 	})
 }
 
@@ -158,7 +217,7 @@ func TestRankAndFileCuiPresenter_HintOutput(t *testing.T) {
 		result := p.HintOutput(fg)
 		assert.Contains(t, result, "ヒント")
 		assert.Contains(t, result, "タブロー列0")
-		assert.Contains(t, result, "ファンデーション")
+		assert.Contains(t, result, "組札")
 	})
 
 	// #5525: ストックだけ残っている局面は行き詰まりではないので、
@@ -220,7 +279,7 @@ func TestRankAndFileCuiPresenter_ActionLogOutput(t *testing.T) {
 		fg := new(interfaces.MockRankAndFileGame)
 		fg.On("GetPhase").Return(domain.RankAndFilePhaseGameOver)
 		fg.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "draw", Detail: "test"},
+			{TurnNumber: 1, ActionType: "draw", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 
 		p := new(RankAndFileCuiPresenter)

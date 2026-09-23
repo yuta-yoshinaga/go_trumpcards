@@ -9,6 +9,7 @@ export type ZwickerCommand = 'reset' | 'take' | 'build' | 'trail' | 'next' | 'hi
 
 /** Index selections and values a Zwicker command may carry. */
 export interface ZwickerParams {
+  config?: { cpuDifficulty?: number };
   cardIndex?: number;
   /**
    * Which matching value the played card is used as. Required for `take` —

@@ -287,7 +287,8 @@ function WhistPageContent() {
                         .filter((p) => !p.isHuman)
                         .map((p) => (
                           <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                            {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                            {playerName(p.id, p.isHuman)}: {t('tricks', { count: p.trickCount })} |{' '}
+                            {t('cards', { count: p.cardCount })} |{' '}
                             <span className={teamBadgeClass(p.team)}>{t('team', { n: p.team })}</span> |{' '}
                             {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
                             {t('roundScore', { score: p.roundScore })}
@@ -301,7 +302,8 @@ function WhistPageContent() {
                     .map((p) => (
                       <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
                         <div className="text-ds-text-muted text-sm">
-                          {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                          {playerName(p.id, p.isHuman)}: {t('tricks', { count: p.trickCount })} |{' '}
+                          {t('cards', { count: p.cardCount })} |{' '}
                           <span className={teamBadgeClass(p.team)}>{t('team', { n: p.team })}</span> |{' '}
                           {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
                           {t('roundScore', { score: p.roundScore })}
@@ -423,6 +425,8 @@ function WhistPageContent() {
               <div className="mb-1 text-ds-text-muted text-sm" data-testid="whist-human-team">
                 {tc('label.you')}:{' '}
                 <span className={teamBadgeClass(humanPlayer.team)}>{t('team', { n: humanPlayer.team })}</span>
+                {' | '}
+                {t('tricks', { count: humanPlayer.trickCount })}
               </div>
             )}
 

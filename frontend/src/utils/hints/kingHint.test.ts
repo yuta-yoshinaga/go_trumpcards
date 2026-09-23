@@ -9,12 +9,12 @@ describe('getKingHint', () => {
   });
 
   it('returns null when the hint reason is empty', () => {
-    const state = makeKingState({ hint: { cardIndices: [], reason: '' } });
+    const state = makeKingState({ hint: { cardIndices: [], contract: -1, reason: '' } });
     expect(getKingHint(state)).toBeNull();
   });
 
   it('maps an avoid-low server hint into a HintResult', () => {
-    const state = makeKingState({ hint: { cardIndices: [2], reason: 'avoid_low' } });
+    const state = makeKingState({ hint: { cardIndices: [2], contract: -1, reason: 'avoid_low' } });
     expect(getKingHint(state)).toEqual({
       targetAction: 'play',
       reason: 'hint.avoid_low',
@@ -23,7 +23,7 @@ describe('getKingHint', () => {
   });
 
   it('maps a win-high hint reason verbatim', () => {
-    const state = makeKingState({ hint: { cardIndices: [0], reason: 'win_high' } });
+    const state = makeKingState({ hint: { cardIndices: [0], contract: -1, reason: 'win_high' } });
     expect(getKingHint(state)?.reason).toBe('hint.win_high');
   });
 });

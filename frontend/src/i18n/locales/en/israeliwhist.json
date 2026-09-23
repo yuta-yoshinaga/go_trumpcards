@@ -14,6 +14,7 @@
     "scoreTable": "Exact +(call² + 10), an exact 0 is +25, missing costs -(10 × the difference). All four exact or all four missing doubles either way.",
     "took": "{{n}} taken",
     "total": "{{n}} total",
+    "roundDelta": "this round {{delta}}",
     "you": "You",
     "cpu": "CPU{{idx}}"
   },

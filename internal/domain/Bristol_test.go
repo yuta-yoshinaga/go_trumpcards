@@ -79,6 +79,9 @@ func TestBristol_Draw(t *testing.T) {
 	for i := 0; i < domain.BristolFanCnt; i++ {
 		assert.Len(t, b.GetFan()[i], 1)
 	}
+	entry := b.GetActionLog()[0]
+	assert.Equal(t, "bristol.log.draw", entry.DetailCode)
+	assert.Empty(t, entry.DetailParams)
 	assert.True(t, b.CanUndo())
 }
 

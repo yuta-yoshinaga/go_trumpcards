@@ -127,6 +127,15 @@ func TestGaigel_Marriage(t *testing.T) {
 	assert.Equal(t, 20, g.GetRoundMarriagePoints(0))
 	// The Q was led.
 	assert.Len(t, g.GetCurrentTrick(), 1)
+	var found *domain.ActionLogEntry
+	for _, entry := range g.GetActionLog() {
+		if entry.DetailCode == "gaigel.log.marriage" {
+			found = entry
+		}
+	}
+	require.NotNil(t, found)
+	assert.Equal(t, "0", found.DetailParams["team"])
+	assert.Equal(t, "20", found.DetailParams["bonus"])
 	// Re-declaring the same suit is now blocked.
 	assert.Empty(t, g.GetMarriageIndices(0))
 }

@@ -459,7 +459,12 @@ function RussianSolitairePageContent() {
                             >
                               {tc.faceUp ? (
                                 (() => {
-                                  const inHoverBlock = hoveredBlock?.col === colIdx && cardIdx >= hoveredBlock.cardIdx;
+                                  const inHoverBlock =
+                                    (hoveredBlock?.col === colIdx && cardIdx >= hoveredBlock.cardIdx) ||
+                                    (selectedSource?.zone === 'tableau' &&
+                                      selectedSource.col === colIdx &&
+                                      selectedSource.cardIndex !== undefined &&
+                                      cardIdx >= selectedSource.cardIndex);
                                   return (
                                     <button
                                       type="button"

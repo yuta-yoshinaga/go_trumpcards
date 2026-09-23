@@ -26,5 +26,15 @@
   "srcTableau": "tableau {{col}}",
   "helpExampleDiscard": "  d                    discard one card and end the turn",
   "helpHint": "  h                    show a hint",
-  "helpLog": "  l                    show the action log"
+  "helpLog": "  l                    show the action log",
+  "log.newGame": "Started a new game",
+  "log.toFoundation": "{{source}} → foundation {{foundation}}",
+  "log.toTableau": "{{source}} → tableau {{column}}",
+  "log.toFoundationTableau": "tableau {{col}} → foundation {{foundation}}",
+  "log.toTableauTableau": "tableau {{col}} → tableau {{column}}",
+  "log.discard": "Discarded a hand card and ended the turn",
+  "log.pass": "Passed the turn",
+  "log.stalemate": "The game ended in a stalemate because neither player could move",
+  "log.stop": "Caught the CPU's missed move (+1)",
+  "log.win": "{{name}} emptied the reserve and won"
 }

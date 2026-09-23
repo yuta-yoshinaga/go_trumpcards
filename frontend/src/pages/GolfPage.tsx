@@ -19,7 +19,6 @@ import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
-import { useChainCombo } from '../hooks/useChainCombo';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
@@ -162,7 +161,7 @@ function GolfPageContent() {
     handleReset();
   }, [handleReset, hideActionLog]);
 
-  const combo = useChainCombo(state?.moveCount, state?.stockCount);
+  const combo = state?.chainCombo ?? 0;
 
   // **バッジは combo >= 2 のときだけ描かれる。** 消えることは live region では
   // 伝わらないので、途切れた瞬間だけ別の文言を出す。要素そのものは常に置いて
@@ -314,7 +313,11 @@ function GolfPageContent() {
                               key={`s-${(i + 1).toString()}`}
                               data-testid={`golf-hole-${(i + 1).toString()}`}
                               className={`px-1 py-0.5 tabular-nums ${
-                                isCurrent ? 'text-ds-info font-bold' : played ? 'text-ds-text' : 'text-game-text-muted'
+                                isCurrent
+                                  ? 'text-ds-info font-bold'
+                                  : played
+                                    ? 'text-ds-text-primary'
+                                    : 'text-game-text-muted'
                               }`}
                             >
                               {played ? nineHole.scores[i] : t('nineHole.pending')}

@@ -22,7 +22,9 @@
     "declarer": "[落札者]",
     "dealer": "[親]",
     "you": "あなた",
-    "cpu": "CPU{{idx}}"
+    "cpu": "CPU{{idx}}",
+    "drawnBadge": "補充",
+    "drawnAria": "引き合いで補充された札"
   },
   "currentTrick": "現在のトリック",
   "roundResult": {

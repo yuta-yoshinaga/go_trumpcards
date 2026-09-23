@@ -319,6 +319,16 @@ func TestGinRummyCuiController_Exec(t *testing.T) {
 		m.AssertCalled(t, "ActionLog")
 	})
 
+	// hint
+	t.Run("hint command h and hint", func(t *testing.T) {
+		m := newMock()
+		m.On("Hint").Return("hint output")
+		c := controller.NewGinRummyCuiController(m)
+		assert.Equal(t, "hint output", c.Exec("h"))
+		assert.Equal(t, "hint output", c.Exec("hint"))
+		m.AssertNumberOfCalls(t, "Hint", 2)
+	})
+
 	// unknown / empty
 	t.Run("unknown command", func(t *testing.T) {
 		c := controller.NewGinRummyCuiController(newMock())

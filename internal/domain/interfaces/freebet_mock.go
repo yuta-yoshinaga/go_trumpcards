@@ -71,6 +71,8 @@ func (m *MockFreeBetBlackjackGame) GetDealerCards() []*domain.Card {
 
 func (m *MockFreeBetBlackjackGame) GetDealerScore() int { return m.Called().Int(0) }
 
+func (m *MockFreeBetBlackjackGame) IsDealerHoleRevealed() bool { return m.Called().Bool(0) }
+
 func (m *MockFreeBetBlackjackGame) IsDealerPushed22() bool { return m.Called().Bool(0) }
 
 func (m *MockFreeBetBlackjackGame) CanFreeDouble() bool { return m.Called().Bool(0) }

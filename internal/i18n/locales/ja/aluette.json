@@ -1,4 +1,11 @@
 {
+  "luette.monsieur": "ムッシュー",
+  "luette.madame": "マダム",
+  "luette.borgne": "ボルニュ",
+  "luette.vache": "ヴァッシュ",
+  "luette.grandNeuf": "グラン・ヌフ",
+  "luette.petitNeuf": "プチ・ヌフ",
+  "luette.unknown": "不明",
   "cardLuette": "{{card}}〈{{name}}〉",
   "dealerBadge": "[親]",
   "gameEnd": "ゲーム終了！チーム{{team}}の勝ち！",
@@ -8,7 +15,7 @@
   "helpPlay": "  play <n>             カードを出す",
   "helpSetDifficulty": "  sd <0-2>             CPU難易度（0=Easy 1=Normal 2=Hard）",
   "helpTitle": "アリュエット (Aluette)",
-  "hintCard": "[HINT: {{cards}} ({{reason}})]",
+  "hintCard": "[ヒント: {{cards}} ({{reason}})]",
   "hintNone": "ヒントはありません。",
   "hintReasonFollowLow": "取れないので低い札を捨てる",
   "hintReasonLeadLow": "低い札でリードして強い札を温存する",
@@ -31,5 +38,10 @@
   "teamLine": "得点  チーム0: {{team0}}  チーム1: {{team1}}  （{{target}}点先取）",
   "helpExamplePlay": "  play 0               手札の 0 番のカードを出す",
   "helpExampleNext": "  n                    トリックの決着を見てから次のトリックへ",
-  "helpHint": "  h                    助言を表示"
+  "helpHint": "  h                    助言を表示",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "log.matchEnd": "マッチ終了",
+  "log.play": "{{name}}",
+  "log.trickWin": "トリック {{trick}} を獲得",
+  "log.roundEnd": "メーヌ {{round}} 終了"
 }

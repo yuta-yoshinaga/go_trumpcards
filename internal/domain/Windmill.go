@@ -170,7 +170,7 @@ func (w *Windmill) Draw() error {
 	card := w.stock[0]
 	w.stock = w.stock[1:]
 	w.waste = append(w.waste, card)
-	w.afterMove("draw", "山札から1枚めくった", card)
+	w.afterMove("draw", "windmill.log.draw", nil, card)
 	return nil
 }
 
@@ -193,7 +193,7 @@ func (w *Windmill) MoveSailToCenter(sailIdx int) error {
 	w.sails[sailIdx] = nil
 	w.pushCenter(card)
 	w.refillSails()
-	w.afterMove("move", fmt.Sprintf("帆%d→中央基礎", sailIdx), card)
+	w.afterMove("move", "windmill.log.moveSailToCenter", map[string]string{"sail": fmt.Sprint(sailIdx)}, card)
 	return nil
 }
 
@@ -219,7 +219,7 @@ func (w *Windmill) MoveSailToCorner(sailIdx, cornerIdx int) error {
 	w.sails[sailIdx] = nil
 	w.corners[cornerIdx] = append(w.corners[cornerIdx], card)
 	w.refillSails()
-	w.afterMove("move", fmt.Sprintf("帆%d→四隅基礎%d", sailIdx, cornerIdx), card)
+	w.afterMove("move", "windmill.log.moveSailToCorner", map[string]string{"sail": fmt.Sprint(sailIdx), "corner": fmt.Sprint(cornerIdx)}, card)
 	return nil
 }
 
@@ -238,7 +238,7 @@ func (w *Windmill) MoveWasteToCenter() error {
 	w.takeSnapshot()
 	w.popWaste()
 	w.pushCenter(card)
-	w.afterMove("move", "捨て札→中央基礎", card)
+	w.afterMove("move", "windmill.log.moveWasteToCenter", nil, card)
 	return nil
 }
 
@@ -260,7 +260,7 @@ func (w *Windmill) MoveWasteToCorner(cornerIdx int) error {
 	w.takeSnapshot()
 	w.popWaste()
 	w.corners[cornerIdx] = append(w.corners[cornerIdx], card)
-	w.afterMove("move", fmt.Sprintf("捨て札→四隅基礎%d", cornerIdx), card)
+	w.afterMove("move", "windmill.log.moveWasteToCorner", map[string]string{"corner": fmt.Sprint(cornerIdx)}, card)
 	return nil
 }
 
@@ -289,7 +289,7 @@ func (w *Windmill) MoveCornerToCenter(cornerIdx int) error {
 	w.center = append(w.center, card)
 	// pushCenter ではなくここで直接立てる。帆・捨て札から置いたときだけ解除される。
 	w.transferBlocked = true
-	w.afterMove("move", fmt.Sprintf("四隅基礎%d→中央基礎", cornerIdx), card)
+	w.afterMove("move", "windmill.log.moveCornerToCenter", map[string]string{"corner": fmt.Sprint(cornerIdx)}, card)
 	return nil
 }
 
@@ -297,7 +297,7 @@ func (w *Windmill) MoveCornerToCenter(cornerIdx int) error {
 func (w *Windmill) GiveUp() {
 	if w.phase == WindmillPhasePlaying {
 		w.phase = WindmillPhaseGameOver
-		w.appendLog("giveup", "ギブアップしました", nil)
+		w.appendLog("giveup", "windmill.log.giveup", nil, nil)
 	}
 }
 
@@ -562,8 +562,8 @@ func (w *Windmill) refillSails() {
 }
 
 // afterMove 手数・棋譜・終了判定をまとめて進める
-func (w *Windmill) afterMove(actionType, detail string, card *Card) {
-	afterMove(&w.moveCount, w, actionType, detail, card)
+func (w *Windmill) afterMove(actionType, detailCode string, detailParams map[string]string, card *Card) {
+	afterMove(&w.moveCount, w, actionType, detailCode, detailParams, card)
 }
 
 // checkGameClear 中央 52 枚と四隅 13 枚×4 がすべて揃ったか
@@ -608,8 +608,8 @@ func (w *Windmill) takeSnapshot() {
 }
 
 // appendLog 棋譜エントリを追加
-func (w *Windmill) appendLog(actionType, detail string, cards []*Card) {
-	w.appendLogAt(w.moveCount, 0, actionType, detail, cards)
+func (w *Windmill) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	w.appendLogCodeAt(w.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // windmillMaxSliceLen caps slice sizes during deserialisation.

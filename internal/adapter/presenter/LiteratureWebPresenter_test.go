@@ -35,6 +35,7 @@ type literatureMockOpts struct {
 	gameEnd   bool
 	winner    int
 	lastAsk   *domain.LiteratureAsk
+	asks      []*domain.LiteratureAsk
 	lastClaim *domain.LiteratureClaimResult
 	states    [domain.LiteratureHalfSuitCnt]domain.LiteratureHalfSuitState
 	team0     int

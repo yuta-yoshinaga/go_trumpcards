@@ -41,6 +41,7 @@ const baseState: BeggarMyNeighbourResponse = {
   penaltyRemaining: 0,
   centralPileSize: 0,
   lastCardPlayed: null,
+  lastCardPlayerIdx: -1,
   roundsPlayed: 0,
   config: { maxRounds: 2000 },
   message: '',
@@ -96,6 +97,21 @@ afterEach(() => {
 });
 
 describe('BeggarMyNeighbourPage', () => {
+  // currentPlayerIdx は札を出した直後に相手へ移るので、そこから逆算すると
+  // 必ず 1 手ずれる。誰が出したかはサーバが lastCardPlayerIdx で明示する。
+  it('names the seat that played the last card, not the seat to move', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      lastCardPlayed: { design: 'SPADE', value: 5 },
+      lastCardPlayerIdx: 1,
+      currentPlayerIdx: 0,
+    });
+    renderWithProviders(<BeggarMyNeighbourPage />);
+    const label = await screen.findByTestId('bmn-last-card-label');
+    expect(label).toHaveTextContent('CPU 1');
+    expect(label).not.toHaveTextContent('あなた');
+  });
+
   it('calls reset on mount', async () => {
     renderWithProviders(<BeggarMyNeighbourPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
@@ -270,6 +286,45 @@ describe('BeggarMyNeighbourPage', () => {
     renderWithProviders(<BeggarMyNeighbourPage />); // baseState: PLAY phase
     await waitFor(() => expect(screen.getByTestId('bmn-phase-announce')).toBeInTheDocument());
     expect(screen.queryByTestId('bmn-penalty-owner')).not.toBeInTheDocument();
+  });
+
+  it('shows human current turn in PLAY phase', async () => {
+    mockExec.mockResolvedValueOnce({ ...baseState, phase: BeggarMyNeighbourPhase.PLAY, currentPlayerIdx: 0 });
+    renderWithProviders(<BeggarMyNeighbourPage />);
+
+    const turn = await screen.findByTestId('bmn-current-turn');
+    expect(turn).toHaveTextContent('手番: あなた');
+    expect(turn.textContent).not.toContain('{{');
+    expect(turn).not.toHaveTextContent('CPU');
+  });
+
+  it('shows CPU current turn in PLAY phase', async () => {
+    mockExec.mockResolvedValueOnce({ ...baseState, phase: BeggarMyNeighbourPhase.PLAY, currentPlayerIdx: 1 });
+    renderWithProviders(<BeggarMyNeighbourPage />);
+
+    const turn = await screen.findByTestId('bmn-current-turn');
+    await waitFor(() => expect(turn).toHaveTextContent('手番: CPU 1'));
+    expect(turn.textContent).not.toContain('{{');
+    expect(turn).not.toHaveTextContent('あなた');
+  });
+
+  it('does not show current turn outside PLAY phase', async () => {
+    mockExec.mockResolvedValueOnce(penaltyState);
+    const { unmount } = renderWithProviders(<BeggarMyNeighbourPage />);
+    await waitFor(() => expect(screen.getByTestId('bmn-penalty-owner')).toBeInTheDocument());
+    expect(screen.queryByTestId('bmn-current-turn')).not.toBeInTheDocument();
+    unmount();
+
+    mockExec.mockResolvedValueOnce(collectState);
+    const { unmount: unmount2 } = renderWithProviders(<BeggarMyNeighbourPage />);
+    await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
+    expect(screen.queryByTestId('bmn-current-turn')).not.toBeInTheDocument();
+    unmount2();
+
+    mockExec.mockResolvedValueOnce(gameEndState);
+    renderWithProviders(<BeggarMyNeighbourPage />);
+    await waitFor(() => expect(screen.getByTestId('step-button')).toBeDisabled());
+    expect(screen.queryByTestId('bmn-current-turn')).not.toBeInTheDocument();
   });
 
   it('conveys pile counts via accessible text and hides the decorative visuals', async () => {

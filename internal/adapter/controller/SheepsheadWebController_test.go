@@ -16,15 +16,17 @@ import (
 
 func mustSheepsheadOutputJSON(msg string) string {
 	out := &controller.SheepsheadWebOutput{
-		Players:         []*controller.SheepsheadWebOutputPlayer{},
-		CurrentTrick:    []*controller.WebOutputTrickCard{},
-		Buried:          []*controller.WebOutputCard{},
-		CallableSuits:   []int{},
-		PlayableIndices: []int{},
-		PickerIdx:       -1,
-		PartnerIdx:      -1,
-		WinnerIdx:       -1,
-		WebOutputBase:   controller.WebOutputBase{Message: msg},
+		Players:            []*controller.SheepsheadWebOutputPlayer{},
+		CurrentTrick:       []*controller.WebOutputTrickCard{},
+		Buried:             []*controller.WebOutputCard{},
+		CallableSuits:      []int{},
+		PlayableIndices:    []int{},
+		LivePickerPoints:   0,
+		LiveDefenderPoints: 0,
+		PickerIdx:          -1,
+		PartnerIdx:         -1,
+		WinnerIdx:          -1,
+		WebOutputBase:      controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {

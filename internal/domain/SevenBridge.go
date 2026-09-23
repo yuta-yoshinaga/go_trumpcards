@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // SevenBridgePlayerCnt セブンブリッジのプレイヤー数
@@ -66,6 +67,11 @@ func NewSevenBridge(trumpCards *TrumpCards, players []*SevenBridgePlayer, config
 		roundNumber:    0,
 		roundWinnerIdx: -1,
 	}
+}
+
+// appendLog records a Seven Bridge action with a locale-independent detail code.
+func (g *SevenBridge) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // NewDefaultSevenBridge 標準構成（人間 1 / CPU 1）でコンストラクトする。
@@ -228,7 +234,7 @@ func (g *SevenBridge) drawFromStock() error {
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", playerName(g.players, g.currentPlayerIdx)), nil)
+	g.appendLog(g.currentPlayerIdx, "draw_stock", "sevenbridge.log.drawsFromStock", map[string]string{"name": playerName(g.players, g.currentPlayerIdx)}, nil)
 	g.claimedThisTurn = false
 	g.phase = SevenBridgePhasePlay
 	return nil
@@ -267,20 +273,20 @@ func (g *SevenBridge) PlayerClaimChi(cardIndices []int) error {
 // applyPonClaim ポン成立処理（人間・CPU 共通）
 func (g *SevenBridge) applyPonClaim(cardIndices []int) error {
 	if len(cardIndices) != 2 {
-		return NewDomainError(ErrInvalidPlay, "ポンには手札 2 枚のインデックスが必要です")
+		return NewDomainErrorCode(ErrInvalidPlay, "sevenbridge.errPonCardIndicesRequired", nil)
 	}
 	if err := validateIndexPair(cardIndices, g.players[g.currentPlayerIdx].GetCardsSize()); err != nil {
 		return err
 	}
 	top := g.GetDiscardTop()
 	if top == nil {
-		return NewDomainError(ErrInvalidPlay, "捨て札が空です")
+		return NewDomainErrorCode(ErrInvalidPlay, "sevenbridge.errDiscardPileEmpty", nil)
 	}
 	player := g.players[g.currentPlayerIdx]
 	c1 := player.GetCard(cardIndices[0])
 	c2 := player.GetCard(cardIndices[1])
 	if c1.GetValue() != top.GetValue() || c2.GetValue() != top.GetValue() {
-		return NewDomainError(ErrInvalidPlay, "ポンの 2 枚は捨て札と同じランクでなければなりません")
+		return NewDomainErrorCode(ErrInvalidPlay, "sevenbridge.errPonRankMismatch", nil)
 	}
 
 	// 捨て札トップを取り出し、手札 2 枚と合わせて新メルドを登録
@@ -296,7 +302,7 @@ func (g *SevenBridge) applyPonClaim(cardIndices []int) error {
 		player.RemoveCard(idx)
 	}
 
-	g.appendLog(g.currentPlayerIdx, "pon", fmt.Sprintf("%s calls Pon on %s", playerName(g.players, g.currentPlayerIdx), cardStr(claimed)), []*Card{claimed, c1, c2})
+	g.appendLog(g.currentPlayerIdx, "pon", "sevenbridge.log.callsPon", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(claimed)}, []*Card{claimed, c1, c2})
 	g.claimedThisTurn = true
 	if player.GetCardsSize() == 0 {
 		g.finishRound(g.currentPlayerIdx)
@@ -309,26 +315,26 @@ func (g *SevenBridge) applyPonClaim(cardIndices []int) error {
 // applyChiClaim チー成立処理（人間・CPU 共通）
 func (g *SevenBridge) applyChiClaim(cardIndices []int) error {
 	if len(cardIndices) != 2 {
-		return NewDomainError(ErrInvalidPlay, "チーには手札 2 枚のインデックスが必要です")
+		return NewDomainErrorCode(ErrInvalidPlay, "sevenbridge.errChiCardIndicesRequired", nil)
 	}
 	if err := validateIndexPair(cardIndices, g.players[g.currentPlayerIdx].GetCardsSize()); err != nil {
 		return err
 	}
 	top := g.GetDiscardTop()
 	if top == nil {
-		return NewDomainError(ErrInvalidPlay, "捨て札が空です")
+		return NewDomainErrorCode(ErrInvalidPlay, "sevenbridge.errDiscardPileEmpty", nil)
 	}
 	player := g.players[g.currentPlayerIdx]
 	c1 := player.GetCard(cardIndices[0])
 	c2 := player.GetCard(cardIndices[1])
 	if c1.GetDesign() != top.GetDesign() || c2.GetDesign() != top.GetDesign() {
-		return NewDomainError(ErrInvalidPlay, "チーの 2 枚は捨て札と同じスートでなければなりません")
+		return NewDomainErrorCode(ErrInvalidPlay, "sevenbridge.errChiSuitMismatch", nil)
 	}
 
 	combo := []int{top.GetValue(), c1.GetValue(), c2.GetValue()}
 	sort.Ints(combo)
 	if combo[0]+1 != combo[1] || combo[1]+1 != combo[2] {
-		return NewDomainError(ErrInvalidPlay, "チーは捨て札と連続する 3 枚のランでなければなりません")
+		return NewDomainErrorCode(ErrInvalidPlay, "sevenbridge.errChiNotConsecutive", nil)
 	}
 
 	claimed := g.popDiscardTop()
@@ -343,7 +349,7 @@ func (g *SevenBridge) applyChiClaim(cardIndices []int) error {
 		player.RemoveCard(idx)
 	}
 
-	g.appendLog(g.currentPlayerIdx, "chi", fmt.Sprintf("%s calls Chi on %s", playerName(g.players, g.currentPlayerIdx), cardStr(claimed)), []*Card{claimed, c1, c2})
+	g.appendLog(g.currentPlayerIdx, "chi", "sevenbridge.log.callsChi", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(claimed)}, []*Card{claimed, c1, c2})
 	g.claimedThisTurn = true
 	if player.GetCardsSize() == 0 {
 		g.finishRound(g.currentPlayerIdx)
@@ -369,7 +375,7 @@ func (g *SevenBridge) PlayerMeld(cardIndices []int) error {
 
 func (g *SevenBridge) applyMeld(cardIndices []int) error {
 	if len(cardIndices) < SevenBridgeMeldMinSize {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("メルドには最低 %d 枚必要です", SevenBridgeMeldMinSize))
+		return NewDomainErrorCode(ErrInvalidPlay, "sevenbridge.errMeldMinimumCards", map[string]string{"min": strconv.Itoa(SevenBridgeMeldMinSize)})
 	}
 	player := g.players[g.currentPlayerIdx]
 	if err := validateIndexList(cardIndices, player.GetCardsSize()); err != nil {
@@ -381,7 +387,7 @@ func (g *SevenBridge) applyMeld(cardIndices []int) error {
 		cards = append(cards, player.GetCard(idx))
 	}
 	if !IsSevenBridgeMeld(cards) {
-		return NewDomainError(ErrInvalidPlay, "有効なメルド（セットまたはラン）ではありません")
+		return NewDomainErrorCode(ErrInvalidPlay, "sevenbridge.errInvalidMeld", nil)
 	}
 
 	// 既存のメルドに影響を与えないよう昇順ソートして保存
@@ -402,7 +408,7 @@ func (g *SevenBridge) applyMeld(cardIndices []int) error {
 		player.RemoveCard(idx)
 	}
 
-	g.appendLog(g.currentPlayerIdx, "meld", fmt.Sprintf("%s melds %d cards", playerName(g.players, g.currentPlayerIdx), len(cards)), cards)
+	g.appendLog(g.currentPlayerIdx, "meld", "sevenbridge.log.meldsCards", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "count": strconv.Itoa(len(cards))}, cards)
 	if player.GetCardsSize() == 0 {
 		g.finishRound(g.currentPlayerIdx)
 	}
@@ -428,26 +434,26 @@ func (g *SevenBridge) PlayerLayoff(targetPlayerIdx, meldIdx, cardIndex int) erro
 
 func (g *SevenBridge) applyLayoff(targetPlayerIdx, meldIdx, cardIndex int) error {
 	if targetPlayerIdx < 0 || targetPlayerIdx >= len(g.players) {
-		return NewDomainError(ErrInvalidPlay, "対象プレイヤーが不正です")
+		return NewDomainErrorCode(ErrInvalidPlay, "sevenbridge.errTargetPlayerInvalid", nil)
 	}
 	target := g.players[targetPlayerIdx]
 	if meldIdx < 0 || meldIdx >= target.GetMeldCount() {
-		return NewDomainError(ErrInvalidPlay, "対象メルドが不正です")
+		return NewDomainErrorCode(ErrInvalidPlay, "sevenbridge.errTargetMeldInvalid", nil)
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "sevenbridge.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
 	meld := target.GetMeld(meldIdx)
 	if !canAddToMeld(meld, card) {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("%s はそのメルドに追加できません", cardStr(card)))
+		return NewDomainErrorCode(ErrInvalidPlay, "sevenbridge.errLayoffCardCannotAdd", map[string]string{"card": cardStr(card)})
 	}
 	target.AddCardToMeld(meldIdx, card)
 	player.RemoveCard(cardIndex)
 
-	g.appendLog(g.currentPlayerIdx, "layoff", fmt.Sprintf("%s lays off %s", playerName(g.players, g.currentPlayerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(g.currentPlayerIdx, "layoff", "sevenbridge.log.laysOff", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(card)}, []*Card{card})
 	if player.GetCardsSize() == 0 {
 		g.finishRound(g.currentPlayerIdx)
 	}
@@ -471,13 +477,13 @@ func (g *SevenBridge) PlayerDiscard(cardIndex int) error {
 func (g *SevenBridge) applyDiscard(cardIndex int) error {
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "sevenbridge.errCardIndexOutOfRange", nil)
 	}
 	// メルド無しで最後の 1 枚を捨てて上がる不正ルートを人間プレイヤー側で禁止する。
 	// CPU は chooseCpuDiscard の合法手優先と applyLayoff/applyMeld の上がり判定で
 	// このゾンビ状態に入る前にターンを抜けるため対象外。
 	if player.GetIsHuman() && player.GetCardsSize() == 1 && player.GetMeldCount() == 0 {
-		return NewDomainError(ErrInvalidPlay, "上がりには最低 1 つのメルドが必要です")
+		return NewDomainErrorCode(ErrInvalidPlay, "sevenbridge.errMeldRequiredToGoOut", nil)
 	}
 	card := player.GetCard(cardIndex)
 
@@ -485,13 +491,13 @@ func (g *SevenBridge) applyDiscard(cardIndex int) error {
 	if top != nil && !IsDiscardLegal(card, top) {
 		// 合法的な捨て札が存在する場合のみ制限する（詰み回避）
 		if g.hasAnyLegalDiscard(player, top) {
-			return NewDomainError(ErrInvalidPlay, "7 と同じランク／±1 のランク、または 7 のみ捨てられます")
+			return NewDomainErrorCode(ErrInvalidPlay, "sevenbridge.errDiscardRestriction", nil)
 		}
 	}
 
 	discarded := player.RemoveCard(cardIndex)
 	g.discardPile = append(g.discardPile, discarded)
-	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+	g.appendLog(g.currentPlayerIdx, "discard", "sevenbridge.log.discards", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(discarded)}, []*Card{discarded})
 
 	// 上がり判定（手札 0）
 	if player.GetCardsSize() == 0 && player.GetMeldCount() > 0 {
@@ -813,9 +819,9 @@ func (g *SevenBridge) finishRound(winnerIdx int) {
 		}
 		// 勝者のラウンドスコア = 相手のペナルティ
 		g.players[winnerIdx].SetRoundScore(loserTotal)
-		g.appendLog(winnerIdx, "round_win", fmt.Sprintf("%s goes out! Opponent penalty: %d", playerName(g.players, winnerIdx), loserTotal), nil)
+		g.appendLog(winnerIdx, "round_win", "sevenbridge.log.goesOut", map[string]string{"name": playerName(g.players, winnerIdx), "penalty": strconv.Itoa(loserTotal)}, nil)
 	} else {
-		g.appendLog(-1, "draw", "Round ends in a draw (stock empty)", nil)
+		g.appendLog(-1, "draw", "sevenbridge.log.roundDraw", nil, nil)
 	}
 
 	for i := range g.players {
@@ -856,7 +862,7 @@ func (g *SevenBridge) checkGameEnd() {
 			g.winnerIdx = i
 		}
 	}
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(g.players, g.winnerIdx)), nil)
+	g.appendLog(-1, "game_end", "sevenbridge.log.gameWinner", map[string]string{"name": playerName(g.players, g.winnerIdx)}, nil)
 }
 
 // hasAnyLegalDiscard 手札に top に対して合法な捨て札があるか

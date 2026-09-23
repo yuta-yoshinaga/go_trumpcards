@@ -100,9 +100,9 @@ func TestGetVariantStrategyAction_Dispatches(t *testing.T) {
 
 	// スパニッシュ21ならヒット、それ以外は標準表のスタンド。
 	assert.Equal(t, domain.BJSuggestHit,
-		domain.GetVariantStrategyAction(hand, upcard, false, domain.BJVariantSpanish21))
+		domain.GetVariantStrategyAction(hand, upcard, nil, false, domain.BJVariantSpanish21))
 	assert.Equal(t, domain.BJSuggestStand,
-		domain.GetVariantStrategyAction(hand, upcard, false, domain.BJVariantStandard))
+		domain.GetVariantStrategyAction(hand, upcard, nil, false, domain.BJVariantStandard))
 }
 
 // TestSpanish21Game_SuggestionUsesTheVariantTable drives the real game object so

@@ -47,6 +47,7 @@
   "scoresTotal": "累計",
   "bidButton": "ビッド",
   "passButton": "パス",
+  "dealerMustBid": "親は全員パスのときパスできません。2〜4のビッドを宣言してください。",
   "playButton": "出す",
   "nextTrick": "次のトリック",
   "nextRound": "次のラウンド",

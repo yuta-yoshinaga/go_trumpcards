@@ -19,6 +19,8 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
+import i18n from '../i18n';
+import { badgeInfoColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { DoudizhuResponse } from '../types/card';
@@ -27,6 +29,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { classifyDoudizhuCombo, doudizhuInvalidReason } from '../utils/doudizhuComboValidator';
+import { resolveMessageCode } from '../utils/resolveMessageCode';
 
 type ApiArgs = {
   command: string;
@@ -87,7 +90,8 @@ export function formatDDZState(state: DoudizhuResponse): string {
   if (human?.cards?.length) {
     lines.push(`Your hand: ${human.cards.map((c, i) => `[${i}]${cardAlt(c)}`).join(' ')}`);
   }
-  if (state.message) lines.push(state.message);
+  const message = resolveMessageCode(i18n.t, state.messageCode, state.messageParams, state.message);
+  if (message) lines.push(message);
   return lines.join('\n');
 }
 
@@ -280,7 +284,7 @@ function DoudizhuPageContent() {
                 <span className="text-ds-text-primary text-xs ml-2">{state.tableCombo}</span>
               </>
             ) : (
-              <span className="text-ds-text-secondary text-sm">{t('label.table')}: ---</span>
+              <span className="text-ds-text-muted text-sm">{t('label.table')}: ---</span>
             )}
           </div>
 
@@ -303,6 +307,16 @@ function DoudizhuPageContent() {
           {/* Human hand — shown during both bid and play phases (display-only while bidding) */}
           {humanPlayer && (phase === 'play' || phase === 'bid') && (
             <div data-tutorial="ddz-hand">
+              {state.landlordIdx >= 0 && (
+                <div className="mb-2 flex justify-center">
+                  <span
+                    data-testid="ddz-own-role"
+                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${badgeInfoColors}`}
+                  >
+                    {humanPlayer.isLandlord ? t('label.landlord') : t('label.peasant')}
+                  </span>
+                </div>
+              )}
               <div className="flex flex-wrap justify-center gap-1">
                 {humanPlayer.cards.map((c, i) => {
                   const interactive = phase === 'play';

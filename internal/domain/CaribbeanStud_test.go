@@ -508,6 +508,15 @@ func TestCaribbeanStud_GetActionLog(t *testing.T) {
 	require.NoError(t, cs.Bet(100, 0))
 	require.NoError(t, cs.Play())
 	assert.NotEmpty(t, cs.GetActionLog())
+	var betLog *domain.ActionLogEntry
+	for _, entry := range cs.GetActionLog() {
+		if entry.DetailCode == "caribbeanstud.log.bet" {
+			betLog = entry
+			break
+		}
+	}
+	require.NotNil(t, betLog)
+	assert.Equal(t, map[string]string{"ante": "100", "jackpot": "0"}, betLog.DetailParams)
 }
 
 func TestCaribbeanStud_JSONRoundTrip(t *testing.T) {

@@ -36,5 +36,18 @@
   "showdown": "Showdown",
   "result.humanWin": "Game over! You win!",
   "result.cpuWin": "Game over! CPU {{cpuId}} wins!",
-  "helpExampleSatisfied": "  s                         declare that you are satisfied"
+  "helpExampleSatisfied": "  s                         declare that you are satisfied",
+  "log.deal": "one card each, pot is {{pot}}",
+  "log.satisfied": "is satisfied",
+  "log.passNoTarget": "nobody could be swapped with",
+  "log.passCircle": "the pass came full circle",
+  "log.cuckoo": "nobody swaps the Cuckoo; the round ends",
+  "log.hussar": "the Hussar strikes down the challenger",
+  "log.pig": "the Pig bites back; its original holder is out",
+  "log.passNext": "pass along to the next player",
+  "log.swap": "swaps with the next player",
+  "log.stock": "exchanges with the stock",
+  "log.showdown": "{{count}} player(s) go out",
+  "log.reenter": "buys back in for {{cost}}",
+  "log.gameEnd": "is the last one standing"
 }

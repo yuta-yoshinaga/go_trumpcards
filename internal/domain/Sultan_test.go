@@ -454,5 +454,8 @@ func TestSultan_AllFaceUp(t *testing.T) {
 func TestSultan_GetActionLog(t *testing.T) {
 	su := setupPlayingSultan()
 	require.NoError(t, su.Draw())
-	assert.NotEmpty(t, su.GetActionLog())
+	logs := su.GetActionLog()
+	entry := logs[len(logs)-1]
+	assert.Equal(t, "sultan.log.draw", entry.DetailCode)
+	assert.Empty(t, entry.DetailParams)
 }

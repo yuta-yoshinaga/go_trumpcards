@@ -23,6 +23,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { useSound } from '../providers/SoundProvider';
+import { badgeInfoColors } from '../styles/badgeStyles';
 import { btnOutline, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, hintRingStyle, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -296,10 +297,25 @@ function BurracoPageContent() {
               <span>
                 {t('drawPile', { count: state.drawPileCount })} / {t('discardPile', { count: state.discardPileCount })}
               </span>
-              <span className="ml-4" data-testid="bu-pozzetto-count">
+              <span
+                className="ml-4"
+                data-testid="bu-pozzetto-count"
+                title={t('pozzettoDescription')}
+                aria-describedby="bu-pozzetto-description"
+              >
                 {t('pozzetto', { count: state.pozzettoCount })}
               </span>
               {state.isFrozen && <span className="ml-2 text-ds-info font-bold">[{t('frozen')}]</span>}
+            </div>
+            {/* **ポゼットはこのゲーム固有の用語。** 残り山数とバナーだけでは
+                意味不明な数字にしかならない。title だけだとタッチ操作で読めないので
+                常時見える 1 行として出す (読み上げには aria-describedby で結ぶ)。 */}
+            <div
+              id="bu-pozzetto-description"
+              className="text-ds-text-muted text-xs"
+              data-testid="bu-pozzetto-description"
+            >
+              {t('pozzettoDescription')}
             </div>
 
             <div className={lgTwoColGrid}>
@@ -309,7 +325,7 @@ function BurracoPageContent() {
                 {state.discardTop && (
                   <div
                     className={`my-3 p-3 rounded flex items-center gap-3 relative ${
-                      state.isFrozen ? 'bg-ds-info/20 ring-2 ring-ds-info' : 'bg-black/40'
+                      state.isFrozen ? `${badgeInfoColors} ring-2 ring-ds-info` : 'bg-black/40'
                     }`}
                     data-tutorial="ca-draw-area"
                     data-testid="ca-discard-pile"

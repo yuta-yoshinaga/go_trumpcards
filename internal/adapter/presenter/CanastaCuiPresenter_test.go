@@ -72,8 +72,8 @@ func TestCanastaCuiPresenter_ListsTheDiscardPile(t *testing.T) {
 	t.Run("lists every card with its index", func(t *testing.T) {
 		out := p.Output(withPile(3), nil)
 		assert.Contains(t, out, "山の中身:")
-		assert.Contains(t, out, "[0]HEART 1")
-		assert.Contains(t, out, "[2]HEART 3")
+		assert.Contains(t, out, "[0]♥1")
+		assert.Contains(t, out, "[2]♥3")
 	})
 
 	t.Run("wraps a long pile over several lines", func(t *testing.T) {
@@ -102,7 +102,7 @@ func TestCanastaCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "ラウンド: 1")
 		assert.Contains(t, result, "山札: 54枚")
 		assert.Contains(t, result, "あなた: 累積0点 ラウンド0点 1枚")
-		assert.Contains(t, result, "[0]SPADE 5")
+		assert.Contains(t, result, "[0]♠5")
 		assert.Contains(t, result, "CPU 1: 累積0点 ラウンド0点 1枚")
 		assert.Contains(t, result, "手番: あなた")
 		assert.Contains(t, result, "ds")
@@ -182,7 +182,7 @@ func TestCanastaCuiPresenter_Output(t *testing.T) {
 		m.On("GetDiscardTop").Return(top)
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "捨て札: HEART 7")
+		assert.Contains(t, result, "捨て札: ♥7")
 	})
 
 	t.Run("discard top nil hides section", func(t *testing.T) {
@@ -215,7 +215,7 @@ func TestCanastaCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "ナチュラル")
-		assert.Contains(t, result, "SPADE 7")
+		assert.Contains(t, result, "♠7")
 	})
 
 	t.Run("error message shown", func(t *testing.T) {
@@ -340,6 +340,69 @@ func TestCanastaCuiPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestCanastaCuiPresenter_HintOutput(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.CanastaCuiPresenter)
+
+	tests := []struct {
+		name string
+		hint *domain.CanastaHint
+		want string
+	}{
+		{
+			name: "draw stock",
+			hint: &domain.CanastaHint{Action: "draw_stock", Reason: "draw_stock_safe"},
+			want: "推奨: 山札から引く (捨て札トップと揃うペアがないため山札から引く)",
+		},
+		{
+			name: "draw discard",
+			hint: &domain.CanastaHint{Action: "draw_discard", Indices: []int{1, 3}, Reason: "draw_discard_pair"},
+			want: "推奨: 捨て札の山を取る [1,3] (捨て札トップとナチュラルペアが揃うため山を取る)",
+		},
+		{
+			name: "meld",
+			hint: &domain.CanastaHint{Action: "meld", Indices: []int{0, 2, 4}, Reason: "meld_available"},
+			want: "推奨メルド: [0,2,4] (メルド可能な組み合わせがある)",
+		},
+		{
+			name: "skip meld",
+			hint: &domain.CanastaHint{Action: "skip_meld", Reason: "no_meld"},
+			want: "推奨: メルドをスキップ (有効なメルドがないためスキップ)",
+		},
+		{
+			name: "discard",
+			hint: &domain.CanastaHint{Action: "discard", Indices: []int{0}, Reason: "discard_safe"},
+			want: "推奨ディスカード: [0] ♥7 (最も不要なカードを捨てる)",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			m := setupCanastaCuiMock()
+			m.On("GetHint").Return(tt.hint)
+			if tt.name == "discard" {
+				player := domain.NewCanastaPlayer(true)
+				player.AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+				m.On("GetPlayer", 0).Return(player)
+			}
+			out := p.HintOutput(m)
+			assert.Contains(t, out, tt.want)
+			for _, reason := range []string{"draw_stock_safe", "draw_discard_pair", "meld_available", "no_meld", "discard_safe"} {
+				assert.NotContains(t, out, reason)
+			}
+			assert.NotContains(t, out, "{{")
+		})
+	}
+
+	t.Run("nil hint", func(t *testing.T) {
+		m := setupCanastaCuiMock()
+		m.On("GetHint").Return((*domain.CanastaHint)(nil))
+		assert.Contains(t, p.HintOutput(m), "ヒントはありません")
+	})
+}
+
 func TestCanastaCuiPresenter_ActionLogOutput(t *testing.T) {
 	origNoColor := color.NoColor()
 	color.SetNoColor(true)
@@ -349,7 +412,7 @@ func TestCanastaCuiPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("with entries", func(t *testing.T) {
 		m := new(interfaces.MockCanastaGame)
 		entries := []*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "draw_stock", Detail: "drew from stock"},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "draw_stock", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		}
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetActionLog").Return(entries)

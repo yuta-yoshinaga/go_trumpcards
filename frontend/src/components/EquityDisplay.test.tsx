@@ -70,4 +70,17 @@ describe('EquityDisplay', () => {
     fireEvent.click(screen.getByTestId('toggle-hand-odds'));
     expect(screen.queryByTestId('hand-odds-table')).not.toBeInTheDocument();
   });
+
+  it('does not render low share when lowProbability prop is omitted (negative control)', () => {
+    render(<EquityDisplay equity={mockEquity} potOdds={33.3} />);
+    expect(screen.queryByTestId('low-probability')).not.toBeInTheDocument();
+    expect(screen.queryByText(/ローの取り分/)).not.toBeInTheDocument();
+  });
+
+  it('renders low share percentage with literal text when lowProbability prop is provided', () => {
+    render(<EquityDisplay equity={mockEquity} potOdds={33.3} lowProbability={0.35} />);
+    const lowDisplay = screen.getByTestId('low-probability');
+    expect(lowDisplay).toBeInTheDocument();
+    expect(lowDisplay).toHaveTextContent('ローの取り分: 35%');
+  });
 });

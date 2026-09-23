@@ -120,6 +120,11 @@ func (p *OhHellCuiPresenter) Output(o interfaces.OhHellGame, lastErr error) stri
 			b.WriteString(i18n.T("ohhell.promptPlayHelp") + "\n")
 		case domain.OhHellPhaseTrickEnd:
 			b.WriteString(i18n.T("ohhell.promptTrickEnd") + "\n")
+			winnerIdx := o.GetLeadPlayerIdx()
+			if winnerIdx >= 0 && winnerIdx < o.GetPlayerCnt() {
+				b.WriteString(i18n.Tf("ohhell.trickWinner",
+					"name", cuiPlayerName(o.GetPlayer(winnerIdx), winnerIdx)) + "\n")
+			}
 			b.WriteString(i18n.T("ohhell.promptTrickEndHelp") + "\n")
 		case domain.OhHellPhaseRoundEnd:
 			b.WriteString(i18n.T("ohhell.promptRoundEnd") + "\n")

@@ -94,6 +94,11 @@ func (m *MockBriscolaGame) GetLeadPlayerIdx() int {
 	return args.Int(0)
 }
 
+func (m *MockBriscolaGame) GetLastTrickPoints() int {
+	args := m.Called()
+	return args.Int(0)
+}
+
 func (m *MockBriscolaGame) GetDealerIdx() int {
 	args := m.Called()
 	return args.Int(0)

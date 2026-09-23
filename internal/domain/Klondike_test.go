@@ -45,6 +45,18 @@ func TestNewKlondike(t *testing.T) {
 	assert.Equal(t, domain.KlondikePhase(0), k.GetPhase())
 }
 
+func TestKlondike_GetConfigReflectsResetWithConfig(t *testing.T) {
+	k := newTestKlondike()
+	k.ResetWithConfig(domain.KlondikeConfig{
+		DrawCount:   3,
+		ScoringMode: domain.KlondikeScoringVegas,
+	})
+
+	config := k.GetConfig()
+	assert.Equal(t, 3, config.DrawCount)
+	assert.Equal(t, domain.KlondikeScoringVegas, config.ScoringMode)
+}
+
 func TestKlondike_Reset(t *testing.T) {
 	k := setupPlayingKlondike()
 
@@ -774,6 +786,8 @@ func TestKlondike_ActionLog(t *testing.T) {
 	_ = k.Draw()
 	assert.NotNil(t, k.GetActionLog())
 	assert.Equal(t, 1, len(k.GetActionLog()))
+	assert.Equal(t, "klondike.log.draw", k.GetActionLog()[0].DetailCode)
+	assert.Nil(t, k.GetActionLog()[0].DetailParams)
 }
 
 func TestKlondike_MoveWasteToFoundation_DifferentSuit(t *testing.T) {

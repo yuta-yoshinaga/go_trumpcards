@@ -121,8 +121,8 @@ type Horse struct {
 	harvest func()
 
 	gameEndFlag bool
-	actionLog   []*ActionLogEntry
-	turnNumber  int
+	actionLogBase
+	turnNumber int
 }
 
 // NewHorse は指定の設定で卓を構築する。席 0 が人間。
@@ -173,7 +173,7 @@ func (g *Horse) Reset() {
 	g.gameEndFlag = false
 	g.actionLog = nil
 	g.turnNumber = 0
-	g.appendLog("reset", "game reset")
+	g.appendLog("reset", "horse.log.reset", nil, nil)
 	g.startHand()
 }
 
@@ -192,8 +192,11 @@ func (g *Horse) startHand() {
 		return
 	}
 	g.phase = HorsePhaseHand
-	g.appendLog("hand", fmt.Sprintf("%s hand %d (%s)",
-		HorseDisciplineLetter(g.discipline), g.handNumber, HorseDisciplineName(g.discipline)))
+	g.appendLog("hand", "horse.log.hand", map[string]string{
+		"letter":  HorseDisciplineLetter(g.discipline),
+		"hand":    fmt.Sprintf("%d", g.handNumber),
+		"nameKey": "horse.discipline." + HorseDisciplineName(g.discipline),
+	}, nil)
 	// **配っただけで終わっているハンドがある。** アンティで出し切った席は
 	// オールイン扱いで手番が回らないので、種目側の `Reset` が CPU だけで
 	// ショーダウンまで打ち切ってしまう。ここで見ないと `IsHumanTurn` も
@@ -468,7 +471,7 @@ func (g *Horse) resolveShowdownDecision() {
 	if err := t.ShowHand(); err != nil {
 		return
 	}
-	g.appendLog("show", fmt.Sprintf("hand %d shown down", g.handNumber))
+	g.appendLog("show", "horse.log.show", map[string]string{"hand": fmt.Sprintf("%d", g.handNumber)}, nil)
 }
 
 // settleIfHandOver は種目のハンドが終わっていれば残高を回収する。
@@ -497,7 +500,7 @@ func (g *Horse) settleIfHandOver() {
 		g.harvest()
 	}
 	g.phase = HorsePhaseHandEnd
-	g.appendLog("handEnd", fmt.Sprintf("hand %d settled", g.handNumber))
+	g.appendLog("handEnd", "horse.log.handEnd", map[string]string{"hand": fmt.Sprintf("%d", g.handNumber)}, nil)
 	if g.aliveSeats() < HorseMinSeats {
 		g.finish()
 	}
@@ -537,7 +540,7 @@ func (g *Horse) aliveSeats() int {
 func (g *Horse) finish() {
 	g.gameEndFlag = true
 	g.phase = HorsePhaseGameEnd
-	g.appendLog("gameEnd", fmt.Sprintf("winner seat %d", g.WinnerSeat()))
+	g.appendLog("gameEnd", "horse.log.gameEnd", map[string]string{"seat": fmt.Sprintf("%d", g.WinnerSeat())}, nil)
 }
 
 // WinnerSeat はチップがいちばん多い席を返す。同点なら若い席。
@@ -609,6 +612,41 @@ func (g *Horse) GetSeatIsHuman(i int) bool {
 	return g.seats[i].isHuman
 }
 
+// GetSeatFolded は指定席の現在のハンドのフォールド状態を返す。
+func (g *Horse) GetSeatFolded(seat int) bool {
+	p := g.horseStatusPlayer(seat)
+	return p != nil && p.GetFolded()
+}
+
+// GetSeatAllIn は指定席の現在のハンドのオールイン状態を返す。
+func (g *Horse) GetSeatAllIn(seat int) bool {
+	p := g.horseStatusPlayer(seat)
+	return p != nil && p.GetAllIn()
+}
+
+// horseStatusPlayer は 5 種目の異なるプレイヤー型を共通の状態インタフェースに変換する。
+func (g *Horse) horseStatusPlayer(seat int) BettingPlayer {
+	if g.table == nil {
+		return nil
+	}
+	ti := g.horseTableIdx(seat)
+	if ti < 0 {
+		return nil
+	}
+	switch t := g.table.(type) {
+	case *Holdem:
+		return t.GetPlayer(ti)
+	case *Omaha:
+		return t.GetPlayer(ti)
+	case *SevenCardStud:
+		return t.GetPlayer(ti)
+	case *DeuceToSeven:
+		return horseDrawPlayer(t, ti)
+	default:
+		return nil
+	}
+}
+
 // GetSeatCount は席数を返す。
 func (g *Horse) GetSeatCount() int { return len(g.seats) }
 
@@ -666,14 +704,9 @@ func (g *Horse) GetTablePhase() int {
 func (g *Horse) GetActionLog() []*ActionLogEntry { return g.actionLog }
 
 // appendLog は棋譜に 1 行足す。
-func (g *Horse) appendLog(actionType, detail string) {
+func (g *Horse) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	g.turnNumber++
-	g.actionLog = append(g.actionLog, &ActionLogEntry{
-		TurnNumber: g.turnNumber,
-		PlayerIdx:  -1,
-		ActionType: actionType,
-		Detail:     detail,
-	})
+	g.appendLogCodeAt(g.turnNumber, -1, actionType, detailCode, detailParams, cards)
 	if len(g.actionLog) > horseMaxSliceLen {
 		g.actionLog = g.actionLog[len(g.actionLog)-horseMaxSliceLen:]
 	}

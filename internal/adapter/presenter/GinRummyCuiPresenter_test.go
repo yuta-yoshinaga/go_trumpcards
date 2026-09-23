@@ -13,6 +13,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
 func setupGinRummyCuiMock() *interfaces.MockGinRummyGame {
@@ -65,8 +66,8 @@ func TestGinRummyCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "ラウンド: 1")
 		assert.Contains(t, result, "山札: 31枚")
 		assert.Contains(t, result, "あなた: 累積0点 ラウンド0点 2枚")
-		assert.Contains(t, result, "[0]SPADE 1")
-		assert.Contains(t, result, "[1]HEART 5")
+		assert.Contains(t, result, "[0]♠1")
+		assert.Contains(t, result, "[1]♥5")
 		assert.Contains(t, result, "CPU 1: 累積0点 ラウンド0点 1枚")
 		assert.Contains(t, result, "手番: あなた")
 		assert.Contains(t, result, "ds")
@@ -80,7 +81,7 @@ func TestGinRummyCuiPresenter_Output(t *testing.T) {
 		m.On("GetDiscardTop").Return(top)
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "捨て札: HEART 7")
+		assert.Contains(t, result, "捨て札: ♥7")
 	})
 
 	t.Run("discard top nil hides section", func(t *testing.T) {
@@ -283,7 +284,7 @@ func TestGinRummyCuiPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("with entries", func(t *testing.T) {
 		m := new(interfaces.MockGinRummyGame)
 		entries := []*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "draw_stock", Detail: "You draws from stock"},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "draw_stock", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		}
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetActionLog").Return(entries)
@@ -293,7 +294,7 @@ func TestGinRummyCuiPresenter_ActionLogOutput(t *testing.T) {
 		result := p.ActionLogOutput(m)
 		assert.Contains(t, result, "棋譜")
 		assert.Contains(t, result, "draw_stock")
-		assert.Contains(t, result, "You draws from stock")
+		assert.Contains(t, result, "テスト用の棋譜行 1")
 		m.AssertExpectations(t)
 	})
 
@@ -316,5 +317,22 @@ func TestGinRummyCuiPresenter_ActionLogOutput(t *testing.T) {
 		result := p.ActionLogOutput(m)
 		assert.Contains(t, result, "棋譜はありません")
 		m.AssertExpectations(t)
+	})
+}
+
+func TestGinRummyCuiPresenter_HintOutput(t *testing.T) {
+	i18n.SetLang("ja")
+	p := new(presenter.GinRummyCuiPresenter)
+
+	t.Run("shows recommendation", func(t *testing.T) {
+		m := new(interfaces.MockGinRummyGame)
+		m.On("GetHint").Return(&domain.GinRummyHint{Action: "drawStock", Reason: "draw_stock"}).Once()
+		assert.Equal(t, "\x1b[33m［助言: 山札から引く（捨て札が合いません）］\x1b[0m\n", p.HintOutput(m))
+	})
+
+	t.Run("no hint when not human turn or none", func(t *testing.T) {
+		m := new(interfaces.MockGinRummyGame)
+		m.On("GetHint").Return(&domain.GinRummyHint{Reason: "none"}).Once()
+		assert.Equal(t, "助言はありません\n", p.HintOutput(m))
 	})
 }

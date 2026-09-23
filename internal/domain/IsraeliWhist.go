@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // IsraeliWhistPhase イスラエリホイストのゲームフェーズ
@@ -188,7 +189,7 @@ func (w *IsraeliWhist) dealRound() {
 	w.bidPlayerIdx = w.auctionPlayerIdx
 	w.currentPlayerIdx = w.auctionPlayerIdx
 	w.leadPlayerIdx = w.auctionPlayerIdx
-	w.appendLog(-1, "deal", fmt.Sprintf("ラウンド%d を開始", w.roundNumber), nil)
+	w.appendLog(-1, "deal", "israeliwhist.log.deal", map[string]string{"round": strconv.Itoa(w.roundNumber)}, nil)
 }
 
 // sortAllHands 手札をスート・ランク順に並べ替える
@@ -308,14 +309,14 @@ func (w *IsraeliWhist) CpuAuction() {
 func (w *IsraeliWhist) acceptAuctionBid(idx, bid, suit int) {
 	w.players[idx].SetAuction(bid, suit)
 	w.highBid, w.highSuit, w.declarerIdx = bid, suit, idx
-	w.appendLog(idx, "auction", fmt.Sprintf("%d トリック・切り札 %d で入札", bid, suit), nil)
+	w.appendLog(idx, "auction", "israeliwhist.log.auction", map[string]string{"bid": strconv.Itoa(bid), "suit": strconv.Itoa(suit)}, nil)
 	w.advanceAuction()
 }
 
 // acceptAuctionPass 降りたことを記録して次の席へ回す
 func (w *IsraeliWhist) acceptAuctionPass(idx int) {
 	w.players[idx].SetPassed(true)
-	w.appendLog(idx, "pass", "オークションを降りた", nil)
+	w.appendLog(idx, "pass", "israeliwhist.log.pass", nil, nil)
 	w.advanceAuction()
 }
 
@@ -342,8 +343,7 @@ func (w *IsraeliWhist) closeAuction() {
 	w.phase = IsraeliWhistPhaseBid
 	// 宣言は落札者から始まる。落札者は自分のノルマ以上を宣言する義務がある。
 	w.bidPlayerIdx = w.declarerIdx
-	w.appendLog(w.declarerIdx, "trump",
-		fmt.Sprintf("切り札 %d・最低ノルマ %d で落札", w.trumpSuit, w.highBid), nil)
+	w.appendLog(w.declarerIdx, "trump", "israeliwhist.log.trump", map[string]string{"suit": strconv.Itoa(w.trumpSuit), "bid": strconv.Itoa(w.highBid)}, nil)
 }
 
 // --- 2 段階目: 宣言 ---
@@ -433,7 +433,7 @@ func (w *IsraeliWhist) CpuBid() {
 // acceptBid 宣言を記録し、次の席へ回す
 func (w *IsraeliWhist) acceptBid(idx, bid int) {
 	w.players[idx].SetBid(bid)
-	w.appendLog(idx, "bid", fmt.Sprintf("%d トリックを宣言", bid), nil)
+	w.appendLog(idx, "bid", "israeliwhist.log.bid", map[string]string{"bid": strconv.Itoa(bid)}, nil)
 
 	// **残りを数えるのは SetBid の後。** `> 1` にすると最後の 1 人が宣言せず、
 	// 合計 13 禁止の制約が掛かる席がそもそも来なくなる。
@@ -562,7 +562,7 @@ func (w *IsraeliWhist) play(playerIdx, cardIndex int) error {
 	}
 	p.RemoveCard(cardIndex)
 	w.currentTrick = append(w.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	w.appendLog(playerIdx, "play", cardStr(card), []*Card{card})
+	w.appendLog(playerIdx, "play", "israeliwhist.log.play", map[string]string{"card": cardStr(card)}, []*Card{card})
 
 	if len(w.currentTrick) < IsraeliWhistPlayerCnt {
 		w.currentPlayerIdx = (playerIdx + 1) % IsraeliWhistPlayerCnt
@@ -670,13 +670,13 @@ func (w *IsraeliWhist) finishRound() {
 		score := IsraeliWhistScoreFor(p.GetBid(), p.GetTrickCount(), doubled)
 		p.SetRoundScore(score)
 		p.AddTotalScore(score)
-		w.appendLog(i, "score", fmt.Sprintf("宣言%d 獲得%d: %+d", p.GetBid(), p.GetTrickCount(), score), nil)
+		w.appendLog(i, "score", "israeliwhist.log.score", map[string]string{"bid": strconv.Itoa(p.GetBid()), "tricks": strconv.Itoa(p.GetTrickCount()), "score": fmt.Sprintf("%+d", score)}, nil)
 	}
 	if doubled {
 		if exact == IsraeliWhistPlayerCnt {
-			w.appendLog(-1, "bonus", "全員が的中。得点は 2 倍", nil)
+			w.appendLog(-1, "bonus", "israeliwhist.log.bonusExact", nil, nil)
 		} else {
-			w.appendLog(-1, "bonus", "全員が外した。減点は 2 倍", nil)
+			w.appendLog(-1, "bonus", "israeliwhist.log.bonusMissed", nil, nil)
 		}
 	}
 
@@ -740,9 +740,10 @@ func (w *IsraeliWhist) finishGame() {
 	} else {
 		w.winnerIdx = bestIdx
 	}
-	w.appendLog(-1, "result", fmt.Sprintf("最終得点 %d/%d/%d/%d",
-		w.players[0].GetTotalScore(), w.players[1].GetTotalScore(),
-		w.players[2].GetTotalScore(), w.players[3].GetTotalScore()), nil)
+	w.appendLog(-1, "result", "israeliwhist.log.result", map[string]string{
+		"score0": strconv.Itoa(w.players[0].GetTotalScore()), "score1": strconv.Itoa(w.players[1].GetTotalScore()),
+		"score2": strconv.Itoa(w.players[2].GetTotalScore()), "score3": strconv.Itoa(w.players[3].GetTotalScore()),
+	}, nil)
 }
 
 // chooseCpuCard CPU の手。宣言に足りなければ取りに行き、足りていれば逃げる。
@@ -965,12 +966,12 @@ func (w *IsraeliWhist) GiveUp() {
 	w.phase = IsraeliWhistPhaseGameEnd
 	w.gameEndFlag = true
 	w.winnerIdx = 1
-	w.appendLog(0, "giveup", "ギブアップしました", nil)
+	w.appendLog(0, "giveup", "israeliwhist.log.giveup", nil, nil)
 }
 
 // appendLog 棋譜エントリを追加
-func (w *IsraeliWhist) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	w.appendLogAt(w.trickNumber, playerIdx, actionType, detail, cards)
+func (w *IsraeliWhist) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	w.appendLogCodeAt(w.trickNumber, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // israeliWhistJSON is the KV snapshot format for IsraeliWhist.

@@ -56,6 +56,14 @@ beforeEach(() => {
 });
 
 describe('GoofspielPage', () => {
+  it('explains what each tie rule does', async () => {
+    renderWithProviders(<GoofspielPage />);
+    const select = await screen.findByTestId('gs-tie-select');
+    fireEvent.click(screen.getByRole('button', { name: '説明を表示' }));
+    expect(screen.getByRole('tooltip')).toHaveTextContent('同点の賞札が次の賞に上乗せ');
+    expect(select).toHaveValue('0');
+  });
+
   it('resets on mount', async () => {
     renderWithProviders(<GoofspielPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

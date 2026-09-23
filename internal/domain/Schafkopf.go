@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra4
+//go:build !js || !wasm || extra7
 
 // Package domain シャーフコップ (Schafkopf) のドメインモデル。
 //
@@ -15,8 +15,8 @@ package domain
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // SchafkopfPlayerCnt プレイヤー数 (人間 1 + CPU 3)
@@ -218,16 +218,16 @@ func (g *Schafkopf) PlayerDeclare(pick bool, contract SchafkopfContract, soloSui
 	}
 	if pick {
 		if contract < SchafkopfContractRufspiel || contract > SchafkopfContractSolo {
-			return NewDomainError(ErrInvalidPlay, "その契約は宣言できません")
+			return NewDomainErrorCode(ErrInvalidPlay, "schafkopf.errInvalidContract", nil)
 		}
 		// **Solo は切り札スートを要る。** 0 はスートではないので、
 		// 受け取ると「どの札とも一致しない切り札」の盤面ができる。
 		if contract == SchafkopfContractSolo &&
 			(soloSuit < CardDesignSpade || soloSuit > CardDesignMax) {
-			return NewDomainError(ErrInvalidCard, "切り札スートを指定してください")
+			return NewDomainErrorCode(ErrInvalidCard, "schafkopf.errTrumpSuitRequired", nil)
 		}
 		if !g.beatsBestBid(contract) {
-			return NewDomainError(ErrInvalidPlay, "現在の宣言を上回る契約が必要です")
+			return NewDomainErrorCode(ErrInvalidPlay, "schafkopf.errContractNotHigher", nil)
 		}
 	}
 	g.resolvePick(g.currentPlayerIdx, pick, contract, soloSuit)
@@ -265,10 +265,9 @@ func (g *Schafkopf) resolvePick(playerIdx int, pick bool, contract SchafkopfCont
 		g.bestSoloSuit = soloSuit
 		g.bestBidderIdx = playerIdx
 		g.appendLog(playerIdx, "declare",
-			fmt.Sprintf("%s declares %s", playerName(g.players, playerIdx),
-				schafkopfContractName(contract)), nil)
+			"schafkopf.log.declares", map[string]string{"name": playerName(g.players, playerIdx), "contractKey": schafkopfContractKey(contract)}, nil)
 	} else {
-		g.appendLog(playerIdx, "pass", fmt.Sprintf("%s passes", playerName(g.players, playerIdx)), nil)
+		g.appendLog(playerIdx, "pass", "schafkopf.log.passes", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 	}
 
 	g.passCount++
@@ -284,8 +283,7 @@ func (g *Schafkopf) resolvePick(playerIdx int, pick bool, contract SchafkopfCont
 		g.bestContract = SchafkopfContractRufspiel
 		g.bestSoloSuit = 0
 		g.appendLog(g.bestBidderIdx, "forced",
-			fmt.Sprintf("%s must take Rufspiel (all passed)",
-				playerName(g.players, g.bestBidderIdx)), nil)
+			"schafkopf.log.mustTakeRufspiel", map[string]string{"name": playerName(g.players, g.bestBidderIdx)}, nil)
 	}
 	g.contract = g.bestContract
 	g.soloSuit = g.bestSoloSuit
@@ -300,16 +298,13 @@ func (g *Schafkopf) resolvePick(playerIdx int, pick bool, contract SchafkopfCont
 // 宣言者が決まったら、そのまま呼びフェーズ (Rufspiel の A 呼び) へ進む。
 func (g *Schafkopf) becomePicker(playerIdx int) {
 	g.pickerIdx = playerIdx
-	g.appendLog(playerIdx, "declare",
-		fmt.Sprintf("%s takes the contract", playerName(g.players, playerIdx)), nil)
+	g.appendLog(playerIdx, "declare", "schafkopf.log.takesContract", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 	g.currentPlayerIdx = playerIdx
 
 	// **Wenz と Solo は単独プレイ。** 相棒を呼ぶのは Rufspiel だけ。
 	if g.contract != SchafkopfContractRufspiel {
 		g.partnerIdx = -1
-		g.appendLog(playerIdx, "alone",
-			fmt.Sprintf("%s plays %s alone", playerName(g.players, playerIdx),
-				schafkopfContractName(g.contract)), nil)
+		g.appendLog(playerIdx, "alone", "schafkopf.log.playsContractAlone", map[string]string{"name": playerName(g.players, playerIdx), "contractKey": schafkopfContractKey(g.contract)}, nil)
 		g.beginPlay()
 		return
 	}
@@ -317,8 +312,7 @@ func (g *Schafkopf) becomePicker(playerIdx int) {
 	// 呼べるフェイル A が無ければ相棒を作れないので単独で戦う。
 	if len(g.callableSuits()) == 0 {
 		g.partnerIdx = -1
-		g.appendLog(playerIdx, "alone",
-			fmt.Sprintf("%s plays alone", playerName(g.players, playerIdx)), nil)
+		g.appendLog(playerIdx, "alone", "schafkopf.log.playsAlone", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 		g.beginPlay()
 		return
 	}
@@ -337,7 +331,7 @@ func (g *Schafkopf) PlayerCall(suit int) error {
 		return ErrNotHumanTurn
 	}
 	if !g.isCallableSuit(suit) {
-		return NewDomainError(ErrInvalidPlay, "そのスートは呼べません")
+		return NewDomainErrorCode(ErrInvalidPlay, "schafkopf.errInvalidCallSuit", nil)
 	}
 	g.applyCall(suit)
 	return nil
@@ -347,8 +341,7 @@ func (g *Schafkopf) PlayerCall(suit int) error {
 func (g *Schafkopf) applyCall(suit int) {
 	g.calledSuit = suit
 	g.partnerIdx = g.holderOfCalledAce(suit)
-	g.appendLog(g.pickerIdx, "call",
-		fmt.Sprintf("%s calls the %s Ace", playerName(g.players, g.pickerIdx), suitStr(suit)), nil)
+	g.appendLog(g.pickerIdx, "call", "schafkopf.log.callsAce", map[string]string{"name": playerName(g.players, g.pickerIdx), "suitKey": suitKeyOf(suit)}, nil)
 	g.beginPlay()
 }
 
@@ -378,7 +371,7 @@ func (g *Schafkopf) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "schafkopf.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
@@ -433,14 +426,13 @@ func (g *Schafkopf) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Schafkopf) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "schafkopf.log.playsCard", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	// 呼びカードがプレイされたら相棒が判明する。
 	if g.calledSuit != 0 && !g.partnerRevealed &&
 		card.GetValue() == 1 && card.GetDesign() == g.calledSuit && !g.isTrump(card) {
 		g.partnerRevealed = true
-		g.appendLog(playerIdx, "partner_reveal",
-			fmt.Sprintf("%s is the picker's partner", playerName(g.players, playerIdx)), nil)
+		g.appendLog(playerIdx, "partner_reveal", "schafkopf.log.partnerRevealed", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 	}
 
 	if len(g.currentTrick) == SchafkopfPlayerCnt {
@@ -463,8 +455,7 @@ func (g *Schafkopf) ResolveTrick() {
 		pts += schafkopfCardPoints(tc.Card.GetValue())
 	}
 	g.players[winnerIdx].AddTrick(trickCards)
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (%d pts)", playerName(g.players, winnerIdx), g.trickNumber, pts), trickCards)
+	g.appendLog(winnerIdx, "trick_win", "schafkopf.log.winsTrick", map[string]string{"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber), "points": strconv.Itoa(pts)}, trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	// Clear the resolved trick so a spurious second ResolveTrick call cannot
@@ -508,16 +499,19 @@ func (g *Schafkopf) ScoreRound() {
 	g.roundPickerWon = pickerWon
 	g.settleChips(pickerWon, mult)
 
-	g.appendLog(-1, "round_score",
-		fmt.Sprintf("round %d: picker team %d pts (%s, x%d)",
-			g.roundNumber, pickerPts, schafkopfOutcomeStr(pickerWon), mult), nil)
+	g.appendLog(-1, "round_score", "schafkopf.log.roundScore", map[string]string{"round": strconv.Itoa(g.roundNumber), "points": strconv.Itoa(pickerPts), "outcomeKey": schafkopfOutcomeKey(pickerWon), "multiplier": strconv.Itoa(mult)}, nil)
 
 	if w := g.chipLeaderAtTarget(); w >= 0 {
 		g.gameEndFlag = true
 		g.winnerIdx = w
 		g.phase = SchafkopfPhaseGameEnd
-		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(g.players, w)), nil)
+		g.appendLog(-1, "game_end", "schafkopf.log.winsGame", map[string]string{"name": playerName(g.players, w)}, nil)
 	}
+}
+
+// appendLog records a Schafkopf action with a locale-independent detail code.
+func (g *Schafkopf) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCodeAt(len(g.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // settleChips チップ精算 (ゼロサム)。
@@ -607,7 +601,7 @@ func (g *Schafkopf) validatePlay(playerIdx int, card *Card) error {
 	}
 	leadSuit := g.suitID(g.currentTrick[0].Card)
 	if g.suitID(card) != leadSuit && g.playerHasSuit(playerIdx, leadSuit) {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+		return NewDomainErrorCode(ErrInvalidPlay, "schafkopf.errFollowLeadSuit", nil)
 	}
 	return nil
 }
@@ -805,15 +799,15 @@ func (g *Schafkopf) isTrump(card *Card) bool {
 	}
 }
 
-// schafkopfContractName は契約名を返す (棋譜用)。
-func schafkopfContractName(c SchafkopfContract) string {
+// schafkopfContractKey は棋譜用の契約名キーを返す。
+func schafkopfContractKey(c SchafkopfContract) string {
 	switch c {
 	case SchafkopfContractWenz:
-		return "Wenz"
+		return "schafkopf.contractShort.wenz"
 	case SchafkopfContractSolo:
-		return "Solo"
+		return "schafkopf.contractShort.solo"
 	default:
-		return "Rufspiel"
+		return "schafkopf.contractShort.rufspiel"
 	}
 }
 
@@ -947,12 +941,12 @@ func schafkopfMultiplier(loserPoints int, loserNoTrick bool) int {
 	return 1
 }
 
-// schafkopfOutcomeStr 勝敗の表示文字列。
-func schafkopfOutcomeStr(pickerWon bool) string {
+// schafkopfOutcomeKey は勝敗の i18n キーを返す。
+func schafkopfOutcomeKey(pickerWon bool) string {
 	if pickerWon {
-		return "picker team wins"
+		return "schafkopf.log.outcome.pickerWins"
 	}
-	return "defenders win"
+	return "schafkopf.log.outcome.defendersWin"
 }
 
 // --- State getters ---

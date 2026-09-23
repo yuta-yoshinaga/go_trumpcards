@@ -30,6 +30,7 @@
   "bankPasses": "{{name}} takes the bank with a pontoon",
   "helpExampleBet": "  b 100                    bet 100 chips",
   "cpuStickLine": "The banker draws until {{cpuMin}} or more. A CPU seat sticks at {{min}} or more (on four cards it takes one more below {{cpuMin}}).",
+  "helpTieRule": "Ties go to the banker, so matching the banker's total still loses.",
   "errActionLogTooLarge": "The action log exceeds the maximum allowed size.",
   "errBankerAlreadyBust": "The banker has already bust.",
   "errBankerDoesNotBet": "The banker does not place a bet.",
@@ -50,5 +51,16 @@
   "errNotHumanTurn": "It is not your turn.",
   "errNotPlayerTurn": "It is not the player's turn.",
   "errSplitRequiresEqualRank": "Split needs two cards of equal rank.",
-  "errTooManyHands": "Cannot hold more than {{Max}} hands."
+  "errTooManyHands": "Cannot hold more than {{Max}} hands.",
+  "log.deal": "Dealt two cards face down to everyone",
+  "log.pontoon": "The banker has a pontoon",
+  "log.stick": "Stick",
+  "log.twist": "Twist",
+  "log.buy": "Buy (+{{amount}})",
+  "log.split": "Split",
+  "log.bankerTwist": "The banker draws a card",
+  "log.resultPontoon": "The banker has a pontoon",
+  "log.resultFiveCard": "The banker has a five card trick",
+  "log.resultBust": "The banker busts ({{total}})",
+  "log.resultTotal": "The banker has {{total}}"
 }

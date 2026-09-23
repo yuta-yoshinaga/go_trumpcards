@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"strconv"
+	"strings"
 )
 
 // GongZhuPlayerCnt 拱猪（Gong Zhu）プレイヤー数
@@ -159,21 +161,21 @@ func (g *GongZhu) PlayerExpose(cardIndices []int) error {
 		return ErrNotHumanTurn
 	}
 	if g.exposeReady[humanIdx] {
-		return NewDomainError(ErrInvalidPlay, "すでに公開選択は完了しています")
+		return NewDomainErrorCode(ErrInvalidPlay, "gongzhu.errExposureAlreadySelected", nil)
 	}
 
 	player := g.players[humanIdx]
 	seen := make(map[int]bool, len(cardIndices))
 	for _, idx := range cardIndices {
 		if idx < 0 || idx >= player.GetCardsSize() {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+			return NewDomainErrorCode(ErrInvalidCard, "gongzhu.errCardIndexOutOfRange", nil)
 		}
 		if seen[idx] {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが重複しています")
+			return NewDomainErrorCode(ErrInvalidCard, "gongzhu.errDuplicateCardIndex", nil)
 		}
 		seen[idx] = true
 		if !gzIsSpecial(player.GetCard(idx)) {
-			return NewDomainError(ErrInvalidPlay, "公開できるのはポイントカード（♠Q, ♦J, ♥A, ♣10）のみです")
+			return NewDomainErrorCode(ErrInvalidPlay, "gongzhu.errOnlyPointCardsExposable", nil)
 		}
 	}
 
@@ -205,7 +207,13 @@ func (g *GongZhu) ExecuteExpose() {
 		}
 	}
 
-	g.appendLog(-1, "expose", fmt.Sprintf("round %d: %s", g.roundNumber, g.exposureSummary()), nil)
+	params := map[string]string{"round": strconv.Itoa(g.roundNumber)}
+	detailCode := "gongzhu.log.exposeNone"
+	if cards := g.exposureCards(); cards != "" {
+		detailCode = "gongzhu.log.exposeCards"
+		params["cards"] = cards
+	}
+	g.appendLogCode(-1, "expose", detailCode, params, nil)
 	g.phase = GongZhuPhasePlay
 	g.startPlayPhase()
 }
@@ -224,7 +232,7 @@ func (g *GongZhu) PlayerPlay(cardIndex int) error {
 
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "gongzhu.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
@@ -275,7 +283,7 @@ func (g *GongZhu) ResolveTrick() {
 	for _, c := range trickCards {
 		rawPts += gzCardRawPoints(c)
 	}
-	g.appendLog(winnerIdx, "trick_win", fmt.Sprintf("%s wins trick %d (raw %+d)", playerName(g.players, winnerIdx), g.trickNumber, rawPts), trickCards)
+	g.appendLogCode(winnerIdx, "trick_win", "gongzhu.log.trickWin", map[string]string{"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber), "raw": fmt.Sprintf("%+d", rawPts)}, trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= GongZhuHandSize {
@@ -304,7 +312,7 @@ func (g *GongZhu) ScoreRound() {
 
 	for i := 0; i < GongZhuPlayerCnt; i++ {
 		if g.playerHeartCount(i) == GongZhuHandSize {
-			g.appendLog(i, "all_hearts", fmt.Sprintf("%s collected all hearts!", playerName(g.players, i)), nil)
+			g.appendLogCode(i, "all_hearts", "gongzhu.log.allHearts", map[string]string{"name": playerName(g.players, i)}, nil)
 		}
 		g.players[i].SetRoundScore(g.scoreForPlayer(i))
 	}
@@ -314,8 +322,7 @@ func (g *GongZhu) ScoreRound() {
 	}
 
 	for i := 0; i < GongZhuPlayerCnt; i++ {
-		g.appendLog(i, "round_score", fmt.Sprintf("%s: round=%+d, total=%+d",
-			playerName(g.players, i), g.players[i].GetRoundScore(), g.players[i].GetCumulativeScore()), nil)
+		g.appendLogCode(i, "round_score", "gongzhu.log.roundScore", map[string]string{"name": playerName(g.players, i), "round": fmt.Sprintf("%+d", g.players[i].GetRoundScore()), "total": fmt.Sprintf("%+d", g.players[i].GetCumulativeScore())}, nil)
 	}
 
 	ended := false
@@ -338,7 +345,7 @@ func (g *GongZhu) ScoreRound() {
 				g.winnerIdx = i
 			}
 		}
-		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(g.players, g.winnerIdx)), nil)
+		g.appendLogCode(-1, "game_end", "gongzhu.log.gameEnd", map[string]string{"name": playerName(g.players, g.winnerIdx)}, nil)
 	}
 }
 
@@ -557,8 +564,8 @@ func (g *GongZhu) markExposed(c *Card) {
 	}
 }
 
-// exposureSummary 公開状況の文字列表現
-func (g *GongZhu) exposureSummary() string {
+// exposureCards 公開されたポイントカードの表示文字列
+func (g *GongZhu) exposureCards() string {
 	var parts []string
 	if g.exposed.Pig {
 		parts = append(parts, "♠Q")
@@ -573,16 +580,9 @@ func (g *GongZhu) exposureSummary() string {
 		parts = append(parts, "♣10")
 	}
 	if len(parts) == 0 {
-		return "no cards exposed"
+		return ""
 	}
-	out := "exposed:"
-	for i, p := range parts {
-		if i > 0 {
-			out += ","
-		}
-		out += " " + p
-	}
-	return out
+	return strings.Join(parts, ", ")
 }
 
 // startPlayPhase プレイフェーズ開始: ♣2を持つプレイヤーをリードに設定
@@ -619,7 +619,7 @@ func (g *GongZhu) playCard(playerIdx int, card *Card) {
 		g.heartsBroken = true
 	}
 
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLogCode(playerIdx, "play", "gongzhu.log.play", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(g.currentTrick) == GongZhuPlayerCnt {
 		g.phase = GongZhuPhaseTrickEnd
@@ -634,7 +634,7 @@ func (g *GongZhu) validatePlay(playerIdx int, card *Card) error {
 		// リード: ハーツが壊れていない場合、ハーツでリードできない（他にカードがある場合）
 		if !g.heartsBroken && card.GetDesign() == CardDesignHeart {
 			if g.playerHasNonHeart(playerIdx) {
-				return NewDomainError(ErrInvalidPlay, "ハーツはまだブレイクされていません")
+				return NewDomainErrorCode(ErrInvalidPlay, "gongzhu.errHeartsNotBroken", nil)
 			}
 		}
 		return nil
@@ -643,7 +643,7 @@ func (g *GongZhu) validatePlay(playerIdx int, card *Card) error {
 	// フォロースート
 	leadSuit := g.currentTrick[0].Card.GetDesign()
 	if card.GetDesign() != leadSuit && g.playerHasSuit(playerIdx, leadSuit) {
-		return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+		return NewDomainErrorCode(ErrInvalidPlay, "gongzhu.errFollowLeadSuit", nil)
 	}
 	return nil
 }

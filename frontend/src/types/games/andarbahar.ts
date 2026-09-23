@@ -73,6 +73,8 @@ export interface AndarBaharResponse extends BaseGameResponse {
   sideAmount: number;
   /** -1 when no side bet was placed. */
   sideBand: number;
+  /** Probability of each side-bet band, indexed by band number. */
+  sideBandProbabilities: number[];
   /** The column that matched the joker, or -1 until decided. */
   winner: number;
   result: number;

@@ -105,7 +105,7 @@ func TestMadrassoWebPresenter_Output(t *testing.T) {
 	t.Run("trick end / round end message codes", func(t *testing.T) {
 		for phase, code := range map[domain.MadrassoPhase]string{
 			domain.MadrassoPhaseTrickEnd: "madrasso.trickEnd",
-			domain.MadrassoPhaseRoundEnd: "madrasso.roundEnd",
+			domain.MadrassoPhaseRoundEnd: "madrasso.roundBreakdown",
 		} {
 			m, _ := setupMadrassoWebMockWithPlayers()
 			m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
@@ -114,6 +114,11 @@ func TestMadrassoWebPresenter_Output(t *testing.T) {
 			var resObj controller.MadrassoWebOutput
 			assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
 			assert.Equal(t, code, resObj.MessageCode)
+			if phase == domain.MadrassoPhaseRoundEnd {
+				assert.Equal(t, map[string]string{
+					"a": "A", "athird": "0", "b": "B", "bthird": "0", "lastteam": "A",
+				}, resObj.MessageParams)
+			}
 		}
 	})
 
@@ -124,6 +129,24 @@ func TestMadrassoWebPresenter_Output(t *testing.T) {
 		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
 		assert.Equal(t, "boom", resObj.Message)
 		assert.Empty(t, resObj.MessageCode)
+	})
+
+	t.Run("coded error uses message code", func(t *testing.T) {
+		m, _ := setupMadrassoWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "shared.errCardIndexOutOfRange", nil)
+		var resObj controller.MadrassoWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, err)), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "shared.errCardIndexOutOfRange", resObj.MessageCode)
+	})
+
+	t.Run("game coded error uses message code", func(t *testing.T) {
+		m, _ := setupMadrassoWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "madrasso.errCardIndexOutOfRange", nil)
+		var resObj controller.MadrassoWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, err)), &resObj))
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "madrasso.errCardIndexOutOfRange", resObj.MessageCode)
 	})
 
 	t.Run("game end human team wins", func(t *testing.T) {
@@ -236,7 +259,7 @@ func TestMadrassoWebPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockMadrassoGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "plays ♠5"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	result := p.ActionLogOutput(m)
 	assert.Contains(t, result, `"actionType":"play"`)

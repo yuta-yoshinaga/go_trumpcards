@@ -142,6 +142,19 @@ describe('GuandanPage', () => {
     await waitFor(() => expect(screen.getAllByTestId('guandan-table')[1]).toHaveTextContent('ボム'));
   });
 
+  it('shows the actual cards on the table', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        lastCombo: { kind: 2, rank: 5, size: 2, cards: [card('HEART', 5), card('CLOVER', 5)] },
+        lastPlayerIdx: 2,
+      }),
+    );
+    renderWithProviders(<GuandanPage />);
+    await waitFor(() => expect(screen.getByTestId('guandan-table-cards')).toBeInTheDocument());
+    expect(screen.getByTestId('guandan-table-cards').querySelector('img[alt="♥ 5"]')).toBeInTheDocument();
+    expect(screen.getByTestId('guandan-table-cards').querySelector('img[alt="♣ 5"]')).toBeInTheDocument();
+  });
+
   it('plays the selected cards as one combination', async () => {
     renderWithProviders(<GuandanPage />);
     await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());

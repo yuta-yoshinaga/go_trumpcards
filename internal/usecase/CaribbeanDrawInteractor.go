@@ -1,4 +1,4 @@
-//go:build !js || !wasm || casino
+//go:build !js || !wasm || extra6
 
 package usecase
 
@@ -23,6 +23,8 @@ type CaribbeanDrawInteractorIF interface {
 	Fold() string
 	// Hint ヒント取得
 	Hint() string
+	// ClearSession clears accumulated session statistics without resetting the game.
+	ClearSession() string
 	// ActionLog 棋譜を出力する
 	ActionLog() string
 }
@@ -70,6 +72,12 @@ func (ci *CaribbeanDrawInteractor) Fold() string {
 // Hint ヒント取得
 func (ci *CaribbeanDrawInteractor) Hint() string {
 	return ci.cp.HintOutput(ci.Game)
+}
+
+// ClearSession clears accumulated session statistics and presents the current game.
+func (ci *CaribbeanDrawInteractor) ClearSession() string {
+	ci.cp.ClearSession()
+	return ci.cp.Output(ci.Game, nil)
 }
 
 // ActionLog 棋譜を出力する

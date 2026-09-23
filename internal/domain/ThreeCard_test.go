@@ -558,6 +558,15 @@ func TestThreeCard_ActionLog(t *testing.T) {
 	require.NoError(t, err)
 	log := tc.GetActionLog()
 	assert.True(t, len(log) >= 3) // bet, deal, play, result (at least)
+	var betLog *domain.ActionLogEntry
+	for _, entry := range log {
+		if entry.DetailCode == "threecard.log.bet" {
+			betLog = entry
+			break
+		}
+	}
+	require.NotNil(t, betLog)
+	assert.Equal(t, map[string]string{"ante": "100", "pairplus": "50"}, betLog.DetailParams)
 }
 
 func TestThreeCard_JSON_RoundTrip(t *testing.T) {
@@ -625,7 +634,7 @@ func TestThreeCard_Rebet(t *testing.T) {
 	t.Run("refuses before any bet has been placed, and says why", func(t *testing.T) {
 		err := newBetPhase().Rebet()
 		require.Error(t, err)
-		assert.Contains(t, err.Error(), "まだ賭けていない")
+		assert.Equal(t, "threecard.errCannotRebet", err.(*domain.DomainError).MessageCode())
 	})
 
 	// **チップ不足は明確に断る。** Bet と同じ検査を通すので理由も同じ。

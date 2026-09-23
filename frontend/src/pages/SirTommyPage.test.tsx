@@ -95,6 +95,33 @@ describe('SirTommyPage', () => {
     await waitFor(() => expect(screen.getAllByText(/ゲームオーバー/).length).toBeGreaterThan(0));
   });
 
+  it.each([
+    { name: 'zero cards', foundations: [[], [], [], []], expected: '組札 0/52 枚（0%）まで到達' },
+    {
+      name: 'six cards',
+      foundations: [
+        [card('SPADE', 1), card('SPADE', 2), card('SPADE', 3)],
+        [card('HEART', 1), card('HEART', 2)],
+        [card('CLOVER', 1)],
+        [],
+      ],
+      expected: '組札 6/52 枚（12%）まで到達',
+    },
+  ])('shows game-over foundation summary for $name', async ({ foundations, expected }) => {
+    mockExec.mockResolvedValue({ ...gameOverState, foundations });
+    renderWithProviders(<SirTommyPage />);
+    const summary = await screen.findByTestId('sirtommy-gameover-summary');
+    expect(summary).toHaveTextContent(expected);
+    expect(summary).not.toHaveTextContent('{{');
+  });
+
+  it('does not show the game-over foundation summary while playing', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<SirTommyPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.queryByTestId('sirtommy-gameover-summary')).not.toBeInTheDocument();
+  });
+
   it('hint button triggers hint command', async () => {
     renderWithProviders(<SirTommyPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
@@ -183,7 +210,7 @@ describe('SirTommyPage', () => {
     renderWithProviders(<SirTommyPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
-    const f0 = screen.getByLabelText(/ファンデーション 0 /);
+    const f0 = screen.getByLabelText(/組札 0 /);
     fireEvent.click(f0);
     await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
@@ -195,7 +222,7 @@ describe('SirTommyPage', () => {
     mockExec.mockClear();
 
     fireEvent.click(screen.getByTestId('calc-stock-button'));
-    fireEvent.click(screen.getByLabelText(/ファンデーション 2 /));
+    fireEvent.click(screen.getByLabelText(/組札 2 /));
 
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'stock' }, { zone: 'foundation', idx: 2 }),
@@ -223,7 +250,7 @@ describe('SirTommyPage', () => {
     mockExec.mockClear();
 
     fireEvent.click(screen.getByTestId('calc-waste-button-1'));
-    fireEvent.click(screen.getByLabelText(/ファンデーション 1 /));
+    fireEvent.click(screen.getByLabelText(/組札 1 /));
 
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'waste', idx: 1 }, { zone: 'foundation', idx: 1 }),
@@ -281,10 +308,10 @@ describe('SirTommyPage', () => {
     // sirtommy.hintAvailable が訳されたため)。帯のほうを見る。
     expect(screen.getAllByText(/ヒントがあります/).length).toBeGreaterThanOrEqual(1);
     // Hint uses localized zone names + index, not raw F/W symbols.
-    expect(screen.getByText(/ストック → ファンデーション 2/)).toBeInTheDocument();
+    expect(screen.getByText(/ストック → 組札 2/)).toBeInTheDocument();
   });
 
-  // #5552: ファンデーションに置けない局面 — このゲームで最頻出 — では
+  // #5552: 組札に置けない局面 — このゲームで最頻出 — では
   // どのウェイストに置くかを助言する。
   it('shows the waste-placement hint and rings the destination pile', async () => {
     mockExec.mockResolvedValue({
@@ -311,7 +338,7 @@ describe('SirTommyPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     expect(screen.queryByText(/ヒントがあります/)).not.toBeInTheDocument();
     // Hint uses localized zone names + index, not raw F/W symbols.
-    expect(screen.queryByText(/ストック → ファンデーション 2/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/ストック → 組札 2/)).not.toBeInTheDocument();
   });
 
   it('renders the backend hint banner when state.hint is a waste hint', async () => {
@@ -323,7 +350,7 @@ describe('SirTommyPage', () => {
     });
     renderWithProviders(<SirTommyPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    expect(screen.getByText(/ウェイスト 0 → ファンデーション 1/)).toBeInTheDocument();
+    expect(screen.getByText(/ウェイスト 0 → 組札 1/)).toBeInTheDocument();
   });
 
   it('renders a stalemate escape button when the game is stalled', async () => {

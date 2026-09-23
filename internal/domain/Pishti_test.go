@@ -116,6 +116,15 @@ func TestPishti_Pisti_SingleCardBonus(t *testing.T) {
 	if g.players[0].CapturedCount() != 2 {
 		t.Fatalf("captured = %d, want 2", g.players[0].CapturedCount())
 	}
+	for _, entry := range g.GetActionLog() {
+		if entry.DetailCode == "pishti.log.pisti" {
+			if entry.DetailParams["bonus"] != "10" || entry.DetailParams["count"] != "2" {
+				t.Fatalf("Pişti log = %+v, want empty detail and bonus/count params", entry)
+			}
+			return
+		}
+	}
+	t.Fatal("Pişti action log entry not found")
 }
 
 func TestPishti_Pisti_JackOnSingleNonJack(t *testing.T) {

@@ -55,6 +55,15 @@ beforeEach(() => {
 });
 
 describe('RamschPage', () => {
+  it('shows the three-player trick-taking skeleton while loading', () => {
+    mockExec.mockReturnValue(new Promise(() => {}));
+    const { container } = renderWithProviders(<RamschPage />);
+
+    expect(container.querySelectorAll('[data-skeleton-section="opponent"]')).toHaveLength(2);
+    expect(container.querySelector('[data-skeleton-section="trick-area"]')).toBeInTheDocument();
+    expect(container.querySelector('[data-skeleton-section="footer-hand"]')).toBeInTheDocument();
+  });
+
   // **切り札と得点の向きを常に出す。** スカート系のつもりで来た人が真っ先に
   // 取り違えるところで、無ければ盤が読めない。
   it('always states that jacks are trump and that points are penalties', async () => {

@@ -229,6 +229,25 @@ describe('TarabishPage', () => {
     renderWithProviders(<TarabishPage />);
     expect(await screen.findByText(/引き受けてよいでしょう/)).toBeInTheDocument();
   });
+
+  it('resolves the game-end message with last-trick bonus to Japanese', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        gameEndFlag: true,
+        winnerTeam: 0,
+        messageCode: 'tarabish.result.team0.bonusYou',
+        messageParams: { t0: '520', t1: '300', bonus: '10' },
+      }),
+    );
+    renderWithProviders(<TarabishPage />);
+
+    expect(
+      await screen.findByText(
+        'あなたのチームの勝ちです（520 － 300）。あなたのチームが最終トリックボーナス +10 点を獲得。',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/tarabish\.result/)).not.toBeInTheDocument();
+  });
 });
 
 // **切り札だけ点数表が入れ替わるのがこの系統の肝** (#5749)。同じ J でも

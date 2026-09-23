@@ -24,6 +24,7 @@
   "gameClear": "Game Clear! Moves: {{moveCount}}",
   "gameOver": "Game Over",
   "hintAvailable": "Hint available",
+  "doubleClickHint": "Double-click or double-tap a card to send it to the foundation",
   "hintAnnouncement": "Hint: move {{card}} to {{dest}}",
   "noHint": "No hint available",
   "tutorial": {

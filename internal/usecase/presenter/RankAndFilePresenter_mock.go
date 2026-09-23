@@ -14,3 +14,9 @@ func (_m *MockRankAndFilePresenter) HintOutput(ft interfaces.RankAndFileGame) st
 	ret := _m.Called(ft)
 	return ret.Get(0).(string)
 }
+
+// TargetsOutput モック
+func (_m *MockRankAndFilePresenter) TargetsOutput(ft interfaces.RankAndFileGame, fromCol, cardIndex int) string {
+	ret := _m.Called(ft, fromCol, cardIndex)
+	return ret.Get(0).(string)
+}

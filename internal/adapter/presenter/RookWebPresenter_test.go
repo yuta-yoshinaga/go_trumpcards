@@ -122,6 +122,19 @@ func TestRookWebPresenter_Error(t *testing.T) {
 	}
 }
 
+func TestRookWebPresenter_CodedError(t *testing.T) {
+	g := newRookGame()
+	p := &presenter.RookWebPresenter{}
+	err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "rook.errInvalidBid", nil)
+	var out controller.RookWebOutput
+	if err := json.Unmarshal([]byte(p.Output(g, err)), &out); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	if out.MessageCode != "rook.errInvalidBid" || out.Message != "" {
+		t.Errorf("coded error output = message %q, code %q", out.Message, out.MessageCode)
+	}
+}
+
 func TestRookWebPresenter_Hint(t *testing.T) {
 	g := newRookGame()
 	g.SetTrumpColor(1)

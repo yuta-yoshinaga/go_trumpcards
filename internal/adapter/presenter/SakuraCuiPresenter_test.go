@@ -108,7 +108,7 @@ func TestSakuraCuiPresenter_ShowsBonuses(t *testing.T) {
 func TestSakuraCuiPresenter_HintOutput(t *testing.T) {
 	g := newSakuraForPresenter()
 	out := new(presenter.SakuraCuiPresenter).HintOutput(g)
-	assert.Contains(t, out, "HINT")
+	assert.Contains(t, out, "ヒント")
 	// 理由は訳された文で出る (キーのままではない)。
 	assert.True(t,
 		strings.Contains(out, i18n.T("sakura.hintReasonCapture")) ||

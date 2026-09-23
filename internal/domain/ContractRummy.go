@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // ContractRummyPlayerCnt コントラクトラミーのプレイヤー数（人間 1 + CPU 2）
@@ -260,21 +261,21 @@ func (g *ContractRummy) drawFromStock() error {
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", playerName(g.players, g.currentPlayerIdx)), nil)
+	g.appendLogCode(g.currentPlayerIdx, "draw_stock", "contractrummy.log.drawStock", map[string]string{"name": playerName(g.players, g.currentPlayerIdx)}, nil)
 	g.phase = ContractRummyPhasePlay
 	return nil
 }
 
 func (g *ContractRummy) drawFromDiscard() error {
 	if len(g.discardPile) == 0 {
-		return NewDomainError(ErrInvalidPlay, "捨て札が空です")
+		return NewDomainErrorCode(ErrInvalidPlay, "contractrummy.errDiscardPileEmpty", nil)
 	}
 	card := g.discardPile[len(g.discardPile)-1]
 	g.discardPile = g.discardPile[:len(g.discardPile)-1]
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s draws %s from discard", playerName(g.players, g.currentPlayerIdx), cardStr(card)), []*Card{card})
+	g.appendLogCode(g.currentPlayerIdx, "draw_discard", "contractrummy.log.drawDiscard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(card)}, []*Card{card})
 	g.phase = ContractRummyPhasePlay
 	return nil
 }
@@ -282,7 +283,11 @@ func (g *ContractRummy) drawFromDiscard() error {
 // recycleDiscardIntoStock 山札が空のとき捨て札トップ 1 枚を残して残りを山札へ戻しシャッフルする。
 // 戻り値は補充できたかどうか（捨て札も枯渇していれば false）。
 func (g *ContractRummy) recycleDiscardIntoStock() bool {
-	return recycleDiscardIntoStock(&g.discardPile, &g.drawPile, g)
+	return recycleDiscardIntoStock(&g.discardPile, &g.drawPile, g, "contractrummy.log.recycle")
+}
+
+func (g *ContractRummy) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // PlayerMeldContract 人間プレイヤーがコントラクトを達成する。
@@ -304,12 +309,12 @@ func (g *ContractRummy) PlayerMeldContract(indicesPerSlot [][]int) error {
 func (g *ContractRummy) applyContractMeld(indicesPerSlot [][]int) error {
 	player := g.players[g.currentPlayerIdx]
 	if player.IsContractMet() {
-		return NewDomainError(ErrInvalidPlay, "既にコントラクトを達成しています")
+		return NewDomainErrorCode(ErrInvalidPlay, "contractrummy.errContractAlreadyMet", nil)
 	}
 
 	contract := ContractForRound(g.roundNumber)
 	if len(indicesPerSlot) != len(contract.Slots) {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("コントラクトには %d 個のメルドが必要です", len(contract.Slots)))
+		return NewDomainErrorCode(ErrInvalidPlay, "contractrummy.errContractMeldCount", map[string]string{"count": strconv.Itoa(len(contract.Slots))})
 	}
 
 	// 全インデックスのバリデーションと重複チェック（スロット間も含む）
@@ -317,14 +322,14 @@ func (g *ContractRummy) applyContractMeld(indicesPerSlot [][]int) error {
 	for slotIdx, indices := range indicesPerSlot {
 		slot := contract.Slots[slotIdx]
 		if len(indices) != slot.Size {
-			return NewDomainError(ErrInvalidPlay, fmt.Sprintf("スロット %d は %d 枚必要です", slotIdx+1, slot.Size))
+			return NewDomainErrorCode(ErrInvalidPlay, "contractrummy.errContractSlotCardCount", map[string]string{"slot": strconv.Itoa(slotIdx + 1), "count": strconv.Itoa(slot.Size)})
 		}
 		for _, idx := range indices {
 			if idx < 0 || idx >= player.GetCardsSize() {
-				return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+				return NewDomainErrorCode(ErrInvalidCard, "contractrummy.errCardIndexOutOfRange", nil)
 			}
 			if allSeen[idx] {
-				return NewDomainError(ErrInvalidCard, "カードインデックスが重複しています")
+				return NewDomainErrorCode(ErrInvalidCard, "contractrummy.errDuplicateCardIndex", nil)
 			}
 			allSeen[idx] = true
 		}
@@ -339,7 +344,11 @@ func (g *ContractRummy) applyContractMeld(indicesPerSlot [][]int) error {
 		}
 		slot := contract.Slots[slotIdx]
 		if !ValidateContractSlot(slot, cards) {
-			return NewDomainError(ErrInvalidPlay, fmt.Sprintf("スロット %d は %s の条件を満たしていません", slotIdx+1, contractSlotLabel(slot)))
+			code := "contractrummy.errContractSlotSet"
+			if slot.Kind == ContractSlotRun {
+				code = "contractrummy.errContractSlotRun"
+			}
+			return NewDomainErrorCode(ErrInvalidPlay, code, map[string]string{"slot": strconv.Itoa(slotIdx + 1), "size": strconv.Itoa(slot.Size)})
 		}
 		slotCards[slotIdx] = cards
 	}
@@ -367,7 +376,7 @@ func (g *ContractRummy) applyContractMeld(indicesPerSlot [][]int) error {
 		player.RemoveCard(idx)
 	}
 
-	g.appendLog(g.currentPlayerIdx, "meld_contract", fmt.Sprintf("%s meets the contract (round %d)", playerName(g.players, g.currentPlayerIdx), g.roundNumber), nil)
+	g.appendLogCode(g.currentPlayerIdx, "meld_contract", "contractrummy.log.meldContract", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "round": strconv.Itoa(g.roundNumber)}, nil)
 
 	if player.GetCardsSize() == 0 {
 		g.finishRound(g.currentPlayerIdx)
@@ -393,10 +402,10 @@ func (g *ContractRummy) PlayerMeldExtra(indices []int) error {
 func (g *ContractRummy) applyExtraMeld(indices []int) error {
 	player := g.players[g.currentPlayerIdx]
 	if !player.IsContractMet() {
-		return NewDomainError(ErrInvalidPlay, "追加メルドの前にコントラクトを達成する必要があります")
+		return NewDomainErrorCode(ErrInvalidPlay, "contractrummy.errExtraMeldContractRequired", nil)
 	}
 	if len(indices) < ContractRummySetSize {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("メルドには最低 %d 枚必要です", ContractRummySetSize))
+		return NewDomainErrorCode(ErrInvalidPlay, "contractrummy.errMeldMinimumCards", map[string]string{"min": strconv.Itoa(ContractRummySetSize)})
 	}
 	if err := validateIndexList(indices, player.GetCardsSize()); err != nil {
 		return err
@@ -406,7 +415,7 @@ func (g *ContractRummy) applyExtraMeld(indices []int) error {
 		cards[i] = player.GetCard(idx)
 	}
 	if !IsContractRummyMeld(cards) {
-		return NewDomainError(ErrInvalidPlay, "有効なメルド（セットまたはラン）ではありません")
+		return NewDomainErrorCode(ErrInvalidPlay, "contractrummy.errInvalidMeld", nil)
 	}
 
 	meldCopy := make([]*Card, len(cards))
@@ -421,7 +430,7 @@ func (g *ContractRummy) applyExtraMeld(indices []int) error {
 		player.RemoveCard(idx)
 	}
 
-	g.appendLog(g.currentPlayerIdx, "meld_extra", fmt.Sprintf("%s melds %d extra cards", playerName(g.players, g.currentPlayerIdx), len(cards)), cards)
+	g.appendLogCode(g.currentPlayerIdx, "meld_extra", "contractrummy.log.meldExtra", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "count": strconv.Itoa(len(cards))}, cards)
 	if player.GetCardsSize() == 0 {
 		g.finishRound(g.currentPlayerIdx)
 	}
@@ -446,31 +455,31 @@ func (g *ContractRummy) PlayerLayoff(targetPlayerIdx, meldIdx, cardIndex int) er
 func (g *ContractRummy) applyLayoff(targetPlayerIdx, meldIdx, cardIndex int) error {
 	current := g.players[g.currentPlayerIdx]
 	if !current.IsContractMet() {
-		return NewDomainError(ErrInvalidPlay, "レイオフはコントラクト達成後にのみ可能です")
+		return NewDomainErrorCode(ErrInvalidPlay, "contractrummy.errLayoffContractRequired", nil)
 	}
 	if targetPlayerIdx < 0 || targetPlayerIdx >= len(g.players) {
-		return NewDomainError(ErrInvalidPlay, "対象プレイヤーが不正です")
+		return NewDomainErrorCode(ErrInvalidPlay, "contractrummy.errTargetPlayerInvalid", nil)
 	}
 	target := g.players[targetPlayerIdx]
 	if !target.IsContractMet() {
-		return NewDomainError(ErrInvalidPlay, "対象プレイヤーがまだコントラクトを達成していません")
+		return NewDomainErrorCode(ErrInvalidPlay, "contractrummy.errTargetContractNotMet", nil)
 	}
 	if meldIdx < 0 || meldIdx >= target.GetMeldCount() {
-		return NewDomainError(ErrInvalidPlay, "対象メルドが不正です")
+		return NewDomainErrorCode(ErrInvalidPlay, "contractrummy.errTargetMeldInvalid", nil)
 	}
 	if cardIndex < 0 || cardIndex >= current.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "contractrummy.errCardIndexOutOfRange", nil)
 	}
 
 	card := current.GetCard(cardIndex)
 	meld := target.GetMeld(meldIdx)
-	if !canAddToContractRummyMeld(meld, card) {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("%s はそのメルドに追加できません", cardStr(card)))
+	if !CanAddToContractRummyMeld(meld, card) {
+		return NewDomainErrorCode(ErrInvalidPlay, "contractrummy.errLayoffCardCannotAdd", map[string]string{"card": cardStr(card)})
 	}
 	target.AddCardToMeld(meldIdx, card)
 	current.RemoveCard(cardIndex)
 
-	g.appendLog(g.currentPlayerIdx, "layoff", fmt.Sprintf("%s lays off %s on player %d's meld", playerName(g.players, g.currentPlayerIdx), cardStr(card), targetPlayerIdx), []*Card{card})
+	g.appendLogCode(g.currentPlayerIdx, "layoff", "contractrummy.log.layoff", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(card), "target": strconv.Itoa(targetPlayerIdx)}, []*Card{card})
 	if current.GetCardsSize() == 0 {
 		g.finishRound(g.currentPlayerIdx)
 	}
@@ -494,16 +503,16 @@ func (g *ContractRummy) PlayerDiscard(cardIndex int) error {
 func (g *ContractRummy) applyDiscard(cardIndex int) error {
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "contractrummy.errCardIndexOutOfRange", nil)
 	}
 	// 手札最後の 1 枚を捨てて上がるとき、コントラクト未達なら不可
 	if player.GetCardsSize() == 1 && !player.IsContractMet() {
-		return NewDomainError(ErrInvalidPlay, "上がりにはコントラクト達成が必要です")
+		return NewDomainErrorCode(ErrInvalidPlay, "contractrummy.errContractRequiredToGoOut", nil)
 	}
 
 	discarded := player.RemoveCard(cardIndex)
 	g.discardPile = append(g.discardPile, discarded)
-	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+	g.appendLogCode(g.currentPlayerIdx, "discard", "contractrummy.log.discard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(discarded)}, []*Card{discarded})
 
 	if player.GetCardsSize() == 0 && player.IsContractMet() {
 		g.finishRound(g.currentPlayerIdx)
@@ -667,7 +676,7 @@ func (g *ContractRummy) findLayoffTargetFor(card *Card) int {
 			continue
 		}
 		for mi := 0; mi < g.players[pi].GetMeldCount(); mi++ {
-			if canAddToContractRummyMeld(g.players[pi].GetMeld(mi), card) {
+			if CanAddToContractRummyMeld(g.players[pi].GetMeld(mi), card) {
 				return mi
 			}
 		}
@@ -682,7 +691,7 @@ func (g *ContractRummy) locateLayoffTarget(card *Card) (int, int, bool) {
 			continue
 		}
 		for mi := 0; mi < g.players[pi].GetMeldCount(); mi++ {
-			if canAddToContractRummyMeld(g.players[pi].GetMeld(mi), card) {
+			if CanAddToContractRummyMeld(g.players[pi].GetMeld(mi), card) {
 				return pi, mi, true
 			}
 		}
@@ -711,9 +720,9 @@ func (g *ContractRummy) finishRound(winnerIdx int) {
 	}
 
 	if winnerIdx >= 0 {
-		g.appendLog(winnerIdx, "round_win", fmt.Sprintf("%s goes out (round %d)", playerName(g.players, winnerIdx), g.roundNumber), nil)
+		g.appendLogCode(winnerIdx, "round_win", "contractrummy.log.roundWin", map[string]string{"name": playerName(g.players, winnerIdx), "round": strconv.Itoa(g.roundNumber)}, nil)
 	} else {
-		g.appendLog(-1, "draw", "Round ends in a draw (stock empty)", nil)
+		g.appendLogCode(-1, "draw", "contractrummy.log.draw", nil, nil)
 	}
 
 	for i := range g.players {
@@ -745,7 +754,7 @@ func (g *ContractRummy) finalizeGameEnd() {
 			g.winnerIdx = i
 		}
 	}
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game with %d penalty points!", playerName(g.players, g.winnerIdx), minScore), nil)
+	g.appendLogCode(-1, "game_end", "contractrummy.log.gameEnd", map[string]string{"name": playerName(g.players, g.winnerIdx), "points": strconv.Itoa(minScore)}, nil)
 }
 
 // --- Getters / Setters ---
@@ -847,14 +856,6 @@ func contractRummyCardPenalty(card *Card) int {
 	return v
 }
 
-// contractSlotLabel スロットの種別を表示用文字列で返す
-func contractSlotLabel(slot ContractSlot) string {
-	if slot.Kind == ContractSlotSet {
-		return fmt.Sprintf("Set of %d", slot.Size)
-	}
-	return fmt.Sprintf("Run of %d", slot.Size)
-}
-
 // ValidateContractSlot cards がスロットの条件（種別・枚数・組み合わせ）を満たすか。
 // セットは同ランクのみを要求し、スートの重複は許容する（2 デッキ運用の標準ルール）。
 func ValidateContractSlot(slot ContractSlot, cards []*Card) bool {
@@ -925,11 +926,11 @@ func isConsecutive(values []int) bool {
 	return true
 }
 
-// canAddToContractRummyMeld は ContractRummy 用のレイオフ可否判定。
+// CanAddToContractRummyMeld は ContractRummy 用のレイオフ可否判定。
 // GinRummy 系の canAddToMeld との違いは:
 //   - セットでのスート重複を許容する（2 デッキ運用の標準）
 //   - ラン末尾に Ace を継ぎ足せる（K-high の上に A を置ける）
-func canAddToContractRummyMeld(meld []*Card, card *Card) bool {
+func CanAddToContractRummyMeld(meld []*Card, card *Card) bool {
 	if len(meld) == 0 || card == nil {
 		return false
 	}

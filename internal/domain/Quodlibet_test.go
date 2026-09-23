@@ -68,6 +68,16 @@ func TestQuodlibet_DealsEightEach(t *testing.T) {
 	}
 	assert.Equal(t, 32, total)
 	assert.Equal(t, QuodlibetPhaseSelectContract, q.GetPhase())
+	var dealLog *ActionLogEntry
+	for _, entry := range q.GetActionLog() {
+		if entry.ActionType == "deal" {
+			dealLog = entry
+			break
+		}
+	}
+	require.NotNil(t, dealLog)
+	assert.Equal(t, "quodlibet.log.deal", dealLog.DetailCode)
+	assert.Equal(t, map[string]string{"deal": "1", "total": "12", "round": "1", "dealer": "0"}, dealLog.DetailParams)
 }
 
 // **12 ディールは 3 つの輪 × 4 種目。** ディーラー 1 人につき 1 種目ではない。

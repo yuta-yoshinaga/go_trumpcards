@@ -37,7 +37,7 @@ func TestAlaskaCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(rg, nil)
 		assert.Contains(t, result, "Alaska")
-		assert.Contains(t, result, "Foundation")
+		assert.Contains(t, result, "組札")
 		assert.Contains(t, result, "列0:")
 	})
 
@@ -144,7 +144,7 @@ func TestAlaskaCuiPresenter_Output(t *testing.T) {
 
 		p := new(AlaskaCuiPresenter)
 		result := p.Output(rg, nil)
-		assert.Contains(t, result, "SPADE 1")
+		assert.Contains(t, result, "♠1")
 	})
 }
 
@@ -161,7 +161,7 @@ func TestAlaskaCuiPresenter_HintOutput(t *testing.T) {
 		p := new(AlaskaCuiPresenter)
 		result := p.HintOutput(rg)
 		assert.Contains(t, result, "ヒント")
-		assert.Contains(t, result, "ファンデーション")
+		assert.Contains(t, result, "組札")
 	})
 
 	t.Run("hint to tableau", func(t *testing.T) {
@@ -202,7 +202,7 @@ func TestAlaskaCuiPresenter_ActionLogOutput(t *testing.T) {
 		rg := new(interfaces.MockAlaskaGame)
 		rg.On("GetPhase").Return(domain.AlaskaPhaseGameOver)
 		rg.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "move", Detail: "test"},
+			{TurnNumber: 1, ActionType: "move", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 
 		p := new(AlaskaCuiPresenter)

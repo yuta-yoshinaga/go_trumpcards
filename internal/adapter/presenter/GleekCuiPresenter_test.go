@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -78,8 +79,8 @@ func TestGleekCuiPresenter_Output(t *testing.T) {
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "グリーク")
 		// **名札の点は手札に出す。** 出さないと 15 点の Tib を捨てた理由が読めない。
-		assert.Contains(t, result, "HEART 1(15)")
-		assert.NotContains(t, result, "SPADE 13(", "平札に点は付かない")
+		assert.Contains(t, result, "♥1(15)")
+		assert.NotContains(t, result, "♠13(", "平札に点は付かない")
 	})
 
 	t.Run("stock line names the buyer once the auction closes", func(t *testing.T) {
@@ -107,10 +108,22 @@ func TestGleekCuiPresenter_Output(t *testing.T) {
 		})
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "ラフ")
+		assert.Contains(t, result, "31")
+		assert.Contains(t, result, "18")
 		assert.Contains(t, result, "スペード")
 		assert.Contains(t, result, "キング3枚")
 		assert.Contains(t, result, "ジャック4枚")
 		assert.Contains(t, result, "マーニヴァル")
+		assert.Equal(t, 1, strings.Count(result, "で獲得"), "only the ruff winner may be described as collecting the payment")
+	})
+
+	t.Run("ruff lines do not claim a winner when no winner is reported", func(t *testing.T) {
+		m, _ := setupGleekCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRuffWinnerIdx")
+		m.On("GetRuffWinnerIdx").Return(-1)
+		result := p.Output(m, nil)
+		assert.Equal(t, 0, strings.Count(result, "で獲得"))
+		assert.Contains(t, result, "あなた: ハート の 20")
 	})
 
 	t.Run("bid phase names the amount that may still be bid", func(t *testing.T) {
@@ -228,7 +241,7 @@ func TestGleekCuiPresenter_HintOutput(t *testing.T) {
 		result := p.HintOutput(m)
 		assert.Contains(t, result, "16")
 		assert.Contains(t, result, "を推奨")
-		assert.NotContains(t, result, "HINT: -")
+		assert.NotContains(t, result, "ヒント: -")
 	})
 
 	t.Run("dropping out is named as an action, not a card", func(t *testing.T) {
@@ -237,7 +250,7 @@ func TestGleekCuiPresenter_HintOutput(t *testing.T) {
 		m.On("GetHint").Return(&domain.GleekHint{Bid: 0, Reason: "bid_pass"})
 		result := p.HintOutput(m)
 		assert.Contains(t, result, "降りる")
-		assert.NotContains(t, result, "HINT: -")
+		assert.NotContains(t, result, "ヒント: -")
 	})
 
 	t.Run("play hint lists the recommended card", func(t *testing.T) {
@@ -247,7 +260,7 @@ func TestGleekCuiPresenter_HintOutput(t *testing.T) {
 		m.On("GetHint").Return(&domain.GleekHint{CardIndices: []int{0}, Reason: "lead_high"})
 		result := p.HintOutput(m)
 		assert.Contains(t, result, "[0]")
-		assert.Contains(t, result, "SPADE 13")
+		assert.Contains(t, result, "♠13")
 	})
 
 	// **捨て札のヒントは落札者の手札を指す。** 現在の手番の席を読むと、
@@ -258,6 +271,6 @@ func TestGleekCuiPresenter_HintOutput(t *testing.T) {
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetHint")
 		m.On("GetHint").Return(&domain.GleekHint{CardIndices: []int{0}, Reason: "discard_stock"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "CLOVER 4")
+		assert.Contains(t, result, "♣4")
 	})
 }

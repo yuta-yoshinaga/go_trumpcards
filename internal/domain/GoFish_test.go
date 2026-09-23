@@ -31,6 +31,77 @@ func newTestGoFish() *GoFish {
 	return g
 }
 
+func addGoFishCards(p *GoFishPlayer, ranks ...int) {
+	for _, rank := range ranks {
+		p.AddCard(NewCard(CardDesignSpade, rank, false))
+	}
+}
+
+func TestGoFish_GetHint(t *testing.T) {
+	t.Run("returns nil when unavailable", func(t *testing.T) {
+		cases := map[string]func(*GoFish){
+			"game ended":     func(g *GoFish) { g.gameEndFlag = true },
+			"wrong phase":    func(g *GoFish) { g.phase = GoFishPhaseGameEnd },
+			"not human turn": func(g *GoFish) { g.currentTurn = 1 },
+			"empty hand":     func(g *GoFish) {},
+		}
+		for name, mutate := range cases {
+			t.Run(name, func(t *testing.T) {
+				g := newTestGoFish()
+				if name == "empty hand" {
+					g.players[0].Reset()
+				}
+				mutate(g)
+				assert.Nil(t, g.GetHint())
+			})
+		}
+	})
+
+	t.Run("recommends all cards of the most common rank", func(t *testing.T) {
+		g := newTestGoFish()
+		addGoFishCards(g.players[0], 5, 5, 8, 3)
+		hint := g.GetHint()
+		require.NotNil(t, hint)
+		assert.Equal(t, "ask", hint.Action)
+		assert.Equal(t, 5, hint.Rank)
+		assert.Equal(t, []int{0, 1}, hint.Indices)
+		assert.Equal(t, "ask_most_copies", hint.Reason)
+	})
+
+	t.Run("breaks ties by lowest rank regardless of hand order", func(t *testing.T) {
+		for _, ranks := range [][]int{{9, 9, 4, 4}, {4, 4, 9, 9}} {
+			g := newTestGoFish()
+			addGoFishCards(g.players[0], ranks...)
+			hint := g.GetHint()
+			require.NotNil(t, hint)
+			assert.Equal(t, 4, hint.Rank)
+		}
+	})
+
+	t.Run("treats ace as the lowest rank", func(t *testing.T) {
+		g := newTestGoFish()
+		addGoFishCards(g.players[0], 7, 7, 1, 1)
+		hint := g.GetHint()
+		require.NotNil(t, hint)
+		assert.Equal(t, 1, hint.Rank)
+		assert.Equal(t, []int{2, 3}, hint.Indices)
+	})
+
+	t.Run("prioritizes the lowest known opponent rank", func(t *testing.T) {
+		g := newTestGoFish()
+		addGoFishCards(g.players[0], 5, 5, 8, 3)
+		g.cpuActions = []*GoFishCpuAction{
+			{AskPlayerIdx: 1, AskTargetIdx: 2, AskRank: 8, Success: true},
+			{AskPlayerIdx: 1, AskTargetIdx: 2, AskRank: 3, Success: true},
+		}
+		hint := g.GetHint()
+		require.NotNil(t, hint)
+		assert.Equal(t, 3, hint.Rank)
+		assert.Equal(t, []int{3}, hint.Indices)
+		assert.Equal(t, "ask_known_rank", hint.Reason)
+	})
+}
+
 func TestGoFish_Reset(t *testing.T) {
 	players := []*GoFishPlayer{
 		NewGoFishPlayer(true),

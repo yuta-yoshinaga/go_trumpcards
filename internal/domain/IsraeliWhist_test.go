@@ -157,7 +157,8 @@ func TestIsraeliWhist_AuctionClosesOnLastSurvivor(t *testing.T) {
 	require.NoError(t, w.PlayerAuctionBid(7, CardDesignHeart))
 	for _, i := range []int{1, 2, 3} {
 		w.SetAuctionPlayerIdxForTest(i)
-		w.CpuAuction()
+		// CPU は手札次第で入札するので、後から SetPassed を付けても既に最高入札者になっている
+		// (実測 約1/5000 で発生)。ここでは席 0 だけが入札した状態を直接作る。
 		w.GetPlayer(i).SetPassed(true)
 	}
 	if w.GetPhase() == IsraeliWhistPhaseAuction {
@@ -741,6 +742,14 @@ func TestIsraeliWhist_ActionLog(t *testing.T) {
 		kinds[e.ActionType] = true
 	}
 	assert.True(t, kinds["auction"])
+	var entry *ActionLogEntry
+	for _, candidate := range w.actionLog {
+		if candidate.DetailCode == "israeliwhist.log.auction" {
+			entry = candidate
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, map[string]string{"bid": "6", "suit": "1"}, entry.DetailParams)
 }
 
 // **全員的中と全員外しはどちらも 2 倍** (#5752)。発動したかどうかを

@@ -9,6 +9,7 @@ import { ErrorAlert } from '../components/ErrorAlert';
 import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { HintTooltip } from '../components/hint/HintTooltip';
+import { LiveAnnouncement } from '../components/LiveAnnouncement';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -233,9 +234,10 @@ function HasenpfefferPageContent() {
                 {t('header.mustBid')}
               </div>
             )}
+            <LiveAnnouncement message={isHumanBidTurn && state.mustBid ? t('header.mustBid') : ''} />
 
             <div className="flex flex-wrap justify-center gap-2 mb-4" data-tutorial="hpf-seats">
-              {state.players.map((p) => (
+              {state.players.map((p, playerIdx) => (
                 <div
                   key={p.id}
                   className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
@@ -245,6 +247,7 @@ function HasenpfefferPageContent() {
                     {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
                   </span>
                   <span className="ml-1 text-ds-accent">{t('header.team', { team: String(p.team) })}</span>
+                  {playerIdx === state.dealerIdx && <span className="ml-1 text-ds-accent"> / {t('dealerBadge')}</span>}
                   {p.id === state.declarerIdx && <span className="ml-1 text-ds-accent">{t('header.declarer')}</span>}
                   {': '}
                   {p.bid < 0

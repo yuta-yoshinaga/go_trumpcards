@@ -40,6 +40,13 @@ export interface BeggarMyNeighbourResponse extends BaseGameResponse {
   centralPileSize: number;
   /** The last card played onto the central pile, or null. */
   lastCardPlayed: Card | null;
+  /**
+   * Seat that played {@link BeggarMyNeighbourResponse.lastCardPlayed}, or -1.
+   *
+   * Not derivable from `currentPlayerIdx`: the turn moves to the opponent in the
+   * same call that sets the card, so reading it back would name the wrong seat.
+   */
+  lastCardPlayerIdx: number;
   /** Number of collection rounds completed. */
   roundsPlayed: number;
   config: BeggarMyNeighbourConfig;

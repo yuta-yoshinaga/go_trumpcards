@@ -36,5 +36,18 @@
   "hintReason.draw_stock": "the discard would not help",
   "hintReason.drop_weakest": "it leaves the highest total",
   "helpExampleDraw": "  ds                   start the turn by drawing from the stock",
-  "helpExampleDiscard": "  d 0                  discard hand card 0"
+  "helpExampleDiscard": "  d 0                  discard hand card 0",
+  "errDiscardPileEmpty": "There is no discard pile.",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errAlreadyKnocked": "The game has already been knocked.",
+  "log.blitz": "{{name}} is dealt 31!",
+  "log.drawStock": "{{name}} draws from stock",
+  "log.drawDiscard": "{{name}} draws {{card}} from discard",
+  "log.discard": "{{name}} discards {{card}}",
+  "log.thirtyOne": "{{name}} reaches 31!",
+  "log.knock": "{{name}} knocks (score: {{score}})",
+  "log.roundWin": "{{name}} wins the round with 31",
+  "log.roundEndStockEmpty": "Round ends (stock empty)",
+  "log.loseLife": "{{name}} loses a life (score: {{score}})",
+  "log.gameEnd": "{{name}} wins the game!"
 }

@@ -10,6 +10,7 @@
   "handLabel": "Your hand",
   "passNotice": "Your turn — pick one card to pass to the next player.",
   "grabNotice": "Four of a kind! Grab a spoon!",
+  "firstGrabber": "{{name}} was first to get four of a kind.",
   "lettersLabel": "letters",
   "badge": {
     "eliminated": "OUT",

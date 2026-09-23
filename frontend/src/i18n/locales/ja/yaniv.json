@@ -12,6 +12,10 @@
     "roundEnd": "ラウンド終了",
     "end": "終了"
   },
+  "roundResult": {
+    "yaniv": "{{name}}がYanivを宣言し、ラウンドに勝利しました！",
+    "asaf": "{{name}}のYanivはアサフでした。+30点のペナルティです。"
+  },
   "label": {
     "stock": "山札",
     "discardPile": "捨て札",

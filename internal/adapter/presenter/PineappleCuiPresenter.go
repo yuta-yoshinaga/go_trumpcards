@@ -3,6 +3,7 @@
 package presenter
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -123,6 +124,24 @@ func (pp *PineappleCuiPresenter) Output(p interfaces.PineappleGame, lastErr erro
 					b.WriteString(i18n.Tf("pineapple.currentBestHand",
 						"hand", cuiPokerHandName(rank),
 						"cards", cuiCardSliceStrEmoji(best)) + "\n")
+				}
+			}
+		}
+
+		if p.IsHumanTurn() {
+			if eq := p.GetEquity(); eq != nil {
+				potOdds := p.GetPotOdds()
+				b.WriteString("----------\n")
+				b.WriteString(color.Bold(i18n.T("pineapple.learningHeader")) + "\n")
+				b.WriteString(i18n.Tf("pineapple.learningLine",
+					"equity", fmt.Sprintf("%.1f", eq.Equity*100),
+					"potodds", fmt.Sprintf("%.1f", potOdds)) + "\n")
+				if potOdds > 0 {
+					if eq.Equity*100 > potOdds {
+						b.WriteString(i18n.T("pineapple.learningEvPlus") + "\n")
+					} else {
+						b.WriteString(i18n.T("pineapple.learningEvMinus") + "\n")
+					}
 				}
 			}
 		}

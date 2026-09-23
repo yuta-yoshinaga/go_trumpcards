@@ -7,7 +7,7 @@
   "helpSetAnte": "  sa <n>                    Ante amount",
   "helpSetChips": "  sc <n>                    Starting chips",
   "helpSetRounds": "  st <n>                    Target rounds",
-  "roundLine": "Round: {{round}}  Ante: {{ante}}",
+  "roundLine": "Round: {{round}} / {{total}}  Ante: {{ante}}",
   "boodleHeader": "Boodles (betting cards):",
   "boodleLine": "{{card}}  chips {{chips}}  [{{status}}]",
   "boodleOpen": "open",
@@ -47,5 +47,13 @@
   "result.cpuWin": "Game over! CPU {{player}} wins!",
   "helpExampleNext": "  n                         go to the next deal",
   "helpHint": "  h                         show a hint",
-  "deadHandNote": "  (an extra hand dealt to nobody -- these cards never come into play this round)"
+  "deadHandNote": "  (an extra hand dealt to nobody -- these cards never come into play this round)",
+  "log.roundStart": "Round {{round}}: place your boodle bets",
+  "log.bet": "{{name}} bets {{total}} across boodles",
+  "log.deal": "Round {{round}}: cards dealt, player {{player}} leads",
+  "log.boodle": "{{name}} hits a boodle and collects {{amount}}",
+  "log.play": "{{name}} plays {{card}}",
+  "log.stop": "sequence stopped",
+  "log.roundEnd": "{{name}} empties their hand; round over",
+  "log.gameEnd": "{{name}} wins the game"
 }

@@ -316,6 +316,7 @@ function SirTommyPageContent() {
   const isGameClear = state.phase === SirTommyPhase.GAME_CLEAR;
   const isGameOver = state.phase === SirTommyPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
+  const foundationCount = isGameOver ? state.foundations.reduce((sum, pile) => sum + pile.length, 0) : 0;
 
   const phaseName = isGameClear ? t('phase.gameClear') : isGameOver ? t('phase.gameOver') : t('phase.playing');
 
@@ -555,6 +556,15 @@ function SirTommyPageContent() {
                 messageParams={state.messageParams}
               />
 
+              {isGameOver && (
+                <p data-testid="sirtommy-gameover-summary" className="text-ds-text-muted text-sm text-center mt-1">
+                  {t('gameOverSummary', {
+                    count: foundationCount,
+                    percent: Math.round((foundationCount / 52) * 100),
+                  })}
+                </p>
+              )}
+
               {/*
                 ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、
                 領域と中身が同じコミットで DOM に入るので変化として扱われず、読み上げ
@@ -564,7 +574,7 @@ function SirTommyPageContent() {
                 {requestedHint && (
                   <div className="text-sm text-ds-accent bg-ds-surface/90 border border-ds-accent rounded px-3 py-1.5 mt-1">
                     {t('hintAvailable')}:{' '}
-                    {/* 置き場所の助言はファンデーションを指さない。移動の体裁に
+                    {/* 置き場所の助言は組札を指さない。移動の体裁に
                         落とすと foundationIdx の -1 が出る (#5552)。 */}
                     {hintPlacesOnWaste
                       ? `${t('stock')} → ${t('waste')} ${requestedHint.wasteIdx.toString()}`

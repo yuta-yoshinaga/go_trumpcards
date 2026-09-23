@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra
+//go:build !js || !wasm || extra7
 
 package presenter
 
@@ -92,6 +92,9 @@ func (p *CanastaWebPresenter) buildPlayersOutput(g interfaces.CanastaGame) []*co
 // buildMessage ゲーム結果メッセージを構築
 func (p *CanastaWebPresenter) buildMessage(g interfaces.CanastaGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {
@@ -116,4 +119,11 @@ func (p *CanastaWebPresenter) buildMessage(g interfaces.CanastaGame, lastErr err
 // ActionLogOutput 棋譜をJSON出力
 func (p *CanastaWebPresenter) ActionLogOutput(g interfaces.CanastaGame) string {
 	return actionLogOutputJSON(g)
+}
+
+// HintOutput emits the current hint. Web hints are calculated client-side
+// (useGameHint), so return the normal state output to satisfy the presenter
+// interface without changing the Web response shape.
+func (p *CanastaWebPresenter) HintOutput(g interfaces.CanastaGame) string {
+	return p.Output(g, nil)
 }

@@ -176,12 +176,32 @@ func TestBhabhi_EmptyingYourHandFinishesYou(t *testing.T) {
 	assert.True(t, b.GetPlayer(0).IsOut(), "手札 0 枚で上がり")
 	assert.Equal(t, 1, b.GetPlayer(0).GetRank(), "上がった順に順位が付く")
 	assert.Equal(t, BhabhiDefaultPlayers-1, b.GetAliveCount())
+	assert.Equal(t, 0, b.GetLastFinishedIdx())
+	assert.Equal(t, 1, b.GetLastFinishedRank())
 
 	for i := 1; i < BhabhiDefaultPlayers; i++ {
 		require.NoError(t, b.PlayForTest(i, 0))
 	}
 	assert.NotEqual(t, 0, b.GetCurrentPlayerIdx(), "上がった席に手番は来ない")
 	assert.Empty(t, b.GetValidPlayIndices(0), "上がった席に出せる札は無い")
+}
+
+func TestBhabhi_ClearsTheLastFinishAtTheNextTrick(t *testing.T) {
+	b := newTestBhabhi(t)
+	b.SetLeadIdxForTest(0)
+	b.SetCurrentIdxForTest(0)
+	bhabhiHandOf(b, 0, NewCard(CardDesignSpade, 5, false))
+	for i := 1; i < BhabhiDefaultPlayers; i++ {
+		bhabhiHandOf(b, i, NewCard(CardDesignSpade, i+5, false), NewCard(CardDesignHeart, i+2, false))
+	}
+
+	require.NoError(t, b.PlayForTest(0, 0))
+	assert.Equal(t, 0, b.GetLastFinishedIdx())
+	require.NoError(t, b.PlayForTest(1, 0))
+	require.NoError(t, b.PlayForTest(2, 0))
+	require.NoError(t, b.PlayForTest(3, 0))
+	assert.Equal(t, -1, b.GetLastFinishedIdx())
+	assert.Equal(t, 0, b.GetLastFinishedRank())
 }
 
 // **最後に 1 人だけ残った人が Bhabhi。**
@@ -474,13 +494,15 @@ func TestBhabhi_HintReasonTracksTheSituation(t *testing.T) {
 
 func TestBhabhi_JSONRoundTrip(t *testing.T) {
 	b := newTestBhabhi(t)
-	for range 12 {
-		if b.GetGameEndFlag() {
-			break
-		}
-		idx := b.GetCurrentPlayerIdx()
-		require.NoError(t, b.PlayForTest(idx, b.CpuChoiceForTest(idx)))
+	b.SetLeadIdxForTest(0)
+	b.SetCurrentIdxForTest(0)
+	bhabhiHandOf(b, 0, NewCard(CardDesignSpade, 5, false))
+	for i := 1; i < BhabhiDefaultPlayers; i++ {
+		bhabhiHandOf(b, i, NewCard(CardDesignSpade, i+5, false), NewCard(CardDesignHeart, i+2, false))
 	}
+	require.NoError(t, b.PlayForTest(0, 0))
+	assert.Equal(t, 0, b.GetLastFinishedIdx())
+	assert.Equal(t, 1, b.GetLastFinishedRank())
 
 	data, err := json.Marshal(b)
 	require.NoError(t, err)
@@ -492,6 +514,8 @@ func TestBhabhi_JSONRoundTrip(t *testing.T) {
 	assert.Equal(t, b.GetTrickNumber(), restored.GetTrickNumber())
 	assert.Equal(t, b.GetCurrentPlayerIdx(), restored.GetCurrentPlayerIdx())
 	assert.Equal(t, b.GetLastPickupIdx(), restored.GetLastPickupIdx())
+	assert.Equal(t, b.GetLastFinishedIdx(), restored.GetLastFinishedIdx())
+	assert.Equal(t, b.GetLastFinishedRank(), restored.GetLastFinishedRank())
 	assert.Equal(t, b.GetAliveCount(), restored.GetAliveCount(), "上がりが取り消されていない")
 	for i := range b.GetPlayerCnt() {
 		assert.Equal(t, b.GetPlayer(i).GetCardsSize(), restored.GetPlayer(i).GetCardsSize())

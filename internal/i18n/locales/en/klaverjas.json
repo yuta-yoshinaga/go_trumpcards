@@ -26,5 +26,15 @@
   "rankHelpTrump": "Trump order: J > 9 > A > 10 > K > Q > 8 > 7 (points: J=20, 9=14, A=11, 10=10, K=4, Q=3, 8/7=0)",
   "rankHelpPlain": "Non-trump: A > 10 > K > Q > J > 9 > 8 > 7 (points: A=11, 10=10, K=4, Q=3, J=2, 9/8/7=0)",
   "roemBreakdown": "Roem breakdown: {{entries}}",
-  "roemEntry": "{{name}} {{points}}"
+  "roemEntry": "{{name}} {{points}}",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errFollowLeadSuit": "You must follow the lead suit.",
+  "errMustPlayTrump": "You must play a trump card.",
+  "errMustOvertrump": "You must overtrump with a stronger trump card.",
+  "log.roem": "{{name}} scores {{roem}} roem",
+  "log.play": "{{name}} plays {{card}}",
+  "log.trickWin": "{{name}} wins trick {{trick}} (+{{points}})",
+  "log.trickWinLast": "{{name}} wins trick {{trick}} (+{{points}} +{{lastBonus}} last trick)",
+  "log.roundScore": "round {{round}}: A={{teamAScore}} (cards {{teamACards}} + roem {{teamARoem}}), B={{teamBScore}} (cards {{teamBCards}} + roem {{teamBRoem}})",
+  "log.gameEnd": "Team {{team}} wins the match!"
 }

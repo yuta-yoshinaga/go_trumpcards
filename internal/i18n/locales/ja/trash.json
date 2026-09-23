@@ -34,5 +34,10 @@
   "hintDrawStock": "この番にできるのは山札から1枚引くことだけです（捨て札は取れません）。",
   "hintGameOver": "ゲームは終了しています。",
   "hintNotYourTurn": "今はあなたの番ではありません。",
-  "helpExampleHint": "  h                   次の一手を教えてもらう"
+  "helpExampleHint": "  h                   次の一手を教えてもらう",
+  "log.draw": "プレイヤー{{player}}がカードを引いた",
+  "log.placeWild": "プレイヤー{{player}}が位置{{position}}にワイルドを配置",
+  "log.win": "プレイヤー{{player}}の勝利",
+  "log.place": "プレイヤー{{player}}が位置{{position}}にカードを配置",
+  "log.end": "プレイヤー{{player}}のターン終了"
 }

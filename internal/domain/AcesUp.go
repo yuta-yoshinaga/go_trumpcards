@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // AcesUpPhase エースアップ（四つ葉のクローバー）ゲームフェーズ
@@ -139,7 +140,7 @@ func (a *AcesUp) Draw() error {
 		dealt = append(dealt, card)
 	}
 	a.moveCount++
-	a.appendLog("draw", "各列にカードを配りました", dealt)
+	a.appendLog("draw", "acesup.log.dealt", nil, dealt)
 	a.checkGameClear()
 	a.checkStalemate()
 	return nil
@@ -163,7 +164,7 @@ func (a *AcesUp) Remove(col int) error {
 	top := a.popTop(col)
 	a.discard = append(a.discard, top)
 	a.moveCount++
-	a.appendLog("remove", fmt.Sprintf("カード除去: 列%d", col), []*Card{top})
+	a.appendLog("remove", "acesup.log.remove", map[string]string{"column": strconv.Itoa(col)}, []*Card{top})
 	a.checkGameClear()
 	a.checkStalemate()
 	return nil
@@ -188,7 +189,7 @@ func (a *AcesUp) Move(col int) error {
 	top := a.popTop(col)
 	a.columns[dest] = append(a.columns[dest], top)
 	a.moveCount++
-	a.appendLog("move", fmt.Sprintf("カード移動: 列%d→列%d", col, dest), []*Card{top})
+	a.appendLog("move", "acesup.log.move", map[string]string{"from": strconv.Itoa(col), "to": strconv.Itoa(dest)}, []*Card{top})
 	a.checkGameClear()
 	a.checkStalemate()
 	return nil
@@ -198,7 +199,7 @@ func (a *AcesUp) Move(col int) error {
 func (a *AcesUp) GiveUp() {
 	if a.phase == AcesUpPhasePlaying {
 		a.phase = AcesUpPhaseGameOver
-		a.appendLog("giveup", "ギブアップしました", nil)
+		a.appendLog("giveup", "acesup.log.giveUp", nil, nil)
 	}
 }
 
@@ -529,8 +530,8 @@ func cloneCards(src []*Card) []*Card {
 }
 
 // appendLog 棋譜エントリを追加
-func (a *AcesUp) appendLog(actionType, detail string, cards []*Card) {
-	a.appendLogAt(a.moveCount, 0, actionType, detail, cards)
+func (a *AcesUp) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	a.appendLogCodeAt(a.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // acesUpJSON is the JSON wire format for AcesUp.

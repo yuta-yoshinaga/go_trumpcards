@@ -2,8 +2,8 @@ package domain
 
 import (
 	"encoding/json"
-	"fmt"
 	"math/rand"
+	"strconv"
 	"time"
 )
 
@@ -53,6 +53,7 @@ const (
 type SlapjackLastEvent struct {
 	Kind      SlapjackEventKind `json:"kind"`
 	PlayerIdx int               `json:"playerIdx"`
+	CardsWon  int               `json:"cardsWon"`
 }
 
 // SlapjackPending 保留中の CPU アクション
@@ -240,7 +241,7 @@ func (g *Slapjack) Step() error {
 	}
 	g.centerPile = append(g.centerPile, c)
 	g.lastEvent = SlapjackLastEvent{Kind: SlapjackEventStep, PlayerIdx: g.currentTurnIdx}
-	g.appendLog(g.currentTurnIdx, "step", fmt.Sprintf("flip from stock (top=%d)", c.GetValue()), []*Card{c})
+	g.appendLogCode(g.currentTurnIdx, "step", "slapjack.log.step", map[string]string{"top": strconv.Itoa(c.GetValue())}, []*Card{c})
 
 	if g.IsTopJack() {
 		// 場のトップが J → CPU は slap を予約 (人間が先に slap する可能性も残す)
@@ -316,8 +317,8 @@ func (g *Slapjack) applyCorrectSlap(playerIdx int) {
 	g.rng.Shuffle(len(got), func(i, j int) { got[i], got[j] = got[j], got[i] })
 	g.players[playerIdx].AddToStockBottom(got...)
 	g.currentTurnIdx = playerIdx
-	g.lastEvent = SlapjackLastEvent{Kind: SlapjackEventSlapCorrect, PlayerIdx: playerIdx}
-	g.appendLog(playerIdx, "slap", fmt.Sprintf("correct slap, +%d cards", len(got)), nil)
+	g.lastEvent = SlapjackLastEvent{Kind: SlapjackEventSlapCorrect, PlayerIdx: playerIdx, CardsWon: len(got)}
+	g.appendLogCode(playerIdx, "slap", "slapjack.log.correctSlap", map[string]string{"count": strconv.Itoa(len(got))}, nil)
 	g.pending = SlapjackPending{Kind: SlapjackPendingNone}
 	g.maybeScheduleCpuStep()
 }
@@ -336,7 +337,7 @@ func (g *Slapjack) applyWrongSlap(playerIdx int) {
 		moved++
 	}
 	g.lastEvent = SlapjackLastEvent{Kind: SlapjackEventSlapWrong, PlayerIdx: playerIdx}
-	g.appendLog(playerIdx, "slap", fmt.Sprintf("wrong slap, -%d cards", moved), nil)
+	g.appendLogCode(playerIdx, "slap", "slapjack.log.wrongSlap", map[string]string{"count": strconv.Itoa(moved)}, nil)
 	if !offender.HasStock() {
 		g.endGame(opp)
 		return

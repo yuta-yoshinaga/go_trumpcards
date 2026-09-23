@@ -61,6 +61,8 @@ type MendikotWebOutput struct {
 	LeadPlayerIdx    int                   `json:"leadPlayerIdx"`
 	DealerIdx        int                   `json:"dealerIdx"`
 	CurrentTrick     []*WebOutputTrickCard `json:"currentTrick"`
+	LastTrick        []*WebOutputTrickCard `json:"lastTrick"`
+	LastTrickWinner  int                   `json:"lastTrickWinner"`
 	ValidPlays       []int                 `json:"validPlays"`
 	// WillSetTrump は、人間が今出す札で切り札が決まってしまうか。
 	//
@@ -112,6 +114,8 @@ func newMendikotDefaultOutput(msg string) *MendikotWebOutput {
 		TensInDeck:      domain.MendikotTensInDeck,
 		TrumpChooserIdx: -1,
 		LastHandWinner:  -1,
+		LastTrick:       make([]*WebOutputTrickCard, 0),
+		LastTrickWinner: -1,
 		WinnerTeam:      -1,
 		WebOutputBase:   WebOutputBase{Message: msg},
 	}

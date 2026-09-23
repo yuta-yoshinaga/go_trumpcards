@@ -28,6 +28,7 @@ func setupBoliviaCuiMock() *interfaces.MockBoliviaGame {
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.BoliviaPhaseDraw)
 	m.On("GetCurrentPlayerIdx").Return(0)
+	m.On("CanGoOut").Return(false)
 	m.On("GetWinnerIdx").Return(-1)
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	m.On("GetTeamScore", 0).Return(0)
@@ -72,7 +73,7 @@ func TestBoliviaCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "山札: 80枚")
 		assert.Contains(t, result, "チーム0:")
 		assert.Contains(t, result, "あなた (チーム0)")
-		assert.Contains(t, result, "[0]SPADE 5")
+		assert.Contains(t, result, "[0]♠5")
 		assert.Contains(t, result, "手番: あなた")
 		// Not frozen → no frozen draw-help note.
 		assert.NotContains(t, result, i18n.T("bolivia.promptDrawHelpFrozen"))
@@ -93,7 +94,7 @@ func TestBoliviaCuiPresenter_Output(t *testing.T) {
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDiscardTop")
 		m.On("GetDiscardTop").Return(domain.NewCard(domain.CardDesignHeart, 7, false))
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "捨て札: HEART 7")
+		assert.Contains(t, result, "捨て札: ♥7")
 	})
 
 	// **7 枚のシーケンスは「エスカレラ」。** クローン元では同じものを
@@ -178,6 +179,18 @@ func TestBoliviaCuiPresenter_Output(t *testing.T) {
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "ディスカードフェーズ")
 		assert.Contains(t, result, "go")
+		assert.Contains(t, result, i18n.T("bolivia.promptGoOutUnavailable"))
+	})
+
+	t.Run("discard phase commands when can go out", func(t *testing.T) {
+		m, _ := setupBoliviaCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "CanGoOut")
+		m.On("GetPhase").Return(domain.BoliviaPhaseDiscard)
+		m.On("CanGoOut").Return(true)
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "go・・・上がる (完成メルド2個以上＋最低1本はエスカレラ)")
+		assert.NotContains(t, result, "go / goout はまだ使えません (完成メルド2個以上＋最低1本はエスカレラ)")
 	})
 
 	t.Run("round end prompt", func(t *testing.T) {
@@ -200,7 +213,7 @@ func TestBoliviaCuiPresenter_ActionLogOutput(t *testing.T) {
 		m := new(interfaces.MockBoliviaGame)
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "draw_stock", Detail: "drew"},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "draw_stock", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 		// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
 		m.On("GetPlayer", mock.Anything).Return(domain.NewBoliviaPlayer(true, 0)).Maybe()

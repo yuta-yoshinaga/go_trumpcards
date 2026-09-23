@@ -33,5 +33,10 @@
   "helpUndoN": "  un [<n>]             undo n moves at once (to escape a dead end)",
   "invalidUndoCount": "Invalid undo count: {{val}} (give a whole number of 1 or more)",
   "noUndoToEscape": "Not in a dead end or cannot escape via undo",
-  "hintExposes": " (this uncovers a face-down card)"
+  "hintExposes": " (this uncovers a face-down card)",
+  "log.deal": "Dealt one card each to columns 0-2 from the stock",
+  "log.move": "Tableau column {{fromCol}} → tableau column {{toCol}}",
+  "log.giveUp": "Gave up",
+  "log.autocomplete": "Auto-completed",
+  "log.complete": "Completed a suit in tableau column {{col}}"
 }

@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra
+//go:build !js || !wasm || extra7
 
 package presenter
 
@@ -21,6 +21,10 @@ func (p *ChinchonWebPresenter) Output(g interfaces.ChinchonGame, lastErr error) 
 	resObj.GameEndFlag = g.GetGameEndFlag()
 	resObj.WinnerIdx = g.GetWinnerIdx()
 	resObj.KnockerIdx = g.GetKnockerIdx()
+	resObj.LayoffableIndices = make([]int, 0)
+	if resObj.Phase == int(domain.ChinchonPhaseLayoff) {
+		resObj.LayoffableIndices = append(resObj.LayoffableIndices, g.GetLayoffableIndices()...)
+	}
 
 	if top := g.GetDiscardTop(); top != nil {
 		resObj.DiscardTop = cardToOutput(top)
@@ -78,6 +82,9 @@ func (p *ChinchonWebPresenter) buildPlayersOutput(g interfaces.ChinchonGame) []*
 // buildMessage ゲーム結果メッセージを構築
 func (p *ChinchonWebPresenter) buildMessage(g interfaces.ChinchonGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

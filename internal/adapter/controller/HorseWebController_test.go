@@ -238,3 +238,16 @@ func TestHorseWebController_ResetKeepsTheVariant(t *testing.T) {
 	assert.Equal(t, 3, g.GetConfig().HandsPerDiscipline, "送った設定が反映されていない")
 	assert.Len(t, g.GetRotation(), 8)
 }
+
+func TestHorseWebOutputIncludesDisciplinePositionFields(t *testing.T) {
+	out := &controller.HorseWebOutput{DisciplinePosition: 3, DisciplineTotal: 8}
+	b, err := json.Marshal(out)
+	require.NoError(t, err)
+	var fields map[string]json.RawMessage
+	require.NoError(t, json.Unmarshal(b, &fields))
+	var position, total int
+	require.NoError(t, json.Unmarshal(fields["disciplinePosition"], &position))
+	require.NoError(t, json.Unmarshal(fields["disciplineTotal"], &total))
+	assert.Equal(t, 3, position)
+	assert.Equal(t, 8, total)
+}

@@ -303,11 +303,20 @@ func TestWhistWebPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.WhistWebPresenter)
 	m := setupWhistWebMock()
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "test"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 
 	result := p.ActionLogOutput(m)
 	assert.NotEmpty(t, result)
+}
+
+func TestWhistWebPresenter_Output_CodedError(t *testing.T) {
+	m, _ := setupWhistWebMockWithPlayers()
+	var out controller.WhistWebOutput
+	err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "whist.errCardIndexOutOfRange", nil)
+	assert.NoError(t, json.Unmarshal([]byte(new(presenter.WhistWebPresenter).Output(m, err)), &out))
+	assert.Empty(t, out.Message)
+	assert.Equal(t, "whist.errCardIndexOutOfRange", out.MessageCode)
 }
 
 // **受動ヒントは Output() に載る。**HintOutput() は `command: "hint"` 専用の

@@ -5,6 +5,7 @@
   "helpSetDifficulty": "  sd <0-2>             set CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
   "roundLine": "Round: {{round}}/{{total}}  Deck: {{deck}}",
   "fieldLine": "Field: {{field}}",
+  "drawCapture": "Drawn card {{card}} captured {{captured}}",
   "playerLine": "{{name}}: hand {{hand}}  captured: {{captured}}  raw: {{raw}}  total: {{score}}  yaku: {{yaku}}",
   "promptPlay": "Turn: {{name}}",
   "promptGameEnd": "Game over. Type nr to start a new game.",
@@ -25,5 +26,13 @@
   "yaku.inoshikacho": "Inoshikacho (Boar-Deer-Butterfly)",
   "yaku.akatan": "Akatan (Red Poetry Ribbons)",
   "yaku.aotan": "Aotan (Blue Ribbons)",
-  "helpExamplePlay": "  p 0                  play hand card 0"
+  "helpExamplePlay": "  p 0                  play hand card 0",
+  "log.roundDealt": "round {{round}} dealt (field {{field}}, draw {{draw}})",
+  "log.plays": "{{name}} plays {{card}} ({{result}})",
+  "log.draws": "{{name}} draws {{card}} ({{result}})",
+  "log.roundSettled": "round {{round}} settled (best {{best}})",
+  "log.sweepsLeftover": "{{name}} sweeps {{count}} leftover field card(s)",
+  "log.gameEnded": "game ended (winner {{winner}})",
+  "log.result.captured": "captures",
+  "log.result.toField": "to field"
 }

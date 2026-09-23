@@ -160,10 +160,7 @@ func (bwp *BarbuWebPresenter) buildResultMessage(bg interfaces.BarbuGame) string
 		if p == nil {
 			continue
 		}
-		name := fmt.Sprintf("CPU %d", i)
-		if p.GetIsHuman() {
-			name = "You"
-		}
+		name := webPlayerName(p.GetIsHuman(), i)
 		msg += fmt.Sprintf("%s:%dpt ", name, p.GetTotalScore())
 	}
 	return msg

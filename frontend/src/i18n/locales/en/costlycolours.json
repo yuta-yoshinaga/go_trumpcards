@@ -38,6 +38,7 @@
   "winner": "{{name}} wins!",
   "nextDeal": "Next deal",
   "restrictedTooltip": "This would take the count past 31",
+  "jackDeuceMark": "J / 2: scores points just by being held",
   "hintAvailable": "Hint",
   "hint": {
     "fifteen": "makes fifteen and pegs",

@@ -65,6 +65,22 @@ describe('LingerLongerPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('announces when the human is eliminated', async () => {
+    mockExec.mockResolvedValue(makeState({ players: [seat(0, { eliminatedAt: 1 }), seat(1), seat(2), seat(3)] }));
+    renderWithProviders(<LingerLongerPage />);
+
+    const visible = await screen.findByTestId('ll-eliminated');
+    const live = await waitFor(() => {
+      const element = [...document.querySelectorAll('[role="status"][aria-live="polite"][aria-atomic="true"]')].find(
+        (candidate) => candidate.textContent === visible.textContent,
+      );
+      expect(element).not.toBeUndefined();
+      return element;
+    });
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toHaveAttribute('aria-atomic', 'true');
+  });
+
   // **取っても得点にならず、補充できるだけ。** 直感と逆なので毎回出す。
   it('states that a trick only buys you a card', async () => {
     renderWithProviders(<LingerLongerPage />);
@@ -95,6 +111,24 @@ describe('LingerLongerPage', () => {
     const line = await screen.findByTestId('ll-stock');
     expect(line).toHaveTextContent('山札 残り4枚');
     expect(within(line).getByTestId('ll-discarded')).toHaveTextContent('場から消えた札 21枚');
+  });
+
+  it('shows the eliminated count and total player count', async () => {
+    const first = renderWithProviders(<LingerLongerPage />);
+    expect(await screen.findByTestId('ll-eliminated-summary')).toHaveTextContent('脱落 0 / 全 4 人');
+    first.unmount();
+
+    mockExec.mockResolvedValue(makeState({ eliminatedCnt: 2, players: [seat(0), seat(1), seat(2), seat(3), seat(4)] }));
+    renderWithProviders(<LingerLongerPage />);
+    expect(await screen.findByTestId('ll-eliminated-summary')).toHaveTextContent('脱落 2 / 全 5 人');
+  });
+
+  it('shows the eliminated summary alongside an empty-stock notice', async () => {
+    mockExec.mockResolvedValue(makeState({ stockSize: 0, eliminatedCnt: 2 }));
+    renderWithProviders(<LingerLongerPage />);
+
+    expect(await screen.findByTestId('ll-no-stock')).toBeInTheDocument();
+    expect(screen.getByTestId('ll-eliminated-summary')).toHaveTextContent('脱落 2 / 全 4 人');
   });
 
   // **山札が尽きた瞬間から局は終わりに向かう。** 盤面からは読み取れない。

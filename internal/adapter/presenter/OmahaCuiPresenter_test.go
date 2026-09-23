@@ -1,6 +1,7 @@
 package presenter_test
 
 import (
+	"encoding/json"
 	"errors"
 	"strings"
 	"testing"
@@ -496,6 +497,27 @@ func TestOmahaCuiPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestOmahaCuiPresenterDoesNotAddPreflopNoticeToStandardOmaha(t *testing.T) {
+	h, _ := makeOmahaForPresenter()
+	h.SetPhase(domain.OmahaPhasePreFlop)
+	assert.NotContains(t, (&presenter.OmahaCuiPresenter{}).Output(h, nil), "exposed before the flop")
+}
+
+func TestOmahaCuiPresenterShowsCourchevelPreflopNotice(t *testing.T) {
+	h, _ := makeOmahaForPresenter()
+	raw, err := json.Marshal(h)
+	require.NoError(t, err)
+	var payload map[string]any
+	require.NoError(t, json.Unmarshal(raw, &payload))
+	payload["pfc"] = float64(1)
+	raw, err = json.Marshal(payload)
+	require.NoError(t, err)
+	courchevel := new(domain.Omaha)
+	require.NoError(t, json.Unmarshal(raw, courchevel))
+	courchevel.SetPhase(domain.OmahaPhasePreFlop)
+	assert.Contains(t, (&presenter.OmahaCuiPresenter{}).Output(courchevel, nil), "プリフロップにコミュニティカード1枚を先に公開")
+}
+
 func TestOmahaCuiPresenter_Output_BettingLimitDisplay(t *testing.T) {
 	origNoColor := color.NoColor()
 	color.SetNoColor(true)
@@ -711,7 +733,7 @@ func TestOmahaCuiPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("with entries", func(t *testing.T) {
 		mockGame := new(interfaces.MockOmahaGame)
 		entries := []*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "raise", Detail: "raised to 100"},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "raise", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		}
 		mockGame.On("GetGameEndFlag").Return(true)
 		mockGame.On("GetActionLog").Return(entries)
@@ -722,7 +744,7 @@ func TestOmahaCuiPresenter_ActionLogOutput(t *testing.T) {
 
 		assert.Contains(t, result, "棋譜")
 		assert.Contains(t, result, "raise")
-		assert.Contains(t, result, "raised to 100")
+		assert.Contains(t, result, "テスト用の棋譜行 1")
 		mockGame.AssertExpectations(t)
 	})
 
@@ -802,7 +824,7 @@ func TestOmahaCuiPresenter_HiLo_ResultRendering(t *testing.T) {
 				domain.NewCard(domain.CardDesignClover, 4, false),
 				domain.NewCard(domain.CardDesignSpade, 5, false),
 			},
-			wantSubstrs: []string{"Low:", "Hi:50", "Lo:50"},
+			wantSubstrs: []string{"ロー:", "Hi:50", "Lo:50"},
 		},
 		{
 			name: "hi only",
@@ -820,7 +842,7 @@ func TestOmahaCuiPresenter_HiLo_ResultRendering(t *testing.T) {
 				domain.NewCard(domain.CardDesignClover, 4, false),
 				domain.NewCard(domain.CardDesignSpade, 5, false),
 			},
-			wantSubstrs: []string{"(Lo)", "Low:"},
+			wantSubstrs: []string{"(Lo)", "ロー:"},
 		},
 	}
 	for _, tc := range cases {

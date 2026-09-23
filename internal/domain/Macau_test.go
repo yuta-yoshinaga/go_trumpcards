@@ -710,7 +710,16 @@ func TestMacau_ActionLog(t *testing.T) {
 	require.NoError(t, err)
 	log := g.GetActionLog()
 	assert.NotEmpty(t, log)
-	assert.Equal(t, "play", log[0].ActionType)
+	var playEntry *domain.ActionLogEntry
+	for _, entry := range log {
+		if entry.DetailCode == "macau.log.play" {
+			playEntry = entry
+			break
+		}
+	}
+	require.NotNil(t, playEntry)
+	assert.Equal(t, "play", playEntry.ActionType)
+	assert.Equal(t, map[string]string{"name": "You", "card": "♠3"}, playEntry.DetailParams)
 }
 
 // --- JSON round-trip ---

@@ -1,14 +1,14 @@
 {
   "helpTitle": "Auld Lang Syne (オールド・ラング・サイン)",
   "helpDeal": "  d, deal             ストックから4つのウェイストへ1枚ずつ配る",
-  "helpWasteToFoundation": "  w <wIdx> f <fIdx>   ウェイスト<wIdx>最上段をファンデーション<fIdx>に置く",
+  "helpWasteToFoundation": "  w <wIdx> f <fIdx>   ウェイスト<wIdx>最上段を組札<fIdx>に置く",
   "helpGiveUp": "  g, giveup           ギブアップ",
   "helpHint": "  h, hint             ヒントを表示",
   "helpAutoComplete": "  ac, autocomplete    オートコンプリート",
   "helpUndo": "  u, undo             1手戻す",
   "helpUndoN": "  un [<n>]            n手まとめて戻す（手詰まりからの脱出用）",
   "promptWasteIdx": "ウェイストのインデックス (0..3) を入力してください:",
-  "promptFoundationIdx": "ファンデーションのインデックス (0..3) を入力してください:",
+  "promptFoundationIdx": "組札のインデックス (0..3) を入力してください:",
   "playing": "プレイ中",
   "stalemate": "手詰まりです",
   "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
@@ -24,8 +24,11 @@
   "wasteEmpty": "(空)",
   "wasteFilled": "{{card}} ({{count}}枚)",
   "stockLine": "ストック: {{count}}枚 (残り{{deals}}回配れます)",
-  "hintWaste": "ヒント: ウェイスト{{waste}} → ファンデーション{{foundation}}",
+  "hintWaste": "ヒント: ウェイスト{{waste}} → 組札{{foundation}}",
   "helpExampleHint": "  h                   次の一手を教えてもらう",
   "invalidUndoCount": "無効なアンドゥ回数です: {{val}}（1以上の整数を指定してください）",
-  "noUndoToEscape": "手詰まり状態ではないか、脱出可能なアンドゥがありません"
+  "noUndoToEscape": "手詰まり状態ではないか、脱出可能なアンドゥがありません",
+  "log.deal": "{{count}}枚を配りました",
+  "log.move": "ウェイスト{{waste}}→組札{{foundation}}",
+  "log.giveUp": "ギブアップしました"
 }

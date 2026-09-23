@@ -80,8 +80,8 @@ func TestEuchreCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "ラウンド: 1")
 		assert.Contains(t, result, "トリック: 1")
 		assert.Contains(t, result, "あなた: チーム0 獲得0トリック 2枚")
-		assert.Contains(t, result, "[0]SPADE 1")
-		assert.Contains(t, result, "[1]HEART 5")
+		assert.Contains(t, result, "[0]♠1")
+		assert.Contains(t, result, "[1]♥5")
 		assert.Contains(t, result, "CPU 1: チーム1 獲得0トリック 1枚")
 		assert.Contains(t, result, "手番: あなた")
 		assert.Contains(t, result, "p <i> (play)")
@@ -109,7 +109,7 @@ func TestEuchreCuiPresenter_Output(t *testing.T) {
 		m.On("GetFaceUpCard").Return(domain.NewCard(domain.CardDesignHeart, 11, false))
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "表向きカード: HEART 11")
+		assert.Contains(t, result, "表向きカード: ♥11")
 	})
 
 	t.Run("going alone shown", func(t *testing.T) {
@@ -160,7 +160,7 @@ func TestEuchreCuiPresenter_Output(t *testing.T) {
 		m.On("GetCurrentTrick").Return(trick)
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "トリック: あなた=CLOVER 3, CPU 1=CLOVER 7")
+		assert.Contains(t, result, "トリック: あなた=♣3, CPU 1=♣7")
 	})
 
 	t.Run("no trick cards hides trick section", func(t *testing.T) {
@@ -258,6 +258,22 @@ func TestEuchreCuiPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestEuchreCuiPresenter_Output_BowerMarks(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	m, players := setupEuchreCuiMockWithPlayers()
+	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 11, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignClover, 11, false))
+	players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
+
+	result := (&presenter.EuchreCuiPresenter{}).Output(m, nil)
+	assert.Contains(t, result, "♠11[R]")
+	assert.Contains(t, result, "♣11[L]")
+	assert.NotContains(t, result, "♥11[R]")
+	assert.NotContains(t, result, "♥11[L]")
+}
+
 func TestEuchreCuiPresenter_ActionLogOutput(t *testing.T) {
 	origNoColor := color.NoColor()
 	color.SetNoColor(true)
@@ -267,7 +283,7 @@ func TestEuchreCuiPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("with entries", func(t *testing.T) {
 		m := new(interfaces.MockEuchreGame)
 		entries := []*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "played SPADE 5"},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		}
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetActionLog").Return(entries)
@@ -278,7 +294,7 @@ func TestEuchreCuiPresenter_ActionLogOutput(t *testing.T) {
 		assert.Contains(t, result, "棋譜")
 		assert.Contains(t, result, "play")
 		assert.Contains(t, result, "あなた", "棋譜の座席名が他の行と揃っていない")
-		assert.Contains(t, result, "played SPADE 5")
+		assert.Contains(t, result, "テスト用の棋譜行 1")
 		m.AssertExpectations(t)
 	})
 
@@ -326,7 +342,7 @@ func TestEuchreCuiPresenter_HintOutput(t *testing.T) {
 
 		p := new(presenter.EuchreCuiPresenter)
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 		assert.Contains(t, result, "オーダーアップ")
 		assert.Contains(t, result, "強い手札")
 	})
@@ -405,7 +421,7 @@ func TestEuchreCuiPresenter_HintOutput(t *testing.T) {
 
 		p := new(presenter.EuchreCuiPresenter)
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 		assert.Contains(t, result, "リードスートに追随")
 	})
 

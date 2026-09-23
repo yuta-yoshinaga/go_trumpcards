@@ -6,6 +6,7 @@
     "hand": "Hand",
     "baza": "Baza",
     "target": "Target",
+    "mano": "Mano",
     "match": "Match",
     "you": "You",
     "cpu": "CPU",
@@ -41,6 +42,12 @@
     "cpuWin": "CPU wins ({{p0}}-{{p1}})"
   },
   "respondPrompt": "{{name}} called {{level}}. Respond.",
+  "history": {
+    "title": "Baza history",
+    "baza": "Baza {{number}}",
+    "winner": "{{name}} wins",
+    "parda": "Parda (tie)"
+  },
   "hintReason": {
     "leadStrong": "Lead with a strong card",
     "leadLow": "Lead low to save your strong cards",

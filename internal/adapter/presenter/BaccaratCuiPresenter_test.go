@@ -57,7 +57,7 @@ func TestBaccaratCuiPresenter_Output_BetPhase(t *testing.T) {
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "チップ: 1000")
-	assert.Contains(t, result, "フェーズ: BET")
+	assert.Contains(t, result, "フェーズ: 賭け")
 }
 
 func TestBaccaratCuiPresenter_Output_History(t *testing.T) {
@@ -190,12 +190,12 @@ func TestBaccaratCuiPresenter_Output_EndPhase_PlayerWins(t *testing.T) {
 	m.On("GetSideBetResults").Return(([]*domain.BacSideBetResult)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "フェーズ: END")
+	assert.Contains(t, result, "フェーズ: 終了")
 	assert.Contains(t, result, "PLAYER")
 	assert.Contains(t, result, "BANKER")
 	assert.Contains(t, result, "プレイヤーの勝ち")
 	assert.Contains(t, result, "払戻し: 200")
-	assert.Contains(t, result, "SPADE 9")
+	assert.Contains(t, result, "♠9")
 	// No side bet placed -> no side-bet outcome lines.
 	assert.NotContains(t, result, "的中")
 	assert.NotContains(t, result, "外れ")
@@ -293,7 +293,7 @@ func TestBaccaratCuiPresenter_Output_EndPhase_Tie(t *testing.T) {
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "タイ")
-	assert.Contains(t, result, "TIE")
+	assert.Contains(t, result, "タイ")
 }
 
 func TestBaccaratCuiPresenter_Output_Error(t *testing.T) {
@@ -319,7 +319,7 @@ func TestBaccaratCuiPresenter_Output_UnknownPhase(t *testing.T) {
 	m.On("GetPhase").Return(99).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "UNKNOWN")
+	assert.Contains(t, result, "不明")
 }
 
 func TestBaccaratCuiPresenter_Output_EndPhase_UnknownResult(t *testing.T) {
@@ -373,7 +373,7 @@ func TestBaccaratCuiPresenter_Output_UnknownBetType(t *testing.T) {
 	m.On("GetSideBetResults").Return(([]*domain.BacSideBetResult)(nil)).Maybe()
 
 	result := p.Output(m, nil)
-	assert.Contains(t, result, "UNKNOWN")
+	assert.Contains(t, result, "不明")
 }
 
 func TestBaccaratCuiPresenter_ActionLogOutput(t *testing.T) {
@@ -393,11 +393,13 @@ func TestBaccaratCuiPresenter_ActionLogOutput(t *testing.T) {
 		m := new(interfaces.MockBaccaratGame)
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "bet", Detail: "bet 100 on player"},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "bet", DetailCode: "baccarat.log.bet", DetailParams: map[string]string{
+				"amount": "100", "type": "player",
+			}},
 		})
 		result := p.ActionLogOutput(m)
 		assert.Contains(t, result, "棋譜")
-		assert.Contains(t, result, "bet 100 on player")
+		assert.Contains(t, result, "100をplayerに賭けました")
 	})
 
 	t.Run("game ended without log", func(t *testing.T) {

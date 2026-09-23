@@ -73,6 +73,9 @@ export interface TeenDoPaanchResponse extends BaseGameResponse {
   lastExchangePairs?: { giver: number; taker: number; count: number }[];
   currentPlayerIdx: number;
   leadPlayerIdx: number;
+  /** Seat that took the previous trick, or -1 before the first is resolved. */
+  lastTrickWinner: number;
+  lastTrick: TeenDoPaanchTrickCard[];
   currentTrick: TeenDoPaanchTrickCard[];
   /** Hand indices you may legally play. Following suit is compulsory. */
   validPlays: number[];

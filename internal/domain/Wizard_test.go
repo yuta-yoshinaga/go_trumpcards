@@ -973,7 +973,15 @@ func TestWizard_ActionLog(t *testing.T) {
 	o.Reset()
 	setupWizardBidPhase(o, 0)
 	_ = o.PlayerBid(1)
-	assert.NotEmpty(t, o.GetActionLog())
+	var entry *domain.ActionLogEntry
+	for _, candidate := range o.GetActionLog() {
+		if candidate.DetailCode == "wizard.log.bid" {
+			entry = candidate
+			break
+		}
+	}
+	assert.NotNil(t, entry)
+	assert.Equal(t, map[string]string{"name": "You", "bid": "1"}, entry.DetailParams)
 }
 
 // --- JSON round-trip ---

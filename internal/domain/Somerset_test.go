@@ -602,4 +602,7 @@ func TestSomerset_ActionLog(t *testing.T) {
 	require.NoError(t, bc.MoveTableauToFoundation(0))
 	log := bc.GetActionLog()
 	assert.NotEmpty(t, log)
+	entry := log[len(log)-1]
+	assert.Equal(t, "somerset.log.moveTableauToFoundation", entry.DetailCode)
+	assert.Equal(t, map[string]string{"col": "0"}, entry.DetailParams)
 }

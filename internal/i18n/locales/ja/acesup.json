@@ -8,8 +8,8 @@
   "columnLabel": "列{{col}}: ",
   "columnEmpty": "[空]",
   "topCard": "[{{card}}]",
-  "stockLine": "Stock: {{count}}枚",
-  "discardLine": " | Discard: {{count}}/{{goal}}枚",
+  "stockLine": "ストック: {{count}}枚",
+  "discardLine": " | 捨札: {{count}}/{{goal}}枚",
   "hintRemove": "ヒント: カード除去: 列{{col}}",
   "hintMove": "ヒント: 列{{col}}を空き列へ移動",
   "hintDraw": "ヒント: 各列にカードを配ってください",
@@ -20,5 +20,9 @@
   "markerLegend": "マーカー: * = 捨て可能 / > = 空き列へ移動可能",
   "usageCol": "使い方: {{cmd}} <列番号>",
   "helpExampleHint": "  h                         次の一手を教えてもらう",
-  "helpUndo": "  u                        1手戻す"
+  "helpUndo": "  u                        1手戻す",
+  "log.dealt": "各列にカードを配りました",
+  "log.remove": "カード除去: 列{{column}}",
+  "log.move": "カード移動: 列{{from}}→列{{to}}",
+  "log.giveUp": "ギブアップしました"
 }

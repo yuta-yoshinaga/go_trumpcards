@@ -52,8 +52,15 @@ describe('formatFreeBetState', () => {
     expect(formatFreeBetState(at({ anteBet: 50 }))).toContain('Ante 50');
   });
 
-  it('ディーラーの札と点数を出す', () => {
-    const out = formatFreeBetState(at({ dealerCards: [card(6), card(9)], dealerScore: 15 }));
+  it('伏せ札がある間はアップカードと伏せ札の説明だけを出す', () => {
+    const out = formatFreeBetState(at({ dealerCards: [card(6), card(9)], dealerScore: 0, dealerHoleRevealed: false }));
+    expect(out).toContain('Dealer:');
+    expect(out).toContain('hole card hidden');
+    expect(out).not.toContain('= 0');
+  });
+
+  it('ディーラーの札と点数を公開後に出す', () => {
+    const out = formatFreeBetState(at({ dealerCards: [card(6), card(9)], dealerScore: 15, dealerHoleRevealed: true }));
     expect(out).toContain('Dealer:');
     expect(out).toContain('= 15');
   });

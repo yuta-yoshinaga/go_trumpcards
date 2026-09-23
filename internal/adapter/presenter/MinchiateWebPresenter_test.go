@@ -157,6 +157,15 @@ func TestMinchiateWebPresenter_Output(t *testing.T) {
 		assert.Empty(t, res.MessageCode)
 	})
 
+	t.Run("coded error returns message code and no message", func(t *testing.T) {
+		m, _ := setupMinchiateWebMockWithPlayers()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "minchiate.errTargetRoundsNotMultiple", map[string]string{"min": "4", "rounds": "5"})
+		var res controller.MinchiateWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, err)), &res))
+		assert.Empty(t, res.Message)
+		assert.Equal(t, "minchiate.errTargetRoundsNotMultiple", res.MessageCode)
+	})
+
 	// 勝敗はチーム単位。人間の席番号ではなく、人間の属するチームで判定する。
 	t.Run("game end reports the human's team, a rival team, or a draw", func(t *testing.T) {
 		cases := map[int]string{
@@ -191,6 +200,15 @@ func TestMinchiateWebPresenter_Output(t *testing.T) {
 		m.On("GetPlayer", 0).Return((*domain.MinchiatePlayer)(nil))
 		assert.NotPanics(t, func() { p.Output(m, nil) })
 	})
+}
+
+func TestMinchiateWebPresenter_CodedErrorUsesMessageCode(t *testing.T) {
+	p := new(presenter.MinchiateWebPresenter)
+	m, _ := setupMinchiateWebMockWithPlayers()
+	var out controller.MinchiateWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(p.Output(m, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "minchiate.errFollowLeadSuit", nil))), &out))
+	assert.Empty(t, out.Message)
+	assert.Equal(t, "minchiate.errFollowLeadSuit", out.MessageCode)
 }
 
 func TestMinchiateWebPresenter_HintOutput(t *testing.T) {
@@ -235,7 +253,7 @@ func TestMinchiateWebPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockMinchiateGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You play Angelo"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	assert.Contains(t, p.ActionLogOutput(m), `"actionType":"play"`)
 }

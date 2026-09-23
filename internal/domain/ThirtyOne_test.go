@@ -107,6 +107,15 @@ func TestThirtyOne_DrawStockEmptyEndsRound(t *testing.T) {
 	g.SetDrawPile([]*Card{})
 	require.NoError(t, g.PlayerDrawFromStock())
 	assert.Contains(t, []ThirtyOnePhase{ThirtyOnePhaseRoundEnd, ThirtyOnePhaseGameEnd}, g.GetPhase())
+	var entry *ActionLogEntry
+	for _, candidate := range g.GetActionLog() {
+		if candidate.DetailCode == "thirtyone.log.roundEndStockEmpty" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Empty(t, entry.DetailParams)
 }
 
 func TestThirtyOne_DiscardWrongPhaseAndIndex(t *testing.T) {
@@ -359,7 +368,14 @@ func TestThirtyOne_ActionLogRecorded(t *testing.T) {
 	g.SetCurrentPlayerIdx(0)
 	g.SetPhase(ThirtyOnePhaseDraw)
 	require.NoError(t, g.PlayerDrawFromStock())
-	assert.NotEmpty(t, g.GetActionLog())
+	var entry *ActionLogEntry
+	for _, candidate := range g.GetActionLog() {
+		if candidate.DetailCode == "thirtyone.log.drawStock" {
+			entry = candidate
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, playerName(g.players, 0), entry.DetailParams["name"])
 }
 
 // **CPU と同じ材料で判断すること (#4806)。**別の計算を書くと、CPU には有利と

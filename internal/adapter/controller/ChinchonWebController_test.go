@@ -18,11 +18,12 @@ import (
 
 func mustChinchonOutputJSON(msg string) string {
 	out := &controller.ChinchonWebOutput{
-		Players:       []*controller.ChinchonWebOutputPlayer{},
-		WinnerIdx:     -1,
-		KnockerIdx:    -1,
-		KnockerMelds:  []*controller.ChinchonWebOutputMeld{},
-		WebOutputBase: controller.WebOutputBase{Message: msg},
+		Players:           []*controller.ChinchonWebOutputPlayer{},
+		WinnerIdx:         -1,
+		KnockerIdx:        -1,
+		KnockerMelds:      []*controller.ChinchonWebOutputMeld{},
+		LayoffableIndices: []int{},
+		WebOutputBase:     controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {

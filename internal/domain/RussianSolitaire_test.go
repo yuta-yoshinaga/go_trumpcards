@@ -383,6 +383,18 @@ func TestRussianSolitaire_GiveUp(t *testing.T) {
 	})
 }
 
+func TestRussianSolitaire_GiveUp_ActionLogUsesDetailCode(t *testing.T) {
+	r := setupPlayingRussianSolitaire()
+	r.GiveUp()
+	for _, entry := range r.GetActionLog() {
+		if entry.DetailCode == "russiansolitaire.log.giveUp" {
+			assert.Nil(t, entry.DetailParams)
+			return
+		}
+	}
+	t.Fatal("give up action log entry not found")
+}
+
 func TestRussianSolitaire_GetHint(t *testing.T) {
 	t.Run("hint to foundation", func(t *testing.T) {
 		r := newTestRussianSolitaire()

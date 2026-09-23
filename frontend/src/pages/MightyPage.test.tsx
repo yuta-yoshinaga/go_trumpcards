@@ -258,6 +258,23 @@ describe('MightyPage', () => {
     );
   });
 
+  it('shows both configured Mighty finish lines beside the score table', async () => {
+    mockCall.mockResolvedValue({ ...playPhaseState, config: { ...playPhaseState.config, pointLimit: 200 } });
+    renderWithProviders(<MightyPage />);
+    const limit = await screen.findByTestId('mighty-point-limit');
+    expect(limit).toHaveTextContent('決着ライン: +200点（宣言側の累計が+200点で勝利、-200点で即敗北）');
+    expect(limit).not.toHaveTextContent('pointLimit');
+
+    mockCall.mockResolvedValue({ ...playPhaseState, config: { ...playPhaseState.config, pointLimit: 300 } });
+    fireEvent.click(screen.getByRole('button', { name: '♠ A' }));
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+    await waitFor(() =>
+      expect(screen.getByTestId('mighty-point-limit')).toHaveTextContent(
+        '決着ライン: +300点（宣言側の累計が+300点で勝利、-300点で即敗北）',
+      ),
+    );
+  });
+
   it('renders play phase with human cards', async () => {
     renderWithProviders(<MightyPage />);
     await waitFor(() => {

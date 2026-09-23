@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // MinibridgePhase はミニブリッジのフェーズ。
@@ -189,7 +190,7 @@ func (m *Minibridge) Reset() {
 	m.gameEndFlag = false
 	m.winnerTeam = -1
 	m.actionLog = nil
-	m.addLog(-1, "start", "ミニブリッジを開始しました", nil)
+	m.addLog(-1, "start", "minibridge.log.start", nil, nil)
 	m.startRound()
 }
 
@@ -248,11 +249,14 @@ func (m *Minibridge) announceHcp() {
 		}
 		p.SetHcp(hcp)
 		total += hcp
-		m.addLog(idx, "hcp", fmt.Sprintf("HCP %d を申告しました", hcp), nil)
+		m.addLog(idx, "hcp", "minibridge.log.announceHcp", map[string]string{"hcp": strconv.Itoa(hcp)}, nil)
 	}
 	// 配り切りなので必ず 40。崩れていたら配りのバグ。
 	if total != MinibridgeTotalHcp {
-		m.addLog(-1, "hcp", fmt.Sprintf("HCP 合計が %d です（想定 %d）", total, MinibridgeTotalHcp), nil)
+		m.addLog(-1, "hcp", "minibridge.log.hcpTotal", map[string]string{
+			"total":    strconv.Itoa(total),
+			"expected": strconv.Itoa(MinibridgeTotalHcp),
+		}, nil)
 	}
 }
 
@@ -280,8 +284,10 @@ func (m *Minibridge) decideDeclarer() {
 	default:
 		m.declarerByDealerTie = true
 		declTeam = m.players[m.dealerIdx].GetTeam()
-		m.addLog(-1, "declarer",
-			fmt.Sprintf("HCP が %d-%d の同点のため、親の側が宣言側になります", teamHcp[0], teamHcp[1]), nil)
+		m.addLog(-1, "declarer", "minibridge.log.declarerTie", map[string]string{
+			"teamA": strconv.Itoa(teamHcp[0]),
+			"teamB": strconv.Itoa(teamHcp[1]),
+		}, nil)
 	}
 
 	// 親から順に見るので、席が同点なら自然と先の席が残る。
@@ -297,9 +303,10 @@ func (m *Minibridge) decideDeclarer() {
 	}
 	m.declarerIdx = best
 	m.dummyIdx = (best + MinibridgeTeamCnt) % MinibridgePlayerCnt
-	m.addLog(m.declarerIdx, "declarer",
-		fmt.Sprintf("HCP %d でデクレアラーになりました（ダミーは席 %d）",
-			m.players[m.declarerIdx].GetHcp(), m.dummyIdx), nil)
+	m.addLog(m.declarerIdx, "declarer", "minibridge.log.declarer", map[string]string{
+		"hcp":       strconv.Itoa(m.players[m.declarerIdx].GetHcp()),
+		"dummySeat": strconv.Itoa(m.dummyIdx),
+	}, nil)
 }
 
 // nextSeat は次の席を返す。
@@ -348,9 +355,10 @@ func (m *Minibridge) selectContractBy(playerIdx, level, suit int) error {
 	// **リードは落札者の左隣から。** ダミーは落札者の正面。
 	m.leadPlayerIdx = m.nextSeat(m.declarerIdx)
 	m.currentPlayerIdx = m.leadPlayerIdx
-	m.addLog(playerIdx, "contract",
-		fmt.Sprintf("契約 %d%s（必要 %d トリック）",
-			level, minibridgeContractSuitStr(suit), m.RequiredTricks()), nil)
+	m.addLog(playerIdx, "contract", "minibridge.log.contract", map[string]string{
+		"level": strconv.Itoa(level), "suit": minibridgeContractSuitStr(suit),
+		"need": strconv.Itoa(m.RequiredTricks()),
+	}, nil)
 	return nil
 }
 
@@ -515,7 +523,7 @@ func (m *Minibridge) play(playerIdx, cardIndex int) error {
 	}
 	p := m.players[playerIdx]
 	if cardIndex < 0 || cardIndex >= p.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "minibridge.errCardIndexOutOfRange", nil)
 	}
 	if !minibridgeContains(m.GetValidPlayIndices(playerIdx), cardIndex) {
 		return errors.New("must follow the led suit")
@@ -523,10 +531,10 @@ func (m *Minibridge) play(playerIdx, cardIndex int) error {
 
 	card := p.RemoveCard(cardIndex)
 	if card == nil {
-		return NewDomainError(ErrInvalidCard, "カードがありません")
+		return NewDomainErrorCode(ErrInvalidCard, "minibridge.errCardMissing", nil)
 	}
 	m.currentTrick = append(m.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	m.addLog(playerIdx, "play", "カードを出しました", []*Card{card})
+	m.addLog(playerIdx, "play", "minibridge.log.play", nil, []*Card{card})
 
 	if len(m.currentTrick) < MinibridgePlayerCnt {
 		m.currentPlayerIdx = m.nextSeat(playerIdx)
@@ -544,7 +552,7 @@ func (m *Minibridge) resolveTrick() {
 		cards = append(cards, tc.Card)
 	}
 	m.players[winner].AddTrick(cards)
-	m.addLog(winner, "trick", "トリックを取りました", cards)
+	m.addLog(winner, "trick", "minibridge.log.trick", nil, cards)
 
 	m.currentTrick = nil
 	m.trickNumber++
@@ -665,14 +673,16 @@ func (m *Minibridge) finishRound() {
 		points := m.contractScore(took - need)
 		m.teamScores[declTeam] += points
 		m.lastMade = true
-		m.addLog(m.declarerIdx, "score",
-			fmt.Sprintf("契約 %d に対し %d トリック：成立 (+%d)", need, took, points), nil)
+		m.addLog(m.declarerIdx, "score", "minibridge.log.scoreMade", map[string]string{
+			"need": strconv.Itoa(need), "took": strconv.Itoa(took), "points": strconv.Itoa(points),
+		}, nil)
 	} else {
 		points := (need - took) * minibridgeUndertrickPenalty
 		m.teamScores[1-declTeam] += points
 		m.lastMade = false
-		m.addLog(m.declarerIdx, "score",
-			fmt.Sprintf("契約 %d に対し %d トリック：失敗、相手に +%d", need, took, points), nil)
+		m.addLog(m.declarerIdx, "score", "minibridge.log.scoreFailed", map[string]string{
+			"need": strconv.Itoa(need), "took": strconv.Itoa(took), "points": strconv.Itoa(points),
+		}, nil)
 	}
 
 	if m.roundNumber >= m.config.Rounds {
@@ -749,8 +759,9 @@ func (m *Minibridge) finishGame() {
 	default:
 		m.winnerTeam = -1
 	}
-	m.addLog(-1, "result",
-		fmt.Sprintf("最終得点 %d - %d", m.teamScores[0], m.teamScores[1]), nil)
+	m.addLog(-1, "result", "minibridge.log.result", map[string]string{
+		"teamA": strconv.Itoa(m.teamScores[0]), "teamB": strconv.Itoa(m.teamScores[1]),
+	}, nil)
 }
 
 // GiveUp は投了する。
@@ -762,7 +773,7 @@ func (m *Minibridge) GiveUp() {
 	m.gameEndFlag = true
 	// 人間は席 0 = チーム 0。
 	m.winnerTeam = 1
-	m.addLog(0, "giveup", "投了しました", nil)
+	m.addLog(0, "giveup", "minibridge.log.giveUp", nil, nil)
 }
 
 // GetHint は人間への助言を返す。
@@ -791,8 +802,8 @@ func (m *Minibridge) GetHint() *MinibridgeHint {
 }
 
 // addLog は棋譜に 1 行足す。
-func (m *Minibridge) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	m.appendLog(playerIdx, actionType, detail, cards)
+func (m *Minibridge) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	m.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- アクセサ ---------------------------------------------------------------

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // ThreeThirteen（スリー・サーティーン）はアメリカ系のプログレッシブ・ラミー。
@@ -246,28 +247,28 @@ func (g *ThreeThirteen) drawFromStock() error {
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", playerName(g.players, g.currentPlayerIdx)), nil)
+	g.appendLog(g.currentPlayerIdx, "draw_stock", "threethirteen.log.drawStock", map[string]string{"name": playerName(g.players, g.currentPlayerIdx)}, nil)
 	g.phase = ThreeThirteenPhaseDiscard
 	return nil
 }
 
 func (g *ThreeThirteen) drawFromDiscard() error {
 	if len(g.discardPile) == 0 {
-		return NewDomainError(ErrInvalidPlay, "捨て札が空です")
+		return NewDomainErrorCode(ErrInvalidPlay, "threethirteen.errDiscardPileEmpty", nil)
 	}
 	card := g.discardPile[len(g.discardPile)-1]
 	g.discardPile = g.discardPile[:len(g.discardPile)-1]
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s draws %s from discard", playerName(g.players, g.currentPlayerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(g.currentPlayerIdx, "draw_discard", "threethirteen.log.drawDiscard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(card)}, []*Card{card})
 	g.phase = ThreeThirteenPhaseDiscard
 	return nil
 }
 
 // recycleDiscardIntoStock 山札が空のとき捨て札トップ 1 枚を残して残りを山札へ戻しシャッフルする。
 func (g *ThreeThirteen) recycleDiscardIntoStock() bool {
-	return recycleDiscardIntoStock(&g.discardPile, &g.drawPile, g)
+	return recycleDiscardIntoStock(&g.discardPile, &g.drawPile, g, "threethirteen.log.recycle")
 }
 
 // PlayerDiscard 人間プレイヤーが手札 1 枚を捨ててターン終了する
@@ -304,29 +305,29 @@ func (g *ThreeThirteen) guardHumanDiscard() error {
 func (g *ThreeThirteen) applyDiscard(cardIndex int, knock bool) error {
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "threethirteen.errCardIndexOutOfRange", nil)
 	}
 
 	if knock {
 		if g.knockerIdx >= 0 {
-			return NewDomainError(ErrInvalidPlay, "既にノックされています")
+			return NewDomainErrorCode(ErrInvalidPlay, "threethirteen.errAlreadyKnocked", nil)
 		}
 		remaining := handWithout(player, cardIndex)
 		_, deadwood := threeThirteenBestMelds(remaining, g.WildRank())
 		if threeThirteenDeadwoodValue(deadwood, g.WildRank()) != 0 {
-			return NewDomainError(ErrInvalidPlay, "手札を完全にメルドできないためノックできません")
+			return NewDomainErrorCode(ErrInvalidPlay, "threethirteen.errCannotKnock", nil)
 		}
 	}
 
 	discarded := player.RemoveCard(cardIndex)
 	g.discardPile = append(g.discardPile, discarded)
-	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+	g.appendLog(g.currentPlayerIdx, "discard", "threethirteen.log.discard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(discarded)}, []*Card{discarded})
 
 	if knock {
 		g.knockerIdx = g.currentPlayerIdx
 		player.SetIsFinished(true)
 		g.finalTurnsLeft = len(g.players) - 1
-		g.appendLog(g.currentPlayerIdx, "knock", fmt.Sprintf("%s knocks!", playerName(g.players, g.currentPlayerIdx)), nil)
+		g.appendLog(g.currentPlayerIdx, "knock", "threethirteen.log.knock", map[string]string{"name": playerName(g.players, g.currentPlayerIdx)}, nil)
 	}
 
 	g.advanceTurn()
@@ -468,9 +469,9 @@ func (g *ThreeThirteen) finishRound() {
 		g.players[i].CommitRoundScore()
 	}
 	if g.knockerIdx >= 0 {
-		g.appendLog(g.knockerIdx, "round_end", fmt.Sprintf("Round %d ends (%s knocked)", g.round, playerName(g.players, g.knockerIdx)), nil)
+		g.appendLog(g.knockerIdx, "round_end", "threethirteen.log.roundEndKnocked", map[string]string{"round": strconv.Itoa(g.round), "name": playerName(g.players, g.knockerIdx)}, nil)
 	} else {
-		g.appendLog(-1, "round_end", fmt.Sprintf("Round %d ends (stock out)", g.round), nil)
+		g.appendLog(-1, "round_end", "threethirteen.log.roundEndStockOut", map[string]string{"round": strconv.Itoa(g.round)}, nil)
 	}
 	g.phase = ThreeThirteenPhaseRoundEnd
 }
@@ -492,7 +493,11 @@ func (g *ThreeThirteen) finalizeGameEnd() {
 			g.winnerIdx = i
 		}
 	}
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game!", playerName(g.players, g.winnerIdx)), nil)
+	g.appendLog(-1, "game_end", "threethirteen.log.gameEnd", map[string]string{"name": playerName(g.players, g.winnerIdx)}, nil)
+}
+
+func (g *ThreeThirteen) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- Getters / Setters ---

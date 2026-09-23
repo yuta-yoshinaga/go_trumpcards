@@ -111,6 +111,9 @@ func (p *OhHellWebPresenter) buildPlayersOutput(o interfaces.OhHellGame) []*cont
 // buildMessage ゲーム結果メッセージを構築
 func (p *OhHellWebPresenter) buildMessage(o interfaces.OhHellGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if o.GetGameEndFlag() {

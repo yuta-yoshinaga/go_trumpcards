@@ -21,6 +21,7 @@
   "team": "Team {{n}}",
   "teamYou": "Team {{n}} (You)",
   "trumpSuit": "Trump: {{suit}}",
+  "trumpPending": "Trump: undecided",
   "noTrump": "No trump",
   "currentTrick": "Current Trick",
   "trickCount": "Tricks: {{count}}",

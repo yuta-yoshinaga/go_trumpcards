@@ -115,7 +115,7 @@ type ZwickerWebOutputConfig struct {
 func (c *ZwickerWebConfig) ToConfig() domain.ZwickerConfig {
 	cfg := domain.DefaultZwickerConfig()
 	cfg.CpuDifficulty = domain.ZwickerCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty,
-		int(domain.ZwickerCpuDifficultyNormal), int(domain.ZwickerCpuDifficultyNormal),
+		int(domain.ZwickerCpuDifficultyEasy), int(domain.ZwickerCpuDifficultyHard),
 		int(cfg.CpuDifficulty)))
 	webutil.ApplyBoundedInt(&cfg.TargetScore, c.TargetScore, 1, 1000)
 	return cfg

@@ -92,7 +92,7 @@ flowchart TD
 Go Fish (ゴーフィッシュ)
 ==========
 あなた: 5枚, ブック: 0
-[0]CLOVER 11  [1]HEART 13  [2]CLOVER 2  [3]HEART 6  [4]DIAMOND 4
+[0]♣11  [1]♥13  [2]♣2  [3]♥6  [4]♦4
 CPU 1: 5枚, ブック: 0
 CPU 2: 5枚, ブック: 0
 CPU 3: 5枚, ブック: 0

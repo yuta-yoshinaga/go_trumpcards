@@ -8,6 +8,9 @@ func (c *Cucumber) SetPhaseForTest(p CucumberPhase) { c.phase = p }
 // SetCurrentPlayerIdxForTest は現在の手番を設定する
 func (c *Cucumber) SetCurrentPlayerIdxForTest(i int) { c.currentPlayerIdx = i }
 
+// SetTrickNumberForTest は解決済みのトリック数を設定する
+func (c *Cucumber) SetTrickNumberForTest(n int) { c.trickNumber = n }
+
 // SetLeadPlayerIdxForTest はリード席を設定する
 func (c *Cucumber) SetLeadPlayerIdxForTest(i int) { c.leadPlayerIdx = i }
 

@@ -35,6 +35,7 @@ func setupBoliviaWebMock() *interfaces.MockBoliviaGame {
 	m.On("GetPhase").Return(domain.BoliviaPhaseDraw)
 	m.On("GetCurrentPlayerIdx").Return(0)
 	m.On("GetWinnerIdx").Return(-1)
+	m.On("CanGoOut").Return(false)
 	m.On("GetConfig").Return(domain.DefaultBoliviaConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	m.On("GetTeamCount").Return(2)
@@ -72,6 +73,15 @@ func TestBoliviaWebPresenter_Output(t *testing.T) {
 		require.Equal(2, len(resObj.TeamScores))
 		require.Equal(0, resObj.Players[0].Team)
 		require.Equal(1, resObj.Players[1].Team)
+	})
+
+	t.Run("canGoOut is exposed", func(t *testing.T) {
+		m, _ := setupBoliviaWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "CanGoOut")
+		m.On("CanGoOut").Return(true)
+		var resObj controller.BoliviaWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, nil)), &resObj))
+		assert.True(t, resObj.CanGoOut)
 	})
 
 	t.Run("human cards shown, CPU hidden in draw phase", func(t *testing.T) {
@@ -161,6 +171,15 @@ func TestBoliviaWebPresenter_Output(t *testing.T) {
 		assert.Empty(t, resObj.MessageCode)
 	})
 
+	t.Run("domain error uses message code", func(t *testing.T) {
+		m, _ := setupBoliviaWebMockWithPlayers()
+		result := p.Output(m, domain.NewDomainErrorCode(domain.ErrInvalidPlay, "bolivia.errCardIndexOutOfRange", nil))
+		var resObj controller.BoliviaWebOutput
+		_ = json.Unmarshal([]byte(result), &resObj)
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "bolivia.errCardIndexOutOfRange", resObj.MessageCode)
+	})
+
 	t.Run("game end human team wins", func(t *testing.T) {
 		m, _ := setupBoliviaWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
@@ -222,7 +241,7 @@ func TestBoliviaWebPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("with entries", func(t *testing.T) {
 		m := new(interfaces.MockBoliviaGame)
 		entries := []*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "draw_stock", Detail: "drew"},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "draw_stock", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		}
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetActionLog").Return(entries)

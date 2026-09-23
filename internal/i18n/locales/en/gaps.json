@@ -19,5 +19,8 @@
   "gapBlocked": "[ x ]",
   "gapAnySuit": "[{{rank}}?]",
   "gapNeeded": "[{{card}}]",
-  "helpExampleHint": "  h                         ask for a move"
+  "helpExampleHint": "  h                         ask for a move",
+  "log.move": "({{fromRow}},{{fromCol}})→({{toRow}},{{toCol}})",
+  "log.redeal": "redeal #{{count}}",
+  "log.giveUp": "give up"
 }

@@ -180,7 +180,7 @@ function GermanWhistPageContent() {
           <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
             <div className="text-ds-text-primary text-center mb-3">
               <span className="mr-4" data-testid="gw-trick">
-                {t('header.trick')}: {state.trickNumber}/26
+                {t('header.trick')}: {state.trickNumber}/26 {t('header.winAt', { target: state.winThreshold })}
               </span>
               <span className="mr-4">
                 {t('header.stock')}: {state.stockCount}

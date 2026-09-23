@@ -471,6 +471,8 @@ func TestDoudizhu_ActionLog(t *testing.T) {
 	log := d.GetActionLog()
 	assert.NotEmpty(t, log)
 	assert.Equal(t, "play", log[0].ActionType)
+	assert.Equal(t, "doudizhu.log.play", log[0].DetailCode)
+	assert.Equal(t, map[string]string{"count": "1"}, log[0].DetailParams)
 }
 
 func TestDoudizhu_BombCountIncrementsOnBomb(t *testing.T) {

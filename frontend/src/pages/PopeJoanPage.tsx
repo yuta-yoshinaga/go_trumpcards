@@ -26,6 +26,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { PopeJoanResponse } from '../types/card';
 import { PopeJoanPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { suitName } from '../utils/cardUtils';
 import { POPEJOAN_HELP, parsePopeJoanCommand } from '../utils/cli/commands/popejoanCommands';
 import { formatPopeJoanState } from '../utils/cli/formatters/popejoanFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -79,6 +80,9 @@ function PopeJoanPageContent() {
   const isHumanTurn = !ended && playing && state.currentPlayerIdx === 0;
 
   const phaseName = ended ? t('phase.end') : dealOver ? t('phase.dealEnd') : t('phase.play');
+  const trumpCards = (human?.cards ?? []).filter((card) => card.design === suitName(state.trumpSuit));
+  const hasMatrimony = trumpCards.some((card) => card.value === 13) && trumpCards.some((card) => card.value === 12);
+  const hasIntrigue = trumpCards.some((card) => card.value === 12) && trumpCards.some((card) => card.value === 11);
 
   return (
     <GamePageShell
@@ -128,6 +132,11 @@ function PopeJoanPageContent() {
               ) : (
                 <span className="text-game-text-muted text-xs">—</span>
               )}
+              <div className="text-game-text-muted text-xs" data-testid="popejoan-targets">
+                {t('targets')}: {hasMatrimony ? t('target.matrimony') : ''}
+                {hasMatrimony && hasIntrigue ? ' / ' : ''}
+                {hasIntrigue ? t('target.intrigue') : !hasMatrimony ? t('target.none') : ''}
+              </div>
             </div>
 
             {/* **8 区画は毎回すべて出す。**膨らんでいる区画がそのディールの

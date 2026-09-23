@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra3
+//go:build !js || !wasm || extra6
 
 package presenter
 
@@ -86,6 +86,9 @@ func (p *BeloteWebPresenter) buildPlayersOutput(b interfaces.BeloteGame) []*cont
 
 func (p *BeloteWebPresenter) buildMessage(b interfaces.BeloteGame, trick []*domain.TrickCard, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if b.GetGameEndFlag() {

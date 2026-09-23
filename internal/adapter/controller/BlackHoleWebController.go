@@ -17,7 +17,8 @@ type BlackHoleWebInput struct {
 
 // BlackHoleWebOutputHint ヒント出力。
 type BlackHoleWebOutputHint struct {
-	Fan int `json:"fan"`
+	Fan        int `json:"fan"`
+	MovesAfter int `json:"movesAfter"`
 }
 
 // BlackHoleWebOutput ブラックホールのWebアウトプット。

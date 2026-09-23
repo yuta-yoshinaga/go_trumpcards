@@ -37,6 +37,8 @@ func (p *SergeantMajorWebPresenter) buildBase(s interfaces.SergeantMajorGame) *c
 	resObj.KittySize = s.GetKittySize()
 	resObj.DiscardCount = s.GetDiscardCount()
 	resObj.LastExchange = s.GetLastExchange()
+	resObj.LastExchangeLost = cardsToOutputOrEmpty(s.GetLastExchangeLost())
+	resObj.LastExchangeReceived = cardsToOutputOrEmpty(s.GetLastExchangeReceived())
 	resObj.CurrentPlayerIdx = s.GetCurrentPlayerIdx()
 	resObj.LeadPlayerIdx = s.GetLeadPlayerIdx()
 	resObj.DealerIdx = s.GetDealerIdx()

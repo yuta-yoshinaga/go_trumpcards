@@ -217,10 +217,10 @@ func TestSevenCardStudCuiPresenter_Output(t *testing.T) {
 		s.SetPhase(domain.SevenCardStudPhaseThirdStreet)
 
 		result := p.Output(s, nil)
-		assert.Contains(t, result, "Ante:1")
-		assert.Contains(t, result, "BringIn:2")
-		assert.Contains(t, result, "SmallBet:5")
-		assert.Contains(t, result, "BigBet:10")
+		assert.Contains(t, result, "アンテ:1")
+		assert.Contains(t, result, "ブリングイン:2")
+		assert.Contains(t, result, "スモールベット:5")
+		assert.Contains(t, result, "ビッグベット:10")
 	})
 
 	t.Run("CPU door cards always visible", func(t *testing.T) {
@@ -418,7 +418,7 @@ func TestSevenCardStudCuiPresenter_Output(t *testing.T) {
 		s.SetHandCount(3)
 
 		result := p.Output(s, nil)
-		assert.Contains(t, result, "トーナメント ハンド#3 Ante:5 BringIn:10 (レベルアップ:5ハンド毎)")
+		assert.Contains(t, result, "トーナメント ハンド#3 アンテ:5 ブリングイン:10 (レベルアップ:5ハンド毎)")
 	})
 
 	t.Run("tournament mode header not shown when disabled", func(t *testing.T) {
@@ -428,6 +428,64 @@ func TestSevenCardStudCuiPresenter_Output(t *testing.T) {
 		result := p.Output(s, nil)
 		assert.NotContains(t, result, "トーナメント")
 	})
+}
+
+func TestSevenCardStudCuiPresenterAnteLevelUpBoundaries(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+
+	for _, tt := range []struct {
+		name      string
+		handCount int
+		want      bool
+	}{
+		{name: "level up at hand 11", handCount: 11, want: true},
+		{name: "not yet at hand 12", handCount: 12, want: false},
+		{name: "first hand", handCount: 1, want: false},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			s, _ := makeSevenCardStudForPresenter()
+			cfg := s.GetConfig()
+			cfg.TournamentMode = true
+			cfg.Ante = 1
+			cfg.AnteMultiplier = 200
+			cfg.AnteLevelHands = 10
+			s.SetConfig(cfg)
+			if tt.want {
+				s.SetHandCount(tt.handCount - 1)
+				assert.NoError(t, s.Reset())
+			} else {
+				s.SetHandCount(tt.handCount)
+			}
+
+			output := new(presenter.SevenCardStudCuiPresenter).Output(s, nil)
+			if tt.want {
+				assert.Contains(t, output, "アンティが上昇しました: 1→2")
+			} else {
+				assert.NotContains(t, output, "アンティが上昇しました:")
+			}
+		})
+	}
+}
+
+func TestSevenCardStudCuiPresenterAnteLevelUpUsesActualPreviousAnte(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+
+	s, _ := makeSevenCardStudForPresenter()
+	cfg := s.GetConfig()
+	cfg.TournamentMode = true
+	cfg.Ante = 5
+	cfg.AnteMultiplier = 150
+	cfg.AnteLevelHands = 10
+	s.SetConfig(cfg)
+	s.SetHandCount(10)
+	assert.NoError(t, s.Reset())
+
+	output := new(presenter.SevenCardStudCuiPresenter).Output(s, nil)
+	assert.Contains(t, output, "アンティが上昇しました: 5→7")
 }
 
 func TestSevenCardStudCuiPresenter_Output_BettingLimitDisplay(t *testing.T) {
@@ -588,20 +646,28 @@ func TestSevenCardStudCuiPresenter_ActionLogOutput(t *testing.T) {
 	defer color.SetNoColor(origNoColor)
 	p := new(presenter.SevenCardStudCuiPresenter)
 
-	t.Run("with entries", func(t *testing.T) {
-		mockGame := new(interfaces.MockSevenCardStudGame)
-		entries := []*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "raise", Detail: "raised to 100"},
-		}
-		mockGame.On("GetGameEndFlag").Return(true)
-		mockGame.On("GetActionLog").Return(entries)
-		// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
-		mockGame.On("GetPlayer", mock.Anything).Return(domain.NewSevenCardStudPlayer(true, domain.SevenCardStudPlayStyle(0))).Maybe()
+	t.Run("with translated entries in both locales", func(t *testing.T) {
+		defer i18n.SetLang("ja")
+		for _, tc := range []struct{ lang, want string }{
+			{lang: "ja", want: "25をコール"},
+			{lang: "en", want: "call 25"},
+		} {
+			i18n.SetLang(tc.lang)
+			mockGame := new(interfaces.MockSevenCardStudGame)
+			entries := []*domain.ActionLogEntry{
+				{TurnNumber: 1, PlayerIdx: 0, ActionType: "call", DetailCode: "sevencardstud.log.call", DetailParams: map[string]string{"amount": "25"}},
+			}
+			mockGame.On("GetGameEndFlag").Return(true)
+			mockGame.On("GetActionLog").Return(entries)
+			// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
+			mockGame.On("GetPlayer", mock.Anything).Return(domain.NewSevenCardStudPlayer(true, domain.SevenCardStudPlayStyle(0))).Maybe()
 
-		result := p.ActionLogOutput(mockGame)
-		assert.Contains(t, result, "棋譜")
-		assert.Contains(t, result, "raise")
-		mockGame.AssertExpectations(t)
+			result := p.ActionLogOutput(mockGame)
+			assert.Contains(t, result, i18n.T("cuiActionLogHeader"))
+			assert.Contains(t, result, tc.want)
+			assert.NotContains(t, result, "sevencardstud.log.")
+			mockGame.AssertExpectations(t)
+		}
 	})
 
 	t.Run("game not ended", func(t *testing.T) {
@@ -792,6 +858,113 @@ func TestSevenCardStudCuiPresenter_HintOutput(t *testing.T) {
 	})
 }
 
+func TestSevenCardStudCuiPresenter_Hint_ChicagoSpadeLock(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.SevenCardStudCuiPresenter)
+	card := func(design, value int) *domain.Card { return domain.NewCard(design, value, false) }
+
+	players := []*domain.SevenCardStudPlayer{
+		domain.NewSevenCardStudPlayer(true, domain.HoldemStyleTAG),
+		domain.NewSevenCardStudPlayer(false, domain.HoldemStyleLAP),
+	}
+	s := domain.NewSevenCardStudChicago(domain.NewTrumpCards(0), players, domain.DefaultSevenCardStudConfig())
+	s.SetPhase(domain.SevenCardStudPhaseSixthStreet)
+	s.SetCurrentTurn(0)
+	players[0].AddHoleCard(card(domain.CardDesignSpade, 1))
+	players[0].AddHoleCard(card(domain.CardDesignHeart, 2))
+	players[0].AddDoorCard(card(domain.CardDesignClover, 9))
+
+	// 伏せ札の A♠ は、ハイの役が弱くてもスペード側の半分を確定する。
+	out := p.HintOutput(s)
+	assert.Contains(t, out, "チェック")
+	assert.Contains(t, out, "伏せ札の A♠ でポットの半分が確定")
+
+	s.SetLastBet(5)
+	out = p.HintOutput(s)
+	assert.Contains(t, out, "コール")
+	assert.Contains(t, out, "伏せ札の A♠ でポットの半分が確定")
+
+	newChicago := func() (*domain.SevenCardStud, *domain.SevenCardStudPlayer) {
+		chicagoPlayers := []*domain.SevenCardStudPlayer{
+			domain.NewSevenCardStudPlayer(true, domain.HoldemStyleTAG),
+			domain.NewSevenCardStudPlayer(false, domain.HoldemStyleLAP),
+		}
+		chicago := domain.NewSevenCardStudChicago(domain.NewTrumpCards(0), chicagoPlayers, domain.DefaultSevenCardStudConfig())
+		chicago.SetPhase(domain.SevenCardStudPhaseThirdStreet)
+		chicago.SetCurrentTurn(0)
+		chicagoPlayers[0].AddHoleCard(card(domain.CardDesignHeart, 2))
+		chicagoPlayers[0].AddHoleCard(card(domain.CardDesignClover, 4))
+		return chicago, chicagoPlayers[0]
+	}
+
+	// A♠ が伏せ札に無ければ、Chicago 専用ヒントではなく通常ハイの既存分岐を使う。
+	noLock, noLockPlayer := newChicago()
+	noLockPlayer.AddDoorCard(card(domain.CardDesignDiamond, 1))
+	out = p.HintOutput(noLock)
+	assert.Contains(t, out, "続行条件を満たしません")
+	assert.NotContains(t, out, "現在ヒントはありません。")
+
+	// 表向きの A♠ は対象外で、通常ハイの既存分岐を使う。
+	plain, plainPlayer := newChicago()
+	plainPlayer.AddDoorCard(card(domain.CardDesignSpade, 1))
+	out = p.HintOutput(plain)
+	assert.NotContains(t, out, "伏せ札の A♠ でポットの半分が確定")
+	assert.Contains(t, out, "続行条件を満たしません")
+}
+
+func TestSevenCardStudCuiPresenter_Hint_ChicagoSpadeLockGuards(t *testing.T) {
+	origNoColor := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(origNoColor)
+	p := new(presenter.SevenCardStudCuiPresenter)
+	card := func(design, value int) *domain.Card { return domain.NewCard(design, value, false) }
+
+	newChicago := func(phase int) (*domain.SevenCardStud, *domain.SevenCardStudPlayer) {
+		players := []*domain.SevenCardStudPlayer{
+			domain.NewSevenCardStudPlayer(true, domain.HoldemStyleTAG),
+			domain.NewSevenCardStudPlayer(false, domain.HoldemStyleLAP),
+		}
+		s := domain.NewSevenCardStudChicago(domain.NewTrumpCards(0), players, domain.DefaultSevenCardStudConfig())
+		s.SetPhase(phase)
+		s.SetCurrentTurn(0)
+		players[0].AddHoleCard(card(domain.CardDesignSpade, 1))
+		players[0].AddHoleCard(card(domain.CardDesignHeart, 2))
+		players[0].AddDoorCard(card(domain.CardDesignClover, 9))
+		return s, players[0]
+	}
+
+	t.Run("falls through outside Chicago betting phases", func(t *testing.T) {
+		s, _ := newChicago(domain.SevenCardStudPhaseShowdown)
+		assert.Contains(t, p.HintOutput(s), "現在ヒントはありません。")
+	})
+
+	for _, tc := range []struct {
+		name   string
+		mutate func(*domain.SevenCardStudPlayer)
+	}{
+		{"folded", func(player *domain.SevenCardStudPlayer) { player.SetFolded(true) }},
+		{"all-in", func(player *domain.SevenCardStudPlayer) { player.SetAllIn(true) }},
+		{"empty hand", func(player *domain.SevenCardStudPlayer) { player.ClearCards() }},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			s, player := newChicago(domain.SevenCardStudPhaseSixthStreet)
+			tc.mutate(player)
+			assert.Contains(t, p.HintOutput(s), "現在ヒントはありません。")
+		})
+	}
+
+	t.Run("rounds a negative owed amount down to a check", func(t *testing.T) {
+		s, player := newChicago(domain.SevenCardStudPhaseSixthStreet)
+		s.SetLastBet(5)
+		player.SetCurrentBet(10)
+		out := p.HintOutput(s)
+		assert.Contains(t, out, "チェック")
+		assert.Contains(t, out, "伏せ札の A♠ でポットの半分が確定")
+	})
+}
+
 // #5543: Hi-Lo の結果は合計額しか出ておらず、ハイを取ったのかローを取ったのか、
 // スクープしたのかが CUI からは読み取れなかった。Web は StudHiLoSplit が
 // 3 通りを別バッジで出している。
@@ -885,7 +1058,7 @@ func TestSevenCardStudCuiPresenter_Output_BringIn(t *testing.T) {
 // **#5435: シカゴの内訳と「その 1 枚」を CUI に出す。** 合計額しか出ていないと、
 // 役で勝ったのか伏せ札のスペードで勝ったのかが読めず、ポットが割れた理由が
 // 画面のどこにも現れない。カードは他の行と同じ絵札表記で出す — ここが生の
-// `SPADE 1` になっていても Go のテストは通ってしまう。
+// `♠1` になっていても Go のテストは通ってしまう。
 func TestSevenCardStudCuiPresenter_Output_ChicagoSplit(t *testing.T) {
 	origNoColor := color.NoColor()
 	color.SetNoColor(true)
@@ -932,7 +1105,7 @@ func TestSevenCardStudCuiPresenter_Output_ChicagoSplit(t *testing.T) {
 	})
 
 	// **その 1 枚は他のカードと同じ表記で出す。** `cuiCardStr` を使うと
-	// `SPADE 1` という生の綴りが、♠A を並べた盤面の中に 1 行だけ混ざる。
+	// `♠1` という生の綴りが、♠A を並べた盤面の中に 1 行だけ混ざる。
 	t.Run("prints the deciding spade in the same notation as the board", func(t *testing.T) {
 		r := base
 		r.WonAmount, r.WonSpade = 100, 50

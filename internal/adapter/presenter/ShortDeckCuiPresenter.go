@@ -143,7 +143,7 @@ func (p *ShortDeckCuiPresenter) Output(o interfaces.ShortDeckGame, lastErr error
 			b.WriteString(color.Bold(i18n.T("shortdeck.cpuActionsHeader")) + "\n")
 			for _, action := range cpuActions {
 				b.WriteString(i18n.Tf("shortdeck.cpuActionLine",
-					"idx", strconv.Itoa(action.PlayerIdx),
+					"name", cuiPlayerName(o.GetPlayer(action.PlayerIdx), action.PlayerIdx),
 					"action", cuiBettingActionName(action.Action)))
 				if action.Amount > 0 {
 					b.WriteString(i18n.Tf("shortdeck.cpuActionAmount", "amount", strconv.Itoa(action.Amount)))

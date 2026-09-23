@@ -31,6 +31,7 @@ import { KLAVERJAS_HELP, parseKlaverjasCommand } from '../utils/cli/commands/kla
 import { formatKlaverjasState } from '../utils/cli/formatters/klaverjasFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
+import { getKlaverjasPlayRestriction } from '../utils/klaverjasPlayRestriction';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -427,6 +428,20 @@ function KlaverjasPageContent() {
                 dataTutorialPrefix="klaverjas"
                 validIndices={canPlay ? state.playableIndices : undefined}
                 restrictedTooltip={t('playButton')}
+                cardTitleFor={
+                  canPlay
+                    ? (idx) => {
+                        if (state.playableIndices.includes(idx)) return undefined;
+                        const reason = getKlaverjasPlayRestriction(
+                          humanPlayer.cards,
+                          state.currentTrick,
+                          state.trumpSuit,
+                          idx,
+                        );
+                        return reason ? t(`playRestriction.${reason}`) : undefined;
+                      }
+                    : undefined
+                }
               />
             )}
 

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"strconv"
 )
 
 // CassinoPlayerCnt カシノのプレイヤー数 (4人固定)
@@ -170,7 +171,7 @@ func (c *Cassino) startRound(isFirstRound bool) {
 			}
 			c.round.tableCards = append(c.round.tableCards, card)
 		}
-		c.appendLog(-1, "deal", fmt.Sprintf("dealt %d table cards", len(c.round.tableCards)), c.round.tableCards)
+		c.appendLog(-1, "deal", "cassino.log.deal", map[string]string{"cards": strconv.Itoa(len(c.round.tableCards))}, c.round.tableCards)
 	}
 	c.round.phase = CassinoPhasePlayerTurn
 }
@@ -335,7 +336,7 @@ func (c *Cassino) applyTake(playerIdx, handIdx int, tableIdxs, buildIdxs []int, 
 		IsSweep:       isSweep,
 	}
 	record(action)
-	c.appendLog(playerIdx, string(CassinoActionTake), fmt.Sprintf("took %d card(s)", len(captured)-1), captured)
+	c.appendLog(playerIdx, string(CassinoActionTake), "cassino.log.take", map[string]string{"cards": strconv.Itoa(len(captured) - 1)}, captured)
 	// 内部状態を前進
 	_ = takenTableIdxGroups // 検証用途のみ (将来 UI 表示で使う可能性)
 	c.postActionAdvance()
@@ -414,7 +415,7 @@ func (c *Cassino) applyBuild(playerIdx, handIdx int, tableIdxs []int, declaredVa
 		BuildValue: declaredValue,
 	}
 	record(action)
-	c.appendLog(playerIdx, string(CassinoActionBuild), fmt.Sprintf("built value %d", declaredValue), groupCards)
+	c.appendLog(playerIdx, string(CassinoActionBuild), "cassino.log.build", map[string]string{"value": strconv.Itoa(declaredValue)}, groupCards)
 	c.postActionAdvance()
 	return nil
 }
@@ -438,7 +439,7 @@ func (c *Cassino) applyTrail(playerIdx, handIdx int, record func(*CassinoAction)
 		PlayedCard: handCard,
 	}
 	record(action)
-	c.appendLog(playerIdx, string(CassinoActionTrail), "trailed", []*Card{handCard})
+	c.appendLog(playerIdx, string(CassinoActionTrail), "cassino.log.trail", nil, []*Card{handCard})
 	c.postActionAdvance()
 	return nil
 }
@@ -477,7 +478,7 @@ func (c *Cassino) finishRound() {
 	c.round.builds = nil
 	if c.round.lastCaptureIdx >= 0 && len(leftover) > 0 {
 		c.players[c.round.lastCaptureIdx].AddCaptured(leftover)
-		c.appendLog(c.round.lastCaptureIdx, "lastTake", fmt.Sprintf("last-take: %d card(s)", len(leftover)), leftover)
+		c.appendLog(c.round.lastCaptureIdx, "lastTake", "cassino.log.lastTake", map[string]string{"cards": strconv.Itoa(len(leftover))}, leftover)
 	}
 	// スコア計算
 	detail := c.scoreRound()
@@ -504,9 +505,9 @@ func (c *Cassino) finishRound() {
 			}
 		}
 		c.round.roundWinners = winners
-		c.appendLog(-1, "gameEnd", fmt.Sprintf("game ended at %d points", maxScore), nil)
+		c.appendLog(-1, "gameEnd", "cassino.log.gameEnd", map[string]string{"points": strconv.Itoa(maxScore)}, nil)
 	} else {
-		c.appendLog(-1, "roundEnd", "round ended", nil)
+		c.appendLog(-1, "roundEnd", "cassino.log.roundEnd", nil, nil)
 	}
 }
 
@@ -649,8 +650,8 @@ func (c *Cassino) removeBuildsByIndex(idxs []int) {
 }
 
 // appendLog 棋譜にエントリを追加する。
-func (c *Cassino) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	c.round.appendLog(playerIdx, actionType, detail, cards)
+func (c *Cassino) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	c.round.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- 状態アクセサ ---

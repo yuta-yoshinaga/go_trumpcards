@@ -173,7 +173,7 @@ func (g *Botifarra) Reset() {
 	g.winnerTeam = -1
 	g.dealerIdx = 0
 	g.actionLog = nil
-	g.addLog(-1, "start", "ボティファラを開始しました", nil)
+	g.addLog(-1, "start", "botifarra.log.start", nil, nil)
 	g.startRound()
 }
 
@@ -201,8 +201,7 @@ func (g *Botifarra) startRound() {
 	g.roundPoints = [2]int{}
 	g.currentTurn = g.dealerIdx
 
-	g.addLog(g.dealerIdx, "deal",
-		fmt.Sprintf("席 %d が親です。切り札を宣言するか相方に委ねます", g.dealerIdx), nil)
+	g.addLog(g.dealerIdx, "deal", "botifarra.log.deal", map[string]string{"dealer": fmt.Sprintf("%d", g.dealerIdx)}, nil)
 	g.advanceCpu()
 }
 
@@ -225,7 +224,7 @@ func (g *Botifarra) declare(idx, suit int) error {
 	}
 	g.trumpSuit = suit
 	g.declarerIdx = idx
-	g.addLog(idx, "declare", botifarraTrumpName(suit)+" を宣言しました", nil)
+	g.addLog(idx, "declare", "botifarra.log.declare", map[string]string{"suitKey": trumpKeyOf(suit)}, nil)
 	g.openDoubling()
 	return nil
 }
@@ -249,7 +248,7 @@ func (g *Botifarra) delegate(idx int) {
 	partner := BotifarraPartnerOf(idx)
 	g.currentTurn = partner
 	g.phase = BotifarraPhaseDelegated
-	g.addLog(idx, "delegate", fmt.Sprintf("席 %d に宣言を委ねました", partner), nil)
+	g.addLog(idx, "delegate", "botifarra.log.delegate", map[string]string{"partner": fmt.Sprintf("%d", partner)}, nil)
 	g.advanceCpu()
 }
 
@@ -292,14 +291,14 @@ func (g *Botifarra) double(idx int) error {
 	switch g.multiplier {
 	case BotifarraMultiplierNone:
 		g.multiplier = BotifarraMultiplierContrar
-		g.addLog(idx, "contrar", "contrar（2 倍）を宣言しました", nil)
+		g.addLog(idx, "contrar", "botifarra.log.contrar", nil, nil)
 		// **相手が倍にしたら、契約側は再倍にできます。**
 		g.currentTurn = g.firstOpponentOf(idx)
 		g.advanceCpu()
 		return nil
 	case BotifarraMultiplierContrar:
 		g.multiplier = BotifarraMultiplierRecontra
-		g.addLog(idx, "recontrar", "recontrar（4 倍）を宣言しました", nil)
+		g.addLog(idx, "recontrar", "botifarra.log.recontrar", nil, nil)
 		g.startPlay()
 		return nil
 	default:
@@ -321,7 +320,7 @@ func (g *Botifarra) PassDouble() error {
 
 // passDouble は倍付けを見送る。
 func (g *Botifarra) passDouble(idx int) {
-	g.addLog(idx, "pass", "倍付けを見送りました", nil)
+	g.addLog(idx, "pass", "botifarra.log.pass", nil, nil)
 	g.startPlay()
 }
 
@@ -329,7 +328,7 @@ func (g *Botifarra) passDouble(idx int) {
 func (g *Botifarra) startPlay() {
 	g.phase = BotifarraPhasePlay
 	g.currentTurn = g.dealerIdx
-	g.addLog(-1, "play", "プレイを開始します（切り札: "+botifarraTrumpName(g.trumpSuit)+"）", nil)
+	g.addLog(-1, "play", "botifarra.log.playStart", map[string]string{"suitKey": trumpKeyOf(g.trumpSuit)}, nil)
 	g.advanceCpu()
 }
 
@@ -457,7 +456,7 @@ func (g *Botifarra) playAt(idx, cardIndex int) {
 		return
 	}
 	g.trick = append(g.trick, &TrickCard{PlayerIdx: idx, Card: card})
-	g.addLog(idx, "card", "札を出しました", []*Card{card})
+	g.addLog(idx, "card", "botifarra.log.play", nil, []*Card{card})
 
 	if len(g.trick) < BotifarraPlayerCnt {
 		g.currentTurn = (idx + 1) % BotifarraPlayerCnt
@@ -485,7 +484,7 @@ func (g *Botifarra) finishTrick() {
 	g.trick = nil
 	g.trickCount++
 	g.currentTurn = winner
-	g.addLog(winner, "trick", fmt.Sprintf("トリックを取りました（%d 点）", pts), nil)
+	g.addLog(winner, "trick", "botifarra.log.trickWin", map[string]string{"points": fmt.Sprintf("%d", pts)}, nil)
 
 	if g.trickCount >= BotifarraTrickCnt {
 		g.finishRound()
@@ -504,7 +503,7 @@ func (g *Botifarra) finishRound() {
 		}
 		diff *= g.multiplier
 		g.scores[team] += diff
-		g.addLog(-1, "score", fmt.Sprintf("チーム %d が %d 点を獲得しました", team, diff), nil)
+		g.addLog(-1, "score", "botifarra.log.score", map[string]string{"team": fmt.Sprintf("%d", team), "points": fmt.Sprintf("%d", diff)}, nil)
 	}
 
 	g.phase = BotifarraPhaseRoundEnd
@@ -524,7 +523,7 @@ func (g *Botifarra) finishGame() {
 	if g.scores[1] > g.scores[0] {
 		g.winnerTeam = 1
 	}
-	g.addLog(-1, "result", fmt.Sprintf("チーム %d の勝ちです", g.winnerTeam), nil)
+	g.addLog(-1, "result", "botifarra.log.result", map[string]string{"team": fmt.Sprintf("%d", g.winnerTeam)}, nil)
 }
 
 // NextRound は次のラウンドを配る。
@@ -549,7 +548,7 @@ func (g *Botifarra) GiveUp() {
 	g.gameEndFlag = true
 	// 人間は席 0 なので、相手チームの勝ちにします。
 	g.winnerTeam = 1
-	g.addLog(0, "giveup", "投了しました", nil)
+	g.addLog(0, "giveup", "botifarra.log.giveup", nil, nil)
 }
 
 // CpuPlay は CPU の手番を 1 つ進める。
@@ -646,22 +645,6 @@ func (g *Botifarra) cpuChooseCard(idx int) int {
 	return pickLowest(p, valid, BotifarraRank)
 }
 
-// botifarraTrumpName は切り札の表示名を返す。
-func botifarraTrumpName(suit int) string {
-	switch suit {
-	case CardDesignSpade:
-		return "spade"
-	case CardDesignClover:
-		return "clover"
-	case CardDesignHeart:
-		return "heart"
-	case CardDesignDiamond:
-		return "diamond"
-	default:
-		return "notrump"
-	}
-}
-
 // GetHint は人間への助言を返す。
 func (g *Botifarra) GetHint() *BotifarraHint {
 	if g.gameEndFlag || !g.players[0].GetIsHuman() {
@@ -704,8 +687,8 @@ func (g *Botifarra) longestSuitOf(idx int) int {
 }
 
 // addLog は棋譜に 1 行足す。
-func (g *Botifarra) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.appendLog(playerIdx, actionType, detail, cards)
+func (g *Botifarra) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- Getters ---

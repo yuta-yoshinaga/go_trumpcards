@@ -14,6 +14,17 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 )
 
+func findActionLogEntry(t *testing.T, log []*domain.ActionLogEntry, detailCode string) *domain.ActionLogEntry {
+	t.Helper()
+	for i := len(log) - 1; i >= 0; i-- {
+		if log[i].DetailCode == detailCode {
+			return log[i]
+		}
+	}
+	t.Fatalf("action log entry %q not found", detailCode)
+	return nil
+}
+
 func newTestCanasta() *domain.Canasta {
 	players := []*domain.CanastaPlayer{
 		domain.NewCanastaPlayer(true),
@@ -225,6 +236,8 @@ func TestCanasta_PlayerDrawFromStock(t *testing.T) {
 
 	err := g.PlayerDrawFromStock()
 	require.NoError(t, err)
+	entry := findActionLogEntry(t, g.GetActionLog(), "canasta.log.drawStock")
+	assert.Contains(t, entry.DetailParams, "name")
 
 	// Phase should advance to Meld
 	assert.Equal(t, domain.CanastaPhaseMeld, g.GetPhase())
@@ -264,6 +277,8 @@ func TestCanasta_PlayerDrawFromDiscard_EmptyPile(t *testing.T) {
 
 	err := g.PlayerDrawFromDiscard([]int{0, 1})
 	assert.Error(t, err)
+	code, _ := domain.ErrorMessageCode(err)
+	assert.Equal(t, "canasta.errDiscardPileEmpty", code)
 }
 
 func TestCanasta_PlayerDrawFromDiscard_Black3OnTop(t *testing.T) {
@@ -274,6 +289,8 @@ func TestCanasta_PlayerDrawFromDiscard_Black3OnTop(t *testing.T) {
 
 	err := g.PlayerDrawFromDiscard([]int{0, 1})
 	assert.Error(t, err)
+	code, _ := domain.ErrorMessageCode(err)
+	assert.Equal(t, "canasta.errBlackThreeCannotTakeDiscardPile", code)
 }
 
 func TestCanasta_PlayerDrawFromDiscard_WildOnTop(t *testing.T) {
@@ -458,6 +475,8 @@ func TestCanasta_PlayerDiscard_InvalidIndex(t *testing.T) {
 
 	err := g.PlayerDiscard(999)
 	assert.Error(t, err)
+	code, _ := domain.ErrorMessageCode(err)
+	assert.Equal(t, "canasta.errCardIndexOutOfRange", code)
 }
 
 func TestCanasta_PlayerDiscard_Red3Rejected(t *testing.T) {

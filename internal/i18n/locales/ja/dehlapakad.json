@@ -20,6 +20,8 @@
   "pileGoesTo": "{{name}}が次のトリックも取れば、この山ごと引き取ります。",
   "promptTrump": "{{name}} が切り札を決めます（見えているのは最初の {{n}} 枚だけ）。",
   "promptTrumpHelp": "trump <1-4> ... 1=♠ 2=♣ 3=♥ 4=♦",
+  "suitBreakdown": "最初の5枚のスート内訳: {{counts}}",
+  "suitCount": "{{suit}} {{n}}枚",
   "promptPlay": "手番: {{name}}",
   "playableList": "出せる札: {{cards}}",
   "promptPlayHelp": "play <idx> ... 札を出す",
@@ -41,5 +43,13 @@
   "hintReasonKeepLead": "次も取れば山ごと引き取れます",
   "hintReasonNextHand": "次のハンドへ進んでください",
   "errCardRange": "カードの番号が範囲外です。",
-  "errTrumpSuit": "切り札のスートが不正です（1=♠ 2=♣ 3=♥ 4=♦）。"
+  "errTrumpSuit": "切り札のスートが不正です（1=♠ 2=♣ 3=♥ 4=♦）。",
+  "log.deal": "ハンド{{hand}}: 親={{dealer}}、各{{cards}}枚",
+  "log.trump": "プレイヤー{{player}}が{{suit}}を切り札と宣言",
+  "log.play": "プレイヤー{{player}}が{{card}}を出す",
+  "log.trickWin": "プレイヤー{{player}}がトリック{{trick}}を取る",
+  "log.collectTwoInARow": "プレイヤー{{player}}が{{cards}}枚を回収（2 回連続）、10が{{tens}}枚",
+  "log.collectLastTrick": "プレイヤー{{player}}が{{cards}}枚を回収（最終トリック）、10が{{tens}}枚",
+  "log.handEnd": "ハンド{{hand}}: チーム{{team}}の勝ち（10={{tens}}、コート={{kot}}）",
+  "log.gameEnd": "チーム{{team}}がマッチを制す"
 }

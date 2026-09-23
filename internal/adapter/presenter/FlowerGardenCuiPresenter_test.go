@@ -57,7 +57,7 @@ func TestFlowerGardenCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(bg, nil)
 		assert.Contains(t, result, "Flower Garden")
-		assert.Contains(t, result, "Foundation")
+		assert.Contains(t, result, "組札")
 		assert.Contains(t, result, "列0:")
 		assert.Contains(t, result, "手数: 0")
 		// The 16 reserve cards wrap across rows: r0 and r8 land on different lines.
@@ -162,7 +162,7 @@ func TestFlowerGardenCuiPresenter_HintOutput(t *testing.T) {
 		result := p.HintOutput(bg)
 		assert.Contains(t, result, "ヒント")
 		assert.Contains(t, result, "フラワーベッド0")
-		assert.Contains(t, result, "ファンデーション")
+		assert.Contains(t, result, "組札")
 	})
 
 	t.Run("tableau hint", func(t *testing.T) {
@@ -220,7 +220,7 @@ func TestFlowerGardenCuiPresenter_ActionLogOutput(t *testing.T) {
 		bg := new(interfaces.MockFlowerGardenGame)
 		bg.On("GetPhase").Return(domain.FlowerGardenPhaseGameOver)
 		bg.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "move", Detail: "test"},
+			{TurnNumber: 1, ActionType: "move", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 
 		p := new(FlowerGardenCuiPresenter)

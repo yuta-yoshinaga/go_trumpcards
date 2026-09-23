@@ -17,6 +17,7 @@ function makeState(overrides: Partial<TwoTenJackResponse> = {}): TwoTenJackRespo
     gameEndFlag: false,
     winnerTeam: -1,
     leadPlayerIdx: 0,
+    validPlayIndices: [],
     message: '',
     config: defaultConfig,
     ...overrides,

@@ -81,6 +81,18 @@ func TestEgyptianRatscrew_Step_NonFace_TurnPasses(t *testing.T) {
 	assert.Equal(t, EgyptianRatscrewEventStep, g.GetLastEvent().Kind)
 }
 
+func TestEgyptianRatscrew_Step_ActionLogUsesDetailCode(t *testing.T) {
+	g, _ := setupEgyptianRatscrewWithStocks(t, []*Card{card(5)}, []*Card{card(7)})
+	assert.NoError(t, g.Step())
+	for _, entry := range g.GetActionLog() {
+		if entry.DetailCode == "egyptianratscrew.log.flipFromStock" {
+			assert.Equal(t, map[string]string{"top": "5"}, entry.DetailParams)
+			return
+		}
+	}
+	t.Fatal("step action log entry not found")
+}
+
 func TestEgyptianRatscrew_Step_FaceCard_StartsChanceBattle(t *testing.T) {
 	g, _ := setupEgyptianRatscrewWithStocks(t,
 		[]*Card{card(EgyptianRatscrewKingValue)},

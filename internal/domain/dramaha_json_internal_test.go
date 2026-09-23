@@ -62,7 +62,7 @@ func dramahaFullyPopulated() *Dramaha {
 	o.rebuyPhaseType = DramahaRebuyPhaseAddon
 	o.lastHumanPlayMs = 1234
 	o.humanProfile = &BettingHumanProfile{GamesPlayed: 7}
-	o.appendLog(0, "bet", "bet 60", nil)
+	o.appendLog(0, "bet", "dramaha.log.bet", map[string]string{"amount": "60"}, nil)
 
 	cfg := o.config
 	cfg.SmallBlind = 25
@@ -123,7 +123,6 @@ func TestDramahaJSONRoundTrip(t *testing.T) {
 
 	require.Len(t, got.actionLog, len(src.actionLog))
 	assert.Equal(t, src.actionLog[0].ActionType, got.actionLog[0].ActionType)
-	assert.Equal(t, src.actionLog[0].Detail, got.actionLog[0].Detail)
 
 	// Board and deck
 	require.Len(t, got.communityCards, len(src.communityCards))

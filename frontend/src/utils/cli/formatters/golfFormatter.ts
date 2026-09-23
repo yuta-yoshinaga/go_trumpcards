@@ -28,6 +28,7 @@ export function formatGolfState(state: GolfResponse): string {
   lines.push('----------');
 
   lines.push(`moves: ${state.moveCount}`);
+  if (state.chainCombo >= 2) lines.push(`combo: ×${state.chainCombo}`);
 
   if (state.isStalemate) lines.push('Stalemate - no more moves possible');
   if (state.hint && isRequestedHint(state)) lines.push(`HINT: col ${state.hint.col}`);

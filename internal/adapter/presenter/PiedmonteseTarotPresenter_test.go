@@ -272,6 +272,8 @@ func TestPiedmonteseTarotCuiPresenter_RoundEndBreakdown(t *testing.T) {
 	assert.Contains(t, out, strings.SplitN(i18n.T("piedmontesetarot.roundEndTotal"), "{{", 2)[0])
 	// 卓の合計は必ず 78 点。
 	assert.Contains(t, out, domain.PiedmonteseTarotFormatThirds(domain.PiedmonteseTarotTotalThirds))
+	assert.Contains(t, out, i18n.Tf("piedmontesetarot.roundEndScarto",
+		"name", "あなた", "points", domain.PiedmonteseTarotFormatThirds(g.GetScartoThirds())))
 	// 席ごとの行が全部出る。
 	for i := 0; i < g.GetPlayerCnt(); i++ {
 		assert.Contains(t, out, domain.PiedmonteseTarotFormatThirds(g.GetCardThirds(i)))

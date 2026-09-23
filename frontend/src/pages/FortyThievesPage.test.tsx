@@ -101,6 +101,10 @@ beforeEach(() => {
 });
 
 describe('FortyThievesPage', () => {
+  it('shows the persistent double-click foundation hint', async () => {
+    renderWithProviders(<FortyThievesPage />);
+    expect(await screen.findByTestId('ft-doubleclick-hint')).toHaveTextContent('ダブルクリック');
+  });
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<FortyThievesPage />);

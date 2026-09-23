@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // GolfPhase ゴルフソリティアゲームフェーズ
@@ -50,6 +51,7 @@ type Golf struct {
 	waste      []*Card
 	phase      GolfPhase
 	moveCount  int
+	chainCombo int
 	actionLogBase
 	history     []*golfSnapshot
 	isStalemate bool
@@ -83,6 +85,7 @@ func (g *Golf) Reset() {
 	g.trumpCards.Shuffle()
 	g.phase = GolfPhasePlaying
 	g.moveCount = 0
+	g.chainCombo = 0
 	g.actionLog = nil
 	g.history = nil
 	g.isStalemate = false
@@ -134,7 +137,8 @@ func (g *Golf) Draw() error {
 	g.stock = g.stock[:len(g.stock)-1]
 	g.waste = append(g.waste, card)
 	g.moveCount++
-	g.appendLog("draw", "ストックからカードを引きました", []*Card{card})
+	g.chainCombo = 0
+	g.appendLog("draw", "golf.log.draw", nil, []*Card{card})
 	g.checkStalemate()
 	return nil
 }
@@ -165,7 +169,8 @@ func (g *Golf) Remove(col int) error {
 	// 除去したカードをウェイストの上に置く
 	g.waste = append(g.waste, gc.Card)
 	g.moveCount++
-	g.appendLog("remove", fmt.Sprintf("カード除去: 列%d", col), []*Card{gc.Card})
+	g.chainCombo++
+	g.appendLog("remove", "golf.log.remove", map[string]string{"col": strconv.Itoa(col)}, []*Card{gc.Card})
 	g.checkGameClear()
 	g.checkStalemate()
 	return nil
@@ -175,7 +180,7 @@ func (g *Golf) Remove(col int) error {
 func (g *Golf) GiveUp() {
 	if g.phase == GolfPhasePlaying {
 		g.phase = GolfPhaseGameOver
-		g.appendLog("giveup", "ギブアップしました", nil)
+		g.appendLog("giveup", "golf.log.giveUp", nil, nil)
 	}
 }
 
@@ -222,6 +227,7 @@ func (g *Golf) Undo() error {
 	snap := g.history[len(g.history)-1]
 	g.history = g.history[:len(g.history)-1]
 	g.restoreSnapshot(snap)
+	g.chainCombo = 0
 	return nil
 }
 
@@ -250,6 +256,9 @@ func (g *Golf) SetPhase(phase GolfPhase) { g.phase = phase }
 
 // GetMoveCount 移動回数取得
 func (g *Golf) GetMoveCount() int { return g.moveCount }
+
+// GetChainCombo 連続除去コンボ数を取得する
+func (g *Golf) GetChainCombo() int { return g.chainCombo }
 
 // GetStockCount ストック枚数取得
 func (g *Golf) GetStockCount() int { return len(g.stock) }
@@ -405,8 +414,8 @@ func (g *Golf) restoreSnapshot(snap *golfSnapshot) {
 }
 
 // appendLog 棋譜エントリを追加
-func (g *Golf) appendLog(actionType, detail string, cards []*Card) {
-	g.appendLogAt(g.moveCount, 0, actionType, detail, cards)
+func (g *Golf) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCodeAt(g.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // golfJSON is the JSON wire format for Golf.
@@ -417,6 +426,7 @@ type golfJSON struct {
 	Waste       []*Card                           `json:"wa"`
 	Phase       GolfPhase                         `json:"ps"`
 	MoveCount   int                               `json:"mc"`
+	ChainCombo  int                               `json:"cc"`
 	ActionLog   []*ActionLogEntry                 `json:"al"`
 	IsStalemate bool                              `json:"sm"`
 	History     []*golfSnapshot                   `json:"hi,omitempty"`
@@ -483,6 +493,7 @@ func (g *Golf) MarshalJSON() ([]byte, error) {
 		Waste:       g.waste,
 		Phase:       g.phase,
 		MoveCount:   g.moveCount,
+		ChainCombo:  g.chainCombo,
 		ActionLog:   g.actionLog,
 		IsStalemate: g.isStalemate,
 		History:     g.history,
@@ -518,6 +529,7 @@ func (g *Golf) UnmarshalJSON(data []byte) error {
 	}
 	g.phase = j.Phase
 	g.moveCount = j.MoveCount
+	g.chainCombo = j.ChainCombo
 	g.actionLog = j.ActionLog
 	if g.actionLog == nil {
 		g.actionLog = make([]*ActionLogEntry, 0)

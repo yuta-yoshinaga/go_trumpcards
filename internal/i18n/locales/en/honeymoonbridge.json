@@ -38,5 +38,17 @@
   "helpExampleGiveUp": "  g                    give the round up",
   "helpHint": "  h                    show a hint",
   "roundMade": "Contract made: {{took}} of the {{need}} needed (+{{points}} to the declarer).",
-  "roundDown": "Contract down: only {{took}} of the {{need}} needed (+{{points}} to the opponent)."
+  "roundDown": "Contract down: only {{took}} of the {{need}} needed (+{{points}} to the opponent).",
+  "log.deal": "Deal {{round}}: 13 cards each, {{stock}} cards in the stock",
+  "log.play": "Played {{card}}",
+  "log.trick": "Took trick {{trick}}",
+  "log.draw": "The draw is over; both players have 13 cards and bidding begins",
+  "log.pass": "Passed",
+  "log.bid": "Declared {{level}} {{suit}}",
+  "log.passout": "Both players passed; redealing",
+  "log.contract": "Contract {{level}} {{suit}} (needs {{need}} tricks)",
+  "log.scoreMade": "Contract {{need}} made with {{took}} tricks (+{{points}})",
+  "log.scoreFailed": "Contract {{need}} failed with {{took}} tricks; opponents get +{{points}}",
+  "log.result": "Final score {{score1}} - {{score2}}",
+  "log.giveup": "Gave up"
 }

@@ -119,7 +119,19 @@ func TestNapCuiPresenter_Output(t *testing.T) {
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 		m.On("GetPhase").Return(domain.NapPhaseRoundEnd)
 		result := p.Output(m, nil)
-		assert.NotEmpty(t, result)
+		assert.Contains(t, result, "ラウンド終了")
+		assert.NotContains(t, result, "全員がパスしたため、このラウンドは流れました。")
+	})
+
+	t.Run("passed out round end prompt", func(t *testing.T) {
+		m, _ := setupNapCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDeclarerIdx")
+		m.On("GetPhase").Return(domain.NapPhaseRoundEnd)
+		m.On("GetDeclarerIdx").Return(-1)
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "全員がパスしたため、このラウンドは流れました。")
+		assert.NotContains(t, result, "ラウンド終了\n")
 	})
 
 	t.Run("game end banner", func(t *testing.T) {
@@ -157,14 +169,14 @@ func TestNapCuiPresenter_HintOutput(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 13, false))
 		m.On("GetHint").Return(&domain.NapHint{CardIndices: []int{0}, Reason: "lead_high"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 
 	t.Run("hint no card indices", func(t *testing.T) {
 		m, _ := setupNapCuiMockWithPlayers()
 		m.On("GetHint").Return(&domain.NapHint{CardIndices: nil, Reason: "follow_win"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 }
 
@@ -173,7 +185,7 @@ func TestNapCuiPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockNapGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You plays ♠K"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
 	m.On("GetPlayer", mock.Anything).Return(domain.NewNapPlayer(true)).Maybe()

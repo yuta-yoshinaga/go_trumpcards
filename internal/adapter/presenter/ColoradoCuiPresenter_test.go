@@ -133,13 +133,13 @@ func TestColoradoCuiPresenter_HintOutput(t *testing.T) {
 	}{
 		{"tableau to a foundation",
 			&domain.ColoradoHint{FromZone: "tableau", FromIdx: 1, ToZone: "foundation", ToIdx: 2},
-			[]string{"タブロー山1", "基礎札2"}},
+			[]string{"タブロー山1", "組札2"}},
 		{"between piles",
 			&domain.ColoradoHint{FromZone: "tableau", FromIdx: 0, ToZone: "tableau", ToIdx: 5},
 			[]string{"タブロー山0", "タブロー山5"}},
 		{"waste to a foundation",
 			&domain.ColoradoHint{FromZone: "waste", FromIdx: -1, ToZone: "foundation", ToIdx: 0},
-			[]string{"捨て札", "基礎札0"}},
+			[]string{"捨て札", "組札0"}},
 		{"stock into a gap",
 			&domain.ColoradoHint{FromZone: "stock", FromIdx: -1, ToZone: "tableau", ToIdx: 3},
 			[]string{"山札", "タブロー山3"}},
@@ -179,7 +179,7 @@ func TestColoradoCuiPresenter_ActionLogOutput(t *testing.T) {
 		g := new(interfaces.MockColoradoGame)
 		g.On("GetPhase").Return(domain.ColoradoPhaseGameOver)
 		g.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "move", Detail: "test"},
+			{TurnNumber: 1, ActionType: "move", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 
 		assert.Contains(t, new(ColoradoCuiPresenter).ActionLogOutput(g), "move")
@@ -207,11 +207,11 @@ func TestColoradoCuiPresenter_MarksOnlyTheMovableCard(t *testing.T) {
 	out := new(ColoradoCuiPresenter).Output(g, nil)
 
 	// 一番上だけが囲まれ、下の 2 枚は地の文で並ぶ。
-	assert.Contains(t, out, "山0: SPADE 4  CLOVER 7  <SPADE 11>")
+	assert.Contains(t, out, "山0: ♠4  ♣7  <♠11>")
 	// 添字はどのカードにも付かない。
-	assert.NotContains(t, out, "[0]SPADE 4")
-	assert.NotContains(t, out, "[1]CLOVER 7")
-	assert.NotContains(t, out, "[2]SPADE 11")
+	assert.NotContains(t, out, "[0]♠4")
+	assert.NotContains(t, out, "[1]♣7")
+	assert.NotContains(t, out, "[2]♠11")
 	// 読み方の説明も出す。
 	assert.Contains(t, out, i18n.T("colorado.pileTopNote"))
 	assert.NotContains(t, out, "{{")

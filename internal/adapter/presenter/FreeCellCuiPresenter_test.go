@@ -20,9 +20,35 @@ func TestFreeCellCuiPresenterOutputPlaying(t *testing.T) {
 	result := p.Output(f, nil)
 
 	assert.Contains(t, result, "FreeCell")
-	assert.Contains(t, result, "FreeCells:")
-	assert.Contains(t, result, "Foundation:")
+	assert.Contains(t, result, "フリーセル:")
+	assert.Contains(t, result, "組札:")
 	assert.Contains(t, result, "手数:")
+}
+
+func TestFreeCellCuiPresenterOutputAutoCompleteReady(t *testing.T) {
+	p := new(FreeCellCuiPresenter)
+	card := func(value int) *domain.Card { return domain.NewCard(domain.CardDesignSpade, value, false) }
+	game := func(tableau [domain.FreeCellTableauCnt][]*domain.Card) *domain.FreeCell {
+		f := domain.NewFreeCell(domain.NewTrumpCards(0))
+		f.Reset()
+		f.SetPhase(domain.FreeCellPhasePlaying)
+		f.SetTableau(tableau)
+		return f
+	}
+
+	t.Run("shows readiness when every column descends", func(t *testing.T) {
+		var tableau [domain.FreeCellTableauCnt][]*domain.Card
+		tableau[0] = []*domain.Card{card(13), card(12)}
+
+		assert.Contains(t, p.Output(game(tableau), nil), "オートコンプリート可能です (ac)")
+	})
+
+	t.Run("omits readiness when a column ascends", func(t *testing.T) {
+		var tableau [domain.FreeCellTableauCnt][]*domain.Card
+		tableau[0] = []*domain.Card{card(12), card(13)}
+
+		assert.NotContains(t, p.Output(game(tableau), nil), "オートコンプリート可能です (ac)")
+	})
 }
 
 func TestFreeCellCuiPresenterOutputGameClear(t *testing.T) {
@@ -81,8 +107,8 @@ func TestFreeCellCuiPresenterOutputFreeCellsOccupied(t *testing.T) {
 
 	result := p.Output(f, nil)
 
-	assert.Contains(t, result, "FreeCells:")
-	assert.Contains(t, result, "SPADE 5")
+	assert.Contains(t, result, "フリーセル:")
+	assert.Contains(t, result, "♠5")
 }
 
 func TestFreeCellCuiPresenterOutputFoundationWithCards(t *testing.T) {
@@ -97,8 +123,8 @@ func TestFreeCellCuiPresenterOutputFoundationWithCards(t *testing.T) {
 
 	result := p.Output(f, nil)
 
-	assert.Contains(t, result, "Foundation:")
-	assert.Contains(t, result, "SPADE 1")
+	assert.Contains(t, result, "組札:")
+	assert.Contains(t, result, "♠1")
 }
 
 func TestFreeCellCuiPresenterOutputEmptyTableau(t *testing.T) {

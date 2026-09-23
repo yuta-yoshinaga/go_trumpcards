@@ -14,7 +14,8 @@
     "faceDown": "Face Down",
     "finalTurn": "Final Turn",
     "columnScore": "{{score}} pt",
-    "columnScoreUncertain": "{{score}}+? pt"
+    "columnScoreUncertain": "{{score}}+? pt",
+    "columnScorePair": "0 pt (pair)"
   },
   "button": {
     "flipInitial": "Flip",

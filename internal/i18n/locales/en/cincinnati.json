@@ -40,5 +40,15 @@
   "reason.seeAnotherCard": "your hand is still weak, so take the free card",
   "reason.notWorthIt": "no made hand, and the price is not cheap",
   "result.gameEnd": "The game is over",
-  "helpExampleBet": "  bet 100              bet 100 chips"
+  "helpExampleBet": "  bet 100              bet 100 chips",
+  "log.reset": "game reset",
+  "log.deal": "hand {{hand}}, ante {{ante}}",
+  "log.fold": "seat {{seat}} folds",
+  "log.check": "seat {{seat}} checks",
+  "log.call": "seat {{seat}} calls {{amount}}",
+  "log.bet": "seat {{seat}} bets {{amount}}",
+  "log.raise": "seat {{seat}} raises {{amount}}",
+  "log.reveal": "community card {{card}}",
+  "log.showdown": "hand {{hand}} settled",
+  "log.gameEnd": "winner seat {{seat}}"
 }

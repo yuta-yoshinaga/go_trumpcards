@@ -12,7 +12,7 @@
   "promptPlay": "Turn: {{name}}",
   "promptPlayHelp": "play <idx> ... play a card (A>10>K>Q>J>9>8>7; must follow suit, then must trump if void)",
   "promptMarriageHelp": "Marriage: leading the K or Q from a same-suit K+Q in hand scores +20 (+40 in the trump suit)",
-  "marriageEarned": "Marriage: {{points}} points",
+  "marriageEarned": "Marriage: {{details}} ({{points}} points total)",
   "promptTrickEnd": "Trick complete",
   "promptTrickEndHelp": "n / next ... go to the next trick",
   "promptRoundEnd": "Round complete (Soloist {{soloist}}: {{pts}} pts incl. marriage)",
@@ -27,5 +27,14 @@
   "helpExamplePlay": "  play 0                   play hand card 0",
   "helpExampleNext": "  n                        read the trick result, then start the next trick",
   "helpHint": "  h                         show a hint",
-  "trumpRule": "(Trump is the Soloist’s longest suit, chosen automatically)"
+  "trumpRule": "(Trump is the Soloist’s longest suit, chosen automatically)",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errMustFollowSuit": "Follow the led suit.",
+  "errMustPlayTrump": "You must play a trump.",
+  "log.marriageDeclared": "{{name}} declares marriages worth {{points}}",
+  "log.play": "{{name}} plays {{card}}",
+  "log.trickWon": "{{name}} wins trick {{trick}} (+{{points}})",
+  "log.roundScoreSoloistWins": "round {{round}}: soloist({{soloist}})={{soloistTotal}} defense={{defenseTotal}} -> soloist wins",
+  "log.roundScoreDefenseWins": "round {{round}}: soloist({{soloist}})={{soloistTotal}} defense={{defenseTotal}} -> defense wins",
+  "log.matchWon": "{{name}} wins the match!"
 }

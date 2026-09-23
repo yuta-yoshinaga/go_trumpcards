@@ -40,6 +40,8 @@ function makeState(overrides: Partial<TeenDoPaanchResponse> = {}): TeenDoPaanchR
     fivePlayerIdx: 0,
     lastExchange: 0,
     currentPlayerIdx: 0,
+    lastTrickWinner: -1,
+    lastTrick: [],
     leadPlayerIdx: 0,
     currentTrick: [],
     validPlays: [0, 1, 2],
@@ -233,6 +235,42 @@ describe('TeenDoPaanchPage', () => {
     });
     renderWithProviders(<TeenDoPaanchPage />);
     expect(await screen.findByText(/いちばん長いスート/)).toBeInTheDocument();
+  });
+
+  it('does not highlight a card in the next trick with the previous winner', async () => {
+    mockExec.mockResolvedValue(
+      playing({
+        currentTrick: [{ playerIdx: 0, card: card('SPADE', 8) }],
+        lastTrick: [
+          { playerIdx: 0, card: card('HEART', 1) },
+          { playerIdx: 1, card: card('HEART', 10) },
+          { playerIdx: 2, card: card('HEART', 9) },
+        ],
+        lastTrickWinner: 1,
+      } as Partial<TeenDoPaanchResponse>),
+    );
+    renderWithProviders(<TeenDoPaanchPage />);
+
+    expect(await screen.findAllByTestId('animated-card')).toHaveLength(1);
+    expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument();
+  });
+
+  it('shows the resolved trick together with its winner', async () => {
+    mockExec.mockResolvedValue(
+      playing({
+        currentTrick: [],
+        lastTrick: [
+          { playerIdx: 0, card: card('HEART', 1) },
+          { playerIdx: 1, card: card('HEART', 10) },
+          { playerIdx: 2, card: card('HEART', 9) },
+        ],
+        lastTrickWinner: 1,
+      } as Partial<TeenDoPaanchResponse>),
+    );
+    renderWithProviders(<TeenDoPaanchPage />);
+
+    expect(await screen.findAllByTestId('animated-card')).toHaveLength(3);
+    expect(screen.getByTestId('trick-winner-badge')).toBeInTheDocument();
   });
 });
 

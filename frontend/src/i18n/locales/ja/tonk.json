@@ -43,7 +43,8 @@
   "knockerDeadwood": "ノッカーのデッドウッド",
   "result": {
     "humanWin": "あなたの勝利！",
-    "cpuWin": "CPU {{cpuId}} の勝利！"
+    "cpuWin": "CPU {{cpuId}} の勝利！",
+    "undercut": "UNDERCUT! ノッカーがアンダーカットされました"
   },
   "tutorial": {
     "drawArea": "山札または捨て札から1枚引きます。",
@@ -61,6 +62,7 @@
   },
   "deadwood": {
     "current": "最小デッドウッド(1枚捨て後): {{value}}",
+    "score": "{{value}}点",
     "knockable": "ノック可能",
     "notKnockable": "ノック不可（{{threshold}}点以下が必要）"
   },

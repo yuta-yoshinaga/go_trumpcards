@@ -1,4 +1,6 @@
 {
+  "log.penalty": "drew {{card}}, matched suit — took {{count}} cards",
+  "log.draw": "drew {{card}}",
   "helpTitle": "Pig's Tail",
   "helpAction": "  d, draw               draw from circle",
   "header": "Stock: {{stock}} / center: {{center}}",

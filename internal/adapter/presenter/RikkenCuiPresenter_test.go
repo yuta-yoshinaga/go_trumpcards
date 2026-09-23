@@ -61,11 +61,32 @@ func TestRikkenCuiPresenter_Output(t *testing.T) {
 	fillRikkenDefaults(m)
 
 	out := new(RikkenCuiPresenter).Output(m, nil)
-	assert.Contains(t, out, "フェーズ: PLAY")
+	assert.Contains(t, out, "フェーズ: プレイ")
 	assert.Contains(t, out, "ラウンド: 1 / 8")
 	assert.Contains(t, out, "リク")
 	assert.Contains(t, out, "スペード")
 	assert.NotContains(t, out, "rikken.", "生キーが漏れている")
+}
+
+func TestRikkenCuiPresenter_CalledCardOnlyForRik(t *testing.T) {
+	t.Run("shows the called card for Rik", func(t *testing.T) {
+		m := new(interfaces.MockRikkenGame)
+		m.On("GetCalledCard").Return(domain.NewCard(domain.CardDesignSpade, 1, false))
+		fillRikkenDefaults(m)
+
+		out := new(RikkenCuiPresenter).Output(m, nil)
+		assert.Contains(t, out, "指名札: ♠1（この札を出した人が相方として公開されます）")
+	})
+
+	t.Run("does not show the called card for other contracts", func(t *testing.T) {
+		m := new(interfaces.MockRikkenGame)
+		m.On("GetContract").Return(domain.RikkenContractSolo)
+		m.On("GetCalledCard").Return(domain.NewCard(domain.CardDesignSpade, 1, false))
+		fillRikkenDefaults(m)
+
+		out := new(RikkenCuiPresenter).Output(m, nil)
+		assert.NotContains(t, out, "指名札")
+	})
 }
 
 // **契約は4種類とも名前で出す。**
@@ -90,6 +111,32 @@ func TestRikkenCuiPresenter_ShowsTheTrickAndScores(t *testing.T) {
 	assert.Contains(t, out, "得点:")
 }
 
+func TestRikkenCuiPresenter_ShowsThePreviousTrick(t *testing.T) {
+	t.Run("displays previous trick and winner when available", func(t *testing.T) {
+		m := new(interfaces.MockRikkenGame)
+		m.On("GetLastTrick").Return([]*domain.TrickCard{
+			{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignClover, 11, false)},
+		})
+		m.On("GetLastTrickWinner").Return(3)
+		fillRikkenDefaults(m)
+
+		out := new(RikkenCuiPresenter).Output(m, nil)
+		assert.Contains(t, out, "前のトリック")
+		assert.Contains(t, out, "席 3:")
+		assert.Contains(t, out, "→ 席 3 が獲得")
+	})
+
+	t.Run("does not display anything when last trick is empty", func(t *testing.T) {
+		m := new(interfaces.MockRikkenGame)
+		m.On("GetLastTrick").Return([]*domain.TrickCard{})
+		fillRikkenDefaults(m)
+
+		out := new(RikkenCuiPresenter).Output(m, nil)
+		assert.NotContains(t, out, "前のトリック")
+		assert.NotContains(t, out, "が獲得")
+	})
+}
+
 func TestRikkenCuiPresenter_Result(t *testing.T) {
 	origNoColor := color.NoColor()
 	color.SetNoColor(true)
@@ -103,7 +150,7 @@ func TestRikkenCuiPresenter_Result(t *testing.T) {
 
 	out := new(RikkenCuiPresenter).Output(m, nil)
 	assert.Contains(t, out, "席 0 の勝ちです")
-	assert.Contains(t, out, "フェーズ: GAME END")
+	assert.Contains(t, out, "フェーズ: ゲーム終了")
 }
 
 func TestRikkenCuiPresenter_Error(t *testing.T) {
@@ -136,13 +183,13 @@ func TestRikkenCuiPresenter_Hint(t *testing.T) {
 
 func TestRikkenCuiPresenter_UnknownValues(t *testing.T) {
 	p := new(RikkenCuiPresenter)
-	assert.Equal(t, "UNKNOWN", p.phaseStr(99))
+	assert.Equal(t, "不明", p.phaseStr(99))
 	assert.Equal(t, "なし", p.trumpStr(domain.RikkenNoTrump))
 	assert.Equal(t, "クラブ", p.trumpStr(domain.CardDesignClover))
 	assert.Equal(t, "ダイヤ", p.trumpStr(domain.CardDesignDiamond))
-	assert.Equal(t, "BID", p.phaseStr(domain.RikkenPhaseBid))
-	assert.Equal(t, "CALL", p.phaseStr(domain.RikkenPhaseCall))
-	assert.Equal(t, "ROUND END", p.phaseStr(domain.RikkenPhaseRoundEnd))
+	assert.Equal(t, "入札", p.phaseStr(domain.RikkenPhaseBid))
+	assert.Equal(t, "コール", p.phaseStr(domain.RikkenPhaseCall))
+	assert.Equal(t, "ラウンド終了", p.phaseStr(domain.RikkenPhaseRoundEnd))
 }
 
 // **CUI もオープンミゼールで宣言者の手札を見せる。**

@@ -120,7 +120,7 @@ func TestJulepeCuiPresenterHintInDecidePhase(t *testing.T) {
 	r := newJulepeForCui(t)
 
 	out := p.HintOutput(r)
-	assert.Contains(t, out, "HINT")
+	assert.Contains(t, out, "ヒント")
 	// 参加/降りのどちらかの文言が出て、生のキーは出ない。
 	assert.True(t,
 		strings.Contains(out, i18n.T("julepe.hintReasonPlayIn")) ||
@@ -185,6 +185,20 @@ func TestJulepeCuiPresenterMarksTheDealer(t *testing.T) {
 	assert.NotContains(t, movedOut, julepePlain(cuiPlayerName(moved.GetPlayer(2), 2))+i18n.T("julepe.dealerMark"))
 }
 
+func TestJulepeCuiPresenterMarksBeastSeats(t *testing.T) {
+	p := new(JulepeCuiPresenter)
+	r := newJulepeForCui(t)
+	for i := range r.GetPlayerCnt() {
+		r.GetPlayer(i).SetInRound(true)
+		r.GetPlayer(i).SetRoundTricks(0)
+	}
+	r.GetPlayer(0).SetRoundTricks(r.GetRequiredTricks())
+	r.FinishRoundForTest()
+
+	out := julepePlain(p.Output(r, nil))
+	assert.Equal(t, r.GetPlayerCnt()-1, strings.Count(out, i18n.T("julepe.beastMark")))
+}
+
 // #6616: Web は validPlays で出せる札をリング表示しているのに、CUI は素の一覧
 // だけで、番号を打ってエラーを踏むまで分からなかった。
 func TestJulepeCuiPresenterMarksThePlayableCards(t *testing.T) {
@@ -224,12 +238,12 @@ func TestJulepeCuiPresenterMarksThePlayableCards(t *testing.T) {
 		r := setup(domain.JulepePhasePlay, 0, trick)
 		out := p.Output(r, nil)
 
-		// 出せる札（SPADE 7, SPADE 1）には印が付く
-		assert.Contains(t, out, "[0]SPADE 7"+CuiLegalMark)
-		assert.Contains(t, out, "[1]SPADE 1"+CuiLegalMark)
-		// 出せない札（HEART 8, DIAMOND 10）には印が付かない
-		assert.NotContains(t, out, "HEART 8"+CuiLegalMark)
-		assert.NotContains(t, out, "DIAMOND 10"+CuiLegalMark)
+		// 出せる札（♠7, ♠1）には印が付く
+		assert.Contains(t, out, "[0]♠7"+CuiLegalMark)
+		assert.Contains(t, out, "[1]♠1"+CuiLegalMark)
+		// 出せない札（♥8, ♦10）には印が付かない
+		assert.NotContains(t, out, "♥8"+CuiLegalMark)
+		assert.NotContains(t, out, "♦10"+CuiLegalMark)
 		// 印の総数が合法手の数（2枚）と一致する
 		assert.Equal(t, 2, strings.Count(out, CuiLegalMark))
 	})

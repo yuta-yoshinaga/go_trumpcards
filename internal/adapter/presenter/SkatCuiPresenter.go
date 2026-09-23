@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra3
+//go:build !js || !wasm || extra6
 
 package presenter
 
@@ -27,14 +27,15 @@ func skatPlayerStr(player *domain.SkatPlayer, i int) string {
 	} else if player.GetBid() > 0 {
 		bidStr = fmt.Sprintf("%d", player.GetBid())
 	}
-	fmt.Fprintf(&b, "%s%s: bid=%s tricks=%d cardPts=%d total=%d round=%d hand=%d\n",
-		name, role, bidStr,
-		player.GetTrickCount(),
-		player.GetCardPoints(),
-		player.GetCumulativeScore(),
-		player.GetRoundScore(),
-		player.GetCardsSize(),
-	)
+	b.WriteString(i18n.Tf("skat.playerLine",
+		"name", name,
+		"role", role,
+		"bid", bidStr,
+		"tricks", strconv.Itoa(player.GetTrickCount()),
+		"cardPts", strconv.Itoa(player.GetCardPoints()),
+		"total", strconv.Itoa(player.GetCumulativeScore()),
+		"round", strconv.Itoa(player.GetRoundScore()),
+		"hand", strconv.Itoa(player.GetCardsSize())) + "\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
 		b.WriteString(cuiIndexedCardListStr(player))
 		b.WriteString("\n")

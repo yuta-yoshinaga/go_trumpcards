@@ -1,4 +1,4 @@
-//go:build !js || !wasm || classic
+//go:build !js || !wasm || extra7
 
 package controller
 
@@ -43,6 +43,8 @@ type HeartsWebOutputPlayer struct {
 	// PenaltyCards には入らず、入れると「ペナルティ」の意味が変わってしまう。
 	// 規則が無効なら常に偽 (そのとき J♦ はただの札)。
 	TookOmnibusJD bool `json:"tookOmnibusJD"`
+	// VoidSuits lists the card-design values this player has proven void this deal.
+	VoidSuits []int `json:"voidSuits"`
 }
 
 // HeartsWebOutput ハーツWebアウトプット

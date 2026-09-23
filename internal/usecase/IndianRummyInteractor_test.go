@@ -211,3 +211,11 @@ func TestIndianRummyInteractor_Snapshot(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotEmpty(t, data)
 }
+
+func TestIndianRummyInteractor_Hint(t *testing.T) {
+	mg := new(interfaces.MockIndianRummyGame)
+	mp := new(presenter.MockIndianRummyPresenter)
+	mp.On("HintOutput", mg).Return("hint output")
+	ci := usecase.NewIndianRummyInteractor(mg, mp)
+	assert.Equal(t, "hint output", ci.Hint())
+}

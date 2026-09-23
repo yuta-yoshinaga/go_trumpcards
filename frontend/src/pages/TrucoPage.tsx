@@ -148,6 +148,7 @@ function TrucoPageContent() {
           : t('phase.play');
 
   const levelLabel = (level: number) => t(`level.${LEVEL_KEYS[level] ?? 'none'}`);
+  const playerLabel = (idx: number) => (state.players[idx]?.isHuman ? t('header.you') : t('header.cpu'));
 
   const youPoints = state.matchPoints[humanIdx] ?? 0;
   const cpuPoints = state.matchPoints[humanIdx === 0 ? 1 : 0] ?? 0;
@@ -177,6 +178,9 @@ function TrucoPageContent() {
           <span className="mr-4">
             {t('header.match')} — {t('header.you')}: {youPoints} / {t('header.cpu')}: {cpuPoints} ({t('header.target')}:{' '}
             {state.matchTarget})
+          </span>
+          <span className="rounded bg-ds-info px-2 py-1 text-sm" data-testid="truco-mano">
+            {t('header.mano')}: {playerLabel(state.manoIdx)}
           </span>
         </div>
         <div className="text-ds-text-muted text-center text-sm mb-3">
@@ -223,6 +227,20 @@ function TrucoPageContent() {
           label={t('currentTrick')}
           dataTutorial="truco-trick"
         />
+
+        {state.trickResults.length > 0 && (
+          <div className="mx-auto my-3 max-w-md rounded bg-black/30 p-2 text-sm" data-testid="truco-trick-history">
+            <div className="mb-1 text-ds-text-primary">{t('history.title')}</div>
+            <div className="space-y-1 text-ds-text-muted">
+              {state.trickResults.map((result, idx) => (
+                <div key={`${idx}-${result}`} data-testid="truco-trick-history-row">
+                  {t('history.baza', { number: idx + 1 })}:{' '}
+                  {result === -1 ? t('history.parda') : t('history.winner', { name: playerLabel(result) })}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {resultBanner && (
           <div className="text-center text-xl my-4 text-ds-accent font-semibold" role="status">

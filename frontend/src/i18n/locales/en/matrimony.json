@@ -1,0 +1,54 @@
+{
+  "phase": {
+    "playing": "Playing",
+    "gameClear": "Game Clear",
+    "gameOver": "Game Over"
+  },
+  "foundation": "Foundation",
+  "tableau": "Tableau",
+  "stock": "Stock",
+  "waste": "Waste",
+  "draw": "Draw",
+  "moveCount": "Moves",
+  "giveup": "Give up",
+  "empty": "Empty",
+  "foundationAriaLabel": "{{suit}} foundation {{idx}}, {{count}} cards",
+  "emptyFoundationAriaLabel": "Empty foundation {{idx}} ({{suit}}, starts at the Ace)",
+  "stockAriaLabel": "Stock, {{count}} cards left",
+  "emptyStockAriaLabel": "The stock is empty (there is no redeal)",
+  "emptyWasteAriaLabel": "The waste is empty",
+  "stockOrWaste": "S/W",
+  "landscapeBanner": "Landscape mode recommended",
+  "hint": "Hint",
+  "autoComplete": "Auto-complete",
+  "autoCompleteNotReady": "Available once a card can reach a foundation",
+  "undo": "Undo",
+  "stalemate": "No moves left",
+  "playing": "Move a card",
+  "gameClear": "Game clear! Moves: {{moveCount}}",
+  "gameOver": "Game over",
+  "gameOverSummary": "Reached {{count}}/52 cards on the foundations ({{percent}}%)",
+  "hintAvailable": "A hint is available",
+  "noHint": "No hint available",
+  "tutorial": {
+    "foundation": "There are four foundations: two build down by suit from ♠Q, past A to K, and two build up by suit from ♦J, past K to A. Ranks wrap around, and all four foundations reaching 13 cards each (52 cards total) wins the game.",
+    "tableau": "Sixteen tableau slots, dealt **one card each** (the other 88 are the stock). Tableau cards can **only be sent to the foundations**, not built on the tableau. Empty slots are refilled **from the stock or waste**.",
+    "emptyPile": "When a pile empties it can be refilled **only from the stock or the waste**. A tableau card can never move into a gap, so an empty pile is not a tool for rearranging the board -- it is an outlet for the stock.",
+    "stock": "Turn the stock one card at a time onto the waste. **You can redeal up to three times.** When an empty slot is available, you can place straight from the stock without spending a turn on the waste.",
+    "controls": "Draw, hint, undo, auto-complete, and the other controls."
+  },
+  "frontendHint": {
+    "tableau": "pile {{pile}}",
+    "foundation": "foundation {{idx}}",
+    "waste": "the waste",
+    "stock": "stock"
+  },
+  "hintReason": {
+    "toFoundation": "Sending this card to a foundation frees up the board",
+    "toTableau": "Take the suggested tableau move to dig out the pile",
+    "fillGap": "Fill the empty pile straight from the stock and save a waste card",
+    "draw": "Nothing can move, so turn a card from the stock"
+  },
+  "emptySlotAriaLabel": "empty slot {{slot}} (fill it from the stock or the waste)",
+  "slotCardAriaLabel": "slot {{slot}}, {{card}}"
+}

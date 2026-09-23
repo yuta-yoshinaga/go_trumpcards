@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { braidApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -162,6 +162,7 @@ function BraidPageContent() {
   );
 
   useActionKeyboardNav({ bindings: actionBindings, enabled: !!isPlayingForKbd && !loading });
+  const [invalidFieldHover, setInvalidFieldHover] = useState<number | null>(null);
 
   if (!state) {
     return <GameSkeleton gameKey="braid" layout={{ kind: 'tableau', topRow: 8, tableau: HELPERS }} />;
@@ -198,7 +199,6 @@ function BraidPageContent() {
       : isHintTo(zone, idx)
         ? 'ring-2 ring-ds-success motion-safe:animate-pulse'
         : '';
-
   const renderSlot = (kind: 'field' | 'helper', idx: number) => {
     const card = (kind === 'field' ? state.fields[idx] : state.helpers[idx]) ?? null;
     const zone: BraidMoveZone = { zone: kind, col: idx };
@@ -239,10 +239,17 @@ function BraidPageContent() {
           <div
             role="img"
             aria-label={emptyLabel}
+            onDragEnter={() => setInvalidFieldHover(idx)}
+            onDragOver={(e) => {
+              e.dataTransfer.dropEffect = 'none';
+              setInvalidFieldHover(idx);
+            }}
+            onDragLeave={() => setInvalidFieldHover(null)}
             style={{ width: dims.cw, height: dims.ch }}
-            className="rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center"
+            className={`rounded border-2 border-dashed text-game-text-muted text-xs flex flex-col items-center justify-center cursor-not-allowed ${invalidFieldHover === idx ? 'border-ds-error text-ds-error ring-2 ring-ds-error' : 'border-white/20'}`}
           >
             {t('empty')}
+            <span className="text-[10px]">{t('autoRefill')}</span>
           </div>
         </div>
       );

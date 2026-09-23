@@ -32,6 +32,7 @@ const playerTurnState: TrashResponse = {
   ],
   stockSize: 34,
   discardSize: 0,
+  suggestedWildSlot: -1,
   moveCount: 0,
   winner: -1,
   message: '',

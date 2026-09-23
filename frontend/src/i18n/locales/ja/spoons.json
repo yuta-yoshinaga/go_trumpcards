@@ -10,6 +10,7 @@
   "handLabel": "あなたの手札",
   "passNotice": "あなたの番です — 次の人に渡すカードを1枚選んでください。",
   "grabNotice": "フォーオブアカインド成立！ スプーンを取りましょう！",
+  "firstGrabber": "最初に4枚揃えたのは{{name}}です。",
   "lettersLabel": "文字",
   "badge": {
     "eliminated": "脱落",

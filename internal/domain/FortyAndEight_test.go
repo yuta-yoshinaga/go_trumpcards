@@ -107,6 +107,20 @@ func TestFortyAndEight_Draw(t *testing.T) {
 	})
 }
 
+func TestFortyAndEight_ActionLogUsesDetailCode(t *testing.T) {
+	ft := setupPlayingFortyAndEight()
+	require.NoError(t, ft.Draw())
+	var entry *domain.ActionLogEntry
+	for _, candidate := range ft.GetActionLog() {
+		if candidate.DetailCode == "fortyandeight.log.draw" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Empty(t, entry.DetailParams)
+}
+
 func TestFortyAndEight_Redeal(t *testing.T) {
 	t.Run("happy path: waste recycled to stock once", func(t *testing.T) {
 		ft := newTestFortyAndEight()

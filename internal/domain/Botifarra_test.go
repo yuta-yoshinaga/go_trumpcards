@@ -429,12 +429,6 @@ func TestBotifarraAccessorsRejectOutOfRange(t *testing.T) {
 	assert.Zero(t, g.GetScore(9))
 	assert.Nil(t, g.GetValidPlayIndices(-1))
 	assert.Nil(t, g.GetValidPlayIndices(99))
-
-	assert.Equal(t, "spade", botifarraTrumpName(CardDesignSpade))
-	assert.Equal(t, "clover", botifarraTrumpName(CardDesignClover))
-	assert.Equal(t, "heart", botifarraTrumpName(CardDesignHeart))
-	assert.Equal(t, "diamond", botifarraTrumpName(CardDesignDiamond))
-	assert.Equal(t, "notrump", botifarraTrumpName(BotifarraNoTrump))
 }
 
 func TestBotifarraHint(t *testing.T) {

@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
@@ -64,6 +65,23 @@ func writeGoFishKnownRanks(b *strings.Builder, gf interfaces.GoFishGame) {
 
 // GoFishCuiPresenter renders the Go Fish CUI view.
 type GoFishCuiPresenter struct{}
+
+var goFishHintReasonKeys = map[string]string{
+	"ask_known_rank":  "gofish.hintReasonKnownRank",
+	"ask_most_copies": "gofish.hintReasonMostCopies",
+}
+
+// HintOutput emits the current Go Fish hint.
+func (p *GoFishCuiPresenter) HintOutput(gf interfaces.GoFishGame) string {
+	hint := gf.GetHint()
+	if hint == nil {
+		return i18n.T("gofish.hintNone") + "\n"
+	}
+	return color.Yellow(i18n.Tf("gofish.hintDecision",
+		"rank", cuiRankLabel(hint.Rank),
+		"indices", joinInts(hint.Indices),
+		"reason", hintReasonStr(hint.Reason, goFishHintReasonKeys))) + "\n"
+}
 
 // Output renders the current game state for the active locale (#1699).
 func (p *GoFishCuiPresenter) Output(gf interfaces.GoFishGame, lastErr error) string {

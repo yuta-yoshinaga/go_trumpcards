@@ -171,7 +171,7 @@ func (s *Spider) Deal() error {
 	}
 	s.moveCount++
 	s.score--
-	s.appendLog("deal", "ストックから各列にカードを配りました", nil)
+	s.appendLog("deal", "spider.log.deal", nil, nil)
 	// 配った後に完成スートをチェック
 	for i := range SpiderTableauCnt {
 		s.checkAndRemoveCompletedSuit(i)
@@ -227,7 +227,10 @@ func (s *Spider) MoveTableauToTableau(fromCol, cardIndex, toCol int) error {
 	s.autoFlipTableau(fromCol)
 	s.moveCount++
 	s.score--
-	s.appendLog("move", fmt.Sprintf("タブロー列%d→タブロー列%d", fromCol, toCol), movedCards)
+	s.appendLog("move", "spider.log.move", map[string]string{
+		"from": fmt.Sprintf("%d", fromCol),
+		"to":   fmt.Sprintf("%d", toCol),
+	}, movedCards)
 	// 完成スートチェック
 	s.checkAndRemoveCompletedSuit(toCol)
 	s.checkSpiderStalemate()
@@ -238,7 +241,7 @@ func (s *Spider) MoveTableauToTableau(fromCol, cardIndex, toCol int) error {
 func (s *Spider) GiveUp() {
 	if s.phase == SpiderPhasePlaying {
 		s.phase = SpiderPhaseGameOver
-		s.appendLog("giveup", "ギブアップしました", nil)
+		s.appendLog("giveup", "spider.log.giveUp", nil, nil)
 	}
 }
 
@@ -330,9 +333,14 @@ func (s *Spider) AutoComplete() error {
 			break
 		}
 	}
-	s.appendLog("autocomplete", "オートコンプリートを実行しました", nil)
+	s.appendLog("autocomplete", "spider.log.autocomplete", nil, nil)
 	s.checkGameClear()
 	return nil
+}
+
+// CanAutoComplete はいまオートコンプリートが実行できるかを返す。
+func (s *Spider) CanAutoComplete() bool {
+	return s.phase == SpiderPhasePlaying && s.AllFaceUp()
 }
 
 // AllFaceUp 全カードが表向きかどうか
@@ -499,7 +507,7 @@ func (s *Spider) checkAndRemoveCompletedSuit(col int) bool {
 	s.tableau[col] = cards[:startIdx]
 	s.completedSuits++
 	s.score += 100
-	s.appendLog("complete", fmt.Sprintf("タブロー列%dでスートが完成しました", col), nil)
+	s.appendLog("complete", "spider.log.complete", map[string]string{"column": fmt.Sprintf("%d", col)}, nil)
 
 	// 自動フリップ
 	s.autoFlipTableau(col)
@@ -586,8 +594,8 @@ func (s *Spider) restoreSnapshot(snap *spiderSnapshot) {
 }
 
 // appendLog 棋譜エントリを追加
-func (s *Spider) appendLog(actionType, detail string, cards []*Card) {
-	s.appendLogAt(s.moveCount, 0, actionType, detail, cards)
+func (s *Spider) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	s.appendLogCodeAt(s.moveCount, 0, actionType, detailCode, detailParams, cards)
 }
 
 // spiderJSON is the JSON wire format for Spider.

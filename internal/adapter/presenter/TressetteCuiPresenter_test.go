@@ -61,6 +61,24 @@ func TestTressetteCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "サード: 3トリック")
 	})
 
+	t.Run("marks partner and opponent CPUs", func(t *testing.T) {
+		m, _ := setupTressetteCuiMockWithPlayers()
+		result := p.Output(m, nil)
+		lines := strings.Split(result, "\n")
+		lineFor := func(name string) string {
+			for _, line := range lines {
+				if strings.Contains(line, name) {
+					return line
+				}
+			}
+			return ""
+		}
+		assert.Contains(t, lineFor("CPU 2"), "味方")
+		assert.Contains(t, lineFor("CPU 1"), "相手")
+		// Negative control: the opponent team must not be labelled as the partner.
+		assert.NotContains(t, lineFor("CPU 1"), "味方")
+	})
+
 	t.Run("trick end prompt", func(t *testing.T) {
 		m, _ := setupTressetteCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
@@ -112,7 +130,7 @@ func TestTressetteCuiPresenter_HintOutput(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
 		m.On("GetHint").Return(&domain.TressetteHint{CardIndices: []int{0}, Reason: "lead_low"})
 		result := p.HintOutput(m)
-		assert.Contains(t, result, "HINT")
+		assert.Contains(t, result, "ヒント")
 	})
 
 	t.Run("no hint", func(t *testing.T) {
@@ -128,7 +146,7 @@ func TestTressetteCuiPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockTressetteGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "plays ♠3"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
 	m.On("GetPlayer", mock.Anything).Return(domain.NewTressettePlayer(true)).Maybe()

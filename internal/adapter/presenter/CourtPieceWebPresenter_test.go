@@ -75,6 +75,15 @@ func TestCourtPieceWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, "boom", got.Message)
 	})
 
+	t.Run("coded error uses message code", func(t *testing.T) {
+		cp := newCourtPieceForWebTest()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidCard, "shared.errCardIndexOutOfRange", nil)
+		var got cpWebOutPartial
+		require.NoError(t, json.Unmarshal([]byte(p.Output(cp, err)), &got))
+		assert.Empty(t, got.Message)
+		assert.Equal(t, "shared.errCardIndexOutOfRange", got.MessageCode)
+	})
+
 	t.Run("trick end + round end", func(t *testing.T) {
 		cp := newCourtPieceForWebTest()
 		cp.SetPhase(domain.CourtPiecePhaseTrickEnd)

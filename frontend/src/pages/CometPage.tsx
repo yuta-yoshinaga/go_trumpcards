@@ -2,6 +2,7 @@ import { useEffect, useMemo } from 'react';
 import type { cometApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
+import { CardRoleBadge } from '../components/CardRoleBadge';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -32,6 +33,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { CometResponse } from '../types/card';
 import { CometPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { COMET_HELP, parseCometCommand } from '../utils/cli/commands/cometCommands';
 import { formatCometState } from '../utils/cli/formatters/cometFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -41,6 +43,8 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Cards of the current sequence to show; older ones scroll off. */
 const PILE_TAIL = 8;
+
+const isCometWild = (card: { design: string; value: number }) => card.design === 'DIAMOND' && card.value === 9;
 
 /** Comet tutorial step definitions. */
 const COMET_TUTORIAL_STEPS: TutorialStep[] = [
@@ -225,7 +229,14 @@ function CometPageContent() {
                     <span className="text-ds-text-muted text-sm">{t('pileEmpty')}</span>
                   ) : (
                     shownPile.map((c, i) => (
-                      <CardImage key={`${c.design}-${c.value}-${i}`} card={c} width={cardWidth} />
+                      <span key={`${c.design}-${c.value}-${i}`} className="relative">
+                        <CardImage
+                          card={c}
+                          width={cardWidth}
+                          ariaLabel={isCometWild(c) ? `${cardAlt(c)} (${t('wildMark')})` : undefined}
+                        />
+                        {isCometWild(c) && <CardRoleBadge idx={i} glyph="★" title={t('wildMark')} />}
+                      </span>
                     ))
                   )}
                 </div>
@@ -277,7 +288,7 @@ function CometPageContent() {
                     ))}
                     <div>{t('unplayedKings', { n: lastResult.unplayedKings })}</div>
                     {lastResult.heldWildIdx >= 0 && (
-                      <div className="text-ds-danger" data-testid="comet-held-wild">
+                      <div className="text-ds-error" data-testid="comet-held-wild">
                         {t('heldWild', {
                           name: playerName(lastResult.heldWildIdx, lastResult.heldWildIdx === 0),
                         })}
@@ -320,6 +331,10 @@ function CometPageContent() {
                 validIndices={canPlay ? playable : undefined}
                 legalIndices={canPlay ? playable : undefined}
                 restrictedTooltip={t('restrictedTooltip')}
+                cardBadgeFor={(idx) => {
+                  const card = humanPlayer.cards[idx];
+                  return isCometWild(card) ? { glyph: '★', title: t('wildMark') } : null;
+                }}
               />
             )}
 

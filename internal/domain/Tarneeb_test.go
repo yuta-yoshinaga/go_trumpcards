@@ -90,6 +90,33 @@ func TestTarneeb_PlayerBid_Pass_Valid(t *testing.T) {
 	assert.Equal(t, domain.TarneebPassBid, tn.GetPlayer(0).GetBid())
 }
 
+func TestTarneeb_PlayerBid_LogUsesDetailCode(t *testing.T) {
+	tn := newTestTarneeb()
+	tn.Reset()
+	tn.SetBidPlayerIdx(0)
+	require.NoError(t, tn.PlayerBid(7))
+	var entry *domain.ActionLogEntry
+	for _, candidate := range tn.GetActionLog() {
+		if candidate.ActionType == "bid" {
+			entry = candidate
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, "tarneeb.log.bid", entry.DetailCode)
+	assert.Equal(t, map[string]string{"name": "You", "bid": "7"}, entry.DetailParams)
+}
+
+func TestTarneeb_PlayerBid_PassLogUsesSeparateCode(t *testing.T) {
+	tn := newTestTarneeb()
+	tn.Reset()
+	tn.SetDealerIdx(3)
+	tn.SetBidPlayerIdx(0)
+	require.NoError(t, tn.PlayerBid(domain.TarneebPassBid))
+	entry := tn.GetActionLog()[0]
+	assert.Equal(t, "tarneeb.log.bidPass", entry.DetailCode)
+	assert.Equal(t, map[string]string{"name": "You"}, entry.DetailParams)
+}
+
 func TestTarneeb_PlayerBid_ValueRange(t *testing.T) {
 	tn := newTestTarneeb()
 	tn.Reset()

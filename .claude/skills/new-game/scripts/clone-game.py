@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Clone an existing game's whole footprint into a new game name.
 
-Usage: clone-game.py <src-key> <dst-key> <SrcType> <DstType> [--jp SrcJP DstJP] [--apply]
+Usage: clone-game.py <src-key> <dst-key> <SrcType> <DstType> [--jp SrcJP DstJP] [--en SrcEN DstEN] [--apply]
 
 Cloning a near-identical game is the dominant pattern in this repo (Alaska from
 RussianSolitaire, Fortress from BeleagueredCastle, Somerset from Fortress). Doing
@@ -21,16 +21,23 @@ Re-running it after you have edited the clone silently throws that work away --
 which is easy to do when a missed file sends you back to the script.
 If you need more files later, copy just those by hand.
 
-After running, three things still need doing by hand:
+After running, five things still need doing by hand:
 
 1. The 17-ish shared registration files it lists (ordered insertion).
-2. descriptions.go and the shared locale files still need the Japanese display
-   name by hand. Pass --jp to rename it inside the per-game files (it shows up in
-   manuals, locale titles, Go doc comments AND page test assertions -- missing it
-   fails the page test with "Unable to find text: /<oldname>/").
+2. descriptions.go and the shared locale files still need display names by hand.
+   Pass --jp and --en to rename them inside the per-game files (formatters,
+   manuals, locale titles, Go doc comments AND test assertions -- missing it
+   leaves the old English header or fails the page test with "Unable to find text: /<oldname>/").
 3. GENERIC helper names in the cloned _test.go. Anything without the game in its
    name (cardSpec, tableauFixture, ...) collides in the shared package_test and
    the build fails with "redeclared in this block". Prefix them.
+4. Rule descriptions in docs: `docs/games.md`, `docs/manual/{cui,web}/<game>.md`,
+   and `api/openapi.yaml` will retain the clone source's rules (deal layout,
+   tableau counts, etc.) instead of the new game's actual rules.
+5. Discover blurbs: `blurb.<game>` and `stretch_blurb.<game>` in
+   `frontend/src/i18n/locales/{ja,en}/discover.json` will describe the clone
+   source's traits.
+   (Note: items 4 and 5 are outdated descriptions rather than names, so grep cannot catch them.)
 """
 from __future__ import annotations
 
@@ -97,6 +104,11 @@ def main() -> None:
         i = argv.index("--jp")
         jp = (argv[i + 1], argv[i + 2])
         argv = argv[:i] + argv[i + 3:]
+    en = None
+    if "--en" in argv:
+        i = argv.index("--en")
+        en = (argv[i + 1], argv[i + 2])
+        argv = argv[:i] + argv[i + 3:]
     args = [a for a in argv if a != "--apply"]
     if len(args) != 4:
         raise SystemExit(__doc__)
@@ -146,6 +158,8 @@ def main() -> None:
             text = rename(data.decode("utf-8"), s_key, d_key, s_type, d_type)
             if jp:
                 text = text.replace(jp[0], jp[1])
+            if en:
+                text = text.replace(en[0], en[1])
             dst.write_bytes(text.encode("utf-8"))
             if crlf and b"\r\n" not in text.encode("utf-8"):
                 raise SystemExit(f"CRLF lost writing {dst}")

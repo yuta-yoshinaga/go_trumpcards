@@ -764,16 +764,16 @@ func TestWindmill_ActionLog(t *testing.T) {
 
 	// The board is 0-indexed everywhere, so the log must be too -- a 1-based log
 	// silently disagrees with the hint and the CLI.
-	details := make([]string, 0, len(w.GetActionLog()))
-	for _, e := range w.GetActionLog() {
-		details = append(details, e.Detail)
-	}
-	assert.Equal(t, []string{
-		"帆0→中央基礎",
-		"帆1→四隅基礎0",
-		"四隅基礎3→中央基礎",
-		"山札から1枚めくった",
-	}, details)
+	log := w.GetActionLog()
+	require.Len(t, log, 4)
+	assert.Equal(t, "windmill.log.moveSailToCenter", log[0].DetailCode)
+	assert.Equal(t, map[string]string{"sail": "0"}, log[0].DetailParams)
+	assert.Equal(t, "windmill.log.moveSailToCorner", log[1].DetailCode)
+	assert.Equal(t, map[string]string{"sail": "1", "corner": "0"}, log[1].DetailParams)
+	assert.Equal(t, "windmill.log.moveCornerToCenter", log[2].DetailCode)
+	assert.Equal(t, map[string]string{"corner": "3"}, log[2].DetailParams)
+	assert.Equal(t, "windmill.log.draw", log[3].DetailCode)
+	assert.Nil(t, log[3].DetailParams)
 }
 
 func TestWindmill_JSONRoundTrip(t *testing.T) {

@@ -786,5 +786,14 @@ func TestFortyThieves_ActionLog(t *testing.T) {
 	_ = ft.Draw()
 	log := ft.GetActionLog()
 	assert.Equal(t, 1, len(log))
-	assert.Equal(t, "draw", log[0].ActionType)
+	var entry *domain.ActionLogEntry
+	for _, candidate := range log {
+		if candidate.DetailCode == "fortythieves.log.draw" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, "draw", entry.ActionType)
+	assert.Empty(t, entry.DetailParams)
 }

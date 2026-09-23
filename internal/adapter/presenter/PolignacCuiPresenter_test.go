@@ -71,6 +71,47 @@ func TestPolignacCuiPresenterRoundEnd(t *testing.T) {
 	assert.NotContains(t, out, i18n.T("polignac.promptPlay"))
 }
 
+func TestPolignacCuiPresenterCapotResult(t *testing.T) {
+	p := new(PolignacCuiPresenter)
+
+	t.Run("success", func(t *testing.T) {
+		g := newPolignacForCui(t)
+		g.SetPhaseForTest(domain.PolignacPhaseRoundEnd)
+		g.SetCapotIdxForTest(0)
+		g.SetCapotTricksForTest(domain.PolignacTricksPerRound)
+		out := p.Output(g, nil)
+		assert.Contains(t, out, "capot成功！全8トリックを獲得しました。")
+		assert.NotContains(t, out, "capot失敗。全8トリックを獲得できませんでした。")
+	})
+
+	t.Run("failure", func(t *testing.T) {
+		g := newPolignacForCui(t)
+		g.SetPhaseForTest(domain.PolignacPhaseRoundEnd)
+		g.SetCapotIdxForTest(0)
+		g.SetCapotTricksForTest(domain.PolignacTricksPerRound - 1)
+		out := p.Output(g, nil)
+		assert.Contains(t, out, "capot失敗。全8トリックを獲得できませんでした。")
+		assert.NotContains(t, out, "capot成功！全8トリックを獲得しました。")
+	})
+
+	t.Run("without a capot attempt", func(t *testing.T) {
+		g := newPolignacForCui(t)
+		g.SetPhaseForTest(domain.PolignacPhaseRoundEnd)
+		out := p.Output(g, nil)
+		assert.NotContains(t, out, "capot成功！全8トリックを獲得しました。")
+		assert.NotContains(t, out, "capot失敗。全8トリックを獲得できませんでした。")
+	})
+
+	t.Run("outside round end", func(t *testing.T) {
+		g := newPolignacForCui(t)
+		g.SetCapotIdxForTest(0)
+		g.SetCapotTricksForTest(domain.PolignacTricksPerRound)
+		out := p.Output(g, nil)
+		assert.NotContains(t, out, "capot成功！全8トリックを獲得しました。")
+		assert.NotContains(t, out, "capot失敗。全8トリックを獲得できませんでした。")
+	})
+}
+
 func TestPolignacCuiPresenterError(t *testing.T) {
 	p := new(PolignacCuiPresenter)
 	assert.Contains(t, p.Output(newPolignacForCui(t), assert.AnError), assert.AnError.Error())
@@ -104,7 +145,7 @@ func TestPolignacCuiPresenterHintOutput(t *testing.T) {
 	g.SetCurrentPlayerIdxForTest(0)
 
 	out := p.HintOutput(g)
-	assert.Contains(t, out, "HINT")
+	assert.Contains(t, out, "ヒント")
 	// 生の理由キーが出ていたら i18n 未登録。
 	assert.NotContains(t, out, "polignacLeadSafe")
 	assert.NotContains(t, out, "polignacAvoidJack")
@@ -196,7 +237,7 @@ func TestPolignacCuiPresenterShowsTheJackBreakdown(t *testing.T) {
 	// ♠ が先に、続けて ♥ が並ぶ。1 行として突き合わせる。
 	assert.Contains(t, out, i18n.Tf("polignac.jackMarks",
 		"jacks", i18n.T("polignac.jackSpade")+" "+
-			i18n.Tf("polignac.jackOther", "suit", "HEART 11")))
+			i18n.Tf("polignac.jackOther", "suit", "♥11")))
 	assert.NotContains(t, out, "{{")
 
 	// 何も取っていない席には内訳が出ない (負のコントロール)。

@@ -139,7 +139,11 @@ func TestEstimation_BiddingGoesRoundOnce(t *testing.T) {
 
 	for range EstimationPlayerCnt {
 		if e.IsHumanBidTurn() {
-			require.NoError(t, e.PlayerBid(2))
+			bid := 2
+			if r := e.GetRestrictedBid(); r == bid {
+				bid = 3
+			}
+			require.NoError(t, e.PlayerBid(bid))
 			continue
 		}
 		e.CpuBid()
@@ -771,4 +775,13 @@ func TestEstimation_ActionLog(t *testing.T) {
 	}
 	assert.True(t, kinds["trump"])
 	assert.True(t, kinds["bid"])
+	var bidLog *ActionLogEntry
+	for _, entry := range e.actionLog {
+		if entry.DetailCode == "estimation.log.bid" {
+			bidLog = entry
+			break
+		}
+	}
+	require.NotNil(t, bidLog)
+	assert.Equal(t, map[string]string{"bid": "3"}, bidLog.DetailParams)
 }

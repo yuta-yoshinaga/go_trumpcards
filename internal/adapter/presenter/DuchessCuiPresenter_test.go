@@ -222,13 +222,13 @@ func TestDuchessCuiPresenter_HintOutput(t *testing.T) {
 	}{
 		{"reserve to a foundation",
 			&domain.DuchessHint{FromZone: "reserve", FromIdx: 2, CardIndex: -1, ToZone: "foundation", ToIdx: 1},
-			[]string{"リザーブ扇2", "基礎札1"}},
+			[]string{"リザーブ扇2", "組札1"}},
 		{"reserve to the tableau",
 			&domain.DuchessHint{FromZone: "reserve", FromIdx: 0, CardIndex: -1, ToZone: "tableau", ToIdx: 3},
 			[]string{"リザーブ扇0", "タブロー列3"}},
 		{"waste to a foundation",
 			&domain.DuchessHint{FromZone: "waste", FromIdx: -1, CardIndex: -1, ToZone: "foundation", ToIdx: 2},
-			[]string{"ウェイスト", "基礎札2"}},
+			[]string{"ウェイスト", "組札2"}},
 		{"tableau to tableau",
 			&domain.DuchessHint{FromZone: "tableau", FromIdx: 1, CardIndex: 2, ToZone: "tableau", ToIdx: 3},
 			[]string{"タブロー列1[2]", "タブロー列3"}},
@@ -269,7 +269,7 @@ func TestDuchessCuiPresenter_ActionLogOutput(t *testing.T) {
 		g := new(interfaces.MockDuchessGame)
 		g.On("GetPhase").Return(domain.DuchessPhaseGameOver)
 		g.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "move", Detail: "test"},
+			{TurnNumber: 1, ActionType: "move", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 
 		assert.Contains(t, new(DuchessCuiPresenter).ActionLogOutput(g), "move")

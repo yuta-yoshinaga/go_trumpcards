@@ -134,12 +134,12 @@ func TestQuadrilleCuiPresenter_AnnotatesMatadors(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 13, false)) // ただの切り札
 
 		out := p.Output(m, nil)
-		assert.Contains(t, out, "[0]SPADE 1(スパディーユ)")
-		assert.Contains(t, out, "[1]HEART 7(マニーユ)")
-		assert.Contains(t, out, "[2]CLOVER 1(バスト)")
+		assert.Contains(t, out, "[0]♠1(スパディーユ)")
+		assert.Contains(t, out, "[1]♥7(マニーユ)")
+		assert.Contains(t, out, "[2]♣1(バスト)")
 		// 切り札の K は平の切り札。注記は付かない。
-		assert.Contains(t, out, "[3]HEART 13")
-		assert.NotContains(t, out, "[3]HEART 13(")
+		assert.Contains(t, out, "[3]♥13")
+		assert.NotContains(t, out, "[3]♥13(")
 	})
 
 	// **マニーユは切り札スート次第。**♠ が切り札なら ♥7 はただの平札。
@@ -152,8 +152,8 @@ func TestQuadrilleCuiPresenter_AnnotatesMatadors(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 7, false))
 
 		out := p.Output(m, nil)
-		assert.NotContains(t, out, "[0]HEART 7(")
-		assert.Contains(t, out, "[1]SPADE 7(マニーユ)")
+		assert.NotContains(t, out, "[0]♥7(")
+		assert.Contains(t, out, "[1]♠7(マニーユ)")
 	})
 
 	// 切り札未確定なら注記なし (受け入れ条件2)。
@@ -168,9 +168,9 @@ func TestQuadrilleCuiPresenter_AnnotatesMatadors(t *testing.T) {
 		out := p.Output(m, nil)
 		// 手札行に注記が付かないことを見る。序列の説明は promptPlayHelp が
 		// 常に出しているので、文言そのものの有無では判定できない。
-		assert.Contains(t, out, "[0]SPADE 1  [1]CLOVER 1")
-		assert.NotContains(t, out, "[0]SPADE 1(")
-		assert.NotContains(t, out, "[1]CLOVER 1(")
+		assert.Contains(t, out, "[0]♠1  [1]♣1")
+		assert.NotContains(t, out, "[0]♠1(")
+		assert.NotContains(t, out, "[1]♣1(")
 	})
 }
 
@@ -201,7 +201,7 @@ func TestQuadrilleCuiPresenter_HintOutput(t *testing.T) {
 		result := p.HintOutput(m)
 		assert.Contains(t, result, "ソロ")  // recommended action name
 		assert.Contains(t, result, "を推奨") // hintDecision format
-		assert.NotContains(t, result, "HINT: -")
+		assert.NotContains(t, result, "ヒント: -")
 	})
 
 	t.Run("non-bid empty-card hint falls back to the card line", func(t *testing.T) {
@@ -218,7 +218,7 @@ func TestQuadrilleCuiPresenter_ActionLogOutput(t *testing.T) {
 	m := new(interfaces.MockQuadrilleGame)
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return([]*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "You plays ♠K"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	})
 	// 棋譜の座席名は同じ画面の他の行と同じ解決を通る (#5977)。
 	m.On("GetPlayer", mock.Anything).Return(domain.NewQuadrillePlayer(true)).Maybe()

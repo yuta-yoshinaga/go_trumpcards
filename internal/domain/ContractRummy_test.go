@@ -117,6 +117,17 @@ func TestContractRummy_PlayerDrawFromStock_ProgressesPhase(t *testing.T) {
 	if g.GetPlayer(0).GetCardsSize() != ContractRummyHandSize+1 {
 		t.Errorf("hand should grow by 1 after draw")
 	}
+	var entry *ActionLogEntry
+	for _, candidate := range g.GetActionLog() {
+		if candidate.ActionType == "draw_stock" {
+			entry = candidate
+		}
+	}
+	if entry == nil {
+		t.Fatal("draw_stock log entry not found")
+	}
+	assert.Equal(t, "contractrummy.log.drawStock", entry.DetailCode)
+	assert.Equal(t, map[string]string{"name": "You"}, entry.DetailParams)
 }
 
 func TestContractRummy_PlayerDrawFromStock_RejectsWrongPhase(t *testing.T) {
@@ -158,6 +169,30 @@ func TestContractRummy_PlayerDrawFromDiscard_EmptyError(t *testing.T) {
 	g.SetDiscardPile(nil)
 	if err := g.PlayerDrawFromDiscard(); err == nil {
 		t.Error("expected error for empty discard")
+	} else if code, _ := ErrorMessageCode(err); code != "contractrummy.errDiscardPileEmpty" {
+		t.Fatalf("code = %q", code)
+	}
+}
+
+func TestContractRummy_DomainErrorsHaveMessageCodes(t *testing.T) {
+	g := helperContractRummyHand(t)
+	g.SetPhase(ContractRummyPhasePlay)
+	if err := g.PlayerMeldContract(nil); err == nil {
+		t.Fatal("expected contract error")
+	} else if code, _ := ErrorMessageCode(err); code != "contractrummy.errContractMeldCount" {
+		t.Fatalf("code = %q", code)
+	}
+
+	if err := g.PlayerMeldExtra([]int{0}); err == nil {
+		t.Fatal("expected extra meld error")
+	} else if code, _ := ErrorMessageCode(err); code != "contractrummy.errExtraMeldContractRequired" {
+		t.Fatalf("code = %q", code)
+	}
+
+	if err := g.PlayerDiscard(-1); err == nil {
+		t.Fatal("expected index error")
+	} else if code, _ := ErrorMessageCode(err); code != "contractrummy.errCardIndexOutOfRange" {
+		t.Fatalf("code = %q", code)
 	}
 }
 
@@ -837,8 +872,8 @@ func TestContractRummy_CanAddToContractRummyMeld(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := canAddToContractRummyMeld(tt.meld, tt.card); got != tt.want {
-				t.Errorf("canAddToContractRummyMeld(%s) = %v, want %v", tt.name, got, tt.want)
+			if got := CanAddToContractRummyMeld(tt.meld, tt.card); got != tt.want {
+				t.Errorf("CanAddToContractRummyMeld(%s) = %v, want %v", tt.name, got, tt.want)
 			}
 		})
 	}

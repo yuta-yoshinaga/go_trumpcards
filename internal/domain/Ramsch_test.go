@@ -38,6 +38,18 @@ func TestRamsch_ResetStartsTrickPlayImmediately(t *testing.T) {
 	assert.Len(t, g.GetSkat(), RamschSkatSize)
 }
 
+func TestRamsch_ActionLogUsesDetailCode(t *testing.T) {
+	g := newTestRamsch()
+	g.Reset()
+	for _, entry := range g.GetActionLog() {
+		if entry.DetailCode == "ramsch.log.roundStart" {
+			assert.Equal(t, "1", entry.DetailParams["round"])
+			return
+		}
+	}
+	t.Fatal("roundStart action log entry not found")
+}
+
 // **切り札はジャック 4 枚だけ、常に。** ♣J > ♠J > ♥J > ♦J で、スートの
 // 一般的な強弱とは別物。
 func TestRamsch_JacksAreTheOnlyTrumpsAndClubsIsHighest(t *testing.T) {

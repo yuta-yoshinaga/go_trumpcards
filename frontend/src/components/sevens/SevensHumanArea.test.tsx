@@ -36,6 +36,7 @@ const defaultProps = {
   endStopEnabled: false,
   jokerConsecutiveBanned: false,
   loading: false,
+  jokerCardIdx: null,
   onPlay: vi.fn(),
 };
 
@@ -161,6 +162,30 @@ describe('SevensHumanArea', () => {
     const player = makePlayer({ cards: [joker] });
     render(<SevensHumanArea {...defaultProps} player={player} />);
     expect(screen.getAllByRole('button')).toHaveLength(1);
+  });
+
+  it('highlights only the selected joker card', () => {
+    const player = makePlayer({ cards: [spade8, joker, joker] });
+    const { rerender } = render(<SevensHumanArea {...defaultProps} player={player} jokerCardIdx={null} />);
+    const playableCardCountBeforeSelection = screen.getAllByTestId('playable-card').length;
+    expect(playableCardCountBeforeSelection).toBeGreaterThan(0);
+
+    rerender(<SevensHumanArea {...defaultProps} player={player} jokerCardIdx={1} />);
+    expect(document.querySelectorAll('[data-joker-selected]')).toHaveLength(1);
+    expect(document.querySelector('[data-joker-selected]')).toBe(screen.getAllByRole('button')[1]);
+    expect(screen.getAllByRole('button')[1]).toHaveStyle({ transform: 'translateY(-8px)' });
+    expect(screen.getAllByRole('button')[2]).not.toHaveStyle({ transform: 'translateY(-8px)' });
+    expect(screen.getAllByTestId('playable-card')).toHaveLength(playableCardCountBeforeSelection);
+
+    rerender(<SevensHumanArea {...defaultProps} player={player} jokerCardIdx={2} />);
+    expect(document.querySelectorAll('[data-joker-selected]')).toHaveLength(1);
+    expect(document.querySelector('[data-joker-selected]')).toBe(screen.getAllByRole('button')[2]);
+    expect(screen.getAllByRole('button')[2]).toHaveStyle({ transform: 'translateY(-8px)' });
+    expect(screen.getAllByRole('button')[1]).not.toHaveStyle({ transform: 'translateY(-8px)' });
+    expect(screen.getAllByTestId('playable-card')).toHaveLength(playableCardCountBeforeSelection);
+
+    rerender(<SevensHumanArea {...defaultProps} player={player} jokerCardIdx={null} />);
+    expect(document.querySelector('[data-joker-selected]')).toBeNull();
   });
 
   it('handles undefined cards gracefully', () => {

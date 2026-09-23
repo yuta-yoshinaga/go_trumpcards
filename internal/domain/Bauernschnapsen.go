@@ -24,8 +24,8 @@ package domain
 
 import (
 	"encoding/json"
-	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // BauernschnapsenNoTrump は「切り札スート未定 / 切り札なし」を表す。
@@ -342,7 +342,7 @@ func (g *Bauernschnapsen) dealInitial() {
 	}
 	// 切り札はまだ決まらない。契約の宣言で決める。
 	g.trumpSuit = BauernschnapsenNoTrump
-	g.appendLog(-1, "deal", "dealt 5 cards each; no talon", nil)
+	g.appendLog(-1, "deal", "bauernschnapsen.log.deal", nil, nil)
 }
 
 // startContractPhase 契約フェーズ開始: ディーラーの左隣から宣言する。
@@ -367,18 +367,18 @@ func (g *Bauernschnapsen) startContractPhase() {
 // 誰も宣言しなければ既定の通常契約でディーラーの左隣が declarer になる。
 func (g *Bauernschnapsen) DeclareContract(playerIdx int, c BauernschnapsenContract, trumpSuit int) error {
 	if g.phase != BauernschnapsenPhaseContract {
-		return NewDomainError(ErrWrongPhase, "契約フェーズではありません")
+		return NewDomainErrorCode(ErrWrongPhase, "bauernschnapsen.errNotContractPhase", nil)
 	}
 	if playerIdx != g.currentPlayerIdx {
-		return NewDomainError(ErrInvalidPlay, "あなたの手番ではありません")
+		return NewDomainErrorCode(ErrInvalidPlay, "bauernschnapsen.errNotYourTurn", nil)
 	}
 	if c < BauernschnapsenContractNone || c > BauernschnapsenContractBettel {
-		return NewDomainError(ErrInvalidCard, "その契約は宣言できません")
+		return NewDomainErrorCode(ErrInvalidCard, "bauernschnapsen.errContractUnavailable", nil)
 	}
 	// **切り札を要る契約はスートも要る。** Bettel は切り札なしなので受け取らない。
 	if c == BauernschnapsenContractRufer || c == BauernschnapsenContractFarbenzwang {
 		if trumpSuit < CardDesignSpade || trumpSuit > CardDesignMax {
-			return NewDomainError(ErrInvalidCard, "切り札スートを指定してください")
+			return NewDomainErrorCode(ErrInvalidCard, "bauernschnapsen.errTrumpSuitRequired", nil)
 		}
 	}
 
@@ -392,7 +392,7 @@ func (g *Bauernschnapsen) DeclareContract(playerIdx int, c BauernschnapsenContra
 			g.trumpSuit = trumpSuit
 		}
 	}
-	g.appendLog(playerIdx, "contract", fmt.Sprintf("declared %d", c), nil)
+	g.appendLog(playerIdx, "contract", "bauernschnapsen.log.contract", map[string]string{"contract": strconv.Itoa(int(c))}, nil)
 
 	g.currentPlayerIdx = (g.currentPlayerIdx + 1) % BauernschnapsenPlayerCnt
 	if g.currentPlayerIdx == g.leadPlayerIdx {
@@ -410,8 +410,9 @@ func (g *Bauernschnapsen) finishContractPhase() {
 		g.declarerIdx = g.leadPlayerIdx
 		g.trumpSuit = g.pickDefaultTrump(g.declarerIdx)
 	}
-	g.appendLog(g.declarerIdx, "contractFinal",
-		fmt.Sprintf("contract %d, trump %d", g.contract, g.trumpSuit), nil)
+	g.appendLog(g.declarerIdx, "contractFinal", "bauernschnapsen.log.contractFinal", map[string]string{
+		"contract": strconv.Itoa(int(g.contract)), "trump": strconv.Itoa(g.trumpSuit),
+	}, nil)
 	g.startPlayPhase()
 }
 
@@ -511,7 +512,7 @@ func (g *Bauernschnapsen) PlayerPlay(cardIndex int) error {
 
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "bauernschnapsen.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
@@ -572,15 +573,15 @@ func (g *Bauernschnapsen) CpuPlay() {
 // 同一スートのマリアージュは 1 ラウンドにつき 1 回のみ宣言できる (先着優先)。
 func (g *Bauernschnapsen) declareMarriage(playerIdx, cardIndex int) error {
 	if len(g.currentTrick) != 0 {
-		return NewDomainError(ErrInvalidPlay, "マリアージュはリード時のみ宣言できます")
+		return NewDomainErrorCode(ErrInvalidPlay, "bauernschnapsen.errMarriageLeadOnly", nil)
 	}
 	player := g.players[playerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "bauernschnapsen.errCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if !g.isMarriageStarter(player, card) {
-		return NewDomainError(ErrInvalidPlay, "そのカードでマリアージュは宣言できません")
+		return NewDomainErrorCode(ErrInvalidPlay, "bauernschnapsen.errMarriageUnavailable", nil)
 	}
 
 	suit := card.GetDesign()
@@ -591,9 +592,10 @@ func (g *Bauernschnapsen) declareMarriage(playerIdx, cardIndex int) error {
 	team := player.GetTeam()
 	g.marriageDeclared[suit] = true
 	g.roundMarriage[team] += bonus
-	g.appendLog(playerIdx, "marriage",
-		fmt.Sprintf("%s declares marriage in %s (+%d for team %d)",
-			playerName(g.players, playerIdx), suitStr(suit), bonus, team), nil)
+	g.appendLog(playerIdx, "marriage", "bauernschnapsen.log.marriage", map[string]string{
+		"player": playerName(g.players, playerIdx), "suitKey": suitKeyOf(suit),
+		"bonus": strconv.Itoa(bonus), "team": strconv.Itoa(team),
+	}, nil)
 
 	played := player.RemoveCard(cardIndex)
 	g.playCard(playerIdx, played)
@@ -634,9 +636,9 @@ func (g *Bauernschnapsen) playCard(playerIdx int, card *Card) {
 		PlayerIdx: playerIdx,
 		Card:      card,
 	})
-	g.appendLog(playerIdx, "play",
-		fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)),
-		[]*Card{card})
+	g.appendLog(playerIdx, "play", "bauernschnapsen.log.play", map[string]string{
+		"player": playerName(g.players, playerIdx), "card": cardStr(card),
+	}, []*Card{card})
 
 	if len(g.currentTrick) == BauernschnapsenPlayerCnt {
 		g.phase = BauernschnapsenPhaseTrickEnd
@@ -664,9 +666,10 @@ func (g *Bauernschnapsen) ResolveTrick() {
 	g.roundTricks[g.players[winnerIdx].GetTeam()]++
 	g.seatTricks[winnerIdx]++
 
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (%d pt)", playerName(g.players, winnerIdx), g.trickNumber, trickPoints),
-		trickCards)
+	g.appendLog(winnerIdx, "trick_win", "bauernschnapsen.log.trickWin", map[string]string{
+		"player": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber),
+		"points": strconv.Itoa(trickPoints),
+	}, trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	g.lastTrickWinner = winnerIdx
@@ -716,10 +719,11 @@ func (g *Bauernschnapsen) ScoreRound() {
 			gained = value
 		}
 		g.teamScores[ti] += gained
-		g.appendLog(-1, "team_score",
-			fmt.Sprintf("Team %d: %d card pts, %d marriage, %d tricks -> +%d (total %d)",
-				ti, g.roundPoints[ti], g.roundMarriage[ti], g.roundTricks[ti],
-				gained, g.teamScores[ti]), nil)
+		g.appendLog(-1, "team_score", "bauernschnapsen.log.teamScore", map[string]string{
+			"team": strconv.Itoa(ti), "cardPoints": strconv.Itoa(g.roundPoints[ti]),
+			"marriage": strconv.Itoa(g.roundMarriage[ti]), "tricks": strconv.Itoa(g.roundTricks[ti]),
+			"gained": strconv.Itoa(gained), "total": strconv.Itoa(g.teamScores[ti]),
+		}, nil)
 	}
 
 	g.checkGameEnd()
@@ -863,11 +867,14 @@ func (g *Bauernschnapsen) checkGameEnd() {
 			} else {
 				g.winnerTeam = 1
 			}
-			g.appendLog(-1, "game_end",
-				fmt.Sprintf("Team %d wins the game!", g.winnerTeam), nil)
+			g.appendLog(-1, "game_end", "bauernschnapsen.log.gameEnd", map[string]string{"team": strconv.Itoa(g.winnerTeam)}, nil)
 			return
 		}
 	}
+}
+
+func (g *Bauernschnapsen) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- State getters / setters ---
@@ -1409,48 +1416,48 @@ func (g *Bauernschnapsen) UnmarshalJSON(data []byte) error {
 	// **下限は契約フェーズ。** Play より前に契約フェーズを足したので、
 	// Play を下限にすると配り直後の盤 (契約待ち) を復元できない。
 	if j.Phase < BauernschnapsenPhaseContract || j.Phase > BauernschnapsenPhaseGameEnd {
-		return NewDomainError(ErrInvalidPlay, "無効なフェーズです")
+		return NewDomainErrorCode(ErrInvalidPlay, "bauernschnapsen.errInvalidPhase", nil)
 	}
 	// **未確定は BauernschnapsenNoTrump (-1)。** 切り札は宣言で決まるので、
 	// 配り直後や Bettel の局面ではスートが無い。0 だけを未確定として扱うと
 	// その盤を復元できない。
 	if j.TrumpSuit != BauernschnapsenNoTrump && j.TrumpSuit != 0 &&
 		(j.TrumpSuit < CardDesignSpade || j.TrumpSuit > CardDesignDiamond) {
-		return NewDomainError(ErrInvalidPlay, "無効な切り札スートです")
+		return NewDomainErrorCode(ErrInvalidPlay, "bauernschnapsen.errInvalidTrumpSuit", nil)
 	}
 	if len(j.Players) != BauernschnapsenPlayerCnt {
-		return NewDomainError(ErrInvalidPlay, "プレイヤー数が不正です")
+		return NewDomainErrorCode(ErrInvalidPlay, "bauernschnapsen.errInvalidPlayerCount", nil)
 	}
 	// 直接インデックス参照される値の範囲検証 (不正な KV 状態でのパニック防止)。
 	// currentPlayerIdx / dealerIdx は常に有効なプレイヤー。leadPlayerIdx /
 	// lastTrickWinner / winnerTeam は未確定を表す -1 を許可する。
 	if j.CurrentPlayerIdx < 0 || j.CurrentPlayerIdx >= BauernschnapsenPlayerCnt ||
 		j.DealerIdx < 0 || j.DealerIdx >= BauernschnapsenPlayerCnt {
-		return NewDomainError(ErrInvalidPlay, "プレイヤーインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidPlay, "bauernschnapsen.errPlayerIndexOutOfRange", nil)
 	}
 	if j.LeadPlayerIdx < -1 || j.LeadPlayerIdx >= BauernschnapsenPlayerCnt ||
 		j.LastTrickWinner < -1 || j.LastTrickWinner >= BauernschnapsenPlayerCnt {
-		return NewDomainError(ErrInvalidPlay, "リード/勝者インデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidPlay, "bauernschnapsen.errLeadWinnerIndexOutOfRange", nil)
 	}
 	if j.WinnerTeam < -1 || j.WinnerTeam >= BauernschnapsenTeamCnt {
-		return NewDomainError(ErrInvalidPlay, "勝者チームが範囲外です")
+		return NewDomainErrorCode(ErrInvalidPlay, "bauernschnapsen.errWinnerTeamOutOfRange", nil)
 	}
 	if len(j.CurrentTrick) > BauernschnapsenPlayerCnt || len(j.ActionLog) > bauernschnapsenMaxSliceLen {
-		return NewDomainError(ErrInvalidPlay, "状態スライスが不正です")
+		return NewDomainErrorCode(ErrInvalidPlay, "bauernschnapsen.errStateSliceInvalid", nil)
 	}
 	for _, p := range j.Players {
 		if p == nil {
-			return NewDomainError(ErrInvalidPlay, "プレイヤーが nil です")
+			return NewDomainErrorCode(ErrInvalidPlay, "bauernschnapsen.errPlayerNil", nil)
 		}
 	}
 	for _, tc := range j.CurrentTrick {
 		if tc == nil || tc.Card == nil {
-			return NewDomainError(ErrInvalidPlay, "トリックカードが nil です")
+			return NewDomainErrorCode(ErrInvalidPlay, "bauernschnapsen.errTrickCardNil", nil)
 		}
 	}
 	for _, entry := range j.ActionLog {
 		if entry == nil {
-			return NewDomainError(ErrInvalidPlay, "棋譜エントリが nil です")
+			return NewDomainErrorCode(ErrInvalidPlay, "bauernschnapsen.errActionLogEntryNil", nil)
 		}
 	}
 

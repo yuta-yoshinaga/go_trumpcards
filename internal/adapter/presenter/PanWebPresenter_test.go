@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
@@ -71,6 +72,16 @@ func TestPanWebPresenter_Output(t *testing.T) {
 		m, _ := setupPanWebMock()
 		out := p.Output(m, errors.New("bad"))
 		assert.Contains(t, out, `"message":"bad"`)
+	})
+
+	t.Run("coded error uses message code", func(t *testing.T) {
+		m, _ := setupPanWebMock()
+		err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "pan.errInvalidMeld", nil)
+		out := p.Output(m, err)
+		var parsed controller.PanWebOutput
+		require.NoError(t, json.Unmarshal([]byte(out), &parsed))
+		assert.Empty(t, parsed.Message)
+		assert.Equal(t, "pan.errInvalidMeld", parsed.MessageCode)
 	})
 
 	t.Run("play phase message", func(t *testing.T) {

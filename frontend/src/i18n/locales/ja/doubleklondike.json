@@ -11,6 +11,7 @@
   "tableau": "場札",
   "stockCount": "ストック残り: {{count}}",
   "moveCount": "手数: {{count}}",
+  "progress": "組札: {{count}}/{{total}}枚",
   "draw": "めくる",
   "auto": "オートコンプリート",
   "giveup": "ギブアップ",

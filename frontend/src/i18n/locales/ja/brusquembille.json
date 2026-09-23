@@ -34,9 +34,9 @@
     "follow_dump": "勝てないので弱いカードを捨てましょう"
   },
   "result": {
-    "youWin": "あなたの勝ち！ ({{p0}}-{{p1}})",
+    "youWin": "あなたの勝ち！ ({{scores}})",
     "cpuWin": "CPUの勝ち ({{p0}}-{{p1}})",
-    "tie": "引き分け ({{p0}}-{{p1}})",
+    "tie": "引き分け ({{scores}})",
     "cpuWinSeat": "CPU {{seat}} の勝ち ({{scores}})"
   },
   "message": {

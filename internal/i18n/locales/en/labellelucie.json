@@ -16,5 +16,12 @@
   "stuckDeadlock": "No legal move remains and no redeals are left - type giveup to concede.",
   "helpExampleAuto": "  ac                   send everything that can go to a foundation",
   "helpHint": "  h                    show a hint",
-  "helpLog": "  l                    show the action log"
+  "helpLog": "  l                    show the action log",
+  "log.deal": "Started a new game",
+  "log.moveFanToFan": "Fan {{from}}→fan {{to}}",
+  "log.moveFanToFoundation": "Fan {{from}}→foundation",
+  "log.redeal": "Gathered and shuffled ({{remaining}} redeals left)",
+  "log.giveUp": "Gave up",
+  "log.clear": "Clear!",
+  "log.gameOver": "No moves remain"
 }

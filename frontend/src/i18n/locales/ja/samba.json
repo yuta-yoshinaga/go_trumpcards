@@ -19,6 +19,8 @@
   "frozenAnnounceOn": "捨札が凍結されました。取得には同種の条件札2枚が必要です。",
   "frozenIndicator": "❄️ フリーズ",
   "goOutButton": "上がる",
+  "goOutProgress": "完成メルド {{completed}}/{{required}}",
+  "goOutUnavailable": "上がるにはチームで完成メルドが{{required}}個必要です",
   "hint": {
     "drawStock": "山札から引くことを推奨",
     "takeDiscardPile": "捨て札の山をまとめて引き取る選択も有効",

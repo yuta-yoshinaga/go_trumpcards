@@ -11,6 +11,7 @@
   "auctionLine": "Auction under way: high bid {{n}} ({{suit}})",
   "trumpLine": "Trump: {{suit}} (won with {{n}} tricks)",
   "playerLine": "{{name}}[{{role}}]: {{bid}}, {{tricks}} tricks, {{total}} total, {{cards}} in hand",
+  "roundDelta": "this round: {{delta}}",
   "roleDeclarer": "won {{n}}",
   "rolePassed": "passed",
   "roleActive": "bidding",
@@ -48,5 +49,16 @@
   "helpExamplePlay": "  p 0                  play hand card 0",
   "helpHint": "  h                    show a hint",
   "doubledAllExact": "! EVERY SEAT HIT ITS BID. Scores for this round are doubled.",
-  "doubledAllMissed": "! EVERY SEAT MISSED. Penalties for this round are doubled."
+  "doubledAllMissed": "! EVERY SEAT MISSED. Penalties for this round are doubled.",
+  "log.deal": "Start round {{round}}",
+  "log.auction": "Bid {{bid}} tricks with trump suit {{suit}}",
+  "log.pass": "Passed the auction",
+  "log.trump": "Won the bid with trump suit {{suit}} and minimum quota {{bid}}",
+  "log.bid": "Declared {{bid}} tricks",
+  "log.play": "{{card}}",
+  "log.score": "Declared {{bid}}, took {{tricks}}: {{score}}",
+  "log.bonusExact": "Everyone hit their bids. Scores are doubled",
+  "log.bonusMissed": "Everyone missed their bids. Penalties are doubled",
+  "log.result": "Final scores {{score0}}/{{score1}}/{{score2}}/{{score3}}",
+  "log.giveup": "Gave up"
 }

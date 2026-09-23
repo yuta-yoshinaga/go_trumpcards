@@ -133,13 +133,21 @@ func TestThirtyOneWebPresenter_Output(t *testing.T) {
 		_ = json.Unmarshal([]byte(p.Output(m, errors.New("oops"))), &resObj)
 		assert.Equal(t, "oops", resObj.Message)
 	})
+
+	t.Run("coded error returns message code without message", func(t *testing.T) {
+		m, _ := setupThirtyOneWebMock()
+		var resObj controller.ThirtyOneWebOutput
+		_ = json.Unmarshal([]byte(p.Output(m, domain.NewDomainErrorCode(domain.ErrInvalidCard, "thirtyone.errCardIndexOutOfRange", nil))), &resObj)
+		assert.Empty(t, resObj.Message)
+		assert.Equal(t, "thirtyone.errCardIndexOutOfRange", resObj.MessageCode)
+	})
 }
 
 func TestThirtyOneWebPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.ThirtyOneWebPresenter)
 	m := new(interfaces.MockThirtyOneGame)
 	entries := []*domain.ActionLogEntry{
-		{TurnNumber: 1, PlayerIdx: 0, ActionType: "knock", Detail: "knocks"},
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "knock", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 	}
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetActionLog").Return(entries)

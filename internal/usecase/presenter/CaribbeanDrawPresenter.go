@@ -1,4 +1,4 @@
-//go:build !js || !wasm || casino
+//go:build !js || !wasm || extra6
 
 package presenter
 
@@ -9,4 +9,6 @@ type CaribbeanDrawPresenter interface {
 	GamePresenter[interfaces.CaribbeanDrawGame]
 	// HintOutput ヒント情報を出力する
 	HintOutput(cs interfaces.CaribbeanDrawGame) string
+	// ClearSession clears accumulated CUI session statistics.
+	ClearSession()
 }

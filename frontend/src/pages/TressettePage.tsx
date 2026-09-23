@@ -286,8 +286,13 @@ function TressettePageContent() {
                         .filter((p) => !p.isHuman)
                         .map((p) => (
                           <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                            {playerName(p.id, p.isHuman)} [{t('teamLabel', { team: teamLabels[p.teamId] })}]:{' '}
-                            {t('cards', { count: p.cardCount })} | {t('tricks', { count: p.trickCount })}
+                            {playerName(p.id, p.isHuman)} [{t('teamLabel', { team: teamLabels[p.teamId] })}]
+                            {humanPlayer && (
+                              <span data-testid={`tr-player-role-${p.id}`} className="ml-1 text-ds-accent">
+                                {t(p.teamId === humanPlayer.teamId ? 'partner' : 'opponent')}
+                              </span>
+                            )}
+                            : {t('cards', { count: p.cardCount })} | {t('tricks', { count: p.trickCount })}
                           </div>
                         ))}
                     </div>
@@ -298,8 +303,13 @@ function TressettePageContent() {
                     .map((p) => (
                       <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
                         <div className="text-ds-text-muted text-sm">
-                          {playerName(p.id, p.isHuman)} [{t('teamLabel', { team: teamLabels[p.teamId] })}]:{' '}
-                          {t('cards', { count: p.cardCount })} | {t('tricks', { count: p.trickCount })}
+                          {playerName(p.id, p.isHuman)} [{t('teamLabel', { team: teamLabels[p.teamId] })}]
+                          {humanPlayer && (
+                            <span data-testid={`tr-player-role-${p.id}`} className="ml-1 text-ds-accent">
+                              {t(p.teamId === humanPlayer.teamId ? 'partner' : 'opponent')}
+                            </span>
+                          )}
+                          : {t('cards', { count: p.cardCount })} | {t('tricks', { count: p.trickCount })}
                         </div>
                       </div>
                     ))

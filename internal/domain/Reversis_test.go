@@ -132,6 +132,40 @@ func TestReversis_MarkedCardChargesPenaltyAndChips(t *testing.T) {
 	assert.Equal(t, chipsBefore-ReversisMarkedStake, p.GetChips(), "プールへ 5 払う")
 	assert.Equal(t, poolBefore+ReversisMarkedStake, r.GetPool())
 	assert.False(t, r.GetPlayer(1).GetTookQuinola(), "出した人には付かない")
+	marked := r.GetActionLog()[len(r.GetActionLog())-1]
+	assert.Equal(t, "reversis.log.marked", marked.DetailCode)
+	assert.Equal(t, "reversis.mark.quinola", marked.DetailParams["nameKey"])
+	assert.NotContains(t, marked.DetailParams, "name")
+}
+
+func TestReversis_MarkedCardsInOneTrickChargeBoth(t *testing.T) {
+	r := newTestReversis(t)
+	poolBefore := r.GetPool()
+	chipsBefore := r.GetPlayer(0).GetChips()
+
+	r.trickNumber = 2
+	r.leadPlayerIdx = 0
+	r.currentTrick = []*TrickCard{
+		{PlayerIdx: 0, Card: NewCard(CardDesignHeart, 1, false)},
+		{PlayerIdx: 1, Card: NewCard(CardDesignHeart, ReversisQuinolaValue, false)},
+		{PlayerIdx: 2, Card: NewCard(CardDesignDiamond, 1, false)},
+		{PlayerIdx: 3, Card: NewCard(CardDesignHeart, 3, false)},
+	}
+	r.resolveTrick()
+
+	p := r.GetPlayer(0)
+	assert.True(t, p.GetTookQuinola())
+	assert.True(t, p.GetTookDiamondAce())
+	assert.Equal(t, 4+1+4+ReversisMarkedPenalty*2, p.GetRoundPenalty())
+	assert.Equal(t, chipsBefore-ReversisMarkedStake*2, p.GetChips())
+	assert.Equal(t, poolBefore+ReversisMarkedStake*2, r.GetPool())
+	marked := 0
+	for _, entry := range r.GetActionLog() {
+		if entry.ActionType == "marked" {
+			marked++
+		}
+	}
+	assert.Equal(t, 2, marked)
 }
 
 func TestReversis_DiamondAceCharges(t *testing.T) {
@@ -676,7 +710,17 @@ func TestReversis_UnmarshalRejectsNegativePool(t *testing.T) {
 
 func TestReversis_ActionLog(t *testing.T) {
 	r := newTestReversis(t)
-	assert.NotEmpty(t, r.GetActionLog())
+	log := r.GetActionLog()
+	assert.NotEmpty(t, log)
+	var dealLog *ActionLogEntry
+	for _, entry := range log {
+		if entry.DetailCode == "reversis.log.deal" {
+			dealLog = entry
+			break
+		}
+	}
+	require.NotNil(t, dealLog)
+	assert.Equal(t, map[string]string{"round": "1", "pool": "20"}, dealLog.DetailParams)
 }
 
 // **手札に出す点数と精算の点数が同じであること** (#5747)。TS 側も同じ

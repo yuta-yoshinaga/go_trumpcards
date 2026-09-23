@@ -30,6 +30,9 @@ func (p *AmericanToadCuiPresenter) Output(at interfaces.AmericanToadGame, lastEr
 	return buildCuiOutput(i18n.T("americantoad.helpTitle"), func(b *strings.Builder) {
 		b.WriteString(i18n.Tf("americantoad.baseRankLine",
 			"rank", strconv.Itoa(at.GetBaseRank())) + "\n")
+		b.WriteString(i18n.Tf("americantoad.passCount",
+			"current", strconv.Itoa(at.GetPassesUsed()+1),
+			"max", strconv.Itoa(domain.AmericanToadMaxPasses)) + "\n")
 
 		// 基礎札は 8 つある。1 行に並べると長いので、山ごとに枚数も出す。
 		b.WriteString(i18n.T("americantoad.foundationHeader"))

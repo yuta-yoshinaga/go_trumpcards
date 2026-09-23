@@ -231,7 +231,7 @@ function PontoonPageContent() {
                             <div className="text-game-text-muted text-xs mt-1">
                               {t('bet')}: {hand.bet}
                               {ended && hand.payout !== 0 && (
-                                <span className={hand.payout > 0 ? ' text-ds-success' : ' text-ds-danger'}>
+                                <span className={hand.payout > 0 ? ' text-ds-success' : ' text-ds-error'}>
                                   {' '}
                                   {hand.payout > 0 ? `+${hand.payout}` : hand.payout}
                                 </span>

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"strconv"
 )
 
 // PresidentPlayerCnt プレジデントのプレイヤー数 (4人固定)
@@ -44,15 +45,16 @@ type PresidentExchangeAction struct {
 
 // presidentRoundState ラウンドごとにリセットされる状態
 type presidentRoundState struct {
-	currentTurn       int                        // 現在の手番プレイヤーインデックス
-	tableCards        []*Card                    // 場に出されているカード (nil = 場はクリア)
-	lastPlayPlayerIdx int                        // 最後にカードを出したプレイヤーインデックス (-1 = なし)
-	gameEndFlag       bool                       // ゲーム終了フラグ
-	passCount         int                        // 最後の出し以降の連続パス数
-	cpuActions        []*PresidentCpuAction      // 人間ターン後のCPUの行動履歴
-	humanAction       *PresidentCpuAction        // 人間の最後の行動
-	revolutionActive  bool                       // 革命フラグ
-	exchangeActions   []*PresidentExchangeAction // カード交換記録
+	currentTurn         int                        // 現在の手番プレイヤーインデックス
+	clubThreeStarterIdx int                        // ♣3 で先手が決まった席 (-1 = 前ラウンド順位またはフォールバックで決定)
+	tableCards          []*Card                    // 場に出されているカード (nil = 場はクリア)
+	lastPlayPlayerIdx   int                        // 最後にカードを出したプレイヤーインデックス (-1 = なし)
+	gameEndFlag         bool                       // ゲーム終了フラグ
+	passCount           int                        // 最後の出し以降の連続パス数
+	cpuActions          []*PresidentCpuAction      // 人間ターン後のCPUの行動履歴
+	humanAction         *PresidentCpuAction        // 人間の最後の行動
+	revolutionActive    bool                       // 革命フラグ
+	exchangeActions     []*PresidentExchangeAction // カード交換記録
 	actionLogBase
 }
 
@@ -71,7 +73,8 @@ func NewPresident(trumpCards *TrumpCards, players []*PresidentPlayer, config Pre
 		players:    players,
 		config:     config,
 		round: presidentRoundState{
-			lastPlayPlayerIdx: -1,
+			lastPlayPlayerIdx:   -1,
+			clubThreeStarterIdx: -1,
 		},
 	}
 }
@@ -102,7 +105,8 @@ func (p *President) Reset() {
 	}
 
 	p.round = presidentRoundState{
-		lastPlayPlayerIdx: -1,
+		lastPlayPlayerIdx:   -1,
+		clubThreeStarterIdx: -1,
 	}
 
 	// 革命は新ラウンドでリセット
@@ -132,9 +136,11 @@ func (p *President) Reset() {
 		p.round.currentTurn = p.findPlayerByPrevRank(PresidentRankScum)
 	} else {
 		p.round.currentTurn = p.findClubThreeHolder()
+		p.round.clubThreeStarterIdx = p.round.currentTurn
 	}
 	if p.round.currentTurn < 0 {
 		p.round.currentTurn = 0
+		p.round.clubThreeStarterIdx = -1
 	}
 }
 
@@ -200,7 +206,7 @@ func (p *President) PlayerPlay(indices []int) error {
 	cards := player.RemoveCards(indices)
 	action := &PresidentCpuAction{PlayerIdx: p.round.currentTurn, PlayedCards: cards}
 	p.round.humanAction = action
-	p.appendLog(p.round.currentTurn, "play", fmt.Sprintf("played %d card(s)", len(cards)), cards)
+	p.appendLog(p.round.currentTurn, "play", "president.log.play", map[string]string{"count": strconv.Itoa(len(cards))}, cards)
 	p.playCards(p.round.currentTurn, cards)
 	return nil
 }
@@ -230,7 +236,7 @@ func (p *President) handlePass(playerIdx int, setAction func(*PresidentCpuAction
 	p.round.passCount++
 	action := &PresidentCpuAction{PlayerIdx: playerIdx, PlayedCards: nil}
 	setAction(action)
-	p.appendLog(playerIdx, "pass", "pass", nil)
+	p.appendLog(playerIdx, "pass", "president.log.pass", nil, nil)
 
 	// パス即場流れモード: パスしたら即座に場をクリア
 	if p.config.PassFieldFlushEnabled && p.round.tableCards != nil {
@@ -268,7 +274,7 @@ func (p *President) CpuPlay() {
 	cards := player.RemoveCards(playIndices)
 	action := &PresidentCpuAction{PlayerIdx: playerIdx, PlayedCards: cards}
 	p.round.cpuActions = append(p.round.cpuActions, action)
-	p.appendLog(playerIdx, "play", fmt.Sprintf("played %d card(s)", len(cards)), cards)
+	p.appendLog(playerIdx, "play", "president.log.play", map[string]string{"count": strconv.Itoa(len(cards))}, cards)
 	p.playCards(playerIdx, cards)
 }
 
@@ -336,7 +342,7 @@ func (p *President) finishPlayer(idx int) {
 	rank := p.countFinished() + 1
 	p.players[idx].SetIsFinished(true)
 	p.players[idx].SetRank(rank)
-	p.appendLog(idx, "finish", fmt.Sprintf("player %d finished (rank %d)", idx, rank), nil)
+	p.appendLog(idx, "finish", "president.log.finish", map[string]string{"player": strconv.Itoa(idx), "rank": strconv.Itoa(rank)}, nil)
 	if p.round.lastPlayPlayerIdx == idx {
 		p.clearTableState()
 	}
@@ -370,8 +376,8 @@ func dedupSortedInts(in []int) []int {
 }
 
 // appendLog 棋譜にエントリを追加する
-func (p *President) appendLog(playerIdx int, actionType, detail string, cards []*Card) {
-	p.round.appendLog(playerIdx, actionType, detail, cards)
+func (p *President) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	p.round.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- 状態アクセサ ---
@@ -383,6 +389,9 @@ func (p *President) IsHumanTurn() bool {
 
 // GetCurrentTurn 現在の手番プレイヤーインデックス取得
 func (p *President) GetCurrentTurn() int { return p.round.currentTurn }
+
+// GetClubThreeStarterIdx ♣3 により先手が決まった席を返す (-1 = ♣3 以外の理由で決定)。
+func (p *President) GetClubThreeStarterIdx() int { return p.round.clubThreeStarterIdx }
 
 // GetGameEndFlag ゲーム終了フラグ取得
 func (p *President) GetGameEndFlag() bool { return p.round.gameEndFlag }
@@ -482,19 +491,20 @@ func (a *PresidentExchangeAction) UnmarshalJSON(data []byte) error {
 
 // presidentJSON is the JSON wire format for President (flattens presidentRoundState).
 type presidentJSON struct {
-	TrumpCards        *TrumpCards                `json:"tc"`
-	Players           []*PresidentPlayer         `json:"pl"`
-	Config            PresidentConfig            `json:"cf"`
-	CurrentTurn       int                        `json:"ct"`
-	TableCards        []*Card                    `json:"tb"`
-	LastPlayPlayerIdx int                        `json:"lp"`
-	GameEndFlag       bool                       `json:"ge"`
-	PassCount         int                        `json:"pc"`
-	CpuActions        []*PresidentCpuAction      `json:"ca"`
-	HumanAction       *PresidentCpuAction        `json:"ha"`
-	RevolutionActive  bool                       `json:"ra"`
-	ExchangeActions   []*PresidentExchangeAction `json:"ex"`
-	ActionLog         []*ActionLogEntry          `json:"al"`
+	TrumpCards          *TrumpCards                `json:"tc"`
+	Players             []*PresidentPlayer         `json:"pl"`
+	Config              PresidentConfig            `json:"cf"`
+	CurrentTurn         int                        `json:"ct"`
+	ClubThreeStarterIdx int                        `json:"c3"`
+	TableCards          []*Card                    `json:"tb"`
+	LastPlayPlayerIdx   int                        `json:"lp"`
+	GameEndFlag         bool                       `json:"ge"`
+	PassCount           int                        `json:"pc"`
+	CpuActions          []*PresidentCpuAction      `json:"ca"`
+	HumanAction         *PresidentCpuAction        `json:"ha"`
+	RevolutionActive    bool                       `json:"ra"`
+	ExchangeActions     []*PresidentExchangeAction `json:"ex"`
+	ActionLog           []*ActionLogEntry          `json:"al"`
 }
 
 // presidentMaxSliceLen caps slice sizes during deserialisation.
@@ -503,25 +513,26 @@ const presidentMaxSliceLen = 1000
 // MarshalJSON implements json.Marshaler.
 func (p *President) MarshalJSON() ([]byte, error) {
 	return json.Marshal(presidentJSON{
-		TrumpCards:        p.trumpCards,
-		Players:           p.players,
-		Config:            p.config,
-		CurrentTurn:       p.round.currentTurn,
-		TableCards:        p.round.tableCards,
-		LastPlayPlayerIdx: p.round.lastPlayPlayerIdx,
-		GameEndFlag:       p.round.gameEndFlag,
-		PassCount:         p.round.passCount,
-		CpuActions:        p.round.cpuActions,
-		HumanAction:       p.round.humanAction,
-		RevolutionActive:  p.round.revolutionActive,
-		ExchangeActions:   p.round.exchangeActions,
-		ActionLog:         p.round.actionLog,
+		TrumpCards:          p.trumpCards,
+		Players:             p.players,
+		Config:              p.config,
+		CurrentTurn:         p.round.currentTurn,
+		ClubThreeStarterIdx: p.round.clubThreeStarterIdx,
+		TableCards:          p.round.tableCards,
+		LastPlayPlayerIdx:   p.round.lastPlayPlayerIdx,
+		GameEndFlag:         p.round.gameEndFlag,
+		PassCount:           p.round.passCount,
+		CpuActions:          p.round.cpuActions,
+		HumanAction:         p.round.humanAction,
+		RevolutionActive:    p.round.revolutionActive,
+		ExchangeActions:     p.round.exchangeActions,
+		ActionLog:           p.round.actionLog,
 	})
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
 func (p *President) UnmarshalJSON(data []byte) error {
-	var j presidentJSON
+	j := presidentJSON{ClubThreeStarterIdx: -1}
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
 	}
@@ -538,18 +549,22 @@ func (p *President) UnmarshalJSON(data []byte) error {
 	if p.players == nil {
 		p.players = make([]*PresidentPlayer, 0)
 	}
+	if j.ClubThreeStarterIdx < -1 || j.ClubThreeStarterIdx >= len(p.players) {
+		return fmt.Errorf("president: club three starter index out of range")
+	}
 	p.config = j.Config
 	p.round = presidentRoundState{
-		currentTurn:       j.CurrentTurn,
-		tableCards:        j.TableCards,
-		lastPlayPlayerIdx: j.LastPlayPlayerIdx,
-		gameEndFlag:       j.GameEndFlag,
-		passCount:         j.PassCount,
-		cpuActions:        j.CpuActions,
-		humanAction:       j.HumanAction,
-		revolutionActive:  j.RevolutionActive,
-		exchangeActions:   j.ExchangeActions,
-		actionLogBase:     actionLogBase{actionLog: j.ActionLog},
+		currentTurn:         j.CurrentTurn,
+		clubThreeStarterIdx: j.ClubThreeStarterIdx,
+		tableCards:          j.TableCards,
+		lastPlayPlayerIdx:   j.LastPlayPlayerIdx,
+		gameEndFlag:         j.GameEndFlag,
+		passCount:           j.PassCount,
+		cpuActions:          j.CpuActions,
+		humanAction:         j.HumanAction,
+		revolutionActive:    j.RevolutionActive,
+		exchangeActions:     j.ExchangeActions,
+		actionLogBase:       actionLogBase{actionLog: j.ActionLog},
 	}
 	if p.round.actionLog == nil {
 		p.round.actionLog = make([]*ActionLogEntry, 0)

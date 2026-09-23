@@ -111,6 +111,25 @@ func TestTressetteTrickWinnerHighestStrength(t *testing.T) {
 	assert.Equal(t, domain.TressettePhaseTrickEnd, g.GetPhase())
 }
 
+func TestTressette_ActionLogUsesDetailCode(t *testing.T) {
+	g := newTestTressette()
+	trResolve(g, 1, []*domain.TrickCard{
+		{PlayerIdx: 0, Card: trCard(domain.CardDesignSpade, 1)},
+		{PlayerIdx: 1, Card: trCard(domain.CardDesignSpade, 2)},
+		{PlayerIdx: 2, Card: trCard(domain.CardDesignSpade, 3)},
+		{PlayerIdx: 3, Card: trCard(domain.CardDesignSpade, 13)},
+	})
+	var win *domain.ActionLogEntry
+	for _, entry := range g.GetActionLog() {
+		if entry.DetailCode == "tressette.log.trickWin" {
+			win = entry
+			break
+		}
+	}
+	assert.NotNil(t, win)
+	assert.Equal(t, "1", win.DetailParams["trick"])
+}
+
 func TestTressetteOffsuitDoesNotWin(t *testing.T) {
 	g := newTestTressette()
 	// Lead spade; player 1 throws a high heart that cannot win (no trump).

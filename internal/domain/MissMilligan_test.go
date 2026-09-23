@@ -570,10 +570,15 @@ func TestMissMilligan_ActionLogUsesZeroBasedIndices(t *testing.T) {
 
 	log := mm.GetActionLog()
 	require.Len(t, log, 4)
-	assert.Equal(t, "タブロー列1→タブロー列0(1枚)", log[0].Detail)
-	assert.Equal(t, "タブロー列2→基礎札2", log[1].Detail, "heart is foundation 2, 0-indexed")
-	assert.Equal(t, "列0から1枚を保持", log[2].Detail)
-	assert.Equal(t, "保持→タブロー列0(1枚)", log[3].Detail)
+	assert.Equal(t, "missmilligan.log.move", log[0].DetailCode)
+	assert.Equal(t, map[string]string{"value1": "1", "value2": "0", "value3": "1"}, log[0].DetailParams)
+	assert.Equal(t, "missmilligan.log.move", log[1].DetailCode)
+	assert.Equal(t, map[string]string{"value1": "2", "value2": "2"}, log[1].DetailParams,
+		"heart is foundation 2, 0-indexed")
+	assert.Equal(t, "missmilligan.log.waive", log[2].DetailCode)
+	assert.Equal(t, map[string]string{"value1": "0", "value2": "1"}, log[2].DetailParams)
+	assert.Equal(t, "missmilligan.log.move", log[3].DetailCode)
+	assert.Equal(t, map[string]string{"value1": "0", "value2": "1"}, log[3].DetailParams)
 }
 
 func TestMissMilligan_JSONRoundTrip(t *testing.T) {

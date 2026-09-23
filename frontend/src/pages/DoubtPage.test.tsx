@@ -400,7 +400,11 @@ describe('DoubtPage', () => {
     mockExec.mockResolvedValue(doubtPhaseCpuPlayedState);
     renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByTestId('doubt-last-action-highlight')).toBeInTheDocument());
-    expect(screen.getByTestId('doubt-last-action-highlight')).toHaveClass('animate-pulse');
+    expect(screen.getByTestId('doubt-last-action-highlight')).toHaveClass(
+      'bg-ds-surface',
+      'border-ds-warning',
+      'animate-pulse',
+    );
   });
 
   it('Space key triggers doubt in doubt decision window', async () => {
@@ -875,24 +879,29 @@ describe('DoubtPage', () => {
 
   // ── CPU Tell indicator ──────────────────────────────────────────────────
 
-  it('shows sweat indicator when cpuAction has hasTell true', async () => {
+  it('shows tell badge only for the current CPU lastAction, not stale cpuActions', async () => {
     const s: DoubtResponse = {
-      ...humanTurnState,
-      cpuActions: [{ playerIdx: 1, claimedValue: 3, cardCount: 2, isBluff: true, hasTell: true }],
+      ...doubtPhaseCpuPlayedState,
+      cpuActions: [{ playerIdx: 2, claimedValue: 3, cardCount: 2, isBluff: true, hasTell: true }],
+      lastAction: { playerIdx: 1, claimedValue: 3, cardCount: 2, isBluff: true, hasTell: true },
     };
     mockExec.mockResolvedValue(s);
     renderWithProviders(<DoubtPage />);
-    await waitFor(() => expect(screen.getByLabelText('テル')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('doubt-cpu-1')).toBeInTheDocument());
+    expect(within(screen.getByTestId('doubt-cpu-1')).getByTestId('doubt-tell-indicator')).toBeInTheDocument();
+    expect(within(screen.getByTestId('doubt-cpu-2')).queryByTestId('doubt-tell-indicator')).not.toBeInTheDocument();
+    expect(within(screen.getByTestId('doubt-cpu-3')).queryByTestId('doubt-tell-indicator')).not.toBeInTheDocument();
   });
 
-  it('shows sweat indicator when lastAction has hasTell true', async () => {
+  it('does not show tell badge outside the current doubtable CPU lastAction', async () => {
     const s: DoubtResponse = {
       ...humanTurnState,
       lastAction: { playerIdx: 1, claimedValue: 3, cardCount: 2, isBluff: true, hasTell: true },
     };
     mockExec.mockResolvedValue(s);
     renderWithProviders(<DoubtPage />);
-    await waitFor(() => expect(screen.getByLabelText('テル')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('doubt-cpu-1')).toBeInTheDocument());
+    expect(within(screen.getByTestId('doubt-cpu-1')).queryByTestId('doubt-tell-indicator')).not.toBeInTheDocument();
   });
 
   it('does not show sweat indicator when hasTell is false', async () => {
@@ -925,6 +934,18 @@ describe('DoubtPage', () => {
     mockExec.mockResolvedValue(s);
     renderWithProviders(<DoubtPage />);
     await waitFor(() => expect(screen.getByText(/緊張しているようだ/)).toBeInTheDocument());
+  });
+
+  it('keeps the CPU action history visible when stale tell badges are ignored', async () => {
+    const s: DoubtResponse = {
+      ...doubtPhaseCpuPlayedState,
+      cpuActions: [{ playerIdx: 2, claimedValue: 5, cardCount: 1, isBluff: true, hasTell: true }],
+    };
+    mockExec.mockResolvedValue(s);
+    renderWithProviders(<DoubtPage />);
+    await waitFor(() => expect(screen.getByTestId('doubt-cpu-action-log')).toBeInTheDocument());
+    expect(screen.getByTestId('doubt-cpu-action-log')).toHaveTextContent('[CPUの行動]');
+    expect(screen.getByTestId('doubt-cpu-action-log')).toHaveTextContent('CPU 2が1枚出しました');
   });
 
   it('does not append tell hint text to cpu action log when hasTell is false', async () => {

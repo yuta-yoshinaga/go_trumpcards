@@ -42,6 +42,14 @@
   "playPhase": "Play a card or draw from the pile",
   "chooseSuitPhase": "Choose the next suit",
   "roundEnd": "Round over",
+  "pointLegend": {
+    "title": "Penalty for cards left in hand",
+    "eight": "8",
+    "ace": "A",
+    "faceCards": "J / Q / K",
+    "other": "Other",
+    "faceValue": "face value"
+  },
   "result": {
     "humanWin": "You win!",
     "cpuWin": "CPU {{cpuId}} wins!"

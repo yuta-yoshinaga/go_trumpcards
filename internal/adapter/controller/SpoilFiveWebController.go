@@ -22,6 +22,7 @@ type SpoilFiveWebInput struct {
 // SpoilFiveWebConfig スポイル・ファイブのWeb設定
 type SpoilFiveWebConfig struct {
 	CpuDifficulty *int `json:"cpuDifficulty,omitempty"`
+	TargetPoints  *int `json:"targetPoints,omitempty"`
 }
 
 // SpoilFiveWebOutputPlayer スポイル・ファイブのWebアウトプットプレイヤー
@@ -67,6 +68,7 @@ type SpoilFiveWebOutputConfig struct {
 func (c *SpoilFiveWebConfig) ToConfig() domain.SpoilFiveConfig {
 	cfg := domain.DefaultSpoilFiveConfig()
 	cfg.CpuDifficulty = domain.SpoilFiveCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty, int(domain.SpoilFiveCpuDifficultyEasy), int(domain.SpoilFiveCpuDifficultyHard), int(cfg.CpuDifficulty)))
+	webutil.ApplyBoundedInt(&cfg.TargetPoints, c.TargetPoints, 1, 1000)
 	return cfg
 }
 

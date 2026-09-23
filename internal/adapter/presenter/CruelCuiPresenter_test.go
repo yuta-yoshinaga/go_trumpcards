@@ -38,7 +38,7 @@ func TestCruelCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(cg, nil)
 		assert.Contains(t, result, "Cruel")
-		assert.Contains(t, result, "Foundation")
+		assert.Contains(t, result, "組札")
 		assert.Contains(t, result, "列0:")
 		// Empty foundation -> 0/52 progress; the shift/move help is always shown.
 		assert.Contains(t, result, "進捗: 0/52")
@@ -139,7 +139,7 @@ func TestCruelCuiPresenter_Output(t *testing.T) {
 
 		p := new(CruelCuiPresenter)
 		result := p.Output(cg, nil)
-		assert.Contains(t, result, "SPADE 1")
+		assert.Contains(t, result, "♠1")
 	})
 }
 
@@ -156,7 +156,7 @@ func TestCruelCuiPresenter_HintOutput(t *testing.T) {
 		p := new(CruelCuiPresenter)
 		result := p.HintOutput(cg)
 		assert.Contains(t, result, "ヒント")
-		assert.Contains(t, result, "ファウンデーション")
+		assert.Contains(t, result, "組札")
 	})
 
 	t.Run("hint to tableau", func(t *testing.T) {
@@ -197,7 +197,7 @@ func TestCruelCuiPresenter_ActionLogOutput(t *testing.T) {
 		cg := new(interfaces.MockCruelGame)
 		cg.On("GetPhase").Return(domain.CruelPhaseGameOver)
 		cg.On("GetActionLog").Return([]*domain.ActionLogEntry{
-			{TurnNumber: 1, ActionType: "move", Detail: "test"},
+			{TurnNumber: 1, ActionType: "move", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}},
 		})
 
 		p := new(CruelCuiPresenter)

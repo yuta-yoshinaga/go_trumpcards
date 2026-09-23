@@ -141,6 +141,9 @@ func (p *MadrassoWebPresenter) buildPlayersOutput(g interfaces.MadrassoGame) []*
 // buildMessage ゲーム結果メッセージを構築
 func (p *MadrassoWebPresenter) buildMessage(g interfaces.MadrassoGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {
@@ -155,7 +158,14 @@ func (p *MadrassoWebPresenter) buildMessage(g interfaces.MadrassoGame, lastErr e
 	case domain.MadrassoPhaseTrickEnd:
 		return "", "madrasso.trickEnd", nil
 	case domain.MadrassoPhaseRoundEnd:
-		return "", "madrasso.roundEnd", nil
+		thirds := g.GetTeamRoundPoints()
+		return "", "madrasso.roundBreakdown", map[string]string{
+			"a":        "A",
+			"athird":   fmt.Sprintf("%d", thirds[0]),
+			"b":        "B",
+			"bthird":   fmt.Sprintf("%d", thirds[1]),
+			"lastteam": madrassoTeamLabel(domain.MadrassoTeamOf(g.GetLeadPlayerIdx())),
+		}
 	}
 	return "", "", nil
 }

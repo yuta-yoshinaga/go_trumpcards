@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { dramahaApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { BettingControls } from '../components/BettingControls';
 import { CpuAccordion } from '../components/CpuAccordion';
 import { CpuActionLog } from '../components/CpuActionLog';
@@ -24,6 +25,7 @@ import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useIsLargeDesktop, useIsMobile } from '../hooks/useCardDimensions';
+import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -193,17 +195,28 @@ function DramahaPageContent() {
 
   const actionBindings = useMemo(
     () => [
-      { key: 'c', action: () => execApi('call', undefined, undefined, getElapsed()), enabled: hasOutstandingBet },
+      {
+        key: 'c',
+        action: () => execApi('call', undefined, undefined, getElapsed()),
+        enabled: hasOutstandingBet,
+        label: 'call',
+      },
       {
         key: 'r',
         action: () =>
           hasOutstandingBet
             ? execApi('raise', betAmount, undefined, getElapsed())
             : execApi('bet', betAmount, undefined, getElapsed()),
+        label: 'raiseOrBet',
       },
-      { key: 'k', action: () => execApi('check', undefined, undefined, getElapsed()), enabled: !hasOutstandingBet },
-      { key: 'f', action: () => execApi('fold', undefined, undefined, getElapsed()) },
-      { key: 'a', action: () => execApi('allin', undefined, undefined, getElapsed()) },
+      {
+        key: 'k',
+        action: () => execApi('check', undefined, undefined, getElapsed()),
+        enabled: !hasOutstandingBet,
+        label: 'check',
+      },
+      { key: 'f', action: () => execApi('fold', undefined, undefined, getElapsed()), label: 'fold' },
+      { key: 'a', action: () => execApi('allin', undefined, undefined, getElapsed()), label: 'allin' },
     ],
     [execApi, hasOutstandingBet, betAmount, getElapsed],
   );
@@ -213,7 +226,7 @@ function DramahaPageContent() {
   // the shared hook covers PRE_FLOP..RIVER only, so the draw phase is
   // deliberately outside it: no betting is legal here.
   const isDrawPhase = phase === DramahaPhase.DRAW;
-  const canDraw = isDrawPhase && !!humanPlayer && !humanPlayer.folded;
+  const canDraw = isDrawPhase && !!humanPlayer && !humanPlayer.folded && state?.currentTurn === humanPlayer.id;
   const [selectedDraw, setSelectedDraw] = useState<number[]>([]);
 
   // Drop a stale selection when the draw round ends, so the cards the player
@@ -239,6 +252,17 @@ function DramahaPageContent() {
     },
     [execApi],
   );
+
+  const confirmDraw = useCallback(() => {
+    submitDraw([...selectedDraw]);
+  }, [selectedDraw, submitDraw]);
+  useCardKeyboardNav({
+    cardCount: humanPlayer?.cards?.length ?? 0,
+    onToggle: toggleDraw,
+    onConfirm: confirmDraw,
+    onClear: () => setSelectedDraw([]),
+    enabled: canDraw && !loading,
+  });
 
   // Both halves of the split, from the same five cards. Recomputed on every
   // board change: the Omaha half moves with the board, the draw half never
@@ -721,6 +745,7 @@ function DramahaPageContent() {
               dataTutorial="dr-reset-button"
               className="min-w-[90px]"
             />
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="dramaha-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

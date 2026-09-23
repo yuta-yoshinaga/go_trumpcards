@@ -83,6 +83,7 @@ type HoldemWebOutputSidePot struct {
 // HoldemWebOutputEquity テキサスホールデムエクイティ情報
 type HoldemWebOutputEquity struct {
 	WinProbability float64                    `json:"winProbability"`
+	LowProbability float64                    `json:"lowProbability,omitempty"`
 	HandOdds       []*HoldemWebOutputHandOdds `json:"handOdds"`
 }
 

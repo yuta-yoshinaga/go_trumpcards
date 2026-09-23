@@ -5,6 +5,7 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 )
 
 // ロシアンポーカーフェーズ定数
@@ -122,7 +123,7 @@ func (rp *RussianPoker) Bet(ante int) error {
 		return NewDomainError(ErrInsufficientChips, "Insufficient chips.")
 	}
 	rp.anteBet = ante
-	rp.appendLog(0, "bet", fmt.Sprintf("ante=%d", ante), nil)
+	rp.appendLog(0, "bet", "russianpoker.log.anteBet", map[string]string{"ante": strconv.Itoa(ante)}, nil)
 	rp.deal()
 	rp.phase = RussianPokerPhaseAction
 	return nil
@@ -163,7 +164,7 @@ func (rp *RussianPoker) Exchange(indices []int) error {
 	}
 	rp.exchangeCount = len(indices)
 	rp.exchangeFee = fee
-	rp.appendLog(0, "exchange", fmt.Sprintf("exchange %d card(s) fee=%d", rp.exchangeCount, rp.exchangeFee), nil)
+	rp.appendLog(0, "exchange", "russianpoker.log.exchange", map[string]string{"count": strconv.Itoa(rp.exchangeCount), "fee": strconv.Itoa(rp.exchangeFee)}, nil)
 	rp.phase = RussianPokerPhasePostAction
 	return nil
 }
@@ -183,7 +184,7 @@ func (rp *RussianPoker) Buy6th() error {
 	if newCard != nil {
 		rp.playerHand = append(rp.playerHand, newCard)
 	}
-	rp.appendLog(0, "buy6th", fmt.Sprintf("bought 6th card fee=%d", fee), nil)
+	rp.appendLog(0, "buy6th", "russianpoker.log.boughtSixthCard", map[string]string{"fee": strconv.Itoa(fee)}, nil)
 	rp.phase = RussianPokerPhaseSelect
 	return nil
 }
@@ -199,7 +200,7 @@ func (rp *RussianPoker) Select(discardIndex int) error {
 	copy(rp.playerHand[discardIndex:], rp.playerHand[discardIndex+1:])
 	rp.playerHand[len(rp.playerHand)-1] = nil
 	rp.playerHand = rp.playerHand[:len(rp.playerHand)-1]
-	rp.appendLog(0, "select", fmt.Sprintf("discard index=%d", discardIndex), nil)
+	rp.appendLog(0, "select", "russianpoker.log.discard", map[string]string{"index": strconv.Itoa(discardIndex)}, nil)
 	rp.phase = RussianPokerPhasePostAction
 	return nil
 }
@@ -214,7 +215,7 @@ func (rp *RussianPoker) Play() error {
 		return NewDomainError(ErrInsufficientChips, "Insufficient chips for play bet.")
 	}
 	rp.playBet = playBet
-	rp.appendLog(0, "play", fmt.Sprintf("play bet=%d", rp.playBet), nil)
+	rp.appendLog(0, "play", "russianpoker.log.playBet", map[string]string{"bet": strconv.Itoa(rp.playBet)}, nil)
 
 	rp.resolve()
 	return nil
@@ -225,13 +226,13 @@ func (rp *RussianPoker) Fold() error {
 	if rp.phase != RussianPokerPhaseAction && rp.phase != RussianPokerPhasePostAction {
 		return NewDomainError(ErrWrongPhase, "Fold is only allowed during the action or post-action phase.")
 	}
-	rp.appendLog(0, "fold", "player folds", nil)
+	rp.appendLog(0, "fold", "russianpoker.log.playerFolds", nil, nil)
 	rp.result = GameResultLose
 	rp.playerHandRank = evalFiveCardHand(rp.playerHand)
 	rp.dealerHandRank = evalFiveCardHand(rp.dealerHand)
 	rp.gameEndFlag = true
 	rp.phase = RussianPokerPhaseEnd
-	rp.appendLog(-1, "result", "player folded", nil)
+	rp.appendLog(-1, "result", "russianpoker.log.playerFolded", nil, nil)
 	return nil
 }
 
@@ -246,7 +247,7 @@ func (rp *RussianPoker) ForceExchange() error {
 	}
 	rp.forceExchanged = true
 	rp.forceExchangeFee = fee
-	rp.appendLog(0, "forceExchange", fmt.Sprintf("force exchange dealer's highest card fee=%d", fee), nil)
+	rp.appendLog(0, "forceExchange", "russianpoker.log.forceExchange", map[string]string{"fee": strconv.Itoa(fee)}, nil)
 
 	highIdx := rp.findDealerHighestCardIndex()
 	newCard := rp.trumpCards.DrawCard()
@@ -263,7 +264,7 @@ func (rp *RussianPoker) Decline() error {
 	if rp.phase != RussianPokerPhaseForceQualify {
 		return NewDomainError(ErrWrongPhase, "Decline is only allowed during the force qualify phase.")
 	}
-	rp.appendLog(0, "decline", "declined force exchange", nil)
+	rp.appendLog(0, "decline", "russianpoker.log.declinedForceExchange", nil, nil)
 	rp.result = GameResultWin
 	rp.antePayout = rp.anteBet * 2
 	rp.playPayout = rp.playBet
@@ -273,7 +274,7 @@ func (rp *RussianPoker) Decline() error {
 	}
 	rp.gameEndFlag = true
 	rp.phase = RussianPokerPhaseEnd
-	rp.appendLog(-1, "result", "dealer does not qualify (declined)", nil)
+	rp.appendLog(-1, "result", "russianpoker.log.dealerNotQualifiedDeclined", nil, nil)
 	return nil
 }
 
@@ -285,7 +286,7 @@ func (rp *RussianPoker) deal() {
 		rp.playerHand = append(rp.playerHand, rp.trumpCards.DrawCard())
 		rp.dealerHand = append(rp.dealerHand, rp.trumpCards.DrawCard())
 	}
-	rp.appendLog(-1, "deal", "dealt 5 cards each", nil)
+	rp.appendLog(-1, "deal", "russianpoker.log.dealtFiveCards", nil, nil)
 }
 
 // resolve ゲーム解決（Play後の処理）
@@ -296,7 +297,7 @@ func (rp *RussianPoker) resolve() {
 
 	if !rp.dealerQualified {
 		rp.phase = RussianPokerPhaseForceQualify
-		rp.appendLog(-1, "qualify", "dealer does not qualify", nil)
+		rp.appendLog(-1, "qualify", "russianpoker.log.dealerNotQualified", nil, nil)
 		return
 	}
 
@@ -318,7 +319,7 @@ func (rp *RussianPoker) resolveAfterForce() {
 		}
 		rp.gameEndFlag = true
 		rp.phase = RussianPokerPhaseEnd
-		rp.appendLog(-1, "result", "dealer still does not qualify after force exchange", nil)
+		rp.appendLog(-1, "result", "russianpoker.log.dealerStillNotQualified", nil, nil)
 		return
 	}
 
@@ -347,16 +348,19 @@ func (rp *RussianPoker) finalResolve() {
 	rp.gameEndFlag = true
 	rp.phase = RussianPokerPhaseEnd
 
-	var resultStr string
+	resultCode := "russianpoker.log.dealerWins"
 	switch rp.result {
 	case GameResultWin:
-		resultStr = "player wins"
+		resultCode = "russianpoker.log.playerWins"
 	case GameResultDraw:
-		resultStr = "push"
-	default:
-		resultStr = "dealer wins"
+		resultCode = "russianpoker.log.push"
 	}
-	rp.appendLog(-1, "result", resultStr, nil)
+	rp.appendLog(-1, "result", resultCode, nil, nil)
+}
+
+// appendLog records a Russian Poker action with a locale-independent detail code.
+func (rp *RussianPoker) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	rp.appendLogCodeAt(len(rp.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // compareHands プレイヤーとディーラーのハンドを比較する

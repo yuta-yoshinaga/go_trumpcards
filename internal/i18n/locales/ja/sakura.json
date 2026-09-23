@@ -1,4 +1,11 @@
 {
+  "log.deal": "ラウンド{{round}}を配りました（場{{field}}枚、山札{{stock}}枚）",
+  "log.play": "{{player}}が{{card}}を出しました（{{took}}）",
+  "log.draw": "{{player}}が{{card}}をめくりました（{{took}}）",
+  "log.roundWin": "{{player}}がラウンド{{round}}を{{points}}点で取りました",
+  "log.roundTie": "ラウンド{{round}}は同点でした",
+  "log.gameWin": "{{player}}が{{points}}点で勝ちました",
+  "log.gameTie": "引き分けでゲーム終了しました",
   "helpTitle": "さくら（肥後花 / 花札）",
   "helpPlay": "  p <h> [f]            手札hを出す (f=2枚一致時の場札)",
   "helpNextRound": "  nr                   次のラウンドへ",
@@ -15,7 +22,7 @@
   "gameWin": "{{name}} の勝ち！ 通算{{score}}点。",
   "gameDraw": "引き分けでゲーム終了。",
   "hintNone": "ヒントはありません。",
-  "hintCard": "[HINT: {{card}} ({{reason}})]",
+  "hintCard": "[ヒント: {{card}} ({{reason}})]",
   "hintReasonCapture": "同じ月の札を合わせて点を稼ぐ",
   "hintReasonDiscard": "合う札が無いので安い札を捨てる",
   "result.scores": "ゲーム終了！ 得点: {{scores}}",
@@ -23,5 +30,7 @@
   "bonus.allBrights": "五光",
   "bonus.none": "なし",
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
-  "helpNext": "  n                    次へ進む"
+  "helpNext": "  n                    次へ進む",
+  "log.took.captured": "取りました",
+  "log.took.discarded": "捨てました"
 }

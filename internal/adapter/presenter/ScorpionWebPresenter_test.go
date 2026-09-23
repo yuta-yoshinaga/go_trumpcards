@@ -22,6 +22,7 @@ func setupScorpionWebMockDefaults(sg *interfaces.MockScorpionGame) {
 	sg.On("UndoToEscape").Return(0).Maybe()
 	sg.On("GetStockCount").Return(3).Maybe()
 	sg.On("GetCompletedSuits").Return(0).Maybe()
+	sg.On("GetCompletedSuitMask").Return(0).Maybe()
 
 	var tableau [domain.ScorpionTableauCnt][]*domain.KlondikeTableauCard
 	for i := range domain.ScorpionTableauCnt {
@@ -67,6 +68,7 @@ func TestScorpionWebPresenter_Output(t *testing.T) {
 		sg.On("UndoToEscape").Return(3).Maybe()
 		sg.On("GetStockCount").Return(0).Maybe()
 		sg.On("GetCompletedSuits").Return(0).Maybe()
+		sg.On("GetCompletedSuitMask").Return(0).Maybe()
 		var tableau [domain.ScorpionTableauCnt][]*domain.KlondikeTableauCard
 		sg.On("GetTableau").Return(tableau).Maybe()
 
@@ -85,6 +87,7 @@ func TestScorpionWebPresenter_Output(t *testing.T) {
 		sg.On("UndoToEscape").Return(0).Maybe()
 		sg.On("GetStockCount").Return(0).Maybe()
 		sg.On("GetCompletedSuits").Return(4).Maybe()
+		sg.On("GetCompletedSuitMask").Return(15).Maybe()
 		var tableau [domain.ScorpionTableauCnt][]*domain.KlondikeTableauCard
 		sg.On("GetTableau").Return(tableau).Maybe()
 
@@ -102,6 +105,7 @@ func TestScorpionWebPresenter_Output(t *testing.T) {
 		sg.On("UndoToEscape").Return(0).Maybe()
 		sg.On("GetStockCount").Return(0).Maybe()
 		sg.On("GetCompletedSuits").Return(0).Maybe()
+		sg.On("GetCompletedSuitMask").Return(0).Maybe()
 		var tableau [domain.ScorpionTableauCnt][]*domain.KlondikeTableauCard
 		sg.On("GetTableau").Return(tableau).Maybe()
 

@@ -300,14 +300,15 @@ func TestGinRummy_appendLog(t *testing.T) {
 	g := newInternalTestGinRummy()
 	g.actionLog = nil
 
-	g.appendLog(0, "draw_stock", "test detail", nil)
+	g.appendLog(0, "draw_stock", "ginrummy.log.test", map[string]string{"name": "You"}, nil)
 	assert.Len(t, g.actionLog, 1)
 	assert.Equal(t, 1, g.actionLog[0].TurnNumber)
 	assert.Equal(t, 0, g.actionLog[0].PlayerIdx)
 	assert.Equal(t, "draw_stock", g.actionLog[0].ActionType)
-	assert.Equal(t, "test detail", g.actionLog[0].Detail)
+	assert.Equal(t, "ginrummy.log.test", g.actionLog[0].DetailCode)
+	assert.Equal(t, map[string]string{"name": "You"}, g.actionLog[0].DetailParams)
 
-	g.appendLog(1, "discard", "discard detail", nil)
+	g.appendLog(1, "discard", "ginrummy.log.discard", nil, nil)
 	assert.Len(t, g.actionLog, 2)
 	assert.Equal(t, 2, g.actionLog[1].TurnNumber)
 }

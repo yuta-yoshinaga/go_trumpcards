@@ -26,9 +26,9 @@ package domain
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"math/rand"
 	"sort"
+	"strconv"
 )
 
 // CalabresellaPlayerCnt プレイヤー数 (人間 1 + CPU 2)
@@ -122,10 +122,14 @@ type Calabresella struct {
 	discardCount     int                                    // discard で捨てた枚数 (0..CalabresellaMonteSize)
 	playerScores     [CalabresellaPlayerCnt]int             // 累積ゲーム点
 	roundThirds      [CalabresellaPlayerCnt]int             // 現ラウンドのプレイヤー別 1/3 点
-	lastTrickWinner  int                                    // 最終トリック勝者 (-1=未確定)
+	lastTrickWinner  int                                    // 直前トリックの勝者 (-1=未確定)
 	gameEndFlag      bool
 	winnerPlayer     int // -1=未確定
 	actionLogBase
+}
+
+func (g *Calabresella) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // NewCalabresella コンストラクタ
@@ -238,7 +242,7 @@ func (g *Calabresella) PlayerBid(bid CalabresellaBid) error {
 		return ErrNotHumanTurn
 	}
 	if !g.isBidLegal(bid) {
-		return NewDomainError(ErrInvalidPlay, "現在の最高ビッドを上回る宣言が必要です")
+		return NewDomainErrorCode(ErrInvalidPlay, "calabresella.errBidMustExceed", nil)
 	}
 	g.applyBid(g.currentBidderIdx, bid)
 	return nil
@@ -283,11 +287,9 @@ func (g *Calabresella) applyBid(playerIdx int, bid CalabresellaBid) {
 	g.bids[playerIdx] = bid
 	g.bidActed[playerIdx] = true
 	if bid == CalabresellaBidNone {
-		g.appendLog(playerIdx, "bid_pass",
-			fmt.Sprintf("%s passes", playerName(g.players, playerIdx)), nil)
+		g.appendLog(playerIdx, "bid_pass", "calabresella.log.bidPass", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 	} else {
-		g.appendLog(playerIdx, "bid",
-			fmt.Sprintf("%s bids %s", playerName(g.players, playerIdx), calabresellaBidName(bid)), nil)
+		g.appendLog(playerIdx, "bid", "calabresella.log.bid", map[string]string{"name": playerName(g.players, playerIdx), "bidKey": calabresellaBidKey(bid)}, nil)
 	}
 
 	if g.allBidsActed() {
@@ -339,8 +341,7 @@ func (g *Calabresella) finalizeAuction() {
 	}
 	g.soloistIdx = soloist
 	g.winningBid = best
-	g.appendLog(soloist, "soloist",
-		fmt.Sprintf("%s is soloist with %s", playerName(g.players, soloist), calabresellaBidName(best)), nil)
+	g.appendLog(soloist, "soloist", "calabresella.log.soloist", map[string]string{"name": playerName(g.players, soloist), "bidKey": calabresellaBidKey(best)}, nil)
 
 	g.startDiscard()
 }
@@ -386,8 +387,7 @@ func (g *Calabresella) startDiscard() {
 	}
 	g.monte = nil
 	calabresellaSortHand(g.players[g.soloistIdx])
-	g.appendLog(g.soloistIdx, "monte_take",
-		fmt.Sprintf("%s takes the monte", playerName(g.players, g.soloistIdx)), revealed)
+	g.appendLog(g.soloistIdx, "monte_take", "calabresella.log.monteTake", map[string]string{"name": playerName(g.players, g.soloistIdx)}, revealed)
 	g.discardCount = 0
 	g.currentPlayerIdx = g.soloistIdx
 
@@ -409,7 +409,7 @@ func (g *Calabresella) PlayerDiscard(cardIndex int) error {
 	}
 	soloist := g.players[g.soloistIdx]
 	if cardIndex < 0 || cardIndex >= soloist.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "calabresella.errDiscardCardIndexOutOfRange", nil)
 	}
 	g.discardOne(cardIndex)
 	if g.discardCount >= CalabresellaMonteSize {
@@ -424,8 +424,7 @@ func (g *Calabresella) discardOne(cardIndex int) {
 	// 捨て札はソリストの獲得札として扱う (トレセッテ系の慣習: 交換で捨てた札の得点はソリストに帰属)。
 	g.players[g.soloistIdx].AddTrick([]*Card{card})
 	g.roundThirds[g.soloistIdx] += calabresellaThirds(card.GetValue())
-	g.appendLog(g.soloistIdx, "discard",
-		fmt.Sprintf("%s discards %s", playerName(g.players, g.soloistIdx), cardStr(card)), []*Card{card})
+	g.appendLog(g.soloistIdx, "discard", "calabresella.log.discard", map[string]string{"name": playerName(g.players, g.soloistIdx), "card": cardStr(card)}, []*Card{card})
 	g.discardCount++
 }
 
@@ -478,7 +477,7 @@ func (g *Calabresella) PlayerPlay(cardIndex int) error {
 	}
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "calabresella.errPlayCardIndexOutOfRange", nil)
 	}
 	card := player.GetCard(cardIndex)
 	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
@@ -512,7 +511,7 @@ func (g *Calabresella) CpuPlay() {
 // playCard カードをプレイする共通処理。
 func (g *Calabresella) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "play", "calabresella.log.play", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	if len(g.currentTrick) == CalabresellaPlayerCnt {
 		g.phase = CalabresellaPhaseTrickEnd
@@ -534,18 +533,24 @@ func (g *Calabresella) ResolveTrick() {
 		thirds += calabresellaThirds(tc.Card.GetValue())
 	}
 	g.players[winnerIdx].AddTrick(trickCards)
-	bonus := ""
 	if g.trickNumber >= CalabresellaTrickCount {
 		thirds += CalabresellaUltimaThirds
-		bonus = " +ultima"
 	}
 	g.roundThirds[winnerIdx] += thirds
-	g.appendLog(winnerIdx, "trick_win",
-		fmt.Sprintf("%s wins trick %d (+%d/3%s)", playerName(g.players, winnerIdx), g.trickNumber, thirds, bonus), trickCards)
+	params := map[string]string{"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber), "points": strconv.Itoa(thirds)}
+	if g.trickNumber >= CalabresellaTrickCount {
+		g.appendLog(winnerIdx, "trick_win", "calabresella.log.trickWinLast", params, trickCards)
+	} else {
+		g.appendLog(winnerIdx, "trick_win", "calabresella.log.trickWin", params, trickCards)
+	}
 
 	g.leadPlayerIdx = winnerIdx
+	// **どのトリックの勝者も憶えておく。** 以前は最終トリックのぶんしか入れて
+	// おらず、しかもその枝は同時に RoundEnd へ移るので、TrickEnd の画面では
+	// この値がいつも -1 だった。King (King.go:333) は毎トリック入れており、
+	// getter の説明「直前トリックの勝者」もそちらの意味で書かれている。
+	g.lastTrickWinner = winnerIdx
 	if g.trickNumber >= CalabresellaTrickCount {
-		g.lastTrickWinner = winnerIdx
 		g.phase = CalabresellaPhaseRoundEnd
 	} else {
 		g.phase = CalabresellaPhaseTrickEnd
@@ -591,13 +596,11 @@ func (g *Calabresella) ScoreRound() {
 			}
 		}
 	}
-	result := "loses"
+	code := "calabresella.log.roundScoreLost"
 	if soloistWon {
-		result = "wins"
+		code = "calabresella.log.roundScoreWon"
 	}
-	g.appendLog(-1, "round_score",
-		fmt.Sprintf("round %d: soloist(%s) %s (%d/3, stake=%d)",
-			g.roundNumber, playerName(g.players, g.soloistIdx), result, soloistThirds, stake), nil)
+	g.appendLog(-1, "round_score", code, map[string]string{"round": strconv.Itoa(g.roundNumber), "name": playerName(g.players, g.soloistIdx), "points": strconv.Itoa(soloistThirds), "stake": strconv.Itoa(stake)}, nil)
 	g.checkGameEnd()
 }
 
@@ -614,7 +617,7 @@ func (g *Calabresella) checkGameEnd() {
 		g.gameEndFlag = true
 		g.winnerPlayer = leader
 		g.phase = CalabresellaPhaseGameEnd
-		g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the match!", playerName(g.players, leader)), nil)
+		g.appendLog(-1, "game_end", "calabresella.log.gameEnd", map[string]string{"name": playerName(g.players, leader)}, nil)
 	}
 }
 
@@ -726,15 +729,15 @@ func calabresellaSortHand(p *CalabresellaPlayer) {
 	}
 }
 
-// calabresellaBidName ビッドの表示名を返す。
-func calabresellaBidName(bid CalabresellaBid) string {
+// calabresellaBidKey はビッドの i18n キーを返す。
+func calabresellaBidKey(bid CalabresellaBid) string {
 	switch bid {
 	case CalabresellaBidChiamo:
-		return "chiamo"
+		return "calabresella.bidChiamo"
 	case CalabresellaBidSolo:
-		return "solo"
+		return "calabresella.bidSolo"
 	default:
-		return "pass"
+		return "calabresella.bidPass"
 	}
 }
 
@@ -930,6 +933,9 @@ func (g *Calabresella) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
 func (g *Calabresella) GetCurrentTrick() []*TrickCard { return g.currentTrick }
+
+// GetLastTrickWinner 直前トリックの勝者を返す (-1 = なし)。
+func (g *Calabresella) GetLastTrickWinner() int { return g.lastTrickWinner }
 
 // SetCurrentTrick トリック設定 (テスト用)
 func (g *Calabresella) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }

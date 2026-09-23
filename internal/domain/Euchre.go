@@ -1,4 +1,4 @@
-//go:build !js || !wasm || solo
+//go:build !js || !wasm || extra7
 
 package domain
 
@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 // EuchrePlayerCnt ユーカープレイヤー数
@@ -136,6 +137,10 @@ func (e *Euchre) Reset() {
 	e.bidPlayerIdx = (e.dealerIdx + 1) % EuchrePlayerCnt
 }
 
+func (e *Euchre) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	e.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
+}
+
 // NextRound 次のラウンドを開始する
 func (e *Euchre) NextRound() {
 	if e.phase != EuchrePhaseRoundEnd {
@@ -211,7 +216,7 @@ func (e *Euchre) PlayerPickUp(orderUp bool, goAlone bool) error {
 	if orderUp {
 		e.doOrderUp(humanIdx, goAlone)
 	} else {
-		e.appendLog(humanIdx, "pass", fmt.Sprintf("%s passes", playerName(e.players, humanIdx)), nil)
+		e.appendLog(humanIdx, "pass", "euchre.log.pass", map[string]string{"name": playerName(e.players, humanIdx)}, nil)
 		e.advanceBidPickUp()
 	}
 	return nil
@@ -233,7 +238,7 @@ func (e *Euchre) CpuPickUp() {
 	if orderUp {
 		e.doOrderUp(e.bidPlayerIdx, goAlone)
 	} else {
-		e.appendLog(e.bidPlayerIdx, "pass", fmt.Sprintf("%s passes", playerName(e.players, e.bidPlayerIdx)), nil)
+		e.appendLog(e.bidPlayerIdx, "pass", "euchre.log.pass", map[string]string{"name": playerName(e.players, e.bidPlayerIdx)}, nil)
 		e.advanceBidPickUp()
 	}
 }
@@ -250,11 +255,9 @@ func (e *Euchre) doOrderUp(playerIdx int, goAlone bool) {
 	if goAlone {
 		e.goingAlone = true
 		e.goingAlonePlayerIdx = playerIdx
-		e.appendLog(playerIdx, "order_up_alone",
-			fmt.Sprintf("%s orders up %s and goes alone", playerName(e.players, playerIdx), cardStr(e.faceUpCard)), []*Card{e.faceUpCard})
+		e.appendLog(playerIdx, "order_up_alone", "euchre.log.orderUpAlone", map[string]string{"name": playerName(e.players, playerIdx), "card": cardStr(e.faceUpCard)}, []*Card{e.faceUpCard})
 	} else {
-		e.appendLog(playerIdx, "order_up",
-			fmt.Sprintf("%s orders up %s", playerName(e.players, playerIdx), cardStr(e.faceUpCard)), []*Card{e.faceUpCard})
+		e.appendLog(playerIdx, "order_up", "euchre.log.orderUp", map[string]string{"name": playerName(e.players, playerIdx), "card": cardStr(e.faceUpCard)}, []*Card{e.faceUpCard})
 	}
 
 	e.faceUpCard = nil
@@ -292,10 +295,10 @@ func (e *Euchre) PlayerCallTrump(suit int, goAlone bool) error {
 		return ErrNotHumanTurn
 	}
 	if e.faceUpCard != nil && suit == e.faceUpCard.GetDesign() {
-		return NewDomainError(ErrInvalidPlay, "表向きカードのスートは選べません")
+		return NewDomainErrorCode(ErrInvalidPlay, "euchre.errFaceUpSuit", nil)
 	}
 	if suit < CardDesignSpade || suit > CardDesignDiamond {
-		return NewDomainError(ErrInvalidPlay, "無効なスートです")
+		return NewDomainErrorCode(ErrInvalidPlay, "euchre.errInvalidSuit", nil)
 	}
 
 	e.doCallTrump(humanIdx, suit, goAlone)
@@ -316,10 +319,10 @@ func (e *Euchre) PlayerPassCall() error {
 	}
 	// スタックドディーラールール: ディーラーは必ず選ばなければならない
 	if e.bidPlayerIdx == e.dealerIdx {
-		return NewDomainError(ErrCannotPass, "ディーラーは必ずスートを選ばなければなりません")
+		return NewDomainErrorCode(ErrCannotPass, "euchre.errDealerMustChooseSuit", nil)
 	}
 
-	e.appendLog(humanIdx, "pass", fmt.Sprintf("%s passes", playerName(e.players, humanIdx)), nil)
+	e.appendLog(humanIdx, "pass", "euchre.log.pass", map[string]string{"name": playerName(e.players, humanIdx)}, nil)
 	e.advanceBidCallTrump()
 	return nil
 }
@@ -342,7 +345,7 @@ func (e *Euchre) CpuCallTrump() {
 			forcedSuit := e.cpuForceCallTrump(e.bidPlayerIdx)
 			e.doCallTrump(e.bidPlayerIdx, forcedSuit, false)
 		} else {
-			e.appendLog(e.bidPlayerIdx, "pass", fmt.Sprintf("%s passes", playerName(e.players, e.bidPlayerIdx)), nil)
+			e.appendLog(e.bidPlayerIdx, "pass", "euchre.log.pass", map[string]string{"name": playerName(e.players, e.bidPlayerIdx)}, nil)
 			e.advanceBidCallTrump()
 		}
 	}
@@ -353,15 +356,12 @@ func (e *Euchre) doCallTrump(playerIdx int, suit int, goAlone bool) {
 	e.trumpSuit = suit
 	e.makerTeam = e.players[playerIdx].GetTeam()
 
-	suitName := suitStr(suit)
 	if goAlone {
 		e.goingAlone = true
 		e.goingAlonePlayerIdx = playerIdx
-		e.appendLog(playerIdx, "call_trump_alone",
-			fmt.Sprintf("%s calls %s as trump and goes alone", playerName(e.players, playerIdx), suitName), nil)
+		e.appendLog(playerIdx, "call_trump_alone", "euchre.log.callTrumpAlone", map[string]string{"name": playerName(e.players, playerIdx), "suitKey": suitKeyOf(suit)}, nil)
 	} else {
-		e.appendLog(playerIdx, "call_trump",
-			fmt.Sprintf("%s calls %s as trump", playerName(e.players, playerIdx), suitName), nil)
+		e.appendLog(playerIdx, "call_trump", "euchre.log.callTrump", map[string]string{"name": playerName(e.players, playerIdx), "suitKey": suitKeyOf(suit)}, nil)
 	}
 
 	e.startPlayPhase()
@@ -389,11 +389,11 @@ func (e *Euchre) PlayerDiscard(cardIndex int) error {
 
 	player := e.players[e.dealerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "euchre.errCardIndexOutOfRange", nil)
 	}
 
 	discarded := player.RemoveCard(cardIndex)
-	e.appendLog(e.dealerIdx, "discard", fmt.Sprintf("%s discards a card", playerName(e.players, e.dealerIdx)), []*Card{discarded})
+	e.appendLog(e.dealerIdx, "discard", "euchre.log.discard", map[string]string{"name": playerName(e.players, e.dealerIdx)}, []*Card{discarded})
 	e.sortAllHands()
 	e.startPlayPhase()
 	return nil
@@ -410,7 +410,7 @@ func (e *Euchre) CpuDiscard() {
 
 	idx := e.cpuSelectDiscard(e.dealerIdx)
 	discarded := e.players[e.dealerIdx].RemoveCard(idx)
-	e.appendLog(e.dealerIdx, "discard", fmt.Sprintf("%s discards a card", playerName(e.players, e.dealerIdx)), []*Card{discarded})
+	e.appendLog(e.dealerIdx, "discard", "euchre.log.discard", map[string]string{"name": playerName(e.players, e.dealerIdx)}, []*Card{discarded})
 	e.sortAllHands()
 	e.startPlayPhase()
 }
@@ -431,7 +431,7 @@ func (e *Euchre) PlayerPlay(cardIndex int) error {
 
 	player := e.players[e.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "euchre.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
@@ -481,7 +481,7 @@ func (e *Euchre) ResolveTrick() {
 	e.players[winnerIdx].AddTrick(trickCards)
 
 	winnerName := playerName(e.players, winnerIdx)
-	e.appendLog(winnerIdx, "trick_win", fmt.Sprintf("%s wins trick %d", winnerName, e.trickNumber), trickCards)
+	e.appendLog(winnerIdx, "trick_win", "euchre.log.trickWin", map[string]string{"name": winnerName, "trick": strconv.Itoa(e.trickNumber)}, trickCards)
 
 	e.leadPlayerIdx = winnerIdx
 
@@ -523,30 +523,25 @@ func (e *Euchre) ScoreRound() {
 			// マーチ (全5トリック獲得)
 			if e.goingAlone {
 				e.teamScores[e.makerTeam] += 4
-				e.appendLog(-1, "march_alone",
-					fmt.Sprintf("Team %d marches going alone! +4 points", e.makerTeam), nil)
+				e.appendLog(-1, "march_alone", "euchre.log.marchAlone", map[string]string{"team": strconv.Itoa(e.makerTeam)}, nil)
 			} else {
 				e.teamScores[e.makerTeam] += 2
-				e.appendLog(-1, "march",
-					fmt.Sprintf("Team %d marches! +2 points", e.makerTeam), nil)
+				e.appendLog(-1, "march", "euchre.log.march", map[string]string{"team": strconv.Itoa(e.makerTeam)}, nil)
 			}
 		} else {
 			// メイカー勝利 (3-4トリック)
 			e.teamScores[e.makerTeam]++
-			e.appendLog(-1, "maker_win",
-				fmt.Sprintf("Team %d wins the round! +1 point", e.makerTeam), nil)
+			e.appendLog(-1, "maker_win", "euchre.log.makerWin", map[string]string{"team": strconv.Itoa(e.makerTeam)}, nil)
 		}
 	} else {
 		// ユーカー (メイカーが3トリック未満)
 		e.teamScores[defenderTeam] += 2
-		e.appendLog(-1, "euchred",
-			fmt.Sprintf("Team %d is euchred! Team %d +2 points", e.makerTeam, defenderTeam), nil)
+		e.appendLog(-1, "euchred", "euchre.log.euchred", map[string]string{"makerTeam": strconv.Itoa(e.makerTeam), "defenderTeam": strconv.Itoa(defenderTeam)}, nil)
 	}
 
 	// スコアログ
 	for ti := range EuchreTeamCnt {
-		e.appendLog(-1, "team_score",
-			fmt.Sprintf("Team %d: %d points (tricks: %d)", ti, e.teamScores[ti], teamTricks[ti]), nil)
+		e.appendLog(-1, "team_score", "euchre.log.teamScore", map[string]string{"team": strconv.Itoa(ti), "points": strconv.Itoa(e.teamScores[ti]), "tricks": strconv.Itoa(teamTricks[ti])}, nil)
 	}
 
 	e.checkGameEnd()
@@ -793,7 +788,7 @@ func (e *Euchre) playCard(playerIdx int, card *Card) {
 		Card:      card,
 	})
 
-	e.appendLog(playerIdx, "play", fmt.Sprintf("%s plays %s", playerName(e.players, playerIdx), cardStr(card)), []*Card{card})
+	e.appendLog(playerIdx, "play", "euchre.log.play", map[string]string{"name": playerName(e.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	expectedCards := e.activePlayerCount()
 	if len(e.currentTrick) == expectedCards {
@@ -813,7 +808,7 @@ func (e *Euchre) validatePlay(playerIdx int, card *Card) error {
 	leadSuit := e.effectiveSuit(e.currentTrick[0].Card)
 	if e.effectiveSuit(card) != leadSuit {
 		if e.playerHasEffectiveSuit(playerIdx, leadSuit) {
-			return NewDomainError(ErrInvalidPlay, "リードスートに従ってください")
+			return NewDomainErrorCode(ErrInvalidPlay, "euchre.errFollowLeadSuit", nil)
 		}
 	}
 
@@ -879,7 +874,7 @@ func (e *Euchre) checkGameEnd() {
 			} else {
 				e.winnerTeam = 1
 			}
-			e.appendLog(-1, "game_end", fmt.Sprintf("Team %d wins the game!", e.winnerTeam), nil)
+			e.appendLog(-1, "game_end", "euchre.log.gameEnd", map[string]string{"team": strconv.Itoa(e.winnerTeam)}, nil)
 			return
 		}
 	}

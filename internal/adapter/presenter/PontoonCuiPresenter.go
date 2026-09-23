@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra2
+//go:build !js || !wasm || extra
 
 package presenter
 
@@ -109,7 +109,9 @@ func (pp *PontoonCuiPresenter) Output(p interfaces.PontoonGame, lastErr error) s
 	case domain.PontoonPhaseBankerTurn:
 		sb.WriteString(color.Yellow(i18n.T("pontoon.bankerTurn")) + "\n")
 	case domain.PontoonPhaseEnd:
-		sb.WriteString(color.Green(p.GetLastResult()) + "\n")
+		if result := translateMessageCode(p.GetLastResultCode(), p.GetLastResultParams()); result != "" {
+			sb.WriteString(color.Green(result) + "\n")
+		}
 		if nb := p.GetNextBanker(); nb >= 0 {
 			sb.WriteString(color.Yellow(i18n.Tf("pontoon.bankPasses",
 				"name", p.GetSeats()[nb].GetName())) + "\n")
@@ -144,7 +146,8 @@ func (pp *PontoonCuiPresenter) actionHints(p interfaces.PontoonGame) string {
 	return i18n.Tf("pontoon.actionsLine", "options", strings.Join(opts, " / ")) + "\n" +
 		color.Yellow(i18n.Tf("pontoon.cpuStickLine",
 			"cpuMin", strconv.Itoa(domain.PontoonCpuStickMin),
-			"min", strconv.Itoa(domain.PontoonStickMin))) + "\n"
+			"min", strconv.Itoa(domain.PontoonStickMin))) + "\n" +
+		color.Yellow(i18n.T("pontoon.helpTieRule")) + "\n"
 }
 
 // ActionLogOutput 棋譜をテキスト出力

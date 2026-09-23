@@ -101,6 +101,14 @@ func TestConquian_DrawFromStock(t *testing.T) {
 	assert.Equal(t, before+1, g.GetPlayer(0).GetCardsSize())
 	assert.Equal(t, stockBefore-1, g.GetDrawPileCount())
 	assert.Equal(t, domain.ConquianPhaseMeld, g.GetPhase())
+	var entry *domain.ActionLogEntry
+	for _, candidate := range g.GetActionLog() {
+		if candidate.DetailCode == "conquian.log.drawStock" {
+			entry = candidate
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, map[string]string{"name": "You"}, entry.DetailParams)
 }
 
 func TestConquian_DrawFromStock_WrongPhase(t *testing.T) {

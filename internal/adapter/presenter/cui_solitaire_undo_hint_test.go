@@ -123,9 +123,15 @@ func TestCuiSolitaireUndoHint_IsShownByEveryGame(t *testing.T) {
 		p := new(presenter.TriPeaksCuiPresenter)
 		add("tripeaks", func() string { return p.Output(g, nil) }, g.CanUndo, g.Draw)
 	}
+	{
+		g := domain.NewDefaultFourteenOut()
+		g.Reset()
+		p := new(presenter.FourteenOutCuiPresenter)
+		add("fourteenout", func() string { return p.Output(g, nil) }, g.CanUndo, nil)
+	}
 
 	// 対象を数えておく。ここが減ったら、どこかの game が表から漏れている。
-	require.Len(t, games, 14, "#5830 の対象は 14 game")
+	require.Len(t, games, 15, "#5830 の対象は 15 game")
 
 	available := i18n.T("cuiSolitaireUndoAvailable")
 	unavailable := i18n.T("cuiSolitaireUndoUnavailable")

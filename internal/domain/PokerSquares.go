@@ -101,7 +101,7 @@ func (p *PokerSquares) Place(row, col int) error {
 	placed := p.currentCard
 	p.board[row][col] = placed
 	p.placedCount++
-	p.appendLog("place", fmt.Sprintf("(%d,%d) に配置", row, col), []*Card{placed})
+	p.appendLog("place", "pokersquares.log.place", map[string]string{"value1": fmt.Sprint(row), "value2": fmt.Sprint(col)}, []*Card{placed})
 	if p.placedCount >= PokerSquaresTotalCells {
 		p.currentCard = nil
 		p.phase = PokerSquaresPhaseComplete
@@ -142,7 +142,7 @@ func (p *PokerSquares) GiveUp() {
 	if p.phase == PokerSquaresPhasePlaying {
 		p.phase = PokerSquaresPhaseComplete
 		p.currentCard = nil
-		p.appendLog("giveup", "ギブアップしました", nil)
+		p.appendLog("giveup", "pokersquares.log.giveup", nil, nil)
 	}
 }
 
@@ -407,13 +407,14 @@ func (p *PokerSquares) takeSnapshot() {
 }
 
 // appendLog は棋譜エントリを追加する。
-func (p *PokerSquares) appendLog(actionType, detail string, cards []*Card) {
+func (p *PokerSquares) appendLog(actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	p.actionLog = append(p.actionLog, &ActionLogEntry{
-		TurnNumber: p.placedCount,
-		PlayerIdx:  0,
-		ActionType: actionType,
-		Detail:     detail,
-		Cards:      cards,
+		TurnNumber:   p.placedCount,
+		PlayerIdx:    0,
+		ActionType:   actionType,
+		DetailCode:   detailCode,
+		DetailParams: detailParams,
+		Cards:        cards,
 	})
 }
 

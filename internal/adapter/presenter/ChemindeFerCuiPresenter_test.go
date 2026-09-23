@@ -64,6 +64,50 @@ func TestChemindeFerCuiPresenter_ShowsBettingProgress(t *testing.T) {
 	assert.NotContains(t, out, "chemindefer.")
 }
 
+func TestChemindeFerCuiPresenter_ShowsShoeCount(t *testing.T) {
+	cp := new(ChemindeFerCuiPresenter)
+
+	full := newChemindeFerForPresenter(t)
+	assert.Contains(t, cp.Output(full, nil), "シュー残り: 312 枚")
+
+	cfg := domain.DefaultChemindeFerConfig()
+	players := make([]*domain.ChemindeFerPlayer, domain.ChemindeFerSeatCnt)
+	for i := range players {
+		players[i] = domain.NewChemindeFerPlayer("seat", cfg.InitialChips, i == 0)
+	}
+	short := domain.NewChemindeFer(domain.NewTrumpCardsWithDecks(1, 0), players, cfg)
+	assert.Contains(t, cp.Output(short, nil), "シュー残り: 52 枚")
+}
+
+func TestChemindeFerCuiPresenter_ShowsShoeCountAfterReplenishment(t *testing.T) {
+	cfg := domain.DefaultChemindeFerConfig()
+	cfg.Rounds = domain.ChemindeFerRoundsMax
+	players := make([]*domain.ChemindeFerPlayer, domain.ChemindeFerSeatCnt)
+	for i := range players {
+		players[i] = domain.NewChemindeFerPlayer("seat", cfg.InitialChips, false)
+	}
+	g := domain.NewChemindeFer(domain.NewTrumpCardsWithDecks(1, 0), players, cfg)
+	g.CpuPlay()
+
+	for g.GetRemainingCards() >= domain.ChemindeFerMaxHandSize*2 {
+		remainingBeforeRound := g.GetRemainingCards()
+		require.Equal(t, domain.ChemindeFerPhaseRoundEnd, g.GetPhase())
+		require.NoError(t, g.NextRound())
+		g.CpuPlay()
+		assert.Less(t, g.GetRemainingCards(), remainingBeforeRound, "ラウンドでシューが減っていない")
+	}
+	remainingBefore := g.GetRemainingCards()
+	require.Less(t, remainingBefore, domain.ChemindeFerMaxHandSize*2,
+		"次ラウンド前にシュー残りが補充閾値未満になっていない")
+
+	require.Equal(t, domain.ChemindeFerPhaseRoundEnd, g.GetPhase())
+	require.NoError(t, g.NextRound())
+	remainingAfter := g.GetRemainingCards()
+	assert.Greater(t, remainingAfter, remainingBefore, "次ラウンド開始時にシューが補充されていない")
+	assert.Contains(t, (new(ChemindeFerCuiPresenter)).Output(g, nil),
+		"シュー残り: "+strconv.Itoa(remainingAfter)+" 枚")
+}
+
 // **選べない合計であることを画面に出す。**
 //
 // 黙って引かせると、なぜ手が飛んだのか読み取れない。
@@ -165,7 +209,7 @@ func TestChemindeFerCuiPresenter_UnknownPhase(t *testing.T) {
 	g := chemindeFerPresenterPosition(t, 3, 2, domain.ChemindeFerPhase(99))
 
 	out := cp.Output(g, nil)
-	assert.Contains(t, out, "UNKNOWN", "範囲外のフェーズが UNKNOWN として出ていない")
+	assert.Contains(t, out, "不明", "範囲外のフェーズが不明として出ていない")
 	assert.NotContains(t, out, "chemindefer.")
 }
 
@@ -173,5 +217,5 @@ func TestChemindeFerCuiPresenter_UnknownPhase(t *testing.T) {
 func TestChemindeFerCuiPresenter_StartsAtStake(t *testing.T) {
 	cp := new(ChemindeFerCuiPresenter)
 	out := cp.Output(newChemindeFerForPresenter(t), nil)
-	assert.True(t, strings.Contains(out, "STAKE"), "既定の卓は張り待ちのはず: %s", out)
+	assert.True(t, strings.Contains(out, "賭け金"), "既定の卓は張り待ちのはず: %s", out)
 }

@@ -24,5 +24,8 @@
   "stockLine": "山札: {{count}}枚",
   "helpDeal": "  d                        山札から補充する（各列3枚まで）",
   "errStockEmptyNoRedeal": "山札は空です（このゲームに再配りはありません）",
-  "errCannotPlaceTableau": "その列にはその札を置けません（同じスートで1つ下の札の上にのみ。空き列は埋められません）"
+  "errCannotPlaceTableau": "その列にはその札を置けません（同じスートで1つ下の札の上にのみ。空き列は埋められません）",
+  "log.move": "{{value1}} {{value2}}",
+  "log.deal": "山札から{{value1}}枚補充した",
+  "log.giveup": "ギブアップしました"
 }

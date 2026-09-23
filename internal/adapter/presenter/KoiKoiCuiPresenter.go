@@ -172,6 +172,7 @@ func koikoiRoundResultStr(g interfaces.KoiKoiGame) string {
 	return i18n.Tf("koikoi.roundWin",
 		"name", name,
 		"yaku", koikoiYakuStr(res.Yaku),
+		"base", strconv.Itoa(res.BasePoints),
 		"total", strconv.Itoa(res.Total),
 		"mult", strconv.Itoa(res.Multiplier))
 }

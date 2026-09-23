@@ -20,6 +20,7 @@
   "promptGiftHelp": "gift = give 1 point / run = re-deal",
   "promptPlay": "Turn: {{name}}",
   "promptPlayHelp": "play <idx> = play a card",
+  "legalPlayLegend": "Legal plays: {{indices}}.",
   "promptTrickEnd": "Trick over",
   "promptTrickEndHelp": "next = next trick",
   "promptRoundEnd": "Deal over",
@@ -46,5 +47,8 @@
   "hintReasonGiftRun": "weak hand, so re-deal",
   "helpExamplePlay": "  play 0               play hand card 0",
   "helpHint": "  h                    show a hint",
-  "helpLog": "  l                    show the action log"
+  "helpLog": "  l                    show the action log",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errMustFollowLeadSuit": "You must follow the lead suit or play a trump card.",
+  "log.turnUp": "Turn-up: {{card}} (trump {{suit}})", "log.begPhase": "{{name}} to stand or beg", "log.begPhaseRedeal": "{{name}} to stand or beg (re-deal)", "log.stand": "{{name}} stands", "log.beg": "{{name}} begs", "log.gift": "{{dealer}} gifts 1 point to {{elder}} (take-it)", "log.redeal": "Deck exhausted on run; re-dealing the hand", "log.run": "Run the cards: new turn-up {{card}}", "log.trumpSet": "New trump {{suit}}", "log.playStart": "Trump is {{suit}}. {{name}} leads.", "log.play": "{{name}} plays {{card}}", "log.trickWin": "{{name}} wins trick {{trick}}", "log.scoreGift": "{{name}} scores the Gift point", "log.scoreHigh": "{{name}} scores High", "log.scoreLow": "{{name}} scores Low", "log.scoreJack": "{{name}} scores Jack", "log.scoreGame": "{{name}} scores Game", "log.cumulativeScore": "{{name}}: total={{total}}", "log.gameEnd": "{{name}} wins the game!"
 }

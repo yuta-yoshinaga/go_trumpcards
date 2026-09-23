@@ -104,6 +104,17 @@ describe('OpenFaceChinesePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('sends the selected difficulty and player count when resetting settings', async () => {
+    renderWithProviders(<OpenFaceChinesePage />);
+    await screen.findByTestId('player-0');
+    mockExec.mockClear();
+
+    fireEvent.change(screen.getByLabelText('CPU難易度'), { target: { value: '2' } });
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', { config: { cpuDifficulty: 2, playerCount: 2 } }),
+    );
+  });
+
   it('shows the round number and the player boards', async () => {
     renderWithProviders(<OpenFaceChinesePage />);
     await waitFor(() => expect(screen.getByTestId('player-0')).toBeInTheDocument());
@@ -340,6 +351,19 @@ describe('OpenFaceChinesePage foul-risk warning', () => {
 
     expect(warning).toHaveAttribute('aria-live', 'polite');
     expect(warning).toHaveTextContent('反則');
+  });
+
+  it('uses the error token for the warning and risky placement row', async () => {
+    mockExec.mockResolvedValue(aboutToFoul);
+    renderWithProviders(<OpenFaceChinesePage />);
+
+    const warning = await screen.findByTestId('ofc-foul-risk-warning');
+    expect(warning.className).toContain('text-ds-error');
+    expect(warning.className).not.toContain('sr-only');
+
+    const riskyButton = screen.getByTestId('place-front');
+    expect(riskyButton).toHaveAttribute('data-foul-risk', 'true');
+    expect(riskyButton.className).toContain('ring-ds-error');
   });
 
   it('says nothing while no placement would foul', async () => {

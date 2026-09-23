@@ -18,6 +18,18 @@ func koenigrufenTrumpCard(v int) *domain.Card {
 	return domain.NewCard(domain.KoenigrufenTrumpDesign, v, false)
 }
 
+func TestKoenigrufenTeamPointsIncludesPartner(t *testing.T) {
+	g := domain.NewDefaultKoenigrufen()
+	g.Reset()
+	g.SetDeclarerIdx(0)
+	g.SetPartnerIdx(2)
+	g.GetPlayer(0).AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignHeart, domain.KoenigrufenKingValue, false)})
+	g.GetPlayer(2).AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignSpade, domain.KoenigrufenKingValue, false)})
+	if got := g.GetTeamPoints(); got <= g.GetCardPoints(0) {
+		t.Fatalf("team points = %d, declarer points = %d; partner points must be included", got, g.GetCardPoints(0))
+	}
+}
+
 func koenigrufenSkusCard() *domain.Card {
 	return domain.NewCard(domain.KoenigrufenSkusDesign, domain.KoenigrufenSkusValue, false)
 }
@@ -184,6 +196,15 @@ func TestKoenigrufenBiddingRufer(t *testing.T) {
 	require.NoError(t, g.PlayerBid(domain.KoenigrufenBidRufer))
 	assert.Equal(t, domain.KoenigrufenBidRufer, g.GetHighestBid())
 	assert.Equal(t, 0, g.GetHighestBidder())
+	var entry *domain.ActionLogEntry
+	for _, candidate := range g.GetActionLog() {
+		if candidate.DetailCode == "koenigrufen.log.bid" {
+			entry = candidate
+			break
+		}
+	}
+	require.NotNil(t, entry)
+	assert.Equal(t, "koenigrufen.bidRufer", entry.DetailParams["bidKey"])
 }
 
 func TestKoenigrufenBidInvalid(t *testing.T) {
@@ -485,6 +506,23 @@ func TestKoenigrufenResolveTrickCapturesAll(t *testing.T) {
 	assert.Equal(t, 1, g.GetPlayer(3).GetTrickCount())
 	// captured points: spade2(1)+spade3(1)+trump4(1)+skus(5) = 8.
 	assert.Equal(t, 8, g.GetCardPoints(3))
+}
+
+func TestKoenigrufenLastTrickWinnerIsSetOnEveryTrick(t *testing.T) {
+	g := koenigrufenNewReset()
+	g.SetTrickNumber(1)
+	g.SetPhase(domain.KoenigrufenPhaseTrickEnd)
+	g.SetCurrentTrick(koenigrufenTrickCards(
+		&domain.TrickCard{PlayerIdx: 0, Card: koenigrufenSuitCard(domain.CardDesignSpade, 2)},
+		&domain.TrickCard{PlayerIdx: 1, Card: koenigrufenSuitCard(domain.CardDesignSpade, 3)},
+		&domain.TrickCard{PlayerIdx: 2, Card: koenigrufenTrumpCard(4)},
+		&domain.TrickCard{PlayerIdx: 3, Card: koenigrufenSkusCard()},
+	))
+
+	g.ResolveTrick()
+
+	assert.NotEqual(t, -1, g.GetLastTrickWinner())
+	assert.Equal(t, g.GetLeadPlayerIdx(), g.GetLastTrickWinner())
 }
 
 func TestKoenigrufenEnterRoundEndZeroSum(t *testing.T) {

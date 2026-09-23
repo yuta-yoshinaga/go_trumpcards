@@ -188,8 +188,7 @@ func (d *Diloti) startRound() {
 	d.lastCapturer = -1
 	d.firstPlayDone = false
 	d.currentIdx = (d.dealerIdx + 1) % DilotiPlayerCnt
-	d.appendLog(-1, "deal", fmt.Sprintf("round %d: dealer=%d, table=%d",
-		d.roundNumber, d.dealerIdx, len(d.table)), nil)
+	d.appendLog(-1, "deal", "diloti.log.deal", map[string]string{"round": fmt.Sprint(d.roundNumber), "dealer": fmt.Sprint(d.dealerIdx), "table": fmt.Sprint(len(d.table))}, nil)
 }
 
 // dealHands は各席へ 6 枚ずつ配る。
@@ -294,12 +293,12 @@ func (d *Diloti) doCapture(seat int, card *Card, tableIdxs, declIdxs []int) erro
 	d.decls = dilotiRemoveDeclsAt(d.decls, declIdxs)
 	d.players[seat].AddCaptured(taken)
 	d.lastCapturer = seat
-	d.appendLog(seat, "capture", fmt.Sprintf("player %d captures %d card(s)", seat, len(taken)-1), taken)
+	d.appendLog(seat, "capture", "diloti.log.capture", map[string]string{"player": fmt.Sprint(seat), "cards": fmt.Sprint(len(taken) - 1)}, taken)
 
 	// **局の初手はクセリにならない。**
 	if sweeps && d.firstPlayDone {
 		d.players[seat].AddXeri()
-		d.appendLog(seat, "xeri", fmt.Sprintf("player %d sweeps the table", seat), nil)
+		d.appendLog(seat, "xeri", "diloti.log.xeri", map[string]string{"player": fmt.Sprint(seat)}, nil)
 	}
 	return nil
 }
@@ -315,7 +314,7 @@ func (d *Diloti) doTrail(seat int, card *Card) error {
 		return NewDomainErrorCode(ErrInvalidPlay, "diloti.errFaceMustCapture", nil)
 	}
 	d.table = append(d.table, card)
-	d.appendLog(seat, "trail", fmt.Sprintf("player %d lays a card", seat), []*Card{card})
+	d.appendLog(seat, "trail", "diloti.log.trail", map[string]string{"player": fmt.Sprint(seat)}, []*Card{card})
 	return nil
 }
 
@@ -360,7 +359,7 @@ func (d *Diloti) doDeclare(seat int, card *Card, tableIdxs, declIdxs []int, valu
 		}
 		d.table = dilotiRemoveAt(d.table, tableIdxs)
 		d.decls = append(d.decls, NewDilotiDeclaration(seat, value, picked))
-		d.appendLog(seat, "declare", fmt.Sprintf("player %d declares %d", seat, value), picked)
+		d.appendLog(seat, "declare", "diloti.log.declare", map[string]string{"player": fmt.Sprint(seat), "value": fmt.Sprint(value)}, picked)
 		return nil
 	}
 
@@ -375,7 +374,7 @@ func (d *Diloti) doDeclare(seat int, card *Card, tableIdxs, declIdxs []int, valu
 		d.table = dilotiRemoveAt(d.table, tableIdxs)
 		target.AddGroup(picked)
 		target.OwnerIdx = seat
-		d.appendLog(seat, "group", fmt.Sprintf("player %d groups %d", seat, value), picked)
+		d.appendLog(seat, "group", "diloti.log.group", map[string]string{"player": fmt.Sprint(seat), "value": fmt.Sprint(value)}, picked)
 		return nil
 	case target.IsGroup:
 		// **グループ宣言は上げられない。**
@@ -394,7 +393,7 @@ func (d *Diloti) doDeclare(seat int, card *Card, tableIdxs, declIdxs []int, valu
 		target.Groups[0] = append(target.Groups[0], picked...)
 		target.Value = value
 		target.OwnerIdx = seat
-		d.appendLog(seat, "raise", fmt.Sprintf("player %d raises to %d", seat, value), picked)
+		d.appendLog(seat, "raise", "diloti.log.raise", map[string]string{"player": fmt.Sprint(seat), "value": fmt.Sprint(value)}, picked)
 		return nil
 	}
 }
@@ -517,8 +516,7 @@ func (d *Diloti) finishRound() {
 			rest = append(rest, x.AllCards()...)
 		}
 		d.players[d.lastCapturer].AddCaptured(rest)
-		d.appendLog(d.lastCapturer, "sweep",
-			fmt.Sprintf("player %d takes the %d card(s) left on the table", d.lastCapturer, len(rest)), rest)
+		d.appendLog(d.lastCapturer, "sweep", "diloti.log.sweep", map[string]string{"player": fmt.Sprint(d.lastCapturer), "cards": fmt.Sprint(len(rest))}, rest)
 		d.table = make([]*Card, 0)
 		d.decls = make([]*DilotiDeclaration, 0)
 	}
@@ -526,8 +524,7 @@ func (d *Diloti) finishRound() {
 	for i := range d.players {
 		d.players[i].AddScore(d.lastResult.Totals[i])
 	}
-	d.appendLog(-1, "roundEnd", fmt.Sprintf("round %d: %d - %d",
-		d.roundNumber, d.lastResult.Totals[0], d.lastResult.Totals[1]), nil)
+	d.appendLog(-1, "roundEnd", "diloti.log.roundEnd", map[string]string{"round": fmt.Sprint(d.roundNumber), "score0": fmt.Sprint(d.lastResult.Totals[0]), "score1": fmt.Sprint(d.lastResult.Totals[1])}, nil)
 	d.phase = DilotiPhaseRoundEnd
 	d.checkGameEnd()
 }
@@ -612,7 +609,11 @@ func (d *Diloti) checkGameEnd() {
 	d.gameEndFlag = true
 	d.winnerIdx = bestIdx
 	d.phase = DilotiPhaseGameEnd
-	d.appendLog(-1, "gameEnd", fmt.Sprintf("player %d wins the match", bestIdx), nil)
+	d.appendLog(-1, "gameEnd", "diloti.log.gameEnd", map[string]string{"player": fmt.Sprint(bestIdx)}, nil)
+}
+
+func (d *Diloti) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	d.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // CpuPlay は CPU が 1 手打つ。

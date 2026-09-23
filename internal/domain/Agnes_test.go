@@ -99,6 +99,9 @@ func TestAgnes_DealStock(t *testing.T) {
 			assert.True(t, newTab[i][len(newTab[i])-1].FaceUp)
 		}
 		assert.Equal(t, 1, a.GetMoveCount())
+		log := a.GetActionLog()
+		assert.Len(t, log, 1)
+		assert.Equal(t, "agnes.log.deal", log[0].DetailCode)
 	})
 
 	t.Run("partial last deal of 2 cards", func(t *testing.T) {

@@ -16,6 +16,8 @@
   "round": "ラウンド {{n}}",
   "trick": "トリック {{n}}",
   "trump": "切り札: {{suit}}",
+  "dealer": "ディーラー: {{name}}",
+  "trumpAutoNote": "切り札はディーラーの手札で最も多いスートから自動で決まります（選択操作はありません）",
   "noTrump": "なし",
   "cards": "{{count}}枚",
   "tricks": "{{count}}トリック",

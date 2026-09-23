@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra2
+//go:build !js || !wasm || extra6
 
 package presenter
 
@@ -33,10 +33,7 @@ func (p *SpoonsWebPresenter) Output(g interfaces.SpoonsGame, lastErr error) stri
 		if player == nil {
 			continue
 		}
-		name := "あなた"
-		if !player.GetIsHuman() {
-			name = "CPU"
-		}
+		name := webPlayerName(player.GetIsHuman(), i)
 		// 手札は人間 (idx 0) のみ公開する。
 		resObj.Players = append(resObj.Players, &controller.SpoonsWebPlayer{
 			Name:       name,

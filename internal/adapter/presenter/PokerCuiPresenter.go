@@ -94,6 +94,22 @@ func (pcp *PokerCuiPresenter) Output(p interfaces.PokerGame, lastErr error) stri
 			}
 		}
 
+		if eq := p.GetEquity(); eq != nil {
+			potOdds := p.GetPotOdds()
+			b.WriteString("----------\n")
+			b.WriteString(color.Bold(i18n.T("poker.learningHeader")) + "\n")
+			b.WriteString(i18n.Tf("poker.learningLine",
+				"equity", fmt.Sprintf("%.1f", eq.Equity*100),
+				"potodds", fmt.Sprintf("%.1f", potOdds)) + "\n")
+			if potOdds > 0 {
+				if eq.Equity*100 > potOdds {
+					b.WriteString(i18n.T("poker.learningEvPlus") + "\n")
+				} else {
+					b.WriteString(i18n.T("poker.learningEvMinus") + "\n")
+				}
+			}
+		}
+
 		cpuActions := p.GetCpuActions()
 		if len(cpuActions) > 0 {
 			b.WriteString("----------\n")

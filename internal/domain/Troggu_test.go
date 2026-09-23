@@ -469,6 +469,15 @@ func TestTrogguFullMatch_Terminates(t *testing.T) {
 	assert.True(t, g.GetGameEndFlag())
 	assert.Equal(t, TrogguPhaseGameEnd, g.GetPhase())
 	assert.NotEmpty(t, g.GetActionLog())
+	var deal *ActionLogEntry
+	for _, entry := range g.GetActionLog() {
+		if entry.DetailCode == "troggu.log.deal" {
+			deal = entry
+			break
+		}
+	}
+	require.NotNil(t, deal)
+	assert.Equal(t, map[string]string{"round": "1", "cards": "18", "talon": "6"}, deal.DetailParams)
 	// 精算はディールごとにゼロサムなので通算も 0。
 	sum := 0
 	for i := range TrogguPlayerCnt {

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // TeenDoPaanchPhase は 3-2-5 のゲームフェーズ。
@@ -85,6 +86,10 @@ type TeenDoPaanch struct {
 	currentTrick     []*TrickCard
 	currentPlayerIdx int
 	leadPlayerIdx    int
+	// lastTrick は直前のトリックの札。次のトリック開始後も表示用に保持する。
+	lastTrick []*TrickCard
+	// lastTrickWinner は直前のトリックの勝者 (-1 = 未確定)。
+	lastTrickWinner int
 	// surplus は前ラウンドの過不足（+ が超過、- が不足）。次の配りで札の
 	// やり取りに使い、使い切ったら 0 に戻します。
 	surplus []int
@@ -104,11 +109,12 @@ type TeenDoPaanch struct {
 // NewTeenDoPaanch はコンストラクタ。
 func NewTeenDoPaanch(players []*TeenDoPaanchPlayer, config TeenDoPaanchConfig) *TeenDoPaanch {
 	return &TeenDoPaanch{
-		players:       players,
-		config:        config,
-		fivePlayerIdx: 0,
-		surplus:       make([]int, TeenDoPaanchPlayerCnt),
-		winnerIdx:     -1,
+		players:         players,
+		config:          config,
+		fivePlayerIdx:   0,
+		surplus:         make([]int, TeenDoPaanchPlayerCnt),
+		winnerIdx:       -1,
+		lastTrickWinner: -1,
 	}
 }
 
@@ -139,6 +145,8 @@ func (g *TeenDoPaanch) Reset() {
 	g.lastExchangePairs = nil
 	g.gameEndFlag = false
 	g.winnerIdx = -1
+	g.lastTrick = nil
+	g.lastTrickWinner = -1
 	g.actionLog = nil
 	for _, p := range g.players {
 		p.ResetGame()
@@ -154,8 +162,10 @@ func (g *TeenDoPaanch) startRound() {
 	g.trumpSuit = 0
 	g.trickNumber = 0
 	g.currentTrick = nil
+	g.lastTrick = nil
 	g.lastExchange = 0
 	g.lastExchangePairs = nil
+	g.lastTrickWinner = -1
 	for _, p := range g.players {
 		p.ResetRound()
 	}
@@ -175,7 +185,7 @@ func (g *TeenDoPaanch) startRound() {
 	g.roundNumber++
 	g.currentPlayerIdx = g.fivePlayerIdx
 	g.leadPlayerIdx = g.fivePlayerIdx
-	g.addLog(-1, "deal", fmt.Sprintf("ラウンド %d：ノルマ 3/2/5 を割り当てました", g.roundNumber), nil)
+	g.addLog(-1, "deal", "teendopaanch.log.deal", map[string]string{"round": strconv.Itoa(g.roundNumber)}, nil)
 }
 
 // assignTargets はノルマを席へ割り当てる。**5 を起点に 3・2 と回します。**
@@ -210,7 +220,7 @@ func (g *TeenDoPaanch) DeclareTrump(suit int) error {
 	g.exchangeCards()
 	g.phase = TeenDoPaanchPhasePlay
 	g.currentPlayerIdx = g.leadPlayerIdx
-	g.addLog(g.fivePlayerIdx, "trump", fmt.Sprintf("切り札は %s", suitStr(suit)), nil)
+	g.addLog(g.fivePlayerIdx, "trump", "teendopaanch.log.trump", map[string]string{"suitKey": suitKeyOf(suit)}, nil)
 	return nil
 }
 
@@ -310,7 +320,7 @@ func (g *TeenDoPaanch) exchangeCards() {
 	}
 	if moved > 0 {
 		g.sortAllHands()
-		g.addLog(-1, "exchange", fmt.Sprintf("前ラウンドの過不足で %d 枚を移しました", moved), nil)
+		g.addLog(-1, "exchange", "teendopaanch.log.exchange", map[string]string{"count": strconv.Itoa(moved)}, nil)
 	}
 }
 
@@ -443,7 +453,7 @@ func (g *TeenDoPaanch) play(playerIdx, cardIndex int) error {
 
 	card := p.RemoveCard(cardIndex)
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.addLog(playerIdx, "play", cardStr(card), []*Card{card})
+	g.addLog(playerIdx, "play", "teendopaanch.log.play", map[string]string{"card": cardStr(card)}, []*Card{card})
 
 	if len(g.currentTrick) < TeenDoPaanchPlayerCnt {
 		g.currentPlayerIdx = (g.currentPlayerIdx + 1) % TeenDoPaanchPlayerCnt
@@ -456,16 +466,19 @@ func (g *TeenDoPaanch) play(playerIdx, cardIndex int) error {
 // resolveTrick はトリックを解決する。
 func (g *TeenDoPaanch) resolveTrick() {
 	winner := g.trickWinner()
+	lastTrick := append([]*TrickCard(nil), g.currentTrick...)
 	cards := make([]*Card, 0, TeenDoPaanchPlayerCnt)
 	for _, tc := range g.currentTrick {
 		cards = append(cards, tc.Card)
 	}
 	g.players[winner].AddTrick(cards)
 	g.currentTrick = nil
+	g.lastTrick = lastTrick
 	g.trickNumber++
 	g.leadPlayerIdx = winner
+	g.lastTrickWinner = winner
 	g.currentPlayerIdx = winner
-	g.addLog(winner, "trick", fmt.Sprintf("トリック %d を取りました", g.trickNumber), nil)
+	g.addLog(winner, "trick", "teendopaanch.log.trick", map[string]string{"trick": strconv.Itoa(g.trickNumber)}, nil)
 
 	if g.trickNumber >= TeenDoPaanchTricksPerRound {
 		g.finishRound()
@@ -505,11 +518,9 @@ func (g *TeenDoPaanch) finishRound() {
 		g.surplus[i] = diff
 		if diff >= 0 {
 			p.AddMet()
-			g.addLog(i, "score", fmt.Sprintf("ノルマ %d に対し %d トリック：達成",
-				p.GetTarget(), p.GetTrickCount()), nil)
+			g.addLog(i, "score", "teendopaanch.log.scoreMet", map[string]string{"target": strconv.Itoa(p.GetTarget()), "tricks": strconv.Itoa(p.GetTrickCount())}, nil)
 		} else {
-			g.addLog(i, "score", fmt.Sprintf("ノルマ %d に対し %d トリック：未達成",
-				p.GetTarget(), p.GetTrickCount()), nil)
+			g.addLog(i, "score", "teendopaanch.log.scoreMissed", map[string]string{"target": strconv.Itoa(p.GetTarget()), "tricks": strconv.Itoa(p.GetTrickCount())}, nil)
 		}
 	}
 	if g.roundNumber >= g.config.Rounds {
@@ -544,7 +555,7 @@ func (g *TeenDoPaanch) finishGame() {
 		best = -1
 	}
 	g.winnerIdx = best
-	g.addLog(-1, "result", "ゲーム終了", nil)
+	g.addLog(-1, "result", "teendopaanch.log.result", nil, nil)
 }
 
 // GiveUp は投了する。
@@ -555,7 +566,7 @@ func (g *TeenDoPaanch) GiveUp() {
 	g.phase = TeenDoPaanchPhaseGameEnd
 	g.gameEndFlag = true
 	g.winnerIdx = -1
-	g.addLog(0, "giveup", "投了しました", nil)
+	g.addLog(0, "giveup", "teendopaanch.log.giveup", nil, nil)
 }
 
 // chooseCpuCard は CPU の手。
@@ -624,8 +635,8 @@ func teenDoPaanchContains(xs []int, v int) bool {
 }
 
 // addLog は棋譜に 1 行足す。
-func (g *TeenDoPaanch) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	g.appendLog(playerIdx, actionType, detail, cards)
+func (g *TeenDoPaanch) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- アクセサ ---------------------------------------------------------------
@@ -660,8 +671,14 @@ func (g *TeenDoPaanch) GetCurrentPlayerIdx() int { return g.currentPlayerIdx }
 // GetLeadPlayerIdx はリードプレイヤーを返す。
 func (g *TeenDoPaanch) GetLeadPlayerIdx() int { return g.leadPlayerIdx }
 
+// GetLastTrickWinner は直前のトリックの勝者を返す (-1 = 未確定)。
+func (g *TeenDoPaanch) GetLastTrickWinner() int { return g.lastTrickWinner }
+
 // GetCurrentTrick は現在のトリックを返す。
 func (g *TeenDoPaanch) GetCurrentTrick() []*TrickCard { return g.currentTrick }
+
+// GetLastTrick は直前のトリックを返す。
+func (g *TeenDoPaanch) GetLastTrick() []*TrickCard { return g.lastTrick }
 
 // GetLastExchange は直前のラウンド間で動いた札の枚数を返す。
 func (g *TeenDoPaanch) GetLastExchange() int { return g.lastExchange }
@@ -700,8 +717,10 @@ type teenDoPaanchJSON struct {
 	TrickNumber      int                   `json:"tn"`
 	FivePlayerIdx    int                   `json:"fp"`
 	CurrentTrick     []*TrickCard          `json:"ct"`
+	LastTrick        []*TrickCard          `json:"lt"`
 	CurrentPlayerIdx int                   `json:"ci"`
 	LeadPlayerIdx    int                   `json:"li"`
+	LastTrickWinner  int                   `json:"lw"`
 	Surplus          []int                 `json:"sp"`
 	LastExchange     int                   `json:"le"`
 	GameEndFlag      bool                  `json:"ge"`
@@ -721,8 +740,10 @@ func (g *TeenDoPaanch) MarshalJSON() ([]byte, error) {
 		TrickNumber:      g.trickNumber,
 		FivePlayerIdx:    g.fivePlayerIdx,
 		CurrentTrick:     g.currentTrick,
+		LastTrick:        g.lastTrick,
 		CurrentPlayerIdx: g.currentPlayerIdx,
 		LeadPlayerIdx:    g.leadPlayerIdx,
+		LastTrickWinner:  g.lastTrickWinner,
 		Surplus:          g.surplus,
 		LastExchange:     g.lastExchange,
 		GameEndFlag:      g.gameEndFlag,
@@ -761,6 +782,9 @@ func (g *TeenDoPaanch) UnmarshalJSON(data []byte) error {
 	if len(j.CurrentTrick) > TeenDoPaanchPlayerCnt {
 		return fmt.Errorf("current trick holds %d cards", len(j.CurrentTrick))
 	}
+	if len(j.LastTrick) > TeenDoPaanchPlayerCnt {
+		return fmt.Errorf("last trick holds %d cards", len(j.LastTrick))
+	}
 	if len(j.ActionLog) > teenDoPaanchMaxSliceLen {
 		return errors.New("teendopaanch: input array exceeds maximum allowed size")
 	}
@@ -775,6 +799,12 @@ func (g *TeenDoPaanch) UnmarshalJSON(data []byte) error {
 	}
 	if j.WinnerIdx < -1 || j.WinnerIdx >= TeenDoPaanchPlayerCnt {
 		return fmt.Errorf("invalid winner: %d", j.WinnerIdx)
+	}
+	// **席を指す値は全部ここで弾く。** Worker はリクエストごとに JSON から
+	// 卓を組み直すので、範囲外の席が入ると壊れた盤をそのまま受け入れる。
+	// いま panic しないのは GetPlayer が nil に落ちるからで、正しさではない。
+	if j.LastTrickWinner < -1 || j.LastTrickWinner >= TeenDoPaanchPlayerCnt {
+		return fmt.Errorf("invalid last trick winner: %d", j.LastTrickWinner)
 	}
 	// **勝者が決まっているのは終局後だけ。**
 	if !j.GameEndFlag && j.WinnerIdx != -1 {
@@ -811,8 +841,10 @@ func (g *TeenDoPaanch) UnmarshalJSON(data []byte) error {
 	g.trickNumber = j.TrickNumber
 	g.fivePlayerIdx = j.FivePlayerIdx
 	g.currentTrick = j.CurrentTrick
+	g.lastTrick = j.LastTrick
 	g.currentPlayerIdx = j.CurrentPlayerIdx
 	g.leadPlayerIdx = j.LeadPlayerIdx
+	g.lastTrickWinner = j.LastTrickWinner
 	g.surplus = j.Surplus
 	g.lastExchange = j.LastExchange
 	g.gameEndFlag = j.GameEndFlag

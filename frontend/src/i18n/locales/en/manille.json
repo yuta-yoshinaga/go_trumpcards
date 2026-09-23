@@ -47,7 +47,7 @@
     "pointCol": "Points",
     "manille": "Manille",
     "manillon": "Manillon",
-    "note": "10 > A > K > Q > J > 9 > 8 > 7 (same for trump and non-trump). 60 points total."
+    "note": "10 > A > K > Q > J > 9 > 8 > 7 (same for trump and non-trump). 60 points total. When void, you must trump unless your partner already holds the trick, in which case you may conserve trump."
   },
   "hintAvailable": "Hint",
   "hint": {

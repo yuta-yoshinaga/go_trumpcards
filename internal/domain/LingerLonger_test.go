@@ -17,6 +17,17 @@ func newTestLingerLonger(t *testing.T) *LingerLonger {
 	return l
 }
 
+func TestLingerLonger_ActionLogUsesDetailCode(t *testing.T) {
+	l := newTestLingerLonger(t)
+	for _, entry := range l.GetActionLog() {
+		if entry.DetailCode == "lingerlonger.log.start" {
+			assert.Equal(t, map[string]string{"players": "4", "cardsPerPlayer": "4"}, entry.DetailParams)
+			return
+		}
+	}
+	t.Fatal("lingerlonger.log.start entry not found")
+}
+
 // **配る枚数は人数と同じ。** 4 人なら 4 枚ずつ、6 人なら 6 枚ずつ。
 func TestLingerLonger_DealsAsManyCardsAsThereArePlayers(t *testing.T) {
 	for n := LingerLongerPlayerCntMin; n <= LingerLongerPlayerCntMax; n++ {

@@ -1,8 +1,10 @@
-//go:build !js || !wasm || casino
+//go:build !js || !wasm || extra6
 
 package presenter
 
 import (
+	"strconv"
+
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
@@ -45,6 +47,10 @@ func (mp *MississippiStudWebPresenter) Output(g interfaces.MississippiStudGame, 
 			resObj.Message = "Push."
 			resObj.MessageCode = "mississippistud.result.push"
 		}
+	case g.GetPhase() == domain.MississippiStudPhaseAnte && g.GetChipsRefilled():
+		resObj.Message = "Your balance fell below the minimum round cost, so it was topped up."
+		resObj.MessageCode = "mississippistud.chipsRefilled"
+		resObj.MessageParams = map[string]string{"chips": strconv.Itoa(domain.MississippiStudDefaultChips)}
 	}
 
 	return marshalOrError(resObj)

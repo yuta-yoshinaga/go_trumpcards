@@ -110,6 +110,18 @@ describe('PageOnePage', () => {
     });
   });
 
+  it.each([
+    [200, '目標: 200点'],
+    [300, '目標: 300点'],
+  ])('renders the server-provided target score (%i)', async (pointLimit, expectedText) => {
+    mockExec.mockResolvedValue({ ...playPhaseState, config: { ...playPhaseState.config, pointLimit } });
+    renderWithProviders(<PageOnePage />);
+
+    const targetScore = await screen.findByTestId('po-target-score');
+    expect(targetScore).toHaveTextContent(expectedText);
+    expect(targetScore).not.toHaveTextContent('{{');
+  });
+
   it('shows the play-condition badge under the discard top', async () => {
     renderWithProviders(<PageOnePage />);
     // discardTop is ♥7 → playable cards are hearts or 7s.

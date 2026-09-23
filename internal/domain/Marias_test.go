@@ -4,6 +4,7 @@ package domain
 
 import (
 	"encoding/json"
+	"reflect"
 	"testing"
 )
 
@@ -105,6 +106,21 @@ func TestMarias_MustFollowAndTrumpWhenVoid(t *testing.T) {
 	if err := g.PlayerPlay(0); err != nil {
 		t.Fatalf("valid follow err: %v", err)
 	}
+	var playLog *ActionLogEntry
+	for _, entry := range g.GetActionLog() {
+		if entry.ActionType == "play" {
+			playLog = entry
+		}
+	}
+	if playLog == nil {
+		t.Fatal("play action was not logged")
+	}
+	if playLog.DetailCode != "marias.log.play" {
+		t.Fatalf("play log = %#v, want code and empty detail", playLog)
+	}
+	if playLog.DetailParams["name"] == "" || playLog.DetailParams["card"] == "" {
+		t.Fatalf("play params = %#v, want name and card", playLog.DetailParams)
+	}
 	// Void in clubs but holds a trump -> must trump.
 	g.SetCurrentTrick([]*TrickCard{{PlayerIdx: 1, Card: marCard(CardDesignClover, 1)}})
 	g.SetCurrentPlayerIdx(0)
@@ -130,6 +146,16 @@ func TestMarias_MarriageDetection(t *testing.T) {
 	if rm[0] != 60 {
 		t.Errorf("player 0 marriage = %d, want 60 (20 plain + 40 trump)", rm[0])
 	}
+	if got, want := g.GetRoundMarriageSuits()[0], []MariasMarriage{{Suit: CardDesignSpade, Points: 20}, {Suit: CardDesignHeart, Points: 40}}; !reflect.DeepEqual(got, want) {
+		t.Errorf("marriage details = %v, want %v", got, want)
+	}
+	g.roundMarriageSuits[0] = []MariasMarriage{{Suit: 99, Points: 999}}
+	g.startRound()
+	for _, marriage := range g.GetRoundMarriageSuits()[0] {
+		if marriage.Suit == 99 {
+			t.Error("marriage details should reset at the start of a round")
+		}
+	}
 }
 
 func TestMarias_ResolveTrickPointsAndLastBonus(t *testing.T) {
@@ -150,6 +176,24 @@ func TestMarias_ResolveTrickPointsAndLastBonus(t *testing.T) {
 	}
 	if g.GetPhase() != MariasPhaseRoundEnd {
 		t.Errorf("phase after final trick = %d, want RoundEnd", g.GetPhase())
+	}
+}
+
+func TestMariasResolveTrickRecordsWinnerBeforeRoundEnd(t *testing.T) {
+	g := newMarGame(false)
+	g.SetPhase(MariasPhaseTrickEnd)
+	g.SetTrickNumber(1)
+	g.SetCurrentTrick([]*TrickCard{
+		{PlayerIdx: 0, Card: marCard(CardDesignClover, 1)},
+		{PlayerIdx: 1, Card: marCard(CardDesignClover, 10)},
+		{PlayerIdx: 2, Card: marCard(CardDesignClover, 13)},
+	})
+	g.ResolveTrick()
+	if g.GetLastTrickWinner() == -1 {
+		t.Fatal("last trick winner should be recorded for every resolved trick")
+	}
+	if g.GetLastTrickWinner() != g.GetLeadPlayerIdx() {
+		t.Fatalf("last trick winner = %d, lead player = %d", g.GetLastTrickWinner(), g.GetLeadPlayerIdx())
 	}
 }
 
@@ -269,6 +313,9 @@ func TestMarias_JSONRoundTrip(t *testing.T) {
 	}
 	if g2.GetTrumpSuit() != g.GetTrumpSuit() || g2.GetSoloistIdx() != g.GetSoloistIdx() {
 		t.Error("round-trip mismatch")
+	}
+	if !reflect.DeepEqual(g2.GetRoundMarriageSuits(), g.GetRoundMarriageSuits()) {
+		t.Errorf("marriage details round-trip mismatch: got %v, want %v", g2.GetRoundMarriageSuits(), g.GetRoundMarriageSuits())
 	}
 }
 

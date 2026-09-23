@@ -29,7 +29,11 @@ import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
-import { isGoalTopPlayableToFoundation, isSpiteAndMaliceWild } from '../utils/spiteAndMaliceUtils';
+import {
+  canPlaceSpiteAndMaliceCardOnFoundation,
+  isGoalTopPlayableToFoundation,
+  isSpiteAndMaliceWild,
+} from '../utils/spiteAndMaliceUtils';
 
 const samRunner = spiteAndMaliceApi;
 
@@ -156,6 +160,14 @@ function SpiteAndMalicePageContent() {
 
   const [selection, setSelection] = useState<Selection>(null);
   const [cpuSpeed, setCpuSpeed] = useState<SamCpuSpeed>(loadSamCpuSpeed);
+  const selectedCard = useMemo(() => {
+    const human = state?.players[0];
+    if (!human || !selection) return null;
+    if (selection.kind === 'hand') return human.hand[selection.idx] ?? null;
+    if (selection.kind === 'goal') return human.goalTop ?? null;
+    const side = human.sides[selection.idx];
+    return side[side.length - 1] ?? null;
+  }, [selection, state]);
 
   const handleSelectCpuSpeed = useCallback((v: string) => {
     const speed: SamCpuSpeed = v === 'slow' || v === 'fast' ? v : 'normal';
@@ -351,6 +363,12 @@ function SpiteAndMalicePageContent() {
                   topValue={state.foundationTops[idx]}
                   cardWidth={cardWidth}
                   highlight={isHintTarget(`hand${selection?.kind === 'hand' ? selection.idx : ''}-to-f${idx}`)}
+                  playable={
+                    isHumanTurn &&
+                    !isGameOver &&
+                    selectedCard !== null &&
+                    canPlaceSpiteAndMaliceCardOnFoundation(selectedCard.value, state.foundationTops[idx], pile.length)
+                  }
                   selected={selection !== null}
                   onClick={() => handleFoundationClick(idx)}
                   ariaTop={(pileNo, card, top) =>
@@ -361,7 +379,7 @@ function SpiteAndMalicePageContent() {
               ))}
             </div>
 
-            <div className="text-center text-xs text-ds-secondary">
+            <div className="text-center text-xs text-ds-text-muted">
               {t('label.stock')}: {state.stockSize} / {t('label.completed')}: {state.completedSize}
             </div>
 
@@ -475,20 +493,20 @@ function PlayerSummary({
   const sideWidth = Math.round(cardWidth * 0.5);
   return (
     <div className="flex flex-col items-center" data-tutorial={dataTutorial}>
-      <span className="text-sm text-ds-secondary mb-1">
+      <span className="text-sm text-ds-text-muted mb-1">
         {label} ({handCountLabel(player.hand.length)})
       </span>
       <div className="flex gap-2 items-end">
         {player.goalTop ? (
           <div className="flex flex-col items-center">
-            <span className="text-xs text-ds-secondary">{goalLabel(player.goalSize)}</span>
+            <span className="text-xs text-ds-text-muted">{goalLabel(player.goalSize)}</span>
             <AnimatedCard card={player.goalTop} width={cardWidth} />
           </div>
         ) : (
-          <span className="text-xs text-ds-secondary">{goalLabel(0)}</span>
+          <span className="text-xs text-ds-text-muted">{goalLabel(0)}</span>
         )}
         <div className="flex flex-col items-center" data-testid="sam-cpu-sides">
-          <span className="text-xs text-ds-secondary">{sidesLabel}</span>
+          <span className="text-xs text-ds-text-muted">{sidesLabel}</span>
           <div className="flex gap-1">
             {player.sides.map((pile, i) => {
               const top = pile.length > 0 ? pile[pile.length - 1] : undefined;
@@ -528,6 +546,7 @@ function FoundationPile({
   topValue,
   cardWidth,
   highlight,
+  playable,
   selected,
   onClick,
   ariaTop,
@@ -538,6 +557,7 @@ function FoundationPile({
   topValue: number;
   cardWidth: number;
   highlight: boolean;
+  playable: boolean;
   selected: boolean;
   onClick: () => void;
   ariaTop: (n: number, card: string, top: number) => string;
@@ -545,19 +565,20 @@ function FoundationPile({
 }) {
   const top = pile.length > 0 ? pile[pile.length - 1] : undefined;
   const ariaLabel = top ? ariaTop(idx + 1, cardAlt(top), topValue) : ariaEmpty(idx + 1);
-  const baseRing = highlight ? 'ring-2 ring-ds-info' : '';
+  const baseRing = highlight ? 'ring-2 ring-ds-info' : playable ? 'ring-2 ring-ds-success' : '';
   const interactive = selected ? 'cursor-pointer hover:-translate-y-0.5' : 'cursor-default';
   return (
     <button
       type="button"
       data-hint-action={`hand-to-f${idx}`}
+      data-playable={playable ? 'true' : undefined}
       className={`relative ${focusRingWhite} rounded-lg transition-transform ${baseRing} ${interactive}`}
       onClick={onClick}
       disabled={!selected}
       aria-label={ariaLabel}
     >
       {top ? <AnimatedCard card={top} width={cardWidth} /> : <FaceDownSlot label={`F${idx + 1}`} width={cardWidth} />}
-      <span className="absolute -top-2 -right-1 text-[10px] bg-ds-surface px-1 rounded text-ds-secondary">
+      <span className="absolute -top-2 -right-1 text-[10px] bg-ds-surface px-1 rounded text-ds-text-muted">
         {topValue === 0 ? '-' : topValue}
       </span>
     </button>
@@ -568,7 +589,7 @@ function FaceDownSlot({ label, width }: { label: string; width: number }) {
   const height = Math.round(width * 1.4);
   return (
     <div
-      className="flex items-center justify-center bg-ds-surface/70 border border-dashed border-ds-secondary rounded-md text-ds-secondary text-sm"
+      className="flex items-center justify-center bg-ds-surface/70 border border-dashed border-ds-border-subtle rounded-md text-ds-text-muted text-sm"
       style={{ width, height }}
     >
       {label}
@@ -617,7 +638,7 @@ function GoalPile({
       disabled={size === 0}
       aria-label={top ? ariaTop(cardAlt(top), size) : ariaEmpty}
     >
-      <span className="text-xs text-ds-secondary mb-1">
+      <span className="text-xs text-ds-text-muted mb-1">
         {label} ({size})
       </span>
       {top ? <AnimatedCard card={top} width={cardWidth} /> : <FaceDownSlot label={label} width={cardWidth} />}
@@ -652,10 +673,10 @@ function HandRow({
 }) {
   return (
     <div className="flex flex-col items-center" data-tutorial={dataTutorial}>
-      <span className="text-sm text-ds-secondary mb-1">{label}</span>
+      <span className="text-sm text-ds-text-muted mb-1">{label}</span>
       <div className="flex gap-2 flex-wrap justify-center">
         {hand.length === 0 ? (
-          <span className="text-xs text-ds-secondary">{emptyLabel}</span>
+          <span className="text-xs text-ds-text-muted">{emptyLabel}</span>
         ) : (
           hand.map((card, idx) => {
             const selected = selectedIdx === idx;
@@ -674,7 +695,7 @@ function HandRow({
                 }`}
               >
                 {card ? <AnimatedCard card={card} width={cardWidth} /> : <FaceDownSlot label="?" width={cardWidth} />}
-                {/* K はどの基礎札にも出せるワイルド。規則はドメインにあるのに、
+                {/* K はどの組札にも出せるワイルド。規則はドメインにあるのに、
                     表示にも読み上げにも出ていなかった (#5560)。 */}
                 {isSpiteAndMaliceWild(card) && (
                   <span
@@ -725,7 +746,7 @@ function SideRow({
 }) {
   return (
     <div className="flex flex-col items-center gap-2" data-tutorial={dataTutorial}>
-      <span className="text-sm text-ds-secondary">{cpuLabel ? `CPU ${label}` : label}</span>
+      <span className="text-sm text-ds-text-muted">{cpuLabel ? `CPU ${label}` : label}</span>
       {/* Shared reason for the discard buttons' disabled state (they all gate on
           a selected hand card), announced via aria-describedby below. */}
       <span id="sam-discard-hint" className="sr-only" data-testid="sam-discard-hint">
@@ -752,7 +773,7 @@ function SideRow({
                   <FaceDownSlot label={`S${idx + 1}`} width={cardWidth} />
                 )}
               </button>
-              <span className="text-[10px] text-ds-secondary">
+              <span className="text-[10px] text-ds-text-muted">
                 {label} {idx + 1} ({pile.length})
               </span>
               <button

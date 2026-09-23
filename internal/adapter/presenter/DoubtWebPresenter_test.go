@@ -11,6 +11,7 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestDoubtWebPresenter_Method(t *testing.T) {
@@ -472,13 +473,23 @@ func TestDoubtWebPresenter_Method(t *testing.T) {
 	})
 }
 
+func TestDoubtWebPresenter_CodedError(t *testing.T) {
+	d := domain.NewDefaultDoubt()
+	err := domain.NewDomainErrorCode(domain.ErrInvalidPlay, "doubt.errNoCardsSpecified", nil)
+	result := new(presenter.DoubtWebPresenter).Output(d, err)
+	var output controller.DoubtWebOutput
+	require.NoError(t, json.Unmarshal([]byte(result), &output))
+	assert.Empty(t, output.Message)
+	assert.Equal(t, "doubt.errNoCardsSpecified", output.MessageCode)
+}
+
 func TestDoubtWebPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.DoubtWebPresenter)
 
 	t.Run("with entries", func(t *testing.T) {
 		mockGame := new(interfaces.MockDoubtGame)
 		entries := []*domain.ActionLogEntry{
-			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", Detail: "declared 5, played 1 card(s)", Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, true)}},
+			{TurnNumber: 1, PlayerIdx: 0, ActionType: "play", DetailCode: "test.log.stub", DetailParams: map[string]string{"value": "1"}, Cards: []*domain.Card{domain.NewCard(domain.CardDesignSpade, 5, true)}},
 		}
 		mockGame.On("GetGameEndFlag").Return(true)
 		mockGame.On("GetActionLog").Return(entries)
@@ -486,7 +497,7 @@ func TestDoubtWebPresenter_ActionLogOutput(t *testing.T) {
 		result := p.ActionLogOutput(mockGame)
 
 		assert.Contains(t, result, `"actionType":"play"`)
-		assert.Contains(t, result, `"detail":"declared 5, played 1 card(s)"`)
+		assert.Contains(t, result, `"detailCode":"test.log.stub"`)
 		assert.Contains(t, result, `"turnNumber":1`)
 		assert.Contains(t, result, `"playerIdx":0`)
 		mockGame.AssertExpectations(t)

@@ -44,6 +44,8 @@ func (p *RamsWebPresenter) buildBase(r interfaces.RamsGame) *controller.RamsWebO
 	resObj.WinnerIdx = r.GetWinnerIdx()
 	resObj.CurrentTrick = trickCardsToOutput(r.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(r)
+	resObj.RoundSettlement = ramsRoundSettlement(r)
+	resObj.MissPenalty = domain.RamsMissPenalty
 	resObj.Config = controller.RamsWebOutputConfig{
 		PlayerCnt: r.GetConfig().PlayerCnt,
 		Rounds:    r.GetConfig().Rounds,
@@ -99,6 +101,43 @@ func (p *RamsWebPresenter) buildMessage(r interfaces.RamsGame, lastErr error) (s
 		return "", "rams.watching", nil
 	}
 	return "", "rams.play", map[string]string{"pot": strconv.Itoa(r.GetPot())}
+}
+
+func ramsRoundSettlement(r interfaces.RamsGame) []*controller.RamsWebRoundSettlement {
+	settlement := make([]*controller.RamsWebRoundSettlement, 0)
+	start := 0
+	entries := r.GetActionLog()
+	for i, entry := range entries {
+		if entry != nil && entry.ActionType == "deal" {
+			start = i + 1
+		}
+	}
+	currentRoundEntries := entries[start:]
+	byPlayer := make(map[int]*controller.RamsWebRoundSettlement)
+	for _, entry := range currentRoundEntries {
+		if entry == nil {
+			continue
+		}
+		if entry.PlayerIdx < 0 {
+			continue
+		}
+		if entry.ActionType != "penalty" && entry.ActionType != "payout" {
+			continue
+		}
+		item := byPlayer[entry.PlayerIdx]
+		if item == nil {
+			item = &controller.RamsWebRoundSettlement{PlayerIdx: entry.PlayerIdx}
+			byPlayer[entry.PlayerIdx] = item
+			settlement = append(settlement, item)
+		}
+		switch entry.ActionType {
+		case "penalty":
+			item.Penalty, _ = strconv.Atoi(entry.DetailParams["amount"])
+		case "payout":
+			item.Payout, _ = strconv.Atoi(entry.DetailParams["amount"])
+		}
+	}
+	return settlement
 }
 
 // HintOutput ヒント情報をJSON出力する

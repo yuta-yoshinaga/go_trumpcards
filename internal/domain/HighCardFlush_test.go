@@ -631,6 +631,14 @@ func TestHighCardFlush_ActionLog(t *testing.T) {
 	log := hcf.GetActionLog()
 	assert.GreaterOrEqual(t, len(log), 3) // bet, deal, fold, result
 	assert.Equal(t, "bet", log[0].ActionType)
+	var resultLog *domain.ActionLogEntry
+	for _, entry := range log {
+		if entry.ActionType == "result" {
+			resultLog = entry
+		}
+	}
+	require.NotNil(t, resultLog)
+	assert.Equal(t, "highcardflush.log.playerFolded", resultLog.DetailCode)
 }
 
 func TestHighCardFlush_JSONRoundTrip(t *testing.T) {

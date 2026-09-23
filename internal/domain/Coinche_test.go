@@ -300,6 +300,14 @@ func TestCoinche_PlayerBid_SetsTheContract(t *testing.T) {
 	assert.Equal(t, domain.CardDesignSpade, b.GetTrumpSuit())
 	// **1 人が宣言しても競りは閉じない。** 残る 3 席が発言してから確定する。
 	assert.Equal(t, domain.CoinchePhaseBid, b.GetPhase())
+	var bidLog *domain.ActionLogEntry
+	for _, entry := range b.GetActionLog() {
+		if entry.DetailCode == "coinche.log.bid" {
+			bidLog = entry
+		}
+	}
+	require.NotNil(t, bidLog)
+	assert.Equal(t, map[string]string{"name": "You", "points": "100", "suitKey": "common.suit.spade"}, bidLog.DetailParams)
 }
 
 // **上回れない宣言は拒否する。** 同点や下回る点を通すと、先に宣言した側が

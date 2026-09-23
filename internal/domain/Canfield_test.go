@@ -77,6 +77,9 @@ func TestCanfield_Draw(t *testing.T) {
 		assert.Equal(t, initial-3, c.GetStockCount())
 		assert.Equal(t, 3, len(c.GetWaste()))
 		assert.Equal(t, 1, c.GetMoveCount())
+		entry := c.GetActionLog()[len(c.GetActionLog())-1]
+		assert.Equal(t, "canfield.log.draw", entry.DetailCode)
+		assert.Nil(t, entry.DetailParams)
 	})
 
 	t.Run("recycle waste to stock", func(t *testing.T) {

@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra3
+//go:build !js || !wasm || extra6
 
 package presenter
 
@@ -89,6 +89,9 @@ func (p *CoincheWebPresenter) buildPlayersOutput(b interfaces.CoincheGame) []*co
 
 func (p *CoincheWebPresenter) buildMessage(b interfaces.CoincheGame, trick []*domain.TrickCard, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if b.GetGameEndFlag() {

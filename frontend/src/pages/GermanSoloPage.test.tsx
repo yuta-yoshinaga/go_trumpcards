@@ -28,6 +28,7 @@ const bidPhaseState = makeGermanSoloState({
 });
 const trickEndState = makeGermanSoloState({
   phase: GermanSoloPhase.TRICK_END,
+  lastTrickWinner: 1,
   currentTrick: [
     { playerIdx: 0, card: { design: 'HEART', value: 12 } },
     { playerIdx: 1, card: { design: 'CLOVER', value: 13 } },
@@ -225,6 +226,16 @@ describe('GermanSoloPage', () => {
     mockExec.mockResolvedValue(trickEndState);
     renderWithProviders(<GermanSoloPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
+    expect(screen.getByTestId('trick-winner-badge')).toHaveTextContent('CPU 1 が獲得');
+  });
+
+  it('does not render a winner badge while a trick is in progress', async () => {
+    mockExec.mockResolvedValue(
+      makeGermanSoloState({ phase: 2, lastTrickWinner: 1, currentTrick: trickEndState.currentTrick.slice(0, 1) }),
+    );
+    renderWithProviders(<GermanSoloPage />);
+    await waitFor(() => expect(screen.getByTestId('trick-display-cards')).toBeInTheDocument());
+    expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument();
   });
 
   it('renders round end with the next deal button and the deal result', async () => {

@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra
+//go:build !js || !wasm || classic
 
 package presenter
 
@@ -10,6 +10,12 @@ import (
 
 // GinRummyWebPresenter ジンラミーWebプレゼンタークラス
 type GinRummyWebPresenter struct{}
+
+// HintOutput returns the current state as JSON. The Web GUI computes its own
+// hint client-side, so this mirrors Output to satisfy GinRummyPresenter.
+func (p *GinRummyWebPresenter) HintOutput(g interfaces.GinRummyGame) string {
+	return p.Output(g, nil)
+}
 
 // Output ゲーム状態をJSON出力
 func (p *GinRummyWebPresenter) Output(g interfaces.GinRummyGame, lastErr error) string {
@@ -89,6 +95,9 @@ func (p *GinRummyWebPresenter) buildPlayersOutput(g interfaces.GinRummyGame) []*
 // buildMessage ゲーム結果メッセージを構築
 func (p *GinRummyWebPresenter) buildMessage(g interfaces.GinRummyGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

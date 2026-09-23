@@ -58,5 +58,10 @@
       "unknownCommand": "Unknown command: {{cmd}}"
     }
   },
-  "foundationProgress": "Progress: {{total}}/52"
+  "foundationProgress": "Progress: {{total}}/52",
+  "stats": {
+    "winRate": "Win rate {{rate}}%",
+    "fewestMoves": "{{moves}} moves",
+    "newBest": "New personal best!"
+  }
 }

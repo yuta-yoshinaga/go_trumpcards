@@ -75,6 +75,11 @@ func (p *BhabhiCuiPresenter) Output(b interfaces.BhabhiGame, lastErr error) stri
 				"name", cuiPlayerName(b.GetPlayer(b.GetLastPickupIdx()), b.GetLastPickupIdx()),
 				"n", strconv.Itoa(b.GetLastPickupSize())) + "\n")
 		}
+		if b.GetLastFinishedIdx() >= 0 && !b.GetGameEndFlag() {
+			sb.WriteString(i18n.Tf("bhabhi.lastFinished",
+				"name", cuiPlayerName(b.GetPlayer(b.GetLastFinishedIdx()), b.GetLastFinishedIdx()),
+				"rank", strconv.Itoa(b.GetLastFinishedRank())) + "\n")
+		}
 
 		cuiErrorBlock(sb, lastErr)
 

@@ -24,6 +24,7 @@ export interface WaspResponse extends BaseGameResponse {
   tableau: KlondikeTableauCard[][];
   stockCount: number;
   completedSuits: number;
+  completedSuitMask: number;
   phase: number;
   moveCount: number;
   canUndo: boolean;

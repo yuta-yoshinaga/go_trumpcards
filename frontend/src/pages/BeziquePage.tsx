@@ -10,6 +10,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
+import { LiveAnnouncement } from '../components/LiveAnnouncement';
 import { PlayerHandSection } from '../components/PlayerHandSection';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
@@ -50,6 +51,17 @@ const MELD_NAME_KEYS = ['marriage', 'bezique', 'fourAces', 'fourKings', 'fourQue
  * gives the player a few turns' notice to finish declaring melds.
  */
 const STOCK_LOW_THRESHOLD = 4;
+
+// Keep these values synchronized with domain.BeziqueCardPoints. The frontend
+// bundle cannot import Go domain code, so the i18n sentence receives them here.
+const BEZIQUE_TRICK_POINT_VALUES = {
+  ace: 11,
+  ten: 10,
+  king: 4,
+  queen: 3,
+  jack: 2,
+  other: 0,
+} as const;
 
 /** Bezique tutorial step definitions. */
 const BEZIQUE_TUTORIAL_STEPS: TutorialStep[] = [
@@ -241,6 +253,10 @@ function BeziquePageContent() {
                 {t('stock', { count: state.stockRemaining })}
               </span>
               <span>{t('target', { points: state.config.targetScore })}</span>
+            </div>
+
+            <div className="text-ds-text-muted text-center mb-2 text-xs" data-testid="bezique-trick-points">
+              {t('trickPoints', BEZIQUE_TRICK_POINT_VALUES)}
             </div>
 
             {stockLow && (
@@ -436,6 +452,15 @@ function BeziquePageContent() {
                   </button>
                 </>
               )}
+              <LiveAnnouncement
+                message={
+                  isHumanMeldTurn
+                    ? state.availableMelds.length > 0
+                      ? t('meldLiveCount', { count: state.availableMelds.length })
+                      : t('meldLiveNone')
+                    : ''
+                }
+              />
               {isRoundEnd && (
                 <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
                   {t('nextRound')}

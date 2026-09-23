@@ -4,6 +4,7 @@
   "helpNext": "  n                         go to next trick",
   "helpNextRound": "  nr                        go to next round",
   "helpSetDifficulty": "  sd [0-2]                  CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
+  "target": "Target: {{n}} points",
   "round": "Round: {{round}}  Trick: {{trick}}  Trump: {{trump}}  Pot: {{pot}}",
   "playerLine": "{{name}}: {{cards}} cards  Round tricks: {{roundTricks}}  Score: {{score}}",
   "gameEnd": "Game over! {{name}} reaches the target and wins the match!",
@@ -24,5 +25,14 @@
   "topTrumpLine": "Ranking: {{cards}} > other trumps > non-trumps",
   "helpExamplePlay": "  play 0                   play hand card 0",
   "helpExampleNext": "  n                        read the trick result, then start the next trick",
-  "helpHint": "  h                         show a hint"
+  "helpHint": "  h                         show a hint",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errMustFollowTrump": "Follow the trump suit.",
+  "errMustFollowSuit": "Follow the led suit.",
+  "log.roundStart": "round {{round}}: trump {{trump}}, pot {{pot}}, {{name}} leads",
+  "log.play": "{{name}} plays {{card}}",
+  "log.trickWin": "{{name}} wins trick {{trick}}",
+  "log.roundWin": "{{name}} wins the pot of {{pot}}",
+  "log.spoil": "spoiled! pot of {{pot}} carries over",
+  "log.gameEnd": "{{name}} wins the match!"
 }

@@ -88,6 +88,9 @@ func (p *ContractRummyWebPresenter) buildPlayersOutput(g interfaces.ContractRumm
 // buildMessage ゲーム結果メッセージを構築
 func (p *ContractRummyWebPresenter) buildMessage(g interfaces.ContractRummyGame, lastErr error) (string, string, map[string]string) {
 	if lastErr != nil {
+		if code, params := domain.ErrorMessageCode(lastErr); code != "" {
+			return "", code, params
+		}
 		return lastErr.Error(), "", nil
 	}
 	if g.GetGameEndFlag() {

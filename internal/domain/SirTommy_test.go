@@ -227,6 +227,18 @@ func TestSirTommy_GiveUp(t *testing.T) {
 	assert.Len(t, s.GetActionLog(), before, "giving up twice logs once")
 }
 
+func TestSirTommy_GiveUp_ActionLogUsesDetailCode(t *testing.T) {
+	s := newTestSirTommy()
+	s.GiveUp()
+	for _, entry := range s.GetActionLog() {
+		if entry.DetailCode == "sirtommy.log.giveUp" {
+			assert.Nil(t, entry.DetailParams)
+			return
+		}
+	}
+	t.Fatal("give up action log entry not found")
+}
+
 func TestSirTommy_UndoRestoresPreviousState(t *testing.T) {
 	s := newTestSirTommy()
 	stackDeck(s, []*Card{NewCard(1, 2, true), NewCard(0, 1, true)})

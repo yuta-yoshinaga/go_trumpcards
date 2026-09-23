@@ -32,6 +32,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"strconv"
 )
 
 // PanHandSize 各プレイヤーの初期手札枚数
@@ -256,21 +257,21 @@ func (g *Pan) drawFromStock() error {
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw_stock", fmt.Sprintf("%s draws from stock", playerName(g.players, g.currentPlayerIdx)), nil)
+	g.appendLog(g.currentPlayerIdx, "draw_stock", "pan.log.drawStock", map[string]string{"name": playerName(g.players, g.currentPlayerIdx)}, nil)
 	g.phase = PanPhasePlay
 	return nil
 }
 
 func (g *Pan) drawFromDiscard() error {
 	if len(g.discardPile) == 0 {
-		return NewDomainError(ErrInvalidPlay, "捨て札が空です")
+		return NewDomainErrorCode(ErrInvalidPlay, "pan.errDiscardPileEmpty", nil)
 	}
 	card := g.discardPile[len(g.discardPile)-1]
 	g.discardPile = g.discardPile[:len(g.discardPile)-1]
 	g.players[g.currentPlayerIdx].AddCard(card)
 	g.sortHand(g.currentPlayerIdx)
 
-	g.appendLog(g.currentPlayerIdx, "draw_discard", fmt.Sprintf("%s draws %s from discard", playerName(g.players, g.currentPlayerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(g.currentPlayerIdx, "draw_discard", "pan.log.drawDiscard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(card)}, []*Card{card})
 	g.phase = PanPhasePlay
 	return nil
 }
@@ -289,16 +290,16 @@ func (g *Pan) PlayerMeld(cardIndices []int) error {
 func (g *Pan) executeMeld(playerIdx int, cardIndices []int) error {
 	player := g.players[playerIdx]
 	if len(cardIndices) < PanMeldMin {
-		return NewDomainError(ErrInvalidPlay, "メルドは3枚以上のカードが必要です")
+		return NewDomainErrorCode(ErrInvalidPlay, "pan.errMeldNeedsAtLeastThreeCards", map[string]string{"min": fmt.Sprintf("%d", PanMeldMin)})
 	}
 
 	seen := make(map[int]bool)
 	for _, i := range cardIndices {
 		if i < 0 || i >= player.GetCardsSize() {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+			return NewDomainErrorCode(ErrInvalidCard, "pan.errCardIndexOutOfRange", nil)
 		}
 		if seen[i] {
-			return NewDomainError(ErrInvalidCard, "カードインデックスが重複しています")
+			return NewDomainErrorCode(ErrInvalidCard, "pan.errDuplicateCardIndex", nil)
 		}
 		seen[i] = true
 	}
@@ -308,7 +309,7 @@ func (g *Pan) executeMeld(playerIdx int, cardIndices []int) error {
 		meld[i] = player.GetCard(idx)
 	}
 	if !PanIsValidMeld(meld) {
-		return NewDomainError(ErrInvalidPlay, "有効なメルド（同ランク3枚以上 または 同スート連続3枚以上）ではありません")
+		return NewDomainErrorCode(ErrInvalidPlay, "pan.errInvalidMeld", nil)
 	}
 
 	sortedIdx := make([]int, len(cardIndices))
@@ -321,7 +322,7 @@ func (g *Pan) executeMeld(playerIdx int, cardIndices []int) error {
 
 	cardsCopy := make([]*Card, len(meld))
 	copy(cardsCopy, meld)
-	g.appendLog(playerIdx, "meld", fmt.Sprintf("%s melds %s", playerName(g.players, playerIdx), formatCards(meld)), cardsCopy)
+	g.appendLog(playerIdx, "meld", "pan.log.meld", map[string]string{"name": playerName(g.players, playerIdx), "cards": formatCards(meld)}, cardsCopy)
 
 	g.payChipConditions(playerIdx, meld)
 	g.checkPanDeclaration(playerIdx)
@@ -339,27 +340,27 @@ func (g *Pan) PlayerLayoff(meldOwner, meldIdx, cardIndex int) error {
 // executeLayoff レイオフを実行する（人間／CPU 共通）
 func (g *Pan) executeLayoff(playerIdx, meldOwner, meldIdx, cardIndex int) error {
 	if meldOwner < 0 || meldOwner >= len(g.players) {
-		return NewDomainError(ErrInvalidPlay, "メルド所有者が不正です")
+		return NewDomainErrorCode(ErrInvalidPlay, "pan.errTargetPlayerInvalid", nil)
 	}
 	owner := g.players[meldOwner]
 	melds := owner.GetLaidMelds()
 	if meldIdx < 0 || meldIdx >= len(melds) {
-		return NewDomainError(ErrInvalidPlay, "メルドインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidPlay, "pan.errTargetMeldInvalid", nil)
 	}
 	player := g.players[playerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "pan.errCardIndexOutOfRange", nil)
 	}
 
 	card := player.GetCard(cardIndex)
 	if !PanCanLayoff(melds[meldIdx], card) {
-		return NewDomainError(ErrInvalidPlay, fmt.Sprintf("%sはレイオフできません", cardStr(card)))
+		return NewDomainErrorCode(ErrInvalidPlay, "pan.errLayoffCardCannotAdd", map[string]string{"card": cardStr(card)})
 	}
 
 	owner.AppendToLaidMeld(meldIdx, card)
 	player.RemoveCard(cardIndex)
 
-	g.appendLog(playerIdx, "layoff", fmt.Sprintf("%s lays off %s", playerName(g.players, playerIdx), cardStr(card)), []*Card{card})
+	g.appendLog(playerIdx, "layoff", "pan.log.layoff", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
 	// レイオフ先の所有者が 11 枚に到達したらその所有者があがる。
 	g.checkPanDeclaration(meldOwner)
@@ -382,7 +383,7 @@ func (g *Pan) payChipConditions(playerIdx int, meld []*Card) {
 		}
 	}
 	g.players[playerIdx].AddChips(units * opponents)
-	g.appendLog(playerIdx, "chips", fmt.Sprintf("%s collects %d chip(s) from each opponent", playerName(g.players, playerIdx), units), nil)
+	g.appendLog(playerIdx, "chips", "pan.log.chips", map[string]string{"name": playerName(g.players, playerIdx), "units": strconv.Itoa(units)}, nil)
 }
 
 // checkPanDeclaration playerIdx が 11 枚を場に出していれば「パン」あがりとしてラウンドを終える。
@@ -395,7 +396,7 @@ func (g *Pan) checkPanDeclaration(playerIdx int) {
 	}
 	g.panDeclarerIdx = playerIdx
 	g.players[playerIdx].SetIsFinished(true)
-	g.appendLog(playerIdx, "pan", fmt.Sprintf("%s declares Pan!", playerName(g.players, playerIdx)), nil)
+	g.appendLog(playerIdx, "pan", "pan.log.pan", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
 	g.enterRoundEnd()
 }
 
@@ -412,11 +413,11 @@ func (g *Pan) PlayerDiscard(cardIndex int) error {
 func (g *Pan) applyDiscard(cardIndex int) error {
 	player := g.players[g.currentPlayerIdx]
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "pan.errCardIndexOutOfRange", nil)
 	}
 	discarded := player.RemoveCard(cardIndex)
 	g.discardPile = append(g.discardPile, discarded)
-	g.appendLog(g.currentPlayerIdx, "discard", fmt.Sprintf("%s discards %s", playerName(g.players, g.currentPlayerIdx), cardStr(discarded)), []*Card{discarded})
+	g.appendLog(g.currentPlayerIdx, "discard", "pan.log.discard", map[string]string{"name": playerName(g.players, g.currentPlayerIdx), "card": cardStr(discarded)}, []*Card{discarded})
 	g.advanceTurn()
 	return nil
 }
@@ -589,7 +590,7 @@ func (g *Pan) enterRoundEnd() {
 // endRoundStockOut 山札枯渇によるラウンド終了（パンなし・全員手札点採点）。
 func (g *Pan) endRoundStockOut() {
 	g.panDeclarerIdx = -1
-	g.appendLog(-1, "stock_out", "Round ends (stock exhausted)", nil)
+	g.appendLog(-1, "stock_out", "pan.log.stockOut", nil, nil)
 	g.enterRoundEnd()
 }
 
@@ -606,7 +607,7 @@ func (g *Pan) scoreRound() {
 	}
 
 	if g.panDeclarerIdx >= 0 {
-		g.appendLog(g.panDeclarerIdx, "round_win", fmt.Sprintf("%s wins the round with Pan", playerName(g.players, g.panDeclarerIdx)), nil)
+		g.appendLog(g.panDeclarerIdx, "round_win", "pan.log.roundWin", map[string]string{"name": playerName(g.players, g.panDeclarerIdx)}, nil)
 	}
 
 	for i := range g.players {
@@ -627,7 +628,7 @@ func (g *Pan) finalizeGameEnd() {
 			g.winnerIdx = i
 		}
 	}
-	g.appendLog(-1, "game_end", fmt.Sprintf("%s wins the game with %d points!", playerName(g.players, g.winnerIdx), minScore), nil)
+	g.appendLog(-1, "game_end", "pan.log.gameEnd", map[string]string{"name": playerName(g.players, g.winnerIdx), "points": strconv.Itoa(minScore)}, nil)
 }
 
 // --- Getters / Setters ---
@@ -637,6 +638,11 @@ func (g *Pan) GetPhase() PanPhase { return g.phase }
 
 // SetPhase フェーズ設定（テスト用）
 func (g *Pan) SetPhase(p PanPhase) { g.phase = p }
+
+// appendLog records a Pan action with a locale-independent detail code.
+func (g *Pan) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	g.appendLogCodeAt(len(g.actionLog)+1, playerIdx, actionType, detailCode, detailParams, cards)
+}
 
 // GetRoundNumber 現在のラウンド番号
 func (g *Pan) GetRoundNumber() int { return g.roundNumber }

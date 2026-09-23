@@ -14,7 +14,7 @@
   "promptTrickEnd": "トリック終了",
   "promptTrickEndHelp": "next・・・次のトリックへ",
   "hintNone": "ヒントはありません。",
-  "hintCard": "[HINT: [{{idx}}]{{card}} ({{reason}})]",
+  "hintCard": "[ヒント: [{{idx}}]{{card}} ({{reason}})]",
   "hintReasonLeadTrump": "トランプで相手のトランプを誘う",
   "hintReasonLeadLow": "0点札でリード",
   "hintReasonLeadValue": "得点札でリード",
@@ -26,5 +26,13 @@
   "helpHint": "  h                    助言を表示",
   "followLegend": "* = 出せる札（山札が尽きたのでリードスートに追従します）",
   "helpSetPlayers": "  sp <2-5>             席数を変更して再開 (2〜5人)",
-  "gameEndCpu": "ゲーム終了！ CPU {{seat}} の勝利です（{{scores}}）。"
+  "gameEndCpu": "ゲーム終了！ CPU {{seat}} の勝利です（{{scores}}）。",
+  "errCardIndexOutOfRange": "カードインデックスが範囲外です",
+  "errCardNil": "カードが nil です",
+  "errMustFollowSuit": "山札が尽きた後はリードスートに追従してください",
+  "log.trickWin": "{{name}}が{{trick}}トリックに勝利（{{points}}点）",
+  "log.strip": "山札を{{remaining}}枚に調整（{{seats}}席で割り切れる）",
+  "log.trump": "切り札: {{card}}",
+  "log.play": "{{name}}が{{card}}をプレイ",
+  "log.gameEnd": "ゲーム終了: {{scores}}"
 }

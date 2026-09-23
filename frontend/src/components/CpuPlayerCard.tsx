@@ -49,6 +49,8 @@ export interface CpuPlayerCardProps {
    * shown), so no explicit fold check is needed here.
    */
   usedHoleIdx?: readonly number[];
+  /** Localised label for the visual marker on used hole cards. */
+  usedHoleLabel?: string;
 }
 
 /** Renders a CPU player's info area with cards (face-up or face-down) and status. */
@@ -61,6 +63,7 @@ export function CpuPlayerCard({
   compactFaceDown,
   metaAi,
   usedHoleIdx,
+  usedHoleLabel,
 }: CpuPlayerCardProps) {
   const { t } = useTranslation('common');
   const { cpuCardWidth } = useCardDimensions();
@@ -105,10 +108,20 @@ export function CpuPlayerCard({
             return (
               <div
                 key={`${card.design}-${card.value}`}
-                className={`rounded-md ${used ? 'ring-2 ring-ds-success motion-safe:animate-pulse' : ''}`}
+                className={`relative rounded-md ${used ? 'ring-2 ring-ds-success motion-safe:animate-pulse' : ''}`}
                 data-testid={used ? 'cpu-hole-used' : undefined}
               >
                 <CardImage card={card} width={cpuCardWidth} style={{ border: '3px solid transparent' }} />
+                {used && usedHoleLabel && (
+                  <span
+                    className="absolute -top-2 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-ds-success text-xs font-bold text-white"
+                    data-testid="cpu-hole-used-indicator"
+                    role="img"
+                    aria-label={usedHoleLabel}
+                  >
+                    ✓
+                  </span>
+                )}
               </div>
             );
           })}

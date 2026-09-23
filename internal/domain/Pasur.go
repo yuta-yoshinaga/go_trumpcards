@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra4
+//go:build !js || !wasm || extra7
 
 package domain
 
@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 )
 
 // PasurPhase はパスールのフェーズ。
@@ -100,7 +101,10 @@ type Pasur struct {
 	// lastCaptureIdx は最後に捕獲した席（-1 = まだ誰も取っていない）。
 	//
 	// **場に残った札はここへ行く。** 取り手がいないと札が消える。
-	lastCaptureIdx   int
+	lastCaptureIdx int
+	// leftoverIdx / leftoverCount は終局時に残り札を受け取った席と枚数。
+	leftoverIdx      int
+	leftoverCount    int
 	currentPlayerIdx int
 
 	gameEndFlag bool
@@ -118,7 +122,7 @@ func NewPasur(players []*PasurPlayer, config PasurConfig) *Pasur {
 	if len(players) != config.PlayerCnt {
 		players = newPasurSeats(config.PlayerCnt)
 	}
-	return &Pasur{players: players, config: config, lastCaptureIdx: -1}
+	return &Pasur{players: players, config: config, lastCaptureIdx: -1, leftoverIdx: -1}
 }
 
 // newPasurSeats は標準の席（人間 1 + CPU）を返す。
@@ -146,6 +150,7 @@ func (p *Pasur) Reset() {
 	p.phase = PasurPhasePlay
 	p.packsDealt = 0
 	p.lastCaptureIdx = -1
+	p.leftoverIdx, p.leftoverCount = -1, 0
 	p.currentPlayerIdx = 0
 	p.gameEndFlag = false
 	p.winners = nil
@@ -160,7 +165,7 @@ func (p *Pasur) Reset() {
 		}
 	}
 	p.dealPack()
-	p.addLog(-1, "start", fmt.Sprintf("パスールを開始しました（%d 人）", p.config.PlayerCnt), nil)
+	p.addLog(-1, "start", "pasur.log.start", map[string]string{"players": strconv.Itoa(p.config.PlayerCnt)}, nil)
 }
 
 // dealPack は全員に 1 パック（4 枚）配る。
@@ -281,7 +286,7 @@ func (p *Pasur) play(playerIdx, cardIndex int, tableIndices []int) error {
 	}
 	pl := p.players[playerIdx]
 	if cardIndex < 0 || cardIndex >= pl.GetCardsSize() {
-		return NewDomainError(ErrInvalidCard, "カードインデックスが範囲外です")
+		return NewDomainErrorCode(ErrInvalidCard, "pasur.errCardIndexOutOfRange", nil)
 	}
 	if err := p.validateCapture(playerIdx, cardIndex, tableIndices); err != nil {
 		return err
@@ -289,13 +294,13 @@ func (p *Pasur) play(playerIdx, cardIndex int, tableIndices []int) error {
 
 	card := pl.RemoveCard(cardIndex)
 	if card == nil {
-		return NewDomainError(ErrInvalidCard, "カードがありません")
+		return NewDomainErrorCode(ErrInvalidCard, "pasur.errCardMissing", nil)
 	}
 
 	if len(tableIndices) == 0 {
 		// **トレール: 取れないので場に置く。**
 		p.tableCards = append(p.tableCards, card)
-		p.addLog(playerIdx, "trail", "場に置きました", []*Card{card})
+		p.addLog(playerIdx, "trail", "pasur.log.trail", nil, []*Card{card})
 	} else {
 		p.capture(playerIdx, card, tableIndices)
 	}
@@ -367,13 +372,14 @@ func (p *Pasur) capture(playerIdx int, card *Card, tableIndices []int) {
 	// **スールは「取った結果、場が空になった」こと。** 取った枚数ではありません。
 	if len(p.tableCards) == 0 {
 		p.players[playerIdx].AddSoorCaptured(taken)
-		p.addLog(playerIdx, "soor",
-			fmt.Sprintf("スール！ %d 枚を取り、場を空にしました（この札は %d 倍）",
-				len(taken), PasurSoorMultiplier), taken)
+		p.addLog(playerIdx, "soor", "pasur.log.soor", map[string]string{
+			"cards": strconv.Itoa(len(taken)),
+			"mult":  strconv.Itoa(PasurSoorMultiplier),
+		}, taken)
 		return
 	}
 	p.players[playerIdx].AddCaptured(taken)
-	p.addLog(playerIdx, "capture", fmt.Sprintf("%d 枚を取りました", len(taken)), taken)
+	p.addLog(playerIdx, "capture", "pasur.log.capture", map[string]string{"cards": strconv.Itoa(len(taken))}, taken)
 }
 
 // advanceTurn は手番を進め、必要なら配り足し、山札が尽きたら精算する。
@@ -404,9 +410,9 @@ func (p *Pasur) finishGame() {
 	// **場に残った札は最後に取った人のもの。** 取り手がいなければ場に残したまま
 	// ——どの席にも入れないので、総得点が 21 に満たないことがあります。
 	if len(p.tableCards) > 0 && p.lastCaptureIdx >= 0 {
+		p.leftoverIdx, p.leftoverCount = p.lastCaptureIdx, len(p.tableCards)
 		p.players[p.lastCaptureIdx].AddCaptured(p.tableCards)
-		p.addLog(p.lastCaptureIdx, "leftover",
-			fmt.Sprintf("場の残り %d 枚を取りました", len(p.tableCards)), p.tableCards)
+		p.addLog(p.lastCaptureIdx, "leftover", "pasur.log.leftover", map[string]string{"cards": strconv.Itoa(len(p.tableCards))}, p.tableCards)
 		p.tableCards = nil
 	}
 
@@ -426,7 +432,7 @@ func (p *Pasur) finishGame() {
 	}
 	p.phase = PasurPhaseGameEnd
 	p.gameEndFlag = true
-	p.addLog(-1, "result", fmt.Sprintf("最終得点 %v", p.scores), nil)
+	p.addLog(-1, "result", "pasur.log.result", map[string]string{"scores": fmt.Sprint(p.scores)}, nil)
 }
 
 // scoreOf は 1 人の得点を返す。**スールで取った札は倍。**
@@ -457,7 +463,7 @@ func (p *Pasur) GiveUp() {
 	for i := 1; i < p.config.PlayerCnt; i++ {
 		p.winners = append(p.winners, i)
 	}
-	p.addLog(0, "giveup", "投了しました", nil)
+	p.addLog(0, "giveup", "pasur.log.giveUp", nil, nil)
 }
 
 // chooseCpuMove は CPU の手を返す。
@@ -520,8 +526,8 @@ func (p *Pasur) GetHint() *PasurHint {
 }
 
 // addLog は棋譜に 1 行足す。
-func (p *Pasur) addLog(playerIdx int, actionType, detail string, cards []*Card) {
-	p.appendLog(playerIdx, actionType, detail, cards)
+func (p *Pasur) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
+	p.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
 // --- アクセサ ---------------------------------------------------------------
@@ -558,6 +564,12 @@ func (p *Pasur) GetDeckRemaining() int {
 
 // GetPacksDealt は配ったパック数を返す。
 func (p *Pasur) GetPacksDealt() int { return p.packsDealt }
+
+// GetLeftoverIdx は終局時の残り札の受取席を返す（-1: 受け取りなし）。
+func (p *Pasur) GetLeftoverIdx() int { return p.leftoverIdx }
+
+// GetLeftoverCount は終局時に受け取った残り札の枚数を返す。
+func (p *Pasur) GetLeftoverCount() int { return p.leftoverCount }
 
 // GetLastCaptureIdx は最後に捕獲した席を返す（-1 = なし）。
 func (p *Pasur) GetLastCaptureIdx() int { return p.lastCaptureIdx }
@@ -598,6 +610,8 @@ type pasurJSON struct {
 	Phase            PasurPhase        `json:"ph"`
 	TableCards       []*Card           `json:"tb"`
 	PacksDealt       int               `json:"pd"`
+	LeftoverIdx      int               `json:"li"`
+	LeftoverCount    int               `json:"ln"`
 	LastCaptureIdx   int               `json:"lc"`
 	CurrentPlayerIdx int               `json:"ci"`
 	GameEndFlag      bool              `json:"ge"`
@@ -611,6 +625,7 @@ func (p *Pasur) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&pasurJSON{
 		TrumpCards: p.trumpCards, Players: p.players, Config: p.config, Phase: p.phase,
 		TableCards: p.tableCards, PacksDealt: p.packsDealt,
+		LeftoverIdx: p.leftoverIdx, LeftoverCount: p.leftoverCount,
 		LastCaptureIdx: p.lastCaptureIdx, CurrentPlayerIdx: p.currentPlayerIdx,
 		GameEndFlag: p.gameEndFlag, Winners: p.winners, Scores: p.scores,
 		ActionLog: p.actionLog,
@@ -623,7 +638,7 @@ func (p *Pasur) MarshalJSON() ([]byte, error) {
 // ので、フェーズ × 各フィールドの表として書いています (#5302〜#5313)。とくに
 // **まとめて立つフィールドの対**（終了フラグ・フェーズ・得点・勝者）を等値で見ます。
 func (p *Pasur) UnmarshalJSON(data []byte) error {
-	var j pasurJSON
+	j := pasurJSON{LeftoverIdx: -1}
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
 	}
@@ -643,6 +658,12 @@ func (p *Pasur) UnmarshalJSON(data []byte) error {
 	}
 	if j.LastCaptureIdx < -1 || j.LastCaptureIdx >= j.Config.PlayerCnt {
 		return fmt.Errorf("invalid last capture: %d", j.LastCaptureIdx)
+	}
+	if j.LeftoverIdx < -1 || j.LeftoverIdx >= j.Config.PlayerCnt ||
+		j.LeftoverCount < 0 || j.LeftoverCount > PasurDeckSize ||
+		(j.LeftoverCount == 0) != (j.LeftoverIdx == -1) ||
+		(j.LeftoverCount > 0 && (!j.GameEndFlag || j.LeftoverIdx != j.LastCaptureIdx || len(j.TableCards) > 0)) {
+		return errors.New("invalid leftover capture")
 	}
 	if j.PacksDealt < 0 {
 		return fmt.Errorf("invalid packs dealt: %d", j.PacksDealt)
@@ -703,6 +724,7 @@ func (p *Pasur) UnmarshalJSON(data []byte) error {
 	p.trumpCards = j.TrumpCards
 	p.players, p.config, p.phase = j.Players, j.Config, j.Phase
 	p.tableCards, p.packsDealt = j.TableCards, j.PacksDealt
+	p.leftoverIdx, p.leftoverCount = j.LeftoverIdx, j.LeftoverCount
 	p.lastCaptureIdx, p.currentPlayerIdx = j.LastCaptureIdx, j.CurrentPlayerIdx
 	p.gameEndFlag, p.winners, p.scores = j.GameEndFlag, j.Winners, j.Scores
 	p.actionLog = j.ActionLog

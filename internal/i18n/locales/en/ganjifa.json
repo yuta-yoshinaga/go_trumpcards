@@ -19,6 +19,8 @@
   "trickWinner": "{{name}} takes the trick",
   "promptTrickEndHelp": "n / next ... go to the next trick",
   "round": "Round: {{round}}  Trick: {{trick}}  Trump: {{trump}}",
+  "dealer": "Dealer: {{name}}",
+  "trumpAutoNote": "Trump is automatically set to the suit most common in the dealer's hand (there is no choice)",
   "roundEndTrickEntry": "{{name}} {{tricks}}",
   "roundEndTricks": "Tricks per player: {{list}}",
   "trumpGroupStrong": "Trump is a strong suit — higher numbers win",
@@ -29,5 +31,13 @@
   "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
   "helpExamplePlay": "  play 0               play hand card 0",
   "helpExampleNext": "  n                    read the trick result, then start the next trick",
-  "helpHint": "  h                    show a hint"
+  "helpHint": "  h                    show a hint",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errCardMissing": "The card is missing.",
+  "errFollowLeadSuit": "You must follow the lead suit.",
+  "log.deal": "Round {{round}} starts (trump {{trump}})",
+  "log.gameEnd": "The match ends",
+  "log.play": "",
+  "log.trickWin": "Won trick {{trick}}",
+  "log.settle": "Round {{round}} ends"
 }

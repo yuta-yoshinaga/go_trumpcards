@@ -204,6 +204,39 @@ describe('CongressPage', () => {
     );
   });
 
+  it('highlights legal tableau and foundation destinations after selecting a card', async () => {
+    const previewState: CongressResponse = {
+      ...playingState,
+      tableau: makeTableau([[card('SPADE', 5)], [card('HEART', 6)], [card('CLOVER', 1)]]),
+      foundation: [[card('SPADE', 4)], [], [], [], [], [], [], []],
+    };
+    mockExec.mockResolvedValue(previewState);
+    renderWithProviders(<CongressPage />);
+    const source = await screen.findByRole('button', { name: /^♠ 5/ });
+    fireEvent.click(source);
+
+    await waitFor(() => expect(source).toHaveAttribute('aria-pressed', 'true'));
+    const targets = document.querySelectorAll('[data-legal-target="true"]');
+    expect(targets).toHaveLength(2);
+    expect(screen.getByText('#1').parentElement).toHaveAttribute('data-legal-target', 'true');
+    expect(screen.getAllByText('♠')[0]?.parentElement).toHaveAttribute('data-legal-target', 'true');
+    expect(screen.getByText('#2').parentElement).not.toHaveAttribute('data-legal-target');
+  });
+
+  it('highlights every empty tableau for a stock-to-tableau move', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<CongressPage />);
+    const tableauSource = await screen.findByRole('button', { name: /^♠ 9/ });
+    fireEvent.click(tableauSource);
+    const stock = screen.getByRole('button', { name: /山札 残り96枚/ });
+    fireEvent.click(stock);
+
+    await waitFor(() => expect(stock).toHaveAttribute('aria-pressed', 'true'));
+    expect(document.querySelectorAll('[data-legal-target="true"]')).toHaveLength(5);
+    expect(screen.getByText('#3').parentElement).toHaveAttribute('data-legal-target', 'true');
+    expect(screen.getByText('#0').parentElement).not.toHaveAttribute('data-legal-target');
+  });
+
   it('shows an empty waste slot when nothing has been turned', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<CongressPage />);

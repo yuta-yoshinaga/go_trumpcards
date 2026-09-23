@@ -1,4 +1,9 @@
 {
+  "settings": {
+    "cpuDifficulty": "CPU Difficulty",
+    "totalRounds": "Rounds",
+    "difficulty": { "0": "Easy", "1": "Normal", "2": "Hard" }
+  },
   "title": "Continental Rummy",
   "noSets": "**Sets are never melds.** All fifteen cards must form sequences of one suit.",
   "discardNotice": "Not a go-out yet - tap a card to throw one.",

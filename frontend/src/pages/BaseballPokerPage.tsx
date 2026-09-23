@@ -96,8 +96,11 @@ function BaseballPokerPageContent() {
       { key: 'k', action: () => execApi('check'), enabled: canAct && !facingBet },
       { key: 'c', action: () => execApi('call'), enabled: canAct && facingBet },
       { key: 'n', action: () => execApi('next'), enabled: isShowdown && !gameOver },
+      { key: 'p', action: () => execApi('pay'), enabled: isBuying },
+      { key: 'b', action: () => execApi('buyfold'), enabled: isBuying },
+      { key: 'f', action: () => execApi('fold'), enabled: canAct },
     ],
-    [execApi, canAct, facingBet, isShowdown, gameOver],
+    [execApi, canAct, facingBet, isShowdown, gameOver, isBuying],
   );
   useActionKeyboardNav({ bindings: actionBindings, enabled: !!state && !loading });
 

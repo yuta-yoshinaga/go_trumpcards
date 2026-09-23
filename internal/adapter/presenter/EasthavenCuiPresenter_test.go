@@ -41,7 +41,7 @@ func TestEasthavenCuiPresenter_Output(t *testing.T) {
 
 		result := p.Output(eg, nil)
 		assert.Contains(t, result, "Easthaven")
-		assert.Contains(t, result, "Foundation")
+		assert.Contains(t, result, "組札")
 		assert.Contains(t, result, "列0:")
 	})
 
@@ -111,7 +111,7 @@ func TestEasthavenCuiPresenter_Output(t *testing.T) {
 		eg.On("GetFoundation").Return(foundation).Maybe()
 
 		p := new(EasthavenCuiPresenter)
-		assert.Contains(t, p.Output(eg, nil), "SPADE 1")
+		assert.Contains(t, p.Output(eg, nil), "♠1")
 	})
 }
 
@@ -122,7 +122,7 @@ func TestEasthavenCuiPresenter_HintOutput(t *testing.T) {
 		p := new(EasthavenCuiPresenter)
 		result := p.HintOutput(eg)
 		assert.Contains(t, result, "ヒント")
-		assert.Contains(t, result, "ファンデーション")
+		assert.Contains(t, result, "組札")
 	})
 
 	t.Run("to tableau", func(t *testing.T) {
@@ -151,7 +151,9 @@ func TestEasthavenCuiPresenter_ActionLogOutput(t *testing.T) {
 	t.Run("game over", func(t *testing.T) {
 		eg := new(interfaces.MockEasthavenGame)
 		eg.On("GetPhase").Return(domain.EasthavenPhaseGameOver)
-		eg.On("GetActionLog").Return([]*domain.ActionLogEntry{{TurnNumber: 1, ActionType: "move", Detail: "test"}})
+		eg.On("GetActionLog").Return([]*domain.ActionLogEntry{
+			{TurnNumber: 1, ActionType: "deal", DetailCode: "easthaven.log.deal"},
+		})
 		p := new(EasthavenCuiPresenter)
 		assert.NotEmpty(t, p.ActionLogOutput(eg))
 	})

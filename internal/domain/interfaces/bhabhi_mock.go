@@ -38,6 +38,8 @@ func (m *MockBhabhiGame) GetTrickNumber() int      { return m.Called().Int(0) }
 func (m *MockBhabhiGame) GetLeadSuit() int         { return m.Called().Int(0) }
 func (m *MockBhabhiGame) GetLastPickupIdx() int    { return m.Called().Int(0) }
 func (m *MockBhabhiGame) GetLastPickupSize() int   { return m.Called().Int(0) }
+func (m *MockBhabhiGame) GetLastFinishedIdx() int  { return m.Called().Int(0) }
+func (m *MockBhabhiGame) GetLastFinishedRank() int { return m.Called().Int(0) }
 func (m *MockBhabhiGame) GetCurrentPlayerIdx() int { return m.Called().Int(0) }
 func (m *MockBhabhiGame) GetLeadPlayerIdx() int    { return m.Called().Int(0) }
 func (m *MockBhabhiGame) GetPlayerCnt() int        { return m.Called().Int(0) }

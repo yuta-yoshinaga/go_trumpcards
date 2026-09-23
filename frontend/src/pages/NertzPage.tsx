@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { type NertzMoveZone, nertzApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
+import { CardBack } from '../components/CardImage';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -543,14 +545,17 @@ function NertzPageContent() {
                 {state.players
                   .filter((p) => !p.isHuman)
                   .map((p) => (
-                    <div key={`cpu-${p.deckIdx}`} className="flex justify-between">
-                      <span>
-                        {t('labels.cpu')}
-                        {p.deckIdx} — {p.name}
-                      </span>
-                      <span>
-                        {t('labels.nertz')}: {p.nertzSize} / {t('labels.score')}: {p.score}
-                      </span>
+                    <div key={`cpu-${p.deckIdx}`} className="space-y-2">
+                      <div className="flex flex-wrap justify-between gap-x-3 gap-y-1">
+                        <span>
+                          {t('labels.cpu')}
+                          {p.deckIdx} — {p.name}
+                        </span>
+                        <span>
+                          {t('labels.nertz')}: {p.nertzSize} / {t('labels.score')}: {p.score}
+                        </span>
+                      </div>
+                      <NertzOpponentBoard player={p} />
                     </div>
                   ))}
               </div>
@@ -790,6 +795,52 @@ interface CardButtonProps {
   selected: boolean;
   disabled: boolean;
   onClick: () => void;
+}
+
+/** Renders the publicly visible piles for one CPU without enabling interaction. */
+function NertzOpponentBoard({ player }: { player: NertzPlayerData }) {
+  const { cpuCardWidth } = useCardDimensions();
+  const { t } = useTranslation('nertz');
+  return (
+    <div className="flex flex-wrap items-start gap-2 text-xs text-ds-text-muted">
+      <div className="space-y-1">
+        <div>{t('labels.nertz')}</div>
+        {player.nertzTop ? <AnimatedCard card={player.nertzTop} width={cpuCardWidth} /> : <span>—</span>}
+      </div>
+      <div className="min-w-0 flex-1 space-y-1">
+        <div className="grid grid-cols-4 gap-1">
+          {player.tableau.map((col, colIdx) => (
+            <div key={`cpu-tableau-${player.deckIdx}-${colIdx}`} className="flex min-w-0 flex-col gap-1">
+              {col.length === 0 ? (
+                <span className="block text-center">—</span>
+              ) : (
+                col.map((tableauCard, cardIdx) =>
+                  tableauCard.faceUp && tableauCard.card ? (
+                    <AnimatedCard
+                      key={`cpu-card-${player.deckIdx}-${colIdx}-${cardIdx}`}
+                      card={tableauCard.card}
+                      width={cpuCardWidth}
+                    />
+                  ) : (
+                    <CardBack key={`cpu-card-${player.deckIdx}-${colIdx}-${cardIdx}`} width={cpuCardWidth} />
+                  ),
+                )
+              )}
+            </div>
+          ))}
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <span>{player.wasteTop ? <AnimatedCard card={player.wasteTop} width={cpuCardWidth} /> : '—'}</span>
+          <span>
+            {t('labels.waste')}: {player.wasteSize}
+          </span>
+          <span>
+            {t('labels.stock')}: {player.stockSize}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function CardButton({ card, label, selected, disabled, onClick }: CardButtonProps) {

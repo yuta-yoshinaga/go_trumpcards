@@ -1,4 +1,5 @@
 {
+  "log.recycle": "Discard pile recycled into stock ({{cards}} cards)",
   "helpTitle": "Three Thirteen",
   "helpDrawStock": "  ds                   draw from stock",
   "helpDrawDiscard": "  dd                   take the discard top",
@@ -7,7 +8,7 @@
   "helpNextRound": "  nr                   next round",
   "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
   "helpSetPlayers": "  sp [2-4]             player count",
-  "header": "Round {{round}}/11  Wild: {{wild}}  Stock: {{stock}}",
+  "header": "Round {{round}}/{{maxRound}}  Wild: {{wild}}  Stock: {{stock}}",
   "discardLine": "Discard: {{card}}",
   "discardPreview": "  Deadwood after discarding: {{values}}",
   "playerLine": "{{name}}: cumulative {{cum}} round {{round}} cards {{cards}} deadwood {{deadwood}}",
@@ -27,5 +28,16 @@
   "result.humanWin": "You win!",
   "result.cpuWin": "CPU {{cpuId}} wins",
   "helpExampleDraw": "  ds                   start the turn by drawing from the stock",
-  "helpExampleDiscard": "  d 0                  discard hand card 0"
+  "helpExampleDiscard": "  d 0                  discard hand card 0",
+  "errDiscardPileEmpty": "The discard pile is empty.",
+  "errCardIndexOutOfRange": "The card index is out of range.",
+  "errAlreadyKnocked": "A player has already knocked.",
+  "errCannotKnock": "You cannot knock because your hand cannot be fully melded.",
+  "log.drawStock": "{{name}} draws from stock",
+  "log.drawDiscard": "{{name}} draws {{card}} from discard",
+  "log.discard": "{{name}} discards {{card}}",
+  "log.knock": "{{name}} knocks!",
+  "log.roundEndKnocked": "Round {{round}} ends ({{name}} knocked)",
+  "log.roundEndStockOut": "Round {{round}} ends (stock out)",
+  "log.gameEnd": "{{name}} wins the game!"
 }
