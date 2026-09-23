@@ -710,7 +710,7 @@ func (g *Gleek) scoreMelds() {
 				g.playerScores[j] -= value
 			}
 			g.appendLog(seat, "meld", "gleek.log.meld",
-				map[string]string{"name": playerName(g.players, seat), "meld": gleekMeldName(n), "rank": gleekRankName(rank), "value": fmt.Sprint(value)}, nil)
+				map[string]string{"name": playerName(g.players, seat), "meldKey": gleekMeldKey(n), "rankKey": gleekRankKey(rank), "value": fmt.Sprint(value)}, nil)
 		}
 	}
 }
@@ -1141,28 +1141,25 @@ func gleekValidSuit(suit int) bool {
 	return suit >= CardDesignSpade && suit <= CardDesignDiamond
 }
 
-// gleekRankName メルド対象ランクの表示名を返す。
-func gleekRankName(rank int) string {
+func gleekRankKey(rank int) string {
 	switch rank {
 	case gleekAceValue:
-		return "aces"
+		return "gleek.rankAce"
 	case gleekKingValue:
-		return "kings"
+		return "gleek.rankKing"
 	case gleekQueenValue:
-		return "queens"
-	case gleekJackValue:
-		return "jacks"
+		return "gleek.rankQueen"
 	default:
-		return "-"
+		// gleekMeldRanks は A/K/Q/J だけなので、残りはジャック。
+		return "gleek.rankJack"
 	}
 }
 
-// gleekMeldName 枚数に対応するメルドの名前を返す。
-func gleekMeldName(count int) string {
+func gleekMeldKey(count int) string {
 	if count >= 4 {
-		return "mournival"
+		return "gleek.meldLabelMournival"
 	}
-	return "gleek"
+	return "gleek.meldLabelGleek"
 }
 
 // GleekHonourValueForTest はテスト用に名札の点を返す。

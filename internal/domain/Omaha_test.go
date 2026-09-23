@@ -61,6 +61,15 @@ func TestOmaha_Reset(t *testing.T) {
 		assert.True(t, p.GetChips() > 0 || p.GetAllIn())
 	}
 	assert.True(t, o.GetPot() > 0)
+	blindCodes := map[string]bool{}
+	for _, entry := range o.GetActionLog() {
+		if entry.ActionType == "blind" {
+			blindCodes[entry.DetailCode] = true
+			assert.Equal(t, map[string]string{"amount": entry.DetailParams["amount"]}, entry.DetailParams)
+		}
+	}
+	assert.True(t, blindCodes["omaha.log.smallBlind"])
+	assert.True(t, blindCodes["omaha.log.bigBlind"])
 }
 
 func TestOmaha_Reset_Deals4Cards(t *testing.T) {

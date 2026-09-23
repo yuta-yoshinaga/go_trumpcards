@@ -343,6 +343,8 @@ func TestCalabresella_ScoreRound_SoloistWinsAndLoses(t *testing.T) {
 	assert.Equal(t, 2, scores[0], "soloist +stake*coalitionSize (1*2)")
 	assert.Equal(t, -1, scores[1])
 	assert.Equal(t, -1, scores[2])
+	assert.Equal(t, "calabresella.log.roundScoreWon", g.GetActionLog()[len(g.GetActionLog())-1].DetailCode)
+	assert.NotContains(t, g.GetActionLog()[len(g.GetActionLog())-1].DetailParams, "result")
 
 	// Soloist fails with solo (stake 2).
 	g2 := newTestCalabresella()
@@ -355,6 +357,8 @@ func TestCalabresella_ScoreRound_SoloistWinsAndLoses(t *testing.T) {
 	assert.Equal(t, -4, s2[0], "soloist -stake*coalitionSize (2*2)")
 	assert.Equal(t, 2, s2[1])
 	assert.Equal(t, 2, s2[2])
+	assert.Equal(t, "calabresella.log.roundScoreLost", g2.GetActionLog()[len(g2.GetActionLog())-1].DetailCode)
+	assert.NotContains(t, g2.GetActionLog()[len(g2.GetActionLog())-1].DetailParams, "result")
 }
 
 func TestCalabresella_GameEnd_AtTarget(t *testing.T) {

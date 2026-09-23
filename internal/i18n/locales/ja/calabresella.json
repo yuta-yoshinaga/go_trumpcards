@@ -52,6 +52,7 @@
   "log.discard": "{{name}}が{{card}}を捨てる",
   "log.play": "{{name}}が{{card}}を出す",
   "log.trickWin": "{{name}}がトリック{{trick}}に勝つ（+{{points}}/3{{bonus}}）",
-  "log.roundScore": "ラウンド{{round}}: ソリスト({{name}}) {{result}}（{{points}}/3、ステーク={{stake}}）",
+  "log.roundScoreWon": "ラウンド{{round}}: ソリスト({{name}}) 勝利（{{points}}/3、ステーク={{stake}}）",
+  "log.roundScoreLost": "ラウンド{{round}}: ソリスト({{name}}) 敗北（{{points}}/3、ステーク={{stake}}）",
   "log.gameEnd": "{{name}}がマッチに勝利！"
 }

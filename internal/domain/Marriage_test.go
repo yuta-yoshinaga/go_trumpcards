@@ -487,6 +487,10 @@ func TestMarriage_Declare_Valid(t *testing.T) {
 	assert.Equal(t, -g.PlayerMaalValue(0), g.GetPlayer(0).GetRoundScore()) // winner scores minus maal
 	assert.Less(t, g.GetPlayer(0).GetRoundScore(), 0)
 	assert.Equal(t, domain.MarriageDeadwoodCap, g.GetPlayer(1).GetRoundScore()) // no pure → 80
+	entry := findMarriageActionLogEntry(g.GetActionLog(), "marriage.log.declareValid")
+	assert.NotNil(t, entry)
+	assert.Equal(t, "marriage.log.declareValid", entry.DetailCode)
+	assert.Equal(t, map[string]string{"name": entry.DetailParams["name"]}, entry.DetailParams)
 }
 
 func TestMarriage_Declare_Invalid(t *testing.T) {
@@ -519,6 +523,10 @@ func TestMarriage_Declare_Invalid(t *testing.T) {
 	require.NoError(t, g.PlayerDeclare(13))
 	assert.False(t, g.GetDeclarationValid())
 	assert.Equal(t, domain.MarriageDeadwoodCap-g.PlayerMaalValue(0), g.GetPlayer(0).GetRoundScore()) // invalid → cap minus maal
+	entry := findMarriageActionLogEntry(g.GetActionLog(), "marriage.log.declareInvalid")
+	assert.NotNil(t, entry)
+	assert.Equal(t, "marriage.log.declareInvalid", entry.DetailCode)
+	assert.Equal(t, "You", entry.DetailParams["name"])
 }
 
 func TestMarriage_DeclareGuards(t *testing.T) {
@@ -530,6 +538,15 @@ func TestMarriage_DeclareGuards(t *testing.T) {
 
 	g.SetPhase(domain.MarriagePhaseDiscard)
 	assert.Error(t, g.PlayerDeclare(999)) // out of range
+}
+
+func findMarriageActionLogEntry(entries []*domain.ActionLogEntry, code string) *domain.ActionLogEntry {
+	for _, entry := range entries {
+		if entry.DetailCode == code {
+			return entry
+		}
+	}
+	return nil
 }
 
 func TestMarriage_Recycle(t *testing.T) {

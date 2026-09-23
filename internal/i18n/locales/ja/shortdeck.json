@@ -66,5 +66,6 @@
   "log.bet": "{{amount}}をベット",
   "log.raise": "{{amount}}にレイズ",
   "log.allIn": "{{amount}}でオールイン",
-  "log.blind": "{{label}} {{amount}}を出しました"
+  "log.smallBlind": "スモールブラインド {{amount}} を出しました",
+  "log.bigBlind": "ビッグブラインド {{amount}} を出しました"
 }

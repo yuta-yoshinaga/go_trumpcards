@@ -38,6 +38,8 @@
   "log.trump": "{{name}}が{{suit}}を切り札に宣言",
   "log.trickWin": "{{name}}が{{trick}}トリックに勝利",
   "log.roundScore": "チーム{{team}}がラウンドに勝利（{{label}}、{{tricks}}トリック、+{{points}}、合計{{total}}）",
+  "sar": "サール",
+  "court": "コート",
   "log.gameEnd": "チーム{{team}}がゲームに勝利！",
   "log.play": "{{name}}が{{card}}を出す"
 }

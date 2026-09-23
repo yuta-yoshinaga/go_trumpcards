@@ -75,5 +75,6 @@
   "log.bet": "bet {{amount}}",
   "log.raise": "raise to {{amount}}",
   "log.allIn": "all in {{amount}}",
-  "log.blind": "posts {{label}} {{amount}}"
+  "log.smallBlind": "posts small blind {{amount}}",
+  "log.bigBlind": "posts big blind {{amount}}"
 }
