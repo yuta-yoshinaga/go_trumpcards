@@ -76,16 +76,6 @@ func TestVintInteractor_ResetWithConfig(t *testing.T) {
 		gameMock.AssertCalled(t, "SetConfig", cfg)
 	})
 
-	t.Run("invalid config never reaches the game", func(t *testing.T) {
-		pMock := new(presenter.MockVintPresenter)
-		pMock.On("Output", mock.Anything, mock.Anything).Return(vintMockOutput)
-		gameMock := new(interfaces.MockVintGame)
-
-		vi := usecase.NewVintInteractor(gameMock, pMock)
-		assert.Equal(t, vintMockOutput, vi.ResetWithConfig(domain.VintConfig{CpuDifficulty: 9}))
-		gameMock.AssertNotCalled(t, "SetConfig", mock.Anything)
-		gameMock.AssertNotCalled(t, "Reset")
-	})
 }
 
 // **宣言は bidIdx、プレイは currentIdx。**取り違えると常に別の席で弾かれる。

@@ -37515,8 +37515,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
         players:
           type: array
           items:
@@ -41269,14 +41267,8 @@ components:
     TrucoConfig:
       type: object
       required:
-        - cpuDifficulty
         - matchTarget
       properties:
-        cpuDifficulty:
-          type: integer
-          description: CPU difficulty (0=Normal)
-          enum: [0]
-          example: 0
         matchTarget:
           type: integer
           description: Points needed to win the match (default 15)
