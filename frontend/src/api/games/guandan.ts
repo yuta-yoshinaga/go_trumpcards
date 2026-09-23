@@ -5,9 +5,7 @@ import type { GuandanResponse } from '../../types/card';
 import { gameExec } from '../gameExec';
 
 /** Configuration options for Guandan game settings. */
-export interface GuandanConfigInput {
-  cpuDifficulty?: number;
-}
+export type GuandanConfigInput = Record<string, never>;
 
 /** Commands the /guandan/exec endpoint accepts. */
 export type GuandanCommand = 'reset' | 'play' | 'pass' | 'tribute' | 'next' | 'log';

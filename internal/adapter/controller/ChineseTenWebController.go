@@ -5,7 +5,6 @@ package controller
 import (
 	"net/http"
 
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/webutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
@@ -20,7 +19,6 @@ type ChineseTenWebInput struct {
 
 // ChineseTenWebConfig 撿紅點Web設定
 type ChineseTenWebConfig struct {
-	CpuDifficulty *int `json:"cpuDifficulty,omitempty"`
 }
 
 // ChineseTenWebOutputCard 1 枚の出力。
@@ -79,15 +77,11 @@ type ChineseTenWebOutput struct {
 
 // ChineseTenWebOutputConfig 撿紅點設定アウトプット
 type ChineseTenWebOutputConfig struct {
-	CpuDifficulty int `json:"cpuDifficulty"`
 }
 
 // ToConfig builds a ChineseTenConfig from the nested web config, applying bounds checking.
 func (c *ChineseTenWebConfig) ToConfig() domain.ChineseTenConfig {
 	cfg := domain.DefaultChineseTenConfig()
-	cfg.CpuDifficulty = domain.ChineseTenCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty,
-		int(domain.ChineseTenCpuDifficultyNormal), int(domain.ChineseTenCpuDifficultyNormal),
-		int(cfg.CpuDifficulty)))
 	return cfg
 }
 

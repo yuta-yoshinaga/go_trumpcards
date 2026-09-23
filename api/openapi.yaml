@@ -18187,9 +18187,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
       responses:
         '200':
           description: Current game state
@@ -18493,9 +18490,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
       responses:
         '200':
           description: Current game state
@@ -20306,9 +20300,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
                     allowNoTrump:
                       type: boolean
                       description: Whether no-trump bids are offered (default true).
@@ -22142,9 +22133,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
       responses:
         '200':
           description: Current game state
@@ -35671,8 +35659,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
         players:
           type: array
           items:
@@ -37296,8 +37282,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
             allowNoTrump:
               type: boolean
         players:
@@ -38530,8 +38514,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
     LiteratureResponse:
       type: object
       description: Response payload for /literature/exec
@@ -38910,8 +38892,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
         players:
           type: array
           description: |

@@ -67,8 +67,7 @@ func (p *GuandanWebPresenter) Output(g interfaces.GuandanGame, lastErr error) st
 		}
 	}
 
-	cfg := g.GetConfig()
-	resObj.Config = controller.GuandanWebOutputConfig{CpuDifficulty: int(cfg.CpuDifficulty)}
+	resObj.Config = controller.GuandanWebOutputConfig{}
 
 	resObj.Players = p.buildPlayersOutput(g)
 	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(g, lastErr)

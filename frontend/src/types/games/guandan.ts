@@ -94,6 +94,4 @@ export interface GuandanResponse extends BaseGameResponse {
 }
 
 /** Settings echoed back with the game state. */
-export interface GuandanConfigOutput {
-  cpuDifficulty: number;
-}
+export type GuandanConfigOutput = Record<string, never>;

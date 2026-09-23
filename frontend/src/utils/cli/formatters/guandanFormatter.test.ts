@@ -40,7 +40,7 @@ function makeState(overrides?: Partial<GuandanResponse>): GuandanResponse {
     gameEndFlag: false,
     winnerTeam: -1,
     message: '',
-    config: { cpuDifficulty: 0 },
+    config: {},
     ...overrides,
   };
 }

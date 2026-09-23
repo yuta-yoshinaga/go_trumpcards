@@ -71,8 +71,7 @@ func (p *KaiserWebPresenter) Output(g interfaces.KaiserGame, lastErr error) stri
 
 	cfg := g.GetConfig()
 	resObj.Config = controller.KaiserWebOutputConfig{
-		CpuDifficulty: int(cfg.CpuDifficulty),
-		AllowNoTrump:  cfg.AllowNoTrump,
+		AllowNoTrump: cfg.AllowNoTrump,
 	}
 
 	resObj.Players = p.buildPlayersOutput(g)

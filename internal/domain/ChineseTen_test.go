@@ -303,11 +303,6 @@ func TestChineseTen_UnmarshalRejectsAndClampsHostileSnapshots(t *testing.T) {
 	data, err := json.Marshal(c)
 	require.NoError(t, err)
 
-	t.Run("invalid config", func(t *testing.T) {
-		hostile := replaceJSONNumber(t, string(data), `"cd":0`, `"cd":99`)
-		assert.Error(t, json.Unmarshal([]byte(hostile), NewDefaultChineseTen()))
-	})
-
 	t.Run("out-of-range seats are clamped", func(t *testing.T) {
 		cur := fmt.Sprintf(`"ci":%d`, c.GetCurrentPlayerIdx())
 		hostile := replaceJSONNumber(t, string(data), cur, `"ci":99`)

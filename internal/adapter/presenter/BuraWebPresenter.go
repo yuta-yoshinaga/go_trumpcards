@@ -41,10 +41,7 @@ func (p *BuraWebPresenter) buildBase(b interfaces.BuraGame) *controller.BuraWebO
 		resObj.WinningCombinations = append(resObj.WinningCombinations, c.Key())
 	}
 
-	cfg := b.GetConfig()
-	resObj.Config = controller.BuraWebOutputConfig{
-		CpuDifficulty: int(cfg.CpuDifficulty),
-	}
+	resObj.Config = controller.BuraWebOutputConfig{}
 
 	resObj.CurrentLead = make([]*controller.WebOutputCard, 0, len(b.GetCurrentLead()))
 	for _, c := range b.GetCurrentLead() {

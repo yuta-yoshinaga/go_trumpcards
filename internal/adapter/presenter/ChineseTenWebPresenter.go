@@ -59,8 +59,7 @@ func (p *ChineseTenWebPresenter) buildBase(c interfaces.ChineseTenGame) *control
 	resObj.SelectableIndices = make([]int, 0, len(sel))
 	resObj.SelectableIndices = append(resObj.SelectableIndices, sel...)
 
-	cfg := c.GetConfig()
-	resObj.Config = controller.ChineseTenWebOutputConfig{CpuDifficulty: int(cfg.CpuDifficulty)}
+	resObj.Config = controller.ChineseTenWebOutputConfig{}
 	resObj.Players = p.buildPlayersOutput(c)
 
 	// ヒントは通常のレスポンスにも載せる。他ゲームは HintOutput でしか設定して

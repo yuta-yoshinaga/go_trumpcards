@@ -46,7 +46,7 @@ function makeState(overrides?: Partial<KaiserResponse>): KaiserResponse {
     maxBid: 12,
     gameEndFlag: false,
     winnerTeam: -1,
-    config: { cpuDifficulty: 0, allowNoTrump: true },
+    config: { allowNoTrump: true },
     message: '',
     ...overrides,
   };
