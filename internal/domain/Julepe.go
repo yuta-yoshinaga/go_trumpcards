@@ -59,12 +59,6 @@ func (r *Julepe) GetRequiredTricks() int {
 // GetBeast は次ラウンドのアンティが倍になる席を返す。
 func (r *Julepe) GetBeast() []bool { return r.beast }
 
-// GetBeastForTest は beast フラグを返す (テスト用)。
-func (r *Julepe) GetBeastForTest() []bool { return r.beast }
-
-// DealRoundForTest は次ラウンドの配りを実行する (テスト用)。
-func (r *Julepe) DealRoundForTest() { r.dealRound() }
-
 // JulepeRequiredTricks は参加人数 n に対する規定トリック数を返す。
 //
 // **人数で変わる。** クローン元のラムスは「1 トリックも取れなければ罰」
