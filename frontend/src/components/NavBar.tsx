@@ -3,8 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import { gameCategories, gameRoutes } from '../constants/gameRoutes';
 import { SITE_NAME } from '../constants/site';
-import { useIsLargeDesktop, useIsMediumDesktop, useIsMobile } from '../hooks/useCardDimensions';
-import { useDetailsOutsideClick } from '../hooks/useDetailsOutsideClick';
+import { useIsLargeDesktop } from '../hooks/useCardDimensions';
 import { useFavoriteGames } from '../hooks/useFavoriteGames';
 import { useGameRouteSearch } from '../hooks/useGameRouteSearch';
 import { useNavFocusTrap } from '../hooks/useNavFocusTrap';
@@ -66,16 +65,14 @@ export function NavBar() {
   const { t } = useTranslation('common');
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const isMobile = useIsMobile();
-  const isMediumDesktop = useIsMediumDesktop();
   const isLargeDesktop = useIsLargeDesktop();
+  const isCompact = !isLargeDesktop;
   const recentGames = useRecentGames(pathname);
   const { favorites, isFavorite, toggleFavorite } = useFavoriteGames();
   const navRef = useRef<HTMLElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
 
-  useNavFocusTrap(navRef, toggleRef, isOpen, isMobile);
-  useDetailsOutsideClick(navRef, !isMobile && !isMediumDesktop);
+  useNavFocusTrap(navRef, toggleRef, isOpen, isCompact);
 
   const closeMenu = useCallback(() => {
     setIsOpen(false);
@@ -92,7 +89,7 @@ export function NavBar() {
 
   return (
     <div className="glass-panel--dark lg:hidden relative z-30 pt-[env(safe-area-inset-top)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
-      <div className="flex items-center justify-between sm:hidden my-2 mx-2.5">
+      <div className="flex items-center justify-between my-2 mx-2.5">
         <Link
           to="/"
           className="text-ds-text-primary font-display font-bold min-h-[44px] inline-flex items-center"
@@ -121,9 +118,9 @@ export function NavBar() {
         ref={navRef}
         id="main-nav"
         onKeyDown={handleNavKeyDown}
-        className={`${isOpen ? 'flex' : 'hidden'} flex-col gap-2 mx-2.5 mb-2 sm:flex sm:flex-row sm:flex-wrap sm:items-start sm:justify-end sm:my-2`}
+        className={`${isOpen ? 'flex' : 'hidden'} flex-col gap-2 mx-2.5 mb-2`}
       >
-        {isMobile && (
+        {isCompact && (
           <div className="flex items-center gap-1">
             <input
               type="search"
@@ -162,7 +159,7 @@ export function NavBar() {
             {t('nav.discover')}
           </Link>
         )}
-        {isMobile && !filteredRoutes && favorites.length > 0 && (
+        {isCompact && !filteredRoutes && favorites.length > 0 && (
           <div className="flex flex-col gap-1">
             <span className="text-ds-text-muted text-xs uppercase tracking-wider px-1 py-1">
               {t('nav.favoriteGames')}
@@ -185,7 +182,7 @@ export function NavBar() {
             })}
           </div>
         )}
-        {isMobile && !filteredRoutes && recentGames.length > 0 && (
+        {isCompact && !filteredRoutes && recentGames.length > 0 && (
           <div className="flex flex-col gap-1">
             <span className="text-ds-text-muted text-xs uppercase tracking-wider px-1 py-1">
               {t('nav.recentGames')}
@@ -208,7 +205,7 @@ export function NavBar() {
             })}
           </div>
         )}
-        {isMobile && (
+        {isCompact && (
           <div aria-live="polite" className="sr-only">
             {filteredRoutes &&
               (filteredRoutes.length > 0
@@ -236,27 +233,26 @@ export function NavBar() {
             )}
           </div>
         ) : (
-          <div className="flex flex-col gap-1 sm:flex-row sm:flex-wrap sm:flex-1 sm:justify-end sm:gap-3">
+          <div className="flex flex-col gap-1">
             {gameCategories.map(({ labelKey, icon: catIcon, routes }) => {
               return (
                 <details
                   key={labelKey}
-                  className="nav-category sm:flex sm:items-center"
+                  className="nav-category"
                   open
                   onToggle={(e) => {
-                    // NavBar is lg:hidden, so we are always on mobile or
-                    // medium desktop. Force categories to stay open on every
-                    // applicable breakpoint so the full 77-game catalog is
+                    // NavBar is lg:hidden. Keep categories open on compact
+                    // widths so the full 77-game catalog is
                     // discoverable on first visit (#1698).
-                    if (!e.currentTarget.open) {
+                    if (isCompact && !e.currentTarget.open) {
                       e.currentTarget.open = true;
                     }
                   }}
                 >
-                  <summary className="text-ds-text-muted text-xs uppercase tracking-wider px-1 py-2 cursor-pointer select-none min-h-[44px] flex items-center gap-1 sm:cursor-default sm:py-0 sm:min-h-0 shrink-0">
+                  <summary className="text-ds-text-muted text-xs uppercase tracking-wider px-1 py-2 cursor-pointer select-none min-h-[44px] flex items-center gap-1 shrink-0">
                     <span aria-hidden="true">{catIcon}</span> {t(labelKey)}
                   </summary>
-                  <div className="nav-dropdown flex flex-col gap-1 pl-2 pb-1 sm:flex-row sm:pl-0 sm:pb-0">
+                  <div className="nav-dropdown flex flex-col gap-1 pl-2 pb-1">
                     {routes.map(({ path, labelKey: routeLabel, icon }) => (
                       <div key={path} className="flex items-center gap-1">
                         <Link
@@ -268,7 +264,7 @@ export function NavBar() {
                           <span aria-hidden="true">{icon}</span>
                           {t(routeLabel)}
                         </Link>
-                        {isMobile && (
+                        {isCompact && (
                           <FavoriteToggleButton
                             path={path}
                             gameLabel={t(routeLabel)}
@@ -292,9 +288,8 @@ export function NavBar() {
         <TutorialProgressPanel />
         {/* Rendered below the large-desktop breakpoint only, because
             DesktopSidebar (which is `hidden lg:flex`) carries the same link in
-            its footer above it. Keying this on `isMobile` instead left tablet
-            and small-desktop widths with no route to the notice at all. */}
-        {!isLargeDesktop && (
+            its footer above it. */}
+        {isCompact && (
           <Link
             to="/legal"
             aria-current={pathname === '/legal' ? 'page' : undefined}
@@ -304,10 +299,6 @@ export function NavBar() {
             {t('nav.legal')}
           </Link>
         )}
-        <div className="hidden sm:flex sm:items-center sm:gap-2">
-          <SoundToggle />
-          <NavLangToggle />
-        </div>
       </nav>
     </div>
   );

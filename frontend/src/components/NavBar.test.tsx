@@ -72,6 +72,22 @@ describe('NavBar', () => {
     }
   });
 
+  it('shows the compact menu, search, and favorite toggles at 800px', () => {
+    const original = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 800 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      renderNavBar('/');
+      const menu = screen.getByRole('button', { name: i18n.t('nav.openMenu') });
+      fireEvent.click(menu);
+      expect(screen.getByRole('searchbox', { name: i18n.t('nav.searchPlaceholder') })).toBeInTheDocument();
+      expect(screen.getAllByRole('button', { name: /お気に入り/ }).length).toBeGreaterThan(0);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
+
   it('links point to correct hrefs', () => {
     renderNavBar();
     // Index the links once. Querying by accessible name recomputes it for every
@@ -195,11 +211,11 @@ describe('NavBar', () => {
       expect(nav).toHaveClass('hidden');
     });
 
-    it('language toggle is always accessible in mobile header', () => {
+    it('language toggle is always accessible in compact header', () => {
       renderNavBar();
-      // Language buttons exist even when nav is hidden (mobile header has its own)
+      // Language buttons are in the compact header even when nav is hidden.
       const jaBtns = screen.getAllByRole('button', { name: i18n.t('nav.switchToJa') });
-      expect(jaBtns.length).toBeGreaterThanOrEqual(2);
+      expect(jaBtns).toHaveLength(1);
     });
 
     it('moves focus to first interactive element when menu opens', () => {
@@ -356,21 +372,22 @@ describe('NavBar', () => {
       expect(tableDetails).toHaveAttribute('open');
     });
 
-    it('forces details open on medium desktop (sm-lg) when toggled closed', () => {
+    it('does not close other categories on mousedown inside a category at compact width', () => {
       const original = window.innerWidth;
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 800 });
       window.dispatchEvent(new Event('resize'));
-      renderNavBar('/');
-      const tableDetails = screen.getByText(labelFor('nav.category.table')).closest('details') as HTMLDetailsElement;
-      expect(tableDetails).toHaveAttribute('open');
-
-      // Simulate toggle to close — the onToggle handler should force it back open
-      tableDetails.open = false;
-      fireEvent(tableDetails, new Event('toggle'));
-      expect(tableDetails).toHaveAttribute('open');
-
-      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
-      window.dispatchEvent(new Event('resize'));
+      try {
+        renderNavBar('/');
+        fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.openMenu') }));
+        const tableDetails = screen.getByText(labelFor('nav.category.table')).closest('details') as HTMLDetailsElement;
+        const pokerDetails = screen.getByText(labelFor('nav.category.poker')).closest('details') as HTMLDetailsElement;
+        fireEvent.mouseDown(pokerDetails.querySelector('a') as HTMLElement);
+        expect(tableDetails).toHaveAttribute('open');
+        expect(pokerDetails).toHaveAttribute('open');
+      } finally {
+        Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
+        window.dispatchEvent(new Event('resize'));
+      }
     });
 
     it('does not close other categories on mousedown inside a category on mobile', () => {
@@ -395,27 +412,6 @@ describe('NavBar', () => {
       window.dispatchEvent(new Event('resize'));
     });
 
-    it('does not close other categories on mousedown inside a category on medium desktop', () => {
-      const original = window.innerWidth;
-      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 800 });
-      window.dispatchEvent(new Event('resize'));
-      renderNavBar('/');
-
-      const tableDetails = screen.getByText(labelFor('nav.category.table')).closest('details') as HTMLDetailsElement;
-      const pokerDetails = screen.getByText(labelFor('nav.category.poker')).closest('details') as HTMLDetailsElement;
-      // Force both open to simulate tablet state
-      tableDetails.open = true;
-      pokerDetails.open = true;
-
-      const pokerLink = pokerDetails.querySelector('a') as HTMLElement;
-      fireEvent.mouseDown(pokerLink);
-
-      expect(tableDetails).toHaveAttribute('open');
-      expect(pokerDetails).toHaveAttribute('open');
-      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
-      window.dispatchEvent(new Event('resize'));
-    });
-
     it('does not close dropdown when clicking inside it', () => {
       renderNavBar('/poker');
       const pokerDetails = screen.getByText(labelFor('nav.category.poker')).closest('details') as HTMLDetailsElement;
@@ -426,14 +422,6 @@ describe('NavBar', () => {
       fireEvent.mouseDown(pokerLink);
 
       expect(pokerDetails).toHaveAttribute('open');
-    });
-
-    it('removes outside click listener on unmount', () => {
-      vi.spyOn(document, 'removeEventListener');
-      const { unmount } = renderNavBar();
-      unmount();
-      expect(document.removeEventListener).toHaveBeenCalledWith('mousedown', expect.any(Function));
-      vi.restoreAllMocks();
     });
   });
 
