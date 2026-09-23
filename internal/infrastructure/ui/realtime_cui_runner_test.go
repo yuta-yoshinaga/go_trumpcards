@@ -6,7 +6,9 @@ import (
 	"bytes"
 	"errors"
 	"io"
+	"os"
 	"strings"
+	"syscall"
 	"testing"
 	"time"
 
@@ -80,7 +82,7 @@ func (m *realtimeMockExecer) Exec(command string) string {
 
 // neverQuit returns a channel that is never closed — used by tests that
 // don't want the quit signal path to influence the loop.
-func neverQuit() <-chan struct{} { return make(chan struct{}) }
+func neverQuit() <-chan int { return make(chan int) }
 
 // SlapjackRealtimeKeyMap is the canonical key→command mapping the realtime
 // runner uses for Slapjack and Egyptian Ratscrew. Tests reach for it
@@ -147,7 +149,7 @@ func TestRealtimeCuiCore_HelpKeyPrintsLegendWithoutDispatching(t *testing.T) {
 	close(keys)
 	var buf bytes.Buffer
 	me := &realtimeMockExecer{response: map[string]string{"r": "fresh"}}
-	realtimeCuiCore(me, keys, nil, neverQuit(), &buf, SlapjackRealtimeKeyMap)
+	assert.Equal(t, 0, realtimeCuiCore(me, keys, nil, neverQuit(), &buf, SlapjackRealtimeKeyMap))
 
 	assert.Equal(t, []string{"r"}, me.calls, "help must not reach the controller")
 	assert.Contains(t, buf.String(), i18n.T("realtime.labelSlap"))
@@ -165,7 +167,7 @@ func TestRealtimeCuiCore_DifficultyKeysDispatchWithArgument(t *testing.T) {
 	close(keys)
 	var buf bytes.Buffer
 	me := &realtimeMockExecer{response: map[string]string{"r": "fresh"}}
-	realtimeCuiCore(me, keys, nil, neverQuit(), &buf, SlapjackRealtimeKeyMap)
+	assert.Equal(t, 0, realtimeCuiCore(me, keys, nil, neverQuit(), &buf, SlapjackRealtimeKeyMap))
 
 	assert.Equal(t, []string{"r", "sd 0", "sd 1", "sd 2"}, me.calls)
 }
@@ -178,7 +180,7 @@ func TestRealtimeCuiCore_PrintsInitialResetOnStart(t *testing.T) {
 	close(ticks)
 	var buf bytes.Buffer
 	me := &realtimeMockExecer{response: map[string]string{"r": "fresh game"}}
-	realtimeCuiCore(me, keys, ticks, neverQuit(), &buf, SlapjackRealtimeKeyMap)
+	assert.Equal(t, 0, realtimeCuiCore(me, keys, ticks, neverQuit(), &buf, SlapjackRealtimeKeyMap))
 	assert.Contains(t, buf.String(), "fresh game")
 	assert.Equal(t, []string{"r"}, me.calls)
 }
@@ -204,7 +206,7 @@ func TestRealtimeCuiCore_TickInvokesTickCommand(t *testing.T) {
 	}()
 	var buf bytes.Buffer
 	me := &realtimeMockExecer{response: map[string]string{"r": "init", "tick": "tock"}}
-	realtimeCuiCore(me, keys, ticks, neverQuit(), &buf, SlapjackRealtimeKeyMap)
+	assert.Equal(t, 0, realtimeCuiCore(me, keys, ticks, neverQuit(), &buf, SlapjackRealtimeKeyMap))
 	assert.Equal(t, []string{"r", "tick", "tick"}, me.calls)
 	assert.Equal(t, 2, strings.Count(buf.String(), "tock"))
 }
@@ -218,7 +220,7 @@ func TestRealtimeCuiCore_KeyTriggersMappedCommand(t *testing.T) {
 	ticks := make(chan struct{})
 	var buf bytes.Buffer
 	me := &realtimeMockExecer{response: map[string]string{"r": "init", "j": "you slap", "s": "you step"}}
-	realtimeCuiCore(me, keys, ticks, neverQuit(), &buf, SlapjackRealtimeKeyMap)
+	assert.Equal(t, 0, realtimeCuiCore(me, keys, ticks, neverQuit(), &buf, SlapjackRealtimeKeyMap))
 	assert.Equal(t, []string{"r", "j", "s"}, me.calls)
 	out := buf.String()
 	assert.Contains(t, out, "you slap")
@@ -235,7 +237,7 @@ func TestRealtimeCuiCore_QKeyEndsLoop(t *testing.T) {
 	ticks := make(chan struct{})
 	var buf bytes.Buffer
 	me := &realtimeMockExecer{response: map[string]string{"r": "init"}}
-	realtimeCuiCore(me, keys, ticks, neverQuit(), &buf, SlapjackRealtimeKeyMap)
+	assert.Equal(t, 0, realtimeCuiCore(me, keys, ticks, neverQuit(), &buf, SlapjackRealtimeKeyMap))
 	// 'q' must terminate before 's' is processed.
 	assert.Equal(t, []string{"r", "j"}, me.calls)
 }
@@ -249,7 +251,7 @@ func TestRealtimeCuiCore_UnknownKeyIsIgnored(t *testing.T) {
 	ticks := make(chan struct{})
 	var buf bytes.Buffer
 	me := &realtimeMockExecer{response: map[string]string{"r": "init", "j": "slap"}}
-	realtimeCuiCore(me, keys, ticks, neverQuit(), &buf, SlapjackRealtimeKeyMap)
+	assert.Equal(t, 0, realtimeCuiCore(me, keys, ticks, neverQuit(), &buf, SlapjackRealtimeKeyMap))
 	assert.Equal(t, []string{"r", "j"}, me.calls)
 }
 
@@ -265,7 +267,7 @@ func TestRealtimeCuiCore_EOFEndsLoop(t *testing.T) {
 	var buf bytes.Buffer
 	me := &realtimeMockExecer{response: map[string]string{"r": "init"}}
 	go func() {
-		realtimeCuiCore(me, keys, ticks, neverQuit(), &buf, SlapjackRealtimeKeyMap)
+		_ = realtimeCuiCore(me, keys, ticks, neverQuit(), &buf, SlapjackRealtimeKeyMap)
 		close(done)
 	}()
 	select {
@@ -284,20 +286,56 @@ func TestRealtimeCuiCore_QuitChannelEndsLoop(t *testing.T) {
 	t.Parallel()
 	keys := make(chan rune)      // open
 	ticks := make(chan struct{}) // open
-	quit := make(chan struct{})
-	close(quit) // signal already fired
+	quit := make(chan int, 1)
+	quit <- 143 // SIGTERM already fired
 	done := make(chan struct{})
 	var buf bytes.Buffer
 	me := &realtimeMockExecer{response: map[string]string{"r": "init"}}
 	go func() {
-		realtimeCuiCore(me, keys, ticks, quit, &buf, SlapjackRealtimeKeyMap)
+		assert.Equal(t, 143, realtimeCuiCore(me, keys, ticks, quit, &buf, SlapjackRealtimeKeyMap))
 		close(done)
 	}()
 	select {
 	case <-done:
 		// loop terminated as expected
 	case <-time.After(time.Second):
-		t.Fatal("realtimeCuiCore did not terminate when quit channel closed")
+		t.Fatal("realtimeCuiCore did not terminate when quit code arrived")
 	}
 	assert.Equal(t, []string{"r"}, me.calls)
+}
+
+func TestRealtimeCuiCore_ExitCodes(t *testing.T) {
+	t.Parallel()
+	for _, tt := range []struct {
+		name string
+		key  rune
+		want int
+	}{
+		{name: "q", key: 'q', want: 0},
+		{name: "Ctrl+D", key: 0x04, want: 0},
+		{name: "Ctrl+C", key: 0x03, want: 130},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			keys := make(chan rune, 1)
+			keys <- tt.key
+			close(keys)
+			got := realtimeCuiCore(&realtimeMockExecer{}, keys, nil, neverQuit(), io.Discard, SlapjackRealtimeKeyMap)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+
+	keys := make(chan rune)
+	for _, code := range []int{130, 143} {
+		quit := make(chan int, 1)
+		quit <- code
+		assert.Equal(t, code, realtimeCuiCore(&realtimeMockExecer{}, keys, nil, quit, io.Discard, SlapjackRealtimeKeyMap))
+	}
+	closedKeys := make(chan rune)
+	close(closedKeys)
+	assert.Equal(t, 0, realtimeCuiCore(&realtimeMockExecer{}, closedKeys, nil, neverQuit(), io.Discard, SlapjackRealtimeKeyMap))
+}
+
+func TestPosixSignalExitCode(t *testing.T) {
+	assert.Equal(t, 130, posixSignalExitCode(os.Interrupt))
+	assert.Equal(t, 143, posixSignalExitCode(syscall.SIGTERM))
 }
