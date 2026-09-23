@@ -5,7 +5,7 @@ import type { LiteratureResponse } from '../../types/card';
 import { gameExec } from '../gameExec';
 
 /** Configuration options for Literature game settings. */
-export type LiteratureConfigInput = object;
+export type LiteratureConfigInput = Record<string, never>;
 
 /** Commands the /literature/exec endpoint accepts. */
 export type LiteratureCommand = 'reset' | 'ask' | 'claim' | 'log';

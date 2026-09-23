@@ -68,4 +68,4 @@ export interface LiteratureResponse extends BaseGameResponse {
 }
 
 /** Settings echoed back with the game state. */
-export type LiteratureConfigOutput = object;
+export type LiteratureConfigOutput = Record<string, never>;
