@@ -19,8 +19,7 @@ type PutWebInput struct {
 
 // PutWebConfig プットWeb設定
 type PutWebConfig struct {
-	CpuDifficulty *int `json:"cpuDifficulty,omitempty"`
-	MatchTarget   *int `json:"matchTarget,omitempty"`
+	MatchTarget *int `json:"matchTarget,omitempty"`
 }
 
 // PutWebOutputPlayer プットWebアウトプットプレイヤー
@@ -69,16 +68,12 @@ type PutWebOutput struct {
 
 // PutWebOutputConfig プット設定アウトプット
 type PutWebOutputConfig struct {
-	CpuDifficulty int `json:"cpuDifficulty"`
-	MatchTarget   int `json:"matchTarget"`
+	MatchTarget int `json:"matchTarget"`
 }
 
 // ToConfig builds a PutConfig from the nested web config, applying bounds checking.
 func (c *PutWebConfig) ToConfig() domain.PutConfig {
 	cfg := domain.DefaultPutConfig()
-	cfg.CpuDifficulty = domain.PutCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty,
-		int(domain.PutCpuDifficultyNormal), int(domain.PutCpuDifficultyNormal),
-		int(cfg.CpuDifficulty)))
 	cfg.MatchTarget = webutil.BoundedIntPtr(c.MatchTarget,
 		domain.PutMinMatchTarget, domain.PutMaxMatchTarget, cfg.MatchTarget)
 	return cfg

@@ -65,9 +65,6 @@ function PutPageContent() {
   const { cardWidth } = useCardDimensions();
   const { hint, hintEnabled, setHintEnabled } = useGameHint('put', state);
 
-  // Only the match target is offered. PutCpuDifficulty has a single value
-  // ("v1 で唯一サポート") and nothing branches on it, so a difficulty selector
-  // would be a choice that changes nothing (#4755).
   const [matchTarget, setMatchTarget] = useState(PUT_DEFAULT_MATCH_TARGET);
   const matchTargetRef = useRef(matchTarget);
   matchTargetRef.current = matchTarget;
