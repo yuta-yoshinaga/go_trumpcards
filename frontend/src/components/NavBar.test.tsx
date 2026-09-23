@@ -444,8 +444,25 @@ describe('NavBar', () => {
       window.dispatchEvent(new Event('resize'));
       renderNavBar();
       fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.openMenu') }));
-      const starButtons = screen.getAllByRole('button', { name: i18n.t('nav.favoriteGames') });
+      const starButtons = screen.getAllByRole('button', { name: /をお気に入りに登録$/ });
       expect(starButtons.length).toBeGreaterThan(0);
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
+      window.dispatchEvent(new Event('resize'));
+    });
+
+    it('gives different games distinct favorite button names', () => {
+      const original = window.innerWidth;
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+      window.dispatchEvent(new Event('resize'));
+      renderNavBar();
+      fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.openMenu') }));
+      const hearts = screen.getByRole('button', {
+        name: i18n.t('nav.favoriteToggle', { game: i18n.t('nav.hearts') }),
+      });
+      const poker = screen.getByRole('button', {
+        name: i18n.t('nav.favoriteToggle', { game: i18n.t('nav.poker') }),
+      });
+      expect(hearts).not.toBe(poker);
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
       window.dispatchEvent(new Event('resize'));
     });
@@ -455,7 +472,7 @@ describe('NavBar', () => {
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1280 });
       window.dispatchEvent(new Event('resize'));
       renderNavBar();
-      expect(screen.queryByRole('button', { name: i18n.t('nav.favoriteGames') })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /をお気に入りに登録$/ })).not.toBeInTheDocument();
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
       window.dispatchEvent(new Event('resize'));
     });
@@ -470,7 +487,7 @@ describe('NavBar', () => {
       // No favorites section initially
       expect(screen.queryByText(i18n.t('nav.favoriteGames'))).not.toBeInTheDocument();
       // Click the first star button
-      const starButtons = screen.getAllByRole('button', { name: i18n.t('nav.favoriteGames') });
+      const starButtons = screen.getAllByRole('button', { name: /をお気に入りに登録$/ });
       fireEvent.click(starButtons[0]);
       // Favorites section should appear
       expect(screen.getByText(i18n.t('nav.favoriteGames'))).toBeInTheDocument();
@@ -511,11 +528,11 @@ describe('NavBar', () => {
       window.dispatchEvent(new Event('resize'));
       renderNavBar();
       fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.openMenu') }));
-      const [firstStar] = screen.getAllByRole('button', { name: i18n.t('nav.favoriteGames') });
+      const [firstStar] = screen.getAllByRole('button', { name: /をお気に入りに登録$/ });
       expect(firstStar).toHaveAttribute('aria-pressed', 'false');
       expect(firstStar.className).toContain('text-ds-text-muted');
       fireEvent.click(firstStar);
-      const toggled = screen.getAllByRole('button', { name: i18n.t('nav.favoriteGames') })[0];
+      const toggled = screen.getAllByRole('button', { name: /をお気に入りに登録$/ })[0];
       expect(toggled).toHaveAttribute('aria-pressed', 'true');
       expect(toggled.className).toContain('text-ds-accent');
       expect(toggled.className).not.toContain('text-ds-text-muted');
