@@ -2,11 +2,6 @@
 
 package domain
 
-// MadrassoBeatsForTest は madrassoBeats を公開する (テスト用)。
-func MadrassoBeatsForTest(challenger, best *Card, leadSuit, trumpSuit int) bool {
-	return madrassoBeats(challenger, best, leadSuit, trumpSuit)
-}
-
 // SetTeamRoundPointsForTest はチームの現ラウンド獲得点を設定する (テスト用)。
 func (g *Madrasso) SetTeamRoundPointsForTest(team, pts int) {
 	if team >= 0 && team < MadrassoTeamCnt {

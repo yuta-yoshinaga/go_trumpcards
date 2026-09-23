@@ -37,6 +37,3 @@ func (g *Michigan) SetRoundStartChipsForTest(chips []int) {
 
 // DoPlayForTest は seat の手札インデックス idx を出す (乱数配札を迂回した決定的検証用)。
 func (g *Michigan) DoPlayForTest(seat, idx int) { g.doPlay(seat, idx) }
-
-// DriveCPUForTest は CPU 手番を進める (テスト用)。
-func (g *Michigan) DriveCPUForTest() { g.driveCPU() }

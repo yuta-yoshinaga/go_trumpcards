@@ -2,9 +2,6 @@
 
 package domain
 
-// SetDeadForTest は死に手を差し替える (テスト用)。
-func (c *Comet) SetDeadForTest(cards []*Card) { c.dead = cards }
-
 // SetNeedForTest は次に要るランクを差し替える (テスト用)。
 func (c *Comet) SetNeedForTest(n int) { c.need = n }
 

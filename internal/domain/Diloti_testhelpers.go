@@ -13,6 +13,3 @@ func (d *Diloti) SetTableForTest(cards []*Card, decls []*DilotiDeclaration) {
 	}
 	d.decls = decls
 }
-
-// SetFirstPlayDoneForTest は局の初手が済んだ印を立てる (テスト用)。
-func (d *Diloti) SetFirstPlayDoneForTest(v bool) { d.firstPlayDone = v }
