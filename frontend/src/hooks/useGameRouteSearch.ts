@@ -4,7 +4,7 @@ import { type GameRoute, gameRoutes } from '../constants/gameRoutes';
 
 /** Result of a bilingual game route search. */
 export interface UseGameRouteSearchResult {
-  /** Matching routes when `searchTerm` is non-empty, otherwise `null` (caller should fall back to its category view). */
+  /** Matching routes when the trimmed `searchTerm` is non-empty, otherwise `null` (caller should fall back to its category view). */
   filteredRoutes: GameRoute[] | null;
   /** Set of paths that match — convenience for callers like DesktopSidebar that already iterate `gameRoutes`. */
   filteredPaths: Set<string> | null;
