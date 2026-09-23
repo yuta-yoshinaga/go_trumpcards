@@ -36,7 +36,7 @@ Build: `make build-worker-{solo,casino,classic,extra,extra2,extra3,extra4,extra5
 ## ローカルでサイズを実測する
 
 ADR-0032 の時点では TinyGo をローカルに持たず CI のレポート頼りだったが、いまは手元で測れる
-（Go 1.25.8 + TinyGo 0.40.1、CI と同じ組み合わせ）。
+（Go 1.25.8 + TinyGo 0.42.0、CI と同じ組み合わせ）。
 
 ```sh
 export PATH="$HOME/sdk/go1.25.8/bin:$HOME/.local/opt/tinygo/bin:$PATH"
@@ -51,8 +51,8 @@ gzip -c workers/<w>/build/app.wasm | wc -c    # 1,048,576 と比較する
 ```
 
 - **`GOTOOLCHAIN=local` を忘れないこと。** `go.mod` の `toolchain go1.26.0` により Go 1.25 でも
-  1.26 に自動アップグレードされ、TinyGo 0.40.1 が
-  `requires go version 1.19 through 1.25, got go1.26` で止まる。CI も同じ理由で明示している。
+  Go 1.26 に自動アップグレードされ、CI（Go 1.25）とは別のツールチェーンでビルドされてサイズが一致しなくなる。
+  CI も同じ理由で明示している。
 - **`wasm-opt` 前の値で判断しない。** extra は 1,077,248 → 1,029,817 と 47 KB 縮む。最適化前だと
   上限超過に見える。
 - `make` が無い環境では上のコマンドが Makefile レシピの展開そのもの。

@@ -108,8 +108,8 @@ Then run the `game-registration-checker` agent for an independent sweep of all t
 
 ## Size verification (measure locally first)
 
-TinyGo 0.40.1 + Go 1.25.8 are installed now, and local builds reproduce CI byte for byte
-(verified: extra2 = 594139 raw / 232016 gzip in both). Measure before pushing:
+TinyGo 0.42.0 + Go 1.25.8 are installed now, and local builds reproduce CI byte for byte
+(verified on 0.40.1: extra2 = 594139 raw / 232016 gzip in both). Measure before pushing:
 
 ```sh
 .claude/skills/rebucket-game/scripts/measure.sh extra2          # one worker, ~3.5 min

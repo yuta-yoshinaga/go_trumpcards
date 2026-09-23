@@ -34,8 +34,8 @@ bash .claude/skills/rebucket-game/scripts/measure.sh classic extra3   # a subset
 ```
 
 The script mirrors the Makefile's build flags exactly, so its figures match CI byte for byte.
-It needs TinyGo 0.40.1 + `wasm-opt` + `bc` and sets `GOTOOLCHAIN=local` itself (TinyGo 0.40.1
-refuses a newer toolchain). A full eight-worker run takes several minutes — build only the
+It needs TinyGo 0.42.0 + `wasm-opt` + `bc` and sets `GOTOOLCHAIN=local` itself (to pin the
+same Go toolchain CI uses, so the sizes match). A full eight-worker run takes several minutes — build only the
 workers you need when the caller has named candidates.
 
 Output is one line per worker with raw bytes, gzip bytes, percent of limit, and headroom in KB.

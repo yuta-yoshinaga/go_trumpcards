@@ -11,7 +11,7 @@ set -euo pipefail
 
 cd "$(dirname "$0")/../../../.."
 export PATH="$HOME/sdk/go1.25.8/bin:$HOME/.local/opt/tinygo/bin:$PATH"
-export GOTOOLCHAIN=local          # TinyGo 0.40.1 refuses a newer toolchain
+export GOTOOLCHAIN=local          # pin the Go toolchain CI uses (1.25) so sizes match CI
 LIMIT=1048576
 
 # Build the list as an array. `for w in "${@:-a b c}"` looks equivalent but is not:
