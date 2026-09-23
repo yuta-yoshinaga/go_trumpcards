@@ -797,13 +797,7 @@ func (p *Pinochle) doCallTrump(playerIdx, suit int) error {
 		return NewDomainErrorCode(ErrInvalidPlay, "pinochle.errInvalidSuit", nil)
 	}
 	p.trumpSuit = suit
-	suitNames := map[int]string{
-		CardDesignSpade:   "スペード",
-		CardDesignClover:  "クラブ",
-		CardDesignHeart:   "ハート",
-		CardDesignDiamond: "ダイヤ",
-	}
-	p.addLog(playerIdx, "trump", "pinochle.log.trump", map[string]string{"suit": suitNames[suit]}, nil)
+	p.addLog(playerIdx, "trump", "pinochle.log.trump", map[string]string{"suitKey": suitKeyOf(suit)}, nil)
 
 	// メルドフェーズへ移行
 	p.evaluateAllMelds()
