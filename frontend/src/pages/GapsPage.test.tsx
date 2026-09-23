@@ -118,6 +118,19 @@ describe('GapsPage', () => {
     expect(screen.queryByTestId('gaps-ghost-3-0')).not.toBeInTheDocument();
   });
 
+  it('renders a ghost rank without a suit symbol for an unknown design', async () => {
+    const gapNeeds = [
+      [{ kind: 'needed', design: 'JOKER', value: 4 } as unknown as GapsGhostHint, ...Array(12).fill(null)],
+      ...Array.from({ length: 3 }, () => Array(13).fill(null)),
+    ];
+    const grid = Array.from({ length: 4 }, () => Array(13).fill(null));
+    mockedRun.mockResolvedValue({ ...playingState, grid, gapNeeds });
+    renderWithProviders(<GapsPage />);
+    const ghost = await screen.findByTestId('gaps-ghost-0-0');
+    expect(ghost).toHaveTextContent('4');
+    expect(ghost).not.toHaveTextContent('♠');
+  });
+
   it('renders redeals remaining', async () => {
     renderWithProviders(<GapsPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent(/再配り残り: 3/));

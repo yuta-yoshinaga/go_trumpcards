@@ -260,6 +260,22 @@ describe('PigsTailPage', () => {
     expect(await screen.findByTestId('pt-human-action')).toHaveTextContent('あなた: ? — ペナルティ！ (+4)');
   });
 
+  it('uses ? for unknown suit designs in human and CPU draw rows', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      humanAction: {
+        drawPlayerIdx: 0,
+        drawnCard: { design: 'JOKER', value: 9 },
+        penaltyFlag: false,
+        penaltyCount: 0,
+      },
+      cpuActions: [{ drawPlayerIdx: 1, drawnCard: { design: 'JOKER', value: 7 }, penaltyFlag: false, penaltyCount: 0 }],
+    });
+    renderWithProviders(<PigsTailPage />);
+    expect(await screen.findByTestId('pt-human-action')).toHaveTextContent('あなた: ?9 — セーフ');
+    expect(await screen.findByText(/CPU 1: \?7 — セーフ/)).toBeInTheDocument();
+  });
+
   it('renders the human action with different penalty counts', async () => {
     mockExec.mockResolvedValue({
       ...baseState,

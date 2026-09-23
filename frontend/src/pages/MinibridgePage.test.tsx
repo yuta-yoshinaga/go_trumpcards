@@ -81,6 +81,12 @@ beforeEach(() => {
 });
 
 describe('MinibridgePage', () => {
+  it('shows ? for an unknown settled contract denomination', async () => {
+    mockExec.mockResolvedValue(playing({ contractSuit: 99 }));
+    renderWithProviders(<MinibridgePage />);
+    expect(await screen.findByTestId('mb-contract')).toHaveTextContent('2?');
+  });
+
   it('resets on mount', async () => {
     renderWithProviders(<MinibridgePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
