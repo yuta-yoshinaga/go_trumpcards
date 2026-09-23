@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { isModalOpen } from './keyboardNavUtils';
 
 /** Options for {@link useReflexShortcuts}. */
 export interface UseReflexShortcutsOptions {
@@ -49,6 +50,7 @@ export function useReflexShortcuts({
   useEffect(() => {
     if (!enabled) return;
     const handler = (event: KeyboardEvent): void => {
+      if (isModalOpen()) return;
       // Modifiers reserve the keystroke for the browser / OS:
       //   - Shift+Space is "page-up", Shift+Enter is form submit-into-newline.
       //   - Ctrl/Alt/Meta combinations are user OS shortcuts.
