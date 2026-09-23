@@ -405,9 +405,18 @@ func (g *UnsunKaruta) CpuPlay() {
 // playCard は 1 枚出す共通処理。
 func (g *UnsunKaruta) playCard(playerIdx int, card *Card) {
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
-	g.appendLog(playerIdx, "play", "unsunkaruta.log.play", map[string]string{
-		"name": playerName(g.players, playerIdx), "card": UnsunKarutaCardName(card),
-	}, []*Card{card})
+	params := map[string]string{
+		"name":    playerName(g.players, playerIdx),
+		"suitKey": "unsunkaruta.suit." + UnsunKarutaSuitName(card.GetDesign()),
+	}
+	detailCode := "unsunkaruta.log.playRank"
+	if rankKey := UnsunKarutaRankName(card.GetValue()); isUnsunKarutaNumber(card.GetValue()) {
+		detailCode = "unsunkaruta.log.playNumber"
+		params["value"] = rankKey
+	} else {
+		params["rankKey"] = "unsunkaruta.rank." + rankKey
+	}
+	g.appendLog(playerIdx, "play", detailCode, params, []*Card{card})
 	if len(g.currentTrick) == UnsunKarutaPlayerCnt {
 		g.phase = UnsunKarutaPhaseTrickEnd
 		return
@@ -851,6 +860,10 @@ func UnsunKarutaRankName(value int) string {
 	default:
 		return fmt.Sprintf("%d", value)
 	}
+}
+
+func isUnsunKarutaNumber(value int) bool {
+	return value >= 1 && value <= 9
 }
 
 // UnsunKarutaCardName は棋譜用の短い表記を返す。

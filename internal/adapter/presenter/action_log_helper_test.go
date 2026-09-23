@@ -272,6 +272,43 @@ func TestActionLogToText_RendersTargetGameSuitsInBothLanguages(t *testing.T) {
 	assert.NotContains(t, en, "Spades")
 }
 
+func TestActionLogToText_RendersTargetCardLabelsInBothLanguages(t *testing.T) {
+	entries := []*domain.ActionLogEntry{
+		{DetailCode: "mighty.log.playJokerLead", DetailParams: map[string]string{"name": "Player", "card": "JK", "suitKey": "common.suit.heart"}},
+		{DetailCode: "napoleon.log.play", DetailParams: map[string]string{"name": "Player", "card": "JK"}},
+		{DetailCode: "rook.log.play", DetailParams: map[string]string{"name": "Player", "colorKey": "rook.colorRed", "value": "14"}},
+		{DetailCode: "rook.log.playBird", DetailParams: map[string]string{"name": "Player", "birdKey": "rook.birdName"}},
+		{DetailCode: "sevens.log.play", DetailParams: map[string]string{"card": "JK"}},
+		{DetailCode: "unsunkaruta.log.playNumber", DetailParams: map[string]string{"name": "Player", "suitKey": "unsunkaruta.suit.pao", "value": "1"}},
+		{DetailCode: "unsunkaruta.log.playRank", DetailParams: map[string]string{"name": "Player", "suitKey": "unsunkaruta.suit.pao", "rankKey": "unsunkaruta.rank.sota"}},
+		{DetailCode: "shithead.log.playOneFromHand", DetailParams: map[string]string{"card": "♠A"}},
+	}
+
+	t.Cleanup(func() { i18n.SetLang("ja") })
+	i18n.SetLang("ja")
+	ja := actionLogToText(entries)
+	assert.Contains(t, ja, "JK")
+	assert.Contains(t, ja, "赤14")
+	assert.Contains(t, ja, "ルーク")
+	assert.Contains(t, ja, "ぱおの1")
+	assert.Contains(t, ja, "ぱおのソウタ")
+	assert.Contains(t, ja, "♠A")
+	assert.NotContains(t, ja, "SPADE")
+	assert.NotContains(t, ja, "Joker")
+	assert.NotContains(t, ja, "joker")
+	assert.NotContains(t, ja, "Red")
+	assert.NotContains(t, ja, "Tou")
+
+	i18n.SetLang("en")
+	en := actionLogToText(entries)
+	assert.Contains(t, en, "JK")
+	assert.Contains(t, en, "Red14")
+	assert.Contains(t, en, "Rook")
+	assert.Contains(t, en, "1 of Pao")
+	assert.Contains(t, en, "Sota of Pao")
+	assert.Contains(t, en, "♠A")
+}
+
 func TestActionLogToText_RendersLastTrickCodesInBothLanguages(t *testing.T) {
 	entries := []*domain.ActionLogEntry{
 		{DetailCode: "calabresella.log.trickWin", DetailParams: map[string]string{"name": "P1", "trick": "1", "points": "2"}},

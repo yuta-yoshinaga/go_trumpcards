@@ -1039,7 +1039,7 @@ func (n *Napoleon) appendLog(playerIdx int, actionType, detailCode string, detai
 // napoleonCardStr カードの文字列表現 (ジョーカー対応)
 func napoleonCardStr(card *Card) string {
 	if card.GetDesign() == CardDesignJoker {
-		return "Joker"
+		return "JK"
 	}
 	return cardStr(card)
 }
