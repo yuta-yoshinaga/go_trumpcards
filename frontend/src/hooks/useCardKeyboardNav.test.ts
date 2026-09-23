@@ -1,6 +1,9 @@
 import { renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { registerOpenModal } from './keyboardNavUtils';
 import { useCardKeyboardNav } from './useCardKeyboardNav';
+
+let unregisterModal: (() => void) | undefined;
 
 function fire(key: string, target?: Partial<HTMLElement>) {
   const event = new KeyboardEvent('keydown', { key, bubbles: true });
@@ -12,6 +15,8 @@ function fire(key: string, target?: Partial<HTMLElement>) {
 
 describe('useCardKeyboardNav', () => {
   afterEach(() => {
+    unregisterModal?.();
+    unregisterModal = undefined;
     vi.restoreAllMocks();
   });
 
@@ -70,6 +75,23 @@ describe('useCardKeyboardNav', () => {
 
     fire('Escape');
     expect(onClear).toHaveBeenCalledTimes(1);
+  });
+
+  it('blocks board keys while a modal is open, then resumes them', () => {
+    const onToggle = vi.fn();
+    const onConfirm = vi.fn();
+    const onClear = vi.fn();
+    renderHook(() => useCardKeyboardNav({ cardCount: 5, onToggle, onConfirm, onClear, enabled: true }));
+    unregisterModal = registerOpenModal();
+    fire('1');
+    fire('Enter');
+    fire('Escape');
+    expect(onToggle).not.toHaveBeenCalled();
+    expect(onConfirm).not.toHaveBeenCalled();
+    expect(onClear).not.toHaveBeenCalled();
+    unregisterModal();
+    fire('1');
+    expect(onToggle).toHaveBeenCalledWith(0);
   });
 
   it('does nothing when enabled is false', () => {
