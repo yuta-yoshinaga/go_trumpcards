@@ -1,4 +1,5 @@
 import type { KingResponse } from '../../../types/card';
+import { suitSymbolAt } from '../../cardAlt';
 import {
   formatCard,
   formatHeader,
@@ -7,8 +8,6 @@ import {
   formatSeparator,
   isRequestedHint,
 } from '../formatterBase';
-
-const SUIT_SYMBOLS = ['-', '♠', '♣', '♥', '♦'];
 
 /** Contract names indexed by contract number (0..6). */
 const CONTRACT_NAMES = [
@@ -29,7 +28,7 @@ export function formatKingState(state: KingResponse): string {
   lines.push(`deal: ${state.dealNumber + 1}/${state.totalDeals}  trick: ${state.trickNumber}  phase: ${state.phase}`);
 
   const contract = state.currentContract >= 0 ? (CONTRACT_NAMES[state.currentContract] ?? state.currentContract) : '-';
-  const trump = state.trumpSuit >= 1 ? (SUIT_SYMBOLS[state.trumpSuit] ?? '-') : '-';
+  const trump = state.trumpSuit >= 1 ? suitSymbolAt(state.trumpSuit, '-') : '-';
   lines.push(`contract: ${contract}  trump: ${trump}  dealer: P${state.dealerIdx}`);
   lines.push('');
 

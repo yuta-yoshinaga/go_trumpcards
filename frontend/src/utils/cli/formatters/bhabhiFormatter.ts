@@ -1,5 +1,6 @@
 import type { BhabhiResponse } from '../../../types/card';
 import { BhabhiPhase } from '../../../types/phases';
+import { suitSymbolAt } from '../../cardAlt';
 import { formatCard, formatHeader, formatPlayerName, formatSeparator } from '../formatterBase';
 
 const PHASE_NAMES: Record<number, string> = {
@@ -8,7 +9,6 @@ const PHASE_NAMES: Record<number, string> = {
 };
 
 /** leadSuit is a 1-based suit code, as elsewhere in this repo. */
-const SUIT_SYMBOLS: Record<number, string> = { 1: '♠', 2: '♣', 3: '♥', 4: '♦' };
 
 /** Format a Bhabhi game state as terminal text. */
 export function formatBhabhiState(state: BhabhiResponse | null): string {
@@ -25,7 +25,7 @@ export function formatBhabhiState(state: BhabhiResponse | null): string {
   lines.push('the last player still holding cards is the Bhabhi (the loser)');
   lines.push(
     state.leadSuit > 0
-      ? `led: ${SUIT_SYMBOLS[state.leadSuit] ?? '?'} (${state.pile.length} on the table — fail to follow and you take them all)`
+      ? `led: ${suitSymbolAt(state.leadSuit, '?')} (${state.pile.length} on the table — fail to follow and you take them all)`
       : 'the table is empty — lead whatever you like',
   );
 

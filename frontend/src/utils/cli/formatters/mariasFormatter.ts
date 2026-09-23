@@ -1,4 +1,5 @@
 import type { MariasResponse } from '../../../types/card';
+import { suitSymbolAt } from '../../cardAlt';
 import {
   formatCard,
   formatHeader,
@@ -9,7 +10,6 @@ import {
 } from '../formatterBase';
 
 const PHASE_NAMES = ['Play', 'TrickEnd', 'RoundEnd', 'GameEnd'];
-const SUIT_SYMBOLS = ['?', '♠', '♣', '♥', '♦'];
 
 /** Format a Mariáš game state as terminal text. */
 export function formatMariasState(state: MariasResponse): string {
@@ -19,7 +19,7 @@ export function formatMariasState(state: MariasResponse): string {
   lines.push(
     `round: ${state.roundNumber}  trick: ${state.trickNumber}  phase: ${PHASE_NAMES[state.phase] ?? state.phase}`,
   );
-  lines.push(`trump: ${SUIT_SYMBOLS[state.trumpSuit] ?? '?'}`);
+  lines.push(`trump: ${suitSymbolAt(state.trumpSuit, '?')}`);
   lines.push(`scores: ${state.playerScores.map((s, i) => `P${i}=${s}`).join('  ')}`);
   lines.push('');
 

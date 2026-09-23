@@ -1,5 +1,6 @@
 import type { GermanWhistResponse } from '../../../types/card';
 import { GermanWhistPhase } from '../../../types/phases';
+import { suitSymbolAt } from '../../cardAlt';
 import { formatCard, formatHeader, formatPlayerName, formatSeparator } from '../formatterBase';
 
 const PHASE_NAMES: Record<number, string> = {
@@ -9,7 +10,6 @@ const PHASE_NAMES: Record<number, string> = {
 };
 
 // trumpSuit is a 1-based suit code, as elsewhere in this repo.
-const SUIT_SYMBOLS: Record<number, string> = { 1: '♠', 2: '♣', 3: '♥', 4: '♦' };
 
 /** Format a German Whist game state as terminal text. */
 export function formatGermanWhistState(state: GermanWhistResponse | null): string {
@@ -18,7 +18,7 @@ export function formatGermanWhistState(state: GermanWhistResponse | null): strin
 
   lines.push(formatHeader('German Whist'));
   lines.push(`trick ${state.trickNumber}/26 | ${PHASE_NAMES[state.phase] ?? state.phase}`);
-  lines.push(`trump: ${SUIT_SYMBOLS[state.trumpSuit] ?? '?'} | stock: ${state.stockCount}`);
+  lines.push(`trump: ${suitSymbolAt(state.trumpSuit, '?')} | stock: ${state.stockCount}`);
   // The face-up card is the whole point of the first half; say so when it's gone.
   lines.push(`face-up: ${state.upCard ? formatCard(state.upCard) : '(none — stock exhausted)'}`);
   lines.push('----------');

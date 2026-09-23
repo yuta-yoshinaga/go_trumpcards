@@ -1,5 +1,6 @@
 import type { HoneymoonBridgeResponse } from '../../../types/card';
 import { HoneymoonBridgePhase } from '../../../types/phases';
+import { suitSymbolAt } from '../../cardAlt';
 import { formatCard, formatHeader, formatPlayerName, formatSeparator } from '../formatterBase';
 
 const PHASE_NAMES: Record<number, string> = {
@@ -11,7 +12,6 @@ const PHASE_NAMES: Record<number, string> = {
 };
 
 /** Contract suits. **`0` is no-trump**, which is a bid, not a missing value. */
-const SUIT_SYMBOLS: Record<number, string> = { 0: 'NT', 1: '♠', 2: '♣', 3: '♥', 4: '♦' };
 
 /** Format a Honeymoon Bridge game state as terminal text. */
 export function formatHoneymoonBridgeState(state: HoneymoonBridgeResponse | null): string {
@@ -32,7 +32,7 @@ export function formatHoneymoonBridgeState(state: HoneymoonBridgeResponse | null
 
   lines.push(
     state.contractLevel > 0
-      ? `contract: ${state.contractLevel}${SUIT_SYMBOLS[state.trumpSuit] ?? '?'} by ${formatPlayerName(
+      ? `contract: ${state.contractLevel}${state.trumpSuit === 0 ? 'NT' : suitSymbolAt(state.trumpSuit, '?')} by ${formatPlayerName(
           state.declarerIdx,
           state.declarerIdx === 0,
         )} — needs ${state.requiredTricks} tricks`
@@ -43,7 +43,7 @@ export function formatHoneymoonBridgeState(state: HoneymoonBridgeResponse | null
   if (state.phase === HoneymoonBridgePhase.BID) {
     lines.push(
       state.minBidLevel > 0
-        ? `lowest bid that outbids: ${state.minBidLevel}${SUIT_SYMBOLS[state.minBidSuit] ?? '?'}`
+        ? `lowest bid that outbids: ${state.minBidLevel}${state.minBidSuit === 0 ? 'NT' : suitSymbolAt(state.minBidSuit, '?')}`
         : 'the contract is at the ceiling (7NT) — pass is the only move',
     );
   }
@@ -61,7 +61,7 @@ export function formatHoneymoonBridgeState(state: HoneymoonBridgeResponse | null
   state.players.forEach((p) => {
     const marker = p.id === state.currentPlayerIdx && !state.gameEndFlag ? '>' : ' ';
     const role = p.id === state.declarerIdx ? '[declarer]' : '';
-    const bid = p.bidLevel > 0 ? `bid ${p.bidLevel}${SUIT_SYMBOLS[p.bidSuit] ?? '?'}` : 'no bid';
+    const bid = p.bidLevel > 0 ? `bid ${p.bidLevel}${p.bidSuit === 0 ? 'NT' : suitSymbolAt(p.bidSuit, '?')}` : 'no bid';
     lines.push(
       `${marker}${formatPlayerName(p.id, p.isHuman)}${role}: ${bid}, took ${p.trickCount} | total ${p.score} | ${p.cardCount} cards`,
     );

@@ -1,4 +1,5 @@
 import type { LooResponse } from '../../../types/card';
+import { suitSymbolAt } from '../../cardAlt';
 import {
   formatCard,
   formatHeader,
@@ -9,7 +10,6 @@ import {
 } from '../formatterBase';
 
 const PHASE_NAMES = ['Decide', 'Play', 'TrickEnd', 'RoundEnd'];
-const SUIT_SYMBOLS = ['-', '♠', '♣', '♥', '♦'];
 
 /** Format a Loo (Lanterloo) game state as terminal text. */
 export function formatLooState(state: LooResponse): string {
@@ -19,7 +19,7 @@ export function formatLooState(state: LooResponse): string {
   lines.push(
     `deal: ${state.roundNumber}  trick: ${state.trickNumber}/${state.totalTricks}  phase: ${PHASE_NAMES[state.phase] ?? state.phase}`,
   );
-  lines.push(`pot: ${state.pot}  trump: ${SUIT_SYMBOLS[state.trumpSuit] ?? '-'}`);
+  lines.push(`pot: ${state.pot}  trump: ${suitSymbolAt(state.trumpSuit, '-')}`);
   lines.push('');
 
   for (const p of state.players) {

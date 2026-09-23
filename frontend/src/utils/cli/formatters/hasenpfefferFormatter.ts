@@ -1,5 +1,6 @@
 import type { HasenpfefferResponse } from '../../../types/card';
 import { HasenpfefferPhase } from '../../../types/phases';
+import { suitSymbolAt } from '../../cardAlt';
 import { formatCard, formatHeader, formatPlayerName, formatSeparator } from '../formatterBase';
 
 const PHASE_NAMES: Record<number, string> = {
@@ -11,7 +12,6 @@ const PHASE_NAMES: Record<number, string> = {
 };
 
 /** trumpSuit is a 1-based suit code, as elsewhere in this repo. */
-const SUIT_SYMBOLS: Record<number, string> = { 1: '♠', 2: '♣', 3: '♥', 4: '♦' };
 
 /** Render one seat's bid: not yet, passed, or a number. */
 function bidText(bid: number): string {
@@ -37,7 +37,7 @@ export function formatHasenpfefferState(state: HasenpfefferResponse | null): str
 
   if (state.trumpSuit > 0) {
     lines.push(
-      `trump: ${SUIT_SYMBOLS[state.trumpSuit] ?? '?'} (${formatPlayerName(
+      `trump: ${suitSymbolAt(state.trumpSuit, '?')} (${formatPlayerName(
         state.declarerIdx,
         state.declarerIdx === 0,
       )} bid ${state.contract})`,

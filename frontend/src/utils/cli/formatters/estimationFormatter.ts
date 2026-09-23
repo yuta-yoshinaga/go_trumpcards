@@ -1,5 +1,6 @@
 import type { EstimationPlayer, EstimationResponse } from '../../../types/card';
 import { EstimationCall, EstimationPhase } from '../../../types/phases';
+import { suitSymbolAt } from '../../cardAlt';
 import { formatCard, formatHeader, formatPlayerName, formatSeparator } from '../formatterBase';
 
 const PHASE_NAMES: Record<number, string> = {
@@ -14,7 +15,6 @@ const PHASE_NAMES: Record<number, string> = {
 const TRICKS_PER_ROUND = 13;
 
 /** trumpSuit is a 1-based suit code, as elsewhere in this repo. */
-const SUIT_SYMBOLS: Record<number, string> = { 1: '♠', 2: '♣', 3: '♥', 4: '♦' };
 
 /** A seat's call, spelled out with its kind rather than as a bare number. */
 function bidStr(p: EstimationPlayer): string {
@@ -37,7 +37,7 @@ export function formatEstimationState(state: EstimationResponse | null): string 
   );
   // **得点表は盤面から読めない。** Dash と Risk の振れ幅を常時出す。
   lines.push('score: exact +(10+call) / missed -(10+call); Dash (0) is ±23; Risk doubles');
-  lines.push(state.trumpSuit > 0 ? `trump: ${SUIT_SYMBOLS[state.trumpSuit] ?? '?'}` : 'trump: undecided');
+  lines.push(state.trumpSuit > 0 ? `trump: ${suitSymbolAt(state.trumpSuit, '?')}` : 'trump: undecided');
 
   // **押せない宣言があるなら先に言う。** 出してから拒否されるのでは遅い。
   if (state.restrictedBid >= 0) {
