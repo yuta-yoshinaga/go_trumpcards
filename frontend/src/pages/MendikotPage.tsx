@@ -30,8 +30,6 @@ import { formatMendikotState } from '../utils/cli/formatters/mendikotFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
-/** Suit code (1=♠ 2=♣ 3=♥ 4=♦) to its symbol. */
-
 /** Guided tutorial steps (the race for the tens, trump, the hand, your cards). */
 const MENDIKOT_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="md-tens"]', messageKey: 'tutorial.tens', placement: 'bottom', advanceOn: 'next' },

@@ -11,8 +11,6 @@ const PHASE_NAMES: Record<number, string> = {
   [HoneymoonBridgePhase.GAME_END]: 'GAME END',
 };
 
-/** Contract suits. **`0` is no-trump**, which is a bid, not a missing value. */
-
 /** Format a Honeymoon Bridge game state as terminal text. */
 export function formatHoneymoonBridgeState(state: HoneymoonBridgeResponse | null): string {
   if (!state) return 'Loading...';

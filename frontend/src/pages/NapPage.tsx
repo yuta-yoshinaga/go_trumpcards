@@ -37,8 +37,6 @@ import { napPayout } from '../utils/napPayout';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
-/** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 = no trump). */
-
 /** Total tricks in a Nap round (5 cards dealt to each player). */
 const NAP_TOTAL_TRICKS = 5;
 

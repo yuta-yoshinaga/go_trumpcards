@@ -38,8 +38,6 @@ import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
-/** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 = no trump). */
-
 /** Bid button options (Pass / 15 / 20 / 25 Jink). */
 const BIDS: { value: number; key: string }[] = [
   { value: 0, key: 'bid.pass' },

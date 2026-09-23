@@ -41,8 +41,6 @@ import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
-/** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 = undeclared). */
-
 /** Tricks a team must take within a 13-trick round to win it (Sar); mirrors CourtPieceTricksToWin in internal/domain/CourtPiece.go. */
 const COURT_PIECE_TRICKS_TO_WIN = 7;
 

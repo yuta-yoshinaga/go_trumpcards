@@ -29,8 +29,6 @@ import { formatBhabhiState } from '../utils/cli/formatters/bhabhiFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
-/** Suit code (1=♠ 2=♣ 3=♥ 4=♦) to its symbol. */
-
 /** Table sizes the game accepts (sync: domain.BhabhiMin/MaxPlayers). */
 const PLAYER_COUNTS: readonly number[] = [3, 4, 5, 6, 7];
 

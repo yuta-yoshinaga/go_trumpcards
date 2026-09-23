@@ -30,8 +30,6 @@ import { formatSergeantMajorState } from '../utils/cli/formatters/sergeantmajorF
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
-/** Suit code (1=♠ 2=♣ 3=♥ 4=♦) to its symbol. */
-
 /** The four suits, in the order the trump buttons are offered. */
 const SUITS: readonly number[] = [1, 2, 3, 4];
 

@@ -10,8 +10,6 @@ const PHASE_NAMES: Record<number, string> = {
   [HokmPhase.GAME_END]: 'GAME END',
 };
 
-/** trumpSuit is a 1-based suit code, as elsewhere in this repo. */
-
 /** Format a Hokm game state as terminal text. */
 export function formatHokmState(state: HokmResponse | null): string {
   if (!state) return 'Loading...';

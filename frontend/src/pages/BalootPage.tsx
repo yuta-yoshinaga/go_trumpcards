@@ -33,8 +33,6 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 /** Tricks per round (eight cards each). */
 const TRICKS_PER_ROUND = 8;
 
-/** Suit code (1=♠ 2=♣ 3=♥ 4=♦) to its symbol, for the trump readout. */
-
 /** The four suits, in the order the Hokom buttons are offered. */
 const SUITS: readonly number[] = [1, 2, 3, 4];
 

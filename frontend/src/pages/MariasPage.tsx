@@ -36,8 +36,6 @@ import { isRequestedHint } from '../utils/hintRequest';
 import { findPlayerName, playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
-/** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 unused). */
-
 /** Mariáš tutorial step definitions. */
 const MARIAS_TUTORIAL_STEPS: TutorialStep[] = [
   {

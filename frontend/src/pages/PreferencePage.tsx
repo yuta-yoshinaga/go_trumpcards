@@ -36,8 +36,6 @@ import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
-/** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 = no trump). */
-
 /** Contract i18n key suffixes indexed by contract value (0=Pass…4=Eight). */
 const CONTRACT_KEYS = ['pass', 'six', 'misere', 'seven', 'eight'] as const;
 

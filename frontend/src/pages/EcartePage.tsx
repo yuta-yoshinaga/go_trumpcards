@@ -35,8 +35,6 @@ import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
-/** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 = undeclared). */
-
 /** Écarté tutorial step definitions. */
 const ECARTE_TUTORIAL_STEPS: TutorialStep[] = [
   { target: '[data-tutorial="ecarte-info"]', messageKey: 'tutorial.info', placement: 'bottom', advanceOn: 'next' },

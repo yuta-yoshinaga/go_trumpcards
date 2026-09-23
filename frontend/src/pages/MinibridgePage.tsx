@@ -29,8 +29,6 @@ import { formatMinibridgeState } from '../utils/cli/formatters/minibridgeFormatt
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
-/** Contract denominations. **`0` is no-trump**, which is a choice, not a blank. */
-
 /** The five denominations, in the order the contract buttons are offered. */
 const DENOMINATIONS: readonly number[] = [1, 2, 3, 4, 0];
 

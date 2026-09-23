@@ -37,8 +37,6 @@ import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
-/** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; 0 = unset). */
-
 /** i18n suit-name key by suit number (1=♠ 2=♣ 3=♥ 4=♦). */
 const SUIT_KEYS: Readonly<Record<number, string>> = { 1: 'spade', 2: 'club', 3: 'heart', 4: 'diamond' };
 

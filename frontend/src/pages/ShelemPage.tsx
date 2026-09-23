@@ -35,8 +35,6 @@ const SHELEM_HAND_POINTS = 100;
 /** Tricks per round (twelve cards each). */
 const TRICKS_PER_ROUND = 12;
 
-/** Suit code (1=♠ 2=♣ 3=♥ 4=♦) to its symbol. */
-
 /** The four suits, in the order the trump buttons are offered. */
 const SUITS: readonly number[] = [1, 2, 3, 4];
 

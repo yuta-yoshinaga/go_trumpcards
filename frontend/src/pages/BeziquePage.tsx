@@ -37,8 +37,6 @@ import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
-/** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 = undeclared). */
-
 /** Suit-name i18n key suffixes indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 unused). */
 const SUIT_KEYS = ['', 'spade', 'club', 'heart', 'diamond'] as const;
 

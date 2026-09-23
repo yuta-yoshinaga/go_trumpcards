@@ -11,8 +11,6 @@ const PHASE_NAMES: Record<number, string> = {
   [HasenpfefferPhase.GAME_END]: 'GAME END',
 };
 
-/** trumpSuit is a 1-based suit code, as elsewhere in this repo. */
-
 /** Render one seat's bid: not yet, passed, or a number. */
 function bidText(bid: number): string {
   if (bid < 0) return '-';

@@ -15,8 +15,6 @@ const PHASE_NAMES: Record<number, string> = {
 /** Tricks per round (thirteen cards each). */
 const TRICKS_PER_ROUND = 13;
 
-/** trumpSuit is a 1-based suit code, as elsewhere in this repo. */
-
 /** A seat's standing in the auction, which the calling round does not replace. */
 function roleStr(p: IsraeliWhistPlayer, declarer: boolean): string {
   if (declarer) return `won ${p.auctionBid}`;

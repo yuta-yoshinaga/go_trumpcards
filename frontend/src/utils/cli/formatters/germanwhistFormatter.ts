@@ -9,8 +9,6 @@ const PHASE_NAMES: Record<number, string> = {
   [GermanWhistPhase.GAME_END]: 'GAME END',
 };
 
-// trumpSuit is a 1-based suit code, as elsewhere in this repo.
-
 /** Format a German Whist game state as terminal text. */
 export function formatGermanWhistState(state: GermanWhistResponse | null): string {
   if (!state) return 'Loading...';
