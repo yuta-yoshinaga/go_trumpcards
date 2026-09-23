@@ -51,5 +51,6 @@
   "log.roundScoreBidder": "チーム{{team}}（ビッド側）: ビッド={{bid}} トリック={{tricks}} 増減={{delta}} 合計={{total}}",
   "log.roundScoreDefender": "チーム{{team}}（守備側）: トリック={{tricks}} 増減={{delta}} 合計={{total}}",
   "log.gameEnd": "チーム{{team}}がゲームに勝利しました！",
-  "log.play": "{{name}}が{{card}}を出しました"
+  "log.play": "{{name}}が{{card}}を出しました",
+  "log.bidPass": "{{name}}がパスしました"
 }

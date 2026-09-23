@@ -45,5 +45,6 @@
   "log.roundScore": "{{name}}: ビッド={{bid}} トリック={{tricks}} ラウンド={{round}} バッグ={{bags}}",
   "log.cumulativeScore": "{{name}}: 合計={{total}}",
   "log.play": "{{name}} が {{card}} を出す",
-  "log.gameEnd": "{{name}} がゲームに勝利！"
+  "log.gameEnd": "{{name}} がゲームに勝利！",
+  "log.bidNil": "{{name}} がニルをビッド"
 }

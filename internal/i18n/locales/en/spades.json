@@ -45,5 +45,6 @@
   "log.roundScore": "{{name}}: bid={{bid}} tricks={{tricks}} round={{round}} bags={{bags}}",
   "log.cumulativeScore": "{{name}}: total={{total}}",
   "log.play": "{{name}} plays {{card}}",
-  "log.gameEnd": "{{name}} wins the game!"
+  "log.gameEnd": "{{name}} wins the game!",
+  "log.bidNil": "{{name}} bids Nil"
 }

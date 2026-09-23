@@ -310,6 +310,31 @@ func TestActionLogToText_RendersLastTrickCodesInBothLanguages(t *testing.T) {
 	assert.NotContains(t, en, "{{lastBonus}}")
 }
 
+func TestActionLogToText_RendersSeparateBidPassAndNilCodes(t *testing.T) {
+	entries := []*domain.ActionLogEntry{
+		{TurnNumber: 1, PlayerIdx: 0, ActionType: "bid", DetailCode: "pitch.log.bidPass", DetailParams: map[string]string{"name": "Player"}},
+		{TurnNumber: 2, PlayerIdx: 1, ActionType: "bid", DetailCode: "cinch.log.bidPass", DetailParams: map[string]string{"name": "Player"}},
+		{TurnNumber: 3, PlayerIdx: 2, ActionType: "bid", DetailCode: "tarneeb.log.bidPass", DetailParams: map[string]string{"name": "Player"}},
+		{TurnNumber: 4, PlayerIdx: 3, ActionType: "bid", DetailCode: "spades.log.bidNil", DetailParams: map[string]string{"name": "Player"}},
+	}
+
+	t.Cleanup(func() { i18n.SetLang("ja") })
+	i18n.SetLang("ja")
+	ja := actionLogToText(entries)
+	assert.Contains(t, ja, "Player がパスしました")
+	assert.Contains(t, ja, "Player がパス")
+	assert.Contains(t, ja, "Playerがパスしました")
+	assert.Contains(t, ja, "Player がニルをビッド")
+	assert.NotContains(t, ja, "pass")
+	assert.NotContains(t, ja, "Pass")
+	assert.NotContains(t, ja, "Nil")
+
+	i18n.SetLang("en")
+	en := actionLogToText(entries)
+	assert.Contains(t, en, "Player passes")
+	assert.Contains(t, en, "Player bids Nil")
+}
+
 func TestActionLogToText_RendersChangedSuitParamsInBothLanguages(t *testing.T) {
 	entries := []*domain.ActionLogEntry{
 		{DetailCode: "binokel.log.trump", DetailParams: map[string]string{"suitKey": "common.suit.heart"}},
