@@ -206,12 +206,15 @@ func (g *Tressette) ResolveTrick() {
 
 	team := TressetteTeamOf(winnerIdx)
 	g.teamRoundThirds[team] += thirds
-	bonus := ""
 	if g.trickNumber >= TressetteTrickCount {
 		g.teamRoundThirds[team] += TressetteUltimaThirds
-		bonus = " +ultima"
 	}
-	g.appendLog(winnerIdx, "trick_win", "tressette.log.trickWin", map[string]string{"name": playerName(g.players, winnerIdx), "trick": fmt.Sprint(g.trickNumber), "thirds": fmt.Sprint(thirds), "bonus": bonus}, trickCards)
+	params := map[string]string{"name": playerName(g.players, winnerIdx), "trick": fmt.Sprint(g.trickNumber), "thirds": fmt.Sprint(thirds)}
+	if g.trickNumber >= TressetteTrickCount {
+		g.appendLog(winnerIdx, "trick_win", "tressette.log.trickWinLast", params, trickCards)
+	} else {
+		g.appendLog(winnerIdx, "trick_win", "tressette.log.trickWin", params, trickCards)
+	}
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= TressetteTrickCount {

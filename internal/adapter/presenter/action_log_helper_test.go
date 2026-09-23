@@ -272,6 +272,44 @@ func TestActionLogToText_RendersTargetGameSuitsInBothLanguages(t *testing.T) {
 	assert.NotContains(t, en, "Spades")
 }
 
+func TestActionLogToText_RendersLastTrickCodesInBothLanguages(t *testing.T) {
+	entries := []*domain.ActionLogEntry{
+		{DetailCode: "calabresella.log.trickWin", DetailParams: map[string]string{"name": "P1", "trick": "1", "points": "2"}},
+		{DetailCode: "calabresella.log.trickWinLast", DetailParams: map[string]string{"name": "P1", "trick": "10", "points": "3"}},
+		{DetailCode: "madrasso.log.trickWin", DetailParams: map[string]string{"name": "P1", "trick": "1", "thirds": "2"}},
+		{DetailCode: "madrasso.log.trickWinLast", DetailParams: map[string]string{"name": "P1", "trick": "10", "thirds": "3"}},
+		{DetailCode: "trappola.log.trickWin", DetailParams: map[string]string{"name": "P1", "trick": "1", "thirds": "2"}},
+		{DetailCode: "trappola.log.trickWinLast", DetailParams: map[string]string{"name": "P1", "trick": "10", "thirds": "3"}},
+		{DetailCode: "tressette.log.trickWin", DetailParams: map[string]string{"name": "P1", "trick": "1", "thirds": "2"}},
+		{DetailCode: "tressette.log.trickWinLast", DetailParams: map[string]string{"name": "P1", "trick": "10", "thirds": "3"}},
+		{DetailCode: "klaverjas.log.trickWin", DetailParams: map[string]string{"name": "P1", "trick": "1", "points": "5"}},
+		{DetailCode: "klaverjas.log.trickWinLast", DetailParams: map[string]string{"name": "P1", "trick": "8", "points": "5", "lastBonus": "10"}},
+		{DetailCode: "tute.log.trickWin", DetailParams: map[string]string{"name": "P1", "trick": "1", "points": "5"}},
+		{DetailCode: "tute.log.trickWinLast", DetailParams: map[string]string{"name": "P1", "trick": "8", "points": "5", "lastBonus": "10"}},
+		{DetailCode: "twentynine.log.trickWin", DetailParams: map[string]string{"name": "P1", "trick": "1", "points": "5"}},
+		{DetailCode: "twentynine.log.trickWinLast", DetailParams: map[string]string{"name": "P1", "trick": "8", "points": "5", "lastBonus": "1"}},
+	}
+	t.Cleanup(func() { i18n.SetLang("ja") })
+
+	i18n.SetLang("ja")
+	ja := actionLogToText(entries)
+	for _, text := range []string{"+ラストトリック", "+10 ラストトリック", "+1 ラストトリック", "+2/3", "+5"} {
+		assert.Contains(t, ja, text)
+	}
+	assert.NotContains(t, ja, "ultima")
+	assert.NotContains(t, ja, "last")
+	assert.NotContains(t, ja, "{{bonus}}")
+	assert.NotContains(t, ja, "{{lastBonus}}")
+
+	i18n.SetLang("en")
+	en := actionLogToText(entries)
+	for _, text := range []string{"+last trick", "+10 last trick", "+1 last trick", "+2/3", "+5"} {
+		assert.Contains(t, en, text)
+	}
+	assert.NotContains(t, en, "{{bonus}}")
+	assert.NotContains(t, en, "{{lastBonus}}")
+}
+
 func TestActionLogToText_RendersChangedSuitParamsInBothLanguages(t *testing.T) {
 	entries := []*domain.ActionLogEntry{
 		{DetailCode: "binokel.log.trump", DetailParams: map[string]string{"suitKey": "common.suit.heart"}},

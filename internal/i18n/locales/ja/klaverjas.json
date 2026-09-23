@@ -33,7 +33,8 @@
   "errMustOvertrump": "より強い切り札で追い越してください",
   "log.roem": "{{name}}が{{roem}}ロエムを獲得",
   "log.play": "{{name}}が{{card}}を出す",
-  "log.trickWin": "{{name}}が{{trick}}トリックに勝利（+{{points}}{{bonus}}）",
+  "log.trickWin": "{{name}}が{{trick}}トリックに勝利（+{{points}}）",
+  "log.trickWinLast": "{{name}}が{{trick}}トリックに勝利（+{{points}} +{{lastBonus}} ラストトリック）",
   "log.roundScore": "{{round}}ラウンド目: A={{teamAScore}}（カード{{teamACards}} + ロエム{{teamARoem}}）、B={{teamBScore}}（カード{{teamBCards}} + ロエム{{teamBRoem}}）",
   "log.gameEnd": "チーム{{team}}がマッチに勝利！"
 }

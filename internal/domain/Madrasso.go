@@ -218,12 +218,15 @@ func (g *Madrasso) ResolveTrick() {
 
 	team := MadrassoTeamOf(winnerIdx)
 	g.teamRoundPoints[team] += thirds
-	bonus := ""
 	if g.trickNumber >= MadrassoTrickCount {
 		g.teamRoundPoints[team] += MadrassoUltimaPoints
-		bonus = " +ultima"
 	}
-	g.appendLog(winnerIdx, "trick_win", "madrasso.log.trickWin", map[string]string{"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber), "thirds": strconv.Itoa(thirds), "bonus": bonus}, trickCards)
+	params := map[string]string{"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber), "thirds": strconv.Itoa(thirds)}
+	if g.trickNumber >= MadrassoTrickCount {
+		g.appendLog(winnerIdx, "trick_win", "madrasso.log.trickWinLast", params, trickCards)
+	} else {
+		g.appendLog(winnerIdx, "trick_win", "madrasso.log.trickWin", params, trickCards)
+	}
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= MadrassoTrickCount {

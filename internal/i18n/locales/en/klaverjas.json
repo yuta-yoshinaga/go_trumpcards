@@ -33,7 +33,8 @@
   "errMustOvertrump": "You must overtrump with a stronger trump card.",
   "log.roem": "{{name}} scores {{roem}} roem",
   "log.play": "{{name}} plays {{card}}",
-  "log.trickWin": "{{name}} wins trick {{trick}} (+{{points}}{{bonus}})",
+  "log.trickWin": "{{name}} wins trick {{trick}} (+{{points}})",
+  "log.trickWinLast": "{{name}} wins trick {{trick}} (+{{points}} +{{lastBonus}} last trick)",
   "log.roundScore": "round {{round}}: A={{teamAScore}} (cards {{teamACards}} + roem {{teamARoem}}), B={{teamBScore}} (cards {{teamBCards}} + roem {{teamBRoem}})",
   "log.gameEnd": "Team {{team}} wins the match!"
 }

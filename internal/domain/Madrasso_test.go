@@ -101,7 +101,7 @@ func TestMadrassoActionLogUsesDetailCode(t *testing.T) {
 		}
 	}
 	require.NotNil(t, entry)
-	assert.Equal(t, map[string]string{"name": "You", "trick": "1", "thirds": "25", "bonus": ""}, entry.DetailParams)
+	assert.Equal(t, map[string]string{"name": "You", "trick": "1", "thirds": "25"}, entry.DetailParams)
 }
 
 // --- config ---

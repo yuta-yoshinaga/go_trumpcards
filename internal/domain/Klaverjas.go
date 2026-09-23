@@ -17,7 +17,6 @@ package domain
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"math/rand"
 	"sort"
 	"strconv"
@@ -255,15 +254,17 @@ func (g *Klaverjas) ResolveTrick() {
 	g.players[winnerIdx].AddTrick(trickCards)
 	team := KlaverjasTeamOf(winnerIdx)
 	g.roundCardPts[team] += pts
-	bonus := ""
+	params := map[string]string{
+		"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber),
+		"points": strconv.Itoa(pts),
+	}
 	if g.trickNumber >= KlaverjasTrickCount {
 		g.roundCardPts[team] += KlaverjasLastTrickBonus
-		bonus = fmt.Sprintf(" +%d last", KlaverjasLastTrickBonus)
+		params["lastBonus"] = strconv.Itoa(KlaverjasLastTrickBonus)
+		g.appendLog(winnerIdx, "trick_win", "klaverjas.log.trickWinLast", params, trickCards)
+	} else {
+		g.appendLog(winnerIdx, "trick_win", "klaverjas.log.trickWin", params, trickCards)
 	}
-	g.appendLog(winnerIdx, "trick_win", "klaverjas.log.trickWin", map[string]string{
-		"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber),
-		"points": strconv.Itoa(pts), "bonus": bonus,
-	}, trickCards)
 
 	g.leadPlayerIdx = winnerIdx
 	if g.trickNumber >= KlaverjasTrickCount {
