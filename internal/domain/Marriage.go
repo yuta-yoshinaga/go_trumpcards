@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra5
+//go:build !js || !wasm || extra6
 
 // Package domain: Marriage (21-card Nepali rummy) implementation.
 //

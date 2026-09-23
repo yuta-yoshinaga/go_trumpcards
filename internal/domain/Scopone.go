@@ -1,4 +1,4 @@
-//go:build !js || !wasm || classic
+//go:build !js || !wasm || extra7
 
 // Package domain スコポーネ (Scopone) のドメインモデル。
 //

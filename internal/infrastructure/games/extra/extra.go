@@ -19,22 +19,6 @@ import (
 )
 
 func init() {
-	games.RegisterKVGame("canasta", games.CategoryExtra,
-		func() usecase.CanastaInteractorIF {
-			return usecase.NewCanastaInteractor(domain.NewDefaultCanasta(), new(presenter.CanastaWebPresenter))
-		},
-		func(data []byte) (usecase.CanastaInteractorIF, error) {
-			return usecase.RestoreCanastaInteractor(data, new(presenter.CanastaWebPresenter))
-		},
-		controller.NewCanastaWebControllerWithProvider)
-	games.RegisterKVGame("ginrummy", games.CategoryExtra,
-		func() usecase.GinRummyInteractorIF {
-			return usecase.NewGinRummyInteractor(domain.NewDefaultGinRummy(), new(presenter.GinRummyWebPresenter))
-		},
-		func(data []byte) (usecase.GinRummyInteractorIF, error) {
-			return usecase.RestoreGinRummyInteractor(data, new(presenter.GinRummyWebPresenter))
-		},
-		controller.NewGinRummyWebControllerWithProvider)
 	games.RegisterKVGame("indianrummy", games.CategoryExtra,
 		func() usecase.IndianRummyInteractorIF {
 			return usecase.NewIndianRummyInteractor(domain.NewDefaultIndianRummy(), new(presenter.IndianRummyWebPresenter))
@@ -59,38 +43,6 @@ func init() {
 			return usecase.RestoreKalookiInteractor(data, new(presenter.KalookiWebPresenter))
 		},
 		controller.NewKalookiWebControllerWithProvider)
-	games.RegisterKVGame("burraco", games.CategoryExtra,
-		func() usecase.BurracoInteractorIF {
-			return usecase.NewBurracoInteractor(domain.NewDefaultBurraco(), new(presenter.BurracoWebPresenter))
-		},
-		func(data []byte) (usecase.BurracoInteractorIF, error) {
-			return usecase.RestoreBurracoInteractor(data, new(presenter.BurracoWebPresenter))
-		},
-		controller.NewBurracoWebControllerWithProvider)
-	games.RegisterKVGame("handandfoot", games.CategoryExtra,
-		func() usecase.HandAndFootInteractorIF {
-			return usecase.NewHandAndFootInteractor(domain.NewDefaultHandAndFoot(), new(presenter.HandAndFootWebPresenter))
-		},
-		func(data []byte) (usecase.HandAndFootInteractorIF, error) {
-			return usecase.RestoreHandAndFootInteractor(data, new(presenter.HandAndFootWebPresenter))
-		},
-		controller.NewHandAndFootWebControllerWithProvider)
-	games.RegisterKVGame("conquian", games.CategoryExtra,
-		func() usecase.ConquianInteractorIF {
-			return usecase.NewConquianInteractor(domain.NewDefaultConquian(), new(presenter.ConquianWebPresenter))
-		},
-		func(data []byte) (usecase.ConquianInteractorIF, error) {
-			return usecase.RestoreConquianInteractor(data, new(presenter.ConquianWebPresenter))
-		},
-		controller.NewConquianWebControllerWithProvider)
-	games.RegisterKVGame("chinchon", games.CategoryExtra,
-		func() usecase.ChinchonInteractorIF {
-			return usecase.NewChinchonInteractor(domain.NewDefaultChinchon(), new(presenter.ChinchonWebPresenter))
-		},
-		func(data []byte) (usecase.ChinchonInteractorIF, error) {
-			return usecase.RestoreChinchonInteractor(data, new(presenter.ChinchonWebPresenter))
-		},
-		controller.NewChinchonWebControllerWithProvider)
 	games.RegisterKVGame("threethirteen", games.CategoryExtra,
 		func() usecase.ThreeThirteenInteractorIF {
 			return usecase.NewThreeThirteenInteractor(domain.NewDefaultThreeThirteen(), new(presenter.ThreeThirteenWebPresenter))
@@ -195,22 +147,6 @@ func init() {
 			return usecase.RestoreCariocaInteractor(data, new(presenter.CariocaWebPresenter))
 		},
 		controller.NewCariocaWebControllerWithProvider)
-	games.RegisterKVGame("samba", games.CategoryExtra,
-		func() usecase.SambaInteractorIF {
-			return usecase.NewSambaInteractor(domain.NewDefaultSamba(), new(presenter.SambaWebPresenter))
-		},
-		func(data []byte) (usecase.SambaInteractorIF, error) {
-			return usecase.RestoreSambaInteractor(data, new(presenter.SambaWebPresenter))
-		},
-		controller.NewSambaWebControllerWithProvider)
-	games.RegisterKVGame("bolivia", games.CategoryExtra,
-		func() usecase.BoliviaInteractorIF {
-			return usecase.NewBoliviaInteractor(domain.NewDefaultBolivia(), new(presenter.BoliviaWebPresenter))
-		},
-		func(data []byte) (usecase.BoliviaInteractorIF, error) {
-			return usecase.RestoreBoliviaInteractor(data, new(presenter.BoliviaWebPresenter))
-		},
-		controller.NewBoliviaWebControllerWithProvider)
 	games.RegisterKVGame("machiavelli", games.CategoryExtra,
 		func() usecase.MachiavelliInteractorIF {
 			return usecase.NewMachiavelliInteractor(domain.NewDefaultMachiavelli(), new(presenter.MachiavelliWebPresenter))
@@ -323,12 +259,4 @@ func init() {
 			return usecase.RestoreTappTarockInteractor(data, new(presenter.TappTarockWebPresenter))
 		},
 		controller.NewTappTarockWebControllerWithProvider)
-	games.RegisterKVGame("biriba", games.CategoryExtra,
-		func() usecase.BiribaInteractorIF {
-			return usecase.NewBiribaInteractor(domain.NewDefaultBiriba(), new(presenter.BiribaWebPresenter))
-		},
-		func(data []byte) (usecase.BiribaInteractorIF, error) {
-			return usecase.RestoreBiribaInteractor(data, new(presenter.BiribaWebPresenter))
-		},
-		controller.NewBiribaWebControllerWithProvider)
 }

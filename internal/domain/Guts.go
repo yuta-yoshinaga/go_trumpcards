@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra4
+//go:build !js || !wasm || extra7
 
 // Package domain ガッツ (Guts) のドメインモデル。
 //

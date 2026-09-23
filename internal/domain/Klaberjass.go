@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra3
+//go:build !js || !wasm || extra6
 
 // Package domain — クラバーヤス (Klaberjass / Clobyosh / Bela) のドメインモデル。
 //
