@@ -1368,7 +1368,7 @@ func mightyCardStr(card *Card) string {
 		return "?"
 	}
 	if card.GetDesign() == CardDesignJoker {
-		return "Joker"
+		return "JK"
 	}
 	return cardStr(card)
 }

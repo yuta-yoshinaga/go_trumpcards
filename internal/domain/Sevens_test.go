@@ -4004,7 +4004,7 @@ func TestSevens_ActionLog_Play(t *testing.T) {
 		if e.ActionType == "play" && e.PlayerIdx == 0 {
 			found = true
 			assert.Equal(t, "sevens.log.play", e.DetailCode)
-			assert.Equal(t, map[string]string{"card": "spade 6"}, e.DetailParams)
+			assert.Equal(t, map[string]string{"card": "♠6"}, e.DetailParams)
 			assert.Len(t, e.Cards, 1)
 			break
 		}

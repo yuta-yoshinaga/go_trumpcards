@@ -18,7 +18,7 @@ func TestActionLogEntry(t *testing.T) {
 		PlayerIdx:    0,
 		ActionType:   "play",
 		DetailCode:   "play.card",
-		DetailParams: map[string]string{"card": "SPADE 5"},
+		DetailParams: map[string]string{"card": "♠5"},
 		Cards:        []*Card{card},
 	}
 

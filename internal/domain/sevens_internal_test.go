@@ -1158,6 +1158,6 @@ func TestSevens_findPlayableHarassment_unlimitedPasses(t *testing.T) {
 }
 
 func TestSevens_ActionLog_JokerStrings(t *testing.T) {
-	assert.Equal(t, "joker", suitLogStr(CardDesignJoker))
-	assert.Equal(t, "joker", cardLogStr(NewCard(CardDesignJoker, 0, false)))
+	assert.Equal(t, "JK", cardLogStr(NewCard(CardDesignJoker, 0, false)))
+	assert.Equal(t, "♠5", cardLogStr(NewCard(CardDesignSpade, 5, false)))
 }
