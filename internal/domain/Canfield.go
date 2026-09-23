@@ -505,7 +505,7 @@ func (c *Canfield) tableauPlacementError(card *Card, col int) error {
 		return nil
 	}
 	top := colCards[len(colCards)-1].Card
-	if !c.isAlternateColor(card, top) || card.GetValue() != c.prevRank(top.GetValue()) {
+	if !isAlternateColor(card, top) || card.GetValue() != c.prevRank(top.GetValue()) {
 		return NewDomainErrorCode(ErrInvalidPlay, "canfield.errNotAlternateDescending", nil)
 	}
 	return nil
@@ -530,14 +530,6 @@ func (c *Canfield) nextRank(r int) int {
 
 func (c *Canfield) prevRank(r int) int {
 	return ((r + 11) % 13) + 1
-}
-
-func (c *Canfield) isAlternateColor(a, b *Card) bool {
-	return c.isBlack(a) != c.isBlack(b)
-}
-
-func (c *Canfield) isBlack(card *Card) bool {
-	return card.GetDesign() == CardDesignSpade || card.GetDesign() == CardDesignClover
 }
 
 func (c *Canfield) autoFillFromReserve() {

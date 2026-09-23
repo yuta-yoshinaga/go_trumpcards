@@ -629,22 +629,12 @@ func (k *Whitehead) canPlaceOnTableau(card *Card, col int) bool {
 	}
 	topCard := colCards[len(colCards)-1].Card
 	// **同じ色**で降順。Klondike は交互の色なので、ここが逆になっている。
-	return !k.isAlternateColor(card, topCard) && card.GetValue() == topCard.GetValue()-1
+	return !isAlternateColor(card, topCard) && card.GetValue() == topCard.GetValue()-1
 }
 
 // canPlaceOnFoundation ファンデーションにカードを置けるか判定
 func (k *Whitehead) canPlaceOnFoundation(card *Card, fIdx int) bool {
 	return canPlaceOnFoundationPile(k.foundation[fIdx], card)
-}
-
-// isAlternateColor 交互の色かどうか判定
-func (k *Whitehead) isAlternateColor(card1, card2 *Card) bool {
-	return k.isBlack(card1) != k.isBlack(card2)
-}
-
-// isBlack 黒いカードかどうか
-func (k *Whitehead) isBlack(card *Card) bool {
-	return card.GetDesign() == CardDesignSpade || card.GetDesign() == CardDesignClover
 }
 
 // autoFlipTableau は Whitehead では何もしない。

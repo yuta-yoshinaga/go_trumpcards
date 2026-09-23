@@ -627,22 +627,12 @@ func (k *Klondike) canPlaceOnTableau(card *Card, col int) bool {
 	}
 	topCard := colCards[len(colCards)-1].Card
 	// 交互の色で降順
-	return k.isAlternateColor(card, topCard) && card.GetValue() == topCard.GetValue()-1
+	return isAlternateColor(card, topCard) && card.GetValue() == topCard.GetValue()-1
 }
 
 // canPlaceOnFoundation ファンデーションにカードを置けるか判定
 func (k *Klondike) canPlaceOnFoundation(card *Card, fIdx int) bool {
 	return canPlaceOnFoundationPile(k.foundation[fIdx], card)
-}
-
-// isAlternateColor 交互の色かどうか判定
-func (k *Klondike) isAlternateColor(card1, card2 *Card) bool {
-	return k.isBlack(card1) != k.isBlack(card2)
-}
-
-// isBlack 黒いカードかどうか
-func (k *Klondike) isBlack(card *Card) bool {
-	return card.GetDesign() == CardDesignSpade || card.GetDesign() == CardDesignClover
 }
 
 // autoFlipTableau タブローの最上部の裏カードを自動フリップ

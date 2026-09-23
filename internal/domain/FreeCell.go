@@ -661,22 +661,12 @@ func (f *FreeCell) tableauStackable(upper, lower *Card) bool {
 	if f.sameSuit {
 		return upper.GetDesign() == lower.GetDesign()
 	}
-	return f.isAlternateColor(upper, lower)
+	return isAlternateColor(upper, lower)
 }
 
 // canPlaceOnFoundation ファンデーションにカードを置けるか判定
 func (f *FreeCell) canPlaceOnFoundation(card *Card, fIdx int) bool {
 	return canPlaceOnFoundationPile(f.foundation[fIdx], card)
-}
-
-// isAlternateColor 交互の色かどうか判定
-func (f *FreeCell) isAlternateColor(card1, card2 *Card) bool {
-	return f.isBlack(card1) != f.isBlack(card2)
-}
-
-// isBlack 黒いカードかどうか
-func (f *FreeCell) isBlack(card *Card) bool {
-	return card.GetDesign() == CardDesignSpade || card.GetDesign() == CardDesignClover
 }
 
 // isValidTableauSequence タブロー移動可能なシーケンスか判定する。

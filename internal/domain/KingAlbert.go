@@ -532,17 +532,7 @@ func (ka *KingAlbert) canPlaceOnTableau(card *Card, col int) bool {
 		return true
 	}
 	topCard := colCards[len(colCards)-1].Card
-	return card.GetValue() == topCard.GetValue()-1 && ka.isAlternateColor(card, topCard)
-}
-
-// isAlternateColor 交互の色かどうか判定
-func (ka *KingAlbert) isAlternateColor(card1, card2 *Card) bool {
-	return ka.isBlack(card1) != ka.isBlack(card2)
-}
-
-// isBlack 黒いカードかどうか
-func (ka *KingAlbert) isBlack(card *Card) bool {
-	return card.GetDesign() == CardDesignSpade || card.GetDesign() == CardDesignClover
+	return card.GetValue() == topCard.GetValue()-1 && isAlternateColor(card, topCard)
 }
 
 // canPlaceOnFoundation ファンデーションにカードを置けるか判定（Aceから同スートで昇順）
