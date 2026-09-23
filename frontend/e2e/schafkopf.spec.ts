@@ -1,5 +1,5 @@
 import { expect, type Page, test } from '@playwright/test';
-import { navigateTo, TIMEOUT_ACTION, TIMEOUT_TRANSITION } from './helpers';
+import { gameButton, navigateTo, TIMEOUT_ACTION, TIMEOUT_TRANSITION } from './helpers';
 
 // **合法な札だけを選ぶ。** ページは出せない札を aria-disabled にするので、
 // 手札の先頭を素で掴むと無効な札を押して盤面が動かないことがある。
@@ -27,7 +27,7 @@ test.describe('Schafkopf E2E', () => {
     await expect(page.getByRole('button', { name: /Rufspiel/ })).toHaveCount(1, { timeout: TIMEOUT_TRANSITION });
     await expect(page.getByRole('button', { name: /Wenz/ })).toHaveCount(1, { timeout: TIMEOUT_TRANSITION });
     // Solo はスートごとに 1 つずつ。宣言してからスートを選ぶ二段構えではない。
-    await expect(page.getByRole('button', { name: /Solo/ })).toHaveCount(4, { timeout: TIMEOUT_TRANSITION });
+    await expect(gameButton(page, /Solo/)).toHaveCount(4, { timeout: TIMEOUT_TRANSITION });
   });
 
   // **契約は切り札の構成そのもの。** 画面に出ていないと、Wenz の盤面で Ober が

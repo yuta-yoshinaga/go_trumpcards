@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, TIMEOUT_GAME_LOOP, waitForLoaded } from './helpers';
+import { gameButton, navigateTo, TIMEOUT_GAME_LOOP, waitForLoaded } from './helpers';
 
 test.describe('Two Ten Jack E2E', () => {
   test('navigates, resets, and plays through phase transitions', async ({ page }) => {
@@ -18,7 +18,7 @@ test.describe('Two Ten Jack E2E', () => {
     // Score table visible
     await expect(page.getByText('スコア', { exact: true }).first()).toBeVisible();
 
-    const suitSpade = page.getByRole('button', { name: 'スペード' });
+    const suitSpade = gameButton(page, 'スペード');
     const suitClub = page.getByRole('button', { name: 'クラブ' });
     const suitHeart = page.getByRole('button', { name: 'ハート' });
     const suitDiamond = page.getByRole('button', { name: 'ダイヤ' });

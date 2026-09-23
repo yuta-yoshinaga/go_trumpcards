@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, TIMEOUT_GAME_LOOP, TIMEOUT_TRANSITION, waitForLoaded } from './helpers';
+import { gameButton, navigateTo, TIMEOUT_GAME_LOOP, TIMEOUT_TRANSITION, waitForLoaded } from './helpers';
 
 test.describe('Cinch E2E', () => {
   test('loads, resets, and renders the game UI', async ({ page }) => {
@@ -20,8 +20,7 @@ test.describe('Cinch E2E', () => {
     // (a pass / numeric bid, a trump suit, the human's play control, a next-deal
     // advance, or — once the deal resolves via CPU play — the reset / next-game
     // button).
-    const anyControl = page
-      .getByRole('button', { name: 'パス' })
+    const anyControl = gameButton(page, 'パス')
       .or(page.getByRole('button', { name: '♠' }))
       .or(page.getByRole('button', { name: '出す' }))
       .or(page.getByRole('button', { name: '次のディール' }))

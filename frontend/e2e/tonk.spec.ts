@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, waitForLoaded } from './helpers';
+import { gameButton, navigateTo, waitForLoaded } from './helpers';
 
 test.describe('Tonk E2E', () => {
   test('navigates, resets, and plays through phase transitions', async ({ page }) => {
@@ -17,7 +17,7 @@ test.describe('Tonk E2E', () => {
     const drawStockButton = page.getByRole('button', { name: '山札から引く' });
     const drawDiscardButton = page.getByRole('button', { name: '捨て札から引く', exact: true });
     const discardButton = page.getByRole('button', { name: '捨てる' });
-    const knockButton = page.getByRole('button', { name: 'ノック' });
+    const knockButton = gameButton(page, 'ノック');
     const nextRoundButton = page.getByRole('button', { name: '次のラウンド' });
     const handCards = page.locator('button[aria-pressed]:has(img)');
     const anyResetButton = page.getByRole('button', { name: /リセット|次のゲーム/ });

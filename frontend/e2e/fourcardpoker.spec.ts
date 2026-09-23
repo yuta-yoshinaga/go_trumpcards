@@ -1,11 +1,11 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, waitForLoaded } from './helpers';
+import { gameButton, navigateTo, waitForLoaded } from './helpers';
 
 test.describe('Four Card Poker E2E', () => {
   test('plays a round: bet → play → result → reset', async ({ page }) => {
     await navigateTo(page, '/fourcardpoker');
 
-    const betButton = page.getByRole('button', { name: 'ベット' });
+    const betButton = gameButton(page, 'ベット');
     await expect(betButton).toBeVisible();
     await betButton.click();
     await waitForLoaded(page);
@@ -20,13 +20,13 @@ test.describe('Four Card Poker E2E', () => {
 
     await resetButton.click();
     await waitForLoaded(page);
-    await expect(page.getByRole('button', { name: 'ベット' })).toBeVisible();
+    await expect(gameButton(page, 'ベット')).toBeVisible();
   });
 
   test('fold flow: bet → fold → result → reset', async ({ page }) => {
     await navigateTo(page, '/fourcardpoker');
 
-    const betButton = page.getByRole('button', { name: 'ベット' });
+    const betButton = gameButton(page, 'ベット');
     await expect(betButton).toBeVisible();
     await betButton.click();
     await waitForLoaded(page);
@@ -41,6 +41,6 @@ test.describe('Four Card Poker E2E', () => {
 
     await resetButton.click();
     await waitForLoaded(page);
-    await expect(page.getByRole('button', { name: 'ベット' })).toBeVisible();
+    await expect(gameButton(page, 'ベット')).toBeVisible();
   });
 });

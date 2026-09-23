@@ -1,11 +1,11 @@
 import { expect, test } from '@playwright/test';
-import { isVisibleWithin, navigateTo, TIMEOUT_ACTION, TIMEOUT_TRANSITION, waitForLoaded } from './helpers';
+import { gameButton, isVisibleWithin, navigateTo, TIMEOUT_ACTION, TIMEOUT_TRANSITION, waitForLoaded } from './helpers';
 
 test.describe('Pitch E2E', () => {
   test('loads bid phase with pass + bid buttons', async ({ page }) => {
     await navigateTo(page, '/pitch');
 
-    const passButton = page.getByRole('button', { name: 'パス' });
+    const passButton = gameButton(page, 'パス');
     const bid2Button = page.getByRole('button', { name: 'ビッド 2' });
     const bid3Button = page.getByRole('button', { name: 'ビッド 3' });
     const bid4Button = page.getByRole('button', { name: 'ビッド 4' });
@@ -19,7 +19,7 @@ test.describe('Pitch E2E', () => {
   test('passes to advance bidding', async ({ page }) => {
     await navigateTo(page, '/pitch');
 
-    const passButton = page.getByRole('button', { name: 'パス' });
+    const passButton = gameButton(page, 'パス');
     await expect(passButton).toBeVisible({ timeout: TIMEOUT_ACTION });
     await passButton.click();
     await waitForLoaded(page);

@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, TIMEOUT_GAME_LOOP, TIMEOUT_TRANSITION, waitForLoaded } from './helpers';
+import { gameButton, navigateTo, TIMEOUT_GAME_LOOP, TIMEOUT_TRANSITION, waitForLoaded } from './helpers';
 
 test.describe('Watten E2E', () => {
   test('loads, resets, and renders the play UI', async ({ page }) => {
@@ -20,10 +20,9 @@ test.describe('Watten E2E', () => {
     // be present (a declare button, the human's play/raise control, a hold/fold
     // response, a deal advance, or — once the deal resolves via CPU play — the
     // reset / next-game button).
-    const anyControl = page
-      .getByRole('button', { name: '宣言' })
+    const anyControl = gameButton(page, '宣言')
       .or(page.getByRole('button', { name: '出す' }))
-      .or(page.getByRole('button', { name: /レイズ/ }))
+      .or(gameButton(page, /レイズ/))
       .or(page.getByRole('button', { name: /hold/ }))
       .or(page.getByRole('button', { name: /fold/ }))
       .or(page.getByRole('button', { name: '次のディール' }))

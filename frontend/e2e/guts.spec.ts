@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { isVisibleWithin, navigateTo, TIMEOUT_ACTION, waitForLoaded } from './helpers';
+import { gameButton, isVisibleWithin, navigateTo, TIMEOUT_ACTION, waitForLoaded } from './helpers';
 
 test.describe('Guts E2E', () => {
   // Guts is a fast pot-vying gamble: the human declares In (stay) or Out (fold),
@@ -7,8 +7,8 @@ test.describe('Guts E2E', () => {
   test('plays a round: declare → resolve → next round', async ({ page }) => {
     await navigateTo(page, '/guts');
 
-    const inButton = page.getByRole('button', { name: /In \(stay\)|イン/ });
-    const outButton = page.getByRole('button', { name: /Out \(fold\)|アウト/ });
+    const inButton = gameButton(page, /In \(stay\)|イン/);
+    const outButton = gameButton(page, /Out \(fold\)|アウト/);
     await expect(inButton.or(outButton).first()).toBeVisible({ timeout: TIMEOUT_ACTION });
 
     await inButton.first().click();
