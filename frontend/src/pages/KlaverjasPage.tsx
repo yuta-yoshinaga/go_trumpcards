@@ -27,6 +27,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { KlaverjasResponse } from '../types/card';
 import { KlaverjasPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { suitSymbolAt } from '../utils/cardAlt';
 import { KLAVERJAS_HELP, parseKlaverjasCommand } from '../utils/cli/commands/klaverjasCommands';
 import { formatKlaverjasState } from '../utils/cli/formatters/klaverjasFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -34,9 +35,6 @@ import { isRequestedHint } from '../utils/hintRequest';
 import { getKlaverjasPlayRestriction } from '../utils/klaverjasPlayRestriction';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
-
-/** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 unused). */
-const SUIT_SYMBOLS = ['', '♠', '♣', '♥', '♦'] as const;
 
 /**
  * Card strength and points, strongest first (sync: `Klaverjas.trumpStrength` /
@@ -199,7 +197,7 @@ function KlaverjasPageContent() {
 
   const canPlay = isPlayPhase && isHumanTurn;
   const humanTeam = humanIdx % 2;
-  const trumpSymbol = SUIT_SYMBOLS[state.trumpSuit] ?? '?';
+  const trumpSymbol = suitSymbolAt(state.trumpSuit, '');
 
   const handleManualReset = () => {
     hideActionLog();

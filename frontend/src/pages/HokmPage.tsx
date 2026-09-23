@@ -24,14 +24,11 @@ import { gameTheme } from '../styles/gameTheme';
 import type { HokmResponse } from '../types/card';
 import { HokmPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { cardAlt } from '../utils/cardAlt';
+import { cardAlt, suitSymbolAt } from '../utils/cardAlt';
 import { HOKM_HELP, parseHokmCommand } from '../utils/cli/commands/hokmCommands';
 import { formatHokmState } from '../utils/cli/formatters/hokmFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
-
-/** Suit code (1=♠ 2=♣ 3=♥ 4=♦) to its symbol. */
-const SUIT_SYMBOLS: Readonly<Record<number, string>> = { 1: '♠', 2: '♣', 3: '♥', 4: '♦' };
 
 /** The four suits, in the order the trump buttons are offered. */
 const SUITS: readonly number[] = [1, 2, 3, 4];
@@ -171,7 +168,7 @@ function HokmPageContent() {
               <span className="mr-4">{t('header.target', { target: String(state.config.target) })}</span>
               <span data-testid="hk-trump">
                 {state.trumpSuit > 0
-                  ? t('header.trump', { suit: SUIT_SYMBOLS[state.trumpSuit] ?? '?' })
+                  ? t('header.trump', { suit: suitSymbolAt(state.trumpSuit, '?') })
                   : t('header.trumpUndecided')}
               </span>
             </div>
@@ -314,7 +311,7 @@ function HokmPageContent() {
                     disabled={loading}
                     data-testid={`hk-trump-${suit.toString()}-btn`}
                   >
-                    {t('actions.trump', { suit: SUIT_SYMBOLS[suit] ?? '?' })}
+                    {t('actions.trump', { suit: suitSymbolAt(suit, '?') })}
                   </button>
                 ))}
               {isHandEnd && !isGameEnd && (

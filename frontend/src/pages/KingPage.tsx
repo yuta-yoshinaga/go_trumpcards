@@ -26,15 +26,13 @@ import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { KingResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
+import { suitSymbolAt } from '../utils/cardAlt';
 import { KING_HELP, parseKingCommand } from '../utils/cli/commands/kingCommands';
 import { formatKingState } from '../utils/cli/formatters/kingFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
 import { findPlayerName, playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
-
-/** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; 0/-1 = unset). */
-const SUIT_SYMBOLS = ['-', '♠', '♣', '♥', '♦'] as const;
 
 /** Selectable trump suits for the King (Trump) contract. */
 const TRUMP_SUITS = [1, 2, 3, 4] as const;
@@ -139,7 +137,7 @@ function KingPageContent() {
   const canSelect = isSelectPhase && state.dealerIdx === humanIdx;
   const canPlay = isPlayPhase && isHumanTurn;
   const contractName = state.currentContract >= 0 ? t(`contracts.${state.currentContract}`) : '-';
-  const trumpSymbol = state.trumpSuit >= 1 ? (SUIT_SYMBOLS[state.trumpSuit] ?? '-') : '-';
+  const trumpSymbol = state.trumpSuit >= 1 ? suitSymbolAt(state.trumpSuit, '-') : '-';
   const phaseName = t(`phase.${state.phase}`);
 
   const handleManualReset = () => {
@@ -313,7 +311,7 @@ function KingPageContent() {
                         {state.lastDealDetail.contract === KING_TRUMP_CONTRACT && state.lastDealDetail.trumpSuit >= 1
                           ? t('dealResult.contractLineTrump', {
                               name: t(`contracts.${state.lastDealDetail.contract}`),
-                              suit: SUIT_SYMBOLS[state.lastDealDetail.trumpSuit] ?? '-',
+                              suit: suitSymbolAt(state.lastDealDetail.trumpSuit, '-'),
                             })
                           : t('dealResult.contractLine', {
                               name: t(`contracts.${state.lastDealDetail.contract}`),
@@ -461,7 +459,7 @@ function KingPageContent() {
                       onClick={() => handleTrumpClick(suit)}
                       disabled={loading}
                     >
-                      {SUIT_SYMBOLS[suit]}
+                      {suitSymbolAt(suit, '-')}
                     </button>
                   ))}
                 </div>

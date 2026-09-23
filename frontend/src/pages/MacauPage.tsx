@@ -30,7 +30,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { MacauResponse } from '../types/card';
 import { CrazyEightsSuit, MacauPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { cardAlt } from '../utils/cardAlt';
+import { cardAlt, suitSymbolAt } from '../utils/cardAlt';
 import { MACAU_HELP, parseMacauCommand } from '../utils/cli/commands/macauCommands';
 import { formatMacauState } from '../utils/cli/formatters/macauFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -51,13 +51,6 @@ const SUIT_BUTTONS = [
   { suit: CrazyEightsSuit.HEART, key: 'suitHeart' },
   { suit: CrazyEightsSuit.DIAMOND, key: 'suitDiamond' },
 ] as const;
-
-const SUIT_SYMBOLS: Record<number, string> = {
-  [CrazyEightsSuit.SPADE]: '♠',
-  [CrazyEightsSuit.CLOVER]: '♣',
-  [CrazyEightsSuit.HEART]: '♥',
-  [CrazyEightsSuit.DIAMOND]: '♦',
-};
 
 /** Macau tutorial step definitions. */
 const MACAU_TUTORIAL_STEPS: TutorialStep[] = [
@@ -245,7 +238,7 @@ function MacauPageContent() {
                         data-testid="chosen-suit-watermark"
                         className="pointer-events-none absolute inset-0 flex items-center justify-end pr-4 text-[6rem] leading-none opacity-15 text-ds-warning motion-safe:animate-suit-watermark"
                       >
-                        {SUIT_SYMBOLS[state.chosenSuit] ?? '?'}
+                        {suitSymbolAt(state.chosenSuit, '?')}
                       </span>
                     )}
                     <div className="relative">
@@ -255,7 +248,7 @@ function MacauPageContent() {
                       <div>{t('discardTop')}</div>
                       {state.chosenSuit > 0 && (
                         <div className="text-ds-warning">
-                          {t('chosenSuit')}: {SUIT_SYMBOLS[state.chosenSuit] ?? '?'}
+                          {t('chosenSuit')}: {suitSymbolAt(state.chosenSuit, '?')}
                         </div>
                       )}
                     </div>

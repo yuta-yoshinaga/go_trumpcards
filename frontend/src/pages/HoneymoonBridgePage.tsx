@@ -24,14 +24,11 @@ import { gameTheme } from '../styles/gameTheme';
 import type { HoneymoonBridgeResponse } from '../types/card';
 import { HoneymoonBridgePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { cardAlt } from '../utils/cardAlt';
+import { cardAlt, suitSymbolAt } from '../utils/cardAlt';
 import { HONEYMOONBRIDGE_HELP, parseHoneymoonBridgeCommand } from '../utils/cli/commands/honeymoonbridgeCommands';
 import { formatHoneymoonBridgeState } from '../utils/cli/formatters/honeymoonbridgeFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
-
-/** Contract denominations. **`0` is no-trump**, which is a bid, not a missing value. */
-const SUIT_SYMBOLS: Readonly<Record<number, string>> = { 0: 'NT', 1: '♠', 2: '♣', 3: '♥', 4: '♦' };
 
 /** The five denominations, weakest first — the order the bid buttons are offered. */
 const DENOMINATIONS: readonly number[] = [1, 2, 3, 4, 0];
@@ -247,7 +244,7 @@ function HoneymoonBridgePageContent() {
               {state.contractLevel > 0
                 ? t('header.contract', {
                     level: String(state.contractLevel),
-                    suit: SUIT_SYMBOLS[state.trumpSuit] ?? '?',
+                    suit: suitSymbolAt(state.trumpSuit, 'NT'),
                     name:
                       state.declarerIdx === 0 ? t('header.you') : t('header.cpu', { idx: String(state.declarerIdx) }),
                     need: String(state.requiredTricks),
@@ -261,7 +258,7 @@ function HoneymoonBridgePageContent() {
                 {state.minBidLevel > 0
                   ? t('header.minBid', {
                       level: String(state.minBidLevel),
-                      suit: SUIT_SYMBOLS[state.minBidSuit] ?? '?',
+                      suit: suitSymbolAt(state.minBidSuit, 'NT'),
                     })
                   : t('header.minBidCapped')}
               </div>
@@ -288,7 +285,7 @@ function HoneymoonBridgePageContent() {
                   {': '}
                   <span className="text-ds-accent">
                     {p.bidLevel > 0
-                      ? t('header.bid', { level: String(p.bidLevel), suit: SUIT_SYMBOLS[p.bidSuit] ?? '?' })
+                      ? t('header.bid', { level: String(p.bidLevel), suit: suitSymbolAt(p.bidSuit, 'NT') })
                       : t('header.noBid')}
                   </span>
                   {' / '}
@@ -401,7 +398,7 @@ function HoneymoonBridgePageContent() {
                         aria-disabled={!legal}
                         data-testid={`hb-bid-${suit.toString()}-btn`}
                       >
-                        {t('actions.bid', { level: String(selectedLevel), suit: SUIT_SYMBOLS[suit] ?? '?' })}
+                        {t('actions.bid', { level: String(selectedLevel), suit: suitSymbolAt(suit, 'NT') })}
                       </button>
                     );
                   })}

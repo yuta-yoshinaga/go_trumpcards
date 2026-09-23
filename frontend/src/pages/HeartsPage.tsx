@@ -31,6 +31,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { Card, HeartsResponse } from '../types/card';
 import { HeartsPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { suitSymbolAt } from '../utils/cardAlt';
 import { HEARTS_HELP, parseHeartsCommand } from '../utils/cli/commands/heartsCommands';
 import { formatHeartsState } from '../utils/cli/formatters/heartsFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -99,9 +100,6 @@ const passDirectionKeys = ['left', 'right', 'across', 'none'] as const;
 
 /** Decorative arrow glyph per pass direction (0=left, 1=right, 2=across, 3=none). */
 const PASS_ARROWS = ['←', '→', '↑', ''] as const;
-
-/** Suit code (1=♠ 2=♣ 3=♥ 4=♦) to its symbol. */
-const SUIT_SYMBOLS: Readonly<Record<number, string>> = { 1: '♠', 2: '♣', 3: '♥', 4: '♦' };
 
 /** Renders the Hearts game page with card passing, trick play, and scoring. */
 export const HeartsPage = withTutorial(HeartsPageContent, 'hearts', HT_TUTORIAL_STEPS);
@@ -585,7 +583,7 @@ function HeartsVoidSuits({
   t: (key: string, opts?: Record<string, unknown>) => string;
 }) {
   if (suits.length === 0) return null;
-  const label = t('voidSuits', { suits: suits.map((suit) => SUIT_SYMBOLS[suit]).join(' ') });
+  const label = t('voidSuits', { suits: suits.map((suit) => suitSymbolAt(suit, '')).join(' ') });
   return (
     <span className="ml-1 inline-flex gap-0.5" role="img" aria-label={label}>
       {suits.map((suit) => (
@@ -595,7 +593,7 @@ function HeartsVoidSuits({
           className="rounded bg-ds-surface px-1 text-ds-text-primary"
           data-testid="hearts-void-suit"
         >
-          {SUIT_SYMBOLS[suit]}
+          {suitSymbolAt(suit, '')}
         </span>
       ))}
     </span>

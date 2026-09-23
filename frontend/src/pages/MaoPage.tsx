@@ -32,7 +32,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { Card, MaoResponse } from '../types/card';
 import { CrazyEightsSuit, MaoPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { cardAlt } from '../utils/cardAlt';
+import { cardAlt, suitSymbolAt } from '../utils/cardAlt';
 import { MAO_HELP, parseMaoCommand } from '../utils/cli/commands/maoCommands';
 import { formatMaoState } from '../utils/cli/formatters/maoFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
@@ -56,13 +56,6 @@ const SUIT_BUTTONS = [
   { suit: CrazyEightsSuit.HEART, key: 'suitHeart' },
   { suit: CrazyEightsSuit.DIAMOND, key: 'suitDiamond' },
 ] as const;
-
-const SUIT_SYMBOLS: Record<number, string> = {
-  [CrazyEightsSuit.SPADE]: '♠',
-  [CrazyEightsSuit.CLOVER]: '♣',
-  [CrazyEightsSuit.HEART]: '♥',
-  [CrazyEightsSuit.DIAMOND]: '♦',
-};
 
 /** Red suits (hearts, diamonds) — rendered in the error/red token; spades and clubs use the ivory primary token. */
 const RED_SUITS: ReadonlySet<number> = new Set([CrazyEightsSuit.HEART, CrazyEightsSuit.DIAMOND]);
@@ -318,7 +311,7 @@ function MaoPageContent() {
                         data-testid="chosen-suit-watermark"
                         className="pointer-events-none absolute inset-0 flex items-center justify-end pr-4 text-[6rem] leading-none opacity-15 text-ds-warning motion-safe:animate-suit-watermark"
                       >
-                        {SUIT_SYMBOLS[state.chosenSuit] ?? '?'}
+                        {suitSymbolAt(state.chosenSuit, '?')}
                       </span>
                     )}
                     <div className="relative">
@@ -328,7 +321,7 @@ function MaoPageContent() {
                       <div>{t('discardTop')}</div>
                       {state.chosenSuit > 0 && (
                         <div className="text-ds-warning">
-                          {t('chosenSuit')}: {SUIT_SYMBOLS[state.chosenSuit] ?? '?'}
+                          {t('chosenSuit')}: {suitSymbolAt(state.chosenSuit, '?')}
                         </div>
                       )}
                     </div>
@@ -572,7 +565,7 @@ function MaoPageContent() {
                           RED_SUITS.has(suit) ? 'text-ds-error' : 'text-ds-text-primary'
                         }`}
                       >
-                        {SUIT_SYMBOLS[suit]}
+                        {suitSymbolAt(suit, '')}
                       </span>
                       {t(key)}
                     </button>
