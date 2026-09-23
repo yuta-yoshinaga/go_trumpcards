@@ -22188,9 +22188,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
       responses:
         '200':
           description: Current game state
@@ -38019,8 +38016,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
             targetHands:
               type: integer
         message:
@@ -38314,8 +38309,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
     GuandanResponse:
       type: object
       description: Response payload for /guandan/exec

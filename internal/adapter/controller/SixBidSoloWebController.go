@@ -24,8 +24,7 @@ type SixBidSoloWebInput struct {
 
 // SixBidSoloWebConfig シックスビッド・ソロ Web設定
 type SixBidSoloWebConfig struct {
-	CpuDifficulty *int `json:"cpuDifficulty,omitempty"`
-	TargetHands   *int `json:"targetHands,omitempty"`
+	TargetHands *int `json:"targetHands,omitempty"`
 }
 
 // SixBidSoloWebOutputBid シックスビッド・ソロ Webアウトプット宣言
@@ -109,15 +108,12 @@ type SixBidSoloWebOutput struct {
 
 // SixBidSoloWebOutputConfig シックスビッド・ソロ設定アウトプット
 type SixBidSoloWebOutputConfig struct {
-	CpuDifficulty int `json:"cpuDifficulty"`
-	TargetHands   int `json:"targetHands"`
+	TargetHands int `json:"targetHands"`
 }
 
 // ToConfig builds a SixBidSoloConfig from the nested web config, applying bounds checking.
 func (c *SixBidSoloWebConfig) ToConfig() domain.SixBidSoloConfig {
 	cfg := domain.DefaultSixBidSoloConfig()
-	cfg.CpuDifficulty = domain.SixBidSoloCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty,
-		int(domain.SixBidSoloCpuDifficultyNormal), int(domain.SixBidSoloCpuDifficultyNormal), int(cfg.CpuDifficulty)))
 	cfg.TargetHands = webutil.BoundedIntPtr(c.TargetHands,
 		domain.SixBidSoloMinHands, domain.SixBidSoloMaxHands, cfg.TargetHands)
 	return cfg

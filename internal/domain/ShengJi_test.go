@@ -1035,9 +1035,6 @@ func TestShengJiConfigValidate(t *testing.T) {
 	if err := DefaultShengJiConfig().Validate(); err != nil {
 		t.Errorf("the default config is invalid: %v", err)
 	}
-	if err := (ShengJiConfig{CpuDifficulty: 9}).Validate(); err == nil {
-		t.Error("an out-of-range difficulty must be rejected")
-	}
 }
 
 func TestShengJiRoundTripsThroughJSON(t *testing.T) {

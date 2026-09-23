@@ -64,7 +64,7 @@ function makeState(overrides?: Partial<SixBidSoloResponse>): SixBidSoloResponse 
     gameEndFlag: false,
     winnerIdx: -1,
     message: '',
-    config: { cpuDifficulty: 0, targetHands: 6 },
+    config: { targetHands: 6 },
     ...overrides,
   };
 }
