@@ -34,10 +34,13 @@ export function TutorialProgressPanel() {
             <Link
               key={game.gameName}
               to={game.path}
-              className={`flex items-center justify-center px-1.5 py-1 rounded hover:bg-ds-surface-elevated-hover ${game.completed ? 'text-ds-success' : 'text-ds-text-muted'}`}
+              className={`flex items-center justify-center min-h-[44px] min-w-[44px] rounded hover:bg-ds-surface-elevated-hover ${game.completed ? 'text-ds-success' : 'text-ds-text-muted'}`}
+              aria-label={t(game.completed ? 'progress.gameCompleted' : 'progress.gamePending', {
+                game: tc(game.labelKey),
+              })}
               title={tc(game.labelKey)}
             >
-              {game.completed ? '✓' : '○'}
+              <span aria-hidden="true">{game.completed ? '✓' : '○'}</span>
             </Link>
           ))}
         </div>
