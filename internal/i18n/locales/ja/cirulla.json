@@ -1,4 +1,5 @@
 {
+  "bonus.unknown": "不明",
   "helpTitle": "チルッラ",
   "helpPlay": "  play / p <idx> [場札...]  札を出す（場札の番号を並べると取る）",
   "helpNextRound": "  nextround / nr            次のラウンドへ",

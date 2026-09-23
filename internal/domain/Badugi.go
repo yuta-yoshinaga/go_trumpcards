@@ -552,7 +552,7 @@ func (b *Badugi) resolveShowdown() {
 			for j := 0; j < pl.GetCardsSize(); j++ {
 				cards[j] = pl.GetCard(j)
 			}
-			b.appendLog(i, "showdown", "badugi.log.showdown", map[string]string{"hand": pl.GetHandName()}, cards)
+			b.appendLog(i, "showdown", "badugi.log.showdown", map[string]string{"handKey": badugiHandLogKey(pl.GetHandRank())}, cards)
 		}
 	}
 
@@ -885,6 +885,22 @@ func (b *Badugi) SetConfig(cfg BadugiConfig) { b.config = cfg }
 
 // GetLastCpuError returns the most recent CPU fallback error (test/debug).
 func (b *Badugi) GetLastCpuError() error { return b.round.lastCpuError }
+
+// badugiHandLogKey はバドゥーギの手札枚数をログ用の翻訳キーに変換する。
+func badugiHandLogKey(size int) string {
+	switch size {
+	case 1:
+		return "badugi.handRank1"
+	case 2:
+		return "badugi.handRank2"
+	case 3:
+		return "badugi.handRank3"
+	case 4:
+		return "badugi.handRank4"
+	default:
+		return "badugi.handRankUnknown"
+	}
+}
 
 // GetHumanProfile returns the meta-AI profile (may be nil).
 func (b *Badugi) GetHumanProfile() *BettingHumanProfile { return b.humanProfile }

@@ -1,4 +1,11 @@
 {
+  "luette.monsieur": "Monsieur",
+  "luette.madame": "Madame",
+  "luette.borgne": "Borgne",
+  "luette.vache": "Vache",
+  "luette.grandNeuf": "Grand Neuf",
+  "luette.petitNeuf": "Petit Neuf",
+  "luette.unknown": "Unknown",
   "cardLuette": "{{card}} <{{name}}>",
   "dealerBadge": "[dealer]",
   "gameEnd": "Game over! Team {{team}} wins!",

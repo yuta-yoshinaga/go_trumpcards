@@ -417,7 +417,7 @@ func (g *Rook) doExchange(discardIndices []int, trumpColor int) error {
 		g.nestPoints += rookCardPoints(c)
 	}
 	g.trumpColor = trumpColor
-	g.appendLogCode(g.declarerIdx, "exchange", "rook.log.exchange", map[string]string{"name": playerName(g.players, g.declarerIdx), "count": strconv.Itoa(len(discarded)), "trump": rookColorName(trumpColor)}, discarded)
+	g.appendLogCode(g.declarerIdx, "exchange", "rook.log.exchange", map[string]string{"name": playerName(g.players, g.declarerIdx), "count": strconv.Itoa(len(discarded)), "trumpKey": rookColorLogKey(trumpColor)}, discarded)
 	g.sortAllHands()
 	g.startPlayPhase()
 	return nil
@@ -1356,4 +1356,20 @@ func (g *Rook) UnmarshalJSON(data []byte) error {
 		g.actionLog = make([]*ActionLogEntry, 0)
 	}
 	return nil
+}
+
+// rookColorLogKey はルークの切り札色をログ用の翻訳キーに変換する。
+func rookColorLogKey(color int) string {
+	switch color {
+	case 1:
+		return "rook.colorRed"
+	case 2:
+		return "rook.colorYellow"
+	case 3:
+		return "rook.colorGreen"
+	case 4:
+		return "rook.colorBlack"
+	default:
+		return "rook.colorUnknown"
+	}
 }
