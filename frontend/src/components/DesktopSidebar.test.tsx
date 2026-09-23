@@ -165,6 +165,14 @@ describe('DesktopSidebar', () => {
       expect(noResultsElements.length).toBeGreaterThanOrEqual(1);
     });
 
+    it('does not announce no results for whitespace-only search', () => {
+      renderSidebar();
+      const input = screen.getByPlaceholderText(i18n.t('nav.searchPlaceholder'));
+      fireEvent.change(input, { target: { value: '  ' } });
+      expect(screen.queryByText(i18n.t('nav.noResults'))).toBeNull();
+      expect(screen.getByText(labelFor('nav.category.poker'))).toBeInTheDocument();
+    });
+
     it('hides categories during search and restores on clear', () => {
       renderSidebar();
       const input = screen.getByPlaceholderText(i18n.t('nav.searchPlaceholder'));

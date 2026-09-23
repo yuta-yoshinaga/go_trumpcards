@@ -32,10 +32,11 @@ export function useGameRouteSearch(searchTerm: string): UseGameRouteSearchResult
   );
 
   return useMemo(() => {
-    if (!searchTerm) return { filteredRoutes: null, filteredPaths: null };
-    const lower = searchTerm.toLowerCase();
+    // trim() also strips U+3000, so IME / mobile-keyboard trailing spaces don't zero the result.
+    const needle = searchTerm.trim().toLowerCase();
+    if (!needle) return { filteredRoutes: null, filteredPaths: null };
     const matches = searchableRoutes
-      .filter(({ ja, en }) => ja.includes(lower) || en.includes(lower))
+      .filter(({ ja, en }) => ja.includes(needle) || en.includes(needle))
       .map(({ route }) => route);
     return {
       filteredRoutes: matches,

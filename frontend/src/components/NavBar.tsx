@@ -210,8 +210,8 @@ export function NavBar() {
         )}
         {isMobile && (
           <div aria-live="polite" className="sr-only">
-            {searchTerm &&
-              (filteredRoutes && filteredRoutes.length > 0
+            {filteredRoutes &&
+              (filteredRoutes.length > 0
                 ? t('nav.searchResultCount', { count: filteredRoutes.length })
                 : t('nav.noResults'))}
           </div>

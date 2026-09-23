@@ -693,6 +693,19 @@ describe('NavBar', () => {
       window.dispatchEvent(new Event('resize'));
     });
 
+    it('does not announce no results for whitespace-only search', () => {
+      const original = window.innerWidth;
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+      window.dispatchEvent(new Event('resize'));
+      renderNavBar();
+      fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.openMenu') }));
+      fireEvent.change(screen.getByPlaceholderText(i18n.t('nav.searchPlaceholder')), { target: { value: '  ' } });
+      expect(screen.queryByText(i18n.t('nav.noResults'))).toBeNull();
+      expect(screen.getByText(labelFor('nav.category.poker'))).toBeInTheDocument();
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
+      window.dispatchEvent(new Event('resize'));
+    });
+
     it('clears search when a game link is clicked', () => {
       const original = window.innerWidth;
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
