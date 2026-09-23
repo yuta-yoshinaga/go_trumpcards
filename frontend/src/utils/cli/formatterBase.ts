@@ -1,13 +1,7 @@
 import i18n from '../../i18n';
 import type { Card } from '../../types/card';
+import { isSuitDesign, suitSymbol } from '../cardAlt';
 import { isRequestedHint } from '../hintRequest';
-
-const SUIT_SYMBOLS: Record<string, string> = {
-  SPADE: '\u2660',
-  HEART: '\u2665',
-  DIAMOND: '\u2666',
-  CLOVER: '\u2663',
-};
 
 const VALUE_NAMES: Record<number, string> = {
   1: 'A',
@@ -21,7 +15,7 @@ const VALUE_NAMES: Record<number, string> = {
 export function formatCard(card: Card): string {
   if (card.label || card.glyph) return `${card.glyph ?? ''}${card.label ?? ''}`;
   if (card.design === 'JOKER') return '🃏';
-  const suit = SUIT_SYMBOLS[card.design] ?? '?';
+  const suit = isSuitDesign(card.design) ? suitSymbol(card.design) : '?';
   const value = VALUE_NAMES[card.value] ?? String(card.value);
   return `${suit}${value}`;
 }
