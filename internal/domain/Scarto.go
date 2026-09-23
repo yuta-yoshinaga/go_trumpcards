@@ -1061,11 +1061,6 @@ func (g *Scarto) GetDealerIdx() int { return g.dealerIdx }
 // SetDealerIdx 親インデックス設定 (テスト用)
 func (g *Scarto) SetDealerIdx(idx int) { g.dealerIdx = idx }
 
-// PlayerScartoValidateForTest はテスト用にスカルトの検証だけを実行する。
-func (g *Scarto) PlayerScartoValidateForTest(cardIndices []int) error {
-	return g.validateScarto(g.players[g.dealerIdx], cardIndices)
-}
-
 // GetScartoCount 親が捨てたスカルト札の枚数取得
 func (g *Scarto) GetScartoCount() int { return len(g.scarto) }
 
@@ -1164,32 +1159,8 @@ func (g *Scarto) GetPlayableIndices(playerIdx int) []int {
 
 // --- Test / helper public wrappers ---
 
-// TrickWinnerPublic 現在のトリックの勝者を返す (テスト用)。
-func (g *Scarto) TrickWinnerPublic() int { return g.trickWinner() }
-
-// LedSuitPublic 現在のトリックのリードスートを返す (テスト用)。
-func (g *Scarto) LedSuitPublic() int { return g.ledSuit() }
-
 // ScartoSettleDeal はディール精算の純粋関数の公開ラッパー (テスト用)。
 func ScartoSettleDeal(half [ScartoPlayerCnt]int) [ScartoPlayerCnt]int { return scartoSettleDeal(half) }
-
-// ScartoCardHalfPointsPublic はカードのハーフポイントを返す (テスト用)。
-func ScartoCardHalfPointsPublic(c *Card) int { return scartoCardHalfPoints(c) }
-
-// ScartoIsBoutPublic はカードがブーか返す (テスト用)。
-func ScartoIsBoutPublic(c *Card) bool { return scartoIsBout(c) }
-
-// ScartoIsTrumpPublic はカードが切り札か返す (テスト用)。
-func ScartoIsTrumpPublic(c *Card) bool { return scartoIsTrump(c) }
-
-// ScartoIsExcusePublic はカードがエクスキューズか返す (テスト用)。
-func ScartoIsExcusePublic(c *Card) bool { return scartoIsExcuse(c) }
-
-// ScartoDiscardablePublic はカードが通常スカルトに出せるか返す (テスト用)。
-func ScartoDiscardablePublic(c *Card) bool { return scartoDiscardable(c) }
-
-// BuildScartoDeckPublic は 78 枚デッキを構築する (テスト用)。
-func BuildScartoDeckPublic() []*Card { return buildScartoDeck() }
 
 // --- JSON ---
 

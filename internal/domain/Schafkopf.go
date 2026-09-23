@@ -817,12 +817,6 @@ func (g *Schafkopf) GetContract() SchafkopfContract { return g.contract }
 // GetSoloSuit は Solo で選ばれた切り札スートを返す。
 func (g *Schafkopf) GetSoloSuit() int { return g.soloSuit }
 
-// SetContractForTest は契約と Solo の切り札スートを設定する (テスト用)。
-func (g *Schafkopf) SetContractForTest(c SchafkopfContract, soloSuit int) {
-	g.contract = c
-	g.soloSuit = soloSuit
-}
-
 // suitID は**現在の契約における**トリック上のスート ID を返す。
 func (g *Schafkopf) suitID(card *Card) int {
 	if g.isTrump(card) {
