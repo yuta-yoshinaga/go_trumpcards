@@ -405,22 +405,12 @@ func (y *Yukon) canPlaceOnTableau(card *Card, col int) bool {
 	}
 	topCard := colCards[len(colCards)-1].Card
 	// 交互の色で降順
-	return y.isAlternateColor(card, topCard) && card.GetValue() == topCard.GetValue()-1
+	return isAlternateColor(card, topCard) && card.GetValue() == topCard.GetValue()-1
 }
 
 // canPlaceOnFoundation ファンデーションにカードを置けるか判定
 func (y *Yukon) canPlaceOnFoundation(card *Card, fIdx int) bool {
 	return canPlaceOnFoundationPile(y.foundation[fIdx], card)
-}
-
-// isAlternateColor 交互の色かどうか判定
-func (y *Yukon) isAlternateColor(card1, card2 *Card) bool {
-	return y.isBlack(card1) != y.isBlack(card2)
-}
-
-// isBlack 黒いカードかどうか
-func (y *Yukon) isBlack(card *Card) bool {
-	return card.GetDesign() == CardDesignSpade || card.GetDesign() == CardDesignClover
 }
 
 // autoFlipTableau タブローの最上部の裏カードを自動フリップ

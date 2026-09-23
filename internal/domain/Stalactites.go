@@ -612,7 +612,7 @@ func (f *Stalactites) tableauStackable(upper, lower *Card) bool {
 	if lower.GetValue() != upper.GetValue()-1 {
 		return false
 	}
-	return f.isAlternateColor(upper, lower)
+	return isAlternateColor(upper, lower)
 }
 
 // canPlaceOnFoundation ファンデーションにカードを置けるか判定
@@ -658,16 +658,6 @@ func (f *Stalactites) foundationIndexFor(card *Card) int {
 
 // GetBaseRank はファンデーションの開始ランク（配りごとに変わる）。
 func (f *Stalactites) GetBaseRank() int { return f.baseRank }
-
-// isAlternateColor 交互の色かどうか判定
-func (f *Stalactites) isAlternateColor(card1, card2 *Card) bool {
-	return f.isBlack(card1) != f.isBlack(card2)
-}
-
-// isBlack 黒いカードかどうか
-func (f *Stalactites) isBlack(card *Card) bool {
-	return card.GetDesign() == CardDesignSpade || card.GetDesign() == CardDesignClover
-}
 
 // isValidTableauSequence タブロー移動可能なシーケンスか判定する。
 // 通常のフリーセルでは降順かつ赤黒交互、Baker's Game では降順かつ同じスート。
