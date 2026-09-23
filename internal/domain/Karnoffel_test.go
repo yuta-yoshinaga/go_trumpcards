@@ -710,9 +710,6 @@ func TestKarnoffelConfigValidate(t *testing.T) {
 	if err := DefaultKarnoffelConfig().Validate(); err != nil {
 		t.Errorf("the default config must validate: %v", err)
 	}
-	if err := (KarnoffelConfig{CpuDifficulty: 9, TargetHands: 3}).Validate(); err == nil {
-		t.Error("a bad difficulty must not validate")
-	}
 	for _, n := range []int{KarnoffelMinTarget - 1, KarnoffelMaxTarget + 1} {
 		if err := (KarnoffelConfig{TargetHands: n}).Validate(); err == nil {
 			t.Errorf("%d hands must not validate", n)

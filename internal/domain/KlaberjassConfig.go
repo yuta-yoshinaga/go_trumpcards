@@ -2,15 +2,6 @@
 
 package domain
 
-// KlaberjassCpuDifficulty CPU の難易度レベル
-type KlaberjassCpuDifficulty int
-
-// Klaberjass の CPU 難易度定数
-const (
-	// KlaberjassCpuDifficultyNormal 中難易度 (v1 はこれのみ)
-	KlaberjassCpuDifficultyNormal KlaberjassCpuDifficulty = iota
-)
-
 // KlaberjassTargetScoreDefault は既定の目標点。
 //
 // **501 点。**issue #4395 は目標点を書いていない。
@@ -24,7 +15,6 @@ const (
 
 // KlaberjassConfig クラバーヤスのゲーム設定
 type KlaberjassConfig struct {
-	CpuDifficulty KlaberjassCpuDifficulty `json:"cd"`
 	// TargetScore は勝利に要る通算点。
 	TargetScore int `json:"ts"`
 	// AllowSchmeiss は「投げ」を許すか。
@@ -34,7 +24,6 @@ type KlaberjassConfig struct {
 // DefaultKlaberjassConfig デフォルト設定を返す
 func DefaultKlaberjassConfig() KlaberjassConfig {
 	return KlaberjassConfig{
-		CpuDifficulty: KlaberjassCpuDifficultyNormal,
 		TargetScore:   KlaberjassTargetScoreDefault,
 		AllowSchmeiss: true,
 	}
@@ -42,9 +31,5 @@ func DefaultKlaberjassConfig() KlaberjassConfig {
 
 // Validate 設定値のドメインバリデーション
 func (c KlaberjassConfig) Validate() error {
-	if err := ValidateRange("CPU difficulty", int(c.CpuDifficulty),
-		int(KlaberjassCpuDifficultyNormal), int(KlaberjassCpuDifficultyNormal)); err != nil {
-		return err
-	}
 	return ValidateRange("target score", c.TargetScore, KlaberjassTargetScoreMin, KlaberjassTargetScoreMax)
 }

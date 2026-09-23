@@ -55,8 +55,7 @@ func (p *LaughAndLieDownWebPresenter) buildBase(c interfaces.LaughAndLieDownGame
 		}
 	}
 
-	cfg := c.GetConfig()
-	resObj.Config = controller.LaughAndLieDownWebOutputConfig{CpuDifficulty: int(cfg.CpuDifficulty)}
+	resObj.Config = controller.LaughAndLieDownWebOutputConfig{}
 	resObj.Players = p.buildPlayersOutput(c)
 
 	// ヒントは通常のレスポンスにも載せる。HintOutput にしか設定しないと、

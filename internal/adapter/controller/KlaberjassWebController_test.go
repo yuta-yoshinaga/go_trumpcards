@@ -117,8 +117,7 @@ func TestKlaberjassWebController_ResetWithConfig(t *testing.T) {
 
 	t.Run("out-of-range values fall back to defaults", func(t *testing.T) {
 		target := 5
-		diff := 9
-		run(t, "cfg-2", &controller.KlaberjassWebConfig{TargetScore: &target, CpuDifficulty: &diff}, domain.DefaultKlaberjassConfig())
+		run(t, "cfg-2", &controller.KlaberjassWebConfig{TargetScore: &target}, domain.DefaultKlaberjassConfig())
 	})
 
 	// **config はワイヤ上で任意。**省略時に落ちるとフロントの reset が死ぬ。

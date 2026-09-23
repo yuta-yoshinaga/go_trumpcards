@@ -35858,9 +35858,6 @@ components:
             $ref: '#/components/schemas/ActionLogEntry'
         config:
           type: object
-          properties:
-            cpuDifficulty:
-              type: integer
         players:
           type: array
           items:
@@ -37032,8 +37029,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
             stake:
               type: integer
         players:
@@ -37146,8 +37141,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
             targetScore:
               type: integer
             allowSchmeiss:
@@ -38198,8 +38191,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
             targetHands:
               type: integer
         message:

@@ -46,7 +46,6 @@ func (p *KlaberjassWebPresenter) Output(g interfaces.KlaberjassGame, lastErr err
 	cfg := g.GetConfig()
 	resObj.TargetScore = cfg.TargetScore
 	resObj.Config = controller.KlaberjassWebOutputConfig{
-		CpuDifficulty: int(cfg.CpuDifficulty),
 		TargetScore:   cfg.TargetScore,
 		AllowSchmeiss: cfg.AllowSchmeiss,
 	}

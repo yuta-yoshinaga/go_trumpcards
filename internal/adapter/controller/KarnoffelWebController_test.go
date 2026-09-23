@@ -87,8 +87,8 @@ func TestKarnoffelWebController_ResetWithConfig(t *testing.T) {
 	}
 
 	t.Run("out-of-range values fall back to defaults", func(t *testing.T) {
-		diff, hands := 9, 99
-		run(t, "cfg-1", &controller.KarnoffelWebConfig{CpuDifficulty: &diff, TargetHands: &hands},
+		hands := 99
+		run(t, "cfg-1", &controller.KarnoffelWebConfig{TargetHands: &hands},
 			domain.DefaultKarnoffelConfig())
 	})
 
