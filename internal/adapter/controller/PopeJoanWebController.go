@@ -19,8 +19,7 @@ type PopeJoanWebInput struct {
 
 // PopeJoanWebConfig ポープ・ジョーンWeb設定
 type PopeJoanWebConfig struct {
-	CpuDifficulty *int `json:"cpuDifficulty,omitempty"`
-	TargetDeals   *int `json:"targetDeals,omitempty"`
+	TargetDeals *int `json:"targetDeals,omitempty"`
 }
 
 // PopeJoanWebOutputCompartment は盤の 1 区画。
@@ -94,16 +93,12 @@ type PopeJoanWebOutput struct {
 
 // PopeJoanWebOutputConfig ポープ・ジョーン設定アウトプット
 type PopeJoanWebOutputConfig struct {
-	CpuDifficulty int `json:"cpuDifficulty"`
-	TargetDeals   int `json:"targetDeals"`
+	TargetDeals int `json:"targetDeals"`
 }
 
 // ToConfig builds a PopeJoanConfig from the nested web config, applying bounds checking.
 func (c *PopeJoanWebConfig) ToConfig() domain.PopeJoanConfig {
 	cfg := domain.DefaultPopeJoanConfig()
-	cfg.CpuDifficulty = domain.PopeJoanCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty,
-		int(domain.PopeJoanCpuDifficultyNormal), int(domain.PopeJoanCpuDifficultyNormal),
-		int(cfg.CpuDifficulty)))
 	webutil.ApplyBoundedInt(&cfg.TargetDeals, c.TargetDeals, 1, 100)
 	return cfg
 }

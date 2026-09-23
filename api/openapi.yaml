@@ -36731,8 +36731,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
             targetDeals:
               type: integer
         players:
@@ -48762,9 +48760,6 @@ components:
       type: object
       description: Piquet configuration (Web request payload)
       properties:
-        cpuDifficulty:
-          type: integer
-          description: 0=Easy, 1=Normal, 2=Hard
         dealsPerPartie:
           type: integer
           minimum: 1
