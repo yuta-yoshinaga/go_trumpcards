@@ -406,14 +406,6 @@ func tressetteSortHand(p *TressettePlayer) {
 	})
 }
 
-// teamName チーム表示名 (0=A, 1=B)
-func teamName(team int) string {
-	if team == 0 {
-		return "A"
-	}
-	return "B"
-}
-
 // --- Card helpers ---
 
 // tressetteStrength トリックの強さ。3 が最強 (9)、4 が最弱 (0)。
