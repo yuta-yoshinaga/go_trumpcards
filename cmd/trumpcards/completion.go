@@ -164,7 +164,7 @@ func writeBashCompletion(w io.Writer) error {
             return
             ;;
         completion)
-            COMPREPLY=( $(compgen -W "bash zsh fish" -- "$cur") )
+            COMPREPLY=( $(compgen -W "bash zsh fish --no-hint" -- "$cur") )
             return
             ;;
         update)
@@ -247,7 +247,7 @@ _trumpcards() {
         args)
             case "${words[1]}" in
                 completion)
-                    _values 'shell' bash zsh fish
+                    _values 'shell' bash zsh fish --no-hint
                     ;;
                 update)
                     _arguments \
@@ -313,7 +313,7 @@ complete -c trumpcards -l start -x -a '%[2]s' -d 'Initial game for interactive m
 # Subcommands
 %[1]s
 # completion subcommand
-complete -c trumpcards -n '__fish_seen_subcommand_from completion' -a 'bash zsh fish'
+complete -c trumpcards -n '__fish_seen_subcommand_from completion' -a 'bash zsh fish --no-hint'
 
 # update subcommand
 complete -c trumpcards -n '__fish_seen_subcommand_from update' -l yes -s y -d 'Skip confirmation prompt'

@@ -849,7 +849,9 @@ func parseSubFlagsWithArgs(name string, args []string, setup func(*flag.FlagSet)
 // parseSubFlagsTo is the testable core of parseSubFlags: it parses args with a
 // subcommand FlagSet, wires the shared builtin help text as the usage, and
 // writes help/diagnostics to the given streams. takesPositional suppresses the
-// leftover-args warning for subcommands whose handler consumes fs.Args().
+// leftover-args warning for subcommands whose handler consumes fs.Args(). When
+// takesPositional is true, flags and positional arguments may appear in any
+// order before `--`; arguments after `--` are always positional.
 func parseSubFlagsTo(name string, args []string, setup func(*flag.FlagSet), stdout, stderr io.Writer, takesPositional bool) (*flag.FlagSet, int, bool) {
 	fs := flag.NewFlagSet(name, flag.ContinueOnError)
 	fs.SetOutput(io.Discard) // suppress Go's raw English error/usage text
@@ -867,14 +869,41 @@ func parseSubFlagsTo(name string, args []string, setup func(*flag.FlagSet), stdo
 	// where the ErrHelp branch below already calls printHelp). Mirrors the
 	// top-level flag.CommandLine.Usage = func(){} in run(). See issue #4307.
 	fs.Usage = func() {}
-	if err := fs.Parse(args); err != nil {
-		if errors.Is(err, flag.ErrHelp) {
-			printHelp()
-			return nil, 0, false
+	parse := func(parseArgs []string) (bool, int) {
+		if err := fs.Parse(parseArgs); err != nil {
+			if errors.Is(err, flag.ErrHelp) {
+				printHelp()
+				return false, 0
+			}
+			_, _ = fmt.Fprintln(stderr, i18n.Tf("cliSubcommandFlagError", "cmd", name, "err", err.Error()))
+			_, _ = fmt.Fprintln(stderr, i18n.Tf("cliTryHelp", "cmd", name))
+			return false, 2
 		}
-		_, _ = fmt.Fprintln(stderr, i18n.Tf("cliSubcommandFlagError", "cmd", name, "err", err.Error()))
-		_, _ = fmt.Fprintln(stderr, i18n.Tf("cliTryHelp", "cmd", name))
-		return nil, 2, false
+		return true, 0
+	}
+	if takesPositional {
+		positional := make([]string, 0, len(args))
+		head, tail := args, []string(nil)
+		if sep := slices.Index(args, "--"); sep >= 0 {
+			head, tail = args[:sep], args[sep+1:]
+		}
+		for len(head) > 0 {
+			if ok, code := parse(head); !ok {
+				return nil, code, false
+			}
+			remaining := fs.Args()
+			if len(remaining) == 0 {
+				break
+			}
+			positional = append(positional, remaining[0])
+			head = remaining[1:]
+		}
+		positional = append(positional, tail...)
+		if ok, code := parse(append([]string{"--"}, positional...)); !ok {
+			return nil, code, false
+		}
+	} else if ok, code := parse(args); !ok {
+		return nil, code, false
 	}
 	if fs.NArg() > 0 && !takesPositional {
 		_, _ = fmt.Fprintln(stderr, i18n.Tf("cliExtraArgsWarning", "args", strings.Join(fs.Args(), " ")))
