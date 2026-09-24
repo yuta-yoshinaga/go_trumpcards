@@ -41,7 +41,7 @@ const drawPhaseState: ConquianResponse = {
   tookDiscard: false,
   message: '',
   messageCode: '',
-  config: { cpuDifficulty: 1, targetWins: 3 },
+  config: { targetWins: 3 },
 };
 
 const meldPhaseState: ConquianResponse = {
@@ -167,7 +167,6 @@ describe('ConquianPage', () => {
     renderWithProviders(<ConquianPage />);
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
-        cpuDifficulty: 1,
         targetWins: 3,
       }),
     );
@@ -438,7 +437,6 @@ describe('ConquianPage', () => {
 
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
-        cpuDifficulty: 1,
         targetWins: 3,
       }),
     );
@@ -450,7 +448,7 @@ describe('ConquianPage', () => {
 
     fireEvent.click(screen.getByText('設定'));
     const selects = screen.getAllByRole('combobox');
-    fireEvent.change(selects[1], { target: { value: '5' } });
+    fireEvent.change(selects[0], { target: { value: '5' } });
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(drawPhaseState);
@@ -459,7 +457,6 @@ describe('ConquianPage', () => {
 
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
-        cpuDifficulty: 1,
         targetWins: 5,
       }),
     );

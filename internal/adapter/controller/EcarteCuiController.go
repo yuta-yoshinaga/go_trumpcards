@@ -33,7 +33,6 @@ func NewEcarteCuiController(ei usecase.EcarteInteractorIF) *EcarteCuiController 
 //	d / discard <i j k>      → 捨て札を選んで引き直す
 //	p / play <i>             → カードをプレイ
 //	n / next / nextround     → 次のディールへ
-//	sd / setdifficulty <0-2> → CPU難易度設定
 //	tg / settarget <n>       → ターゲットスコア設定
 //	h / hint                 → ヒント表示
 //	log / l                  → 棋譜表示
@@ -48,7 +47,7 @@ func (c *EcarteCuiController) Exec(command string) string {
 			"pr", "propose", "st", "stand", "a", "accept", "rf", "refuse",
 			"d", "discard", "p", "play",
 			"n", "next", "nextround",
-			"sd", "setdifficulty", "tg", "settarget",
+			"tg", "settarget",
 			"h", "hint", "log", "l",
 		},
 		func(cmd string, args []string) (string, bool) {
@@ -74,12 +73,6 @@ func (c *EcarteCuiController) Exec(command string) string {
 				return cuiutil.WithParsedIntKeys(args, "cardIndexRequired", "invalidCardIndex", cuiutil.NoMin, cuiutil.NoMax, c.ei.Play)
 			case "n", "next", "nextround":
 				return c.ei.NextRound(), true
-			case "sd", "setdifficulty":
-				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
-					cfg := c.ei.GetConfig()
-					cfg.CpuDifficulty = domain.EcarteCpuDifficulty(v)
-					return c.ei.ResetWithConfig(cfg)
-				})
 			case "tg", "settarget":
 				return cuiutil.WithParsedIntKeys(args, "targetScoreRequired", "invalidTargetScore", 1, math.MaxInt, func(v int) string {
 					cfg := c.ei.GetConfig()

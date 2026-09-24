@@ -106,25 +106,6 @@ func TestConquianCuiController_Exec(t *testing.T) {
 		m.AssertCalled(t, "NextRound")
 	})
 
-	t.Run("setdifficulty sd valid", func(t *testing.T) {
-		m := newMock()
-		c := controller.NewConquianCuiController(m)
-		assert.Equal(t, mockOutput, c.Exec("sd 2"))
-		expected := domain.DefaultConquianConfig()
-		expected.CpuDifficulty = domain.ConquianCpuDifficultyHard
-		m.AssertCalled(t, "ResetWithConfig", expected)
-	})
-
-	t.Run("setdifficulty sd no args", func(t *testing.T) {
-		result := controller.NewConquianCuiController(newMock()).Exec("sd")
-		assert.Contains(t, result, msgCpuDifficultyRequired())
-	})
-
-	t.Run("setdifficulty sd over 2", func(t *testing.T) {
-		result := controller.NewConquianCuiController(newMock()).Exec("sd 3")
-		assert.Equal(t, msgInvalidCpuDifficulty("3"), result)
-	})
-
 	t.Run("setwins sw valid", func(t *testing.T) {
 		m := newMock()
 		c := controller.NewConquianCuiController(m)

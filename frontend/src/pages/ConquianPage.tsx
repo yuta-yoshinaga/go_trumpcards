@@ -19,7 +19,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
-import { CPU_DIFFICULTY_OPTIONS, TARGET_WINS_OPTIONS, useConquianGame } from '../hooks/useConquianGame';
+import { TARGET_WINS_OPTIONS, useConquianGame } from '../hooks/useConquianGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
@@ -174,10 +174,9 @@ function ConquianPageContent() {
   const handleManualReset = useCallback(() => {
     hideActionLog();
     void gameExec('reset', undefined, {
-      cpuDifficulty: conquianConfig.cpuDifficulty,
       targetWins: conquianConfig.targetWins,
     });
-  }, [gameExec, hideActionLog, conquianConfig.cpuDifficulty, conquianConfig.targetWins]);
+  }, [gameExec, hideActionLog, conquianConfig.targetWins]);
 
   const kbdConfirmAction = useCallback(() => {
     if (isMeldPhase) handleMeldSelected();
@@ -236,17 +235,6 @@ function ConquianPageContent() {
             groups={[
               {
                 items: [
-                  {
-                    type: 'select',
-                    id: 'cpuDifficulty',
-                    label: t('settings.cpuDifficulty'),
-                    value: conquianConfig.cpuDifficulty,
-                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
-                      value: o.value,
-                      label: t(`settings.${o.label.toLowerCase()}`),
-                    })),
-                    onSelect: (v) => handleConfigChange('cpuDifficulty', v),
-                  },
                   {
                     type: 'select',
                     id: 'targetWins',

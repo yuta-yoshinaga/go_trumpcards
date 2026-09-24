@@ -72,7 +72,7 @@ func TestConquianInteractor_ResetWithConfig(t *testing.T) {
 		pMock := cqNewPresenterMock()
 		gameMock := new(interfaces.MockConquianGame)
 		ci := usecase.NewConquianInteractor(gameMock, pMock)
-		bad := domain.ConquianConfig{CpuDifficulty: 99, TargetWins: 1}
+		bad := domain.ConquianConfig{TargetWins: 0}
 		out := ci.ResetWithConfig(bad)
 		assert.Equal(t, cqMockOut, out)
 		gameMock.AssertNotCalled(t, "Reset")

@@ -174,18 +174,14 @@ func TestEcarteWebConfig_ToConfig(t *testing.T) {
 		assert.Equal(t, domain.DefaultEcarteConfig(), input.ToConfig())
 	})
 
-	t.Run("explicit hard difficulty and target", func(t *testing.T) {
-		diff := int(domain.EcarteCpuDifficultyHard)
+	t.Run("custom target", func(t *testing.T) {
 		target := 10
-		c := &controller.EcarteWebConfig{CpuDifficulty: &diff, TargetScore: &target}
-		got := c.ToConfig()
-		assert.Equal(t, domain.EcarteCpuDifficultyHard, got.CpuDifficulty)
-		assert.Equal(t, 10, got.TargetScore)
+		c := &controller.EcarteWebConfig{TargetScore: &target}
+		assert.Equal(t, 10, c.ToConfig().TargetScore)
 	})
-
-	t.Run("out-of-range difficulty clamps to default", func(t *testing.T) {
-		diff := 99
-		c := &controller.EcarteWebConfig{CpuDifficulty: &diff}
-		assert.Equal(t, domain.DefaultEcarteConfig().CpuDifficulty, c.ToConfig().CpuDifficulty)
+	t.Run("out-of-range target clamps to default", func(t *testing.T) {
+		target := 99
+		c := &controller.EcarteWebConfig{TargetScore: &target}
+		assert.Equal(t, domain.DefaultEcarteConfig().TargetScore, c.ToConfig().TargetScore)
 	})
 }

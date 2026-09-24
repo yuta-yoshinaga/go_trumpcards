@@ -53,7 +53,7 @@ describe('EcartePage', () => {
     renderWithProviders(<EcartePage />);
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', {
-        config: { cpuDifficulty: 1, targetScore: 5 },
+        config: { targetScore: 5 },
       }),
     );
   });

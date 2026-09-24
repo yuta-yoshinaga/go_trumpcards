@@ -3675,7 +3675,6 @@ var gameRegistry = []GameRegistryEntry{
 				"ecarte.helpNext", "ecarte.helpHint",
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
-			SettingKeys:       []string{"ecarte.helpSetDifficulty"},
 		}),
 	BindCuiFor("threecardbrag",
 		func() usecase.ThreeCardBragInteractorIF {
@@ -3806,7 +3805,6 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys: []string{
-				"conquian.helpSetDifficulty",
 				"conquian.helpSetWins",
 			},
 		}),

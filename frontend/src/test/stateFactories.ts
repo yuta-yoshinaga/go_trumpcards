@@ -3228,7 +3228,7 @@ const baseEcarteState: EcarteResponse = {
   winnerIdx: -1,
   hint: null,
   message: '',
-  config: { cpuDifficulty: 1, targetScore: 5 },
+  config: { targetScore: 5 },
 };
 
 /**

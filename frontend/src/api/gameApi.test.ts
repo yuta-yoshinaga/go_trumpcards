@@ -3070,19 +3070,19 @@ describe('gameApi', () => {
       roundWinnerIdx: -1,
       tookDiscard: false,
       message: '',
-      config: { cpuDifficulty: 1, targetWins: 3 },
+      config: { targetWins: 3 },
     };
 
     it('calls the correct URL with reset command and config', async () => {
       mockFetch.mockReturnValue(makeResponse(payload));
-      const result = await conquianApi.exec('reset', undefined, { cpuDifficulty: 1, targetWins: 3 });
+      const result = await conquianApi.exec('reset', undefined, { targetWins: 3 });
       expect(mockFetch).toHaveBeenCalledWith('/conquian/exec', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           command: 'reset',
           cardIndex: undefined,
-          config: { cpuDifficulty: 1, targetWins: 3 },
+          config: { targetWins: 3 },
           meldGroups: undefined,
           sessionId,
         }),

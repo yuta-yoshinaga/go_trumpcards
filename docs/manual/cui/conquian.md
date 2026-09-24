@@ -71,7 +71,6 @@ flowchart TD
 | `meld <idx...>` | `m <idx...>` | テーブルにメルドを並べる（複数グループは `;` で区切る） |
 | `discard <idx>` | `d <idx>` | カードを捨てる（インデックス指定） |
 | `nextround` | `nr` | 次のラウンドへ |
-| `setdifficulty <0-2>` | `sd <0-2>` | CPU難易度設定（0=Easy, 1=Normal, 2=Hard） |
 | `setwins <n>` | `sw <n>` | 目標勝利数設定 |
 | `log` | `l` | 棋譜表示 |
 | `quit` | `q` | ゲーム終了 |

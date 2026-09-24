@@ -7,16 +7,8 @@ import { useGameConfig } from './useGameConfig';
 
 /** Default Conquian game configuration. */
 export const DEFAULT_CONQUIAN_CONFIG: ConquianConfig = {
-  cpuDifficulty: 1,
   targetWins: 3,
 };
-
-/** CPU difficulty level options for Conquian. */
-export const CPU_DIFFICULTY_OPTIONS = [
-  { value: 0, label: 'Easy' },
-  { value: 1, label: 'Normal' },
-  { value: 2, label: 'Hard' },
-] as const;
 
 /** Available target-wins (match length) options for Conquian. */
 export const TARGET_WINS_OPTIONS = [1, 3, 5, 7] as const;

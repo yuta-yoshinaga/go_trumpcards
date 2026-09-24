@@ -56,8 +56,7 @@ func (p *EcarteWebPresenter) buildBase(b interfaces.EcarteGame) *controller.Ecar
 
 	cfg := b.GetConfig()
 	resObj.Config = controller.EcarteWebOutputConfig{
-		CpuDifficulty: int(cfg.CpuDifficulty),
-		TargetScore:   cfg.TargetScore,
+		TargetScore: cfg.TargetScore,
 	}
 
 	cnt := b.GetPlayerCnt()
