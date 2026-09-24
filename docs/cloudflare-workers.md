@@ -38,28 +38,23 @@ Build: `make build-worker-{solo,casino,classic,extra,extra2,extra3,extra4,extra5
 ## ローカルでサイズを実測する
 
 ADR-0032 の時点では TinyGo をローカルに持たず CI のレポート頼りだったが、いまは手元で測れる
-（Go 1.27.1 + TinyGo 0.42.0、CI と同じ組み合わせ）。
+（Go 1.25.8 + TinyGo 0.42.0、CI と同じ組み合わせ）。
 
 ```sh
-go install golang.org/dl/go1.27.1@latest
-go1.27.1 download
-export PATH="$HOME/sdk/go1.27.1/bin:$HOME/.local/opt/tinygo/bin:$PATH"
+export PATH="$HOME/sdk/go1.25.8/bin:$HOME/.local/opt/tinygo/bin:$PATH"
 export GOTOOLCHAIN=local            # ← 必須
 mkdir -p workers/<w>/build
 go run github.com/syumai/workers/cmd/workers-assets-gen -mode=tinygo -o workers/<w>/build
-GOEXPERIMENT=nojsonv2 tinygo build -tags <w> -o workers/<w>/build/app.wasm -target wasm \
+tinygo build -tags <w> -o workers/<w>/build/app.wasm -target wasm \
   -stack-size=128KB -no-debug -opt=z ./cmd/workers/<w>
 wasm-opt --enable-bulk-memory --enable-nontrapping-float-to-int --enable-sign-ext \
   -Oz workers/<w>/build/app.wasm -o workers/<w>/build/app.wasm
 gzip -c workers/<w>/build/app.wasm | wc -c    # 1,048,576 と比較する
 ```
 
-- **`GOTOOLCHAIN=local` を忘れないこと。** `go.mod` に `toolchain go1.27.1` の行があると、ローカルの Go が別バージョンでも `go` コマンドは自動でそのツールチェーンに切り替わる。
-  `GOTOOLCHAIN=local` で PATH 上の go1.27.1 を固定しないと、CI とは別のツールチェーンでビルドされ、サイズが一致しなくなる。CI も同じ理由で明示している。
+- **`GOTOOLCHAIN=local` を忘れないこと。** `go.mod` の `toolchain go1.27.1` により Go 1.25 でも
+  Go 1.27 に自動アップグレードされ、CI（Go 1.25）とは別のツールチェーンでビルドされてサイズが一致しなくなる。
+  CI も同じ理由で明示している。
 - **`wasm-opt` 前の値で判断しない。** extra は 1,077,248 → 1,029,817 と 47 KB 縮む。最適化前だと
   上限超過に見える。
 - `make` が無い環境では上のコマンドが Makefile レシピの展開そのもの。
-
-Go 1.27 では `encoding/json` の v2 実装により Worker が約 140 KB 太り、1 MB の gzip 上限を超える。
-そのため Worker のビルドだけ `GOEXPERIMENT=nojsonv2` を指定し、サーバーや CLI では標準の json v2 を使う。
-この実験フラグは将来の Go で削除予定のため、削除前に json 依存の削減または Worker の追加が必要になる（[ADR-0042](adr/0042-workers-go-127-nojsonv2.md)）。
