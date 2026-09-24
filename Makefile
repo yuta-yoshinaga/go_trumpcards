@@ -25,7 +25,8 @@ define build_worker
 	# from shipping in every worker and keeps each binary under the 1 MB gzip
 	# free-tier limit (see issue #2126). Non-worker builds (server, CLI, tests)
 	# match `!js || !wasm`, so they still include all games.
-	# Go 1.27 の encoding/json v2 は各 Worker を約 140KB 太らせ 1MB 上限を超えるため Worker だけ v1 実装でビルドする。GOEXPERIMENT=nojsonv2 は将来の Go で削除予定、ADR-0042。
+	# Go 1.27's encoding/json v2 adds ~140KB gzip to every Worker and pushes them over the 1MB limit,
+	# so Workers build with the v1 implementation. GOEXPERIMENT=nojsonv2 is slated for removal in a future Go (ADR-0042).
 	GOEXPERIMENT=nojsonv2 $(TINYGO) build -tags $(1) -o workers/$(1)/build/app.wasm -target wasm -stack-size=128KB -no-debug -opt=z ./cmd/workers/$(1)
 	$(WASM_OPT) --enable-bulk-memory --enable-nontrapping-float-to-int --enable-sign-ext -Oz workers/$(1)/build/app.wasm -o workers/$(1)/build/app.wasm
 	@RAW=$$(stat -c%s workers/$(1)/build/app.wasm); GZIP=$$(gzip -c workers/$(1)/build/app.wasm | wc -c); \

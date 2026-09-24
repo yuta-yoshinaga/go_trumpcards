@@ -54,8 +54,8 @@ wasm-opt --enable-bulk-memory --enable-nontrapping-float-to-int --enable-sign-ex
 gzip -c workers/<w>/build/app.wasm | wc -c    # 1,048,576 と比較する
 ```
 
-- **`GOTOOLCHAIN=local` を忘れないこと。** CI と同じ Go 1.27.1 の明示したツールチェーンで測定する。
-  CI も同じ理由で明示している。
+- **`GOTOOLCHAIN=local` を忘れないこと。** `go.mod` に `toolchain go1.27.1` の行があると、ローカルの Go が別バージョンでも `go` コマンドは自動でそのツールチェーンに切り替わる。
+  `GOTOOLCHAIN=local` で PATH 上の go1.27.1 を固定しないと、CI とは別のツールチェーンでビルドされ、サイズが一致しなくなる。CI も同じ理由で明示している。
 - **`wasm-opt` 前の値で判断しない。** extra は 1,077,248 → 1,029,817 と 47 KB 縮む。最適化前だと
   上限超過に見える。
 - `make` が無い環境では上のコマンドが Makefile レシピの展開そのもの。
