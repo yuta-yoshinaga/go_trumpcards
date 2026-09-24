@@ -116,7 +116,7 @@ constant in `frontend/src/api/gameApi.ts`. For the full set of registration poin
 
 ### TinyGo constraints
 
-- `go.mod` specifies `go 1.25.8` with `toolchain go1.27.1` for local development. Workers build with Go 1.27 and `GOEXPERIMENT=nojsonv2` to stay under the gzip size limit (ADR-0042)
+- `go.mod` specifies `go 1.27.0` with `toolchain go1.27.1` for local development. Workers build with Go 1.27 and `GOEXPERIMENT=nojsonv2` to stay under the gzip size limit (ADR-0042)
 - Mock files require `//go:build test` tag to exclude `testify/mock` from WASM builds
 - `net/http` method-prefixed routing (`"POST /path"`) is not supported; Worker entry points use plain `"/path"` patterns
 

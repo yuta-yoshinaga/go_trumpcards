@@ -6,7 +6,7 @@ Go implementations of 383 trump card game algorithms (blackjack, poker, hearts, 
 
 | Tool | Version |
 |------|---------|
-| [Go](https://go.dev/) | 1.27.x (`go.mod` declares `go 1.25.8`; Workers build with Go 1.27 and `GOEXPERIMENT=nojsonv2` (ADR-0042); `toolchain go1.27.1`) |
+| [Go](https://go.dev/) | 1.27.x (`go.mod` declares `go 1.27.0`; Workers build with Go 1.27 and `GOEXPERIMENT=nojsonv2` (ADR-0042); `toolchain go1.27.1`) |
 | [Node.js](https://nodejs.org/) | 24.x |
 | [Bun](https://bun.sh/) | 1.3.10 |
 | [jq](https://jqlang.github.io/jq/) | any (required by the `.claude/settings.json` commit-gate hooks — they silently no-op without it) |

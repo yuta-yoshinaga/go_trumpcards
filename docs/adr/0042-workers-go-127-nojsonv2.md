@@ -16,7 +16,7 @@ PR #8043 で staging の全 Worker が `runtime.getRandomData` の不足によ�
 
 ## Decision
 
-Worker は Go 1.27.1 と `GOEXPERIMENT=nojsonv2` でビルドし、Workers glue を `github.com/syumai/workers-go` v0.36.0 から生成する。go directive は `1.25.8` のまま維持する。
+Worker は Go 1.27.1 と `GOEXPERIMENT=nojsonv2` でビルドし、Workers glue を `github.com/syumai/workers-go` v0.36.0 から生成する。go directive は `1.25.8` のまま維持する。(2026-09-25 追記: #8013 段階 3 で go directive を `1.27.0` に上げた。Worker は既に Go 1.27 でビルドしているため、この部分の制約は解消した。)
 
 ## Consequences
 
