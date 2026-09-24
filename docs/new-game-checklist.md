@@ -33,7 +33,7 @@ When adding a new game, follow this checklist to avoid post-feat fix commits. Co
    - **(c)** `games.RegisterKVGame("<name>", games.Category…, …)` in the matching sub-package under `internal/infrastructure/games/{casino,classic,solo,extra,extra2,extra3,extra4,extra5,extra6,extra7}/` — the per-category split is what keeps each Cloudflare Worker WASM binary under the 1 MB gzipped free-tier limit, so the sub-package must match the `Category` in (a). `RegisterKVGame` panics at init if they disagree (via the underlying `games.BindWorker`), and `TestWorkerRegistrationsCoverAllGames` (in `registry_worker_consistency_test.go`) parses each sub-package source with `go/parser` and fails the build if the registry and a category's `RegisterKVGame` calls disagree (per ADR-0031, option 3).
    - **(d)** `GameRegistryEntry` entry in the `gameRegistry` slice in `internal/infrastructure/ui/GameManager.go` — the CLI-side wiring. Always use the `cuiEntry` helper with a `CuiHelpSpec`. For the standard help template, fill in `TitleKey`/`CommandKeys`/`SettingKeys`; for hand-authored help that does not fit the scaffold, set `CuiHelpSpec.Body` to the full help lines.
 6b. **Frontend worker URL**: verify `frontend/src/api/gameExec.ts` `workerUrl` maps the new game to the same worker name as its `Category`.
-7. **Run `goimports -w` and `golangci-lint run ./...`** on all new files
+7. **Run `goimports -w` and `golangci-lint run --build-tags test ./...`** on all new files
 8. **80%+ branch coverage** for all new packages
 
 ## Frontend (React)

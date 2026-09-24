@@ -16,9 +16,9 @@
 Goサーバーをバックグラウンドで起動する。他セッション・委譲のプロセスには触れず、このコマンドが起動したサーバーだけを停止する。
 
 ```sh
-[ -f /tmp/ux-review-server.pid ] && kill "$(cat /tmp/ux-review-server.pid)" 2>/dev/null || true
+[ -f /tmp/mobile-ux-review-server.pid ] && kill "$(cat /tmp/mobile-ux-review-server.pid)" 2>/dev/null || true
 PORT=8080 go run ./cmd/server &
-echo $! > /tmp/ux-review-server.pid
+echo $! > /tmp/mobile-ux-review-server.pid
 # サーバー起動待ち（最大10秒）
 for i in $(seq 1 10); do curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/ | grep -q 200 && break; sleep 1; done
 ```
@@ -183,8 +183,8 @@ gh issue comment <ISSUE_NUMBER> --body "## スクリーンショット（iPhone 
 
 ```sh
 agent-browser close
-[ -f /tmp/ux-review-server.pid ] && kill "$(cat /tmp/ux-review-server.pid)" 2>/dev/null || true
-rm -f /tmp/ux-review-server.pid
+[ -f /tmp/mobile-ux-review-server.pid ] && kill "$(cat /tmp/mobile-ux-review-server.pid)" 2>/dev/null || true
+rm -f /tmp/mobile-ux-review-server.pid
 rm -rf /tmp/mobile-screenshots
 ```
 
