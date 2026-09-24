@@ -52,8 +52,8 @@ wasm-opt --enable-bulk-memory --enable-nontrapping-float-to-int --enable-sign-ex
 gzip -c workers/<w>/build/app.wasm | wc -c    # 1,048,576 と比較する
 ```
 
-- **`GOTOOLCHAIN=local` を忘れないこと。** `go.mod` の `toolchain go1.26.0` により Go 1.25 でも
-  Go 1.26 に自動アップグレードされ、CI（Go 1.25）とは別のツールチェーンでビルドされてサイズが一致しなくなる。
+- **`GOTOOLCHAIN=local` を忘れないこと。** `go.mod` の `toolchain go1.27.1` により Go 1.25 でも
+  Go 1.27 に自動アップグレードされ、CI（Go 1.25）とは別のツールチェーンでビルドされてサイズが一致しなくなる。
   CI も同じ理由で明示している。
 - **`wasm-opt` 前の値で判断しない。** extra は 1,077,248 → 1,029,817 と 47 KB 縮む。最適化前だと
   上限超過に見える。
