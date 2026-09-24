@@ -1,4 +1,4 @@
-//go:build test || extra8 || extra9 || extra10 || extra11
+//go:build test
 
 package games_test
 
