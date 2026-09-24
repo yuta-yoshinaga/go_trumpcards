@@ -164,10 +164,10 @@ var registry = []*Game{
 	{Name: "crazypineapple", Category: CategoryCasino},
 	{Name: "irishpoker", Category: CategoryCasino},
 	{Name: "hearts", Category: CategoryExtra7},
-	{Name: "memory", Category: CategorySolo},
+	{Name: "memory", Category: CategoryExtra9},
 	{Name: "klondike", Category: CategorySolo},
 	{Name: "freecell", Category: CategorySolo},
-	{Name: "seahaventowers", Category: CategorySolo},
+	{Name: "seahaventowers", Category: CategoryExtra9},
 	{Name: "cruel", Category: CategorySolo},
 	{Name: "baccarat", Category: CategoryCasino},
 	{Name: "spades", Category: CategoryClassic},
@@ -201,7 +201,7 @@ var registry = []*Game{
 	{Name: "golf", Category: CategorySolo},
 	{Name: "pigtail", Category: CategoryExtra2},
 	{Name: "sevencardstud", Category: CategoryCasino},
-	{Name: "clocksolitaire", Category: CategorySolo},
+	{Name: "clocksolitaire", Category: CategoryExtra9},
 	{Name: "durak", Category: CategoryClassic},
 	{Name: "fortythieves", Category: CategorySolo},
 	{Name: "paigow", Category: CategoryExtra6},
@@ -216,7 +216,7 @@ var registry = []*Game{
 	{Name: "whist", Category: CategoryClassic},
 	{Name: "catchten", Category: CategoryClassic},
 	{Name: "letitride", Category: CategoryExtra4},
-	{Name: "pokersquares", Category: CategorySolo},
+	{Name: "pokersquares", Category: CategoryExtra9},
 	{Name: "pageone", Category: CategoryClassic},
 	{Name: "reddog", Category: CategoryExtra7},
 	{Name: "badugi", Category: CategoryCasino},
@@ -262,7 +262,7 @@ var registry = []*Game{
 	// American Toad is the two-deck Canfield: a 20-card reserve, eight columns,
 	// and eight foundations that wrap from a player-independent base rank.
 	{Name: "americantoad", Category: CategoryExtra2},
-	{Name: "spiteandmalice", Category: CategoryExtra2},
+	{Name: "spiteandmalice", Category: CategoryExtra9},
 	// Skat is a trick-taking game.
 	{Name: "skat", Category: CategoryExtra6},
 	// Congress deals one card to each of eight piles and keeps the other 96 as
@@ -276,10 +276,10 @@ var registry = []*Game{
 	{Name: "braid", Category: CategoryExtra2},
 	// Pontoon deals every hand face down, including the banker's, and ranks a
 	// two-card 21 above a five-card trick above any total.
-	{Name: "pontoon", Category: CategoryExtra},
+	{Name: "pontoon", Category: CategoryExtra9},
 	// Sette e Mezzo plays to 7.5 on a 40-card deck where face cards are worth
 	// half a point, and the king of coins is wild for 0.5 or 1-7.
-	{Name: "settemezzo", Category: CategoryExtra},
+	{Name: "settemezzo", Category: CategoryExtra9},
 	// Niu Niu finds three of five cards summing to a multiple of ten; the
 	// remaining pair's last digit is the rank, and the multiplier follows it.
 	{Name: "niuniu", Category: CategoryExtra3},
@@ -313,7 +313,7 @@ var registry = []*Game{
 	// a "trump" is not the same thing as "a card of the trump suit".
 	{Name: "loba", Category: CategoryExtra2},
 
-	{Name: "sjavs", Category: CategoryExtra2},
+	{Name: "sjavs", Category: CategoryExtra9},
 
 	{Name: "laughandliedown", Category: CategoryExtra2},
 
@@ -327,7 +327,7 @@ var registry = []*Game{
 	{Name: "pitch", Category: CategoryExtra5},
 	{Name: "dragontiger", Category: CategoryExtra4},
 	{Name: "blackjackswitch", Category: CategoryExtra8},
-	{Name: "montecarlo", Category: CategorySolo},
+	{Name: "montecarlo", Category: CategoryExtra9},
 	{Name: "contractrummy", Category: CategoryExtra},
 	{Name: "ultimatetexasholdem", Category: CategoryCasino},
 	{Name: "crescent", Category: CategorySolo},
@@ -362,7 +362,7 @@ var registry = []*Game{
 	{Name: "rummy500", Category: CategoryExtra},
 	{Name: "eightoff", Category: CategorySolo},
 	{Name: "russianpoker", Category: CategoryExtra8},
-	{Name: "penguin", Category: CategorySolo},
+	{Name: "penguin", Category: CategoryExtra9},
 	{Name: "chinesepoker", Category: CategoryCasino},
 	{Name: "sixcardgolf", Category: CategoryExtra2},
 	// Dou Dizhu (fight the landlord) is a 3-player climbing/shedding game.
@@ -377,17 +377,17 @@ var registry = []*Game{
 	// Thirty-One (Scat) is a draw-and-discard pub game.
 	{Name: "thirtyone", Category: CategoryExtra7},
 	// Tien Len (Vietnamese Big Two) is a shedding game.
-	{Name: "tienlen", Category: CategorySolo},
+	{Name: "tienlen", Category: CategoryExtra9},
 	// Osmosis (浸透) is a foundation-only solitaire.
 	{Name: "osmosis", Category: CategorySolo},
 	// 500 (Five Hundred) is a trick-taking game (auction + kitty exchange + bowers/joker).
 	{Name: "fivehundred", Category: CategoryExtra7},
 	// Schnapsen / Sixty-Six is a 2-player trick-taking game (marriages + draw from stock).
-	{Name: "schnapsen", Category: CategorySolo},
+	{Name: "schnapsen", Category: CategoryExtra9},
 	// Burraco is a Canasta-derived rummy game.
 	{Name: "burraco", Category: CategoryExtra7},
 	// Yaniv (ヤニブ) is a draw-and-discard hand-reduction game.
-	{Name: "yaniv", Category: CategorySolo},
+	{Name: "yaniv", Category: CategoryExtra9},
 	// Gong Zhu (拱猪 / Chinese Hearts) is a trick-taking game with positive and negative
 	// point cards, a doubling card, and an exposure phase.
 	{Name: "gongzhu", Category: CategoryExtra4},
@@ -442,7 +442,7 @@ var registry = []*Game{
 	{Name: "nap", Category: CategoryExtra8},
 	{Name: "preference", Category: CategoryExtra4},
 	{Name: "ganjifa", Category: CategoryExtra},
-	{Name: "vira", Category: CategoryExtra},
+	{Name: "vira", Category: CategoryExtra9},
 	{Name: "spoilfive", Category: CategoryExtra8},
 	// Court Piece (コートピース / Rang / Hokm) is a Pakistani/Iranian 4-player (2v2) trick-
 	// taking game where the caller declares trump after peeking at the first 5 cards; 7+
@@ -554,7 +554,7 @@ var registry = []*Game{
 	// three around a central foundation (the black hole) seeded with the ♠A; play a fan
 	// top whose rank is ±1 (any suit, no K-A wrap) onto the pile. Absorb all 52 cards to
 	// win.
-	{Name: "blackhole", Category: CategorySolo},
+	{Name: "blackhole", Category: CategoryExtra9},
 	// Beggar-My-Neighbour: classic English 2-player capture game. 52 cards split evenly;
 	// players alternate turning top cards onto a central pile. Penalty cards (J=1, Q=2,
 	// K=3, A=4) force the opponent to pay that many cards; a new penalty card during
@@ -577,21 +577,21 @@ var registry = []*Game{
 	// follow); phase 2 enforces must-follow. Marriage (trump K+Q = 40, else 20) scores to
 	// the team. First team to 101 wins. Composes jass (4p/2-team structure) + schnapsen
 	// (marriage/points/stock).
-	{Name: "gaigel", Category: CategoryExtra},
+	{Name: "gaigel", Category: CategoryExtra9},
 	// Thousand (Tysiąc): a Polish/East-European 3-player bidding trick-taker on a 24-card
 	// pack (9,J,Q,K,10,A). Players bid from 100 in +10 steps; the last bidder becomes
 	// declarer, takes the 3-card talon (widow) and passes one card to each opponent.
 	// Declaring a marriage (K+Q of a suit) on lead sets that suit as trump and scores
 	// 40/60/80/100 (♠/♣/♦/♥); trump changes dynamically. Declarer scores ±contract; others
 	// round to 10. First to 1000 wins. Modelled on mariáš.
-	{Name: "tysiac", Category: CategoryExtra},
+	{Name: "tysiac", Category: CategoryExtra9},
 	// Calabresella (Terziglio): an Italian (Calabrian) 3-player no-trump trick-taker in
 	// the Tressette family. One soloist plays against a 2-player coalition on a 40-card
 	// deck (A,2..7,J,Q,K). Each player gets 12 cards; 4 form the monte (widow). Bidding is
 	// pass/chiamo (stake 1)/solo (stake 2); the soloist takes the monte and discards down
 	// to 12. Tressette rank (3>2>A>K>Q>J>7>6>5>4) and points (11/deal via thirds +
 	// ultima); the soloist must take more than half to win.
-	{Name: "calabresella", Category: CategoryExtra},
+	{Name: "calabresella", Category: CategoryExtra9},
 	// Ombre (Hombre): a 17th-century Spanish 3-player soloist-vs-coalition trick-taker,
 	// ancestor of all solo games. 40-card deck (A,2..7,J,Q,K); 9 cards each, 13 unused.
 	// Bidding is pass/entrar/solo; the winner (Ombre) picks trump and plays alone against
@@ -755,7 +755,7 @@ var registry = []*Game{
 	// Aluette (アリュエット) is a Breton 48-card Spanish-suited trick-taker for 4 in
 	// fixed 2v2 teams. It has no trump suit and no follow obligation: strength is
 	// per CARD, not per rank -- six named cards (the luettes) outrank everything.
-	{Name: "aluette", Category: CategoryExtra2},
+	{Name: "aluette", Category: CategoryExtra9},
 	{Name: "minchiate", Category: CategoryExtra7},
 	{Name: "tarocchini", Category: CategoryExtra7},
 	{Name: "scarto", Category: CategoryExtra4},
@@ -764,7 +764,7 @@ var registry = []*Game{
 	{Name: "cego", Category: CategoryExtra5},
 	// Zheng Shangyou is a Chinese climbing/shedding game (ancestor of Big Two / Daifugo)
 	// on a 54-card deck (52 + 2 jokers); suits are irrelevant to rank strength.
-	{Name: "zheng", Category: CategorySolo},
+	{Name: "zheng", Category: CategoryExtra9},
 	// Desmoche is a Nicaraguan rummy: nine dealt, and the pot goes to whoever melds
 	// exactly ten cards. Poker hand rankings play no part despite the family
 	// resemblance, and "desmoche" itself is the move of reusing a card from one of
@@ -775,7 +775,7 @@ var registry = []*Game{
 	// values chosen by the player, and they join sums -- which is why it cannot reuse
 	// the Cassino engine. "Zwick" is the bonus for clearing the table, not the name
 	// for a multi-group capture.
-	{Name: "zwicker", Category: CategoryExtra2},
+	{Name: "zwicker", Category: CategoryExtra9},
 	// Poch is a 15th-century German three-stage game on 32 cards with a nine-pool
 	// board. Pools that go unclaimed carry over, which is what the game runs on.
 	// The middle stage compares same-rank sets (4 > 3 > 2) -- there is no bluff and
@@ -830,7 +830,7 @@ var registry = []*Game{
 	// highest. A made contract scores each side its own tricks; a set costs the
 	// declaring side its BID (not the tricks it took), while the defenders still
 	// score theirs. First side to 32 wins.
-	{Name: "bideuchre", Category: CategoryExtra2},
+	{Name: "bideuchre", Category: CategoryExtra9},
 	// sixbidsolo -- Six-Bid Solo. A 3-player American descendant of skat on a
 	// 36-card pack where the ten outranks the king. ELEVEN cards each plus a
 	// THREE-CARD WIDOW (11 x 3 + 3 = 36), and the widow is credited to the
@@ -990,7 +990,7 @@ var registry = []*Game{
 	// A>10>K>Q>J>9>8>7 with no trump (120 a round), while Hokom gives the chosen
 	// trump suit J>9>A>10>K>Q>8>7 (152 a round). The same 32 cards therefore
 	// carry two orders and two point tables, decided fresh every round.
-	{Name: "baloot", Category: CategoryExtra2},
+	{Name: "baloot", Category: CategoryExtra9},
 	// Estimation is the Gulf's household Oh Hell: 4 players, 13 cards each, and
 	// **only an exact call scores** -- one short and five over lose the same
 	// amount, so the size of the call is the size of the bet. Two calls swing
@@ -1068,7 +1068,7 @@ var registry = []*Game{
 	// イギリスの反射ゲーム。**トリガーは固定ではなく「直前に出た札と同じランク」**
 	// なので、場札が 1 枚のあいだは決して成立しない。同時反射は Slapjack と同じく
 	// **予約 + Tick** で決定的に解く。
-	{Name: "snap", Category: CategorySolo},
+	{Name: "snap", Category: CategoryExtra9},
 	// RollingStone ローリングストーン（アンフレ）
 	//
 	// **勝利条件が逆さま。** トリックを取っても得点にならず、**先に手札を出し切った
@@ -1128,7 +1128,7 @@ var registry = []*Game{
 	// Solo(単独6) < Open Misere(公開・0) が**ひとつの梯子に並ぶ**——「多く取る」契約と
 	// 「1枚も取らない」契約が強さ順に混ざる。**組は席では決まらず**、Rik だけが 2 対 2。
 	// 得点はゼロサムで、卓の合計は常に 0。
-	{Name: "rikken", Category: CategoryExtra2},
+	{Name: "rikken", Category: CategoryExtra9},
 	// Colour Whist カラーホイスト（クルーレンヴィーゼン）
 	//
 	// **手札の形が契約を決めてしまう。** 配った時点で誰かがエースを 3 枚持っていれば
@@ -1231,7 +1231,7 @@ var registry = []*Game{
 	{Name: "alaska", Category: CategoryExtra4},
 	{Name: "fortress", Category: CategorySolo},
 	{Name: "somerset", Category: CategorySolo},
-	{Name: "stalactites", Category: CategorySolo},
+	{Name: "stalactites", Category: CategoryExtra9},
 	{Name: "whitehead", Category: CategorySolo},
 	{Name: "curdsandwhey", Category: CategoryExtra8},
 	{Name: "shamrocks", Category: CategoryClassic},
@@ -1254,11 +1254,11 @@ var registry = []*Game{
 	{Name: "put", Category: CategoryExtra4},
 	{Name: "ristikontra", Category: CategoryExtra2},
 	{Name: "brusquembille", Category: CategoryExtra7},
-	{Name: "bauernschnapsen", Category: CategoryExtra},
+	{Name: "bauernschnapsen", Category: CategoryExtra9},
 	{Name: "quadrille", Category: CategoryExtra5},
 	{Name: "trappola", Category: CategoryExtra2},
 	{Name: "madrasso", Category: CategoryExtra3},
-	{Name: "julepe", Category: CategoryExtra2},
+	{Name: "julepe", Category: CategoryExtra9},
 	{Name: "schafkopf", Category: CategoryExtra7},
 	{Name: "coinche", Category: CategoryExtra6},
 	{Name: "germansolo", Category: CategoryExtra7},
@@ -1285,7 +1285,7 @@ var registry = []*Game{
 	{Name: "omi", Category: CategoryExtra5},
 	{Name: "tongits", Category: CategoryExtra5},
 	{Name: "willothewisp", Category: CategorySolo},
-	{Name: "quinze", Category: CategoryExtra},
+	{Name: "quinze", Category: CategoryExtra9},
 	{Name: "doubleexposure", Category: CategoryExtra8},
 	{Name: "basset", Category: CategoryExtra4},
 	{Name: "matrimony", Category: CategoryExtra},
