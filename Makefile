@@ -1,6 +1,6 @@
 TINYGO ?= tinygo
 WASM_OPT ?= wasm-opt
-ASSETS_GEN := go run github.com/syumai/workers/cmd/workers-assets-gen
+ASSETS_GEN := go run github.com/syumai/workers-go/cmd/workers-assets-gen
 COVERAGE_DIR := build/coverage
 
 .PHONY: build-workers build-worker-casino build-worker-classic build-worker-solo build-worker-extra build-worker-extra2 build-worker-extra3 build-worker-extra4 build-worker-extra5 build-worker-extra6 build-worker-extra7 clean-workers deploy-workers coverage clean-cov
@@ -25,11 +25,16 @@ define build_worker
 	# from shipping in every worker and keeps each binary under the 1 MB gzip
 	# free-tier limit (see issue #2126). Non-worker builds (server, CLI, tests)
 	# match `!js || !wasm`, so they still include all games.
-	$(TINYGO) build -tags $(1) -o workers/$(1)/build/app.wasm -target wasm -stack-size=128KB -no-debug -opt=z ./cmd/workers/$(1)
+	# Go 1.27's encoding/json v2 adds ~140KB gzip to every Worker and pushes them over the 1MB limit; use v1 (ADR-0042).
+	GOEXPERIMENT=nojsonv2 $(TINYGO) build -tags $(1) -o workers/$(1)/build/app.wasm -target wasm -stack-size=128KB -no-debug -opt=z ./cmd/workers/$(1)
 	$(WASM_OPT) --enable-bulk-memory --enable-nontrapping-float-to-int --enable-sign-ext -Oz workers/$(1)/build/app.wasm -o workers/$(1)/build/app.wasm
 	@RAW=$$(stat -c%s workers/$(1)/build/app.wasm); GZIP=$$(gzip -c workers/$(1)/build/app.wasm | wc -c); \
 	echo "  $(1): $$RAW bytes raw, $$GZIP bytes gzip"
 endef
+
+.PHONY: check-wasm-imports-casino check-wasm-imports-classic check-wasm-imports-solo check-wasm-imports-extra check-wasm-imports-extra2 check-wasm-imports-extra3 check-wasm-imports-extra4 check-wasm-imports-extra5 check-wasm-imports-extra6 check-wasm-imports-extra7
+check-wasm-imports-%:
+	bun scripts/check-wasm-imports.ts workers/$*/build
 
 build-worker-casino:
 	$(call build_worker,casino)

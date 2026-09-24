@@ -141,7 +141,7 @@ jobs:
     # ので、GPL/LGPL 系が混ざると、許諾できない権利を許諾したことになる。
     #
     # ネイティブと js/wasm を別々に検査するのは、ビルドタグで依存集合が
-    # 変わるため。syumai/workers は js/wasm ビルドにしか現れず、ネイティブ側
+    # 変わるため。syumai/workers-go は js/wasm ビルドにしか現れず、ネイティブ側
     # だけを見ると素通りする (実測で確認済み)。
     #
     # フロント側 (npm) は `bun run check` の check-dependency-licenses.mjs が

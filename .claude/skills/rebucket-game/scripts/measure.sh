@@ -10,8 +10,8 @@
 set -euo pipefail
 
 cd "$(dirname "$0")/../../../.."
-export PATH="$HOME/sdk/go1.25.8/bin:$HOME/.local/opt/tinygo/bin:$PATH"
-export GOTOOLCHAIN=local          # pin the Go toolchain CI uses (1.25) so sizes match CI
+export PATH="$HOME/sdk/go1.27.1/bin:$HOME/.local/opt/tinygo/bin:$PATH"
+export GOTOOLCHAIN=local          # pin the Go toolchain CI uses (1.27) so sizes match CI
 LIMIT=1048576
 
 # Build the list as an array. `for w in "${@:-a b c}"` looks equivalent but is not:
@@ -24,8 +24,8 @@ fi
 
 for w in "${workers[@]}"; do
   mkdir -p "workers/$w/build"
-  go run github.com/syumai/workers/cmd/workers-assets-gen -mode=tinygo -o "workers/$w/build" >/dev/null
-  tinygo build -tags "$w" -o "workers/$w/build/app.wasm" -target wasm \
+  go run github.com/syumai/workers-go/cmd/workers-assets-gen -mode=tinygo -o "workers/$w/build" >/dev/null
+  GOEXPERIMENT=nojsonv2 tinygo build -tags "$w" -o "workers/$w/build/app.wasm" -target wasm \
     -stack-size=128KB -no-debug -opt=z "./cmd/workers/$w"
   wasm-opt --enable-bulk-memory --enable-nontrapping-float-to-int --enable-sign-ext \
     -Oz "workers/$w/build/app.wasm" -o "workers/$w/build/app.wasm"
