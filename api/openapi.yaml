@@ -15783,7 +15783,6 @@ paths:
         | `reset`         | `r`  | Start / restart a game |
         | `next`          | `n`  | Start the next round |
         | `play`          | `p`  | Play a hand card to capture table cards or lay it |
-        | `setdifficulty` | `sd` | Set CPU difficulty (0-2) |
         | `settarget`     | `st` | Set the target score |
         | `hint`          | `h`  | Get a hint for the next move |
         | `log`           | `l`  | View action log |
@@ -15855,7 +15854,6 @@ paths:
         | `reset`         | `r`  | Start / restart a game |
         | `next`          | `n`  | Start the next round |
         | `play`          | `p`  | Play a hand card to capture table cards or lay it |
-        | `setdifficulty` | `sd` | Set CPU difficulty (0-2) |
         | `settarget`     | `st` | Set the target score |
         | `hint`          | `h`  | Get a hint for the next move |
         | `log`           | `l`  | View action log |
@@ -18289,9 +18287,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
                     playerCnt:
                       type: integer
                       description: Seats, 3-8.
@@ -27733,7 +27728,6 @@ paths:
         | `play`            | `p`                    | Play a card by `cardIndex` (Play phase) |
         | `next`            | `n`, `nextround`       | Advance to the next trick or deal |
         | `hint`            | `h`                    | Request a play hint |
-        | `setdifficulty`   | `sd`                   | Set CPU difficulty (requires `difficulty` 0-2) |
         | `settarget`       | `tg`                   | Set the target score (requires `target`) |
         | `log`             | `l`                    | View action log |
       operationId: ecarteExec
@@ -27835,7 +27829,6 @@ paths:
         | `show`            | `sh`                   | Call a showdown (Seen player, two players remaining) |
         | `next`            | `n`, `nextround`       | Advance to the next deal |
         | `hint`            | `h`                    | Request an action hint |
-        | `setdifficulty`   | `sd`                   | Set CPU difficulty (requires `difficulty` 0-2) |
         | `setante`         | `sa`                   | Set the ante (requires `ante`) |
         | `setchips`        | `sc`                   | Set the starting chips (requires `startingChips`) |
         | `log`             | `l`                    | View action log |
@@ -27947,7 +27940,6 @@ paths:
         | `show`            | `sh`                   | Call a showdown (Seen player, two players remaining) |
         | `next`            | `n`, `nextround`       | Advance to the next deal |
         | `hint`            | `h`                    | Request an action hint |
-        | `setdifficulty`   | `sd`                   | Set CPU difficulty (requires `difficulty` 0-2) |
         | `setante`         | `sa`                   | Set the ante / boot (requires `ante`) |
         | `setchips`        | `sc`                   | Set the starting chips (requires `startingChips`) |
         | `log`             | `l`                    | View action log |
@@ -31689,8 +31681,6 @@ paths:
                   type: object
                   properties:
                     playerCount:
-                      type: integer
-                    cpuDifficulty:
                       type: integer
                     targetRounds:
                       type: integer
@@ -36199,8 +36189,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
         players:
           type: array
           items:
@@ -36842,8 +36830,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
             targetDeals:
               type: integer
         players:
@@ -38542,8 +38528,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
         message:
           type: string
         messageCode:
@@ -38706,8 +38690,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
             targetRounds:
               type: integer
         players:
@@ -46738,10 +46720,6 @@ components:
           type: object
           description: Optional game configuration (only used with `reset`).
           properties:
-            cpuDifficulty:
-              type: integer
-              minimum: 0
-              maximum: 2
             playerCount:
               type: integer
               minimum: 2
@@ -46834,8 +46812,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
             playerCount:
               type: integer
             knockThreshold:
@@ -47097,8 +47073,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
             targetWins:
               type: integer
         message:
@@ -56445,11 +56419,6 @@ components:
               type: integer
               description: Score required to win the match.
               example: 11
-            cpuDifficulty:
-              type: integer
-              description: CPU difficulty (0=easy, 1=normal, 2=hard).
-              minimum: 0
-              maximum: 2
         sessionId:
           type: string
           description: Client-generated session identifier (max 256 characters)
@@ -56595,7 +56564,7 @@ components:
         command:
           type: string
           description: Escoba command. Accepted values. `reset` (`r`), `next` (`n`), `play` (`p`), `settarget` (`st`), `log` (`l`).
-          enum: [reset, r, next, n, play, p, setdifficulty, sd, settarget, st, log, l, hint, h]
+          enum: [reset, r, next, n, play, p, settarget, st, log, l, hint, h]
           example: play
         handIndex:
           type: integer
@@ -56617,11 +56586,6 @@ components:
               type: integer
               description: Score required to win the match.
               example: 10
-            cpuDifficulty:
-              type: integer
-              description: CPU difficulty (0=easy, 1=normal, 2=hard).
-              minimum: 0
-              maximum: 2
         sessionId:
           type: string
           description: Client-generated session identifier (max 256 characters)
@@ -56693,7 +56657,6 @@ components:
           type: object
           properties:
             targetScore: { type: integer }
-            cpuDifficulty: { type: integer }
         cpuActions:
           type: array
           description: Actions taken by the CPUs since the last human action.
@@ -69745,11 +69708,6 @@ components:
           type: integer
           description: List index of the meld to declare. Required for the `meld` command.
           example: 0
-        difficulty:
-          type: integer
-          description: CPU difficulty level for `setdifficulty`. 0=Easy, 1=Normal, 2=Hard.
-          minimum: 0
-          maximum: 2
         target:
           type: integer
           description: Target score for `settarget`.
@@ -69758,10 +69716,6 @@ components:
           type: object
           description: Optional game configuration (only used with `reset`).
           properties:
-            cpuDifficulty:
-              type: integer
-              minimum: 0
-              maximum: 2
             targetScore:
               type: integer
               minimum: 1
@@ -69918,8 +69872,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
             targetScore:
               type: integer
 
@@ -70094,8 +70046,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
             targetScore:
               type: integer
 
@@ -70495,11 +70445,6 @@ components:
           description: Amount to raise the stake by. Required for the `raise` command.
           minimum: 1
           example: 10
-        difficulty:
-          type: integer
-          description: CPU difficulty level for `setdifficulty`. 0=Easy, 1=Normal, 2=Hard.
-          minimum: 0
-          maximum: 2
         ante:
           type: integer
           description: Ante paid into the pot at the start of each deal, for `setante`.
@@ -70647,11 +70592,6 @@ components:
         accept:
           type: boolean
           description: Response to a side show request (true to accept, false to decline). Used with `accept` / `decline`.
-        difficulty:
-          type: integer
-          description: CPU difficulty level for `setdifficulty`. 0=Easy, 1=Normal, 2=Hard.
-          minimum: 0
-          maximum: 2
         ante:
           type: integer
           description: Ante (boot) paid into the pot at the start of each deal, for `setante`.
@@ -70814,8 +70754,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
             ante:
               type: integer
             startingChips:
@@ -77908,8 +77846,6 @@ components:
           type: object
           properties:
             playerCount:
-              type: integer
-            cpuDifficulty:
               type: integer
             targetRounds:
               type: integer
