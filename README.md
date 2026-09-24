@@ -422,7 +422,7 @@ Go + Clean Architecture で実装した383種類のトランプゲーム。CLI �
 
 | Tool | Version |
 |------|---------|
-| [Go](https://go.dev/) | 1.26.x |
+| [Go](https://go.dev/) | 1.27.x |
 | [Node.js](https://nodejs.org/) | 24.x |
 | [Bun](https://bun.sh/) | 1.3.10 |
 
