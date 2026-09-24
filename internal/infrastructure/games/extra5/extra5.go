@@ -37,14 +37,6 @@ func init() {
 			return usecase.RestorePitchInteractor(data, new(presenter.PitchWebPresenter))
 		},
 		controller.NewPitchWebControllerWithProvider)
-	games.RegisterKVGame("quodlibet", games.CategoryExtra5,
-		func() usecase.QuodlibetInteractorIF {
-			return usecase.NewQuodlibetInteractor(domain.NewDefaultQuodlibet(), new(presenter.QuodlibetWebPresenter))
-		},
-		func(data []byte) (usecase.QuodlibetInteractorIF, error) {
-			return usecase.RestoreQuodlibetInteractor(data, new(presenter.QuodlibetWebPresenter))
-		},
-		controller.NewQuodlibetWebControllerWithProvider)
 	games.RegisterKVGame("teendopaanch", games.CategoryExtra5,
 		func() usecase.TeenDoPaanchInteractorIF {
 			return usecase.NewTeenDoPaanchInteractor(domain.NewDefaultTeenDoPaanch(), new(presenter.TeenDoPaanchWebPresenter))
@@ -149,22 +141,6 @@ func init() {
 			return usecase.RestoreLooInteractor(data, new(presenter.LooWebPresenter))
 		},
 		controller.NewLooWebControllerWithProvider)
-	games.RegisterKVGame("quadrille", games.CategoryExtra5,
-		func() usecase.QuadrilleInteractorIF {
-			return usecase.NewQuadrilleInteractor(domain.NewDefaultQuadrille(), new(presenter.QuadrilleWebPresenter))
-		},
-		func(data []byte) (usecase.QuadrilleInteractorIF, error) {
-			return usecase.RestoreQuadrilleInteractor(data, new(presenter.QuadrilleWebPresenter))
-		},
-		controller.NewQuadrilleWebControllerWithProvider)
-	games.RegisterKVGame("cego", games.CategoryExtra5,
-		func() usecase.CegoInteractorIF {
-			return usecase.NewCegoInteractor(domain.NewDefaultCego(), new(presenter.CegoWebPresenter))
-		},
-		func(data []byte) (usecase.CegoInteractorIF, error) {
-			return usecase.RestoreCegoInteractor(data, new(presenter.CegoWebPresenter))
-		},
-		controller.NewCegoWebControllerWithProvider)
 	games.RegisterKVGame("comet", games.CategoryExtra5,
 		func() usecase.CometInteractorIF {
 			return usecase.NewCometInteractor(domain.NewDefaultComet(), new(presenter.CometWebPresenter))
@@ -197,14 +173,6 @@ func init() {
 			return usecase.RestoreWizardInteractor(data, new(presenter.WizardWebPresenter))
 		},
 		controller.NewWizardWebControllerWithProvider)
-	games.RegisterKVGame("napoleon", games.CategoryExtra5,
-		func() usecase.NapoleonInteractorIF {
-			return usecase.NewNapoleonInteractor(domain.NewDefaultNapoleon(), new(presenter.NapoleonWebPresenter))
-		},
-		func(data []byte) (usecase.NapoleonInteractorIF, error) {
-			return usecase.RestoreNapoleonInteractor(data, new(presenter.NapoleonWebPresenter))
-		},
-		controller.NewNapoleonWebControllerWithProvider)
 	games.RegisterKVGame("ulti", games.CategoryExtra5,
 		func() usecase.UltiInteractorIF {
 			return usecase.NewUltiInteractor(domain.NewDefaultUlti(), new(presenter.UltiWebPresenter))
@@ -245,28 +213,4 @@ func init() {
 			return usecase.RestoreTongitsInteractor(data, new(presenter.TongitsWebPresenter))
 		},
 		controller.NewTongitsWebControllerWithProvider)
-	games.RegisterKVGame("kingo", games.CategoryExtra5,
-		func() usecase.KingoInteractorIF {
-			return usecase.NewKingoInteractor(domain.NewDefaultKingo(), new(presenter.KingoWebPresenter))
-		},
-		func(data []byte) (usecase.KingoInteractorIF, error) {
-			return usecase.RestoreKingoInteractor(data, new(presenter.KingoWebPresenter))
-		},
-		controller.NewKingoWebControllerWithProvider)
-	games.RegisterKVGame("oichokabu", games.CategoryExtra5,
-		func() usecase.OichoKabuInteractorIF {
-			return usecase.NewOichoKabuInteractor(domain.NewDefaultOichoKabu(), new(presenter.OichoKabuWebPresenter))
-		},
-		func(data []byte) (usecase.OichoKabuInteractorIF, error) {
-			return usecase.RestoreOichoKabuInteractor(data, new(presenter.OichoKabuWebPresenter))
-		},
-		controller.NewOichoKabuWebControllerWithProvider)
-	games.RegisterKVGame("tusac", games.CategoryExtra5,
-		func() usecase.TuSacInteractorIF {
-			return usecase.NewTuSacInteractor(domain.NewDefaultTuSac(), new(presenter.TuSacWebPresenter))
-		},
-		func(data []byte) (usecase.TuSacInteractorIF, error) {
-			return usecase.RestoreTuSacInteractor(data, new(presenter.TuSacWebPresenter))
-		},
-		controller.NewTuSacWebControllerWithProvider)
 }

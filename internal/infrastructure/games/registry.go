@@ -178,7 +178,7 @@ var registry = []*Game{
 	{Name: "canasta", Category: CategoryExtra7},
 	{Name: "spider", Category: CategorySolo},
 	// Napoleon is a trick-taking game.
-	{Name: "napoleon", Category: CategoryExtra5},
+	{Name: "napoleon", Category: CategoryExtra10},
 	{Name: "indianpoker", Category: CategoryCasino},
 	{Name: "videopoker", Category: CategoryExtra8},
 	{Name: "deuceswild", Category: CategoryExtra8},
@@ -494,7 +494,7 @@ var registry = []*Game{
 	// Mao: a Crazy Eights / Macau–style shedding game with a secret "hidden rule" the
 	// human must infer (penalties for non-compliance, a half-hint after three correct
 	// follows). 4 players, 52-card deck, magic cards (8 wild, A skip, 2 draw-two).
-	{Name: "mao", Category: CategoryExtra3},
+	{Name: "mao", Category: CategoryExtra10},
 	// Spoons: American party speed game. 4 players, 52-card deck; pass cards around until
 	// someone collects four of a kind, then everyone races to grab one of the N-1 spoons.
 	// Missing out earns a letter (S-P-O-O-N-S); six letters eliminates you, last player
@@ -665,7 +665,7 @@ var registry = []*Game{
 	// the retourne) beats a same-rank "simple" — otherwise high card wins (ties to the
 	// earliest seat). Chips accumulate; the game ends after a fixed number of rounds, and
 	// the richest player wins.
-	{Name: "bouillotte", Category: CategoryExtra3},
+	{Name: "bouillotte", Category: CategoryExtra10},
 	// Primero: a 16th-century Renaissance vying/betting pot game, an ancestor of poker, on
 	// a 40-card deck (A,2,3,4,5,6,7,J,Q,K × 4 suits). 2–6 players ante to a pot and are
 	// dealt 4 cards each (no shared card). Players bet in turn (call / raise "vie" by the
@@ -674,7 +674,7 @@ var registry = []*Game{
 	// 50), which beats a Primero (four suits, points < 50), which beats a Numerus (best
 	// single-suit point sum); ties go to the earliest seat. Chips accumulate; the game
 	// ends after a fixed number of rounds, and the richest player wins.
-	{Name: "primero", Category: CategoryExtra3},
+	{Name: "primero", Category: CategoryExtra10},
 	// Michigan (a.k.a. Newmarket / Boodle / Chicago): a "stops" family gambling party game
 	// on a standard 52-card deck. 3–8 players each spread an ante across four fixed center
 	// "boodle" cards (A♥, K♣, Q♦, J♠), then all 52 cards are dealt round-robin to the
@@ -725,10 +725,10 @@ var registry = []*Game{
 	{Name: "wizard", Category: CategoryExtra5},
 	// Oicho-Kabu is a kabufuda (40-card, values 1-10) baccarat-style banking game; its
 	// cards use the non-52 procedural render path (ADR-0033).
-	{Name: "oichokabu", Category: CategoryExtra5},
+	{Name: "oichokabu", Category: CategoryExtra10},
 	// Rook is a 57-card (4 colors 1-14 + Rook bird) 2-team point-trick game; its special-
 	// deck cards use the non-52 procedural render path (ADR-0033).
-	{Name: "rook", Category: CategoryExtra3},
+	{Name: "rook", Category: CategoryExtra10},
 	// Koi-Koi is a 48-card hanafuda capture game with yaku scoring; the hanafuda cards use
 	// the non-52 procedural render path (ADR-0033).
 	{Name: "koikoi", Category: CategoryExtra3},
@@ -761,7 +761,7 @@ var registry = []*Game{
 	{Name: "scarto", Category: CategoryExtra4},
 	// Cego is a German (Baden) tarock trick-taker on the 54-card tarock deck with the
 	// signature Cego-blind swap; procedural render path (ADR-0033).
-	{Name: "cego", Category: CategoryExtra5},
+	{Name: "cego", Category: CategoryExtra10},
 	// Zheng Shangyou is a Chinese climbing/shedding game (ancestor of Big Two / Daifugo)
 	// on a 54-card deck (52 + 2 jokers); suits are irrelevant to rank strength.
 	{Name: "zheng", Category: CategoryExtra9},
@@ -780,7 +780,7 @@ var registry = []*Game{
 	// board. Pools that go unclaimed carry over, which is what the game runs on.
 	// The middle stage compares same-rank sets (4 > 3 > 2) -- there is no bluff and
 	// no declaration -- and "Pocher" is one of the nine pools, not a move.
-	{Name: "poch", Category: CategoryExtra3},
+	{Name: "poch", Category: CategoryExtra10},
 	// Pope Joan is the ancestor of the stops family: 51 cards (the 8D is removed so a
 	// run always dies at the 7D), a board of eight named compartments, and a dead hand
 	// whose last card turns for trump. Compartments pay only on the trump suit, and
@@ -796,7 +796,7 @@ var registry = []*Game{
 	// exchange: the Cuckoo ends the round on the spot, the Hussar cuts down the
 	// challenger, the Pig unwinds the swap and bites its own holder, and the
 	// Cavalier and Inn pass the challenge along to the next seat.
-	{Name: "kille", Category: CategoryExtra3},
+	{Name: "kille", Category: CategoryExtra10},
 	// Klaberjass is the two-player ancestor of the Jass family, on a 32-card pack
 	// of which only 18 cards are dealt. The trump jack (20) and nine (14) outrank
 	// the ace, sequences are contested so that only the better holder scores, and
@@ -808,7 +808,7 @@ var registry = []*Game{
 	// three of spades (-3), which is why 4x8 cards leave a two-card kitty. The
 	// declarer takes the kitty and discards two, but may never discard either
 	// scoring card.
-	{Name: "kaiser", Category: CategoryExtra3},
+	{Name: "kaiser", Category: CategoryExtra10},
 	// Boston is the 18th-century Whist derivative whose auction ladder INTERLEAVES
 	// the misere bids with the trick bids -- Little Misere ranks below seven
 	// tricks, Grand Misere below nine -- and adds Piccolissimo, which wants
@@ -1196,13 +1196,13 @@ var registry = []*Game{
 	//
 	// **おいちょかぶと同じ株札を使うが、競うものが違う。** 合計の下一桁では
 	// なく、同じ数字を何枚そろえたかで決まる ── 役の判定に総和は出てこない。
-	{Name: "kingo", Category: CategoryExtra5},
+	{Name: "kingo", Category: CategoryExtra10},
 	// Tu Sac トゥーサック (四色牌)
 	//
 	// **4 色 × 7 種 × 4 枚 = 112 枚の専用デッキ。** 引いて捨てる形は
 	// ラミーと同じだが、数字の並びという概念が無いので「同スートの連番」に
 	// 当たるメルドが存在しない ── 同色同種 3 枚 / 異色の車馬砲 / 卒 5 枚の 3 つ。
-	{Name: "tusac", Category: CategoryExtra5},
+	{Name: "tusac", Category: CategoryExtra10},
 	// Sakura さくら (肥後花)
 	//
 	// **花札 48 枚を使うが、役ではなく点数の合計で競う。** こいこいや八八が
@@ -1255,7 +1255,7 @@ var registry = []*Game{
 	{Name: "ristikontra", Category: CategoryExtra2},
 	{Name: "brusquembille", Category: CategoryExtra7},
 	{Name: "bauernschnapsen", Category: CategoryExtra9},
-	{Name: "quadrille", Category: CategoryExtra5},
+	{Name: "quadrille", Category: CategoryExtra10},
 	{Name: "trappola", Category: CategoryExtra2},
 	{Name: "madrasso", Category: CategoryExtra3},
 	{Name: "julepe", Category: CategoryExtra9},
@@ -1267,10 +1267,10 @@ var registry = []*Game{
 	{Name: "eightgame", Category: CategoryCasino},
 	{Name: "piedmontesetarot", Category: CategoryExtra4},
 	{Name: "unsunkaruta", Category: CategoryClassic},
-	{Name: "quodlibet", Category: CategoryExtra5},
+	{Name: "quodlibet", Category: CategoryExtra10},
 	{Name: "dehlapakad", Category: CategoryExtra5},
 	{Name: "sutda", Category: CategoryExtra6},
-	{Name: "cirulla", Category: CategoryExtra3},
+	{Name: "cirulla", Category: CategoryExtra10},
 	{Name: "diloti", Category: CategoryExtra5},
 	{Name: "comet", Category: CategoryExtra5},
 	{Name: "costlycolours", Category: CategoryExtra6},
