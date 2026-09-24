@@ -1458,8 +1458,8 @@ func TestPrintGamesByCategoryFiltersLong(t *testing.T) {
 	var buf bytes.Buffer
 	printGames(false, false, "casino", "", &buf)
 	out := buf.String()
-	if !strings.Contains(out, "blackjack") {
-		t.Errorf("expected casino filter to include blackjack; got:\n%s", out)
+	if !strings.Contains(out, "holdem") {
+		t.Errorf("expected casino filter to include holdem; got:\n%s", out)
 	}
 	// hearts is classic; must be excluded.
 	if strings.Contains(out, "hearts ") {
@@ -1475,7 +1475,7 @@ func TestPrintGamesByCategoryFiltersShort(t *testing.T) {
 	if len(lines) == 0 || lines[0] == "" {
 		t.Fatalf("expected non-empty solo output; got:\n%s", buf.String())
 	}
-	// klondike is solo; must be present. blackjack is casino; must be absent.
+	// klondike is solo; must be present. blackjack is not solo; must be absent.
 	hasKlondike, hasBlackjack := false, false
 	for _, l := range lines {
 		switch l {
