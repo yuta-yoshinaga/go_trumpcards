@@ -3695,7 +3695,6 @@ var gameRegistry = []GameRegistryEntry{
 				"threecardbrag.helpNext", "threecardbrag.helpHint",
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
-			SettingKeys:       []string{"threecardbrag.helpSetDifficulty"},
 		}),
 	BindCuiFor("teenpatti",
 		func() usecase.TeenPattiInteractorIF {

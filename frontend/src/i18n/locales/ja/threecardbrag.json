@@ -7,7 +7,6 @@
   },
   "settings": {
     "title": "設定",
-    "cpuDifficulty": "CPU難易度",
     "ante": "アンティ",
     "startingChips": "初期チップ",
     "easy": "Easy",

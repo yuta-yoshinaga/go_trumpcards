@@ -3279,7 +3279,7 @@ const baseThreeCardBragState: ThreeCardBragResponse = {
   isHumanTurn: true,
   hint: null,
   message: '',
-  config: { cpuDifficulty: 1, ante: 1, startingChips: 100 },
+  config: { ante: 1, startingChips: 100 },
 };
 
 /**

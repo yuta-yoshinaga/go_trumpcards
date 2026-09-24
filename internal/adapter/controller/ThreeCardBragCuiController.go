@@ -29,7 +29,6 @@ func NewThreeCardBragCuiController(ti usecase.ThreeCardBragInteractorIF) *ThreeC
 //	f / fold                  → 降りる
 //	sh / show                 → 勝負を要求する (残り 2 人 & Seen)
 //	n / next / nextround      → 次のディールへ (RoundEnd フェーズ)
-//	sd [0-2] / setdifficulty  → CPU難易度設定
 //	sa <n> / setante <n>      → アンティ額設定
 //	sc <n> / setchips <n>     → 初期チップ設定
 //	h / hint                  → ヒント表示
@@ -48,7 +47,6 @@ func (c *ThreeCardBragCuiController) Exec(command string) string {
 			"f", "fold",
 			"sh", "show",
 			"n", "next", "nextround",
-			"sd", "setdifficulty",
 			"sa", "setante",
 			"sc", "setchips",
 			"h", "hint", "l", "log",
@@ -69,12 +67,6 @@ func (c *ThreeCardBragCuiController) Exec(command string) string {
 				return c.ti.Show(), true
 			case "n", "next", "nextround":
 				return c.ti.NextRound(), true
-			case "sd", "setdifficulty":
-				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
-					cfg := c.ti.GetConfig()
-					cfg.CpuDifficulty = domain.ThreeCardBragCpuDifficulty(v)
-					return c.ti.ResetWithConfig(cfg)
-				})
 			case "sa", "setante":
 				return cuiutil.WithParsedIntKeys(args, "anteRequiredEGSa2", "invalidAntePlain", 1, 1000, func(v int) string {
 					cfg := c.ti.GetConfig()

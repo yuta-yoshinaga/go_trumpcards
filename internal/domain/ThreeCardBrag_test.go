@@ -34,9 +34,29 @@ func tcbSetHand(p *domain.ThreeCardBragPlayer, cards ...*domain.Card) {
 func TestThreeCardBragConfig_Validate(t *testing.T) {
 	cfg := domain.DefaultThreeCardBragConfig()
 	assert.NoError(t, cfg.Validate())
-	assert.Error(t, domain.ThreeCardBragConfig{CpuDifficulty: 99, Ante: 1, StartingChips: 30}.Validate())
-	assert.Error(t, domain.ThreeCardBragConfig{CpuDifficulty: 0, Ante: 0, StartingChips: 30}.Validate())
-	assert.Error(t, domain.ThreeCardBragConfig{CpuDifficulty: 0, Ante: 1, StartingChips: 1}.Validate())
+	assert.Error(t, domain.ThreeCardBragConfig{Ante: 0, StartingChips: 30}.Validate())
+	assert.Error(t, domain.ThreeCardBragConfig{Ante: 1, StartingChips: 1}.Validate())
+}
+
+func TestThreeCardBrag_UnmarshalLegacyConfigCD(t *testing.T) {
+	game := domain.NewDefaultThreeCardBrag()
+	game.Reset()
+	data, err := json.Marshal(game)
+	require.NoError(t, err)
+	var snapshot map[string]json.RawMessage
+	require.NoError(t, json.Unmarshal(data, &snapshot))
+	var config map[string]json.RawMessage
+	require.NoError(t, json.Unmarshal(snapshot["cf"], &config))
+	config["cd"] = json.RawMessage("0")
+	snapshot["cf"], err = json.Marshal(config)
+	require.NoError(t, err)
+	data, err = json.Marshal(snapshot)
+	require.NoError(t, err)
+
+	var restored domain.ThreeCardBrag
+	require.NoError(t, json.Unmarshal(data, &restored))
+	assert.Equal(t, domain.DefaultThreeCardBragConfig().Ante, restored.GetConfig().Ante)
+	assert.Equal(t, domain.DefaultThreeCardBragConfig().StartingChips, restored.GetConfig().StartingChips)
 }
 
 func TestThreeCardBragEval_Categories(t *testing.T) {

@@ -60,12 +60,6 @@ go run ./cmd/trumpcards --lang en threecardbrag  # 英語モード
 - チップが尽きたプレイヤーは**脱落**します。
 - 最後までチップを持って残った1人が**マッチの勝者**です。
 
-### CPU難易度
-
-- **Easy（0）**: ランダムな合法手。
-- **Normal（1）**: 基本戦略。
-- **Hard（2）**: 高度なヒューリスティック。
-
 ## ゲームの流れ
 
 ```mermaid
@@ -104,7 +98,6 @@ flowchart TD
 | `fold` | `f` | 降りる（このディールから抜ける） |
 | `show` | `sh` | ショーダウンを要求する（残り2人・シーン時） |
 | `next` | `n` / `nextround` | 次のディールへ進む |
-| `setdifficulty <0-2>` | `sd` | CPU難易度設定（0=Easy, 1=Normal, 2=Hard） |
 | `setante <n>` | `sa` | アンティ額設定 |
 | `setchips <n>` | `sc` | 初期チップ数設定 |
 | `hint` | `h` | ヒント表示 |

@@ -89,7 +89,6 @@ func TestThreeCardBragWebPresenter_Output(t *testing.T) {
 		result := p.Output(m, nil)
 		var resObj controller.ThreeCardBragWebOutput
 		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
-		assert.Equal(t, int(domain.ThreeCardBragCpuDifficultyNormal), resObj.Config.CpuDifficulty)
 		assert.Equal(t, domain.ThreeCardBragDefaultAnte, resObj.Config.Ante)
 		assert.Equal(t, domain.ThreeCardBragDefaultStartingChips, resObj.Config.StartingChips)
 	})

@@ -52,7 +52,6 @@ func TestThreeCardBragInteractor_ResetWithConfig(t *testing.T) {
 	spMock.On("Output", mock.Anything, mock.Anything).Return(threeCardBragMockOutput)
 	gameMock := new(interfaces.MockThreeCardBragGame)
 	cfg := domain.ThreeCardBragConfig{
-		CpuDifficulty: domain.ThreeCardBragCpuDifficultyHard,
 		Ante:          2,
 		StartingChips: 50,
 	}
@@ -65,21 +64,6 @@ func TestThreeCardBragInteractor_ResetWithConfig(t *testing.T) {
 	ti := usecase.NewThreeCardBragInteractor(gameMock, spMock)
 	assert.Equal(t, threeCardBragMockOutput, ti.ResetWithConfig(cfg))
 	gameMock.AssertCalled(t, "SetConfig", cfg)
-}
-
-func TestThreeCardBragInteractor_ResetWithConfigInvalid(t *testing.T) {
-	spMock := new(presenter.MockThreeCardBragPresenter)
-	spMock.On("Output", mock.Anything, mock.Anything).Return(threeCardBragMockOutput)
-	gameMock := new(interfaces.MockThreeCardBragGame)
-
-	ti := usecase.NewThreeCardBragInteractor(gameMock, spMock)
-	bad := domain.ThreeCardBragConfig{
-		CpuDifficulty: domain.ThreeCardBragCpuDifficulty(99),
-		Ante:          1,
-		StartingChips: 30,
-	}
-	assert.Equal(t, threeCardBragMockOutput, ti.ResetWithConfig(bad))
-	gameMock.AssertNotCalled(t, "Reset")
 }
 
 func TestThreeCardBragInteractor_See(t *testing.T) {

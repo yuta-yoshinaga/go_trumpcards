@@ -7,7 +7,6 @@
   },
   "settings": {
     "title": "Settings",
-    "cpuDifficulty": "CPU Difficulty",
     "ante": "Ante",
     "startingChips": "Starting Chips",
     "easy": "Easy",

@@ -70486,9 +70486,9 @@ components:
           description: |
             Game command. Accepted values: `reset` (`r`), `see` (`s`), `bet` (`b`),
             `raise` (`rs`), `fold` (`f`), `show` (`sh`), `next` (`n`, `nextround`),
-            `hint` (`h`), `setdifficulty` (`sd`), `setante` (`sa`), `setchips` (`sc`),
+            `hint` (`h`), `setante` (`sa`), `setchips` (`sc`),
             `log` (`l`).
-          enum: [reset, r, see, s, bet, b, raise, rs, fold, f, show, sh, next, n, nextround, hint, h, setdifficulty, sd, setante, sa, setchips, sc, log, l]
+          enum: [reset, r, see, s, bet, b, raise, rs, fold, f, show, sh, next, n, nextround, hint, h, setante, sa, setchips, sc, log, l]
           example: bet
         raiseStake:
           type: integer
@@ -70512,10 +70512,6 @@ components:
           type: object
           description: Optional game configuration (only used with `reset`).
           properties:
-            cpuDifficulty:
-              type: integer
-              minimum: 0
-              maximum: 2
             ante:
               type: integer
               minimum: 1
@@ -70623,8 +70619,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
             ante:
               type: integer
             startingChips:
