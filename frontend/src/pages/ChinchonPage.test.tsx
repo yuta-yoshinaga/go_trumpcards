@@ -13,7 +13,7 @@ vi.mock('../api/gameApi', () => ({
 
 const mockExec = vi.mocked(chinchonApi.exec);
 
-const RESET_CONFIG = { cpuDifficulty: 1, playerCount: 2, knockThreshold: 5, eliminationLimit: 100 };
+const RESET_CONFIG = { playerCount: 2, knockThreshold: 5, eliminationLimit: 100 };
 
 const drawPhaseState: ChinchonResponse = {
   players: [
@@ -42,7 +42,7 @@ const drawPhaseState: ChinchonResponse = {
   knockerMelds: [],
   layoffableIndices: [],
   message: '',
-  config: { cpuDifficulty: 1, playerCount: 2, knockThreshold: 5, eliminationLimit: 100 },
+  config: { playerCount: 2, knockThreshold: 5, eliminationLimit: 100 },
 };
 
 const discardPhaseState: ChinchonResponse = { ...drawPhaseState, phase: 1 };
@@ -407,7 +407,7 @@ describe('ChinchonPage', () => {
 
     fireEvent.click(screen.getByText('設定'));
     const selects = screen.getAllByRole('combobox');
-    fireEvent.change(selects[1], { target: { value: '4' } });
+    fireEvent.change(selects[0], { target: { value: '4' } });
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(drawPhaseState);

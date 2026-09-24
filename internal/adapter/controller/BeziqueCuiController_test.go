@@ -97,16 +97,6 @@ func TestBeziqueCuiController_Exec(t *testing.T) {
 		m.AssertCalled(t, "NextRound")
 	})
 
-	t.Run("setdifficulty", func(t *testing.T) {
-		m := newMock()
-		c := controller.NewBeziqueCuiController(m)
-		got := c.Exec("sd 2")
-		assert.Equal(t, mockOutput, got)
-		expected := domain.DefaultBeziqueConfig()
-		expected.CpuDifficulty = domain.BeziqueCpuDifficultyHard
-		m.AssertCalled(t, "ResetWithConfig", expected)
-	})
-
 	t.Run("settarget", func(t *testing.T) {
 		m := newMock()
 		c := controller.NewBeziqueCuiController(m)

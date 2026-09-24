@@ -27636,7 +27636,6 @@ paths:
         | `skip`            | `s`                    | Decline to declare a meld (Meld phase) |
         | `next`            | `n`, `nextround`       | Advance to the next trick or deal |
         | `hint`            | `h`                    | Request a play hint |
-        | `setdifficulty`   | `sd`                   | Set CPU difficulty (requires `difficulty` 0-2) |
         | `settarget`       | `st`                   | Set the target score (requires `target`) |
         | `log`             | `l`                    | View action log |
       operationId: beziqueExec
@@ -69745,9 +69744,8 @@ components:
           type: string
           description: |
             Game command. Accepted values: `reset` (`r`), `play` (`p`), `meld` (`m`),
-            `skip` (`s`), `next` (`n`, `nextround`), `hint` (`h`), `setdifficulty` (`sd`),
-            `settarget` (`st`), `log` (`l`).
-          enum: [reset, r, play, p, meld, m, skip, s, next, n, nextround, hint, h, setdifficulty, sd, settarget, st, log, l]
+            `skip` (`s`), `next` (`n`, `nextround`), `hint` (`h`), `settarget` (`st`), `log` (`l`).
+          enum: [reset, r, play, p, meld, m, skip, s, next, n, nextround, hint, h, settarget, st, log, l]
           example: reset
         cardIndex:
           type: integer

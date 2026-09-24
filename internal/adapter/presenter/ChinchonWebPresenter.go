@@ -32,7 +32,6 @@ func (p *ChinchonWebPresenter) Output(g interfaces.ChinchonGame, lastErr error) 
 
 	cfg := g.GetConfig()
 	resObj.Config = controller.ChinchonWebOutputConfig{
-		CpuDifficulty:    int(cfg.CpuDifficulty),
 		PlayerCount:      cfg.PlayerCount,
 		KnockThreshold:   cfg.KnockThreshold,
 		EliminationLimit: cfg.EliminationLimit,

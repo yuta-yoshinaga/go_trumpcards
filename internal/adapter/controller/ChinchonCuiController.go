@@ -4,7 +4,6 @@ package controller
 
 import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -33,7 +32,7 @@ func (c *ChinchonCuiController) Exec(command string) string {
 			"ds", "drawstock", "dd", "drawdiscard",
 			"d", "discard", "k", "knock", "lo", "layoff",
 			"nr", "nextround",
-			"sd", "setdifficulty", "sp", "setplayers", "log", "l",
+			"sp", "setplayers", "log", "l",
 		},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
@@ -49,12 +48,6 @@ func (c *ChinchonCuiController) Exec(command string) string {
 				return c.ci.Layoff(parseIntList(args)), true
 			case "nr", "nextround":
 				return c.ci.NextRound(), true
-			case "sd", "setdifficulty":
-				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
-					cfg := c.ci.GetConfig()
-					cfg.CpuDifficulty = domain.ChinchonCpuDifficulty(v)
-					return c.ci.ResetWithConfig(cfg)
-				})
 			case "sp", "setplayers":
 				return cuiutil.WithParsedIntKeys(args, "playerCountRequired", "invalidPlayerCount", 2, 4, func(v int) string {
 					cfg := c.ci.GetConfig()

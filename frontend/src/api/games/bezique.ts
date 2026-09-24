@@ -6,7 +6,6 @@ import { gameExec } from '../gameExec';
 
 /** Configuration options for Bezique game settings. */
 export interface BeziqueConfigInput {
-  cpuDifficulty?: number;
   targetScore?: number;
 }
 

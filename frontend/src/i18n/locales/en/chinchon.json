@@ -8,7 +8,6 @@
   },
   "settings": {
     "title": "Settings",
-    "cpuDifficulty": "CPU Difficulty",
     "playerCount": "Players",
     "eliminationLimit": "Elimination Limit",
     "knockThreshold": "Knock Limit",

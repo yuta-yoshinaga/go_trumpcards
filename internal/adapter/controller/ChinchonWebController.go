@@ -20,7 +20,6 @@ type ChinchonWebInput struct {
 
 // ChinchonWebConfig チンチョンWeb設定
 type ChinchonWebConfig struct {
-	CpuDifficulty    *int `json:"cpuDifficulty,omitempty"`
 	PlayerCount      *int `json:"playerCount,omitempty"`
 	KnockThreshold   *int `json:"knockThreshold,omitempty"`
 	EliminationLimit *int `json:"eliminationLimit,omitempty"`
@@ -61,7 +60,6 @@ type ChinchonWebOutput struct {
 
 // ChinchonWebOutputConfig チンチョン設定アウトプット
 type ChinchonWebOutputConfig struct {
-	CpuDifficulty    int `json:"cpuDifficulty"`
 	PlayerCount      int `json:"playerCount"`
 	KnockThreshold   int `json:"knockThreshold"`
 	EliminationLimit int `json:"eliminationLimit"`
@@ -70,7 +68,6 @@ type ChinchonWebOutputConfig struct {
 // ToConfig builds a ChinchonConfig from the nested web config, applying bounds checking.
 func (c *ChinchonWebConfig) ToConfig() domain.ChinchonConfig {
 	cfg := domain.DefaultChinchonConfig()
-	cfg.CpuDifficulty = domain.ChinchonCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty, int(domain.ChinchonCpuDifficultyEasy), int(domain.ChinchonCpuDifficultyHard), int(cfg.CpuDifficulty)))
 	webutil.ApplyBoundedInt(&cfg.PlayerCount, c.PlayerCount, 2, 4)
 	webutil.ApplyBoundedInt(&cfg.KnockThreshold, c.KnockThreshold, 0, 60)
 	webutil.ApplyBoundedInt(&cfg.EliminationLimit, c.EliminationLimit, 1, 1000)

@@ -14,8 +14,6 @@ const VALID_COMMANDS = [
   'skip',
   'n',
   'next',
-  'sd',
-  'setdifficulty',
   'st',
   'settarget',
   'h',
@@ -34,8 +32,8 @@ const VALID_COMMANDS = [
  *
  * Bezique alternates a Play phase (`play <idx>`) with a Meld phase where the
  * trick winner declares a meld (`meld <idx>`) or skips it (`skip`); `next`
- * advances to the following deal. `sd <0-2>` and `st <n>` reset the game with a
- * new CPU difficulty / target score because config is only accepted on reset.
+ * advances to the following deal. `st <n>` resets the game with a new target score because config is only
+ * accepted on reset.
  */
 export function parseBeziqueCommand(input: string): CliParseResult<BeziqueCliArgs> {
   const { cmd, args } = splitCommand(input);
@@ -59,12 +57,6 @@ export function parseBeziqueCommand(input: string): CliParseResult<BeziqueCliArg
     case 'n':
     case 'next':
       return { args: ['next'] };
-    case 'sd':
-    case 'setdifficulty': {
-      const level = Number.parseInt(args[0] ?? '', 10);
-      if (Number.isNaN(level) || level < 0 || level > 2) return { error: 'Usage: sd <0-2> (0=Easy 1=Normal 2=Hard)' };
-      return { args: ['reset', { config: { cpuDifficulty: level } }] };
-    }
     case 'st':
     case 'settarget': {
       const target = Number.parseInt(args[0] ?? '', 10);
@@ -94,7 +86,6 @@ export const BEZIQUE_HELP: string[] = [
   'm <idx>             - Declare a meld (Meld phase, trick winner only)',
   's / skip            - Skip declaring a meld',
   'n / next            - Next deal',
-  'sd <0-2>            - Set CPU difficulty (resets game)',
   'st <n>              - Set target score (resets game)',
   'h / hint            - Show hint',
   'l / log             - Show action log',

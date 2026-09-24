@@ -72,7 +72,7 @@ func TestBeziqueInteractor_ResetWithConfig_ValidationError(t *testing.T) {
 	bpMock.On("Output", gameMock, mock.MatchedBy(func(err error) bool { return err != nil })).Return("validation error")
 
 	bi := usecase.NewBeziqueInteractor(gameMock, bpMock)
-	invalid := domain.BeziqueConfig{CpuDifficulty: 99, TargetScore: 1000}
+	invalid := domain.BeziqueConfig{TargetScore: 10}
 	got := bi.ResetWithConfig(invalid)
 	assert.Equal(t, "validation error", got)
 	gameMock.AssertNotCalled(t, "Reset")

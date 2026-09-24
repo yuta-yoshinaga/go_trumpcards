@@ -3175,7 +3175,7 @@ const baseBeziqueState: BeziqueResponse = {
   winnerIdx: -1,
   hint: null,
   message: '',
-  config: { cpuDifficulty: 1, targetScore: 1000 },
+  config: { targetScore: 1000 },
 };
 
 /**

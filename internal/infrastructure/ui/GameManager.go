@@ -3656,7 +3656,6 @@ var gameRegistry = []GameRegistryEntry{
 				"bezique.helpNext", "bezique.helpHint",
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
-			SettingKeys:       []string{"bezique.helpSetDifficulty"},
 		}),
 	BindCuiFor("ecarte",
 		func() usecase.EcarteInteractorIF {
@@ -3832,7 +3831,6 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys: []string{
-				"chinchon.helpSetDifficulty",
 				"chinchon.helpSetPlayers",
 			},
 		}),

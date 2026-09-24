@@ -6,7 +6,6 @@ import (
 	"math"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/cuiutil"
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
 
@@ -29,7 +28,6 @@ func NewBeziqueCuiController(bi usecase.BeziqueInteractorIF) *BeziqueCuiControll
 //	m / meld <i>             → 役をインデックス指定で宣言
 //	s / skip                 → 役宣言をパス
 //	n / next / nextround     → 次のディールへ
-//	sd / setdifficulty <0-2> → CPU難易度設定
 //	st / settarget <n>       → ターゲットスコア設定 (デフォルト1000)
 //	h / hint                 → ヒント表示
 //	log / l                  → 棋譜表示
@@ -43,7 +41,7 @@ func (c *BeziqueCuiController) Exec(command string) string {
 		[]string{
 			"p", "play", "m", "meld", "s", "skip",
 			"n", "next", "nextround",
-			"sd", "setdifficulty", "st", "settarget",
+			"st", "settarget",
 			"h", "hint", "log", "l",
 		},
 		func(cmd string, args []string) (string, bool) {
@@ -56,12 +54,6 @@ func (c *BeziqueCuiController) Exec(command string) string {
 				return c.bi.SkipMeld(), true
 			case "n", "next", "nextround":
 				return c.bi.NextRound(), true
-			case "sd", "setdifficulty":
-				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
-					cfg := c.bi.GetConfig()
-					cfg.CpuDifficulty = domain.BeziqueCpuDifficulty(v)
-					return c.bi.ResetWithConfig(cfg)
-				})
 			case "st", "settarget":
 				return cuiutil.WithParsedIntKeys(args, "targetScoreRequired", "invalidTargetScore", 1, math.MaxInt, func(v int) string {
 					cfg := c.bi.GetConfig()

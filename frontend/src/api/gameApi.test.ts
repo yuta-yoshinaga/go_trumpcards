@@ -3143,13 +3143,12 @@ describe('gameApi', () => {
       knockerIdx: -1,
       knockerMelds: [],
       message: '',
-      config: { cpuDifficulty: 1, playerCount: 2, knockThreshold: 5, eliminationLimit: 100 },
+      config: { playerCount: 2, knockThreshold: 5, eliminationLimit: 100 },
     };
 
     it('calls the correct URL with reset command and config', async () => {
       mockFetch.mockReturnValue(makeResponse(payload));
       const result = await chinchonApi.exec('reset', undefined, {
-        cpuDifficulty: 1,
         playerCount: 2,
         knockThreshold: 5,
         eliminationLimit: 100,
@@ -3161,7 +3160,7 @@ describe('gameApi', () => {
           command: 'reset',
           cardIndex: undefined,
           cardIndices: undefined,
-          config: { cpuDifficulty: 1, playerCount: 2, knockThreshold: 5, eliminationLimit: 100 },
+          config: { playerCount: 2, knockThreshold: 5, eliminationLimit: 100 },
           sessionId,
         }),
       });
