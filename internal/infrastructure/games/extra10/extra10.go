@@ -132,4 +132,36 @@ func init() {
 			return usecase.RestoreTuSacInteractor(data, new(presenter.TuSacWebPresenter))
 		},
 		controller.NewTuSacWebControllerWithProvider)
+	games.RegisterKVGame("gostop", games.CategoryExtra10,
+		func() usecase.GoStopInteractorIF {
+			return usecase.NewGoStopInteractor(domain.NewDefaultGoStop(), new(presenter.GoStopWebPresenter))
+		},
+		func(data []byte) (usecase.GoStopInteractorIF, error) {
+			return usecase.RestoreGoStopInteractor(data, new(presenter.GoStopWebPresenter))
+		},
+		controller.NewGoStopWebControllerWithProvider)
+	games.RegisterKVGame("kingalbert", games.CategoryExtra10,
+		func() usecase.KingAlbertInteractorIF {
+			return usecase.NewKingAlbertInteractor(domain.NewDefaultKingAlbert(), new(presenter.KingAlbertWebPresenter))
+		},
+		func(data []byte) (usecase.KingAlbertInteractorIF, error) {
+			return usecase.RestoreKingAlbertInteractor(data, new(presenter.KingAlbertWebPresenter))
+		},
+		controller.NewKingAlbertWebControllerWithProvider)
+	games.RegisterKVGame("baccarat", games.CategoryExtra10,
+		func() usecase.BaccaratInteractorIF {
+			return usecase.NewBaccaratInteractor(domain.NewDefaultBaccarat(), new(presenter.BaccaratWebPresenter))
+		},
+		func(data []byte) (usecase.BaccaratInteractorIF, error) {
+			return usecase.RestoreBaccaratInteractor(data, new(presenter.BaccaratWebPresenter))
+		},
+		controller.NewBaccaratWebControllerWithProvider)
+	games.RegisterKVGame("caribbeanstud", games.CategoryExtra10,
+		func() usecase.CaribbeanStudInteractorIF {
+			return usecase.NewCaribbeanStudInteractor(domain.NewDefaultCaribbeanStud(), new(presenter.CaribbeanStudWebPresenter))
+		},
+		func(data []byte) (usecase.CaribbeanStudInteractorIF, error) {
+			return usecase.RestoreCaribbeanStudInteractor(data, new(presenter.CaribbeanStudWebPresenter))
+		},
+		controller.NewCaribbeanStudWebControllerWithProvider)
 }

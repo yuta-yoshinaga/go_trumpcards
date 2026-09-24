@@ -59,14 +59,6 @@ func init() {
 			return usecase.RestoreStreetsAndAlleysInteractor(data, new(presenter.StreetsAndAlleysWebPresenter))
 		},
 		controller.NewStreetsAndAlleysWebControllerWithProvider)
-	games.RegisterKVGame("kingalbert", games.CategoryExtra,
-		func() usecase.KingAlbertInteractorIF {
-			return usecase.NewKingAlbertInteractor(domain.NewDefaultKingAlbert(), new(presenter.KingAlbertWebPresenter))
-		},
-		func(data []byte) (usecase.KingAlbertInteractorIF, error) {
-			return usecase.RestoreKingAlbertInteractor(data, new(presenter.KingAlbertWebPresenter))
-		},
-		controller.NewKingAlbertWebControllerWithProvider)
 	games.RegisterKVGame("sultan", games.CategoryExtra,
 		func() usecase.SultanInteractorIF {
 			return usecase.NewSultanInteractor(domain.NewDefaultSultan(), new(presenter.SultanWebPresenter))
@@ -115,14 +107,6 @@ func init() {
 			return usecase.RestoreMachiavelliInteractor(data, new(presenter.MachiavelliWebPresenter))
 		},
 		controller.NewMachiavelliWebControllerWithProvider)
-	games.RegisterKVGame("gostop", games.CategoryExtra,
-		func() usecase.GoStopInteractorIF {
-			return usecase.NewGoStopInteractor(domain.NewDefaultGoStop(), new(presenter.GoStopWebPresenter))
-		},
-		func(data []byte) (usecase.GoStopInteractorIF, error) {
-			return usecase.RestoreGoStopInteractor(data, new(presenter.GoStopWebPresenter))
-		},
-		controller.NewGoStopWebControllerWithProvider)
 	games.RegisterKVGame("hachihachi", games.CategoryExtra,
 		func() usecase.HachiHachiInteractorIF {
 			return usecase.NewHachiHachiInteractor(domain.NewDefaultHachiHachi(), new(presenter.HachiHachiWebPresenter))

@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra8 || casino
+//go:build !js || !wasm || extra8 || casino || extra10
 
 package domain
 

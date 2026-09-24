@@ -156,4 +156,20 @@ func init() {
 			return usecase.RestoreSheepsheadInteractor(data, new(presenter.SheepsheadWebPresenter))
 		},
 		controller.NewSheepsheadWebControllerWithProvider)
+	games.RegisterKVGame("euchre", games.CategoryExtra11,
+		func() usecase.EuchreInteractorIF {
+			return usecase.NewEuchreInteractor(domain.NewDefaultEuchre(), new(presenter.EuchreWebPresenter))
+		},
+		func(data []byte) (usecase.EuchreInteractorIF, error) {
+			return usecase.RestoreEuchreInteractor(data, new(presenter.EuchreWebPresenter))
+		},
+		controller.NewEuchreWebControllerWithProvider)
+	games.RegisterKVGame("fivehundred", games.CategoryExtra11,
+		func() usecase.FiveHundredInteractorIF {
+			return usecase.NewFiveHundredInteractor(domain.NewDefaultFiveHundred(), new(presenter.FiveHundredWebPresenter))
+		},
+		func(data []byte) (usecase.FiveHundredInteractorIF, error) {
+			return usecase.RestoreFiveHundredInteractor(data, new(presenter.FiveHundredWebPresenter))
+		},
+		controller.NewFiveHundredWebControllerWithProvider)
 }

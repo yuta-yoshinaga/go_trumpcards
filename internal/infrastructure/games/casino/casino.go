@@ -110,14 +110,6 @@ func init() {
 			return usecase.RestorePineappleInteractor(data, new(presenter.PineappleWebPresenter))
 		},
 		controller.NewPineappleWebControllerWithProvider)
-	games.RegisterKVGame("baccarat", games.CategoryCasino,
-		func() usecase.BaccaratInteractorIF {
-			return usecase.NewBaccaratInteractor(domain.NewDefaultBaccarat(), new(presenter.BaccaratWebPresenter))
-		},
-		func(data []byte) (usecase.BaccaratInteractorIF, error) {
-			return usecase.RestoreBaccaratInteractor(data, new(presenter.BaccaratWebPresenter))
-		},
-		controller.NewBaccaratWebControllerWithProvider)
 	games.RegisterKVGame("indianpoker", games.CategoryCasino,
 		func() usecase.IndianPokerInteractorIF {
 			return usecase.NewIndianPokerInteractor(domain.NewDefaultIndianPoker(), new(presenter.IndianPokerWebPresenter))
@@ -126,14 +118,6 @@ func init() {
 			return usecase.RestoreIndianPokerInteractor(data, new(presenter.IndianPokerWebPresenter))
 		},
 		controller.NewIndianPokerWebControllerWithProvider)
-	games.RegisterKVGame("threecard", games.CategoryCasino,
-		func() usecase.ThreeCardInteractorIF {
-			return usecase.NewThreeCardInteractor(domain.NewDefaultThreeCard(), new(presenter.ThreeCardWebPresenter))
-		},
-		func(data []byte) (usecase.ThreeCardInteractorIF, error) {
-			return usecase.RestoreThreeCardInteractor(data, new(presenter.ThreeCardWebPresenter))
-		},
-		controller.NewThreeCardWebControllerWithProvider)
 	games.RegisterKVGame("sevencardstud", games.CategoryCasino,
 		func() usecase.SevenCardStudInteractorIF {
 			return usecase.NewSevenCardStudInteractor(domain.NewDefaultSevenCardStud(), new(presenter.SevenCardStudWebPresenter))
@@ -142,14 +126,6 @@ func init() {
 			return usecase.RestoreSevenCardStudInteractor(data, new(presenter.SevenCardStudWebPresenter))
 		},
 		controller.NewSevenCardStudWebControllerWithProvider)
-	games.RegisterKVGame("caribbeanstud", games.CategoryCasino,
-		func() usecase.CaribbeanStudInteractorIF {
-			return usecase.NewCaribbeanStudInteractor(domain.NewDefaultCaribbeanStud(), new(presenter.CaribbeanStudWebPresenter))
-		},
-		func(data []byte) (usecase.CaribbeanStudInteractorIF, error) {
-			return usecase.RestoreCaribbeanStudInteractor(data, new(presenter.CaribbeanStudWebPresenter))
-		},
-		controller.NewCaribbeanStudWebControllerWithProvider)
 	games.RegisterKVGame("razz", games.CategoryCasino,
 		func() usecase.SevenCardStudInteractorIF {
 			return usecase.NewSevenCardStudInteractor(domain.NewDefaultRazz(), new(presenter.SevenCardStudWebPresenter))
@@ -326,4 +302,12 @@ func init() {
 			return usecase.RestoreTexasHoldemBonusInteractor(data, new(presenter.TexasHoldemBonusWebPresenter))
 		},
 		controller.NewTexasHoldemBonusWebControllerWithProvider)
+	games.RegisterKVGame("threecard", games.CategoryCasino,
+		func() usecase.ThreeCardInteractorIF {
+			return usecase.NewThreeCardInteractor(domain.NewDefaultThreeCard(), new(presenter.ThreeCardWebPresenter))
+		},
+		func(data []byte) (usecase.ThreeCardInteractorIF, error) {
+			return usecase.RestoreThreeCardInteractor(data, new(presenter.ThreeCardWebPresenter))
+		},
+		controller.NewThreeCardWebControllerWithProvider)
 }

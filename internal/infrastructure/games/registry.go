@@ -169,7 +169,7 @@ var registry = []*Game{
 	{Name: "freecell", Category: CategorySolo},
 	{Name: "seahaventowers", Category: CategoryExtra9},
 	{Name: "cruel", Category: CategorySolo},
-	{Name: "baccarat", Category: CategoryCasino},
+	{Name: "baccarat", Category: CategoryExtra10},
 	{Name: "spades", Category: CategoryClassic},
 	{Name: "crazyeights", Category: CategoryClassic},
 	{Name: "ginrummy", Category: CategoryClassic},
@@ -184,7 +184,7 @@ var registry = []*Game{
 	{Name: "deuceswild", Category: CategoryExtra8},
 	{Name: "jokerpoker", Category: CategoryExtra8},
 	// Euchre is a trick-taking game.
-	{Name: "euchre", Category: CategoryExtra7},
+	{Name: "euchre", Category: CategoryExtra11},
 	{Name: "pyramid", Category: CategorySolo},
 	{Name: "tripeaks", Category: CategorySolo},
 	{Name: "cribbage", Category: CategoryExtra6},
@@ -206,7 +206,7 @@ var registry = []*Game{
 	{Name: "fortythieves", Category: CategorySolo},
 	{Name: "paigow", Category: CategoryExtra6},
 	{Name: "twotenjack", Category: CategoryClassic},
-	{Name: "caribbeanstud", Category: CategoryCasino},
+	{Name: "caribbeanstud", Category: CategoryExtra10},
 	{Name: "texasholdembonus", Category: CategoryCasino},
 	{Name: "war", Category: CategoryExtra2},
 	{Name: "canfield", Category: CategorySolo},
@@ -342,7 +342,7 @@ var registry = []*Game{
 	// Streets and Alleys is a Beleaguered Castle variant.
 	{Name: "streetsandalleys", Category: CategoryExtra},
 	// King Albert is an English open patience (FreeCell family).
-	{Name: "kingalbert", Category: CategoryExtra},
+	{Name: "kingalbert", Category: CategoryExtra10},
 	{Name: "flowergarden", Category: CategoryExtra4},
 	{Name: "fortyandeight", Category: CategoryExtra3},
 	// Agnes Sorel is a Klondike+Canfield hybrid patience.
@@ -381,7 +381,7 @@ var registry = []*Game{
 	// Osmosis (浸透) is a foundation-only solitaire.
 	{Name: "osmosis", Category: CategorySolo},
 	// 500 (Five Hundred) is a trick-taking game (auction + kitty exchange + bowers/joker).
-	{Name: "fivehundred", Category: CategoryExtra7},
+	{Name: "fivehundred", Category: CategoryExtra11},
 	// Schnapsen / Sixty-Six is a 2-player trick-taking game (marriages + draw from stock).
 	{Name: "schnapsen", Category: CategoryExtra9},
 	// Burraco is a Canasta-derived rummy game.
@@ -734,7 +734,7 @@ var registry = []*Game{
 	{Name: "koikoi", Category: CategoryExtra3},
 	// Go-Stop (Godori) is a Korean hanafuda capture game (same 48-card Hwatu deck
 	// as Koi-Koi) with Gwang/Godori scoring + Go/Stop; procedural render (ADR-0033).
-	{Name: "gostop", Category: CategoryExtra},
+	{Name: "gostop", Category: CategoryExtra10},
 	// Hachi-Hachi is the classic 3-player Japanese hanafuda game (88-point
 	// settlement); reuses the hanafuda deck + procedural render path (ADR-0033).
 	{Name: "hachihachi", Category: CategoryExtra},
