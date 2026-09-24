@@ -8,16 +8,8 @@ import { useGameConfig } from './useGameConfig';
 /** Default Machiavelli game configuration. */
 export const DEFAULT_MACHIAVELLI_CONFIG: MachiavelliConfig = {
   playerCount: 4,
-  cpuDifficulty: 1,
   targetRounds: 3,
 };
-
-/** CPU difficulty level options for Machiavelli. */
-export const CPU_DIFFICULTY_OPTIONS = [
-  { value: 0, label: 'Easy' },
-  { value: 1, label: 'Normal' },
-  { value: 2, label: 'Hard' },
-] as const;
 
 /** Available player-count options for Machiavelli (2-5 players). */
 export const PLAYER_COUNT_OPTIONS = [2, 3, 4, 5] as const;

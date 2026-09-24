@@ -13,7 +13,6 @@
   "hintEscoba": "Recommendation: play {{played}} to sweep {{captured}} (escoba!)",
   "helpPlay": "  p <h> [t...]             play hand h (capture table cards t..., or lay if none given)",
   "helpNext": "  n                        start the next round",
-  "helpSetDifficulty": "  sd [0-2]                 CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
   "helpSetTarget": "  st <n>                   target score (default 10)",
   "roundLine": "Round {{round}} (stock {{stock}} left)",
   "playerLine": "{{name}}: hand {{hand}} / captured {{captured}} / escoba {{escoba}} / {{score}}pt",

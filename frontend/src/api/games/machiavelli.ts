@@ -19,7 +19,6 @@ export interface MachiavelliMoveParams {
 /** Configuration options for Machiavelli game settings. */
 export interface MachiavelliConfigInput {
   playerCount?: number;
-  cpuDifficulty?: number;
   targetRounds?: number;
 }
 

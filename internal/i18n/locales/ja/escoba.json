@@ -13,7 +13,6 @@
   "hintEscoba": "推奨: {{played}} で 場札 {{captured}} を全取り（エスコバ！）",
   "helpPlay": "  p <h> [t...]             手札hを出す (場札t...を捕獲、無指定で場に置く)",
   "helpNext": "  n                        次のラウンドを開始する",
-  "helpSetDifficulty": "  sd [0-2]                 CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
   "helpSetTarget": "  st <n>                   目標スコア (デフォルト10)",
   "roundLine": "ラウンド {{round}} (山札 残り{{stock}}枚)",
   "playerLine": "{{name}}: 手札{{hand}}枚 / 捕獲{{captured}}枚 / エスコバ{{escoba}} / {{score}}点",

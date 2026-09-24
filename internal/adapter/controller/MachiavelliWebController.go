@@ -31,9 +31,8 @@ type MachiavelliWebInput struct {
 
 // MachiavelliWebConfig マキャヴェッリ Web 設定
 type MachiavelliWebConfig struct {
-	PlayerCount   *int `json:"playerCount,omitempty"`
-	CpuDifficulty *int `json:"cpuDifficulty,omitempty"`
-	TargetRounds  *int `json:"targetRounds,omitempty"`
+	PlayerCount  *int `json:"playerCount,omitempty"`
+	TargetRounds *int `json:"targetRounds,omitempty"`
 }
 
 // MachiavelliWebOutputMeld テーブル上のメルドのアウトプット
@@ -72,21 +71,14 @@ type MachiavelliWebOutput struct {
 
 // MachiavelliWebOutputConfig 設定アウトプット
 type MachiavelliWebOutputConfig struct {
-	PlayerCount   int `json:"playerCount"`
-	CpuDifficulty int `json:"cpuDifficulty"`
-	TargetRounds  int `json:"targetRounds"`
+	PlayerCount  int `json:"playerCount"`
+	TargetRounds int `json:"targetRounds"`
 }
 
 // ToConfig builds a MachiavelliConfig from the nested web config, applying bounds checking.
 func (c *MachiavelliWebConfig) ToConfig() domain.MachiavelliConfig {
 	cfg := domain.DefaultMachiavelliConfig()
 	webutil.ApplyBoundedInt(&cfg.PlayerCount, c.PlayerCount, domain.MachiavelliPlayerCountMin, domain.MachiavelliPlayerCountMax)
-	cfg.CpuDifficulty = domain.MachiavelliCpuDifficulty(webutil.BoundedIntPtr(
-		c.CpuDifficulty,
-		int(domain.MachiavelliCpuDifficultyEasy),
-		int(domain.MachiavelliCpuDifficultyHard),
-		int(cfg.CpuDifficulty),
-	))
 	webutil.ApplyBoundedInt(&cfg.TargetRounds, c.TargetRounds, 1, 100)
 	return cfg
 }

@@ -57,7 +57,7 @@ const turnState: MachiavelliResponse = {
   winnerIdx: -1,
   roundWinnerIdx: -1,
   message: '',
-  config: { playerCount: 4, cpuDifficulty: 1, targetRounds: 3 },
+  config: { playerCount: 4, targetRounds: 3 },
 };
 
 const roundEndState: MachiavelliResponse = { ...turnState, phase: 1 };
@@ -113,7 +113,6 @@ describe('MachiavelliPage', () => {
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
         playerCount: 4,
-        cpuDifficulty: 1,
         targetRounds: 3,
       }),
     );
@@ -348,7 +347,6 @@ describe('MachiavelliPage', () => {
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
         playerCount: 4,
-        cpuDifficulty: 1,
         targetRounds: 3,
       }),
     );
@@ -376,7 +374,6 @@ describe('MachiavelliPage', () => {
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
         playerCount: 5,
-        cpuDifficulty: 1,
         targetRounds: 3,
       }),
     );

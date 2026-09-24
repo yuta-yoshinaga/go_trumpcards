@@ -5,7 +5,6 @@
   "helpLayoff": "  lo <meldIdx handIdx> add a hand card to an existing meld",
   "helpNextRound": "  nr                   next round",
   "helpSetPlayers": "  pc [2-5]             player count",
-  "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
   "helpSetRounds": "  sr <n>               number of rounds",
   "header": "Round: {{round}}/{{total}}  Stock: {{stock}}",
   "tableTitle": "Table melds:",

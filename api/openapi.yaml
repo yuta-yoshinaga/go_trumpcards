@@ -56600,7 +56600,7 @@ components:
       properties:
         command:
           type: string
-          description: Escoba command. Accepted values. `reset` (`r`), `next` (`n`), `play` (`p`), `setdifficulty` (`sd`), `settarget` (`st`), `log` (`l`).
+          description: Escoba command. Accepted values. `reset` (`r`), `next` (`n`), `play` (`p`), `settarget` (`st`), `log` (`l`).
           enum: [reset, r, next, n, play, p, setdifficulty, sd, settarget, st, log, l, hint, h]
           example: play
         handIndex:

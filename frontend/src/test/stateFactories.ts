@@ -3814,7 +3814,7 @@ const baseEscobaState: EscobaResponse = {
   isHumanTurn: true,
   handCaptures: [[[0, 1]], [], []],
   lastRoundDetail: null,
-  config: { cpuDifficulty: 1, targetScore: 10 },
+  config: { targetScore: 10 },
   message: '',
 };
 

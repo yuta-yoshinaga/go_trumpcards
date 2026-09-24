@@ -7,7 +7,6 @@
   "settings": {
     "title": "設定",
     "playerCount": "プレイヤー数",
-    "cpuDifficulty": "CPU難易度",
     "targetRounds": "ラウンド数",
     "easy": "Easy",
     "normal": "Normal",

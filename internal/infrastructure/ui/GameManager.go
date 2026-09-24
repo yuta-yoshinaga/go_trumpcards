@@ -3754,7 +3754,6 @@ var gameRegistry = []GameRegistryEntry{
 				"escoba.helpSetTarget",
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
-			SettingKeys:       []string{"escoba.helpSetDifficulty"},
 			NoteKeys:          []string{"escoba.helpCardValues"},
 		}),
 	BindCuiFor("handandfoot",
@@ -4566,7 +4565,7 @@ var gameRegistry = []GameRegistryEntry{
 				"machiavelli.helpNextRound",
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
-			SettingKeys:       []string{"machiavelli.helpSetPlayers", "machiavelli.helpSetDifficulty", "machiavelli.helpSetRounds"},
+			SettingKeys:       []string{"machiavelli.helpSetPlayers", "machiavelli.helpSetRounds"},
 		}),
 	BindCuiFor("pan",
 		func() usecase.PanInteractorIF {

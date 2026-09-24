@@ -2985,14 +2985,13 @@ describe('gameApi', () => {
       winnerIdx: -1,
       roundWinnerIdx: -1,
       message: '',
-      config: { playerCount: 4, cpuDifficulty: 1, targetRounds: 3 },
+      config: { playerCount: 4, targetRounds: 3 },
     };
 
     it('calls the correct URL with reset command and config', async () => {
       mockFetch.mockReturnValue(makeResponse(payload));
       const result = await machiavelliApi.exec('reset', undefined, {
         playerCount: 4,
-        cpuDifficulty: 1,
         targetRounds: 3,
       });
       expect(mockFetch).toHaveBeenCalledWith('/machiavelli/exec', {
@@ -3000,7 +2999,7 @@ describe('gameApi', () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           command: 'reset',
-          config: { playerCount: 4, cpuDifficulty: 1, targetRounds: 3 },
+          config: { playerCount: 4, targetRounds: 3 },
           sessionId,
         }),
       });
