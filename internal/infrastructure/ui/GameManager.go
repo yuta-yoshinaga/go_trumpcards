@@ -3717,7 +3717,6 @@ var gameRegistry = []GameRegistryEntry{
 				"teenpatti.helpNext", "teenpatti.helpAutoPlay", "teenpatti.helpHint",
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
-			SettingKeys:       []string{"teenpatti.helpSetDifficulty"},
 		}),
 	BindCuiFor("scopone",
 		func() usecase.ScoponeInteractorIF {
@@ -3735,7 +3734,6 @@ var gameRegistry = []GameRegistryEntry{
 				"scopone.helpSetTarget",
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
-			SettingKeys:       []string{"scopone.helpSetDifficulty"},
 			NoteKeys:          []string{"scopone.scoreRules"},
 		}),
 	BindCuiFor("escoba",

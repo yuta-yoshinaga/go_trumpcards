@@ -13,7 +13,6 @@
   "hintScopa": "推奨: {{played}} で 場札 {{captured}} を全取り（スコパ！）",
   "helpPlay": "  p <h> [t...]             手札hを出す (場札t...を捕獲、無指定で場に置く)",
   "helpNext": "  n                        次のラウンドを開始する",
-  "helpSetDifficulty": "  sd [0-2]                 CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
   "helpSetTarget": "  st <n>                   目標スコア (デフォルト11)",
   "teamScoreLine": "チームスコア: チーム0 {{t0}}点 / チーム1 {{t1}}点",
   "roundLine": "ラウンド {{round}}",

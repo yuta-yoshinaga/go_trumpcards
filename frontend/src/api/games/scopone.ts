@@ -7,7 +7,6 @@ import { gameExec } from '../gameExec';
 /** Configuration options for Scopone game settings. */
 export interface ScoponeConfigInput {
   targetScore?: number;
-  cpuDifficulty?: number;
 }
 
 /** Command verbs accepted by the Scopone /scopone/exec endpoint (short forms). */

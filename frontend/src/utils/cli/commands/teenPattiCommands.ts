@@ -24,8 +24,6 @@ const VALID_COMMANDS = [
   'decline',
   'n',
   'next',
-  'sd',
-  'setdifficulty',
   'sa',
   'setante',
   'sc',
@@ -49,8 +47,7 @@ const VALID_COMMANDS = [
  * showdown when two players remain, and `sideshow` requests a private hand
  * comparison with the previous Seen player. `accept` / `decline` respond to a
  * Side Show requested of the human. `next` advances to the following deal.
- * `sd <0-2>`, `sa <n>`, and `sc <n>` reset the game with a new CPU difficulty /
- * ante / starting chips because config is only accepted on reset.
+ * `sa <n>`, and `sc <n>` reset the game with a new ante / starting chips because config is only accepted on reset.
  */
 export function parseTeenPattiCommand(input: string): CliParseResult<TeenPattiCliArgs> {
   const { cmd, args } = splitCommand(input);
@@ -86,12 +83,6 @@ export function parseTeenPattiCommand(input: string): CliParseResult<TeenPattiCl
     case 'n':
     case 'next':
       return { args: ['next'] };
-    case 'sd':
-    case 'setdifficulty': {
-      const level = Number.parseInt(args[0] ?? '', 10);
-      if (Number.isNaN(level) || level < 0 || level > 2) return { error: 'Usage: sd <0-2> (0=Easy 1=Normal 2=Hard)' };
-      return { args: ['reset', { config: { cpuDifficulty: level } }] };
-    }
     case 'sa':
     case 'setante': {
       const ante = Number.parseInt(args[0] ?? '', 10);
@@ -132,7 +123,6 @@ export const TEEN_PATTI_HELP: string[] = [
   'ac / accept         - Accept a Side Show request',
   'dc / decline        - Decline a Side Show request',
   'n / next            - Next deal',
-  'sd <0-2>            - Set CPU difficulty (resets game)',
   'sa <n>              - Set ante (resets game)',
   'sc <n>              - Set starting chips (resets game)',
   'h / hint            - Show hint',

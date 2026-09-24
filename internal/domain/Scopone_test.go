@@ -34,8 +34,6 @@ func TestScoponeConfig_Validate(t *testing.T) {
 	cfg := domain.DefaultScoponeConfig()
 	assert.NoError(t, cfg.Validate())
 	assert.Equal(t, 11, cfg.TargetScore)
-	assert.Error(t, domain.ScoponeConfig{CpuDifficulty: 99, TargetScore: 11}.Validate())
-	assert.Error(t, domain.ScoponeConfig{CpuDifficulty: 0, TargetScore: 0}.Validate())
 }
 
 func TestScoponeDeck40(t *testing.T) {
@@ -183,7 +181,7 @@ func TestScopone_GettersAndConfig(t *testing.T) {
 	assert.Equal(t, 0, s.GetTeamScore(9)) // out of range
 	assert.NotNil(t, s.GetActionLog())
 	assert.True(t, s.IsHumanTurn() || !s.IsHumanTurn())
-	cfg := domain.ScoponeConfig{CpuDifficulty: domain.ScoponeCpuDifficultyHard, TargetScore: 21}
+	cfg := domain.ScoponeConfig{TargetScore: 21}
 	s.SetConfig(cfg)
 	assert.Equal(t, cfg, s.GetConfig())
 	// NextRound is a no-op outside roundEnd.
@@ -234,6 +232,18 @@ func TestScopone_JSONRoundTrip(t *testing.T) {
 	require.NoError(t, json.Unmarshal(data, &s2))
 	assert.Equal(t, s.GetPhase(), s2.GetPhase())
 	assert.Equal(t, s.GetPlayerCnt(), s2.GetPlayerCnt())
+}
+
+func TestScopone_UnmarshalLegacyConfigField(t *testing.T) {
+	s := newTestScopone(true)
+	s.Reset()
+	data, err := json.Marshal(s)
+	require.NoError(t, err)
+	legacy := strings.Replace(string(data), `"cf":{"ts":11}`, `"cf":{"ts":11,"cd":0}`, 1)
+	require.NotEqual(t, string(data), legacy)
+	var restored domain.Scopone
+	require.NoError(t, json.Unmarshal([]byte(legacy), &restored))
+	assert.Equal(t, domain.ScoponeDefaultTargetScore, restored.GetConfig().TargetScore)
 }
 
 func TestScopone_UnmarshalRejectsInvalid(t *testing.T) {

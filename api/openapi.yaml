@@ -56295,11 +56295,6 @@ components:
               type: integer
               description: Score required to win the match.
               example: 11
-            cpuDifficulty:
-              type: integer
-              description: CPU difficulty (0=easy, 1=normal, 2=hard).
-              minimum: 0
-              maximum: 2
         sessionId:
           type: string
           description: Client-generated session identifier (max 256 characters)
@@ -56427,8 +56422,8 @@ components:
       properties:
         command:
           type: string
-          description: Scopone command. Accepted values. `reset` (`r`), `next` (`n`), `play` (`p`), `setdifficulty` (`sd`), `settarget` (`st`), `log` (`l`).
-          enum: [reset, r, next, n, play, p, setdifficulty, sd, settarget, st, log, l, hint, h]
+          description: Scopone command. Accepted values. `reset` (`r`), `next` (`n`), `play` (`p`), `settarget` (`st`), `log` (`l`).
+          enum: [reset, r, next, n, play, p, settarget, st, log, l, hint, h]
           example: play
         handIndex:
           type: integer
@@ -56525,7 +56520,6 @@ components:
           type: object
           properties:
             targetScore: { type: integer }
-            cpuDifficulty: { type: integer }
         cpuActions:
           type: array
           description: Actions taken by the CPUs since the last human action.
@@ -70648,8 +70642,8 @@ components:
             Game command. Accepted values: `reset` (`r`), `see` (`s`), `bet` (`b`),
             `raise` (`rs`), `fold` (`f`), `show` (`sh`), `sideshow` (`ss`),
             `accept` (`ac`), `decline` (`dc`), `next` (`n`, `nextround`), `hint` (`h`),
-            `setdifficulty` (`sd`), `setante` (`sa`), `setchips` (`sc`), `log` (`l`).
-          enum: [reset, r, see, s, bet, b, raise, rs, fold, f, show, sh, sideshow, ss, accept, ac, decline, dc, next, n, nextround, hint, h, setdifficulty, sd, setante, sa, setchips, sc, log, l]
+            `setante` (`sa`), `setchips` (`sc`), `log` (`l`).
+          enum: [reset, r, see, s, bet, b, raise, rs, fold, f, show, sh, sideshow, ss, accept, ac, decline, dc, next, n, nextround, hint, h, setante, sa, setchips, sc, log, l]
           example: bet
         raiseStake:
           type: integer
@@ -70676,10 +70670,6 @@ components:
           type: object
           description: Optional game configuration (only used with `reset`).
           properties:
-            cpuDifficulty:
-              type: integer
-              minimum: 0
-              maximum: 2
             ante:
               type: integer
               minimum: 1

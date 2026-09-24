@@ -52,12 +52,10 @@ describe('parseTeenPattiCommand', () => {
     expect(parseTeenPattiCommand('next')).toEqual({ args: ['next'] });
   });
 
-  it('parses sd into a reset with difficulty config', () => {
-    expect(parseTeenPattiCommand('sd 2')).toEqual({ args: ['reset', { config: { cpuDifficulty: 2 } }] });
-  });
-
-  it('rejects an out-of-range sd', () => {
-    expect('error' in parseTeenPattiCommand('sd 9')).toBe(true);
+  it('does not recognize the removed sd command', () => {
+    const result = parseTeenPattiCommand('sd 9');
+    expect('error' in result).toBe(true);
+    if ('error' in result) expect(result.error).toContain('Unknown command');
   });
 
   it('parses sa into a reset with ante config', () => {
