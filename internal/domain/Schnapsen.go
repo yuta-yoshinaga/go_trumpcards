@@ -1,4 +1,4 @@
-//go:build !js || !wasm || solo
+//go:build !js || !wasm || extra9
 
 // Package domain シュナプセン / Sixty-Six (Schnapsen / 66) のドメインモデル。
 //

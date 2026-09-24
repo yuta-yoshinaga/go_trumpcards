@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra3
+//go:build !js || !wasm || extra10
 
 // Package domain — カイザー (Kaiser) のドメインモデル。
 //

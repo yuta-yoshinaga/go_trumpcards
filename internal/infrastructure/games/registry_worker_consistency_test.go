@@ -14,7 +14,7 @@ import (
 
 // TestWorkerRegistrationsCoverAllGames asserts that every game in
 // games.ByCategory(c) has a matching games.RegisterKVGame call in the
-// corresponding worker sub-package (casino, classic, solo, extra, extra2, extra3, extra4, extra5, extra6, extra7) —
+// corresponding worker sub-package (casino, classic, solo, extra, extra2, extra3, extra4, extra5, extra6, extra7, extra8, extra9, extra10, extra11) —
 // and conversely,
 // that no sub-package registers a name absent from the registry.
 //
@@ -41,6 +41,10 @@ func TestWorkerRegistrationsCoverAllGames(t *testing.T) {
 		{games.CategoryExtra5, "extra5"},
 		{games.CategoryExtra6, "extra6"},
 		{games.CategoryExtra7, "extra7"},
+		{games.CategoryExtra8, "extra8"},
+		{games.CategoryExtra9, "extra9"},
+		{games.CategoryExtra10, "extra10"},
+		{games.CategoryExtra11, "extra11"},
 	}
 
 	for _, c := range cases {

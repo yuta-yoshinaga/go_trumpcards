@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra5
+//go:build !js || !wasm || extra10
 
 // Package domain チェゴ (Cego) のドメインモデル。
 //

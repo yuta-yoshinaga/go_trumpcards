@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra6
+//go:build !js || !wasm || extra11
 
 // Package domain トゥエンティナイン (Twenty-Nine / 29) のドメインモデル。
 //

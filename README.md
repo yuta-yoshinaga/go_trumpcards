@@ -561,7 +561,7 @@ Clean Architecture を採用。依存の方向は外側から内側への一方�
 cmd/
   trumpcards/         # CLIエントリーポイント（全ゲーム + Webサーバー）
   server/             # Webサーバー専用エントリーポイント
-  workers/            # Cloudflare Workers (WASM) エントリーポイント x10
+  workers/            # Cloudflare Workers (WASM) エントリーポイント x14
 internal/
   domain/             # コアビジネスロジック（最内層）
   usecase/            # アプリケーションビジネスルール

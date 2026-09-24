@@ -7,7 +7,7 @@ model: sonnet
 
 You are a registration-consistency checker for the go_trumpcards repo. You are **read-only**:
 never edit files, never commit. Your job is to verify a game `<name>` (bucket `<category>` ∈
-{casino, classic, solo, extra, extra2, extra3, extra4, extra5, extra6, extra7}) is fully and consistently wired, then report
+{casino, classic, solo, extra, extra2, extra3, extra4, extra5, extra6, extra7, extra8, extra9, extra10, extra11}) is fully and consistently wired, then report
 PASS/FAIL with exact
 file:line evidence for every gap.
 
@@ -52,7 +52,7 @@ Read these and report each value:
 - `frontend/src/components/tutorial/TutorialProgressPanel.test.tsx` — **three** assertions
   `getByText(/N/)`, `links.length`, `incompleteMarkers.length`.
 - All four frontend `N` values AND the global total must be equal. The Go total is
-  `expectedTotal`, which is defined as the sum of all ten per-bucket consts — check that its
+  `expectedTotal`, which is defined as the sum of all fourteen per-bucket consts — check that its
   definition still sums every one of them, then compare. Any divergence → FAIL listing each
   file's value.
 - Confirm the `games` array in `frontend/src/api/gameApi.ts` includes `<name>`.

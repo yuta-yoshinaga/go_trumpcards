@@ -14,14 +14,6 @@ import (
 )
 
 func init() {
-	games.RegisterKVGame("blackjack", games.CategoryCasino,
-		func() usecase.BlackJackInteractorIF {
-			return usecase.NewBlackJackInteractor(domain.NewDefaultBlackJack(), new(presenter.BlackJackWebPresenter))
-		},
-		func(data []byte) (usecase.BlackJackInteractorIF, error) {
-			return usecase.RestoreBlackJackInteractor(data, new(presenter.BlackJackWebPresenter))
-		},
-		controller.NewBlackJackWebControllerWithProvider)
 	games.RegisterKVGame("poker", games.CategoryCasino,
 		func() usecase.PokerInteractorIF {
 			return usecase.NewPokerInteractor(domain.NewDefaultPoker(), new(presenter.PokerWebPresenter))
@@ -118,14 +110,6 @@ func init() {
 			return usecase.RestorePineappleInteractor(data, new(presenter.PineappleWebPresenter))
 		},
 		controller.NewPineappleWebControllerWithProvider)
-	games.RegisterKVGame("baccarat", games.CategoryCasino,
-		func() usecase.BaccaratInteractorIF {
-			return usecase.NewBaccaratInteractor(domain.NewDefaultBaccarat(), new(presenter.BaccaratWebPresenter))
-		},
-		func(data []byte) (usecase.BaccaratInteractorIF, error) {
-			return usecase.RestoreBaccaratInteractor(data, new(presenter.BaccaratWebPresenter))
-		},
-		controller.NewBaccaratWebControllerWithProvider)
 	games.RegisterKVGame("indianpoker", games.CategoryCasino,
 		func() usecase.IndianPokerInteractorIF {
 			return usecase.NewIndianPokerInteractor(domain.NewDefaultIndianPoker(), new(presenter.IndianPokerWebPresenter))
@@ -134,38 +118,6 @@ func init() {
 			return usecase.RestoreIndianPokerInteractor(data, new(presenter.IndianPokerWebPresenter))
 		},
 		controller.NewIndianPokerWebControllerWithProvider)
-	games.RegisterKVGame("videopoker", games.CategoryCasino,
-		func() usecase.VideoPokerInteractorIF {
-			return usecase.NewVideoPokerInteractor(domain.NewDefaultVideoPoker(), new(presenter.VideoPokerWebPresenter))
-		},
-		func(data []byte) (usecase.VideoPokerInteractorIF, error) {
-			return usecase.RestoreVideoPokerInteractor(data, new(presenter.VideoPokerWebPresenter))
-		},
-		controller.NewVideoPokerWebControllerWithProvider)
-	games.RegisterKVGame("deuceswild", games.CategoryCasino,
-		func() usecase.VideoPokerInteractorIF {
-			return usecase.NewVideoPokerInteractor(domain.NewDeucesWildVideoPoker(), new(presenter.VideoPokerWebPresenter))
-		},
-		func(data []byte) (usecase.VideoPokerInteractorIF, error) {
-			return usecase.RestoreVideoPokerInteractor(data, new(presenter.VideoPokerWebPresenter))
-		},
-		controller.NewVideoPokerWebControllerWithProvider)
-	games.RegisterKVGame("jokerpoker", games.CategoryCasino,
-		func() usecase.VideoPokerInteractorIF {
-			return usecase.NewVideoPokerInteractor(domain.NewJokerPokerVideoPoker(), new(presenter.VideoPokerWebPresenter))
-		},
-		func(data []byte) (usecase.VideoPokerInteractorIF, error) {
-			return usecase.RestoreVideoPokerInteractor(data, new(presenter.VideoPokerWebPresenter))
-		},
-		controller.NewVideoPokerWebControllerWithProvider)
-	games.RegisterKVGame("threecard", games.CategoryCasino,
-		func() usecase.ThreeCardInteractorIF {
-			return usecase.NewThreeCardInteractor(domain.NewDefaultThreeCard(), new(presenter.ThreeCardWebPresenter))
-		},
-		func(data []byte) (usecase.ThreeCardInteractorIF, error) {
-			return usecase.RestoreThreeCardInteractor(data, new(presenter.ThreeCardWebPresenter))
-		},
-		controller.NewThreeCardWebControllerWithProvider)
 	games.RegisterKVGame("sevencardstud", games.CategoryCasino,
 		func() usecase.SevenCardStudInteractorIF {
 			return usecase.NewSevenCardStudInteractor(domain.NewDefaultSevenCardStud(), new(presenter.SevenCardStudWebPresenter))
@@ -174,22 +126,6 @@ func init() {
 			return usecase.RestoreSevenCardStudInteractor(data, new(presenter.SevenCardStudWebPresenter))
 		},
 		controller.NewSevenCardStudWebControllerWithProvider)
-	games.RegisterKVGame("caribbeanstud", games.CategoryCasino,
-		func() usecase.CaribbeanStudInteractorIF {
-			return usecase.NewCaribbeanStudInteractor(domain.NewDefaultCaribbeanStud(), new(presenter.CaribbeanStudWebPresenter))
-		},
-		func(data []byte) (usecase.CaribbeanStudInteractorIF, error) {
-			return usecase.RestoreCaribbeanStudInteractor(data, new(presenter.CaribbeanStudWebPresenter))
-		},
-		controller.NewCaribbeanStudWebControllerWithProvider)
-	games.RegisterKVGame("texasholdembonus", games.CategoryCasino,
-		func() usecase.TexasHoldemBonusInteractorIF {
-			return usecase.NewTexasHoldemBonusInteractor(domain.NewDefaultTexasHoldemBonus(), new(presenter.TexasHoldemBonusWebPresenter))
-		},
-		func(data []byte) (usecase.TexasHoldemBonusInteractorIF, error) {
-			return usecase.RestoreTexasHoldemBonusInteractor(data, new(presenter.TexasHoldemBonusWebPresenter))
-		},
-		controller.NewTexasHoldemBonusWebControllerWithProvider)
 	games.RegisterKVGame("razz", games.CategoryCasino,
 		func() usecase.SevenCardStudInteractorIF {
 			return usecase.NewSevenCardStudInteractor(domain.NewDefaultRazz(), new(presenter.SevenCardStudWebPresenter))
@@ -238,62 +174,6 @@ func init() {
 			return usecase.RestoreDeuceToSevenInteractor(data, new(presenter.DeuceToSevenWebPresenter))
 		},
 		controller.NewDeuceToSevenWebControllerWithProvider)
-	games.RegisterKVGame("spanish21", games.CategoryCasino,
-		func() usecase.BlackJackInteractorIF {
-			return usecase.NewBlackJackInteractor(domain.NewSpanish21BlackJack(), new(presenter.BlackJackWebPresenter))
-		},
-		func(data []byte) (usecase.BlackJackInteractorIF, error) {
-			return usecase.RestoreBlackJackInteractor(data, new(presenter.BlackJackWebPresenter))
-		},
-		controller.NewBlackJackWebControllerWithProvider)
-	games.RegisterKVGame("doubleexposure", games.CategoryCasino,
-		func() usecase.BlackJackInteractorIF {
-			return usecase.NewBlackJackInteractor(domain.NewDoubleExposureBlackJack(), new(presenter.BlackJackWebPresenter))
-		},
-		func(data []byte) (usecase.BlackJackInteractorIF, error) {
-			return usecase.RestoreBlackJackInteractor(data, new(presenter.BlackJackWebPresenter))
-		},
-		controller.NewBlackJackWebControllerWithProvider)
-	games.RegisterKVGame("blackjackswitch", games.CategoryCasino,
-		func() usecase.BlackJackSwitchInteractorIF {
-			return usecase.NewBlackJackSwitchInteractor(domain.NewDefaultBlackJackSwitch(), new(presenter.BlackJackSwitchWebPresenter))
-		},
-		func(data []byte) (usecase.BlackJackSwitchInteractorIF, error) {
-			return usecase.RestoreBlackJackSwitchInteractor(data, new(presenter.BlackJackSwitchWebPresenter))
-		},
-		controller.NewBlackJackSwitchWebControllerWithProvider)
-	games.RegisterKVGame("ultimatetexasholdem", games.CategoryCasino,
-		func() usecase.UltimateTexasHoldemInteractorIF {
-			return usecase.NewUltimateTexasHoldemInteractor(domain.NewDefaultUltimateTexasHoldem(), new(presenter.UltimateTexasHoldemWebPresenter))
-		},
-		func(data []byte) (usecase.UltimateTexasHoldemInteractorIF, error) {
-			return usecase.RestoreUltimateTexasHoldemInteractor(data, new(presenter.UltimateTexasHoldemWebPresenter))
-		},
-		controller.NewUltimateTexasHoldemWebControllerWithProvider)
-	games.RegisterKVGame("casinoholdem", games.CategoryCasino,
-		func() usecase.CasinoHoldemInteractorIF {
-			return usecase.NewCasinoHoldemInteractor(domain.NewDefaultCasinoHoldem(), new(presenter.CasinoHoldemWebPresenter))
-		},
-		func(data []byte) (usecase.CasinoHoldemInteractorIF, error) {
-			return usecase.RestoreCasinoHoldemInteractor(data, new(presenter.CasinoHoldemWebPresenter))
-		},
-		controller.NewCasinoHoldemWebControllerWithProvider)
-	games.RegisterKVGame("fourcardpoker", games.CategoryCasino,
-		func() usecase.FourCardPokerInteractorIF {
-			return usecase.NewFourCardPokerInteractor(domain.NewDefaultFourCardPoker(), new(presenter.FourCardPokerWebPresenter))
-		},
-		func(data []byte) (usecase.FourCardPokerInteractorIF, error) {
-			return usecase.RestoreFourCardPokerInteractor(data, new(presenter.FourCardPokerWebPresenter))
-		},
-		controller.NewFourCardPokerWebControllerWithProvider)
-	games.RegisterKVGame("russianpoker", games.CategoryCasino,
-		func() usecase.RussianPokerInteractorIF {
-			return usecase.NewRussianPokerInteractor(domain.NewDefaultRussianPoker(), new(presenter.RussianPokerWebPresenter))
-		},
-		func(data []byte) (usecase.RussianPokerInteractorIF, error) {
-			return usecase.RestoreRussianPokerInteractor(data, new(presenter.RussianPokerWebPresenter))
-		},
-		controller.NewRussianPokerWebControllerWithProvider)
 	games.RegisterKVGame("chinesepoker", games.CategoryCasino,
 		func() usecase.ChinesePokerInteractorIF {
 			return usecase.NewChinesePokerInteractor(domain.NewDefaultChinesePoker(), new(presenter.ChinesePokerWebPresenter))
@@ -332,30 +212,6 @@ func init() {
 		},
 		controller.NewFiveCardStudWebControllerWithProvider)
 
-	games.RegisterKVGame("doubleattack", games.CategoryCasino,
-		func() usecase.DoubleAttackBlackjackInteractorIF {
-			return usecase.NewDoubleAttackBlackjackInteractor(domain.NewDefaultDoubleAttackBlackjack(), new(presenter.DoubleAttackBlackjackWebPresenter))
-		},
-		func(data []byte) (usecase.DoubleAttackBlackjackInteractorIF, error) {
-			return usecase.RestoreDoubleAttackBlackjackInteractor(data, new(presenter.DoubleAttackBlackjackWebPresenter))
-		},
-		controller.NewDoubleAttackBlackjackWebControllerWithProvider)
-	games.RegisterKVGame("freebet", games.CategoryCasino,
-		func() usecase.FreeBetBlackjackInteractorIF {
-			return usecase.NewFreeBetBlackjackInteractor(domain.NewDefaultFreeBetBlackjack(), new(presenter.FreeBetBlackjackWebPresenter))
-		},
-		func(data []byte) (usecase.FreeBetBlackjackInteractorIF, error) {
-			return usecase.RestoreFreeBetBlackjackInteractor(data, new(presenter.FreeBetBlackjackWebPresenter))
-		},
-		controller.NewFreeBetBlackjackWebControllerWithProvider)
-	games.RegisterKVGame("banluck", games.CategoryCasino,
-		func() usecase.BanLuckInteractorIF {
-			return usecase.NewBanLuckInteractor(domain.NewDefaultBanLuck(), new(presenter.BanLuckWebPresenter))
-		},
-		func(data []byte) (usecase.BanLuckInteractorIF, error) {
-			return usecase.RestoreBanLuckInteractor(data, new(presenter.BanLuckWebPresenter))
-		},
-		controller.NewBanLuckWebControllerWithProvider)
 	games.RegisterKVGame("cincinnati", games.CategoryCasino,
 		func() usecase.CincinnatiInteractorIF {
 			return usecase.NewCincinnatiInteractor(domain.NewDefaultCincinnati(), new(presenter.CincinnatiWebPresenter))
@@ -414,14 +270,6 @@ func init() {
 			return usecase.RestoreFollowTheQueenInteractor(data, new(presenter.FollowTheQueenWebPresenter))
 		},
 		controller.NewFollowTheQueenWebControllerWithProvider)
-	games.RegisterKVGame("threecardrummy", games.CategoryCasino,
-		func() usecase.ThreeCardRummyInteractorIF {
-			return usecase.NewThreeCardRummyInteractor(domain.NewDefaultThreeCardRummy(), new(presenter.ThreeCardRummyWebPresenter))
-		},
-		func(data []byte) (usecase.ThreeCardRummyInteractorIF, error) {
-			return usecase.RestoreThreeCardRummyInteractor(data, new(presenter.ThreeCardRummyWebPresenter))
-		},
-		controller.NewThreeCardRummyWebControllerWithProvider)
 	games.RegisterKVGame("dramaha", games.CategoryCasino,
 		func() usecase.DramahaInteractorIF {
 			return usecase.NewDramahaInteractor(domain.NewDefaultDramaha(), new(presenter.DramahaWebPresenter))
@@ -430,4 +278,36 @@ func init() {
 			return usecase.RestoreDramahaInteractor(data, new(presenter.DramahaWebPresenter))
 		},
 		controller.NewDramahaWebControllerWithProvider)
+	games.RegisterKVGame("casinoholdem", games.CategoryCasino,
+		func() usecase.CasinoHoldemInteractorIF {
+			return usecase.NewCasinoHoldemInteractor(domain.NewDefaultCasinoHoldem(), new(presenter.CasinoHoldemWebPresenter))
+		},
+		func(data []byte) (usecase.CasinoHoldemInteractorIF, error) {
+			return usecase.RestoreCasinoHoldemInteractor(data, new(presenter.CasinoHoldemWebPresenter))
+		},
+		controller.NewCasinoHoldemWebControllerWithProvider)
+	games.RegisterKVGame("ultimatetexasholdem", games.CategoryCasino,
+		func() usecase.UltimateTexasHoldemInteractorIF {
+			return usecase.NewUltimateTexasHoldemInteractor(domain.NewDefaultUltimateTexasHoldem(), new(presenter.UltimateTexasHoldemWebPresenter))
+		},
+		func(data []byte) (usecase.UltimateTexasHoldemInteractorIF, error) {
+			return usecase.RestoreUltimateTexasHoldemInteractor(data, new(presenter.UltimateTexasHoldemWebPresenter))
+		},
+		controller.NewUltimateTexasHoldemWebControllerWithProvider)
+	games.RegisterKVGame("texasholdembonus", games.CategoryCasino,
+		func() usecase.TexasHoldemBonusInteractorIF {
+			return usecase.NewTexasHoldemBonusInteractor(domain.NewDefaultTexasHoldemBonus(), new(presenter.TexasHoldemBonusWebPresenter))
+		},
+		func(data []byte) (usecase.TexasHoldemBonusInteractorIF, error) {
+			return usecase.RestoreTexasHoldemBonusInteractor(data, new(presenter.TexasHoldemBonusWebPresenter))
+		},
+		controller.NewTexasHoldemBonusWebControllerWithProvider)
+	games.RegisterKVGame("threecard", games.CategoryCasino,
+		func() usecase.ThreeCardInteractorIF {
+			return usecase.NewThreeCardInteractor(domain.NewDefaultThreeCard(), new(presenter.ThreeCardWebPresenter))
+		},
+		func(data []byte) (usecase.ThreeCardInteractorIF, error) {
+			return usecase.RestoreThreeCardInteractor(data, new(presenter.ThreeCardWebPresenter))
+		},
+		controller.NewThreeCardWebControllerWithProvider)
 }

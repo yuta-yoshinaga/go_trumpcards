@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra
+//go:build !js || !wasm || extra9
 
 // Package domain バウエルンシュナプセン (Bauernschnapsen) のドメインモデル。
 //

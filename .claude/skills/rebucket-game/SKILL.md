@@ -1,6 +1,6 @@
 ---
 name: rebucket-game
-description: Move an existing game between Cloudflare Worker size buckets (casino/classic/solo/extra/extra2/extra3/extra4/extra5/extra6/extra7) when its current worker exceeds or nears the 1 MB gzip free-tier limit. Scripts the 6 touchpoints (build tags, registry, KV registration, count assertions, gameExec.ts, docs) and measures the result locally with TinyGo. Use when the size-check CI step fails ("EXCEEDS free tier limit") or when routing a game to a different worker (e.g. "/rebucket-game scarto solo", "move <game> to <worker>").
+description: Move an existing game between Cloudflare Worker size buckets (casino/classic/solo/extra/extra2/extra3/extra4/extra5/extra6/extra7/extra8/extra9/extra10/extra11) when its current worker exceeds or nears the 1 MB gzip free-tier limit. Scripts the 6 touchpoints (build tags, registry, KV registration, count assertions, gameExec.ts, docs) and measures the result locally with TinyGo. Use when the size-check CI step fails ("EXCEEDS free tier limit") or when routing a game to a different worker (e.g. "/rebucket-game scarto solo", "move <game> to <worker>").
 ---
 
 # Rebucket Game
@@ -107,11 +107,11 @@ Then run the `game-registration-checker` agent for an independent sweep of all t
 
 ## Size verification (measure locally first)
 
-TinyGo 0.42.0 + Go 1.27.1 (`GOEXPERIMENT=nojsonv2`, ADR-0042) reproduce CI byte for byte. Measure before pushing:
+TinyGo 0.42.0 + Go 1.27.1 (`encoding/json` v2, ADR-0043) reproduce CI byte for byte. Measure before pushing:
 
 ```sh
 .claude/skills/rebucket-game/scripts/measure.sh extra2          # one worker, ~3.5 min
-.claude/skills/rebucket-game/scripts/measure.sh                  # all ten Workers
+.claude/skills/rebucket-game/scripts/measure.sh                  # all fourteen Workers
 ```
 
 Budget ~14.4 KB gzip per average game, but the spread is wide (scarto measured 20,332 B) --

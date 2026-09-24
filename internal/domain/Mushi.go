@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra6
+//go:build !js || !wasm || extra11
 
 // Package domain — 虫 (Mushi) のドメインモデル。
 //

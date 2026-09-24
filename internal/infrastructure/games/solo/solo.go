@@ -14,14 +14,6 @@ import (
 )
 
 func init() {
-	games.RegisterKVGame("memory", games.CategorySolo,
-		func() usecase.MemoryInteractorIF {
-			return usecase.NewMemoryInteractor(domain.NewDefaultMemory(), new(presenter.MemoryWebPresenter))
-		},
-		func(data []byte) (usecase.MemoryInteractorIF, error) {
-			return usecase.RestoreMemoryInteractor(data, new(presenter.MemoryWebPresenter))
-		},
-		controller.NewMemoryWebControllerWithProvider)
 	games.RegisterKVGame("whitehead", games.CategorySolo,
 		func() usecase.WhiteheadInteractorIF {
 			return usecase.NewWhiteheadInteractor(domain.NewDefaultWhitehead(), new(presenter.WhiteheadWebPresenter))
@@ -57,14 +49,6 @@ func init() {
 			return usecase.RestoreFreeCellInteractor(data, new(presenter.BakersGameWebPresenter))
 		},
 		controller.NewFreeCellWebControllerWithProvider)
-	games.RegisterKVGame("seahaventowers", games.CategorySolo,
-		func() usecase.SeahavenTowersInteractorIF {
-			return usecase.NewSeahavenTowersInteractor(domain.NewDefaultSeahavenTowers(), new(presenter.SeahavenTowersWebPresenter))
-		},
-		func(data []byte) (usecase.SeahavenTowersInteractorIF, error) {
-			return usecase.RestoreSeahavenTowersInteractor(data, new(presenter.SeahavenTowersWebPresenter))
-		},
-		controller.NewSeahavenTowersWebControllerWithProvider)
 	games.RegisterKVGame("cruel", games.CategorySolo,
 		func() usecase.CruelInteractorIF {
 			return usecase.NewCruelInteractor(domain.NewDefaultCruel(), new(presenter.CruelWebPresenter))
@@ -105,14 +89,6 @@ func init() {
 			return usecase.RestoreGolfInteractor(data, new(presenter.GolfWebPresenter))
 		},
 		controller.NewGolfWebControllerWithProvider)
-	games.RegisterKVGame("clocksolitaire", games.CategorySolo,
-		func() usecase.ClockSolitaireInteractorIF {
-			return usecase.NewClockSolitaireInteractor(domain.NewDefaultClockSolitaire(), new(presenter.ClockSolitaireWebPresenter))
-		},
-		func(data []byte) (usecase.ClockSolitaireInteractorIF, error) {
-			return usecase.RestoreClockSolitaireInteractor(data, new(presenter.ClockSolitaireWebPresenter))
-		},
-		controller.NewClockSolitaireWebControllerWithProvider)
 	games.RegisterKVGame("fortythieves", games.CategorySolo,
 		func() usecase.FortyThievesInteractorIF {
 			return usecase.NewFortyThievesInteractor(domain.NewDefaultFortyThieves(), new(presenter.FortyThievesWebPresenter))
@@ -153,14 +129,6 @@ func init() {
 			return usecase.RestoreRussianSolitaireInteractor(data, new(presenter.RussianSolitaireWebPresenter))
 		},
 		controller.NewRussianSolitaireWebControllerWithProvider)
-	games.RegisterKVGame("pokersquares", games.CategorySolo,
-		func() usecase.PokerSquaresInteractorIF {
-			return usecase.NewPokerSquaresInteractor(domain.NewDefaultPokerSquares(), new(presenter.PokerSquaresWebPresenter))
-		},
-		func(data []byte) (usecase.PokerSquaresInteractorIF, error) {
-			return usecase.RestorePokerSquaresInteractor(data, new(presenter.PokerSquaresWebPresenter))
-		},
-		controller.NewPokerSquaresWebControllerWithProvider)
 	games.RegisterKVGame("scorpion", games.CategorySolo,
 		func() usecase.ScorpionInteractorIF {
 			return usecase.NewScorpionInteractor(domain.NewDefaultScorpion(), new(presenter.ScorpionWebPresenter))
@@ -201,14 +169,6 @@ func init() {
 			return usecase.RestoreBakersDozenInteractor(data, new(presenter.BakersDozenWebPresenter))
 		},
 		controller.NewBakersDozenWebControllerWithProvider)
-	games.RegisterKVGame("montecarlo", games.CategorySolo,
-		func() usecase.MonteCarloInteractorIF {
-			return usecase.NewMonteCarloInteractor(domain.NewDefaultMonteCarlo(), new(presenter.MonteCarloWebPresenter))
-		},
-		func(data []byte) (usecase.MonteCarloInteractorIF, error) {
-			return usecase.RestoreMonteCarloInteractor(data, new(presenter.MonteCarloWebPresenter))
-		},
-		controller.NewMonteCarloWebControllerWithProvider)
 	games.RegisterKVGame("crescent", games.CategorySolo,
 		func() usecase.CrescentInteractorIF {
 			return usecase.NewCrescentInteractor(domain.NewDefaultCrescent(), new(presenter.CrescentWebPresenter))
@@ -225,14 +185,6 @@ func init() {
 			return usecase.RestoreSpideretteInteractor(data, new(presenter.SpideretteWebPresenter))
 		},
 		controller.NewSpideretteWebControllerWithProvider)
-	games.RegisterKVGame("stalactites", games.CategorySolo,
-		func() usecase.StalactitesInteractorIF {
-			return usecase.NewStalactitesInteractor(domain.NewDefaultStalactites(), new(presenter.StalactitesWebPresenter))
-		},
-		func(data []byte) (usecase.StalactitesInteractorIF, error) {
-			return usecase.RestoreStalactitesInteractor(data, new(presenter.StalactitesWebPresenter))
-		},
-		controller.NewStalactitesWebControllerWithProvider)
 	games.RegisterKVGame("somerset", games.CategorySolo,
 		func() usecase.SomersetInteractorIF {
 			return usecase.NewSomersetInteractor(domain.NewDefaultSomerset(), new(presenter.SomersetWebPresenter))
@@ -273,14 +225,6 @@ func init() {
 			return usecase.RestoreEightOffInteractor(data, new(presenter.EightOffWebPresenter))
 		},
 		controller.NewEightOffWebControllerWithProvider)
-	games.RegisterKVGame("penguin", games.CategorySolo,
-		func() usecase.PenguinInteractorIF {
-			return usecase.NewPenguinInteractor(domain.NewDefaultPenguin(), new(presenter.PenguinWebPresenter))
-		},
-		func(data []byte) (usecase.PenguinInteractorIF, error) {
-			return usecase.RestorePenguinInteractor(data, new(presenter.PenguinWebPresenter))
-		},
-		controller.NewPenguinWebControllerWithProvider)
 	games.RegisterKVGame("acesup", games.CategorySolo,
 		func() usecase.AcesUpInteractorIF {
 			return usecase.NewAcesUpInteractor(domain.NewDefaultAcesUp(), new(presenter.AcesUpWebPresenter))
@@ -293,14 +237,6 @@ func init() {
 	// worker is at the 1 MB gzip free-tier limit. See registry.go.
 	// Macau is a Crazy Eights variant bucketed here (solo worker) for binary-size
 	// reasons; the classic worker is at the 1 MB gzip free-tier limit. See registry.go.
-	games.RegisterKVGame("tienlen", games.CategorySolo,
-		func() usecase.TienLenInteractorIF {
-			return usecase.NewTienLenInteractor(domain.NewDefaultTienLen(), new(presenter.TienLenWebPresenter))
-		},
-		func(data []byte) (usecase.TienLenInteractorIF, error) {
-			return usecase.RestoreTienLenInteractor(data, new(presenter.TienLenWebPresenter))
-		},
-		controller.NewTienLenWebControllerWithProvider)
 	games.RegisterKVGame("osmosis", games.CategorySolo,
 		func() usecase.OsmosisInteractorIF {
 			return usecase.NewOsmosisInteractor(domain.NewDefaultOsmosis(), new(presenter.OsmosisWebPresenter))
@@ -312,14 +248,6 @@ func init() {
 	// Schnapsen / Sixty-Six is a 2-player trick-taking game bucketed here (solo
 	// worker) for binary-size reasons; the classic worker is at the 1 MB gzip
 	// free-tier limit. See registry.go.
-	games.RegisterKVGame("schnapsen", games.CategorySolo,
-		func() usecase.SchnapsenInteractorIF {
-			return usecase.NewSchnapsenInteractor(domain.NewDefaultSchnapsen(), new(presenter.SchnapsenWebPresenter))
-		},
-		func(data []byte) (usecase.SchnapsenInteractorIF, error) {
-			return usecase.RestoreSchnapsenInteractor(data, new(presenter.SchnapsenWebPresenter))
-		},
-		controller.NewSchnapsenWebControllerWithProvider)
 
 	games.RegisterKVGame("bristol", games.CategorySolo,
 		func() usecase.BristolInteractorIF {
@@ -339,27 +267,11 @@ func init() {
 		},
 		controller.NewEasthavenWebControllerWithProvider)
 
-	games.RegisterKVGame("blackhole", games.CategorySolo,
-		func() usecase.BlackHoleInteractorIF {
-			return usecase.NewBlackHoleInteractor(domain.NewDefaultBlackHole(), new(presenter.BlackHoleWebPresenter))
-		},
-		func(data []byte) (usecase.BlackHoleInteractorIF, error) {
-			return usecase.RestoreBlackHoleInteractor(data, new(presenter.BlackHoleWebPresenter))
-		},
-		controller.NewBlackHoleWebControllerWithProvider)
 	// Scarto (78-card Italian tarot trick-taker) is bucketed here for binary-size
 	// headroom; the extra worker hit the 1 MB gzip free-tier limit. Category is a
 	// size bucket, not a user-facing taxonomy.
 	// Cego (54-card Baden tarock, Cego-blind swap) — bucketed in solo (extra full).
 	// Zheng Shangyou (54-card Chinese climbing game, suit-blind ranks).
-	games.RegisterKVGame("yaniv", games.CategorySolo,
-		func() usecase.YanivInteractorIF {
-			return usecase.NewYanivInteractor(domain.NewDefaultYaniv(), new(presenter.YanivWebPresenter))
-		},
-		func(data []byte) (usecase.YanivInteractorIF, error) {
-			return usecase.RestoreYanivInteractor(data, new(presenter.YanivWebPresenter))
-		},
-		controller.NewYanivWebControllerWithProvider)
 	games.RegisterKVGame("crazyquilt", games.CategorySolo,
 		func() usecase.CrazyQuiltInteractorIF {
 			return usecase.NewCrazyQuiltInteractor(domain.NewDefaultCrazyQuilt(), new(presenter.CrazyQuiltWebPresenter))
@@ -368,14 +280,6 @@ func init() {
 			return usecase.RestoreCrazyQuiltInteractor(data, new(presenter.CrazyQuiltWebPresenter))
 		},
 		controller.NewCrazyQuiltWebControllerWithProvider)
-	games.RegisterKVGame("snap", games.CategorySolo,
-		func() usecase.SnapInteractorIF {
-			return usecase.NewSnapInteractor(domain.NewDefaultSnap(), new(presenter.SnapWebPresenter))
-		},
-		func(data []byte) (usecase.SnapInteractorIF, error) {
-			return usecase.RestoreSnapInteractor(data, new(presenter.SnapWebPresenter))
-		},
-		controller.NewSnapWebControllerWithProvider)
 	games.RegisterKVGame("citadel", games.CategorySolo,
 		func() usecase.CitadelInteractorIF {
 			return usecase.NewCitadelInteractor(domain.NewDefaultCitadel(), new(presenter.CitadelWebPresenter))
@@ -392,14 +296,6 @@ func init() {
 			return usecase.RestoreWillOTheWispInteractor(data, new(presenter.WillOTheWispWebPresenter))
 		},
 		controller.NewWillOTheWispWebControllerWithProvider)
-	games.RegisterKVGame("zheng", games.CategorySolo,
-		func() usecase.ZhengInteractorIF {
-			return usecase.NewZhengInteractor(domain.NewDefaultZheng(), new(presenter.ZhengWebPresenter))
-		},
-		func(data []byte) (usecase.ZhengInteractorIF, error) {
-			return usecase.RestoreZhengInteractor(data, new(presenter.ZhengWebPresenter))
-		},
-		controller.NewZhengWebControllerWithProvider)
 	games.RegisterKVGame("oasispoker", games.CategorySolo,
 		func() usecase.OasisPokerInteractorIF {
 			return usecase.NewOasisPokerInteractor(domain.NewDefaultOasisPoker(), new(presenter.OasisPokerWebPresenter))
