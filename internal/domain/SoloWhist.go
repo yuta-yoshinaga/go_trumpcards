@@ -1,4 +1,4 @@
-//go:build !js || !wasm || classic
+//go:build !js || !wasm || extra8
 
 // Package domain ソロ・ホイスト (Solo Whist) のドメインモデル。
 //

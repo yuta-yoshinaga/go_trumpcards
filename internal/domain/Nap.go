@@ -1,4 +1,4 @@
-//go:build !js || !wasm || classic
+//go:build !js || !wasm || extra8
 
 // Package domain ナップ (Nap / Napoleon) のドメインモデル。
 //
