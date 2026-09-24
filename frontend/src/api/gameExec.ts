@@ -33,6 +33,14 @@ export const WORKER_EXTRA5 = import.meta.env.VITE_WORKER_EXTRA5_URL || '';
 export const WORKER_EXTRA6 = import.meta.env.VITE_WORKER_EXTRA6_URL || '';
 /** Tenth size bucket (ADR-0041). */
 export const WORKER_EXTRA7 = import.meta.env.VITE_WORKER_EXTRA7_URL || '';
+/** Eleventh size bucket (ADR-0043). */
+export const WORKER_EXTRA8 = import.meta.env.VITE_WORKER_EXTRA8_URL || '';
+/** Twelfth size bucket (ADR-0043). */
+export const WORKER_EXTRA9 = import.meta.env.VITE_WORKER_EXTRA9_URL || '';
+/** Thirteenth size bucket (ADR-0043). */
+export const WORKER_EXTRA10 = import.meta.env.VITE_WORKER_EXTRA10_URL || '';
+/** Fourteenth size bucket (ADR-0043). */
+export const WORKER_EXTRA11 = import.meta.env.VITE_WORKER_EXTRA11_URL || '';
 
 /** Maps each game to its Worker base URL. */
 export const workerUrl: Record<string, string> = {

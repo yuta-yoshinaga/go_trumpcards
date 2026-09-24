@@ -8,9 +8,9 @@
 //     Category) for all 318 games. Cheap; no references to game code.
 //   - games_server.go (!js || !wasm)   — installs Web-server factories for
 //     every game via BindWebController. Imported by TrumpCardsWeb.
-//   - casino/, classic/, solo/, extra/, extra2/, extra3/, extra4/, extra5/, extra6/, extra7/ (js && wasm) —
+//   - casino/, classic/, solo/, extra/, extra2/, extra3/, extra4/, extra5/, extra6/, extra7/, extra8/, extra9/, extra10/, extra11/ (js && wasm) —
 //     per-category worker bindings. Each worker blank-imports only its own
-//     sub-package so TinyGo dead-code elimination can drop the other nine
+//     sub-package so TinyGo dead-code elimination can drop the other thirteen
 //     categories' domain/usecase code.
 package games
 
@@ -58,6 +58,14 @@ const (
 	CategoryExtra6
 	// CategoryExtra7 is the tenth size bucket (ADR-0041). See CategoryExtra2.
 	CategoryExtra7
+	// CategoryExtra8 is the eleventh size bucket (ADR-0043). See CategoryExtra2.
+	CategoryExtra8
+	// CategoryExtra9 is the twelfth size bucket (ADR-0043). See CategoryExtra2.
+	CategoryExtra9
+	// CategoryExtra10 is the thirteenth size bucket (ADR-0043). See CategoryExtra2.
+	CategoryExtra10
+	// CategoryExtra11 is the fourteenth size bucket (ADR-0043). See CategoryExtra2.
+	CategoryExtra11
 )
 
 // String returns the lowercase worker name (casino/classic/solo). Panics on
@@ -86,6 +94,14 @@ func (c Category) String() string {
 		return "extra6"
 	case CategoryExtra7:
 		return "extra7"
+	case CategoryExtra8:
+		return "extra8"
+	case CategoryExtra9:
+		return "extra9"
+	case CategoryExtra10:
+		return "extra10"
+	case CategoryExtra11:
+		return "extra11"
 	default:
 		panic(fmt.Sprintf("games: unknown Category %d", int(c)))
 	}
@@ -1304,7 +1320,7 @@ func ByCategory(cat Category) []Game {
 }
 
 // AllCategories returns every Category value in canonical display order
-// (casino, classic, solo, extra, extra2, extra3, extra4, extra5, extra6, extra7). The returned slice is fresh per
+// (casino, classic, solo, extra, extra2, extra3, extra4, extra5, extra6, extra7, extra8, extra9, extra10, extra11). The returned slice is fresh per
 // call so callers
 // cannot mutate package state. Adding a new Category value to the iota above
 // requires extending this slice — that intentional coupling is the SSoT
@@ -1314,7 +1330,7 @@ func AllCategories() []Category {
 	return []Category{
 		CategoryCasino, CategoryClassic, CategorySolo,
 		CategoryExtra, CategoryExtra2, CategoryExtra3, CategoryExtra4,
-		CategoryExtra5, CategoryExtra6, CategoryExtra7,
+		CategoryExtra5, CategoryExtra6, CategoryExtra7, CategoryExtra8, CategoryExtra9, CategoryExtra10, CategoryExtra11,
 	}
 }
 

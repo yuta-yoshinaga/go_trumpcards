@@ -1,4 +1,4 @@
-//go:build test
+//go:build test || extra8 || extra9 || extra10 || extra11
 
 package games_test
 
@@ -11,10 +11,10 @@ import (
 	"testing"
 )
 
-// workerNames are the ten Cloudflare Workers the games ship to. Listed rather
+// workerNames are the fourteen Cloudflare Workers the games ship to. Listed rather
 // than globbed so a worker that loses its wrangler.toml fails here instead of
 // silently dropping out of the check.
-var workerNames = []string{"casino", "classic", "solo", "extra", "extra2", "extra3", "extra4", "extra5", "extra6", "extra7"}
+var workerNames = []string{"casino", "classic", "solo", "extra", "extra2", "extra3", "extra4", "extra5", "extra6", "extra7", "extra8", "extra9", "extra10", "extra11"}
 
 var observabilityEnabledRe = regexp.MustCompile(`(?m)^\[observability\]\s*$`)
 

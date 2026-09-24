@@ -70,7 +70,7 @@ Go source (//go:build js && wasm)
   → wrangler deploy (Cloudflare Workers)
 ```
 
-Build commands: `make build-worker-{casino,classic,solo,extra,extra2,extra3,extra4,extra5,extra6,extra7}` or `make build-workers`.
+Build commands: `make build-worker-{casino,classic,solo,extra,extra2,extra3,extra4,extra5,extra6,extra7,extra8,extra9,extra10,extra11}` or `make build-workers`.
 
 ### Size buckets
 

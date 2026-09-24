@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        worker: [casino, classic, solo, extra, extra2, extra3, extra4, extra5, extra6, extra7]
+        worker: [casino, classic, solo, extra, extra2, extra3, extra4, extra5, extra6, extra7, extra8, extra9, extra10, extra11]
     environment:
       name: ${{ github.ref == 'refs/heads/master' && 'production' || 'staging' }}
     steps:
@@ -137,6 +137,10 @@ jobs:
           VITE_WORKER_EXTRA5_URL: ${{ github.ref == 'refs/heads/master' && vars.WORKER_EXTRA5_URL || vars.WORKER_EXTRA5_STAGING_URL }}
           VITE_WORKER_EXTRA6_URL: ${{ github.ref == 'refs/heads/master' && vars.WORKER_EXTRA6_URL || vars.WORKER_EXTRA6_STAGING_URL }}
           VITE_WORKER_EXTRA7_URL: ${{ github.ref == 'refs/heads/master' && vars.WORKER_EXTRA7_URL || vars.WORKER_EXTRA7_STAGING_URL }}
+          VITE_WORKER_EXTRA8_URL: ${{ github.ref == 'refs/heads/master' && vars.WORKER_EXTRA8_URL || vars.WORKER_EXTRA8_STAGING_URL }}
+          VITE_WORKER_EXTRA9_URL: ${{ github.ref == 'refs/heads/master' && vars.WORKER_EXTRA9_URL || vars.WORKER_EXTRA9_STAGING_URL }}
+          VITE_WORKER_EXTRA10_URL: ${{ github.ref == 'refs/heads/master' && vars.WORKER_EXTRA10_URL || vars.WORKER_EXTRA10_STAGING_URL }}
+          VITE_WORKER_EXTRA11_URL: ${{ github.ref == 'refs/heads/master' && vars.WORKER_EXTRA11_URL || vars.WORKER_EXTRA11_STAGING_URL }}
         run: bun run build
 
       - name: Deploy to Cloudflare Pages
