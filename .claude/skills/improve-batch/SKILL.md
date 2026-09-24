@@ -17,8 +17,7 @@ disable-model-invocation: true
 # improve-batch — clear an issue batch, one merge at a time
 
 Orchestrates [`improve-issue`](../improve-issue/SKILL.md) across a set of issues.
-This is the loop that cleared **#2238–#2292** (20 PRs #2376–#2395 merged + 1
-false-positive closed) in a single sustained run.
+Runs one issue at a time through merge, in lowest-effort order.
 
 **This skill is the *orchestrator only*.** Every per-issue mechanic — branch,
 TDD, PR, CI triage, full-review handling, squash-merge, sync — lives in
@@ -34,7 +33,6 @@ Process **one issue fully (through merge) before starting the next**:
 
 - Merges serialize on `develop` anyway, and each new branch must start from the
   just-merged tip — so **re-sync `develop` between issues** or you branch stale.
-- This box is RAM-constrained (~2 GB); parallel `bun`/`go`/builds thrash/OOM.
 - Each issue's CI (esp. E2E ~15–20 min) is the real wall-clock cost; running
   many at once doesn't speed merges and multiplies flake reruns.
 
@@ -83,7 +81,7 @@ scope issue N+1 read-only** (don't edit — you're still on N's branch) → merg
 
 When the batch is done, post a single summary: a table of `issue → PR → game →
 one-line change`, plus any issues closed as false-positives (with why) and any
-deferred for a decision. (Mirror the wrap-up format used for #2238–#2292.)
+deferred for a decision.
 
 ## Pacing note
 

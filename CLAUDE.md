@@ -50,7 +50,7 @@ go test -tags test -coverprofile=coverage.out -covermode=set ./...    # Coverage
 goimports -w .               # Format and organize imports (use goimports, not gofmt; `./...` is a go tool pattern goimports does not accept)
 
 # Lint
-golangci-lint run ./...      # Run Go linter (must pass before commit)
+golangci-lint run --build-tags test ./...   # Run Go linter as CI does (must pass before commit)
 
 # Frontend
 cd frontend && bun install   # Install dependencies
@@ -85,7 +85,7 @@ Clean Architecture: `infrastructure` -> `adapter` -> `usecase` -> `domain`. See 
 Before marking any task complete:
 
 1. All Go tests pass: `go test -tags test ./...`
-2. Go lint passes: `golangci-lint run ./...`
+2. Go lint passes: `golangci-lint run --build-tags test ./...`
 3. Go files formatted: `goimports -w` on modified files
 4. Frontend checks pass (if applicable): `cd frontend && bun run build && bun run check && bun run test`
 5. Branch coverage is 80%+ for modified packages
@@ -172,18 +172,14 @@ Where to document design decisions that don't warrant an ADR:
 | Reason for refactoring | Commit message body |
 | UI design direction | GitHub Issue or PR description |
 
-### Plan Node Default
+### Planning
 
-- Enter plan mode for ANY non-trivial task (3+ steps or architectural decisions)
-- If something goes sideways, STOP and re-plan immediately -- don't keep pushing
-- Use plan mode for verification steps, not just building
-- Write detailed specs upfront to reduce ambiguity
+- Get the user's approval on a plan before an architectural change (anything ADR-worthy).
 
 ### Core Principles
 
-- **Simplicity First**: Make every change as simple as possible. Impact minimal code.
-- **No Laziness**: Find root causes. No temporary fixes. Senior developer standards.
-- **Minimal Impact**: Changes should only touch what's necessary. Avoid introducing bugs.
+- Find the root cause; don't ship temporary fixes.
+- Change only what the task needs, as simply as it allows.
 - **Dead Code Cleanup**: When modifying code, always remove any dead code or dead files you encounter. Use `golang.org/x/tools/cmd/deadcode` for Go and `cd frontend && bun run deadcode` (knip) for TypeScript to identify unused code. Verify findings manually before deleting -- static analysis tools can produce false positives (e.g., interface implementations called via reflection, mock methods). Delete confirmed dead code in the same commit as your feature or fix.
 
 ## Design System

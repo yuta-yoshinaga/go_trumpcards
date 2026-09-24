@@ -17,9 +17,7 @@ allowed-tools:
 
 # improve-issue — one issue, branch → merge
 
-Codifies the loop used to clear the **#2238–#2292** per-game improvement batch
-(20 PRs #2376–#2395, all merged green). Reuse it to take a single
-improvement/UX/a11y issue from open → merged with reviews addressed.
+Takes a single improvement/UX/a11y issue from open → merged with reviews addressed.
 
 **Input:** an issue number (e.g. `/improve-issue 2248`). If none is given, pick
 the lowest-effort still-open issue from the batch the user names.
@@ -53,12 +51,13 @@ the lowest-effort still-open issue from the batch the user names.
 4. **Local gates** (frontend):
    ```sh
    cd frontend && bun run test -- --run src/pages/<X>Page.test.tsx
-   cd frontend && bun run check          # biome + design-tokens (NOT tsc — see gotchas)
+   cd frontend && bun run check          # biome + design-tokens
+   cd frontend && bun run typecheck      # the only type gate (TS 7)
    ```
    For Go changes also: `goimports -w <file>` (install with
    `go install golang.org/x/tools/cmd/goimports@latest`; ensure `$(go env GOPATH)/bin`
-   is on `PATH`), `go vet -tags test ./internal/adapter/presenter/` and run the focused package
-   test (`internal/domain` OOMs locally — CI-gate it; `adapter/presenter` is fine).
+   is on `PATH`), then `go test -tags test ./internal/...` and
+   `golangci-lint run --build-tags test ./...` — the same scope CI runs.
 
 5. **Commit (Conventional Commits), push, open the PR.**
    ```sh
@@ -95,10 +94,9 @@ the lowest-effort still-open issue from the batch the user names.
   errors `bun run check` misses: optional-index (`obj[maybeUndef]`), a
   `HintResult` test mock missing `targetAction`, missing union members.
 - **Long E2E failure (~15–20 min) with `Target page, context or browser has
-  been closed`** = the recurring **runner-crash flake** (e.g. poker.spec /
-  paigow). `231 passed, 1 failed` confirms it. `gh run rerun <run> --failed`;
-  if it recurs, full `gh run rerun <run>` for a fresh runner. develop's E2E is
-  green, so it is never your PR.
+  been closed`** = a possible runner issue. Record it with the `flake-ledger`
+  skill before re-running; a single sighting is UNCONFIRMED and gets investigated
+  like a real failure.
 - **golangci-lint binary download HTTP 504** = infra; rerun.
 - **codecov/patch < 80%** = a new branch is untested. codecov counts **each
   ternary/`&&` branch and each `?.`/`??`** separately → add a test per branch

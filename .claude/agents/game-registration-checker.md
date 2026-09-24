@@ -1,6 +1,6 @@
 ---
 name: game-registration-checker
-description: Read-only verifier that a newly added card game is wired into every required backend, frontend, worker, and count-assertion touchpoint, with all four registration points agreeing on name+category. Use before committing a new-game change to catch missing registrations and stale count totals BEFORE the (expensive, OOM-prone) CI round-trip. MUST BE USED after adding or renaming a game.
+description: Read-only verifier that a newly added card game is wired into every required backend, frontend, worker, and count-assertion touchpoint, with all four registration points agreeing on name+category. Use before committing a new-game change to catch missing registrations and stale count totals BEFORE the CI round-trip. MUST BE USED after adding or renaming a game.
 tools: Read, Grep, Glob, Bash
 model: sonnet
 ---
@@ -31,7 +31,7 @@ grep -n '"<name>"' frontend/src/api/gameApi.ts
   nowhere else** — a call under the wrong sub-package is a FAIL (it breaks the worker size
   split and `TestWorkerRegistrationsCoverAllGames`).
 - `GameManager.go` `gameRegistry` must have a matching entry.
-- `gameApi.ts` `workerUrl` must map `"<name>": "<category>"` (the bucket string must equal
+- `gameExec.ts` `workerUrl` must map `"<name>": "<category>"` (the bucket string must equal
   `<category>`). A mismatch here is the most common silent break — verify the value, not
   just the key's presence.
 
@@ -42,22 +42,20 @@ games are appended last in both). Report if positions differ.
 
 ### 3. Count assertions are bumped consistently
 Read these and report each value:
-- `internal/infrastructure/games/registry_test.go` consts `expectedCasino` / `expectedClassic`
-  / `expectedSolo` / `expectedExtra` / `expectedExtra2` / `expectedExtra3` / `expectedExtra4` / `expectedExtra5` — one per worker
-  bucket, so read all ten. The const for `<category>` must equal the number of
+- `internal/infrastructure/games/registry_test.go` `expected<Bucket>` consts — one per Worker bucket, so read every one. The const for `<category>` must equal the number of
   `RegisterKVGame` calls in `internal/infrastructure/games/<category>/`. Count them:
   ```
   grep -rc 'RegisterKVGame' internal/infrastructure/games/<category>/
   ```
   If `expected<Category>` ≠ that count → FAIL with both numbers.
-- `frontend/src/hooks/useTutorialProgress.test.ts` — `totalCount).toBe(N)` (~line 12)
+- `frontend/src/hooks/useTutorialProgress.test.ts` — `totalCount).toBe(N)`
 - `frontend/src/components/tutorial/TutorialProgressPanel.test.tsx` — **three** assertions
-  (~lines 22/36/49): `getByText(/N/)`, `links.length`, `incompleteMarkers.length`.
+  `getByText(/N/)`, `links.length`, `incompleteMarkers.length`.
 - All four frontend `N` values AND the global total must be equal. The Go total is
   `expectedTotal`, which is defined as the sum of all ten per-bucket consts — check that its
   definition still sums every one of them, then compare. Any divergence → FAIL listing each
   file's value.
-- Confirm the `games` array in `frontend/src/api/gameApi.ts` (~line 2237) includes `<name>`.
+- Confirm the `games` array in `frontend/src/api/gameApi.ts` includes `<name>`.
 
 ### 4. Frontend route + concierge profile
 - `frontend/src/constants/gameRoutes.ts` has a `<name>` entry **with a `profile:` field**
@@ -88,5 +86,4 @@ FAIL give the exact `file:line` (or "missing: <expected file>") and the concrete
 - **VERDICT: FAIL (n issues)** — followed by a numbered fix list ordered by what will break
   the build first (count/worker mismatches before doc gaps).
 
-Do not run `go test`, `golangci-lint`, or `bun run build` — they OOM on this box; your value
-is catching these statically before CI. Stay read-only.
+Your value is catching these statically, in seconds, before anything is built. Stay read-only.
