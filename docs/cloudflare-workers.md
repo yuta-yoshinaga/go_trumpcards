@@ -64,4 +64,4 @@ bun scripts/check-wasm-imports.ts workers/<w>/build
   上限超過に見える。
 - `make` が無い環境では上のコマンドが Makefile レシピの展開そのもの。
 
-Worker は `GOEXPERIMENT=nojsonv2` (json v1) でビルドする。json v2 は TinyGo が実装していない `reflect.SliceOf` / `reflect.MapOf` を使い、文字列以外のキーの map を 2 要素以上マーシャルすると Worker が停止する (ADR-0043)。サイズ面では 14 Worker で json v2 も収まる（空 Worker 342,756 B、v2 はゲームコード量の約 19% 増）。
+Worker は `GOEXPERIMENT=nojsonv2` (json v1) でビルドする。json v2 は TinyGo が実装していない `reflect.SliceOf` を使い、文字列以外のキーの map を 2 要素以上マーシャルすると Worker が停止する (ADR-0043、[tinygo-org/tinygo#5740](https://github.com/tinygo-org/tinygo/issues/5740))。サイズ面では 14 Worker で json v2 も収まる（空 Worker 342,756 B、v2 はゲームコード量の約 19% 増）。
