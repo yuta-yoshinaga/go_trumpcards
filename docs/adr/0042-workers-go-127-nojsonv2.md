@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Superseded by [ADR-0043](0043-json-v2-fourteen-workers.md)
 
 ## Date
 

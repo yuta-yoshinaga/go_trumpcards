@@ -25,7 +25,7 @@ fi
 for w in "${workers[@]}"; do
   mkdir -p "workers/$w/build"
   go run github.com/syumai/workers-go/cmd/workers-assets-gen -mode=tinygo -o "workers/$w/build" >/dev/null
-  GOEXPERIMENT=nojsonv2 tinygo build -tags "$w" -o "workers/$w/build/app.wasm" -target wasm \
+  tinygo build -tags "$w" -o "workers/$w/build/app.wasm" -target wasm \
     -stack-size=128KB -no-debug -opt=z "./cmd/workers/$w"
   wasm-opt --enable-bulk-memory --enable-nontrapping-float-to-int --enable-sign-ext \
     -Oz "workers/$w/build/app.wasm" -o "workers/$w/build/app.wasm"
