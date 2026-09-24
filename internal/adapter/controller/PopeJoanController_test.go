@@ -27,9 +27,9 @@ func TestPopeJoanWebInput_ToConfigWithNoConfigDoesNotPanic(t *testing.T) {
 }
 
 func TestPopeJoanWebInput_ToConfigClampsOutOfRangeValues(t *testing.T) {
-	bad, huge := 99, 99999
+	huge := 99999
 	cfg := controller.PopeJoanWebInput{
-		Config: &controller.PopeJoanWebConfig{CpuDifficulty: &bad, TargetDeals: &huge},
+		Config: &controller.PopeJoanWebConfig{TargetDeals: &huge},
 	}.ToConfig()
 	assert.NoError(t, cfg.Validate())
 }

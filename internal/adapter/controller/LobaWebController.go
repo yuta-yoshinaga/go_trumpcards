@@ -5,7 +5,6 @@ package controller
 import (
 	"net/http"
 
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/webutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
@@ -22,7 +21,6 @@ type LobaWebInput struct {
 
 // LobaWebConfig ロバWeb設定
 type LobaWebConfig struct {
-	CpuDifficulty *int `json:"cpuDifficulty,omitempty"`
 }
 
 // LobaWebOutputPlayer ロバWebアウトプットプレイヤー
@@ -84,15 +82,11 @@ type LobaWebOutput struct {
 
 // LobaWebOutputConfig ロバ設定アウトプット
 type LobaWebOutputConfig struct {
-	CpuDifficulty int `json:"cpuDifficulty"`
 }
 
 // ToConfig builds a LobaConfig from the nested web config, applying bounds checking.
 func (c *LobaWebConfig) ToConfig() domain.LobaConfig {
 	cfg := domain.DefaultLobaConfig()
-	cfg.CpuDifficulty = domain.LobaCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty,
-		int(domain.LobaCpuDifficultyNormal), int(domain.LobaCpuDifficultyNormal),
-		int(cfg.CpuDifficulty)))
 	return cfg
 }
 

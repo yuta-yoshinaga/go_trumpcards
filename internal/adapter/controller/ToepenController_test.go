@@ -27,9 +27,9 @@ func TestToepenWebInput_ToConfigWithNoConfigDoesNotPanic(t *testing.T) {
 }
 
 func TestToepenWebInput_ToConfigClampsOutOfRangeValues(t *testing.T) {
-	badDifficulty, badSeats := 99, 999
+	badSeats := 999
 	cfg := controller.ToepenWebInput{
-		Config: &controller.ToepenWebConfig{CpuDifficulty: &badDifficulty, PlayerCnt: &badSeats},
+		Config: &controller.ToepenWebConfig{PlayerCnt: &badSeats},
 	}.ToConfig()
 	assert.NoError(t, cfg.Validate())
 	assert.LessOrEqual(t, cfg.PlayerCnt, domain.ToepenMaxPlayers)

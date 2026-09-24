@@ -6,16 +6,8 @@ import { useGameConfig } from './useGameConfig';
 
 /** Default Piquet game configuration. */
 export const DEFAULT_PIQUET_CONFIG: PiquetConfig = {
-  cpuDifficulty: 1,
   dealsPerPartie: 6,
 };
-
-/** CPU difficulty level options for Piquet. */
-export const CPU_DIFFICULTY_OPTIONS = [
-  { value: 0, label: 'Easy' },
-  { value: 1, label: 'Normal' },
-  { value: 2, label: 'Hard' },
-] as const;
 
 /** Deal-count options for Piquet partie length. */
 export const DEALS_PER_PARTIE_OPTIONS = [1, 3, 6] as const;

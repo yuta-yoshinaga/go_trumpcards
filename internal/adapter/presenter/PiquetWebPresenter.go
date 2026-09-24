@@ -122,7 +122,6 @@ func newPiquetWebOutputBase(g interfaces.PiquetGame) *controller.PiquetWebOutput
 		GameEndFlag:          g.GetGameEndFlag(),
 		WinnerIdx:            g.GetWinnerIdx(),
 		Config: controller.PiquetWebOutputConfig{
-			CpuDifficulty:  int(cfg.CpuDifficulty),
 			DealsPerPartie: cfg.DealsPerPartie,
 		},
 	}

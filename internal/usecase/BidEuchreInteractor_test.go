@@ -76,16 +76,6 @@ func TestBidEuchreInteractor_ResetWithConfig(t *testing.T) {
 		gameMock.AssertCalled(t, "SetConfig", cfg)
 	})
 
-	t.Run("invalid config never reaches the game", func(t *testing.T) {
-		pMock := new(presenter.MockBidEuchrePresenter)
-		pMock.On("Output", mock.Anything, mock.Anything).Return(bidEuchreMockOutput)
-		gameMock := new(interfaces.MockBidEuchreGame)
-
-		bi := usecase.NewBidEuchreInteractor(gameMock, pMock)
-		assert.Equal(t, bidEuchreMockOutput, bi.ResetWithConfig(domain.BidEuchreConfig{CpuDifficulty: 9}))
-		gameMock.AssertNotCalled(t, "SetConfig", mock.Anything)
-		gameMock.AssertNotCalled(t, "Reset")
-	})
 }
 
 // **宣言は bidIdx、切札指定は declarerIdx、プレイは currentIdx。**

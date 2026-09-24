@@ -91,29 +91,20 @@ func TestPiquetWebConfig_ToConfig_DefaultsAndBounds(t *testing.T) {
 		}
 	})
 	t.Run("out-of-range falls back to default", func(t *testing.T) {
-		d := 999
 		n := 0
-		webCfg := &controller.PiquetWebConfig{CpuDifficulty: &d, DealsPerPartie: &n}
+		webCfg := &controller.PiquetWebConfig{DealsPerPartie: &n}
 		in := controller.PiquetWebInput{Config: webCfg}
 		cfg := in.ToConfig()
-		// out-of-range difficulty -> default (Normal)
-		if cfg.CpuDifficulty != domain.PiquetCpuDifficultyNormal {
-			t.Errorf("out-of-range difficulty did not fall back, got %d", cfg.CpuDifficulty)
-		}
 		// out-of-range deals -> default (6)
 		if cfg.DealsPerPartie != 6 {
 			t.Errorf("out-of-range deals did not fall back, got %d", cfg.DealsPerPartie)
 		}
 	})
 	t.Run("in-range values preserved", func(t *testing.T) {
-		d := int(domain.PiquetCpuDifficultyHard)
 		n := 3
-		webCfg := &controller.PiquetWebConfig{CpuDifficulty: &d, DealsPerPartie: &n}
+		webCfg := &controller.PiquetWebConfig{DealsPerPartie: &n}
 		in := controller.PiquetWebInput{Config: webCfg}
 		cfg := in.ToConfig()
-		if cfg.CpuDifficulty != domain.PiquetCpuDifficultyHard {
-			t.Errorf("in-range difficulty lost, got %d", cfg.CpuDifficulty)
-		}
 		if cfg.DealsPerPartie != 3 {
 			t.Errorf("in-range deals lost, got %d", cfg.DealsPerPartie)
 		}

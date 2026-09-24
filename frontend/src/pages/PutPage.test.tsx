@@ -48,7 +48,7 @@ function makeState(overrides: Partial<PutResponse> = {}): PutResponse {
     gameEndFlag: false,
     winnerIdx: -1,
     message: '',
-    config: { cpuDifficulty: 0, matchTarget: 15 },
+    config: { matchTarget: 15 },
     ...overrides,
   };
 }

@@ -61,7 +61,7 @@ function makeState(overrides?: Partial<KaiserResponse>): KaiserResponse {
     maxBid: 12,
     gameEndFlag: false,
     winnerTeam: -1,
-    config: { cpuDifficulty: 0, allowNoTrump: true },
+    config: { allowNoTrump: true },
     message: '',
     ...overrides,
   };
@@ -82,7 +82,7 @@ describe('KaiserPage', () => {
         highBid: null,
         declarerIdx: -1,
         trumpSuit: 0,
-        config: { cpuDifficulty: 0, allowNoTrump },
+        config: { allowNoTrump },
       });
 
     it('offers all three contracts while it is on', async () => {

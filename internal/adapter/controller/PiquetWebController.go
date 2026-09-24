@@ -20,19 +20,12 @@ type PiquetWebInput struct {
 
 // PiquetWebConfig Piquet Web設定
 type PiquetWebConfig struct {
-	CpuDifficulty  *int `json:"cpuDifficulty,omitempty"`
 	DealsPerPartie *int `json:"dealsPerPartie,omitempty"`
 }
 
 // ToConfig builds a PiquetConfig from the nested web config, applying bounds checking.
 func (c *PiquetWebConfig) ToConfig() domain.PiquetConfig {
 	cfg := domain.DefaultPiquetConfig()
-	cfg.CpuDifficulty = domain.PiquetCpuDifficulty(webutil.BoundedIntPtr(
-		c.CpuDifficulty,
-		int(domain.PiquetCpuDifficultyEasy),
-		int(domain.PiquetCpuDifficultyHard),
-		int(cfg.CpuDifficulty),
-	))
 	webutil.ApplyBoundedInt(&cfg.DealsPerPartie, c.DealsPerPartie, 1, 100)
 	return cfg
 }
@@ -85,7 +78,6 @@ type PiquetWebOutputHint struct {
 
 // PiquetWebOutputConfig 設定アウトプット
 type PiquetWebOutputConfig struct {
-	CpuDifficulty  int `json:"cpuDifficulty"`
 	DealsPerPartie int `json:"dealsPerPartie"`
 }
 

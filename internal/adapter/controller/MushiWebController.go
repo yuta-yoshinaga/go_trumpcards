@@ -20,8 +20,7 @@ type MushiWebInput struct {
 
 // MushiWebConfig 虫Web設定
 type MushiWebConfig struct {
-	CpuDifficulty *int `json:"cpuDifficulty,omitempty"`
-	TargetRounds  *int `json:"targetRounds,omitempty"`
+	TargetRounds *int `json:"targetRounds,omitempty"`
 }
 
 // MushiWebOutputCard 場札・取り札 1 枚の出力。
@@ -88,16 +87,12 @@ type MushiWebOutput struct {
 
 // MushiWebOutputConfig 虫設定アウトプット
 type MushiWebOutputConfig struct {
-	CpuDifficulty int `json:"cpuDifficulty"`
-	TargetRounds  int `json:"targetRounds"`
+	TargetRounds int `json:"targetRounds"`
 }
 
 // ToConfig builds a MushiConfig from the nested web config, applying bounds checking.
 func (c *MushiWebConfig) ToConfig() domain.MushiConfig {
 	cfg := domain.DefaultMushiConfig()
-	cfg.CpuDifficulty = domain.MushiCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty,
-		int(domain.MushiCpuDifficultyNormal), int(domain.MushiCpuDifficultyNormal),
-		int(cfg.CpuDifficulty)))
 	cfg.TargetRounds = webutil.BoundedIntPtr(c.TargetRounds, 1, domain.MushiMaxRounds, cfg.TargetRounds)
 	return cfg
 }

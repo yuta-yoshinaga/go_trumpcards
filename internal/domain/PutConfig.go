@@ -2,15 +2,6 @@
 
 package domain
 
-// PutCpuDifficulty CPU の難易度レベル
-type PutCpuDifficulty int
-
-// PutのCPU難易度定数
-const (
-	// PutCpuDifficultyNormal 標準難易度 (v1で唯一サポート)
-	PutCpuDifficultyNormal PutCpuDifficulty = iota
-)
-
 // PutMinMatchTarget マッチ目標点の下限
 const PutMinMatchTarget = 1
 
@@ -22,7 +13,6 @@ const PutDefaultMatchTarget = 15
 
 // PutConfig プットゲーム設定
 type PutConfig struct {
-	CpuDifficulty PutCpuDifficulty `json:"cd"`
 	// MatchTarget この点数に最初に到達したプレイヤーがマッチに勝利する
 	MatchTarget int `json:"mt"`
 }
@@ -30,17 +20,12 @@ type PutConfig struct {
 // DefaultPutConfig デフォルト設定を返す
 func DefaultPutConfig() PutConfig {
 	return PutConfig{
-		CpuDifficulty: PutCpuDifficultyNormal,
-		MatchTarget:   PutDefaultMatchTarget,
+		MatchTarget: PutDefaultMatchTarget,
 	}
 }
 
 // Validate 設定値のドメインバリデーション
 func (c PutConfig) Validate() error {
-	if err := ValidateRange("CPU difficulty", int(c.CpuDifficulty),
-		int(PutCpuDifficultyNormal), int(PutCpuDifficultyNormal)); err != nil {
-		return err
-	}
 	return ValidateRange("Match target", c.MatchTarget, PutMinMatchTarget, PutMaxMatchTarget)
 }
 

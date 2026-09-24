@@ -18,8 +18,7 @@ type KilleWebInput struct {
 
 // KilleWebConfig キッレ Web設定
 type KilleWebConfig struct {
-	CpuDifficulty *int `json:"cpuDifficulty,omitempty"`
-	Stake         *int `json:"stake,omitempty"`
+	Stake *int `json:"stake,omitempty"`
 }
 
 // KilleWebOutputPlayer キッレ Webアウトプットプレイヤー
@@ -69,14 +68,12 @@ type KilleWebOutput struct {
 
 // KilleWebOutputConfig キッレ設定アウトプット
 type KilleWebOutputConfig struct {
-	CpuDifficulty int `json:"cpuDifficulty"`
-	Stake         int `json:"stake"`
+	Stake int `json:"stake"`
 }
 
 // ToConfig builds a KilleConfig from the nested web config, applying bounds checking.
 func (c *KilleWebConfig) ToConfig() domain.KilleConfig {
 	cfg := domain.DefaultKilleConfig()
-	cfg.CpuDifficulty = domain.KilleCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty, int(domain.KilleCpuDifficultyNormal), int(domain.KilleCpuDifficultyNormal), int(cfg.CpuDifficulty)))
 	webutil.ApplyBoundedInt(&cfg.Stake, c.Stake, 1, 100)
 	return cfg
 }

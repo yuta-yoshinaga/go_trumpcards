@@ -91,7 +91,6 @@ export interface BidEuchreResponse extends BaseGameResponse {
 
 /** Settings echoed back with the game state. */
 export interface BidEuchreConfigOutput {
-  cpuDifficulty: number;
   /** Whether the declarer may name a no-trump form. */
   allowNoTrump: boolean;
 }

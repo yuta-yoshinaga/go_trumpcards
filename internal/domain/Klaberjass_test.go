@@ -1040,9 +1040,8 @@ func TestKlaberjassConfigValidate(t *testing.T) {
 		t.Errorf("the default config must validate: %v", err)
 	}
 	for _, bad := range []KlaberjassConfig{
-		{CpuDifficulty: 9, TargetScore: 501},
-		{CpuDifficulty: KlaberjassCpuDifficultyNormal, TargetScore: 0},
-		{CpuDifficulty: KlaberjassCpuDifficultyNormal, TargetScore: 99999},
+		{TargetScore: 0},
+		{TargetScore: 99999},
 	} {
 		if err := bad.Validate(); err == nil {
 			t.Errorf("%+v must not validate", bad)

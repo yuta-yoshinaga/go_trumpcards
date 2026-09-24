@@ -5,7 +5,6 @@ package controller
 import (
 	"net/http"
 
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/webutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
@@ -20,9 +19,7 @@ type SjavsWebInput struct {
 }
 
 // SjavsWebConfig シャウスWeb設定
-type SjavsWebConfig struct {
-	CpuDifficulty *int `json:"cpuDifficulty,omitempty"`
-}
+type SjavsWebConfig struct{}
 
 // SjavsWebOutputPlayer シャウスWebアウトプットプレイヤー
 type SjavsWebOutputPlayer struct {
@@ -109,27 +106,10 @@ type SjavsWebOutput struct {
 }
 
 // SjavsWebOutputConfig シャウス設定アウトプット
-type SjavsWebOutputConfig struct {
-	CpuDifficulty int `json:"cpuDifficulty"`
-}
+type SjavsWebOutputConfig struct{}
 
-// ToConfig builds a SjavsConfig from the nested web config, applying bounds checking.
-func (c *SjavsWebConfig) ToConfig() domain.SjavsConfig {
-	cfg := domain.DefaultSjavsConfig()
-	cfg.CpuDifficulty = domain.SjavsCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty,
-		int(domain.SjavsCpuDifficultyNormal), int(domain.SjavsCpuDifficultyNormal),
-		int(cfg.CpuDifficulty)))
-	return cfg
-}
-
-// ToConfig builds a SjavsConfig from the input, falling back to defaults when absent.
-//
-// Must go through configOrDefault: `config` is optional on the wire, so a plain
-// reset arrives with a nil *SjavsWebConfig and calling the method on it would
-// dereference nil.
-func (i SjavsWebInput) ToConfig() domain.SjavsConfig {
-	return configOrDefault(i.Config, (*SjavsWebConfig).ToConfig, domain.DefaultSjavsConfig())
-}
+// ToConfig returns the default Sjavs configuration.
+func (SjavsWebInput) ToConfig() domain.SjavsConfig { return domain.DefaultSjavsConfig() }
 
 // SjavsWebController シャウスWebコントローラ
 type SjavsWebController = GameWebController[usecase.SjavsInteractorIF, SjavsWebInput, *SjavsWebOutput]

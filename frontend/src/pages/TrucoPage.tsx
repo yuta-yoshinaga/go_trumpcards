@@ -62,9 +62,7 @@ function TrucoPageContent() {
   const { cardWidth } = useCardDimensions();
   const { hint, hintEnabled, setHintEnabled } = useGameHint('truco', state);
 
-  // Only the match target is offered. TrucoCpuDifficulty has a single value
-  // ("v1 で唯一サポート") and nothing branches on it, so a difficulty selector
-  // would be a choice that changes nothing (#4755).
+  // Match target is the only configurable game setting.
   const [matchTarget, setMatchTarget] = useState(TRUCO_DEFAULT_MATCH_TARGET);
   const matchTargetRef = useRef(matchTarget);
   matchTargetRef.current = matchTarget;

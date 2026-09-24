@@ -1,6 +1,7 @@
 package domain_test
 
 import (
+	"bytes"
 	"encoding/json"
 	"testing"
 
@@ -449,18 +450,6 @@ func TestBriscola_Getters(t *testing.T) {
 	if got := b.GetPlayerPoints(99); got != 0 {
 		t.Error("out-of-range player points should return 0")
 	}
-	cfg := b.GetConfig()
-	if cfg.CpuDifficulty != domain.BriscolaCpuDifficultyNormal {
-		t.Error("default config not preserved")
-	}
-}
-
-func TestBriscola_SetConfig(t *testing.T) {
-	b := newTestBriscola()
-	b.SetConfig(domain.BriscolaConfig{CpuDifficulty: domain.BriscolaCpuDifficultyNormal})
-	if b.GetConfig().CpuDifficulty != domain.BriscolaCpuDifficultyNormal {
-		t.Error("SetConfig did not persist")
-	}
 }
 
 func TestBriscola_JSONRoundtrip(t *testing.T) {
@@ -486,6 +475,26 @@ func TestBriscola_JSONRoundtrip(t *testing.T) {
 	}
 	if got.GetTrumpCard() == nil {
 		t.Error("trump card lost in roundtrip")
+	}
+}
+
+func TestBriscola_JSONRoundtripIgnoresLegacyCpuDifficulty(t *testing.T) {
+	b := newTestBriscola()
+	b.Reset()
+	data, err := json.Marshal(b)
+	if err != nil {
+		t.Fatalf("Marshal: %v", err)
+	}
+	legacy := bytes.Replace(data, []byte(`"cf":{}`), []byte(`"cf":{"cd":0}`), 1)
+	if bytes.Equal(data, legacy) {
+		t.Fatalf("config object not found in JSON: %s", data)
+	}
+	var restored domain.Briscola
+	if err := json.Unmarshal(legacy, &restored); err != nil {
+		t.Fatalf("Unmarshal legacy JSON: %v", err)
+	}
+	if err := restored.GetConfig().Validate(); err != nil {
+		t.Fatalf("restored config: %v", err)
 	}
 }
 

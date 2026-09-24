@@ -43,7 +43,7 @@ const baseState: PiquetResponse = {
   gameEndFlag: false,
   winnerIdx: -1,
   message: '',
-  config: { cpuDifficulty: 1, dealsPerPartie: 6 },
+  config: { dealsPerPartie: 6 },
 };
 
 describe('usePiquetGame', () => {

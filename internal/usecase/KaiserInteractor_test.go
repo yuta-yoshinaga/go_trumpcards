@@ -75,17 +75,6 @@ func TestKaiserInteractor_ResetWithConfig(t *testing.T) {
 		assert.Equal(t, kaiserMockOutput, ki.ResetWithConfig(cfg))
 		gameMock.AssertCalled(t, "SetConfig", cfg)
 	})
-
-	t.Run("invalid config never reaches the game", func(t *testing.T) {
-		pMock := new(presenter.MockKaiserPresenter)
-		pMock.On("Output", mock.Anything, mock.Anything).Return(kaiserMockOutput)
-		gameMock := new(interfaces.MockKaiserGame)
-
-		ki := usecase.NewKaiserInteractor(gameMock, pMock)
-		assert.Equal(t, kaiserMockOutput, ki.ResetWithConfig(domain.KaiserConfig{CpuDifficulty: 9}))
-		gameMock.AssertNotCalled(t, "SetConfig", mock.Anything)
-		gameMock.AssertNotCalled(t, "Reset")
-	})
 }
 
 // **フェーズごとに使う席が違う。**ビッドは bidIdx、切札と捨て札は declarerIdx、

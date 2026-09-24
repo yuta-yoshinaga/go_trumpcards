@@ -5,7 +5,6 @@ package controller
 import (
 	"net/http"
 
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/webutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
@@ -23,8 +22,7 @@ type KaiserWebInput struct {
 
 // KaiserWebConfig カイザー Web設定
 type KaiserWebConfig struct {
-	CpuDifficulty *int  `json:"cpuDifficulty,omitempty"`
-	AllowNoTrump  *bool `json:"allowNoTrump,omitempty"`
+	AllowNoTrump *bool `json:"allowNoTrump,omitempty"`
 }
 
 // KaiserWebOutputBid カイザー Webアウトプットビッド
@@ -87,15 +85,12 @@ type KaiserWebOutput struct {
 
 // KaiserWebOutputConfig カイザー設定アウトプット
 type KaiserWebOutputConfig struct {
-	CpuDifficulty int  `json:"cpuDifficulty"`
-	AllowNoTrump  bool `json:"allowNoTrump"`
+	AllowNoTrump bool `json:"allowNoTrump"`
 }
 
 // ToConfig builds a KaiserConfig from the nested web config, applying bounds checking.
 func (c *KaiserWebConfig) ToConfig() domain.KaiserConfig {
 	cfg := domain.DefaultKaiserConfig()
-	cfg.CpuDifficulty = domain.KaiserCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty,
-		int(domain.KaiserCpuDifficultyNormal), int(domain.KaiserCpuDifficultyNormal), int(cfg.CpuDifficulty)))
 	if c.AllowNoTrump != nil {
 		cfg.AllowNoTrump = *c.AllowNoTrump
 	}

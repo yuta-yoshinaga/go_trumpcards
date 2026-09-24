@@ -5,7 +5,6 @@ package controller
 import (
 	"net/http"
 
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/webutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
@@ -22,7 +21,6 @@ type GuandanWebInput struct {
 
 // GuandanWebConfig 掼蛋 Web設定
 type GuandanWebConfig struct {
-	CpuDifficulty *int `json:"cpuDifficulty,omitempty"`
 }
 
 // GuandanWebOutputPlayer 掼蛋 Webアウトプットプレイヤー
@@ -103,14 +101,11 @@ type GuandanWebOutput struct {
 
 // GuandanWebOutputConfig 掼蛋設定アウトプット
 type GuandanWebOutputConfig struct {
-	CpuDifficulty int `json:"cpuDifficulty"`
 }
 
 // ToConfig builds a GuandanConfig from the nested web config, applying bounds checking.
 func (c *GuandanWebConfig) ToConfig() domain.GuandanConfig {
 	cfg := domain.DefaultGuandanConfig()
-	cfg.CpuDifficulty = domain.GuandanCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty,
-		int(domain.GuandanCpuDifficultyNormal), int(domain.GuandanCpuDifficultyNormal), int(cfg.CpuDifficulty)))
 	return cfg
 }
 

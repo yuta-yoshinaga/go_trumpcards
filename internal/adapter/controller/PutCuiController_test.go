@@ -114,7 +114,7 @@ func TestPutCuiController_Exec(t *testing.T) {
 func TestPutCuiControllerSetsTheMatchTarget(t *testing.T) {
 	// **既定と違う設定を持たせる。**既定のままだと「今の設定を読んで書き換える」が
 	// 「既定から作り直す」実装でも通ってしまい、何も確かめない。難易度は現状
-	// Normal しか無いので、目標点そのものを既定から動かして区別する。
+	// 単一設定の既定値との違いを、目標点そのものを動かして区別する。
 	current := domain.DefaultPutConfig()
 	current.MatchTarget = 30
 	newMock := func() *mockUsecases.MockPutInteractor {

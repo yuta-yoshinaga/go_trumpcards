@@ -67,6 +67,5 @@ export interface KarnoffelResponse extends BaseGameResponse {
 
 /** Settings echoed back with the game state. */
 export interface KarnoffelConfigOutput {
-  cpuDifficulty: number;
   targetHands: number;
 }

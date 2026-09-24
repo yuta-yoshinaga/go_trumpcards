@@ -6,7 +6,6 @@ import { gameExec } from '../gameExec';
 
 /** Configuration options for Bid Euchre game settings. */
 export interface BidEuchreConfigInput {
-  cpuDifficulty?: number;
   /** Whether the declarer may name a no-trump form. */
   allowNoTrump?: boolean;
 }

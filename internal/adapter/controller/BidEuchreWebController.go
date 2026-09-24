@@ -5,7 +5,6 @@ package controller
 import (
 	"net/http"
 
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/webutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
@@ -21,8 +20,7 @@ type BidEuchreWebInput struct {
 
 // BidEuchreWebConfig ビッド・ユーカー Web設定
 type BidEuchreWebConfig struct {
-	CpuDifficulty *int  `json:"cpuDifficulty,omitempty"`
-	AllowNoTrump  *bool `json:"allowNoTrump,omitempty"`
+	AllowNoTrump *bool `json:"allowNoTrump,omitempty"`
 }
 
 // BidEuchreWebOutputBid ビッド・ユーカー Webアウトプット宣言
@@ -94,15 +92,12 @@ type BidEuchreWebOutput struct {
 
 // BidEuchreWebOutputConfig ビッド・ユーカー設定アウトプット
 type BidEuchreWebOutputConfig struct {
-	CpuDifficulty int  `json:"cpuDifficulty"`
-	AllowNoTrump  bool `json:"allowNoTrump"`
+	AllowNoTrump bool `json:"allowNoTrump"`
 }
 
 // ToConfig builds a BidEuchreConfig from the nested web config, applying bounds checking.
 func (c *BidEuchreWebConfig) ToConfig() domain.BidEuchreConfig {
 	cfg := domain.DefaultBidEuchreConfig()
-	cfg.CpuDifficulty = domain.BidEuchreCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty,
-		int(domain.BidEuchreCpuDifficultyNormal), int(domain.BidEuchreCpuDifficultyNormal), int(cfg.CpuDifficulty)))
 	if c.AllowNoTrump != nil {
 		cfg.AllowNoTrump = *c.AllowNoTrump
 	}

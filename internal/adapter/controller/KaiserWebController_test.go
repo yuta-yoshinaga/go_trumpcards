@@ -112,11 +112,6 @@ func TestKaiserWebController_ResetWithConfig(t *testing.T) {
 		run(t, "cfg-1", &controller.KaiserWebConfig{AllowNoTrump: &allow}, expected)
 	})
 
-	t.Run("out-of-range values fall back to defaults", func(t *testing.T) {
-		diff := 9
-		run(t, "cfg-2", &controller.KaiserWebConfig{CpuDifficulty: &diff}, domain.DefaultKaiserConfig())
-	})
-
 	// **config はワイヤ上で任意。**省略時に落ちるとフロントの reset が死ぬ。
 	t.Run("nil config uses defaults", func(t *testing.T) {
 		run(t, "cfg-3", nil, domain.DefaultKaiserConfig())

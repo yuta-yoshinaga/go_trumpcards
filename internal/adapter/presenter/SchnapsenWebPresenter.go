@@ -54,10 +54,7 @@ func (p *SchnapsenWebPresenter) buildBase(s interfaces.SchnapsenGame) *controlle
 	resObj.WinnerIdx = s.GetWinnerIdx()
 	resObj.WinThreshold = domain.SchnapsenWinThreshold
 
-	cfg := s.GetConfig()
-	resObj.Config = controller.SchnapsenWebOutputConfig{
-		CpuDifficulty: int(cfg.CpuDifficulty),
-	}
+	resObj.Config = controller.SchnapsenWebOutputConfig{}
 
 	resObj.CurrentTrick = trickCardsToOutput(s.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(s)

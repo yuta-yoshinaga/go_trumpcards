@@ -17,8 +17,7 @@ type TrucoWebInput struct {
 
 // TrucoWebConfig トゥルコWeb設定
 type TrucoWebConfig struct {
-	CpuDifficulty *int `json:"cpuDifficulty,omitempty"`
-	MatchTarget   *int `json:"matchTarget,omitempty"`
+	MatchTarget *int `json:"matchTarget,omitempty"`
 }
 
 // TrucoWebOutputPlayer トゥルコWebアウトプットプレイヤー
@@ -67,16 +66,12 @@ type TrucoWebOutput struct {
 
 // TrucoWebOutputConfig トゥルコ設定アウトプット
 type TrucoWebOutputConfig struct {
-	CpuDifficulty int `json:"cpuDifficulty"`
-	MatchTarget   int `json:"matchTarget"`
+	MatchTarget int `json:"matchTarget"`
 }
 
 // ToConfig builds a TrucoConfig from the nested web config, applying bounds checking.
 func (c *TrucoWebConfig) ToConfig() domain.TrucoConfig {
 	cfg := domain.DefaultTrucoConfig()
-	cfg.CpuDifficulty = domain.TrucoCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty,
-		int(domain.TrucoCpuDifficultyNormal), int(domain.TrucoCpuDifficultyNormal),
-		int(cfg.CpuDifficulty)))
 	cfg.MatchTarget = webutil.BoundedIntPtr(c.MatchTarget,
 		domain.TrucoMinMatchTarget, domain.TrucoMaxMatchTarget, cfg.MatchTarget)
 	return cfg

@@ -18187,9 +18187,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
       responses:
         '200':
           description: Current game state
@@ -18394,9 +18391,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
                     targetRounds:
                       type: integer
                       description: Rounds per game, 1-12. Mushi is normally 12.
@@ -18493,9 +18487,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
       responses:
         '200':
           description: Current game state
@@ -19028,9 +19019,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
       responses:
         '200':
           description: Current game state
@@ -19133,9 +19121,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
       responses:
         '200':
           description: Current game state
@@ -19244,9 +19229,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
       responses:
         '200':
           description: Current game state
@@ -19349,9 +19331,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
       responses:
         '200':
           description: Current game state
@@ -19459,9 +19438,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
       responses:
         '200':
           description: Current game state
@@ -19569,9 +19545,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
       responses:
         '200':
           description: Current game state
@@ -19686,9 +19659,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
                     targetScore:
                       type: integer
                       description: Points that win the game (default 61).
@@ -19785,9 +19755,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
                     targetDeals:
                       type: integer
                       description: Deals played before the game is decided (default 5).
@@ -19881,9 +19848,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
                     targetDeals:
                       type: integer
                       description: Deals played before the game is decided (default 5).
@@ -19974,9 +19938,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
                     targetDeals:
                       type: integer
                       description: Deals played before the game is decided (default 5).
@@ -20071,9 +20032,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
                     stake:
                       type: integer
                       description: Stake each player antes per round (1-100, default 1).
@@ -20184,9 +20142,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
                     targetScore:
                       type: integer
                       description: Points needed to win (100-1000, default 501).
@@ -20306,9 +20261,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
                     allowNoTrump:
                       type: boolean
                       description: Whether no-trump bids are offered (default true).
@@ -20417,9 +20369,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
                     targetHands:
                       type: integer
                       description: Hands played before the game is decided (1-30, default 8).
@@ -20522,9 +20471,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
       responses:
         '200':
           description: Current game state
@@ -20620,9 +20566,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
                     allowNoTrump:
                       type: boolean
                       description: Whether the declarer may name a no-trump form.
@@ -20737,9 +20680,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
                     targetHands:
                       type: integer
                       description: Hands in a game (3-12).
@@ -21942,9 +21882,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
                     targetHands:
                       type: integer
                       description: Hands needed to win the game (1-10).
@@ -22052,9 +21989,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
       responses:
         '200':
           description: Current game state
@@ -22148,9 +22082,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
       responses:
         '200':
           description: Current game state
@@ -22257,9 +22188,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
       responses:
         '200':
           description: Current game state
@@ -35677,8 +35605,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
         players:
           type: array
           items:
@@ -35771,9 +35697,6 @@ components:
             $ref: '#/components/schemas/ActionLogEntry'
         config:
           type: object
-          properties:
-            cpuDifficulty:
-              type: integer
         players:
           type: array
           items:
@@ -35878,9 +35801,6 @@ components:
             $ref: '#/components/schemas/ActionLogEntry'
         config:
           type: object
-          properties:
-            cpuDifficulty:
-              type: integer
         players:
           type: array
           items:
@@ -35986,9 +35906,6 @@ components:
             $ref: '#/components/schemas/ActionLogEntry'
         config:
           type: object
-          properties:
-            cpuDifficulty:
-              type: integer
         players:
           type: array
           items:
@@ -36146,11 +36063,6 @@ components:
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
           items:
             $ref: '#/components/schemas/ActionLogEntry'
-        config:
-          type: object
-          properties:
-            cpuDifficulty:
-              type: integer
         players:
           type: array
           items:
@@ -36805,8 +36717,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
             targetDeals:
               type: integer
         players:
@@ -37052,8 +36962,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
             stake:
               type: integer
         players:
@@ -37166,8 +37074,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
             targetScore:
               type: integer
             allowSchmeiss:
@@ -37302,8 +37208,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
             allowNoTrump:
               type: boolean
         players:
@@ -37451,8 +37355,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
             targetHands:
               type: integer
         players:
@@ -37613,8 +37515,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
         players:
           type: array
           items:
@@ -37931,8 +37831,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
             allowNoTrump:
               type: boolean
         message:
@@ -38105,8 +38003,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
             targetHands:
               type: integer
         message:
@@ -38224,8 +38120,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
             targetHands:
               type: integer
         message:
@@ -38402,8 +38296,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
     GuandanResponse:
       type: object
       description: Response payload for /guandan/exec
@@ -38540,8 +38432,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
     LiteratureResponse:
       type: object
       description: Response payload for /literature/exec
@@ -38675,8 +38565,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
             playerCnt:
               type: integer
         players:
@@ -38920,8 +38808,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
         players:
           type: array
           description: |
@@ -41381,14 +41267,8 @@ components:
     TrucoConfig:
       type: object
       required:
-        - cpuDifficulty
         - matchTarget
       properties:
-        cpuDifficulty:
-          type: integer
-          description: CPU difficulty (0=Normal)
-          enum: [0]
-          example: 0
         matchTarget:
           type: integer
           description: Points needed to win the match (default 15)
@@ -41597,14 +41477,8 @@ components:
     PutConfig:
       type: object
       required:
-        - cpuDifficulty
         - matchTarget
       properties:
-        cpuDifficulty:
-          type: integer
-          description: CPU difficulty (0=Normal)
-          enum: [0]
-          example: 0
         matchTarget:
           type: integer
           description: Points needed to win the match (default 15)
@@ -45511,14 +45385,6 @@ components:
     # -------------------------------------------------------------------------
     BriscolaConfig:
       type: object
-      description: Briscola game configuration. v1 only supports Normal difficulty.
-      properties:
-        cpuDifficulty:
-          type: integer
-          minimum: 0
-          maximum: 0
-          description: "0 = Normal (only level supported in v1)"
-
     BriscolaResponse:
       type: object
       description: Current state of the Briscola game.
@@ -45610,11 +45476,6 @@ components:
       type: object
       description: Brusquembille game configuration.
       properties:
-        cpuDifficulty:
-          type: integer
-          minimum: 0
-          maximum: 0
-          description: "0 = Normal (only level supported in v1)"
         playerCnt:
           type: integer
           minimum: 2
@@ -45721,13 +45582,8 @@ components:
     # -------------------------------------------------------------------------
     SchnapsenConfig:
       type: object
-      description: Schnapsen game configuration. v1 only supports Normal difficulty.
-      properties:
-        cpuDifficulty:
-          type: integer
-          minimum: 0
-          maximum: 0
-          description: "0 = Normal (only level supported in v1)"
+      description: Schnapsen game configuration.
+      properties: {}
 
     SchnapsenResponse:
       type: object
@@ -48865,9 +48721,6 @@ components:
       type: object
       description: Piquet configuration (Web request payload)
       properties:
-        cpuDifficulty:
-          type: integer
-          description: 0=Easy, 1=Normal, 2=Hard
         dealsPerPartie:
           type: integer
           minimum: 1

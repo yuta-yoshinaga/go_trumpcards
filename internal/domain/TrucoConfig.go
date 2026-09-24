@@ -1,14 +1,5 @@
 package domain
 
-// TrucoCpuDifficulty CPU の難易度レベル
-type TrucoCpuDifficulty int
-
-// TrucoのCPU難易度定数
-const (
-	// TrucoCpuDifficultyNormal 標準難易度 (v1で唯一サポート)
-	TrucoCpuDifficultyNormal TrucoCpuDifficulty = iota
-)
-
 // TrucoMinMatchTarget マッチ目標点の下限
 const TrucoMinMatchTarget = 1
 
@@ -20,7 +11,6 @@ const TrucoDefaultMatchTarget = 15
 
 // TrucoConfig トゥルコゲーム設定
 type TrucoConfig struct {
-	CpuDifficulty TrucoCpuDifficulty `json:"cd"`
 	// MatchTarget この点数に最初に到達したプレイヤーがマッチに勝利する
 	MatchTarget int `json:"mt"`
 }
@@ -28,17 +18,12 @@ type TrucoConfig struct {
 // DefaultTrucoConfig デフォルト設定を返す
 func DefaultTrucoConfig() TrucoConfig {
 	return TrucoConfig{
-		CpuDifficulty: TrucoCpuDifficultyNormal,
-		MatchTarget:   TrucoDefaultMatchTarget,
+		MatchTarget: TrucoDefaultMatchTarget,
 	}
 }
 
 // Validate 設定値のドメインバリデーション
 func (c TrucoConfig) Validate() error {
-	if err := ValidateRange("CPU difficulty", int(c.CpuDifficulty),
-		int(TrucoCpuDifficultyNormal), int(TrucoCpuDifficultyNormal)); err != nil {
-		return err
-	}
 	return ValidateRange("Match target", c.MatchTarget, TrucoMinMatchTarget, TrucoMaxMatchTarget)
 }
 

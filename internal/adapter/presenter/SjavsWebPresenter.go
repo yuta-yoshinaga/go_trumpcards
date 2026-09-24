@@ -86,8 +86,7 @@ func (p *SjavsWebPresenter) buildBase(c interfaces.SjavsGame) *controller.SjavsW
 		}
 	}
 
-	cfg := c.GetConfig()
-	resObj.Config = controller.SjavsWebOutputConfig{CpuDifficulty: int(cfg.CpuDifficulty)}
+	resObj.Config = controller.SjavsWebOutputConfig{}
 	resObj.Players = p.buildPlayersOutput(c)
 
 	// ヒントは通常のレスポンスにも載せる。HintOutput にしか設定しないと、

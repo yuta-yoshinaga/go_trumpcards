@@ -59,8 +59,7 @@ func (p *BrusquembilleWebPresenter) buildBase(b interfaces.BrusquembilleGame) *c
 
 	cfg := b.GetConfig()
 	resObj.Config = controller.BrusquembilleWebOutputConfig{
-		CpuDifficulty: int(cfg.CpuDifficulty),
-		PlayerCnt:     cfg.PlayerCnt,
+		PlayerCnt: cfg.PlayerCnt,
 	}
 
 	resObj.CurrentTrick = trickCardsToOutput(b.GetCurrentTrick())

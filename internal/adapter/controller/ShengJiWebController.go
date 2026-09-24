@@ -5,7 +5,6 @@ package controller
 import (
 	"net/http"
 
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/webutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
@@ -22,9 +21,7 @@ type ShengJiWebInput struct {
 }
 
 // ShengJiWebConfig 升级 Web設定
-type ShengJiWebConfig struct {
-	CpuDifficulty *int `json:"cpuDifficulty,omitempty"`
-}
+type ShengJiWebConfig struct{}
 
 // ShengJiWebOutputPlayer 升级 Webアウトプットプレイヤー
 type ShengJiWebOutputPlayer struct {
@@ -119,15 +116,11 @@ type ShengJiWebOutput struct {
 }
 
 // ShengJiWebOutputConfig 升级設定アウトプット
-type ShengJiWebOutputConfig struct {
-	CpuDifficulty int `json:"cpuDifficulty"`
-}
+type ShengJiWebOutputConfig struct{}
 
 // ToConfig builds a ShengJiConfig from the nested web config, applying bounds checking.
 func (c *ShengJiWebConfig) ToConfig() domain.ShengJiConfig {
 	cfg := domain.DefaultShengJiConfig()
-	cfg.CpuDifficulty = domain.ShengJiCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty,
-		int(domain.ShengJiCpuDifficultyNormal), int(domain.ShengJiCpuDifficultyNormal), int(cfg.CpuDifficulty)))
 	return cfg
 }
 

@@ -80,8 +80,6 @@ func (p *TrexWebPresenter) buildBase(c interfaces.TrexGame) *controller.TrexWebO
 		c.IsTrix() &&
 		len(valid) == 0
 
-	cfg := c.GetConfig()
-	resObj.Config = controller.TrexWebOutputConfig{CpuDifficulty: int(cfg.CpuDifficulty)}
 	resObj.Players = p.buildPlayersOutput(c)
 
 	// ヒントは通常のレスポンスにも載せる。HintOutput にしか設定しないと、

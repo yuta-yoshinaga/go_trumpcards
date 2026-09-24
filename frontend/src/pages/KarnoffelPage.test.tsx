@@ -56,7 +56,7 @@ function makeState(overrides?: Partial<KarnoffelResponse>): KarnoffelResponse {
     gameEndFlag: false,
     winnerTeam: -1,
     message: '',
-    config: { cpuDifficulty: 0, targetHands: 3 },
+    config: { targetHands: 3 },
     ...overrides,
   };
 }

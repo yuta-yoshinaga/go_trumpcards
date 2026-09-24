@@ -20,9 +20,7 @@ export interface SchnapsenTrickCard {
 }
 
 /** Schnapsen game configuration. */
-export interface SchnapsenConfig {
-  cpuDifficulty: number;
-}
+export type SchnapsenConfig = Record<string, never>;
 
 /** A suggested hint for Schnapsen. */
 export interface SchnapsenHint {

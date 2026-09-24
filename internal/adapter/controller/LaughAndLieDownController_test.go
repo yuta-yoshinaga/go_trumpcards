@@ -26,14 +26,6 @@ func TestLaughAndLieDownWebInput_ToConfigWithNoConfigDoesNotPanic(t *testing.T) 
 	})
 }
 
-func TestLaughAndLieDownWebInput_ToConfigClampsAnOutOfRangeDifficulty(t *testing.T) {
-	bad := 99
-	cfg := controller.LaughAndLieDownWebInput{
-		Config: &controller.LaughAndLieDownWebConfig{CpuDifficulty: &bad},
-	}.ToConfig()
-	assert.NoError(t, cfg.Validate())
-}
-
 func TestLaughAndLieDownWebInput_TakeCountDefaultsToOne(t *testing.T) {
 	// 1 枚取りが普通なので、毎リクエストに takeCount を要求しない。省略が
 	// 3 枚取りに化けると、指定していない札まで取られる。

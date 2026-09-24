@@ -5,7 +5,6 @@ package controller
 import (
 	"net/http"
 
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/webutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
@@ -19,7 +18,6 @@ type SchnapsenWebInput struct {
 
 // SchnapsenWebConfig シュナプセンWeb設定
 type SchnapsenWebConfig struct {
-	CpuDifficulty *int `json:"cpuDifficulty,omitempty"`
 }
 
 // SchnapsenWebOutputPlayer シュナプセンWebアウトプットプレイヤー
@@ -64,15 +62,11 @@ type SchnapsenWebOutput struct {
 
 // SchnapsenWebOutputConfig シュナプセン設定アウトプット
 type SchnapsenWebOutputConfig struct {
-	CpuDifficulty int `json:"cpuDifficulty"`
 }
 
 // ToConfig builds a SchnapsenConfig from the nested web config, applying bounds checking.
 func (c *SchnapsenWebConfig) ToConfig() domain.SchnapsenConfig {
 	cfg := domain.DefaultSchnapsenConfig()
-	cfg.CpuDifficulty = domain.SchnapsenCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty,
-		int(domain.SchnapsenCpuDifficultyNormal), int(domain.SchnapsenCpuDifficultyNormal),
-		int(cfg.CpuDifficulty)))
 	return cfg
 }
 

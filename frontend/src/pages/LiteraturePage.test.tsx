@@ -55,7 +55,7 @@ function makeState(overrides?: Partial<LiteratureResponse>): LiteratureResponse 
     gameEndFlag: false,
     winnerTeam: -1,
     message: '',
-    config: { cpuDifficulty: 0 },
+    config: {},
     ...overrides,
   };
 }

@@ -5,7 +5,6 @@ package controller
 import (
 	"net/http"
 
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/webutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
@@ -21,7 +20,6 @@ type BuraWebInput struct {
 
 // BuraWebConfig ブラWeb設定
 type BuraWebConfig struct {
-	CpuDifficulty *int `json:"cpuDifficulty,omitempty"`
 }
 
 // BuraWebOutputPlayer ブラWebアウトプットプレイヤー
@@ -67,15 +65,11 @@ type BuraWebOutput struct {
 
 // BuraWebOutputConfig ブラ設定アウトプット
 type BuraWebOutputConfig struct {
-	CpuDifficulty int `json:"cpuDifficulty"`
 }
 
 // ToConfig builds a BuraConfig from the nested web config, applying bounds checking.
 func (c *BuraWebConfig) ToConfig() domain.BuraConfig {
 	cfg := domain.DefaultBuraConfig()
-	cfg.CpuDifficulty = domain.BuraCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty,
-		int(domain.BuraCpuDifficultyNormal), int(domain.BuraCpuDifficultyNormal),
-		int(cfg.CpuDifficulty)))
 	return cfg
 }
 

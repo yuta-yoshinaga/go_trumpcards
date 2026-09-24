@@ -322,6 +322,22 @@ func TestToepen_SurvivesAKVRoundTrip(t *testing.T) {
 	}
 }
 
+func TestToepen_UnmarshalAcceptsLegacyDifficulty(t *testing.T) {
+	type snapshot map[string]json.RawMessage
+	tp := NewDefaultToepen()
+	tp.Reset()
+	data, err := json.Marshal(tp)
+	require.NoError(t, err)
+	var snap snapshot
+	require.NoError(t, json.Unmarshal(data, &snap))
+	snap["cfg"] = json.RawMessage(`{"cd":0,"pc":4}`)
+	legacy, err := json.Marshal(snap)
+	require.NoError(t, err)
+	restored := NewDefaultToepen()
+	require.NoError(t, json.Unmarshal(legacy, restored))
+	assert.Equal(t, ToepenPlayerCnt, restored.GetConfig().PlayerCnt)
+}
+
 func TestToepen_UnmarshalRejectsAndRepairsHostileSnapshots(t *testing.T) {
 	assert.Error(t, json.Unmarshal([]byte("{"), NewDefaultToepen()))
 	assert.Error(t, json.Unmarshal([]byte(`{"pl":[]}`), NewDefaultToepen()))
@@ -330,11 +346,6 @@ func TestToepen_UnmarshalRejectsAndRepairsHostileSnapshots(t *testing.T) {
 	tp.Reset()
 	data, err := json.Marshal(tp)
 	require.NoError(t, err)
-
-	t.Run("invalid config", func(t *testing.T) {
-		hostile := replaceJSONNumber(t, string(data), `"cd":0`, `"cd":99`)
-		assert.Error(t, json.Unmarshal([]byte(hostile), NewDefaultToepen()))
-	})
 
 	t.Run("out-of-range seats are clamped", func(t *testing.T) {
 		// The current seat is the one after the dealer, not necessarily 0, so

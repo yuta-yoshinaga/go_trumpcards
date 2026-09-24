@@ -101,6 +101,5 @@ export interface SixBidSoloResponse extends BaseGameResponse {
 
 /** Settings echoed back with the game state. */
 export interface SixBidSoloConfigOutput {
-  cpuDifficulty: number;
   targetHands: number;
 }

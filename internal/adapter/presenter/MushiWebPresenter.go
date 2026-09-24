@@ -94,8 +94,7 @@ func (p *MushiWebPresenter) buildBase(m interfaces.MushiGame) *controller.MushiW
 
 	cfg := m.GetConfig()
 	resObj.Config = controller.MushiWebOutputConfig{
-		CpuDifficulty: int(cfg.CpuDifficulty),
-		TargetRounds:  cfg.TargetRounds,
+		TargetRounds: cfg.TargetRounds,
 	}
 	resObj.TargetRounds = cfg.TargetRounds
 	resObj.Players = p.buildPlayersOutput(m)

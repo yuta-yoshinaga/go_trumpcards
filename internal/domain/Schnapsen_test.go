@@ -533,10 +533,6 @@ func TestSchnapsenConfig_Validate(t *testing.T) {
 	if err := domain.DefaultSchnapsenConfig().Validate(); err != nil {
 		t.Errorf("default config should be valid: %v", err)
 	}
-	bad := domain.SchnapsenConfig{CpuDifficulty: domain.SchnapsenCpuDifficulty(9)}
-	if err := bad.Validate(); err == nil {
-		t.Error("out-of-range difficulty should be invalid")
-	}
 }
 
 func TestSchnapsen_FullGameToCompletion(t *testing.T) {

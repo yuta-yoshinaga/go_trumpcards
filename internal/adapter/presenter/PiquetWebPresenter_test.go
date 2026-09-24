@@ -297,7 +297,7 @@ func TestPiquetWebPresenter_HintOutput_WithHint(t *testing.T) {
 		domain.NewPiquetPlayer(false),
 	}
 	g := domain.NewPiquet(domain.NewTrumpCardsBelote(), players,
-		domain.PiquetConfig{DealsPerPartie: 1, CpuDifficulty: domain.PiquetCpuDifficultyNormal})
+		domain.PiquetConfig{DealsPerPartie: 1})
 	g.Reset()
 	for g.GetPhase() == domain.PiquetPhaseExchange {
 		g.CpuPlay()
@@ -336,7 +336,7 @@ func TestPiquetWebPresenterOutputCarriesTheHint(t *testing.T) {
 			domain.NewPiquetPlayer(humanSeat == 1),
 		}
 		g := domain.NewPiquet(domain.NewTrumpCardsBelote(), players,
-			domain.PiquetConfig{DealsPerPartie: 1, CpuDifficulty: domain.PiquetCpuDifficultyNormal})
+			domain.PiquetConfig{DealsPerPartie: 1})
 		g.Reset()
 		return g
 	}

@@ -32,7 +32,7 @@ func mustBrusquembilleOutputJSON(msg string) string {
 }
 
 func TestBrusquembilleWebController_Exec(t *testing.T) {
-	mockOutput := `{"players":[],"phase":0,"trickNumber":0,"currentPlayerIdx":0,"currentTrick":[],"trumpSuit":0,"dealerIdx":0,"leadPlayerIdx":0,"stockRemaining":0,"gameEndFlag":false,"winnerIdx":-1,"message":"","config":{"cpuDifficulty":0}}`
+	mockOutput := `{"players":[],"phase":0,"trickNumber":0,"currentPlayerIdx":0,"currentTrick":[],"trumpSuit":0,"dealerIdx":0,"leadPlayerIdx":0,"stockRemaining":0,"gameEndFlag":false,"winnerIdx":-1,"message":"","config":{}}`
 
 	biMock := new(usecase.MockBrusquembilleInteractor)
 	biMock.On("ResetWithConfig", domain.DefaultBrusquembilleConfig()).Return(mockOutput)
@@ -110,16 +110,4 @@ func TestBrusquembilleWebConfig_ToConfig(t *testing.T) {
 		assert.Equal(t, domain.DefaultBrusquembilleConfig(), input.ToConfig())
 	})
 
-	t.Run("explicit normal difficulty", func(t *testing.T) {
-		diff := int(domain.BrusquembilleCpuDifficultyNormal)
-		c := &controller.BrusquembilleWebConfig{CpuDifficulty: &diff}
-		assert.Equal(t, domain.BrusquembilleCpuDifficultyNormal, c.ToConfig().CpuDifficulty)
-	})
-
-	t.Run("out-of-range clamps to default", func(t *testing.T) {
-		diff := 99
-		c := &controller.BrusquembilleWebConfig{CpuDifficulty: &diff}
-		// v1 only supports Normal; out-of-range falls back to the default.
-		assert.Equal(t, domain.BrusquembilleCpuDifficultyNormal, c.ToConfig().CpuDifficulty)
-	})
 }

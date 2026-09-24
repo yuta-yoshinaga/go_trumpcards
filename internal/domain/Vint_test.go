@@ -717,9 +717,6 @@ func TestVintConfigValidate(t *testing.T) {
 	if err := DefaultVintConfig().Validate(); err != nil {
 		t.Errorf("the default config must validate: %v", err)
 	}
-	if err := (VintConfig{CpuDifficulty: 9}).Validate(); err == nil {
-		t.Error("a bad difficulty must not validate")
-	}
 }
 
 func TestVintRoundTripsThroughJSON(t *testing.T) {

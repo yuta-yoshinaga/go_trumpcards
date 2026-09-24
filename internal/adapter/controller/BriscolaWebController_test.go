@@ -32,7 +32,7 @@ func mustBriscolaOutputJSON(msg string) string {
 }
 
 func TestBriscolaWebController_Exec(t *testing.T) {
-	mockOutput := `{"players":[],"phase":0,"trickNumber":0,"currentPlayerIdx":0,"currentTrick":[],"trumpSuit":0,"dealerIdx":0,"leadPlayerIdx":0,"stockRemaining":0,"gameEndFlag":false,"winnerIdx":-1,"message":"","config":{"cpuDifficulty":0}}`
+	mockOutput := `{"players":[],"phase":0,"trickNumber":0,"currentPlayerIdx":0,"currentTrick":[],"trumpSuit":0,"dealerIdx":0,"leadPlayerIdx":0,"stockRemaining":0,"gameEndFlag":false,"winnerIdx":-1,"message":"","config":{}}`
 
 	biMock := new(usecase.MockBriscolaInteractor)
 	biMock.On("ResetWithConfig", domain.DefaultBriscolaConfig()).Return(mockOutput)
@@ -110,16 +110,4 @@ func TestBriscolaWebConfig_ToConfig(t *testing.T) {
 		assert.Equal(t, domain.DefaultBriscolaConfig(), input.ToConfig())
 	})
 
-	t.Run("explicit normal difficulty", func(t *testing.T) {
-		diff := int(domain.BriscolaCpuDifficultyNormal)
-		c := &controller.BriscolaWebConfig{CpuDifficulty: &diff}
-		assert.Equal(t, domain.BriscolaCpuDifficultyNormal, c.ToConfig().CpuDifficulty)
-	})
-
-	t.Run("out-of-range clamps to default", func(t *testing.T) {
-		diff := 99
-		c := &controller.BriscolaWebConfig{CpuDifficulty: &diff}
-		// v1 only supports Normal; out-of-range falls back to the default.
-		assert.Equal(t, domain.BriscolaCpuDifficultyNormal, c.ToConfig().CpuDifficulty)
-	})
 }

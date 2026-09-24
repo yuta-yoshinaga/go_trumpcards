@@ -20,7 +20,6 @@ export interface TrucoTrickCard {
 
 /** Truco game configuration. */
 export interface TrucoConfig {
-  cpuDifficulty: number;
   matchTarget: number;
 }
 

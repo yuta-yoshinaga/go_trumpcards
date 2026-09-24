@@ -61,7 +61,7 @@ func TestKilleInteractor_ResetWithConfig(t *testing.T) {
 		pMock := new(presenter.MockKillePresenter)
 		pMock.On("Output", mock.Anything, mock.Anything).Return(killeMockOutput)
 		gameMock := new(interfaces.MockKilleGame)
-		cfg := domain.KilleConfig{CpuDifficulty: domain.KilleCpuDifficultyNormal, Stake: 5}
+		cfg := domain.KilleConfig{Stake: 5}
 		gameMock.On("SetConfig", cfg).Return()
 		gameMock.On("Reset").Return()
 		gameMock.On("GetGameEndFlag").Return(false)

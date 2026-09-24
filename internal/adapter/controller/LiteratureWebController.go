@@ -5,7 +5,6 @@ package controller
 import (
 	"net/http"
 
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/webutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
@@ -25,7 +24,6 @@ type LiteratureWebInput struct {
 
 // LiteratureWebConfig リテラチャー Web設定
 type LiteratureWebConfig struct {
-	CpuDifficulty *int `json:"cpuDifficulty,omitempty"`
 }
 
 // LiteratureWebOutputPlayer リテラチャー Webアウトプットプレイヤー
@@ -89,14 +87,11 @@ type LiteratureWebOutput struct {
 
 // LiteratureWebOutputConfig リテラチャー設定アウトプット
 type LiteratureWebOutputConfig struct {
-	CpuDifficulty int `json:"cpuDifficulty"`
 }
 
 // ToConfig builds a LiteratureConfig from the nested web config, applying bounds checking.
 func (c *LiteratureWebConfig) ToConfig() domain.LiteratureConfig {
 	cfg := domain.DefaultLiteratureConfig()
-	cfg.CpuDifficulty = domain.LiteratureCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty,
-		int(domain.LiteratureCpuDifficultyNormal), int(domain.LiteratureCpuDifficultyNormal), int(cfg.CpuDifficulty)))
 	return cfg
 }
 

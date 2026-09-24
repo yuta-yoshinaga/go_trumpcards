@@ -56,7 +56,7 @@ function makeState(overrides?: Partial<BidEuchreResponse>): BidEuchreResponse {
     handSize: 6,
     gameEndFlag: false,
     winnerTeam: -1,
-    config: { cpuDifficulty: 0, allowNoTrump: true },
+    config: { allowNoTrump: true },
     message: '',
     ...overrides,
   };

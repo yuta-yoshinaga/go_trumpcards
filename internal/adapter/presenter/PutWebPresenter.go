@@ -63,10 +63,8 @@ func (p *PutWebPresenter) buildBase(g interfaces.PutGame) *controller.PutWebOutp
 
 	resObj.MatchPoints = []int{g.GetPlayerMatchPoints(0), g.GetPlayerMatchPoints(1)}
 
-	cfg := g.GetConfig()
 	resObj.Config = controller.PutWebOutputConfig{
-		CpuDifficulty: int(cfg.CpuDifficulty),
-		MatchTarget:   g.GetMatchTarget(),
+		MatchTarget: g.GetMatchTarget(),
 	}
 
 	resObj.CurrentTrick = trickCardsToOutput(g.GetCurrentTrick())

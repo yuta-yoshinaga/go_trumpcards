@@ -45,10 +45,7 @@ func (p *ToepenWebPresenter) buildBase(t interfaces.ToepenGame) *controller.Toep
 	resObj.CanRedeal = t.CanRedeal(0)
 
 	cfg := t.GetConfig()
-	resObj.Config = controller.ToepenWebOutputConfig{
-		CpuDifficulty: int(cfg.CpuDifficulty),
-		PlayerCnt:     cfg.PlayerCnt,
-	}
+	resObj.Config = controller.ToepenWebOutputConfig{PlayerCnt: cfg.PlayerCnt}
 	resObj.Players = p.buildPlayersOutput(t)
 
 	// ヒントは通常のレスポンスにも載せる。他ゲームは HintOutput でしか設定して

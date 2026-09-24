@@ -48,7 +48,7 @@ function makeState(overrides: Partial<SchnapsenResponse> = {}): SchnapsenRespons
     winnerIdx: -1,
     winThreshold: 66,
     message: '',
-    config: { cpuDifficulty: 0 },
+    config: {},
     ...overrides,
   };
 }

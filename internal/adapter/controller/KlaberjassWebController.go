@@ -21,7 +21,6 @@ type KlaberjassWebInput struct {
 
 // KlaberjassWebConfig クラバーヤス Web設定
 type KlaberjassWebConfig struct {
-	CpuDifficulty *int  `json:"cpuDifficulty,omitempty"`
 	TargetScore   *int  `json:"targetScore,omitempty"`
 	AllowSchmeiss *bool `json:"allowSchmeiss,omitempty"`
 }
@@ -88,7 +87,6 @@ type KlaberjassWebOutput struct {
 
 // KlaberjassWebOutputConfig クラバーヤス設定アウトプット
 type KlaberjassWebOutputConfig struct {
-	CpuDifficulty int  `json:"cpuDifficulty"`
 	TargetScore   int  `json:"targetScore"`
 	AllowSchmeiss bool `json:"allowSchmeiss"`
 }
@@ -96,8 +94,6 @@ type KlaberjassWebOutputConfig struct {
 // ToConfig builds a KlaberjassConfig from the nested web config, applying bounds checking.
 func (c *KlaberjassWebConfig) ToConfig() domain.KlaberjassConfig {
 	cfg := domain.DefaultKlaberjassConfig()
-	cfg.CpuDifficulty = domain.KlaberjassCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty,
-		int(domain.KlaberjassCpuDifficultyNormal), int(domain.KlaberjassCpuDifficultyNormal), int(cfg.CpuDifficulty)))
 	webutil.ApplyBoundedInt(&cfg.TargetScore, c.TargetScore,
 		domain.KlaberjassTargetScoreMin, domain.KlaberjassTargetScoreMax)
 	if c.AllowSchmeiss != nil {
