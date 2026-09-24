@@ -144,7 +144,7 @@ var registry = []*Game{
 	{Name: "blackjack", Category: CategoryExtra8},
 	{Name: "poker", Category: CategoryCasino},
 	{Name: "oldmaid", Category: CategoryClassic},
-	{Name: "daifugo", Category: CategoryExtra6},
+	{Name: "daifugo", Category: CategoryExtra11},
 	{Name: "bigtwo", Category: CategoryExtra2},
 	{Name: "sevens", Category: CategoryClassic},
 	{Name: "doubt", Category: CategoryExtra5},
@@ -218,7 +218,7 @@ var registry = []*Game{
 	{Name: "letitride", Category: CategoryExtra4},
 	{Name: "pokersquares", Category: CategoryExtra9},
 	{Name: "pageone", Category: CategoryClassic},
-	{Name: "reddog", Category: CategoryExtra7},
+	{Name: "reddog", Category: CategoryExtra11},
 	{Name: "badugi", Category: CategoryCasino},
 	{Name: "deucetoseven", Category: CategoryCasino},
 	{Name: "razz", Category: CategoryCasino},
@@ -290,7 +290,7 @@ var registry = []*Game{
 
 	// Mushi is hanafuda on 40 cards -- June and July are out -- and is a
 	// hana-awase game: no koi-koi stop, the round runs to the last card.
-	{Name: "mushi", Category: CategoryExtra6},
+	{Name: "mushi", Category: CategoryExtra11},
 
 	// Toepen's ranking is the standard order inverted -- 10 high, jack low --
 	// and only the winner of the final trick escapes the penalty.
@@ -298,7 +298,7 @@ var registry = []*Game{
 
 	// Chinese Ten captures by summing to ten (A-9) or by rank (10-K), and only
 	// the RED cards score.
-	{Name: "chineseten", Category: CategoryExtra6},
+	{Name: "chineseten", Category: CategoryExtra11},
 
 	// Skitgubbe's two phases are different games: a two-player duel that
 	// collects cards, then a durak-style beat-or-pick-up shed.
@@ -323,7 +323,7 @@ var registry = []*Game{
 	{Name: "egyptianratscrew", Category: CategoryClassic},
 	{Name: "bakersdozen", Category: CategorySolo},
 	{Name: "tonk", Category: CategoryClassic},
-	{Name: "casinowar", Category: CategoryExtra7},
+	{Name: "casinowar", Category: CategoryExtra11},
 	{Name: "pitch", Category: CategoryExtra5},
 	{Name: "dragontiger", Category: CategoryExtra4},
 	{Name: "blackjackswitch", Category: CategoryExtra8},
@@ -395,7 +395,7 @@ var registry = []*Game{
 	{Name: "bristol", Category: CategorySolo},
 	// Bid Whist is a 4-player partnership trick-taking game with jokers, a 6-card kitty
 	// and Uptown/Downtown/No-Trump bidding.
-	{Name: "bidwhist", Category: CategoryExtra7},
+	{Name: "bidwhist", Category: CategoryExtra11},
 	// Tressette (トレセッテ) is an Italian no-trump must-follow trick-taking team game on the
 	// 40-card Briscola deck.
 	{Name: "tressette", Category: CategoryExtra6},
@@ -414,7 +414,7 @@ var registry = []*Game{
 	// Sheepshead (シープスヘッド) is a German-American 5-player trick-taking game with a fixed-
 	// trump system (all Queens + all Jacks + all Diamonds) and a secret picker/partner
 	// formed via a called Ace.
-	{Name: "sheepshead", Category: CategoryExtra7},
+	{Name: "sheepshead", Category: CategoryExtra11},
 	// Doppelkopf (ドッペルコップ) is a German 4-player partnership trick-taking game on a doubled
 	// 48-card deck with a fixed trump (♥10 Dulle + all Q + all J + all ♦) and secret
 	// Re/Kontra teams formed by the two Q♣ holders.
@@ -425,12 +425,12 @@ var registry = []*Game{
 	{Name: "mus", Category: CategoryExtra6},
 	// Tute (トゥーテ) is a Spanish 40-card trump trick-taking game for 4 players (2v2) with
 	// K+Q marriage declarations (cante) and a 4-King/4-Queen instant win.
-	{Name: "tute", Category: CategoryExtra6},
+	{Name: "tute", Category: CategoryExtra11},
 	// Sueca (スエカ) is a Portuguese/Brazilian 40-card trump trick-taking game for 4 players
 	// (2v2) with A=11/7=10 scoring.
 	{Name: "sueca", Category: CategoryExtra6},
-	{Name: "fortyfives", Category: CategoryExtra6},
-	{Name: "twentynine", Category: CategoryExtra6},
+	{Name: "fortyfives", Category: CategoryExtra11},
+	{Name: "twentynine", Category: CategoryExtra11},
 	// Klaverjas (クラヴァヤス) is a Dutch Jass-family trump trick-taking game for 4 players
 	// (2v2) with the J(20)>9(14) trump rank and Roem melds.
 	{Name: "klaverjas", Category: CategoryExtra7},
@@ -509,7 +509,7 @@ var registry = []*Game{
 	// each hold one card and 3 lives; on your turn keep or swap with your neighbour (a
 	// King holder may refuse). The lowest card each round loses a life; last player
 	// standing wins.
-	{Name: "cuckoo", Category: CategoryExtra6},
+	{Name: "cuckoo", Category: CategoryExtra11},
 	// Pişti: a popular Turkish fishing/capture game. 2–4 players; play a card matching the
 	// pile top (or any Jack) to capture the whole pile. Matching a lone card scores a
 	// Pişti (+10; +20 for Jack-on-Jack).
@@ -656,7 +656,7 @@ var registry = []*Game{
 	// player must MATCH the pot into the next round's pot — the escalation/penalty. Chips
 	// accumulate; the game ends after a fixed number of rounds or when fewer than two
 	// players can ante, and the richest player wins.
-	{Name: "guts", Category: CategoryExtra7},
+	{Name: "guts", Category: CategoryExtra11},
 	// Bouillotte: an 18th-century French poker ancestor, a vying/betting pot game on a
 	// 20-card deck (A, K, Q, 9, 8 × 4 suits). 3–4 players ante to a pot, are dealt 3 cards
 	// each, and a shared "retourne" card is turned face up. Players bet in turn (call /
@@ -871,7 +871,7 @@ var registry = []*Game{
 	// TRIBUTE (highest card, wilds excluded) and receive one back, unless a
 	// payer holds both red jokers, which cancels tribute outright. Climbing
 	// past the ace wins the game.
-	{Name: "guandan", Category: CategoryExtra7},
+	{Name: "guandan", Category: CategoryExtra11},
 	// shengji -- Sheng Ji (Tractor), a two-pack point-trick game for four
 	// players in two partnerships sitting OPPOSITE. 25 cards each from 108,
 	// leaving an EIGHT-CARD KITTY -- 108 divides by four, but dealing 27 each
@@ -1173,7 +1173,7 @@ var registry = []*Game{
 	// 賭け、次にめくる 1 枚 (ゲート) とスートが一致すれば 3:1。控除率は
 	// すべてプレイヤーの選択から出る ── 場札に 1 枚しか出ていないスートを
 	// 選べば互角で、重複したスートを選ぶたびに 11% 以上を失う。
-	{Name: "montebank", Category: CategoryExtra6},
+	{Name: "montebank", Category: CategoryExtra11},
 	// Cincinnati シンシナティ
 	//
 	// **手札 5 枚 + コミュニティ 5 枚の 10 枚から最良の 5 枚。** コミュニティを
@@ -1246,7 +1246,7 @@ var registry = []*Game{
 	{Name: "bigben", Category: CategoryExtra3},
 	{Name: "followthequeen", Category: CategoryCasino},
 	{Name: "ramsch", Category: CategoryExtra6},
-	{Name: "seventwentyseven", Category: CategoryExtra7},
+	{Name: "seventwentyseven", Category: CategoryExtra11},
 	{Name: "threecardrummy", Category: CategoryExtra8},
 	{Name: "caribbeandraw", Category: CategoryExtra6},
 	{Name: "speculation", Category: CategoryExtra5},
@@ -1261,7 +1261,7 @@ var registry = []*Game{
 	{Name: "julepe", Category: CategoryExtra9},
 	{Name: "schafkopf", Category: CategoryExtra7},
 	{Name: "coinche", Category: CategoryExtra6},
-	{Name: "germansolo", Category: CategoryExtra7},
+	{Name: "germansolo", Category: CategoryExtra11},
 	{Name: "gleek", Category: CategoryExtra5},
 	{Name: "chicago", Category: CategoryCasino},
 	{Name: "eightgame", Category: CategoryCasino},
@@ -1281,7 +1281,7 @@ var registry = []*Game{
 	{Name: "citadel", Category: CategorySolo},
 	{Name: "batak", Category: CategoryExtra5},
 	{Name: "binokel", Category: CategoryExtra5},
-	{Name: "marjapussi", Category: CategoryExtra6},
+	{Name: "marjapussi", Category: CategoryExtra11},
 	{Name: "omi", Category: CategoryExtra5},
 	{Name: "tongits", Category: CategoryExtra5},
 	{Name: "willothewisp", Category: CategorySolo},
@@ -1293,7 +1293,7 @@ var registry = []*Game{
 	{Name: "tapptarock", Category: CategoryExtra},
 	// Biriba is the pure same-suit-sequence Canasta variant: 106 cards including two jokers.
 	{Name: "biriba", Category: CategoryExtra7},
-	{Name: "marriage", Category: CategoryExtra6},
+	{Name: "marriage", Category: CategoryExtra11},
 }
 
 // All returns a value-level copy of the registry in canonical order.

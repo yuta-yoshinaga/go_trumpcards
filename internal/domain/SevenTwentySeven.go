@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra7
+//go:build !js || !wasm || extra11
 
 // Package domain セブン・トゥエンティセブン (SevenTwentySeven) のドメインモデル。
 //

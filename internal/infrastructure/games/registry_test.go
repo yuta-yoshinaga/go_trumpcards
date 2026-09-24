@@ -22,12 +22,12 @@ const (
 	expectedExtra3  = 24
 	expectedExtra4  = 29
 	expectedExtra5  = 24
-	expectedExtra6  = 36
-	expectedExtra7  = 36
+	expectedExtra6  = 26
+	expectedExtra7  = 28
 	expectedExtra8  = 31
 	expectedExtra9  = 29
 	expectedExtra10 = 15
-	expectedExtra11 = 0
+	expectedExtra11 = 18
 	expectedTotal   = expectedCasino + expectedClassic + expectedSolo + expectedExtra + expectedExtra2 + expectedExtra3 + expectedExtra4 + expectedExtra5 + expectedExtra6 + expectedExtra7 + expectedExtra8 + expectedExtra9 + expectedExtra10 + expectedExtra11
 )
 
