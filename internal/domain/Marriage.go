@@ -86,8 +86,8 @@ const (
 // MarriageMaalGateSequences is the number of pure sequences required to score maal.
 const MarriageMaalGateSequences = 3
 
-// marriageSearchCap は宣言/デッドウッド探索の最大反復回数。病的な手札での
-// 指数的爆発を防ぐための保険（実手札では到達しない）。
+// marriageSearchCap は宣言検証探索の最大反復回数。病的な手札での
+// 指数的爆発を防ぐための保険。
 const marriageSearchCap = 2000000
 
 // marriagePureSequenceSearchCap は Worker の CPU 予算のため、純シーケンス
@@ -489,12 +489,18 @@ func (g *Marriage) cpuFindDeclareCard(player *MarriagePlayer) (int, bool) {
 func (g *Marriage) findDeclareCard(player *MarriagePlayer) (int, bool) {
 	cards := marriageCollectCards(player)
 	// 3 本の純正シーケンスが無い手札は、どのカードを捨てても宣言できない。
-	// 探索上限到達時は宣言可能でも勧めない安全側の誤りになるが、人間と CPU で同じ挙動にする。
+	// どのカードを捨てても宣言できない手札はここで除外する。
 	if !MarriageHasPureSequences(cards, g.wildRank, 3) {
 		return 0, false
 	}
 	n := len(cards)
+	seen := make(map[string]bool)
 	for f := 0; f < n; f++ {
+		key := marriageCardTypeKey(cards[f], g.wildRank)
+		if seen[key] {
+			continue
+		}
+		seen[key] = true
 		rem := make([]*Card, 0, n-1)
 		for i := 0; i < n; i++ {
 			if i != f {
@@ -1064,45 +1070,70 @@ func marriageCovering(n int, melds []marriageMeld) [][]int {
 // 全カードがメルドに収まり、ピュアシーケンスが 3 つ以上あれば true。
 func MarriageValidateDeclaration(cards []*Card, wildRank int) bool {
 	n := len(cards)
-	if n != MarriageHandSize {
+	if n != MarriageHandSize || n > 64 {
 		return false
 	}
+	if !MarriageHasPureSequences(cards, wildRank, 3) {
+		return false
+	}
+	cards, types := marriageCanonicalCards(cards, wildRank)
 	melds := marriageGenerateMelds(cards, wildRank)
 	covering := marriageCovering(n, melds)
-	decided := make([]bool, n)
-	iter := 0
-
-	var dfs func(seq, pure int) bool
-	dfs = func(seq, pure int) bool {
-		iter++
-		if iter > marriageSearchCap {
-			return false
+	masks := make([]uint64, len(melds))
+	for mi, m := range melds {
+		for _, i := range m.idx {
+			masks[mi] |= uint64(1) << i
 		}
-		i := marriageFirstUndecided(decided)
-		if i == -1 {
-			return pure >= 3
+	}
+	full := (uint64(1) << n) - 1
+	memo := make(map[uint64]int)
+	var dfs func(uint64) int
+	dfs = func(mask uint64) int {
+		if mask == full {
+			return 0
 		}
+		if v, ok := memo[mask]; ok {
+			return v
+		}
+		remaining := ^mask
+		i := 0
+		for remaining&(uint64(1)<<i) == 0 {
+			i++
+		}
+		best := -1
 		for _, mi := range covering[i] {
 			m := melds[mi]
-			if !marriageAllUndecided(decided, m.idx) {
+			mm := masks[mi]
+			if mm&mask != 0 {
 				continue
 			}
-			marriageSetDecided(decided, m.idx, true)
-			si, pi := 0, 0
-			if m.seq {
-				si = 1
-				if m.pure {
-					pi = 1
+			canonical := true
+			for _, j := range m.idx {
+				for k := 0; k < j; k++ {
+					if types[k] == types[j] && mask&(uint64(1)<<k) == 0 && mm&(uint64(1)<<k) == 0 {
+						canonical = false
+						break
+					}
+				}
+				if !canonical {
+					break
 				}
 			}
-			if dfs(seq+si, pure+pi) {
-				return true
+			if !canonical {
+				continue
 			}
-			marriageSetDecided(decided, m.idx, false)
+			v := dfs(mask | mm)
+			if v >= 0 && m.seq && m.pure {
+				v++
+			}
+			if v > best {
+				best = v
+			}
 		}
-		return false
+		memo[mask] = best
+		return best
 	}
-	return dfs(0, 0)
+	return dfs(0) >= 3
 }
 
 // MarriageHasPureSequence cards にピュアシーケンス（ワイルド未使用の同スート連続 3+ 枚）が存在するか。
@@ -1169,10 +1200,119 @@ func MarriageDeadwoodScore(cards []*Card, wildRank int) int {
 
 // marriageMinDeadwood cards を互いに素なメルドで覆ったときの最小デッドウッド点を返す。
 func marriageMinDeadwood(cards []*Card, wildRank int) int {
+	value, _ := marriageMinDeadwoodMemo(cards, wildRank)
+	return value
+}
+
+func marriageMinDeadwoodMemo(cards []*Card, wildRank int) (int, int) {
 	n := len(cards)
 	if n == 0 {
-		return 0
+		return 0, 0
 	}
+	if n > 64 {
+		return marriageMinDeadwoodCapped(cards, wildRank), 0
+	}
+	// Sort a private copy into canonical card types so equivalent physical
+	// copies share the same position in the memoized search.
+	var types []int
+	cards, types = marriageCanonicalCards(cards, wildRank)
+	melds := marriageGenerateMelds(cards, wildRank)
+	covering := marriageCovering(n, melds)
+	meldMasks := make([]uint64, len(melds))
+	for mi, m := range melds {
+		for _, ci := range m.idx {
+			meldMasks[mi] |= uint64(1) << ci
+		}
+	}
+	points := make([]int, n)
+	for i, c := range cards {
+		points[i] = marriageCardPoints(c, wildRank)
+	}
+	fullMask := ^uint64(0)
+	if n < 64 {
+		fullMask = (uint64(1) << n) - 1
+	}
+	memo := make(map[uint64]int)
+	var dfs func(uint64) int
+	dfs = func(mask uint64) int {
+		if mask == fullMask {
+			return 0
+		}
+		if value, ok := memo[mask]; ok {
+			return value
+		}
+		remaining := ^mask
+		i := 0
+		for remaining&(uint64(1)<<i) == 0 {
+			i++
+		}
+		// 選択肢 A: カード i をデッドウッドにする
+		best := points[i] + dfs(mask|(uint64(1)<<i))
+		// 選択肢 B: i を覆うメルドを使う
+		for _, mi := range covering[i] {
+			meldMask := meldMasks[mi]
+			if mask&meldMask != 0 {
+				continue
+			}
+			canonical := true
+			for j := 0; j < n && canonical; j++ {
+				if meldMask&(uint64(1)<<j) == 0 {
+					continue
+				}
+				for k := 0; k < j; k++ {
+					if types[k] == types[j] && mask&(uint64(1)<<k) == 0 && meldMask&(uint64(1)<<k) == 0 {
+						canonical = false
+						break
+					}
+				}
+			}
+			if !canonical {
+				continue
+			}
+			c := dfs(mask | meldMask)
+			if c < best {
+				best = c
+			}
+		}
+		memo[mask] = best
+		return best
+	}
+	value := dfs(0)
+	return value, len(memo)
+}
+
+func marriageSameType(a, b *Card, wildRank int) bool {
+	if marriageIsWild(a, wildRank) || marriageIsWild(b, wildRank) {
+		return marriageIsWild(a, wildRank) && marriageIsWild(b, wildRank)
+	}
+	return a.GetDesign() == b.GetDesign() && a.GetValue() == b.GetValue()
+}
+
+func marriageCardTypeKey(c *Card, wildRank int) string {
+	if marriageIsWild(c, wildRank) {
+		return "wild"
+	}
+	return fmt.Sprintf("%d:%d", c.GetDesign(), c.GetValue())
+}
+
+func marriageCanonicalCards(cards []*Card, wildRank int) ([]*Card, []int) {
+	out := append([]*Card(nil), cards...)
+	sort.SliceStable(out, func(i, j int) bool {
+		return marriageCardTypeKey(out[i], wildRank) < marriageCardTypeKey(out[j], wildRank)
+	})
+	types := make([]int, len(out))
+	id := -1
+	for i, c := range out {
+		if i == 0 || !marriageSameType(out[i-1], c, wildRank) {
+			id++
+		}
+		types[i] = id
+	}
+	return out, types
+}
+
+func marriageMinDeadwoodCapped(cards []*Card, wildRank int) int {
+	n := len(cards)
 	melds := marriageGenerateMelds(cards, wildRank)
 	covering := marriageCovering(n, melds)
 	points := make([]int, n)
@@ -1181,7 +1321,6 @@ func marriageMinDeadwood(cards []*Card, wildRank int) int {
 	}
 	decided := make([]bool, n)
 	iter := 0
-
 	var dfs func() int
 	dfs = func() int {
 		iter++
@@ -1198,11 +1337,9 @@ func marriageMinDeadwood(cards []*Card, wildRank int) int {
 		if i == -1 {
 			return 0
 		}
-		// 選択肢 A: カード i をデッドウッドにする
 		decided[i] = true
 		best := points[i] + dfs()
 		decided[i] = false
-		// 選択肢 B: i を覆うメルドを使う
 		for _, mi := range covering[i] {
 			m := melds[mi]
 			if !marriageAllUndecided(decided, m.idx) {

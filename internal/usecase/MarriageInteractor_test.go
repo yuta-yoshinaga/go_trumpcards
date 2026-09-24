@@ -5,15 +5,35 @@ package usecase_test
 import (
 	"errors"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
+	webpresenter "github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain/interfaces"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase/presenter"
 )
+
+func TestMarriageInteractor_ResetPerformance(t *testing.T) {
+	ci := usecase.NewMarriageInteractor(domain.NewDefaultMarriage(), &webpresenter.MarriageWebPresenter{})
+	start := time.Now()
+	var worst time.Duration
+	for i := 0; i < 200; i++ {
+		oneStart := time.Now()
+		ci.Reset()
+		if elapsed := time.Since(oneStart); elapsed > worst {
+			worst = elapsed
+		}
+	}
+	elapsed := time.Since(start)
+	t.Logf("200 Marriage resets: total %s, average %s, worst %s", elapsed, elapsed/200, worst)
+	if elapsed > 2*time.Second || worst > 100*time.Millisecond {
+		t.Fatalf("200 Marriage resets took %s (worst %s), limits are total 2s and worst 100ms", elapsed, worst)
+	}
+}
 
 const marriageMockOutput = `{"phase":0}`
 

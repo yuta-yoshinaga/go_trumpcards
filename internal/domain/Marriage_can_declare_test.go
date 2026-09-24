@@ -122,6 +122,28 @@ func TestMarriageCpuFindDeclareCard(t *testing.T) {
 	}
 }
 
+func TestMarriageFindDeclareCardKeepsFirstValidIndexWithDuplicateTypes(t *testing.T) {
+	cards := append(marriageValidDeclarationHand(), NewCard(CardDesignClover, 7, false))
+	// Duplicate a physical type so candidate pruning must preserve the lowest valid index.
+	cards[21] = NewCard(cards[20].GetDesign(), cards[20].GetValue(), false)
+	g := &Marriage{wildRank: 0}
+	player := marriageCanDeclareTestPlayer(false, cards)
+	got, gotOK := g.findDeclareCard(player)
+	var want int
+	wantOK := false
+	for f := 0; f < len(cards); f++ {
+		rem := append([]*Card(nil), cards[:f]...)
+		rem = append(rem, cards[f+1:]...)
+		if MarriageValidateDeclaration(rem, 0) {
+			want, wantOK = f, true
+			break
+		}
+	}
+	if gotOK != wantOK || gotOK && got != want {
+		t.Fatalf("findDeclareCard()=(%d,%v), old scan=(%d,%v)", got, gotOK, want, wantOK)
+	}
+}
+
 func BenchmarkMarriageCanDeclare(b *testing.B) {
 	cards := append(marriageValidDeclarationHand(), NewCard(CardDesignClover, 1, false))
 	benchmarks := []struct {
