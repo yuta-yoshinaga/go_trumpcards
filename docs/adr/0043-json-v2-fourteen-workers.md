@@ -33,6 +33,12 @@ ADR-0042 は Worker ビルドにだけ `GOEXPERIMENT=nojsonv2` を付けて json
 
 Worker を 14 個にし（extra8、extra9、extra10、extra11）、ゲーム 99 個を再バケットして `GOEXPERIMENT=nojsonv2` を撤去する。Worker とサーバの両方で `encoding/json` v2 を使う。
 
+### 改訂 (2026-09-25)
+
+マージ後の staging で全 383 ゲームの reset を実行したところ、gostop / basra / koikoi の Worker が停止した。原因は TinyGo 0.42.0 の reflect が `reflect.SliceOf` / `reflect.MapOf` を実装しておらず (`panic: unimplemented: reflect.SliceOf()`)、Go 1.27 の encoding/json v2 がこれらを呼ぶことだった。v2 は文字列以外のキーを持つ map を 2 要素以上マーシャルするとき、決定的出力のためキーをソートする経路で `src/encoding/json/v2/arshal_default.go:910-911` の `SliceOf` を呼び、空でない map のアンマーシャルでは同ファイル 1012 行の `MapOf` を呼ぶ。最小再現は TinyGo wasm で `map[int][]int{0: {5}, 3: {1, 2}}` を `json.Marshal` すると panic し、1 要素なら通る。
+
+Worker 14 個と再バケットは維持し、`GOEXPERIMENT=nojsonv2` を戻す。json v2 へ移れる条件は、(a) TinyGo が `reflect.SliceOf` / `reflect.MapOf` を実装する、または (b) Worker が JSON にする型から文字列以外のキーの map を無くす、のどちらか。Web 出力の `map[int]...` だけで20箇所以上あり、KV に保存するセッション状態も対象となる。移行時は staging で全ゲームを reset するだけでなく、数手進めて確かめる。サイズ・import 検査・Go のテストはいずれもこの停止を検出しない。
+
 再バケット後の実測（json v2、gzip B / 残り KB）は次の通り。
 
 | Worker | gzip B | 残り KB |
@@ -63,3 +69,4 @@ Worker を 14 個にし（extra8、extra9、extra10、extra11）、ゲーム 99 
 - サーバと Worker の JSON 実装が揃う。
 - Cloudflare 無料枠の Worker 数上限（100）には余裕がある。
 - CI の Worker ビルド workflow が go.mod / go.sum の変更でも走るようにした（#8048 で走らなかった穴）。
+- `nojsonv2` が Go から削除されるまでに上の条件のどちらかが要る。サイズ面の準備（14 Worker）は済んでいる。

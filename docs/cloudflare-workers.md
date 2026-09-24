@@ -50,7 +50,7 @@ export GOTOOLCHAIN=local            # ← 必須
 go install golang.org/dl/go1.27.1@latest && go1.27.1 download
 mkdir -p workers/<w>/build
 go run github.com/syumai/workers-go/cmd/workers-assets-gen -mode=tinygo -o workers/<w>/build
-tinygo build -tags <w> -o workers/<w>/build/app.wasm -target wasm \
+GOEXPERIMENT=nojsonv2 tinygo build -tags <w> -o workers/<w>/build/app.wasm -target wasm \
   -stack-size=128KB -no-debug -opt=z ./cmd/workers/<w>
 wasm-opt --enable-bulk-memory --enable-nontrapping-float-to-int --enable-sign-ext \
   -Oz workers/<w>/build/app.wasm -o workers/<w>/build/app.wasm
@@ -64,4 +64,4 @@ bun scripts/check-wasm-imports.ts workers/<w>/build
   上限超過に見える。
 - `make` が無い環境では上のコマンドが Makefile レシピの展開そのもの。
 
-Go 1.27 の `encoding/json` v2 は json v1 比でゲームコード量に比例して約 19% 大きくなる（空 Worker は 342,756 B）。ADR-0043 で Worker を 14 個に増やして吸収した。
+Worker は `GOEXPERIMENT=nojsonv2` (json v1) でビルドする。json v2 は TinyGo が実装していない `reflect.SliceOf` / `reflect.MapOf` を使い、文字列以外のキーの map を 2 要素以上マーシャルすると Worker が停止する (ADR-0043)。サイズ面では 14 Worker で json v2 も収まる（空 Worker 342,756 B、v2 はゲームコード量の約 19% 増）。
