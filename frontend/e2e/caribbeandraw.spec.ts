@@ -1,11 +1,11 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, waitForLoaded } from './helpers';
+import { gameButton, navigateTo, waitForLoaded } from './helpers';
 
 test.describe('Caribbean Draw Poker E2E', () => {
   test('stands pat: bet → no exchange → call → result → reset', async ({ page }) => {
     await navigateTo(page, '/caribbeandraw');
 
-    const betButton = page.getByRole('button', { name: 'ベット' });
+    const betButton = gameButton(page, 'ベット');
     await expect(betButton).toBeVisible();
     await betButton.click();
     await waitForLoaded(page);
@@ -19,7 +19,7 @@ test.describe('Caribbean Draw Poker E2E', () => {
     await waitForLoaded(page);
 
     // ACTION phase
-    const callButton = page.getByRole('button', { name: 'コール' });
+    const callButton = gameButton(page, 'コール');
     await expect(callButton).toBeVisible({ timeout: 10_000 });
     await callButton.click();
     await waitForLoaded(page);
@@ -29,18 +29,18 @@ test.describe('Caribbean Draw Poker E2E', () => {
 
     await resetButton.click();
     await waitForLoaded(page);
-    await expect(page.getByRole('button', { name: 'ベット' })).toBeVisible();
+    await expect(gameButton(page, 'ベット')).toBeVisible();
   });
 
   test('exchanges two cards, and refuses a third', async ({ page }) => {
     await navigateTo(page, '/caribbeandraw');
 
-    await page.getByRole('button', { name: 'ベット' }).click();
+    await gameButton(page, 'ベット').click();
     await waitForLoaded(page);
     await expect(page.getByTestId('cd-draw-fee')).toBeVisible({ timeout: 10_000 });
 
     // The hand cards become toggles during the draw phase.
-    const selectable = page.getByRole('button', { name: /^(?!ベット|交換|コール|フォールド|リセット)/ }).filter({
+    const selectable = gameButton(page, /^(?!ベット|交換|コール|フォールド|リセット)/).filter({
       has: page.locator('img'),
     });
     const first = selectable.nth(0);
@@ -59,13 +59,13 @@ test.describe('Caribbean Draw Poker E2E', () => {
     await page.getByRole('button', { name: /^交換する/ }).click();
     await waitForLoaded(page);
 
-    await expect(page.getByRole('button', { name: 'コール' })).toBeVisible({ timeout: 10_000 });
+    await expect(gameButton(page, 'コール')).toBeVisible({ timeout: 10_000 });
   });
 
   test('fold flow: bet → stand pat → fold → result', async ({ page }) => {
     await navigateTo(page, '/caribbeandraw');
 
-    await page.getByRole('button', { name: 'ベット' }).click();
+    await gameButton(page, 'ベット').click();
     await waitForLoaded(page);
     await page.getByRole('button', { name: '交換しない' }).click();
     await waitForLoaded(page);

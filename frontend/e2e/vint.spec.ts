@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { isVisibleWithin, navigateTo, TIMEOUT_GAME_LOOP, waitForLoaded } from './helpers';
+import { gameButton, isVisibleWithin, navigateTo, TIMEOUT_GAME_LOOP, waitForLoaded } from './helpers';
 
 test.describe('Vint E2E', () => {
   test('shows the reversed ranking and progresses the hand', async ({ page }) => {
@@ -17,7 +17,7 @@ test.describe('Vint E2E', () => {
     await expect(page.getByTestId('vint-scores')).toBeVisible();
 
     // The human may open the auction, or the CPUs may already have settled it.
-    const pass = page.getByRole('button', { name: 'パス' });
+    const pass = gameButton(page, 'パス');
     if (await isVisibleWithin(pass, TIMEOUT_GAME_LOOP)) {
       await pass.click();
       await waitForLoaded(page);

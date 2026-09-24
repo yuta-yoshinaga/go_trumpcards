@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, TIMEOUT_ACTION, TIMEOUT_TRANSITION } from './helpers';
+import { gameButton, navigateTo, TIMEOUT_ACTION, TIMEOUT_TRANSITION } from './helpers';
 
 test.describe('Coinche E2E', () => {
   test('navigates to coinche and renders the opening board', async ({ page }) => {
@@ -20,7 +20,7 @@ test.describe('Coinche E2E', () => {
         timeout: TIMEOUT_TRANSITION,
       });
     }
-    await expect(page.getByRole('button', { name: 'パス' })).toBeVisible({ timeout: TIMEOUT_TRANSITION });
+    await expect(gameButton(page, 'パス')).toBeVisible({ timeout: TIMEOUT_TRANSITION });
   });
 
   // **契約は「点 + 切り札」の対。** 点を選ばないうちにスートだけ押せると、

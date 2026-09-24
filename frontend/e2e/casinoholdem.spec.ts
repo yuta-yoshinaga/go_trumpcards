@@ -1,18 +1,18 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, waitForLoaded } from './helpers';
+import { gameButton, navigateTo, waitForLoaded } from './helpers';
 
 test.describe("Casino Hold'em E2E", () => {
   test('plays a round: bet → call → result → reset', async ({ page }) => {
     await navigateTo(page, '/casinoholdem');
 
     // BET phase: click ベット
-    const betButton = page.getByRole('button', { name: 'ベット' });
+    const betButton = gameButton(page, 'ベット');
     await expect(betButton).toBeVisible();
     await betButton.click();
     await waitForLoaded(page);
 
     // FLOP phase: click コール (2x ante)
-    const callButton = page.getByRole('button', { name: /コール/ });
+    const callButton = gameButton(page, /コール/);
     await expect(callButton).toBeVisible({ timeout: 10_000 });
     await callButton.click();
     await waitForLoaded(page);
@@ -24,13 +24,13 @@ test.describe("Casino Hold'em E2E", () => {
     // Reset back to bet phase
     await resetButton.click();
     await waitForLoaded(page);
-    await expect(page.getByRole('button', { name: 'ベット' })).toBeVisible();
+    await expect(gameButton(page, 'ベット')).toBeVisible();
   });
 
   test('fold flow: bet → fold → result → reset', async ({ page }) => {
     await navigateTo(page, '/casinoholdem');
 
-    const betButton = page.getByRole('button', { name: 'ベット' });
+    const betButton = gameButton(page, 'ベット');
     await expect(betButton).toBeVisible();
     await betButton.click();
     await waitForLoaded(page);
@@ -45,6 +45,6 @@ test.describe("Casino Hold'em E2E", () => {
 
     await resetButton.click();
     await waitForLoaded(page);
-    await expect(page.getByRole('button', { name: 'ベット' })).toBeVisible();
+    await expect(gameButton(page, 'ベット')).toBeVisible();
   });
 });

@@ -527,6 +527,7 @@
     "euchre": "Euchre",
     "faro": "Faro",
     "basset": "Basset",
+    "favoriteToggle": "Favorite {{game}}",
     "favoriteGames": "Favorites",
     "fiftyone": "Fifty-one",
     "fivecardstud": "Five Card Stud",

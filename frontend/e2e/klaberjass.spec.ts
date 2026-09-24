@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { isVisibleWithin, navigateTo, TIMEOUT_GAME_LOOP, waitForLoaded } from './helpers';
+import { gameButton, isVisibleWithin, navigateTo, TIMEOUT_GAME_LOOP, waitForLoaded } from './helpers';
 
 test.describe('Klaberjass E2E', () => {
   test('shows the trump order, bids and reaches play', async ({ page }) => {
@@ -24,7 +24,7 @@ test.describe('Klaberjass E2E', () => {
     // Either we are in play, still bidding, or the CPU took it — the deal must
     // progress rather than hang.
     const play = page.getByRole('button', { name: '出す' });
-    const pass = page.getByRole('button', { name: 'パス' });
+    const pass = gameButton(page, 'パス');
     const next = page.getByRole('button', { name: '次のディールへ' });
     expect(
       (await isVisibleWithin(play, TIMEOUT_GAME_LOOP)) ||

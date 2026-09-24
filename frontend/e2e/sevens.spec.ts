@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, TIMEOUT_GAME_LOOP, waitForLoaded } from './helpers';
+import { gameButton, navigateTo, TIMEOUT_GAME_LOOP, waitForLoaded } from './helpers';
 
 test.describe('Sevens E2E', () => {
   test('plays a full game: reset → play or pass each turn → end → reset', async ({ page }) => {
@@ -15,7 +15,7 @@ test.describe('Sevens E2E', () => {
     // Game loop
     let gameEnded = false;
     for (let turn = 0; turn < 300; turn++) {
-      const passButton = page.getByRole('button', { name: 'パス' });
+      const passButton = gameButton(page, 'パス');
       const gameEnd = page.locator('text=ゲーム終了');
       const playableCards = page.locator('[data-testid="playable-card"]');
 

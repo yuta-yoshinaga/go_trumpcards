@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, waitForLoaded } from './helpers';
+import { gameButton, navigateTo, waitForLoaded } from './helpers';
 
 test.describe('Bridge E2E', () => {
   test('navigates, resets, and plays through phase transitions', async ({ page }) => {
@@ -15,8 +15,8 @@ test.describe('Bridge E2E', () => {
     // Verify round/trick info is visible
     await expect(page.getByText(/^ラウンド \d+$/).first()).toBeVisible();
 
-    const bidButton = page.getByRole('button', { name: 'ビッド' });
-    const passButton = page.getByRole('button', { name: 'パス' });
+    const bidButton = gameButton(page, 'ビッド');
+    const passButton = gameButton(page, 'パス');
     const playButton = page.getByRole('button', { name: '出す' });
     const nextTrickButton = page.getByRole('button', { name: '次のトリック' });
     const nextRoundButton = page.getByRole('button', { name: '次のラウンド' });

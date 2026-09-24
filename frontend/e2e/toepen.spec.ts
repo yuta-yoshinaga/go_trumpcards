@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, waitForLoaded } from './helpers';
+import { gameButton, navigateTo, waitForLoaded } from './helpers';
 
 test.describe('Toepen E2E', () => {
   test('plays a card and keeps the ranking on screen', async ({ page }) => {
@@ -31,7 +31,7 @@ test.describe('Toepen E2E', () => {
     await navigateTo(page, '/toepen');
 
     await expect(page.getByText(/賭け点: 1/)).toBeVisible();
-    await page.getByRole('button', { name: /toep/i }).click();
+    await gameButton(page, /toep/i).click();
     await waitForLoaded(page);
 
     // The stake is at least two now; the CPUs may have raised again on top.

@@ -229,27 +229,27 @@ describe('DesktopSidebar', () => {
   describe('favorites', () => {
     it('renders favorite toggle buttons for all games', () => {
       renderSidebar();
-      const starButtons = screen.getAllByRole('button', { name: i18n.t('nav.favoriteGames') });
+      const starButtons = screen.getAllByRole('button', { name: /をお気に入りに登録$/ });
       expect(starButtons.length).toBe(gameRoutes.length);
     });
 
     it('applies min-w-[44px] and min-h-[44px] touch target to favorite buttons', () => {
       renderSidebar();
-      const starButtons = screen.getAllByRole('button', { name: i18n.t('nav.favoriteGames') });
+      const starButtons = screen.getAllByRole('button', { name: /をお気に入りに登録$/ });
       expect(starButtons[0].className).toContain('min-w-[44px]');
       expect(starButtons[0].className).toContain('min-h-[44px]');
     });
 
     it('applies focus ring to favorite buttons', () => {
       renderSidebar();
-      const starButtons = screen.getAllByRole('button', { name: i18n.t('nav.favoriteGames') });
+      const starButtons = screen.getAllByRole('button', { name: /をお気に入りに登録$/ });
       expect(starButtons[0].className).toContain('focus-visible:ring-2');
     });
 
     it('toggling star adds game to favorites section', () => {
       renderSidebar();
       expect(screen.queryByText(i18n.t('nav.favoriteGames'))).not.toBeInTheDocument();
-      const starButtons = screen.getAllByRole('button', { name: i18n.t('nav.favoriteGames') });
+      const starButtons = screen.getAllByRole('button', { name: /をお気に入りに登録$/ });
       fireEvent.click(starButtons[0]);
       expect(screen.getByText(i18n.t('nav.favoriteGames'))).toBeInTheDocument();
     });

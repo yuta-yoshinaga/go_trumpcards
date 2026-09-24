@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { isVisibleWithin, navigateTo, TIMEOUT_GAME_LOOP, waitForLoaded } from './helpers';
+import { gameButton, isVisibleWithin, navigateTo, TIMEOUT_GAME_LOOP, waitForLoaded } from './helpers';
 
 test.describe('Guandan E2E', () => {
   test('explains the level cards and plays a combination', async ({ page }) => {
@@ -25,7 +25,7 @@ test.describe('Guandan E2E', () => {
     }
 
     // The game must progress rather than hang.
-    const pass = page.getByRole('button', { name: 'パス' });
+    const pass = gameButton(page, 'パス');
     const next = page.getByRole('button', { name: '次の局へ' });
     expect(
       (await isVisibleWithin(play, TIMEOUT_GAME_LOOP)) ||

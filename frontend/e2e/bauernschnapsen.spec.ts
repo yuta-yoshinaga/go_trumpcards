@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, waitForLoaded } from './helpers';
+import { gameButton, navigateTo, waitForLoaded } from './helpers';
 
 test.describe('Bauernschnapsen E2E', () => {
   test('declares a contract, then plays through the phase transitions', async ({ page }) => {
@@ -17,7 +17,7 @@ test.describe('Bauernschnapsen E2E', () => {
     // 契約フェーズを抜けるボタン。**これが押せないと盤面は最初の手番で固まる。**
     const contractControls = page.getByTestId('bauernschnapsen-contract-controls');
     const bettelButton = page.getByRole('button', { name: 'ベテル' });
-    const passButton = page.getByRole('button', { name: 'パス' });
+    const passButton = gameButton(page, 'パス');
 
     const playButton = page.getByRole('button', { name: '出す' });
     // **exact でないと札にも当たる。** Playwright の name は既定で部分一致で、

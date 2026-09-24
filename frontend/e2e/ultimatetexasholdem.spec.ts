@@ -1,12 +1,12 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, waitForLoaded } from './helpers';
+import { gameButton, navigateTo, waitForLoaded } from './helpers';
 
 test.describe("Ultimate Texas Hold'em E2E", () => {
   test('check-through flow: bet → check → check → play 1× → result → reset', async ({ page }) => {
     await navigateTo(page, '/ultimatetexasholdem');
 
     // BET phase
-    const betButton = page.getByRole('button', { name: 'ベット' });
+    const betButton = gameButton(page, 'ベット');
     await expect(betButton).toBeVisible();
     await betButton.click();
     await waitForLoaded(page);
@@ -34,13 +34,13 @@ test.describe("Ultimate Texas Hold'em E2E", () => {
     await expect(resetButton).toBeVisible({ timeout: 10_000 });
     await resetButton.click();
     await waitForLoaded(page);
-    await expect(page.getByRole('button', { name: 'ベット' })).toBeVisible();
+    await expect(gameButton(page, 'ベット')).toBeVisible();
   });
 
   test('preflop 4× flow: bet → play 4× → result', async ({ page }) => {
     await navigateTo(page, '/ultimatetexasholdem');
 
-    await page.getByRole('button', { name: 'ベット' }).click();
+    await gameButton(page, 'ベット').click();
     await waitForLoaded(page);
 
     const play4x = page.getByRole('button', { name: 'プレイ 4×' });
@@ -54,7 +54,7 @@ test.describe("Ultimate Texas Hold'em E2E", () => {
   test('fold flow: bet → check → check → fold → result', async ({ page }) => {
     await navigateTo(page, '/ultimatetexasholdem');
 
-    await page.getByRole('button', { name: 'ベット' }).click();
+    await gameButton(page, 'ベット').click();
     await waitForLoaded(page);
 
     await page.getByRole('button', { name: 'チェック' }).click();

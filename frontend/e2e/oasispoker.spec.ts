@@ -1,12 +1,12 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, waitForLoaded } from './helpers';
+import { gameButton, navigateTo, waitForLoaded } from './helpers';
 
 test.describe('Oasis Poker E2E', () => {
   test('plays a round: bet → stand → call → result → reset', async ({ page }) => {
     await navigateTo(page, '/oasispoker');
 
     // BET phase: click ベット
-    const betButton = page.getByRole('button', { name: 'ベット' });
+    const betButton = gameButton(page, 'ベット');
     await expect(betButton).toBeVisible();
     await betButton.click();
     await waitForLoaded(page);
@@ -18,7 +18,7 @@ test.describe('Oasis Poker E2E', () => {
     await waitForLoaded(page);
 
     // ACTION phase: click コール
-    const callButton = page.getByRole('button', { name: 'コール' });
+    const callButton = gameButton(page, 'コール');
     await expect(callButton).toBeVisible({ timeout: 10_000 });
     await callButton.click();
     await waitForLoaded(page);
@@ -29,13 +29,13 @@ test.describe('Oasis Poker E2E', () => {
 
     await resetButton.click();
     await waitForLoaded(page);
-    await expect(page.getByRole('button', { name: 'ベット' })).toBeVisible();
+    await expect(gameButton(page, 'ベット')).toBeVisible();
   });
 
   test('fold flow: bet → stand → fold → result → reset', async ({ page }) => {
     await navigateTo(page, '/oasispoker');
 
-    const betButton = page.getByRole('button', { name: 'ベット' });
+    const betButton = gameButton(page, 'ベット');
     await expect(betButton).toBeVisible();
     await betButton.click();
     await waitForLoaded(page);
@@ -55,13 +55,13 @@ test.describe('Oasis Poker E2E', () => {
 
     await resetButton.click();
     await waitForLoaded(page);
-    await expect(page.getByRole('button', { name: 'ベット' })).toBeVisible();
+    await expect(gameButton(page, 'ベット')).toBeVisible();
   });
 
   test('exchange flow: bet → select card → exchange → call', async ({ page }) => {
     await navigateTo(page, '/oasispoker');
 
-    const betButton = page.getByRole('button', { name: 'ベット' });
+    const betButton = gameButton(page, 'ベット');
     await expect(betButton).toBeVisible();
     await betButton.click();
     await waitForLoaded(page);
@@ -77,7 +77,7 @@ test.describe('Oasis Poker E2E', () => {
     await waitForLoaded(page);
 
     // ACTION phase reached
-    const callButton = page.getByRole('button', { name: 'コール' });
+    const callButton = gameButton(page, 'コール');
     await expect(callButton).toBeVisible({ timeout: 10_000 });
   });
 });

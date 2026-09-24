@@ -271,6 +271,7 @@ export function NavBar() {
                         {isMobile && (
                           <FavoriteToggleButton
                             path={path}
+                            gameLabel={t(routeLabel)}
                             pressed={isFavorite(path)}
                             onToggle={toggleFavorite}
                             className={(pressed) =>

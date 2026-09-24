@@ -1,24 +1,24 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, waitForLoaded } from './helpers';
+import { gameButton, navigateTo, waitForLoaded } from './helpers';
 
 test.describe('Let It Ride E2E', () => {
   test('plays a round: bet → let it ride → let it ride → result → reset', async ({ page }) => {
     await navigateTo(page, '/letitride');
 
     // BET phase: click ベット
-    const betButton = page.getByRole('button', { name: 'ベット' });
+    const betButton = gameButton(page, 'ベット');
     await expect(betButton).toBeVisible();
     await betButton.click();
     await waitForLoaded(page);
 
     // FIRST DECISION phase: click レットイットライド
-    const rideButton1 = page.getByRole('button', { name: 'レットイットライド' });
+    const rideButton1 = gameButton(page, 'レットイットライド');
     await expect(rideButton1).toBeVisible({ timeout: 10_000 });
     await rideButton1.click();
     await waitForLoaded(page);
 
     // SECOND DECISION phase: click レットイットライド
-    const rideButton2 = page.getByRole('button', { name: 'レットイットライド' });
+    const rideButton2 = gameButton(page, 'レットイットライド');
     await expect(rideButton2).toBeVisible({ timeout: 10_000 });
     await rideButton2.click();
     await waitForLoaded(page);
@@ -30,26 +30,26 @@ test.describe('Let It Ride E2E', () => {
     // Reset back to bet phase
     await resetButton.click();
     await waitForLoaded(page);
-    await expect(page.getByRole('button', { name: 'ベット' })).toBeVisible();
+    await expect(gameButton(page, 'ベット')).toBeVisible();
   });
 
   test('pull flow: bet → pull → pull → result → reset', async ({ page }) => {
     await navigateTo(page, '/letitride');
 
-    const betButton = page.getByRole('button', { name: 'ベット' });
+    const betButton = gameButton(page, 'ベット');
     await expect(betButton).toBeVisible();
     await betButton.click();
     await waitForLoaded(page);
 
     // FIRST DECISION: pull (now requires confirming the risk-reduction dialog)
-    const pullButton1 = page.getByRole('button', { name: 'プル' });
+    const pullButton1 = gameButton(page, 'プル');
     await expect(pullButton1).toBeVisible({ timeout: 10_000 });
     await pullButton1.click();
     await page.getByRole('button', { name: '確認' }).click();
     await waitForLoaded(page);
 
     // SECOND DECISION: pull
-    const pullButton2 = page.getByRole('button', { name: 'プル' });
+    const pullButton2 = gameButton(page, 'プル');
     await expect(pullButton2).toBeVisible({ timeout: 10_000 });
     await pullButton2.click();
     await page.getByRole('button', { name: '確認' }).click();
@@ -61,6 +61,6 @@ test.describe('Let It Ride E2E', () => {
 
     await resetButton.click();
     await waitForLoaded(page);
-    await expect(page.getByRole('button', { name: 'ベット' })).toBeVisible();
+    await expect(gameButton(page, 'ベット')).toBeVisible();
   });
 });

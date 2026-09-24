@@ -177,6 +177,7 @@ export function DesktopSidebar() {
                     </Link>
                     <FavoriteToggleButton
                       path={path}
+                      gameLabel={t(routeLabel)}
                       pressed={isFavorite(path)}
                       onToggle={toggleFavorite}
                       className={() =>
@@ -215,6 +216,7 @@ export function DesktopSidebar() {
                       </Link>
                       <FavoriteToggleButton
                         path={path}
+                        gameLabel={t(routeLabel)}
                         pressed={isFavorite(path)}
                         onToggle={toggleFavorite}
                         className={() =>

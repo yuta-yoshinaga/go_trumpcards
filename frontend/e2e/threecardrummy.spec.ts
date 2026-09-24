@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, waitForLoaded } from './helpers';
+import { gameButton, navigateTo, waitForLoaded } from './helpers';
 
 test.describe('Three Card Rummy E2E', () => {
   test('plays a round: bet → play → result → reset', async ({ page }) => {
@@ -9,7 +9,7 @@ test.describe('Three Card Rummy E2E', () => {
     // total wins, so it has to reach the browser, not just the unit test.
     await expect(page.getByText(/低いほど強く/)).toBeVisible();
 
-    const betButton = page.getByRole('button', { name: 'ベット' });
+    const betButton = gameButton(page, 'ベット');
     await expect(betButton).toBeVisible();
     await betButton.click();
     await waitForLoaded(page);
@@ -29,13 +29,13 @@ test.describe('Three Card Rummy E2E', () => {
 
     await resetButton.click();
     await waitForLoaded(page);
-    await expect(page.getByRole('button', { name: 'ベット' })).toBeVisible();
+    await expect(gameButton(page, 'ベット')).toBeVisible();
   });
 
   test('fold flow: bet → fold → result → reset', async ({ page }) => {
     await navigateTo(page, '/threecardrummy');
 
-    const betButton = page.getByRole('button', { name: 'ベット' });
+    const betButton = gameButton(page, 'ベット');
     await expect(betButton).toBeVisible();
     await betButton.click();
     await waitForLoaded(page);
@@ -50,6 +50,6 @@ test.describe('Three Card Rummy E2E', () => {
 
     await resetButton.click();
     await waitForLoaded(page);
-    await expect(page.getByRole('button', { name: 'ベット' })).toBeVisible();
+    await expect(gameButton(page, 'ベット')).toBeVisible();
   });
 });

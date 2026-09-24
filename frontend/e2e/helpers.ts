@@ -1,5 +1,16 @@
 import type { Locator, Page } from '@playwright/test';
 
+/**
+ * A button outside the site navigation. The nav renders a favorite toggle per
+ * game whose accessible name contains the game name ("パスール をお気に入りに登録",
+ * "Favorite Cego"), and Playwright matches `name` as a substring, so an unscoped
+ * `page.getByRole("button", { name: "パス" })` also resolves to that toggle and
+ * fails strict mode (#8017). Scoping out `nav` keeps the caller's matching rules.
+ */
+export function gameButton(page: Page, name: string | RegExp): Locator {
+  return page.getByRole('button', { name }).and(page.locator(':not(nav *)'));
+}
+
 /** Timeout for quick UI checks (button appeared after an action). */
 export const TIMEOUT_QUICK = 1_000;
 /** Timeout for standard action visibility (betting round transitions, card animations). */
