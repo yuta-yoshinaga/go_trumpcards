@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Accepted (2026-09-25 改訂: json v2 への移行は撤回し、Worker 14 個化のみ有効。Decision 末尾の「改訂」を参照)
 
 ## Date
 
@@ -32,6 +32,7 @@ ADR-0042 は Worker ビルドにだけ `GOEXPERIMENT=nojsonv2` を付けて json
 ## Decision
 
 Worker を 14 個にし（extra8、extra9、extra10、extra11）、ゲーム 99 個を再バケットして `GOEXPERIMENT=nojsonv2` を撤去する。Worker とサーバの両方で `encoding/json` v2 を使う。
+> この段落の nojsonv2 撤去と json v2 化は、下の「改訂 (2026-09-25)」で撤回した。有効なのは Worker 14 個化と再バケットのみ。
 
 ### 改訂 (2026-09-25)
 
