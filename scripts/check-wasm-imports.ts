@@ -15,6 +15,9 @@ export function findMissingImports(imports: WasmImport[], glue: string): string[
     const name = escapeRegExp(item.name);
     const modulePattern = new RegExp(`(?:["']${module}["']|\\b${module})\\s*:\\s*\\{`);
     const moduleMatch = modulePattern.exec(glue);
+    // Imports for one module can be split between worker.mjs and wasm_exec.js,
+    // so intentionally search through the end of the combined glue. A later file
+    // with the same key could mask a missing import, but names are namespace-qualified (e.g. runtime.getRandomData).
     const body = moduleMatch ? glue.slice(moduleMatch.index + moduleMatch[0].length) : "";
     const namePattern = new RegExp(`(?:["']${name}["']|\\b${name})\\s*:`);
     if (!namePattern.test(body)) missing.push(`${item.module}.${item.name}`);
