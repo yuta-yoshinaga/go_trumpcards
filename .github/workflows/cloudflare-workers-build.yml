@@ -40,7 +40,7 @@ jobs:
 
       - uses: actions/setup-go@v6
         with:
-          go-version: '1.25'
+          go-version: '1.27'
 
       - uses: acifani/setup-tinygo@v2
         with:
@@ -58,6 +58,13 @@ jobs:
         env:
           GOTOOLCHAIN: local
         run: make build-worker-${{ matrix.worker }}
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.10'
+
+      - name: Check WASM imports
+        run: bun scripts/check-wasm-imports.ts workers/${{ matrix.worker }}/build
 
       - name: Check size limit
         env:

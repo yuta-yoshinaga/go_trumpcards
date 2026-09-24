@@ -8,7 +8,7 @@ require (
 	github.com/minio/selfupdate v0.6.0
 	github.com/peterh/liner v1.2.2
 	github.com/stretchr/testify v1.11.1
-	github.com/syumai/workers v0.32.0
+	github.com/syumai/workers-go v0.36.0
 	golang.org/x/term v0.45.0
 	gopkg.in/yaml.v3 v3.0.1
 )

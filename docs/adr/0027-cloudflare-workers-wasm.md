@@ -20,7 +20,7 @@ Cloudflare Workers はリクエスト駆動でコールドスタートが事実�
 
 ### 1. TinyGo による Wasm コンパイル
 
-Go 1.26 の代わりに TinyGo 0.40.1（Go 1.25 対応）を使用し、Wasm バイナリサイズを大幅に削減する。`go.mod` に `go 1.25.8` + `toolchain go1.26.0` を指定することで、Docker ビルド（Go 1.26）と Workers ビルド（TinyGo/Go 1.25）の両方を同一リポジトリで維持する。
+Go 1.26 の代わりに TinyGo 0.40.1（Go 1.25 対応）を使用し、Wasm バイナリサイズを大幅に削減する。`go.mod` に `go 1.25.8` + `toolchain go1.26.0` を指定することで、Docker ビルド（Go 1.26）と Workers ビルド（TinyGo/Go 1.25）の両方を同一リポジトリで維持する。この Worker の Go バージョン前提は [ADR-0042](0042-workers-go-127-nojsonv2.md) で更新された。
 
 ### 2. 3-Worker 分割構成
 
