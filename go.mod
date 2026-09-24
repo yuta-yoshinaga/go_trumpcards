@@ -2,7 +2,7 @@ module github.com/yuta-yoshinaga/go_trumpcards
 
 go 1.25.8
 
-toolchain go1.26.0
+toolchain go1.27.1
 
 require (
 	github.com/minio/selfupdate v0.6.0

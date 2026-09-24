@@ -76,7 +76,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
-          go-version: '1.26'
+          go-version: '1.27'
 
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v9
@@ -108,7 +108,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
-          go-version: '1.26'
+          go-version: '1.27'
 
       - name: Download dependencies
         run: go mod download
@@ -160,7 +160,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
-          go-version: '1.26'
+          go-version: '1.27'
 
       # Pinned like everything else in this workflow. An unpinned gate can
       # change its flag semantics or output on any future run with no diff here
@@ -310,7 +310,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v6
         with:
-          go-version: '1.26'
+          go-version: '1.27'
           # Reuse the module + build cache across shards so `go build` of the
           # server binary is not paid three times from cold (~37s each).
           cache-dependency-path: go.sum
