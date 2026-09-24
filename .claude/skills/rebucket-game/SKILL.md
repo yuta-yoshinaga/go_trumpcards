@@ -17,8 +17,7 @@ rebucketed to `solo` (this exact procedure).
 
 - `<game>` — registry key (run `go run ./cmd/trumpcards games --short` to confirm spelling).
 - `<target>` — destination bucket. If not given, pick the worker with the most gzip headroom
-  (see Size verification below). Current standing guidance: `extra` is FULL (~1.048 MB) and
-  `classic` is near the limit — prefer `solo` unless CI numbers say otherwise.
+  as measured by Size verification below.
 
 ## The 6 touchpoints
 
@@ -108,16 +107,15 @@ Then run the `game-registration-checker` agent for an independent sweep of all t
 
 ## Size verification (measure locally first)
 
-TinyGo 0.42.0 + Go 1.25.8 are installed now, and local builds reproduce CI byte for byte
-(verified on 0.40.1: extra2 = 594139 raw / 232016 gzip in both). Measure before pushing:
+TinyGo 0.42.0 + Go 1.27.1 (`GOEXPERIMENT=nojsonv2`, ADR-0042) reproduce CI byte for byte. Measure before pushing:
 
 ```sh
 .claude/skills/rebucket-game/scripts/measure.sh extra2          # one worker, ~3.5 min
-.claude/skills/rebucket-game/scripts/measure.sh                  # all six, ~21 min
+.claude/skills/rebucket-game/scripts/measure.sh                  # all ten Workers
 ```
 
 Budget ~14.4 KB gzip per average game, but the spread is wide (scarto measured 20,332 B) --
-and every worker pays a fixed 232 KB baseline for the Go runtime regardless of its contents,
+and every worker pays a fixed baseline for the Go runtime (measure it; about 318 KB gzip on TinyGo 0.42.0),
 so never estimate a bucket's capacity as "total gzip / games".
 
 `make` is not installed here; `measure.sh` mirrors the Makefile macro exactly. CI remains the
@@ -130,13 +128,7 @@ gh run watch <run-id>
 
 The "Check size limit" step fails (exit 1) if `gzip(app.wasm) > 1048576` bytes for any
 worker. Both the OLD worker (should shrink) and the TARGET worker (must stay under 1 MB)
-matter. To gauge a bucket's current headroom before choosing `<target>`, read the step
-summary of the latest successful run on `develop`:
-
-```sh
-gh run list --workflow=cloudflare-workers-build.yml --branch develop --limit 1 --json databaseId \
-  --jq '.[0].databaseId' | xargs -I{} gh run view {} --log | grep -A6 "Check size limit" | grep -E "Raw|gzip"
-```
+matter. To gauge current headroom before choosing `<target>`, run `measure.sh` or the `worker-budget-checker` agent (the size summary is not in `gh run view --log`).
 
 If the target worker also overflows, pick the next-roomiest bucket and repeat — do not
 split a game's files across buckets.

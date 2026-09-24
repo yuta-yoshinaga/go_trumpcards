@@ -113,5 +113,5 @@ Rules:
 - **FAIL** if any file is missing its twin, any leaf key is missing in either locale, or any
   file is invalid JSON.
 - **PASS WITH WARNINGS** if keys are in full parity but some values are empty.
-- **PASS** only when files, keys, and (ideally) values all line up.
+- **PASS** only when files and keys match and no value is empty.
 - Never propose edits inline — just report. The caller decides the fix.

@@ -20,7 +20,7 @@ Check the following documents against the actual code:
 - `README.md` — game descriptions and run commands
 - `docs/games.md` — game entity definitions
 - `docs/manual/cui/` and `docs/manual/web/` — per-game manuals
-- Actual games: registered in `cmd/trumpcards/main.go` and domain files in `internal/domain/`
+- Actual games: `internal/infrastructure/games/registry.go` (the SSoT) and `internal/domain/`
 
 ### 2. Web API endpoints
 - `docs/architecture.md` — endpoint list and count
@@ -64,8 +64,8 @@ Check the following documents against the actual code:
 
 4. If `$ARGUMENTS` contains `--fix`:
    - Fix all discrepancies directly in the files
-   - Create a GitHub issue documenting what was fixed
+   - Report the findings. Create a GitHub issue only when the user asked for one.
    - Do NOT commit (leave changes unstaged for user review)
 5. If `$ARGUMENTS` does NOT contain `--fix`:
-   - Create a GitHub issue listing all discrepancies found
+   - Report the findings. Create a GitHub issue only when the user asked for one.
    - Do not modify any files
