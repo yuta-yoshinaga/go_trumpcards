@@ -107,7 +107,7 @@ Then run the `game-registration-checker` agent for an independent sweep of all t
 
 ## Size verification (measure locally first)
 
-TinyGo 0.42.0 + Go 1.27.1 (`encoding/json` v2, ADR-0043) reproduce CI byte for byte. Measure before pushing:
+TinyGo 0.42.0 + Go 1.27.1 (`GOEXPERIMENT=nojsonv2`, ADR-0043) reproduce CI byte for byte. Measure before pushing:
 
 ```sh
 .claude/skills/rebucket-game/scripts/measure.sh extra2          # one worker, ~3.5 min
