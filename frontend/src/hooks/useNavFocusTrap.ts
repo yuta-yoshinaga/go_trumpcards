@@ -6,10 +6,10 @@ import { getFocusableElements } from '../utils/dom';
  *
  * - When `isOpen` flips to true, focus moves to the first focusable element inside `containerRef`.
  * - When `isOpen` flips to false, focus is restored to `restoreRef` (the toggle button).
- * - While `isActive` (mobile only) and `isOpen` are both true, Tab/Shift+Tab cycle inside the container.
+ * - While `isActive` (NavBar is compact, below large desktop) and `isOpen` are both true, Tab/Shift+Tab cycle inside the container.
  *
- * The trap is intentionally skipped on tablet+ because the nav renders inline
- * on those breakpoints and a trap would prevent normal Tab flow into page content.
+ * The trap is active only while NavBar is compact (below large desktop). At 1024px
+ * and above, NavBar is hidden and DesktopSidebar is used instead.
  */
 export function useNavFocusTrap(
   containerRef: RefObject<HTMLElement | null>,
