@@ -77,15 +77,6 @@ func TestEscobaCuiController_Exec(t *testing.T) {
 		assert.True(t, msgRejected(c.Exec("p xyz")))
 	})
 
-	t.Run("sd (difficulty)", func(t *testing.T) {
-		m := newMock()
-		c := controller.NewEscobaCuiController(m)
-		assert.Equal(t, mockOutput, c.Exec("sd 2"))
-		m.AssertCalled(t, "ResetWithConfig", mock.MatchedBy(func(cfg domain.EscobaConfig) bool {
-			return cfg.CpuDifficulty == domain.EscobaCpuDifficultyHard
-		}))
-	})
-
 	t.Run("st (target)", func(t *testing.T) {
 		m := newMock()
 		c := controller.NewEscobaCuiController(m)

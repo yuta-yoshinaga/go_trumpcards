@@ -119,7 +119,6 @@ flowchart TD
 | `meld <idx>` | `m` | リスト番号idxのメルドを宣言する（メルドフェーズ、トリックの勝者のみ） |
 | `skip` | `s` | メルドを宣言しない |
 | `next` | `n` / `nextround` | 次のトリック／次のディールへ進む |
-| `setdifficulty <0-2>` | `sd` | CPU難易度設定（0=Easy, 1=Normal, 2=Hard） |
 | `settarget <n>` | `st` | 目標スコア設定 |
 | `hint` | `h` | ヒント表示 |
 | `log` | `l` | アクションログを表示 |

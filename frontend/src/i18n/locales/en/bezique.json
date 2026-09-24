@@ -7,7 +7,6 @@
   },
   "settings": {
     "title": "Settings",
-    "cpuDifficulty": "CPU Difficulty",
     "targetScore": "Target Score",
     "easy": "Easy",
     "normal": "Normal",

@@ -23,7 +23,6 @@ type TeenPattiWebInput struct {
 
 // TeenPattiWebConfig ティーン・パティのWeb設定
 type TeenPattiWebConfig struct {
-	CpuDifficulty *int `json:"cpuDifficulty,omitempty"`
 	Ante          *int `json:"ante,omitempty"`
 	StartingChips *int `json:"startingChips,omitempty"`
 }
@@ -77,7 +76,6 @@ type TeenPattiWebOutputSideShow struct {
 
 // TeenPattiWebOutputConfig ティーン・パティの設定アウトプット
 type TeenPattiWebOutputConfig struct {
-	CpuDifficulty int `json:"cpuDifficulty"`
 	Ante          int `json:"ante"`
 	StartingChips int `json:"startingChips"`
 }
@@ -115,7 +113,6 @@ type TeenPattiWebOutput struct {
 // ToConfig builds a TeenPattiConfig from the nested web config, applying bounds checking.
 func (c *TeenPattiWebConfig) ToConfig() domain.TeenPattiConfig {
 	cfg := domain.DefaultTeenPattiConfig()
-	cfg.CpuDifficulty = domain.TeenPattiCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty, int(domain.TeenPattiCpuDifficultyEasy), int(domain.TeenPattiCpuDifficultyHard), int(cfg.CpuDifficulty)))
 	webutil.ApplyBoundedInt(&cfg.Ante, c.Ante, 1, 1000)
 	webutil.ApplyBoundedInt(&cfg.StartingChips, c.StartingChips, 2, domain.TeenPattiMaxStartingChips)
 	return cfg

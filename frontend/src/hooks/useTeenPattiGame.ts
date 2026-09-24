@@ -5,17 +5,9 @@ import { useGameConfig } from './useGameConfig';
 
 /** Default Teen Patti game configuration. */
 export const DEFAULT_TEEN_PATTI_CONFIG: Required<TeenPattiConfigInput> = {
-  cpuDifficulty: 1,
   ante: 1,
   startingChips: 100,
 };
-
-/** CPU difficulty level options for Teen Patti. */
-export const CPU_DIFFICULTY_OPTIONS = [
-  { value: 0, label: 'Easy' },
-  { value: 1, label: 'Normal' },
-  { value: 2, label: 'Hard' },
-] as const;
 
 /** Available ante (per-deal stake) options for Teen Patti. */
 export const ANTE_OPTIONS = [1, 2, 5] as const;

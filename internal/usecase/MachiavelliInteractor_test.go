@@ -53,7 +53,7 @@ func TestMachiavelliInteractor_Reset(t *testing.T) {
 
 func TestMachiavelliInteractor_ResetWithConfig_Valid(t *testing.T) {
 	pMock, gameMock := setupMachiavelliMocks()
-	cfg := domain.MachiavelliConfig{PlayerCount: 5, CpuDifficulty: domain.MachiavelliCpuDifficultyHard, TargetRounds: 4}
+	cfg := domain.MachiavelliConfig{PlayerCount: 5, TargetRounds: 4}
 	gameMock.On("SetConfig", cfg).Return()
 	gameMock.On("Reset").Return()
 

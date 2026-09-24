@@ -6,7 +6,6 @@ import { gameExec } from '../gameExec';
 
 /** Configuration options for Three Card Brag game settings. */
 export interface ThreeCardBragConfigInput {
-  cpuDifficulty?: number;
   ante?: number;
   startingChips?: number;
 }

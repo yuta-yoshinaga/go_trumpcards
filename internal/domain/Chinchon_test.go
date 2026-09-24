@@ -49,11 +49,6 @@ func TestChinchonConfig_Validate(t *testing.T) {
 	t.Run("default is valid", func(t *testing.T) {
 		assert.NoError(t, domain.DefaultChinchonConfig().Validate())
 	})
-	t.Run("difficulty out of range", func(t *testing.T) {
-		c := domain.DefaultChinchonConfig()
-		c.CpuDifficulty = domain.ChinchonCpuDifficulty(99)
-		assert.Error(t, c.Validate())
-	})
 	t.Run("player count below 2", func(t *testing.T) {
 		c := domain.DefaultChinchonConfig()
 		c.PlayerCount = 1
@@ -675,4 +670,10 @@ func TestChinchonRankPositionIsContiguousOverTheDeck(t *testing.T) {
 			t.Errorf("domain.ChinchonRankPosition(%d) = %d, デッキに無いランクが並びに入っている", value, got)
 		}
 	}
+}
+
+func TestChinchonConfig_UnmarshalLegacyConfigJSON(t *testing.T) {
+	var cfg domain.ChinchonConfig
+	require.NoError(t, json.Unmarshal([]byte(`{"cd":0,"pc":3,"kt":4,"el":90}`), &cfg))
+	assert.Equal(t, domain.ChinchonConfig{PlayerCount: 3, KnockThreshold: 4, EliminationLimit: 90}, cfg)
 }

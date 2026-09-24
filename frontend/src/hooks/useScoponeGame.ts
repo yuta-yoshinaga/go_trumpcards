@@ -5,7 +5,6 @@ import { useGameApi } from './useGameApi';
 
 const defaultConfigInput: ScoponeConfigInput = {
   targetScore: 11,
-  cpuDifficulty: 1,
 };
 
 /** Hook that manages Scopone game state, selections, and action dispatch. */

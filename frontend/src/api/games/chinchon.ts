@@ -6,7 +6,6 @@ import { gameExec } from '../gameExec';
 
 /** Configuration options for Chinchón game settings. */
 export interface ChinchonConfigInput {
-  cpuDifficulty?: number;
   playerCount?: number;
   knockThreshold?: number;
   eliminationLimit?: number;

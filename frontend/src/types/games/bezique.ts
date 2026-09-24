@@ -39,7 +39,6 @@ export interface BeziqueMeld {
 
 /** Bezique game configuration. */
 export interface BeziqueConfig {
-  cpuDifficulty: number;
   targetScore: number;
 }
 

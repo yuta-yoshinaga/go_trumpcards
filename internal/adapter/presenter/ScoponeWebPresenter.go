@@ -37,8 +37,7 @@ func (swp *ScoponeWebPresenter) Output(sg interfaces.ScoponeGame, lastErr error)
 
 	config := sg.GetConfig()
 	resObj.Config = controller.ScoponeWebConfig{
-		TargetScore:   config.TargetScore,
-		CpuDifficulty: int(config.CpuDifficulty),
+		TargetScore: config.TargetScore,
 	}
 
 	resObj.TableCards = cardsToOutputOrEmpty(sg.GetTableCards())

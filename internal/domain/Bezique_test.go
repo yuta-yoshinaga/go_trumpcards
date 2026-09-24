@@ -34,9 +34,9 @@ func TestBeziqueConfig_Validate(t *testing.T) {
 	cfg := domain.DefaultBeziqueConfig()
 	assert.NoError(t, cfg.Validate())
 	assert.Equal(t, domain.BeziqueDefaultTargetScore, cfg.TargetScore)
-	assert.Error(t, domain.BeziqueConfig{CpuDifficulty: 99, TargetScore: 1000}.Validate())
-	assert.Error(t, domain.BeziqueConfig{CpuDifficulty: domain.BeziqueCpuDifficultyNormal, TargetScore: 10}.Validate())
-	assert.Error(t, domain.BeziqueConfig{CpuDifficulty: domain.BeziqueCpuDifficultyNormal, TargetScore: 99999}.Validate())
+
+	assert.Error(t, domain.BeziqueConfig{TargetScore: 10}.Validate())
+	assert.Error(t, domain.BeziqueConfig{TargetScore: 99999}.Validate())
 }
 
 func TestBeziqueDeck64(t *testing.T) {

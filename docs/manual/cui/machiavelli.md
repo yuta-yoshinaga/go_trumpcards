@@ -83,7 +83,6 @@ flowchart TD
 | `rearrange <グループ> / <手札番号>` | `ra <グループ> / <手札番号>` | 場を組み替えながら手札を出す（グループは**組み替え後の場の全体**） |
 | `nextround` | `nr` | ラウンドをスコアリングして次のラウンドへ |
 | `setplayers <2-5>` | `pc <2-5>` | プレイヤー数設定 |
-| `setdifficulty <0-2>` | `sd <0-2>` | CPU難易度設定（0=Easy, 1=Normal, 2=Hard） |
 | `setrounds <n>` | `sr <n>` | ラウンド数設定 |
 | `log` | `l` | 棋譜表示 |
 | `quit` | `q` | ゲーム終了 |

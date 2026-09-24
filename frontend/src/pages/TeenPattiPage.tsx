@@ -20,12 +20,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import {
-  ANTE_OPTIONS,
-  CPU_DIFFICULTY_OPTIONS,
-  STARTING_CHIPS_OPTIONS,
-  useTeenPattiGame,
-} from '../hooks/useTeenPattiGame';
+import { ANTE_OPTIONS, STARTING_CHIPS_OPTIONS, useTeenPattiGame } from '../hooks/useTeenPattiGame';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -203,17 +198,6 @@ function TeenPattiPageContent() {
             groups={[
               {
                 items: [
-                  {
-                    type: 'select',
-                    id: 'cpuDifficulty',
-                    label: t('settings.cpuDifficulty'),
-                    value: teenPattiConfig.cpuDifficulty,
-                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
-                      value: o.value,
-                      label: t(`settings.${o.label.toLowerCase()}`),
-                    })),
-                    onSelect: (v) => handleConfigChange('cpuDifficulty', v),
-                  },
                   {
                     type: 'select',
                     id: 'ante',

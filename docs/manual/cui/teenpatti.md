@@ -120,7 +120,6 @@ flowchart TD
 | `accept` | `ac` | サイドショーの申請を承諾する |
 | `decline` | `dc` | サイドショーの申請を拒否する |
 | `next` | `n` / `nextround` | 次のディールへ進む |
-| `setdifficulty <0-2>` | `sd` | CPU難易度設定（0=Easy, 1=Normal, 2=Hard） |
 | `setante <n>` | `sa` | アンティ（ブート）額設定 |
 | `setchips <n>` | `sc` | 初期チップ数設定 |
 | `hint` | `h` | ヒント表示 |

@@ -11,15 +11,13 @@ import (
 
 // EscobaWebConfig ローカルルール設定 (入力・出力共用)
 type EscobaWebConfig struct {
-	TargetScore   int `json:"targetScore"`
-	CpuDifficulty int `json:"cpuDifficulty"`
+	TargetScore int `json:"targetScore"`
 }
 
 // ToConfig converts EscobaWebConfig to domain.EscobaConfig.
 func (c EscobaWebConfig) ToConfig() domain.EscobaConfig {
 	return domain.EscobaConfig{
-		TargetScore:   c.TargetScore,
-		CpuDifficulty: domain.EscobaCpuDifficulty(c.CpuDifficulty),
+		TargetScore: c.TargetScore,
 	}
 }
 

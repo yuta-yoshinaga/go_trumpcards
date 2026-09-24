@@ -18,8 +18,6 @@ const VALID_COMMANDS = [
   'show',
   'n',
   'next',
-  'sd',
-  'setdifficulty',
   'sa',
   'setante',
   'sc',
@@ -41,8 +39,8 @@ const VALID_COMMANDS = [
  * On the player's turn: `see` reveals the hand (Blind→Seen), `bet` calls the
  * stake, `raise <n>` raises the stake to `n`, `fold` drops out, and `show`
  * forces a showdown when two players remain. `next` advances to the following
- * deal. `sd <0-2>`, `sa <n>`, and `sc <n>` reset the game with a new CPU
- * difficulty / ante / starting chips because config is only accepted on reset.
+ * deal. `sa <n>` and `sc <n>` reset the game with a new ante / starting chips
+ * because config is only accepted on reset.
  */
 export function parseThreeCardBragCommand(input: string): CliParseResult<ThreeCardBragCliArgs> {
   const { cmd, args } = splitCommand(input);
@@ -69,12 +67,6 @@ export function parseThreeCardBragCommand(input: string): CliParseResult<ThreeCa
     case 'n':
     case 'next':
       return { args: ['next'] };
-    case 'sd':
-    case 'setdifficulty': {
-      const level = Number.parseInt(args[0] ?? '', 10);
-      if (Number.isNaN(level) || level < 0 || level > 2) return { error: 'Usage: sd <0-2> (0=Easy 1=Normal 2=Hard)' };
-      return { args: ['reset', { config: { cpuDifficulty: level } }] };
-    }
     case 'sa':
     case 'setante': {
       const ante = Number.parseInt(args[0] ?? '', 10);
@@ -112,7 +104,6 @@ export const THREE_CARD_BRAG_HELP: string[] = [
   'f / fold            - Fold (drop out of the deal)',
   'sh / show           - Show (force a showdown, 2 players left)',
   'n / next            - Next deal',
-  'sd <0-2>            - Set CPU difficulty (resets game)',
   'sa <n>              - Set ante (resets game)',
   'sc <n>              - Set starting chips (resets game)',
   'h / hint            - Show hint',

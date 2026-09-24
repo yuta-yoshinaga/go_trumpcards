@@ -5,7 +5,6 @@
   "helpMeld": "  m <idx,..>;<idx>     lay or extend melds (groups split by ;)",
   "helpDiscard": "  d <idx>              discard a card",
   "helpNextRound": "  nr                   next round",
-  "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
   "helpSetWins": "  sw <n>               match wins target",
   "header": "Round: {{round}}  Stock: {{stock}}",
   "discardLine": "Discard: {{card}}",

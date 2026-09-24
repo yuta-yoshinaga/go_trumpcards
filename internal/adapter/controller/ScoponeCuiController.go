@@ -24,7 +24,6 @@ func NewScoponeCuiController(si usecase.ScoponeInteractorIF) *ScoponeCuiControll
 //
 //	play <h> [t1 t2 ...]   手札 h を出す (場札 t... を捕獲、無指定なら場に置く)
 //	reset / r / next / n / nextround
-//	sd <0-2>               CPU 難易度
 //	st <n>                 目標スコア
 //	log / l
 func (c *ScoponeCuiController) Exec(command string) string {
@@ -35,8 +34,7 @@ func (c *ScoponeCuiController) Exec(command string) string {
 			return c.si.ResetWithConfig(cfg)
 		},
 		[]string{
-			"play", "p", "next", "n", "nextround",
-			"sd", "setdifficulty", "st", "settarget", "h", "hint", "log", "l",
+			"play", "p", "next", "n", "nextround", "st", "settarget", "h", "hint", "log", "l",
 		},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
@@ -44,12 +42,6 @@ func (c *ScoponeCuiController) Exec(command string) string {
 				return c.handlePlay(args)
 			case "n", "next", "nextround":
 				return c.si.NextRound(), true
-			case "sd", "setdifficulty":
-				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
-					cfg := c.si.GetConfig()
-					cfg.CpuDifficulty = domain.ScoponeCpuDifficulty(v)
-					return c.si.ResetWithConfig(cfg)
-				})
 			case "st", "settarget":
 				return cuiutil.WithParsedIntKeys(args, "targetScoreRequiredAlt", "invalidTargetScorePlain", 1, domain.ScoponeMaxTargetScore, func(v int) string {
 					cfg := c.si.GetConfig()

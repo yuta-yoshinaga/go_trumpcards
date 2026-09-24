@@ -84,7 +84,6 @@ flowchart TD
 | `knock <idx>` | `k <idx>` | 指定カードを捨ててノック（デッドウッド≤上限の時） |
 | `layoff <idx...>` | `lo <idx...>` | レイオフ（ノッカーのメルドにカードを付け足す） |
 | `nextround` | `nr` | ラウンドをスコアリングして次のラウンドへ |
-| `setdifficulty <0-2>` | `sd <0-2>` | CPU難易度設定（0=Easy, 1=Normal, 2=Hard） |
 | `setplayers <2-4>` | `sp <2-4>` | プレイヤー人数設定 |
 | `log` | `l` | 棋譜表示 |
 | `quit` | `q` | ゲーム終了 |

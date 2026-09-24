@@ -32,7 +32,6 @@ func NewTeenPattiCuiController(ti usecase.TeenPattiInteractorIF) *TeenPattiCuiCo
 //	ac / accept               → サイドショー申請を受諾する
 //	dc / decline              → サイドショー申請を辞退する
 //	n / next / nextround      → 次のディールへ (RoundEnd フェーズ)
-//	sd [0-2] / setdifficulty  → CPU難易度設定
 //	sa <n> / setante <n>      → アンティ額設定
 //	sc <n> / setchips <n>     → 初期チップ設定
 //	h / hint                  → ヒント表示
@@ -54,7 +53,6 @@ func (c *TeenPattiCuiController) Exec(command string) string {
 			"ac", "accept",
 			"dc", "decline",
 			"n", "next", "nextround",
-			"sd", "setdifficulty",
 			"sa", "setante",
 			"sc", "setchips",
 			"h", "hint", "l", "log",
@@ -81,12 +79,6 @@ func (c *TeenPattiCuiController) Exec(command string) string {
 				return c.ti.RespondSideShow(false), true
 			case "n", "next", "nextround":
 				return c.ti.NextRound(), true
-			case "sd", "setdifficulty":
-				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
-					cfg := c.ti.GetConfig()
-					cfg.CpuDifficulty = domain.TeenPattiCpuDifficulty(v)
-					return c.ti.ResetWithConfig(cfg)
-				})
 			case "sa", "setante":
 				return cuiutil.WithParsedIntKeys(args, "anteRequiredEGSa2", "invalidAntePlain", 1, 1000, func(v int) string {
 					cfg := c.ti.GetConfig()

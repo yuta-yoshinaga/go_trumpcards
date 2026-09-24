@@ -65,7 +65,6 @@ flowchart TD
 | `play <hand> [tbl...]` | `p` | 手札を1枚出す（場札インデックスを指定すると取る、指定なしで場に置く） |
 | `next` / `nextround` | `n` | 次のラウンドへ進む |
 | `reset` | `r` | ゲームをリセット |
-| `setdifficulty <0-2>` | `sd` | CPU難易度を設定（0=easy / 1=normal / 2=hard） |
 | `settarget <n>` | `st` | 目標スコアを設定（既定11） |
 | `log` | `l` | アクションログを表示 |
 | `quit` | `q` | ゲームを終了 |

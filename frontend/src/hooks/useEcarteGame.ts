@@ -6,16 +6,8 @@ import { useGameConfig } from './useGameConfig';
 
 /** Default Écarté game configuration. */
 export const DEFAULT_ECARTE_CONFIG: Required<EcarteConfigInput> = {
-  cpuDifficulty: 1,
   targetScore: 5,
 };
-
-/** CPU difficulty level options for Écarté. */
-export const CPU_DIFFICULTY_OPTIONS = [
-  { value: 0, label: 'Easy' },
-  { value: 1, label: 'Normal' },
-  { value: 2, label: 'Hard' },
-] as const;
 
 /** Available target-score options for Écarté (first player to reach wins). */
 export const TARGET_SCORE_OPTIONS = [3, 5, 7] as const;

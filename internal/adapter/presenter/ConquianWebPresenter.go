@@ -29,8 +29,7 @@ func (p *ConquianWebPresenter) Output(g interfaces.ConquianGame, lastErr error) 
 
 	cfg := g.GetConfig()
 	resObj.Config = controller.ConquianWebOutputConfig{
-		CpuDifficulty: int(cfg.CpuDifficulty),
-		TargetWins:    cfg.TargetWins,
+		TargetWins: cfg.TargetWins,
 	}
 
 	resObj.Players = p.buildPlayersOutput(g)

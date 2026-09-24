@@ -6,7 +6,6 @@ import { gameExec } from '../gameExec';
 
 /** Configuration options for Teen Patti game settings. */
 export interface TeenPattiConfigInput {
-  cpuDifficulty?: number;
   ante?: number;
   startingChips?: number;
 }

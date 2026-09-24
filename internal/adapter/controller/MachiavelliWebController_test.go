@@ -182,21 +182,13 @@ func TestMachiavelliWebInput_ToConfig(t *testing.T) {
 	})
 	t.Run("custom values", func(t *testing.T) {
 		pc := 5
-		diff := int(domain.MachiavelliCpuDifficultyHard)
 		rounds := 4
 		in := controller.MachiavelliWebInput{
-			Config: &controller.MachiavelliWebConfig{
-				PlayerCount:   &pc,
-				CpuDifficulty: &diff,
-				TargetRounds:  &rounds,
-			},
+			Config: &controller.MachiavelliWebConfig{PlayerCount: &pc, TargetRounds: &rounds},
 		}
 		got := in.ToConfig()
 		if got.PlayerCount != 5 {
 			t.Errorf("playerCount = %d", got.PlayerCount)
-		}
-		if got.CpuDifficulty != domain.MachiavelliCpuDifficultyHard {
-			t.Errorf("difficulty = %d", got.CpuDifficulty)
 		}
 		if got.TargetRounds != 4 {
 			t.Errorf("rounds = %d", got.TargetRounds)

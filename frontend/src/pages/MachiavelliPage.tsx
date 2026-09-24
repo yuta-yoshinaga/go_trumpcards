@@ -20,12 +20,7 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import {
-  CPU_DIFFICULTY_OPTIONS,
-  PLAYER_COUNT_OPTIONS,
-  TARGET_ROUNDS_OPTIONS,
-  useMachiavelliGame,
-} from '../hooks/useMachiavelliGame';
+import { PLAYER_COUNT_OPTIONS, TARGET_ROUNDS_OPTIONS, useMachiavelliGame } from '../hooks/useMachiavelliGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnOutline, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
@@ -163,16 +158,9 @@ function MachiavelliPageContent() {
     hideActionLog();
     void gameExec('reset', undefined, {
       playerCount: machiavelliConfig.playerCount,
-      cpuDifficulty: machiavelliConfig.cpuDifficulty,
       targetRounds: machiavelliConfig.targetRounds,
     });
-  }, [
-    gameExec,
-    hideActionLog,
-    machiavelliConfig.playerCount,
-    machiavelliConfig.cpuDifficulty,
-    machiavelliConfig.targetRounds,
-  ]);
+  }, [gameExec, hideActionLog, machiavelliConfig.playerCount, machiavelliConfig.targetRounds]);
 
   // getMachiavelliHint already asks findHandMeld which cards form a meld and then
   // throws the indices away, leaving the hint to say "make a meld" without saying
@@ -295,17 +283,6 @@ function MachiavelliPageContent() {
                     value: machiavelliConfig.playerCount,
                     options: PLAYER_COUNT_OPTIONS.map((v) => ({ value: v, label: String(v) })),
                     onSelect: (v) => handleConfigChange('playerCount', v),
-                  },
-                  {
-                    type: 'select',
-                    id: 'cpuDifficulty',
-                    label: t('settings.cpuDifficulty'),
-                    value: machiavelliConfig.cpuDifficulty,
-                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
-                      value: o.value,
-                      label: t(`settings.${o.label.toLowerCase()}`),
-                    })),
-                    onSelect: (v) => handleConfigChange('cpuDifficulty', v),
                   },
                   {
                     type: 'select',

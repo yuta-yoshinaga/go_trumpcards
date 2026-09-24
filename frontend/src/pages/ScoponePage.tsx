@@ -33,12 +33,6 @@ import { scoponeSelectionSum } from '../utils/scoponeSelectionSum';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { sweepCelebration } from '../utils/sweepCelebration';
 
-const DIFFICULTY_OPTIONS = [
-  { value: '0', label: 'Easy' },
-  { value: '1', label: 'Normal' },
-  { value: '2', label: 'Hard' },
-];
-
 const TARGET_SCORE_OPTIONS = [
   { value: '11', label: '11' },
   { value: '16', label: '16' },
@@ -399,17 +393,6 @@ function ScoponePageContent() {
             groups={[
               {
                 items: [
-                  {
-                    type: 'select' as const,
-                    id: 'cpuDifficulty',
-                    label: t('settings.cpuDifficulty'),
-                    value: String(configInput.cpuDifficulty ?? 1),
-                    options: DIFFICULTY_OPTIONS.map((o) => ({
-                      value: o.value,
-                      label: t(`settings.${o.label.toLowerCase()}`),
-                    })),
-                    onSelect: (v: string) => handleConfigChange('cpuDifficulty', Number.parseInt(v, 10)),
-                  },
                   {
                     type: 'select' as const,
                     id: 'targetScore',

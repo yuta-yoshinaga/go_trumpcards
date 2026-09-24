@@ -41,7 +41,7 @@ describe('TeenPattiPage', () => {
     renderWithProviders(<TeenPattiPage />);
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', {
-        config: { cpuDifficulty: 1, ante: 1, startingChips: 100 },
+        config: { ante: 1, startingChips: 100 },
       }),
     );
   });

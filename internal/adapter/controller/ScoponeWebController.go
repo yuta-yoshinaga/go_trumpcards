@@ -11,15 +11,13 @@ import (
 
 // ScoponeWebConfig ローカルルール設定 (入力・出力共用)
 type ScoponeWebConfig struct {
-	TargetScore   int `json:"targetScore"`
-	CpuDifficulty int `json:"cpuDifficulty"`
+	TargetScore int `json:"targetScore"`
 }
 
 // ToConfig converts ScoponeWebConfig to domain.ScoponeConfig.
 func (c ScoponeWebConfig) ToConfig() domain.ScoponeConfig {
 	return domain.ScoponeConfig{
-		TargetScore:   c.TargetScore,
-		CpuDifficulty: domain.ScoponeCpuDifficulty(c.CpuDifficulty),
+		TargetScore: c.TargetScore,
 	}
 }
 

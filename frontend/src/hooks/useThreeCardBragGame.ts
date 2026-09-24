@@ -5,17 +5,9 @@ import { useGameConfig } from './useGameConfig';
 
 /** Default Three Card Brag game configuration. */
 export const DEFAULT_THREE_CARD_BRAG_CONFIG: Required<ThreeCardBragConfigInput> = {
-  cpuDifficulty: 1,
   ante: 1,
   startingChips: 100,
 };
-
-/** CPU difficulty level options for Three Card Brag. */
-export const CPU_DIFFICULTY_OPTIONS = [
-  { value: 0, label: 'Easy' },
-  { value: 1, label: 'Normal' },
-  { value: 2, label: 'Hard' },
-] as const;
 
 /** Available ante (per-deal stake) options for Three Card Brag. */
 export const ANTE_OPTIONS = [1, 2, 5] as const;

@@ -17,7 +17,7 @@ import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
-import { CPU_DIFFICULTY_OPTIONS, TARGET_SCORE_OPTIONS, useEcarteGame } from '../hooks/useEcarteGame';
+import { TARGET_SCORE_OPTIONS, useEcarteGame } from '../hooks/useEcarteGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
@@ -205,17 +205,6 @@ function EcartePageContent() {
             groups={[
               {
                 items: [
-                  {
-                    type: 'select',
-                    id: 'cpuDifficulty',
-                    label: t('settings.cpuDifficulty'),
-                    value: ecarteConfig.cpuDifficulty,
-                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
-                      value: o.value,
-                      label: t(`settings.${o.label.toLowerCase()}`),
-                    })),
-                    onSelect: (v) => handleConfigChange('cpuDifficulty', v),
-                  },
                   {
                     type: 'select',
                     id: 'targetScore',

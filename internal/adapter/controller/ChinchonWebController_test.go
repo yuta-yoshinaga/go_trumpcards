@@ -126,18 +126,17 @@ func TestChinchonWebController_ResetWithConfig(t *testing.T) {
 	mockOutput := `{"players":[]}`
 
 	t.Run("custom config values are passed", func(t *testing.T) {
-		diff := 2
 		players := 2
 		knock := 3
 		elim := 50
-		expected := domain.ChinchonConfig{CpuDifficulty: domain.ChinchonCpuDifficultyHard, PlayerCount: 2, KnockThreshold: 3, EliminationLimit: 50}
+		expected := domain.ChinchonConfig{PlayerCount: 2, KnockThreshold: 3, EliminationLimit: 50}
 		siMock := new(usecase.MockChinchonInteractor)
 		siMock.On("ResetWithConfig", expected).Return(mockOutput)
 		ctrl := controller.NewChinchonWebController(func() uc.ChinchonInteractorIF { return siMock })
 		defer ctrl.Stop()
 		input := controller.ChinchonWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "c1"},
-			Config:       &controller.ChinchonWebConfig{CpuDifficulty: &diff, PlayerCount: &players, KnockThreshold: &knock, EliminationLimit: &elim},
+			Config:       &controller.ChinchonWebConfig{PlayerCount: &players, KnockThreshold: &knock, EliminationLimit: &elim},
 		}
 		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
@@ -145,7 +144,6 @@ func TestChinchonWebController_ResetWithConfig(t *testing.T) {
 	})
 
 	t.Run("out-of-range config falls back to defaults", func(t *testing.T) {
-		diff := 99
 		players := 9
 		expected := domain.DefaultChinchonConfig()
 		siMock := new(usecase.MockChinchonInteractor)
@@ -154,7 +152,7 @@ func TestChinchonWebController_ResetWithConfig(t *testing.T) {
 		defer ctrl.Stop()
 		input := controller.ChinchonWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "c2"},
-			Config:       &controller.ChinchonWebConfig{CpuDifficulty: &diff, PlayerCount: &players},
+			Config:       &controller.ChinchonWebConfig{PlayerCount: &players},
 		}
 		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)

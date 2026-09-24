@@ -114,7 +114,6 @@ flowchart TD
 | `discard <i j k>` | `d` | 指定したインデックスのカードを捨てて引き直す（承諾後） |
 | `play <i>` | `p` | 手札のidx番目のカードを出す（プレイフェーズ） |
 | `next` | `n` / `nextround` | 次のトリック／次のディールへ進む |
-| `setdifficulty <0-2>` | `sd` | CPU難易度設定（0=Easy, 1=Normal, 2=Hard） |
 | `settarget <n>` | `tg` | 目標点設定 |
 | `hint` | `h` | ヒント表示 |
 | `log` | `l` | アクションログを表示 |

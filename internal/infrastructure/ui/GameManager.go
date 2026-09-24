@@ -3656,7 +3656,6 @@ var gameRegistry = []GameRegistryEntry{
 				"bezique.helpNext", "bezique.helpHint",
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
-			SettingKeys:       []string{"bezique.helpSetDifficulty"},
 		}),
 	BindCuiFor("ecarte",
 		func() usecase.EcarteInteractorIF {
@@ -3676,7 +3675,6 @@ var gameRegistry = []GameRegistryEntry{
 				"ecarte.helpNext", "ecarte.helpHint",
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
-			SettingKeys:       []string{"ecarte.helpSetDifficulty"},
 		}),
 	BindCuiFor("threecardbrag",
 		func() usecase.ThreeCardBragInteractorIF {
@@ -3697,7 +3695,6 @@ var gameRegistry = []GameRegistryEntry{
 				"threecardbrag.helpNext", "threecardbrag.helpHint",
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
-			SettingKeys:       []string{"threecardbrag.helpSetDifficulty"},
 		}),
 	BindCuiFor("teenpatti",
 		func() usecase.TeenPattiInteractorIF {
@@ -3719,7 +3716,6 @@ var gameRegistry = []GameRegistryEntry{
 				"teenpatti.helpNext", "teenpatti.helpAutoPlay", "teenpatti.helpHint",
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
-			SettingKeys:       []string{"teenpatti.helpSetDifficulty"},
 		}),
 	BindCuiFor("scopone",
 		func() usecase.ScoponeInteractorIF {
@@ -3737,7 +3733,6 @@ var gameRegistry = []GameRegistryEntry{
 				"scopone.helpSetTarget",
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
-			SettingKeys:       []string{"scopone.helpSetDifficulty"},
 			NoteKeys:          []string{"scopone.scoreRules"},
 		}),
 	BindCuiFor("escoba",
@@ -3756,7 +3751,6 @@ var gameRegistry = []GameRegistryEntry{
 				"escoba.helpSetTarget",
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
-			SettingKeys:       []string{"escoba.helpSetDifficulty"},
 			NoteKeys:          []string{"escoba.helpCardValues"},
 		}),
 	BindCuiFor("handandfoot",
@@ -3807,7 +3801,6 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys: []string{
-				"conquian.helpSetDifficulty",
 				"conquian.helpSetWins",
 			},
 		}),
@@ -3832,7 +3825,6 @@ var gameRegistry = []GameRegistryEntry{
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
 			SettingKeys: []string{
-				"chinchon.helpSetDifficulty",
 				"chinchon.helpSetPlayers",
 			},
 		}),
@@ -4570,7 +4562,7 @@ var gameRegistry = []GameRegistryEntry{
 				"machiavelli.helpNextRound",
 			},
 			ExtraCommandLines: []string{"  l                    action log"},
-			SettingKeys:       []string{"machiavelli.helpSetPlayers", "machiavelli.helpSetDifficulty", "machiavelli.helpSetRounds"},
+			SettingKeys:       []string{"machiavelli.helpSetPlayers", "machiavelli.helpSetRounds"},
 		}),
 	BindCuiFor("pan",
 		func() usecase.PanInteractorIF {

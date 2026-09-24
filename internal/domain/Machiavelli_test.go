@@ -104,10 +104,6 @@ func TestMachiavelliConfig_Validate(t *testing.T) {
 	bad2.PlayerCount = 6
 	assert.Error(t, bad2.Validate())
 
-	bad3 := domain.DefaultMachiavelliConfig()
-	bad3.CpuDifficulty = 9
-	assert.Error(t, bad3.Validate())
-
 	bad4 := domain.DefaultMachiavelliConfig()
 	bad4.TargetRounds = 0
 	assert.Error(t, bad4.Validate())

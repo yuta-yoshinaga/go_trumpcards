@@ -33,7 +33,6 @@ export interface EcarteTrickCard {
 
 /** Écarté game configuration. */
 export interface EcarteConfig {
-  cpuDifficulty: number;
   targetScore: number;
 }
 

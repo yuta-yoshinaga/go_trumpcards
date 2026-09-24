@@ -37,7 +37,7 @@ func TestEscobaWebController_Method(t *testing.T) {
 	t.Run("reset with config", func(t *testing.T) {
 		input := controller.EscobaWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "s1"},
-			Config:       &controller.EscobaWebConfig{TargetScore: 10, CpuDifficulty: 2},
+			Config:       &controller.EscobaWebConfig{TargetScore: 10},
 		}
 		rec := execRequest(t, ctrl.Exec, &input)
 		rec.CodeIs(http.StatusOK)
@@ -48,7 +48,7 @@ func TestEscobaWebController_Method(t *testing.T) {
 	t.Run("config command", func(t *testing.T) {
 		input := controller.EscobaWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "config", SessionID: "s1"},
-			Config:       &controller.EscobaWebConfig{TargetScore: 21, CpuDifficulty: 1},
+			Config:       &controller.EscobaWebConfig{TargetScore: 21},
 		}
 		rec := execRequest(t, ctrl.Exec, &input)
 		rec.CodeIs(http.StatusOK)
@@ -85,9 +85,9 @@ func TestEscobaWebController_Method(t *testing.T) {
 }
 
 func TestEscobaWebConfig_ToConfig(t *testing.T) {
-	wc := controller.EscobaWebConfig{TargetScore: 15, CpuDifficulty: 2}
+	wc := controller.EscobaWebConfig{TargetScore: 15}
 	c := wc.ToConfig()
-	if c.TargetScore != 15 || c.CpuDifficulty != 2 {
+	if c.TargetScore != 15 {
 		t.Fatalf("ToConfig mapping incorrect: %+v", c)
 	}
 }

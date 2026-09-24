@@ -32,7 +32,7 @@ function base({ hand = [card('SPADE', 3), card('HEART', 11)], ...overrides }: Pa
     knockerMelds: [],
     layoffableIndices: [],
     message: '',
-    config: { cpuDifficulty: 1, targetScore: 100 },
+    config: { targetScore: 100 },
     ...overrides,
   } as ChinchonResponse;
 }

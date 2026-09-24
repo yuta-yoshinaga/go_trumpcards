@@ -32,7 +32,6 @@ export interface TeenPattiPlayer {
 
 /** Teen Patti game configuration. */
 export interface TeenPattiConfig {
-  cpuDifficulty: number;
   /** Chips put in the pot by each player at the start of a deal. */
   ante: number;
   /** Chips each player begins the match with. */

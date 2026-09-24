@@ -23,7 +23,7 @@ function base({ hand = [card('SPADE', 3), card('HEART', 11)], ...overrides }: Pa
     roundWinnerIdx: -1,
     tookDiscard: false,
     message: '',
-    config: { cpuDifficulty: 1 },
+    config: { targetWins: 3 },
     ...overrides,
   } as ConquianResponse;
 }

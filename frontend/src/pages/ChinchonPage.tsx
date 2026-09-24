@@ -17,7 +17,6 @@ import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import {
-  CPU_DIFFICULTY_OPTIONS,
   ELIMINATION_LIMIT_OPTIONS,
   KNOCK_THRESHOLD_OPTIONS,
   PLAYER_COUNT_OPTIONS,
@@ -167,7 +166,6 @@ function ChinchonPageContent() {
   const handleManualReset = useCallback(() => {
     hideActionLog();
     void gameExec('reset', undefined, {
-      cpuDifficulty: chinchonConfig.cpuDifficulty,
       playerCount: chinchonConfig.playerCount,
       knockThreshold: chinchonConfig.knockThreshold,
       eliminationLimit: chinchonConfig.eliminationLimit,
@@ -175,7 +173,6 @@ function ChinchonPageContent() {
   }, [
     gameExec,
     hideActionLog,
-    chinchonConfig.cpuDifficulty,
     chinchonConfig.playerCount,
     chinchonConfig.knockThreshold,
     chinchonConfig.eliminationLimit,
@@ -272,17 +269,6 @@ function ChinchonPageContent() {
             groups={[
               {
                 items: [
-                  {
-                    type: 'select',
-                    id: 'cpuDifficulty',
-                    label: t('settings.cpuDifficulty'),
-                    value: chinchonConfig.cpuDifficulty,
-                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
-                      value: o.value,
-                      label: t(`settings.${o.label.toLowerCase()}`),
-                    })),
-                    onSelect: (v) => handleConfigChange('cpuDifficulty', v),
-                  },
                   {
                     type: 'select',
                     id: 'playerCount',

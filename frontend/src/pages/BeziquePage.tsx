@@ -15,7 +15,7 @@ import { PlayerHandSection } from '../components/PlayerHandSection';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { CPU_DIFFICULTY_OPTIONS, TARGET_SCORE_OPTIONS, useBeziqueGame } from '../hooks/useBeziqueGame';
+import { TARGET_SCORE_OPTIONS, useBeziqueGame } from '../hooks/useBeziqueGame';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -217,17 +217,6 @@ function BeziquePageContent() {
             groups={[
               {
                 items: [
-                  {
-                    type: 'select',
-                    id: 'cpuDifficulty',
-                    label: t('settings.cpuDifficulty'),
-                    value: beziqueConfig.cpuDifficulty,
-                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
-                      value: o.value,
-                      label: t(`settings.${o.label.toLowerCase()}`),
-                    })),
-                    onSelect: (v) => handleConfigChange('cpuDifficulty', v),
-                  },
                   {
                     type: 'select',
                     id: 'targetScore',

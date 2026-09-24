@@ -37,14 +37,6 @@ describe('parseThreeCardBragCommand', () => {
     expect(parseThreeCardBragCommand('next')).toEqual({ args: ['next'] });
   });
 
-  it('parses sd into a reset with difficulty config', () => {
-    expect(parseThreeCardBragCommand('sd 2')).toEqual({ args: ['reset', { config: { cpuDifficulty: 2 } }] });
-  });
-
-  it('rejects an out-of-range sd', () => {
-    expect('error' in parseThreeCardBragCommand('sd 9')).toBe(true);
-  });
-
   it('parses sa into a reset with ante config', () => {
     expect(parseThreeCardBragCommand('sa 5')).toEqual({ args: ['reset', { config: { ante: 5 } }] });
   });

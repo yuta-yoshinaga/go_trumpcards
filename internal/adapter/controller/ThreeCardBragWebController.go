@@ -21,7 +21,6 @@ type ThreeCardBragWebInput struct {
 
 // ThreeCardBragWebConfig スリーカード・ブラグのWeb設定
 type ThreeCardBragWebConfig struct {
-	CpuDifficulty *int `json:"cpuDifficulty,omitempty"`
 	Ante          *int `json:"ante,omitempty"`
 	StartingChips *int `json:"startingChips,omitempty"`
 }
@@ -49,7 +48,6 @@ type ThreeCardBragWebOutputHint struct {
 
 // ThreeCardBragWebOutputConfig スリーカード・ブラグの設定アウトプット
 type ThreeCardBragWebOutputConfig struct {
-	CpuDifficulty int `json:"cpuDifficulty"`
 	Ante          int `json:"ante"`
 	StartingChips int `json:"startingChips"`
 }
@@ -77,7 +75,6 @@ type ThreeCardBragWebOutput struct {
 // ToConfig builds a ThreeCardBragConfig from the nested web config, applying bounds checking.
 func (c *ThreeCardBragWebConfig) ToConfig() domain.ThreeCardBragConfig {
 	cfg := domain.DefaultThreeCardBragConfig()
-	cfg.CpuDifficulty = domain.ThreeCardBragCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty, int(domain.ThreeCardBragCpuDifficultyEasy), int(domain.ThreeCardBragCpuDifficultyHard), int(cfg.CpuDifficulty)))
 	webutil.ApplyBoundedInt(&cfg.Ante, c.Ante, 1, 1000)
 	webutil.ApplyBoundedInt(&cfg.StartingChips, c.StartingChips, 2, domain.ThreeCardBragMaxStartingChips)
 	return cfg

@@ -69,7 +69,7 @@ describe('BeziquePage', () => {
     renderWithProviders(<BeziquePage />);
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', {
-        config: { cpuDifficulty: 1, targetScore: 1000 },
+        config: { targetScore: 1000 },
       }),
     );
   });

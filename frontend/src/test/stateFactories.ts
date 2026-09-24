@@ -3175,7 +3175,7 @@ const baseBeziqueState: BeziqueResponse = {
   winnerIdx: -1,
   hint: null,
   message: '',
-  config: { cpuDifficulty: 1, targetScore: 1000 },
+  config: { targetScore: 1000 },
 };
 
 /**
@@ -3228,7 +3228,7 @@ const baseEcarteState: EcarteResponse = {
   winnerIdx: -1,
   hint: null,
   message: '',
-  config: { cpuDifficulty: 1, targetScore: 5 },
+  config: { targetScore: 5 },
 };
 
 /**
@@ -3279,7 +3279,7 @@ const baseThreeCardBragState: ThreeCardBragResponse = {
   isHumanTurn: true,
   hint: null,
   message: '',
-  config: { cpuDifficulty: 1, ante: 1, startingChips: 100 },
+  config: { ante: 1, startingChips: 100 },
 };
 
 /**
@@ -3336,7 +3336,7 @@ const baseTeenPattiState: TeenPattiResponse = {
   isHumanTurn: true,
   hint: null,
   message: '',
-  config: { cpuDifficulty: 1, ante: 1, startingChips: 100 },
+  config: { ante: 1, startingChips: 100 },
 };
 
 /**
@@ -3763,7 +3763,7 @@ const baseScoponeState: ScoponeResponse = {
   isHumanTurn: true,
   handCaptures: [[[1]], [], []],
   lastRoundDetail: null,
-  config: { cpuDifficulty: 1, targetScore: 11 },
+  config: { targetScore: 11 },
   message: '',
 };
 
@@ -3814,7 +3814,7 @@ const baseEscobaState: EscobaResponse = {
   isHumanTurn: true,
   handCaptures: [[[0, 1]], [], []],
   lastRoundDetail: null,
-  config: { cpuDifficulty: 1, targetScore: 10 },
+  config: { targetScore: 10 },
   message: '',
 };
 

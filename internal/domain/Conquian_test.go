@@ -34,14 +34,16 @@ func newTestConquian() *domain.Conquian {
 	return domain.NewConquian(players, domain.DefaultConquianConfig())
 }
 
+func TestConquianConfig_UnmarshalLegacyDifficulty(t *testing.T) {
+	var cfg domain.ConquianConfig
+	require.NoError(t, json.Unmarshal([]byte(`{"cd":0,"tw":3}`), &cfg))
+	assert.Equal(t, 3, cfg.TargetWins)
+	assert.NoError(t, cfg.Validate())
+}
+
 func TestConquianConfig_Validate(t *testing.T) {
 	t.Run("default is valid", func(t *testing.T) {
 		assert.NoError(t, domain.DefaultConquianConfig().Validate())
-	})
-	t.Run("difficulty out of range", func(t *testing.T) {
-		c := domain.DefaultConquianConfig()
-		c.CpuDifficulty = domain.ConquianCpuDifficulty(99)
-		assert.Error(t, c.Validate())
 	})
 	t.Run("target wins below 1", func(t *testing.T) {
 		c := domain.DefaultConquianConfig()
@@ -458,11 +460,11 @@ func TestConquian_JSONRoundTrip(t *testing.T) {
 
 func TestConquian_UnmarshalJSON_RejectsInvalid(t *testing.T) {
 	cases := map[string]string{
-		"wrong player count":     `{"pl":[{}],"cf":{"cd":1,"tw":1},"ps":0,"ci":0}`,
-		"nil player element":     `{"pl":[null,null],"cf":{"cd":1,"tw":1},"ps":0,"ci":0}`,
-		"phase out of range":     `{"pl":[{},{}],"cf":{"cd":1,"tw":1},"ps":99,"ci":0}`,
-		"current idx out of rng": `{"pl":[{},{}],"cf":{"cd":1,"tw":1},"ps":0,"ci":5}`,
-		"invalid config":         `{"pl":[{},{}],"cf":{"cd":99,"tw":1},"ps":0,"ci":0}`,
+		"wrong player count":     `{"pl":[{}],"cf":{"tw":1},"ps":0,"ci":0}`,
+		"nil player element":     `{"pl":[null,null],"cf":{"tw":1},"ps":0,"ci":0}`,
+		"phase out of range":     `{"pl":[{},{}],"cf":{"tw":1},"ps":99,"ci":0}`,
+		"current idx out of rng": `{"pl":[{},{}],"cf":{"tw":1},"ps":0,"ci":5}`,
+		"invalid config":         `{"pl":[{},{}],"cf":{"tw":0},"ps":0,"ci":0}`,
 	}
 	for name, raw := range cases {
 		t.Run(name, func(t *testing.T) {

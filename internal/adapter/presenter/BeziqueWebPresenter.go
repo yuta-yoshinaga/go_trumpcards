@@ -54,8 +54,7 @@ func (p *BeziqueWebPresenter) buildBase(b interfaces.BeziqueGame) *controller.Be
 
 	cfg := b.GetConfig()
 	resObj.Config = controller.BeziqueWebOutputConfig{
-		CpuDifficulty: int(cfg.CpuDifficulty),
-		TargetScore:   cfg.TargetScore,
+		TargetScore: cfg.TargetScore,
 	}
 
 	cnt := b.GetPlayerCnt()

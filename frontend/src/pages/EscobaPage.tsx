@@ -31,12 +31,6 @@ import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { sweepCelebration } from '../utils/sweepCelebration';
 
-const DIFFICULTY_OPTIONS = [
-  { value: '0', label: 'Easy' },
-  { value: '1', label: 'Normal' },
-  { value: '2', label: 'Hard' },
-];
-
 const TARGET_SCORE_OPTIONS = [
   { value: '10', label: '10' },
   { value: '15', label: '15' },
@@ -431,17 +425,6 @@ function EscobaPageContent() {
             groups={[
               {
                 items: [
-                  {
-                    type: 'select' as const,
-                    id: 'cpuDifficulty',
-                    label: t('settings.cpuDifficulty'),
-                    value: String(configInput.cpuDifficulty ?? 1),
-                    options: DIFFICULTY_OPTIONS.map((o) => ({
-                      value: o.value,
-                      label: t(`settings.${o.label.toLowerCase()}`),
-                    })),
-                    onSelect: (v: string) => handleConfigChange('cpuDifficulty', Number.parseInt(v, 10)),
-                  },
                   {
                     type: 'select' as const,
                     id: 'targetScore',

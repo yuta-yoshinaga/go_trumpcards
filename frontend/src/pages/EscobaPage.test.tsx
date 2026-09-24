@@ -28,15 +28,6 @@ describe('EscobaPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('r'));
   });
 
-  it('renders CPU difficulty options with localized labels', async () => {
-    renderWithProviders(<EscobaPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalled());
-    // Difficulty options are localized (ja), not the hardcoded Easy/Normal/Hard.
-    expect(screen.getByRole('option', { name: 'かんたん' })).toBeInTheDocument();
-    expect(screen.getByRole('option', { name: 'ふつう' })).toBeInTheDocument();
-    expect(screen.getByRole('option', { name: 'むずかしい' })).toBeInTheDocument();
-  });
-
   it('renders the human hand', async () => {
     renderWithProviders(<EscobaPage />);
     await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
@@ -197,25 +188,8 @@ describe('EscobaPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('r', {
-        config: { targetScore: 10, cpuDifficulty: 1 },
+        config: { targetScore: 10 },
       }),
-    );
-  });
-
-  it('changes CPU difficulty and includes it in the reset config', async () => {
-    renderWithProviders(<EscobaPage />);
-    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
-
-    const select = screen.getByLabelText(/CPU難易度|CPU Difficulty/);
-    fireEvent.change(select, { target: { value: '2' } });
-    mockExec.mockClear();
-    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    fireEvent.click(screen.getByRole('button', { name: '確認' }));
-    await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith(
-        'r',
-        expect.objectContaining({ config: expect.objectContaining({ cpuDifficulty: 2 }) }),
-      ),
     );
   });
 

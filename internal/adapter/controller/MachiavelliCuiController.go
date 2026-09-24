@@ -34,7 +34,7 @@ func (c *MachiavelliCuiController) Exec(command string) string {
 			"lo", "layoff",
 			"ra", "rearrange",
 			"nr", "nextround",
-			"pc", "setplayers", "sd", "setdifficulty", "sr", "setrounds", "log", "l",
+			"pc", "setplayers", "sr", "setrounds", "log", "l",
 		},
 		func(cmd string, args []string) (string, bool) {
 			switch cmd {
@@ -64,12 +64,6 @@ func (c *MachiavelliCuiController) Exec(command string) string {
 				return cuiutil.WithParsedIntKeys(args, "playerCountRequired25", "invalidPlayerCount25", domain.MachiavelliPlayerCountMin, domain.MachiavelliPlayerCountMax, func(v int) string {
 					cfg := c.ci.GetConfig()
 					cfg.PlayerCount = v
-					return c.ci.ResetWithConfig(cfg)
-				})
-			case "sd", "setdifficulty":
-				return cuiutil.WithParsedIntKeys(args, "cpuDifficultyRequired", "invalidCpuDifficulty", 0, 2, func(v int) string {
-					cfg := c.ci.GetConfig()
-					cfg.CpuDifficulty = domain.MachiavelliCpuDifficulty(v)
 					return c.ci.ResetWithConfig(cfg)
 				})
 			case "sr", "setrounds":

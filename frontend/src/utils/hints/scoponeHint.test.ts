@@ -28,7 +28,7 @@ function base({
     isHumanTurn: true,
     handCaptures: [[], []],
     message: '',
-    config: { cpuDifficulty: 1, targetScore: 11 },
+    config: { targetScore: 11 },
     ...overrides,
   } as ScoponeResponse;
 }
