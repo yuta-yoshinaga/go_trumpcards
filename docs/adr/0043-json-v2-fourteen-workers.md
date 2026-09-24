@@ -36,9 +36,9 @@ Worker を 14 個にし（extra8、extra9、extra10、extra11）、ゲーム 99 
 
 ### 改訂 (2026-09-25)
 
-マージ後の staging で全 383 ゲームの reset を実行したところ、gostop / basra / koikoi の Worker が停止した。原因は TinyGo 0.42.0 の reflect が `reflect.SliceOf` / `reflect.MapOf` を実装しておらず (`panic: unimplemented: reflect.SliceOf()`)、Go 1.27 の encoding/json v2 がこれらを呼ぶことだった。v2 は文字列以外のキーを持つ map を 2 要素以上マーシャルするとき、決定的出力のためキーをソートする経路で `src/encoding/json/v2/arshal_default.go:910-911` の `SliceOf` を呼び、空でない map のアンマーシャルでは同ファイル 1012 行の `MapOf` を呼ぶ。最小再現は TinyGo wasm で `map[int][]int{0: {5}, 3: {1, 2}}` を `json.Marshal` すると panic し、1 要素なら通る。
+マージ後の staging で全 383 ゲームの reset を実行したところ、gostop / basra / koikoi の Worker が停止した。原因は TinyGo 0.42.0 の reflect が `reflect.SliceOf` を実装しておらず (`panic: unimplemented: reflect.SliceOf()`)、Go 1.27 の encoding/json v2 がこれを呼ぶことだった。v2 は文字列以外のキーを持つ map を 2 要素以上マーシャルするとき、決定的出力のためキーをソートする経路で `src/encoding/json/v2/arshal_default.go:910-911` の `SliceOf` を呼ぶ。`json.Unmarshal` は v1 互換で重複名を許すため MapOf の分岐 (1012 行) を通らず、TinyGo でもアンマーシャルは成功する (実測)。最小再現は TinyGo wasm で `map[int][]int{0: {5}, 3: {1, 2}}` を `json.Marshal` すると panic し、1 要素なら通る。Go 1.25.8 / 1.26.5 の既定 (json v1) では再現せず、両者で `GOEXPERIMENT=jsonv2` を付けると同じ panic になる。Go 1.27 で jsonv2 が既定になった (`src/internal/buildcfg/exp.go:87`) ことで顕在化した TinyGo の既知の制限 (tinygo#2115、スタブのみ #4836) で、本件は https://github.com/tinygo-org/tinygo/issues/5740 として起票した。
 
-Worker 14 個と再バケットは維持し、`GOEXPERIMENT=nojsonv2` を戻す。json v2 へ移れる条件は、(a) TinyGo が `reflect.SliceOf` / `reflect.MapOf` を実装する、または (b) Worker が JSON にする型から文字列以外のキーの map を無くす、のどちらか。Web 出力の `map[int]...` だけで20箇所以上あり、KV に保存するセッション状態も対象となる。移行時は staging で全ゲームを reset するだけでなく、数手進めて確かめる。サイズ・import 検査・Go のテストはいずれもこの停止を検出しない。
+Worker 14 個と再バケットは維持し、`GOEXPERIMENT=nojsonv2` を戻す。json v2 へ移れる条件は、(a) TinyGo が `reflect.SliceOf` を実装する (tinygo#5740)、または (b) Worker が JSON にする型から文字列以外のキーの map を無くす、のどちらか。Web 出力の `map[int]...` だけで20箇所以上あり、KV に保存するセッション状態も対象となる。移行時は staging で全ゲームを reset するだけでなく、数手進めて確かめる。サイズ・import 検査・Go のテストはいずれもこの停止を検出しない。
 
 再バケット後の実測（json v2、gzip B / 残り KB）は次の通り。
 

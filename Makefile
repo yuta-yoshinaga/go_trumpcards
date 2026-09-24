@@ -25,7 +25,7 @@ define build_worker
 	# from shipping in every worker and keeps each binary under the 1 MB gzip
 	# free-tier limit (see issue #2126). Non-worker builds (server, CLI, tests)
 	# match `!js || !wasm`, so they still include all games.
-	# encoding/json v2 needs reflect.SliceOf/MapOf, which TinyGo does not implement; build the Workers with json v1 (ADR-0043).
+	# encoding/json v2 (default in Go 1.27) calls reflect.SliceOf, which TinyGo does not implement (tinygo-org/tinygo#5740); build the Workers with json v1 (ADR-0043).
 	GOEXPERIMENT=nojsonv2 $(TINYGO) build -tags $(1) -o workers/$(1)/build/app.wasm -target wasm -stack-size=128KB -no-debug -opt=z ./cmd/workers/$(1)
 	$(WASM_OPT) --enable-bulk-memory --enable-nontrapping-float-to-int --enable-sign-ext -Oz workers/$(1)/build/app.wasm -o workers/$(1)/build/app.wasm
 	@RAW=$$(stat -c%s workers/$(1)/build/app.wasm); GZIP=$$(gzip -c workers/$(1)/build/app.wasm | wc -c); \
