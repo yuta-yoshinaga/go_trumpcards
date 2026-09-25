@@ -889,9 +889,9 @@ func botifarraValidateWire(j *botifarraJSON) error {
 	if len(j.ActionLog) > botifarraMaxSliceLen {
 		return fmt.Errorf("botifarra: action log too long: %d", len(j.ActionLog))
 	}
-	for name, seat := range map[string]int{"dealer": j.DealerIdx, "current turn": j.CurrentTurn} {
-		if seat < 0 || seat >= BotifarraPlayerCnt {
-			return fmt.Errorf("botifarra: %s index out of range: %d", name, seat)
+	for _, f := range []namedInt{{"dealer", j.DealerIdx}, {"current turn", j.CurrentTurn}} {
+		if f.value < 0 || f.value >= BotifarraPlayerCnt {
+			return fmt.Errorf("botifarra: %s index out of range: %d", f.name, f.value)
 		}
 	}
 	if j.DeclarerIdx < -1 || j.DeclarerIdx >= BotifarraPlayerCnt {

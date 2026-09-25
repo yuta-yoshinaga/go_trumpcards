@@ -740,12 +740,9 @@ func doubleAttackValidate(j *doubleAttackJSON) error {
 	if j.Phase < int(DoubleAttackPhaseBet) || j.Phase > int(DoubleAttackPhaseMax) {
 		return fmt.Errorf("doubleattack: phase out of range: %d", j.Phase)
 	}
-	for name, v := range map[string]int{
-		"ante": j.AnteBet, "double attack": j.AttackBet,
-		"bust it": j.BustItBet, "payout": j.Payout,
-	} {
-		if v < 0 {
-			return fmt.Errorf("doubleattack: %s must not be negative: %d", name, v)
+	for _, f := range []namedInt{{"ante", j.AnteBet}, {"double attack", j.AttackBet}, {"bust it", j.BustItBet}, {"payout", j.Payout}} {
+		if f.value < 0 {
+			return fmt.Errorf("doubleattack: %s must not be negative: %d", f.name, f.value)
 		}
 	}
 	if j.RoundNumber < 1 {

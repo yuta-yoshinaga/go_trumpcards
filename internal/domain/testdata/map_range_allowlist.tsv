@@ -1,23 +1,14 @@
-AllFours.go	*AllFours.UnmarshalJSON	map[string]int{…}	unreviewed	
 Anaconda.go	AnacondaEval	counts	independent	収集後に枚数とランクで決定的な降順ソートを行っているため順序に依存しない。
 Anaconda.go	anacondaStraight	uniq	independent	集めたスライスを直後に決定的な降順ソートで並び替えているため順序に影響されない。
-Baloot.go	*Baloot.UnmarshalJSON	map[string]int{…}	unreviewed	
 BarbuCPU.go	*Barbu.longestSuitLen	counts	independent	最大枚数（値そのもの）を求めているだけであり、タイがあっても返される枚数は変わらない。
 BaseballPoker.go	*BaseballPoker.finishHand	won	independent	配列の各要素に対して独立に値を設定しているため、設定する順序が結果に影響しない。
 Bauernschnapsen.go	*Bauernschnapsen.pickDefaultTrump	counts	unreviewed	
-Bhabhi.go	*Bhabhi.UnmarshalJSON	map[string]int{…}	unreviewed	
-Bhabhi.go	*Bhabhi.UnmarshalJSON	map[string]int{…} #2	unreviewed	
-BidEuchre.go	*BidEuchre.UnmarshalJSON	map[string]int{…}	unreviewed	
-BidEuchre.go	*BidEuchre.UnmarshalJSON	map[string]int{…} #2	unreviewed	
 BigTwoEval.go	bigTwoClassify5Cards	freq	independent	枚数のスライスを作った後に降順ソートしてから使用するため順序に依存しない。
 BigTwoEval.go	bigTwoFourOfAKindStrength	freq	independent	フォーカードにおいて4枚組となるランクは1つしか存在せず、走査順によらず常に同じランクが選ばれる。
 BigTwoEval.go	bigTwoFullHouseStrength	freq	independent	フルハウスにおいて3枚組となるランクは1つしか存在せず、最初に見つけてbreakしても結果は常に同じ。
 Binokel.go	BinokelMeldTable	binokelMeldPoints	independent	要素をスライスに集めた後、点数と役の種別で決定的にソートしているため表示順は変わらない。
 BlackJackVariant.go	spanishSuitBonus	suits	independent	要素数が1つであることが事前に len(suits) == 1 で保証されているため反復順序の揺れは起きない。
 Bolivia.go	*Bolivia.PlayerMeld	allIndices	independent	削除対象のインデックスを集めて降順ソートしてから処理するため順序に影響されない。
-Boston.go	*Boston.UnmarshalJSON	map[string]int{…}	unreviewed	
-Boston.go	*Boston.UnmarshalJSON	map[string]int{…} #2	unreviewed	
-Botifarra.go	botifarraValidateWire	map[string]int{…}	unreviewed	
 BotifarraConfig.go	botifarraValidateDeckPoints	botifarraCardPoints	independent	マップの値の合計を計算しているだけであり、加算順序が変わっても最終的な合計値は変わらない。
 Canasta.go	*Canasta.PlayerMeld	allIndices	independent	削除するインデックスを降順ソートしてから処理するため処理順序の影響を受けない。
 CaribbeanDraw.go	caribbeanDrawPairValue	freq	independent	条件を満たす最大のランク（キー）を求めており、キーは一意であるため常に同じ最大値が得られる。
@@ -27,8 +18,6 @@ Carioca.go	cariocaScoreContractProgress	bySuit	independent	各スートの最長
 CasinoHoldem.go	casinoHoldemDealerQualifies	counts	independent	条件を満たすペアが存在するかどうかの真偽判定のみであり、どれが先に見つかっても結果は同じ。
 Cassino.go	uniqueMaxIndex	m	independent	一意な最大値を持つキーを厳密に判定する論理であり、同点タイの考慮も含めて走査順によらず正しい結果になる。
 CirullaEval.go	CirullaPrimiera	best	independent	スートごとのポイントを合計しているだけであり、加算順序は最終的な合計値に影響しない。
-ColourWhist.go	colourWhistValidateWire	map[string]int{…}	unreviewed	
-ColourWhist.go	colourWhistValidateWire	map[string]int{…} #2	unreviewed	
 Conquian.go	*Conquian.PlayerMeldWithTargets	seen	independent	削除対象のインデックスを集め、降順にソートしてから処理するため順序に依存しない。
 ContractRummy.go	*ContractRummy.applyContractMeld	allSeen	independent	インデックスを収集した後に降順ソートを行ってから削除処理を行うため順序に依存しない。
 ContractRummy.go	findExtraMeld	byVal	independent	マップから値を取り出した直後に sort.Ints で昇順にソートして利用するため順序の影響を受けない。
@@ -40,12 +29,10 @@ CostlyColoursEval.go	CostlyColourCombo	suits	independent	スートごとの枚�
 CostlyColoursEval.go	CostlyRankCombo	counts	independent	役の枚数（値そのもの）と得点を求めているため、同点の役が複数あっても返される結果は変わらない。
 CrazyFourPokerConfig.go	CrazyFourPokerQueensUpPayout	crazyFourPokerQueensUpPayouts	independent	配当表の行を集めた後、倍率と役の強さで決定的なソートを行っているため順序に影響されない。
 CrazyFourPokerConfig.go	CrazyFourPokerSuperBonusPayout	crazyFourPokerSuperBonusPayouts	independent	集めた配当表を倍率と役の強さで決定的にソートしているため走査順によらず常に同じになる。
-DoubleAttackBlackjack.go	doubleAttackValidate	map[string]int{…}	unreviewed	
 DoudizhuCPU.go	*Doudizhu.buildFrequency	freq	independent	直後に強度（キーは一意）でソートしているため、キーの順序は決定的に定まり依存しない。
 DoudizhuCPU.go	*Doudizhu.handQuality	freq	independent	全要素を走査してスコアを加算しているだけであり、加算の順序によらず合計値は同じになる。
 DoudizhuEval.go	doudizhuRankCounts	freq	independent	直後に count と strength を使ってソートしており、結果が決定的に定まるため順序に依存しない。
 Dramaha.go	*Dramaha.evalPreFlopStrength	suitCount	independent	条件に合致するすべての要素についてスコアを加減算しているだけであり、最終的なスコアは順序に依存しない。
-Estimation.go	*Estimation.UnmarshalJSON	map[string]int{…}	unreviewed	
 Estimation_testhelpers.go	*Estimation.SetBidsForTest	bids	independent	各プレイヤーごとの独立した状態を配列のインデックス経由で更新しており、副作用が競合しないため順序に依存しない。
 Faro.go	*Faro.GetBetRanks	f.bets	independent	マップからスライスにキーを集めた直後に sort.Ints で昇順にソートしているため、順序は決定的に定まる。
 Faro.go	*Faro.PlayerClearAll	f.bets	independent	全ベットの返金（加算）と削除を行っており、加算は可換で全削除も順序に依存しない。
@@ -70,15 +57,11 @@ Guandan.go	*Guandan.guandanFindBeating	byRank	independent	マップからスラ�
 Guandan.go	GuandanEvaluate	counts	independent	ループに入る条件が要素数1以下のため、最大で1要素しか反復されず順序のブレが発生しない構造になっている。
 Guandan.go	guandanSortedRanks	counts	independent	マップからスライスにキーを集めた直後に sort.Ints で昇順にソートしているため、順序は決定的に定まる。
 HandAndFoot.go	*HandAndFoot.PlayerMeld	allIndices	independent	マップからスライスにキーを集めた直後に逆順にソートしているため、順序は決定的に定まる。
-Hasenpfeffer.go	*Hasenpfeffer.UnmarshalJSON	map[string]int{…}	unreviewed	
 HighCardFlush.go	evalHighCardFlushHand	suitVals	independent	マップからスライスにキーを集めた直後に sort.Ints で昇順にソートしているため、順序は決定的に定まる。
 HighCardFlush.go	evalLongestStraightFlushLen	suitSets	independent	最大値を求めているだけであり、選ばれるのは値そのものだけで反復順が違っても最大値の結果は変わらない。
 HighCardFlush.go	longestConsecutiveRun	set	independent	すべての要素を始点として連続部分を走査しており、最終的な最大長の値だけを返すため順序に依存しない。
-Hokm.go	*Hokm.UnmarshalJSON	map[string]int{…}	unreviewed	
-Hokm.go	*Hokm.UnmarshalJSON	map[string]int{…} #2	unreviewed	
 Holdem.go	evalBoardTexture	suitCount	independent	条件を満たす要素の存在確認（ブール値のフラグセットとbreak）であり、どれが先に見つかっても同じ true になる。
 Holdem.go	evalBoardTexture	valCount	independent	条件を満たす要素の存在確認（ブール値のフラグセットとbreak）であり、どれが先に見つかっても同じ true になる。
-HoneymoonBridge.go	*HoneymoonBridge.UnmarshalJSON	map[string]int{…}	unreviewed	
 IsraeliWhist.go	*IsraeliWhist.UnmarshalJSON	map[string]int{…}	unreviewed	
 IsraeliWhist_testhelpers.go	*IsraeliWhist.SetBidsForTest	bids	independent	各プレイヤーごとの独立した状態を配列のインデックス経由で更新しており、副作用が競合しないため順序に依存しない。
 Jass.go	computeWeis	suitRanks	independent	比較基準（点数・長さ・最高ランク）が全て同じ場合は厳密にタイとなり、選ばれたスート自体は結果に影響を与えないため。

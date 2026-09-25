@@ -838,14 +838,9 @@ func (e *Estimation) UnmarshalJSON(data []byte) error {
 	if len(j.CurrentTrick) > EstimationPlayerCnt {
 		return fmt.Errorf("current trick holds %d cards", len(j.CurrentTrick))
 	}
-	for name, idx := range map[string]int{
-		"current player": j.CurrentPlayerIdx,
-		"bid player":     j.BidPlayerIdx,
-		"lead player":    j.LeadPlayerIdx,
-		"dealer":         j.DealerIdx,
-	} {
-		if idx < 0 || idx >= EstimationPlayerCnt {
-			return fmt.Errorf("invalid %s: %d", name, idx)
+	for _, f := range []namedInt{{"current player", j.CurrentPlayerIdx}, {"bid player", j.BidPlayerIdx}, {"lead player", j.LeadPlayerIdx}, {"dealer", j.DealerIdx}} {
+		if f.value < 0 || f.value >= EstimationPlayerCnt {
+			return fmt.Errorf("invalid %s: %d", f.name, f.value)
 		}
 	}
 	if j.WinnerIdx < -1 || j.WinnerIdx >= EstimationPlayerCnt {
