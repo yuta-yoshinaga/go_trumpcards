@@ -226,17 +226,11 @@ func characterSomerset(columns [][]int) *Somerset {
 	c.phase = SomersetPhasePlaying
 	var tableau [SomersetTableauCnt][]*SomersetTableauCard
 	for col, ranks := range columns {
-		for i, rank := range ranks {
+		for _, rank := range ranks {
 			suit := CardDesignSpade
-			if (rank % 2) != (ranks[0] % 2) {
-				suit = CardDesignHeart
-			}
-			// Wait, if we want to move from column 0 to column 1, and 0 has 4, 1 has 5, we need 4 to be red and 5 to be black!
-			// Actually let's just make suit depend on rank parity so alternating ranks have alternating colors!
 			if rank%2 == 0 {
 				suit = CardDesignHeart
 			}
-			_ = i
 			tableau[col] = append(tableau[col], &SomersetTableauCard{Card: NewCard(suit, rank, false), FaceUp: true})
 		}
 	}
