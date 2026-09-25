@@ -1229,21 +1229,14 @@ func (k *Klaberjass) UnmarshalJSON(data []byte) error {
 	if j.Phase < KlaberjassPhaseBidTurnUp || j.Phase > KlaberjassPhaseGameEnd {
 		return fmt.Errorf("bad phase: %d", j.Phase)
 	}
-	for name, v := range map[string]int{
-		"dealer": j.DealerIdx, "current": j.CurrentIdx, "bid": j.BidIdx,
-	} {
-		if v < 0 || v >= KlaberjassPlayerCnt {
-			return fmt.Errorf("bad %s index: %d", name, v)
+	for _, f := range []namedInt{{"dealer", j.DealerIdx}, {"current", j.CurrentIdx}, {"bid", j.BidIdx}} {
+		if f.value < 0 || f.value >= KlaberjassPlayerCnt {
+			return fmt.Errorf("bad %s index: %d", f.name, f.value)
 		}
 	}
-	for name, v := range map[string]int{
-		"maker": j.MakerIdx, "trick leader": j.TrickLeader,
-		"sequence winner": j.SequenceWinner, "bela holder": j.BelaHolder,
-		"last trick winner": j.LastTrickWinner, "schmeiss": j.SchmeissBy,
-		"winner": j.WinnerIdx,
-	} {
-		if v < -1 || v >= KlaberjassPlayerCnt {
-			return fmt.Errorf("bad %s index: %d", name, v)
+	for _, f := range []namedInt{{"maker", j.MakerIdx}, {"trick leader", j.TrickLeader}, {"sequence winner", j.SequenceWinner}, {"bela holder", j.BelaHolder}, {"last trick winner", j.LastTrickWinner}, {"schmeiss", j.SchmeissBy}, {"winner", j.WinnerIdx}} {
+		if f.value < -1 || f.value >= KlaberjassPlayerCnt {
+			return fmt.Errorf("bad %s index: %d", f.name, f.value)
 		}
 	}
 	// 0 は「未確定」。それ以外はスートの範囲でなければならない。

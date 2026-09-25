@@ -833,21 +833,14 @@ func (m *Mendikot) UnmarshalJSON(data []byte) error {
 	if len(j.LastTrick) > MendikotPlayerCnt {
 		return fmt.Errorf("last trick holds %d cards", len(j.LastTrick))
 	}
-	for name, idx := range map[string]int{
-		"current player": j.CurrentPlayerIdx,
-		"lead player":    j.LeadPlayerIdx,
-		"dealer":         j.DealerIdx,
-	} {
-		if idx < 0 || idx >= MendikotPlayerCnt {
-			return fmt.Errorf("invalid %s: %d", name, idx)
+	for _, f := range []namedInt{{"current player", j.CurrentPlayerIdx}, {"lead player", j.LeadPlayerIdx}, {"dealer", j.DealerIdx}} {
+		if f.value < 0 || f.value >= MendikotPlayerCnt {
+			return fmt.Errorf("invalid %s: %d", f.name, f.value)
 		}
 	}
-	for name, team := range map[string]int{
-		"winner team":      j.WinnerTeam,
-		"last hand winner": j.LastHandWinner,
-	} {
-		if team < -1 || team >= MendikotTeamCnt {
-			return fmt.Errorf("invalid %s: %d", name, team)
+	for _, f := range []namedInt{{"winner team", j.WinnerTeam}, {"last hand winner", j.LastHandWinner}} {
+		if f.value < -1 || f.value >= MendikotTeamCnt {
+			return fmt.Errorf("invalid %s: %d", f.name, f.value)
 		}
 	}
 	if j.TrumpCards != nil {

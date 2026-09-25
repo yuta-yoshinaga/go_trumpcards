@@ -788,13 +788,9 @@ func (g *TeenDoPaanch) UnmarshalJSON(data []byte) error {
 	if len(j.ActionLog) > teenDoPaanchMaxSliceLen {
 		return errors.New("teendopaanch: input array exceeds maximum allowed size")
 	}
-	for name, idx := range map[string]int{
-		"current player": j.CurrentPlayerIdx,
-		"lead player":    j.LeadPlayerIdx,
-		"five player":    j.FivePlayerIdx,
-	} {
-		if idx < 0 || idx >= TeenDoPaanchPlayerCnt {
-			return fmt.Errorf("invalid %s: %d", name, idx)
+	for _, f := range []namedInt{{"current player", j.CurrentPlayerIdx}, {"lead player", j.LeadPlayerIdx}, {"five player", j.FivePlayerIdx}} {
+		if f.value < 0 || f.value >= TeenDoPaanchPlayerCnt {
+			return fmt.Errorf("invalid %s: %d", f.name, f.value)
 		}
 	}
 	if j.WinnerIdx < -1 || j.WinnerIdx >= TeenDoPaanchPlayerCnt {

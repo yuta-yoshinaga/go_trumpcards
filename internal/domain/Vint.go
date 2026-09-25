@@ -843,14 +843,14 @@ func (v *Vint) UnmarshalJSON(data []byte) error {
 	if j.Phase < VintPhaseBid || j.Phase > VintPhaseGameEnd {
 		return fmt.Errorf("bad phase: %d", j.Phase)
 	}
-	for name, val := range map[string]int{"dealer": j.DealerIdx, "current": j.CurrentIdx, "bid": j.BidIdx} {
-		if val < 0 || val >= VintPlayerCnt {
-			return fmt.Errorf("bad %s index: %d", name, val)
+	for _, f := range []namedInt{{"dealer", j.DealerIdx}, {"current", j.CurrentIdx}, {"bid", j.BidIdx}} {
+		if f.value < 0 || f.value >= VintPlayerCnt {
+			return fmt.Errorf("bad %s index: %d", f.name, f.value)
 		}
 	}
-	for name, val := range map[string]int{"declarer": j.DeclarerIdx, "trick leader": j.TrickLeader} {
-		if val < -1 || val >= VintPlayerCnt {
-			return fmt.Errorf("bad %s index: %d", name, val)
+	for _, f := range []namedInt{{"declarer", j.DeclarerIdx}, {"trick leader", j.TrickLeader}} {
+		if f.value < -1 || f.value >= VintPlayerCnt {
+			return fmt.Errorf("bad %s index: %d", f.name, f.value)
 		}
 	}
 	if j.WinnerTeam < -1 || j.WinnerTeam >= VintTeamCnt {

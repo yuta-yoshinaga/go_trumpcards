@@ -1387,14 +1387,14 @@ func (s *SixBidSolo) UnmarshalJSON(data []byte) error {
 	if j.Phase < SixBidSoloPhaseBid || j.Phase > SixBidSoloPhaseGameEnd {
 		return errors.New("unknown phase")
 	}
-	for name, v := range map[string]int{"dealer": j.DealerIdx, "bid seat": j.BidIdx, "current seat": j.CurrentIdx, "trick leader": j.TrickLeader} {
-		if v < 0 || v >= SixBidSoloPlayerCnt {
-			return errors.New("bad " + name)
+	for _, f := range []namedInt{{"dealer", j.DealerIdx}, {"bid seat", j.BidIdx}, {"current seat", j.CurrentIdx}, {"trick leader", j.TrickLeader}} {
+		if f.value < 0 || f.value >= SixBidSoloPlayerCnt {
+			return errors.New("bad " + f.name)
 		}
 	}
-	for name, v := range map[string]int{"declarer": j.DeclarerIdx, "winner": j.WinnerIdx} {
-		if v < -1 || v >= SixBidSoloPlayerCnt {
-			return errors.New("bad " + name)
+	for _, f := range []namedInt{{"declarer", j.DeclarerIdx}, {"winner", j.WinnerIdx}} {
+		if f.value < -1 || f.value >= SixBidSoloPlayerCnt {
+			return errors.New("bad " + f.name)
 		}
 	}
 	if j.TrumpSuit < 0 || j.TrumpSuit > CardDesignDiamond {

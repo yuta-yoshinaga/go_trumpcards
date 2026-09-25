@@ -820,9 +820,9 @@ func (k *Karnoffel) UnmarshalJSON(data []byte) error {
 	if j.Phase < KarnoffelPhasePlay || j.Phase > KarnoffelPhaseGameEnd {
 		return errors.New("unknown phase")
 	}
-	for name, v := range map[string]int{"dealer": j.DealerIdx, "current seat": j.CurrentIdx, "trick leader": j.TrickLeader} {
-		if v < 0 || v >= KarnoffelPlayerCnt {
-			return errors.New("bad " + name)
+	for _, f := range []namedInt{{"dealer", j.DealerIdx}, {"current seat", j.CurrentIdx}, {"trick leader", j.TrickLeader}} {
+		if f.value < 0 || f.value >= KarnoffelPlayerCnt {
+			return errors.New("bad " + f.name)
 		}
 	}
 	if j.WinnerTeam < -1 || j.WinnerTeam >= KarnoffelTeamCnt {

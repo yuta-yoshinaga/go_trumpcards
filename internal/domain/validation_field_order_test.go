@@ -4,6 +4,7 @@ package domain_test
 
 import (
 	"encoding/json"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -36,11 +37,45 @@ func TestValidationFieldOrder(t *testing.T) {
 		{"Hokm/current player", "current player", "cp", "hk", 99, func() any { return domain.NewDefaultHokm() }},
 		{"Hokm/winner team", "winner team", "wt", "lw", 99, func() any { return domain.NewDefaultHokm() }},
 		{"HoneymoonBridge/current player", "current player", "ci", "dl", 99, func() any { return domain.NewDefaultHoneymoonBridge() }},
+		{"IsraeliWhist/current player", "current player", "cp", "di", 99, func() any { return domain.NewDefaultIsraeliWhist() }},
+		{"Julepe/current player", "current player", "cp", "di", 99, func() any { return domain.NewDefaultJulepe() }},
+		{"Kaiser/dealer", "dealer", "di", "bi", 99, func() any { return domain.NewDefaultKaiser() }},
+		{"Kaiser/declarer", "declarer", "de", "s3", 99, func() any { return domain.NewDefaultKaiser() }},
+		{"Karnoffel/dealer", "dealer", "di", "tl", 99, func() any { return domain.NewDefaultKarnoffel() }},
+		{"Klaberjass/dealer", "dealer", "di", "bi", 99, func() any { return domain.NewDefaultKlaberjass() }},
+		{"Klaberjass/maker", "maker", "mi", "wi", 99, func() any { return domain.NewDefaultKlaberjass() }},
+		{"LingerLonger/current player", "current player", "ci", "li", 99, func() any { return domain.NewDefaultLingerLonger() }},
+		{"Mendikot/current player", "current player", "cp", "di", 99, func() any { return domain.NewDefaultMendikot() }},
+		{"Mendikot/winner team", "winner team", "wt", "lw", 99, func() any { return domain.NewDefaultMendikot() }},
+		{"Minibridge/current player", "current player", "ci", "dl", 99, func() any { return domain.NewDefaultMinibridge() }},
+		{"Polignac/current player", "current player", "cp", "lp", 99, func() any { return domain.NewDefaultPolignac() }},
+		{"Rams/current player", "current player", "cp", "di", 99, func() any { return domain.NewDefaultRams() }},
+		{"Reversis/current player", "current player", "cp", "di", 99, func() any { return domain.NewDefaultReversis() }},
+		{"Rikken/dealer", "dealer", "di", "cu", 99, func() any { return domain.NewDefaultRikken() }},
+		{"Rikken/declarer", "declarer", "dc", "wi", 99, func() any { return domain.NewDefaultRikken() }},
+		{"RollingStone/seat", "current player", "ci", "li", 99, func() any { return domain.NewDefaultRollingStone() }},
+		{"SergeantMajor/seat", "current player", "ci", "dl", 99, func() any { return domain.NewDefaultSergeantMajor() }},
+		{"Shelem/seat", "current player", "cp", "di", 99, func() any { return domain.NewDefaultShelem() }},
+		{"SixBidSolo/seat", "dealer", "di", "tl", 99, func() any { return domain.NewDefaultSixBidSolo() }},
+		{"SixBidSolo/declarer", "declarer", "de", "wi", 99, func() any { return domain.NewDefaultSixBidSolo() }},
+		{"Skat/slice lengths", "skat", "sk", "dh", 99, func() any { return domain.NewDefaultSkat() }},
+		{"Skat/seat", "currentPlayerIdx", "ci", "r1", 99, func() any { return domain.NewDefaultSkat() }},
+		{"Slobberhannes/seat", "current player", "cp", "di", 99, func() any { return domain.NewDefaultSlobberhannes() }},
+		{"TappTarock/seat", "current player", "cp", "di", 99, func() any { return domain.NewDefaultTappTarock() }},
+		{"TappTarock/declarer", "declarer", "dc", "hr", 99, func() any { return domain.NewDefaultTappTarock() }},
+		{"Tarabish/seat", "current player", "cp", "di", 99, func() any { return domain.NewDefaultTarabish() }},
+		{"TeenDoPaanch/seat", "current player", "ci", "fi", 99, func() any { return domain.NewDefaultTeenDoPaanch() }},
+		{"Troggu/seat", "current player", "cp", "di", 99, func() any { return domain.NewDefaultTroggu() }},
+		{"Troggu/declarer", "declarer", "dc", "hr", 99, func() any { return domain.NewDefaultTroggu() }},
+		{"Vint/seat", "dealer", "di", "bi", 99, func() any { return domain.NewDefaultVint() }},
+		{"Vint/declarer", "declarer", "de", "tl", 99, func() any { return domain.NewDefaultVint() }},
+		{"Zwanzigerrufen/seat", "current player", "cp", "di", 99, func() any { return domain.NewDefaultZwanzigerrufen() }},
+		{"Zwanzigerrufen/declarer", "declarer", "dc", "hr", 99, func() any { return domain.NewDefaultZwanzigerrufen() }},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			base := tc.newGame()
-			resetGame(base)
+			resetGame(t, base)
 			data, err := json.Marshal(base)
 			require.NoError(t, err)
 			var wire map[string]any
@@ -51,36 +86,9 @@ func TestValidationFieldOrder(t *testing.T) {
 
 			var firstError string
 			for range 30 {
-				game := tc.newGame()
-				// Decode into a fresh zero value of the concrete game type.
-				switch g := game.(type) {
-				case *domain.AllFours:
-					err = json.Unmarshal(bad, new(domain.AllFours))
-				case *domain.Baloot:
-					err = json.Unmarshal(bad, new(domain.Baloot))
-				case *domain.Bhabhi:
-					err = json.Unmarshal(bad, new(domain.Bhabhi))
-				case *domain.BidEuchre:
-					err = json.Unmarshal(bad, new(domain.BidEuchre))
-				case *domain.Boston:
-					err = json.Unmarshal(bad, new(domain.Boston))
-				case *domain.Botifarra:
-					err = json.Unmarshal(bad, new(domain.Botifarra))
-				case *domain.ColourWhist:
-					err = json.Unmarshal(bad, new(domain.ColourWhist))
-				case *domain.DoubleAttackBlackjack:
-					err = json.Unmarshal(bad, new(domain.DoubleAttackBlackjack))
-				case *domain.Estimation:
-					err = json.Unmarshal(bad, new(domain.Estimation))
-				case *domain.Hasenpfeffer:
-					err = json.Unmarshal(bad, new(domain.Hasenpfeffer))
-				case *domain.Hokm:
-					err = json.Unmarshal(bad, new(domain.Hokm))
-				case *domain.HoneymoonBridge:
-					err = json.Unmarshal(bad, new(domain.HoneymoonBridge))
-				default:
-					t.Fatalf("unsupported game type %T", g)
-				}
+				gameType := reflect.TypeOf(tc.newGame())
+				fresh := reflect.New(gameType.Elem()).Interface()
+				err = json.Unmarshal(bad, fresh)
 				require.Error(t, err)
 				if firstError == "" {
 					firstError = err.Error()
@@ -93,31 +101,11 @@ func TestValidationFieldOrder(t *testing.T) {
 	}
 }
 
-func resetGame(game any) {
-	switch g := game.(type) {
-	case *domain.AllFours:
-		g.Reset()
-	case *domain.Baloot:
-		g.Reset()
-	case *domain.Bhabhi:
-		g.Reset()
-	case *domain.BidEuchre:
-		g.Reset()
-	case *domain.Boston:
-		g.Reset()
-	case *domain.Botifarra:
-		g.Reset()
-	case *domain.ColourWhist:
-		g.Reset()
-	case *domain.DoubleAttackBlackjack:
-		g.Reset()
-	case *domain.Estimation:
-		g.Reset()
-	case *domain.Hasenpfeffer:
-		g.Reset()
-	case *domain.Hokm:
-		g.Reset()
-	case *domain.HoneymoonBridge:
-		g.Reset()
+func resetGame(t *testing.T, game any) {
+	t.Helper()
+	resetter, ok := game.(interface{ Reset() })
+	if !ok {
+		t.Fatalf("%T does not implement Reset", game)
 	}
+	resetter.Reset()
 }

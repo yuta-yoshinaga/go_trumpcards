@@ -17,7 +17,7 @@ import (
 	"testing"
 )
 
-const mapRangeUnreviewedLimit = 47
+const mapRangeUnreviewedLimit = 0
 const mapRangeMinimumCount = 100
 
 type mapRangeEntry struct {
