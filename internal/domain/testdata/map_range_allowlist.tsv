@@ -34,7 +34,7 @@ ContractRummy.go	*ContractRummy.applyContractMeld	allSeen	independent	インデ�
 ContractRummy.go	findExtraMeld	byVal	independent	マップから値を取り出した直後に sort.Ints で昇順にソートして利用するため順序の影響を受けない。
 ContractRummy.go	findRunCandidates	byVal	independent	マップから集めた値のスライスを直後に sort.Ints で昇順ソートしてから使用するため順序に影響されない。
 ContractRummy.go	scoreContractProgress	byRank	independent	ランクごとのセット数を計算して単純に合計しているため加算順序によらず結果は同じ。 / 条件を満たすペアの数を数え上げているだけであり走査順に依存しない。
-ContractRummy.go	scoreContractProgress	byRank #2	unreviewed	
+ContractRummy.go	scoreContractProgress	byRank #2	independent	出現数の集計・最大値・存在判定のみで、反復順に依らず同じ結果になる。
 ContractRummy.go	scoreContractProgress	bySuit	independent	各スートで条件を満たすランの数を数え上げているだけであり走査順によらず結果は同じになる。
 CostlyColoursEval.go	CostlyColourCombo	suits	independent	スートごとの枚数の最大値（数値自体）を求めているだけであり、タイがあっても最大値は変わらない。
 CostlyColoursEval.go	CostlyRankCombo	counts	independent	役の枚数（値そのもの）と得点を求めているため、同点の役が複数あっても返される結果は変わらない。
@@ -49,22 +49,22 @@ Estimation.go	*Estimation.UnmarshalJSON	map[string]int{…}	unreviewed
 Estimation_testhelpers.go	*Estimation.SetBidsForTest	bids	independent	各プレイヤーごとの独立した状態を配列のインデックス経由で更新しており、副作用が競合しないため順序に依存しない。
 Faro.go	*Faro.GetBetRanks	f.bets	independent	マップからスライスにキーを集めた直後に sort.Ints で昇順にソートしているため、順序は決定的に定まる。
 Faro.go	*Faro.PlayerClearAll	f.bets	independent	全ベットの返金（加算）と削除を行っており、加算は可換で全削除も順序に依存しない。
-Faro.go	*Faro.UnmarshalJSON	j.Bets	unreviewed	
+Faro.go	*Faro.UnmarshalJSON	j.Bets	independent	どの不正でも同じ errFaroInput を返すため、反復順は結果に現れない。
 Faro.go	*Faro.totalBet	f.bets	independent	全要素のベット額を加算して合計を求めているだけであり、順序によらず合計値は同じになる。
 FiftyOne.go	*FiftyOne.evaluateExchangeAll	scores	independent	スコアの最大値を求めているが、選ばれるのは値そのものだけであり反復順が違っても最大値の結果は変わらない。
 FiftyOnePlayer.go	*FiftyOnePlayer.BestSuitScore	p.SuitScores()	independent	スコアの最大値を求めているが、選ばれるのは値そのものだけであり反復順が違っても最大値の結果は変わらない。
-FiveCardStudCPU.go	*FiveCardStud.evalThirdStreetStrength	freq	unreviewed	
-FiveCardStudCPU.go	*FiveCardStud.evalThirdStreetStrength	freq #2	unreviewed	
+FiveCardStudCPU.go	*FiveCardStud.evalThirdStreetStrength	freq	independent	出現数の集計・最大値・存在判定のみで、反復順に依らず同じ結果になる。
+FiveCardStudCPU.go	*FiveCardStud.evalThirdStreetStrength	freq #2	independent	開始ストリートの手札は2〜3枚で、ペアは高々1つしか存在しないため、どの順でも同じ要素に当たる。
 FiveCardStudCPU.go	*FiveCardStud.evalThirdStreetStrength	suitCnt	independent	条件を満たす要素が存在するかどうかの確認（1回でもあれば加算して終了）であり、真偽値の存在確認と同等のため依存しない。
 FiveCardStudPlayer.go	evalPartialHandFcs	freq	independent	単なる最大値の計算であり、同着の場合でも値自体しか使わないため反復順に依存しない。 / 条件を満たす要素の数え上げを行っているだけであり、順序によらず合計カウントは同じになる。
-FiveCardStudPlayer.go	evalPartialHandFcs	freq #2	unreviewed	
-FiveCardStudPlayer.go	evalPartialHandFcs	freq #3	unreviewed	
-FollowTheQueenCPU.go	*FollowTheQueen.evalThirdStreetStrength	freq	unreviewed	
-FollowTheQueenCPU.go	*FollowTheQueen.evalThirdStreetStrength	freq #2	unreviewed	
+FiveCardStudPlayer.go	evalPartialHandFcs	freq #2	independent	出現数の集計・最大値・存在判定のみで、反復順に依らず同じ結果になる。
+FiveCardStudPlayer.go	evalPartialHandFcs	freq #3	independent	出現数の集計・最大値・存在判定のみで、反復順に依らず同じ結果になる。
+FollowTheQueenCPU.go	*FollowTheQueen.evalThirdStreetStrength	freq	independent	出現数の集計・最大値・存在判定のみで、反復順に依らず同じ結果になる。
+FollowTheQueenCPU.go	*FollowTheQueen.evalThirdStreetStrength	freq #2	independent	開始ストリートの手札は2〜3枚で、ペアは高々1つしか存在しないため、どの順でも同じ要素に当たる。
 FollowTheQueenCPU.go	*FollowTheQueen.evalThirdStreetStrength	suitCnt	independent	条件を満たす要素が存在するかどうかの確認（1回でもあれば加算して終了）であり、真偽値の存在確認と同等のため依存しない。
 FollowTheQueenPlayer.go	followTheQueenEvalPartialHand	freq	independent	単なる最大値の計算であり、同着の場合でも値自体しか使わないため反復順に依存しない。 / 条件を満たす要素の数え上げを行っているだけであり、順序によらず合計カウントは同じになる。
-FollowTheQueenPlayer.go	followTheQueenEvalPartialHand	freq #2	unreviewed	
-FollowTheQueenPlayer.go	followTheQueenEvalPartialHand	freq #3	unreviewed	
+FollowTheQueenPlayer.go	followTheQueenEvalPartialHand	freq #2	independent	出現数の集計・最大値・存在判定のみで、反復順に依らず同じ結果になる。
+FollowTheQueenPlayer.go	followTheQueenEvalPartialHand	freq #3	independent	出現数の集計・最大値・存在判定のみで、反復順に依らず同じ結果になる。
 GoFish.go	*GoFish.GetKnownRanks	asked[i]	independent	マップからスライスにキーを集めた直後に sort.Ints で昇順にソートしているため、順序は決定的に定まる。
 Guandan.go	*Guandan.guandanFindBeating	byRank	independent	マップからスライスにキーを集めた直後に sort.Ints で昇順にソートしているため、順序は決定的に定まる。
 Guandan.go	GuandanEvaluate	counts	independent	ループに入る条件が要素数1以下のため、最大で1要素しか反復されず順序のブレが発生しない構造になっている。
@@ -136,12 +136,12 @@ Sakura.go	*Sakura.GetChoiceIndices	g.GetValidFieldIndices()	independent	条件�
 Samba.go	*Samba.PlayerMeld	allIndices	independent	いったんスライスに集めた後に降順ソートしてから処理に使うため。
 SergeantMajor.go	*SergeantMajor.UnmarshalJSON	map[string]int{…}	unreviewed	
 SevenCardStudCPU.go	*SevenCardStud.evalThirdStreetStrength	freq	independent	3枚の手札でペアは最大でも1つしか存在しないことが構造上保証されており、breakする要素は常に一意であるため。 / 最大値の取得と真偽値のフラグ設定のみであり、どの要素が先に見つかっても結果は同じであるため。
-SevenCardStudCPU.go	*SevenCardStud.evalThirdStreetStrength	freq #2	unreviewed	
+SevenCardStudCPU.go	*SevenCardStud.evalThirdStreetStrength	freq #2	independent	開始ストリートの手札は2〜3枚で、ペアは高々1つしか存在しないため、どの順でも同じ要素に当たる。
 SevenCardStudCPU.go	*SevenCardStud.evalThirdStreetStrength	suitCnt	independent	3枚の手札でスリーカードになるスートは最大1つしか存在せず、合致する要素が常に一意であるため。
 SevenCardStudCPU.go	*SevenCardStud.evalThirdStreetStrengthRazz	freq	independent	条件を満たすかどうかの真偽値フラグを立てるだけであり、どれが先に見つかっても結果は同じであるため。
 SevenCardStudPlayer.go	evalPartialHand	freq	independent	ペアの数を数え上げるだけであり、反復順に関わらず合計数は一定であるため。 / 頻度の最大値を求めるだけであり、タイの場合でも選ばれる最大値自体は変わらないため。
-SevenCardStudPlayer.go	evalPartialHand	freq #2	unreviewed	
-SevenCardStudPlayer.go	evalPartialHand	freq #3	unreviewed	
+SevenCardStudPlayer.go	evalPartialHand	freq #2	independent	出現数の集計・最大値・存在判定のみで、反復順に依らず同じ結果になる。
+SevenCardStudPlayer.go	evalPartialHand	freq #3	independent	出現数の集計・最大値・存在判定のみで、反復順に依らず同じ結果になる。
 SevenTwentySeven.go	*SevenTwentySeven.settle	shares	unreviewed	
 Shelem.go	*Shelem.UnmarshalJSON	map[string]int{…}	unreviewed	
 ShengJi.go	*ShengJi.countPairsInSuit	counts	independent	各要素の対子の数を合算するだけであり、順序に関わらず合計は一定であるため。
@@ -170,7 +170,7 @@ TichuEval.go	TichuBombIndices	byRank	independent	ボムの判定でカードに�
 TichuEval.go	TichuBombIndices	bySuit	independent	スートごとの判定でフラグを立てるが、各カードのスートは排他的であるため処理順に関わらずマーキング状態は一定であるため。
 TichuEval.go	tichuSortedDistinctRanks	counts	independent	いったんスライスに集めた後に昇順ソートしてから返すため。
 TichuEval.go	tichuTryFullHouse	counts	independent	5枚の手札で3枚組と2枚組はそれぞれ最大1つしか存在しないことが構造上保証されているため。 / フルハウスに使えないランクが含まれているかの存在確認であり、結果は一意であるため。
-TichuEval.go	tichuTryFullHouse	counts #2	unreviewed	
+TichuEval.go	tichuTryFullHouse	counts #2	independent	範囲外のランクが1つでもあれば nil を返す検証のみで、どの要素で気づいても結果は同じ。
 TichuEval.go	tichuTryStairs	counts	independent	ペアに使えないランクが含まれているかの存在確認であり、見つかれば即座に nil を返すため結果は一意である。
 TienLenCPU.go	*TienLen.findFourOfAKinds	tl.cardsByValue(player)	independent	抽出された候補は最終的に一意の強さで安定ソートされ、結果は一定であるため。
 TienLenCPU.go	*TienLen.findPairs	tl.cardsByValue(player)	independent	抽出された候補は最終的に一意の強さで安定ソートされ、同ランクのペア同士は反復内で確定順に生成されるため最終順序は一定であるため。
@@ -207,7 +207,7 @@ four_card_hand_eval.go	fourCardTwoPairSortedValues	freq	independent	ペアのリ
 hand_eval.go	evalFiveCardHand	valueCounts	independent	出現回数の配列に追加された直後に降順ソートされるため反復順に依存しない。
 hand_eval.go	evalRazzHand	valueCounts	independent	出現回数の配列に追加された直後に降順ソートされるため反復順に依存しない。
 hand_eval.go	evalThreeCardHand	valueCounts	independent	3枚の手札で3枚組は最大1つしか存在せず、真偽値の早期リターンであるため結果は変わらない。 / 3枚の手札でワンペアは最大1つしか存在せず、真偽値の早期リターンであるため結果は変わらない。
-hand_eval.go	evalThreeCardHand	valueCounts #2	unreviewed	
+hand_eval.go	evalThreeCardHand	valueCounts #2	independent	出現数の集計・最大値・存在判定のみで、反復順に依らず同じ結果になる。
 hand_eval.go	threeCardPairSortedValues	freq	independent	3枚手札のワンペアにおいて、ペアの値とキッカーの値はそれぞれ構造上1つしか存在しないため。
 kicker.go	ExtractKickers	freq	independent	キッカーのリストに追加された直後に降順ソートされるため反復順に依存しない。
 map_order.go	sortedIntKeys	m	independent	キーを集めてから sort.Ints で並べる
