@@ -506,23 +506,8 @@ func (g *Bauernschnapsen) PlayerPlay(cardIndex int) error {
 	if g.phase != BauernschnapsenPhasePlay {
 		return ErrWrongPhase
 	}
-	if !g.players[g.currentPlayerIdx].GetIsHuman() {
-		return ErrNotHumanTurn
-	}
-
-	player := g.players[g.currentPlayerIdx]
-	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainErrorCode(ErrInvalidCard, "bauernschnapsen.errCardIndexOutOfRange", nil)
-	}
-
-	card := player.GetCard(cardIndex)
-	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
-		return err
-	}
-
-	played := player.RemoveCard(cardIndex)
-	g.playCard(g.currentPlayerIdx, played)
-	return nil
+	seat := g.currentPlayerIdx
+	return trickPlayerPlay(seat, g.players[seat].GamePlayer, cardIndex, "bauernschnapsen.errCardIndexOutOfRange", g.validatePlay, g.playCard)
 }
 
 // PlayerDeclareMarriage 人間プレイヤーがマリアージュ (K+Q 同スート) を宣言し、

@@ -264,23 +264,8 @@ func (g *Trappola) PlayerPlay(cardIndex int) error {
 	if g.phase != TrappolaPhasePlay {
 		return ErrWrongPhase
 	}
-	if !g.players[g.currentPlayerIdx].GetIsHuman() {
-		return ErrNotHumanTurn
-	}
-
-	player := g.players[g.currentPlayerIdx]
-	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainErrorCode(ErrInvalidCard, "trappola.errCardIndexOutOfRange", nil)
-	}
-
-	card := player.GetCard(cardIndex)
-	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
-		return err
-	}
-
-	played := player.RemoveCard(cardIndex)
-	g.playCard(g.currentPlayerIdx, played)
-	return nil
+	seat := g.currentPlayerIdx
+	return trickPlayerPlay(seat, g.players[seat].GamePlayer, cardIndex, "trappola.errCardIndexOutOfRange", g.validatePlay, g.playCard)
 }
 
 // CpuPlay 現在の手番がCPUの場合に1ターン実行
