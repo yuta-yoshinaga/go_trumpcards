@@ -691,7 +691,8 @@ func bestYanivDiscard(cards []*Card) []int {
 		}
 		bySuit[c.GetDesign()] = append(bySuit[c.GetDesign()], i)
 	}
-	for _, idxs := range bySuit {
+	for _, suit := range sortedIntKeys(bySuit) {
+		idxs := bySuit[suit]
 		sort.Slice(idxs, func(a, b int) bool { return cards[idxs[a]].GetValue() < cards[idxs[b]].GetValue() })
 		run := []int{}
 		for k, i := range idxs {
