@@ -932,7 +932,8 @@ func (g *HandAndFoot) cpuFindMelds(player *HandAndFootPlayer, team int) [][]*Car
 	}
 
 	// 新規メルド: 同ランク3枚以上
-	for _, cards := range byRank {
+	for _, rank := range sortedIntKeys(byRank) {
+		cards := byRank[rank]
 		if len(cards) >= 3 {
 			melds = append(melds, cards[:3])
 			if len(cards) > 3 {
