@@ -760,14 +760,14 @@ func (b *Bhabhi) UnmarshalJSON(data []byte) error {
 	if j.FinishedCnt < 0 || j.FinishedCnt > n {
 		return fmt.Errorf("invalid finished count: %d", j.FinishedCnt)
 	}
-	for name, idx := range map[string]int{"current player": j.CurrentIdx, "lead player": j.LeadIdx} {
-		if idx < 0 || idx >= n {
-			return fmt.Errorf("invalid %s: %d", name, idx)
+	for _, f := range []namedInt{{"current player", j.CurrentIdx}, {"lead player", j.LeadIdx}} {
+		if f.value < 0 || f.value >= n {
+			return fmt.Errorf("invalid %s: %d", f.name, f.value)
 		}
 	}
-	for name, idx := range map[string]int{"last pickup": j.LastPickupIdx, "last finished": j.LastFinishedIdx, "bhabhi": j.BhabhiIdx} {
-		if idx < -1 || idx >= n {
-			return fmt.Errorf("invalid %s: %d", name, idx)
+	for _, f := range []namedInt{{"last pickup", j.LastPickupIdx}, {"last finished", j.LastFinishedIdx}, {"bhabhi", j.BhabhiIdx}} {
+		if f.value < -1 || f.value >= n {
+			return fmt.Errorf("invalid %s: %d", f.name, f.value)
 		}
 	}
 	// **敗者が決まっているのは終局後だけ。** 進行中に載っていたら壊れている。

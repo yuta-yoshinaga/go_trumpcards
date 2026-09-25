@@ -998,17 +998,14 @@ func (k *Kaiser) UnmarshalJSON(data []byte) error {
 	if j.Phase < KaiserPhaseBid || j.Phase > KaiserPhaseGameEnd {
 		return fmt.Errorf("bad phase: %d", j.Phase)
 	}
-	for name, v := range map[string]int{"dealer": j.DealerIdx, "current": j.CurrentIdx, "bid": j.BidIdx} {
-		if v < 0 || v >= KaiserPlayerCnt {
-			return fmt.Errorf("bad %s index: %d", name, v)
+	for _, f := range []namedInt{{"dealer", j.DealerIdx}, {"current", j.CurrentIdx}, {"bid", j.BidIdx}} {
+		if f.value < 0 || f.value >= KaiserPlayerCnt {
+			return fmt.Errorf("bad %s index: %d", f.name, f.value)
 		}
 	}
-	for name, v := range map[string]int{
-		"declarer": j.DeclarerIdx, "trick leader": j.TrickLeader,
-		"heart five": j.HeartFiveBy, "spade three": j.SpadeThreeBy,
-	} {
-		if v < -1 || v >= KaiserPlayerCnt {
-			return fmt.Errorf("bad %s index: %d", name, v)
+	for _, f := range []namedInt{{"declarer", j.DeclarerIdx}, {"trick leader", j.TrickLeader}, {"heart five", j.HeartFiveBy}, {"spade three", j.SpadeThreeBy}} {
+		if f.value < -1 || f.value >= KaiserPlayerCnt {
+			return fmt.Errorf("bad %s index: %d", f.name, f.value)
 		}
 	}
 	if j.WinnerTeam < -1 || j.WinnerTeam >= KaiserTeamCnt {

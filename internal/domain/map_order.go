@@ -11,3 +11,9 @@ func sortedIntKeys[V any](m map[int]V) []int {
 	sort.Ints(keys)
 	return keys
 }
+
+// namedInt は検証エラーに載せる名前と値の組。map リテラルと違い宣言順に反復できる (#8069)。
+type namedInt struct {
+	name  string
+	value int
+}

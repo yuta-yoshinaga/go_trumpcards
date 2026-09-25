@@ -876,13 +876,9 @@ func (s *SergeantMajor) UnmarshalJSON(data []byte) error {
 	if len(j.ActionLog) > sergeantMajorMaxSliceLen {
 		return errors.New("sergeantmajor: input array exceeds maximum allowed size")
 	}
-	for name, idx := range map[string]int{
-		"current player": j.CurrentPlayerIdx,
-		"lead player":    j.LeadPlayerIdx,
-		"dealer":         j.DealerIdx,
-	} {
-		if idx < 0 || idx >= SergeantMajorPlayerCnt {
-			return fmt.Errorf("invalid %s: %d", name, idx)
+	for _, f := range []namedInt{{"current player", j.CurrentPlayerIdx}, {"lead player", j.LeadPlayerIdx}, {"dealer", j.DealerIdx}} {
+		if f.value < 0 || f.value >= SergeantMajorPlayerCnt {
+			return fmt.Errorf("invalid %s: %d", f.name, f.value)
 		}
 	}
 	if j.WinnerIdx < -1 || j.WinnerIdx >= SergeantMajorPlayerCnt {

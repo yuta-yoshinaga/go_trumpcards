@@ -957,13 +957,9 @@ func (m *Minibridge) UnmarshalJSON(data []byte) error {
 	if j.Phase < MinibridgePhaseContract || j.Phase > MinibridgePhaseGameEnd {
 		return fmt.Errorf("invalid phase: %d", j.Phase)
 	}
-	for name, idx := range map[string]int{
-		"current player": j.CurrentPlayerIdx,
-		"lead player":    j.LeadPlayerIdx,
-		"dealer":         j.DealerIdx,
-	} {
-		if idx < 0 || idx >= MinibridgePlayerCnt {
-			return fmt.Errorf("invalid %s: %d", name, idx)
+	for _, f := range []namedInt{{"current player", j.CurrentPlayerIdx}, {"lead player", j.LeadPlayerIdx}, {"dealer", j.DealerIdx}} {
+		if f.value < 0 || f.value >= MinibridgePlayerCnt {
+			return fmt.Errorf("invalid %s: %d", f.name, f.value)
 		}
 	}
 	// **落札者とダミーは対で決まる。** 片方だけ立っている状態は無い。

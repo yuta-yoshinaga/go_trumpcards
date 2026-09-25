@@ -757,21 +757,14 @@ func (h *Hokm) UnmarshalJSON(data []byte) error {
 	if len(j.CurrentTrick) > HokmPlayerCnt {
 		return fmt.Errorf("current trick holds %d cards", len(j.CurrentTrick))
 	}
-	for name, idx := range map[string]int{
-		"current player": j.CurrentPlayerIdx,
-		"lead player":    j.LeadPlayerIdx,
-		"hakem":          j.HakemIdx,
-	} {
-		if idx < 0 || idx >= HokmPlayerCnt {
-			return fmt.Errorf("invalid %s: %d", name, idx)
+	for _, f := range []namedInt{{"current player", j.CurrentPlayerIdx}, {"lead player", j.LeadPlayerIdx}, {"hakem", j.HakemIdx}} {
+		if f.value < 0 || f.value >= HokmPlayerCnt {
+			return fmt.Errorf("invalid %s: %d", f.name, f.value)
 		}
 	}
-	for name, team := range map[string]int{
-		"winner team":      j.WinnerTeam,
-		"last hand winner": j.LastHandWinner,
-	} {
-		if team < -1 || team >= HokmTeamCnt {
-			return fmt.Errorf("invalid %s: %d", name, team)
+	for _, f := range []namedInt{{"winner team", j.WinnerTeam}, {"last hand winner", j.LastHandWinner}} {
+		if f.value < -1 || f.value >= HokmTeamCnt {
+			return fmt.Errorf("invalid %s: %d", f.name, f.value)
 		}
 	}
 	if j.TrumpCards != nil {

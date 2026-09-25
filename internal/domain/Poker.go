@@ -888,7 +888,8 @@ func (p *Poker) cpuDecideExchange(idx int) []int {
 			valueCounts[v] = append(valueCounts[v], i)
 		}
 		indices := []int{}
-		for _, idxList := range valueCounts {
+		for _, value := range sortedIntKeys(valueCounts) {
+			idxList := valueCounts[value]
 			if len(idxList) == 1 {
 				indices = append(indices, idxList[0])
 			}
@@ -946,7 +947,8 @@ func (p *Poker) cpuDecideExchangeLowball(idx int) []int {
 	}
 	pairDiscards := []int{}
 	isPairCard := make(map[int]bool)
-	for _, idxList := range valueCounts {
+	for _, value := range sortedIntKeys(valueCounts) {
+		idxList := valueCounts[value]
 		if len(idxList) >= 2 {
 			for _, ci := range idxList {
 				isPairCard[ci] = true

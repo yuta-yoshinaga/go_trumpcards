@@ -119,7 +119,8 @@ func (p *MemoryPlayer) FindAnyKnownPair() (int, int, bool) {
 	for _, entry := range p.cardMemories {
 		rankToPositions[entry.rank] = append(rankToPositions[entry.rank], entry.position)
 	}
-	for _, positions := range rankToPositions {
+	for _, rank := range sortedIntKeys(rankToPositions) {
+		positions := rankToPositions[rank]
 		if len(positions) >= 2 {
 			return positions[0], positions[1], true
 		}

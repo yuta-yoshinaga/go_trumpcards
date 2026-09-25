@@ -1255,14 +1255,14 @@ func (g *TappTarock) UnmarshalJSON(data []byte) error {
 	if j.TrickNumber < 0 || j.TrickNumber > TappTarockTrickCount {
 		return fmt.Errorf("tapptarock: trick %d out of range", j.TrickNumber)
 	}
-	for name, idx := range map[string]int{"current player": j.CurrentPlayer, "bid player": j.BidPlayerIdx, "dealer": j.DealerIdx} {
-		if idx < 0 || idx >= TappTarockPlayerCnt {
-			return fmt.Errorf("tapptarock: %s out of range", name)
+	for _, f := range []namedInt{{"current player", j.CurrentPlayer}, {"bid player", j.BidPlayerIdx}, {"dealer", j.DealerIdx}} {
+		if f.value < 0 || f.value >= TappTarockPlayerCnt {
+			return fmt.Errorf("tapptarock: %s out of range", f.name)
 		}
 	}
-	for name, idx := range map[string]int{"declarer": j.DeclarerIdx, "winner": j.WinnerPlayer, "highest bidder": j.HighestBidder} {
-		if idx < -1 || idx >= TappTarockPlayerCnt {
-			return fmt.Errorf("tapptarock: %s out of range", name)
+	for _, f := range []namedInt{{"declarer", j.DeclarerIdx}, {"winner", j.WinnerPlayer}, {"highest bidder", j.HighestBidder}} {
+		if f.value < -1 || f.value >= TappTarockPlayerCnt {
+			return fmt.Errorf("tapptarock: %s out of range", f.name)
 		}
 	}
 	if err := tapptarockValidateContract(&j); err != nil {

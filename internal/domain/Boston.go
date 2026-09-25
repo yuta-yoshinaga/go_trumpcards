@@ -828,17 +828,14 @@ func (b *Boston) UnmarshalJSON(data []byte) error {
 	if j.Phase < BostonPhaseBid || j.Phase > BostonPhaseGameEnd {
 		return fmt.Errorf("bad phase: %d", j.Phase)
 	}
-	for name, v := range map[string]int{"dealer": j.DealerIdx, "current": j.CurrentIdx, "bid": j.BidIdx} {
-		if v < 0 || v >= BostonPlayerCnt {
-			return fmt.Errorf("bad %s index: %d", name, v)
+	for _, f := range []namedInt{{"dealer", j.DealerIdx}, {"current", j.CurrentIdx}, {"bid", j.BidIdx}} {
+		if f.value < 0 || f.value >= BostonPlayerCnt {
+			return fmt.Errorf("bad %s index: %d", f.name, f.value)
 		}
 	}
-	for name, v := range map[string]int{
-		"declarer": j.DeclarerIdx, "partner": j.PartnerIdx,
-		"trick leader": j.TrickLeader, "winner": j.WinnerIdx,
-	} {
-		if v < -1 || v >= BostonPlayerCnt {
-			return fmt.Errorf("bad %s index: %d", name, v)
+	for _, f := range []namedInt{{"declarer", j.DeclarerIdx}, {"partner", j.PartnerIdx}, {"trick leader", j.TrickLeader}, {"winner", j.WinnerIdx}} {
+		if f.value < -1 || f.value >= BostonPlayerCnt {
+			return fmt.Errorf("bad %s index: %d", f.name, f.value)
 		}
 	}
 	if j.TrumpSuit != 0 && (j.TrumpSuit < CardDesignSpade || j.TrumpSuit > CardDesignDiamond) {
