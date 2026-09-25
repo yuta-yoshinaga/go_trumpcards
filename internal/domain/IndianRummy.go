@@ -53,10 +53,6 @@ const IndianRummySeqMin = 3
 // IndianRummySetMin セットの最小枚数
 const IndianRummySetMin = 3
 
-// indianRummySearchCap は宣言/デッドウッド探索の最大反復回数。病的な手札での
-// 指数的爆発を防ぐための保険（実手札では到達しない）。
-const indianRummySearchCap = 2000000
-
 // IndianRummyPhase ゲームフェーズ
 type IndianRummyPhase int
 
@@ -799,263 +795,20 @@ func IndianRummyCardPoints(card *Card, wildRank int) int {
 	return indianRummyCardPoints(card, wildRank)
 }
 
-// --- Meld generation (joker-aware) ---
-
-// indianRummyMeld は候補メルド。idx は cards スライス内のインデックス集合。
-type indianRummyMeld struct {
-	idx  []int
-	seq  bool // シーケンス（ラン）か
-	pure bool // ピュアシーケンス（ワイルド未使用）か
-}
-
-// indianRummyGenerateMelds cards から有効なセット／シーケンス候補を全列挙する。
-func indianRummyGenerateMelds(cards []*Card, wildRank int) []indianRummyMeld {
-	wildIdxs := make([]int, 0)
-	for i, c := range cards {
-		if indianRummyIsWild(c, wildRank) {
-			wildIdxs = append(wildIdxs, i)
-		}
-	}
-	melds := indianRummyGenerateSets(cards, wildRank, wildIdxs)
-	melds = append(melds, indianRummyGenerateRuns(cards, wildRank, wildIdxs)...)
-	return melds
-}
-
-// indianRummyDistinctSuitCombos idxs から k 枚を、全てスートが異なるように選ぶ組み合わせを返す。
-func indianRummyDistinctSuitCombos(idxs []int, cards []*Card, k int) [][]int {
-	bySuit := make(map[int][]int)
-	order := make([]int, 0)
-	for _, i := range idxs {
-		s := cards[i].GetDesign()
-		if _, ok := bySuit[s]; !ok {
-			order = append(order, s)
-		}
-		bySuit[s] = append(bySuit[s], i)
-	}
-	res := make([][]int, 0)
-	var rec func(pos int, cur []int)
-	rec = func(pos int, cur []int) {
-		if len(cur) == k {
-			res = append(res, append([]int(nil), cur...))
-			return
-		}
-		if pos >= len(order) || len(order)-pos < k-len(cur) {
-			return
-		}
-		// このスートを使わない
-		rec(pos+1, cur)
-		// このスートの 1 枚を使う
-		for _, i := range bySuit[order[pos]] {
-			rec(pos+1, append(cur, i))
-		}
-	}
-	rec(0, nil)
-	return res
-}
-
-// indianRummyGenerateSets セット候補（同ランク別スート 3-4 枚、ワイルド最大 1 枚）を列挙する。
-func indianRummyGenerateSets(cards []*Card, wildRank int, wildIdxs []int) []indianRummyMeld {
-	byRank := make(map[int][]int)
-	for i, c := range cards {
-		if indianRummyIsWild(c, wildRank) {
-			continue
-		}
-		byRank[c.GetValue()] = append(byRank[c.GetValue()], i)
-	}
-	melds := make([]indianRummyMeld, 0)
-	for _, idxs := range byRank {
-		// ピュアセット（ワイルドなし）3 枚・4 枚
-		for _, k := range []int{3, 4} {
-			for _, combo := range indianRummyDistinctSuitCombos(idxs, cards, k) {
-				melds = append(melds, indianRummyMeld{idx: combo, seq: false, pure: false})
-			}
-		}
-		// ワイルド 1 枚を含むセット（合計 3 枚・4 枚）
-		for _, total := range []int{3, 4} {
-			naturals := total - 1
-			for _, combo := range indianRummyDistinctSuitCombos(idxs, cards, naturals) {
-				for _, w := range wildIdxs {
-					m := append(append([]int(nil), combo...), w)
-					melds = append(melds, indianRummyMeld{idx: m, seq: false, pure: false})
-				}
-			}
-		}
-	}
-	return melds
-}
-
-// indianRummyGenerateRuns シーケンス候補（同スート連続 3+ 枚、ワイルド最大 1 枚）を列挙する。
-// Ace は low(A-2-3) / high(Q-K-A) の双方を許容する。
-func indianRummyGenerateRuns(cards []*Card, wildRank int, wildIdxs []int) []indianRummyMeld {
-	bySuit := make(map[int]map[int][]int)
-	for i, c := range cards {
-		if indianRummyIsWild(c, wildRank) {
-			continue
-		}
-		s := c.GetDesign()
-		if bySuit[s] == nil {
-			bySuit[s] = make(map[int][]int)
-		}
-		v := c.GetValue()
-		bySuit[s][v] = append(bySuit[s][v], i)
-	}
-	melds := make([]indianRummyMeld, 0)
-	for _, byVal := range bySuit {
-		for start := 1; start <= 13; start++ {
-			for length := IndianRummySeqMin; start+length-1 <= 14; length++ {
-				m, ok := indianRummyBuildRunWindow(byVal, start, length, wildIdxs)
-				if ok {
-					melds = append(melds, m...)
-				}
-			}
-		}
-	}
-	return melds
-}
-
-// indianRummyBuildRunWindow 単一スートの value→idxs から窓 [start, start+length-1] のラン候補を作る。
-func indianRummyBuildRunWindow(byVal map[int][]int, start, length int, wildIdxs []int) ([]indianRummyMeld, bool) {
-	present := make([][]int, 0, length)
-	missing := 0
-	seen := make(map[int]bool)
-	for v := start; v < start+length; v++ {
-		lv := v
-		if lv == 14 {
-			lv = 1 // Ace-high
-		}
-		if seen[lv] {
-			return nil, false // 同じランクを二度参照する窓（ラップアラウンド）は不可
-		}
-		seen[lv] = true
-		opts := byVal[lv]
-		if len(opts) == 0 {
-			missing++
-			present = append(present, nil)
-		} else {
-			present = append(present, opts)
-		}
-	}
-	switch {
-	case missing == 0:
-		combos := indianRummyCartesian(present)
-		out := make([]indianRummyMeld, 0, len(combos))
-		for _, combo := range combos {
-			out = append(out, indianRummyMeld{idx: combo, seq: true, pure: true})
-		}
-		return out, true
-	case missing == 1 && len(wildIdxs) > 0:
-		base := make([][]int, 0, length-1)
-		for _, opts := range present {
-			if len(opts) > 0 {
-				base = append(base, opts)
-			}
-		}
-		combos := indianRummyCartesian(base)
-		out := make([]indianRummyMeld, 0, len(combos)*len(wildIdxs))
-		for _, combo := range combos {
-			for _, w := range wildIdxs {
-				m := append(append([]int(nil), combo...), w)
-				out = append(out, indianRummyMeld{idx: m, seq: true, pure: false})
-			}
-		}
-		return out, true
-	default:
-		return nil, false
-	}
-}
-
-// indianRummyCartesian 各値の候補インデックスから 1 つずつ選ぶ直積を返す（爆発防止に上限あり）。
-func indianRummyCartesian(lists [][]int) [][]int {
-	const maxCartesian = 256
-	res := [][]int{{}}
-	for _, opts := range lists {
-		if len(opts) == 0 {
-			continue
-		}
-		next := make([][]int, 0, len(res)*len(opts))
-		for _, prefix := range res {
-			for _, o := range opts {
-				next = append(next, append(append([]int(nil), prefix...), o))
-			}
-		}
-		if len(next) > maxCartesian {
-			next = next[:maxCartesian]
-		}
-		res = next
-	}
-	return res
-}
-
-// --- Declaration / deadwood search ---
-
-// indianRummyCovering 各カードインデックスを覆うメルドのインデックス一覧を返す。
-func indianRummyCovering(n int, melds []indianRummyMeld) [][]int {
-	covering := make([][]int, n)
-	for mi, m := range melds {
-		for _, ci := range m.idx {
-			covering[ci] = append(covering[ci], mi)
-		}
-	}
-	return covering
-}
-
-// IndianRummyValidateDeclaration cards（13 枚）が有効宣言か。
-// 全カードがメルドに収まり、シーケンスが 2 つ以上・うち 1 つ以上がピュアであれば true。
+// IndianRummyValidateDeclaration は全カード被覆とシーケンス条件を検証する。
 func IndianRummyValidateDeclaration(cards []*Card, wildRank int) bool {
-	n := len(cards)
-	if n != IndianRummyHandSize {
+	if len(cards) != IndianRummyHandSize {
 		return false
 	}
-	melds := indianRummyGenerateMelds(cards, wildRank)
-	covering := indianRummyCovering(n, melds)
-	decided := make([]bool, n)
-	iter := 0
-
-	var dfs func(seq, pure int) bool
-	dfs = func(seq, pure int) bool {
-		iter++
-		if iter > indianRummySearchCap {
-			return false
-		}
-		i := indianRummyFirstUndecided(decided)
-		if i == -1 {
-			return seq >= 2 && pure >= 1
-		}
-		for _, mi := range covering[i] {
-			m := melds[mi]
-			if !indianRummyAllUndecided(decided, m.idx) {
-				continue
-			}
-			indianRummySetDecided(decided, m.idx, true)
-			si, pi := 0, 0
-			if m.seq {
-				si = 1
-				if m.pure {
-					pi = 1
-				}
-			}
-			if dfs(seq+si, pure+pi) {
-				return true
-			}
-			indianRummySetDecided(decided, m.idx, false)
-		}
-		return false
-	}
-	return dfs(0, 0)
+	return rummyValidate(cards, indianRummyRules(wildRank), func(seq, pure int) bool { return seq >= 2 && pure >= 1 })
 }
 
-// IndianRummyHasPureSequence cards にピュアシーケンス（ワイルド未使用の同スート連続 3+ 枚）が存在するか。
+// IndianRummyHasPureSequence はピュアシーケンスの有無を返す。
 func IndianRummyHasPureSequence(cards []*Card, wildRank int) bool {
-	for _, m := range indianRummyGenerateMelds(cards, wildRank) {
-		if m.seq && m.pure {
-			return true
-		}
-	}
-	return false
+	return rummyHasPureSequence(cards, indianRummyRules(wildRank))
 }
 
-// IndianRummyDeadwoodScore デッドウッド採点値を返す。
-// ピュアシーケンスが無ければ 80（フルキャップ）。あれば最小デッドウッド点を 80 で頭打ちにする。
+// IndianRummyDeadwoodScore はデッドウッド採点値を返す。
 func IndianRummyDeadwoodScore(cards []*Card, wildRank int) int {
 	if !IndianRummyHasPureSequence(cards, wildRank) {
 		return IndianRummyDeadwoodCap
@@ -1066,82 +819,12 @@ func IndianRummyDeadwoodScore(cards []*Card, wildRank int) int {
 	}
 	return dw
 }
-
-// indianRummyMinDeadwood cards を互いに素なメルドで覆ったときの最小デッドウッド点を返す。
 func indianRummyMinDeadwood(cards []*Card, wildRank int) int {
-	n := len(cards)
-	if n == 0 {
-		return 0
-	}
-	melds := indianRummyGenerateMelds(cards, wildRank)
-	covering := indianRummyCovering(n, melds)
-	points := make([]int, n)
-	for i, c := range cards {
-		points[i] = indianRummyCardPoints(c, wildRank)
-	}
-	decided := make([]bool, n)
-	iter := 0
-
-	var dfs func() int
-	dfs = func() int {
-		iter++
-		if iter > indianRummySearchCap {
-			s := 0
-			for k := 0; k < n; k++ {
-				if !decided[k] {
-					s += points[k]
-				}
-			}
-			return s
-		}
-		i := indianRummyFirstUndecided(decided)
-		if i == -1 {
-			return 0
-		}
-		// 選択肢 A: カード i をデッドウッドにする
-		decided[i] = true
-		best := points[i] + dfs()
-		decided[i] = false
-		// 選択肢 B: i を覆うメルドを使う
-		for _, mi := range covering[i] {
-			m := melds[mi]
-			if !indianRummyAllUndecided(decided, m.idx) {
-				continue
-			}
-			indianRummySetDecided(decided, m.idx, true)
-			c := dfs()
-			indianRummySetDecided(decided, m.idx, false)
-			if c < best {
-				best = c
-			}
-		}
-		return best
-	}
-	return dfs()
+	v, _ := rummyMinDeadwood(cards, indianRummyRules(wildRank))
+	return v
 }
-
-func indianRummyFirstUndecided(decided []bool) int {
-	for i := 0; i < len(decided); i++ {
-		if !decided[i] {
-			return i
-		}
-	}
-	return -1
-}
-
-func indianRummyAllUndecided(decided []bool, idx []int) bool {
-	for _, ci := range idx {
-		if decided[ci] {
-			return false
-		}
-	}
-	return true
-}
-
-func indianRummySetDecided(decided []bool, idx []int, v bool) {
-	for _, ci := range idx {
-		decided[ci] = v
-	}
+func indianRummyRules(wildRank int) rummyMeldRules {
+	return rummyMeldRules{isWild: func(c *Card) bool { return indianRummyIsWild(c, wildRank) }, points: func(c *Card) int { return indianRummyCardPoints(c, wildRank) }}
 }
 
 // --- JSON ---

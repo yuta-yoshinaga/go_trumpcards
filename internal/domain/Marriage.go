@@ -873,55 +873,12 @@ func MarriageValidateDeclaration(cards []*Card, wildRank int) bool {
 	if len(cards) != MarriageHandSize {
 		return false
 	}
-	m, ok := newMarriageTypeModel(cards, wildRank)
-	if !ok {
-		return false
-	}
-	memo := newMarriageMemo()
-	var dfs func(uint64) int
-	dfs = func(key uint64) int {
-		i := m.first(key)
-		if i < 0 {
-			if key>>(2*len(m.types)) == 0 {
-				return 0
-			}
-			return -1
-		}
-		if v, ok := memo.get(key); ok {
-			return int(v)
-		}
-		best := -1
-		for _, mi := range m.byType[i] {
-			x := m.melds[mi]
-			if ((key|key>>1)&m.lowMask)&x.need != x.need || uint8(key>>(2*len(m.types))) < x.wild {
-				continue
-			}
-			v := dfs(key - x.delta)
-			if v >= 0 && x.seq && x.pure {
-				v++
-			}
-			if v > best {
-				best = v
-			}
-		}
-		memo.put(key, int16(best))
-		return best
-	}
-	return dfs(m.initial()) >= 3
+	return rummyValidate(cards, marriageRummyRules(wildRank), func(seq, pure int) bool { return pure >= 3 })
 }
 
 // MarriageHasPureSequence cards にピュアシーケンス（ワイルド未使用の同スート連続 3+ 枚）が存在するか。
 func MarriageHasPureSequence(cards []*Card, wildRank int) bool {
-	m, ok := newMarriageTypeModel(cards, wildRank)
-	if !ok {
-		return false
-	}
-	for _, x := range m.melds {
-		if x.seq && x.pure {
-			return true
-		}
-	}
-	return false
+	return rummyHasPureSequence(cards, marriageRummyRules(wildRank))
 }
 
 // MarriageHasPureSequences reports whether cards contain n mutually disjoint
@@ -930,11 +887,11 @@ func MarriageHasPureSequences(cards []*Card, wildRank, n int) bool {
 	if n <= 0 {
 		return true
 	}
-	m, ok := newMarriageTypeModel(cards, wildRank)
+	m, ok := newRummyTypeModel(cards, marriageRummyRules(wildRank))
 	if !ok {
 		return false
 	}
-	memo := newMarriageMemo()
+	memo := newRummyMemo()
 	var dfs func(uint64, int) bool
 	dfs = func(key uint64, left int) bool {
 		if left == 0 {
@@ -986,41 +943,11 @@ func marriageMinDeadwood(cards []*Card, wildRank int) int {
 }
 
 func marriageMinDeadwoodMemo(cards []*Card, wildRank int) (int, int) {
-	if len(cards) == 0 {
-		return 0, 0
-	}
-	m, ok := newMarriageTypeModel(cards, wildRank)
-	if !ok {
-		sum := 0
-		for _, c := range cards {
-			sum += marriageCardPoints(c, wildRank)
-		}
-		return sum, 0
-	}
-	memo := newMarriageMemo()
-	var dfs func(uint64) int
-	dfs = func(key uint64) int {
-		i := m.first(key)
-		if i < 0 {
-			return 0
-		}
-		if v, ok := memo.get(key); ok {
-			return int(v)
-		}
-		best := m.points[i] + dfs(key-(uint64(1)<<(2*i)))
-		for _, mi := range m.byType[i] {
-			x := m.melds[mi]
-			if ((key|key>>1)&m.lowMask)&x.need == x.need && uint8(key>>(2*len(m.types))) >= x.wild {
-				if v := dfs(key - x.delta); v < best {
-					best = v
-				}
-			}
-		}
-		memo.put(key, int16(best))
-		return best
-	}
-	v := dfs(m.initial())
-	return v, memo.size
+	return rummyMinDeadwood(cards, marriageRummyRules(wildRank))
+}
+
+func marriageRummyRules(wildRank int) rummyMeldRules {
+	return rummyMeldRules{isWild: func(c *Card) bool { return marriageIsWild(c, wildRank) }, points: func(c *Card) int { return marriageCardPoints(c, wildRank) }}
 }
 
 // --- JSON ---
