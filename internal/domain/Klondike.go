@@ -27,12 +27,6 @@ const KlondikeTableauCnt = 7
 // KlondikeFoundationCnt ファンデーションの数
 const KlondikeFoundationCnt = 4
 
-// KlondikeTableauCard タブロー上のカード
-type KlondikeTableauCard struct {
-	Card   *Card `json:"c"`
-	FaceUp bool  `json:"f"`
-}
-
 // KlondikeHint ヒント
 type KlondikeHint struct {
 	FromZone  string // "waste" or "tableau"
