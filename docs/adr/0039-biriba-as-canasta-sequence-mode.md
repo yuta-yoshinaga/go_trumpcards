@@ -19,8 +19,10 @@ Samba と Bolivia は独立したドメイン型で、同一の純粋ロジッ�
 検討した選択肢は次のとおりである。
 
 1. Canasta を複製して独立ドメインにする。1670 行規模の複製になり、さらに
-   `Burraco.go` が説明する TinyGo の `json.Marshaler` / `json.Unmarshaler` 保持問題により、
-   全 Worker が不要な直列化コードを抱えるため却下した。
+   当時は TinyGo の `json.Marshaler` / `json.Unmarshaler` 保持問題により、
+   全 Worker が不要な直列化コードを抱える懸念があったため却下した（当時の懸念。
+   現在は Worker ごとのビルドタグで domain が分かれているため、この点は当てはまらない。
+   1,670 行規模の複製になることが主な理由）。
 2. Burraco と同じくエイリアスと Pozzetto だけを追加する。セット制のままでは Biriba が
    Burraco のほぼ別名となり、issue #7093 の「単なる別名ではない」という要件を満たさないため却下した。
 3. Canasta に `UseBiriba` でシーケンス制メルドを追加し、Biriba はエイリアスで公開する。

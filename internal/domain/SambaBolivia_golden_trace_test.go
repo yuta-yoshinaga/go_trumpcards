@@ -157,9 +157,6 @@ func TestSambaBoliviaGoldenTrace(t *testing.T) {
 					}
 					steps++
 				}
-				if deal.Stop != "" {
-					continue
-				}
 			}
 			if steps == 0 {
 				t.Fatal("golden trace contains no replayed steps")
