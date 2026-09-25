@@ -2,7 +2,7 @@
 
 package domain
 
-// KlondikeTableauCard is a face-up or face-down card in a Klondike-family tableau.
+// KlondikeTableauCard タブロー上のカード。Yukon 系ゲームでも共有する。
 type KlondikeTableauCard struct {
 	Card   *Card `json:"c"`
 	FaceUp bool  `json:"f"`

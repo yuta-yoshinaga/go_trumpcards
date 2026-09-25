@@ -23,10 +23,6 @@ func familyYukon(tableau [YukonTableauCnt][]*KlondikeTableauCard, foundation [Yu
 	return y
 }
 
-func familyRussianCard(suit, rank int, faceUp bool) *KlondikeTableauCard {
-	return &KlondikeTableauCard{Card: NewCard(suit, rank, false), FaceUp: faceUp}
-}
-
 func familyRussian(tableau [RussianSolitaireTableauCnt][]*KlondikeTableauCard, foundation [RussianSolitaireFoundationCnt][]*Card) *RussianSolitaire {
 	r := NewRussianSolitaire(&TrumpCards{})
 	r.phase = RussianSolitairePhasePlaying
@@ -53,15 +49,15 @@ func TestRussianSolitaireFamilyCharacterization(t *testing.T) {
 	}{
 		{"multi_card_tableau_move", func() *RussianSolitaire {
 			var tab [RussianSolitaireTableauCnt][]*KlondikeTableauCard
-			tab[0] = []*KlondikeTableauCard{familyRussianCard(CardDesignSpade, 5, true), familyRussianCard(CardDesignHeart, 10, true), familyRussianCard(CardDesignClover, 2, true)}
-			tab[1] = []*KlondikeTableauCard{familyRussianCard(CardDesignSpade, 6, true)}
+			tab[0] = []*KlondikeTableauCard{familyCard(CardDesignSpade, 5, true), familyCard(CardDesignHeart, 10, true), familyCard(CardDesignClover, 2, true)}
+			tab[1] = []*KlondikeTableauCard{familyCard(CardDesignSpade, 6, true)}
 			return familyRussian(tab, [RussianSolitaireFoundationCnt][]*Card{})
 		}, func(r *RussianSolitaire) error { return r.MoveTableauToTableau(0, 0, 1) }, `{"FromCol":0,"CardIndex":0,"ToZone":"tableau","ToCol":1}`, "", "", 0, 1, true, 0, 1, true, false},
 		{"tableau_to_foundation", func() *RussianSolitaire {
 			var tab [RussianSolitaireTableauCnt][]*KlondikeTableauCard
 			var fd [RussianSolitaireFoundationCnt][]*Card
 			fd[0] = []*Card{NewCard(CardDesignSpade, 1, false)}
-			tab[0] = []*KlondikeTableauCard{familyRussianCard(CardDesignSpade, 2, true)}
+			tab[0] = []*KlondikeTableauCard{familyCard(CardDesignSpade, 2, true)}
 			return familyRussian(tab, fd)
 		}, func(r *RussianSolitaire) error { return r.MoveTableauToFoundation(0) }, `{"FromCol":0,"CardIndex":0,"ToZone":"foundation","ToCol":0}`, "", "", 0, 1, true, 0, 1, true, false},
 		{"autocomplete_several", func() *RussianSolitaire {
@@ -71,14 +67,14 @@ func TestRussianSolitaireFamilyCharacterization(t *testing.T) {
 				for rank := 1; rank <= 10; rank++ {
 					fd[suit-1] = append(fd[suit-1], NewCard(suit, rank, false))
 				}
-				tab[suit-1] = []*KlondikeTableauCard{familyRussianCard(suit, 13, true), familyRussianCard(suit, 12, true), familyRussianCard(suit, 11, true)}
+				tab[suit-1] = []*KlondikeTableauCard{familyCard(suit, 13, true), familyCard(suit, 12, true), familyCard(suit, 11, true)}
 			}
 			return familyRussian(tab, fd)
 		}, func(r *RussianSolitaire) error { return r.AutoComplete() }, `{"FromCol":0,"CardIndex":2,"ToZone":"foundation","ToCol":0}`, "", "game is not in playing phase", 1, 12, false, 1, 12, false, true},
 		{"stalemate", func() *RussianSolitaire {
 			var tab [RussianSolitaireTableauCnt][]*KlondikeTableauCard
-			tab[0] = []*KlondikeTableauCard{familyRussianCard(CardDesignSpade, 5, true)}
-			tab[1] = []*KlondikeTableauCard{familyRussianCard(CardDesignSpade, 6, true)}
+			tab[0] = []*KlondikeTableauCard{familyCard(CardDesignSpade, 5, true)}
+			tab[1] = []*KlondikeTableauCard{familyCard(CardDesignSpade, 6, true)}
 			return familyRussian(tab, [RussianSolitaireFoundationCnt][]*Card{})
 		}, func(r *RussianSolitaire) error { return r.MoveTableauToTableau(0, 0, 1) }, `{"FromCol":0,"CardIndex":0,"ToZone":"tableau","ToCol":1}`, "", "", 0, 1, true, 0, 1, true, false},
 		{"one_move_clear", func() *RussianSolitaire {
@@ -93,7 +89,7 @@ func TestRussianSolitaireFamilyCharacterization(t *testing.T) {
 					fd[suit-1] = append(fd[suit-1], NewCard(suit, rank, false))
 				}
 			}
-			tab[0] = []*KlondikeTableauCard{familyRussianCard(CardDesignSpade, 13, true)}
+			tab[0] = []*KlondikeTableauCard{familyCard(CardDesignSpade, 13, true)}
 			return familyRussian(tab, fd)
 		}, func(r *RussianSolitaire) error { return r.MoveTableauToFoundation(0) }, `{"FromCol":0,"CardIndex":0,"ToZone":"foundation","ToCol":0}`, "", "game is not in playing phase", 1, 1, false, 1, 1, false, true},
 	}
