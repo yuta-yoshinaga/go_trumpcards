@@ -119,29 +119,11 @@ func (bc *Somerset) MoveTableauToTableau(fromCol, cardIndex, toCol int) error {
 	if bc.phase != SomersetPhasePlaying {
 		return errors.New("game is not in playing phase")
 	}
-	if fromCol < 0 || fromCol >= SomersetTableauCnt {
-		return errors.New("invalid from column")
-	}
-	if toCol < 0 || toCol >= SomersetTableauCnt {
-		return errors.New("invalid to column")
-	}
-	if fromCol == toCol {
-		return errors.New("from and to columns are the same")
+	tc, cardIndex, err := columnValidateTableauMove(bc.tableau[:], fromCol, cardIndex, toCol, bc.canPlaceOnTableau)
+	if err != nil {
+		return err
 	}
 	fromCards := bc.tableau[fromCol]
-	if cardIndex == -1 {
-		cardIndex = len(fromCards) - 1
-	}
-	if cardIndex < 0 || cardIndex >= len(fromCards) {
-		return errors.New("invalid card index")
-	}
-	if cardIndex != len(fromCards)-1 {
-		return errors.New("only the top card can be moved")
-	}
-	tc := fromCards[cardIndex]
-	if !bc.canPlaceOnTableau(tc.Card, toCol) {
-		return errors.New("cannot place card on tableau")
-	}
 	bc.takeSnapshot()
 	bc.tableau[toCol] = append(bc.tableau[toCol], tc)
 	bc.tableau[fromCol] = fromCards[:cardIndex]
@@ -156,19 +138,12 @@ func (bc *Somerset) MoveTableauToFoundation(col int) error {
 	if bc.phase != SomersetPhasePlaying {
 		return errors.New("game is not in playing phase")
 	}
-	if col < 0 || col >= SomersetTableauCnt {
-		return errors.New("invalid column")
+	tc, fIdx, err := columnValidateTableauToFoundation(bc.tableau[:], col, bc.findFoundation)
+	if err != nil {
+		return err
 	}
-	fromCards := bc.tableau[col]
-	if len(fromCards) == 0 {
-		return errors.New("tableau column is empty")
-	}
-	tc := fromCards[len(fromCards)-1]
 	card := tc.Card
-	fIdx := bc.findFoundation(card)
-	if fIdx < 0 {
-		return errors.New("cannot place card on foundation")
-	}
+	fromCards := bc.tableau[col]
 	bc.takeSnapshot()
 	bc.tableau[col] = fromCards[:len(fromCards)-1]
 	bc.foundation[fIdx] = append(bc.foundation[fIdx], card)
@@ -198,27 +173,7 @@ func (bc *Somerset) AutoComplete() error {
 		return errors.New("game is not in playing phase")
 	}
 	bc.takeSnapshot()
-	for {
-		moved := false
-		for col := range SomersetTableauCnt {
-			if len(bc.tableau[col]) == 0 {
-				continue
-			}
-			tc := bc.tableau[col][len(bc.tableau[col])-1]
-			card := tc.Card
-			fIdx := bc.findFoundation(card)
-			if fIdx < 0 {
-				continue
-			}
-			bc.tableau[col] = bc.tableau[col][:len(bc.tableau[col])-1]
-			bc.foundation[fIdx] = append(bc.foundation[fIdx], card)
-			bc.moveCount++
-			moved = true
-		}
-		if !moved {
-			break
-		}
-	}
+	bc.moveCount += columnAutoCompleteMoves(bc.tableau[:], bc.foundation[:], bc.findFoundation)
 	bc.appendLog("autocomplete", "somerset.log.autoComplete", nil, nil)
 	bc.checkGameClear()
 	bc.checkStalemate()
@@ -323,11 +278,6 @@ func (bc *Somerset) canPlaceOnTableau(card *Card, col int) bool {
 // same predicate but as a method on its own type, so it cannot be reused.
 func somersetIsBlack(card *Card) bool {
 	return card.GetDesign() == CardDesignSpade || card.GetDesign() == CardDesignClover
-}
-
-// canPlaceOnFoundation ファンデーションにカードを置けるか判定
-func (bc *Somerset) canPlaceOnFoundation(card *Card, fIdx int) bool {
-	return canPlaceOnFoundationPile(bc.foundation[fIdx], card)
 }
 
 // findFoundation カードを置けるファンデーションのインデックスを探す（見つからない場合-1）

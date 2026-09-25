@@ -18,6 +18,75 @@ type ColumnSolitaireHint struct {
 	ToCol     int
 }
 
+func columnValidateTableauMove(tableau [][]*ColumnTableauCard, fromCol, cardIndex, toCol int, canPlace func(*Card, int) bool) (*ColumnTableauCard, int, error) {
+	if fromCol < 0 || fromCol >= len(tableau) {
+		return nil, cardIndex, errors.New("invalid from column")
+	}
+	if toCol < 0 || toCol >= len(tableau) {
+		return nil, cardIndex, errors.New("invalid to column")
+	}
+	if fromCol == toCol {
+		return nil, cardIndex, errors.New("from and to columns are the same")
+	}
+	fromCards := tableau[fromCol]
+	if cardIndex == -1 {
+		cardIndex = len(fromCards) - 1
+	}
+	if cardIndex < 0 || cardIndex >= len(fromCards) {
+		return nil, cardIndex, errors.New("invalid card index")
+	}
+	if cardIndex != len(fromCards)-1 {
+		return nil, cardIndex, errors.New("only the top card can be moved")
+	}
+	tc := fromCards[cardIndex]
+	if !canPlace(tc.Card, toCol) {
+		return nil, cardIndex, errors.New("cannot place card on tableau")
+	}
+	return tc, cardIndex, nil
+}
+
+func columnValidateTableauToFoundation(tableau [][]*ColumnTableauCard, col int, findFoundation func(*Card) int) (*ColumnTableauCard, int, error) {
+	if col < 0 || col >= len(tableau) {
+		return nil, -1, errors.New("invalid column")
+	}
+	fromCards := tableau[col]
+	if len(fromCards) == 0 {
+		return nil, -1, errors.New("tableau column is empty")
+	}
+	tc := fromCards[len(fromCards)-1]
+	fIdx := findFoundation(tc.Card)
+	if fIdx < 0 {
+		return nil, fIdx, errors.New("cannot place card on foundation")
+	}
+	return tc, fIdx, nil
+}
+
+func columnAutoCompleteMoves(tableau [][]*ColumnTableauCard, foundation [][]*Card, findFoundation func(*Card) int) int {
+	moveCount := 0
+	for {
+		moved := false
+		for col := range len(tableau) {
+			if len(tableau[col]) == 0 {
+				continue
+			}
+			tc := tableau[col][len(tableau[col])-1]
+			card := tc.Card
+			fIdx := findFoundation(card)
+			if fIdx < 0 {
+				continue
+			}
+			tableau[col] = tableau[col][:len(tableau[col])-1]
+			foundation[fIdx] = append(foundation[fIdx], card)
+			moveCount++
+			moved = true
+		}
+		if !moved {
+			break
+		}
+	}
+	return moveCount
+}
+
 type columnSolitaireRules struct {
 	canStack func(card *Card, col []*ColumnTableauCard) bool
 }
