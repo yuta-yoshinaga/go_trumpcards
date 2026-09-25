@@ -32,18 +32,10 @@ const CitadelMaxColumnLen = 6
 const CitadelFoundationCnt = 4
 
 // CitadelTableauCard タブロー上のカード
-type CitadelTableauCard struct {
-	Card   *Card `json:"c"`
-	FaceUp bool  `json:"f"`
-}
+type CitadelTableauCard = ColumnTableauCard
 
 // CitadelHint ヒント
-type CitadelHint struct {
-	FromCol   int    // タブロー列インデックス
-	CardIndex int    // 列内のカードインデックス
-	ToZone    string // "tableau" or "foundation"
-	ToCol     int    // タブロー列 or ファンデーションのインデックス
-}
+type CitadelHint = ColumnSolitaireHint
 
 // CitadelConfig Citadel ゲーム設定
 type CitadelConfig struct{}
@@ -398,12 +390,7 @@ func (c *Citadel) canPlaceOnFoundation(card *Card, fIdx int) bool {
 
 // findFoundation カードを置けるファンデーションのインデックスを探す（見つからない場合-1）
 func (c *Citadel) findFoundation(card *Card) int {
-	for i := range CitadelFoundationCnt {
-		if c.canPlaceOnFoundation(card, i) {
-			return i
-		}
-	}
-	return -1
+	return columnFindFoundation(c.foundation[:], card)
 }
 
 // checkGameClear ゲームクリア判定

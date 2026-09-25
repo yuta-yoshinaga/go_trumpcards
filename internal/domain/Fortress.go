@@ -34,18 +34,10 @@ const FortressColumnLen = 6
 const FortressFoundationCnt = 4
 
 // FortressTableauCard タブロー上のカード
-type FortressTableauCard struct {
-	Card   *Card `json:"c"`
-	FaceUp bool  `json:"f"`
-}
+type FortressTableauCard = ColumnTableauCard
 
 // FortressHint ヒント
-type FortressHint struct {
-	FromCol   int    // タブロー列インデックス
-	CardIndex int    // 列内のカードインデックス
-	ToZone    string // "tableau" or "foundation"
-	ToCol     int    // タブロー列 or ファンデーションのインデックス
-}
+type FortressHint = ColumnSolitaireHint
 
 // FortressConfig フォートレスのゲーム設定
 type FortressConfig struct{}
@@ -377,12 +369,7 @@ func (bc *Fortress) canPlaceOnFoundation(card *Card, fIdx int) bool {
 
 // findFoundation カードを置けるファンデーションのインデックスを探す（見つからない場合-1）
 func (bc *Fortress) findFoundation(card *Card) int {
-	for i := range FortressFoundationCnt {
-		if bc.canPlaceOnFoundation(card, i) {
-			return i
-		}
-	}
-	return -1
+	return columnFindFoundation(bc.foundation[:], card)
 }
 
 // checkGameClear ゲームクリア判定

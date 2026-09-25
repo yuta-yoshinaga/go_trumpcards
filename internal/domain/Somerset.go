@@ -34,18 +34,10 @@ const SomersetColumnLen = 6
 const SomersetFoundationCnt = 4
 
 // SomersetTableauCard タブロー上のカード
-type SomersetTableauCard struct {
-	Card   *Card `json:"c"`
-	FaceUp bool  `json:"f"`
-}
+type SomersetTableauCard = ColumnTableauCard
 
 // SomersetHint ヒント
-type SomersetHint struct {
-	FromCol   int    // タブロー列インデックス
-	CardIndex int    // 列内のカードインデックス
-	ToZone    string // "tableau" or "foundation"
-	ToCol     int    // タブロー列 or ファンデーションのインデックス
-}
+type SomersetHint = ColumnSolitaireHint
 
 // SomersetConfig サマセットのゲーム設定
 type SomersetConfig struct{}
@@ -380,12 +372,7 @@ func (bc *Somerset) canPlaceOnFoundation(card *Card, fIdx int) bool {
 
 // findFoundation カードを置けるファンデーションのインデックスを探す（見つからない場合-1）
 func (bc *Somerset) findFoundation(card *Card) int {
-	for i := range SomersetFoundationCnt {
-		if bc.canPlaceOnFoundation(card, i) {
-			return i
-		}
-	}
-	return -1
+	return columnFindFoundation(bc.foundation[:], card)
 }
 
 // checkGameClear ゲームクリア判定
