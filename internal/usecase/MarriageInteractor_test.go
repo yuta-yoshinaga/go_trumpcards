@@ -30,8 +30,8 @@ func TestMarriageInteractor_ResetPerformance(t *testing.T) {
 	}
 	elapsed := time.Since(start)
 	t.Logf("200 Marriage resets: total %s, average %s, worst %s", elapsed, elapsed/200, worst)
-	if elapsed > 2*time.Second || worst > 100*time.Millisecond {
-		t.Fatalf("200 Marriage resets took %s (worst %s), limits are total 2s and worst 100ms", elapsed, worst)
+	if elapsed > time.Second || worst > 20*time.Millisecond {
+		t.Fatalf("200 Marriage resets took %s (worst %s), limits are total 1s and worst 20ms", elapsed, worst)
 	}
 }
 

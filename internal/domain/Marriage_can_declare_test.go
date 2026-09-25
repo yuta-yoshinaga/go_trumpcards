@@ -69,8 +69,8 @@ func TestMarriageCanDeclareRejectsUnmeldableHandWithThreePureSequences(t *testin
 		NewCard(CardDesignHeart, 7, false), NewCard(CardDesignHeart, 8, false), NewCard(CardDesignHeart, 9, false),
 		NewCard(CardDesignDiamond, 11, false), NewCard(CardDesignDiamond, 12, false), NewCard(CardDesignDiamond, 13, false),
 	}
-	for i := 0; i < 13; i++ {
-		cards = append(cards, NewCard(CardDesignClover, 1, false))
+	for _, rank := range []int{1, 1, 3, 3, 5, 5, 7, 7, 9, 9, 11, 11, 13} {
+		cards = append(cards, NewCard(CardDesignClover, rank, false))
 	}
 
 	if !MarriageHasPureSequences(cards, 0, 3) {
