@@ -678,7 +678,8 @@ func bestYanivDiscard(cards []*Card) []int {
 		}
 		byValue[c.GetValue()] = append(byValue[c.GetValue()], i)
 	}
-	for _, idxs := range byValue {
+	for _, value := range sortedIntKeys(byValue) {
+		idxs := byValue[value]
 		if len(idxs) >= 2 {
 			consider(idxs)
 		}
