@@ -91,18 +91,24 @@ func enumerateMapRanges(t *testing.T) map[string]mapRangeEntry {
 	t.Helper()
 	const root = "."
 	fset := token.NewFileSet()
-	packages, err := parser.ParseDir(fset, root, func(info os.FileInfo) bool {
-		return strings.HasSuffix(info.Name(), ".go") && !strings.HasSuffix(info.Name(), "_test.go")
-	}, 0)
+	dirEntries, err := os.ReadDir(root)
 	if err != nil {
-		t.Fatalf("parse domain: %v", err)
+		t.Fatalf("read domain directory: %v", err)
+	}
+	packages := make(map[string][]*ast.File)
+	for _, entry := range dirEntries {
+		name := entry.Name()
+		if entry.IsDir() || !strings.HasSuffix(name, ".go") || strings.HasSuffix(name, "_test.go") {
+			continue
+		}
+		file, err := parser.ParseFile(fset, filepath.Join(root, name), nil, 0)
+		if err != nil {
+			t.Fatalf("parse %s: %v", name, err)
+		}
+		packages[file.Name.Name] = append(packages[file.Name.Name], file)
 	}
 	entries := make(map[string]mapRangeEntry)
-	for _, pkg := range packages {
-		files := make([]*ast.File, 0, len(pkg.Files))
-		for _, file := range pkg.Files {
-			files = append(files, file)
-		}
+	for _, files := range packages {
 		info := &types.Info{Types: make(map[ast.Expr]types.TypeAndValue)}
 		conf := types.Config{Importer: importer.ForCompiler(fset, "source", nil), Error: func(error) {}}
 		_, _ = conf.Check("domain", fset, files, info)
@@ -157,7 +163,7 @@ func readMapRangeAllowlist(path string) (map[string]mapRangeEntry, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 	entries := make(map[string]mapRangeEntry)
 	scanner := bufio.NewScanner(file)
 	for line := 1; scanner.Scan(); line++ {
@@ -188,12 +194,14 @@ func writeMapRangeAllowlist(path string, entries map[string]mapRangeEntry) error
 	if err != nil {
 		return err
 	}
-	defer file.Close()
 	for _, key := range keys {
 		entry := entries[key]
 		if _, err := fmt.Fprintf(file, "%s\t%s\t%s\t%s\t%s\n", entry.file, entry.function, entry.expression, entry.verdict, entry.reason); err != nil {
 			return err
 		}
+	}
+	if err := file.Close(); err != nil {
+		return err
 	}
 	return nil
 }
