@@ -422,7 +422,8 @@ func (g *Machiavelli) cpuBuildPlay() ([][]*Card, []int, bool) {
 			byRank[c.GetValue()] = append(byRank[c.GetValue()], i)
 		}
 	}
-	for _, idxs := range byRank {
+	for _, rank := range sortedIntKeys(byRank) {
+		idxs := byRank[rank]
 		distinct := machiavelliDistinctSuitIdx(hand, idxs)
 		if len(distinct) >= MachiavelliMeldMin {
 			meld := make([]*Card, 0, len(distinct))
@@ -484,7 +485,8 @@ func (g *Machiavelli) cpuFindRuns(hand []*Card, used []bool) [][]int {
 	}
 	runs := make([][]int, 0)
 	consumed := make(map[int]bool)
-	for _, byVal := range bySuit {
+	for _, suit := range sortedIntKeys(bySuit) {
+		byVal := bySuit[suit]
 		values := make([]int, 0, len(byVal))
 		for v := range byVal {
 			values = append(values, v)

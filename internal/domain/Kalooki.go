@@ -875,7 +875,8 @@ func findKalookiMeld(cards []*Card) []*Card {
 	for _, c := range naturals {
 		byRank[c.GetValue()] = append(byRank[c.GetValue()], c)
 	}
-	for _, group := range byRank {
+	for _, rank := range sortedIntKeys(byRank) {
+		group := byRank[rank]
 		need := KalookiMeldMinSize - len(group)
 		if need <= 0 {
 			return []*Card{group[0], group[1], group[2]}
@@ -900,7 +901,8 @@ func findKalookiMeld(cards []*Card) []*Card {
 			bySuit[c.GetDesign()][c.GetValue()] = c
 		}
 	}
-	for _, byVal := range bySuit {
+	for _, suit := range sortedIntKeys(bySuit) {
+		byVal := bySuit[suit]
 		if pick := findKalookiRunIn(byVal, jokers); pick != nil {
 			return pick
 		}

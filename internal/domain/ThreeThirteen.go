@@ -784,7 +784,8 @@ func threeThirteenAllMelds(cards []*Card, wildRank int) [][]*Card {
 	for _, c := range naturals {
 		byRank[c.GetValue()] = append(byRank[c.GetValue()], c)
 	}
-	for _, group := range byRank {
+	for _, rank := range sortedIntKeys(byRank) {
+		group := byRank[rank]
 		for size := ThreeThirteenMeldMinSize; size <= ThreeThirteenMeldMinSize+1; size++ {
 			needWild := size - len(group)
 			if needWild < 0 {
@@ -813,7 +814,8 @@ func threeThirteenAllMelds(cards []*Card, wildRank int) [][]*Card {
 			bySuit[c.GetDesign()][c.GetValue()] = c
 		}
 	}
-	for _, byVal := range bySuit {
+	for _, suit := range sortedIntKeys(bySuit) {
+		byVal := bySuit[suit]
 		melds = append(melds, threeThirteenRunsIn(byVal, wilds, wildRank)...)
 	}
 	return melds
