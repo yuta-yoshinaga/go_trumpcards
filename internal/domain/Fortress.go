@@ -34,18 +34,10 @@ const FortressColumnLen = 6
 const FortressFoundationCnt = 4
 
 // FortressTableauCard タブロー上のカード
-type FortressTableauCard struct {
-	Card   *Card `json:"c"`
-	FaceUp bool  `json:"f"`
-}
+type FortressTableauCard = ColumnTableauCard
 
 // FortressHint ヒント
-type FortressHint struct {
-	FromCol   int    // タブロー列インデックス
-	CardIndex int    // 列内のカードインデックス
-	ToZone    string // "tableau" or "foundation"
-	ToCol     int    // タブロー列 or ファンデーションのインデックス
-}
+type FortressHint = ColumnSolitaireHint
 
 // FortressConfig フォートレスのゲーム設定
 type FortressConfig struct{}
@@ -127,29 +119,11 @@ func (bc *Fortress) MoveTableauToTableau(fromCol, cardIndex, toCol int) error {
 	if bc.phase != FortressPhasePlaying {
 		return errors.New("game is not in playing phase")
 	}
-	if fromCol < 0 || fromCol >= FortressTableauCnt {
-		return errors.New("invalid from column")
-	}
-	if toCol < 0 || toCol >= FortressTableauCnt {
-		return errors.New("invalid to column")
-	}
-	if fromCol == toCol {
-		return errors.New("from and to columns are the same")
+	tc, cardIndex, err := columnValidateTableauMove(bc.tableau[:], fromCol, cardIndex, toCol, bc.canPlaceOnTableau)
+	if err != nil {
+		return err
 	}
 	fromCards := bc.tableau[fromCol]
-	if cardIndex == -1 {
-		cardIndex = len(fromCards) - 1
-	}
-	if cardIndex < 0 || cardIndex >= len(fromCards) {
-		return errors.New("invalid card index")
-	}
-	if cardIndex != len(fromCards)-1 {
-		return errors.New("only the top card can be moved")
-	}
-	tc := fromCards[cardIndex]
-	if !bc.canPlaceOnTableau(tc.Card, toCol) {
-		return errors.New("cannot place card on tableau")
-	}
 	bc.takeSnapshot()
 	bc.tableau[toCol] = append(bc.tableau[toCol], tc)
 	bc.tableau[fromCol] = fromCards[:cardIndex]
@@ -164,19 +138,12 @@ func (bc *Fortress) MoveTableauToFoundation(col int) error {
 	if bc.phase != FortressPhasePlaying {
 		return errors.New("game is not in playing phase")
 	}
-	if col < 0 || col >= FortressTableauCnt {
-		return errors.New("invalid column")
+	tc, fIdx, err := columnValidateTableauToFoundation(bc.tableau[:], col, bc.findFoundation)
+	if err != nil {
+		return err
 	}
-	fromCards := bc.tableau[col]
-	if len(fromCards) == 0 {
-		return errors.New("tableau column is empty")
-	}
-	tc := fromCards[len(fromCards)-1]
 	card := tc.Card
-	fIdx := bc.findFoundation(card)
-	if fIdx < 0 {
-		return errors.New("cannot place card on foundation")
-	}
+	fromCards := bc.tableau[col]
 	bc.takeSnapshot()
 	bc.tableau[col] = fromCards[:len(fromCards)-1]
 	bc.foundation[fIdx] = append(bc.foundation[fIdx], card)
@@ -197,47 +164,7 @@ func (bc *Fortress) GiveUp() {
 
 // GetHint ヒントを取得
 func (bc *Fortress) GetHint() *FortressHint {
-	if bc.phase != FortressPhasePlaying {
-		return nil
-	}
-	// 優先度1: タブローからファンデーションへ
-	for col := range FortressTableauCnt {
-		if len(bc.tableau[col]) == 0 {
-			continue
-		}
-		tc := bc.tableau[col][len(bc.tableau[col])-1]
-		fIdx := bc.findFoundation(tc.Card)
-		if fIdx >= 0 {
-			return &FortressHint{
-				FromCol:   col,
-				CardIndex: len(bc.tableau[col]) - 1,
-				ToZone:    "foundation",
-				ToCol:     fIdx,
-			}
-		}
-	}
-	// 優先度2: タブローからタブローへ
-	for fromCol := range FortressTableauCnt {
-		fromCards := bc.tableau[fromCol]
-		if len(fromCards) == 0 {
-			continue
-		}
-		card := fromCards[len(fromCards)-1].Card
-		for toCol := range FortressTableauCnt {
-			if toCol == fromCol {
-				continue
-			}
-			if bc.canPlaceOnTableau(card, toCol) {
-				return &FortressHint{
-					FromCol:   fromCol,
-					CardIndex: len(fromCards) - 1,
-					ToZone:    "tableau",
-					ToCol:     toCol,
-				}
-			}
-		}
-	}
-	return nil
+	return columnGetHint(bc.phase == FortressPhasePlaying, bc.tableau[:], bc.canPlaceOnTableau, bc.findFoundation)
 }
 
 // AutoComplete オートコンプリート（全ての山から可能な限りファンデーションへ）
@@ -246,27 +173,7 @@ func (bc *Fortress) AutoComplete() error {
 		return errors.New("game is not in playing phase")
 	}
 	bc.takeSnapshot()
-	for {
-		moved := false
-		for col := range FortressTableauCnt {
-			if len(bc.tableau[col]) == 0 {
-				continue
-			}
-			tc := bc.tableau[col][len(bc.tableau[col])-1]
-			card := tc.Card
-			fIdx := bc.findFoundation(card)
-			if fIdx < 0 {
-				continue
-			}
-			bc.tableau[col] = bc.tableau[col][:len(bc.tableau[col])-1]
-			bc.foundation[fIdx] = append(bc.foundation[fIdx], card)
-			bc.moveCount++
-			moved = true
-		}
-		if !moved {
-			break
-		}
-	}
+	bc.moveCount += columnAutoCompleteMoves(bc.tableau[:], bc.foundation[:], bc.findFoundation)
 	bc.appendLog("autocomplete", "fortress.log.autoComplete", nil, nil)
 	bc.checkGameClear()
 	bc.checkStalemate()
@@ -275,7 +182,7 @@ func (bc *Fortress) AutoComplete() error {
 
 // AllFaceUp 全カードが表向きかどうか（Fortress は全札を表向きに配るので常にtrue）
 func (bc *Fortress) AllFaceUp() bool {
-	return true
+	return columnAllFaceUp(bc.tableau[:])
 }
 
 // --- State getters/setters ---
@@ -370,41 +277,23 @@ func (bc *Fortress) canPlaceOnTableau(card *Card, col int) bool {
 	return diff == 1 || diff == -1
 }
 
-// canPlaceOnFoundation ファンデーションにカードを置けるか判定
-func (bc *Fortress) canPlaceOnFoundation(card *Card, fIdx int) bool {
-	return canPlaceOnFoundationPile(bc.foundation[fIdx], card)
-}
-
 // findFoundation カードを置けるファンデーションのインデックスを探す（見つからない場合-1）
 func (bc *Fortress) findFoundation(card *Card) int {
-	for i := range FortressFoundationCnt {
-		if bc.canPlaceOnFoundation(card, i) {
-			return i
-		}
-	}
-	return -1
+	return columnFindFoundation(bc.foundation[:], card)
 }
 
 // checkGameClear ゲームクリア判定
 func (bc *Fortress) checkGameClear() {
-	for i := range FortressFoundationCnt {
-		if len(bc.foundation[i]) != CardValueMax {
-			return
-		}
+	if columnCheckGameClear(bc.foundation[:]) {
+		bc.phase = FortressPhaseGameClear
 	}
-	bc.phase = FortressPhaseGameClear
 }
 
 // checkStalemate 手詰まり判定
 func (bc *Fortress) checkStalemate() {
-	if bc.phase != FortressPhasePlaying {
-		return
+	if bc.phase == FortressPhasePlaying {
+		bc.isStalemate = columnCheckStalemate(true, bc.tableau[:], bc.canPlaceOnTableau, bc.findFoundation)
 	}
-	if bc.GetHint() != nil {
-		bc.isStalemate = false
-		return
-	}
-	bc.isStalemate = true
 }
 
 // takeSnapshot 現在の状態をスナップショットとして保存
