@@ -1,3 +1,5 @@
+//go:build !js || !wasm || extra11
+
 package domain
 
 import "math/bits"

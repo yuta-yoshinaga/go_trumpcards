@@ -308,10 +308,7 @@ func TestMarriageValidateDeclarationMemoMatchesReference(t *testing.T) {
 	}
 	// Random hands exercise false outcomes and retain old/new parity when the old search finishes.
 	for i := 0; i < 200; i++ {
-		cards := make([]*Card, MarriageHandSize)
-		for j := range cards {
-			cards[j] = NewCard(1+rng.Intn(4), 1+rng.Intn(13), false)
-		}
+		cards := marriageRandomPhysicalHand(rng, MarriageHandSize)
 		wildRank := 1 + rng.Intn(13)
 		old, iters := marriageValidateDeclarationReference(cards, wildRank)
 		got := MarriageValidateDeclaration(cards, wildRank)
@@ -476,15 +473,24 @@ func TestMarriageMinDeadwoodCanonicalMatchesMemoReference(t *testing.T) {
 }
 
 func TestMarriageMinDeadwoodCanonicalWorstCaseMemoStates(t *testing.T) {
-	// Identical physical copies maximize the symmetry the canonical order removes.
-	cards := make([]*Card, 22)
-	for i := range cards {
-		cards[i] = NewCard(1+i%4, 7, false)
+	// Repeated consecutive ranks provide many equivalent set/run choices while
+	// keeping every suit/rank multiplicity within the three-deck physical limit.
+	cards := make([]*Card, 0, 22)
+	for rank := 2; rank <= 7 && len(cards) < 20; rank++ {
+		for copy := 0; copy < 3 && len(cards) < 20; copy++ {
+			for suit := 1; suit <= 4 && len(cards) < 20; suit++ {
+				cards = append(cards, NewCard(suit, rank, false))
+			}
+		}
 	}
+	cards = append(cards, NewCard(0, 0, true), NewCard(0, 0, true))
 	sort.Slice(cards, func(i, j int) bool { return cards[i].design < cards[j].design })
 	_, states := marriageMinDeadwoodMemo(cards, 1)
 	t.Logf("canonical memo states: %d", states)
-	if states > 10000 {
+	if states == 0 {
+		t.Fatal("memo was not constructed")
+	}
+	if states > 250 {
 		t.Fatalf("unexpected memo state count: %d", states)
 	}
 }
