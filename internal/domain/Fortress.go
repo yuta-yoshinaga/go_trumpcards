@@ -189,47 +189,7 @@ func (bc *Fortress) GiveUp() {
 
 // GetHint ヒントを取得
 func (bc *Fortress) GetHint() *FortressHint {
-	if bc.phase != FortressPhasePlaying {
-		return nil
-	}
-	// 優先度1: タブローからファンデーションへ
-	for col := range FortressTableauCnt {
-		if len(bc.tableau[col]) == 0 {
-			continue
-		}
-		tc := bc.tableau[col][len(bc.tableau[col])-1]
-		fIdx := bc.findFoundation(tc.Card)
-		if fIdx >= 0 {
-			return &FortressHint{
-				FromCol:   col,
-				CardIndex: len(bc.tableau[col]) - 1,
-				ToZone:    "foundation",
-				ToCol:     fIdx,
-			}
-		}
-	}
-	// 優先度2: タブローからタブローへ
-	for fromCol := range FortressTableauCnt {
-		fromCards := bc.tableau[fromCol]
-		if len(fromCards) == 0 {
-			continue
-		}
-		card := fromCards[len(fromCards)-1].Card
-		for toCol := range FortressTableauCnt {
-			if toCol == fromCol {
-				continue
-			}
-			if bc.canPlaceOnTableau(card, toCol) {
-				return &FortressHint{
-					FromCol:   fromCol,
-					CardIndex: len(fromCards) - 1,
-					ToZone:    "tableau",
-					ToCol:     toCol,
-				}
-			}
-		}
-	}
-	return nil
+	return columnGetHint(bc.phase == FortressPhasePlaying, bc.tableau[:], bc.canPlaceOnTableau, bc.findFoundation)
 }
 
 // AutoComplete オートコンプリート（全ての山から可能な限りファンデーションへ）
@@ -267,7 +227,7 @@ func (bc *Fortress) AutoComplete() error {
 
 // AllFaceUp 全カードが表向きかどうか（Fortress は全札を表向きに配るので常にtrue）
 func (bc *Fortress) AllFaceUp() bool {
-	return true
+	return columnAllFaceUp(bc.tableau[:])
 }
 
 // --- State getters/setters ---
@@ -374,24 +334,16 @@ func (bc *Fortress) findFoundation(card *Card) int {
 
 // checkGameClear ゲームクリア判定
 func (bc *Fortress) checkGameClear() {
-	for i := range FortressFoundationCnt {
-		if len(bc.foundation[i]) != CardValueMax {
-			return
-		}
+	if columnCheckGameClear(bc.foundation[:]) {
+		bc.phase = FortressPhaseGameClear
 	}
-	bc.phase = FortressPhaseGameClear
 }
 
 // checkStalemate 手詰まり判定
 func (bc *Fortress) checkStalemate() {
-	if bc.phase != FortressPhasePlaying {
-		return
+	if bc.phase == FortressPhasePlaying {
+		bc.isStalemate = columnCheckStalemate(true, bc.tableau[:], bc.canPlaceOnTableau, bc.findFoundation)
 	}
-	if bc.GetHint() != nil {
-		bc.isStalemate = false
-		return
-	}
-	bc.isStalemate = true
 }
 
 // takeSnapshot 現在の状態をスナップショットとして保存

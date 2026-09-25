@@ -70,3 +70,74 @@ func columnFindFoundation(foundation [][]*Card, card *Card) int {
 	}
 	return -1
 }
+
+func columnGetHint(
+	isPlaying bool,
+	tableau [][]*ColumnTableauCard,
+	canPlaceOnTableau func(*Card, int) bool,
+	findFoundation func(*Card) int,
+) *ColumnSolitaireHint {
+	if !isPlaying {
+		return nil
+	}
+	// 優先度1: タブローからファンデーションへ
+	for col := range len(tableau) {
+		if len(tableau[col]) == 0 {
+			continue
+		}
+		tc := tableau[col][len(tableau[col])-1]
+		fIdx := findFoundation(tc.Card)
+		if fIdx >= 0 {
+			return &ColumnSolitaireHint{
+				FromCol:   col,
+				CardIndex: len(tableau[col]) - 1,
+				ToZone:    "foundation",
+				ToCol:     fIdx,
+			}
+		}
+	}
+	// 優先度2: タブローからタブローへ
+	for fromCol := range len(tableau) {
+		fromCards := tableau[fromCol]
+		if len(fromCards) == 0 {
+			continue
+		}
+		card := fromCards[len(fromCards)-1].Card
+		for toCol := range len(tableau) {
+			if toCol == fromCol {
+				continue
+			}
+			if canPlaceOnTableau(card, toCol) {
+				return &ColumnSolitaireHint{
+					FromCol:   fromCol,
+					CardIndex: len(fromCards) - 1,
+					ToZone:    "tableau",
+					ToCol:     toCol,
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func columnCheckGameClear(foundation [][]*Card) bool {
+	for _, pile := range foundation {
+		if len(pile) != CardValueMax {
+			return false
+		}
+	}
+	return true
+}
+
+func columnCheckStalemate(
+	isPlaying bool,
+	tableau [][]*ColumnTableauCard,
+	canPlaceOnTableau func(*Card, int) bool,
+	findFoundation func(*Card) int,
+) bool {
+	if !isPlaying {
+		return false
+	}
+	hint := columnGetHint(isPlaying, tableau, canPlaceOnTableau, findFoundation)
+	return hint == nil
+}
