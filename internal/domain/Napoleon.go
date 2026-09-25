@@ -1226,7 +1226,8 @@ func (n *Napoleon) cpuSelectTrumpNormal(playerIdx int) (int, int, int) {
 	}
 	trumpSuit := CardDesignSpade
 	maxCount := 0
-	for suit, cnt := range suitCounts {
+	for _, suit := range sortedIntKeys(suitCounts) {
+		cnt := suitCounts[suit]
 		if cnt > maxCount {
 			maxCount = cnt
 			trumpSuit = suit

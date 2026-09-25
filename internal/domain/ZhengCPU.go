@@ -152,8 +152,10 @@ func (z *Zheng) cardsByRunStrength(player *ZhengPlayer) map[int][]int {
 }
 
 // cardsByValue は手札を (ジョーカーを除いた) ランクごとのインデックス昇順リストに分類する。
-func (z *Zheng) cardsByValue(player *ZhengPlayer) map[int][]int {
-	byVal := make(map[int][]int)
+// 値 (1..CardValueMax) を添字とする配列で返すので、呼び出し側は値の昇順に反復でき、
+// map と違って候補の順序が実行ごとに変わらない (#8069)。CPU 探索のたびに呼ばれるので map も確保しない。
+func (z *Zheng) cardsByValue(player *ZhengPlayer) [CardValueMax + 1][]int {
+	var byVal [CardValueMax + 1][]int
 	for i := 0; i < player.GetCardsSize(); i++ {
 		c := player.GetCard(i)
 		if c == nil || c.GetDesign() == CardDesignJoker {

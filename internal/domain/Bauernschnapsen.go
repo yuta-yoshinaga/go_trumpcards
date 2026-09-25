@@ -426,7 +426,8 @@ func (g *Bauernschnapsen) pickDefaultTrump(playerIdx int) int {
 		}
 	}
 	best, bestSuit := -1, CardDesignSpade
-	for suit, n := range counts {
+	for _, suit := range sortedIntKeys(counts) {
+		n := counts[suit]
 		if n > best {
 			best, bestSuit = n, suit
 		}

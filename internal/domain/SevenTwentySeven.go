@@ -428,7 +428,8 @@ func (g *SevenTwentySeven) settle() {
 		g.payOut(shares, highWinners, g.state.pot-half)
 	}
 
-	for idx, amount := range shares {
+	for _, idx := range sortedIntKeys(shares) {
+		amount := shares[idx]
 		g.players[idx].AddChips(amount)
 		g.appendLog(idx, "win", "seventwentyseven.log.win", map[string]string{"player": playerName(g.players, idx), "amount": strconv.Itoa(amount)}, nil)
 	}
