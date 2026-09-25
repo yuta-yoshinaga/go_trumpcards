@@ -12,7 +12,9 @@ Accepted
 
 Biriba は同じスートの連続ランクによるシーケンスが主役である。一方、Canasta
 ドメインの `validateNewMeld` は同ランクのセットしか認めていない。
-Canasta、Burraco、Samba は同じ Canasta ドメインを共有している。
+Canasta と Burraco・Biriba は Canasta ドメインを共有している（エイリアス）。
+Samba と Bolivia は独立したドメイン型で、同一の純粋ロジックだけを
+`samba_bolivia_shared.go` の共有関数にしている (#8056)。
 
 検討した選択肢は次のとおりである。
 

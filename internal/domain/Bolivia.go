@@ -1181,14 +1181,9 @@ func (g *Bolivia) cpuFindEscaleraGroups(player *BoliviaPlayer, used map[*Card]bo
 }
 
 // boliviaFilterUnused はまだ使われていないカードのみを返す。
+// 純粋ロジックは samba_bolivia_shared.go の sbFilterUnused に委譲する。
 func boliviaFilterUnused(cards []*Card, used map[*Card]bool) []*Card {
-	out := cards[:0:0]
-	for _, c := range cards {
-		if !used[c] {
-			out = append(out, c)
-		}
-	}
-	return out
+	return sbFilterUnused(cards, used)
 }
 
 // cpuBestDiscard CPUが最適なディスカードを選択する
@@ -1483,37 +1478,9 @@ func (g *Bolivia) validateEscaleraAddition(existing *BoliviaMeld, cards []*Card)
 
 // boliviaValidateEscaleraCards は一連のカードが有効なシーケンス（同スート連番、
 // ワイルド・3を含まない、重複なし）かどうかを検証する。スパンを測る前に
-// 必ず値をソートする。
+// 必ず値をソートする。純粋ロジックは samba_bolivia_shared.go の sbValidateSequenceCards に委譲する。
 func boliviaValidateEscaleraCards(cards []*Card) error {
-	if len(cards) < 3 {
-		return NewDomainErrorCode(ErrInvalidPlay, "bolivia.errSequenceNeedsAtLeastThreeCards", nil)
-	}
-	design := -1
-	vals := make([]int, 0, len(cards))
-	for _, c := range cards {
-		if BoliviaIsWild(c) {
-			return NewDomainErrorCode(ErrInvalidPlay, "bolivia.errSequenceCannotUseWildCards", nil)
-		}
-		if c.GetValue() == 3 {
-			return NewDomainErrorCode(ErrInvalidPlay, "bolivia.errThreeCannotBeUsedInSequence", nil)
-		}
-		if design == -1 {
-			design = c.GetDesign()
-		} else if c.GetDesign() != design {
-			return NewDomainErrorCode(ErrInvalidPlay, "bolivia.errSequenceMeldMustUseSameSuit", nil)
-		}
-		vals = append(vals, boliviaEscaleraValue(c))
-	}
-	sort.Ints(vals)
-	for i := 1; i < len(vals); i++ {
-		if vals[i] == vals[i-1] {
-			return NewDomainErrorCode(ErrInvalidPlay, "bolivia.errSequenceMeldCannotDuplicateCard", nil)
-		}
-		if vals[i] != vals[i-1]+1 {
-			return NewDomainErrorCode(ErrInvalidPlay, "bolivia.errSequenceMeldRanksMustBeConsecutive", nil)
-		}
-	}
-	return nil
+	return sbValidateSequenceCards(cards, "bolivia")
 }
 
 // minimumMeldValue 初回メルドの最低点を返す (チーム累積スコアに基づく)
@@ -1589,60 +1556,33 @@ func BoliviaCardValue(card *Card) int {
 }
 
 // boliviaEscaleraValue はシーケンス判定用のカード値を返す。エースは高位(14)扱いで
-// ラップアラウンドはしない。
+// ラップアラウンドはしない。純粋ロジックは samba_bolivia_shared.go の sbSequenceCardValue に委譲する。
 func boliviaEscaleraValue(card *Card) int {
-	if card.GetValue() == 1 {
-		return 14
-	}
-	return card.GetValue()
+	return sbSequenceCardValue(card)
 }
 
 // boliviaEscaleraValues はカード列のシーケンス値のスライスを返す。
+// 純粋ロジックは samba_bolivia_shared.go の sbSequenceCardValues に委譲する。
 func boliviaEscaleraValues(cards []*Card) []int {
-	out := make([]int, 0, len(cards))
-	for _, c := range cards {
-		if BoliviaIsWild(c) {
-			continue
-		}
-		out = append(out, boliviaEscaleraValue(c))
-	}
-	return out
+	return sbSequenceCardValues(cards)
 }
 
 // boliviaGroupIsSetShaped はグループの全ナチュラルカードが同ランクかどうかを返す。
+// 純粋ロジックは samba_bolivia_shared.go の sbGroupIsSetShaped に委譲する。
 func boliviaGroupIsSetShaped(cards []*Card) bool {
-	rank := 0
-	for _, c := range cards {
-		if BoliviaIsWild(c) {
-			continue
-		}
-		if rank == 0 {
-			rank = c.GetValue()
-		} else if c.GetValue() != rank {
-			return false
-		}
-	}
-	return true
+	return sbGroupIsSetShaped(cards)
 }
 
 // boliviaNaturalRank はグループ内の最初のナチュラルカードのランクを返す (なければ0)。
+// 純粋ロジックは samba_bolivia_shared.go の sbNaturalRank に委譲する。
 func boliviaNaturalRank(cards []*Card) int {
-	for _, c := range cards {
-		if !BoliviaIsWild(c) {
-			return c.GetValue()
-		}
-	}
-	return 0
+	return sbNaturalRank(cards)
 }
 
 // boliviaEscaleraSuit はシーケンス形状グループのスートを返す (なければ-1)。
+// 純粋ロジックは samba_bolivia_shared.go の sbSequenceSuit に委譲する。
 func boliviaEscaleraSuit(cards []*Card) int {
-	for _, c := range cards {
-		if !BoliviaIsWild(c) {
-			return c.GetDesign()
-		}
-	}
-	return -1
+	return sbSequenceSuit(cards)
 }
 
 // boliviaMeldKindKey はメルド種別の i18n キーを返す。
