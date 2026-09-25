@@ -217,47 +217,7 @@ func (c *Citadel) GiveUp() {
 
 // GetHint ヒントを取得
 func (c *Citadel) GetHint() *CitadelHint {
-	if c.phase != CitadelPhasePlaying {
-		return nil
-	}
-	// 優先度1: タブローからファンデーションへ
-	for col := range CitadelTableauCnt {
-		if len(c.tableau[col]) == 0 {
-			continue
-		}
-		tc := c.tableau[col][len(c.tableau[col])-1]
-		fIdx := c.findFoundation(tc.Card)
-		if fIdx >= 0 {
-			return &CitadelHint{
-				FromCol:   col,
-				CardIndex: len(c.tableau[col]) - 1,
-				ToZone:    "foundation",
-				ToCol:     fIdx,
-			}
-		}
-	}
-	// 優先度2: タブローからタブローへ
-	for fromCol := range CitadelTableauCnt {
-		fromCards := c.tableau[fromCol]
-		if len(fromCards) == 0 {
-			continue
-		}
-		card := fromCards[len(fromCards)-1].Card
-		for toCol := range CitadelTableauCnt {
-			if toCol == fromCol {
-				continue
-			}
-			if c.canPlaceOnTableau(card, toCol) {
-				return &CitadelHint{
-					FromCol:   fromCol,
-					CardIndex: len(fromCards) - 1,
-					ToZone:    "tableau",
-					ToCol:     toCol,
-				}
-			}
-		}
-	}
-	return nil
+	return columnGetHint(c.phase == CitadelPhasePlaying, c.tableau[:], c.canPlaceOnTableau, c.findFoundation)
 }
 
 // AutoComplete オートコンプリート（全ての山から可能な限りファンデーションへ）
@@ -295,7 +255,7 @@ func (c *Citadel) AutoComplete() error {
 
 // AllFaceUp 全カードが表向きかどうか（Citadel では常にtrue）
 func (c *Citadel) AllFaceUp() bool {
-	return true
+	return columnAllFaceUp(c.tableau[:])
 }
 
 // --- State getters/setters ---
@@ -395,24 +355,16 @@ func (c *Citadel) findFoundation(card *Card) int {
 
 // checkGameClear ゲームクリア判定
 func (c *Citadel) checkGameClear() {
-	for i := range CitadelFoundationCnt {
-		if len(c.foundation[i]) != CardValueMax {
-			return
-		}
+	if columnCheckGameClear(c.foundation[:]) {
+		c.phase = CitadelPhaseGameClear
 	}
-	c.phase = CitadelPhaseGameClear
 }
 
 // checkStalemate 手詰まり判定
 func (c *Citadel) checkStalemate() {
-	if c.phase != CitadelPhasePlaying {
-		return
+	if c.phase == CitadelPhasePlaying {
+		c.isStalemate = columnCheckStalemate(true, c.tableau[:], c.canPlaceOnTableau, c.findFoundation)
 	}
-	if c.GetHint() != nil {
-		c.isStalemate = false
-		return
-	}
-	c.isStalemate = true
 }
 
 // takeSnapshot 現在の状態をスナップショットとして保存
