@@ -729,7 +729,8 @@ func conquianFindMeld(cards []*Card) []*Card {
 	for _, c := range cards {
 		byRank[c.GetValue()] = append(byRank[c.GetValue()], c)
 	}
-	for _, group := range byRank {
+	for _, rank := range sortedIntKeys(byRank) {
+		group := byRank[rank]
 		// 異スートのみ抽出
 		seen := make(map[int]bool)
 		uniq := make([]*Card, 0, len(group))
@@ -748,7 +749,8 @@ func conquianFindMeld(cards []*Card) []*Card {
 	for _, c := range cards {
 		bySuit[c.GetDesign()] = append(bySuit[c.GetDesign()], c)
 	}
-	for _, group := range bySuit {
+	for _, suit := range sortedIntKeys(bySuit) {
+		group := bySuit[suit]
 		sorted := append([]*Card{}, group...)
 		sort.Slice(sorted, func(i, j int) bool {
 			return conquianRankPosition(sorted[i].GetValue()) < conquianRankPosition(sorted[j].GetValue())

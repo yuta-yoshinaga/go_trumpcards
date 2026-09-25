@@ -790,7 +790,8 @@ func (b *Bura) cpuChooseLead(hand []*Card) []int {
 	}
 
 	bestIdx, bestPoints := []int(nil), -1
-	for suit, indices := range bySuit {
+	for _, suit := range sortedIntKeys(bySuit) {
+		indices := bySuit[suit]
 		if len(indices) < 2 || suit == b.trumpSuit {
 			continue
 		}
