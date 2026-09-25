@@ -1086,14 +1086,9 @@ func (g *Samba) cpuFindSequenceGroups(player *SambaPlayer, used map[*Card]bool) 
 }
 
 // filterUnused はまだ使われていないカードのみを返す。
+// 純粋ロジックは samba_bolivia_shared.go の sbFilterUnused に委譲する。
 func filterUnused(cards []*Card, used map[*Card]bool) []*Card {
-	out := cards[:0:0]
-	for _, c := range cards {
-		if !used[c] {
-			out = append(out, c)
-		}
-	}
-	return out
+	return sbFilterUnused(cards, used)
 }
 
 // cpuBestDiscard CPUが最適なディスカードを選択する
@@ -1369,37 +1364,9 @@ func (g *Samba) validateSequenceAddition(existing *SambaMeld, cards []*Card) err
 
 // sambaValidateSequenceCards は一連のカードが有効なシーケンス（同スート連番、
 // ワイルド・3を含まない、重複なし）かどうかを検証する。スパンを測る前に
-// 必ず値をソートする。
+// 必ず値をソートする。純粋ロジックは samba_bolivia_shared.go の sbValidateSequenceCards に委譲する。
 func sambaValidateSequenceCards(cards []*Card) error {
-	if len(cards) < 3 {
-		return NewDomainErrorCode(ErrInvalidPlay, "samba.errSequenceNeedsAtLeastThreeCards", nil)
-	}
-	design := -1
-	vals := make([]int, 0, len(cards))
-	for _, c := range cards {
-		if SambaIsWild(c) {
-			return NewDomainErrorCode(ErrInvalidPlay, "samba.errSequenceCannotUseWildCards", nil)
-		}
-		if c.GetValue() == 3 {
-			return NewDomainErrorCode(ErrInvalidPlay, "samba.errThreeCannotBeUsedInSequence", nil)
-		}
-		if design == -1 {
-			design = c.GetDesign()
-		} else if c.GetDesign() != design {
-			return NewDomainErrorCode(ErrInvalidPlay, "samba.errSequenceMeldMustUseSameSuit", nil)
-		}
-		vals = append(vals, sambaSequenceValue(c))
-	}
-	sort.Ints(vals)
-	for i := 1; i < len(vals); i++ {
-		if vals[i] == vals[i-1] {
-			return NewDomainErrorCode(ErrInvalidPlay, "samba.errSequenceMeldCannotDuplicateCard", nil)
-		}
-		if vals[i] != vals[i-1]+1 {
-			return NewDomainErrorCode(ErrInvalidPlay, "samba.errSequenceMeldRanksMustBeConsecutive", nil)
-		}
-	}
-	return nil
+	return sbValidateSequenceCards(cards, "samba")
 }
 
 // minimumMeldValue 初回メルドの最低点を返す (チーム累積スコアに基づく)
@@ -1475,60 +1442,33 @@ func SambaCardValue(card *Card) int {
 }
 
 // sambaSequenceValue はシーケンス判定用のカード値を返す。エースは高位(14)扱いで
-// ラップアラウンドはしない。
+// ラップアラウンドはしない。純粋ロジックは samba_bolivia_shared.go の sbSequenceCardValue に委譲する。
 func sambaSequenceValue(card *Card) int {
-	if card.GetValue() == 1 {
-		return 14
-	}
-	return card.GetValue()
+	return sbSequenceCardValue(card)
 }
 
 // sambaSequenceValues はカード列のシーケンス値のスライスを返す。
+// 純粋ロジックは samba_bolivia_shared.go の sbSequenceCardValues に委譲する。
 func sambaSequenceValues(cards []*Card) []int {
-	out := make([]int, 0, len(cards))
-	for _, c := range cards {
-		if SambaIsWild(c) {
-			continue
-		}
-		out = append(out, sambaSequenceValue(c))
-	}
-	return out
+	return sbSequenceCardValues(cards)
 }
 
 // sambaGroupIsSetShaped はグループの全ナチュラルカードが同ランクかどうかを返す。
+// 純粋ロジックは samba_bolivia_shared.go の sbGroupIsSetShaped に委譲する。
 func sambaGroupIsSetShaped(cards []*Card) bool {
-	rank := 0
-	for _, c := range cards {
-		if SambaIsWild(c) {
-			continue
-		}
-		if rank == 0 {
-			rank = c.GetValue()
-		} else if c.GetValue() != rank {
-			return false
-		}
-	}
-	return true
+	return sbGroupIsSetShaped(cards)
 }
 
 // sambaNaturalRank はグループ内の最初のナチュラルカードのランクを返す (なければ0)。
+// 純粋ロジックは samba_bolivia_shared.go の sbNaturalRank に委譲する。
 func sambaNaturalRank(cards []*Card) int {
-	for _, c := range cards {
-		if !SambaIsWild(c) {
-			return c.GetValue()
-		}
-	}
-	return 0
+	return sbNaturalRank(cards)
 }
 
 // sambaSequenceSuit はシーケンス形状グループのスートを返す (なければ-1)。
+// 純粋ロジックは samba_bolivia_shared.go の sbSequenceSuit に委譲する。
 func sambaSequenceSuit(cards []*Card) int {
-	for _, c := range cards {
-		if !SambaIsWild(c) {
-			return c.GetDesign()
-		}
-	}
-	return -1
+	return sbSequenceSuit(cards)
 }
 
 // sambaMeldKindKey はメルド種別の i18n キーを返す。

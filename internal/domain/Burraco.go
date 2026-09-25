@@ -7,12 +7,9 @@ package domain
 // rule all live in the Canasta domain, gated by CanastaConfig.UsePozzetto.
 //
 // Burraco is exposed through type aliases rather than a second domain type on
-// purpose. The domain package is linked into every Cloudflare Worker WASM
-// binary, and TinyGo conservatively retains every json.Marshaler /
-// json.Unmarshaler implementation it finds — so a standalone Burraco type would
-// ship its serialisation code in all three workers and push the classic worker
-// (already at the 1 MB gzip free-tier limit) over the edge. Aliasing keeps the
-// footprint at zero new types.
+// purpose. Burraco can be expressed entirely through Canasta's existing
+// configuration surface (UsePozzetto), so introducing a standalone type would
+// add serialisation code without adding any new behaviour.
 
 // Burraco はブラーコゲーム（= ポゼット有効化した Canasta）。
 type Burraco = Canasta
