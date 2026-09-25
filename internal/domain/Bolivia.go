@@ -1046,7 +1046,11 @@ func (g *Bolivia) cpuFindMelds(player *BoliviaPlayer) []boliviaCpuGroup {
 	}
 
 	// 新規セットメルド (同ランク3枚以上、または2枚+ワイルド)
-	for _, cards := range byRank {
+	for rank := 1; rank <= CardValueMax; rank++ {
+		cards, ok := byRank[rank]
+		if !ok {
+			continue
+		}
 		if len(cards) >= 3 {
 			// **同ランクは 1 つの組にまとめて出す。** 3 枚とあまりに割ると、
 			// あまりが 1〜2 枚の「新規メルド」として提案され、3 枚未満の
@@ -1132,7 +1136,11 @@ func (g *Bolivia) cpuFindEscaleraGroups(player *BoliviaPlayer, used map[*Card]bo
 	}
 
 	// 新規シーケンス (未使用カードから長さ3以上の連番を作る)
-	for _, pool := range bySuit {
+	for suit := CardDesignMin; suit <= CardDesignMax; suit++ {
+		pool, ok := bySuit[suit]
+		if !ok {
+			continue
+		}
 		cards := boliviaFilterUnused(pool, used)
 		sort.Slice(cards, func(i, j int) bool {
 			return boliviaEscaleraValue(cards[i]) < boliviaEscaleraValue(cards[j])

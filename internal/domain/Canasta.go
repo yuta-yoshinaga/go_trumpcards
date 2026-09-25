@@ -1055,7 +1055,11 @@ func (g *Canasta) cpuFindMelds(player *CanastaPlayer) [][]*Card {
 	}
 
 	// 新規メルド: 同ランク3枚以上
-	for _, cards := range byRank {
+	for rank := 1; rank <= CardValueMax; rank++ {
+		cards, ok := byRank[rank]
+		if !ok {
+			continue
+		}
 		if len(cards) >= 3 {
 			melds = append(melds, cards[:3])
 			// 残りは既存メルドへの追加として
@@ -1085,7 +1089,11 @@ func (g *Canasta) cpuFindBiribaMelds(player *CanastaPlayer) [][]*Card {
 		}
 	}
 	var melds [][]*Card
-	for _, cards := range bySuit {
+	for suit := CardDesignMin; suit <= CardDesignMax; suit++ {
+		cards, ok := bySuit[suit]
+		if !ok {
+			continue
+		}
 		sort.Slice(cards, func(i, j int) bool { return cards[i].GetValue() < cards[j].GetValue() })
 		run := make([]*Card, 0, len(cards))
 		for _, card := range cards {

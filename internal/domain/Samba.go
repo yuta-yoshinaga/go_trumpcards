@@ -947,7 +947,11 @@ func (g *Samba) cpuFindMelds(player *SambaPlayer) []sambaCpuGroup {
 	}
 
 	// 新規セットメルド (同ランク3枚以上、または2枚+ワイルド)
-	for _, cards := range byRank {
+	for rank := 1; rank <= CardValueMax; rank++ {
+		cards, ok := byRank[rank]
+		if !ok {
+			continue
+		}
 		if len(cards) >= 3 {
 			// **同ランクは 1 つの組にまとめて出す。** 「3 枚 + あまり」に割ると、
 			// あまりの 1〜2 枚が新規メルドとして場に残る ── `validateNewSet` は
@@ -1037,7 +1041,11 @@ func (g *Samba) cpuFindSequenceGroups(player *SambaPlayer, used map[*Card]bool) 
 	}
 
 	// 新規シーケンス (未使用カードから長さ3以上の連番を作る)
-	for _, pool := range bySuit {
+	for suit := CardDesignMin; suit <= CardDesignMax; suit++ {
+		pool, ok := bySuit[suit]
+		if !ok {
+			continue
+		}
 		cards := filterUnused(pool, used)
 		sort.Slice(cards, func(i, j int) bool {
 			return sambaSequenceValue(cards[i]) < sambaSequenceValue(cards[j])
