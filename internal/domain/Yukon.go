@@ -201,85 +201,11 @@ func (y *Yukon) GetHint() *YukonHint {
 	if y.phase != YukonPhasePlaying {
 		return nil
 	}
-	// 優先度1: タブローからファンデーションへ
-	for col := range YukonTableauCnt {
-		if len(y.tableau[col]) == 0 {
-			continue
-		}
-		tc := y.tableau[col][len(y.tableau[col])-1]
-		card := tc.Card
-		fIdx := card.GetDesign() - 1
-		if fIdx >= 0 && fIdx < YukonFoundationCnt && y.canPlaceOnFoundation(card, fIdx) {
-			return &YukonHint{
-				FromCol:   col,
-				CardIndex: len(y.tableau[col]) - 1,
-				ToZone:    "foundation",
-				ToCol:     fIdx,
-			}
-		}
+	h := yukonFamilyGetHint(y.tableau[:], YukonFoundationCnt, func(tc *KlondikeTableauCard) *Card { return tc.Card }, func(tc *KlondikeTableauCard) bool { return tc.FaceUp }, y.canPlaceOnFoundation, y.canPlaceOnTableau)
+	if h == nil {
+		return nil
 	}
-	// 優先度2: タブローからタブローへ（裏カードを開けるための移動を優先）
-	for fromCol := range YukonTableauCnt {
-		fromCards := y.tableau[fromCol]
-		if len(fromCards) == 0 {
-			continue
-		}
-		// 表向きの最初のカードを探す
-		firstFaceUp := -1
-		for i, tc := range fromCards {
-			if tc.FaceUp {
-				firstFaceUp = i
-				break
-			}
-		}
-		if firstFaceUp < 0 {
-			continue
-		}
-		// 裏カードがない列からの移動はスキップ（既に全部表）
-		if firstFaceUp == 0 {
-			continue
-		}
-		card := fromCards[firstFaceUp].Card
-		for toCol := range YukonTableauCnt {
-			if toCol == fromCol {
-				continue
-			}
-			if y.canPlaceOnTableau(card, toCol) {
-				return &YukonHint{
-					FromCol:   fromCol,
-					CardIndex: firstFaceUp,
-					ToZone:    "tableau",
-					ToCol:     toCol,
-				}
-			}
-		}
-	}
-	// 優先度3: タブローからタブローへ（裏カードがなくても移動）
-	for fromCol := range YukonTableauCnt {
-		fromCards := y.tableau[fromCol]
-		if len(fromCards) == 0 {
-			continue
-		}
-		for i, tc := range fromCards {
-			if !tc.FaceUp {
-				continue
-			}
-			for toCol := range YukonTableauCnt {
-				if toCol == fromCol {
-					continue
-				}
-				if y.canPlaceOnTableau(tc.Card, toCol) {
-					return &YukonHint{
-						FromCol:   fromCol,
-						CardIndex: i,
-						ToZone:    "tableau",
-						ToCol:     toCol,
-					}
-				}
-			}
-		}
-	}
-	return nil
+	return &YukonHint{FromCol: h.fromCol, CardIndex: h.cardIndex, ToZone: h.toZone, ToCol: h.toCol}
 }
 
 // AutoComplete オートコンプリート（全カード表向きの場合に自動でファンデーションへ移動）
@@ -319,14 +245,7 @@ func (y *Yukon) AutoComplete() error {
 
 // AllFaceUp 全カードが表向きかどうか
 func (y *Yukon) AllFaceUp() bool {
-	for col := range YukonTableauCnt {
-		for _, tc := range y.tableau[col] {
-			if !tc.FaceUp {
-				return false
-			}
-		}
-	}
-	return true
+	return yukonFamilyAllFaceUp(y.tableau[:], func(tc *KlondikeTableauCard) bool { return tc.FaceUp })
 }
 
 // --- State getters/setters ---
@@ -420,12 +339,7 @@ func (y *Yukon) autoFlipTableau(col int) {
 
 // checkGameClear ゲームクリア判定
 func (y *Yukon) checkGameClear() {
-	for i := range YukonFoundationCnt {
-		if len(y.foundation[i]) != CardValueMax {
-			return
-		}
-	}
-	y.phase = YukonPhaseGameClear
+	yukonFamilyCheckGameClear(y.foundation[:], CardValueMax, func() { y.phase = YukonPhaseGameClear })
 }
 
 // checkYukonStalemate 手詰まり判定

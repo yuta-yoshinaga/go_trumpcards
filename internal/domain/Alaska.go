@@ -31,14 +31,8 @@ const AlaskaFoundationCnt = 4
 // AlaskaTotalCards 使用する総枚数
 const AlaskaTotalCards = CardCnt
 
-// AlaskaTableauCard タブロー上のカード。Alaska は Klondike とは別バケット
-// (extra4 worker) に属するため、AlaskaTableauCard を共有せず独自に定義する。
-// DoubleKlondike が同じ理由で DoubleAlaskaTableauCard を持つのと同じ扱い。
-// JSON のフィールド名は Klondike と同一なので、通信形式は変わらない。
-type AlaskaTableauCard struct {
-	Card   *Card `json:"c"`
-	FaceUp bool  `json:"f"`
-}
+// AlaskaTableauCard タブロー上のカード。
+type AlaskaTableauCard = KlondikeTableauCard
 
 // AlaskaHint ヒント
 type AlaskaHint struct {
@@ -224,85 +218,11 @@ func (y *Alaska) GetHint() *AlaskaHint {
 	if y.phase != AlaskaPhasePlaying {
 		return nil
 	}
-	// 優先度1: タブローからファンデーションへ
-	for col := range AlaskaTableauCnt {
-		if len(y.tableau[col]) == 0 {
-			continue
-		}
-		tc := y.tableau[col][len(y.tableau[col])-1]
-		card := tc.Card
-		fIdx := card.GetDesign() - 1
-		if fIdx >= 0 && fIdx < AlaskaFoundationCnt && y.canPlaceOnFoundation(card, fIdx) {
-			return &AlaskaHint{
-				FromCol:   col,
-				CardIndex: len(y.tableau[col]) - 1,
-				ToZone:    "foundation",
-				ToCol:     fIdx,
-			}
-		}
+	h := yukonFamilyGetHint(y.tableau[:], AlaskaFoundationCnt, func(tc *AlaskaTableauCard) *Card { return tc.Card }, func(tc *AlaskaTableauCard) bool { return tc.FaceUp }, y.canPlaceOnFoundation, y.canPlaceOnTableau)
+	if h == nil {
+		return nil
 	}
-	// 優先度2: タブローからタブローへ（裏カードを開けるための移動を優先）
-	for fromCol := range AlaskaTableauCnt {
-		fromCards := y.tableau[fromCol]
-		if len(fromCards) == 0 {
-			continue
-		}
-		// 表向きの最初のカードを探す
-		firstFaceUp := -1
-		for i, tc := range fromCards {
-			if tc.FaceUp {
-				firstFaceUp = i
-				break
-			}
-		}
-		if firstFaceUp < 0 {
-			continue
-		}
-		// 裏カードがない列からの移動はスキップ（既に全部表）
-		if firstFaceUp == 0 {
-			continue
-		}
-		card := fromCards[firstFaceUp].Card
-		for toCol := range AlaskaTableauCnt {
-			if toCol == fromCol {
-				continue
-			}
-			if y.canPlaceOnTableau(card, toCol) {
-				return &AlaskaHint{
-					FromCol:   fromCol,
-					CardIndex: firstFaceUp,
-					ToZone:    "tableau",
-					ToCol:     toCol,
-				}
-			}
-		}
-	}
-	// 優先度3: タブローからタブローへ（裏カードがなくても移動）
-	for fromCol := range AlaskaTableauCnt {
-		fromCards := y.tableau[fromCol]
-		if len(fromCards) == 0 {
-			continue
-		}
-		for i, tc := range fromCards {
-			if !tc.FaceUp {
-				continue
-			}
-			for toCol := range AlaskaTableauCnt {
-				if toCol == fromCol {
-					continue
-				}
-				if y.canPlaceOnTableau(tc.Card, toCol) {
-					return &AlaskaHint{
-						FromCol:   fromCol,
-						CardIndex: i,
-						ToZone:    "tableau",
-						ToCol:     toCol,
-					}
-				}
-			}
-		}
-	}
-	return nil
+	return &AlaskaHint{FromCol: h.fromCol, CardIndex: h.cardIndex, ToZone: h.toZone, ToCol: h.toCol}
 }
 
 // AutoComplete オートコンプリート（全カード表向きの場合に自動でファンデーションへ移動）
@@ -342,14 +262,7 @@ func (y *Alaska) AutoComplete() error {
 
 // AllFaceUp 全カードが表向きかどうか
 func (y *Alaska) AllFaceUp() bool {
-	for col := range AlaskaTableauCnt {
-		for _, tc := range y.tableau[col] {
-			if !tc.FaceUp {
-				return false
-			}
-		}
-	}
-	return true
+	return yukonFamilyAllFaceUp(y.tableau[:], func(tc *AlaskaTableauCard) bool { return tc.FaceUp })
 }
 
 // --- State getters/setters ---
@@ -458,12 +371,7 @@ func (y *Alaska) autoFlipTableau(col int) {
 
 // checkGameClear ゲームクリア判定
 func (y *Alaska) checkGameClear() {
-	for i := range AlaskaFoundationCnt {
-		if len(y.foundation[i]) != CardValueMax {
-			return
-		}
-	}
-	y.phase = AlaskaPhaseGameClear
+	yukonFamilyCheckGameClear(y.foundation[:], CardValueMax, func() { y.phase = AlaskaPhaseGameClear })
 }
 
 // checkAlaskaStalemate 手詰まり判定
