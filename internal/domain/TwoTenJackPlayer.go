@@ -71,16 +71,8 @@ func (p *TwoTenJackPlayer) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
 	}
-	if j.GamePlayer != nil {
-		p.GamePlayer = j.GamePlayer
-	} else {
-		p.GamePlayer = NewGamePlayer(false)
-	}
-	if j.RoundScoreHolder != nil {
-		p.RoundScoreHolder = *j.RoundScoreHolder
-	}
-	if j.TrickHolder != nil {
-		p.TrickHolder = *j.TrickHolder
-	}
+	p.GamePlayer = restoreGamePlayer(j.GamePlayer)
+	assignIfSet(&p.RoundScoreHolder, j.RoundScoreHolder)
+	assignIfSet(&p.TrickHolder, j.TrickHolder)
 	return nil
 }

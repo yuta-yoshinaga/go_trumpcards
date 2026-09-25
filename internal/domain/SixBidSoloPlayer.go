@@ -35,10 +35,6 @@ func (p *SixBidSoloPlayer) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
 	}
-	if j.GamePlayer != nil {
-		p.GamePlayer = j.GamePlayer
-	} else {
-		p.GamePlayer = NewGamePlayer(false)
-	}
+	p.GamePlayer = restoreGamePlayer(j.GamePlayer)
 	return nil
 }
