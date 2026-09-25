@@ -330,6 +330,49 @@ func TestMarriageValidateDeclarationMemoMatchesReference(t *testing.T) {
 	t.Logf("declaration outcomes true=%d false=%d old-search capped=%d", trueCount, falseCount, capped)
 }
 
+func TestMarriageDeclarationPureSequenceBoundary(t *testing.T) {
+	rng := rand.New(rand.NewSource(8055002))
+	makeHand := func(sequenceCount int) []*Card {
+		hand := make([]*Card, 0, MarriageHandSize)
+		for i := 0; i < sequenceCount; i++ {
+			suit, start := 4, 1+i*4
+			for rank := start; rank < start+3; rank++ {
+				hand = append(hand, NewCard(suit, rank, false))
+			}
+		}
+		remaining := MarriageHandSize - len(hand)
+		setRanks := []int{2, 4, 6, 8, 12}
+		for i := 0; remaining > 0; i++ {
+			size := 3
+			if remaining == 4 {
+				size = 4
+			}
+			for _, suit := range []int{1, 2, 3, 4}[:size] {
+				hand = append(hand, NewCard(suit, setRanks[i], false))
+			}
+			remaining -= size
+		}
+		return hand
+	}
+	for _, tc := range []struct {
+		name      string
+		sequences int
+		want      bool
+	}{{"two pure sequences", 2, false}, {"three pure sequences", 3, true}} {
+		t.Run(tc.name, func(t *testing.T) {
+			for i := 0; i < 30; i++ {
+				hand := makeHand(tc.sequences)
+				rng.Shuffle(len(hand), func(i, j int) { hand[i], hand[j] = hand[j], hand[i] })
+				old, iters := marriageValidateDeclarationReference(hand, 0)
+				got := MarriageValidateDeclaration(hand, 0)
+				if iters > marriageSearchCap || old != tc.want || got != tc.want {
+					t.Fatalf("sample %d: reference=%v got=%v want=%v iterations=%d", i, old, got, tc.want, iters)
+				}
+			}
+		})
+	}
+}
+
 // marriageMinDeadwoodMemoReference is the pre-canonical memoized algorithm.
 func marriageMinDeadwoodMemoReference(cards []*Card, wildRank int) int {
 	n := len(cards)
