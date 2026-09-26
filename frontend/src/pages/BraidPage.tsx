@@ -519,7 +519,7 @@ function BraidPageContent() {
               )}
             </div>
             <div className="flex justify-center">
-              <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+              <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled && !hint} t={t} />
             </div>
 
             <GameMessageBox

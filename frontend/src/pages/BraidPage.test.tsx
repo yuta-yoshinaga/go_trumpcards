@@ -330,6 +330,37 @@ describe('BraidPage', () => {
     await waitFor(() => expect(screen.getAllByText(new RegExp(expected)).length).toBeGreaterThan(0));
   });
 
+  it('hides the frontend hint tooltip while a server hint is shown', async () => {
+    vi.mocked(useGameHint).mockReturnValue({
+      hint: { targetAction: 'move', reason: 'frontendHint.useFreeCells', confidence: 'moderate' },
+      hintEnabled: true,
+      setHintEnabled: vi.fn(),
+    });
+    mockExec.mockResolvedValueOnce(playingState).mockResolvedValueOnce({
+      ...playingState,
+      hint: { fromZone: 'field', fromIdx: 2, toZone: 'foundation', toIdx: 3 },
+    });
+    renderWithProviders(<BraidPage />);
+    await screen.findByTestId('phase-indicator');
+
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    await waitFor(() => expect(screen.getByTestId('br-hint-live')).toHaveTextContent(/組札3/));
+    expect(screen.queryByTestId('hint-tooltip')).not.toBeInTheDocument();
+  });
+
+  it('shows the frontend hint tooltip when there is no server hint', async () => {
+    vi.mocked(useGameHint).mockReturnValue({
+      hint: { targetAction: 'move', reason: 'frontendHint.useFreeCells', confidence: 'moderate' },
+      hintEnabled: true,
+      setHintEnabled: vi.fn(),
+    });
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BraidPage />);
+
+    expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
+  });
+
   it('swaps the board for a terminal when CLI mode is toggled', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BraidPage />);
