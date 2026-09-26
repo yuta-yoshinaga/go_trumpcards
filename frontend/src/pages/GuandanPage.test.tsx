@@ -121,8 +121,13 @@ describe('GuandanPage', () => {
     // **パートナーは向かい合わせ。**席 0/2 が同じチーム。
     const players = screen.getAllByTestId('guandan-player');
     expect(players[0]).toHaveTextContent('チーム0');
+    expect(players[0]).toHaveTextContent('味方');
+    expect(players[0]).toHaveTextContent('27枚');
     expect(players[1]).toHaveTextContent('チーム1');
+    expect(players[1]).toHaveTextContent('相手');
+    expect(players[1]).toHaveTextContent('27枚');
     expect(players[2]).toHaveTextContent('チーム0');
+    expect(players[2]).toHaveTextContent('味方');
   });
 
   it('shows the finishing position once a seat is out', async () => {
