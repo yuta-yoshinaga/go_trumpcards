@@ -72,7 +72,7 @@ describe('SevenTwentySevenPage', () => {
     });
     renderWithProviders(<SevenTwentySevenPage />);
 
-    expect(await screen.findByTestId('s27-deck-empty')).toHaveTextContent('山札');
+    expect(await screen.findByTestId('s27-deck-empty')).toHaveTextContent('このラウンドで山札がすべて配られました。');
     expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument();
   });
 

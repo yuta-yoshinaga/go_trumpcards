@@ -33,7 +33,7 @@
   "cardButton": "カードを引く",
   "standButton": "止まる",
   "nextRound": "次のラウンド",
-  "deckEmptyResult": "山札がなくなったため、全員が自動的に止まり、このラウンドの結果に進みました。",
+  "deckEmptyResult": "このラウンドで山札がすべて配られました。",
   "roundResult": {
     "title": "ラウンド結果",
     "carry": "全員が両側とも超えました。ポット {{pot}} は次のラウンドへ持ち越し（{{count}} 回目）",
