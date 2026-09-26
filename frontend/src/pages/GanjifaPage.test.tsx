@@ -15,7 +15,13 @@ const mockExec = vi.mocked(ganjifaApi.exec);
 const playPhaseState = makeGanjifaState();
 const cpuTurnState = makeGanjifaState({ isHumanTurn: false, currentPlayerIdx: 1, playableIndices: [] });
 const trickEndState = makeGanjifaState({ phase: 1, isHumanTurn: false, playableIndices: [] });
-const roundEndState = makeGanjifaState({ phase: 2, isHumanTurn: false, playableIndices: [], roundTricks: [14, 10, 8] });
+const roundEndState = makeGanjifaState({
+  phase: 2,
+  isHumanTurn: false,
+  playableIndices: [],
+  roundTricks: [14, 10, 8],
+  playerScores: [20, 16, 12],
+});
 const gameEndState = makeGanjifaState({
   phase: 3,
   isHumanTurn: false,
@@ -151,6 +157,15 @@ describe('GanjifaPage', () => {
     mockExec.mockResolvedValue(roundEndState);
     fireEvent.click(button);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
+  });
+
+  it('shows each round score and its resulting cumulative score in the round summary', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<GanjifaPage />);
+
+    expect(await screen.findByText('あなた トリック: 14 / 今回得点: 14 / 累計: 20')).toBeInTheDocument();
+    expect(screen.getByText('CPU 1 トリック: 10 / 今回得点: 10 / 累計: 16')).toBeInTheDocument();
+    expect(screen.getByText('CPU 2 トリック: 8 / 今回得点: 8 / 累計: 12')).toBeInTheDocument();
   });
 
   it('shows the game end message', async () => {

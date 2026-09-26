@@ -21,7 +21,7 @@
   "round": "ラウンド: {{round}}  トリック: {{trick}}  切り札: {{trump}}",
   "dealer": "ディーラー: {{name}}",
   "trumpAutoNote": "切り札はディーラーの手札で最も多いスートから自動で決まります（選択操作はありません）",
-  "roundEndTrickEntry": "{{name}} {{tricks}}",
+  "roundEndTrickEntry": "{{name}} トリック: {{tricks}} / 今回得点: {{roundScore}} / 累計: {{cumulativeScore}}",
   "roundEndTricks": "各プレイヤーのトリック数: {{list}}",
   "trumpGroupStrong": "切り札は強い群 — 数字が大きいほど強い",
   "trumpGroupWeak": "切り札は弱い群 — 数字が小さいほど強い",
