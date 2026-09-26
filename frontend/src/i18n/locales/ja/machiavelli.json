@@ -18,6 +18,7 @@
   "tableEmpty": "まだメルドはありません",
   "meldKindSet": "セット",
   "meldKindRun": "シーケンス",
+  "meldSummary": "{{kind}} {{rank}}",
   "cards": "{{count}}枚",
   "cumulativeScore": "累計: {{score}}",
   "deadwoodShort": "デッドウッド {{score}}",
