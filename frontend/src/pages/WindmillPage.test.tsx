@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { windmillApi } from '../api/gameApi';
+import * as autoCompleteState from '../hooks/useAutoCompleteState';
 import { useGameHint } from '../hooks/useGameHint';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -159,6 +160,20 @@ describe('WindmillPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '中央組札 1/52枚' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', { zone: 'waste' }, { zone: 'center' }));
+  });
+
+  it('disables waste selection during auto-complete and enables it afterward', async () => {
+    const originalUseAutoCompleteState = autoCompleteState.useAutoCompleteState;
+    vi.spyOn(autoCompleteState, 'useAutoCompleteState').mockImplementation(() => originalUseAutoCompleteState(50));
+    mockExec.mockResolvedValue({ ...playingState, waste: [card('DIAMOND', 2)] });
+    renderWithProviders(<WindmillPage />);
+    const wasteTop = await screen.findByRole('button', { name: '♦ 2' });
+    await waitFor(() => expect(screen.getByRole('button', { name: /山札 残り100枚/ })).toBeEnabled());
+
+    fireEvent.click(screen.getByTestId('autocomplete-button'));
+    expect(wasteTop).toBeDisabled();
+    await waitFor(() => expect(wasteTop).toBeEnabled());
+    vi.mocked(autoCompleteState.useAutoCompleteState).mockRestore();
   });
 
   it('shows an empty waste slot when nothing has been turned', async () => {

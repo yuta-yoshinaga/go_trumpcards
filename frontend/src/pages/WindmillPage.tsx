@@ -356,7 +356,7 @@ function WindmillPageContent() {
                     <button
                       type="button"
                       onClick={() => game.handleSelectSource(wasteZone)}
-                      disabled={!isPlaying || loading}
+                      disabled={!isPlaying || loading || isAutoCompleting}
                       aria-label={cardAlt(wasteTop)}
                       aria-pressed={isSourceSelected('waste', undefined)}
                       draggable={isPlaying && !loading}
