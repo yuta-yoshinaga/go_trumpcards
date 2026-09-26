@@ -255,18 +255,23 @@ function BaseballPokerPageContent() {
                   )}
                   {/* **なぜその配当になったのかが最後まで分からなかった** (#6579)。
                       ショーダウンでは役名と、ベスト 5 枚を出す。 */}
-                  {isShowdown && seat.bestHand.length > 0 && (
+                  {isShowdown && !seat.folded && (
                     <div className="mt-1" data-testid={`bp-showdown-${i}`}>
-                      <span className="text-ds-accent text-xs">{handLabel(seat.handRank)}</span>
-                      <div className="flex justify-center gap-1 flex-wrap mt-1">
-                        {seat.bestHand.map((card, k) => (
-                          <AnimatedCard
-                            key={`b${i}-${card.design}-${card.value}-${k}`}
-                            card={card}
-                            width={Math.round(cardWidth * 0.5)}
-                          />
-                        ))}
-                      </div>
+                      <span className="text-ds-accent text-xs font-bold">
+                        {seat.wonAmount > 0 ? `✓ ${t('label.winner')}` : `× ${t('label.loser')}`}
+                      </span>
+                      <span className="ml-2 text-ds-text-primary text-xs">{handLabel(seat.handRank)}</span>
+                      {seat.bestHand.length > 0 && (
+                        <div className="flex justify-center gap-1 flex-wrap mt-1">
+                          {seat.bestHand.map((card, k) => (
+                            <AnimatedCard
+                              key={`b${i}-${card.design}-${card.value}-${k}`}
+                              card={card}
+                              width={Math.round(cardWidth * 0.5)}
+                            />
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

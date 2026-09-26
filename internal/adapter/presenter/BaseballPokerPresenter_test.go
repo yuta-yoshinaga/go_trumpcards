@@ -202,7 +202,7 @@ func TestBaseballPokerCuiPresenter_ShowsHandNamesAtShowdown(t *testing.T) {
 	out := cp.Output(g, nil)
 
 	shown := 0
-	for _, p := range g.GetPlayers() {
+	for i, p := range g.GetPlayers() {
 		if p.GetFolded() {
 			continue
 		}
@@ -210,7 +210,11 @@ func TestBaseballPokerCuiPresenter_ShowsHandNamesAtShowdown(t *testing.T) {
 		rank := p.GetHandRank()
 		require.GreaterOrEqual(t, rank, 0)
 		require.Less(t, rank, len(domain.PokerHandNames))
-		assert.Contains(t, out, "  "+p.GetName()+": "+domain.PokerHandNames[rank])
+		result := "敗者"
+		if g.GetResults()[i].WonAmount > 0 {
+			result = "勝者"
+		}
+		assert.Contains(t, out, "  "+p.GetName()+": "+domain.PokerHandNames[rank]+"（"+result+"）")
 	}
 	require.Positive(t, shown, "役名を出した席が 1 つも無い")
 	assert.NotContains(t, out, "baseballpoker.")

@@ -21,6 +21,7 @@
   "label.won": "won {{amount}}",
   "label.bestHand": "Best five",
   "label.winner": "Winner",
+  "label.loser": "Lost",
   "phase.betting": "Betting",
   "phase.buyIn": "Buy the pot",
   "phase.showdown": "Showdown",
