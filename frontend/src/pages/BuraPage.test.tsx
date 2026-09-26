@@ -89,6 +89,14 @@ describe('BuraPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', [0, 1]));
   });
 
+  it('asks the player to select a card when nothing is selected', async () => {
+    renderWithProviders(<BuraPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    expect(screen.getByRole('button', { name: '出す' })).toBeDisabled();
+    expect(document.getElementById('bura-play-reason')).toHaveTextContent('出すカードを選んでください');
+  });
+
   it('refuses a mixed-suit lead', async () => {
     renderWithProviders(<BuraPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
@@ -123,6 +131,21 @@ describe('BuraPage', () => {
     expect(respond).toBeEnabled();
     expect(document.getElementById('bura-play-reason')).toBeEmptyDOMElement();
     expect(respond).not.toHaveAttribute('aria-describedby');
+  });
+
+  it('explains when a response selects more cards than the lead', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ currentLead: [card('DIAMOND', 13)], leadPlayerIdx: 1, currentPlayerIdx: 0 }),
+    );
+    renderWithProviders(<BuraPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.getAttribute('aria-pressed') !== null);
+    fireEvent.click(cardButtons[0]);
+    fireEvent.click(cardButtons[1]);
+
+    expect(screen.getByRole('button', { name: '1 枚で受ける' })).toBeDisabled();
+    expect(document.getElementById('bura-play-reason')).toHaveTextContent('リードに合わせて1枚だけ選んでください');
   });
 
   it('explains a lead selection that exceeds the three-card limit', async () => {
