@@ -310,23 +310,33 @@ function RamsPageContent() {
 
             <div className="mt-4 flex flex-wrap gap-2" data-tutorial="rams-decide">
               {/* 参加選択は配り直後の一度きり。 */}
-              {isDecide && !isGameEnd && (
+              {human && isDecide && !isGameEnd && (
                 <>
+                  <div
+                    className="w-full text-sm text-ds-text-primary"
+                    role="status"
+                    aria-live="polite"
+                    data-testid="rm-decision-status"
+                  >
+                    {!human.decided ? t('decision.undecided') : human.inRound ? t('decision.in') : t('decision.out')}
+                  </div>
                   <button
                     type="button"
-                    className={btnWarning}
+                    className={`${btnWarning}${human.decided && human.inRound ? ' ring-2 ring-ds-warning' : ''}`}
                     onClick={handlePlayIn}
-                    disabled={loading}
+                    disabled={loading || human.decided}
                     data-testid="rm-in-btn"
+                    aria-pressed={human.decided && human.inRound}
                   >
                     {t('actions.playIn')}
                   </button>
                   <button
                     type="button"
-                    className={btnSuccess}
+                    className={`${btnSuccess}${human.decided && !human.inRound ? ' ring-2 ring-ds-success' : ''}`}
                     onClick={handlePassOut}
-                    disabled={loading}
+                    disabled={loading || human.decided}
                     data-testid="rm-out-btn"
+                    aria-pressed={human.decided && !human.inRound}
                   >
                     {t('actions.passOut')}
                   </button>

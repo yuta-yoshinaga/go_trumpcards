@@ -79,14 +79,33 @@ describe('RamsPage', () => {
   // **配り直後は参加選択。** ここを逃すと判断の機会が無い。
   it('opens on the decision phase with both choices', async () => {
     renderWithProviders(<RamsPage />);
-    expect(await screen.findByTestId('rm-in-btn')).toBeInTheDocument();
-    expect(screen.getByTestId('rm-out-btn')).toBeInTheDocument();
+    expect(await screen.findByTestId('rm-in-btn')).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByTestId('rm-out-btn')).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByTestId('rm-decision-status')).toHaveTextContent('まだ参加するか降りるか決めていません');
   });
 
-  it('hides the choices once play has started', async () => {
+  it.each([
+    [true, '参加', '参加を決定しました'],
+    [false, '降り', '降りることを決定しました'],
+  ])('shows the confirmed %s choice in the controls and status', async (inRound, label, status) => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 0,
+        players: [seat(0, { decided: true, inRound }), seat(1), seat(2), seat(3)],
+      } as Partial<RamsResponse>),
+    );
+    renderWithProviders(<RamsPage />);
+    expect(await screen.findByTestId('rm-in-btn')).toHaveAttribute('aria-pressed', String(inRound));
+    expect(screen.getByTestId('rm-out-btn')).toHaveAttribute('aria-pressed', String(!inRound));
+    expect(screen.getByTestId('rm-decision-status')).toHaveTextContent(status);
+    expect(screen.getByTestId('rm-seat-0')).toHaveTextContent(label);
+  });
+
+  it('hides the decision status and choices once play has started', async () => {
     mockExec.mockResolvedValue(playing());
     renderWithProviders(<RamsPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.queryByTestId('rm-decision-status')).not.toBeInTheDocument();
     expect(screen.queryByTestId('rm-in-btn')).not.toBeInTheDocument();
     expect(screen.queryByTestId('rm-out-btn')).not.toBeInTheDocument();
   });
