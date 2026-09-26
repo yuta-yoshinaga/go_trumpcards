@@ -350,7 +350,7 @@ function PyramidPageContent() {
                   <AnimatedCardBack
                     width={effectiveCardWidth}
                     onClick={isPlaying ? handleDraw : undefined}
-                    ariaLabel={t('draw')}
+                    ariaLabel={t('drawStock', { count: state.stockCount })}
                   />
                 ) : (
                   <div
@@ -472,7 +472,13 @@ function PyramidPageContent() {
             <div className="flex gap-2 items-center flex-wrap">
               {isPlaying && (
                 <div data-tutorial="py-controls">
-                  <button type="button" className={btnPrimary} onClick={handleDraw} disabled={loading}>
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handleDraw}
+                    disabled={loading}
+                    aria-label={t('drawStock', { count: state.stockCount })}
+                  >
                     {t('draw')}
                   </button>
                   <button
