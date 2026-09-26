@@ -91,9 +91,15 @@ func (p *BridgeCuiPresenter) Output(b interfaces.BridgeGame, lastErr error) stri
 		}
 
 		// Vulnerability
+		vulnerabilityLabel := func(team int) string {
+			if b.GetVulnerability(team) {
+				return i18n.T("bridge.vulnerable")
+			}
+			return i18n.T("bridge.notVulnerable")
+		}
 		sb.WriteString(i18n.Tf("bridge.vulnerability",
-			"a", strconv.FormatBool(b.GetVulnerability(0)),
-			"b", strconv.FormatBool(b.GetVulnerability(1))) + "\n")
+			"a", vulnerabilityLabel(0),
+			"b", vulnerabilityLabel(1)) + "\n")
 
 		// Team scores
 		sb.WriteString(i18n.Tf("bridge.teamScores",
