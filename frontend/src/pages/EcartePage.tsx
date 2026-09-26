@@ -343,6 +343,9 @@ function EcartePageContent() {
                 </div>
               )}
             </div>
+            <div data-testid="ecarte-discard-live" className="sr-only" role="status" aria-live="polite">
+              {isDiscardStep && t('discardSelectionGuide', { count: selectedCardIndices.length })}
+            </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="ecarte-action-buttons">
@@ -442,7 +445,11 @@ function EcartePageContent() {
               {isDiscardStep && (
                 <>
                   <span className="text-xs text-ds-text-muted self-center mr-1">{t('discardPrompt')}</span>
-                  <span className="text-xs text-ds-text-primary self-center mr-1" data-testid="ecarte-discard-guide">
+                  <span
+                    className="text-xs text-ds-text-primary self-center mr-1"
+                    data-testid="ecarte-discard-guide"
+                    aria-hidden="true"
+                  >
                     {t('discardSelectionGuide', { count: selectedCardIndices.length })}
                   </span>
                   <button
