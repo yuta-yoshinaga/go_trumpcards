@@ -95,6 +95,25 @@ describe('ToepenPage', () => {
     expect(handButtons).toHaveLength(3);
   });
 
+  it('labels each trick card with its player and marks folded players in text', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        currentTrick: [
+          { playerIdx: 0, card: card('SPADE', 10) },
+          { playerIdx: 2, card: card('HEART', 11) },
+        ],
+        players: [human(), cpu(1), cpu(2, { folded: true }), cpu(3)],
+      }),
+    );
+    renderWithProviders(<ToepenPage />);
+
+    const trick = await screen.findByTestId('toepen-current-trick');
+    expect(trick).toHaveTextContent('あなた');
+    expect(trick).toHaveTextContent('CPU2');
+    expect(trick).toHaveTextContent('[降参]');
+    expect(trick.querySelectorAll('[data-testid="toepen-trick-card"]')).toHaveLength(2);
+  });
+
   it('only plays the cards the server marked legal', async () => {
     // The follow-suit obligation lives on the server; the page must not accept
     // a click on a card it did not offer.
