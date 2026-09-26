@@ -23,6 +23,7 @@ import type { CliGameConfig } from '../utils/cli/types';
 const STEPS: TutorialStep[] = [];
 const BassetPhase = { BETTING: 1, TURN: 2, DECISION: 3, ROUND_END: 4, GAME_END: 5 } as const;
 const PHASES: Record<number, string> = { 1: 'betting', 2: 'turn', 3: 'decision', 4: 'roundEnd', 5: 'gameEnd' };
+const RANK_LABELS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
 
 /** Renders the Basset page and its paroli decision controls. */
 export const BassetPage = withTutorial(BassetPageContent, 'basset', STEPS);
@@ -88,14 +89,24 @@ function BassetPageContent() {
             )}
             {state.phase === BassetPhase.BETTING || state.phase === BassetPhase.TURN ? (
               <div className="flex flex-wrap justify-center gap-3">
-                <input
-                  className="min-h-[44px] w-20 rounded bg-black/30 p-2"
-                  type="number"
-                  min="1"
-                  max="13"
-                  value={rank}
-                  onChange={(e) => setRank(Number(e.target.value))}
-                />
+                <fieldset className="flex flex-wrap justify-center gap-2">
+                  <legend className="sr-only">{t('rankSelection')}</legend>
+                  {RANK_LABELS.map((label, index) => {
+                    const value = index + 1;
+                    const selected = rank === value;
+                    return (
+                      <button
+                        aria-pressed={selected}
+                        className={`min-h-[44px] min-w-[44px] rounded border px-3 font-semibold ${selected ? 'border-ds-accent bg-ds-accent text-black' : 'border-ds-border bg-ds-surface text-ds-text-primary hover:bg-ds-surface-elevated'}`}
+                        key={label}
+                        type="button"
+                        onClick={() => setRank(value)}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </fieldset>
                 <input
                   className="min-h-[44px] w-24 rounded bg-black/30 p-2"
                   type="number"
