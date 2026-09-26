@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { matrimonyApi } from '../api/games/matrimony';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -85,6 +85,18 @@ function MatrimonyPageContent() {
   } = useGamePageSetup('matrimony');
   const game = useMatrimonyGame();
   const { state, loading, error, retry, hintError, selectedSource, hint, isAutoCompleting } = game;
+  const autoCompleteWasRunning = useRef(false);
+  const [autoCompleteStatus, setAutoCompleteStatus] = useState('');
+
+  useEffect(() => {
+    if (isAutoCompleting) {
+      autoCompleteWasRunning.current = true;
+      setAutoCompleteStatus(t('autoCompleteInProgress'));
+    } else if (autoCompleteWasRunning.current) {
+      autoCompleteWasRunning.current = false;
+      setAutoCompleteStatus(t('autoCompleteFinished'));
+    }
+  }, [isAutoCompleting, t]);
 
   const {
     hint: frontendHint,
@@ -381,6 +393,9 @@ function MatrimonyPageContent() {
                   {formatHintZone(t, hint.toZone, hint.toIdx)}
                 </div>
               )}
+            </div>
+            <div className="sr-only" data-testid="auto-complete-status" role="status" aria-live="polite">
+              {autoCompleteStatus}
             </div>
             <div className="flex justify-center">
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />

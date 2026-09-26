@@ -22,6 +22,8 @@
   "hint": "Hint",
   "autoComplete": "Auto-complete",
   "autoCompleteNotReady": "Available once a card can reach a foundation",
+  "autoCompleteInProgress": "Auto-complete is in progress",
+  "autoCompleteFinished": "Auto-complete is finished. Move a card to continue",
   "undo": "Undo",
   "stalemate": "No moves left",
   "playing": "Move a card",
