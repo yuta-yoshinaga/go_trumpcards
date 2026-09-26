@@ -142,6 +142,25 @@ func TestIsraeliWhistCuiPresenterPlayPrompt(t *testing.T) {
 	assert.Contains(t, out, fixedPart("israeliwhist.promptCurrentPlayer"))
 }
 
+func TestIsraeliWhistCuiPresenterShowsProvisionalTrickWinner(t *testing.T) {
+	p := new(IsraeliWhistCuiPresenter)
+	w := newIsraeliWhistForCui(t)
+	w.SetPhaseForTest(domain.IsraeliWhistPhasePlay)
+	w.SetTrumpSuitForTest(domain.CardDesignHeart)
+	w.SetCurrentTrickForTest([]*domain.TrickCard{{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignSpade, 13, false)}})
+	assert.Contains(t, p.Output(w, nil), i18n.Tf("israeliwhist.trickWinner", "name", cuiPlayerName(w.GetPlayer(3), 3)))
+
+	w.SetCurrentTrickForTest([]*domain.TrickCard{
+		{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignSpade, 13, false)},
+		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 2, false)},
+		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignHeart, 1, false)},
+	})
+	assert.Contains(t, p.Output(w, nil), i18n.Tf("israeliwhist.trickWinner", "name", cuiPlayerName(w.GetPlayer(2), 2)))
+
+	w.SetCurrentTrickForTest(nil)
+	assert.NotContains(t, p.Output(w, nil), i18n.T("israeliwhist.trickWinner"))
+}
+
 func TestIsraeliWhistCuiPresenterError(t *testing.T) {
 	p := new(IsraeliWhistCuiPresenter)
 	assert.Contains(t, p.Output(newIsraeliWhistForCui(t), assert.AnError), assert.AnError.Error())

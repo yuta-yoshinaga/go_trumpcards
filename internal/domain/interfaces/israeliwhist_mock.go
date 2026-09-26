@@ -60,8 +60,11 @@ func (m *MockIsraeliWhistGame) GetAuctionPlayerIdx() int  { return m.Called().In
 func (m *MockIsraeliWhistGame) GetBidPlayerIdx() int      { return m.Called().Int(0) }
 func (m *MockIsraeliWhistGame) GetLeadPlayerIdx() int     { return m.Called().Int(0) }
 func (m *MockIsraeliWhistGame) GetDealerIdx() int         { return m.Called().Int(0) }
-func (m *MockIsraeliWhistGame) GetPlayerCnt() int         { return m.Called().Int(0) }
-func (m *MockIsraeliWhistGame) GetWinnerIdx() int         { return m.Called().Int(0) }
+func (m *MockIsraeliWhistGame) GetCurrentTrickWinnerIdx() int {
+	return m.Called().Int(0)
+}
+func (m *MockIsraeliWhistGame) GetPlayerCnt() int { return m.Called().Int(0) }
+func (m *MockIsraeliWhistGame) GetWinnerIdx() int { return m.Called().Int(0) }
 
 func (m *MockIsraeliWhistGame) GetCurrentTrick() []*domain.TrickCard {
 	args := m.Called()

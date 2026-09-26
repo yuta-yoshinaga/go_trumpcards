@@ -910,6 +910,14 @@ func (w *IsraeliWhist) GetHighSuit() int { return w.highSuit }
 // GetCurrentTrick 現在のトリック
 func (w *IsraeliWhist) GetCurrentTrick() []*TrickCard { return w.currentTrick }
 
+// GetCurrentTrickWinnerIdx returns the provisional winner, or -1 when the trick is empty.
+func (w *IsraeliWhist) GetCurrentTrickWinnerIdx() int {
+	if len(w.currentTrick) == 0 {
+		return -1
+	}
+	return w.trickWinner()
+}
+
 // GetCurrentPlayerIdx 現在の手番
 func (w *IsraeliWhist) GetCurrentPlayerIdx() int { return w.currentPlayerIdx }
 

@@ -483,6 +483,23 @@ func TestIsraeliWhist_TieHasNoWinner(t *testing.T) {
 
 // --- プレイ ---
 
+func TestIsraeliWhist_GetCurrentTrickWinnerIdx_Empty(t *testing.T) {
+	w := newTestIsraeliWhist(t)
+
+	assert.Equal(t, -1, w.GetCurrentTrickWinnerIdx())
+}
+
+func TestIsraeliWhist_GetCurrentTrickWinnerIdx_WithCards(t *testing.T) {
+	w := newTestIsraeliWhist(t)
+	w.SetTrumpSuitForTest(CardDesignHeart)
+	w.SetCurrentTrickForTest([]*TrickCard{
+		{PlayerIdx: 0, Card: NewCard(CardDesignSpade, 1, false)},
+		{PlayerIdx: 2, Card: NewCard(CardDesignHeart, 2, false)},
+	})
+
+	assert.Equal(t, 2, w.GetCurrentTrickWinnerIdx())
+}
+
 func TestIsraeliWhist_MustFollowSuit(t *testing.T) {
 	w := newTestIsraeliWhist(t)
 	w.SetTrumpSuitForTest(CardDesignHeart)
