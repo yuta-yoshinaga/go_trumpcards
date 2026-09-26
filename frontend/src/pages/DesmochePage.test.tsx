@@ -113,13 +113,12 @@ describe('DesmochePage', () => {
     expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeDisabled();
   });
 
-  it('guides the act step with its available operations and selection requirements', async () => {
+  it('shows only the hand selection hint in the act step', async () => {
     renderWithProviders(<DesmochePage />);
     await screen.findByRole('button', { name: 'メルド' });
 
-    expect(screen.getByTestId('desmoche-action-guide')).toHaveTextContent(
-      '3枚以上を選んでメルド、1枚を選んで付けるか捨てる、または場のカードと移し先のメルドを選んで組み替えてください',
-    );
+    expect(screen.queryByTestId('desmoche-action-guide')).not.toBeInTheDocument();
+    expect(screen.getAllByText(/手札をクリックして選び/)).toHaveLength(1);
   });
 
   it('needs three selected cards before it will meld', async () => {

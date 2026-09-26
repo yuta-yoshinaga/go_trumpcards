@@ -19,7 +19,6 @@
   "selected": "{{n}} selected",
   "selectHint": "Click cards to select, then Meld / Lay off / Discard. To rearrange, pick a card on the table and a target meld",
   "actionGuide.draw": "Draw from the stock, or take the discard when one is available",
-  "actionGuide.act": "Select 3 or more cards to meld, one card to lay off or discard, or a table card and a target meld to rearrange",
   "melded": "{{n}}/{{goal}} down",
   "opponentHand": "{{name}}: {{n}} card(s)",
   "opponentHandAriaLabel": "{{name}} holds {{n}} face-down card(s)",
