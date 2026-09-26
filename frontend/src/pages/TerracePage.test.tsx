@@ -326,7 +326,19 @@ describe('TerracePage', () => {
     mockExec.mockResolvedValue({ ...playingState, isStalemate: true, undoToEscape: 2, canUndo: true });
     renderWithProviders(<TerracePage />);
     await waitFor(() => expect(screen.getByTestId('stalemate-escape-button')).toBeInTheDocument());
+    expect(screen.getByText('合法手がありません')).toBeInTheDocument();
+    expect(screen.getByTestId('stalemate-escape-button')).toHaveTextContent('2');
   });
+
+  it.each([playingState, gameClearState, gameOverState])(
+    'does not show the no-legal-moves explanation outside stalemate',
+    async (state) => {
+      mockExec.mockResolvedValue(state);
+      renderWithProviders(<TerracePage />);
+      await waitFor(() => expect(screen.getByRole('heading', { name: 'テラス' })).toBeInTheDocument());
+      expect(screen.queryByText('合法手がありません')).not.toBeInTheDocument();
+    },
+  );
 
   it.each([
     ['terrace', { fromZone: 'reserve', fromIdx: -1, toZone: 'foundation', toIdx: 2 }, '組札2'],

@@ -436,6 +436,12 @@ function TerracePageContent() {
               messageParams={state.messageParams}
             />
 
+            <div role="status" aria-live="polite" data-testid="tr-stalemate-explanation">
+              {isPlaying && state.isStalemate && (
+                <p className="text-ds-warning text-sm text-center mb-2">{t('stalemateNoLegalMoves')}</p>
+              )}
+            </div>
+
             {isGameOver && (
               <p data-testid="tr-gameover-summary" className="text-ds-text-muted text-sm text-center mt-1">
                 {t('gameOverSummary', {

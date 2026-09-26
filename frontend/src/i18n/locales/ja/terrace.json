@@ -30,6 +30,7 @@
   "autoCompleteNotReady": "組札へ送れる札があると有効になります",
   "undo": "元に戻す",
   "stalemate": "手詰まりです",
+  "stalemateNoLegalMoves": "合法手がありません",
   "playing": "カードを移動してください",
   "chooseBase": "最初の1枚を組札へ送って開始ランクを決めてください",
   "gameClear": "ゲームクリア！ 手数: {{moveCount}}",

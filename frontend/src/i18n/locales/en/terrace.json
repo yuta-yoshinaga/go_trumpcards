@@ -30,6 +30,7 @@
   "autoCompleteNotReady": "Available once a card can reach a foundation",
   "undo": "Undo",
   "stalemate": "No moves left",
+  "stalemateNoLegalMoves": "There are no legal moves",
   "playing": "Move a card",
   "chooseBase": "Send a first card to a foundation to fix the starting rank",
   "gameClear": "Game clear! Moves: {{moveCount}}",
