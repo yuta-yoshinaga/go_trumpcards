@@ -58,7 +58,7 @@ func bouillottePlayerStr(g interfaces.BouillotteGame, i int) string {
 	b.WriteString("\n")
 	if showCards && player.GetCardsSize() > 0 {
 		line := cuiIndexedCardListStr(player)
-		if showCards && !player.GetIsHuman() && player.GetCardsSize() == domain.BouillotteHandSize {
+		if showCards && player.GetCardsSize() == domain.BouillotteHandSize {
 			line += "  (" + i18n.T("bouillotte.hand."+bouillotteHandName(player, g.GetRetourne())) + ")"
 		}
 		b.WriteString(line + "\n")
