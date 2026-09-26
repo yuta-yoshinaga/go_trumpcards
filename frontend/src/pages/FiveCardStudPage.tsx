@@ -186,7 +186,10 @@ export function FiveCardStudPageContent({ gameKey }: { gameKey: FcsPageGameKey }
   const humanAllIn = humanPlayer?.allIn ?? false;
   const canAct = isActive && !humanFolded && !humanAllIn && state?.currentTurn === humanPlayer?.id;
   const hasOutstandingBet = (state?.lastBet ?? 0) > (humanPlayer?.currentBet ?? 0);
-  const callAmount = Math.max(0, (state?.lastBet ?? 0) - (humanPlayer?.currentBet ?? 0));
+  const callAmount = Math.min(
+    Math.max(0, (state?.lastBet ?? 0) - (humanPlayer?.currentBet ?? 0)),
+    humanPlayer?.chips ?? 0,
+  );
   const minRaise = state?.minRaise ?? 0;
   const isMuckPhase = phase === FiveCardStudPhase.SHOWDOWN && state?.muckAvailable === true;
   const isRebuyPhase = phase === FiveCardStudPhase.REBUY && state?.rebuyPhaseType === FiveCardStudRebuyPhaseType.REBUY;
@@ -589,7 +592,7 @@ export function FiveCardStudPageContent({ gameKey }: { gameKey: FcsPageGameKey }
             {canAct && (
               <div data-tutorial="fcs-action-buttons">
                 <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
-                <p className="text-center text-sm text-ds-text-primary" aria-live="polite">
+                <p className="text-center text-sm text-ds-text-primary" aria-live="polite" role="status">
                   {hasOutstandingBet ? t('betting.callAmount', { amount: callAmount }) : t('betting.checkAvailable')}
                 </p>
 
