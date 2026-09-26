@@ -423,9 +423,14 @@ function CaribbeanStudPageContent() {
             )}
             {isActionPhase && (
               <div className="flex justify-center gap-2 pb-2" data-tutorial="csp-action-buttons">
-                <button type="button" className={btnSuccess} onClick={handlePlay} disabled={loading}>
-                  {t('button.play')}
-                </button>
+                <div className="flex flex-col items-center">
+                  <span className="text-xs text-ds-text-muted">
+                    {t('label.play')}: {state.anteBet * 2}
+                  </span>
+                  <button type="button" className={btnSuccess} onClick={handlePlay} disabled={loading}>
+                    {t('button.play')}
+                  </button>
+                </div>
                 <button type="button" className={btnDanger} onClick={handleFold} disabled={loading}>
                   {t('button.fold')}
                 </button>
