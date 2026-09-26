@@ -268,6 +268,9 @@ function OichoKabuPageContent() {
             )}
             {isDrawPhase && (
               <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="ok-action-buttons">
+                <p className="text-ds-text-primary text-sm tabular-nums">
+                  {t('label.bet')}: {state.bet}
+                </p>
                 <p className="text-ds-text-muted text-sm">{t('drawGuide')}</p>
                 <div className="flex justify-center gap-2">
                   <button type="button" className={btnSuccess} onClick={handleDraw} disabled={loading}>
