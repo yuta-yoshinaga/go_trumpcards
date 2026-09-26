@@ -283,6 +283,21 @@ describe('ThreeCardPage', () => {
     expect(screen.getByText('所持チップに合わせて賭け額を調整しました。')).toBeInTheDocument();
   });
 
+  it('adjusts the ante when the bet response leaves fewer chips', async () => {
+    mockExec.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce({ ...betPhaseState, chips: 500 });
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+
+    fireEvent.change(screen.getByLabelText('アンテ'), { target: { value: '800' } });
+    fireEvent.change(screen.getByLabelText('ペアプラス'), { target: { value: '100' } });
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+
+    await waitFor(() => expect(screen.getByText('チップ: 500')).toBeInTheDocument());
+    expect(screen.getByLabelText('アンテ')).toHaveValue('400');
+    expect(screen.getByLabelText('ペアプラス')).toHaveValue('100');
+    expect(screen.getByText('所持チップに合わせて賭け額を調整しました。')).toBeInTheDocument();
+  });
+
   it('clears the adjusted bet message when a new bet phase starts', async () => {
     mockExec.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce(endPhasePlayerWins);
     renderWithProviders(<ThreeCardPage />);

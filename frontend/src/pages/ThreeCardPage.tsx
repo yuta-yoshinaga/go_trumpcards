@@ -122,12 +122,14 @@ function ThreeCardPageContent() {
   }, [state?.chips, isBetPhase, anteAmount, pairPlusAmount, state]);
 
   const handleAnteChange = (value: number) => {
-    const nextAnte = Math.min(Math.max(value, MIN_ANTE_BET), Math.max(0, (state?.chips ?? 0) - pairPlusAmount));
+    if (!state) return;
+    const nextAnte = Math.min(Math.max(value, MIN_ANTE_BET), Math.max(0, state.chips - pairPlusAmount));
     setAnteAmount(nextAnte);
     setBetAdjusted(nextAnte !== value);
   };
   const handlePairPlusChange = (value: number) => {
-    const nextPairPlus = Math.min(value, Math.max(0, (state?.chips ?? 0) - anteAmount));
+    if (!state) return;
+    const nextPairPlus = Math.min(value, Math.max(0, state.chips - anteAmount));
     setPairPlusAmount(nextPairPlus);
     setBetAdjusted(nextPairPlus !== value);
   };
