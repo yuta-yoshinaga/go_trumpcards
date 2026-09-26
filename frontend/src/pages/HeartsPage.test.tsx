@@ -70,6 +70,21 @@ describe('HeartsPage', () => {
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
   });
 
+  it('announces the trick winner as the next leader without duplicating the status message', async () => {
+    mockExec.mockResolvedValue(makeHeartsState({ phase: 2, leadPlayerIdx: 1 }));
+    renderWithProviders(<HeartsPage />);
+    expect(await screen.findByTestId('hearts-trick-result-live')).toHaveTextContent(
+      'CPU 1がトリックを獲得し、次のリードを担当します。',
+    );
+    expect(screen.getAllByText('CPU 1がトリックを獲得し、次のリードを担当します。')).toHaveLength(1);
+  });
+
+  it('does not announce a next leader at round end', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<HeartsPage />);
+    expect(await screen.findByTestId('hearts-trick-result-live')).toBeEmptyDOMElement();
+  });
+
   it('calls reset on mount', async () => {
     renderWithProviders(<HeartsPage />);
     await waitFor(() =>
