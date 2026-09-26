@@ -54,6 +54,10 @@
     "title": "Settings"
   },
   "betGuide": "Set ante and optional AA bonus, then place your bet",
+  "betPreview": {
+    "required": "Total chips needed (ante, bonus, and call): {{amount}}",
+    "shortfall": "Chips short: {{amount}}"
+  },
   "payoutRef": {
     "title": "Pay Table",
     "anteHeader": "Ante Payout",
