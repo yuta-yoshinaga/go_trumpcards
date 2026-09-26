@@ -13,6 +13,7 @@ import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
+import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -124,6 +125,23 @@ function BostonPageContent() {
   const { cardWidth } = useCardDimensions();
   const phaseNames = usePhaseNames('boston', BOSTON_PHASE_KEYS);
 
+  const handlePlay = () => {
+    if (selected === null || !state?.validPlays.includes(selected)) return;
+    exec('play', { cardIndex: selected });
+    setSelected(null);
+  };
+
+  useCardKeyboardNav({
+    cardCount: state?.players.find((p) => p.isHuman)?.cards.length ?? 0,
+    onToggle: (index) => {
+      if (state?.validPlays.includes(index)) setSelected(index);
+    },
+    onConfirm: handlePlay,
+    onClear: () => setSelected(null),
+    enabled:
+      !!state && state.phase === BostonPhase.PLAY && state.currentPlayerIdx === 0 && !state.gameEndFlag && !loading,
+  });
+
   if (!state)
     return <GameSkeleton gameKey="boston" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 13 }} />;
 
@@ -159,12 +177,6 @@ function BostonPageContent() {
     if (bidLevel === null) return;
     exec('bid', { level: bidLevel, suit: chosen?.needsTrump ? bidSuit : undefined });
     setBidLevel(null);
-  };
-
-  const handlePlay = () => {
-    if (selected === null) return;
-    exec('play', { cardIndex: selected });
-    setSelected(null);
   };
 
   const handleManualReset = () => {
