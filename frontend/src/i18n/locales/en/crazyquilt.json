@@ -57,5 +57,8 @@
   "emptyFoundationDescendingAriaLabel": "empty foundation {{idx}} ({{suit}}, down from the King)",
   "directionAscending": "up from the Ace",
   "directionDescending": "down from the King",
-  "emptyCellAriaLabel": "Empty cell {{cell}}"
+  "emptyCellAriaLabel": "Empty cell {{cell}}",
+  "listSeparator": ", ",
+  "keyboardDestinations": "Valid destinations: {{destinations}}",
+  "noKeyboardDestinations": "No valid destinations"
 }

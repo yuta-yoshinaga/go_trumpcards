@@ -107,6 +107,23 @@ describe('CrazyQuiltPage', () => {
     expect(screen.getByTestId('cq-cell-20')).not.toHaveAttribute('data-available');
   });
 
+  it('announces and highlights only legal destinations for the selected quilt card', async () => {
+    mockExec.mockResolvedValue({ ...playingState, waste: [card('CLOVER', 2)] });
+    renderWithProviders(<CrazyQuiltPage />);
+    const source = await screen.findByTestId('cq-cell-0');
+    fireEvent.click(source);
+
+    const waste = await screen.findByTestId('cq-waste');
+    expect(waste).toHaveAttribute('data-valid-destination', 'true');
+    expect(waste.className).toContain('ring-ds-success');
+    expect(screen.getByTestId('cq-destinations')).toHaveTextContent('捨て札');
+    expect(screen.getAllByRole('button', { name: /組札/ })[0]).not.toHaveAttribute('data-valid-destination');
+
+    fireEvent.click(source);
+    await waitFor(() => expect(screen.queryByTestId('cq-destinations')).not.toBeInTheDocument());
+    expect(waste).not.toHaveAttribute('data-valid-destination');
+  });
+
   // A boxed-in card must not reach the server even if something clicks it.
   it('never dispatches a move for a boxed-in card', async () => {
     renderWithProviders(<CrazyQuiltPage />);
