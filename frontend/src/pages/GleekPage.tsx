@@ -150,6 +150,7 @@ function GleekPageContent() {
   const isGameEnd = state.phase === GleekPhase.GAME_END || state.gameEndFlag;
 
   const canBid = state.phase === GleekPhase.BID && state.isHumanBidTurn;
+  const biddingSeatIdx = state.phase === GleekPhase.BID && !state.gameEndFlag ? state.currentBidderIdx : -1;
   const canDiscard = state.phase === GleekPhase.DISCARD && state.isHumanDiscardTurn;
   const canPlay = isPlayPhase && isHumanTurn;
   // **上限に達したら競り上げのボタンを出さない。** サーバは 0 以外を弾くので、
@@ -274,10 +275,15 @@ function GleekPageContent() {
               <div data-tutorial="gleek-info">
                 <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
                   {state.players.map((p) => (
-                    <div key={p.id} className="py-0.5 flex items-center gap-2">
+                    <div
+                      key={p.id}
+                      className={`py-0.5 flex items-center gap-2 ${p.id === biddingSeatIdx ? 'text-ds-accent font-semibold' : ''}`}
+                      data-testid={`gleek-player-${p.id.toString()}`}
+                    >
                       <span className={p.isBuyer ? 'text-ds-warning font-semibold' : ''}>
                         {playerName(p.id, p.isHuman)}: {t('score', { score: p.score })}
                       </span>
+                      {p.id === biddingSeatIdx && <span data-testid="gleek-bid-turn-label">{t('bidTurn')}</span>}
                       {p.isBuyer && (
                         <span className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>{t('buyerBadge')}</span>
                       )}

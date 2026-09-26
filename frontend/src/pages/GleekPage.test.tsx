@@ -144,6 +144,22 @@ describe('GleekPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', { bid: 14 }));
   });
 
+  it('marks the state-reported bidder beside their name and clears it outside bidding', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    const { unmount } = renderWithProviders(<GleekPage />);
+    const bidderLabel = await screen.findByTestId('gleek-bid-turn-label');
+    expect(bidderLabel).toHaveTextContent('入札手番');
+    expect(screen.getByTestId('gleek-player-0')).toHaveTextContent('あなた');
+    expect(screen.getByTestId('gleek-player-0')).toContainElement(bidderLabel);
+    expect(screen.getByTestId('gleek-bid-controls')).toBeInTheDocument();
+
+    unmount();
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<GleekPage />);
+    expect(await screen.findByTestId('gleek-player-0')).toHaveTextContent('あなた');
+    expect(screen.queryByTestId('gleek-bid-turn-label')).not.toBeInTheDocument();
+  });
+
   it('dropping out dispatches bid 0', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<GleekPage />);
