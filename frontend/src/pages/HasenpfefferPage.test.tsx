@@ -101,7 +101,9 @@ describe('HasenpfefferPage', () => {
     mockExec.mockResolvedValue(makeState({ dealerIdx: 2 }));
     renderWithProviders(<HasenpfefferPage />);
 
-    expect(await screen.findByTestId('hpf-seat-2')).toHaveTextContent('/ 親');
+    const dealerSeat = await screen.findByTestId('hpf-seat-2');
+    expect(dealerSeat).toHaveClass('border-0', 'm-0', 'min-w-0');
+    expect(dealerSeat).toHaveTextContent('/ 親');
     expect(screen.getByTestId('hpf-seat-0')).not.toHaveTextContent('/ 親');
   });
 

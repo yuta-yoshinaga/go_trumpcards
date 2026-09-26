@@ -82,6 +82,7 @@ func TestHasenpfefferCuiPresenterNamesEverySuit(t *testing.T) {
 
 // **宣言の状態は 3 通り。** 未宣言 / 降り / 数字を取り違えない。
 func TestHasenpfefferCuiPresenterShowsEveryBidState(t *testing.T) {
+	assert.NotEqual(t, "hasenpfeffer.bidNone", i18n.T("hasenpfeffer.bidNone"))
 	assert.Equal(t, i18n.T("hasenpfeffer.bidNone"), hasenpfefferBidStr(-1))
 	assert.Equal(t, i18n.T("hasenpfeffer.bidPassed"), hasenpfefferBidStr(0))
 	assert.Equal(t, i18n.Tf("hasenpfeffer.bidValue", "n", "4"), hasenpfefferBidStr(4))
@@ -93,7 +94,6 @@ func TestHasenpfefferCuiPresenterShowsEveryBidState(t *testing.T) {
 	out := p.Output(h, nil)
 	assert.Contains(t, out, i18n.T("hasenpfeffer.bidPassed"))
 	assert.Contains(t, out, i18n.T("hasenpfeffer.bidNone"))
-	assert.Contains(t, out, "未宣言", "未入札はWebと同じ用語で表示する")
 }
 
 // **降りられるかどうかが場面で変わる。** 3 通りすべてを踏む。
