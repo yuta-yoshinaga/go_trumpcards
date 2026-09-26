@@ -17,7 +17,7 @@ import { KEMPS_COUNTER_PENALTY } from '../constants/kemps';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
-import { useGameApi } from '../hooks/useGameApi';
+import { isRejectedAction, useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
@@ -111,7 +111,18 @@ export const KempsPage = withTutorial(KempsPageContent, 'kemps', KEMPS_TUTORIAL_
 function KempsPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('kemps');
-  const { state, loading, error, exec, retry } = useGameApi(kempsApi.exec);
+  const [swapAnnouncement, setSwapAnnouncement] = useState('');
+  const { state, loading, error, exec, retry } = useGameApi(kempsApi.exec, {
+    onSuccess: (response, [command, options]) => {
+      if (command !== 'swap' || !options || isRejectedAction(response)) return;
+      const human = response.players.find((player) => player.isHuman);
+      const newHandCard = human?.hand[options.handIndex ?? -1];
+      const newFieldCard = response.field[options.fieldIndex ?? -1];
+      if (newHandCard && newFieldCard) {
+        setSwapAnnouncement(t('swapComplete', { handCard: cardAlt(newHandCard), fieldCard: cardAlt(newFieldCard) }));
+      }
+    },
+  });
 
   const [cpuDifficulty, setCpuDifficulty] = useState(1);
   const [selectedHand, setSelectedHand] = useState<number | null>(null);
@@ -268,6 +279,9 @@ function KempsPageContent() {
             </div>
 
             {/* Shared field */}
+            <span className="sr-only" role="status" aria-live="polite" data-testid="kemps-swap-announcement">
+              {swapAnnouncement}
+            </span>
             <div className="mb-2 p-2 rounded bg-black/30" data-tutorial="kemps-field">
               <div className="mb-1 text-ds-text-primary text-sm">
                 {t('fieldLabel')}
