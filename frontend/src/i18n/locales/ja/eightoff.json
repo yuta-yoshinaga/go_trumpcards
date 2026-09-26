@@ -30,6 +30,10 @@
   },
   "landscapeBanner": "横画面での表示を推奨します",
   "freecellShort": "FC",
+  "listSeparator": "、",
+  "tableauMoveGuide": "列{{source}}から移動できます。移動先: {{targets}}",
+  "noTableauMoveTargets": "列{{source}}から移動できる先はありません",
+  "tableauColumnLabel": "列{{column}}",
   "frontendHint": {
     "moveToFoundation": "組札に移動できるカードがあります",
     "freeCellsFilling": "フリーセルがほぼ満杯です — 空けることを検討しましょう",

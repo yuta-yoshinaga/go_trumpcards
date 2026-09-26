@@ -30,6 +30,10 @@
   },
   "landscapeBanner": "Landscape mode recommended",
   "freecellShort": "FC",
+  "listSeparator": ", ",
+  "tableauMoveGuide": "Move from column {{source}}. Destinations: {{targets}}",
+  "noTableauMoveTargets": "There are no destinations from column {{source}}",
+  "tableauColumnLabel": "Column {{column}}",
   "frontendHint": {
     "moveToFoundation": "A card can be moved to the foundation",
     "freeCellsFilling": "Free cells are almost full — try to clear some",
