@@ -135,6 +135,28 @@ describe('CrescentPage', () => {
     expect(alert.textContent).toMatch(/2/);
   });
 
+  it('announces when a stalemate can be resolved with a redeal and updates after redealing', async () => {
+    mockExec.mockResolvedValue({ ...playingState, isStalemate: true, redealsRemaining: 2 });
+    renderWithProviders(<CrescentPage />);
+
+    const guidance = await screen.findByTestId('crescent-stalemate-redeal-status');
+    expect(guidance).toHaveAttribute('role', 'status');
+    expect(guidance).toHaveAttribute('aria-live', 'polite');
+    expect(guidance).toHaveTextContent(/手詰まり.*再配り.*2/);
+
+    mockExec.mockResolvedValue({ ...playingState, isStalemate: true, redealsRemaining: 1 });
+    fireEvent.click(screen.getByRole('button', { name: /再配り \(2\)/ }));
+    await waitFor(() => expect(guidance).toHaveTextContent(/手詰まり.*再配り.*1/));
+  });
+
+  it('keeps the stalemate redeal status region mounted and clears its message when not applicable', async () => {
+    mockExec.mockResolvedValue({ ...playingState, isStalemate: false, redealsRemaining: 2 });
+    renderWithProviders(<CrescentPage />);
+    const guidance = await screen.findByTestId('crescent-stalemate-redeal-status');
+    expect(guidance).toHaveAttribute('aria-live', 'polite');
+    expect(guidance).toBeEmptyDOMElement();
+  });
+
   it('defaults the escape count to 0 when undoToEscape is absent', async () => {
     mockExec.mockResolvedValue({ ...playingState, isStalemate: true, undoToEscape: undefined });
     renderWithProviders(<CrescentPage />);
