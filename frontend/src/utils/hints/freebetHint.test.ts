@@ -17,6 +17,7 @@ const hand = (score: number) =>
     busted: false,
     blackjack: false,
     result: 0,
+    payout: 0,
   }) as FreeBetResponse['hands'][number];
 
 const state = (over: Partial<FreeBetResponse> = {}) =>

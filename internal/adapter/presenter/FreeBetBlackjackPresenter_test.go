@@ -77,17 +77,24 @@ func TestFreeBetCuiPresenter_ShowsTheHouseShareSeparately(t *testing.T) {
 
 func TestFreeBetCuiPresenter_ShowsResultAndNet(t *testing.T) {
 	cp := new(FreeBetBlackjackCuiPresenter)
-	g := newFreeBetForPresenter(t)
-	require.NoError(t, g.PlaceBet(50))
-	for g.GetPhase() == domain.FreeBetPhasePlay {
-		require.NoError(t, g.Stand())
-	}
+	g := freeBetDealtUntil(t, func(g *domain.FreeBetBlackjack) bool {
+		if g.GetPhase() != domain.FreeBetPhasePlay {
+			return false
+		}
+		for g.GetPhase() == domain.FreeBetPhasePlay {
+			if err := g.Stand(); err != nil {
+				return false
+			}
+		}
+		return len(g.GetHandPayouts()) == 1 && g.GetResults()[0] == domain.FreeBetResultPush && g.GetHandPayouts()[0] == 50
+	})
 
 	out := cp.Output(g, nil)
 	assert.Contains(t, out, "アンティ: 50")
 	assert.Contains(t, out, "収支:")
-	assert.Contains(t, out, "手札1:")
+	assert.Contains(t, out, "手札1: 引き分け")
 	assert.Contains(t, out, "手札1の払い戻し:")
+	assert.Contains(t, out, "手札1の払い戻し: 50", "確定した払い戻し額が表示されていない")
 	assert.Contains(t, out, "next")
 	assert.NotContains(t, out, "freebet.")
 }
@@ -272,6 +279,7 @@ func TestFreeBetWebPresenter_HandsCarryTheirState(t *testing.T) {
 			Score  int               `json:"score"`
 			Bet    int               `json:"bet"`
 			Result int               `json:"result"`
+			Payout int               `json:"payout"`
 		} `json:"hands"`
 		DealerCards    []json.RawMessage `json:"dealerCards"`
 		DealerScore    int               `json:"dealerScore"`
@@ -285,6 +293,7 @@ func TestFreeBetWebPresenter_HandsCarryTheirState(t *testing.T) {
 	assert.Positive(t, got.Hands[0].Score)
 	assert.Equal(t, 50, got.Hands[0].Bet)
 	assert.NotZero(t, got.Hands[0].Result, "決着が載っていない")
+	assert.Equal(t, g.GetHandPayouts()[0], got.Hands[0].Payout)
 	assert.GreaterOrEqual(t, len(got.DealerCards), 2)
 	assert.Positive(t, got.DealerScore)
 	assert.Equal(t, g.IsDealerPushed22(), got.DealerPushed22)
@@ -345,6 +354,7 @@ func TestFreeBetWebPresenter_SplitTwentyOneIsNotFlaggedAsBlackjack(t *testing.T)
 	m := new(interfaces.MockFreeBetBlackjackGame)
 	m.On("GetHands").Return([]*domain.BlackJackHand{split21(), natural})
 	m.On("GetResults").Return([]domain.FreeBetResult{domain.FreeBetResultWin, domain.FreeBetResultBlackjack})
+	m.On("GetHandPayouts").Return([]int{0, 250})
 	m.On("GetFreeBet", mock.Anything).Return(0)
 	m.On("GetPhase").Return(domain.FreeBetPhaseResult)
 	m.On("GetActiveHandIdx").Return(0)
@@ -367,6 +377,7 @@ func TestFreeBetWebPresenter_SplitTwentyOneIsNotFlaggedAsBlackjack(t *testing.T)
 		Hands []struct {
 			Score     int  `json:"score"`
 			Blackjack bool `json:"blackjack"`
+			Payout    int  `json:"payout"`
 		} `json:"hands"`
 	}
 	require.NoError(t, json.Unmarshal([]byte(cp.Output(m, nil)), &got))
@@ -374,6 +385,7 @@ func TestFreeBetWebPresenter_SplitTwentyOneIsNotFlaggedAsBlackjack(t *testing.T)
 	require.Equal(t, 21, got.Hands[0].Score)
 	assert.False(t, got.Hands[0].Blackjack, "分けた手札がブラックジャック扱いになっている")
 	assert.True(t, got.Hands[1].Blackjack, "配ったままの 21 までナチュラルでなくなっている")
+	assert.Equal(t, 250, got.Hands[1].Payout)
 }
 
 // **チップが尽きたら messageCode で伝える。**

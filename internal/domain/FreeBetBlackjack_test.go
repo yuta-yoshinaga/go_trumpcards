@@ -49,6 +49,7 @@ func fbStaged(t *testing.T, ante int, player, dealer []*Card) *FreeBetBlackjack 
 	g.hands = []*BlackJackHand{h}
 	g.freeBets = []int{0}
 	g.results = []FreeBetResult{FreeBetResultNone}
+	g.handPayouts = []int{0}
 	g.activeHand = 0
 
 	d := NewBlackJackHand()

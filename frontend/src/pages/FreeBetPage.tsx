@@ -113,20 +113,6 @@ function FreeBetPageContent() {
   const net = state.payout - staked;
   const won = state.hands.some((h) => h.result === FREE_BET_RESULT.win || h.result === FREE_BET_RESULT.blackjack);
   const resultKeyOf = (r: number) => Object.entries(FREE_BET_RESULT).find(([, v]) => v === r)?.[0] ?? 'none';
-  const handPayout = (h: FreeBetResponse['hands'][number]) => {
-    switch (h.result) {
-      case FREE_BET_RESULT.win:
-        return h.bet * 2 + h.freeBet;
-      case FREE_BET_RESULT.blackjack:
-        return h.bet + Math.floor((h.bet * 3) / 2);
-      case FREE_BET_RESULT.push:
-      case FREE_BET_RESULT.dealer22Push:
-        return h.bet;
-      default:
-        return 0;
-    }
-  };
-
   return (
     <GamePageShell
       title={tc('nav.freebet')}
@@ -230,7 +216,7 @@ function FreeBetPageContent() {
                           {' · '}
                           {t(`result.${resultKeyOf(h.result)}`)}
                           {' · '}
-                          {t('label.handPayout')}: {handPayout(h)}
+                          {t('label.handPayout')}: {h.payout}
                         </>
                       )}
                     </div>

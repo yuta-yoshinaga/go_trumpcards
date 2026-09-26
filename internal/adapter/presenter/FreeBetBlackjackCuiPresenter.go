@@ -101,20 +101,15 @@ func (cp *FreeBetBlackjackCuiPresenter) writeResult(sb *strings.Builder, c inter
 	if c.IsDealerPushed22() {
 		sb.WriteString(i18n.T("freebet.dealer22Line") + "\n")
 	}
+	payouts := c.GetHandPayouts()
 	for i, r := range c.GetResults() {
 		sb.WriteString(i18n.Tf("freebet.resultLine",
 			"idx", strconv.Itoa(i+1),
 			"result", i18n.T("freebet.result"+strings.ToUpper(domain.FreeBetResultName(r)[:1])+
 				domain.FreeBetResultName(r)[1:])) + "\n")
-		h := c.GetHands()[i]
 		payout := 0
-		switch r {
-		case domain.FreeBetResultWin:
-			payout = h.GetBet()*2 + c.GetFreeBet(i)
-		case domain.FreeBetResultBlackjack:
-			payout = h.GetBet() + h.GetBet()*3/2
-		case domain.FreeBetResultPush, domain.FreeBetResultDealer22Push:
-			payout = h.GetBet()
+		if i < len(payouts) {
+			payout = payouts[i]
 		}
 		sb.WriteString(i18n.Tf("freebet.handPayoutLine",
 			"idx", strconv.Itoa(i+1), "payout", strconv.Itoa(payout)) + "\n")

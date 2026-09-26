@@ -91,6 +91,14 @@ func (m *MockFreeBetBlackjackGame) GetResults() []domain.FreeBetResult {
 
 func (m *MockFreeBetBlackjackGame) GetPayout() int { return m.Called().Int(0) }
 
+func (m *MockFreeBetBlackjackGame) GetHandPayouts() []int {
+	args := m.Called()
+	if args.Get(0) == nil {
+		return nil
+	}
+	return args.Get(0).([]int)
+}
+
 func (m *MockFreeBetBlackjackGame) GetChips() int { return m.Called().Int(0) }
 
 func (m *MockFreeBetBlackjackGame) GetRoundNumber() int { return m.Called().Int(0) }

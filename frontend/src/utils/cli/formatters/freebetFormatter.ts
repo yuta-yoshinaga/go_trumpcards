@@ -55,7 +55,7 @@ export function formatFreeBetState(state: FreeBetResponse): string {
     lines.push(formatSeparator());
     if (state.dealerPushed22) lines.push('Dealer busted with 22 — surviving hands push.');
     state.hands.forEach((h, i) => {
-      lines.push(`Hand ${i + 1}: ${RESULT_NAMES[h.result] ?? '?'}`);
+      lines.push(`Hand ${i + 1}: ${RESULT_NAMES[h.result] ?? '?'} (payout ${h.payout})`);
     });
   }
   if (state.gameEndFlag) lines.push('Out of chips.');
