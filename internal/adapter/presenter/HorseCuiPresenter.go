@@ -30,6 +30,11 @@ func (p *HorseCuiPresenter) Output(g interfaces.HorseGame, lastErr error) string
 			"hand", strconv.Itoa(g.GetHandInDiscipline()),
 			"hands", strconv.Itoa(cfg.HandsPerDiscipline),
 			"total", strconv.Itoa(g.GetHandNumber())) + "\n")
+		if round := horseTableRound(g.GetDiscipline(), g.GetTablePhase()); round != "" {
+			b.WriteString(i18n.Tf("horse.actionRound",
+				"round", i18n.T("horse.round."+round),
+				"action", horseActionLabel(g)) + "\n")
+		}
 
 		if shared := g.GetCommunityCards(); len(shared) > 0 {
 			b.WriteString(i18n.T("horse.community") + " " + horseCardsText(shared) + "\n")
@@ -89,6 +94,34 @@ func (p *HorseCuiPresenter) Output(g interfaces.HorseGame, lastErr error) string
 			b.WriteString(i18n.T("horse.promptPlayHelp") + "\n")
 		}
 	})
+}
+
+// horseTableRound names the current discipline-specific round.
+func horseTableRound(discipline domain.HorseDiscipline, phase int) string {
+	switch discipline {
+	case domain.HorseHoldem, domain.HorseOmahaHiLo, domain.HorseNLHoldem, domain.HorsePLOmaha:
+		return [...]string{"", "preflop", "flop", "turn", "river", "showdown"}[max(0, min(phase, 5))]
+	case domain.HorseRazz, domain.HorseStud, domain.HorseStudHiLo:
+		return [...]string{"", "third", "fourth", "fifth", "sixth", "seventh", "showdown"}[max(0, min(phase, 6))]
+	case domain.HorseTripleDraw:
+		if phase == domain.DeuceToSevenPhaseDraw {
+			return "drawing"
+		}
+		if phase == domain.DeuceToSevenPhaseDeal || phase == domain.DeuceToSevenPhaseBet {
+			return "betting"
+		}
+		return ""
+	default:
+		return ""
+	}
+}
+
+// horseActionLabel identifies whether the current state is a draw or betting turn.
+func horseActionLabel(g interfaces.HorseGame) string {
+	if g.IsDrawPhase() {
+		return i18n.Tf("horse.actionDraw", "draw", strconv.Itoa(g.GetDrawIndex()))
+	}
+	return i18n.T("horse.actionBetting")
 }
 
 // HintOutput emits the current H.O.R.S.E. hint.

@@ -320,6 +320,13 @@ export function HorsePageContent({ gameKey }: { gameKey: HorsePageGameKey }) {
           />
 
           <GameFooter className={`${gameTheme[gameKey].footer} px-4 py-2.5`}>
+            <div className="text-center text-xs text-ds-text-muted" data-testid="ho-action-context">
+              <span className="text-ds-text-primary">{tc(`nav.${gameKey}`)}</span>
+              <span> · {disciplineName}</span>
+              {roundLabel && <span> · {roundLabel}</span>}
+              {isDrawTurn && <span> · {t('action.draw', { n: state.drawIndex })}</span>}
+              {isBetTurn && <span> · {t('action.betting')}</span>}
+            </div>
             <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="ho-actions">
               {isDrawTurn && (
                 <div className="flex flex-col items-center gap-2" data-testid="ho-draw">
