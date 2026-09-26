@@ -10,6 +10,8 @@
   "foundation": "組札",
   "tableau": "場札",
   "stockCount": "ストック残り: {{count}}",
+  "stockDrawAriaLabel": "ストックをめくる、残り{{count}}枚",
+  "stockEmptyAriaLabel": "ストックをめくる、空",
   "moveCount": "手数: {{count}}",
   "progress": "組札: {{count}}/{{total}}枚",
   "draw": "めくる",

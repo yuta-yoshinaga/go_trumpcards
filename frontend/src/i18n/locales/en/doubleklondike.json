@@ -10,6 +10,8 @@
   "foundation": "Foundations",
   "tableau": "Tableau",
   "stockCount": "Stock left: {{count}}",
+  "stockDrawAriaLabel": "Draw from stock, {{count}} cards remaining",
+  "stockEmptyAriaLabel": "Draw from stock, empty",
   "moveCount": "Moves: {{count}}",
   "progress": "Foundations: {{count}}/{{total}}",
   "draw": "Draw",
