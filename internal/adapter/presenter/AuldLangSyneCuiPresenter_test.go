@@ -59,6 +59,14 @@ func TestAuldLangSyneCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "11", "44 cards / 4 wastes = 11 deals left")
 	})
 
+	t.Run("stock line rounds up a partial deal like the web readout", func(t *testing.T) {
+		g := new(interfaces.MockAuldLangSyneGame)
+		g.On("GetStockCount").Return(42)
+		setupAuldLangSyneCuiMockDefaults(g)
+
+		assert.Contains(t, new(AuldLangSyneCuiPresenter).Output(g, nil), "残り11回配れます")
+	})
+
 	t.Run("next required rank per foundation", func(t *testing.T) {
 		g := new(interfaces.MockAuldLangSyneGame)
 
