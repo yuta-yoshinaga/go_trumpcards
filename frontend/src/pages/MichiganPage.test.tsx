@@ -111,6 +111,15 @@ describe('MichiganPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '賭ける' })).toBeInTheDocument());
   });
 
+  it('names each bet control with its card and current bet amount', async () => {
+    renderWithProviders(<MichiganPage />);
+    const minus = await screen.findByRole('button', { name: '♥ A の賭け金 2 チップから 1 枚減らす' });
+    expect(minus).toHaveAccessibleName('♥ A の賭け金 2 チップから 1 枚減らす');
+    fireEvent.click(minus);
+    expect(screen.getByRole('button', { name: '♥ A の賭け金 1 チップから 1 枚減らす' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♥ A の賭け金 1 チップに 1 枚足す' })).toBeInTheDocument();
+  });
+
   it('dispatches bet with the even chip distribution when Place bets is clicked', async () => {
     renderWithProviders(<MichiganPage />);
     const btn = await screen.findByRole('button', { name: '賭ける' });
@@ -121,17 +130,17 @@ describe('MichiganPage', () => {
 
   it('disables the increment buttons and enables Place bets when the full budget is allocated', async () => {
     renderWithProviders(<MichiganPage />);
-    const plus0 = await screen.findByRole('button', { name: 'ブードル 0 にチップを 1 枚足す' });
+    const plus0 = await screen.findByRole('button', { name: '♥ A の賭け金 2 チップに 1 枚足す' });
     expect(plus0).toBeDisabled();
     expect(screen.getByRole('button', { name: '賭ける' })).toBeEnabled();
   });
 
   it('redistributes chips with the +/- steppers and blocks Place bets until the sum matches the budget', async () => {
     renderWithProviders(<MichiganPage />);
-    const minus0 = await screen.findByRole('button', { name: 'ブードル 0 からチップを 1 枚減らす' });
+    const minus0 = await screen.findByRole('button', { name: '♥ A の賭け金 2 チップから 1 枚減らす' });
     fireEvent.click(minus0); // [1,2,2,2] — one chip freed, sum 7 != 8
     expect(screen.getByRole('button', { name: '賭ける' })).toBeDisabled();
-    const plus0 = screen.getByRole('button', { name: 'ブードル 0 にチップを 1 枚足す' });
+    const plus0 = screen.getByRole('button', { name: '♥ A の賭け金 1 チップに 1 枚足す' });
     expect(plus0).toBeEnabled();
     fireEvent.click(plus0); // back to [2,2,2,2]
     await waitFor(() => expect(screen.getByRole('button', { name: '賭ける' })).toBeEnabled());
@@ -142,11 +151,11 @@ describe('MichiganPage', () => {
 
   it('clamps a boodle bet at zero when decremented past its minimum', async () => {
     renderWithProviders(<MichiganPage />);
-    const minus0 = await screen.findByRole('button', { name: 'ブードル 0 からチップを 1 枚減らす' });
+    const minus0 = await screen.findByRole('button', { name: '♥ A の賭け金 2 チップから 1 枚減らす' });
     fireEvent.click(minus0); // 2 -> 1
     fireEvent.click(minus0); // 1 -> 0
     fireEvent.click(minus0); // stays 0 (clamped)
-    const plus0 = screen.getByRole('button', { name: 'ブードル 0 にチップを 1 枚足す' });
+    const plus0 = screen.getByRole('button', { name: '♥ A の賭け金 0 チップに 1 枚足す' });
     fireEvent.click(plus0); // 0 -> 1
     fireEvent.click(plus0); // 1 -> 2, budget fully re-allocated
     await waitFor(() => expect(screen.getByRole('button', { name: '賭ける' })).toBeEnabled());
