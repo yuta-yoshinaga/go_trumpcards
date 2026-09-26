@@ -114,7 +114,7 @@ function WindmillPageContent() {
   const dnd = useSolitaireDragDrop<WindmillMoveZone>({
     onMove: dispatchMove,
     isPlaying: !!isPlayingForKbd,
-    disabled: loading,
+    disabled: loading || isAutoCompleting,
   });
 
   const handleManualReset = useCallback(() => {
@@ -176,7 +176,7 @@ function WindmillPageContent() {
           <button
             type="button"
             onClick={() => game.handleSelectSource(sailZone)}
-            disabled={!isPlaying || loading}
+            disabled={!isPlaying || loading || isAutoCompleting}
             aria-label={t('sailAriaLabel', { card: cardAlt(card), idx })}
             aria-pressed={isSourceSelected('sail', idx)}
             draggable={isPlaying && !loading}
@@ -246,7 +246,7 @@ function WindmillPageContent() {
             <button
               type="button"
               onClick={() => game.handleSelectTarget(cornerZone)}
-              disabled={!isPlaying || loading || !selectedSource}
+              disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
               aria-label={t('emptyCornerAriaLabel', { idx })}
               style={{ width: cardWidth, height: cardHeight }}
               className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
@@ -320,7 +320,7 @@ function WindmillPageContent() {
                     <button
                       type="button"
                       onClick={() => game.handleSelectTarget(centerZone)}
-                      disabled={!isPlaying || loading || !selectedSource}
+                      disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
                       aria-label={t('emptyCenterAriaLabel')}
                       style={{ width: cardWidth, height: cardHeight }}
                       className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
@@ -356,7 +356,7 @@ function WindmillPageContent() {
                     <button
                       type="button"
                       onClick={() => game.handleSelectSource(wasteZone)}
-                      disabled={!isPlaying || loading}
+                      disabled={!isPlaying || loading || isAutoCompleting}
                       aria-label={cardAlt(wasteTop)}
                       aria-pressed={isSourceSelected('waste', undefined)}
                       draggable={isPlaying && !loading}

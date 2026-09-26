@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { windmillApi } from '../api/gameApi';
+import * as autoCompleteState from '../hooks/useAutoCompleteState';
 import { useGameHint } from '../hooks/useGameHint';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -57,6 +58,10 @@ describe('WindmillPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it('calls reset on initial render', async () => {
@@ -159,6 +164,29 @@ describe('WindmillPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '中央組札 1/52枚' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', { zone: 'waste' }, { zone: 'center' }));
+  });
+
+  it('disables manual sources, empty targets, and drag-and-drop during auto-complete', async () => {
+    const originalUseAutoCompleteState = autoCompleteState.useAutoCompleteState;
+    vi.spyOn(autoCompleteState, 'useAutoCompleteState').mockImplementation(() => originalUseAutoCompleteState(500));
+    mockExec.mockResolvedValue({ ...playingState, center: [], waste: [card('DIAMOND', 2)] });
+    renderWithProviders(<WindmillPage />);
+    const sail = await screen.findByRole('button', { name: /: ♠ 9$/ });
+    const emptyCenter = screen.getByRole('button', { name: '中央組札は空です' });
+    const emptyCorner = screen.getByRole('button', { name: '空の四隅組札1 (K のみ置けます)' });
+    await waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeEnabled());
+    fireEvent.click(screen.getByTestId('autocomplete-button'));
+
+    expect(sail).toBeDisabled();
+    expect(emptyCenter).toBeDisabled();
+    expect(emptyCorner).toBeDisabled();
+
+    mockExec.mockClear();
+    fireEvent.dragStart(sail);
+    fireEvent.dragOver(emptyCorner);
+    fireEvent.drop(emptyCorner);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
   });
 
   it('shows an empty waste slot when nothing has been turned', async () => {
