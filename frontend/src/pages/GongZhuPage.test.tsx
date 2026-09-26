@@ -54,6 +54,28 @@ describe('GongZhuPage', () => {
     });
   });
 
+  it('labels each trick card with its player and updates the label for the next trick', async () => {
+    const firstTrick = makeGongZhuState({
+      phase: 2,
+      currentTrick: [
+        { playerIdx: 0, card: { design: 'DIAMOND', value: 3 } },
+        { playerIdx: 1, card: { design: 'HEART', value: 5 } },
+      ],
+    });
+    const nextTrick = makeGongZhuState({
+      currentTrick: [{ playerIdx: 2, card: { design: 'CLOVER', value: 9 } }],
+    });
+    mockExec.mockResolvedValueOnce(firstTrick).mockResolvedValueOnce(nextTrick);
+    renderWithProviders(<GongZhuPage />);
+
+    expect(await screen.findByRole('img', { name: 'あなた、♦ 3' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'CPU 1、♥ 5' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: '次のトリック' }));
+    expect(await screen.findByRole('img', { name: 'CPU 2、♣ 9' })).toBeInTheDocument();
+    expect(screen.queryByRole('img', { name: 'あなた、♦ 3' })).not.toBeInTheDocument();
+  });
+
   it('renders expose phase with expose button', async () => {
     mockExec.mockResolvedValue(exposePhaseState);
     renderWithProviders(<GongZhuPage />);

@@ -28,6 +28,7 @@
   "cumulativeScore": "累計: {{score}}",
   "roundScore": "ラウンド: {{score}}",
   "currentTrick": "現在のトリック",
+  "trickCardLabel": "{{player}}、{{card}}",
   "scores": "スコア",
   "scoresPlayer": "プレイヤー",
   "scoresRound": "ラウンド",

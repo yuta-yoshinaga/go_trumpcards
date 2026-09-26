@@ -28,6 +28,7 @@
   "cumulativeScore": "Total: {{score}}",
   "roundScore": "Round: {{score}}",
   "currentTrick": "Current Trick",
+  "trickCardLabel": "{{player}}, {{card}}",
   "scores": "Scores",
   "scoresPlayer": "Player",
   "scoresRound": "Round",

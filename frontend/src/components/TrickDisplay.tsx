@@ -49,6 +49,8 @@ export interface TrickDisplayProps {
   wrap?: boolean;
   /** Optional per-card role marker, rendered in both the visual and accessible card label. */
   cardBadgeFor?: (card: Card) => { glyph: string; title: string } | null;
+  /** Optional localized accessible name for each card, including its player. */
+  cardAriaLabelFor?: (player: TrickDisplayPlayer, card: Card) => string;
 }
 
 /**
@@ -74,6 +76,7 @@ export function TrickDisplay({
   winnerLabel,
   wrap = false,
   cardBadgeFor,
+  cardAriaLabelFor,
 }: TrickDisplayProps) {
   const displayedTrick = currentTrick.length > 0 ? currentTrick : (lastTrick ?? []);
   const displayedWinnerIdx = currentTrick.length > 0 ? winnerIdx : (lastTrickWinner ?? winnerIdx);
@@ -94,6 +97,7 @@ export function TrickDisplay({
       <div className={wrap ? 'flex gap-2 flex-wrap' : 'flex gap-2'} data-testid="trick-display-cards">
         {displayedTrick.map((trickCard) => {
           const player = players[trickCard.playerIdx];
+          const displayPlayer = player ?? { id: trickCard.playerIdx, isHuman: false };
           const team = player?.team;
           const isAlly = hasTeams && team !== undefined && team === humanTeam;
           const isFoe = hasTeams && team !== undefined && team !== humanTeam;
@@ -112,6 +116,7 @@ export function TrickDisplay({
               ? 'text-ds-error font-semibold'
               : 'text-game-text-muted';
           const badge = cardBadgeFor?.(trickCard.card);
+          const cardLabel = cardAriaLabelFor?.(displayPlayer, trickCard.card) ?? cardAlt(trickCard.card);
           return (
             <div
               key={`trick-${trickCard.playerIdx}`}
@@ -124,7 +129,7 @@ export function TrickDisplay({
                 card={trickCard.card}
                 width={cardWidth}
                 wrapperClassName={wrapperClass || undefined}
-                ariaLabel={badge ? `${cardAlt(trickCard.card)} (${badge.title})` : undefined}
+                ariaLabel={badge ? `${cardLabel} (${badge.title})` : cardAriaLabelFor ? cardLabel : undefined}
               />
               {badge && <CardRoleBadge idx={trickCard.playerIdx} glyph={badge.glyph} title={badge.title} />}
               {isWinner && (
