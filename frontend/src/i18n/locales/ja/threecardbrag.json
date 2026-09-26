@@ -23,6 +23,11 @@
   "cards": "{{count}}枚",
   "handLabel": "あなたの手札",
   "currentTurn": "現在の手番: {{name}}",
+  "listSeparator": "、",
+  "turnStatus": {
+    "human": "あなたの番です。可能な操作: {{actions}}。",
+    "other": "{{name}} の番です。"
+  },
   "playersTitle": "プレイヤー",
   "badge": {
     "blind": "ブラインド",
