@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { sixcardgolfApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
@@ -57,7 +57,8 @@ describe('SixCardGolfPage', () => {
     renderWithProviders(<SixCardGolfPage />);
 
     const discardOption = await screen.findByTestId('scg-discard-draw-option');
-    expect(discardOption).toHaveTextContent('捨て札から引く');
+    expect(within(discardOption).getAllByText('捨て札から引く', { exact: true })).toHaveLength(1);
+    expect(discardOption).not.toHaveTextContent('引けません');
     expect(discardOption).toHaveClass('ring-2');
     expect(screen.getByRole('button', { name: '捨て札から引く' })).toBeInTheDocument();
 

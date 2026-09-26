@@ -265,7 +265,7 @@ function SixCardGolfPageContent() {
               <div className="text-xs mb-1">
                 {t('label.stock')} ({state.drawPileCount})
               </div>
-              {phase === SCG_PHASE_PLAYER_TURN && isHumanTurn && !state.canFlip && (
+              {canDrawDiscard && (
                 <button
                   type="button"
                   className={`px-3 py-1 rounded bg-ds-accent hover:bg-ds-accent-hover text-ds-text-on-accent text-sm ${focusRingWhite}`}
@@ -282,9 +282,9 @@ function SixCardGolfPageContent() {
               >
                 <div className="text-xs mb-1">{t('label.discard')}</div>
                 <AnimatedCard card={state.discardTop} width={cardWidth} />
-                <div className={`text-xs font-medium ${canDrawDiscard ? 'text-ds-success' : 'text-ds-text-muted'}`}>
-                  {t(canDrawDiscard ? 'label.discardAvailable' : 'label.discardUnavailable')}
-                </div>
+                {!canDrawDiscard && (
+                  <div className="text-xs font-medium text-ds-text-muted">{t('label.discardUnavailable')}</div>
+                )}
                 {canDrawDiscard && (
                   <button
                     type="button"
