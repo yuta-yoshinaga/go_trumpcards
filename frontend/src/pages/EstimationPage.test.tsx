@@ -170,6 +170,7 @@ describe('EstimationPage', () => {
     renderWithProviders(<EstimationPage />);
 
     const explanation = await screen.findByTestId('est-restricted-bid-explanation');
+    expect(explanation).toHaveAttribute('aria-live', 'polite');
     expect(explanation).toHaveTextContent('宣言合計9に4を加えると全13トリックになるため選べません');
 
     fireEvent.click(screen.getByTestId('est-bid-3-btn'));

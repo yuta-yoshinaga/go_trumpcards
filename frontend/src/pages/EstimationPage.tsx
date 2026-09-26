@@ -338,6 +338,7 @@ function EstimationPageContent() {
                 <p
                   className="w-full text-center text-sm text-ds-text-muted"
                   data-testid="est-restricted-bid-explanation"
+                  aria-live="polite"
                 >
                   {t('actions.bidRestrictedExplanation', {
                     sum: TRICKS_PER_ROUND - state.restrictedBid,
