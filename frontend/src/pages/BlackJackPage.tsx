@@ -570,7 +570,9 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
                   <div
                     key={r.betType}
                     data-testid={
-                      variant === 'spanish21' && phase === BjPhase.END ? 'spanish21-side-bet-breakdown' : undefined
+                      variant === 'spanish21' && phase === BjPhase.END
+                        ? `spanish21-side-bet-breakdown-${r.betType}`
+                        : undefined
                     }
                     className={`text-sm text-center px-3 py-1 rounded mb-1 ${r.payout > 0 ? 'bg-ds-warning/90 text-ds-text-on-accent font-bold' : 'bg-ds-surface-elevated/70 text-ds-text-primary'}`}
                   >

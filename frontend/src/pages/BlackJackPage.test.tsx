@@ -1280,9 +1280,35 @@ describe('BlackJackPage', () => {
       sideBetResults: [{ betType: 1, resultType: 1, resultName: 'Perfect Pair', betAmount: 10, payout: 250 }],
     });
     renderWithProviders(<BlackJackPage variant="spanish21" />);
-    expect(await screen.findByTestId('spanish21-side-bet-breakdown')).toHaveTextContent('ベット額: 10');
-    expect(screen.getByTestId('spanish21-side-bet-breakdown')).toHaveTextContent('成立条件: Perfect Pair');
-    expect(screen.getByTestId('spanish21-side-bet-breakdown')).toHaveTextContent('払い戻し: 260');
+    expect(await screen.findByTestId('spanish21-side-bet-breakdown-1')).toHaveTextContent('ベット額: 10');
+    expect(screen.getByTestId('spanish21-side-bet-breakdown-1')).toHaveTextContent('成立条件: Perfect Pair');
+    expect(screen.getByTestId('spanish21-side-bet-breakdown-1')).toHaveTextContent('払い戻し: 260');
+  });
+
+  it('shows Spanish 21 losing side bet with no qualifying condition and zero return', async () => {
+    mockSpanish21Exec.mockResolvedValue({
+      ...endPhaseState,
+      sideBetResults: [{ betType: 2, resultType: 0, resultName: '', betAmount: 20, payout: 0 }],
+    });
+    renderWithProviders(<BlackJackPage variant="spanish21" />);
+    const breakdown = await screen.findByTestId('spanish21-side-bet-breakdown-2');
+    expect(breakdown).toHaveTextContent('ベット額: 20');
+    expect(breakdown).not.toHaveTextContent('成立条件:');
+    expect(breakdown).toHaveTextContent('払い戻し: 0');
+  });
+
+  it('uses a unique Spanish 21 breakdown test id for each side bet type', async () => {
+    mockSpanish21Exec.mockResolvedValue({
+      ...endPhaseState,
+      sideBetResults: [
+        { betType: 1, resultType: 1, resultName: 'Perfect Pair', betAmount: 10, payout: 250 },
+        { betType: 2, resultType: 0, resultName: '', betAmount: 20, payout: 0 },
+      ],
+    });
+    renderWithProviders(<BlackJackPage variant="spanish21" />);
+    expect(await screen.findByTestId('spanish21-side-bet-breakdown-1')).toHaveTextContent('払い戻し: 260');
+    expect(screen.getByTestId('spanish21-side-bet-breakdown-2')).toHaveTextContent('払い戻し: 0');
+    expect(screen.getAllByTestId(/^spanish21-side-bet-breakdown-/)).toHaveLength(2);
   });
 
   // --- Multi-hand tests ---
