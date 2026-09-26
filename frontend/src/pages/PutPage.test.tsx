@@ -150,7 +150,8 @@ describe('PutPage', () => {
     );
     renderWithProviders(<PutPage />);
 
-    await waitFor(() => expect(screen.getByText(/あなた: 0 \/ 獲得トリック: 2/)).toBeInTheDocument());
+    const counts = await screen.findByTestId('put-player-counts');
+    expect(counts).toHaveTextContent('あなた02CPU31');
     expect(screen.queryByRole('button', { name: '♠ A を出す' })).not.toBeInTheDocument();
   });
 
@@ -159,16 +160,26 @@ describe('PutPage', () => {
     mockExec.mockResolvedValue(makeState({ players }));
     renderWithProviders(<PutPage />);
 
-    await waitFor(() => expect(screen.getByText(/あなた: 0 \/ 獲得トリック: 0/)).toBeInTheDocument());
+    const counts = await screen.findByTestId('put-player-counts');
+    expect(counts).toHaveTextContent('あなた00');
     expect(screen.queryByRole('button', { name: /を出す$/ })).not.toBeInTheDocument();
   });
 
   it('keeps both count rows and the human cards visible during normal play', async () => {
     renderWithProviders(<PutPage />);
 
-    await waitFor(() => expect(screen.getByText(/あなた: 3 \/ 獲得トリック: 0/)).toBeInTheDocument());
-    expect(screen.getByText(/CPU: 3 \/ 獲得トリック: 0/)).toBeInTheDocument();
+    const counts = await screen.findByTestId('put-player-counts');
+    expect(counts).toHaveTextContent('あなた30');
+    expect(counts).toHaveTextContent('CPU30');
     expect(screen.getByRole('button', { name: '♠ A を出す' })).toBeInTheDocument();
+  });
+
+  it('hides the comparison table in the match result phase', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 4, gameEndFlag: true, winnerIdx: 0, matchPoints: [15, 8] }));
+    renderWithProviders(<PutPage />);
+
+    await screen.findByRole('status');
+    expect(screen.queryByTestId('put-player-counts')).not.toBeInTheDocument();
   });
 
   it('fires play with the selected card index when a card is clicked', async () => {

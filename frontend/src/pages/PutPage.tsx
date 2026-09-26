@@ -206,11 +206,35 @@ function PutPageContent() {
           </div>
         </details>
 
-        <div className="flex flex-wrap items-start gap-4 mb-4">
-          <div className="p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-            {t('header.cpu')}: {cpu?.cardCount ?? 0} / {t('header.tricks')}: {cpu?.trickCount ?? 0}
-          </div>
-        </div>
+        {!isGameEnd && (
+          <table className="w-full max-w-md mx-auto mb-4 text-sm text-ds-text-primary" data-testid="put-player-counts">
+            <thead className="text-ds-text-muted">
+              <tr>
+                <th scope="col" className="text-left p-2"></th>
+                <th scope="col" className="text-right p-2">
+                  {t('header.cards')}
+                </th>
+                <th scope="col" className="text-right p-2">
+                  {t('header.tricks')}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                { player: human, name: t('header.you') },
+                { player: cpu, name: t('header.cpu') },
+              ].map(({ player, name }) => (
+                <tr key={name} className="border-t border-ds-border-subtle">
+                  <th scope="row" className="text-left p-2 font-medium">
+                    {name}
+                  </th>
+                  <td className="text-right p-2 tabular-nums">{player?.cardCount ?? 0}</td>
+                  <td className="text-right p-2 tabular-nums">{player?.trickCount ?? 0}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
 
         <TrickDisplay
           currentTrick={state.currentTrick}
@@ -237,9 +261,6 @@ function PutPageContent() {
         <ErrorAlert message={error} onRetry={retry} />
 
         <div className="mt-4" data-tutorial="put-hand">
-          <div className="text-ds-text-muted text-sm mb-1">
-            {t('header.you')}: {human?.cardCount ?? 0} / {t('header.tricks')}: {human?.trickCount ?? 0}
-          </div>
           {human && human.cards.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {human.cards.map((card, idx) => (
