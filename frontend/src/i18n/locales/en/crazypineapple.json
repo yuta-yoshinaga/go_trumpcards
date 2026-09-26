@@ -24,9 +24,10 @@
     "recommended": "Recommended",
     "limitReached": "You can select up to {{count}} card(s). Deselect one first.",
     "limitDescription": "You can select at most {{count}} card(s) to discard.",
-    "cpPreviewAria": "Keeping hand: {{hand}}",
-    "cpPreviewAriaRecommended": "Keeping hand: {{hand}} (Recommended)"
+    "cpPreviewAria": "Discard {{card}}. Keep: {{kept}}. Resulting hand: {{hand}}",
+    "cpPreviewAriaRecommended": "Discard {{card}}. Keep: {{kept}}. Resulting hand: {{hand}} (Recommended)"
   },
+  "listSeparator": ", ",
   "rebuy": {
     "prompt": "Rebuy? ({{chips}} chips, {{used}}/{{max}} used)",
     "accept": "Rebuy",

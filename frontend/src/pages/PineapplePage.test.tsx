@@ -1210,25 +1210,35 @@ describe('PineapplePage', () => {
     mockCrazyExec.mockResolvedValue(crazyDiscardState);
     renderWithProviders(<PineapplePage variant="crazypineapple" />);
     await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    const live = screen.getByTestId('cp-discard-preview-announce');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toBeEmptyDOMElement();
 
     // Select the recommended discard (index 2: 2♦)
     fireEvent.click(screen.getByAltText('♦ 2').closest('button') as HTMLButtonElement);
 
-    const live = await screen.findByTestId('cp-discard-preview-announce');
-    expect(live).toHaveAttribute('role', 'status');
-    expect(live).toHaveAttribute('aria-live', 'polite');
+    await waitFor(() => expect(live).toHaveTextContent('スリーカード'));
     expect(live).toHaveClass('sr-only');
     expect(live.textContent).toContain('スリーカード');
     expect(live.textContent).toContain('おすすめ');
+    expect(live.textContent).toContain('♦ 2');
+    expect(live.textContent).toContain('♠ 10');
+    expect(live.textContent).toContain('♥ 10');
 
     // Re-selecting toggles it off
     fireEvent.click(screen.getByAltText('♦ 2').closest('button') as HTMLButtonElement);
-    expect(screen.queryByTestId('cp-discard-preview-announce')).not.toBeInTheDocument();
+    expect(screen.getByTestId('cp-discard-preview-announce')).toBeEmptyDOMElement();
 
     // Select a non-recommended discard (index 1: 10♥)
     fireEvent.click(screen.getByAltText('♥ 10').closest('button') as HTMLButtonElement);
     const live2 = await screen.findByTestId('cp-discard-preview-announce');
     expect(live2.textContent).toContain('ワンペア');
+    expect(live2.textContent).toContain('♥ 10');
+    expect(live2.textContent).toContain('♠ 10');
+    expect(live2.textContent).toContain('♦ 2');
+    expect(live2.textContent).toContain('残すカード: ♠ 10、♦ 2');
+    expect(live2.textContent).not.toContain('残すカード: ♠ 10、♥ 10、♦ 2');
     expect(live2.textContent).not.toContain('おすすめ');
     // A key looked up in the wrong namespace comes back as the identifier itself,
     // which would still satisfy every assertion above except this one.

@@ -334,12 +334,18 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
     if (selectedDiscards.length !== discardCount) return null;
     const discardIdx = selectedDiscards[0];
     const cand = candidatePreviews?.[discardIdx];
+    const cards = humanPlayer?.cards ?? [];
     if (!cand) return null;
     return {
       handKey: cand.handKey,
       isRecommended: recommendedDiscards.has(discardIdx),
+      discardedCard: cardAlt(cards[discardIdx]),
+      keptCards: cards
+        .filter((_, i) => i !== discardIdx)
+        .map(cardAlt)
+        .join(t('listSeparator')),
     };
-  }, [variant, isDiscardPhase, selectedDiscards, discardCount, candidatePreviews, recommendedDiscards]);
+  }, [variant, isDiscardPhase, selectedDiscards, discardCount, candidatePreviews, recommendedDiscards, humanPlayer, t]);
 
   const actionBindings = useMemo(
     () => [
@@ -726,20 +732,29 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
 
             <ErrorAlert message={error} onRetry={retry} />
 
+            {/* The cp-discard-candidate / cp-discard-recommended badges are
+                visual only. This region is variant-exclusive with
+                irishpoker-discard-preview-announce, so only one of the two
+                can ever speak. */}
+            <div className="sr-only" role="status" aria-live="polite" data-testid="cp-discard-preview-announce">
+              {canDiscard &&
+                cpSelectedPreview &&
+                (cpSelectedPreview.isRecommended
+                  ? t('discard.cpPreviewAriaRecommended', {
+                      card: cpSelectedPreview.discardedCard,
+                      kept: cpSelectedPreview.keptCards,
+                      hand: t(`hand.${cpSelectedPreview.handKey}`),
+                    })
+                  : t('discard.cpPreviewAria', {
+                      card: cpSelectedPreview.discardedCard,
+                      kept: cpSelectedPreview.keptCards,
+                      hand: t(`hand.${cpSelectedPreview.handKey}`),
+                    }))}
+            </div>
+
             {/* Discard controls */}
             {canDiscard && (
               <div className="mb-2 text-center" data-testid="discard-controls" data-tutorial="pn-discard-controls">
-                {/* The cp-discard-candidate / cp-discard-recommended badges are
-                    visual only. This region is variant-exclusive with
-                    irishpoker-discard-preview-announce, so only one of the two
-                    can ever speak. */}
-                {cpSelectedPreview && (
-                  <div className="sr-only" role="status" aria-live="polite" data-testid="cp-discard-preview-announce">
-                    {cpSelectedPreview.isRecommended
-                      ? t('discard.cpPreviewAriaRecommended', { hand: t(`hand.${cpSelectedPreview.handKey}`) })
-                      : t('discard.cpPreviewAria', { hand: t(`hand.${cpSelectedPreview.handKey}`) })}
-                  </div>
-                )}
                 {discardPreview && (
                   <div className="mb-2 text-sm" data-testid="irishpoker-discard-preview">
                     {/* **見えている行は読み上げ向きではない。** ラベル・札・役が
