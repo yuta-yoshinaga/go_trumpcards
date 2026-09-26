@@ -264,6 +264,7 @@ function NapPageContent() {
                 aria-live="polite"
               >
                 {t('declarerProgress', {
+                  name: playerName(state.declarerIdx, declarer?.isHuman ?? false),
                   won: declarerWon,
                   needed: state.contract,
                   remaining: tricksRemaining,
