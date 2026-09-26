@@ -88,6 +88,15 @@ describe('HachiHachiPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0, fieldIndex: 1 }));
   });
 
+  it('names each field card and exposes whether it is a capture candidate', async () => {
+    mockExec.mockResolvedValue(makeHachiHachiState({ captureOptions: { 0: [0, 1] } }));
+    renderWithProviders(<HachiHachiPage />);
+    const first = await screen.findByTestId('field-card-0');
+    const second = screen.getByTestId('field-card-1');
+    expect(first).toHaveAccessibleName(/3月 カス.*捕獲候補/);
+    expect(second).toHaveAccessibleName(/8月 光.*捕獲候補ではありません$/);
+  });
+
   it('shows the next-round button at round end and dispatches nextround', async () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<HachiHachiPage />);

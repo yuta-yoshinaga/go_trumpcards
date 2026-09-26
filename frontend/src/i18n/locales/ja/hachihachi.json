@@ -4,7 +4,9 @@
   "cpu": "CPU{{n}}",
   "deck": "山札: {{count}}",
   "field": "場",
+  "fieldCaptureCandidate": "捕獲候補",
   "fieldEmpty": "（なし）",
+  "fieldNotCaptureCandidate": "捕獲候補ではありません",
   "hint": {
     "capture": "価値の高い場札を捕獲する",
     "discard_low": "捨てても損の少ない札を出す"
