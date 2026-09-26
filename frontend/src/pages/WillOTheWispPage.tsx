@@ -307,6 +307,7 @@ function WillOTheWispPageContent() {
                     onClick={isPlaying ? handleDealGuarded : undefined}
                     disabled={loading || isAutoCompleting}
                     ariaLabel={t('deal')}
+                    ariaDescribedBy={dealBlockedByEmpty ? 'willothewisp-deal-blocked-reason' : undefined}
                   />
                 ) : (
                   <div
@@ -319,6 +320,11 @@ function WillOTheWispPageContent() {
                 {state.stockCount > 0 && (
                   <div className="text-game-text-muted text-xs mt-1">
                     {t('dealsRemaining', { count: dealsRemaining })}
+                  </div>
+                )}
+                {dealBlockedByEmpty && (
+                  <div id="willothewisp-deal-blocked-reason" className="text-ds-warning text-xs mt-1 max-w-32">
+                    {t('cannotDealEmptyColExists')}
                   </div>
                 )}
               </div>
