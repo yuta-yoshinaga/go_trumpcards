@@ -129,6 +129,11 @@ func catchTenHonorPoints(card *Card, trumpSuit int) int {
 	}
 }
 
+// CatchTenHonorPoints returns the honor points awarded when a card's trick is won.
+func CatchTenHonorPoints(card *Card, trumpSuit int) int {
+	return catchTenHonorPoints(card, trumpSuit)
+}
+
 // Reset ゲーム初期化
 func (g *CatchTen) Reset() {
 	g.gameEndFlag = false

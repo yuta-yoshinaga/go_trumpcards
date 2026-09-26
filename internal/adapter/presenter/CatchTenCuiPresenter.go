@@ -11,7 +11,7 @@ import (
 )
 
 // catchTenPlayerStr returns the display string for a single Catch the Ten player.
-func catchTenPlayerStr(player *domain.CatchTenPlayer, i int) string {
+func catchTenPlayerStrWithTrump(player *domain.CatchTenPlayer, i, trumpSuit int) string {
 	var b strings.Builder
 	b.WriteString(i18n.Tf("catchten.playerLine",
 		"name", cuiPlayerName(player, i),
@@ -23,9 +23,19 @@ func catchTenPlayerStr(player *domain.CatchTenPlayer, i int) string {
 	))
 	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
-		b.WriteString(cuiIndexedCardListStr(player) + "\n")
+		b.WriteString(catchTenIndexedCardListStr(player, trumpSuit) + "\n")
 	}
 	return b.String()
+}
+
+func catchTenIndexedCardListStr(player *domain.CatchTenPlayer, trumpSuit int) string {
+	return formatCardList(player, func(card *domain.Card) string {
+		cardStr := cuiCardStr(card)
+		if points := domain.CatchTenHonorPoints(card, trumpSuit); points > 0 {
+			cardStr += " (" + strconv.Itoa(points) + ")"
+		}
+		return cardStr
+	}, "  ", true)
 }
 
 // CatchTenCuiPresenter renders the Catch the Ten CUI view.
@@ -44,7 +54,7 @@ func (p *CatchTenCuiPresenter) Output(g interfaces.CatchTenGame, lastErr error) 
 			"t1", strconv.Itoa(g.GetTeamScore(1))) + "\n")
 
 		for i := 0; i < g.GetPlayerCnt(); i++ {
-			b.WriteString(catchTenPlayerStr(g.GetPlayer(i), i))
+			b.WriteString(catchTenPlayerStrWithTrump(g.GetPlayer(i), i, g.GetTrumpSuit()))
 		}
 
 		b.WriteString("----------\n")
