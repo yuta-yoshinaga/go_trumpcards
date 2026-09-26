@@ -432,8 +432,19 @@ function BristolPageContent() {
                           className={`relative rounded border-2 bg-transparent p-0 ${focusRingWhite} ${
                             isSelected(zone) ? 'border-ds-info' : 'border-transparent'
                           }`}
+                          style={{ width: cardWidth + 4, height: (pile.length - 1) * colOffset + cardHeight + 4 }}
                         >
-                          <AnimatedCard card={top} width={cardWidth} draggable={false} />
+                          {pile.map((card, cardIdx) => (
+                            <span
+                              key={`fan-card-${i}-${cardIdx}`}
+                              data-testid={`br-fan-card-${i}-${cardIdx}`}
+                              aria-hidden="true"
+                              className="absolute left-0 right-0"
+                              style={{ top: cardIdx * colOffset, zIndex: cardIdx }}
+                            >
+                              <AnimatedCard card={card} width={cardWidth} draggable={false} />
+                            </span>
+                          ))}
                           {pile.length >= 2 ? (
                             <span
                               aria-hidden="true"

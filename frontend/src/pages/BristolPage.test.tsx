@@ -106,6 +106,26 @@ describe('BristolPage', () => {
     expect(screen.getByTestId('br-fan-count-1')).toHaveTextContent('2');
   });
 
+  it('shows every fan card in a stack while keeping the top card as the move target', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      fan: [[card('HEART', 4), card('SPADE', 5), card('CLOVER', 6)], [], []],
+    });
+    renderWithProviders(<BristolPage />);
+
+    await waitFor(() => expect(screen.getByTestId('br-fan-card-0-0')).toBeInTheDocument());
+    const lowerCard = screen.getByTestId('br-fan-card-0-0');
+    const middleCard = screen.getByTestId('br-fan-card-0-1');
+    const topCard = screen.getByTestId('br-fan-card-0-2');
+
+    expect(lowerCard.querySelector('[data-testid="animated-card"]')).toBeInTheDocument();
+    expect(middleCard.querySelector('[data-testid="animated-card"]')).toBeInTheDocument();
+    expect(topCard.querySelector('[data-testid="animated-card"]')).toBeInTheDocument();
+    expect(Number.parseFloat(lowerCard.style.top)).toBeLessThan(Number.parseFloat(middleCard.style.top));
+    expect(Number.parseFloat(middleCard.style.top)).toBeLessThan(Number.parseFloat(topCard.style.top));
+    expect(screen.getByRole('button', { name: 'ファン 0: ♣ 6（3枚）' })).toHaveAttribute('draggable', 'true');
+  });
+
   it('hides the fan count badge for single-card fans', async () => {
     mockExec.mockResolvedValue({ ...playingState, fan: [[card('HEART', 4)], [], []] });
     renderWithProviders(<BristolPage />);
