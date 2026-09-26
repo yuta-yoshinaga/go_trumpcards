@@ -69,6 +69,7 @@
     "resetButton": "Reset the game."
   },
   "sumIndicator": "Sum {{sum}} / {{target}}",
+  "captureCombination": "Capture combination {{number}}",
   "frontendHint": {
     "escobaEscoba": "This clears the whole table — an escoba, worth a point on its own",
     "escobaCaptureMost": "The card that captures the most",
