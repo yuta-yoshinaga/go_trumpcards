@@ -60,7 +60,8 @@
   "nextRound": "Next Round",
   "roundResult": {
     "title": "Round Result",
-    "winner": "{{name}} won the pot of {{pot}}."
+    "winner": "{{name}} won the pot of {{pot}}.",
+    "none": "The round ended with no winner."
   },
   "matchWinner": "{{name}} won the match!",
   "hint": {

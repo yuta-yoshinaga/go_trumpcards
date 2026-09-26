@@ -73108,6 +73108,9 @@ components:
           type: integer
         pot:
           type: integer
+        lastPayout:
+          type: integer
+          description: "Payout from the previous round."
         currentBet:
           type: integer
         raiseCount:

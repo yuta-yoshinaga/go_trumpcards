@@ -17,7 +17,7 @@ const passState = makeAnacondaState({ phase: 0, passCount: 3, isHumanTurn: true 
 const setState = makeAnacondaState({ phase: 1, passCount: 0, isHumanTurn: true });
 const rollState = makeAnacondaState({ phase: 2, rollIndex: 1, isHumanTurn: true, canRaise: true, currentBet: 10 });
 const rollWaitState = makeAnacondaState({ phase: 2, rollIndex: 1, isHumanTurn: false, currentPlayer: 1 });
-const resultState = makeAnacondaState({ phase: 3, winnerIdx: 0, result: 1, isHumanTurn: false });
+const resultState = makeAnacondaState({ phase: 3, winnerIdx: 0, result: 1, lastPayout: 60, isHumanTurn: false });
 const gameEndState = makeAnacondaState({
   phase: 3,
   gameEndFlag: true,
@@ -155,6 +155,18 @@ describe('AnacondaPage', () => {
     mockExec.mockClear();
     fireEvent.click(btn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
+  });
+
+  it('shows the winner and the paid pot amount, and omits payout when there is no winner', async () => {
+    mockExec.mockResolvedValueOnce(resultState);
+    const { unmount } = renderWithProviders(<AnacondaPage />);
+    expect(await screen.findByText('あなた がポット 60 を獲得しました。')).toBeInTheDocument();
+    unmount();
+
+    mockExec.mockResolvedValue(makeAnacondaState({ phase: 3, winnerIdx: -1, lastPayout: 0, result: 0 }));
+    renderWithProviders(<AnacondaPage />);
+    expect(await screen.findByText('勝者なしでラウンドが終了しました。')).toBeInTheDocument();
+    expect(screen.queryByText(/ポット .* を獲得しました/)).not.toBeInTheDocument();
   });
 
   it('renders the game-end message', async () => {

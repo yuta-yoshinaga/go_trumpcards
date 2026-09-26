@@ -17,6 +17,7 @@ import (
 func mustAnacondaOutputJSON(msg string) string {
 	out := &controller.AnacondaWebOutput{
 		Players:        make([]*controller.AnacondaWebOutputPlayer, 0),
+		LastPayout:     0,
 		WinnerIdx:      -1,
 		MatchWinnerIdx: -1,
 		WebOutputBase:  controller.WebOutputBase{Message: msg},
