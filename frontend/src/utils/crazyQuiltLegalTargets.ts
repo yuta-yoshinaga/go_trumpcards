@@ -27,7 +27,6 @@ export function crazyQuiltLegalTargets(
     if (!selectedCard || pile.length === 0 || pile.length >= 13) return false;
     if (selectedCard.design !== foundationSuits[idx]) return false;
     const top = pile[pile.length - 1];
-    if (!top) return false;
     return foundationAscending?.[idx] !== false
       ? selectedCard.value === top.value + 1
       : selectedCard.value === top.value - 1;

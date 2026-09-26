@@ -124,6 +124,35 @@ describe('CrazyQuiltPage', () => {
     expect(waste).not.toHaveAttribute('data-valid-destination');
   });
 
+  it('announces foundation destinations for a selected waste card', async () => {
+    const foundation = Array.from({ length: 8 }, () => [] as Card[]);
+    foundation[2] = [card('HEART', 7)];
+    mockExec.mockResolvedValue({ ...playingState, foundation, waste: [card('HEART', 8)] });
+    renderWithProviders(<CrazyQuiltPage />);
+
+    const waste = await screen.findByTestId('cq-waste');
+    fireEvent.click(waste);
+
+    expect(await screen.findByTestId('cq-destinations')).toHaveTextContent('有効な移動先: 組札2');
+    expect(waste).not.toHaveAttribute('data-valid-destination');
+  });
+
+  it('announces when the selected card has no legal destination', async () => {
+    mockExec.mockResolvedValue({ ...playingState, waste: [card('HEART', 8)] });
+    renderWithProviders(<CrazyQuiltPage />);
+
+    fireEvent.click(await screen.findByTestId('cq-cell-0'));
+
+    expect(await screen.findByTestId('cq-destinations')).toHaveTextContent('有効な移動先はありません');
+  });
+
+  it('hides the destination announcement when no source is selected', async () => {
+    renderWithProviders(<CrazyQuiltPage />);
+
+    await screen.findByTestId('cq-cell-0');
+    expect(screen.queryByTestId('cq-destinations')).not.toBeInTheDocument();
+  });
+
   // A boxed-in card must not reach the server even if something clicks it.
   it('never dispatches a move for a boxed-in card', async () => {
     renderWithProviders(<CrazyQuiltPage />);
