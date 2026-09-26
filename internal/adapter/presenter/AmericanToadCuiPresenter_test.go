@@ -71,12 +71,26 @@ func TestAmericanToadCuiPresenter_Output(t *testing.T) {
 		setupAmericanToadCuiMockDefaults(g)
 		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetWaste")
 		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetTableau")
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetReserve")
 		g.On("GetWaste").Return([]*domain.Card(nil))
 		g.On("GetTableau").Return([domain.AmericanToadTableauCnt][]*domain.AmericanToadTableauCard{})
+		g.On("GetReserve").Return([]*domain.Card(nil))
 
 		result := new(AmericanToadCuiPresenter).Output(g, nil)
 		assert.Contains(t, result, i18n.T("americantoad.wasteEmpty"))
 		assert.Contains(t, result, "[空]")
+		assert.Contains(t, result, i18n.T("americantoad.emptyColumnDescription"))
+	})
+
+	t.Run("empty columns show reserve refill status", func(t *testing.T) {
+		g := new(interfaces.MockAmericanToadGame)
+		setupAmericanToadCuiMockDefaults(g)
+		g.ExpectedCalls = filterCalls(g.ExpectedCalls, "GetTableau")
+		g.On("GetTableau").Return([domain.AmericanToadTableauCnt][]*domain.AmericanToadTableauCard{})
+
+		result := new(AmericanToadCuiPresenter).Output(g, nil)
+		assert.Contains(t, result, i18n.T("americantoad.reservedColumnLabel"))
+		assert.Contains(t, result, i18n.T("americantoad.reservedColumnDescription"))
 	})
 
 	// The single redeal is easy to miss, so it is announced while it lasts.
