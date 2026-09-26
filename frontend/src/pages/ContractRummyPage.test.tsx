@@ -121,6 +121,37 @@ describe('ContractRummyPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('drawstock'));
   });
 
+  it('binds and advertises phase-specific action shortcuts', async () => {
+    renderWithProviders(<ContractRummyPage />);
+    await screen.findByRole('button', { name: /Draw from stock|山札から引く/ });
+    fireEvent.keyDown(document.body, { key: 'd' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('drawstock'));
+
+    fireEvent.click(within(screen.getByTestId('contractrummy-kbd-shortcuts')).getByText('キーボードショートカット'));
+    expect(screen.getByText(/Draw from the stock|山札から引く/)).toBeInTheDocument();
+    fireEvent.keyDown(document.body, { key: 'n' });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('nextround');
+
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<ContractRummyPage />);
+    await screen.findByRole('button', { name: /Next round|次のラウンドへ/ });
+    fireEvent.keyDown(document.body, { key: 'n' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
+  });
+
+  it('does not bind discard until one card is selected in the play phase', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<ContractRummyPage />);
+    await screen.findByRole('button', { name: /Discard|捨てる/ });
+    fireEvent.keyDown(document.body, { key: 'x' });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('discard', expect.anything());
+    fireEvent.click(screen.getByRole('button', { name: '♠ 5' }));
+    fireEvent.keyDown(document.body, { key: 'x' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', { cardIndex: 0 }));
+  });
+
   it('shows play-phase action buttons after drawing', async () => {
     mockExec.mockResolvedValue(playState);
     renderWithProviders(<ContractRummyPage />);
