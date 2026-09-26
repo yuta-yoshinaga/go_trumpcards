@@ -24,6 +24,8 @@
   "teamScore": "チーム{{n}}: {{score}}",
   "dealerBadge": "親",
   "luetteLegend": "リュエット（強い順）",
+  "luetteRankItem": "{{rank}}位 {{name}}（{{card}}）",
+  "luetteRankExplanation": "この6枚は札ごとに特別な強さを持ち、通常の札より常に強い札です。",
   "noLuetteInHand": "手札にリュエットはありません",
   "luette": {
     "Monsieur": "ムッシュー",
