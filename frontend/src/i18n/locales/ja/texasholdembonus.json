@@ -64,6 +64,7 @@
     "clear": "クリア"
   },
   "betGuide": "アンテと任意のボーナスを設定してベット",
+  "betSummary": "合計: {{total}} / 残り: {{remaining}}",
   "payoutRef": {
     "title": "配当表",
     "anteHeader": "アンテボーナス（ストレート以上）",
