@@ -364,6 +364,29 @@ describe('BakersDozenPage legal targets', () => {
     expect(screen.getByRole('status', { name: '移動先' })).toHaveTextContent('移動可能なタブロー列: 2');
   });
 
+  it('announces legal foundation destinations', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: makeTableau([[{ card: card('SPADE', 1), faceUp: true }]]),
+    });
+    renderWithProviders(<BakersDozenPage />);
+    fireEvent.click(await screen.findByRole('button', { name: '♠ A' }));
+    const status = screen.getByTestId('bd-destination-live');
+    await waitFor(() => expect(status).toHaveTextContent('移動可能なタブロー列: なし。組札の移動先: ♠、♣、♥、♦。'));
+  });
+
+  it('announces when neither tableau nor foundation has a destination', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: makeTableau([[{ card: card('SPADE', 13), faceUp: true }]]),
+    });
+    renderWithProviders(<BakersDozenPage />);
+    fireEvent.click(await screen.findByRole('button', { name: '♠ K' }));
+    expect(screen.getByTestId('bd-destination-live')).toHaveTextContent(
+      '移動可能なタブロー列: なし。組札の移動先: なし。',
+    );
+  });
+
   it('separates multiple announced tableau destinations', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
@@ -449,6 +472,7 @@ describe('BakersDozenPage destination preview', () => {
 
     fireEvent.mouseEnter(spadeFive);
     await waitFor(() => expect(targets().length).toBeGreaterThan(0));
+    expect(screen.getByTestId('bd-destination-live')).toHaveTextContent('移動可能なタブロー列: 2');
     // プレビュー中は弱いリング。選択後と見分けが付く。
     expect(previews().length).toBe(targets().length);
     expect(targets()[0]?.className).toContain('ring-ds-success/70');
@@ -461,6 +485,7 @@ describe('BakersDozenPage destination preview', () => {
     const spadeFive = await render();
     fireEvent.focus(spadeFive);
     await waitFor(() => expect(previews().length).toBeGreaterThan(0));
+    expect(screen.getByTestId('bd-destination-live')).toHaveTextContent('移動可能なタブロー列: 2');
     fireEvent.blur(spadeFive);
     await waitFor(() => expect(targets().length).toBe(0));
   });

@@ -229,16 +229,14 @@ function BakersDozenPageContent() {
       ? state.tableau[previewSource.col]?.[previewSource.cardIndex]?.card
       : undefined;
   const legalTargets = bakersDozenLegalTargets(state.tableau, state.foundation, previewedCard);
-  const destinationAnnouncement =
-    selectedSource && previewedCard
-      ? t('destinationAnnouncement', {
-          tableau:
-            [...legalTargets.tableau].map((col) => col + 1).join(t('listSeparator')) || t('noTableauDestination'),
-          foundation:
-            [...legalTargets.foundation].map((idx) => FOUNDATION_SUITS[idx]).join(t('listSeparator')) ||
-            t('noFoundationDestination'),
-        })
-      : '';
+  const destinationAnnouncement = previewedCard
+    ? t('destinationAnnouncement', {
+        tableau: [...legalTargets.tableau].map((col) => col + 1).join(t('listSeparator')) || t('noDestination'),
+        foundation:
+          [...legalTargets.foundation].map((idx) => FOUNDATION_SUITS[idx]).join(t('listSeparator')) ||
+          t('noDestination'),
+      })
+    : '';
   /** Ring for a legal destination: softer while it is only a hover preview. */
   const targetRing = preview.isPreview ? ' rounded ring-2 ring-ds-success/70' : ' rounded ring-2 ring-ds-success';
 
@@ -454,7 +452,13 @@ function BakersDozenPageContent() {
               })}
             </div>
 
-            <div role="status" aria-live="polite" aria-atomic="true" aria-label={t('destinationStatusLabel')}>
+            <div
+              data-testid="bd-destination-live"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+              aria-label={t('destinationStatusLabel')}
+            >
               {destinationAnnouncement}
             </div>
 

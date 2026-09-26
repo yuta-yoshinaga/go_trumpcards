@@ -27,8 +27,7 @@
   "destinationStatusLabel": "Move destinations",
   "listSeparator": ", ",
   "destinationAnnouncement": "Legal tableau columns: {{tableau}}. Legal foundations: {{foundation}}.",
-  "noTableauDestination": "none",
-  "noFoundationDestination": "none",
+  "noDestination": "none",
   "tutorial": {
     "foundation": "Build 4 foundation piles by suit from Ace to King.",
     "tableau": "13 tableau columns of 4 cards each. Kings are automatically moved to the bottom at deal time.",
