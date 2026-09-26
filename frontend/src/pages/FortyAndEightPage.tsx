@@ -214,6 +214,13 @@ function FortyAndEightPageContent() {
   const isGameClear = state.phase === FortyAndEightPhase.GAME_CLEAR;
   const isGameOver = state.phase === FortyAndEightPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
+  const completedFoundationCount = isEnded ? state.foundation.filter((pile) => pile.length === 13).length : 0;
+  const foundationCardCount = isEnded ? state.foundation.reduce((count, pile) => count + pile.length, 0) : 0;
+  // Stock, every waste card, and every tableau card are disjoint zones. Waste's
+  // display only reveals its top card, but its state array contains the whole pile.
+  const remainingCardCount = isEnded
+    ? state.stockCount + state.waste.length + state.tableau.reduce((count, column) => count + column.length, 0)
+    : 0;
   const autoCompleteReady = state.stockCount === 0 && state.waste.length === 0 && isTableauAllFaceUp(state.tableau);
 
   const isSourceSelected = (zone: string, col?: number, cardIndex?: number) =>
@@ -484,6 +491,22 @@ function FortyAndEightPageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
+
+            {isEnded && (
+              <section
+                data-testid="f8-end-summary"
+                className="mt-2 rounded-lg border border-ds-border-subtle bg-ds-surface/80 px-3 py-2 text-center text-sm text-ds-text-primary"
+              >
+                <h2 className="font-bold">{t(isGameClear ? 'endSummary.clearTitle' : 'endSummary.gameOverTitle')}</h2>
+                <p className="text-ds-text-muted">
+                  {t('endSummary.counts', {
+                    completed: completedFoundationCount,
+                    foundationCards: foundationCardCount,
+                    remaining: remainingCardCount,
+                  })}
+                </p>
+              </section>
+            )}
 
             {/* Action log */}
             <ActionLogSection

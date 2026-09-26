@@ -121,6 +121,52 @@ describe('FortyAndEightPage', () => {
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
   });
 
+  it('shows a clear summary with completed foundations, foundation cards, and remaining cards', async () => {
+    mockExec.mockResolvedValue({
+      ...gameClearState,
+      stockCount: 2,
+      waste: [card('SPADE', 8), card('HEART', 9)],
+      tableau: makeTableau([[{ card: card('CLOVER', 10), faceUp: true }]]),
+      foundation: [
+        Array.from({ length: 13 }, (_, i) => card('SPADE', i + 1)),
+        [card('SPADE', 1)],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+      ],
+    });
+    renderWithProviders(<FortyAndEightPage />);
+    const summary = await screen.findByTestId('f8-end-summary');
+    expect(summary).toHaveTextContent('ゲームクリア時のまとめ');
+    expect(summary).toHaveTextContent('完成した組札: 1');
+    expect(summary).toHaveTextContent('組札の札: 14');
+    expect(summary).toHaveTextContent('未完成の札: 5');
+  });
+
+  it('shows a game-over summary and omits it while playing', async () => {
+    mockExec.mockResolvedValue({
+      ...gameOverState,
+      stockCount: 3,
+      waste: [card('SPADE', 8), card('HEART', 9)],
+      foundation: [[card('SPADE', 1), card('SPADE', 2)], [], [], [], [], [], [], []],
+    });
+    const { unmount } = renderWithProviders(<FortyAndEightPage />);
+    const summary = await screen.findByTestId('f8-end-summary');
+    expect(summary).toHaveTextContent('ゲームオーバー時のまとめ');
+    expect(summary).toHaveTextContent('完成した組札: 0');
+    expect(summary).toHaveTextContent('組札の札: 2');
+    expect(summary).toHaveTextContent('未完成の札: 8');
+
+    unmount();
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<FortyAndEightPage />);
+    await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
+    expect(screen.queryByTestId('f8-end-summary')).not.toBeInTheDocument();
+  });
+
   it('distinguishes the two same-suit foundation piles in their aria-labels', async () => {
     mockExec.mockResolvedValue(playingState); // all 8 foundations empty
     renderWithProviders(<FortyAndEightPage />);
