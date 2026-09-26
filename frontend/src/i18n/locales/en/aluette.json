@@ -24,6 +24,8 @@
   "teamScore": "Team {{n}}: {{score}}",
   "dealerBadge": "Dealer",
   "luetteLegend": "Luettes (strongest first)",
+  "luetteRankItem": "{{rank}}: {{name}} ({{card}})",
+  "luetteRankExplanation": "Each of these six named cards has a special strength and outranks every ordinary card.",
   "noLuetteInHand": "No luette in hand",
   "luette": {
     "Monsieur": "Monsieur",
