@@ -44,6 +44,7 @@
   "bidButton": "Bid",
   "passButton": "Pass",
   "bidSelectLabel": "Select your bid",
+  "selectedBid": "Selected bid: {{n}}",
   "playButton": "Play",
   "nextTrick": "Next trick",
   "nextRound": "Next round",
