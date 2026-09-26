@@ -474,7 +474,7 @@ function CrescentPageContent() {
               role="status"
               aria-live="polite"
             >
-              {isPlaying && state.isStalemate && state.redealsRemaining > 0
+              {isPlaying && state.noLegalMoves && state.redealsRemaining > 0
                 ? t('stalemateRedealAvailable', { count: state.redealsRemaining })
                 : ''}
             </div>

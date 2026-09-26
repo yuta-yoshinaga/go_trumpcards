@@ -17,6 +17,7 @@ func mustCrescentOutputJSON(msg string) string {
 	out := &controller.CrescentWebOutput{
 		Tableau:       [][]*controller.CrescentWebOutputTableauCard{},
 		Foundation:    [][]*controller.WebOutputCard{},
+		NoLegalMoves:  false,
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)

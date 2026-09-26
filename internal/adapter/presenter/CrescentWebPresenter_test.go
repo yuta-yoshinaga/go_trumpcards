@@ -20,6 +20,7 @@ func setupCrescentWebMockDefaults(cg *interfaces.MockCrescentGame) {
 	cg.On("GetRedealsRemaining").Return(domain.CrescentMaxRedeals).Maybe()
 	cg.On("CanUndo").Return(false).Maybe()
 	cg.On("IsStalemate").Return(false).Maybe()
+	cg.On("HasNoLegalMoves").Return(false).Maybe()
 	cg.On("UndoToEscape").Return(0).Maybe()
 
 	var tableau [domain.CrescentTableauCnt][]*domain.CrescentTableauCard
@@ -69,9 +70,19 @@ func TestCrescentWebPresenter_Output(t *testing.T) {
 		result := parseCrescentOutput(t, p.Output(cg, nil))
 		assert.Equal(t, 0, result.Phase)
 		assert.Equal(t, domain.CrescentMaxRedeals, result.RedealsRemaining)
+		assert.False(t, result.NoLegalMoves)
 		assert.Len(t, result.Tableau, domain.CrescentTableauCnt)
 		assert.Len(t, result.Foundation, domain.CrescentFoundationCnt)
 		assert.Equal(t, "crescent.playing", result.MessageCode)
+	})
+
+	t.Run("no legal moves with redeals remaining", func(t *testing.T) {
+		cg := new(interfaces.MockCrescentGame)
+		setupCrescentOutputMock(cg)
+		cg.ExpectedCalls = filterCalls(cg.ExpectedCalls, "HasNoLegalMoves")
+		cg.On("HasNoLegalMoves").Return(true)
+		result := parseCrescentOutput(t, new(CrescentWebPresenter).Output(cg, nil))
+		assert.True(t, result.NoLegalMoves)
 	})
 
 	t.Run("error message", func(t *testing.T) {

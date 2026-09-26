@@ -51,6 +51,7 @@ const playingState: CrescentResponse = {
   moveCount: 5,
   canUndo: false,
   isStalemate: false,
+  noLegalMoves: false,
   message: '',
 };
 
@@ -136,7 +137,7 @@ describe('CrescentPage', () => {
   });
 
   it('announces when a stalemate can be resolved with a redeal and updates after redealing', async () => {
-    mockExec.mockResolvedValue({ ...playingState, isStalemate: true, redealsRemaining: 2 });
+    mockExec.mockResolvedValue({ ...playingState, noLegalMoves: true, redealsRemaining: 2 });
     renderWithProviders(<CrescentPage />);
 
     const guidance = await screen.findByTestId('crescent-stalemate-redeal-status');
@@ -144,13 +145,13 @@ describe('CrescentPage', () => {
     expect(guidance).toHaveAttribute('aria-live', 'polite');
     expect(guidance).toHaveTextContent(/手詰まり.*再配り.*2/);
 
-    mockExec.mockResolvedValue({ ...playingState, isStalemate: true, redealsRemaining: 1 });
+    mockExec.mockResolvedValue({ ...playingState, noLegalMoves: true, redealsRemaining: 1 });
     fireEvent.click(screen.getByRole('button', { name: /再配り \(2\)/ }));
     await waitFor(() => expect(guidance).toHaveTextContent(/手詰まり.*再配り.*1/));
   });
 
   it('keeps the stalemate redeal status region mounted and clears its message when not applicable', async () => {
-    mockExec.mockResolvedValue({ ...playingState, isStalemate: false, redealsRemaining: 2 });
+    mockExec.mockResolvedValue({ ...playingState, noLegalMoves: false, redealsRemaining: 2 });
     renderWithProviders(<CrescentPage />);
     const guidance = await screen.findByTestId('crescent-stalemate-redeal-status');
     expect(guidance).toHaveAttribute('aria-live', 'polite');
