@@ -456,7 +456,9 @@ function KalookiPageContent() {
                     const isInGroup = groupIdx >= 0;
                     const ariaLabel = isInGroup
                       ? t('cardInGroup', { card: cardAlt(c), group: groupIdx + 1 })
-                      : cardAlt(c);
+                      : isMeldPhase
+                        ? t(isSelected ? 'selection.selected' : 'selection.unselected', { card: cardAlt(c) })
+                        : cardAlt(c);
                     return (
                       <button
                         type="button"
