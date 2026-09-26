@@ -222,10 +222,19 @@ function AluettePageContent() {
               cannot be read off the hand — the table is permanent, not a tooltip.
             */}
             <div className="text-center mb-2 text-sm" data-tutorial="aluette-luettes" data-testid="aluette-luettes">
-              <span className="font-semibold text-ds-warning">{t('luetteLegend')}: </span>
-              <span className="text-ds-text-muted">
-                {luettes.map((l) => `${t(`luette.${l.name}`)} (${t(`suit.${l.design}`)}${l.value})`).join(' > ')}
-              </span>
+              <span className="font-semibold text-ds-warning">{t('luetteLegend')}</span>
+              <p className="text-ds-text-muted">{t('luetteRankExplanation')}</p>
+              <ol aria-label={t('luetteLegend')} className="flex flex-wrap justify-center gap-x-3 text-ds-text-muted">
+                {luettes.map((l, index) => (
+                  <li key={l.name}>
+                    {t('luetteRankItem', {
+                      rank: index + 1,
+                      name: t(`luette.${l.name}`),
+                      card: `${t(`suit.${l.design}`)}${l.value}`,
+                    })}
+                  </li>
+                ))}
+              </ol>
             </div>
 
             <div className={lgTwoColGrid}>
