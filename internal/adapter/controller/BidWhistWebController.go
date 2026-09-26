@@ -77,6 +77,7 @@ type BidWhistWebOutput struct {
 	KittyIndices      []int                      `json:"kittyIndices"`
 	CurrentTrick      []*WebOutputTrickCard      `json:"currentTrick"`
 	TeamScores        [2]int                     `json:"teamScores"`
+	TargetScore       int                        `json:"targetScore"`
 	GameEndFlag       bool                       `json:"gameEndFlag"`
 	WinnerTeam        int                        `json:"winnerTeam"`
 	Hint              *BidWhistWebOutputHint     `json:"hint,omitempty"`

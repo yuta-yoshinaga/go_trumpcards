@@ -58,6 +58,7 @@ function makeState(overrides: Partial<BidWhistResponse> = {}): BidWhistResponse 
     kittyIndices: [],
     currentTrick: [],
     teamScores: [0, 0],
+    targetScore: 7,
     gameEndFlag: false,
     winnerTeam: -1,
     config: { cpuDifficulty: 1, targetScore: 7 },
@@ -87,6 +88,19 @@ describe('BidWhistPage', () => {
     expect(screen.getByRole('option', { name: 'かんたん' })).toBeInTheDocument();
     expect(screen.getByRole('option', { name: 'ふつう' })).toBeInTheDocument();
     expect(screen.getByRole('option', { name: 'むずかしい' })).toBeInTheDocument();
+  });
+
+  it('shows the server target score beside team scores, even after local config changes', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: BidWhistPhase.GAME_END, gameEndFlag: true, targetScore: 9 }));
+    renderWithProviders(<BidWhistPage />);
+
+    expect(await screen.findByText('勝利目標: 9点')).toBeInTheDocument();
+
+    const targetScore = screen.getByLabelText('目標スコア');
+    for (const score of [11, 7]) {
+      fireEvent.change(targetScore, { target: { value: String(score) } });
+      expect(screen.getByText('勝利目標: 9点')).toBeInTheDocument();
+    }
   });
 
   it('shows bid controls on the human bid turn', async () => {

@@ -57,6 +57,7 @@ func (p *BidWhistWebPresenter) buildBase(g interfaces.BidWhistGame) *controller.
 	resObj.KittyCount = len(g.GetKitty())
 	resObj.KittyIndices = bidWhistKittyIndicesForHuman(g)
 	resObj.TeamScores = [2]int{g.GetTeamScore(0), g.GetTeamScore(1)}
+	resObj.TargetScore = g.GetConfig().TargetScore
 	resObj.GameEndFlag = g.GetGameEndFlag()
 	resObj.WinnerTeam = g.GetWinnerTeam()
 

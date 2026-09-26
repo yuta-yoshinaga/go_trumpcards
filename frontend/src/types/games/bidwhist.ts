@@ -70,6 +70,7 @@ export interface BidWhistResponse extends BaseGameResponse {
   kittyIndices: number[];
   currentTrick: BidWhistTrickCard[];
   teamScores: [number, number];
+  targetScore: number;
   gameEndFlag: boolean;
   winnerTeam: number;
   config: BidWhistConfig;

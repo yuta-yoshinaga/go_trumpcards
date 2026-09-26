@@ -73858,6 +73858,8 @@ components:
           type: integer
         currentTrick:
           type: array
+        targetScore:
+          type: integer
         teamScores:
           type: array
           items:
