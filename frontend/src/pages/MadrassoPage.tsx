@@ -32,6 +32,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { MADRASSO_HELP, parseMadrassoCommand } from '../utils/cli/commands/madrassoCommands';
 import { formatMadrassoState } from '../utils/cli/formatters/madrassoFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { madrassoTrickPoints } from '../utils/madrassoTrickPoints';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -184,6 +185,8 @@ function MadrassoPageContent() {
   const trumpSymbol = SUIT_GLYPHS[state.trumpSuit] ?? t('noTrump');
 
   const teamLabels = ['A', 'B'];
+  const currentTrickPoints = madrassoTrickPoints(state.currentTrick);
+  const trickWinnerTeam = isTrickEnd ? state.players[state.lastTrickWinner]?.teamId : undefined;
 
   return (
     <GamePageShell
@@ -250,6 +253,14 @@ function MadrassoPageContent() {
                   label={t('currentTrick')}
                   dataTutorial="tr-trick-display"
                 />
+                <div className="mb-2 text-center text-sm text-ds-text-primary" data-testid="madrasso-trick-points">
+                  {trickWinnerTeam === undefined
+                    ? t('currentTrickPoints', { points: currentTrickPoints })
+                    : t('wonTrickPoints', {
+                        team: teamLabels[trickWinnerTeam],
+                        points: currentTrickPoints,
+                      })}
+                </div>
 
                 {/* Previous trick reviewer: lets the player recount the just-completed trick */}
                 <details className="mb-2 p-2 rounded bg-black/30" data-testid="tr-previous-trick">
