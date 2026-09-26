@@ -22,6 +22,7 @@
   "total": "Total {{n}} / 31",
   "score": "score {{n}}",
   "cards": "{{n}} card(s)",
+  "waitingForOpponent": "Waiting for the other player.",
   "dealerBadge": "Dealer",
   "mogAccept": "Exchange",
   "mogRefuse": "Refuse (opponent pegs 1)",
