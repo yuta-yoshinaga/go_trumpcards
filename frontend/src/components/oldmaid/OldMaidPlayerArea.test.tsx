@@ -81,6 +81,22 @@ describe('OldMaidPlayerArea suspect/target a11y', () => {
   });
 });
 
+describe('OldMaidPlayerArea keyboard draw guidance', () => {
+  it('names the target and explains keyboard activation only while its positions are selectable', () => {
+    const props = { ...defaultProps, isTarget: true, isHumanTurn: true };
+    const { rerender } = render(<OldMaidPlayerArea {...props} player={makeCpuPlayer(3)} />);
+    expect(screen.getByText(/CPU.*左から1枚目/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'カード 1 枚目を引く' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'カード 3 枚目を引く' })).toBeInTheDocument();
+
+    rerender(<OldMaidPlayerArea {...props} isHumanTurn={false} player={makeCpuPlayer(3)} />);
+    expect(screen.queryByText(/CPU.*左から1枚目/)).not.toBeInTheDocument();
+
+    rerender(<OldMaidPlayerArea {...props} gameEndFlag player={makeCpuPlayer(3)} />);
+    expect(screen.queryByText(/CPU.*左から1枚目/)).not.toBeInTheDocument();
+  });
+});
+
 describe('OldMaidPlayerArea does not reveal the CPU placement trap', () => {
   const selectableProps = { ...defaultProps, isTarget: true, isHumanTurn: true };
 
