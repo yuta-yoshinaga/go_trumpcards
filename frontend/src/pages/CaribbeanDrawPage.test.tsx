@@ -260,6 +260,22 @@ describe('CaribbeanDrawPage', () => {
       await waitFor(() => expect(mockApi).toHaveBeenCalledWith('draw', undefined, undefined, []));
     });
 
+    it('explains why Draw is disabled and updates its accessible description with the selection', async () => {
+      mockApi.mockResolvedValue(drawPhaseState);
+      renderWithProviders(<CaribbeanDrawPage />);
+      const drawButton = await screen.findByTestId('cd-draw-button');
+
+      expect(drawButton).toBeDisabled();
+      const description = document.getElementById(drawButton.getAttribute('aria-describedby') ?? '');
+      expect(description).toHaveTextContent('交換する札を1枚以上選んでください。最大2枚まで選べます。');
+
+      fireEvent.click(screen.getByTestId('cd-player-card-0'));
+      expect(description).toHaveTextContent('1枚選択中です。最大2枚まで交換できます。');
+
+      fireEvent.click(screen.getByTestId('cd-player-card-1'));
+      expect(description).toHaveTextContent('2枚選択中です。最大2枚まで交換できます。');
+    });
+
     it('will not confirm an exchange of nothing', async () => {
       mockApi.mockResolvedValue(drawPhaseState);
       renderWithProviders(<CaribbeanDrawPage />);

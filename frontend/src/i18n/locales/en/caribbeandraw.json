@@ -30,7 +30,9 @@
     "fee": "Exchange fee {{cost}} (the same as your ante). Standing pat is free.",
     "selected": "Selected: {{count}} / {{max}}",
     "cardSelected": "selected for exchange",
-    "maxReached": "You may exchange at most {{max}} cards."
+    "maxReached": "You may exchange at most {{max}} cards.",
+    "selectionRequired": "Select at least one card to use Draw. You may select up to {{max}} cards.",
+    "selectionReady": "{{count}} card(s) selected. You may exchange up to {{max}} cards."
   },
   "result": {
     "playerWins": "You win!",
