@@ -381,6 +381,13 @@ function CinchPageContent() {
                 </div>
               )}
             </div>
+            <div data-testid="cinch-trump-selection-live" role="status" aria-live="polite">
+              {state.trumpSuit >= 1 && (
+                <div className="mb-1 text-center text-sm text-ds-accent font-semibold">
+                  {t('trumpConfirmed', { suit: suitLabel(state.trumpSuit) })}
+                </div>
+              )}
+            </div>
             {canBid && bidStrength && (
               <div
                 className="mb-2 mx-auto max-w-xl p-2 rounded bg-black/30 text-ds-text-muted text-xs text-center"
