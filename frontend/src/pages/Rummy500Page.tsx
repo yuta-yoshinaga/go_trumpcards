@@ -376,6 +376,19 @@ function Rummy500PageContent() {
                 )}
               </div>
             ))}
+            {isRoundEnd && (
+              <section data-testid="round-hand-penalties" className="my-3 rounded bg-ds-surface p-3">
+                <h2 className="mb-2 text-sm font-semibold text-ds-text-primary">{t('roundHandPenalties')}</h2>
+                <ul className="space-y-1 text-sm text-ds-text-muted">
+                  {state.players.map((p) => (
+                    <li key={p.id} className="flex justify-between gap-4">
+                      <span>{playerName(p.id, p.isHuman)}</span>
+                      <span className="tabular-nums">{t('handPenalty', { points: rummy500HandPenalty(p.cards) })}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
             <RoundScoreAnnouncement
               active={isRoundEnd || isGameEnd}
               entries={state.players.map((p) => ({

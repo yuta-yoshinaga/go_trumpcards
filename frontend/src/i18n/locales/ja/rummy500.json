@@ -37,6 +37,7 @@
   "drawDiscardRangeLabel": "{{card}} から{{count}}枚引き取る",
   "pickupBadge": "{{count}}枚引き取る",
   "handPenalty": "手札ペナルティ: -{{points}}点",
+  "roundHandPenalties": "各プレイヤーの手札ペナルティ",
   "handPenaltyHint": "誰かが上がった時、手札に残ったカードの合計がマイナス点になります",
   "winner": {
     "human": "あなたの勝利！",
