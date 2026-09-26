@@ -1184,6 +1184,8 @@ describe('PineapplePage', () => {
     expect(live2.textContent).toContain('♥ 10');
     expect(live2.textContent).toContain('♠ 10');
     expect(live2.textContent).toContain('♦ 2');
+    expect(live2.textContent).toContain('残すカード: ♠ 10、♦ 2');
+    expect(live2.textContent).not.toContain('残すカード: ♠ 10、♥ 10、♦ 2');
     expect(live2.textContent).not.toContain('おすすめ');
     // A key looked up in the wrong namespace comes back as the identifier itself,
     // which would still satisfy every assertion above except this one.
