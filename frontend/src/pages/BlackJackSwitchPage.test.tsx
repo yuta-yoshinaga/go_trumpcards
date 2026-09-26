@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { blackjackswitchApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BlackJackSwitchResponse } from '../types/card';
 import { BlackJackSwitchPhase, BlackJackSwitchResult } from '../types/phases';
@@ -196,6 +197,32 @@ describe('BlackJackSwitchPage', () => {
     expect(await screen.findByRole('button', { name: /Hit|ヒット/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Stand|スタンド/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Double Down|ダブルダウン/ })).toBeInTheDocument();
+  });
+
+  it('disables Double Down and its keyboard shortcut when chips are below the current bet', async () => {
+    mockApi.mockResolvedValue({ ...actionState, chips: 99 });
+    renderWithProviders(<BlackJackSwitchPage />);
+    const doubleDownButton = await screen.findByRole('button', { name: /Double Down|ダブルダウン/ });
+
+    expect(doubleDownButton).toBeDisabled();
+    mockApi.mockClear();
+    fireEvent.keyDown(document.body, { key: 'd' });
+    await flushPendingDispatch();
+    expect(mockApi).not.toHaveBeenCalledWith('doubledown');
+  });
+
+  it('allows Double Down by button and keyboard when chips cover the current bet', async () => {
+    mockApi.mockResolvedValue(actionState);
+    renderWithProviders(<BlackJackSwitchPage />);
+    const doubleDownButton = await screen.findByRole('button', { name: /Double Down|ダブルダウン/ });
+
+    expect(doubleDownButton).toBeEnabled();
+    fireEvent.click(doubleDownButton);
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('doubledown'));
+
+    mockApi.mockClear();
+    fireEvent.keyDown(document.body, { key: 'd' });
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('doubledown'));
   });
 
   it('shows the dealer-22 push banner in END phase', async () => {
