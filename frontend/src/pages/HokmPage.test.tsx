@@ -86,6 +86,18 @@ describe('HokmPage', () => {
     expect(live).toHaveAttribute('aria-atomic', 'true');
   });
 
+  it('explains that play is over and puts the next-hand action in the result', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 2, lastHandWinner: 0, lastHandKot: true }));
+    renderWithProviders(<HokmPage />);
+
+    const result = await screen.findByTestId('hk-hand-result');
+    expect(result).toHaveTextContent('Kot');
+    expect(result).toHaveTextContent('残りのトリックはプレイしません');
+    const nextHand = screen.getByTestId('hk-next-hand-result');
+    expect(nextHand).toHaveAccessibleName('次のハンドへ');
+    expect(result).toContainElement(nextHand);
+  });
+
   // **13トリック打ち切らないことは盤面から読めない。** 7先取の競り合いを常に出す。
   it('leads with the race to seven tricks', async () => {
     mockExec.mockResolvedValue(playing({ teamTricks: [5, 2] } as Partial<HokmResponse>));
