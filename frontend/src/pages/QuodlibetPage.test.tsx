@@ -120,6 +120,37 @@ describe('QuodlibetPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0 }));
   });
 
+  it('announces legal and restricted cards and ignores attempts to select restricted cards', async () => {
+    mockExec.mockResolvedValue(makeQuodlibetState({ ...playState, playableIndices: [0] }));
+    renderWithProviders(<QuodlibetPage />);
+    const cards = await screen.findAllByRole('button', { name: /♠|♥|♦|♣/ });
+
+    expect(cards[0]).toHaveAttribute('data-legal', 'true');
+    expect(cards[0]).toHaveAttribute('aria-pressed', 'false');
+    expect(cards[1]).toHaveAttribute('aria-disabled', 'true');
+    expect(cards[1]).toHaveAccessibleDescription(jaQuodlibet.restrictedTooltip);
+
+    fireEvent.click(cards[1]);
+    expect(cards[1]).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(cards[0]);
+    expect(cards[0]).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('marks every card restricted when it is not the human turn', async () => {
+    mockExec.mockResolvedValue(makeQuodlibetState({ ...playState, isHumanTurn: false }));
+    renderWithProviders(<QuodlibetPage />);
+    const cards = await screen.findAllByRole('button', { name: /♠|♥|♦|♣/ });
+
+    expect(cards.length).toBeGreaterThan(0);
+    for (const card of cards) {
+      expect(card).toHaveAttribute('aria-disabled', 'true');
+      expect(card).toHaveAccessibleDescription(jaQuodlibet.restrictedTooltip);
+      fireEvent.click(card);
+      expect(card).toHaveAttribute('aria-pressed', 'false');
+    }
+    expect(screen.queryByTestId('quodlibet-play')).not.toBeInTheDocument();
+  });
+
   // **点は罰点で、少ないほうが勝ち。** 向きを書かないと多い人が勝っている
   // ように読める。
   it('labels the score column as penalty points', async () => {
