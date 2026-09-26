@@ -253,6 +253,15 @@ function SpeculationPageContent() {
                       ? t('result.youWin')
                       : t('result.seatWins', { name: state.seats[state.winnerSeat]?.name ?? '' })}
                 </div>
+                {state.lastTrade && (
+                  <div className="text-ds-text-muted text-sm" data-testid="sp-last-trade">
+                    {t('result.trade', {
+                      buyer: state.seats[state.lastTrade.buyerSeat]?.name ?? '',
+                      seller: state.seats[state.lastTrade.sellerSeat]?.name ?? '',
+                      price: state.lastTrade.price,
+                    })}
+                  </div>
+                )}
                 {gameOver && (
                   <div className="text-ds-text-muted text-sm" data-testid="sp-final-chips">
                     {t('result.finalChips', { chips: human?.chips ?? 0 })}

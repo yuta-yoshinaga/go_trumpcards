@@ -203,6 +203,7 @@ func mustSpeculationOutputJSON(msg string) string {
 		OfferFrom:     -1,
 		OfferTo:       -1,
 		WinnerSeat:    -1,
+		LastTrade:     nil,
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)

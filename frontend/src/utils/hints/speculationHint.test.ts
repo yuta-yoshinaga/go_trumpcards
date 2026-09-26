@@ -18,6 +18,7 @@ const base: SpeculationResponse = {
   roundNo: 0,
   winnerSeat: -1,
   gameEndFlag: false,
+  lastTrade: null,
   message: '',
 };
 

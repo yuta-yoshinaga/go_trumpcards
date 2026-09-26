@@ -50,6 +50,14 @@ export interface SpeculationConfig {
   rounds: number;
 }
 
+/** Most recently completed purchase in the current round. */
+export interface SpeculationTrade {
+  buyerSeat: number;
+  sellerSeat: number;
+  price: number;
+  card: Card | null;
+}
+
 /** Response payload for `/speculation/exec`. */
 export interface SpeculationResponse extends BaseGameResponse {
   /** 0=Flip, 1=Auction, 2=Result, 3=GameEnd. */
@@ -75,5 +83,7 @@ export interface SpeculationResponse extends BaseGameResponse {
   /** Winner of the round just settled, or {@link SPECULATION_NO_SEAT} when void. */
   winnerSeat: number;
   gameEndFlag: boolean;
+  /** Most recently completed purchase, or null when no trade occurred. */
+  lastTrade: SpeculationTrade | null;
   config?: SpeculationConfig;
 }

@@ -31,6 +31,7 @@
   "result.youWin": "あなたがポットを取りました！",
   "result.seatWins": "{{name}} がポットを取りました",
   "result.void": "切り札が1枚も出ませんでした。参加料は返却されます",
+  "result.trade": "{{buyer}} が {{seller}} から {{price}} で購入",
   "result.finalChips": "最終チップ: {{chips}}",
   "button.flip": "めくる",
   "button.accept": "受ける",

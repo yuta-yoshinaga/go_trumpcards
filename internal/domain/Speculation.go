@@ -71,7 +71,16 @@ type Speculation struct {
 	roundNo     int
 	winnerSeat  int
 	gameEndFlag bool
+	lastTrade   *SpeculationTrade
 	actionLogBase
+}
+
+// SpeculationTrade records the most recent completed purchase.
+type SpeculationTrade struct {
+	BuyerSeat  int
+	SellerSeat int
+	Price      int
+	Card       *Card
 }
 
 func (g *Speculation) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
@@ -119,6 +128,7 @@ func (g *Speculation) Reset() {
 	g.bestSeat = -1
 	g.winnerSeat = -1
 	g.gameEndFlag = false
+	g.lastTrade = nil
 	g.actionLog = nil
 	g.trumpCard = nil
 	g.trumpSuit = -1
@@ -346,6 +356,7 @@ func (g *Speculation) Accept() error {
 	}
 	owner.AddChips(amount)
 	card := owner.GetBest()
+	g.lastTrade = &SpeculationTrade{BuyerSeat: g.offerFrom, SellerSeat: g.offerTo, Price: g.offerAmount, Card: card}
 	owner.SetBest(nil)
 	g.bestSeat = g.offerFrom
 	buyer.SetBest(card)
@@ -517,6 +528,9 @@ func (g *Speculation) GetWinnerSeat() int { return g.winnerSeat }
 
 // GetGameEndFlag はゲームが終わったかを返す。
 func (g *Speculation) GetGameEndFlag() bool { return g.gameEndFlag }
+
+// GetLastTrade returns the most recent completed purchase in this round.
+func (g *Speculation) GetLastTrade() *SpeculationTrade { return g.lastTrade }
 
 // --- Test helpers ---
 
