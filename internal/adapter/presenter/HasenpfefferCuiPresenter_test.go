@@ -93,6 +93,7 @@ func TestHasenpfefferCuiPresenterShowsEveryBidState(t *testing.T) {
 	out := p.Output(h, nil)
 	assert.Contains(t, out, i18n.T("hasenpfeffer.bidPassed"))
 	assert.Contains(t, out, i18n.T("hasenpfeffer.bidNone"))
+	assert.Contains(t, out, "未宣言", "未入札はWebと同じ用語で表示する")
 }
 
 // **降りられるかどうかが場面で変わる。** 3 通りすべてを踏む。
