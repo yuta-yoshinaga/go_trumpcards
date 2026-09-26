@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -11,6 +12,7 @@ import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCassinoGame } from '../hooks/useCassinoGame';
 import { useCliGame } from '../hooks/useCliGame';
@@ -136,6 +138,18 @@ function CassinoPageContent() {
   // is still null.
   const human = state && state.players.length >= 4 ? state.players[0] : null;
   const isHumanTurn = !!state && state.currentTurn === 0 && !state.gameEndFlag;
+  const canTake = isHumanTurn && handIndex !== null && (tableIndices.length > 0 || buildIndices.length > 0);
+  const canBuild = isHumanTurn && handIndex !== null && tableIndices.length > 0;
+  const canTrail = isHumanTurn && handIndex !== null;
+  const actionBindings = useMemo(
+    () => [
+      { key: 't', action: playTake, enabled: canTake && !loading, label: 'cassinoTake' },
+      { key: 'b', action: playBuild, enabled: canBuild && !loading, label: 'cassinoBuild' },
+      { key: 'r', action: playTrail, enabled: canTrail && !loading, label: 'cassinoTrail' },
+    ],
+    [playTake, playBuild, playTrail, canTake, canBuild, canTrail, loading],
+  );
+  useActionKeyboardNav({ bindings: actionBindings, enabled: !!state && !loading });
   // 自分と CPU の手を 1 本の時系列に。文言は CUI の cassinoActionStr と同じ組み立て
   // (テイクは捕獲枚数とスイープ、ビルドは値、トレイルはその旨)。
   const describeAction = (a: CassinoAction): string => {
@@ -204,9 +218,6 @@ function CassinoPageContent() {
     handIndex !== null && isHumanTurn
       ? cassinoBuildTakeCandidates(state.builds, human.cards[handIndex]?.value ?? 0).indices
       : new Set<number>();
-  const canTake = isHumanTurn && handIndex !== null && (tableIndices.length > 0 || buildIndices.length > 0);
-  const canBuild = isHumanTurn && handIndex !== null && tableIndices.length > 0;
-  const canTrail = isHumanTurn && handIndex !== null;
   const phaseName = isGameEnd ? t('phase.end') : t(`phase.${state.phase}`, t('phase.play'));
   const suggestionLabel =
     suggestion?.type === 'take'
@@ -454,6 +465,7 @@ function CassinoPageContent() {
 
           <GameFooter className={`${gameTheme.cassino.footer} px-4 py-2.5`}>
             <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="cs-actions">
+              <ActionShortcutsPanel bindings={actionBindings} data-testid="cassino-action-shortcuts" />
               <button
                 type="button"
                 onClick={playTake}
