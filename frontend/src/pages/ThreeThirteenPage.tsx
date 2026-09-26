@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { threethirteenApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
@@ -104,6 +104,9 @@ function ThreeThirteenPageContent() {
     handleKnock,
     handleNextRound,
   } = useThreeThirteenGame();
+  const pendingDrawRef = useRef<{ source: 'stock' | 'discard'; oldCards: Set<string> } | null>(null);
+  const drawAnnouncementTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [drawAnnouncement, setDrawAnnouncement] = useState('');
   const { cardWidth } = useCardDimensions();
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('threethirteen');
@@ -146,6 +149,45 @@ function ThreeThirteenPageContent() {
   });
 
   const phaseNames = usePhaseNames('threethirteen', THREETHIRTEEN_PHASE_KEYS);
+
+  const beginDraw = useCallback(
+    (source: 'stock' | 'discard') => {
+      const cards = state?.players.find((player) => player.isHuman)?.cards ?? [];
+      pendingDrawRef.current = {
+        source,
+        oldCards: new Set(cards.map((card) => `${card.design}:${card.value}:${card.label ?? ''}:${card.glyph ?? ''}`)),
+      };
+      if (source === 'stock') handleDrawStock();
+      else handleDrawDiscard();
+    },
+    [handleDrawDiscard, handleDrawStock, state],
+  );
+
+  useEffect(() => {
+    const pending = pendingDrawRef.current;
+    if (!pending || state?.phase !== ThreeThirteenPhase.DISCARD) return;
+    const cards = state.players.find((player) => player.isHuman)?.cards ?? [];
+    const drawn = cards.find(
+      (card) => !pending.oldCards.has(`${card.design}:${card.value}:${card.label ?? ''}:${card.glyph ?? ''}`),
+    );
+    pendingDrawRef.current = null;
+    if (!drawn) return;
+    setDrawAnnouncement(
+      t('drawResultAnnouncement', {
+        source: t(pending.source === 'stock' ? 'drawStockSource' : 'drawDiscardSource'),
+        card: cardAlt(drawn),
+      }),
+    );
+    if (drawAnnouncementTimerRef.current) clearTimeout(drawAnnouncementTimerRef.current);
+    drawAnnouncementTimerRef.current = setTimeout(() => setDrawAnnouncement(''), 4000);
+  }, [state, t]);
+
+  useEffect(
+    () => () => {
+      if (drawAnnouncementTimerRef.current) clearTimeout(drawAnnouncementTimerRef.current);
+    },
+    [],
+  );
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
@@ -377,8 +419,14 @@ function ThreeThirteenPageContent() {
             {/* 強調はパルスと数字の色だけなので、支援技術には何も届かない。領域は
                 **常設**にして中身だけ差し替える ── 中身が変わったときにだけ
                 読み上げられるので、成立したまま選択を変えなければ繰り返さない。 */}
-            <div className="sr-only" role="status" aria-live="polite" data-testid="threethirteen-knock-live">
-              {canKnockNow && t('knockReadyAnnouncement')}
+            <div
+              className="sr-only"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+              data-testid="threethirteen-knock-live"
+            >
+              {drawAnnouncement || (canKnockNow && t('knockReadyAnnouncement'))}
             </div>
             {isDiscardPhase && humanDeadwood != null && (
               <div
@@ -420,13 +468,13 @@ function ThreeThirteenPageContent() {
             <div className="flex gap-2 items-center flex-wrap">
               {isDrawPhase && isHumanTurn && (
                 <div className="flex gap-2">
-                  <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
+                  <button type="button" className={btnPrimary} onClick={() => beginDraw('stock')} disabled={loading}>
                     {t('drawStockButton')}
                   </button>
                   <button
                     type="button"
                     className={btnPrimary}
-                    onClick={handleDrawDiscard}
+                    onClick={() => beginDraw('discard')}
                     disabled={loading || !state.discardTop}
                   >
                     {t('drawDiscardButton')}
