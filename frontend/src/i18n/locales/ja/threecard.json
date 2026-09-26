@@ -57,6 +57,11 @@
     "title": "設定"
   },
   "betGuide": "アンテとペアプラスを設定してベット",
+  "betSummary": {
+    "total": "合計: {{amount}}",
+    "remaining": "残額: {{amount}}",
+    "adjusted": "所持チップに合わせて賭け額を調整しました。"
+  },
   "payoutRef": {
     "title": "配当表",
     "anteBonusHeader": "アンテボーナス",

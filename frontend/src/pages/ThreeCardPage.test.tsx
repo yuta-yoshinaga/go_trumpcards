@@ -259,6 +259,30 @@ describe('ThreeCardPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 200, 50));
   });
 
+  it('keeps the combined bet within chips and shows the total and remainder', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+
+    const anteInput = screen.getByLabelText('アンテ');
+    const ppInput = screen.getByLabelText('ペアプラス');
+    expect(anteInput).toHaveAttribute('max', '1000');
+    expect(ppInput).toHaveAttribute('max', '900');
+    expect(screen.getByTestId('tc-bet-summary')).toHaveTextContent('合計: 100');
+    expect(screen.getByTestId('tc-bet-summary')).toHaveTextContent('残額: 900');
+
+    fireEvent.change(anteInput, { target: { value: '950' } });
+    expect(ppInput).toHaveAttribute('max', '50');
+    expect(screen.getByTestId('tc-bet-summary')).toHaveTextContent('合計: 950');
+    expect(screen.getByTestId('tc-bet-summary')).toHaveTextContent('残額: 50');
+
+    fireEvent.change(ppInput, { target: { value: '100' } });
+    expect(ppInput).toHaveValue('50');
+    expect(screen.getByTestId('tc-bet-summary')).toHaveTextContent('合計: 1000');
+    expect(screen.getByTestId('tc-bet-summary')).toHaveTextContent('残額: 0');
+    expect(screen.getByText('所持チップに合わせて賭け額を調整しました。')).toBeInTheDocument();
+  });
+
   it('steps the ante and pair plus amounts with the chip steppers', async () => {
     mockExec.mockResolvedValue(betPhaseState);
     renderWithProviders(<ThreeCardPage />);
