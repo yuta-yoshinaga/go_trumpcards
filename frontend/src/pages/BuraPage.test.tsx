@@ -99,6 +99,8 @@ describe('BuraPage', () => {
     fireEvent.click(cardButtons[2]);
 
     expect(screen.getByRole('button', { name: '出す' })).toBeDisabled();
+    expect(document.getElementById('bura-play-reason')).toHaveTextContent('リードは同じスートのカードを選んでください');
+    expect(screen.getByRole('button', { name: '出す' })).toHaveAttribute('aria-describedby', 'bura-play-reason');
   });
 
   it('requires a response to match the lead count exactly', async () => {
@@ -113,11 +115,29 @@ describe('BuraPage', () => {
 
     fireEvent.click(cardButtons[0]);
     expect(respond).toBeDisabled();
+    expect(document.getElementById('bura-play-reason')).toHaveTextContent('リードに合わせて2枚選んでください');
 
     // Two cards of DIFFERENT suits are a legal response -- only a lead has to
     // be one suit. This is the case a "same suit" check would wrongly block.
     fireEvent.click(cardButtons[2]);
     expect(respond).toBeEnabled();
+    expect(document.getElementById('bura-play-reason')).toBeEmptyDOMElement();
+    expect(respond).not.toHaveAttribute('aria-describedby');
+  });
+
+  it('explains a lead selection that exceeds the three-card limit', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [human({ cards: [card('SPADE', 1), card('SPADE', 10), card('SPADE', 11), card('SPADE', 12)] }), cpu()],
+      }),
+    );
+    renderWithProviders(<BuraPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    const cardButtons = screen.getAllByRole('button').filter((b) => b.getAttribute('aria-pressed') !== null);
+    for (const button of cardButtons) fireEvent.click(button);
+    expect(screen.getByRole('button', { name: '出す' })).toBeDisabled();
+    expect(document.getElementById('bura-play-reason')).toHaveTextContent('リードは同じスートから3枚まで選べます');
   });
 
   it('claims and declares through their own commands', async () => {
@@ -141,7 +161,7 @@ describe('BuraPage', () => {
     mockExec.mockResolvedValue(makeState({ players: [human({ points: 31 }), cpu()] }));
     renderWithProviders(<BuraPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '31点を宣言' })).toBeInTheDocument());
-    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(screen.queryByText('到達していなければその場で負けます')).not.toBeInTheDocument();
   });
 
   it('reports a draw distinctly from a loss', async () => {
