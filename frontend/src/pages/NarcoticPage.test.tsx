@@ -88,6 +88,7 @@ describe('NarcoticPage', () => {
     renderWithProviders(<NarcoticPage />);
     await waitFor(() => expect(screen.getByText(/山札 \(/)).toBeInTheDocument());
     expect(screen.getByText(/\(44\)/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '山札をめくる（残り44枚）' })).toBeEnabled();
   });
 
   it('renders move count', async () => {
@@ -141,6 +142,12 @@ describe('NarcoticPage', () => {
     renderWithProviders(<NarcoticPage />);
     await waitFor(() => expect(screen.getByText(/山札 \(/)).toBeInTheDocument());
     expect(screen.getAllByText('空').length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('keeps the stock button available but disabled after the game ends', async () => {
+    mockExec.mockResolvedValue(gameOverState);
+    renderWithProviders(<NarcoticPage />);
+    expect(await screen.findByRole('button', { name: '山札をめくる（残り44枚）' })).toBeDisabled();
   });
 
   it('clicking deal button dispatches draw', async () => {

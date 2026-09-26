@@ -12,6 +12,7 @@
   "redealCount": "配り直し",
   "combo": "コンボ ×{{count}}",
   "draw": "配る",
+  "stockAriaLabel": "山札をめくる（残り{{count}}枚）",
   "remove": "4枚まとめて捨てる",
   "removeAll": "4枚まとめて捨てる",
   "move": "重ねる",
