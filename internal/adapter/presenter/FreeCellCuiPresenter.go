@@ -116,7 +116,7 @@ func (p *FreeCellCuiPresenter) Output(f interfaces.FreeCellGame, lastErr error) 
 				"cells", strconv.Itoa(freeCellEmptyCells(f)),
 				"cols", strconv.Itoa(freeCellEmptyColumns(f))))
 			// **空き列を移動先にすると上限は下がる。**その列自身を経由地に
-			// 使えないため。空き列があるときだけ出す。
+			// 使えないため。空き列宛ての上限を常に出す (空き列が無ければ 0)。
 			b.WriteString(i18n.Tf("freecell.supermoveToEmpty",
 				"limit", strconv.Itoa(f.GetMaxMovableCardsToEmptyColumn())))
 			b.WriteString("\n")
