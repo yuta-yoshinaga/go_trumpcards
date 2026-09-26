@@ -27,6 +27,7 @@
   "noHint": "ヒントはありません",
   "hintAvailable": "ヒントがあります",
   "stalemate": "手詰まりです",
+  "stalemateNoEscape": "履歴から脱出できません",
   "dealsRemaining": "残り{{count}}回配れます",
   "cannotDealEmptyColExists": "空の列をすべて埋めないと配れません",
   "tutorial": {
