@@ -26,6 +26,7 @@
   "takeButton": "Take Cards",
   "transferButton": "Transfer",
   "selectCard": "Select a card",
+  "selectedCard": "Selected: {{card}}",
   "selectAttackCard": "Select attack card to defend",
   "attacker": "Attacker",
   "defender": "Defender",
