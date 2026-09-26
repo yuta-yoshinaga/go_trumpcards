@@ -300,7 +300,7 @@ function GrandfathersClockPageContent() {
     >
       <LandscapeBanner message={t('landscapeBanner')} />
 
-      <div data-testid="gc-autocomplete-status" role="status" aria-live="polite">
+      <div className="sr-only" data-testid="gc-autocomplete-status" role="status" aria-live="polite">
         {autoCompleteAnnouncement}
       </div>
 

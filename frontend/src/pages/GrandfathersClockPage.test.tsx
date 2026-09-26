@@ -265,6 +265,7 @@ describe('GrandfathersClockPage', () => {
     vi.useFakeTimers();
     fireEvent.click(button);
     const liveRegion = screen.getByTestId('gc-autocomplete-status');
+    expect(liveRegion).toHaveClass('sr-only');
     expect(liveRegion).toHaveTextContent('自動完成中');
     expect(screen.getByTestId('gc-autocomplete-visible')).toBeInTheDocument();
     expect(button).toBeDisabled();
