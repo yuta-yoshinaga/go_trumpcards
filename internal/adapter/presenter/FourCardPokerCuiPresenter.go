@@ -82,6 +82,13 @@ func (p *FourCardPokerCuiPresenter) Output(g interfaces.FourCardPokerGame, lastE
 	}
 
 	sb.WriteString("----------\n")
+	switch g.GetPhase() {
+	case domain.FourCardPokerPhaseBet:
+		sb.WriteString(i18n.T("fourcardpoker.helpBet") + "\n")
+	case domain.FourCardPokerPhaseAction:
+		sb.WriteString(i18n.T("fourcardpoker.helpPlay") + "\n")
+		sb.WriteString(i18n.T("fourcardpoker.helpFold") + "\n")
+	}
 
 	if lastErr != nil {
 		sb.WriteString(i18n.MarkErrorLine(color.Red(lastErr.Error())) + "\n")
