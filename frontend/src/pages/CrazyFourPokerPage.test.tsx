@@ -171,6 +171,16 @@ describe('CrazyFourPokerPage', () => {
     await waitFor(() => expect(screen.getByTestId('c4p-player-rank')).toBeInTheDocument());
   });
 
+  it('announces the dealt player hand rank through a status region', async () => {
+    mockApi.mockResolvedValue(dealt());
+    renderWithProviders(<CrazyFourPokerPage />);
+
+    const announcement = await screen.findByTestId('c4p-rank-announcement');
+    expect(announcement).toHaveAttribute('role', 'status');
+    expect(announcement).toHaveAttribute('aria-live', 'polite');
+    expect(announcement).toHaveTextContent('最良の4枚: ワンペア');
+  });
+
   it('hides player hand rank before being dealt', async () => {
     mockApi.mockResolvedValue(base);
     renderWithProviders(<CrazyFourPokerPage />);

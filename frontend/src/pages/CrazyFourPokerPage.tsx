@@ -215,6 +215,9 @@ function CrazyFourPokerPageContent() {
         </>
       }
     >
+      <span className="sr-only" role="status" aria-live="polite" aria-atomic="true" data-testid="c4p-rank-announcement">
+        {state.playerHand.length > 0 ? `${t('label.yourBest')}: ${t(`rank.${state.playerHandRank}`)}` : ''}
+      </span>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
