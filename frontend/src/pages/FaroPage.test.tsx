@@ -116,6 +116,9 @@ describe('FaroPage', () => {
     renderWithProviders(<FaroPage />);
 
     expect(await screen.findByTestId('rank-2')).toBeEnabled();
+    const caseKeeperRank = screen.getByTestId('case-keeper-rank-2');
+    expect(caseKeeperRank).toHaveAttribute('aria-label', expect.stringContaining('賭けられます'));
+    expect(caseKeeperRank).not.toHaveTextContent('賭けられません');
     fireEvent.click(screen.getByTestId('rank-2'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', { rank: 2, amount: 10, copper: false }));
   });

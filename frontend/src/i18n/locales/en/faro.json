@@ -37,7 +37,7 @@
   "caseKeeperDepleted": "Cannot bet (no cards remain)",
   "caseKeeperInsufficientChips": "Cannot bet {{amount}} chips in {{mode}} mode (insufficient chips)",
   "caseKeeperAvailable": "Can bet {{amount}} chips in {{mode}} mode",
-  "normalBet": "normal",
+  "normalTag": "normal",
   "phase": {
     "betting": "Betting",
     "turn": "Turn",

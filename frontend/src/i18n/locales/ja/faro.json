@@ -37,7 +37,7 @@
   "caseKeeperDepleted": "賭けられません（カードがありません）",
   "caseKeeperInsufficientChips": "賭けられません（{{mode}} {{amount}}チップに不足）",
   "caseKeeperAvailable": "{{mode}} {{amount}}チップを賭けられます",
-  "normalBet": "通常ベット",
+  "normalTag": "通常ベット",
   "phase": {
     "betting": "ベット",
     "turn": "ターン",

@@ -295,18 +295,19 @@ function FaroPageContent() {
                   const left = remaining[rank] ?? FARO_RANK_COUNT;
                   const depleted = left === 0;
                   const bet = state.bets.find((item) => item.rank === rank);
+                  const canBet = left > 0 || bet !== undefined;
                   const canAfford = state.chips + (bet?.amount ?? 0) >= chipAmount;
-                  const statusKey = depleted
+                  const statusKey = !canBet
                     ? 'caseKeeperDepleted'
                     : canAfford
                       ? 'caseKeeperAvailable'
                       : 'caseKeeperInsufficientChips';
-                  const status = t(statusKey, { amount: chipAmount, mode: t(copper ? 'copperTag' : 'normalBet') });
+                  const status = t(statusKey, { amount: chipAmount, mode: t(copper ? 'copperTag' : 'normalTag') });
                   return (
                     <div
                       key={`case-${rank}`}
                       className={`flex flex-col items-center rounded border px-1 py-0.5 text-center leading-tight ${
-                        depleted ? 'border-white/10 bg-black/30 opacity-50' : 'border-white/25 bg-black/20'
+                        left === 0 ? 'border-white/10 bg-black/30 opacity-50' : 'border-white/25 bg-black/20'
                       }`}
                       data-testid={`case-keeper-rank-${rank}`}
                       role="img"
