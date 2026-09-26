@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { sixcardgolfApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
@@ -52,6 +52,23 @@ beforeEach(() => {
 });
 
 describe('SixCardGolfPage', () => {
+  it('identifies the discard card as a draw option only during the human draw phase', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 1 }));
+    renderWithProviders(<SixCardGolfPage />);
+
+    const discardOption = await screen.findByTestId('scg-discard-draw-option');
+    expect(within(discardOption).getAllByText('捨て札から引く', { exact: true })).toHaveLength(1);
+    expect(discardOption).not.toHaveTextContent('引けません');
+    expect(discardOption).toHaveClass('ring-2');
+    expect(screen.getByRole('button', { name: '捨て札から引く' })).toBeInTheDocument();
+
+    mockExec.mockResolvedValue(makeState({ phase: 3 }));
+    fireEvent.click(screen.getByRole('button', { name: '捨て札から引く' }));
+    await waitFor(() => expect(screen.getByTestId('scg-discard-draw-option')).toHaveTextContent('引けません'));
+    expect(screen.getByTestId('scg-discard-draw-option')).not.toHaveClass('ring-2');
+    expect(screen.queryByRole('button', { name: '捨て札から引く' })).not.toBeInTheDocument();
+  });
+
   it('calls reset on mount', async () => {
     renderWithProviders(<SixCardGolfPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith({ command: 'reset' }));
