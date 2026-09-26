@@ -26,6 +26,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { AllFoursResponse } from '../types/card';
 import { AllFoursPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { ALLFOURS_HELP, parseAllFoursCommand } from '../utils/cli/commands/allfoursCommands';
 import { formatAllFoursState } from '../utils/cli/formatters/allfoursFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -341,21 +342,29 @@ function AllFoursPageContent() {
               className="border border-ds-border-subtle rounded p-2 min-h-[80px] mb-3 text-ds-text-primary"
             >
               <div className="text-xs uppercase opacity-60 mb-1">{t('currentTrick')}</div>
-              {state.currentTrick.length === 0 ? (
-                <div className="opacity-50">—</div>
-              ) : (
-                <div className="flex flex-wrap gap-2">
-                  {state.currentTrick.map((tk) => (
-                    <div
-                      key={`${tk.playerIdx}-${tk.card.design}-${tk.card.value}`}
-                      className="flex flex-col items-center"
-                    >
-                      <span className="text-[10px] opacity-60">{findPlayerName(state.players, tk.playerIdx)}</span>
-                      <CardImage card={tk.card} width={cardWidth} />
-                    </div>
-                  ))}
-                </div>
-              )}
+              <div role="status" aria-live="polite" aria-atomic="true" data-testid="af-trick-status">
+                {state.currentTrick.length === 0 ? (
+                  <span className="inline-block rounded px-2 py-1 text-ds-text-primary">
+                    {state.phase === AllFoursPhase.TRICK_END ? t('trickComplete') : t('trickUnplayed')}
+                  </span>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {state.currentTrick.map((tk) => {
+                      const playerName = findPlayerName(state.players, tk.playerIdx);
+                      return (
+                        <figure
+                          key={`${tk.playerIdx}-${tk.card.design}-${tk.card.value}`}
+                          aria-label={t('trickCard', { player: playerName, card: cardAlt(tk.card) })}
+                          className="flex flex-col items-center"
+                        >
+                          <span className="text-[10px] opacity-60">{playerName}</span>
+                          <CardImage card={tk.card} width={cardWidth} />
+                        </figure>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
 
             {human && human.cards.length > 0 && (
