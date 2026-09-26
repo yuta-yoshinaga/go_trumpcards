@@ -128,6 +128,14 @@ describe('LetItRidePage', () => {
     expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument();
   });
 
+  it('previews the three bet amounts and total risk before betting', async () => {
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<LetItRidePage />);
+    await waitFor(() => expect(screen.getByTestId('bet-outcome-preview')).toBeInTheDocument());
+    expect(screen.getByTestId('bet-outcome-preview')).toHaveTextContent('各口のベット額: 100');
+    expect(screen.getByTestId('bet-outcome-preview')).toHaveTextContent('ベット後のリスク合計: 300');
+  });
+
   it('applies min=10 and step=10 guardrails to the bet input', async () => {
     mockApi.mockResolvedValue(betPhaseState);
     renderWithProviders(<LetItRidePage />);
@@ -220,6 +228,31 @@ describe('LetItRidePage', () => {
     renderWithProviders(<LetItRidePage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'プル' })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'レットイットライド' })).toBeInTheDocument();
+  });
+
+  it('previews pull and let-it-ride outcomes from the active bets', async () => {
+    mockApi.mockResolvedValue(firstDecisionState);
+    renderWithProviders(<LetItRidePage />);
+    await waitFor(() => expect(screen.getByTestId('pull-outcome-preview')).toBeInTheDocument());
+    expect(screen.getByTestId('pull-outcome-preview')).toHaveTextContent('各口のベット額: 100');
+    expect(screen.getByTestId('pull-outcome-preview')).toHaveTextContent('操作後のリスク合計: 200');
+    expect(screen.getByTestId('ride-outcome-preview')).toHaveTextContent('操作後のリスク合計: 300');
+  });
+
+  it('previews the second-decision pull using the active second bet', async () => {
+    mockApi.mockResolvedValue(secondDecisionState);
+    renderWithProviders(<LetItRidePage />);
+    await waitFor(() => expect(screen.getByTestId('pull-outcome-preview')).toBeInTheDocument());
+    expect(screen.getByTestId('pull-outcome-preview')).toHaveTextContent('操作後のリスク合計: 100');
+    expect(screen.getByTestId('ride-outcome-preview')).toHaveTextContent('操作後のリスク合計: 200');
+  });
+
+  it('does not preview a pull when its target bet is not active', async () => {
+    mockApi.mockResolvedValue({ ...firstDecisionState, bet3Active: false });
+    renderWithProviders(<LetItRidePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'プル' })).toBeInTheDocument());
+    expect(screen.queryByTestId('pull-outcome-preview')).not.toBeInTheDocument();
+    expect(screen.getByTestId('ride-outcome-preview')).toHaveTextContent('操作後のリスク合計: 200');
   });
 
   it('shows bet pulled status when a bet is withdrawn', async () => {
