@@ -19,6 +19,8 @@
   "chips": "Chips: {{amount}}",
   "currentBet": "Current bet: {{amount}}",
   "roundBet": "Bet: {{amount}}",
+  "yourRoundBet": "Your bet: {{amount}}",
+  "callAmount": "Amount to call: {{amount}}",
   "handLabel": "Your hand",
   "playersTitle": "Players",
   "playerRowLabel": "{{name}} — status: {{status}}",

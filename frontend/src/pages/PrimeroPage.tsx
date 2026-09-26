@@ -383,8 +383,12 @@ function PrimeroPageContent() {
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="primero-action-buttons">
-              {isBettingPhase && isHumanTurn && !isGameEnd && (
+              {isBettingPhase && isHumanTurn && !isGameEnd && humanPlayer && (
                 <>
+                  <div className="w-full text-ds-text-primary text-sm" data-testid="primero-betting-controls">
+                    <span className="mr-4">{t('yourRoundBet', { amount: humanPlayer.roundBet })}</span>
+                    <span>{t('callAmount', { amount: Math.max(0, state.currentBet - humanPlayer.roundBet) })}</span>
+                  </div>
                   <button type="button" className={btnPrimary} onClick={handleCall} disabled={loading}>
                     {t('callButton')}
                   </button>
