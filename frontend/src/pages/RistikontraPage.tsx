@@ -320,11 +320,20 @@ function RistikontraPageContent() {
 
             {/* Center pile */}
             <div className="relative mb-2 p-3 rounded bg-black/20 text-center" data-tutorial="ristikontra-pile">
+              <div
+                key={counterCelebration?.key}
+                className="sr-only"
+                role="status"
+                aria-live="polite"
+                data-testid="ristikontra-counter-announcement"
+              >
+                {counterCelebration ? t('counterCelebration') : ''}
+              </div>
               {counterCelebration && (
                 <div
-                  key={counterCelebration.key}
+                  key={`celebration-${counterCelebration.key}`}
                   className="absolute inset-x-0 -top-2 z-10 flex justify-center motion-safe:animate-bounce pointer-events-none"
-                  role="status"
+                  aria-hidden="true"
                   data-testid="ristikontra-counter-celebration"
                 >
                   <span className="rounded-full bg-ds-accent px-3 py-0.5 text-sm font-bold text-ds-text-on-accent shadow-lg">
