@@ -286,6 +286,58 @@ describe('RazzPage', () => {
     expect(screen.getByAltText('♥ 8')).toBeInTheDocument();
   });
 
+  it('shows the same best-low evaluation for every live player only at showdown', async () => {
+    mockExec.mockResolvedValue(showdownState);
+    const { unmount } = renderWithProviders(<RazzPage />);
+    const lows = await screen.findAllByTestId('razz-showdown-best-low');
+    expect(lows).toHaveLength(2);
+    expect(lows.map((low) => low.textContent)).toEqual(
+      expect.arrayContaining(['現在のロー: 8-7-5-3-A', '現在のロー: 8-7-5-4-2']),
+    );
+
+    unmount();
+    mockExec.mockResolvedValue(thirdStreetState);
+    renderWithProviders(<RazzPage />);
+    await waitFor(() => expect(screen.getByText(/CPU 1/)).toBeInTheDocument());
+    expect(screen.queryByTestId('razz-showdown-best-low')).not.toBeInTheDocument();
+  });
+
+  it('shows an incomplete low for a showdown opponent with fewer than five distinct ranks', async () => {
+    mockExec.mockResolvedValue({
+      ...showdownState,
+      players: [
+        showdownState.players[0],
+        cpuPlayer(1, {
+          doorCards: [
+            { design: 'DIAMOND', value: 2 },
+            { design: 'CLOVER', value: 2 },
+            { design: 'HEART', value: 3 },
+            { design: 'SPADE', value: 3 },
+          ],
+          holeCards: [
+            { design: 'SPADE', value: 2 },
+            { design: 'HEART', value: 3 },
+            { design: 'DIAMOND', value: 4 },
+          ],
+        }),
+      ],
+    });
+    renderWithProviders(<RazzPage />);
+    const lows = await screen.findAllByTestId('razz-showdown-best-low');
+    expect(lows).toHaveLength(2);
+    expect(lows.map((low) => low.textContent)).toContain('ロー未完成（5枚揃わず）');
+  });
+
+  it('does not show a human showdown low when the human has folded', async () => {
+    mockExec.mockResolvedValue({
+      ...showdownState,
+      players: [humanPlayer({ folded: true }), showdownState.players[1]],
+    });
+    renderWithProviders(<RazzPage />);
+    await waitFor(() => expect(screen.getByText('ショーダウン')).toBeInTheDocument());
+    expect(screen.getAllByTestId('razz-showdown-best-low')).toHaveLength(1);
+  });
+
   // ---- CPU actions log ----
   it('shows CPU actions log when cpuActions is non-empty', async () => {
     mockExec.mockResolvedValue(thirdStreetWithBetState);
