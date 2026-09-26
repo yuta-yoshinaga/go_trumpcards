@@ -22,11 +22,7 @@
     "undecided": "—"
   },
   "decision": {
-    "undecided": "Choose whether to play or drop out. Undecided: {{count}}.",
-    "inWaiting": "You chose to play. Waiting for the other players (undecided: {{count}}).",
-    "outWaiting": "You dropped out. Waiting for the other players (undecided: {{count}}).",
-    "inComplete": "You chose to play. Everyone has decided.",
-    "outComplete": "You dropped out. Everyone has decided."
+    "undecided": "Choose whether to play or drop out. Undecided: {{count}}."
   },
   "currentTrick": "Current trick",
   "actions": {

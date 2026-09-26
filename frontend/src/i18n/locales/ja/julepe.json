@@ -22,11 +22,7 @@
     "undecided": "未定"
   },
   "decision": {
-    "undecided": "参加するか降りるかを選んでください。未決定: {{count}}人。",
-    "inWaiting": "参加しました。ほかのプレイヤーの判断を待っています（未決定: {{count}}人）。",
-    "outWaiting": "降りました。ほかのプレイヤーの判断を待っています（未決定: {{count}}人）。",
-    "inComplete": "参加しました。全員の判断が終わりました。",
-    "outComplete": "降りました。全員の判断が終わりました。"
+    "undecided": "参加するか降りるかを選んでください。未決定: {{count}}人。"
   },
   "currentTrick": "現在のトリック",
   "actions": {
