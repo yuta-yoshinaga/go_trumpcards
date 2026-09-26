@@ -44,6 +44,7 @@
   "bidButton": "ビッド",
   "passButton": "パス",
   "bidSelectLabel": "ビッド数を選択",
+  "selectedBid": "選択中のビッド: {{n}}",
   "playButton": "出す",
   "nextTrick": "次のトリック",
   "nextRound": "次のラウンド",
