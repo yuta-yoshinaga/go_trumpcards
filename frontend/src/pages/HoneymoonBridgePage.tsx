@@ -297,6 +297,11 @@ function HoneymoonBridgePageContent() {
             </div>
 
             <div data-tutorial="hb-trick">
+              {(isDraw || state.phase === HoneymoonBridgePhase.PLAY) && (
+                <div className="text-center mb-2 text-ds-accent text-sm" data-testid="hb-trick-status">
+                  {isDraw ? t('trickStatus.draw') : t('trickStatus.play')}
+                </div>
+              )}
               <TrickDisplay
                 currentTrick={state.currentTrick}
                 players={state.players}
