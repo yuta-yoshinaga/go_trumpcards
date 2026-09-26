@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { tressetteApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
@@ -91,6 +91,15 @@ function thirdsFilled(thirds: number): number {
   return Math.min(Math.max(thirds, 0), 3);
 }
 
+/** Formats a non-negative number of thirds as points for a score announcement. */
+function formatThirdPoints(thirds: number): string {
+  const points = Math.floor(thirds / 3);
+  const remainder = thirds % 3;
+  if (points > 0 && remainder > 0) return `${points}+${remainder}/3`;
+  if (points > 0) return String(points);
+  return `${remainder}/3`;
+}
+
 /** Renders the Tressette game page: no-trump must-follow trick play with team scoring. */
 export const TressettePage = withTutorial(TressettePageContent, 'tressette', TR_TUTORIAL_STEPS);
 
@@ -151,6 +160,37 @@ function TressettePageContent() {
   });
 
   const phaseNames = usePhaseNames('tressette', TRESSETTE_PHASE_KEYS);
+  const previousScoreRef = useRef<{ points: [number, number]; thirds: [number, number] } | null>(null);
+  const [scoreAnnouncement, setScoreAnnouncement] = useState('');
+  useEffect(() => {
+    if (!state) return;
+    const points: [number, number] = [state.teamScores[0] ?? 0, state.teamScores[1] ?? 0];
+    const thirds: [number, number] = [state.teamRoundThirds[0] ?? 0, state.teamRoundThirds[1] ?? 0];
+    const previous = previousScoreRef.current;
+    previousScoreRef.current = { points, thirds };
+    if (!previous) return;
+
+    const changes = [0, 1]
+      .map((team) => ({
+        team,
+        gained:
+          Math.max(0, points[team] - previous.points[team]) * 3 + Math.max(0, thirds[team] - previous.thirds[team]),
+      }))
+      .filter(({ gained }) => gained > 0);
+    if (changes.length === 0) return;
+    setScoreAnnouncement(
+      changes
+        .map(({ team, gained }) =>
+          t('scoreAnnouncement', {
+            team: team === 0 ? 'A' : 'B',
+            gained: formatThirdPoints(gained),
+            points: state.teamScores[team] ?? 0,
+            thirds: (state.teamRoundThirds[team] ?? 0) % 3,
+          }),
+        )
+        .join(t('listSeparator')),
+    );
+  }, [state, t]);
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
@@ -186,6 +226,9 @@ function TressettePageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
+      <span className="sr-only" data-testid="tr-score-live" role="status" aria-live="polite" aria-atomic="true">
+        {scoreAnnouncement}
+      </span>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
