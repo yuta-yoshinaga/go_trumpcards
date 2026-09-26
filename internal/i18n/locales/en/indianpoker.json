@@ -25,7 +25,7 @@
   "playerAllIn": " [ALL-IN]",
   "playerBet": " bet:{{bet}}",
   "cardLine": "  card: {{card}}",
-  "cardHidden": "  card: ??",
+  "cardHidden": "  card: visible to opponents, hidden from you",
   "equityLine": "  est. win: {{pct}}%",
   "betInfoLine": "  To call: {{call}} / min raise: {{minraise}} / max: {{max}}",
   "checkAvailableLine": "  Check available / max: {{max}}",

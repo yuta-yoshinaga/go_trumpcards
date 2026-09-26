@@ -9,6 +9,8 @@
   },
   "yourCard": "Your Card",
   "hidden": "???",
+  "hiddenCardAriaLabel": "A card visible to opponents but hidden from you",
+  "faceUpCardAriaLabel": "{{name}}'s card: {{card}}",
   "ante": "Ante",
   "settings": {
     "ante": "Ante",

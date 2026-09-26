@@ -220,9 +220,32 @@ describe('IndianPokerPage', () => {
     mockExec.mockResolvedValue(bettingState);
     renderWithProviders(<IndianPokerPage />);
     await waitFor(() => {
-      const cards = screen.getAllByAltText('♠ 10');
+      const cards = screen.getAllByAltText('CPU 1のカード: ♠ 10');
       expect(cards.length).toBeGreaterThanOrEqual(1);
     });
+  });
+
+  it('announces who can see the human card while it is face down', async () => {
+    mockExec.mockResolvedValue(bettingState);
+    renderWithProviders(<IndianPokerPage />);
+    await waitFor(() =>
+      expect(screen.getByRole('img', { name: '相手には見えていますが、あなたには見えないカード' })).toBeInTheDocument(),
+    );
+  });
+
+  it('labels face-up opponent cards with their owner and card during betting and after folding', async () => {
+    mockExec.mockResolvedValue({
+      ...bettingState,
+      players: [humanPlayer(), cpuPlayer(1, { folded: true }), cpuPlayer(2)],
+    });
+    renderWithProviders(<IndianPokerPage />);
+    await waitFor(() => expect(screen.getByAltText('CPU 1のカード: ♠ 10')).toBeInTheDocument());
+  });
+
+  it('labels the human card with its owner and content when revealed at showdown', async () => {
+    mockExec.mockResolvedValue(showdownState);
+    renderWithProviders(<IndianPokerPage />);
+    await waitFor(() => expect(screen.getByAltText('あなたのカード: ♥ 7')).toBeInTheDocument());
   });
 
   it('shows CardBack for CPU when card is null', async () => {
@@ -341,7 +364,7 @@ describe('IndianPokerPage', () => {
   it('shows human card face-up during showdown', async () => {
     mockExec.mockResolvedValue(showdownState);
     renderWithProviders(<IndianPokerPage />);
-    await waitFor(() => expect(screen.getByAltText('♥ 7')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByAltText('あなたのカード: ♥ 7')).toBeInTheDocument());
   });
 
   it('does not show CardBack for human when folded', async () => {
@@ -826,7 +849,7 @@ describe('IndianPokerPage', () => {
         renderWithProviders(<IndianPokerPage />);
         // Own-card reveal wrapper (and the flipped card) appears immediately at showdown.
         await vi.waitFor(() => expect(screen.getByTestId('indianpoker-own-reveal')).toBeInTheDocument());
-        expect(screen.getByAltText('♥ 7')).toBeInTheDocument();
+        expect(screen.getByAltText('あなたのカード: ♥ 7')).toBeInTheDocument();
         // Results stay hidden until the 600ms reveal delay elapses (no spoiler).
         expect(screen.queryByText('結果:')).not.toBeInTheDocument();
         // After the delay the results panel is revealed.
