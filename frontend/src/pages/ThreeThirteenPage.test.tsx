@@ -239,6 +239,86 @@ describe('ThreeThirteenPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('drawdiscard'));
   });
 
+  it('announces the drawn card, source, and discard phase in the live status', async () => {
+    const afterDraw: ThreeThirteenResponse = {
+      ...discardPhaseState,
+      players: [
+        {
+          ...discardPhaseState.players[0],
+          cardCount: 5,
+          cards: [...drawPhaseState.players[0].cards, { design: 'DIAMOND', value: 9 }],
+        },
+        discardPhaseState.players[1],
+      ],
+    };
+    renderWithProviders(<ThreeThirteenPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '山札から引く' })).toBeInTheDocument());
+    mockExec.mockResolvedValue(afterDraw);
+
+    fireEvent.click(screen.getByRole('button', { name: '山札から引く' }));
+
+    const live = screen.getByTestId('threethirteen-knock-live');
+    await waitFor(() => expect(live).toHaveTextContent('山札から ♦ 9 を引きました。捨て札フェーズです。'));
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live.textContent?.match(/山札から/g)).toHaveLength(1);
+    expect(live).not.toHaveTextContent('ノックできます');
+  });
+
+  it('announces a stock card when the same card was already in hand', async () => {
+    const duplicateCard = { design: 'HEART' as const, value: 7 };
+    const beforeDraw: ThreeThirteenResponse = {
+      ...drawPhaseState,
+      players: [
+        { ...drawPhaseState.players[0], cardCount: 3, cards: [...drawPhaseState.players[0].cards, duplicateCard] },
+        drawPhaseState.players[1],
+      ],
+    };
+    const afterDraw: ThreeThirteenResponse = {
+      ...beforeDraw,
+      phase: 1,
+      players: [
+        { ...beforeDraw.players[0], cardCount: 4, cards: [...beforeDraw.players[0].cards, { ...duplicateCard }] },
+        beforeDraw.players[1],
+      ],
+    };
+    mockExec.mockResolvedValue(beforeDraw);
+    renderWithProviders(<ThreeThirteenPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '山札から引く' })).toBeInTheDocument());
+    mockExec.mockResolvedValue(afterDraw);
+
+    fireEvent.click(screen.getByRole('button', { name: '山札から引く' }));
+
+    await waitFor(() =>
+      expect(screen.getByTestId('threethirteen-knock-live')).toHaveTextContent(
+        '山札から ♥ 7 を引きました。捨て札フェーズです。',
+      ),
+    );
+  });
+
+  it('announces a card drawn from the discard pile', async () => {
+    const afterDraw: ThreeThirteenResponse = {
+      ...discardPhaseState,
+      players: [
+        {
+          ...discardPhaseState.players[0],
+          cardCount: 5,
+          cards: [...drawPhaseState.players[0].cards, { design: 'HEART', value: 7 }],
+        },
+        discardPhaseState.players[1],
+      ],
+    };
+    renderWithProviders(<ThreeThirteenPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '捨て札から引く' })).toBeInTheDocument());
+    mockExec.mockResolvedValue(afterDraw);
+
+    fireEvent.click(screen.getByRole('button', { name: '捨て札から引く' }));
+
+    const live = screen.getByTestId('threethirteen-knock-live');
+    await waitFor(() => expect(live).toHaveTextContent('捨て札から ♥ 7 を引きました。捨て札フェーズです。'));
+    expect(live.textContent?.match(/捨て札から/g)).toHaveLength(1);
+  });
+
   it('renders discard and knock buttons when human discard turn', async () => {
     mockExec.mockResolvedValue(discardPhaseState);
     renderWithProviders(<ThreeThirteenPage />);
