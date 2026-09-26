@@ -44,6 +44,8 @@ func TestFourCardPokerCuiPresenter_Output_BetPhase(t *testing.T) {
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "チップ: 1000")
 	assert.Contains(t, result, "フェーズ: 賭け")
+	assert.Contains(t, result, i18n.T("fourcardpoker.helpBet"))
+	assert.NotContains(t, result, i18n.T("fourcardpoker.helpPlay"))
 }
 
 func TestFourCardPokerCuiPresenter_Output_ActionPhase_ShowsUpcard(t *testing.T) {
@@ -89,6 +91,9 @@ func TestFourCardPokerCuiPresenter_Output_ActionPhase_ShowsUpcard(t *testing.T) 
 	assert.Contains(t, result, "PLAYER")
 	assert.Contains(t, result, "DEALER")
 	assert.Contains(t, result, "アップカード")
+	assert.Contains(t, result, i18n.T("fourcardpoker.helpPlay"))
+	assert.Contains(t, result, i18n.T("fourcardpoker.helpFold"))
+	assert.NotContains(t, result, i18n.T("fourcardpoker.helpBet"))
 }
 
 func TestFourCardPokerCuiPresenter_Output_EndPhase_PlayerWins(t *testing.T) {
@@ -258,6 +263,8 @@ func TestFourCardPokerCuiPresenter_Output_EndPhase_Push(t *testing.T) {
 
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "プッシュ")
+	assert.NotContains(t, result, i18n.T("fourcardpoker.helpBet"))
+	assert.NotContains(t, result, i18n.T("fourcardpoker.helpPlay"))
 }
 
 func TestFourCardPokerCuiPresenter_Output_Error(t *testing.T) {
