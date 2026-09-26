@@ -143,6 +143,46 @@ describe('EgyptianRatscrewPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('step'));
   });
 
+  it('announces the pile size and next player after a successful step', async () => {
+    mockExec.mockResolvedValueOnce(baseState).mockResolvedValueOnce({
+      ...baseState,
+      centerPileSize: 1,
+      topCard: { design: 'HEART', value: 8 },
+      isHumanTurn: false,
+      currentTurnIdx: 1,
+    });
+    renderWithProviders(<EgyptianRatscrewPage />);
+    await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('step-button'));
+    await waitFor(() => {
+      const live = screen.getByTestId('er-step-announce');
+      expect(live).toHaveAttribute('role', 'status');
+      expect(live).toHaveAttribute('aria-live', 'polite');
+      expect(live).toHaveTextContent('場札1枚');
+      expect(live).toHaveTextContent('CPU');
+    });
+  });
+
+  it('does not announce a rejected or finished step', async () => {
+    mockExec
+      .mockResolvedValueOnce(baseState)
+      .mockResolvedValueOnce({ ...baseState, message: '操作できません', messageCode: '' });
+    renderWithProviders(<EgyptianRatscrewPage />);
+    await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('step-button'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('step'));
+    expect(screen.getByTestId('er-step-announce')).toBeEmptyDOMElement();
+  });
+
+  it('does not announce a step response that ends the game', async () => {
+    mockExec.mockResolvedValueOnce(baseState).mockResolvedValueOnce({ ...gameEndState, centerPileSize: 1 });
+    renderWithProviders(<EgyptianRatscrewPage />);
+    await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('step-button'));
+    await waitFor(() => expect(screen.getByTestId('step-button')).toBeDisabled());
+    expect(screen.getByTestId('er-step-announce')).toBeEmptyDOMElement();
+  });
+
   it('slap button calls exec with slap', async () => {
     mockExec.mockResolvedValueOnce(slappableState);
     renderWithProviders(<EgyptianRatscrewPage />);
