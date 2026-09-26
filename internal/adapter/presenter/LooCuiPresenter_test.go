@@ -209,3 +209,24 @@ func TestLooCuiPresenter_ShowsThePotCarry(t *testing.T) {
 	prefix := strings.SplitN(i18n.T("loo.potCarryLine"), "{{", 2)[0]
 	assert.NotContains(t, withCarry(0), prefix)
 }
+
+func TestLooCuiPresenter_ShowsCarriedPotAtNextDealPrompt(t *testing.T) {
+	orig := i18n.Lang()
+	t.Cleanup(func() { i18n.SetLang(orig) })
+
+	color.SetNoColor(true)
+	defer color.SetNoColor(false)
+	p := new(presenter.LooCuiPresenter)
+	g := domain.NewDefaultLoo()
+	g.Reset()
+	g.SetLastDealDetail(&domain.LooDealDetail{PotCarry: 17})
+
+	for _, lang := range []string{"ja", "en"} {
+		i18n.SetLang(lang)
+		out := p.Output(g, nil)
+		assert.Contains(t, out, i18n.Tf("loo.potCarryLine", "chips", "17"))
+	}
+
+	g.SetLastDealDetail(&domain.LooDealDetail{})
+	assert.NotContains(t, p.Output(g, nil), "17")
+}
