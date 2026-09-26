@@ -8,7 +8,7 @@ export function eightOffTableauTargets(
   cardIndex: number,
 ): number[] {
   const source = tableau[fromCol];
-  if (!source || cardIndex < 0 || cardIndex >= source.length) return [];
+  if (!source) return [];
   const moving = source.slice(cardIndex);
   if (
     moving.some(
