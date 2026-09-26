@@ -97,6 +97,26 @@ function roundPointsShown(points: number): number {
   return Math.min(Math.max(points, 0), MADRASSO_ROUND_POINTS);
 }
 
+/** Returns the integer card points currently on the Madrasso trick. */
+function madrassoTrickPoints(cards: MadrassoResponse['currentTrick']): number {
+  return cards.reduce((total, { card }) => {
+    switch (card.value) {
+      case 1:
+        return total + 11;
+      case 3:
+        return total + 10;
+      case 13:
+        return total + 4;
+      case 12:
+        return total + 3;
+      case 11:
+        return total + 2;
+      default:
+        return total;
+    }
+  }, 0);
+}
+
 /** Total card points contested in one deal (sync: MadrassoRoundPoints in Go). */
 const MADRASSO_ROUND_POINTS = 121;
 
@@ -184,6 +204,8 @@ function MadrassoPageContent() {
   const trumpSymbol = SUIT_GLYPHS[state.trumpSuit] ?? t('noTrump');
 
   const teamLabels = ['A', 'B'];
+  const currentTrickPoints = madrassoTrickPoints(state.currentTrick);
+  const trickWinnerTeam = isTrickEnd ? state.players[state.lastTrickWinner]?.teamId : undefined;
 
   return (
     <GamePageShell
@@ -250,6 +272,14 @@ function MadrassoPageContent() {
                   label={t('currentTrick')}
                   dataTutorial="tr-trick-display"
                 />
+                <div className="mb-2 text-center text-sm text-ds-text-primary" data-testid="madrasso-trick-points">
+                  {trickWinnerTeam === undefined
+                    ? t('currentTrickPoints', { points: currentTrickPoints })
+                    : t('wonTrickPoints', {
+                        team: teamLabels[trickWinnerTeam],
+                        points: currentTrickPoints,
+                      })}
+                </div>
 
                 {/* Previous trick reviewer: lets the player recount the just-completed trick */}
                 <details className="mb-2 p-2 rounded bg-black/30" data-testid="tr-previous-trick">
