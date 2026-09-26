@@ -104,6 +104,14 @@ describe('SpiderettePage', () => {
     await waitFor(() => expect(status).toBeEmptyDOMElement());
   });
 
+  it('does not announce an escape when a stalemate has no escape count', async () => {
+    mockSend.mockResolvedValueOnce({ ...playingState, isStalemate: true, canUndo: true });
+    renderWithProviders(<SpiderettePage />);
+
+    const status = await screen.findByTestId('spiderette-stalemate-status');
+    expect(status).toBeEmptyDOMElement();
+  });
+
   it('renders skeleton when no state', () => {
     mockSend.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<SpiderettePage />);
