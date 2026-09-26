@@ -17,6 +17,7 @@
     "loss": "Game Over",
     "pairs": "makes 14",
     "noPair": "does not make 14 with the selected card",
+    "invalidPair": "The two selected cards do not add up to 14",
     "empty": "empty"
   },
   "button": {
