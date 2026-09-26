@@ -20,6 +20,24 @@ beforeEach(() => {
 });
 
 describe('CometPage', () => {
+  it('shows a waiting notice only during an opponent turn in play', async () => {
+    mockExec.mockResolvedValue(makeCometState({ isHumanTurn: false }));
+    renderWithProviders(<CometPage />);
+    expect(await screen.findByTestId('comet-waiting')).toHaveTextContent(
+      '相手の手番です。次の手番までお待ちください。',
+    );
+
+    mockExec.mockResolvedValue(makeCometState({ isHumanTurn: true }));
+    renderWithProviders(<CometPage />);
+    await screen.findByTestId('comet-pile');
+    expect(screen.getAllByTestId('comet-waiting')).toHaveLength(1);
+
+    mockExec.mockResolvedValue(makeCometState({ phase: 'gameEnd', gameEndFlag: true, isHumanTurn: false }));
+    renderWithProviders(<CometPage />);
+    await screen.findByTestId('comet-winner');
+    expect(screen.getAllByTestId('comet-waiting')).toHaveLength(1);
+  });
+
   it('marks the Comet in the hand and pile accessibly', async () => {
     const state = makeCometState({
       players: [
