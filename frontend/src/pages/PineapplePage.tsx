@@ -710,6 +710,10 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
 
             <ErrorAlert message={error} onRetry={retry} />
 
+            {/* The cp-discard-candidate / cp-discard-recommended badges are
+                visual only. This region is variant-exclusive with
+                irishpoker-discard-preview-announce, so only one of the two
+                can ever speak. */}
             <div className="sr-only" role="status" aria-live="polite" data-testid="cp-discard-preview-announce">
               {canDiscard &&
                 cpSelectedPreview &&
@@ -729,10 +733,6 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
             {/* Discard controls */}
             {canDiscard && (
               <div className="mb-2 text-center" data-testid="discard-controls" data-tutorial="pn-discard-controls">
-                {/* The cp-discard-candidate / cp-discard-recommended badges are
-                    visual only. This region is variant-exclusive with
-                    irishpoker-discard-preview-announce, so only one of the two
-                    can ever speak. */}
                 {discardPreview && (
                   <div className="mb-2 text-sm" data-testid="irishpoker-discard-preview">
                     {/* **見えている行は読み上げ向きではない。** ラベル・札・役が
