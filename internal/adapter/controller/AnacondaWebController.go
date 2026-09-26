@@ -85,6 +85,7 @@ type AnacondaWebOutput struct {
 	PassCount      int                        `json:"passCount"`
 	RollIndex      int                        `json:"rollIndex"`
 	Pot            int                        `json:"pot"`
+	LastPayout     int                        `json:"lastPayout"`
 	CurrentBet     int                        `json:"currentBet"`
 	RaiseCount     int                        `json:"raiseCount"`
 	MaxRaises      int                        `json:"maxRaises"`

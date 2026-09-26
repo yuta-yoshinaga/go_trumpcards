@@ -34,6 +34,7 @@
   "result.win": "あなたがポットを獲得！",
   "result.lose": "あなたの負け。",
   "result.cpuWin": "CPU {{player}} がポットを獲得。",
+  "result.payout": "{{name}} がポット {{amount}} を獲得しました。",
   "action.pass": "パス",
   "action.keep": "キープ",
   "action.call": "コール",

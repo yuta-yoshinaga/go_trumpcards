@@ -435,9 +435,15 @@ function AnacondaPageContent() {
                 <div>
                   {t('roundResult.winner', {
                     name: playerLabel(state.winnerIdx, state.winnerIdx === humanIdx),
-                    pot: state.pot,
+                    pot: state.lastPayout,
                   })}
                 </div>
+              </div>
+            )}
+            {isResultPhase && state.winnerIdx < 0 && (
+              <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
+                <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
+                <div>{t('roundResult.none')}</div>
               </div>
             )}
 

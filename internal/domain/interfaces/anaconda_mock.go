@@ -112,6 +112,11 @@ func (_m *MockAnacondaGame) GetPot() int {
 	return ret.Get(0).(int)
 }
 
+func (_m *MockAnacondaGame) GetLastPayout() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}
+
 // GetCurrentBet モック
 func (_m *MockAnacondaGame) GetCurrentBet() int {
 	ret := _m.Called()

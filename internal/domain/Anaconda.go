@@ -137,6 +137,7 @@ type anacondaState struct {
 	passCount       int // 現在のパスサブラウンドで渡す枚数 (3/2/1; パス外では 0)
 	rollIndex       int // ロールフェーズで公開済みの枚数 (0..AnacondaKeepSize)
 	pot             int
+	lastPayout      int // 直近ラウンドで勝者へ支払われたポット額
 	currentBet      int // 現在のストリートで必要な拠出額 (call でこの額に合わせる)
 	raiseCount      int // このストリートのレイズ回数
 	actedSinceRaise int // 直近のレイズ (またはストリート開始) 以降にアクションしたアクティブ人数
@@ -220,6 +221,7 @@ func (g *Anaconda) NextRound() {
 // startRound は 1 ラウンドを準備する: 脱落判定・アンティ徴収・配札・パスフェーズへ遷移。
 func (g *Anaconda) startRound() {
 	g.state.winnerIdx = -1
+	g.state.lastPayout = 0
 	g.state.result = AnacondaResultNone
 	g.state.pot = 0
 	g.state.currentBet = 0
@@ -562,7 +564,9 @@ func (g *Anaconda) resolveShowdown() {
 		winner = g.bestHand(active)
 	}
 	g.state.winnerIdx = winner
+	g.state.lastPayout = 0
 	if winner >= 0 {
+		g.state.lastPayout = g.state.pot
 		g.players[winner].AddChips(g.state.pot)
 		g.appendLog(winner, "win", "anaconda.log.win", map[string]string{"name": playerName(g.players, winner), "pot": strconv.Itoa(g.state.pot)}, nil)
 	}
@@ -1017,6 +1021,9 @@ func (g *Anaconda) SetRollIndex(v int) { g.state.rollIndex = v }
 // GetPot は現在のポットを返す。
 func (g *Anaconda) GetPot() int { return g.state.pot }
 
+// GetLastPayout は直近ラウンドに勝者へ支払われたポット額を返す。
+func (g *Anaconda) GetLastPayout() int { return g.state.lastPayout }
+
 // SetPot はポットを設定する (テスト用)。
 func (g *Anaconda) SetPot(v int) { g.state.pot = v }
 
@@ -1111,6 +1118,7 @@ type anacondaJSON struct {
 	PassCount       int               `json:"pn"`
 	RollIndex       int               `json:"ri"`
 	Pot             int               `json:"pt"`
+	LastPayout      int               `json:"lp"`
 	CurrentBet      int               `json:"cb"`
 	RaiseCount      int               `json:"rc"`
 	ActedSinceRaise int               `json:"as"`
@@ -1136,6 +1144,7 @@ func (g *Anaconda) MarshalJSON() ([]byte, error) {
 		PassCount:       g.state.passCount,
 		RollIndex:       g.state.rollIndex,
 		Pot:             g.state.pot,
+		LastPayout:      g.state.lastPayout,
 		CurrentBet:      g.state.currentBet,
 		RaiseCount:      g.state.raiseCount,
 		ActedSinceRaise: g.state.actedSinceRaise,
@@ -1174,7 +1183,7 @@ func (g *Anaconda) UnmarshalJSON(data []byte) error {
 	if !anacondaValidPhase(j.Phase) {
 		return errAnacondaSnapshot
 	}
-	if j.RoundNumber < 1 || j.Pot < 0 || j.CurrentBet < 0 || j.RaiseCount < 0 ||
+	if j.RoundNumber < 1 || j.Pot < 0 || j.LastPayout < 0 || j.CurrentBet < 0 || j.RaiseCount < 0 ||
 		j.ActedSinceRaise < 0 || j.ActionCount < 0 {
 		return errAnacondaSnapshot
 	}
@@ -1218,6 +1227,7 @@ func (g *Anaconda) UnmarshalJSON(data []byte) error {
 		passCount:       j.PassCount,
 		rollIndex:       j.RollIndex,
 		pot:             j.Pot,
+		lastPayout:      j.LastPayout,
 		currentBet:      j.CurrentBet,
 		raiseCount:      j.RaiseCount,
 		actedSinceRaise: j.ActedSinceRaise,

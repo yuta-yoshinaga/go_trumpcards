@@ -139,13 +139,15 @@ func (p *AnacondaCuiPresenter) resultLine(g interfaces.AnacondaGame) string {
 	if g.GetWinnerIdx() < 0 {
 		return color.Yellow(i18n.T("anaconda.result.none")) + "\n"
 	}
+	name := cuiPlayerName(g.GetPlayer(g.GetWinnerIdx()), g.GetWinnerIdx())
+	payout := i18n.Tf("anaconda.result.payout", "name", name, "amount", strconv.Itoa(g.GetLastPayout()))
 	switch g.GetResult() {
 	case domain.AnacondaResultWin:
-		return color.Green(i18n.T("anaconda.result.win")) + "\n"
+		return color.Green(i18n.T("anaconda.result.win")) + "\n" + payout + "\n"
 	case domain.AnacondaResultLose:
-		return color.Red(i18n.T("anaconda.result.lose")) + "\n"
+		return color.Red(i18n.T("anaconda.result.lose")) + "\n" + payout + "\n"
 	default:
-		return color.Yellow(i18n.Tf("anaconda.result.cpuWin", "player", strconv.Itoa(g.GetWinnerIdx()))) + "\n"
+		return color.Yellow(i18n.Tf("anaconda.result.cpuWin", "player", strconv.Itoa(g.GetWinnerIdx()))) + "\n" + payout + "\n"
 	}
 }
 

@@ -89,6 +89,7 @@ func TestAnacondaCuiPresenter_OutputResult(t *testing.T) {
 	out := p.Output(g, nil)
 	assert.NotEmpty(t, out)
 	assert.Contains(t, out, "フォーカード")
+	assert.Contains(t, out, "ポット 60 を獲得しました")
 }
 
 func TestAnacondaCuiPresenter_OutputGameEnd(t *testing.T) {

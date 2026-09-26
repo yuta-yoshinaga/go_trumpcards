@@ -89,6 +89,7 @@ func TestAnacondaWebPresenter_ResultHumanWin(t *testing.T) {
 	var decoded map[string]any
 	require.NoError(t, json.Unmarshal([]byte(p.Output(g, nil)), &decoded))
 	assert.Equal(t, float64(domain.AnacondaPhaseResult), decoded["phase"])
+	assert.Equal(t, float64(100), decoded["lastPayout"])
 	assert.Equal(t, "anaconda.roundEndHumanWin", decoded["messageCode"])
 	assert.Equal(t, float64(0), decoded["winnerIdx"])
 
