@@ -254,10 +254,32 @@ describe('CuarentaPage', () => {
     const popped = screen.getAllByTestId('cuarenta-bonus-pop');
     expect(popped.length).toBeGreaterThan(0);
     expect(popped[0].className).toContain('motion-safe:animate-bounce');
-    // ...and the bonus row is announced to assistive tech.
+    // The permanent live region announces the server-reported caída and matches its badge.
     const announce = screen.getByTestId('cuarenta-bonus-announce');
     expect(announce).toHaveAttribute('role', 'status');
     expect(announce).toHaveAttribute('aria-live', 'polite');
+    expect(announce).toHaveTextContent('カイーダ! +2');
+  });
+
+  it('keeps the Caída live region mounted and empty for a plain capture', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        humanAction: {
+          playerIdx: 0,
+          playedCard: card('CLOVER', 7),
+          capturedCards: [card('CLOVER', 7)],
+          isCaida: false,
+          isLimpia: false,
+          rondaBonus: 0,
+        },
+      }),
+    );
+    renderWithProviders(<CuarentaPage />);
+    await waitFor(() => expect(screen.getByText('直前のプレイ')).toBeInTheDocument());
+    const announce = screen.getByTestId('cuarenta-bonus-announce');
+    expect(announce).toHaveAttribute('role', 'status');
+    expect(announce).toHaveAttribute('aria-live', 'polite');
+    expect(announce).toBeEmptyDOMElement();
   });
 
   it('chimes once when a fresh human bonus lands, but not on a plain play', async () => {
