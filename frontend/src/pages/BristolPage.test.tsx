@@ -102,6 +102,9 @@ describe('BristolPage', () => {
     renderWithProviders(<BristolPage />);
     // Fan 0 has 3 cards → badge shows the count.
     await waitFor(() => expect(screen.getByTestId('br-fan-count-0')).toHaveTextContent('3'));
+    expect(Number(screen.getByTestId('br-fan-count-0').style.zIndex)).toBeGreaterThan(
+      Number(screen.getByTestId('br-fan-card-0-2').style.zIndex),
+    );
     // Fan 1 has exactly 2 cards → boundary case, badge shows.
     expect(screen.getByTestId('br-fan-count-1')).toHaveTextContent('2');
   });

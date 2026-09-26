@@ -450,6 +450,7 @@ function BristolPageContent() {
                               aria-hidden="true"
                               data-testid={`br-fan-count-${i.toString()}`}
                               className="absolute bottom-0.5 right-0.5 px-1 rounded bg-ds-accent text-ds-text-on-accent text-[10px] font-bold shadow-sm pointer-events-none"
+                              style={{ zIndex: 1000 }}
                             >
                               {pile.length}
                             </span>
