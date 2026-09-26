@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { Fragment, useMemo } from 'react';
 import type { quinzeApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -233,16 +233,27 @@ function QuinzePageContent() {
               {isBetting && !state.isHumanBanker && (
                 <>
                   <span className="text-sm text-ds-text-muted">{t('betLabel')}</span>
+                  <span className="text-sm text-ds-text-muted" data-testid="quinze-bet-chips">
+                    {t('chips')}: {state.chips}
+                  </span>
                   {BET_OPTIONS.map((amount) => (
-                    <button
-                      key={`bet-${amount.toString()}`}
-                      type="button"
-                      className={btnPrimary}
-                      onClick={() => game.handleBet(amount)}
-                      disabled={loading || amount > state.chips}
-                    >
-                      {t('betAmount', { amount })}
-                    </button>
+                    <Fragment key={`bet-${amount.toString()}`}>
+                      <button
+                        type="button"
+                        className={btnPrimary}
+                        onClick={() => game.handleBet(amount)}
+                        disabled={loading || amount > state.chips}
+                        title={amount > state.chips ? t('betUnavailable') : undefined}
+                        aria-describedby={amount > state.chips ? `quinze-bet-unavailable-${amount}` : undefined}
+                      >
+                        {t('betAmount', { amount })}
+                      </button>
+                      {amount > state.chips && (
+                        <span id={`quinze-bet-unavailable-${amount}`} className="sr-only">
+                          {t('betUnavailable')}
+                        </span>
+                      )}
+                    </Fragment>
                   ))}
                 </>
               )}
