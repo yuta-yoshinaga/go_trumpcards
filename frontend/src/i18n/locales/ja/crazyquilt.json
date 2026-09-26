@@ -57,5 +57,8 @@
   "emptyFoundationDescendingAriaLabel": "空の組札{{idx}}（{{suit}}、K から降順）",
   "directionAscending": "A から昇順",
   "directionDescending": "K から降順",
-  "emptyCellAriaLabel": "空のマス {{cell}}"
+  "emptyCellAriaLabel": "空のマス {{cell}}",
+  "listSeparator": "、",
+  "keyboardDestinations": "有効な移動先: {{destinations}}",
+  "noKeyboardDestinations": "有効な移動先はありません"
 }

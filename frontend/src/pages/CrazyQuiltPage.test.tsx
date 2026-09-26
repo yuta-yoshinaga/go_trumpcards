@@ -107,6 +107,52 @@ describe('CrazyQuiltPage', () => {
     expect(screen.getByTestId('cq-cell-20')).not.toHaveAttribute('data-available');
   });
 
+  it('announces and highlights only legal destinations for the selected quilt card', async () => {
+    mockExec.mockResolvedValue({ ...playingState, waste: [card('CLOVER', 2)] });
+    renderWithProviders(<CrazyQuiltPage />);
+    const source = await screen.findByTestId('cq-cell-0');
+    fireEvent.click(source);
+
+    const waste = await screen.findByTestId('cq-waste');
+    expect(waste).toHaveAttribute('data-valid-destination', 'true');
+    expect(waste.className).toContain('ring-ds-success');
+    expect(screen.getByTestId('cq-destinations')).toHaveTextContent('捨て札');
+    expect(screen.getAllByRole('button', { name: /組札/ })[0]).not.toHaveAttribute('data-valid-destination');
+
+    fireEvent.click(source);
+    await waitFor(() => expect(screen.queryByTestId('cq-destinations')).not.toBeInTheDocument());
+    expect(waste).not.toHaveAttribute('data-valid-destination');
+  });
+
+  it('announces foundation destinations for a selected waste card', async () => {
+    const foundation = Array.from({ length: 8 }, () => [] as Card[]);
+    foundation[2] = [card('HEART', 7)];
+    mockExec.mockResolvedValue({ ...playingState, foundation, waste: [card('HEART', 8)] });
+    renderWithProviders(<CrazyQuiltPage />);
+
+    const waste = await screen.findByTestId('cq-waste');
+    fireEvent.click(waste);
+
+    expect(await screen.findByTestId('cq-destinations')).toHaveTextContent('有効な移動先: 組札2');
+    expect(waste).not.toHaveAttribute('data-valid-destination');
+  });
+
+  it('announces when the selected card has no legal destination', async () => {
+    mockExec.mockResolvedValue({ ...playingState, waste: [card('HEART', 8)] });
+    renderWithProviders(<CrazyQuiltPage />);
+
+    fireEvent.click(await screen.findByTestId('cq-cell-0'));
+
+    expect(await screen.findByTestId('cq-destinations')).toHaveTextContent('有効な移動先はありません');
+  });
+
+  it('hides the destination announcement when no source is selected', async () => {
+    renderWithProviders(<CrazyQuiltPage />);
+
+    await screen.findByTestId('cq-cell-0');
+    expect(screen.queryByTestId('cq-destinations')).not.toBeInTheDocument();
+  });
+
   // A boxed-in card must not reach the server even if something clicks it.
   it('never dispatches a move for a boxed-in card', async () => {
     renderWithProviders(<CrazyQuiltPage />);
