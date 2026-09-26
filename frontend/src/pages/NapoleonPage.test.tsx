@@ -709,6 +709,49 @@ describe('NapoleonPage', () => {
     });
   });
 
+  it('marks trump cards in the active trick with a translated, accessible badge', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      currentTrick: [
+        { playerIdx: 0, card: { design: 'SPADE', value: 1 } },
+        { playerIdx: 1, card: { design: 'HEART', value: 5 } },
+      ],
+    });
+    renderWithProviders(<NapoleonPage />);
+    await waitFor(() => expect(screen.getByTestId('trick-display-cards')).toBeInTheDocument());
+
+    const trumpCard = screen.getByTestId('card-role-badge-0');
+    expect(trumpCard).toHaveTextContent('★');
+    expect(trumpCard).toHaveAttribute('title', '切り札: スペード');
+    expect(screen.getByAltText(/♠ A \(切り札: スペード\)/)).toBeInTheDocument();
+    expect(screen.queryByTestId('card-role-badge-1')).not.toBeInTheDocument();
+  });
+
+  it('marks only club cards when clubs are trump', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      trumpSuit: 2,
+      currentTrick: [
+        { playerIdx: 0, card: { design: 'CLOVER', value: 1 } },
+        { playerIdx: 1, card: { design: 'SPADE', value: 5 } },
+      ],
+    });
+    renderWithProviders(<NapoleonPage />);
+    await waitFor(() => expect(screen.getByTestId('trick-display-cards')).toBeInTheDocument());
+
+    expect(screen.getByTestId('card-role-badge-0')).toHaveTextContent('★');
+    expect(screen.getByTestId('card-role-badge-0')).toHaveAttribute('title', '切り札: クラブ');
+    expect(screen.queryByTestId('card-role-badge-1')).not.toBeInTheDocument();
+  });
+
+  it('does not retain trump badges after the trick ends', async () => {
+    mockExec.mockResolvedValue(trickEndState);
+    renderWithProviders(<NapoleonPage />);
+    await waitFor(() => expect(screen.getByAltText('♦ 3')).toBeInTheDocument());
+    expect(screen.queryByTestId('card-role-badge-0')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('card-role-badge-1')).not.toBeInTheDocument();
+  });
+
   it('does not show current trick when empty', async () => {
     renderWithProviders(<NapoleonPage />);
     await waitFor(() => expect(screen.getByText('\u30b9\u30b3\u30a2')).toBeInTheDocument());
