@@ -27,6 +27,7 @@
   "actions": {
     "trump": "Trump {{suit}}",
     "discard": "Discard ({{n}}/{{total}})",
+    "discardProgress": "Selected: {{n}}/{{total}} cards",
     "nextRound": "Next round",
     "reset": "Reset",
     "giveUp": "Give up",
