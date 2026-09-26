@@ -18,6 +18,7 @@
   "cardAction": {
     "removable": "除去可能",
     "movable": "移動可能",
+    "removableAndMovable": "除去可能・移動可能",
     "unavailable": "操作不可"
   },
   "giveup": "ギブアップ",

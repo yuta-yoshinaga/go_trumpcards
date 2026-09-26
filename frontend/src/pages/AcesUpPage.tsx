@@ -39,6 +39,13 @@ import { formatAcesUpState } from '../utils/cli/formatters/acesupFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
+function cardActionKey(card: { removable: boolean; movable: boolean }): string {
+  if (card.removable && card.movable) return 'cardAction.removableAndMovable';
+  if (card.removable) return 'cardAction.removable';
+  if (card.movable) return 'cardAction.movable';
+  return 'cardAction.unavailable';
+}
+
 /** Aces Up tutorial step definitions. */
 const ACESUP_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -265,13 +272,7 @@ function AcesUpPageContent() {
                                   aria-label={t('cardLabel', {
                                     column: colIdx + 1,
                                     card: cardAlt(c.card),
-                                    action: t(
-                                      c.removable
-                                        ? 'cardAction.removable'
-                                        : c.movable
-                                          ? 'cardAction.movable'
-                                          : 'cardAction.unavailable',
-                                    ),
+                                    action: t(cardActionKey(c)),
                                   })}
                                   draggable={isPlaying && !busy && c.movable === true}
                                   onDragStart={dnd.handleDragStart(columnZone)}

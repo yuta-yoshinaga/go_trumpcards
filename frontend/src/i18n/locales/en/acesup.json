@@ -18,6 +18,7 @@
   "cardAction": {
     "removable": "removable",
     "movable": "movable",
+    "removableAndMovable": "removable and movable",
     "unavailable": "not actionable"
   },
   "giveup": "Give Up",

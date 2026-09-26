@@ -160,6 +160,17 @@ describe('AcesUpPage', () => {
     expect(screen.getByRole('button', { name: '列4、♦ 6、操作不可' })).toBeInTheDocument();
   });
 
+  it('announces both actions when a top card is removable and movable', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      columns: [[makeCard(card('SPADE', 5), { top: true, removable: true, movable: true })], [], [], []],
+    });
+    renderWithProviders(<AcesUpPage />);
+    await waitFor(() => expect(screen.getByText(/山札 \(/)).toBeInTheDocument());
+
+    expect(screen.getByRole('button', { name: '列1、♠ 5、除去可能・移動可能' })).toBeInTheDocument();
+  });
+
   it('keeps the movable marker visible alongside a hint ring', async () => {
     renderWithProviders(<AcesUpPage />);
     await waitFor(() => expect(screen.getByText(/山札 \(/)).toBeInTheDocument());
