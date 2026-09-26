@@ -23,8 +23,7 @@
   "declareNotice": "Your turn — declare In (stay) or Out (fold).",
   "declareMoney": {
     "chips": "Balance: {{amount}}",
-    "bet": "Bet: {{amount}}",
-    "pot": "Pot: {{amount}}"
+    "bet": "Bet: {{amount}}"
   },
   "badge": {
     "in": "In",

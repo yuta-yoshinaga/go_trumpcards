@@ -379,7 +379,7 @@ function GutsPageContent() {
                     >
                       <span className="mr-3">{t('declareMoney.chips', { amount: humanPlayer.chips })}</span>
                       <span className="mr-3">{t('declareMoney.bet', { amount: humanPlayer.roundBet })}</span>
-                      <span>{t('declareMoney.pot', { amount: state.pot })}</span>
+                      <span>{t('pot', { amount: state.pot })}</span>
                     </div>
                   )}
                   <button type="button" className={btnPrimary} onClick={handleIn} disabled={loading}>
