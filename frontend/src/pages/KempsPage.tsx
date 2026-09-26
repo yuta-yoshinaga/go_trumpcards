@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { kempsApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -112,15 +112,22 @@ function KempsPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('kemps');
   const [swapAnnouncement, setSwapAnnouncement] = useState('');
+  const swapCardsRef = useRef<{
+    handCard: KempsResponse['field'][number];
+    fieldCard: KempsResponse['field'][number];
+  } | null>(null);
   const { state, loading, error, exec, retry } = useGameApi(kempsApi.exec, {
     onSuccess: (response, [command, options]) => {
-      if (command !== 'swap' || !options || isRejectedAction(response)) return;
-      const human = response.players.find((player) => player.isHuman);
-      const newHandCard = human?.hand[options.handIndex ?? -1];
-      const newFieldCard = response.field[options.fieldIndex ?? -1];
-      if (newHandCard && newFieldCard) {
-        setSwapAnnouncement(t('swapComplete', { handCard: cardAlt(newHandCard), fieldCard: cardAlt(newFieldCard) }));
-      }
+      if (command !== 'swap' || !options) return;
+      const swappedCards = swapCardsRef.current;
+      swapCardsRef.current = null;
+      if (isRejectedAction(response) || !swappedCards) return;
+      setSwapAnnouncement(
+        t('swapComplete', {
+          handCard: cardAlt(swappedCards.fieldCard),
+          fieldCard: cardAlt(swappedCards.handCard),
+        }),
+      );
     },
   });
 
@@ -198,6 +205,10 @@ function KempsPageContent() {
   const handleFieldClick = (fieldIndex: number) => {
     if (!canSwap || selectedHand === null) return;
     const handIndex = selectedHand;
+    const human = state.players.find((player) => player.isHuman);
+    const handCard = human?.hand[handIndex];
+    const fieldCard = state.field[fieldIndex];
+    swapCardsRef.current = handCard && fieldCard ? { handCard, fieldCard } : null;
     setSelectedHand(null);
     exec('swap', { handIndex, fieldIndex });
   };

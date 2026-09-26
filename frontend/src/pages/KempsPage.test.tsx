@@ -121,6 +121,31 @@ describe('KempsPage', () => {
   });
 
   it('announces the accepted swap with the new hand and field cards', async () => {
+    const swappedState = makeState({
+      field: [
+        { design: 'SPADE', value: 5 },
+        { design: 'HEART', value: 6 },
+        { design: 'HEART', value: 2 },
+        { design: 'DIAMOND', value: 8 },
+      ],
+      players: [
+        makePlayer({
+          name: 'You',
+          isHuman: true,
+          team: 0,
+          hand: [
+            { design: 'SPADE', value: 1 },
+            { design: 'CLOVER', value: 3 },
+            { design: 'DIAMOND', value: 4 },
+            { design: 'CLOVER', value: 7 },
+          ],
+        }),
+        makePlayer({ team: 1 }),
+        makePlayer({ team: 0 }),
+        makePlayer({ team: 1 }),
+      ],
+    });
+    mockExec.mockResolvedValueOnce(exchangeState).mockResolvedValue(swappedState);
     renderWithProviders(<KempsPage />);
     fireEvent.click(await screen.findByRole('button', { name: '♥ 2 を選択' }));
     fireEvent.click(await screen.findByRole('button', { name: '♣ 7 と交換' }));
