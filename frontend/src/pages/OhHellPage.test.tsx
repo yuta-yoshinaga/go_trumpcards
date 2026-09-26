@@ -216,9 +216,20 @@ describe('OhHellPage', () => {
     });
     renderWithProviders(<OhHellPage />);
     const chip = await screen.findByTestId('bid-progress-chip');
+    expect(chip).toHaveTextContent('\u5ba3\u8a00: 2 / \u7372\u5f97: 0 / \u6b8b\u308a: 2');
     expect(chip.className).toContain('border-ds-border-subtle');
     expect(chip.className).not.toContain('border-ds-error');
     expect(chip).not.toHaveTextContent('\u9054\u6210\u4e0d\u80fd');
+  });
+
+  it('does not show the progress chip when there is no human player', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      players: playPhaseState.players.map((player) => ({ ...player, isHuman: false })),
+    });
+    renderWithProviders(<OhHellPage />);
+    await screen.findByRole('heading', { level: 1 });
+    expect(screen.queryByTestId('bid-progress-chip')).not.toBeInTheDocument();
   });
 
   it('hides the progress chip during the bid phase and at game end', async () => {
