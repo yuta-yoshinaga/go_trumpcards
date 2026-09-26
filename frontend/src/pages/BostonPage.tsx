@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { bostonApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -125,19 +125,25 @@ function BostonPageContent() {
   const { cardWidth } = useCardDimensions();
   const phaseNames = usePhaseNames('boston', BOSTON_PHASE_KEYS);
 
-  const handlePlay = () => {
+  const handlePlay = useCallback(() => {
     if (selected === null || !state?.validPlays.includes(selected)) return;
     exec('play', { cardIndex: selected });
     setSelected(null);
-  };
+  }, [exec, selected, state?.validPlays]);
+
+  const selectValidCard = useCallback(
+    (index: number) => {
+      if (state?.validPlays.includes(index)) setSelected(index);
+    },
+    [state?.validPlays],
+  );
+  const clearSelection = useCallback(() => setSelected(null), []);
 
   useCardKeyboardNav({
     cardCount: state?.players.find((p) => p.isHuman)?.cards.length ?? 0,
-    onToggle: (index) => {
-      if (state?.validPlays.includes(index)) setSelected(index);
-    },
+    onToggle: selectValidCard,
     onConfirm: handlePlay,
-    onClear: () => setSelected(null),
+    onClear: clearSelection,
     enabled:
       !!state && state.phase === BostonPhase.PLAY && state.currentPlayerIdx === 0 && !state.gameEndFlag && !loading,
   });

@@ -169,6 +169,25 @@ describe('BostonPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 1 }));
   });
 
+  it('does not play a selected card after the server marks it invalid', async () => {
+    const response = makeState();
+    mockExec.mockResolvedValue(response);
+    renderWithProviders(<BostonPage />);
+    await waitFor(() => expect(screen.getByTestId('boston-play-notice')).toBeInTheDocument());
+
+    fireEvent.keyDown(document, { key: '2' });
+    expect(handButtons()[1].className).toContain('ring-2');
+
+    // Simulate a newer server response while preserving the page's old selection.
+    response.validPlays = [0, 2];
+    fireEvent.click(screen.getByRole('checkbox', { name: 'ヒント表示' }));
+
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'Enter' });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('play', expect.anything());
+  });
+
   it('does not activate card keyboard controls during another player’s turn', async () => {
     mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1 }));
     renderWithProviders(<BostonPage />);
