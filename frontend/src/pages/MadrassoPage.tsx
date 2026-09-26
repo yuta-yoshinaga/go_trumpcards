@@ -32,6 +32,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { MADRASSO_HELP, parseMadrassoCommand } from '../utils/cli/commands/madrassoCommands';
 import { formatMadrassoState } from '../utils/cli/formatters/madrassoFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { madrassoTrickPoints } from '../utils/madrassoTrickPoints';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -95,26 +96,6 @@ const MADRASSO_PHASE_KEYS: Readonly<Record<number, string>> = {
  */
 function roundPointsShown(points: number): number {
   return Math.min(Math.max(points, 0), MADRASSO_ROUND_POINTS);
-}
-
-/** Returns the integer card points currently on the Madrasso trick. */
-function madrassoTrickPoints(cards: MadrassoResponse['currentTrick']): number {
-  return cards.reduce((total, { card }) => {
-    switch (card.value) {
-      case 1:
-        return total + 11;
-      case 3:
-        return total + 10;
-      case 13:
-        return total + 4;
-      case 12:
-        return total + 3;
-      case 11:
-        return total + 2;
-      default:
-        return total;
-    }
-  }, 0);
 }
 
 /** Total card points contested in one deal (sync: MadrassoRoundPoints in Go). */
