@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { basraApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeBasraState } from '../test/stateFactories';
+import * as basraCaptures from '../utils/basraCaptures';
 import { BasraPage } from './BasraPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -149,6 +150,32 @@ describe('BasraPage', () => {
 
     fireEvent.click(screen.getByTestId('hand-card-1'));
     expect(screen.getByTestId('basra-capture-reasons')).toHaveTextContent('ジャックで一掃');
+  });
+
+  it('does not explain sum captures for a Queen even when numeric cards are in the preview', async () => {
+    mockExec.mockResolvedValue(
+      makeBasraState({
+        tableCards: [
+          { design: 'SPADE', value: 12 },
+          { design: 'HEART', value: 5 },
+          { design: 'DIAMOND', value: 7 },
+        ],
+        players: playPhaseState.players.map((player) =>
+          player.isHuman ? { ...player, cards: [{ design: 'CLOVER', value: 12 }, ...player.cards.slice(1)] } : player,
+        ),
+      }),
+    );
+    // Hold the preview candidates to a same-rank Queen and numeric cards so this
+    // assertion exercises the page's face-card reason guard directly.
+    const captureSpy = vi.spyOn(basraCaptures, 'basraFindCaptures').mockReturnValue([0, 1, 2]);
+    try {
+      renderWithProviders(<BasraPage />);
+      fireEvent.click(await screen.findByTestId('hand-card-0'));
+      expect(screen.getByTestId('basra-capture-reasons')).toHaveTextContent('同ランク捕獲');
+      expect(screen.getByTestId('basra-capture-reasons')).not.toHaveTextContent('合計値捕獲');
+    } finally {
+      captureSpy.mockRestore();
+    }
   });
 
   it('previews a Jack as a full board sweep and labels the button with the swept count', async () => {
