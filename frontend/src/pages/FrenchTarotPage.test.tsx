@@ -11,6 +11,15 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockExec = vi.mocked(frenchtarotApi.exec);
+const mobileFlag = { value: false };
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useCardDimensions: () => ({ ...actual.useCardDimensions(), isMobile: mobileFlag.value }),
+  };
+});
 
 const suit = (value: number, design: 'HEART' | 'SPADE' | 'CLOVER' | 'DIAMOND', glyph: string, label: string) => ({
   design,
@@ -106,11 +115,32 @@ const gameEndState = makeFrenchTarotState({
 const cpuTurnState = makeFrenchTarotState({ currentPlayerIdx: 1, isHumanTurn: false });
 
 beforeEach(() => {
+  mobileFlag.value = false;
   mockExec.mockReset();
   mockExec.mockResolvedValue(playPhaseState);
 });
 
 describe('FrenchTarotPage', () => {
+  it('keeps each player’s tricks and captured points visible on mobile while cards stay collapsed', async () => {
+    mobileFlag.value = true;
+    mockExec.mockResolvedValue(
+      makeFrenchTarotState({
+        players: [
+          { ...playPhaseState.players[0], trickCount: 2, cardPoints: 15, cardCount: 18 },
+          ...playPhaseState.players.slice(1),
+        ],
+      }),
+    );
+
+    renderWithProviders(<FrenchTarotPage />);
+
+    await waitFor(() => expect(screen.getByText(/2トリック/)).toBeVisible());
+    expect(screen.getAllByText(/0トリック/).length).toBeGreaterThan(0);
+    const cardsDetails = screen.getByText('プレイヤー').closest('details');
+    expect(cardsDetails).not.toHaveAttribute('open');
+    expect(screen.getByText('プレイヤー')).toBeVisible();
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<FrenchTarotPage />);
