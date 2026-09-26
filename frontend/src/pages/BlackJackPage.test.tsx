@@ -1,7 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import i18n from 'i18next';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { actionLogApi, blackjackApi, doubleexposureApi } from '../api/gameApi';
+import { actionLogApi, blackjackApi, doubleexposureApi, spanish21Api } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -11,11 +11,13 @@ import { BlackJackPage } from './BlackJackPage';
 vi.mock('../api/gameApi', () => ({
   blackjackApi: { exec: vi.fn() },
   doubleexposureApi: { exec: vi.fn() },
+  spanish21Api: { exec: vi.fn() },
   actionLogApi: { blackjack: vi.fn() },
 }));
 
 const mockExec = vi.mocked(blackjackApi.exec);
 const mockDoubleExposureExec = vi.mocked(doubleexposureApi.exec);
+const mockSpanish21Exec = vi.mocked(spanish21Api.exec);
 
 const betPhaseState: BlackJackResponse = {
   dealer: { chips: 1000 },
@@ -1270,6 +1272,17 @@ describe('BlackJackPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'ヒット' })).toBeInTheDocument());
     expect(screen.queryByText(/Perfect Pairs:/)).not.toBeInTheDocument();
     expect(screen.queryByText(/ポーカー役ボーナス:/)).not.toBeInTheDocument();
+  });
+
+  it('shows Spanish 21 side bet stake, qualifying condition, and total return at round end', async () => {
+    mockSpanish21Exec.mockResolvedValue({
+      ...endPhaseState,
+      sideBetResults: [{ betType: 1, resultType: 1, resultName: 'Perfect Pair', betAmount: 10, payout: 250 }],
+    });
+    renderWithProviders(<BlackJackPage variant="spanish21" />);
+    expect(await screen.findByTestId('spanish21-side-bet-breakdown')).toHaveTextContent('ベット額: 10');
+    expect(screen.getByTestId('spanish21-side-bet-breakdown')).toHaveTextContent('成立条件: Perfect Pair');
+    expect(screen.getByTestId('spanish21-side-bet-breakdown')).toHaveTextContent('払い戻し: 260');
   });
 
   // --- Multi-hand tests ---

@@ -569,12 +569,33 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
                 {sideBetResults.map((r) => (
                   <div
                     key={r.betType}
+                    data-testid={
+                      variant === 'spanish21' && phase === BjPhase.END ? 'spanish21-side-bet-breakdown' : undefined
+                    }
                     className={`text-sm text-center px-3 py-1 rounded mb-1 ${r.payout > 0 ? 'bg-ds-warning/90 text-ds-text-on-accent font-bold' : 'bg-ds-surface-elevated/70 text-ds-text-primary'}`}
                   >
-                    {r.betType === BJ_SIDE_BET_PERFECT_PAIRS ? t('sideBet.perfectPairs') : t('sideBet.twentyOnePlus3')}:{' '}
-                    {r.payout > 0
-                      ? t('sideBet.win', { name: r.resultName, payout: r.payout })
-                      : t('sideBet.lose', { name: r.resultName, amount: r.betAmount })}
+                    {variant === 'spanish21' && phase === BjPhase.END ? (
+                      <>
+                        <div>
+                          {r.betType === BJ_SIDE_BET_PERFECT_PAIRS
+                            ? t('sideBet.perfectPairs')
+                            : t('sideBet.twentyOnePlus3')}
+                        </div>
+                        <div>{t('sideBet.breakdownBet', { amount: r.betAmount })}</div>
+                        {r.resultName && <div>{t('sideBet.breakdownCondition', { condition: r.resultName })}</div>}
+                        <div>{t('sideBet.breakdownPayout', { amount: r.payout > 0 ? r.betAmount + r.payout : 0 })}</div>
+                      </>
+                    ) : (
+                      <>
+                        {r.betType === BJ_SIDE_BET_PERFECT_PAIRS
+                          ? t('sideBet.perfectPairs')
+                          : t('sideBet.twentyOnePlus3')}
+                        :{' '}
+                        {r.payout > 0
+                          ? t('sideBet.win', { name: r.resultName, payout: r.payout })
+                          : t('sideBet.lose', { name: r.resultName, amount: r.betAmount })}
+                      </>
+                    )}
                   </div>
                 ))}
               </div>
