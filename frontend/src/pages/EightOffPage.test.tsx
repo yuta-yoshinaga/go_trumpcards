@@ -134,6 +134,25 @@ describe('EightOffPage', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
   });
 
+  it('announces the selected source and legal destinations, then clears the guide on deselection and move', async () => {
+    renderWithProviders(<EightOffPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    const status = screen.getByTestId('eo-move-guide');
+    expect(status).toBeEmptyDOMElement();
+
+    fireEvent.click(screen.getByTestId('eo-tableau-0-0'));
+    expect(status).toHaveTextContent('列1から移動できます');
+    expect(status).toHaveTextContent('列3');
+    expect(status).not.toHaveTextContent('列2');
+
+    fireEvent.click(screen.getByTestId('eo-tableau-0-0'));
+    expect(status).toBeEmptyDOMElement();
+
+    fireEvent.click(screen.getByTestId('eo-tableau-0-0'));
+    fireEvent.click(screen.getByTestId('eo-tableau-1-0'));
+    expect(status).toBeEmptyDOMElement();
+  });
+
   it('shows supermove limit tooltip with empty free-cell and column counts', async () => {
     mockExec.mockResolvedValue(supermoveBlockedState);
     renderWithProviders(<EightOffPage />);
