@@ -51,10 +51,13 @@ export interface CpuPlayerCardProps {
   usedHoleIdx?: readonly number[];
   /** Localised label for the visual marker on used hole cards. */
   usedHoleLabel?: string;
-  /** Hi/Lo-specific used cards, allowing the two hand types to be distinguished. */
+  /** Indices into `player.cards` used for the high hand in Hi/Lo. */
   usedHoleHiIdx?: readonly number[];
+  /** Indices into `player.cards` used for the low hand in Hi/Lo. */
   usedHoleLoIdx?: readonly number[];
+  /** Localised label for hole cards used in the high hand. */
   usedHoleHiLabel?: string;
+  /** Localised label for hole cards used in the low hand. */
   usedHoleLoLabel?: string;
 }
 
@@ -169,7 +172,7 @@ export function CpuPlayerCard({
                 <CardImage card={card} width={cpuCardWidth} style={{ border: '3px solid transparent' }} />
                 {(usage || used) && label && (
                   <span
-                    className={`absolute -top-2 -right-1 flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold text-ds-text-primary ${usage === 'lo' ? 'bg-ds-info' : usage === 'both' ? 'bg-ds-accent' : 'bg-ds-success'}`}
+                    className={`absolute -top-2 -right-1 flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold text-ds-text-on-accent ${usage === 'lo' ? 'bg-ds-info' : usage === 'both' ? 'bg-ds-accent' : 'bg-ds-success'}`}
                     data-testid="cpu-hole-used-indicator"
                     role="img"
                     aria-label={label}

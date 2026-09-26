@@ -227,6 +227,26 @@ describe('CpuPlayerCard', () => {
     expect(indicator).toHaveClass('text-white');
   });
 
+  it('uses the on-accent text color for Hi/Lo usage badges', () => {
+    render(
+      <CpuPlayerCard
+        player={makePlayer()}
+        showCards={true}
+        faceDownCount={2}
+        showHandName={false}
+        usedHoleHiIdx={[0]}
+        usedHoleLoIdx={[1]}
+        usedHoleHiLabel="ハイ"
+        usedHoleLoLabel="ロー"
+      />,
+    );
+    const indicators = screen.getAllByTestId('cpu-hole-used-indicator');
+    expect(indicators).toHaveLength(2);
+    for (const indicator of indicators) {
+      expect(indicator).toHaveClass('text-ds-text-on-accent');
+    }
+  });
+
   it('does not add the marker when the label is absent', () => {
     render(
       <CpuPlayerCard player={makePlayer()} showCards={true} faceDownCount={2} showHandName={false} usedHoleIdx={[0]} />,
