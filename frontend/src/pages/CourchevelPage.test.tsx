@@ -438,6 +438,33 @@ describe('CourchevelPage', () => {
     expect(highlightedIndexes).toEqual(best?.boardIdx);
   });
 
+  it('does not highlight any cards when the human folded and there is no winner', async () => {
+    mockExec.mockResolvedValue({
+      ...showdownState,
+      players: [humanPlayer({ folded: true }), showdownState.players[1], showdownState.players[2]],
+      roundResults: showdownState.roundResults.map((result) => ({ ...result, wonAmount: 0 })),
+    });
+    const { container } = renderWithProviders(<CourchevelPage />);
+    await waitFor(() => expect(screen.getByText('ツーペア')).toBeInTheDocument());
+    expect(container.querySelectorAll('[data-best5-hole]')).toHaveLength(0);
+    expect(container.querySelectorAll('[data-best5-board]')).toHaveLength(0);
+  });
+
+  it('does not highlight any cards when the winning CPU is folded', async () => {
+    mockExec.mockResolvedValue({
+      ...showdownState,
+      players: [humanPlayer({ folded: true }), showdownState.players[1], cpuPlayer(2, { folded: true })],
+      roundResults: showdownState.roundResults.map((result) => ({
+        ...result,
+        wonAmount: result.playerIdx === 2 ? 200 : 0,
+      })),
+    });
+    const { container } = renderWithProviders(<CourchevelPage />);
+    await waitFor(() => expect(screen.getByText('ツーペア')).toBeInTheDocument());
+    expect(container.querySelectorAll('[data-best5-hole]')).toHaveLength(0);
+    expect(container.querySelectorAll('[data-best5-board]')).toHaveLength(0);
+  });
+
   it('shows the winning CPU board cards when the human did not win', async () => {
     mockExec.mockResolvedValue({
       ...showdownState,

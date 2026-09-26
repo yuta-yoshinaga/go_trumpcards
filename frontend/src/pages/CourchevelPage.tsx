@@ -173,7 +173,7 @@ function CourchevelPageContent() {
           ? state.players.find((candidate) => candidate.id === winner.playerIdx && !candidate.folded)
           : undefined;
     if (!player) return empty;
-    const best = omahaBestFive(player.cards ?? [], state.communityCards ?? []);
+    const best = omahaBestFive(player.cards, state.communityCards);
     if (!best) return empty;
     return {
       holeSet: player === humanPlayer ? new Set(best.holeIdx) : empty.holeSet,
