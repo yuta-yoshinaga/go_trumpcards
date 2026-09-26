@@ -87,6 +87,23 @@ beforeEach(() => {
 });
 
 describe('SpiderettePage', () => {
+  it('announces stalemate escape moves and clears the announcement when resolved', async () => {
+    mockSend.mockResolvedValueOnce({ ...playingState, isStalemate: true, undoToEscape: 3, canUndo: true });
+    mockSend.mockResolvedValueOnce({ ...playingState, isStalemate: true, undoToEscape: 2, canUndo: true });
+    mockSend.mockResolvedValueOnce(playingState);
+    renderWithProviders(<SpiderettePage />);
+
+    const status = await screen.findByTestId('spiderette-stalemate-status');
+    expect(status).toHaveAttribute('role', 'status');
+    expect(status).toHaveAttribute('aria-live', 'polite');
+    expect(status).toHaveTextContent('手詰まりです。元に戻すボタンで3手戻ると脱出できます。');
+
+    fireEvent.click(screen.getByTestId('stalemate-escape-button'));
+    await waitFor(() => expect(status).toHaveTextContent('手詰まりです。元に戻すボタンで2手戻ると脱出できます。'));
+    fireEvent.click(screen.getByTestId('stalemate-escape-button'));
+    await waitFor(() => expect(status).toBeEmptyDOMElement());
+  });
+
   it('renders skeleton when no state', () => {
     mockSend.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<SpiderettePage />);
