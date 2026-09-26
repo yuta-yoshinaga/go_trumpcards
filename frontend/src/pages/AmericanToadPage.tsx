@@ -214,6 +214,7 @@ function AmericanToadPageContent() {
       >
         <div className="text-center text-xs text-ds-text-muted mb-0.5" aria-hidden="true">
           #{colIdx}
+          {col.length === 0 && reserveHolds ? ` · ${t('reservedColumnLabel')}` : ''}
         </div>
         <DropZone
           isDropTarget={dnd.isDropTarget(tableauColZone)}
@@ -236,7 +237,12 @@ function AmericanToadPageContent() {
                 style={{ height: dims.ch }}
                 className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center bg-transparent ${focusRingWhite}`}
               >
-                {reserveHolds ? t('reserve') : t('waste')}
+                <span className="flex flex-col items-center">
+                  <span>{reserveHolds ? t('reserve') : t('waste')}</span>
+                  <span className="text-xs leading-tight">
+                    {t(reserveHolds ? 'reservedColumnDescription' : 'emptyColumnDescription')}
+                  </span>
+                </span>
               </button>
             ) : (
               col.map((tc2, cardIdx) => {
