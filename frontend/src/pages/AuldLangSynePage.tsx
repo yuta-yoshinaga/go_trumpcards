@@ -461,7 +461,12 @@ function AuldLangSynePageContent() {
                     {t('empty')}
                   </div>
                 )}
-                <span className="text-[11px] text-ds-text-muted mt-0.5" data-testid="als-deals-left">
+                <span
+                  className="text-[11px] text-ds-text-muted mt-0.5"
+                  data-testid="als-deals-left"
+                  role="status"
+                  aria-live="polite"
+                >
                   {t('dealsLeft', { count: dealsLeft })}
                 </span>
               </div>

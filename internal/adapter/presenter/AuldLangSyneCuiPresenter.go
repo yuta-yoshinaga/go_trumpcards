@@ -73,7 +73,7 @@ func (p *AuldLangSyneCuiPresenter) Output(g interfaces.AuldLangSyneGame, lastErr
 		// are left, which is the count divided by the four wastes.
 		b.WriteString(i18n.Tf("auldlangsyne.stockLine",
 			"count", strconv.Itoa(g.GetStockCount()),
-			"deals", strconv.Itoa(g.GetStockCount()/domain.AuldLangSyneWasteCnt)))
+			"deals", strconv.Itoa((g.GetStockCount()+domain.AuldLangSyneWasteCnt-1)/domain.AuldLangSyneWasteCnt)))
 		b.WriteString("\n")
 
 		cuiErrorBlock(b, lastErr)
