@@ -113,6 +113,7 @@ function SixCardGolfPageContent() {
   const humanIdx = state?.players?.findIndex((p) => p.isHuman) ?? 0;
   const isHumanTurn = state ? state.currentPlayerIdx === humanIdx : false;
   const humanWon = isGameEnd && state?.winnerIdx === humanIdx;
+  const canDrawDiscard = phase === SCG_PHASE_PLAYER_TURN && isHumanTurn && !state?.canFlip;
 
   const handleFlipInitial = useCallback((pos: number) => apiCall({ command: 'flipinitial', position: pos }), [apiCall]);
   const handleDrawStock = useCallback(() => apiCall({ command: 'drawstock' }), [apiCall]);
@@ -275,10 +276,16 @@ function SixCardGolfPageContent() {
               )}
             </div>
             {state.discardTop && (
-              <div className="text-center">
+              <div
+                className={`text-center rounded-md p-1 ${canDrawDiscard ? 'ring-2 ring-ds-success bg-ds-surface/40' : ''}`}
+                data-testid="scg-discard-draw-option"
+              >
                 <div className="text-xs mb-1">{t('label.discard')}</div>
                 <AnimatedCard card={state.discardTop} width={cardWidth} />
-                {phase === SCG_PHASE_PLAYER_TURN && isHumanTurn && !state.canFlip && (
+                <div className={`text-xs font-medium ${canDrawDiscard ? 'text-ds-success' : 'text-ds-text-muted'}`}>
+                  {t(canDrawDiscard ? 'label.discardAvailable' : 'label.discardUnavailable')}
+                </div>
+                {canDrawDiscard && (
                   <button
                     type="button"
                     className={`mt-1 px-3 py-1 rounded bg-ds-success hover:bg-ds-success-hover text-white text-sm ${focusRingWhite}`}
