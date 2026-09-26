@@ -256,7 +256,16 @@ function BoliviaPageContent() {
               </span>
             </div>
             <div className="text-ds-text-muted text-center mb-2 text-sm" data-testid="sa-team-scores">
-              {t('teamScores', { a: state.teamScores[0] ?? 0, b: state.teamScores[1] ?? 0 })}
+              {t('teamScores', {
+                a: t(humanPlayer?.team === 0 ? 'teamScoreSelf' : 'teamScoreOpponent', {
+                  team: t('teamLabel', { n: 0 }),
+                  score: state.teamScores[0] ?? 0,
+                }),
+                b: t(humanPlayer?.team === 1 ? 'teamScoreSelf' : 'teamScoreOpponent', {
+                  team: t('teamLabel', { n: 1 }),
+                  score: state.teamScores[1] ?? 0,
+                }),
+              })}
             </div>
 
             {/* **上がりの条件を書いておく。** カナスタ 2 個では上がれず、

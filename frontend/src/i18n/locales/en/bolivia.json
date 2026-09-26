@@ -80,7 +80,9 @@
   },
   "skipMeldButton": "Skip",
   "teamLabel": "Team {{n}}",
-  "teamScores": "Team 0: {{a}} / Team 1: {{b}}",
+  "teamScoreSelf": "{{team}} (your team): {{score}}",
+  "teamScoreOpponent": "{{team}} (opponent): {{score}}",
+  "teamScores": "{{a}} / {{b}}",
   "tutorial": {
     "drawArea": "The stock and discard area. Draw cards from here.",
     "playerHand": "Your hand. Select cards to meld or discard.",
