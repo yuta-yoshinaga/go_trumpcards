@@ -123,9 +123,9 @@ func (ap *AndarBaharCuiPresenter) writeHistory(b *strings.Builder, history []int
 	syms := make([]string, len(shown))
 	for i, r := range shown {
 		if r == domain.AndarBaharBetAndar {
-			syms[i] = color.Red("A")
+			syms[i] = color.Red(i18n.T("andarbahar.historyAndarSymbol"))
 		} else {
-			syms[i] = color.Yellow("B")
+			syms[i] = color.Yellow(i18n.T("andarbahar.historyBaharSymbol"))
 		}
 	}
 	b.WriteString(i18n.Tf("andarbahar.historyLine", "symbols", strings.Join(syms, " ")) + "\n")

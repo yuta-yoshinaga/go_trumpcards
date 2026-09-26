@@ -221,6 +221,22 @@ function AndarBaharPageContent() {
               <div className="mb-4" data-testid="andarbahar-road" data-tutorial="ab-road">
                 <div className="text-ds-text-primary text-center text-sm font-bold mb-1">{t('label.road')}</div>
                 <div className="mx-auto max-w-3xl">
+                  <ol className="sr-only" aria-label={t('label.roadResults')}>
+                    {state.history.map((result, index) => (
+                      <li
+                        key={`${index}-${result}`}
+                        aria-label={result === AndarBaharColumn.ANDAR ? t('label.andar') : t('label.bahar')}
+                      >
+                        {result === AndarBaharColumn.ANDAR ? t('label.andar') : t('label.bahar')}
+                      </li>
+                    ))}
+                  </ol>
+                  <p className="sr-only">
+                    {t('label.roadCounts', {
+                      andar: state.history.filter((result) => result === AndarBaharColumn.ANDAR).length,
+                      bahar: state.history.filter((result) => result === AndarBaharColumn.BAHAR).length,
+                    })}
+                  </p>
                   <RoadmapTrendBar
                     history={state.history}
                     leftCode={AndarBaharColumn.ANDAR}
