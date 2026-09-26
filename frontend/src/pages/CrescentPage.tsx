@@ -468,6 +468,17 @@ function CrescentPageContent() {
               messageParams={state.messageParams}
             />
 
+            <div
+              data-testid="crescent-stalemate-redeal-status"
+              className="text-ds-warning text-sm text-center"
+              role="status"
+              aria-live="polite"
+            >
+              {isPlaying && state.noLegalMoves && state.redealsRemaining > 0
+                ? t('stalemateRedealAvailable', { count: state.redealsRemaining })
+                : ''}
+            </div>
+
             {/* **どこまで進んでいたかを自分で数えさせない。**8 組札 (昇順4 + 降順4)
                 は Congress より複雑なので、なおさら数えにくい (#5590)。
                 Congress / CrazyQuilt と同じ形。 */}

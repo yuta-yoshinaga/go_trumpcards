@@ -75151,6 +75151,9 @@ components:
           type: boolean
         isStalemate:
           type: boolean
+        noLegalMoves:
+          type: boolean
+          description: True when no card can move, regardless of remaining redeals.
         undoToEscape:
           type: integer
         messageCode:

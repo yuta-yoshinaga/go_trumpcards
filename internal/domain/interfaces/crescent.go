@@ -31,4 +31,6 @@ type CrescentGame interface {
 	GetFoundation() [domain.CrescentFoundationCnt][]*domain.Card
 	// IsStalemate 手詰まり状態を取得する。
 	IsStalemate() bool
+	// HasNoLegalMoves reports whether no move is possible, regardless of redeals.
+	HasNoLegalMoves() bool
 }

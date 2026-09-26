@@ -43,6 +43,7 @@ type CrescentWebOutput struct {
 	Tableau          [][]*CrescentWebOutputTableauCard `json:"tableau"`
 	Foundation       [][]*WebOutputCard                `json:"foundation"`
 	RedealsRemaining int                               `json:"redealsRemaining"`
+	NoLegalMoves     bool                              `json:"noLegalMoves"`
 	Hint             *CrescentWebOutputHint            `json:"hint,omitempty"`
 	SolitaireWebOutputBase
 	WebOutputBase

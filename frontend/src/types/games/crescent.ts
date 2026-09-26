@@ -26,6 +26,7 @@ export interface CrescentResponse extends BaseGameResponse {
   moveCount: number;
   canUndo: boolean;
   isStalemate: boolean;
+  noLegalMoves: boolean;
   undoToEscape?: number;
   hint?: CrescentHint;
 }

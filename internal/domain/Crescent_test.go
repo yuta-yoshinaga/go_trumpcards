@@ -3,6 +3,7 @@
 package domain_test
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -552,6 +553,28 @@ func TestCrescent_Stalemate(t *testing.T) {
 	cr.SetTableau(tab2)
 	require.NoError(t, cr.MoveTableauToTableau(2, 3))
 	assert.False(t, cr.IsStalemate())
+}
+
+func TestCrescent_NoLegalMovesWithRedealsRemaining(t *testing.T) {
+	cr := newTestCrescent()
+	clearCrescentTableau(cr)
+	clearCrescentFoundation(cr)
+	var tab [domain.CrescentTableauCnt][]*domain.CrescentTableauCard
+	tab[0] = []*domain.CrescentTableauCard{makeCrescentTableauCard(domain.CardDesignSpade, 7)}
+	tab[1] = []*domain.CrescentTableauCard{makeCrescentTableauCard(domain.CardDesignSpade, 8)}
+	cr.SetTableau(tab)
+	cr.SetRedealsRemaining(2)
+	require.NoError(t, cr.MoveTableauToTableau(0, 1))
+	assert.True(t, cr.HasNoLegalMoves())
+	assert.False(t, cr.IsStalemate())
+
+	data, err := json.Marshal(cr)
+	require.NoError(t, err)
+	restored := newTestCrescent()
+	require.NoError(t, json.Unmarshal(data, restored))
+	assert.True(t, restored.HasNoLegalMoves())
+	require.NoError(t, restored.Undo())
+	assert.False(t, restored.HasNoLegalMoves(), "undo restores the pre-move snapshot")
 }
 
 func TestCrescent_GameClear(t *testing.T) {
