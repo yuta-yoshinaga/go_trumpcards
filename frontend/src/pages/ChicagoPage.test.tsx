@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { chicagoApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -88,6 +88,19 @@ describe('ChicagoPage', () => {
     // 同じページを共有しているので、キーの取り違えは静かに別ゲームを叩く。
     renderWithProviders(<ChicagoPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
+  });
+
+  it('uses the shared muck/show shortcuts during Chicago showdown', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: SevenCardStudPhase.SHOWDOWN, muckAvailable: true }));
+    renderWithProviders(<ChicagoPage />);
+    await waitFor(() => expect(screen.getByTestId('muck-controls')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'm' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('muck'));
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 's' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('show'));
   });
 
   it('shows the split breakdown at showdown', async () => {

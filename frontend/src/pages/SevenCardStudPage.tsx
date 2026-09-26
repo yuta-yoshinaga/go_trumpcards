@@ -283,13 +283,15 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
       },
       { key: 'f', action: () => execApi('fold', undefined, undefined, getElapsed()), label: 'fold' },
       { key: 'a', action: () => execApi('allin', undefined, undefined, getElapsed()), label: 'allin' },
+      { key: 'm', action: () => execApi('muck'), enabled: isMuckPhase, label: 'muck' },
+      { key: 's', action: () => execApi('show'), enabled: isMuckPhase, label: 'show' },
     ],
-    [execApi, hasOutstandingBet, betAmount, getElapsed],
+    [execApi, hasOutstandingBet, betAmount, getElapsed, isMuckPhase],
   );
 
   useActionKeyboardNav({
     bindings: actionBindings,
-    enabled: canAct && !loading,
+    enabled: (canAct || isMuckPhase) && !loading,
   });
 
   if (!state)

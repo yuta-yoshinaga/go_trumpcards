@@ -954,6 +954,37 @@ describe('SevenCardStudPage keyboard shortcuts', () => {
     await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
+
+  it('binds muck and show only during muck phase and lists them in the shortcut panel', async () => {
+    mockExec.mockResolvedValue({ ...showdownState, phase: 6, muckAvailable: true });
+    renderWithProviders(<SevenCardStudPage />);
+    await waitFor(() => expect(screen.getByTestId('muck-controls')).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'm' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('muck'));
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ ...showdownState, phase: 6, muckAvailable: true });
+    fireEvent.keyDown(document, { key: 's' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('show'));
+
+    fireEvent.click(screen.getByText('キーボードショートカット'));
+    expect(screen.getByText('マックする')).toBeInTheDocument();
+    expect(screen.getByText('ショーする')).toBeInTheDocument();
+    expect(screen.getByText('m')).toBeInTheDocument();
+    expect(screen.getByText('s')).toBeInTheDocument();
+  });
+
+  it('does not bind muck or show outside muck phase', async () => {
+    mockExec.mockResolvedValue(thirdStreetState);
+    renderWithProviders(<SevenCardStudPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'm' });
+    fireEvent.keyDown(document, { key: 's' });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
 });
 
 // #5522: バックエンドは VPIP/PFR/3Bet/AF を毎回返し、CUI は毎ターン出しているのに、
