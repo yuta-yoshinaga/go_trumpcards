@@ -919,6 +919,12 @@ func TestKlaberjassCpuDrivesAFullDeal(t *testing.T) {
 			t.Fatalf("attempt %d: the deal never finished (phase %v)", attempt, k.GetPhase())
 		}
 		total := k.GetHandPoints(0) + k.GetHandPoints(1)
+		for player := range KlaberjassPlayerCnt {
+			breakdown := k.GetCardPoints(player) + k.GetSequencePoints(player) + k.GetBelaPoints(player) + k.GetLastTrickPoints(player)
+			if breakdown != k.GetHandPoints(player) {
+				t.Fatalf("attempt %d player %d: breakdown %d != hand points %d", attempt, player, breakdown, k.GetHandPoints(player))
+			}
+		}
 		if total <= 0 {
 			t.Fatalf("attempt %d: a finished deal must have scored something", attempt)
 		}

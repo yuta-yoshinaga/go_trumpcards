@@ -124,6 +124,9 @@ func (p *KlaberjassCuiPresenter) Output(g interfaces.KlaberjassGame, lastErr err
 			}
 			b.WriteString(i18n.T("klaberjass.promptPlayHelp") + "\n")
 		case domain.KlaberjassPhaseHandEnd:
+			for i := range domain.KlaberjassPlayerCnt {
+				b.WriteString(i18n.Tf("klaberjass.pointsBreakdown", "name", cuiPlayerName(g.GetPlayer(i), i), "card", strconv.Itoa(g.GetCardPoints(i)), "sequence", strconv.Itoa(g.GetSequencePoints(i)), "bela", strconv.Itoa(g.GetBelaPoints(i)), "lastTrick", strconv.Itoa(g.GetLastTrickPoints(i)), "total", strconv.Itoa(g.GetHandPoints(i))) + "\n")
+			}
 			if g.IsBete() {
 				b.WriteString(i18n.T("klaberjass.beteLine") + "\n")
 			}
