@@ -22,6 +22,7 @@
   },
   "betLabel": "Choose your stake",
   "betAmount": "{{amount}}",
+  "betUnavailable": "You do not have enough chips for this bet",
   "dealAsBanker": "You are the banker — deal the round",
   "placeBet": "Choose your stake",
   "yourTurn": "Draw or stand",
