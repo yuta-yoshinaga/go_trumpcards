@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { macauApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
@@ -87,6 +87,8 @@ export const MacauPage = withTutorial(MacauPageContent, 'macau', MACAU_TUTORIAL_
 function MacauPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('macau');
+  const [mustDeclareAnnouncement, setMustDeclareAnnouncement] = useState('');
+  const wasHumanMustDeclare = useRef(false);
   const {
     state,
     loading,
@@ -149,6 +151,17 @@ function MacauPageContent() {
   });
 
   const phaseNames = usePhaseNames('macau', MACAU_PHASE_KEYS);
+  const isHumanMustDeclare =
+    state?.phase === MacauPhase.MUST_DECLARE && state.players[state.currentPlayerIdx]?.isHuman === true;
+
+  useEffect(() => {
+    if (isHumanMustDeclare && !wasHumanMustDeclare.current) {
+      setMustDeclareAnnouncement(t('mustDeclareBanner'));
+    } else if (!isHumanMustDeclare) {
+      setMustDeclareAnnouncement('');
+    }
+    wasHumanMustDeclare.current = isHumanMustDeclare;
+  }, [isHumanMustDeclare, t]);
 
   if (!state)
     return (
@@ -182,6 +195,9 @@ function MacauPageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
+      <div className="sr-only" role="status" aria-live="polite" data-testid="macau-must-declare-live">
+        {mustDeclareAnnouncement}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -298,10 +314,9 @@ function MacauPageContent() {
                   </div>
                 )}
 
-                {isMustDeclare && state.players[state.currentPlayerIdx]?.isHuman && (
+                {isHumanMustDeclare && (
                   <div
                     className={`my-2 p-2 rounded text-sm font-semibold ${badgeInfoColors}`}
-                    role="status"
                     data-testid="macau-must-declare-banner"
                   >
                     {t('mustDeclareBanner')}

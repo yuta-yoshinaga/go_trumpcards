@@ -71,12 +71,23 @@ describe('MacauPage', () => {
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
   });
 
-  it('shows a role=status must-declare banner on the human MUST_DECLARE turn', async () => {
-    mockExec.mockResolvedValue(mustDeclareState); // phase 2, human's turn
+  it('keeps the live announcement stable during rerenders and empties it after the phase', async () => {
+    mockExec
+      .mockResolvedValueOnce(playPhaseState)
+      .mockResolvedValueOnce(mustDeclareState)
+      .mockResolvedValueOnce(playPhaseState);
     renderWithProviders(<MacauPage />);
-    const banner = await screen.findByTestId('macau-must-declare-banner');
-    expect(banner).toHaveAttribute('role', 'status');
-    expect(banner).toHaveTextContent('マカオ');
+    const liveRegion = await screen.findByTestId('macau-must-declare-live');
+    expect(liveRegion).toBeEmptyDOMElement();
+    fireEvent.click(await screen.findByRole('button', { name: '引く' }));
+    const declareButton = await screen.findByRole('button', { name: 'マカオ！' });
+    expect(liveRegion).toHaveTextContent('残り1枚です');
+    expect(screen.getByTestId('macau-must-declare-banner')).not.toHaveAttribute('role', 'status');
+    const announcedText = liveRegion.textContent;
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    expect(liveRegion.textContent).toBe(announcedText);
+    fireEvent.click(declareButton);
+    await waitFor(() => expect(liveRegion).toBeEmptyDOMElement());
   });
 
   it('does not show the must-declare banner on a CPU turn', async () => {
