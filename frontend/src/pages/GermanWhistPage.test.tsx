@@ -65,6 +65,18 @@ describe('GermanWhistPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('shows the led suit for the current trick and clears it when the trick is empty', async () => {
+    mockExec
+      .mockResolvedValueOnce(makeState({ currentTrick: [{ playerIdx: 1, card: card('HEART', 6) }] }))
+      .mockResolvedValueOnce(makeState({ currentTrick: [] }));
+    renderWithProviders(<GermanWhistPage />);
+    expect(await screen.findByTestId('trick-lead-suit')).toHaveTextContent('リードスート: ハート');
+
+    fireEvent.click(screen.getAllByRole('button', { name: /を出す/ })[0]);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', expect.any(Number)));
+    await waitFor(() => expect(screen.queryByTestId('trick-lead-suit')).not.toBeInTheDocument());
+  });
+
   it('plays the clicked card by its hand index', async () => {
     renderWithProviders(<GermanWhistPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
