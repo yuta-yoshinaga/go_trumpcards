@@ -176,6 +176,20 @@ describe('TressettePage', () => {
     expect(live).toHaveTextContent('チームAに1+1/3点加点。合計0点、今ラウンド1/3点');
   });
 
+  it('announces thirds gained by team B', async () => {
+    mockExec.mockImplementation(async (action) =>
+      action === 'play' ? makeTressetteState({ teamRoundThirds: [0, 2] }) : makeTressetteState(),
+    );
+    renderWithProviders(<TressettePage />);
+
+    fireEvent.click(await screen.findByAltText('♠ 3'));
+    fireEvent.click(await screen.findByRole('button', { name: '出す' }));
+
+    await waitFor(() =>
+      expect(screen.getByTestId('tr-score-live')).toHaveTextContent('チームBに2/3点加点。合計0点、今ラウンド2/3点'),
+    );
+  });
+
   it('does not announce round settlement as newly gained points', async () => {
     mockExec.mockImplementation(async (action) => {
       return action === 'play'

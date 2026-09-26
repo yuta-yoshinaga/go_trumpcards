@@ -32,6 +32,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { parseTressetteCommand, TRESSETTE_HELP } from '../utils/cli/commands/tressetteCommands';
 import { formatTressetteState } from '../utils/cli/formatters/tressetteFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatThirdPoints } from '../utils/formatThirdPoints';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -89,15 +90,6 @@ const TRESSETTE_PHASE_KEYS: Readonly<Record<number, string>> = {
  */
 function thirdsFilled(thirds: number): number {
   return Math.min(Math.max(thirds, 0), 3);
-}
-
-/** Formats a non-negative number of thirds as points for a score announcement. */
-function formatThirdPoints(thirds: number): string {
-  const points = Math.floor(thirds / 3);
-  const remainder = thirds % 3;
-  if (points > 0 && remainder > 0) return `${points}+${remainder}/3`;
-  if (points > 0) return String(points);
-  return `${remainder}/3`;
 }
 
 /** Renders the Tressette game page: no-trump must-follow trick play with team scoring. */
