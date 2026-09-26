@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { contractrummyApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -13,6 +14,7 @@ import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -237,6 +239,32 @@ function ContractRummyPageContent() {
     void execApi('nextround');
     clearSelection();
   }, [execApi, clearSelection]);
+
+  const actionBindings = useMemo(
+    () => [
+      { key: 'd', action: handleDrawStock, enabled: isDrawPhase, label: 'draw' },
+      { key: 'p', action: handleDrawDiscard, enabled: isDrawPhase && !!state?.discardTop, label: 'takeDiscard' },
+      {
+        key: 'x',
+        action: handleDiscard,
+        enabled: isPlayPhase && selectedCards.length === 1,
+        label: 'discard',
+      },
+      { key: 'n', action: handleNextRound, enabled: isRoundEnd, label: 'next' },
+    ],
+    [
+      handleDrawStock,
+      handleDrawDiscard,
+      handleDiscard,
+      handleNextRound,
+      isDrawPhase,
+      isPlayPhase,
+      isRoundEnd,
+      selectedCards.length,
+      state?.discardTop,
+    ],
+  );
+  useActionKeyboardNav({ bindings: actionBindings, enabled: !!state && !loading });
 
   // **リセットでも難易度を持ち越す。**config を付けずに reset すると、サーバは
   // 既定値 (Normal) に戻す。選んだ直後は効くのに、次に「最初から」を押した時点で
@@ -575,7 +603,6 @@ function ContractRummyPageContent() {
               </button>
             )}
           </section>
-
           <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
 
           <ActionLogSection
@@ -599,6 +626,7 @@ function ContractRummyPageContent() {
                 </span>
               )}
             </div>
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="contractrummy-kbd-shortcuts" />
           </GameFooter>
         </>
       )}
