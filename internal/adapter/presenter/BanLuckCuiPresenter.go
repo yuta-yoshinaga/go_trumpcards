@@ -99,9 +99,8 @@ func (cp *BanLuckCuiPresenter) writeResult(sb *strings.Builder, c interfaces.Ban
 			case domain.BanLuckOutcomeWin:
 				multiplier = domain.BanLuckPayoutFor(r.Rank)
 			case domain.BanLuckOutcomeLose:
-				bankerResults := c.GetResults()
-				if banker := c.GetBankerSeat(); banker >= 0 && banker < len(bankerResults) {
-					multiplier = domain.BanLuckPayoutFor(bankerResults[banker].Rank)
+				if banker := c.GetBankerSeat(); banker >= 0 && banker < len(results) {
+					multiplier = domain.BanLuckPayoutFor(results[banker].Rank)
 				}
 			}
 		}

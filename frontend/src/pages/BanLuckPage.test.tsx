@@ -4,7 +4,7 @@ import { banluckApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BanLuckResponse, Card } from '../types/card';
-import { BAN_LUCK_RANK } from '../types/games/banluck';
+import { BAN_LUCK_OUTCOME, BAN_LUCK_RANK } from '../types/games/banluck';
 import { BanLuckPhase } from '../types/phases';
 import { BanLuckPage } from './BanLuckPage';
 
@@ -256,6 +256,56 @@ describe('BanLuckPage', () => {
     await waitFor(() => expect(screen.getByTestId('bl-result-0')).toHaveTextContent('通常'));
     expect(screen.getByTestId('bl-result-0')).toHaveTextContent('100');
     expect(screen.getByTestId('bl-result-0')).not.toHaveTextContent('倍');
+  });
+
+  it('子が負けたときは親の役の倍率を表示する', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: BanLuckPhase.ROUND_END,
+        seats: [
+          seat({
+            name: 'YOU',
+            cards: [card(10), card(7)],
+            score: 17,
+            rank: BAN_LUCK_RANK.point,
+            outcome: BAN_LUCK_OUTCOME.lose,
+            delta: -100,
+          }),
+          seat({
+            name: 'CPU1',
+            isHuman: false,
+            isBanker: true,
+            cards: [card(1), card(1), card(3), card(4), card(5)],
+            score: 13,
+            rank: BAN_LUCK_RANK.fiveDragon,
+            outcome: BAN_LUCK_OUTCOME.push,
+          }),
+        ],
+      }),
+    );
+    renderWithProviders(<BanLuckPage />);
+    await waitFor(() => expect(screen.getByTestId('bl-result-0')).toHaveTextContent('2倍'));
+  });
+
+  it('バンラックの倍率は2倍で表示する', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: BanLuckPhase.ROUND_END,
+        seats: [
+          seat({
+            name: 'YOU',
+            cards: [card(1), card(2), card(3)],
+            score: 16,
+            rank: BAN_LUCK_RANK.banLuck,
+            outcome: BAN_LUCK_OUTCOME.win,
+            delta: 100,
+          }),
+          seat({ name: 'CPU1', isHuman: false, isBanker: true, cards: [card(10), card(7)], score: 17 }),
+        ],
+      }),
+    );
+    renderWithProviders(<BanLuckPage />);
+    await waitFor(() => expect(screen.getByTestId('bl-result-0')).toHaveTextContent('2倍'));
   });
 
   it('決着後は次のラウンドを送る', async () => {

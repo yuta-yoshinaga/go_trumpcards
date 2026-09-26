@@ -27,7 +27,7 @@ import { btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { BanLuckResponse } from '../types/card';
-import { BAN_LUCK_RANK } from '../types/games/banluck';
+import { BAN_LUCK_OUTCOME, BAN_LUCK_RANK } from '../types/games/banluck';
 import { BanLuckPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { BANLUCK_CLI_HELP, parseBanLuckCommand } from '../utils/cli/commands/banluckCommands';
@@ -197,9 +197,9 @@ function BanLuckPageContent() {
                           {(() => {
                             const payoutRank = seat.isBanker
                               ? seat.rank
-                              : seat.outcome === 2
+                              : seat.outcome === BAN_LUCK_OUTCOME.win
                                 ? seat.rank
-                                : seat.outcome === 0
+                                : seat.outcome === BAN_LUCK_OUTCOME.lose
                                   ? state.seats[state.bankerSeat]?.rank
                                   : undefined;
                             const multiplier =
