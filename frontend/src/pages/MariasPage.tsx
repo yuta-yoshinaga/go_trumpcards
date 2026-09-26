@@ -28,7 +28,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { MariasResponse } from '../types/card';
 import { MariasPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { suitSymbolAt } from '../utils/cardAlt';
+import { cardAlt, suitSymbolAt } from '../utils/cardAlt';
 import { MARIAS_HELP, parseMariasCommand } from '../utils/cli/commands/mariasCommands';
 import { formatMariasState } from '../utils/cli/formatters/mariasFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -236,6 +236,9 @@ function MariasPageContent() {
                     isTrickEnd
                       ? t('previousTrickWinner', { name: findPlayerName(state.players, state.lastTrickWinner) })
                       : undefined
+                  }
+                  cardAriaLabelFor={(player, card) =>
+                    t('trickPlay', { name: playerName(player.id, player.isHuman), card: cardAlt(card) })
                   }
                   dataTutorial="marias-trick-display"
                 />

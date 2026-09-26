@@ -27,6 +27,7 @@
   "cards": "{{count}}枚",
   "tricks": "{{count}}トリック",
   "currentTrick": "現在のトリック",
+  "trickPlay": "{{name}}: {{card}}",
   "previousTrickWinner": "{{name}} が獲得",
   "players": "プレイヤー",
   "you": "あなた",

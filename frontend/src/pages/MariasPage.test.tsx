@@ -166,6 +166,23 @@ describe('MariasPage', () => {
     expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument();
   });
 
+  it('names each played trick card with its player and tracks trick updates', async () => {
+    mockExec
+      .mockResolvedValueOnce(trickEndState)
+      .mockResolvedValueOnce(
+        makeMariasState({ currentTrick: [{ playerIdx: 2, card: { design: 'SPADE', value: 1 } }] }),
+      );
+    renderWithProviders(<MariasPage />);
+
+    expect(await screen.findByAltText('あなた: ♥ Q')).toBeInTheDocument();
+    expect(screen.getByAltText('CPU 1: ♣ K')).toBeInTheDocument();
+    expect(screen.queryByAltText('CPU 2:')).not.toBeInTheDocument();
+
+    fireEvent.click(await screen.findByRole('button', { name: '次のトリック' }));
+    expect(await screen.findByAltText('CPU 2: ♠ A')).toBeInTheDocument();
+    expect(screen.queryByAltText('あなた: ♥ Q')).not.toBeInTheDocument();
+  });
+
   it('renders round end with the next round button and the round result', async () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<MariasPage />);
