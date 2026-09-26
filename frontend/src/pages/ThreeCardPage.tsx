@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { threecardApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -65,6 +65,8 @@ const HAND_RANK_KEYS: Record<number, string> = {
   6: 'handRank.6',
 };
 
+const MIN_ANTE_BET = 10;
+
 /** Renders the Three Card Poker game page with betting, action, and result display. */
 export const ThreeCardPage = withTutorial(ThreeCardPageContent, 'threecard', TC_TUTORIAL_STEPS);
 /** Inner content of the Three Card Poker page, wrapped by TutorialProvider. */
@@ -74,6 +76,7 @@ function ThreeCardPageContent() {
 
   const [anteAmount, setAnteAmount] = useState(100);
   const [pairPlusAmount, setPairPlusAmount] = useState(0);
+  const [betAdjusted, setBetAdjusted] = useState(false);
   // Snapshot of the last submitted bet, used to power the one-click rebet.
   const [lastBet, setLastBet] = useState<{ ante: number; pairPlus: number } | null>(null);
 
@@ -98,6 +101,38 @@ function ThreeCardPageContent() {
   const isBetPhase = state?.phase === ThreeCardPhase.BET;
   const isActionPhase = state?.phase === ThreeCardPhase.ACTION;
   const isEndPhase = state?.phase === ThreeCardPhase.END;
+
+  const previousPhase = useRef(state?.phase);
+  useEffect(() => {
+    if (isBetPhase && previousPhase.current !== ThreeCardPhase.BET) {
+      setBetAdjusted(false);
+    }
+    previousPhase.current = state?.phase;
+  }, [isBetPhase, state?.phase]);
+
+  useEffect(() => {
+    if (!state || !isBetPhase) return;
+    const nextAnte = Math.min(anteAmount, Math.max(0, state.chips - pairPlusAmount));
+    const nextPairPlus = Math.min(pairPlusAmount, Math.max(0, state.chips - nextAnte));
+    if (nextAnte !== anteAmount || nextPairPlus !== pairPlusAmount) {
+      setAnteAmount(nextAnte);
+      setPairPlusAmount(nextPairPlus);
+      setBetAdjusted(true);
+    }
+  }, [state?.chips, isBetPhase, anteAmount, pairPlusAmount, state]);
+
+  const handleAnteChange = (value: number) => {
+    if (!state) return;
+    const nextAnte = Math.min(Math.max(value, MIN_ANTE_BET), Math.max(0, state.chips - pairPlusAmount));
+    setAnteAmount(nextAnte);
+    setBetAdjusted(nextAnte !== value);
+  };
+  const handlePairPlusChange = (value: number) => {
+    if (!state) return;
+    const nextPairPlus = Math.min(value, Math.max(0, state.chips - anteAmount));
+    setPairPlusAmount(nextPairPlus);
+    setBetAdjusted(nextPairPlus !== value);
+  };
 
   const handleBet = useCallback(() => {
     setLastBet({ ante: anteAmount, pairPlus: pairPlusAmount });
@@ -309,6 +344,17 @@ function ThreeCardPageContent() {
           <GameFooter className={`${gameTheme.threecard.footer} px-4 pt-3`}>
             <ErrorAlert message={error} onRetry={retry} />
             {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
+            <div role="status" aria-live="polite" className="text-center">
+              {isBetPhase && state && (
+                <>
+                  <div className="text-ds-text-primary text-sm" data-testid="tc-bet-summary">
+                    {t('betSummary.total', { amount: anteAmount + pairPlusAmount })} ·{' '}
+                    {t('betSummary.remaining', { amount: Math.max(0, state.chips - anteAmount - pairPlusAmount) })}
+                  </div>
+                  {betAdjusted && <p className="text-ds-warning text-sm">{t('betSummary.adjusted')}</p>}
+                </>
+              )}
+            </div>
             <SettingsPanel
               title={t('settings.title')}
               groups={[
@@ -331,23 +377,25 @@ function ThreeCardPageContent() {
                   id="threecard-ante-amount"
                   label={t('label.ante')}
                   value={anteAmount}
-                  onChange={setAnteAmount}
-                  min={10}
-                  max={state.chips}
+                  onChange={handleAnteChange}
+                  min={MIN_ANTE_BET}
+                  max={Math.max(0, state.chips - pairPlusAmount)}
                   step={10}
                   disabled={loading}
                   showSteppers
+                  autoClamp={false}
                 />
                 <ChipBetInput
                   id="threecard-pairplus-amount"
                   label={t('label.pairPlus')}
                   value={pairPlusAmount}
-                  onChange={setPairPlusAmount}
+                  onChange={handlePairPlusChange}
                   min={0}
-                  max={state.chips}
+                  max={Math.max(0, state.chips - anteAmount)}
                   step={10}
                   disabled={loading}
                   showSteppers
+                  autoClamp={false}
                 />
                 <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
                   {t('button.bet')}
