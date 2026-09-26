@@ -137,6 +137,7 @@ function BatakPageContent() {
   }, [state?.minLegalBid]);
 
   const effectiveBidValue = bidValue === 0 || minLegalBid === 0 ? 0 : Math.max(minLegalBid, Math.min(13, bidValue));
+  const bidSelectedLabel = effectiveBidValue === 0 ? t('bidPass') : t('bidSelected', { n: effectiveBidValue });
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('batak');
@@ -542,12 +543,12 @@ function BatakPageContent() {
                       {/* Announce the current bid selection to screen readers, since the
                           grid's aria-pressed alone isn't read back as a running value. */}
                       <span className="sr-only" role="status" aria-live="polite" data-testid="batak-bid-selected">
-                        {t('bidSelected', { n: effectiveBidValue })}
+                        {bidSelectedLabel}
                       </span>
                     </>
                   )}
                   <span className="text-ds-text-primary" data-testid="batak-bid-selected-visible">
-                    {effectiveBidValue === 0 ? t('bidPass') : t('bidSelected', { n: effectiveBidValue })}
+                    {bidSelectedLabel}
                   </span>
                   <div className="flex gap-2">
                     {minLegalBid > 0 && (

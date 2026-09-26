@@ -140,6 +140,19 @@ describe('BatakPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', 0));
   });
 
+  it('announces pass in the live region while the bid response is pending', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<BatakPage />);
+    await waitFor(() => expect(screen.getByTestId('bid-pass')).toBeInTheDocument());
+
+    mockExec.mockReturnValue(new Promise(() => undefined));
+    fireEvent.click(screen.getByTestId('bid-pass'));
+
+    const liveRegion = screen.getByTestId('batak-bid-selected');
+    expect(liveRegion).toHaveTextContent('パス');
+    expect(liveRegion).not.toHaveTextContent(': 0');
+  });
+
   it('shows bid phase instruction when human bid turn', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<BatakPage />);
