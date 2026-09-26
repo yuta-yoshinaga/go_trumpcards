@@ -882,4 +882,26 @@ describe('CribbagePage', () => {
     fireEvent.pointerEnter(screen.getByLabelText('♥ J'));
     await waitFor(() => expect(region).toHaveTextContent('14'));
   });
+
+  it('announces changed peg counts and keeps the announcement on same-count renders', async () => {
+    mockExec.mockResolvedValueOnce({ ...peggingPhaseState, pegCount: 4 }).mockResolvedValue({
+      ...peggingPhaseState,
+      pegCount: 9,
+    });
+    renderWithProviders(<CribbagePage />);
+    await waitFor(() => expect(screen.getByTestId('cb-peg-count-live')).toBeInTheDocument());
+
+    const region = screen.getByTestId('cb-peg-count-live');
+    expect(region).toHaveAttribute('role', 'status');
+    expect(region).toHaveAttribute('aria-live', 'polite');
+    expect(region).toHaveTextContent('');
+
+    fireEvent.click(screen.getByRole('button', { name: '♠ A' }));
+    fireEvent.click(screen.getByRole('button', { name: 'カードを出す' }));
+    await waitFor(() => expect(region).toHaveTextContent('9'));
+    expect(region).toHaveTextContent('ペグカウントが9に更新されました');
+
+    fireEvent.pointerEnter(screen.getByLabelText('♥ J'));
+    expect(region).toHaveTextContent('ペグカウントが9に更新されました');
+  });
 });
