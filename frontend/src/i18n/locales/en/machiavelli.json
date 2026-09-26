@@ -18,6 +18,7 @@
   "tableEmpty": "No melds yet",
   "meldKindSet": "Set",
   "meldKindRun": "Run",
+  "meldSummary": "{{kind}} {{rank}}",
   "cards": "{{count}} cards",
   "cumulativeScore": "Total: {{score}}",
   "deadwoodShort": "Deadwood {{score}}",

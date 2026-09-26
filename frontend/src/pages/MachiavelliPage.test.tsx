@@ -1,7 +1,8 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, machiavelliApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { MachiavelliMeld, MachiavelliPlayer, MachiavelliResponse } from '../types/card';
 import { MachiavelliPage } from './MachiavelliPage';
@@ -618,5 +619,54 @@ describe('MachiavelliPage', () => {
     });
     renderWithProviders(<MachiavelliPage />);
     expect(await screen.findByTestId('mv-own-deadwood')).toHaveTextContent('デッドウッド 5');
+  });
+
+  describe('visual meld labels', () => {
+    afterEach(async () => {
+      await i18n.changeLanguage('ja');
+    });
+
+    it('shows visual label with kind and rank for runs and sets', async () => {
+      const { unmount } = renderWithProviders(<MachiavelliPage />);
+      await waitFor(() => expect(screen.getByTestId('machiavelli-meld-label-0')).toBeInTheDocument());
+      expect(screen.getByTestId('machiavelli-meld-label-0')).toHaveTextContent('シーケンス 3–5');
+
+      unmount();
+      const setMeld: MachiavelliMeld = {
+        kind: 0,
+        cards: [
+          { design: 'SPADE', value: 9 },
+          { design: 'HEART', value: 9 },
+          { design: 'CLOVER', value: 9 },
+        ],
+      };
+      mockExec.mockResolvedValue({ ...turnState, table: [setMeld] });
+      renderWithProviders(<MachiavelliPage />);
+      await waitFor(() => expect(screen.getByTestId('machiavelli-meld-label-0')).toBeInTheDocument());
+      expect(screen.getByTestId('machiavelli-meld-label-0')).toHaveTextContent('セット 9');
+    });
+
+    it('translates visual meld label in English locale', async () => {
+      await i18n.changeLanguage('en');
+      const { unmount } = renderWithProviders(<MachiavelliPage />);
+      await waitFor(() => expect(screen.getByTestId('machiavelli-meld-label-0')).toBeInTheDocument());
+      expect(screen.getByTestId('machiavelli-meld-label-0')).toHaveTextContent('Run 3–5');
+      expect(screen.getByTestId('machiavelli-meld-label-0')).not.toHaveTextContent('シーケンス');
+
+      unmount();
+      const setMeld: MachiavelliMeld = {
+        kind: 0,
+        cards: [
+          { design: 'SPADE', value: 9 },
+          { design: 'HEART', value: 9 },
+          { design: 'CLOVER', value: 9 },
+        ],
+      };
+      mockExec.mockResolvedValue({ ...turnState, table: [setMeld] });
+      renderWithProviders(<MachiavelliPage />);
+      await waitFor(() => expect(screen.getByTestId('machiavelli-meld-label-0')).toBeInTheDocument());
+      expect(screen.getByTestId('machiavelli-meld-label-0')).toHaveTextContent('Set 9');
+      expect(screen.getByTestId('machiavelli-meld-label-0')).not.toHaveTextContent('セット');
+    });
   });
 });
