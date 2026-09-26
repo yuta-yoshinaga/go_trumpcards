@@ -179,6 +179,29 @@ function ThreeCardBragPageContent() {
 
   const playerLabel = (id: number, isHuman: boolean): string => (isHuman ? t('you') : t('cpu', { id }));
 
+  const turnStatus = isGameEnd
+    ? t('matchWinner', { name: playerLabel(state.matchWinnerIdx, state.matchWinnerIdx === humanIdx) })
+    : isRoundEnd
+      ? `${t('roundResult.title')}: ${t('roundResult.winner', {
+          name: playerLabel(state.roundWinnerIdx, state.roundWinnerIdx === humanIdx),
+          pot: state.pot,
+        })}`
+      : isBettingPhase && isHumanTurn
+        ? t('turnStatus.human', {
+            actions: [
+              !humanPlayer?.seen ? t('seeButton') : null,
+              t('betButton', { amount: betCost }),
+              canRaise ? t('raiseButton', { amount: raiseCost }) : null,
+              t('foldButton'),
+              state.canShow ? t('showButton') : null,
+            ]
+              .filter(Boolean)
+              .join(t('listSeparator')),
+          })
+        : t('turnStatus.other', {
+            name: playerLabel(state.currentPlayerIdx, state.players[state.currentPlayerIdx]?.isHuman ?? false),
+          });
+
   const handName = (key?: string): string => (key ? t(`hand.${key.toLowerCase()}`, { defaultValue: key }) : '');
 
   const handleManualReset = () => {
@@ -201,6 +224,9 @@ function ThreeCardBragPageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
+      <div data-testid="tcb-turn-live" role="status" aria-live="polite" className="sr-only">
+        {turnStatus}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (

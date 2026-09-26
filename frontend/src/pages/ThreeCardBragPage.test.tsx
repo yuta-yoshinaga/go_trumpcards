@@ -390,6 +390,36 @@ describe('ThreeCardBragPage', () => {
     expect(screen.queryByRole('button', { name: '手札を見る' })).not.toBeInTheDocument();
   });
 
+  it('announces whose turn it is and the available actions in a persistent status region', async () => {
+    renderWithProviders(<ThreeCardBragPage />);
+    const status = await screen.findByTestId('tcb-turn-live');
+    expect(status).toHaveAttribute('role', 'status');
+    expect(status).toHaveAttribute('aria-live', 'polite');
+    expect(status).toHaveTextContent('あなたの番です');
+    expect(status).toHaveTextContent('手札を見る');
+    expect(status).not.toHaveTextContent('ショー');
+    expect(status).toHaveTextContent('可能な操作: 手札を見る、ベット (1)、レイズ (2)、フォールド。');
+    expect(status.textContent?.match(/あなたの番です/g)).toHaveLength(1);
+  });
+
+  it('announces a CPU turn after the human acts', async () => {
+    mockExec.mockResolvedValueOnce(bettingState).mockResolvedValueOnce(cpuTurnState);
+    renderWithProviders(<ThreeCardBragPage />);
+    fireEvent.click(await screen.findByRole('button', { name: 'ベット (1)' }));
+    expect(await screen.findByTestId('tcb-turn-live')).toHaveTextContent('CPU 1 の番です');
+  });
+
+  it('announces deal and match results instead of turn instructions', async () => {
+    mockExec.mockResolvedValueOnce(roundEndState).mockResolvedValueOnce(gameEndState);
+    renderWithProviders(<ThreeCardBragPage />);
+    expect(await screen.findByTestId('tcb-turn-live')).toHaveTextContent('ディール結果');
+    expect(screen.getByTestId('tcb-turn-live')).toHaveTextContent('あなた がポット');
+    expect(screen.getByTestId('tcb-turn-live')).not.toHaveTextContent('あなたの番です');
+
+    fireEvent.click(screen.getByRole('button', { name: '次のディール' }));
+    expect(await screen.findByTestId('tcb-turn-live')).toHaveTextContent('あなた がマッチに勝利しました');
+  });
+
   it('shows the next-deal button at deal end', async () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<ThreeCardBragPage />);
