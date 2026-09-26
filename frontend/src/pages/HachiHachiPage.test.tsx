@@ -89,11 +89,15 @@ describe('HachiHachiPage', () => {
   });
 
   it('names each field card and exposes whether it is a capture candidate', async () => {
-    mockExec.mockResolvedValue(makeHachiHachiState({ captureOptions: { 0: [0, 1] } }));
+    const state = makeHachiHachiState({ captureOptions: { 0: [0, 1] } });
+    mockExec.mockResolvedValue({ ...state, fieldCards: [...state.fieldCards, state.fieldCards[1]] });
     renderWithProviders(<HachiHachiPage />);
+    const handCard = await screen.findByTestId('hand-card-0');
+    fireEvent.click(handCard);
+    await waitFor(() => expect(screen.getByTestId('hachihachi-field-pick')).toBeInTheDocument());
     const first = await screen.findByTestId('field-card-0');
-    const second = screen.getByTestId('field-card-1');
-    expect(first).toHaveAccessibleName(/3月 カス.*捕獲候補/);
+    const second = screen.getByTestId('field-card-2');
+    expect(first).toHaveAccessibleName(/3月 カス.*捕獲候補$/);
     expect(second).toHaveAccessibleName(/8月 光.*捕獲候補ではありません$/);
   });
 
