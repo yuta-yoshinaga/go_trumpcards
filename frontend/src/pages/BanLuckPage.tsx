@@ -194,6 +194,22 @@ function BanLuckPageContent() {
                         <span data-testid={`bl-result-${i}`}>
                           {' · '}
                           {t(`rank.${rankKeyOf(seat.rank)}`)}
+                          {(() => {
+                            const payoutRank = seat.isBanker
+                              ? seat.rank
+                              : seat.outcome === 2
+                                ? seat.rank
+                                : seat.outcome === 0
+                                  ? state.seats[state.bankerSeat]?.rank
+                                  : undefined;
+                            const multiplier =
+                              payoutRank === BAN_LUCK_RANK.banBan
+                                ? 3
+                                : payoutRank === BAN_LUCK_RANK.banLuck || payoutRank === BAN_LUCK_RANK.fiveDragon
+                                  ? 2
+                                  : undefined;
+                            return multiplier ? ` · ${t('label.multiplier', { multiplier })}` : null;
+                          })()}
                           {' · '}
                           {t('label.delta')} {seat.delta}
                         </span>
