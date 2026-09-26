@@ -198,14 +198,23 @@ describe('SlapjackPage', () => {
     const announce = await screen.findByTestId('sj-jack-announce');
     expect(announce).toHaveAttribute('aria-live', 'assertive');
     expect(announce).toHaveAttribute('aria-atomic', 'true');
-    expect(announce).toHaveTextContent('ジャックが出ました');
+    expect(announce).toHaveTextContent('スラップ可能です');
+  });
+
+  it('announces only slap-availability changes and clears the notice when the Jack leaves', async () => {
+    mockExec.mockResolvedValueOnce(jackOnTopState).mockResolvedValueOnce(baseState);
+    renderWithProviders(<SlapjackPage />);
+    const announce = await screen.findByTestId('sj-jack-announce');
+    expect(announce).toHaveTextContent('スラップ可能');
+    fireEvent.click(screen.getByTestId('slap-button'));
+    await waitFor(() => expect(announce).toHaveTextContent('スラップ不可'));
   });
 
   it('keeps the live region empty when no Jack is on top', async () => {
     mockExec.mockResolvedValueOnce(baseState);
     renderWithProviders(<SlapjackPage />);
     const announce = await screen.findByTestId('sj-jack-announce');
-    expect(announce).toHaveTextContent('');
+    expect(announce).toBeEmptyDOMElement();
   });
 
   it('announces a correct slap by the human via a polite status live region', async () => {
