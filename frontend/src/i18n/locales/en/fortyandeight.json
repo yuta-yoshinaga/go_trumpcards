@@ -26,6 +26,11 @@
   "playing": "Move cards to build foundations",
   "gameClear": "Game Clear! Moves: {{moveCount}}",
   "gameOver": "Game Over",
+  "endSummary": {
+    "clearTitle": "Game Clear Summary",
+    "gameOverTitle": "Game Over Summary",
+    "counts": "Completed foundations: {{completed}} / Foundation cards: {{foundationCards}} / Remaining cards: {{remaining}}"
+  },
   "hintAvailable": "Hint available",
   "noHint": "No hint available",
   "tutorial": {
