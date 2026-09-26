@@ -121,6 +121,33 @@ describe('SevenBridgePage', () => {
     expect(pon).not.toBeDisabled();
   });
 
+  it('shows pon/chi selection progress and follows selecting and deselecting cards', async () => {
+    mockExec.mockResolvedValue(drawState);
+    renderWithProviders(<SevenBridgePage />);
+    const pon = await screen.findByRole('button', { name: /ポン|Pon/i });
+    const chi = screen.getByRole('button', { name: /チー|Chi/i });
+    const progress = screen.getByTestId('sb-select-two-progress');
+
+    expect(progress).toHaveTextContent('ポン／チー');
+    expect(progress).toHaveTextContent('0／2');
+    expect(pon).toBeDisabled();
+    expect(chi).toBeDisabled();
+
+    const firstCard = screen.getByRole('button', { name: '♠ 9' });
+    const secondCard = screen.getByRole('button', { name: '♣ 9' });
+    fireEvent.click(firstCard);
+    expect(progress).toHaveTextContent('1／2');
+    fireEvent.click(secondCard);
+    expect(progress).toHaveTextContent('2／2');
+    expect(pon).toBeEnabled();
+    expect(chi).toBeEnabled();
+
+    fireEvent.click(secondCard);
+    expect(progress).toHaveTextContent('1／2');
+    expect(pon).toBeDisabled();
+    expect(chi).toBeDisabled();
+  });
+
   it('describes the meld selection requirement and flips it to "met" via aria-describedby', async () => {
     mockExec.mockResolvedValue(playState);
     renderWithProviders(<SevenBridgePage />);
