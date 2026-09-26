@@ -46003,6 +46003,9 @@ components:
         discardTop:
           description: The top card of the discard pile
           $ref: '#/components/schemas/Card'
+        discardPileCount:
+          type: integer
+          description: Number of cards in the discard pile
         drawPileCount:
           type: integer
           description: Number of cards remaining in the draw pile

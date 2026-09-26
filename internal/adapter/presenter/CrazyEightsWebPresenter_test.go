@@ -18,6 +18,7 @@ func setupCrazyEightsWebMock() *interfaces.MockCrazyEightsGame {
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetDrawPileCount").Return(30)
 	m.On("GetDiscardTop").Return((*domain.Card)(nil))
+	m.On("GetDiscardPileCount").Return(1)
 	m.On("GetChosenSuit").Return(-1)
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.CrazyEightsPhasePlay)
@@ -59,6 +60,7 @@ func TestCrazyEightsWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 0, resObj.Phase) // CrazyEightsPhasePlay
 		assert.Equal(t, 1, resObj.RoundNumber)
 		assert.Equal(t, 30, resObj.DrawPileCount)
+		assert.Equal(t, 1, resObj.DiscardPileCount)
 		assert.Equal(t, -1, resObj.ChosenSuit)
 		assert.Equal(t, -1, resObj.WinnerIdx)
 		assert.Nil(t, resObj.DiscardTop)

@@ -16,6 +16,7 @@ func (p *CrazyEightsWebPresenter) Output(g interfaces.CrazyEightsGame, lastErr e
 	resObj.RoundNumber = g.GetRoundNumber()
 	resObj.CurrentPlayerIdx = g.GetCurrentPlayerIdx()
 	resObj.DrawPileCount = g.GetDrawPileCount()
+	resObj.DiscardPileCount = g.GetDiscardPileCount()
 	resObj.ChosenSuit = g.GetChosenSuit()
 	resObj.GameEndFlag = g.GetGameEndFlag()
 	resObj.WinnerIdx = g.GetWinnerIdx()

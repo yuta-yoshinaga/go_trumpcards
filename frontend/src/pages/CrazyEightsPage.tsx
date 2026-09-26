@@ -212,6 +212,7 @@ function CrazyEightsPageContent() {
   const isRoundEnd = state.phase === CrazyEightsPhase.ROUND_END;
   const isGameEnd = state.phase === CrazyEightsPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
+  const shouldPass = state.drawPileCount === 0 && state.discardPileCount <= 1;
 
   // Announce the active suit whenever an 8 has changed it. The watermark and the
   // sidebar readout are aria-hidden / static, so this sr-only live region is the
@@ -509,7 +510,7 @@ function CrazyEightsPageContent() {
                     {t('playButton')}
                   </button>
                   <button type="button" className={btnPrimary} onClick={handleDraw} disabled={loading}>
-                    {t('drawButton')}
+                    {t(shouldPass ? 'passButton' : 'drawButton')}
                   </button>
                   {/* **Hearts / Spades はサーバー計算の理由付きヒントを返すのに、
                       CrazyEights には無く、全ゲーム共通の簡易ヒューリスティック

@@ -22,6 +22,7 @@ function makeState(overrides: Partial<CrazyEightsResponse> = {}): CrazyEightsRes
     roundNumber: 1,
     currentPlayerIdx: 0,
     discardTop: card('HEART', 7),
+    discardPileCount: 3,
     drawPileCount: 20,
     chosenSuit: 0,
     gameEndFlag: false,
