@@ -1,12 +1,14 @@
 package presenter_test
 
 import (
+	"encoding/json"
 	"errors"
 	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
@@ -72,24 +74,42 @@ func TestAnacondaCuiPresenter_OutputSetAndRoll(t *testing.T) {
 }
 
 func TestAnacondaCuiPresenter_OutputResult(t *testing.T) {
-	g := domain.NewDefaultAnaconda()
-	for i := 0; i < g.GetPlayerCnt(); i++ {
-		anacondaWebSetKept(g.GetPlayer(i), anacondaWebWeak()...)
+	cases := []struct {
+		name       string
+		result     domain.AnacondaResult
+		winner     int
+		wantWinner string
+	}{
+		{"human win", domain.AnacondaResultWin, 0, "あなた"},
+		{"human lose", domain.AnacondaResultLose, 1, "CPU 1"},
+		{"CPU win", domain.AnacondaResultNone, 1, "CPU 1"},
 	}
-	// human wins with four of a kind.
-	anacondaWebSetKept(g.GetPlayer(0),
-		anacondaWebCard(domain.CardDesignSpade, 8), anacondaWebCard(domain.CardDesignHeart, 8),
-		anacondaWebCard(domain.CardDesignClover, 8), anacondaWebCard(domain.CardDesignDiamond, 8),
-		anacondaWebCard(domain.CardDesignSpade, 2))
-	g.SetPhase(domain.AnacondaPhaseRoll)
-	g.SetPot(60)
-	g.ResolveShowdownForTest()
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			g := domain.NewDefaultAnaconda()
+			for i := 0; i < g.GetPlayerCnt(); i++ {
+				anacondaWebSetKept(g.GetPlayer(i), anacondaWebWeak()...)
+			}
+			anacondaWebSetKept(g.GetPlayer(0),
+				anacondaWebCard(domain.CardDesignSpade, 8), anacondaWebCard(domain.CardDesignHeart, 8),
+				anacondaWebCard(domain.CardDesignClover, 8), anacondaWebCard(domain.CardDesignDiamond, 8),
+				anacondaWebCard(domain.CardDesignSpade, 2))
+			data, err := json.Marshal(g)
+			require.NoError(t, err)
+			var snapshot map[string]any
+			require.NoError(t, json.Unmarshal(data, &snapshot))
+			snapshot["ph"], snapshot["wi"], snapshot["re"], snapshot["lp"] = float64(domain.AnacondaPhaseResult), float64(tc.winner), float64(tc.result), float64(120)
+			data, err = json.Marshal(snapshot)
+			require.NoError(t, err)
+			var result domain.Anaconda
+			require.NoError(t, json.Unmarshal(data, &result))
 
-	p := new(presenter.AnacondaCuiPresenter)
-	out := p.Output(g, nil)
-	assert.NotEmpty(t, out)
-	assert.Contains(t, out, "フォーカード")
-	assert.Contains(t, out, "ポット 60 を獲得しました")
+			out := (new(presenter.AnacondaCuiPresenter)).Output(&result, nil)
+			assert.NotEmpty(t, out)
+			assert.Contains(t, out, "120")
+			assert.Contains(t, out, tc.wantWinner)
+		})
+	}
 }
 
 func TestAnacondaCuiPresenter_OutputGameEnd(t *testing.T) {
