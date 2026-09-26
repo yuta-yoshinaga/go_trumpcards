@@ -20,7 +20,10 @@
   },
   "label": {
     "stock": "Stock",
+    "stockAria": "Stock pile, {{count}} cards remaining",
     "discardPile": "Discard",
+    "discardTopAria": "Discard pile: {{card}}",
+    "discardEmpty": "Discard pile is empty",
     "lives": "Lives",
     "score": "Best Suit",
     "round": "Round",
