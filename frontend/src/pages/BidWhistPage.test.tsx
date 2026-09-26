@@ -89,6 +89,19 @@ describe('BidWhistPage', () => {
     expect(screen.getByRole('option', { name: 'むずかしい' })).toBeInTheDocument();
   });
 
+  it('shows the selected target score beside team scores, including after game end', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: BidWhistPhase.GAME_END, gameEndFlag: true }));
+    renderWithProviders(<BidWhistPage />);
+
+    expect(await screen.findByText('勝利目標: 7点')).toBeInTheDocument();
+
+    const targetScore = screen.getByLabelText('目標スコア');
+    for (const score of [9, 11, 7]) {
+      fireEvent.change(targetScore, { target: { value: String(score) } });
+      expect(screen.getByText(`勝利目標: ${score}点`)).toBeInTheDocument();
+    }
+  });
+
   it('shows bid controls on the human bid turn', async () => {
     renderWithProviders(<BidWhistPage />);
     expect(await screen.findByTestId('pass-button')).toBeEnabled();
