@@ -103,6 +103,28 @@ func TestColourWhistCuiPresenter_NoCalledCardWhenNil(t *testing.T) {
 	assert.NotContains(t, out, "指名札")
 }
 
+func TestColourWhistCuiPresenter_PartnerStatus(t *testing.T) {
+	t.Run("shows revealed partner seat", func(t *testing.T) {
+		m := new(interfaces.MockColourWhistGame)
+		m.On("GetPartnerIdx").Return(2)
+		fillColourWhistDefaults(m)
+		assert.Contains(t, new(ColourWhistCuiPresenter).Output(m, nil), "相方: 席 2")
+	})
+
+	t.Run("shows hidden partner before Samen reveal", func(t *testing.T) {
+		m := new(interfaces.MockColourWhistGame)
+		fillColourWhistDefaults(m)
+		assert.Contains(t, new(ColourWhistCuiPresenter).Output(m, nil), "相方: 未公開")
+	})
+
+	t.Run("shows no partner for a solo contract", func(t *testing.T) {
+		m := new(interfaces.MockColourWhistGame)
+		m.On("GetContract").Return(domain.ColourWhistContractAlleen)
+		fillColourWhistDefaults(m)
+		assert.Contains(t, new(ColourWhistCuiPresenter).Output(m, nil), "相方: なし")
+	})
+}
+
 func TestColourWhistCuiPresenter_ShowsTheTrickAndScores(t *testing.T) {
 	m := new(interfaces.MockColourWhistGame)
 	m.On("GetTrick").Return([]*domain.TrickCard{
