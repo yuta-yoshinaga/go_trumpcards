@@ -459,7 +459,10 @@ function StHelenaPageContent() {
                                             }
                                           }}
                                           disabled={!isPlaying || loading || !isTop}
-                                          aria-label={cardAlt(tc.card)}
+                                          aria-label={t('tableauCardAriaLabel', {
+                                            card: cardAlt(tc.card),
+                                            col: colIdx,
+                                          })}
                                           aria-pressed={isTop && isSourceSelected('tableau', colIdx)}
                                           draggable={isPlaying && !loading && isTop}
                                           onDragStart={isTop ? dnd.handleDragStart(tableauColZone) : undefined}
