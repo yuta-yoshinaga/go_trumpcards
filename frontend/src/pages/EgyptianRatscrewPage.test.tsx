@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { egyptianRatscrewApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { EgyptianRatscrewResponse } from '../types/card';
 import { EgyptianRatscrewEventKind, EgyptianRatscrewPhase, EgyptianRatscrewSlapReason } from '../types/phases';
@@ -141,6 +142,64 @@ describe('EgyptianRatscrewPage', () => {
     await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
     fireEvent.click(screen.getByTestId('step-button'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('step'));
+  });
+
+  it('announces the pile size and next player after a successful step', async () => {
+    mockExec.mockResolvedValueOnce(baseState).mockResolvedValueOnce({
+      ...baseState,
+      centerPileSize: 1,
+      topCard: { design: 'HEART', value: 8 },
+      isHumanTurn: false,
+      currentTurnIdx: 1,
+    });
+    renderWithProviders(<EgyptianRatscrewPage />);
+    await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('step-button'));
+    await waitFor(() => {
+      const live = screen.getByTestId('er-step-announce');
+      expect(live).toHaveAttribute('role', 'status');
+      expect(live).toHaveAttribute('aria-live', 'polite');
+      expect(live).toHaveTextContent('場札1枚');
+      expect(live).toHaveTextContent('CPU');
+      expect(live).toHaveTextContent('場札1枚。CPU 1のターンです。');
+    });
+  });
+
+  it('announces the human turn without a possessive in English', async () => {
+    await i18n.changeLanguage('en');
+    mockExec.mockResolvedValueOnce(baseState).mockResolvedValueOnce({
+      ...baseState,
+      centerPileSize: 1,
+      topCard: { design: 'HEART', value: 8 },
+      isHumanTurn: true,
+    });
+    renderWithProviders(<EgyptianRatscrewPage />);
+    await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('step-button'));
+    await waitFor(() =>
+      expect(screen.getByTestId('er-step-announce')).toHaveTextContent('1 cards in the pile. Your turn.'),
+    );
+    await i18n.changeLanguage('ja');
+  });
+
+  it('does not announce a rejected or finished step', async () => {
+    mockExec
+      .mockResolvedValueOnce(baseState)
+      .mockResolvedValueOnce({ ...baseState, message: '操作できません', messageCode: '' });
+    renderWithProviders(<EgyptianRatscrewPage />);
+    await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('step-button'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('step'));
+    expect(screen.getByTestId('er-step-announce')).toBeEmptyDOMElement();
+  });
+
+  it('does not announce a step response that ends the game', async () => {
+    mockExec.mockResolvedValueOnce(baseState).mockResolvedValueOnce({ ...gameEndState, centerPileSize: 1 });
+    renderWithProviders(<EgyptianRatscrewPage />);
+    await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('step-button'));
+    await waitFor(() => expect(screen.getByTestId('step-button')).toBeDisabled());
+    expect(screen.getByTestId('er-step-announce')).toBeEmptyDOMElement();
   });
 
   it('slap button calls exec with slap', async () => {
