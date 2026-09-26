@@ -107,6 +107,22 @@ describe('DuchessPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
   });
 
+  it('shows remaining stock cards and how many a draw deals, including when empty', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<DuchessPage />);
+    await waitFor(() => expect(screen.getByText('残り35枚')).toBeInTheDocument());
+    expect(screen.getByText('めくると1枚配られます')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '山札 残り35枚' })).toBeInTheDocument();
+  });
+
+  it('shows an empty stock count and no draw hint when the stock is empty', async () => {
+    mockExec.mockResolvedValue({ ...playingState, stockCount: 0 });
+    renderWithProviders(<DuchessPage />);
+    await waitFor(() => expect(screen.getByText('残り0枚')).toBeInTheDocument());
+    expect(screen.getByText('山札は空です')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '山札 残り0枚' })).toBeDisabled();
+  });
+
   // Until the base rank is set nothing else is legal, so the reserve fan is a
   // rank picker rather than a move source, and everything else is barred.
   it('turns the reserve fans into base-rank pickers before the rank is set', async () => {

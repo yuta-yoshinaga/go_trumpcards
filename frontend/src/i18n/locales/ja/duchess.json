@@ -51,6 +51,9 @@
   "stalemate": "手詰まりです",
   "stock": "山札",
   "stockAriaLabel": "山札 残り{{count}}枚",
+  "stockRemaining": "残り{{count}}枚",
+  "stockDrawCount": "めくると1枚配られます",
+  "stockEmpty": "山札は空です",
   "tableau": "場札",
   "tutorial": {
     "reserve": "左のリザーブは3枚ずつの扇が4つ。使えるのは各扇の一番上だけです。まずここから1枚選び、そのランクを4つの組札すべての開始ランクに決めます。",

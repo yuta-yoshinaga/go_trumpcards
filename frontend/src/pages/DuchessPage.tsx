@@ -159,6 +159,7 @@ function DuchessPageContent() {
     return <GameSkeleton gameKey="duchess" layout={{ kind: 'tableau', topRow: 4, tableau: TABLEAU_COLS }} />;
   }
 
+  const stockCount = state.stockCount;
   const isPlaying = state.phase === DuchessPhase.PLAYING;
   const isGameClear = state.phase === DuchessPhase.GAME_CLEAR;
   const isGameOver = state.phase === DuchessPhase.GAME_OVER;
@@ -432,18 +433,20 @@ function DuchessPageContent() {
               <div className="flex gap-2 items-start" data-tutorial="du-stock">
                 <div className="text-center">
                   <div className="text-game-text-muted text-xs mb-1">{t('stock')}</div>
+                  <div className="text-ds-text-primary text-xs mb-1">{t('stockRemaining', { count: stockCount })}</div>
                   <button
                     type="button"
                     onClick={game.handleDraw}
-                    disabled={
-                      !isPlaying || loading || isAutoCompleting || state.stockCount === 0 || state.awaitingBaseRank
-                    }
-                    aria-label={t('stockAriaLabel', { count: state.stockCount })}
+                    disabled={!isPlaying || loading || isAutoCompleting || stockCount === 0 || state.awaitingBaseRank}
+                    aria-label={t('stockAriaLabel', { count: stockCount })}
                     style={{ width: dims.cw, height: dims.ch }}
                     className={`rounded border-2 border-white/30 bg-white/10 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                   >
-                    {state.stockCount}
+                    {stockCount}
                   </button>
+                  <div className="text-ds-text-muted text-xs mt-1">
+                    {t(stockCount > 0 ? 'stockDrawCount' : 'stockEmpty')}
+                  </div>
                 </div>
                 <div className="text-center">
                   <div className="text-game-text-muted text-xs mb-1">{t('waste')}</div>

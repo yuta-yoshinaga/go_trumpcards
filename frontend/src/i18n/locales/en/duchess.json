@@ -51,6 +51,9 @@
   "stalemate": "No moves left",
   "stock": "Stock",
   "stockAriaLabel": "Stock, {{count}} cards left",
+  "stockRemaining": "{{count}} cards left",
+  "stockDrawCount": "Draw deals one card",
+  "stockEmpty": "The stock is empty",
   "tableau": "Tableau",
   "tutorial": {
     "reserve": "The reserve on the left is four fans of three cards; only the top of each fan is available. Start by picking one — its rank becomes the starting rank of all four foundations.",
