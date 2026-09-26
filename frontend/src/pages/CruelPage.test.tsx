@@ -388,12 +388,14 @@ describe('CruelPage autocomplete readiness', () => {
     mockExec.mockResolvedValue({ ...playingState, canAutoComplete: false });
     renderWithProviders(<CruelPage />);
     await waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeDisabled());
+    expect(screen.getByTestId('autocomplete-readiness')).toHaveTextContent('組札へ送れるカードがあると有効になります');
   });
 
   it('enables the button when a card can go to a foundation', async () => {
     mockExec.mockResolvedValue({ ...playingState, canAutoComplete: true });
     renderWithProviders(<CruelPage />);
     await waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeEnabled());
+    expect(screen.getByTestId('autocomplete-readiness')).toHaveTextContent('オートコンプリートを実行できます');
   });
 
   // **組札の中身から推測しない。** Cruel は開始時にエースを組札へ配るので、
