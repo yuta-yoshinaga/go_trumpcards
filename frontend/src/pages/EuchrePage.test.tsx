@@ -551,7 +551,7 @@ describe('EuchrePage', () => {
     const { container } = renderWithProviders(<EuchrePage />);
     await waitFor(() => expect(container.querySelector('[data-tutorial="eu-trick-display"]')).toBeInTheDocument());
     const trick = container.querySelector('[data-tutorial="eu-trick-display"]');
-    expect(trick?.parentElement).toHaveTextContent('切り札: ♠ スペード');
+    expect(trick?.previousElementSibling).toHaveTextContent('切り札: ♠ スペード');
   });
 
   it('shows no trump text when trump is 0', async () => {
@@ -560,7 +560,9 @@ describe('EuchrePage', () => {
     await waitFor(() => {
       expect(screen.getByText('\u5207\u308a\u672d\u306a\u3057')).toBeInTheDocument();
     });
-    expect(document.querySelector('[data-tutorial="eu-trick-display"]')?.parentElement).toHaveTextContent('切り札なし');
+    expect(document.querySelector('[data-tutorial="eu-trick-display"]')?.previousElementSibling).toHaveTextContent(
+      '切り札なし',
+    );
   });
 
   it('shows going alone text', async () => {

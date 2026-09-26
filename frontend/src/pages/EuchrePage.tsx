@@ -311,7 +311,7 @@ function EuchrePageContent() {
                 )}
 
                 {/* Current trick */}
-                <section aria-label={t('currentTrick')}>
+                <section>
                   <div className="text-ds-text-primary text-sm text-center" aria-live="polite">
                     {state.trumpSuit > 0 ? t('trumpSuit', { suit: suitName(state.trumpSuit) }) : t('noTrump')}
                   </div>
