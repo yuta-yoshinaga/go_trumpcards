@@ -1249,6 +1249,14 @@ describe('ShortDeckPage', () => {
     expect(document.querySelectorAll('[data-best5-board]').length).toBe(3);
   });
 
+  it('hides the current hand chip at showdown while keeping the showdown hand name', async () => {
+    mockExec.mockResolvedValue(showdownState);
+    renderWithProviders(<ShortDeckPage />);
+
+    expect(await screen.findByText('ワンペア', { selector: 'span' })).toBeInTheDocument();
+    expect(screen.queryByTestId('shortdeck-current-hand')).not.toBeInTheDocument();
+  });
+
   // The page already rendered hand/level progress behind state.tournamentMode,
   // but nothing could switch it on: the display existed for a state the player
   // could not reach.

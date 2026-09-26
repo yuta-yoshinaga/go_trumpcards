@@ -48,6 +48,19 @@ import type { CliGameConfig } from '../utils/cli/types';
 import { findPlayerName } from '../utils/playerUtils';
 import { scoreFiveShortDeck, shortDeckBestFive } from '../utils/shortDeckBestFive';
 
+const RANK_KEYS = [
+  '',
+  'highCard',
+  'onePair',
+  'twoPair',
+  'threeOfAKind',
+  'straight',
+  'fullHouse',
+  'flush',
+  'fourOfAKind',
+  'straightFlush',
+] as const;
+
 /** Short Deck Hold'em tutorial step definitions. */
 const SD_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -408,12 +421,9 @@ function ShortDeckPageContent() {
                   )}
                   {humanPlayer.folded && <span className="ml-2 text-ds-error text-xs">[{tc('status.folded')}]</span>}
                   {humanPlayer.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
-                  {currentBest5.rank !== null && !humanPlayer.folded && (
+                  {isActive && currentBest5.rank !== null && !humanPlayer.folded && (
                     <span className="ml-2 text-xs text-ds-info" data-testid="shortdeck-current-hand">
-                      {t('handRank.current')}:{' '}
-                      {t(
-                        `handRank.${(['', 'highCard', 'onePair', 'twoPair', 'threeOfAKind', 'straight', 'fullHouse', 'flush', 'fourOfAKind', 'straightFlush'] as const)[currentBest5.rank]}`,
-                      )}
+                      {t('handRank.current')}: {t(`handRank.${RANK_KEYS[currentBest5.rank]}`)}
                     </span>
                   )}
                   {isShowdown && !humanPlayer.folded && humanPlayer.handName && (
