@@ -345,7 +345,9 @@ function BadugiPageContent() {
                       <button
                         key={`${card.design}-${card.value}`}
                         type="button"
-                        aria-label={`${cardAlt(card)}${isSelected ? ` ${t('cardSelected')}` : ''}${subsetHint}`}
+                        aria-label={`${cardAlt(card)}${
+                          canExchange ? ` ${t(isSelected ? 'cardSelected' : 'cardNotSelected')}` : ''
+                        }${subsetHint}`}
                         aria-pressed={isSelected}
                         onClick={() => toggleCard(i)}
                         data-badugi-subset={showSubsetHint && inSubset ? 'true' : undefined}

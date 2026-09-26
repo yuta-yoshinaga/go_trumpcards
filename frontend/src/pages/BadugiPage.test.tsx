@@ -142,6 +142,22 @@ describe('BadugiPage', () => {
     expect(screen.getAllByRole('button', { name: /交換候補/ })).toHaveLength(1);
   });
 
+  it('announces whether each card is selected as an exchange target only during the draw phase', async () => {
+    mockExec.mockResolvedValue(baseState({ phase: BadugiPhase.DRAW, currentTurn: 0 }));
+    const { unmount } = renderWithProviders(<BadugiPage />);
+
+    const unselected = await screen.findByRole('button', { name: /♠ A/ });
+    expect(unselected).toHaveAccessibleName(/交換対象ではありません/);
+    fireEvent.click(unselected);
+    expect(screen.getByRole('button', { name: /♠ A/ })).toHaveAccessibleName(/交換対象として選択中/);
+
+    unmount();
+    mockExec.mockResolvedValue(baseState({ phase: BadugiPhase.BET, currentTurn: 0 }));
+    renderWithProviders(<BadugiPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: /♠ A/ })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: /♠ A/ })).not.toHaveAccessibleName(/交換対象/);
+  });
+
   it('shows the end message at showdown', async () => {
     mockExec.mockResolvedValue(
       baseState({
