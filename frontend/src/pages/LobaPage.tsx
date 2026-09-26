@@ -216,8 +216,8 @@ function LobaPageContent() {
             {roundOver && state.roundWinner >= 0 && (
               <div className="text-center text-sm mb-3" data-testid="loba-round-result">
                 {state.roundClean
-                  ? t('roundWinnerClean', { n: state.roundWinner })
-                  : t('roundWinner', { n: state.roundWinner })}
+                  ? t('roundWinnerClean', { name: findPlayerName(state.players, state.roundWinner) })
+                  : t('roundWinner', { name: findPlayerName(state.players, state.roundWinner) })}
               </div>
             )}
 
