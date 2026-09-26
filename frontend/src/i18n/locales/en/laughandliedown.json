@@ -6,6 +6,7 @@
   "table": "Table (face up)",
   "you": "You",
   "takeThree": "Take three",
+  "takeThreeAriaLabel": "Take three cards of rank {{rank}}",
   "takeThreeHint": "three of that rank are on the table",
   "won": "{{n}} won",
   "laidDown": "laid down",
