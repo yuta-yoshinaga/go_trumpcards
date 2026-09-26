@@ -27,7 +27,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { SuecaResponse } from '../types/card';
 import { SuecaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { suitSymbolAt } from '../utils/cardAlt';
+import { cardAlt, suitSymbolAt } from '../utils/cardAlt';
 import { parseSuecaCommand, SUECA_HELP } from '../utils/cli/commands/suecaCommands';
 import { formatSuecaState } from '../utils/cli/formatters/suecaFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -152,6 +152,9 @@ function SuecaPageContent() {
   const isGameEnd = state.phase === SuecaPhase.GAME_END || state.gameEndFlag;
 
   const canPlay = isPlayPhase && isHumanTurn;
+  // Sueca states always contain one human player, and selection indices come
+  // from that player's hand. Treat violations as invalid game state.
+  const selectedCardNames = selectedCardIndices.map((idx) => cardAlt(humanPlayer!.cards[idx]!));
   const humanTeam = humanIdx % 2;
   const trumpSymbol = suitSymbolAt(state.trumpSuit, '');
   // Spoken trump: the suit name (not the ♠♣♥♦ glyph, which SRs read poorly).
@@ -422,6 +425,12 @@ function SuecaPageContent() {
             )}
 
             <ErrorAlert message={error} onRetry={retry} />
+
+            <div data-testid="sueca-selection-status" role="status" aria-live="polite" aria-atomic="true">
+              {selectedCardNames.length > 0
+                ? t('selectedCards', { cards: selectedCardNames.join(t('listSeparator')) })
+                : t('noCardSelected')}
+            </div>
 
             {/*
               ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、

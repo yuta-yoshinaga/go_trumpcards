@@ -88,6 +88,38 @@ describe('SuecaPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0 }));
   });
 
+  it('announces the selected card beside the play action and announces when selection is cleared', async () => {
+    renderWithProviders(<SuecaPage />);
+    const status = await screen.findByTestId('sueca-selection-status');
+    expect(status).toHaveTextContent('カード未選択');
+
+    fireEvent.click(await screen.findByRole('button', { name: '♥ Q' }));
+    await waitFor(() => expect(status).toHaveTextContent('選択中: ♥ Q'));
+
+    fireEvent.click(await screen.findByRole('button', { name: '♥ Q' }));
+    await waitFor(() => expect(status).toHaveTextContent('カード未選択'));
+  });
+
+  it('separates multiple selected cards in the live announcement', async () => {
+    renderWithProviders(<SuecaPage />);
+    const status = await screen.findByTestId('sueca-selection-status');
+
+    fireEvent.click(await screen.findByRole('button', { name: '♥ Q' }));
+    fireEvent.click(await screen.findByRole('button', { name: '♥ K' }));
+
+    await waitFor(() => expect(status).toHaveTextContent('選択中: ♥ Q、♥ K'));
+  });
+
+  it('keeps the play action disabled unless exactly one card is selected', async () => {
+    renderWithProviders(<SuecaPage />);
+    const playButton = await screen.findByRole('button', { name: '出す' });
+    expect(playButton).toBeDisabled();
+    fireEvent.click(await screen.findByAltText('♥ Q'));
+    await waitFor(() => expect(playButton).toBeEnabled());
+    fireEvent.click(await screen.findByAltText('♠ A'));
+    await waitFor(() => expect(playButton).toBeDisabled());
+  });
+
   it('renders trick end with the next trick button', async () => {
     mockExec.mockResolvedValue(trickEndState);
     renderWithProviders(<SuecaPage />);
