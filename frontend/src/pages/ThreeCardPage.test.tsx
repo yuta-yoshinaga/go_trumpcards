@@ -283,6 +283,32 @@ describe('ThreeCardPage', () => {
     expect(screen.getByText('所持チップに合わせて賭け額を調整しました。')).toBeInTheDocument();
   });
 
+  it('clears the adjusted bet message when a new bet phase starts', async () => {
+    mockExec.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce(endPhasePlayerWins);
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+
+    fireEvent.change(screen.getByLabelText('ペアプラス'), { target: { value: '1000' } });
+    expect(screen.getByText('所持チップに合わせて賭け額を調整しました。')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+
+    mockExec.mockResolvedValueOnce(betPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: '次のゲーム' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    expect(screen.queryByText('所持チップに合わせて賭け額を調整しました。')).not.toBeInTheDocument();
+  });
+
+  it('clamps ante input to the minimum of 10', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<ThreeCardPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+
+    const anteInput = screen.getByLabelText('アンテ');
+    fireEvent.change(anteInput, { target: { value: '5' } });
+    expect(anteInput).toHaveValue('10');
+  });
+
   it('steps the ante and pair plus amounts with the chip steppers', async () => {
     mockExec.mockResolvedValue(betPhaseState);
     renderWithProviders(<ThreeCardPage />);

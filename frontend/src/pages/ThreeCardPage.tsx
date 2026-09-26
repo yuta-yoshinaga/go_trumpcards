@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { threecardApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -65,6 +65,8 @@ const HAND_RANK_KEYS: Record<number, string> = {
   6: 'handRank.6',
 };
 
+const MIN_ANTE_BET = 10;
+
 /** Renders the Three Card Poker game page with betting, action, and result display. */
 export const ThreeCardPage = withTutorial(ThreeCardPageContent, 'threecard', TC_TUTORIAL_STEPS);
 /** Inner content of the Three Card Poker page, wrapped by TutorialProvider. */
@@ -100,6 +102,14 @@ function ThreeCardPageContent() {
   const isActionPhase = state?.phase === ThreeCardPhase.ACTION;
   const isEndPhase = state?.phase === ThreeCardPhase.END;
 
+  const previousPhase = useRef(state?.phase);
+  useEffect(() => {
+    if (isBetPhase && previousPhase.current !== ThreeCardPhase.BET) {
+      setBetAdjusted(false);
+    }
+    previousPhase.current = state?.phase;
+  }, [isBetPhase, state?.phase]);
+
   useEffect(() => {
     if (!state || !isBetPhase) return;
     const nextAnte = Math.min(anteAmount, Math.max(0, state.chips - pairPlusAmount));
@@ -112,7 +122,7 @@ function ThreeCardPageContent() {
   }, [state?.chips, isBetPhase, anteAmount, pairPlusAmount, state]);
 
   const handleAnteChange = (value: number) => {
-    const nextAnte = Math.min(value, Math.max(0, (state?.chips ?? 0) - pairPlusAmount));
+    const nextAnte = Math.min(Math.max(value, MIN_ANTE_BET), Math.max(0, (state?.chips ?? 0) - pairPlusAmount));
     setAnteAmount(nextAnte);
     setBetAdjusted(nextAnte !== value);
   };
@@ -332,6 +342,17 @@ function ThreeCardPageContent() {
           <GameFooter className={`${gameTheme.threecard.footer} px-4 pt-3`}>
             <ErrorAlert message={error} onRetry={retry} />
             {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
+            <div role="status" aria-live="polite" className="text-center">
+              {isBetPhase && state && (
+                <>
+                  <div className="text-ds-text-primary text-sm" data-testid="tc-bet-summary">
+                    {t('betSummary.total', { amount: anteAmount + pairPlusAmount })} ·{' '}
+                    {t('betSummary.remaining', { amount: Math.max(0, state.chips - anteAmount - pairPlusAmount) })}
+                  </div>
+                  {betAdjusted && <p className="text-ds-warning text-sm">{t('betSummary.adjusted')}</p>}
+                </>
+              )}
+            </div>
             <SettingsPanel
               title={t('settings.title')}
               groups={[
@@ -350,17 +371,12 @@ function ThreeCardPageContent() {
             />
             {isBetPhase && (
               <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="tc-bet-controls">
-                <div className="text-ds-text-primary text-sm text-center" data-testid="tc-bet-summary">
-                  {t('betSummary.total', { amount: anteAmount + pairPlusAmount })} ·{' '}
-                  {t('betSummary.remaining', { amount: Math.max(0, state.chips - anteAmount - pairPlusAmount) })}
-                </div>
-                {betAdjusted && <p className="text-ds-warning text-sm">{t('betSummary.adjusted')}</p>}
                 <ChipBetInput
                   id="threecard-ante-amount"
                   label={t('label.ante')}
                   value={anteAmount}
                   onChange={handleAnteChange}
-                  min={10}
+                  min={MIN_ANTE_BET}
                   max={Math.max(0, state.chips - pairPlusAmount)}
                   step={10}
                   disabled={loading}
