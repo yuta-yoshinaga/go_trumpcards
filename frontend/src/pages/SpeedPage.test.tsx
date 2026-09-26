@@ -249,7 +249,7 @@ describe('SpeedPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '♠ 4 (今すぐ出せる)' }));
 
-    expect(await screen.findByTestId('speed-play-count-announcement')).toHaveTextContent('手札は3枚です');
+    await waitFor(() => expect(screen.getByTestId('speed-play-count-announcement')).toHaveTextContent('手札は3枚です'));
   });
 
   it('does not announce a selection or a rejected play', async () => {
@@ -267,7 +267,7 @@ describe('SpeedPage', () => {
     expect(announcement).toBeEmptyDOMElement();
   });
 
-  it('does not repeat an announcement for consecutive state updates with the same hand count', async () => {
+  it('remounts the live region to re-announce consecutive plays with the same hand count', async () => {
     renderWithProviders(<SpeedPage />);
     await screen.findByText('手札');
     mockExec.mockResolvedValueOnce({
@@ -275,15 +275,22 @@ describe('SpeedPage', () => {
       players: [{ ...playState.players[0], cardCount: 3 }, playState.players[1]],
     });
     fireEvent.click(screen.getByRole('button', { name: '♠ 4 (今すぐ出せる)' }));
-    expect(await screen.findByTestId('speed-play-count-announcement')).toHaveTextContent('手札は3枚です');
+    let firstRegion: HTMLElement | null = null;
+    await waitFor(() => {
+      firstRegion = screen.getByTestId('speed-play-count-announcement');
+      expect(firstRegion).toHaveTextContent('手札は3枚です');
+    });
 
     mockExec.mockResolvedValueOnce({
       ...playState,
       players: [{ ...playState.players[0], cardCount: 3 }, playState.players[1]],
     });
-    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
-    expect(screen.getByTestId('speed-play-count-announcement')).toHaveTextContent('手札は3枚です');
+    fireEvent.click(screen.getByRole('button', { name: '♠ 4 (今すぐ出せる)' }));
+    await waitFor(() => {
+      const secondRegion = screen.getByTestId('speed-play-count-announcement');
+      expect(secondRegion).toHaveTextContent('手札は3枚です');
+      expect(secondRegion).not.toBe(firstRegion);
+    });
   });
 
   it('plays a card to a center pile when a card is selected', async () => {

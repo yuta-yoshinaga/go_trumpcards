@@ -60,6 +60,7 @@ function SpeedPageContent() {
   const {
     state,
     playedCardCount,
+    playAnnouncementNonce,
     loading,
     error,
     exec: gameExec,
@@ -204,6 +205,7 @@ function SpeedPageContent() {
       }
     >
       <span
+        key={playAnnouncementNonce}
         className="sr-only"
         role="status"
         aria-live="polite"

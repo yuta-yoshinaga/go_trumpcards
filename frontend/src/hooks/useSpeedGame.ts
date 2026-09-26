@@ -28,21 +28,20 @@ export function useSpeedGame() {
   const { selected: selectedCardIndices, toggle: toggleCard, clear: clearSelection } = useCardSelection();
   const { config: speedConfig, handleConfigChange, handleToggle } = useGameConfig<SpeedConfig>(DEFAULT_SPEED_CONFIG);
   const [playedCardCount, setPlayedCardCount] = useState<number | null>(null);
-  const lastAnnouncedCountRef = useRef<number | null>(null);
+  const [playAnnouncementNonce, setPlayAnnouncementNonce] = useState(0);
 
   const onSuccess = useCallback(
     (res: Awaited<ReturnType<typeof speedApi.exec>>, args: Parameters<typeof speedApi.exec>) => {
       clearSelection();
       if (args[0] === 'reset') {
-        lastAnnouncedCountRef.current = null;
         setPlayedCardCount(null);
         return;
       }
       if (args[0] !== 'play' || isRejectedAction(res)) return;
       const count = res.players[0]?.cardCount;
-      if (count !== undefined && count !== lastAnnouncedCountRef.current) {
-        lastAnnouncedCountRef.current = count;
+      if (count !== undefined) {
         setPlayedCardCount(count);
+        setPlayAnnouncementNonce((nonce) => nonce + 1);
       }
     },
     [clearSelection],
@@ -111,6 +110,7 @@ export function useSpeedGame() {
   return {
     state,
     playedCardCount,
+    playAnnouncementNonce,
     loading,
     error,
     exec: gameExec,
