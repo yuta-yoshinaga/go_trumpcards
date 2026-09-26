@@ -17,7 +17,7 @@
   },
   "round": "ラウンド {{n}}",
   "trick": "トリック {{n}}",
-  "trickResult": "{{winner}}がトリックを獲得し、次のリードを担当します。",
+  "trickResult": "{{name}}がトリックを獲得し、次のリードを担当します。",
   "heartsBroken": "ハートブレイク済",
   "heartsNotBroken": "ハート未ブレイク",
   "passDirection": {

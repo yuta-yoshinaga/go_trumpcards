@@ -465,7 +465,7 @@ function HeartsPageContent() {
               {isTrickEnd && (
                 <div className="text-ds-text-primary text-center font-bold mb-2">
                   {t('trickResult', {
-                    winner: state.players[state.leadPlayerIdx]
+                    name: state.players[state.leadPlayerIdx]
                       ? playerName(state.players[state.leadPlayerIdx].id, state.players[state.leadPlayerIdx].isHuman)
                       : '',
                   })}
@@ -474,9 +474,9 @@ function HeartsPageContent() {
             </div>
             <div data-tutorial="ht-penalty-info">
               <GameMessageBox
-                message={isTrickEnd ? undefined : state.message}
-                messageCode={isTrickEnd ? undefined : state.messageCode}
-                messageParams={isTrickEnd ? undefined : state.messageParams}
+                message={isTrickEnd && state.messageCode === 'hearts.trickEnd' ? undefined : state.message}
+                messageCode={isTrickEnd && state.messageCode === 'hearts.trickEnd' ? undefined : state.messageCode}
+                messageParams={isTrickEnd && state.messageCode === 'hearts.trickEnd' ? undefined : state.messageParams}
               />
             </div>
 
