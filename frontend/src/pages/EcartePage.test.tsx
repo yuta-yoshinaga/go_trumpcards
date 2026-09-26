@@ -247,7 +247,18 @@ describe('EcartePage', () => {
     fireEvent.click(card);
     expect(screen.getByTestId('ecarte-discard')).toBeEnabled();
     expect(screen.getByTestId('ecarte-discard-guide')).toHaveTextContent('1枚選択中');
+    expect(screen.getByTestId('ecarte-discard-live')).toHaveAttribute('role', 'status');
+    expect(screen.getByTestId('ecarte-discard-live')).toHaveTextContent('1枚選択中');
     expect(screen.queryByTestId('ecarte-discard-reason')).not.toBeInTheDocument();
+  });
+
+  it('keeps the discard status region mounted but empty outside the discard step', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<EcartePage />);
+
+    const status = await screen.findByTestId('ecarte-discard-live');
+    expect(status).toHaveAttribute('role', 'status');
+    expect(status).toBeEmptyDOMElement();
   });
 
   it('disables the discard button and shows the stock reason when selecting more than the stock', async () => {
