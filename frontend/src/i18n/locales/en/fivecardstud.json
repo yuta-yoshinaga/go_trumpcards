@@ -13,6 +13,10 @@
   "holeCards": "Hole Cards",
   "yourHand": "Your Hand",
   "anteBringIn": "Ante/Bring-in",
+  "betting": {
+    "callAmount": "Amount to call: {{amount}}",
+    "checkAvailable": "You can check"
+  },
   "handNumber": "Hand #{{count}} (Ante level {{anteLevel}}; next level in {{remaining}} hands; level up: every {{level}} hands)",
   "rebuy": {
     "prompt": "Rebuy? ({{chips}} chips, {{used}}/{{max}} used)",

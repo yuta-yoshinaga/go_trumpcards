@@ -292,6 +292,24 @@ describe('FiveCardStudPage', () => {
     renderWithProviders(<FiveCardStudPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'レイズ' })).toBeInTheDocument();
+    expect(screen.getByText('コールに必要な額: 40')).toBeInTheDocument();
+  });
+
+  it("caps the displayed call amount at the human player's remaining chips", async () => {
+    mockExec.mockResolvedValue({
+      ...secondStreetWithBetState,
+      players: [humanPlayer({ chips: 15 }), ...secondStreetWithBetState.players.slice(1)],
+    });
+    renderWithProviders(<FiveCardStudPage />);
+    await waitFor(() => expect(screen.getByText('コールに必要な額: 15')).toHaveAttribute('role', 'status'));
+  });
+
+  it('shows check availability instead of a call amount when no bet is outstanding', async () => {
+    mockExec.mockResolvedValue(secondStreetState);
+    renderWithProviders(<FiveCardStudPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'チェック' })).toBeInTheDocument());
+    expect(screen.getByText('チェック可能')).toBeInTheDocument();
+    expect(screen.queryByText(/コールに必要な額/)).not.toBeInTheDocument();
   });
 
   it('hides betting controls when not active phase', async () => {
