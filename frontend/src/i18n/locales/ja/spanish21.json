@@ -79,7 +79,10 @@
     "perfectPairs": "Perfect Pairs",
     "twentyOnePlus3": "ポーカー役ボーナス",
     "win": "{{name}} WIN +{{payout}}",
-    "lose": "{{name}} LOSE -{{amount}}"
+    "lose": "{{name}} LOSE -{{amount}}",
+    "breakdownBet": "ベット額: {{amount}}",
+    "breakdownCondition": "成立条件: {{condition}}",
+    "breakdownPayout": "払い戻し: {{amount}}"
   },
   "status": {
     "bust": "BUST",
