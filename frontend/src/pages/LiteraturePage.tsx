@@ -375,7 +375,10 @@ function LiteraturePageContent() {
                 <div className="text-ds-text-muted text-xs" data-testid="literature-ask-rules">
                   {t('askRules')}
                 </div>
-                <div className="flex flex-wrap gap-2 items-center">
+                <fieldset
+                  disabled={askableCards.length === 0}
+                  className="flex flex-wrap gap-2 items-center border-0 p-0 m-0 min-w-0"
+                >
                   <label className="text-ds-text-muted text-xs flex items-center gap-1" htmlFor="literature-target">
                     {t('askTargetLabel')}
                     <select
@@ -410,7 +413,12 @@ function LiteraturePageContent() {
                   <button type="button" className={btnPrimary} onClick={handleAsk} disabled={loading || !selectedCard}>
                     {t('askButton')}
                   </button>
-                </div>
+                </fieldset>
+                {askableCards.length === 0 && (
+                  <p className="text-ds-warning text-sm" role="status">
+                    {t('noAskableCards')}
+                  </p>
+                )}
 
                 {/* Claim — placing all six, and misplacing within your own team cancels it. */}
                 <div className="text-ds-text-muted text-xs" data-testid="literature-claim-rules">
