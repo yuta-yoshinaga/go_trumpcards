@@ -10,6 +10,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
+import { KbdBadge } from '../components/KbdBadge';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { PlayerHandSection } from '../components/PlayerHandSection';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
@@ -348,6 +349,7 @@ function ContinentalRummyPageContent() {
                   data-testid="cont-goout-deal"
                 >
                   {t('button.goOutOnDeal')}
+                  {!loading && <KbdBadge label={t('kbd.goOutOnDeal')} />}
                 </button>
               )}
 
@@ -362,6 +364,7 @@ function ContinentalRummyPageContent() {
                     disabled={loading}
                   >
                     {t('button.stock')}
+                    {!loading && <KbdBadge label={t('kbd.stock')} />}
                   </button>
                   <button
                     type="button"
@@ -372,6 +375,7 @@ function ContinentalRummyPageContent() {
                     disabled={loading || !state.discardTop}
                   >
                     {t('button.take')}
+                    {!loading && !!state.discardTop && <KbdBadge label={t('kbd.take')} />}
                   </button>
                 </div>
               )}
@@ -389,6 +393,7 @@ function ContinentalRummyPageContent() {
                   data-testid="cont-goout"
                 >
                   {t('button.goOut')}
+                  {!loading && <KbdBadge label={t('kbd.goOut')} />}
                 </button>
               )}
 
@@ -407,6 +412,7 @@ function ContinentalRummyPageContent() {
                   disabled={loading}
                 >
                   {t('button.next')}
+                  {!loading && <KbdBadge label={t('kbd.next')} />}
                 </button>
               )}
 
