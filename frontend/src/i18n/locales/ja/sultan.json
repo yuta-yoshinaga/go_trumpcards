@@ -15,6 +15,7 @@
   "giveup": "ギブアップ",
   "empty": "空",
   "emptyDivanSlot": "空のディヴァン枠 {{idx}}",
+  "divanCard": "ディヴァン枠 {{idx}} {{card}}",
   "foundationSlot": "組札{{idx}} 一番上 {{top}}",
   "foundationSlotComplete": "組札{{idx}} 一番上 {{top}}（完成）",
   "emptyFoundationSlot": "組札{{idx}} 空（Kから積む）",

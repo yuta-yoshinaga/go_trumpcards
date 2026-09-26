@@ -139,6 +139,15 @@ describe('SultanPage', () => {
     expect(screen.queryByRole('img', { name: '空のディヴァン枠 0' })).not.toBeInTheDocument();
   });
 
+  it('includes the matching 0-based position and suit-bearing card name in each divan card button label', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<SultanPage />);
+
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ディヴァン枠 0 ♣ 3' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: 'ディヴァン枠 2 ♥ 5' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: '空のディヴァン枠 1' })).toBeInTheDocument();
+  });
+
   it('renders stock count', async () => {
     renderWithProviders(<SultanPage />);
     await waitFor(() => expect(screen.getByText(/山札 \(/)).toBeInTheDocument());
