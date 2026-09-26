@@ -140,15 +140,22 @@ func TestCitadelCuiPresenter_HintOutput(t *testing.T) {
 		bg := new(interfaces.MockCitadelGame)
 		bg.On("GetHint").Return(&domain.CitadelHint{
 			FromCol:   0,
-			CardIndex: 3,
+			CardIndex: 1,
 			ToZone:    "foundation",
 			ToCol:     0,
 		})
+		var tableau [domain.CitadelTableauCnt][]*domain.CitadelTableauCard
+		tableau[0] = []*domain.CitadelTableauCard{
+			{Card: domain.NewCard(domain.CardDesignHeart, 4, false), FaceUp: true},
+			{Card: domain.NewCard(domain.CardDesignClover, 7, false), FaceUp: true},
+		}
+		bg.On("GetTableau").Return(tableau)
 
 		p := new(CitadelCuiPresenter)
 		result := p.HintOutput(bg)
 		assert.Contains(t, result, "ヒント")
-		assert.Contains(t, result, "タブロー列0")
+		assert.Contains(t, result, "タブロー列0[1]")
+		assert.Contains(t, result, "♣7")
 		assert.Contains(t, result, "組札")
 	})
 
@@ -160,10 +167,16 @@ func TestCitadelCuiPresenter_HintOutput(t *testing.T) {
 			ToZone:    "tableau",
 			ToCol:     3,
 		})
+		var tableau [domain.CitadelTableauCnt][]*domain.CitadelTableauCard
+		tableau[1] = []*domain.CitadelTableauCard{
+			{Card: domain.NewCard(domain.CardDesignSpade, 9, false), FaceUp: true},
+		}
+		bg.On("GetTableau").Return(tableau)
 
 		p := new(CitadelCuiPresenter)
 		result := p.HintOutput(bg)
-		assert.Contains(t, result, "タブロー列1")
+		assert.Contains(t, result, "タブロー列1[0]")
+		assert.Contains(t, result, "♠9")
 		assert.Contains(t, result, "タブロー列3")
 	})
 
