@@ -113,6 +113,43 @@ describe('CribbageSquaresPage', () => {
     expect(live).toHaveTextContent('行2が4点、列3が2点、合計6点');
   });
 
+  it('does not announce non-placement commands or placements missing from the returned board', async () => {
+    renderWithProviders(<CribbageSquaresPage />);
+    await waitFor(() => expect(screen.getByTestId('cell-1-2')).toBeEnabled());
+    const live = screen.getByTestId('cs-placement-announcement');
+
+    fireEvent.click(screen.getByRole('button', { name: '元に戻す' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo'));
+    expect(live).toBeEmptyDOMElement();
+
+    mockExec.mockResolvedValue(makeState());
+    fireEvent.click(screen.getByTestId('cell-1-2'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('place', 1, 2));
+    expect(live).toBeEmptyDOMElement();
+  });
+
+  it('announces final row and column scores when placement completes the board', async () => {
+    renderWithProviders(<CribbageSquaresPage />);
+    await waitFor(() => expect(screen.getByTestId('cell-1-2')).toBeEnabled());
+    const board = makeState().board;
+    board[1][2] = { card: card('HEART', 10) };
+    mockExec.mockResolvedValue(
+      makeState({
+        board,
+        phase: 1,
+        rowScores: [0, 12, 0, 0],
+        colScores: [0, 0, 8, 0],
+        rowPartialDetails: [zero(), { ...zero(), total: 4 }, zero(), zero()],
+        colPartialDetails: [zero(), zero(), { ...zero(), total: 2 }, zero()],
+      }),
+    );
+
+    fireEvent.click(screen.getByTestId('cell-1-2'));
+    await waitFor(() =>
+      expect(screen.getByTestId('cs-placement-announcement')).toHaveTextContent('行2が12点、列3が8点、合計20点'),
+    );
+  });
+
   it('refuses to place into an occupied cell', async () => {
     renderWithProviders(<CribbageSquaresPage />);
     await waitFor(() => expect(screen.getByTestId('cell-0-0')).toBeDisabled());
