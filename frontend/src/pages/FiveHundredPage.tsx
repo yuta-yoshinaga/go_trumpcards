@@ -129,6 +129,12 @@ function FiveHundredPageContent() {
 
   const [bidTricks, setBidTricks] = useState(6);
   const [focusedBidKind, setFocusedBidKind] = useState<1 | 2 | 3 | 4 | null>(null);
+  const conditionHandlers = (kind: 1 | 2 | 3 | 4) => ({
+    onFocus: () => setFocusedBidKind(kind),
+    onMouseEnter: () => setFocusedBidKind(kind),
+    onBlur: () => setFocusedBidKind(null),
+    onMouseLeave: () => setFocusedBidKind(null),
+  });
   const formatBid = (bid: NonNullable<FiveHundredResponse['highestBid']>): string => {
     switch (bid.kind) {
       case FiveHundredContract.SUIT:
@@ -461,10 +467,7 @@ function FiveHundredPageContent() {
                     <button
                       key={s.id}
                       type="button"
-                      onFocus={() => setFocusedBidKind(FiveHundredContract.SUIT)}
-                      onBlur={() => setFocusedBidKind(null)}
-                      onMouseEnter={() => setFocusedBidKind(FiveHundredContract.SUIT)}
-                      onMouseLeave={() => setFocusedBidKind(null)}
+                      {...conditionHandlers(FiveHundredContract.SUIT)}
                       onClick={() => bidSuit(bidTricks, s.id)}
                       disabled={loading}
                       data-testid={`fh-bid-suit-${s.id}`}
@@ -483,10 +486,7 @@ function FiveHundredPageContent() {
                   ))}
                   <button
                     type="button"
-                    onFocus={() => setFocusedBidKind(FiveHundredContract.NO_TRUMP)}
-                    onBlur={() => setFocusedBidKind(null)}
-                    onMouseEnter={() => setFocusedBidKind(FiveHundredContract.NO_TRUMP)}
-                    onMouseLeave={() => setFocusedBidKind(null)}
+                    {...conditionHandlers(FiveHundredContract.NO_TRUMP)}
                     onClick={() => bidNoTrump(bidTricks)}
                     disabled={loading}
                     data-testid="fh-bid-nt"
@@ -499,10 +499,7 @@ function FiveHundredPageContent() {
                   </button>
                   <button
                     type="button"
-                    onFocus={() => setFocusedBidKind(FiveHundredContract.MISERE)}
-                    onBlur={() => setFocusedBidKind(null)}
-                    onMouseEnter={() => setFocusedBidKind(FiveHundredContract.MISERE)}
-                    onMouseLeave={() => setFocusedBidKind(null)}
+                    {...conditionHandlers(FiveHundredContract.MISERE)}
                     onClick={bidMisere}
                     disabled={loading}
                     data-testid="fh-bid-misere"
@@ -515,10 +512,7 @@ function FiveHundredPageContent() {
                   </button>
                   <button
                     type="button"
-                    onFocus={() => setFocusedBidKind(FiveHundredContract.OPEN_MISERE)}
-                    onBlur={() => setFocusedBidKind(null)}
-                    onMouseEnter={() => setFocusedBidKind(FiveHundredContract.OPEN_MISERE)}
-                    onMouseLeave={() => setFocusedBidKind(null)}
+                    {...conditionHandlers(FiveHundredContract.OPEN_MISERE)}
                     onClick={bidOpenMisere}
                     disabled={loading}
                     data-testid="fh-bid-open-misere"

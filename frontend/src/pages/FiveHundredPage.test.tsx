@@ -199,6 +199,34 @@ describe('FiveHundredPage', () => {
     expect(screen.getByTestId('fh-bid-condition')).toHaveAttribute('role', 'status');
   });
 
+  it.each([
+    ['SUIT', 'fh-bid-suit-1', '成立には6トリック以上取る必要があります。'],
+    ['NO_TRUMP', 'fh-bid-nt', '成立には6トリック以上取る必要があります。'],
+    ['MISERE', 'fh-bid-misere', '成立には1トリックも取らない必要があります。'],
+    ['OPEN_MISERE', 'fh-bid-open-misere', '成立には1トリックも取らない必要があります。'],
+  ])('%s focus shows its condition and blur restores the default', async (_kind, testId, focusedCondition) => {
+    renderWithProviders(<FiveHundredPage />);
+    const button = await screen.findByTestId(testId);
+    const condition = screen.getByTestId('fh-bid-condition');
+    const defaultCondition = '成立には6トリック以上取る必要があります。';
+
+    fireEvent.focus(button);
+    expect(condition).toHaveTextContent(focusedCondition);
+    fireEvent.blur(button);
+    expect(condition).toHaveTextContent(defaultCondition);
+  });
+
+  it('shows and clears the bid condition on mouse enter and leave', async () => {
+    renderWithProviders(<FiveHundredPage />);
+    const button = await screen.findByTestId('fh-bid-open-misere');
+    const condition = screen.getByTestId('fh-bid-condition');
+
+    fireEvent.mouseEnter(button);
+    expect(condition).toHaveTextContent('成立には1トリックも取らない必要があります。');
+    fireEvent.mouseLeave(button);
+    expect(condition).toHaveTextContent('成立には6トリック以上取る必要があります。');
+  });
+
   it('describes the highest bid, bidder, and each CPU bid', async () => {
     mockExec.mockResolvedValue(
       makeState({
