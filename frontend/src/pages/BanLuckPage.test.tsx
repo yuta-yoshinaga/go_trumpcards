@@ -209,7 +209,14 @@ describe('BanLuckPage', () => {
       withState({
         phase: BanLuckPhase.ROUND_END,
         seats: [
-          seat({ name: 'YOU', cards: [card(1), card(1)], score: 12, rank: BAN_LUCK_RANK.banBan, delta: 150 }),
+          seat({
+            name: 'YOU',
+            cards: [card(1), card(1)],
+            score: 12,
+            rank: BAN_LUCK_RANK.banBan,
+            outcome: 2,
+            delta: 150,
+          }),
           seat({ name: 'CPU1', isHuman: false, isBanker: true, cards: [card(10), card(7)], score: 17, delta: -150 }),
         ],
       }),
@@ -217,7 +224,38 @@ describe('BanLuckPage', () => {
     renderWithProviders(<BanLuckPage />);
     await waitFor(() => expect(screen.getByTestId('bl-result-0')).toHaveTextContent('バンバン'));
     expect(screen.getByTestId('bl-result-0')).toHaveTextContent('150');
+    expect(screen.getByTestId('bl-result-0')).toHaveTextContent('3倍');
     expect(screen.getByRole('button', { name: '次のラウンドへ' })).toBeInTheDocument();
+  });
+
+  it('通常役の結果に特別な倍率を表示しない', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: BanLuckPhase.ROUND_END,
+        seats: [
+          seat({
+            name: 'YOU',
+            cards: [card(10), card(7)],
+            score: 17,
+            rank: BAN_LUCK_RANK.point,
+            outcome: 2,
+            delta: 100,
+          }),
+          seat({
+            name: 'CPU1',
+            isHuman: false,
+            isBanker: true,
+            cards: [card(10), card(7)],
+            score: 17,
+            rank: BAN_LUCK_RANK.point,
+          }),
+        ],
+      }),
+    );
+    renderWithProviders(<BanLuckPage />);
+    await waitFor(() => expect(screen.getByTestId('bl-result-0')).toHaveTextContent('通常'));
+    expect(screen.getByTestId('bl-result-0')).toHaveTextContent('100');
+    expect(screen.getByTestId('bl-result-0')).not.toHaveTextContent('倍');
   });
 
   it('決着後は次のラウンドを送る', async () => {
