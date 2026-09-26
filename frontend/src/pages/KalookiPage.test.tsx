@@ -166,10 +166,25 @@ describe('KalookiPage', () => {
     mockExec.mockResolvedValue(meldState);
     renderWithProviders(<KalookiPage />);
     // baseHand[0] is ♠5 → cardAlt reads "♠ 5".
-    const first = await screen.findByRole('button', { name: '♠ 5' });
+    const first = await screen.findByRole('button', { name: /♠ 5、未選択/ });
     expect(first).toHaveAttribute('aria-pressed', 'false');
     fireEvent.click(first);
-    expect(screen.getByRole('button', { name: '♠ 5' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: /♠ 5、選択中/ })).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('announces discard selection and deselection only during the meld phase', async () => {
+    mockExec.mockResolvedValue(meldState);
+    const { unmount } = renderWithProviders(<KalookiPage />);
+    const first = await screen.findByRole('button', { name: /♠ 5、未選択/ });
+    fireEvent.click(first);
+    expect(screen.getByRole('button', { name: /♠ 5、選択中/ })).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(screen.getByRole('button', { name: /♠ 5、選択中/ }));
+    expect(screen.getByRole('button', { name: /♠ 5、未選択/ })).toHaveAttribute('aria-pressed', 'false');
+
+    unmount();
+    mockExec.mockResolvedValue(drawState);
+    renderWithProviders(<KalookiPage />);
+    expect(await screen.findByRole('button', { name: '♠ 5' })).toHaveAttribute('aria-pressed', 'false');
   });
 
   it('stages a meld group and submits the meld with meldGroups', async () => {
