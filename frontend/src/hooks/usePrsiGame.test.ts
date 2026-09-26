@@ -31,6 +31,7 @@ const defaultState: PrsiResponse = {
   currentPlayerIdx: 0,
   discardTop: { design: 'HEART', value: 9 },
   drawPileCount: 30,
+  discardPileCount: 3,
   penaltyDrawCount: 0,
   pendingSkips: 0,
   gameEndFlag: false,
