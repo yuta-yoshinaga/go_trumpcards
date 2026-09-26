@@ -36,6 +36,7 @@ import { chinesePokerIsFoul } from '../utils/chinesePokerFoul';
 import { CHINESEPOKER_HELP, parseChinesepokerCommand } from '../utils/cli/commands/chinesepokerCommands';
 import { formatChinesePokerState } from '../utils/cli/formatters/chinesepokerFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FRONT_RANK_KEYS: Record<number, string> = {
   0: '',
@@ -509,15 +510,7 @@ function ChinesePokerPageContent() {
               title={t('settings.title')}
               groups={[
                 {
-                  items: [
-                    {
-                      type: 'checkbox',
-                      id: 'chinesepoker-hint',
-                      label: tc('hint.toggle', { ns: 'tutorial' }),
-                      checked: hintEnabled,
-                      onToggle: setHintEnabled,
-                    },
-                  ],
+                  items: [hintCheckboxItem(tc, hintEnabled, setHintEnabled)],
                 },
               ]}
             />
