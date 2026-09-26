@@ -422,7 +422,7 @@ function CaribbeanStudPageContent() {
               </div>
             )}
             {isActionPhase && (
-              <div className="flex justify-center gap-2 pb-2" data-tutorial="csp-action-buttons">
+              <div className="flex items-end justify-center gap-2 pb-2" data-tutorial="csp-action-buttons">
                 <div className="flex flex-col items-center">
                   <span className="text-xs text-ds-text-muted">
                     {t('label.play')}: {state.anteBet * 2}

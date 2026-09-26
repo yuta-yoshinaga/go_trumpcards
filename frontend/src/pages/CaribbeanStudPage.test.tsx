@@ -166,6 +166,7 @@ describe('CaribbeanStudPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
     await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'フォールド' }).parentElement).toHaveClass('items-end');
   });
 
   it('shows the required play bet next to the call button', async () => {
