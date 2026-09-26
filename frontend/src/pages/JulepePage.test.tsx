@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { julepeApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, JulepeResponse } from '../types/card';
 import { JulepePage } from './JulepePage';
@@ -83,36 +84,18 @@ describe('JulepePage', () => {
     expect(screen.getByTestId('rm-out-btn')).toBeInTheDocument();
   });
 
-  it.each([
-    [true, '参加しました。ほかのプレイヤーの判断を待っています（未決定: 3人）。'],
-    [false, '降りました。ほかのプレイヤーの判断を待っています（未決定: 3人）。'],
-  ])('announces the human decision and undecided seat count', async (inRound, message) => {
-    mockExec.mockResolvedValue(
-      makeState({
-        players: [seat(0, { decided: true, inRound }), seat(1), seat(2), seat(3)],
-      } as Partial<JulepeResponse>),
-    );
+  it('announces the undecided choice during the decision phase', async () => {
     renderWithProviders(<JulepePage />);
 
-    await waitFor(() => expect(screen.getByTestId('rm-decision-status')).toHaveTextContent(message));
+    expect(await screen.findByTestId('rm-decision-status')).toHaveTextContent(
+      '参加するか降りるかを選んでください。未決定: 4人。',
+    );
+    expect(screen.getByTestId('rm-seat-0')).toHaveTextContent('未定');
   });
 
-  it('updates the live announcement when every player has decided', async () => {
-    mockExec.mockResolvedValue(
-      makeState({
-        players: [
-          seat(0, { decided: true, inRound: true }),
-          seat(1, { decided: true, inRound: false }),
-          seat(2, { decided: true, inRound: true }),
-          seat(3, { decided: true, inRound: false }),
-        ],
-      } as Partial<JulepeResponse>),
-    );
-    renderWithProviders(<JulepePage />);
-
-    await waitFor(() =>
-      expect(screen.getByTestId('rm-decision-status')).toHaveTextContent('参加しました。全員の判断が終わりました。'),
-    );
+  it('keeps only the reachable decision announcement translations', () => {
+    expect(Object.keys(i18n.getResourceBundle('ja', 'julepe').decision)).toEqual(['undecided']);
+    expect(Object.keys(i18n.getResourceBundle('en', 'julepe').decision)).toEqual(['undecided']);
   });
 
   it('hides the choices once play has started', async () => {

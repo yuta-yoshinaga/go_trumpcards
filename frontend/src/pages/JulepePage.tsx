@@ -153,11 +153,7 @@ function JulepePageContent() {
     !p.decided ? t('status.undecided') : p.inRound ? t('status.in') : t('status.out');
 
   const undecidedCount = state.players.filter((player) => !player.decided).length;
-  const decisionAnnouncement = !human?.decided
-    ? t('decision.undecided', { count: undecidedCount })
-    : undecidedCount > 0
-      ? t(human.inRound ? 'decision.inWaiting' : 'decision.outWaiting', { count: undecidedCount })
-      : t(human.inRound ? 'decision.inComplete' : 'decision.outComplete');
+  const decisionAnnouncement = t('decision.undecided', { count: undecidedCount });
 
   const resultBanner = (() => {
     if (!isGameEnd) return null;
