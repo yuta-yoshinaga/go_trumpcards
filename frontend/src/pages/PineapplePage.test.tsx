@@ -445,6 +445,59 @@ describe('PineapplePage', () => {
     expect(preview).toHaveTextContent('ワンペア');
   });
 
+  it('labels and announces the two Irish Poker cards as the playable hand after discard', async () => {
+    mockIrishExec
+      .mockResolvedValueOnce({
+        ...discardState,
+        initialDealCount: 4,
+        players: [
+          humanPlayer({
+            cards: [
+              { design: 'SPADE', value: 1 },
+              { design: 'HEART', value: 1 },
+              { design: 'DIAMOND', value: 5 },
+              { design: 'CLOVER', value: 8 },
+            ],
+          }),
+          cpuPlayer(1),
+          cpuPlayer(2),
+          cpuPlayer(3),
+        ],
+      })
+      .mockResolvedValueOnce({
+        ...preFlopState,
+        initialDealCount: 4,
+        players: [
+          humanPlayer({
+            cards: [
+              { design: 'SPADE', value: 1 },
+              { design: 'HEART', value: 1 },
+            ],
+          }),
+          cpuPlayer(1),
+          cpuPlayer(2),
+          cpuPlayer(3),
+        ],
+        discardDone: [true, true, true, true],
+        communityCards: discardState.communityCards,
+      });
+    renderWithProviders(<PineapplePage variant="irishpoker" />);
+    await screen.findByTestId('discard-controls');
+    fireEvent.click(screen.getByAltText('♦ 5').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByAltText('♣ 8').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByTestId('discard-controls').querySelector('button:not(:disabled)') as HTMLButtonElement);
+    await screen.findByTestId('discard-confirm');
+    fireEvent.click(screen.getByRole('button', { name: '確定' }));
+
+    expect(await screen.findByTestId('irishpoker-playable-hand-label')).toHaveTextContent('プレイに使う手札');
+    const live = screen.getByTestId('irishpoker-playable-hand-announce');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toHaveTextContent('プレイに使う手札');
+    expect(live).toHaveTextContent('♠ A');
+    expect(live).toHaveTextContent('♥ A');
+  });
+
   // #5490: 残す2枚と役はディスカード確定前の重要なフィードバックなのに、
   // 同じフッター内の上限超過通知 (pn-discard-limit-announce) が aria-live を
   // 持つのに対し、こちらは無音だった。

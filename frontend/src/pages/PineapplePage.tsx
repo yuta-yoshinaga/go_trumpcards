@@ -579,6 +579,14 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                 )}
                 <div className="text-ds-text-primary text-lg mb-1">
                   {t('yourHand')}
+                  {variant === 'irishpoker' && !isDiscardPhase && humanPlayer.cards?.length === 2 && (
+                    <span
+                      className="ml-2 inline-block rounded-full px-2 py-0.5 text-xs font-semibold bg-ds-surface-elevated text-ds-text-primary"
+                      data-testid="irishpoker-playable-hand-label"
+                    >
+                      {t('discard.playableHand')}
+                    </span>
+                  )}
                   <span className="ml-3 text-xs">
                     {tc('betting.chips')} {humanPlayer.chips}
                   </span>
@@ -604,6 +612,20 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                     </span>
                   )}
                 </div>
+                {variant === 'irishpoker' && (
+                  <span
+                    className="sr-only"
+                    role="status"
+                    aria-live="polite"
+                    data-testid="irishpoker-playable-hand-announce"
+                  >
+                    {variant === 'irishpoker' && !isDiscardPhase && humanPlayer.cards?.length === 2
+                      ? t('discard.playableHandAria', {
+                          cards: humanPlayer.cards.map((c) => cardAlt(c)).join(t('listSeparator')),
+                        })
+                      : ''}
+                  </span>
+                )}
                 {/* Screen-reader description of the discard cap, associated with the
                     hand group so AT conveys the limit up front. */}
                 {canDiscard && (
