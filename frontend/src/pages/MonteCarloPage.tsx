@@ -12,7 +12,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
-import { useGameApi } from '../hooks/useGameApi';
+import { isRejectedAction, useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
@@ -79,7 +79,21 @@ function MonteCarloPageContent() {
   } = useGamePageSetup('montecarlo');
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
-  const { state, loading, error, exec: execApi, retry } = useGameApi(montecarloApi.exec);
+  const pendingPairToast = useRef(false);
+  const {
+    state,
+    loading,
+    error,
+    exec: execApi,
+    retry,
+  } = useGameApi(montecarloApi.exec, {
+    onSuccess: (response, args) => {
+      if (args[0] === 'remove') {
+        if (pendingPairToast.current && !isRejectedAction(response)) flashPairRemoved();
+        pendingPairToast.current = false;
+      }
+    },
+  });
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -125,15 +139,14 @@ function MonteCarloPageContent() {
         return;
       }
       // Two cells chosen. Send the remove request (server validates adjacency + rank).
-      // Flash the success toast when the chosen pair is locally valid (adjacent + same rank).
       const firstCard = state.board[selected.row]?.[selected.col]?.card;
       const isValidPair =
         firstCard != null && firstCard.value === cell.card.value && isAdjacent(selected, { row, col });
+      pendingPairToast.current = isValidPair;
       void execApi('remove', selected.row, selected.col, row, col);
-      if (isValidPair) flashPairRemoved();
       setSelected(null);
     },
-    [execApi, flashPairRemoved, isPlaying, selected, state],
+    [execApi, isPlaying, selected, state],
   );
 
   const handleDeal = useCallback(() => {

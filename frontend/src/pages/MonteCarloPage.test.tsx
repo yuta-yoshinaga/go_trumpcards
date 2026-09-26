@@ -63,6 +63,7 @@ const gameOverState: MonteCarloResponse = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
   localStorage.clear();
   mockExec.mockResolvedValue(playingState);
 });
@@ -117,6 +118,49 @@ describe('MonteCarloPage', () => {
     fireEvent.click(screen.getByTestId('mc-cell-0-0'));
     fireEvent.click(screen.getByTestId('mc-cell-0-1'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('remove', 0, 0, 0, 1));
+  });
+
+  it('shows the removal toast only after a successful server response', async () => {
+    let resolveRemove!: (response: MonteCarloResponse) => void;
+    mockExec.mockImplementation((...args) => {
+      if (args[0] === 'remove')
+        return new Promise((resolve) => {
+          resolveRemove = resolve;
+        });
+      return Promise.resolve(playingState);
+    });
+    renderWithProviders(<MonteCarloPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    fireEvent.click(screen.getByTestId('mc-cell-0-0'));
+    fireEvent.click(screen.getByTestId('mc-cell-0-1'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('remove', 0, 0, 0, 1));
+    expect(screen.queryByTestId('mc-pair-toast')).not.toBeInTheDocument();
+    await act(async () => resolveRemove(playingState));
+    expect(screen.getByTestId('mc-pair-toast')).toBeInTheDocument();
+  });
+
+  it('does not show the removal toast when the server rejects the pair', async () => {
+    mockExec.mockResolvedValue({ ...playingState, message: 'rejected', messageCode: '' });
+    renderWithProviders(<MonteCarloPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    fireEvent.click(screen.getByTestId('mc-cell-0-0'));
+    fireEvent.click(screen.getByTestId('mc-cell-0-1'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('remove', 0, 0, 0, 1));
+    await flushPendingDispatch();
+    expect(screen.queryByTestId('mc-pair-toast')).not.toBeInTheDocument();
+  });
+
+  it('does not show the removal toast when the remove request fails', async () => {
+    mockExec.mockImplementation((...args) =>
+      args[0] === 'remove' ? Promise.reject(new Error('network error')) : Promise.resolve(playingState),
+    );
+    renderWithProviders(<MonteCarloPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    fireEvent.click(screen.getByTestId('mc-cell-0-0'));
+    fireEvent.click(screen.getByTestId('mc-cell-0-1'));
+    await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument());
+    expect(screen.queryByTestId('mc-pair-toast')).not.toBeInTheDocument();
+    expect(screen.getByTestId('mc-cell-0-0')).toHaveAttribute('aria-pressed', 'false');
   });
 
   it('deal button fires deal command', async () => {
@@ -301,6 +345,9 @@ describe('MonteCarloPage', () => {
 
       // Removing the valid pair flashes the toast, which auto-dismisses after 1s.
       fireEvent.click(match);
+      await act(async () => {
+        await Promise.resolve();
+      });
       expect(screen.getByTestId('mc-pair-toast')).toBeInTheDocument();
       act(() => {
         vi.advanceTimersByTime(1000);
