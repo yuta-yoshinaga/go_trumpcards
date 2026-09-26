@@ -127,7 +127,9 @@ function LingerLongerPageContent() {
     } else {
       message = t('result.cpu', { name });
     }
-    return `${message} ${t('result.seat', { seat: String(state.winnerIdx + 1) })}`;
+    // CPU 名は席の内部 index（0 始まり）を表示する。人間は「あなた (席0)」を
+    // 避けるため席を省き、CPU の場合だけ同じ番号を席表示にも使う。
+    return state.winnerIdx === 0 ? message : `${message} ${t('result.seat', { seat: String(state.winnerIdx) })}`;
   })();
 
   return (
