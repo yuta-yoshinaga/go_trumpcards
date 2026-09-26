@@ -32,6 +32,13 @@ beforeEach(() => {
 });
 
 describe('ShamrocksPage', () => {
+  it('announces an empty fan by its zero-based position', async () => {
+    mockExec.mockResolvedValue(makeState({ fans: [[card('SPADE', 9)], [], [card('DIAMOND', 1)]] }));
+    renderWithProviders(<ShamrocksPage />);
+
+    expect(await screen.findByRole('button', { name: '扇 1、空' })).toBeInTheDocument();
+  });
+
   it('announces fan position and card, and exposes keyboard selection state', async () => {
     renderWithProviders(<ShamrocksPage />);
 
