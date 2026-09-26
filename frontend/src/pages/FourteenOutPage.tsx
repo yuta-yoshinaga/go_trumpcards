@@ -78,15 +78,29 @@ function FourteenOutPageContent() {
   // **選ぶのは列。**動かせるのは各列の末尾だけなので、セル座標は要らない。
   const [selected, setSelected] = useState<number | null>(null);
   const [pairRemoved, setPairRemoved] = useState(false);
+  const [invalidPairColumns, setInvalidPairColumns] = useState<[number, number] | null>(null);
   const pairToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const invalidPairTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Clear the success toast timer on unmount to avoid setting state after teardown.
-  useEffect(() => () => clearTimeout(pairToastTimer.current ?? undefined), []);
+  useEffect(
+    () => () => {
+      clearTimeout(pairToastTimer.current ?? undefined);
+      clearTimeout(invalidPairTimer.current ?? undefined);
+    },
+    [],
+  );
 
   const flashPairRemoved = useCallback(() => {
     setPairRemoved(true);
     clearTimeout(pairToastTimer.current ?? undefined);
     pairToastTimer.current = setTimeout(() => setPairRemoved(false), 1000);
+  }, []);
+
+  const flashInvalidPair = useCallback((first: number, second: number) => {
+    setInvalidPairColumns([first, second]);
+    clearTimeout(invalidPairTimer.current ?? undefined);
+    invalidPairTimer.current = setTimeout(() => setInvalidPairColumns(null), 1500);
   }, []);
 
   const isPlaying = state?.phase === FourteenOutPhase.PLAYING;
@@ -128,14 +142,15 @@ function FourteenOutPageContent() {
         setSelected(null);
         return;
       }
-      // Two columns chosen. The server validates the sum; the toast only fires
-      // when the pair is locally valid, so a refused move stays silent.
+      // Two columns chosen. The server validates the sum; show a reason after
+      // clearing the selection when the pair is locally invalid.
       const isValidPair = partners.has(col);
       void execApi('remove', selected, col);
       if (isValidPair) flashPairRemoved();
+      else flashInvalidPair(selected, col);
       setSelected(null);
     },
-    [execApi, flashPairRemoved, isPlaying, partners, selected, state],
+    [execApi, flashInvalidPair, flashPairRemoved, isPlaying, partners, selected, state],
   );
 
   const handleUndo = useCallback(() => {
@@ -221,6 +236,7 @@ function FourteenOutPageContent() {
                     ? frontendHint.targetAction.split('-').slice(1)
                     : [];
                   const isHintTarget = frontendHintEnabled && hintCols.includes(String(colIdx));
+                  const isInvalidPairColumn = invalidPairColumns?.includes(colIdx) ?? false;
                   return (
                     <button
                       type="button"
@@ -236,12 +252,15 @@ function FourteenOutPageContent() {
                       disabled={!isPlaying || loading || tail === null}
                       aria-pressed={tail ? isSelected : undefined}
                       data-pair-match={isPartner ? 'true' : undefined}
+                      data-invalid-pair={isInvalidPairColumn ? 'true' : undefined}
                       data-dimmed={dimmed ? 'true' : undefined}
                       className={`flex flex-col items-center p-1 border-0 bg-transparent rounded transition ${focusRingWhite} ${
                         tail ? 'cursor-pointer' : ''
                       } ${isSelected ? 'ring-2 ring-ds-accent' : ''} ${
                         isPartner ? 'ring-2 ring-ds-success animate-pulse -translate-y-1' : ''
-                      } ${dimmed ? 'opacity-40' : ''} ${isHintTarget ? 'ring-2 ring-ds-warning' : ''}`}
+                      } ${dimmed ? 'opacity-40' : ''} ${isHintTarget ? 'ring-2 ring-ds-warning' : ''} ${
+                        isInvalidPairColumn ? 'ring-2 ring-ds-error' : ''
+                      }`}
                     >
                       <span className="text-ds-text-muted text-[10px] mb-0.5 font-mono">{colIdx}</span>
                       {col.length === 0 ? (
@@ -288,6 +307,17 @@ function FourteenOutPageContent() {
             >
               {selected === null ? t('label.selectFirst') : t('label.selectSecond')}
             </div>
+
+            {invalidPairColumns && (
+              <div
+                role="status"
+                aria-live="polite"
+                data-testid="mc-invalid-pair"
+                className="mb-2 text-center text-ds-error text-sm font-medium"
+              >
+                {t('label.invalidPair')}
+              </div>
+            )}
 
             <div
               className={`text-center text-sm font-mono mb-2 ${

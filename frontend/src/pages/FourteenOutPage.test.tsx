@@ -217,6 +217,21 @@ describe('FourteenOutPage', () => {
     await waitFor(() => expect(screen.getByTestId('mc-pair-toast')).toBeInTheDocument());
   });
 
+  it('explains and briefly marks columns when the selected pair does not make 14', async () => {
+    renderWithProviders(<FourteenOutPage />);
+    const first = await screen.findByTestId('mc-col-0');
+    const second = screen.getByTestId('mc-col-2');
+
+    fireEvent.click(first);
+    fireEvent.click(second);
+
+    expect(await screen.findByTestId('mc-invalid-pair')).toHaveTextContent('合計が14になりません');
+    expect(first).toHaveAttribute('data-invalid-pair', 'true');
+    expect(second).toHaveAttribute('data-invalid-pair', 'true');
+    expect(screen.queryByTestId('mc-pair-toast')).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByTestId('mc-invalid-pair')).not.toBeInTheDocument(), { timeout: 2500 });
+  });
+
   // ペアを取り除く前は成功トーストを表示しない。
   it('hides pair-removed toast before removing a pair', async () => {
     renderWithProviders(<FourteenOutPage />);
