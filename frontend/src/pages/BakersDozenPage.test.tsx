@@ -361,6 +361,55 @@ describe('BakersDozenPage legal targets', () => {
   it('rings the column whose top card is one rank higher', async () => {
     await selectSpadeFive();
     await waitFor(() => expect(document.querySelectorAll('[data-legal-target="true"]').length).toBeGreaterThan(0));
+    expect(screen.getByRole('status', { name: '移動先' })).toHaveTextContent('移動可能なタブロー列: 2');
+  });
+
+  it('announces legal foundation destinations', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: makeTableau([[{ card: card('SPADE', 1), faceUp: true }]]),
+    });
+    renderWithProviders(<BakersDozenPage />);
+    fireEvent.click(await screen.findByRole('button', { name: '♠ A' }));
+    const status = screen.getByTestId('bd-destination-live');
+    await waitFor(() => expect(status).toHaveTextContent('移動可能なタブロー列: なし。組札の移動先: ♠、♣、♥、♦。'));
+  });
+
+  it('announces when neither tableau nor foundation has a destination', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: makeTableau([[{ card: card('SPADE', 13), faceUp: true }]]),
+    });
+    renderWithProviders(<BakersDozenPage />);
+    fireEvent.click(await screen.findByRole('button', { name: '♠ K' }));
+    expect(screen.getByTestId('bd-destination-live')).toHaveTextContent(
+      '移動可能なタブロー列: なし。組札の移動先: なし。',
+    );
+  });
+
+  it('separates multiple announced tableau destinations', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: makeTableau([
+        [
+          { card: card('SPADE', 13), faceUp: true },
+          { card: card('SPADE', 5), faceUp: true },
+        ],
+        [{ card: card('HEART', 6), faceUp: true }],
+        [{ card: card('CLOVER', 6), faceUp: true }],
+      ]),
+    });
+    renderWithProviders(<BakersDozenPage />);
+    fireEvent.click(await screen.findByRole('button', { name: '♠ 5' }));
+    expect(screen.getByRole('status', { name: '移動先' })).toHaveTextContent('移動可能なタブロー列: 2、3');
+  });
+
+  it('clears the announced destinations after moving the selected card', async () => {
+    await selectSpadeFive();
+    const status = screen.getByRole('status', { name: '移動先' });
+    expect(status).toHaveTextContent('移動可能なタブロー列: 2');
+    fireEvent.click(screen.getByRole('button', { name: '♥ 6' }));
+    await waitFor(() => expect(status).toBeEmptyDOMElement());
   });
 
   // **空き列は光らせない。**Baker's Dozen は空き列を埋められない。
@@ -423,6 +472,7 @@ describe('BakersDozenPage destination preview', () => {
 
     fireEvent.mouseEnter(spadeFive);
     await waitFor(() => expect(targets().length).toBeGreaterThan(0));
+    expect(screen.getByTestId('bd-destination-live')).toHaveTextContent('移動可能なタブロー列: 2');
     // プレビュー中は弱いリング。選択後と見分けが付く。
     expect(previews().length).toBe(targets().length);
     expect(targets()[0]?.className).toContain('ring-ds-success/70');
@@ -435,6 +485,7 @@ describe('BakersDozenPage destination preview', () => {
     const spadeFive = await render();
     fireEvent.focus(spadeFive);
     await waitFor(() => expect(previews().length).toBeGreaterThan(0));
+    expect(screen.getByTestId('bd-destination-live')).toHaveTextContent('移動可能なタブロー列: 2');
     fireEvent.blur(spadeFive);
     await waitFor(() => expect(targets().length).toBe(0));
   });
