@@ -442,11 +442,11 @@ function TeenPattiPageContent() {
                       className={btnSecondary}
                       onClick={() => setRaiseStake((a) => Math.max(state.minRaise, a - 1))}
                       disabled={loading || raiseStake <= state.minRaise}
-                      aria-label="-"
+                      aria-label={t('raiseDecrease')}
                     >
                       −
                     </button>
-                    <span className="text-ds-text-primary text-sm min-w-[4rem] text-center">
+                    <span className="text-ds-text-primary text-sm min-w-[4rem] text-center" aria-live="polite">
                       {t('raisePrompt')} {raiseStake}
                     </span>
                     <button
@@ -457,7 +457,7 @@ function TeenPattiPageContent() {
                       // 気づいた。
                       onClick={() => setRaiseStake((a) => Math.min(state.maxRaise, a + 1))}
                       disabled={loading || raiseStake >= state.maxRaise}
-                      aria-label="+"
+                      aria-label={t('raiseIncrease')}
                     >
                       ＋
                     </button>

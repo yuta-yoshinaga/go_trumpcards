@@ -212,7 +212,7 @@ describe('TeenPattiPage', () => {
     mockExec.mockResolvedValue(makeTeenPattiState({ minRaise: 2, maxRaise: 3, canRaise: true }));
     renderWithProviders(<TeenPattiPage />);
 
-    const plus = await screen.findByRole('button', { name: '+' });
+    const plus = await screen.findByRole('button', { name: 'レイズ額を1増やす' });
     // 2 -> 3 まで上げたら、そこで打ち止め。
     fireEvent.click(plus);
     expect(plus).toBeDisabled();
@@ -224,7 +224,7 @@ describe('TeenPattiPage', () => {
     mockExec.mockResolvedValue(makeTeenPattiState({ minRaise: 2, maxRaise: 30, canRaise: true }));
     renderWithProviders(<TeenPattiPage />);
 
-    const minus = await screen.findByRole('button', { name: '-' });
+    const minus = await screen.findByRole('button', { name: 'レイズ額を1減らす' });
     expect(minus).toBeDisabled();
   });
 
@@ -280,5 +280,17 @@ describe('TeenPattiPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     // レイズ不可でもボタン文言が範囲外の額を出さないこと。
     expect(screen.getByTestId('tp-raise-button')).not.toHaveTextContent('30');
+  });
+
+  it('gives raise amount controls meaningful names and announces the updated amount', async () => {
+    mockExec.mockResolvedValue(makeTeenPattiState({ minRaise: 1, maxRaise: 30, canRaise: true }));
+    renderWithProviders(<TeenPattiPage />);
+
+    const decrease = await screen.findByRole('button', { name: 'レイズ額を1減らす' });
+    const increase = screen.getByRole('button', { name: 'レイズ額を1増やす' });
+    expect(decrease).toBeEnabled();
+    expect(screen.getByText('レイズ額: 2')).toHaveAttribute('aria-live', 'polite');
+    fireEvent.click(increase);
+    expect(screen.getByText('レイズ額: 3')).toHaveAttribute('aria-live', 'polite');
   });
 });
