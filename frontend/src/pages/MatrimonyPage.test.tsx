@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { matrimonyApi } from '../api/games/matrimony';
 import { useGameHint } from '../hooks/useGameHint';
@@ -289,6 +289,27 @@ describe('MatrimonyPage', () => {
     });
     renderWithProviders(<MatrimonyPage />);
     await waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeEnabled());
+  });
+
+  it('announces auto-complete start and completion without announcing intermediate updates', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [[card('SPADE', 1)], [], [], [], [], [], [], []],
+    });
+    renderWithProviders(<MatrimonyPage />);
+    const button = await screen.findByTestId('autocomplete-button');
+    await waitFor(() => expect(button).toBeEnabled());
+
+    fireEvent.click(button);
+    const status = screen.getByTestId('auto-complete-status');
+    expect(status).toHaveAttribute('role', 'status');
+    expect(status).toHaveAttribute('aria-live', 'polite');
+    expect(status).toHaveTextContent('自動完成を実行中です');
+
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 3100));
+    });
+    expect(status).toHaveTextContent('自動完成が終了しました。カードを移動してください');
   });
 
   it('shows StalemateEscapeButton when the stalemate flag is set', async () => {
