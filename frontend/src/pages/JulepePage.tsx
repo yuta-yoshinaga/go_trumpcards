@@ -152,6 +152,13 @@ function JulepePageContent() {
   const statusStr = (p: JulepePlayer): string =>
     !p.decided ? t('status.undecided') : p.inRound ? t('status.in') : t('status.out');
 
+  const undecidedCount = state.players.filter((player) => !player.decided).length;
+  const decisionAnnouncement = !human?.decided
+    ? t('decision.undecided', { count: undecidedCount })
+    : undecidedCount > 0
+      ? t(human.inRound ? 'decision.inWaiting' : 'decision.outWaiting', { count: undecidedCount })
+      : t(human.inRound ? 'decision.inComplete' : 'decision.outComplete');
+
   const resultBanner = (() => {
     if (!isGameEnd) return null;
     if (state.winnerIdx < 0) return t('result.tie');
@@ -215,6 +222,16 @@ function JulepePageContent() {
                 })}
               </div>
             </div>
+
+            {isDecide && (
+              <div
+                className="mb-3 rounded border border-ds-warning bg-ds-surface px-3 py-2 text-ds-text-primary text-sm text-center"
+                role="status"
+                data-testid="rm-decision-status"
+              >
+                {decisionAnnouncement}
+              </div>
+            )}
 
             <div className="flex flex-wrap justify-center gap-2 mb-4">
               {state.players.map((p) => (
