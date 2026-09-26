@@ -40,6 +40,7 @@
     "achieve": "獲得",
     "avoid": "回避"
   },
+  "contractUnavailable": "使用済みのため選択できません",
   "contractIcon": {
     "0": "全トリック",
     "1": "♥",

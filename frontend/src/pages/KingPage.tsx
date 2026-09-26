@@ -426,7 +426,7 @@ function KingPageContent() {
                         // The badge below is aria-hidden (it is icon + colour), so
                         // the achieve/avoid distinction has to be restated here or a
                         // screen reader hears only the contract's name (#4844).
-                        aria-label={`${t(`contracts.${contract}`)} — ${t(`contractType.${isAchieve ? 'achieve' : 'avoid'}`)}`}
+                        aria-label={`${t(`contracts.${contract}`)} — ${t(`contractType.${isAchieve ? 'achieve' : 'avoid'}`)}${used ? ` — ${t('contractUnavailable')}` : ''}`}
                         aria-describedby={`king-contract-desc-${contract}`}
                         data-testid={`king-contract-${contract}`}
                       >
@@ -442,6 +442,7 @@ function KingPageContent() {
                           <span>{t(`contractIcon.${contract}`)}</span>
                         </span>
                         <span id={`king-contract-desc-${contract}`} className="sr-only">
+                          {used && `${t('contractUnavailable')}. `}
                           {t(`contractDesc.${contract}`)}
                         </span>
                       </button>
