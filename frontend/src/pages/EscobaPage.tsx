@@ -31,6 +31,13 @@ import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { sweepCelebration } from '../utils/sweepCelebration';
 
+const MATCH_COLORS = [
+  { text: 'text-ds-success', ring: 'ring-ds-success' },
+  { text: 'text-ds-info', ring: 'ring-ds-info' },
+  { text: 'text-ds-accent', ring: 'ring-ds-accent' },
+  { text: 'text-ds-warning', ring: 'ring-ds-warning' },
+];
+
 const TARGET_SCORE_OPTIONS = [
   { value: '10', label: '10' },
   { value: '15', label: '15' },
@@ -305,13 +312,7 @@ function EscobaPageContent() {
                 <div
                   role="status"
                   className={`text-center text-xs font-semibold ${
-                    matchedCandidate % 4 === 1
-                      ? 'text-ds-success'
-                      : matchedCandidate % 4 === 2
-                        ? 'text-ds-info'
-                        : matchedCandidate % 4 === 3
-                          ? 'text-ds-accent'
-                          : 'text-ds-warning'
+                    MATCH_COLORS[(matchedCandidate - 1) % MATCH_COLORS.length].text
                   } mb-1`}
                   data-testid={`escoba-matched-capture-${matchedCandidate}`}
                 >
@@ -329,15 +330,9 @@ function EscobaPageContent() {
                   state.tableCards.map((c, i) => {
                     const isCandidate = takeCandidateIndices.has(i);
                     const isMatchedCard = matchedCandidate !== null && tableIndices.includes(i);
-                    const matchColors = [
-                      { text: 'text-ds-success', ring: 'ring-ds-success' },
-                      { text: 'text-ds-info', ring: 'ring-ds-info' },
-                      { text: 'text-ds-accent', ring: 'ring-ds-accent' },
-                      { text: 'text-ds-warning', ring: 'ring-ds-warning' },
-                    ];
                     const matchColor = matchedCandidate
-                      ? matchColors[(matchedCandidate - 1) % matchColors.length]
-                      : matchColors[0];
+                      ? MATCH_COLORS[(matchedCandidate - 1) % MATCH_COLORS.length]
+                      : MATCH_COLORS[0];
                     return (
                       <button
                         key={i}

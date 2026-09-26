@@ -84,12 +84,14 @@ describe('EscobaPage', () => {
     fireEvent.click(screen.getByTestId('hand-card-0'));
 
     fireEvent.click(screen.getByTestId('table-card-0'));
-    expect(screen.getByTestId('escoba-matched-capture-1')).toBeInTheDocument();
+    expect(screen.getByTestId('escoba-matched-capture-1')).toHaveClass('text-ds-success');
+    expect(screen.getByTestId('table-card-0')).toHaveClass('ring-ds-success');
     expect(screen.queryByTestId('escoba-matched-capture-2')).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByTestId('table-card-0'));
     fireEvent.click(screen.getByTestId('table-card-1'));
-    expect(screen.getByTestId('escoba-matched-capture-2')).toBeInTheDocument();
+    expect(screen.getByTestId('escoba-matched-capture-2')).toHaveClass('text-ds-info');
+    expect(screen.getByTestId('table-card-1')).toHaveClass('ring-ds-info');
   });
 
   it('renders per-player scores and stock', async () => {
