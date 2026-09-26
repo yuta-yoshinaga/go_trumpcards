@@ -1,6 +1,7 @@
 {
   "handRank": {
     "title": "役の強さ（ショートデッキ）",
+    "current": "現時点の最良役",
     "straightFlush": "ストレートフラッシュ",
     "fourOfAKind": "フォーカード",
     "flush": "フラッシュ",
