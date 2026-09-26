@@ -111,6 +111,7 @@ const NAPOLEON_PHASE_KEYS: Readonly<Record<number, string>> = {
 };
 
 const SUIT_KEYS: Record<number, string> = { 1: 'spade', 2: 'club', 3: 'heart', 4: 'diamond' };
+const DESIGN_ORDER: Readonly<Record<string, number>> = { SPADE: 1, CLOVER: 2, HEART: 3, DIAMOND: 4 };
 
 /** Renders the Napoleon game page with bidding, trump declaration, kitty exchange, trick play, and scoring. */
 export const NapoleonPage = withTutorial(NapoleonPageContent, 'napoleon', NP_TUTORIAL_STEPS);
@@ -430,6 +431,10 @@ function NapoleonPageContent() {
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
                   dataTutorial="np-trick-display"
+                  cardBadgeFor={(card) => {
+                    if (!isPlayPhase || DESIGN_ORDER[card.design] !== state.trumpSuit) return null;
+                    return { glyph: '★', title: t('trumpCardBadge', { suit: trumpLabel }) };
+                  }}
                 />
               </div>
 
