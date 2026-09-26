@@ -45,6 +45,7 @@ const base: SpeculationResponse = {
   roundNo: 0,
   winnerSeat: -1,
   gameEndFlag: false,
+  lastTrade: null,
   config: { players: 3, initialChips: 200, stake: 10, rounds: 5 },
   message: '',
 };
@@ -270,6 +271,28 @@ describe('SpeculationPage', () => {
     renderWithProviders(<SpeculationPage />);
     await waitFor(() => expect(screen.getByTestId('sp-final-chips')).toHaveTextContent('320'));
     expect(screen.queryByTestId('sp-next')).not.toBeInTheDocument();
+  });
+
+  it('成立した取引を勝者表示と別に表示する', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: SpeculationPhase.RESULT,
+        winnerSeat: 0,
+        lastTrade: { buyerSeat: 2, sellerSeat: 1, price: 35, card: card('HEART', 12) },
+      }),
+    );
+    renderWithProviders(<SpeculationPage />);
+    await waitFor(() => expect(screen.getByTestId('sp-last-trade')).toHaveTextContent('CPU2'));
+    expect(screen.getByTestId('sp-last-trade')).toHaveTextContent('CPU1');
+    expect(screen.getByTestId('sp-last-trade')).toHaveTextContent('35');
+    expect(screen.getByTestId('sp-result')).toHaveTextContent('あなたがポットを取りました');
+  });
+
+  it('取引のない結果では取引欄を表示しない', async () => {
+    mockApi.mockResolvedValue(withState({ phase: SpeculationPhase.RESULT, winnerSeat: 0, lastTrade: null }));
+    renderWithProviders(<SpeculationPage />);
+    await waitFor(() => expect(screen.getByTestId('sp-result')).toBeInTheDocument());
+    expect(screen.queryByTestId('sp-last-trade')).not.toBeInTheDocument();
   });
 });
 

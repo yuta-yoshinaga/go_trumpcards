@@ -60900,6 +60900,25 @@ components:
             - $ref: '#/components/schemas/Card'
           description: The best trump this seat holds; absent when it holds none
 
+    SpeculationTrade:
+      type: object
+      required: [buyerSeat, sellerSeat, price, card]
+      properties:
+        buyerSeat:
+          type: integer
+          description: Seat that bought the card
+        sellerSeat:
+          type: integer
+          description: Seat that sold the card
+        price:
+          type: integer
+          description: Agreed purchase price in chips
+        card:
+          allOf:
+            - $ref: '#/components/schemas/Card'
+          nullable: true
+          description: Card transferred in the purchase
+
     SpeculationResponse:
       type: object
       description: Current state of the Speculation game
@@ -60982,6 +61001,11 @@ components:
           type: boolean
           description: Whether every round has been played
           example: false
+        lastTrade:
+          allOf:
+            - $ref: '#/components/schemas/SpeculationTrade'
+          nullable: true
+          description: Most recent completed purchase in this round, or null when none occurred
         config:
           type: object
           description: The table settings in force
