@@ -113,6 +113,21 @@ describe('BassetPage', () => {
     await screen.findByRole('button', { name: '賭ける' });
     const rankButtons = screen.getAllByRole('button').filter((button) => button.hasAttribute('aria-pressed'));
     expect(rankButtons).toHaveLength(13);
+    expect(rankButtons.map((button) => button.textContent)).toEqual([
+      'A',
+      '2',
+      '3',
+      '4',
+      '5',
+      '6',
+      '7',
+      '8',
+      '9',
+      '10',
+      'J',
+      'Q',
+      'K',
+    ]);
     expect(screen.getByRole('button', { name: 'A' })).toHaveAttribute('aria-pressed', 'true');
     fireEvent.click(screen.getByRole('button', { name: 'K' }));
     expect(screen.getByRole('button', { name: 'K' })).toHaveAttribute('aria-pressed', 'true');

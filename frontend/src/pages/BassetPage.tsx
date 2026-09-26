@@ -15,6 +15,7 @@ import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { gameTheme } from '../styles/gameTheme';
 import type { BassetResponse } from '../types/games/basset';
 import type { TutorialStep } from '../types/tutorial';
+import { valueName } from '../utils/cardUtils';
 import { BASSET_HELP, parseBassetCommand } from '../utils/cli/commands/bassetCommands';
 import { formatBassetState } from '../utils/cli/formatters/bassetFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
@@ -23,7 +24,7 @@ import type { CliGameConfig } from '../utils/cli/types';
 const STEPS: TutorialStep[] = [];
 const BassetPhase = { BETTING: 1, TURN: 2, DECISION: 3, ROUND_END: 4, GAME_END: 5 } as const;
 const PHASES: Record<number, string> = { 1: 'betting', 2: 'turn', 3: 'decision', 4: 'roundEnd', 5: 'gameEnd' };
-const RANK_LABELS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+const RANK_LABELS = Array.from({ length: 13 }, (_, index) => valueName(index + 1));
 
 /** Renders the Basset page and its paroli decision controls. */
 export const BassetPage = withTutorial(BassetPageContent, 'basset', STEPS);
