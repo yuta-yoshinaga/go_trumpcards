@@ -31,6 +31,7 @@ const defaultState: CrazyEightsResponse = {
   roundNumber: 1,
   currentPlayerIdx: 0,
   discardTop: { design: 'HEART', value: 7 },
+  discardPileCount: 1,
   drawPileCount: 30,
   chosenSuit: 0,
   gameEndFlag: false,

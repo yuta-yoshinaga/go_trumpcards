@@ -34,6 +34,7 @@ func (m *MockCrazyEightsGame) GetRoundNumber() int         { return m.Called().I
 func (m *MockCrazyEightsGame) GetCurrentPlayerIdx() int    { return m.Called().Int(0) }
 func (m *MockCrazyEightsGame) GetDiscardTop() *domain.Card { return m.Called().Get(0).(*domain.Card) }
 func (m *MockCrazyEightsGame) GetDrawPileCount() int       { return m.Called().Int(0) }
+func (m *MockCrazyEightsGame) GetDiscardPileCount() int    { return m.Called().Int(0) }
 func (m *MockCrazyEightsGame) GetChosenSuit() int          { return m.Called().Int(0) }
 func (m *MockCrazyEightsGame) GetWinnerIdx() int           { return m.Called().Int(0) }
 func (m *MockCrazyEightsGame) GetPlayerCnt() int           { return m.Called().Int(0) }

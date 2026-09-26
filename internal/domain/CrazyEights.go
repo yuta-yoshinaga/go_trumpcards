@@ -387,6 +387,9 @@ func (g *CrazyEights) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 // GetDiscardPile 捨て札の山を取得
 func (g *CrazyEights) GetDiscardPile() []*Card { return g.discardPile }
 
+// GetDiscardPileCount 捨て札の枚数を取得する
+func (g *CrazyEights) GetDiscardPileCount() int { return len(g.discardPile) }
+
 // SetDiscardPile 捨て札の山を設定 (テスト用)
 func (g *CrazyEights) SetDiscardPile(pile []*Card) { g.discardPile = pile }
 
