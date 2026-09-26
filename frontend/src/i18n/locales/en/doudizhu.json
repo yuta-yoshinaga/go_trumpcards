@@ -55,6 +55,7 @@
   },
   "combo": {
     "selectedLabel": "Selected",
+    "selectionCount": "{{count}} cards selected",
     "badge": "{{type}} ({{count}} cards)",
     "notCombo": "Not a valid combination — check your selection",
     "noBeat": "This combo cannot beat the current table play",

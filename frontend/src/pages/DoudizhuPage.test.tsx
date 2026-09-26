@@ -109,12 +109,16 @@ describe('DoudizhuPage', () => {
     renderWithProviders(<DoudizhuPage />);
     fireEvent.click(await screen.findByRole('button', { name: '♠ 5' }));
     expect(await screen.findByTestId('ddz-combo-hint')).toBeInTheDocument();
+    expect(screen.getByTestId('ddz-selection-count')).toHaveTextContent('1枚選択中');
+    expect(screen.getByTestId('ddz-combo-hint')).toHaveAttribute('role', 'status');
   });
 
-  it('hides combo hint when no cards are selected', async () => {
+  it('keeps the selection live region mounted and empty when no cards are selected', async () => {
     mockExec.mockResolvedValue(defaultState);
     renderWithProviders(<DoudizhuPage />);
-    await waitFor(() => expect(screen.queryByTestId('ddz-combo-hint')).not.toBeInTheDocument());
+    const region = await screen.findByTestId('ddz-combo-hint');
+    expect(region).toHaveAttribute('role', 'status');
+    expect(region).toBeEmptyDOMElement();
   });
 
   it('renders skeleton before first API response', () => {
@@ -396,6 +400,7 @@ describe('DoudizhuPage', () => {
     fireEvent.click(await screen.findByRole('button', { name: '♠ 5' }));
     fireEvent.click(screen.getByRole('button', { name: '♥ 9' }));
     expect(await screen.findByTestId('ddz-invalid-combo')).toBeInTheDocument();
+    expect(screen.getByTestId('ddz-selection-count')).toHaveTextContent('2枚選択中');
   });
 
   it('warns that a valid-but-too-low combo cannot beat the table', async () => {
