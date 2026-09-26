@@ -35,6 +35,7 @@ import { CRAZYQUILT_HELP, parseCrazyQuiltCommand } from '../utils/cli/commands/c
 import { formatCrazyQuiltState } from '../utils/cli/formatters/crazyquiltFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isCrazyQuiltVertical } from '../utils/crazyQuiltCells';
+import { crazyQuiltLegalTargets } from '../utils/crazyQuiltLegalTargets';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦', '♠', '♣', '♥', '♦'] as const;
@@ -183,29 +184,21 @@ function CrazyQuiltPageContent() {
       : selectedSource?.zone === 'waste'
         ? wasteTop
         : null;
-  const canReachFoundation = (idx: number) => {
-    if (!selectedCard) return false;
-    const pile = state.foundation[idx];
-    if (!pile || pile.length === 0 || pile.length >= 13) return false;
-    const suits = ['SPADE', 'CLOVER', 'HEART', 'DIAMOND', 'SPADE', 'CLOVER', 'HEART', 'DIAMOND'];
-    if (selectedCard.design !== suits[idx]) return false;
-    const top = pile[pile.length - 1];
-    return state.foundationAscending?.[idx] !== false
-      ? selectedCard.value === top.value + 1
-      : selectedCard.value === top.value - 1;
-  };
-  const canReachWaste =
-    !!selectedCard &&
-    selectedSource?.zone === 'quilt' &&
-    !!wasteTop &&
-    Math.abs(selectedCard.value - wasteTop.value) === 1;
-  const validFoundationTargets = selectedSource ? state.foundation.map((_, idx) => canReachFoundation(idx)) : [];
+  const legalTargets = crazyQuiltLegalTargets(
+    state.foundation,
+    state.foundationAscending,
+    wasteTop,
+    selectedCard,
+    selectedSource?.zone === 'quilt',
+  );
+  const canReachWaste = legalTargets.waste;
+  const validFoundationTargets = legalTargets.foundation;
   const destinationSummary = selectedSource
     ? t('keyboardDestinations', {
         destinations: (() => {
           const destinations = [
             ...validFoundationTargets.flatMap((valid, idx) => (valid ? [t('frontendHint.foundation', { idx })] : [])),
-            ...(canReachWaste ? [t('waste')] : []),
+            ...(canReachWaste ? [t('frontendHint.waste')] : []),
           ];
           return destinations.length > 0 ? destinations.join(t('listSeparator')) : t('noKeyboardDestinations');
         })(),
