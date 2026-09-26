@@ -49,5 +49,6 @@
   "frontendHint.ironcrossWorthACall": "役はあるので、この額なら見る価値があります",
   "frontendHint.ironcrossCheapToStay": "安いので、次の1枚を見る価値があります",
   "frontendHint.ironcrossSeeAnotherCard": "中央はまだ開いていません。ただで次の1枚を見られます",
-  "frontendHint.ironcrossNotWorthIt": "役が無く、残り回数ぶんのベットに見合いません"
+  "frontendHint.ironcrossNotWorthIt": "役が無く、残り回数ぶんのベットに見合いません",
+  "listSeparator": "、"
 }
