@@ -79,6 +79,19 @@ describe('AlaskaPage', () => {
     await waitFor(() => expect(screen.getByText(/手数/)).toBeInTheDocument());
   });
 
+  it('announces each foundation top card and the next legal card condition', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [[card('SPADE', 1), card('SPADE', 2)], [], [], [card('DIAMOND', 12), card('DIAMOND', 13)]],
+    });
+    renderWithProviders(<AlaskaPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    expect(screen.getByRole('button', { name: '♠ 組札 2枚、最後の札 ♠ 2、次は♠ 3' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '空の組札 (♣)、次は♣ A' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♦ 組札 2枚、最後の札 ♦ K、完成' })).toBeInTheDocument();
+  });
+
   it('shows the face-down rule note and gives face-down cards concise positional labels', async () => {
     renderWithProviders(<AlaskaPage />);
     await waitFor(() => expect(screen.getByTestId('alaska-facedown-rule')).toBeInTheDocument());
