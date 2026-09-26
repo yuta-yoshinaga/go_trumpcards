@@ -97,12 +97,14 @@ function TexasHoldemBonusPageContent() {
   const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec: execApi, retry } = useGameApi(texasholdembonusApi.exec);
   const chips = state?.chips;
+  // anteAmount changes are already capped by ChipBetInput; only chip balance changes need reconciliation.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: anteAmount is intentionally excluded.
   useEffect(() => {
     if (chips == null) return;
     const nextAnte = Math.min(anteAmount, Math.max(10, chips));
-    setAnteAmount(nextAnte);
+    setAnteAmount((current) => Math.min(current, Math.max(10, chips)));
     setBonusAmount((current) => Math.min(current, Math.max(0, chips - nextAnte)));
-  }, [chips, anteAmount]);
+  }, [chips]);
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
