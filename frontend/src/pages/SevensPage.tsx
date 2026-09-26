@@ -189,6 +189,13 @@ function SevensPageContent() {
     isHumanTurn &&
     humanPlayer != null &&
     (humanPlayer.maxPasses === 0 || humanPlayer.passesUsed < humanPlayer.maxPasses);
+  const passDisabledReason = state.gameEndFlag
+    ? t('passDisabled.gameEnded')
+    : !isHumanTurn
+      ? t('passDisabled.notYourTurn')
+      : humanPlayer != null && humanPlayer.maxPasses > 0 && humanPlayer.passesUsed >= humanPlayer.maxPasses
+        ? t('passDisabled.limitReached')
+        : null;
 
   // Passes remaining before a forced dobon; null when passes are unlimited (maxPasses=0).
   const passesRemaining =
@@ -458,9 +465,19 @@ function SevensPageContent() {
                 disabled={loading || !canPass}
                 onClick={() => exec('play', -1)}
                 data-tutorial="sv-play-pass"
+                aria-describedby={passDisabledReason ? 'pass-disabled-reason' : undefined}
               >
                 {passesRemaining === null ? tc('button.pass') : t('passRemaining', { count: passesRemaining })}
               </button>
+              {passDisabledReason && (
+                <p
+                  id="pass-disabled-reason"
+                  data-testid="pass-disabled-reason"
+                  className="text-ds-text-primary text-xs mt-1"
+                >
+                  {passDisabledReason}
+                </p>
+              )}
               {jokerCardIdx !== null && (
                 <button type="button" className={`${btnSecondary} min-w-[90px]`} onClick={() => setJokerCardIdx(null)}>
                   {tc('button.cancel')}
