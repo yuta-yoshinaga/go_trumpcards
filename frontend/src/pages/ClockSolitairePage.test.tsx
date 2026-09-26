@@ -247,11 +247,22 @@ describe('ClockSolitairePage', () => {
     expect((targets[0] as HTMLElement).className).toContain('ring-ds-warning');
   });
 
-  it('renders no flight target when there is no card awaiting placement', async () => {
+  it('marks the center pile as the flight target before the first card is drawn', async () => {
     restoreCliModeDefault();
     mockExec.mockResolvedValue({ ...playingState, currentCard: undefined });
     renderWithProviders(<ClockSolitairePage />);
     await waitFor(() => expect(screen.getByText(/ステップ数/)).toBeInTheDocument());
+    const targets = document.querySelectorAll('[data-flight-target="true"]');
+    expect(targets).toHaveLength(1);
+    expect((targets[0] as HTMLElement).className).toContain('ring-ds-warning');
+    expect(targets[0].parentElement).toHaveAttribute('data-tutorial', 'clock-center');
+  });
+
+  it('renders no flight target after the game ends without a current card', async () => {
+    restoreCliModeDefault();
+    mockExec.mockResolvedValue(gameOverState);
+    renderWithProviders(<ClockSolitairePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('ゲームオーバー'));
     expect(document.querySelectorAll('[data-flight-target="true"]')).toHaveLength(0);
   });
 
