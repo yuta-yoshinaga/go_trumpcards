@@ -26,7 +26,8 @@
   "pickup": {
     "hint": "You can only take a card from either end of the discard.",
     "badge": "Take",
-    "endLabel": "Take this end card",
+    "endLabel": "Take {{card}} at discard position {{position}}",
+    "position": "Discard position {{position}} ({{card}})",
     "disabledReason": "Middle cards can't be taken (only the two ends)"
   },
   "settings": {
