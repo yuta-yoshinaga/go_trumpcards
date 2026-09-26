@@ -105,6 +105,43 @@ describe('QuadrillePage', () => {
     expect(screen.getByRole('button', { name: 'パス' })).toBeInTheDocument();
   });
 
+  it('shows an undecided trump during bidding even if an old suit is present', async () => {
+    mockExec.mockResolvedValue(
+      makeQuadrilleState({
+        phase: QuadrillePhase.BID,
+        winningBid: 0,
+        trumpSuit: 3,
+        isHumanBidTurn: true,
+      }),
+    );
+    renderWithProviders(<QuadrillePage />);
+    expect(await screen.findByText('切り札: 未確定')).toBeInTheDocument();
+  });
+
+  it('shows the confirmed trump suit after a pass-only auction resolves', async () => {
+    mockExec.mockResolvedValue(
+      makeQuadrilleState({
+        phase: QuadrillePhase.KING_CALL,
+        winningBid: 1,
+        trumpSuit: 2,
+      }),
+    );
+    renderWithProviders(<QuadrillePage />);
+    expect(await screen.findByText('切り札: クラブ')).toBeInTheDocument();
+  });
+
+  it('shows no trump when the resolved auction has no trump suit', async () => {
+    mockExec.mockResolvedValue(
+      makeQuadrilleState({
+        phase: QuadrillePhase.KING_CALL,
+        winningBid: 1,
+        trumpSuit: 0,
+      }),
+    );
+    renderWithProviders(<QuadrillePage />);
+    expect(await screen.findByText('切り札: -')).toBeInTheDocument();
+  });
+
   it('stages entrar → trump selection → confirm and dispatches the bid with the suit', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<QuadrillePage />);

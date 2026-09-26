@@ -170,7 +170,11 @@ function QuadrillePageContent() {
   const canCallKing = state.phase === QuadrillePhase.KING_CALL && state.isHumanKingCallTurn;
   const canPlay = isPlayPhase && isHumanTurn;
 
-  const trumpLabel = state.trumpSuit >= 1 ? t(SUIT_KEYS[state.trumpSuit] ?? 'suitNone') : t('suitNone');
+  const trumpLabel = isBidPhase
+    ? t('trumpUndecided')
+    : state.trumpSuit >= 1
+      ? t(SUIT_KEYS[state.trumpSuit])
+      : t('suitNone');
 
   // Badge the three matadors (Spadille ♠A / Manille = trump 7 / Basto ♣A) in
   // the human's hand once trump is decided. Ring only — never blocks clicks.

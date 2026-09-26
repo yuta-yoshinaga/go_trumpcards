@@ -19,6 +19,7 @@
   "trick": "トリック {{n}}",
   "winningBid": "入札: {{bid}}",
   "trump": "切り札: {{suit}}",
+  "trumpUndecided": "未確定",
   "bidNone": "-",
   "bidEntrar": "エントラール",
   "bidSolo": "ソロ",
