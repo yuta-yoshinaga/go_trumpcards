@@ -73,7 +73,7 @@ export function GoFishPlayerArea({
         aria-pressed={isSelected}
       >
         <div className="text-ds-text-muted text-sm">
-          {name}: {t('deck', { count: player.cardCount })} | {t('books', { count: player.bookCount })}
+          {name}: {t('handCount', { count: player.cardCount })} | {t('books', { count: player.bookCount })}
         </div>
         {knownRanks && knownRanks.length > 0 && (
           <div
