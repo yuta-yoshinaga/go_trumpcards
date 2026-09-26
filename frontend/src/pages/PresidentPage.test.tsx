@@ -66,6 +66,26 @@ describe('PresidentPage', () => {
     expect(screen.getByTestId('hand-card-2')).toBeInTheDocument();
   });
 
+  it('exposes each hand card selection state to assistive technology', async () => {
+    renderWithProviders(<PresidentPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+
+    const firstCard = screen.getByTestId('hand-card-0');
+    const secondCard = screen.getByTestId('hand-card-1');
+    expect(firstCard).toHaveAttribute('aria-pressed', 'false');
+    expect(secondCard).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(firstCard);
+    await waitFor(() => expect(firstCard).toHaveAttribute('aria-pressed', 'true'));
+    fireEvent.click(secondCard);
+    await waitFor(() => expect(secondCard).toHaveAttribute('aria-pressed', 'true'));
+    expect(firstCard).toHaveAttribute('aria-pressed', 'true');
+
+    fireEvent.click(firstCard);
+    await waitFor(() => expect(firstCard).toHaveAttribute('aria-pressed', 'false'));
+    expect(secondCard).toHaveAttribute('aria-pressed', 'true');
+  });
+
   it('gives each display-only table card an accessible name', async () => {
     // Table cards not present in the human hand (S3/H5/D7) so the labels are unambiguous.
     mockExec.mockResolvedValue(makeState({ tableCards: [card('SPADE', 12), card('CLOVER', 1)], lastPlayPlayerIdx: 1 }));
@@ -144,6 +164,7 @@ describe('PresidentPage', () => {
     renderWithProviders(<PresidentPage />);
     await waitFor(() => expect(screen.getByTestId('pass-button')).toBeDisabled());
     expect(screen.getByTestId('play-button')).toBeDisabled();
+    expect(screen.getByTestId('hand-card-0')).toBeDisabled();
   });
 
   it('resets with config and passes it to the API', async () => {
