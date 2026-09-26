@@ -475,6 +475,14 @@ function IndianRummyPageContent() {
                   <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
                     {t('drawStockButton')}
                   </button>
+                  {state.discardTop && (
+                    <span
+                      className="self-center text-ds-text-muted text-sm"
+                      data-testid="indianrummy-discard-draw-target"
+                    >
+                      {t('drawDiscardTarget', { card: cardAlt(state.discardTop) })}
+                    </span>
+                  )}
                   <button
                     type="button"
                     className={btnPrimary}

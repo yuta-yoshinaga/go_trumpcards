@@ -30,6 +30,7 @@
   "scoresTotal": "Total",
   "drawStockButton": "Draw Stock",
   "drawDiscardButton": "Draw Discard",
+  "drawDiscardTarget": "Target: {{card}}",
   "discardButton": "Discard",
   "declareButton": "Declare",
   "declarePreview": {
