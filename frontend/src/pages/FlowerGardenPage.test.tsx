@@ -221,6 +221,14 @@ describe('FlowerGardenPage', () => {
     expect(screen.getAllByLabelText(/空のリザーブ枠 \d+/).length).toBeGreaterThan(0);
   });
 
+  it('explains that only reserve slots containing cards can be selected', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<FlowerGardenPage />);
+    expect(await screen.findByText('カードのある枠を選択できます')).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: /リザーブ枠/ }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('img', { name: /空のリザーブ枠 \d+/ }).length).toBeGreaterThan(0);
+  });
+
   // #5599: 「スートを問わない」という他のソリティアと違う規則が、初回だけ出る
   // チュートリアルにしか書かれていなかった。読み飛ばした後に思い出す手掛かりが
   // 盤面に無いので、**チュートリアルの状態に関係なく**出る注記を置く。
