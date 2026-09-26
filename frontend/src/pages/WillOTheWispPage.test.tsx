@@ -150,10 +150,27 @@ describe('WillOTheWispPage', () => {
     const dealBtn = (await screen.findAllByRole('button', { name: '配る' }))[0];
     fireEvent.click(dealBtn);
     await waitFor(() => {
-      const warn = screen.getByText('空の列をすべて埋めないと配れません');
+      const warn = screen
+        .getAllByText('空の列をすべて埋めないと配れません')
+        .find((el) => el.getAttribute('role') === 'status');
+      expect(warn).toBeDefined();
       expect(warn).toHaveAttribute('role', 'status');
       expect(warn).toHaveAttribute('aria-live', 'assertive');
     });
+  });
+
+  it('shows the empty-column deal reason beside the stock and describes the stock control', async () => {
+    mockSend.mockResolvedValue({
+      ...playingState,
+      tableau: makeTableau([playingState.tableau[0], [], [], [], [], [], []]),
+    });
+    renderWithProviders(<WillOTheWispPage />);
+
+    const reason = await screen.findByText('空の列をすべて埋めないと配れません');
+    const stockPile = screen.getByTestId('animated-card-back').parentElement;
+    const stock = stockPile?.querySelector('button');
+    expect(reason).toBeVisible();
+    expect(stock).toHaveAttribute('aria-describedby', reason.id);
   });
 
   it('renders stock count', async () => {
