@@ -91,7 +91,19 @@ describe('StealingBundlesPage', () => {
 
     selectCard(0);
     fireEvent.click(screen.getByTestId('sb-take-btn'));
-    expect(live).toHaveTextContent('手番が終了');
+    await waitFor(() => expect(live).toHaveTextContent('手番が終了'));
+  });
+
+  it('does not announce turn end when the server rejects an action', async () => {
+    renderWithProviders(<StealingBundlesPage />);
+    await screen.findByTestId('sb-table');
+    const live = screen.getByTestId('sb-action-announcement');
+    selectCard(0);
+    mockExec.mockResolvedValue(makeState({ message: 'invalid move' }));
+
+    fireEvent.click(screen.getByTestId('sb-take-btn'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('take', 0));
+    expect(live).not.toHaveTextContent('手番が終了');
   });
 
   it('announces trailing as the only action when no capture is available', async () => {

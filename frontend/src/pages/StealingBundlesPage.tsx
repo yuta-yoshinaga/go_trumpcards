@@ -14,7 +14,7 @@ import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
-import { useGameApi } from '../hooks/useGameApi';
+import { isRejectedAction, useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { btnDanger, btnPrimary, btnSecondary, btnWarning } from '../styles/buttonStyles';
@@ -50,13 +50,23 @@ const STEALINGBUNDLES_TUTORIAL_STEPS: TutorialStep[] = [
 function StealingBundlesPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('stealingbundles');
+  const handleApiSuccess = useCallback(
+    (response: StealingBundlesResponse, [command]: Parameters<typeof stealingbundlesApi.exec>) => {
+      if (!isRejectedAction(response) && ['take', 'steal', 'trail'].includes(command)) {
+        setActionAnnouncement(t('status.turnEnded'));
+      }
+    },
+    [t],
+  );
   const {
     state,
     loading,
     error,
     exec: dispatch,
     retry,
-  } = useGameApi<StealingBundlesResponse, Parameters<typeof stealingbundlesApi.exec>>(stealingbundlesApi.exec);
+  } = useGameApi<StealingBundlesResponse, Parameters<typeof stealingbundlesApi.exec>>(stealingbundlesApi.exec, {
+    onSuccess: handleApiSuccess,
+  });
   const { cardWidth } = useCardDimensions();
   const { hint, hintEnabled, setHintEnabled } = useGameHint('stealingbundles', state);
   const [playerCnt, setPlayerCnt] = useState(4);
@@ -82,35 +92,31 @@ function StealingBundlesPageContent() {
   const handleReset = useCallback(() => {
     hideActionLog();
     setSelected(null);
-    setActionAnnouncement(t('status.turnEnded'));
     void dispatch('reset', undefined, undefined, { playerCnt });
-  }, [dispatch, hideActionLog, playerCnt, t]);
+  }, [dispatch, hideActionLog, playerCnt]);
 
   const handleTake = useCallback(
     (idx: number) => {
       setSelected(null);
-      setActionAnnouncement(t('status.turnEnded'));
       void dispatch('take', idx);
     },
-    [dispatch, t],
+    [dispatch],
   );
 
   const handleSteal = useCallback(
     (idx: number, victim: number) => {
       setSelected(null);
-      setActionAnnouncement(t('status.turnEnded'));
       void dispatch('steal', idx, victim);
     },
-    [dispatch, t],
+    [dispatch],
   );
 
   const handleTrail = useCallback(
     (idx: number) => {
       setSelected(null);
-      setActionAnnouncement(t('status.turnEnded'));
       void dispatch('trail', idx);
     },
-    [dispatch, t],
+    [dispatch],
   );
 
   const handleGiveUp = useCallback(() => {
