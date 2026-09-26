@@ -64,6 +64,32 @@ beforeEach(() => {
 });
 
 describe('MendikotPage', () => {
+  it('highlights the current seat and labels it when its play will set undecided trump', async () => {
+    mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 2, trumpSuit: 0, willSetTrump: true }));
+    renderWithProviders(<MendikotPage />);
+
+    const currentSeat = await screen.findByTestId('md-seat-2');
+    expect(currentSeat).toHaveAttribute('aria-current', 'step');
+    expect(currentSeat.className).toContain('border-ds-accent');
+    expect(currentSeat).toHaveTextContent('手番');
+    expect(currentSeat).toHaveTextContent('切り札を決める番');
+    expect(screen.getByTestId('md-seat-0')).not.toHaveAttribute('aria-current', 'step');
+  });
+
+  it('moves the current seat indicator and clears the trump role when trump is decided', async () => {
+    mockExec
+      .mockResolvedValueOnce(makeState({ currentPlayerIdx: 0, trumpSuit: 0, willSetTrump: true }))
+      .mockResolvedValueOnce(makeState({ currentPlayerIdx: 1, trumpSuit: 3, willSetTrump: false }));
+    renderWithProviders(<MendikotPage />);
+
+    expect(await screen.findByTestId('md-seat-0')).toHaveTextContent('切り札を決める番');
+    fireEvent.click((await screen.findAllByRole('button', { name: /を出す/ }))[0]);
+    await waitFor(() => expect(screen.getByTestId('md-seat-1')).toHaveAttribute('aria-current', 'step'));
+    expect(screen.getByTestId('md-seat-1')).toHaveTextContent('手番');
+    expect(screen.getByTestId('md-seat-1')).not.toHaveTextContent('切り札を決める番');
+    expect(screen.getByTestId('md-seat-0')).not.toHaveTextContent('手番');
+  });
+
   it('marks the previous trick winner with a ring and WIN badge', async () => {
     mockExec.mockResolvedValue(
       makeState({

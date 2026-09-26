@@ -16,6 +16,8 @@
     "seatTens": "{{n}} tens",
     "took": "{{n}} tricks",
     "team": "T{{team}}",
+    "currentTurn": "[Turn]",
+    "trumpDecider": "[deciding trump]",
     "chooser": "[set trump]",
     "you": "You",
     "cpu": "CPU{{idx}}"
