@@ -124,6 +124,7 @@ describe('BatakPage', () => {
     expect(screen.queryByRole('button', { name: 'ビッド' })).not.toBeInTheDocument();
     expect(screen.queryByTestId('bid-option-5')).not.toBeInTheDocument();
     expect(screen.queryByTestId('bid-option-13')).not.toBeInTheDocument();
+    expect(screen.getByTestId('batak-bid-selected-visible')).toHaveTextContent('パス');
   });
 
   it('calls bid command with 0 when pass button is clicked', async () => {
@@ -132,9 +133,10 @@ describe('BatakPage', () => {
     await waitFor(() => expect(screen.getByTestId('bid-pass')).toBeInTheDocument());
 
     mockExec.mockClear();
-    mockExec.mockResolvedValue(playPhaseState);
+    mockExec.mockResolvedValue(bidPhaseState);
     fireEvent.click(screen.getByTestId('bid-pass'));
 
+    expect(screen.getByTestId('batak-bid-selected-visible')).toHaveTextContent('パス');
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', 0));
   });
 
@@ -161,8 +163,9 @@ describe('BatakPage', () => {
     // Select bid 7 from the button group.
     fireEvent.click(screen.getByTestId('bid-option-7'));
     expect(screen.getByTestId('bid-option-7')).toHaveAttribute('aria-pressed', 'true');
-    // The live region reflects the current selection for screen readers.
+    // The visible value and live region both reflect the selected option.
     expect(screen.getByTestId('batak-bid-selected')).toHaveTextContent('7');
+    expect(screen.getByTestId('batak-bid-selected-visible')).toHaveTextContent('7');
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(playPhaseState);
