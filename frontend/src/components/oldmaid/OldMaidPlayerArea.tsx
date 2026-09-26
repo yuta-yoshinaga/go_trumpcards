@@ -202,7 +202,7 @@ export function OldMaidPlayerArea({
       {showSelectable && !player.isFinished && (
         <>
           <div className="text-game-text-highlight text-xs mb-1">{t('draw')}</div>
-          <p className="text-ds-text-muted text-xs mb-1">
+          <p className="text-game-text-muted text-xs mb-1">
             {t('keyboardDrawHint', { name: playerName(player.id, player.isHuman) })}
           </p>
         </>
