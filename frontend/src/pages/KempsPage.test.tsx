@@ -120,6 +120,50 @@ describe('KempsPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('swap', { handIndex: 1, fieldIndex: 2 }));
   });
 
+  it('announces the accepted swap with the new hand and field cards', async () => {
+    const swappedState = makeState({
+      field: [
+        { design: 'SPADE', value: 5 },
+        { design: 'HEART', value: 6 },
+        { design: 'HEART', value: 2 },
+        { design: 'DIAMOND', value: 8 },
+      ],
+      players: [
+        makePlayer({
+          name: 'You',
+          isHuman: true,
+          team: 0,
+          hand: [
+            { design: 'SPADE', value: 1 },
+            { design: 'CLOVER', value: 3 },
+            { design: 'DIAMOND', value: 4 },
+            { design: 'CLOVER', value: 7 },
+          ],
+        }),
+        makePlayer({ team: 1 }),
+        makePlayer({ team: 0 }),
+        makePlayer({ team: 1 }),
+      ],
+    });
+    mockExec.mockResolvedValueOnce(exchangeState).mockResolvedValue(swappedState);
+    renderWithProviders(<KempsPage />);
+    fireEvent.click(await screen.findByRole('button', { name: '♥ 2 を選択' }));
+    fireEvent.click(await screen.findByRole('button', { name: '♣ 7 と交換' }));
+
+    expect(await screen.findByTestId('kemps-swap-announcement')).toHaveTextContent('交換しました');
+    expect(screen.getByTestId('kemps-swap-announcement')).toHaveTextContent('♣ 7');
+    expect(screen.getByTestId('kemps-swap-announcement')).toHaveTextContent('♥ 2');
+  });
+
+  it('does not announce a rejected swap as successful', async () => {
+    mockExec.mockResolvedValue(makeState({ message: '手札を選択してください', messageCode: '' }));
+    renderWithProviders(<KempsPage />);
+    fireEvent.click(await screen.findByRole('button', { name: '♥ 2 を選択' }));
+    fireEvent.click(await screen.findByRole('button', { name: '♣ 7 と交換' }));
+
+    expect(await screen.findByTestId('kemps-swap-announcement')).toBeEmptyDOMElement();
+  });
+
   it('highlights same-rank field cards when a hand card is selected and clears on deselect', async () => {
     mockExec.mockResolvedValue(rankMatchState);
     renderWithProviders(<KempsPage />);
