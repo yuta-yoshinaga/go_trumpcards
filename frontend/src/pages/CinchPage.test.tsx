@@ -151,6 +151,13 @@ describe('CinchPage', () => {
     await waitFor(() =>
       expect(screen.getByTestId('cinch-trump-selection-live')).toHaveTextContent('切り札はスペードに確定しました。'),
     );
+    expect(screen.getByTestId('cinch-trump-selection-live').firstElementChild).toHaveClass(
+      'mb-1',
+      'text-center',
+      'text-sm',
+      'text-ds-accent',
+      'font-semibold',
+    );
     expect(mockExec).toHaveBeenCalledTimes(1);
     expect(mockExec).toHaveBeenCalledWith('trump', { trumpSuit: 1 });
   });
