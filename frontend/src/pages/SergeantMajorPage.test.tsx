@@ -155,6 +155,24 @@ describe('SergeantMajorPage', () => {
     expect(cards[0]).toHaveAttribute('aria-pressed', 'false');
   });
 
+  it('shows the discard count beside the hand and keeps it in sync with the confirm button', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 1, dealerIdx: 0, kittySize: 0 } as Partial<SergeantMajorResponse>));
+    renderWithProviders(<SergeantMajorPage />);
+
+    const cards = await screen.findAllByRole('button', { name: /捨て札に選ぶ/ });
+    const progress = screen.getByTestId('sm-discard-progress');
+    const confirm = screen.getByTestId('sm-discard-btn');
+    expect(progress).toHaveTextContent('0/4');
+    expect(confirm).toHaveTextContent('0/4');
+
+    fireEvent.click(cards[0]);
+    expect(progress).toHaveTextContent('1/4');
+    expect(confirm).toHaveTextContent('1/4');
+    fireEvent.click(cards[0]);
+    expect(progress).toHaveTextContent('0/4');
+    expect(confirm).toHaveTextContent('0/4');
+  });
+
   it('plays the clicked card by its hand index', async () => {
     mockExec.mockResolvedValue(playing());
     renderWithProviders(<SergeantMajorPage />);

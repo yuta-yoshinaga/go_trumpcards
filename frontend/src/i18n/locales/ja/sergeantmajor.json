@@ -27,6 +27,7 @@
   "actions": {
     "trump": "切り札 {{suit}}",
     "discard": "捨てる（{{n}}/{{total}}）",
+    "discardProgress": "選択済み: {{n}}/{{total}} 枚",
     "nextRound": "次のラウンドへ",
     "reset": "リセット",
     "giveUp": "投了",

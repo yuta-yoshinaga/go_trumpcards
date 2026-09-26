@@ -277,6 +277,11 @@ function SergeantMajorPageContent() {
                 <div className="text-ds-text-muted text-sm mb-1">
                   {t('header.you')}: {human.cardCount}
                 </div>
+                {isHumanDiscardTurn && (
+                  <div className="text-ds-text-primary text-sm mb-1" data-testid="sm-discard-progress">
+                    {t('actions.discardProgress', { n: String(picked.length), total: String(state.discardCount) })}
+                  </div>
+                )}
                 <div className="flex flex-wrap gap-2">
                   {human.cards.map((card, idx) => (
                     <button
