@@ -46,7 +46,7 @@ import { formatShortdeckState } from '../utils/cli/formatters/shortdeckFormatter
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { findPlayerName } from '../utils/playerUtils';
-import { shortDeckBestFive } from '../utils/shortDeckBestFive';
+import { scoreFiveShortDeck, shortDeckBestFive } from '../utils/shortDeckBestFive';
 
 /** Short Deck Hold'em tutorial step definitions. */
 const SD_TUTORIAL_STEPS: TutorialStep[] = [
@@ -177,21 +177,26 @@ function ShortDeckPageContent() {
   // Short Deck reorders the hand rankings, so the standard holdemBestFive would
   // sometimes mark five cards the server did not score — most visibly on the
   // A-6-7-8-9 wheel, which it cannot see at all (#4684).
-  const showdownBest5 = useMemo(() => {
+  const currentBest5 = useMemo(() => {
     const empty = { holeSet: new Set<number>(), boardSet: new Set<number>() };
-    if (!isShowdown || !humanPlayer || humanPlayer.folded) return empty;
+    if ((!isActive && !isShowdown) || !humanPlayer || humanPlayer.folded)
+      return { ...empty, rank: null as number | null };
     const hole = humanPlayer.cards ?? [];
     const board = state?.communityCards ?? [];
-    if (hole.length !== 2 || board.length < 5) return empty;
+    if (hole.length !== 2 || board.length < 3) return { ...empty, rank: null as number | null };
     const combined = [...hole, ...board.slice(0, 5)];
     const holeSet = new Set<number>();
     const boardSet = new Set<number>();
-    for (const i of shortDeckBestFive(combined) ?? []) {
+    const best = shortDeckBestFive(combined) ?? [];
+    if (!best.length) return { ...empty, rank: null as number | null };
+    const bestCards = best.flatMap((i) => (combined[i] ? [combined[i]] : []));
+    const rank = scoreFiveShortDeck(bestCards)[0] ?? null;
+    for (const i of best) {
       if (i < hole.length) holeSet.add(i);
       else boardSet.add(i - hole.length);
     }
-    return { holeSet, boardSet };
-  }, [isShowdown, humanPlayer, state?.communityCards]);
+    return { holeSet, boardSet, rank };
+  }, [isActive, isShowdown, humanPlayer, state?.communityCards]);
 
   const minRaise = state?.minRaise ?? 0;
   const isMuckPhase = phase === HoldemPhase.SHOWDOWN && state?.muckAvailable === true;
@@ -303,8 +308,8 @@ function ShortDeckPageContent() {
                   <div className="flex flex-wrap gap-2">
                     {state?.communityCards?.length
                       ? state.communityCards.map((card, idx) => {
-                          const inBest = showdownBest5.boardSet.has(idx);
-                          const dim = isShowdown && showdownBest5.boardSet.size > 0 && !inBest;
+                          const inBest = currentBest5.boardSet.has(idx);
+                          const dim = currentBest5.boardSet.size > 0 && !inBest;
                           return (
                             <div
                               key={`${card.design}-${card.value}`}
@@ -403,6 +408,14 @@ function ShortDeckPageContent() {
                   )}
                   {humanPlayer.folded && <span className="ml-2 text-ds-error text-xs">[{tc('status.folded')}]</span>}
                   {humanPlayer.allIn && <span className="ml-2 text-ds-warning text-xs">[{tc('status.allIn')}]</span>}
+                  {currentBest5.rank !== null && !humanPlayer.folded && (
+                    <span className="ml-2 text-xs text-ds-info" data-testid="shortdeck-current-hand">
+                      {t('handRank.current')}:{' '}
+                      {t(
+                        `handRank.${(['', 'highCard', 'onePair', 'twoPair', 'threeOfAKind', 'straight', 'fullHouse', 'flush', 'fourOfAKind', 'straightFlush'] as const)[currentBest5.rank]}`,
+                      )}
+                    </span>
+                  )}
                   {isShowdown && !humanPlayer.folded && humanPlayer.handName && (
                     <span
                       className={`inline-flex items-center gap-1 ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}
@@ -432,8 +445,8 @@ function ShortDeckPageContent() {
                 <div className="flex flex-wrap gap-1.5 mb-2">
                   {humanPlayer.cards?.length
                     ? humanPlayer.cards.map((card, idx) => {
-                        const inBest = showdownBest5.holeSet.has(idx);
-                        const dim = isShowdown && showdownBest5.holeSet.size > 0 && !inBest;
+                        const inBest = currentBest5.holeSet.has(idx);
+                        const dim = currentBest5.holeSet.size > 0 && !inBest;
                         return (
                           <div
                             key={`${card.design}-${card.value}`}

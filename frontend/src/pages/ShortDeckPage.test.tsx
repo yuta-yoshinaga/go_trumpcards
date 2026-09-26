@@ -1224,6 +1224,31 @@ describe('ShortDeckPage', () => {
     expect(document.querySelectorAll('[data-best5-board]').length).toBe(3);
   });
 
+  it('shows the current Short Deck hand and highlights its cards before showdown', async () => {
+    mockExec.mockResolvedValue({
+      ...flopState,
+      players: [
+        humanPlayer({
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 7 },
+          ],
+        }),
+        ...flopState.players.slice(1),
+      ],
+      communityCards: [
+        { design: 'HEART', value: 6 },
+        { design: 'DIAMOND', value: 8 },
+        { design: 'CLOVER', value: 9 },
+      ],
+    });
+    renderWithProviders(<ShortDeckPage />);
+    expect(await screen.findByTestId('shortdeck-current-hand')).toHaveTextContent('現時点');
+    expect(screen.getByTestId('shortdeck-current-hand')).toHaveTextContent('ストレート');
+    await waitFor(() => expect(document.querySelectorAll('[data-best5-hole]').length).toBe(2));
+    expect(document.querySelectorAll('[data-best5-board]').length).toBe(3);
+  });
+
   // The page already rendered hand/level progress behind state.tournamentMode,
   // but nothing could switch it on: the display existed for a state the player
   // could not reach.

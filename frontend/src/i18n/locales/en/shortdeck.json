@@ -1,6 +1,7 @@
 {
   "handRank": {
     "title": "Hand ranking (Short Deck)",
+    "current": "Best hand so far",
     "straightFlush": "Straight flush",
     "fourOfAKind": "Four of a kind",
     "flush": "Flush",
