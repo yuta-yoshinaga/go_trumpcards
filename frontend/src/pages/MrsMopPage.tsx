@@ -352,6 +352,7 @@ function MrsMopPageContent() {
                               disabled={!isPlaying || loading || !selectedSource}
                               style={{ height: tableau.ch }}
                               data-testid={`spd-empty-col-${colIdx.toString()}`}
+                              aria-label={t('emptyTableauPosition', { col: colIdx })}
                               className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                             >
                               {t('empty')}
@@ -407,7 +408,11 @@ function MrsMopPageContent() {
                                         }
                                       }}
                                       disabled={!isPlaying || loading}
-                                      aria-label={cardAlt(tc.card)}
+                                      aria-label={t('tableauCardPosition', {
+                                        col: colIdx,
+                                        idx: cardIdx,
+                                        card: cardAlt(tc.card),
+                                      })}
                                       aria-pressed={isSourceSelected(colIdx, cardIdx)}
                                       draggable={isPlaying && !loading}
                                       onDragStart={dnd.handleDragStart(cardZone)}

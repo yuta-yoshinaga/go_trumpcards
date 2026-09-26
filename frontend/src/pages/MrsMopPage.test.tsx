@@ -411,6 +411,14 @@ describe('MrsMopPage', () => {
     await waitFor(() => expect(cardButton).toHaveAttribute('aria-pressed', 'true'));
   });
 
+  it('includes zero-based tableau column and card index in card and empty-column names', async () => {
+    renderWithProviders(<MrsMopPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+
+    expect(screen.getByRole('button', { name: '列0、位置0、♠ K' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '列2、空列' })).toBeInTheDocument();
+  });
+
   it('empty tableau column disabled when no source selected', async () => {
     renderWithProviders(<MrsMopPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
