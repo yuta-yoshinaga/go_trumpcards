@@ -80,11 +80,11 @@ function ChineseTenPageContent() {
   const actionBindings = useMemo(() => {
     const digit = (index: number) => (index === 9 ? '0' : String(index + 1));
     if (choosing && isHumanTurn && state) {
-      return state.selectableIndices.map((index) => ({
-        key: digit(index),
-        action: () => game.handleSelect(index),
-        label: 'select',
-      }));
+      return state.selectableIndices.flatMap((index) => {
+        const key = index < 9 ? String(index + 1) : index === 9 ? '0' : undefined;
+        if (key === undefined) return [];
+        return [{ key, action: () => game.handleSelect(index), label: 'select' }];
+      });
     }
     const handCount = state?.players.find((p) => p.isHuman)?.cards.length ?? 0;
     return Array.from({ length: Math.min(handCount, 10) }, (_, index) => ({
