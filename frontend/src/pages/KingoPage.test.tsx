@@ -187,6 +187,17 @@ describe('KingoPage', () => {
     await waitFor(() => expect(screen.getByTestId('kingo-deal')).toBeInTheDocument());
     expect(screen.queryByTestId('kingo-bet')).not.toBeInTheDocument();
     expect(screen.getByTestId('kingo-banker')).toHaveTextContent('あなたが親です');
+    expect(screen.getByTestId('kingo-banker-guide')).toHaveTextContent('親はベット対象外です');
+    expect(screen.queryByLabelText('張り')).not.toBeInTheDocument();
+  });
+
+  it('ベットフェーズ以外では親のベット対象外案内を表示しない', async () => {
+    mockApi.mockResolvedValue(withState({ isHumanBanker: true, phase: KingoPhase.RESULT }));
+    renderWithProviders(<KingoPage />);
+
+    expect(await screen.findByTestId('kingo-next')).toBeInTheDocument();
+    expect(screen.getByTestId('phase-indicator')).toHaveTextContent('決着');
+    expect(screen.queryByTestId('kingo-banker-guide')).not.toBeInTheDocument();
   });
 
   it('各操作をそのまま送る', async () => {
