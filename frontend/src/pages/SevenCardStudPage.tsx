@@ -46,6 +46,7 @@ import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { findPlayerName } from '../utils/playerUtils';
 import { evaluateBestHand, pokerHandKey } from '../utils/pokerSquaresUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
+import { showingHandKey } from '../utils/showingHandKey';
 
 /** Seven Card Stud tutorial step definitions. */
 const SCS_TUTORIAL_STEPS: TutorialStep[] = [
@@ -373,12 +374,12 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
                         {p.handName}
                       </span>
                     )}
-                    {!isShowdown && !p.folded && !p.handName && p.doorCards?.length > 0 && (
+                    {!isShowdown && !p.folded && !p.handName && showingHandKey(p.doorCards) !== null && (
                       <span
                         data-testid={`scs-showing-hand-${p.id}`}
                         className="inline-block ml-2 text-xs text-ds-text-muted"
                       >
-                        {t('showingHand', { hand: t(`hand.${pokerHandKey(evaluateBestHand(p.doorCards) ?? 0)}`) })}
+                        {t('showingHand', { hand: t(`hand.${showingHandKey(p.doorCards)}`) })}
                       </span>
                     )}
                   </div>
@@ -525,13 +526,16 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
                       {humanPlayer.handName}
                     </span>
                   )}
-                  {!isShowdown && !humanPlayer.folded && !humanPlayer.handName && humanPlayer.doorCards?.length > 0 && (
-                    <span data-testid="scs-showing-hand-0" className="inline-block ml-2 text-xs text-ds-text-muted">
-                      {t('showingHand', {
-                        hand: t(`hand.${pokerHandKey(evaluateBestHand(humanPlayer.doorCards) ?? 0)}`),
-                      })}
-                    </span>
-                  )}
+                  {!isShowdown &&
+                    !humanPlayer.folded &&
+                    !humanPlayer.handName &&
+                    showingHandKey(humanPlayer.doorCards) !== null && (
+                      <span data-testid="scs-showing-hand-0" className="inline-block ml-2 text-xs text-ds-text-muted">
+                        {t('showingHand', {
+                          hand: t(`hand.${showingHandKey(humanPlayer.doorCards)}`),
+                        })}
+                      </span>
+                    )}
                   {isActive && !humanPlayer.folded && currentHandKey && (
                     <span
                       data-testid="scs-current-hand"
