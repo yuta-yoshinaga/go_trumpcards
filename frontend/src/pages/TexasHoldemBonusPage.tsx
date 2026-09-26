@@ -96,6 +96,15 @@ function TexasHoldemBonusPageContent() {
 
   const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec: execApi, retry } = useGameApi(texasholdembonusApi.exec);
+  const chips = state?.chips;
+  // anteAmount changes are already capped by ChipBetInput; only chip balance changes need reconciliation.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: anteAmount is intentionally excluded.
+  useEffect(() => {
+    if (chips == null) return;
+    const nextAnte = Math.min(anteAmount, Math.max(10, chips));
+    setAnteAmount((current) => Math.min(current, Math.max(10, chips)));
+    setBonusAmount((current) => Math.min(current, Math.max(0, chips - nextAnte)));
+  }, [chips]);
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -156,6 +165,8 @@ function TexasHoldemBonusPageContent() {
   if (!state) return <GameSkeleton gameKey="texasholdembonus" layout={{ kind: 'casino-table', sections: [2, 5, 2] }} />;
 
   const handleBet = () => execApi('bet', anteAmount, bonusAmount);
+  const anteMax = Math.max(10, state.chips - bonusAmount);
+  const bonusMax = Math.max(0, state.chips - anteAmount);
   const handlePlay = () => execApi('play');
   const handleFold = () => execApi('fold');
   const handleCheck = () => execApi('check');
@@ -391,13 +402,19 @@ function TexasHoldemBonusPageContent() {
             <SettingsPanel title={t('settings.title')} groups={[]} />
             {isBetPhase && (
               <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="thb-bet-controls">
+                <p className="text-ds-text-primary text-sm tabular-nums" data-testid="thb-bet-summary">
+                  {t('betSummary', {
+                    total: anteAmount + bonusAmount,
+                    remaining: state.chips - anteAmount - bonusAmount,
+                  })}
+                </p>
                 <ChipBetInput
                   id="texasholdembonus-ante-amount"
                   label={t('label.ante')}
                   value={anteAmount}
                   onChange={setAnteAmount}
                   min={10}
-                  max={state.chips}
+                  max={anteMax}
                   step={10}
                   disabled={loading}
                   showSteppers
@@ -408,7 +425,7 @@ function TexasHoldemBonusPageContent() {
                   value={bonusAmount}
                   onChange={setBonusAmount}
                   min={0}
-                  max={state.chips}
+                  max={bonusMax}
                   step={10}
                   disabled={loading}
                   showSteppers

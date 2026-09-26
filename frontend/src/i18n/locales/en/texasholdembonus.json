@@ -64,6 +64,7 @@
     "clear": "Clear"
   },
   "betGuide": "Set your ante and optional bonus side bet",
+  "betSummary": "Total: {{total}} / Remaining: {{remaining}}",
   "payoutRef": {
     "title": "Payout Table",
     "anteHeader": "Ante Bonus (Straight or better)",
