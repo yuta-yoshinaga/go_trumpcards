@@ -21,6 +21,11 @@
   "handLabel": "Your hand",
   "playersTitle": "Players",
   "declareNotice": "Your turn — declare In (stay) or Out (fold).",
+  "declareMoney": {
+    "chips": "Balance: {{amount}}",
+    "bet": "Bet: {{amount}}",
+    "pot": "Pot: {{amount}}"
+  },
   "badge": {
     "in": "In",
     "out": "Out",

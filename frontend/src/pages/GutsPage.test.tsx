@@ -129,6 +129,35 @@ describe('GutsPage', () => {
     expect(screen.getByRole('button', { name: 'アウト（降りる）' })).toBeInTheDocument();
   });
 
+  it('shows the human chips, round bet, and current pot beside the declare actions', async () => {
+    const state = makeGutsState({
+      phase: 0,
+      pot: 75,
+      players: [
+        { ...declareState.players[0], isHuman: true, chips: 185, roundBet: 15 },
+        ...declareState.players.slice(1),
+      ],
+    });
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<GutsPage />);
+
+    const money = await screen.findByTestId('guts-declare-money');
+    expect(money).toHaveTextContent('残高: 185');
+    expect(money).toHaveTextContent('賭け額: 15');
+    expect(money).toHaveTextContent('ポット: 75');
+    expect(
+      money.compareDocumentPosition(screen.getByRole('button', { name: 'イン（残る）' })) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  it('does not show declaration money after the phase changes to result', async () => {
+    mockExec.mockResolvedValue(resultState);
+    renderWithProviders(<GutsPage />);
+    await screen.findByRole('button', { name: '次のラウンド' });
+    expect(screen.queryByTestId('guts-declare-money')).not.toBeInTheDocument();
+  });
+
   it('dispatches declare in when the In button is clicked', async () => {
     renderWithProviders(<GutsPage />);
     const btn = await screen.findByRole('button', { name: 'イン（残る）' });

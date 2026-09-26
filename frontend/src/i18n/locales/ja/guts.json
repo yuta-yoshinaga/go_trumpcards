@@ -21,6 +21,11 @@
   "handLabel": "あなたの手札",
   "playersTitle": "プレイヤー",
   "declareNotice": "あなたの番です — イン（残る）かアウト（降りる）を選んでください。",
+  "declareMoney": {
+    "chips": "残高: {{amount}}",
+    "bet": "賭け額: {{amount}}",
+    "pot": "ポット: {{amount}}"
+  },
   "badge": {
     "in": "イン",
     "out": "脱落",
