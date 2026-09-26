@@ -143,7 +143,7 @@ func TestAndarBaharCuiPresenter_Output_History(t *testing.T) {
 	fillAndarBaharCuiDefaults(m)
 
 	result := new(AndarBaharCuiPresenter).Output(m, nil)
-	assert.Contains(t, result, "罫線: A B A")
+	assert.Contains(t, result, "罫線: A(アンダー) B(バハール) A(アンダー)")
 	assert.Contains(t, result, "アンダー 2 / バハール 1")
 }
 

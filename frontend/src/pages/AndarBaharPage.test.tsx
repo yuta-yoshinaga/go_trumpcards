@@ -84,6 +84,19 @@ beforeEach(() => {
 });
 
 describe('AndarBaharPage', () => {
+  it('exposes localized names and counts for each road result', async () => {
+    mockApi.mockResolvedValue({
+      ...betState,
+      history: [AndarBaharColumn.ANDAR, AndarBaharColumn.BAHAR, AndarBaharColumn.ANDAR],
+    });
+    renderWithProviders(<AndarBaharPage />);
+
+    const results = await screen.findByRole('list', { name: '履歴の各結果' });
+    expect(results).toHaveTextContent('アンダー');
+    expect(results).toHaveTextContent('バハール');
+    expect(screen.getByText('アンダー 2 件、バハール 1 件')).toBeInTheDocument();
+  });
+
   it('resets on mount', async () => {
     mockApi.mockResolvedValue(betState);
     renderWithProviders(<AndarBaharPage />);

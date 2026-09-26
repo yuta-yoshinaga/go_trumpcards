@@ -10,6 +10,8 @@
     "firstColumn": "Dealt first",
     "dealtCount": "Cards dealt",
     "road": "Road",
+    "roadResults": "Road results",
+    "roadCounts": "Andar {{andar}}, Bahar {{bahar}}",
     "sideBet": "Side bet",
     "sideAmount": "Side bet stake",
     "payoutTable": "Payouts",

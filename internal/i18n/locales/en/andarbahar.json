@@ -17,6 +17,8 @@
   "winnerLine": "{{column}} drew a card matching the joker",
   "payoutLine": "Payout: {{payout}}",
   "historyLine": "Road: {{symbols}}",
+  "historyAndarSymbol": "A(Andar)",
+  "historyBaharSymbol": "B(Bahar)",
   "historyCounts": "Andar {{andar}} / Bahar {{bahar}}",
   "phaseBet": "BET",
   "phaseEnd": "END",
