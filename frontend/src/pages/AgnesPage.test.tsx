@@ -70,7 +70,7 @@ describe('AgnesPage', () => {
 
   it('shows base rank', async () => {
     renderWithProviders(<AgnesPage />);
-    await waitFor(() => expect(screen.getAllByText('ベースランク: 5')).toHaveLength(4));
+    await waitFor(() => expect(screen.getByTestId('agnes-base-rank')).toHaveTextContent('ベースランク: 5'));
   });
 
   it('shows the base rank in each empty foundation and keeps occupied cards visible', async () => {

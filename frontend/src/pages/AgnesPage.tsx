@@ -255,7 +255,7 @@ function AgnesPageContent() {
       cancelGiveUp={cancelGiveUp}
       headerExtra={
         <>
-          <span className="text-sm text-ds-text-muted">
+          <span data-testid="agnes-base-rank" className="text-sm text-ds-text-muted">
             {t('baseRank')}: {state.baseRank || '?'}
           </span>
           <span className="text-sm text-ds-text-muted">
