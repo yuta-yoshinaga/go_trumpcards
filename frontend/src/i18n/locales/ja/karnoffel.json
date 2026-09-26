@@ -10,6 +10,8 @@
   "playersTitle": "プレイヤー",
   "hiddenHand": "非公開 {{count}}枚",
   "yourHand": "あなたの手札",
+  "playableThisTurn": "この手番に出せます",
+  "notPlayableThisTurn": "この手番には出せません",
   "trick": "場",
   "tricksWon": "トリック {{n}}",
   "handsWon": "{{n}}局",
