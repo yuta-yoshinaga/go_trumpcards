@@ -90,6 +90,22 @@ const playPhaseInvalidHandState: Rummy500Response = {
 const roundEndState: Rummy500Response = {
   ...drawPhaseState,
   phase: 2,
+  players: [
+    {
+      ...drawPhaseState.players[0],
+      cards: [
+        { design: 'SPADE', value: 1 },
+        { design: 'HEART', value: 12 },
+      ],
+    },
+    {
+      ...drawPhaseState.players[1],
+      cards: [
+        { design: 'CLOVER', value: 9 },
+        { design: 'DIAMOND', value: 13 },
+      ],
+    },
+  ],
 };
 
 const gameEndState: Rummy500Response = {
@@ -357,6 +373,45 @@ describe('Rummy500Page', () => {
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /次のラウンド/ })).toBeInTheDocument();
     });
+  });
+
+  it('compares every player hand penalty at round end using the shared hand calculation', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<Rummy500Page />);
+    await waitFor(() => {
+      expect(screen.getByTestId('round-hand-penalties')).toBeInTheDocument();
+    });
+    const comparison = screen.getByTestId('round-hand-penalties');
+    expect(comparison).toHaveTextContent('あなた');
+    expect(comparison).toHaveTextContent('-11');
+    expect(comparison).toHaveTextContent('CPU 1');
+    expect(comparison).toHaveTextContent('-19');
+  });
+
+  it('shows every player hand penalty when the game ends', async () => {
+    mockExec.mockResolvedValue({
+      ...gameEndState,
+      players: roundEndState.players,
+    });
+    renderWithProviders(<Rummy500Page />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('round-hand-penalties')).toBeInTheDocument();
+    });
+    const comparison = screen.getByTestId('round-hand-penalties');
+    expect(comparison).toHaveTextContent('あなた');
+    expect(comparison).toHaveTextContent('-11');
+    expect(comparison).toHaveTextContent('CPU 1');
+    expect(comparison).toHaveTextContent('-19');
+  });
+
+  it('does not retain the previous round hand penalties in the next round', async () => {
+    mockExec.mockResolvedValue(drawPhaseState);
+    renderWithProviders(<Rummy500Page />);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /山札から引く/ })).toBeInTheDocument();
+    });
+    expect(screen.queryByTestId('round-hand-penalties')).not.toBeInTheDocument();
   });
 
   it('shows game end celebration', async () => {

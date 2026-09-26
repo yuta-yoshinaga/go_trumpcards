@@ -37,6 +37,7 @@
   "drawDiscardRangeLabel": "Take {{count}} card(s) from {{card}}",
   "pickupBadge": "Take {{count}}",
   "handPenalty": "Hand penalty: -{{points}} pts",
+  "roundHandPenalties": "Hand penalties by player",
   "handPenaltyHint": "If anyone else goes out, this is how many points you lose",
   "winner": {
     "human": "You win!",
