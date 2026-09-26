@@ -373,6 +373,14 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
                         {p.handName}
                       </span>
                     )}
+                    {!isShowdown && !p.folded && !p.handName && p.doorCards?.length > 0 && (
+                      <span
+                        data-testid={`scs-showing-hand-${p.id}`}
+                        className="inline-block ml-2 text-xs text-ds-text-muted"
+                      >
+                        {t('showingHand', { hand: t(`hand.${pokerHandKey(evaluateBestHand(p.doorCards) ?? 0)}`) })}
+                      </span>
+                    )}
                   </div>
                   {/* Door cards (always visible) */}
                   <div className="text-ds-text-muted text-xs mb-0.5">{t('doorCards')}</div>
@@ -515,6 +523,13 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
                   {isShowdown && !humanPlayer.folded && humanPlayer.handName && (
                     <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
                       {humanPlayer.handName}
+                    </span>
+                  )}
+                  {!isShowdown && !humanPlayer.folded && !humanPlayer.handName && humanPlayer.doorCards?.length > 0 && (
+                    <span data-testid="scs-showing-hand-0" className="inline-block ml-2 text-xs text-ds-text-muted">
+                      {t('showingHand', {
+                        hand: t(`hand.${pokerHandKey(evaluateBestHand(humanPlayer.doorCards) ?? 0)}`),
+                      })}
                     </span>
                   )}
                   {isActive && !humanPlayer.folded && currentHandKey && (
