@@ -1,5 +1,7 @@
 {
   "autoComplete": "Auto Complete",
+  "autoCompleteComplete": "Auto-complete is complete. You can resume playing.",
+  "autoCompleteInProgress": "Auto-complete is in progress. Please wait.",
   "autoCompleteNotReady": "Available once a clock face builds past the deal",
   "cardPosAria": "{{card}} (column {{col}}, position {{pos}})",
   "empty": "Empty",
