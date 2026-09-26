@@ -257,6 +257,36 @@ describe('BeggarMyNeighbourPage', () => {
     );
   });
 
+  it('coalesces rapid penalty count updates while autoplaying', async () => {
+    mockExec.mockResolvedValueOnce(penaltyState);
+    renderWithProviders(<BeggarMyNeighbourPage />);
+    const region = await screen.findByTestId('bmn-phase-announce');
+    expect(region).toHaveTextContent('残りペナルティ 3 枚');
+
+    vi.useFakeTimers();
+    try {
+      mockExec.mockResolvedValueOnce({ ...penaltyState, penaltyRemaining: 2 });
+      fireEvent.click(screen.getByTestId('autoplay-button'));
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(450);
+      });
+      expect(mockExec).toHaveBeenCalledWith('step');
+      await act(async () => {
+        await Promise.resolve();
+      });
+      fireEvent.click(screen.getByTestId('autoplay-button'));
+      expect(screen.getByText('残りペナルティ: 2')).toBeInTheDocument();
+      expect(region).toHaveTextContent('残りペナルティ 3 枚');
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(500);
+      });
+      expect(region).toHaveTextContent('残りペナルティ 2 枚');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   // **誰が払っているのかが画面のどこにも出ていなかった** ── サーバは毎レスポンス
   // `penaltyOwnerIdx` を返しているのに一度も読まれていなかった (#6478)。
   it('names the human as the one paying the penalty', async () => {
