@@ -398,6 +398,27 @@ describe('CruelPage autocomplete readiness', () => {
     expect(screen.getByTestId('autocomplete-readiness')).toHaveTextContent('オートコンプリートを実行できます');
   });
 
+  it('keeps the ready message during another pending action', async () => {
+    let resolveShift!: (value: CruelResponse) => void;
+    mockExec.mockImplementation((command) =>
+      command === 'shift'
+        ? new Promise<CruelResponse>((resolve) => {
+            resolveShift = resolve;
+          })
+        : Promise.resolve(playingState),
+    );
+    renderWithProviders(<CruelPage />);
+    const readiness = await screen.findByTestId('autocomplete-readiness');
+    await waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeEnabled());
+    expect(readiness).toHaveTextContent('オートコンプリートを実行できます');
+    fireEvent.click(screen.getByTestId('shift-button'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('shift'));
+    expect(readiness).toHaveTextContent('オートコンプリートを実行できます');
+    expect(readiness.closest('footer')).toBeNull();
+
+    resolveShift(playingState);
+  });
+
   // **組札の中身から推測しない。** Cruel は開始時にエースを組札へ配るので、
   // Congress と同じ「組札に何かあるか」で判定すると常に有効になる。
   it('ignores the foundation contents and trusts the server flag', async () => {

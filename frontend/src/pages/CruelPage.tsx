@@ -593,14 +593,6 @@ function CruelPageContent() {
                   >
                     {t('autoComplete')}
                   </button>
-                  <p
-                    className="text-sm text-ds-text-muted"
-                    role="status"
-                    aria-live="polite"
-                    data-testid="autocomplete-readiness"
-                  >
-                    {state.canAutoComplete && !loading ? t('autoCompleteReady') : t('autoCompleteNotReady')}
-                  </p>
                   <button
                     type="button"
                     className={btnOutline}
@@ -623,6 +615,16 @@ function CruelPageContent() {
               )}
               <ActionShortcutsPanel bindings={actionBindings} data-testid="cruel-kbd-shortcuts" />
             </GameFooter>
+            {isPlaying && (
+              <p
+                className="text-sm text-ds-text-muted"
+                role="status"
+                aria-live="polite"
+                data-testid="autocomplete-readiness"
+              >
+                {state.canAutoComplete ? t('autoCompleteReady') : t('autoCompleteNotReady')}
+              </p>
+            )}
           </div>
         </>
       )}
