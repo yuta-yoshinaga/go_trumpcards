@@ -7,7 +7,6 @@ import { MarjapussiPage } from './MarjapussiPage';
 
 vi.mock('../api/gameApi', () => ({
   marjapussiApi: { exec: vi.fn() },
-  actionLogApi: { marjapussi: vi.fn() },
 }));
 
 const mockExec = vi.mocked(marjapussiApi.exec);
@@ -131,6 +130,45 @@ describe('MarjapussiPage', () => {
     expect(declaredMarriage).toHaveTextContent('♥');
     expect(declaredMarriage).toHaveTextContent('40');
     unmount();
+  });
+
+  it('records each marriage point increase in order and clears history for a new round', async () => {
+    mockExec
+      .mockResolvedValueOnce(makeMarjapussiState({ roundMarriage: [20, 0], trumpSuit: 1, leadPlayerIdx: 0 }))
+      .mockResolvedValueOnce(makeMarjapussiState({ roundMarriage: [40, 0], trumpSuit: 3, leadPlayerIdx: 0 }));
+    renderWithProviders(<MarjapussiPage />);
+    const history = await screen.findByTestId('marjapussi-marriage-history');
+    expect(history).toHaveTextContent('あなた が ♠ を宣言（+20点）');
+    fireEvent.click(screen.getByAltText('♥ Q'));
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+    await waitFor(() => expect(history).toHaveTextContent('あなた が ♥ を宣言（+20点）'));
+    expect(history.querySelectorAll('li')).toHaveLength(2);
+    expect(history.querySelector('[aria-current="true"]')).toHaveTextContent('♥');
+  });
+
+  it('clears marriage history when the round changes', async () => {
+    mockExec
+      .mockResolvedValueOnce(makeMarjapussiState({ phase: 2, roundMarriage: [40, 0], trumpSuit: 3, leadPlayerIdx: 0 }))
+      .mockResolvedValueOnce(makeMarjapussiState({ roundNumber: 2, roundMarriage: [0, 0], trumpSuit: 0 }));
+    renderWithProviders(<MarjapussiPage />);
+    const history = await screen.findByTestId('marjapussi-marriage-history');
+    expect(history).toHaveTextContent('あなた が ♥ を宣言（+40点）');
+    fireEvent.click(screen.getByRole('button', { name: '次のラウンド' }));
+    await waitFor(() => expect(history.querySelectorAll('li')).toHaveLength(0));
+    expect(history).toHaveTextContent('今ラウンドの結婚履歴');
+  });
+
+  it('clears marriage history when a new game starts at the same round number', async () => {
+    mockExec
+      .mockResolvedValueOnce(makeMarjapussiState({ roundMarriage: [20, 0], trumpSuit: 1, leadPlayerIdx: 0 }))
+      .mockResolvedValueOnce(makeMarjapussiState({ roundNumber: 1, roundMarriage: [0, 0], trumpSuit: 0 }));
+    renderWithProviders(<MarjapussiPage />);
+    const history = await screen.findByTestId('marjapussi-marriage-history');
+    expect(history.querySelectorAll('li')).toHaveLength(1);
+
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(history.querySelectorAll('li')).toHaveLength(0));
   });
 
   it('shows a marriage available banner when human has K and Q and is leading', async () => {
