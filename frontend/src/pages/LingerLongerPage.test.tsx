@@ -288,6 +288,7 @@ describe('LingerLongerPage', () => {
       renderWithProviders(<LingerLongerPage />);
       const el = await screen.findByTestId('ll-result');
       expect(el).toHaveTextContent('最後のトリック');
+      expect(el).toHaveTextContent('席2');
       // 持ちこたえた人はいないのだから、そう言ってはいけない。
       expect(el).not.toHaveTextContent('持ち続け');
     });
@@ -297,6 +298,7 @@ describe('LingerLongerPage', () => {
       renderWithProviders(<LingerLongerPage />);
       const el = await screen.findByTestId('ll-result');
       expect(el).toHaveTextContent('投了');
+      expect(el).toHaveTextContent('席1');
       expect(el).not.toHaveTextContent('持ち続け');
     });
 
@@ -305,6 +307,29 @@ describe('LingerLongerPage', () => {
       mockExec.mockResolvedValue(endState({ winnerIdx: 0, winReason: '' }));
       renderWithProviders(<LingerLongerPage />);
       expect(await screen.findByTestId('ll-result')).toHaveTextContent('最後まで手札を持ち続けました');
+    });
+
+    it('omits the seat for a human last-trick win', async () => {
+      mockExec.mockResolvedValue(endState({ winnerIdx: 0, winReason: 'lastTrick' }));
+      renderWithProviders(<LingerLongerPage />);
+      const result = await screen.findByTestId('ll-result');
+      expect(result).not.toHaveTextContent('席');
+    });
+
+    it('shows the CPU seat when the human gives up', async () => {
+      mockExec.mockResolvedValue(endState({ winnerIdx: 3, winReason: 'giveUp' }));
+      renderWithProviders(<LingerLongerPage />);
+      const result = await screen.findByTestId('ll-result');
+      expect(result).toHaveTextContent('CPU3');
+      expect(result).toHaveTextContent('席3');
+      expect(result).toHaveTextContent(/CPU3.*席3/);
+    });
+
+    it('does not show a result when there is no winner', async () => {
+      mockExec.mockResolvedValue(endState({ winnerIdx: -1, winReason: 'lastTrick' }));
+      renderWithProviders(<LingerLongerPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+      expect(screen.queryByTestId('ll-result')).not.toBeInTheDocument();
     });
   });
 });

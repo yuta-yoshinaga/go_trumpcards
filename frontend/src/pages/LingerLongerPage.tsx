@@ -117,12 +117,19 @@ function LingerLongerPageContent() {
     // 勝因で言い分けること。全員が同時に出し切った局には「最後まで持ち続けた
     // 人」がおらず、勝ちは最後のトリックで決まる (#5765)。未知の勝因は通常勝ち
     // に寄せる -- CUI の lingerLongerEndBanner と同じ振り分け。
+    let message: string;
     if (state.winReason === 'lastTrick') {
-      return state.winnerIdx === 0 ? t('result.lastTrickYou') : t('result.lastTrickCpu', { name });
+      message = state.winnerIdx === 0 ? t('result.lastTrickYou') : t('result.lastTrickCpu', { name });
+    } else if (state.winReason === 'giveUp') {
+      message = t('result.giveUp', { name });
+    } else if (state.winnerIdx === 0) {
+      message = t('result.you');
+    } else {
+      message = t('result.cpu', { name });
     }
-    if (state.winReason === 'giveUp') return t('result.giveUp', { name });
-    if (state.winnerIdx === 0) return t('result.you');
-    return t('result.cpu', { name });
+    // CPU 名は席の内部 index（0 始まり）を表示する。人間は「あなた (席0)」を
+    // 避けるため席を省き、CPU の場合だけ同じ番号を席表示にも使う。
+    return state.winnerIdx === 0 ? message : `${message} ${t('result.seat', { seat: String(state.winnerIdx) })}`;
   })();
 
   return (
