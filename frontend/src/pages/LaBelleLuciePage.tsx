@@ -270,15 +270,26 @@ function LaBelleLuciePageContent() {
               <button
                 type="button"
                 key={`fnd-${i}`}
+                aria-label={
+                  pile.length > 0
+                    ? t('foundationAriaLabel', {
+                        suit: t(`suitNames.${pile[pile.length - 1].design.toLowerCase()}`),
+                        count: pile.length,
+                      })
+                    : t('emptyFoundationAriaLabel', { index: i + 1 })
+                }
                 className={`rounded ${selected !== null ? 'ring-1 ring-ds-success' : ''} ${canAct ? 'cursor-pointer' : ''}`}
                 onClick={selected !== null ? sendToFoundation : undefined}
                 disabled={selected === null}
                 data-testid={`foundation-${i}`}
               >
                 {pile.length > 0 ? (
-                  <CardImage card={pile[pile.length - 1]} width={w} />
+                  <span aria-hidden="true">
+                    <CardImage card={pile[pile.length - 1]} width={w} />
+                  </span>
                 ) : (
                   <div
+                    aria-hidden="true"
                     className="rounded border border-dashed border-white/25 bg-black/20"
                     style={{ width: w, height: Math.round(w * 1.4) }}
                   />
