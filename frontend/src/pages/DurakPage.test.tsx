@@ -158,6 +158,23 @@ describe('DurakPage', () => {
     expect(aceBtn).toHaveAttribute('aria-pressed', 'false');
   });
 
+  it('shows the selected hand card beside the action buttons and updates or clears it', async () => {
+    renderWithProviders(<DurakPage />);
+    const aceBtn = await screen.findByRole('button', { name: '♠ A' });
+    const jackBtn = screen.getByRole('button', { name: '♥ J' });
+
+    expect(screen.queryByTestId('durak-selected-card')).not.toBeInTheDocument();
+
+    fireEvent.click(aceBtn);
+    expect(await screen.findByTestId('durak-selected-card')).toHaveTextContent('選択中: ♠ A');
+
+    fireEvent.click(jackBtn);
+    expect(screen.getByTestId('durak-selected-card')).toHaveTextContent('選択中: ♥ J');
+
+    fireEvent.click(jackBtn);
+    expect(screen.queryByTestId('durak-selected-card')).not.toBeInTheDocument();
+  });
+
   it('shows attack button when human is attacker in attack phase', async () => {
     renderWithProviders(<DurakPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '攻撃' })).toBeInTheDocument());
