@@ -16,6 +16,10 @@
   "round": "ラウンド {{n}}",
   "trick": "トリック {{n}}",
   "handSize": "手札 {{n}}枚",
+  "playerHandCount": {
+    "current": "手札 {{count}}枚",
+    "next": "次ラウンド {{count}}枚"
+  },
   "trump": "切り札 {{suit}}",
   "trumpSelectPrompt": "あなたがラウンド勝者です。次ラウンドの切り札を選んでください:",
   "trumpSelectSuit": "切り札を{{suit}}にする",

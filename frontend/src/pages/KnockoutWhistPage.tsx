@@ -165,6 +165,8 @@ function KnockoutWhistPageContent() {
     const isLeader = !isGameEnd && state.leadPlayerIdx === p.id;
     const isRoundWinner = (isRoundEnd || isGameEnd) && state.roundWinnerIdx === p.id;
     const isDogboneWarning = !p.eliminated && p.dogbones === 0;
+    const showHandCount = !p.eliminated;
+    const showNextHandSize = showHandCount && (isPlayPhase || isTrickEnd) && state.handSize > 1;
     return (
       <div
         key={p.id}
@@ -177,6 +179,12 @@ function KnockoutWhistPageContent() {
             ? ` — ${t('eliminated')}`
             : ` — ${t('roundTricks', { count: p.roundTricks })} · ${t('dogbones', { count: p.dogbones })}`}
         </span>
+        {showHandCount && (
+          <span data-testid="kw-player-hand-count" className="text-ds-text-muted">
+            {t('playerHandCount.current', { count: p.cardCount })}
+            {showNextHandSize && ` · ${t('playerHandCount.next', { count: nextHandSize })}`}
+          </span>
+        )}
         {isLeader && <span className={`px-1.5 py-0.5 rounded text-xs ${badgeInfoColors}`}>{t('leader')}</span>}
         {isRoundWinner && (
           <span className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>{t('roundWinner')}</span>
