@@ -64,6 +64,48 @@ beforeEach(() => {
 });
 
 describe('StealingBundlesPage', () => {
+  it('announces available actions and targets, selection changes, and turn end in a persistent live region', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        tableCards: [card('CLOVER', 7), card('HEART', 7)],
+        tableMatches: { '0': [0, 1] },
+        stealTargets: { '0': [2] },
+        players: [seat(0), seat(1), seat(2, { bundleSize: 3 }), seat(3)],
+      }),
+    );
+    renderWithProviders(<StealingBundlesPage />);
+    await screen.findByTestId('sb-table');
+    const live = screen.getByTestId('sb-action-announcement');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toBeEmptyDOMElement();
+
+    selectCard(0);
+    expect(live).toHaveTextContent('♣ 7、♥ 7');
+    expect(live).toHaveTextContent('CPU2');
+    expect(live).toHaveTextContent('場から取る');
+    expect(live).toHaveTextContent('奪う');
+    expect(live).not.toHaveTextContent('場に置く');
+
+    fireEvent.click(screen.getByRole('button', { name: '選び直す' }));
+    expect(live).toHaveTextContent('選択を解除');
+
+    selectCard(0);
+    fireEvent.click(screen.getByTestId('sb-take-btn'));
+    expect(live).toHaveTextContent('手番が終了');
+  });
+
+  it('announces trailing as the only action when no capture is available', async () => {
+    mockExec.mockResolvedValue(makeState({ canCapture: false, tableMatches: {}, stealTargets: {} }));
+    renderWithProviders(<StealingBundlesPage />);
+    await screen.findByTestId('sb-table');
+    const live = screen.getByTestId('sb-action-announcement');
+    selectCard(2);
+
+    expect(live).toHaveTextContent('場に置く');
+    expect(live).not.toHaveTextContent('場から取る');
+    expect(live).not.toHaveTextContent('奪う');
+  });
+
   it('names every table card captured by take', async () => {
     mockExec.mockResolvedValue(
       makeState({ tableCards: [card('CLOVER', 7), card('HEART', 7)], tableMatches: { '0': [0, 1] } }),

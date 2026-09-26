@@ -61,6 +61,7 @@ function StealingBundlesPageContent() {
   const { hint, hintEnabled, setHintEnabled } = useGameHint('stealingbundles', state);
   const [playerCnt, setPlayerCnt] = useState(4);
   const [selected, setSelected] = useState<number | null>(null);
+  const [actionAnnouncement, setActionAnnouncement] = useState('');
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('stealingbundles');
   const cliConfig: CliGameConfig<StealingBundlesResponse, Parameters<typeof stealingbundlesApi.exec>> = useMemo(
@@ -81,31 +82,35 @@ function StealingBundlesPageContent() {
   const handleReset = useCallback(() => {
     hideActionLog();
     setSelected(null);
+    setActionAnnouncement(t('status.turnEnded'));
     void dispatch('reset', undefined, undefined, { playerCnt });
-  }, [dispatch, hideActionLog, playerCnt]);
+  }, [dispatch, hideActionLog, playerCnt, t]);
 
   const handleTake = useCallback(
     (idx: number) => {
       setSelected(null);
+      setActionAnnouncement(t('status.turnEnded'));
       void dispatch('take', idx);
     },
-    [dispatch],
+    [dispatch, t],
   );
 
   const handleSteal = useCallback(
     (idx: number, victim: number) => {
       setSelected(null);
+      setActionAnnouncement(t('status.turnEnded'));
       void dispatch('steal', idx, victim);
     },
-    [dispatch],
+    [dispatch, t],
   );
 
   const handleTrail = useCallback(
     (idx: number) => {
       setSelected(null);
+      setActionAnnouncement(t('status.turnEnded'));
       void dispatch('trail', idx);
     },
-    [dispatch],
+    [dispatch, t],
   );
 
   const handleGiveUp = useCallback(() => {
@@ -129,6 +134,21 @@ function StealingBundlesPageContent() {
   const selectedSteals = selected === null ? [] : (state.stealTargets[String(selected)] ?? []);
   // **取れるときは置けません。** サーバが必ず拒否するので、ボタンも出しません。
   const canTrailSelected = selected !== null && !state.canCapture;
+  const actionLabelsFor = (idx: number) => {
+    const takes = state.tableMatches[String(idx)] ?? [];
+    const steals = state.stealTargets[String(idx)] ?? [];
+    return [
+      ...(takes.length > 0
+        ? [
+            t('actions.take', {
+              cards: takes.map((i) => cardAlt(state.tableCards[i])).join(t('listSeparator')),
+            }),
+          ]
+        : []),
+      ...steals.map((victim) => t('actions.steal', { name: seatName(victim) })),
+      ...(!state.canCapture ? [t('actions.trail')] : []),
+    ];
+  };
 
   const resultBanner = (() => {
     if (!isGameEnd || state.winnerIdx < 0) return null;
@@ -155,6 +175,9 @@ function StealingBundlesPageContent() {
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
+          <div className="sr-only" role="status" aria-live="polite" data-testid="sb-action-announcement">
+            {actionAnnouncement}
+          </div>
           <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
             <div className="text-ds-text-primary text-center mb-2" data-testid="sb-header">
               {/* **山札を配り切ってもゲームは続く。**Pasur と同じ「○パック目」で
@@ -265,7 +288,15 @@ function StealingBundlesPageContent() {
                       <button
                         key={`${card.design}-${card.value}-${idx}`}
                         type="button"
-                        onClick={() => setSelected(idx)}
+                        onClick={() => {
+                          setSelected(idx);
+                          setActionAnnouncement(
+                            t('status.availableActions', {
+                              card: cardAlt(card),
+                              actions: actionLabelsFor(idx).join(t('listSeparator')) || t('status.noActions'),
+                            }),
+                          );
+                        }}
                         disabled={loading || !isHumanTurn}
                         aria-label={t('actions.selectAria', { card: cardAlt(card) })}
                         aria-pressed={selected === idx}
@@ -327,7 +358,15 @@ function StealingBundlesPageContent() {
                     {t('actions.trail')}
                   </button>
                 )}
-                <button type="button" className={btnSecondary} onClick={() => setSelected(null)} disabled={loading}>
+                <button
+                  type="button"
+                  className={btnSecondary}
+                  onClick={() => {
+                    setSelected(null);
+                    setActionAnnouncement(t('status.deselected'));
+                  }}
+                  disabled={loading}
+                >
                   {t('actions.cancel')}
                 </button>
               </div>

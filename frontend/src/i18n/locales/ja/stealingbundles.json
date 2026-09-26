@@ -1,4 +1,5 @@
 {
+  "listSeparator": "、",
   "phase": {
     "play": "プレイ中",
     "gameEnd": "終了"
@@ -33,7 +34,11 @@
     "mustCapture": "取れる手があります。場に置くことはできません。",
     "trailOnly": "取れる手がありません。場に置いてください。",
     "waiting": "相手の番です。",
-    "selected": "{{card}} を選びました。どうしますか？"
+    "selected": "{{card}} を選びました。どうしますか？",
+    "availableActions": "{{card}} でできること: {{actions}}。",
+    "noActions": "できる行動はありません",
+    "deselected": "カードの選択を解除しました。",
+    "turnEnded": "手番が終了しました。"
   },
   "result": {
     "you": "あなたの勝ち！ {{n}} 枚でいちばん多く集めました。",
