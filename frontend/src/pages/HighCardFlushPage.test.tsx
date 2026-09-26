@@ -432,6 +432,48 @@ describe('HighCardFlushPage', () => {
     expect(straightFlushInput).toHaveAttribute('aria-describedby', 'highcardflush-balance-error');
   });
 
+  it('describes an invalid flush bonus bet with its translated error', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<HighCardFlushPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+
+    const flushBonusInput = screen.getByLabelText('フラッシュボーナス');
+    fireEvent.change(flushBonusInput, { target: { value: '15' } });
+
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'フラッシュボーナスは0または10〜10000の範囲で10単位で入力してください',
+    );
+    expect(flushBonusInput).toHaveAttribute('aria-invalid', 'true');
+    expect(flushBonusInput).toHaveAttribute('aria-describedby', 'highcardflush-flush-bonus-error');
+  });
+
+  it('describes an invalid straight flush bet with its translated error', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<HighCardFlushPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+
+    const straightFlushInput = screen.getByLabelText('ストレートフラッシュ');
+    fireEvent.change(straightFlushInput, { target: { value: '15' } });
+
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'ストレートフラッシュは0または10〜10000の範囲で10単位で入力してください',
+    );
+    expect(straightFlushInput).toHaveAttribute('aria-invalid', 'true');
+    expect(straightFlushInput).toHaveAttribute('aria-describedby', 'highcardflush-straight-flush-error');
+  });
+
+  it('shows invalid ante and insufficient balance errors together', async () => {
+    mockExec.mockResolvedValue(betPhaseState);
+    renderWithProviders(<HighCardFlushPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+
+    fireEvent.change(screen.getByLabelText('アンテ'), { target: { value: '15' } });
+    fireEvent.change(screen.getByLabelText('フラッシュボーナス'), { target: { value: '1000' } });
+
+    expect(screen.getByRole('alert')).toHaveTextContent('アンテは10〜10000の範囲で10単位で入力してください');
+    expect(screen.getByRole('alert')).toHaveTextContent('合計ベット1015、所持チップ1000');
+  });
+
   it('places bet with valid amounts across ante and side bets', async () => {
     mockExec.mockResolvedValue(betPhaseState);
     renderWithProviders(<HighCardFlushPage />);
