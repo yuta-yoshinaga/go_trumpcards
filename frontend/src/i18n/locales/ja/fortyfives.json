@@ -53,7 +53,12 @@
   "roundResult": {
     "title": "ラウンド結果",
     "teamA": "チームA: {{points}}点",
-    "teamB": "チームB: {{points}}点"
+    "teamB": "チームB: {{points}}点",
+    "contract": "{{team}}（落札）: 契約{{contract}}点 / 獲得{{got}}点 — {{status}}",
+    "status": {
+      "made": "契約達成",
+      "failed": "契約未達"
+    }
   },
   "livePoints": {
     "title": "ライブ得点",
