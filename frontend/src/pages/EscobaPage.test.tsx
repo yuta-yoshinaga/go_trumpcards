@@ -47,6 +47,51 @@ describe('EscobaPage', () => {
     expect(screen.getByTestId('escoba-card-values')).toHaveTextContent('捕獲判定では、J=8、Q=9、K=10として数えます。');
   });
 
+  it('identifies the exact selected capture combination and keeps an unmatched total neutral', async () => {
+    mockExec.mockResolvedValue(
+      makeEscobaState({
+        tableCards: [
+          { design: 'SPADE', value: 4 },
+          { design: 'HEART', value: 4 },
+          { design: 'CLOVER', value: 4 },
+        ],
+        handCaptures: [[[0, 1]], [], []],
+      }),
+    );
+    renderWithProviders(<EscobaPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+
+    fireEvent.click(screen.getByTestId('table-card-0'));
+    fireEvent.click(screen.getByTestId('table-card-1'));
+    expect(screen.getByTestId('escoba-matched-capture-1')).toBeInTheDocument();
+    expect(screen.getByTestId('escoba-matched-card-0')).toHaveTextContent('1');
+    expect(screen.getByTestId('escoba-matched-card-1')).toHaveTextContent('1');
+    expect(screen.getByTestId('escoba-sum-indicator')).toHaveClass('text-ds-success');
+
+    fireEvent.click(screen.getByTestId('table-card-1'));
+    fireEvent.click(screen.getByTestId('table-card-2'));
+    expect(screen.getByTestId('escoba-sum-indicator')).toHaveTextContent('合計 15 / 15');
+    expect(screen.getByTestId('escoba-sum-indicator')).not.toHaveClass('text-ds-success');
+    expect(screen.queryByTestId('escoba-matched-capture-1')).not.toBeInTheDocument();
+    expect(screen.getByTestId('take-button')).toBeInTheDocument();
+  });
+
+  it('distinguishes multiple capture combinations with separate identifiers', async () => {
+    mockExec.mockResolvedValue(makeEscobaState({ handCaptures: [[[0], [1]], [], []] }));
+    renderWithProviders(<EscobaPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+
+    fireEvent.click(screen.getByTestId('table-card-0'));
+    expect(screen.getByTestId('escoba-matched-capture-1')).toBeInTheDocument();
+    expect(screen.queryByTestId('escoba-matched-capture-2')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId('table-card-0'));
+    fireEvent.click(screen.getByTestId('table-card-1'));
+    expect(screen.getByTestId('escoba-matched-capture-2')).toBeInTheDocument();
+  });
+
   it('renders per-player scores and stock', async () => {
     renderWithProviders(<EscobaPage />);
     await waitFor(() => expect(screen.getByTestId('player-score-0')).toBeInTheDocument());

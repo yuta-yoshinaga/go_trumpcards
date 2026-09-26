@@ -79,6 +79,21 @@ function captureCandidateIndices(handCaptures: number[][][], handIndex: number):
   return indices;
 }
 
+/** Returns the one-based candidate number when selected table cards exactly match a capture set. */
+function matchedCaptureCandidate(
+  handCaptures: number[][][],
+  handIndex: number,
+  selectedIndices: number[],
+): number | null {
+  if (selectedIndices.length === 0) return null;
+  const selected = new Set(selectedIndices);
+  const candidates = handCaptures[handIndex] ?? [];
+  const index = candidates.findIndex(
+    (candidate) => candidate.length === selected.size && candidate.every((tableIndex) => selected.has(tableIndex)),
+  );
+  return index < 0 ? null : index + 1;
+}
+
 /** Escoba card point value (mirrors the backend ScopaCardValue): A(1)–7 count as their pip;
  * J(11)=8, Q(12)=9, K(13)=10 in the 40-card Spanish deck. */
 export function escobaCardValue(c: Card): number {
@@ -189,6 +204,8 @@ function EscobaPageContent() {
   // Live 15-counter: once a hand card is picked, show its value plus the selected table cards.
   const selectedHandCard = handIndex !== null ? (human.cards[handIndex] ?? null) : null;
   const selectionSum = selectedHandCard ? escobaSelectionSum(selectedHandCard, state.tableCards, tableIndices) : null;
+  const matchedCandidate =
+    handIndex !== null && isHumanTurn ? matchedCaptureCandidate(state.handCaptures, handIndex, tableIndices) : null;
   const phaseName = isGameEnd ? t('phase.gameEnd') : t(`phase.${state.phase}`, t('phase.play'));
   const detail = state.lastRoundDetail;
 
@@ -274,10 +291,31 @@ function EscobaPageContent() {
                   aria-live="polite"
                   data-testid="escoba-sum-indicator"
                   className={`text-center text-sm font-bold mb-1 ${
-                    selectionSum === 15 ? 'text-ds-success' : selectionSum > 15 ? 'text-ds-error' : 'text-ds-text-muted'
+                    selectionSum === 15 && matchedCandidate !== null
+                      ? 'text-ds-success'
+                      : selectionSum > 15
+                        ? 'text-ds-error'
+                        : 'text-ds-text-muted'
                   }`}
                 >
                   {t('sumIndicator', { sum: selectionSum, target: 15 })}
+                </div>
+              )}
+              {matchedCandidate !== null && (
+                <div
+                  role="status"
+                  className={`text-center text-xs font-semibold ${
+                    matchedCandidate % 4 === 1
+                      ? 'text-ds-success'
+                      : matchedCandidate % 4 === 2
+                        ? 'text-ds-info'
+                        : matchedCandidate % 4 === 3
+                          ? 'text-ds-accent'
+                          : 'text-ds-warning'
+                  } mb-1`}
+                  data-testid={`escoba-matched-capture-${matchedCandidate}`}
+                >
+                  {t('captureCombination', { number: matchedCandidate })}
                 </div>
               )}
               <div className="text-center text-xs text-ds-text-muted mb-2">{t('label.tableCards')}</div>
@@ -290,22 +328,43 @@ function EscobaPageContent() {
                 ) : (
                   state.tableCards.map((c, i) => {
                     const isCandidate = takeCandidateIndices.has(i);
+                    const isMatchedCard = matchedCandidate !== null && tableIndices.includes(i);
+                    const matchColors = [
+                      { text: 'text-ds-success', ring: 'ring-ds-success' },
+                      { text: 'text-ds-info', ring: 'ring-ds-info' },
+                      { text: 'text-ds-accent', ring: 'ring-ds-accent' },
+                      { text: 'text-ds-warning', ring: 'ring-ds-warning' },
+                    ];
+                    const matchColor = matchedCandidate
+                      ? matchColors[(matchedCandidate - 1) % matchColors.length]
+                      : matchColors[0];
                     return (
                       <button
                         key={i}
                         type="button"
                         onClick={() => isHumanTurn && toggleTable(i)}
                         disabled={!isHumanTurn}
-                        className={`rounded transition-all ${
-                          tableIndices.includes(i)
-                            ? 'ring-2 ring-ds-warning -translate-y-1'
-                            : isCandidate
-                              ? 'ring-2 ring-ds-success motion-safe:animate-pulse'
-                              : ''
+                        className={`relative rounded transition-all ${
+                          isMatchedCard
+                            ? `ring-4 ring-offset-2 ring-offset-ds-surface ${matchColor.ring}`
+                            : tableIndices.includes(i)
+                              ? 'ring-2 ring-ds-warning -translate-y-1'
+                              : isCandidate
+                                ? 'ring-2 ring-ds-success motion-safe:animate-pulse'
+                                : ''
                         } ${isHumanTurn ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
                         data-testid={`table-card-${i}`}
                         data-take-candidate={isCandidate || undefined}
+                        data-matched-capture={isMatchedCard ? matchedCandidate : undefined}
                       >
+                        {isMatchedCard && (
+                          <span
+                            className={`absolute -top-2 -right-2 z-10 rounded-full bg-ds-surface px-1.5 text-xs font-bold ${matchColor.text}`}
+                            data-testid={`escoba-matched-card-${i}`}
+                          >
+                            {matchedCandidate}
+                          </span>
+                        )}
                         <AnimatedCard card={c} width={cardWidth * 0.9} />
                       </button>
                     );

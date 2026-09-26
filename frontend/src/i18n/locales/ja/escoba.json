@@ -69,6 +69,7 @@
     "resetButton": "ゲームをリセットします。"
   },
   "sumIndicator": "合計 {{sum}} / {{target}}",
+  "captureCombination": "捕獲できる組み合わせ {{number}}",
   "frontendHint": {
     "escobaEscoba": "場の札を全部さらえます。エスコバで 1 点です",
     "escobaCaptureMost": "一番多く取れる札です",
