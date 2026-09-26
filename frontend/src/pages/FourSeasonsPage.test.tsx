@@ -95,6 +95,33 @@ describe('FourSeasonsPage', () => {
     expect(screen.getByTestId('fs-foundation-next-1')).toHaveTextContent('7');
   });
 
+  it('places the tableau cross and foundation corners in the wide board grid', async () => {
+    renderWithProviders(<FourSeasonsPage />);
+    await screen.findByTestId('fs-foundation-0');
+    const expectedCells = [
+      ['fs-tableau-0', '1 / 2'],
+      ['fs-tableau-1', '2 / 1'],
+      ['fs-tableau-2', '2 / 2'],
+      ['fs-tableau-3', '2 / 3'],
+      ['fs-tableau-4', '3 / 2'],
+      ['fs-foundation-0', '1 / 1'],
+      ['fs-foundation-1', '1 / 3'],
+      ['fs-foundation-2', '3 / 1'],
+      ['fs-foundation-3', '3 / 3'],
+    ];
+
+    for (const [testId, cell] of expectedCells) {
+      const button = screen.getByTestId(testId);
+      expect(button.closest('[data-board-cell]')).toHaveAttribute('data-board-cell', cell);
+    }
+
+    for (const tutorialTarget of ['fs-foundations', 'fs-cross']) {
+      const target = document.querySelector(`[data-tutorial="${tutorialTarget}"]`);
+      expect(target).not.toBeNull();
+      expect(target).not.toHaveClass('contents');
+    }
+  });
+
   it('draws from the stock', async () => {
     renderWithProviders(<FourSeasonsPage />);
     await waitFor(() => expect(screen.getByTestId('fs-draw-button')).toBeInTheDocument());
