@@ -14,6 +14,12 @@
   "remove": "Remove",
   "removeAll": "Discard All",
   "move": "Move",
+  "cardLabel": "Column {{column}}, {{card}}, {{action}}",
+  "cardAction": {
+    "removable": "removable",
+    "movable": "movable",
+    "unavailable": "not actionable"
+  },
   "giveup": "Give Up",
   "hint": "Hint",
   "undo": "Undo",

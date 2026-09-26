@@ -14,6 +14,12 @@
   "remove": "除去",
   "removeAll": "まとめて捨てる",
   "move": "移動",
+  "cardLabel": "列{{column}}、{{card}}、{{action}}",
+  "cardAction": {
+    "removable": "除去可能",
+    "movable": "移動可能",
+    "unavailable": "操作不可"
+  },
   "giveup": "ギブアップ",
   "hint": "ヒント",
   "undo": "元に戻す",

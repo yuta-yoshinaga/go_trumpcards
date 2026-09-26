@@ -262,7 +262,17 @@ function AcesUpPageContent() {
                                   type="button"
                                   onClick={() => handleRemove(colIdx)}
                                   disabled={isCardDisabled}
-                                  aria-label={cardAlt(c.card)}
+                                  aria-label={t('cardLabel', {
+                                    column: colIdx + 1,
+                                    card: cardAlt(c.card),
+                                    action: t(
+                                      c.removable
+                                        ? 'cardAction.removable'
+                                        : c.movable
+                                          ? 'cardAction.movable'
+                                          : 'cardAction.unavailable',
+                                    ),
+                                  })}
                                   draggable={isPlaying && !busy && c.movable === true}
                                   onDragStart={dnd.handleDragStart(columnZone)}
                                   onDragEnd={dnd.handleDragEnd}
@@ -280,7 +290,9 @@ function AcesUpPageContent() {
                                       ↗
                                     </span>
                                   )}
-                                  <AnimatedCard card={c.card} width={cardWidth} />
+                                  <span aria-hidden="true">
+                                    <AnimatedCard card={c.card} width={cardWidth} />
+                                  </span>
                                 </button>
                               </div>
                             );

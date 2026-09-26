@@ -122,9 +122,9 @@ describe('AcesUpPage', () => {
     renderWithProviders(<AcesUpPage />);
     await waitFor(() => expect(screen.getByText(/山札 \(/)).toBeInTheDocument());
 
-    const removableCard = screen.getByRole('button', { name: '♠ 5' });
-    const movableCard = screen.getByRole('button', { name: '♠ 9' });
-    const unavailableCard = screen.getByRole('button', { name: '♦ 6' });
+    const removableCard = screen.getByRole('button', { name: /♠ 5/ });
+    const movableCard = screen.getByRole('button', { name: /♠ 9/ });
+    const unavailableCard = screen.getByRole('button', { name: /♦ 6/ });
 
     expect(removableCard).not.toHaveClass('opacity-50');
     expect(removableCard).not.toHaveClass('grayscale');
@@ -141,6 +141,25 @@ describe('AcesUpPage', () => {
     expect(unavailableCard).not.toHaveTextContent('↗');
   });
 
+  it('announces the column, card, and available action for each top card', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      columns: [
+        [makeCard(card('SPADE', 5), { top: true, removable: true })],
+        [makeCard(card('SPADE', 9), { top: true, movable: true })],
+        [makeCard(card('SPADE', 5), { top: true, removable: true })],
+        [makeCard(card('DIAMOND', 6), { top: true })],
+      ],
+    });
+    renderWithProviders(<AcesUpPage />);
+    await waitFor(() => expect(screen.getByText(/山札 \(/)).toBeInTheDocument());
+
+    expect(screen.getByRole('button', { name: '列1、♠ 5、除去可能' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '列2、♠ 9、移動可能' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '列3、♠ 5、除去可能' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '列4、♦ 6、操作不可' })).toBeInTheDocument();
+  });
+
   it('keeps the movable marker visible alongside a hint ring', async () => {
     renderWithProviders(<AcesUpPage />);
     await waitFor(() => expect(screen.getByText(/山札 \(/)).toBeInTheDocument());
@@ -148,7 +167,7 @@ describe('AcesUpPage', () => {
     mockExec.mockResolvedValue({ ...playingState, hint: { type: 'move', col: 1 } });
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
     await waitFor(() => {
-      const hintedMovableCard = screen.getByRole('button', { name: '♠ 9' });
+      const hintedMovableCard = screen.getByRole('button', { name: /♠ 9/ });
       expect(hintedMovableCard).toHaveClass('ring-2', 'ring-ds-warning', 'border', 'border-ds-info');
       expect(hintedMovableCard).toHaveTextContent('↗');
       expect(hintedMovableCard).not.toHaveClass('ring-ds-info');
@@ -242,7 +261,7 @@ describe('AcesUpPage', () => {
 
     // Drag col1's movable 9♠ (the only movable top card) onto the empty col2.
     const dataTransfer = buildDataTransfer();
-    fireEvent.dragStart(screen.getByRole('button', { name: '♠ 9' }), { dataTransfer });
+    fireEvent.dragStart(screen.getByRole('button', { name: /♠ 9/ }), { dataTransfer });
     const dropZone = screen.getByTestId('acesup-empty-2');
     fireEvent.dragOver(dropZone, { dataTransfer });
     fireEvent.drop(dropZone, { dataTransfer });
