@@ -19,6 +19,7 @@
   "trick": "Trick {{n}}",
   "winningBid": "Bid: {{bid}}",
   "trump": "Trump: {{suit}}",
+  "trumpUndecided": "Undecided",
   "bidNone": "-",
   "bidEntrar": "Entrar",
   "bidSolo": "Solo",
