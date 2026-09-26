@@ -465,6 +465,7 @@ function SevensPageContent() {
                 disabled={loading || !canPass}
                 onClick={() => exec('play', -1)}
                 data-tutorial="sv-play-pass"
+                title={passDisabledReason ?? undefined}
                 aria-describedby={passDisabledReason ? 'pass-disabled-reason' : undefined}
               >
                 {passesRemaining === null ? tc('button.pass') : t('passRemaining', { count: passesRemaining })}
@@ -473,7 +474,7 @@ function SevensPageContent() {
                 <p
                   id="pass-disabled-reason"
                   data-testid="pass-disabled-reason"
-                  className="text-ds-text-primary text-xs mt-1"
+                  className="text-xs text-ds-text-muted mt-1"
                 >
                   {passDisabledReason}
                 </p>

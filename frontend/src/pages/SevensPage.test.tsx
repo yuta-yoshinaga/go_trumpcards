@@ -261,6 +261,7 @@ describe('SevensPage', () => {
     renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: /パス/ })).toBeDisabled());
     expect(screen.getByText('パスできる回数の上限に達しました')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /パス/ })).toHaveAttribute('title', 'パスできる回数の上限に達しました');
   });
 
   it('does not show a disabled reason when passing is available', async () => {
