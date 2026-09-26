@@ -267,7 +267,7 @@ function StreetsAndAlleysPageContent() {
                           }
                         }}
                         disabled={!isPlaying || loading || (!isTop && !selectedSource)}
-                        aria-label={cardAlt(tc.card)}
+                        aria-label={t('tableauCardAriaLabel', { card: cardAlt(tc.card), col: colIdx })}
                         aria-pressed={isSelfSource}
                         data-target-candidate={isTargetCandidate || undefined}
                         data-preview-target={isTargetCandidate && preview.isPreview ? 'true' : undefined}
