@@ -161,6 +161,38 @@ describe('RistikontraPage', () => {
     );
     fireEvent.click(cardBtn);
     expect(await screen.findByTestId('ristikontra-counter-celebration')).toBeInTheDocument();
+    expect(screen.getByTestId('ristikontra-counter-announcement')).toHaveTextContent('打ち返し！ 束を奪いました');
+  });
+
+  it('keeps a live status mounted and announces only a counter', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          { ...playState.players[0], capturedCount: 1 },
+          makePlayer({ id: 1, capturedCount: 6 }),
+          makePlayer({ id: 2 }),
+          makePlayer({ id: 3 }),
+        ],
+      }),
+    );
+    renderWithProviders(<RistikontraPage />);
+    const announcement = await screen.findByTestId('ristikontra-counter-announcement');
+    expect(announcement).toHaveAttribute('role', 'status');
+    expect(announcement).toBeEmptyDOMElement();
+
+    const cardBtn = await screen.findByTestId('hand-card-1');
+    mockExec.mockResolvedValueOnce(
+      makeState({
+        players: [
+          { ...playState.players[0], capturedCount: 7 },
+          makePlayer({ id: 1, capturedCount: 0 }),
+          makePlayer({ id: 2 }),
+          makePlayer({ id: 3 }),
+        ],
+      }),
+    );
+    fireEvent.click(cardBtn);
+    await waitFor(() => expect(announcement).toHaveTextContent('打ち返し！ 束を奪いました'));
   });
 
   it('stays quiet on an ordinary capture, where nobody loses cards', async () => {
@@ -179,6 +211,7 @@ describe('RistikontraPage', () => {
     fireEvent.click(cardBtn);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.queryByTestId('ristikontra-counter-celebration')).not.toBeInTheDocument();
+    expect(screen.getByTestId('ristikontra-counter-announcement')).toBeEmptyDOMElement();
   });
 
   it('does not mistake a new deal for a counter', async () => {
