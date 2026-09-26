@@ -16,6 +16,7 @@
   },
   "round": "Round {{n}}",
   "deck": "Stock: {{count}}",
+  "deckChanged": "Cards remaining in the stock: {{count}}.",
   "koikoiCount": "Koi-Koi: {{count}}",
   "field": "Field",
   "fieldEmpty": "(empty)",

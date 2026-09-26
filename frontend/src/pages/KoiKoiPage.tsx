@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { koikoiApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -113,12 +113,22 @@ function KoiKoiPageContent() {
     hintEnabled: frontendHintEnabled,
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('koikoi', state);
+  const previousDeckCount = useRef<number | null>(null);
+  const [deckAnnouncement, setDeckAnnouncement] = useState('');
 
   // Fetch a fresh game on mount.
   // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
   useEffect(() => {
     callApi('reset');
   }, []);
+
+  useEffect(() => {
+    if (!state) return;
+    if (previousDeckCount.current !== null && previousDeckCount.current !== state.remainingDeck) {
+      setDeckAnnouncement(t('deckChanged', { count: state.remainingDeck }));
+    }
+    previousDeckCount.current = state.remainingDeck;
+  }, [state, t]);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('koikoi');
   const cliConfig: CliGameConfig<KoiKoiResponse, Parameters<typeof koikoiApi.exec>> = useMemo(
@@ -227,6 +237,9 @@ function KoiKoiPageContent() {
               <span className="mr-3">{t('round', { n: state.roundNumber })}</span>
               <span className="mr-3">{t('deck', { count: state.remainingDeck })}</span>
               <span>{t('koikoiCount', { count: state.koikoiCount })}</span>
+            </div>
+            <div data-testid="koikoi-deck-live" role="status" aria-live="polite" aria-atomic="true" className="sr-only">
+              {deckAnnouncement}
             </div>
 
             {/* CPU captured + yaku */}
