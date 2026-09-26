@@ -346,6 +346,9 @@ function SevenBridgePageContent() {
                   <span id="sb-select-two-hint" className="sr-only" data-testid="sb-select-two-hint">
                     {selectedCardIndices.length === 2 ? t('requirementMet') : t('requireTwo')}
                   </span>
+                  <span className="text-ds-text-muted text-sm tabular-nums" data-testid="sb-select-two-progress">
+                    {t('ponChiSelectionProgress', { selected: selectedCardIndices.length, required: 2 })}
+                  </span>
                   <button
                     type="button"
                     className={btnPrimary}
