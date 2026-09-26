@@ -142,6 +142,11 @@ describe('PyramidPage', () => {
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
   });
 
+  it('includes the remaining stock count in the draw button name', async () => {
+    renderWithProviders(<PyramidPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '引く（山札の残り20枚）' })).toBeInTheDocument());
+  });
+
   it('renders stock count', async () => {
     renderWithProviders(<PyramidPage />);
     await waitFor(() => expect(screen.getByText(/山札 \(/)).toBeInTheDocument());
@@ -518,7 +523,7 @@ describe('PyramidPage', () => {
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(playingState);
-    const drawLabel = screen.getByLabelText('引く');
+    const drawLabel = screen.getByLabelText('引く（山札の残り20枚）');
     if (drawLabel) {
       fireEvent.click(drawLabel);
       await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));

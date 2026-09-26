@@ -9,6 +9,7 @@
   "waste": "Waste",
   "moveCount": "Moves",
   "draw": "Draw",
+  "drawStock": "Draw ({{count}} cards remaining in stock)",
   "giveup": "Give Up",
   "hint": "Hint",
   "undo": "Undo",

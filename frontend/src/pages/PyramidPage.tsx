@@ -350,7 +350,7 @@ function PyramidPageContent() {
                   <AnimatedCardBack
                     width={effectiveCardWidth}
                     onClick={isPlaying ? handleDraw : undefined}
-                    ariaLabel={t('draw')}
+                    ariaLabel={t('drawStock', { count: state.stockCount })}
                   />
                 ) : (
                   <div
