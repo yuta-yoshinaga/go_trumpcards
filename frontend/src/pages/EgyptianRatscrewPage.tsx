@@ -92,8 +92,11 @@ function EgyptianRatscrewPageContent() {
       ) {
         return;
       }
-      const player = res.isHumanTurn ? tc('player.you') : tc('player.cpu', { id: res.currentTurnIdx });
-      setStepAnnounce(t('egyptianratscrew.stepAnnounce', { count: res.centerPileSize, player }));
+      const announceKey = res.isHumanTurn ? 'stepAnnounceYou' : 'stepAnnounceCpu';
+      const values = res.isHumanTurn
+        ? { count: res.centerPileSize }
+        : { count: res.centerPileSize, player: tc('player.cpu', { id: res.currentTurnIdx }) };
+      setStepAnnounce(t(`egyptianratscrew.${announceKey}`, values));
     },
   });
   const { cardWidth } = useCardDimensions();

@@ -27,7 +27,8 @@
     }
   },
   "egyptianratscrew": {
-    "stepAnnounce": "場札{{count}}枚。{{player}}のターンです。",
+    "stepAnnounceYou": "場札{{count}}枚。あなたのターンです。",
+    "stepAnnounceCpu": "場札{{count}}枚。{{player}}のターンです。",
     "slap": "スラップ！",
     "slappable": "ペア/サンドイッチ！叩け！",
     "chanceBattle": "チャンスバトル中",

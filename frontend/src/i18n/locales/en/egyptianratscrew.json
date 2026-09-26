@@ -27,7 +27,8 @@
     }
   },
   "egyptianratscrew": {
-    "stepAnnounce": "{{count}} cards in the pile. {{player}}'s turn.",
+    "stepAnnounceYou": "{{count}} cards in the pile. Your turn.",
+    "stepAnnounceCpu": "{{count}} cards in the pile. {{player}}'s turn.",
     "slap": "Slap!",
     "slappable": "PAIR/SANDWICH! Slap fast!",
     "chanceBattle": "Chance battle in progress",

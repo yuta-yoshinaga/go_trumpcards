@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { egyptianRatscrewApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { EgyptianRatscrewResponse } from '../types/card';
 import { EgyptianRatscrewEventKind, EgyptianRatscrewPhase, EgyptianRatscrewSlapReason } from '../types/phases';
@@ -160,7 +161,25 @@ describe('EgyptianRatscrewPage', () => {
       expect(live).toHaveAttribute('aria-live', 'polite');
       expect(live).toHaveTextContent('場札1枚');
       expect(live).toHaveTextContent('CPU');
+      expect(live).toHaveTextContent('場札1枚。CPU 1のターンです。');
     });
+  });
+
+  it('announces the human turn without a possessive in English', async () => {
+    await i18n.changeLanguage('en');
+    mockExec.mockResolvedValueOnce(baseState).mockResolvedValueOnce({
+      ...baseState,
+      centerPileSize: 1,
+      topCard: { design: 'HEART', value: 8 },
+      isHumanTurn: true,
+    });
+    renderWithProviders(<EgyptianRatscrewPage />);
+    await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('step-button'));
+    await waitFor(() =>
+      expect(screen.getByTestId('er-step-announce')).toHaveTextContent('1 cards in the pile. Your turn.'),
+    );
+    await i18n.changeLanguage('ja');
   });
 
   it('does not announce a rejected or finished step', async () => {
