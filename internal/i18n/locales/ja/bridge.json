@@ -19,6 +19,8 @@
   "contractRedoubled": " リダブル",
   "declarerLine": "デクレアラー: {{declarer}}  ダミー: {{dummy}}",
   "vulnerability": "バルネラビリティ: チーム0={{a}} チーム1={{b}}",
+  "vulnerable": "バル",
+  "notVulnerable": "ノンバル",
   "teamScores": "チーム0: {{a}}点 (ゲーム{{aGames}}勝 ライン下{{aBelow}})  チーム1: {{b}}点 (ゲーム{{bGames}}勝 ライン下{{bBelow}})",
   "dummyHand": "ダミー手札: {{cards}}",
   "gameEnd": "ゲーム終了！ {{banner}}",
