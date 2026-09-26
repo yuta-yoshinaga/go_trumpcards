@@ -286,6 +286,22 @@ describe('RazzPage', () => {
     expect(screen.getByAltText('♥ 8')).toBeInTheDocument();
   });
 
+  it('shows the same best-low evaluation for every live player only at showdown', async () => {
+    mockExec.mockResolvedValue(showdownState);
+    const { unmount } = renderWithProviders(<RazzPage />);
+    const lows = await screen.findAllByTestId('razz-showdown-best-low');
+    expect(lows).toHaveLength(2);
+    expect(lows.map((low) => low.textContent)).toEqual(
+      expect.arrayContaining(['現在のロー: 8-7-5-3-A', '現在のロー: 8-7-5-4-2']),
+    );
+
+    unmount();
+    mockExec.mockResolvedValue(thirdStreetState);
+    renderWithProviders(<RazzPage />);
+    await waitFor(() => expect(screen.getByText(/CPU 1/)).toBeInTheDocument());
+    expect(screen.queryByTestId('razz-showdown-best-low')).not.toBeInTheDocument();
+  });
+
   // ---- CPU actions log ----
   it('shows CPU actions log when cpuActions is non-empty', async () => {
     mockExec.mockResolvedValue(thirdStreetWithBetState);

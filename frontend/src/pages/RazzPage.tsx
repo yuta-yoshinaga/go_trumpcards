@@ -214,6 +214,10 @@ function RazzPageContent() {
     isActive && humanPlayer && !humanPlayer.folded
       ? razzBestLow([...(humanPlayer.doorCards ?? []), ...(humanPlayer.holeCards ?? [])])
       : null;
+  const humanShowdownLow =
+    isShowdown && humanPlayer && !humanPlayer.folded
+      ? razzBestLow([...(humanPlayer.doorCards ?? []), ...(humanPlayer.holeCards ?? [])])
+      : null;
   const minRaise = state?.minRaise ?? 0;
   const isMuckPhase = phase === SevenCardStudPhase.SHOWDOWN && state?.muckAvailable === true;
   const isRebuyPhase =
@@ -332,6 +336,19 @@ function RazzPageContent() {
                     {p.id === bringInPlayerId && (
                       <span data-testid={`razz-bringin-badge-${p.id}`} className={bringInBadgeClass}>
                         {t('bringIn')}
+                      </span>
+                    )}
+                    {isShowdown && !p.folded && (
+                      <span
+                        data-testid="razz-showdown-best-low"
+                        className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}
+                      >
+                        {(() => {
+                          const low = razzBestLow([...(p.doorCards ?? []), ...(p.holeCards ?? [])]);
+                          return low.complete
+                            ? t('currentLow', { low: formatRazzLow(low) })
+                            : t('currentLowIncomplete');
+                        })()}
                       </span>
                     )}
                     {isShowdown && !p.folded && p.handName && (
@@ -473,6 +490,16 @@ function RazzPageContent() {
                       className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}
                     >
                       {razzLow.complete ? t('currentLow', { low: formatRazzLow(razzLow) }) : t('currentLowIncomplete')}
+                    </span>
+                  )}
+                  {humanShowdownLow && (
+                    <span
+                      data-testid="razz-showdown-best-low"
+                      className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}
+                    >
+                      {humanShowdownLow.complete
+                        ? t('currentLow', { low: formatRazzLow(humanShowdownLow) })
+                        : t('currentLowIncomplete')}
                     </span>
                   )}
                   {isShowdown && !humanPlayer.folded && humanPlayer.handName && (
