@@ -67,7 +67,11 @@ describe('ContinentalRummyPage', () => {
   // **山と捨て札は別のボタンで、別のコマンドとして届く。**
   it('offers both draws and sends each as its own command', async () => {
     renderWithProviders(<ContinentalRummyPage />);
-    fireEvent.click(await screen.findByRole('button', { name: '山札から引く' }));
+    const stockButton = await screen.findByRole('button', { name: '山札から引く' });
+    const discardButton = screen.getByRole('button', { name: '捨て札を取る' });
+    expect(stockButton.querySelector('kbd')).toHaveTextContent('S');
+    expect(discardButton.querySelector('kbd')).toHaveTextContent('T');
+    fireEvent.click(stockButton);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('stock'));
     expect(mockExec).not.toHaveBeenCalledWith('take');
 
@@ -85,6 +89,14 @@ describe('ContinentalRummyPage', () => {
     await screen.findByTestId('cont-layouts');
     expect(screen.queryByTestId('cont-goout')).not.toBeInTheDocument();
     expect(screen.queryByTestId('cont-discard-notice')).not.toBeInTheDocument();
+  });
+
+  it('does not show the discard shortcut when the discard pile is empty', async () => {
+    mockExec.mockResolvedValue(makeContinentalRummyState({ phase: 'draw', discardTop: undefined }));
+    renderWithProviders(<ContinentalRummyPage />);
+    const takeButton = await screen.findByRole('button', { name: '捨て札を取る' });
+    expect(takeButton).toBeDisabled();
+    expect(takeButton.querySelector('kbd')).not.toBeInTheDocument();
   });
 
   // **上がれるときは黙っていない。** 15 枚の分割は目で追いきれない。
@@ -151,7 +163,9 @@ describe('ContinentalRummyPage', () => {
     expect(screen.getByTestId('cont-collected')).toHaveTextContent('11');
     expect(screen.getByTestId('cont-collected')).toHaveTextContent('33');
 
-    fireEvent.click(screen.getByRole('button', { name: '次のラウンド' }));
+    const nextButton = screen.getByRole('button', { name: '次のラウンド' });
+    expect(nextButton.querySelector('kbd')).toHaveTextContent('N');
+    fireEvent.click(nextButton);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('next'));
   });
 
