@@ -327,8 +327,9 @@ function NarcoticPageContent() {
                 {state.stockCount > 0 ? (
                   <AnimatedCardBack
                     width={cardWidth}
-                    onClick={isPlaying && !busy ? handleDraw : undefined}
-                    ariaLabel={t('draw')}
+                    onClick={handleDraw}
+                    disabled={!isPlaying || busy}
+                    ariaLabel={t('stockAriaLabel', { count: state.stockCount })}
                   />
                 ) : (
                   <div

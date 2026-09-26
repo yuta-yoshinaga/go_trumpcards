@@ -12,6 +12,7 @@
   "redealCount": "Redeals",
   "combo": "Combo ×{{count}}",
   "draw": "Deal",
+  "stockAriaLabel": "Turn over the stock ({{count}} cards remaining)",
   "remove": "Discard all four",
   "removeAll": "Discard all four",
   "move": "Stack",
