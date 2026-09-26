@@ -377,6 +377,9 @@ function FiftyOnePageContent() {
 
           <GameFooter className={`${gameTheme.fiftyone.footer} px-4 py-2.5`}>
             <div className="flex gap-2 justify-center flex-wrap" data-tutorial="fo-action-buttons">
+              <p className="w-full text-xs text-ds-text-muted text-center mt-0 mb-1" data-testid="exchange-guidance">
+                {t('guide.exchangeFlow')}
+              </p>
               <button
                 type="button"
                 onClick={handleExchange}
