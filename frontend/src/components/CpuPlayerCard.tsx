@@ -51,6 +51,14 @@ export interface CpuPlayerCardProps {
   usedHoleIdx?: readonly number[];
   /** Localised label for the visual marker on used hole cards. */
   usedHoleLabel?: string;
+  /** Indices into `player.cards` used for the high hand in Hi/Lo. */
+  usedHoleHiIdx?: readonly number[];
+  /** Indices into `player.cards` used for the low hand in Hi/Lo. */
+  usedHoleLoIdx?: readonly number[];
+  /** Localised label for hole cards used in the high hand. */
+  usedHoleHiLabel?: string;
+  /** Localised label for hole cards used in the low hand. */
+  usedHoleLoLabel?: string;
 }
 
 /** Renders a CPU player's info area with cards (face-up or face-down) and status. */
@@ -64,11 +72,18 @@ export function CpuPlayerCard({
   metaAi,
   usedHoleIdx,
   usedHoleLabel,
+  usedHoleHiIdx,
+  usedHoleLoIdx,
+  usedHoleHiLabel,
+  usedHoleLoLabel,
 }: CpuPlayerCardProps) {
   const { t } = useTranslation('common');
   const { cpuCardWidth } = useCardDimensions();
   const showFaceUp = showCards && !player.folded && player.cards.length > 0;
   const usedHoleSet = usedHoleIdx ? new Set(usedHoleIdx) : undefined;
+  const usedHoleHiSet = usedHoleHiIdx ? new Set(usedHoleHiIdx) : undefined;
+  const usedHoleLoSet = usedHoleLoIdx ? new Set(usedHoleLoIdx) : undefined;
+  const showHiLoUsage = usedHoleHiIdx !== undefined || usedHoleLoIdx !== undefined;
   const strategyStyle = metaAi?.enabled ? deriveStrategyStyle(metaAi) : undefined;
   return (
     <div className="relative mb-3 rounded-lg p-2 bg-black/20 border border-white/10">
@@ -105,19 +120,62 @@ export function CpuPlayerCard({
         <div className="flex flex-wrap gap-1">
           {player.cards.map((card, idx) => {
             const used = usedHoleSet?.has(idx) ?? false;
+            if (!showHiLoUsage) {
+              return (
+                <div
+                  key={`${card.design}-${card.value}`}
+                  className={`relative rounded-md ${used ? 'ring-2 ring-ds-success motion-safe:animate-pulse' : ''}`}
+                  data-testid={used ? 'cpu-hole-used' : undefined}
+                >
+                  <CardImage card={card} width={cpuCardWidth} style={{ border: '3px solid transparent' }} />
+                  {used && usedHoleLabel && (
+                    <span
+                      className="absolute -top-2 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-ds-success text-xs font-bold text-white"
+                      data-testid="cpu-hole-used-indicator"
+                      role="img"
+                      aria-label={usedHoleLabel}
+                    >
+                      ✓
+                    </span>
+                  )}
+                </div>
+              );
+            }
+            const usedHi = usedHoleHiSet?.has(idx) ?? false;
+            const usedLo = usedHoleLoSet?.has(idx) ?? false;
+            const usage = usedHi && usedLo ? 'both' : usedHi ? 'hi' : usedLo ? 'lo' : undefined;
+            const label =
+              usage === 'both'
+                ? `${usedHoleHiLabel}, ${usedHoleLoLabel}`
+                : usage === 'hi'
+                  ? usedHoleHiLabel
+                  : usage === 'lo'
+                    ? usedHoleLoLabel
+                    : usedHoleLabel;
+            const ring =
+              usage === 'both'
+                ? 'ring-2 ring-ds-accent'
+                : usage === 'hi'
+                  ? 'ring-2 ring-ds-success'
+                  : usage === 'lo'
+                    ? 'ring-2 ring-ds-info'
+                    : used
+                      ? 'ring-2 ring-ds-success motion-safe:animate-pulse'
+                      : '';
             return (
               <div
                 key={`${card.design}-${card.value}`}
-                className={`relative rounded-md ${used ? 'ring-2 ring-ds-success motion-safe:animate-pulse' : ''}`}
-                data-testid={used ? 'cpu-hole-used' : undefined}
+                className={`relative rounded-md ${ring}`}
+                data-testid={usage || used ? 'cpu-hole-used' : undefined}
+                data-hilo-usage={usage}
               >
                 <CardImage card={card} width={cpuCardWidth} style={{ border: '3px solid transparent' }} />
-                {used && usedHoleLabel && (
+                {(usage || used) && label && (
                   <span
-                    className="absolute -top-2 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-ds-success text-xs font-bold text-white"
+                    className={`absolute -top-2 -right-1 flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold text-ds-text-on-accent ${usage === 'lo' ? 'bg-ds-info' : usage === 'both' ? 'bg-ds-accent' : 'bg-ds-success'}`}
                     data-testid="cpu-hole-used-indicator"
                     role="img"
-                    aria-label={usedHoleLabel}
+                    aria-label={label}
                   >
                     ✓
                   </span>

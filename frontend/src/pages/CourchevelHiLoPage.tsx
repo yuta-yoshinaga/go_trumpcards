@@ -279,6 +279,24 @@ function CourchevelHiLoPageContent() {
                   showCards={isShowdown}
                   faceDownCount={5}
                   showHandName={isShowdown}
+                  usedHoleHiIdx={
+                    isShowdown && !player.folded
+                      ? (omahaBestFive(player.cards ?? [], state.communityCards ?? [])?.holeIdx ?? [])
+                      : undefined
+                  }
+                  usedHoleLoIdx={
+                    isShowdown && !player.folded
+                      ? [
+                          ...lowCardIndexSets(
+                            state.roundResults?.find((r) => r.playerIdx === player.id)?.lowBestHand,
+                            player.cards ?? [],
+                            state.communityCards ?? [],
+                          ).loHoleSet,
+                        ]
+                      : undefined
+                  }
+                  usedHoleHiLabel={t('hiLoUsage.hi')}
+                  usedHoleLoLabel={t('hiLoUsage.lo')}
                   extraInfo={
                     player.totalHands > 0 ? (
                       <HudStats

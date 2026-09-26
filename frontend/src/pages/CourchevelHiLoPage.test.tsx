@@ -375,6 +375,40 @@ describe('CourchevelHiLoPage', () => {
     expect(container.querySelectorAll('[data-best5-board]')).toHaveLength(3);
   });
 
+  it('highlights CPU hole cards used for both Hi and Lo at showdown', async () => {
+    const cpuCards = [
+      { design: 'SPADE' as const, value: 1 },
+      { design: 'CLOVER' as const, value: 2 },
+      { design: 'DIAMOND' as const, value: 12 },
+      { design: 'HEART' as const, value: 13 },
+    ];
+    const state: OmahaResponse = {
+      ...showdownState,
+      players: [humanPlayer(), cpuPlayer(1, { cards: cpuCards }), cpuPlayer(2, { folded: true })],
+      roundResults: showdownState.roundResults.map((result) =>
+        result.playerIdx === 1
+          ? {
+              ...result,
+              lowBestHand: [
+                cpuCards[0],
+                cpuCards[1],
+                { design: 'SPADE', value: 5 },
+                { design: 'CLOVER', value: 6 },
+                { design: 'DIAMOND', value: 7 },
+              ],
+            }
+          : result,
+      ),
+    };
+    mockExec.mockResolvedValue(state);
+    const { container } = renderWithProviders(<CourchevelHiLoPage />);
+    await waitFor(() => expect(container.querySelectorAll('[data-testid="cpu-hole-used"]').length).toBeGreaterThan(0));
+    const cpuUsed = container.querySelectorAll('[data-testid="cpu-hole-used"]');
+    expect(cpuUsed).toHaveLength(2);
+    expect(container.querySelectorAll('[data-hilo-usage="lo"], [data-hilo-usage="both"]').length).toBe(2);
+    expect(container.querySelectorAll('[data-hilo-usage="hi"], [data-hilo-usage="both"]').length).toBeGreaterThan(0);
+  });
+
   it('shows green Hi and blue Lo split badges (Lo omitted when none qualifies)', async () => {
     const splitState: OmahaResponse = {
       ...showdownState,
