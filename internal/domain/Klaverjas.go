@@ -68,6 +68,9 @@ type Klaverjas struct {
 	trickNumber      int
 	currentPlayerIdx int
 	currentTrick     []*TrickCard
+	lastTrickTeam    int // -1 until a trick has been resolved
+	lastTrickPoints  int
+	lastTrickBonus   int
 	leadPlayerIdx    int
 	dealerIdx        int
 	trumpSuit        int                     // 切り札スート
@@ -133,6 +136,9 @@ func (g *Klaverjas) NextRound() {
 func (g *Klaverjas) startRound() {
 	g.trickNumber = 1
 	g.currentTrick = nil
+	g.lastTrickTeam = -1
+	g.lastTrickPoints = 0
+	g.lastTrickBonus = 0
 	g.roundCardPts = [KlaverjasTeamCnt]int{}
 	g.roundRoem = [KlaverjasTeamCnt]int{}
 	g.roundPlayerRoem = [KlaverjasPlayerCnt]int{}
@@ -230,12 +236,16 @@ func (g *Klaverjas) ResolveTrick() {
 	}
 	g.players[winnerIdx].AddTrick(trickCards)
 	team := KlaverjasTeamOf(winnerIdx)
+	g.lastTrickTeam = team
+	g.lastTrickPoints = pts
+	g.lastTrickBonus = 0
 	g.roundCardPts[team] += pts
 	params := map[string]string{
 		"name": playerName(g.players, winnerIdx), "trick": strconv.Itoa(g.trickNumber),
 		"points": strconv.Itoa(pts),
 	}
 	if g.trickNumber >= KlaverjasTrickCount {
+		g.lastTrickBonus = KlaverjasLastTrickBonus
 		g.roundCardPts[team] += KlaverjasLastTrickBonus
 		params["lastBonus"] = strconv.Itoa(KlaverjasLastTrickBonus)
 		g.appendLog(winnerIdx, "trick_win", "klaverjas.log.trickWinLast", params, trickCards)
@@ -257,6 +267,9 @@ func (g *Klaverjas) NextTrick() {
 		return
 	}
 	g.currentTrick = nil
+	g.lastTrickTeam = -1
+	g.lastTrickPoints = 0
+	g.lastTrickBonus = 0
 	g.currentPlayerIdx = g.leadPlayerIdx
 	g.trickNumber++
 	g.phase = KlaverjasPhasePlay
@@ -737,6 +750,15 @@ func (g *Klaverjas) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 // GetCurrentTrick 現在のトリック取得
 func (g *Klaverjas) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
+// GetLastTrickTeam returns the team that won the most recently resolved trick, or -1 if none is active.
+func (g *Klaverjas) GetLastTrickTeam() int { return g.lastTrickTeam }
+
+// GetLastTrickPoints returns the card points in the most recently resolved trick, excluding the final trick bonus.
+func (g *Klaverjas) GetLastTrickPoints() int { return g.lastTrickPoints }
+
+// GetLastTrickBonus returns the bonus awarded for the most recently resolved trick.
+func (g *Klaverjas) GetLastTrickBonus() int { return g.lastTrickBonus }
+
 // SetCurrentTrick トリック設定 (テスト用)
 func (g *Klaverjas) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
 
@@ -819,6 +841,9 @@ type klaverjasJSON struct {
 	TrickNumber      int                     `json:"tn"`
 	CurrentPlayerIdx int                     `json:"ci"`
 	CurrentTrick     []*TrickCard            `json:"ct"`
+	LastTrickTeam    *int                    `json:"ltt"`
+	LastTrickPoints  int                     `json:"ltp"`
+	LastTrickBonus   int                     `json:"ltb"`
 	LeadPlayerIdx    int                     `json:"li"`
 	DealerIdx        int                     `json:"di"`
 	TrumpSuit        int                     `json:"ts"`
@@ -842,6 +867,9 @@ func (g *Klaverjas) MarshalJSON() ([]byte, error) {
 		TrickNumber:      g.trickNumber,
 		CurrentPlayerIdx: g.currentPlayerIdx,
 		CurrentTrick:     g.currentTrick,
+		LastTrickTeam:    &g.lastTrickTeam,
+		LastTrickPoints:  g.lastTrickPoints,
+		LastTrickBonus:   g.lastTrickBonus,
 		LeadPlayerIdx:    g.leadPlayerIdx,
 		DealerIdx:        g.dealerIdx,
 		TrumpSuit:        g.trumpSuit,
@@ -891,6 +919,12 @@ func (g *Klaverjas) UnmarshalJSON(data []byte) error {
 	g.trickNumber = j.TrickNumber
 	g.currentPlayerIdx = j.CurrentPlayerIdx
 	g.currentTrick = j.CurrentTrick
+	g.lastTrickTeam = -1
+	if j.LastTrickTeam != nil {
+		g.lastTrickTeam = *j.LastTrickTeam
+	}
+	g.lastTrickPoints = j.LastTrickPoints
+	g.lastTrickBonus = j.LastTrickBonus
 	if g.currentTrick == nil {
 		g.currentTrick = make([]*TrickCard, 0)
 	}

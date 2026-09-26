@@ -105,6 +105,10 @@ func (_m *MockKlaverjasGame) GetCurrentTrick() []*domain.TrickCard {
 	return nil
 }
 
+func (_m *MockKlaverjasGame) GetLastTrickTeam() int   { return _m.Called().Int(0) }
+func (_m *MockKlaverjasGame) GetLastTrickPoints() int { return _m.Called().Int(0) }
+func (_m *MockKlaverjasGame) GetLastTrickBonus() int  { return _m.Called().Int(0) }
+
 // GetLeadPlayerIdx モック
 func (_m *MockKlaverjasGame) GetLeadPlayerIdx() int {
 	ret := _m.Called()

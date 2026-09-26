@@ -41,6 +41,8 @@
   },
   "nextTrick": "次のトリック",
   "trickWinner": "{{team}} がトリック獲得",
+  "trickResult": "{{team}} がこのトリックで {{points}} 点",
+  "trickResultWithBonus": "{{team}} がこのトリックで {{points}} 点 (最終トリック +{{bonus}})",
   "nextRound": "次のラウンド",
   "roundResult": {
     "title": "ラウンド結果",

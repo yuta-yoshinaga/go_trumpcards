@@ -41,6 +41,8 @@
   },
   "nextTrick": "Next Trick",
   "trickWinner": "{{team}} won the trick",
+  "trickResult": "{{team}} won {{points}} points this trick",
+  "trickResultWithBonus": "{{team}} won {{points}} points this trick (final trick +{{bonus}})",
   "nextRound": "Next Round",
   "roundResult": {
     "title": "Round Result",

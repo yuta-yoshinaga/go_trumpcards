@@ -48,6 +48,12 @@ export interface KlaverjasResponse extends BaseGameResponse {
   /** Trump suit (1=♠ 2=♣ 3=♥ 4=♦). */
   trumpSuit: number;
   currentTrick: KlaverjasTrickCard[];
+  /** Team that won the most recently resolved trick, or -1 outside its result display. */
+  lastTrickTeam: number;
+  /** Card points in the most recently resolved trick, excluding the final trick bonus. */
+  lastTrickPoints: number;
+  /** Bonus points awarded for the most recently resolved trick. */
+  lastTrickBonus: number;
   /** Cumulative match scores per team — [team0, team1]. */
   teamScores: number[];
   /** Card points captured per team this round — [team0, team1]. */

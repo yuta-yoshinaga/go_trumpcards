@@ -15,12 +15,22 @@ const mockExec = vi.mocked(klaverjasApi.exec);
 const playPhaseState = makeKlaverjasState();
 const trickEndState = makeKlaverjasState({
   phase: 1,
+  lastTrickTeam: 0,
+  lastTrickPoints: 45,
+  lastTrickBonus: 0,
   currentTrick: [
     { playerIdx: 0, card: { design: 'HEART', value: 12 } },
     { playerIdx: 1, card: { design: 'CLOVER', value: 13 } },
   ],
 });
-const roundEndState = makeKlaverjasState({ phase: 2, roundCardPoints: [70, 50], roundRoem: [20, 0] });
+const roundEndState = makeKlaverjasState({
+  phase: 2,
+  lastTrickTeam: 1,
+  lastTrickPoints: 20,
+  lastTrickBonus: 10,
+  roundCardPoints: [70, 50],
+  roundRoem: [20, 0],
+});
 const gameEndState = makeKlaverjasState({
   phase: 3,
   gameEndFlag: true,
@@ -161,16 +171,25 @@ describe('KlaverjasPage', () => {
     mockExec.mockResolvedValue(trickEndState);
     renderWithProviders(<KlaverjasPage />);
     const banner = await screen.findByTestId('klaverjas-trick-winner');
-    expect(banner).toHaveTextContent('チームA がトリック獲得');
+    expect(banner).toHaveTextContent('チームA がこのトリックで 45 点');
     expect(banner).toHaveAttribute('role', 'status');
     expect(banner).toHaveAttribute('aria-live', 'polite');
+    expect(banner).toHaveTextContent('チームA がこのトリックで 45 点');
+  });
+
+  it('shows last trick points and bonus at round end', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<KlaverjasPage />);
+    expect(await screen.findByTestId('klaverjas-trick-winner')).toHaveTextContent(
+      'チームB がこのトリックで 20 点 (最終トリック +10)',
+    );
   });
 
   it('attributes the trick to Team B when an odd-seat player leads next', async () => {
-    mockExec.mockResolvedValue({ ...trickEndState, leadPlayerIdx: 1 });
+    mockExec.mockResolvedValue({ ...trickEndState, lastTrickTeam: 1 });
     renderWithProviders(<KlaverjasPage />);
     await waitFor(() =>
-      expect(screen.getByTestId('klaverjas-trick-winner')).toHaveTextContent('チームB がトリック獲得'),
+      expect(screen.getByTestId('klaverjas-trick-winner')).toHaveTextContent('チームB がこのトリックで 45 点'),
     );
   });
 
