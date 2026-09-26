@@ -25,6 +25,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { HachiHachiResponse, HachiHachiYaku } from '../types/card';
 import { HachiHachiPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { HACHIHACHI_HELP, parseHachiHachiCommand } from '../utils/cli/commands/hachihachiCommands';
 import { formatHachiHachiState } from '../utils/cli/formatters/hachihachiFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -230,6 +231,7 @@ function HachiHachiPageContent() {
                         } ${needsFieldPick && isCandidate ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
                         data-testid={`field-card-${i}`}
                         data-capture-candidate={isCandidate || undefined}
+                        aria-label={`${cardAlt(c)} — ${t(isCandidate ? 'fieldCaptureCandidate' : 'fieldNotCaptureCandidate')}`}
                       >
                         <CardImage card={c} width={cardWidth * 0.9} />
                       </button>
