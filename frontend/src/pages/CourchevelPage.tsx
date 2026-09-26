@@ -160,15 +160,26 @@ function CourchevelPageContent() {
     cli: { parseCommand: parseOmahaCommand, formatResponse: formatOmahaState, helpText: OMAHA_HELP },
   });
 
-  // At showdown, highlight the human's winning 5 cards under Courchevel's
-  // must-use-exactly-2-hole (of 5) + 3-board rule.
+  // At showdown, highlight the human's hand when they won; otherwise show a
+  // winning CPU hand. Courchevel uses exactly 2 hole cards + 3 board cards.
   const showdownBest5 = useMemo(() => {
     const empty = { holeSet: new Set<number>(), boardSet: new Set<number>() };
-    if (!isShowdown || !humanPlayer || humanPlayer.folded) return empty;
-    const best = omahaBestFive(humanPlayer.cards ?? [], state?.communityCards ?? []);
+    if (!isShowdown || !humanPlayer || !state) return empty;
+    const winner = state.roundResults.find((result) => result.wonAmount > 0);
+    const player =
+      !humanPlayer.folded && (!winner || winner.playerIdx === humanPlayer.id)
+        ? humanPlayer
+        : winner
+          ? state.players.find((candidate) => candidate.id === winner.playerIdx && !candidate.folded)
+          : undefined;
+    if (!player) return empty;
+    const best = omahaBestFive(player.cards, state.communityCards);
     if (!best) return empty;
-    return { holeSet: new Set(best.holeIdx), boardSet: new Set(best.boardIdx) };
-  }, [isShowdown, humanPlayer, state?.communityCards]);
+    return {
+      holeSet: player === humanPlayer ? new Set(best.holeIdx) : empty.holeSet,
+      boardSet: new Set(best.boardIdx),
+    };
+  }, [isShowdown, humanPlayer, state]);
 
   // Preview the hand the player currently holds under the must-use-exactly-2
   // rule. Courchevel deals five hole cards — ten pairings to weigh by eye — so the
@@ -251,6 +262,7 @@ function CourchevelPageContent() {
                                 inBest ? '-translate-y-1 ring-2 ring-ds-success motion-safe:animate-pulse' : ''
                               } ${dim ? 'opacity-50' : ''}`}
                               data-best5-board={inBest || undefined}
+                              data-community-card-index={idx}
                             >
                               <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
                             </div>

@@ -5,6 +5,7 @@ import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { OmahaResponse } from '../types/card';
+import { omahaBestFive } from '../utils/omahaBestFive';
 import { CourchevelPage } from './CourchevelPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -211,7 +212,7 @@ const showdownState: OmahaResponse = {
       handName: '\u30ef\u30f3\u30da\u30a2',
       kickers: 'A, Q, 10',
       bestHand: [],
-      wonAmount: 0,
+      wonAmount: 200,
       mucked: false,
     },
     {
@@ -220,12 +221,12 @@ const showdownState: OmahaResponse = {
       handName: '\u30c4\u30fc\u30da\u30a2',
       kickers: '8',
       bestHand: [],
-      wonAmount: 200,
+      wonAmount: 0,
       mucked: false,
     },
   ],
   cpuActions: [],
-  message: 'CPU 1 \u306e\u52dd\u3061',
+  message: '\u4eba\u9593\u306e\u52dd\u3061',
   handCount: 1,
   smallBlind: 5,
   bigBlind: 10,
@@ -415,6 +416,72 @@ describe('CourchevelPage', () => {
     // Courchevel must-use-2 rule (2 of 5 hole) → exactly 2 hole and 3 board highlighted.
     expect(container.querySelectorAll('[data-best5-hole]')).toHaveLength(2);
     expect(container.querySelectorAll('[data-best5-board]')).toHaveLength(3);
+  });
+
+  it('highlights the winning CPU board cards when the human has folded', async () => {
+    mockExec.mockResolvedValue({
+      ...showdownState,
+      players: [humanPlayer({ folded: true }), showdownState.players[1], showdownState.players[2]],
+      roundResults: showdownState.roundResults.map((result) => ({
+        ...result,
+        wonAmount: result.playerIdx === 1 ? 200 : 0,
+      })),
+    });
+    const { container } = renderWithProviders(<CourchevelPage />);
+    await waitFor(() => expect(screen.getByText('ツーペア')).toBeInTheDocument());
+    const cpu = showdownState.players[1];
+    const best = omahaBestFive(cpu.cards, showdownState.communityCards);
+    expect(best).not.toBeNull();
+    const highlightedIndexes = [...container.querySelectorAll('[data-best5-board]')].map((el) =>
+      Number(el.getAttribute('data-community-card-index')),
+    );
+    expect(highlightedIndexes).toEqual(best?.boardIdx);
+  });
+
+  it('does not highlight any cards when the human folded and there is no winner', async () => {
+    mockExec.mockResolvedValue({
+      ...showdownState,
+      players: [humanPlayer({ folded: true }), showdownState.players[1], showdownState.players[2]],
+      roundResults: showdownState.roundResults.map((result) => ({ ...result, wonAmount: 0 })),
+    });
+    const { container } = renderWithProviders(<CourchevelPage />);
+    await waitFor(() => expect(screen.getByText('ツーペア')).toBeInTheDocument());
+    expect(container.querySelectorAll('[data-best5-hole]')).toHaveLength(0);
+    expect(container.querySelectorAll('[data-best5-board]')).toHaveLength(0);
+  });
+
+  it('does not highlight any cards when the winning CPU is folded', async () => {
+    mockExec.mockResolvedValue({
+      ...showdownState,
+      players: [humanPlayer({ folded: true }), showdownState.players[1], cpuPlayer(2, { folded: true })],
+      roundResults: showdownState.roundResults.map((result) => ({
+        ...result,
+        wonAmount: result.playerIdx === 2 ? 200 : 0,
+      })),
+    });
+    const { container } = renderWithProviders(<CourchevelPage />);
+    await waitFor(() => expect(screen.getByText('ツーペア')).toBeInTheDocument());
+    expect(container.querySelectorAll('[data-best5-hole]')).toHaveLength(0);
+    expect(container.querySelectorAll('[data-best5-board]')).toHaveLength(0);
+  });
+
+  it('shows the winning CPU board cards when the human did not win', async () => {
+    mockExec.mockResolvedValue({
+      ...showdownState,
+      roundResults: showdownState.roundResults.map((result) => ({
+        ...result,
+        wonAmount: result.playerIdx === 1 ? 200 : 0,
+      })),
+    });
+    const { container } = renderWithProviders(<CourchevelPage />);
+    await waitFor(() => expect(screen.getByText('ツーペア')).toBeInTheDocument());
+    expect(container.querySelectorAll('[data-best5-board]')).toHaveLength(3);
+    // The CPU's pair of fives and eights uses board cards 5 and 8, not the human's best hand.
+    const best = omahaBestFive(showdownState.players[1].cards, showdownState.communityCards);
+    const highlightedIndexes = [...container.querySelectorAll('[data-best5-board]')].map((el) =>
+      Number(el.getAttribute('data-community-card-index')),
+    );
+    expect(highlightedIndexes).toEqual(best?.boardIdx);
   });
 
   it('rings the 2 hole cards each non-folded CPU used at showdown', async () => {
