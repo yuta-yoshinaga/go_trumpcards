@@ -256,6 +256,8 @@ function SpiderPageContent() {
     }
   }, [state?.completedSuits, playSound]);
 
+  const undoToEscape = state?.undoToEscape ?? 0;
+
   if (!state) return <GameSkeleton gameKey="spider" layout={{ kind: 'tableau', topRow: 3, tableau: 10 }} />;
 
   const isPlaying = state.phase === SpiderPhase.PLAYING;
@@ -556,7 +558,7 @@ function SpiderPageContent() {
                     {t('undo')}
                   </button>
                   {state.isStalemate &&
-                    ((state.undoToEscape ?? 0) <= 0 ? (
+                    (undoToEscape <= 0 ? (
                       <span
                         role="status"
                         data-testid="stalemate-escape-unavailable"
@@ -566,7 +568,7 @@ function SpiderPageContent() {
                       </span>
                     ) : (
                       <StalemateEscapeButton
-                        undoToEscape={state.undoToEscape ?? 0}
+                        undoToEscape={undoToEscape}
                         onEscape={handleUndoEscape}
                         disabled={loading || isAutoCompleting}
                       />
