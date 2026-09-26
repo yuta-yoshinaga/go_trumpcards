@@ -334,6 +334,18 @@ function EstimationPageContent() {
                     </button>
                   );
                 })}
+              {isHumanBidTurn && state.restrictedBid >= 0 && (
+                <p
+                  className="w-full text-center text-sm text-ds-text-muted"
+                  data-testid="est-restricted-bid-explanation"
+                >
+                  {t('actions.bidRestrictedExplanation', {
+                    sum: TRICKS_PER_ROUND - state.restrictedBid,
+                    bid: state.restrictedBid,
+                    total: TRICKS_PER_ROUND,
+                  })}
+                </p>
+              )}
               {isRoundEnd && !isGameEnd && (
                 <button type="button" className={btnSuccess} onClick={handleNextRound} disabled={loading}>
                   {t('actions.nextRound')}

@@ -36,7 +36,8 @@
     "bidAria": "{{n}}トリック宣言",
     "bidDashAria": "Dash Call（0トリック宣言）",
     "bidBarredAria": "{{n}}トリック宣言は選べません（全員の宣言の合計が{{total}}になるため）",
-    "bidDashBarredAria": "Dash Call（0トリック宣言）は選べません（全員の宣言の合計が{{total}}になるため）"
+    "bidDashBarredAria": "Dash Call（0トリック宣言）は選べません（全員の宣言の合計が{{total}}になるため）",
+    "bidRestrictedExplanation": "宣言合計{{sum}}に{{bid}}を加えると全{{total}}トリックになるため選べません"
   },
   "result": {
     "win": "あなたの勝ち！ {{score}}点",
