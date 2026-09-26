@@ -105,6 +105,20 @@ describe('GoStopPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0, fieldIndex: 1 }));
   });
 
+  it('announces field card names and keeps capture candidate status in sync with selection', async () => {
+    mockExec.mockResolvedValue(makeGoStopState({ captureOptions: { 0: [0, 1] } }));
+    renderWithProviders(<GoStopPage />);
+
+    const firstField = await screen.findByTestId('field-card-0');
+    const secondField = screen.getByTestId('field-card-1');
+    expect(firstField).toHaveAccessibleName(/3月 カス 🌸.*捕獲候補ではありません/);
+    expect(secondField).toHaveAccessibleName(/8月 光 🌕.*捕獲候補ではありません/);
+
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+    expect(firstField).toHaveAccessibleName(/3月 カス 🌸.*捕獲候補$/);
+    expect(secondField).toHaveAccessibleName(/8月 光 🌕.*捕獲候補$/);
+  });
+
   it('shows the go / stop buttons on the decision phase and dispatches them', async () => {
     mockExec.mockResolvedValue(decisionState);
     renderWithProviders(<GoStopPage />);

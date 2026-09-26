@@ -20,6 +20,8 @@
   "field": "Field",
   "fieldEmpty": "(empty)",
   "pickField": "Pick a field card to capture (two cards match).",
+  "captureCandidate": "Capture candidate",
+  "notCaptureCandidate": "Not a capture candidate",
   "you": "You",
   "cpu": "CPU",
   "captured": "Captured: {{count}}",
