@@ -144,6 +144,37 @@ describe('BeleagueredCastlePage', () => {
     expect(screen.queryByRole('button', { name: '空のタブロー列 1' })).not.toBeInTheDocument();
   });
 
+  it('keeps empty tableau columns focusable before a card is selected and ignores clicks', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BeleagueredCastlePage />);
+    const emptyColumn = await screen.findByRole('button', { name: '空のタブロー列 3' });
+    expect(emptyColumn).toBeEnabled();
+    emptyColumn.focus();
+    expect(emptyColumn).toHaveFocus();
+
+    mockExec.mockClear();
+    fireEvent.click(emptyColumn);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('moves a selected card to a legal empty tableau column', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BeleagueredCastlePage />);
+    fireEvent.click(await screen.findByRole('button', { name: '♠ 5' }));
+    const emptyColumn = await screen.findByRole('button', { name: '空のタブロー列 3' });
+    expect(emptyColumn).toBeEnabled();
+
+    fireEvent.click(emptyColumn);
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith(
+        'move',
+        { zone: 'tableau', col: 0, cardIndex: 1 },
+        { zone: 'tableau', col: 2 },
+      ),
+    );
+  });
+
   it('renders giveup button when playing', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BeleagueredCastlePage />);
