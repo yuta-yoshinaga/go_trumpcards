@@ -29,23 +29,13 @@ func catchTenPlayerStrWithTrump(player *domain.CatchTenPlayer, i, trumpSuit int)
 }
 
 func catchTenIndexedCardListStr(player *domain.CatchTenPlayer, trumpSuit int) string {
-	var b strings.Builder
-	for idx := 0; idx < player.GetCardsSize(); idx++ {
-		if idx > 0 {
-			b.WriteString("  ")
-		}
-		card := player.GetCard(idx)
-		b.WriteString("[")
-		b.WriteString(strconv.Itoa(idx))
-		b.WriteString("]")
-		b.WriteString(cuiCardStr(card))
+	return formatCardList(player, func(card *domain.Card) string {
+		cardStr := cuiCardStr(card)
 		if points := domain.CatchTenHonorPoints(card, trumpSuit); points > 0 {
-			b.WriteString(" (")
-			b.WriteString(strconv.Itoa(points))
-			b.WriteString(")")
+			cardStr += " (" + strconv.Itoa(points) + ")"
 		}
-	}
-	return b.String()
+		return cardStr
+	}, "  ", true)
 }
 
 // CatchTenCuiPresenter renders the Catch the Ten CUI view.
