@@ -300,16 +300,21 @@ describe('MatrimonyPage', () => {
     const button = await screen.findByTestId('autocomplete-button');
     await waitFor(() => expect(button).toBeEnabled());
 
-    fireEvent.click(button);
-    const status = screen.getByTestId('auto-complete-status');
-    expect(status).toHaveAttribute('role', 'status');
-    expect(status).toHaveAttribute('aria-live', 'polite');
-    expect(status).toHaveTextContent('自動完成を実行中です');
+    vi.useFakeTimers();
+    try {
+      fireEvent.click(button);
+      const status = screen.getByTestId('auto-complete-status');
+      expect(status).toHaveAttribute('role', 'status');
+      expect(status).toHaveAttribute('aria-live', 'polite');
+      expect(status).toHaveTextContent('自動完成を実行中です');
 
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 3100));
-    });
-    expect(status).toHaveTextContent('自動完成が終了しました。カードを移動してください');
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(3000);
+      });
+      expect(status).toHaveTextContent('自動完成が終了しました。カードを移動してください');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('shows StalemateEscapeButton when the stalemate flag is set', async () => {
