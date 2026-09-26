@@ -133,6 +133,37 @@ describe('TexasHoldemBonusPage', () => {
     expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument();
   });
 
+  it('shows the bet total and remaining chips while keeping both bets within the balance', async () => {
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<TexasHoldemBonusPage />);
+
+    const anteInput = (await screen.findByLabelText('アンテ')) as HTMLInputElement;
+    const bonusInput = screen.getByLabelText('ボーナス') as HTMLInputElement;
+    expect(screen.getByTestId('thb-bet-summary')).toHaveTextContent('合計: 100 / 残り: 900');
+
+    fireEvent.change(anteInput, { target: { value: '900' } });
+    expect(bonusInput).toHaveAttribute('max', '100');
+    fireEvent.change(bonusInput, { target: { value: '200' } });
+    expect(bonusInput).toHaveValue('100');
+    expect(anteInput).toHaveAttribute('max', '900');
+    expect(screen.getByTestId('thb-bet-summary')).toHaveTextContent('合計: 1000 / 残り: 0');
+  });
+
+  it('adjusts bet values when the chip balance decreases', async () => {
+    mockApi.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce({ ...betPhaseState, chips: 300 });
+    renderWithProviders(<TexasHoldemBonusPage />);
+
+    const anteInput = (await screen.findByLabelText('アンテ')) as HTMLInputElement;
+    const bonusInput = screen.getByLabelText('ボーナス') as HTMLInputElement;
+    fireEvent.change(anteInput, { target: { value: '900' } });
+    fireEvent.change(bonusInput, { target: { value: '100' } });
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+
+    await waitFor(() => expect(anteInput).toHaveValue('300'));
+    expect(bonusInput).toHaveValue('0');
+    expect(screen.getByTestId('thb-bet-summary')).toHaveTextContent('合計: 300 / 残り: 0');
+  });
+
   it('explains that ante and bonus payouts are judged independently', async () => {
     mockApi.mockResolvedValue(betPhaseState);
     renderWithProviders(<TexasHoldemBonusPage />);
