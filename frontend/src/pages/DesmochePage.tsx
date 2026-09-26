@@ -317,6 +317,11 @@ function DesmochePageContent() {
 
           <GameFooter className={`${gameTheme.desmoche.footer} px-4 py-2.5`}>
             <ErrorAlert message={error} onRetry={retry} />
+            {drawing && isHumanTurn && (
+              <p className="mb-2 text-sm text-ds-text-muted" data-testid="desmoche-action-guide">
+                {t('actionGuide.draw')}
+              </p>
+            )}
             <div className="flex gap-2 items-center flex-wrap">
               {drawing && isHumanTurn && (
                 <>

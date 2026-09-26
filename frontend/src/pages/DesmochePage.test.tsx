@@ -102,6 +102,25 @@ describe('DesmochePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('drawdiscard'));
   });
 
+  it('guides the draw step and explains when the discard cannot be taken', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: DesmochePhase.DRAW, discardTop: undefined }));
+    renderWithProviders(<DesmochePage />);
+    await screen.findByRole('button', { name: '山札から引く' });
+
+    expect(screen.getByTestId('desmoche-action-guide')).toHaveTextContent(
+      '山札から引くか、捨て札がある場合は捨て札を取ってください',
+    );
+    expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeDisabled();
+  });
+
+  it('shows only the hand selection hint in the act step', async () => {
+    renderWithProviders(<DesmochePage />);
+    await screen.findByRole('button', { name: 'メルド' });
+
+    expect(screen.queryByTestId('desmoche-action-guide')).not.toBeInTheDocument();
+    expect(screen.getAllByText(/手札をクリックして選び/)).toHaveLength(1);
+  });
+
   it('needs three selected cards before it will meld', async () => {
     // 2 枚では押せない。押せてしまうとサーバー往復が無駄になる。
     renderWithProviders(<DesmochePage />);
