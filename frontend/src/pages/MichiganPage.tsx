@@ -437,7 +437,7 @@ function MichiganPageContent() {
                             className={btnDanger}
                             onClick={() => adjustBet(i, -1)}
                             disabled={loading || (bets[i] ?? 0) <= 0}
-                            aria-label={t('betMinusAria', { index: i })}
+                            aria-label={t('betMinusAria', { card: cardAlt(b.card), amount: bets[i] ?? 0 })}
                           >
                             −
                           </button>
@@ -447,7 +447,7 @@ function MichiganPageContent() {
                             className={btnSuccess}
                             onClick={() => adjustBet(i, 1)}
                             disabled={loading || betRemaining <= 0}
-                            aria-label={t('betPlusAria', { index: i })}
+                            aria-label={t('betPlusAria', { card: cardAlt(b.card), amount: bets[i] ?? 0 })}
                           >
                             +
                           </button>
