@@ -36,6 +36,11 @@
   "keyHints": "Number keys: play the matching card",
   "mustPass": "No playable cards — please pass",
   "passCount": "Pass: {{used}}/{{max}}",
+  "passDisabled": {
+    "gameEnded": "The game has ended",
+    "notYourTurn": "It is not your turn",
+    "limitReached": "You have reached the pass limit"
+  },
   "passRemaining": "Pass ({{count}} left)",
   "passUnlimited": "∞",
   "phase": {
