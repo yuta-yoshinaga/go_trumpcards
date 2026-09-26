@@ -133,7 +133,15 @@ describe('GapsPage', () => {
 
   it('renders redeals remaining', async () => {
     renderWithProviders(<GapsPage />);
-    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent(/再配り残り: 3/));
+    const controls = await screen.findByTestId('gaps-controls');
+    expect(controls).toHaveTextContent(/再配り残り: 3/);
+  });
+
+  it('clearly shows zero redeals remaining beside the controls', async () => {
+    mockedRun.mockResolvedValue({ ...playingState, redealsRemaining: 0, redealsUsed: 3 });
+    renderWithProviders(<GapsPage />);
+    const controls = await screen.findByTestId('gaps-controls');
+    expect(controls).toHaveTextContent(/再配り残り: 0/);
   });
 
   it('calls run reset on mount', async () => {
