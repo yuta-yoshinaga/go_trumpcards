@@ -35,6 +35,7 @@ import { parseThreeThirteenCommand, THREETHIRTEEN_HELP } from '../utils/cli/comm
 import { formatThreeThirteenState } from '../utils/cli/formatters/threethirteenFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
+import { findDrawnCard } from '../utils/findDrawnCard';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { bestThreeThirteenDeadwoodValue, bestThreeThirteenDiscardValue } from '../utils/threethirteenDeadwood';
@@ -104,7 +105,7 @@ function ThreeThirteenPageContent() {
     handleKnock,
     handleNextRound,
   } = useThreeThirteenGame();
-  const pendingDrawRef = useRef<{ source: 'stock' | 'discard'; oldCards: Set<string> } | null>(null);
+  const pendingDrawRef = useRef<{ source: 'stock' | 'discard'; oldCards: Card[]; discardCard?: Card } | null>(null);
   const drawAnnouncementTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [drawAnnouncement, setDrawAnnouncement] = useState('');
   const { cardWidth } = useCardDimensions();
@@ -155,7 +156,8 @@ function ThreeThirteenPageContent() {
       const cards = state?.players.find((player) => player.isHuman)?.cards ?? [];
       pendingDrawRef.current = {
         source,
-        oldCards: new Set(cards.map((card) => `${card.design}:${card.value}:${card.label ?? ''}:${card.glyph ?? ''}`)),
+        oldCards: cards,
+        ...(source === 'discard' && state?.discardTop ? { discardCard: state.discardTop } : {}),
       };
       if (source === 'stock') handleDrawStock();
       else handleDrawDiscard();
@@ -167,9 +169,7 @@ function ThreeThirteenPageContent() {
     const pending = pendingDrawRef.current;
     if (!pending || state?.phase !== ThreeThirteenPhase.DISCARD) return;
     const cards = state.players.find((player) => player.isHuman)?.cards ?? [];
-    const drawn = cards.find(
-      (card) => !pending.oldCards.has(`${card.design}:${card.value}:${card.label ?? ''}:${card.glyph ?? ''}`),
-    );
+    const drawn = pending.source === 'discard' ? pending.discardCard : findDrawnCard(pending.oldCards, cards);
     pendingDrawRef.current = null;
     if (!drawn) return;
     setDrawAnnouncement(
