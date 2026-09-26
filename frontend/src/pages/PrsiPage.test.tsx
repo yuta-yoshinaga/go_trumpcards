@@ -398,6 +398,7 @@ describe('PrsiPage', () => {
     const stock = await screen.findByTestId('prsi-stock');
     expect(stock).toHaveTextContent('30');
     expect(stock).toHaveAccessibleName('山札から1枚ドロー（残り30枚）');
+    expect(stock).not.toHaveAttribute('aria-describedby');
     expect(stock).not.toBeDisabled();
   });
 
@@ -422,6 +423,7 @@ describe('PrsiPage', () => {
     expect(screen.getByTestId('prsi-stock-empty')).toHaveTextContent(
       '山札と捨て札から引ける札が無いため、押すとパスになります',
     );
+    expect(stock).toHaveAccessibleDescription('山札と捨て札から引ける札が無いため、押すとパスになります');
     expect(screen.getByTestId('prsi-stock-penalty')).toHaveTextContent('+2');
 
     mockExec.mockClear();
