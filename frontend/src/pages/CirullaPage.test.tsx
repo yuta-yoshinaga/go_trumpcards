@@ -79,6 +79,22 @@ describe('CirullaPage', () => {
     for (const card of tableCards) expect(card).not.toHaveClass('ring-2');
   });
 
+  it('clears the table highlight after a hovered capture option is clicked', async () => {
+    renderWithProviders(<CirullaPage />);
+    await pickHand(2);
+    const option = await screen.findByTestId('cirulla-take-0-1-2-3');
+    const tableCards = [0, 1, 2, 3].map((idx) => screen.getByTestId(`cirulla-table-card-${idx}`));
+
+    fireEvent.mouseEnter(option);
+    for (const card of tableCards) expect(card).toHaveClass('ring-2', 'ring-ds-warning');
+
+    fireEvent.click(option);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { handIndex: 2, captureIndices: [0, 1, 2, 3] }));
+    await waitFor(() => {
+      for (const card of tableCards) expect(card).not.toHaveClass('ring-2');
+    });
+  });
+
   it('sends the chosen group with the card', async () => {
     renderWithProviders(<CirullaPage />);
     await pickHand(0);

@@ -128,6 +128,11 @@ function CirullaPageContent() {
   const { cardWidth, isMobile } = useCardDimensions();
   const [hoveredCapture, setHoveredCapture] = useState<number[] | null>(null);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Clear the hovered option whenever the selected hand changes.
+  useEffect(() => {
+    setHoveredCapture(null);
+  }, [selectedHandIdx]);
+
   if (!state)
     return (
       <GameSkeleton
@@ -243,7 +248,10 @@ function CirullaPageContent() {
                           key={group.join('-')}
                           type="button"
                           className={btnPrimary}
-                          onClick={() => play(group)}
+                          onClick={() => {
+                            setHoveredCapture(null);
+                            play(group);
+                          }}
                           onMouseEnter={() => setHoveredCapture(group)}
                           onMouseLeave={() => setHoveredCapture(null)}
                           disabled={loading}
