@@ -367,8 +367,8 @@ function FrenchTarotPageContent() {
                       ))}
                     </div>
                     <details className="mt-1">
-                      <summary className="cursor-pointer select-none text-ds-text-muted text-xs">
-                        {t('players')}
+                      <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
+                        {t('cardCounts')}
                       </summary>
                       <div className="mt-1">
                         {state.players.map((p) => (

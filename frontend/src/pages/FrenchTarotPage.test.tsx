@@ -136,9 +136,10 @@ describe('FrenchTarotPage', () => {
 
     await waitFor(() => expect(screen.getByText(/2トリック/)).toBeVisible());
     expect(screen.getAllByText(/0トリック/).length).toBeGreaterThan(0);
-    const cardsDetails = screen.getByText('プレイヤー').closest('details');
+    const cardsSummary = screen.getByText('手札の枚数');
+    const cardsDetails = cardsSummary.closest('details');
     expect(cardsDetails).not.toHaveAttribute('open');
-    expect(screen.getByText('プレイヤー')).toBeVisible();
+    expect(cardsSummary).toBeVisible();
   });
 
   it('renders skeleton when no state', () => {
