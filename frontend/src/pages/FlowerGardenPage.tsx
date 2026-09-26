@@ -360,7 +360,7 @@ function FlowerGardenPageContent() {
             <div className="flex flex-wrap gap-2 sm:gap-3 items-start justify-center mb-3">
               <div className="flex flex-col gap-1" data-tutorial="fg-reserve">
                 <span className="text-game-text-muted text-xs">{t('reserve')}</span>
-                <span className="text-ds-text-muted text-xs">{t('reserveSelectionHint')}</span>
+                <span className="text-game-text-muted text-xs">{t('reserveSelectionHint')}</span>
                 {/* 16 bouquet cards laid out as a grid (4 cols on mobile, 8 on sm+) so every
                     slot stays clearly visible instead of cramming into one wrapping row (#3283). */}
                 <div className="grid grid-cols-4 sm:grid-cols-8 gap-1 sm:gap-2 justify-items-center">
