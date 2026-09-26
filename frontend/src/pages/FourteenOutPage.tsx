@@ -92,12 +92,18 @@ function FourteenOutPageContent() {
   );
 
   const flashPairRemoved = useCallback(() => {
+    clearTimeout(invalidPairTimer.current ?? undefined);
+    invalidPairTimer.current = null;
+    setInvalidPairColumns(null);
     setPairRemoved(true);
     clearTimeout(pairToastTimer.current ?? undefined);
     pairToastTimer.current = setTimeout(() => setPairRemoved(false), 1000);
   }, []);
 
   const flashInvalidPair = useCallback((first: number, second: number) => {
+    clearTimeout(pairToastTimer.current ?? undefined);
+    pairToastTimer.current = null;
+    setPairRemoved(false);
     setInvalidPairColumns([first, second]);
     clearTimeout(invalidPairTimer.current ?? undefined);
     invalidPairTimer.current = setTimeout(() => setInvalidPairColumns(null), 1500);
