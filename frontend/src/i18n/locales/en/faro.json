@@ -33,7 +33,11 @@
   "gameEnd": "Out of chips. Game over.",
   "rankName": "Rank",
   "caseKeeperTitle": "Case keeper (cards left per rank)",
-  "caseKeeperCell": "{{rank}}: {{count}} left",
+  "caseKeeperCell": "{{rank}}: {{count}} left. {{status}}",
+  "caseKeeperDepleted": "Cannot bet (no cards remain)",
+  "caseKeeperInsufficientChips": "Cannot bet {{amount}} chips in {{mode}} mode (insufficient chips)",
+  "caseKeeperAvailable": "Can bet {{amount}} chips in {{mode}} mode",
+  "normalBet": "normal",
   "phase": {
     "betting": "Betting",
     "turn": "Turn",
