@@ -49,6 +49,7 @@ const playPhaseState: PrsiResponse = {
   currentPlayerIdx: 0,
   discardTop: { design: 'HEART', value: 7 },
   drawPileCount: 30,
+  discardPileCount: 3,
   penaltyDrawCount: 0,
   pendingSkips: 0,
   gameEndFlag: false,
@@ -396,7 +397,39 @@ describe('PrsiPage', () => {
     renderWithProviders(<PrsiPage />);
     const stock = await screen.findByTestId('prsi-stock');
     expect(stock).toHaveTextContent('30');
+    expect(stock).toHaveAccessibleName('山札から1枚ドロー（残り30枚）');
+    expect(stock).not.toHaveAttribute('aria-describedby');
     expect(stock).not.toBeDisabled();
+  });
+
+  it('allows drawing from a recycled discard pile when the stock is empty', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, drawPileCount: 0, discardPileCount: 3 });
+    renderWithProviders(<PrsiPage />);
+
+    const stock = await screen.findByTestId('prsi-stock');
+    expect(stock).not.toBeDisabled();
+    expect(stock).toHaveAccessibleName('山札から1枚ドロー（残り0枚）');
+    expect(screen.queryByTestId('prsi-stock-empty')).not.toBeInTheDocument();
+  });
+
+  it('offers pass when neither pile has a card to draw', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, drawPileCount: 0, discardPileCount: 1, penaltyDrawCount: 2 });
+    renderWithProviders(<PrsiPage />);
+
+    const stock = await screen.findByTestId('prsi-stock');
+    expect(stock).not.toBeDisabled();
+    expect(stock).toHaveAccessibleName('パス');
+    expect(screen.getByText('パス')).toBeVisible();
+    expect(screen.getByTestId('prsi-stock-empty')).toHaveTextContent(
+      '山札と捨て札から引ける札が無いため、押すとパスになります',
+    );
+    expect(stock).toHaveAccessibleDescription('山札と捨て札から引ける札が無いため、押すとパスになります');
+    expect(screen.getByTestId('prsi-stock-penalty')).toHaveTextContent('+2');
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playPhaseState);
+    fireEvent.click(stock);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
   });
 
   it('drawing via a stock click dispatches the draw action on the human turn', async () => {

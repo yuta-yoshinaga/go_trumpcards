@@ -232,6 +232,9 @@ func (g *Prsi) GetDiscardTop() *Card {
 	return discardTop(g.discardPile)
 }
 
+// GetDiscardPileCount returns the number of cards in the discard pile.
+func (g *Prsi) GetDiscardPileCount() int { return len(g.discardPile) }
+
 // GetDrawPileCount 山札の残り枚数取得
 func (g *Prsi) GetDrawPileCount() int { return len(g.drawPile) }
 

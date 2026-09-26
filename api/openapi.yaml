@@ -54966,6 +54966,9 @@ components:
           description: Top card of the discard pile, or null.
         drawPileCount:
           type: integer
+        discardPileCount:
+          type: integer
+          description: Number of cards in the discard pile, including its top card.
         penaltyDrawCount:
           type: integer
           description: Accumulated 7-stack penalty the current player must take or stack onto (0 = none).

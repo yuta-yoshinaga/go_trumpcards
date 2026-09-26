@@ -153,6 +153,7 @@ function PrsiPageContent() {
   const humanPlayer = state.players.find((p) => p.isHuman);
   const isPlayPhase = state.phase === PrsiPhase.PLAY;
   const isGameEnd = state.phase === PrsiPhase.GAME_END || state.gameEndFlag;
+  const cannotDraw = state.drawPileCount === 0 && state.discardPileCount <= 1;
   // 残り 1 枚は次の一手で勝敗が決まる。ページはこれまで枚数を素の数字でしか
   // 出しておらず、hasPenalty には警告バッジがあるのにここには無かった。
   const atOneCard = (cardCount: number) => cardCount === 1 && !isGameEnd;
@@ -228,10 +229,11 @@ function PrsiPageContent() {
                       type="button"
                       data-testid="prsi-stock"
                       onClick={handleDrawWithSound}
-                      disabled={!isHumanTurn || loading || state.drawPileCount === 0}
-                      aria-label={t('stockAria', { count: state.drawPileCount })}
+                      disabled={!isHumanTurn || loading}
+                      aria-label={cannotDraw ? t('passButton') : t('stockAria', { count: state.drawPileCount })}
+                      aria-describedby={cannotDraw ? 'prsi-stock-empty-description' : undefined}
                       className={`relative ${focusRingCard} ${
-                        isHumanTurn && state.drawPileCount > 0 ? 'cursor-pointer' : 'cursor-default opacity-70'
+                        isHumanTurn ? 'cursor-pointer' : 'cursor-default opacity-70'
                       }`}
                       style={{ background: 'none', padding: 0, border: 'none', lineHeight: 0 }}
                     >
@@ -252,7 +254,16 @@ function PrsiPageContent() {
                         </span>
                       )}
                     </button>
-                    <div className="text-ds-text-muted text-sm">{t('stock')}</div>
+                    <div className="text-ds-text-muted text-sm">{cannotDraw ? t('passButton') : t('stock')}</div>
+                    {cannotDraw && (
+                      <div
+                        id="prsi-stock-empty-description"
+                        className="text-ds-text-muted text-sm"
+                        data-testid="prsi-stock-empty"
+                      >
+                        {t('stockEmpty')}
+                      </div>
+                    )}
                   </div>
                 </div>
 
