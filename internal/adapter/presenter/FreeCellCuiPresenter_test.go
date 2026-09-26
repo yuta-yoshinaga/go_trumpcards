@@ -299,9 +299,9 @@ func TestFreeCellCuiPresenterOutput_SupermoveLine(t *testing.T) {
 		assert.Contains(t, out, "空き列へは5枚")
 	})
 
-	t.Run("omits the empty-column limit when no column is empty", func(t *testing.T) {
+	t.Run("shows a zero empty-column limit when no column is empty", func(t *testing.T) {
 		out := p.Output(board(0, domain.FreeCellTableauCnt), nil)
-		assert.NotContains(t, out, "空き列へは")
+		assert.Contains(t, out, "空き列へは0枚")
 	})
 
 	t.Run("shows a limit of one when the board is packed", func(t *testing.T) {
