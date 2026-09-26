@@ -109,14 +109,7 @@ describe('MarjapussiPage', () => {
     expect(screen.getByTestId('marjapussi-progress-team-1')).toBeInTheDocument();
   });
 
-  it('displays latest marriage declaration or none', async () => {
-    // マリッジ宣言なし
-    const { unmount: unmountNoMarriage } = renderWithProviders(<MarjapussiPage />);
-    const noMarriage = await screen.findByTestId('marjapussi-last-marriage');
-    expect(noMarriage).toHaveTextContent('直近のマリッジ宣言: なし');
-    unmountNoMarriage();
-
-    // マリッジ宣言あり (チーム0の人間が ♥ を宣言して 40点)
+  it('highlights the latest marriage declaration in the history', async () => {
     mockExec.mockResolvedValue(
       makeMarjapussiState({
         trumpSuit: 3,
@@ -124,12 +117,18 @@ describe('MarjapussiPage', () => {
         leadPlayerIdx: 0,
       }),
     );
-    const { unmount } = renderWithProviders(<MarjapussiPage />);
-    const declaredMarriage = await screen.findByTestId('marjapussi-last-marriage');
-    expect(declaredMarriage).toHaveTextContent('直近のマリッジ宣言');
-    expect(declaredMarriage).toHaveTextContent('♥');
-    expect(declaredMarriage).toHaveTextContent('40');
-    unmount();
+    renderWithProviders(<MarjapussiPage />);
+    const history = await screen.findByTestId('marjapussi-marriage-history');
+    const latestMarriage = history.querySelector('[aria-current="true"]');
+    expect(latestMarriage).toHaveTextContent('あなた が ♥ を宣言（+40点）');
+    expect(history.querySelectorAll('li')).toHaveLength(1);
+  });
+
+  it('shows no marriage in the history when there are no declarations', async () => {
+    renderWithProviders(<MarjapussiPage />);
+    const history = await screen.findByTestId('marjapussi-marriage-history');
+    expect(history).toHaveTextContent('直近のマリッジ宣言: なし');
+    expect(history.querySelector('[aria-current="true"]')).toBeNull();
   });
 
   it('records each marriage point increase in order and clears history for a new round', async () => {

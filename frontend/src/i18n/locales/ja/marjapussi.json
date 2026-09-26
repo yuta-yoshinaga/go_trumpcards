@@ -27,7 +27,6 @@
   "teamScore": "チーム得点: {{score}}",
   "progressLabel": "進捗: {{score}} / {{target}}",
   "marriageAvailable": "マリッジ可能: {{list}}（同スートのK・Qを両方持ち、リードで出すと成立）",
-  "lastMarriage": "直近のマリッジ宣言: {{player}} が {{suit}} を宣言（+{{points}}点）",
   "marriageHistory": "今ラウンドの結婚履歴",
   "marriageEntry": "{{player}} が {{suit}} を宣言（+{{points}}点）",
   "noMarriage": "直近のマリッジ宣言: なし",

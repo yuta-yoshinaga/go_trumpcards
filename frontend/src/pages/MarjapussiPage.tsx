@@ -177,8 +177,6 @@ function MarjapussiPageContent() {
     prevRoundMarriageRef.current = current;
   }, [state]);
 
-  const activeMarriage = marriagesThisRound.at(-1) ?? null;
-
   if (!state)
     return <GameSkeleton gameKey="marjapussi" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 8 }} />;
 
@@ -280,29 +278,14 @@ function MarjapussiPageContent() {
               <span>{t('target', { points: target })}</span>
             </div>
 
-            {/* Latest Marriage Banner */}
-            <div
-              className="mb-2 p-1.5 rounded bg-black/20 text-center text-xs text-ds-text-muted"
-              data-testid="marjapussi-last-marriage"
-            >
-              {activeMarriage ? (
-                <span>
-                  {t('lastMarriage', {
-                    player: playerName(activeMarriage.playerIdx, activeMarriage.playerIdx === humanIdx),
-                    suit: suitSymbolAt(activeMarriage.suit, '-'),
-                    points: activeMarriage.points,
-                  })}
-                </span>
-              ) : (
-                <span>{t('noMarriage')}</span>
-              )}
-            </div>
             <section
               className="mb-2 rounded bg-ds-surface p-2 text-sm text-ds-text-primary"
               data-testid="marjapussi-marriage-history"
-              aria-label={t('marriageHistory')}
+              aria-labelledby="marjapussi-marriage-history-heading"
             >
-              <h2 className="mb-1 font-semibold">{t('marriageHistory')}</h2>
+              <h2 id="marjapussi-marriage-history-heading" className="mb-1 font-semibold">
+                {t('marriageHistory')}
+              </h2>
               {marriagesThisRound.length > 0 ? (
                 <ol className="space-y-1">
                   {marriagesThisRound.map((marriage, index) => (
