@@ -30,6 +30,7 @@
   "promptTrickEnd": "トリック終了",
   "promptTrickEndHelp": "n・・・次のトリックへ",
   "promptRoundEnd": "ラウンド終了",
+  "roundCardPointsLine": "ラウンド獲得カード点: チーム0={{t0}}点  チーム1={{t1}}点",
   "promptRoundEndHelp": "nr・・・次のラウンドへ",
   "hintNone": "ヒントはありません。",
   "hintBid": "[ヒント: {{points}}点を{{suit}}で宣言 ({{reason}})]",
