@@ -20,6 +20,8 @@
   "field": "場",
   "fieldEmpty": "（なし）",
   "pickField": "捕獲する場札を選んでください（2枚が一致しています）。",
+  "captureCandidate": "捕獲候補",
+  "notCaptureCandidate": "捕獲候補ではありません",
   "you": "あなた",
   "cpu": "CPU",
   "captured": "捕獲: {{count}}",
