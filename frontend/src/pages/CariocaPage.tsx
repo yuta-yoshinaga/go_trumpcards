@@ -435,7 +435,8 @@ function CariocaPageContent() {
                         key={`${idx}-${c.design}-${c.value}`}
                         onClick={() => toggleCard(idx)}
                         disabled={isInSlot}
-                        className={`${focusRingWhite} ${isSelected ? 'ring-2 ring-ds-warning' : ''} ${
+                        aria-pressed={isSelected}
+                        className={`${focusRingWhite} ${isSelected ? '-translate-y-2 ring-2 ring-ds-warning' : ''} ${
                           isInSlot ? 'opacity-40' : ''
                         }`}
                       >
