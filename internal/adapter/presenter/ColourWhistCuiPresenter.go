@@ -35,6 +35,16 @@ func (cp *ColourWhistCuiPresenter) Output(c interfaces.ColourWhistGame, lastErr 
 				"seat", strconv.Itoa(c.GetDeclarerIdx()),
 				"tricks", strconv.Itoa(c.GetDeclarerTricks())) + "\n")
 		}
+		if c.GetContract() != domain.ColourWhistContractNone {
+			partnerStatus := i18n.T("colourwhist.partnerNone")
+			if c.GetContract() == domain.ColourWhistContractSamen || c.GetContract() == domain.ColourWhistContractTroel {
+				partnerStatus = i18n.T("colourwhist.partnerHidden")
+				if partnerIdx := c.GetPartnerIdx(); partnerIdx >= 0 {
+					partnerStatus = i18n.Tf("colourwhist.partnerSeat", "seat", strconv.Itoa(partnerIdx))
+				}
+			}
+			sb.WriteString(i18n.Tf("colourwhist.partnerLine", "partner", partnerStatus) + "\n")
+		}
 		if card := c.GetCalledCard(); card != nil {
 			sb.WriteString(i18n.Tf("colourwhist.calledCardLine",
 				"card", cuiCardStr(card)) + "\n")
