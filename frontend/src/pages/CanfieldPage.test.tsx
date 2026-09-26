@@ -112,6 +112,31 @@ describe('CanfieldPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
   });
 
+  it('exposes current stock and reserve counts in their accessible names', async () => {
+    renderWithProviders(<CanfieldPage />);
+
+    expect(await screen.findByRole('button', { name: '山札、残り34枚' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'リザーブ、♠ 3、残り1枚' })).toBeInTheDocument();
+  });
+
+  it('updates the stock accessible name after drawing and names an empty reserve', async () => {
+    const afterDraw = { ...playingState, stockCount: 33, reserve: [] };
+    mockExec.mockResolvedValueOnce(playingState).mockResolvedValueOnce(afterDraw);
+    renderWithProviders(<CanfieldPage />);
+
+    fireEvent.click(await screen.findByRole('button', { name: '山札、残り34枚' }));
+
+    expect(await screen.findByRole('button', { name: '山札、残り33枚' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'リザーブ、空' })).toBeInTheDocument();
+  });
+
+  it('names an empty stock accessibly', async () => {
+    mockExec.mockResolvedValue({ ...playingState, stockCount: 0 });
+    renderWithProviders(<CanfieldPage />);
+
+    expect(await screen.findByRole('button', { name: '山札、空' })).toBeInTheDocument();
+  });
+
   it('moves reserve to foundation', async () => {
     renderWithProviders(<CanfieldPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
