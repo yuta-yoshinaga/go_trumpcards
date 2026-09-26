@@ -44,6 +44,7 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 import { isTableauAllFaceUp } from '../utils/solitaireUtils';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
+const FOUNDATION_SUIT_NAMES = ['spade', 'club', 'heart', 'diamond'] as const;
 
 /** Klondike tutorial step definitions. */
 const KL_TUTORIAL_STEPS: TutorialStep[] = [
@@ -427,6 +428,7 @@ function KlondikePageContent() {
                             disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
                             aria-label={t('foundationAriaLabel', {
                               suit: FOUNDATION_SUITS[idx],
+                              suitName: t(`suitNames.${FOUNDATION_SUIT_NAMES[idx]}`),
                               count: pile.length,
                             })}
                             className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
@@ -443,7 +445,10 @@ function KlondikePageContent() {
                             type="button"
                             onClick={() => handleSelectTarget(foundationZone)}
                             disabled={!isPlaying || loading || !selectedSource}
-                            aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
+                            aria-label={t('emptyFoundationAriaLabel', {
+                              suit: FOUNDATION_SUITS[idx],
+                              suitName: t(`suitNames.${FOUNDATION_SUIT_NAMES[idx]}`),
+                            })}
                             style={{ width: kl.cw, height: kl.ch }}
                             className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                           >
