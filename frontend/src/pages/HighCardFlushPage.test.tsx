@@ -360,7 +360,7 @@ describe('HighCardFlushPage', () => {
     expect(betButton).toBeDisabled();
 
     fireEvent.change(anteInput, { target: { value: '100' } });
-    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.getByRole('alert')).toBeEmptyDOMElement();
     expect(betButton).toBeEnabled();
   });
 
@@ -392,7 +392,7 @@ describe('HighCardFlushPage', () => {
     expect(flushBonusInput.value).toBe('0');
     expect(straightFlushInput.value).toBe('0');
 
-    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.getByRole('alert')).toBeEmptyDOMElement();
     const betButton = screen.getByRole('button', { name: 'ベット' });
     expect(betButton).toBeEnabled();
 
@@ -400,7 +400,7 @@ describe('HighCardFlushPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 100, 0, 0));
   });
 
-  it('attaches aria-describedby to inputs and displays error message with role="alert" when invalid', async () => {
+  it('describes only the invalid bet conditions and updates the balance error as inputs change', async () => {
     mockExec.mockResolvedValue(betPhaseState);
     renderWithProviders(<HighCardFlushPage />);
     await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
@@ -415,15 +415,21 @@ describe('HighCardFlushPage', () => {
     fireEvent.change(anteInput, { target: { value: '15' } });
 
     const alert = screen.getByRole('alert');
-    expect(alert).toHaveAttribute('id', 'highcardflush-bet-error');
-    expect(alert).toHaveTextContent(
-      'アンテは10〜10000、ボーナスは0または10〜10000、ベットは10単位で、合計は残高以内で指定してください',
-    );
+    expect(alert).toHaveTextContent('アンテは10〜10000の範囲で10単位で入力してください');
+    expect(alert).not.toHaveTextContent('フラッシュボーナス');
+    expect(alert).not.toHaveTextContent('必要額');
 
     expect(anteInput).toHaveAttribute('aria-invalid', 'true');
-    expect(anteInput).toHaveAttribute('aria-describedby', 'highcardflush-bet-error');
-    expect(flushBonusInput).toHaveAttribute('aria-describedby', 'highcardflush-bet-error');
-    expect(straightFlushInput).toHaveAttribute('aria-describedby', 'highcardflush-bet-error');
+    expect(anteInput).toHaveAttribute('aria-describedby', 'highcardflush-ante-error');
+    expect(flushBonusInput).not.toHaveAttribute('aria-describedby');
+    expect(straightFlushInput).not.toHaveAttribute('aria-describedby');
+
+    fireEvent.change(anteInput, { target: { value: '1000' } });
+    fireEvent.change(flushBonusInput, { target: { value: '1000' } });
+    expect(screen.getByRole('alert')).toHaveTextContent('合計ベット2000、所持チップ1000');
+    expect(anteInput).toHaveAttribute('aria-describedby', 'highcardflush-balance-error');
+    expect(flushBonusInput).toHaveAttribute('aria-describedby', 'highcardflush-balance-error');
+    expect(straightFlushInput).toHaveAttribute('aria-describedby', 'highcardflush-balance-error');
   });
 
   it('places bet with valid amounts across ante and side bets', async () => {
