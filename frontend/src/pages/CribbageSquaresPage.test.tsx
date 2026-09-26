@@ -86,6 +86,33 @@ describe('CribbageSquaresPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('place', 1, 2));
   });
 
+  it('announces only the affected row and column scores after placement', async () => {
+    renderWithProviders(<CribbageSquaresPage />);
+    await waitFor(() => expect(screen.getByTestId('cell-1-2')).toBeEnabled());
+    const live = screen.getByTestId('cs-placement-announcement');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toBeEmptyDOMElement();
+
+    const board = makeState().board;
+    board[1][2] = { card: card('HEART', 10) };
+    mockExec.mockResolvedValue(
+      makeState({
+        board,
+        placedCount: 2,
+        rowPartialDetails: [zero(), { ...zero(), total: 4 }, zero(), zero()],
+        colPartialDetails: [zero(), zero(), { ...zero(), total: 2 }, zero()],
+      }),
+    );
+    fireEvent.click(screen.getByTestId('cell-1-2'));
+    await waitFor(() => expect(live).toHaveTextContent('行2が4点、列3が2点、合計6点'));
+
+    // A state refresh such as undo must not repeat a placement announcement.
+    mockExec.mockResolvedValue(makeState());
+    fireEvent.click(screen.getByRole('button', { name: '元に戻す' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo'));
+    expect(live).toHaveTextContent('行2が4点、列3が2点、合計6点');
+  });
+
   it('refuses to place into an occupied cell', async () => {
     renderWithProviders(<CribbageSquaresPage />);
     await waitFor(() => expect(screen.getByTestId('cell-0-0')).toBeDisabled());

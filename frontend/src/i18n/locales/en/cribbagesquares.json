@@ -19,6 +19,7 @@
   },
   "partialPrefix": "so far",
   "partialTooltip": "Locked in without the starter. The starter can only add to it.",
+  "placementAnnouncement": "Row {{rowNo}}: {{rowScore}} points; column {{colNo}}: {{colScore}} points; combined: {{total}} points",
   "part": {
     "fifteens": "15s {{n}}",
     "pairs": "pairs {{n}}",
