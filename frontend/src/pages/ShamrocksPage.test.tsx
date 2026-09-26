@@ -32,6 +32,20 @@ beforeEach(() => {
 });
 
 describe('ShamrocksPage', () => {
+  it('announces fan position and card, and exposes keyboard selection state', async () => {
+    renderWithProviders(<ShamrocksPage />);
+
+    const fan = await screen.findByRole('button', { name: '扇 1、最上段は♠ 8' });
+    expect(fan).toHaveAttribute('type', 'button');
+    expect(fan).toHaveAttribute('aria-pressed', 'false');
+    fan.focus();
+    expect(fan).toHaveFocus();
+    fireEvent.click(fan);
+    expect(fan).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(fan);
+    expect(fan).toHaveAttribute('aria-pressed', 'false');
+  });
+
   // **リングは 1 つだけ。** ring-* は同じ box-shadow を共有するので重ねられず、
   // 連結すると選択中かつ移動可能な扇で選択リングが黙って消える (レビュー指摘)。
   it('keeps the selection ring on a fan that can also move', async () => {
