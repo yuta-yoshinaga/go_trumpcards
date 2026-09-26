@@ -615,6 +615,16 @@ function CruelPageContent() {
               )}
               <ActionShortcutsPanel bindings={actionBindings} data-testid="cruel-kbd-shortcuts" />
             </GameFooter>
+            {isPlaying && (
+              <p
+                className="text-sm text-ds-text-muted"
+                role="status"
+                aria-live="polite"
+                data-testid="autocomplete-readiness"
+              >
+                {state.canAutoComplete ? t('autoCompleteReady') : t('autoCompleteNotReady')}
+              </p>
+            )}
           </div>
         </>
       )}
