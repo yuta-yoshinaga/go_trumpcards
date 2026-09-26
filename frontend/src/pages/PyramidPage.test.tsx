@@ -144,7 +144,12 @@ describe('PyramidPage', () => {
 
   it('includes the remaining stock count in the draw button name', async () => {
     renderWithProviders(<PyramidPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '引く（山札の残り20枚）' })).toBeInTheDocument());
+    await waitFor(() => {
+      const drawButtons = screen.getAllByRole('button', { name: '引く（山札の残り20枚）' });
+      expect(drawButtons).toHaveLength(2);
+      expect(drawButtons[0]).toBeInTheDocument();
+      expect(drawButtons[1]).toHaveTextContent('引く');
+    });
   });
 
   it('renders stock count', async () => {
@@ -192,7 +197,7 @@ describe('PyramidPage', () => {
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(playingState);
-    const drawButtons = screen.getAllByRole('button', { name: '引く' });
+    const drawButtons = screen.getAllByRole('button', { name: '引く（山札の残り20枚）' });
     fireEvent.click(drawButtons[drawButtons.length - 1]);
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
@@ -523,11 +528,9 @@ describe('PyramidPage', () => {
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(playingState);
-    const drawLabel = screen.getByLabelText('引く（山札の残り20枚）');
-    if (drawLabel) {
-      fireEvent.click(drawLabel);
-      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
-    }
+    const drawLabels = screen.getAllByLabelText('引く（山札の残り20枚）');
+    fireEvent.click(drawLabels[0]);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
   });
 
   it('undo button disabled when canUndo is false', async () => {
