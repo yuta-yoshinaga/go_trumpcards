@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import type { chinesetenApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CardBack } from '../components/CardImage';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
@@ -15,6 +16,7 @@ import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useChineseTenGame } from '../hooks/useChineseTenGame';
 import { useCliGame } from '../hooks/useCliGame';
@@ -72,15 +74,34 @@ function ChineseTenPageContent() {
   // 載せるので、`state.hint` を直接読むと常時ハイライトになる (#4605)。
   const showServerHint = frontendHintEnabled && state !== null && isRequestedHint(state);
 
+  const ended = state?.phase === ChineseTenPhase.GAME_END;
+  const choosing = state?.phase === ChineseTenPhase.SELECT;
+  const isHumanTurn = !!state && !ended && state.currentPlayerIdx === 0;
+  const actionBindings = useMemo(() => {
+    const digit = (index: number) => (index === 9 ? '0' : String(index + 1));
+    if (choosing && isHumanTurn && state) {
+      return state.selectableIndices.flatMap((index) => {
+        const key = index < 9 ? String(index + 1) : index === 9 ? '0' : undefined;
+        if (key === undefined) return [];
+        return [{ key, action: () => game.handleSelect(index), label: 'select' }];
+      });
+    }
+    const handCount = state?.players.find((p) => p.isHuman)?.cards.length ?? 0;
+    return Array.from({ length: Math.min(handCount, 10) }, (_, index) => ({
+      key: digit(index),
+      action: () => game.handlePlay(index),
+      label: 'play',
+      enabled: isHumanTurn && !choosing,
+    }));
+  }, [choosing, game.handlePlay, game.handleSelect, isHumanTurn, state]);
+  useActionKeyboardNav({ bindings: actionBindings, enabled: !!state && !loading });
+
   if (!state) {
     return <GameSkeleton gameKey="chineseten" layout={{ kind: 'tableau', topRow: 4, tableau: 4 }} />;
   }
 
-  const ended = state.phase === ChineseTenPhase.GAME_END;
-  const choosing = state.phase === ChineseTenPhase.SELECT;
   const human = state.players.find((p) => p.isHuman);
   const opponents = state.players.filter((p) => !p.isHuman);
-  const isHumanTurn = !ended && state.currentPlayerIdx === 0;
 
   // Selectability comes from the server, which applies BOTH capture rules.
   // Re-deriving them here would put a pair of non-overlapping rules in two
@@ -294,6 +315,7 @@ function ChineseTenPageContent() {
                 dataTutorial="ct-reset-button"
               />
             </div>
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="chineseten-kbd-shortcuts" />
           </GameFooter>
         </>
       )}
