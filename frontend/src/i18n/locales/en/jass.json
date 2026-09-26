@@ -19,6 +19,8 @@
   "round": "Round {{n}}",
   "trick": "Trick {{n}}",
   "cards": "{{count}} cards",
+  "cardPlayable": "Playable",
+  "cardNotPlayable": "Not playable",
   "teamScores": "Team Scores",
   "team": "Team {{n}}",
   "teamYou": "Team {{n}} (You)",
