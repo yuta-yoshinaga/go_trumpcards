@@ -161,6 +161,27 @@ describe('MonteBankPage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', { idx: 2, bet: 50 }));
   });
 
+  it('札の切り替えを通知し、札の注記をアクセシブルネームに含め、賭けは既定選択で有効', async () => {
+    mockApi.mockResolvedValue(base);
+    renderWithProviders(<MonteBankPage />);
+    await waitFor(() => expect(screen.getByTestId('mb-layout-2')).toBeInTheDocument());
+
+    const announcement = screen.getByRole('status');
+    expect(screen.getByRole('button', { name: '賭ける' })).toBeEnabled();
+    expect(announcement).toBeEmptyDOMElement();
+    fireEvent.click(screen.getByTestId('mb-layout-2'));
+    expect(announcement).toHaveTextContent('♠ Aの選択を解除し、♥ 3を選択');
+    expect(screen.getByTestId('mb-layout-2')).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByTestId('mb-layout-2')).not.toHaveAttribute('aria-label');
+    expect(screen.getByTestId('mb-layout-2')).toHaveAccessibleName(/互角/);
+
+    fireEvent.click(screen.getByTestId('mb-layout-3'));
+    expect(announcement).toHaveTextContent('♥ 3の選択を解除し、♣ Kを選択');
+    expect(screen.getByTestId('mb-layout-3')).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(screen.getByTestId('mb-layout-3'));
+    expect(announcement).toHaveTextContent('♥ 3の選択を解除し、♣ Kを選択');
+  });
+
   // **決着後も「どの札に張ったか」は読み上げから分かる必要がある。**
   // リングは isPicked を見ていたのに aria-pressed は BET フェーズしか見ておらず、
   // 決着すると色でだけ残っていた。
