@@ -87,6 +87,8 @@ func TestFreeBetCuiPresenter_ShowsResultAndNet(t *testing.T) {
 	assert.Contains(t, out, "アンティ: 50")
 	assert.Contains(t, out, "収支:")
 	assert.Contains(t, out, "手札1:")
+	assert.Contains(t, out, "手札1の払い戻し:")
+	assert.Contains(t, out, "next")
 	assert.NotContains(t, out, "freebet.")
 }
 

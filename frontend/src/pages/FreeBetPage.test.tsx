@@ -269,6 +269,19 @@ describe('FreeBetPage', () => {
     );
     renderWithProviders(<FreeBetPage />);
     await waitFor(() => expect(screen.getByTestId('fb-result')).toHaveTextContent('収支: 100'));
+    expect(screen.getByTestId('fb-hand-0')).toHaveTextContent('払い戻し: 150');
+  });
+
+  it('ブラックジャックの手札ごとの払い戻しを表示する', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: FreeBetPhase.RESULT,
+        hands: [hand({ bet: 50, blackjack: true, result: FREE_BET_RESULT.blackjack })],
+        payout: 125,
+      }),
+    );
+    renderWithProviders(<FreeBetPage />);
+    await waitFor(() => expect(screen.getByTestId('fb-hand-0')).toHaveTextContent('払い戻し: 125'));
   });
 
   // **22 は名指しする。** 無料ダブル / 無料スプリットの対価がこれ。
