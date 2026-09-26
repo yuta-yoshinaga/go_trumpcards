@@ -537,30 +537,40 @@ describe('BaccaratPage', () => {
     mockExec.mockResolvedValue(betPhaseState);
     renderWithProviders(<BaccaratPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    fireEvent.change(screen.getByLabelText('プレイヤーペア'), { target: { value: '10' } });
+    fireEvent.change(screen.getByLabelText('バンカーペア'), { target: { value: '20' } });
 
     mockExec.mockClear();
-    mockExec.mockResolvedValue(endPhasePlayerWins);
+    mockExec.mockResolvedValue(endPhaseWithSideBets);
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
     await waitFor(() => expect(screen.getByTestId('bac-rebet-button')).toBeInTheDocument());
+    expect(screen.getByTestId('bac-rebet-breakdown')).toHaveTextContent('プレイヤー: 100');
+    expect(screen.getByTestId('bac-rebet-breakdown')).toHaveTextContent('プレイヤーペア: 10');
+    expect(screen.getByTestId('bac-rebet-breakdown')).toHaveTextContent('バンカーペア: 20');
 
     mockExec.mockClear();
     mockExec.mockResolvedValueOnce(betPhaseState);
     mockExec.mockResolvedValueOnce(endPhasePlayerWins);
     fireEvent.click(screen.getByTestId('bac-rebet-button'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 100, 0, 0, 0));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', 100, 0, 10, 20));
   });
 
   it('does not show the Rebet button at end-phase when chips are insufficient to replay', async () => {
     mockExec.mockResolvedValue(betPhaseState);
     renderWithProviders(<BaccaratPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    fireEvent.change(screen.getByLabelText('プレイヤーペア'), { target: { value: '10' } });
+    fireEvent.change(screen.getByLabelText('バンカーペア'), { target: { value: '20' } });
 
     mockExec.mockClear();
-    mockExec.mockResolvedValue({ ...endPhasePlayerWins, chips: 50 });
+    mockExec.mockResolvedValue({ ...endPhaseWithSideBets, chips: 50 });
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
     await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
     expect(screen.queryByTestId('bac-rebet-button')).not.toBeInTheDocument();
+    expect(screen.getByTestId('bac-rebet-breakdown')).toHaveTextContent('プレイヤー: 100');
+    expect(screen.getByTestId('bac-rebet-breakdown')).toHaveTextContent('プレイヤーペア: 10');
+    expect(screen.getByTestId('bac-rebet-breakdown')).toHaveTextContent('バンカーペア: 20');
   });
 
   it("snapshots the bet when the 'b' keyboard shortcut is used so Rebet is available at end phase", async () => {
