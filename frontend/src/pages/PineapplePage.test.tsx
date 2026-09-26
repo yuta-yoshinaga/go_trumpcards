@@ -1192,6 +1192,16 @@ describe('PineapplePage', () => {
     expect(live2.textContent).not.toContain('cpPreviewAria');
   });
 
+  it('omits the selected discard preview when the server provides no candidate', async () => {
+    mockCrazyExec.mockResolvedValue({ ...discardState, discardPreviews: [] });
+    renderWithProviders(<PineapplePage variant="crazypineapple" />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+
+    expect(screen.getByTestId('cp-discard-preview-announce')).toBeEmptyDOMElement();
+  });
+
   // 複数枚のカードを捨てるゲーム（Irish Poker 等）の場合のみ、選択枚数カウントを表示する。
   it('renders discard-count when discardCount is greater than one', async () => {
     mockExec.mockResolvedValue({ ...discardState, initialDealCount: 4 });
