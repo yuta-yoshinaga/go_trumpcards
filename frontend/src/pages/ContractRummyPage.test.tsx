@@ -127,8 +127,10 @@ describe('ContractRummyPage', () => {
     fireEvent.keyDown(document.body, { key: 'd' });
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('drawstock'));
 
-    fireEvent.click(within(screen.getByTestId('contractrummy-kbd-shortcuts')).getByText('キーボードショートカット'));
-    expect(screen.getByText(/Draw from the stock|山札から引く/)).toBeInTheDocument();
+    const shortcuts = within(screen.getByTestId('contractrummy-kbd-shortcuts'));
+    fireEvent.click(shortcuts.getByText('キーボードショートカット'));
+    expect(shortcuts.getAllByText('山札をめくる')).toHaveLength(1);
+    expect(shortcuts.getAllByText('捨て札を取る')).toHaveLength(1);
     fireEvent.keyDown(document.body, { key: 'n' });
     await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('nextround');

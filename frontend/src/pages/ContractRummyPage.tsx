@@ -243,7 +243,7 @@ function ContractRummyPageContent() {
   const actionBindings = useMemo(
     () => [
       { key: 'd', action: handleDrawStock, enabled: isDrawPhase, label: 'draw' },
-      { key: 'p', action: handleDrawDiscard, enabled: isDrawPhase && !!state?.discardTop, label: 'draw' },
+      { key: 'p', action: handleDrawDiscard, enabled: isDrawPhase && !!state?.discardTop, label: 'takeDiscard' },
       {
         key: 'x',
         action: handleDiscard,
@@ -603,10 +603,6 @@ function ContractRummyPageContent() {
               </button>
             )}
           </section>
-          <div className="px-4">
-            <ActionShortcutsPanel bindings={actionBindings} data-testid="contractrummy-kbd-shortcuts" />
-          </div>
-
           <GameMessageBox message={state.message} messageCode={state.messageCode} messageParams={state.messageParams} />
 
           <ActionLogSection
@@ -630,6 +626,7 @@ function ContractRummyPageContent() {
                 </span>
               )}
             </div>
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="contractrummy-kbd-shortcuts" />
           </GameFooter>
         </>
       )}
