@@ -76,6 +76,21 @@ describe('GleekPage', () => {
     expect(screen.getByText('落札者')).toBeInTheDocument();
   });
 
+  it('marks the CPU bidder row during the bidding phase', async () => {
+    mockExec.mockResolvedValue(
+      makeGleekState({
+        ...bidPhaseState,
+        currentBidderIdx: 1,
+        isHumanBidTurn: false,
+      }),
+    );
+    renderWithProviders(<GleekPage />);
+
+    const cpuBidderRow = await screen.findByTestId('gleek-player-1');
+    expect(cpuBidderRow).toContainElement(screen.getByTestId('gleek-bid-turn-label'));
+    expect(screen.getByTestId('gleek-player-0')).not.toContainElement(screen.getByTestId('gleek-bid-turn-label'));
+  });
+
   // **段階の点は出さないと見えない。** ラフとメルドで動いた点が画面に無いと、
   // 累積点だけが理由なく動いているように見える。
   it('shows the stock, the ruff and both meld kinds', async () => {

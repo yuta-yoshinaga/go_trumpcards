@@ -150,7 +150,7 @@ function GleekPageContent() {
   const isGameEnd = state.phase === GleekPhase.GAME_END || state.gameEndFlag;
 
   const canBid = state.phase === GleekPhase.BID && state.isHumanBidTurn;
-  const biddingSeatIdx = state.phase === GleekPhase.BID && !state.gameEndFlag ? state.currentBidderIdx : -1;
+  const biddingSeatIdx = state.phase === GleekPhase.BID ? state.currentBidderIdx : -1;
   const canDiscard = state.phase === GleekPhase.DISCARD && state.isHumanDiscardTurn;
   const canPlay = isPlayPhase && isHumanTurn;
   // **上限に達したら競り上げのボタンを出さない。** サーバは 0 以外を弾くので、
