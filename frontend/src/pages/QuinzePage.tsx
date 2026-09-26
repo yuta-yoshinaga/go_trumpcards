@@ -243,6 +243,7 @@ function QuinzePageContent() {
                         className={btnPrimary}
                         onClick={() => game.handleBet(amount)}
                         disabled={loading || amount > state.chips}
+                        title={amount > state.chips ? t('betUnavailable') : undefined}
                         aria-describedby={amount > state.chips ? `quinze-bet-unavailable-${amount}` : undefined}
                       >
                         {t('betAmount', { amount })}

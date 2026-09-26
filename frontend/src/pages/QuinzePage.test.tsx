@@ -126,6 +126,7 @@ describe('QuinzePage', () => {
     const reasonId = unavailable.getAttribute('aria-describedby');
     expect(reasonId).toBeTruthy();
     expect(document.getElementById(reasonId ?? '')).toHaveTextContent('所持チップが不足しています');
+    expect(unavailable).toHaveAttribute('title', '所持チップが不足しています');
     expect(screen.getByRole('button', { name: '10' })).toBeEnabled();
   });
 
