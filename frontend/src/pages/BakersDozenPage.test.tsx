@@ -361,6 +361,32 @@ describe('BakersDozenPage legal targets', () => {
   it('rings the column whose top card is one rank higher', async () => {
     await selectSpadeFive();
     await waitFor(() => expect(document.querySelectorAll('[data-legal-target="true"]').length).toBeGreaterThan(0));
+    expect(screen.getByRole('status', { name: '移動先' })).toHaveTextContent('移動可能なタブロー列: 2');
+  });
+
+  it('separates multiple announced tableau destinations', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: makeTableau([
+        [
+          { card: card('SPADE', 13), faceUp: true },
+          { card: card('SPADE', 5), faceUp: true },
+        ],
+        [{ card: card('HEART', 6), faceUp: true }],
+        [{ card: card('CLOVER', 6), faceUp: true }],
+      ]),
+    });
+    renderWithProviders(<BakersDozenPage />);
+    fireEvent.click(await screen.findByRole('button', { name: '♠ 5' }));
+    expect(screen.getByRole('status', { name: '移動先' })).toHaveTextContent('移動可能なタブロー列: 2、3');
+  });
+
+  it('clears the announced destinations after moving the selected card', async () => {
+    await selectSpadeFive();
+    const status = screen.getByRole('status', { name: '移動先' });
+    expect(status).toHaveTextContent('移動可能なタブロー列: 2');
+    fireEvent.click(screen.getByRole('button', { name: '♥ 6' }));
+    await waitFor(() => expect(status).toBeEmptyDOMElement());
   });
 
   // **空き列は光らせない。**Baker's Dozen は空き列を埋められない。
