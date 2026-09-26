@@ -71,7 +71,7 @@ describe('QuinzePage', () => {
   it('renders chips, the banker and the target', async () => {
     mockExec.mockResolvedValue(makeState());
     renderWithProviders(<QuinzePage />);
-    await waitFor(() => expect(screen.getByText(/チップ: 900/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('quinze-chips')).toHaveTextContent('チップ: 900'));
     expect(screen.getByText(/親: CPU1/)).toBeInTheDocument();
     // 15 comes from the server in halves so it is not hardcoded twice.
     expect(screen.getByText(/目標: 15/)).toBeInTheDocument();

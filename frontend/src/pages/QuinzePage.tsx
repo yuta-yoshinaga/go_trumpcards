@@ -139,7 +139,7 @@ function QuinzePageContent() {
       cancelReset={cancelReset}
       headerExtra={
         <>
-          <span className="text-sm text-ds-text-muted">
+          <span className="text-sm text-ds-text-muted" data-testid="quinze-chips">
             {t('chips')}: {state.chips}
           </span>
           <span className="text-sm text-ds-text-muted">
