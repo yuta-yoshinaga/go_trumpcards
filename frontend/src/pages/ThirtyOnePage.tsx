@@ -298,11 +298,25 @@ function ThirtyOnePageContent() {
                 <div className="text-xs text-ds-text-muted mb-1">
                   {t('label.stock')}: {state.drawPileCount}
                 </div>
-                {state.drawPileCount > 0 ? <AnimatedCardBack width={cardWidth * 0.8} /> : null}
+                {state.drawPileCount > 0 ? (
+                  <span role="img" aria-label={t('label.stockAria', { count: state.drawPileCount })}>
+                    <AnimatedCardBack width={cardWidth * 0.8} />
+                  </span>
+                ) : (
+                  <span role="img" aria-label={t('label.stockAria', { count: 0 })} className="sr-only" />
+                )}
               </div>
               <div className="text-center">
                 <div className="text-xs text-ds-text-muted mb-1">{t('label.discardPile')}</div>
-                {state.discardTop ? <AnimatedCard card={state.discardTop} width={cardWidth * 0.8} /> : '—'}
+                {state.discardTop ? (
+                  <AnimatedCard
+                    card={state.discardTop}
+                    width={cardWidth * 0.8}
+                    ariaLabel={t('label.discardTopAria', { card: cardAlt(state.discardTop) })}
+                  />
+                ) : (
+                  <span>{t('label.discardEmpty')}</span>
+                )}
               </div>
             </div>
 
