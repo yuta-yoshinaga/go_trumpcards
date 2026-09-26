@@ -185,15 +185,18 @@ describe('FiveHundredPage', () => {
   it('explains the focused bid condition and follows the selected trick count', async () => {
     renderWithProviders(<FiveHundredPage />);
     await screen.findByTestId('fh-bid-suit-1');
-    expect(screen.getByTestId('fh-bid-condition')).toHaveTextContent('成立には 6トリック以上取る必要があります。');
+    expect(screen.getByTestId('fh-bid-condition')).toHaveTextContent('成立には6トリック以上取る必要があります。');
 
     fireEvent.focus(screen.getByTestId('fh-bid-suit-1'));
-    expect(screen.getByTestId('fh-bid-condition')).toHaveTextContent('成立には 6トリック以上取る必要があります。');
+    expect(screen.getByTestId('fh-bid-condition')).toHaveTextContent('成立には6トリック以上取る必要があります。');
     fireEvent.change(screen.getByLabelText(/トリック数を選択/), { target: { value: '7' } });
-    expect(screen.getByTestId('fh-bid-condition')).toHaveTextContent('成立には 7トリック以上取る必要があります。');
+    expect(screen.getByTestId('fh-bid-condition')).toHaveTextContent('成立には7トリック以上取る必要があります。');
 
     fireEvent.mouseEnter(screen.getByTestId('fh-bid-misere'));
     expect(screen.getByTestId('fh-bid-condition')).toHaveTextContent('成立には1トリックも取らない必要があります。');
+    fireEvent.mouseLeave(screen.getByTestId('fh-bid-misere'));
+    expect(screen.getByTestId('fh-bid-condition')).toHaveTextContent('成立には7トリック以上取る必要があります。');
+    expect(screen.getByTestId('fh-bid-condition')).toHaveAttribute('role', 'status');
   });
 
   it('describes the highest bid, bidder, and each CPU bid', async () => {
