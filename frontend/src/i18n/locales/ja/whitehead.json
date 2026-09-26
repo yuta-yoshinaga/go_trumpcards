@@ -10,6 +10,7 @@
   "foundation": "組札",
   "tableau": "場札",
   "moveCount": "手数",
+  "drawCount": "配札回数",
   "draw": "引く",
   "giveup": "ギブアップ",
   "hint": "ヒント",

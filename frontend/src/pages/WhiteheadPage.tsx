@@ -579,6 +579,11 @@ function WhiteheadPageContent() {
                 {t('totalScore')}: {state.score + timeBonus(elapsedSeconds)}
               </div>
             )}
+            {isGameClear && (
+              <div data-testid="whitehead-clear-draw-count" className="text-ds-text-muted text-sm text-center mb-2">
+                {t('drawCount')}: {state.drawCount}
+              </div>
+            )}
 
             {/* Message */}
             <GameMessageBox

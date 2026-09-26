@@ -10,6 +10,7 @@
   "foundation": "Foundation",
   "tableau": "Tableau",
   "moveCount": "Moves",
+  "drawCount": "Deal Count",
   "draw": "Draw",
   "giveup": "Give Up",
   "hint": "Hint",

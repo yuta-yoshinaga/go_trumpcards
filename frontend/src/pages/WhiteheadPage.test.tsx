@@ -974,6 +974,19 @@ describe('WhiteheadPage', () => {
     await waitFor(() => expect(screen.getByText(/タイム: 00:00/)).toBeInTheDocument());
   });
 
+  it('shows the current draw count on game clear', async () => {
+    mockExec.mockResolvedValue({ ...gameClearState, drawCount: 3 });
+    renderWithProviders(<WhiteheadPage />);
+    await waitFor(() => expect(screen.getByTestId('whitehead-clear-draw-count')).toHaveTextContent('配札回数: 3'));
+  });
+
+  it('does not show draw count in the result area while playing', async () => {
+    mockExec.mockResolvedValue({ ...playingState, drawCount: 1 });
+    renderWithProviders(<WhiteheadPage />);
+    await waitFor(() => expect(screen.getByTestId('kl-stats-panel')).toBeInTheDocument());
+    expect(screen.queryByTestId('whitehead-clear-draw-count')).not.toBeInTheDocument();
+  });
+
   it('shows total score on game clear in Vegas mode', async () => {
     mockExec.mockResolvedValue({ ...gameClearState, scoringMode: 1, score: 208 });
     renderWithProviders(<WhiteheadPage />);
