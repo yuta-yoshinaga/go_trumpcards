@@ -9,6 +9,7 @@
   "waste": "ウェイスト",
   "moveCount": "手数",
   "draw": "引く",
+  "drawStock": "引く（山札の残り{{count}}枚）",
   "giveup": "ギブアップ",
   "hint": "ヒント",
   "undo": "元に戻す",
