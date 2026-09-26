@@ -219,7 +219,7 @@ describe('StHelenaPage', () => {
     renderWithProviders(<StHelenaPage />);
     fireEvent.click(await screen.findByRole('button', { name: 'ヒント' }));
 
-    const sourceButton = await screen.findByRole('button', { name: '♠ 4' });
+    const sourceButton = await screen.findByRole('button', { name: '♠ 4、列4' });
     expect(sourceButton.className).toContain('ring-ds-info');
     expect(screen.getByAltText('♠ 5').closest('[class*="ring-ds-success"]')).not.toBeNull();
     expect(screen.getByAltText('♥ 6').closest('[class*="ring-ds-success"]')).toBeNull();
@@ -255,7 +255,7 @@ describe('StHelenaPage', () => {
     );
     renderWithProviders(<StHelenaPage />);
     fireEvent.click(await screen.findByRole('button', { name: 'ヒント' }));
-    const source = await screen.findByRole('button', { name: '♠ 4' });
+    const source = await screen.findByRole('button', { name: '♠ 4、列4' });
     fireEvent.click(source);
     await waitFor(() => expect(source.className).toContain('ring-ds-warning'));
     expect(source.className).not.toContain('ring-ds-info');
@@ -283,6 +283,25 @@ describe('StHelenaPage', () => {
     const cardButton = cardImg.closest('button') as HTMLButtonElement;
     fireEvent.click(cardButton);
     await waitFor(() => expect(cardButton.className).toContain('ring-2'));
+  });
+
+  it('includes the zero-based tableau column in each card name and preserves pressed state', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: makeTableau({
+        0: [{ card: card('SPADE', 5), faceUp: true }],
+        1: [{ card: card('SPADE', 5), faceUp: true }],
+      }),
+    });
+    renderWithProviders(<StHelenaPage />);
+
+    const colZeroCard = await screen.findByRole('button', { name: '♠ 5、列0' });
+    const colOneCard = screen.getByRole('button', { name: '♠ 5、列1' });
+    expect(colZeroCard).toHaveAttribute('aria-pressed', 'false');
+    expect(colOneCard).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(colOneCard);
+    await waitFor(() => expect(colOneCard).toHaveAttribute('aria-pressed', 'true'));
+    expect(colZeroCard).toHaveAttribute('aria-pressed', 'false');
   });
 
   // **初回の配りの制限をページが守ること。**サーバは拒むが、押せてしまうと
