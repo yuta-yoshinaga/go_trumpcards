@@ -197,6 +197,38 @@ function BeggarMyNeighbourPageContent() {
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
+  const [liveAnnouncement, setLiveAnnouncement] = useState('');
+  const wasPayingPenalty = useRef(false);
+  useEffect(() => {
+    if (!state || state.players.length < 2) return;
+    const isPayingPenalty = state.phase === BeggarMyNeighbourPhase.PAY_PENALTY;
+    const phase =
+      state.gameEndFlag || state.phase === BeggarMyNeighbourPhase.GAME_END
+        ? t('phase.end')
+        : isPayingPenalty
+          ? t('phase.payPenalty')
+          : state.phase === BeggarMyNeighbourPhase.COLLECT
+            ? t('phase.collect')
+            : t('phase.play');
+    const ownerName = !isPayingPenalty
+      ? ''
+      : state.penaltyOwnerIdx === 0
+        ? tc('player.you')
+        : tc('player.cpu', { id: state.penaltyOwnerIdx });
+    const announcement = isPayingPenalty
+      ? t('phaseAnnouncePenalty', { phase, count: state.penaltyRemaining, name: ownerName })
+      : t('phaseAnnounce', { phase });
+
+    if (!isPayingPenalty || !wasPayingPenalty.current) {
+      setLiveAnnouncement(announcement);
+    } else {
+      const timer = setTimeout(() => setLiveAnnouncement(announcement), 500);
+      wasPayingPenalty.current = isPayingPenalty;
+      return () => clearTimeout(timer);
+    }
+    wasPayingPenalty.current = isPayingPenalty;
+  }, [state, t, tc]);
+
   if (!state || state.players.length < 2)
     return <GameSkeleton gameKey="beggarmyneighbour" layout={{ kind: 'centered', rows: [2], gap: 'wide' }} />;
 
@@ -245,10 +277,6 @@ function BeggarMyNeighbourPageContent() {
 
   // Phase transitions (and the penalty countdown) are conveyed only by the
   // central-pile ring color, so mirror them into an sr-only live region.
-  const phaseAnnouncement = isPayingPenalty
-    ? t('phaseAnnouncePenalty', { phase: phaseName, count: state.penaltyRemaining, name: penaltyOwnerName })
-    : t('phaseAnnounce', { phase: phaseName });
-
   return (
     <GamePageShell
       title={tc('nav.beggarmyneighbour')}
@@ -273,7 +301,7 @@ function BeggarMyNeighbourPageContent() {
 
             {/* Announce the phase (and penalty countdown) to screen readers. */}
             <div className="sr-only" role="status" aria-live="polite" data-testid="bmn-phase-announce">
-              {phaseAnnouncement}
+              {liveAnnouncement}
             </div>
 
             {/* Held-card totals + round progress so the standings and how close the
