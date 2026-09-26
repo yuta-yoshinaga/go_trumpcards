@@ -145,7 +145,7 @@ describe('RistikontraPage', () => {
       }),
     );
     renderWithProviders(<RistikontraPage />);
-    const cardBtn = await screen.findByTestId('hand-card-1');
+    await screen.findByTestId('hand-card-1');
     expect(screen.queryByTestId('ristikontra-counter-celebration')).not.toBeInTheDocument();
 
     // 席 1 が持っていた 6 枚を、席 0 が打ち返しで奪った状態。
@@ -159,7 +159,8 @@ describe('RistikontraPage', () => {
         ],
       }),
     );
-    fireEvent.click(cardBtn);
+    fireEvent.click(screen.getByTestId('hand-card-1'));
+    await flushPendingDispatch();
     expect(await screen.findByTestId('ristikontra-counter-celebration')).toBeInTheDocument();
     expect(screen.getByTestId('ristikontra-counter-announcement')).toHaveTextContent('打ち返し！ 束を奪いました');
   });
@@ -176,11 +177,11 @@ describe('RistikontraPage', () => {
       }),
     );
     renderWithProviders(<RistikontraPage />);
-    const announcement = await screen.findByTestId('ristikontra-counter-announcement');
-    expect(announcement).toHaveAttribute('role', 'status');
-    expect(announcement).toBeEmptyDOMElement();
+    const initialAnnouncement = await screen.findByTestId('ristikontra-counter-announcement');
+    expect(initialAnnouncement).toHaveAttribute('role', 'status');
+    expect(initialAnnouncement).toBeEmptyDOMElement();
 
-    const cardBtn = await screen.findByTestId('hand-card-1');
+    await screen.findByTestId('hand-card-1');
     mockExec.mockResolvedValueOnce(
       makeState({
         players: [
@@ -191,8 +192,79 @@ describe('RistikontraPage', () => {
         ],
       }),
     );
+    fireEvent.click(screen.getByTestId('hand-card-1'));
+    await flushPendingDispatch();
+    await waitFor(() =>
+      expect(screen.getByTestId('ristikontra-counter-announcement')).toHaveTextContent('打ち返し！ 束を奪いました'),
+    );
+  });
+
+  it('remounts the live region on repeated counters so identical events re-announce', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          { ...playState.players[0], capturedCount: 1 },
+          makePlayer({ id: 1, capturedCount: 6 }),
+          makePlayer({ id: 2 }),
+          makePlayer({ id: 3 }),
+        ],
+      }),
+    );
+    renderWithProviders(<RistikontraPage />);
+    const cardBtn = await screen.findByTestId('hand-card-1');
+
+    mockExec.mockResolvedValueOnce(
+      makeState({
+        players: [
+          { ...playState.players[0], capturedCount: 7 },
+          makePlayer({ id: 1 }),
+          makePlayer({ id: 2 }),
+          makePlayer({ id: 3 }),
+        ],
+      }),
+    );
     fireEvent.click(cardBtn);
-    await waitFor(() => expect(announcement).toHaveTextContent('打ち返し！ 束を奪いました'));
+    await flushPendingDispatch();
+    await waitFor(() => expect(mockExec).toHaveBeenCalledTimes(2));
+    let firstRegion: HTMLElement | null = null;
+    await waitFor(() => {
+      firstRegion = screen.getByTestId('ristikontra-counter-announcement');
+      expect(firstRegion).toHaveTextContent('打ち返し！ 束を奪いました');
+    });
+
+    mockExec.mockResolvedValueOnce(
+      makeState({
+        players: [
+          { ...playState.players[0], capturedCount: 7 },
+          makePlayer({ id: 1, capturedCount: 6 }),
+          makePlayer({ id: 2 }),
+          makePlayer({ id: 3 }),
+        ],
+      }),
+    );
+    fireEvent.click(screen.getByTestId('hand-card-1'));
+    await flushPendingDispatch();
+    await waitFor(() => expect(mockExec).toHaveBeenCalledTimes(3));
+
+    mockExec.mockResolvedValueOnce(
+      makeState({
+        players: [
+          { ...playState.players[0], capturedCount: 13 },
+          makePlayer({ id: 1 }),
+          makePlayer({ id: 2 }),
+          makePlayer({ id: 3 }),
+        ],
+      }),
+    );
+    fireEvent.click(screen.getByTestId('hand-card-1'));
+    await flushPendingDispatch();
+    await waitFor(() => expect(mockExec).toHaveBeenCalledTimes(4));
+
+    await waitFor(() => {
+      const secondRegion = screen.getByTestId('ristikontra-counter-announcement');
+      expect(secondRegion).toHaveTextContent('打ち返し！ 束を奪いました');
+      expect(secondRegion).not.toBe(firstRegion);
+    });
   });
 
   it('stays quiet on an ordinary capture, where nobody loses cards', async () => {
