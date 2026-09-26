@@ -1,5 +1,7 @@
 {
   "autoComplete": "自動完成",
+  "autoCompleteComplete": "自動完成が完了しました。通常の操作に戻れます。",
+  "autoCompleteInProgress": "自動完成中です。しばらくお待ちください。",
   "autoCompleteNotReady": "文字盤を配り札より先へ進めると有効になります",
   "cardPosAria": "{{card}}（列{{col}}・上から{{pos}}枚目）",
   "empty": "空",

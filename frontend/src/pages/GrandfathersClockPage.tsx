@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { grandfathersClockApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -59,6 +59,8 @@ function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => stri
 }
 
 function GrandfathersClockPageContent() {
+  const [autoCompleteAnnouncement, setAutoCompleteAnnouncement] = useState('');
+  const wasAutoCompleting = useRef(false);
   const {
     t,
     tc,
@@ -76,6 +78,15 @@ function GrandfathersClockPageContent() {
   } = useGamePageSetup('grandfathersclock');
   const game = useGrandfathersClockGame();
   const { state, loading, error, retry, hintError, selectedSource, hint, isAutoCompleting } = game;
+
+  useEffect(() => {
+    if (isAutoCompleting) {
+      setAutoCompleteAnnouncement(t('autoCompleteInProgress'));
+    } else if (wasAutoCompleting.current) {
+      setAutoCompleteAnnouncement(t('autoCompleteComplete'));
+    }
+    wasAutoCompleting.current = isAutoCompleting;
+  }, [isAutoCompleting, t]);
 
   const {
     hint: frontendHint,
@@ -289,6 +300,10 @@ function GrandfathersClockPageContent() {
     >
       <LandscapeBanner message={t('landscapeBanner')} />
 
+      <div data-testid="gc-autocomplete-status" role="status" aria-live="polite">
+        {autoCompleteAnnouncement}
+      </div>
+
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -362,6 +377,12 @@ function GrandfathersClockPageContent() {
                 );
               })}
             </div>
+
+            {isAutoCompleting && (
+              <p data-testid="gc-autocomplete-visible" className="text-ds-warning text-sm text-center mb-2">
+                {t('autoCompleteInProgress')}
+              </p>
+            )}
 
             <div className="flex gap-1 sm:gap-2 items-start" data-tutorial="gc-tableau">
               {Array.from({ length: TABLEAU_COLS }, (_, i) => i).map(renderTableauColumn)}
