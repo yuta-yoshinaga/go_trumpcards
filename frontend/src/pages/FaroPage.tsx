@@ -294,15 +294,24 @@ function FaroPageContent() {
                 {RANKS.map((rank) => {
                   const left = remaining[rank] ?? FARO_RANK_COUNT;
                   const depleted = left === 0;
+                  const bet = state.bets.find((item) => item.rank === rank);
+                  const canBet = left > 0 || bet !== undefined;
+                  const canAfford = state.chips + (bet?.amount ?? 0) >= chipAmount;
+                  const statusKey = !canBet
+                    ? 'caseKeeperDepleted'
+                    : canAfford
+                      ? 'caseKeeperAvailable'
+                      : 'caseKeeperInsufficientChips';
+                  const status = t(statusKey, { amount: chipAmount, mode: t(copper ? 'copperTag' : 'normalTag') });
                   return (
                     <div
                       key={`case-${rank}`}
                       className={`flex flex-col items-center rounded border px-1 py-0.5 text-center leading-tight ${
-                        depleted ? 'border-white/10 bg-black/30 opacity-50' : 'border-white/25 bg-black/20'
+                        left === 0 ? 'border-white/10 bg-black/30 opacity-50' : 'border-white/25 bg-black/20'
                       }`}
                       data-testid={`case-keeper-rank-${rank}`}
                       role="img"
-                      aria-label={t('caseKeeperCell', { rank: valueName(rank), count: left })}
+                      aria-label={t('caseKeeperCell', { rank: valueName(rank), count: left, status })}
                     >
                       <span className="text-[11px] font-bold text-ds-text-primary" aria-hidden="true">
                         {valueName(rank)}
@@ -314,6 +323,7 @@ function FaroPageContent() {
                       >
                         {left}
                       </span>
+                      {(depleted || !canAfford) && <span className="text-[10px] text-ds-error">{status}</span>}
                     </div>
                   );
                 })}

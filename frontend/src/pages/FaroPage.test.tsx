@@ -116,6 +116,9 @@ describe('FaroPage', () => {
     renderWithProviders(<FaroPage />);
 
     expect(await screen.findByTestId('rank-2')).toBeEnabled();
+    const caseKeeperRank = screen.getByTestId('case-keeper-rank-2');
+    expect(caseKeeperRank).toHaveAttribute('aria-label', expect.stringContaining('賭けられます'));
+    expect(caseKeeperRank).not.toHaveTextContent('賭けられません');
     fireEvent.click(screen.getByTestId('rank-2'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', { rank: 2, amount: 10, copper: false }));
   });
@@ -266,6 +269,33 @@ describe('FaroPage', () => {
   });
 
   describe('case keeper', () => {
+    it('explains bet availability by remaining cards, selected stake, and copper mode', async () => {
+      const counts = Array.from({ length: 14 }, (_, i) => (i === 0 ? 0 : 4));
+      counts[2] = 0;
+      mockExec.mockResolvedValue(makeState({ chips: 20, remainingByRank: counts }));
+      renderWithProviders(<FaroPage />);
+
+      const depleted = await screen.findByTestId('case-keeper-rank-2');
+      expect(depleted).toHaveTextContent('賭けられません');
+      expect(depleted).toHaveAttribute('aria-label', expect.stringContaining('残り0枚'));
+      expect(depleted).toHaveAttribute('aria-label', expect.stringContaining('カードがありません'));
+
+      const available = screen.getByTestId('case-keeper-rank-3');
+      expect(available).toHaveTextContent('4');
+      expect(available).not.toHaveTextContent('賭けられます');
+      expect(available).toHaveAttribute('aria-label', expect.stringContaining('通常ベット'));
+
+      fireEvent.click(screen.getByTestId('chip-50'));
+      expect(screen.getByTestId('case-keeper-rank-3')).toHaveTextContent('不足');
+      expect(screen.getByTestId('case-keeper-rank-3')).toHaveAttribute('aria-label', expect.stringContaining('50'));
+
+      fireEvent.click(screen.getByTestId('copper-toggle'));
+      expect(screen.getByTestId('case-keeper-rank-3')).toHaveAttribute(
+        'aria-label',
+        expect.stringContaining('カッパー'),
+      );
+    });
+
     it('starts every rank at four before any card is revealed', async () => {
       renderWithProviders(<FaroPage />);
       const grid = await screen.findByTestId('case-keeper');
