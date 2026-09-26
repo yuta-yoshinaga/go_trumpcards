@@ -213,9 +213,6 @@ function GapsPageContent() {
           <span>
             {t('moveCount')}: {state.moveCount}
           </span>
-          <span>
-            {t('redealsRemaining')}: {state.redealsRemaining}
-          </span>
         </>
       }
     >
@@ -371,7 +368,10 @@ function GapsPageContent() {
         <ErrorAlert message={error} onRetry={retry} />
         <div className="flex gap-2 items-center flex-wrap">
           {isPlaying && (
-            <div data-tutorial="gaps-controls" className="flex gap-2 flex-wrap">
+            <div data-tutorial="gaps-controls" data-testid="gaps-controls" className="flex gap-2 flex-wrap">
+              <span className="self-center text-ds-text-primary text-sm">
+                {t('redealsRemaining')}: {state.redealsRemaining}
+              </span>
               <button
                 type="button"
                 className={btnPrimary}

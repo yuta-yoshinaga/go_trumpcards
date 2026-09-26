@@ -44,10 +44,6 @@ func (pr *GapsCuiPresenter) Output(g interfaces.GapsGame, lastErr error) string 
 			b.WriteString("\n")
 		}
 		b.WriteString("----------\n")
-		b.WriteString(i18n.Tf("gaps.redealsLine",
-			"used", strconv.Itoa(g.GetRedealsUsed()),
-			"remaining", strconv.Itoa(g.GetRedealsRemaining())))
-		b.WriteString("\n")
 		b.WriteString(i18n.T("gaps.lockedLegend") + "\n")
 		b.WriteString("----------\n")
 		cuiErrorBlock(b, lastErr)
@@ -65,6 +61,8 @@ func (pr *GapsCuiPresenter) Output(g interfaces.GapsGame, lastErr error) string 
 			b.WriteString(i18n.Tf("cuiSolitaireMoves",
 				"count", strconv.Itoa(g.GetMoveCount())) +
 				cuiSolitaireUndoHint(g.CanUndo()) + "\n")
+			b.WriteString(i18n.Tf("gaps.redealsLine",
+				"remaining", strconv.Itoa(g.GetRedealsRemaining())) + "\n")
 		case domain.GapsPhaseGameClear:
 			b.WriteString(color.Green(i18n.T("cuiSolitaireGameClear")) + " " +
 				i18n.Tf("cuiSolitaireMoves", "count", strconv.Itoa(g.GetMoveCount())) + "\n")
