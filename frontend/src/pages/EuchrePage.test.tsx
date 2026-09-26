@@ -154,11 +154,6 @@ const cpuTurnState: EuchreResponse = {
   currentPlayerIdx: 1,
 };
 
-const noTrumpState: EuchreResponse = {
-  ...playPhaseState,
-  trumpSuit: 0,
-};
-
 beforeEach(() => {
   mockExec.mockResolvedValue(playPhaseState);
 });
@@ -551,12 +546,21 @@ describe('EuchrePage', () => {
     });
   });
 
+  it('shows the translated trump name beside the current trick', async () => {
+    mockExec.mockResolvedValue(trickEndState);
+    const { container } = renderWithProviders(<EuchrePage />);
+    await waitFor(() => expect(container.querySelector('[data-tutorial="eu-trick-display"]')).toBeInTheDocument());
+    const trick = container.querySelector('[data-tutorial="eu-trick-display"]');
+    expect(trick?.parentElement).toHaveTextContent('切り札: ♠ スペード');
+  });
+
   it('shows no trump text when trump is 0', async () => {
-    mockExec.mockResolvedValue(noTrumpState);
+    mockExec.mockResolvedValue({ ...trickEndState, trumpSuit: 0 });
     renderWithProviders(<EuchrePage />);
     await waitFor(() => {
       expect(screen.getByText('\u5207\u308a\u672d\u306a\u3057')).toBeInTheDocument();
     });
+    expect(document.querySelector('[data-tutorial="eu-trick-display"]')?.parentElement).toHaveTextContent('切り札なし');
   });
 
   it('shows going alone text', async () => {
