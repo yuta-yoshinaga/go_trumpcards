@@ -463,6 +463,11 @@ function SpiderettePageContent() {
 
           <GameFooter className={`${gameTheme.spiderette.footer} px-4 py-2.5`}>
             <ErrorAlert message={error ?? hintError} onRetry={retry} />
+            <div className="sr-only" role="status" aria-live="polite" data-testid="spiderette-stalemate-status">
+              {state.isStalemate && (state.undoToEscape ?? 0) > 0
+                ? t('stalemateWithEscape', { count: state.undoToEscape })
+                : ''}
+            </div>
             <div className="flex gap-2 items-center flex-wrap">
               {isPlaying && (
                 <div data-tutorial="spdt-controls">

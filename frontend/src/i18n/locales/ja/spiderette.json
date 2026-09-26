@@ -23,6 +23,7 @@
   "noHint": "ヒントはありません",
   "hintAvailable": "ヒントがあります",
   "stalemate": "手詰まりです",
+  "stalemateWithEscape": "手詰まりです。元に戻すボタンで{{count}}手戻ると脱出できます。",
   "dealsRemaining": "残り{{count}}回配れます",
   "cannotDealEmptyColExists": "空の列をすべて埋めないと配れません",
   "tutorial": {
