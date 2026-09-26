@@ -152,12 +152,9 @@ function SuecaPageContent() {
   const isGameEnd = state.phase === SuecaPhase.GAME_END || state.gameEndFlag;
 
   const canPlay = isPlayPhase && isHumanTurn;
-  const selectedCardNames = humanPlayer
-    ? selectedCardIndices.flatMap((idx) => {
-        const card = humanPlayer.cards[idx];
-        return card ? [cardAlt(card)] : [];
-      })
-    : [];
+  // Sueca states always contain one human player, and selection indices come
+  // from that player's hand. Treat violations as invalid game state.
+  const selectedCardNames = selectedCardIndices.map((idx) => cardAlt(humanPlayer!.cards[idx]!));
   const humanTeam = humanIdx % 2;
   const trumpSymbol = suitSymbolAt(state.trumpSuit, '');
   // Spoken trump: the suit name (not the ♠♣♥♦ glyph, which SRs read poorly).

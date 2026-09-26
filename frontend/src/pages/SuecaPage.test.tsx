@@ -100,6 +100,16 @@ describe('SuecaPage', () => {
     await waitFor(() => expect(status).toHaveTextContent('カード未選択'));
   });
 
+  it('separates multiple selected cards in the live announcement', async () => {
+    renderWithProviders(<SuecaPage />);
+    const status = await screen.findByTestId('sueca-selection-status');
+
+    fireEvent.click(await screen.findByRole('button', { name: '♥ Q' }));
+    fireEvent.click(await screen.findByRole('button', { name: '♥ K' }));
+
+    await waitFor(() => expect(status).toHaveTextContent('選択中: ♥ Q、♥ K'));
+  });
+
   it('keeps the play action disabled unless exactly one card is selected', async () => {
     renderWithProviders(<SuecaPage />);
     const playButton = await screen.findByRole('button', { name: '出す' });
