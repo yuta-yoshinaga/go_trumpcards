@@ -126,9 +126,13 @@ func TestGanjifaCuiPresenter_Output(t *testing.T) {
 		m, players := setupGanjifaCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 		m.On("GetPhase").Return(domain.GanjifaPhaseRoundEnd)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPlayerScores")
+		m.On("GetPlayerScores").Return([domain.GanjifaPlayerCnt]int{20, 16, 12})
 		players[0].AddTrick([]*domain.Card{domain.NewCard(1, 7, false)})
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "各プレイヤーのトリック数")
+		assert.Contains(t, result, "あなた トリック: 1 / 今回得点: 1 / 累計: 20")
+		assert.Contains(t, result, "CPU 1 トリック: 0 / 今回得点: 0 / 累計: 16")
 	})
 
 	t.Run("error block is rendered", func(t *testing.T) {

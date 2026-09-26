@@ -277,6 +277,10 @@ function GanjifaPageContent() {
                           name: playerName(p.id, p.isHuman),
                           count: state.roundTricks[p.id] ?? 0,
                         })}
+                        {t('roundResult.separator')}
+                        {t('roundResult.score', { score: state.roundTricks[p.id] ?? 0 })}
+                        {t('roundResult.separator')}
+                        {t('roundResult.cumulativeScore', { score: state.playerScores[p.id] ?? p.score })}
                       </div>
                     ))}
                   </div>

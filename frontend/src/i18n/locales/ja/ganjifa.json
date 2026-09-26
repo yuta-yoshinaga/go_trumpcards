@@ -36,7 +36,10 @@
   "trumpGroupWeak": "切り札は弱い群 — 数字が小さいほど強い（1が最強）",
   "roundResult": {
     "title": "ラウンド結果",
-    "tricks": "{{name}} トリック: {{count}}"
+    "tricks": "{{name}} トリック: {{count}}",
+    "separator": " / ",
+    "score": "今回得点: {{score}}",
+    "cumulativeScore": "累計: {{score}}"
   },
   "hintAvailable": "ヒント",
   "hint": {
