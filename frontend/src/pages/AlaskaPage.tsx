@@ -35,6 +35,7 @@ import type { AlaskaResponse } from '../types/card';
 import { AlaskaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { valueName } from '../utils/cardUtils';
 import { parseAlaskaCommand, RS_HELP } from '../utils/cli/commands/alaskaCommands';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
@@ -360,9 +361,17 @@ function AlaskaPageContent() {
                           ? t('foundationAriaLabel', {
                               suit: FOUNDATION_SUITS[i],
                               count: pile.length,
+                              topCard: cardAlt(topCard),
+                              nextCondition:
+                                topCard.value < 13
+                                  ? t('foundationNextCard', {
+                                      card: `${FOUNDATION_SUITS[i]} ${valueName(topCard.value + 1)}`,
+                                    })
+                                  : t('foundationComplete'),
                             })
                           : t('emptyFoundationAriaLabel', {
                               suit: FOUNDATION_SUITS[i],
+                              nextCondition: t('foundationNextCard', { card: `${FOUNDATION_SUITS[i]} A` }),
                             })
                       }
                       style={{ width: rs.cw, height: rs.ch }}
