@@ -18,6 +18,7 @@
   "awardLine": "席{{player}} が {{compartment}} を獲得（{{chips}}）",
   "awardTurnUpLine": "席{{player}} がめくり札で {{compartment}} を獲得（{{chips}}）",
   "seat": "{{name}}: チップ{{chips}} 手札{{n}}枚",
+  "seatEnded": "{{name}}: チップ{{chips}}",
   "holdsPope": "ポープ保持（支払い免除）",
   "opponentHandAriaLabel": "{{name}} の手札 {{n}} 枚（裏向き）",
   "played": "場に出た札",
