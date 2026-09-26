@@ -146,7 +146,7 @@ function QuodlibetPageContent() {
   const canPlay = isPlayPhase && isHumanTurn;
   const canChoose = isContractPhase && isHumanTurn;
 
-  const handValidIndices = canPlay ? state.playableIndices : undefined;
+  const handValidIndices = canPlay ? state.playableIndices : [];
   const humanWon = isGameEnd && state.winners.length === 1 && state.winners[0] === 0;
 
   const handleManualReset = () => {
