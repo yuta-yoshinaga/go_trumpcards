@@ -975,6 +975,16 @@ describe('SevenCardStudPage keyboard shortcuts', () => {
     expect(screen.getByText('s')).toBeInTheDocument();
   });
 
+  it.each(['f', 'a', 'k', 'r', 'c'])('ignores betting shortcut %s during muck phase', async (key) => {
+    mockExec.mockResolvedValue({ ...showdownState, phase: 6, muckAvailable: true });
+    renderWithProviders(<SevenCardStudPage />);
+    await waitFor(() => expect(screen.getByTestId('muck-controls')).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
   it('does not bind muck or show outside muck phase', async () => {
     mockExec.mockResolvedValue(thirdStreetState);
     renderWithProviders(<SevenCardStudPage />);

@@ -264,7 +264,7 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
       {
         key: 'c',
         action: () => execApi('call', undefined, undefined, getElapsed()),
-        enabled: hasOutstandingBet,
+        enabled: canAct && hasOutstandingBet,
         label: 'call',
       },
       {
@@ -273,20 +273,31 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
           hasOutstandingBet
             ? execApi('raise', betAmount, undefined, getElapsed())
             : execApi('bet', betAmount, undefined, getElapsed()),
+        enabled: canAct,
         label: 'raiseOrBet',
       },
       {
         key: 'k',
         action: () => execApi('check', undefined, undefined, getElapsed()),
-        enabled: !hasOutstandingBet,
+        enabled: canAct && !hasOutstandingBet,
         label: 'check',
       },
-      { key: 'f', action: () => execApi('fold', undefined, undefined, getElapsed()), label: 'fold' },
-      { key: 'a', action: () => execApi('allin', undefined, undefined, getElapsed()), label: 'allin' },
+      {
+        key: 'f',
+        action: () => execApi('fold', undefined, undefined, getElapsed()),
+        enabled: canAct,
+        label: 'fold',
+      },
+      {
+        key: 'a',
+        action: () => execApi('allin', undefined, undefined, getElapsed()),
+        enabled: canAct,
+        label: 'allin',
+      },
       { key: 'm', action: () => execApi('muck'), enabled: isMuckPhase, label: 'muck' },
       { key: 's', action: () => execApi('show'), enabled: isMuckPhase, label: 'show' },
     ],
-    [execApi, hasOutstandingBet, betAmount, getElapsed, isMuckPhase],
+    [execApi, canAct, hasOutstandingBet, betAmount, getElapsed, isMuckPhase],
   );
 
   useActionKeyboardNav({
