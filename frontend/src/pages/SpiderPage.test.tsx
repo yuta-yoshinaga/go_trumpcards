@@ -711,6 +711,14 @@ describe('SpiderPage', () => {
     );
   });
 
+  it('defaults a missing escape count to no available escape', async () => {
+    mockExec.mockResolvedValue({ ...playingState, isStalemate: true, undoToEscape: undefined, canUndo: false });
+    renderWithProviders(<SpiderPage />);
+    await waitFor(() =>
+      expect(screen.getByTestId('stalemate-escape-unavailable')).toHaveTextContent('履歴から脱出できません'),
+    );
+  });
+
   describe('movable-run hover highlight (#3061)', () => {
     // Col 0 is a valid same-suit descending run (♠K ♠Q ♠J); col 1 breaks at the first
     // card (♣7 then ♥6 — suit mismatch) so ♣7 is not movable while ♥6 rings itself.
