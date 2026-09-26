@@ -252,6 +252,7 @@ describe('BeggarMyNeighbourPage', () => {
     mockExec.mockResolvedValueOnce(penaltyState);
     renderWithProviders(<BeggarMyNeighbourPage />);
     const region = await screen.findByTestId('bmn-phase-announce');
+    expect(await screen.findByTestId('bmn-penalty-owner')).toHaveTextContent('あなた');
     await waitFor(() =>
       expect(region).toHaveTextContent('フェーズ: ペナルティ支払い中。あなた が残りペナルティ 3 枚を支払い中'),
     );
