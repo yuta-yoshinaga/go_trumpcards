@@ -236,3 +236,22 @@ func TestBouillotteCuiPresenter_ShowsTheRetourneMatch(t *testing.T) {
 		assert.NotContains(t, out, strings.TrimSpace(lit))
 	})
 }
+
+func TestBouillotteCuiPresenter_ShowsHandNamesForHumanAndCpu(t *testing.T) {
+	p := new(presenter.BouillotteCuiPresenter)
+	wantHand := "  (" + i18n.T("bouillotte.hand.brelan") + ")"
+
+	t.Run("human hand during betting", func(t *testing.T) {
+		g := bouillotteCuiMatchGame(
+			domain.NewCard(domain.CardDesignHeart, 9, false),
+			domain.NewCard(domain.CardDesignSpade, 9, false),
+			domain.NewCard(domain.CardDesignClover, 9, false),
+		)
+		assert.Contains(t, p.Output(g, nil), wantHand)
+	})
+
+	t.Run("revealed cpu hand at round result", func(t *testing.T) {
+		g := bouillotteResultGame(false)
+		assert.Contains(t, p.Output(g, nil), wantHand)
+	})
+}
