@@ -458,10 +458,17 @@ function BakersGamePageContent() {
                               const stackSize = col.length - cardIdx;
                               const exceedsSupermove = stackSize > supermoveLimit;
                               const additionalSlots = exceedsSupermove ? getAdditionalSlots(stackSize) : null;
+                              const additionalSlotsKey = additionalSlots
+                                ? additionalSlots.cells === 0
+                                  ? 'additionalSlotsColumnsOnly'
+                                  : additionalSlots.columns === 0
+                                    ? 'additionalSlotsCellsOnly'
+                                    : 'additionalSlotsTooltip'
+                                : null;
                               const limitTooltip = exceedsSupermove
                                 ? additionalSlots
                                   ? t('supermoveLimitTooltip', { limit: supermoveLimit }) +
-                                    ` — ${t('additionalSlotsTooltip', additionalSlots)}`
+                                    ` — ${t(additionalSlotsKey as string, additionalSlots)}`
                                   : t('supermoveLimitTooltip', { limit: supermoveLimit })
                                 : undefined;
                               const isInHoveredBlock =

@@ -1091,7 +1091,7 @@ describe('BakersGamePage empty-column move limit', () => {
 });
 
 describe('BakersGamePage supermove slot guidance', () => {
-  it('does not ask for more free cells when all free cells are already empty', async () => {
+  it('asks only for a column when all free cells are already empty', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
       tableau: [
@@ -1111,8 +1111,8 @@ describe('BakersGamePage supermove slot guidance', () => {
     renderWithProviders(<BakersGamePage />);
 
     const blockedCard = (await screen.findByAltText('♠ K')).closest('button') as HTMLButtonElement;
-    expect(blockedCard.title).toContain('空きフリーセル0個');
     expect(blockedCard.title).toContain('空き列1個');
+    expect(blockedCard.title).not.toContain('空きフリーセル');
     expect(blockedCard.title).not.toContain('空きフリーセル1個');
   });
 
@@ -1166,6 +1166,30 @@ describe('BakersGamePage supermove slot guidance', () => {
     const blockedCard = (await screen.findByAltText('♠ K')).closest('button') as HTMLButtonElement;
     expect(blockedCard).toHaveAttribute('data-supermove-blocked', 'true');
     expect(blockedCard.title).toContain('空きフリーセル2個');
-    expect(blockedCard.getAttribute('aria-label')).toContain('空き列0個');
+    expect(blockedCard.title).not.toContain('空き列');
+  });
+
+  it('asks for both cells and columns when both are needed', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: [
+        [card('SPADE', 13), card('HEART', 12), card('CLOVER', 11), card('DIAMOND', 10), card('SPADE', 9)],
+        [card('HEART', 8)],
+        [card('CLOVER', 7)],
+        [card('DIAMOND', 6)],
+        [card('SPADE', 5)],
+        [card('HEART', 4)],
+        [card('CLOVER', 3)],
+        [card('DIAMOND', 2)],
+      ],
+      freeCells: [card('SPADE', 1), card('HEART', 3), card('CLOVER', 5), card('DIAMOND', 7)],
+      maxMovableCards: 1,
+      maxMovableCardsToEmptyColumn: 1,
+    });
+    renderWithProviders(<BakersGamePage />);
+
+    const blockedCard = (await screen.findByAltText('♠ K')).closest('button') as HTMLButtonElement;
+    expect(blockedCard.title).toContain('空きフリーセル2個');
+    expect(blockedCard.title).toContain('空き列1個');
   });
 });
