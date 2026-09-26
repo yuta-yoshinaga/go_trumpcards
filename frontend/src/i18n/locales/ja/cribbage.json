@@ -18,6 +18,7 @@
   "round": "ラウンド {{n}}",
   "dealer": "ディーラー: {{name}}",
   "pegCount": "ペグカウント: {{count}}/31",
+  "pegCountAnnouncement": "ペグカウントが{{count}}に更新されました",
   "pegPreview": "{{from}} → {{to}} / 31",
   "pegRestrictedTooltip": "このカードを出すと31を超えてしまいます",
   "pegRestrictedAria": "ペグカウント超過のため出せません",
