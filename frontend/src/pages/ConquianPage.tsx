@@ -400,11 +400,14 @@ function ConquianPageContent() {
           </div>
 
           <GameFooter className={`${gameTheme.conquian.footer} px-4 py-2.5`}>
-            {isMeldPhase && isHumanTurn && state.tookDiscard && (
-              <div className="text-xs font-bold mb-1 text-ds-info" data-testid="conquian-forced-use">
-                {t('forcedUse')}
-              </div>
-            )}
+            <div
+              className="text-xs font-bold mb-1 text-ds-info"
+              data-testid="conquian-forced-use"
+              role="status"
+              aria-live="polite"
+            >
+              {isMeldPhase && isHumanTurn && state.tookDiscard && t('forcedUse')}
+            </div>
             {humanPlayer && (
               <div className="mb-2 max-w-xs">{renderMeldProgress(humanPlayer, 'conquian-meld-progress')}</div>
             )}
