@@ -267,6 +267,56 @@ func TestMightyCuiPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestMightyCuiPresenter_OutputShowsTeamPointCardTotals(t *testing.T) {
+	origLang := i18n.Lang()
+	t.Cleanup(func() { i18n.SetLang(origLang) })
+	i18n.SetLang("ja")
+	m, players := setupMightyCuiMockWithPlayers()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPartnerRevealed")
+	m.On("GetPartnerRevealed").Return(true)
+	players[0].SetIsDeclarer(true)
+	players[1].SetIsPartner(true)
+	players[0].SetPointCards(4)
+	players[1].SetPointCards(3)
+	players[2].SetPointCards(2)
+	players[3].SetPointCards(1)
+	players[4].SetPointCards(0)
+
+	result := new(presenter.MightyCuiPresenter).Output(m, nil)
+	assert.Contains(t, result, "与党の得点札: 7枚")
+	assert.Contains(t, result, "野党の得点札: 3枚")
+	assert.Contains(t, result, "ラウンド: 1  トリック: 1")
+}
+
+func TestMightyCuiPresenter_OutputHidesUndisclosedPartnerPointCards(t *testing.T) {
+	origLang := i18n.Lang()
+	t.Cleanup(func() { i18n.SetLang(origLang) })
+	i18n.SetLang("ja")
+	m, players := setupMightyCuiMockWithPlayers()
+	players[0].SetIsDeclarer(true)
+	players[1].SetIsPartner(true)
+	players[0].SetPointCards(4)
+	players[1].SetPointCards(3)
+	players[2].SetPointCards(2)
+	players[3].SetPointCards(1)
+
+	result := new(presenter.MightyCuiPresenter).Output(m, nil)
+	assert.Contains(t, result, "宣言者の得点札: 4枚  他の席: 6枚 (パートナー未公開)")
+	assert.NotContains(t, result, "与党の得点札")
+}
+
+func TestMightyCuiPresenter_OutputOmitsPointCardTotalsBeforeDeclarer(t *testing.T) {
+	origLang := i18n.Lang()
+	t.Cleanup(func() { i18n.SetLang(origLang) })
+	i18n.SetLang("ja")
+	m, _ := setupMightyCuiMockWithPlayers()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDeclarerIdx")
+	m.On("GetDeclarerIdx").Return(-1)
+
+	result := new(presenter.MightyCuiPresenter).Output(m, nil)
+	assert.NotContains(t, result, "得点札:")
+}
+
 func TestMightyCuiPresenter_ShowsTheConfiguredFinishLines(t *testing.T) {
 	i18n.SetLang("ja")
 	p := new(presenter.MightyCuiPresenter)
