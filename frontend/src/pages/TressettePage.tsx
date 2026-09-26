@@ -160,21 +160,20 @@ function TressettePageContent() {
   });
 
   const phaseNames = usePhaseNames('tressette', TRESSETTE_PHASE_KEYS);
-  const previousScoreRef = useRef<{ points: [number, number]; thirds: [number, number] } | null>(null);
+  const previousScoreRef = useRef<{ round: number; thirds: [number, number] } | null>(null);
   const [scoreAnnouncement, setScoreAnnouncement] = useState('');
   useEffect(() => {
     if (!state) return;
-    const points: [number, number] = [state.teamScores[0] ?? 0, state.teamScores[1] ?? 0];
     const thirds: [number, number] = [state.teamRoundThirds[0] ?? 0, state.teamRoundThirds[1] ?? 0];
     const previous = previousScoreRef.current;
-    previousScoreRef.current = { points, thirds };
+    previousScoreRef.current = { round: state.roundNumber, thirds };
     if (!previous) return;
+    if (state.roundNumber !== previous.round) return;
 
     const changes = [0, 1]
       .map((team) => ({
         team,
-        gained:
-          Math.max(0, points[team] - previous.points[team]) * 3 + Math.max(0, thirds[team] - previous.thirds[team]),
+        gained: Math.max(0, thirds[team] - previous.thirds[team]),
       }))
       .filter(({ gained }) => gained > 0);
     if (changes.length === 0) return;
