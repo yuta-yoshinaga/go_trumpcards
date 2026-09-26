@@ -6,6 +6,7 @@
   "table": "場（表向き）",
   "you": "あなた",
   "takeThree": "3枚取る",
+  "takeThreeAriaLabel": "{{rank}}のランクで3枚取る",
   "takeThreeHint": "同ランクが3枚あります",
   "won": "取り札{{n}}枚",
   "laidDown": "降りた",

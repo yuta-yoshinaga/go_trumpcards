@@ -27,6 +27,7 @@ import type { LaughAndLieDownResponse } from '../types/card';
 import { LaughAndLieDownPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { valueName } from '../utils/cardUtils';
 import { LAUGHANDLIEDOWN_HELP, parseLaughAndLieDownCommand } from '../utils/cli/commands/laughandliedownCommands';
 import { formatLaughAndLieDownState } from '../utils/cli/formatters/laughandliedownFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -238,6 +239,7 @@ function LaughAndLieDownPageContent() {
                       {canPlay && threeTakes.has(i) && (
                         <button
                           type="button"
+                          aria-label={t('takeThreeAriaLabel', { rank: valueName(card.value) })}
                           aria-pressed={threeArmed === i}
                           onClick={() => setThreeArmed(threeArmed === i ? null : i)}
                           className={[
