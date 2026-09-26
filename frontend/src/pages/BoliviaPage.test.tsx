@@ -42,6 +42,19 @@ describe('BoliviaPage', () => {
     );
   });
 
+  it('labels each team score as yours or the opponent while preserving team numbers', async () => {
+    const state = makeBoliviaState({
+      players: makeBoliviaState().players.map((player) => (player.isHuman ? { ...player, team: 1 } : player)),
+      teamScores: [123, 456],
+    });
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<BoliviaPage />);
+
+    expect(await screen.findByTestId('sa-team-scores')).toHaveTextContent(
+      'チーム0（相手チーム）: 123 / チーム1（自チーム）: 456',
+    );
+  });
+
   it('shows draw phase buttons and team scores', async () => {
     renderWithProviders(<BoliviaPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '山札から引く' })).toBeInTheDocument());
