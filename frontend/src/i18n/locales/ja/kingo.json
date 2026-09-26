@@ -8,6 +8,7 @@
   "label.youAreBanker": "あなたが親です",
   "label.payouts": "嵐 {{arashi}}倍 / 2枚そろい {{pair}}倍",
   "label.betPrompt": "張ってください（{{min}} から、10 刻み）",
+  "label.bankerBetExcluded": "親はベット対象外です",
   "label.dealPrompt": "子の張りが出そろいました。配ってください",
   "label.won": "{{amount}}",
   "label.winner": "勝者",

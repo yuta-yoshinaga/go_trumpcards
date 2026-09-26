@@ -248,6 +248,9 @@ function KingoPageContent() {
               {canAct &&
                 (isBanker ? (
                   <>
+                    <p className="text-ds-text-muted text-sm" data-testid="kingo-banker-guide">
+                      {t('label.bankerBetExcluded')}
+                    </p>
                     <p className="text-ds-text-muted text-sm" data-testid="kingo-deal-guide">
                       {t('label.dealPrompt')}
                     </p>
