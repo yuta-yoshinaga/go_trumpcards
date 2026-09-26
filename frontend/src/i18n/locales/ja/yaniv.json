@@ -26,7 +26,8 @@
   "pickup": {
     "hint": "取れるのは捨て札の両端のカードのみです。",
     "badge": "取れる",
-    "endLabel": "この端のカードを取る",
+    "endLabel": "捨て札の{{position}}番目（{{card}}）を取る",
+    "position": "捨て札の{{position}}番目（{{card}}）",
     "disabledReason": "中間のカードは取れません（引けるのは両端のみ）"
   },
   "settings": {

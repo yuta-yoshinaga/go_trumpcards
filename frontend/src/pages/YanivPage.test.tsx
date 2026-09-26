@@ -197,6 +197,20 @@ describe('YanivPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('drawpickup', { end: 0 }));
   });
 
+  it('names pickup choices by card and position and requests the chosen end', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ phase: YanivPhase.DRAW, pickupCards: [card('SPADE', 4), card('HEART', 6)] }),
+    );
+    renderWithProviders(<YanivPage />);
+    const first = await screen.findByTestId('pickup-card-0');
+    const second = screen.getByTestId('pickup-card-1');
+    expect(first).toHaveAccessibleName('捨て札の1番目（♠ 4）を取る');
+    expect(second).toHaveAccessibleName('捨て札の2番目（♥ 6）を取る');
+
+    fireEvent.click(second);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('drawpickup', { end: 1 }));
+  });
+
   it('marks only the two ends of a discarded run as pickup-able in the draw phase', async () => {
     mockExec.mockResolvedValue(
       makeState({
@@ -214,6 +228,10 @@ describe('YanivPage', () => {
     expect(screen.queryByTestId('pickup-badge-1')).not.toBeInTheDocument();
     // The middle card is not clickable and is marked as such.
     const middle = screen.getByTestId('pickup-card-1');
+    expect(screen.getByTestId('pickup-card-0')).toHaveAccessibleName('捨て札の1番目（♠ 4）を取る');
+    expect(screen.getByTestId('pickup-card-2')).toHaveAccessibleName('捨て札の3番目（♠ 6）を取る');
+    expect(middle).toHaveAccessibleName('捨て札の2番目（♠ 5）');
+    expect(middle).not.toHaveAccessibleName(expect.stringContaining('取る'));
     expect(middle).toBeDisabled();
     expect(middle).toHaveAttribute('aria-disabled', 'true');
     // Ends are actionable and take the correct discard end.
