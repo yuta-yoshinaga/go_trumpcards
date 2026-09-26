@@ -357,17 +357,28 @@ function FrenchTarotPageContent() {
 
                 {/* Players: cards / tricks / captured points */}
                 {isMobile ? (
-                  <details className="mb-2 p-2 rounded bg-black/30">
-                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">{t('players')}</summary>
-                    <div className="mt-1">
+                  <div className="mb-2 p-2 rounded bg-black/30">
+                    <div className="text-ds-text-muted text-sm">
                       {state.players.map((p) => (
-                        <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                          {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                          {t('tricks', { count: p.trickCount })} | {t('points', { points: p.cardPoints })}
+                        <div key={p.id} className="py-0.5">
+                          {playerName(p.id, p.isHuman)}: {t('tricks', { count: p.trickCount })} |{' '}
+                          {t('points', { points: p.cardPoints })}
                         </div>
                       ))}
                     </div>
-                  </details>
+                    <details className="mt-1">
+                      <summary className="cursor-pointer select-none text-ds-text-muted text-xs">
+                        {t('players')}
+                      </summary>
+                      <div className="mt-1">
+                        {state.players.map((p) => (
+                          <div key={p.id} className="text-ds-text-muted text-xs py-0.5">
+                            {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })}
+                          </div>
+                        ))}
+                      </div>
+                    </details>
+                  </div>
                 ) : (
                   <div className="mb-2 p-2 rounded bg-black/30">
                     {state.players.map((p) => (
