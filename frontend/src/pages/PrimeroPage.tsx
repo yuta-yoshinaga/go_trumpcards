@@ -126,8 +126,6 @@ function PrimeroPageContent() {
     return <GameSkeleton gameKey="primero" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 4 }} />;
 
   const humanPlayer = state.players.find((p) => p.isHuman);
-  const humanRoundBet = humanPlayer?.roundBet ?? 0;
-  const callAmount = Math.max(0, state.currentBet - humanRoundBet);
   // **レイズが消えた理由は 2 つある。**上限と枚数不足を区別しないと、
   // 「レイズ 1/3回」がボタンの無い画面で「まだできる」と読めてしまう。
   const raiseInput = {
@@ -385,11 +383,11 @@ function PrimeroPageContent() {
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="primero-action-buttons">
-              {isBettingPhase && isHumanTurn && !isGameEnd && (
+              {isBettingPhase && isHumanTurn && !isGameEnd && humanPlayer && (
                 <>
                   <div className="w-full text-ds-text-primary text-sm" data-testid="primero-betting-controls">
-                    <span className="mr-4">{t('yourRoundBet', { amount: humanRoundBet })}</span>
-                    <span>{t('callAmount', { amount: callAmount })}</span>
+                    <span className="mr-4">{t('yourRoundBet', { amount: humanPlayer.roundBet })}</span>
+                    <span>{t('callAmount', { amount: Math.max(0, state.currentBet - humanPlayer.roundBet) })}</span>
                   </div>
                   <button type="button" className={btnPrimary} onClick={handleCall} disabled={loading}>
                     {t('callButton')}
