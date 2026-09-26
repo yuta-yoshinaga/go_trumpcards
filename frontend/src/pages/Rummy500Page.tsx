@@ -376,7 +376,7 @@ function Rummy500PageContent() {
                 )}
               </div>
             ))}
-            {isRoundEnd && (
+            {(isRoundEnd || isGameEnd) && (
               <section data-testid="round-hand-penalties" className="my-3 rounded bg-ds-surface p-3">
                 <h2 className="mb-2 text-sm font-semibold text-ds-text-primary">{t('roundHandPenalties')}</h2>
                 <ul className="space-y-1 text-sm text-ds-text-muted">

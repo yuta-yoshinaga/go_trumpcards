@@ -388,6 +388,23 @@ describe('Rummy500Page', () => {
     expect(comparison).toHaveTextContent('-19');
   });
 
+  it('shows every player hand penalty when the game ends', async () => {
+    mockExec.mockResolvedValue({
+      ...gameEndState,
+      players: roundEndState.players,
+    });
+    renderWithProviders(<Rummy500Page />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('round-hand-penalties')).toBeInTheDocument();
+    });
+    const comparison = screen.getByTestId('round-hand-penalties');
+    expect(comparison).toHaveTextContent('あなた');
+    expect(comparison).toHaveTextContent('-11');
+    expect(comparison).toHaveTextContent('CPU 1');
+    expect(comparison).toHaveTextContent('-19');
+  });
+
   it('does not retain the previous round hand penalties in the next round', async () => {
     mockExec.mockResolvedValue(drawPhaseState);
     renderWithProviders(<Rummy500Page />);
