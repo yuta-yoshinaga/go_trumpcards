@@ -32,6 +32,10 @@
   "lead": "Lead",
   "tricksLabel": "Tricks",
   "selectTricks": "Select tricks (6-10):",
+  "bidCondition": {
+    "suit": "To make this contract, take at least {{tricks}} tricks.",
+    "misere": "To make this contract, take no tricks."
+  },
   "misereButton": "Misere",
   "openMisereButton": "Open Misere",
   "nominateSuitAria": "Call {{suit}}",
