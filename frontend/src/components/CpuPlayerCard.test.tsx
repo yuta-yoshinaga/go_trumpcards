@@ -208,6 +208,25 @@ describe('CpuPlayerCard', () => {
     expect(indicator).toHaveTextContent('✓');
   });
 
+  it('keeps the legacy used-card badge and pulse ring without Hi/Lo props', () => {
+    render(
+      <CpuPlayerCard
+        player={makePlayer()}
+        showCards={true}
+        faceDownCount={2}
+        showHandName={false}
+        usedHoleIdx={[0]}
+        usedHoleLabel="使用"
+      />,
+    );
+    const used = screen.getByTestId('cpu-hole-used');
+    expect(used).toHaveClass('motion-safe:animate-pulse');
+    const indicator = within(used).getByTestId('cpu-hole-used-indicator');
+    expect(indicator).toHaveTextContent('✓');
+    expect(indicator).toHaveAttribute('aria-label', '使用');
+    expect(indicator).toHaveClass('text-white');
+  });
+
   it('does not add the marker when the label is absent', () => {
     render(
       <CpuPlayerCard player={makePlayer()} showCards={true} faceDownCount={2} showHandName={false} usedHoleIdx={[0]} />,
