@@ -1224,6 +1224,60 @@ describe('ShortDeckPage', () => {
     expect(document.querySelectorAll('[data-best5-board]').length).toBe(3);
   });
 
+  it('shows the current Short Deck hand and highlights its cards before showdown', async () => {
+    mockExec.mockResolvedValue({
+      ...flopState,
+      players: [
+        humanPlayer({
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 7 },
+          ],
+        }),
+        ...flopState.players.slice(1),
+      ],
+      communityCards: [
+        { design: 'HEART', value: 6 },
+        { design: 'DIAMOND', value: 8 },
+        { design: 'CLOVER', value: 9 },
+      ],
+    });
+    renderWithProviders(<ShortDeckPage />);
+    expect(await screen.findByTestId('shortdeck-current-hand')).toHaveTextContent('現時点');
+    expect(screen.getByTestId('shortdeck-current-hand')).toHaveTextContent('ストレート');
+    await waitFor(() => expect(document.querySelectorAll('[data-best5-hole]').length).toBe(2));
+    expect(document.querySelectorAll('[data-best5-board]').length).toBe(3);
+  });
+
+  it.each([
+    ['outside an active hand', { ...flopState, phase: 0 }],
+    ['for a folded human', { ...flopState, players: [humanPlayer({ folded: true }), ...flopState.players.slice(1)] }],
+    [
+      'when the human does not have exactly two cards',
+      {
+        ...flopState,
+        players: [humanPlayer({ cards: [{ design: 'SPADE', value: 1 }] }), ...flopState.players.slice(1)],
+      },
+    ],
+    ['with fewer than three community cards', { ...flopState, communityCards: flopState.communityCards.slice(0, 2) }],
+  ])('does not calculate or highlight a current hand %s', async (_caseName, state) => {
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<ShortDeckPage />);
+
+    await screen.findByTestId('shortdeck-rank-watermark');
+    expect(screen.queryByTestId('shortdeck-current-hand')).not.toBeInTheDocument();
+    expect(document.querySelectorAll('[data-best5-board]').length).toBe(0);
+    expect(document.querySelectorAll('[data-best5-hole]').length).toBe(0);
+  });
+
+  it('hides the current hand chip at showdown while keeping the showdown hand name', async () => {
+    mockExec.mockResolvedValue(showdownState);
+    renderWithProviders(<ShortDeckPage />);
+
+    expect(await screen.findByText('ワンペア', { selector: 'span' })).toBeInTheDocument();
+    expect(screen.queryByTestId('shortdeck-current-hand')).not.toBeInTheDocument();
+  });
+
   // The page already rendered hand/level progress behind state.tournamentMode,
   // but nothing could switch it on: the display existed for a state the player
   // could not reach.
