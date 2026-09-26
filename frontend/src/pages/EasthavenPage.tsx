@@ -608,6 +608,11 @@ function EasthavenPageContent() {
                   >
                     {t('deal')}
                   </button>
+                  {dealBlockedByEmpty && (
+                    <span className="text-sm text-ds-warning" data-testid="eh-empty-column-deal-reason">
+                      {t('cannotDealEmptyColExists')}
+                    </span>
+                  )}
                   <button type="button" className={btnOutline} onClick={handleHint} disabled={loading}>
                     {t('hint')}
                   </button>
