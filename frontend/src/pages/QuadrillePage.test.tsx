@@ -130,6 +130,18 @@ describe('QuadrillePage', () => {
     expect(await screen.findByText('切り札: クラブ')).toBeInTheDocument();
   });
 
+  it('shows no trump when the resolved auction has no trump suit', async () => {
+    mockExec.mockResolvedValue(
+      makeQuadrilleState({
+        phase: QuadrillePhase.KING_CALL,
+        winningBid: 1,
+        trumpSuit: 0,
+      }),
+    );
+    renderWithProviders(<QuadrillePage />);
+    expect(await screen.findByText('切り札: -')).toBeInTheDocument();
+  });
+
   it('stages entrar → trump selection → confirm and dispatches the bid with the suit', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<QuadrillePage />);

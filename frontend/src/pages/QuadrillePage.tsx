@@ -173,7 +173,7 @@ function QuadrillePageContent() {
   const trumpLabel = isBidPhase
     ? t('trumpUndecided')
     : state.trumpSuit >= 1
-      ? t(SUIT_KEYS[state.trumpSuit] ?? 'suitNone')
+      ? t(SUIT_KEYS[state.trumpSuit])
       : t('suitNone');
 
   // Badge the three matadors (Spadille ♠A / Manille = trump 7 / Basto ♣A) in
