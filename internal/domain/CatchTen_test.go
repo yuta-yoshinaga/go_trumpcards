@@ -271,6 +271,27 @@ func TestCatchTen_HonorCaptureScoring(t *testing.T) {
 	assert.Equal(t, 25, g.GetPlayer(0).GetRoundScore()) // 11+10+4
 }
 
+func TestCatchTenHonorPoints(t *testing.T) {
+	tests := []struct {
+		name string
+		card *domain.Card
+		want int
+	}{
+		{name: "trump jack", card: domain.NewCard(domain.CardDesignSpade, 11, false), want: 11},
+		{name: "trump ten", card: domain.NewCard(domain.CardDesignSpade, 10, false), want: 10},
+		{name: "trump ace", card: domain.NewCard(domain.CardDesignSpade, 1, false), want: 4},
+		{name: "trump king", card: domain.NewCard(domain.CardDesignSpade, 13, false), want: 3},
+		{name: "trump queen", card: domain.NewCard(domain.CardDesignSpade, 12, false), want: 2},
+		{name: "trump low card", card: domain.NewCard(domain.CardDesignSpade, 9, false), want: 0},
+		{name: "plain honor rank", card: domain.NewCard(domain.CardDesignHeart, 11, false), want: 0},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, domain.CatchTenHonorPoints(tt.card, domain.CardDesignSpade))
+		})
+	}
+}
+
 func TestCatchTen_HonorKingQueen(t *testing.T) {
 	g := newTestCatchTen()
 	g.Reset()

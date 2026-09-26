@@ -24,10 +24,14 @@ func TestCatchTenCuiPresenter_Output(t *testing.T) {
 	t.Run("play phase", func(t *testing.T) {
 		m, players := setupCatchTenWebMockWithPlayers()
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 11, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 11, false))
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "Catch the Ten")
 		assert.Contains(t, result, "ラウンド: 1")
 		assert.Contains(t, result, "トランプ:")
+		assert.Contains(t, result, "[0]♠11 (11)")
+		assert.Contains(t, result, "[1]♥11")
+		assert.NotContains(t, result, "[1]♥11 (0)")
 	})
 
 	t.Run("error block", func(t *testing.T) {
