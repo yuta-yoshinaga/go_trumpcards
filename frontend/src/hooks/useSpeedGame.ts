@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { speedApi } from '../api/gameApi';
 import type { Card, SpeedConfig } from '../types/card';
 import { SpeedPhase } from '../types/phases';
 import { isAdjacentRank } from '../utils/speedUtils';
 import { useCardSelection } from './useCardSelection';
-import { useGameApi } from './useGameApi';
+import { isRejectedAction, useGameApi } from './useGameApi';
 import { useGameConfig } from './useGameConfig';
 
 /** Default Speed game configuration. */
@@ -27,10 +27,25 @@ export const CPU_DIFFICULTY_OPTIONS = [
 export function useSpeedGame() {
   const { selected: selectedCardIndices, toggle: toggleCard, clear: clearSelection } = useCardSelection();
   const { config: speedConfig, handleConfigChange, handleToggle } = useGameConfig<SpeedConfig>(DEFAULT_SPEED_CONFIG);
+  const [playedCardCount, setPlayedCardCount] = useState<number | null>(null);
+  const [playAnnouncementNonce, setPlayAnnouncementNonce] = useState(0);
 
-  const onSuccess = useCallback(() => {
-    clearSelection();
-  }, [clearSelection]);
+  const onSuccess = useCallback(
+    (res: Awaited<ReturnType<typeof speedApi.exec>>, args: Parameters<typeof speedApi.exec>) => {
+      clearSelection();
+      if (args[0] === 'reset') {
+        setPlayedCardCount(null);
+        return;
+      }
+      if (args[0] !== 'play' || isRejectedAction(res)) return;
+      const count = res.players[0]?.cardCount;
+      if (count !== undefined) {
+        setPlayedCardCount(count);
+        setPlayAnnouncementNonce((nonce) => nonce + 1);
+      }
+    },
+    [clearSelection],
+  );
 
   // NOTE: exec here is the game API exec function from useGameApi, not child_process.exec
   const { state, loading, error, exec: gameExec, retry } = useGameApi(speedApi.exec, { onSuccess });
@@ -94,6 +109,8 @@ export function useSpeedGame() {
 
   return {
     state,
+    playedCardCount,
+    playAnnouncementNonce,
     loading,
     error,
     exec: gameExec,

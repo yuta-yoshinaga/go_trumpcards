@@ -239,6 +239,60 @@ describe('SpeedPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0, 0));
   });
 
+  it('announces the updated hand count after a successful play', async () => {
+    renderWithProviders(<SpeedPage />);
+    await screen.findByText('手札');
+    mockExec.mockResolvedValueOnce({
+      ...playState,
+      players: [{ ...playState.players[0], cardCount: 3 }, playState.players[1]],
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: '♠ 4 (今すぐ出せる)' }));
+
+    await waitFor(() => expect(screen.getByTestId('speed-play-count-announcement')).toHaveTextContent('手札は3枚です'));
+  });
+
+  it('does not announce a selection or a rejected play', async () => {
+    renderWithProviders(<SpeedPage />);
+    await screen.findByText('手札');
+    const announcement = screen.getByTestId('speed-play-count-announcement');
+    expect(announcement).toBeEmptyDOMElement();
+
+    fireEvent.click(screen.getByRole('button', { name: '♦ 2' }));
+    expect(announcement).toBeEmptyDOMElement();
+
+    mockExec.mockResolvedValueOnce({ ...playState, message: 'invalid play' });
+    fireEvent.click(screen.getByRole('button', { name: /台札1:/ }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 3, 0));
+    expect(announcement).toBeEmptyDOMElement();
+  });
+
+  it('remounts the live region to re-announce consecutive plays with the same hand count', async () => {
+    renderWithProviders(<SpeedPage />);
+    await screen.findByText('手札');
+    mockExec.mockResolvedValueOnce({
+      ...playState,
+      players: [{ ...playState.players[0], cardCount: 3 }, playState.players[1]],
+    });
+    fireEvent.click(screen.getByRole('button', { name: '♠ 4 (今すぐ出せる)' }));
+    let firstRegion: HTMLElement | null = null;
+    await waitFor(() => {
+      firstRegion = screen.getByTestId('speed-play-count-announcement');
+      expect(firstRegion).toHaveTextContent('手札は3枚です');
+    });
+
+    mockExec.mockResolvedValueOnce({
+      ...playState,
+      players: [{ ...playState.players[0], cardCount: 3 }, playState.players[1]],
+    });
+    fireEvent.click(screen.getByRole('button', { name: '♠ 4 (今すぐ出せる)' }));
+    await waitFor(() => {
+      const secondRegion = screen.getByTestId('speed-play-count-announcement');
+      expect(secondRegion).toHaveTextContent('手札は3枚です');
+      expect(secondRegion).not.toBe(firstRegion);
+    });
+  });
+
   it('plays a card to a center pile when a card is selected', async () => {
     renderWithProviders(<SpeedPage />);
     await waitFor(() => expect(screen.getByText('手札')).toBeInTheDocument());
