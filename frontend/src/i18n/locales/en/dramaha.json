@@ -21,7 +21,7 @@
   "handsUnavailable": "Not decided yet",
   "draw": {
     "title": "Draw round",
-    "prompt": "Pick the cards to exchange, or stand pat and keep all five.",
+    "prompt": "Pick cards to exchange. Select a chosen card again to unselect it. With a keyboard, focus a card and press Enter or Space to toggle it. You can also stand pat and keep all five.",
     "exchange": "Exchange {{count}}",
     "standPat": "Stand pat",
     "selected": "Selected: {{count}}",
