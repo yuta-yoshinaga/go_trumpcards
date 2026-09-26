@@ -161,6 +161,16 @@ func TestGuandanCuiPresenter_LabelsTeamsFromTheHumanPerspective(t *testing.T) {
 	assert.Contains(t, out, "(T1 相手 着順-")
 }
 
+func TestGuandanCuiPresenter_NoHumanOmitsRelation(t *testing.T) {
+	i18n.SetLang("en")
+	defer i18n.SetLang("ja")
+	o := defaultGuandanOpts()
+	o.noHuman = true
+	out := new(presenter.GuandanCuiPresenter).Output(setupGuandanMock(o), nil)
+	assert.NotContains(t, out, "(T0  out")
+	assert.Contains(t, out, "(T0 out")
+}
+
 func TestGuandanCuiPresenter_Error(t *testing.T) {
 	out := new(presenter.GuandanCuiPresenter).Output(setupGuandanMock(defaultGuandanOpts()), errors.New("boom"))
 	assert.Contains(t, out, "boom")

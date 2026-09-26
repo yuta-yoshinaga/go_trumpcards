@@ -9,6 +9,7 @@
   "hiddenHand": "hidden, {{count}} cards",
   "turnTag": "<- your turn",
   "playerLine": "seat {{seat}} {{name}} (T{{team}} {{relation}} out {{rank}}){{turn}}: {{count}} cards  {{hand}}",
+  "playerLineNoRelation": "seat {{seat}} {{name}} (T{{team}} out {{rank}}){{turn}}: {{count}} cards  {{hand}}",
   "ally": "Ally",
   "opponent": "Opponent",
   "tableCombo": "table: {{combo}} ({{size}} cards) played by seat {{seat}}",

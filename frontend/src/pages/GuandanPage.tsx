@@ -148,7 +148,7 @@ function GuandanPageContent() {
   const human = state.players.find((p) => p.isHuman);
   const isGameEnd = state.phase === GuandanPhase.GAME_END || state.gameEndFlag;
   const isHandEnd = !isGameEnd && state.phase === GuandanPhase.HAND_END;
-  const humanTeam = state.players.find((player) => player.isHuman)?.team;
+  const humanTeam = human?.team;
   const isHumanTurn = !isGameEnd && !isHandEnd && state.currentPlayerIdx === 0;
   const humanWon = isGameEnd && state.winnerTeam === 0;
   // **還貢は「受け取った側」が返す。**貢の相手が自分でなければ操作は無い。
