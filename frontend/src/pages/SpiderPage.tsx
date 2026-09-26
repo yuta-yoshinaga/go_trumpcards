@@ -555,13 +555,22 @@ function SpiderPageContent() {
                   >
                     {t('undo')}
                   </button>
-                  {state.isStalemate && (
-                    <StalemateEscapeButton
-                      undoToEscape={state.undoToEscape ?? 0}
-                      onEscape={handleUndoEscape}
-                      disabled={loading || isAutoCompleting}
-                    />
-                  )}
+                  {state.isStalemate &&
+                    ((state.undoToEscape ?? 0) <= 0 ? (
+                      <span
+                        role="status"
+                        data-testid="stalemate-escape-unavailable"
+                        className="text-ds-warning font-semibold"
+                      >
+                        {t('stalemateNoEscape')}
+                      </span>
+                    ) : (
+                      <StalemateEscapeButton
+                        undoToEscape={state.undoToEscape ?? 0}
+                        onEscape={handleUndoEscape}
+                        disabled={loading || isAutoCompleting}
+                      />
+                    ))}
                   <button
                     type="button"
                     className={btnSuccess}
