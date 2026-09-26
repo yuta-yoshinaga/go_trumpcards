@@ -58,6 +58,8 @@ func TestBisleyCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "Bisley")
 		assert.Contains(t, result, i18n.T("bisley.aceFoundationHeader"))
 		assert.Contains(t, result, i18n.T("bisley.kingFoundationHeader"))
+		assert.Contains(t, result, "[0]♠1 | [1]♣1 | [2]♥1 | [3]♦1")
+		assert.Contains(t, result, "[0]♠13 | [1]♣13 | [2]♥13 | [3]♦13")
 		assert.Contains(t, result, "列0:")
 		assert.Contains(t, result, "列12:")
 		assert.Contains(t, result, "手数: 0")
@@ -123,15 +125,19 @@ func TestBisleyCuiPresenter_Output(t *testing.T) {
 		bg := new(interfaces.MockBisleyGame)
 		setupBisleyCuiMockDefaults(bg)
 		bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "GetTableau")
+		bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "GetAceFoundations")
 		bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "GetKingFoundations")
 		var emptyTableau [domain.BisleyTableauCnt][]*domain.BisleyTableauCard
+		var emptyAce [domain.BisleyFoundationCnt][]*domain.Card
 		var emptyKing [domain.BisleyFoundationCnt][]*domain.Card
 		bg.On("GetTableau").Return(emptyTableau)
+		bg.On("GetAceFoundations").Return(emptyAce)
 		bg.On("GetKingFoundations").Return(emptyKing)
 
 		p := new(BisleyCuiPresenter)
 		result := p.Output(bg, nil)
-		assert.Contains(t, result, "[空]")
+		assert.Contains(t, result, i18n.T("bisley.aceFoundationHeader")+"[0][空] | [1][空] | [2][空] | [3][空]")
+		assert.Contains(t, result, i18n.T("bisley.kingFoundationHeader")+"[0][空] | [1][空] | [2][空] | [3][空]")
 	})
 }
 
