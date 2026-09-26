@@ -138,6 +138,21 @@ describe('KaiserPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 1 }));
   });
 
+  it('exposes hand card selection with aria-pressed and updates it after deselection', async () => {
+    renderWithProviders(<KaiserPage />);
+    const hand = await waitFor(() => {
+      expect(handButtons()).toHaveLength(3);
+      return handButtons();
+    });
+
+    expect(hand[0]).toHaveAttribute('aria-pressed', 'false');
+    expect(hand[0]).toHaveAccessibleName();
+    fireEvent.click(hand[0]!);
+    expect(handButtons()[0]).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(handButtons()[0]!);
+    expect(handButtons()[0]).toHaveAttribute('aria-pressed', 'false');
+  });
+
   // **追随は強制。**サーバーが出せる札を決め、それ以外は押せない。
   it('disables cards the server did not list as playable', async () => {
     mockExec.mockResolvedValue(makeState({ validPlays: [2] }));
