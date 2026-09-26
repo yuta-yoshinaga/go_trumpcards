@@ -229,14 +229,11 @@ function PrsiPageContent() {
                       type="button"
                       data-testid="prsi-stock"
                       onClick={handleDrawWithSound}
-                      disabled={!isHumanTurn || loading || cannotDraw}
-                      aria-label={
-                        cannotDraw
-                          ? t('stockEmptyAria', { count: state.drawPileCount })
-                          : t('stockAria', { count: state.drawPileCount })
-                      }
+                      disabled={!isHumanTurn || loading}
+                      aria-label={cannotDraw ? t('passButton') : t('stockAria', { count: state.drawPileCount })}
+                      aria-description={cannotDraw ? t('stockEmptyAria') : undefined}
                       className={`relative ${focusRingCard} ${
-                        isHumanTurn && !cannotDraw ? 'cursor-pointer' : 'cursor-default opacity-70'
+                        isHumanTurn ? 'cursor-pointer' : 'cursor-default opacity-70'
                       }`}
                       style={{ background: 'none', padding: 0, border: 'none', lineHeight: 0 }}
                     >
@@ -257,7 +254,7 @@ function PrsiPageContent() {
                         </span>
                       )}
                     </button>
-                    <div className="text-ds-text-muted text-sm">{t('stock')}</div>
+                    <div className="text-ds-text-muted text-sm">{cannotDraw ? t('passButton') : t('stock')}</div>
                     {cannotDraw && (
                       <div className="text-ds-text-muted text-sm" data-testid="prsi-stock-empty">
                         {t('stockEmpty')}

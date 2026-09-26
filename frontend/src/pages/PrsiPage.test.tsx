@@ -411,15 +411,23 @@ describe('PrsiPage', () => {
     expect(screen.queryByTestId('prsi-stock-empty')).not.toBeInTheDocument();
   });
 
-  it('explains that drawing is unavailable when recycling would leave no cards', async () => {
+  it('offers pass when neither pile has a card to draw', async () => {
     mockExec.mockResolvedValue({ ...playPhaseState, drawPileCount: 0, discardPileCount: 1, penaltyDrawCount: 2 });
     renderWithProviders(<PrsiPage />);
 
     const stock = await screen.findByTestId('prsi-stock');
-    expect(stock).toBeDisabled();
-    expect(stock).toHaveAccessibleName('山札から1枚ドロー（残り0枚）。山札が空のため引けません');
-    expect(screen.getByTestId('prsi-stock-empty')).toBeVisible();
+    expect(stock).not.toBeDisabled();
+    expect(stock).toHaveAccessibleName('パス');
+    expect(screen.getByText('パス')).toBeVisible();
+    expect(screen.getByTestId('prsi-stock-empty')).toHaveTextContent(
+      '山札と捨て札から引ける札が無いため、押すとパスになります',
+    );
     expect(screen.getByTestId('prsi-stock-penalty')).toHaveTextContent('+2');
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playPhaseState);
+    fireEvent.click(stock);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
   });
 
   it('drawing via a stock click dispatches the draw action on the human turn', async () => {
