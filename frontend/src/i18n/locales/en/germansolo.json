@@ -48,6 +48,7 @@
   "roleDeclarer": "declarer",
   "roleDefender": "defender",
   "rolePartner": "partner",
+  "partnerAria": "partner",
   "declarerBadge": "Declarer",
   "dealerBadge": "dealer",
   "dealerAria": "the dealer this deal (bidding and leading start to their left)",
