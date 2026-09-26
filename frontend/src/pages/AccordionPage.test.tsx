@@ -123,6 +123,28 @@ describe('AccordionPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
   });
 
+  it('keeps the hint live region mounted before a hint is requested', async () => {
+    renderWithProviders(<AccordionPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const hintStatus = screen.getByTestId('ac-hint-status');
+    expect(hintStatus).toHaveAttribute('role', 'status');
+    expect(hintStatus).toHaveAttribute('aria-live', 'polite');
+    expect(hintStatus).toBeEmptyDOMElement();
+    expect(hintStatus).not.toHaveClass(
+      'text-sm',
+      'text-ds-accent',
+      'bg-ds-surface/90',
+      'border',
+      'border-ds-accent',
+      'rounded',
+      'px-3',
+      'py-1.5',
+      'mt-1',
+    );
+    expect(hintStatus.querySelector('[class]')).not.toBeInTheDocument();
+  });
+
   it('explains why an offset three hint is preferred', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
