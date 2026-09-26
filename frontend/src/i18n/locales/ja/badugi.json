@@ -18,7 +18,8 @@
   "cpuExchange": "CPUドロー:",
   "cpuExchangeEntry": "Player {{idx}} (draw {{draw}}): {{count}}枚交換",
   "exchangeCount": "交換: {{count}}枚",
-  "cardSelected": "(交換選択中)",
+  "cardSelected": "交換対象として選択中",
+  "cardNotSelected": "交換対象ではありません",
   "subsetBest": "ベストハンドの一部",
   "subsetExchange": "交換候補",
   "settings": {
