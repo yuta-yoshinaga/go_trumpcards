@@ -414,11 +414,14 @@ function LiteraturePageContent() {
                     {t('askButton')}
                   </button>
                 </fieldset>
-                {askableCards.length === 0 && (
-                  <p className="text-ds-warning text-sm" role="status">
-                    {t('noAskableCards')}
-                  </p>
-                )}
+                <p
+                  className={askableCards.length === 0 ? 'text-ds-warning text-sm' : undefined}
+                  role="status"
+                  aria-live="polite"
+                  data-testid="literature-ask-status"
+                >
+                  {askableCards.length === 0 ? t('noAskableCards') : null}
+                </p>
 
                 {/* Claim — placing all six, and misplacing within your own team cancels it. */}
                 <div className="text-ds-text-muted text-xs" data-testid="literature-claim-rules">

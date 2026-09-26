@@ -158,6 +158,8 @@ describe('LiteraturePage', () => {
     renderWithProviders(<LiteraturePage />);
 
     expect(await screen.findByText('要求できる札がありません')).toBeInTheDocument();
+    const askStatus = screen.getByTestId('literature-ask-status');
+    expect(askStatus).toHaveTextContent('要求できる札がありません');
     expect(screen.getByLabelText(/^札/)).toBeDisabled();
     expect(screen.getByRole('button', { name: '要求する' })).toBeDisabled();
 
@@ -167,6 +169,15 @@ describe('LiteraturePage', () => {
     expect(await screen.findByRole('button', { name: '要求する' })).toBeEnabled();
     expect(screen.getByLabelText(/^札/)).toBeEnabled();
     expect(screen.getByLabelText(/^札/).querySelectorAll('option')).toHaveLength(48);
+    expect(screen.getByTestId('literature-ask-status')).toBeEmptyDOMElement();
+  });
+
+  it('keeps the ask status region empty when askable cards are available', async () => {
+    renderWithProviders(<LiteraturePage />);
+
+    expect(await screen.findByLabelText(/^札/)).toBeEnabled();
+    expect(screen.getByTestId('literature-ask-status')).toBeInTheDocument();
+    expect(screen.getByTestId('literature-ask-status')).toBeEmptyDOMElement();
   });
 
   // **宣言は6枚すべての所在を申告する。**候補は自チームの席だけ。
