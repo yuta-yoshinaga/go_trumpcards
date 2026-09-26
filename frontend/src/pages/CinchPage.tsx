@@ -119,7 +119,6 @@ function CinchPageContent() {
   useEffect(() => {
     reset();
   }, []);
-
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('cinch');
   const cinchCliConfig: CliGameConfig<CinchResponse, Parameters<typeof cinchApi.exec>> = useMemo(
@@ -380,6 +379,9 @@ function CinchPageContent() {
                   {t('trumpPrompt')}
                 </div>
               )}
+            </div>
+            <div data-testid="cinch-trump-selection-live" role="status" aria-live="polite">
+              {state.trumpSuit >= 1 && t('trumpConfirmed', { suit: suitLabel(state.trumpSuit) })}
             </div>
             {canBid && bidStrength && (
               <div

@@ -32,6 +32,7 @@
     "note": "A rough guide only — your actual take depends on play after trump is named."
   },
   "trumpPrompt": "You won the bid — name the trump suit.",
+  "trumpConfirmed": "{{suit}} confirmed as trump.",
   "bidderBadge": "Bidder",
   "cards": "{{count}} cards",
   "tricks": "{{count}} tricks",
