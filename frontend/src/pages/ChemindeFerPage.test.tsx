@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { chemindeferApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, ChemindeFerResponse } from '../types/card';
 import { ChemindeFerPhase } from '../types/phases';
@@ -349,6 +350,26 @@ describe('ChemindeFerPage', () => {
 
     await waitFor(() => expect(screen.queryByText('投了確認')).not.toBeInTheDocument());
     expect(mockApi).not.toHaveBeenCalled();
+  });
+
+  it('confirms keyboard give-up before dispatching', async () => {
+    mockApi.mockResolvedValue(base);
+    renderWithProviders(<ChemindeFerPage />);
+    await screen.findByTestId('giveup-button');
+
+    mockApi.mockClear();
+    fireEvent.keyDown(document, { key: 'g' });
+    await waitFor(() => expect(screen.getByText('投了確認')).toBeInTheDocument());
+    expect(mockApi).not.toHaveBeenCalledWith('giveup');
+
+    fireEvent.click(screen.getByRole('button', { name: 'キャンセル' }));
+    await flushPendingDispatch();
+    expect(mockApi).not.toHaveBeenCalled();
+
+    fireEvent.keyDown(document, { key: 'g' });
+    await waitFor(() => expect(screen.getByText('投了確認')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('giveup'));
   });
 
   it('renders the bet line when stake is > 0', async () => {
