@@ -19,6 +19,8 @@
   "contractRedoubled": " redoubled",
   "declarerLine": "Declarer: {{declarer}}  Dummy: {{dummy}}",
   "vulnerability": "Vulnerability: team 0={{a}} team 1={{b}}",
+  "vulnerable": "Vul",
+  "notVulnerable": "Non-Vul",
   "teamScores": "Team 0: {{a}}pt ({{aGames}} games, below-line {{aBelow}})  Team 1: {{b}}pt ({{bGames}} games, below-line {{bBelow}})",
   "dummyHand": "Dummy hand: {{cards}}",
   "gameEnd": "Game over! {{banner}}",

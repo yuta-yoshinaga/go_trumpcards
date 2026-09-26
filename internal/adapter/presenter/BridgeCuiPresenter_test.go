@@ -188,6 +188,9 @@ func TestBridgeCuiPresenter_Output(t *testing.T) {
 	})
 
 	t.Run("vulnerability shown", func(t *testing.T) {
+		origLang := i18n.Lang()
+		t.Cleanup(func() { i18n.SetLang(origLang) })
+		i18n.SetLang("ja")
 		m, _ := setupBridgeCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetVulnerability")
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetVulnerability")
@@ -195,7 +198,15 @@ func TestBridgeCuiPresenter_Output(t *testing.T) {
 		m.On("GetVulnerability", 1).Return(false)
 
 		result := p.Output(m, nil)
-		assert.Contains(t, result, "バルネラビリティ: チーム0=true チーム1=false")
+		assert.Contains(t, result, "バルネラビリティ: チーム0=バル チーム1=ノンバル")
+		assert.NotContains(t, result, "チーム0=true")
+		assert.NotContains(t, result, "チーム1=false")
+
+		i18n.SetLang("en")
+		result = p.Output(m, nil)
+		assert.Contains(t, result, "Vulnerability: team 0=Vul team 1=Non-Vul")
+		assert.NotContains(t, result, "team 0=true")
+		assert.NotContains(t, result, "team 1=false")
 	})
 
 	t.Run("team scores shown", func(t *testing.T) {
