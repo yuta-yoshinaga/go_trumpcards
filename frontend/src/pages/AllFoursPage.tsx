@@ -343,10 +343,11 @@ function AllFoursPageContent() {
             >
               <div className="text-xs uppercase opacity-60 mb-1">{t('currentTrick')}</div>
               <div role="status" aria-live="polite" aria-atomic="true" data-testid="af-trick-status">
+                {state.phase === AllFoursPhase.TRICK_END && (
+                  <span className="inline-block rounded px-2 py-1 text-ds-text-primary">{t('trickComplete')}</span>
+                )}
                 {state.currentTrick.length === 0 ? (
-                  <span className="inline-block rounded px-2 py-1 text-ds-text-primary">
-                    {state.phase === AllFoursPhase.TRICK_END ? t('trickComplete') : t('trickUnplayed')}
-                  </span>
+                  <span className="inline-block rounded px-2 py-1 text-ds-text-primary">{t('trickUnplayed')}</span>
                 ) : (
                   <div className="flex flex-wrap gap-2">
                     {state.currentTrick.map((tk) => {
