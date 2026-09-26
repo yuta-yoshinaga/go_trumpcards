@@ -318,28 +318,39 @@ function MississippiStudPageContent() {
           </div>
         )}
         {isStreetPhase && (
-          <div className="flex justify-center gap-2 pb-2 flex-wrap" data-tutorial="ms-street-buttons">
-            {(
-              [
-                { m: 1, cls: btnSecondary },
-                { m: 2, cls: btnPrimary },
-                { m: 3, cls: btnSuccess },
-              ] as const
-            ).map(({ m, cls }) => (
-              <button
-                key={m}
-                type="button"
-                className={`${cls} min-h-[44px]`}
-                onClick={() => handlePlay(m)}
-                disabled={loading}
-                data-testid={`ms-play-${m}x`}
-              >
-                {t('button.playMult', { mult: m, amount: state.anteAmount * m })}
+          <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="ms-street-buttons">
+            <div className="text-ds-text-primary text-sm text-center" data-testid="ms-street-betting-summary">
+              <span>{phaseName}</span>
+              <span className="ml-3">
+                {t('label.totalBet')}: {state.totalBet}
+              </span>
+            </div>
+            <div className="flex justify-center gap-2 flex-wrap">
+              {(
+                [
+                  { m: 1, cls: btnSecondary },
+                  { m: 2, cls: btnPrimary },
+                  { m: 3, cls: btnSuccess },
+                ] as const
+              ).map(({ m, cls }) => (
+                <button
+                  key={m}
+                  type="button"
+                  className={`${cls} min-h-[44px]`}
+                  onClick={() => handlePlay(m)}
+                  disabled={loading}
+                  data-testid={`ms-play-${m}x`}
+                >
+                  {t('button.playMult', { mult: m, amount: state.anteAmount * m })}
+                  <span className="block text-xs font-normal">
+                    {t('label.totalAfterBet')}: {state.totalBet + state.anteAmount * m}
+                  </span>
+                </button>
+              ))}
+              <button type="button" className={`${btnDanger} min-h-[44px]`} onClick={handleFold} disabled={loading}>
+                {t('button.fold')}
               </button>
-            ))}
-            <button type="button" className={`${btnDanger} min-h-[44px]`} onClick={handleFold} disabled={loading}>
-              {t('button.fold')}
-            </button>
+            </div>
           </div>
         )}
         {isEndPhase && (
