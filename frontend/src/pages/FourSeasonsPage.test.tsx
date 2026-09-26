@@ -112,8 +112,12 @@ describe('FourSeasonsPage', () => {
 
     for (const [testId, cell] of expectedCells) {
       const button = screen.getByTestId(testId);
-      expect(button.closest('[data-board-cell]')).toHaveAttribute('data-board-cell', cell);
+      const boardCell = button.closest<HTMLElement>('[data-board-cell]');
+      expect(boardCell).toHaveAttribute('data-board-cell', cell);
+      expect(boardCell?.style.gridArea).toBe(cell);
     }
+
+    expect(document.querySelector('[data-tutorial="fs-controls"]')).toHaveClass('sm:row-start-5');
 
     for (const tutorialTarget of ['fs-foundations', 'fs-cross']) {
       const target = document.querySelector(`[data-tutorial="${tutorialTarget}"]`);

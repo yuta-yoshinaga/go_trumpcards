@@ -40,6 +40,8 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 const TABLEAU_CNT = 5;
 const FOUNDATION_CNT = 4;
 const FOUNDATION_PILE_FULL = 13;
+const FOUNDATION_CELLS = ['1 / 1', '1 / 3', '3 / 1', '3 / 3'];
+const TABLEAU_CELLS = ['1 / 2', '2 / 1', '2 / 2', '2 / 3', '3 / 2'];
 
 /**
  * The rank a foundation needs next. Foundations build up **from the deal's base
@@ -288,9 +290,9 @@ function FourSeasonsPageContent() {
                   <button
                     key={`f-${idx.toString()}`}
                     data-tutorial={idx === 0 ? 'fs-foundations' : undefined}
-                    data-board-cell={['1 / 1', '1 / 3', '3 / 1', '3 / 3'][idx]}
+                    data-board-cell={FOUNDATION_CELLS[idx]}
                     type="button"
-                    style={{ gridArea: ['1 / 1', '1 / 3', '3 / 1', '3 / 3'][idx] }}
+                    style={{ gridArea: FOUNDATION_CELLS[idx] }}
                     className={`flex flex-col items-center p-1 rounded ${focusRingWhite} ${hintFoundation === idx ? 'ring-2 ring-ds-success animate-pulse' : ''} ${source ? 'cursor-pointer' : 'cursor-default'}`}
                     onClick={() => placeOn('foundation', idx)}
                     disabled={!isPlaying || loading || source === null}
@@ -390,8 +392,8 @@ function FourSeasonsPageContent() {
                   <div
                     key={`t-${idx.toString()}`}
                     data-tutorial={idx === 2 ? 'fs-cross' : undefined}
-                    data-board-cell={['1 / 2', '2 / 1', '2 / 2', '2 / 3', '3 / 2'][idx]}
-                    style={{ gridArea: ['1 / 2', '2 / 1', '2 / 2', '2 / 3', '3 / 2'][idx] }}
+                    data-board-cell={TABLEAU_CELLS[idx]}
+                    style={{ gridArea: TABLEAU_CELLS[idx] }}
                     className="flex flex-col items-center"
                   >
                     <div className="text-[11px] mb-0.5 text-ds-text-muted">
@@ -436,7 +438,7 @@ function FourSeasonsPageContent() {
               })}
             </div>
 
-            <div data-tutorial="fs-controls" className="mt-4 sm:col-span-3">
+            <div data-tutorial="fs-controls" className="mt-4 sm:col-span-3 sm:row-start-5">
               <GameMessageBox
                 message={state.message}
                 messageCode={state.messageCode}
