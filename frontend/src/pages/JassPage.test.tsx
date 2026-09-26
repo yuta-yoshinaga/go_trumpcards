@@ -143,7 +143,7 @@ describe('JassPage', () => {
   it('dispatches play with the selected card index during play', async () => {
     mockExec.mockResolvedValue(makeState({ phase: JassPhase.PLAY, trumpSuit: 1, currentPlayerIdx: 0 }));
     renderWithProviders(<JassPage />);
-    const cardBtn = await screen.findByRole('button', { name: '♠ J' });
+    const cardBtn = await screen.findByRole('button', { name: '♠ J (プレイ可能)' });
     fireEvent.click(cardBtn);
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: '出す' }));
@@ -160,12 +160,31 @@ describe('JassPage', () => {
     expect(cards[2]).toHaveAttribute('aria-disabled', 'true');
   });
 
+  it('announces legal and illegal card status only during the human play turn', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: JassPhase.PLAY, validPlayIndices: [1] }));
+    renderWithProviders(<JassPage />);
+
+    expect(await screen.findByRole('button', { name: '♠ J (プレイ不可)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♥ 10 (プレイ可能)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♣ 9 (プレイ不可)' })).toBeInTheDocument();
+  });
+
+  it('does not announce stale legality outside a human play turn', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: JassPhase.BID_TRUMP, validPlayIndices: [1] }));
+    renderWithProviders(<JassPage />);
+
+    expect(await screen.findByRole('button', { name: '♠ J' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♥ 10' })).toBeInTheDocument();
+  });
+
   it('does not restrict cards during a CPU play turn', async () => {
     mockExec.mockResolvedValue(makeState({ phase: JassPhase.PLAY, currentPlayerIdx: 1, validPlayIndices: [] }));
     renderWithProviders(<JassPage />);
 
     const cards = await screen.findAllByRole('button', { name: /♠ J|♥ 10|♣ 9/ });
     for (const card of cards) expect(card).not.toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByRole('button', { name: '♠ J' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /♠ J \(プレイ可能\)/ })).not.toBeInTheDocument();
   });
 
   it('renders the team score table during play', async () => {

@@ -57,6 +57,26 @@ describe('PlayerHandSection (desktop)', () => {
     expect(hand).toHaveClass('lg:flex-nowrap');
     expect(hand).toHaveClass('lg:overflow-x-auto');
   });
+
+  it('appends each card status to its accessible name when provided', () => {
+    render(
+      <PlayerHandSection
+        {...baseProps}
+        isMobile={false}
+        cardStatusFor={(idx) => (idx === 1 ? '使用可能' : undefined)}
+      />,
+    );
+    const buttons = screen.getAllByRole('button');
+    expect(buttons[1]).toHaveAccessibleName(/\(使用可能\)$/);
+    expect(buttons[0]).not.toHaveAccessibleName(/\(使用可能\)$/);
+  });
+
+  it('does not append a status to card accessible names when cardStatusFor is omitted', () => {
+    render(<PlayerHandSection {...baseProps} isMobile={false} />);
+    for (const button of screen.getAllByRole('button')) {
+      expect(button).not.toHaveAccessibleName(/\(使用可能\)$/);
+    }
+  });
 });
 
 describe('PlayerHandSection (mobile)', () => {
