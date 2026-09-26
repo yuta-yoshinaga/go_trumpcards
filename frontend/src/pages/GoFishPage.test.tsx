@@ -97,6 +97,13 @@ describe('GoFishPage', () => {
     await waitFor(() => expect(screen.getByText(/CPU 2/)).toBeInTheDocument());
   });
 
+  it('labels each opponent hand count as a hand count, not a deck count', async () => {
+    renderWithProviders(<GoFishPage />);
+    const opponent = await screen.findByRole('button', { name: /CPU 2/ });
+    expect(within(opponent).getByText('CPU 2: 手札: 4枚 | ブック: 0')).toBeInTheDocument();
+    expect(within(opponent).queryByText(/山札/)).not.toBeInTheDocument();
+  });
+
   it('renders deck remaining', async () => {
     renderWithProviders(<GoFishPage />);
     await waitFor(() => expect(screen.getByText(/30/)).toBeInTheDocument());
