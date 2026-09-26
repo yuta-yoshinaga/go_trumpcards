@@ -37,6 +37,9 @@ func TestBidWhistWebPresenter_Output(t *testing.T) {
 	if parsed.Config.TargetScore != domain.BidWhistDefaultTargetScore {
 		t.Errorf("targetScore = %d", parsed.Config.TargetScore)
 	}
+	if parsed.TargetScore != domain.BidWhistDefaultTargetScore {
+		t.Errorf("response targetScore = %d, want %d", parsed.TargetScore, domain.BidWhistDefaultTargetScore)
+	}
 	// Human player's cards are revealed; CPU cards are hidden.
 	if len(parsed.Players[0].Cards) == 0 {
 		t.Errorf("human cards should be revealed")

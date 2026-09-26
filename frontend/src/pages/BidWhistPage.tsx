@@ -231,7 +231,7 @@ function BidWhistPageContent() {
                     })}
               </div>
               <div>{t('teamScores', { t0: state.teamScores[0], t1: state.teamScores[1] })}</div>
-              <div>{t('targetScoreLine', { score: config.targetScore ?? 7 })}</div>
+              <div>{t('targetScoreLine', { score: state.targetScore })}</div>
             </div>
 
             {/* CPU players */}
