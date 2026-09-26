@@ -10,6 +10,8 @@
   "playersTitle": "Players",
   "hiddenHand": "{{count}} hidden",
   "yourHand": "Your hand",
+  "playableThisTurn": "Playable this turn",
+  "notPlayableThisTurn": "Not playable this turn",
   "trick": "Trick",
   "tricksWon": "tricks {{n}}",
   "handsWon": "{{n}} hands",
