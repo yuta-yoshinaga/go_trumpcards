@@ -17,7 +17,7 @@
     "took": "{{n}} tricks",
     "team": "T{{team}}",
     "currentTurn": "[Turn]",
-    "trumpDecider": "[Sets trump]",
+    "trumpDecider": "[deciding trump]",
     "chooser": "[set trump]",
     "you": "You",
     "cpu": "CPU{{idx}}"

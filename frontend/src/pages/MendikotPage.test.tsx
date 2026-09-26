@@ -72,7 +72,7 @@ describe('MendikotPage', () => {
     expect(currentSeat).toHaveAttribute('aria-current', 'step');
     expect(currentSeat.className).toContain('border-ds-accent');
     expect(currentSeat).toHaveTextContent('手番');
-    expect(currentSeat).toHaveTextContent('切り札決定者');
+    expect(currentSeat).toHaveTextContent('切り札を決める番');
     expect(screen.getByTestId('md-seat-0')).not.toHaveAttribute('aria-current', 'step');
   });
 
@@ -82,11 +82,11 @@ describe('MendikotPage', () => {
       .mockResolvedValueOnce(makeState({ currentPlayerIdx: 1, trumpSuit: 3, willSetTrump: false }));
     renderWithProviders(<MendikotPage />);
 
-    expect(await screen.findByTestId('md-seat-0')).toHaveTextContent('切り札決定者');
+    expect(await screen.findByTestId('md-seat-0')).toHaveTextContent('切り札を決める番');
     fireEvent.click((await screen.findAllByRole('button', { name: /を出す/ }))[0]);
     await waitFor(() => expect(screen.getByTestId('md-seat-1')).toHaveAttribute('aria-current', 'step'));
     expect(screen.getByTestId('md-seat-1')).toHaveTextContent('手番');
-    expect(screen.getByTestId('md-seat-1')).not.toHaveTextContent('切り札決定者');
+    expect(screen.getByTestId('md-seat-1')).not.toHaveTextContent('切り札を決める番');
     expect(screen.getByTestId('md-seat-0')).not.toHaveTextContent('手番');
   });
 
