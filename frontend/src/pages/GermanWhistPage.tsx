@@ -140,6 +140,11 @@ function GermanWhistPageContent() {
   const isHumanTurn = !isGameEnd && state.players[state.currentPlayerIdx]?.isHuman === true;
 
   const phaseName = isGameEnd ? t('phase.gameEnd') : isFirstHalf ? t('phase.firstHalf') : t('phase.secondHalf');
+  const firstTrickCard = state.currentTrick[0]?.card;
+  const leadSuitKey =
+    firstTrickCard && ['SPADE', 'CLOVER', 'HEART', 'DIAMOND'].includes(firstTrickCard.design)
+      ? `suits.${firstTrickCard.design}`
+      : undefined;
 
   // Following suit is compulsory in both halves, so the legal set is always
   // meaningful. As on the Schnapsen page this is an **additive ring**, not a
@@ -227,6 +232,8 @@ function GermanWhistPageContent() {
                 players={state.players}
                 cardWidth={cardWidth}
                 label={t('currentTrick')}
+                leadSuit={leadSuitKey ? t(leadSuitKey) : undefined}
+                leadSuitLabel={t('leadSuit')}
               />
             </div>
 

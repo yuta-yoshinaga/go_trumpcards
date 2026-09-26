@@ -30,6 +30,10 @@ export interface TrickDisplayProps {
   cardWidth: number;
   /** Localised label, e.g. `t('currentTrick')`. */
   label: string;
+  /** Localised name of the first card's suit, when the caller wants to show it. */
+  leadSuit?: string;
+  /** Localised label for {@link leadSuit}. */
+  leadSuitLabel?: string;
   /** Value for the `data-tutorial` attribute (e.g. `"ht-trick-display"`). */
   dataTutorial?: string;
   /** When set (e.g. the trick winner at TRICK_END), that player's card gets a gold ring + WIN badge. */
@@ -67,6 +71,8 @@ export function TrickDisplay({
   players,
   cardWidth,
   label,
+  leadSuit,
+  leadSuitLabel,
   dataTutorial,
   winnerIdx,
   lastTrick,
@@ -89,6 +95,11 @@ export function TrickDisplay({
   return (
     <div className="my-3 p-3 rounded bg-black/40" data-tutorial={dataTutorial}>
       <div className="text-ds-text-muted text-sm mb-1">{label}</div>
+      {leadSuit && leadSuitLabel && (
+        <div className="text-ds-text-primary text-sm mb-2" data-testid="trick-lead-suit">
+          {leadSuitLabel}: {leadSuit}
+        </div>
+      )}
       {/* wrap の既定は false。通常のトリックは席数までしか積まれないので
           1 行に収まり、これまでの見た目のまま。 */}
       <div className={wrap ? 'flex gap-2 flex-wrap' : 'flex gap-2'} data-testid="trick-display-cards">
