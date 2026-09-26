@@ -249,7 +249,15 @@ function CuarentaPageContent() {
         aria-atomic="true"
         data-testid="cuarenta-bonus-announce"
       >
-        {bonusCelebrationKey > 0 && humanAction?.isCaida ? t('caida') : ''}
+        {bonusCelebrationKey > 0 && humanBonus
+          ? [
+              humanAction.isCaida ? t('caida') : '',
+              humanAction.rondaBonus > 0 ? t('ronda', { bonus: humanAction.rondaBonus }) : '',
+              humanAction.isLimpia ? t('limpia') : '',
+            ]
+              .filter(Boolean)
+              .join('')
+          : ''}
       </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
