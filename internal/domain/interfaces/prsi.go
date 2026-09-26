@@ -29,6 +29,8 @@ type PrsiGame interface {
 	GetCurrentPlayerIdx() int
 	// GetDiscardTop 捨て札の一番上のカードを取得する
 	GetDiscardTop() *domain.Card
+	// GetDiscardPileCount 捨て札の枚数を取得する
+	GetDiscardPileCount() int
 	// GetDrawPileCount 山札の残り枚数を取得する
 	GetDrawPileCount() int
 	// GetPenaltyDrawCount 累積7ペナルティ枚数を取得する

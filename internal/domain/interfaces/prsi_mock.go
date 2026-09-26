@@ -28,6 +28,7 @@ func (m *MockPrsiGame) GetPhase() domain.PrsiPhase {
 func (m *MockPrsiGame) IsHumanTurn() bool           { return m.Called().Bool(0) }
 func (m *MockPrsiGame) GetCurrentPlayerIdx() int    { return m.Called().Int(0) }
 func (m *MockPrsiGame) GetDiscardTop() *domain.Card { return m.Called().Get(0).(*domain.Card) }
+func (m *MockPrsiGame) GetDiscardPileCount() int    { return m.Called().Int(0) }
 func (m *MockPrsiGame) GetDrawPileCount() int       { return m.Called().Int(0) }
 func (m *MockPrsiGame) GetPenaltyDrawCount() int    { return m.Called().Int(0) }
 func (m *MockPrsiGame) GetPendingSkips() int        { return m.Called().Int(0) }

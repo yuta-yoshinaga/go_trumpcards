@@ -15,6 +15,7 @@ func (p *PrsiWebPresenter) Output(g interfaces.PrsiGame, lastErr error) string {
 	resObj.Phase = int(g.GetPhase())
 	resObj.CurrentPlayerIdx = g.GetCurrentPlayerIdx()
 	resObj.DrawPileCount = g.GetDrawPileCount()
+	resObj.DiscardPileCount = g.GetDiscardPileCount()
 	resObj.PenaltyDrawCount = g.GetPenaltyDrawCount()
 	resObj.PendingSkips = g.GetPendingSkips()
 	resObj.GameEndFlag = g.GetGameEndFlag()

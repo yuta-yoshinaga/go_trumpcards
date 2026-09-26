@@ -13,6 +13,8 @@
   "drawPile": "Draw pile: {{count}} cards",
   "stock": "Stock",
   "stockAria": "Draw a card from the stock ({{count}} left)",
+  "stockEmpty": "Cannot draw because the stock is empty",
+  "stockEmptyAria": "Draw a card from the stock ({{count}} left). Cannot draw because the stock is empty",
   "discardTop": "Discard",
   "penalty": "Penalty: {{count}} — stack a 7 or draw",
   "cards": "{{count}} cards",

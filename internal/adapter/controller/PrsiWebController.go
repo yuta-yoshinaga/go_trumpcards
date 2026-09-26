@@ -35,6 +35,7 @@ type PrsiWebOutput struct {
 	CurrentPlayerIdx int                    `json:"currentPlayerIdx"`
 	DiscardTop       *WebOutputCard         `json:"discardTop"`
 	DrawPileCount    int                    `json:"drawPileCount"`
+	DiscardPileCount int                    `json:"discardPileCount"`
 	PenaltyDrawCount int                    `json:"penaltyDrawCount"`
 	PendingSkips     int                    `json:"pendingSkips"`
 	GameEndFlag      bool                   `json:"gameEndFlag"`
