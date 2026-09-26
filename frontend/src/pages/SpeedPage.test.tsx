@@ -239,6 +239,53 @@ describe('SpeedPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0, 0));
   });
 
+  it('announces the updated hand count after a successful play', async () => {
+    renderWithProviders(<SpeedPage />);
+    await screen.findByText('手札');
+    mockExec.mockResolvedValueOnce({
+      ...playState,
+      players: [{ ...playState.players[0], cardCount: 3 }, playState.players[1]],
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: '♠ 4 (今すぐ出せる)' }));
+
+    expect(await screen.findByTestId('speed-play-count-announcement')).toHaveTextContent('手札は3枚です');
+  });
+
+  it('does not announce a selection or a rejected play', async () => {
+    renderWithProviders(<SpeedPage />);
+    await screen.findByText('手札');
+    const announcement = screen.getByTestId('speed-play-count-announcement');
+    expect(announcement).toBeEmptyDOMElement();
+
+    fireEvent.click(screen.getByRole('button', { name: '♦ 2' }));
+    expect(announcement).toBeEmptyDOMElement();
+
+    mockExec.mockResolvedValueOnce({ ...playState, message: 'invalid play' });
+    fireEvent.click(screen.getByRole('button', { name: /台札1:/ }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 3, 0));
+    expect(announcement).toBeEmptyDOMElement();
+  });
+
+  it('does not repeat an announcement for consecutive state updates with the same hand count', async () => {
+    renderWithProviders(<SpeedPage />);
+    await screen.findByText('手札');
+    mockExec.mockResolvedValueOnce({
+      ...playState,
+      players: [{ ...playState.players[0], cardCount: 3 }, playState.players[1]],
+    });
+    fireEvent.click(screen.getByRole('button', { name: '♠ 4 (今すぐ出せる)' }));
+    expect(await screen.findByTestId('speed-play-count-announcement')).toHaveTextContent('手札は3枚です');
+
+    mockExec.mockResolvedValueOnce({
+      ...playState,
+      players: [{ ...playState.players[0], cardCount: 3 }, playState.players[1]],
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+    expect(screen.getByTestId('speed-play-count-announcement')).toHaveTextContent('手札は3枚です');
+  });
+
   it('plays a card to a center pile when a card is selected', async () => {
     renderWithProviders(<SpeedPage />);
     await waitFor(() => expect(screen.getByText('手札')).toBeInTheDocument());
