@@ -28,6 +28,11 @@
   "playButton": "Play",
   "captureButton": "Capture",
   "captureButtonCount": "Capture {{count}}",
+  "captureReason": {
+    "sameRank": "Same-rank capture",
+    "sum": "Sum capture",
+    "jackSweep": "Jack sweep"
+  },
   "trailButton": "Trail",
   "newGame": "New Game",
   "result": {

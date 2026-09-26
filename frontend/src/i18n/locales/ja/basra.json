@@ -28,6 +28,11 @@
   "playButton": "出す",
   "captureButton": "捕獲",
   "captureButtonCount": "{{count}}枚捕獲",
+  "captureReason": {
+    "sameRank": "同ランク捕獲",
+    "sum": "合計値捕獲",
+    "jackSweep": "ジャックで一掃"
+  },
   "trailButton": "トレイル",
   "newGame": "新しいゲーム",
   "result": {
