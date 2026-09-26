@@ -95,6 +95,19 @@ func (bp *BaccaratCuiPresenter) Output(b interfaces.BaccaratGame, lastErr error)
 	}
 
 	if b.GetGameEndFlag() {
+		// Show the exact wagers that can be repeated, including when the Web UI hides
+		// the rebet button because the remaining chips are insufficient.
+		mainBet := i18n.Tf("baccarat.rebetMain",
+			"type", bp.betTypeStr(b.GetBetType()),
+			"amount", strconv.Itoa(b.GetBetAmount()))
+		parts := []string{mainBet}
+		if playerPairBet := b.GetPlayerPairBet(); playerPairBet > 0 {
+			parts = append(parts, i18n.Tf("baccarat.rebetPlayerPair", "amount", strconv.Itoa(playerPairBet)))
+		}
+		if bankerPairBet := b.GetBankerPairBet(); bankerPairBet > 0 {
+			parts = append(parts, i18n.Tf("baccarat.rebetBankerPair", "amount", strconv.Itoa(bankerPairBet)))
+		}
+		sb.WriteString(i18n.Tf("baccarat.rebetBreakdown", "bets", strings.Join(parts, i18n.T("baccarat.listSeparator"))) + "\n")
 		sb.WriteString(i18n.Tf("baccarat.betLine",
 			"amount", strconv.Itoa(b.GetBetAmount()),
 			"type", bp.betTypeStr(b.GetBetType()),

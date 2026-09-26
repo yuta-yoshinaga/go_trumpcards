@@ -594,6 +594,16 @@ function BaccaratPageContent() {
             )}
             {isEndPhase && (
               <div className="flex justify-center gap-2 pb-2">
+                {lastBet && (
+                  <div className="text-ds-text-muted text-sm text-center" data-testid="bac-rebet-breakdown">
+                    <div>{t('rebetBreakdown.title')}</div>
+                    <div>
+                      {t('rebetBreakdown.main', { type: t(BET_TYPE_LABELS[lastBet.type]), amount: lastBet.amount })}
+                    </div>
+                    {lastBet.pp > 0 && <div>{t('rebetBreakdown.playerPair', { amount: lastBet.pp })}</div>}
+                    {lastBet.bp > 0 && <div>{t('rebetBreakdown.bankerPair', { amount: lastBet.bp })}</div>}
+                  </div>
+                )}
                 {canRebet && (
                   <button
                     type="button"
