@@ -156,10 +156,12 @@ func (p *GanjifaCuiPresenter) writeRoundEndResult(b *strings.Builder, g interfac
 		if player == nil {
 			continue
 		}
+		tricks := player.GetTrickCount()
+		// settleRound adds the trick count directly to the round score.
 		entries = append(entries, i18n.Tf("ganjifa.roundEndTrickEntry",
 			"name", cuiPlayerName(player, i),
-			"tricks", strconv.Itoa(player.GetTrickCount()),
-			"roundScore", strconv.Itoa(player.GetTrickCount()),
+			"tricks", strconv.Itoa(tricks),
+			"roundScore", strconv.Itoa(tricks),
 			"cumulativeScore", strconv.Itoa(scores[i])))
 	}
 	b.WriteString(i18n.Tf("ganjifa.roundEndTricks", "list", strings.Join(entries, ", ")) + "\n")
