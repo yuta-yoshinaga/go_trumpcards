@@ -4,6 +4,7 @@
     "chips": "Chips: {{chips}}",
     "bet": "Bet: {{bet}} coin(s)",
     "payout": "Payout: {{payout}}",
+    "netChange": "Net change: {{net}}",
     "betAmount": "Coins",
     "autoHold": "Auto-hold",
     "betMax": "Bet Max"

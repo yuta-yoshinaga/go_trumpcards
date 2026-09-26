@@ -178,13 +178,21 @@ describe('VideoPokerGameContent', () => {
     mockExec.mockResolvedValue(resultPhaseWin);
     renderContent();
     await waitFor(() => expect(screen.getByText(/配当.*5/)).toBeInTheDocument());
+    expect(screen.getByTestId('vp-net-change')).toHaveTextContent('+4');
     expect(screen.getByRole('button', { name: /次のゲーム/ })).toBeInTheDocument();
   });
 
   it('renders result phase on lose', async () => {
     mockExec.mockResolvedValue(resultPhaseLose);
     renderContent();
+    await waitFor(() => expect(screen.getByTestId('vp-net-change')).toHaveTextContent('-1'));
     await waitFor(() => expect(screen.getByRole('button', { name: /次のゲーム/ })).toBeInTheDocument());
+  });
+
+  it('marks a break-even result as zero', async () => {
+    mockExec.mockResolvedValue({ ...resultPhaseWin, betAmount: 5, payout: 5 });
+    renderContent();
+    await waitFor(() => expect(screen.getByTestId('vp-net-change')).toHaveTextContent('0'));
   });
 
   it('auto-hold pre-selects the hint-recommended cards on entering draw phase', async () => {

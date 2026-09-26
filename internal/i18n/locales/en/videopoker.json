@@ -16,6 +16,7 @@
   "winLine": "{{handName}}! You win!",
   "noWin": "No winning hand.",
   "payoutLine": "payout: {{payout}}",
+  "netChangeLine": "net change: {{net}}",
   "hintNone": "No hint available.",
   "hintHold": "Hold recommendation: {{cards}} — {{reason}} (h <idx...> to hold)",
   "hintHoldNone": "Nothing to hold; consider redrawing all five.",
