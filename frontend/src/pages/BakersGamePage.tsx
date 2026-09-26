@@ -200,6 +200,25 @@ function BakersGamePageContent() {
   // (#5975)。Baker's Game は FreeCell と同じレスポンスを使う。
   const supermoveLimit = state.maxMovableCards;
   const emptyColLimit = state.maxMovableCardsToEmptyColumn;
+  const emptyFreeCells = state.freeCells.filter((cell) => cell === null).length;
+  const emptyTableauColumns = state.tableau.filter((column) => column.length === 0).length;
+  const filledFreeCells = state.freeCells.length - emptyFreeCells;
+  const additionalColumnLimit = state.tableau.filter((column) => column.length > 0).length - 1;
+
+  const getAdditionalSlots = (stackSize: number) => {
+    // Match the supermove capacity model and find the smallest combination of
+    // newly freed cells and columns that can carry this stack.
+    for (let total = 1; total <= filledFreeCells + additionalColumnLimit; total += 1) {
+      for (let columns = 0; columns <= total; columns += 1) {
+        const cells = total - columns;
+        if (cells > filledFreeCells || columns > additionalColumnLimit) continue;
+        if ((emptyFreeCells + cells + 1) * 2 ** (emptyTableauColumns + columns) >= stackSize) {
+          return { cells, columns };
+        }
+      }
+    }
+    return null;
+  };
 
   // 選択中の束の枚数。空き列が受け取れるかはこれと emptyColLimit で決まる。
   const selectedStackSize =
@@ -438,6 +457,20 @@ function BakersGamePageContent() {
                               };
                               const stackSize = col.length - cardIdx;
                               const exceedsSupermove = stackSize > supermoveLimit;
+                              const additionalSlots = exceedsSupermove ? getAdditionalSlots(stackSize) : null;
+                              const additionalSlotsKey = additionalSlots
+                                ? additionalSlots.cells === 0
+                                  ? 'additionalSlotsColumnsOnly'
+                                  : additionalSlots.columns === 0
+                                    ? 'additionalSlotsCellsOnly'
+                                    : 'additionalSlotsTooltip'
+                                : null;
+                              const limitTooltip = exceedsSupermove
+                                ? additionalSlots
+                                  ? t('supermoveLimitTooltip', { limit: supermoveLimit }) +
+                                    ` — ${t(additionalSlotsKey as string, additionalSlots)}`
+                                  : t('supermoveLimitTooltip', { limit: supermoveLimit })
+                                : undefined;
                               const isInHoveredBlock =
                                 hoveredStack !== null &&
                                 hoveredStack.col === colIdx &&
@@ -475,9 +508,7 @@ function BakersGamePageContent() {
                                       // ホバーできる人にしか届かない。draggable も落として
                                       // いるのに、動かせない理由が読み上げに出ない (#5820)。
                                       aria-label={
-                                        exceedsSupermove
-                                          ? `${cardAlt(card)} — ${t('supermoveLimitTooltip', { limit: supermoveLimit })}`
-                                          : cardAlt(card)
+                                        exceedsSupermove ? `${cardAlt(card)} — ${limitTooltip}` : cardAlt(card)
                                       }
                                       aria-pressed={isSourceSelected('tableau', colIdx, undefined, cardIdx)}
                                       draggable={isPlaying && !loading && !exceedsSupermove}
@@ -487,11 +518,7 @@ function BakersGamePageContent() {
                                       onMouseLeave={() => setHoveredStack(null)}
                                       onFocus={() => setHoveredStack({ col: colIdx, cardIdx })}
                                       onBlur={() => setHoveredStack(null)}
-                                      title={
-                                        exceedsSupermove
-                                          ? t('supermoveLimitTooltip', { limit: supermoveLimit })
-                                          : undefined
-                                      }
+                                      title={limitTooltip}
                                       data-supermove-blocked={exceedsSupermove ? 'true' : undefined}
                                       data-supermove-block={isInHoveredBlock ? 'true' : undefined}
                                       className={[
