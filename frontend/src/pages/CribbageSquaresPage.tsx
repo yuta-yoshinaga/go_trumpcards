@@ -100,7 +100,36 @@ function CribbageSquaresPageContent() {
     cancelGiveUp,
   } = useGamePageSetup('cribbagesquares');
   const { cardWidth } = useCardDimensions();
-  const { state, loading, error, exec: execApi, retry } = useGameApi(cribbagesquaresApi.exec);
+  const [placementAnnouncement, setPlacementAnnouncement] = useState('');
+  const {
+    state,
+    loading,
+    error,
+    exec: execApi,
+    retry,
+  } = useGameApi(cribbagesquaresApi.exec, {
+    onSuccess: (result, [command, row, col]) => {
+      if (command !== 'place' || typeof row !== 'number' || typeof col !== 'number') return;
+      if (!result.board[row]?.[col]?.card) return;
+      const rowScore =
+        result.phase === CribbageSquaresPhase.COMPLETE
+          ? result.rowScores[row]
+          : (result.rowPartialDetails[row]?.total ?? 0);
+      const colScore =
+        result.phase === CribbageSquaresPhase.COMPLETE
+          ? result.colScores[col]
+          : (result.colPartialDetails[col]?.total ?? 0);
+      setPlacementAnnouncement(
+        t('placementAnnouncement', {
+          rowNo: row + 1,
+          rowScore,
+          colNo: col + 1,
+          colScore,
+          total: rowScore + colScore,
+        }),
+      );
+    },
+  });
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -146,7 +175,7 @@ function CribbageSquaresPageContent() {
   const breakdownLabel = useCallback((key: string, n: number) => t(`part.${key}`, { n }), [t]);
 
   const handlePlace = (row: number, col: number) => {
-    execApi('place', row, col);
+    void execApi('place', row, col);
   };
   const handleUndo = () => execApi('undo');
   const handleHint = () => execApi('hint');
@@ -189,6 +218,9 @@ function CribbageSquaresPageContent() {
         </>
       }
     >
+      <div className="sr-only" role="status" aria-live="polite" data-testid="cs-placement-announcement">
+        {placementAnnouncement}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
