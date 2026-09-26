@@ -103,6 +103,21 @@ describe('GoofspielPage', () => {
     expect(screen.getByTestId('gs-prize')).toHaveTextContent('13');
   });
 
+  it('separates the current prize points from carried points and updates when the carry clears', async () => {
+    mockExec.mockResolvedValueOnce(
+      makeState({ phase: 1, carriedPrizes: [card('DIAMOND', 4), card('DIAMOND', 5)], prizeValue: 18 }),
+    );
+    mockExec.mockResolvedValueOnce(makeState({ carriedPrizes: [], prizeValue: 9 }));
+    renderWithProviders(<GoofspielPage />);
+
+    expect(await screen.findByTestId('gs-current-prize-value')).toHaveTextContent('9');
+    expect(screen.getByTestId('gs-carried-value')).toHaveTextContent('9');
+    expect(screen.getByTestId('gs-prize-total')).toHaveTextContent('18');
+    fireEvent.click(screen.getByTestId('gs-next-btn'));
+    expect(await screen.findByTestId('gs-current-prize-value')).toHaveTextContent('9');
+    expect(screen.queryByTestId('gs-carried-value')).not.toBeInTheDocument();
+  });
+
   // **積まれている札の強さが枚数からは読めない。**現在の賞は画像で出しているのに
   // 持ち越しだけ中身が見えないのは非対称だった。
   it('shows the carried prizes as cards, not only as a count', async () => {
