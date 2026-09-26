@@ -32,6 +32,7 @@
   },
   "yourTeam": "Your Team",
   "teamScore": "{{team}}: {{score}} pts",
+  "winner": "Winner",
   "callerBadge": "Caller",
   "callerUndecided": "Caller: undecided",
   "callerLine": "Caller: {{name}} ({{team}})",
