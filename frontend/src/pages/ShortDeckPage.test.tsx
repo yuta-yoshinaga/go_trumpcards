@@ -1249,6 +1249,27 @@ describe('ShortDeckPage', () => {
     expect(document.querySelectorAll('[data-best5-board]').length).toBe(3);
   });
 
+  it.each([
+    ['outside an active hand', { ...flopState, phase: 0 }],
+    ['for a folded human', { ...flopState, players: [humanPlayer({ folded: true }), ...flopState.players.slice(1)] }],
+    [
+      'when the human does not have exactly two cards',
+      {
+        ...flopState,
+        players: [humanPlayer({ cards: [{ design: 'SPADE', value: 1 }] }), ...flopState.players.slice(1)],
+      },
+    ],
+    ['with fewer than three community cards', { ...flopState, communityCards: flopState.communityCards.slice(0, 2) }],
+  ])('does not calculate or highlight a current hand %s', async (_caseName, state) => {
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<ShortDeckPage />);
+
+    await screen.findByTestId('shortdeck-rank-watermark');
+    expect(screen.queryByTestId('shortdeck-current-hand')).not.toBeInTheDocument();
+    expect(document.querySelectorAll('[data-best5-board]').length).toBe(0);
+    expect(document.querySelectorAll('[data-best5-hole]').length).toBe(0);
+  });
+
   it('hides the current hand chip at showdown while keeping the showdown hand name', async () => {
     mockExec.mockResolvedValue(showdownState);
     renderWithProviders(<ShortDeckPage />);

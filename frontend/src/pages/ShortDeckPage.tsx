@@ -200,10 +200,12 @@ function ShortDeckPageContent() {
     const combined = [...hole, ...board.slice(0, 5)];
     const holeSet = new Set<number>();
     const boardSet = new Set<number>();
-    const best = shortDeckBestFive(combined) ?? [];
-    if (!best.length) return { ...empty, rank: null as number | null };
+    // The length guard guarantees five candidates; keep the evaluator's nullable
+    // return explicit because its public contract also supports shorter inputs.
+    const best = shortDeckBestFive(combined);
+    if (best === null) return { ...empty, rank: null as number | null };
     const bestCards = best.flatMap((i) => (combined[i] ? [combined[i]] : []));
-    const rank = scoreFiveShortDeck(bestCards)[0] ?? null;
+    const rank = scoreFiveShortDeck(bestCards)[0];
     for (const i of best) {
       if (i < hole.length) holeSet.add(i);
       else boardSet.add(i - hole.length);

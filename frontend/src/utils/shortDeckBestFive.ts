@@ -52,7 +52,7 @@ export function shortDeckStraightHigh(descendingUnique: readonly number[]): numb
  * @param hand - Exactly five cards.
  * @returns The comparable score tuple.
  */
-export function scoreFiveShortDeck(hand: readonly Card[]): number[] {
+export function scoreFiveShortDeck(hand: readonly Card[]): [number, ...number[]] {
   const ranks = hand.map(rankValue).sort((x, y) => y - x);
   const suits = hand.map((c) => c.design);
   const flush = suits.every((s) => s === suits[0]);
