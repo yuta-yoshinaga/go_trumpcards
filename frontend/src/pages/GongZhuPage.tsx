@@ -312,6 +312,12 @@ function GongZhuPageContent() {
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
                   dataTutorial="gz-trick-display"
+                  cardAriaLabelFor={(player, card) =>
+                    t('trickCardLabel', {
+                      player: playerName(player.id, player.isHuman),
+                      card: cardAlt(card),
+                    })
+                  }
                 />
               </div>
 
