@@ -164,6 +164,20 @@ function BasraPageContent() {
   const selectedHandCard = handIndex !== null && isHumanTurn ? (human?.cards[handIndex] ?? null) : null;
   const previewCaptures = selectedHandCard ? basraFindCaptures(selectedHandCard, state.tableCards) : [];
   const captureCandidates = new Set(previewCaptures);
+  const captureReasons =
+    selectedHandCard && previewCaptures.length > 0
+      ? selectedHandCard.value === 11
+        ? [t('captureReason.jackSweep')]
+        : [
+            ...(previewCaptures.some((i) => state.tableCards[i].value === selectedHandCard.value)
+              ? [t('captureReason.sameRank')]
+              : []),
+            ...(selectedHandCard.value < 11 &&
+            previewCaptures.some((i) => state.tableCards[i].value !== selectedHandCard.value)
+              ? [t('captureReason.sum')]
+              : []),
+          ]
+      : [];
   const captureAction = resolveBasraAction(selectedHandCard, previewCaptures, tableIndices);
   const canPlay = isHumanTurn && handIndex !== null;
 
@@ -296,6 +310,12 @@ function BasraPageContent() {
                 )}
               </div>
             </div>
+
+            {captureReasons.length > 0 && (
+              <div className="text-center text-sm text-ds-text-muted" data-testid="basra-capture-reasons">
+                {captureReasons.join(' · ')}
+              </div>
+            )}
 
             {/* Human hand */}
             <div className="text-center" data-tutorial="basra-player-hand">

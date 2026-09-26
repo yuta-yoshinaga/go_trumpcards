@@ -122,6 +122,35 @@ describe('BasraPage', () => {
     expect(screen.getByRole('button', { name: '1枚捕獲' })).toBeInTheDocument();
   });
 
+  it('explains every capture rule represented in the selected card preview', async () => {
+    mockExec.mockResolvedValue(
+      makeBasraState({
+        tableCards: [
+          { design: 'SPADE', value: 5 },
+          { design: 'HEART', value: 2 },
+          { design: 'DIAMOND', value: 3 },
+        ],
+        players: playPhaseState.players.map((player) =>
+          player.isHuman ? { ...player, cards: [...player.cards.slice(0, 3), { design: 'CLOVER', value: 4 }] } : player,
+        ),
+      }),
+    );
+    renderWithProviders(<BasraPage />);
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+    expect(screen.getByTestId('basra-capture-reasons')).toHaveTextContent('同ランク捕獲');
+    expect(screen.getByTestId('basra-capture-reasons')).toHaveTextContent('合計値捕獲');
+
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+    expect(screen.queryByTestId('basra-capture-reasons')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId('hand-card-3'));
+    expect(screen.getByRole('button', { name: 'トレイル' })).toBeInTheDocument();
+    expect(screen.queryByTestId('basra-capture-reasons')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId('hand-card-1'));
+    expect(screen.getByTestId('basra-capture-reasons')).toHaveTextContent('ジャックで一掃');
+  });
+
   it('previews a Jack as a full board sweep and labels the button with the swept count', async () => {
     renderWithProviders(<BasraPage />);
     // Hand card 1 (♠J) sweeps every non-Jack table card ([♠5, ♥9]) — a 2-card sweep,
