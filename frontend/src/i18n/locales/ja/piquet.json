@@ -9,8 +9,8 @@
   "declTied": "引き分け",
   "declarationHeader": "宣言フェーズ",
   "declarationsList": "宣言結果",
-  "exchangeElder": "Elder 交換 ({{count}}枚)",
   "exchangeCounts": "現在の手札: {{hand}}枚 / 選択中: {{selected}}枚 / 交換後: {{remaining}}枚",
+  "exchangeElder": "Elder 交換 ({{count}}枚)",
   "exchangeHeader": "交換フェーズ",
   "exchangeYounger": "Younger 交換 ({{count}}枚)",
   "frontendHint": {

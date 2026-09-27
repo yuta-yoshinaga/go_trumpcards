@@ -165,11 +165,11 @@ describe('PiquetPage', () => {
     }
     mockExec.mockResolvedValue(state);
     renderWithProviders(<PiquetPage />);
-    await waitFor(() =>
-      expect(screen.getByTestId('piquet-exchange-counts')).toHaveTextContent(
-        '現在の手札: 12枚 / 選択中: 0枚 / 交換後: 12枚',
-      ),
-    );
+    await waitFor(() => {
+      const region = screen.getByTestId('piquet-exchange-counts');
+      expect(region).toHaveAttribute('aria-live', 'polite');
+      expect(region).toHaveTextContent('現在の手札: 12枚 / 選択中: 0枚 / 交換後: 12枚');
+    });
     fireEvent.click(await screen.findByAltText('♠ K'));
     expect(screen.getByTestId('piquet-exchange-counts')).toHaveTextContent(
       '現在の手札: 12枚 / 選択中: 1枚 / 交換後: 12枚',
