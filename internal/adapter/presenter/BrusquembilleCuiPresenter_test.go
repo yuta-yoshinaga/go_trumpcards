@@ -87,8 +87,10 @@ func TestBrusquembilleCuiPresenter_Output(t *testing.T) {
 		m, _ := setupBrusquembilleCuiMockWithPlayers(domain.NewCard(domain.CardDesignSpade, 13, false))
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 		m.On("GetPhase").Return(domain.BrusquembillePhaseTrickEnd)
+		m.On("GetLeadPlayerIdx").Return(1)
 		out := p.Output(m, nil)
 		assert.Contains(t, out, "トリック終了")
+		assert.Contains(t, out, "CPU 1がトリックを獲得しました")
 	})
 
 	t.Run("game end p0 banner", func(t *testing.T) {
@@ -277,4 +279,20 @@ func TestBrusquembilleCuiPresenter_ReportsEverySeat(t *testing.T) {
 		"全席の得点が出る (席 0/1 だけだと 30 と 60 が消える):\n%s", out)
 	// 勝者は席 3。「CPU の勝利」ではどの CPU か分からない。
 	assert.Contains(t, out, "CPU 3 の勝利", "勝った席を名指しする:\n%s", out)
+}
+
+func TestBrusquembilleCuiPresenter_ShowsTrickWinner(t *testing.T) {
+	m, _ := setupBrusquembilleCuiMockWithPlayers(nil)
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+	m.On("GetPhase").Return(domain.BrusquembillePhaseTrickEnd)
+	m.On("GetLeadPlayerIdx").Return(1)
+	m.On("GetCurrentTrick").Return([]*domain.TrickCard{
+		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignSpade, 7, false)},
+		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 14, false)},
+	})
+
+	out := new(presenter.BrusquembilleCuiPresenter).Output(m, nil)
+
+	assert.Contains(t, out, "がトリックを獲得しました")
+	assert.Contains(t, out, "CPU 1")
 }

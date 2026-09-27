@@ -150,6 +150,29 @@ describe('BrusquembillePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('next'));
   });
 
+  it('highlights the winning seat in the trick-end display', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: BrusquembillePhase.TRICK_END,
+        leadPlayerIdx: 3,
+        config: { playerCnt: 4 },
+        players: [
+          { id: 0, isHuman: true, cardCount: 3, cards: [], points: 0, trickCount: 0 },
+          { id: 1, isHuman: false, cardCount: 3, cards: [], points: 0, trickCount: 0 },
+          { id: 2, isHuman: false, cardCount: 3, cards: [], points: 0, trickCount: 0 },
+          { id: 3, isHuman: false, cardCount: 3, cards: [], points: 0, trickCount: 1 },
+        ],
+        currentTrick: [0, 1, 2, 3].map((playerIdx) => ({ playerIdx, card: card('SPADE', playerIdx + 7) })),
+      }),
+    );
+    renderWithProviders(<BrusquembillePage />);
+    await waitFor(() => expect(screen.getByTestId('trick-display-cards')).toBeInTheDocument());
+
+    const winningCard = screen.getByTestId('trick-display-cards').children[3];
+    expect(winningCard).toHaveAttribute('data-trick-winner', 'true');
+    expect(winningCard).toHaveTextContent('獲得');
+  });
+
   it('shows youWin banner when winnerIdx is 0', async () => {
     mockExec.mockResolvedValue(
       makeState({
