@@ -245,7 +245,7 @@ function NainJaunePageContent() {
                       data-hint-action="play"
                       data-unplayable={restricting && !canPlay ? 'true' : undefined}
                       aria-pressed={handIdx === i}
-                      disabled={restricting && !canPlay}
+                      disabled={!isHumanTurn || (restricting && !canPlay)}
                       aria-disabled={!isHumanTurn || !canPlay}
                       onClick={() => isHumanTurn && canPlay && setHandIdx(handIdx === i ? null : i)}
                       className={[
