@@ -20,6 +20,9 @@ func setupKlaverjasWebMock() *interfaces.MockKlaverjasGame {
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
 	m.On("GetCurrentTrick").Return(([]*domain.TrickCard)(nil))
+	m.On("GetLastTrickTeam").Return(-1)
+	m.On("GetLastTrickPoints").Return(0)
+	m.On("GetLastTrickBonus").Return(0)
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.KlaverjasPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -193,6 +196,21 @@ func TestKlaverjasWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, [domain.KlaverjasTeamCnt]int{50, 20}, resObj.RoundRoem)
 		assert.Contains(t, result, `"roundPlayerRoem":[50,20,0,0]`)
 	})
+}
+
+func TestKlaverjasWebPresenter_OutputCarriesLastTrickResult(t *testing.T) {
+	m, _ := setupKlaverjasWebMockWithPlayers()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLastTrickTeam")
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLastTrickPoints")
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLastTrickBonus")
+	m.On("GetLastTrickTeam").Return(1)
+	m.On("GetLastTrickPoints").Return(20)
+	m.On("GetLastTrickBonus").Return(10)
+	var out controller.KlaverjasWebOutput
+	assert.NoError(t, json.Unmarshal([]byte((&presenter.KlaverjasWebPresenter{}).Output(m, nil)), &out))
+	assert.Equal(t, 1, out.LastTrickTeam)
+	assert.Equal(t, 20, out.LastTrickPoints)
+	assert.Equal(t, 10, out.LastTrickBonus)
 }
 
 func TestKlaverjasWebPresenter_HintOutput(t *testing.T) {

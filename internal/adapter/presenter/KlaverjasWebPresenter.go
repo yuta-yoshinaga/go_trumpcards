@@ -57,6 +57,9 @@ func (p *KlaverjasWebPresenter) buildBase(g interfaces.KlaverjasGame) *controlle
 	}
 
 	resObj.CurrentTrick = trickCardsToOutput(g.GetCurrentTrick())
+	resObj.LastTrickTeam = g.GetLastTrickTeam()
+	resObj.LastTrickPoints = g.GetLastTrickPoints()
+	resObj.LastTrickBonus = g.GetLastTrickBonus()
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
 }

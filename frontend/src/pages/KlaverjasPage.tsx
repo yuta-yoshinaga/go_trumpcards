@@ -193,6 +193,7 @@ function KlaverjasPageContent() {
   const isPlayPhase = state.phase === KlaverjasPhase.PLAY;
   const isTrickEnd = state.phase === KlaverjasPhase.TRICK_END;
   const isRoundEnd = state.phase === KlaverjasPhase.ROUND_END;
+  const showLastTrickResult = isTrickEnd || isRoundEnd;
   const isGameEnd = state.phase === KlaverjasPhase.GAME_END || state.gameEndFlag;
 
   const canPlay = isPlayPhase && isHumanTurn;
@@ -270,15 +271,19 @@ function KlaverjasPageContent() {
                   label={t('currentTrick')}
                   dataTutorial="klaverjas-trick-display"
                 />
-                {/* At TrickEnd leadPlayerIdx is the trick winner, so their team is shown before Next Trick. */}
-                {isTrickEnd && (
+                {/* Show the resolved trick result until the next trick starts. */}
+                {showLastTrickResult && state.lastTrickTeam >= 0 && (
                   <div
                     className="my-2 p-2 rounded bg-ds-accent/15 text-center text-sm font-semibold text-ds-accent"
                     role="status"
                     aria-live="polite"
                     data-testid="klaverjas-trick-winner"
                   >
-                    {t('trickWinner', { team: state.leadPlayerIdx % 2 === 0 ? t('team.a') : t('team.b') })}
+                    {t(state.lastTrickBonus > 0 ? 'trickResultWithBonus' : 'trickResult', {
+                      team: state.lastTrickTeam === 0 ? t('team.a') : t('team.b'),
+                      points: state.lastTrickPoints,
+                      bonus: state.lastTrickBonus,
+                    })}
                   </div>
                 )}
               </div>

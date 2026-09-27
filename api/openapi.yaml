@@ -67793,6 +67793,15 @@ components:
           description: "Current trump suit: 1=♠, 2=♣, 3=♥, 4=♦"
           minimum: 1
           maximum: 4
+        lastTrickTeam:
+          type: integer
+          description: Team that won the most recently resolved trick, or -1 if none is active
+        lastTrickPoints:
+          type: integer
+          description: Card points in the most recently resolved trick, excluding the final trick bonus
+        lastTrickBonus:
+          type: integer
+          description: Bonus points awarded for the most recently resolved trick
         currentTrick:
           type: array
           items:

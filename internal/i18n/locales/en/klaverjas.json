@@ -10,6 +10,8 @@
   "promptPlay": "Turn: {{name}}",
   "promptPlayHelp": "play <idx> ... play a card (must follow suit / overtrump)",
   "promptTrickEnd": "Trick complete",
+  "trickResult": "Team {{team}} won {{points}} points this trick",
+  "trickResultWithBonus": "Team {{team}} won {{points}} points this trick (final trick +{{bonus}})",
   "promptTrickEndHelp": "n / next ... go to the next trick",
   "promptRoundEnd": "Round complete (Team A: {{ptsA}} card pts, Team B: {{ptsB}} card pts)",
   "promptRoundEndHelp": "nr / nextround ... go to the next round",
