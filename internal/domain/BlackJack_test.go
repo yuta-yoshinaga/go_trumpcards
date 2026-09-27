@@ -292,6 +292,49 @@ func TestBlackJack_DoubleDown_WrongPhase(t *testing.T) {
 	assert.ErrorIs(t, err, domain.ErrWrongPhase)
 }
 
+func TestBlackJack_DoubleDownBlockReason(t *testing.T) {
+	tests := []struct {
+		name    string
+		setup   func(*domain.BlackJack)
+		want    domain.BJDoubleDownBlock
+		wantErr error
+	}{
+		{"wrong phase", func(*domain.BlackJack) {}, domain.BJDoubleDownBlockWrongPhase, domain.ErrWrongPhase},
+		{"not two cards", func(b *domain.BlackJack) { b.SetPhase(domain.BJPhaseAction) }, domain.BJDoubleDownBlockNotTwoCards, domain.ErrInvalidPlay},
+		{"split without DAS", func(b *domain.BlackJack) {
+			h := b.GetPlayerHands()[0]
+			h.AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+			h.AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+			h.SetFromSplit(true)
+			_ = b.SetConfig(domain.BlackJackConfig{DoubleAfterSplit: false})
+			b.SetPhase(domain.BJPhaseAction)
+		}, domain.BJDoubleDownBlockSplitNoDAS, domain.ErrInvalidPlay},
+		{"finished", func(b *domain.BlackJack) {
+			b.SetPhase(domain.BJPhaseAction)
+			h := b.GetPlayerHands()[0]
+			h.AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+			h.AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+			h.SetStood(true)
+		}, domain.BJDoubleDownBlockHandFinished, domain.ErrHandFinished},
+		{"chips", func(b *domain.BlackJack) {
+			b.SetPhase(domain.BJPhaseAction)
+			h := b.GetPlayerHands()[0]
+			h.AddCard(domain.NewCard(domain.CardDesignSpade, 4, false))
+			h.AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+			h.SetBet(100)
+			b.GetPlayer().SetChips(0)
+		}, domain.BJDoubleDownBlockInsufficientChips, domain.ErrInsufficientChips},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			b := domain.NewDefaultBlackJack()
+			tt.setup(b)
+			assert.Equal(t, tt.want, b.DoubleDownBlockReason())
+			assert.ErrorIs(t, b.PlayerDoubleDown(), tt.wantErr)
+		})
+	}
+}
+
 func TestBlackJack_Split_WrongPhase(t *testing.T) {
 	bj := domain.NewDefaultBlackJack()
 	bj.Reset()

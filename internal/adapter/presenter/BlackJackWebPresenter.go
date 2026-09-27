@@ -23,6 +23,7 @@ func (bjp *BlackJackWebPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 	resObj.Player.Chips = player.GetChips()
 
 	resObj.Phase = bj.GetPhase()
+	resObj.DoubleDownBlock = int(bj.DoubleDownBlockReason())
 	resObj.CurrentHandIdx = bj.GetCurrentHandIdx()
 	resObj.InsuranceBet = bj.GetInsuranceBet()
 	resObj.InsuranceAvailable = bj.IsInsuranceAvailable()

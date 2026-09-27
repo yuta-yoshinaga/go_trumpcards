@@ -39828,6 +39828,11 @@ components:
             - `6` — Early Surrender phase (only when surrender rule = Early)
           enum: [1, 2, 3, 4, 5, 6]
           example: 4
+        doubleDownBlock:
+          type: integer
+          description: Double down block reason (0=available, 1=wrong phase, 2=not two cards, 3=split without DAS, 4=hand finished, 5=insufficient chips).
+          enum: [0, 1, 2, 3, 4, 5]
+          example: 0
         currentHandIdx:
           type: integer
           description: |

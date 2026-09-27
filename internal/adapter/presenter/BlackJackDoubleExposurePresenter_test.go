@@ -73,3 +73,16 @@ func TestBlackJackDoubleExposureCuiPresenterShowsDealerScore(t *testing.T) {
 
 	assert.Contains(t, output, "スコア 18")
 }
+
+func TestBlackJackDoubleExposureCuiPresenterExplainsDoubleDownAvailability(t *testing.T) {
+	bj := setupDoubleExposurePresenterBlackJack(t)
+	hand := bj.GetPlayerHands()[0]
+	hand.AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+	hand.AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+	hand.SetBet(100)
+	bj.GetPlayer().SetChips(100)
+
+	output := (&BlackJackCuiPresenter{}).Output(bj, nil)
+
+	assert.Contains(t, output, "ダブルダウンは手札2枚で、追加ベット分のチップがあり")
+}

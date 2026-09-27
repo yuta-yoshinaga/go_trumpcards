@@ -167,6 +167,31 @@ beforeEach(() => {
 });
 
 describe('BlackJackPage', () => {
+  it('shows Double Exposure double-down eligibility in the action area', async () => {
+    mockDoubleExposureExec.mockResolvedValue(actionPhaseState);
+    renderWithProviders(<BlackJackPage variant="doubleexposure" />);
+    expect(
+      await screen.findByText(
+        'ダブルダウンは手札2枚で、追加ベット分のチップがあり、スプリット後はDASが有効な場合に可能です。',
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it('explains why Double Exposure double down is unavailable after a split', async () => {
+    mockDoubleExposureExec.mockResolvedValue({
+      ...actionPhaseState,
+      hands: [{ ...baseHand }, { ...baseHand }],
+      currentHandIdx: 0,
+      doubleAfterSplit: false,
+      doubleDownBlock: 3,
+      player: { chips: 900 },
+    });
+    renderWithProviders(<BlackJackPage variant="doubleexposure" />);
+    expect(
+      await screen.findByText('スプリット後のハンドではダブルダウンできません（DASが無効です）。'),
+    ).toBeInTheDocument();
+  });
+
   it('shows the out-of-chips restart button instead of bet controls at zero chips', async () => {
     mockExec.mockResolvedValue({ ...betPhaseState, player: { chips: 0 } });
     renderWithProviders(<BlackJackPage />);

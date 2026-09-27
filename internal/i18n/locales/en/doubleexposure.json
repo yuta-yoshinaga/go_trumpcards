@@ -7,5 +7,9 @@
   "payoutRef.insurance": "Insurance (2:1)",
   "payoutRef.push": "Dealer wins ties",
   "payoutRef.surrender": "Surrender (half the bet returned)",
-  "payoutRef.bust": "Bust (over 21: lose)"
+  "payoutRef.bust": "Bust (over 21: lose)",
+  "doubleDownAvailable": "Double down is available with two cards, enough chips for an additional bet, and DAS enabled after a split.",
+  "doubleDownUnavailable.cards": "Double down is available only with two cards.",
+  "doubleDownUnavailable.chips": "You do not have enough chips for the additional bet.",
+  "doubleDownUnavailable.split": "Double down after a split is not allowed because DAS is disabled."
 }

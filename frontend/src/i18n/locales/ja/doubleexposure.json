@@ -129,5 +129,11 @@
     "decline": "N",
     "earlySurrender": "U",
     "continue": "N"
+  },
+  "doubleDownAvailable": "ダブルダウンは手札2枚で、追加ベット分のチップがあり、スプリット後はDASが有効な場合に可能です。",
+  "doubleDownUnavailable": {
+    "cards": "ダブルダウンは手札が2枚のときだけ可能です。",
+    "chips": "追加ベット分のチップが足りないため、ダブルダウンできません。",
+    "split": "スプリット後のハンドではダブルダウンできません（DASが無効です）。"
   }
 }

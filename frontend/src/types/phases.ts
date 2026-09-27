@@ -48,6 +48,16 @@ export const BjPhase = {
   EARLY_SURRENDER: 6,
 } as const;
 
+/** BlackJack double down block reasons (sync: internal/domain/BlackJack.go). */
+export const BjDoubleDownBlock = {
+  NONE: 0,
+  WRONG_PHASE: 1,
+  NOT_TWO_CARDS: 2,
+  SPLIT_NO_DAS: 3,
+  HAND_FINISHED: 4,
+  INSUFFICIENT_CHIPS: 5,
+} as const;
+
 /** Poker phase constants (sync: internal/domain/Poker.go). */
 export const PokerPhase = {
   INIT: 0,
