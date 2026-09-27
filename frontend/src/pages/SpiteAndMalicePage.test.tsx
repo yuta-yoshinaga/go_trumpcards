@@ -308,6 +308,9 @@ describe('SpiteAndMalicePage', () => {
     renderWithProviders(<SpiteAndMalicePage />);
     await waitFor(() => expect(screen.getByTestId('sam-autocomplete-btn')).toBeInTheDocument());
     expect(screen.getByTestId('sam-autocomplete-btn')).toBeDisabled();
+    expect(screen.getByTestId('sam-autocomplete-hint')).toHaveTextContent(
+      '組札に出せるカードを連続して自動でプレイします。手がなくなったら手動に戻り、ディスカードしてターンを終えてください。',
+    );
   });
 
   it('enables the autocomplete button when canAutoComplete=true and dispatches the command on click', async () => {
