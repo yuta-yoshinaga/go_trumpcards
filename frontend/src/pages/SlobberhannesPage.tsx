@@ -232,6 +232,7 @@ function SlobberhannesPageContent() {
                   </span>
                   {': '}
                   {t('header.score', { score: String(p.score) })} [{penaltyMarks(p)}]
+                  {(isRoundEnd || isGameEnd) && ` (${t('roundTricks', { count: p.trickCount })})`}
                 </div>
               ))}
             </div>
