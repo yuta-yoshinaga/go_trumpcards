@@ -15,7 +15,7 @@
   "faceDown": "[??]",
   "totalInline": "({{total}})",
   "betInline": "bet {{bet}}",
-  "payoutInline": "-> {{payout}}",
+  "payoutInline": "Net: {{payout}}",
   "rankPontoon": "Pontoon",
   "rankFiveCard": "Five card trick",
   "rankBust": "Bust",

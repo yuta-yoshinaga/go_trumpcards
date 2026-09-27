@@ -67,6 +67,7 @@ func TestPontoonCuiPresenter_Output(t *testing.T) {
 		out := new(PontoonCuiPresenter).Output(g, nil)
 		assert.NotContains(t, out, i18n.T("pontoon.faceDown"))
 		assert.Contains(t, out, "親は 19")
+		assert.Contains(t, out, "収支: 0")
 	})
 
 	t.Run("an English settled round is translated", func(t *testing.T) {
