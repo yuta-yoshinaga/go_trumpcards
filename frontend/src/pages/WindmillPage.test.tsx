@@ -64,6 +64,23 @@ describe('WindmillPage', () => {
     vi.restoreAllMocks();
   });
 
+  it('keeps an empty center target focusable and explains that a source must be selected', async () => {
+    mockExec.mockResolvedValue({ ...playingState, center: [] });
+    renderWithProviders(<WindmillPage />);
+    const target = await screen.findByRole('button', { name: '中央組札は空です' });
+
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const hintId = target.getAttribute('aria-describedby');
+    expect(hintId).toBeTruthy();
+    expect(document.getElementById(hintId ?? '')).toHaveTextContent('先に移動する札を選んでください');
+
+    mockExec.mockClear();
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('calls reset on initial render', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<WindmillPage />);

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { WillOTheWispMoveZone, willothewispApi } from '../api/games/willothewisp';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -79,6 +79,7 @@ const TABLEAU_COLS = 7;
 export const WillOTheWispPage = withTutorial(WillOTheWispPageContent, 'willothewisp', WILLOTHEWISP_TUTORIAL_STEPS);
 
 function WillOTheWispPageContent() {
+  const selectSourceHintId = useId();
   const {
     t,
     tc,
@@ -331,6 +332,9 @@ function WillOTheWispPageContent() {
             </div>
 
             <div className="relative">
+              <span id={selectSourceHintId} className="sr-only">
+                {tc('label.selectSourceFirst')}
+              </span>
               <div className="flex gap-0.5 sm:gap-1 mb-3" data-tutorial="willothewisp-tableau">
                 {state.tableau.map((col, colIdx) => {
                   const tableauColZone: WillOTheWispMoveZone = { zone: 'tableau', col: colIdx };
@@ -356,8 +360,13 @@ function WillOTheWispPageContent() {
                             <button
                               key={`empty-${colIdx.toString()}-${emptyDealAttemptKey.toString()}`}
                               type="button"
-                              onClick={() => handleSelectTarget(tableauColZone)}
-                              disabled={!isPlaying || loading || !selectedSource}
+                              onClick={() => {
+                                if (!selectedSource) return;
+                                handleSelectTarget(tableauColZone);
+                              }}
+                              disabled={!isPlaying || loading}
+                              aria-disabled={!selectedSource || undefined}
+                              aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                               style={{ height: tableau.ch }}
                               data-testid={`willothewisp-empty-col-${colIdx.toString()}`}
                               className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}${emptyDealAttemptKey > 0 ? ' animate-shake border-ds-warning text-ds-warning' : ''}`}

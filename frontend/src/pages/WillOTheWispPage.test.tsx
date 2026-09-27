@@ -94,6 +94,23 @@ beforeEach(() => {
 });
 
 describe('WillOTheWispPage', () => {
+  it('keeps an empty tableau target focusable and explains that a source must be selected', async () => {
+    mockSend.mockResolvedValue({ ...playingState, tableau: makeTableau([[], ...playingState.tableau.slice(1)]) });
+    renderWithProviders(<WillOTheWispPage />);
+    const target = await screen.findByTestId('willothewisp-empty-col-0');
+
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const hintId = target.getAttribute('aria-describedby');
+    expect(hintId).toBeTruthy();
+    expect(document.getElementById(hintId ?? '')).toHaveTextContent('先に移動する札を選んでください');
+
+    mockSend.mockClear();
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockSend).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('renders skeleton when no state', () => {
     mockSend.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<WillOTheWispPage />);
