@@ -198,7 +198,7 @@ function TrenteEtQuarantePageContent() {
               <div className="text-ds-text-primary text-center text-sm mb-2" data-testid="teq-result">
                 <div>
                   {t('result.betSummary', {
-                    bet: t(`betType.${['noir', 'rouge', 'couleur', 'inverse'][state.currentBet] ?? 'noir'}`),
+                    bet: t(BET_OPTIONS.find((option) => option.type === state.currentBet)?.labelKey ?? ''),
                     stake: state.stake,
                   })}
                 </div>

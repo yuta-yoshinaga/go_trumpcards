@@ -188,6 +188,7 @@ describe('TrenteEtQuarantePage', () => {
     await waitFor(() => expect(screen.getByTestId('teq-result')).toBeInTheDocument());
     expect(screen.getByTestId('teq-next-round-button')).toBeInTheDocument();
     expect(screen.getByTestId('teq-result')).toHaveTextContent('200');
+    expect(screen.getByTestId('teq-result')).toHaveTextContent('賭け内容: ノワール（賭け金 100）');
     expect(screen.getByTestId('teq-result')).toHaveTextContent('ノワール');
     expect(screen.getByTestId('teq-result')).toHaveTextContent('100');
   });
