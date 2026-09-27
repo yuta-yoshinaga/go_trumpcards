@@ -184,6 +184,27 @@ describe('MississippiStudPage', () => {
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
   });
 
+  it('shows the current street multiplier and cumulative bet beside the betting actions', async () => {
+    mockApi.mockResolvedValue(fourthStreetState);
+    renderWithProviders(<MississippiStudPage />);
+    await waitFor(() => expect(screen.getByTestId('ms-street-betting-summary')).toBeInTheDocument());
+
+    const summary = screen.getByTestId('ms-street-betting-summary');
+    expect(summary).toHaveTextContent('4thストリート');
+    expect(summary).toHaveTextContent('合計ベット: 400');
+    expect(screen.getByTestId('ms-play-2x')).toHaveTextContent('ベット後の合計: 600');
+
+    mockApi.mockResolvedValue({
+      ...fourthStreetState,
+      phase: MississippiStudPhase.FIFTH_STREET,
+      streetMultipliers: [3, 2, 0],
+      totalBet: 600,
+    });
+    fireEvent.click(screen.getByTestId('ms-play-2x'));
+    await waitFor(() => expect(screen.getByTestId('ms-street-betting-summary')).toHaveTextContent('5thストリート'));
+    expect(screen.getByTestId('ms-street-betting-summary')).toHaveTextContent('合計ベット: 600');
+  });
+
   it('shows player hand and community card sections in street phase', async () => {
     mockApi.mockResolvedValue(thirdStreetState);
     renderWithProviders(<MississippiStudPage />);
