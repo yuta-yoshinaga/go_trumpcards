@@ -22,7 +22,7 @@
   "refuseNoticeNoKing": "誰かがあなたと交換しようとしています。キングを持っていないため拒否できません。受け入れてください。",
   "acceptButton": "受け入れる",
   "nextRound": "次のラウンドへ",
-  "roundLoser": "{{name}} が最も低いカードでライフを失いました。",
+  "roundLoser": "{{name}} が最も低いカードでライフを失いました。現在のライフ {{lives}}",
   "roundLosersTitle": "今ラウンドの敗者",
   "roundLowestValue": "最低値: {{value}}",
   "settings": {

@@ -21,6 +21,7 @@
   "promptRefuse": "拒否手番: {{name}}（キング保持）",
   "promptRefuseHelp": "rf / refuse ・・・キングを見せて拒否／ac / accept ・・・スワップを受け入れる",
   "promptRoundEnd": "ラウンド終了：最低位は {{lowest}}",
+  "roundLoser": "{{name}}：現在のライフ {{lives}}",
   "promptRoundEndHelp": "nr / nextround ・・・最低位のプレイヤーがライフを失い、次のラウンドへ",
   "turnPhase": "手番フェーズ",
   "refusePhase": "拒否フェーズ",

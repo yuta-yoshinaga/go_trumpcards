@@ -96,6 +96,10 @@ func (p *CuckooCuiPresenter) Output(g interfaces.CuckooGame, lastErr error) stri
 			b.WriteString(i18n.T("cuckoo.promptRefuseHelp") + "\n")
 		case domain.CuckooPhaseRoundEnd:
 			b.WriteString(i18n.Tf("cuckoo.promptRoundEnd", "lowest", strconv.Itoa(g.GetRoundLowest())) + "\n")
+			for _, idx := range g.GetRoundLosers() {
+				player := g.GetPlayer(idx)
+				b.WriteString(i18n.Tf("cuckoo.roundLoser", "name", cuiPlayerName(player, idx), "lives", strconv.Itoa(maxInt0(player.GetLives()))) + "\n")
+			}
 			b.WriteString(i18n.T("cuckoo.promptRoundEndHelp") + "\n")
 		}
 	})
