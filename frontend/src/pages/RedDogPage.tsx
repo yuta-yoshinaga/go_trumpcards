@@ -192,7 +192,8 @@ function RedDogPageContent() {
                     />
                     {reddogWinningRanks(state.initialCards).length > 0 && (
                       <div className="text-ds-text-muted text-center text-xs mt-1" data-testid="reddog-winners-text">
-                        {t('label.winners')}: {reddogWinningRanks(state.initialCards).map(rankLabel).join(', ')}
+                        {t('label.winners')}:{' '}
+                        {reddogWinningRanks(state.initialCards).map(rankLabel).join(t('listSeparator'))}
                       </div>
                     )}
                   </>
@@ -211,6 +212,18 @@ function RedDogPageContent() {
 
             {isEndPhase && (
               <div className="text-ds-text-primary text-center text-sm mb-2" data-testid="payout-breakdown">
+                {state.result > 0 && state.thirdCard && (
+                  <div>
+                    {t('payout.winningRank')}: {rankLabel(redDogRank(state.thirdCard))}
+                  </div>
+                )}
+                {state.result > 0 && (
+                  <div>
+                    {t('payout.multiplier')}: {state.appliedMultiplier}:1
+                  </div>
+                )}
+                {state.result < 0 && <div>{t('payout.none')}</div>}
+                {state.result === 0 && <div>{t('payout.refund')}</div>}
                 <div className="font-bold">
                   {t('payout.total')}: {state.totalPayout}
                 </div>
