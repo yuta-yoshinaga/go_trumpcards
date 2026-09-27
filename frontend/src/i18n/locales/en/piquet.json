@@ -10,6 +10,7 @@
   "declarationHeader": "Declaration phase",
   "declarationsList": "Declarations",
   "exchangeElder": "Elder exchange ({{count}})",
+  "exchangeCounts": "Hand: {{hand}} / Selected: {{selected}} / After exchange: {{remaining}}",
   "exchangeHeader": "Exchange phase",
   "exchangeYounger": "Younger exchange ({{count}})",
   "frontendHint": {

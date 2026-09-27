@@ -226,6 +226,15 @@ function PiquetPageContent() {
       </div>
 
       <div data-tutorial="piquet-controls" className="flex flex-wrap gap-2 px-2">
+        {humanCanExchange && human ? (
+          <p data-testid="piquet-exchange-counts" className="w-full text-xs text-ds-text-muted">
+            {t('exchangeCounts', {
+              hand: human.cardCount,
+              selected: selectedDiscards.length,
+              remaining: human.cardCount,
+            })}
+          </p>
+        ) : null}
         {humanCanExchange && state.exchangeTurn === PiquetExchangeTurn.ELDER ? (
           <button
             type="button"
