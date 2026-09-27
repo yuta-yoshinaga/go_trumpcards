@@ -69,6 +69,22 @@ func TestUlti_ResetDeal(t *testing.T) {
 	assert.True(t, g.IsHumanBidTurn())
 }
 
+func TestUlti_GetContractRequirement(t *testing.T) {
+	g := newTestUlti()
+	for _, tc := range []struct {
+		contract domain.UltiContract
+		want     int
+	}{
+		{domain.UltiContractParty, 61},
+		{domain.UltiContractDurchmarsch, 10},
+		{domain.UltiContractBetli, 0},
+		{domain.UltiContractNone, 0},
+	} {
+		g.SetContract(tc.contract)
+		assert.Equal(t, tc.want, g.GetContractRequirement())
+	}
+}
+
 func TestUlti_DeckIsUnique32(t *testing.T) {
 	g := newTestUlti()
 	seen := map[int]bool{}

@@ -158,6 +158,12 @@ func (_m *MockUltiGame) GetContract() domain.UltiContract {
 	return ret.Get(0).(domain.UltiContract)
 }
 
+// GetContractRequirement モック
+func (_m *MockUltiGame) GetContractRequirement() int {
+	ret := _m.Called()
+	return ret.Get(0).(int)
+}
+
 // GetTrumpSuit モック
 func (_m *MockUltiGame) GetTrumpSuit() int {
 	ret := _m.Called()

@@ -62,6 +62,8 @@ export interface UltiResponse extends BaseGameResponse {
   declarerIdx: number;
   /** The declared contract (0=None, 1=Party, 2=Betli, 3=Durchmarsch). */
   contract: number;
+  /** Points or tricks needed to fulfill the active contract, or 0 when not applicable. */
+  contractRequirement: number;
   /** The trump suit (1=♠ 2=♣ 3=♥ 4=♦), or -1 when none / not a Party contract. */
   trumpSuit: number;
   /** Number of face-down talon cards remaining. */

@@ -1822,6 +1822,7 @@ const baseUltiState: UltiResponse = {
   dealerIdx: 2,
   declarerIdx: 0,
   contract: 1,
+  contractRequirement: 61,
   trumpSuit: 1,
   talonCount: 0,
   talonTaken: true,
