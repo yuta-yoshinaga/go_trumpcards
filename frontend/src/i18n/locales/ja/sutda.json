@@ -22,6 +22,8 @@
   "pot": "ポット {{pot}} / 現在のベット {{bet}}",
   "chips": "チップ {{n}}",
   "bet": "ベット {{n}}",
+  "remainingChips": "残りチップ",
+  "currentContribution": "投入額",
   "dealerBadge": "親",
   "folded": "降り",
   "handName": {
