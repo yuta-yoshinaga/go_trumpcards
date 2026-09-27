@@ -454,15 +454,23 @@ function SpiteAndMalicePageContent() {
               />
 
               {!isGameOver && isHumanTurn && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handleAutoComplete}
-                  disabled={loading || !state.canAutoComplete}
-                  data-testid="sam-autocomplete-btn"
-                >
-                  {t('autoComplete')}
-                </button>
+                <div className="flex flex-col items-center">
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handleAutoComplete}
+                    disabled={loading || !state.canAutoComplete}
+                    data-testid="sam-autocomplete-btn"
+                  >
+                    {t('autoComplete')}
+                  </button>
+                  <p
+                    className="mt-1 max-w-sm text-center text-xs text-ds-text-muted"
+                    data-testid="sam-autocomplete-hint"
+                  >
+                    {t('autoCompleteHint')}
+                  </p>
+                </div>
               )}
             </GameFooter>
           </div>
