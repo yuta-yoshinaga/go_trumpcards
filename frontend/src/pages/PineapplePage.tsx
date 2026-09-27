@@ -334,8 +334,8 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
     if (selectedDiscards.length !== discardCount) return null;
     const discardIdx = selectedDiscards[0];
     const cand = candidatePreviews?.[discardIdx];
-    const cards = humanPlayer?.cards ?? [];
-    if (!cand) return null;
+    if (!cand || !humanPlayer) return null;
+    const cards = humanPlayer.cards;
     return {
       handKey: cand.handKey,
       isRecommended: recommendedDiscards.has(discardIdx),
