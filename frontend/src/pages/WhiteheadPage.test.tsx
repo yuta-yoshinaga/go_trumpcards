@@ -101,6 +101,20 @@ beforeEach(() => {
 });
 
 describe('WhiteheadPage', () => {
+  it('keeps a move target focusable and explains the required source', async () => {
+    renderWithProviders(<WhiteheadPage />);
+    const target = await screen.findByRole('button', { name: /空の組札.*♠/ });
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const hint = document.getElementById(target.getAttribute('aria-describedby') ?? '');
+    expect(hint).toHaveTextContent('先に移動する札を選んでください');
+
+    mockExec.mockClear();
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('shows foundation progress when the game is over', async () => {
     mockExec.mockResolvedValue({ ...gameOverState, foundation: withFoundationState.foundation });
     renderWithProviders(<WhiteheadPage />);
@@ -505,24 +519,25 @@ describe('WhiteheadPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', expect.any(Object), expect.any(Object)));
   });
 
-  it('foundation disabled when no source selected', async () => {
+  it('foundation targets stay focusable when no source is selected', async () => {
     renderWithProviders(<WhiteheadPage />);
     await waitFor(() => expect(screen.getByText('♠')).toBeInTheDocument());
 
-    // Empty foundation buttons should be disabled when no source selected
     const aButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === 'A');
     for (const btn of aButtons) {
-      expect(btn).toBeDisabled();
+      expect(btn).not.toBeDisabled();
+      expect(btn).toHaveAttribute('aria-disabled', 'true');
     }
   });
 
-  it('empty tableau column disabled when no source selected', async () => {
+  it('empty tableau targets stay focusable when no source is selected', async () => {
     renderWithProviders(<WhiteheadPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
     const kButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === 'K');
     for (const btn of kButtons) {
-      expect(btn).toBeDisabled();
+      expect(btn).not.toBeDisabled();
+      expect(btn).toHaveAttribute('aria-disabled', 'true');
     }
   });
 
