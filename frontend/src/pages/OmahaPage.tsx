@@ -300,6 +300,28 @@ function OmahaPageContent() {
 
             {/* Round results */}
             {isShowdown && <RoundResults results={state?.roundResults} players={state?.players ?? []} />}
+            {isShowdown && (state?.potAwards?.length ?? 0) > 1 && (
+              <div className="mb-3 text-sm">
+                {state?.potAwards?.map((award, index) => {
+                  const names = (ids: number[], payouts: number[]) =>
+                    ids
+                      .map((id, i) => `${findPlayerName(state?.players ?? [], id)} +${payouts[i]}`)
+                      .join(t('listSeparator'));
+                  const eligible = award.eligible
+                    .map((id) => findPlayerName(state?.players ?? [], id))
+                    .join(t('listSeparator'));
+                  return (
+                    <p key={`${index}-${award.amount}`}>
+                      {index === 0 ? t('potAwards.mainPot') : t('potAwards.sidePot', { n: index })} {award.amount}:{' '}
+                      {t('potAwards.eligible')} [{eligible}] → {t('potAwards.winners')}{' '}
+                      {names(award.hiWinners, award.hiPayouts)}
+                      {award.loWinners.length > 0 &&
+                        ` (${t('potAwards.low')}: ${names(award.loWinners, award.loPayouts)})`}
+                    </p>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Action log */}
             <ActionLogSection

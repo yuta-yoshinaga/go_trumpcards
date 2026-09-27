@@ -264,6 +264,32 @@ func (p *OmahaCuiPresenter) Output(o interfaces.OmahaGame, lastErr error) string
 				}
 				b.WriteString("\n")
 			}
+			awards := o.GetPotAwards()
+			if len(awards) > 1 {
+				for n, a := range awards {
+					label := i18n.T("omaha.mainPot")
+					if n > 0 {
+						label = i18n.Tf("omaha.sidePot", "n", strconv.Itoa(n))
+					}
+					eligible := make([]string, 0, len(a.Eligible))
+					for _, idx := range a.Eligible {
+						eligible = append(eligible, cuiPlayerName(o.GetPlayer(idx), idx))
+					}
+					winners := make([]string, 0, len(a.HiWinners))
+					for i, idx := range a.HiWinners {
+						winners = append(winners, cuiPlayerName(o.GetPlayer(idx), idx)+" +"+strconv.Itoa(a.HiPayouts[i]))
+					}
+					b.WriteString(i18n.Tf("omaha.potAward", "pot", label, "amount", strconv.Itoa(a.Amount), "eligible", strings.Join(eligible, i18n.T("omaha.listSeparator")), "winners", strings.Join(winners, i18n.T("omaha.listSeparator"))))
+					if len(a.LoWinners) > 0 {
+						lows := make([]string, 0, len(a.LoWinners))
+						for i, idx := range a.LoWinners {
+							lows = append(lows, cuiPlayerName(o.GetPlayer(idx), idx)+" +"+strconv.Itoa(a.LoPayouts[i]))
+						}
+						b.WriteString(i18n.Tf("omaha.potAwardLow", "winners", strings.Join(lows, i18n.T("omaha.listSeparator"))))
+					}
+					b.WriteString("\n")
+				}
+			}
 		}
 
 		if o.IsMuckAvailable() {

@@ -50,6 +50,33 @@ func TestNewOmaha(t *testing.T) {
 	assert.False(t, o.GetGameEndFlag())
 }
 
+func TestOmahaDistributeAmongWinnersRecordsChipPayouts(t *testing.T) {
+	players := []BettingPlayer{
+		NewOmahaPlayer(true, HoldemStyleTAG),
+		NewOmahaPlayer(false, HoldemStyleTAG),
+	}
+	won := make(map[int]int)
+	payouts := make([]int, 2)
+	distributeAmongWinners(players, []int{1, 0}, 11, won, payouts)
+	assert.Equal(t, []int{6, 5}, payouts, "the first winner must receive the odd chip")
+	assert.Equal(t, 6, won[1])
+	assert.Equal(t, 5, won[0])
+	assert.Equal(t, 6, players[1].GetChips())
+	assert.Equal(t, 5, players[0].GetChips())
+}
+
+func TestOmahaPotAwardsSnapshotAndReset(t *testing.T) {
+	o := newTestOmaha()
+	o.potAwards = []OmahaPotAward{{Amount: 12, Eligible: []int{0, 1}, HiWinners: []int{1}, HiPayouts: []int{12}}}
+	data, err := o.MarshalJSON()
+	assert.NoError(t, err)
+	var restored Omaha
+	assert.NoError(t, restored.UnmarshalJSON(data))
+	assert.Equal(t, o.potAwards, restored.GetPotAwards())
+	assert.NoError(t, o.Reset())
+	assert.Nil(t, o.GetPotAwards())
+}
+
 func TestOmaha_Reset(t *testing.T) {
 	o := newTestOmaha()
 	_ = o.Reset()

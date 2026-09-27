@@ -26,6 +26,8 @@ type OmahaGame interface {
 	GetPot() int
 	// GetSidePots サイドポット一覧を取得する
 	GetSidePots() []domain.SidePot
+	// GetPotAwards returns the per-pot showdown payout breakdown.
+	GetPotAwards() []domain.OmahaPotAward
 	// GetDealerIdx ディーラーインデックスを取得する
 	GetDealerIdx() int
 	// GetCurrentTurn 現在のターンを取得する

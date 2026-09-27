@@ -76,5 +76,10 @@
   "log.raise": "{{amount}}にレイズ",
   "log.allIn": "{{amount}}でオールイン",
   "log.smallBlind": "スモールブラインド {{amount}} を出しました",
-  "log.bigBlind": "ビッグブラインド {{amount}} を出しました"
+  "log.bigBlind": "ビッグブラインド {{amount}} を出しました",
+  "listSeparator": "、",
+  "mainPot": "メインポット",
+  "sidePot": "サイドポット{{n}}",
+  "potAward": "{{pot}} {{amount}}: 対象 [{{eligible}}] → 勝者 {{winners}}",
+  "potAwardLow": " (ロー: {{winners}})"
 }

@@ -79,6 +79,15 @@ func (_m *MockOmahaGame) GetSidePots() []domain.SidePot {
 	return nil
 }
 
+// GetPotAwards モック
+func (_m *MockOmahaGame) GetPotAwards() []domain.OmahaPotAward {
+	ret := _m.Called()
+	if val, ok := ret.Get(0).([]domain.OmahaPotAward); ok {
+		return val
+	}
+	return nil
+}
+
 // GetDealerIdx モック
 func (_m *MockOmahaGame) GetDealerIdx() int {
 	ret := _m.Called()

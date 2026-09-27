@@ -94,5 +94,13 @@
     "weakHandRank": "弱いハンド — フォールド推奨"
   },
   "cardUsed": "使用",
-  "cardUnused": "未使用"
+  "cardUnused": "未使用",
+  "potAwards": {
+    "mainPot": "メインポット",
+    "sidePot": "サイドポット{{n}}",
+    "eligible": "対象",
+    "winners": "勝者",
+    "low": "ロー"
+  },
+  "listSeparator": "、"
 }

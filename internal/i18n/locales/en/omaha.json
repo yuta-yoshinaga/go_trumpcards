@@ -76,5 +76,10 @@
   "log.raise": "raise to {{amount}}",
   "log.allIn": "all in {{amount}}",
   "log.smallBlind": "posts small blind {{amount}}",
-  "log.bigBlind": "posts big blind {{amount}}"
+  "log.bigBlind": "posts big blind {{amount}}",
+  "listSeparator": ", ",
+  "mainPot": "Main pot",
+  "sidePot": "Side pot {{n}}",
+  "potAward": "{{pot}} {{amount}}: Eligible [{{eligible}}] → Winners {{winners}}",
+  "potAwardLow": " (Low: {{winners}})"
 }
