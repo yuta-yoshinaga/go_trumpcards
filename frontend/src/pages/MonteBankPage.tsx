@@ -29,6 +29,7 @@ import type { MonteBankResponse } from '../types/card';
 import { MONTE_BANK_RESULT } from '../types/games/montebank';
 import { MonteBankPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { MONTEBANK_CLI_HELP, parseMonteBankCommand } from '../utils/cli/commands/montebankCommands';
 import { formatMonteBankState } from '../utils/cli/formatters/montebankFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -52,6 +53,7 @@ function MonteBankPageContent() {
 
   const [bet, setBet] = useState(50);
   const [selected, setSelected] = useState(0);
+  const [selectionAnnouncement, setSelectionAnnouncement] = useState('');
   const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec: execApi, retry } = useGameApi(montebankApi.exec);
 
@@ -153,6 +155,10 @@ function MonteBankPageContent() {
             </div>
             <p className="text-ds-text-muted text-center text-xs mb-2">{t('suitNotice')}</p>
 
+            <div role="status" aria-live="polite" aria-atomic="true">
+              {selectionAnnouncement && <span className="sr-only">{selectionAnnouncement}</span>}
+            </div>
+
             <div className="flex justify-center gap-2 flex-wrap mb-3" data-tutorial="mb-layout">
               {state.layout.map((entry, i) => (
                 <button
@@ -166,7 +172,15 @@ function MonteBankPageContent() {
                   aria-disabled={!isBetPhase || undefined}
                   onClick={() => {
                     if (!isBetPhase) return;
-                    setSelected(i);
+                    if (selected !== i) {
+                      setSelected(i);
+                      setSelectionAnnouncement(
+                        t('selection.changed', {
+                          prev: cardAlt(state.layout[selected].card),
+                          card: cardAlt(entry.card),
+                        }),
+                      );
+                    }
                   }}
                   className={`flex flex-col items-center rounded px-1 py-1 disabled:cursor-not-allowed aria-disabled:cursor-not-allowed ${
                     isPickedOrSelected(entry, i) ? 'ring-2 ring-ds-success' : ''
