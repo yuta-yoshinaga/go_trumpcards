@@ -599,9 +599,13 @@ describe('PokerPage', () => {
     const exchangeBtn = await screen.findByRole('button', { name: '交換' });
     // Nothing selected yet: stand is the only enabled action.
     expect(exchangeBtn).toBeDisabled();
+    expect(screen.getByTestId('pk-exchange-confirmability')).toHaveTextContent(
+      '0枚では交換確定できません。交換せず進む場合は「スタンド」を選択してください',
+    );
     expect(screen.getByRole('button', { name: 'スタンド' })).toBeEnabled();
     fireEvent.click(screen.getByAltText('♠ A'));
     expect(exchangeBtn).toBeEnabled();
+    expect(screen.getByTestId('pk-exchange-confirmability')).toHaveTextContent('選択した 1 枚を交換して確定できます');
   });
 
   it('shows the selected-count badge (updating on selection) and a stand hint', async () => {

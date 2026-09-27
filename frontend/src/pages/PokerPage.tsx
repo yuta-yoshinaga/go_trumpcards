@@ -447,6 +447,11 @@ function PokerPageContent() {
                 <div className="text-game-text-highlight text-xs mb-1" data-testid="pk-exchange-selected">
                   {t('exchangeSelectedCount', { n: selected.length })}
                 </div>
+                <div className="text-ds-text-muted text-xs mb-1" data-testid="pk-exchange-confirmability">
+                  {selected.length === 0
+                    ? t('exchangeNotConfirmable')
+                    : t('exchangeConfirmable', { n: selected.length })}
+                </div>
                 <button
                   type="button"
                   className={`${btnWarning} min-w-[90px]`}

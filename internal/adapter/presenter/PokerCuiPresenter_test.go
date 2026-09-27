@@ -60,6 +60,8 @@ func TestPokerCuiPresenter_Output(t *testing.T) {
 		result := pres.Output(p, nil)
 		assert.Contains(t, result, i18n.T("poker.phaseExchange"))
 		assert.Contains(t, result, i18n.T("poker.promptExchange"))
+		assert.Contains(t, result, "1枚以上を交換して確定")
+		assert.Contains(t, result, "0枚交換で進む")
 	})
 
 	t.Run("CPU player info with play style name", func(t *testing.T) {
