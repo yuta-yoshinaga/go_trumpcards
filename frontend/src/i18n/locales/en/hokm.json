@@ -20,11 +20,13 @@
     "cpu": "CPU{{idx}}"
   },
   "currentTrick": "Current trick",
+  "sentenceSeparator": " ",
   "handEnd": {
     "normal": "Team {{team}} reached {{need}} tricks and took the hand (+1).",
     "kot": "Team {{team}} let the others take nothing at all — that is a Kot, +2.",
-    "hakemMoves": "the hakem passes to the next seat",
-    "hakemStays": "the hakem keeps the deal"
+    "hakemMoves": "The hakem passes to the next seat.",
+    "hakemStays": "The hakem keeps the deal.",
+    "noMoreTricks": "There are no more tricks to play. Press the button below to start the next hand."
   },
   "actions": {
     "trump": "Trump {{suit}}",

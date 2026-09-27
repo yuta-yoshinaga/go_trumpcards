@@ -20,11 +20,13 @@
     "cpu": "CPU{{idx}}"
   },
   "currentTrick": "現在のトリック",
+  "sentenceSeparator": "",
   "handEnd": {
     "normal": "チーム{{team}} が{{need}}トリック先取でこのハンドを制しました（+1）。",
     "kot": "チーム{{team}} が相手に1トリックも取らせず、Kot で +2 です。",
-    "hakemMoves": "親が次の席に移ります",
-    "hakemStays": "親は交代しません"
+    "hakemMoves": "親が次の席に移ります。",
+    "hakemStays": "親は交代しません。",
+    "noMoreTricks": "残りのトリックはプレイしません。次のハンドへ進むには下のボタンを押してください。"
   },
   "actions": {
     "trump": "切り札 {{suit}}",

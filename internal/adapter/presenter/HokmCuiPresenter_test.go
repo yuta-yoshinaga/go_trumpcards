@@ -107,7 +107,10 @@ func TestHokmCuiPresenterExplainsHowTheHandEnded(t *testing.T) {
 				h.FinishHandForTest(tc.team)
 			}
 			require.Equal(t, domain.HokmPhaseHandEnd, h.GetPhase())
-			assert.Contains(t, p.Output(h, nil), tc.want)
+			out := p.Output(h, nil)
+			assert.Contains(t, out, tc.want)
+			assert.Contains(t, out, i18n.T("hokm.promptNoMoreTricks"))
+			assert.Contains(t, out, i18n.T("hokm.promptNext"))
 		})
 	}
 }

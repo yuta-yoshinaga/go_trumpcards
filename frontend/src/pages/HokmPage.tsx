@@ -242,19 +242,33 @@ function HokmPageContent() {
                 <span className="ml-2" data-testid="hk-hakem-change">
                   {state.lastHandHakemChanged ? t('handEnd.hakemMoves') : t('handEnd.hakemStays')}
                 </span>
+                <div className="mt-2 text-ds-text-primary">{t('handEnd.noMoreTricks')}</div>
+                {!isGameEnd && (
+                  <button
+                    type="button"
+                    className={`${btnSuccess} mt-2`}
+                    onClick={handleNextHand}
+                    disabled={loading}
+                    data-testid="hk-next-hand-result"
+                  >
+                    {t('actions.nextHand')}
+                  </button>
+                )}
               </div>
             )}
             <LiveAnnouncement
               message={
                 isHandEnd && state.lastHandWinner >= 0
-                  ? state.lastHandKot
-                    ? `${t('handEnd.kot', { team: String(state.lastHandWinner) })}${
-                        state.lastHandHakemChanged ? t('handEnd.hakemMoves') : t('handEnd.hakemStays')
-                      }`
-                    : `${t('handEnd.normal', {
-                        team: String(state.lastHandWinner),
-                        need: String(state.tricksToWin),
-                      })}${state.lastHandHakemChanged ? t('handEnd.hakemMoves') : t('handEnd.hakemStays')}`
+                  ? [
+                      state.lastHandKot
+                        ? t('handEnd.kot', { team: String(state.lastHandWinner) })
+                        : t('handEnd.normal', {
+                            team: String(state.lastHandWinner),
+                            need: String(state.tricksToWin),
+                          }),
+                      state.lastHandHakemChanged ? t('handEnd.hakemMoves') : t('handEnd.hakemStays'),
+                      t('handEnd.noMoreTricks'),
+                    ].join(t('sentenceSeparator'))
                   : ''
               }
             />
@@ -314,11 +328,6 @@ function HokmPageContent() {
                     {t('actions.trump', { suit: suitSymbolAt(suit, '?') })}
                   </button>
                 ))}
-              {isHandEnd && !isGameEnd && (
-                <button type="button" className={btnSuccess} onClick={handleNextHand} disabled={loading}>
-                  {t('actions.nextHand')}
-                </button>
-              )}
               <button
                 type="button"
                 className={btnPrimary}

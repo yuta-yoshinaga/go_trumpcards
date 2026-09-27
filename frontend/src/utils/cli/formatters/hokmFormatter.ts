@@ -65,6 +65,7 @@ export function formatHokmState(state: HokmResponse | null): string {
         ? `hand over — team ${state.lastHandWinner} took every trick: Kot, 2 points`
         : `hand over — team ${state.lastHandWinner} reached ${state.tricksToWin} tricks`,
     );
+    lines.push('The remaining tricks are not played. Type next to start the next hand.');
   }
 
   if (state.gameEndFlag) {
