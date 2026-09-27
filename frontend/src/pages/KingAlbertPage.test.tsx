@@ -86,6 +86,22 @@ describe('KingAlbertPage', () => {
     await waitFor(() => expect(screen.getAllByLabelText(/組札 1枚/).length).toBe(4));
   });
 
+  it('keeps an empty tableau target focusable and explains the missing source', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<KingAlbertPage />);
+    const [target] = await screen.findAllByRole('button', { name: '空' });
+    expect(target).toBeDefined();
+    if (!target) return;
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const hintId = target.getAttribute('aria-describedby');
+    expect(hintId).toBeTruthy();
+    expect(document.getElementById(hintId ?? '')).toHaveTextContent('先に移動する札を選んでください');
+    mockExec.mockClear();
+    fireEvent.click(target);
+    await waitFor(() => expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything()));
+  });
+
   it('renders a reserve card', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<KingAlbertPage />);
