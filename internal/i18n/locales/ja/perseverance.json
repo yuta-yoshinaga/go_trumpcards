@@ -1,5 +1,9 @@
 {
   "helpTitle": "Perseverance (パーシビアランス)",
+  "stalemateUndoRedeal": "盤面に合法手がありません。元に戻すか、配り直してください。",
+  "stalemateUndo": "盤面に合法手がありません。元に戻してください。",
+  "stalemateRedeal": "盤面に合法手がありません。配り直してください。",
+  "stalemateNoEscape": "盤面に合法手がありません。ギブアップするか、新しいゲームを始めてください。",
   "helpMoveTF": "  m <col> f            タブローから組札へ",
   "helpMoveTT": "  m <fromCol> <toCol>  タブロー間で移動 (m <列> <位置> <列> で並びを一括)",
   "helpGiveUp": "  g                    ギブアップ",

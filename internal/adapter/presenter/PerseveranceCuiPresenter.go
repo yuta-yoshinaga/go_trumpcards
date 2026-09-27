@@ -71,7 +71,15 @@ func (p *PerseveranceCuiPresenter) Output(bd interfaces.PerseveranceGame, lastEr
 		switch bd.GetPhase() {
 		case domain.PerseverancePhasePlaying:
 			if bd.IsStalemate() {
-				b.WriteString(color.Red(i18n.T("cuiSolitaireStalemate")) + "\n")
+				key := "stalemateNoEscape"
+				if bd.CanUndo() && bd.GetRedealsLeft() > 0 {
+					key = "stalemateUndoRedeal"
+				} else if bd.CanUndo() {
+					key = "stalemateUndo"
+				} else if bd.GetRedealsLeft() > 0 {
+					key = "stalemateRedeal"
+				}
+				b.WriteString(color.Red(i18n.T("perseverance."+key)) + "\n")
 				// Tell the player how many undos escape the dead end, matching the
 				// web StalemateEscapeButton.
 				if n := bd.UndoToEscape(); n > 0 {

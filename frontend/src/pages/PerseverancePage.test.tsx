@@ -245,6 +245,45 @@ describe('PerseverancePage', () => {
     await waitFor(() => expect(screen.getByTestId('stalemate-escape-button')).toBeInTheDocument());
   });
 
+  it.each([
+    [true, 1, '盤面に合法手がありません。元に戻すか、配り直してください。'],
+    [true, 0, '盤面に合法手がありません。元に戻してください。'],
+    [false, 1, '盤面に合法手がありません。配り直してください。'],
+    [false, 0, '盤面に合法手がありません。ギブアップするか、新しいゲームを始めてください。'],
+  ])(
+    'explains available escape actions when stalemated (canUndo=%s, redeals=%s)',
+    async (canUndo, redealsLeft, expected) => {
+      mockExec.mockResolvedValue({ ...playingState, isStalemate: true, canUndo, redealsLeft });
+      renderWithProviders(<PerseverancePage />);
+      const explanation = await screen.findByText(expected);
+      expect(explanation.parentElement).toHaveAttribute('role', 'status');
+    },
+  );
+
+  it('preserves server errors in GameMessageBox while showing a separate stalemate explanation', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      isStalemate: true,
+      canUndo: false,
+      redealsLeft: 0,
+      message: '操作できません',
+      messageCode: 'perseverance.invalidMove',
+    });
+    renderWithProviders(<PerseverancePage />);
+    expect(await screen.findByText('操作できません')).toBeInTheDocument();
+    expect(screen.getByText(/ギブアップするか、新しいゲームを始めてください/).parentElement).toHaveAttribute(
+      'role',
+      'status',
+    );
+  });
+
+  it('does not show a stalemate explanation when redeals are exhausted but the game is live', async () => {
+    mockExec.mockResolvedValue({ ...playingState, isStalemate: false, redealsLeft: 0 });
+    renderWithProviders(<PerseverancePage />);
+    await screen.findByTestId('redeals-left');
+    expect(screen.queryByText(/盤面に合法手がありません/)).not.toBeInTheDocument();
+  });
+
   it('renders foundation pile top card', async () => {
     const withFoundation: PerseveranceResponse = {
       ...playingState,
