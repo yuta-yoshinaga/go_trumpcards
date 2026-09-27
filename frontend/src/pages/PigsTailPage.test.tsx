@@ -128,9 +128,7 @@ describe('PigsTailPage', () => {
 
   it('renders game state with circle and center info', async () => {
     renderWithProviders(<PigsTailPage />);
-    await waitFor(() => {
-      expect(screen.getByText(/52/)).toBeInTheDocument();
-    });
+    expect(await screen.findByText((_, element) => element?.textContent === '山札: 52')).toBeInTheDocument();
   });
 
   it('draw button is enabled on human turn', async () => {
@@ -139,6 +137,32 @@ describe('PigsTailPage', () => {
       const drawBtn = screen.getByRole('button', { name: '山札から引く' });
       expect(drawBtn).not.toBeDisabled();
     });
+  });
+
+  it('omits penalty guidance when the center is empty', async () => {
+    renderWithProviders(<PigsTailPage />);
+    expect(await screen.findByTestId('pigtail-draw-guidance')).toHaveTextContent(
+      '山札は52枚残っています。あなたの番です。',
+    );
+    expect(screen.getByTestId('pigtail-draw-guidance')).not.toHaveTextContent('場札トップと同じスートを引くと');
+    expect(screen.getByRole('button', { name: '山札から引く' })).toBeEnabled();
+  });
+
+  it('explains the penalty when the center has cards', async () => {
+    mockExec.mockResolvedValue({ ...baseState, centerCount: 1, centerTop: { design: 'SPADE', value: 1 } });
+    renderWithProviders(<PigsTailPage />);
+    expect(await screen.findByTestId('pigtail-draw-guidance')).toHaveTextContent(
+      '場札トップと同じスートを引くと、場札をすべて引き取ります。',
+    );
+  });
+
+  it('explains an empty stock and does not suggest drawing after the game ends', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<PigsTailPage />);
+    expect(await screen.findByTestId('pigtail-draw-guidance')).toHaveTextContent(
+      '山札は0枚です。山札がなくなったためゲーム終了です。手札が最も多い人が負けです。ゲームは終了しています。',
+    );
+    expect(screen.getByRole('button', { name: '山札から引く' })).toBeDisabled();
   });
 
   it('shows the center top card rank and suit (not just the suit symbol)', async () => {

@@ -40,7 +40,16 @@ func TestPigsTailCuiPresenter_Output(t *testing.T) {
 		output := p.Output(pt, nil)
 		assert.Contains(t, output, "Pig's Tail (ぶたのしっぽ)")
 		assert.Contains(t, output, "山札: 52枚")
+		assert.NotContains(t, output, "場札トップと同じスートを引くと、場札をすべて引き取ります。")
+		assert.Contains(t, output, "山札は52枚残っています。")
 		assert.Contains(t, output, "手番:")
+	})
+	t.Run("penalty guidance only appears when the center has cards", func(t *testing.T) {
+		pt := newTestPigsTailForPresenter()
+		assert.NotContains(t, p.Output(pt, nil), "場札トップと同じスートを引くと、場札をすべて引き取ります。")
+
+		pt.SetCenter([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 1, false)})
+		assert.Contains(t, p.Output(pt, nil), "場札トップと同じスートを引くと、場札をすべて引き取ります。")
 	})
 	// **Web は引いた札と判定を見せている。**CUI は CPU の行動履歴しか出さず、
 	// 自分が引いた札もペナルティかどうかも分からなかった (#4864)。
@@ -92,6 +101,8 @@ func TestPigsTailCuiPresenter_Output(t *testing.T) {
 		output := p.Output(pt, nil)
 		assert.Contains(t, output, "ゲーム終了！")
 		assert.Contains(t, output, "の負け！")
+		assert.Contains(t, output, "山札は0枚です。山札がなくなったためゲーム終了です。手札が最も多い人が負けです。")
+		assert.Contains(t, output, "ゲームは終了しています。")
 	})
 	t.Run("with cpu actions", func(t *testing.T) {
 		pt := newTestPigsTailForPresenter()
