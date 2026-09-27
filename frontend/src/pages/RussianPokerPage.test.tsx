@@ -74,6 +74,32 @@ describe('RussianPokerPage', () => {
     expect(within(line).queryByText(/⚠/)).not.toBeInTheDocument();
   });
 
+  it.each([RussianPokerPhase.ACTION, RussianPokerPhase.POST_ACTION])(
+    'shows the exact nonrefundable fold costs in phase %s',
+    async (phase) => {
+      mockExec.mockResolvedValue(
+        makeState({
+          phase,
+          exchangeCount: 2,
+          exchangeFee: 200,
+          bought6th: true,
+          buy6thFee: 100,
+          forceExchanged: true,
+          forceExchangeFee: 100,
+        }),
+      );
+      renderWithProviders(<RussianPokerPage />);
+
+      const line = await screen.findByTestId('russian-fold-costs');
+      expect(line).toHaveTextContent('フォールド時に返金されない費用: 500');
+      expect(line).toHaveTextContent('アンテ 100');
+      expect(line).toHaveTextContent('交換手数料 200');
+      expect(line).toHaveTextContent('6枚目手数料 100');
+      expect(line).toHaveTextContent('強制交換手数料 100');
+      expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
+    },
+  );
+
   it.each([100, 250])('shows the sixth-card fee preview for an ante of %s', async (anteBet) => {
     mockExec.mockResolvedValue(makeState({ anteBet }));
     renderWithProviders(<RussianPokerPage />);
