@@ -36,6 +36,10 @@ export interface TongitsResponse extends BaseGameResponse {
   gameEndFlag: boolean;
   winnerIdx: number;
   isTongits: boolean;
+  /** Reason the round ended: 0 none, 1 Tongits, 2 challenge, 3 stock out. */
+  roundEndReason: number;
+  /** Round winner index, or -1 for a draw. */
+  roundWinner: number;
   /** Remaining hand points for the human on their discard turn, or -1. */
   remainingPoints: number;
   config: TongitsConfig;

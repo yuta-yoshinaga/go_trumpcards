@@ -170,6 +170,8 @@ func TestTongitsEmptyHandWinsImmediately(t *testing.T) {
 	require.NoError(t, g.PlayerMeld([]int{0, 1, 2}))
 	assert.True(t, g.GetGameEndFlag())
 	assert.Equal(t, 0, g.GetWinnerIdx())
+	assert.Equal(t, domain.TongitsRoundEndReasonTongits, g.GetRoundEndReason())
+	assert.Equal(t, 0, g.GetRoundWinner())
 }
 
 func TestTongitsChallengeComparesThreeHands(t *testing.T) {
@@ -181,6 +183,8 @@ func TestTongitsChallengeComparesThreeHands(t *testing.T) {
 	g.GetPlayer(2).AddCard(tongitsCard(domain.CardDesignSpade, 5))
 	require.NoError(t, g.PlayerChallenge([]bool{true, true}))
 	assert.Equal(t, 1, g.GetWinnerIdx())
+	assert.Equal(t, domain.TongitsRoundEndReasonChallenge, g.GetRoundEndReason())
+	assert.Equal(t, 1, g.GetRoundWinner())
 }
 
 func TestTongitsConfigAndCardValue(t *testing.T) {
@@ -490,6 +494,8 @@ func TestTongitsCPUPlayEarlyReturnsAndDrawBranches(t *testing.T) {
 		g.SetDiscardPile(nil)
 		g.CpuPlay()
 		assert.Equal(t, domain.TongitsPhaseRoundEnd, g.GetPhase())
+		assert.Equal(t, domain.TongitsRoundEndReasonStockOut, g.GetRoundEndReason())
+		assert.Equal(t, -1, g.GetRoundWinner())
 	})
 
 	t.Run("empty hand wins", func(t *testing.T) {
@@ -546,9 +552,21 @@ func TestTongitsScoreRoundIsIdempotent(t *testing.T) {
 
 func TestTongitsNextRoundResetsRoundState(t *testing.T) {
 	g := tongitsTestGame()
-	g.SetRand(rand.New(rand.NewSource(1)))
 	g.SetRoundNumber(3)
-	g.SetPhase(domain.TongitsPhaseRoundEnd)
+	// Simulate a completed challenge round from its JSON snapshot so NextRound
+	// must clear a non-default reason and winner.
+	snapshot, err := json.Marshal(g)
+	require.NoError(t, err)
+	var roundState map[string]json.RawMessage
+	require.NoError(t, json.Unmarshal(snapshot, &roundState))
+	roundState["ps"], _ = json.Marshal(domain.TongitsPhaseRoundEnd)
+	roundState["rer"], _ = json.Marshal(domain.TongitsRoundEndReasonChallenge)
+	roundState["rw"], _ = json.Marshal(2)
+	snapshot, err = json.Marshal(roundState)
+	require.NoError(t, err)
+	require.NoError(t, json.Unmarshal(snapshot, g))
+	g.SetRand(rand.New(rand.NewSource(1)))
+	g.SetIsTongits(true)
 	g.SetCurrentPlayerIdx(2)
 	g.SetDiscardPile([]*domain.Card{tongitsCard(domain.CardDesignSpade, 2)})
 
@@ -561,6 +579,8 @@ func TestTongitsNextRoundResetsRoundState(t *testing.T) {
 	assert.Equal(t, domain.TongitsHandSize, g.GetPlayer(1).GetCardsSize())
 	assert.Equal(t, domain.TongitsHandSize, g.GetPlayer(2).GetCardsSize())
 	assert.Equal(t, domain.TongitsPhaseDiscard, g.GetPhase())
+	assert.Equal(t, domain.TongitsRoundEndReasonNone, g.GetRoundEndReason())
+	assert.Equal(t, -1, g.GetRoundWinner())
 }
 
 func TestTongitsNextRoundIgnoresWrongPhase(t *testing.T) {

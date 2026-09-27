@@ -33,6 +33,8 @@ func (p *TongitsWebPresenter) Output(g interfaces.TongitsGame, lastErr error) st
 	resObj.GameEndFlag = g.GetGameEndFlag()
 	resObj.WinnerIdx = g.GetWinnerIdx()
 	resObj.IsTongits = g.GetIsTongits()
+	resObj.RoundEndReason = int(g.GetRoundEndReason())
+	resObj.RoundWinner = g.GetRoundWinner()
 
 	top := g.GetDiscardTop()
 	if top != nil {

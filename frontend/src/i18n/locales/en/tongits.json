@@ -34,6 +34,13 @@
   "drawPhase": "Draw a card from the stock or discard pile",
   "discardPhase": "Meld, sapaw, discard, or challenge",
   "roundEnd": "Round end",
+  "roundEndReasonLabel": "Round end reason",
+  "roundWinnerLabel": "Winner",
+  "roundDraw": "Draw",
+  "roundEndReason": { "1": "Tongits", "2": "Challenge", "3": "Stock out" },
+  "roundEndReasonLine": "Round end reason: {{reason}}",
+  "roundWinnerLine": "Round winner: {{name}}",
+  "cpuName": "CPU {{id}}",
   "tongitsOnDeal": "Tongits on deal! Instant win",
   "tongitsOnDealBanner": {
     "title": "TONGITS!",

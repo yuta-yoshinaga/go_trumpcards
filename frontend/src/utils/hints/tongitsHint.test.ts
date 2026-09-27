@@ -27,6 +27,8 @@ function base(overrides: Partial<TongitsResponse> = {}): TongitsResponse {
     gameEndFlag: false,
     winnerIdx: -1,
     isTongits: false,
+    roundEndReason: 0,
+    roundWinner: -1,
     remainingPoints: 6,
     message: '',
     config: { cpuDifficulty: 1, pointLimit: 50 },
