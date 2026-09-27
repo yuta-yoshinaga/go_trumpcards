@@ -3,6 +3,8 @@
   "ruleLine": "a pool pays only on a card of the turn-up's suit / pochen compares same-rank sets (four beats three beats a pair) -- there is no declaration",
   "turnUp": "Turn-up",
   "board": "Board (unclaimed pools carry over to the next deal)",
+  "listSeparator": ", ",
+  "poolUpdate": "{{pool}}: {{chips}} chips",
   "pool.ace": "Ace",
   "pool.king": "King",
   "pool.queen": "Queen",

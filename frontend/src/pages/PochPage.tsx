@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { pochApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardBack } from '../components/CardImage';
@@ -56,6 +56,29 @@ function PochPageContent() {
   );
 
   const [handIdx, setHandIdx] = useState<number | null>(null);
+  const previousPools = useRef<PochResponse['pools'] | null>(null);
+  const [poolAnnouncement, setPoolAnnouncement] = useState('');
+
+  const resetWithQuietPoolBaseline = (reset: () => void) => {
+    previousPools.current = null;
+    setPoolAnnouncement('');
+    reset();
+  };
+
+  useEffect(() => {
+    if (!state) return;
+    if (previousPools.current === null) {
+      previousPools.current = state.pools;
+      return;
+    }
+
+    const previousByName = new Map(previousPools.current.map((pool) => [pool.name, pool.chips]));
+    const changedPools = state.pools
+      .filter((pool) => previousByName.get(pool.name) !== pool.chips)
+      .map((pool) => t('poolUpdate', { pool: t(`pool.${pool.name}`), chips: pool.chips }));
+    previousPools.current = state.pools;
+    setPoolAnnouncement(changedPools.join(t('listSeparator')));
+  }, [state, t]);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('poch');
   const cliConfig: CliGameConfig<PochResponse, Parameters<typeof pochApi.exec>> = useMemo(
@@ -117,6 +140,10 @@ function PochPageContent() {
     >
       <LandscapeBanner message={t('landscapeBanner')} />
 
+      <div role="status" aria-live="polite" className="sr-only" data-testid="poch-pool-live">
+        {poolAnnouncement}
+      </div>
+
       <SettingsPanel
         title={tc('settings.title')}
         groups={[
@@ -128,7 +155,8 @@ function PochPageContent() {
                 label: t('settings.cpuDifficulty'),
                 value: String(state.config?.cpuDifficulty ?? 1),
                 options: difficultyOptions,
-                onSelect: (v: string) => game.exec('reset', undefined, { cpuDifficulty: Number(v) }),
+                onSelect: (v: string) =>
+                  resetWithQuietPoolBaseline(() => game.exec('reset', undefined, { cpuDifficulty: Number(v) })),
               },
               hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
             ],
@@ -359,7 +387,7 @@ function PochPageContent() {
               )}
               <GameResetButton
                 isGameEnd={ended}
-                onReset={game.handleReset}
+                onReset={() => resetWithQuietPoolBaseline(game.handleReset)}
                 requestConfirm={requestConfirm}
                 loading={loading}
                 dataTutorial="pc-reset-button"
