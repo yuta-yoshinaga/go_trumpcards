@@ -27,6 +27,8 @@ func setupTongitsWebMock() *interfaces.MockTongitsGame {
 	m.On("GetConfig").Return(domain.DefaultTongitsConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	m.On("GetIsTongits").Return(false)
+	m.On("GetRoundEndReason").Return(domain.TongitsRoundEndReasonNone)
+	m.On("GetRoundWinner").Return(-1)
 	m.On("IsHumanTurn").Return(false).Maybe()
 
 	return m
@@ -64,7 +66,23 @@ func TestTongitsWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, -1, resObj.WinnerIdx)
 		assert.Equal(t, -1, resObj.RemainingPoints)
 		assert.False(t, resObj.IsTongits)
+		assert.Equal(t, 0, resObj.RoundEndReason)
+		assert.Equal(t, -1, resObj.RoundWinner)
 		assert.Nil(t, resObj.DiscardTop)
+	})
+
+	t.Run("round end includes reason and winner", func(t *testing.T) {
+		m, _ := setupTongitsWebMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundEndReason")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundWinner")
+		m.On("GetPhase").Return(domain.TongitsPhaseRoundEnd)
+		m.On("GetRoundEndReason").Return(domain.TongitsRoundEndReasonChallenge)
+		m.On("GetRoundWinner").Return(2)
+		var out controller.TongitsWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, nil)), &out))
+		assert.Equal(t, int(domain.TongitsRoundEndReasonChallenge), out.RoundEndReason)
+		assert.Equal(t, 2, out.RoundWinner)
 	})
 
 	t.Run("human cards shown, CPU cards hidden in draw phase", func(t *testing.T) {

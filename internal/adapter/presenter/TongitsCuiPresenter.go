@@ -150,6 +150,15 @@ func (p *TongitsCuiPresenter) Output(g interfaces.TongitsGame, lastErr error) st
 			b.WriteString(i18n.T("tongits.promptDiscardHelp") + "\n")
 			b.WriteString(i18n.T("tongits.promptChallengeHelp") + "\n")
 		case domain.TongitsPhaseRoundEnd:
+			if g.GetRoundEndReason() != domain.TongitsRoundEndReasonNone {
+				b.WriteString(i18n.Tf("tongits.roundEndReason", "reason", i18n.T("tongits.roundEndReasonValue."+strconv.Itoa(int(g.GetRoundEndReason())))) + "\n")
+			}
+			if g.GetRoundWinner() < 0 {
+				b.WriteString(i18n.T("tongits.roundWinnerDraw") + "\n")
+			} else {
+				winner := g.GetRoundWinner()
+				b.WriteString(i18n.Tf("tongits.roundWinner", "name", cuiPlayerName(g.GetPlayer(winner), winner)) + "\n")
+			}
 			if g.GetIsTongits() {
 				b.WriteString(i18n.T("tongits.promptDealtTongits") + "\n")
 			}

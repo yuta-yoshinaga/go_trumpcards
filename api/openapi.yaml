@@ -47174,6 +47174,8 @@ components:
         gameEndFlag: {type: boolean}
         winnerIdx: {type: integer}
         isTongits: {type: boolean}
+        roundEndReason: {type: integer, description: 0 none, 1 Tongits, 2 challenge, 3 stock out}
+        roundWinner: {type: integer, description: Player index or -1 for a draw}
         remainingPoints: {type: integer}
         config:
           type: object

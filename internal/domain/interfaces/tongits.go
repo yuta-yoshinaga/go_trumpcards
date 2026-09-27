@@ -56,4 +56,6 @@ type TongitsGame interface {
 	GetPlayer(i int) *domain.TongitsPlayer
 	// GetIsTongits 配牌Tongitsかを返す
 	GetIsTongits() bool
+	GetRoundEndReason() domain.TongitsRoundEndReason
+	GetRoundWinner() int
 }

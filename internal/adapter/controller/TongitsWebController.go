@@ -61,6 +61,8 @@ type TongitsWebOutput struct {
 	GameEndFlag      bool                      `json:"gameEndFlag"`
 	WinnerIdx        int                       `json:"winnerIdx"`
 	IsTongits        bool                      `json:"isTongits"`
+	RoundEndReason   int                       `json:"roundEndReason"`
+	RoundWinner      int                       `json:"roundWinner"`
 	// RemainingPoints は手番のプレイヤーの残り点 (challenge の判定材料)。
 	// 手番でないときは -1。
 	RemainingPoints int `json:"remainingPoints"`
@@ -103,6 +105,7 @@ func newTongitsDefaultOutput(msg string) *TongitsWebOutput {
 	return &TongitsWebOutput{
 		Players:         make([]*TongitsWebOutputPlayer, 0),
 		WinnerIdx:       -1,
+		RoundWinner:     -1,
 		RemainingPoints: -1,
 		WebOutputBase:   WebOutputBase{Message: msg},
 	}
