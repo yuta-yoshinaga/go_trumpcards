@@ -27,7 +27,9 @@
     "speedHelp": "自動進行中に1手ごとの演出をどれくらいの速さで再生するかを選びます。速いほど決着まで一気に進みます。",
     "speedSlow": "ゆっくり",
     "speedNormal": "普通",
-    "speedFast": "高速"
+    "speedFast": "高速",
+    "speedSelected": "演出速度：{{speed}}",
+    "speedChanged": "速度を{{speed}}に変更しました"
   },
   "hint": {
     "flipCard": "カードをめくりましょう",

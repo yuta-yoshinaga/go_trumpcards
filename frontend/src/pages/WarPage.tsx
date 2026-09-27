@@ -123,20 +123,27 @@ function WarPageContent() {
 
   const [autoPlaySpeed, setAutoPlaySpeed] = useState<AutoPlaySpeed>(loadAutoPlaySpeed);
   const [autoPlaying, setAutoPlaying] = useState(false);
+  const [speedAnnouncement, setSpeedAnnouncement] = useState('');
 
   const handleStep = useCallback(() => execApi('step'), [execApi]);
   // Autoplay is driven client-side as a timed sequence of `step` calls (see the
   // effect below) so each round's reveal/war animation plays out; the button toggles it.
   const handleAutoPlay = useCallback(() => setAutoPlaying((prev) => !prev), []);
-  const handleSelectSpeed = useCallback((v: string) => {
-    const speed: AutoPlaySpeed = v === 'slow' || v === 'fast' ? v : 'normal';
-    setAutoPlaySpeed(speed);
-    try {
-      localStorage.setItem(AUTOPLAY_SPEED_STORAGE_KEY, speed);
-    } catch {
-      // Persistence is best-effort; ignore storage failures.
-    }
-  }, []);
+  const handleSelectSpeed = useCallback(
+    (v: string) => {
+      const speed: AutoPlaySpeed = v === 'slow' || v === 'fast' ? v : 'normal';
+      setAutoPlaySpeed(speed);
+      setSpeedAnnouncement(
+        t('settings.speedChanged', { speed: t(`settings.speed${speed[0].toUpperCase()}${speed.slice(1)}`) }),
+      );
+      try {
+        localStorage.setItem(AUTOPLAY_SPEED_STORAGE_KEY, speed);
+      } catch {
+        // Persistence is best-effort; ignore storage failures.
+      }
+    },
+    [t],
+  );
   const handleReset = useCallback(() => {
     setAutoPlaying(false);
     return execApi('reset', { maxRounds });
@@ -433,6 +440,9 @@ function WarPageContent() {
                     id: 'autoPlaySpeed',
                     testId: 'autoplay-speed-select',
                     label: t('settings.speed'),
+                    ariaLabel: t('settings.speedSelected', {
+                      speed: t(`settings.speed${autoPlaySpeed[0].toUpperCase()}${autoPlaySpeed.slice(1)}`),
+                    }),
                     tooltip: t('settings.speedHelp'),
                     value: autoPlaySpeed,
                     options: [
@@ -447,6 +457,9 @@ function WarPageContent() {
               },
             ]}
           />
+          <div role="status" aria-live="polite" className="sr-only">
+            {speedAnnouncement}
+          </div>
 
           <GameFooter className={`${gameTheme.war.footer} px-4 py-2.5`}>
             <div className="flex gap-2 justify-center">

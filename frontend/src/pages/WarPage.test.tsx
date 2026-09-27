@@ -344,9 +344,15 @@ describe('WarPage', () => {
     renderWithProviders(<WarPage />);
     const select = (await screen.findByTestId('autoplay-speed-select')) as HTMLSelectElement;
     expect(select.value).toBe('normal');
+    expect(select).toHaveAccessibleName('演出速度：普通');
+    expect(screen.getByRole('status')).toBeEmptyDOMElement();
     fireEvent.change(select, { target: { value: 'slow' } });
     expect(select.value).toBe('slow');
+    expect(select).toHaveAccessibleName('演出速度：ゆっくり');
+    expect(screen.getByRole('status')).toHaveTextContent('速度をゆっくりに変更しました');
     expect(localStorage.getItem('war:autoPlaySpeed')).toBe('slow');
+    fireEvent.click(screen.getByTestId('autoplay-button'));
+    expect(screen.getByTestId('autoplay-button')).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('disables autoplay button on game end', async () => {
