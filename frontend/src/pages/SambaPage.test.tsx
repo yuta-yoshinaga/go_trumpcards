@@ -97,6 +97,21 @@ describe('SambaPage', () => {
     expect(hand).toHaveAttribute('aria-describedby', 'sa-meld-points');
   });
 
+  it('does not describe meld points after the initial meld is complete', async () => {
+    const stateAfterInitialMeld = makeSambaState({
+      phase: 1,
+      messageCode: 'samba.meldPhase',
+      players: [{ ...meldPhaseState.players[0], hasInitMeld: true }, ...meldPhaseState.players.slice(1)],
+    });
+    mockExec.mockResolvedValue(stateAfterInitialMeld);
+    renderWithProviders(<SambaPage />);
+
+    const meldButton = await screen.findByRole('button', { name: 'メルドする' });
+    const hand = document.querySelector('[data-tutorial="sa-player-hand"] button');
+    expect(hand).not.toHaveAttribute('aria-describedby');
+    expect(meldButton).not.toHaveAttribute('aria-describedby');
+  });
+
   it('announces that the initial-meld requirement is met when selected points reach the minimum', async () => {
     const stateWithEnoughPoints = makeSambaState({
       phase: 1,
