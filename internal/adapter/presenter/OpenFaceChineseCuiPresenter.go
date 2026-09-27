@@ -24,6 +24,14 @@ func ofcRowCards(cards []*domain.Card) string {
 	return strings.Join(parts, ", ")
 }
 
+func ofcRowRemaining(cards []*domain.Card, capacity int) string {
+	remaining := capacity - len(cards)
+	if remaining <= 0 {
+		return i18n.T("openfacechinese.rowFull")
+	}
+	return i18n.Tf("openfacechinese.rowRemaining", "count", strconv.Itoa(remaining))
+}
+
 // ofcPlayerStr returns the display string for a single player's three rows.
 func ofcPlayerStr(g interfaces.OpenFaceChineseGame, idx int) string {
 	player := g.GetPlayer(idx)
@@ -43,9 +51,12 @@ func ofcPlayerStr(g interfaces.OpenFaceChineseGame, idx int) string {
 		"total", strconv.Itoa(player.GetTotalScore()),
 		"round", strconv.Itoa(player.GetRoundScore()),
 		"status", status) + "\n")
-	b.WriteString(i18n.Tf("openfacechinese.rowFront", "cards", ofcRowCards(player.GetFront())) + "\n")
-	b.WriteString(i18n.Tf("openfacechinese.rowMiddle", "cards", ofcRowCards(player.GetMiddle())) + "\n")
-	b.WriteString(i18n.Tf("openfacechinese.rowBack", "cards", ofcRowCards(player.GetBack())) + "\n")
+	b.WriteString(i18n.Tf("openfacechinese.rowFront", "cards", ofcRowCards(player.GetFront()),
+		"remaining", ofcRowRemaining(player.GetFront(), domain.OpenFaceChineseFrontSize)) + "\n")
+	b.WriteString(i18n.Tf("openfacechinese.rowMiddle", "cards", ofcRowCards(player.GetMiddle()),
+		"remaining", ofcRowRemaining(player.GetMiddle(), domain.OpenFaceChineseMiddleSize)) + "\n")
+	b.WriteString(i18n.Tf("openfacechinese.rowBack", "cards", ofcRowCards(player.GetBack()),
+		"remaining", ofcRowRemaining(player.GetBack(), domain.OpenFaceChineseBackSize)) + "\n")
 	// **なぜその点になったのかが CUI からは追えなかった。**ロイヤリティは強い役に
 	// 付く追加点で、`ofcPlayerRoyalty` が毎ラウンド算出しているのに、CUI は合計と
 	// ラウンド得点しか出しておらず `GetRoyalty()` を一度も呼んでいなかった (#6472)。

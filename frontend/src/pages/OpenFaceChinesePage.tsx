@@ -184,6 +184,11 @@ function OpenFaceChinesePageContent() {
   const handleNext = () => exec('nextround');
   const handleHint = () => exec('hint');
   const rowNames = ['front', 'middle', 'back'] as const;
+  const placementRowLabel = (row: number) => {
+    const count = [human?.front.length ?? 0, human?.middle.length ?? 0, human?.back.length ?? 0][row] ?? 0;
+    const remaining = Math.max(0, ROW_CAPACITIES[row] - count);
+    return `${t(`rows.${rowNames[row]}`)} ${remaining === 0 ? t('rowFull') : t('rowRemaining', { count: remaining })}`;
+  };
 
   const playerName = (player: OpenFaceChinesePlayer) => (player.isHuman ? t('you') : t('cpu', { n: player.id }));
 
@@ -203,9 +208,12 @@ function OpenFaceChinesePageContent() {
     // A fieldset+legend names the whole row for SR (count + card contents), since
     // the empty slots are decorative and biome forbids role="group" on a div.
     const cardNames = cards.map(cardAlt).join(', ');
+    const remaining = Math.max(0, capacity - cards.length);
+    const remainingLabel = remaining === 0 ? t('rowFull') : t('rowRemaining', { count: remaining });
+    const rowLabel = `${label} ${remainingLabel}`;
     const rowAria = cardNames
-      ? t('rowAriaFilled', { label, count: cards.length, cards: cardNames })
-      : t('rowAriaEmpty', { label, count: cards.length });
+      ? t('rowAriaFilled', { label: rowLabel, count: cards.length, cards: cardNames })
+      : t('rowAriaEmpty', { label: rowLabel, count: cards.length });
     const slots = (
       <div className="flex gap-1 flex-wrap">
         {cards.map((c, i) => (
@@ -225,7 +233,7 @@ function OpenFaceChinesePageContent() {
       <fieldset className="flex flex-col gap-1 border-0 p-0 m-0" data-testid={`ofc-row-${keyPrefix}`}>
         <legend className="sr-only">{rowAria}</legend>
         <span className="text-ds-text-muted text-[11px]" aria-hidden="true">
-          {label}
+          {rowLabel}
         </span>
         {place ? (
           <button
@@ -234,7 +242,7 @@ function OpenFaceChinesePageContent() {
             onClick={() => handlePlace(place.row)}
             disabled={loading || place.full}
             aria-disabled={place.full}
-            aria-label={t('placeRowAria', { label })}
+            aria-label={t('placeRowAria', { label: rowLabel })}
             data-testid={`ofc-place-row-${keyPrefix}`}
           >
             {slots}
@@ -339,6 +347,7 @@ function OpenFaceChinesePageContent() {
                     onClick={() => handlePlace(ROW_FRONT)}
                     disabled={loading || frontFull}
                     aria-disabled={frontFull}
+                    aria-label={t('placeRowAria', { label: placementRowLabel(ROW_FRONT) })}
                     data-foul-risk={foulRisk.front ? 'true' : undefined}
                     data-testid="place-front"
                   >
@@ -350,6 +359,7 @@ function OpenFaceChinesePageContent() {
                     onClick={() => handlePlace(ROW_MIDDLE)}
                     disabled={loading || middleFull}
                     aria-disabled={middleFull}
+                    aria-label={t('placeRowAria', { label: placementRowLabel(ROW_MIDDLE) })}
                     data-foul-risk={foulRisk.middle ? 'true' : undefined}
                     data-testid="place-middle"
                   >
@@ -361,6 +371,7 @@ function OpenFaceChinesePageContent() {
                     onClick={() => handlePlace(ROW_BACK)}
                     disabled={loading || backFull}
                     aria-disabled={backFull}
+                    aria-label={t('placeRowAria', { label: placementRowLabel(ROW_BACK) })}
                     data-foul-risk={foulRisk.back ? 'true' : undefined}
                     data-testid="place-back"
                   >
