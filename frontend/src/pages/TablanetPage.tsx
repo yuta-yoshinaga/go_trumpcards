@@ -178,7 +178,7 @@ function TablanetPageContent() {
   // tabla). This mirrors the backend award rule (Tablanet.go applyPlay) and is
   // derived purely from captureOptions + tableCards.length as the issue requires.
   const selectedHandCard = handIndex !== null ? (human?.cards[handIndex] ?? null) : null;
-  const selectedTableTotal = tableIndices.reduce((sum, idx) => sum + (state.tableCards[idx]?.value ?? 0), 0);
+  const selectedTableTotal = tableIndices.reduce((sum, idx) => sum + state.tableCards[idx].value, 0);
   const selectedIsJack = selectedHandCard?.value === 11;
   const tablaPossible =
     isHumanTurn &&
