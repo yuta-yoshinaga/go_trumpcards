@@ -418,6 +418,8 @@ func TestRankAndFile_MoveTableauToFoundation(t *testing.T) {
 		err := ft.MoveTableauToFoundation(0)
 		assert.NoError(t, err)
 		assert.Equal(t, 0, len(ft.GetTableau()[0]))
+		logs := ft.GetActionLog()
+		assert.Equal(t, "1", logs[len(logs)-1].DetailParams["foundation"])
 	})
 
 	t.Run("move card to existing foundation pile", func(t *testing.T) {

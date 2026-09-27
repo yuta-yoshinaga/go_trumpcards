@@ -380,6 +380,9 @@ function RankAndFilePageContent() {
                   );
                 })}
               </div>
+              {state.foundation.some((pile) => pile.length === 0) && (
+                <span className="text-game-text-muted text-xs self-center">{t('emptyFoundationAutoTarget')}</span>
+              )}
               <span data-testid="rf-doubleclick-hint" className="text-game-text-muted text-xs self-center">
                 {t('doubleClickHint')}
               </span>

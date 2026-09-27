@@ -154,6 +154,11 @@ describe('RankAndFilePage', () => {
     expect(screen.queryByText('♦')).not.toBeInTheDocument();
   });
 
+  it('explains that an empty foundation click selects a valid pile automatically', async () => {
+    renderWithProviders(<RankAndFilePage />);
+    expect(await screen.findByText(/空の組札を選ぶと、置ける組札が自動で選ばれます/)).toBeInTheDocument();
+  });
+
   it('labels a populated foundation with the suit actually sitting on it', async () => {
     mockExec.mockResolvedValue(withFoundationState);
     renderWithProviders(<RankAndFilePage />);

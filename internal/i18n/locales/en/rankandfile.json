@@ -3,7 +3,7 @@
   "log.wasteToTableau": "Waste → tableau column {{column}}",
   "log.wasteToFoundation": "Waste → foundation",
   "log.tableauToTableau": "Tableau column {{fromColumn}} → tableau column {{toColumn}}",
-  "log.tableauToFoundation": "Tableau column {{column}} → foundation",
+  "log.tableauToFoundation": "Tableau column {{column}} → foundation {{foundation}}",
   "log.giveup": "Gave up",
   "log.autocomplete": "Ran autocomplete",
   "helpTitle": "Rank and File Solitaire",
