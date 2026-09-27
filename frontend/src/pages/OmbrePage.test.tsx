@@ -153,6 +153,24 @@ describe('OmbrePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0 }));
   });
 
+  it('requests a play hint and marks the recommended card', async () => {
+    mockExec.mockResolvedValueOnce(playPhaseState).mockResolvedValueOnce({
+      ...playPhaseState,
+      hint: { cardIndices: [0], reason: 'lead_high' },
+      messageCode: 'ombre.hintRequested',
+    });
+    renderWithProviders(<OmbrePage />);
+    const hintButton = await screen.findByRole('button', { name: 'ヒントを表示' });
+    fireEvent.click(hintButton);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
+    const hintLive = screen.getByTestId('ombre-hint-live');
+    await waitFor(() => {
+      expect(hintLive.textContent).toContain('♥ Q');
+      expect(hintLive.textContent).toContain('強い札でリード');
+    });
+    expect(screen.getByAltText('♥ Q').closest('button')).toHaveStyle({ border: '3px solid var(--color-ds-warning)' });
+  });
+
   it('renders trick end with the next trick button', async () => {
     mockExec.mockResolvedValue(trickEndState);
     renderWithProviders(<OmbrePage />);
@@ -245,9 +263,7 @@ describe('OmbrePage', () => {
     mockExec.mockResolvedValue({ ...playPhaseState, hint: { cardIndices: [0], reason: 'x' } });
     renderWithProviders(<OmbrePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
-    // バナーは推奨札の位置を `([0])` の形で含む。トグルのラベル (「ヒント表示」)
-    // と紛れないよう、そこで判定する。
-    expect(screen.queryByText(/\(\[0\]\)/)).not.toBeInTheDocument();
+    expect(screen.getByTestId('ombre-hint-live')).not.toHaveTextContent('♥ Q');
   });
 
   // **押したときは出る。**押していない側だけを見ていると、`isRequestedHint` を
@@ -259,7 +275,7 @@ describe('OmbrePage', () => {
       messageCode: 'ombre.hintRequested',
     });
     renderWithProviders(<OmbrePage />);
-    expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId('ombre-hint-live').textContent).toContain('♥ Q'));
   });
 
   // **全員パスによる強制 Entrar は通常の宣言と区別が付かなかった** ── 差は

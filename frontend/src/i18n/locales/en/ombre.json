@@ -68,7 +68,9 @@
     "outcome": "Outcome: {{outcome}}",
     "ombre": "Ombre: {{name}}"
   },
-  "hintAvailable": "Hint",
+  "requestHint": "Show hint",
+  "hintMessage": "Suggested: {{cards}} — {{reason}}",
+  "listSeparator": ", ",
   "hint": {
     "lead_high": "You are Ombre — lead a strong card to take control",
     "lead_low": "You are coalition — lead a low card to conserve",
