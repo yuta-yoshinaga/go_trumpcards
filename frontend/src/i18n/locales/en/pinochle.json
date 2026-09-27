@@ -25,6 +25,8 @@
   "team": "Team",
   "highestBid": "Highest Bid",
   "trumpSuit": "Trump Suit",
+  "trumpUndecided": "undecided",
+  "trumpSelecting": "selecting",
   "meldScore": "Meld Score",
   "meldHighlightHint": "Click a meld badge to highlight the cards that form it",
   "trickPoints": "Trick Points",
