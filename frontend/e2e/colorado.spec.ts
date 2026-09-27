@@ -49,7 +49,7 @@ test.describe('Colorado E2E', () => {
   test('selecting a tableau pile arms the move', async ({ page }) => {
     await navigateTo(page, '/colorado');
     // Pile 0 always holds a card at deal, so it is safe to click without
-    // probing (an empty pile renders a disabled button).
+    // probing (an empty pile is aria-disabled until a source can move there).
     const pile = page.getByTestId('co-tableau-0');
     await expect(pile).toBeVisible({ timeout: TIMEOUT_TRANSITION });
     await expect(pile).toHaveAttribute('aria-pressed', 'false');

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useId, useMemo, useState } from 'react';
 import { coloradoApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -100,6 +100,7 @@ function ColoradoPageContent() {
   useMountReset(runApi);
 
   const [source, setSource] = useState<Source | null>(null);
+  const selectSourceHintId = useId();
 
   const {
     hint: frontendHint,
@@ -273,6 +274,9 @@ function ColoradoPageContent() {
           <LandscapeBanner message={t('landscapeBanner')} />
 
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
+            <span id={selectSourceHintId} className="sr-only">
+              {tc('label.selectSourceFirst')}
+            </span>
             <div className="mb-2 text-xs text-ds-text-muted">{t('foundations')}</div>
             <div className="flex gap-2 mb-5 flex-wrap" data-tutorial="co-foundations">
               {Array.from({ length: FOUNDATION_CNT }, (_, idx) => {
@@ -288,7 +292,9 @@ function ColoradoPageContent() {
                     type="button"
                     className={`flex flex-col items-center p-1 rounded ${focusRingWhite} ${hintFoundation === idx ? 'ring-2 ring-ds-success animate-pulse' : ''} ${source && source.kind !== 'stock' ? 'cursor-pointer' : 'cursor-default'}`}
                     onClick={placeOnFoundation}
-                    disabled={!isPlaying || loading || source === null || source.kind === 'stock'}
+                    disabled={!isPlaying || loading}
+                    aria-disabled={source === null || source.kind === 'stock' || undefined}
+                    aria-describedby={source === null ? selectSourceHintId : undefined}
                     data-testid={`co-foundation-${idx.toString()}`}
                     aria-label={
                       nextRankLabel
@@ -408,7 +414,9 @@ function ColoradoPageContent() {
                     <button
                       type="button"
                       onClick={() => clickTableau(idx, isEmpty)}
-                      disabled={!isPlaying || loading || (isEmpty && !isTarget)}
+                      disabled={!isPlaying || loading}
+                      aria-disabled={(isEmpty && !isTarget) || undefined}
+                      aria-describedby={isEmpty && source === null ? selectSourceHintId : undefined}
                       aria-pressed={selected}
                       data-testid={`co-tableau-${idx.toString()}`}
                       aria-label={

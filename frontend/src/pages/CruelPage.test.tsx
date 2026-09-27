@@ -71,6 +71,21 @@ beforeEach(() => {
 describe('CruelPage', () => {
   afterEach(() => localStorage.clear());
 
+  it('keeps a foundation target focusable and explains that a source must be selected', async () => {
+    renderWithProviders(<CruelPage />);
+    const target = await screen.findByTestId('cruel-foundation-0');
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const describedBy = target.getAttribute('aria-describedby');
+    expect(describedBy).toBeTruthy();
+    expect(document.getElementById(describedBy ?? '')).toHaveTextContent('先に移動する札を選んでください');
+
+    mockExec.mockClear();
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('renders heading', async () => {
     renderWithProviders(<CruelPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
