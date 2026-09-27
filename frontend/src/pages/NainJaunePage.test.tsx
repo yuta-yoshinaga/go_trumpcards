@@ -169,6 +169,22 @@ describe('NainJaunePage', () => {
   // **並びに従う義務がある。**出せない札を押せてしまうと、サーバに弾かれて
   // 初めて分かる (#4935)。
   describe('playable-card restriction', () => {
+    it.each([
+      ['CPU turn', { currentPlayerIdx: 1 }],
+      ['deal end', { phase: NainJaunePhase.DEAL_END, dealWinner: 1 }],
+    ] as const)('disables every hand card and matches its ARIA state during %s', async (_name, overrides) => {
+      mockExec.mockResolvedValue(makeState(overrides));
+      renderWithProviders(<NainJaunePage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+      const buttons = screen.getAllByRole('button').filter((b) => b.hasAttribute('data-hint-action'));
+      expect(buttons).toHaveLength(3);
+      for (const button of buttons) {
+        expect(button).toBeDisabled();
+        expect(button).toHaveAttribute('aria-disabled', 'true');
+      }
+    });
+
     it('disables and dims the cards that cannot legally be played', async () => {
       mockExec.mockResolvedValue(makeState({ validPlays: [0] }));
       renderWithProviders(<NainJaunePage />);
@@ -177,8 +193,10 @@ describe('NainJaunePage', () => {
       const buttons = screen.getAllByRole('button').filter((b) => b.hasAttribute('data-hint-action'));
       expect(buttons.length).toBeGreaterThan(1);
       expect(buttons[0]).not.toBeDisabled();
+      expect(buttons[0]).toHaveAttribute('aria-disabled', 'false');
       expect(buttons[0]).not.toHaveAttribute('data-unplayable');
       expect(buttons[1]).toBeDisabled();
+      expect(buttons[1]).toHaveAttribute('aria-disabled', 'true');
       expect(buttons[1]).toHaveAttribute('data-unplayable', 'true');
     });
 
@@ -191,6 +209,7 @@ describe('NainJaunePage', () => {
 
       for (const b of screen.getAllByRole('button').filter((x) => x.hasAttribute('data-hint-action'))) {
         expect(b).not.toBeDisabled();
+        expect(b).toHaveAttribute('aria-disabled', 'false');
       }
     });
   });
