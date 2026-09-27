@@ -69,6 +69,10 @@ interface ContractProgress {
   won: number;
   /** Tricks the declarer needs (0 for Misère). */
   needed: number;
+  /** Tricks still available in the round. */
+  remaining: number;
+  /** Tricks still needed to reach the target, clamped at zero. */
+  short: number;
   /** Made / failed / still in progress. */
   status: ContractStatus;
   /** Whether the contract is Misère (win no tricks). */
@@ -97,7 +101,7 @@ function computeContractProgress(contract: number, won: number, remaining: numbe
   } else {
     status = 'progress';
   }
-  return { won, needed, status, isMisere };
+  return { won, needed, remaining, short: Math.max(needed - won, 0), status, isMisere };
 }
 
 /** Bid button options (Pass/Six/Misère/Seven/Eight). */
@@ -314,8 +318,12 @@ function ViraPageContent() {
                 data-testid="vira-contract-progress"
               >
                 {contractProgress.isMisere
-                  ? t('progress.misere', { won: contractProgress.won })
-                  : t('progress.line', { won: contractProgress.won, needed: contractProgress.needed })}
+                  ? t('progress.misere', { won: contractProgress.won, remaining: contractProgress.remaining })
+                  : t('progress.line', {
+                      won: contractProgress.won,
+                      needed: contractProgress.needed,
+                      short: contractProgress.short,
+                    })}
                 {contractProgress.status === 'made' && ` — ${t('progress.made')}`}
                 {contractProgress.status === 'failed' && ` — ${t('progress.failed')}`}
               </div>

@@ -60,8 +60,8 @@
     "potCarried": "The pot carries over and now holds {{chips}}"
   },
   "progress": {
-    "line": "Declarer progress: {{won}} / {{needed}} tricks",
-    "misere": "Declarer progress: {{won}} tricks (Misère, target 0)",
+    "line": "Declarer progress: {{won}} / {{needed}} tricks ({{short}} more needed)",
+    "misere": "Declarer progress: {{won}} tricks (Misère, target 0; {{remaining}} tricks remaining)",
     "made": "Contract made",
     "failed": "Contract failed"
   },
