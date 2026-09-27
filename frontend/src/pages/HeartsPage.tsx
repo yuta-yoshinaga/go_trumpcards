@@ -461,11 +461,22 @@ function HeartsPageContent() {
             </div>
 
             {/* Message */}
+            <div data-testid="hearts-trick-result-live" role="status" aria-live="polite">
+              {isTrickEnd && (
+                <div className="text-ds-text-primary text-center font-bold mb-2">
+                  {t('trickResult', {
+                    name: state.players[state.leadPlayerIdx]
+                      ? playerName(state.players[state.leadPlayerIdx].id, state.players[state.leadPlayerIdx].isHuman)
+                      : '',
+                  })}
+                </div>
+              )}
+            </div>
             <div data-tutorial="ht-penalty-info">
               <GameMessageBox
-                message={state.message}
-                messageCode={state.messageCode}
-                messageParams={state.messageParams}
+                message={isTrickEnd && state.messageCode === 'hearts.trickEnd' ? undefined : state.message}
+                messageCode={isTrickEnd && state.messageCode === 'hearts.trickEnd' ? undefined : state.messageCode}
+                messageParams={isTrickEnd && state.messageCode === 'hearts.trickEnd' ? undefined : state.messageParams}
               />
             </div>
 

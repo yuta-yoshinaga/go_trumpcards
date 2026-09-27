@@ -17,6 +17,7 @@
   },
   "round": "Round {{n}}",
   "trick": "Trick {{n}}",
+  "trickResult": "{{name}} won the trick and will lead next.",
   "heartsBroken": "Hearts Broken",
   "heartsNotBroken": "Hearts Not Broken",
   "passDirection": {

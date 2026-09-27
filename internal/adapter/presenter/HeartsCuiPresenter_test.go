@@ -292,6 +292,7 @@ func TestHeartsCuiPresenter_Output(t *testing.T) {
 		m.On("GetPhase").Return(domain.HeartsPhaseTrickEnd)
 
 		result := p.Output(m, nil)
+		assert.Contains(t, result, "あなたがトリックを獲得し、次のリードを担当します。")
 		assert.Contains(t, result, "トリック終了")
 		assert.Contains(t, result, "next・・・次のトリックへ")
 	})
