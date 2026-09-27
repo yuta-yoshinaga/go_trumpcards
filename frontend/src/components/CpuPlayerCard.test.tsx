@@ -208,6 +208,130 @@ describe('CpuPlayerCard', () => {
     expect(indicator).toHaveTextContent('✓');
   });
 
+  it('keeps the legacy used-card badge and pulse ring without Hi/Lo props', () => {
+    render(
+      <CpuPlayerCard
+        player={makePlayer()}
+        showCards={true}
+        faceDownCount={2}
+        showHandName={false}
+        usedHoleIdx={[0]}
+        usedHoleLabel="使用"
+      />,
+    );
+    const used = screen.getByTestId('cpu-hole-used');
+    expect(used).toHaveClass('motion-safe:animate-pulse');
+    const indicator = within(used).getByTestId('cpu-hole-used-indicator');
+    expect(indicator).toHaveTextContent('✓');
+    expect(indicator).toHaveAttribute('aria-label', '使用');
+    expect(indicator).toHaveClass('text-white');
+  });
+
+  it('uses the on-accent text color for Hi/Lo usage badges', () => {
+    render(
+      <CpuPlayerCard
+        player={makePlayer()}
+        showCards={true}
+        faceDownCount={2}
+        showHandName={false}
+        usedHoleHiIdx={[0]}
+        usedHoleLoIdx={[1]}
+        usedHoleHiLabel="ハイ"
+        usedHoleLoLabel="ロー"
+      />,
+    );
+    const indicators = screen.getAllByTestId('cpu-hole-used-indicator');
+    expect(indicators).toHaveLength(2);
+    for (const indicator of indicators) {
+      expect(indicator).toHaveClass('text-ds-text-on-accent');
+    }
+  });
+
+  it.each([
+    {
+      usage: 'hi',
+      hiIdx: [0],
+      loIdx: [1],
+      cardAlt: '♠ A',
+      ringClass: 'ring-ds-success',
+      label: 'ハイ',
+    },
+    {
+      usage: 'lo',
+      hiIdx: [1],
+      loIdx: [0],
+      cardAlt: '♠ A',
+      ringClass: 'ring-ds-info',
+      label: 'ロー',
+    },
+    {
+      usage: 'both',
+      hiIdx: [0],
+      loIdx: [0],
+      cardAlt: '♠ A',
+      ringClass: 'ring-ds-accent',
+      label: 'ハイ, ロー',
+    },
+  ])('marks a card used for $usage with its label and ring', ({ usage, hiIdx, loIdx, cardAlt, ringClass, label }) => {
+    render(
+      <CpuPlayerCard
+        player={makePlayer()}
+        showCards={true}
+        faceDownCount={2}
+        showHandName={false}
+        usedHoleHiIdx={hiIdx}
+        usedHoleLoIdx={loIdx}
+        usedHoleHiLabel="ハイ"
+        usedHoleLoLabel="ロー"
+      />,
+    );
+
+    const card = screen.getByAltText(cardAlt).parentElement;
+    expect(card).toHaveAttribute('data-hilo-usage', usage);
+    expect(card).toHaveClass(ringClass);
+    expect(within(card as HTMLElement).getByTestId('cpu-hole-used-indicator')).toHaveAttribute('aria-label', label);
+  });
+
+  it('does not mark or ring a card with no Hi/Lo usage', () => {
+    render(
+      <CpuPlayerCard
+        player={makePlayer()}
+        showCards={true}
+        faceDownCount={2}
+        showHandName={false}
+        usedHoleHiIdx={[]}
+        usedHoleLoIdx={[]}
+        usedHoleHiLabel="ハイ"
+        usedHoleLoLabel="ロー"
+      />,
+    );
+
+    const card = screen.getByAltText('♠ A').parentElement;
+    expect(card).not.toHaveAttribute('data-hilo-usage');
+    expect(card).not.toHaveClass('ring-2');
+    expect(within(card as HTMLElement).queryByTestId('cpu-hole-used-indicator')).not.toBeInTheDocument();
+  });
+
+  it('keeps the legacy used-hole marker for cards outside the Hi/Lo sets', () => {
+    render(
+      <CpuPlayerCard
+        player={makePlayer()}
+        showCards={true}
+        faceDownCount={2}
+        showHandName={false}
+        usedHoleIdx={[1]}
+        usedHoleLabel="使用"
+        usedHoleHiIdx={[]}
+        usedHoleLoIdx={[]}
+      />,
+    );
+
+    const used = screen.getByTestId('cpu-hole-used');
+    expect(used).not.toHaveAttribute('data-hilo-usage');
+    expect(used).toHaveClass('motion-safe:animate-pulse');
+    expect(within(used).getByTestId('cpu-hole-used-indicator')).toHaveAttribute('aria-label', '使用');
+  });
+
   it('does not add the marker when the label is absent', () => {
     render(
       <CpuPlayerCard player={makePlayer()} showCards={true} faceDownCount={2} showHandName={false} usedHoleIdx={[0]} />,
