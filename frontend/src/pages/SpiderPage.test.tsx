@@ -455,14 +455,21 @@ describe('SpiderPage', () => {
     await waitFor(() => expect(cardButton).toHaveAttribute('aria-pressed', 'true'));
   });
 
-  it('empty tableau column disabled when no source selected', async () => {
+  it('empty tableau targets stay focusable and explain source selection before a move', async () => {
     renderWithProviders(<SpiderPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
-    const emptyButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === '空');
-    for (const btn of emptyButtons) {
-      expect(btn).toBeDisabled();
-    }
+    const btn = screen.getByTestId('spd-empty-col-2');
+    expect(btn).not.toBeDisabled();
+    expect(btn).toHaveAttribute('aria-disabled', 'true');
+    const describedBy = btn.getAttribute('aria-describedby');
+    expect(describedBy).toBeTruthy();
+    expect(document.getElementById(describedBy ?? '')).toHaveTextContent('先に移動する札を選んでください');
+
+    mockExec.mockClear();
+    fireEvent.click(btn);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
   });
 
   it('pressing d triggers deal in PLAYING phase when no empty columns', async () => {

@@ -87,6 +87,22 @@ beforeEach(() => {
 });
 
 describe('SpiderettePage', () => {
+  it('empty tableau targets stay focusable and explain source selection before a move', async () => {
+    renderWithProviders(<SpiderettePage />);
+
+    const btn = await screen.findByTestId('spdt-empty-col-2');
+    expect(btn).not.toBeDisabled();
+    expect(btn).toHaveAttribute('aria-disabled', 'true');
+    const describedBy = btn.getAttribute('aria-describedby');
+    expect(describedBy).toBeTruthy();
+    expect(document.getElementById(describedBy ?? '')).toHaveTextContent('先に移動する札を選んでください');
+
+    mockSend.mockClear();
+    fireEvent.click(btn);
+    await flushPendingDispatch();
+    expect(mockSend).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('announces stalemate escape moves and clears the announcement when resolved', async () => {
     mockSend.mockResolvedValueOnce({ ...playingState, isStalemate: true, undoToEscape: 3, canUndo: true });
     mockSend.mockResolvedValueOnce({ ...playingState, isStalemate: true, undoToEscape: 2, canUndo: true });

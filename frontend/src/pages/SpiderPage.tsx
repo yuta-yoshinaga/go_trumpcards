@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { SpiderMoveZone, spiderApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -86,6 +86,7 @@ const SPD_TUTORIAL_STEPS: TutorialStep[] = [
 export const SpiderPage = withTutorial(SpiderPageContent, 'spider', SPD_TUTORIAL_STEPS);
 /** Inner content of the Spider page, wrapped by TutorialProvider. */
 function SpiderPageContent() {
+  const selectSourceHintId = useId();
   const {
     t,
     tc,
@@ -321,6 +322,9 @@ function SpiderPageContent() {
 
           {/* Scrollable area */}
           <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
+            <span id={selectSourceHintId} className="sr-only">
+              {tc('label.selectSourceFirst')}
+            </span>
             {/* Stock row */}
             <div className="flex gap-2 mb-3 items-start">
               {/* Stock */}
@@ -394,7 +398,9 @@ function SpiderPageContent() {
                               key={`empty-${colIdx.toString()}-${emptyDealAttemptKey.toString()}`}
                               type="button"
                               onClick={() => handleSelectTarget(tableauColZone)}
-                              disabled={!isPlaying || loading || !selectedSource}
+                              disabled={!isPlaying || loading}
+                              aria-disabled={!selectedSource || undefined}
+                              aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                               style={{ height: tableau.ch }}
                               data-testid={`spd-empty-col-${colIdx.toString()}`}
                               className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}${emptyDealAttemptKey > 0 ? ' animate-shake border-ds-warning text-ds-warning' : ''}`}
