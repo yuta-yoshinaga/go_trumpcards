@@ -86,6 +86,8 @@ export interface AnacondaResponse extends BaseGameResponse {
   rollIndex: number;
   /** Chips currently in the pot. */
   pot: number;
+  /** Amount actually paid to the round winner; zero when no winner was paid. */
+  lastPayout: number;
   /** The current bet to match on this betting street. */
   currentBet: number;
   /** Number of raises already made on the current street. */

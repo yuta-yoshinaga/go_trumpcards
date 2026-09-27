@@ -3979,6 +3979,7 @@ const baseAnacondaState: AnacondaResponse = {
   passCount: 3,
   rollIndex: 0,
   pot: 40,
+  lastPayout: 0,
   currentBet: 0,
   raiseCount: 0,
   maxRaises: 3,

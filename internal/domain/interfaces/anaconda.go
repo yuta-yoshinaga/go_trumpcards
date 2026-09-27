@@ -45,6 +45,8 @@ type AnacondaGame interface {
 	GetRollIndex() int
 	// GetPot 現在のポットを取得する
 	GetPot() int
+	// GetLastPayout 直近ラウンドに勝者へ支払われたポット額を取得する
+	GetLastPayout() int
 	// GetCurrentBet 現在のストリートで必要な拠出額を取得する
 	GetCurrentBet() int
 	// GetRaiseCount このストリートのレイズ回数を取得する
