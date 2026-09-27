@@ -126,6 +126,10 @@ func (p *SkatCuiPresenter) Output(s interfaces.SkatGame, lastErr error) string {
 			func(tc *domain.TrickCard) string { return cuiCardStr(tc.Card) },
 			func(idx int) string { return cuiPlayerName(s.GetPlayer(idx), idx) },
 		)
+		if (s.GetPhase() == domain.SkatPhaseTrickEnd || (s.GetPhase() == domain.SkatPhasePlay && s.GetTrickNumber() > 1)) && s.GetLeadPlayerIdx() >= 0 {
+			winnerIdx := s.GetLeadPlayerIdx()
+			b.WriteString(i18n.Tf("skat.lastTrickWinner", "name", cuiPlayerName(s.GetPlayer(winnerIdx), winnerIdx)) + "\n")
+		}
 
 		cuiErrorBlock(b, lastErr)
 

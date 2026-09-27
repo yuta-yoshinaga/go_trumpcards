@@ -28,6 +28,7 @@
   "turnLabel": "手番: {{name}}",
   "promptPlay": "p <idx>",
   "trickComplete": "トリック完了",
+  "lastTrickWinner": "直前のトリックの勝者: {{name}}",
   "promptNext": "n / next",
   "roundEndLine": "ラウンド終了。宣言者ポイント: {{declarer}} / ディフェンダー: {{defenders}} / ゲーム価値: {{value}}",
   "promptNextRound": "nr / nextround",
