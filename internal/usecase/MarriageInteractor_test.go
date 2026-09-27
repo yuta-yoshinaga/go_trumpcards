@@ -30,8 +30,11 @@ func TestMarriageInteractor_ResetPerformance(t *testing.T) {
 	}
 	elapsed := time.Since(start)
 	t.Logf("200 Marriage resets: total %s, average %s, worst %s", elapsed, elapsed/200, worst)
-	if elapsed > time.Second || worst > 20*time.Millisecond {
-		t.Fatalf("200 Marriage resets took %s (worst %s), limits are total 1s and worst 20ms", elapsed, worst)
+	// The total catches a slow average: before #8054 a reset averaged 514ms natively.
+	// The worst catches a rare pathological deal: before #8054 the slowest took 1.64s.
+	// 100ms leaves room above GC/scheduler noise, which reached 22.5ms under a parallel test run (#8706).
+	if elapsed > time.Second || worst > 100*time.Millisecond {
+		t.Fatalf("200 Marriage resets took %s (worst %s), limits are total 1s and worst 100ms", elapsed, worst)
 	}
 }
 
