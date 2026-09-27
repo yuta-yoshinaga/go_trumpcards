@@ -341,7 +341,7 @@ function SpoilFivePageContent() {
                 {/* Round result */}
                 {(isRoundEnd || isGameEnd) && (
                   <div
-                    className="my-3 p-2 rounded bg-ds-surface text-ds-text-muted text-sm"
+                    className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
                     data-testid="spoilfive-round-result"
                   >
                     <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
