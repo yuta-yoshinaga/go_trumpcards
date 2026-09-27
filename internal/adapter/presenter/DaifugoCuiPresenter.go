@@ -114,6 +114,9 @@ func (p *DaifugoCuiPresenter) Output(dg interfaces.DaifugoGame, lastErr error) s
 				"name", cuiPlayerName(dg.GetPlayer(lastPlayIdx), lastPlayIdx)) + "\n")
 		} else {
 			b.WriteString(i18n.T("daifugo.tableEmpty") + "\n")
+			if leader := dg.GetFieldClearedLeader(); leader >= 0 {
+				b.WriteString(i18n.Tf("daifugo.fieldClearedLeader", "name", cuiPlayerName(dg.GetPlayer(leader), leader)) + "\n")
+			}
 		}
 
 		// Human's previous action

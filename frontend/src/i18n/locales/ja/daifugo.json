@@ -13,6 +13,7 @@
   "cardCount": "{{count}}枚",
   "selectToPlay": "カードをクリックして選択",
   "tableCards": "場札",
+  "fieldClearedLeader": "場流れ: {{name}} からリード",
   "tableEmpty": "（なし）",
   "lastPlayedBy": "（{{name}} が出した）",
   "playButton": "選択して出す",
