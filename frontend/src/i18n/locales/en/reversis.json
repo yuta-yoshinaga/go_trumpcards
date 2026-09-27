@@ -26,6 +26,9 @@
     "playAriaWithPoints": "Play {{card}} (worth {{points}})"
   },
   "result": {
+    "penaltyBreakdown": "Round penalty breakdown",
+    "normalPenalty": "Regular {{points}} points",
+    "specialPenalty": "Special card bonus {{points}} points",
     "youWin": "You win! {{chips}} chips",
     "cpuWin": "CPU{{idx}} wins with {{chips}} chips.",
     "tie": "It's a tie."

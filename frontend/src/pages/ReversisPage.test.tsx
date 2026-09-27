@@ -26,6 +26,7 @@ const seat = (id: number, over: Record<string, unknown> = {}) => ({
   cards: id === 0 ? [card('HEART', 11), card('SPADE', 9), card('DIAMOND', 1)] : [],
   chips: 45,
   roundPenalty: 0,
+  markedPenalty: 0,
   trickCount: 0,
   tookQuinola: false,
   tookDiamondAce: false,
@@ -80,6 +81,24 @@ describe('ReversisPage', () => {
     expect(await screen.findByTestId('rv-pool')).toHaveTextContent('20');
     expect(screen.getByTestId('rv-penalty-rule')).toHaveTextContent(/A=4 K=3 Q=2 J=1/);
     expect(screen.getByTestId('rv-penalty-rule')).toHaveTextContent(/♥J（キノラ）と♦A/);
+  });
+
+  it('shows a per-player round penalty breakdown that adds up to the displayed penalty', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 1,
+        players: [
+          seat(0, { roundPenalty: 12, markedPenalty: 10, tookQuinola: true, tookDiamondAce: true }),
+          seat(1, { roundPenalty: 4, markedPenalty: 0 }),
+          seat(2),
+          seat(3),
+        ],
+      }),
+    );
+    renderWithProviders(<ReversisPage />);
+    const breakdown = await screen.findByTestId('rv-penalty-breakdown');
+    expect(breakdown).toHaveTextContent('あなた: 通常 2 点 + 特殊札追加 10 点 = 12');
+    expect(breakdown).toHaveTextContent('CPU1: 通常 4 点 + 特殊札追加 0 点 = 4');
   });
 
   // **プールが急に大きくなる理由は持ち越し。**その規則はラウンド終了時の

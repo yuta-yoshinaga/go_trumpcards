@@ -290,6 +290,7 @@ func (r *Reversis) resolveTrick() {
 // chargeMarked 印付きの札を取った罰。**追加失点とプールへの支払いの両方。**
 func (r *Reversis) chargeMarked(winner int, nameKey string, card *Card) {
 	r.players[winner].AddRoundPenalty(ReversisMarkedPenalty)
+	r.players[winner].AddMarkedPenalty(ReversisMarkedPenalty)
 	r.players[winner].AddChips(-ReversisMarkedStake)
 	r.pool += ReversisMarkedStake
 	r.appendLog(winner, "marked", "reversis.log.marked", map[string]string{"nameKey": nameKey, "penalty": strconv.Itoa(ReversisMarkedPenalty), "stake": strconv.Itoa(ReversisMarkedStake)}, []*Card{card})

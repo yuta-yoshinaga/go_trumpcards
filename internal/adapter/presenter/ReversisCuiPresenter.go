@@ -77,7 +77,12 @@ func (p *ReversisCuiPresenter) Output(r interfaces.ReversisGame, lastErr error) 
 		sb.WriteString(i18n.T("reversis.penaltyLine") + "\n")
 
 		for i := 0; i < r.GetPlayerCnt(); i++ {
-			sb.WriteString(reversisPlayerStr(r.GetPlayer(i), i))
+			player := r.GetPlayer(i)
+			sb.WriteString(reversisPlayerStr(player, i))
+			if r.GetPhase() == domain.ReversisPhaseRoundEnd || r.GetPhase() == domain.ReversisPhaseGameEnd {
+				special := player.GetMarkedPenalty()
+				sb.WriteString(i18n.Tf("reversis.penaltyBreakdown", "name", cuiPlayerName(player, i), "normal", strconv.Itoa(player.GetRoundPenalty()-special), "special", strconv.Itoa(special), "total", strconv.Itoa(player.GetRoundPenalty())) + "\n")
+			}
 		}
 
 		sb.WriteString("----------\n")

@@ -21,6 +21,8 @@ export interface ReversisPlayer {
   chips: number;
   /** Penalty points taken this round. **Lower is better** — it wins the pool. */
   roundPenalty: number;
+  /** Penalty points added for captured marked cards this round. */
+  markedPenalty: number;
   trickCount: number;
   /** Took the J of hearts (+5 penalty, 5 chips to the pool). */
   tookQuinola: boolean;

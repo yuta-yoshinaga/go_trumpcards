@@ -62709,6 +62709,9 @@ components:
         roundPenalty:
           type: integer
           description: Penalty points taken this round. LOWER is better -- it wins the pool.
+        markedPenalty:
+          type: integer
+          description: Penalty points added for captured marked cards this round.
         trickCount:
           type: integer
         tookQuinola:

@@ -247,3 +247,19 @@ func TestReversisCuiPresenterCountsTheMarkedSurcharge(t *testing.T) {
 	// 同じランクでも印が無ければ素の点。
 	assert.Contains(t, out, i18n.Tf("reversis.handCard", "idx", "2", "card", "♠11", "points", "1"))
 }
+
+func TestReversisCuiPresenterShowsRoundPenaltyBreakdown(t *testing.T) {
+	originalLang := i18n.Lang()
+	t.Cleanup(func() { i18n.SetLang(originalLang) })
+	i18n.SetLang("ja")
+	r := newReversisForCui(t)
+	r.SetPhaseForTest(domain.ReversisPhaseRoundEnd)
+	p := r.GetPlayer(0)
+	p.SetRoundPenalty(12)
+	p.AddMarkedPenalty(2 * domain.ReversisMarkedPenalty)
+	p.SetTookQuinola(true)
+	p.SetTookDiamondAce(true)
+
+	output := (&ReversisCuiPresenter{}).Output(r, nil)
+	require.Contains(t, output, "失点内訳: 通常2点 + 特殊札追加10点 = 合計12点")
+}
