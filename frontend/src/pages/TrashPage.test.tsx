@@ -119,7 +119,7 @@ describe('TrashPage', () => {
     await waitFor(() => expect(screen.getAllByText(/CPUのターン/).length).toBeGreaterThan(0));
   });
 
-  it('announces CPU progress in a permanent live region', async () => {
+  it('shows CPU progress without a live region only during the CPU turn', async () => {
     vi.useFakeTimers();
     try {
       mockExec.mockImplementation(async (command) => (command === 'reset' ? cpuTurnState : playerTurnState));
@@ -128,8 +128,9 @@ describe('TrashPage', () => {
         await vi.advanceTimersByTimeAsync(0);
       });
       const region = screen.getByTestId('tr-cpu-turn-announce');
-      expect(region).toHaveAttribute('role', 'status');
-      expect(region).toHaveAttribute('aria-live', 'polite');
+      expect(region).not.toHaveAttribute('role', 'status');
+      expect(region).not.toHaveAttribute('aria-live');
+      expect(region).not.toHaveAttribute('aria-atomic');
       expect(region).toHaveTextContent('CPUがプレイ中です…');
       await act(async () => {
         await vi.advanceTimersByTimeAsync(500);

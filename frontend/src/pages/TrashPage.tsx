@@ -297,7 +297,7 @@ function TrashPageContent() {
             />
 
             <div className="flex flex-col items-center gap-2">
-              <div role="status" aria-live="polite" aria-atomic="true" data-testid="tr-cpu-turn-announce">
+              <div data-testid="tr-cpu-turn-announce">
                 {cpuTurnAnnouncement && (
                   <p className="rounded-md bg-ds-warning px-4 py-2 text-sm font-medium text-ds-text-on-accent">
                     {cpuTurnAnnouncement}
