@@ -625,3 +625,13 @@ func TestDiloti_CpuMovesAreAllActuallyPlayable(t *testing.T) {
 	g.CpuPlay()
 	assert.Less(t, g.players[1].GetCardsSize(), before, "CPU の手番で手札が減っていない")
 }
+
+func TestDiloti_SetGameEndRoundForTestFinishesTheGame(t *testing.T) {
+	d := newDilotiGame(t)
+	d.SetGameEndRoundForTest()
+
+	assert.True(t, d.GetGameEndFlag())
+	assert.Equal(t, DilotiPhaseGameEnd, d.GetPhase())
+	require.NotNil(t, d.GetLastResult())
+	assert.Greater(t, d.players[0].GetScore(), d.players[1].GetScore())
+}
