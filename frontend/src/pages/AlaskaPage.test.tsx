@@ -74,6 +74,20 @@ describe('AlaskaPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('keeps a move target focusable and explains why selection is needed', async () => {
+    renderWithProviders(<AlaskaPage />);
+    const target = await screen.findByRole('button', { name: /空の組札 \(♠\)/ });
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const hintId = target.getAttribute('aria-describedby');
+    expect(hintId).toBeTruthy();
+    expect(document.getElementById(hintId ?? '')).toHaveTextContent('先に移動する札を選んでください');
+
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('shows move count', async () => {
     renderWithProviders(<AlaskaPage />);
     await waitFor(() => expect(screen.getByText(/手数/)).toBeInTheDocument());

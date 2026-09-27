@@ -83,6 +83,21 @@ describe('AmericanToadPage', () => {
     expect(screen.getByText(/山札の通し: 1\/2/)).toBeInTheDocument();
   });
 
+  it('keeps a move target focusable and explains why selection is needed', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<AmericanToadPage />);
+    const target = await screen.findByRole('button', { name: /空の組札0/ });
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const hintId = target.getAttribute('aria-describedby');
+    expect(hintId).toBeTruthy();
+    expect(document.getElementById(hintId ?? '')).toHaveTextContent('先に移動する札を選んでください');
+
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('renders eight foundations and eight columns', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<AmericanToadPage />);
@@ -149,7 +164,7 @@ describe('AmericanToadPage', () => {
     renderWithProviders(<AmericanToadPage />);
     const open = await screen.findByRole('button', { name: '空のタブロー列 2 (捨て札から埋められます)' });
     expect(screen.getAllByText('捨て札から補充').length).toBeGreaterThan(0);
-    // Still disabled with nothing selected; selecting the waste enables it.
+    // The reserve lock still natively disables this target; selecting waste enables it.
     fireEvent.click(screen.getByRole('button', { name: '♥ 8' }));
     await waitFor(() => expect(open).toBeEnabled());
 
