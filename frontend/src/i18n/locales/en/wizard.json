@@ -26,9 +26,9 @@
   "roundScore": "Round: {{score}}",
   "bid": "Bid {{n}}",
   "bidNone": "No bid",
+  "playersSummary": "Players ({{count}})",
   "bidProgress": {
     "header": "Bid: {{bid}} / Won: {{won}}",
-    "title": "Bid progress (confirmed tricks)",
     "values": "Bid {{bid}} / Confirmed {{won}}",
     "reachable": "Still possible",
     "unreachable": "Unreachable",

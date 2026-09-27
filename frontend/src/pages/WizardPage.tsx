@@ -216,10 +216,7 @@ function WizardPageContent() {
     const canStillMakeBid = p.trickCount <= p.bid && p.bid - p.trickCount <= remainingTricks;
     return {
       remainingTricks,
-      status:
-        p.trickCount > p.bid || p.bid - p.trickCount > remainingTricks
-          ? 'bidProgress.unreachable'
-          : 'bidProgress.reachable',
+      status: canStillMakeBid ? 'bidProgress.reachable' : 'bidProgress.unreachable',
       canStillMakeBid,
     };
   };
@@ -371,7 +368,7 @@ function WizardPageContent() {
                 {isMobile ? (
                   <details className="mb-2 p-2 rounded bg-black/30">
                     <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
-                      {tc('label.cpuOpponents', { count: state.players.filter((p) => !p.isHuman).length })}
+                      {t('playersSummary', { count: state.players.length })}
                     </summary>
                     <div className="mt-1">
                       {state.players.map((p) => (
@@ -403,7 +400,7 @@ function WizardPageContent() {
                         {p.bid >= 0 ? t('bidProgress.values', { bid: p.bid, won: p.trickCount }) : t('bidNone')}
                         {p.bid >= 0 && (
                           <span
-                            className={`ml-1 rounded-full px-2 py-0.5 text-xs ${playerBidProgress(p).canStillMakeBid ? badgeInfoColors : badgeErrorColors}`}
+                            className={`ml-1 rounded-full px-2 py-0.5 text-xs ${progressChipColors(p.bid, p.trickCount, playerBidProgress(p).remainingTricks)}`}
                           >
                             {t(playerBidProgress(p).status)} (
                             {t('bidProgress.remaining', { count: playerBidProgress(p).remainingTricks })})

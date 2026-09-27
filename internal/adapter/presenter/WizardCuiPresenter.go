@@ -92,7 +92,7 @@ func wizardPlayerStr(player *domain.WizardPlayer, i int, legal []bool, remaining
 		if player.GetTrickCount() > player.GetBid() || player.GetBid()-player.GetTrickCount() > remainingTricks {
 			key = "wizard.bidUnreachable"
 		}
-		progressStr = i18n.Tf(key, "remaining", strconv.Itoa(remainingTricks))
+		progressStr = " " + i18n.Tf(key, "remaining", strconv.Itoa(remainingTricks))
 	}
 	b.WriteString(i18n.Tf("wizard.playerLine",
 		"name", cuiPlayerName(player, i),
