@@ -25,8 +25,26 @@ func tarabishPlayerStr(player *domain.TarabishPlayer, idx, trumpSuit int) string
 	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
 		b.WriteString(tarabishHandStr(player, trumpSuit) + "\n")
+		if trumpSuit == 0 {
+			b.WriteString(tarabishBidSuitCounts(player) + "\n")
+		}
 	}
 	return b.String()
+}
+
+func tarabishBidSuitCounts(player *domain.TarabishPlayer) string {
+	counts := [5]int{}
+	for i := range player.GetCardsSize() {
+		card := player.GetCard(i)
+		counts[card.GetDesign()]++
+	}
+	parts := []string{
+		i18n.Tf("tarabish.bidSuitCount", "suit", i18n.T("tarabish.suitSpade"), "count", strconv.Itoa(counts[domain.CardDesignSpade])),
+		i18n.Tf("tarabish.bidSuitCount", "suit", i18n.T("tarabish.suitClover"), "count", strconv.Itoa(counts[domain.CardDesignClover])),
+		i18n.Tf("tarabish.bidSuitCount", "suit", i18n.T("tarabish.suitHeart"), "count", strconv.Itoa(counts[domain.CardDesignHeart])),
+		i18n.Tf("tarabish.bidSuitCount", "suit", i18n.T("tarabish.suitDiamond"), "count", strconv.Itoa(counts[domain.CardDesignDiamond])),
+	}
+	return i18n.Tf("tarabish.bidSuitCounts", "counts", strings.Join(parts, i18n.T("tarabish.listSeparator")))
 }
 
 // tarabishHandStr は手札を、切り札を踏まえた点数付きで並べる。

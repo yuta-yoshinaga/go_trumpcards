@@ -267,6 +267,20 @@ function TarabishPageContent() {
                 <div className="text-ds-text-muted text-sm mb-1">
                   {t('header.you')}: {human.cardCount}
                 </div>
+                {isBid && (
+                  <div className="mb-2 text-center text-ds-text-muted text-sm" data-testid="tb-bid-suit-counts">
+                    {t('header.suitCounts', {
+                      counts: ['SPADE', 'CLOVER', 'HEART', 'DIAMOND']
+                        .map((suit) =>
+                          t('header.suitCount', {
+                            suit: t(`header.suits.${suit.toLowerCase()}`),
+                            count: human.cards.filter((card) => card.design === suit).length,
+                          }),
+                        )
+                        .join(t('listSeparator')),
+                    })}
+                  </div>
+                )}
                 <div className="flex flex-wrap gap-2">
                   {human.cards.map((card, idx) => (
                     <button

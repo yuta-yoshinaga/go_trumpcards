@@ -4,6 +4,7 @@ package presenter
 
 import (
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -271,6 +272,12 @@ func TestTarabishCuiPresenterShowsCardPoints(t *testing.T) {
 	assert.Contains(t, biddingOut, "[0]♥11")
 	assert.NotContains(t, biddingOut, i18n.Tf("tarabish.handCard", "idx", "0", "card", "♥11", "points", "2"))
 	assert.NotContains(t, biddingOut, "点)")
+	assert.Contains(t, biddingOut, i18n.Tf("tarabish.bidSuitCounts", "counts", strings.Join([]string{
+		i18n.Tf("tarabish.bidSuitCount", "suit", i18n.T("tarabish.suitSpade"), "count", "0"),
+		i18n.Tf("tarabish.bidSuitCount", "suit", i18n.T("tarabish.suitClover"), "count", "0"),
+		i18n.Tf("tarabish.bidSuitCount", "suit", i18n.T("tarabish.suitHeart"), "count", "1"),
+		i18n.Tf("tarabish.bidSuitCount", "suit", i18n.T("tarabish.suitDiamond"), "count", "0"),
+	}, i18n.T("tarabish.listSeparator"))))
 }
 
 // tarabishPlain は色付けのエスケープを落とす。
