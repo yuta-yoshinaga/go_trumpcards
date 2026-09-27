@@ -27,6 +27,7 @@
   "bidSolo": "Solo",
   "bidPass": "Pass",
   "discardCard": "Discard card",
+  "discardCards": "Discard {{count}} cards",
   "cards": "{{count}} cards",
   "tricks": "{{count}} tricks",
   "currentTrick": "Current Trick",
