@@ -194,10 +194,17 @@ describe('DehlaPakadPage', () => {
 
   it('names the winning team at the end of the match', async () => {
     mockExec.mockResolvedValue(
-      makeDehlaPakadState({ phase: 'gameEnd', gameEndFlag: true, isTrumpPhase: false, winnerTeam: 1 }),
+      makeDehlaPakadState({
+        phase: 'gameEnd',
+        gameEndFlag: true,
+        isTrumpPhase: false,
+        winnerTeam: 1,
+        lastTrickWinner: 2,
+      }),
     );
     renderWithProviders(<DehlaPakadPage />);
     expect(await screen.findByTestId('dehlapakad-winner')).toHaveTextContent('組1 の勝ちです');
+    expect(screen.queryByTestId('dehlapakad-last-trick-winner')).not.toBeInTheDocument();
   });
 
   // ヒントのゲート: 頼んでいないヒントは出さない。
