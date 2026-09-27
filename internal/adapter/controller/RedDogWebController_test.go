@@ -27,7 +27,7 @@ func mustRedDogOutputJSON(msg string) string {
 }
 
 func TestRedDogWebController_Method(t *testing.T) {
-	mockOutput := `{"initialCards":[],"phase":0,"chips":0,"ante":0,"raise":0,"spread":0,"result":0,"totalPayout":0,"message":""}`
+	mockOutput := `{"initialCards":[],"phase":0,"chips":0,"ante":0,"raise":0,"spread":0,"result":0,"totalPayout":0,"appliedMultiplier":0,"message":""}`
 	expectedBody := mockOutput
 
 	rdMock := new(usecase.MockRedDogInteractor)
