@@ -253,6 +253,26 @@ function RussianPokerPageContent() {
             : t('phase.end');
 
   const exchangePreviewFee = state.anteBet * selectedIndices.length;
+  const foldCosts = [
+    { key: 'ante', amount: state.anteBet },
+    { key: 'exchange', amount: state.exchangeFee },
+    { key: 'buy6th', amount: state.buy6thFee },
+    { key: 'forceExchange', amount: state.forceExchangeFee },
+  ] as const;
+  const foldCostTotal = foldCosts.reduce((total, cost) => total + cost.amount, 0);
+  const foldCostLine = (
+    <div
+      className="rounded-lg bg-ds-surface px-3 py-2 text-ds-warning text-sm text-center"
+      data-testid="russian-fold-costs"
+    >
+      <p className="font-bold">{t('foldCosts.title', { amount: foldCostTotal })}</p>
+      {foldCosts
+        .filter((cost) => cost.amount > 0)
+        .map((cost) => (
+          <p key={cost.key}>{t(`foldCosts.${cost.key}`, { amount: cost.amount })}</p>
+        ))}
+    </div>
+  );
 
   return (
     <GamePageShell
@@ -519,6 +539,7 @@ function RussianPokerPageContent() {
                 <p className="text-ds-warning text-sm font-bold" data-testid="russian-buy6th-fee-line">
                   {t('buy6thFeeInfo', { fee: state.anteBet })}
                 </p>
+                {foldCostLine}
                 <div className="flex gap-2 flex-wrap justify-center">
                   <button type="button" className={btnSuccess} onClick={handlePlay} disabled={loading}>
                     {t('button.play')}
@@ -546,13 +567,16 @@ function RussianPokerPageContent() {
               </div>
             )}
             {isPostActionPhase && (
-              <div className="flex justify-center gap-2 pb-2">
-                <button type="button" className={btnSuccess} onClick={handlePlay} disabled={loading}>
-                  {t('button.play')}
-                </button>
-                <button type="button" className={btnDanger} onClick={handleFold} disabled={loading}>
-                  {t('button.fold')}
-                </button>
+              <div className="flex flex-col items-center gap-2 pb-2">
+                {foldCostLine}
+                <div className="flex justify-center gap-2">
+                  <button type="button" className={btnSuccess} onClick={handlePlay} disabled={loading}>
+                    {t('button.play')}
+                  </button>
+                  <button type="button" className={btnDanger} onClick={handleFold} disabled={loading}>
+                    {t('button.fold')}
+                  </button>
+                </div>
               </div>
             )}
             {isForceQualifyPhase && (
