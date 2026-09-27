@@ -95,6 +95,7 @@ func (p *BrusquembilleCuiPresenter) Output(b interfaces.BrusquembilleGame, lastE
 				"name", cuiPlayerName(b.GetPlayer(currentIdx), currentIdx)) + "\n")
 			sb.WriteString(i18n.T("brusquembille.promptPlay") + "\n")
 		case domain.BrusquembillePhaseTrickEnd:
+			sb.WriteString(i18n.Tf("brusquembille.trickWinner", "name", cuiPlayerName(b.GetPlayer(b.GetLeadPlayerIdx()), b.GetLeadPlayerIdx())) + "\n")
 			sb.WriteString(i18n.T("brusquembille.promptTrickEnd") + "\n")
 			sb.WriteString(i18n.T("brusquembille.promptTrickEndHelp") + "\n")
 		}
