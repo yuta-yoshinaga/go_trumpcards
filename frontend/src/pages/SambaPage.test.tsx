@@ -47,6 +47,7 @@ describe('SambaPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '山札から引く' })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeInTheDocument();
     expect(screen.getByTestId('sa-team-scores')).toBeInTheDocument();
+    expect(screen.getByTestId('sa-meld-points')).toHaveAttribute('aria-live', 'polite');
   });
 
   it('announces when the discard pile becomes frozen', async () => {
@@ -89,8 +90,11 @@ describe('SambaPage', () => {
     mockExec.mockResolvedValue(meldPhaseState); // team score 0 → min 50; hasInitMeld false
     renderWithProviders(<SambaPage />);
     const info = await screen.findByTestId('sa-meld-points');
-    expect(info).toHaveTextContent('初回メルド最低点: 50');
+    expect(info).toHaveTextContent('初回メルド必要点: 50');
     expect(info).toHaveTextContent('選択合計: 0');
+    expect(info).toHaveTextContent('あと50点不足しています');
+    const hand = document.querySelector('[data-tutorial="sa-player-hand"] button');
+    expect(hand).toHaveAttribute('aria-describedby', 'sa-meld-points');
   });
 
   it('calls skipmeld command when skip button clicked', async () => {

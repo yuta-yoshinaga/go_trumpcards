@@ -32,7 +32,9 @@
   "meldButton": "Meld",
   "meldPhase": "Meld cards or skip.",
   "meldPoints": {
-    "initial": "Min initial meld: {{min}} / selected: {{points}}",
+    "initial": "Initial meld needs {{min}} points / selected: {{points}}. {{shortfall}}",
+    "shortfall": "{{points}} points short",
+    "met": "Requirement met",
     "selected": "Selected: {{points}}"
   },
   "meldProgress": {
