@@ -97,6 +97,35 @@ describe('MushiPage', () => {
     expect(screen.getByText('CPU の手札 2 枚')).toBeInTheDocument();
   });
 
+  it('removes hand cards from the tab order outside a playable human turn', async () => {
+    mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1 }));
+    renderWithProviders(<MushiPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    const handButtons = screen.getAllByRole('button').filter((b) => b.dataset.hintAction === 'play');
+    expect(handButtons).toHaveLength(2);
+    for (const button of handButtons) expect(button).toBeDisabled();
+  });
+
+  it('keeps hand enabled for human play and keeps field selection separate', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 2, pendingCard: card(1, 1), selectableIndices: [0] }));
+    const { unmount } = renderWithProviders(<MushiPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    const handButtons = screen.getAllByRole('button').filter((b) => b.dataset.hintAction === 'play');
+    for (const button of handButtons) expect(button).toBeDisabled();
+    const fieldButtons = screen.getAllByRole('button').filter((b) => b.dataset.hintAction === 'select');
+    expect(fieldButtons).toHaveLength(2);
+    for (const button of fieldButtons) expect(button).not.toBeDisabled();
+
+    unmount();
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<MushiPage />);
+    await waitFor(() =>
+      expect(screen.getAllByRole('button').filter((b) => b.dataset.hintAction === 'play')[0]).toBeEnabled(),
+    );
+  });
+
   it('plays a hand card', async () => {
     renderWithProviders(<MushiPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());

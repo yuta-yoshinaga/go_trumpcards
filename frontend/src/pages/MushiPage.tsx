@@ -228,6 +228,7 @@ function MushiPageContent() {
                     type="button"
                     data-hint-action="play"
                     aria-disabled={!isHumanTurn || choosing}
+                    disabled={!isHumanTurn || choosing}
                     onClick={() => isHumanTurn && !choosing && game.handlePlay(i)}
                     className={[
                       'rounded transition-transform',
