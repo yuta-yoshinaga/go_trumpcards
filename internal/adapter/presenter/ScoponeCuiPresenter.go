@@ -93,9 +93,8 @@ func scoponeScoreDetailStr(b *strings.Builder, det *domain.ScoponeScoreDetail) {
 	}
 }
 
-// HintOutput emits a capture recommendation for the human's turn: the hand
-// card and the table cards it captures (flagging a scopa when it clears the
-// table), reusing the domain's GetValidCaptures.
+// HintOutput recommends a capture for the human's turn, then lists every
+// capture available for each hand card and whether capture is mandatory.
 func (p *ScoponeCuiPresenter) HintOutput(sg interfaces.ScoponeGame) string {
 	if sg.GetPhase() != domain.ScoponePhasePlayerTurn {
 		return i18n.T("scopone.hintNone") + "\n"
@@ -109,8 +108,16 @@ func (p *ScoponeCuiPresenter) HintOutput(sg interfaces.ScoponeGame) string {
 	bestHand := -1
 	var bestCap []int
 	bestScopa := false
+	var b strings.Builder
+	anyCapture := false
 	for i := 0; i < player.GetCardsSize(); i++ {
-		for _, cap := range sg.GetValidCaptures(i) {
+		captures := sg.GetValidCaptures(i)
+		if len(captures) == 0 {
+			b.WriteString(i18n.Tf("scopone.hintHandNoCapture", "hand", strconv.Itoa(i)) + "\n")
+			continue
+		}
+		anyCapture = true
+		for _, cap := range captures {
 			isScopa := len(table) > 0 && len(cap) == len(table)
 			switch {
 			case bestHand == -1:
@@ -121,9 +128,25 @@ func (p *ScoponeCuiPresenter) HintOutput(sg interfaces.ScoponeGame) string {
 			}
 			bestHand, bestCap, bestScopa = i, cap, isScopa
 		}
+		options := make([]string, 0, len(captures))
+		for _, capture := range captures {
+			cards := make([]*domain.Card, 0, len(capture))
+			for _, idx := range capture {
+				cards = append(cards, table[idx])
+			}
+			option := cuiCardSliceStr(cards)
+			if len(table) > 0 && len(capture) == len(table) {
+				option += i18n.T("scopone.hintScopaSuffix")
+			}
+			options = append(options, option)
+		}
+		b.WriteString(i18n.Tf("scopone.hintHandCaptures",
+			"hand", strconv.Itoa(i),
+			"played", cuiCardSliceStr([]*domain.Card{player.GetCard(i)}),
+			"captured", strings.Join(options, i18n.T("scopone.listSeparator"))) + "\n")
 	}
-	if bestHand == -1 {
-		return color.Yellow(i18n.T("scopone.hintNoCapture")) + "\n"
+	if !anyCapture {
+		return color.Yellow(i18n.T("scopone.hintNoCapture")) + "\n" + b.String()
 	}
 	capCards := make([]*domain.Card, 0, len(bestCap))
 	for _, idx := range bestCap {
@@ -133,9 +156,10 @@ func (p *ScoponeCuiPresenter) HintOutput(sg interfaces.ScoponeGame) string {
 	if bestScopa {
 		key = "scopone.hintScopa"
 	}
-	return color.Yellow(i18n.Tf(key,
+	recommendation := color.Yellow(i18n.Tf(key,
 		"played", cuiCardSliceStr([]*domain.Card{player.GetCard(bestHand)}),
 		"captured", cuiCardSliceStr(capCards))) + "\n"
+	return recommendation + color.Yellow(i18n.T("scopone.hintCaptureRequired")) + "\n" + b.String()
 }
 
 // ActionLogOutput emits the action-log transcript as plain text.
