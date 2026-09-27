@@ -88,6 +88,20 @@ describe('SeahavenTowersPage', () => {
     expect(kElements.length).toBeGreaterThanOrEqual(1);
   });
 
+  it('keeps move targets focusable and explains that a source must be selected', async () => {
+    renderWithProviders(<SeahavenTowersPage />);
+    const target = await screen.findByRole('button', { name: 'リザーブセル 0 (空)' });
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const hintId = target.getAttribute('aria-describedby');
+    expect(document.getElementById(hintId ?? '')).toHaveTextContent('先に移動する札を選んでください');
+
+    mockExec.mockClear();
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('shows the bulk-move (supermove) limit from empty reserved cells', async () => {
     // 2 empty reserved cells → 1 + 2 = 3.
     renderWithProviders(<SeahavenTowersPage />);

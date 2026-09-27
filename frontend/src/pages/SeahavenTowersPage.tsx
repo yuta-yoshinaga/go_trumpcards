@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useId, useMemo, useState } from 'react';
 import type { SeahavenTowersMoveZone, seahaventowersApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -80,6 +80,7 @@ export const SeahavenTowersPage = withTutorial(SeahavenTowersPageContent, 'seaha
 
 /** Inner content of the Seahaven Towers page, wrapped by TutorialProvider. */
 function SeahavenTowersPageContent() {
+  const selectSourceHintId = useId();
   const {
     t,
     tc,
@@ -247,6 +248,9 @@ function SeahavenTowersPageContent() {
           <LandscapeBanner message={t('landscapeBanner')} />
 
           <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
+            <span id={selectSourceHintId} className="sr-only">
+              {tc('label.selectSourceFirst')}
+            </span>
             {/* Reserved cells + Foundation row */}
             <div className="flex gap-2 mb-3 items-start flex-wrap">
               {/* Reserved cells */}
@@ -288,7 +292,9 @@ function SeahavenTowersPageContent() {
                           <button
                             type="button"
                             onClick={() => handleSelectTarget(reservedZone)}
-                            disabled={!isPlaying || loading || !selectedSource}
+                            disabled={!isPlaying || loading}
+                            aria-disabled={!selectedSource || undefined}
+                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t('emptyReservedAriaLabel', { idx: String(idx) })}
                             style={{ width: cardWidth, height: cardHeight }}
                             className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
@@ -321,7 +327,9 @@ function SeahavenTowersPageContent() {
                           <button
                             type="button"
                             onClick={() => handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
+                            disabled={!isPlaying || loading || isAutoCompleting}
+                            aria-disabled={!selectedSource || undefined}
+                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t('foundationAriaLabel', {
                               suit: FOUNDATION_SUITS[idx],
                               cardCount: String(pile.length),
@@ -339,7 +347,9 @@ function SeahavenTowersPageContent() {
                           <button
                             type="button"
                             onClick={() => handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading || !selectedSource}
+                            disabled={!isPlaying || loading}
+                            aria-disabled={!selectedSource || undefined}
+                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
                             style={{ width: cardWidth, height: cardHeight }}
                             className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
@@ -381,7 +391,9 @@ function SeahavenTowersPageContent() {
                             <button
                               type="button"
                               onClick={() => handleSelectTarget(tableauColZone)}
-                              disabled={!isPlaying || loading || !selectedSource}
+                              disabled={!isPlaying || loading}
+                              aria-disabled={!selectedSource || undefined}
+                              aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                               style={{ height: cardHeight }}
                               className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                             >
