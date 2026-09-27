@@ -160,6 +160,7 @@ describe('ScopaPage', () => {
   it('take button is disabled until both hand and table are selected', async () => {
     renderWithProviders(<ScopaPage />);
     await waitFor(() => expect(screen.getByTestId('take-button')).toBeInTheDocument());
+    expect(screen.getByTestId('sc-capture-instructions')).toHaveTextContent('候補の場札を選び、「取る」で確定');
     expect(screen.getByTestId('take-button')).toBeDisabled();
 
     fireEvent.click(screen.getByTestId('hand-card-0'));

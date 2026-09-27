@@ -22,7 +22,7 @@
   "gameEnd": "Game over!",
   "scoreEntry": "  {{name}}: {{score}}pt",
   "promptCurrentTurn": "Current turn: {{name}}",
-  "promptHelp": "p <hand> [table...] to capture or lay / n for the next round",
+  "promptHelp": "Choose a capture candidate and use p <hand> [table...] to confirm capture (list multiple table indices); with no candidates, use p <hand> to lay / n for the next round",
   "breakdownHeader": "--- Last round breakdown ---",
   "breakdownNobody": "nobody (tie)",
   "breakdownRow": "{{category}}: {{name}} (+{{points}})",

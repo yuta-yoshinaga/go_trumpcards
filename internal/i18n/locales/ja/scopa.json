@@ -22,7 +22,7 @@
   "gameEnd": "ゲーム終了！",
   "scoreEntry": "  {{name}}: {{score}}点",
   "promptCurrentTurn": "手番: {{name}}",
-  "promptHelp": "p <hand> [table...] で捕獲または場に置く / n で次のラウンド",
+  "promptHelp": "取り札候補の場札を選び、p <hand> [table...] で取得を確定（場札番号は複数指定可）。候補がなければ p <hand> で場に置く / n で次のラウンド",
   "breakdownHeader": "--- 前ラウンドの内訳 ---",
   "breakdownNobody": "なし(同点)",
   "breakdownRow": "{{category}}: {{name}} (+{{points}})",

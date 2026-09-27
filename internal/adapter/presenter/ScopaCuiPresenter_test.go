@@ -23,6 +23,8 @@ func TestScopaCuiPresenter_Output(t *testing.T) {
 	s := buildPlayedScopa(t)
 	if out := p.Output(s, nil); out == "" {
 		t.Fatal("expected non-empty output")
+	} else if !strings.Contains(out, "取り札候補の場札を選び") || !strings.Contains(out, "取得を確定") {
+		t.Errorf("expected capture selection and confirmation instructions, got: %s", out)
 	}
 }
 

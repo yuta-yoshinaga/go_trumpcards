@@ -402,6 +402,9 @@ function ScopaPageContent() {
           />
 
           <GameFooter className={`${gameTheme.scopa.footer} px-4 py-2.5`}>
+            <p className="text-center text-xs text-ds-text-muted" data-testid="sc-capture-instructions">
+              {t('label.captureInstructions')}
+            </p>
             <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="sc-actions">
               <button
                 type="button"

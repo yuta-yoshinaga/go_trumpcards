@@ -19,6 +19,7 @@
     "takeCandidate": "取り札候補",
     "takeCandidateAnnounce": "{{count}}枚の取り札候補があります",
     "noTakeCandidate": "取り札候補はありません",
+    "captureInstructions": "候補の場札を選び、「取る」で確定",
     "yourCaptures": "獲得カード",
     "cpuStats": "{{cards}}枚 / {{score}}pt",
     "humanStats": "手札{{cards}}枚 / 捕獲{{captured}}枚 / スコパ{{scopa}} / 累計{{score}}pt",
