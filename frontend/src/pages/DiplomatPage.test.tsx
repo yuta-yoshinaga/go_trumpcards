@@ -115,12 +115,28 @@ describe('DiplomatPage', () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<DiplomatPage />);
     const empty = await screen.findByRole('button', { name: /空の列 3/ });
-    // まだ何も選んでいなければ押せない。
-    expect(empty).toBeDisabled();
+    expect(empty).not.toBeDisabled();
+    expect(empty).toHaveAttribute('aria-disabled', 'true');
 
     fireEvent.click(screen.getByRole('button', { name: '♠ 9' }));
     await waitFor(() => expect(screen.getByRole('button', { name: '♠ 9' })).toHaveAttribute('aria-pressed', 'true'));
     expect(empty).toBeEnabled();
+  });
+
+  it('explains and ignores an empty-column target before a source is selected', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<DiplomatPage />);
+    const target = await screen.findByRole('button', { name: /空の列 3/ });
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const describedBy = target.getAttribute('aria-describedby');
+    expect(describedBy).toBeTruthy();
+    expect(document.getElementById(describedBy ?? '')).toHaveTextContent('先に移動する札を選んでください');
+
+    mockExec.mockClear();
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
   });
 
   // **ドラッグ経路も同じ規則に従う。**クリックとドラッグで結果が変わらないこと
