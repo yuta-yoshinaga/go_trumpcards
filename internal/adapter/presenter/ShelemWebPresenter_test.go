@@ -50,6 +50,23 @@ func TestShelemWebPresenterOutput(t *testing.T) {
 	assert.Equal(t, float64(0), players[2].(map[string]any)["team"], "0 と 2 が味方")
 }
 
+func TestShelemWebPresenterLastTrickFields(t *testing.T) {
+	s := newShelemForWeb(t)
+	s.SetPhaseForTest(domain.ShelemPhasePlay)
+	s.SetTrumpSuitForTest(domain.CardDesignSpade)
+	var snapshot map[string]any
+	b, err := json.Marshal(s)
+	require.NoError(t, err)
+	require.NoError(t, json.Unmarshal(b, &snapshot))
+	snapshot["ltw"], snapshot["ltp"] = 2, 15
+	b, err = json.Marshal(snapshot)
+	require.NoError(t, err)
+	require.NoError(t, json.Unmarshal(b, s))
+	m := decodeShelem(t, new(ShelemWebPresenter).Output(s, nil))
+	assert.Equal(t, float64(2), m["lastTrickWinner"])
+	assert.Equal(t, float64(15), m["lastTrickPoints"])
+}
+
 // **次に出せる最小額をワイヤに載せる。** 載せないと上回らない入札を出してしまう。
 func TestShelemWebPresenterSurfacesTheNextBid(t *testing.T) {
 	p := new(ShelemWebPresenter)

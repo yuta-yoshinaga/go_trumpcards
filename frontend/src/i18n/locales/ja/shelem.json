@@ -34,6 +34,7 @@
     "pickAria": "{{card}} を捨て札に選ぶ"
   },
   "currentTrick": "現在のトリック",
+  "lastTrick": "直前のトリック: {{team}} が +{{points}} 点 (合計 {{total}} 点)",
   "widowTitle": "ウィドウ",
   "widowHidden": "伏せ {{count}}枚",
   "mustBid": "あなた以外は全員降りました。契約が決まらないため、降りずに入札してください。",

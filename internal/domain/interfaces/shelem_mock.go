@@ -62,6 +62,8 @@ func (m *MockShelemGame) GetWinnerTeam() int       { return m.Called().Int(0) }
 
 func (m *MockShelemGame) GetScore(team int) int       { return m.Called(team).Int(0) }
 func (m *MockShelemGame) GetRoundPoints(team int) int { return m.Called(team).Int(0) }
+func (m *MockShelemGame) GetLastTrickWinner() int     { return m.Called().Int(0) }
+func (m *MockShelemGame) GetLastTrickPoints() int     { return m.Called().Int(0) }
 func (m *MockShelemGame) TeamTricks(team int) int     { return m.Called(team).Int(0) }
 
 func (m *MockShelemGame) GetCurrentTrick() []*domain.TrickCard {

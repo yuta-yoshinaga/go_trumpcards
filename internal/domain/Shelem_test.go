@@ -471,6 +471,26 @@ func TestShelem_TrumpBeatsTheLeadSuit(t *testing.T) {
 	assert.Equal(t, 10, s.GetRoundPoints(ShelemTeamOf(2)))
 }
 
+func TestShelem_LastTrickResultAndRoundReset(t *testing.T) {
+	s := newTestShelem(t)
+	s.SetTrumpSuitForTest(CardDesignHeart)
+	s.SetPhaseForTest(ShelemPhasePlay)
+	s.SetCurrentPlayerIdxForTest(0)
+	s.SetLeadPlayerIdxForTest(0)
+	shelemHandOf(s, 0, NewCard(CardDesignSpade, 1, false))
+	shelemHandOf(s, 1, NewCard(CardDesignSpade, 5, false))
+	shelemHandOf(s, 2, NewCard(CardDesignSpade, 10, false))
+	shelemHandOf(s, 3, NewCard(CardDesignSpade, 2, false))
+	for i := range ShelemPlayerCnt {
+		require.NoError(t, s.PlayForTest(i, 0))
+	}
+	assert.Equal(t, 0, s.GetLastTrickWinner())
+	assert.Equal(t, 25, s.GetLastTrickPoints())
+	s.dealRound()
+	assert.Equal(t, -1, s.GetLastTrickWinner())
+	assert.Zero(t, s.GetLastTrickPoints())
+}
+
 func TestShelem_PlayRejectsInvalidIndex(t *testing.T) {
 	s := newTestShelem(t)
 	settleBidding(t, s)

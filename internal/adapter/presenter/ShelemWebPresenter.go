@@ -61,6 +61,8 @@ func (p *ShelemWebPresenter) buildBase(s interfaces.ShelemGame) *controller.Shel
 	}
 	resObj.Scores = scores
 	resObj.RoundPoints = points
+	resObj.LastTrickWinner = s.GetLastTrickWinner()
+	resObj.LastTrickPoints = s.GetLastTrickPoints()
 	resObj.TeamTricks = tricks
 	resObj.Config = controller.ShelemWebOutputConfig{Target: s.GetConfig().Target}
 	return resObj

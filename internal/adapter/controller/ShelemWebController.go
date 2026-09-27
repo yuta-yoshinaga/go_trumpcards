@@ -66,6 +66,8 @@ type ShelemWebOutput struct {
 	// Scores は累計、RoundPoints は現ラウンドのカード点。どちらもチーム単位。
 	Scores           []int                 `json:"scores"`
 	RoundPoints      []int                 `json:"roundPoints"`
+	LastTrickWinner  int                   `json:"lastTrickWinner"`
+	LastTrickPoints  int                   `json:"lastTrickPoints"`
 	TeamTricks       []int                 `json:"teamTricks"`
 	CurrentPlayerIdx int                   `json:"currentPlayerIdx"`
 	BidPlayerIdx     int                   `json:"bidPlayerIdx"`
@@ -109,17 +111,18 @@ var NewShelemWebController, NewShelemWebControllerWithProvider = webControllerPa
 
 func newShelemDefaultOutput(msg string) *ShelemWebOutput {
 	return &ShelemWebOutput{
-		Players:       make([]*ShelemWebOutputPlayer, 0),
-		CurrentTrick:  make([]*WebOutputTrickCard, 0),
-		ValidPlays:    make([]int, 0),
-		Scores:        make([]int, 0),
-		RoundPoints:   make([]int, 0),
-		TeamTricks:    make([]int, 0),
-		DeclarerIdx:   -1,
-		MinBid:        domain.ShelemMinBid,
-		DiscardCount:  domain.ShelemWidowSize,
-		WinnerTeam:    -1,
-		WebOutputBase: WebOutputBase{Message: msg},
+		Players:         make([]*ShelemWebOutputPlayer, 0),
+		CurrentTrick:    make([]*WebOutputTrickCard, 0),
+		ValidPlays:      make([]int, 0),
+		Scores:          make([]int, 0),
+		RoundPoints:     make([]int, 0),
+		TeamTricks:      make([]int, 0),
+		DeclarerIdx:     -1,
+		MinBid:          domain.ShelemMinBid,
+		DiscardCount:    domain.ShelemWidowSize,
+		WinnerTeam:      -1,
+		LastTrickWinner: -1,
+		WebOutputBase:   WebOutputBase{Message: msg},
 	}
 }
 

@@ -58065,6 +58065,12 @@ components:
           description: Card points taken this round per team, index 0 and 1.
           items:
             type: integer
+        lastTrickWinner:
+          type: integer
+          description: Seat that won the last resolved trick, or -1 before one resolves this round.
+        lastTrickPoints:
+          type: integer
+          description: Card points earned by the last resolved trick.
         teamTricks:
           type: array
           description: Tricks taken this round per team, index 0 and 1.
