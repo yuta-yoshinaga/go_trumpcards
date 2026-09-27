@@ -41,6 +41,7 @@
   "playPhase.follow": "リードスートに従ってください",
   "trickEnd": "トリック終了",
   "roundEnd": "ラウンド終了",
+  "roundContractResult": "契約目標: {{target}}トリック — 宣言者: {{won}}トリック",
   "result.humanWin": "ゲーム終了！ あなたの勝ち！",
   "result.cpuWin": "ゲーム終了！ プレイヤー{{player}}の勝ち！",
   "bidHistory": "ビッド状況: {{bids}}",

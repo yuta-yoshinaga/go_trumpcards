@@ -56,6 +56,7 @@
   "round": "ラウンド {{n}}",
   "roundResult": {
     "title": "ラウンド結果",
+    "contract": "契約目標: {{target}}トリック — 宣言者: {{won}}トリック",
     "tricks": "{{name}} トリック: {{count}}"
   },
   "score": "得点: {{score}}",

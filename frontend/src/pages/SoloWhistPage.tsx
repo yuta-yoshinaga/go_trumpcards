@@ -395,6 +395,15 @@ function SoloWhistPageContent() {
                 {(isRoundEnd || isGameEnd) && (
                   <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
                     <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
+                    {declarer &&
+                      (state.contract === SoloWhistContract.SOLO || state.contract === SoloWhistContract.ABUNDANCE) && (
+                        <div className="mb-1 text-ds-text-primary" data-testid="solowhist-round-contract">
+                          {t('roundResult.contract', {
+                            target: CONTRACT_TARGET_TRICKS[state.contract],
+                            won: state.roundTricks[declarer.id] ?? 0,
+                          })}
+                        </div>
+                      )}
                     {state.players.map((p) => (
                       <div key={p.id}>
                         {t('roundResult.tricks', {

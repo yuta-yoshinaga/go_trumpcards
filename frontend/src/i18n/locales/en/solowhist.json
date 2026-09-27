@@ -56,6 +56,7 @@
   "round": "Round {{n}}",
   "roundResult": {
     "title": "Round Result",
+    "contract": "Contract target: {{target}} tricks — declarer: {{won}} tricks",
     "tricks": "{{name}} tricks: {{count}}"
   },
   "score": "Score: {{score}}",
