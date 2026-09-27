@@ -15,6 +15,8 @@ type OsmosisGame interface {
 	Draw() error
 	// MoveWasteToFoundation ウェイストからファンデーションに移動
 	MoveWasteToFoundation(fIdx int) error
+	// CanPlaceOnFoundation reports whether a card can be placed on a foundation row.
+	CanPlaceOnFoundation(card *domain.Card, fIdx int) bool
 	// MoveReserveToFoundation リザーブからファンデーションに移動
 	MoveReserveToFoundation(rIdx, fIdx int) error
 	// GiveUp ギブアップ

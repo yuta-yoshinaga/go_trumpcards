@@ -28,6 +28,8 @@
   "hintFromWaste": "waste",
   "hintToFoundation": "foundation {{idx}}",
   "allowedRanks": "[playable: {{ranks}}]",
+  "candidateRows": "Playable rows for {{source}}: {{rows}}",
+  "listSeparator": ", ",
   "anyRank": "any rank",
   "hintLine": "Hint: {{from}} → {{to}} (allowed: {{allowed}})",
   "helpExampleHint": "  h                    ask for a move",

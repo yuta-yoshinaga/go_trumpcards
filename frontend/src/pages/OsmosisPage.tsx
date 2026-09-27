@@ -272,6 +272,8 @@ function OsmosisPageContent() {
                 // row currently hovered (the drop target).
                 const clickBlocked =
                   selectedCard != null && !osmosisCanPlace(state.foundation, state.baseRank, i, selectedCard);
+                const clickAllowed =
+                  selectedCard != null && osmosisCanPlace(state.foundation, state.baseRank, i, selectedCard);
                 const isDropHover = dnd.isDropTarget(fZone);
                 const dragBlocked =
                   isDropHover &&
@@ -290,15 +292,19 @@ function OsmosisPageContent() {
                       type="button"
                       onClick={() => handleFoundationClick(i)}
                       disabled={!isPlaying || !selected || loading}
-                      aria-label={`${t('foundation')} ${i}`}
-                      // **理由は読み上げに乗せる。**`title` は支援技術が読み上げる
-                      // 保証が無く、赤枠も見えない人には届かない (#5625)。名前
-                      // 自体は状態で変えない ── 同じ段が選択のたびに別名で呼ばれると
-                      // どれを触っているのか分からなくなる。
+                      aria-label={`${t('foundation')} ${i}${clickAllowed ? `, ${t('placeable')}` : ''}`}
+                      // Read the available action in the name; explain blocked rows with
+                      // aria-describedby because title and border color are not reliable cues.
                       aria-describedby={blocked ? `os-foundation-blocked-${i.toString()}` : undefined}
                       title={blocked ? t('cannotPlaceHere') : undefined}
                       className={`flex w-full items-center gap-2 rounded border p-1 text-left ${focusRingWhite} ${
-                        blocked ? 'border-ds-error' : selected || dnd.isDragging ? 'border-ds-info' : 'border-white/30'
+                        blocked
+                          ? 'border-ds-error'
+                          : clickAllowed
+                            ? 'border-ds-success'
+                            : selected || dnd.isDragging
+                              ? 'border-ds-info'
+                              : 'border-white/30'
                       } ${hintedMove?.toCol === i ? HINT_RING : ''}`}
                     >
                       <span className="w-5 text-xs text-ds-text-muted">#{i}</span>
@@ -312,6 +318,11 @@ function OsmosisPageContent() {
                         )}
                       </div>
                       <span className="text-xs text-ds-text-muted">({pile.length})</span>
+                      {clickAllowed && (
+                        <span className="rounded bg-ds-success px-1 py-0.5 text-[10px] text-white">
+                          {t('placeable')}
+                        </span>
+                      )}
                       <span className="text-xs text-ds-text-muted" data-testid={`os-allowed-${i}`}>
                         {i === 0 && <span className="text-ds-warning">★ </span>}
                         {allowed.length === 0
