@@ -1033,6 +1033,15 @@ describe('FreeCellPage empty-column move limit', () => {
     expect(limit).not.toHaveTextContent('320');
   });
 
+  it('shows a zero empty-column limit when no empty column is available', async () => {
+    mockExec.mockResolvedValue({ ...playingState, maxMovableCards: 8, maxMovableCardsToEmptyColumn: 0 });
+    renderWithProviders(<FreeCellPage />);
+
+    const limit = await screen.findByTestId('fc-supermove-limit');
+    expect(limit).toHaveTextContent('8');
+    expect(limit).toHaveTextContent('0');
+  });
+
   it('marks the empty column as out of reach for a stack that only the lower limit blocks', async () => {
     // 3 枚の束: 一般上限 8 なら動かせるが、空き列上限 2 は超える。
     mockExec.mockResolvedValue({

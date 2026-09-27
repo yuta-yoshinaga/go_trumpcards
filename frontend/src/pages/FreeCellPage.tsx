@@ -383,8 +383,7 @@ function FreeCellPageContent() {
 
             {/* Max bulk-move (supermove) limit, derived from empty free cells/columns */}
             <div className="text-game-text-muted text-xs mb-2" data-testid="fc-supermove-limit">
-              {t('supermoveLimitLabel', { limit: supermoveLimit })}
-              {emptyColLimit > 0 && <> {t('supermoveToEmpty', { limit: emptyColLimit })}</>}
+              {t('supermoveLimitLabel', { limit: supermoveLimit })} {t('supermoveToEmpty', { limit: emptyColLimit })}
             </div>
 
             {/* Tableau */}
