@@ -68,17 +68,18 @@ func sakuraPlayerStr(g interfaces.SakuraGame, idx int) string {
 	if player == nil {
 		return ""
 	}
+	taken := player.GetTaken()
 	var b strings.Builder
 	b.WriteString(i18n.Tf("sakura.playerLine",
 		"name", cuiPlayerName(player, idx),
 		"hand", strconv.Itoa(player.GetCardsSize()),
-		"taken", strconv.Itoa(len(player.GetTaken())),
+		"taken", strconv.Itoa(len(taken)),
 		"points", strconv.Itoa(player.TotalPoints()),
 		"bonus", sakuraBonusStr(player.Bonuses()),
 		"score", strconv.Itoa(player.GetScore()),
 		"wins", strconv.Itoa(player.GetRoundWins())) + "\n")
-	if len(player.GetTaken()) > 0 {
-		b.WriteString(i18n.Tf("sakura.takenLine", "taken", sakuraCuiCardsStr(player.GetTaken())) + "\n")
+	if len(taken) > 0 {
+		b.WriteString(i18n.Tf("sakura.takenLine", "taken", sakuraCuiCardsStr(taken)) + "\n")
 	}
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
 		b.WriteString(i18n.Tf("sakura.handLine",
