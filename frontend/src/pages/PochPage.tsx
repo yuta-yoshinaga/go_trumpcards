@@ -59,6 +59,12 @@ function PochPageContent() {
   const previousPools = useRef<PochResponse['pools'] | null>(null);
   const [poolAnnouncement, setPoolAnnouncement] = useState('');
 
+  const resetWithQuietPoolBaseline = (reset: () => void) => {
+    previousPools.current = null;
+    setPoolAnnouncement('');
+    reset();
+  };
+
   useEffect(() => {
     if (!state) return;
     if (previousPools.current === null) {
@@ -134,7 +140,7 @@ function PochPageContent() {
     >
       <LandscapeBanner message={t('landscapeBanner')} />
 
-      <div role="status" aria-live="polite" className="sr-only">
+      <div role="status" aria-live="polite" className="sr-only" data-testid="poch-pool-live">
         {poolAnnouncement}
       </div>
 
@@ -149,7 +155,8 @@ function PochPageContent() {
                 label: t('settings.cpuDifficulty'),
                 value: String(state.config?.cpuDifficulty ?? 1),
                 options: difficultyOptions,
-                onSelect: (v: string) => game.exec('reset', undefined, { cpuDifficulty: Number(v) }),
+                onSelect: (v: string) =>
+                  resetWithQuietPoolBaseline(() => game.exec('reset', undefined, { cpuDifficulty: Number(v) })),
               },
               hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
             ],
@@ -380,7 +387,7 @@ function PochPageContent() {
               )}
               <GameResetButton
                 isGameEnd={ended}
-                onReset={game.handleReset}
+                onReset={() => resetWithQuietPoolBaseline(game.handleReset)}
                 requestConfirm={requestConfirm}
                 loading={loading}
                 dataTutorial="pc-reset-button"
