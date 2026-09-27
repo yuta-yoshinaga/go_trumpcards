@@ -27,6 +27,7 @@
   "ruleSequenceLocked": "【階段縛り】",
   "exchangesHeader": "[カード交換]",
   "tableLine": "場: {{cards}} (出したプレイヤー: {{name}})",
+  "fieldClearedLeader": "場流れ: {{name}} からリード",
   "tableEmpty": "場: なし (誰でも出せます)",
   "actionPassed": "{{name}}がパスしました",
   "actionPlayed": "{{name}}が {{cards}} を出しました",

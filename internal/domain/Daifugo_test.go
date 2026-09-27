@@ -1,12 +1,28 @@
 package domain_test
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 	"github.com/stretchr/testify/assert"
 )
+
+func TestDaifugo_FieldClearedLeaderJSON(t *testing.T) {
+	var dg domain.Daifugo
+	assert.NoError(t, json.Unmarshal([]byte(`{"fcl":2}`), &dg))
+	assert.Equal(t, 2, dg.GetFieldClearedLeader())
+	encoded, err := json.Marshal(&dg)
+	assert.NoError(t, err)
+	var snapshot map[string]any
+	assert.NoError(t, json.Unmarshal(encoded, &snapshot))
+	assert.Equal(t, float64(2), snapshot["fcl"])
+
+	var legacySnapshot domain.Daifugo
+	assert.NoError(t, json.Unmarshal([]byte(`{}`), &legacySnapshot))
+	assert.Equal(t, -1, legacySnapshot.GetFieldClearedLeader())
+}
 
 func noRulesConfig() domain.DaifugoConfig {
 	return domain.DaifugoConfig{}
@@ -31,6 +47,7 @@ func TestDaifugo_Method(t *testing.T) {
 		assert.False(t, dg.GetGameEndFlag())
 		assert.Nil(t, dg.GetTableCards())
 		assert.Equal(t, -1, dg.GetLastPlayPlayerIdx())
+		assert.Equal(t, -1, dg.GetFieldClearedLeader())
 		assert.Equal(t, 0, dg.GetCurrentTurn())
 	})
 
@@ -55,6 +72,7 @@ func TestDaifugo_Method(t *testing.T) {
 		assert.Nil(t, dg.GetTableCards())
 		assert.Equal(t, -1, dg.GetLastPlayPlayerIdx())
 		assert.Equal(t, 0, dg.GetPassCount())
+		assert.Equal(t, -1, dg.GetFieldClearedLeader())
 		assert.Nil(t, dg.GetHumanAction())
 		assert.Nil(t, dg.GetCpuActions())
 	})
@@ -152,6 +170,7 @@ func TestDaifugo_Method(t *testing.T) {
 		err := dg.PlayerPlay([]int{}) // pass
 		assert.NoError(t, err)
 		assert.Equal(t, 1, dg.GetPassCount())
+		assert.Equal(t, -1, dg.GetFieldClearedLeader())
 		assert.NotNil(t, dg.GetHumanAction())
 		assert.Nil(t, dg.GetHumanAction().PlayedCards) // pass → nil
 	})
@@ -190,6 +209,8 @@ func TestDaifugo_Method(t *testing.T) {
 		dg.CpuPlay() // CPU 3 passes → checkPassClear triggers, table clears
 		assert.Nil(t, dg.GetTableCards())
 		assert.True(t, dg.IsHumanTurn())
+		assert.Equal(t, 0, dg.GetFieldClearedLeader())
+		assert.NoError(t, dg.PlayerPlay([]int{0}))
 	})
 
 	t.Run("success CpuPlay does nothing on human turn", func(t *testing.T) {

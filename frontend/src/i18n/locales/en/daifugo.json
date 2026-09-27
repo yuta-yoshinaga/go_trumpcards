@@ -13,6 +13,7 @@
   "cardCount": "{{count}} cards",
   "selectToPlay": "Click cards to select",
   "tableCards": "Table",
+  "fieldClearedLeader": "Field cleared: lead from {{name}}",
   "tableEmpty": "(empty)",
   "lastPlayedBy": "(played by {{name}})",
   "playButton": "Play Selected",

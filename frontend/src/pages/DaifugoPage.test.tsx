@@ -59,6 +59,7 @@ const humanTurnState: DaifugoResponse = {
     { id: 3, isHuman: false, isFinished: false, rank: -1, cardCount: 5, cards: [] },
   ],
   currentTurn: 0,
+  fieldClearedLeader: -1,
   tableCards: [],
   lastPlayPlayerIdx: -1,
   gameEndFlag: false,
@@ -115,6 +116,19 @@ beforeEach(() => {
 });
 
 describe('DaifugoPage', () => {
+  it('shows the player who leads after the field clears', async () => {
+    mockExec.mockResolvedValue({ ...humanTurnState, fieldClearedLeader: 2 });
+    renderWithProviders(<DaifugoPage />);
+    expect(await screen.findByText(/場流れ: CPU 2 からリード/)).toBeInTheDocument();
+  });
+
+  it('does not show a field-cleared leader on an ordinary empty table', async () => {
+    mockExec.mockResolvedValue(humanTurnState);
+    renderWithProviders(<DaifugoPage />);
+    await screen.findByText('（なし）');
+    expect(screen.queryByText(/場流れ:/)).not.toBeInTheDocument();
+  });
+
   it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<DaifugoPage />);

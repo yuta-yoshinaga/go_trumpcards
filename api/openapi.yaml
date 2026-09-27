@@ -40919,6 +40919,7 @@ components:
       required:
         - players
         - currentTurn
+        - fieldClearedLeader
         - tableCards
         - lastPlayPlayerIdx
         - gameEndFlag
@@ -40954,6 +40955,10 @@ components:
           type: integer
           description: Index of the player whose turn it is
           example: 0
+        fieldClearedLeader:
+          type: integer
+          description: Index of the player who leads after the table clears, or -1
+          example: -1
         tableCards:
           type: array
           description: Cards currently on the table (last played set)

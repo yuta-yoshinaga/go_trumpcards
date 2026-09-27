@@ -99,6 +99,7 @@ type DaifugoWebOutputExchangeAction struct {
 type DaifugoWebOutput struct {
 	Players             []*DaifugoWebOutputPlayer         `json:"players"`
 	CurrentTurn         int                               `json:"currentTurn"`
+	FieldClearedLeader  int                               `json:"fieldClearedLeader"`
 	TableCards          []*WebOutputCard                  `json:"tableCards"`
 	LastPlayPlayerIdx   int                               `json:"lastPlayPlayerIdx"`
 	GameEndFlag         bool                              `json:"gameEndFlag"`
@@ -138,6 +139,7 @@ var NewDaifugoWebController, NewDaifugoWebControllerWithProvider = webController
 
 func newDaifugoDefaultOutput(msg string) *DaifugoWebOutput {
 	return &DaifugoWebOutput{
+		FieldClearedLeader:  -1,
 		Players:             make([]*DaifugoWebOutputPlayer, 0),
 		TableCards:          make([]*WebOutputCard, 0),
 		CpuActions:          make([]*DaifugoWebOutputAction, 0),

@@ -26,6 +26,7 @@ const baseState: DaifugoResponse = {
     { id: 1, isHuman: false, cardCount: 5, cards: [], rank: 0, isFinished: false },
   ],
   currentTurn: 0,
+  fieldClearedLeader: -1,
   tableCards: [],
   lastPlayPlayerIdx: -1,
   gameEndFlag: false,
