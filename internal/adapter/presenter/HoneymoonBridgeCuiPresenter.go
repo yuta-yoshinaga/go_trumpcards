@@ -82,9 +82,9 @@ func (p *HoneymoonBridgeCuiPresenter) Output(s interfaces.HoneymoonBridgeGame, l
 		sb.WriteString("----------\n")
 		switch s.GetPhase() {
 		case domain.HoneymoonBridgePhaseDraw:
-			sb.WriteString(i18n.T("honeymoonbridge.trickStatusDraw") + " / " + i18n.T("honeymoonbridge.trickScoreless") + "\n")
+			sb.WriteString(i18n.T("honeymoonbridge.trickStatusDrawLine") + "\n")
 		case domain.HoneymoonBridgePhasePlay:
-			sb.WriteString(i18n.T("honeymoonbridge.trickStatusPlay") + " / " + i18n.T("honeymoonbridge.trickScoring") + "\n")
+			sb.WriteString(i18n.T("honeymoonbridge.trickStatusPlayLine") + "\n")
 		}
 		cuiTrickBlock(sb, s.GetCurrentTrick(),
 			func(tc *domain.TrickCard) int { return tc.PlayerIdx },

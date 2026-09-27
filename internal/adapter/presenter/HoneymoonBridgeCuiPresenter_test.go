@@ -86,15 +86,13 @@ func TestHoneymoonBridgeCuiPresenterTrickPhaseStatus(t *testing.T) {
 
 	drawing := newHoneymoonBridgeForCui(t)
 	out := p.Output(drawing, nil)
-	assert.Contains(t, out, i18n.T("honeymoonbridge.trickStatusDraw"))
-	assert.Contains(t, out, i18n.T("honeymoonbridge.trickScoreless"))
+	assert.Contains(t, out, i18n.T("honeymoonbridge.trickStatusDrawLine"))
 
 	playing := newHoneymoonBridgeForCui(t)
 	playing.SetPhaseForTest(domain.HoneymoonBridgePhasePlay)
 	playing.SetContractForTest(0, 2, domain.CardDesignHeart)
 	out = p.Output(playing, nil)
-	assert.Contains(t, out, i18n.T("honeymoonbridge.trickStatusPlay"))
-	assert.Contains(t, out, i18n.T("honeymoonbridge.trickScoring"))
+	assert.Contains(t, out, i18n.T("honeymoonbridge.trickStatusPlayLine"))
 }
 
 // 契約は未決定と確定の両側を踏む。
