@@ -12,6 +12,7 @@
   "label.seats": "Seats",
   "label.score": "pts",
   "label.delta": "Net",
+  "label.multiplier": "{{multiplier}}x payout",
   "label.winner": "Winner",
   "phase.bet": "Bet",
   "phase.play": "Play",

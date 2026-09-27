@@ -130,6 +130,75 @@ func TestBanLuckCuiPresenter_ShowsResults(t *testing.T) {
 	}
 }
 
+func TestBanLuckCuiPresenter_ShowsMultipliers(t *testing.T) {
+	tests := []struct {
+		name       string
+		bankerRank domain.BanLuckRank
+		seatRank   domain.BanLuckRank
+		outcome    domain.BanLuckOutcome
+		seat       func(*domain.BanLuck) int
+		want       string
+		wantAbsent string
+	}{
+		{
+			name:       "親はバンバンの倍率を表示",
+			bankerRank: domain.BanLuckRankBanBan,
+			seat:       func(g *domain.BanLuck) int { return g.GetBankerSeat() },
+			want:       "バンバン（3倍）",
+		},
+		{
+			name:       "バンラックで勝った子は2倍を表示",
+			bankerRank: domain.BanLuckRankPoint,
+			seatRank:   domain.BanLuckRankBanLuck,
+			outcome:    domain.BanLuckOutcomeWin,
+			seat:       func(g *domain.BanLuck) int { return (g.GetBankerSeat() + 1) % len(g.GetPlayers()) },
+			want:       "バンラック（2倍）",
+		},
+		{
+			name:       "負けた子は親の役の倍率を表示",
+			bankerRank: domain.BanLuckRankBanBan,
+			seatRank:   domain.BanLuckRankPoint,
+			outcome:    domain.BanLuckOutcomeLose,
+			seat:       func(g *domain.BanLuck) int { return (g.GetBankerSeat() + 1) % len(g.GetPlayers()) },
+			want:       "通常（3倍）",
+		},
+		{
+			name:       "通常倍率は表示しない",
+			bankerRank: domain.BanLuckRankPoint,
+			seatRank:   domain.BanLuckRankPoint,
+			outcome:    domain.BanLuckOutcomeWin,
+			seat:       func(g *domain.BanLuck) int { return (g.GetBankerSeat() + 1) % len(g.GetPlayers()) },
+			want:       "通常 →",
+			wantAbsent: "（1倍）",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := banLuckSettled(t)
+			results := g.GetResults()
+			banker := g.GetBankerSeat()
+			results[banker].Rank = tt.bankerRank
+			seat := tt.seat(g)
+			if seat == banker {
+				results[seat].Outcome = domain.BanLuckOutcomePush
+			} else {
+				results[seat].Rank = tt.seatRank
+				results[seat].Outcome = tt.outcome
+			}
+
+			out := new(BanLuckCuiPresenter).Output(g, nil)
+			line := g.GetPlayers()[seat].GetName() + ": "
+			if tt.want != "" {
+				assert.Contains(t, out, line+tt.want)
+			}
+			if tt.wantAbsent != "" {
+				assert.NotContains(t, out, tt.wantAbsent)
+			}
+		})
+	}
+}
+
 func TestBanLuckCuiPresenter_ErrorsAndHint(t *testing.T) {
 	cp := new(BanLuckCuiPresenter)
 	g := newBanLuckForPresenter(t)
