@@ -27,6 +27,7 @@
   "bidSolo": "ソロ",
   "bidPass": "パス",
   "discardCard": "カードを捨てる",
+  "discardCards": "{{count}}枚を捨てる",
   "cards": "{{count}}枚",
   "tricks": "{{count}}トリック",
   "currentTrick": "現在のトリック",

@@ -40,6 +40,12 @@ func (_m *MockCalabresellaGame) PlayerDiscard(cardIndex int) error {
 	return ret.Error(0)
 }
 
+// PlayerDiscardCards モック
+func (_m *MockCalabresellaGame) PlayerDiscardCards(cardIndices []int) error {
+	ret := _m.Called(cardIndices)
+	return ret.Error(0)
+}
+
 // PlayerPlay モック
 func (_m *MockCalabresellaGame) PlayerPlay(cardIndex int) error {
 	ret := _m.Called(cardIndex)

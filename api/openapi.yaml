@@ -29489,7 +29489,7 @@ paths:
         |-----------------|---------|-------------|
         | `reset`         | `r`     | Start / restart a game |
         | `bid`           | `b`     | Declare a bid (requires `bid`: 0=pass, 1=chiamo, 2=solo) |
-        | `discard`       | `d`     | Discard a monte card (requires `cardIndex`; 4 times) |
+        | `discard`       | `d`     | Discard the 4 monte cards at once with `cardIndices` (exactly 4 distinct indices), or one card with `cardIndex` |
         | `play`          | `p`     | Play a card (requires `cardIndex`) |
         | `next`          | `n`     | Advance to the next trick |
         | `nextround`     | `nr`    | Advance to the next round |
@@ -29517,6 +29517,11 @@ paths:
                 cardIndex:
                   type: integer
                   description: Hand index of the card to play (for `play`) or discard (for `discard`).
+                cardIndices:
+                  type: array
+                  description: Exactly 4 distinct hand indices for discarding all monte cards at once (for `discard`).
+                  items:
+                    type: integer
                 config:
                   type: object
                   properties:

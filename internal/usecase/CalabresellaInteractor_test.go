@@ -133,6 +133,21 @@ func TestCalabresellaInteractor_DiscardError(t *testing.T) {
 	gameMock.AssertCalled(t, "PlayerDiscard", 9)
 }
 
+func TestCalabresellaInteractor_DiscardCards(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
+		tpMock := new(presenter.MockCalabresellaPresenter)
+		tpMock.On("Output", mock.Anything, mock.Anything).Return(calabresellaMockOutput)
+		gameMock := new(interfaces.MockCalabresellaGame)
+		gameMock.On("GetGameEndFlag").Return(false)
+		gameMock.On("GetPhase").Return(domain.CalabresellaPhasePlay)
+		gameMock.On("IsHumanTurn").Return(true)
+		gameMock.On("PlayerDiscardCards", []int{0, 1, 2, 3}).Return(nil)
+		ci := usecase.NewCalabresellaInteractor(gameMock, tpMock)
+		assert.Equal(t, calabresellaMockOutput, ci.DiscardCards([]int{0, 1, 2, 3}))
+		gameMock.AssertCalled(t, "PlayerDiscardCards", []int{0, 1, 2, 3})
+	})
+}
+
 func TestCalabresellaInteractor_PlayResolvesTrick(t *testing.T) {
 	tpMock := new(presenter.MockCalabresellaPresenter)
 	tpMock.On("Output", mock.Anything, mock.Anything).Return(calabresellaMockOutput)

@@ -24,7 +24,7 @@ test.describe('Calabresella E2E', () => {
       .getByRole('button', { name: 'キアーモ' })
       .or(gameButton(page, 'ソロ'))
       .or(gameButton(page, 'パス'))
-      .or(page.getByRole('button', { name: 'カードを捨てる' }))
+      .or(page.getByRole('button', { name: /枚を捨てる|カードを捨てる/ }))
       .or(page.getByRole('button', { name: '出す' }))
       .or(page.getByRole('button', { name: '次のトリック' }))
       .or(page.getByRole('button', { name: '次のラウンド' }))

@@ -130,7 +130,7 @@ describe('CalabresellaPage', () => {
     mockExec.mockResolvedValue(discardPhaseState);
     renderWithProviders(<CalabresellaPage />);
     await waitFor(() => expect(screen.getByTestId('calabresella-discard-prompt')).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: /カードを捨てる/ })).toBeInTheDocument();
+    expect(screen.getByTestId('calabresella-discard-button')).toBeInTheDocument();
   });
 
   it('reveals the monte (widow) cards once the Soloist has taken them', async () => {
@@ -164,7 +164,7 @@ describe('CalabresellaPage', () => {
     renderWithProviders(<CalabresellaPage />);
     const prompt = await screen.findByTestId('calabresella-discard-prompt');
     expect(prompt).toHaveTextContent('残り 4 枚');
-    expect(screen.getByTestId('calabresella-discard-button')).toHaveTextContent('(4)');
+    expect(screen.getByTestId('calabresella-discard-button')).toHaveTextContent('4枚を捨てる');
   });
 
   it('hides the discard prompt once the hand is down to the regulation 12', async () => {
@@ -192,16 +192,19 @@ describe('CalabresellaPage', () => {
     expect(screen.getByTestId('calabresella-discard-button').textContent).not.toContain('(');
   });
 
-  it('selecting a card then discarding dispatches discard', async () => {
+  it('selecting four cards then discarding dispatches them together', async () => {
     mockExec.mockResolvedValue(discardPhaseState);
     renderWithProviders(<CalabresellaPage />);
     const card = await screen.findByAltText('♥ Q');
     fireEvent.click(card);
-    const discardBtn = await screen.findByRole('button', { name: /カードを捨てる/ });
+    fireEvent.click(await screen.findByAltText('♥ K'));
+    fireEvent.click(await screen.findByAltText('♠ A'));
+    fireEvent.click(await screen.findByAltText('♠ 2'));
+    const discardBtn = await screen.findByTestId('calabresella-discard-button');
     mockExec.mockClear();
     mockExec.mockResolvedValue(discardPhaseState);
     fireEvent.click(discardBtn);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', { cardIndex: 0 }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', { cardIndices: [0, 1, 2, 3] }));
   });
 
   it('selecting a card then playing dispatches play', async () => {

@@ -210,6 +210,22 @@ func TestCalabresella_Discard_SoloistExchange(t *testing.T) {
 	assert.Equal(t, 0, g.GetLeadPlayerIdx(), "soloist leads")
 }
 
+func TestCalabresella_DiscardCards_AtomicExchange(t *testing.T) {
+	g := newTestCalabresella()
+	g.SetSoloistIdx(0)
+	g.SetPhase(domain.CalabresellaPhaseDiscard)
+	setCalabresellaHand(g, 0, calCard(domain.CardDesignSpade, 1), calCard(domain.CardDesignSpade, 2), calCard(domain.CardDesignSpade, 3), calCard(domain.CardDesignSpade, 4), calCard(domain.CardDesignSpade, 5))
+	require.Error(t, g.PlayerDiscardCards([]int{0, 1, 1, 4}))
+	assert.Equal(t, 5, g.GetPlayer(0).GetCardsSize())
+	require.Error(t, g.PlayerDiscardCards([]int{0, 1, 2}))
+	assert.Equal(t, 5, g.GetPlayer(0).GetCardsSize())
+	require.Error(t, g.PlayerDiscardCards([]int{0, 1, 2, 8}))
+	assert.Equal(t, 5, g.GetPlayer(0).GetCardsSize())
+	require.NoError(t, g.PlayerDiscardCards([]int{0, 1, 3, 4}))
+	assert.Equal(t, 1, g.GetPlayer(0).GetCardsSize())
+	assert.Equal(t, domain.CalabresellaPhasePlay, g.GetPhase())
+}
+
 func TestCalabresella_Discard_Errors(t *testing.T) {
 	g := newTestCalabresella()
 	g.SetSoloistIdx(0)
