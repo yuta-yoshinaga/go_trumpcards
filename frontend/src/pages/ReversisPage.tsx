@@ -199,6 +199,27 @@ function ReversisPageContent() {
               ))}
             </div>
 
+            {(isRoundEnd || isGameEnd) && (
+              <section
+                className="mb-4 rounded border border-ds-border bg-ds-surface p-3 text-sm text-ds-text-primary"
+                data-testid="rv-penalty-breakdown"
+              >
+                <h2 className="mb-2 font-semibold">{t('result.penaltyBreakdown')}</h2>
+                <ul className="flex flex-wrap justify-center gap-x-4 gap-y-1">
+                  {state.players.map((p) => {
+                    const special = p.markedPenalty;
+                    return (
+                      <li key={p.id}>
+                        {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}:{' '}
+                        {t('result.normalPenalty', { points: String(p.roundPenalty - special) })} +{' '}
+                        {t('result.specialPenalty', { points: String(special) })} = {p.roundPenalty}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </section>
+            )}
+
             <div data-tutorial="reversis-trick">
               <TrickDisplay
                 currentTrick={state.currentTrick}

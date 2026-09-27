@@ -45,10 +45,18 @@ func TestReversisWebPresenterOutput(t *testing.T) {
 	assert.Len(t, human["cards"].([]any), domain.ReversisHandSize, "人間の手札は見える")
 	assert.Equal(t, float64(domain.ReversisStartingChips-domain.ReversisAnte), human["chips"])
 	assert.Equal(t, float64(0), human["roundPenalty"])
+	assert.Equal(t, float64(0), human["markedPenalty"])
 	assert.False(t, human["tookQuinola"].(bool))
 	assert.False(t, human["tookDiamondAce"].(bool))
 
 	assert.Empty(t, players[1].(map[string]any)["cards"], "CPU の手札は伏せる")
+}
+
+func TestReversisWebPresenterMarkedPenalty(t *testing.T) {
+	r := newReversisForWeb(t)
+	r.GetPlayer(0).AddMarkedPenalty(2 * domain.ReversisMarkedPenalty)
+	players := decodeReversis(t, (&ReversisWebPresenter{}).Output(r, nil))["players"].([]any)
+	assert.Equal(t, float64(2*domain.ReversisMarkedPenalty), players[0].(map[string]any)["markedPenalty"])
 }
 
 // 印付きの札を取ったことが画面に出る。両側を踏む。

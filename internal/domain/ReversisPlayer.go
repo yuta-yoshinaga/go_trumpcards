@@ -12,6 +12,8 @@ type ReversisPlayer struct {
 	chips int
 	// roundPenalty はこのラウンドで取ったカードの失点。少ないほど良い。
 	roundPenalty int
+	// markedPenalty はこのラウンドに取った印付き札による追加失点。
+	markedPenalty int
 	// tookQuinola / tookDiamondAce は印付きの 2 枚を取ったか。
 	tookQuinola    bool
 	tookDiamondAce bool
@@ -32,6 +34,7 @@ func (p *ReversisPlayer) ResetGame() {
 func (p *ReversisPlayer) ResetRound() {
 	resetPlayerRound(p)
 	p.roundPenalty = 0
+	p.markedPenalty = 0
 	p.tookQuinola = false
 	p.tookDiamondAce = false
 }
@@ -50,6 +53,12 @@ func (p *ReversisPlayer) GetRoundPenalty() int { return p.roundPenalty }
 
 // AddRoundPenalty このラウンドの失点に加算する
 func (p *ReversisPlayer) AddRoundPenalty(n int) { p.roundPenalty += n }
+
+// GetMarkedPenalty このラウンドの印付き札による追加失点
+func (p *ReversisPlayer) GetMarkedPenalty() int { return p.markedPenalty }
+
+// AddMarkedPenalty 印付き札による追加失点に加算する
+func (p *ReversisPlayer) AddMarkedPenalty(n int) { p.markedPenalty += n }
 
 // SetRoundPenalty このラウンドの失点を設定する（テスト用）
 func (p *ReversisPlayer) SetRoundPenalty(n int) { p.roundPenalty = n }
@@ -74,6 +83,7 @@ type reversisPlayerJSON struct {
 	// 抜けると持ちチップがラウンド途中で初期値に戻る (#4478)。
 	Chips          int  `json:"ch"`
 	RoundPenalty   int  `json:"rp"`
+	MarkedPenalty  int  `json:"mp"`
 	TookQuinola    bool `json:"tq"`
 	TookDiamondAce bool `json:"td"`
 }
@@ -85,6 +95,7 @@ func (p *ReversisPlayer) MarshalJSON() ([]byte, error) {
 		TrickHolder:    &p.TrickHolder,
 		Chips:          p.chips,
 		RoundPenalty:   p.roundPenalty,
+		MarkedPenalty:  p.markedPenalty,
 		TookQuinola:    p.tookQuinola,
 		TookDiamondAce: p.tookDiamondAce,
 	})
@@ -106,6 +117,7 @@ func (p *ReversisPlayer) UnmarshalJSON(data []byte) error {
 	}
 	p.chips = j.Chips
 	p.roundPenalty = j.RoundPenalty
+	p.markedPenalty = j.MarkedPenalty
 	p.tookQuinola = j.TookQuinola
 	p.tookDiamondAce = j.TookDiamondAce
 	return nil
