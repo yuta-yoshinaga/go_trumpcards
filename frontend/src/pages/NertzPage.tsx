@@ -59,8 +59,8 @@ function loadNertzCpuSpeed(): NertzCpuSpeed {
   return 'normal';
 }
 
-/** Duration to leave the collision shake/red-ring on a rejected foundation. */
-const NERTZ_COLLISION_FEEDBACK_MS = 500;
+/** Duration of Nertz collision and placement feedback animations. */
+export const NERTZ_COLLISION_FEEDBACK_MS = 500;
 
 /** Tutorial step definitions for the Nertz / Pounce page. */
 const NERTZ_TUTORIAL_STEPS: TutorialStep[] = [
@@ -220,6 +220,7 @@ function NertzPageContent() {
   const [placedFlashes, setPlacedFlashes] = useState<Map<number, { placedBy: 'human' | 'cpu'; key: number }>>(
     () => new Map(),
   );
+  const placementFlashTimersRef = useRef<Map<number, number>>(new Map());
   const prevFoundationSizesRef = useRef<number[]>([]);
   const flashKeyRef = useRef(0);
   // `isCollisionError` flags that the current `error` from useGameApi was
@@ -231,6 +232,15 @@ function NertzPageContent() {
   // can attribute the next error from `useGameApi` to a specific cell.
   const pendingFoundationRef = useRef<number | null>(null);
   const prevErrorRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      for (const timerId of placementFlashTimersRef.current.values()) {
+        window.clearTimeout(timerId);
+      }
+      placementFlashTimersRef.current.clear();
+    };
+  }, []);
 
   // Successful moves call `setState(res)` on the useGameApi side; whenever a new
   // state arrives we know the in-flight move resolved without error, so the
@@ -271,7 +281,10 @@ function NertzPageContent() {
       // Schedule a removal for each idx independently so the visible flash
       // duration is constant regardless of when sibling flashes start.
       for (const idx of grown) {
-        window.setTimeout(() => {
+        const previousTimer = placementFlashTimersRef.current.get(idx);
+        if (previousTimer !== undefined) window.clearTimeout(previousTimer);
+        const timerId = window.setTimeout(() => {
+          placementFlashTimersRef.current.delete(idx);
           setPlacedFlashes((current) => {
             if (!current.has(idx)) return current;
             const next = new Map(current);
@@ -279,6 +292,7 @@ function NertzPageContent() {
             return next;
           });
         }, NERTZ_COLLISION_FEEDBACK_MS);
+        placementFlashTimersRef.current.set(idx, timerId);
       }
     }
     prevFoundationSizesRef.current = state.foundations.map((f) => f.size);
