@@ -146,6 +146,7 @@ function MinibridgePageContent() {
 
   // **validPlays はいま操作している席のもの**なので、ダミーの手番ではダミー側に付く。
   // 枠表示と選択可否の両方に同じ合法札判定を使う。
+  // 押せる札はクライアント側でも絞るが、合法性の最終判断はサーバが必ず検証する（クライアント側の判定だけには頼らない）。
   const legalRing = new Set(isHumanTurn ? state.validPlays : []);
 
   const pairHcp = state.players
