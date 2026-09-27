@@ -191,6 +191,17 @@ describe('PishtiPage', () => {
     await waitFor(() => expect(screen.getByText('場札なし')).toBeInTheDocument());
   });
 
+  it('announces the changed pile and capture once in a polite live region', async () => {
+    renderWithProviders(<PishtiPage />);
+    const announcement = await screen.findByTestId('pishti-pile-announcement');
+    expect(announcement).toHaveAttribute('aria-live', 'polite');
+    expect(announcement).toBeEmptyDOMElement();
+
+    mockExec.mockResolvedValueOnce(makeState({ pile: [], pileTop: null, pileCount: 0 }));
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+    await waitFor(() => expect(announcement).toHaveTextContent('場札更新。トップは場札なし、0枚。場札が取られました'));
+  });
+
   it('does not dispatch play when it is not the human turn', async () => {
     mockExec.mockResolvedValue(makeState({ currentTurn: 2 }));
     renderWithProviders(<PishtiPage />);

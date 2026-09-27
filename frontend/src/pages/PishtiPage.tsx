@@ -142,6 +142,27 @@ function PishtiPageContent() {
   // the game's highlight but was easy to miss amid fast CPU turns (#2692). Tracked
   // per-player (not aggregate) so two CPU +10s in one response can't fake a +20 Jack.
   const [pistiCelebration, setPistiCelebration] = useState<{ key: number; jack: boolean } | null>(null);
+  const [pileAnnouncement, setPileAnnouncement] = useState('');
+  const prevPileRef = useRef<{ count: number; top: Card | null } | null>(null);
+  useEffect(() => {
+    if (!state) return;
+    const previous = prevPileRef.current;
+    prevPileRef.current = { count: state.pileCount, top: state.pileTop };
+    if (
+      previous &&
+      (previous.count !== state.pileCount ||
+        previous.top?.design !== state.pileTop?.design ||
+        previous.top?.value !== state.pileTop?.value)
+    ) {
+      setPileAnnouncement(
+        t('pileUpdate', {
+          top: state.pileTop ? cardAlt(state.pileTop) : t('pileEmpty'),
+          count: t('pileCount', { count: state.pileCount }),
+          captured: previous.count > state.pileCount ? t('pileCaptured') : '',
+        }),
+      );
+    }
+  }, [state, t]);
   const prevBonusesRef = useRef<number[] | null>(null);
   useEffect(() => {
     if (!state) return;
@@ -298,6 +319,9 @@ function PishtiPageContent() {
 
             {/* Center pile */}
             <div className="relative mb-2 p-3 rounded bg-black/20 text-center" data-tutorial="pishti-pile">
+              <div aria-live="polite" aria-atomic="true" data-testid="pishti-pile-announcement" className="sr-only">
+                {pileAnnouncement}
+              </div>
               {pistiCelebration && (
                 <div
                   key={pistiCelebration.key}
