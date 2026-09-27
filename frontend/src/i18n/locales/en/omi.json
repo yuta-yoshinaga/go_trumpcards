@@ -26,6 +26,8 @@
   "trumpCaller": "Trump Caller",
   "maker": "Maker: Team {{team}}",
   "currentTrick": "Current Trick",
+  "trickAnnouncementEntry": "{{player}}: {{card}}",
+  "listSeparator": ", ",
   "partnership": "Partner: {{partner}}",
   "trickCount": "Tricks: {{count}}",
   "callTrumpButton": "Call Trump",

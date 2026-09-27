@@ -173,6 +173,31 @@ describe('OmiPage', () => {
     });
   });
 
+  it('announces changed trick cards and skips the initial trick on first render', async () => {
+    const playedState: OmiResponse = {
+      ...playPhaseState,
+      currentTrick: [{ playerIdx: 0, card: { design: 'SPADE', value: 1 } }],
+      currentPlayerIdx: 1,
+    };
+    mockExec.mockResolvedValueOnce(playPhaseState).mockResolvedValueOnce(playedState);
+    renderWithProviders(<OmiPage />);
+
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    const liveRegion = screen.getByTestId('omi-trick-announcement');
+    expect(liveRegion).toBeEmptyDOMElement();
+
+    fireEvent.click(screen.getByAltText('♠ A'));
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+    await waitFor(() => expect(liveRegion).toHaveTextContent('あなた: ♠ A'));
+  });
+
+  it('does not announce a non-empty trick on initial render', async () => {
+    mockExec.mockResolvedValue(trickEndState);
+    renderWithProviders(<OmiPage />);
+    await waitFor(() => expect(screen.getByTestId('trick-display-cards')).toBeInTheDocument());
+    expect(screen.getByTestId('omi-trick-announcement')).toBeEmptyDOMElement();
+  });
+
   // ─── Required test 1: trump calling UI appears only for human caller ───────
 
   it('shows trump suit buttons only when human is the trump caller', async () => {

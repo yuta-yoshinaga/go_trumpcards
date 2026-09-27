@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { omiApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
@@ -143,6 +143,34 @@ function OmiPageContent() {
     [],
   );
   const { handleCommand } = useCliGame(apiExec, cliConfig, state, { addInput, addOutput, addError, clearLog });
+  const [trickAnnouncement, setTrickAnnouncement] = useState('');
+  const previousTrickRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!state) return;
+    const trickKey = JSON.stringify(state.currentTrick);
+    if (previousTrickRef.current === null) {
+      previousTrickRef.current = trickKey;
+      return;
+    }
+    if (previousTrickRef.current !== trickKey) {
+      previousTrickRef.current = trickKey;
+      const trick = state.currentTrick;
+      const humanSeat = state.players.findIndex((p) => p.isHuman);
+      if (trick.length > 0) {
+        setTrickAnnouncement(
+          trick
+            .map(({ playerIdx, card }) =>
+              t('trickAnnouncementEntry', {
+                player: playerName(playerIdx, playerIdx === humanSeat),
+                card: cardAlt(card),
+              }),
+            )
+            .join(t('listSeparator')),
+        );
+      }
+    }
+  }, [state, t]);
 
   const isPlayPhaseForKbd = state?.phase === OmiPhase.PLAY;
   const isHumanTurnForKbd = isPlayPhaseForKbd && state?.players[state.currentPlayerIdx]?.isHuman === true;
@@ -203,6 +231,9 @@ function OmiPageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
+      <div role="status" aria-live="polite" aria-atomic="true" className="sr-only" data-testid="omi-trick-announcement">
+        {trickAnnouncement}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
