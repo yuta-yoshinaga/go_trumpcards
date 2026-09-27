@@ -14,6 +14,7 @@
   "srcOppWaste": "相手廃札",
   "srcTableau": "タブロー{{col}}",
   "selectedSource": "選択中: {{src}}",
+  "placeable": "置ける",
   "pickSourceHint": "動かすカード（リザーブ/廃札/タブロー）を選んでください。",
   "toFoundation": "組札へ",
   "cancelSelect": "選択解除",

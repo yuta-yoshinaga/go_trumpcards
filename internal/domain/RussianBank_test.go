@@ -77,6 +77,37 @@ func TestRussianBank_TableauRules(t *testing.T) {
 	}
 }
 
+func TestRussianBank_GetTableauNextDescribesPlacementRules(t *testing.T) {
+	g := newRbGame()
+	rbClearBoard(g)
+	g.tableau[0] = []*Card{rbCard(CardDesignSpade, 8)}
+	g.tableau[1] = []*Card{rbCard(CardDesignHeart, 10)}
+
+	next := g.GetTableauNext()
+	require.Len(t, next, RussianBankTableauCnt)
+	assert.Equal(t, RussianBankTableauNext{Any: true}, next[2])
+	assert.Equal(t, RussianBankTableauNext{Black: false, Value: 7}, next[0]) // black 8 takes red 7
+	assert.Equal(t, RussianBankTableauNext{Black: true, Value: 9}, next[1])  // red 10 takes black 9
+
+	for col, n := range next {
+		if n.Any {
+			assert.True(t, g.rbCanPlaceTableau(rbCard(CardDesignHeart, 1), col), "empty target %d should accept any card", col)
+			continue
+		}
+		design := CardDesignHeart
+		if n.Black {
+			design = CardDesignSpade
+		}
+		assert.True(t, g.rbCanPlaceTableau(rbCard(design, n.Value), col), "target %d should accept advertised card", col)
+		wrongColor := CardDesignHeart
+		if !n.Black {
+			wrongColor = CardDesignSpade
+		}
+		assert.False(t, g.rbCanPlaceTableau(rbCard(wrongColor, n.Value), col), "target %d should reject wrong color", col)
+		assert.False(t, g.rbCanPlaceTableau(rbCard(design, n.Value+1), col), "target %d should reject wrong value", col)
+	}
+}
+
 func TestRussianBank_FoundationRules(t *testing.T) {
 	g := newRbGame()
 	rbClearBoard(g)

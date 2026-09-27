@@ -75,6 +75,8 @@ export interface RussianBankResponse extends BaseGameResponse {
    * Ace).
    */
   foundationNext: { design: string; value: number }[];
+  /** What each tableau column will accept next. */
+  tableauNext: { any: boolean; black: boolean; value: number }[];
   /** Optional move hint (present only on a hint request). */
   hint?: RussianBankHint;
   /** One entry per player (index 0 = human). */

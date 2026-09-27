@@ -166,11 +166,29 @@ function RussianBankPageContent() {
   })();
 
   const foundationTarget = ((): number => {
-    if (!state || !selectedCard) return -1;
+    if (!canAct || !selected || !selectedCard) return -1;
     return state.foundationNext.findIndex(
       (n) => (n.design === '' || n.design === selectedCard.design) && n.value === selectedCard.value,
     );
   })();
+
+  // The server describes each column's next accepted card, so placement rules
+  // stay in the domain. A tableau source cannot target itself.
+  const tableauTargets = new Set<number>();
+  if (canAct && selected && selectedCard) {
+    state.tableau.forEach((_, i) => {
+      if (selected.zone === ZONE_TABLEAU && selected.col === i) return;
+      const next = state.tableauNext[i];
+      if (
+        next &&
+        (next.any ||
+          (next.black === (selectedCard.design === 'SPADE' || selectedCard.design === 'CLOVER') &&
+            next.value === selectedCard.value))
+      ) {
+        tableauTargets.add(i);
+      }
+    });
+  }
 
   const sendToTableau = (toCol: number) => {
     if (!selected) {
@@ -361,7 +379,7 @@ function RussianBankPageContent() {
                 <button
                   type="button"
                   key={`tab-${i}`}
-                  className={`relative flex flex-col items-center rounded ${selected ? 'ring-1 ring-ds-success' : ''}${hintRing} ${canAct ? 'cursor-pointer' : ''}`}
+                  className={`relative flex flex-col items-center rounded ${selected?.zone === ZONE_TABLEAU && selected.col === i ? 'ring-1 ring-ds-success' : ''} ${tableauTargets.has(i) ? 'ring-2 ring-ds-success' : ''}${hintRing} ${canAct ? 'cursor-pointer' : ''}`}
                   onClick={canAct ? () => sendToTableau(i) : undefined}
                   disabled={!canAct}
                   data-testid={`tableau-${i}`}
@@ -373,6 +391,11 @@ function RussianBankPageContent() {
                       : t('slotEmptyZone', { zone: t('srcTableau', { col: i + 1 }) })
                   }
                 >
+                  {tableauTargets.has(i) && (
+                    <span className="absolute -top-2 left-1/2 z-10 -translate-x-1/2 rounded bg-ds-success px-1 text-[10px] font-semibold text-ds-text-primary">
+                      {t('placeable')}
+                    </span>
+                  )}
                   {n === 0 ? (
                     <div
                       className="rounded border border-dashed border-white/25 bg-black/20"
