@@ -120,6 +120,12 @@ function PaiGowPageContent() {
   // within the player's chip balance. Invalid bets disable submission.
   const betInvalid =
     Number.isNaN(betAmount) || betAmount < 10 || betAmount % 10 !== 0 || betAmount > (state?.chips ?? 0);
+  const betErrorKey =
+    betAmount < 10 || Number.isNaN(betAmount)
+      ? 'betErrorMinimum'
+      : betAmount % 10 !== 0
+        ? 'betErrorStep'
+        : 'betErrorBalance';
 
   const foul = useMemo(
     () =>
@@ -382,13 +388,16 @@ function PaiGowPageContent() {
             />
             {isBetPhase && (
               <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="pg-bet-controls">
+                <p data-testid="paigow-bet-guidance" className="text-ds-text-muted text-xs text-center">
+                  {t('betLimits', { chips: state.chips, amount: betAmount })}
+                </p>
                 <ChipBetInput
                   id="paigow-bet-amount"
                   label={t('label.bet')}
                   value={betAmount}
                   onChange={setBetAmount}
                   min={10}
-                  max={state.chips}
+                  max={Math.min(state.chips, 10000)}
                   step={10}
                   disabled={loading}
                   showSteppers
@@ -397,7 +406,7 @@ function PaiGowPageContent() {
                 />
                 {betInvalid && (
                   <p id="paigow-bet-error" role="alert" className="text-ds-error text-xs">
-                    {t('betError')}
+                    {t(betErrorKey)}
                   </p>
                 )}
                 <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading || betInvalid}>
