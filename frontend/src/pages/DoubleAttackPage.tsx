@@ -278,6 +278,20 @@ function DoubleAttackPageContent() {
                   <p className="text-ds-text-muted text-xs" data-testid="da-attack-notice">
                     {t('attackNotice')}
                   </p>
+                  <div
+                    className="flex flex-wrap justify-center gap-x-4 gap-y-1 rounded bg-ds-surface px-3 py-2 text-ds-text-primary text-sm tabular-nums"
+                    data-testid="da-attack-comparison"
+                  >
+                    <span>
+                      {t('label.balance')}: {state.chips}
+                    </span>
+                    <span>
+                      {t('label.attackLimit')}: {state.maxAttackBet}
+                    </span>
+                    <span>
+                      {t('label.selectedAttack')}: {attack}
+                    </span>
+                  </div>
                   {/* **上限はサーバの値に従う。** アンティから計算し直さない。 */}
                   <ChipBetInput
                     id="doubleattack-attack"
