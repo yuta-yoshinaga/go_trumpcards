@@ -150,6 +150,25 @@ describe('MonteCarloPage', () => {
     expect(screen.queryByTestId('mc-pair-toast')).not.toBeInTheDocument();
   });
 
+  it('does not show the removal toast when the selected pair is locally invalid', async () => {
+    renderWithProviders(<MonteCarloPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const first = screen.getByTestId('mc-cell-0-0');
+    const nonAdjacent = screen.getByTestId('mc-cell-2-2');
+    await waitFor(() => expect(first).toBeEnabled());
+    fireEvent.click(first);
+    // Invoke the cell handler directly to exercise its local-invalid-pair path
+    // even though the UI disables non-matching targets after selection.
+    const propsKey = Object.keys(nonAdjacent).find((key) => key.startsWith('__reactProps$'));
+    expect(propsKey).toBeDefined();
+    if (!propsKey) throw new Error('React cell props not found');
+    const props = (nonAdjacent as unknown as Record<string, { onClick: () => void }>)[propsKey];
+    act(() => props.onClick());
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('remove', 0, 0, 2, 2));
+    await flushPendingDispatch();
+    expect(screen.queryByTestId('mc-pair-toast')).not.toBeInTheDocument();
+  });
+
   it('does not show the removal toast when the remove request fails', async () => {
     mockExec.mockImplementation((...args) =>
       args[0] === 'remove' ? Promise.reject(new Error('network error')) : Promise.resolve(playingState),

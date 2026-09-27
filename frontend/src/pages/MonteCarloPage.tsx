@@ -87,6 +87,8 @@ function MonteCarloPageContent() {
     exec: execApi,
     retry,
   } = useGameApi(montecarloApi.exec, {
+    // Wait for the server's successful response before showing the removal toast.
+    // Local pair validation alone cannot confirm that the pair was removed.
     onSuccess: (response, args) => {
       if (args[0] === 'remove') {
         if (pendingPairToast.current && !isRejectedAction(response)) flashPairRemoved();
