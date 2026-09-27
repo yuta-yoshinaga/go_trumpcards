@@ -181,10 +181,27 @@ describe('BristolPage', () => {
     );
   });
 
-  it('foundations are disabled until a source is selected', async () => {
+  it('foundation targets stay focusable until a source is selected', async () => {
     renderWithProviders(<BristolPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    expect(screen.getByRole('button', { name: /^組札 0/ })).toBeDisabled();
+    const button = screen.getByRole('button', { name: /^組札 0/ });
+    expect(button).not.toBeDisabled();
+    expect(button).toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('explains and ignores an unselected foundation target', async () => {
+    renderWithProviders(<BristolPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    const button = screen.getByRole('button', { name: /^組札 0/ });
+    expect(button).not.toBeDisabled();
+    expect(button).toHaveAttribute('aria-disabled', 'true');
+    const describedBy = button.getAttribute('aria-describedby');
+    expect(describedBy).toBeTruthy();
+    expect(document.getElementById(describedBy ?? '')).toHaveTextContent('先に移動する札を選んでください');
+    fireEvent.click(button);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
   });
 
   it('hint button triggers hint command', async () => {

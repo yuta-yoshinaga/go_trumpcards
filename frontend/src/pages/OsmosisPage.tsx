@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useId, useMemo, useState } from 'react';
 import { type OsmosisMoveZone, osmosisApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -78,6 +78,7 @@ export const OsmosisPage = withTutorial(OsmosisPageContent, 'osmosis', OS_TUTORI
 
 /** Inner content of the Osmosis page. */
 function OsmosisPageContent() {
+  const selectSourceHintId = useId();
   const {
     t,
     tc,
@@ -262,6 +263,9 @@ function OsmosisPageContent() {
           <LandscapeBanner message={phaseName} />
 
           <div className="flex-1 overflow-y-auto px-4 pt-3 lg:px-8">
+            <span id={selectSourceHintId} className="sr-only">
+              {tc('label.selectSourceFirst')}
+            </span>
             {/* Foundation rows */}
             <div className="mb-3 flex flex-col gap-2" data-tutorial="os-foundation">
               <span className="text-xs text-ds-text-muted">{t('foundation')}</span>
@@ -291,11 +295,19 @@ function OsmosisPageContent() {
                     <button
                       type="button"
                       onClick={() => handleFoundationClick(i)}
-                      disabled={!isPlaying || !selected || loading}
+                      disabled={!isPlaying || loading}
+                      aria-disabled={!selected || undefined}
                       aria-label={`${t('foundation')} ${i}${clickAllowed ? `, ${t('placeable')}` : ''}`}
                       // Read the available action in the name; explain blocked rows with
                       // aria-describedby because title and border color are not reliable cues.
-                      aria-describedby={blocked ? `os-foundation-blocked-${i.toString()}` : undefined}
+                      aria-describedby={
+                        [
+                          !selected ? selectSourceHintId : undefined,
+                          blocked ? `os-foundation-blocked-${i.toString()}` : undefined,
+                        ]
+                          .filter(Boolean)
+                          .join(' ') || undefined
+                      }
                       title={blocked ? t('cannotPlaceHere') : undefined}
                       className={`flex w-full items-center gap-2 rounded border p-1 text-left ${focusRingWhite} ${
                         blocked
