@@ -121,6 +121,19 @@ describe('SixBidSoloPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 1 }));
   });
 
+  it('shows each trick card with the player who played it', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        trick: [card('SPADE', 1), card('HEART', 10)],
+        trickLeaderIdx: 1,
+      }),
+    );
+    renderWithProviders(<SixBidSoloPage />);
+    await waitFor(() => expect(screen.getByTestId('sixbidsolo-trick')).toBeInTheDocument());
+    expect(screen.getByTestId('sixbidsolo-trick')).toHaveTextContent('CPU 1');
+    expect(screen.getByTestId('sixbidsolo-trick')).toHaveTextContent('CPU 2');
+  });
+
   // **追随は強制。**サーバーが出せる札を決める。
   it('disables cards the server did not list as playable', async () => {
     mockExec.mockResolvedValue(makeState({ validPlays: [2] }));
