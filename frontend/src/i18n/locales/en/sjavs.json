@@ -3,8 +3,6 @@
   "trumpUndecided": "undecided",
   "trumpCount": "{{n}} trumps",
   "remaining": "To go",
-  "us": "Us",
-  "them": "Them",
   "ruleLine": "Permanent trumps: CQ > SQ > CJ > SJ > HJ > DJ (highest whatever the trump suit)",
   "phase.bid": "Bidding",
   "phase.play": "In progress",

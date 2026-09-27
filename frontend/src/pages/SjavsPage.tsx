@@ -117,7 +117,7 @@ function SjavsPageContent() {
             {t('trump')}: {state.trumpSuit >= 0 ? SUIT_GLYPHS[state.trumpSuit] : t('trumpUndecided')}
             {state.trumpCount > 0 && ` (${t('trumpCount', { n: state.trumpCount })})`}
             {' / '}
-            {t('remaining')}: {t('us')} {state.remaining[0]} · {t('them')} {state.remaining[1]}
+            {t('remaining')}: {t('team', { n: 0 })} {state.remaining[0]} · {t('team', { n: 1 })} {state.remaining[1]}
           </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>

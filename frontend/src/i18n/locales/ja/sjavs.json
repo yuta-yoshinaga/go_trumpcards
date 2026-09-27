@@ -3,8 +3,6 @@
   "trumpUndecided": "未定",
   "trumpCount": "切札{{n}}枚",
   "remaining": "残り",
-  "us": "味方",
-  "them": "相手",
   "ruleLine": "常時切札: ♣Q ＞ ♠Q ＞ ♣J ＞ ♠J ＞ ♥J ＞ ♦J（切札スートに関係なく最強）",
   "phase.bid": "ビッド",
   "phase.play": "進行中",

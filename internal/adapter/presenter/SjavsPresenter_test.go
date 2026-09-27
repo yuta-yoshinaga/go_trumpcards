@@ -88,8 +88,7 @@ func TestSjavsWebPresenter_HidesTheCpuHandButNeverTheBids(t *testing.T) {
 
 func TestSjavsCuiPresenter_LabelsPointsWithPlayerTeamIdentifiers(t *testing.T) {
 	output := new(SjavsCuiPresenter).Output(sjStub(domain.SjavsPhaseBid, -1, false, -1), nil)
-	assert.Contains(t, output, "チーム0")
-	assert.Contains(t, output, "チーム1")
+	assert.Contains(t, output, "今ハンドの点: チーム0 60 / チーム1 60（合計120）")
 }
 
 func TestSjavsWebPresenter_ShipsTheTrumpCountSoTheClientNeverRecountsIt(t *testing.T) {

@@ -82,6 +82,7 @@ describe('SjavsPage', () => {
   it('labels hand points with the same team identifiers shown by each player', async () => {
     const { unmount } = renderWithProviders(<SjavsPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.getByTestId('phase-indicator')).toHaveTextContent('残り: チーム0 24 · チーム1 24');
     expect(screen.getByText('今ハンド: チーム0 0 / チーム1 0（合計120）')).toBeInTheDocument();
     expect(screen.getAllByText(/チーム0/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/チーム1/).length).toBeGreaterThan(0);
