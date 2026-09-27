@@ -32,6 +32,7 @@
   "currentTrick": "現在のトリック",
   "previousTrickWinner": "{{name}} が獲得",
   "players": "プレイヤー",
+  "cardCounts": "手札の枚数",
   "chienLabel": "シアン（公開）",
   "bouts": {
     "title": "保有ブー（{{count}}/3）",
