@@ -489,25 +489,42 @@ describe('KlondikePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', expect.any(Object), expect.any(Object)));
   });
 
-  it('foundation disabled when no source selected', async () => {
+  it('foundation targets remain focusable when no source is selected', async () => {
     renderWithProviders(<KlondikePage />);
     await waitFor(() => expect(screen.getByText('♠')).toBeInTheDocument());
 
-    // Empty foundation buttons should be disabled when no source selected
     const aButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === 'A');
     for (const btn of aButtons) {
-      expect(btn).toBeDisabled();
+      expect(btn).not.toBeDisabled();
+      expect(btn).toHaveAttribute('aria-disabled', 'true');
     }
   });
 
-  it('empty tableau column disabled when no source selected', async () => {
+  it('empty tableau targets remain focusable when no source is selected', async () => {
     renderWithProviders(<KlondikePage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
     const kButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === 'K');
     for (const btn of kButtons) {
-      expect(btn).toBeDisabled();
+      expect(btn).not.toBeDisabled();
+      expect(btn).toHaveAttribute('aria-disabled', 'true');
     }
+  });
+
+  it('explains and ignores a foundation target click before source selection', async () => {
+    renderWithProviders(<KlondikePage />);
+    const targets = await screen.findAllByRole('button', { name: /空の組札/ });
+    const target = targets[0];
+    expect(target).toBeDefined();
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const hint = document.getElementById(target.getAttribute('aria-describedby') ?? '');
+    expect(hint).toHaveTextContent('先に移動する札を選んでください');
+
+    mockExec.mockClear();
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
   });
 
   it('shows hint text from waste after clicking hint', async () => {

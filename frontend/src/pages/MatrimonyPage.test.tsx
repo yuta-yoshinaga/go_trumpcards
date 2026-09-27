@@ -113,15 +113,33 @@ describe('MatrimonyPage', () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<MatrimonyPage />);
     const empty = await screen.findByRole('button', { name: /空の枠 3/ });
-    // まだ何も選んでいなければ、当然押せない。
-    expect(empty).toBeDisabled();
+    expect(empty).not.toBeDisabled();
+    expect(empty).toHaveAttribute('aria-disabled', 'true');
 
     fireEvent.click(screen.getByRole('button', { name: '枠 0 ♠ 9' }));
     await waitFor(() =>
       expect(screen.getByRole('button', { name: '枠 0 ♠ 9' })).toHaveAttribute('aria-pressed', 'true'),
     );
-    // タブローの札を選んでも押せないまま。
-    expect(empty).toBeDisabled();
+    // タブローの札を選んでも空き枠は aria-disabled のまま。
+    expect(empty).not.toBeDisabled();
+    expect(empty).toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('explains and ignores a foundation target click before source selection', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<MatrimonyPage />);
+    const targets = await screen.findAllByRole('button', { name: /空の組札/ });
+    const target = targets[0];
+    expect(target).toBeDefined();
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const hint = document.getElementById(target.getAttribute('aria-describedby') ?? '');
+    expect(hint).toHaveTextContent('先に移動する札を選んでください');
+
+    mockExec.mockClear();
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
   });
 
   // **ドラッグ経路も同じ規則を守る。**クリックはボタンを無効化して防いでいるが、
