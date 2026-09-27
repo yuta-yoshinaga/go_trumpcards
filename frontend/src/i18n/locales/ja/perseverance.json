@@ -16,7 +16,6 @@
   "hint": "ヒント",
   "autoComplete": "自動完成",
   "undo": "元に戻す",
-  "stalemate": "手詰まりです",
   "stalemateUndoRedeal": "盤面に合法手がありません。元に戻すか、配り直してください。",
   "stalemateUndo": "盤面に合法手がありません。元に戻してください。",
   "stalemateRedeal": "盤面に合法手がありません。配り直してください。",

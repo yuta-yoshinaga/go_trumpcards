@@ -271,7 +271,10 @@ describe('PerseverancePage', () => {
     });
     renderWithProviders(<PerseverancePage />);
     expect(await screen.findByText('操作できません')).toBeInTheDocument();
-    expect(screen.getByText(/ギブアップするか、新しいゲームを始めてください/).parentElement).toHaveAttribute('role', 'status');
+    expect(screen.getByText(/ギブアップするか、新しいゲームを始めてください/).parentElement).toHaveAttribute(
+      'role',
+      'status',
+    );
   });
 
   it('does not show a stalemate explanation when redeals are exhausted but the game is live', async () => {

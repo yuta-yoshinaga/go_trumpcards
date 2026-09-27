@@ -16,7 +16,6 @@
   "hint": "Hint",
   "autoComplete": "Auto Complete",
   "undo": "Undo",
-  "stalemate": "Stalemate",
   "stalemateUndoRedeal": "No legal board moves remain. Undo or redeal.",
   "stalemateUndo": "No legal board moves remain. Undo.",
   "stalemateRedeal": "No legal board moves remain. Redeal.",
