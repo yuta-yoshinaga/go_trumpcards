@@ -79,6 +79,19 @@ beforeEach(() => {
 });
 
 describe('StalactitesPage', () => {
+  it('keeps an unselected empty tableau target focusable and explains the required source', async () => {
+    renderWithProviders(<StalactitesPage />);
+    const btn = await screen.findByTestId('fc-empty-col-2');
+    expect(btn).not.toBeDisabled();
+    expect(btn).toHaveAttribute('aria-disabled', 'true');
+    const hint = document.getElementById(btn.getAttribute('aria-describedby') ?? '');
+    expect(hint).toHaveTextContent('先に移動する札を選んでください');
+    mockExec.mockClear();
+    fireEvent.click(btn);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('explains both bulk-move limits using the current empty cells and columns', async () => {
     renderWithProviders(<StalactitesPage />);
     const limit = await screen.findByTestId('fc-supermove-limit');
@@ -769,36 +782,39 @@ describe('StalactitesPage', () => {
     await waitFor(() => expect(cardButton).toHaveAttribute('aria-pressed', 'true'));
   });
 
-  // --- Empty targets disabled without source ---
+  // --- Empty targets stay focusable without source ---
 
-  it('foundation disabled when no source selected', async () => {
+  it('foundation targets are aria-disabled when no source selected', async () => {
     renderWithProviders(<StalactitesPage />);
     await waitFor(() => expect(screen.getByText('♠')).toBeInTheDocument());
 
     const aButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === 'A');
     for (const btn of aButtons) {
-      expect(btn).toBeDisabled();
+      expect(btn).not.toBeDisabled();
+      expect(btn).toHaveAttribute('aria-disabled', 'true');
     }
   });
 
-  it('empty tableau column disabled when no source selected', async () => {
+  it('empty tableau columns are aria-disabled when no source selected', async () => {
     renderWithProviders(<StalactitesPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
     const kButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === 'K');
     for (const btn of kButtons) {
-      expect(btn).toBeDisabled();
+      expect(btn).not.toBeDisabled();
+      expect(btn).toHaveAttribute('aria-disabled', 'true');
     }
   });
 
-  it('empty stalactites disabled when no source selected', async () => {
+  it('empty stalactites are aria-disabled when no source selected', async () => {
     renderWithProviders(<StalactitesPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
     const emptyButtons = screen.getAllByText('空');
     for (const btn of emptyButtons) {
       const button = btn.closest('button') as HTMLButtonElement;
-      expect(button).toBeDisabled();
+      expect(button).not.toBeDisabled();
+      expect(button).toHaveAttribute('aria-disabled', 'true');
     }
   });
 

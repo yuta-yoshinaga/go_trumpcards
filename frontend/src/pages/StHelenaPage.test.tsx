@@ -110,6 +110,19 @@ beforeEach(() => {
 });
 
 describe('StHelenaPage', () => {
+  it('keeps an unselected foundation target focusable and explains the required source', async () => {
+    renderWithProviders(<StHelenaPage />);
+    const btn = (await screen.findByAltText('♠ A')).closest('button') as HTMLButtonElement;
+    expect(btn).not.toBeDisabled();
+    expect(btn).toHaveAttribute('aria-disabled', 'true');
+    const hint = document.getElementById(btn.getAttribute('aria-describedby') ?? '');
+    expect(hint).toHaveTextContent('先に移動する札を選んでください');
+    mockExec.mockClear();
+    fireEvent.click(btn);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<StHelenaPage />);
