@@ -59564,6 +59564,9 @@ components:
               result:
                 type: integer
                 description: "0=none, 1=win, 2=lose, 3=push, 4=blackjack"
+              payout:
+                type: integer
+                description: Total returned for this hand, including returned stake.
         activeHand:
           type: integer
         dealerCards:

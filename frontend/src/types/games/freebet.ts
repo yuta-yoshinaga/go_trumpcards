@@ -46,6 +46,8 @@ export interface FreeBetHand {
   blackjack: boolean;
   /** 0=none, 1=win, 2=lose, 3=push, 4=blackjack, 5=dealer-22 push. */
   result: number;
+  /** Total returned for this hand, including returned stake. */
+  payout: number;
 }
 
 /** Free Bet Blackjack game settings. */

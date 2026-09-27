@@ -18,6 +18,7 @@ const hand = (over: Partial<FreeBetResponse['hands'][number]> = {}) =>
     busted: false,
     blackjack: false,
     result: 0,
+    payout: 0,
     ...over,
   }) as FreeBetResponse['hands'][number];
 
@@ -42,6 +43,15 @@ const base = {
 const at = (over: Partial<FreeBetResponse>) => ({ ...base, ...over }) as FreeBetResponse;
 
 describe('formatFreeBetState', () => {
+  it('決着時に手札ごとの払い戻しを表示する', () => {
+    const out = formatFreeBetState(
+      at({
+        phase: FreeBetPhase.RESULT,
+        hands: [hand({ result: FREE_BET_RESULT.win, payout: 150 })],
+      }),
+    );
+    expect(out).toContain('Hand 1: win (payout 150)');
+  });
   it('フェーズとチップを出す', () => {
     const out = formatFreeBetState(base);
     expect(out).toContain('BET');

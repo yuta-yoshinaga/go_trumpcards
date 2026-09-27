@@ -113,7 +113,6 @@ function FreeBetPageContent() {
   const net = state.payout - staked;
   const won = state.hands.some((h) => h.result === FREE_BET_RESULT.win || h.result === FREE_BET_RESULT.blackjack);
   const resultKeyOf = (r: number) => Object.entries(FREE_BET_RESULT).find(([, v]) => v === r)?.[0] ?? 'none';
-
   return (
     <GamePageShell
       title={tc('nav.freebet')}
@@ -212,7 +211,14 @@ function FreeBetPageContent() {
                           + {t('label.freeBet')} {h.freeBet}
                         </span>
                       )}
-                      {isResultPhase && ` · ${t(`result.${resultKeyOf(h.result)}`)}`}
+                      {isResultPhase && (
+                        <>
+                          {' · '}
+                          {t(`result.${resultKeyOf(h.result)}`)}
+                          {' · '}
+                          {t('label.handPayout')}: {h.payout}
+                        </>
+                      )}
                     </div>
                   </div>
                 ))}

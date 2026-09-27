@@ -42,6 +42,7 @@ const hand = (over: Partial<FreeBetResponse['hands'][number]> = {}) =>
     busted: false,
     blackjack: false,
     result: 0,
+    payout: 0,
     ...over,
   }) as FreeBetResponse['hands'][number];
 
@@ -263,12 +264,25 @@ describe('FreeBetPage', () => {
         dealerCards: [card(6), card(9), card(5)],
         dealerScore: 20,
         // 賭け 50 + ハウス 50 で勝つと払い戻しは 150。自腹は 50 なので収支は +100。
-        hands: [hand({ bet: 50, freeBet: 50, doubled: true, result: FREE_BET_RESULT.win })],
+        hands: [hand({ bet: 50, freeBet: 50, doubled: true, result: FREE_BET_RESULT.win, payout: 150 })],
         payout: 150,
       }),
     );
     renderWithProviders(<FreeBetPage />);
     await waitFor(() => expect(screen.getByTestId('fb-result')).toHaveTextContent('収支: 100'));
+    expect(screen.getByTestId('fb-hand-0')).toHaveTextContent('払い戻し: 150');
+  });
+
+  it('ブラックジャックの手札ごとの払い戻しを表示する', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: FreeBetPhase.RESULT,
+        hands: [hand({ bet: 50, blackjack: true, result: FREE_BET_RESULT.blackjack, payout: 125 })],
+        payout: 125,
+      }),
+    );
+    renderWithProviders(<FreeBetPage />);
+    await waitFor(() => expect(screen.getByTestId('fb-hand-0')).toHaveTextContent('払い戻し: 125'));
   });
 
   // **22 は名指しする。** 無料ダブル / 無料スプリットの対価がこれ。

@@ -60,6 +60,7 @@ func (cp *FreeBetBlackjackWebPresenter) Output(c interfaces.FreeBetBlackjackGame
 func freeBetHandsToOutput(c interfaces.FreeBetBlackjackGame) []*controller.FreeBetWebOutputHand {
 	hands := c.GetHands()
 	results := c.GetResults()
+	payouts := c.GetHandPayouts()
 	out := make([]*controller.FreeBetWebOutputHand, 0, len(hands))
 	for i, h := range hands {
 		if h == nil {
@@ -68,6 +69,10 @@ func freeBetHandsToOutput(c interfaces.FreeBetBlackjackGame) []*controller.FreeB
 		result := domain.FreeBetResultNone
 		if i < len(results) {
 			result = results[i]
+		}
+		payout := 0
+		if i < len(payouts) {
+			payout = payouts[i]
 		}
 		out = append(out, &controller.FreeBetWebOutputHand{
 			Cards:     cardsToOutputOrEmpty(h.GetCards()),
@@ -80,6 +85,7 @@ func freeBetHandsToOutput(c interfaces.FreeBetBlackjackGame) []*controller.FreeB
 			Busted:    h.IsBusted(),
 			Blackjack: domain.FreeBetIsNatural(h),
 			Result:    int(result),
+			Payout:    payout,
 		})
 	}
 	return out

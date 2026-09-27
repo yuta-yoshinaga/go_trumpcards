@@ -35,6 +35,7 @@ type FreeBetWebOutputHand struct {
 	Busted    bool `json:"busted"`
 	Blackjack bool `json:"blackjack"`
 	Result    int  `json:"result"`
+	Payout    int  `json:"payout"`
 }
 
 // FreeBetBlackjackWebOutput フリーベット・ブラックジャックWebアウトプット
