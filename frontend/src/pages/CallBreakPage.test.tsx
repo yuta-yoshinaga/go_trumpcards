@@ -29,9 +29,12 @@ const bidPhaseCpuTurnState = makeCallBreakState({
 
 const trickEndState = makeCallBreakState({
   phase: 2,
+  leadPlayerIdx: 2,
+  players: makeCallBreakState().players.slice(0, 3),
   currentTrick: [
     { playerIdx: 0, card: { design: 'DIAMOND', value: 3 } },
     { playerIdx: 1, card: { design: 'HEART', value: 5 } },
+    { playerIdx: 2, card: { design: 'SPADE', value: 10 } },
   ],
 });
 
@@ -293,6 +296,11 @@ describe('CallBreakPage', () => {
     mockExec.mockResolvedValue(trickEndState);
     renderWithProviders(<CallBreakPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
+    expect(screen.getByTestId('trick-winner-badge')).toHaveTextContent('勝者');
+    expect(screen.getByTestId('trick-winner-badge').parentElement).toHaveAttribute('data-trick-winner', 'true');
+    expect(screen.getAllByTestId('trick-display-cards')[0].querySelectorAll('[data-trick-winner="true"]')).toHaveLength(
+      1,
+    );
   });
 
   it('shows next round button on round end', async () => {
