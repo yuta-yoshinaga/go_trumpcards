@@ -8,7 +8,6 @@
   "drawGuidanceStock": "山札は{{count}}枚残っています。",
   "drawGuidanceEmptyStock": "山札は0枚です。山札がなくなったためゲーム終了です。手札が最も多い人が負けです。",
   "drawGuidanceYourTurn": "あなたの番です。",
-  "drawGuidanceOtherTurn": "{{name}}の番です。あなたは待ってください。",
   "drawGuidanceGameEnded": "ゲームは終了しています。",
   "topCardLine": "場札トップ: {{card}}",
   "playerLine": "{{name}}: {{cards}}枚",

@@ -352,7 +352,7 @@ function PigsTailPageContent() {
 
           <GameFooter className={`${gameTheme.pigtail.footer} px-4 py-2.5`}>
             <div data-testid="pigtail-draw-guidance" className="mb-2 text-center text-xs text-ds-text-primary">
-              <p>{t('drawGuidance.penalty')}</p>
+              {state.centerCount > 0 && <p>{t('drawGuidance.penalty')}</p>}
               <p>
                 {state.circleCount > 0
                   ? t('drawGuidance.stock', { count: state.circleCount })

@@ -8,7 +8,6 @@
   "drawGuidanceStock": "{{count}} cards remain in the stock.",
   "drawGuidanceEmptyStock": "The stock is empty, so the game is over. The player with the most cards in hand loses.",
   "drawGuidanceYourTurn": "It is your turn.",
-  "drawGuidanceOtherTurn": "It is {{name}}'s turn. Please wait.",
   "drawGuidanceGameEnded": "The game has ended.",
   "topCardLine": "Center top: {{card}}",
   "playerLine": "{{name}}: {{cards}} cards",

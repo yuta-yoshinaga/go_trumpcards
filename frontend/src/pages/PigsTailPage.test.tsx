@@ -139,19 +139,28 @@ describe('PigsTailPage', () => {
     });
   });
 
-  it('explains the penalty, remaining stock, and whether drawing is available', async () => {
+  it('omits penalty guidance when the center is empty', async () => {
     renderWithProviders(<PigsTailPage />);
     expect(await screen.findByTestId('pigtail-draw-guidance')).toHaveTextContent(
-      '場札トップと同じスートを引くと、場札をすべて引き取ります。山札は52枚残っています。あなたの番です。',
+      '山札は52枚残っています。あなたの番です。',
     );
+    expect(screen.getByTestId('pigtail-draw-guidance')).not.toHaveTextContent('場札トップと同じスートを引くと');
     expect(screen.getByRole('button', { name: '山札から引く' })).toBeEnabled();
+  });
+
+  it('explains the penalty when the center has cards', async () => {
+    mockExec.mockResolvedValue({ ...baseState, centerCount: 1, centerTop: { design: 'SPADE', value: 1 } });
+    renderWithProviders(<PigsTailPage />);
+    expect(await screen.findByTestId('pigtail-draw-guidance')).toHaveTextContent(
+      '場札トップと同じスートを引くと、場札をすべて引き取ります。',
+    );
   });
 
   it('explains an empty stock and does not suggest drawing after the game ends', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<PigsTailPage />);
     expect(await screen.findByTestId('pigtail-draw-guidance')).toHaveTextContent(
-      '場札トップと同じスートを引くと、場札をすべて引き取ります。山札は0枚です。山札がなくなったためゲーム終了です。手札が最も多い人が負けです。ゲームは終了しています。',
+      '山札は0枚です。山札がなくなったためゲーム終了です。手札が最も多い人が負けです。ゲームは終了しています。',
     );
     expect(screen.getByRole('button', { name: '山札から引く' })).toBeDisabled();
   });

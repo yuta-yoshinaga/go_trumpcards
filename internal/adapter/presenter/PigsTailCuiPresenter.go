@@ -19,7 +19,9 @@ func (p *PigsTailCuiPresenter) Output(pt interfaces.PigsTailGame, lastErr error)
 		b.WriteString(i18n.Tf("pigtail.header",
 			"stock", strconv.Itoa(pt.GetCircleCount()),
 			"center", strconv.Itoa(len(pt.GetCenter()))) + "\n")
-		b.WriteString(i18n.T("pigtail.drawGuidancePenalty") + "\n")
+		if len(pt.GetCenter()) > 0 {
+			b.WriteString(i18n.T("pigtail.drawGuidancePenalty") + "\n")
+		}
 		if pt.GetCircleCount() > 0 {
 			b.WriteString(i18n.Tf("pigtail.drawGuidanceStock", "count", strconv.Itoa(pt.GetCircleCount())) + "\n")
 		} else {
@@ -96,12 +98,10 @@ func (p *PigsTailCuiPresenter) Output(pt interfaces.PigsTailGame, lastErr error)
 			}
 			return
 		}
-		currentTurn := pt.GetCurrentTurn()
 		if pt.IsHumanTurn() {
 			b.WriteString(i18n.T("pigtail.drawGuidanceYourTurn") + "\n")
-		} else {
-			b.WriteString(i18n.Tf("pigtail.drawGuidanceOtherTurn", "name", cuiPlayerName(pt.GetPlayer(currentTurn), currentTurn)) + "\n")
 		}
+		currentTurn := pt.GetCurrentTurn()
 		b.WriteString(i18n.Tf("pigtail.promptCurrentTurn",
 			"name", cuiPlayerName(pt.GetPlayer(currentTurn), currentTurn)) + "\n")
 	})
