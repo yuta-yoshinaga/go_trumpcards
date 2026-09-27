@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { osmosisApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -104,8 +104,8 @@ describe('OsmosisPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     screen.getByRole('button', { name: /^ウェイスト:/ }).click();
     // Foundation row 0 becomes enabled once a source is selected.
-    await waitFor(() => expect(screen.getByRole('button', { name: '組札 0' })).toBeEnabled());
-    screen.getByRole('button', { name: '組札 0' }).click();
+    await waitFor(() => expect(screen.getByRole('button', { name: /^組札 0/ })).toBeEnabled());
+    screen.getByRole('button', { name: /^組札 0/ }).click();
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'waste' }, { zone: 'foundation', col: 0 }),
     );
@@ -114,11 +114,12 @@ describe('OsmosisPage', () => {
   it('selects a reserve column then moves it to a foundation row', async () => {
     renderWithProviders(<OsmosisPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    screen.getByRole('button', { name: /^リザーブ 1:/ }).click();
-    await waitFor(() => expect(screen.getByRole('button', { name: '組札 2' })).toBeEnabled());
-    screen.getByRole('button', { name: '組札 2' }).click();
+    screen.getByRole('button', { name: /^リザーブ 0:/ }).click();
+    await waitFor(() => expect(screen.getByRole('button', { name: /組札 0/ })).toBeEnabled());
+    expect(screen.getByRole('button', { name: /組札 0/ })).toHaveAttribute('aria-label', '組札 0, 置ける');
+    screen.getByRole('button', { name: /組札 0/ }).click();
     await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'reserve', col: 1 }, { zone: 'foundation', col: 2 }),
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'reserve', col: 0 }, { zone: 'foundation', col: 0 }),
     );
   });
 
@@ -372,8 +373,8 @@ describe('OsmosisPage', () => {
     const reserve0 = screen.getByRole('button', { name: /リザーブ 0/ });
     expect(reserve0).toHaveAccessibleName(/♠ 2/);
     reserve0.click();
-    await waitFor(() => expect(screen.getByRole('button', { name: '組札 0' })).toBeEnabled());
-    screen.getByRole('button', { name: '組札 0' }).click();
+    await waitFor(() => expect(screen.getByRole('button', { name: /^組札 0/ })).toBeEnabled());
+    screen.getByRole('button', { name: /^組札 0/ }).click();
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'reserve', col: 0 }, { zone: 'foundation', col: 0 }),
     );
@@ -381,8 +382,8 @@ describe('OsmosisPage', () => {
     const reserve1 = screen.getByRole('button', { name: /リザーブ 1/ });
     expect(reserve1).toHaveAccessibleName(/♠ 3/);
     reserve1.click();
-    await waitFor(() => expect(screen.getByRole('button', { name: '組札 0' })).toBeEnabled());
-    screen.getByRole('button', { name: '組札 0' }).click();
+    await waitFor(() => expect(screen.getByRole('button', { name: /^組札 0/ })).toBeEnabled());
+    screen.getByRole('button', { name: /^組札 0/ }).click();
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'reserve', col: 1 }, { zone: 'foundation', col: 0 }),
     );
@@ -470,6 +471,34 @@ describe('OsmosisPage', () => {
 // 読み上げる保証が無いので、キーボード/スクリーンリーダー利用者には**理由が
 // どこにも無い**状態だった。
 describe('OsmosisPage blocked foundation rows', () => {
+  it('highlights only rows that accept the selected card and updates on selection change', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      reserve: [[card('HEART', 5)], ...playingState.reserve.slice(1)],
+      waste: [card('SPADE', 7)],
+    });
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(screen.getByTestId('os-allowed-0')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole('button', { name: /^リザーブ 0:/ }));
+    const row0 = screen.getByRole('button', { name: /^組札 0/ });
+    const row1 = screen.getByRole('button', { name: /^組札 1/ });
+    await waitFor(() => expect(row1).toHaveAccessibleName('組札 1, 置ける'));
+    expect(within(row1).getByText('置ける')).toBeInTheDocument();
+    expect(row0.className).not.toContain('border-ds-success');
+
+    fireEvent.click(screen.getByRole('button', { name: /^ウェイスト:/ }));
+    await waitFor(() => expect(row0).toHaveAccessibleName('組札 0, 置ける'));
+    expect(within(row0).getByText('置ける')).toBeInTheDocument();
+    expect(row1).toHaveAccessibleName('組札 1');
+    expect(within(row1).queryByText('置ける')).not.toBeInTheDocument();
+    expect(row1.className).not.toContain('border-ds-success');
+
+    fireEvent.click(screen.getByRole('button', { name: /^ウェイスト:/ }));
+    await waitFor(() => expect(row0).toHaveAccessibleName('組札 0'));
+    expect(within(row0).queryByText('置ける')).not.toBeInTheDocument();
+  });
+
   it('puts the reason in the accessible name of the rows that reject the card', async () => {
     renderWithProviders(<OsmosisPage />);
     await waitFor(() => expect(screen.getByTestId('os-allowed-0')).toBeInTheDocument());

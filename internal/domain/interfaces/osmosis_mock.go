@@ -25,6 +25,11 @@ func (_m *MockOsmosisGame) MoveWasteToFoundation(fIdx int) error {
 	return ret.Error(0)
 }
 
+func (_m *MockOsmosisGame) CanPlaceOnFoundation(card *domain.Card, fIdx int) bool {
+	ret := _m.Called(card, fIdx)
+	return ret.Bool(0)
+}
+
 func (_m *MockOsmosisGame) MoveReserveToFoundation(rIdx, fIdx int) error {
 	ret := _m.Called(rIdx, fIdx)
 	return ret.Error(0)

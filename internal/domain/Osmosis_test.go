@@ -33,6 +33,42 @@ func osCard(design, value int) *domain.Card {
 	return domain.NewCard(design, value, false)
 }
 
+func TestOsmosisCanPlaceOnFoundationMatchesMoves(t *testing.T) {
+	tests := []struct {
+		name       string
+		foundation [domain.OsmosisFoundationCnt][]*domain.Card
+		row        int
+		card       *domain.Card
+		want       bool
+	}{
+		{"empty row requires started row above and base rank", [domain.OsmosisFoundationCnt][]*domain.Card{{osCard(domain.CardDesignSpade, 8)}, nil}, 1, osCard(domain.CardDesignHeart, 8), true},
+		{"empty row rejects duplicate suit", [domain.OsmosisFoundationCnt][]*domain.Card{{osCard(domain.CardDesignSpade, 8)}, {osCard(domain.CardDesignHeart, 8)}, nil}, 2, osCard(domain.CardDesignHeart, 8), false},
+		{"existing row accepts same suit rank found above", [domain.OsmosisFoundationCnt][]*domain.Card{{osCard(domain.CardDesignSpade, 8), osCard(domain.CardDesignSpade, 9)}, {osCard(domain.CardDesignHeart, 8)}}, 1, osCard(domain.CardDesignHeart, 9), true},
+		{"existing row rejects rank absent above", [domain.OsmosisFoundationCnt][]*domain.Card{{osCard(domain.CardDesignSpade, 8)}, {osCard(domain.CardDesignHeart, 8)}}, 1, osCard(domain.CardDesignHeart, 9), false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			o := setupPlayingOsmosis()
+			o.SetBaseRank(8)
+			o.SetFoundation(tt.foundation)
+			got := o.CanPlaceOnFoundation(tt.card, tt.row)
+			assert.Equal(t, tt.want, got)
+			o.SetWaste([]*domain.Card{tt.card})
+			err := o.MoveWasteToFoundation(tt.row)
+			assert.Equal(t, tt.want, err == nil)
+
+			reserveGame := setupPlayingOsmosis()
+			reserveGame.SetBaseRank(8)
+			reserveGame.SetFoundation(tt.foundation)
+			var reserve [domain.OsmosisReserveCnt][]*domain.Card
+			reserve[0] = []*domain.Card{tt.card}
+			reserveGame.SetReserve(reserve)
+			err = reserveGame.MoveReserveToFoundation(0, tt.row)
+			assert.Equal(t, tt.want, err == nil)
+		})
+	}
+}
+
 func TestNewOsmosis(t *testing.T) {
 	o := newTestOsmosis()
 	assert.NotNil(t, o)

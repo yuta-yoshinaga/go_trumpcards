@@ -11,6 +11,7 @@
   "foundation": "Foundation",
   "anyRank": "any",
   "cannotPlaceHere": "Can't place here",
+  "placeable": "Can place",
   "baseRank": "Base rank",
   "moveCount": "Moves",
   "draw": "Draw",
