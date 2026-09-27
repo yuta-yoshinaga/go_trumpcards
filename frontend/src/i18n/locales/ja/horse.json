@@ -50,5 +50,10 @@
   "round.fourth": "フォースストリート",
   "round.fifth": "フィフスストリート",
   "round.sixth": "シックスストリート",
-  "round.seventh": "セブンスストリート"
+  "round.seventh": "セブンスストリート",
+  "round.deal": "配札",
+  "round.betting": "ベッティング",
+  "round.drawing": "ドロー",
+  "action.betting": "ベッティング手番",
+  "action.draw": "ドロー手番（{{n}}回目）"
 }
