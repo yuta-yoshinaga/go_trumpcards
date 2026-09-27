@@ -584,6 +584,7 @@ describe('PokerPage', () => {
     renderWithProviders(<PokerPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: 'スタンド' })).not.toBeInTheDocument();
+    expect(screen.getByTestId('pk-exchange-confirmability')).toBeEmptyDOMElement();
   });
 
   it('does not show exchange buttons when it is not human turn', async () => {
@@ -599,13 +600,16 @@ describe('PokerPage', () => {
     const exchangeBtn = await screen.findByRole('button', { name: '交換' });
     // Nothing selected yet: stand is the only enabled action.
     expect(exchangeBtn).toBeDisabled();
-    expect(screen.getByTestId('pk-exchange-confirmability')).toHaveTextContent(
+    const confirmability = screen.getByTestId('pk-exchange-confirmability');
+    expect(confirmability).toHaveAttribute('aria-live', 'polite');
+    expect(confirmability).not.toHaveClass('text-ds-text-muted');
+    expect(confirmability).toHaveTextContent(
       '0枚では交換確定できません。交換せず進む場合は「スタンド」を選択してください',
     );
     expect(screen.getByRole('button', { name: 'スタンド' })).toBeEnabled();
     fireEvent.click(screen.getByAltText('♠ A'));
     expect(exchangeBtn).toBeEnabled();
-    expect(screen.getByTestId('pk-exchange-confirmability')).toHaveTextContent('選択した 1 枚を交換して確定できます');
+    expect(confirmability).toHaveTextContent('選択した 1 枚を交換して確定できます');
   });
 
   it('shows the selected-count badge (updating on selection) and a stand hint', async () => {

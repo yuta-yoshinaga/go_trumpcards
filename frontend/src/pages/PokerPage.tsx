@@ -442,15 +442,19 @@ function PokerPageContent() {
             )}
 
             {/* Exchange controls */}
+            <div aria-live="polite" data-testid="pk-exchange-confirmability">
+              {canExchange && (
+                <span className="block text-center text-ds-text-muted text-xs mb-1">
+                  {selected.length === 0
+                    ? t('exchangeNotConfirmable')
+                    : t('exchangeConfirmable', { n: selected.length })}
+                </span>
+              )}
+            </div>
             {canExchange && (
               <div className="text-center mb-2" data-tutorial="pk-exchange-button">
                 <div className="text-game-text-highlight text-xs mb-1" data-testid="pk-exchange-selected">
                   {t('exchangeSelectedCount', { n: selected.length })}
-                </div>
-                <div className="text-ds-text-muted text-xs mb-1" data-testid="pk-exchange-confirmability">
-                  {selected.length === 0
-                    ? t('exchangeNotConfirmable')
-                    : t('exchangeConfirmable', { n: selected.length })}
                 </div>
                 <button
                   type="button"
