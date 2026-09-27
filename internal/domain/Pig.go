@@ -244,10 +244,18 @@ func (g *Pig) activeSeats() []int {
 
 // nextActive は i の次の生存席を返す。
 func (g *Pig) nextActive(i int) int {
-	n := len(g.players)
+	return PigNextActiveSeat(g.players, i)
+}
+
+// PigNextActiveSeat returns the next non-eliminated seat, wrapping around the table.
+func PigNextActiveSeat(players []*PigPlayer, i int) int {
+	n := len(players)
+	if n == 0 {
+		return -1
+	}
 	for step := 1; step <= n; step++ {
 		j := (i + step) % n
-		if !g.players[j].GetEliminated() {
+		if !players[j].GetEliminated() {
 			return j
 		}
 	}

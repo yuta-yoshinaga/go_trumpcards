@@ -55,6 +55,18 @@ func TestPigWebPresenterOutput(t *testing.T) {
 	assert.Empty(t, players[1].(map[string]any)["cards"], "CPU の手札は伏せる")
 }
 
+func TestPigWebPresenterPassTargetSkipsEliminatedSeat(t *testing.T) {
+	p := new(PigWebPresenter)
+	g := newPigForWeb(t)
+	g.GetPlayer(1).SetEliminated(true)
+	m := decodePig(t, p.Output(g, nil))
+	assert.Equal(t, float64(2), m["passTargetIdx"])
+
+	g.GetPlayer(0).SetEliminated(true)
+	m = decodePig(t, p.Output(g, nil))
+	assert.Equal(t, float64(-1), m["passTargetIdx"])
+}
+
 // **同時に渡すので、選び終えた席が並びます。** 盤面には痕跡が残らない。
 func TestPigWebPresenterCarriesWhoHasChosen(t *testing.T) {
 	p := new(PigWebPresenter)

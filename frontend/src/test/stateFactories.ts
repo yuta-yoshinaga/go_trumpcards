@@ -53,6 +53,7 @@ import type {
   NapResponse,
   OmbreResponse,
   PiedmonteseTarotResponse,
+  PigResponse,
   PreferenceResponse,
   PrimeroResponse,
   QuadrilleResponse,
@@ -5714,6 +5715,41 @@ export function makeRussianBankState(overrides?: Partial<RussianBankResponse>): 
     ],
     config: { cpuDifficulty: 1 },
     message: '',
+    ...overrides,
+  };
+}
+
+/** Creates a Pig pass state with the human's next active recipient. */
+export function makePigState(overrides?: Partial<PigResponse>): PigResponse {
+  const players: PigResponse['players'] = Array.from({ length: 4 }, (_, id) => ({
+    id,
+    isHuman: id === 0,
+    cardCount: 4,
+    cards: [],
+    letters: 0,
+    letterWord: '',
+    eliminated: false,
+    hasSignalled: false,
+    noticedOrder: 0,
+    hasChosenPass: false,
+  }));
+  return {
+    players,
+    phase: 0,
+    validPlays: [0, 1, 2, 3],
+    signallerIdx: -1,
+    noticedCnt: 0,
+    roundLoserIdx: -1,
+    letterTarget: 'PIG',
+    roundNumber: 1,
+    passCount: 0,
+    passTargetIdx: 1,
+    deckSize: 16,
+    currentPlayerIdx: 0,
+    gameEndFlag: false,
+    winnerIdx: -1,
+    message: '',
+    config: { playerCnt: 4, cpuDifficulty: 1 },
     ...overrides,
   };
 }

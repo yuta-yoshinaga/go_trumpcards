@@ -163,6 +163,12 @@ function PigPageContent() {
               {t('header.rule')}
             </div>
 
+            {canPass && state.passTargetIdx >= 0 && (
+              <div className="mb-3 text-center text-ds-text-primary" data-testid="pig-pass-target">
+                {t('status.passTarget', { direction: t('passDirection.left'), name: seatName(state.passTargetIdx) })}
+              </div>
+            )}
+
             {/* **合図は声に出さない。** 盤面からは絶対に読み取れません。 */}
             {canSignal && (
               <div

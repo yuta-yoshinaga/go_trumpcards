@@ -47,6 +47,7 @@ function makeState(overrides: Partial<PigResponse> = {}): PigResponse {
     letterTarget: 'PIG',
     roundNumber: 2,
     passCount: 3,
+    passTargetIdx: 1,
     deckSize: 16,
     currentPlayerIdx: 0,
     gameEndFlag: false,
@@ -83,6 +84,22 @@ describe('PigPage', () => {
     const head = await screen.findByTestId('pig-round');
     expect(head).toHaveTextContent('2');
     expect(head).toHaveTextContent('16');
+  });
+
+  it('shows the actual next active pass recipient while choosing a card', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ passTargetIdx: 2, players: [seat(0), seat(1, { eliminated: true }), seat(2), seat(3)] }),
+    );
+    renderWithProviders(<PigPage />);
+    expect(await screen.findByTestId('pig-pass-target')).toHaveTextContent('左隣');
+    expect(screen.getByTestId('pig-pass-target')).toHaveTextContent('CPU2');
+  });
+
+  it('does not show a pass recipient when the API has none', async () => {
+    mockExec.mockResolvedValue(makeState({ passTargetIdx: -1 }));
+    renderWithProviders(<PigPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.queryByTestId('pig-pass-target')).not.toBeInTheDocument();
   });
 
   // **文字がそのまま残機。** 得点表示はありません。

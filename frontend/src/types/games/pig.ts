@@ -65,6 +65,8 @@ export interface PigResponse extends BaseGameResponse {
   roundNumber: number;
   /** Passes made this round. */
   passCount: number;
+  /** Next active seat to receive the human pass, or -1 when unavailable. */
+  passTargetIdx: number;
   /** Cards in play: players x 4, so 12 / 16 / 20 / 24. */
   deckSize: number;
   currentPlayerIdx: number;
