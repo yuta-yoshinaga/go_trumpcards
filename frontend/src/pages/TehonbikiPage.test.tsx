@@ -66,6 +66,23 @@ describe('TehonbikiPage', () => {
     expect(screen.queryByText('single')).not.toBeInTheDocument();
   });
 
+  it('summarizes the wager and clearly shows an empty number selection', async () => {
+    renderWithProviders(<TehonbikiPage />);
+    const summary = await screen.findByRole('status');
+    expect(summary).toHaveTextContent('数字 未選択');
+    expect(summary).toHaveTextContent('賭け方 単張り');
+    expect(summary).toHaveTextContent('賭け額 50');
+
+    fireEvent.click(screen.getByRole('button', { name: '2' }));
+    fireEvent.click(screen.getByRole('button', { name: '4' }));
+    expect(summary).toHaveTextContent('数字 2、4');
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: 'double' } });
+    fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '' } });
+    expect(summary).toHaveTextContent('数字 未選択');
+    expect(summary).toHaveTextContent('賭け方 二丁掛け');
+    expect(summary).toHaveTextContent('賭け額 未入力');
+  });
+
   it('sends the selected numbers, wager kind, and amount', async () => {
     renderWithProviders(<TehonbikiPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '張る' })).toBeInTheDocument());
