@@ -30,13 +30,16 @@
   "mandatoryRule": "ルール: 手札から2枚 + 場札から3枚 (Hi/Lo別に組合せ可)",
   "mandatoryRuleAria": "Hi-Loルール: ハイとローそれぞれで手札2枚と場札3枚を使います",
   "handNumber": "ハンド#{{count}} (レベルアップ:{{level}}ハンド毎)",
+  "listSeparator": "、",
   "rebuy": {
     "prompt": "リバイしますか? ({{chips}}チップ, {{used}}/{{max}}回使用済)",
+    "stack": "現在のスタック: {{current}}チップ{{separator}}追加後のスタック: {{after}}チップ{{separator}}残り回数: {{remaining}}回",
     "accept": "リバイ",
     "skip": "スキップ"
   },
   "addon": {
     "prompt": "アドオンしますか? ({{chips}}チップ)",
+    "stack": "追加後のスタック: {{after}}チップ",
     "accept": "アドオン",
     "skip": "スキップ"
   },

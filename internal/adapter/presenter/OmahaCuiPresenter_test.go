@@ -619,7 +619,7 @@ func TestOmahaCuiPresenter_Output_RebuyAddon(t *testing.T) {
 	})
 
 	t.Run("rebuy phase type 1 shows rebuy prompt", func(t *testing.T) {
-		h, _ := makeOmahaForPresenter()
+		h, players := makeOmahaForPresenter()
 		cfg := domain.OmahaConfig{
 			SmallBlind:       10,
 			BigBlind:         20,
@@ -636,16 +636,20 @@ func TestOmahaCuiPresenter_Output_RebuyAddon(t *testing.T) {
 		h.SetPhase(domain.OmahaPhaseRebuy)
 		h.SetRebuyPhaseType(1)
 		h.SetRebuyCounts([]int{1, 0, 0, 0})
+		players[0].AddChips(400)
 
 		result := p.Output(h, nil)
 		assert.Contains(t, result, "リバイしますか?")
 		assert.Contains(t, result, "1000チップ")
 		assert.Contains(t, result, "1/3回使用済")
+		assert.Contains(t, result, "現在のスタック: 400")
+		assert.Contains(t, result, "追加後のスタック: 1400")
+		assert.Contains(t, result, "残り回数: 2")
 		assert.Contains(t, result, "rb=リバイ / sr=スキップ")
 	})
 
 	t.Run("rebuy phase type 2 shows addon prompt", func(t *testing.T) {
-		h, _ := makeOmahaForPresenter()
+		h, players := makeOmahaForPresenter()
 		cfg := domain.OmahaConfig{
 			SmallBlind:      10,
 			BigBlind:        20,
@@ -660,10 +664,12 @@ func TestOmahaCuiPresenter_Output_RebuyAddon(t *testing.T) {
 		h.SetConfig(cfg)
 		h.SetPhase(domain.OmahaPhaseRebuy)
 		h.SetRebuyPhaseType(2)
+		players[0].AddChips(400)
 
 		result := p.Output(h, nil)
 		assert.Contains(t, result, "アドオンしますか?")
 		assert.Contains(t, result, "1500チップ")
+		assert.Contains(t, result, "追加後のスタック: 1900")
 		assert.Contains(t, result, "ad=アドオン / sa=スキップ")
 	})
 
