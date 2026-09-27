@@ -314,6 +314,28 @@ function ScartoPageContent() {
                 )}
 
                 {/* Round result: the deal settlement (signed delta from the average) */}
+                {(isScartoPhase || isPlayPhase || isTrickEnd) && (
+                  <div
+                    className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                    data-testid="scarto-provisional"
+                  >
+                    <div className="mb-1 text-ds-text-primary">{t('roundResult.provisional')}</div>
+                    <div data-testid="scarto-provisional-breakdown">
+                      <div>{t('roundResult.average', { avg: formatPoints(averageCardPoints) })}</div>
+                      <div>{t('roundResult.formula', { n: state.players.length })}</div>
+                      {state.players.map((p) => (
+                        <div key={p.id}>
+                          {t('roundResult.earnedLine', {
+                            name: playerName(p.id, p.isHuman),
+                            points: p.cardPoints,
+                            diff: formatSigned(p.cardPoints - averageCardPoints),
+                            scaled: formatSigned((p.cardPoints - averageCardPoints) * state.players.length),
+                          })}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 {(isRoundEnd || isGameEnd) && (
                   <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm" data-testid="scarto-result">
                     <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>

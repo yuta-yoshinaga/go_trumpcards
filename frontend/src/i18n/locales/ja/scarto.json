@@ -45,6 +45,7 @@
   "outcomeLoss": "平均より下",
   "roundResult": {
     "title": "ディール結果",
+    "provisional": "暫定（ディール進行中）",
     "outcome": "あなたの結果: {{outcome}}",
     "playerLine": "{{name}}: {{delta}}（累計 {{score}}）",
     "average": "全体平均: {{avg}}点",

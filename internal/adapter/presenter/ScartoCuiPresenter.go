@@ -109,6 +109,10 @@ func (p *ScartoCuiPresenter) Output(g interfaces.ScartoGame, lastErr error) stri
 		for i := 0; i < g.GetPlayerCnt(); i++ {
 			b.WriteString(scartoPlayerStr(g, i))
 		}
+		if g.GetPhase() == domain.ScartoPhaseScarto || g.GetPhase() == domain.ScartoPhasePlay || g.GetPhase() == domain.ScartoPhaseTrickEnd {
+			b.WriteString(i18n.T("scarto.roundInProgress") + "\n")
+			scartoWriteAverageBreakdown(b, g)
+		}
 
 		b.WriteString("----------\n")
 
