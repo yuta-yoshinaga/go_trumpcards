@@ -100,8 +100,14 @@ func (p *HorseCuiPresenter) Output(g interfaces.HorseGame, lastErr error) string
 func horseTableRound(discipline domain.HorseDiscipline, phase int) string {
 	switch discipline {
 	case domain.HorseHoldem, domain.HorseOmahaHiLo, domain.HorseNLHoldem, domain.HorsePLOmaha:
+		if phase == domain.HoldemPhaseEnd || phase == domain.HoldemPhaseRebuy {
+			return ""
+		}
 		return [...]string{"", "preflop", "flop", "turn", "river", "showdown"}[max(0, min(phase, 5))]
 	case domain.HorseRazz, domain.HorseStud, domain.HorseStudHiLo:
+		if phase == domain.SevenCardStudPhaseEnd || phase == domain.SevenCardStudPhaseRebuy {
+			return ""
+		}
 		return [...]string{"", "third", "fourth", "fifth", "sixth", "seventh", "showdown"}[max(0, min(phase, 6))]
 	case domain.HorseTripleDraw:
 		if phase == domain.DeuceToSevenPhaseDraw {

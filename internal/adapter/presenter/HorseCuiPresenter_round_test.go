@@ -19,10 +19,15 @@ func TestHorseTableRound(t *testing.T) {
 		want       string
 	}{
 		{domain.HorseHoldem, domain.HoldemPhaseFlop, "flop"},
+		{domain.HorseHoldem, domain.HoldemPhaseEnd, ""},
+		{domain.HorseHoldem, domain.HoldemPhaseRebuy, ""},
 		{domain.HorseRazz, domain.SevenCardStudPhaseFourthStreet, "fourth"},
+		{domain.HorseRazz, domain.SevenCardStudPhaseEnd, ""},
+		{domain.HorseRazz, domain.SevenCardStudPhaseRebuy, ""},
 		{domain.HorseTripleDraw, domain.DeuceToSevenPhaseDraw, "drawing"},
 		{domain.HorseTripleDraw, domain.DeuceToSevenPhaseBet, "betting"},
 		{domain.HorseTripleDraw, domain.DeuceToSevenPhaseShowdown, ""},
+		{domain.HorseTripleDraw, domain.DeuceToSevenPhaseEnd, ""},
 	} {
 		assert.Equal(t, tt.want, horseTableRound(tt.discipline, tt.phase))
 	}

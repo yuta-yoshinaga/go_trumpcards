@@ -48,7 +48,7 @@ const STUD_ROUND_KEYS = ['', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'sh
  * alternates draw and betting rounds. Phase numbers come from
  * `DeuceToSevenPhase*` (1=deal 2=bet 3=draw 4=showdown 5=end).
  */
-const DRAW_ROUND_KEYS = ['', 'deal', 'betting', 'drawing', 'showdown', 'showdown'] as const;
+const DRAW_ROUND_KEYS = ['', 'deal', 'betting', 'drawing', 'showdown', ''] as const;
 
 /** Disciplines whose betting rounds are named after community cards. */
 const COMMUNITY_DISCIPLINES = new Set(['holdem', 'omahaHiLo', 'nlHoldem', 'plOmaha']);
@@ -325,7 +325,7 @@ export function HorsePageContent({ gameKey }: { gameKey: HorsePageGameKey }) {
               <span> · {disciplineName}</span>
               {roundLabel && <span> · {roundLabel}</span>}
               {isDrawTurn && <span> · {t('action.draw', { n: state.drawIndex })}</span>}
-              {isBetTurn && <span> · {t('action.betting')}</span>}
+              {roundLabel && isBetTurn && <span> · {t('action.betting')}</span>}
             </div>
             <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="ho-actions">
               {isDrawTurn && (

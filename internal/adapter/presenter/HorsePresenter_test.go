@@ -55,7 +55,16 @@ func TestHorseCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, out, g.GetSeatName(i))
 	}
 	assert.Contains(t, out, "ポット")
-	assert.Contains(t, out, i18n.T("horse.round.flop"))
+	var actionRoundLine string
+	for _, line := range strings.Split(out, "\n") {
+		if strings.Contains(line, i18n.T("horse.actionBetting")) {
+			actionRoundLine = line
+			break
+		}
+	}
+	assert.Equal(t, i18n.Tf("horse.actionRound",
+		"round", i18n.T("horse.round.preflop"),
+		"action", i18n.T("horse.actionBetting")), actionRoundLine)
 	assert.Contains(t, out, i18n.T("horse.actionBetting"))
 }
 

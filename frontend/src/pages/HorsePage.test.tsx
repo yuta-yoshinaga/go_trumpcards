@@ -51,6 +51,20 @@ describe('HorsePage', () => {
     expect(screen.getByTestId('ho-action-context')).toHaveTextContent('ベッティング');
   });
 
+  it.each([
+    ['Hold’em end', { tablePhase: 6 }],
+    ['Hold’em rebuy', { tablePhase: 7 }],
+    ['Stud end', { discipline: 2, disciplineName: 'stud', tablePhase: 7 }],
+    ['Stud rebuy', { discipline: 2, disciplineName: 'stud', tablePhase: 8 }],
+    ['Triple Draw end', { discipline: 7, disciplineName: 'tripleDraw', tablePhase: 5 }],
+  ])('hides the table round after %s', async (_label, state) => {
+    mockExec.mockResolvedValue(makeHorseState(state));
+    renderWithProviders(<HorsePage />);
+    const context = await screen.findByTestId('ho-action-context');
+    expect(context).not.toHaveTextContent('ショーダウン');
+    expect(context).not.toHaveTextContent('ベッティング');
+  });
+
   it('identifies Eight-Game Mix separately and marks draw turns', async () => {
     mockEightExec.mockResolvedValue(
       makeHorseState({
