@@ -98,9 +98,9 @@
   "potAwards": {
     "mainPot": "Main pot",
     "sidePot": "Side pot {{n}}",
-    "eligible": "対象",
-    "winners": "勝者",
-    "low": "ロー"
+    "eligible": "Eligible",
+    "winners": "Winners",
+    "low": "Low"
   },
   "listSeparator": ", "
 }

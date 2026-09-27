@@ -536,18 +536,7 @@ func (o *Omaha) resolveShowdown() {
 		for _, sp := range o.sidePots {
 			winners := FindPotWinners(bp, sp.EligiblePlayers)
 			award := OmahaPotAward{Amount: sp.Amount, Eligible: append([]int(nil), sp.EligiblePlayers...), HiWinners: append([]int(nil), winners...), HiPayouts: make([]int, len(winners))}
-			if len(winners) > 0 {
-				share, remainder := sp.Amount/len(winners), sp.Amount%len(winners)
-				for n, idx := range winners {
-					got := share
-					if n == 0 {
-						got += remainder
-					}
-					bp[idx].AddChips(got)
-					hiAmounts[idx] += got
-					award.HiPayouts[n] = got
-				}
-			}
+			distributeAmongWinners(bp, winners, sp.Amount, hiAmounts, award.HiPayouts)
 			o.potAwards = append(o.potAwards, award)
 		}
 	}
@@ -1483,8 +1472,16 @@ func (o *Omaha) UnmarshalJSON(data []byte) error {
 	if len(j.Players) > omahaMaxSliceLen || len(j.CommunityCards) > omahaMaxSliceLen ||
 		len(j.SidePots) > omahaMaxSliceLen || len(j.ActedFlags) > omahaMaxSliceLen ||
 		len(j.RoundResults) > omahaMaxSliceLen || len(j.CpuActions) > omahaMaxSliceLen ||
-		len(j.StartingChips) > omahaMaxSliceLen || len(j.ActionLog) > omahaMaxSliceLen {
+		len(j.StartingChips) > omahaMaxSliceLen || len(j.ActionLog) > omahaMaxSliceLen ||
+		len(j.PotAwards) > omahaMaxSliceLen {
 		return fmt.Errorf("omaha: input array exceeds maximum allowed size")
+	}
+	for _, award := range j.PotAwards {
+		if len(award.Eligible) > omahaMaxSliceLen || len(award.HiWinners) > omahaMaxSliceLen ||
+			len(award.HiPayouts) > omahaMaxSliceLen || len(award.LoWinners) > omahaMaxSliceLen ||
+			len(award.LoPayouts) > omahaMaxSliceLen {
+			return fmt.Errorf("omaha: input array exceeds maximum allowed size")
+		}
 	}
 	o.trumpCards = j.TrumpCards
 	if o.trumpCards == nil {
