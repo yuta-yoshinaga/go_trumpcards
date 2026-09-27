@@ -179,6 +179,17 @@ describe('PanPage', () => {
     await waitFor(() => {
       expect(screen.getByRole('button', { name: '山札から引く' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: '捨て札から引く' })).toBeInTheDocument();
+      expect(screen.getByTestId('pan-draw-pile-count')).toHaveTextContent('山札: 250枚');
+    });
+  });
+
+  it('explains that drawing from an empty stock ends the round and keeps the action available', async () => {
+    mockExec.mockResolvedValue({ ...drawPhaseState, drawPileCount: 0 });
+    renderWithProviders(<PanPage />);
+    await waitFor(() => {
+      expect(screen.getByTestId('pan-draw-pile-count')).toHaveTextContent('山札: 0枚');
+      expect(screen.getByText('山札が空です。山札から引くとラウンドが終了します。')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '山札から引く' })).toBeEnabled();
     });
   });
 

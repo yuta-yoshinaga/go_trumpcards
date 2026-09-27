@@ -65,6 +65,16 @@ func TestPanCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "捨て札")
 	})
 
+	t.Run("empty stock explains that drawing ends the round", func(t *testing.T) {
+		m, _ := setupPanCuiMock()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDrawPileCount")
+		m.On("GetDrawPileCount").Return(0)
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "山札0枚")
+		assert.Contains(t, result, "引くとラウンド終了")
+		assert.Contains(t, result, "捨て札から補充されません")
+	})
+
 	t.Run("play phase prompts include command examples and a meld note", func(t *testing.T) {
 		m, _ := setupPanCuiMock()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")

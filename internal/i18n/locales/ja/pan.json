@@ -18,6 +18,7 @@
   "gameEnd": "ゲーム終了！ {{name}}の勝利です！",
   "promptDraw": "手番: {{name}} (ドローフェーズ)",
   "promptDrawHelpStock": "ds・・・山札から引く",
+  "promptDrawHelpStockEmpty": "ds・・・山札0枚。引くとラウンド終了 (捨て札から補充されません)",
   "promptDrawHelpDiscard": "dd・・・捨て札から引く",
   "promptPlay": "手番: {{name}} (プレイフェーズ)",
   "promptPlayHelpMeld": "m <idx...>・・・メルドを場に出す (例: m 0 1 2)",
