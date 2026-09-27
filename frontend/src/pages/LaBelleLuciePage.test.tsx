@@ -134,6 +134,21 @@ describe('LaBelleLuciePage', () => {
     expect(screen.getByTestId('foundation-0')).toBeInTheDocument();
   });
 
+  it('keeps an unselected foundation focusable and explains how to enable it', async () => {
+    renderWithProviders(<LaBelleLuciePage />);
+    const foundation = await screen.findByTestId('foundation-0');
+    expect(foundation).not.toBeDisabled();
+    expect(foundation).toHaveAttribute('aria-disabled', 'true');
+    const hintId = foundation.getAttribute('aria-describedby');
+    expect(hintId).toBeTruthy();
+    expect(document.getElementById(hintId ?? '')).toHaveTextContent('先に移動する札を選んでください');
+
+    mockExec.mockClear();
+    fireEvent.click(foundation);
+    await waitFor(() => expect(foundation).toHaveAttribute('aria-disabled', 'true'));
+    expect(mockExec).not.toHaveBeenCalledWith('ff');
+  });
+
   it('gives empty foundations a numbered accessible name', async () => {
     mockExec.mockResolvedValue(makeState({ foundation: [[], [card('HEART', 5)], [], []] }));
     renderWithProviders(<LaBelleLuciePage />);
