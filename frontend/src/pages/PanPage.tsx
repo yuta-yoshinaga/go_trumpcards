@@ -283,7 +283,9 @@ function PanPageContent() {
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
             <div className="text-ds-text-primary text-center mb-2">
               <span className="mr-4">{t('round', { n: state.roundNumber, total: state.targetRounds })}</span>
-              <span className="mr-4">{t('drawPile', { count: state.drawPileCount })}</span>
+              {!(isDrawPhase && isHumanTurn) && (
+                <span className="mr-4">{t('drawPile', { count: state.drawPileCount })}</span>
+              )}
               <span>{t('winMeld', { count: state.winMeldCount })}</span>
             </div>
 
@@ -507,7 +509,11 @@ function PanPageContent() {
 
             <div className="flex gap-2 items-center flex-wrap">
               {isDrawPhase && isHumanTurn && (
-                <div className="flex gap-2" data-tutorial="pan-draw-area">
+                <div className="flex flex-wrap items-center gap-2" data-tutorial="pan-draw-area">
+                  <span className="text-ds-text-muted text-sm" data-testid="pan-draw-pile-count">
+                    {t('drawPile', { count: state.drawPileCount })}
+                  </span>
+                  {state.drawPileCount === 0 && <span className="text-ds-warning text-sm">{t('drawStockEmpty')}</span>}
                   <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
                     {t('drawStockButton')}
                   </button>

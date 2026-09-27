@@ -16,6 +16,7 @@
   },
   "round": "ラウンド {{n}}/{{total}}",
   "drawPile": "山札: {{count}}枚",
+  "drawStockEmpty": "山札が空です。山札から引くとラウンドが終了します。",
   "discardTop": "捨て札",
   "cards": "{{count}}枚",
   "chips": "チップ: {{count}}",

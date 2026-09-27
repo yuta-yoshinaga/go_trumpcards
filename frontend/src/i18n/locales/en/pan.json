@@ -16,6 +16,7 @@
   },
   "round": "Round {{n}}/{{total}}",
   "drawPile": "Draw pile: {{count}} cards",
+  "drawStockEmpty": "The stock is empty. Drawing from it ends the round.",
   "discardTop": "Discard",
   "cards": "{{count}} cards",
   "chips": "Chips: {{count}}",
