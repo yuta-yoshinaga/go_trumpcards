@@ -42974,6 +42974,19 @@ components:
           description: Side pots (created when players go all-in with different amounts)
           items:
             $ref: '#/components/schemas/HoldemSidePot'
+        potAwards:
+          type: array
+          description: Omaha showdown payouts by main and side pot
+          items:
+            type: object
+            required: [amount, eligible, hiWinners, hiPayouts, loWinners, loPayouts]
+            properties:
+              amount: { type: integer }
+              eligible: { type: array, items: { type: integer } }
+              hiWinners: { type: array, items: { type: integer } }
+              hiPayouts: { type: array, items: { type: integer } }
+              loWinners: { type: array, items: { type: integer } }
+              loPayouts: { type: array, items: { type: integer } }
         dealerIdx:
           type: integer
           description: Index of the dealer for this round

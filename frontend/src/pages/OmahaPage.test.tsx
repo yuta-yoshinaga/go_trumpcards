@@ -524,6 +524,29 @@ describe('OmahaPage', () => {
     await waitFor(() => expect(screen.getByText('結果:')).toBeInTheDocument());
   });
 
+  it('shows per-pot payout rows when showdown has multiple pots', async () => {
+    mockExec.mockResolvedValue({
+      ...showdownState,
+      potAwards: [
+        { amount: 100, eligible: [0, 1, 2], hiWinners: [0], hiPayouts: [100], loWinners: [], loPayouts: [] },
+        { amount: 50, eligible: [0, 1], hiWinners: [1], hiPayouts: [50], loWinners: [], loPayouts: [] },
+      ],
+    });
+    renderWithProviders(<OmahaPage />);
+    expect(await screen.findByText(/メインポット 100/)).toBeInTheDocument();
+    expect(screen.getByText(/サイドポット1 50/)).toBeInTheDocument();
+  });
+
+  it('does not show per-pot payout rows for a single pot', async () => {
+    mockExec.mockResolvedValue({
+      ...showdownState,
+      potAwards: [{ amount: 150, eligible: [0, 1, 2], hiWinners: [0], hiPayouts: [150], loWinners: [], loPayouts: [] }],
+    });
+    renderWithProviders(<OmahaPage />);
+    await screen.findByText(/勝ち|勝利|lost/i);
+    expect(screen.queryByText(/メインポット/)).not.toBeInTheDocument();
+  });
+
   it('does not show round results when not in showdown', async () => {
     mockExec.mockResolvedValue(preFlopState);
     renderWithProviders(<OmahaPage />);

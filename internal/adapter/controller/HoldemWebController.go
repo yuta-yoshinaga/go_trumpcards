@@ -80,6 +80,16 @@ type HoldemWebOutputSidePot struct {
 	EligiblePlayers []int `json:"eligiblePlayers"`
 }
 
+// HoldemWebOutputPotAward describes the actual payout from an Omaha pot.
+type HoldemWebOutputPotAward struct {
+	Amount    int   `json:"amount"`
+	Eligible  []int `json:"eligible"`
+	HiWinners []int `json:"hiWinners"`
+	HiPayouts []int `json:"hiPayouts"`
+	LoWinners []int `json:"loWinners"`
+	LoPayouts []int `json:"loPayouts"`
+}
+
 // HoldemWebOutputEquity テキサスホールデムエクイティ情報
 type HoldemWebOutputEquity struct {
 	WinProbability float64                    `json:"winProbability"`
@@ -109,6 +119,7 @@ type HoldemWebOutput struct {
 	CommunityCards   []*WebOutputCard                `json:"communityCards"`
 	Pot              int                             `json:"pot"`
 	SidePots         []*HoldemWebOutputSidePot       `json:"sidePots"`
+	PotAwards        []*HoldemWebOutputPotAward      `json:"potAwards,omitempty"`
 	DealerIdx        int                             `json:"dealerIdx"`
 	CurrentTurn      int                             `json:"currentTurn"`
 	Phase            int                             `json:"phase"`

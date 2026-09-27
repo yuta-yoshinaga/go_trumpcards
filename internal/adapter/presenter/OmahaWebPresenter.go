@@ -22,6 +22,10 @@ func (owp *OmahaWebPresenter) buildOutput(o interfaces.OmahaGame, lastErr error)
 	resObj := buildCommunityCardBaseOutput(o)
 	resObj.Players = buildPokerPlayersOutput(o.GetPhase(), o.GetPlayerCnt(), func(i int) communityCardPresenterPlayer { return o.GetPlayer(i) }, domain.OmahaPhaseShowdown, domain.OmahaPhaseEnd, pokerHandName)
 	resObj.IsHiLo = o.GetIsHiLo()
+	resObj.PotAwards = make([]*controller.HoldemWebOutputPotAward, 0, len(o.GetPotAwards()))
+	for _, a := range o.GetPotAwards() {
+		resObj.PotAwards = append(resObj.PotAwards, &controller.HoldemWebOutputPotAward{Amount: a.Amount, Eligible: a.Eligible, HiWinners: a.HiWinners, HiPayouts: a.HiPayouts, LoWinners: a.LoWinners, LoPayouts: a.LoPayouts})
+	}
 	resObj.Message, resObj.MessageCode, resObj.MessageParams = owp.buildMessage(o, lastErr)
 	return resObj
 }
