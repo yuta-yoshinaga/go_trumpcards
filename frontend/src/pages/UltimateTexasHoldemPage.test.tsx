@@ -152,7 +152,7 @@ describe('UltimateTexasHoldemPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
     await waitFor(() => expect(screen.getByRole('button', { name: /プレイ 4×/ })).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: /プレイ 4×.*プレイ: 400/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /プレイ 4×.*プレイベット: 400/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /プレイ 3×/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'チェック' })).toBeInTheDocument();
   });
@@ -254,8 +254,10 @@ describe('UltimateTexasHoldemPage', () => {
     fireEvent.change(screen.getByLabelText('アンテ'), { target: { value: '200' } });
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
 
-    await waitFor(() => expect(screen.getByRole('button', { name: /プレイ 4×.*プレイ: 800/ })).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: /プレイ 3×.*プレイ: 600/ })).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /プレイ 4×.*プレイベット: 800/ })).toBeInTheDocument(),
+    );
+    expect(screen.getByRole('button', { name: /プレイ 3×.*プレイベット: 600/ })).toBeInTheDocument();
     // Check has no amount annotation in the pre-flop decision phase.
     expect(screen.queryByRole('button', { name: /チェック.*プレイ:/ })).not.toBeInTheDocument();
   });

@@ -430,7 +430,7 @@ function UltimateTexasHoldemPageContent() {
                     disabled={loading}
                     data-testid="play-4x"
                   >
-                    {t('button.play4x', { playBet: t('payout.play'), amount: anteAmount * 4 })}
+                    {t('button.play4x', { playBet: t('label.playBet'), amount: anteAmount * 4 })}
                   </button>
                   <button
                     type="button"
@@ -439,7 +439,7 @@ function UltimateTexasHoldemPageContent() {
                     disabled={loading}
                     data-testid="play-3x"
                   >
-                    {t('button.play3x', { playBet: t('payout.play'), amount: anteAmount * 3 })}
+                    {t('button.play3x', { playBet: t('label.playBet'), amount: anteAmount * 3 })}
                   </button>
                   <button type="button" className={btnSecondary} onClick={handleCheck} disabled={loading}>
                     {t('button.check')}
@@ -451,7 +451,7 @@ function UltimateTexasHoldemPageContent() {
         {isFlopPhase && (
           <div className="flex justify-center gap-2 pb-2" data-tutorial="uth-flop-buttons">
             <button type="button" className={btnWarning} onClick={() => handlePlay(2)} disabled={loading}>
-              {t('button.play2x', { playBet: t('payout.play'), amount: anteAmount * 2 })}
+              {t('button.play2x', { playBet: t('label.playBet'), amount: anteAmount * 2 })}
             </button>
             <button type="button" className={btnSecondary} onClick={handleCheck} disabled={loading}>
               {t('button.check')}
@@ -461,7 +461,7 @@ function UltimateTexasHoldemPageContent() {
         {isRiverPhase && (
           <div className="flex justify-center gap-2 pb-2" data-tutorial="uth-river-buttons">
             <button type="button" className={btnWarning} onClick={() => handlePlay(1)} disabled={loading}>
-              {t('button.play1x', { playBet: t('payout.play'), amount: anteAmount })}
+              {t('button.play1x', { playBet: t('label.playBet'), amount: anteAmount })}
             </button>
             <button type="button" className={btnDanger} onClick={handleFold} disabled={loading}>
               {t('button.fold')}
