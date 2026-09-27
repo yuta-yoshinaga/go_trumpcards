@@ -28,7 +28,7 @@
   "hintNone": "現在ヒントはありません。",
   "hintPlayable": "出せるカード: {{cards}}（p <idx> で出す）",
   "hintDraw": "出せるカードがありません。d でドローしてください。",
-  "hintDrawEmpty": "出せるカードがありません。捨て札の一番上を残して山札を作り直し、戻せる札がなければパスします。",
+  "hintDrawEmpty": "出せるカードがありません。捨て札の一番上を残して山札を作り直し、戻せる札がなければこの手番はパスします。",
   "helpExamplePlay": "  p 0                  手札の 0 番のカードを出す",
   "helpHint": "  h                    助言を表示",
   "errCardIndexOutOfRange": "カードインデックスが範囲外です",

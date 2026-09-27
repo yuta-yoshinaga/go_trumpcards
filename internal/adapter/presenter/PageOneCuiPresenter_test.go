@@ -70,6 +70,21 @@ func TestPageOneCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "play <idx>")
 	})
 
+	t.Run("empty draw pile explanation shown during play phase", func(t *testing.T) {
+		m, _ := setupPageOneCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDrawPileCount")
+		m.On("GetDrawPileCount").Return(0)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, i18n.T("pageone.drawPileEmpty"))
+	})
+
+	t.Run("empty draw pile explanation omitted when cards remain", func(t *testing.T) {
+		m, _ := setupPageOneCuiMockWithPlayers()
+		result := p.Output(m, nil)
+		assert.NotContains(t, result, i18n.T("pageone.drawPileEmpty"))
+	})
+
 	t.Run("discard top shown", func(t *testing.T) {
 		m, _ := setupPageOneCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDiscardTop")
