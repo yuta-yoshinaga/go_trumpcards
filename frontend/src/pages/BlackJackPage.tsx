@@ -733,6 +733,17 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
 
               {phase === BjPhase.ACTION && (
                 <div data-tutorial="bj-action-buttons">
+                  {variant === 'doubleexposure' && state?.doubleDownBlock !== 4 && state?.doubleDownBlock !== 1 && (
+                    <p className="mb-2 text-sm text-ds-text-muted">
+                      {state?.doubleDownBlock === 2
+                        ? t('doubleDownUnavailable.cards')
+                        : state?.doubleDownBlock === 5
+                          ? t('doubleDownUnavailable.chips')
+                          : state?.doubleDownBlock === 3
+                            ? t('doubleDownUnavailable.split')
+                            : t('doubleDownAvailable')}
+                    </p>
+                  )}
                   <BjActionPhaseControls
                     loading={loading}
                     hintEnabled={hintEnabled}

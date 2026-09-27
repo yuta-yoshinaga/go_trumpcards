@@ -203,6 +203,23 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 		}
 	}
 
+	if variant := bj.GetVariant(); variant != nil && variant.Name == domain.BJVariantDoubleExposure && !bj.GetGameEndFlag() {
+		key := "doubleexposure.doubleDownAvailable"
+		switch bj.DoubleDownBlockReason() {
+		case domain.BJDoubleDownBlockNotTwoCards:
+			key = "doubleexposure.doubleDownUnavailable.cards"
+		case domain.BJDoubleDownBlockInsufficientChips:
+			key = "doubleexposure.doubleDownUnavailable.chips"
+		case domain.BJDoubleDownBlockSplitNoDAS:
+			key = "doubleexposure.doubleDownUnavailable.split"
+		case domain.BJDoubleDownBlockHandFinished, domain.BJDoubleDownBlockWrongPhase:
+			key = ""
+		}
+		if key != "" {
+			fmt.Fprintf(&b, "%s\n", i18n.T(key))
+		}
+	}
+
 	if lastErr != nil {
 		fmt.Fprintf(&b, "%s\n", i18n.MarkErrorLine(color.Red(lastErr.Error())))
 	}

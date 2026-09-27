@@ -366,19 +366,19 @@ func (b *BlackJack) PlayerStand() error {
 
 // PlayerDoubleDown プレイヤーダブルダウン
 func (b *BlackJack) PlayerDoubleDown() error {
-	if b.phase != BJPhaseAction {
+	switch b.DoubleDownBlockReason() {
+	case BJDoubleDownBlockWrongPhase:
 		return NewDomainError(ErrWrongPhase, "Double down is not allowed now.")
+	case BJDoubleDownBlockNotTwoCards:
+		return NewDomainError(ErrInvalidPlay, "Double down is only allowed with 2 cards.")
+	case BJDoubleDownBlockSplitNoDAS:
+		return NewDomainError(ErrInvalidPlay, "Double after split is not allowed.")
+	case BJDoubleDownBlockHandFinished:
+		return NewDomainError(ErrHandFinished, "This hand is already finished.")
+	case BJDoubleDownBlockInsufficientChips:
+		return NewDomainError(ErrInsufficientChips, "Insufficient chips for double down.")
 	}
 	hand := b.playerHands[b.currentHandIdx]
-	if hand.GetCardsSize() != 2 {
-		return NewDomainError(ErrInvalidPlay, "Double down is only allowed with 2 cards.")
-	}
-	if hand.IsFromSplit() && !b.config.DoubleAfterSplit {
-		return NewDomainError(ErrInvalidPlay, "Double after split is not allowed.")
-	}
-	if hand.IsFinished() {
-		return NewDomainError(ErrHandFinished, "This hand is already finished.")
-	}
 	bet := hand.GetBet()
 	if !b.player.SubtractChips(bet) {
 		return NewDomainError(ErrInsufficientChips, "Insufficient chips for double down.")
@@ -404,6 +404,39 @@ func (b *BlackJack) PlayerDoubleDown() error {
 	}
 	b.advanceHand()
 	return nil
+}
+
+// BJDoubleDownBlock indicates why a double down is unavailable.
+type BJDoubleDownBlock int
+
+const (
+	BJDoubleDownBlockNone BJDoubleDownBlock = iota
+	BJDoubleDownBlockWrongPhase
+	BJDoubleDownBlockNotTwoCards
+	BJDoubleDownBlockSplitNoDAS
+	BJDoubleDownBlockHandFinished
+	BJDoubleDownBlockInsufficientChips
+)
+
+// DoubleDownBlockReason returns the first rule that prevents a double down.
+func (b *BlackJack) DoubleDownBlockReason() BJDoubleDownBlock {
+	if b.phase != BJPhaseAction {
+		return BJDoubleDownBlockWrongPhase
+	}
+	hand := b.playerHands[b.currentHandIdx]
+	if hand.GetCardsSize() != 2 {
+		return BJDoubleDownBlockNotTwoCards
+	}
+	if hand.IsFromSplit() && !b.config.DoubleAfterSplit {
+		return BJDoubleDownBlockSplitNoDAS
+	}
+	if hand.IsFinished() {
+		return BJDoubleDownBlockHandFinished
+	}
+	if b.player.GetChips() < hand.GetBet() {
+		return BJDoubleDownBlockInsufficientChips
+	}
+	return BJDoubleDownBlockNone
 }
 
 // PlayerSplit プレイヤースプリット
