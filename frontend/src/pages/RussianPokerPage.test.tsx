@@ -100,6 +100,17 @@ describe('RussianPokerPage', () => {
     },
   );
 
+  it('shows only the ante when fold fees are zero', async () => {
+    mockExec.mockResolvedValue(makeState({ exchangeFee: 0, buy6thFee: 0 }));
+    renderWithProviders(<RussianPokerPage />);
+
+    const line = await screen.findByTestId('russian-fold-costs');
+    expect(line).toHaveTextContent('フォールド時に返金されない費用: 100');
+    expect(line).toHaveTextContent('アンテ 100');
+    expect(within(line).queryByText(/交換手数料/)).not.toBeInTheDocument();
+    expect(within(line).queryByText(/6枚目手数料/)).not.toBeInTheDocument();
+  });
+
   it.each([100, 250])('shows the sixth-card fee preview for an ante of %s', async (anteBet) => {
     mockExec.mockResolvedValue(makeState({ anteBet }));
     renderWithProviders(<RussianPokerPage />);
