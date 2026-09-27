@@ -31,7 +31,8 @@ type ReversisWebOutputPlayer struct {
 	// Chips は持ちチップ。**多いほど良い**（勝敗はこれで決まる）。
 	Chips int `json:"chips"`
 	// RoundPenalty はこのラウンドの失点。**少ないほど良い**（プールを取れる）。
-	RoundPenalty   int  `json:"roundPenalty"`
+	RoundPenalty int `json:"roundPenalty"`
+	// MarkedPenalty は RoundPenalty のうち印付き札 (キノラ・♦A) による追加分。
 	MarkedPenalty  int  `json:"markedPenalty"`
 	TrickCount     int  `json:"trickCount"`
 	TookQuinola    bool `json:"tookQuinola"`
