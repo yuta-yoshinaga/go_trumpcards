@@ -374,6 +374,7 @@ describe('PaiGowPage', () => {
     mockExec.mockResolvedValue({ ...betPhaseState, chips: 50 });
     renderWithProviders(<PaiGowPage />);
     await waitFor(() => expect(screen.getByText('チップ: 50')).toBeInTheDocument());
+    expect(screen.getByRole('textbox', { name: 'ベット' })).toHaveAttribute('max', '50');
     expect(screen.getByTestId('paigow-bet-guidance')).toHaveTextContent('残高: 50');
     expect(screen.getByTestId('paigow-bet-guidance')).toHaveTextContent('入力額: 100');
     expect(screen.getByTestId('paigow-bet-guidance')).toHaveTextContent('10以上、10単位、最大10,000');

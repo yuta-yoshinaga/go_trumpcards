@@ -63,7 +63,6 @@
   "foulRuleHelp": "Split the 7 cards into a 5-card high hand and a 2-card low hand. The 2-card low hand must rank lower than the 5-card high hand — if the low hand is stronger, it is a foul.",
   "betErrorMinimum": "Bet must be at least 10",
   "betErrorStep": "Bet must be in increments of 10",
-  "betErrorMaximum": "Bet must be no more than 10,000",
   "betErrorBalance": "Bet exceeds your balance",
   "tutorial": {
     "betControls": "Set your bet amount and press Bet.",

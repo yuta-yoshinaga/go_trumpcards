@@ -119,19 +119,13 @@ function PaiGowPageContent() {
   // Bet is invalid unless it is a positive multiple of 10, at least 10, and
   // within the player's chip balance. Invalid bets disable submission.
   const betInvalid =
-    Number.isNaN(betAmount) ||
-    betAmount < 10 ||
-    betAmount % 10 !== 0 ||
-    betAmount > 10000 ||
-    betAmount > (state?.chips ?? 0);
+    Number.isNaN(betAmount) || betAmount < 10 || betAmount % 10 !== 0 || betAmount > (state?.chips ?? 0);
   const betErrorKey =
     betAmount < 10 || Number.isNaN(betAmount)
       ? 'betErrorMinimum'
       : betAmount % 10 !== 0
         ? 'betErrorStep'
-        : betAmount > 10000
-          ? 'betErrorMaximum'
-          : 'betErrorBalance';
+        : 'betErrorBalance';
 
   const foul = useMemo(
     () =>
