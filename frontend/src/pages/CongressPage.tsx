@@ -83,6 +83,7 @@ function CongressPageContent() {
   } = useGamePageSetup('congress');
   const game = useCongressGame();
   const { state, loading, error, retry, hintError, selectedSource, hint, isAutoCompleting } = game;
+  const emptyPileAriaDisabled = !selectedSource || selectedSource.zone === 'tableau';
 
   const {
     hint: frontendHint,
@@ -208,12 +209,15 @@ function CongressPageContent() {
             {cards.length === 0 ? (
               <button
                 type="button"
-                onClick={() => game.handleSelectTarget(pileZone)}
+                onClick={() => {
+                  if (emptyPileAriaDisabled) return;
+                  game.handleSelectTarget(pileZone);
+                }}
                 // **空き山はタブローからは埋められない。**山札か捨て札からだけ
                 // (`MoveTableauToTableau` が明示的に拒否する)。押せてしまうと
                 // サーバに弾かれるまで気づけない (#4906)。
                 disabled={!isPlaying || loading}
-                aria-disabled={!selectedSource || selectedSource.zone === 'tableau' || undefined}
+                aria-disabled={emptyPileAriaDisabled || undefined}
                 aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                 aria-label={t('emptyPileAriaLabel', { pile: pileIdx })}
                 style={{ height: dims.ch }}

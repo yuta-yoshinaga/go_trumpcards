@@ -132,6 +132,20 @@ describe('CongressPage', () => {
     expect(empty).toHaveAttribute('aria-disabled', 'true');
   });
 
+  it('does not dispatch a move when clicking an empty pile with a tableau card selected', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<CongressPage />);
+    const empty = await screen.findByRole('button', { name: /空の山 3/ });
+    fireEvent.click(screen.getByRole('button', { name: /^♠ 9 / }));
+    await waitFor(() => expect(screen.getByRole('button', { name: /^♠ 9 / })).toHaveAttribute('aria-pressed', 'true'));
+    expect(empty).toHaveAttribute('aria-disabled', 'true');
+
+    mockExec.mockClear();
+    fireEvent.click(empty);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   // **ドラッグ経路も同じ規則を守る。**クリックはボタンを無効化して防いでいるが、
   // ドラッグは dispatchMove を直接通る（レビュー指摘）。
   it('ignores a tableau card dragged onto an empty pile', async () => {
