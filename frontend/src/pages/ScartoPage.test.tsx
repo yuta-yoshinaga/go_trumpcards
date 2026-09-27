@@ -293,6 +293,25 @@ describe('ScartoPage', () => {
     expect(screen.getByTestId('scarto-result')).toHaveTextContent('+28');
   });
 
+  it('shows clearly provisional average differences during play with decimal averages', async () => {
+    mockExec.mockResolvedValue(
+      makeScartoState({
+        phase: 1,
+        players: [
+          { id: 0, isHuman: true, cardCount: 20, cards: [], trickCount: 1, cardPoints: 1, score: 0, isDealer: false },
+          { id: 1, isHuman: false, cardCount: 20, cards: [], trickCount: 0, cardPoints: 0, score: 0, isDealer: false },
+          { id: 2, isHuman: false, cardCount: 20, cards: [], trickCount: 0, cardPoints: 0, score: 0, isDealer: true },
+        ],
+      }),
+    );
+    renderWithProviders(<ScartoPage />);
+    const provisional = await screen.findByTestId('scarto-provisional');
+    expect(provisional).toHaveTextContent('暫定（ディール進行中）');
+    expect(screen.getByTestId('scarto-provisional-breakdown')).toHaveTextContent('全体平均: 0.3点');
+    expect(screen.getByTestId('scarto-provisional-breakdown')).toHaveTextContent('平均差 +0.7');
+    expect(screen.queryByTestId('scarto-result')).not.toBeInTheDocument();
+  });
+
   // 上段の dealScores と内訳の平均差が N 倍で結び付くことを固定する (#4930)。
   it('spells out that the change is the average difference times the player count', async () => {
     mockExec.mockResolvedValue(settlementState);
