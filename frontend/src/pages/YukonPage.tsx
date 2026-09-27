@@ -362,8 +362,8 @@ function YukonPageContent() {
                       }`}
                       onClick={() => isTarget && handleSelectTarget('foundation', i)}
                       disabled={!isPlaying}
-                      aria-disabled={!selectedSource || undefined}
-                      aria-describedby={!selectedSource ? selectSourceHintId : undefined}
+                      aria-disabled={!isTarget || undefined}
+                      aria-describedby={!isTarget ? selectSourceHintId : undefined}
                       aria-label={
                         topCard
                           ? t('foundationAriaLabel', {
