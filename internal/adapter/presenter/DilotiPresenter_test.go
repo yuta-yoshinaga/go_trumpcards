@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -132,6 +133,14 @@ func TestDilotiCuiPresenter_RoundResultAndHint(t *testing.T) {
 	for _, key := range []string{"cards", "aces", "tenOfDiamonds", "twoOfClubs", "xeri"} {
 		assert.Contains(t, out, i18n.T("diloti.score."+key), "得点項目 %s が出ていない", key)
 	}
+	for i := 0; i < d.GetPlayerCnt(); i++ {
+		player := d.GetPlayer(i)
+		assert.Contains(t, out, i18n.Tf("diloti.resultScoreSummary",
+			"name", map[bool]string{true: i18n.T("diloti.you"), false: i18n.Tf("diloti.cpu", "n", "1")}[player.GetIsHuman()],
+			"round", fmt.Sprint(d.GetLastResult().Totals[i]),
+			"total", fmt.Sprint(player.GetScore())))
+	}
+	assert.Contains(t, out, i18n.T("diloti.gameContinues"))
 
 	hintOut := p.HintOutput(dilotiGame())
 	assert.NotContains(t, hintOut, "diloti.", "生キーが出ている")
