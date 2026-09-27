@@ -18,6 +18,8 @@
   "rolePartner": "[パートナー]",
   "playerLine": "{{name}}{{role}}: ビッド={{bid}} 獲得{{tricks}}トリック 得点札{{points}}枚 累積{{cum}}点 ラウンド{{round}}点 {{cards}}枚",
   "round": "ラウンド: {{round}}  トリック: {{trick}}",
+  "teamPointCards": "与党の得点札: {{declarer}}枚  野党の得点札: {{opposition}}枚",
+  "teamPointCardsHidden": "宣言者の得点札: {{declarer}}枚  他の席: {{other}}枚 (パートナー未公開)",
   "trump": "切り札: {{suit}}",
   "trumpNoTrump": "ノートランプ",
   "partnerCard": "パートナー指名: {{card}}",
