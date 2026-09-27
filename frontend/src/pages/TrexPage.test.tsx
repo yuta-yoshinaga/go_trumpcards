@@ -105,6 +105,27 @@ describe('TrexPage', () => {
     expect(screen.queryByText('♦1枚につき−10点')).not.toBeInTheDocument();
   });
 
+  it('associates each available contract button with its description', async () => {
+    mockExec.mockResolvedValue(makeState({ availableContracts: [TrexContract.KING_OF_HEARTS, TrexContract.DOMINOES] }));
+    renderWithProviders(<TrexPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    const contracts = [
+      { name: /♥K/, id: `trex-contract-desc-${TrexContract.KING_OF_HEARTS}`, description: '♥Kを取ると−75点' },
+      {
+        name: /ドミノ/,
+        id: `trex-contract-desc-${TrexContract.DOMINOES}`,
+        description: '上がり順に+200/+150/+100/+50点',
+      },
+    ];
+    for (const contract of contracts) {
+      const button = screen.getByRole('button', { name: contract.name });
+      expect(button).toHaveAttribute('aria-describedby', contract.id);
+      expect(document.getElementById(contract.id)).toHaveTextContent(contract.description);
+      expect(button).toHaveAccessibleDescription(contract.description);
+    }
+  });
+
   it('sends contract zero, the king of hearts, as a value', async () => {
     // 省略にすると ♥K 契約だけ選べなくなる。
     renderWithProviders(<TrexPage />);

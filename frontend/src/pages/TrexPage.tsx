@@ -269,12 +269,15 @@ function TrexPageContent() {
                       <button
                         type="button"
                         data-hint-action="choose"
+                        aria-describedby={`trex-contract-desc-${n.toString()}`}
                         className={`${btnPrimary} min-h-11`}
                         onClick={() => game.handleChoose(n)}
                       >
                         {contractName(n)}
                       </button>
-                      <span className="text-xs text-ds-text-muted">{t(`contractDescription${n}`)}</span>
+                      <span id={`trex-contract-desc-${n.toString()}`} className="text-xs text-ds-text-muted">
+                        {t(`contractDescription${n}`)}
+                      </span>
                     </div>
                   ))}
                 </div>
