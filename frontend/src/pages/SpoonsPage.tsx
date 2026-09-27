@@ -96,6 +96,12 @@ const SPOONS_PHASE_KEYS: Readonly<Record<number, string>> = {
   [SpoonsPhase.GAME_END]: 'gameEnd',
 };
 
+/** Derives game-over and available grab-window state from a response. */
+function spoonsGrabState(state: SpoonsResponse | null | undefined) {
+  const gameOver = state?.phase === SpoonsPhase.GAME_END || !!state?.gameEndFlag;
+  return { gameOver, grabOpen: !!state?.grabWindowOpen && !gameOver };
+}
+
 /** Render the S-P-O-O-N-S letter progress for a given count (0–6). */
 function lettersText(letters: number): string {
   const word = 'SPOONS';
@@ -158,13 +164,18 @@ function SpoonsPageContent() {
   // Chime the instant the grab window opens (false→true) — a static "grab now!"
   // text alone was easy to miss in this reflex game.
   const prevGrabOpenRef = useRef(false);
+  const [grabWindowAnnouncement, setGrabWindowAnnouncement] = useState('');
+  const { grabOpen: announcementGrabOpen } = spoonsGrabState(state);
   useEffect(() => {
-    const open = state?.grabWindowOpen ?? false;
+    const open = announcementGrabOpen;
     if (open && !prevGrabOpenRef.current) {
       playSound('turnTick', { pitchVariation: 0.1 });
     }
+    if (open !== prevGrabOpenRef.current) {
+      setGrabWindowAnnouncement(t(open ? 'grabWindowOpened' : 'grabWindowClosed'));
+    }
     prevGrabOpenRef.current = open;
-  }, [state?.grabWindowOpen, playSound]);
+  }, [announcementGrabOpen, playSound, t]);
 
   // **速さが勝敗を決めるのに、取るにはマウスが要った。**このページには
   // `useActionKeyboardNav` も `aria-keyshortcuts` も無く、grabWindow の一瞬で
@@ -172,10 +183,8 @@ function SpoonsPageContent() {
   // まさにこの反射勝負なので、ここに導線が無いのは他のゲームより重い。
   //
   // 早期 return より前に置く: フック順は状態の有無で変わってはいけない。
-  const kbdGameOver = state?.phase === SpoonsPhase.GAME_END || !!state?.gameEndFlag;
-  const kbdGrabOpen = !!state?.grabWindowOpen && !kbdGameOver;
-  const kbdCanPass =
-    state?.phase === SpoonsPhase.PASS && !!state?.isHumanTurn && !state?.grabWindowOpen && !kbdGameOver;
+  const { gameOver: kbdGameOver, grabOpen: kbdGrabOpen } = spoonsGrabState(state);
+  const kbdCanPass = state?.phase === SpoonsPhase.PASS && !!state?.isHumanTurn && !kbdGrabOpen && !kbdGameOver;
   const humanHandSize = state?.players.find((p) => p.isHuman)?.hand.length ?? 0;
   const actionBindings = useMemo(() => {
     // g で取る。Space は**フォーカスされているボタンを既定で発火させる**うえ
@@ -201,9 +210,9 @@ function SpoonsPageContent() {
   const humanPlayer = state.players.find((p) => p.isHuman);
   const isPassPhase = state.phase === SpoonsPhase.PASS;
   const isRoundEnd = state.phase === SpoonsPhase.ROUND_END;
-  const isGameEnd = state.phase === SpoonsPhase.GAME_END || state.gameEndFlag;
+  const { gameOver: isGameEnd, grabOpen } = spoonsGrabState(state);
   const isHumanTurn = state.isHumanTurn;
-  const canPass = isPassPhase && isHumanTurn && !state.grabWindowOpen && !isGameEnd;
+  const canPass = isPassPhase && isHumanTurn && !grabOpen && !isGameEnd;
   const humanWon = isGameEnd && state.winnerIdx === 0;
 
   const playerLabel = (id: number, isHuman: boolean): string => (isHuman ? t('you') : t('cpu', { id }));
@@ -353,6 +362,10 @@ function SpoonsPageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
+
+            <div className="sr-only" data-testid="spoons-grab-window-live" role="status" aria-live="polite">
+              {grabWindowAnnouncement}
+            </div>
 
             {/* Keep this live region mounted so the grabber is announced when the
                 time-limited grab window opens, and remains available in results. */}
