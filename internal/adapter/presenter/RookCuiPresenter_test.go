@@ -14,9 +14,13 @@ func TestRookCuiPresenter_Output_Phases(t *testing.T) {
 	t.Run("bid phase", func(t *testing.T) {
 		g := newRookGame()
 		g.Reset()
+		g.GetPlayer(1).SetPassed(true)
 		out := p.Output(g, nil)
 		if out == "" || !strings.Contains(out, "Rook") {
 			t.Errorf("bid output missing title: %q", out)
+		}
+		if !strings.Contains(out, "残り入札者: 3人") || !strings.Contains(out, "パス済み: 1人") {
+			t.Errorf("bid counts missing from output: %q", out)
 		}
 	})
 
