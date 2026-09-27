@@ -40,7 +40,7 @@ func (p *SeahavenTowersCuiPresenter) Output(s interfaces.SeahavenTowersGame, las
 		foundation := s.GetFoundation()
 		for i := 0; i < domain.SeahavenTowersFoundationCnt; i++ {
 			if i != 0 {
-				b.WriteString(" | ")
+				b.WriteString(i18n.T("seahaventowers.cellSeparator"))
 			}
 			pile := foundation[i]
 			if len(pile) == 0 {
