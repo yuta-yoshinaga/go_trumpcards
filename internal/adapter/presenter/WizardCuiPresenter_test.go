@@ -63,6 +63,7 @@ func TestWizardCuiPresenter_Output(t *testing.T) {
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "ビッド=1 確定獲得0トリック")
 		assert.Contains(t, result, "達成可能 (残り1トリック)")
+		assert.Contains(t, result, "0枚 達成可能")
 	})
 
 	t.Run("play phase", func(t *testing.T) {
@@ -73,6 +74,9 @@ func TestWizardCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "手札枚数: 1")
 		assert.Contains(t, result, "切り札:")
 		assert.Contains(t, result, "手番:")
+		for _, line := range strings.Split(result, "\n") {
+			assert.Equal(t, strings.TrimRight(line, " \t"), line, "CUI line should not end with separator whitespace")
+		}
 		// Empty trick → no established lead suit yet.
 		assert.Contains(t, result, i18n.T("wizard.leadNone"))
 	})

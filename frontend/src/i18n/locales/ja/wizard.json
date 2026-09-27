@@ -26,9 +26,9 @@
   "roundScore": "ラウンド: {{score}}",
   "bid": "ビッド {{n}}",
   "bidNone": "未ビッド",
+  "playersSummary": "プレイヤー ({{count}})",
   "bidProgress": {
     "header": "宣言: {{bid}} / 獲得: {{won}}",
-    "title": "ビッド達成状況（確定トリック）",
     "values": "ビッド {{bid}} / 確定獲得 {{won}}",
     "reachable": "達成可能",
     "unreachable": "達成不可",
