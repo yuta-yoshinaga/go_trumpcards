@@ -283,7 +283,7 @@ function DoubleAttackPageContent() {
                     data-testid="da-attack-comparison"
                   >
                     <span>
-                      {t('label.balance')}: {state.chips}
+                      {t('label.chips')}: {state.chips}
                     </span>
                     <span>
                       {t('label.attackLimit')}: {state.maxAttackBet}
@@ -295,7 +295,7 @@ function DoubleAttackPageContent() {
                   {/* **上限はサーバの値に従う。** アンティから計算し直さない。 */}
                   <ChipBetInput
                     id="doubleattack-attack"
-                    label={`${t('label.attack')} (${t('label.maxAttack')} ${state.maxAttackBet})`}
+                    label={t('label.attack')}
                     value={attack}
                     onChange={setAttack}
                     max={state.maxAttackBet}
