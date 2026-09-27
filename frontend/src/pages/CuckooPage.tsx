@@ -304,7 +304,12 @@ function CuckooPageContent() {
                   </div>
                 )}
                 {state.roundLosers.map((idx) => (
-                  <div key={`loser-${idx}`}>{t('roundLoser', { name: playerLabel(idx, idx === 0) })}</div>
+                  <div key={`loser-${idx}`}>
+                    {t('roundLoser', {
+                      name: playerLabel(idx, idx === 0),
+                      lives: state.players[idx]?.lives ?? 0,
+                    })}
+                  </div>
                 ))}
               </div>
             )}

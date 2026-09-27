@@ -21,6 +21,7 @@
   "promptRefuse": "Refuse turn: {{name}} (holds a King)",
   "promptRefuseHelp": "rf / refuse ... reveal King and refuse / ac / accept ... accept the swap",
   "promptRoundEnd": "Round over: lowest is {{lowest}}",
+  "roundLoser": "{{name}}: current lives {{lives}}",
   "promptRoundEndHelp": "nr / nextround ... lowest-card players lose a life, then deal the next round",
   "turnPhase": "Turn phase",
   "refusePhase": "Refuse phase",
