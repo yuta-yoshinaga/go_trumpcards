@@ -54,8 +54,10 @@ type PasurWebOutput struct {
 	// **サーバが必ず拒否する操作をクライアントに出させないためにワイヤへ載せる。**
 	// 11 の部分集合はページ側で作り直すと必ずズレます。
 	CaptureOptions [][][]int `json:"captureOptions"`
-	DeckRemaining  int       `json:"deckRemaining"`
-	PacksDealt     int       `json:"packsDealt"`
+	// CaptureScores mirrors CaptureOptions; each entry separates base points and soor bonus.
+	CaptureScores [][]domain.PasurCaptureScoreBreakdown `json:"captureScores"`
+	DeckRemaining int                                   `json:"deckRemaining"`
+	PacksDealt    int                                   `json:"packsDealt"`
 	// LastCaptureIdx は最後に捕獲した席。**場に残った札はここへ行く。**
 	LastCaptureIdx   int                 `json:"lastCaptureIdx"`
 	CurrentPlayerIdx int                 `json:"currentPlayerIdx"`
@@ -101,6 +103,7 @@ func newPasurDefaultOutput(msg string) *PasurWebOutput {
 		Players:        make([]*PasurWebOutputPlayer, 0),
 		Table:          make([]*WebOutputCard, 0),
 		CaptureOptions: make([][][]int, 0),
+		CaptureScores:  make([][]domain.PasurCaptureScoreBreakdown, 0),
 		Winners:        make([]int, 0),
 		LastCaptureIdx: -1,
 		WebOutputBase:  WebOutputBase{Message: msg},

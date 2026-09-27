@@ -41,6 +41,15 @@ function makeState(overrides: Partial<PasurResponse> = {}): PasurResponse {
     table: [card('SPADE', 7), card('HEART', 4), card('CLOVER', 3)],
     // ♦4 は ♠7 単独、または ♥4+♣3。♠K は取れない。
     captureOptions: [[[0], [1, 2]], [], [], []],
+    captureScores: [
+      [
+        { normal: 0, soorBonus: 0 },
+        { normal: 0, soorBonus: 0 },
+      ],
+      [],
+      [],
+      [],
+    ],
     deckRemaining: 32,
     packsDealt: 1,
     lastCaptureIdx: -1,
@@ -113,6 +122,7 @@ describe('PasurPage', () => {
     expect(await screen.findByTestId('ps-options')).toBeInTheDocument();
     expect(screen.getByTestId('ps-take-0-btn')).toBeInTheDocument();
     expect(screen.getByTestId('ps-take-1-2-btn')).toBeInTheDocument();
+    expect(screen.getByTestId('ps-score-0')).toHaveTextContent('通常 0点 + スール加算 0点 = 0点');
     // 送られていない組み合わせは出さない。
     expect(screen.queryByTestId('ps-take-1-btn')).not.toBeInTheDocument();
     expect(screen.queryByTestId('ps-take-0-1-2-btn')).not.toBeInTheDocument();

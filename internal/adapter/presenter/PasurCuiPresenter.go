@@ -135,7 +135,8 @@ func writePasurCaptureOptions(sb *strings.Builder, s interfaces.PasurGame) {
 			for _, idx := range opt {
 				indices = append(indices, strconv.Itoa(idx))
 			}
-			combos = append(combos, strings.Join(indices, ","))
+			breakdown := s.CaptureScoreFor(0, i, opt)
+			combos = append(combos, i18n.Tf("pasur.captureScore", "targets", strings.Join(indices, ","), "normal", strconv.Itoa(breakdown.Normal), "bonus", strconv.Itoa(breakdown.SoorBonus)))
 		}
 		captures = append(captures, handCapture{
 			idx:     i,

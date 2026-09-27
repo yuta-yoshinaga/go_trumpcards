@@ -31,6 +31,8 @@ type PasurGame interface {
 	GetTableCards() []*domain.Card
 	// GetCaptureOptions 指定手札で取れる場札の組み合わせを返す
 	GetCaptureOptions(playerIdx, cardIndex int) [][]int
+	// CaptureScoreFor 指定した捕獲候補の得点内訳を返す
+	CaptureScoreFor(playerIdx, handIdx int, tableIndices []int) domain.PasurCaptureScoreBreakdown
 	// GetDeckRemaining 山札の残り枚数を取得する
 	GetDeckRemaining() int
 	// GetPacksDealt 配ったパック数を取得する

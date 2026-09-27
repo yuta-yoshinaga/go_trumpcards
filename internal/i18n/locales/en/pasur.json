@@ -11,6 +11,7 @@
   "promptCurrentPlayer": "Turn: {{name}}",
   "captureTitle": "Captures available:",
   "captureLine": "  hand {{idx}} {{card}} -> table {{targets}}",
+  "captureScore": "{{targets}} (base {{normal}} + soor bonus {{bonus}})",
   "captureNone": "No capture is available; you can only lay a card on the table.",
   "promptPlay": "play <i> [t...] ... play hand card i (t... are table indices)",
   "leftover": "{{name}} took the remaining {{count}} cards from the table.",
