@@ -280,7 +280,7 @@ function GanjifaPageContent() {
                         {t('roundResult.separator')}
                         {t('roundResult.score', { score: state.roundTricks[p.id] ?? 0 })}
                         {t('roundResult.separator')}
-                        {t('roundResult.cumulativeScore', { score: state.playerScores[p.id] ?? p.score })}
+                        {t('roundResult.cumulativeScore', { score: p.score })}
                       </div>
                     ))}
                   </div>

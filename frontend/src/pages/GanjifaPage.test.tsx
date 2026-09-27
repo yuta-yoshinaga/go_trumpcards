@@ -21,6 +21,10 @@ const roundEndState = makeGanjifaState({
   playableIndices: [],
   roundTricks: [14, 10, 8],
   playerScores: [20, 16, 12],
+  players: makeGanjifaState().players.map((player, index) => ({
+    ...player,
+    score: index === 0 ? 20 : index === 1 ? 16 : 12,
+  })),
 });
 const gameEndState = makeGanjifaState({
   phase: 3,
