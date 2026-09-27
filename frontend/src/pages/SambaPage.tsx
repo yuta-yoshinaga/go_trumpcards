@@ -145,7 +145,8 @@ function SambaPageContent() {
     const selectedPoints = sambaSelectionPoints(selectedCards);
     const needInitial = !humanPlayer.hasInitMeld;
     const minMeld = sambaMinMeld(humanPlayer.cumulativeScore);
-    return { selectedPoints, needInitial, minMeld, below: needInitial && selectedPoints < minMeld };
+    const shortfall = Math.max(0, minMeld - selectedPoints);
+    return { selectedPoints, needInitial, minMeld, shortfall, below: needInitial && shortfall > 0 };
   }, [isMeldPhase, humanPlayer, selectedCardIndices]);
 
   const handleManualReset = useCallback(() => {
@@ -429,6 +430,7 @@ function SambaPageContent() {
                     onClick={() => toggleCard(idx)}
                     aria-label={cardAlt(card)}
                     aria-pressed={selectedCardIndices.includes(idx)}
+                    aria-describedby={isHumanTurn && meldPointInfo?.needInitial ? 'sa-meld-points' : undefined}
                     className={`transition-transform ${focusRingCard}`}
                     style={{
                       background: 'none',
@@ -443,6 +445,22 @@ function SambaPageContent() {
                 ))}
               </div>
             )}
+
+            <div id="sa-meld-points" role="status" aria-live="polite" data-testid="sa-meld-points">
+              {isHumanTurn && meldPointInfo && (
+                <div className={`w-full text-xs ${meldPointInfo.below ? 'text-ds-warning' : 'text-ds-text-muted'}`}>
+                  {meldPointInfo.needInitial
+                    ? t('meldPoints.initial', {
+                        min: meldPointInfo.minMeld,
+                        points: meldPointInfo.selectedPoints,
+                        shortfall: meldPointInfo.below
+                          ? t('meldPoints.shortfall', { points: meldPointInfo.shortfall })
+                          : t('meldPoints.met'),
+                      })
+                    : t('meldPoints.selected', { points: meldPointInfo.selectedPoints })}
+                </div>
+              )}
+            </div>
 
             <ErrorAlert message={error} onRetry={retry} />
 
@@ -477,26 +495,12 @@ function SambaPageContent() {
               )}
               {isMeldPhase && isHumanTurn && (
                 <>
-                  {meldPointInfo && (
-                    <div
-                      id="sa-meld-points"
-                      data-testid="sa-meld-points"
-                      className={`w-full text-xs ${meldPointInfo.below ? 'text-ds-warning' : 'text-ds-text-muted'}`}
-                    >
-                      {meldPointInfo.needInitial
-                        ? t('meldPoints.initial', {
-                            min: meldPointInfo.minMeld,
-                            points: meldPointInfo.selectedPoints,
-                          })
-                        : t('meldPoints.selected', { points: meldPointInfo.selectedPoints })}
-                    </div>
-                  )}
                   <button
                     type="button"
                     className={btnPrimary}
                     onClick={handleMeldSelected}
                     disabled={loading || selectedCardIndices.length < 3}
-                    aria-describedby={meldPointInfo?.below ? 'sa-meld-points' : undefined}
+                    aria-describedby={isHumanTurn && meldPointInfo?.needInitial ? 'sa-meld-points' : undefined}
                   >
                     {t('meldButton')}
                   </button>

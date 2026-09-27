@@ -32,7 +32,9 @@
   "meldButton": "メルドする",
   "meldPhase": "メルドを出すか、スキップしてください。",
   "meldPoints": {
-    "initial": "初回メルド最低点: {{min}} / 選択合計: {{points}}",
+    "initial": "初回メルド必要点: {{min}} / 選択合計: {{points}}。{{shortfall}}",
+    "shortfall": "あと{{points}}点不足しています",
+    "met": "必要点を満たしています",
     "selected": "選択合計: {{points}}"
   },
   "meldProgress": {
