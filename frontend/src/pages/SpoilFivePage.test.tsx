@@ -31,6 +31,9 @@ const gameEndState = makeSpoilFiveState({
   phase: 3,
   gameEndFlag: true,
   winnerPlayer: 0,
+  roundWinnerIdx: 1,
+  players: makeSpoilFiveState().players.map((p, i) => ({ ...p, score: i === 0 ? 30 : 5 })),
+  config: { cpuDifficulty: 1, targetPoints: 30 },
   message: 'ゲーム終了！ あなたの勝ち！',
 });
 const cpuTurnState = makeSpoilFiveState({ currentPlayerIdx: 1, isHumanTurn: false });
@@ -132,6 +135,10 @@ describe('SpoilFivePage', () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<SpoilFivePage />);
     await waitFor(() => expect(screen.getByText('ゲーム終了！ あなたの勝ち！')).toBeInTheDocument());
+    const result = screen.getByTestId('spoilfive-game-result');
+    expect(result).toHaveTextContent('ゲーム勝者: あなた');
+    expect(result).toHaveTextContent('最終スコア: 30点 / 目標 30点');
+    expect(screen.getByTestId('spoilfive-round-result')).toHaveTextContent('ラウンド勝者: CPU 1 がポットを獲得');
   });
 
   it('does not show the play button on a CPU turn', async () => {

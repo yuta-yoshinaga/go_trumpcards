@@ -340,7 +340,10 @@ function SpoilFivePageContent() {
 
                 {/* Round result */}
                 {(isRoundEnd || isGameEnd) && (
-                  <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
+                  <div
+                    className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                    data-testid="spoilfive-round-result"
+                  >
                     <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
                     {isSpoil ? (
                       <div>{t('roundResult.spoil')}</div>
@@ -356,6 +359,25 @@ function SpoilFivePageContent() {
                         </div>
                       )
                     )}
+                  </div>
+                )}
+                {isGameEnd && state.winnerPlayer >= 0 && (
+                  <div
+                    className="my-3 p-3 rounded bg-ds-surface-elevated text-ds-text-primary"
+                    data-testid="spoilfive-game-result"
+                  >
+                    <div className="font-semibold">{t('gameResult.title')}</div>
+                    <div>
+                      {t('gameResult.winner', {
+                        name: playerName(state.winnerPlayer, state.players[state.winnerPlayer]?.isHuman ?? false),
+                      })}
+                    </div>
+                    <div>
+                      {t('gameResult.score', {
+                        score: state.players[state.winnerPlayer]?.score ?? 0,
+                        target: state.config.targetPoints,
+                      })}
+                    </div>
                   </div>
                 )}
               </div>

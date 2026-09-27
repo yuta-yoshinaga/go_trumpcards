@@ -101,12 +101,19 @@ func TestSpoilFiveCuiPresenter_Output(t *testing.T) {
 
 	t.Run("game end banner", func(t *testing.T) {
 		m, _ := setupSpoilFiveCuiMockWithPlayers()
+		players := makeSpoilFivePlayers()
+		players[0].SetScore(30)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPlayer")
+		for i := range players {
+			m.On("GetPlayer", i).Return(players[i])
+		}
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetWinnerPlayer")
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetWinnerPlayer").Return(0)
 		result := p.Output(m, nil)
 		assert.NotEmpty(t, result)
+		assert.Contains(t, result, "ゲーム結果 — 勝者: あなた / 最終スコア: 30点 / 目標: 30点")
 	})
 
 	t.Run("error block", func(t *testing.T) {
