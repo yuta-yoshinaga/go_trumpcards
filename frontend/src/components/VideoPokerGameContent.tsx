@@ -438,15 +438,10 @@ export function VideoPokerGameContent({
               </div>
             )}
 
-            {isResultPhase && state && (
+            {isResultPhase && (
               <div className="text-ds-text-primary text-center font-bold mb-2" data-testid="vp-net-change">
                 {t('label.netChange', {
-                  net:
-                    state.payout > state.betAmount
-                      ? `+${state.payout - state.betAmount}`
-                      : state.payout < state.betAmount
-                        ? `${state.payout - state.betAmount}`
-                        : '0',
+                  net: `${state.payout - state.betAmount >= 0 ? '+' : ''}${state.payout - state.betAmount}`,
                 })}
               </div>
             )}
