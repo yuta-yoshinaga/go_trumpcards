@@ -178,6 +178,7 @@ function TablanetPageContent() {
   // tabla). This mirrors the backend award rule (Tablanet.go applyPlay) and is
   // derived purely from captureOptions + tableCards.length as the issue requires.
   const selectedHandCard = handIndex !== null ? (human?.cards[handIndex] ?? null) : null;
+  const selectedTableTotal = tableIndices.reduce((sum, idx) => sum + (state.tableCards[idx]?.value ?? 0), 0);
   const selectedIsJack = selectedHandCard?.value === 11;
   const tablaPossible =
     isHumanTurn &&
@@ -451,6 +452,14 @@ function TablanetPageContent() {
 
           <GameFooter className={`${gameTheme.tablanet.footer} px-4 py-2.5`}>
             <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="tablanet-actions">
+              {tableIndices.length > 0 && (
+                <span
+                  className="rounded bg-ds-surface px-3 py-2 text-sm text-ds-text-primary tabular-nums"
+                  data-testid="tablanet-selected-total"
+                >
+                  {t('selectedTableTotal', { total: selectedTableTotal })}
+                </span>
+              )}
               {!isGameEnd && isHumanTurn && (
                 <button
                   type="button"

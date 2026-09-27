@@ -88,6 +88,23 @@ describe('TablanetPage', () => {
     });
   });
 
+  it('shows the selected table-card rank total and updates it as cards are toggled', async () => {
+    renderWithProviders(<TablanetPage />);
+    await screen.findByTestId('hand-card-0');
+
+    fireEvent.click(screen.getByTestId('table-card-0'));
+    expect(screen.getByTestId('tablanet-selected-total')).toHaveTextContent('選択中の場札の合計: 5');
+
+    fireEvent.click(screen.getByTestId('table-card-1'));
+    expect(screen.getByTestId('tablanet-selected-total')).toHaveTextContent('選択中の場札の合計: 14');
+
+    fireEvent.click(screen.getByTestId('table-card-0'));
+    expect(screen.getByTestId('tablanet-selected-total')).toHaveTextContent('選択中の場札の合計: 9');
+
+    fireEvent.click(screen.getByTestId('table-card-1'));
+    expect(screen.queryByTestId('tablanet-selected-total')).not.toBeInTheDocument();
+  });
+
   it('capturing dispatches play with the selected hand and table indices', async () => {
     renderWithProviders(<TablanetPage />);
     const handCard = await screen.findByTestId('hand-card-0');
