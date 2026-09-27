@@ -147,6 +147,21 @@ func TestDilotiCuiPresenter_RoundResultAndHint(t *testing.T) {
 	assert.Contains(t, hintOut, strings.SplitN(i18n.T("diloti.hintCard"), "{{", 2)[0])
 }
 
+func TestDilotiCuiPresenter_GameEndRoundShowsScoreSummary(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	i18n.SetLang("ja")
+	d := dilotiGame()
+	d.SetGameEndRoundForTest()
+
+	out := new(presenter.DilotiCuiPresenter).Output(d, nil)
+	assert.Equal(t, domain.DilotiPhaseGameEnd, d.GetPhase())
+	assert.True(t, d.GetGameEndFlag())
+	assert.Contains(t, out, i18n.Tf("diloti.resultScoreSummary", "name", i18n.T("diloti.you"), "round", "6", "total", "61"))
+	assert.NotContains(t, out, i18n.T("diloti.gameContinues"))
+}
+
 func TestDilotiWebPresenter_Output(t *testing.T) {
 	i18n.SetLang("ja")
 	p := new(presenter.DilotiWebPresenter)

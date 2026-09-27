@@ -229,7 +229,9 @@ describe('DilotiPage', () => {
     );
     renderWithProviders(<DilotiPage />);
     expect(await screen.findByTestId('diloti-winner')).toBeInTheDocument();
-    expect(screen.getByTestId('diloti-round-result')).toHaveTextContent('あなた: 今回 14 / 累計 14');
+    const result = screen.getByTestId('diloti-round-result');
+    expect(result).toHaveTextContent('あなた: 今回 14 / 累計 14');
+    expect(result).not.toHaveTextContent('ゲームは続きます');
   });
 
   // **ヒントのライブ領域は常設。** 出る側と出ない側の両方を見る。
