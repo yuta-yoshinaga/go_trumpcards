@@ -357,6 +357,7 @@ function TichuPageContent() {
                       onClick={() => toggleCard(i)}
                       disabled={phase !== 'play'}
                       aria-label={isBomb ? t('bombCardAriaLabel', { card: cardAlt(c) }) : cardAlt(c)}
+                      aria-pressed={selectedCards.has(i)}
                     >
                       <AnimatedCard card={c} width={cardWidth * 0.9} />
                       {isBomb && (
