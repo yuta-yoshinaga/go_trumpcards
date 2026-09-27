@@ -210,6 +210,19 @@ function WizardPageContent() {
         state.handSize,
       )
     : null;
+  const currentTrickPlayerIndices = new Set(state.currentTrick.map((tc) => tc.playerIdx));
+  const playerBidProgress = (p: (typeof state.players)[number]) => {
+    const remainingTricks = p.cardCount + (currentTrickPlayerIndices.has(state.players.indexOf(p)) ? 1 : 0);
+    const canStillMakeBid = p.trickCount <= p.bid && p.bid - p.trickCount <= remainingTricks;
+    return {
+      remainingTricks,
+      status:
+        p.trickCount > p.bid || p.bid - p.trickCount > remainingTricks
+          ? 'bidProgress.unreachable'
+          : 'bidProgress.reachable',
+      canStillMakeBid,
+    };
+  };
 
   // On the human's play turn, compute which hand cards are legal to play so the
   // UI can highlight them. Mirrors Wizard.validatePlay in internal/domain/Wizard.go:
@@ -258,7 +271,7 @@ function WizardPageContent() {
                 humanPlayer.cardCount + (humanInCurrentTrick ? 1 : 0),
               )}`}
             >
-              {t('bidProgress', { bid: humanPlayer.bid, won: humanPlayer.trickCount })}
+              {t('bidProgress.header', { bid: humanPlayer.bid, won: humanPlayer.trickCount })}
             </span>
           )}
           {bidSummary && (
@@ -354,38 +367,51 @@ function WizardPageContent() {
 
               {/* Right: info sidebar */}
               <div>
-                {/* CPU players */}
+                {/* Player bid progress; trickCount contains completed tricks only. */}
                 {isMobile ? (
                   <details className="mb-2 p-2 rounded bg-black/30">
                     <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
                       {tc('label.cpuOpponents', { count: state.players.filter((p) => !p.isHuman).length })}
                     </summary>
                     <div className="mt-1">
-                      {state.players
-                        .filter((p) => !p.isHuman)
-                        .map((p) => (
-                          <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
+                      {state.players.map((p) => (
+                        <div key={p.id} data-testid="bid-achievement-row" className="text-ds-text-muted text-sm py-0.5">
+                          <div>
                             {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
                             {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
                             {t('roundScore', { score: p.roundScore })} |{' '}
                             {p.bid >= 0 ? t('bid', { n: p.bid }) : t('bidNone')}
                           </div>
-                        ))}
+                          <div>
+                            {p.bid >= 0 ? t('bidProgress.values', { bid: p.bid, won: p.trickCount }) : t('bidNone')}
+                            {p.bid >= 0 && <> · {t(playerBidProgress(p).status)}</>}
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </details>
                 ) : (
-                  state.players
-                    .filter((p) => !p.isHuman)
-                    .map((p) => (
-                      <div key={p.id} className="mb-2 p-2 rounded bg-black/30">
-                        <div className="text-ds-text-muted text-sm">
-                          {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                          {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
-                          {t('roundScore', { score: p.roundScore })} |{' '}
-                          {p.bid >= 0 ? t('bid', { n: p.bid }) : t('bidNone')}
-                        </div>
+                  state.players.map((p) => (
+                    <div key={p.id} data-testid="bid-achievement-row" className="mb-2 p-2 rounded bg-black/30">
+                      <div className="text-ds-text-muted text-sm">
+                        {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
+                        {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
+                        {t('roundScore', { score: p.roundScore })} |{' '}
+                        {p.bid >= 0 ? t('bid', { n: p.bid }) : t('bidNone')}
                       </div>
-                    ))
+                      <div className="text-ds-text-muted text-sm">
+                        {p.bid >= 0 ? t('bidProgress.values', { bid: p.bid, won: p.trickCount }) : t('bidNone')}
+                        {p.bid >= 0 && (
+                          <span
+                            className={`ml-1 rounded-full px-2 py-0.5 text-xs ${playerBidProgress(p).canStillMakeBid ? badgeInfoColors : badgeErrorColors}`}
+                          >
+                            {t(playerBidProgress(p).status)} (
+                            {t('bidProgress.remaining', { count: playerBidProgress(p).remainingTricks })})
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))
                 )}
 
                 {/* Score table */}

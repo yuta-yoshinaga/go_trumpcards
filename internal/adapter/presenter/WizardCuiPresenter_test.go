@@ -55,6 +55,16 @@ func TestWizardCuiPresenter_Output(t *testing.T) {
 
 	p := new(presenter.WizardCuiPresenter)
 
+	t.Run("shows confirmed tricks and includes an unresolved trick only in reachability", func(t *testing.T) {
+		m, players := setupWizardCuiMockWithPlayers()
+		players[0].SetBid(1)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentTrick")
+		m.On("GetCurrentTrick").Return([]*domain.TrickCard{{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignHeart, 5, false)}})
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "ビッド=1 確定獲得0トリック")
+		assert.Contains(t, result, "達成可能 (残り1トリック)")
+	})
+
 	t.Run("play phase", func(t *testing.T) {
 		m, _ := setupWizardCuiMockWithPlayers()
 		result := p.Output(m, nil)
