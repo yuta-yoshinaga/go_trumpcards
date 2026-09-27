@@ -107,7 +107,7 @@ describe('MushiPage', () => {
     for (const button of handButtons) expect(button).toBeDisabled();
   });
 
-  it('keeps hand enabled for human play and keeps field selection separate', async () => {
+  it('disables the hand while a field card is being chosen, then re-enables it', async () => {
     mockExec.mockResolvedValue(makeState({ phase: 2, pendingCard: card(1, 1), selectableIndices: [0] }));
     const { unmount } = renderWithProviders(<MushiPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
