@@ -116,8 +116,8 @@ describe('PenguinPage', () => {
 
   it('labels each tableau column with its zero-based number and current card count', async () => {
     renderWithProviders(<PenguinPage />);
-    expect(await screen.findByRole('region', { name: 'タブロー列0、1枚' })).toBeInTheDocument();
-    expect(screen.getByRole('region', { name: 'タブロー列2、空' })).toBeInTheDocument();
+    expect(await screen.findByRole('group', { name: 'タブロー列0、1枚' })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'タブロー列2 (空)' })).toBeInTheDocument();
     expect(screen.getByTestId('pg-tableau-0-0')).toHaveAccessibleName('♠ K');
   });
 

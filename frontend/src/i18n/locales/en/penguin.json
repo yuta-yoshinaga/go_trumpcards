@@ -20,6 +20,7 @@
   "emptyFoundationAriaLabel": "{{suit}} Foundation (empty)",
   "emptyFreecellAriaLabel": "Free Cell {{idx}} (empty)",
   "tableauColumnAriaLabel": "Tableau column {{col}}, {{count}}",
+  "tableauColumnEmptyAriaLabel": "Tableau column {{col}} (empty)",
   "tableauCardCount_one": "{{count}} card",
   "tableauCardCount_other": "{{count}} cards",
   "emptyColumnAriaLabel": "Empty column (only {{rank}} may be placed)",
