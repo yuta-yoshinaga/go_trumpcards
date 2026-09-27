@@ -355,6 +355,14 @@ describe('WarPage', () => {
     expect(screen.getByTestId('autoplay-button')).toHaveAttribute('aria-pressed', 'true');
   });
 
+  it('does not announce when the current animation speed is selected again', async () => {
+    renderWithProviders(<WarPage />);
+    const select = await screen.findByTestId('autoplay-speed-select');
+    fireEvent.change(select, { target: { value: 'normal' } });
+    expect(screen.getByRole('status')).toBeEmptyDOMElement();
+    expect(localStorage.getItem('war:autoPlaySpeed')).toBeNull();
+  });
+
   it('disables autoplay button on game end', async () => {
     mockExec.mockResolvedValueOnce(gameEndState);
     renderWithProviders(<WarPage />);

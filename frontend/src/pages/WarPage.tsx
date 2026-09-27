@@ -9,6 +9,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
+import { LiveAnnouncement } from '../components/LiveAnnouncement';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
@@ -35,6 +36,10 @@ const DEFAULT_MAX_ROUNDS = 500;
 
 /** Autoplay animation speed presets. */
 type AutoPlaySpeed = 'slow' | 'normal' | 'fast';
+
+function speedLabelKey(speed: AutoPlaySpeed): string {
+  return `settings.speed${speed[0].toUpperCase()}${speed.slice(1)}`;
+}
 
 /**
  * Delay (ms) between auto-advanced `step` calls per speed preset. A larger delay
@@ -132,17 +137,16 @@ function WarPageContent() {
   const handleSelectSpeed = useCallback(
     (v: string) => {
       const speed: AutoPlaySpeed = v === 'slow' || v === 'fast' ? v : 'normal';
+      if (speed === autoPlaySpeed) return;
       setAutoPlaySpeed(speed);
-      setSpeedAnnouncement(
-        t('settings.speedChanged', { speed: t(`settings.speed${speed[0].toUpperCase()}${speed.slice(1)}`) }),
-      );
+      setSpeedAnnouncement(t('settings.speedChanged', { speed: t(speedLabelKey(speed)) }));
       try {
         localStorage.setItem(AUTOPLAY_SPEED_STORAGE_KEY, speed);
       } catch {
         // Persistence is best-effort; ignore storage failures.
       }
     },
-    [t],
+    [autoPlaySpeed, t],
   );
   const handleReset = useCallback(() => {
     setAutoPlaying(false);
@@ -441,7 +445,7 @@ function WarPageContent() {
                     testId: 'autoplay-speed-select',
                     label: t('settings.speed'),
                     ariaLabel: t('settings.speedSelected', {
-                      speed: t(`settings.speed${autoPlaySpeed[0].toUpperCase()}${autoPlaySpeed.slice(1)}`),
+                      speed: t(speedLabelKey(autoPlaySpeed)),
                     }),
                     tooltip: t('settings.speedHelp'),
                     value: autoPlaySpeed,
@@ -457,9 +461,7 @@ function WarPageContent() {
               },
             ]}
           />
-          <div role="status" aria-live="polite" className="sr-only">
-            {speedAnnouncement}
-          </div>
+          <LiveAnnouncement message={speedAnnouncement} />
 
           <GameFooter className={`${gameTheme.war.footer} px-4 py-2.5`}>
             <div className="flex gap-2 justify-center">
