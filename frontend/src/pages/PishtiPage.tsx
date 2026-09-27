@@ -158,7 +158,8 @@ function PishtiPageContent() {
         t('pileUpdate', {
           top: state.pileTop ? cardAlt(state.pileTop) : t('pileEmpty'),
           count: t('pileCount', { count: state.pileCount }),
-          captured: previous.count > state.pileCount ? t('pileCaptured') : '',
+          // A reset / next game replaces the old pile with a fresh four-card pile.
+          captured: state.pileCount === 0 && previous.count > 0 ? t('pileCaptured') : '',
         }),
       );
     }
