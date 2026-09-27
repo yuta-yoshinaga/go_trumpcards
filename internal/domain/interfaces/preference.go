@@ -59,6 +59,8 @@ type PreferenceGame interface {
 	GetContract() domain.PreferenceBid
 	// GetBids 各プレイヤーの入札を取得する
 	GetBids() [domain.PreferencePlayerCnt]domain.PreferenceBid
+	// GetBidDone 各プレイヤーが入札を完了したか取得する
+	GetBidDone() [domain.PreferencePlayerCnt]bool
 	// GetTrumpSuit 切り札スートを取得する (0=なし)
 	GetTrumpSuit() int
 	// GetPlayerScores プレイヤー別累積点を取得する

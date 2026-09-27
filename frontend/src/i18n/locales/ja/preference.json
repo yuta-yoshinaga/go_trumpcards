@@ -32,6 +32,7 @@
   "contractUndecided": "契約: 未決定",
   "declarerLine": "宣言者: {{name}} — {{contract}}",
   "bidLabel": "入札",
+  "bidNotSubmitted": "未入札",
   "playButton": "出す",
   "nextTrick": "次のトリック",
   "nextRound": "次のラウンド",

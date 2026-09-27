@@ -65,6 +65,9 @@ func TestPreference_BiddingResolvesHighestDeclarer(t *testing.T) {
 	if err := g.PlayerBid(PreferenceBidSix); err != nil {
 		t.Fatalf("P1 six err: %v", err)
 	}
+	if got, want := g.GetBidDone(), [PreferencePlayerCnt]bool{false, true, false}; got != want {
+		t.Errorf("bid completion after P1 bid = %v, want %v", got, want)
+	}
 	if err := g.PlayerBid(PreferenceBidSeven); err != nil {
 		t.Fatalf("P2 seven err: %v", err)
 	}

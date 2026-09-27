@@ -55,6 +55,8 @@ export interface PreferenceResponse extends BaseGameResponse {
   trumpSuit: number;
   /** Each player's bid this round (0-4) — [p0, p1, p2]. */
   bids: number[];
+  /** Whether each player has submitted a bid this round; distinguishes Pass from not yet bid. */
+  bidDone: boolean[];
   currentTrick: PreferenceTrickCard[];
   /** Cumulative match scores per player — [p0, p1, p2]. */
   playerScores: number[];

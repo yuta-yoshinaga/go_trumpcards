@@ -3592,6 +3592,7 @@ const basePreferenceState: PreferenceResponse = {
   contract: 0,
   trumpSuit: 0,
   bids: [0, 0, 0],
+  bidDone: [false, false, false],
   currentTrick: [],
   playerScores: [0, 0, 0],
   roundTricks: [0, 0, 0],

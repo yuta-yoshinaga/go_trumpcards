@@ -43,6 +43,7 @@ func (p *PreferenceWebPresenter) buildBase(g interfaces.PreferenceGame) *control
 	resObj.Contract = int(g.GetContract())
 	resObj.TrumpSuit = g.GetTrumpSuit()
 	resObj.Bids = p.bidsOutput(g)
+	resObj.BidDone = g.GetBidDone()
 	resObj.GameEndFlag = g.GetGameEndFlag()
 	resObj.WinnerPlayer = g.GetWinnerPlayer()
 	resObj.PlayerScores = g.GetPlayerScores()
