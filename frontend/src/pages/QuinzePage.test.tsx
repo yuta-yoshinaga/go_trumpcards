@@ -71,7 +71,7 @@ describe('QuinzePage', () => {
   it('renders chips, the banker and the target', async () => {
     mockExec.mockResolvedValue(makeState());
     renderWithProviders(<QuinzePage />);
-    await waitFor(() => expect(screen.getByText(/チップ: 900/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('quinze-chips')).toHaveTextContent('チップ: 900'));
     expect(screen.getByText(/親: CPU1/)).toBeInTheDocument();
     // 15 comes from the server in halves so it is not hardcoded twice.
     expect(screen.getByText(/目標: 15/)).toBeInTheDocument();
@@ -120,7 +120,13 @@ describe('QuinzePage', () => {
   it('disables a stake above the stack', async () => {
     mockExec.mockResolvedValue(makeState({ phase: 1, chips: 50, bankerHand: undefined }));
     renderWithProviders(<QuinzePage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '500' })).toBeDisabled());
+    const unavailable = await screen.findByRole('button', { name: '500' });
+    await waitFor(() => expect(unavailable).toBeDisabled());
+    expect(screen.getByTestId('quinze-bet-chips')).toHaveTextContent('チップ: 50');
+    const reasonId = unavailable.getAttribute('aria-describedby');
+    expect(reasonId).toBeTruthy();
+    expect(document.getElementById(reasonId ?? '')).toHaveTextContent('所持チップが不足しています');
+    expect(unavailable).toHaveAttribute('title', '所持チップが不足しています');
     expect(screen.getByRole('button', { name: '10' })).toBeEnabled();
   });
 
