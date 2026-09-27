@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useId, useMemo } from 'react';
 import type { FortyThievesMoveZone } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -89,6 +89,7 @@ function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => stri
 
 /** Inner content of the Forty Thieves page, wrapped by TutorialProvider. */
 function FortyThievesPageContent() {
+  const selectSourceHintId = useId();
   const {
     t,
     tc,
@@ -256,6 +257,9 @@ function FortyThievesPageContent() {
         </>
       }
     >
+      <span id={selectSourceHintId} className="sr-only">
+        {tc('label.selectSourceFirst')}
+      </span>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -348,8 +352,13 @@ function FortyThievesPageContent() {
                         {pile.length > 0 ? (
                           <button
                             type="button"
-                            onClick={() => handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
+                            onClick={() => {
+                              if (!selectedSource) return;
+                              handleSelectTarget(foundationZone);
+                            }}
+                            disabled={!isPlaying || loading || isAutoCompleting}
+                            aria-disabled={!selectedSource || undefined}
+                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t('foundationAriaLabel', {
                               suit: foundationSuit(pile),
                               count: pile.length,
@@ -366,8 +375,13 @@ function FortyThievesPageContent() {
                         ) : (
                           <button
                             type="button"
-                            onClick={() => handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading || !selectedSource}
+                            onClick={() => {
+                              if (!selectedSource) return;
+                              handleSelectTarget(foundationZone);
+                            }}
+                            disabled={!isPlaying || loading}
+                            aria-disabled={!selectedSource || undefined}
+                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t('emptyFoundationAriaLabel', { idx: idx + 1 })}
                             style={{ width: ft.cw, height: ft.ch }}
                             className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
@@ -405,8 +419,13 @@ function FortyThievesPageContent() {
                         {col.length === 0 ? (
                           <button
                             type="button"
-                            onClick={() => handleSelectTarget(tableauColZone)}
-                            disabled={!isPlaying || loading || !selectedSource}
+                            onClick={() => {
+                              if (!selectedSource) return;
+                              handleSelectTarget(tableauColZone);
+                            }}
+                            disabled={!isPlaying || loading}
+                            aria-disabled={!selectedSource || undefined}
+                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             style={{ height: ft.ch }}
                             className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
                           >
