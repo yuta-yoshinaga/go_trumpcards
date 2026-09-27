@@ -125,6 +125,23 @@ describe('MatrimonyPage', () => {
     expect(empty).toHaveAttribute('aria-disabled', 'true');
   });
 
+  it('ignores an empty slot click while a tableau card is selected', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<MatrimonyPage />);
+    const empty = await screen.findByRole('button', { name: /空の枠 3/ });
+
+    fireEvent.click(screen.getByRole('button', { name: '枠 0 ♠ 9' }));
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: '枠 0 ♠ 9' })).toHaveAttribute('aria-pressed', 'true'),
+    );
+    expect(empty).toHaveAttribute('aria-disabled', 'true');
+
+    mockExec.mockClear();
+    fireEvent.click(empty);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('explains and ignores a foundation target click before source selection', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<MatrimonyPage />);

@@ -209,7 +209,10 @@ function MatrimonyPageContent() {
           {card === null ? (
             <button
               type="button"
-              onClick={() => game.handleSelectTarget(slotZone)}
+              onClick={() => {
+                if (!selectedSource || selectedSource.zone === 'tableau') return;
+                game.handleSelectTarget(slotZone);
+              }}
               // Only stock and waste can fill an empty slot.
               disabled={!isPlaying || loading}
               aria-disabled={!selectedSource || selectedSource.zone === 'tableau' || undefined}
