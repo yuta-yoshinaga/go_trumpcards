@@ -27,6 +27,7 @@
   "noHint": "No hint available",
   "hintAvailable": "Hint available",
   "stalemate": "No more moves",
+  "stalemateNoEscape": "No undo history can escape this stalemate",
   "dealsRemaining": "{{count}} deals remaining",
   "cannotDealEmptyColExists": "Fill every empty column before dealing",
   "tutorial": {
