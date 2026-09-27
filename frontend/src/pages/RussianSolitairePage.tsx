@@ -341,7 +341,7 @@ function RussianSolitairePageContent() {
 
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
             <span id={selectSourceHintId} className="sr-only">
-              {tc('label.selectSourceFirst', { ns: 'common' })}
+              {tc('label.selectSourceFirst')}
             </span>
             {/* Foundation row */}
             <div className="flex gap-1 sm:gap-2 mb-3 items-start justify-center" data-tutorial="rs-foundation">
@@ -362,7 +362,9 @@ function RussianSolitairePageContent() {
                         isTarget ? 'hover:ring-2 hover:ring-ds-warning cursor-pointer' : ''
                       }`}
                       onClick={() => isTarget && handleSelectTarget('foundation', i)}
-                      disabled={!isPlaying || !isTarget}
+                      disabled={!isPlaying}
+                      aria-disabled={!isTarget || undefined}
+                      aria-describedby={!isTarget ? selectSourceHintId : undefined}
                       aria-label={
                         topCard
                           ? t('foundationAriaLabel', {

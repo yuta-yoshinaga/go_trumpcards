@@ -332,7 +332,7 @@ function RoyalCotillionPageContent() {
         <>
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
             <span id={selectSourceHintId} className="sr-only">
-              {tc('label.selectSourceFirst', { ns: 'common' })}
+              {tc('label.selectSourceFirst')}
             </span>
             <div className="flex flex-wrap justify-center items-start gap-3 sm:gap-6 mb-3">
               <div className="flex flex-wrap justify-center gap-1 sm:gap-2" data-tutorial="cg-foundation">

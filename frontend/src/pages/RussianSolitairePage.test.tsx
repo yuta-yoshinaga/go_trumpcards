@@ -294,6 +294,16 @@ describe('RussianSolitairePage', () => {
     expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
   });
 
+  it('keeps an empty foundation target focusable and explains that a source must be selected', async () => {
+    renderWithProviders(<RussianSolitairePage />);
+    const target = await screen.findByRole('button', { name: '空の組札 (♠)' });
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const describedBy = target.getAttribute('aria-describedby');
+    expect(describedBy).toBeTruthy();
+    expect(document.getElementById(describedBy ?? '')).toHaveTextContent('先に移動する札を選んでください');
+  });
+
   it('renders foundation suit labels', async () => {
     renderWithProviders(<RussianSolitairePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
