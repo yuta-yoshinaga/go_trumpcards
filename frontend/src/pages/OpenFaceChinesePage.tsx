@@ -184,11 +184,12 @@ function OpenFaceChinesePageContent() {
   const handleNext = () => exec('nextround');
   const handleHint = () => exec('hint');
   const rowNames = ['front', 'middle', 'back'] as const;
-  const placementRowLabel = (row: number) => {
-    const count = [human?.front.length ?? 0, human?.middle.length ?? 0, human?.back.length ?? 0][row] ?? 0;
-    const remaining = Math.max(0, ROW_CAPACITIES[row] - count);
-    return `${t(`rows.${rowNames[row]}`)} ${remaining === 0 ? t('rowFull') : t('rowRemaining', { count: remaining })}`;
+  const rowStatus = (cards: Card[], capacity: number) => {
+    const remaining = Math.max(0, capacity - cards.length);
+    return remaining === 0 ? t('rowFull') : t('rowRemaining', { count: remaining });
   };
+  const placementRowLabel = (row: number, player: OpenFaceChinesePlayer) =>
+    `${t(`rows.${rowNames[row]}`)} ${rowStatus([player.front, player.middle, player.back][row], ROW_CAPACITIES[row])}`;
 
   const playerName = (player: OpenFaceChinesePlayer) => (player.isHuman ? t('you') : t('cpu', { n: player.id }));
 
@@ -208,9 +209,7 @@ function OpenFaceChinesePageContent() {
     // A fieldset+legend names the whole row for SR (count + card contents), since
     // the empty slots are decorative and biome forbids role="group" on a div.
     const cardNames = cards.map(cardAlt).join(', ');
-    const remaining = Math.max(0, capacity - cards.length);
-    const remainingLabel = remaining === 0 ? t('rowFull') : t('rowRemaining', { count: remaining });
-    const rowLabel = `${label} ${remainingLabel}`;
+    const rowLabel = `${label} ${rowStatus(cards, capacity)}`;
     const rowAria = cardNames
       ? t('rowAriaFilled', { label: rowLabel, count: cards.length, cards: cardNames })
       : t('rowAriaEmpty', { label: rowLabel, count: cards.length });
@@ -316,7 +315,7 @@ function OpenFaceChinesePageContent() {
             </span>
 
             {/* Pending card to place */}
-            {canPlace && state.currentCard && (
+            {canPlace && human && state.currentCard && (
               <div
                 className="mb-3 p-3 rounded bg-black/30 text-center flex flex-col items-center gap-2"
                 data-tutorial="ofc-place"
@@ -347,7 +346,7 @@ function OpenFaceChinesePageContent() {
                     onClick={() => handlePlace(ROW_FRONT)}
                     disabled={loading || frontFull}
                     aria-disabled={frontFull}
-                    aria-label={t('placeRowAria', { label: placementRowLabel(ROW_FRONT) })}
+                    aria-label={t('placeRowAria', { label: placementRowLabel(ROW_FRONT, human) })}
                     data-foul-risk={foulRisk.front ? 'true' : undefined}
                     data-testid="place-front"
                   >
@@ -359,7 +358,7 @@ function OpenFaceChinesePageContent() {
                     onClick={() => handlePlace(ROW_MIDDLE)}
                     disabled={loading || middleFull}
                     aria-disabled={middleFull}
-                    aria-label={t('placeRowAria', { label: placementRowLabel(ROW_MIDDLE) })}
+                    aria-label={t('placeRowAria', { label: placementRowLabel(ROW_MIDDLE, human) })}
                     data-foul-risk={foulRisk.middle ? 'true' : undefined}
                     data-testid="place-middle"
                   >
@@ -371,7 +370,7 @@ function OpenFaceChinesePageContent() {
                     onClick={() => handlePlace(ROW_BACK)}
                     disabled={loading || backFull}
                     aria-disabled={backFull}
-                    aria-label={t('placeRowAria', { label: placementRowLabel(ROW_BACK) })}
+                    aria-label={t('placeRowAria', { label: placementRowLabel(ROW_BACK, human) })}
                     data-foul-risk={foulRisk.back ? 'true' : undefined}
                     data-testid="place-back"
                   >

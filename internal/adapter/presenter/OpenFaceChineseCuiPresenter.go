@@ -24,6 +24,7 @@ func ofcRowCards(cards []*domain.Card) string {
 	return strings.Join(parts, ", ")
 }
 
+// ofcRowRemaining returns the localized number of empty slots in a row.
 func ofcRowRemaining(cards []*domain.Card, capacity int) string {
 	remaining := capacity - len(cards)
 	if remaining <= 0 {
