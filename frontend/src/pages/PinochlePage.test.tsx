@@ -488,7 +488,23 @@ describe('PinochlePage', () => {
     mockExec.mockResolvedValue(playPhaseState);
     renderWithProviders(<PinochlePage />);
     await waitFor(() => {
-      expect(screen.getByText(/切り札/)).toBeInTheDocument();
+      expect(screen.getByText('切り札: ♠')).toBeInTheDocument();
+    });
+  });
+
+  it('shows that trump is undecided before the trump phase', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => {
+      expect(screen.getByText('切り札: 未決定')).toBeInTheDocument();
+    });
+  });
+
+  it('shows that trump is being selected during the trump phase', async () => {
+    mockExec.mockResolvedValue(trumpPhaseState);
+    renderWithProviders(<PinochlePage />);
+    await waitFor(() => {
+      expect(screen.getByText('切り札: 選択中')).toBeInTheDocument();
     });
   });
 
