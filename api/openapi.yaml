@@ -81370,7 +81370,7 @@ components:
         lastTrick:
           type: array
           items:
-            $ref: '#/components/schemas/TrucoTrickCard'
+            type: object
         lastTrickWinner:
           type: integer
           description: Seat that took lastTrick, or -1 before the first trick.
