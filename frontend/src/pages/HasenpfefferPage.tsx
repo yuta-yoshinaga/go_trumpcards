@@ -235,14 +235,14 @@ function HasenpfefferPageContent() {
 
             <div className="flex flex-wrap justify-center gap-2 mb-4" data-tutorial="hpf-seats">
               {state.players.map((p, playerIdx) => (
-                <div
+                <fieldset
                   key={p.id}
-                  className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
+                  className="rounded bg-black/30 border-0 m-0 min-w-0 px-3 py-2 text-sm text-ds-text-muted"
                   data-testid={`hpf-seat-${p.id.toString()}`}
                 >
-                  <span className="text-ds-text-primary">
+                  <legend className="inline text-ds-text-primary">
                     {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
-                  </span>
+                  </legend>
                   <span className="ml-1 text-ds-accent">{t('header.team', { team: String(p.team) })}</span>
                   {playerIdx === state.dealerIdx && <span className="ml-1 text-ds-accent"> / {t('dealerBadge')}</span>}
                   {p.id === state.declarerIdx && <span className="ml-1 text-ds-accent">{t('header.declarer')}</span>}
@@ -254,7 +254,7 @@ function HasenpfefferPageContent() {
                       : t('header.bidValue', { n: String(p.bid) })}
                   {' / '}
                   {t('header.took', { n: String(p.trickCount) })}
-                </div>
+                </fieldset>
               ))}
             </div>
 

@@ -101,7 +101,9 @@ describe('HasenpfefferPage', () => {
     mockExec.mockResolvedValue(makeState({ dealerIdx: 2 }));
     renderWithProviders(<HasenpfefferPage />);
 
-    expect(await screen.findByTestId('hpf-seat-2')).toHaveTextContent('/ 親');
+    const dealerSeat = await screen.findByTestId('hpf-seat-2');
+    expect(dealerSeat).toHaveClass('border-0', 'm-0', 'min-w-0');
+    expect(dealerSeat).toHaveTextContent('/ 親');
     expect(screen.getByTestId('hpf-seat-0')).not.toHaveTextContent('/ 親');
   });
 
@@ -216,6 +218,23 @@ describe('HasenpfefferPage', () => {
     expect(screen.getByTestId('hpf-seat-1')).toHaveTextContent(/降り/);
     expect(screen.getByTestId('hpf-seat-2')).toHaveTextContent(/未宣言/);
     expect(screen.getByTestId('hpf-seat-1')).toHaveTextContent('[落札]');
+  });
+
+  it('groups each player name with their bid state and tricks taken', async () => {
+    mockExec.mockResolvedValue(
+      playing({
+        players: [seat(0, { bid: 4, trickCount: 2 }), seat(1, { bid: 0, trickCount: 1 })],
+      } as Partial<HasenpfefferResponse>),
+    );
+    renderWithProviders(<HasenpfefferPage />);
+
+    const rows = await screen.findAllByRole('group');
+    expect(rows[0]).toHaveAccessibleName('あなた');
+    expect(rows[0]).toHaveTextContent('宣言4');
+    expect(rows[0]).toHaveTextContent('獲得2');
+    expect(rows[1]).toHaveAccessibleName('CPU1');
+    expect(rows[1]).toHaveTextContent('降り');
+    expect(rows[1]).toHaveTextContent('獲得1');
   });
 
   // 伏せ札・未宣言・確定の 3 状態を踏む。

@@ -82,6 +82,7 @@ func TestHasenpfefferCuiPresenterNamesEverySuit(t *testing.T) {
 
 // **宣言の状態は 3 通り。** 未宣言 / 降り / 数字を取り違えない。
 func TestHasenpfefferCuiPresenterShowsEveryBidState(t *testing.T) {
+	assert.NotEqual(t, "hasenpfeffer.bidNone", i18n.T("hasenpfeffer.bidNone"))
 	assert.Equal(t, i18n.T("hasenpfeffer.bidNone"), hasenpfefferBidStr(-1))
 	assert.Equal(t, i18n.T("hasenpfeffer.bidPassed"), hasenpfefferBidStr(0))
 	assert.Equal(t, i18n.Tf("hasenpfeffer.bidValue", "n", "4"), hasenpfefferBidStr(4))
