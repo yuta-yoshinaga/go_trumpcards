@@ -39,6 +39,12 @@ func TestPigCuiPresenterOutput(t *testing.T) {
 	assert.Contains(t, out, i18n.T("pig.promptPass"))
 }
 
+func TestPigPassDestinationIsSelf(t *testing.T) {
+	assert.True(t, pigPassDestinationIsSelf(1))
+	assert.False(t, pigPassDestinationIsSelf(0))
+	assert.False(t, pigPassDestinationIsSelf(domain.PigDefaultPlayerCnt))
+}
+
 // **選び終えた席に印を出す。** 同時に渡すので、待ちが発生します。
 func TestPigCuiPresenterMarksWhoHasChosen(t *testing.T) {
 	p := new(PigCuiPresenter)

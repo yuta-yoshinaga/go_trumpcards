@@ -13,8 +13,7 @@ import (
 )
 
 // pigPlayerStr returns the display string for a single seat.
-func pigPlayerStr(s interfaces.PigGame, idx int, current bool) string {
-	player := s.GetPlayer(idx)
+func pigPlayerStr(s interfaces.PigGame, player *domain.PigPlayer, idx int, current bool) string {
 	var b strings.Builder
 	marker := " "
 	if current {
@@ -47,11 +46,26 @@ func pigPlayerStr(s interfaces.PigGame, idx int, current bool) string {
 	return b.String()
 }
 
+// pigPlayers returns the table's players in seat order for both presenters.
+func pigPlayers(s interfaces.PigGame) []*domain.PigPlayer {
+	players := make([]*domain.PigPlayer, 0, s.GetPlayerCnt())
+	for i := 0; i < s.GetPlayerCnt(); i++ {
+		players = append(players, s.GetPlayer(i))
+	}
+	return players
+}
+
+// pigPassDestinationIsSelf reports whether the human's left-hand destination is the human seat.
+func pigPassDestinationIsSelf(playerCnt int) bool {
+	return playerCnt > 0 && 1%playerCnt == 0
+}
+
 // PigCuiPresenter renders the Pig CUI view.
 type PigCuiPresenter struct{}
 
 // Output renders the current game state for the active locale.
 func (p *PigCuiPresenter) Output(s interfaces.PigGame, lastErr error) string {
+	players := pigPlayers(s)
 	return buildCuiOutput(i18n.T("pig.helpTitle"), func(sb *strings.Builder) {
 		sb.WriteString(i18n.Tf("pig.header",
 			"round", strconv.Itoa(s.GetRoundNumber()),
@@ -60,8 +74,8 @@ func (p *PigCuiPresenter) Output(s interfaces.PigGame, lastErr error) string {
 		// **罰の理由が直感と違う。** 取り合いではなく、気づくのが遅いことが負け。
 		sb.WriteString(i18n.T("pig.rule") + "\n")
 
-		for i := 0; i < s.GetPlayerCnt(); i++ {
-			sb.WriteString(pigPlayerStr(s, i,
+		for i, player := range players {
+			sb.WriteString(pigPlayerStr(s, player, i,
 				i == s.GetCurrentPlayerIdx() && s.GetPhase() == domain.PigPhasePass && !s.GetGameEndFlag()))
 		}
 
@@ -106,6 +120,9 @@ func (p *PigCuiPresenter) Output(s interfaces.PigGame, lastErr error) string {
 			if s.HasChosenPass(0) {
 				// **同時に渡すので、全員が選ぶまで札は動きません。**
 				sb.WriteString(i18n.T("pig.promptWaiting") + "\n")
+				return
+			}
+			if pigPassDestinationIsSelf(s.GetPlayerCnt()) {
 				return
 			}
 			sb.WriteString(i18n.T("pig.promptPass") + "\n")

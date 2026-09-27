@@ -12,6 +12,13 @@
   "communityCards": "コミュニティカード",
   "winningHand": "役: {{hand}}",
   "yourHand": "あなたの手札",
+  "betComparison": {
+    "currentMaximum": "現在の最高額: {{amount}}",
+    "yourContribution": "自分の投入額: {{amount}}",
+    "callDifference": "コール差額: {{amount}}",
+    "noCallNeeded": "コール不要（チェック可能）",
+    "minimumRaise": "最小レイズ額: {{amount}}"
+  },
   "handNumber": "ハンド#{{count}} (レベルアップ:{{level}}ハンド毎)",
   "bettingLimit": {
     "label": "リミット",

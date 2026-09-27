@@ -531,6 +531,22 @@ function HoldemPageContent() {
             {/* Betting controls */}
             {canAct && (
               <div data-tutorial="he-action-buttons">
+                <div className="mb-2 text-ds-text-primary text-xs tabular-nums" data-testid="holdem-bet-comparison">
+                  <span>{t('betComparison.currentMaximum', { amount: state?.lastBet ?? 0 })}</span>
+                  <span className="mx-2">
+                    {t('betComparison.yourContribution', { amount: humanPlayer?.currentBet ?? 0 })}
+                  </span>
+                  <span>
+                    {hasOutstandingBet
+                      ? t('betComparison.callDifference', {
+                          amount: (state?.lastBet ?? 0) - (humanPlayer?.currentBet ?? 0),
+                        })
+                      : t('betComparison.noCallNeeded')}
+                  </span>
+                  {(state?.lastBet ?? 0) > 0 && (
+                    <span className="ml-2">{t('betComparison.minimumRaise', { amount: minRaise })}</span>
+                  )}
+                </div>
                 <BettingControls
                   inputId="holdemBetAmount"
                   betAmount={betAmount}
