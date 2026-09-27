@@ -24,6 +24,13 @@
   "cards": "{{count}}枚",
   "tricks": "{{count}}トリック",
   "currentTrick": "現在のトリック",
+  "leadSuit": "現トリックのリードスート: {{symbol}} {{suit}}",
+  "suits": {
+    "spade": "スペード",
+    "clover": "クラブ",
+    "heart": "ハート",
+    "diamond": "ダイヤ"
+  },
   "trickEmpty": "(まだカードがありません)",
   "players": "プレイヤー",
   "you": "あなた",

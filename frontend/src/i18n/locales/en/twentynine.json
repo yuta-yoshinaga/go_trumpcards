@@ -24,6 +24,13 @@
   "cards": "{{count}} cards",
   "tricks": "{{count}} tricks",
   "currentTrick": "Current Trick",
+  "leadSuit": "Current trick lead suit: {{symbol}} {{suit}}",
+  "suits": {
+    "spade": "Spades",
+    "clover": "Clubs",
+    "heart": "Hearts",
+    "diamond": "Diamonds"
+  },
   "trickEmpty": "(no cards yet)",
   "players": "Players",
   "you": "You",
