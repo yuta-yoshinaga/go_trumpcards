@@ -11,6 +11,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
+import { LiveAnnouncement } from '../components/LiveAnnouncement';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
@@ -154,12 +155,18 @@ function OmiPageContent() {
       return;
     }
     if (previousTrickRef.current !== trickKey) {
+      const previousTrick = JSON.parse(previousTrickRef.current) as typeof state.currentTrick;
       previousTrickRef.current = trickKey;
       const trick = state.currentTrick;
       const humanSeat = state.players.findIndex((p) => p.isHuman);
+      const isAppend =
+        trick.length > previousTrick.length &&
+        previousTrick.every((played, index) => JSON.stringify(played) === JSON.stringify(trick[index]));
+      // A new trick (the previous one was taken in the same response) is read in full.
       if (trick.length > 0) {
         setTrickAnnouncement(
           trick
+            .slice(isAppend ? previousTrick.length : 0)
             .map(({ playerIdx, card }) =>
               t('trickAnnouncementEntry', {
                 player: playerName(playerIdx, playerIdx === humanSeat),
@@ -231,9 +238,7 @@ function OmiPageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
-      <div role="status" aria-live="polite" aria-atomic="true" className="sr-only" data-testid="omi-trick-announcement">
-        {trickAnnouncement}
-      </div>
+      <LiveAnnouncement message={trickAnnouncement} />
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
