@@ -95,7 +95,8 @@ func TestSeahavenTowersCuiPresenterOutputReservedOccupied(t *testing.T) {
 
 	result := p.Output(s, nil)
 	assert.Contains(t, result, "リザーブ:")
-	assert.Contains(t, result, "♠5")
+	assert.Contains(t, result, "0: ♠5")
+	assert.Contains(t, result, "1: 空 (移動先)")
 }
 
 func TestSeahavenTowersCuiPresenterOutputFoundationWithCards(t *testing.T) {
