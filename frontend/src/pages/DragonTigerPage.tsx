@@ -201,7 +201,7 @@ function DragonTigerPageContent() {
                     ['tiger', 1],
                     ['tie', 8],
                   ].map(([type, odds]) => (
-                    <span key={type} className="rounded-full bg-ds-surface-elevated px-2 py-1">
+                    <span key={type} className="rounded-full bg-ds-surface-elevated px-2 py-0.5 text-xs font-medium">
                       {t('payout.oddsBadge', { type: t(`payout.${type}`), odds })}
                     </span>
                   ))}

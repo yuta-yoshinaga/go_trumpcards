@@ -204,7 +204,7 @@ describe('DragonTigerPage', () => {
     expect(diff).toHaveClass('text-ds-success');
   });
 
-  it('shows the tiger-win result and ×1 badge for a winning Tiger bet', async () => {
+  it('shows the tiger-win result and 1:1 odds badge for a winning Tiger bet', async () => {
     mockApi.mockResolvedValueOnce(tigerWinOnTigerBetState); // result -1, bet Tiger 100, payout 200
     renderWithProviders(<DragonTigerPage />);
     const breakdown = await screen.findByTestId('payout-breakdown');
