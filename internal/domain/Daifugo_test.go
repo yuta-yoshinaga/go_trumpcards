@@ -87,6 +87,20 @@ func TestDaifugo_Method(t *testing.T) {
 		assert.False(t, dg.GetPlayer(1).GetIsHuman())
 	})
 
+	t.Run("field cleared leader is next player after finish", func(t *testing.T) {
+		players := makeDaifugoPlayers()
+		dg := domain.NewDaifugo(domain.NewTrumpCards(0), players, noRulesConfig())
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+
+		assert.NoError(t, dg.PlayerPlay([]int{0}))
+
+		assert.Equal(t, 1, dg.GetCurrentTurn())
+		assert.Equal(t, 1, dg.GetFieldClearedLeader())
+	})
+
 	t.Run("success GetPlayer invalid index returns nil", func(t *testing.T) {
 		tc := domain.NewTrumpCards(0)
 		players := makeDaifugoPlayers()
@@ -1580,18 +1594,19 @@ func TestDaifugo_PlayerPlay_EightCutWithFinish(t *testing.T) {
 	config := domain.DaifugoConfig{EightCutEnabled: true}
 	dg := domain.NewDaifugo(tc, players, config)
 
-	// 3 CPUs already finished, human plays 8 as last card → finishes AND 8-cut fires
+	// One CPU is finished; human plays 8 as last card → finishes AND 8-cut fires.
+	// The next active player should receive the lead after turn advancement.
 	players[1].SetIsFinished(true)
 	players[1].SetRank(1)
-	players[2].SetIsFinished(true)
-	players[2].SetRank(2)
-	players[3].SetIsFinished(true)
-	players[3].SetRank(3)
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
 	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false)) // last card
 
 	_ = dg.PlayerPlay([]int{0}) // play 8 → finish + 8-cut
-	assert.True(t, dg.GetGameEndFlag())
-	assert.Equal(t, 4, players[0].GetRank())
+	assert.False(t, dg.GetGameEndFlag())
+	assert.Equal(t, 2, players[0].GetRank())
+	assert.Equal(t, 2, dg.GetCurrentTurn())
+	assert.Equal(t, 2, dg.GetFieldClearedLeader())
 	// Table should be nil (8-cut or finishPlayer clears)
 	assert.Nil(t, dg.GetTableCards())
 }

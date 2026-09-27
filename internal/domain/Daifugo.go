@@ -101,6 +101,7 @@ type DaifugoExchangeAction struct {
 type daifugoRoundState struct {
 	currentTurn         int                      // 現在の手番プレイヤーインデックス
 	fieldClearedLeader  int                      // 場流れでリード権を得たプレイヤー (-1 = なし)
+	fieldJustCleared    bool                     // 手番確定後にリーダーを記録する場流れフラグ
 	tableCards          []*Card                  // 場に出されているカード (nil = 場はクリア)
 	lastPlayPlayerIdx   int                      // 最後にカードを出したプレイヤーインデックス (-1 = なし)
 	gameEndFlag         bool                     // ゲーム終了フラグ
@@ -230,6 +231,7 @@ func (d *Daifugo) PlayerPlay(indices []int) error {
 		d.appendLog(d.round.currentTurn, "pass", "daifugo.log.pass", nil, nil)
 		d.advanceTurn()
 		d.checkPassClear()
+		d.recordFieldClearedLeader()
 		return nil
 	}
 
@@ -323,6 +325,7 @@ func (d *Daifugo) playCards(playerIdx int, cards []*Card, isSeq bool, spadeThree
 			d.checkPassClear()
 		}
 	}
+	d.recordFieldClearedLeader()
 }
 
 // CpuPlay 現在の手番がCPUの場合に1ターン実行
@@ -351,6 +354,7 @@ func (d *Daifugo) CpuPlay() {
 		d.appendLog(playerIdx, "pass", "daifugo.log.pass", nil, nil)
 		d.advanceTurn()
 		d.checkPassClear()
+		d.recordFieldClearedLeader()
 	} else {
 		// 出すカードを取得 (スート縛り更新用)
 		selectedCards := make([]*Card, len(playIndices))
@@ -399,7 +403,7 @@ func (d *Daifugo) checkPassClear() {
 
 // clearTableState 場の状態をクリア (8切り、上がり時等に使用)
 func (d *Daifugo) clearTableState() {
-	d.round.fieldClearedLeader = d.round.currentTurn
+	d.round.fieldJustCleared = true
 	d.round.tableCards = nil
 	d.round.lastPlayPlayerIdx = -1
 	d.round.passCount = 0
@@ -408,6 +412,14 @@ func (d *Daifugo) clearTableState() {
 	d.round.elevenBackActive = false
 	d.round.tableIsSequence = false
 	d.round.numberLocked = false
+}
+
+// recordFieldClearedLeader records the lead after turn processing has settled.
+func (d *Daifugo) recordFieldClearedLeader() {
+	if d.round.fieldJustCleared {
+		d.round.fieldClearedLeader = d.round.currentTurn
+		d.round.fieldJustCleared = false
+	}
 }
 
 // IsHumanTurn 現在の手番が人間かどうか
