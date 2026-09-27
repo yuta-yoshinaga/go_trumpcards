@@ -28,7 +28,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { TwentyNineResponse } from '../types/card';
 import { TwentyNinePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { suitSymbolAt } from '../utils/cardAlt';
+import { suitSymbol, suitSymbolAt } from '../utils/cardAlt';
 import { parseTwentyNineCommand, TWENTY_NINE_HELP } from '../utils/cli/commands/twentyNineCommands';
 import { formatTwentyNineState } from '../utils/cli/formatters/twentyNineFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -174,7 +174,6 @@ function TwentyNinePageContent() {
   const trumpDisplay =
     !state.trumpRevealed && isHumanDeclarer ? t('trumpVisibleToYou', { suit: trumpSymbol }) : trumpSymbol;
   const leadCard = state.currentTrick[0]?.card;
-  const leadSuitNumber: Record<string, number> = { SPADE: 1, CLOVER: 2, HEART: 3, DIAMOND: 4 };
 
   // The current highest (non-pass) bid; a new non-pass bid must beat it.
   const highestBid = Math.max(0, ...state.bids);
@@ -273,7 +272,7 @@ function TwentyNinePageContent() {
                   {isPlayPhase && leadCard && (
                     <span className="inline-flex items-center gap-2 rounded-lg bg-ds-surface px-3 py-1.5">
                       {t('leadSuit', {
-                        symbol: suitSymbolAt(leadSuitNumber[leadCard.design] ?? 0, ''),
+                        symbol: suitSymbol(leadCard.design),
                         suit: t(`suits.${leadCard.design.toLowerCase()}`),
                       })}
                     </span>
