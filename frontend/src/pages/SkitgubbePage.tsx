@@ -118,7 +118,9 @@ function SkitgubbePageContent() {
             {/* Permanent, not tutorial-only: the two phases are different
                 games, and which one is running decides what a click means. */}
             <div className="text-center text-xs text-ds-warning mb-3 font-medium" data-tutorial="sg-rule">
-              {collecting ? t('phaseCollect') : t('phaseShed')} — {t('ruleLine')}
+              {collecting ? t('phaseCollect') : t('phaseShed')} —{' '}
+              {collecting ? t('phaseCollectGuide') : t('phaseShedGuide')} /{' '}
+              {collecting ? t('ruleCollect') : t('ruleShed')}
             </div>
 
             {/* Opponent hands: backs only. The server withholds the cards. */}

@@ -72,13 +72,27 @@ describe('SkitgubbePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
-  it('names the running phase and shows both phases rules permanently', async () => {
+  it('shows the collecting objective and rule without the shedding rule', async () => {
     // The two phases are different games, and which one is running decides
     // what clicking a card means.
     renderWithProviders(<SkitgubbePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
-    expect(screen.getByText(/第1フェーズ（集める）/)).toBeInTheDocument();
-    expect(screen.getByText(/2人の一騎打ち/)).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /第1フェーズ（集める）.*手札を使って札を集めます.*2人の一騎打ち（スート無関係・強い方が両方取る）/,
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/直前の札を上回る（同スートの上位か切札）/)).not.toBeInTheDocument();
+  });
+
+  it('shows the shedding objective and rule without the collecting rule', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 1, pile: [card('SPADE', 10)], validIndices: [2] }));
+    renderWithProviders(<SkitgubbePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(
+      screen.getByText(/第2フェーズ（出し切る）.*手札を出し切ります.*直前の札を上回る（同スートの上位か切札）/),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/2人の一騎打ち（スート無関係・強い方が両方取る）/)).not.toBeInTheDocument();
   });
 
   it('shows the trump as undecided until the stock fixes it', async () => {
