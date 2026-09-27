@@ -95,6 +95,22 @@ describe('BakersDozenPage', () => {
     vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
   });
 
+  it('explains and ignores a target click before a source is selected', async () => {
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BakersDozenPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    const target = screen.getByRole('button', { name: '空の組札 (♠)' });
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const hintId = target.getAttribute('aria-describedby');
+    expect(hintId).toBeTruthy();
+    expect(document.getElementById(hintId!)).toHaveTextContent('先に移動する札を選んでください');
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('calls reset on initial render', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BakersDozenPage />);
