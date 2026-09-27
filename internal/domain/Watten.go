@@ -102,6 +102,8 @@ type Watten struct {
 	trickNumber      int
 	currentPlayerIdx int
 	currentTrick     []*TrickCard
+	lastTrick        []*TrickCard
+	lastTrickWinner  int
 	dealerIdx        int
 	leadPlayerIdx    int
 	schlagRank       int // 宣言された Schlag ランク (0 = 未宣言)
@@ -124,15 +126,16 @@ type Watten struct {
 // NewWatten コンストラクタ
 func NewWatten(trumpCards *TrumpCards, players []*WattenPlayer, config WattenConfig) *Watten {
 	return &Watten{
-		trumpCards:     trumpCards,
-		players:        players,
-		config:         config,
-		winnerTeam:     -1,
-		dealWinnerTeam: -1,
-		raiserTeam:     -1,
-		responderIdx:   -1,
-		roundNumber:    0,
-		dealerIdx:      0,
+		trumpCards:      trumpCards,
+		players:         players,
+		config:          config,
+		winnerTeam:      -1,
+		lastTrickWinner: -1,
+		dealWinnerTeam:  -1,
+		raiserTeam:      -1,
+		responderIdx:    -1,
+		roundNumber:     0,
+		dealerIdx:       0,
 	}
 }
 
@@ -200,6 +203,8 @@ func (g *Watten) NextRound() {
 func (g *Watten) beginRound() {
 	g.trickNumber = 0
 	g.currentTrick = nil
+	g.lastTrick = nil
+	g.lastTrickWinner = -1
 	g.leadPlayerIdx = -1
 	g.schlagRank = 0
 	g.criticalSuit = 0
@@ -339,6 +344,8 @@ func (g *Watten) ResolveTrick() {
 		return
 	}
 	winnerIdx := g.trickWinner()
+	g.lastTrick = append([]*TrickCard(nil), g.currentTrick...)
+	g.lastTrickWinner = winnerIdx
 	trickCards := make([]*Card, len(g.currentTrick))
 	for i, tc := range g.currentTrick {
 		trickCards[i] = tc.Card
@@ -1057,6 +1064,12 @@ func (g *Watten) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 // GetCurrentTrick 現在のトリック取得
 func (g *Watten) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
+// GetLastTrick returns the most recently completed trick in the current deal.
+func (g *Watten) GetLastTrick() []*TrickCard { return g.lastTrick }
+
+// GetLastTrickWinner returns the winning seat of the most recently completed trick, or -1.
+func (g *Watten) GetLastTrickWinner() int { return g.lastTrickWinner }
+
 // SetCurrentTrick トリック設定 (テスト用)
 func (g *Watten) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
 
@@ -1192,6 +1205,8 @@ type wattenJSON struct {
 	TrickNumber      int                `json:"tn"`
 	CurrentPlayerIdx int                `json:"cp"`
 	CurrentTrick     []*TrickCard       `json:"ct"`
+	LastTrick        []*TrickCard       `json:"lt"`
+	LastTrickWinner  int                `json:"lw"`
 	DealerIdx        int                `json:"di"`
 	LeadPlayerIdx    int                `json:"li"`
 	SchlagRank       int                `json:"sr"`
@@ -1222,6 +1237,8 @@ func (g *Watten) MarshalJSON() ([]byte, error) {
 		TrickNumber:      g.trickNumber,
 		CurrentPlayerIdx: g.currentPlayerIdx,
 		CurrentTrick:     g.currentTrick,
+		LastTrick:        g.lastTrick,
+		LastTrickWinner:  g.lastTrickWinner,
 		DealerIdx:        g.dealerIdx,
 		LeadPlayerIdx:    g.leadPlayerIdx,
 		SchlagRank:       g.schlagRank,
@@ -1277,6 +1294,23 @@ func (g *Watten) UnmarshalJSON(data []byte) error {
 			return NewDomainErrorCode(ErrInvalidPlay, "watten.errTrickPlayerIndexOutOfRange", nil)
 		}
 	}
+	if len(j.LastTrick) > WattenPlayerCnt {
+		return NewDomainErrorCode(ErrInvalidPlay, "watten.errTooManyTrickCards", nil)
+	}
+	for i, tc := range j.LastTrick {
+		if tc == nil || tc.Card == nil {
+			return NewDomainErrorCode(ErrInvalidPlay, "watten.errTrickCardNil", map[string]string{"idx": fmt.Sprintf("%d", i)})
+		}
+		if tc.PlayerIdx < 0 || tc.PlayerIdx >= WattenPlayerCnt {
+			return NewDomainErrorCode(ErrInvalidPlay, "watten.errTrickPlayerIndexOutOfRange", nil)
+		}
+	}
+	if j.LastTrickWinner < -1 || j.LastTrickWinner >= WattenPlayerCnt {
+		return NewDomainErrorCode(ErrInvalidPlay, "watten.errPlayerIndexOutOfRange", nil)
+	}
+	if len(j.LastTrick) == 0 {
+		j.LastTrickWinner = -1
+	}
 	if len(j.ActionLog) > wattenMaxSliceLen {
 		return NewDomainErrorCode(ErrInvalidPlay, "watten.errActionLogTooLarge", nil)
 	}
@@ -1323,6 +1357,8 @@ func (g *Watten) UnmarshalJSON(data []byte) error {
 	g.trickNumber = j.TrickNumber
 	g.currentPlayerIdx = j.CurrentPlayerIdx
 	g.currentTrick = j.CurrentTrick
+	g.lastTrick = j.LastTrick
+	g.lastTrickWinner = j.LastTrickWinner
 	g.dealerIdx = j.DealerIdx
 	g.leadPlayerIdx = j.LeadPlayerIdx
 	g.schlagRank = j.SchlagRank

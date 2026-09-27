@@ -81378,6 +81378,13 @@ components:
           type: array
           items:
             type: object
+        lastTrick:
+          type: array
+          items:
+            type: object
+        lastTrickWinner:
+          type: integer
+          description: Seat that took lastTrick, or -1 before the first trick.
         teamScores:
           type: array
           items:

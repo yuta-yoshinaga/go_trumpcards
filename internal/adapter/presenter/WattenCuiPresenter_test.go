@@ -16,6 +16,8 @@ func setupWattenCuiMock() *interfaces.MockWattenGame {
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
 	m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
+	m.On("GetLastTrick").Return([]*domain.TrickCard(nil))
+	m.On("GetLastTrickWinner").Return(-1)
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.WattenPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -60,6 +62,22 @@ func TestWattenCuiPresenter_Output(t *testing.T) {
 	color.SetNoColor(true)
 	defer color.SetNoColor(origNoColor)
 	p := new(presenter.WattenCuiPresenter)
+	t.Run("shows previous trick cards and winner", func(t *testing.T) {
+		m, _ := setupWattenCuiMockWithPlayers()
+		trick := []*domain.TrickCard{
+			{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignSpade, 1, false)},
+			{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 13, false)},
+		}
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLastTrick")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLastTrickWinner")
+		m.On("GetLastTrick").Return(trick)
+		m.On("GetLastTrickWinner").Return(1)
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "直前のトリック")
+		assert.Contains(t, result, "勝者: CPU 1")
+		assert.Contains(t, result, "♠1")
+		assert.Contains(t, result, "♥13")
+	})
 
 	t.Run("initial state", func(t *testing.T) {
 		m, players := setupWattenCuiMockWithPlayers()

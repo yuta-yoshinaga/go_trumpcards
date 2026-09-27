@@ -226,6 +226,8 @@ func TestWatten_TrickWinner_Trump(t *testing.T) {
 	g.ResolveTrick()
 	assert.Equal(t, 2, g.GetLeadPlayerIdx())
 	assert.Equal(t, 1, g.GetTeamTricks(0)) // P2 is team 0
+	assert.Equal(t, g.GetCurrentTrick(), g.GetLastTrick())
+	assert.Equal(t, 2, g.GetLastTrickWinner())
 }
 
 // --- Trick winner: Max beats all ---
@@ -495,6 +497,8 @@ func TestWatten_NextRound(t *testing.T) {
 	before := g.GetRoundNumber()
 	g.ScoreRound() // idempotent
 	g.NextRound()
+	assert.Empty(t, g.GetLastTrick())
+	assert.Equal(t, -1, g.GetLastTrickWinner())
 	assert.Equal(t, before+1, g.GetRoundNumber())
 	assert.Equal(t, domain.WattenPhaseDeclare, g.GetPhase())
 	assert.Equal(t, 1, g.GetDealerIdx())

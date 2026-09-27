@@ -70,6 +70,10 @@ export interface WattenResponse extends BaseGameResponse {
   /** Whether the human (as lead) may raise the stake right now. */
   canRaise: boolean;
   currentTrick: WattenTrickCard[];
+  /** Cards from the most recently completed trick in this deal. */
+  lastTrick: WattenTrickCard[];
+  /** Seat that won the most recently completed trick, or -1 when none. */
+  lastTrickWinner: number;
   teamScores: number[];
   teamTricks: number[];
   /** The team that won the most recent completed deal, or -1 until decided. */
