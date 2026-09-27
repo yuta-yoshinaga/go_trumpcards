@@ -19,6 +19,7 @@
     "takeCandidate": "capture candidate",
     "takeCandidateAnnounce": "{{count}} capture candidate(s) available",
     "noTakeCandidate": "No capture candidates",
+    "captureInstructions": "Select the capture candidate(s), then press Take to confirm",
     "yourCaptures": "Captures",
     "cpuStats": "{{cards}} cards / {{score}} pt",
     "humanStats": "Hand {{cards}} / Captured {{captured}} / Scopa {{scopa}} / Total {{score}} pt",
