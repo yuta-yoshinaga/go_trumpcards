@@ -415,8 +415,24 @@ describe('FortyThievesPage', () => {
     // Empty foundation buttons should be disabled when no source selected
     const aButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === 'A');
     for (const btn of aButtons) {
-      expect(btn).toBeDisabled();
+      expect(btn).not.toBeDisabled();
+      expect(btn).toHaveAttribute('aria-disabled', 'true');
     }
+  });
+
+  it('keeps an empty foundation target focusable and explains that a source must be selected', async () => {
+    renderWithProviders(<FortyThievesPage />);
+    const btn = await screen.findByRole('button', { name: /空の組札 1/ });
+    expect(btn).not.toBeDisabled();
+    expect(btn).toHaveAttribute('aria-disabled', 'true');
+    const describedBy = btn.getAttribute('aria-describedby');
+    expect(describedBy).toBeTruthy();
+    expect(document.getElementById(describedBy ?? '')).toHaveTextContent('先に移動する札を選んでください');
+
+    mockExec.mockClear();
+    fireEvent.click(btn);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
   });
 
   it('double-clicking a foundation-playable tableau top card sends it to a foundation', async () => {
