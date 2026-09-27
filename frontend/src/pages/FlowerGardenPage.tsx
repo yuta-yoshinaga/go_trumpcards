@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useId, useMemo } from 'react';
 import type { FlowerGardenMoveZone, flowerGardenApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -82,6 +82,7 @@ function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => stri
 }
 
 function FlowerGardenPageContent() {
+  const selectSourceHintId = useId();
   const {
     t,
     tc,
@@ -226,7 +227,9 @@ function FlowerGardenPageContent() {
               <button
                 type="button"
                 onClick={() => game.handleSelectTarget(tableauColZone)}
-                disabled={!isPlaying || loading || !selectedSource}
+                disabled={!isPlaying || loading}
+                aria-disabled={!selectedSource || undefined}
+                aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                 style={{ height: dims.ch }}
                 data-target-candidate={legalTargets.tableau.has(colIdx) || undefined}
                 className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center bg-transparent ${focusRingWhite} ${
@@ -350,6 +353,9 @@ function FlowerGardenPageContent() {
         </>
       }
     >
+      <span id={selectSourceHintId} className="sr-only">
+        {tc('label.selectSourceFirst')}
+      </span>
       <LandscapeBanner message={t('landscapeBanner')} />
 
       {cliEnabled ? (
@@ -384,7 +390,9 @@ function FlowerGardenPageContent() {
                           <button
                             type="button"
                             onClick={() => game.handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
+                            disabled={!isPlaying || loading || isAutoCompleting}
+                            aria-disabled={!selectedSource || undefined}
+                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t('foundationAriaLabel', {
                               suit: FOUNDATION_SUITS[idx],
                               count: pile.length,
@@ -405,7 +413,9 @@ function FlowerGardenPageContent() {
                           <button
                             type="button"
                             onClick={() => game.handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading || !selectedSource}
+                            disabled={!isPlaying || loading}
+                            aria-disabled={!selectedSource || undefined}
+                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
                             style={{ width: dims.cw, height: dims.ch }}
                             data-target-candidate={legalTargets.foundation.has(idx) || undefined}

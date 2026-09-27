@@ -121,6 +121,21 @@ describe('FortyAndEightPage', () => {
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
   });
 
+  it('keeps move targets focusable and explains that a source must be selected first', async () => {
+    renderWithProviders(<FortyAndEightPage />);
+    const target = await screen.findByRole('button', { name: '空の組札 ♠ 1' });
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const hintId = target.getAttribute('aria-describedby');
+    expect(hintId).toBeTruthy();
+    expect(document.getElementById(hintId ?? '')).toHaveTextContent('先に移動する札を選んでください');
+
+    mockExec.mockClear();
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('shows a clear summary with completed foundations, foundation cards, and remaining cards', async () => {
     mockExec.mockResolvedValue({
       ...gameClearState,
@@ -592,13 +607,14 @@ describe('FortyAndEightPage', () => {
     }
   });
 
-  it('foundation disabled when no source selected', async () => {
+  it('foundation targets are aria-disabled when no source is selected', async () => {
     renderWithProviders(<FortyAndEightPage />);
     await waitFor(() => expect(screen.getAllByText('♠').length).toBeGreaterThanOrEqual(1));
 
     const aButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === 'A');
     for (const btn of aButtons) {
-      expect(btn).toBeDisabled();
+      expect(btn).not.toBeDisabled();
+      expect(btn).toHaveAttribute('aria-disabled', 'true');
     }
   });
 
