@@ -60,7 +60,7 @@ export interface UltiResponse extends BaseGameResponse {
   dealerIdx: number;
   /** Seat index of the declarer (always the human, seat 0). */
   declarerIdx: number;
-  /** The declared contract (0=None, 1=Party, 2=Betli, 3=Durchmarsch). */
+  /** The declared contract (0=None, 1=Party, 2=Betli, 3=Durchmarsch, 4=Ulti). */
   contract: number;
   /** Points or tricks needed to fulfill the active contract, or 0 when not applicable. */
   contractRequirement: number;

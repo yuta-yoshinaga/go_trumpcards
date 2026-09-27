@@ -185,18 +185,22 @@ function UltiPageContent() {
   const contractLabel = t(CONTRACT_KEYS[state.contract] ?? 'contractNone');
   const trumpLabel = state.trumpSuit >= 1 ? t(SUIT_KEYS[state.trumpSuit] ?? 'suitNone') : t('suitNone');
   const declarer = state.players[state.declarerIdx];
-  const contractProgress =
-    (isPlayPhase || isTrickEnd) && declarer
-      ? state.contract === 1
-        ? t('contractProgress.party', { current: declarer.cardPoints, required: state.contractRequirement })
-        : state.contract === 2
-          ? t('contractProgress.betli')
-          : state.contract === 3
-            ? t('contractProgress.durchmarsch', { current: declarer.trickCount, required: state.contractRequirement })
-            : state.contract === 4
-              ? t('contractProgress.ulti', { suit: trumpLabel })
-              : null
-      : null;
+  const contractProgress = (() => {
+    if (!(isPlayPhase || isTrickEnd) || !declarer) return null;
+
+    switch (state.contract) {
+      case 1:
+        return t('contractProgress.party', { current: declarer.cardPoints, required: state.contractRequirement });
+      case 2:
+        return t('contractProgress.betli');
+      case 3:
+        return t('contractProgress.durchmarsch', { current: declarer.trickCount, required: state.contractRequirement });
+      case 4:
+        return t('contractProgress.ulti', { suit: trumpLabel });
+      default:
+        return null;
+    }
+  })();
 
   const handleManualReset = () => {
     hideActionLog();
