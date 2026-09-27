@@ -38,11 +38,9 @@ func tarabishBidSuitCounts(player *domain.TarabishPlayer) string {
 		card := player.GetCard(i)
 		counts[card.GetDesign()]++
 	}
-	parts := []string{
-		i18n.Tf("tarabish.bidSuitCount", "suit", i18n.T("tarabish.suitSpade"), "count", strconv.Itoa(counts[domain.CardDesignSpade])),
-		i18n.Tf("tarabish.bidSuitCount", "suit", i18n.T("tarabish.suitClover"), "count", strconv.Itoa(counts[domain.CardDesignClover])),
-		i18n.Tf("tarabish.bidSuitCount", "suit", i18n.T("tarabish.suitHeart"), "count", strconv.Itoa(counts[domain.CardDesignHeart])),
-		i18n.Tf("tarabish.bidSuitCount", "suit", i18n.T("tarabish.suitDiamond"), "count", strconv.Itoa(counts[domain.CardDesignDiamond])),
+	parts := make([]string, 0, 4)
+	for _, suit := range []int{domain.CardDesignSpade, domain.CardDesignClover, domain.CardDesignHeart, domain.CardDesignDiamond} {
+		parts = append(parts, i18n.Tf("tarabish.bidSuitCount", "suit", tarabishSuitName(suit), "count", strconv.Itoa(counts[suit])))
 	}
 	return i18n.Tf("tarabish.bidSuitCounts", "counts", strings.Join(parts, i18n.T("tarabish.listSeparator")))
 }
