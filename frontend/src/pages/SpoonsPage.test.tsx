@@ -87,6 +87,24 @@ beforeEach(() => {
 });
 
 describe('SpoonsPage', () => {
+  it('announces grab window transitions once and matches whether grabbing is available', async () => {
+    mockExec.mockResolvedValueOnce(passState).mockResolvedValueOnce(grabState).mockResolvedValueOnce(passState);
+    renderWithProviders(<SpoonsPage />);
+
+    const live = await screen.findByTestId('spoons-grab-window-live');
+    expect(live).toBeEmptyDOMElement();
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+
+    fireEvent.click(await screen.findByRole('button', { name: '♠ A を渡す' }));
+    await waitFor(() => expect(live).toHaveTextContent('スプーンを取れます。'));
+    expect(screen.getByTestId('spoons-grab-button')).toBeEnabled();
+    // A rerender with the same open state does not repeat or clear the announcement.
+    fireEvent.click(screen.getByTestId('spoons-grab-button'));
+    await waitFor(() => expect(live).toHaveTextContent('スプーンを取れません。'));
+    expect(screen.queryByTestId('spoons-grab-button')).not.toBeInTheDocument();
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<SpoonsPage />);

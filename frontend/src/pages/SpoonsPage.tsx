@@ -158,13 +158,18 @@ function SpoonsPageContent() {
   // Chime the instant the grab window opens (false→true) — a static "grab now!"
   // text alone was easy to miss in this reflex game.
   const prevGrabOpenRef = useRef(false);
+  const [grabWindowAnnouncement, setGrabWindowAnnouncement] = useState('');
   useEffect(() => {
-    const open = state?.grabWindowOpen ?? false;
+    const gameOver = state?.phase === SpoonsPhase.GAME_END || !!state?.gameEndFlag;
+    const open = !!state?.grabWindowOpen && !gameOver;
     if (open && !prevGrabOpenRef.current) {
       playSound('turnTick', { pitchVariation: 0.1 });
     }
+    if (open !== prevGrabOpenRef.current) {
+      setGrabWindowAnnouncement(t(open ? 'grabWindowOpened' : 'grabWindowClosed'));
+    }
     prevGrabOpenRef.current = open;
-  }, [state?.grabWindowOpen, playSound]);
+  }, [state?.grabWindowOpen, state?.phase, state?.gameEndFlag, playSound, t]);
 
   // **速さが勝敗を決めるのに、取るにはマウスが要った。**このページには
   // `useActionKeyboardNav` も `aria-keyshortcuts` も無く、grabWindow の一瞬で
@@ -353,6 +358,10 @@ function SpoonsPageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
+
+            <div className="sr-only" data-testid="spoons-grab-window-live" role="status" aria-live="polite">
+              {grabWindowAnnouncement}
+            </div>
 
             {/* Keep this live region mounted so the grabber is announced when the
                 time-limited grab window opens, and remains available in results. */}
