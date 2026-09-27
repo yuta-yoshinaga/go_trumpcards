@@ -458,10 +458,18 @@ function PenguinPageContent() {
                 {state.tableau.map((col: (Card | null)[], colIdx: number) => {
                   const tableauColZone: PenguinMoveZone = { zone: 'tableau', col: colIdx };
                   return (
-                    <div
+                    <fieldset
                       key={`col-${colIdx.toString()}`}
+                      aria-label={
+                        col.length === 0
+                          ? t('tableauColumnEmptyAriaLabel', { col: String(colIdx) })
+                          : t('tableauColumnAriaLabel', {
+                              col: String(colIdx),
+                              count: t('tableauCardCount', { count: col.length }),
+                            })
+                      }
                       data-testid={`pg-col-${colIdx.toString()}`}
-                      className={`flex-1 min-w-0${isHintTarget('tableau', colIdx) ? ' rounded ring-2 ring-ds-success animate-pulse' : ''}`}
+                      className={`m-0 min-w-0 flex-1 border-0 p-0${isHintTarget('tableau', colIdx) ? ' rounded ring-2 ring-ds-success animate-pulse' : ''}`}
                     >
                       <DropZone
                         isDropTarget={dnd.isDropTarget(tableauColZone)}
@@ -593,7 +601,7 @@ function PenguinPageContent() {
                           {col.length > 0 && <div style={{ height: (col.length - 1) * cardOverlap + cardHeight }} />}
                         </div>
                       </DropZone>
-                    </div>
+                    </fieldset>
                   );
                 })}
               </div>
