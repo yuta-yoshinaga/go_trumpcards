@@ -24,8 +24,12 @@
     "target": "Ends at",
     "reset": "Reset",
     "giveUp": "Give up",
-    "playAria": "Play {{card}}"
+    "playAria": "Play {{card}}",
+    "position": "position {{position}} of {{total}}",
+    "playable": "Playable",
+    "notPlayable": "Not playable"
   },
+  "listSeparator": ", ",
   "status": {
     "lead": "You lead. Any card is legal.",
     "beat": "Play a card higher than {{n}}.",

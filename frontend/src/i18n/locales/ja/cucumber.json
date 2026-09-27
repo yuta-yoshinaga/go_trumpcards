@@ -24,8 +24,12 @@
     "target": "終了失点",
     "reset": "リセット",
     "giveUp": "投了",
-    "playAria": "{{card}} を出す"
+    "playAria": "{{card}} を出す",
+    "position": "{{total}}枚中{{position}}枚目",
+    "playable": "出せます",
+    "notPlayable": "出せません"
   },
+  "listSeparator": "、",
   "status": {
     "lead": "リードです。どの札でも出せます。",
     "beat": "{{n}} より高い札を出してください。",
