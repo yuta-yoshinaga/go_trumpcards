@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useId, useMemo, useState } from 'react';
 import { type ScorpionMoveZone, scorpionApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -154,6 +154,7 @@ function formatScorpionState(state: ScorpionResponse): string {
 export const ScorpionPage = withTutorial(ScorpionPageContent, 'scorpion', SC_TUTORIAL_STEPS);
 /** Inner content of the Scorpion page. */
 function ScorpionPageContent() {
+  const selectSourceHintId = useId();
   const {
     t,
     tc,
@@ -386,6 +387,9 @@ function ScorpionPageContent() {
           />
           <LandscapeBanner message={t('landscapeBanner')} />
 
+          <span id={selectSourceHintId} className="sr-only">
+            {tc('label.selectSourceFirst')}
+          </span>
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
             <div className="flex gap-1 sm:gap-2 justify-center" data-tutorial="sc-tableau">
               {state.tableau.map((col, colIdx) => (
@@ -406,7 +410,9 @@ function ScorpionPageContent() {
                         }${emptyDealAttemptKey > 0 ? ' animate-shake border-ds-warning text-ds-warning' : ''}`}
                         style={{ width: sc.cw, height: sc.ch }}
                         onClick={() => selectedSource && handleSelectTarget('tableau', colIdx)}
-                        disabled={!isPlaying || !selectedSource}
+                        disabled={!isPlaying}
+                        aria-disabled={!selectedSource || undefined}
+                        aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                         aria-label={`${t('empty')} ${t('tableau')} ${colIdx}`}
                         data-testid={`sc-empty-col-${colIdx.toString()}`}
                       >
