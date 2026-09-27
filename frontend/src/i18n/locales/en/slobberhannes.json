@@ -25,6 +25,8 @@
     "clean": "clean (+{{bonus}})"
   },
   "currentTrick": "Current trick",
+  "roundTricks_one": "{{count}} trick",
+  "roundTricks_other": "{{count}} tricks",
   "dealerBadge": "Dealer",
   "actions": {
     "reset": "Reset",
