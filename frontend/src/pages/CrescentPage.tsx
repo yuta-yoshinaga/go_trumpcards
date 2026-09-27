@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useId, useMemo } from 'react';
 import type { CrescentMoveZone, crescentApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -85,6 +85,7 @@ function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => stri
 const CRESCENT_TOTAL_CARDS = 104;
 
 function CrescentPageContent() {
+  const selectSourceHintId = useId();
   const {
     t,
     tc,
@@ -271,6 +272,9 @@ function CrescentPageContent() {
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
+          <span id={selectSourceHintId} className="sr-only">
+            {tc('label.selectSourceFirst')}
+          </span>
           <LandscapeBanner message={t('landscapeBanner')} />
 
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
@@ -309,7 +313,9 @@ function CrescentPageContent() {
                               <button
                                 type="button"
                                 onClick={() => handleSelectTarget(foundationZone)}
-                                disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
+                                disabled={!isPlaying || loading || isAutoCompleting}
+                                aria-disabled={!selectedSource || undefined}
+                                aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                                 aria-label={t('foundationAriaLabel', {
                                   suit,
                                   direction: t(`direction.${directionKey}`),
@@ -324,7 +330,9 @@ function CrescentPageContent() {
                               <button
                                 type="button"
                                 onClick={() => handleSelectTarget(foundationZone)}
-                                disabled={!isPlaying || loading || !selectedSource}
+                                disabled={!isPlaying || loading}
+                                aria-disabled={!selectedSource || undefined}
+                                aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                                 aria-label={t('emptyFoundationAriaLabel', { suit, direction: directionKey })}
                                 style={{ width: tableauDim.cw, height: tableauDim.ch }}
                                 className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
