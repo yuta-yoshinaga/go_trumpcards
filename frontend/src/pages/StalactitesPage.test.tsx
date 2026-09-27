@@ -79,6 +79,15 @@ beforeEach(() => {
 });
 
 describe('StalactitesPage', () => {
+  it('explains both bulk-move limits using the current empty cells and columns', async () => {
+    renderWithProviders(<StalactitesPage />);
+    const limit = await screen.findByTestId('fc-supermove-limit');
+    expect(limit).toHaveTextContent('一括移動上限: 320枚');
+    expect(limit).toHaveTextContent('空きセル4・空き列6');
+    expect(limit).toHaveTextContent('空き列へは160枚');
+    expect(limit).toHaveTextContent('空きセル4・経由できる空き列5');
+  });
+
   it('shows the persistent double-click foundation hint', async () => {
     renderWithProviders(<StalactitesPage />);
     expect(await screen.findByTestId('st-doubleclick-hint')).toHaveTextContent('ダブルクリック');

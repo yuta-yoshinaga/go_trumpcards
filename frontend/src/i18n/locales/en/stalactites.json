@@ -21,7 +21,9 @@
   "emptyCellAriaLabel": "Free Cell {{idx}} (empty)",
   "supermoveLimitTooltip": "Only {{limit}} card(s) can be moved at once",
   "supermoveLimitLabel": "Max bulk move: {{limit}} cards",
+  "supermoveLimitConditions": "(with {{cells}} empty free cells and {{cols}} empty columns)",
   "supermoveToEmpty": "(to an empty column: {{limit}})",
+  "supermoveToEmptyConditions": "(with {{cells}} empty free cells and {{cols}} other empty columns available for transfer)",
   "emptyColumnAriaLabel": "Empty column {{idx}} (only K may be placed)",
   "emptyColLimitTooltip": "Only {{limit}} card(s) can move into an empty column (selected: {{size}})",
   "tutorial": {
