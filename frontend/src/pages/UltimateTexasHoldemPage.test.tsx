@@ -151,46 +151,47 @@ describe('UltimateTexasHoldemPage', () => {
     await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
 
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
-    await waitFor(() => expect(screen.getByRole('button', { name: 'プレイ 4×' })).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: 'プレイ 3×' })).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole('button', { name: /プレイ 4×/ })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: /プレイ 4×.*プレイベット: 400/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /プレイ 3×/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'チェック' })).toBeInTheDocument();
   });
 
   it('shows flop with play 2x / check buttons after preflop check', async () => {
     mockApi.mockResolvedValueOnce(preFlopState).mockResolvedValueOnce(flopState);
     renderWithProviders(<UltimateTexasHoldemPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'プレイ 4×' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /プレイ 4×/ })).toBeInTheDocument());
 
     fireEvent.click(screen.getByRole('button', { name: 'チェック' }));
-    await waitFor(() => expect(screen.getByRole('button', { name: 'プレイ 2×' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /プレイ 2×/ })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'チェック' })).toBeInTheDocument();
   });
 
   it('shows river with play 1x / fold buttons after flop check', async () => {
     mockApi.mockResolvedValueOnce(flopState).mockResolvedValueOnce(riverState);
     renderWithProviders(<UltimateTexasHoldemPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'プレイ 2×' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /プレイ 2×/ })).toBeInTheDocument());
 
     fireEvent.click(screen.getByRole('button', { name: 'チェック' }));
-    await waitFor(() => expect(screen.getByRole('button', { name: 'プレイ 1×' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /プレイ 1×/ })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
   });
 
   it('sends multiplier 4 when Play 4x is pressed', async () => {
     mockApi.mockResolvedValue(preFlopState);
     renderWithProviders(<UltimateTexasHoldemPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'プレイ 4×' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /プレイ 4×/ })).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole('button', { name: 'プレイ 4×' }));
+    fireEvent.click(screen.getByRole('button', { name: /プレイ 4×/ }));
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('play', undefined, undefined, 4));
   });
 
   it('sends multiplier 3 when Play 3x is pressed', async () => {
     mockApi.mockResolvedValue(preFlopState);
     renderWithProviders(<UltimateTexasHoldemPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'プレイ 3×' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /プレイ 3×/ })).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole('button', { name: 'プレイ 3×' }));
+    fireEvent.click(screen.getByRole('button', { name: /プレイ 3×/ }));
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('play', undefined, undefined, 3));
   });
 
@@ -246,6 +247,21 @@ describe('UltimateTexasHoldemPage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 200, 20));
   });
 
+  it('updates the displayed play amount when ante changes and keeps check/fold amount-free', async () => {
+    mockApi.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce(preFlopState);
+    renderWithProviders(<UltimateTexasHoldemPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+    fireEvent.change(screen.getByLabelText('アンテ'), { target: { value: '200' } });
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /プレイ 4×.*プレイベット: 800/ })).toBeInTheDocument(),
+    );
+    expect(screen.getByRole('button', { name: /プレイ 3×.*プレイベット: 600/ })).toBeInTheDocument();
+    // Check has no amount annotation in the pre-flop decision phase.
+    expect(screen.queryByRole('button', { name: /チェック.*プレイ:/ })).not.toBeInTheDocument();
+  });
+
   it('shows network error', async () => {
     mockApi.mockResolvedValueOnce(betPhaseState).mockRejectedValueOnce(new Error('Network'));
     renderWithProviders(<UltimateTexasHoldemPage />);
@@ -268,14 +284,14 @@ describe('UltimateTexasHoldemPage', () => {
   it('renders hint toggle checkbox', async () => {
     mockApi.mockResolvedValue(preFlopState);
     renderWithProviders(<UltimateTexasHoldemPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'プレイ 4×' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /プレイ 4×/ })).toBeInTheDocument());
     expect(screen.getByRole('checkbox')).toBeInTheDocument();
   });
 
   it('renders hint tooltip when the checkbox is enabled', async () => {
     mockApi.mockResolvedValue(preFlopState);
     renderWithProviders(<UltimateTexasHoldemPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'プレイ 4×' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /プレイ 4×/ })).toBeInTheDocument());
 
     const checkbox = screen.getByRole('checkbox') as HTMLInputElement;
     fireEvent.click(checkbox);
@@ -287,18 +303,18 @@ describe('UltimateTexasHoldemPage', () => {
   it('sends multiplier 2 when Play 2× is pressed on the flop', async () => {
     mockApi.mockResolvedValue(flopState);
     renderWithProviders(<UltimateTexasHoldemPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'プレイ 2×' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /プレイ 2×/ })).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole('button', { name: 'プレイ 2×' }));
+    fireEvent.click(screen.getByRole('button', { name: /プレイ 2×/ }));
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('play', undefined, undefined, 2));
   });
 
   it('sends multiplier 1 when Play 1× is pressed on the river', async () => {
     mockApi.mockResolvedValue(riverState);
     renderWithProviders(<UltimateTexasHoldemPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'プレイ 1×' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: /プレイ 1×/ })).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole('button', { name: 'プレイ 1×' }));
+    fireEvent.click(screen.getByRole('button', { name: /プレイ 1×/ }));
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('play', undefined, undefined, 1));
   });
 
