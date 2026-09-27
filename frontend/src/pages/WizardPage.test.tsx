@@ -495,6 +495,31 @@ describe('WizardPage', () => {
     });
   });
 
+  it('shows every player bid against confirmed tricks and reachability', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      currentTrick: [{ playerIdx: 1, card: { design: 'HEART', value: 5 } }],
+      players: [
+        { ...playPhaseState.players[0], cardCount: 4, bid: 2, trickCount: 0 },
+        { ...playPhaseState.players[1], cardCount: 4, bid: 1, trickCount: 1 },
+        { ...playPhaseState.players[2], cardCount: 5, bid: 2, trickCount: 2 },
+        { ...playPhaseState.players[3], cardCount: 5, bid: 0, trickCount: 1 },
+      ],
+    });
+    renderWithProviders(<WizardPage />);
+    const rows = await screen.findAllByTestId('bid-achievement-row');
+    expect(rows).toHaveLength(4);
+    expect(rows[0]).toHaveTextContent('あなた');
+    expect(rows[0]).toHaveTextContent('ビッド 2 / 確定獲得 0');
+    expect(rows[0]).toHaveTextContent('達成可能');
+    expect(rows[1]).toHaveTextContent('ビッド 1 / 確定獲得 1');
+    expect(rows[1]).toHaveTextContent('達成可能');
+    expect(rows[2]).toHaveTextContent('ビッド 2 / 確定獲得 2');
+    expect(rows[2]).toHaveTextContent('達成可能');
+    expect(rows[3]).toHaveTextContent('ビッド 0 / 確定獲得 1');
+    expect(rows[3]).toHaveTextContent('達成不可');
+  });
+
   it('calls play command when play button is clicked', async () => {
     renderWithProviders(<WizardPage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());

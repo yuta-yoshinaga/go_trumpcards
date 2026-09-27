@@ -26,7 +26,14 @@
   "roundScore": "ラウンド: {{score}}",
   "bid": "ビッド {{n}}",
   "bidNone": "未ビッド",
-  "bidProgress": "宣言: {{bid}} / 獲得: {{won}}",
+  "bidProgress": {
+    "header": "宣言: {{bid}} / 獲得: {{won}}",
+    "title": "ビッド達成状況（確定トリック）",
+    "values": "ビッド {{bid}} / 確定獲得 {{won}}",
+    "reachable": "達成可能",
+    "unreachable": "達成不可",
+    "remaining": "残り {{count}} トリック"
+  },
   "bidTotal": "総ビッド {{total}} / 手札 {{handSize}}",
   "bidOverUnder": {
     "over": "(オーバー)",
