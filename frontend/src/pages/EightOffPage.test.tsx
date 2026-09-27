@@ -134,6 +134,22 @@ describe('EightOffPage', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
   });
 
+  it('keeps an empty freecell target focusable and explains that a source must be selected', async () => {
+    renderWithProviders(<EightOffPage />);
+    const btn = await screen.findByTestId('eo-freecell-empty-0');
+
+    expect(btn).not.toBeDisabled();
+    expect(btn).toHaveAttribute('aria-disabled', 'true');
+    const hintId = btn.getAttribute('aria-describedby');
+    expect(hintId).toBeTruthy();
+    expect(document.getElementById(hintId ?? '')).toHaveTextContent('先に移動する札を選んでください');
+
+    mockExec.mockClear();
+    fireEvent.click(btn);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('announces the selected source and legal destinations, then clears the guide on deselection and move', async () => {
     renderWithProviders(<EightOffPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
@@ -892,36 +908,39 @@ describe('EightOffPage', () => {
     await waitFor(() => expect(cardButton).toHaveAttribute('aria-pressed', 'true'));
   });
 
-  // --- Empty targets disabled without source ---
+  // --- Empty targets are aria-disabled without source ---
 
-  it('foundation disabled when no source selected', async () => {
+  it('foundation targets are aria-disabled when no source is selected', async () => {
     renderWithProviders(<EightOffPage />);
     await waitFor(() => expect(screen.getByText('♠')).toBeInTheDocument());
 
     const aButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === 'A');
     for (const btn of aButtons) {
-      expect(btn).toBeDisabled();
+      expect(btn).not.toBeDisabled();
+      expect(btn).toHaveAttribute('aria-disabled', 'true');
     }
   });
 
-  it('empty tableau column disabled when no source selected', async () => {
+  it('empty tableau columns are aria-disabled when no source is selected', async () => {
     renderWithProviders(<EightOffPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
     const kButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === 'K');
     for (const btn of kButtons) {
-      expect(btn).toBeDisabled();
+      expect(btn).not.toBeDisabled();
+      expect(btn).toHaveAttribute('aria-disabled', 'true');
     }
   });
 
-  it('empty freecell disabled when no source selected', async () => {
+  it('empty freecells are aria-disabled when no source is selected', async () => {
     renderWithProviders(<EightOffPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
     const emptyButtons = screen.getAllByText('空');
     for (const btn of emptyButtons) {
       const button = btn.closest('button') as HTMLButtonElement;
-      expect(button).toBeDisabled();
+      expect(button).not.toBeDisabled();
+      expect(button).toHaveAttribute('aria-disabled', 'true');
     }
   });
 

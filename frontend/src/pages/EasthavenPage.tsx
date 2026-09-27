@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useId, useMemo, useState } from 'react';
 import { type EasthavenMoveZone, easthavenApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -84,6 +84,7 @@ const EH_TUTORIAL_STEPS: TutorialStep[] = [
 export const EasthavenPage = withTutorial(EasthavenPageContent, 'easthaven', EH_TUTORIAL_STEPS);
 /** Inner content of the Easthaven page. */
 function EasthavenPageContent() {
+  const selectSourceHintId = useId();
   const {
     t,
     tc,
@@ -359,6 +360,9 @@ function EasthavenPageContent() {
           <LandscapeBanner message={t('landscapeBanner')} />
 
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
+            <span id={selectSourceHintId} className="sr-only">
+              {tc('label.selectSourceFirst')}
+            </span>
             {/* Foundation row */}
             <div className="flex gap-1 sm:gap-2 mb-3 items-start justify-center" data-tutorial="eh-foundation">
               {state.foundation.map((pile, i) => {
@@ -437,7 +441,9 @@ function EasthavenPageContent() {
                         }${emptyDealAttemptKey > 0 ? ' animate-shake border-ds-warning text-ds-warning' : ''}`}
                         style={{ width: eh.cw, height: eh.ch }}
                         onClick={() => selectedSource && handleSelectTarget('tableau', colIdx)}
-                        disabled={!isPlaying || !selectedSource}
+                        disabled={!isPlaying}
+                        aria-disabled={!selectedSource || undefined}
+                        aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                         aria-label={
                           selectedSource
                             ? t('moveHereAriaLabel', { col: colIdx })

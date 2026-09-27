@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useState } from 'react';
 import type { EightOffMoveZone, eightoffApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -92,6 +92,7 @@ const EO_TUTORIAL_STEPS: TutorialStep[] = [
 export const EightOffPage = withTutorial(EightOffPageContent, 'eightoff', EO_TUTORIAL_STEPS);
 /** Inner content of the Eight Off page, wrapped by TutorialProvider. */
 function EightOffPageContent() {
+  const selectSourceHintId = useId();
   const {
     t,
     tc,
@@ -331,6 +332,9 @@ function EightOffPageContent() {
           <LandscapeBanner message={t('landscapeBanner')} />
 
           <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
+            <span id={selectSourceHintId} className="sr-only">
+              {tc('label.selectSourceFirst')}
+            </span>
             <div role="status" aria-live="polite" data-testid="eo-move-guide" className="mb-2 text-sm text-ds-info">
               {tableauMoveGuide}
             </div>
@@ -383,7 +387,9 @@ function EightOffPageContent() {
                           <button
                             type="button"
                             onClick={() => handleSelectTarget(freeCellZone)}
-                            disabled={!isPlaying || loading || !selectedSource}
+                            disabled={!isPlaying || loading}
+                            aria-disabled={!selectedSource || undefined}
+                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t('emptyFreecellAriaLabel', { idx: String(idx) })}
                             data-testid={`eo-freecell-empty-${idx.toString()}`}
                             style={{ width: cardWidth, height: cardHeight }}
@@ -417,7 +423,9 @@ function EightOffPageContent() {
                           <button
                             type="button"
                             onClick={() => handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
+                            disabled={!isPlaying || loading || isAutoCompleting}
+                            aria-disabled={!selectedSource || undefined}
+                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t('foundationAriaLabel', {
                               suit: FOUNDATION_SUITS[idx],
                               cardCount: String(pile.length),
@@ -436,7 +444,9 @@ function EightOffPageContent() {
                           <button
                             type="button"
                             onClick={() => handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading || !selectedSource}
+                            disabled={!isPlaying || loading}
+                            aria-disabled={!selectedSource || undefined}
+                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
                             data-testid={`eo-foundation-empty-${idx.toString()}`}
                             style={{ width: cardWidth, height: cardHeight }}
@@ -478,7 +488,9 @@ function EightOffPageContent() {
                             <button
                               type="button"
                               onClick={() => handleSelectTarget(tableauColZone)}
-                              disabled={!isPlaying || loading || !selectedSource}
+                              disabled={!isPlaying || loading}
+                              aria-disabled={!selectedSource || undefined}
+                              aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                               aria-label={t('emptyColumnAriaLabel', { rank: 'K' })}
                               style={{ height: cardHeight }}
                               className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
