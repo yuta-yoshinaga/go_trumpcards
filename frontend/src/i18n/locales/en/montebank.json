@@ -28,5 +28,6 @@
   "tutorial.gate": "The next card off the deck settles it — a suit match pays 3:1",
   "frontendHint.monteBankLoneSuit": "only one of this suit is showing, so 3:1 makes it an even bet",
   "frontendHint.monteBankAllDuplicated": "every suit is showing at least twice, so no bet here is even",
-  "label.remainingOfSuit": "{{count}} left in the deck"
+  "label.remainingOfSuit": "{{count}} left in the deck",
+  "selection.changed": "Deselected {{prev}}, selected {{card}}"
 }

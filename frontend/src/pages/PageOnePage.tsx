@@ -377,6 +377,9 @@ function PageOnePageContent() {
                   </button>
                 </div>
               )}
+              {isHumanTurn && state.drawPileCount === 0 && (
+                <p className="text-sm text-ds-text-muted self-center">{t('drawPileEmpty')}</p>
+              )}
               {isHumanMustDeclare && (
                 <div className="flex gap-2" data-tutorial="po-declare">
                   <button

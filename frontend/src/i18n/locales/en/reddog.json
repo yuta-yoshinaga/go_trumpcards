@@ -1,5 +1,6 @@
 {
   "title": "Red Dog",
+  "listSeparator": ", ",
   "betGuide": "Place your ante to deal 2 cards",
   "label": {
     "chips": "Chips",
@@ -28,7 +29,11 @@
     "push": "Push"
   },
   "payout": {
-    "total": "Total Payout"
+    "total": "Total Payout",
+    "winningRank": "Winning rank",
+    "multiplier": "Multiplier",
+    "none": "No payout",
+    "refund": "No winning payout (ante returned)"
   },
   "payoutRef": {
     "title": "Payout Table",

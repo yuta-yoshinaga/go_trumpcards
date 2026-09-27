@@ -669,6 +669,9 @@ func (g *Preference) SetContract(b PreferenceBid) { g.contract = b }
 // GetBids 各プレイヤーの入札を取得
 func (g *Preference) GetBids() [PreferencePlayerCnt]PreferenceBid { return g.bids }
 
+// GetBidDone 各プレイヤーが入札を完了したか取得する。
+func (g *Preference) GetBidDone() [PreferencePlayerCnt]bool { return g.bidDone }
+
 // GetTrumpSuit 切り札スート取得 (0=なし)
 func (g *Preference) GetTrumpSuit() int { return g.trumpSuit }
 

@@ -258,13 +258,24 @@ describe('MinibridgePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 2));
   });
 
+  it('enables only legal cards on the human turn', async () => {
+    mockExec.mockResolvedValue(playing({ validPlays: [1, 3] } as Partial<MinibridgeResponse>));
+    renderWithProviders(<MinibridgePage />);
+
+    const cards = await screen.findAllByRole('button', { name: /^(?!ダミーの).*を出す$/ });
+    expect(cards.map((button) => (button as HTMLButtonElement).disabled)).toEqual([true, false, true, false, true]);
+    expect(cards.map((button) => button.className.includes('ring-2'))).toEqual([false, true, false, true, false]);
+  });
+
   // **ダミーの手番は人間デクレアラーの出番。** 自分の手札ではなくダミーが押せる。
   it('swaps which hand is pressable on the dummy turn', async () => {
     mockExec.mockResolvedValue(playing({ currentPlayerIdx: 2, validPlays: [1] } as Partial<MinibridgeResponse>));
     renderWithProviders(<MinibridgePage />);
 
     const dummyCards = await screen.findAllByRole('button', { name: /^ダミーの/ });
-    expect(dummyCards[0]).toBeEnabled();
+    expect(dummyCards[0]).toBeDisabled();
+    expect(dummyCards[1]).toBeEnabled();
+    expect(dummyCards.map((button) => button.className.includes('ring-2'))).toEqual([false, true]);
     const ownCards = screen.getAllByRole('button', { name: /^(?!ダミーの).*を出す$/ });
     expect(ownCards[0]).toBeDisabled();
 

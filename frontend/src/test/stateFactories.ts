@@ -57,6 +57,7 @@ import type {
   PrimeroResponse,
   QuadrilleResponse,
   QuodlibetResponse,
+  RussianBankResponse,
   SakuraResponse,
   SambaPlayerData,
   SambaResponse,
@@ -3596,6 +3597,7 @@ const basePreferenceState: PreferenceResponse = {
   contract: 0,
   trumpSuit: 0,
   bids: [0, 0, 0],
+  bidDone: [false, false, false],
   currentTrick: [],
   playerScores: [0, 0, 0],
   roundTricks: [0, 0, 0],
@@ -5673,4 +5675,45 @@ const baseShelemState: ShelemResponse = {
 /** Creates a Shelem response with sensible defaults. */
 export function makeShelemState(overrides?: Partial<ShelemResponse>): ShelemResponse {
   return { ...baseShelemState, ...overrides };
+}
+
+/** Creates a Russian Bank state with an empty board and legal empty-pile targets. */
+export function makeRussianBankState(overrides?: Partial<RussianBankResponse>): RussianBankResponse {
+  return {
+    phase: 1,
+    currentPlayerIdx: 0,
+    gameEndFlag: false,
+    winnerIdx: -1,
+    isHumanTurn: true,
+    canCallStop: false,
+    canUndo: false,
+    moveCount: 0,
+    tableau: [[], [], [], []],
+    foundations: [[], [], [], [], [], [], [], []],
+    foundationNext: Array.from({ length: 8 }, () => ({ design: '', value: 1 })),
+    tableauNext: Array.from({ length: 4 }, () => ({ any: true, black: false, value: 0 })),
+    players: [
+      {
+        id: 0,
+        isHuman: true,
+        reserveCount: 13,
+        reserveTop: { design: 'DIAMOND', value: 7 },
+        handCount: 39,
+        wasteCount: 0,
+        stopPoints: 0,
+      },
+      {
+        id: 1,
+        isHuman: false,
+        reserveCount: 13,
+        reserveTop: { design: 'HEART', value: 8 },
+        handCount: 39,
+        wasteCount: 0,
+        stopPoints: 0,
+      },
+    ],
+    config: { cpuDifficulty: 1 },
+    message: '',
+    ...overrides,
+  };
 }

@@ -115,6 +115,24 @@ describe('PreferencePage', () => {
     expect(banner).toHaveTextContent('なし');
   });
 
+  it('shows each player as unbid, passed, or holding their bid only during bidding', async () => {
+    mockExec.mockResolvedValue(
+      makePreferenceState({
+        bids: [0, 0, 3],
+        bidDone: [false, true, true],
+      }),
+    );
+    const { unmount } = renderWithProviders(<PreferencePage />);
+    expect(await screen.findByTestId('preference-player-bid-0')).toHaveTextContent('未入札');
+    expect(screen.getByTestId('preference-player-bid-1')).toHaveTextContent('パス');
+    expect(screen.getByTestId('preference-player-bid-2')).toHaveTextContent('セブン');
+
+    unmount();
+    mockExec.mockResolvedValue(makePreferenceState({ phase: 1, bidDone: [true, true, true], bids: [0, 0, 3] }));
+    renderWithProviders(<PreferencePage />);
+    await waitFor(() => expect(screen.queryByTestId('preference-player-bid-0')).not.toBeInTheDocument());
+  });
+
   it('names the current highest bid once someone has bid', async () => {
     mockExec.mockResolvedValue(makePreferenceState({ bids: [2, 0, 0] }));
     renderWithProviders(<PreferencePage />);

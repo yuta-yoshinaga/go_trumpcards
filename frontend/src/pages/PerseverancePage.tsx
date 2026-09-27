@@ -218,6 +218,17 @@ function PerseverancePageContent() {
   const isGameClear = state.phase === PerseverancePhase.GAME_CLEAR;
   const isGameOver = state.phase === PerseverancePhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
+  const stalemateMessage = state.isStalemate
+    ? t(
+        state.canUndo
+          ? state.redealsLeft > 0
+            ? 'stalemateUndoRedeal'
+            : 'stalemateUndo'
+          : state.redealsLeft > 0
+            ? 'stalemateRedeal'
+            : 'stalemateNoEscape',
+      )
+    : undefined;
 
   // **選択後は押すまで正誤が分からず、クリック→サーバーエラーのループになって
   // いた (#4795)。**13列 + 4組札で移動先候補が多い。姉妹の Wasp / Accordion は
@@ -478,6 +489,9 @@ function PerseverancePageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
+            <div role="status">
+              {stalemateMessage && <p className="text-center text-sm mb-2">{stalemateMessage}</p>}
+            </div>
 
             {/* Action log */}
             <ActionLogSection

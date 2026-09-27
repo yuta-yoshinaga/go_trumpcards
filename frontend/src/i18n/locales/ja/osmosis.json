@@ -11,6 +11,7 @@
   "foundation": "組札",
   "anyRank": "任意",
   "cannotPlaceHere": "この段には置けません",
+  "placeable": "置ける",
   "baseRank": "ベースランク",
   "moveCount": "手数",
   "draw": "引く",

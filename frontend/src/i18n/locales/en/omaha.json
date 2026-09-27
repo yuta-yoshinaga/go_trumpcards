@@ -94,5 +94,13 @@
     "weakHandRank": "Weak hand — fold recommended"
   },
   "cardUsed": "Used",
-  "cardUnused": "Unused"
+  "cardUnused": "Unused",
+  "potAwards": {
+    "mainPot": "Main pot",
+    "sidePot": "Side pot {{n}}",
+    "eligible": "Eligible",
+    "winners": "Winners",
+    "low": "Low"
+  },
+  "listSeparator": ", "
 }

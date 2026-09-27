@@ -49,6 +49,8 @@ export interface PasurResponse extends BaseGameResponse {
    * server. An empty array for a card means it can only be laid down.
    */
   captureOptions: number[][][];
+  /** Point breakdown for each capture option, aligned with captureOptions. */
+  captureScores: { normal: number; soorBonus: number }[][];
   deckRemaining: number;
   packsDealt: number;
   /** The seat that captured last. **Cards left on the table go to them.** */

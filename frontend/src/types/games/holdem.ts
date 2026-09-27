@@ -59,12 +59,23 @@ export interface HoldemSidePot {
   eligiblePlayers: number[];
 }
 
+/** Actual per-pot Omaha showdown payouts. */
+export interface OmahaPotAwardData {
+  amount: number;
+  eligible: number[];
+  hiWinners: number[];
+  hiPayouts: number[];
+  loWinners: number[];
+  loPayouts: number[];
+}
+
 /** Full Texas Hold'em game state returned from the API. */
 export interface HoldemResponse extends BaseGameResponse {
   players: HoldemPlayerData[];
   communityCards: Card[];
   pot: number;
   sidePots: HoldemSidePot[];
+  potAwards?: OmahaPotAwardData[];
   dealerIdx: number;
   currentTurn: number;
   phase: number;

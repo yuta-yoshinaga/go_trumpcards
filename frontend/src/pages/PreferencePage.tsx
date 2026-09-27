@@ -340,6 +340,11 @@ function PreferencePageContent() {
                           {t('declarerBadge')}
                         </span>
                       )}
+                      {isBidPhase && (
+                        <span className="text-ds-text-muted" data-testid={`preference-player-bid-${p.id}`}>
+                          {state.bidDone[p.id] ? t(`bid.${CONTRACT_KEYS[state.bids[p.id]]}`) : t('bidNotSubmitted')}
+                        </span>
+                      )}
                     </div>
                   ))}
                 </div>

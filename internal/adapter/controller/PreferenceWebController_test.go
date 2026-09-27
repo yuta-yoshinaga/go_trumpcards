@@ -19,6 +19,7 @@ func mustPreferenceOutputJSON(msg string) string {
 		Players:         []*controller.PreferenceWebOutputPlayer{},
 		CurrentTrick:    []*controller.WebOutputTrickCard{},
 		PlayableIndices: []int{},
+		BidDone:         [domain.PreferencePlayerCnt]bool{},
 		DeclarerIdx:     -1,
 		WinnerPlayer:    -1,
 		WebOutputBase:   controller.WebOutputBase{Message: msg},

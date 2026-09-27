@@ -16,15 +16,16 @@ type RedDogWebInput struct {
 
 // RedDogWebOutput レッドドッグWebアウトプット
 type RedDogWebOutput struct {
-	InitialCards []*WebOutputCard `json:"initialCards"`
-	ThirdCard    *WebOutputCard   `json:"thirdCard,omitempty"`
-	Phase        int              `json:"phase"`
-	Chips        int              `json:"chips"`
-	Ante         int              `json:"ante"`
-	Raise        int              `json:"raise"`
-	Spread       int              `json:"spread"`
-	Result       int              `json:"result"`
-	TotalPayout  int              `json:"totalPayout"`
+	InitialCards      []*WebOutputCard `json:"initialCards"`
+	ThirdCard         *WebOutputCard   `json:"thirdCard,omitempty"`
+	Phase             int              `json:"phase"`
+	Chips             int              `json:"chips"`
+	Ante              int              `json:"ante"`
+	Raise             int              `json:"raise"`
+	Spread            int              `json:"spread"`
+	Result            int              `json:"result"`
+	TotalPayout       int              `json:"totalPayout"`
+	AppliedMultiplier int              `json:"appliedMultiplier"`
 	WebOutputBase
 }
 

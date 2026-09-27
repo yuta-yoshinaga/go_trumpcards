@@ -23,6 +23,7 @@ func setupPerseveranceCuiMockDefaults(bg *interfaces.MockPerseveranceGame) {
 	bg.On("IsStalemate").Return(false).Maybe()
 	bg.On("GetRedealsLeft").Return(domain.PerseveranceMaxRedeals).Maybe()
 	bg.On("UndoToEscape").Return(0).Maybe()
+	bg.On("CanUndo").Return(false).Maybe()
 
 	var tableau [domain.PerseveranceTableauCnt][]*domain.PerseveranceTableauCard
 	for i := range domain.PerseveranceTableauCnt {
@@ -116,17 +117,33 @@ func TestPerseveranceCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "ゲームオーバー")
 	})
 
-	t.Run("stalemate", func(t *testing.T) {
-		bg := new(interfaces.MockPerseveranceGame)
-		setupPerseveranceCuiMockDefaults(bg)
-		bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, "IsStalemate")
-		bg.On("IsStalemate").Return(true)
-		bg.On("UndoToEscape").Return(0).Maybe()
+	for _, tc := range []struct {
+		name       string
+		canUndo    bool
+		redeals    int
+		messageKey string
+	}{
+		{name: "undo and redeal", canUndo: true, redeals: 1, messageKey: "stalemateUndoRedeal"},
+		{name: "undo only", canUndo: true, redeals: 0, messageKey: "stalemateUndo"},
+		{name: "redeal only", canUndo: false, redeals: 1, messageKey: "stalemateRedeal"},
+		{name: "no escape", canUndo: false, redeals: 0, messageKey: "stalemateNoEscape"},
+	} {
+		t.Run("stalemate "+tc.name, func(t *testing.T) {
+			bg := new(interfaces.MockPerseveranceGame)
+			setupPerseveranceCuiMockDefaults(bg)
+			for _, method := range []string{"IsStalemate", "CanUndo", "GetRedealsLeft"} {
+				bg.ExpectedCalls = filterCalls(bg.ExpectedCalls, method)
+			}
+			bg.On("IsStalemate").Return(true)
+			bg.On("CanUndo").Return(tc.canUndo)
+			bg.On("GetRedealsLeft").Return(tc.redeals)
+			bg.On("UndoToEscape").Return(0)
 
-		p := new(PerseveranceCuiPresenter)
-		result := p.Output(bg, nil)
-		assert.Contains(t, result, "手詰まり")
-	})
+			p := new(PerseveranceCuiPresenter)
+			result := p.Output(bg, nil)
+			assert.Contains(t, result, i18n.T("perseverance."+tc.messageKey))
+		})
+	}
 
 	t.Run("empty column", func(t *testing.T) {
 		bg := new(interfaces.MockPerseveranceGame)

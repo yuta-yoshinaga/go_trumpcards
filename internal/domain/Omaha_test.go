@@ -1,6 +1,9 @@
 package domain
 
 import (
+	"encoding/json"
+	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -48,6 +51,137 @@ func TestNewOmaha(t *testing.T) {
 	assert.NotNil(t, o.GetCommunityCards())
 	assert.Equal(t, 0, o.GetPot())
 	assert.False(t, o.GetGameEndFlag())
+}
+
+func TestOmahaDistributeAmongWinnersRecordsChipPayouts(t *testing.T) {
+	players := []BettingPlayer{
+		NewOmahaPlayer(true, HoldemStyleTAG),
+		NewOmahaPlayer(false, HoldemStyleTAG),
+	}
+	won := make(map[int]int)
+	payouts := make([]int, 2)
+	distributeAmongWinners(players, []int{1, 0}, 11, won, payouts)
+	assert.Equal(t, []int{6, 5}, payouts, "the first winner must receive the odd chip")
+	assert.Equal(t, 6, won[1])
+	assert.Equal(t, 5, won[0])
+	assert.Equal(t, 6, players[1].GetChips())
+	assert.Equal(t, 5, players[0].GetChips())
+}
+
+func TestOmahaPotAwardsSnapshotAndReset(t *testing.T) {
+	o := newTestOmaha()
+	o.potAwards = []OmahaPotAward{{Amount: 12, Eligible: []int{0, 1}, HiWinners: []int{1}, HiPayouts: []int{12}}}
+	data, err := o.MarshalJSON()
+	assert.NoError(t, err)
+	var restored Omaha
+	assert.NoError(t, restored.UnmarshalJSON(data))
+	assert.Equal(t, o.potAwards, restored.GetPotAwards())
+	assert.NoError(t, o.Reset())
+	assert.Nil(t, o.GetPotAwards())
+}
+
+func TestOmahaUnmarshalPotAwardSliceLimits(t *testing.T) {
+	tests := []struct {
+		name string
+		json string
+	}{
+		{"awards", fmt.Sprintf(`{"pa":[%s]}`, strings.TrimSuffix(strings.Repeat(`{},`, omahaMaxSliceLen+1), ","))},
+		{"eligible", `{"pa":[{"eligible":[` + oversizedJSONElements() + `]}]}`},
+		{"high winners", `{"pa":[{"hiWinners":[` + oversizedJSONElements() + `]}]}`},
+		{"high payouts", `{"pa":[{"hiPayouts":[` + oversizedJSONElements() + `]}]}`},
+		{"low winners", `{"pa":[{"loWinners":[` + oversizedJSONElements() + `]}]}`},
+		{"low payouts", `{"pa":[{"loPayouts":[` + oversizedJSONElements() + `]}]}`},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var o Omaha
+			err := json.Unmarshal([]byte(tt.json), &o)
+			assert.EqualError(t, err, "omaha: input array exceeds maximum allowed size")
+		})
+	}
+}
+
+func oversizedJSONElements() string {
+	return strings.TrimSuffix(strings.Repeat(`0,`, omahaMaxSliceLen+1), ",")
+}
+
+func TestOmahaResolveShowdownPotAwards(t *testing.T) {
+	for _, hiLo := range []bool{false, true} {
+		t.Run(fmt.Sprintf("hiLo=%t", hiLo), func(t *testing.T) {
+			players := []*OmahaPlayer{
+				NewOmahaPlayer(true, HoldemStyleTAG),
+				NewOmahaPlayer(false, HoldemStyleTAG),
+				NewOmahaPlayer(false, HoldemStyleTAG),
+			}
+			cfg := DefaultOmahaConfig()
+			o := NewOmaha(NewTrumpCards(0), players, cfg)
+			if hiLo {
+				o.hiLo = true
+			}
+			// The fixed holdings and board make each showdown deterministic;
+			// seats 0 and 1 share the same qualifying low.
+			holes := [][]*Card{
+				{NewCard(CardDesignSpade, 1, false), NewCard(CardDesignSpade, 6, false), NewCard(CardDesignHeart, 12, false), NewCard(CardDesignHeart, 11, false)},
+				{NewCard(CardDesignClover, 1, false), NewCard(CardDesignClover, 7, false), NewCard(CardDesignDiamond, 12, false), NewCard(CardDesignDiamond, 11, false)},
+				{NewCard(CardDesignHeart, 10, false), NewCard(CardDesignDiamond, 10, false), NewCard(CardDesignHeart, 9, false), NewCard(CardDesignDiamond, 9, false)},
+			}
+			remaining := []int{400, 200, 0}
+			for i, p := range players {
+				p.SetChips(remaining[i])
+				p.SetAllIn(true)
+				for _, c := range holes[i] {
+					p.AddCard(c)
+				}
+			}
+			o.startingChips = []int{500, 500, 500}
+			o.pot = 900
+			o.communityCards = []*Card{
+				NewCard(CardDesignSpade, 2, false), NewCard(CardDesignHeart, 3, false),
+				NewCard(CardDesignClover, 4, false), NewCard(CardDesignDiamond, 5, false),
+				NewCard(CardDesignSpade, 9, false),
+			}
+			o.resolveShowdown()
+			awards := o.GetPotAwards()
+			assert.Len(t, awards, 3)
+			assert.Equal(t, []int{300, 400, 200}, []int{awards[0].Amount, awards[1].Amount, awards[2].Amount})
+			assert.Equal(t, []int{0, 1, 2}, awards[0].Eligible)
+			assert.Equal(t, []int{1, 2}, awards[1].Eligible)
+			assert.Equal(t, []int{2}, awards[2].Eligible)
+			if !hiLo {
+				assert.Equal(t, []int{2}, awards[0].HiWinners)
+				assert.Equal(t, []int{300}, awards[0].HiPayouts)
+				assert.Equal(t, []int{2}, awards[1].HiWinners)
+				assert.Equal(t, []int{400}, awards[1].HiPayouts)
+				assert.Equal(t, []int{2}, awards[2].HiWinners)
+				assert.Equal(t, []int{200}, awards[2].HiPayouts)
+			} else {
+				assert.Equal(t, []int{2}, awards[0].HiWinners)
+				assert.Equal(t, []int{150}, awards[0].HiPayouts)
+				assert.Equal(t, []int{2}, awards[1].HiWinners)
+				assert.Equal(t, []int{200}, awards[1].HiPayouts)
+				assert.Equal(t, []int{2}, awards[2].HiWinners)
+				assert.Equal(t, []int{200}, awards[2].HiPayouts)
+				assert.Equal(t, []int{0}, awards[0].LoWinners)
+				assert.Equal(t, []int{150}, awards[0].LoPayouts)
+				assert.Equal(t, []int{1}, awards[1].LoWinners)
+				assert.Equal(t, []int{200}, awards[1].LoPayouts)
+				assert.Empty(t, awards[2].LoWinners)
+				assert.Empty(t, awards[2].LoPayouts)
+			}
+			paid := make([]int, len(players))
+			for _, award := range awards {
+				for n, idx := range award.HiWinners {
+					paid[idx] += award.HiPayouts[n]
+				}
+				for n, idx := range award.LoWinners {
+					paid[idx] += award.LoPayouts[n]
+				}
+			}
+			for _, result := range o.GetRoundResults() {
+				assert.Equal(t, result.WonAmount, paid[result.PlayerIdx], "seat %d", result.PlayerIdx)
+			}
+		})
+	}
 }
 
 func TestOmaha_Reset(t *testing.T) {

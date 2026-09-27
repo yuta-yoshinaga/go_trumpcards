@@ -68,7 +68,9 @@
     "outcome": "結果: {{outcome}}",
     "ombre": "オンブル: {{name}}"
   },
-  "hintAvailable": "ヒント",
+  "requestHint": "ヒントを表示",
+  "hintMessage": "おすすめ: {{cards}} — {{reason}}",
+  "listSeparator": "、",
   "hint": {
     "lead_high": "オンブルなので強い札でリードして主導する",
     "lead_low": "連合なので低い札でリードして温存する",

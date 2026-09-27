@@ -42974,6 +42974,19 @@ components:
           description: Side pots (created when players go all-in with different amounts)
           items:
             $ref: '#/components/schemas/HoldemSidePot'
+        potAwards:
+          type: array
+          description: Omaha showdown payouts by main and side pot
+          items:
+            type: object
+            required: [amount, eligible, hiWinners, hiPayouts, loWinners, loPayouts]
+            properties:
+              amount: { type: integer }
+              eligible: { type: array, items: { type: integer } }
+              hiWinners: { type: array, items: { type: integer } }
+              hiPayouts: { type: array, items: { type: integer } }
+              loWinners: { type: array, items: { type: integer } }
+              loPayouts: { type: array, items: { type: integer } }
         dealerIdx:
           type: integer
           description: Index of the dealer for this round
@@ -54336,6 +54349,10 @@ components:
           type: integer
           description: Total payout returned to the player.
           example: 0
+        appliedMultiplier:
+          type: integer
+          description: Multiplier used for the settled winning payout, or 0 otherwise.
+          example: 0
         message:
           type: string
           description: Human-readable status or result message.
@@ -59222,6 +59239,23 @@ components:
               type: array
               items:
                 type: integer
+        captureScores:
+          type: array
+          description: >-
+            Per hand card, the normal and soor bonus points for each
+            corresponding capture option. The inner arrays align with
+            captureOptions; a soor bonus is added when the option empties the table.
+          items:
+            type: array
+            items:
+              type: object
+              properties:
+                normal:
+                  type: integer
+                  description: Points from the captured cards before a soor bonus.
+                soorBonus:
+                  type: integer
+                  description: Extra points awarded for emptying the table.
         deckRemaining:
           type: integer
         packsDealt:
@@ -70174,6 +70208,11 @@ components:
           items:
             type: integer
           description: Bid placed by each player in seat order (0=Pass, 1=Six, 2=Misere, 3=Seven, 4=Eight; -1=not yet bid)
+        bidDone:
+          type: array
+          items:
+            type: boolean
+          description: Whether each seat has submitted its bid, in seat order.
         currentTrick:
           type: array
           items:
@@ -72156,6 +72195,23 @@ components:
         canUndo:
           type: boolean
           description: True when the human's last move can be undone
+        tableauNext:
+          type: array
+          description: >-
+            What each tableau column will accept next. Clients match a selected card
+            against these conditions instead of re-deriving the placement rule.
+          items:
+            type: object
+            properties:
+              any:
+                type: boolean
+                description: True when any card is accepted (an empty column).
+              black:
+                type: boolean
+                description: Required card color when any is false.
+              value:
+                type: integer
+                description: Required rank when any is false.
         foundationNext:
           type: array
           description: >-

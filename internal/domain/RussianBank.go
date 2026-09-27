@@ -223,12 +223,8 @@ func (g *RussianBank) rbCanPlaceTableau(card *Card, col int) bool {
 	if card == nil || col < 0 || col >= RussianBankTableauCnt {
 		return false
 	}
-	pile := g.tableau[col]
-	if len(pile) == 0 {
-		return true
-	}
-	top := pile[len(pile)-1]
-	return rbIsBlack(card) != rbIsBlack(top) && card.GetValue() == top.GetValue()-1
+	next := g.GetTableauNext()[col]
+	return next.Any || (rbIsBlack(card) == next.Black && card.GetValue() == next.Value)
 }
 
 // rbCanPlaceFoundation ファウンデーション fIdx に card を置けるか。空本は A のみ、
@@ -252,6 +248,28 @@ func (g *RussianBank) rbCanPlaceFoundation(card *Card, fIdx int) bool {
 type RussianBankFoundationNext struct {
 	Design int
 	Value  int
+}
+
+// RussianBankTableauNext はタブロー列が次に受け取れる札の条件。
+// Any が true の場合、色と値を問わない。
+type RussianBankTableauNext struct {
+	Any   bool
+	Black bool
+	Value int
+}
+
+// GetTableauNext は各タブロー列が次に受け取れる札の条件を返す。
+func (g *RussianBank) GetTableauNext() [RussianBankTableauCnt]RussianBankTableauNext {
+	var out [RussianBankTableauCnt]RussianBankTableauNext
+	for i, pile := range g.tableau {
+		if len(pile) == 0 {
+			out[i] = RussianBankTableauNext{Any: true}
+			continue
+		}
+		top := pile[len(pile)-1]
+		out[i] = RussianBankTableauNext{Black: !rbIsBlack(top), Value: top.GetValue() - 1}
+	}
+	return out
 }
 
 // GetFoundationNext は各ファウンデーションが次に受け取れる札の条件を返す。

@@ -173,6 +173,81 @@ describe('OmiPage', () => {
     });
   });
 
+  it('announces only the newly played card and skips the initial trick on first render', async () => {
+    const firstPlayedState: OmiResponse = {
+      ...playPhaseState,
+      currentTrick: [{ playerIdx: 0, card: { design: 'SPADE', value: 1 } }],
+      currentPlayerIdx: 0,
+    };
+    const secondPlayedState: OmiResponse = {
+      ...firstPlayedState,
+      currentTrick: [...firstPlayedState.currentTrick, { playerIdx: 1, card: { design: 'HEART', value: 5 } }],
+      currentPlayerIdx: 2,
+    };
+    mockExec
+      .mockResolvedValueOnce(playPhaseState)
+      .mockResolvedValueOnce(firstPlayedState)
+      .mockResolvedValueOnce(secondPlayedState);
+    renderWithProviders(<OmiPage />);
+
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    const liveRegion = screen.getAllByRole('status').find((status) => status.classList.contains('sr-only'));
+    expect(liveRegion).toBeDefined();
+    expect(liveRegion).toBeEmptyDOMElement();
+
+    fireEvent.click(screen.getByAltText('♠ A'));
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+    await waitFor(() => expect(liveRegion).toHaveTextContent('あなた: ♠ A'));
+
+    fireEvent.click(screen.getByAltText('♥ J'));
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+    await waitFor(() => expect(liveRegion).toHaveTextContent('CPU 1: ♥ 5'));
+    expect(liveRegion).not.toHaveTextContent('あなた: ♠ A');
+  });
+
+  it('announces a new trick in full when the previous trick is taken in the same response', async () => {
+    const completedTrickState: OmiResponse = {
+      ...playPhaseState,
+      currentTrick: [
+        { playerIdx: 0, card: { design: 'SPADE', value: 1 } },
+        { playerIdx: 1, card: { design: 'HEART', value: 5 } },
+      ],
+      currentPlayerIdx: 0,
+    };
+    const newTrickState: OmiResponse = {
+      ...completedTrickState,
+      currentTrick: [{ playerIdx: 2, card: { design: 'CLOVER', value: 7 } }],
+    };
+    mockExec
+      .mockResolvedValueOnce(playPhaseState)
+      .mockResolvedValueOnce(completedTrickState)
+      .mockResolvedValueOnce(newTrickState);
+    renderWithProviders(<OmiPage />);
+
+    await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
+    const liveRegion = screen.getAllByRole('status').find((status) => status.classList.contains('sr-only'));
+    expect(liveRegion).toBeDefined();
+
+    fireEvent.click(screen.getByAltText('♠ A'));
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+    await waitFor(() => expect(liveRegion).toHaveTextContent('CPU 1: ♥ 5'));
+
+    fireEvent.click(screen.getByAltText('♥ J'));
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+    await waitFor(() => expect(liveRegion).toHaveTextContent('CPU 2: ♣ 7'));
+    expect(liveRegion).not.toHaveTextContent('あなた: ♠ A');
+    expect(liveRegion).not.toHaveTextContent('CPU 1: ♥ 5');
+  });
+
+  it('does not announce a non-empty trick on initial render', async () => {
+    mockExec.mockResolvedValue(trickEndState);
+    renderWithProviders(<OmiPage />);
+    await waitFor(() => expect(screen.getByTestId('trick-display-cards')).toBeInTheDocument());
+    const liveRegion = screen.getAllByRole('status').find((status) => status.classList.contains('sr-only'));
+    expect(liveRegion).toBeDefined();
+    expect(liveRegion).toBeEmptyDOMElement();
+  });
+
   // ─── Required test 1: trump calling UI appears only for human caller ───────
 
   it('shows trump suit buttons only when human is the trump caller', async () => {

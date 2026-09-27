@@ -32,6 +32,7 @@
   "contractUndecided": "Contract: undecided",
   "declarerLine": "Declarer: {{name}} — {{contract}}",
   "bidLabel": "Bid",
+  "bidNotSubmitted": "Not bid",
   "playButton": "Play",
   "nextTrick": "Next Trick",
   "nextRound": "Next Round",

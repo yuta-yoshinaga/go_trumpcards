@@ -63,6 +63,7 @@ type Omaha struct {
 	// 賭ける前に見せる ── 公開する枚数を前倒しするだけで、総枚数も役の
 	// 作り方も変わらない。
 	preflopCommunity int
+	potAwards        []OmahaPotAward
 	config           OmahaConfig
 	roundResults     []HoldemResult
 	cpuActions       []HoldemCpuAction
@@ -76,6 +77,16 @@ type Omaha struct {
 	actionLogBase
 	humanProfile    *BettingHumanProfile
 	lastHumanPlayMs int
+}
+
+// OmahaPotAward records the actual chips awarded from one pot at showdown.
+type OmahaPotAward struct {
+	Amount    int   `json:"amount"`
+	Eligible  []int `json:"eligible"`
+	HiWinners []int `json:"hiWinners"`
+	HiPayouts []int `json:"hiPayouts"`
+	LoWinners []int `json:"loWinners"`
+	LoPayouts []int `json:"loPayouts"`
 }
 
 // NewOmaha コンストラクタ
@@ -146,6 +157,7 @@ func (o *Omaha) Reset() error {
 	o.phase = OmahaPhaseInit
 	o.pot = 0
 	o.sidePots = make([]SidePot, 0)
+	o.potAwards = nil
 	o.communityCards = make([]*Card, 0)
 	o.gameEndFlag = false
 	o.lastBet = 0
@@ -484,6 +496,7 @@ func (o *Omaha) countActivePlayers() int {
 
 // resolveLastPlayer 全員フォールドで最後のプレイヤーが勝利
 func (o *Omaha) resolveLastPlayer() {
+	o.potAwards = nil
 	for i, p := range o.players {
 		if !p.GetFolded() {
 			p.AddChips(o.pot)
@@ -502,6 +515,7 @@ func (o *Omaha) resolveLastPlayer() {
 
 // resolveShowdown ショーダウン: ハンド評価・ポット配分
 func (o *Omaha) resolveShowdown() {
+	o.potAwards = nil
 	for _, p := range o.players {
 		if !p.GetFolded() {
 			p.EvalBestHand(o.communityCards)
@@ -518,7 +532,13 @@ func (o *Omaha) resolveShowdown() {
 	if o.hiLo {
 		hiAmounts, lowAmounts = o.distributeHiLoPots(bp)
 	} else {
-		hiAmounts = DistributePots(bp, o.sidePots)
+		hiAmounts = make(map[int]int)
+		for _, sp := range o.sidePots {
+			winners := FindPotWinners(bp, sp.EligiblePlayers)
+			award := OmahaPotAward{Amount: sp.Amount, Eligible: append([]int(nil), sp.EligiblePlayers...), HiWinners: append([]int(nil), winners...), HiPayouts: make([]int, len(winners))}
+			distributeAmongWinners(bp, winners, sp.Amount, hiAmounts, award.HiPayouts)
+			o.potAwards = append(o.potAwards, award)
+		}
 	}
 
 	o.roundResults = make([]HoldemResult, 0)
@@ -577,8 +597,10 @@ func (o *Omaha) distributeHiLoPots(bp []BettingPlayer) (hi, lo map[int]int) {
 			hiPot = sp.Amount - loPot // 奇数チップは Hi 側に寄せる
 		}
 
-		distributeAmongWinners(bp, hiWinners, hiPot, hi)
-		distributeAmongWinners(bp, loWinners, loPot, lo)
+		award := OmahaPotAward{Amount: sp.Amount, Eligible: append([]int(nil), sp.EligiblePlayers...), HiWinners: append([]int(nil), hiWinners...), LoWinners: append([]int(nil), loWinners...), HiPayouts: make([]int, len(hiWinners)), LoPayouts: make([]int, len(loWinners))}
+		distributeAmongWinners(bp, hiWinners, hiPot, hi, award.HiPayouts)
+		distributeAmongWinners(bp, loWinners, loPot, lo, award.LoPayouts)
+		o.potAwards = append(o.potAwards, award)
 	}
 	return hi, lo
 }
@@ -614,7 +636,7 @@ func (o *Omaha) findOmahaLowWinners(eligible []int) []int {
 // distributeAmongWinners は amount を winners 間で均等配分し、
 // 余りは winners[0] に寄せる。amount==0 または winners==nil は no-op。
 // チップ加算と won マップ更新を同時に行う。
-func distributeAmongWinners(bp []BettingPlayer, winners []int, amount int, won map[int]int) {
+func distributeAmongWinners(bp []BettingPlayer, winners []int, amount int, won map[int]int, payoutTarget ...[]int) {
 	if amount <= 0 || len(winners) == 0 {
 		return
 	}
@@ -627,6 +649,9 @@ func distributeAmongWinners(bp []BettingPlayer, winners []int, amount int, won m
 		}
 		bp[w].AddChips(got)
 		won[w] += got
+		if len(payoutTarget) > 0 && i < len(payoutTarget[0]) {
+			payoutTarget[0][i] = got
+		}
 	}
 }
 
@@ -1259,6 +1284,9 @@ func (o *Omaha) GetCommunityCards() []*Card { return o.communityCards }
 // GetPot ポット取得
 func (o *Omaha) GetPot() int { return o.pot }
 
+// GetPotAwards returns the showdown payout breakdown for each pot.
+func (o *Omaha) GetPotAwards() []OmahaPotAward { return o.potAwards }
+
 // GetSidePots サイドポット取得
 func (o *Omaha) GetSidePots() []SidePot { return o.sidePots }
 
@@ -1388,6 +1416,7 @@ type omahaJSON struct {
 	HiLo             bool                     `json:"hl,omitempty"`
 	HoleCards        int                      `json:"hcn,omitempty"`
 	PreflopCommunity int                      `json:"pfc,omitempty"`
+	PotAwards        []OmahaPotAward          `json:"pa,omitempty"`
 }
 
 // omahaMaxSliceLen caps slice sizes during deserialisation.
@@ -1425,6 +1454,7 @@ func (o *Omaha) MarshalJSON() ([]byte, error) {
 		HiLo:             o.hiLo,
 		HoleCards:        o.holeCards,
 		PreflopCommunity: o.preflopCommunity,
+		PotAwards:        o.potAwards,
 	}
 	if o.humanProfile != nil {
 		d := o.humanProfile.Export()
@@ -1442,8 +1472,16 @@ func (o *Omaha) UnmarshalJSON(data []byte) error {
 	if len(j.Players) > omahaMaxSliceLen || len(j.CommunityCards) > omahaMaxSliceLen ||
 		len(j.SidePots) > omahaMaxSliceLen || len(j.ActedFlags) > omahaMaxSliceLen ||
 		len(j.RoundResults) > omahaMaxSliceLen || len(j.CpuActions) > omahaMaxSliceLen ||
-		len(j.StartingChips) > omahaMaxSliceLen || len(j.ActionLog) > omahaMaxSliceLen {
+		len(j.StartingChips) > omahaMaxSliceLen || len(j.ActionLog) > omahaMaxSliceLen ||
+		len(j.PotAwards) > omahaMaxSliceLen {
 		return fmt.Errorf("omaha: input array exceeds maximum allowed size")
+	}
+	for _, award := range j.PotAwards {
+		if len(award.Eligible) > omahaMaxSliceLen || len(award.HiWinners) > omahaMaxSliceLen ||
+			len(award.HiPayouts) > omahaMaxSliceLen || len(award.LoWinners) > omahaMaxSliceLen ||
+			len(award.LoPayouts) > omahaMaxSliceLen {
+			return fmt.Errorf("omaha: input array exceeds maximum allowed size")
+		}
 	}
 	o.trumpCards = j.TrumpCards
 	if o.trumpCards == nil {
@@ -1462,6 +1500,7 @@ func (o *Omaha) UnmarshalJSON(data []byte) error {
 	if o.sidePots == nil {
 		o.sidePots = make([]SidePot, 0)
 	}
+	o.potAwards = j.PotAwards
 	o.dealerIdx = j.DealerIdx
 	o.currentTurn = j.CurrentTurn
 	o.phase = j.Phase

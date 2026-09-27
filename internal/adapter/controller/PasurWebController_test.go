@@ -21,6 +21,7 @@ func mustPasurOutputJSON(msg string) string {
 		Players:        []*controller.PasurWebOutputPlayer{},
 		Table:          []*controller.WebOutputCard{},
 		CaptureOptions: [][][]int{},
+		CaptureScores:  [][]domain.PasurCaptureScoreBreakdown{},
 		Winners:        []int{},
 		LastCaptureIdx: -1,
 		WebOutputBase:  controller.WebOutputBase{Message: msg},

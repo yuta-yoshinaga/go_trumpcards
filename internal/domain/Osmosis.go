@@ -159,7 +159,7 @@ func (o *Osmosis) MoveWasteToFoundation(fIdx int) error {
 		return errors.New("waste is empty")
 	}
 	card := o.waste[len(o.waste)-1]
-	if !o.canPlaceOnFoundation(card, fIdx) {
+	if !o.CanPlaceOnFoundation(card, fIdx) {
 		return errors.New("cannot place card on foundation")
 	}
 	o.takeSnapshot()
@@ -187,7 +187,7 @@ func (o *Osmosis) MoveReserveToFoundation(rIdx, fIdx int) error {
 		return errors.New("reserve pile is empty")
 	}
 	card := pile[len(pile)-1]
-	if !o.canPlaceOnFoundation(card, fIdx) {
+	if !o.CanPlaceOnFoundation(card, fIdx) {
 		return errors.New("cannot place card on foundation")
 	}
 	o.takeSnapshot()
@@ -383,7 +383,7 @@ func (o *Osmosis) UndoN(n int) error {
 
 // --- Private helpers ---
 
-// canPlaceOnFoundation はカードを fIdx 段目のファンデーションに置けるか判定する。
+// CanPlaceOnFoundation reports whether card can be placed on foundation row fIdx.
 //
 // オズモシスのルール:
 //   - 各段は1スート専用。空段に最初に置くカードはベースランクでなければならず、
@@ -392,7 +392,7 @@ func (o *Osmosis) UndoN(n int) error {
 //   - 2段目以降は、置こうとするランクのカードが「すぐ上の段」に既に存在する場合のみ置ける
 //     （上段の進行が下段に「浸透」する）。空段に最初のカード（ベースランク）を置くには、
 //     すぐ上の段が開始済み（1枚以上）である必要がある。
-func (o *Osmosis) canPlaceOnFoundation(card *Card, fIdx int) bool {
+func (o *Osmosis) CanPlaceOnFoundation(card *Card, fIdx int) bool {
 	if fIdx < 0 || fIdx >= OsmosisFoundationCnt {
 		return false
 	}
@@ -423,7 +423,7 @@ func (o *Osmosis) canPlaceOnFoundation(card *Card, fIdx int) bool {
 // findFoundationFor はカードを置けるファンデーション段を返す（無ければ -1）。
 func (o *Osmosis) findFoundationFor(card *Card) int {
 	for fIdx := 0; fIdx < OsmosisFoundationCnt; fIdx++ {
-		if o.canPlaceOnFoundation(card, fIdx) {
+		if o.CanPlaceOnFoundation(card, fIdx) {
 			return fIdx
 		}
 	}

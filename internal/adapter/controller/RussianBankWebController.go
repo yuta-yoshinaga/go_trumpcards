@@ -60,16 +60,18 @@ type RussianBankWebOutput struct {
 	// **送り先はスートから自動で決まる**ので、画面はこれと選択中の札を
 	// 突き合わせて「どこへ行くのか」を示す (#6473)。design が空文字なら
 	// どのスートでもよい (空の台は任意のエースを受ける)。
-	FoundationNext   []*RussianBankWebFoundationNext `json:"foundationNext"`
-	Phase            int                             `json:"phase"`
-	CurrentPlayerIdx int                             `json:"currentPlayerIdx"`
-	GameEndFlag      bool                            `json:"gameEndFlag"`
-	WinnerIdx        int                             `json:"winnerIdx"`
-	IsHumanTurn      bool                            `json:"isHumanTurn"`
-	CanCallStop      bool                            `json:"canCallStop"`
-	CanUndo          bool                            `json:"canUndo"`
-	MoveCount        int                             `json:"moveCount"`
-	Hint             *RussianBankWebOutputHint       `json:"hint,omitempty"`
+	FoundationNext []*RussianBankWebFoundationNext `json:"foundationNext"`
+	// TableauNext は各タブロー列が次に受け取れる札の条件。
+	TableauNext      []*RussianBankWebTableauNext `json:"tableauNext"`
+	Phase            int                          `json:"phase"`
+	CurrentPlayerIdx int                          `json:"currentPlayerIdx"`
+	GameEndFlag      bool                         `json:"gameEndFlag"`
+	WinnerIdx        int                          `json:"winnerIdx"`
+	IsHumanTurn      bool                         `json:"isHumanTurn"`
+	CanCallStop      bool                         `json:"canCallStop"`
+	CanUndo          bool                         `json:"canUndo"`
+	MoveCount        int                          `json:"moveCount"`
+	Hint             *RussianBankWebOutputHint    `json:"hint,omitempty"`
 	WebOutputBase
 	Config RussianBankWebOutputConfig `json:"config"`
 }
@@ -79,6 +81,13 @@ type RussianBankWebFoundationNext struct {
 	// Design は必要なスート。空文字は「どのスートでもよい」。
 	Design string `json:"design"`
 	Value  int    `json:"value"`
+}
+
+// RussianBankWebTableauNext はタブロー列が次に受け取れる札の条件。
+type RussianBankWebTableauNext struct {
+	Any   bool `json:"any"`
+	Black bool `json:"black"`
+	Value int  `json:"value"`
 }
 
 // RussianBankWebOutputConfig ロシアンバンク (クラペット) の設定アウトプット。
@@ -116,6 +125,7 @@ func newRussianBankDefaultOutput(msg string) *RussianBankWebOutput {
 		Tableau:        make([][]*WebOutputCard, 0),
 		Foundations:    make([][]*WebOutputCard, 0),
 		FoundationNext: make([]*RussianBankWebFoundationNext, 0),
+		TableauNext:    make([]*RussianBankWebTableauNext, 0),
 		WinnerIdx:      -1,
 		WebOutputBase:  WebOutputBase{Message: msg},
 	}

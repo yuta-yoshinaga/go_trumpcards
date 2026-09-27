@@ -49,6 +49,8 @@
     "foulRule": "The top row (3 cards) must not beat the middle (5), and the middle must not beat the back (5). Break that order and the hand fouls — you lose every row for the round."
   },
   "placeRowAria": "Place on {{label}}",
+  "rowRemaining": "{{count}} slots remaining",
+  "rowFull": "Full",
   "rowAriaEmpty": "{{label}} {{count}} cards",
   "rowAriaFilled": "{{label}} {{count}} cards: {{cards}}",
   "pendingAnnounce": "To place: {{card}}",

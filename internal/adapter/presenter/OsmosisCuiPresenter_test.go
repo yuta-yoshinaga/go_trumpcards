@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/color"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
@@ -20,6 +21,7 @@ func setupOsmosisCuiMockDefaults(og *interfaces.MockOsmosisGame) {
 	og.On("GetStockCount").Return(34).Maybe()
 	og.On("GetWaste").Return(([]*domain.Card)(nil)).Maybe()
 	og.On("GetBaseRank").Return(7).Maybe()
+	og.On("CanPlaceOnFoundation", mock.Anything, mock.Anything).Return(false).Maybe()
 
 	var reserve [domain.OsmosisReserveCnt][]*domain.Card
 	for i := 0; i < domain.OsmosisReserveCnt; i++ {
@@ -148,6 +150,19 @@ func TestOsmosisCuiPresenter_Output(t *testing.T) {
 		p := new(OsmosisCuiPresenter)
 		result := p.Output(og, nil)
 		assert.Contains(t, result, "ゲームオーバー")
+	})
+
+	t.Run("shows playable foundation rows for each source card index", func(t *testing.T) {
+		og := new(interfaces.MockOsmosisGame)
+		og.On("CanPlaceOnFoundation", mock.Anything, 1).Return(true)
+		setupOsmosisCuiMockDefaults(og)
+		og.ExpectedCalls = filterCalls(og.ExpectedCalls, "GetReserve")
+		var reserve [domain.OsmosisReserveCnt][]*domain.Card
+		reserve[2] = []*domain.Card{domain.NewCard(domain.CardDesignHeart, 7, false)}
+		og.On("GetReserve").Return(reserve)
+		p := new(OsmosisCuiPresenter)
+		result := p.Output(og, nil)
+		assert.Contains(t, result, "リザーブ2列から置ける段: 1")
 	})
 }
 

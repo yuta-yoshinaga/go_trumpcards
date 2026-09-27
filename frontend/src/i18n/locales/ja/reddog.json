@@ -1,5 +1,6 @@
 {
   "title": "レッドドッグ",
+  "listSeparator": "、",
   "betGuide": "アンテをベットしてカードを2枚配ります",
   "label": {
     "chips": "チップ",
@@ -28,7 +29,11 @@
     "push": "プッシュ"
   },
   "payout": {
-    "total": "合計配当"
+    "total": "合計配当",
+    "winningRank": "当たりランク",
+    "multiplier": "倍率",
+    "none": "配当なし",
+    "refund": "勝ち配当なし（アンテ返金）"
   },
   "payoutRef": {
     "title": "配当表",
