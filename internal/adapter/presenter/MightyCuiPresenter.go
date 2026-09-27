@@ -112,6 +112,10 @@ func (p *MightyCuiPresenter) Output(m interfaces.MightyGame, lastErr error) stri
 		declarerIdx := m.GetDeclarerIdx()
 		if declarerIdx >= 0 {
 			partnerRevealed := m.GetPartnerRevealed()
+			// パートナー公開前は GetIsPartner() を見ず、宣言者だけを数える。
+			// ドメインは公開前からパートナー席に IsPartner を立てるため、合算すると
+			// 枚数からパートナーの席が割り出せてしまう (#8180)。
+			// declarerPoints / otherPoints は公開前は宣言者のみ / 他の席、公開後はチーム合計。
 			declarerPoints, otherPoints := 0, 0
 			for i := 0; i < m.GetPlayerCnt(); i++ {
 				player := m.GetPlayer(i)
