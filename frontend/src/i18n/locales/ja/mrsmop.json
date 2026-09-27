@@ -14,6 +14,8 @@
   "autoCompleteNotReady": "山札が空で全カードが表向きになるとクリックできます",
   "undo": "元に戻す",
   "empty": "空",
+  "tableauCardPosition": "列{{col}}、位置{{idx}}、{{card}}",
+  "emptyTableauPosition": "列{{col}}、空列",
   "score": "スコア",
   "difficulty": "難易度",
   "difficulty1": "1スート",
