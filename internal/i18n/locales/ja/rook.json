@@ -26,6 +26,7 @@
   "birdName": "ルーク",
   "promptBid": "{{name}} のビッドです",
   "promptBidHelp": "b <points> (70-120, 5刻み) / pa でパス",
+  "bidStatus": "残り入札者: {{remaining}}人 / パス済み: {{passed}}人",
   "promptNestExchange": "ネストを手札に加えました。5枚捨てて切り札色を宣言してください",
   "promptNestExchangeHelp": "e <i> <j> <k> <l> <m> <color> (color: 1=赤 2=黄 3=緑 4=黒)",
   "promptCurrentPlayer": "{{name}} の番です",

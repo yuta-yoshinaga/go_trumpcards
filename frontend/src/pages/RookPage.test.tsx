@@ -141,7 +141,8 @@ describe('RookPage', () => {
     const status = await screen.findByTestId('rook-bid-status');
     expect(status).toHaveTextContent('現在最高: 80点');
     expect(status).toHaveTextContent('残り入札者: 3人');
-    expect(status).toHaveTextContent('パス済み: CPU 1');
+    expect(status).toHaveTextContent('パス済み: 1人');
+    expect(status).toHaveTextContent('CPU 1');
   });
 
   it('shows the bid status as undecided when no bid has been made yet', async () => {
