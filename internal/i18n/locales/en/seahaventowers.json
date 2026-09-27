@@ -12,6 +12,8 @@
   "helpHint": "  h                    hint",
   "helpAutoComplete": "  ac                   auto-complete",
   "reservedHeader": "Reserved: ",
+  "cellSeparator": " | ",
+  "emptyCellDestination": "Empty (destination)",
   "foundationHeader": "Foundation: ",
   "columnLabel": "Column {{col}}:",
   "hintFromTableau": "tableau column {{col}}[{{idx}}]",
