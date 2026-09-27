@@ -196,6 +196,12 @@ function TrenteEtQuarantePageContent() {
 
             {isResultPhase && (
               <div className="text-ds-text-primary text-center text-sm mb-2" data-testid="teq-result">
+                <div>
+                  {t('result.betSummary', {
+                    bet: t(`betType.${['noir', 'rouge', 'couleur', 'inverse'][state.currentBet] ?? 'noir'}`),
+                    stake: state.stake,
+                  })}
+                </div>
                 {state.refait ? (
                   <div className="font-bold text-ds-warning">{t('result.refait')}</div>
                 ) : (

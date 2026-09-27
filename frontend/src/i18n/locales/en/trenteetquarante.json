@@ -33,6 +33,7 @@
     "result": "Result"
   },
   "result": {
+    "betSummary": "Bet: {{bet}} (stake {{stake}})",
     "win": "You win!",
     "lose": "You lose",
     "push": "Push — your stake is returned.",
@@ -40,7 +41,7 @@
     "margin": "{{winner}} wins by {{diff}} ({{winnerTotal}} vs {{loserTotal}})"
   },
   "payout": {
-    "total": "Net payout"
+    "total": "Total payout"
   },
   "refait": {
     "title": "What is a Refait (a tie at 31)?",

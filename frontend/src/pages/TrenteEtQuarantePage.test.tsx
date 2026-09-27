@@ -188,6 +188,8 @@ describe('TrenteEtQuarantePage', () => {
     await waitFor(() => expect(screen.getByTestId('teq-result')).toBeInTheDocument());
     expect(screen.getByTestId('teq-next-round-button')).toBeInTheDocument();
     expect(screen.getByTestId('teq-result')).toHaveTextContent('200');
+    expect(screen.getByTestId('teq-result')).toHaveTextContent('ノワール');
+    expect(screen.getByTestId('teq-result')).toHaveTextContent('100');
   });
 
   it('shows the running cumulative total beneath each dealt card', async () => {
