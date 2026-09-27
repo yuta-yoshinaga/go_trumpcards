@@ -99,10 +99,26 @@ describe('SpoonsPage', () => {
     fireEvent.click(await screen.findByRole('button', { name: '♠ A を渡す' }));
     await waitFor(() => expect(live).toHaveTextContent('スプーンを取れます。'));
     expect(screen.getByTestId('spoons-grab-button')).toBeEnabled();
-    // A rerender with the same open state does not repeat or clear the announcement.
+    // Grabbing closes the window, so this response announces that grabbing is unavailable.
     fireEvent.click(screen.getByTestId('spoons-grab-button'));
     await waitFor(() => expect(live).toHaveTextContent('スプーンを取れません。'));
     expect(screen.queryByTestId('spoons-grab-button')).not.toBeInTheDocument();
+  });
+
+  it('announces only once when consecutive responses keep the grab window open', async () => {
+    mockExec.mockResolvedValueOnce(passState).mockResolvedValueOnce(grabState).mockResolvedValueOnce(grabState);
+    renderWithProviders(<SpoonsPage />);
+
+    const live = await screen.findByTestId('spoons-grab-window-live');
+    fireEvent.click(await screen.findByRole('button', { name: '♠ A を渡す' }));
+    await waitFor(() => expect(live).toHaveTextContent('スプーンを取れます。'));
+    expect(soundCalls('turnTick')).toBe(1);
+
+    fireEvent.click(await screen.findByTestId('spoons-grab-button'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('grab'));
+    expect(live).toHaveTextContent('スプーンを取れます。');
+    expect(soundCalls('turnTick')).toBe(1);
+    expect(live.textContent?.match(/スプーンを取れます。/g)).toHaveLength(1);
   });
 
   it('renders skeleton when no state', () => {
