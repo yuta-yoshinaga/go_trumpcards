@@ -371,7 +371,7 @@ function OmbrePageContent() {
                 isMobile={isMobile}
                 dataTutorialPrefix="ombre"
                 validIndices={canPlay ? state.playableIndices : undefined}
-                highlightIndices={canPlay && isRequestedHint(state) ? (state.hint?.cardIndices ?? []) : undefined}
+                highlightIndices={canPlay && isRequestedHint(state) ? state.hint?.cardIndices : undefined}
                 restrictedTooltip={t('playButton')}
                 cardBadgeFor={matadorBadgeFor}
               />
@@ -385,13 +385,11 @@ function OmbrePageContent() {
               られないことがある (#5955)。
             */}
             <div data-testid="ombre-hint-live" role="status" aria-live="polite">
-              {state.hint && isRequestedHint(state) && (
+              {humanPlayer && state.hint && isRequestedHint(state) && (
                 <div className="text-ds-warning text-sm mb-2">
                   {t('hintMessage', {
-                    cards: (state.hint.cardIndices ?? [])
-                      .map((i) => humanPlayer?.cards[i])
-                      .filter((card) => card !== undefined)
-                      .map(cardAlt)
+                    cards: state.hint.cardIndices
+                      .map((i) => cardAlt(humanPlayer.cards[i] as NonNullable<(typeof humanPlayer.cards)[number]>))
                       .join(t('listSeparator')),
                     reason: t(`hint.${state.hint.reason}`),
                   })}
