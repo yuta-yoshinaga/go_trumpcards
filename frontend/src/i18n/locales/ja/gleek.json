@@ -41,6 +41,7 @@
   "you": "あなた",
   "cpu": "CPU {{id}}",
   "buyerBadge": "落札者",
+  "bidTurn": "入札手番",
   "score": "得点: {{score}}",
   "bidPhase": "競り中 — 最高額 {{bid}}。競り上げるか降りてください。",
   "discardPhase": "ストックを取り込みました — {{count}}枚選んでください（選択中 {{selected}}枚）",

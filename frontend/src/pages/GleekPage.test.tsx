@@ -76,6 +76,21 @@ describe('GleekPage', () => {
     expect(screen.getByText('落札者')).toBeInTheDocument();
   });
 
+  it('marks the CPU bidder row during the bidding phase', async () => {
+    mockExec.mockResolvedValue(
+      makeGleekState({
+        ...bidPhaseState,
+        currentBidderIdx: 1,
+        isHumanBidTurn: false,
+      }),
+    );
+    renderWithProviders(<GleekPage />);
+
+    const cpuBidderRow = await screen.findByTestId('gleek-player-1');
+    expect(cpuBidderRow).toContainElement(screen.getByTestId('gleek-bid-turn-label'));
+    expect(screen.getByTestId('gleek-player-0')).not.toContainElement(screen.getByTestId('gleek-bid-turn-label'));
+  });
+
   // **段階の点は出さないと見えない。** ラフとメルドで動いた点が画面に無いと、
   // 累積点だけが理由なく動いているように見える。
   it('shows the stock, the ruff and both meld kinds', async () => {
@@ -142,6 +157,22 @@ describe('GleekPage', () => {
     mockExec.mockResolvedValue(bidPhaseState);
     fireEvent.click(raise);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', { bid: 14 }));
+  });
+
+  it('marks the state-reported bidder beside their name and clears it outside bidding', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    const { unmount } = renderWithProviders(<GleekPage />);
+    const bidderLabel = await screen.findByTestId('gleek-bid-turn-label');
+    expect(bidderLabel).toHaveTextContent('入札手番');
+    expect(screen.getByTestId('gleek-player-0')).toHaveTextContent('あなた');
+    expect(screen.getByTestId('gleek-player-0')).toContainElement(bidderLabel);
+    expect(screen.getByTestId('gleek-bid-controls')).toBeInTheDocument();
+
+    unmount();
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<GleekPage />);
+    expect(await screen.findByTestId('gleek-player-0')).toHaveTextContent('あなた');
+    expect(screen.queryByTestId('gleek-bid-turn-label')).not.toBeInTheDocument();
   });
 
   it('dropping out dispatches bid 0', async () => {
