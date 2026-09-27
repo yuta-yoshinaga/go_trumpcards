@@ -47,6 +47,7 @@ func TestDiplomatCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "列0:")
 		assert.Contains(t, result, "列7:", "all eight columns are rendered")
 		assert.Contains(t, result, "72", "the stock count is rendered")
+		assert.Contains(t, result, i18n.T("diplomat.stockRules"))
 		assert.Contains(t, result, "手数: 0")
 	})
 

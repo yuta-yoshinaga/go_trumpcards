@@ -91,6 +91,14 @@ describe('DiplomatPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
   });
 
+  it('explains the stock pass and direct use of the waste beside the piles', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<DiplomatPage />);
+    expect(await screen.findByTestId('diplomat-stock-rules')).toHaveTextContent(
+      '山札は1枚ずつ捨て札へ移り、めくり直しはありません。捨て札の一番上はそのまま移動に使えます。',
+    );
+  });
+
   // An empty column takes any card from another column or the waste, so the
   // label says so and a tableau selection must be droppable there.
   it('labels an empty column as taking any card', async () => {
