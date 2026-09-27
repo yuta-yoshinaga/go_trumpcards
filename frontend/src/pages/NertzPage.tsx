@@ -59,7 +59,6 @@ function loadNertzCpuSpeed(): NertzCpuSpeed {
   return 'normal';
 }
 
-/** Duration to leave the collision shake/red-ring on a rejected foundation. */
 /** Duration of Nertz collision and placement feedback animations. */
 export const NERTZ_COLLISION_FEEDBACK_MS = 500;
 
