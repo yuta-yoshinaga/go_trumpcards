@@ -255,6 +255,17 @@ func TestPageOneCuiPresenter_HintOutput(t *testing.T) {
 		assert.Contains(t, p.HintOutput(m), i18n.T("pageone.hintDraw"))
 	})
 
+	t.Run("explains empty draw pile recycling when nothing is playable", func(t *testing.T) {
+		m, players := setupPageOneCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDrawPileCount")
+		m.On("GetDrawPileCount").Return(0)
+		m.On("IsHumanTurn").Return(true)
+		c := domain.NewCard(domain.CardDesignSpade, 9, false)
+		players[0].AddCard(c)
+		m.On("IsValidPlay", c).Return(false)
+		assert.Contains(t, p.HintOutput(m), i18n.T("pageone.hintDrawEmpty"))
+	})
+
 	t.Run("no hint on a CPU turn", func(t *testing.T) {
 		m, _ := setupPageOneCuiMockWithPlayers()
 		m.On("IsHumanTurn").Return(false)

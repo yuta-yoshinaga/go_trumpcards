@@ -15,6 +15,7 @@
   },
   "round": "Round {{n}}",
   "drawPile": "Draw pile: {{count}}",
+  "drawPileEmpty": "The draw pile is empty. The discard pile is reshuffled except for its top card; if no cards can be returned, this turn is passed.",
   "discardTop": "Discard",
   "playCondition": "Playable: {{suit}} or {{rank}}",
   "cards": "{{count}} cards",

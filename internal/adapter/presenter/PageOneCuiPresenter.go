@@ -94,6 +94,9 @@ func (p *PageOneCuiPresenter) Output(g interfaces.PageOneGame, lastErr error) st
 				}
 				b.WriteString(i18n.T("pageone.cmdPlay") + "\n")
 				b.WriteString(i18n.T("pageone.cmdDraw") + "\n")
+				if g.GetDrawPileCount() == 0 {
+					b.WriteString(i18n.T("pageone.drawPileEmpty") + "\n")
+				}
 			case domain.PageOnePhaseMustDeclare:
 				b.WriteString(color.Yellow(i18n.T("pageone.cuiMustDeclare")) + "\n")
 				b.WriteString(i18n.T("pageone.declarePhase") + "\n")
@@ -130,6 +133,9 @@ func (p *PageOneCuiPresenter) HintOutput(g interfaces.PageOneGame) string {
 		}
 	}
 	if len(parts) == 0 {
+		if g.GetDrawPileCount() == 0 {
+			return color.Yellow(i18n.T("pageone.hintDrawEmpty")) + "\n"
+		}
 		return color.Yellow(i18n.T("pageone.hintDraw")) + "\n"
 	}
 	return color.Yellow(i18n.Tf("pageone.hintPlayable", "cards", strings.Join(parts, " "))) + "\n"
