@@ -174,7 +174,6 @@ describe('KlaverjasPage', () => {
     expect(banner).toHaveTextContent('チームA がこのトリックで 45 点');
     expect(banner).toHaveAttribute('role', 'status');
     expect(banner).toHaveAttribute('aria-live', 'polite');
-    expect(banner).toHaveTextContent('チームA がこのトリックで 45 点');
   });
 
   it('shows last trick points and bonus at round end', async () => {

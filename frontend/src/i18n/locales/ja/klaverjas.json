@@ -40,7 +40,6 @@
     "mustOvertrump": "より強い切り札で追い越してください"
   },
   "nextTrick": "次のトリック",
-  "trickWinner": "{{team}} がトリック獲得",
   "trickResult": "{{team}} がこのトリックで {{points}} 点",
   "trickResultWithBonus": "{{team}} がこのトリックで {{points}} 点 (最終トリック +{{bonus}})",
   "nextRound": "次のラウンド",

@@ -40,7 +40,6 @@
     "mustOvertrump": "You must overtrump with a stronger trump"
   },
   "nextTrick": "Next Trick",
-  "trickWinner": "{{team}} won the trick",
   "trickResult": "{{team}} won {{points}} points this trick",
   "trickResultWithBonus": "{{team}} won {{points}} points this trick (final trick +{{bonus}})",
   "nextRound": "Next Round",
