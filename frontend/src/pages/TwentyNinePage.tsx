@@ -173,6 +173,8 @@ function TwentyNinePageContent() {
   const trumpSymbol = !state.trumpRevealed && !isHumanDeclarer ? t('hiddenTrump') : revealedTrumpSymbol;
   const trumpDisplay =
     !state.trumpRevealed && isHumanDeclarer ? t('trumpVisibleToYou', { suit: trumpSymbol }) : trumpSymbol;
+  const leadCard = state.currentTrick[0]?.card;
+  const leadSuitNumber: Record<string, number> = { SPADE: 1, CLOVER: 2, HEART: 3, DIAMOND: 4 };
 
   // The current highest (non-pass) bid; a new non-pass bid must beat it.
   const highestBid = Math.max(0, ...state.bids);
@@ -267,6 +269,16 @@ function TwentyNinePageContent() {
             <div className={lgTwoColGrid}>
               {/* Left: play area */}
               <div>
+                <div data-testid="tn29-lead-suit" className="mb-2 text-center text-ds-text-primary text-sm">
+                  {isPlayPhase && leadCard && (
+                    <span className="inline-flex items-center gap-2 rounded-lg bg-ds-surface px-3 py-1.5">
+                      {t('leadSuit', {
+                        symbol: suitSymbolAt(leadSuitNumber[leadCard.design] ?? 0, ''),
+                        suit: t(`suits.${leadCard.design.toLowerCase()}`),
+                      })}
+                    </span>
+                  )}
+                </div>
                 <TrickDisplay
                   currentTrick={state.currentTrick}
                   players={state.players}
