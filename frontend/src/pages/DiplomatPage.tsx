@@ -425,6 +425,9 @@ function DiplomatPageContent() {
                   )}
                 </div>
               </div>
+              <p className="mt-1 text-xs text-ds-text-muted" data-testid="diplomat-stock-rules">
+                {t('stockRules')}
+              </p>
             </div>
 
             <div className="flex gap-1 sm:gap-2 items-start" data-tutorial="cg-tableau">

@@ -19,6 +19,7 @@
   "deadEndMark": "[dead end]",
   "foundationHeader": "Foundations: ",
   "stockLine": "Stock: {{count}}",
+  "stockRules": "The stock turns one card at a time with no redeal. The waste top can be moved directly.",
   "wasteEmpty": "Waste: empty",
   "wasteTop": "Waste: {{card}} ({{count}})",
   "pileLabel": "Col {{pile}}:",

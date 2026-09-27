@@ -58,6 +58,7 @@ func (p *DiplomatCuiPresenter) Output(c interfaces.DiplomatGame, lastErr error) 
 				"count", strconv.Itoa(len(waste))))
 		}
 		b.WriteString("\n")
+		b.WriteString(i18n.T("diplomat.stockRules") + "\n")
 
 		b.WriteString("----------\n")
 
