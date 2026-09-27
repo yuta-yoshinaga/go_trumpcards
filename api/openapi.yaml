@@ -59208,6 +59208,23 @@ components:
               type: array
               items:
                 type: integer
+        captureScores:
+          type: array
+          description: >-
+            Per hand card, the normal and soor bonus points for each
+            corresponding capture option. The inner arrays align with
+            captureOptions; a soor bonus is added when the option empties the table.
+          items:
+            type: array
+            items:
+              type: object
+              properties:
+                normal:
+                  type: integer
+                  description: Points from the captured cards before a soor bonus.
+                soorBonus:
+                  type: integer
+                  description: Extra points awarded for emptying the table.
         deckRemaining:
           type: integer
         packsDealt:

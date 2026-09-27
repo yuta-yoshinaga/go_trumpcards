@@ -57,6 +57,11 @@ func (m *MockPasurGame) GetCaptureOptions(playerIdx, cardIndex int) [][]int {
 	return nil
 }
 
+func (m *MockPasurGame) CaptureScoreFor(playerIdx, handIdx int, tableIndices []int) domain.PasurCaptureScoreBreakdown {
+	args := m.Called(playerIdx, handIdx, tableIndices)
+	return args.Get(0).(domain.PasurCaptureScoreBreakdown)
+}
+
 func (m *MockPasurGame) GetWinners() []int {
 	args := m.Called()
 	if v := args.Get(0); v != nil {

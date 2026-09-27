@@ -11,6 +11,7 @@
   "promptCurrentPlayer": "手番: {{name}}",
   "captureTitle": "取れる組み合わせ:",
   "captureLine": "  手札{{idx}} {{card}} → 場札 {{targets}}",
+  "captureScore": "{{targets}}（通常{{normal}}点 + スール加算{{bonus}}点）",
   "captureNone": "取れる組み合わせはありません。場に置くしかありません。",
   "promptPlay": "play <i> [t...]・・・手札 i を出す（t... は場札の番号）",
   "leftover": "{{name}} が場の残り {{count}} 枚を取りました。",

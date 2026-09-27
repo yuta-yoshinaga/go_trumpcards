@@ -40,6 +40,7 @@ func (p *PasurWebPresenter) buildBase(s interfaces.PasurGame) *controller.PasurW
 	resObj.Phase = int(s.GetPhase())
 	resObj.Table = cardsToOutputOrEmpty(s.GetTableCards())
 	resObj.CaptureOptions = pasurCaptureOptions(s)
+	resObj.CaptureScores = pasurCaptureScores(s)
 	resObj.DeckRemaining = s.GetDeckRemaining()
 	resObj.PacksDealt = s.GetPacksDealt()
 	resObj.LastCaptureIdx = s.GetLastCaptureIdx()
@@ -49,6 +50,23 @@ func (p *PasurWebPresenter) buildBase(s interfaces.PasurGame) *controller.PasurW
 	resObj.Players = p.buildPlayersOutput(s)
 	resObj.Config = controller.PasurWebOutputConfig{PlayerCnt: s.GetConfig().PlayerCnt}
 	return resObj
+}
+
+func pasurCaptureScores(s interfaces.PasurGame) [][]domain.PasurCaptureScoreBreakdown {
+	out := make([][]domain.PasurCaptureScoreBreakdown, 0)
+	hand := s.GetPlayer(0)
+	if hand == nil {
+		return out
+	}
+	for hi := 0; hi < hand.GetCardsSize(); hi++ {
+		options := s.GetCaptureOptions(0, hi)
+		row := make([]domain.PasurCaptureScoreBreakdown, 0, len(options))
+		for _, option := range options {
+			row = append(row, s.CaptureScoreFor(0, hi, option))
+		}
+		out = append(out, row)
+	}
+	return out
 }
 
 // pasurCaptureOptions は人間の手札ごとの捕獲候補を返す。

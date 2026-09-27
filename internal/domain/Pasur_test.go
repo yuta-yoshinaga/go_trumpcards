@@ -11,6 +11,36 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestPasurScoreCaptureSeparatesSoorBonus(t *testing.T) {
+	cards := []*Card{NewCard(CardDesignClover, 2, false), NewCard(CardDesignDiamond, 10, false), NewCard(CardDesignSpade, 1, false)}
+	assert.Equal(t, PasurCaptureScoreBreakdown{Normal: 6, SoorBonus: 6}, PasurScoreCapture(cards, true))
+	assert.Equal(t, PasurCaptureScoreBreakdown{Normal: 6, SoorBonus: 0}, PasurScoreCapture(cards, false))
+}
+
+func TestPasurCaptureScoreForMatchesPlayedScore(t *testing.T) {
+	for _, tc := range []struct {
+		name    string
+		table   []*Card
+		indices []int
+		want    PasurCaptureScoreBreakdown
+	}{
+		{"部分捕獲", []*Card{NewCard(CardDesignSpade, 7, false), NewCard(CardDesignHeart, 13, false)}, []int{0}, PasurCaptureScoreBreakdown{Normal: 1}},
+		{"場を取り切る", []*Card{NewCard(CardDesignSpade, 7, false)}, []int{0}, PasurCaptureScoreBreakdown{Normal: 1, SoorBonus: 1}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			p := newTestPasur(t)
+			p.SetCurrentPlayerIdxForTest(0)
+			p.SetTableForTest(tc.table)
+			pasurHandOf(p, 0, NewCard(CardDesignClover, 4, false))
+			before := p.GetScore(0)
+			got := p.CaptureScoreFor(0, 0, tc.indices)
+			assert.Equal(t, tc.want, got)
+			require.NoError(t, p.PlayForTest(0, 0, tc.indices))
+			assert.Equal(t, got.Normal+got.SoorBonus, p.GetScore(0)-before)
+		})
+	}
+}
+
 func newTestPasur(t *testing.T) *Pasur {
 	t.Helper()
 	p := NewDefaultPasur()

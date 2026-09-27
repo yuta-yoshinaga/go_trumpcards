@@ -120,6 +120,21 @@ func TestPasurWebPresenterCarriesCapturesAndSoors(t *testing.T) {
 	assert.Equal(t, float64(4), human["score"], "2♣ の 2 点がスールで倍")
 }
 
+func TestPasurCaptureScoresUsesDomainBreakdown(t *testing.T) {
+	g := new(interfaces.MockPasurGame)
+	hand := domain.NewPasurPlayer(true)
+	hand.AddCard(domain.NewCard(domain.CardDesignClover, 4, false))
+	g.On("GetPlayer", 0).Return(hand).Once()
+	g.On("GetCaptureOptions", 0, 0).Return([][]int{{0}, {1, 2}}).Once()
+	normal := domain.PasurCaptureScoreBreakdown{Normal: 2}
+	soor := domain.PasurCaptureScoreBreakdown{Normal: 3, SoorBonus: 3}
+	g.On("CaptureScoreFor", 0, 0, []int{0}).Return(normal).Once()
+	g.On("CaptureScoreFor", 0, 0, []int{1, 2}).Return(soor).Once()
+
+	assert.Equal(t, [][]domain.PasurCaptureScoreBreakdown{{normal, soor}}, pasurCaptureScores(g))
+	g.AssertExpectations(t)
+}
+
 func TestPasurWebPresenterMessages(t *testing.T) {
 	p := new(PasurWebPresenter)
 
