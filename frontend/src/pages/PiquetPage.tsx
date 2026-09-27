@@ -226,6 +226,18 @@ function PiquetPageContent() {
       </div>
 
       <div data-tutorial="piquet-controls" className="flex flex-wrap gap-2 px-2">
+        <div data-testid="piquet-exchange-counts" aria-live="polite" aria-atomic="true">
+          {humanCanExchange && human ? (
+            <p className="w-full text-xs text-ds-text-muted">
+              {t('exchangeCounts', {
+                hand: human.cardCount,
+                selected: selectedDiscards.length,
+                // Piquet draws one talon card per discard, so the hand size stays the same.
+                remaining: human.cardCount,
+              })}
+            </p>
+          ) : null}
+        </div>
         {humanCanExchange && state.exchangeTurn === PiquetExchangeTurn.ELDER ? (
           <button
             type="button"
