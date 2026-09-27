@@ -8,6 +8,7 @@
   "round": "Round: {{round}}  Trick: {{trick}}  Trump: {{trump}}  Pot: {{pot}}",
   "playerLine": "{{name}}: {{cards}} cards  Round tricks: {{roundTricks}}  Score: {{score}}",
   "gameEnd": "Game over! {{name}} reaches the target and wins the match!",
+  "gameResult": "Game result — Winner: {{name}} / Final score: {{score}} pts / Target: {{target}} pts",
   "promptPlay": "Turn: {{name}}",
   "promptPlayHelp": "play <idx> ... play a card (must follow suit, but the top three trumps — trump 5, trump J, ♥A — may be held back: Reneging. Win 3 tricks to take the pot)",
   "promptTrickEnd": "Trick complete",

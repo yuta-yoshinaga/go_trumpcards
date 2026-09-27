@@ -36,6 +36,11 @@
     "winner": "Round winner: {{name}} takes the pot",
     "spoil": "Spoil (流局)! Nobody reached 3 tricks — the pot carries to the next round"
   },
+  "gameResult": {
+    "title": "Game Result",
+    "winner": "Match winner: {{name}}",
+    "score": "Final score: {{score}} pts / Target {{target}} pts"
+  },
   "trumpLegend": {
     "title": "Top-trump order and Reneging",
     "caption": "Trump strength is fixed (current trump: {{suit}}). The three top trumps (trump 5, J, and ♥A) carry no follow obligation and may be held back (Reneging). Other trumps use a simplified 10-high order (no red/black reversal).",
