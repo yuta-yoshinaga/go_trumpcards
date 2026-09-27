@@ -28,6 +28,7 @@
   "turnLabel": "Turn: {{name}}",
   "promptPlay": "p <idx>",
   "trickComplete": "Trick complete",
+  "lastTrickWinner": "Last trick winner: {{name}}",
   "promptNext": "n / next",
   "roundEndLine": "Round end. Declarer points: {{declarer}} / Defenders: {{defenders}} / Game value: {{value}}",
   "promptNextRound": "nr / nextround",

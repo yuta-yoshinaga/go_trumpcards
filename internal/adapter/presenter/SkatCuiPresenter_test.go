@@ -189,6 +189,27 @@ func TestSkatCuiPresenter_OutputPhases(t *testing.T) {
 	}
 }
 
+func TestSkatCuiPresenter_OutputShowsLastTrickWinner(t *testing.T) {
+	p := new(presenter.SkatCuiPresenter)
+	for _, phase := range []domain.SkatPhase{domain.SkatPhaseTrickEnd, domain.SkatPhasePlay} {
+		m := setupSkatCuiMock()
+		setupSkatCuiMockPhase(m, phase)
+		removeAllMockCalls(m, "GetLeadPlayerIdx")
+		removeAllMockCalls(m, "GetTrickNumber")
+		m.On("GetLeadPlayerIdx").Return(2)
+		m.On("GetTrickNumber").Return(2)
+		out := p.Output(m, nil)
+		assert.Contains(t, out, "直前のトリックの勝者:")
+		assert.Contains(t, out, "CPU 2")
+	}
+
+	m := setupSkatCuiMock()
+	removeAllMockCalls(m, "GetLeadPlayerIdx")
+	m.On("GetLeadPlayerIdx").Return(-1)
+	out := p.Output(m, nil)
+	assert.NotContains(t, out, "直前のトリックの勝者:")
+}
+
 // TestSkatCuiPresenter_OutputDeclaredVariants exercises the trump-suit symbol
 // branches and the Grand/Null game label paths.
 func TestSkatCuiPresenter_OutputDeclaredVariants(t *testing.T) {

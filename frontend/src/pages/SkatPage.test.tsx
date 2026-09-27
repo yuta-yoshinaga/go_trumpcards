@@ -182,6 +182,26 @@ beforeEach(() => {
 });
 
 describe('SkatPage', () => {
+  it('shows the completed trick winner through the next trick and clears it for a new round', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseHumanTurn,
+      trickNumber: 2,
+      leadPlayerIdx: 2,
+      players: [basePlayer(0, true), basePlayer(1, false), basePlayer(2, false)],
+    });
+    renderWithProviders(<SkatPage />);
+    await waitFor(() =>
+      expect(screen.getByTestId('last-trick-winner')).toHaveTextContent('直前のトリックの勝者: CPU 2'),
+    );
+  });
+
+  it('does not show a previous trick winner in a fresh round', async () => {
+    mockExec.mockResolvedValue({ ...bidPhaseHumanTurn, leadPlayerIdx: -1 });
+    renderWithProviders(<SkatPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('ビッドフェーズ'));
+    expect(screen.queryByTestId('last-trick-winner')).not.toBeInTheDocument();
+  });
+
   it('shows loading message before state arrives', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(
