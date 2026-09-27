@@ -190,6 +190,11 @@ func (p *DehlaPakadCuiPresenter) writeHandEnd(b *strings.Builder, g interfaces.D
 			"team", strconv.Itoa(res.WinnerTeam),
 			"a", strconv.Itoa(res.TeamTens[0]),
 			"b", strconv.Itoa(res.TeamTens[1])) + "\n")
+		if winner := g.GetLastTrickWinner(); winner >= 0 {
+			b.WriteString(i18n.Tf("dehlapakad.lastTrickWinner",
+				"name", cuiPlayerName(g.GetPlayer(winner), winner),
+				"team", strconv.Itoa(domain.DehlaPakadTeamOf(winner))) + "\n")
+		}
 		if res.Kot {
 			b.WriteString(color.Yellow(i18n.T("dehlapakad.kot."+res.KotReason)) + "\n")
 		}
