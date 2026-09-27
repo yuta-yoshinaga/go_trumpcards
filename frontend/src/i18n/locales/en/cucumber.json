@@ -26,8 +26,8 @@
     "giveUp": "Give up",
     "playAria": "Play {{card}}",
     "position": "position {{position}} of {{total}}",
-    "playable": "Playable",
-    "notPlayable": "Not playable"
+    "playable": "playable",
+    "notPlayable": "not playable"
   },
   "listSeparator": ", ",
   "status": {
