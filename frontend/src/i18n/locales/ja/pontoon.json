@@ -46,7 +46,7 @@
   "bankerTurn": "親として引くか止めるかを決めてください",
   "roundOver": "{{result}}",
   "bankPasses": "ポンツーンで親が移りました",
-  "payout": "{{payout}}",
+  "payout": "収支: {{payout}}",
   "landscapeBanner": "横画面での表示を推奨します",
   "seatAriaLabel": "{{name}} の手 合計{{total}}",
   "hiddenHandAriaLabel": "{{name}} の手は伏せられています",

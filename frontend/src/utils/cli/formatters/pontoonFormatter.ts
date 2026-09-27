@@ -42,7 +42,7 @@ export function formatPontoonState(state: PontoonResponse): string {
       const onTurn =
         state.phase === PontoonPhase.PLAYER_TURN && seatIdx === state.activeSeat && handIdx === state.activeHand;
       const marker = onTurn ? '> ' : '  ';
-      const payout = ended && hand.payout !== 0 ? ` -> ${hand.payout}` : '';
+      const payout = ended ? ` -> ${hand.payout}` : '';
       lines.push(`${marker}${seat.name} bet ${hand.bet} ${formatHand(hand)}${payout}`);
     });
   });
