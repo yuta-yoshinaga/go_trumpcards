@@ -136,6 +136,9 @@ describe('DragonTigerPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'ドラゴン' })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'タイガー' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /タイ \(8:1\)/ })).toBeInTheDocument();
+    expect(screen.getByTestId('bet-odds')).toHaveTextContent('ドラゴン 1:1');
+    expect(screen.getByTestId('bet-odds')).toHaveTextContent('タイガー 1:1');
+    expect(screen.getByTestId('bet-odds')).toHaveTextContent('タイ 8:1');
   });
 
   it('dispatches a Dragon bet on button click', async () => {
@@ -190,33 +193,33 @@ describe('DragonTigerPage', () => {
     await waitFor(() => expect(screen.getByText('払戻し: 50')).toBeInTheDocument());
   });
 
-  it('shows the payout breakdown — result, ×1 odds badge, and a green profit — for a Dragon win', async () => {
+  it('shows the payout breakdown — result, 1:1 odds badge, and a green profit — for a Dragon win', async () => {
     mockApi.mockResolvedValueOnce(dragonWinState); // bet Dragon 100, payout 200
     renderWithProviders(<DragonTigerPage />);
     const breakdown = await screen.findByTestId('payout-breakdown');
     expect(breakdown).toHaveTextContent('ドラゴンの勝ち');
-    expect(breakdown).toHaveTextContent('ドラゴン ×1');
+    expect(breakdown).toHaveTextContent('配当倍率: ドラゴン 1:1');
     const diff = screen.getByTestId('payout-diff');
     expect(diff).toHaveTextContent('+100');
     expect(diff).toHaveClass('text-ds-success');
   });
 
-  it('shows the tiger-win result and ×1 badge for a winning Tiger bet', async () => {
+  it('shows the tiger-win result and 1:1 odds badge for a winning Tiger bet', async () => {
     mockApi.mockResolvedValueOnce(tigerWinOnTigerBetState); // result -1, bet Tiger 100, payout 200
     renderWithProviders(<DragonTigerPage />);
     const breakdown = await screen.findByTestId('payout-breakdown');
     expect(breakdown).toHaveTextContent('タイガーの勝ち');
-    expect(breakdown).toHaveTextContent('タイガー ×1');
+    expect(breakdown).toHaveTextContent('配当倍率: タイガー 1:1');
     const diff = screen.getByTestId('payout-diff');
     expect(diff).toHaveTextContent('+100');
     expect(diff).toHaveClass('text-ds-success');
   });
 
-  it('shows the ×8 odds badge and a big green profit for a Tie-bet win', async () => {
+  it('shows the 8:1 odds badge and a big green profit for a Tie-bet win', async () => {
     mockApi.mockResolvedValueOnce(tieWinOnTieBetState); // bet Tie 100, payout 900
     renderWithProviders(<DragonTigerPage />);
     const breakdown = await screen.findByTestId('payout-breakdown');
-    expect(breakdown).toHaveTextContent('タイ ×8');
+    expect(breakdown).toHaveTextContent('配当倍率: タイ 8:1');
     expect(screen.getByTestId('payout-result')).toHaveTextContent('的中'); // tieWin text
     const diff = screen.getByTestId('payout-diff');
     expect(diff).toHaveTextContent('+800');
