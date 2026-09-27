@@ -287,7 +287,7 @@
   "rankandfile.log.wasteToTableau": "ウェイスト→タブロー列{{column}}",
   "rankandfile.log.wasteToFoundation": "ウェイスト→組札",
   "rankandfile.log.tableauToTableau": "タブロー列{{fromColumn}}→タブロー列{{toColumn}}",
-  "rankandfile.log.tableauToFoundation": "タブロー列{{column}}→組札",
+  "rankandfile.log.tableauToFoundation": "タブロー列{{column}}→組札{{foundation}}",
   "rankandfile.log.giveup": "ギブアップしました",
   "rankandfile.log.autocomplete": "オートコンプリートを実行しました",
   "continentalrummy.log.deal": "ラウンド{{round}}を配り、山札は{{stock}}枚",

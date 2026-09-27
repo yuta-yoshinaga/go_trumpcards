@@ -287,7 +287,7 @@
   "rankandfile.log.wasteToTableau": "Waste → tableau column {{column}}",
   "rankandfile.log.wasteToFoundation": "Waste → foundation",
   "rankandfile.log.tableauToTableau": "Tableau column {{fromColumn}} → tableau column {{toColumn}}",
-  "rankandfile.log.tableauToFoundation": "Tableau column {{column}} → foundation",
+  "rankandfile.log.tableauToFoundation": "Tableau column {{column}} → foundation {{foundation}}",
   "rankandfile.log.giveup": "Gave up",
   "rankandfile.log.autocomplete": "Ran autocomplete",
   "continentalrummy.log.deal": "round {{round}} dealt, {{stock}} in stock",

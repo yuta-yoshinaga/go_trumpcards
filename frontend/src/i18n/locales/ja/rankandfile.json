@@ -7,6 +7,7 @@
   "stock": "山札",
   "waste": "ウェイスト",
   "foundation": "組札",
+  "emptyFoundationAutoTarget": "空の組札を選ぶと、置ける組札が自動で選ばれます。移動先は棋譜で確認できます。",
   "tableau": "場札",
   "moveCount": "手数",
   "draw": "引く",

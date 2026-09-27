@@ -86,6 +86,20 @@ const withFoundationState: RankAndFileResponse = {
   foundation: [[card('SPADE', 1)], [], [card('HEART', 1), card('HEART', 2)], [], [], [], [], []],
 };
 
+const allFoundationsPopulatedState: RankAndFileResponse = {
+  ...playingState,
+  foundation: [
+    [card('SPADE', 1)],
+    [card('HEART', 1)],
+    [card('DIAMOND', 1)],
+    [card('CLOVER', 1)],
+    [card('SPADE', 2)],
+    [card('HEART', 2)],
+    [card('DIAMOND', 2)],
+    [card('CLOVER', 2)],
+  ],
+};
+
 const withHintState: RankAndFileResponse = {
   ...playingState,
   hint: { fromZone: 'waste', fromCol: -1, cardIndex: -1, toZone: 'tableau', toCol: 3 },
@@ -152,6 +166,18 @@ describe('RankAndFilePage', () => {
     await waitFor(() => expect(screen.getAllByText('—').length).toBe(8));
     expect(screen.queryByText('♠')).not.toBeInTheDocument();
     expect(screen.queryByText('♦')).not.toBeInTheDocument();
+  });
+
+  it('explains that an empty foundation click selects a valid pile automatically', async () => {
+    renderWithProviders(<RankAndFilePage />);
+    expect(await screen.findByText(/空の組札を選ぶと、置ける組札が自動で選ばれます/)).toBeInTheDocument();
+  });
+
+  it('does not show the empty foundation auto-target hint when every foundation is populated', async () => {
+    mockExec.mockResolvedValue(allFoundationsPopulatedState);
+    renderWithProviders(<RankAndFilePage />);
+    await waitFor(() => expect(screen.getByAltText('♣ 2')).toBeInTheDocument());
+    expect(screen.queryByText(/空の組札を選ぶと、置ける組札が自動で選ばれます/)).not.toBeInTheDocument();
   });
 
   it('labels a populated foundation with the suit actually sitting on it', async () => {
