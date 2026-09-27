@@ -114,6 +114,13 @@ describe('PenguinPage', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
   });
 
+  it('labels each tableau column with its zero-based number and current card count', async () => {
+    renderWithProviders(<PenguinPage />);
+    expect(await screen.findByRole('region', { name: 'タブロー列0、1枚' })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'タブロー列2、空' })).toBeInTheDocument();
+    expect(screen.getByTestId('pg-tableau-0-0')).toHaveAccessibleName('♠ K');
+  });
+
   it('renders empty tableau columns with prevRank placeholder (3 for baseRank=4)', async () => {
     renderWithProviders(<PenguinPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());

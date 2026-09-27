@@ -458,8 +458,12 @@ function PenguinPageContent() {
                 {state.tableau.map((col: (Card | null)[], colIdx: number) => {
                   const tableauColZone: PenguinMoveZone = { zone: 'tableau', col: colIdx };
                   return (
-                    <div
+                    <section
                       key={`col-${colIdx.toString()}`}
+                      aria-label={t('tableauColumnAriaLabel', {
+                        col: String(colIdx),
+                        count: col.length === 0 ? t('empty') : t('tableauCardCount', { count: col.length }),
+                      })}
                       data-testid={`pg-col-${colIdx.toString()}`}
                       className={`flex-1 min-w-0${isHintTarget('tableau', colIdx) ? ' rounded ring-2 ring-ds-success animate-pulse' : ''}`}
                     >
@@ -593,7 +597,7 @@ function PenguinPageContent() {
                           {col.length > 0 && <div style={{ height: (col.length - 1) * cardOverlap + cardHeight }} />}
                         </div>
                       </DropZone>
-                    </div>
+                    </section>
                   );
                 })}
               </div>
