@@ -120,8 +120,10 @@ describe('SchnapsenPage', () => {
     mockExec.mockResolvedValue(makeState({ isEndgame: true, validPlays: [0] }));
     renderWithProviders(<SchnapsenPage />);
     await waitFor(() => expect(screen.getByTestId('schnapsen-phase')).toHaveTextContent(/第2フェーズ/));
-    const legal = screen.getByRole('button', { name: '♠ A を出す' });
-    const illegal = screen.getByRole('button', { name: '♥ 10 を出す' });
+    const legal = screen.getByRole('button', { name: /♠ A を出す/ });
+    const illegal = screen.getByRole('button', { name: /♥ 10 を出す/ });
+    expect(legal).toHaveAccessibleName('♠ A を出す。合法です');
+    expect(illegal).toHaveAccessibleName('♥ 10 を出す。選択できません');
     // Legal card gets an additive success ring; illegal card does not.
     expect(legal.className).toContain('ring-ds-success');
     expect(illegal.className).not.toContain('ring-ds-success');
