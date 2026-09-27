@@ -62,7 +62,7 @@ func tysiacPlayerStr(g interfaces.TysiacGame, idx int) string {
 	// Web は同じ閾値で得点バーを警告色にしている (#6483)。閾値は
 	// frontend/src/pages/TysiacPage.tsx の NEAR_WIN_RATIO と対で、
 	// check-near-win-threshold.mjs が食い違いを落とす。
-	if tysiacNearWin(scores[idx], g.GetConfig().TargetPoints) {
+	if tysiacNearWin(scores[idx], target) {
 		line = color.Yellow(line)
 	}
 	b.WriteString(line)
