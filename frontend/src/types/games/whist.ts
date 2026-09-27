@@ -41,6 +41,8 @@ export interface WhistResponse extends BaseGameResponse {
   trickNumber: number;
   currentPlayerIdx: number;
   currentTrick: WhistTrickCard[];
+  lastTrick: WhistTrickCard[];
+  lastTrickWinner: number;
   trumpSuit: number;
   dealerIdx: number;
   teamScores: [number, number];

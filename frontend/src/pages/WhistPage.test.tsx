@@ -36,6 +36,8 @@ function makeState(overrides: Partial<WhistResponse> = {}): WhistResponse {
     trickNumber: 1,
     currentPlayerIdx: 0,
     currentTrick: [],
+    lastTrick: [],
+    lastTrickWinner: -1,
     trumpSuit: 0,
     dealerIdx: 0,
     teamScores: [0, 0],
@@ -57,6 +59,15 @@ beforeEach(() => {
 });
 
 describe('WhistPage', () => {
+  it('shows the previous trick, its player and winner after advancing', async () => {
+    const previous = [{ playerIdx: 0, card: card('SPADE', 1) }];
+    mockExec.mockResolvedValue(makeState({ lastTrick: previous, lastTrickWinner: 0 }));
+    renderWithProviders(<WhistPage />);
+    expect(await screen.findByText('直前のトリック')).toBeInTheDocument();
+    expect(screen.getByTestId('trick-winner-badge')).toHaveTextContent('勝者');
+    expect(screen.getByTestId('trick-display-cards').querySelector('img')).toHaveAttribute('alt', 'あなたが出した♠ A');
+  });
+
   it('calls reset on mount with default config', async () => {
     renderWithProviders(<WhistPage />);
     // useTrickGameBase fires the mount reset with four positional args.

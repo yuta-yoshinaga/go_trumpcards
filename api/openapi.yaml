@@ -81492,6 +81492,18 @@ components:
                     type: string
                   value:
                     type: integer
+        lastTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: "#/components/schemas/Card"
+        lastTrickWinner:
+          type: integer
+          description: "Player index of the last trick winner; -1 before any trick is completed."
         trumpSuit:
           type: integer
         dealerIdx:

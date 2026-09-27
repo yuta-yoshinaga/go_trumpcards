@@ -41,6 +41,8 @@ type WhistGame interface {
 	GetCurrentPlayerIdx() int
 	// GetCurrentTrick 現在のトリックを取得する
 	GetCurrentTrick() []*domain.TrickCard
+	// GetLastTrick returns the most recently resolved trick in the current round.
+	GetLastTrick() []*domain.TrickCard
 	// GetTrumpSuit トランプスートを取得する
 	GetTrumpSuit() int
 	// GetLeadPlayerIdx リードプレイヤーインデックスを取得する

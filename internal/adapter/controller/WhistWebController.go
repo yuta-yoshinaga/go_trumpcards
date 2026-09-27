@@ -47,6 +47,8 @@ type WhistWebOutput struct {
 	TrickNumber      int                     `json:"trickNumber"`
 	CurrentPlayerIdx int                     `json:"currentPlayerIdx"`
 	CurrentTrick     []*WebOutputTrickCard   `json:"currentTrick"`
+	LastTrick        []*WebOutputTrickCard   `json:"lastTrick"`
+	LastTrickWinner  int                     `json:"lastTrickWinner"`
 	TrumpSuit        int                     `json:"trumpSuit"`
 	DealerIdx        int                     `json:"dealerIdx"`
 	TeamScores       [2]int                  `json:"teamScores"`
@@ -93,10 +95,12 @@ var NewWhistWebController, NewWhistWebControllerWithProvider = webControllerPair
 
 func newWhistDefaultOutput(msg string) *WhistWebOutput {
 	return &WhistWebOutput{
-		Players:       make([]*WhistWebOutputPlayer, 0),
-		CurrentTrick:  make([]*WebOutputTrickCard, 0),
-		WinnerTeam:    -1,
-		WebOutputBase: WebOutputBase{Message: msg},
+		Players:         make([]*WhistWebOutputPlayer, 0),
+		CurrentTrick:    make([]*WebOutputTrickCard, 0),
+		LastTrick:       make([]*WebOutputTrickCard, 0),
+		LastTrickWinner: -1,
+		WinnerTeam:      -1,
+		WebOutputBase:   WebOutputBase{Message: msg},
 	}
 }
 

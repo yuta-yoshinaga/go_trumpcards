@@ -19,10 +19,12 @@ import (
 
 func mustWhistOutputJSON(msg string) string {
 	out := &controller.WhistWebOutput{
-		Players:       []*controller.WhistWebOutputPlayer{},
-		CurrentTrick:  []*controller.WebOutputTrickCard{},
-		WinnerTeam:    -1,
-		WebOutputBase: controller.WebOutputBase{Message: msg},
+		Players:         []*controller.WhistWebOutputPlayer{},
+		CurrentTrick:    []*controller.WebOutputTrickCard{},
+		LastTrick:       []*controller.WebOutputTrickCard{},
+		LastTrickWinner: -1,
+		WinnerTeam:      -1,
+		WebOutputBase:   controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {
@@ -32,7 +34,7 @@ func mustWhistOutputJSON(msg string) string {
 }
 
 func TestWhistWebController_Method(t *testing.T) {
-	mockOutput := `{"players":[],"phase":0,"roundNumber":0,"trickNumber":0,"currentPlayerIdx":0,"currentTrick":[],"trumpSuit":0,"dealerIdx":0,"teamScores":[0,0],"gameEndFlag":false,"winnerTeam":-1,"leadPlayerIdx":0,"message":"","config":{"cpuDifficulty":0,"pointLimit":0}}`
+	mockOutput := `{"players":[],"phase":0,"roundNumber":0,"trickNumber":0,"currentPlayerIdx":0,"currentTrick":[],"lastTrick":[],"lastTrickWinner":-1,"trumpSuit":0,"dealerIdx":0,"teamScores":[0,0],"gameEndFlag":false,"winnerTeam":-1,"leadPlayerIdx":0,"message":"","config":{"cpuDifficulty":0,"pointLimit":0}}`
 	expectedBody := mockOutput
 
 	wiMock := new(usecase.MockWhistInteractor)
