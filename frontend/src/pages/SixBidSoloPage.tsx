@@ -271,9 +271,7 @@ function SixBidSoloPageContent() {
                   const player = state.players[(state.trickLeaderIdx + i) % state.players.length];
                   return (
                     <div key={`trick-${c.design}-${c.value}-${i}`} className="flex flex-col items-center">
-                      <span className="text-ds-text-muted text-xs">
-                        {player ? playerLabel(player.id, player.isHuman) : ''}
-                      </span>
+                      <span className="text-ds-text-muted text-xs">{playerLabel(player.id, player.isHuman)}</span>
                       <CardImage card={c} width={cardWidth} />
                     </div>
                   );

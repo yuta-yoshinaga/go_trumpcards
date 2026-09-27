@@ -128,7 +128,7 @@ func (p *SixBidSoloCuiPresenter) Output(g interfaces.SixBidSoloGame, lastErr err
 		if trick := g.GetTrick(); len(trick) > 0 {
 			var t strings.Builder
 			for i, c := range trick {
-				seat := (g.GetTrickLeaderIdx() + i) % len(g.GetPlayers())
+				seat := (g.GetTrickLeaderIdx() + i) % domain.SixBidSoloPlayerCnt
 				t.WriteString(cuiPlayerName(g.GetPlayer(seat), seat) + " " + cuiCardStr(c) + " ")
 			}
 			b.WriteString(i18n.Tf("sixbidsolo.trick", "cards", strings.TrimSpace(t.String())) + "\n")
