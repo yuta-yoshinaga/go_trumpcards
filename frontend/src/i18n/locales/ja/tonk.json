@@ -24,6 +24,8 @@
   "scoresRound": "ラウンド",
   "scoresTotal": "累計",
   "drawStockButton": "山札から引く",
+  "endRoundDrawButton": "山札切れでラウンドを終了",
+  "emptyStockDrawInfo": "山札から引くとラウンドは引き分けで終了します。捨て札から引けば続行できます。",
   "drawDiscardButton": "捨て札から引く",
   "drawDiscardCardLabel": "捨て札から引く: {{card}}",
   "discardButton": "捨てる",

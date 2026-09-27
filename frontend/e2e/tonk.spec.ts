@@ -15,6 +15,7 @@ test.describe('Tonk E2E', () => {
     await expect(page.getByText('スコア', { exact: true }).first()).toBeVisible();
 
     const drawStockButton = page.getByRole('button', { name: '山札から引く' });
+    const endRoundForEmptyStockButton = page.getByRole('button', { name: '山札切れでラウンドを終了' });
     const drawDiscardButton = page.getByRole('button', { name: '捨て札から引く', exact: true });
     const discardButton = page.getByRole('button', { name: '捨てる' });
     const knockButton = gameButton(page, 'ノック');
@@ -28,6 +29,7 @@ test.describe('Tonk E2E', () => {
       await expect(
         drawStockButton
           .or(drawDiscardButton)
+          .or(endRoundForEmptyStockButton)
           .or(discardButton)
           .or(knockButton)
           .or(nextRoundButton)
@@ -37,11 +39,27 @@ test.describe('Tonk E2E', () => {
 
       const drawStockVisible = await drawStockButton.isVisible();
       const drawDiscardVisible = await drawDiscardButton.isVisible();
+      const endRoundForEmptyStockVisible = await endRoundForEmptyStockButton.isVisible();
       const discardVisible = await discardButton.isVisible();
       const knockVisible = await knockButton.isVisible();
       const nextRoundVisible = await nextRoundButton.isVisible();
 
-      if (!drawStockVisible && !drawDiscardVisible && !discardVisible && !knockVisible && !nextRoundVisible) break;
+      if (
+        !drawStockVisible &&
+        !drawDiscardVisible &&
+        !endRoundForEmptyStockVisible &&
+        !discardVisible &&
+        !knockVisible &&
+        !nextRoundVisible
+      )
+        break;
+
+      if (endRoundForEmptyStockVisible) {
+        interactions++;
+        await endRoundForEmptyStockButton.click();
+        await waitForLoaded(page);
+        continue;
+      }
 
       if (drawStockVisible || drawDiscardVisible) {
         interactions++;

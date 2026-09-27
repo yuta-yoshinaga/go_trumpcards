@@ -23,7 +23,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, POINT_LIMIT_OPTIONS, useTonkGame } from '../hooks/useTonkGame';
-import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
+import { btnPrimary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { focusRingCard, playableCardStyle, selectedCardStyle } from '../styles/cardStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -466,18 +466,29 @@ function TonkPageContent() {
 
             <div className="flex gap-2 items-center flex-wrap">
               {isDrawPhase && isHumanTurn && (
-                <div className="flex gap-2" data-tutorial="tonk-draw-area">
-                  <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
-                    {t('drawStockButton')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleDrawDiscard}
-                    disabled={loading || !state.discardTop}
-                  >
-                    {t('drawDiscardButton')}
-                  </button>
+                <div className="flex flex-col gap-2" data-tutorial="tonk-draw-area">
+                  <p className="text-sm text-ds-text-muted" role="status" aria-live="polite">
+                    {state.drawPileCount === 0 ? t('emptyStockDrawInfo') : ''}
+                  </p>
+                  <div className="flex gap-2">
+                    {state.drawPileCount === 0 ? (
+                      <button type="button" className={btnWarning} onClick={handleDrawStock} disabled={loading}>
+                        {t('endRoundDrawButton')}
+                      </button>
+                    ) : (
+                      <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
+                        {t('drawStockButton')}
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handleDrawDiscard}
+                      disabled={loading || !state.discardTop}
+                    >
+                      {t('drawDiscardButton')}
+                    </button>
+                  </div>
                 </div>
               )}
               {isDiscardPhase && isHumanTurn && (
