@@ -16,7 +16,10 @@
     "you": "You",
     "cpu": "CPU{{idx}}",
     "team": "T{{team}}",
-    "tricksTaken": "{{count}} tricks"
+    "tricksTaken": "{{count}} tricks",
+    "suitCounts": "Pre-bid hand suit counts: {{counts}}",
+    "suitCount": "{{suit}} {{count}}",
+    "suits": { "spade": "Spades", "clover": "Clubs", "heart": "Hearts", "diamond": "Diamonds" }
   },
   "meld": {
     "none": "no meld",
@@ -25,6 +28,7 @@
     "summary": "{{detail}}={{points}}"
   },
   "currentTrick": "Current trick",
+  "listSeparator": ", ",
   "actions": {
     "take": "Take it",
     "pass": "Pass",

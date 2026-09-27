@@ -307,4 +307,22 @@ describe('TarabishPage card points', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.queryByTestId('tb-points-0')).not.toBeInTheDocument();
   });
+
+  it('shows the human hand suit counts only while bidding', async () => {
+    mockExec.mockResolvedValue(makeState({ trumpSuit: 0 }));
+    renderWithProviders(<TarabishPage />);
+    const counts = await screen.findByTestId('tb-bid-suit-counts');
+    expect(counts).toHaveTextContent('スペード 1');
+    expect(counts).toHaveTextContent('クラブ 1');
+    expect(counts).toHaveTextContent('ハート 1');
+    expect(counts).toHaveTextContent('ダイヤ 0');
+    expect(counts).toHaveTextContent('枚数');
+  });
+
+  it('does not show bid suit counts after trump is settled', async () => {
+    mockExec.mockResolvedValue(playing());
+    renderWithProviders(<TarabishPage />);
+    await screen.findByTestId('tb-trump');
+    expect(screen.queryByTestId('tb-bid-suit-counts')).not.toBeInTheDocument();
+  });
 });

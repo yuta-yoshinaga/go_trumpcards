@@ -16,7 +16,10 @@
     "you": "あなた",
     "cpu": "CPU{{idx}}",
     "team": "T{{team}}",
-    "tricksTaken": "獲得{{count}}"
+    "tricksTaken": "獲得{{count}}",
+    "suitCounts": "宣言前の手札のスート別枚数: {{counts}}",
+    "suitCount": "{{suit}} {{count}}枚",
+    "suits": { "spade": "スペード", "clover": "クラブ", "heart": "ハート", "diamond": "ダイヤ" }
   },
   "meld": {
     "none": "メルドなし",
@@ -25,6 +28,7 @@
     "summary": "{{detail}}={{points}}点"
   },
   "currentTrick": "現在のトリック",
+  "listSeparator": "、",
   "actions": {
     "take": "引き受ける",
     "pass": "見送る",
