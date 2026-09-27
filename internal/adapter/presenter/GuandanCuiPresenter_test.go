@@ -150,9 +150,25 @@ func TestGuandanCuiPresenter_ShowsTheFinishingOrder(t *testing.T) {
 	o := defaultGuandanOpts()
 	o.finished = []int{2, 0}
 	out := new(presenter.GuandanCuiPresenter).Output(setupGuandanMock(o), nil)
-	assert.Contains(t, out, "(T0 着順2)")
+	assert.Contains(t, out, "(T0 味方 着順2)")
 	assert.Contains(t, out, "着順1")
 	assert.Contains(t, out, "着順-")
+}
+
+func TestGuandanCuiPresenter_LabelsTeamsFromTheHumanPerspective(t *testing.T) {
+	out := new(presenter.GuandanCuiPresenter).Output(setupGuandanMock(defaultGuandanOpts()), nil)
+	assert.Contains(t, out, "(T0 味方 着順-")
+	assert.Contains(t, out, "(T1 相手 着順-")
+}
+
+func TestGuandanCuiPresenter_NoHumanOmitsRelation(t *testing.T) {
+	i18n.SetLang("en")
+	defer i18n.SetLang("ja")
+	o := defaultGuandanOpts()
+	o.noHuman = true
+	out := new(presenter.GuandanCuiPresenter).Output(setupGuandanMock(o), nil)
+	assert.NotContains(t, out, "(T0  out")
+	assert.Contains(t, out, "(T0 out")
 }
 
 func TestGuandanCuiPresenter_Error(t *testing.T) {

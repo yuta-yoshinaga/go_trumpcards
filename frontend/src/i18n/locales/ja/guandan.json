@@ -3,6 +3,8 @@
   "cpu": "CPU {{id}}",
   "seat": "席{{n}}",
   "team": "チーム{{n}}",
+  "ally": "味方",
+  "opponent": "相手",
   "playersTitle": "プレイヤー",
   "cardCount": "{{count}}枚",
   "outAt": "着順{{n}}",

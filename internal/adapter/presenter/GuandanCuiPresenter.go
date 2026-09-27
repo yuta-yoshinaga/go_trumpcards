@@ -80,10 +80,23 @@ func guandanPlayerStr(g interfaces.GuandanGame, i int) string {
 			rank = strconv.Itoa(pos + 1)
 		}
 	}
-	return i18n.Tf("guandan.playerLine",
+	relation := ""
+	if human := guandanHumanIdx(g); human >= 0 {
+		key := "guandan.opponent"
+		if domain.GuandanTeamOf(i) == domain.GuandanTeamOf(human) {
+			key = "guandan.ally"
+		}
+		relation = i18n.T(key)
+	}
+	lineKey := "guandan.playerLineNoRelation"
+	if human := guandanHumanIdx(g); human >= 0 {
+		lineKey = "guandan.playerLine"
+	}
+	return i18n.Tf(lineKey,
 		"seat", strconv.Itoa(i),
 		"name", cuiPlayerName(player, i),
 		"team", strconv.Itoa(domain.GuandanTeamOf(i)),
+		"relation", relation,
 		"rank", rank,
 		"turn", turn,
 		"count", strconv.Itoa(player.GetCardsSize()),
