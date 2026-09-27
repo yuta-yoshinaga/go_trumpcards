@@ -1079,7 +1079,8 @@
     "errorBoundaryReport": "問題を報告",
     "errorBoundaryHelp": "申し訳ありません。下のボタンで対応をお選びいただけます。",
     "errorBoundaryRepeated": "同じエラーが繰り返されています。ページをリロードしてください。",
-    "errorBoundaryDetails": "エラーの詳細を表示"
+    "errorBoundaryDetails": "エラーの詳細を表示",
+    "selectSourceFirst": "先に移動する札を選んでください"
   },
   "messageCode": {
     "quinze.chipsReplenished": "チップが不足したため、開始チップに補充しました。",
