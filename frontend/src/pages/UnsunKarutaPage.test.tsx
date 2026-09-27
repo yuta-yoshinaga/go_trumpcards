@@ -20,6 +20,33 @@ beforeEach(() => {
 });
 
 describe('UnsunKarutaPage', () => {
+  it('highlights the individual trick winner only until the next trick starts', async () => {
+    const trickEnd = makeUnsunKarutaState({
+      phase: 1,
+      isHumanTurn: false,
+      playableIndices: [],
+      lastTrickWinner: 3,
+      currentTrick: [
+        { playerIdx: 3, card: { design: 'JOKER', value: 1, deck: 'unsun', glyph: '杯', label: '1', color: 'red' } },
+      ],
+    });
+    const nextTrick = makeUnsunKarutaState({ trickNumber: 2 });
+    mockExec.mockReset();
+    mockExec.mockResolvedValueOnce(trickEnd).mockResolvedValueOnce(nextTrick);
+
+    renderWithProviders(<UnsunKarutaPage />);
+    const winnerCard = await screen.findByTestId('trick-winner-badge');
+    expect(winnerCard).toHaveTextContent('勝者');
+    expect(document.querySelector('[data-trick-winner="true"]')).toHaveTextContent('CPU 3');
+    expect(screen.getAllByTitle('丸物: このスートは 1 が最強です')).toHaveLength(4);
+    expect(screen.getByTestId('unsunkaruta-next-trick')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId('unsunkaruta-next-trick'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('next'));
+    expect(await screen.findByText('トリック 2/9')).toBeInTheDocument();
+    expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument();
+  });
+
   it('marks round suits in both the hand and trick with the reverse-rank explanation', async () => {
     mockExec.mockResolvedValue(
       makeUnsunKarutaState({
