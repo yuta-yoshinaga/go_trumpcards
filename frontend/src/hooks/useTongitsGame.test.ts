@@ -41,6 +41,8 @@ const defaultState: TongitsResponse = {
   gameEndFlag: false,
   winnerIdx: -1,
   isTongits: false,
+  roundEndReason: 0,
+  roundWinner: -1,
   remainingPoints: -1,
   message: '',
   config: { cpuDifficulty: 1, pointLimit: 50 },

@@ -12,6 +12,13 @@
   "communityCards": "Community Cards",
   "winningHand": "Hand: {{hand}}",
   "yourHand": "Your Hand",
+  "betComparison": {
+    "currentMaximum": "Current highest bet: {{amount}}",
+    "yourContribution": "Your contribution: {{amount}}",
+    "callDifference": "Amount to call: {{amount}}",
+    "noCallNeeded": "No call needed (you can check)",
+    "minimumRaise": "Minimum raise: {{amount}}"
+  },
   "handNumber": "Hand #{{count}} (Level up: every {{level}} hands)",
   "bettingLimit": {
     "label": "Limit",

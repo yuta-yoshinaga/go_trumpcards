@@ -86,6 +86,11 @@ func TestSjavsWebPresenter_HidesTheCpuHandButNeverTheBids(t *testing.T) {
 	assert.Equal(t, float64(1), cpu["team"], "seat 1 is the other team")
 }
 
+func TestSjavsCuiPresenter_LabelsPointsWithPlayerTeamIdentifiers(t *testing.T) {
+	output := new(SjavsCuiPresenter).Output(sjStub(domain.SjavsPhaseBid, -1, false, -1), nil)
+	assert.Contains(t, output, "今ハンドの点: チーム0 60 / チーム1 60（合計120）")
+}
+
 func TestSjavsWebPresenter_ShipsTheTrumpCountSoTheClientNeverRecountsIt(t *testing.T) {
 	// 常時切札 6 枚を含むので、クライアントが切札スートだけ数えると必ず足りない。
 	red := sjStub(domain.SjavsPhasePlay, domain.CardDesignHeart, false, -1)

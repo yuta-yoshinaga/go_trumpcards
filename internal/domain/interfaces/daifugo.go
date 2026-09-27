@@ -50,6 +50,8 @@ type DaifugoGame interface {
 	GetPlayableCardIndices() []int
 	// GetCurrentTurn 現在の手番プレイヤーインデックスを取得する
 	GetCurrentTurn() int
+	// GetFieldClearedLeader 場流れ後にリード権を得たプレイヤーを取得する (-1 = なし)
+	GetFieldClearedLeader() int
 	// GetConfig ゲーム設定を取得する
 	GetConfig() domain.DaifugoConfig
 	// GetPassCount パス回数を取得する

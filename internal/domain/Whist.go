@@ -44,6 +44,7 @@ type Whist struct {
 	trickNumber      int
 	currentPlayerIdx int
 	currentTrick     []*TrickCard
+	lastTrick        []*TrickCard
 	trumpSuit        int // トランプ（切り札）スート
 	leadPlayerIdx    int
 	dealerIdx        int
@@ -84,6 +85,7 @@ func (w *Whist) Reset() {
 	w.roundNumber = 1
 	w.trickNumber = 0
 	w.currentTrick = nil
+	w.lastTrick = nil
 	w.leadPlayerIdx = -1
 	w.currentPlayerIdx = -1
 	w.dealerIdx = 0
@@ -114,6 +116,7 @@ func (w *Whist) NextRound() {
 	w.roundNumber++
 	w.trickNumber = 0
 	w.currentTrick = nil
+	w.lastTrick = nil
 	w.leadPlayerIdx = -1
 	w.currentPlayerIdx = -1
 	w.dealerIdx = (w.dealerIdx + 1) % WhistPlayerCnt
@@ -197,6 +200,7 @@ func (w *Whist) ResolveTrick() {
 	}, trickCards)
 
 	w.leadPlayerIdx = winnerIdx
+	w.lastTrick = append([]*TrickCard(nil), w.currentTrick...)
 
 	if w.trickNumber >= WhistHandSize {
 		w.phase = WhistPhaseRoundEnd
@@ -281,6 +285,9 @@ func (w *Whist) SetCurrentPlayerIdx(idx int) { w.currentPlayerIdx = idx }
 
 // GetCurrentTrick 現在のトリック取得
 func (w *Whist) GetCurrentTrick() []*TrickCard { return w.currentTrick }
+
+// GetLastTrick returns the most recently resolved trick in the current round.
+func (w *Whist) GetLastTrick() []*TrickCard { return w.lastTrick }
 
 // SetCurrentTrick トリック設定 (テスト用)
 func (w *Whist) SetCurrentTrick(trick []*TrickCard) { w.currentTrick = trick }
@@ -746,6 +753,7 @@ type whistJSON struct {
 	TrickNumber      int               `json:"tn"`
 	CurrentPlayerIdx int               `json:"ci"`
 	CurrentTrick     []*TrickCard      `json:"ct"`
+	LastTrick        []*TrickCard      `json:"lt,omitempty"`
 	TrumpSuit        int               `json:"ts"`
 	LeadPlayerIdx    int               `json:"li"`
 	DealerIdx        int               `json:"di"`
@@ -766,6 +774,7 @@ func (w *Whist) MarshalJSON() ([]byte, error) {
 		TrickNumber:      w.trickNumber,
 		CurrentPlayerIdx: w.currentPlayerIdx,
 		CurrentTrick:     w.currentTrick,
+		LastTrick:        w.lastTrick,
 		TrumpSuit:        w.trumpSuit,
 		LeadPlayerIdx:    w.leadPlayerIdx,
 		DealerIdx:        w.dealerIdx,
@@ -786,7 +795,7 @@ func (w *Whist) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
 	}
-	if len(j.Players) > whistMaxSliceLen || len(j.CurrentTrick) > whistMaxSliceLen ||
+	if len(j.Players) > whistMaxSliceLen || len(j.CurrentTrick) > whistMaxSliceLen || len(j.LastTrick) > whistMaxSliceLen ||
 		len(j.ActionLog) > whistMaxSliceLen {
 		return fmt.Errorf("whist: input array exceeds maximum allowed size")
 	}
@@ -804,6 +813,7 @@ func (w *Whist) UnmarshalJSON(data []byte) error {
 	w.trickNumber = j.TrickNumber
 	w.currentPlayerIdx = j.CurrentPlayerIdx
 	w.currentTrick = j.CurrentTrick
+	w.lastTrick = j.LastTrick
 	if w.currentTrick == nil {
 		w.currentTrick = make([]*TrickCard, 0)
 	}

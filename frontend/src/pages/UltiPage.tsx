@@ -184,6 +184,23 @@ function UltiPageContent() {
 
   const contractLabel = t(CONTRACT_KEYS[state.contract] ?? 'contractNone');
   const trumpLabel = state.trumpSuit >= 1 ? t(SUIT_KEYS[state.trumpSuit] ?? 'suitNone') : t('suitNone');
+  const declarer = state.players[state.declarerIdx];
+  const contractProgress = (() => {
+    if (!(isPlayPhase || isTrickEnd) || !declarer) return null;
+
+    switch (state.contract) {
+      case 1:
+        return t('contractProgress.party', { current: declarer.cardPoints, required: state.contractRequirement });
+      case 2:
+        return t('contractProgress.betli');
+      case 3:
+        return t('contractProgress.durchmarsch', { current: declarer.trickCount, required: state.contractRequirement });
+      case 4:
+        return t('contractProgress.ulti', { suit: trumpLabel });
+      default:
+        return null;
+    }
+  })();
 
   const handleManualReset = () => {
     hideActionLog();
@@ -258,6 +275,11 @@ function UltiPageContent() {
               <span className="mr-4">{t('contract', { contract: contractLabel })}</span>
               <span>{t('trump', { suit: trumpLabel })}</span>
             </div>
+            {contractProgress && (
+              <div className="text-ds-text-muted text-sm text-center mb-2" data-testid="ulti-contract-progress">
+                {contractProgress}
+              </div>
+            )}
 
             <div className={lgTwoColGrid}>
               {/* Left: play area */}

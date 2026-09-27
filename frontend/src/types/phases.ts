@@ -48,6 +48,16 @@ export const BjPhase = {
   EARLY_SURRENDER: 6,
 } as const;
 
+/** BlackJack double down block reasons (sync: internal/domain/BlackJack.go). */
+export const BjDoubleDownBlock = {
+  NONE: 0,
+  WRONG_PHASE: 1,
+  NOT_TWO_CARDS: 2,
+  SPLIT_NO_DAS: 3,
+  HAND_FINISHED: 4,
+  INSUFFICIENT_CHIPS: 5,
+} as const;
+
 /** Poker phase constants (sync: internal/domain/Poker.go). */
 export const PokerPhase = {
   INIT: 0,
@@ -2365,6 +2375,9 @@ export const TrenteEtQuaranteBetType = {
   COULEUR: 2,
   INVERSE: 3,
 } as const;
+
+/** Valid bet types for Trente et Quarante. */
+export type TrenteEtQuaranteBetTypeValue = (typeof TrenteEtQuaranteBetType)[keyof typeof TrenteEtQuaranteBetType];
 
 /** Trente et Quarante winning-row constants (sync: internal/domain/TrenteEtQuarante.go). A row index, not a color. */
 export const TrenteEtQuaranteWinningRow = {

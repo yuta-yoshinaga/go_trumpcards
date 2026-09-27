@@ -26,6 +26,7 @@
   "playableList": "出せる札: {{cards}}",
   "promptPlayHelp": "play <idx> ... 札を出す",
   "promptHandEnd": "ハンド終了 — 組{{team}} の勝ち（10 の枚数 {{a}} 対 {{b}}）",
+  "lastTrickWinner": "最終トリックの勝者: {{name}}（組{{team}}）",
   "promptHandEndHelp": "nexthand ... 次のハンドへ",
   "gameEnd": "ゲーム終了！ 組{{team}} の勝ちです。",
   "suit.spade": "スペード（♠）",

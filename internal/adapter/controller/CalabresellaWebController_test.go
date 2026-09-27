@@ -38,6 +38,7 @@ func TestCalabresellaWebController_Method(t *testing.T) {
 	diMock.On("ResetWithConfig", domain.DefaultCalabresellaConfig()).Return(mockOutput)
 	diMock.On("Bid", domain.CalabresellaBidChiamo).Return(mockOutput)
 	diMock.On("Discard", 2).Return(mockOutput)
+	diMock.On("DiscardCards", []int{0, 1, 2, 3}).Return(mockOutput)
 	diMock.On("Play", 3).Return(mockOutput)
 	diMock.On("NextTrick").Return(mockOutput)
 	diMock.On("NextRound").Return(mockOutput)
@@ -86,7 +87,10 @@ func TestCalabresellaWebController_Method(t *testing.T) {
 		recorded.BodyIs(mockOutput)
 	})
 	t.Run("discard missing cardIndex", func(t *testing.T) {
-		run(t, `{"command":"d","sessionId":"s1"}`, mustCalabresellaOutputJSON("param error: cardIndex is required."), http.StatusBadRequest)
+		run(t, `{"command":"d","sessionId":"s1"}`, mustCalabresellaOutputJSON("param error: cardIndices are required."), http.StatusBadRequest)
+	})
+	t.Run("discard cards", func(t *testing.T) {
+		run(t, `{"command":"discard","sessionId":"s1","cardIndices":[0,1,2,3]}`, mockOutput, http.StatusOK)
 	})
 	t.Run("play", func(t *testing.T) {
 		input := controller.CalabresellaWebInput{

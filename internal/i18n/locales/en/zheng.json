@@ -3,6 +3,7 @@
   "helpPlay": "  p [idx ...]          play cards (no index = pass)",
   "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Normal, 1=Easy, 2=Hard)",
   "playerFinished": ": finished (rank {{rank}})",
+  "finishCards": "Finishing play: {{cards}}",
   "playerCardCount": ": {{count}} cards",
   "tableCards": "Table",
   "tableEmpty": "Table: empty (free lead)",

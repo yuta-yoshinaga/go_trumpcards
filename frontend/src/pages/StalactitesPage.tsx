@@ -235,6 +235,8 @@ function StalactitesPageContent() {
   // 見せてサーバーに弾かれる (#5975)。
   const supermoveLimit = state.maxMovableCards;
   const emptyColLimit = state.maxMovableCardsToEmptyColumn;
+  const emptyCellCount = state.cells.filter((cell) => cell === null).length;
+  const emptyColumnCount = state.tableau.filter((col) => col.length === 0).length;
 
   // 選択中の束の枚数。空き列が受け取れるかはこれと emptyColLimit で決まる。
   const selectedStackSize =
@@ -412,8 +414,16 @@ function StalactitesPageContent() {
 
             {/* Max bulk-move (supermove) limit, derived from empty free cells/columns */}
             <div className="text-game-text-muted text-xs mb-2" data-testid="fc-supermove-limit">
-              {t('supermoveLimitLabel', { limit: supermoveLimit })}
-              {emptyColLimit > 0 && <> {t('supermoveToEmpty', { limit: emptyColLimit })}</>}
+              <span>{t('supermoveLimitLabel', { limit: supermoveLimit })}</span>
+              <span className="ml-1">
+                {t('supermoveLimitConditions', { cells: emptyCellCount, cols: emptyColumnCount })}
+              </span>
+              {emptyColLimit > 0 && (
+                <span className="ml-1">
+                  {t('supermoveToEmpty', { limit: emptyColLimit })}{' '}
+                  {t('supermoveToEmptyConditions', { cells: emptyCellCount, cols: emptyColumnCount - 1 })}
+                </span>
+              )}
             </div>
 
             {/* Tableau */}

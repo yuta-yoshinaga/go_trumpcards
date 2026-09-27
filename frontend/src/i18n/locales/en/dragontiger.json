@@ -38,7 +38,7 @@
     "dragon": "Dragon",
     "tiger": "Tiger",
     "tie": "Tie",
-    "oddsBadge": "{{type}} ×{{odds}}",
+    "oddsBadge": "Payout odds: {{type}} {{odds}}:1",
     "win": "Win +{{amount}}",
     "loss": "Loss -{{amount}}"
   },

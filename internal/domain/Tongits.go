@@ -29,6 +29,16 @@ const TongitsBonus = 50
 // TongitsPhase ゲームフェーズ
 type TongitsPhase int
 
+// TongitsRoundEndReason identifies how the current round ended.
+type TongitsRoundEndReason int
+
+const (
+	TongitsRoundEndReasonNone TongitsRoundEndReason = iota
+	TongitsRoundEndReasonTongits
+	TongitsRoundEndReasonChallenge
+	TongitsRoundEndReasonStockOut
+)
+
 // TongitsHint is a bounded-cost recommendation for the human player.
 type TongitsHint struct {
 	Action          string
@@ -64,8 +74,10 @@ type Tongits struct {
 	winnerIdx        int
 	roundNumber      int
 	actionLogBase
-	isTongits bool // 配牌Tongits(49/50点即勝利)かどうか
-	rng       *rand.Rand
+	isTongits      bool // 配牌Tongits(49/50点即勝利)かどうか
+	roundEndReason TongitsRoundEndReason
+	roundWinner    int
+	rng            *rand.Rand
 }
 
 func (g *Tongits) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
@@ -79,6 +91,7 @@ func NewTongits(trumpCards *TrumpCards, players []*TongitsPlayer, config Tongits
 		players:     players,
 		config:      config,
 		winnerIdx:   -1,
+		roundWinner: -1,
 		roundNumber: 0,
 		rng:         rand.New(rand.NewSource(rand.Int63())),
 	}
@@ -111,6 +124,7 @@ func (g *Tongits) Reset() {
 	g.currentPlayerIdx = 0
 	g.actionLog = nil
 	g.isTongits = false
+	g.roundEndReason, g.roundWinner = TongitsRoundEndReasonNone, -1
 
 	for _, p := range g.players {
 		p.SetRoundScore(0)
@@ -137,6 +151,7 @@ func (g *Tongits) NextRound() {
 	g.drawPile = nil
 	g.currentPlayerIdx = 0
 	g.isTongits = false
+	g.roundEndReason, g.roundWinner = TongitsRoundEndReasonNone, -1
 
 	for _, p := range g.players {
 		p.ResetRound()
@@ -457,6 +472,7 @@ func (g *Tongits) resolveChallenge(agreed []bool) error {
 			winner, best = i, value
 		}
 	}
+	g.roundEndReason, g.roundWinner = TongitsRoundEndReasonChallenge, winner
 	g.finishTongits(winner)
 	return nil
 }
@@ -475,6 +491,10 @@ func (g *Tongits) validateHumanPlay(phase TongitsPhase) error {
 }
 
 func (g *Tongits) finishTongits(winner int) {
+	if g.roundEndReason == TongitsRoundEndReasonNone {
+		g.roundEndReason = TongitsRoundEndReasonTongits
+		g.roundWinner = winner
+	}
 	g.winnerIdx, g.gameEndFlag, g.phase = winner, true, TongitsPhaseGameEnd
 	g.players[winner].SetIsFinished(true)
 	g.appendLog(winner, "tongits", "tongits.log.tongits", map[string]string{"name": playerName(g.players, winner)}, nil)
@@ -683,6 +703,7 @@ func (g *Tongits) cpuDiscardOrChallenge() {
 // scoreTongits 配牌Tongits成立時のスコア処理
 
 func (g *Tongits) scoreTongits(winner int, handValue int) {
+	g.roundEndReason, g.roundWinner = TongitsRoundEndReasonTongits, winner
 	score := TongitsBonus + handValue
 	g.players[winner].SetRoundScore(score)
 	g.appendLog(winner, "tongits_score", "tongits.log.tongitsScore", map[string]string{"name": playerName(g.players, winner), "score": fmt.Sprintf("%d", score), "bonus": fmt.Sprintf("%d", TongitsBonus), "hand": fmt.Sprintf("%d", handValue)}, nil)
@@ -699,6 +720,7 @@ func (g *Tongits) scoreTongits(winner int, handValue int) {
 
 // endRoundDraw 山札切れによる引き分け (スコアなし)
 func (g *Tongits) endRoundDraw() {
+	g.roundEndReason, g.roundWinner = TongitsRoundEndReasonStockOut, -1
 	g.appendLog(-1, "draw", "tongits.log.draw", nil, nil)
 
 	g.checkGameEnd()
@@ -810,6 +832,12 @@ func (g *Tongits) SetConfig(cfg TongitsConfig) { g.config = cfg }
 // GetIsTongits 配牌Tongitsかどうか取得
 func (g *Tongits) GetIsTongits() bool { return g.isTongits }
 
+// GetRoundEndReason returns the reason the current round ended.
+func (g *Tongits) GetRoundEndReason() TongitsRoundEndReason { return g.roundEndReason }
+
+// GetRoundWinner returns the winner of the current round, or -1 for a draw.
+func (g *Tongits) GetRoundWinner() int { return g.roundWinner }
+
 // SetIsTongits 配牌Tongits設定 (テスト用)
 func (g *Tongits) SetIsTongits(isTongits bool) { g.isTongits = isTongits }
 
@@ -827,18 +855,20 @@ func (g *Tongits) sortHand(playerIdx int) {
 
 // tongitsJSON is the JSON wire format for Tongits.
 type tongitsJSON struct {
-	TrumpCards       *TrumpCards       `json:"tc"`
-	Players          []*TongitsPlayer  `json:"pl"`
-	Config           TongitsConfig     `json:"cf"`
-	Phase            TongitsPhase      `json:"ps"`
-	CurrentPlayerIdx int               `json:"ci"`
-	DiscardPile      []*Card           `json:"dp"`
-	DrawPile         []*Card           `json:"wp"`
-	GameEndFlag      bool              `json:"ge"`
-	WinnerIdx        int               `json:"wi"`
-	RoundNumber      int               `json:"rn"`
-	ActionLog        []*ActionLogEntry `json:"al"`
-	IsTongits        bool              `json:"it"`
+	TrumpCards       *TrumpCards           `json:"tc"`
+	Players          []*TongitsPlayer      `json:"pl"`
+	Config           TongitsConfig         `json:"cf"`
+	Phase            TongitsPhase          `json:"ps"`
+	CurrentPlayerIdx int                   `json:"ci"`
+	DiscardPile      []*Card               `json:"dp"`
+	DrawPile         []*Card               `json:"wp"`
+	GameEndFlag      bool                  `json:"ge"`
+	WinnerIdx        int                   `json:"wi"`
+	RoundNumber      int                   `json:"rn"`
+	ActionLog        []*ActionLogEntry     `json:"al"`
+	IsTongits        bool                  `json:"it"`
+	RoundEndReason   TongitsRoundEndReason `json:"rer"`
+	RoundWinner      int                   `json:"rw"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -856,6 +886,8 @@ func (g *Tongits) MarshalJSON() ([]byte, error) {
 		RoundNumber:      g.roundNumber,
 		ActionLog:        g.actionLog,
 		IsTongits:        g.isTongits,
+		RoundEndReason:   g.roundEndReason,
+		RoundWinner:      g.roundWinner,
 	})
 }
 
@@ -901,6 +933,10 @@ func (g *Tongits) UnmarshalJSON(data []byte) error {
 		g.actionLog = make([]*ActionLogEntry, 0)
 	}
 	g.isTongits = j.IsTongits
+	g.roundEndReason, g.roundWinner = j.RoundEndReason, j.RoundWinner
+	if j.RoundWinner == 0 && j.RoundEndReason == TongitsRoundEndReasonNone {
+		g.roundWinner = -1
+	}
 	// **復元したら必ず乱数源を張り直す。**Cloudflare Worker は毎リクエスト KV から
 	// 組み直すので SetRand は一度も呼ばれない。rng を nil のままにすると、
 	// シャッフル以外で rng を使う経路 (CPU の乱択など) が nil デリファレンスで

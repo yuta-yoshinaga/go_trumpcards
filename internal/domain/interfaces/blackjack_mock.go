@@ -54,6 +54,12 @@ func (_m *MockBlackJackGame) PlayerDoubleDown() error {
 	return ret.Error(0)
 }
 
+// DoubleDownBlockReason モック
+func (_m *MockBlackJackGame) DoubleDownBlockReason() domain.BJDoubleDownBlock {
+	ret := _m.Called()
+	return domain.BJDoubleDownBlock(ret.Int(0))
+}
+
 // PlayerSplit モック
 func (_m *MockBlackJackGame) PlayerSplit() error {
 	ret := _m.Called()

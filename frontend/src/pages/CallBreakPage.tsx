@@ -282,6 +282,8 @@ function CallBreakPageContent() {
                   players={state.players}
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
+                  winnerIdx={isTrickEnd ? state.leadPlayerIdx : undefined}
+                  winnerLabel={t('trickWinnerBadge')}
                   dataTutorial="cb-trick-display"
                 />
               </div>

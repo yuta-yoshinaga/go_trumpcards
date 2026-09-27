@@ -418,6 +418,42 @@ func (g *Calabresella) PlayerDiscard(cardIndex int) error {
 	return nil
 }
 
+// PlayerDiscardCards 人間ソリストが指定した札をまとめて捨てる。
+func (g *Calabresella) PlayerDiscardCards(cardIndices []int) error {
+	if g.gameEndFlag {
+		return ErrGameEnded
+	}
+	if g.phase != CalabresellaPhaseDiscard {
+		return ErrWrongPhase
+	}
+	if !g.players[g.soloistIdx].GetIsHuman() {
+		return ErrNotHumanTurn
+	}
+	soloist := g.players[g.soloistIdx]
+	if len(cardIndices) != CalabresellaMonteSize || g.discardCount != 0 {
+		return ErrInvalidPlay
+	}
+	seen := make(map[int]struct{}, len(cardIndices))
+	for _, cardIndex := range cardIndices {
+		if cardIndex < 0 || cardIndex >= soloist.GetCardsSize() {
+			return NewDomainErrorCode(ErrInvalidCard, "calabresella.errDiscardCardIndexOutOfRange", nil)
+		}
+		if _, ok := seen[cardIndex]; ok {
+			return ErrInvalidPlay
+		}
+		seen[cardIndex] = struct{}{}
+	}
+	indices := append([]int(nil), cardIndices...)
+	sort.Sort(sort.Reverse(sort.IntSlice(indices)))
+	for _, cardIndex := range indices {
+		g.discardOne(cardIndex)
+	}
+	if g.discardCount >= CalabresellaMonteSize {
+		g.startPlay()
+	}
+	return nil
+}
+
 // discardOne ソリストの cardIndex の札を捨てる (獲得トリックとして保持し得点計算に含める)。
 func (g *Calabresella) discardOne(cardIndex int) {
 	card := g.players[g.soloistIdx].RemoveCard(cardIndex)

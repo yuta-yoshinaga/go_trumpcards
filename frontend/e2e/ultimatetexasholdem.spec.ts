@@ -24,7 +24,7 @@ test.describe("Ultimate Texas Hold'em E2E", () => {
     await waitForLoaded(page);
 
     // RIVER: play 1×
-    const play1x = page.getByRole('button', { name: 'プレイ 1×' });
+    const play1x = page.getByRole('button', { name: /プレイ 1×/ });
     await expect(play1x).toBeVisible({ timeout: 10_000 });
     await play1x.click();
     await waitForLoaded(page);
@@ -43,7 +43,7 @@ test.describe("Ultimate Texas Hold'em E2E", () => {
     await gameButton(page, 'ベット').click();
     await waitForLoaded(page);
 
-    const play4x = page.getByRole('button', { name: 'プレイ 4×' });
+    const play4x = page.getByRole('button', { name: /プレイ 4×/ });
     await expect(play4x).toBeVisible({ timeout: 10_000 });
     await play4x.click();
     await waitForLoaded(page);

@@ -1,12 +1,28 @@
 package domain_test
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 	"github.com/stretchr/testify/assert"
 )
+
+func TestDaifugo_FieldClearedLeaderJSON(t *testing.T) {
+	var dg domain.Daifugo
+	assert.NoError(t, json.Unmarshal([]byte(`{"fcl":2}`), &dg))
+	assert.Equal(t, 2, dg.GetFieldClearedLeader())
+	encoded, err := json.Marshal(&dg)
+	assert.NoError(t, err)
+	var snapshot map[string]any
+	assert.NoError(t, json.Unmarshal(encoded, &snapshot))
+	assert.Equal(t, float64(2), snapshot["fcl"])
+
+	var legacySnapshot domain.Daifugo
+	assert.NoError(t, json.Unmarshal([]byte(`{}`), &legacySnapshot))
+	assert.Equal(t, -1, legacySnapshot.GetFieldClearedLeader())
+}
 
 func noRulesConfig() domain.DaifugoConfig {
 	return domain.DaifugoConfig{}
@@ -31,6 +47,7 @@ func TestDaifugo_Method(t *testing.T) {
 		assert.False(t, dg.GetGameEndFlag())
 		assert.Nil(t, dg.GetTableCards())
 		assert.Equal(t, -1, dg.GetLastPlayPlayerIdx())
+		assert.Equal(t, -1, dg.GetFieldClearedLeader())
 		assert.Equal(t, 0, dg.GetCurrentTurn())
 	})
 
@@ -55,6 +72,7 @@ func TestDaifugo_Method(t *testing.T) {
 		assert.Nil(t, dg.GetTableCards())
 		assert.Equal(t, -1, dg.GetLastPlayPlayerIdx())
 		assert.Equal(t, 0, dg.GetPassCount())
+		assert.Equal(t, -1, dg.GetFieldClearedLeader())
 		assert.Nil(t, dg.GetHumanAction())
 		assert.Nil(t, dg.GetCpuActions())
 	})
@@ -67,6 +85,20 @@ func TestDaifugo_Method(t *testing.T) {
 		assert.True(t, dg.GetPlayer(0).GetIsHuman())
 		assert.NotNil(t, dg.GetPlayer(1))
 		assert.False(t, dg.GetPlayer(1).GetIsHuman())
+	})
+
+	t.Run("field cleared leader is next player after finish", func(t *testing.T) {
+		players := makeDaifugoPlayers()
+		dg := domain.NewDaifugo(domain.NewTrumpCards(0), players, noRulesConfig())
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 7, false))
+		players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 9, false))
+
+		assert.NoError(t, dg.PlayerPlay([]int{0}))
+
+		assert.Equal(t, 1, dg.GetCurrentTurn())
+		assert.Equal(t, 1, dg.GetFieldClearedLeader())
 	})
 
 	t.Run("success GetPlayer invalid index returns nil", func(t *testing.T) {
@@ -152,6 +184,7 @@ func TestDaifugo_Method(t *testing.T) {
 		err := dg.PlayerPlay([]int{}) // pass
 		assert.NoError(t, err)
 		assert.Equal(t, 1, dg.GetPassCount())
+		assert.Equal(t, -1, dg.GetFieldClearedLeader())
 		assert.NotNil(t, dg.GetHumanAction())
 		assert.Nil(t, dg.GetHumanAction().PlayedCards) // pass → nil
 	})
@@ -190,6 +223,8 @@ func TestDaifugo_Method(t *testing.T) {
 		dg.CpuPlay() // CPU 3 passes → checkPassClear triggers, table clears
 		assert.Nil(t, dg.GetTableCards())
 		assert.True(t, dg.IsHumanTurn())
+		assert.Equal(t, 0, dg.GetFieldClearedLeader())
+		assert.NoError(t, dg.PlayerPlay([]int{0}))
 	})
 
 	t.Run("success CpuPlay does nothing on human turn", func(t *testing.T) {
@@ -1559,18 +1594,19 @@ func TestDaifugo_PlayerPlay_EightCutWithFinish(t *testing.T) {
 	config := domain.DaifugoConfig{EightCutEnabled: true}
 	dg := domain.NewDaifugo(tc, players, config)
 
-	// 3 CPUs already finished, human plays 8 as last card → finishes AND 8-cut fires
+	// One CPU is finished; human plays 8 as last card → finishes AND 8-cut fires.
+	// The next active player should receive the lead after turn advancement.
 	players[1].SetIsFinished(true)
 	players[1].SetRank(1)
-	players[2].SetIsFinished(true)
-	players[2].SetRank(2)
-	players[3].SetIsFinished(true)
-	players[3].SetRank(3)
+	players[2].AddCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+	players[3].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
 	players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 8, false)) // last card
 
 	_ = dg.PlayerPlay([]int{0}) // play 8 → finish + 8-cut
-	assert.True(t, dg.GetGameEndFlag())
-	assert.Equal(t, 4, players[0].GetRank())
+	assert.False(t, dg.GetGameEndFlag())
+	assert.Equal(t, 2, players[0].GetRank())
+	assert.Equal(t, 2, dg.GetCurrentTurn())
+	assert.Equal(t, 2, dg.GetFieldClearedLeader())
 	// Table should be nil (8-cut or finishPlayer clears)
 	assert.Nil(t, dg.GetTableCards())
 }

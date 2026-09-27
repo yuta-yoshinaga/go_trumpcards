@@ -67,6 +67,8 @@ func (p *WattenWebPresenter) buildBase(g interfaces.WattenGame) *controller.Watt
 	}
 
 	resObj.CurrentTrick = trickCardsToOutput(g.GetCurrentTrick())
+	resObj.LastTrick = trickCardsToOutput(g.GetLastTrick())
+	resObj.LastTrickWinner = g.GetLastTrickWinner()
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
 }

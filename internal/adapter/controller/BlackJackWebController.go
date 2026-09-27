@@ -69,6 +69,7 @@ type BlackJackWebOutput struct {
 	Hands              []*BlackJackWebOutputHand          `json:"hands,omitempty"`
 	CurrentHandIdx     int                                `json:"currentHandIdx"`
 	Phase              int                                `json:"phase"`
+	DoubleDownBlock    int                                `json:"doubleDownBlock"`
 	InsuranceBet       int                                `json:"insuranceBet"`
 	InsuranceAvailable bool                               `json:"insuranceAvailable"`
 	HintEnabled        bool                               `json:"hintEnabled"`

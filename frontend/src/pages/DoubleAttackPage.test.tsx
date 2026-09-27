@@ -193,6 +193,20 @@ describe('DoubleAttackPage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('attack', { amount: 30 }));
   });
 
+  it('追加ベット額・サーバー上限・チップを入力に合わせて表示する', async () => {
+    mockApi.mockResolvedValue(
+      withState({ phase: DoubleAttackPhase.ATTACK, chips: 730, maxAttackBet: 50, dealerCards: [card(6)] }),
+    );
+    renderWithProviders(<DoubleAttackPage />);
+    await waitFor(() => expect(screen.getByTestId('da-attack-comparison')).toHaveTextContent('チップ: 730'));
+    expect(screen.getByTestId('da-attack-comparison')).toHaveTextContent('追加ベット上限: 50');
+    expect(screen.getByTestId('da-attack-comparison')).toHaveTextContent('入力額: 0');
+    expect(screen.getByLabelText('追加ベット')).toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText(/追加ベット/), { target: { value: '30' } });
+    expect(screen.getByTestId('da-attack-comparison')).toHaveTextContent('入力額: 30');
+  });
+
   it('見送りのキーで attack に amount 0 を送る', async () => {
     mockApi.mockResolvedValue(
       withState({ phase: DoubleAttackPhase.ATTACK, maxAttackBet: 50, dealerCards: [card(6)], hands: [hand()] }),

@@ -119,6 +119,48 @@ describe('TrashPage', () => {
     await waitFor(() => expect(screen.getAllByText(/CPUのターン/).length).toBeGreaterThan(0));
   });
 
+  it('shows CPU progress without a live region only during the CPU turn', async () => {
+    vi.useFakeTimers();
+    try {
+      mockExec.mockImplementation(async (command) => (command === 'reset' ? cpuTurnState : playerTurnState));
+      renderWithProviders(<TrashPage />);
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
+      const region = screen.getByTestId('tr-cpu-turn-announce');
+      expect(region).not.toHaveAttribute('role', 'status');
+      expect(region).not.toHaveAttribute('aria-live');
+      expect(region).not.toHaveAttribute('aria-atomic');
+      expect(region).toHaveTextContent('CPUがプレイ中です…');
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(500);
+      });
+      expect(region).toBeEmptyDOMElement();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('shows the CPU wild-placement progress message during await-wild', async () => {
+    const cpuAwaitWildState: TrashResponse = {
+      ...awaitWildState,
+      current: 1,
+      messageCode: 'trash.awaitWild',
+    };
+    mockExec.mockResolvedValue(cpuAwaitWildState);
+    renderWithProviders(<TrashPage />);
+
+    expect(await screen.findByTestId('tr-cpu-turn-announce')).toHaveTextContent('CPUがワイルドを配置しています');
+  });
+
+  it('does not show CPU progress after the game is over', async () => {
+    const cpuGameOverState: TrashResponse = { ...gameOverWinState, current: 1 };
+    mockExec.mockResolvedValue(cpuGameOverState);
+    renderWithProviders(<TrashPage />);
+
+    expect(await screen.findByTestId('tr-cpu-turn-announce')).toBeEmptyDOMElement();
+  });
+
   it('renders 10 slots per player', async () => {
     renderWithProviders(<TrashPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

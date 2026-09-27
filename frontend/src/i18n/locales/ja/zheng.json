@@ -9,6 +9,8 @@
   "rankTable": {
     "title": "順位表"
   },
+  "finishCards": "上がり札: {{cards}}",
+  "listSeparator": "、",
   "selectToPlay": "カードを選択して出す",
   "tableCards": "場のカード",
   "tableEmpty": "(なし)",

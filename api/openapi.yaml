@@ -29489,7 +29489,7 @@ paths:
         |-----------------|---------|-------------|
         | `reset`         | `r`     | Start / restart a game |
         | `bid`           | `b`     | Declare a bid (requires `bid`: 0=pass, 1=chiamo, 2=solo) |
-        | `discard`       | `d`     | Discard a monte card (requires `cardIndex`; 4 times) |
+        | `discard`       | `d`     | Discard the 4 monte cards at once with `cardIndices` (exactly 4 distinct indices), or one card with `cardIndex` |
         | `play`          | `p`     | Play a card (requires `cardIndex`) |
         | `next`          | `n`     | Advance to the next trick |
         | `nextround`     | `nr`    | Advance to the next round |
@@ -29517,6 +29517,11 @@ paths:
                 cardIndex:
                   type: integer
                   description: Hand index of the card to play (for `play`) or discard (for `discard`).
+                cardIndices:
+                  type: array
+                  description: Exactly 4 distinct hand indices for discarding all monte cards at once (for `discard`).
+                  items:
+                    type: integer
                 config:
                   type: object
                   properties:
@@ -39823,6 +39828,11 @@ components:
             - `6` — Early Surrender phase (only when surrender rule = Early)
           enum: [1, 2, 3, 4, 5, 6]
           example: 4
+        doubleDownBlock:
+          type: integer
+          description: Double down block reason (0=available, 1=wrong phase, 2=not two cards, 3=split without DAS, 4=hand finished, 5=insufficient chips).
+          enum: [0, 1, 2, 3, 4, 5]
+          example: 0
         currentHandIdx:
           type: integer
           description: |
@@ -40919,6 +40929,7 @@ components:
       required:
         - players
         - currentTurn
+        - fieldClearedLeader
         - tableCards
         - lastPlayPlayerIdx
         - gameEndFlag
@@ -40954,6 +40965,10 @@ components:
           type: integer
           description: Index of the player whose turn it is
           example: 0
+        fieldClearedLeader:
+          type: integer
+          description: Index of the player who leads after the table clears, or -1
+          example: -1
         tableCards:
           type: array
           description: Cards currently on the table (last played set)
@@ -47174,6 +47189,8 @@ components:
         gameEndFlag: {type: boolean}
         winnerIdx: {type: integer}
         isTongits: {type: boolean}
+        roundEndReason: {type: integer, description: 0 none, 1 Tongits, 2 challenge, 3 stock out}
+        roundWinner: {type: integer, description: Player index or -1 for a draw}
         remainingPoints: {type: integer}
         config:
           type: object
@@ -81015,6 +81032,9 @@ components:
           type: integer
         contract:
           type: integer
+        contractRequirement:
+          type: integer
+          description: Points or tricks required to fulfill the current contract; 0 when not applicable.
         trumpSuit:
           type: integer
         talonCount:
@@ -81376,6 +81396,13 @@ components:
           type: array
           items:
             type: object
+        lastTrick:
+          type: array
+          items:
+            type: object
+        lastTrickWinner:
+          type: integer
+          description: Seat that took lastTrick, or -1 before the first trick.
         teamScores:
           type: array
           items:
@@ -81501,6 +81528,18 @@ components:
                     type: string
                   value:
                     type: integer
+        lastTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: "#/components/schemas/Card"
+        lastTrickWinner:
+          type: integer
+          description: "Player index of the last trick winner; -1 before any trick is completed."
         trumpSuit:
           type: integer
         dealerIdx:
@@ -81671,6 +81710,11 @@ components:
                 type: integer
               cards:
                 type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              finishCards:
+                type: array
+                description: Last cards played by this player when they finished.
                 items:
                   $ref: '#/components/schemas/Card'
         currentTurn:

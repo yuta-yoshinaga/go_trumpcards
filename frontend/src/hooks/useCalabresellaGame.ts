@@ -54,10 +54,10 @@ export function useCalabresellaGame() {
     [exec],
   );
 
-  /** Discards the currently-selected card during the monte exchange (four times as Soloist). */
+  /** Discards the four currently-selected cards during the monte exchange. */
   const handleDiscard = useCallback(() => {
-    if (selectedCardIndices.length !== 1) return;
-    void exec('discard', { cardIndex: selectedCardIndices[0] });
+    if (selectedCardIndices.length !== 4) return;
+    void exec('discard', { cardIndices: selectedCardIndices });
   }, [exec, selectedCardIndices]);
 
   /** Plays the single currently-selected card in the Play phase. */

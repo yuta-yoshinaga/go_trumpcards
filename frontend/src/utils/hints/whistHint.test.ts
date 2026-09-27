@@ -17,6 +17,8 @@ function makeState(overrides: Partial<WhistResponse> = {}): WhistResponse {
     trickNumber: 1,
     currentPlayerIdx: 0,
     currentTrick: [],
+    lastTrick: [],
+    lastTrickWinner: -1,
     trumpSuit: 3,
     dealerIdx: 3,
     teamScores: [0, 0],

@@ -27,6 +27,7 @@
   "ruleSequenceLocked": "[Sequence lock]",
   "exchangesHeader": "[Card exchanges]",
   "tableLine": "Table: {{cards}} (last play: {{name}})",
+  "fieldClearedLeader": "Field cleared: lead from {{name}}",
   "tableEmpty": "Table: empty (anyone may play)",
   "actionPassed": "{{name}} passed",
   "actionPlayed": "{{name}} played {{cards}}",

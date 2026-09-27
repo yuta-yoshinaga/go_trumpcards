@@ -25,6 +25,12 @@
   "contractBetli": "ベトリ",
   "contractDurchmarsch": "ドゥルマルス",
   "contractUlti": "ウルティ",
+  "contractProgress": {
+    "party": "宣言者のカード得点: {{current}}/{{required}}点",
+    "betli": "宣言者は1トリックも取らない契約です",
+    "durchmarsch": "宣言者の獲得トリック: {{current}}/{{required}}",
+    "ulti": "宣言者は最終トリックを切り札{{suit}}の7で取る契約です"
+  },
   "chooseTrump": "切り札",
   "suitNone": "-",
   "suitSpade": "スペード",

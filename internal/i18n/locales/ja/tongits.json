@@ -20,6 +20,9 @@
   "meldRun": "ラン",
   "revealedHand": "{{name}}の手札: {{cards}}",
   "promptRoundEnd": "ラウンド終了",
+  "roundEndReason": "終了理由: {{reason}}",
+  "roundWinner": "勝者: {{name}}",
+  "roundWinnerDraw": "勝者: 引き分け",
   "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",
   "helpExampleDraw": "  ds                   2 手番目以降は山札から 1 枚引いて始める",
   "helpExampleDiscard": "  d 0                  親は引かずに手札の 0 番を捨てて始める",
@@ -63,5 +66,8 @@
   "log.tongits": "{{name}}がTongitsで勝利",
   "log.tongitsScore": "{{name}}が{{score}}点 (Tongitsボーナス{{bonus}} + 手札{{hand}})",
   "log.draw": "山札切れでラウンド引き分け",
-  "log.gameEnd": "{{name}}がゲームに勝利！"
+  "log.gameEnd": "{{name}}がゲームに勝利！",
+  "roundEndReasonValue.1": "トンギッツ",
+  "roundEndReasonValue.2": "チャレンジ",
+  "roundEndReasonValue.3": "山札切れ"
 }

@@ -89,6 +89,15 @@ func (m *MockWhistGame) GetCurrentTrick() []*domain.TrickCard {
 	return nil
 }
 
+// GetLastTrick mocks the corresponding WhistGame method.
+func (m *MockWhistGame) GetLastTrick() []*domain.TrickCard {
+	args := m.Called()
+	if args.Get(0) == nil {
+		return nil
+	}
+	return args.Get(0).([]*domain.TrickCard)
+}
+
 func (m *MockWhistGame) GetTrumpSuit() int {
 	args := m.Called()
 	return args.Int(0)

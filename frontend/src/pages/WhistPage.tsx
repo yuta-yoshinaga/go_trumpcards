@@ -267,9 +267,15 @@ function WhistPageContent() {
                 {/* Current trick */}
                 <TrickDisplay
                   currentTrick={state.currentTrick}
+                  lastTrick={state.lastTrick}
+                  lastTrickWinner={state.lastTrickWinner}
                   players={state.players}
                   cardWidth={cardWidth}
-                  label={t('currentTrick')}
+                  label={state.currentTrick.length > 0 ? t('currentTrick') : t('lastTrick')}
+                  winnerLabel={t('trickWinner')}
+                  cardAriaLabelFor={(player, card) =>
+                    t('trickCardByPlayer', { card: cardAlt(card), name: playerName(player.id, player.isHuman) })
+                  }
                   dataTutorial="wh-trick-display"
                 />
               </div>

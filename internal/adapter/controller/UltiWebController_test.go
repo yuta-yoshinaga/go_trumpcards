@@ -16,13 +16,14 @@ import (
 
 func mustUltiOutputJSON(msg string) string {
 	out := &controller.UltiWebOutput{
-		Players:         []*controller.UltiWebOutputPlayer{},
-		CurrentTrick:    []*controller.WebOutputTrickCard{},
-		PlayableIndices: []int{},
-		TrumpSuit:       -1,
-		LastTrickWinner: -1,
-		WinnerPlayer:    -1,
-		WebOutputBase:   controller.WebOutputBase{Message: msg},
+		Players:             []*controller.UltiWebOutputPlayer{},
+		CurrentTrick:        []*controller.WebOutputTrickCard{},
+		PlayableIndices:     []int{},
+		ContractRequirement: 0,
+		TrumpSuit:           -1,
+		LastTrickWinner:     -1,
+		WinnerPlayer:        -1,
+		WebOutputBase:       controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {

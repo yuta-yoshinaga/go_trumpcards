@@ -26,6 +26,7 @@
   "playableList": "Playable: {{cards}}",
   "promptPlayHelp": "play <idx> ... play a card",
   "promptHandEnd": "Hand over - team {{team}} wins (tens {{a}} to {{b}})",
+  "lastTrickWinner": "Last trick winner: {{name}} (team {{team}})",
   "promptHandEndHelp": "nexthand ... go to the next hand",
   "gameEnd": "Game over! Team {{team}} takes the match.",
   "suit.spade": "Spades",

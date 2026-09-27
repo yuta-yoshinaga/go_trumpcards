@@ -50,6 +50,8 @@ function state(overrides: Partial<TongitsResponse> = {}): TongitsResponse {
     gameEndFlag: false,
     winnerIdx: -1,
     isTongits: false,
+    roundEndReason: 0,
+    roundWinner: -1,
     remainingPoints: 3,
     message: '',
     config: { cpuDifficulty: 1, pointLimit: 50 },
@@ -183,5 +185,24 @@ describe('TongitsPage', () => {
     renderWithProviders(<TongitsPage />);
     fireEvent.click(await screen.findByRole('button', { name: '次のラウンド' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
+  });
+
+  it.each([
+    [1, 'トンギッツ'],
+    [2, 'チャレンジ'],
+    [3, '山札切れ'],
+  ])('shows the round end reason %s and keeps next round available', async (reason, label) => {
+    mockExec.mockResolvedValue(state({ phase: TongitsPhase.ROUND_END, roundEndReason: reason, roundWinner: 1 }));
+    renderWithProviders(<TongitsPage />);
+    const result = await screen.findByTestId('tongits-round-result');
+    expect(result).toHaveTextContent(`終了理由: ${label}`);
+    expect(result).toHaveTextContent('勝者: CPU 1');
+    expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument();
+  });
+
+  it('shows a draw for a stock out round', async () => {
+    mockExec.mockResolvedValue(state({ phase: TongitsPhase.ROUND_END, roundEndReason: 3, roundWinner: -1 }));
+    renderWithProviders(<TongitsPage />);
+    expect(await screen.findByTestId('tongits-round-result')).toHaveTextContent('勝者: 引き分け');
   });
 });

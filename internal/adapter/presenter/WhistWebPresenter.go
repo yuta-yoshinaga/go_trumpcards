@@ -71,6 +71,11 @@ func (p *WhistWebPresenter) buildBase(w interfaces.WhistGame) *controller.WhistW
 	}
 
 	resObj.CurrentTrick = trickCardsToOutput(w.GetCurrentTrick())
+	resObj.LastTrick = trickCardsToOutput(w.GetLastTrick())
+	resObj.LastTrickWinner = w.GetLeadPlayerIdx()
+	if len(w.GetLastTrick()) == 0 {
+		resObj.LastTrickWinner = -1
+	}
 	resObj.Players = p.buildPlayersOutput(w)
 	return resObj
 }

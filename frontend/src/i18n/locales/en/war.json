@@ -27,7 +27,9 @@
     "speedHelp": "How fast each round's animation plays while autoplaying. Faster races to the finish; slower lets each reveal and war play out.",
     "speedSlow": "Slow",
     "speedNormal": "Normal",
-    "speedFast": "Fast"
+    "speedFast": "Fast",
+    "speedSelected": "Animation speed: {{speed}}",
+    "speedChanged": "Speed changed to {{speed}}"
   },
   "hint": {
     "flipCard": "Flip the next card",

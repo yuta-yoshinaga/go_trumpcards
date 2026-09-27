@@ -219,6 +219,25 @@ describe('TysiacPage', () => {
     expect(bar0.querySelector('.bg-ds-warning')).toBeNull();
   });
 
+  it('shows remaining points from current scores and marks players at the target as reached', async () => {
+    mockExec.mockResolvedValue(
+      makeTysiacState({
+        players: [
+          { id: 0, isHuman: true, cardCount: 7, cards: [], trickCount: 0, score: 250, isDeclarer: false },
+          { id: 1, isHuman: false, cardCount: 7, cards: [], trickCount: 0, score: 1000, isDeclarer: false },
+          { id: 2, isHuman: false, cardCount: 7, cards: [], trickCount: 0, score: 1100, isDeclarer: false },
+        ],
+        contract: 300,
+      }),
+    );
+    renderWithProviders(<TysiacPage />);
+    await screen.findByTestId('tysiac-progress-0');
+
+    expect(screen.getByText('現在得点: 目標まであと750点')).toBeInTheDocument();
+    expect(screen.getAllByText('現在得点で目標達成')).toHaveLength(2);
+    expect(screen.queryByText(/あと-\d+点/)).not.toBeInTheDocument();
+  });
+
   it('turns the bar to the warning color once a player passes 80% of the target', async () => {
     const state = makeTysiacState({
       players: [

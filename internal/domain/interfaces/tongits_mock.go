@@ -58,3 +58,7 @@ func (m *MockTongitsGame) GetActionLog() []*domain.ActionLogEntry {
 	return m.Called().Get(0).([]*domain.ActionLogEntry)
 }
 func (m *MockTongitsGame) GetIsTongits() bool { return m.Called().Bool(0) }
+func (m *MockTongitsGame) GetRoundEndReason() domain.TongitsRoundEndReason {
+	return m.Called().Get(0).(domain.TongitsRoundEndReason)
+}
+func (m *MockTongitsGame) GetRoundWinner() int { return m.Called().Int(0) }

@@ -135,7 +135,11 @@ func TestCallBreakCuiPresenter_Output(t *testing.T) {
 		m, _ := setupCallBreakCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 		m.On("GetPhase").Return(domain.CallBreakPhaseTrickEnd)
-		assert.Contains(t, p.Output(m, nil), "トリック終了")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLeadPlayerIdx")
+		m.On("GetLeadPlayerIdx").Return(2)
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "CPU 2がトリックを獲得")
+		assert.Contains(t, result, "トリック終了")
 	})
 }
 

@@ -34,6 +34,13 @@
   "drawPhase": "山札または捨て札から1枚引いてください",
   "discardPhase": "メルド、サパウ、ディスカード、またはチャレンジを選びます",
   "roundEnd": "ラウンド終了",
+  "roundEndReasonLabel": "終了理由",
+  "roundWinnerLabel": "勝者",
+  "roundDraw": "引き分け",
+  "roundEndReason": { "1": "トンギッツ", "2": "チャレンジ", "3": "山札切れ" },
+  "roundEndReasonLine": "終了理由: {{reason}}",
+  "roundWinnerLine": "勝者: {{name}}",
+  "cpuName": "CPU {{id}}",
   "tongitsOnDeal": "配牌Tongits成立！即勝利です",
   "tongitsOnDealBanner": {
     "title": "TONGITS!",

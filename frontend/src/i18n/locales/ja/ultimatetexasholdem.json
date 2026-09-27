@@ -13,10 +13,10 @@
   },
   "button": {
     "bet": "ベット",
-    "play4x": "プレイ 4×",
-    "play3x": "プレイ 3×",
-    "play2x": "プレイ 2×",
-    "play1x": "プレイ 1×",
+    "play4x": "プレイ 4×（{{playBet}}: {{amount}}）",
+    "play3x": "プレイ 3×（{{playBet}}: {{amount}}）",
+    "play2x": "プレイ 2×（{{playBet}}: {{amount}}）",
+    "play1x": "プレイ 1×（{{playBet}}: {{amount}}）",
     "check": "チェック",
     "fold": "フォールド",
     "reset": "リセット"

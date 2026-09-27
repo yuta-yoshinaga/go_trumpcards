@@ -22,6 +22,8 @@
   "pot": "Pot {{pot}} / current bet {{bet}}",
   "chips": "{{n}} chips",
   "bet": "bet {{n}}",
+  "remainingChips": "Chips left",
+  "currentContribution": "Current bet",
   "dealerBadge": "Dealer",
   "folded": "folded",
   "handName": {

@@ -202,6 +202,9 @@ func TestWhist_ResolveTrick(t *testing.T) {
 	// Player 2 (K of hearts) wins
 	assert.Equal(t, 2, w.GetLeadPlayerIdx())
 	assert.Equal(t, 1, w.GetPlayer(2).GetTrickCount())
+	assert.Equal(t, trick, w.GetLastTrick())
+	w.NextTrick()
+	assert.Equal(t, trick, w.GetLastTrick())
 }
 
 func TestWhist_ResolveTrick_TrumpWins(t *testing.T) {
@@ -259,6 +262,7 @@ func TestWhist_NextTrick(t *testing.T) {
 	assert.Equal(t, 2, w.GetCurrentPlayerIdx())
 	assert.Equal(t, 2, w.GetTrickNumber())
 	assert.Nil(t, w.GetCurrentTrick())
+	assert.Empty(t, w.GetLastTrick())
 }
 
 func TestWhist_ScoreRound(t *testing.T) {

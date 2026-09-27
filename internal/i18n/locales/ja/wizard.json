@@ -10,7 +10,7 @@
   "trumpNone": "切り札: なし",
   "dealer": "ディーラー: {{name}}",
   "bidPending": "未ビッド",
-  "playerLine": "{{name}}: ビッド={{bid}} 確定獲得{{tricks}}トリック 累積{{cum}}点 ラウンド{{round}}点 {{cards}}枚 {{progress}}",
+  "playerLine": "{{name}}: ビッド={{bid}} 確定獲得{{tricks}}トリック 累積{{cum}}点 ラウンド{{round}}点 {{cards}}枚{{progress}}",
   "bidReachable": "達成可能 (残り{{remaining}}トリック)",
   "bidUnreachable": "達成不可 (残り{{remaining}}トリック)",
   "gameEnd": "ゲーム終了！ {{name}}の勝利です！",

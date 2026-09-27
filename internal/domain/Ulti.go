@@ -1142,6 +1142,18 @@ func (g *Ulti) SetDeclarerIdx(idx int) { g.declarerIdx = idx }
 // GetContract コントラクト取得
 func (g *Ulti) GetContract() UltiContract { return g.contract }
 
+// GetContractRequirement returns the target points or tricks for the current contract.
+func (g *Ulti) GetContractRequirement() int {
+	switch g.contract {
+	case UltiContractParty:
+		return UltiPartyThreshold
+	case UltiContractDurchmarsch:
+		return UltiTrickCount
+	default:
+		return 0
+	}
+}
+
 // SetContract コントラクト設定 (テスト用)
 func (g *Ulti) SetContract(c UltiContract) { g.contract = c }
 

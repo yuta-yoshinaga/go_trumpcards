@@ -19,6 +19,7 @@
   "deadEndMark": "[行き止まり]",
   "foundationHeader": "組札: ",
   "stockLine": "山札: {{count}}枚",
+  "stockRules": "山札は1枚ずつ捨て札へ移り、めくり直しはありません。捨て札の一番上はそのまま移動に使えます。",
   "wasteEmpty": "捨て札: なし",
   "wasteTop": "捨て札: {{card}} ({{count}}枚)",
   "pileLabel": "列{{pile}}:",

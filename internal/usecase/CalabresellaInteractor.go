@@ -20,6 +20,7 @@ type CalabresellaInteractorIF interface {
 	Bid(bid domain.CalabresellaBid) string
 	// Discard monte 交換で1枚を捨てる
 	Discard(cardIndex int) string
+	DiscardCards(cardIndices []int) string
 	// Play カードをプレイ
 	Play(cardIndex int) string
 	// NextTrick 次のトリックへ進む
@@ -86,6 +87,18 @@ func (ci *CalabresellaInteractor) Discard(cardIndex int) string {
 		return out
 	}
 	if err := ci.Game.PlayerDiscard(cardIndex); err != nil {
+		return ci.tp.Output(ci.Game, err)
+	}
+	ci.advance()
+	return ci.tp.Output(ci.Game, nil)
+}
+
+// DiscardCards discards the selected monte exchange cards in one action.
+func (ci *CalabresellaInteractor) DiscardCards(cardIndices []int) string {
+	if out, blocked := guardGameEnd(ci.Game, ci.tp); blocked {
+		return out
+	}
+	if err := ci.Game.PlayerDiscardCards(cardIndices); err != nil {
 		return ci.tp.Output(ci.Game, err)
 	}
 	ci.advance()

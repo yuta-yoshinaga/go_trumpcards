@@ -35,6 +35,7 @@
   "dealerBadge": "親",
   "callTrump": "切り札を宣言してください（見えているのは最初の 5 枚だけ）",
   "handResult": "ハンド終了 — 組{{team}} の勝ち（10 の枚数 {{a}} 対 {{b}}）",
+  "lastTrickWinner": "最終トリックの勝者: {{name}}（組{{team}}）",
   "kot": {
     "allTens": "コート！ 10 を 4 枚とも取りました。",
     "streak": "コート！ 7 連勝を達成しました。",

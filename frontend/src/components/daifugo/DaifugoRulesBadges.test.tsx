@@ -13,6 +13,7 @@ function makeState(overrides: Partial<DaifugoResponse> = {}): DaifugoResponse {
   return {
     players: [],
     currentTurn: 0,
+    fieldClearedLeader: -1,
     tableCards: [],
     lastPlayPlayerIdx: -1,
     gameEndFlag: false,

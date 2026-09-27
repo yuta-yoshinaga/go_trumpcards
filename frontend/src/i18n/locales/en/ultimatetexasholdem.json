@@ -13,10 +13,10 @@
   },
   "button": {
     "bet": "Bet",
-    "play4x": "Play 4×",
-    "play3x": "Play 3×",
-    "play2x": "Play 2×",
-    "play1x": "Play 1×",
+    "play4x": "Play 4× ({{playBet}}: {{amount}})",
+    "play3x": "Play 3× ({{playBet}}: {{amount}})",
+    "play2x": "Play 2× ({{playBet}}: {{amount}})",
+    "play1x": "Play 1× ({{playBet}}: {{amount}})",
     "check": "Check",
     "fold": "Fold",
     "reset": "Reset"

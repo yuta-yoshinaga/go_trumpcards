@@ -40,7 +40,7 @@ test.describe('Sjavs E2E', () => {
     await waitForLoaded(page);
 
     // JSX puts whitespace between the expressions, so the rendered text is
-    // "味方 24" rather than "味方24".
-    await expect(page.getByText(/残り: 味方\s*24/)).toBeVisible();
+    // "チーム0 24" rather than "チーム024".
+    await expect(page.getByText(/残り: チーム0\s*24/)).toBeVisible();
   });
 });

@@ -45,21 +45,22 @@ type UltiWebOutputPlayer struct {
 
 // UltiWebOutput ウルティのWebアウトプット
 type UltiWebOutput struct {
-	Players          []*UltiWebOutputPlayer    `json:"players"`
-	Phase            int                       `json:"phase"`
-	RoundNumber      int                       `json:"roundNumber"`
-	TrickNumber      int                       `json:"trickNumber"`
-	CurrentPlayerIdx int                       `json:"currentPlayerIdx"`
-	LeadPlayerIdx    int                       `json:"leadPlayerIdx"`
-	DealerIdx        int                       `json:"dealerIdx"`
-	DeclarerIdx      int                       `json:"declarerIdx"`
-	Contract         int                       `json:"contract"`
-	TrumpSuit        int                       `json:"trumpSuit"`
-	TalonCount       int                       `json:"talonCount"`
-	TalonTaken       bool                      `json:"talonTaken"`
-	DiscardCount     int                       `json:"discardCount"`
-	CurrentTrick     []*WebOutputTrickCard     `json:"currentTrick"`
-	PlayerCoins      [domain.UltiPlayerCnt]int `json:"playerCoins"`
+	Players             []*UltiWebOutputPlayer    `json:"players"`
+	Phase               int                       `json:"phase"`
+	RoundNumber         int                       `json:"roundNumber"`
+	TrickNumber         int                       `json:"trickNumber"`
+	CurrentPlayerIdx    int                       `json:"currentPlayerIdx"`
+	LeadPlayerIdx       int                       `json:"leadPlayerIdx"`
+	DealerIdx           int                       `json:"dealerIdx"`
+	DeclarerIdx         int                       `json:"declarerIdx"`
+	Contract            int                       `json:"contract"`
+	ContractRequirement int                       `json:"contractRequirement"`
+	TrumpSuit           int                       `json:"trumpSuit"`
+	TalonCount          int                       `json:"talonCount"`
+	TalonTaken          bool                      `json:"talonTaken"`
+	DiscardCount        int                       `json:"discardCount"`
+	CurrentTrick        []*WebOutputTrickCard     `json:"currentTrick"`
+	PlayerCoins         [domain.UltiPlayerCnt]int `json:"playerCoins"`
 	// LastDealCoins は直近ディールの精算による符号付き増減。累積からは読めない。
 	LastDealCoins   [domain.UltiPlayerCnt]int `json:"lastDealCoins"`
 	LastTrickWinner int                       `json:"lastTrickWinner"`

@@ -21,6 +21,7 @@ func mustTongitsOutputJSON(msg string) string {
 		Players:         []*controller.TongitsWebOutputPlayer{},
 		WinnerIdx:       -1,
 		RemainingPoints: -1,
+		RoundWinner:     -1,
 		WebOutputBase:   controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)

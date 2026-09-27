@@ -351,6 +351,19 @@ function PigsTailPageContent() {
           {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
 
           <GameFooter className={`${gameTheme.pigtail.footer} px-4 py-2.5`}>
+            <div data-testid="pigtail-draw-guidance" className="mb-2 text-center text-xs text-ds-text-primary">
+              {state.centerCount > 0 && <p>{t('drawGuidance.penalty')}</p>}
+              <p>
+                {state.circleCount > 0
+                  ? t('drawGuidance.stock', { count: state.circleCount })
+                  : t('drawGuidance.emptyStock')}
+              </p>
+              <p>
+                {/* CPU turns run to completion inside the same request, so outside game end
+                    the response is always the human's turn. */}
+                {isGameEnd ? t('drawGuidance.gameEnded') : t('drawGuidance.yourTurn')}
+              </p>
+            </div>
             <div className="flex gap-2 justify-center items-center flex-wrap">
               <label className="flex items-center gap-1 text-ds-text-primary text-xs min-h-[44px]">
                 <input

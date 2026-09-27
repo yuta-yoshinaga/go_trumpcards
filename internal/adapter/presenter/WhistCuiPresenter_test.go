@@ -18,6 +18,9 @@ func setupWhistCuiMock() *interfaces.MockWhistGame {
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
 	m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
+	m.On("GetLastTrick").Return([]*domain.TrickCard{
+		{PlayerIdx: 0, Card: domain.NewCard(domain.CardDesignSpade, 1, false)},
+	})
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.WhistPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -65,4 +68,7 @@ func TestWhistCuiPresenter_PointLimit(t *testing.T) {
 
 	assert.Contains(t, out, "チームスコア: チーム0=0  チーム1=0")
 	assert.Contains(t, out, "目標点: 11")
+	assert.Contains(t, out, "直前のトリック")
+	assert.Contains(t, out, "勝者:")
+	assert.Contains(t, out, "あなた")
 }

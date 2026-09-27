@@ -142,6 +142,12 @@ func (_m *MockDaifugoGame) GetCurrentTurn() int {
 	return ret.Int(0)
 }
 
+// GetFieldClearedLeader モック
+func (_m *MockDaifugoGame) GetFieldClearedLeader() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}
+
 // GetConfig モック
 func (_m *MockDaifugoGame) GetConfig() domain.DaifugoConfig {
 	ret := _m.Called()

@@ -1,3 +1,4 @@
+import i18n from '../../../i18n';
 import type { TongitsResponse } from '../../../types/card';
 import {
   formatCard,
@@ -34,6 +35,17 @@ export function formatTongitsState(state: TongitsResponse): string {
   lines.push('----------');
 
   if (state.isTongits) lines.push('TONGITS declared on deal!');
+  if (state.roundEndReason !== 0) {
+    const reason = i18n.t(`tongits:roundEndReason.${state.roundEndReason}`);
+    lines.push(i18n.t('tongits:roundEndReasonLine', { reason }));
+    const winner =
+      state.roundWinner < 0
+        ? i18n.t('tongits:roundDraw')
+        : state.players[state.roundWinner]?.isHuman
+          ? i18n.t('tongits:result.humanWin')
+          : i18n.t('tongits:cpuName', { id: state.roundWinner });
+    lines.push(i18n.t('tongits:roundWinnerLine', { name: winner }));
+  }
   for (const p of state.players) {
     if (p.melds.length > 0) {
       lines.push(`${formatPlayerName(p.id, p.isHuman)} melds:`);

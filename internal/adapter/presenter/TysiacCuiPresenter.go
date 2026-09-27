@@ -42,6 +42,11 @@ func tysiacPlayerStr(g interfaces.TysiacGame, idx int) string {
 	}
 	scores := g.GetPlayerScores()
 	role := i18n.T("tysiac.rolePlayer")
+	target := g.GetConfig().TargetPoints
+	progress := i18n.Tf("tysiac.pointsRemaining", "points", strconv.Itoa(max(0, target-scores[idx])))
+	if scores[idx] >= target {
+		progress = i18n.T("tysiac.targetReached")
+	}
 	if idx == g.GetDeclarerIdx() {
 		role = i18n.T("tysiac.roleDeclarer")
 	}
@@ -51,12 +56,13 @@ func tysiacPlayerStr(g interfaces.TysiacGame, idx int) string {
 		"role", role,
 		"cards", strconv.Itoa(player.GetCardsSize()),
 		"score", strconv.Itoa(scores[idx]),
+		"progress", progress,
 		"tricks", strconv.Itoa(player.GetTrickCount()),
 	)
 	// Web は同じ閾値で得点バーを警告色にしている (#6483)。閾値は
 	// frontend/src/pages/TysiacPage.tsx の NEAR_WIN_RATIO と対で、
 	// check-near-win-threshold.mjs が食い違いを落とす。
-	if tysiacNearWin(scores[idx], g.GetConfig().TargetPoints) {
+	if tysiacNearWin(scores[idx], target) {
 		line = color.Yellow(line)
 	}
 	b.WriteString(line)
