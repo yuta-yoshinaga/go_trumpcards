@@ -27,7 +27,11 @@ import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, TrenteEtQuaranteResponse } from '../types/card';
-import { TrenteEtQuaranteBetType, TrenteEtQuaranteWinningRow } from '../types/phases';
+import {
+  TrenteEtQuaranteBetType,
+  type TrenteEtQuaranteBetTypeValue,
+  TrenteEtQuaranteWinningRow,
+} from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { parseTrenteEtQuaranteCommand, TRENTEETQUARANTE_HELP } from '../utils/cli/commands/trenteetquaranteCommands';
 import { formatTrenteEtQuaranteState } from '../utils/cli/formatters/trenteetquaranteFormatter';
@@ -51,12 +55,19 @@ const TEQ_TUTORIAL_STEPS: TutorialStep[] = [
 ];
 
 /** The four even-money bets, in display order, keyed to their i18n labels. */
-const BET_OPTIONS: readonly { type: number; labelKey: string; descKey: string }[] = [
+const BET_OPTIONS: readonly { type: TrenteEtQuaranteBetTypeValue; labelKey: string; descKey: string }[] = [
   { type: TrenteEtQuaranteBetType.NOIR, labelKey: 'betType.noir', descKey: 'betType.noirDesc' },
   { type: TrenteEtQuaranteBetType.ROUGE, labelKey: 'betType.rouge', descKey: 'betType.rougeDesc' },
   { type: TrenteEtQuaranteBetType.COULEUR, labelKey: 'betType.couleur', descKey: 'betType.couleurDesc' },
   { type: TrenteEtQuaranteBetType.INVERSE, labelKey: 'betType.inverse', descKey: 'betType.inverseDesc' },
 ];
+const BET_LABEL_KEYS = BET_OPTIONS.reduce(
+  (labelKeys, option) => {
+    labelKeys[option.type] = option.labelKey;
+    return labelKeys;
+  },
+  {} as Record<TrenteEtQuaranteBetTypeValue, string>,
+);
 
 /** Renders the Trente et Quarante (Rouge et Noir) game page. */
 export const TrenteEtQuarantePage = withTutorial(TrenteEtQuarantePageContent, 'trenteetquarante', TEQ_TUTORIAL_STEPS);
@@ -198,7 +209,7 @@ function TrenteEtQuarantePageContent() {
               <div className="text-ds-text-primary text-center text-sm mb-2" data-testid="teq-result">
                 <div>
                   {t('result.betSummary', {
-                    bet: t(BET_OPTIONS.find((option) => option.type === state.currentBet)?.labelKey ?? ''),
+                    bet: t(BET_LABEL_KEYS[state.currentBet]),
                     stake: state.stake,
                   })}
                 </div>

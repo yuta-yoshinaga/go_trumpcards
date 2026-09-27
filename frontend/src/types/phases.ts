@@ -2366,6 +2366,9 @@ export const TrenteEtQuaranteBetType = {
   INVERSE: 3,
 } as const;
 
+/** Valid bet types for Trente et Quarante. */
+export type TrenteEtQuaranteBetTypeValue = (typeof TrenteEtQuaranteBetType)[keyof typeof TrenteEtQuaranteBetType];
+
 /** Trente et Quarante winning-row constants (sync: internal/domain/TrenteEtQuarante.go). A row index, not a color. */
 export const TrenteEtQuaranteWinningRow = {
   NONE: -1,

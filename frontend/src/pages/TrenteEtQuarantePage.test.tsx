@@ -193,6 +193,18 @@ describe('TrenteEtQuarantePage', () => {
     expect(screen.getByTestId('teq-result')).toHaveTextContent('100');
   });
 
+  it.each([
+    [TrenteEtQuaranteBetType.NOIR, 'ノワール'],
+    [TrenteEtQuaranteBetType.ROUGE, 'ルージュ'],
+    [TrenteEtQuaranteBetType.COULEUR, 'クルール'],
+    [TrenteEtQuaranteBetType.INVERSE, 'アンヴェルス'],
+  ])('renders the label for bet type %s in the result summary', async (currentBet, label) => {
+    mockApi.mockResolvedValue(makeTrenteEtQuaranteState({ ...endState, currentBet }));
+    renderWithProviders(<TrenteEtQuarantePage />);
+
+    expect(await screen.findByTestId('teq-result')).toHaveTextContent(`賭け内容: ${label}（賭け金 100）`);
+  });
+
   it('shows the running cumulative total beneath each dealt card', async () => {
     mockApi.mockResolvedValue(crossState);
     renderWithProviders(<TrenteEtQuarantePage />);
