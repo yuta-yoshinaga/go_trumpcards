@@ -92,6 +92,21 @@ describe('GrandfathersClockPage', () => {
     await waitFor(() => expect(screen.getAllByLabelText(/文字盤\d+ \(\d+時\)/).length).toBe(12));
   });
 
+  it('keeps a clock face target focusable and explains the missing source', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<GrandfathersClockPage />);
+    const target = await screen.findByLabelText(/文字盤0/);
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const hintId = target.getAttribute('aria-describedby');
+    expect(hintId).toBeTruthy();
+    expect(document.getElementById(hintId ?? '')).toHaveTextContent('先に移動する札を選んでください');
+    mockExec.mockClear();
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   // The target rank is what the player plans against, so it has to be on screen
   // rather than implied by the clock position.
   it('shows each face target: face 0 wants an Ace, face 11 a Queen', async () => {

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useState } from 'react';
 import { type GapsMoveZone, gapsApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -65,6 +65,7 @@ const GAPS_TUTORIAL_STEPS: TutorialStep[] = [
 export const GapsPage = withTutorial(GapsPageContent, 'gaps', GAPS_TUTORIAL_STEPS);
 
 function GapsPageContent() {
+  const selectSourceHintId = useId();
   const {
     t,
     tc,
@@ -219,6 +220,9 @@ function GapsPageContent() {
       <LandscapeBanner message={t('landscapeBanner')} />
 
       <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
+        <span id={selectSourceHintId} className="sr-only">
+          {tc('label.selectSourceFirst')}
+        </span>
         <div data-tutorial="gaps-grid" className="flex flex-col items-center gap-1 mb-3">
           {state.grid.map((row, rIdx) => {
             const lockedCount = lockedPrefixLengths[rIdx] ?? 0;
@@ -264,7 +268,9 @@ function GapsPageContent() {
                               : 'border-dashed border-white/30'
                           } ${isHintTo ? 'ring-2 ring-ds-warning' : ''} ${focusRingWhite}`}
                           style={{ width: cardWidth, height: cardHeight }}
-                          disabled={!isPlaying || loading || !selectedSource}
+                          disabled={!isPlaying || loading}
+                          aria-disabled={!selectedSource || undefined}
+                          aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                         >
                           {ghost?.kind === 'needed' && (
                             <span

@@ -225,6 +225,22 @@ describe('FortressPage', () => {
     await waitFor(() => expect(sourceBtn).toHaveAttribute('aria-pressed', 'true'));
   });
 
+  it('keeps an empty tableau target focusable and explains that a source must be selected', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<FortressPage />);
+    const btn = await screen.findByRole('button', { name: '空のタブロー列 3' });
+    expect(btn).not.toBeDisabled();
+    expect(btn).toHaveAttribute('aria-disabled', 'true');
+    const describedBy = btn.getAttribute('aria-describedby');
+    expect(describedBy).toBeTruthy();
+    expect(document.getElementById(describedBy ?? '')).toHaveTextContent('先に移動する札を選んでください');
+
+    mockExec.mockClear();
+    fireEvent.click(btn);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   // 合法な移動先のリング表示 (#4799)。「選ぶまで光らない」側も踏まないと、
   // 常時全部を光らせる実装でも通ってしまう。
   describe('legal target highlighting', () => {
