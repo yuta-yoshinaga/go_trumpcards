@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useId, useMemo } from 'react';
 import type { bigBenApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -64,6 +64,7 @@ function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => stri
 }
 
 function BigBenPageContent() {
+  const selectSourceHintId = useId();
   const {
     t,
     tc,
@@ -192,8 +193,13 @@ function BigBenPageContent() {
             {col.length === 0 ? (
               <button
                 type="button"
-                onClick={() => game.handleSelectTarget(tableauColZone)}
-                disabled={!isPlaying || loading || !selectedSource}
+                onClick={() => {
+                  if (!selectedSource) return;
+                  game.handleSelectTarget(tableauColZone);
+                }}
+                disabled={!isPlaying || loading}
+                aria-disabled={!selectedSource || undefined}
+                aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                 aria-label={t('emptyColumnAriaLabel', { col: colIdx })}
                 style={{ height: dims.ch }}
                 className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center bg-transparent ${focusRingWhite}`}
@@ -278,6 +284,9 @@ function BigBenPageContent() {
       }
     >
       <LandscapeBanner message={t('landscapeBanner')} />
+      <span id={selectSourceHintId} className="sr-only">
+        {tc('label.selectSourceFirst')}
+      </span>
 
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
@@ -310,11 +319,12 @@ function BigBenPageContent() {
                           // 外すので、目標ランクと枚数を含む faceAriaLabel が
                           // 読み上げられなくなる (#5555)。
                           onClick={() => {
-                            if (face.complete) return;
+                            if (!selectedSource || face.complete) return;
                             game.handleSelectTarget(faceZone);
                           }}
-                          disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
-                          aria-disabled={face.complete || undefined}
+                          disabled={!isPlaying || loading || isAutoCompleting}
+                          aria-disabled={!selectedSource || face.complete || undefined}
+                          aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                           aria-label={t('faceAriaLabel', {
                             idx,
                             hour: CLOCK_HOURS[idx],
