@@ -67,6 +67,7 @@ const ESTABLISHED_TERMS = [
   'capot', // Same role name in the spelling used by a lowercase label.
   'Queens Up', // Crazy 4 Poker bet name; the existing クイーンズ translation has zero occurrences.
   'Weis', // Jass term written in Latin script throughout jass.json, alongside Stöck and Schieber.
+  'Kontra', // Doppelkopf team/declaration name; Latin script 9 times in doppelkopf.json, katakana 0, beside the 2-letter Re.
 ];
 const hasEstablishedTerm = (value) => ESTABLISHED_TERMS.some((term) => value.includes(term));
 

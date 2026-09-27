@@ -80,11 +80,13 @@ func TestDoppelkopfCuiPresenter_Output(t *testing.T) {
 	})
 
 	t.Run("play phase with announce prompt", func(t *testing.T) {
-		m, _ := setupDoppelkopfCuiMockWithPlayers()
+		m, players := setupDoppelkopfCuiMockWithPlayers()
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 12, false))
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "CanHumanAnnounce")
 		m.On("CanHumanAnnounce").Return(true)
+		m.On("IsRe", 0).Return(true)
 		result := p.Output(m, nil)
-		assert.NotEmpty(t, result)
+		assert.Contains(t, result, "第1トリック: Reが宣言可能（あなたの手札1枚）")
 	})
 
 	t.Run("trick end prompt shows live points without unreplaced placeholders", func(t *testing.T) {

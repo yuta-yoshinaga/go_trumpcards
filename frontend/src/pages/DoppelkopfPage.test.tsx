@@ -122,10 +122,12 @@ describe('DoppelkopfPage', () => {
     mockExec.mockResolvedValue(announceState);
     renderWithProviders(<DoppelkopfPage />);
     const btn = await screen.findByRole('button', { name: /Re を宣言/ });
-    // aria-label adds the timing/scoring context while still containing the visible label.
+    // aria-label adds the timing context while still containing the visible label.
     expect(btn.getAttribute('aria-label')).toContain('Re を宣言');
-    expect(btn.getAttribute('aria-label')).toContain('得点');
+    expect(btn.getAttribute('aria-label')).toContain('第1トリック');
     expect(btn).toHaveAttribute('title');
+    expect(screen.getByTestId('dk-announce-stage')).toHaveTextContent('第1トリック');
+    expect(screen.getByTestId('dk-announce-stage')).toHaveTextContent('Re');
     fireEvent.click(btn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('announce'));
   });
@@ -140,6 +142,7 @@ describe('DoppelkopfPage', () => {
     renderWithProviders(<DoppelkopfPage />);
     await waitFor(() => expect(screen.getByAltText('♥ 10')).toBeInTheDocument());
     expect(screen.queryByRole('button', { name: /宣言/ })).not.toBeInTheDocument();
+    expect(screen.queryByTestId('dk-announce-stage')).not.toBeInTheDocument();
   });
 
   it('renders trick end with the next trick button', async () => {

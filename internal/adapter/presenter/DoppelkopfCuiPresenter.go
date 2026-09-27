@@ -96,7 +96,20 @@ func (p *DoppelkopfCuiPresenter) Output(g interfaces.DoppelkopfGame, lastErr err
 				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
 			b.WriteString(i18n.T("doppelkopf.promptPlayHelp") + "\n")
 			if g.CanHumanAnnounce() {
-				b.WriteString(i18n.T("doppelkopf.promptAnnounce") + "\n")
+				for i := 0; i < g.GetPlayerCnt(); i++ {
+					player := g.GetPlayer(i)
+					if player != nil && player.GetIsHuman() {
+						team := i18n.T("doppelkopf.teamKontra")
+						if g.IsRe(i) {
+							team = i18n.T("doppelkopf.teamRe")
+						}
+						b.WriteString(i18n.Tf("doppelkopf.promptAnnounce",
+							"trick", strconv.Itoa(g.GetTrickNumber()),
+							"team", team,
+							"cards", strconv.Itoa(player.GetCardsSize())) + "\n")
+						break
+					}
+				}
 			}
 		case domain.DoppelkopfPhaseTrickEnd:
 			winnerIdx := g.GetLeadPlayerIdx()
