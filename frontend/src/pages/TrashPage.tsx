@@ -225,6 +225,8 @@ function TrashPageContent() {
       : isAwaitWild
         ? t('phase.awaitWild')
         : t('phase.playerTurn');
+  const cpuTurnAnnouncement =
+    state.current === 1 && !isGameOver ? (isAwaitWild ? t('message.cpuAwaitWild') : t('message.cpuTurn')) : '';
 
   // Slot index where the pending non-wild card should land. Wild cards (K/Joker)
   // route through AWAIT_WILD's existing highlightFaceDown path, so this stays
@@ -294,29 +296,38 @@ function TrashPageContent() {
               pendingTargetIdx={null}
             />
 
-            <div className="flex items-center justify-center gap-6" data-tutorial="tr-stock">
-              <StockPile
-                size={state.stockSize}
-                onClick={handleDraw}
-                disabled={!isHumanTurn || isAwaitWild || isGameOver}
-              />
-              {state.pending && (
-                <div className="flex flex-col items-center">
-                  <span className="text-xs text-ds-text-muted mb-1">{t('label.pending')}</span>
-                  <AnimatedCard card={state.pending} width={cardWidth} />
-                </div>
-              )}
-              {/* Always-mounted live region (only its text is conditional) so screen
-                  readers reliably announce each drawn card and its placement target. */}
-              <div className="sr-only" role="status" aria-live="polite" data-testid="tr-pending-announce">
-                {pendingAnnounce}
+            <div className="flex flex-col items-center gap-2">
+              <div data-testid="tr-cpu-turn-announce">
+                {cpuTurnAnnouncement && (
+                  <p className="rounded-md bg-ds-warning px-4 py-2 text-sm font-medium text-ds-text-on-accent">
+                    {cpuTurnAnnouncement}
+                  </p>
+                )}
               </div>
-              <DiscardPile
-                top={state.discardTop}
-                size={state.discardSize}
-                cardWidth={cardWidth}
-                label={t('label.discard')}
-              />
+              <div className="flex items-center justify-center gap-6" data-tutorial="tr-stock">
+                <StockPile
+                  size={state.stockSize}
+                  onClick={handleDraw}
+                  disabled={!isHumanTurn || isAwaitWild || isGameOver}
+                />
+                {state.pending && (
+                  <div className="flex flex-col items-center">
+                    <span className="text-xs text-ds-text-muted mb-1">{t('label.pending')}</span>
+                    <AnimatedCard card={state.pending} width={cardWidth} />
+                  </div>
+                )}
+                {/* Always-mounted live region (only its text is conditional) so screen
+                  readers reliably announce each drawn card and its placement target. */}
+                <div className="sr-only" role="status" aria-live="polite" data-testid="tr-pending-announce">
+                  {pendingAnnounce}
+                </div>
+                <DiscardPile
+                  top={state.discardTop}
+                  size={state.discardSize}
+                  cardWidth={cardWidth}
+                  label={t('label.discard')}
+                />
+              </div>
             </div>
 
             <PlayerRow
