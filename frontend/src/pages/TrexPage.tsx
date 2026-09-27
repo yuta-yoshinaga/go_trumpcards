@@ -265,15 +265,17 @@ function TrexPageContent() {
                   {/* Only what this king has not played. A contract is played
                       once per kingdom, so offering a spent one is a dead end. */}
                   {state.availableContracts.map((n) => (
-                    <button
-                      key={`contract-${n.toString()}`}
-                      type="button"
-                      data-hint-action="choose"
-                      className={`${btnPrimary} min-h-11`}
-                      onClick={() => game.handleChoose(n)}
-                    >
-                      {contractName(n)}
-                    </button>
+                    <div key={`contract-${n.toString()}`} className="flex flex-col items-start gap-1">
+                      <button
+                        type="button"
+                        data-hint-action="choose"
+                        className={`${btnPrimary} min-h-11`}
+                        onClick={() => game.handleChoose(n)}
+                      >
+                        {contractName(n)}
+                      </button>
+                      <span className="text-xs text-ds-text-muted">{t(`contractDescription${n}`)}</span>
+                    </div>
                   ))}
                 </div>
               </div>

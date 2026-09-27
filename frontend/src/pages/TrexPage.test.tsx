@@ -95,6 +95,16 @@ describe('TrexPage', () => {
     expect(screen.queryByRole('button', { name: /ダイヤ/ })).not.toBeInTheDocument();
   });
 
+  it('shows localized rules beside only the available contract choices', async () => {
+    mockExec.mockResolvedValue(makeState({ availableContracts: [TrexContract.KING_OF_HEARTS, TrexContract.DOMINOES] }));
+    renderWithProviders(<TrexPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    expect(screen.getByText('♥Kを取ると−75点')).toBeInTheDocument();
+    expect(screen.getByText('上がり順に+200/+150/+100/+50点')).toBeInTheDocument();
+    expect(screen.queryByText('♦1枚につき−10点')).not.toBeInTheDocument();
+  });
+
   it('sends contract zero, the king of hearts, as a value', async () => {
     // 省略にすると ♥K 契約だけ選べなくなる。
     renderWithProviders(<TrexPage />);
