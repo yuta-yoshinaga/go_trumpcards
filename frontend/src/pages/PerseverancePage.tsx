@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef } from 'react';
 import type { PerseveranceMoveZone, perseveranceApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -79,6 +79,7 @@ function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => stri
 
 /** Inner content of the Perseverance page, wrapped by TutorialProvider. */
 function PerseverancePageContent() {
+  const selectSourceHintId = useId();
   const {
     t,
     tc,
@@ -281,6 +282,9 @@ function PerseverancePageContent() {
       }
     >
       <LandscapeBanner message={t('landscapeBanner')} />
+      <span id={selectSourceHintId} className="sr-only">
+        {tc('label.selectSourceFirst')}
+      </span>
 
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
@@ -310,7 +314,9 @@ function PerseverancePageContent() {
                         <button
                           type="button"
                           onClick={() => handleSelectTarget(foundationZone)}
-                          disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
+                          disabled={!isPlaying || loading || isAutoCompleting}
+                          aria-disabled={!selectedSource || undefined}
+                          aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                           aria-label={t('foundationAriaLabel', {
                             suit: FOUNDATION_SUITS[idx],
                             count: pile.length,
@@ -328,7 +334,9 @@ function PerseverancePageContent() {
                         <button
                           type="button"
                           onClick={() => handleSelectTarget(foundationZone)}
-                          disabled={!isPlaying || loading || !selectedSource}
+                          disabled={!isPlaying || loading}
+                          aria-disabled={!selectedSource || undefined}
+                          aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                           aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
                           style={{ width: bd.cw, height: bd.ch }}
                           className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}

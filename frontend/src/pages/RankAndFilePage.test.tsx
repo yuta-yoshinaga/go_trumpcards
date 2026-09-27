@@ -117,6 +117,24 @@ beforeEach(() => {
 });
 
 describe('RankAndFilePage', () => {
+  it('keeps a target focusable and explains why it cannot be used before source selection', async () => {
+    renderWithProviders(<RankAndFilePage />);
+    await waitFor(() => expect(screen.getAllByText('—')).toHaveLength(8));
+    const target = screen.getAllByRole('button').find((button) => button.textContent === 'A');
+    expect(target).toBeDefined();
+    const targetButton = target as HTMLButtonElement;
+    expect(targetButton).not.toBeDisabled();
+    expect(targetButton).toHaveAttribute('aria-disabled', 'true');
+    const hintId = targetButton.getAttribute('aria-describedby');
+    expect(hintId).toBeTruthy();
+    expect(document.getElementById(hintId ?? '')).toHaveTextContent('先に移動する札を選んでください');
+
+    mockExec.mockClear();
+    fireEvent.click(targetButton);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('shows the persistent double-click foundation hint', async () => {
     renderWithProviders(<RankAndFilePage />);
     expect(await screen.findByTestId('rf-doubleclick-hint')).toHaveTextContent('ダブルクリック');
@@ -440,10 +458,11 @@ describe('RankAndFilePage', () => {
     renderWithProviders(<RankAndFilePage />);
     await waitFor(() => expect(screen.getAllByText('—').length).toBe(8));
 
-    // Empty foundation buttons should be disabled when no source selected
+    // Empty foundation targets remain focusable but unavailable until a source is selected.
     const aButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === 'A');
     for (const btn of aButtons) {
-      expect(btn).toBeDisabled();
+      expect(btn).not.toBeDisabled();
+      expect(btn).toHaveAttribute('aria-disabled', 'true');
     }
   });
 

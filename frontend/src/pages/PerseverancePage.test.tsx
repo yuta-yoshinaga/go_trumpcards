@@ -421,6 +421,22 @@ describe('PerseverancePage', () => {
 // いた (#4795)。**13列 + 4組札で移動先候補が多い。姉妹の Wasp / Accordion は
 // 選択時に合法な移動先をリング表示している。
 describe('PerseverancePage legal targets', () => {
+  it('keeps a target focusable and explains why it cannot be used before source selection', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<PerseverancePage />);
+    const target = await screen.findByRole('button', { name: '空の組札 (♠)' });
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const hintId = target.getAttribute('aria-describedby');
+    expect(hintId).toBeTruthy();
+    expect(document.getElementById(hintId ?? '')).toHaveTextContent('先に移動する札を選んでください');
+
+    mockExec.mockClear();
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   const selectSpadeFive = async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<PerseverancePage />);
