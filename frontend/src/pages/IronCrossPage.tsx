@@ -145,10 +145,12 @@ function IronCrossPageContent() {
     const card: Card | null = state.cross[index] ?? null;
     const previewed = previewIndexes.includes(index);
     const ring = previewed ? ' ring-2 ring-ds-success' : '';
-    const previewLines = [
-      ...(previewed && state.verticalIndexes.includes(index) ? [t('label.vertical')] : []),
-      ...(previewed && state.horizontalIndexes.includes(index) ? [t('label.horizontal')] : []),
-    ];
+    const previewLines = previewed
+      ? [
+          ...(state.verticalIndexes.includes(index) ? [t('label.vertical')] : []),
+          ...(state.horizontalIndexes.includes(index) ? [t('label.horizontal')] : []),
+        ]
+      : [];
     const previewName = previewLines.join(t('listSeparator'));
     const marker = previewed ? (
       <span
@@ -177,8 +179,7 @@ function IronCrossPageContent() {
         className={`relative${ring}`}
         data-testid={`ic-cross-${index}`}
         data-previewed={previewed ? 'true' : undefined}
-        role="img"
-        aria-label={previewName || undefined}
+        {...(previewName ? { role: 'img' as const, 'aria-label': previewName } : {})}
       >
         {marker}
         <AnimatedCard card={card} width={cardWidth} />

@@ -119,6 +119,9 @@ describe('IronCrossPage', () => {
     mockApi.mockResolvedValue(withState({ cross: [card(13), card(12), null, null, null], revealedCount: 2 }));
     renderWithProviders(<IronCrossPage />);
     await waitFor(() => expect(screen.getByTestId('ic-cross-0')).toBeInTheDocument());
+    const exposedCard = screen.getByAltText('♠ K');
+    expect(exposedCard).toBeInTheDocument();
+    expect(exposedCard.parentElement).not.toHaveAttribute('role', 'img');
     // 開いている位置には札があり、伏せている位置には無い。
     expect(screen.getByTestId('ic-cross-0').querySelector('img,svg,div')).not.toBeNull();
     expect(screen.getByTestId('ic-cross-2')).toBeEmptyDOMElement();
