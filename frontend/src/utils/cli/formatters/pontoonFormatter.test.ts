@@ -121,6 +121,20 @@ describe('formatPontoonState', () => {
     expect(formatPontoonState(makeState({ isHumanBanker: true, bankerIdx: 0 }))).toContain('banker: you');
   });
 
+  it('shows a zero payout once the round settles', () => {
+    const result = formatPontoonState(
+      makeState({
+        phase: 4,
+        seats: [
+          { name: 'あなた', isCpu: false, hands: [hand({ payout: 0 })] },
+          { name: 'CPU1', isCpu: true, hands: [] },
+        ],
+      }),
+    );
+    expect(result).toContain('あなた bet 100');
+    expect(result).toContain('-> 0');
+  });
+
   it('announces the bank passing and shows the payouts', () => {
     const result = formatPontoonState(
       makeState({
