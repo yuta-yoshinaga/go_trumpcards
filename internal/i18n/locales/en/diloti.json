@@ -29,6 +29,8 @@
   "resultTitle": "--- Round score (you - CPU) ---",
   "resultLine": "{{key}}: {{points}}",
   "resultTotal": "Total: {{a}} - {{b}}",
+  "resultScoreSummary": "{{name}}: this round {{round}} / total {{total}}",
+  "gameContinues": "The game continues.",
   "nextRoundHint": "Type nextround to start the next round.",
   "winner": "{{name}} wins!",
   "score.cards": "Most cards",

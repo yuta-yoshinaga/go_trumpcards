@@ -13,3 +13,15 @@ func (d *Diloti) SetTableForTest(cards []*Card, decls []*DilotiDeclaration) {
 	}
 	d.decls = decls
 }
+
+// SetGameEndRoundForTest は固定得点から終局する局末状態を作る。
+func (d *Diloti) SetGameEndRoundForTest() {
+	for _, p := range d.players {
+		p.ResetRound()
+	}
+	d.players[0].AddScore(55)
+	d.players[0].AddCaptured([]*Card{NewCard(CardDesignDiamond, 10, true)})
+	d.table = make([]*Card, 0)
+	d.decls = make([]*DilotiDeclaration, 0)
+	d.finishRound()
+}

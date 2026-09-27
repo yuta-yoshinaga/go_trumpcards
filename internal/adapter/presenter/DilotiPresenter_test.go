@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -132,10 +133,33 @@ func TestDilotiCuiPresenter_RoundResultAndHint(t *testing.T) {
 	for _, key := range []string{"cards", "aces", "tenOfDiamonds", "twoOfClubs", "xeri"} {
 		assert.Contains(t, out, i18n.T("diloti.score."+key), "得点項目 %s が出ていない", key)
 	}
+	for i := 0; i < d.GetPlayerCnt(); i++ {
+		player := d.GetPlayer(i)
+		assert.Contains(t, out, i18n.Tf("diloti.resultScoreSummary",
+			"name", map[bool]string{true: i18n.T("diloti.you"), false: i18n.Tf("diloti.cpu", "n", "1")}[player.GetIsHuman()],
+			"round", fmt.Sprint(d.GetLastResult().Totals[i]),
+			"total", fmt.Sprint(player.GetScore())))
+	}
+	assert.Contains(t, out, i18n.T("diloti.gameContinues"))
 
 	hintOut := p.HintOutput(dilotiGame())
 	assert.NotContains(t, hintOut, "diloti.", "生キーが出ている")
 	assert.Contains(t, hintOut, strings.SplitN(i18n.T("diloti.hintCard"), "{{", 2)[0])
+}
+
+func TestDilotiCuiPresenter_GameEndRoundShowsScoreSummary(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	i18n.SetLang("ja")
+	d := dilotiGame()
+	d.SetGameEndRoundForTest()
+
+	out := new(presenter.DilotiCuiPresenter).Output(d, nil)
+	assert.Equal(t, domain.DilotiPhaseGameEnd, d.GetPhase())
+	assert.True(t, d.GetGameEndFlag())
+	assert.Contains(t, out, i18n.Tf("diloti.resultScoreSummary", "name", i18n.T("diloti.you"), "round", "6", "total", "61"))
+	assert.NotContains(t, out, i18n.T("diloti.gameContinues"))
 }
 
 func TestDilotiWebPresenter_Output(t *testing.T) {

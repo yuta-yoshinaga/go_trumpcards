@@ -38,6 +38,8 @@
   "score.twoOfClubs": "2 of clubs",
   "score.xeri": "Xeri",
   "roundTotal": "Total: {{a}} - {{b}}",
+  "roundScoreSummary": "{{name}}: this round {{round}} / total {{total}}",
+  "gameContinues": "The game continues",
   "winner": "{{name}} wins!",
   "nextRound": "Next round",
   "restrictedTooltip": "You cannot play this now",

@@ -38,6 +38,8 @@
   "score.twoOfClubs": "2♣",
   "score.xeri": "クセリ",
   "roundTotal": "合計: {{a}} - {{b}}",
+  "roundScoreSummary": "{{name}}: 今回 {{round}} / 累計 {{total}}",
+  "gameContinues": "ゲームは続きます",
   "winner": "{{name}} の勝ち！",
   "nextRound": "次の局へ",
   "restrictedTooltip": "いまは出せません",

@@ -362,6 +362,16 @@ function DilotiPageContent() {
                     <div className="text-ds-text-primary">
                       {t('roundTotal', { a: state.lastResult.totals[0], b: state.lastResult.totals[1] })}
                     </div>
+                    {state.players.map((player, idx) => (
+                      <div key={player.id}>
+                        {t('roundScoreSummary', {
+                          name: playerName(player.id, player.isHuman),
+                          round: state.lastResult?.totals[idx] ?? 0,
+                          total: player.score,
+                        })}
+                      </div>
+                    ))}
+                    {!isGameEnd && <div className="text-ds-text-primary">{t('gameContinues')}</div>}
                   </div>
                 )}
 
