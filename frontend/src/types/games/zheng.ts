@@ -11,6 +11,7 @@ export interface ZhengPlayerData {
   rank: number;
   cardCount: number;
   cards: Card[];
+  finishCards?: Card[];
 }
 
 /** A play or pass action in Zheng Shangyou (null playedCards = pass). */

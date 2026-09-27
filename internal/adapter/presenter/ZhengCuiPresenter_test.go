@@ -24,7 +24,6 @@ func setupZhengCuiMock() (*interfaces.MockZhengGame, []*domain.ZhengPlayer) {
 	m.On("GetTableCards").Return(([]*domain.Card)(nil))
 	m.On("GetCpuActions").Return(([]*domain.ZhengAction)(nil))
 	m.On("IsHumanTurn").Return(true)
-	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	m.On("GetPlayerCnt").Return(4)
 	for i := 0; i < 4; i++ {
 		m.On("GetPlayer", i).Return(players[i])
@@ -78,7 +77,10 @@ func TestZhengCuiPresenter_Output(t *testing.T) {
 		m, players := setupZhengCuiMock()
 		players[1].SetIsFinished(true)
 		players[1].SetRank(1)
-		assert.Contains(t, p.Output(m, nil), "上がり")
+		setZhengPresenterFinishCards(t, players[1], []*domain.Card{domain.NewCard(domain.CardDesignHeart, 5, false)})
+		out := p.Output(m, nil)
+		assert.Contains(t, out, "上がり")
+		assert.Contains(t, out, "♥5")
 	})
 
 	t.Run("error shown", func(t *testing.T) {

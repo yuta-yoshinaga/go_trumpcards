@@ -81664,6 +81664,11 @@ components:
                 type: array
                 items:
                   $ref: '#/components/schemas/Card'
+              finishCards:
+                type: array
+                description: Last cards played by this player when they finished.
+                items:
+                  $ref: '#/components/schemas/Card'
         currentTurn:
           type: integer
         tableCards:

@@ -56,7 +56,15 @@ func (p *ZhengCuiPresenter) HintOutput(zg interfaces.ZhengGame) string {
 func (p *ZhengCuiPresenter) Output(zg interfaces.ZhengGame, lastErr error) string {
 	return buildCuiOutput(i18n.T("zheng.helpTitle"), func(b *strings.Builder) {
 		for i := 0; i < zg.GetPlayerCnt(); i++ {
-			b.WriteString(zhengPlayerStr(zg.GetPlayer(i), i))
+			line := zhengPlayerStr(zg.GetPlayer(i), i)
+			player := zg.GetPlayer(i)
+			if player != nil && player.GetIsFinished() {
+				finishCards := player.GetFinishCards()
+				if finishCards != nil {
+					line = strings.TrimSuffix(line, "\n") + ": " + cuiCardSliceStr(finishCards) + "\n"
+				}
+			}
+			b.WriteString(line)
 		}
 
 		b.WriteString("----------\n")
