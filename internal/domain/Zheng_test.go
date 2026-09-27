@@ -901,6 +901,19 @@ func TestZheng_UnmarshalJSON_Invalid(t *testing.T) {
 			z.players[0].SetRank(9)
 			return marshal(t, z)
 		}},
+		{"finish cards over limit", func(t *testing.T) []byte {
+			z := newZhengTestGame()
+			z.players[0].finishCards = make([]*Card, ZhengMaxCardsPerPlayer+1)
+			for i := range z.players[0].finishCards {
+				z.players[0].finishCards[i] = zhengCard(3, CardDesignSpade)
+			}
+			return marshal(t, z)
+		}},
+		{"invalid finish card", func(t *testing.T) []byte {
+			z := newZhengTestGame()
+			z.players[0].finishCards = []*Card{NewCard(9, 5, false)}
+			return marshal(t, z)
+		}},
 		{"invalid hand card design", func(t *testing.T) []byte {
 			z := newZhengTestGame()
 			z.players[0].AddCard(NewCard(9, 5, false))

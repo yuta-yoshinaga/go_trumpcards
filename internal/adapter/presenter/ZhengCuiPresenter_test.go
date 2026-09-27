@@ -83,6 +83,14 @@ func TestZhengCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, out, "♥5")
 	})
 
+	t.Run("finished player with no finish cards omits finish cards line", func(t *testing.T) {
+		m, players := setupZhengCuiMock()
+		players[1].SetIsFinished(true)
+		players[1].SetRank(1)
+		out := p.Output(m, nil)
+		assert.NotContains(t, out, ": \n")
+	})
+
 	t.Run("error shown", func(t *testing.T) {
 		m, _ := setupZhengCuiMock()
 		assert.Contains(t, p.Output(m, errors.New("invalid play")), "invalid play")

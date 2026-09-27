@@ -60,8 +60,8 @@ func (p *ZhengCuiPresenter) Output(zg interfaces.ZhengGame, lastErr error) strin
 			player := zg.GetPlayer(i)
 			if player != nil && player.GetIsFinished() {
 				finishCards := player.GetFinishCards()
-				if finishCards != nil {
-					line = strings.TrimSuffix(line, "\n") + ": " + cuiCardSliceStr(finishCards) + "\n"
+				if len(finishCards) > 0 {
+					line = strings.TrimSuffix(line, "\n") + "\n" + i18n.Tf("zheng.finishCards", "cards", cuiCardSliceStr(finishCards)) + "\n"
 				}
 			}
 			b.WriteString(line)
