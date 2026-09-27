@@ -2,6 +2,7 @@
 // card.ts re-exports this file, so existing imports keep working.
 
 import type { BaseGameResponse, Card } from '../common';
+import type { TrenteEtQuaranteBetTypeValue } from '../phases';
 
 /**
  * Trente et Quarante (Rouge et Noir) game state response.
@@ -21,7 +22,7 @@ export interface TrenteEtQuaranteResponse extends BaseGameResponse {
   /** Player's remaining chip stack. */
   chips: number;
   /** Selected bet: 0=Noir, 1=Rouge, 2=Couleur, 3=Inverse. */
-  currentBet: number;
+  currentBet: TrenteEtQuaranteBetTypeValue;
   /** Amount wagered on the current round. */
   stake: number;
   /** Cards dealt to the Noir (black) row, summed until the total reaches 31+. */
