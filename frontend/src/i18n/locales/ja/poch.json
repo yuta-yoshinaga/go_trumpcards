@@ -3,6 +3,8 @@
   "ruleLine": "区画は「めくり札と同じスート」の札でしか取れません／pochen は宣言ではなく同ランクの組の比べ合い（4枚＞3枚＞2枚）",
   "turnUp": "めくり札",
   "board": "盤（取られなかった区画は次のディールへ持ち越し）",
+  "listSeparator": "、",
+  "poolUpdate": "{{pool}}: {{chips}}チップ",
   "pool.ace": "A",
   "pool.king": "K",
   "pool.queen": "Q",

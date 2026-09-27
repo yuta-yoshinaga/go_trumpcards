@@ -101,6 +101,27 @@ describe('PochPage', () => {
     expect(marriage).toHaveTextContent('12');
   });
 
+  it('announces only pools whose chip totals changed', async () => {
+    renderWithProviders(<PochPage />);
+    await screen.findAllByTestId('poch-pool');
+    expect(screen.getByRole('status')).toBeEmptyDOMElement();
+
+    mockExec.mockResolvedValueOnce(
+      makeState({
+        pools: POOLS.map((name, i) => ({ name, chips: i === 5 ? 15 : i === 8 ? 7 : 4 })),
+      }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: '賭ける' }));
+
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('マリッジ'));
+    expect(screen.getByRole('status')).toHaveTextContent('15');
+    expect(screen.getByRole('status')).toHaveTextContent('センター');
+    expect(screen.getByRole('status')).toHaveTextContent('7');
+    expect(screen.getByRole('status').textContent?.match(/マリッジ/g)).toHaveLength(1);
+    expect(screen.getByRole('status').textContent?.match(/センター/g)).toHaveLength(1);
+    expect(screen.getByRole('status')).not.toHaveTextContent('エース');
+  });
+
   // 第 1 段階は自動で解決するので、結果を出さないと何が起きたのか読めない。
   it('reports what stage one paid out', async () => {
     renderWithProviders(<PochPage />);

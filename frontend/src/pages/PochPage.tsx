@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { pochApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardBack } from '../components/CardImage';
@@ -56,6 +56,23 @@ function PochPageContent() {
   );
 
   const [handIdx, setHandIdx] = useState<number | null>(null);
+  const previousPools = useRef<PochResponse['pools'] | null>(null);
+  const [poolAnnouncement, setPoolAnnouncement] = useState('');
+
+  useEffect(() => {
+    if (!state) return;
+    if (previousPools.current === null) {
+      previousPools.current = state.pools;
+      return;
+    }
+
+    const previousByName = new Map(previousPools.current.map((pool) => [pool.name, pool.chips]));
+    const changedPools = state.pools
+      .filter((pool) => previousByName.get(pool.name) !== pool.chips)
+      .map((pool) => t('poolUpdate', { pool: t(`pool.${pool.name}`), chips: pool.chips }));
+    previousPools.current = state.pools;
+    setPoolAnnouncement(changedPools.join(t('listSeparator')));
+  }, [state, t]);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('poch');
   const cliConfig: CliGameConfig<PochResponse, Parameters<typeof pochApi.exec>> = useMemo(
@@ -116,6 +133,10 @@ function PochPageContent() {
       }
     >
       <LandscapeBanner message={t('landscapeBanner')} />
+
+      <div role="status" aria-live="polite" className="sr-only">
+        {poolAnnouncement}
+      </div>
 
       <SettingsPanel
         title={tc('settings.title')}
