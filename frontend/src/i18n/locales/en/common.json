@@ -1079,7 +1079,8 @@
     "errorBoundaryReport": "Report issue",
     "errorBoundaryHelp": "Sorry — choose how to recover below.",
     "errorBoundaryRepeated": "The same error keeps occurring. Please reload the page.",
-    "errorBoundaryDetails": "Show error details"
+    "errorBoundaryDetails": "Show error details",
+    "selectSourceFirst": "Select a card to move first"
   },
   "messageCode": {
     "quinze.chipsReplenished": "Your chips were replenished to the starting amount because they were too low.",
