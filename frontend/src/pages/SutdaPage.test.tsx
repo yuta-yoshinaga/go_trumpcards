@@ -35,6 +35,15 @@ describe('SutdaPage', () => {
     expect(screen.getByTestId('sutda-pot')).toHaveTextContent('ポット 30');
   });
 
+  it('pairs each seat’s remaining chips with its current contribution', async () => {
+    renderWithProviders(<SutdaPage />);
+    expect(await screen.findByTestId('sutda-chips-0')).toHaveTextContent('990');
+    expect(screen.getByTestId('sutda-bet-0')).toHaveTextContent('10');
+    expect(screen.getByTestId('sutda-table')).toHaveTextContent('残りチップ');
+    expect(screen.getByTestId('sutda-table')).toHaveTextContent('投入額');
+    expect(screen.getByTestId('sutda-pot')).toHaveTextContent('ポット 30');
+  });
+
   // **自分の役は常に見える。** 伏せているのは相手の札だけ。
   it('always shows your own two cards and what they make', async () => {
     renderWithProviders(<SutdaPage />);

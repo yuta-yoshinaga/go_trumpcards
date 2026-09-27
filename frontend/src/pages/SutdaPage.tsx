@@ -229,11 +229,9 @@ function SutdaPageContent() {
 
             <div className="mb-2 p-2 rounded bg-black/30" data-tutorial="sutda-table" data-testid="sutda-table">
               {state.players.map((p) => (
-                <div key={p.id} className="py-1 border-b border-white/5 last:border-0">
-                  <div className="text-ds-text-muted text-sm flex items-center gap-2">
-                    <span className={p.folded ? 'opacity-50 line-through' : ''}>
-                      {playerName(p.id, p.isHuman)}: {t('chips', { n: p.chips })} / {t('bet', { n: p.bet })}
-                    </span>
+                <div key={p.id} className="py-2 border-b border-white/5 last:border-0">
+                  <div className="text-ds-text-muted text-sm flex items-center gap-2 mb-1">
+                    <span className={p.folded ? 'opacity-50 line-through' : ''}>{playerName(p.id, p.isHuman)}</span>
                     {p.isDealer && (
                       <span className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>{t('dealerBadge')}</span>
                     )}
@@ -242,6 +240,26 @@ function SutdaPageContent() {
                         {t('folded')}
                       </span>
                     )}
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="rounded px-2 py-1 bg-ds-surface">
+                      <div className="text-xs text-ds-text-muted">{t('remainingChips')}</div>
+                      <div
+                        className="font-semibold tabular-nums text-ds-text-primary"
+                        data-testid={`sutda-chips-${p.id}`}
+                      >
+                        {p.chips}
+                      </div>
+                    </div>
+                    <div className="rounded px-2 py-1 bg-ds-surface">
+                      <div className="text-xs text-ds-text-muted">{t('currentContribution')}</div>
+                      <div
+                        className="font-semibold tabular-nums text-ds-text-primary"
+                        data-testid={`sutda-bet-${p.id}`}
+                      >
+                        {p.bet}
+                      </div>
+                    </div>
                   </div>
                   {/* **伏せているうちは自分のぶんだけ。** 相手の役が見えると
                       賭ける意味が無くなる。 */}
