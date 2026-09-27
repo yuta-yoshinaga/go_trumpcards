@@ -45,6 +45,7 @@ func TestHoldemCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "(なし)")
 		assert.Contains(t, result, "ポット:")
 		assert.Contains(t, result, "コール不要（チェック可能）")
+		assert.NotContains(t, result, "最小レイズ額")
 		assert.Contains(t, result, "あなた")
 		assert.Contains(t, result, "♠10")
 		assert.Contains(t, result, "♥11")
@@ -57,8 +58,8 @@ func TestHoldemCuiPresenter_Output(t *testing.T) {
 		h.SetMinRaise(50)
 		players[0].SetCurrentBet(10)
 		result := p.Output(h, nil)
-		assert.Contains(t, result, "コール差額:30")
-		assert.Contains(t, result, "最小レイズ額:50")
+		assert.Contains(t, result, "コール差額: 30")
+		assert.Contains(t, result, "最小レイズ額: 50")
 	})
 
 	t.Run("community cards displayed", func(t *testing.T) {

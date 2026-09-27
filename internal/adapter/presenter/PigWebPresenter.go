@@ -57,9 +57,9 @@ func (p *PigWebPresenter) buildBase(s interfaces.PigGame) *controller.PigWebOutp
 
 // buildPlayersOutput プレイヤー情報を構築
 func (p *PigWebPresenter) buildPlayersOutput(s interfaces.PigGame) []*controller.PigWebOutputPlayer {
-	out := make([]*controller.PigWebOutputPlayer, 0)
-	for i := 0; i < s.GetPlayerCnt(); i++ {
-		player := s.GetPlayer(i)
+	players := pigPlayers(s)
+	out := make([]*controller.PigWebOutputPlayer, 0, len(players))
+	for i, player := range players {
 		out = append(out, &controller.PigWebOutputPlayer{
 			ID:            i,
 			IsHuman:       player.GetIsHuman(),

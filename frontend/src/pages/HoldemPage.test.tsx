@@ -661,6 +661,7 @@ describe('HoldemPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'チェック' })).toBeInTheDocument();
     expect(screen.getByText('コール不要（チェック可能）')).toBeInTheDocument();
+    expect(screen.queryByText(/最小レイズ額/)).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'オールイン' })).toBeInTheDocument();
   });

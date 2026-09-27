@@ -4,7 +4,8 @@ import { pigApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
-import type { Card, PigResponse } from '../types/card';
+import { makePigState } from '../test/stateFactories';
+import type { PigResponse } from '../types/card';
 import { PigPage } from './PigPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -18,52 +19,15 @@ vi.mock('../hooks/useGameHint', () => ({
 
 const mockExec = vi.mocked(pigApi.exec);
 
-const card = (design: string, value: number): Card => ({ design, value }) as unknown as Card;
-
-const hand = [card('SPADE', 13), card('HEART', 13), card('CLOVER', 1), card('DIAMOND', 12)];
-
-const seat = (id: number, over: Record<string, unknown> = {}) => ({
-  id,
-  isHuman: id === 0,
-  cardCount: 4,
-  cards: id === 0 ? hand : [],
-  letters: 0,
-  letterWord: '',
-  eliminated: false,
-  hasSignalled: false,
-  noticedOrder: 0,
-  hasChosenPass: false,
-  ...over,
-});
-
-function makeState(overrides: Partial<PigResponse> = {}): PigResponse {
-  return {
-    players: [seat(0), seat(1), seat(2), seat(3)],
-    phase: 0,
-    validPlays: [0, 1, 2, 3],
-    signallerIdx: -1,
-    noticedCnt: 0,
-    roundLoserIdx: -1,
-    letterTarget: 'PIG',
-    roundNumber: 2,
-    passCount: 3,
-    deckSize: 16,
-    currentPlayerIdx: 0,
-    gameEndFlag: false,
-    winnerIdx: -1,
-    config: { playerCnt: 4, cpuDifficulty: 1 },
-    message: '',
-    ...overrides,
-  } as unknown as PigResponse;
-}
+const seat = (id: number, over: Record<string, unknown> = {}) => ({ ...makePigState().players[id], ...over });
 
 /** A signal is out and the human has not answered it yet. */
 const liveSignal = (over: Partial<PigResponse> = {}) =>
-  makeState({ phase: 1, signallerIdx: 2, noticedCnt: 1, ...over } as Partial<PigResponse>);
+  makePigState({ phase: 1, signallerIdx: 2, noticedCnt: 1, ...over } as Partial<PigResponse>);
 
 beforeEach(() => {
   vi.clearAllMocks();
-  mockExec.mockResolvedValue(makeState());
+  mockExec.mockResolvedValue(makePigState());
 });
 
 describe('PigPage', () => {
@@ -88,7 +52,7 @@ describe('PigPage', () => {
   // **文字がそのまま残機。** 得点表示はありません。
   it('shows every hand size and letters', async () => {
     mockExec.mockResolvedValue(
-      makeState({ players: [seat(0, { letters: 2, letterWord: 'PI' }), seat(1), seat(2), seat(3)] }),
+      makePigState({ players: [seat(0, { letters: 2, letterWord: 'PI' }), seat(1), seat(2), seat(3)] }),
     );
     renderWithProviders(<PigPage />);
     const s0 = await screen.findByTestId('pig-seat-0');
@@ -106,7 +70,9 @@ describe('PigPage', () => {
     expect(screen.getByTestId('pig-seat-1')).not.toHaveTextContent(/選択済み/);
     unmount();
 
-    mockExec.mockResolvedValue(makeState({ players: [seat(0), seat(1, { hasChosenPass: true }), seat(2), seat(3)] }));
+    mockExec.mockResolvedValue(
+      makePigState({ players: [seat(0), seat(1, { hasChosenPass: true }), seat(2), seat(3)] }),
+    );
     const second = renderWithProviders(<PigPage />);
     expect(await screen.findByTestId('pig-seat-1')).toHaveTextContent(/選択済み/);
     second.unmount();
@@ -119,7 +85,9 @@ describe('PigPage', () => {
     third.unmount();
 
     mockExec.mockResolvedValue(
-      makeState({ players: [seat(0), seat(1, { eliminated: true, letters: 3, letterWord: 'PIG' }), seat(2), seat(3)] }),
+      makePigState({
+        players: [seat(0), seat(1, { eliminated: true, letters: 3, letterWord: 'PIG' }), seat(2), seat(3)],
+      }),
     );
     renderWithProviders(<PigPage />);
     expect(await screen.findByTestId('pig-seat-1')).toHaveTextContent(/脱落/);
@@ -135,7 +103,9 @@ describe('PigPage', () => {
 
   // **同時に渡すので、選んだあとは待ちになる。**
   it('locks the hand once you have chosen', async () => {
-    mockExec.mockResolvedValue(makeState({ players: [seat(0, { hasChosenPass: true }), seat(1), seat(2), seat(3)] }));
+    mockExec.mockResolvedValue(
+      makePigState({ players: [seat(0, { hasChosenPass: true }), seat(1), seat(2), seat(3)] }),
+    );
     renderWithProviders(<PigPage />);
     expect(await screen.findByTestId('pig-waiting')).toHaveTextContent(/全員が選ぶまで待ちます/);
     expect(screen.getAllByRole('button', { name: /へ渡す$/ })[0]).toBeDisabled();
@@ -195,7 +165,7 @@ describe('PigPage', () => {
   // **罰は1ラウンドに1回の出来事。** 配り直す前に読ませる。
   it('shows the round result and deals the next round on request', async () => {
     mockExec.mockResolvedValue(
-      makeState({
+      makePigState({
         phase: 2,
         roundLoserIdx: 1,
         players: [seat(0), seat(1, { letters: 1, letterWord: 'P' }), seat(2), seat(3)],
@@ -212,7 +182,7 @@ describe('PigPage', () => {
   // **脱落しても局は続く。**
   it('tells the human when they are out but the game continues', async () => {
     mockExec.mockResolvedValue(
-      makeState({
+      makePigState({
         players: [seat(0, { eliminated: true, letters: 3, letterWord: 'PIG', cards: [] }), seat(1), seat(2), seat(3)],
       }),
     );
@@ -221,12 +191,12 @@ describe('PigPage', () => {
   });
 
   it('reports who was left standing', async () => {
-    mockExec.mockResolvedValue(makeState({ phase: 3, gameEndFlag: true, winnerIdx: 0 }));
+    mockExec.mockResolvedValue(makePigState({ phase: 3, gameEndFlag: true, winnerIdx: 0 }));
     const { unmount } = renderWithProviders(<PigPage />);
     expect(await screen.findByTestId('pig-result')).toHaveTextContent(/最後まで残りました/);
     unmount();
 
-    mockExec.mockResolvedValue(makeState({ phase: 3, gameEndFlag: true, winnerIdx: 2 }));
+    mockExec.mockResolvedValue(makePigState({ phase: 3, gameEndFlag: true, winnerIdx: 2 }));
     renderWithProviders(<PigPage />);
     expect(await screen.findByTestId('pig-result')).toHaveTextContent(/CPU2 が最後まで残りました/);
   });

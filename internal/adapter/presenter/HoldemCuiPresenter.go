@@ -75,8 +75,12 @@ func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) stri
 		}
 
 		b.WriteString("----------\n")
+		humanIdx := -1
 		for i := 0; i < h.GetPlayerCnt(); i++ {
 			player := h.GetPlayer(i)
+			if humanIdx < 0 && player.GetIsHuman() {
+				humanIdx = i
+			}
 			b.WriteString(cuiPlayerNameWithStyle(player, i))
 			b.WriteString(i18n.Tf("holdem.playerChips", "chips", strconv.Itoa(player.GetChips())))
 
@@ -108,23 +112,22 @@ func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) stri
 		// human's turn while equity is available (pre-flop through river, human
 		// not folded). GetEquity returns nil otherwise, hiding the display.
 		if h.IsHumanTurn() {
-			for i := 0; i < h.GetPlayerCnt(); i++ {
-				player := h.GetPlayer(i)
-				if player.GetIsHuman() {
-					callAmount := h.GetLastBet() - player.GetCurrentBet()
-					if callAmount < 0 {
-						callAmount = 0
-					}
-					key := "holdem.betComparison"
-					if callAmount == 0 {
-						key = "holdem.betComparisonCheck"
-					}
-					b.WriteString(i18n.Tf(key,
-						"current", strconv.Itoa(h.GetLastBet()),
-						"own", strconv.Itoa(player.GetCurrentBet()),
-						"call", strconv.Itoa(callAmount),
-						"minraise", strconv.Itoa(h.GetMinRaise())) + "\n")
-					break
+			if humanIdx >= 0 {
+				player := h.GetPlayer(humanIdx)
+				callAmount := h.GetLastBet() - player.GetCurrentBet()
+				if callAmount < 0 {
+					callAmount = 0
+				}
+				key := "holdem.betComparison"
+				if callAmount == 0 {
+					key = "holdem.betComparisonCheck"
+				}
+				b.WriteString(i18n.Tf(key,
+					"current", strconv.Itoa(h.GetLastBet()),
+					"own", strconv.Itoa(player.GetCurrentBet()),
+					"call", strconv.Itoa(callAmount)) + "\n")
+				if h.GetLastBet() > 0 {
+					b.WriteString(i18n.Tf("holdem.minimumRaise", "minraise", strconv.Itoa(h.GetMinRaise())) + "\n")
 				}
 			}
 			if eq := h.GetEquity(); eq != nil {
@@ -205,13 +208,6 @@ func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) stri
 			switch h.GetRebuyPhaseType() {
 			case domain.HoldemRebuyPhaseRebuy:
 				rebuyCounts := h.GetRebuyCounts()
-				humanIdx := -1
-				for i := 0; i < h.GetPlayerCnt(); i++ {
-					if h.GetPlayer(i).GetIsHuman() {
-						humanIdx = i
-						break
-					}
-				}
 				if humanIdx >= 0 {
 					b.WriteString(i18n.Tf("holdem.rebuyPrompt",
 						"chips", strconv.Itoa(cfg.RebuyChips),
