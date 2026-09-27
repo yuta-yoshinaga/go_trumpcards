@@ -6,7 +6,7 @@
   "header": "trump {{trump}} · to go: us {{a}} / them {{b}}",
   "ruleLine": "Permanent trumps: CQ > SQ > CJ > SJ > HJ > DJ (highest whatever the trump suit)",
   "trumpCountLine": "trumps in this suit: {{n}}",
-  "pointsLine": "this hand: us {{a}} / them {{b}} (120 in all)",
+  "pointsLine": "this hand: Team 0 {{a}} / Team 1 {{b}} (120 in all)",
   "trickLine": "Trick: {{cards}}",
   "playerLine": "{{name}} [team {{team}}]: {{cards}} card(s)",
   "bidMark": "-- bid {{n}}",

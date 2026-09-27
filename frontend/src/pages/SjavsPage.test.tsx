@@ -79,6 +79,33 @@ describe('SjavsPage', () => {
     expect(screen.getByText(/♣Q ＞ ♠Q ＞ ♣J ＞ ♠J ＞ ♥J ＞ ♦J/)).toBeInTheDocument();
   });
 
+  it('labels hand points with the same team identifiers shown by each player', async () => {
+    const { unmount } = renderWithProviders(<SjavsPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.getByText('今ハンド: チーム0 0 / チーム1 0（合計120）')).toBeInTheDocument();
+    expect(screen.getAllByText(/チーム0/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/チーム1/).length).toBeGreaterThan(0);
+
+    unmount();
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: SjavsPhase.HAND_END,
+        teamPoints: [8, 4],
+        handResult: {
+          declarerTeam: 0,
+          declarerPoints: 60,
+          trumpWasClubs: false,
+          scoringTeam: 0,
+          amount: 4,
+          vol: false,
+        },
+      }),
+    );
+    renderWithProviders(<SjavsPage />);
+    await waitFor(() => expect(screen.getByText('今ハンド: チーム0 8 / チーム1 4（合計120）')).toBeInTheDocument());
+    expect(screen.getByTestId('sjavs-hand-result')).toHaveTextContent('チーム0');
+  });
+
   it('shows the trump as undecided while bidding and the count once it is fixed', async () => {
     renderWithProviders(<SjavsPage />);
     await waitFor(() => expect(screen.getByText(/切札: 未定/)).toBeInTheDocument());

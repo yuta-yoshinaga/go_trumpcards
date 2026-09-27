@@ -6,7 +6,7 @@
   "header": "切札{{trump}} · 残り 味方{{a}} / 相手{{b}}",
   "ruleLine": "常時切札: ♣Q ＞ ♠Q ＞ ♣J ＞ ♠J ＞ ♥J ＞ ♦J（切札スートに関係なく最強）",
   "trumpCountLine": "この切札での切札総数: {{n}}枚",
-  "pointsLine": "今ハンドの点: 味方{{a}} / 相手{{b}}（合計120）",
+  "pointsLine": "今ハンドの点: チーム0 {{a}} / チーム1 {{b}}（合計120）",
   "trickLine": "場: {{cards}}",
   "playerLine": "{{name}}[チーム{{team}}]: 手札{{cards}}枚",
   "bidMark": "— {{n}}枚を申告",
