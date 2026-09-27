@@ -14,7 +14,7 @@
     "pickedUp": "[just picked up]",
     "you": "You",
     "cpu": "CPU{{idx}}",
-    "mustPickUp": "You have no {{suit}} to follow with. Take the {{n}} card(s) on the table."
+    "mustPickUp": "You have no {{suit}} to follow with. Pick up the {{n}} card(s) in the current trick and add them to your hand."
   },
   "currentTrick": "Current trick",
   "actions": {

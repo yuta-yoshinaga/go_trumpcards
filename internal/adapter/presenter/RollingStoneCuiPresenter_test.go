@@ -78,6 +78,8 @@ func TestRollingStoneCuiPresenterPromptsForAPickUp(t *testing.T) {
 	// 札を "♠9" と出すのに合わせる。
 	assert.Contains(t, out, i18n.Tf("rollingstone.promptPickUp",
 		"suit", cuiSuitName(domain.CardDesignSpade), "n", "1"))
+	assert.Contains(t, out, "現在のトリック")
+	assert.Contains(t, out, "手札")
 
 	// **負のコントロール: フォローできるなら通常の促し。**
 	r.GiveHandForTest(0, domain.NewCard(domain.CardDesignSpade, 8, false))
