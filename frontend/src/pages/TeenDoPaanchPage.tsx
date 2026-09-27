@@ -164,7 +164,11 @@ function TeenDoPaanchPageContent() {
               <span className="mr-4" data-testid="td-round">
                 {t('header.round', { round: String(state.roundNumber), total: String(state.config.rounds) })}
               </span>
-              <span data-testid="td-trump" data-tutorial="td-trump">
+              <span
+                data-testid="td-trump"
+                data-tutorial="td-trump"
+                className={state.trumpSuit > 0 ? 'text-lg font-semibold text-ds-accent' : ''}
+              >
                 {state.trumpSuit > 0
                   ? t('header.trump', { suit: suitSymbolAt(state.trumpSuit, '?') })
                   : t('header.trumpUndecided')}
@@ -310,6 +314,15 @@ function TeenDoPaanchPageContent() {
                 <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
                   {t('actions.giveUp')}
                 </button>
+              )}
+            </div>
+
+            <div role="status" aria-live="polite" data-testid="td-trump-guidance">
+              {isHumanTrumpTurn && <span className="text-ds-text-primary">{t('actions.chooseTrump')}</span>}
+              {isHumanTurn && state.trumpSuit > 0 && (
+                <span className="text-ds-accent font-semibold">
+                  {t('actions.trumpSetNext', { suit: suitSymbolAt(state.trumpSuit, '?') })}
+                </span>
               )}
             </div>
 
