@@ -88,6 +88,16 @@ func TestPinochleCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "切り札: 未決定")
 	})
 
+	t.Run("shows selecting trump when trumpSuit is 0 during trump phase", func(t *testing.T) {
+		m, _ := setupPinochleCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetTrumpSuit")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.On("GetTrumpSuit").Return(0)
+		m.On("GetPhase").Return(domain.PinochlePhaseTrump)
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "切り札: 選択中")
+	})
+
 	t.Run("shows highest bid and bidder", func(t *testing.T) {
 		m, _ := setupPinochleCuiMockWithPlayers()
 		result := p.Output(m, nil)

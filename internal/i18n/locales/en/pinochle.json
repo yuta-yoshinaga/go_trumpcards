@@ -30,6 +30,7 @@
   "trumpWithBidder": "Trump: {{suit}} (bidding team: team {{team}})",
   "trumpOnly": "Trump: {{suit}}",
   "trumpUndecided": "Trump: undecided",
+  "trumpSelecting": "Trump: selecting",
   "highestBid": "Highest bid: {{bid}}",
   "highestBidWithName": "Highest bid: {{bid}} ({{name}})",
   "teamScores": "Team 0: {{a}}pt  Team 1: {{b}}pt",

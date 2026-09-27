@@ -30,6 +30,7 @@
   "trumpWithBidder": "切り札: {{suit}} (ビッドチーム: チーム{{team}})",
   "trumpOnly": "切り札: {{suit}}",
   "trumpUndecided": "切り札: 未決定",
+  "trumpSelecting": "切り札: 選択中",
   "highestBid": "最高ビッド: {{bid}}",
   "highestBidWithName": "最高ビッド: {{bid}} ({{name}})",
   "teamScores": "チーム0: {{a}}点  チーム1: {{b}}点",
