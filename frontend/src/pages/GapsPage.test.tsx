@@ -358,18 +358,22 @@ describe('GapsPage', () => {
     );
   });
 
-  it('does not move when an unselected gap is clicked', async () => {
+  it('explains a focusable gap and ignores clicks before a source is selected', async () => {
     renderWithProviders(<GapsPage />);
     const target = await screen.findByTestId('gaps-cell-0-12');
 
-    expect(target).toBeDisabled();
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const hintId = target.getAttribute('aria-describedby');
+    expect(hintId).toBeTruthy();
+    expect(document.getElementById(hintId ?? '')).toHaveTextContent('先に移動する札を選んでください');
     mockedRun.mockClear();
     fireEvent.click(target);
     await flushPendingDispatch();
     expect(mockedRun).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
   });
 
-  it('keeps the gap drop handlers on an enabled wrapper while its click button is disabled', async () => {
+  it('keeps the gap drop handlers on an enabled wrapper while its click button is aria-disabled', async () => {
     const grid = makeGrid();
     grid[0] = [card('HEART', 5), ...Array.from({ length: 12 }, () => null)];
     mockedRun.mockResolvedValue({ ...playingState, grid });
@@ -379,7 +383,8 @@ describe('GapsPage', () => {
     const dropZone = target.parentElement;
     expect(dropZone).not.toBeNull();
     expect(dropZone).not.toHaveAttribute('disabled');
-    expect(target).toBeDisabled();
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
 
     const dataTransfer = {
       data: {} as Record<string, string>,
