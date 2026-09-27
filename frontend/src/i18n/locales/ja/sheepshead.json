@@ -22,6 +22,10 @@
   "tricks": "{{count}}トリック",
   "chips": "{{count}}チップ",
   "currentTrick": "現在のトリック",
+  "trickResult": {
+    "winner": "獲得者: {{player}}",
+    "nextLead": "次のリード: {{player}}"
+  },
   "blind": "ブラインド",
   "blindCount": "ブラインド: {{count}}枚",
   "picker": "ピッカー",

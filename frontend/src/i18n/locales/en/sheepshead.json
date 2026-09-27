@@ -22,6 +22,10 @@
   "tricks": "{{count}} tricks",
   "chips": "{{count}} chips",
   "currentTrick": "Current Trick",
+  "trickResult": {
+    "winner": "Trick winner: {{player}}",
+    "nextLead": "Next lead: {{player}}"
+  },
   "blind": "Blind",
   "blindCount": "Blind: {{count}} cards",
   "picker": "Picker",
