@@ -144,8 +144,9 @@ function MinibridgePageContent() {
         ? t('phase.contract')
         : t('phase.play');
 
-  // 出せる札に緑の枠を足すだけで、押せなくはしない（サーバが必ず検証する）。
   // **validPlays はいま操作している席のもの**なので、ダミーの手番ではダミー側に付く。
+  // 枠表示と選択可否の両方に同じ合法札判定を使う。
+  // 押せる札はクライアント側でも絞るが、合法性の最終判断はサーバが必ず検証する（クライアント側の判定だけには頼らない）。
   const legalRing = new Set(isHumanTurn ? state.validPlays : []);
 
   const pairHcp = state.players
@@ -319,7 +320,7 @@ function MinibridgePageContent() {
                       key={`dummy-${card.design}-${card.value}-${idx}`}
                       type="button"
                       onClick={() => handlePlay(idx)}
-                      disabled={loading || !isHumanDummyTurn}
+                      disabled={loading || !isHumanDummyTurn || !legalRing.has(idx)}
                       aria-label={t('actions.playDummyAria', { card: cardAlt(card) })}
                       className={`disabled:opacity-50 ${
                         isHumanDummyTurn && legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''
@@ -347,7 +348,7 @@ function MinibridgePageContent() {
                       key={`${card.design}-${card.value}-${idx}`}
                       type="button"
                       onClick={() => handlePlay(idx)}
-                      disabled={loading || !isHumanTurn || isHumanDummyTurn}
+                      disabled={loading || !isHumanTurn || isHumanDummyTurn || !legalRing.has(idx)}
                       aria-label={t('actions.playAria', { card: cardAlt(card) })}
                       className={`disabled:opacity-50 ${
                         !isHumanDummyTurn && legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''
