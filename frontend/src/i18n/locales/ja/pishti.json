@@ -14,6 +14,8 @@
   "pileTop": "場の一番上",
   "pileCount": "{{count}}枚",
   "pileEmpty": "場札なし",
+  "pileUpdate": "場札更新。トップは{{top}}、{{count}}{{captured}}",
+  "pileCaptured": "。場札が取られました",
   "yourHand": "あなたの手札",
   "turnNotice": "あなたの番です — 手札を1枚選んで場に出してください。",
   "playButton": "出す",
