@@ -255,10 +255,11 @@ describe('PokerSquaresPage', () => {
     });
     renderWithProviders(<PokerSquaresPage />);
     await waitFor(() => expect(screen.getByTestId('cell-0-0')).toBeInTheDocument());
+    expect(screen.getByTestId('cell-0-0')).toHaveAccessibleName('空、行 0、列 0');
     const live = screen.getByTestId('ps-preview-live');
     expect(live).toHaveTextContent('');
     fireEvent.focus(screen.getByTestId('cell-0-0'));
-    await waitFor(() => expect(live).toHaveTextContent(/1行目.*完成.*点/));
+    await waitFor(() => expect(live).toHaveTextContent(/行 0.*完成.*点/));
     fireEvent.blur(screen.getByTestId('cell-0-0'));
     await waitFor(() => expect(live).toHaveTextContent(''));
   });
@@ -279,9 +280,10 @@ describe('PokerSquaresPage', () => {
     });
     renderWithProviders(<PokerSquaresPage />);
     await waitFor(() => expect(screen.getByTestId('cell-0-0')).toBeInTheDocument());
+    expect(screen.getByTestId('cell-0-0')).toHaveAccessibleName('空、行 0、列 0');
     const live = screen.getByTestId('ps-preview-live');
     fireEvent.focus(screen.getByTestId('cell-0-0'));
-    await waitFor(() => expect(live).toHaveTextContent(/1列目.*完成.*点/));
+    await waitFor(() => expect(live).toHaveTextContent(/列 0.*完成.*点/));
   });
 
   it('does not announce a preview when the focused cell completes no line', async () => {
@@ -539,7 +541,7 @@ describe('PokerSquaresPage', () => {
     const cell = await screen.findByTestId('cell-0-2');
     fireEvent.focus(cell);
     const live = screen.getByTestId('ps-preview-live');
-    await waitFor(() => expect(live).toHaveTextContent(/1行目.*見込み/));
+    await waitFor(() => expect(live).toHaveTextContent(/行 0.*見込み/));
   });
 
   it('shows the projected row score when hovering a cell that would complete a row', async () => {

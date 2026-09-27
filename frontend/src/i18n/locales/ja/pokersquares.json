@@ -47,10 +47,10 @@
     "straightFlush": "ストレートフラッシュ",
     "royalFlush": "ロイヤルフラッシュ"
   },
-  "previewRowAnnounce": "{{row}}行目が{{hand}}で完成し、{{delta}}点獲得します",
-  "previewColAnnounce": "{{col}}列目が{{hand}}で完成し、{{delta}}点獲得します",
+  "previewRowAnnounce": "行 {{row}} が{{hand}}で完成し、{{delta}}点獲得します",
+  "previewColAnnounce": "列 {{col}} が{{hand}}で完成し、{{delta}}点獲得します",
   "previewPartialPrefix": "〜",
-  "previewRowPartialAnnounce": "{{row}}行目は現在{{hand}}の見込みです",
-  "previewColPartialAnnounce": "{{col}}列目は現在{{hand}}の見込みです",
+  "previewRowPartialAnnounce": "行 {{row}} は現在{{hand}}の見込みです",
+  "previewColPartialAnnounce": "列 {{col}} は現在{{hand}}の見込みです",
   "touchPlaceHint": "もう一度タップで確定"
 }
