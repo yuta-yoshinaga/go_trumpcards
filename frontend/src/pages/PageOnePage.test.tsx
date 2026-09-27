@@ -110,6 +110,14 @@ describe('PageOnePage', () => {
     });
   });
 
+  it('explains the empty draw pile fallback while keeping draw available', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, drawPileCount: 0 });
+    renderWithProviders(<PageOnePage />);
+
+    expect(await screen.findByText(/捨て札の一番上を残して山札を作り直し/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '引く' })).toBeEnabled();
+  });
+
   it.each([
     [200, '目標: 200点'],
     [300, '目標: 300点'],
