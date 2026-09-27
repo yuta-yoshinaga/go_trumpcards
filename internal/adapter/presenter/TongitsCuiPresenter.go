@@ -69,6 +69,18 @@ func tongitsHandCards(player *domain.TongitsPlayer) []*domain.Card {
 	return cards
 }
 
+func writeTongitsRoundResult(b *strings.Builder, g interfaces.TongitsGame) {
+	if g.GetRoundEndReason() != domain.TongitsRoundEndReasonNone {
+		b.WriteString(i18n.Tf("tongits.roundEndReason", "reason", i18n.T("tongits.roundEndReasonValue."+strconv.Itoa(int(g.GetRoundEndReason())))) + "\n")
+	}
+	if g.GetRoundWinner() < 0 {
+		b.WriteString(i18n.T("tongits.roundWinnerDraw") + "\n")
+	} else {
+		winner := g.GetRoundWinner()
+		b.WriteString(i18n.Tf("tongits.roundWinner", "name", cuiPlayerName(g.GetPlayer(winner), winner)) + "\n")
+	}
+}
+
 // TongitsCuiPresenter renders the Tongits CUI view.
 type TongitsCuiPresenter struct{}
 
@@ -122,6 +134,7 @@ func (p *TongitsCuiPresenter) Output(g interfaces.TongitsGame, lastErr error) st
 		cuiErrorBlock(b, lastErr)
 
 		if g.GetGameEndFlag() {
+			writeTongitsRoundResult(b, g)
 			winnerIdx := g.GetWinnerIdx()
 			banner := i18n.Tf("tongits.gameEnd",
 				"name", cuiPlayerName(g.GetPlayer(winnerIdx), winnerIdx))
@@ -150,15 +163,7 @@ func (p *TongitsCuiPresenter) Output(g interfaces.TongitsGame, lastErr error) st
 			b.WriteString(i18n.T("tongits.promptDiscardHelp") + "\n")
 			b.WriteString(i18n.T("tongits.promptChallengeHelp") + "\n")
 		case domain.TongitsPhaseRoundEnd:
-			if g.GetRoundEndReason() != domain.TongitsRoundEndReasonNone {
-				b.WriteString(i18n.Tf("tongits.roundEndReason", "reason", i18n.T("tongits.roundEndReasonValue."+strconv.Itoa(int(g.GetRoundEndReason())))) + "\n")
-			}
-			if g.GetRoundWinner() < 0 {
-				b.WriteString(i18n.T("tongits.roundWinnerDraw") + "\n")
-			} else {
-				winner := g.GetRoundWinner()
-				b.WriteString(i18n.Tf("tongits.roundWinner", "name", cuiPlayerName(g.GetPlayer(winner), winner)) + "\n")
-			}
+			writeTongitsRoundResult(b, g)
 			if g.GetIsTongits() {
 				b.WriteString(i18n.T("tongits.promptDealtTongits") + "\n")
 			}
