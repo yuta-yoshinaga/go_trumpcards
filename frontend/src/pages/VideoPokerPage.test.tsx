@@ -124,6 +124,28 @@ describe('VideoPokerPage', () => {
     expect(screen.getByTestId('vp-hold-announce').textContent).toMatch(/カード1のホールドを解除/);
   });
 
+  it('announces auto-hold setting changes and identifies automatic holds until manually changed', async () => {
+    localStorage.setItem('auto_hold_videopoker', 'true');
+    mockExec.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce(drawPhaseState);
+    renderWithProviders(<VideoPokerPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const autoHold = screen.getByTestId('vp-auto-hold-toggle');
+    expect(autoHold).toBeChecked();
+    expect(autoHold.closest('label')).toHaveTextContent('自動ホールド (オン)');
+    fireEvent.click(autoHold);
+    expect(screen.getByTestId('vp-auto-hold-announce')).toHaveTextContent('自動ホールドをオフにしました');
+    fireEvent.click(autoHold);
+    expect(screen.getByTestId('vp-auto-hold-announce')).toHaveTextContent('自動ホールドをオンにしました');
+
+    fireEvent.click(screen.getByRole('button', { name: /ディール/ }));
+    await screen.findByRole('button', { name: /ドロー/ });
+    const automaticCard = screen.getByRole('button', { name: /ホールド 1, 自動ホールドで選択/ });
+    expect(automaticCard).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(automaticCard);
+    expect(screen.getByTestId('vp-hold-announce')).toHaveTextContent('カード2のホールドを解除');
+    expect(screen.getByRole('button', { name: /カード 1$/ })).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('number keys do not toggle hold outside the draw phase', async () => {
     // Result phase: held cards come from the server; local keyboard toggles are ignored.
     mockExec.mockResolvedValue(resultPhaseWin);

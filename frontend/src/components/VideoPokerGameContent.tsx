@@ -150,9 +150,11 @@ export function VideoPokerGameContent({
 
   const [betAmount, setBetAmount] = useState(1);
   const [heldCards, setHeldCards] = useState<boolean[]>([false, false, false, false, false]);
+  const [autoHeldCards, setAutoHeldCards] = useState<boolean[]>([false, false, false, false, false]);
   // Screen-reader announcement for a hold toggle (aria-pressed alone is not
   // reliably re-announced by every AT when toggled via the keyboard).
   const [holdAnnounce, setHoldAnnounce] = useState('');
+  const [autoHoldAnnounce, setAutoHoldAnnounce] = useState('');
   // Screen-reader announcement summarising the draw result (winning hand +
   // payout, or the loss message). The payout text and the payout-table row
   // highlight are static, so this sr-only live region is the only channel
@@ -238,6 +240,7 @@ export function VideoPokerGameContent({
       }
     }
     setHeldCards(next);
+    setAutoHeldCards(next);
     // Clear any stale hold announcement carried over from the previous hand.
     setHoldAnnounce('');
   }, [isDrawPhase]);
@@ -249,6 +252,11 @@ export function VideoPokerGameContent({
       setHeldCards((prev) => {
         const next = [...prev];
         next[index] = !next[index];
+        return next;
+      });
+      setAutoHeldCards((prev) => {
+        const next = [...prev];
+        next[index] = false;
         return next;
       });
       setHoldAnnounce(tNs(willHold ? 'a11y.holdOn' : 'a11y.holdOff', { index: index + 1 }));
@@ -358,6 +366,9 @@ export function VideoPokerGameContent({
             <div className="sr-only" role="status" aria-live="polite" data-testid="vp-hold-announce">
               {holdAnnounce}
             </div>
+            <div className="sr-only" role="status" aria-live="polite" data-testid="vp-auto-hold-announce">
+              {autoHoldAnnounce}
+            </div>
 
             {/* Keying the live region on resultNonce remounts it on each result, so
                 assistive tech re-announces even two identical consecutive hands (an
@@ -401,7 +412,7 @@ export function VideoPokerGameContent({
                           className={`relative rounded transition-transform ${
                             displayHeld[i] ? 'ring-4 ring-ds-warning -translate-y-2 motion-safe:animate-card-lock' : ''
                           }`}
-                          aria-label={`${displayHeld[i] ? `${tNs('hold')} ${i}` : tNs('card', { index: i })}${isWild ? ` ${tNs('wild')}` : ''}`}
+                          aria-label={`${displayHeld[i] ? `${tNs('hold')} ${i}` : tNs('card', { index: i })}${isWild ? ` ${tNs('wild')}` : ''}${autoHeldCards[i] ? `, ${tNs('a11y.autoSelected')}` : ''}`}
                           aria-pressed={displayHeld[i] ?? false}
                           data-held={displayHeld[i] ? 'true' : undefined}
                         >
@@ -548,10 +559,13 @@ export function VideoPokerGameContent({
                 <input
                   type="checkbox"
                   checked={autoHoldEnabled}
-                  onChange={(e) => setAutoHoldEnabled(e.target.checked)}
+                  onChange={(e) => {
+                    setAutoHoldEnabled(e.target.checked);
+                    setAutoHoldAnnounce(tNs(e.target.checked ? 'a11y.autoHoldOn' : 'a11y.autoHoldOff'));
+                  }}
                   data-testid="vp-auto-hold-toggle"
                 />
-                {t('label.autoHold')}
+                {t('label.autoHold')} ({tNs(autoHoldEnabled ? 'a11y.enabled' : 'a11y.disabled')})
               </label>
             </div>
           </GameFooter>
