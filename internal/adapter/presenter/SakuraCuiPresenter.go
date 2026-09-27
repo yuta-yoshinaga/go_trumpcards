@@ -77,6 +77,9 @@ func sakuraPlayerStr(g interfaces.SakuraGame, idx int) string {
 		"bonus", sakuraBonusStr(player.Bonuses()),
 		"score", strconv.Itoa(player.GetScore()),
 		"wins", strconv.Itoa(player.GetRoundWins())) + "\n")
+	if len(player.GetTaken()) > 0 {
+		b.WriteString(i18n.Tf("sakura.takenLine", "taken", sakuraCuiCardsStr(player.GetTaken())) + "\n")
+	}
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
 		b.WriteString(i18n.Tf("sakura.handLine",
 			"hand", sakuraCuiCardsStr(player.GetCards())) + "\n")

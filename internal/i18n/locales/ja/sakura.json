@@ -14,6 +14,7 @@
   "roundLine": "ラウンド: {{round}}/{{rounds}}  山札: {{stock}}  親: {{dealer}}",
   "fieldLine": "場: {{field}}",
   "playerLine": "{{name}}: 手札{{hand}}枚  取り札{{taken}}枚  今局{{points}}点  追加役: {{bonus}}  通算{{score}}点  勝{{wins}}",
+  "takenLine": "取り札: {{taken}}",
   "handLine": "手札: {{hand}}",
   "promptPlay": "手番: {{name}}",
   "promptHelp": "p <h> [f] でプレイ（f は 2 枚一致時に取る場札）。nr=次のラウンドへ",

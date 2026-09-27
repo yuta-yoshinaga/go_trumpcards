@@ -14,6 +14,7 @@
   "roundLine": "Round: {{round}}/{{rounds}}  Stock: {{stock}}  Dealer: {{dealer}}",
   "fieldLine": "Field: {{field}}",
   "playerLine": "{{name}}: hand {{hand}}  taken {{taken}}  this round {{points}}  bonus: {{bonus}}  total {{score}}  wins {{wins}}",
+  "takenLine": "Taken cards: {{taken}}",
   "handLine": "Hand: {{hand}}",
   "promptPlay": "Turn: {{name}}",
   "promptHelp": "Play with p <h> [f] (f picks the field card when two match). nr = next round",
