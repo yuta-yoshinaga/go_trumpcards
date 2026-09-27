@@ -18,6 +18,8 @@ func setupWattenWebMock() *interfaces.MockWattenGame {
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
 	m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
+	m.On("GetLastTrick").Return([]*domain.TrickCard(nil))
+	m.On("GetLastTrickWinner").Return(-1)
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.WattenPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -73,6 +75,21 @@ func TestWattenWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, int(domain.WattenPhasePlay), resObj.Phase)
 		assert.Equal(t, -1, resObj.WinnerTeam)
 		assert.Equal(t, 2, resObj.Stake)
+		assert.Empty(t, resObj.LastTrick)
+		assert.Equal(t, -1, resObj.LastTrickWinner)
+	})
+
+	t.Run("includes the previous trick and winner", func(t *testing.T) {
+		m, _ := setupWattenWebMockWithPlayers()
+		trick := []*domain.TrickCard{{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignHeart, 13, false)}}
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLastTrick")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLastTrickWinner")
+		m.On("GetLastTrick").Return(trick)
+		m.On("GetLastTrickWinner").Return(1)
+		var result controller.WattenWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, nil)), &result))
+		assert.Equal(t, 1, result.LastTrick[0].PlayerIdx)
+		assert.Equal(t, 1, result.LastTrickWinner)
 	})
 
 	t.Run("with error", func(t *testing.T) {

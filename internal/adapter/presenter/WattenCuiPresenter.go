@@ -116,6 +116,16 @@ func (p *WattenCuiPresenter) Output(g interfaces.WattenGame, lastErr error) stri
 			func(tc *domain.TrickCard) string { return cuiCardStr(tc.Card) },
 			func(idx int) string { return cuiPlayerName(g.GetPlayer(idx), idx) },
 		)
+		if lastTrick := g.GetLastTrick(); len(lastTrick) > 0 {
+			out.WriteString(i18n.T("watten.previousTrick") + "\n")
+			cuiTrickBlock(out, lastTrick,
+				func(tc *domain.TrickCard) int { return tc.PlayerIdx },
+				func(tc *domain.TrickCard) string { return cuiCardStr(tc.Card) },
+				func(idx int) string { return cuiPlayerName(g.GetPlayer(idx), idx) },
+			)
+			winnerIdx := g.GetLastTrickWinner()
+			out.WriteString(i18n.Tf("watten.previousTrickWinner", "name", cuiPlayerName(g.GetPlayer(winnerIdx), winnerIdx)) + "\n")
+		}
 
 		cuiErrorBlock(out, lastErr)
 

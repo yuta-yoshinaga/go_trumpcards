@@ -57,6 +57,10 @@ type WattenGame interface {
 	GetCurrentPlayerIdx() int
 	// GetCurrentTrick 現在のトリックを取得する
 	GetCurrentTrick() []*domain.TrickCard
+	// GetLastTrick returns the most recently completed trick in the current deal.
+	GetLastTrick() []*domain.TrickCard
+	// GetLastTrickWinner returns the winning seat of the most recently completed trick, or -1.
+	GetLastTrickWinner() int
 	// GetDealerIdx ディーラーインデックスを取得する
 	GetDealerIdx() int
 	// GetLeadPlayerIdx リードプレイヤーインデックスを取得する

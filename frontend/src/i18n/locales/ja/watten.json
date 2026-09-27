@@ -27,6 +27,7 @@
   "suitHeart": "ハート",
   "suitDiamond": "ダイヤ",
   "currentTrick": "現在のトリック",
+  "trickHistory": { "title": "直前のトリック", "cards": "出された札", "winner": "勝者" },
   "players": "プレイヤー",
   "you": "あなた",
   "cards": "{{count}}枚",

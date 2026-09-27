@@ -64,6 +64,8 @@ type WattenWebOutput struct {
 	ResponderIdx     int                      `json:"responderIdx"`
 	CanRaise         bool                     `json:"canRaise"`
 	CurrentTrick     []*WebOutputTrickCard    `json:"currentTrick"`
+	LastTrick        []*WebOutputTrickCard    `json:"lastTrick"`
+	LastTrickWinner  int                      `json:"lastTrickWinner"`
 	TeamScores       [2]int                   `json:"teamScores"`
 	TeamTricks       [2]int                   `json:"teamTricks"`
 	DealWinnerTeam   int                      `json:"dealWinnerTeam"`

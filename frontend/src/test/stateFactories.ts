@@ -2273,6 +2273,8 @@ const baseWattenState: WattenResponse = {
   responderIdx: -1,
   canRaise: true,
   currentTrick: [],
+  lastTrick: [],
+  lastTrickWinner: -1,
   teamScores: [0, 0],
   teamTricks: [0, 0],
   dealWinnerTeam: -1,
