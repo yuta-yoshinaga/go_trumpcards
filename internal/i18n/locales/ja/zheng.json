@@ -3,6 +3,7 @@
   "helpPlay": "  p [idx ...]          カードを出す (指定なし = パス)",
   "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Normal, 1=Easy, 2=Hard)",
   "playerFinished": ": 上がり ({{rank}}位)",
+  "finishCards": "上がり札: {{cards}}",
   "playerCardCount": ": {{count}}枚",
   "tableCards": "場",
   "tableEmpty": "場: なし (自由に出せます)",

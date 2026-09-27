@@ -9,6 +9,8 @@
   "rankTable": {
     "title": "Standings"
   },
+  "finishCards": "Finishing play: {{cards}}",
+  "listSeparator": ", ",
   "selectToPlay": "Click cards to select",
   "tableCards": "Table",
   "tableEmpty": "(empty)",

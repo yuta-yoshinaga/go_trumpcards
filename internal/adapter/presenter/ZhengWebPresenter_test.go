@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/presenter"
@@ -24,6 +25,20 @@ func makeZhengPresenterPlayers() []*domain.ZhengPlayer {
 	}
 }
 
+func setZhengPresenterFinishCards(t *testing.T, player *domain.ZhengPlayer, cards []*domain.Card) {
+	t.Helper()
+	data, err := json.Marshal(player)
+	require.NoError(t, err)
+	var encoded map[string]json.RawMessage
+	require.NoError(t, json.Unmarshal(data, &encoded))
+	encodedCards, err := json.Marshal(cards)
+	require.NoError(t, err)
+	encoded["fc"] = encodedCards
+	data, err = json.Marshal(encoded)
+	require.NoError(t, err)
+	require.NoError(t, json.Unmarshal(data, player))
+}
+
 func setupZhengWebMock() (*interfaces.MockZhengGame, []*domain.ZhengPlayer) {
 	m := new(interfaces.MockZhengGame)
 	players := makeZhengPresenterPlayers()
@@ -36,7 +51,6 @@ func setupZhengWebMock() (*interfaces.MockZhengGame, []*domain.ZhengPlayer) {
 	m.On("GetCpuActions").Return(([]*domain.ZhengAction)(nil))
 	m.On("GetHumanAction").Return((*domain.ZhengAction)(nil))
 	m.On("IsHumanTurn").Return(true)
-	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	m.On("GetPlayerCnt").Return(4)
 	for i := 0; i < 4; i++ {
 		m.On("GetPlayer", i).Return(players[i])
@@ -91,6 +105,18 @@ func TestZhengWebPresenter_Output(t *testing.T) {
 		var out controller.ZhengWebOutput
 		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, nil)), &out))
 		assert.NotNil(t, out.HumanAction)
+	})
+
+	t.Run("finished player exposes their finishing play", func(t *testing.T) {
+		m, players := setupZhengWebMock()
+		players[1].SetIsFinished(true)
+		players[1].SetRank(1)
+		setZhengPresenterFinishCards(t, players[1], []*domain.Card{domain.NewCard(domain.CardDesignHeart, 10, false)})
+		var out controller.ZhengWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, nil)), &out))
+		require.Len(t, out.Players[1].FinishCards, 1)
+		assert.Equal(t, 10, out.Players[1].FinishCards[0].Value)
+		assert.Empty(t, out.Players[2].FinishCards)
 	})
 
 	t.Run("error message", func(t *testing.T) {

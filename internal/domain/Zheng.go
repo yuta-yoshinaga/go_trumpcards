@@ -82,6 +82,7 @@ func (z *Zheng) Reset() {
 
 	resetPlayers(z.players, func(p *ZhengPlayer) {
 		p.SetRank(-1)
+		p.finishCards = nil
 	})
 
 	dealAllCards(z.trumpCards, z.players)
@@ -178,6 +179,7 @@ func (z *Zheng) playCards(playerIdx int, cards []*Card, playType ZhengPlayType) 
 	z.round.passCount = 0
 
 	if z.players[playerIdx].GetCardsSize() == 0 {
+		z.players[playerIdx].finishCards = append([]*Card(nil), cards...)
 		z.finishPlayer(playerIdx)
 	}
 
@@ -563,6 +565,12 @@ func (z *Zheng) UnmarshalJSON(data []byte) error {
 		}
 		if r := p.GetRank(); r < -1 || r > ZhengPlayerCnt {
 			return errZhengInvalidRank
+		}
+		if len(p.finishCards) > ZhengMaxCardsPerPlayer {
+			return errZhengInvalidCard
+		}
+		if err := zhengCheckCards(p.finishCards); err != nil {
+			return err
 		}
 		for i := 0; i < p.GetCardsSize(); i++ {
 			if !zhengValidCard(p.GetCard(i)) {
