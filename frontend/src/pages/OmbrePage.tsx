@@ -28,6 +28,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { OmbreResponse } from '../types/card';
 import { OmbrePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { OMBRE_HELP, parseOmbreCommand } from '../utils/cli/commands/ombreCommands';
 import { formatOmbreState } from '../utils/cli/formatters/ombreFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -370,6 +371,7 @@ function OmbrePageContent() {
                 isMobile={isMobile}
                 dataTutorialPrefix="ombre"
                 validIndices={canPlay ? state.playableIndices : undefined}
+                highlightIndices={canPlay && isRequestedHint(state) ? (state.hint?.cardIndices ?? []) : undefined}
                 restrictedTooltip={t('playButton')}
                 cardBadgeFor={matadorBadgeFor}
               />
@@ -385,10 +387,14 @@ function OmbrePageContent() {
             <div data-testid="ombre-hint-live" role="status" aria-live="polite">
               {state.hint && isRequestedHint(state) && (
                 <div className="text-ds-warning text-sm mb-2">
-                  {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
-                  {state.hint.cardIndices &&
-                    state.hint.cardIndices.length > 0 &&
-                    ` (${state.hint.cardIndices.map((i) => `[${i}]`).join(', ')})`}
+                  {t('hintMessage', {
+                    cards: (state.hint.cardIndices ?? [])
+                      .map((i) => humanPlayer?.cards[i])
+                      .filter((card) => card !== undefined)
+                      .map(cardAlt)
+                      .join(t('listSeparator')),
+                    reason: t(`hint.${state.hint.reason}`),
+                  })}
                 </div>
               )}
             </div>
@@ -448,14 +454,19 @@ function OmbrePageContent() {
                 </div>
               )}
               {canPlay && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handlePlay}
-                  disabled={loading || selectedCardIndices.length !== 1}
-                >
-                  {t('playButton')}
-                </button>
+                <>
+                  <button type="button" className={btnSecondary} onClick={() => void exec('hint')} disabled={loading}>
+                    {t('requestHint')}
+                  </button>
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handlePlay}
+                    disabled={loading || selectedCardIndices.length !== 1}
+                  >
+                    {t('playButton')}
+                  </button>
+                </>
               )}
               {isTrickEnd && (
                 <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>
