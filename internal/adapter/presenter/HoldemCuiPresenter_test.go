@@ -44,9 +44,21 @@ func TestHoldemCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "ディーラー:")
 		assert.Contains(t, result, "(なし)")
 		assert.Contains(t, result, "ポット:")
+		assert.Contains(t, result, "コール不要（チェック可能）")
 		assert.Contains(t, result, "あなた")
 		assert.Contains(t, result, "♠10")
 		assert.Contains(t, result, "♥11")
+	})
+
+	t.Run("short all-in amount is distinct from minimum raise", func(t *testing.T) {
+		h, players := makeHoldemForPresenter()
+		h.SetPhase(domain.HoldemPhasePreFlop)
+		h.SetLastBet(40)
+		h.SetMinRaise(50)
+		players[0].SetCurrentBet(10)
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "コール差額:30")
+		assert.Contains(t, result, "最小レイズ額:50")
 	})
 
 	t.Run("community cards displayed", func(t *testing.T) {

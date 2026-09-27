@@ -37,6 +37,8 @@
   "communityNone": "Community: (none)",
   "communityCards": "Community: {{cards}}",
   "potLine": "Pot: {{pot}}",
+  "betComparison": "Current highest bet: {{current}} Your contribution: {{own}} Amount to call: {{call}} Minimum raise: {{minraise}}",
+  "betComparisonCheck": "Current highest bet: {{current}} Your contribution: {{own}} No call needed (you can check) Minimum raise: {{minraise}}",
   "limitLine": "Limit: {{name}}",
   "playerChips": " chips:{{chips}}",
   "playerStats": " VPIP:{{vpip}}% PFR:{{pfr}}% 3Bet:{{tb}}% AF:{{af}}",

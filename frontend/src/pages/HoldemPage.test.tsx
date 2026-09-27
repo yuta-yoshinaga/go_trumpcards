@@ -660,6 +660,7 @@ describe('HoldemPage', () => {
     renderWithProviders(<HoldemPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'チェック' })).toBeInTheDocument();
+    expect(screen.getByText('コール不要（チェック可能）')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'オールイン' })).toBeInTheDocument();
   });
@@ -671,6 +672,22 @@ describe('HoldemPage', () => {
     expect(screen.getByRole('button', { name: 'レイズ' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'オールイン' })).toBeInTheDocument();
+  });
+
+  it('shows the call comparison beside the controls and distinguishes min raise', async () => {
+    const state = {
+      ...preFlopWithBetState,
+      lastBet: 40,
+      minRaise: 50,
+      players: [humanPlayer({ currentBet: 10 }), cpuPlayer(1), cpuPlayer(2)],
+    };
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<HoldemPage />);
+    expect(await screen.findByText('現在の最高額: 40')).toBeInTheDocument();
+    expect(screen.getByTestId('holdem-bet-comparison')).toHaveTextContent('コール差額: 30');
+    expect(screen.getByText('自分の投入額: 10')).toBeInTheDocument();
+    expect(screen.getByText('コール差額: 30')).toBeInTheDocument();
+    expect(screen.getByText('最小レイズ額: 50')).toBeInTheDocument();
   });
 
   it('hides betting controls when not active phase', async () => {

@@ -37,6 +37,8 @@
   "communityNone": "コミュニティ: (なし)",
   "communityCards": "コミュニティ: {{cards}}",
   "potLine": "ポット: {{pot}}",
+  "betComparison": "現在の最高額:{{current}} 自分の投入額:{{own}} コール差額:{{call}} 最小レイズ額:{{minraise}}",
+  "betComparisonCheck": "現在の最高額:{{current}} 自分の投入額:{{own}} コール不要（チェック可能） 最小レイズ額:{{minraise}}",
   "limitLine": "リミット: {{name}}",
   "playerChips": " チップ:{{chips}}",
   "playerStats": " VPIP:{{vpip}}% PFR:{{pfr}}% 3Bet:{{tb}}% AF:{{af}}",

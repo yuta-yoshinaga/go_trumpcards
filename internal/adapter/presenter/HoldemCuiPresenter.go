@@ -108,6 +108,25 @@ func (p *HoldemCuiPresenter) Output(h interfaces.HoldemGame, lastErr error) stri
 		// human's turn while equity is available (pre-flop through river, human
 		// not folded). GetEquity returns nil otherwise, hiding the display.
 		if h.IsHumanTurn() {
+			for i := 0; i < h.GetPlayerCnt(); i++ {
+				player := h.GetPlayer(i)
+				if player.GetIsHuman() {
+					callAmount := h.GetLastBet() - player.GetCurrentBet()
+					if callAmount < 0 {
+						callAmount = 0
+					}
+					key := "holdem.betComparison"
+					if callAmount == 0 {
+						key = "holdem.betComparisonCheck"
+					}
+					b.WriteString(i18n.Tf(key,
+						"current", strconv.Itoa(h.GetLastBet()),
+						"own", strconv.Itoa(player.GetCurrentBet()),
+						"call", strconv.Itoa(callAmount),
+						"minraise", strconv.Itoa(h.GetMinRaise())) + "\n")
+					break
+				}
+			}
 			if eq := h.GetEquity(); eq != nil {
 				potOdds := h.GetPotOdds()
 				b.WriteString("----------\n")
