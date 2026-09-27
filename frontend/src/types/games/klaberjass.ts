@@ -27,9 +27,13 @@ export interface KlaberjassPlayer {
   sequences: KlaberjassSequence[];
   /** Points taken this deal, melds and bela included. */
   handPoints: number;
+  /** Card points taken in tricks this deal. */
   cardPoints: number;
+  /** Sequence (meld) points this deal. */
   sequencePoints: number;
+  /** Bela bonus this deal. */
   belaPoints: number;
+  /** Last-trick bonus this deal. */
   lastTrickPoints: number;
   score: number;
   isMaker: boolean;

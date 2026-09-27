@@ -315,7 +315,7 @@ function KlaberjassPageContent() {
                 <div>{state.bete ? t('beteLine') : t('madeLine')}</div>
                 {state.players.map((p) => (
                   <div key={p.id} data-testid="klaberjass-points-breakdown">
-                    {playerLabel(p.id, p.id === 0)}:{' '}
+                    {playerLabel(p.id, p.isHuman)}:{' '}
                     {t('pointsBreakdown', {
                       card: p.cardPoints,
                       sequence: p.sequencePoints,
