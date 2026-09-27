@@ -1,3 +1,4 @@
+import type { TFunction } from 'i18next';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { beggarmyneighbourApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
@@ -50,6 +51,26 @@ const AUTOPLAY_DELAY_MS: Record<AutoPlaySpeed, number> = {
 };
 
 const AUTOPLAY_SPEED_STORAGE_KEY = 'beggarmyneighbour:autoPlaySpeed';
+
+/** Resolve the shared phase labels and penalty owner for display and announcements. */
+function describePhase(state: BeggarMyNeighbourResponse, t: TFunction<'beggarmyneighbour'>, tc: TFunction<'common'>) {
+  const isPayingPenalty = state.phase === BeggarMyNeighbourPhase.PAY_PENALTY;
+  const isGameEnd = state.gameEndFlag || state.phase === BeggarMyNeighbourPhase.GAME_END;
+  const phaseName = isGameEnd
+    ? t('phase.end')
+    : isPayingPenalty
+      ? t('phase.payPenalty')
+      : state.phase === BeggarMyNeighbourPhase.COLLECT
+        ? t('phase.collect')
+        : t('phase.play');
+  const ownerName = !isPayingPenalty
+    ? ''
+    : state.penaltyOwnerIdx === 0
+      ? tc('player.you')
+      : tc('player.cpu', { id: state.penaltyOwnerIdx });
+
+  return { isPayingPenalty, phaseName, ownerName };
+}
 
 /** Read the persisted autoplay speed, falling back to `normal` when unset/invalid. */
 function loadAutoPlaySpeed(): AutoPlaySpeed {
@@ -197,6 +218,25 @@ function BeggarMyNeighbourPageContent() {
   );
   const { handleCommand } = useCliGame(execApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
+  const [liveAnnouncement, setLiveAnnouncement] = useState('');
+  const wasPayingPenalty = useRef(false);
+  useEffect(() => {
+    if (!state || state.players.length < 2) return;
+    const { isPayingPenalty, phaseName, ownerName } = describePhase(state, t, tc);
+    const announcement = isPayingPenalty
+      ? t('phaseAnnouncePenalty', { phase: phaseName, count: state.penaltyRemaining, name: ownerName })
+      : t('phaseAnnounce', { phase: phaseName });
+
+    if (!isPayingPenalty || !wasPayingPenalty.current) {
+      setLiveAnnouncement(announcement);
+    } else {
+      const timer = setTimeout(() => setLiveAnnouncement(announcement), 500);
+      wasPayingPenalty.current = isPayingPenalty;
+      return () => clearTimeout(timer);
+    }
+    wasPayingPenalty.current = isPayingPenalty;
+  }, [state, t, tc]);
+
   if (!state || state.players.length < 2)
     return <GameSkeleton gameKey="beggarmyneighbour" layout={{ kind: 'centered', rows: [2], gap: 'wide' }} />;
 
@@ -213,13 +253,7 @@ function BeggarMyNeighbourPageContent() {
   const roundCap = state.config.maxRounds;
   const roundPct = roundCap > 0 ? Math.min(100, Math.round((state.roundsPlayed / roundCap) * 100)) : 0;
 
-  const phaseName = isGameEnd
-    ? t('phase.end')
-    : state.phase === BeggarMyNeighbourPhase.PAY_PENALTY
-      ? t('phase.payPenalty')
-      : state.phase === BeggarMyNeighbourPhase.COLLECT
-        ? t('phase.collect')
-        : t('phase.play');
+  const { isPayingPenalty, phaseName, ownerName: penaltyOwnerName } = describePhase(state, t, tc);
 
   // **誰が払っているのかが画面のどこにも出ていなかった。**サーバは毎レスポンス
   // `penaltyOwnerIdx` を返しているのに一度も読まれておらず、残り枚数と中央の
@@ -227,13 +261,6 @@ function BeggarMyNeighbourPageContent() {
   //
   // **支払い中のときだけ引く。**フェーズ外では `penaltyOwnerIdx` が -1 なので、
   // 無条件に組むと `CPU -1` という誰でもない名前を作ることになる (レビュー指摘)。
-  const isPayingPenalty = state.phase === BeggarMyNeighbourPhase.PAY_PENALTY;
-  const penaltyOwnerName = !isPayingPenalty
-    ? ''
-    : state.penaltyOwnerIdx === 0
-      ? tc('player.you')
-      : tc('player.cpu', { id: state.penaltyOwnerIdx });
-
   // PLAY フェーズの手番プレイヤー表示 (#7341)。通常プレイ時にどちらの手番かが
   // 分かるようにする。PLAY フェーズ以外では表示しない。
   const isPlaying = state.phase === BeggarMyNeighbourPhase.PLAY;
@@ -245,10 +272,6 @@ function BeggarMyNeighbourPageContent() {
 
   // Phase transitions (and the penalty countdown) are conveyed only by the
   // central-pile ring color, so mirror them into an sr-only live region.
-  const phaseAnnouncement = isPayingPenalty
-    ? t('phaseAnnouncePenalty', { phase: phaseName, count: state.penaltyRemaining, name: penaltyOwnerName })
-    : t('phaseAnnounce', { phase: phaseName });
-
   return (
     <GamePageShell
       title={tc('nav.beggarmyneighbour')}
@@ -273,7 +296,7 @@ function BeggarMyNeighbourPageContent() {
 
             {/* Announce the phase (and penalty countdown) to screen readers. */}
             <div className="sr-only" role="status" aria-live="polite" data-testid="bmn-phase-announce">
-              {phaseAnnouncement}
+              {liveAnnouncement}
             </div>
 
             {/* Held-card totals + round progress so the standings and how close the

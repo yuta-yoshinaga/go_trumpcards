@@ -252,9 +252,40 @@ describe('BeggarMyNeighbourPage', () => {
     mockExec.mockResolvedValueOnce(penaltyState);
     renderWithProviders(<BeggarMyNeighbourPage />);
     const region = await screen.findByTestId('bmn-phase-announce');
+    expect(await screen.findByTestId('bmn-penalty-owner')).toHaveTextContent('あなた');
     await waitFor(() =>
       expect(region).toHaveTextContent('フェーズ: ペナルティ支払い中。あなた が残りペナルティ 3 枚を支払い中'),
     );
+  });
+
+  it('coalesces rapid penalty count updates while autoplaying', async () => {
+    mockExec.mockResolvedValueOnce(penaltyState);
+    renderWithProviders(<BeggarMyNeighbourPage />);
+    const region = await screen.findByTestId('bmn-phase-announce');
+    expect(region).toHaveTextContent('残りペナルティ 3 枚');
+
+    vi.useFakeTimers();
+    try {
+      mockExec.mockResolvedValueOnce({ ...penaltyState, penaltyRemaining: 2 });
+      fireEvent.click(screen.getByTestId('autoplay-button'));
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(450);
+      });
+      expect(mockExec).toHaveBeenCalledWith('step');
+      await act(async () => {
+        await Promise.resolve();
+      });
+      fireEvent.click(screen.getByTestId('autoplay-button'));
+      expect(screen.getByText('残りペナルティ: 2')).toBeInTheDocument();
+      expect(region).toHaveTextContent('残りペナルティ 3 枚');
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(500);
+      });
+      expect(region).toHaveTextContent('残りペナルティ 2 枚');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   // **誰が払っているのかが画面のどこにも出ていなかった** ── サーバは毎レスポンス
