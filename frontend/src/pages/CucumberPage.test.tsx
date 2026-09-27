@@ -175,10 +175,30 @@ describe('CucumberPage', () => {
 
   it('plays the clicked card by its hand index', async () => {
     renderWithProviders(<CucumberPage />);
-    const cards = await screen.findAllByRole('button', { name: /を出す$/ });
+    const cards = await screen.findAllByRole('button', { name: /を出す/ });
     mockExec.mockClear();
     fireEvent.click(cards[1]);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 1));
+  });
+
+  it('announces each card position and server-reported playability in hand order', async () => {
+    renderWithProviders(<CucumberPage />);
+    const cards = await screen.findAllByRole('button');
+    const handCards = cards.filter((button) => button.getAttribute('aria-label')?.includes('を出す'));
+    expect(handCards.map((button) => button.getAttribute('aria-label'))).toEqual([
+      '4枚中1枚目、出せません、♠ 3 を出す',
+      '4枚中2枚目、出せます、♥ 10 を出す',
+      '4枚中3枚目、出せます、♣ Q を出す',
+      '4枚中4枚目、出せません、♦ 5 を出す',
+    ]);
+  });
+
+  it('updates announced playability when the server returns the next state', async () => {
+    mockExec.mockResolvedValueOnce(makeState()).mockResolvedValueOnce(makeState({ validPlays: [0] }));
+    renderWithProviders(<CucumberPage />);
+    const card = await screen.findByRole('button', { name: '4枚中2枚目、出せます、♥ 10 を出す' });
+    fireEvent.click(card);
+    expect(await screen.findByRole('button', { name: '4枚中2枚目、出せません、♥ 10 を出す' })).toBeInTheDocument();
   });
 
   // **「選べる」と「決まっている」を言い分けます。**
@@ -207,7 +227,7 @@ describe('CucumberPage', () => {
   it('disables the hand while it is a CPU turn', async () => {
     mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1 }));
     renderWithProviders(<CucumberPage />);
-    const cards = await screen.findAllByRole('button', { name: /を出す$/ });
+    const cards = await screen.findAllByRole('button', { name: /を出す/ });
     expect(cards[0]).toBeDisabled();
     expect(screen.queryByTestId('cu-status')).not.toBeInTheDocument();
   });
