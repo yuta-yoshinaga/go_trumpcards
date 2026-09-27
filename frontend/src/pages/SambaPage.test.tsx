@@ -97,6 +97,48 @@ describe('SambaPage', () => {
     expect(hand).toHaveAttribute('aria-describedby', 'sa-meld-points');
   });
 
+  it('announces that the initial-meld requirement is met when selected points reach the minimum', async () => {
+    const stateWithEnoughPoints = makeSambaState({
+      phase: 1,
+      messageCode: 'samba.meldPhase',
+      players: [
+        {
+          ...meldPhaseState.players[0],
+          cards: [
+            { design: 'SPADE', value: 10 },
+            { design: 'CLOVER', value: 10 },
+            { design: 'HEART', value: 10 },
+            { design: 'DIAMOND', value: 10 },
+            { design: 'SPADE', value: 10 },
+          ],
+        },
+        ...meldPhaseState.players.slice(1),
+      ],
+    });
+    mockExec.mockResolvedValue(stateWithEnoughPoints);
+    renderWithProviders(<SambaPage />);
+
+    const handCards = await screen.findAllByRole('button', { name: /10/ });
+    handCards.forEach((card) => {
+      fireEvent.click(card);
+    });
+
+    expect(screen.getByTestId('sa-meld-points')).toHaveTextContent('初回メルド必要点: 50');
+    expect(screen.getByTestId('sa-meld-points')).toHaveTextContent('選択合計: 50');
+    expect(screen.getByTestId('sa-meld-points')).toHaveTextContent('必要点を満たしています');
+    expect(screen.getByTestId('sa-meld-points')).not.toHaveTextContent('不足しています');
+  });
+
+  it('does not describe an empty meld-points region during a CPU meld turn', async () => {
+    mockExec.mockResolvedValue(makeSambaState({ phase: 1, currentPlayerIdx: 1, messageCode: 'samba.meldPhase' }));
+    renderWithProviders(<SambaPage />);
+
+    await screen.findByTestId('sa-meld-points');
+    const hand = document.querySelector('[data-tutorial="sa-player-hand"] button');
+    expect(hand).not.toHaveAttribute('aria-describedby');
+    expect(screen.getByTestId('sa-meld-points')).toHaveTextContent('');
+  });
+
   it('calls skipmeld command when skip button clicked', async () => {
     mockExec.mockResolvedValue(meldPhaseState);
     renderWithProviders(<SambaPage />);

@@ -430,7 +430,7 @@ function SambaPageContent() {
                     onClick={() => toggleCard(idx)}
                     aria-label={cardAlt(card)}
                     aria-pressed={selectedCardIndices.includes(idx)}
-                    aria-describedby={isMeldPhase && meldPointInfo?.needInitial ? 'sa-meld-points' : undefined}
+                    aria-describedby={isHumanTurn && meldPointInfo?.needInitial ? 'sa-meld-points' : undefined}
                     className={`transition-transform ${focusRingCard}`}
                     style={{
                       background: 'none',
@@ -447,7 +447,7 @@ function SambaPageContent() {
             )}
 
             <div id="sa-meld-points" role="status" aria-live="polite" data-testid="sa-meld-points">
-              {isMeldPhase && isHumanTurn && meldPointInfo && (
+              {isHumanTurn && meldPointInfo && (
                 <div className={`w-full text-xs ${meldPointInfo.below ? 'text-ds-warning' : 'text-ds-text-muted'}`}>
                   {meldPointInfo.needInitial
                     ? t('meldPoints.initial', {
@@ -500,7 +500,7 @@ function SambaPageContent() {
                     className={btnPrimary}
                     onClick={handleMeldSelected}
                     disabled={loading || selectedCardIndices.length < 3}
-                    aria-describedby={meldPointInfo?.needInitial ? 'sa-meld-points' : undefined}
+                    aria-describedby={isHumanTurn && meldPointInfo?.needInitial ? 'sa-meld-points' : undefined}
                   >
                     {t('meldButton')}
                   </button>
