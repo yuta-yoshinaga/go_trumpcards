@@ -136,14 +136,47 @@ describe('OpenFaceChinesePage', () => {
     expect(announce).toHaveAttribute('aria-live', 'polite');
     expect(announce).toHaveTextContent('配置待ち: ♠ A');
     // Each row is a named group; both players' empty top rows report their count.
-    expect(screen.getAllByRole('group', { name: /トップ（3枚） 0枚/ }).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByRole('group', { name: /トップ（3枚） 残り3枠 0枚/ }).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('shows remaining slots in row headings and placement button labels', async () => {
+    renderWithProviders(<OpenFaceChinesePage />);
+    await screen.findByTestId('place-front');
+
+    expect(screen.getByTestId('ofc-row-front-0')).toHaveTextContent('トップ（3枚） 残り3枠');
+    expect(screen.getByTestId('ofc-row-middle-0')).toHaveTextContent('ミドル（5枚） 残り5枠');
+    expect(screen.getByTestId('ofc-row-back-0')).toHaveTextContent('ボトム（5枚） 残り5枠');
+    expect(screen.getByTestId('place-front')).toHaveAccessibleName('トップ（3枚） 残り3枠 に置く');
+  });
+
+  it('shows full rows as full in headings and placement button labels', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<OpenFaceChinesePage />);
+    await screen.findByTestId('player-0');
+
+    expect(screen.getByTestId('ofc-row-front-0')).toHaveTextContent('トップ（3枚） 満杯');
+    expect(screen.getByTestId('ofc-row-middle-0')).toHaveTextContent('ミドル（5枚） 満杯');
+    expect(screen.getByTestId('ofc-row-back-0')).toHaveTextContent('ボトム（5枚） 満杯');
+  });
+
+  it('updates the remaining slots after placing a card', async () => {
+    mockExec
+      .mockResolvedValueOnce(placingState)
+      .mockResolvedValueOnce(
+        makeState({ players: [makePlayer({ front: [card('SPADE', 1)] }), makePlayer({ id: 1, isHuman: false })] }),
+      );
+    renderWithProviders(<OpenFaceChinesePage />);
+    fireEvent.click(await screen.findByTestId('place-front'));
+
+    await waitFor(() => expect(screen.getByTestId('ofc-row-front-0')).toHaveTextContent('トップ（3枚） 残り2枠'));
+    expect(screen.getByTestId('place-front')).toHaveAccessibleName('トップ（3枚） 残り2枠 に置く');
   });
 
   it('names a filled row with its card contents', async () => {
     mockExec.mockResolvedValue(roundEndState); // human top row = ♠2 ♥3 ♣4
     renderWithProviders(<OpenFaceChinesePage />);
     await waitFor(() =>
-      expect(screen.getByRole('group', { name: 'トップ（3枚） 3枚: ♠ 2, ♥ 3, ♣ 4' })).toBeInTheDocument(),
+      expect(screen.getByRole('group', { name: 'トップ（3枚） 満杯 3枚: ♠ 2, ♥ 3, ♣ 4' })).toBeInTheDocument(),
     );
   });
 
