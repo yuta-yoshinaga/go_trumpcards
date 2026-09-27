@@ -409,6 +409,16 @@ describe('CourchevelHiLoPage', () => {
     expect(container.querySelectorAll('[data-hilo-usage="hi"], [data-hilo-usage="both"]').length).toBeGreaterThan(0);
   });
 
+  it('renders without high-card usage when the showdown board is too short', async () => {
+    mockExec.mockResolvedValue({
+      ...showdownState,
+      communityCards: showdownState.communityCards.slice(0, 2),
+    });
+    const { container } = renderWithProviders(<CourchevelHiLoPage />);
+    await waitFor(() => expect(screen.getByText('ツーペア')).toBeInTheDocument());
+    expect(container.querySelector('[data-testid="cpu-hole-used"]')).not.toBeInTheDocument();
+  });
+
   it('shows green Hi and blue Lo split badges (Lo omitted when none qualifies)', async () => {
     const splitState: OmahaResponse = {
       ...showdownState,

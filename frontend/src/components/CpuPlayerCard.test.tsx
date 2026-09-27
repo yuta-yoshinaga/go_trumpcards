@@ -312,6 +312,26 @@ describe('CpuPlayerCard', () => {
     expect(within(card as HTMLElement).queryByTestId('cpu-hole-used-indicator')).not.toBeInTheDocument();
   });
 
+  it('keeps the legacy used-hole marker for cards outside the Hi/Lo sets', () => {
+    render(
+      <CpuPlayerCard
+        player={makePlayer()}
+        showCards={true}
+        faceDownCount={2}
+        showHandName={false}
+        usedHoleIdx={[1]}
+        usedHoleLabel="使用"
+        usedHoleHiIdx={[]}
+        usedHoleLoIdx={[]}
+      />,
+    );
+
+    const used = screen.getByTestId('cpu-hole-used');
+    expect(used).not.toHaveAttribute('data-hilo-usage');
+    expect(used).toHaveClass('motion-safe:animate-pulse');
+    expect(within(used).getByTestId('cpu-hole-used-indicator')).toHaveAttribute('aria-label', '使用');
+  });
+
   it('does not add the marker when the label is absent', () => {
     render(
       <CpuPlayerCard player={makePlayer()} showCards={true} faceDownCount={2} showHandName={false} usedHoleIdx={[0]} />,
