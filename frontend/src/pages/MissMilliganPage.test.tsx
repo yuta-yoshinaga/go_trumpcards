@@ -113,6 +113,23 @@ describe('MissMilliganPage', () => {
     );
   });
 
+  it('keeps a move target focusable and explains that a source must be selected', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<MissMilliganPage />);
+    const target = await screen.findByRole('button', { name: /空の組札0/ });
+    mockExec.mockClear();
+
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const descriptionId = target.getAttribute('aria-describedby');
+    expect(descriptionId).toBeTruthy();
+    expect(document.getElementById(descriptionId!)).toHaveTextContent('先に移動する札を選んでください');
+
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('highlights the selected run as one connected block', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<MissMilliganPage />);
