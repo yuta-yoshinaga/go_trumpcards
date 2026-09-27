@@ -466,18 +466,31 @@ function TonkPageContent() {
 
             <div className="flex gap-2 items-center flex-wrap">
               {isDrawPhase && isHumanTurn && (
-                <div className="flex gap-2" data-tutorial="tonk-draw-area">
-                  <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
-                    {t('drawStockButton')}
-                  </button>
-                  <button
-                    type="button"
-                    className={btnPrimary}
-                    onClick={handleDrawDiscard}
-                    disabled={loading || !state.discardTop}
-                  >
-                    {t('drawDiscardButton')}
-                  </button>
+                <div className="flex flex-col gap-2" data-tutorial="tonk-draw-area">
+                  {state.drawPileCount === 0 && <p className="text-sm text-ds-text-muted">{t('emptyStockDrawInfo')}</p>}
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handleDrawStock}
+                      disabled={loading || state.drawPileCount === 0}
+                    >
+                      {t('drawStockButton')}
+                    </button>
+                    {state.drawPileCount === 0 && (
+                      <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
+                        {t('endRoundDrawButton')}
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      onClick={handleDrawDiscard}
+                      disabled={loading || !state.discardTop}
+                    >
+                      {t('drawDiscardButton')}
+                    </button>
+                  </div>
                 </div>
               )}
               {isDiscardPhase && isHumanTurn && (
