@@ -240,7 +240,7 @@ export function VideoPokerGameContent({
       }
     }
     setHeldCards(next);
-    setAutoHeldCards(next.map((held) => held && autoHoldEnabled));
+    setAutoHeldCards(next);
     // Clear any stale hold announcement carried over from the previous hand.
     setHoldAnnounce('');
   }, [isDrawPhase]);
