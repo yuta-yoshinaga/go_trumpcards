@@ -59,6 +59,10 @@ type KlaberjassGame interface {
 	GetTrickNumber() int
 	// GetHandPoints このディールで取った点を取得する
 	GetHandPoints(idx int) int
+	GetCardPoints(idx int) int
+	GetSequencePoints(idx int) int
+	GetBelaPoints(idx int) int
+	GetLastTrickPoints(idx int) int
 	// GetSequences シーケンス役を取得する
 	GetSequences(idx int) []*domain.KlaberjassSequence
 	// GetSequenceWinner シーケンス勝負に勝った席を取得する

@@ -25,6 +25,7 @@
   "promptPlay": "Turn: {{name}}",
   "promptPlayHelp": "p <i> ... play hand card i (following, trumping and overtrumping are compulsory)",
   "beteLine": "The maker failed to score more and goes bete; the whole hand goes to the opponent",
+  "pointsBreakdown": "{{name}}: cards {{card}}, sequences {{sequence}}, bela {{bela}}, last trick {{lastTrick}}, total {{total}}",
   "sequenceWinner": "Sequence: {{name}} takes it all",
   "sequenceNobody": "Sequence: tied, so nobody scores it",
   "belaLine": "Bela: {{name}} (+20)",

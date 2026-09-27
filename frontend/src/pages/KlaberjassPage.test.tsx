@@ -24,6 +24,10 @@ function seat(id: number, isHuman: boolean, overrides?: Partial<KlaberjassPlayer
     cards: isHuman ? [card('SPADE', 11), card('HEART', 1), card('CLOVER', 7)] : [],
     sequences: [],
     handPoints: 0,
+    cardPoints: 0,
+    sequencePoints: 0,
+    belaPoints: 0,
+    lastTrickPoints: 0,
     score: 0,
     isMaker: false,
     isDealer: id === 0,
@@ -202,6 +206,23 @@ describe('KlaberjassPage', () => {
     mockExec.mockResolvedValue(makeState({ phase: KlaberjassPhase.HAND_END, sequenceWinner: -1 }));
     renderWithProviders(<KlaberjassPage />);
     await waitFor(() => expect(screen.getAllByText(/どちらも得点なし/).length).toBeGreaterThan(0));
+  });
+
+  it('shows the server confirmed points breakdown for each team', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: KlaberjassPhase.HAND_END,
+        players: [
+          seat(0, true, { cardPoints: 42, sequencePoints: 20, belaPoints: 20, lastTrickPoints: 10, handPoints: 92 }),
+          seat(1, false, { cardPoints: 31, handPoints: 31 }),
+        ],
+      }),
+    );
+    renderWithProviders(<KlaberjassPage />);
+    await waitFor(() => expect(screen.getAllByTestId('klaberjass-points-breakdown')).toHaveLength(2));
+    expect(screen.getAllByTestId('klaberjass-points-breakdown')[0]).toHaveTextContent(
+      'カード 42、シーケンス 20、ベラ 20、最終トリック 10、合計 92',
+    );
   });
 
   it('reports the bela and the dix when they happened', async () => {

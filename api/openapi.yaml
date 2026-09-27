@@ -37100,6 +37100,14 @@ components:
               handPoints:
                 type: integer
                 description: Points taken this deal, melds and bela included.
+              cardPoints:
+                type: integer
+              sequencePoints:
+                type: integer
+              belaPoints:
+                type: integer
+              lastTrickPoints:
+                type: integer
               score:
                 type: integer
               isMaker:

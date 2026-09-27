@@ -46,10 +46,29 @@ func setupKlaberjassCuiMock(phase domain.KlaberjassPhase, trump int, turnUp *dom
 	m.On("KlaberjassValidPlays", 0).Return([]int{1})
 	for i := range players {
 		m.On("GetPlayer", i).Return(players[i])
+		m.On("GetCardPoints", i).Return(0)
+		m.On("GetSequencePoints", i).Return(0)
+		m.On("GetBelaPoints", i).Return(0)
+		m.On("GetLastTrickPoints", i).Return(0)
 		m.On("GetHandPoints", i).Return(0)
 		m.On("GetScore", i).Return(0)
 	}
 	return m
+}
+
+func TestKlaberjassCuiPresenter_ShowsConcreteHandBreakdown(t *testing.T) {
+	m := setupKlaberjassCuiMock(domain.KlaberjassPhaseHandEnd, domain.CardDesignSpade, nil)
+	for _, name := range []string{"GetCardPoints", "GetSequencePoints", "GetBelaPoints", "GetLastTrickPoints", "GetHandPoints"} {
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, name)
+	}
+	m.On("GetCardPoints", 0).Return(81)
+	m.On("GetSequencePoints", 0).Return(20)
+	m.On("GetBelaPoints", 0).Return(20)
+	m.On("GetLastTrickPoints", 0).Return(10)
+	m.On("GetHandPoints", 0).Return(131)
+
+	out := new(presenter.KlaberjassCuiPresenter).Output(m, nil)
+	assert.Contains(t, out, "カード 81、シーケンス 20、ベラ 20、最終トリック 10、合計 131")
 }
 
 func TestKlaberjassCuiPresenter_HidesTheOpponentsHand(t *testing.T) {
@@ -121,6 +140,10 @@ func TestKlaberjassCuiPresenter_NamesBete(t *testing.T) {
 	m.On("IsHumanTurn").Return(false)
 	for i := range players {
 		m.On("GetPlayer", i).Return(players[i])
+		m.On("GetCardPoints", i).Return(0)
+		m.On("GetSequencePoints", i).Return(0)
+		m.On("GetBelaPoints", i).Return(0)
+		m.On("GetLastTrickPoints", i).Return(0)
 		m.On("GetHandPoints", i).Return(0)
 		m.On("GetScore", i).Return(0)
 	}
@@ -192,6 +215,10 @@ func TestKlaberjassCuiPresenter_NamesTheLastTrickBonus(t *testing.T) {
 		m.On("IsHumanTurn").Return(false)
 		for i := range players {
 			m.On("GetPlayer", i).Return(players[i])
+			m.On("GetCardPoints", i).Return(0)
+			m.On("GetSequencePoints", i).Return(0)
+			m.On("GetBelaPoints", i).Return(0)
+			m.On("GetLastTrickPoints", i).Return(0)
 			m.On("GetHandPoints", i).Return(0)
 			m.On("GetScore", i).Return(0)
 		}
@@ -204,7 +231,7 @@ func TestKlaberjassCuiPresenter_NamesTheLastTrickBonus(t *testing.T) {
 	assert.Contains(t, out, "+"+strconv.Itoa(domain.KlaberjassLastTrickBonus)+"点")
 
 	// まだ誰も取っていなければ出さない。
-	assert.NotContains(t, p.Output(build(-1), nil), "最終トリック")
+	assert.NotContains(t, p.Output(build(-1), nil), "+10点")
 }
 
 // #5726: ハンド精算の得点は bete と最終トリックだけでは説明できない。Web の
