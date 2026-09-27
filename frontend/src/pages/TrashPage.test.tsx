@@ -141,6 +141,26 @@ describe('TrashPage', () => {
     }
   });
 
+  it('shows the CPU wild-placement progress message during await-wild', async () => {
+    const cpuAwaitWildState: TrashResponse = {
+      ...awaitWildState,
+      current: 1,
+      messageCode: 'trash.awaitWild',
+    };
+    mockExec.mockResolvedValue(cpuAwaitWildState);
+    renderWithProviders(<TrashPage />);
+
+    expect(await screen.findByTestId('tr-cpu-turn-announce')).toHaveTextContent('CPUがワイルドを配置しています');
+  });
+
+  it('does not show CPU progress after the game is over', async () => {
+    const cpuGameOverState: TrashResponse = { ...gameOverWinState, current: 1 };
+    mockExec.mockResolvedValue(cpuGameOverState);
+    renderWithProviders(<TrashPage />);
+
+    expect(await screen.findByTestId('tr-cpu-turn-announce')).toBeEmptyDOMElement();
+  });
+
   it('renders 10 slots per player', async () => {
     renderWithProviders(<TrashPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
