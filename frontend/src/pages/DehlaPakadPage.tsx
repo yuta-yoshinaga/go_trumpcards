@@ -337,6 +337,17 @@ function DehlaPakadPageContent() {
                         b: state.lastHand.teamTens[1],
                       })}
                     </div>
+                    {isHandEnd && state.lastTrickWinner >= 0 && (
+                      <div data-testid="dehlapakad-last-trick-winner">
+                        {t('lastTrickWinner', {
+                          name: playerName(
+                            state.lastTrickWinner,
+                            state.players[state.lastTrickWinner]?.isHuman === true,
+                          ),
+                          team: state.players[state.lastTrickWinner]?.team ?? -1,
+                        })}
+                      </div>
+                    )}
                     {state.lastHand.kot && (
                       <div className="text-ds-warning" data-testid="dehlapakad-kot">
                         {t(`kot.${state.lastHand.kotReason}`)}

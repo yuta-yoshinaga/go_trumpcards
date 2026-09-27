@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"encoding/json"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -103,6 +104,24 @@ func TestDehlaPakadCuiPresenter_Output(t *testing.T) {
 		out := p.Output(d, nil)
 		assert.Contains(t, out, strings.SplitN(i18n.T("dehlapakad.centrePile"), "{{", 2)[0])
 		assert.Contains(t, out, strings.SplitN(i18n.T("dehlapakad.pileGoesTo"), "{{", 2)[0])
+	})
+
+	t.Run("shows the last trick winner at hand end", func(t *testing.T) {
+		d := dehlaPakadGame()
+		dehlaPakadStartPlay(t, d)
+		for d.GetPhase() == domain.DehlaPakadPhasePlay {
+			dehlaPakadPlayOneTrick(t, d)
+		}
+		require.Equal(t, domain.DehlaPakadPhaseHandEnd, d.GetPhase())
+		winner := d.GetLastTrickWinner()
+		name := "CPU " + strconv.Itoa(winner)
+		if d.GetPlayer(winner).GetIsHuman() {
+			name = "あなた"
+		}
+		out := p.Output(d, nil)
+		assert.Contains(t, out, i18n.Tf("dehlapakad.lastTrickWinner",
+			"name", name,
+			"team", strconv.Itoa(domain.DehlaPakadTeamOf(winner))))
 	})
 
 	t.Run("says nothing about the pile while it is empty", func(t *testing.T) {

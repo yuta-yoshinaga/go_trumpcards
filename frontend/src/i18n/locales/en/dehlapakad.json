@@ -35,6 +35,7 @@
   "dealerBadge": "Dealer",
   "callTrump": "Call the trump (only your first five cards are dealt)",
   "handResult": "Hand over - team {{team}} wins (tens {{a}} to {{b}})",
+  "lastTrickWinner": "Last trick winner: {{name}} (team {{team}})",
   "kot": {
     "allTens": "Kot! All four tens taken.",
     "streak": "Kot! Seven hands in a row.",

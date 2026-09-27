@@ -153,6 +153,29 @@ describe('DehlaPakadPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nexthand'));
   });
 
+  it('shows the last trick winner with their team only at hand end', async () => {
+    mockExec.mockResolvedValue(
+      makeDehlaPakadState({
+        phase: 'handEnd',
+        isTrumpPhase: false,
+        isHumanTurn: false,
+        lastTrickWinner: 2,
+        lastHand: { winnerTeam: 0, teamTens: [3, 1], kot: false, kotReason: '', dealerIdx: 3, trumpSuit: 3 },
+      }),
+    );
+    renderWithProviders(<DehlaPakadPage />);
+    expect(await screen.findByTestId('dehlapakad-last-trick-winner')).toHaveTextContent(
+      '最終トリックの勝者: CPU 2（組0）',
+    );
+  });
+
+  it('does not show last trick winner during play', async () => {
+    mockExec.mockResolvedValue(makeDehlaPakadState({ ...playState, lastTrickWinner: 2 }));
+    renderWithProviders(<DehlaPakadPage />);
+    await screen.findByTestId('dehlapakad-play');
+    expect(screen.queryByTestId('dehlapakad-last-trick-winner')).not.toBeInTheDocument();
+  });
+
   it.each([
     ['allTens', '10 を 4 枚とも取りました'],
     ['streak', '7 連勝を達成しました'],
