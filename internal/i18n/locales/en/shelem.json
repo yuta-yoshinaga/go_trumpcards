@@ -10,6 +10,7 @@
   "header": "Round: {{round}}  Trick: {{trick}}/{{tricks}}  (first to {{target}})",
   "pointTable": "Point cards: A and 10 are worth 10, the 5 is worth 5. A round holds exactly 100.",
   "scoreLine": "Total: your team={{t0}}  theirs={{t1}}",
+  "lastTrick": "Last trick: team {{team}} +{{points}} points ({{total}} total)",
   "contractUndecided": "Contract: undecided (bidding runs 55 to 100 in fives -- 100 is every card point in the round)",
   "contractLine": "Contract: {{n}} ({{name}} won it; {{got}} so far)",
   "defenderLine": "defenders: {{got}} of the {{total}} on the table",

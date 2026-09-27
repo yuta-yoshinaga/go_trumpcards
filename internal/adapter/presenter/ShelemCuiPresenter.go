@@ -146,6 +146,10 @@ func (p *ShelemCuiPresenter) Output(s interfaces.ShelemGame, lastErr error) stri
 		}
 
 		currentIdx := s.GetCurrentPlayerIdx()
+		if s.GetLastTrickWinner() >= 0 {
+			team := domain.ShelemTeamOf(s.GetLastTrickWinner())
+			sb.WriteString(i18n.Tf("shelem.lastTrick", "team", strconv.Itoa(team), "points", strconv.Itoa(s.GetLastTrickPoints()), "total", strconv.Itoa(s.GetRoundPoints(team))) + "\n")
+		}
 		sb.WriteString(i18n.Tf("shelem.promptCurrentPlayer",
 			"name", cuiPlayerName(s.GetPlayer(currentIdx), currentIdx)) + "\n")
 		sb.WriteString(i18n.T("shelem.promptPlay") + "\n")

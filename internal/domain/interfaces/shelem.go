@@ -61,6 +61,10 @@ type ShelemGame interface {
 	GetScore(team int) int
 	// GetRoundPoints チームの現ラウンドのカード点を取得する
 	GetRoundPoints(team int) int
+	// GetLastTrickWinner returns the seat that won the most recently resolved trick, or -1.
+	GetLastTrickWinner() int
+	// GetLastTrickPoints returns the card points earned by the most recently resolved trick.
+	GetLastTrickPoints() int
 	// TeamTricks チームの獲得トリック数を取得する
 	TeamTricks(team int) int
 	// GetCurrentPlayerIdx 現在のプレイヤーインデックスを取得する

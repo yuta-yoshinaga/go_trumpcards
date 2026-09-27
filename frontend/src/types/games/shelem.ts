@@ -77,6 +77,10 @@ export interface ShelemResponse extends BaseGameResponse {
   scores: number[];
   /** Card points taken this round per team, index 0 and 1. */
   roundPoints: number[];
+  /** Seat that won the last resolved trick, or -1 before any trick resolves this round. */
+  lastTrickWinner: number;
+  /** Card points earned by the last resolved trick. */
+  lastTrickPoints: number;
   /** Tricks taken this round per team, index 0 and 1. */
   teamTricks: number[];
   currentPlayerIdx: number;

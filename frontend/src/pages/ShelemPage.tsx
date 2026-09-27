@@ -278,6 +278,15 @@ function ShelemPageContent() {
             <div className="text-ds-text-muted text-sm text-center mb-3" data-testid="sh-score">
               {t('header.score', { t0: String(state.scores[0] ?? 0), t1: String(state.scores[1] ?? 0) })}
             </div>
+            {state.lastTrickWinner >= 0 && (
+              <div className="text-ds-text-primary text-sm text-center mb-3" data-testid="sh-last-trick">
+                {t('lastTrick', {
+                  team: t('header.team', { team: String(state.lastTrickWinner % 2) }),
+                  points: String(state.lastTrickPoints),
+                  total: String(state.roundPoints[state.lastTrickWinner % 2] ?? 0),
+                })}
+              </div>
+            )}
 
             <div className="flex flex-wrap justify-center gap-2 mb-4" data-tutorial="sh-seats">
               {state.players.map((p) => (

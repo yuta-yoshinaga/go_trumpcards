@@ -65,6 +65,7 @@ import type {
   ScoponeResponse,
   SedmaResponse,
   SheepsheadResponse,
+  ShelemResponse,
   SoloWhistResponse,
   SpadesResponse,
   SpoilFiveResponse,
@@ -5638,4 +5639,38 @@ const baseBinokelState: BinokelResponse = {
  */
 export function makeBinokelState(overrides?: Partial<BinokelResponse>): BinokelResponse {
   return { ...baseBinokelState, ...overrides };
+}
+
+const baseShelemState: ShelemResponse = {
+  players: [],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 0,
+  trumpSuit: 0,
+  declarerIdx: -1,
+  contract: 0,
+  shelemBid: false,
+  minBid: 55,
+  widowSize: 4,
+  discardCount: 4,
+  scores: [0, 0],
+  roundPoints: [0, 0],
+  lastTrickWinner: -1,
+  lastTrickPoints: 0,
+  teamTricks: [0, 0],
+  currentPlayerIdx: 0,
+  bidPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 3,
+  currentTrick: [],
+  validPlays: [],
+  gameEndFlag: false,
+  winnerTeam: -1,
+  config: { target: 500 },
+  message: '',
+};
+
+/** Creates a Shelem response with sensible defaults. */
+export function makeShelemState(overrides?: Partial<ShelemResponse>): ShelemResponse {
+  return { ...baseShelemState, ...overrides };
 }

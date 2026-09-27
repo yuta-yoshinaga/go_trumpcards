@@ -18,17 +18,18 @@ func intPtrSh(v int) *int { return &v }
 
 func mustShelemOutputJSON(msg string) string {
 	out := &controller.ShelemWebOutput{
-		Players:       []*controller.ShelemWebOutputPlayer{},
-		CurrentTrick:  []*controller.WebOutputTrickCard{},
-		ValidPlays:    []int{},
-		Scores:        []int{},
-		RoundPoints:   []int{},
-		TeamTricks:    []int{},
-		DeclarerIdx:   -1,
-		MinBid:        domain.ShelemMinBid,
-		DiscardCount:  domain.ShelemWidowSize,
-		WinnerTeam:    -1,
-		WebOutputBase: controller.WebOutputBase{Message: msg},
+		Players:         []*controller.ShelemWebOutputPlayer{},
+		CurrentTrick:    []*controller.WebOutputTrickCard{},
+		ValidPlays:      []int{},
+		Scores:          []int{},
+		RoundPoints:     []int{},
+		TeamTricks:      []int{},
+		DeclarerIdx:     -1,
+		MinBid:          domain.ShelemMinBid,
+		DiscardCount:    domain.ShelemWidowSize,
+		WinnerTeam:      -1,
+		LastTrickWinner: -1,
+		WebOutputBase:   controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {

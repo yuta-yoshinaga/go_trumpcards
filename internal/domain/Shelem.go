@@ -96,10 +96,12 @@ type Shelem struct {
 	players    []*ShelemPlayer
 	config     ShelemConfig
 
-	phase       ShelemPhase
-	roundNumber int
-	trickNumber int
-	trumpSuit   int
+	phase           ShelemPhase
+	roundNumber     int
+	trickNumber     int
+	lastTrickWinner int
+	lastTrickPoints int
+	trumpSuit       int
 	// widow は伏せられた 4 枚。落札者だけが見て取り込む。
 	widow []*Card
 	// declarerIdx は落札者 (-1: 未決定)、contract は落札した点数。
@@ -125,7 +127,7 @@ type Shelem struct {
 
 // NewShelem コンストラクタ
 func NewShelem(trumpCards *TrumpCards, players []*ShelemPlayer, config ShelemConfig) *Shelem {
-	return &Shelem{trumpCards: trumpCards, players: players, config: config, declarerIdx: -1, winnerTeam: -1}
+	return &Shelem{trumpCards: trumpCards, players: players, config: config, declarerIdx: -1, winnerTeam: -1, lastTrickWinner: -1}
 }
 
 // NewDefaultShelem 既定構成（人間 1 + CPU 3）のコンストラクタ
@@ -174,6 +176,8 @@ func (s *Shelem) Reset() {
 func (s *Shelem) dealRound() {
 	s.phase = ShelemPhaseBid
 	s.trickNumber = 0
+	s.lastTrickWinner = -1
+	s.lastTrickPoints = 0
 	s.currentTrick = nil
 	s.trumpSuit = 0
 	s.declarerIdx = -1
@@ -613,6 +617,8 @@ func (s *Shelem) resolveTrick() {
 	}
 	s.players[winner].AddTrick(cards)
 	s.roundPoints[ShelemTeamOf(winner)] += pts
+	s.lastTrickWinner = winner
+	s.lastTrickPoints = pts
 
 	s.trickNumber++
 	s.currentTrick = nil
@@ -920,6 +926,12 @@ func (s *Shelem) GetRoundPoints(team int) int {
 	return s.roundPoints[team]
 }
 
+// GetLastTrickWinner returns the seat that won the most recently resolved trick, or -1.
+func (s *Shelem) GetLastTrickWinner() int { return s.lastTrickWinner }
+
+// GetLastTrickPoints returns card points earned by the most recently resolved trick.
+func (s *Shelem) GetLastTrickPoints() int { return s.lastTrickPoints }
+
 // GetCurrentTrick 現在のトリック
 func (s *Shelem) GetCurrentTrick() []*TrickCard { return s.currentTrick }
 
@@ -1003,6 +1015,8 @@ type shelemJSON struct {
 	DealerIdx        int                `json:"di"`
 	Scores           [ShelemTeamCnt]int `json:"sc"`
 	RoundPoints      [ShelemTeamCnt]int `json:"rp"`
+	LastTrickWinner  int                `json:"ltw"`
+	LastTrickPoints  int                `json:"ltp"`
 	GameEndFlag      bool               `json:"ge"`
 	WinnerTeam       int                `json:"wt"`
 	ActionLog        []*ActionLogEntry  `json:"al"`
@@ -1029,6 +1043,8 @@ func (s *Shelem) MarshalJSON() ([]byte, error) {
 		DealerIdx:        s.dealerIdx,
 		Scores:           s.scores,
 		RoundPoints:      s.roundPoints,
+		LastTrickWinner:  s.lastTrickWinner,
+		LastTrickPoints:  s.lastTrickPoints,
 		GameEndFlag:      s.gameEndFlag,
 		WinnerTeam:       s.winnerTeam,
 		ActionLog:        s.actionLog,
@@ -1085,6 +1101,9 @@ func (s *Shelem) UnmarshalJSON(data []byte) error {
 	if j.WinnerTeam < -1 || j.WinnerTeam >= ShelemTeamCnt {
 		return fmt.Errorf("invalid winner team: %d", j.WinnerTeam)
 	}
+	if j.LastTrickWinner < -1 || j.LastTrickWinner >= ShelemPlayerCnt {
+		return fmt.Errorf("invalid last trick winner: %d", j.LastTrickWinner)
+	}
 	if j.TrumpCards != nil {
 		s.trumpCards = j.TrumpCards
 	}
@@ -1107,6 +1126,8 @@ func (s *Shelem) UnmarshalJSON(data []byte) error {
 	s.dealerIdx = j.DealerIdx
 	s.scores = j.Scores
 	s.roundPoints = j.RoundPoints
+	s.lastTrickWinner = j.LastTrickWinner
+	s.lastTrickPoints = j.LastTrickPoints
 	s.gameEndFlag = j.GameEndFlag
 	s.winnerTeam = j.WinnerTeam
 	s.actionLog = j.ActionLog

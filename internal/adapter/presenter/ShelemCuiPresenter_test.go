@@ -3,6 +3,7 @@
 package presenter
 
 import (
+	"encoding/json"
 	"regexp"
 	"strconv"
 	"testing"
@@ -31,6 +32,22 @@ func TestShelemCuiPresenterOutput(t *testing.T) {
 	assert.Contains(t, out, i18n.T("shelem.pointTable"))
 	assert.Contains(t, out, i18n.T("shelem.contractUndecided"))
 	assert.Contains(t, out, fixedPart("shelem.widowLine"))
+}
+
+func TestShelemCuiPresenterShowsLastTrick(t *testing.T) {
+	s := newShelemForCui(t)
+	s.SetPhaseForTest(domain.ShelemPhasePlay)
+	s.SetTrumpSuitForTest(domain.CardDesignSpade)
+	var snapshot map[string]any
+	b, err := json.Marshal(s)
+	require.NoError(t, err)
+	require.NoError(t, json.Unmarshal(b, &snapshot))
+	snapshot["ltw"], snapshot["ltp"] = 2, 15
+	b, err = json.Marshal(snapshot)
+	require.NoError(t, err)
+	require.NoError(t, json.Unmarshal(b, s))
+	s.SetRoundPointsForTest(0, 40)
+	assert.Contains(t, new(ShelemCuiPresenter).Output(s, nil), i18n.Tf("shelem.lastTrick", "team", "0", "points", "15", "total", "40"))
 }
 
 // 契約は未定・通常・Shelem の 3 通りを踏む。

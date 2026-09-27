@@ -34,6 +34,7 @@
     "pickAria": "Select {{card}} to discard"
   },
   "currentTrick": "Current trick",
+  "lastTrick": "Last trick: {{team}} +{{points}} points ({{total}} total)",
   "widowTitle": "Widow",
   "widowHidden": "{{count}} face down",
   "mustBid": "Everyone else has passed. You cannot drop out — a contract has to be settled, so you must bid.",
