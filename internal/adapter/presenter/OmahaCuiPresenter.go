@@ -284,13 +284,32 @@ func (p *OmahaCuiPresenter) Output(o interfaces.OmahaGame, lastErr error) string
 					}
 				}
 				if humanIdx >= 0 {
+					currentChips := o.GetPlayer(humanIdx).GetChips()
+					used := rebuyCounts[humanIdx]
+					remaining := cfg.RebuyMaxCount - used
+					if remaining < 0 {
+						remaining = 0
+					}
 					b.WriteString(i18n.Tf("omaha.rebuyPrompt",
 						"chips", strconv.Itoa(cfg.RebuyChips),
-						"used", strconv.Itoa(rebuyCounts[humanIdx]),
+						"used", strconv.Itoa(used),
 						"max", strconv.Itoa(cfg.RebuyMaxCount)) + "\n")
+					b.WriteString(i18n.Tf("omaha.rebuyStack",
+						"current", strconv.Itoa(currentChips),
+						"after", strconv.Itoa(currentChips+cfg.RebuyChips),
+						"remaining", strconv.Itoa(remaining),
+						"separator", i18n.T("omaha.listSeparator")) + "\n")
 				}
 			case domain.OmahaRebuyPhaseAddon:
 				b.WriteString(i18n.Tf("omaha.addonPrompt", "chips", strconv.Itoa(cfg.AddonChips)) + "\n")
+				for i := 0; i < o.GetPlayerCnt(); i++ {
+					player := o.GetPlayer(i)
+					if player.GetIsHuman() {
+						b.WriteString(i18n.Tf("omaha.addonStack",
+							"after", strconv.Itoa(player.GetChips()+cfg.AddonChips)) + "\n")
+						break
+					}
+				}
 			}
 		}
 

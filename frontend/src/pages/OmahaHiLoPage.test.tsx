@@ -1147,6 +1147,10 @@ describe('OmahaHiLoPage', () => {
     mockExec.mockResolvedValue(rebuyState);
     renderWithProviders(<OmahaHiLoPage />);
     await waitFor(() => expect(screen.getByText(/リバイしますか/)).toBeInTheDocument());
+    const rebuyControls = screen.getByTestId('rebuy-controls');
+    expect(rebuyControls).toHaveTextContent('現在のスタック: 980');
+    expect(rebuyControls).toHaveTextContent('追加後のスタック: 1980');
+    expect(rebuyControls).toHaveTextContent('残り回数: 3');
     expect(screen.getByRole('button', { name: 'リバイ' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'スキップ' })).toBeInTheDocument();
   });
@@ -1202,6 +1206,7 @@ describe('OmahaHiLoPage', () => {
     mockExec.mockResolvedValue(addonState);
     renderWithProviders(<OmahaHiLoPage />);
     await waitFor(() => expect(screen.getByText(/アドオンしますか/)).toBeInTheDocument());
+    expect(screen.getByTestId('addon-controls')).toHaveTextContent('追加後のスタック: 2480');
     expect(screen.getByRole('button', { name: 'アドオン' })).toBeInTheDocument();
   });
 

@@ -570,6 +570,14 @@ function OmahaHiLoPageContent() {
                 <p className="text-ds-text-primary mb-2">
                   {t('rebuy.prompt', { chips: state?.rebuyChips, used: humanRebuyCount, max: state?.rebuyMaxCount })}
                 </p>
+                <p className="text-ds-text-muted mb-2">
+                  {t('rebuy.stack', {
+                    current: humanPlayer?.chips ?? 0,
+                    after: (humanPlayer?.chips ?? 0) + (state?.rebuyChips ?? 0),
+                    remaining: Math.max(0, (state?.rebuyMaxCount ?? 0) - humanRebuyCount),
+                    separator: t('listSeparator'),
+                  })}
+                </p>
                 <div className="flex justify-center gap-2">
                   <button
                     type="button"
@@ -593,6 +601,9 @@ function OmahaHiLoPageContent() {
             {isAddonPhase && (
               <div className="mb-2 text-center" data-testid="addon-controls">
                 <p className="text-ds-text-primary mb-2">{t('addon.prompt', { chips: state?.addonChips })}</p>
+                <p className="text-ds-text-muted mb-2">
+                  {t('addon.stack', { after: (humanPlayer?.chips ?? 0) + (state?.addonChips ?? 0) })}
+                </p>
                 <div className="flex justify-center gap-2">
                   <button
                     type="button"
