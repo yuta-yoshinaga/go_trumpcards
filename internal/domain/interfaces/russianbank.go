@@ -59,4 +59,6 @@ type RussianBankGame interface {
 	// GetFoundationNext は各ファウンデーションが次に受け取れる札の条件を返す
 	// (Design 0 = どのスートでもよい)。
 	GetFoundationNext() [domain.RussianBankFoundationCnt]domain.RussianBankFoundationNext
+	// GetTableauNext は各タブロー列が次に受け取れる札の条件を返す。
+	GetTableauNext() [domain.RussianBankTableauCnt]domain.RussianBankTableauNext
 }

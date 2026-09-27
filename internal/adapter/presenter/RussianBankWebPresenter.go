@@ -70,6 +70,11 @@ func (p *RussianBankWebPresenter) buildBase(g interfaces.RussianBankGame) *contr
 		}
 		resObj.FoundationNext[i] = &controller.RussianBankWebFoundationNext{Design: design, Value: n.Value}
 	}
+	tableauNext := g.GetTableauNext()
+	resObj.TableauNext = make([]*controller.RussianBankWebTableauNext, len(tableauNext))
+	for i, n := range tableauNext {
+		resObj.TableauNext[i] = &controller.RussianBankWebTableauNext{Any: n.Any, Black: n.Black, Value: n.Value}
+	}
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
 }

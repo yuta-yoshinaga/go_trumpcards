@@ -72172,6 +72172,23 @@ components:
         canUndo:
           type: boolean
           description: True when the human's last move can be undone
+        tableauNext:
+          type: array
+          description: >-
+            What each tableau column will accept next. Clients match a selected card
+            against these conditions instead of re-deriving the placement rule.
+          items:
+            type: object
+            properties:
+              any:
+                type: boolean
+                description: True when any card is accepted (an empty column).
+              black:
+                type: boolean
+                description: Required card color when any is false.
+              value:
+                type: integer
+                description: Required rank when any is false.
         foundationNext:
           type: array
           description: >-
