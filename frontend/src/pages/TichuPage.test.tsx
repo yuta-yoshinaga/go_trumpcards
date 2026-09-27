@@ -73,6 +73,32 @@ describe('TichuPage', () => {
     });
   });
 
+  it('exposes each hand card selection state while keeping its card name', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          player({ id: 0, isHuman: true, cards: [{ design: 'SPADE', value: 9 }] }),
+          player({ id: 1, team: 1 }),
+          player({ id: 2, team: 0 }),
+          player({ id: 3, team: 1 }),
+        ],
+      }),
+    );
+    const { container } = renderWithProviders(<TichuPage />);
+    await screen.findByRole('button', { name: '出す' });
+    const card = container.querySelector('[data-tutorial="tichu-hand"] button')!;
+    const cardName = card.getAttribute('aria-label');
+
+    expect(card).toHaveAttribute('aria-pressed', 'false');
+    expect(cardName).toBeTruthy();
+    fireEvent.click(card);
+    expect(card).toHaveAttribute('aria-pressed', 'true');
+    expect(card).toHaveAttribute('aria-label', cardName);
+    fireEvent.click(card);
+    expect(card).toHaveAttribute('aria-pressed', 'false');
+    expect(card).toHaveAttribute('aria-label', cardName);
+  });
+
   it('changing CPU difficulty in settings resets with the new config', async () => {
     renderWithProviders(<TichuPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith(expect.objectContaining({ command: 'reset' })));
