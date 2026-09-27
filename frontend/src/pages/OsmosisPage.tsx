@@ -270,10 +270,10 @@ function OsmosisPageContent() {
                 const allowed = osmosisAllowedRanks(state.foundation, state.baseRank, i);
                 // Click selection flags every invalid row; a drag only warns on the
                 // row currently hovered (the drop target).
-                const clickBlocked =
-                  selectedCard != null && !osmosisCanPlace(state.foundation, state.baseRank, i, selectedCard);
-                const clickAllowed =
+                const canPlace =
                   selectedCard != null && osmosisCanPlace(state.foundation, state.baseRank, i, selectedCard);
+                const clickBlocked = selectedCard != null && !canPlace;
+                const clickAllowed = canPlace;
                 const isDropHover = dnd.isDropTarget(fZone);
                 const dragBlocked =
                   isDropHover &&

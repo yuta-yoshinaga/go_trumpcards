@@ -114,11 +114,12 @@ describe('OsmosisPage', () => {
   it('selects a reserve column then moves it to a foundation row', async () => {
     renderWithProviders(<OsmosisPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    screen.getByRole('button', { name: /^リザーブ 1:/ }).click();
-    await waitFor(() => expect(screen.getByRole('button', { name: '組札 2' })).toBeEnabled());
-    screen.getByRole('button', { name: '組札 2' }).click();
+    screen.getByRole('button', { name: /^リザーブ 0:/ }).click();
+    await waitFor(() => expect(screen.getByRole('button', { name: /組札 0/ })).toBeEnabled());
+    expect(screen.getByRole('button', { name: /組札 0/ })).toHaveAttribute('aria-label', '組札 0, 置ける');
+    screen.getByRole('button', { name: /組札 0/ }).click();
     await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'reserve', col: 1 }, { zone: 'foundation', col: 2 }),
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'reserve', col: 0 }, { zone: 'foundation', col: 0 }),
     );
   });
 
