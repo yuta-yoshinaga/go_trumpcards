@@ -274,6 +274,8 @@ function TysiacPageContent() {
                         ? Math.max(0, Math.min(100, ((p.score + state.contract) / target) * 100))
                         : null;
                     const barLabel = t('progressLabel', { score: p.score, target });
+                    const progressText =
+                      p.score >= target ? t('targetReached') : t('pointsRemaining', { points: target - p.score });
                     return (
                       <div key={p.id} className="py-0.5">
                         <div className="flex items-center gap-2">
@@ -286,6 +288,7 @@ function TysiacPageContent() {
                             </span>
                           )}
                         </div>
+                        <p className="text-xs text-ds-text-muted">{progressText}</p>
                         <div
                           role="progressbar"
                           aria-label={barLabel}
