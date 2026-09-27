@@ -380,9 +380,7 @@ func (b *BlackJack) PlayerDoubleDown() error {
 	}
 	hand := b.playerHands[b.currentHandIdx]
 	bet := hand.GetBet()
-	if !b.player.SubtractChips(bet) {
-		return NewDomainError(ErrInsufficientChips, "Insufficient chips for double down.")
-	}
+	b.player.SubtractChips(bet)
 	hand.SetBet(bet * 2)
 	hand.SetDoubled(true)
 	// ダブルダウンは1枚だけ引いてスタンド

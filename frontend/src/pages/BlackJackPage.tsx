@@ -45,7 +45,7 @@ import { btnDanger } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { BlackJackResponse } from '../types/card';
-import { BjPhase } from '../types/phases';
+import { BjDoubleDownBlock, BjPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { BLACKJACK_SIDE_BET_PAYOUTS } from '../utils/blackjackSideBetPayouts';
 import { BLACKJACK_HELP, parseBlackjackCommand } from '../utils/cli/commands/blackjackCommands';
@@ -733,17 +733,19 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
 
               {phase === BjPhase.ACTION && (
                 <div data-tutorial="bj-action-buttons">
-                  {variant === 'doubleexposure' && state?.doubleDownBlock !== 4 && state?.doubleDownBlock !== 1 && (
-                    <p className="mb-2 text-sm text-ds-text-muted">
-                      {state?.doubleDownBlock === 2
-                        ? t('doubleDownUnavailable.cards')
-                        : state?.doubleDownBlock === 5
-                          ? t('doubleDownUnavailable.chips')
-                          : state?.doubleDownBlock === 3
-                            ? t('doubleDownUnavailable.split')
-                            : t('doubleDownAvailable')}
-                    </p>
-                  )}
+                  {variant === 'doubleexposure' &&
+                    state?.doubleDownBlock !== BjDoubleDownBlock.HAND_FINISHED &&
+                    state?.doubleDownBlock !== BjDoubleDownBlock.WRONG_PHASE && (
+                      <p className="mb-2 text-sm text-ds-text-muted">
+                        {state?.doubleDownBlock === BjDoubleDownBlock.NOT_TWO_CARDS
+                          ? t('doubleDownUnavailable.cards')
+                          : state?.doubleDownBlock === BjDoubleDownBlock.INSUFFICIENT_CHIPS
+                            ? t('doubleDownUnavailable.chips')
+                            : state?.doubleDownBlock === BjDoubleDownBlock.SPLIT_NO_DAS
+                              ? t('doubleDownUnavailable.split')
+                              : t('doubleDownAvailable')}
+                      </p>
+                    )}
                   <BjActionPhaseControls
                     loading={loading}
                     hintEnabled={hintEnabled}
