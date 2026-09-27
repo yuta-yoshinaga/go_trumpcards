@@ -60,8 +60,8 @@
     "potCarried": "ポットが {{chips}} 枚に積み上がりました"
   },
   "progress": {
-    "line": "宣言者の進捗: {{won}} / {{needed}} トリック",
-    "misere": "宣言者の進捗: {{won}} トリック（ミゼール・目標0）",
+    "line": "宣言者の進捗: {{won}} / {{needed}} トリック（あと{{short}}トリック必要）",
+    "misere": "宣言者の進捗: {{won}}トリック（ミゼール・目標0、残り{{remaining}}トリック）",
     "made": "達成",
     "failed": "失敗確定"
   },

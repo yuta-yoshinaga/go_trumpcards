@@ -252,6 +252,7 @@ describe('ViraPage', () => {
     renderWithProviders(<ViraPage />);
     const readout = await screen.findByTestId('vira-contract-progress');
     expect(readout).toHaveTextContent('4 / 7');
+    expect(readout).toHaveTextContent('あと3トリック必要');
     expect(readout).toHaveClass('text-ds-warning');
     expect(readout).not.toHaveTextContent('達成');
     expect(readout).not.toHaveTextContent('失敗確定');
@@ -263,6 +264,7 @@ describe('ViraPage', () => {
     renderWithProviders(<ViraPage />);
     const readout = await screen.findByTestId('vira-contract-progress');
     expect(readout).toHaveTextContent('7 / 7');
+    expect(readout).toHaveTextContent('あと0トリック必要');
     expect(readout).toHaveTextContent('達成');
     expect(readout).toHaveClass('text-ds-success');
   });
@@ -273,8 +275,16 @@ describe('ViraPage', () => {
     renderWithProviders(<ViraPage />);
     const readout = await screen.findByTestId('vira-contract-progress');
     expect(readout).toHaveTextContent('2 / 10');
+    expect(readout).toHaveTextContent('あと8トリック必要');
     expect(readout).toHaveTextContent('失敗確定');
     expect(readout).toHaveClass('text-ds-error');
+  });
+
+  it('does not apply trick targets to Pass', async () => {
+    mockExec.mockResolvedValue(declarerProgressState(0, 2, 5));
+    renderWithProviders(<ViraPage />);
+    await screen.findByTestId('vira-declarer-line');
+    expect(screen.queryByTestId('vira-contract-progress')).not.toBeInTheDocument();
   });
 
   it('flags Misère failure the instant the declarer wins a trick', async () => {
@@ -284,6 +294,8 @@ describe('ViraPage', () => {
     renderWithProviders(<ViraPage />);
     const readout = await screen.findByTestId('vira-contract-progress');
     expect(readout).toHaveTextContent('ミゼール');
+    expect(readout).toHaveTextContent('目標0');
+    expect(readout).toHaveTextContent('残り5トリック');
     expect(readout).toHaveTextContent('失敗確定');
     expect(readout).toHaveClass('text-ds-error');
   });
