@@ -240,6 +240,8 @@ function UnsunKarutaPageContent() {
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
                   dataTutorial="unsunkaruta-trick-display"
+                  winnerIdx={isTrickEnd && state.lastTrickWinner >= 0 ? state.lastTrickWinner : undefined}
+                  winnerLabel={t('trickWinnerBadge')}
                   cardBadgeFor={(card) => (isRoundSuit(card) ? { glyph: '↺', title: t('roundSuitMark') } : null)}
                 />
               </div>
