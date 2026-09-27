@@ -223,10 +223,7 @@ function DuchessPageContent() {
             {col.length === 0 ? (
               <button
                 type="button"
-                onClick={() => {
-                  if (!selectedSource) return;
-                  game.handleSelectTarget(tableauColZone);
-                }}
+                onClick={() => game.handleSelectTarget(tableauColZone)}
                 disabled={!isPlaying || loading}
                 aria-disabled={!selectedSource || undefined}
                 aria-describedby={!selectedSource ? selectSourceHintId : undefined}
@@ -405,10 +402,7 @@ function DuchessPageContent() {
                         {pile.length > 0 ? (
                           <button
                             type="button"
-                            onClick={() => {
-                              if (!selectedSource) return;
-                              game.handleSelectTarget(foundationZone);
-                            }}
+                            onClick={() => game.handleSelectTarget(foundationZone)}
                             disabled={!isPlaying || loading || isAutoCompleting}
                             aria-disabled={!selectedSource || undefined}
                             aria-describedby={!selectedSource ? selectSourceHintId : undefined}
@@ -429,10 +423,7 @@ function DuchessPageContent() {
                         ) : (
                           <button
                             type="button"
-                            onClick={() => {
-                              if (!selectedSource) return;
-                              game.handleSelectTarget(foundationZone);
-                            }}
+                            onClick={() => game.handleSelectTarget(foundationZone)}
                             disabled={!isPlaying || loading}
                             aria-disabled={!selectedSource || undefined}
                             aria-describedby={!selectedSource ? selectSourceHintId : undefined}

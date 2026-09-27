@@ -203,10 +203,7 @@ function DiplomatPageContent() {
             {cards.length === 0 ? (
               <button
                 type="button"
-                onClick={() => {
-                  if (!selectedSource) return;
-                  game.handleSelectTarget(pileZone);
-                }}
+                onClick={() => game.handleSelectTarget(pileZone)}
                 // **空き列は別の列か捨て札から埋める。**Congress と違って
                 // タブローも移動元にできる（Diplomat の主要な逃げ道）。
                 disabled={!isPlaying || loading}

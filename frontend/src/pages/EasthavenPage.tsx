@@ -384,7 +384,9 @@ function EasthavenPageContent() {
                           : `${focusRingWhite} rounded-lg transition-colors`
                       }
                       onClick={() => isTarget && handleSelectTarget('foundation', i)}
-                      disabled={!isPlaying || !isTarget}
+                      disabled={!isPlaying}
+                      aria-disabled={!isTarget || undefined}
+                      aria-describedby={!isTarget ? selectSourceHintId : undefined}
                       aria-label={
                         topCard
                           ? t('foundationAriaLabel', { suit: FOUNDATION_SUITS[i], count: pile.length })
