@@ -10,7 +10,9 @@
     "placedCount": "Placed",
     "row": "Row",
     "col": "Col",
-    "empty": "Empty"
+    "empty": "Empty",
+    "cellEmptyAria": "Empty, row {{row}}, column {{col}}",
+    "cellCardAria": "{{card}}, row {{row}}, column {{col}}"
   },
   "button": {
     "reset": "Reset",

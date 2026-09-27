@@ -334,7 +334,13 @@ function PokerSquaresPageContent() {
                                 data-cross-hover={inCross ? 'true' : undefined}
                                 data-armed={isArmed ? 'true' : undefined}
                                 aria-label={
-                                  cell.card ? cardAlt(cell.card) : `${t('label.empty')} ${rowIdx + 1}-${colIdx + 1}`
+                                  cell.card
+                                    ? t('label.cellCardAria', {
+                                        card: cardAlt(cell.card),
+                                        row: rowIdx,
+                                        col: colIdx,
+                                      })
+                                    : t('label.cellEmptyAria', { row: rowIdx, col: colIdx })
                                 }
                                 onPointerDown={(event) => {
                                   pointerTypeRef.current = event.pointerType;

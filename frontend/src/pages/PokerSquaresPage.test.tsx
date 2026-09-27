@@ -113,6 +113,16 @@ describe('PokerSquaresPage', () => {
     expect(screen.getByText(/次に置くカード/)).toBeInTheDocument();
   });
 
+  it('announces zero-based row and column coordinates for empty and filled cells', async () => {
+    const board = emptyBoard();
+    board[2][3] = { card: card('SPADE', 1) };
+    mockApi.mockResolvedValue({ ...playingState, board, placedCount: 1 });
+    renderWithProviders(<PokerSquaresPage />);
+
+    expect(await screen.findByTestId('cell-0-0')).toHaveAttribute('aria-label', '空、行 0、列 0');
+    expect(screen.getByTestId('cell-2-3')).toHaveAttribute('aria-label', '♠ A、行 2、列 3');
+  });
+
   it('grows the card width to fill the viewport on a 375px mobile screen', async () => {
     const original = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
