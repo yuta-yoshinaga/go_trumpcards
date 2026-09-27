@@ -103,6 +103,17 @@ describe('HoneymoonBridgePage', () => {
     renderWithProviders(<HoneymoonBridgePage />);
     expect(await screen.findByTestId('hb-rule')).toHaveTextContent(/勝っても得点にならず/);
     expect(await screen.findByTestId('hb-stock')).toHaveTextContent('26');
+    expect(await screen.findByTestId('hb-trick-status')).toHaveTextContent('引き合い');
+    expect(screen.getByTestId('hb-trick-status')).toHaveTextContent('得点対象外');
+    expect(screen.getByTestId('hb-trick-status')).toHaveAttribute('role', 'status');
+  });
+
+  it('identifies contract play as scoring next to the current trick', async () => {
+    mockExec.mockResolvedValue(playing());
+    renderWithProviders(<HoneymoonBridgePage />);
+    const status = await screen.findByTestId('hb-trick-status');
+    expect(status).toHaveTextContent('契約プレイ');
+    expect(status).toHaveTextContent('得点対象');
   });
 
   // **山札は競りに入る前に尽きる。** 残りを出し続けると誤解を招く。
@@ -111,6 +122,14 @@ describe('HoneymoonBridgePage', () => {
     renderWithProviders(<HoneymoonBridgePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     expect(screen.queryByTestId('hb-stock')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('hb-trick-status')).not.toBeInTheDocument();
+  });
+
+  it('hides trick status after the deal ends', async () => {
+    mockExec.mockResolvedValue(playing({ phase: 3 }));
+    renderWithProviders(<HoneymoonBridgePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.queryByTestId('hb-trick-status')).not.toBeInTheDocument();
   });
 
   it('shows the contract once it is bought, and the needed trick count', async () => {

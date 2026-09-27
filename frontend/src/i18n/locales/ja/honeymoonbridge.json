@@ -27,6 +27,10 @@
     "drawnAria": "引き合いで補充された札"
   },
   "currentTrick": "現在のトリック",
+  "trickStatus": {
+    "draw": "引き合い（補充・得点対象外）",
+    "play": "契約プレイ（得点対象）"
+  },
   "roundResult": {
     "made": "契約成立: {{need}}トリック必要で {{took}} 取りました。",
     "down": "契約失敗: {{need}}トリック必要で {{took}} しか取れませんでした。",

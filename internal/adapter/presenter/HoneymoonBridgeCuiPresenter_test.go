@@ -81,6 +81,20 @@ func TestHoneymoonBridgeCuiPresenterStockLine(t *testing.T) {
 		"山札を使い切ってから競るので出さない")
 }
 
+func TestHoneymoonBridgeCuiPresenterTrickPhaseStatus(t *testing.T) {
+	p := new(HoneymoonBridgeCuiPresenter)
+
+	drawing := newHoneymoonBridgeForCui(t)
+	out := p.Output(drawing, nil)
+	assert.Contains(t, out, i18n.T("honeymoonbridge.trickStatusDrawLine"))
+
+	playing := newHoneymoonBridgeForCui(t)
+	playing.SetPhaseForTest(domain.HoneymoonBridgePhasePlay)
+	playing.SetContractForTest(0, 2, domain.CardDesignHeart)
+	out = p.Output(playing, nil)
+	assert.Contains(t, out, i18n.T("honeymoonbridge.trickStatusPlayLine"))
+}
+
 // 契約は未決定と確定の両側を踏む。
 func TestHoneymoonBridgeCuiPresenterContractLine(t *testing.T) {
 	p := new(HoneymoonBridgeCuiPresenter)
