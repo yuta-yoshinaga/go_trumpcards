@@ -173,11 +173,10 @@ function MonteBankPageContent() {
                   onClick={() => {
                     if (!isBetPhase) return;
                     if (selected !== i) {
-                      const previous = state.layout[selected];
                       setSelected(i);
                       setSelectionAnnouncement(
                         t('selection.changed', {
-                          ...(previous ? { prev: cardAlt(previous.card) } : {}),
+                          prev: cardAlt(state.layout[selected].card),
                           card: cardAlt(entry.card),
                         }),
                       );
