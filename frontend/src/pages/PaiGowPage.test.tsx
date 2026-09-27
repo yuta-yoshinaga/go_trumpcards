@@ -361,13 +361,24 @@ describe('PaiGowPage', () => {
     const betInput = screen.getByLabelText('ベット');
     fireEvent.change(betInput, { target: { value: '15' } });
 
-    expect(screen.getByRole('alert')).toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveTextContent('ベットは10単位で指定してください');
     expect(screen.getByRole('button', { name: 'ベット' })).toBeDisabled();
 
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
     await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('bet', 15);
+  });
+
+  it('shows the balance, entered amount, betting limits, and the specific invalid reason', async () => {
+    mockExec.mockResolvedValue({ ...betPhaseState, chips: 50 });
+    renderWithProviders(<PaiGowPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 50')).toBeInTheDocument());
+    expect(screen.getByTestId('paigow-bet-guidance')).toHaveTextContent('残高: 50');
+    expect(screen.getByTestId('paigow-bet-guidance')).toHaveTextContent('入力額: 100');
+    expect(screen.getByTestId('paigow-bet-guidance')).toHaveTextContent('10以上、10単位、最大10,000');
+    expect(screen.getByRole('alert')).toHaveTextContent('残高を超えています');
+    expect(screen.getByRole('button', { name: 'ベット' })).toBeDisabled();
   });
 
   it('resets after end phase', async () => {

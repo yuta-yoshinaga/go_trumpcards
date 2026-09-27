@@ -3,6 +3,7 @@
 package presenter
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -24,6 +25,14 @@ func (pp *PaiGowCuiPresenter) Output(pg interfaces.PaiGowGame, lastErr error) st
 	sb.WriteString("----------\n")
 	sb.WriteString(i18n.Tf("paigow.chipsLine", "chips", strconv.Itoa(pg.GetChips())) + "\n")
 	sb.WriteString(i18n.Tf("paigow.phaseLine", "phase", pp.phaseStr(pg.GetPhase())) + "\n")
+	if pg.GetPhase() == domain.PaiGowPhaseBet {
+		sb.WriteString(i18n.Tf("paigow.betLimitsLine",
+			"chips", strconv.Itoa(pg.GetChips()),
+			"minimum", strconv.Itoa(domain.PaiGowMinBet),
+			"step", strconv.Itoa(domain.PaiGowMinBet),
+			"maximum", strconv.Itoa(domain.PaiGowMaxBet),
+		) + "\n")
+	}
 
 	playerCards := pg.GetPlayerCards()
 	if len(playerCards) > 0 {
@@ -99,7 +108,17 @@ func (pp *PaiGowCuiPresenter) Output(pg interfaces.PaiGowGame, lastErr error) st
 
 	// 共通ヘルパに寄せる。ここで lastErr.Error() を直に書いていたので、
 	// i18n キーを名乗るエラーはキーがそのまま画面に出ていた (#5526)。
-	cuiErrorBlock(&sb, lastErr)
+	if errors.Is(lastErr, domain.ErrInvalidAmount) {
+		sb.WriteString(i18n.MarkErrorLine(color.Red(i18n.Tf("paigow.invalidBetError",
+			"minimum", strconv.Itoa(domain.PaiGowMinBet),
+			"step", strconv.Itoa(domain.PaiGowMinBet),
+			"maximum", strconv.Itoa(domain.PaiGowMaxBet),
+		))) + "\n")
+	} else if errors.Is(lastErr, domain.ErrInsufficientChips) {
+		sb.WriteString(i18n.MarkErrorLine(color.Red(i18n.Tf("paigow.insufficientBetError", "chips", strconv.Itoa(pg.GetChips())))) + "\n")
+	} else {
+		cuiErrorBlock(&sb, lastErr)
+	}
 
 	if pg.GetGameEndFlag() {
 		sb.WriteString(i18n.Tf("paigow.betLine", "bet", strconv.Itoa(pg.GetBet())) + "\n")
