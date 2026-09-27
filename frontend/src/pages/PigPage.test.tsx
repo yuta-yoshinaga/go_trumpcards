@@ -5,7 +5,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makePigState } from '../test/stateFactories';
-import type { PigResponse } from '../types/card';
+import type { Card, PigResponse } from '../types/card';
 import { PigPage } from './PigPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -19,7 +19,23 @@ vi.mock('../hooks/useGameHint', () => ({
 
 const mockExec = vi.mocked(pigApi.exec);
 
-const seat = (id: number, over: Record<string, unknown> = {}) => ({ ...makePigState().players[id], ...over });
+const card = (design: string, value: number): Card => ({ design, value }) as unknown as Card;
+
+const hand = [card('SPADE', 13), card('HEART', 13), card('CLOVER', 1), card('DIAMOND', 12)];
+
+const seat = (id: number, over: Record<string, unknown> = {}) => ({
+  id,
+  isHuman: id === 0,
+  cardCount: 4,
+  cards: id === 0 ? hand : [],
+  letters: 0,
+  letterWord: '',
+  eliminated: false,
+  hasSignalled: false,
+  noticedOrder: 0,
+  hasChosenPass: false,
+  ...over,
+});
 
 /** A signal is out and the human has not answered it yet. */
 const liveSignal = (over: Partial<PigResponse> = {}) =>
@@ -47,6 +63,22 @@ describe('PigPage', () => {
     const head = await screen.findByTestId('pig-round');
     expect(head).toHaveTextContent('2');
     expect(head).toHaveTextContent('16');
+  });
+
+  it('shows the actual next active pass recipient while choosing a card', async () => {
+    mockExec.mockResolvedValue(
+      makePigState({ passTargetIdx: 2, players: [seat(0), seat(1, { eliminated: true }), seat(2), seat(3)] }),
+    );
+    renderWithProviders(<PigPage />);
+    expect(await screen.findByTestId('pig-pass-target')).toHaveTextContent('左隣');
+    expect(screen.getByTestId('pig-pass-target')).toHaveTextContent('CPU2');
+  });
+
+  it('does not show a pass recipient when the API has none', async () => {
+    mockExec.mockResolvedValue(makePigState({ passTargetIdx: -1 }));
+    renderWithProviders(<PigPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.queryByTestId('pig-pass-target')).not.toBeInTheDocument();
   });
 
   // **文字がそのまま残機。** 得点表示はありません。

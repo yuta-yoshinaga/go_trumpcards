@@ -62430,6 +62430,9 @@ components:
         passCount:
           type: integer
           description: Passes made this round.
+        passTargetIdx:
+          type: integer
+          description: Next active seat to receive the human pass, or -1 when unavailable.
         deckSize:
           type: integer
           description: "Cards in play: players x 4, so 12 / 16 / 20 / 24."

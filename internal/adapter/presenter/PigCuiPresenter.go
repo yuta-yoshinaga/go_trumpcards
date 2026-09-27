@@ -13,7 +13,8 @@ import (
 )
 
 // pigPlayerStr returns the display string for a single seat.
-func pigPlayerStr(s interfaces.PigGame, player *domain.PigPlayer, idx int, current bool) string {
+func pigPlayerStr(s interfaces.PigGame, idx int, current bool) string {
+	player := s.GetPlayer(idx)
 	var b strings.Builder
 	marker := " "
 	if current {
@@ -46,26 +47,11 @@ func pigPlayerStr(s interfaces.PigGame, player *domain.PigPlayer, idx int, curre
 	return b.String()
 }
 
-// pigPlayers returns the table's players in seat order for both presenters.
-func pigPlayers(s interfaces.PigGame) []*domain.PigPlayer {
-	players := make([]*domain.PigPlayer, 0, s.GetPlayerCnt())
-	for i := 0; i < s.GetPlayerCnt(); i++ {
-		players = append(players, s.GetPlayer(i))
-	}
-	return players
-}
-
-// pigPassDestinationIsSelf reports whether the human's left-hand destination is the human seat.
-func pigPassDestinationIsSelf(playerCnt int) bool {
-	return playerCnt > 0 && 1%playerCnt == 0
-}
-
 // PigCuiPresenter renders the Pig CUI view.
 type PigCuiPresenter struct{}
 
 // Output renders the current game state for the active locale.
 func (p *PigCuiPresenter) Output(s interfaces.PigGame, lastErr error) string {
-	players := pigPlayers(s)
 	return buildCuiOutput(i18n.T("pig.helpTitle"), func(sb *strings.Builder) {
 		sb.WriteString(i18n.Tf("pig.header",
 			"round", strconv.Itoa(s.GetRoundNumber()),
@@ -74,8 +60,8 @@ func (p *PigCuiPresenter) Output(s interfaces.PigGame, lastErr error) string {
 		// **罰の理由が直感と違う。** 取り合いではなく、気づくのが遅いことが負け。
 		sb.WriteString(i18n.T("pig.rule") + "\n")
 
-		for i, player := range players {
-			sb.WriteString(pigPlayerStr(s, player, i,
+		for i := 0; i < s.GetPlayerCnt(); i++ {
+			sb.WriteString(pigPlayerStr(s, i,
 				i == s.GetCurrentPlayerIdx() && s.GetPhase() == domain.PigPhasePass && !s.GetGameEndFlag()))
 		}
 
@@ -122,12 +108,28 @@ func (p *PigCuiPresenter) Output(s interfaces.PigGame, lastErr error) string {
 				sb.WriteString(i18n.T("pig.promptWaiting") + "\n")
 				return
 			}
-			if pigPassDestinationIsSelf(s.GetPlayerCnt()) {
-				return
+			players := pigPlayers(s)
+			humanIdx := 0
+			for i, player := range players {
+				if player.GetIsHuman() {
+					humanIdx = i
+					break
+				}
 			}
-			sb.WriteString(i18n.T("pig.promptPass") + "\n")
+			target := domain.PigNextActiveSeat(players, humanIdx)
+			if target != humanIdx {
+				sb.WriteString(i18n.Tf("pig.promptPass", "direction", i18n.T("pig.passDirectionLeft"), "name", cuiPlayerName(s.GetPlayer(target), target)) + "\n")
+			}
 		}
 	})
+}
+
+func pigPlayers(s interfaces.PigGame) []*domain.PigPlayer {
+	players := make([]*domain.PigPlayer, s.GetPlayerCnt())
+	for i := range players {
+		players[i] = s.GetPlayer(i)
+	}
+	return players
 }
 
 // HintOutput emits the current hint.

@@ -62,6 +62,7 @@ type PigWebOutput struct {
 	LetterTarget     string            `json:"letterTarget"`
 	RoundNumber      int               `json:"roundNumber"`
 	PassCount        int               `json:"passCount"`
+	PassTargetIdx    int               `json:"passTargetIdx"`
 	DeckSize         int               `json:"deckSize"`
 	CurrentPlayerIdx int               `json:"currentPlayerIdx"`
 	GameEndFlag      bool              `json:"gameEndFlag"`
@@ -110,6 +111,7 @@ func newPigDefaultOutput(msg string) *PigWebOutput {
 		ValidPlays:    make([]int, 0),
 		SignallerIdx:  -1,
 		RoundLoserIdx: -1,
+		PassTargetIdx: -1,
 		WinnerIdx:     -1,
 		WebOutputBase: WebOutputBase{Message: msg},
 	}

@@ -5647,51 +5647,6 @@ export function makeBinokelState(overrides?: Partial<BinokelResponse>): BinokelR
   return { ...baseBinokelState, ...overrides };
 }
 
-/**
- * Creates a {@link PigResponse} with defaults matching the Pig page tests.
- *
- * @param overrides - Partial PigResponse fields to override.
- * @returns A complete PigResponse suitable for use in tests.
- */
-export function makePigState(overrides?: Partial<PigResponse>): PigResponse {
-  const hand = [
-    { design: 'SPADE' as const, value: 13 },
-    { design: 'HEART' as const, value: 13 },
-    { design: 'CLOVER' as const, value: 1 },
-    { design: 'DIAMOND' as const, value: 12 },
-  ];
-  const players = [0, 1, 2, 3].map((id) => ({
-    id,
-    isHuman: id === 0,
-    cardCount: 4,
-    cards: id === 0 ? hand : [],
-    letters: 0,
-    letterWord: '',
-    eliminated: false,
-    hasSignalled: false,
-    noticedOrder: 0,
-    hasChosenPass: false,
-  }));
-  return {
-    players,
-    phase: 0,
-    validPlays: [0, 1, 2, 3],
-    signallerIdx: -1,
-    noticedCnt: 0,
-    roundLoserIdx: -1,
-    letterTarget: 'PIG',
-    roundNumber: 2,
-    passCount: 3,
-    deckSize: 16,
-    currentPlayerIdx: 0,
-    gameEndFlag: false,
-    winnerIdx: -1,
-    config: { playerCnt: 4, cpuDifficulty: 1 },
-    message: '',
-    ...overrides,
-  } as PigResponse;
-}
-
 const baseShelemState: ShelemResponse = {
   players: [],
   phase: 0,
@@ -5763,6 +5718,47 @@ export function makeRussianBankState(overrides?: Partial<RussianBankResponse>): 
     ],
     config: { cpuDifficulty: 1 },
     message: '',
+    ...overrides,
+  };
+}
+
+/** Creates a Pig pass state with the human's next active recipient. */
+export function makePigState(overrides?: Partial<PigResponse>): PigResponse {
+  const hand: PigResponse['players'][number]['cards'] = [
+    { design: 'SPADE', value: 13 },
+    { design: 'HEART', value: 13 },
+    { design: 'CLOVER', value: 1 },
+    { design: 'DIAMOND', value: 12 },
+  ];
+  const players: PigResponse['players'] = Array.from({ length: 4 }, (_, id) => ({
+    id,
+    isHuman: id === 0,
+    cardCount: 4,
+    cards: id === 0 ? hand : [],
+    letters: 0,
+    letterWord: '',
+    eliminated: false,
+    hasSignalled: false,
+    noticedOrder: 0,
+    hasChosenPass: false,
+  }));
+  return {
+    players,
+    phase: 0,
+    validPlays: [0, 1, 2, 3],
+    signallerIdx: -1,
+    noticedCnt: 0,
+    roundLoserIdx: -1,
+    letterTarget: 'PIG',
+    roundNumber: 2,
+    passCount: 3,
+    passTargetIdx: 1,
+    deckSize: 16,
+    currentPlayerIdx: 0,
+    gameEndFlag: false,
+    winnerIdx: -1,
+    message: '',
+    config: { playerCnt: 4, cpuDifficulty: 1 },
     ...overrides,
   };
 }
