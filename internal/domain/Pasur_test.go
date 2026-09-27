@@ -41,6 +41,20 @@ func TestPasurCaptureScoreForMatchesPlayedScore(t *testing.T) {
 	}
 }
 
+func TestPasurCaptureKeepsTableOrderWhenIndicesAreReversed(t *testing.T) {
+	p := newTestPasur(t)
+	p.SetCurrentPlayerIdxForTest(0)
+	played := NewCard(CardDesignClover, 4, false)
+	first := NewCard(CardDesignSpade, 2, false)
+	second := NewCard(CardDesignHeart, 5, false)
+	remaining := NewCard(CardDesignDiamond, 3, false)
+	p.SetTableForTest([]*Card{first, second, remaining})
+	pasurHandOf(p, 0, played)
+
+	require.NoError(t, p.PlayForTest(0, 0, []int{1, 0}))
+	assert.Equal(t, []*Card{played, first, second}, p.GetPlayer(0).GetCaptured())
+}
+
 func newTestPasur(t *testing.T) *Pasur {
 	t.Helper()
 	p := NewDefaultPasur()

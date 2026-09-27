@@ -131,7 +131,9 @@ func TestPasurCaptureScoresUsesDomainBreakdown(t *testing.T) {
 	g.On("CaptureScoreFor", 0, 0, []int{0}).Return(normal).Once()
 	g.On("CaptureScoreFor", 0, 0, []int{1, 2}).Return(soor).Once()
 
-	assert.Equal(t, [][]domain.PasurCaptureScoreBreakdown{{normal, soor}}, pasurCaptureScores(g))
+	options, scores := pasurCaptureData(g)
+	assert.Equal(t, [][][]int{{{0}, {1, 2}}}, options)
+	assert.Equal(t, [][]domain.PasurCaptureScoreBreakdown{{normal, soor}}, scores)
 	g.AssertExpectations(t)
 }
 

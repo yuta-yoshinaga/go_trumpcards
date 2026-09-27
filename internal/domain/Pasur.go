@@ -285,9 +285,13 @@ func (p *Pasur) cardsTakenForCapture(card *Card, tableIndices []int) []*Card {
 	taken := []*Card{card}
 	seen := make(map[int]bool, len(tableIndices))
 	for _, i := range tableIndices {
-		if i >= 0 && i < len(p.tableCards) && !seen[i] {
-			taken = append(taken, p.tableCards[i])
+		if i >= 0 && i < len(p.tableCards) {
 			seen[i] = true
+		}
+	}
+	for i, tableCard := range p.tableCards {
+		if seen[i] {
+			taken = append(taken, tableCard)
 		}
 	}
 	return taken

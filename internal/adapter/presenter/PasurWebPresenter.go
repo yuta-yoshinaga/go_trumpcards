@@ -39,8 +39,7 @@ func (p *PasurWebPresenter) buildBase(s interfaces.PasurGame) *controller.PasurW
 	resObj := new(controller.PasurWebOutput)
 	resObj.Phase = int(s.GetPhase())
 	resObj.Table = cardsToOutputOrEmpty(s.GetTableCards())
-	resObj.CaptureOptions = pasurCaptureOptions(s)
-	resObj.CaptureScores = pasurCaptureScores(s)
+	resObj.CaptureOptions, resObj.CaptureScores = pasurCaptureData(s)
 	resObj.DeckRemaining = s.GetDeckRemaining()
 	resObj.PacksDealt = s.GetPacksDealt()
 	resObj.LastCaptureIdx = s.GetLastCaptureIdx()
@@ -52,42 +51,25 @@ func (p *PasurWebPresenter) buildBase(s interfaces.PasurGame) *controller.PasurW
 	return resObj
 }
 
-func pasurCaptureScores(s interfaces.PasurGame) [][]domain.PasurCaptureScoreBreakdown {
-	out := make([][]domain.PasurCaptureScoreBreakdown, 0)
+func pasurCaptureData(s interfaces.PasurGame) ([][][]int, [][]domain.PasurCaptureScoreBreakdown) {
+	optionsOut := make([][][]int, 0)
+	scoresOut := make([][]domain.PasurCaptureScoreBreakdown, 0)
 	hand := s.GetPlayer(0)
 	if hand == nil {
-		return out
+		return optionsOut, scoresOut
 	}
 	for hi := 0; hi < hand.GetCardsSize(); hi++ {
 		options := s.GetCaptureOptions(0, hi)
-		row := make([]domain.PasurCaptureScoreBreakdown, 0, len(options))
+		optionRow := make([][]int, 0, len(options))
+		scoreRow := make([]domain.PasurCaptureScoreBreakdown, 0, len(options))
 		for _, option := range options {
-			row = append(row, s.CaptureScoreFor(0, hi, option))
+			optionRow = append(optionRow, intSliceOrEmpty(option))
+			scoreRow = append(scoreRow, s.CaptureScoreFor(0, hi, option))
 		}
-		out = append(out, row)
+		optionsOut = append(optionsOut, optionRow)
+		scoresOut = append(scoresOut, scoreRow)
 	}
-	return out
-}
-
-// pasurCaptureOptions は人間の手札ごとの捕獲候補を返す。
-//
-// **11 の部分集合をページ側で作り直さない。** 作り直せば必ずズレて、サーバが
-// 拒否する組み合わせを送ることになります。
-func pasurCaptureOptions(s interfaces.PasurGame) [][][]int {
-	out := make([][][]int, 0)
-	human := s.GetPlayer(0)
-	if human == nil {
-		return out
-	}
-	for i := 0; i < human.GetCardsSize(); i++ {
-		opts := s.GetCaptureOptions(0, i)
-		normalised := make([][]int, 0, len(opts))
-		for _, o := range opts {
-			normalised = append(normalised, intSliceOrEmpty(o))
-		}
-		out = append(out, normalised)
-	}
-	return out
+	return optionsOut, scoresOut
 }
 
 // buildPlayersOutput プレイヤー情報を構築
