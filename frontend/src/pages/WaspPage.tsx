@@ -453,7 +453,7 @@ function WaspPageContent() {
                         style={{ width: sc.cw, height: sc.ch }}
                         onClick={() => selectedSource && handleSelectTarget('tableau', colIdx)}
                         disabled={!isPlaying || !selectedSource}
-                        aria-label={`${t('empty')} ${t('tableau')} ${colIdx} — ${t('anyCard')}`}
+                        aria-label={`${t('empty')} ${t('tableau')} ${colIdx} — ${t('anyCard')}${selectedSource ? ` ${t('legalDestination')}` : ''}`}
                         data-testid={`sc-empty-col-${colIdx.toString()}`}
                       >
                         <span className="flex flex-col items-center leading-tight">
@@ -527,7 +527,13 @@ function WaspPageContent() {
                                   }}
                                   disabled={!isPlaying}
                                   aria-label={
-                                    tc.card ? `${cardAlt(tc.card)}${isSelected ? ` ${t('cardSelected')}` : ''}` : ''
+                                    tc.card
+                                      ? `${cardAlt(tc.card)}${isSelected ? ` ${t('cardSelected')}` : ''}${
+                                          isLast && legalTargets.has(colIdx) && selectedSource
+                                            ? ` ${t('legalDestination')}`
+                                            : ''
+                                        }`
+                                      : ''
                                   }
                                 >
                                   {tc.card && <AnimatedCard card={tc.card} width={sc.cw} />}
