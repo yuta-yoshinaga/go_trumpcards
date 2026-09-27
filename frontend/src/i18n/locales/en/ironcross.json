@@ -49,5 +49,6 @@
   "frontendHint.ironcrossWorthACall": "you have a made hand, and this price is fair",
   "frontendHint.ironcrossCheapToStay": "it is cheap enough to see one more card",
   "frontendHint.ironcrossSeeAnotherCard": "the centre is still face down, and the next card is free",
-  "frontendHint.ironcrossNotWorthIt": "no made hand, and the rounds left are not worth the price"
+  "frontendHint.ironcrossNotWorthIt": "no made hand, and the rounds left are not worth the price",
+  "listSeparator": ", "
 }
