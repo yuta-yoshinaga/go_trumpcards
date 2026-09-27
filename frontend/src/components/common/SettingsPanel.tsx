@@ -7,6 +7,8 @@ export interface SettingsItem {
   id: string;
   label: string;
   tooltip?: string;
+  /** Optional accessible name override for the underlying input/select element. */
+  ariaLabel?: string;
   // checkbox
   checked?: boolean;
   onToggle?: (checked: boolean) => void;
@@ -129,6 +131,7 @@ export function SettingsPanel({ title, groups }: SettingsPanelProps) {
                       className="bg-ds-surface-elevated text-ds-text-primary disabled:text-ds-text-muted disabled:opacity-70 rounded px-2 py-2 min-h-[44px]"
                       disabled={item.disabled}
                       aria-describedby={item.tooltip ? `${item.id}-tooltip` : undefined}
+                      aria-label={item.ariaLabel}
                       data-testid={item.testId}
                     >
                       {item.options?.map((opt) => (
