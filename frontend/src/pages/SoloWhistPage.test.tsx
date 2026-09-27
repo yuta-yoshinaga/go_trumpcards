@@ -196,6 +196,29 @@ describe('SoloWhistPage', () => {
     expect(screen.getByText('ラウンド結果')).toBeInTheDocument();
   });
 
+  it('shows the declarer target and won tricks for Solo and Abundance, but not team targets for Pass or Misère', async () => {
+    for (const [contract, roundTricks, expected] of [
+      [1, [8, 2, 2, 1], '契約目標: 8トリック — 宣言者: 8トリック'],
+      [3, [9, 1, 2, 1], '契約目標: 9トリック — 宣言者: 9トリック'],
+    ] as [number, number[], string][]) {
+      mockExec.mockResolvedValue(makeSoloWhistState({ phase: 3, declarerIdx: 0, contract, roundTricks }));
+      const { unmount } = renderWithProviders(<SoloWhistPage />);
+      expect(await screen.findByTestId('solowhist-round-contract')).toHaveTextContent(expected);
+      unmount();
+    }
+
+    for (const [contract, declarerIdx] of [
+      [0, -1],
+      [2, 0],
+    ] as const) {
+      mockExec.mockResolvedValue(makeSoloWhistState({ phase: 3, declarerIdx, contract, roundTricks: [1, 2, 3, 7] }));
+      const { unmount } = renderWithProviders(<SoloWhistPage />);
+      await screen.findByText('ラウンド結果');
+      expect(screen.queryByTestId('solowhist-round-contract')).not.toBeInTheDocument();
+      unmount();
+    }
+  });
+
   it('renders the game end message', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<SoloWhistPage />);
