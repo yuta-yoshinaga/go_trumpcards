@@ -74,16 +74,36 @@ describe('HokmPage', () => {
     mockExec.mockResolvedValue(makeState({ phase: 2, lastHandWinner: 0, lastHandKot: true }));
     renderWithProviders(<HokmPage />);
 
-    const visible = await screen.findByTestId('hk-hand-result');
+    await screen.findByTestId('hk-hand-result');
     const live = await waitFor(() => {
-      const element = [...document.querySelectorAll('[role="status"][aria-live="polite"][aria-atomic="true"]')].find(
-        (candidate) => candidate.textContent === visible.textContent,
+      const element = [...document.querySelectorAll('[aria-live="polite"][aria-atomic="true"].sr-only')].find(
+        (candidate) => candidate.textContent?.includes('残りのトリック'),
       );
-      expect(element).not.toBeUndefined();
+      expect(element?.textContent).toContain('残りのトリックはプレイしません');
       return element;
     });
     expect(live).toHaveAttribute('aria-live', 'polite');
     expect(live).toHaveAttribute('aria-atomic', 'true');
+  });
+
+  it('separates each Japanese sentence in the completed hand announcement', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ phase: 2, lastHandWinner: 0, lastHandKot: true, lastHandHakemChanged: true }),
+    );
+    renderWithProviders(<HokmPage />);
+
+    const announcement = await waitFor(() => {
+      const element = [...document.querySelectorAll('[aria-live="polite"][aria-atomic="true"].sr-only')].find(
+        (candidate) => candidate.textContent?.includes('Kot'),
+      );
+      expect(element?.textContent).toContain('Kot');
+      return element;
+    });
+    expect(announcement).toBeDefined();
+    expect(announcement?.textContent).toBe(
+      'チーム0 が相手に1トリックも取らせず、Kot で +2 です。親が次の席に移ります。残りのトリックはプレイしません。次のハンドへ進むには下のボタンを押してください。',
+    );
+    expect(announcement?.textContent).not.toContain('席に移ります残り');
   });
 
   it('explains that play is over and puts the next-hand action in the result', async () => {

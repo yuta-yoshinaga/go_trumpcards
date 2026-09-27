@@ -75,6 +75,11 @@ describe('formatHokmState', () => {
     expect(normal).not.toContain('Kot');
   });
 
+  it('explains that remaining tricks are skipped and the next hand can begin', () => {
+    const out = formatHokmState(state({ phase: 2, lastHandWinner: 1, lastHandKot: false }));
+    expect(out).toContain('The remaining tricks are not played. Type next to start the next hand.');
+  });
+
   it('marks legal cards in the hand', () => {
     const out = formatHokmState(state({ validPlays: [1] }));
     expect(out).toMatch(/\[1\]\S+\*/);

@@ -259,14 +259,16 @@ function HokmPageContent() {
             <LiveAnnouncement
               message={
                 isHandEnd && state.lastHandWinner >= 0
-                  ? state.lastHandKot
-                    ? `${t('handEnd.kot', { team: String(state.lastHandWinner) })}${
-                        state.lastHandHakemChanged ? t('handEnd.hakemMoves') : t('handEnd.hakemStays')
-                      }${t('handEnd.noMoreTricks')}${t('actions.nextHand')}`
-                    : `${t('handEnd.normal', {
-                        team: String(state.lastHandWinner),
-                        need: String(state.tricksToWin),
-                      })}${state.lastHandHakemChanged ? t('handEnd.hakemMoves') : t('handEnd.hakemStays')}${t('handEnd.noMoreTricks')}${t('actions.nextHand')}`
+                  ? [
+                      state.lastHandKot
+                        ? t('handEnd.kot', { team: String(state.lastHandWinner) })
+                        : t('handEnd.normal', {
+                            team: String(state.lastHandWinner),
+                            need: String(state.tricksToWin),
+                          }),
+                      state.lastHandHakemChanged ? t('handEnd.hakemMoves') : t('handEnd.hakemStays'),
+                      t('handEnd.noMoreTricks'),
+                    ].join(t('sentenceSeparator'))
                   : ''
               }
             />
