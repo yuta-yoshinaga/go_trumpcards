@@ -11,6 +11,8 @@
   "exchangeInstruction": "交換したいカードをクリックして選択し、「交換」または「スタンド」を押してください。",
   "exchangeLabel": "交換",
   "exchangeSelectedCount": "選択 {{n}} 枚",
+  "exchangeConfirmable": "選択した {{n}} 枚を交換して確定できます",
+  "exchangeNotConfirmable": "0枚では交換確定できません。交換せず進む場合は「スタンド」を選択してください",
   "standLabel": "スタンド",
   "standHint": "交換せず今の手札で勝負します",
   "drawOdds": "ドローオッズ:",
