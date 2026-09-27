@@ -36,7 +36,10 @@
   "trumpGroupWeak": "Trump is a weak suit — lower numbers are stronger (1 high)",
   "roundResult": {
     "title": "Round Result",
-    "tricks": "{{name}} tricks: {{count}}"
+    "tricks": "{{name}} tricks: {{count}}",
+    "separator": " / ",
+    "score": "Round score: {{score}}",
+    "cumulativeScore": "Total: {{score}}"
   },
   "hintAvailable": "Hint",
   "hint": {

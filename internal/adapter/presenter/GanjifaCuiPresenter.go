@@ -150,14 +150,19 @@ func (p *GanjifaCuiPresenter) writePrompt(b *strings.Builder, g interfaces.Ganji
 // 競うだけなので、出すべきは誰が何トリック取ったかに尽きる。
 func (p *GanjifaCuiPresenter) writeRoundEndResult(b *strings.Builder, g interfaces.GanjifaGame) {
 	entries := make([]string, 0, g.GetPlayerCnt())
+	scores := g.GetPlayerScores()
 	for i := 0; i < g.GetPlayerCnt(); i++ {
 		player := g.GetPlayer(i)
 		if player == nil {
 			continue
 		}
+		tricks := player.GetTrickCount()
+		// settleRound adds the trick count directly to the round score.
 		entries = append(entries, i18n.Tf("ganjifa.roundEndTrickEntry",
 			"name", cuiPlayerName(player, i),
-			"tricks", strconv.Itoa(player.GetTrickCount())))
+			"tricks", strconv.Itoa(tricks),
+			"roundScore", strconv.Itoa(tricks),
+			"cumulativeScore", strconv.Itoa(scores[i])))
 	}
 	b.WriteString(i18n.Tf("ganjifa.roundEndTricks", "list", strings.Join(entries, ", ")) + "\n")
 }

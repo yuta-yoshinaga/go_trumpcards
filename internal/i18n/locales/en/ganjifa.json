@@ -21,7 +21,7 @@
   "round": "Round: {{round}}  Trick: {{trick}}  Trump: {{trump}}",
   "dealer": "Dealer: {{name}}",
   "trumpAutoNote": "Trump is automatically set to the suit most common in the dealer's hand (there is no choice)",
-  "roundEndTrickEntry": "{{name}} {{tricks}}",
+  "roundEndTrickEntry": "{{name}} tricks: {{tricks}} / Round score: {{roundScore}} / Total: {{cumulativeScore}}",
   "roundEndTricks": "Tricks per player: {{list}}",
   "trumpGroupStrong": "Trump is a strong suit — higher numbers win",
   "trumpGroupWeak": "Trump is a weak suit — lower numbers win",
