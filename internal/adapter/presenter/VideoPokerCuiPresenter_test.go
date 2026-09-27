@@ -222,6 +222,7 @@ func TestVideoPokerCuiPresenter_Output_ResultPhase_Win(t *testing.T) {
 	assert.Contains(t, result, "フォーカード! あなたの勝利です！")
 	assert.NotContains(t, result, "Four of a Kind!")
 	assert.Contains(t, result, "払戻し: 25")
+	assert.Contains(t, result, "純増減: +24")
 }
 
 func TestVideoPokerCuiPresenter_Output_ResultPhase_Win_DeucesWildTranslated(t *testing.T) {
@@ -316,6 +317,7 @@ func TestVideoPokerCuiPresenter_Output_ResultPhase_Lose(t *testing.T) {
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "役なし。")
 	assert.Contains(t, result, "払戻し: 0")
+	assert.Contains(t, result, "純増減: -1")
 }
 
 func TestVideoPokerCuiPresenter_Output_Error(t *testing.T) {
