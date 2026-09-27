@@ -46,6 +46,15 @@ func omahaTitleKey(holeCards int, hiLo bool, preflopCommunity int) string {
 	return "omaha.helpTitle"
 }
 
+func omahaHumanPlayerIdx(o interfaces.OmahaGame) int {
+	for i := 0; i < o.GetPlayerCnt(); i++ {
+		if o.GetPlayer(i).GetIsHuman() {
+			return i
+		}
+	}
+	return -1
+}
+
 // Output renders the current game state for the active locale (#1699).
 func (p *OmahaCuiPresenter) Output(o interfaces.OmahaGame, lastErr error) string {
 	titleKey := omahaTitleKey(o.GetHoleCardCount(), o.GetIsHiLo(), o.GetPreflopCommunityCount())
@@ -276,13 +285,7 @@ func (p *OmahaCuiPresenter) Output(o interfaces.OmahaGame, lastErr error) string
 			switch o.GetRebuyPhaseType() {
 			case domain.OmahaRebuyPhaseRebuy:
 				rebuyCounts := o.GetRebuyCounts()
-				humanIdx := -1
-				for i := 0; i < o.GetPlayerCnt(); i++ {
-					if o.GetPlayer(i).GetIsHuman() {
-						humanIdx = i
-						break
-					}
-				}
+				humanIdx := omahaHumanPlayerIdx(o)
 				if humanIdx >= 0 {
 					currentChips := o.GetPlayer(humanIdx).GetChips()
 					used := rebuyCounts[humanIdx]
@@ -302,13 +305,9 @@ func (p *OmahaCuiPresenter) Output(o interfaces.OmahaGame, lastErr error) string
 				}
 			case domain.OmahaRebuyPhaseAddon:
 				b.WriteString(i18n.Tf("omaha.addonPrompt", "chips", strconv.Itoa(cfg.AddonChips)) + "\n")
-				for i := 0; i < o.GetPlayerCnt(); i++ {
-					player := o.GetPlayer(i)
-					if player.GetIsHuman() {
-						b.WriteString(i18n.Tf("omaha.addonStack",
-							"after", strconv.Itoa(player.GetChips()+cfg.AddonChips)) + "\n")
-						break
-					}
+				if humanIdx := omahaHumanPlayerIdx(o); humanIdx >= 0 {
+					b.WriteString(i18n.Tf("omaha.addonStack",
+						"after", strconv.Itoa(o.GetPlayer(humanIdx).GetChips()+cfg.AddonChips)) + "\n")
 				}
 			}
 		}
