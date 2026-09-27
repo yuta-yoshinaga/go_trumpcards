@@ -86,6 +86,22 @@ describe('TerracePage', () => {
     expect(mockExec.mock.calls[0]?.[0]).toBe('reset');
   });
 
+  it('keeps a move target focusable and explains how to enable it before a source is selected', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<TerracePage />);
+    const target = await screen.findByRole('button', { name: '空の組札0' });
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const descriptionId = target.getAttribute('aria-describedby');
+    expect(descriptionId).toBeTruthy();
+    expect(document.getElementById(descriptionId ?? '')).toHaveTextContent('先に移動する札を選んでください');
+
+    mockExec.mockClear();
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('renders heading, base rank and move count', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<TerracePage />);
