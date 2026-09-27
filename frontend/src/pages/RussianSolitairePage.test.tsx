@@ -279,6 +279,21 @@ describe('RussianSolitairePage', () => {
     expect(screen.getByText('空')).toBeInTheDocument();
   });
 
+  it('keeps an empty tableau target focusable and explains that a source must be selected', async () => {
+    mockExec.mockResolvedValue({ ...playingState, tableau: [[], ...playingState.tableau.slice(1)] });
+    renderWithProviders(<RussianSolitairePage />);
+    const target = await screen.findByRole('button', { name: /空.*0/ });
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const describedBy = target.getAttribute('aria-describedby');
+    expect(describedBy).toBeTruthy();
+    expect(document.getElementById(describedBy ?? '')).toHaveTextContent('先に移動する札を選んでください');
+    mockExec.mockClear();
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('renders foundation suit labels', async () => {
     renderWithProviders(<RussianSolitairePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

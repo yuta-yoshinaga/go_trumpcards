@@ -104,20 +104,35 @@ describe('RoyalCotillionPage', () => {
   });
 
   // **空き山はタブローからは埋められない。**`MoveTableauToTableau` が明示的に
-  // 拒否する。押せてしまうとサーバに弾かれるまで気づけない (#4906)。
-  it('keeps an empty slot unclickable while a board card is selected', async () => {
+  // 拒否する。無効状態を読み上げつつ Tab で到達できる (#4906)。
+  it('keeps an empty slot aria-disabled while a board card is selected', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<RoyalCotillionPage />);
     const empty = await screen.findByRole('button', { name: /空の枠 3/ });
-    // まだ何も選んでいなければ、当然押せない。
-    expect(empty).toBeDisabled();
+    expect(empty).not.toBeDisabled();
+    expect(empty).toHaveAttribute('aria-disabled', 'true');
 
     fireEvent.click(screen.getByRole('button', { name: '枠 0 ♠ 9' }));
     await waitFor(() =>
       expect(screen.getByRole('button', { name: '枠 0 ♠ 9' })).toHaveAttribute('aria-pressed', 'true'),
     );
-    // タブローの札を選んでも押せないまま。
-    expect(empty).toBeDisabled();
+    expect(empty).not.toBeDisabled();
+    expect(empty).toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('keeps an empty foundation focusable and explains that a source must be selected', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<RoyalCotillionPage />);
+    const target = await screen.findByRole('button', { name: /^空の組札0/ });
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const describedBy = target.getAttribute('aria-describedby');
+    expect(describedBy).toBeTruthy();
+    expect(document.getElementById(describedBy ?? '')).toHaveTextContent('先に移動する札を選んでください');
+    mockExec.mockClear();
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
   });
 
   // **ドラッグ経路も同じ規則を守る。**クリックはボタンを無効化して防いでいるが、
