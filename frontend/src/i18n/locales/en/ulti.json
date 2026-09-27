@@ -25,6 +25,12 @@
   "contractBetli": "Betli",
   "contractDurchmarsch": "Durchmarsch",
   "contractUlti": "Ulti",
+  "contractProgress": {
+    "party": "Declarer's card points: {{current}}/{{required}}",
+    "betli": "The declarer must take no tricks",
+    "durchmarsch": "Declarer's tricks taken: {{current}}/{{required}}",
+    "ulti": "The declarer must win the final trick with the trump {{suit}} 7"
+  },
   "chooseTrump": "Trump",
   "suitNone": "-",
   "suitSpade": "Spades",

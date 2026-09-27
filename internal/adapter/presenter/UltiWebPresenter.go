@@ -41,6 +41,7 @@ func (p *UltiWebPresenter) buildBase(g interfaces.UltiGame) *controller.UltiWebO
 	resObj.DealerIdx = g.GetDealerIdx()
 	resObj.DeclarerIdx = g.GetDeclarerIdx()
 	resObj.Contract = int(g.GetContract())
+	resObj.ContractRequirement = g.GetContractRequirement()
 	resObj.TrumpSuit = g.GetTrumpSuit()
 	resObj.TalonCount = g.GetTalonCount()
 	resObj.TalonTaken = g.GetTalonTaken()

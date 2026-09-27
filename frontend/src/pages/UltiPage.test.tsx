@@ -59,6 +59,36 @@ beforeEach(() => {
 });
 
 describe('UltiPage', () => {
+  it('shows the declarer progress for the active contract without assigning it to the coalition', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      contractRequirement: 61,
+      players: playPhaseState.players.map((player, index) => ({
+        ...player,
+        trickCount: index === 0 ? 3 : 1,
+        cardPoints: index === 0 ? 42 : 20,
+      })),
+    });
+    renderWithProviders(<UltiPage />);
+
+    expect(await screen.findByTestId('ulti-contract-progress')).toHaveTextContent('42/61');
+    expect(screen.getAllByTestId('ulti-contract-progress')).toHaveLength(1);
+  });
+
+  it('describes Betli without showing a normal target count', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, contract: 2, contractRequirement: 0 });
+    renderWithProviders(<UltiPage />);
+    expect(await screen.findByTestId('ulti-contract-progress')).toHaveTextContent('1トリックも取らない');
+    expect(screen.getByTestId('ulti-contract-progress')).not.toHaveTextContent('/');
+  });
+
+  it('describes the Ulti final-trick condition without showing a normal target count', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, contract: 4, contractRequirement: 0 });
+    renderWithProviders(<UltiPage />);
+    expect(await screen.findByTestId('ulti-contract-progress')).toHaveTextContent('最終トリック');
+    expect(screen.getByTestId('ulti-contract-progress')).not.toHaveTextContent('/');
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<UltiPage />);

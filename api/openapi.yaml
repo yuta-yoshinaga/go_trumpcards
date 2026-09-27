@@ -81014,6 +81014,9 @@ components:
           type: integer
         contract:
           type: integer
+        contractRequirement:
+          type: integer
+          description: Points or tricks required to fulfill the current contract; 0 when not applicable.
         trumpSuit:
           type: integer
         talonCount:
