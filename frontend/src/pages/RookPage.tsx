@@ -432,7 +432,7 @@ function RookPageContent() {
                       {state.highestBid > 0
                         ? t('bidStatus.highest', { value: state.highestBid })
                         : t('bidStatus.highestNone')}
-                      {t('listSeparator')}
+                      {' · '}
                       {t('bidStatus.remaining', { n: bidStatus.activeBidders })}
                     </div>
                     {passedNames && (
