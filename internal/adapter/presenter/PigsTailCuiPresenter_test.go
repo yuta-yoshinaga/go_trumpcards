@@ -40,7 +40,9 @@ func TestPigsTailCuiPresenter_Output(t *testing.T) {
 		output := p.Output(pt, nil)
 		assert.Contains(t, output, "Pig's Tail (ぶたのしっぽ)")
 		assert.Contains(t, output, "山札: 52枚")
-		assert.Contains(t, output, "手番:")
+		assert.Contains(t, output, "場札トップと同じスートを引くと、場札をすべて引き取ります。")
+		assert.Contains(t, output, "山札は52枚残っています。")
+		assert.Contains(t, output, "番です。")
 	})
 	// **Web は引いた札と判定を見せている。**CUI は CPU の行動履歴しか出さず、
 	// 自分が引いた札もペナルティかどうかも分からなかった (#4864)。
@@ -92,6 +94,17 @@ func TestPigsTailCuiPresenter_Output(t *testing.T) {
 		output := p.Output(pt, nil)
 		assert.Contains(t, output, "ゲーム終了！")
 		assert.Contains(t, output, "の負け！")
+		assert.Contains(t, output, "山札は0枚です。山札がなくなったためゲーム終了です。手札が最も多い人が負けです。")
+		assert.Contains(t, output, "ゲームは終了しています。")
+	})
+	t.Run("other player's turn is not offered as the human's turn", func(t *testing.T) {
+		pt := newTestPigsTailForPresenter()
+		humanIdx := humanPlayerIdx(pt)
+		otherIdx := (humanIdx + 1) % pt.GetPlayerCnt()
+		pt.SetCurrentTurn(otherIdx)
+		output := p.Output(pt, nil)
+		assert.Contains(t, output, "の番です。あなたは待ってください。")
+		assert.NotContains(t, output, "あなたの番です。")
 	})
 	t.Run("with cpu actions", func(t *testing.T) {
 		pt := newTestPigsTailForPresenter()
