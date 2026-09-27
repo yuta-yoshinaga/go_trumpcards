@@ -117,7 +117,9 @@ func (p *PigCuiPresenter) Output(s interfaces.PigGame, lastErr error) string {
 				}
 			}
 			target := domain.PigNextActiveSeat(players, humanIdx)
-			sb.WriteString(i18n.Tf("pig.promptPass", "direction", i18n.T("pig.passDirectionLeft"), "name", cuiPlayerName(s.GetPlayer(target), target)) + "\n")
+			if target != humanIdx {
+				sb.WriteString(i18n.Tf("pig.promptPass", "direction", i18n.T("pig.passDirectionLeft"), "name", cuiPlayerName(s.GetPlayer(target), target)) + "\n")
+			}
 		}
 	})
 }

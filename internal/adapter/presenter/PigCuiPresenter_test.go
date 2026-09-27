@@ -60,6 +60,17 @@ func TestPigCuiPresenterShowsActivePassRecipient(t *testing.T) {
 	assert.Contains(t, out, i18n.Tf("pig.promptPass", "direction", i18n.T("pig.passDirectionLeft"), "name", cuiPlayerName(g.GetPlayer(2), 2)))
 }
 
+func TestPigCuiPresenterDoesNotPromptWhenHumanIsOwnPassTarget(t *testing.T) {
+	p := new(PigCuiPresenter)
+	g := newPigForCui(t)
+	for i := 1; i < g.GetPlayerCnt(); i++ {
+		g.GetPlayer(i).SetEliminated(true)
+	}
+
+	out := p.Output(g, nil)
+	assert.NotContains(t, out, "pass <idx>")
+}
+
 // **合図は声に出さない。** こちらから名乗る必要があることを出す。
 func TestPigCuiPresenterPromptsForTheSignal(t *testing.T) {
 	p := new(PigCuiPresenter)

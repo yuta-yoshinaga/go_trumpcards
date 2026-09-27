@@ -5721,11 +5721,17 @@ export function makeRussianBankState(overrides?: Partial<RussianBankResponse>): 
 
 /** Creates a Pig pass state with the human's next active recipient. */
 export function makePigState(overrides?: Partial<PigResponse>): PigResponse {
+  const hand: PigResponse['players'][number]['cards'] = [
+    { design: 'SPADE', value: 13 },
+    { design: 'HEART', value: 13 },
+    { design: 'CLOVER', value: 1 },
+    { design: 'DIAMOND', value: 12 },
+  ];
   const players: PigResponse['players'] = Array.from({ length: 4 }, (_, id) => ({
     id,
     isHuman: id === 0,
     cardCount: 4,
-    cards: [],
+    cards: id === 0 ? hand : [],
     letters: 0,
     letterWord: '',
     eliminated: false,
@@ -5741,8 +5747,8 @@ export function makePigState(overrides?: Partial<PigResponse>): PigResponse {
     noticedCnt: 0,
     roundLoserIdx: -1,
     letterTarget: 'PIG',
-    roundNumber: 1,
-    passCount: 0,
+    roundNumber: 2,
+    passCount: 3,
     passTargetIdx: 1,
     deckSize: 16,
     currentPlayerIdx: 0,

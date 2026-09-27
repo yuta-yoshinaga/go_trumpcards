@@ -44,10 +44,7 @@ func (p *PigWebPresenter) buildBase(s interfaces.PigGame) *controller.PigWebOutp
 	resObj.PassCount = s.GetPassCount()
 	resObj.PassTargetIdx = -1
 	if s.GetPhase() == domain.PigPhasePass {
-		players := make([]*domain.PigPlayer, s.GetPlayerCnt())
-		for i := range players {
-			players[i] = s.GetPlayer(i)
-		}
+		players := pigPlayers(s)
 		for i := range players {
 			if players[i].GetIsHuman() && !players[i].GetEliminated() {
 				if target := domain.PigNextActiveSeat(players, i); target != i {
