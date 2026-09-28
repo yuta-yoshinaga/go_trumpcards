@@ -894,6 +894,20 @@ describe('DoubtPage', () => {
     expect(within(screen.getByTestId('doubt-cpu-3')).queryByTestId('doubt-tell-indicator')).not.toBeInTheDocument();
   });
 
+  it('announces the current CPU tell in a persistent live region', async () => {
+    mockExec.mockResolvedValue({
+      ...doubtPhaseCpuPlayedState,
+      lastAction: { ...doubtPhaseCpuPlayedState.lastAction!, hasTell: true },
+    });
+    renderWithProviders(<DoubtPage />);
+
+    await waitFor(() => expect(screen.getByTestId('doubt-cpu-1')).toBeInTheDocument());
+    const liveRegion = screen.getByTestId('doubt-tell-announcement');
+    await waitFor(() => expect(liveRegion).toHaveTextContent('CPU 1にテルが見えます'));
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(within(screen.getByTestId('doubt-cpu-1')).getByTestId('doubt-tell-indicator')).toBeInTheDocument();
+  });
+
   it('does not show tell badge outside the current doubtable CPU lastAction', async () => {
     const s: DoubtResponse = {
       ...humanTurnState,

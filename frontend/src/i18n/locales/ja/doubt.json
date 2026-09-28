@@ -30,6 +30,7 @@
   "playButton": "出す",
   "tell": "テル",
   "tellBadge": "怪しい",
+  "tellAnnouncement": "{{name}}にテルが見えます",
   "settings": {
     "title": "設定",
     "doubtTime": "ダウト時間:",
