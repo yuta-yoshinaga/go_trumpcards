@@ -459,6 +459,7 @@ function KingPageContent() {
                       className={btnPrimary}
                       onClick={() => handleTrumpClick(suit)}
                       disabled={loading}
+                      aria-label={t(`trumpSuit.${suit}`)}
                     >
                       {suitSymbolAt(suit, '-')}
                     </button>
