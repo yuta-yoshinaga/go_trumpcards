@@ -534,6 +534,29 @@ function RussianPokerPageContent() {
                       </span>
                     )}
                   </p>
+                  <div className="mt-2 rounded-lg bg-ds-surface px-3 py-2" data-testid="russian-exchange-preview">
+                    <p className="text-xs font-semibold">{t('exchangePreview')}</p>
+                    <div className="mt-1 flex flex-wrap justify-center gap-2">
+                      {state.playerHand.map((card, i) =>
+                        selectedIndices.includes(i) ? (
+                          <span
+                            key={`replacement-${i}`}
+                            data-testid="russian-exchange-replacement"
+                            className="flex h-10 min-w-14 items-center justify-center rounded border-2 border-dashed border-ds-warning px-2 text-xs text-ds-warning"
+                          >
+                            {t('exchangeReplacement')}
+                          </span>
+                        ) : (
+                          <span
+                            key={`kept-${i}`}
+                            className="flex h-10 min-w-14 items-center justify-center rounded border border-ds-border bg-ds-surface-elevated px-2 text-xs"
+                          >
+                            {cardAlt(card)}
+                          </span>
+                        ),
+                      )}
+                    </div>
+                  </div>
                 </div>
                 <p className="text-ds-text-muted text-sm">{t('actionGuide')}</p>
                 <p className="text-ds-warning text-sm font-bold" data-testid="russian-buy6th-fee-line">
