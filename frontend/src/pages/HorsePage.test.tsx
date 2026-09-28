@@ -324,6 +324,17 @@ describe('HorsePage', () => {
     await waitFor(() => expect(screen.getByTestId('ho-draw')).toBeInTheDocument());
   });
 
+  it('names each draw card and exposes its selected state', async () => {
+    mockExec.mockResolvedValue(makeHorseState({ isDrawPhase: true, drawIndex: 1 }));
+    renderWithProviders(<HorsePage />);
+
+    const ace = await screen.findByRole('button', { name: 'A ♠' });
+    expect(ace).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(ace);
+    expect(screen.getByRole('button', { name: 'A ♠' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'K ♥' })).toHaveAttribute('aria-pressed', 'false');
+  });
+
   // ベットラウンドなどドローフェーズ以外では交換カード選択エリアを表示しない。
   it('hides draw area outside draw turn', async () => {
     mockExec.mockResolvedValue(handState);
