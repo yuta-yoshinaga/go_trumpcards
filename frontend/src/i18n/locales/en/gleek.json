@@ -42,6 +42,8 @@
   "cpu": "CPU {{id}}",
   "buyerBadge": "Buyer",
   "bidTurn": "Bidding turn",
+  "playerBid": "Bid: {{bid}}",
+  "playerPassed": "Passed",
   "score": "score: {{score}}",
   "bidPhase": "Bidding — highest {{bid}}. Raise or drop out.",
   "discardPhase": "You have taken the stock — choose {{count}} cards to throw ({{selected}} selected)",
