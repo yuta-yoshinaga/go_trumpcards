@@ -450,6 +450,11 @@ function FaroPageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
+            {isRoundEnd && (
+              <div className="text-ds-text-primary text-center font-bold mb-2" data-testid="faro-round-net">
+                {t('roundNet', { amount: state.totalPayout > 0 ? `+${state.totalPayout}` : String(state.totalPayout) })}
+              </div>
+            )}
 
             <ActionLogSection
               isEndPhase={isGameEnd}
