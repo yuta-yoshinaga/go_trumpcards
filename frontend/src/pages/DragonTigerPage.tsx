@@ -253,6 +253,12 @@ function DragonTigerPageContent() {
                   {state.history.slice(-HISTORY_MAX_SHOWN).map((r, i) => {
                     const label =
                       r === DragonTigerHistoryResult.DRAGON ? 'D' : r === DragonTigerHistoryResult.TIGER ? 'T' : '=';
+                    const resultLabel =
+                      r === DragonTigerHistoryResult.DRAGON
+                        ? t('result.dragonWins')
+                        : r === DragonTigerHistoryResult.TIGER
+                          ? t('result.tigerWins')
+                          : t('result.tie');
                     const tone =
                       r === DragonTigerHistoryResult.DRAGON
                         ? 'bg-ds-error text-white'
@@ -263,6 +269,11 @@ function DragonTigerPageContent() {
                       <span
                         key={`bigroad-${i}-${r}`}
                         data-testid="bigroad-badge"
+                        role="img"
+                        aria-label={t('label.historyMarker', {
+                          round: state.history.length - Math.min(state.history.length, HISTORY_MAX_SHOWN) + i + 1,
+                          result: resultLabel,
+                        })}
                         className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${tone}`}
                       >
                         {label}
