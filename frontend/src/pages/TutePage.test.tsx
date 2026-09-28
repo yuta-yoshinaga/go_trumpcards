@@ -226,4 +226,17 @@ describe('TutePage', () => {
     // Negative control: last trick bonus must not appear during play phase
     expect(screen.queryByTestId('tute-last-trick-bonus')).not.toBeInTheDocument();
   });
+
+  it('shows each team score and the configured target during play', async () => {
+    mockExec.mockResolvedValue(
+      makeTuteState({
+        teamScores: [80, 121],
+        config: { cpuDifficulty: 1, targetPoints: 121 },
+      }),
+    );
+    renderWithProviders(<TutePage />);
+
+    expect(await screen.findByText('チームA: 80 / 目標 121点')).toBeInTheDocument();
+    expect(screen.getByText('チームB: 121 / 目標 121点')).toBeInTheDocument();
+  });
 });
