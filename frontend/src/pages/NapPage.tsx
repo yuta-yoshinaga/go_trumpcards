@@ -294,6 +294,14 @@ function NapPageContent() {
                       <span className={p.isDeclarer ? 'text-ds-warning font-semibold' : ''}>
                         {playerName(p.id, p.isHuman)}: {t('score', { score: p.score })}
                       </span>
+                      {state.dealerIdx === p.id && (
+                        <span
+                          className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}
+                          data-testid="nap-dealer-badge"
+                        >
+                          {t('dealerBadge')}
+                        </span>
+                      )}
                       {p.isDeclarer && (
                         <span className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>
                           {t('declarerBadge')}

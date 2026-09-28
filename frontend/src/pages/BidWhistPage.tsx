@@ -245,6 +245,11 @@ function BidWhistPageContent() {
                       <span>
                         ({t('teamShort', { team: p.team })}) {p.trickCount}🂠
                       </span>
+                      {state.dealerIdx === p.id && (
+                        <span className="text-ds-accent" data-testid="bidwhist-dealer-badge">
+                          [{t('dealerBadge')}]
+                        </span>
+                      )}
                       {p.isDeclarer && <span className="font-bold text-ds-warning">★</span>}
                       {p.passed && <span className="opacity-60">{t('passed')}</span>}
                     </div>
@@ -309,6 +314,12 @@ function BidWhistPageContent() {
             <div className="text-center" data-tutorial="bw-hand">
               <div className="text-xs text-ds-text-muted mb-1">
                 {tc('player.you')} ({t('teamShort', { team: human.team })}) · {human.trickCount}🂠
+                {state.dealerIdx === human.id && (
+                  <span className="text-ds-accent" data-testid="bidwhist-dealer-badge">
+                    {' '}
+                    [{t('dealerBadge')}]
+                  </span>
+                )}
                 {human.isDeclarer && <span className="font-bold text-ds-warning"> ★</span>}
               </div>
               {isHumanExchange && kittyIndexSet.size > 0 && (

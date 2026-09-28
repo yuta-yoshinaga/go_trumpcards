@@ -179,6 +179,11 @@ function KnockoutWhistPageContent() {
             ? ` — ${t('eliminated')}`
             : ` — ${t('roundTricks', { count: p.roundTricks })} · ${t('dogbones', { count: p.dogbones })}`}
         </span>
+        {state.dealerIdx === p.id && (
+          <span className={`px-1.5 py-0.5 rounded text-xs ${badgeInfoColors}`} data-testid="kw-dealer-badge">
+            {t('dealerBadge')}
+          </span>
+        )}
         {showHandCount && (
           <span data-testid="kw-player-hand-count" className="text-ds-text-muted">
             {t('playerHandCount.current', { count: p.cardCount })}

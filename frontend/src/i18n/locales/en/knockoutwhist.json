@@ -1,4 +1,5 @@
 {
+  "dealerBadge": "Dealer",
   "phase": {
     "play": "Play",
     "trickEnd": "Trick End",

@@ -483,4 +483,10 @@ describe('BidWhistPage', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
     expect(screen.queryByTestId('nextround-button')).not.toBeInTheDocument();
   });
+
+  it('marks the current dealer seat', async () => {
+    mockExec.mockResolvedValue(makeState({ dealerIdx: 1 }));
+    renderWithProviders(<BidWhistPage />);
+    expect(await screen.findAllByTestId('bidwhist-dealer-badge')).toHaveLength(1);
+  });
 });

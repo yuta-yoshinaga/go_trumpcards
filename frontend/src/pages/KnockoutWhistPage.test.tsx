@@ -324,4 +324,13 @@ describe('KnockoutWhistPage round survivors and eliminations', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
     expect(screen.queryByTestId('knockoutwhist-trump-select')).not.toBeInTheDocument();
   });
+
+  it('marks only the current dealer, including an eliminated player', async () => {
+    const state = makeKnockoutWhistState({ dealerIdx: 2 });
+    state.players[2].eliminated = true;
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<KnockoutWhistPage />);
+    expect(await screen.findAllByTestId('kw-dealer-badge')).toHaveLength(1);
+    expect(screen.getByTestId('kw-dealer-badge').parentElement).toHaveAttribute('data-eliminated', 'true');
+  });
 });
