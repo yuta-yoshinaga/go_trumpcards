@@ -200,12 +200,24 @@ describe('CuarentaPage', () => {
 
     fireEvent.focus(handCard);
     await waitFor(() => expect(screen.getByTestId('cuarenta-table-card-0')).toHaveAttribute('data-capturable', 'true'));
+    expect(screen.getByTestId('cuarenta-capture-preview')).toHaveTextContent('この札で捕獲できます: ♣ 7');
+    expect(screen.getByTestId('cuarenta-capture-preview')).toHaveAttribute('aria-live', 'polite');
     expect(screen.getByTestId('cuarenta-table-card-0').className).toContain('ring-ds-success');
     // The non-matching table card stays un-ringed.
     expect(screen.getByTestId('cuarenta-table-card-1')).not.toHaveAttribute('data-capturable');
 
     fireEvent.blur(handCard);
     await waitFor(() => expect(screen.getByTestId('cuarenta-table-card-0')).not.toHaveAttribute('data-capturable'));
+    expect(screen.getByTestId('cuarenta-capture-preview')).toBeEmptyDOMElement();
+  });
+
+  it('explains that a hand card with no matches will be laid on the table', async () => {
+    renderWithProviders(<CuarentaPage />);
+    const handCard = await screen.findByTestId('hand-card-0');
+    fireEvent.focus(handCard);
+    expect(screen.getByTestId('cuarenta-capture-preview')).toHaveTextContent(
+      '捕獲できる札はありません。場に出します。',
+    );
   });
 
   it('does not ring any table card when it is not the human turn', async () => {

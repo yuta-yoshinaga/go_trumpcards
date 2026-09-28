@@ -184,6 +184,19 @@ function CuarentaPageContent() {
   // only while it is the human's turn so the ring is actionable advice.
   const previewCard = isHumanTurn && previewHandIndex !== null ? (humanPlayer?.cards[previewHandIndex] ?? null) : null;
   const captureIndices = cuarentaCaptureIndices(previewCard, state.tableCards);
+  const capturePreview =
+    previewCard === null
+      ? ''
+      : captureIndices.size > 0
+        ? t('capturePreview', {
+            cards: [...captureIndices]
+              .flatMap((i) => {
+                const card = state.tableCards[i];
+                return card ? [cardAlt(card)] : [];
+              })
+              .join(t('listSeparator')),
+          })
+        : t('layPreview');
 
   // Per-team captured-card totals this round: capturing 20+ cards earns the
   // "más de veinte" bonus, so the running tally matters mid-round (#3563).
@@ -258,6 +271,11 @@ function CuarentaPageContent() {
               .filter(Boolean)
               .join('')
           : ''}
+      </div>
+      <div role="status" aria-live="polite" aria-atomic="true" data-testid="cuarenta-capture-preview">
+        {capturePreview && (
+          <p className="mx-4 mt-2 rounded bg-ds-surface px-3 py-2 text-sm text-ds-text-primary">{capturePreview}</p>
+        )}
       </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
