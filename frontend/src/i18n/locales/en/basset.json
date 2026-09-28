@@ -3,6 +3,7 @@
   "turns": "Turns: {{played}}/{{total}}",
   "remaining": "Cards left: {{count}}",
   "rankSelection": "Bet rank",
+  "betAmount": "Bet amount",
   "bet": "Bet",
   "noBet": "No bet placed",
   "bankerCard": "Banker card",
