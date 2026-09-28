@@ -130,7 +130,6 @@ function HokmPageContent() {
         ? t('phase.trump')
         : t('phase.play');
 
-  // 出せる札に緑の枠を足すだけで、押せなくはしない（サーバが必ず検証する）。
   const legalRing = new Set(isHumanTurn ? state.validPlays : []);
 
   const resultBanner = (() => {
@@ -296,15 +295,24 @@ function HokmPageContent() {
                     <button
                       key={`${card.design}-${card.value}-${idx}`}
                       type="button"
-                      onClick={() => handlePlay(idx)}
-                      disabled={loading || !isHumanTurn}
+                      onClick={() => {
+                        if (loading || !isHumanTurn || !legalRing.has(idx)) return;
+                        handlePlay(idx);
+                      }}
+                      aria-disabled={loading || !isHumanTurn || !legalRing.has(idx)}
+                      aria-describedby={
+                        loading || !isHumanTurn || !legalRing.has(idx) ? 'hk-play-unavailable' : undefined
+                      }
                       aria-label={t('actions.playAria', { card: cardAlt(card) })}
-                      className={`disabled:opacity-50 ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
+                      className={`${loading || !isHumanTurn || !legalRing.has(idx) ? 'opacity-50 cursor-not-allowed' : ''} ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
                     >
                       <CardImage card={card} width={cardWidth} />
                     </button>
                   ))}
                 </div>
+                <span id="hk-play-unavailable" className="sr-only">
+                  {t('actions.playUnavailable')}
+                </span>
               </div>
             )}
 

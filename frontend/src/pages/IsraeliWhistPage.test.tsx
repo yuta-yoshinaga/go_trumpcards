@@ -71,6 +71,22 @@ beforeEach(() => {
 });
 
 describe('IsraeliWhistPage', () => {
+  it('keeps illegal cards focusable but blocks play and explains why', async () => {
+    mockExec.mockResolvedValue(playing({ validPlays: [0] }));
+    renderWithProviders(<IsraeliWhistPage />);
+    const cards = await screen.findAllByRole('button', { name: /を出す/ });
+    mockExec.mockClear();
+    expect(cards[0]).toHaveAttribute('aria-disabled', 'false');
+    expect(cards[0]).not.toHaveAttribute('aria-describedby');
+    expect(cards[1]).toHaveAttribute('aria-disabled', 'true');
+    expect(cards[1]).toHaveAttribute('aria-describedby', 'iw-play-unavailable');
+    expect(document.getElementById('iw-play-unavailable')).toHaveTextContent('自分の手番で出せる札ではありません');
+    fireEvent.click(cards[1]);
+    fireEvent.click(cards[0]);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0));
+    expect(mockExec.mock.calls).toEqual([['play', 0]]);
+  });
+
   it('resets on mount', async () => {
     renderWithProviders(<IsraeliWhistPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
@@ -399,11 +415,12 @@ describe('IsraeliWhistPage', () => {
     }
   });
 
-  it('disables the hand while it is a CPU turn', async () => {
+  it('marks the hand unavailable while it is a CPU turn', async () => {
     mockExec.mockResolvedValue(playing({ currentPlayerIdx: 1 } as Partial<IsraeliWhistResponse>));
     renderWithProviders(<IsraeliWhistPage />);
     const cards = await screen.findAllByRole('button', { name: /を出す/ });
-    expect(cards[0]).toBeDisabled();
+    expect(cards[0]).toHaveAttribute('aria-disabled', 'true');
+    expect(cards[0]).toHaveAttribute('aria-describedby', 'iw-play-unavailable');
   });
 
   it('shows the hint when one is enabled', async () => {
