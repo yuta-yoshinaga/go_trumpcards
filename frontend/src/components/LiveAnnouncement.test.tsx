@@ -20,6 +20,11 @@ describe('LiveAnnouncement', () => {
     expect(screen.getByRole('status')).toHaveTextContent('');
   });
 
+  it('exposes an optional test selector on the live region', () => {
+    render(<LiveAnnouncement message="hi" testId="announcement" />);
+    expect(screen.getByTestId('announcement')).toHaveAttribute('role', 'status');
+  });
+
   // 本文が付くとき、領域は**同じ DOM ノードのまま**であること。作り直すと
   // 「既存の領域が変化した」ではなく「領域が現れた」になり、読み上げられない。
   it('reuses the same node when the message arrives', () => {

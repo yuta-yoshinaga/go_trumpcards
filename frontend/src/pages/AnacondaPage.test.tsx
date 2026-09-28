@@ -124,14 +124,31 @@ describe('AnacondaPage', () => {
 
   it('announces the raise count through the atomic polite live region', async () => {
     mockExec.mockResolvedValue(rollState);
+    renderWithProviders(<AnacondaPage />);
+
+    const live = await screen.findByTestId('anaconda-raise-count-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toHaveAttribute('aria-atomic', 'true');
+    expect(live).toHaveTextContent('レイズ 0/3回');
+  });
+
+  it('announces the current call amount with the same text shown on screen', async () => {
+    mockExec.mockResolvedValueOnce(rollState).mockResolvedValueOnce({ ...rollState, currentBet: 25 });
     const { container } = renderWithProviders(<AnacondaPage />);
 
-    const live = await waitFor(() => {
-      const element = container.querySelector('[role="status"][aria-live="polite"][aria-atomic="true"]');
-      expect(element).not.toBeNull();
-      return element;
+    const live = await screen.findByTestId('anaconda-current-bet-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toHaveAttribute('aria-atomic', 'true');
+    expect(live).toHaveTextContent('コール額: 10');
+    expect(container.querySelector('[data-testid="anaconda-info"]')).toHaveTextContent('コール額: 10');
+
+    fireEvent.click(screen.getByRole('button', { name: 'コール / チェック' }));
+    await waitFor(() => {
+      expect(live).toHaveTextContent('コール額: 25');
+      expect(container.querySelector('[data-testid="anaconda-info"]')).toHaveTextContent('コール額: 25');
     });
-    expect(live).toHaveTextContent('レイズ 0/3回');
   });
 
   it('disables the Raise button when canRaise is false', async () => {
