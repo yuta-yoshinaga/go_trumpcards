@@ -43,6 +43,8 @@
     "canastaComplete": "カナスタ成立！",
     "sambaComplete": "サンバ成立！"
   },
+  "meldProgressAnnouncement": "あなたのチームのメルド: {{updates}}",
+  "listSeparator": "、",
   "melds": "メルド",
   "mixedCanasta": "ミックスカナスタ",
   "naturalCanasta": "ナチュラルカナスタ",

@@ -43,6 +43,8 @@
     "canastaComplete": "Canasta complete!",
     "sambaComplete": "Samba complete!"
   },
+  "meldProgressAnnouncement": "Your team's meld: {{updates}}",
+  "listSeparator": ", ",
   "melds": "Melds",
   "mixedCanasta": "Mixed Canasta",
   "naturalCanasta": "Natural Canasta",
