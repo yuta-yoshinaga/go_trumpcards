@@ -35,6 +35,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { parseSalicLawCommand, SALICLAW_HELP } from '../utils/cli/commands/saliclawCommands';
 import { formatSalicLawState } from '../utils/cli/formatters/saliclawFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { countSalicLawTargets, isSalicLawTarget } from '../utils/saliclawTargets';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 // **組札はスートで決まらない。**A から J まで、どのスートでも積める。列と
@@ -67,6 +68,8 @@ function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => stri
 
 function SalicLawPageContent() {
   const selectSourceHintId = useId();
+  const legalTargetHintId = useId();
+  const illegalTargetHintId = useId();
   const {
     t,
     tc,
@@ -175,6 +178,10 @@ function SalicLawPageContent() {
   const isEnded = isGameClear || isGameOver;
   const foundationCount = isGameOver ? state.foundation.reduce((sum, pile) => sum + pile.length, 0) : 0;
   const autoCompleteReady = state.foundation.some((pile) => pile.length > 0);
+  const selectedTargetCount =
+    selectedSource?.zone === 'tableau' && selectedSource.col !== undefined
+      ? countSalicLawTargets(state, selectedSource.col)
+      : null;
 
   const isSourceSelected = (zone: string, col?: number) =>
     selectedSource !== null && selectedSource.zone === zone && selectedSource.col === col;
@@ -253,6 +260,13 @@ function SalicLawPageContent() {
                       }}
                       disabled={!isPlaying || loading || (selectedSource ? !(isBareKing || isSelectedHere) : !isTop)}
                       aria-label={isBareKing ? t('bareKingPileAriaLabel', { pile: pileIdx }) : cardAlt(card)}
+                      aria-describedby={
+                        selectedSource?.zone === 'tableau' && selectedSource.col !== undefined
+                          ? isSalicLawTarget(state, selectedSource.col, 'tableau', pileIdx)
+                            ? legalTargetHintId
+                            : illegalTargetHintId
+                          : undefined
+                      }
                       aria-pressed={isTop ? isSourceSelected('tableau', pileIdx) : undefined}
                       data-testid={isBareKing ? `sl-bare-king-${pileIdx.toString()}` : undefined}
                       draggable={isTop && isPlaying && !loading}
@@ -312,6 +326,12 @@ function SalicLawPageContent() {
           <span id={selectSourceHintId} className="sr-only">
             {tc('label.selectSourceFirst')}
           </span>
+          <span id={legalTargetHintId} className="sr-only">
+            {t('legalDestination')}
+          </span>
+          <span id={illegalTargetHintId} className="sr-only">
+            {t('notLegalDestination')}
+          </span>
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
             <div className="flex flex-wrap justify-center items-start gap-3 sm:gap-6 mb-3">
               <div className="flex flex-wrap justify-center gap-1 sm:gap-2" data-tutorial="sl-foundation">
@@ -341,7 +361,15 @@ function SalicLawPageContent() {
                             onClick={() => game.handleSelectTarget(foundationZone)}
                             disabled={!isPlaying || loading || isAutoCompleting}
                             aria-disabled={!selectedSource || undefined}
-                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
+                            aria-describedby={
+                              !selectedSource
+                                ? selectSourceHintId
+                                : selectedSource.zone === 'tableau' && selectedSource.col !== undefined
+                                  ? isSalicLawTarget(state, selectedSource.col, 'foundation', idx)
+                                    ? legalTargetHintId
+                                    : illegalTargetHintId
+                                  : undefined
+                            }
                             aria-label={t('foundationAriaLabel', { idx, count: pile.length })}
                             className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
                           >
@@ -358,7 +386,15 @@ function SalicLawPageContent() {
                             onClick={() => game.handleSelectTarget(foundationZone)}
                             disabled={!isPlaying || loading}
                             aria-disabled={!selectedSource || undefined}
-                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
+                            aria-describedby={
+                              !selectedSource
+                                ? selectSourceHintId
+                                : selectedSource.zone === 'tableau' && selectedSource.col !== undefined
+                                  ? isSalicLawTarget(state, selectedSource.col, 'foundation', idx)
+                                    ? legalTargetHintId
+                                    : illegalTargetHintId
+                                  : undefined
+                            }
                             aria-label={t('emptyFoundationAriaLabel', { idx })}
                             style={{ width: dims.cw, height: dims.ch }}
                             className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
@@ -433,6 +469,13 @@ function SalicLawPageContent() {
                   {formatHintZone(t, hint.toZone, hint.toIdx)}
                 </div>
               )}
+            </div>
+            <div data-testid="sl-destination-live" role="status" aria-live="polite" className="sr-only">
+              {selectedTargetCount === null
+                ? ''
+                : selectedTargetCount === 0
+                  ? t('selectionNoMoves')
+                  : t('selectionMoves', { count: selectedTargetCount })}
             </div>
             <div className="flex justify-center">
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
