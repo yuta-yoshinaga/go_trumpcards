@@ -72,6 +72,22 @@ beforeEach(() => {
 });
 
 describe('YukonPage', () => {
+  it('adds the move count only to the selected tableau card label', async () => {
+    renderWithProviders(<YukonPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const heart8 = screen.getByRole('button', { name: '♥ 8' });
+    const spade3 = screen.getByRole('button', { name: '♠ 3' });
+    expect(heart8).not.toHaveAttribute('aria-label', expect.stringContaining('まとめて移動'));
+    expect(spade3).not.toHaveAttribute('aria-label', expect.stringContaining('まとめて移動'));
+
+    fireEvent.click(heart8);
+
+    expect(heart8).toHaveAttribute('aria-label', '♥ 8 1枚をまとめて移動');
+    expect(spade3).toHaveAttribute('aria-label', '♠ 3');
+    expect(spade3.getAttribute('aria-label')).not.toContain('まとめて移動');
+  });
+
   it('keeps move targets focusable and explains that a source must be selected', async () => {
     renderWithProviders(<YukonPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
