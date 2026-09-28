@@ -242,6 +242,8 @@ describe('PineapplePage', () => {
     mockExec.mockResolvedValue(preFlopState);
     renderWithProviders(<PineapplePage />);
     await waitFor(() => expect(screen.getByText('あなたの手札')).toBeInTheDocument());
+    expect(screen.queryByRole('log')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('cp-cpu-discard-log')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'チェック' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
   });

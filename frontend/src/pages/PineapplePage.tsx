@@ -201,6 +201,7 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
       setSelectedDiscards([]);
       setDiscardConfirming(false);
       setLimitAnnounce('');
+      setCpuDiscardedPlayers([]);
     }
   }, [state?.isDiscardPhase]);
 
@@ -554,18 +555,20 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
 
             {/* CPU actions: toast on mobile, inline log on desktop */}
             {isMobile ? <CpuActionToast actions={state?.cpuActions} /> : <CpuActionLog actions={state?.cpuActions} />}
-            <div role="log" aria-live="polite" aria-label={t('cpuDiscard.logLabel')}>
-              {variant === 'crazypineapple' && cpuDiscardedPlayers.length > 0 && (
-                <div
-                  className="bg-black/30 rounded p-2 mb-3 text-ds-text-primary text-xs"
-                  data-testid="cp-cpu-discard-log"
-                >
-                  {cpuDiscardedPlayers.map((idx) => (
-                    <div key={idx}>{t('cpuDiscard.completed', { player: findPlayerName(state.players, idx) })}</div>
-                  ))}
-                </div>
-              )}
-            </div>
+            {variant === 'crazypineapple' && (
+              <div role="log" aria-live="polite" aria-label={t('cpuDiscard.logLabel')}>
+                {cpuDiscardedPlayers.length > 0 && (
+                  <div
+                    className="bg-black/30 rounded p-2 mb-3 text-ds-text-primary text-xs"
+                    data-testid="cp-cpu-discard-log"
+                  >
+                    {cpuDiscardedPlayers.map((idx) => (
+                      <div key={idx}>{t('cpuDiscard.completed', { player: findPlayerName(state.players, idx) })}</div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Round results */}
             {isShowdown && <RoundResults results={state?.roundResults} players={state?.players ?? []} />}
