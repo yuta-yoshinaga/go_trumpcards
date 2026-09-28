@@ -371,6 +371,49 @@ describe('DoudizhuPage', () => {
     });
   });
 
+  it('disables play and pass controls while a play request is pending', async () => {
+    const playState: DoudizhuResponse = {
+      ...defaultState,
+      tableCards: [{ design: 'CLOVER', value: 13 }],
+      tableCombo: 'single',
+      players: [
+        {
+          id: 0,
+          isHuman: true,
+          isFinished: false,
+          isLandlord: false,
+          cardCount: 1,
+          cards: [{ design: 'SPADE', value: 2 }],
+        },
+        { id: 1, isHuman: false, isFinished: false, isLandlord: true, cardCount: 17, cards: [] },
+        { id: 2, isHuman: false, isFinished: false, isLandlord: false, cardCount: 17, cards: [] },
+      ],
+    };
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<DoudizhuPage />);
+
+    const playButton = await screen.findByRole('button', { name: '出す' });
+    const passButton = screen.getByRole('button', { name: 'パス' });
+    fireEvent.click(screen.getByAltText('♠ 2'));
+    expect(playButton).toBeEnabled();
+    expect(passButton).toBeEnabled();
+
+    let resolve!: (value: DoudizhuResponse) => void;
+    const pendingRequest = new Promise<DoudizhuResponse>((res) => {
+      resolve = res;
+    });
+    mockExec.mockReturnValueOnce(pendingRequest);
+    fireEvent.click(playButton);
+
+    expect(playButton).toBeDisabled();
+    expect(passButton).toBeDisabled();
+
+    resolve(playState);
+    fireEvent.click(screen.getByAltText('♠ 2'));
+    await waitFor(() => expect(playButton).toBeEnabled());
+    expect(passButton).toBeEnabled();
+  });
+
   it('toggles card selection off and passes when the table has cards', async () => {
     mockExec.mockResolvedValue({
       ...defaultState,
