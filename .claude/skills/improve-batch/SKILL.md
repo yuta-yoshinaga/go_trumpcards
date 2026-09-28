@@ -50,7 +50,16 @@ scope issue N+1 read-only** (don't edit — you're still on N's branch) → merg
    ```
    (or `gh issue list --label <l> --state open`).
 
-2. **Order lowest-effort-first** (cheapest, highest-confidence first — builds
+2. **Triage (read-only).** Before implementing anything, run one read-only pass
+   over every issue in scope. Each scan returns `VERDICT: IMPLEMENT | NOT_PLANNED`
+   with file:line evidence. Close the `NOT_PLANNED` issues in bulk first. The
+   orchestrator must read the cited lines for every `NOT_PLANNED` verdict itself:
+   last time delegated `NOT_PLANNED` verdicts were wrong in 4 of the first 7,
+   rejecting whole proposals because one part of the premise was off. If the same
+   premise recurs across 3 or more issues, stop and turn it into one policy
+   question for the user rather than deciding it per issue.
+
+3. **Order lowest-effort-first** (cheapest, highest-confidence first — builds
    momentum and front-loads easy wins). Rough rubric:
    1. **Close-as-false-positive** (premise wrong / already done) — seconds.
    2. **i18n-only / static-label** changes (no logic).
@@ -60,17 +69,17 @@ scope issue N+1 read-only** (don't edit — you're still on N's branch) → merg
    6. **Backend Go** (domain / presenter / CUI) — heaviest, CI-gated.
    Read each issue body to place it; reorder freely as you learn the code.
 
-3. **For each issue, run `improve-issue`** end-to-end (branch → … → merge →
+4. **For each issue, run `improve-issue`** end-to-end (branch → … → merge →
    sync). Do **not** advance until the current PR is merged (or the issue is
    closed as a false-positive).
 
-4. **Maintain a running tally** in the batch memory file (reuse the existing
+5. **Maintain a running tally** in the batch memory file (reuse the existing
    `memory/project_issues_*.md` for this batch, or start a new
    `project_issues_<lo>_<hi>.md`, and link it from `MEMORY.md`): which issues are merged, which
    PR numbers, recurring gotchas surfaced this run. Update it as you go so a
    resumed run has context.
 
-5. **Stop and surface** (don't push through) when:
+6. **Stop and surface** (don't push through) when:
    - the range is exhausted (report the final list of merged PRs + closed issues);
    - an issue genuinely needs a product/UX decision (use `AskUserQuestion`);
    - the same CI failure recurs after a flake rerun (it may be real — inspect with

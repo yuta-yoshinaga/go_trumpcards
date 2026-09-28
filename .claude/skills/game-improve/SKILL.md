@@ -1,7 +1,7 @@
 ---
 name: game-improve
-version: 1.0.0
-description: Generate ONE high-impact improvement proposal per card game (from real Page.tsx + CuiPresenter code) and open each as a GitHub issue. Use for "各ゲームの改善提案", "全ゲームのissueを作って", per-game UX-assist batches.
+version: 2.0.0
+description: Generate evidence-checked improvement proposals per card game and open them as GitHub issues. Use for "各ゲームの改善提案", "全ゲームのissueを作って", per-game UX-assist batches.
 allowed-tools:
   - Bash
   - Read
@@ -60,38 +60,84 @@ carries the Japanese name. Get the current game list with
 already have a comparable open improvement issue. (Most past per-game issues are
 closed/merged, so collisions are rare.)
 
-### 3. Fan out READ-ONLY analysis agents
-Chunk the in-scope games into groups of ~16. Launch one `general-purpose`
-**sonnet** agent per group **in a single message** (parallel). Per-agent prompt
-must enforce:
+### 3. Build the evidence map
+From the repository root, build `games.json`. The surface map records each
+game's page, Web and CUI presenters, interactor, directly imported hooks and
+components, transitive `deep` set (the full transitive closure of relative
+imports under `frontend/src/components/` and `frontend/src/hooks/`), locales,
+and `sync_cpu_loop` status.
+It also adds up to eight matching closed issue titles per game, marking issues
+closed as not planned.
 
-- Agents are read-only (Read/Grep/Glob) — this is a proposal pass, not an implementation.
-- For each game: read `frontend/src/pages/<PascalCase>Page.tsx` and
-  `internal/adapter/presenter/<PascalCase>CuiPresenter.go` (glob for casing);
-  optionally the hook/components or `docs/manual/web/<game>.md`.
-- Output ONE proposal/game (or N if scope said so) to
-  `/tmp/claude-proposals/group-<n>.json` as a JSON array of
-  `{game,title,body}`. Body ~120–220 words, valid JSON (escape newlines).
-- Return only a one-line count; the file is the real payload (keeps the
-  orchestrator's context lean).
-
-Map PascalCase from the slug if needed (e.g. `bigtwo`→`BigTwo`,
-`seahaventowers`→`SeahavenTowers`, `ohhell`→`OhHell`).
-
-### 4. Validate + merge
 ```sh
-cd /tmp/claude-proposals
-for f in group-*.json; do jq -e . "$f" >/dev/null && echo "$f OK $(jq length $f)" || echo "$f BAD"; done
-jq -s 'add' group-*.json > all.json
-jq 'length' all.json                                   # == in-scope count
-jq -s 'add|map(select(.game==null or .title==null or .body==null))|length' group-*.json   # == 0
-jq -s 'add|group_by(.game)|map(select(length>1))|map(.[0].game)' group-*.json             # == []
+python3 .claude/skills/game-improve/scripts/build_games.py --out games.json
 ```
-Spot-check one full body for quality (real file names, concrete phase).
 
-### 5. Create issues (idempotent, rate-limit-safe)
+### 4. Generate proposals in groups of 12
+Generate one prompt per group with the script; it includes each game's mapped
+surface, past issues, required proposal fields, and the known false positives.
+Each proposal must include `current_state` entries (`path`, `line`, `note`) for
+the behavior being criticized, plus `absence_evidence` entries (`claim`,
+`pattern`, `paths`). The pattern describes code that would exist if the proposed
+improvement were implemented. `current_state` was added after the smoke test
+found patterns quoting existing code.
+Use the same prompt text and JSON shape for either mode:
+
+- When the session is in dele-mode:
+  ```sh
+  dele -k scan -s @.claude/skills/game-improve/scripts/schema.json "$(python3 .claude/skills/game-improve/scripts/mkprompt.py N --games games.json)"
+  ```
+- Otherwise, use read-only `Agent` subagents with that same prompt text. Validate
+  their JSON shape with `jq` against the requested proposal structure.
+
+Measured last time: codex took ~100–150 s per 12-game group; agy-pro took
+250–650 s; Gemini ran out of quota after 9 groups.
+
+### 5. Merge proposals and check absence claims
+Merge the generated group JSON files (each shaped as `{"proposals":[...]}`) into `proposals.json`, then run the checker. It
+validates required fields and evidence, searches every absence regex over the
+game's whole mapped surface including `deep` plus any paths named in the
+evidence, and flags `needs_cpu_turn_state` for `sync_cpu_loop` games. Keep clean
+proposals moving; send suspect proposals and their reported hits to step 6.
+
+```sh
+jq -s 'map(.proposals) | add' out-*.json > proposals.json
+# A group can silently return fewer proposals than games (the smoke test dropped 1 of 3).
+# Re-run the group for any game listed here before going on.
+comm -23 <(jq -r '.[].game' games.json | sort) <(jq -r '.[].game' proposals.json | sort)
+python3 .claude/skills/game-improve/scripts/check_absence.py proposals.json --games games.json --clean clean.json --suspect suspect.json
+```
+
+### 6. Verify suspect proposals and a clean sample
+Render verification prompts with the suspect hits included. Review all suspect
+proposals and a sample of clean ones; each verdict is `keep`, `fixed`, or
+`replaced`. Re-run the absence checker on every fixed or replaced proposal:
+replacements make new claims, and missed checks on replacements caused misses
+last time.
+
+```sh
+python3 .claude/skills/game-improve/scripts/mkvprompt.py N --games games.json --proposals suspect.json --hits suspect.json
+python3 .claude/skills/game-improve/scripts/mkvprompt.py N --games games.json --proposals clean.json
+python3 .claude/skills/game-improve/scripts/check_absence.py fixed-and-replaced.json --games games.json --clean rechecked-clean.json --suspect rechecked-suspect.json
+```
+
+### 7. Cluster recurring premises
+Run clustering after verification. A `premise_key` shared by at least three
+distinct games becomes one policy issue listing those games, rather than
+separate per-game issues. #8378 was closed per game before policy issue #8524
+reversed that decision across 55 pages. Policy issues may need a user decision;
+file them as such.
+
+```sh
+python3 .claude/skills/game-improve/scripts/cluster.py verified-proposals.json --min 3 --policy policy.json --individual individual.json
+```
+
+Handle policy candidates as decision items; create per-game issues only from
+the individual proposals.
+
+### 8. Create issues (idempotent, rate-limit-safe)
 Use `scripts/create_issues.sh` (in this skill dir). It:
-- creates one issue per `all.json` element via `gh issue create --body-file`,
+- creates one issue per `individual.json` element via `gh issue create --body-file`,
 - appends a `対象ゲーム` footer,
 - logs `game\turl\ttitle` to `created.log` and **skips already-logged games on
   rerun** (resumable if it dies mid-batch),
@@ -101,23 +147,58 @@ Use `scripts/create_issues.sh` (in this skill dir). It:
 Verify gh first: `gh auth status`. Choose labels from `gh label list` (for example,
 `ui/ux`, `cli-ux`, or `refactor`).
 
-For draft mode: render `all.json` to the user as a table and stop before step 5.
+Run the per-game issue command with `SRC=individual.json bash .claude/skills/game-improve/scripts/create_issues.sh`.
 
-### 6. Verify + report
+For draft mode: render the final proposal set to the user as a table and stop
+before issue creation.
+
+### 9. Verify + report
 ```sh
-comm -23 <(jq -r '.[].game' all.json|sort) <(cut -f1 created.log|sort)   # missing games (want empty)
+comm -23 <(jq -r '.[].game' individual.json|sort) <(cut -f1 created.log|sort)   # missing games (want empty)
 wc -l created.log ; [ -s errors.log ] && cat errors.log
 ```
 Report issue-number range, per-category counts, and the recurring-gap themes.
 Record the batch in project memory (`project_issues_<lo>_<hi>_improvements`) and
 add a one-line MEMORY.md pointer, mirroring `project_issues_2161_2292_improvements`.
 
+## Why this pipeline (measured, #8071–#8453)
+
+Of 383 filed proposals, 82 (21%) were closed as not planned because the premise
+was wrong. This was after the second pass had already replaced 269 of the 383
+first-pass proposals.
+
+The dominant cause was that the feature already existed outside the page file:
+shared components such as `VideoPokerGameContent` and `CardImage`, the Web
+presenter's message, the CUI presenter, and always-mounted live regions. Both
+passes read the same two files, so they shared the blind spot.
+
+About 5 proposals asked to show “the CPU's turn” in games whose interactor runs
+CPU turns synchronously (Vint / TwoTenJack / Tute / Rikken / Pineapple).
+A replay of real false positives through `check_absence.py` caught Deuces Wild
+(via `VideoPokerGameContent` only), Gin Rummy (via `CardImage`), Horse (CUI
+presenter), and Tute (pattern plus sync loop).
+
+A generic pattern such as `aria-live` matches shared components everywhere, so
+vague evidence is pushed back rather than passed. That is intended.
+
+## Known false positives
+
+- Keyboard shortcuts come from shared hooks / `useActionShortcuts` — shared hook implementation.
+- `CardImage` already provides a default alt through `cardAlt` — `CardImage` component.
+- The video-poker family renders through `VideoPokerGameContent` — `VideoPokerGameContent` component.
+- Live regions are often always-mounted sr-only elements with a testid — page-level live-region elements.
+- Column numbers are 0-based by repository convention; never propose 1-based numbering — game column/index logic.
+- Purely decorative motion (screen shake and similar) is low value — presentation-only motion code.
+- In `sync_cpu_loop` games, never propose showing the CPU's turn — interactor synchronous CPU loop.
+- Do not treat a config value as a play statistic (Whitehead `drawCount`) — Whitehead config value.
+
 ## Notes / gotchas
-- Agent tool has **no schema option** (that's Workflow). Enforce JSON shape in the
-  prompt and validate with `jq` after.
+- The generation step must follow dele-mode when it is on. A skill telling the
+  model to fan out agents once overrode dele-mode and burned ~6.6M tokens.
+- `Agent` tool has **no schema option** (that's Workflow). Enforce JSON shape in
+  the prompt and validate with `jq` after.
 - Do NOT use the Workflow tool here unless the user explicitly opts into
-  multi-agent orchestration ("ultracode" / "use a workflow"). Plain `Agent`
-  fan-out is the default.
+  multi-agent orchestration ("ultracode" / "use a workflow").
 - Frontend page = `frontend/src/pages/`, CUI presenter = `internal/adapter/presenter/`.
 - Body files are reused per-iteration at `/tmp/claude-proposals/body.md`; the
   script overwrites it each loop — safe because it writes-then-creates serially.
