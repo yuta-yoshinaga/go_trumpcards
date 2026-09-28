@@ -188,6 +188,23 @@ describe('HandAndFootPage', () => {
     expect(screen.getByTestId('hf-meld-points')).toHaveTextContent('初回メルド最低点: 50 / 選択合計: 20');
   });
 
+  it('announces meld points in a live region without duplicating the meld button description', async () => {
+    mockExec.mockResolvedValue(meldPhaseState);
+    renderWithProviders(<HandAndFootPage />);
+    await waitFor(() => expect(screen.getByTestId('hf-meld-points')).toBeInTheDocument());
+
+    const announcement = screen.getByTestId('hf-meld-points-announcement');
+    expect(announcement).toHaveAttribute('aria-live', 'polite');
+    expect(announcement).toHaveTextContent('初回メルド最低点: 50 / 選択合計: 0');
+    expect(screen.getByRole('button', { name: 'メルドする' })).not.toHaveAttribute(
+      'aria-describedby',
+      'hf-meld-points',
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: '♠ 10' }));
+    await waitFor(() => expect(announcement).toHaveTextContent('初回メルド最低点: 50 / 選択合計: 10'));
+  });
+
   // #5663: 初回メルドの最低点に満たない選択でもボタンが押せてしまい、サーバーの
   // バリデーションで弾かれて初めて気づいた。警告テキストは既に出ていたのに、
   // ボタンの無効化条件がそれを見ていなかった。
