@@ -399,17 +399,13 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
                       !isShowdown &&
                       !p.isHuman &&
                       !p.folded &&
-                      (p.doorCards ?? []).some((card) => card.value <= 8) && (
+                      p.doorCards.some((card) => card.value <= 8) && (
                         <span
                           data-testid={`scs-opponent-low-${p.id}`}
                           className="inline-block ml-2 text-xs text-ds-text-muted"
                         >
                           {t('opponentPublicLow', {
-                            low: [
-                              ...new Set(
-                                (p.doorCards ?? []).filter((card) => card.value <= 8).map((card) => card.value),
-                              ),
-                            ]
+                            low: [...new Set(p.doorCards.filter((card) => card.value <= 8).map((card) => card.value))]
                               .sort((a, b) => b - a)
                               .map(valueName)
                               .join('-'),
