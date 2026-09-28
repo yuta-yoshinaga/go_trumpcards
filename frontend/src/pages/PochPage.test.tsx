@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { pochApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { CardDesign, PochPlayer, PochResponse } from '../types/card';
@@ -91,6 +92,23 @@ describe('PochPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.getByText(/めくり札と同じスート/)).toBeInTheDocument();
     expect(screen.getByText(/宣言ではなく同ランクの組の比べ合い/)).toBeInTheDocument();
+  });
+
+  it('labels the turn-up suit as the pay suit visually and accessibly', async () => {
+    renderWithProviders(<PochPage />);
+    const paySuit = await screen.findByRole('group', { name: '支払い対象スート: スペード' });
+    expect(paySuit).toHaveTextContent('支払い対象スート: スペード');
+  });
+
+  it('localizes the pay suit label and suit name in English', async () => {
+    await i18n.changeLanguage('en');
+    try {
+      renderWithProviders(<PochPage />);
+      const paySuit = await screen.findByRole('group', { name: 'Pay suit: Spades' });
+      expect(paySuit).toHaveTextContent('Pay suit: Spades');
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
   });
 
   // **9 区画すべてが出ていないと、持ち越しがどこに乗っているか読めない。**
