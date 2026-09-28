@@ -64,6 +64,13 @@ beforeEach(() => {
 });
 
 describe('MendikotPage', () => {
+  it('announces playable cards while retaining each card name', async () => {
+    mockExec.mockResolvedValue(makeState({ validPlays: [1] }));
+    renderWithProviders(<MendikotPage />);
+    expect(await screen.findAllByRole('button', { name: /プレイ可能/ })).toHaveLength(1);
+    expect(screen.getAllByRole('button', { name: /を出す/ })).toHaveLength(3);
+  });
+
   it('highlights the current seat and labels it when its play will set undecided trump', async () => {
     mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 2, trumpSuit: 0, willSetTrump: true }));
     renderWithProviders(<MendikotPage />);

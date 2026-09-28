@@ -309,7 +309,9 @@ function HasenpfefferPageContent() {
                       aria-label={
                         isHumanDiscardTurn
                           ? t('actions.discardAria', { card: cardAlt(card) })
-                          : t('actions.playAria', { card: cardAlt(card) })
+                          : legalRing.has(idx)
+                            ? t('actions.playableAria', { card: cardAlt(card) })
+                            : t('actions.playAria', { card: cardAlt(card) })
                       }
                       className={`disabled:opacity-50 ${
                         picked === idx

@@ -72,6 +72,13 @@ beforeEach(() => {
 });
 
 describe('JulepePage', () => {
+  it('announces which cards are playable', async () => {
+    mockExec.mockResolvedValue(playing({ validPlays: [1] }));
+    renderWithProviders(<JulepePage />);
+    expect(await screen.findAllByRole('button', { name: /プレイ可能/ })).toHaveLength(1);
+    expect(screen.getAllByRole('button', { name: /を出す/ })).toHaveLength(3);
+  });
+
   it('resets on mount', async () => {
     renderWithProviders(<JulepePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
