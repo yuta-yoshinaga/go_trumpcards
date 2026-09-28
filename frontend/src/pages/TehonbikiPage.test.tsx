@@ -2,6 +2,7 @@ import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { tehonbikiApi } from '../api/games/tehonbiki';
 import { useGameApi } from '../hooks/useGameApi';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { TehonbikiResponse } from '../types/games/tehonbiki';
 import { TehonbikiPage } from './TehonbikiPage';
@@ -64,6 +65,17 @@ describe('TehonbikiPage', () => {
       expect(screen.getByRole('option', { name })).toBeInTheDocument();
     }
     expect(screen.queryByText('single')).not.toBeInTheDocument();
+  });
+
+  it('associates translated labels with the wager type and amount inputs', async () => {
+    renderWithProviders(<TehonbikiPage />);
+    expect(screen.getByRole('combobox', { name: '賭け方' })).toBeInTheDocument();
+    expect(screen.getByRole('spinbutton', { name: '張り金' })).toBeInTheDocument();
+
+    await i18n.changeLanguage('en');
+    expect(screen.getByRole('combobox', { name: 'Wager type' })).toBeInTheDocument();
+    expect(screen.getByRole('spinbutton', { name: 'Stake' })).toBeInTheDocument();
+    await i18n.changeLanguage('ja');
   });
 
   it('summarizes the wager and clearly shows an empty number selection', async () => {
