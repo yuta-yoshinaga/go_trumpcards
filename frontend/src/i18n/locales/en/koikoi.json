@@ -17,6 +17,12 @@
   "round": "Round {{n}}",
   "deck": "Stock: {{count}}",
   "deckChanged": "Cards remaining in the stock: {{count}}.",
+  "listSeparator": ", ",
+  "scoreLive": {
+    "captured": "{{name}} has captured {{count}} cards",
+    "score": "{{name}}'s score is {{score}} points",
+    "yaku": "{{name}} completed a yaku: {{yaku}}"
+  },
   "koikoiCount": "Koi-Koi: {{count}}",
   "field": "Field",
   "fieldEmpty": "(empty)",

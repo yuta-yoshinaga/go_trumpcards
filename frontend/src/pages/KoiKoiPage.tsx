@@ -115,6 +115,10 @@ function KoiKoiPageContent() {
   } = useGameHint('koikoi', state);
   const previousDeckCount = useRef<number | null>(null);
   const [deckAnnouncement, setDeckAnnouncement] = useState('');
+  const previousPlayerStats = useRef<Map<number, { capturedCount: number; score: number; yaku: string[] }> | null>(
+    null,
+  );
+  const [scoreAnnouncement, setScoreAnnouncement] = useState('');
 
   // Fetch a fresh game on mount.
   // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
@@ -128,6 +132,41 @@ function KoiKoiPageContent() {
       setDeckAnnouncement(t('deckChanged', { count: state.remainingDeck }));
     }
     previousDeckCount.current = state.remainingDeck;
+  }, [state, t]);
+
+  useEffect(() => {
+    if (!state) return;
+    const previous = previousPlayerStats.current;
+    const changes: string[] = [];
+    if (previous) {
+      for (const player of state.players) {
+        const before = previous.get(player.id);
+        if (!before) continue;
+        const name = t(player.isHuman ? 'you' : 'cpu');
+        if (player.capturedCount !== before.capturedCount) {
+          changes.push(t('scoreLive.captured', { name, count: player.capturedCount }));
+        }
+        if (player.score !== before.score) {
+          changes.push(t('scoreLive.score', { name, score: player.score }));
+        }
+        const newYaku = player.yaku.filter((yaku) => !before.yaku.includes(yaku.key));
+        if (newYaku.length > 0) {
+          changes.push(
+            t('scoreLive.yaku', {
+              name,
+              yaku: newYaku.map((yaku) => t(`yaku.${yaku.key}`, { defaultValue: yaku.key })).join(t('listSeparator')),
+            }),
+          );
+        }
+      }
+      if (changes.length > 0) setScoreAnnouncement(changes.join(t('listSeparator')));
+    }
+    previousPlayerStats.current = new Map(
+      state.players.map((player) => [
+        player.id,
+        { capturedCount: player.capturedCount, score: player.score, yaku: player.yaku.map((yaku) => yaku.key) },
+      ]),
+    );
   }, [state, t]);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('koikoi');
@@ -240,6 +279,15 @@ function KoiKoiPageContent() {
             </div>
             <div data-testid="koikoi-deck-live" role="status" aria-live="polite" aria-atomic="true" className="sr-only">
               {deckAnnouncement}
+            </div>
+            <div
+              data-testid="koikoi-score-live"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+              className="sr-only"
+            >
+              {scoreAnnouncement}
             </div>
 
             {/* CPU captured + yaku */}

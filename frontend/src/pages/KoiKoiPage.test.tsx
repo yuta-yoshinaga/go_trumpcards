@@ -57,6 +57,28 @@ describe('KoiKoiPage', () => {
     await waitFor(() => expect(live).toHaveTextContent('山札の残りは31枚です。'));
   });
 
+  it('announces only changed captures, yaku, and scores once', async () => {
+    const updated = makeKoiKoiState({
+      remainingDeck: 30,
+      players: playState.players.map((p) =>
+        p.isHuman ? { ...p, capturedCount: 2, score: 3, yaku: [{ key: 'tane', points: 1 }] } : p,
+      ),
+    });
+    mockExec.mockResolvedValueOnce(playState).mockResolvedValueOnce(updated).mockResolvedValueOnce(updated);
+    renderWithProviders(<KoiKoiPage />);
+    const live = await screen.findByTestId('koikoi-score-live');
+    expect(live).toBeEmptyDOMElement();
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+    await waitFor(() => expect(live).toHaveTextContent('あなたが獲得した札は2枚です'));
+    expect(live).toHaveTextContent('タネ');
+    expect(live).toHaveTextContent('得点は3点です');
+    const announcement = live.textContent;
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledTimes(3));
+    expect(live).toHaveTextContent(announcement ?? '');
+    expect(live.textContent).toBe(announcement);
+  });
+
   it('renders the loading fallback when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<KoiKoiPage />);
