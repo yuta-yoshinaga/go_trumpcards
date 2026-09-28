@@ -5,6 +5,7 @@
   "actionPlayedJoker": "{{name}} played: {{design}} {{value}} → {{targetSuit}} {{targetValue}}",
   "board": "Board",
   "cardCount": "{{count}} cards",
+  "cardDisabledReason": "This card cannot be played now",
   "cellEmptyAria": "{{suit}} {{value}} empty",
   "cellPlacedAria": "{{suit}} {{value}} placed",
   "clickPlayable": "Click a playable card",

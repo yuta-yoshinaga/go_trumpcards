@@ -36,7 +36,7 @@ import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
-import { actionDesc, listJokerPlacements } from '../utils/sevensUtils';
+import { actionDesc, isCardPlayable, listJokerPlacements } from '../utils/sevensUtils';
 
 /** Sevens tutorial step definitions. */
 const SV_TUTORIAL_STEPS: TutorialStep[] = [
@@ -106,6 +106,29 @@ function SevensPageContent() {
     },
     [handleCardPlay],
   );
+  const canDirectPlay = useCallback(
+    (idx: number) => {
+      const player = state?.players.find((p) => p.isHuman);
+      const card = player?.cards?.[idx];
+      return (
+        !!state &&
+        !!player &&
+        !!card &&
+        isCardPlayable(
+          card,
+          state.tablePlaced,
+          state.config.tunnelEnabled,
+          state.config.noJokerFinish,
+          player.cards,
+          state.config.endStopEnabled,
+          state.config.jokerConsecutiveBanned,
+          player.lastPlayedJoker,
+          state.config.tunnelSkipWidth,
+        )
+      );
+    },
+    [state],
+  );
   useCardKeyboardNav({
     cardCount: humanCardCount,
     onToggle: noop,
@@ -113,6 +136,7 @@ function SevensPageContent() {
     onClear: noop,
     enabled: isHumanTurnForKbd && !loading,
     onDirectPlay: directPlay,
+    canDirectPlay,
   });
 
   const runAction = exec;

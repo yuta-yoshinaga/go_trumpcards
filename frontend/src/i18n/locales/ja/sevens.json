@@ -5,6 +5,7 @@
   "actionPlayedJoker": "{{name}}が出しました: {{design}} {{value}} → {{targetSuit}} {{targetValue}}",
   "board": "ボード",
   "cardCount": "{{count}}枚",
+  "cardDisabledReason": "このカードは現在出せません",
   "cellEmptyAria": "{{suit}} {{value}} 空き",
   "cellPlacedAria": "{{suit}} {{value}} 配置済み",
   "clickPlayable": "出せるカードをクリック",

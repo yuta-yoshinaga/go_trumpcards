@@ -183,6 +183,26 @@ describe('useCardKeyboardNav', () => {
     expect(onToggle).toHaveBeenCalledWith(2);
   });
 
+  it('does not direct-play a card rejected by the legality predicate', () => {
+    const onDirectPlay = vi.fn();
+    renderHook(() =>
+      useCardKeyboardNav({
+        cardCount: 3,
+        onToggle: vi.fn(),
+        onConfirm: vi.fn(),
+        onClear: vi.fn(),
+        enabled: true,
+        onDirectPlay,
+        canDirectPlay: (index) => index === 1,
+      }),
+    );
+
+    fire('1');
+    fire('2');
+    expect(onDirectPlay).toHaveBeenCalledTimes(1);
+    expect(onDirectPlay).toHaveBeenCalledWith(1);
+  });
+
   it('ignores 0 key when cardCount < 10', () => {
     const onToggle = vi.fn();
     renderHook(() =>

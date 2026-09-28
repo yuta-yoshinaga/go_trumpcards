@@ -61,6 +61,7 @@ function HumanArea({
     : isCurrentTurn
       ? 'border-2 border-game-status-active shadow-[0_0_12px_var(--color-game-status-active)]'
       : '';
+  const disabledReasonId = 'sevens-card-disabled-reason';
   return (
     <div className={`${playerAreaClass}${conditionalClass ? ` ${conditionalClass}` : ''}`}>
       <div className="text-ds-text-primary font-bold mb-1">
@@ -105,9 +106,13 @@ function HumanArea({
             <button
               key={`${card.design}-${card.value}`}
               type="button"
-              className={focusRingWhite}
-              disabled={!playable}
-              onClick={() => onPlay(i)}
+              className={`${focusRingWhite} aria-disabled:opacity-40 aria-disabled:cursor-not-allowed`}
+              aria-disabled={playable ? undefined : 'true'}
+              aria-describedby={!playable ? disabledReasonId : undefined}
+              onClick={() => {
+                if (!playable) return;
+                onPlay(i);
+              }}
               title={playable ? t('playTitle', { design: card.design, value: valueName(card.value) }) : undefined}
               // Number keys 1-9 (and 0 for the 10th card) directly play the matching
               // card (useCardKeyboardNav maps digit 0 → index 9); advertise the
@@ -116,7 +121,7 @@ function HumanArea({
               style={{
                 background: 'none',
                 padding: 0,
-                cursor: playable ? 'pointer' : 'default',
+                cursor: playable ? 'pointer' : 'not-allowed',
                 borderRadius: 8,
                 ...playableCardStyle(playable),
                 // selectedCardStyle is the repo-wide "this hand card is selected"
@@ -141,6 +146,9 @@ function HumanArea({
           );
         })}
       </div>
+      <span id={disabledReasonId} className="sr-only">
+        {t('cardDisabledReason')}
+      </span>
     </div>
   );
 }
