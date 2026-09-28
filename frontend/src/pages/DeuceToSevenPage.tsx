@@ -17,6 +17,7 @@ import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { HintTooltip } from '../components/hint/HintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
+import { RoundResults } from '../components/RoundResults';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
@@ -356,6 +357,8 @@ function DeuceToSevenPageContent() {
                 severity={isEnd ? 'alert' : 'info'}
               />
             </div>
+
+            {isHandOver && <RoundResults results={state.roundResults} players={state.players} />}
 
             {/* Action log */}
             <ActionLogSection
