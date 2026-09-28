@@ -75,6 +75,42 @@ beforeEach(() => {
 });
 
 describe('RussianSolitairePage', () => {
+  it('highlights legal tableau destinations and removes highlights when deselected', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: playingState.tableau.map((column, index) =>
+        index === 4 ? [{ card: card('SPADE', 12), faceUp: true }] : column,
+      ),
+    });
+    renderWithProviders(<RussianSolitairePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const legalColumnTop = screen.getByRole('button', { name: '♠ K' });
+    const illegalColumnTop = screen.getByRole('button', { name: '♥ 8' });
+    fireEvent.click(screen.getByRole('button', { name: '♠ Q' }));
+
+    expect(legalColumnTop).toHaveClass('ring-ds-success');
+    expect(illegalColumnTop).not.toHaveClass('ring-ds-success');
+
+    fireEvent.click(screen.getByRole('button', { name: '♠ Q' }));
+    expect(legalColumnTop).not.toHaveClass('ring-ds-success');
+  });
+
+  it('highlights a legal foundation destination', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: playingState.tableau.map((column, index) =>
+        index === 4 ? [{ card: card('SPADE', 1), faceUp: true }] : column,
+      ),
+    });
+    renderWithProviders(<RussianSolitairePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const spadeFoundation = screen.getByRole('button', { name: '空の組札 (♠)' });
+    fireEvent.click(screen.getByRole('button', { name: '♠ A' }));
+    expect(spadeFoundation).toHaveClass('ring-ds-success');
+  });
+
   it('renders heading', async () => {
     renderWithProviders(<RussianSolitairePage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());

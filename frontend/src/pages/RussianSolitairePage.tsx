@@ -38,6 +38,7 @@ import { cardAlt } from '../utils/cardAlt';
 import { parseRussianSolitaireCommand, RS_HELP } from '../utils/cli/commands/russiansolitaireCommands';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
+import { russianSolitaireLegalTargets } from '../utils/russianSolitaireLegalTargets';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { isTableauAllFaceUp } from '../utils/solitaireUtils';
 
@@ -300,6 +301,10 @@ function RussianSolitairePageContent() {
     selectedSource.zone === zone &&
     selectedSource.col === col &&
     selectedSource.cardIndex === cardIndex;
+  const legalTargets =
+    selectedSource?.zone === 'tableau' && selectedSource.col !== undefined && selectedSource.cardIndex !== undefined
+      ? russianSolitaireLegalTargets(state, selectedSource.col, selectedSource.cardIndex)
+      : null;
 
   return (
     <GamePageShell
@@ -348,6 +353,7 @@ function RussianSolitairePageContent() {
               {state.foundation.map((pile, i) => {
                 const topCard = pile.length > 0 ? pile[pile.length - 1] : null;
                 const isTarget = selectedSource !== null;
+                const isLegalTarget = legalTargets?.foundation.has(i) ?? false;
                 return (
                   <DropZone
                     key={i}
@@ -359,7 +365,11 @@ function RussianSolitairePageContent() {
                     <button
                       type="button"
                       className={`${focusRingWhite} rounded-lg transition-colors ${
-                        isTarget ? 'hover:ring-2 hover:ring-ds-warning cursor-pointer' : ''
+                        isLegalTarget
+                          ? 'ring-2 ring-ds-success'
+                          : isTarget
+                            ? 'hover:ring-2 hover:ring-ds-warning cursor-pointer'
+                            : ''
                       }`}
                       onClick={() => isTarget && handleSelectTarget('foundation', i)}
                       disabled={!isPlaying}
@@ -442,6 +452,7 @@ function RussianSolitairePageContent() {
                         const zone: RussianSolitaireMoveZone = { zone: 'tableau', col: colIdx, cardIndex: cardIdx };
                         const isDragSrc = dnd.isDragSource(zone);
                         const isLast = cardIdx === col.length - 1;
+                        const isLegalTarget = legalTargets?.tableau.has(colIdx) && isLast;
 
                         // Hint highlight (announced via the card aria-labels, no visible text panel)
                         const hintFrom =
@@ -490,7 +501,7 @@ function RussianSolitairePageContent() {
                                         hintFrom ? 'ring-2 ring-ds-info motion-safe:animate-pulse' : ''
                                       } ${hintTo ? 'ring-2 ring-ds-success motion-safe:animate-pulse' : ''} ${
                                         inHoverBlock && !isSelected ? 'ring-2 ring-ds-accent/70' : ''
-                                      }`}
+                                      } ${isLegalTarget ? 'ring-2 ring-ds-success' : ''}`}
                                       onClick={() => {
                                         // Clicking the selected card again deselects it, which
                                         // `handleSelectSource` implements by toggling. That has to be checked
