@@ -18,6 +18,8 @@
   "trick": "Trick {{n}}",
   "cards": "{{count}} cards",
   "teamScores": "Team Scores",
+  "playerList": "Players",
+  "listSeparator": ", ",
   "team": "Team {{n}}",
   "teamYou": "Team {{n}} (You)",
   "trumpSuit": "Trump: {{suit}}",

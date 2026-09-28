@@ -236,16 +236,19 @@ function BauernschnapsenPageContent() {
               })}
         </div>
 
-        {/* CPU players */}
-        <div className="mb-3">
-          {state.players
-            .filter((p) => !p.isHuman)
-            .map((p) => (
-              <div key={p.id} className="mb-1 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-                {playerName(p.id, p.isHuman)}: {t('team', { n: p.team })} | {t('cards', { count: p.cardCount })} |{' '}
-                {t('trickCount', { count: p.trickCount })}
-              </div>
-            ))}
+        {/* All players */}
+        <div className="mb-3" data-testid="bauernschnapsen-player-list">
+          <div className="text-ds-text-muted text-sm mb-1">{t('playerList')}</div>
+          {state.players.map((p) => (
+            <div key={p.id} className="mb-1 p-2 rounded bg-ds-surface text-ds-text-muted text-sm">
+              {[
+                playerName(p.id, p.isHuman),
+                t('team', { n: p.team }),
+                t('cards', { count: p.cardCount }),
+                t('trickCount', { count: p.trickCount }),
+              ].join(t('listSeparator'))}
+            </div>
+          ))}
         </div>
 
         {/* Current trick */}
