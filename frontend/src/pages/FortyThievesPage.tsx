@@ -424,6 +424,7 @@ function FortyThievesPageContent() {
                               handleSelectTarget(tableauColZone);
                             }}
                             disabled={!isPlaying || loading}
+                            aria-label={t('emptyTableauAriaLabel', { idx: colIdx })}
                             aria-disabled={!selectedSource || undefined}
                             aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             style={{ height: ft.ch }}
