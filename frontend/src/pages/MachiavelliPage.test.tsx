@@ -388,6 +388,14 @@ describe('MachiavelliPage', () => {
     });
   });
 
+  it('announces draw pile count changes and when the pile is empty', async () => {
+    renderWithProviders(<MachiavelliPage />);
+    await waitFor(() => expect(screen.getByTestId('machiavelli-draw-pile-live')).toHaveTextContent('山札の残り: 40枚'));
+    mockExec.mockResolvedValue({ ...turnState, drawPileCount: 0 });
+    fireEvent.click(screen.getByRole('button', { name: '山札から引く' }));
+    await waitFor(() => expect(screen.getByTestId('machiavelli-draw-pile-live')).toHaveTextContent('山札切れ'));
+  });
+
   it('phase indicator shows your turn on the human turn', async () => {
     renderWithProviders(<MachiavelliPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('あなたのターン'));
