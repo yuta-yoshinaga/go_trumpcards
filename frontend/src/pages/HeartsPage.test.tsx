@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, heartsApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeHeartsState } from '../test/stateFactories';
 import type { HeartsResponse } from '../types/card';
@@ -349,6 +350,43 @@ describe('HeartsPage', () => {
     renderWithProviders(<HeartsPage />);
     const badge = await screen.findByTestId('hearts-pass-progress');
     expect(badge).toHaveTextContent('0/3');
+  });
+
+  it('announces selected and remaining pass cards in Japanese and English', async () => {
+    const previousLanguage = i18n.language;
+    try {
+      mockExec.mockResolvedValue({
+        ...passPhaseState,
+        players: [
+          {
+            ...passPhaseState.players[0],
+            cards: [
+              { design: 'SPADE', value: 1 },
+              { design: 'HEART', value: 11 },
+              { design: 'CLOVER', value: 5 },
+            ],
+          },
+          ...passPhaseState.players.slice(1),
+        ],
+      });
+      await i18n.changeLanguage('ja');
+      const { unmount } = renderWithProviders(<HeartsPage />);
+      const liveRegion = await screen.findByTestId('hearts-pass-progress-live');
+      expect(liveRegion).toHaveAttribute('role', 'status');
+      expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+      expect(liveRegion).toHaveTextContent('0枚選択済み、残り3枚');
+
+      fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+      expect(liveRegion).toHaveTextContent('1枚選択済み、残り2枚');
+      expect(screen.getAllByText('パス方向: 左 → CPU 1 へ')).toHaveLength(1);
+      unmount();
+
+      await i18n.changeLanguage('en');
+      renderWithProviders(<HeartsPage />);
+      expect(await screen.findByTestId('hearts-pass-progress-live')).toHaveTextContent('0 selected, 3 remaining');
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
   });
 
   it('pass button disabled when not 3 cards selected', async () => {
