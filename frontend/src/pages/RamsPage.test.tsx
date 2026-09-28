@@ -71,6 +71,15 @@ beforeEach(() => {
 });
 
 describe('RamsPage', () => {
+  it('announces playable and unplayable cards from validPlays', async () => {
+    mockExec.mockResolvedValue(playing({ validPlays: [1] }));
+    renderWithProviders(<RamsPage />);
+    const cards = await screen.findAllByRole('button', { name: /を出す/ });
+    expect(cards).toHaveLength(3);
+    expect(cards[0]).toHaveAccessibleName(/出せない/);
+    expect(cards[1]).toHaveAccessibleName(/出せる/);
+    expect(cards[2]).toHaveAccessibleName(/出せない/);
+  });
   it('resets on mount', async () => {
     renderWithProviders(<RamsPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

@@ -23,7 +23,11 @@
     "nextRound": "Next round",
     "reset": "Reset",
     "giveUp": "Give up",
-    "playAriaWithPoints": "Play {{card}} (worth {{points}})"
+    "playAriaWithPoints": "Play {{card}} (worth {{points}})",
+    "playAriaPlayable": "Playable card, play {{card}}",
+    "playAriaUnplayable": "Unplayable card, play {{card}}",
+    "playAriaWithPointsPlayable": "Playable card, play {{card}} (worth {{points}})",
+    "playAriaWithPointsUnplayable": "Unplayable card, play {{card}} (worth {{points}})"
   },
   "result": {
     "penaltyBreakdown": "Round penalty breakdown",

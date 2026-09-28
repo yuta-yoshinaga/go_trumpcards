@@ -293,11 +293,18 @@ function TarabishPageContent() {
                       // パートナーに寄せる札を間違える。
                       aria-label={
                         state.trumpSuit > 0
-                          ? t('actions.playAriaWithPoints', {
+                          ? t(
+                              legalRing.has(idx)
+                                ? 'actions.playAriaWithPointsPlayable'
+                                : 'actions.playAriaWithPointsUnplayable',
+                              {
+                                card: cardAlt(card),
+                                points: tarabishCardPoints(card, state.trumpSuit),
+                              },
+                            )
+                          : t(legalRing.has(idx) ? 'actions.playAriaPlayable' : 'actions.playAriaUnplayable', {
                               card: cardAlt(card),
-                              points: tarabishCardPoints(card, state.trumpSuit),
                             })
-                          : t('actions.playAria', { card: cardAlt(card) })
                       }
                       className={`relative disabled:opacity-50 ${
                         legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''

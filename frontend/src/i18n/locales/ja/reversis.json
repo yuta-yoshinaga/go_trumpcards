@@ -23,7 +23,11 @@
     "nextRound": "次のラウンドへ",
     "reset": "リセット",
     "giveUp": "投了",
-    "playAriaWithPoints": "{{card}}（{{points}}点）を出す"
+    "playAriaWithPoints": "{{card}}（{{points}}点）を出す",
+    "playAriaPlayable": "出せる札、{{card}} を出す",
+    "playAriaUnplayable": "出せない札、{{card}} を出す",
+    "playAriaWithPointsPlayable": "出せる札、{{card}}（{{points}}点）を出す",
+    "playAriaWithPointsUnplayable": "出せない札、{{card}}（{{points}}点）を出す"
   },
   "result": {
     "penaltyBreakdown": "ラウンド失点の内訳",

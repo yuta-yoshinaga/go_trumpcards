@@ -271,11 +271,7 @@ function SlobberhannesPageContent() {
                       type="button"
                       onClick={() => handlePlay(idx)}
                       disabled={loading || !isHumanTurn}
-                      aria-label={
-                        idx === queenInHandIdx
-                          ? `${t('actions.playAria', { card: cardAlt(card) })} - ${t('warn.queenInHand')}`
-                          : t('actions.playAria', { card: cardAlt(card) })
-                      }
+                      aria-label={`${t(legalRing.has(idx) ? 'actions.playAriaPlayable' : 'actions.playAriaUnplayable', { card: cardAlt(card) })}${idx === queenInHandIdx ? ` - ${t('warn.queenInHand')}` : ''}`}
                       className={`disabled:opacity-50 ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''} ${
                         idx === queenInHandIdx ? 'rounded-lg outline outline-2 outline-ds-error' : ''
                       }`}
