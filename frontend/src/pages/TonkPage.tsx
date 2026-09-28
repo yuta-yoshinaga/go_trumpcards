@@ -473,7 +473,7 @@ function TonkPageContent() {
                           data-best={candidateValue === bestDiscardCandidateValue ? 'true' : undefined}
                           data-knockable={candidateKnockable ? 'true' : undefined}
                         >
-                          {t('deadwood.candidate', { value: candidateValue })}
+                          {t('deadwood.score', { value: candidateValue })}
                           <br />
                           {candidateKnockable
                             ? t('deadwood.knockable')

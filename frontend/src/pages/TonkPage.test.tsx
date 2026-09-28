@@ -296,6 +296,8 @@ describe('TonkPage', () => {
     expect(screen.getByTestId('tonk-discard-candidate-3')).toHaveTextContent('ノック可能');
     expect(screen.getByTestId('tonk-discard-candidate-4')).toHaveTextContent('9点');
     expect(screen.getByTestId('tonk-discard-candidate-4')).toHaveTextContent('ノック可能');
+    expect(screen.getByTestId('tonk-discard-candidate-4')).toHaveAttribute('data-best', 'true');
+    expect(screen.getByTestId('tonk-discard-candidate-3')).not.toHaveAttribute('data-best');
     expect(screen.getByTestId('tonk-discard-candidate-0')).toHaveTextContent('ノック不可');
   });
 
