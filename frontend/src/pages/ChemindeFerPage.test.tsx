@@ -271,6 +271,33 @@ describe('ChemindeFerPage', () => {
     expect(screen.getByTestId('cdf-seat-1')).toHaveTextContent('50');
   });
 
+  it('BET中の賭け額0はパス扱いにせず、BET終了後はパスと表示する', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: ChemindeFerPhase.BET,
+        stake: 200,
+        players: [seat(0, { isBanker: true }), seat(1, { bet: 50, isBanker: false }), seat(2, { isBanker: false })],
+      }),
+    );
+    const { unmount } = renderWithProviders(<ChemindeFerPage />);
+    await screen.findByTestId('cdf-seat-0');
+    expect(screen.getByTestId('cdf-seat-0')).not.toHaveTextContent('パス');
+    expect(screen.getByTestId('cdf-seat-2')).not.toHaveTextContent('パス');
+    unmount();
+
+    mockApi.mockResolvedValue(
+      withState({
+        phase: ChemindeFerPhase.PUNTER_DRAW,
+        stake: 200,
+        players: [seat(0, { isBanker: true }), seat(1, { bet: 50, isBanker: false }), seat(2, { isBanker: false })],
+      }),
+    );
+    renderWithProviders(<ChemindeFerPage />);
+    expect(await screen.findByTestId('cdf-seat-0')).not.toHaveTextContent('パス');
+    expect(screen.getByTestId('cdf-seat-2')).toHaveTextContent('パス');
+    expect(screen.getByTestId('cdf-seat-1')).not.toHaveTextContent('パス');
+  });
+
   // **CPU 名だけサーバ製の英語が混ざっていた。**ラベルとボタンは全部翻訳される
   // のに、席の見出しだけ "Player2" が日本語 UI に出ていた。
   it('CPUの席名を翻訳済みラベルで出し、サーバ製のPlayerを出さない', async () => {

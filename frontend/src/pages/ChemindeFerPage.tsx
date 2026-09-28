@@ -97,6 +97,10 @@ function ChemindeFerPageContent() {
   const canPunterDecide = isMyTurn && phase === ChemindeFerPhase.PUNTER_DRAW && !!state?.punterMayChoose;
   const canBankerDecide = isMyTurn && phase === ChemindeFerPhase.BANKER_DRAW;
   const isRoundEnd = phase === ChemindeFerPhase.ROUND_END;
+  const betsAreComplete =
+    phase === ChemindeFerPhase.PUNTER_DRAW ||
+    phase === ChemindeFerPhase.BANKER_DRAW ||
+    phase === ChemindeFerPhase.ROUND_END;
   const gameOver = !!state?.gameEndFlag;
 
   const handleStake = useCallback(() => execApi('stake', { stake: stakeAmount }), [execApi, stakeAmount]);
@@ -272,6 +276,7 @@ function ChemindeFerPageContent() {
                   <div className="text-ds-text-muted">
                     {t('label.chips')}: {p.chips}
                     {p.bet > 0 && ` (${t('label.bet')}: ${p.bet})`}
+                    {betsAreComplete && !p.isBanker && p.bet === 0 && ` (${t('label.passed')})`}
                   </div>
                 </div>
               ))}
