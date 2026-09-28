@@ -7,6 +7,7 @@
     "totalBet": "Total Bet",
     "totalAfterBet": "Total after bet",
     "totalPayout": "Total Payout",
+    "netProfit": "Net Profit",
     "hand": "Hand",
     "community": "Community Cards",
     "communityStatus": "Revealed: {{revealed}} / {{total}}",

@@ -554,6 +554,9 @@ func (m *MississippiStud) GetStreetPayouts() [MississippiStudStreetCnt]int {
 // GetTotalPayout 合計配当を取得する。
 func (m *MississippiStud) GetTotalPayout() int { return m.totalPayout }
 
+// GetNetChange returns the net chip change for the round.
+func (m *MississippiStud) GetNetChange() int { return m.totalPayout - m.GetTotalBet() }
+
 // GetChips チップ残高を取得する。
 func (m *MississippiStud) GetChips() int { return m.chips.GetChips() }
 

@@ -49,6 +49,7 @@ import type {
   MarjapussiResponse,
   MichiganResponse,
   MinchiateResponse,
+  MississippiStudResponse,
   MusResponse,
   NapResponse,
   OmbreResponse,
@@ -5764,6 +5765,30 @@ export function makePigState(overrides?: Partial<PigResponse>): PigResponse {
     winnerIdx: -1,
     message: '',
     config: { playerCnt: 4, cpuDifficulty: 1 },
+    ...overrides,
+  };
+}
+
+/** Creates a Mississippi Stud ante phase state. */
+export function makeMississippiStudState(overrides?: Partial<MississippiStudResponse>): MississippiStudResponse {
+  return {
+    playerHand: [],
+    communityCards: [],
+    communityRevealed: [false, false, false],
+    phase: 1,
+    chips: 1000,
+    anteAmount: 0,
+    streetMultipliers: [0, 0, 0],
+    folded: false,
+    totalBet: 0,
+    result: 0,
+    handRank: 0,
+    payoutMultiplier: 0,
+    antePayout: 0,
+    streetPayouts: [0, 0, 0],
+    totalPayout: 0,
+    netChange: 0,
+    message: '',
     ...overrides,
   };
 }

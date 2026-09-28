@@ -25,6 +25,8 @@ export interface MississippiStudResponse extends BaseGameResponse {
   antePayout: number;
   streetPayouts: number[];
   totalPayout: number;
+  /** Net chip change for the round (total payout minus total bet). */
+  netChange: number;
 }
 
 // --- Pai Gow Poker (パイゴウポーカー) ---

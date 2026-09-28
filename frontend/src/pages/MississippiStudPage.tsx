@@ -294,6 +294,10 @@ function MississippiStudPageContent() {
             <div className="font-bold mt-1">
               {t('label.totalPayout')}: {state.totalPayout}
             </div>
+            <div className="font-bold mt-1">
+              {t('label.netProfit')}: {state.netChange > 0 ? '+' : ''}
+              {state.netChange}
+            </div>
           </div>
         )}
 
