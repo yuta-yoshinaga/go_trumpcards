@@ -317,6 +317,16 @@ function BasraPageContent() {
               </div>
             )}
 
+            <div role="status" aria-live="polite" data-testid="basra-capture-preview">
+              {selectedHandCard && (
+                <div className="text-center text-sm text-ds-text-muted">
+                  {previewCaptures.length > 0
+                    ? t('capturePreview.count', { count: captureCandidates.size })
+                    : t('capturePreview.trail')}
+                </div>
+              )}
+            </div>
+
             {/* Human hand */}
             <div className="text-center" data-tutorial="basra-player-hand">
               <div className="text-xs text-ds-text-muted mb-1">

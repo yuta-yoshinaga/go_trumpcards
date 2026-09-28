@@ -33,6 +33,10 @@
     "sum": "Sum capture",
     "jackSweep": "Jack sweep"
   },
+  "capturePreview": {
+    "count": "Capture candidates: {{count}}",
+    "trail": "No capture candidates. This card will trail."
+  },
   "trailButton": "Trail",
   "newGame": "New Game",
   "result": {
