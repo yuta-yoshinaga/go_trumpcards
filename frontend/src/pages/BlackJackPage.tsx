@@ -603,6 +603,18 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
               </div>
             )}
 
+            <div
+              className="sr-only"
+              data-testid="bj-bonus-announcement"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+            >
+              {variant === 'spanish21' && phase === BjPhase.END
+                ? state?.bonuses?.map((key, i) => <span key={`${key}-${i}`}>{t(bonusBadgeKey(key))}</span>)
+                : null}
+            </div>
+
             {/* Variant bonus badges (Spanish 21): 7-7-7 / 6-7-8 / 5+card 21 achievements. */}
             {phase === BjPhase.END && (state?.bonuses?.length ?? 0) > 0 && (
               <div

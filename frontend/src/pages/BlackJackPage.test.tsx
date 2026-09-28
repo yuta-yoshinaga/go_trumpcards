@@ -313,6 +313,7 @@ describe('BlackJackPage', () => {
     renderWithProviders(<BlackJackPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
     expect(screen.queryByTestId('bj-bonus-badges')).not.toBeInTheDocument();
+    expect(screen.getByTestId('bj-bonus-announcement')).toBeEmptyDOMElement();
   });
 
   it('shows message overlay when message is non-empty', async () => {
