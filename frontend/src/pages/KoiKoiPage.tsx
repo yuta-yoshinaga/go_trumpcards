@@ -118,7 +118,14 @@ function KoiKoiPageContent() {
   const previousPlayerStats = useRef<Map<number, { capturedCount: number; score: number; yaku: string[] }> | null>(
     null,
   );
+  const previousRoundNumber = useRef<number | null>(null);
   const [scoreAnnouncement, setScoreAnnouncement] = useState('');
+
+  const resetScoreAnnouncementBaseline = () => {
+    previousPlayerStats.current = null;
+    previousRoundNumber.current = null;
+    setScoreAnnouncement('');
+  };
 
   // Fetch a fresh game on mount.
   // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
@@ -136,6 +143,11 @@ function KoiKoiPageContent() {
 
   useEffect(() => {
     if (!state) return;
+    if (previousRoundNumber.current !== null && previousRoundNumber.current !== state.roundNumber) {
+      previousPlayerStats.current = null;
+      setScoreAnnouncement('');
+    }
+    previousRoundNumber.current = state.roundNumber;
     const previous = previousPlayerStats.current;
     const changes: string[] = [];
     if (previous) {
@@ -488,7 +500,10 @@ function KoiKoiPageContent() {
                       value: String(o.value),
                       label: t(`settings.${o.label.toLowerCase()}`),
                     })),
-                    onSelect: (v: string) => handleConfigChange('cpuDifficulty', Number.parseInt(v, 10)),
+                    onSelect: (v: string) => {
+                      resetScoreAnnouncementBaseline();
+                      handleConfigChange('cpuDifficulty', Number.parseInt(v, 10));
+                    },
                   },
                   {
                     type: 'select' as const,
@@ -496,7 +511,10 @@ function KoiKoiPageContent() {
                     label: t('settings.targetScore'),
                     value: String(configInput.targetScore ?? 50),
                     options: TARGET_SCORE_OPTIONS.map((v) => ({ value: String(v), label: String(v) })),
-                    onSelect: (v: string) => handleConfigChange('targetScore', Number.parseInt(v, 10)),
+                    onSelect: (v: string) => {
+                      resetScoreAnnouncementBaseline();
+                      handleConfigChange('targetScore', Number.parseInt(v, 10));
+                    },
                   },
                   hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
@@ -507,18 +525,37 @@ function KoiKoiPageContent() {
           <GameFooter className={`${gameTheme.koikoi.footer} px-4 py-2.5`}>
             <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="koikoi-actions">
               {isRoundEnd && !isGameEnd && (
-                <button type="button" className={btnPrimary} onClick={handleNextRound} disabled={loading}>
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={() => {
+                    resetScoreAnnouncementBaseline();
+                    handleNextRound();
+                  }}
+                  disabled={loading}
+                >
                   {t('nextRound')}
                 </button>
               )}
               {isGameEnd && (
-                <button type="button" className={btnSuccess} onClick={handleResetWithConfig} disabled={loading}>
+                <button
+                  type="button"
+                  className={btnSuccess}
+                  onClick={() => {
+                    resetScoreAnnouncementBaseline();
+                    handleResetWithConfig();
+                  }}
+                  disabled={loading}
+                >
                   {t('newGame')}
                 </button>
               )}
               <GameResetButton
                 isGameEnd={isGameEnd}
-                onReset={handleResetWithConfig}
+                onReset={() => {
+                  resetScoreAnnouncementBaseline();
+                  handleResetWithConfig();
+                }}
                 requestConfirm={requestConfirm}
                 loading={loading}
                 dataTutorial="koikoi-reset-button"

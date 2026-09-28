@@ -132,6 +132,34 @@ describe('KoiKoiPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
   });
 
+  it('does not announce cleared player stats in the first response of the next round', async () => {
+    const nextRound = makeKoiKoiState({ roundNumber: 2 });
+    mockExec.mockResolvedValueOnce(roundEndState).mockResolvedValueOnce(nextRound);
+    renderWithProviders(<KoiKoiPage />);
+    const live = await screen.findByTestId('koikoi-score-live');
+    fireEvent.click(await screen.findByRole('button', { name: '次のラウンド' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
+    await waitFor(() => expect(screen.getByText('ラウンド 2')).toBeInTheDocument());
+    expect(live).toBeEmptyDOMElement();
+  });
+
+  it('clears the score announcement baseline before resetting', async () => {
+    const scoredState = makeKoiKoiState({
+      players: playState.players.map((player) => (player.isHuman ? { ...player, capturedCount: 2, score: 3 } : player)),
+    });
+    mockExec.mockResolvedValueOnce(playState).mockResolvedValueOnce(scoredState).mockResolvedValueOnce(playState);
+    renderWithProviders(<KoiKoiPage />);
+    const live = await screen.findByTestId('koikoi-score-live');
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+    await waitFor(() => expect(live).toHaveTextContent('得点は3点です'));
+    fireEvent.click(await screen.findByRole('button', { name: 'リセット' }));
+    fireEvent.click(await screen.findByRole('button', { name: '確認' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', { config: { cpuDifficulty: 1, targetScore: 50 } }),
+    );
+    await waitFor(() => expect(live).toBeEmptyDOMElement());
+  });
+
   it('shows base points, multiplier, and total in the round result', async () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<KoiKoiPage />);
