@@ -294,9 +294,12 @@ describe('SalicLawPage', () => {
     const ace = await screen.findByRole('button', { name: '♣ A' });
     fireEvent.click(ace);
     await waitFor(() => expect(ace).toHaveAttribute('aria-pressed', 'true'));
+    const foundation = screen.getByRole('button', { name: /空の組札1/ });
+    expect(foundation).not.toHaveAttribute('aria-disabled');
+    expect(foundation).not.toHaveAttribute('aria-describedby');
     mockExec.mockClear();
 
-    fireEvent.click(screen.getByRole('button', { name: /空の組札1/ }));
+    fireEvent.click(foundation);
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'tableau', col: 1 }, { zone: 'foundation', col: 1 }),
     );

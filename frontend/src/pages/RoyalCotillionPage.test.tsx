@@ -205,9 +205,12 @@ describe('RoyalCotillionPage', () => {
     const reserveCard = await screen.findByRole('button', { name: 'リザーブ 0 ♥ 2（一番上）' });
     fireEvent.click(reserveCard);
     await waitFor(() => expect(reserveCard).toHaveAttribute('aria-pressed', 'true'));
+    const foundation = screen.getByRole('button', { name: /組札0/ });
+    expect(foundation).not.toHaveAttribute('aria-disabled');
+    expect(foundation).not.toHaveAttribute('aria-describedby');
     mockExec.mockClear();
 
-    fireEvent.click(screen.getAllByRole('button', { name: /組札/ })[0]);
+    fireEvent.click(foundation);
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'reserve', col: 0 }, { zone: 'foundation', col: 0 }),
     );
@@ -261,9 +264,12 @@ describe('RoyalCotillionPage', () => {
     );
     fireEvent.click(stock);
     await waitFor(() => expect(stock).toHaveAttribute('aria-pressed', 'true'));
+    const emptySlot = screen.getByRole('button', { name: /空の枠 3/ });
+    expect(emptySlot).not.toHaveAttribute('aria-disabled');
+    expect(emptySlot).not.toHaveAttribute('aria-describedby');
     mockExec.mockClear();
 
-    fireEvent.click(screen.getByRole('button', { name: /空の枠 3/ }));
+    fireEvent.click(emptySlot);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', { zone: 'stock' }, { zone: 'tableau', col: 3 }));
   });
 
@@ -274,9 +280,12 @@ describe('RoyalCotillionPage', () => {
     const ace = await screen.findByRole('button', { name: '枠 2 ♣ A' });
     fireEvent.click(ace);
     await waitFor(() => expect(ace).toHaveAttribute('aria-pressed', 'true'));
+    const foundation = screen.getByRole('button', { name: /空の組札1/ });
+    expect(foundation).not.toHaveAttribute('aria-disabled');
+    expect(foundation).not.toHaveAttribute('aria-describedby');
     mockExec.mockClear();
 
-    fireEvent.click(screen.getByRole('button', { name: /空の組札1/ }));
+    fireEvent.click(foundation);
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'tableau', col: 2 }, { zone: 'foundation', col: 1 }),
     );

@@ -102,6 +102,51 @@ describe('SeahavenTowersPage', () => {
     expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
   });
 
+  it('moves a selected tableau card to an empty reserved cell without source hints', async () => {
+    renderWithProviders(<SeahavenTowersPage />);
+    const source = await screen.findByRole('button', { name: '♠ K' });
+    fireEvent.click(source);
+    await waitFor(() => expect(source).toHaveAttribute('aria-pressed', 'true'));
+
+    const target = screen.getByRole('button', { name: 'リザーブセル 0 (空)' });
+    expect(target).not.toHaveAttribute('aria-disabled');
+    expect(target).not.toHaveAttribute('aria-describedby');
+    mockExec.mockClear();
+    fireEvent.click(target);
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith(
+        'move',
+        { zone: 'tableau', col: 0, cardIndex: 0 },
+        { zone: 'reserved', cell: 0 },
+      ),
+    );
+  });
+
+  it('moves a selected ace to an empty foundation without source hints', async () => {
+    const aceState: SeahavenTowersResponse = {
+      ...playingState,
+      tableau: [[card('SPADE', 1)], [card('SPADE', 12)], [], [], [], [], [], [], [], []],
+    };
+    mockExec.mockResolvedValue(aceState);
+    renderWithProviders(<SeahavenTowersPage />);
+    const source = await screen.findByRole('button', { name: '♠ A' });
+    fireEvent.click(source);
+    await waitFor(() => expect(source).toHaveAttribute('aria-pressed', 'true'));
+
+    const target = screen.getByRole('button', { name: /♠ 組札 \(空\)/ });
+    expect(target).not.toHaveAttribute('aria-disabled');
+    expect(target).not.toHaveAttribute('aria-describedby');
+    mockExec.mockClear();
+    fireEvent.click(target);
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith(
+        'move',
+        { zone: 'tableau', col: 0, cardIndex: 0 },
+        { zone: 'foundation', col: 0 },
+      ),
+    );
+  });
+
   it('shows the bulk-move (supermove) limit from empty reserved cells', async () => {
     // 2 empty reserved cells → 1 + 2 = 3.
     renderWithProviders(<SeahavenTowersPage />);
