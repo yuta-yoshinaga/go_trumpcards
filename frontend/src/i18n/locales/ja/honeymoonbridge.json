@@ -22,6 +22,7 @@
     "declarer": "[落札者]",
     "dealer": "[親]",
     "you": "あなた",
+    "currentTurn": "手番中",
     "cpu": "CPU{{idx}}",
     "drawnBadge": "補充",
     "drawnAria": "引き合いで補充された札"

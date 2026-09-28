@@ -39,6 +39,7 @@
     "reset": "Reset",
     "giveUp": "Give up",
     "playAria": "Play {{card}}",
+    "playableAria": "Play {{card}} (playable)",
     "discardAria": "Choose {{card}} to discard"
   },
   "result": {

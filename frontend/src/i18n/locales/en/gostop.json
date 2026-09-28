@@ -60,6 +60,8 @@
     "title": "Round Result",
     "winner": "Winner: {{name}}",
     "draw": "Draw",
+    "announcementWinner": "{{name}} won the round. Total: {{total}} points.",
+    "announcementDraw": "The round is a draw. Total: {{total}} points.",
     "total": "base {{base}} × go {{go}} × bak {{bak}} = {{total}} pts"
   },
   "result": {

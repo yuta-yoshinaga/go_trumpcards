@@ -179,7 +179,16 @@ describe('QuinzePage', () => {
       }),
     );
     renderWithProviders(<QuinzePage />);
-    await waitFor(() => expect(screen.getByText(/\+100/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/^\s*\+100\s*$/)).toBeInTheDocument());
+    const handImage = screen.getByRole('img', { name: /あなた.*15/ });
+    expect(handImage).toHaveAttribute('aria-describedby');
+    expect(document.getElementById(handImage.getAttribute('aria-describedby') ?? '')).toHaveTextContent(
+      'プレイヤー席、賭け金100、払戻額+100、勝ち',
+    );
+    const bankerImage = screen.getByRole('img', { name: /親の手 合計/ });
+    expect(document.getElementById(bankerImage.getAttribute('aria-describedby') ?? '')).toHaveTextContent(
+      '親席、精算 -100',
+    );
   });
 
   it('marks a losing payout as an error after the round', async () => {
@@ -194,6 +203,10 @@ describe('QuinzePage', () => {
     const payout = await screen.findByText('-100');
     expect(payout).toHaveClass('text-ds-error');
     expect(payout).not.toHaveClass('text-ds-success');
+    const handImage = screen.getByRole('img', { name: /あなた.*15/ });
+    expect(document.getElementById(handImage.getAttribute('aria-describedby') ?? '')).toHaveTextContent(
+      'プレイヤー席、賭け金100、払戻額-100、負け',
+    );
   });
 
   it('swaps the board for a terminal when CLI mode is toggled', async () => {

@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { germansoloApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -166,16 +166,22 @@ describe('GermanSoloPage', () => {
     renderWithProviders(<GermanSoloPage />);
     // Stage 1: only contract buttons, no trump/confirm yet.
     await screen.findByTestId('germansolo-bid-stage1');
+    const bidStage1 = screen.getByRole('group', { name: '契約を選択' });
+    expect(bidStage1).toBeInTheDocument();
+    expect(within(bidStage1).getByRole('button', { name: 'フラーゲ' })).toBeEnabled();
     expect(screen.queryByTestId('germansolo-bid-stage2')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'スペード' })).not.toBeInTheDocument();
 
     // Choose Frage → advance to stage 2 (trump + confirm/back).
-    fireEvent.click(screen.getByRole('button', { name: 'フラーゲ' }));
+    fireEvent.click(within(bidStage1).getByRole('button', { name: 'フラーゲ' }));
     await screen.findByTestId('germansolo-bid-stage2');
+    const bidStage2 = screen.getByRole('group', { name: 'フラーゲの切り札を選択' });
+    expect(bidStage2).toBeInTheDocument();
+    expect(within(bidStage2).getByRole('button', { name: 'スペード' })).toBeEnabled();
     expect(screen.getByTestId('germansolo-bid-confirm')).toBeDisabled();
 
     // Pick spades (♠) as trump → confirm enabled.
-    fireEvent.click(screen.getByRole('button', { name: 'スペード' }));
+    fireEvent.click(within(bidStage2).getByRole('button', { name: 'スペード' }));
     expect(screen.getByTestId('germansolo-bid-confirm')).toBeEnabled();
 
     mockExec.mockClear();
@@ -383,13 +389,15 @@ describe('GermanSoloPage ace call', () => {
     );
     renderWithProviders(<GermanSoloPage />);
     await waitFor(() => expect(screen.getByTestId('germansolo-ace-call')).toBeInTheDocument());
+    const aceCallGroup = screen.getByRole('group', { name: '味方を呼ぶエースを選んでください' });
+    expect(aceCallGroup).toBeInTheDocument();
 
     // 呼べるエースだけがボタンになる。
-    expect(screen.getByRole('button', { name: 'クラブ' })).toBeInTheDocument();
+    expect(within(aceCallGroup).getByRole('button', { name: 'クラブ' })).toBeEnabled();
     expect(screen.queryByRole('button', { name: 'スペード' })).not.toBeInTheDocument();
 
     mockExec.mockClear();
-    fireEvent.click(screen.getByRole('button', { name: 'ハート' }));
+    fireEvent.click(within(aceCallGroup).getByRole('button', { name: 'ハート' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(mockExec).toHaveBeenCalledWith('ace', expect.objectContaining({ aceSuit: 3 }));
   });

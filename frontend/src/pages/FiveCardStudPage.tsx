@@ -246,6 +246,7 @@ export function FiveCardStudPageContent({ gameKey }: { gameKey: FcsPageGameKey }
         layout={{ kind: 'community-poker', community: 4, opponents: 3, opponentCards: 2, footerHandSize: 2 }}
       />
     );
+  const callPotOdds = callAmount > 0 ? ((callAmount / (state.pot + callAmount)) * 100).toFixed(1) : null;
 
   // Reset raises the ante at a positive multiple, then increments handCount.
   // Therefore hand n is level floor((n - 1) / period) + 1, with this many
@@ -593,7 +594,14 @@ export function FiveCardStudPageContent({ gameKey }: { gameKey: FcsPageGameKey }
               <div data-tutorial="fcs-action-buttons">
                 <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
                 <p className="text-center text-sm text-ds-text-primary" aria-live="polite" role="status">
-                  {hasOutstandingBet ? t('betting.callAmount', { amount: callAmount }) : t('betting.checkAvailable')}
+                  {hasOutstandingBet ? (
+                    <>
+                      {t('betting.callAmount', { amount: callAmount })}
+                      {gameKey === 'soko' && callPotOdds !== null && t('callPotOdds', { percent: callPotOdds })}
+                    </>
+                  ) : (
+                    t('betting.checkAvailable')
+                  )}
                 </p>
 
                 <BettingControls

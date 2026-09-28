@@ -57,5 +57,6 @@
   "waiveReadyAriaLabel": "Waived slot is empty; the stock is gone so waiving is available",
   "waived": "Waived",
   "waivedAriaLabel": "Waived cards, {{count}}",
+  "waivedCount": "{{count}} cards",
   "waiving": "Put the waived cards back on the tableau"
 }

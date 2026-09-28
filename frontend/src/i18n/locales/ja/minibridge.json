@@ -19,6 +19,7 @@
     "dealer": "[親]",
     "declarerByTie": "HCP が同点だったため、親（席{{seat}}）の側が宣言側になりました。",
     "you": "あなた",
+    "currentTurn": "手番中",
     "cpu": "CPU{{idx}}",
     "dummyHand": "ダミーの手札",
     "yourTurn": "あなたの番",

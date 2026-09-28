@@ -278,11 +278,18 @@ function StHelenaPageContent() {
   // The legal-destination rings are colour only, so a screen-reader user cannot
   // tell whether a selection leads anywhere. Count the same predicates the rings
   // use and announce the total (#4797), mirroring Accordion's ac-selection-status.
+  const legalFoundationTargets =
+    selectedCard === null ? [] : state.foundation.flatMap((_, idx) => (isFoundationTarget(idx) ? [idx] : []));
   const legalTargetCount =
     selectedCard === null
       ? 0
-      : state.foundation.filter((_, idx) => isFoundationTarget(idx)).length +
-        state.tableau.filter((_, colIdx) => isTableauTarget(colIdx)).length;
+      : legalFoundationTargets.length + state.tableau.filter((_, colIdx) => isTableauTarget(colIdx)).length;
+  const foundationDestinationLabels = legalFoundationTargets.map((idx) =>
+    t('foundationDestination', {
+      suit: FOUNDATION_SUITS[idx % FOUNDATION_SUITS.length],
+      direction: t(idx < 4 ? 'destinationDirection.asc' : 'destinationDirection.desc'),
+    }),
+  );
 
   return (
     <GamePageShell
@@ -310,7 +317,10 @@ function StHelenaPageContent() {
           <span className="sr-only" role="status" aria-live="polite" data-testid="cr-selection-status">
             {isPlaying && selectedCard !== null
               ? legalTargetCount > 0
-                ? t('selectionMoves', { count: legalTargetCount })
+                ? t('selectionMoves', {
+                    count: legalTargetCount,
+                    destinations: foundationDestinationLabels.join(t('listSeparator')),
+                  })
                 : t('selectionNoMoves')
               : ''}
           </span>

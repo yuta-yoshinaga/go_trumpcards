@@ -327,6 +327,45 @@ describe('GoStopPage', () => {
     expect(live).toContainElement(await screen.findByTestId('gostop-prompt'));
   });
 
+  it('announces the round winner and total from an always-mounted live region', async () => {
+    mockExec.mockResolvedValueOnce(playState).mockResolvedValue(roundEndState);
+    renderWithProviders(<GoStopPage />);
+
+    const live = (await screen.findAllByTestId('gostop-round-result-live'))[0];
+    expect(live).toBeDefined();
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toBeEmptyDOMElement();
+
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+    await waitFor(() => expect(live).toHaveTextContent('あなたがラウンドに勝利。合計14点。'));
+  });
+
+  it('announces the CPU as the round winner when the human loses', async () => {
+    const cpuRoundEndState = makeGoStopState({
+      phase: 2,
+      roundWinner: 1,
+      lastRoundResult: {
+        winner: 1,
+        breakdown: playState.players[0].breakdown,
+        basePoints: 7,
+        goScore: 7,
+        bakMult: 2,
+        total: 14,
+        gwangBak: true,
+        piBak: false,
+        goBak: false,
+        goCount: 0,
+      },
+    });
+    mockExec.mockResolvedValueOnce(playState).mockResolvedValue(cpuRoundEndState);
+    renderWithProviders(<GoStopPage />);
+
+    const live = (await screen.findAllByTestId('gostop-round-result-live'))[0];
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+    await waitFor(() => expect(live).toHaveTextContent('CPUがラウンドに勝利。合計14点。'));
+  });
+
   // **CPU対戦相手がいる場合のみCPU領域を描画する。**
   it('renders the CPU area only when a CPU player exists', async () => {
     mockExec.mockResolvedValue(playState);

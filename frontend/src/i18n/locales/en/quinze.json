@@ -34,6 +34,11 @@
   "hiddenHandAriaLabel": "{{name}}'s hand is face down, {{count}} cards",
   "bankerHandAriaLabel": "Banker's hand, total {{total}}",
   "hiddenBankerHandAriaLabel": "The banker's hand is face down, {{count}} cards",
+  "settlement": {
+    "banker": "Banker seat, net {{net}}",
+    "playerWin": "Player seat, bet {{bet}}, payout {{payout}}, win",
+    "playerLoss": "Player seat, bet {{bet}}, payout {{payout}}, loss"
+  },
   "tutorial": {
     "faceCards": "**Jacks, queens, and kings are worth 10 points.** Aces are worth 1 and number cards keep their face value.",
     "target": "The target is **15**; over that is a bust. **Ties go to the banker**, so matching the banker's total still loses.",

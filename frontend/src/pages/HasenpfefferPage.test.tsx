@@ -76,6 +76,13 @@ beforeEach(() => {
 });
 
 describe('HasenpfefferPage', () => {
+  it('announces playable cards during play and keeps discard labels unchanged', async () => {
+    mockExec.mockResolvedValue(playing({ validPlays: [1] }));
+    renderWithProviders(<HasenpfefferPage />);
+    expect(await screen.findAllByRole('button', { name: /プレイ可能/ })).toHaveLength(1);
+    expect(screen.getAllByRole('button', { name: /を出す/ })).toHaveLength(3);
+  });
+
   it('resets on mount', async () => {
     renderWithProviders(<HasenpfefferPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
@@ -187,6 +194,7 @@ describe('HasenpfefferPage', () => {
     await waitFor(() => expect(mockExec).not.toHaveBeenCalled());
 
     const cards = screen.getAllByRole('button', { name: /捨て札に選ぶ/ });
+    expect(screen.queryByRole('button', { name: /プレイ可能/ })).not.toBeInTheDocument();
     fireEvent.click(cards[1]);
     expect(cards[1]).toHaveAttribute('aria-pressed', 'true');
 

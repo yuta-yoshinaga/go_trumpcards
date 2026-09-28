@@ -136,6 +136,12 @@ function BouillottePageContent() {
   };
   const raiseBlock = raiseAvailability(raiseInput);
   const raiseNeeded = raiseCost(raiseInput);
+  const raiseStatusText =
+    raiseBlock === 'cap'
+      ? t('raiseCapReached', { max: state.maxRaises })
+      : raiseBlock === 'chips'
+        ? t('raiseNoChips', { cost: raiseNeeded })
+        : t('raiseCount', { count: state.raiseCount, max: state.maxRaises });
   const humanIdx = state.players.findIndex((p) => p.isHuman);
 
   // Pot odds and chip costs facing the human at the Call/Raise/Fold decision.
@@ -186,6 +192,9 @@ function BouillottePageContent() {
         </>
       }
     >
+      <div className="sr-only" role="status" aria-live="polite" data-testid="bouillotte-raise-announcement">
+        {raiseStatusText}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -379,11 +388,7 @@ function BouillottePageContent() {
                   {/* **レイズが消えた理由を書く。**回数上限とチップ不足を
                       区別できないと、突然選択肢を奪われたように見える (#4924)。 */}
                   <span className="text-ds-text-muted text-xs" data-testid="bouillotte-raise-count">
-                    {raiseBlock === 'cap'
-                      ? t('raiseCapReached', { max: state.maxRaises })
-                      : raiseBlock === 'chips'
-                        ? t('raiseNoChips', { cost: raiseNeeded })
-                        : t('raiseCount', { count: state.raiseCount, max: state.maxRaises })}
+                    {raiseStatusText}
                   </span>
                   {state.canRaise && (
                     <button type="button" className={btnSuccess} onClick={handleRaise} disabled={loading}>

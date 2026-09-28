@@ -427,6 +427,9 @@ function MissMilliganPageContent() {
                       className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waived', undefined, undefined) ? 'ring-2 ring-ds-warning' : ''}`}
                     >
                       <AnimatedCard card={state.waived[0]} width={dims.cw} draggable={false} />
+                      <span className="mt-1 block text-ds-text-primary text-xs" data-testid="mm-waived-count">
+                        {t('waivedCount', { count: state.waived.length })}
+                      </span>
                     </button>
                   ) : (
                     <div

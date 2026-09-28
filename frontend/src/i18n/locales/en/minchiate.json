@@ -28,6 +28,7 @@
   "teamScore": "Team {{n}}: {{score}}",
   "dealerBadge": "dealer",
   "scartoPrompt": "Choose {{count}} cards to bury (trumps and the Matto cannot be chosen)",
+  "scartoProgress": "Selected {{selected}}/{{count}} cards",
   "scartoButton": "Bury",
   "scartoDone": "Buried: {{count}} cards",
   "playButton": "Play",

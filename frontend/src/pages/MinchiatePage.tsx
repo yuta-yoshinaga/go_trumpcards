@@ -337,6 +337,15 @@ function MinchiatePageContent() {
               )}
             </div>
 
+            {canScarto && (
+              <div
+                className="mb-1 text-center text-sm text-ds-text-primary tabular-nums"
+                data-testid="minchiate-scarto-progress"
+              >
+                {t('scartoProgress', { selected: selectedCardIndices.length, count: MINCHIATE_SURPLUS })}
+              </div>
+            )}
+
             {humanPlayer && (
               <PlayerHandSection
                 humanPlayer={humanPlayer}

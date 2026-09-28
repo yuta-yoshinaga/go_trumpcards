@@ -18,6 +18,7 @@
     "score": "total {{n}}",
     "dealer": "[dealer / target 8]",
     "you": "You",
+    "currentTurn": "Current turn",
     "cpu": "CPU{{idx}}",
     "kittyBadge": "kitty",
     "kittyAria": "came in from the kitty",

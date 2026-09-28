@@ -105,6 +105,16 @@ describe('MissMilliganPage', () => {
     expect(screen.getByRole('button', { name: '配り足す' })).toHaveAttribute('title');
   });
 
+  it('shows the number of cards in the waived area', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      stockCount: 0,
+      waived: [card('HEART', 8), card('SPADE', 7), card('CLOVER', 6)],
+    });
+    renderWithProviders(<MissMilliganPage />);
+    expect(await screen.findByTestId('mm-waived-count')).toHaveTextContent('3枚');
+  });
+
   it('labels an empty column as Kings-only', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<MissMilliganPage />);

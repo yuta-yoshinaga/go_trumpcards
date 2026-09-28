@@ -59,6 +59,7 @@ import type {
   PrimeroResponse,
   QuadrilleResponse,
   QuodlibetResponse,
+  Rummy500Response,
   RussianBankResponse,
   SakuraResponse,
   SambaPlayerData,
@@ -4138,6 +4139,7 @@ const baseMichiganState: MichiganResponse = {
     { card: { design: 'DIAMOND' as const, value: 12 }, chips: 2, claimedBy: -1 },
     { card: { design: 'SPADE' as const, value: 11 }, chips: 2, claimedBy: -1 },
   ],
+  roundBoodleWins: [],
   phase: 0,
   roundNumber: 1,
   ante: 8,
@@ -5789,6 +5791,28 @@ export function makeMississippiStudState(overrides?: Partial<MississippiStudResp
     totalPayout: 0,
     netChange: 0,
     message: '',
+    ...overrides,
+  };
+}
+
+/** Creates a Rummy 500 state with sensible defaults. */
+export function makeRummy500State(overrides?: Partial<Rummy500Response>): Rummy500Response {
+  return {
+    players: [
+      { id: 0, isHuman: true, cardCount: 0, cards: [], roundScore: 0, cumulativeScore: 0, laidMelds: [] },
+      { id: 1, isHuman: false, cardCount: 0, cards: [], roundScore: 0, cumulativeScore: 0, laidMelds: [] },
+    ],
+    layoffTargets: [],
+    phase: 0,
+    roundNumber: 1,
+    currentPlayerIdx: 0,
+    discardPile: [],
+    drawPileCount: 0,
+    gameEndFlag: false,
+    winnerIdx: -1,
+    roundEnderIdx: -1,
+    message: '',
+    config: { cpuDifficulty: 1, pointLimit: 500 },
     ...overrides,
   };
 }

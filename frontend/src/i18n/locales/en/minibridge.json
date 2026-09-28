@@ -19,6 +19,7 @@
     "dealer": "[dealer]",
     "declarerByTie": "The HCP were level, so the dealer's side (seat {{seat}}) declares.",
     "you": "You",
+    "currentTurn": "Current turn",
     "cpu": "CPU{{idx}}",
     "dummyHand": "Dummy's hand",
     "yourTurn": "Your turn",
