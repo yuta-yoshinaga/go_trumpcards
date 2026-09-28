@@ -107,10 +107,40 @@ describe('DesmochePage', () => {
     renderWithProviders(<DesmochePage />);
     await screen.findByRole('button', { name: '山札から引く' });
 
+    expect(screen.getByTestId('desmoche-action-guide')).toHaveTextContent('捨て札は空です。山札から引いてください');
+    expect(screen.getByRole('button', { name: '捨て札を取る' })).toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('keeps stock draw available when empty, explains the outcome, and draws from the stock', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: DesmochePhase.DRAW, stockCount: 0 }));
+    renderWithProviders(<DesmochePage />);
+    const stock = await screen.findByRole('button', { name: '山札から引く' });
+
+    expect(stock).toBeEnabled();
+    expect(stock).not.toHaveAttribute('aria-disabled');
+    expect(stock).toHaveAttribute('aria-describedby', 'desmoche-draw-guide');
+    expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeEnabled();
     expect(screen.getByTestId('desmoche-action-guide')).toHaveTextContent(
-      '山札から引くか、捨て札がある場合は捨て札を取ってください',
+      '山札は空です。山札から引くと勝者なしでラウンドが終了します。捨て札から引くこともできます',
     );
-    expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeDisabled();
+    mockExec.mockClear();
+    fireEvent.click(stock);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('drawstock'));
+  });
+
+  it('keeps empty stock actionable when both piles are empty and explains that the round ends', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: DesmochePhase.DRAW, stockCount: 0, discardTop: undefined }));
+    renderWithProviders(<DesmochePage />);
+    const stock = await screen.findByRole('button', { name: '山札から引く' });
+
+    expect(stock).not.toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByRole('button', { name: '捨て札を取る' })).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByTestId('desmoche-action-guide')).toHaveTextContent(
+      '山札も捨て札も空です。山札から引くと勝者なしでラウンドが終了します',
+    );
+    mockExec.mockClear();
+    fireEvent.click(stock);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('drawstock'));
   });
 
   it('shows only the hand selection hint in the act step', async () => {

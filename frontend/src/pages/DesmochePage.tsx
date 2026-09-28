@@ -89,6 +89,8 @@ function DesmochePageContent() {
   const drawing = state.phase === DesmochePhase.DRAW;
   const acting = state.phase === DesmochePhase.ACT;
   const roundOver = state.phase === DesmochePhase.ROUND_END;
+  const stockEmpty = state.stockCount === 0;
+  const discardEmpty = !state.discardTop;
   const human = state.players.find((p) => p.isHuman);
   const opponents = state.players.filter((p) => !p.isHuman);
   const isHumanTurn = !ended && state.currentPlayerIdx === 0;
@@ -318,8 +320,18 @@ function DesmochePageContent() {
           <GameFooter className={`${gameTheme.desmoche.footer} px-4 py-2.5`}>
             <ErrorAlert message={error} onRetry={retry} />
             {drawing && isHumanTurn && (
-              <p className="mb-2 text-sm text-ds-text-muted" data-testid="desmoche-action-guide">
-                {t('actionGuide.draw')}
+              <p
+                id="desmoche-draw-guide"
+                className="mb-2 text-sm text-ds-text-muted"
+                data-testid="desmoche-action-guide"
+              >
+                {stockEmpty
+                  ? discardEmpty
+                    ? t('actionGuide.bothEmpty')
+                    : t('actionGuide.stockEmpty')
+                  : discardEmpty
+                    ? t('actionGuide.discardEmpty')
+                    : t('actionGuide.draw')}
               </p>
             )}
             <div className="flex gap-2 items-center flex-wrap">
@@ -328,6 +340,7 @@ function DesmochePageContent() {
                   <button
                     type="button"
                     data-hint-action="draw"
+                    aria-describedby={stockEmpty ? 'desmoche-draw-guide' : undefined}
                     className={`${btnPrimary} min-h-11`}
                     onClick={game.handleDrawStock}
                   >
@@ -335,9 +348,13 @@ function DesmochePageContent() {
                   </button>
                   <button
                     type="button"
-                    className={`${btnSecondary} min-h-11`}
-                    onClick={game.handleDrawDiscard}
-                    disabled={!state.discardTop}
+                    aria-disabled={discardEmpty ? true : undefined}
+                    aria-describedby={discardEmpty ? 'desmoche-draw-guide' : undefined}
+                    className={`${btnSecondary} min-h-11 ${discardEmpty ? 'aria-disabled:opacity-50 aria-disabled:cursor-not-allowed' : ''}`}
+                    onClick={() => {
+                      if (discardEmpty) return;
+                      game.handleDrawDiscard();
+                    }}
                   >
                     {t('drawDiscard')}
                   </button>
