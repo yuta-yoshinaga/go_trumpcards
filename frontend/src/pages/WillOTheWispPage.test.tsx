@@ -119,7 +119,9 @@ describe('WillOTheWispPage', () => {
     await waitFor(() => expect(source).toHaveAttribute('aria-pressed', 'true'));
     const target = screen.getByTestId('willothewisp-empty-col-0');
     expect(target).not.toHaveAttribute('aria-disabled');
-    expect(target).not.toHaveAttribute('aria-describedby');
+    const hintId = target.getAttribute('aria-describedby');
+    expect(hintId).toBeTruthy();
+    expect(document.getElementById(hintId ?? '')).toHaveTextContent('列0は移動先として選択できます');
 
     mockSend.mockClear();
     fireEvent.click(target);
