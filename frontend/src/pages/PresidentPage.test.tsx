@@ -132,6 +132,16 @@ describe('PresidentPage', () => {
     await waitFor(() => expect(screen.getByText(/革命中/)).toBeInTheDocument());
   });
 
+  it('announces revolution activation to screen readers', async () => {
+    mockExec.mockResolvedValue(makeState({ revolutionActive: true }));
+    renderWithProviders(<PresidentPage />);
+
+    await waitFor(() => expect(screen.getByTestId('president-revolution-live')).toHaveTextContent('革命発生'));
+    expect(screen.getByTestId('president-revolution-live')).toHaveAttribute('role', 'status');
+    expect(screen.getByTestId('president-revolution-live')).toHaveAttribute('aria-live', 'polite');
+    expect(screen.getByTestId('president-revolution-live')).toHaveClass('sr-only');
+  });
+
   it('flashes a full-screen overlay when revolution turns on', async () => {
     // revolutionActive arrives true on mount → false→true transition fires the flash.
     mockExec.mockResolvedValue(makeState({ revolutionActive: true }));
