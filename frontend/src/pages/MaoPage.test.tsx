@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { maoApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { MaoResponse } from '../types/card';
 import { MaoPage } from './MaoPage';
@@ -449,6 +450,24 @@ describe('MaoPage', () => {
     mockExec.mockResolvedValue({ ...playPhaseState, chosenSuit: 1 });
     renderWithProviders(<MaoPage />);
     await waitFor(() => expect(screen.getByTestId('chosen-suit-watermark')).toBeInTheDocument());
+    expect(screen.getByTestId('chosen-suit-status')).toHaveTextContent('指定スート: スペード ♠');
+  });
+
+  it('falls back to the symbol alone for a suit value it has no name for', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, chosenSuit: 9 });
+    renderWithProviders(<MaoPage />);
+    await waitFor(() => expect(screen.getByTestId('chosen-suit-status')).toHaveTextContent('指定スート: ?'));
+  });
+
+  it('shows the chosen suit name in English when English is selected', async () => {
+    await i18n.changeLanguage('en');
+    try {
+      mockExec.mockResolvedValue({ ...playPhaseState, chosenSuit: 1 });
+      renderWithProviders(<MaoPage />);
+      await waitFor(() => expect(screen.getByTestId('chosen-suit-status')).toHaveTextContent('Chosen suit: Spade ♠'));
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
   });
 
   it('does not render chosen-suit-watermark when chosenSuit is zero', async () => {
