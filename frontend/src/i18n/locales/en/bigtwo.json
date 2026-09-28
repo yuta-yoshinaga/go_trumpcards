@@ -53,6 +53,8 @@
     "number": "Rank",
     "label": "Sort hand"
   },
+  "listSeparator": ", ",
+  "tablePlayAnnouncement": "Cards played: {{cards}}. Play type: {{playType}}",
   "tablePlayLabel": "Play",
   "selectedPlayLabel": "Selected",
   "actionPlayed": "{{name}} played: {{cards}}",
