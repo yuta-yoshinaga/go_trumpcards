@@ -46,4 +46,20 @@ describe('russianSolitaireLegalTargets', () => {
     };
     expect(russianSolitaireLegalTargets(stacked, 0, 0).foundation.size).toBe(0);
   });
+
+  it('returns no targets when the card index is out of range', () => {
+    const targets = russianSolitaireLegalTargets(state, 0, 1);
+    expect(targets.tableau).toEqual(new Set());
+    expect(targets.foundation).toEqual(new Set());
+  });
+
+  it('returns no targets for a face-down card', () => {
+    const faceDown: RussianSolitaireResponse = {
+      ...state,
+      tableau: [[{ card: card('SPADE', 7), faceUp: false }], ...state.tableau.slice(1)],
+    };
+    const targets = russianSolitaireLegalTargets(faceDown, 0, 0);
+    expect(targets.tableau).toEqual(new Set());
+    expect(targets.foundation).toEqual(new Set());
+  });
 });
