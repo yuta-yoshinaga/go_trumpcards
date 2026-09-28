@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { casinoholdemApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, CasinoHoldemResponse } from '../types/card';
@@ -142,6 +143,23 @@ describe('CasinoHoldemPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: /コール/ })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
     expect(screen.getByTestId('ch-flop-call-bet')).toHaveTextContent('コール額: 200');
+    expect(screen.getByTestId('ch-dealer-qualify-rule')).toHaveTextContent(
+      'ディーラーはツーペア以上、または4以上のペアでクオリファイします',
+    );
+  });
+
+  it('shows the dealer qualification rule in English during the flop', async () => {
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      mockApi.mockResolvedValue(flopState);
+      renderWithProviders(<CasinoHoldemPage />);
+      expect(await screen.findByTestId('ch-dealer-qualify-rule')).toHaveTextContent(
+        'The dealer qualifies with two pair or better, or a pair of fours or better',
+      );
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
   });
 
   it('shows the server-provided call amount for a different ante', async () => {

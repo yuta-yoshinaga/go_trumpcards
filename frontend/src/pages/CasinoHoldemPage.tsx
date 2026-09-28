@@ -283,6 +283,11 @@ function CasinoHoldemPageContent() {
                     </span>
                   )}
                 </div>
+                {isFlopPhase && (
+                  <p className="text-ds-text-muted text-sm text-center" data-testid="ch-dealer-qualify-rule">
+                    {t('dealerQualifyRule')}
+                  </p>
+                )}
                 <div className="flex justify-center gap-2 flex-wrap">
                   {state.playerHand.map((card, i) => (
                     <AnimatedCard key={`p-${card.design}-${card.value}-${i}`} card={card} width={cardWidth} />

@@ -6,6 +6,7 @@
   "board": "ボード",
   "dealerQualified": "ディーラークオリファイ",
   "dealerDoesNotQualify": "ディーラーノークオリファイ",
+  "dealerQualifyRule": "ディーラーはツーペア以上、または4以上のペアでクオリファイします",
   "betError": "アンテは10以上、ベットは10単位で、残高以内で指定してください",
   "label": {
     "chips": "チップ",
