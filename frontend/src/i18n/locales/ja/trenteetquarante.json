@@ -11,7 +11,8 @@
     "rougeRow": "ルージュ",
     "total": "合計",
     "winner": "勝ち列",
-    "crossing": "31到達"
+    "crossing": "31到達",
+    "crossingAria": "累積 {{total}}、{{card}}で31到達"
   },
   "betType": {
     "noir": "ノワール",

@@ -33,6 +33,7 @@ import {
   TrenteEtQuaranteWinningRow,
 } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { parseTrenteEtQuaranteCommand, TRENTEETQUARANTE_HELP } from '../utils/cli/commands/trenteetquaranteCommands';
 import { formatTrenteEtQuaranteState } from '../utils/cli/formatters/trenteetquaranteFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -192,6 +193,7 @@ function TrenteEtQuarantePageContent() {
                   cards={state.noirRow}
                   cardWidth={cardWidth}
                   crossingLabel={t('label.crossing')}
+                  crossingAriaLabel={(total, card) => t('label.crossingAria', { total, card: cardAlt(card) })}
                   highlight={isResultPhase && !state.refait && state.winningRow === TrenteEtQuaranteWinningRow.NOIR}
                 />
                 <CardRow
@@ -200,6 +202,7 @@ function TrenteEtQuarantePageContent() {
                   cards={state.rougeRow}
                   cardWidth={cardWidth}
                   crossingLabel={t('label.crossing')}
+                  crossingAriaLabel={(total, card) => t('label.crossingAria', { total, card: cardAlt(card) })}
                   highlight={isResultPhase && !state.refait && state.winningRow === TrenteEtQuaranteWinningRow.ROUGE}
                 />
               </div>
@@ -392,6 +395,7 @@ function CardRow({
   cards,
   cardWidth,
   crossingLabel,
+  crossingAriaLabel,
   highlight,
 }: {
   testId: string;
@@ -399,6 +403,7 @@ function CardRow({
   cards: Card[];
   cardWidth: number;
   crossingLabel: string;
+  crossingAriaLabel: (total: number, card: Card) => string;
   highlight: boolean;
 }) {
   const steps = buildTrenteEtQuaranteRow(cards);
@@ -419,7 +424,13 @@ function CardRow({
             >
               {step.cumulative}
               {step.crossing && (
-                <span className="ml-0.5" data-testid={`teq-crossing-${testId}`} title={crossingLabel}>
+                <span
+                  className="ml-0.5"
+                  data-testid={`teq-crossing-${testId}`}
+                  role="img"
+                  title={crossingLabel}
+                  aria-label={crossingAriaLabel(step.cumulative, step.card)}
+                >
                   ▲
                 </span>
               )}
