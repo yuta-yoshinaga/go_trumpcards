@@ -247,6 +247,11 @@ describe('CruelPage', () => {
     expect(undoBtn).toBeDisabled();
   });
 
+  it('explains that cards cannot be moved to empty tableau columns', async () => {
+    renderWithProviders(<CruelPage />);
+    expect(await screen.findByText('空き列にはカードを移動できません')).toBeInTheDocument();
+  });
+
   it('renders empty tableau column placeholder', async () => {
     const stateWithEmpty = {
       ...playingState,

@@ -65,5 +65,6 @@
     "winRate": "Win rate {{rate}}%",
     "fewestMoves": "{{moves}} moves",
     "newBest": "New personal best!"
-  }
+  },
+  "emptyColumnRule": "Cards cannot be moved to empty columns"
 }
