@@ -301,6 +301,15 @@ describe('KingoPage', () => {
     expect(screen.getByTestId('kingo-payouts')).toHaveTextContent('2');
   });
 
+  it('張りの前に倍率と勝ち額の意味を説明する', async () => {
+    mockApi.mockResolvedValue(base);
+    renderWithProviders(<KingoPage />);
+    await waitFor(() => expect(screen.getByTestId('kingo-payouts')).toBeInTheDocument());
+    expect(screen.getByTestId('kingo-payout-meaning')).toHaveTextContent(
+      '倍率は張り額に掛かります（張り10・倍率3なら30）。勝てばその額を受け取り、負ければ親の役の倍率で支払います。勝ち額は決着時のチップ増減です。',
+    );
+  });
+
   it('ラウンドと親を出す', async () => {
     mockApi.mockResolvedValue(withState({ roundNumber: 4, rounds: 10 }));
     renderWithProviders(<KingoPage />);
