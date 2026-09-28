@@ -67,6 +67,13 @@ beforeEach(() => {
 });
 
 describe('TarabishPage', () => {
+  it('keeps the original points label off turn', async () => {
+    renderWithProviders(<TarabishPage />);
+    const cards = await screen.findAllByRole('button', { name: /を出す/ });
+    expect(cards[0]).toHaveAccessibleName(/♥ J（20点）を出す/);
+    expect(cards[0]).not.toHaveAccessibleName(/出せる|出せない/);
+  });
+
   it('announces playable and unplayable cards from validPlays', async () => {
     mockExec.mockResolvedValue(playing({ validPlays: [1] }));
     renderWithProviders(<TarabishPage />);
@@ -301,7 +308,7 @@ describe('TarabishPage card points', () => {
       }),
     );
     renderWithProviders(<TarabishPage />);
-    expect(await screen.findByRole('button', { name: '出せない札、♥ J（20点）を出す' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: '♥ J（20点）を出す' })).toBeInTheDocument();
   });
 
   // **切り札が決まるまで点は定まらない。**入札中に出すと嘘になる。

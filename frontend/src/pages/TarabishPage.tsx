@@ -292,7 +292,7 @@ function TarabishPageContent() {
                       // 切り札なら 20 点、そうでなければ 2 点。暗算させると
                       // パートナーに寄せる札を間違える。
                       aria-label={
-                        state.trumpSuit > 0
+                        isHumanTurn && state.trumpSuit > 0
                           ? t(
                               legalRing.has(idx)
                                 ? 'actions.playAriaWithPointsPlayable'
@@ -302,9 +302,16 @@ function TarabishPageContent() {
                                 points: tarabishCardPoints(card, state.trumpSuit),
                               },
                             )
-                          : t(legalRing.has(idx) ? 'actions.playAriaPlayable' : 'actions.playAriaUnplayable', {
-                              card: cardAlt(card),
-                            })
+                          : isHumanTurn
+                            ? t(legalRing.has(idx) ? 'actions.playAriaPlayable' : 'actions.playAriaUnplayable', {
+                                card: cardAlt(card),
+                              })
+                            : state.trumpSuit > 0
+                              ? t('actions.playAriaWithPoints', {
+                                  card: cardAlt(card),
+                                  points: tarabishCardPoints(card, state.trumpSuit),
+                                })
+                              : t('actions.playAria', { card: cardAlt(card) })
                       }
                       className={`relative disabled:opacity-50 ${
                         legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''

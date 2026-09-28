@@ -260,12 +260,19 @@ function ReversisPageContent() {
                       disabled={loading || !isHumanTurn}
                       // **点を取り合うのが核なのに、どの札が何点かは出ていなかった**
                       // (#5747)。A=4 / K=3 / Q=2 / J=1 を暗算し続けることになる。
-                      aria-label={t(
-                        legalRing.has(idx)
-                          ? 'actions.playAriaWithPointsPlayable'
-                          : 'actions.playAriaWithPointsUnplayable',
-                        { card: cardAlt(card), points: reversisCardPoints(card) },
-                      )}
+                      aria-label={
+                        isHumanTurn
+                          ? t(
+                              legalRing.has(idx)
+                                ? 'actions.playAriaWithPointsPlayable'
+                                : 'actions.playAriaWithPointsUnplayable',
+                              { card: cardAlt(card), points: reversisCardPoints(card) },
+                            )
+                          : t('actions.playAriaWithPoints', {
+                              card: cardAlt(card),
+                              points: reversisCardPoints(card),
+                            })
+                      }
                       className={`relative disabled:opacity-50 ${
                         legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''
                       }`}
