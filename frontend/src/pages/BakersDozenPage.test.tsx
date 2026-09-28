@@ -105,7 +105,8 @@ describe('BakersDozenPage', () => {
     expect(target).toHaveAttribute('aria-disabled', 'true');
     const hintId = target.getAttribute('aria-describedby');
     expect(hintId).toBeTruthy();
-    expect(document.getElementById(hintId!)).toHaveTextContent('先に移動する札を選んでください');
+    if (!hintId) throw new Error('Expected target to reference an explanatory hint');
+    expect(document.getElementById(hintId)).toHaveTextContent('先に移動する札を選んでください');
     fireEvent.click(target);
     await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());

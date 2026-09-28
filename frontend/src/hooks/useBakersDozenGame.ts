@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { type BakersDozenMoveZone, bakersDozenApi } from '../api/gameApi';
 import type { BakersDozenHint } from '../types/card';
 import { BakersDozenPhase } from '../types/phases';
@@ -14,7 +14,7 @@ export function useBakersDozenGame() {
     loading,
     error,
     exec: rawExec,
-    retry,
+    retry: rawRetry,
   } = useGameApi(bakersDozenApi.exec, {
     onSuccess: (res, args) => {
       if (args[0] === 'autocomplete') {
@@ -22,15 +22,33 @@ export function useBakersDozenGame() {
       }
     },
   });
+  const previousError = useRef(error);
   useEffect(() => {
-    if (error && autoCompleteStatus === 'inProgress') setAutoCompleteStatus('interrupted');
-  }, [error, autoCompleteStatus]);
+    if (error && !loading && !previousError.current && autoCompleteStatus === 'inProgress') {
+      setAutoCompleteStatus('interrupted');
+    }
+    previousError.current = error;
+  }, [error, loading, autoCompleteStatus]);
   const [selectedSource, setSelectedSource] = useState<BakersDozenMoveZone | null>(null);
   const [hint, setHint] = useState<BakersDozenHint | null>(null);
   const [hintError, setHintError] = useState<string | null>(null);
   const { isAutoCompleting, startAutoComplete } = useAutoCompleteState();
+  const lastCommand = useRef<string | undefined>(undefined);
 
-  const exec = useCallback((...args: Parameters<typeof rawExec>) => rawExec(...args), [rawExec]);
+  const exec = useCallback(
+    (...args: Parameters<typeof rawExec>) => {
+      lastCommand.current = args[0];
+      if (args[0] === 'reset') setAutoCompleteStatus(null);
+      const request = rawExec(...args);
+      if (args[0] === 'autocomplete') setAutoCompleteStatus('inProgress');
+      return request;
+    },
+    [rawExec],
+  );
+  const retry = useCallback(() => {
+    if (lastCommand.current === 'autocomplete') setAutoCompleteStatus('inProgress');
+    return rawRetry();
+  }, [rawRetry]);
 
   useEffect(() => {
     exec('reset');
@@ -59,7 +77,6 @@ export function useBakersDozenGame() {
     setSelectedSource(null);
     setHint(null);
     startAutoComplete();
-    setAutoCompleteStatus('inProgress');
     exec('autocomplete');
   }, [exec, startAutoComplete]);
 
