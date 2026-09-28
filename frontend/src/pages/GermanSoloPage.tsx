@@ -528,7 +528,7 @@ function GermanSoloPageContent() {
                   data-testid="germansolo-bid-stage2"
                 >
                   <legend className="text-ds-text-muted text-sm">
-                    {t('chooseTrumpFor', { bid: t(BID_KEYS[pendingBid] ?? 'bidNone') })}
+                    {t('chooseTrumpFor', { bid: t(BID_KEYS[pendingBid]) })}
                   </legend>
                   {TRUMP_CHOICES.map((c) => (
                     <button
