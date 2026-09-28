@@ -1,4 +1,5 @@
 {
+  "listSeparator": "、",
   "phase": { "bid": "入札中", "reveal": "公開", "gameEnd": "終了" },
   "header": {
     "round": "ラウンド {{n}}",
@@ -28,6 +29,8 @@
     "bidAria": "{{card}} で入札する"
   },
   "status": {
+    "revealPlayer": "{{name}}: {{card}}",
+    "revealAnnouncement": "公開札は {{bids}}。{{result}}",
     "bid": "{{n}} 点が懸かっています。伏せる札を選んでください。",
     "waiting": "入札しました。全員が伏せるまで待ちます。",
     "roundEnd": "{{name}} が {{n}} 点を獲得しました。",
