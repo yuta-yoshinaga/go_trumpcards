@@ -180,9 +180,9 @@ function ShelemPageContent() {
           ? t('phase.discard')
           : t('phase.play');
 
-  // 出せる札に緑の枠を足すだけで、押せなくはしない（サーバが必ず検証する）。
+  // 出せる札は緑の枠で示し、出せない札は aria-disabled にしてクリックを無視する。
   const legalRing = new Set(isHumanTurn ? state.validPlays : []);
-  const hasIllegalPlay = isHumanTurn && human?.cards.some((_, idx) => !legalRing.has(idx));
+  const hasIllegalPlay = isHumanTurn && (human?.cards.some((_, idx) => !legalRing.has(idx)) ?? false);
 
   /** Bids that would actually beat the standing one, capped at the maximum. */
   const bidChoices: number[] = [];
