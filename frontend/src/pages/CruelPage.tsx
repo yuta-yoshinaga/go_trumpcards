@@ -359,6 +359,7 @@ function CruelPageContent() {
           <LandscapeBanner message={t('landscapeBanner')} />
 
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
+            <p className="mb-2 text-center text-sm text-ds-text-muted">{t('emptyColumnRule')}</p>
             <span id={selectSourceHintId} className="sr-only">
               {tc('label.selectSourceFirst')}
             </span>

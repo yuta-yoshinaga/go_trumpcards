@@ -65,5 +65,6 @@
     "winRate": "勝率 {{rate}}%",
     "fewestMoves": "最少 {{moves}}手",
     "newBest": "自己ベスト更新！"
-  }
+  },
+  "emptyColumnRule": "空き列にはカードを移動できません"
 }
