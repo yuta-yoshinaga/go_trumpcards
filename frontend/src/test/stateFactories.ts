@@ -23,6 +23,7 @@ import type {
   DilotiResponse,
   DoppelkopfResponse,
   EcarteResponse,
+  EgyptianRatscrewResponse,
   EscobaResponse,
   FiveHundredResponse,
   FortyFivesResponse,
@@ -93,6 +94,37 @@ import type {
   WattenResponse,
   ZwanzigerrufenResponse,
 } from '../types/card';
+
+/** Creates a default Egyptian Ratscrew state. */
+export function makeEgyptianRatscrewState(overrides?: Partial<EgyptianRatscrewResponse>): EgyptianRatscrewResponse {
+  return {
+    phase: 0,
+    gameEndFlag: false,
+    winnerIdx: -1,
+    currentTurnIdx: 0,
+    isHumanTurn: true,
+    isTopFaceCard: false,
+    isSlappable: false,
+    slappableReason: 0,
+    centerPileSize: 0,
+    topCard: null,
+    players: [
+      { name: 'You', isHuman: true, stockSize: 26 },
+      { name: 'CPU', isHuman: false, stockSize: 26 },
+    ],
+    cpuDifficulty: 1,
+    chanceRemaining: 0,
+    faceChances: { jack: 1, queen: 2, king: 3, ace: 4 },
+    chanceFromIdx: -1,
+    pendingKind: 0,
+    pendingDeadlineMs: 0,
+    lastEventKind: 0,
+    lastEventPlayerIdx: 0,
+    lastSlapReason: 0,
+    message: '',
+    ...overrides,
+  };
+}
 
 /** Base Hearts player data for player 0 (human). */
 const heartsHumanPlayer = {

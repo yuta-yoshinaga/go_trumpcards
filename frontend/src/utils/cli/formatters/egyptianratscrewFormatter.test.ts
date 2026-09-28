@@ -12,6 +12,7 @@ function baseState(overrides: Partial<EgyptianRatscrewResponse> = {}): EgyptianR
     isHumanTurn: true,
     isTopFaceCard: false,
     isSlappable: false,
+    slappableReason: 0,
     centerPileSize: 0,
     topCard: null,
     players: [

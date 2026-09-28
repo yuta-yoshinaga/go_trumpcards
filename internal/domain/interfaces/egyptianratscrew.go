@@ -43,6 +43,8 @@ type EgyptianRatscrewGame interface {
 	IsTopFaceCard() bool
 	// IsSlappable 場の上 2 枚がペアまたは上 3 枚がサンドイッチかを返す
 	IsSlappable() bool
+	// GetSlappableReason 場の現在のスラップ理由を取得する
+	GetSlappableReason() domain.EgyptianRatscrewSlapReason
 	// GetChanceRemaining チャンスバトル中の残 flip 回数 (0 ならチャンスバトル外)
 	GetChanceRemaining() int
 	// GetChanceFromIdx チャンスを課したプレイヤーインデックス (チャンスバトル外では -1)

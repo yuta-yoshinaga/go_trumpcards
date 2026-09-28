@@ -55,6 +55,7 @@ type EgyptianRatscrewWebOutput struct {
 	IsHumanTurn     bool                         `json:"isHumanTurn"`
 	IsTopFaceCard   bool                         `json:"isTopFaceCard"`
 	IsSlappable     bool                         `json:"isSlappable"`
+	SlappableReason int                          `json:"slappableReason"`
 	CenterPileSize  int                          `json:"centerPileSize"`
 	TopCard         *WebOutputCard               `json:"topCard,omitempty"`
 	Players         []*EgyptianRatscrewWebPlayer `json:"players"`

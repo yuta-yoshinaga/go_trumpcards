@@ -18,6 +18,7 @@ func (p *EgyptianRatscrewWebPresenter) Output(g interfaces.EgyptianRatscrewGame,
 	resObj.IsHumanTurn = g.IsHumanTurn()
 	resObj.IsTopFaceCard = g.IsTopFaceCard()
 	resObj.IsSlappable = g.IsSlappable()
+	resObj.SlappableReason = int(g.GetSlappableReason())
 	resObj.CenterPileSize = g.GetCenterPileSize()
 	resObj.TopCard = cardToOutput(g.GetTopCard())
 	resObj.CpuDifficulty = int(g.GetConfig().CpuDifficulty)
