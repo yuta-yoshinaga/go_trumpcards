@@ -38,7 +38,9 @@
     "resetButton": "Use this button to reset the game at any time."
   },
   "playCardAria": "Play {{card}}",
-  "captureHint": "can capture the pile",
+  "captureHint": "can capture the current pile",
+  "counterHint": "can steal the bundle taken by the previous capture",
+  "counterAndCaptureHint": "can steal the bundle taken by the previous capture and capture the current pile",
   "frontendHint": {
     "ristikontraCounter": "You hold the rank that just captured — playing it now steals the whole bundle",
     "ristikontraCapture": "Matches the top card — you take the pile",

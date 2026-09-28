@@ -118,6 +118,41 @@ describe('RistikontraPage', () => {
     expect(screen.getByTestId('ristikontra-turn-notice')).toHaveAttribute('role', 'status');
   });
 
+  it('distinguishes counter cards, ordinary captures, and cards that do both', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        counterRank: 5,
+        pileTop: card('CLOVER', 7),
+        players: [
+          makePlayer({
+            id: 0,
+            isHuman: true,
+            cards: [card('SPADE', 5), card('HEART', 7), card('DIAMOND', 9)],
+          }),
+          makePlayer({ id: 1 }),
+          makePlayer({ id: 2 }),
+          makePlayer({ id: 3 }),
+        ],
+      }),
+    );
+    renderWithProviders(<RistikontraPage />);
+
+    expect(await screen.findByRole('button', { name: '♠ 5 を出す — 直前に取られた束を奪えます' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♥ 7 を出す — 場の山を獲得できます' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♦ 9 を出す' })).toBeInTheDocument();
+  });
+
+  it('explains both effects when a card can counter and capture', async () => {
+    mockExec.mockResolvedValue(makeState({ counterRank: 5, pileTop: card('HEART', 5) }));
+    renderWithProviders(<RistikontraPage />);
+
+    expect(
+      await screen.findByRole('button', {
+        name: '♠ 5 を出す — 直前に取られた束を奪い、場の山も獲得できます',
+      }),
+    ).toBeInTheDocument();
+  });
+
   it('plays a hand card on the human turn', async () => {
     renderWithProviders(<RistikontraPage />);
     const cardBtn = await screen.findByTestId('hand-card-1');

@@ -221,6 +221,16 @@ function RistikontraPageContent() {
     return '';
   };
 
+  const captureAriaHint = (c: Card): string | null => {
+    if (!isHumanTurn) return null;
+    const canCounter = state.counterRank > 0 && c.value === state.counterRank;
+    const canCapture = !!state.pileTop && c.value === state.pileTop.value;
+    if (canCounter && canCapture) return t('counterAndCaptureHint');
+    if (canCounter) return t('counterHint');
+    if (canCapture) return t('captureHint');
+    return null;
+  };
+
   const playerLabel = (id: number, isHuman: boolean): string => (isHuman ? t('you') : t('cpu', { id }));
 
   // **途中経過はチームの獲得枚数そのもの。** 札ごとの点数もボーナスも無いので
@@ -385,11 +395,9 @@ function RistikontraPageContent() {
                     } ${captureRing(c)} ${selectedIdx === i ? 'ring-2 ring-ds-warning' : ''}`}
                     aria-pressed={selectedIdx === i}
                     data-testid={`hand-card-${i}`}
-                    aria-label={
-                      captureRing(c)
-                        ? `${t('playCardAria', { card: cardAlt(c) })} — ${t('captureHint')}`
-                        : t('playCardAria', { card: cardAlt(c) })
-                    }
+                    aria-label={[t('playCardAria', { card: cardAlt(c) }), captureAriaHint(c)]
+                      .filter(Boolean)
+                      .join(' — ')}
                   >
                     <CardImage card={c} width={cardWidth} />
                   </button>

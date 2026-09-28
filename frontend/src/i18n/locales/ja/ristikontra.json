@@ -38,7 +38,9 @@
     "resetButton": "このボタンでいつでもゲームをリセットできます。"
   },
   "playCardAria": "{{card}} を出す",
-  "captureHint": "この山を獲得できます",
+  "captureHint": "場の山を獲得できます",
+  "counterHint": "直前に取られた束を奪えます",
+  "counterAndCaptureHint": "直前に取られた束を奪い、場の山も獲得できます",
   "frontendHint": {
     "ristikontraCounter": "直前の捕獲と同じ数字を持っています。今出せば取られた束ごと奪えます",
     "ristikontraCapture": "場の一番上と同じ数字です。場を取れます",
