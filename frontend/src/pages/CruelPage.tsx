@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { type CruelMoveZone, cruelApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -124,6 +124,7 @@ function CruelPageContent() {
   useMountReset(apiExec);
 
   const [selectedSource, setSelectedSource] = useState<CruelMoveZone | null>(null);
+  const selectSourceHintId = useId();
 
   const {
     hint: frontendHint,
@@ -358,6 +359,9 @@ function CruelPageContent() {
           <LandscapeBanner message={t('landscapeBanner')} />
 
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
+            <span id={selectSourceHintId} className="sr-only">
+              {tc('label.selectSourceFirst')}
+            </span>
             {/* Foundation row (4 suits — Cruel autoplaces Aces on reset). */}
             <div className="flex gap-1 sm:gap-2 mb-3 items-start justify-center" data-tutorial="cruel-foundation">
               {state.foundation.map((pile, i) => {
@@ -383,7 +387,9 @@ function CruelPageContent() {
                         showSuitTarget ? 'ring-2 ring-ds-info' : ''
                       } ${isTarget && suitMatch ? 'hover:ring-2 hover:ring-ds-warning cursor-pointer' : ''}`}
                       onClick={() => isTarget && handleSelectTarget('foundation')}
-                      disabled={!isPlaying || !isTarget}
+                      disabled={!isPlaying}
+                      aria-disabled={!isTarget || undefined}
+                      aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                       aria-label={
                         topCard
                           ? t('foundationAriaLabel', {

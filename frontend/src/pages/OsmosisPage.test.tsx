@@ -135,10 +135,27 @@ describe('OsmosisPage', () => {
     expect(screen.getByRole('button', { name: '組札 0' }).className).toContain('border-ds-error');
   });
 
-  it('foundation rows are disabled until a source is selected', async () => {
+  it('foundation targets stay focusable until a source is selected', async () => {
     renderWithProviders(<OsmosisPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    expect(screen.getByRole('button', { name: '組札 0' })).toBeDisabled();
+    const button = screen.getByRole('button', { name: '組札 0' });
+    expect(button).not.toBeDisabled();
+    expect(button).toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('explains and ignores an unselected foundation target', async () => {
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    const button = screen.getByRole('button', { name: '組札 0' });
+    expect(button).not.toBeDisabled();
+    expect(button).toHaveAttribute('aria-disabled', 'true');
+    const describedBy = button.getAttribute('aria-describedby');
+    expect(describedBy).toBeTruthy();
+    expect(document.getElementById(describedBy ?? '')).toHaveTextContent('先に移動する札を選んでください');
+    fireEvent.click(button);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
   });
 
   it('hint button triggers hint command', async () => {
@@ -515,11 +532,14 @@ describe('OsmosisPage blocked foundation rows', () => {
     expect(row0.className).toContain('border-ds-error');
   });
 
-  it('leaves the accessible name alone when nothing is selected', async () => {
+  it('leaves the accessible name alone and describes the hint when nothing is selected', async () => {
     renderWithProviders(<OsmosisPage />);
     await waitFor(() => expect(screen.getByTestId('os-allowed-0')).toBeInTheDocument());
 
-    expect(screen.getByRole('button', { name: '組札 0' })).not.toHaveAttribute('aria-describedby');
+    const row0 = screen.getByRole('button', { name: '組札 0' });
+    const describedBy = row0.getAttribute('aria-describedby');
+    expect(describedBy).toBeTruthy();
+    expect(document.getElementById(describedBy ?? '')).toHaveTextContent('先に移動する札を選んでください');
     expect(screen.queryByText('この段には置けません')).not.toBeInTheDocument();
   });
 });

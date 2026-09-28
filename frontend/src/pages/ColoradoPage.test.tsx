@@ -195,9 +195,26 @@ describe('ColoradoPage', () => {
     expect(screen.queryByTestId('co-stock-fill-button')).not.toBeInTheDocument();
   });
 
+  it('keeps an empty tableau target focusable and explains that a source must be selected', async () => {
+    renderWithProviders(<ColoradoPage />);
+    const target = await screen.findByTestId('co-tableau-3');
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const describedBy = target.getAttribute('aria-describedby');
+    expect(describedBy).toBeTruthy();
+    expect(document.getElementById(describedBy ?? '')).toHaveTextContent('先に移動する札を選んでください');
+
+    mockExec.mockClear();
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('does not move when nothing is selected', async () => {
     renderWithProviders(<ColoradoPage />);
-    await waitFor(() => expect(screen.getByTestId('co-foundation-0')).toBeDisabled());
+    const foundation = await screen.findByTestId('co-foundation-0');
+    expect(foundation).not.toBeDisabled();
+    expect(foundation).toHaveAttribute('aria-disabled', 'true');
 
     mockExec.mockClear();
     fireEvent.click(screen.getByTestId('co-foundation-0'));
