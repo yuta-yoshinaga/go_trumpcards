@@ -325,22 +325,18 @@ function GongZhuPageContent() {
               <div>
                 {/* CPU players */}
                 {isMobile ? (
-                  <details className="mb-2 p-2 rounded bg-black/30">
-                    <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
-                      {tc('label.cpuOpponents', { count: state.players.filter((p) => !p.isHuman).length })}
-                    </summary>
-                    <div className="mt-1">
-                      {state.players
-                        .filter((p) => !p.isHuman)
-                        .map((p) => (
-                          <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
-                            {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
-                            {t('cumulativeScore', { score: p.cumulativeScore })} |{' '}
-                            {t('roundScore', { score: p.roundScore })}
-                          </div>
-                        ))}
-                    </div>
-                  </details>
+                  <div data-testid="gz-mobile-opponent-scores" className="mb-2 grid grid-cols-3 gap-2">
+                    {state.players
+                      .filter((p) => !p.isHuman)
+                      .map((p) => (
+                        <div key={p.id} className="rounded bg-ds-surface/80 px-2 py-1 text-center text-xs">
+                          <div className="text-ds-text-primary">{playerName(p.id, p.isHuman)}</div>
+                          <div className="text-ds-text-muted">{t('cards', { count: p.cardCount })}</div>
+                          <div className="text-ds-text-muted">{t('cumulativeScore', { score: p.cumulativeScore })}</div>
+                          <div className="text-ds-text-muted">{t('roundScore', { score: p.roundScore })}</div>
+                        </div>
+                      ))}
+                  </div>
                 ) : (
                   state.players
                     .filter((p) => !p.isHuman)
