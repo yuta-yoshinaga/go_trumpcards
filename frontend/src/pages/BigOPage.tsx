@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { bigOApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -32,6 +32,7 @@ import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import { OmahaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { OMAHA_HELP, parseOmahaCommand } from '../utils/cli/commands/omahaCommands';
 import { formatOmahaState } from '../utils/cli/formatters/omahaFormatter';
 import { omahaLivePreviewKey } from '../utils/livePokerPreview';
@@ -156,6 +157,23 @@ function BigOPageContent() {
     cli: { parseCommand: parseOmahaCommand, formatResponse: formatOmahaState, helpText: OMAHA_HELP },
     resetConfig: bigOResetConfig,
   });
+  const [communityCardsAnnouncement, setCommunityCardsAnnouncement] = useState('');
+  const announcedCommunityCardCount = useRef(0);
+  useEffect(() => {
+    const cards = state?.communityCards ?? [];
+    if (cards.length < announcedCommunityCardCount.current) {
+      announcedCommunityCardCount.current = cards.length;
+      return;
+    }
+    if (cards.length > announcedCommunityCardCount.current) {
+      setCommunityCardsAnnouncement(
+        t('communityCardsRevealed', {
+          cards: cards.slice(announcedCommunityCardCount.current).map(cardAlt).join(t('listSeparator')),
+        }),
+      );
+      announcedCommunityCardCount.current = cards.length;
+    }
+  }, [state?.communityCards, t]);
 
   // At showdown, highlight the human's winning 5 cards under Big O's
   // must-use-exactly-2-hole (of 5) + 3-board rule.
@@ -216,6 +234,9 @@ function BigOPageContent() {
         </>
       }
     >
+      <div aria-live="polite" aria-atomic="true" className="sr-only" data-testid="community-cards-announcement">
+        {communityCardsAnnouncement}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (

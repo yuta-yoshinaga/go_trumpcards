@@ -102,5 +102,6 @@
     "winners": "勝者",
     "low": "ロー"
   },
-  "listSeparator": "、"
+  "listSeparator": "、",
+  "communityCardsRevealed": "コミュニティカードが公開されました: {{cards}}"
 }

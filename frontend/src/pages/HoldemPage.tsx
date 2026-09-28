@@ -40,6 +40,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { HoldemResponse } from '../types/card';
 import { HoldemPhase, HoldemRebuyPhaseType } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { HOLDEM_HELP, parseHoldemCommand } from '../utils/cli/commands/holdemCommands';
 import { formatHoldemState } from '../utils/cli/formatters/holdemFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
@@ -139,6 +140,24 @@ function HoldemPageContent() {
   const turnStartRef = useRef(0);
 
   useMountReset(exec);
+
+  const [communityCardsAnnouncement, setCommunityCardsAnnouncement] = useState('');
+  const announcedCommunityCardCount = useRef(0);
+  useEffect(() => {
+    const cards = state?.communityCards ?? [];
+    if (cards.length < announcedCommunityCardCount.current) {
+      announcedCommunityCardCount.current = cards.length;
+      return;
+    }
+    if (cards.length > announcedCommunityCardCount.current) {
+      setCommunityCardsAnnouncement(
+        t('communityCardsRevealed', {
+          cards: cards.slice(announcedCommunityCardCount.current).map(cardAlt).join(t('listSeparator')),
+        }),
+      );
+      announcedCommunityCardCount.current = cards.length;
+    }
+  }, [state?.communityCards, t]);
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
@@ -288,6 +307,9 @@ function HoldemPageContent() {
         </>
       }
     >
+      <div aria-live="polite" aria-atomic="true" className="sr-only" data-testid="community-cards-announcement">
+        {communityCardsAnnouncement}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
