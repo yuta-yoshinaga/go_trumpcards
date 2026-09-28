@@ -31,6 +31,7 @@ import type { BotifarraResponse } from '../types/card';
 import { BOTIFARRA_NO_TRUMP, BOTIFARRA_TOTAL_POINTS } from '../types/games/botifarra';
 import { BotifarraPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { BOTIFARRA_CLI_HELP, parseBotifarraCommand } from '../utils/cli/commands/botifarraCommands';
 import { formatBotifarraState } from '../utils/cli/formatters/botifarraFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -284,7 +285,7 @@ function BotifarraPageContent() {
                         onClick={() => handlePlay(i)}
                         disabled={loading || !playable}
                         aria-disabled={!playable}
-                        aria-label={`${card.design} ${card.value}`}
+                        aria-label={cardAlt(card)}
                         className={playable ? 'ring-2 ring-ds-success rounded' : 'opacity-60'}
                       >
                         <AnimatedCard card={card} width={cardWidth} />

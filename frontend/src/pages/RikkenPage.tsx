@@ -31,6 +31,7 @@ import type { RikkenResponse } from '../types/card';
 import { RIKKEN_CONTRACTS, RIKKEN_NO_TRUMP } from '../types/games/rikken';
 import { RikkenContract, RikkenPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { parseRikkenCommand, RIKKEN_CLI_HELP } from '../utils/cli/commands/rikkenCommands';
 import { formatRikkenState } from '../utils/cli/formatters/rikkenFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -294,7 +295,7 @@ function RikkenPageContent() {
                         onClick={() => handlePlay(i)}
                         disabled={loading || !playable}
                         aria-disabled={!playable}
-                        aria-label={`${card.design} ${card.value}`}
+                        aria-label={cardAlt(card)}
                         className={playable ? 'ring-2 ring-ds-success rounded' : 'opacity-60'}
                       >
                         <AnimatedCard card={card} width={cardWidth} />

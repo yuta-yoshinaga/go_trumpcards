@@ -6,6 +6,7 @@ import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, RikkenResponse } from '../types/card';
 import { RIKKEN_NO_TRUMP } from '../types/games/rikken';
 import { RikkenContract, RikkenPhase } from '../types/phases';
+import { cardAlt } from '../utils/cardAlt';
 import { RikkenPage } from './RikkenPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -121,6 +122,13 @@ beforeEach(() => {
 });
 
 describe('RikkenPage', () => {
+  it('uses localized card names for hand buttons', async () => {
+    mockApi.mockResolvedValue(playState);
+    renderWithProviders(<RikkenPage />);
+    const handElement = await screen.findByTestId('rikken-hand');
+    expect(handElement.querySelector('button')).toHaveAttribute('aria-label', cardAlt({ design: 'SPADE', value: 1 }));
+  });
+
   it('resets on mount', async () => {
     mockApi.mockResolvedValue(bidState);
     renderWithProviders(<RikkenPage />);

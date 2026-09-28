@@ -31,6 +31,7 @@ import type { ColourWhistResponse } from '../types/card';
 import { COLOUR_WHIST_BIDDABLE, COLOUR_WHIST_NO_TRUMP } from '../types/games/colourwhist';
 import { ColourWhistContract, ColourWhistPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { COLOURWHIST_CLI_HELP, parseColourWhistCommand } from '../utils/cli/commands/colourwhistCommands';
 import { formatColourWhistState } from '../utils/cli/formatters/colourwhistFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -291,7 +292,7 @@ function ColourWhistPageContent() {
                         onClick={() => handlePlay(i)}
                         disabled={loading || !playable}
                         aria-disabled={!playable}
-                        aria-label={`${card.design} ${card.value}`}
+                        aria-label={cardAlt(card)}
                         className={playable ? 'ring-2 ring-ds-success rounded' : 'opacity-60'}
                       >
                         <AnimatedCard card={card} width={cardWidth} />
