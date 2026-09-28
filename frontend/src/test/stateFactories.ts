@@ -3169,6 +3169,7 @@ const baseBeziqueState: BeziqueResponse = {
   ],
   dealPoints: [0, 0],
   dealMeldPoints: [0, 0],
+  lastTrickBonus: [0, 0],
   matchScore: [0, 0],
   phase: 0,
   roundNumber: 1,

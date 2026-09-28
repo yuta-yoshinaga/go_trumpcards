@@ -328,6 +328,11 @@ function BeziquePageContent() {
                           name: p.isHuman ? t('you') : t('cpu', { id: p.id }),
                           points: state.dealPoints[p.id] ?? 0,
                         })}
+                        {state.lastTrickBonus[p.id] > 0 && (
+                          <div data-testid={`bezique-last-trick-bonus-${p.id}`}>
+                            {t('roundResult.lastTrickBonus', { points: state.lastTrickBonus[p.id] })}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>

@@ -51,7 +51,8 @@
   },
   "roundResult": {
     "title": "ディール結果（獲得ポイント）",
-    "line": "{{name}}: {{points}}点"
+    "line": "{{name}}: {{points}}点",
+    "lastTrickBonus": "（うち最終トリック加点 {{points}}点）"
   },
   "hintAvailable": "ヒント",
   "hint": {

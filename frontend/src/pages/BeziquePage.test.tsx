@@ -85,6 +85,23 @@ describe('BeziquePage', () => {
     expect(breakdown).toHaveTextContent('4');
   });
 
+  it('shows who received the last-trick bonus in the deal result and omits it when absent', async () => {
+    mockExec.mockResolvedValue(
+      makeBeziqueState({ phase: 2, dealPoints: [10, 30], dealMeldPoints: [0, 0], lastTrickBonus: [0, 10] }),
+    );
+    renderWithProviders(<BeziquePage />);
+    expect(await screen.findByTestId('bezique-last-trick-bonus-1')).toHaveTextContent('（うち最終トリック加点 10点）');
+    expect(screen.queryByTestId('bezique-last-trick-bonus-0')).not.toBeInTheDocument();
+  });
+
+  it('does not show a last-trick bonus line when no bonus was scored', async () => {
+    mockExec.mockResolvedValue(makeBeziqueState({ phase: 2, lastTrickBonus: [0, 0] }));
+    renderWithProviders(<BeziquePage />);
+    expect(await screen.findByText('ディール結果（獲得ポイント）')).toBeInTheDocument();
+    expect(screen.queryByTestId('bezique-last-trick-bonus-0')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('bezique-last-trick-bonus-1')).not.toBeInTheDocument();
+  });
+
   it('shows the literal trick point table', async () => {
     mockExec.mockResolvedValue(makeBeziqueState());
     renderWithProviders(<BeziquePage />);

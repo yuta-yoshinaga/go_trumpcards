@@ -168,6 +168,7 @@ type Bezique struct {
 	dealerIdx        int
 	dealPoints       []int // 当ディールの得点
 	dealMeldPoints   []int // 当ディールのうちメルド由来の得点 (内訳表示用; トリック由来 = dealPoints - dealMeldPoints)
+	lastTrickBonus   []int // 当ディールの最終トリック加点
 	matchScore       []int // 試合累積得点
 	meldsDeclared    []int // プレイヤー毎の宣言済みメルドビットマスク
 	gameEndFlag      bool
@@ -184,6 +185,7 @@ func NewBezique(trumpCards *TrumpCards, players []*BeziquePlayer, config Bezique
 		winnerIdx:      -1,
 		dealPoints:     make([]int, len(players)),
 		dealMeldPoints: make([]int, len(players)),
+		lastTrickBonus: make([]int, len(players)),
 		matchScore:     make([]int, len(players)),
 		meldsDeclared:  make([]int, len(players)),
 	}
@@ -224,6 +226,7 @@ func (b *Bezique) NextRound() {
 func (b *Bezique) startDeal() {
 	b.dealPoints = make([]int, len(b.players))
 	b.dealMeldPoints = make([]int, len(b.players))
+	b.lastTrickBonus = make([]int, len(b.players))
 	b.meldsDeclared = make([]int, len(b.players))
 	b.currentTrick = nil
 	b.trumpCard = nil
@@ -435,6 +438,14 @@ func (b *Bezique) GetDealMeldPoints(i int) int {
 	return b.dealMeldPoints[i]
 }
 
+// GetLastTrickBonus はプレイヤーの当ディール最終トリック加点を返す。
+func (b *Bezique) GetLastTrickBonus(i int) int {
+	if i < 0 || i >= len(b.lastTrickBonus) {
+		return 0
+	}
+	return b.lastTrickBonus[i]
+}
+
 // SetDealPoints プレイヤーの当ディール得点設定 (テスト用)
 func (b *Bezique) SetDealPoints(i, points int) {
 	if i >= 0 && i < len(b.dealPoints) {
@@ -566,6 +577,7 @@ func (b *Bezique) resolveTrick() {
 		// 第2フェーズ: 役宣言・補充なし。
 		if b.allHandsEmpty() {
 			b.dealPoints[winnerIdx] += BeziqueLastTrickBonus
+			b.lastTrickBonus[winnerIdx] += BeziqueLastTrickBonus
 			b.appendLogCode(winnerIdx, "last_trick", "bezique.log.lastTrick", map[string]string{"name": playerName(b.players, winnerIdx), "bonus": strconv.Itoa(BeziqueLastTrickBonus)}, nil)
 			b.scoreDeal()
 			return
@@ -1020,6 +1032,7 @@ type beziqueJSON struct {
 	DealerIdx        int               `json:"di"`
 	DealPoints       []int             `json:"dp"`
 	DealMeldPoints   []int             `json:"dmp"`
+	LastTrickBonus   []int             `json:"ltb"`
 	MatchScore       []int             `json:"ms"`
 	MeldsDeclared    []int             `json:"me"`
 	GameEndFlag      bool              `json:"ge"`
@@ -1044,6 +1057,7 @@ func (b *Bezique) MarshalJSON() ([]byte, error) {
 		DealerIdx:        b.dealerIdx,
 		DealPoints:       b.dealPoints,
 		DealMeldPoints:   b.dealMeldPoints,
+		LastTrickBonus:   b.lastTrickBonus,
 		MatchScore:       b.matchScore,
 		MeldsDeclared:    b.meldsDeclared,
 		GameEndFlag:      b.gameEndFlag,
@@ -1116,6 +1130,7 @@ func (b *Bezique) UnmarshalJSON(data []byte) error {
 	b.dealerIdx = j.DealerIdx
 	b.dealPoints = beziqueEnsureLen(j.DealPoints)
 	b.dealMeldPoints = beziqueEnsureLen(j.DealMeldPoints)
+	b.lastTrickBonus = beziqueEnsureLen(j.LastTrickBonus)
 	b.matchScore = beziqueEnsureLen(j.MatchScore)
 	b.meldsDeclared = beziqueEnsureLen(j.MeldsDeclared)
 	b.gameEndFlag = j.GameEndFlag
