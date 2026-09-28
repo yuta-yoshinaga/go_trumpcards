@@ -1397,4 +1397,16 @@ describe('PineapplePage', () => {
     expect(screen.getByText('ベット判断の情報')).toBeInTheDocument();
     expect(screen.queryByTestId('equity-display')).not.toBeInTheDocument();
   });
+
+  it('does not show Irish equity when pot odds are unavailable', async () => {
+    mockIrishExec.mockResolvedValue({
+      ...preFlopState,
+      equity: { winProbability: 0.42, handOdds: [] },
+      potOdds: undefined,
+    });
+    renderWithProviders(<PineapplePage variant="irishpoker" />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.getByText('ベット判断の情報')).toBeInTheDocument();
+    expect(screen.queryByTestId('equity-display')).not.toBeInTheDocument();
+  });
 });
