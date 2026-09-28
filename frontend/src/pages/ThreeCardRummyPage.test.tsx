@@ -268,9 +268,9 @@ describe('ThreeCardRummyPage', () => {
     renderWithProviders(<ThreeCardRummyPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument());
 
-    expect(screen.getByTestId('tcr-fold-consequence')).toHaveTextContent(
-      'フォールドするとアンテ 100 を失います。ローボーナス 50 は独立して評価されます。',
-    );
+    const consequence = 'フォールドするとアンテ 100 を失います。ローボーナス 50 は独立して評価されます。';
+    expect(screen.getByTestId('tcr-fold-consequence')).toHaveTextContent(consequence);
+    expect(screen.getByRole('button', { name: 'フォールド' })).toHaveAccessibleDescription(consequence);
   });
 
   it('mentions only the lost ante when no low bonus was placed', async () => {
