@@ -32,6 +32,19 @@ describe('RoundResults', () => {
     expect(visible().getByText(/\+100チップ/)).toBeInTheDocument();
   });
 
+  it('renders signed net changes including zero while keeping gross winnings', () => {
+    const results = [
+      { playerIdx: 0, handName: 'Pair', wonAmount: 120, netChange: 120 },
+      { playerIdx: 1, handName: 'High card', wonAmount: 0, netChange: -40 },
+      { playerIdx: 2, handName: 'High card', wonAmount: 0, netChange: 0 },
+    ];
+    render(<RoundResults results={results} players={players} />);
+    expect(visible().getByText(/差引 \+120 チップ/)).toBeInTheDocument();
+    expect(visible().getByText(/差引 -40 チップ/)).toBeInTheDocument();
+    expect(visible().getByText(/差引 ±0 チップ/)).toBeInTheDocument();
+    expect(visible().getByText(/\+120チップ/)).toBeInTheDocument();
+  });
+
   it('renders CPU player with index', () => {
     const results = [{ playerIdx: 1, handName: 'ワンペア', wonAmount: 0 }];
     render(<RoundResults results={results} players={players} />);

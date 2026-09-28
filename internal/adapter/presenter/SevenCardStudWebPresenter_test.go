@@ -47,6 +47,7 @@ func TestSevenCardStudWebPresenter_Output(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, domain.SevenCardStudPhaseThirdStreet, out.Phase)
 		assert.Equal(t, 4, len(out.Players))
+		assert.Equal(t, []int{0, 0, 0, 0}, []int{out.Players[0].NetChange, out.Players[1].NetChange, out.Players[2].NetChange, out.Players[3].NetChange})
 		assert.False(t, out.GameEndFlag)
 		assert.Equal(t, "", out.Message)
 		assert.Nil(t, out.CommunityCard)

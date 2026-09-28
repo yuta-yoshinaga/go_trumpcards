@@ -33,6 +33,7 @@ type SevenCardStudWebOutputPlayer struct {
 	HoleCards  []*WebOutputCard `json:"holeCards"`
 	DoorCards  []*WebOutputCard `json:"doorCards"`
 	Chips      int              `json:"chips"`
+	NetChange  int              `json:"netChange"`
 	CurrentBet int              `json:"currentBet"`
 	Folded     bool             `json:"folded"`
 	AllIn      bool             `json:"allIn"`

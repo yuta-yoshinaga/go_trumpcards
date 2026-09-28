@@ -405,7 +405,12 @@ function RazzPageContent() {
             {isMobile ? <CpuActionToast actions={state?.cpuActions} /> : <CpuActionLog actions={state?.cpuActions} />}
 
             {/* Round results */}
-            {isShowdown && <RoundResults results={state?.roundResults} players={state?.players ?? []} />}
+            {isShowdown && (
+              <RoundResults
+                results={state?.roundResults?.map((r) => ({ ...r, netChange: state?.players[r.playerIdx]?.netChange }))}
+                players={state?.players ?? []}
+              />
+            )}
 
             {/* Action log */}
             <ActionLogSection

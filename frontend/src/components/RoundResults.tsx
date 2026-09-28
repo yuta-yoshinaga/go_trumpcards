@@ -6,13 +6,14 @@ export interface RoundResultEntry {
   handName: string;
   kickers?: string;
   wonAmount: number;
+  netChange?: number;
   mucked?: boolean;
 }
 
 /** Props for {@link RoundResults}. */
 export interface RoundResultsProps {
   results: RoundResultEntry[] | undefined;
-  players: { isHuman: boolean }[];
+  players: { isHuman: boolean; netChange?: number }[];
 }
 
 /**
@@ -73,6 +74,13 @@ export function RoundResults({ results, players }: RoundResultsProps) {
             {!r.mucked && r.kickers && ` (${t('label.kicker', { kickers: r.kickers })})`}
             {r.wonAmount > 0 && (
               <span className="text-ds-warning ml-1"> {t('label.chipsWon', { amount: r.wonAmount })}</span>
+            )}
+            {r.netChange !== undefined && (
+              <span className="ml-1">
+                {t('label.netChange', {
+                  amount: r.netChange > 0 ? `+${r.netChange}` : r.netChange < 0 ? `${r.netChange}` : '±0',
+                })}
+              </span>
             )}
           </div>
         ))}

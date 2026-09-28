@@ -1070,6 +1070,7 @@
     "dealer": "ディーラー:",
     "networkError": "通信エラーが発生しました。もう一度お試しください。",
     "chipsWon": "+{{amount}}チップ",
+    "netChange": "差引 {{amount}} チップ",
     "kicker": "キッカー: {{kickers}}",
     "mucked": "マック",
     "player": "プレイヤー",

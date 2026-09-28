@@ -53405,6 +53405,9 @@ components:
           description: Current chip count
           minimum: 0
           example: 990
+        netChange:
+          type: integer
+          description: Net chip change since this hand started, including antes and bets.
         currentBet:
           type: integer
           description: Current round bet amount

@@ -1093,6 +1093,14 @@ func (s *SevenCardStud) GetRaiseCount() int { return s.raiseCount }
 // GetRoundResults ラウンド結果取得
 func (s *SevenCardStud) GetRoundResults() []SevenCardStudResult { return s.roundResults }
 
+// GetRoundNetChange returns the player's chip change since the current hand began.
+func (s *SevenCardStud) GetRoundNetChange(playerIdx int) int {
+	if playerIdx < 0 || playerIdx >= len(s.players) || playerIdx >= len(s.startingChips) {
+		return 0
+	}
+	return s.players[playerIdx].GetChips() - s.startingChips[playerIdx]
+}
+
 // GetCpuActions CPU行動記録取得
 func (s *SevenCardStud) GetCpuActions() []SevenCardStudCpuAction { return s.cpuActions }
 
