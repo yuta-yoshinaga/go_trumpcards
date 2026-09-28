@@ -104,20 +104,35 @@ describe('RoyalCotillionPage', () => {
   });
 
   // **空き山はタブローからは埋められない。**`MoveTableauToTableau` が明示的に
-  // 拒否する。押せてしまうとサーバに弾かれるまで気づけない (#4906)。
-  it('keeps an empty slot unclickable while a board card is selected', async () => {
+  // 拒否する。無効状態を読み上げつつ Tab で到達できる (#4906)。
+  it('keeps an empty slot aria-disabled while a board card is selected', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<RoyalCotillionPage />);
     const empty = await screen.findByRole('button', { name: /空の枠 3/ });
-    // まだ何も選んでいなければ、当然押せない。
-    expect(empty).toBeDisabled();
+    expect(empty).not.toBeDisabled();
+    expect(empty).toHaveAttribute('aria-disabled', 'true');
 
     fireEvent.click(screen.getByRole('button', { name: '枠 0 ♠ 9' }));
     await waitFor(() =>
       expect(screen.getByRole('button', { name: '枠 0 ♠ 9' })).toHaveAttribute('aria-pressed', 'true'),
     );
-    // タブローの札を選んでも押せないまま。
-    expect(empty).toBeDisabled();
+    expect(empty).not.toBeDisabled();
+    expect(empty).toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('keeps an empty foundation focusable and explains that a source must be selected', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<RoyalCotillionPage />);
+    const target = await screen.findByRole('button', { name: /^空の組札0/ });
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const describedBy = target.getAttribute('aria-describedby');
+    expect(describedBy).toBeTruthy();
+    expect(document.getElementById(describedBy ?? '')).toHaveTextContent('先に移動する札を選んでください');
+    mockExec.mockClear();
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
   });
 
   // **ドラッグ経路も同じ規則を守る。**クリックはボタンを無効化して防いでいるが、
@@ -190,9 +205,12 @@ describe('RoyalCotillionPage', () => {
     const reserveCard = await screen.findByRole('button', { name: 'リザーブ 0 ♥ 2（一番上）' });
     fireEvent.click(reserveCard);
     await waitFor(() => expect(reserveCard).toHaveAttribute('aria-pressed', 'true'));
+    const foundation = screen.getByRole('button', { name: /組札0/ });
+    expect(foundation).not.toHaveAttribute('aria-disabled');
+    expect(foundation).not.toHaveAttribute('aria-describedby');
     mockExec.mockClear();
 
-    fireEvent.click(screen.getAllByRole('button', { name: /組札/ })[0]);
+    fireEvent.click(foundation);
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'reserve', col: 0 }, { zone: 'foundation', col: 0 }),
     );
@@ -246,9 +264,12 @@ describe('RoyalCotillionPage', () => {
     );
     fireEvent.click(stock);
     await waitFor(() => expect(stock).toHaveAttribute('aria-pressed', 'true'));
+    const emptySlot = screen.getByRole('button', { name: /空の枠 3/ });
+    expect(emptySlot).not.toHaveAttribute('aria-disabled');
+    expect(emptySlot).not.toHaveAttribute('aria-describedby');
     mockExec.mockClear();
 
-    fireEvent.click(screen.getByRole('button', { name: /空の枠 3/ }));
+    fireEvent.click(emptySlot);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', { zone: 'stock' }, { zone: 'tableau', col: 3 }));
   });
 
@@ -259,9 +280,12 @@ describe('RoyalCotillionPage', () => {
     const ace = await screen.findByRole('button', { name: '枠 2 ♣ A' });
     fireEvent.click(ace);
     await waitFor(() => expect(ace).toHaveAttribute('aria-pressed', 'true'));
+    const foundation = screen.getByRole('button', { name: /空の組札1/ });
+    expect(foundation).not.toHaveAttribute('aria-disabled');
+    expect(foundation).not.toHaveAttribute('aria-describedby');
     mockExec.mockClear();
 
-    fireEvent.click(screen.getByRole('button', { name: /空の組札1/ }));
+    fireEvent.click(foundation);
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'tableau', col: 2 }, { zone: 'foundation', col: 1 }),
     );
