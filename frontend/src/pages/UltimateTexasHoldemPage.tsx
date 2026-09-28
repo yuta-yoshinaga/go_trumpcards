@@ -322,28 +322,48 @@ function UltimateTexasHoldemPageContent() {
         {isEndPhase && (
           <div className="text-ds-text-primary text-center text-sm mb-2" data-testid="payout-breakdown">
             <div>{state.dealerQualified ? t('result.dealerQualified') : t('result.dealerNotQualified')}</div>
-            {state.antePayout !== 0 && (
+            {state.anteBet > 0 && (
               <div>
-                {t('payout.ante')}: {state.antePayout}
+                {t('payout.ante')}: {state.antePayout} (
+                {t(
+                  `payout.${state.antePayout > state.anteBet ? 'win' : state.antePayout === state.anteBet ? 'push' : 'loss'}`,
+                )}
+                )
               </div>
             )}
-            {state.blindPayout !== 0 && (
+            {state.blindBet > 0 && (
               <div>
-                {t('payout.blind')}: {state.blindPayout}
+                {t('payout.blind')}: {state.blindPayout} (
+                {t(
+                  `payout.${state.blindPayout > state.blindBet ? 'win' : state.blindPayout === state.blindBet ? 'push' : 'loss'}`,
+                )}
+                )
               </div>
             )}
-            {state.playPayout !== 0 && (
+            {state.playBet > 0 && (
               <div>
-                {t('payout.play')}: {state.playPayout}
+                {t('payout.play')}: {state.playPayout} (
+                {t(
+                  `payout.${state.playPayout > state.playBet ? 'win' : state.playPayout === state.playBet ? 'push' : 'loss'}`,
+                )}
+                )
               </div>
             )}
-            {state.tripsPayout !== 0 && (
+            {state.tripsBet > 0 && (
               <div>
-                {t('payout.trips')}: {state.tripsPayout}
+                {t('payout.trips')}: {state.tripsPayout} (
+                {t(
+                  `payout.${state.tripsPayout > state.tripsBet ? 'win' : state.tripsPayout === state.tripsBet ? 'push' : 'loss'}`,
+                )}
+                )
               </div>
             )}
             <div className="font-bold mt-1">
               {t('payout.total')}: {state.totalPayout}
+            </div>
+            <div className="font-bold">
+              {t('payout.netChange')}:{' '}
+              {state.netChange > 0 ? `+${state.netChange}` : state.netChange < 0 ? `${state.netChange}` : '±0'}
             </div>
           </div>
         )}

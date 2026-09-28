@@ -29,7 +29,7 @@ func mustUltimateTexasHoldemOutputJSON(msg string) string {
 }
 
 func TestUltimateTexasHoldemWebController_Method(t *testing.T) {
-	mockOutput := `{"playerHand":[],"dealerHand":[],"community":[],"phase":0,"chips":0,"anteBet":0,"blindBet":0,"tripsBet":0,"playBet":0,"folded":false,"result":0,"dealerQualified":false,"antePayout":0,"blindPayout":0,"playPayout":0,"tripsPayout":0,"totalPayout":0,"playerHandRank":0,"dealerHandRank":0,"message":""}`
+	mockOutput := `{"playerHand":[],"dealerHand":[],"community":[],"phase":0,"chips":0,"anteBet":0,"blindBet":0,"tripsBet":0,"playBet":0,"folded":false,"result":0,"dealerQualified":false,"antePayout":0,"blindPayout":0,"playPayout":0,"tripsPayout":0,"totalPayout":0,"netChange":0,"playerHandRank":0,"dealerHandRank":0,"message":""}`
 
 	tiMock := new(usecase.MockUltimateTexasHoldemInteractor)
 	tiMock.On("Reset").Return(mockOutput)

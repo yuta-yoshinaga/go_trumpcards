@@ -50888,6 +50888,7 @@ components:
         - anteBonusPayout
         - acesUpPayout
         - totalPayout
+        - netChange
         - playerHandRank
         - dealerHandRank
         - message
@@ -64444,6 +64445,10 @@ components:
         totalPayout:
           type: integer
           description: Sum of antePayout + blindPayout + playPayout + tripsPayout
+          example: 0
+        netChange:
+          type: integer
+          description: Sum of all payouts minus all bets placed during the round
           example: 0
         playerHandRank:
           type: integer

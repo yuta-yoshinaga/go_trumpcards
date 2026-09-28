@@ -22,6 +22,7 @@ function baseState(overrides: Partial<UltimateTexasHoldemResponse> = {}): Ultima
     playPayout: 0,
     tripsPayout: 0,
     totalPayout: 0,
+    netChange: 0,
     playerHandRank: 0,
     dealerHandRank: 0,
     message: '',
