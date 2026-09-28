@@ -230,6 +230,21 @@ describe('SpeedPage', () => {
     expect(screen.getByRole('button', { name: /^台札2: ♠ 9/ })).toBeInTheDocument();
   });
 
+  it('advertises the arrow key that plays onto each center pile', async () => {
+    renderWithProviders(<SpeedPage />);
+    await screen.findByText('手札');
+    expect(screen.getByRole('button', { name: /^台札1:/ })).toHaveAttribute('aria-keyshortcuts', 'ArrowLeft');
+    expect(screen.getByRole('button', { name: /^台札2:/ })).toHaveAttribute('aria-keyshortcuts', 'ArrowRight');
+  });
+
+  it('does not advertise the arrow keys while stuck, when the piles are flipped instead', async () => {
+    mockExec.mockResolvedValue(stuckState);
+    renderWithProviders(<SpeedPage />);
+    const flipPile = await screen.findByRole('button', { name: '台札1をめくる' });
+    expect(flipPile).not.toHaveAttribute('aria-keyshortcuts');
+    expect(screen.getByRole('button', { name: '台札2をめくる' })).not.toHaveAttribute('aria-keyshortcuts');
+  });
+
   it('auto-plays a card via smart-click when only one valid pile exists', async () => {
     renderWithProviders(<SpeedPage />);
     await waitFor(() => expect(screen.getByText('手札')).toBeInTheDocument());
