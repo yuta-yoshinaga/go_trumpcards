@@ -126,6 +126,24 @@ describe('CuckooPage', () => {
     expect(await screen.findByRole('button', { name: '棋譜を見る' })).toBeInTheDocument();
   });
 
+  it('disables the keep keyboard shortcut while the action log is open and restores it when closed', async () => {
+    vi.mocked(actionLogApi.cuckoo).mockResolvedValue({ entries: [] });
+    renderWithProviders(<CuckooPage />);
+
+    fireEvent.click(await screen.findByRole('button', { name: '棋譜を見る' }));
+    await screen.findByText('棋譜はありません。');
+    mockExec.mockClear();
+
+    fireEvent.keyDown(document, { key: 'k' });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('keep');
+
+    fireEvent.click(screen.getByRole('button', { name: '閉じる' }));
+    await screen.findByRole('button', { name: '棋譜を見る' });
+    fireEvent.keyDown(document, { key: 'k' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('keep'));
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<CuckooPage />);
