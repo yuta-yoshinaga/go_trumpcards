@@ -7,6 +7,7 @@ ROOT=Path(__file__).resolve().parents[4]
 SCRIPTS=ROOT/".claude/skills/game-improve/scripts"
 sys.path.insert(0,str(SCRIPTS))
 from surface_map import build_one, page_for, registry_games
+from check_absence import line_count
 
 class GameImproveTests(unittest.TestCase):
     def test_surface_map_real_games(self):
@@ -68,6 +69,25 @@ class GameImproveTests(unittest.TestCase):
             current_state=[{"path":path,"line":351,"note":"passes trumpIndices only for styling"}])
         run,clean,suspect=self.run_checker([p],[build_one("tute")])
         self.assertEqual(run.returncode,0,run.stderr); self.assertEqual(len(clean),1); self.assertEqual(suspect,[])
+
+    def test_pcre_noncapturing_group_and_digit_escape_match(self):
+        p=self.fixture("tute",r"(?:useState)\(\d", "frontend/src/pages/AnacondaPage.tsx")
+        run,clean,suspect=self.run_checker([p],[build_one("tute")])
+        self.assertEqual(run.returncode,0,run.stderr)
+        self.assertEqual(clean,[])
+        self.assertIn("pattern-found",[x["reason"] for x in suspect[0]["reasons"]])
+
+    def test_invalid_pcre_is_never_clean(self):
+        p=self.fixture("ginrummy",r"(?")
+        run,clean,suspect=self.run_checker([p],[build_one("ginrummy")])
+        self.assertEqual(clean,[])
+        self.assertTrue(any(x["reason"] in ("invalid-regex","grep-error") for x in suspect[0]["reasons"]))
+
+    def test_line_count_replaces_invalid_utf8(self):
+        with tempfile.TemporaryDirectory() as td:
+            path=Path(td)/"invalid.txt"
+            path.write_bytes(b"valid\ninvalid-\xff\n")
+            self.assertEqual(line_count(path),2)
 
     def test_missing_current_state_path_rejected(self):
         p=self.fixture("ginrummy","zzzNoSuchSymbolzzz",current_state=[{"path":"not/a/real/file.tsx","line":1,"note":"missing"}])

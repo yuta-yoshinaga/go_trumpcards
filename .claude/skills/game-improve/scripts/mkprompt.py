@@ -43,7 +43,7 @@ def main():
 - Code-backed proposal with concrete paths/symbols; avoid generic testing/refactor suggestions.
 - Do not duplicate closed issues; verify current code.
 - A past issue marked (not planned) was rejected because its premise was wrong; do not propose that premise again.
-- Require `absence_evidence`: at least one {{claim, pattern, paths}}. A script will rerun each extended-regex pattern across the entire game surface and return the proposal if anything matches. Make the pattern specific to the missing feature, not a broad keyword.
+- Require `absence_evidence`: at least one {{claim, pattern, paths}}. A script will rerun each PCRE regex (as `git grep -P`) across the entire game surface and return the proposal if anything matches. Make the pattern specific to the missing feature, not a broad keyword.
 - `premise_key` is a short kebab-case name for the missing premise, shared across games with the same premise.
 - `needs_cpu_turn_state` is true only when the requested UI needs to show an in-progress CPU turn.
 - Include `files_read` with repository paths actually inspected.

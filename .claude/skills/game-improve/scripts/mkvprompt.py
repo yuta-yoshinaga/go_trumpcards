@@ -22,7 +22,7 @@ def main():
         cpu=("yes — CPU turns run inside the human's request; a \"CPU is acting\" state never reaches the screen" if g.get("sync_cpu_loop") else "no")
         hit=next((x for x in suspects if x.get("proposal",x).get("game")==p.get("game")),None)
         chunks.append(f"### {p.get('game')}\nsync_cpu_loop: {cpu}\nSurface files (inspect all):\n{surface}\nNested shared components (the `deep` set) are also searched by the absence check, though they are not listed.\nPast issues:\n{past}\n\nProposal: {json.dumps(p,ensure_ascii=False,indent=2)}\n\nAbsence checker hits: {json.dumps(hit,ensure_ascii=False) if hit else 'none'}")
-    print(f"""Read-only code review. Verify every factual claim against current code and every listed surface file.
+    print(f"""Read-only code review. Verify every factual claim against current code and every listed surface file. Absence patterns use PCRE regex (as `git grep -P`).
 Known false positives:
 {FALSE}
 {EVIDENCE_GUIDANCE}

@@ -6,6 +6,9 @@ from surface_map import ROOT, build_one
 
 REQUIRED={"game","title","body","premise_key","needs_cpu_turn_state","files_read","current_state","absence_evidence"}
 
+def line_count(path):
+    return len(path.read_text(errors="replace").splitlines())
+
 def main():
     ap=argparse.ArgumentParser(); ap.add_argument("proposals"); ap.add_argument("--games",required=True); ap.add_argument("--clean",required=True); ap.add_argument("--suspect",required=True); a=ap.parse_args()
     try:
@@ -36,11 +39,11 @@ def main():
             path,line=state["path"],state["line"]
             if not isinstance(path,str) or not (ROOT/path).is_file():
                 reasons.append({"reason":"missing-current-state-path","index":idx,"path":path}); continue
-            try: line_count=len((ROOT/path).read_text().splitlines())
+            try: count=line_count(ROOT/path)
             except OSError:
                 reasons.append({"reason":"missing-current-state-path","index":idx,"path":path}); continue
-            if not isinstance(line,int) or isinstance(line,bool) or line < 1 or line > line_count:
-                reasons.append({"reason":"invalid-current-state-line","index":idx,"path":path,"line":line,"line_count":line_count}); continue
+            if not isinstance(line,int) or isinstance(line,bool) or line < 1 or line > count:
+                reasons.append({"reason":"invalid-current-state-line","index":idx,"path":path,"line":line,"line_count":count}); continue
             current_locations.append((path,line))
         surface=set()
         if g:
@@ -59,7 +62,7 @@ def main():
             except (TypeError,re.error) as e:
                 reasons.append({"reason":"invalid-regex","index":idx,"error":str(e)}); continue
             search_paths=sorted(surface|set(paths))
-            cmd=["git","grep","-nE","-e",ev["pattern"],"--",*search_paths]
+            cmd=["git","grep","-nP","-e",ev["pattern"],"--",*search_paths]
             run=subprocess.run(cmd,cwd=ROOT,text=True,capture_output=True)
             if run.returncode not in (0,1):
                 reasons.append({"reason":"grep-error","index":idx,"error":run.stderr.strip()})

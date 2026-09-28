@@ -95,7 +95,8 @@ Measured last time: codex took ~100–150 s per 12-game group; agy-pro took
 
 ### 5. Merge proposals and check absence claims
 Merge the generated group JSON files (each shaped as `{"proposals":[...]}`) into `proposals.json`, then run the checker. It
-validates required fields and evidence, searches every absence regex over the
+validates required fields and evidence, searches every absence PCRE regex (as
+`git grep -P`) over the
 game's whole mapped surface including `deep` plus any paths named in the
 evidence, and flags `needs_cpu_turn_state` for `sync_cpu_loop` games. Keep clean
 proposals moving; send suspect proposals and their reported hits to step 6.
