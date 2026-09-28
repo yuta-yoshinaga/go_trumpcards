@@ -27,6 +27,7 @@ import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
+import { useCommunityCardAnnouncement } from '../hooks/useCommunityCardAnnouncement';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
@@ -40,7 +41,6 @@ import { gameTheme } from '../styles/gameTheme';
 import type { HoldemResponse } from '../types/card';
 import { HoldemPhase, HoldemRebuyPhaseType } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { cardAlt } from '../utils/cardAlt';
 import { HOLDEM_HELP, parseHoldemCommand } from '../utils/cli/commands/holdemCommands';
 import { formatHoldemState } from '../utils/cli/formatters/holdemFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
@@ -141,23 +141,7 @@ function HoldemPageContent() {
 
   useMountReset(exec);
 
-  const [communityCardsAnnouncement, setCommunityCardsAnnouncement] = useState('');
-  const announcedCommunityCardCount = useRef(0);
-  useEffect(() => {
-    const cards = state?.communityCards ?? [];
-    if (cards.length < announcedCommunityCardCount.current) {
-      announcedCommunityCardCount.current = cards.length;
-      return;
-    }
-    if (cards.length > announcedCommunityCardCount.current) {
-      setCommunityCardsAnnouncement(
-        t('communityCardsRevealed', {
-          cards: cards.slice(announcedCommunityCardCount.current).map(cardAlt).join(t('listSeparator')),
-        }),
-      );
-      announcedCommunityCardCount.current = cards.length;
-    }
-  }, [state?.communityCards, t]);
+  const communityCardsAnnouncement = useCommunityCardAnnouncement(state?.communityCards ?? [], t);
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
