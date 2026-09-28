@@ -94,6 +94,7 @@ func (p *Rummy500WebPresenter) buildPlayersOutput(g interfaces.Rummy500Game) []*
 		laid := make([]*controller.Rummy500WebOutputMeld, 0, len(melds))
 		for _, m := range melds {
 			meldOut := &controller.Rummy500WebOutputMeld{
+				Score: domain.Rummy500MeldScore(m),
 				Cards: make([]*controller.WebOutputCard, 0, len(m)),
 			}
 			for _, c := range m {
