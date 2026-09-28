@@ -139,11 +139,11 @@ describe('VideoPokerPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /ディール/ }));
     await screen.findByRole('button', { name: /ドロー/ });
-    const automaticCard = screen.getByRole('button', { name: /ホールド 1, 自動ホールドで選択/ });
+    const automaticCard = screen.getByRole('button', { name: /カード 2、カード2をホールド、自動ホールドで選択$/ });
     expect(automaticCard).toHaveAttribute('aria-pressed', 'true');
     fireEvent.click(automaticCard);
     expect(screen.getByTestId('vp-hold-announce')).toHaveTextContent('カード2のホールドを解除');
-    expect(screen.getByRole('button', { name: /カード 1$/ })).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByRole('button', { name: /、カード 2$/ })).toHaveAttribute('aria-pressed', 'false');
   });
 
   it('number keys do not toggle hold outside the draw phase', async () => {

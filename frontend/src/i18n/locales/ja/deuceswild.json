@@ -62,6 +62,7 @@
     "drawAll": "ホールドなし — 全て交換"
   },
   "card": "カード {{index}}",
+  "listSeparator": "、",
   "dealGuide": "コイン数を選んでディールしてゲーム開始",
   "a11y": {
     "holdOn": "カード{{index}}をホールド",

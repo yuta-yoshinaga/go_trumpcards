@@ -14,6 +14,7 @@ import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, VideoPokerResponse } from '../types/card';
 import { VideoPokerPhase } from '../types/phases';
+import { cardAlt } from '../utils/cardAlt';
 import type { CliGameConfig } from '../utils/cli/types';
 import { getVideoPokerBaseHint } from '../utils/hints/videoPokerBaseHint';
 import { evaluateVideoPokerMadeHand } from '../utils/jokerPokerMadeHand';
@@ -412,7 +413,13 @@ export function VideoPokerGameContent({
                           className={`relative rounded transition-transform ${
                             displayHeld[i] ? 'ring-4 ring-ds-warning -translate-y-2 motion-safe:animate-card-lock' : ''
                           }`}
-                          aria-label={`${displayHeld[i] ? `${tNs('hold')} ${i}` : tNs('card', { index: i })}${isWild ? ` ${tNs('wild')}` : ''}${autoHeldCards[i] ? `, ${tNs('a11y.autoSelected')}` : ''}`}
+                          aria-label={[
+                            cardAlt(card),
+                            tNs('card', { index: i + 1 }),
+                            ...(displayHeld[i] ? [tNs('a11y.holdOn', { index: i + 1 })] : []),
+                            ...(isWild ? [tNs('wild')] : []),
+                            ...(autoHeldCards[i] ? [tNs('a11y.autoSelected')] : []),
+                          ].join(tNs('listSeparator'))}
                           aria-pressed={displayHeld[i] ?? false}
                           data-held={displayHeld[i] ? 'true' : undefined}
                         >

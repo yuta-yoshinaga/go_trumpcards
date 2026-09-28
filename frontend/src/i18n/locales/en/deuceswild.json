@@ -62,6 +62,7 @@
     "drawAll": "No strong holds — draw all"
   },
   "card": "Card {{index}}",
+  "listSeparator": ", ",
   "dealGuide": "Select coins and deal to start",
   "a11y": {
     "holdOn": "Hold card {{index}}",
