@@ -53,6 +53,11 @@
   "bidHighest": "現在の最高ビッド: {{bid}}（{{player}}）",
   "bidNone": "まだ入札なし",
   "bidDisabledReason": "現在の最高ビッド {{currentBid}} を超える必要があります",
+  "bidHistory": {
+    "title": "入札履歴",
+    "player": "席{{seat}} {{player}}（{{team}}）",
+    "pending": "未入札"
+  },
   "bid": {
     "pass": "パス",
     "sixteen": "16",
