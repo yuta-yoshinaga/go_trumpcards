@@ -899,6 +899,14 @@ describe('IndianPokerPage', () => {
       window.dispatchEvent(new Event('resize'));
     });
 
+    it('keeps CPU action live region mounted before actions arrive', async () => {
+      mockExec.mockResolvedValue(bettingState);
+      renderWithProviders(<IndianPokerPage />);
+      const region = await screen.findByTestId('cpu-action-announcement');
+      expect(region).toHaveAttribute('role', 'status');
+      expect(region).toBeEmptyDOMElement();
+    });
+
     it('renders CPU cards in 3-column grid on mobile', async () => {
       mockExec.mockResolvedValue(bettingState);
       const { container } = renderWithProviders(<IndianPokerPage />);

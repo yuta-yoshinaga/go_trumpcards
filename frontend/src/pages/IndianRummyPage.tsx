@@ -435,39 +435,38 @@ function IndianRummyPageContent() {
               </div>
             )}
 
-            {isDiscardPhase && isHumanTurn && declarePreview && (
-              <div
-                role="status"
-                aria-live="polite"
-                data-testid="indianrummy-declare-preview"
-                className={`mb-2 px-3 py-2 rounded text-sm ${
-                  declarePreview.valid ? badgeSuccessColors : badgeWarningColors
-                }`}
-              >
-                {declarePreview.valid ? (
-                  <span data-testid="indianrummy-declare-preview-valid">{t('declarePreview.valid')}</span>
-                ) : (
-                  <div data-testid="indianrummy-declare-preview-invalid">
-                    <div className="font-semibold">{t('declarePreview.title')}</div>
-                    <ul className="list-disc list-inside">
-                      {!declarePreview.hasPureSequence && <li>{t('declarePreview.noPureSequence')}</li>}
-                      {declarePreview.unmeldedCount > 0 && (
-                        <li>
-                          {t('declarePreview.unmelded', {
-                            count: declarePreview.unmeldedCount,
-                            points: declarePreview.unmeldedPoints,
-                          })}
-                        </li>
-                      )}
-                      {declarePreview.hasPureSequence && declarePreview.unmeldedCount === 0 && (
-                        <li>{t('declarePreview.incomplete')}</li>
-                      )}
-                    </ul>
-                    <div>{t('declarePreview.penalty', { penalty: declarePreview.penalty })}</div>
-                  </div>
-                )}
-              </div>
-            )}
+            <div role="status" aria-live="polite" data-testid="indianrummy-declare-preview">
+              {isDiscardPhase && isHumanTurn && declarePreview && (
+                <div
+                  className={`mb-2 px-3 py-2 rounded text-sm ${
+                    declarePreview.valid ? badgeSuccessColors : badgeWarningColors
+                  }`}
+                >
+                  {declarePreview.valid ? (
+                    <span data-testid="indianrummy-declare-preview-valid">{t('declarePreview.valid')}</span>
+                  ) : (
+                    <div data-testid="indianrummy-declare-preview-invalid">
+                      <div className="font-semibold">{t('declarePreview.title')}</div>
+                      <ul className="list-disc list-inside">
+                        {!declarePreview.hasPureSequence && <li>{t('declarePreview.noPureSequence')}</li>}
+                        {declarePreview.unmeldedCount > 0 && (
+                          <li>
+                            {t('declarePreview.unmelded', {
+                              count: declarePreview.unmeldedCount,
+                              points: declarePreview.unmeldedPoints,
+                            })}
+                          </li>
+                        )}
+                        {declarePreview.hasPureSequence && declarePreview.unmeldedCount === 0 && (
+                          <li>{t('declarePreview.incomplete')}</li>
+                        )}
+                      </ul>
+                      <div>{t('declarePreview.penalty', { penalty: declarePreview.penalty })}</div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
 
             <div className="flex gap-2 items-center flex-wrap">
               {isDrawPhase && isHumanTurn && (

@@ -23,16 +23,23 @@ export function CpuActionToast({ actions }: CpuActionToastProps) {
     skipInitial: false,
   });
 
-  if (!visible || !actions || actions.length === 0) return null;
+  const actionLines = actions?.map((a, i) => (
+    <div key={`${i}-${a.playerIdx}-${a.action}`}>
+      {t('player.player', { idx: a.playerIdx })}: {bettingActionName(a.action)}
+      {a.amount > 0 && ` (${a.amount})`}
+    </div>
+  ));
 
   return (
-    <Toast onDismiss={dismiss}>
-      {actions.map((a, i) => (
-        <div key={`${i}-${a.playerIdx}-${a.action}`}>
-          {t('player.player', { idx: a.playerIdx })}: {bettingActionName(a.action)}
-          {a.amount > 0 && ` (${a.amount})`}
-        </div>
-      ))}
-    </Toast>
+    <>
+      <div className="sr-only" role="status" aria-live="polite" data-testid="cpu-action-announcement">
+        {actionLines}
+      </div>
+      {visible && actions && actions.length > 0 && (
+        <Toast onDismiss={dismiss} live="off" testId="cpu-action-toast">
+          {actionLines}
+        </Toast>
+      )}
+    </>
   );
 }
