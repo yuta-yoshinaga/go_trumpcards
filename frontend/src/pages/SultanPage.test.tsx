@@ -120,6 +120,8 @@ describe('SultanPage', () => {
     expect(screen.getByAltText('♥ A').closest('button')).toHaveClass('ring-2', 'ring-ds-success');
     expect(screen.getByAltText('♣ 2').closest('button')).not.toHaveAttribute('data-playable');
     expect(screen.getByAltText('♣ 2').closest('button')).not.toHaveClass('ring-ds-success');
+    expect(screen.getByAltText('♥ A').closest('button')).toHaveAccessibleName(/配置できます/);
+    expect(screen.getByAltText('♣ 2').closest('button')).toHaveAccessibleName(/配置できません/);
   });
 
   it('renders skeleton when no state', () => {
@@ -143,8 +145,10 @@ describe('SultanPage', () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<SultanPage />);
 
-    await waitFor(() => expect(screen.getByRole('button', { name: 'ディヴァン枠 0 ♣ 3' })).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: 'ディヴァン枠 2 ♥ 5' })).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'ディヴァン枠 0 ♣ 3、配置できません' })).toBeInTheDocument(),
+    );
+    expect(screen.getByRole('button', { name: 'ディヴァン枠 2 ♥ 5、配置できません' })).toBeInTheDocument();
     expect(screen.getByRole('img', { name: '空のディヴァン枠 1' })).toBeInTheDocument();
   });
 

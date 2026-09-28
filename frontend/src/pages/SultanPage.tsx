@@ -325,7 +325,9 @@ function SultanPageContent() {
                         type="button"
                         onClick={() => handlePlay({ zone: 'divan', divanIdx: idx })}
                         disabled={!isPlaying || loading || isAutoCompleting}
-                        aria-label={t('divanCard', { idx, card: cardAlt(dcard) })}
+                        aria-label={t(divanPlayable ? 'divanPlayableCard' : 'divanUnplayableCard', {
+                          label: t('divanCard', { idx, card: cardAlt(dcard) }),
+                        })}
                         className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}${divanPlayable ? ' ring-2 ring-ds-success' : ''}`}
                         data-playable={divanPlayable ? 'true' : undefined}
                       >

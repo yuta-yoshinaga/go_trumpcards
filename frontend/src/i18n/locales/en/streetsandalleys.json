@@ -12,6 +12,8 @@
   "foundationAriaLabel": "{{suit}} foundation {{count}} cards",
   "emptyFoundationAriaLabel": "Empty foundation ({{suit}})",
   "tableauCardAriaLabel": "{{card}}, tableau column {{col}}",
+  "legalDestinationCount": "{{count}} legal destinations",
+  "noLegalDestinations": "No legal destinations",
   "foundationProgress": "{{count}}/13",
   "landscapeBanner": "Landscape mode recommended",
   "hint": "Hint",
