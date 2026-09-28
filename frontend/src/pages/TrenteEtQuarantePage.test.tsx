@@ -226,6 +226,16 @@ describe('TrenteEtQuarantePage', () => {
     expect(screen.getAllByTestId('teq-crossing-noir')).toHaveLength(1);
     expect(screen.getAllByTestId('teq-crossing-rouge')).toHaveLength(1);
     expect(screen.getByTestId('teq-cumulative-noir-3')).toContainElement(screen.getByTestId('teq-crossing-noir'));
+    expect(screen.getByTestId('teq-crossing-noir')).toHaveAttribute('aria-label', '累積 31、♣ Aで31到達');
+    expect(screen.getByTestId('teq-crossing-rouge')).toHaveAttribute('aria-label', '累積 39、♦ 9で31到達');
+  });
+
+  it('does not add a crossing label when no card reaches 31', async () => {
+    mockApi.mockResolvedValue(betState);
+    renderWithProviders(<TrenteEtQuarantePage />);
+    await waitFor(() => expect(screen.getByText('トラント・エ・カラント')).toBeInTheDocument());
+    expect(screen.queryByTestId('teq-crossing-noir')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('teq-crossing-rouge')).not.toBeInTheDocument();
   });
 
   it('emphasizes the winning row total and the margin over the losing row', async () => {

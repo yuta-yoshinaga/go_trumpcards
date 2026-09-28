@@ -11,7 +11,8 @@
     "rougeRow": "Rouge",
     "total": "Total",
     "winner": "Winner",
-    "crossing": "Reaches 31"
+    "crossing": "Reaches 31",
+    "crossingAria": "Cumulative {{total}}, reaches 31 on {{card}}"
   },
   "betType": {
     "noir": "Noir",
