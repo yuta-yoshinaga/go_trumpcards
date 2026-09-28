@@ -40,6 +40,8 @@ function makeState(overrides: Partial<BlackHoleResponse> = {}): BlackHoleRespons
 }
 
 beforeEach(() => {
+  cardDimensions.isMobile = false;
+  cardDimensions.cardWidth = 60;
   mockExec.mockReset();
   mockExec.mockResolvedValue(makeState());
 });
