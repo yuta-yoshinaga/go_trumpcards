@@ -89,6 +89,22 @@ beforeEach(() => {
 });
 
 describe('IronCrossPage', () => {
+  it('does not show a hand name for a seat that folded before the showdown', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: IronCrossPhase.SHOWDOWN,
+        isHumanTurn: false,
+        seats: [
+          seat({ handRank: 1, bestHand: [card(2), card(2), card(4), card(5), card(6)] }),
+          seat({ name: 'CPU1', isHuman: false, cards: [], isTurn: false, folded: true, handRank: 0, bestHand: [] }),
+        ],
+      }),
+    );
+    renderWithProviders(<IronCrossPage />);
+    await waitFor(() => expect(screen.getByTestId('ic-seat-rank-0')).toBeInTheDocument());
+    expect(screen.queryByTestId('ic-seat-rank-1')).not.toBeInTheDocument();
+  });
+
   it('ショーダウンと終了時に席ごとの役名と最良5枚を表示し、未知ランクも残す', async () => {
     mockApi.mockResolvedValue(
       withState({

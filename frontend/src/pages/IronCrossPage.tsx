@@ -305,7 +305,7 @@ function IronCrossPageContent() {
                       <span data-testid={`ic-won-${i}`}> · {t('label.won', { amount: seat.wonAmount })}</span>
                     )}
                   </span>
-                  {showResults && (
+                  {showResults && !seat.folded && (
                     <>
                       <div className="text-ds-text-primary text-xs mt-1" data-testid={`ic-seat-rank-${i}`}>
                         {t('label.handRank')}:{' '}
