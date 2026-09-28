@@ -2,6 +2,8 @@
   "aceFoundation": "Ascending (A->K)",
   "aceFoundationAriaLabel": "{{suit}} ascending foundation {{count}} cards, next required card {{rank}}",
   "autoComplete": "Auto Complete",
+  "autoCompleteCompleted": "Auto-complete finished",
+  "autoCompleteStarted": "Auto-complete started",
   "autoCompleteNotReady": "Available once a foundation builds past the deal",
   "cardPosAria": "{{card}} (column {{col}}, position {{pos}})",
   "completeAceFoundationAriaLabel": "{{suit}} ascending foundation {{count}} cards",

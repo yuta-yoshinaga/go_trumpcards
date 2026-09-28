@@ -249,6 +249,30 @@ describe('BisleyPage', () => {
     expect(btn.className).toContain('animate-pulse');
   });
 
+  it('announces auto-complete start and completion in a persistent live region', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      aceFoundations: [
+        [card('SPADE', 1), card('SPADE', 2)],
+        [card('CLOVER', 1)],
+        [card('HEART', 1)],
+        [card('DIAMOND', 1)],
+      ],
+    });
+    const { unmount } = renderWithProviders(<BisleyPage />);
+    await vi.waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeEnabled());
+    const liveRegion = screen.getByTestId('bisley-autocomplete-live');
+    expect(liveRegion).toHaveAttribute('role', 'status');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion).toHaveClass('sr-only');
+    expect(liveRegion).toBeEmptyDOMElement();
+
+    fireEvent.click(screen.getByTestId('autocomplete-button'));
+    expect(liveRegion).toHaveTextContent('自動完成を開始しました');
+    await waitFor(() => expect(liveRegion).toHaveTextContent('自動完成の処理が終わりました'), { timeout: 4000 });
+    unmount();
+  });
+
   it('enables auto-complete as soon as a descending pile opens', async () => {
     // The King foundations start empty, so a single card there already counts as
     // progress — unlike the aces, which are seeded by the deal.
