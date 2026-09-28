@@ -160,6 +160,27 @@ describe('TexasHoldemBonusPage', () => {
     expect(mockApi).toHaveBeenCalledTimes(1); // mount reset only
   });
 
+  it('restores the default ante when chips recover above the minimum', async () => {
+    mockApi.mockResolvedValueOnce({ ...betPhaseState, chips: 20 }).mockResolvedValueOnce(betPhaseState);
+    renderWithProviders(<TexasHoldemBonusPage />);
+
+    const anteInput = (await screen.findByLabelText('アンテ')) as HTMLInputElement;
+    const bet = screen.getByRole('button', { name: 'ベット' });
+    await waitFor(() => expect(anteInput).toHaveValue('0'));
+    expect(bet).toHaveAttribute('aria-disabled', 'true');
+
+    fireEvent.click(screen.getByRole('button', { name: 'CLIモードに切り替え' }));
+    const commandInput = screen.getByRole('textbox');
+    fireEvent.change(commandInput, { target: { value: 'reset' } });
+    fireEvent.keyDown(commandInput, { key: 'Enter' });
+
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'GUIモードに切り替え' }));
+    const recoveredAnteInput = await screen.findByLabelText('アンテ');
+    await waitFor(() => expect(recoveredAnteInput).toHaveValue('100'));
+    expect(screen.getByRole('button', { name: 'ベット' })).toHaveAttribute('aria-disabled', 'false');
+  });
+
   it('adjusts bet values when the chip balance decreases', async () => {
     mockApi.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce({ ...betPhaseState, chips: 300 });
     renderWithProviders(<TexasHoldemBonusPage />);

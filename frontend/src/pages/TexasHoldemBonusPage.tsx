@@ -42,6 +42,9 @@ import {
   texasHoldemBonusBetCost,
 } from '../utils/texasHoldemBonusBet';
 
+const INITIAL_ANTE_AMOUNT = 100;
+const FLOP_BET_COST_MULTIPLIER = 1 + TEXASHOLDEMBONUS_FLOP_MULTIPLIER;
+
 /** Texas Hold'em Bonus Poker tutorial step definitions. */
 const THB_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -91,7 +94,7 @@ function TexasHoldemBonusPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('texasholdembonus');
 
-  const [anteAmount, setAnteAmount] = useState(100);
+  const [anteAmount, setAnteAmount] = useState(INITIAL_ANTE_AMOUNT);
   const [bonusAmount, setBonusAmount] = useState(0);
 
   const { cardWidth } = useCardDimensions();
@@ -101,12 +104,12 @@ function TexasHoldemBonusPageContent() {
   // biome-ignore lint/correctness/useExhaustiveDependencies: anteAmount is intentionally excluded.
   useEffect(() => {
     if (chips == null) return;
-    const maxAnte = Math.floor(chips / (1 + TEXASHOLDEMBONUS_FLOP_MULTIPLIER) / 10) * 10;
+    const maxAnte = Math.floor(chips / FLOP_BET_COST_MULTIPLIER / 10) * 10;
     const nextAnte = Math.min(anteAmount, maxAnte);
-    setAnteAmount((current) => Math.min(current, maxAnte));
-    setBonusAmount((current) =>
-      Math.min(current, Math.max(0, chips - (1 + TEXASHOLDEMBONUS_FLOP_MULTIPLIER) * nextAnte)),
+    setAnteAmount((current) =>
+      current < 10 && maxAnte >= 10 ? Math.min(INITIAL_ANTE_AMOUNT, maxAnte) : Math.min(current, maxAnte),
     );
+    setBonusAmount((current) => Math.min(current, Math.max(0, chips - FLOP_BET_COST_MULTIPLIER * nextAnte)));
   }, [chips]);
   const {
     hint: frontendHint,
@@ -167,8 +170,8 @@ function TexasHoldemBonusPageContent() {
 
   if (!state) return <GameSkeleton gameKey="texasholdembonus" layout={{ kind: 'casino-table', sections: [2, 5, 2] }} />;
 
-  const anteMax = Math.floor(Math.max(0, state.chips - bonusAmount) / (1 + TEXASHOLDEMBONUS_FLOP_MULTIPLIER) / 10) * 10;
-  const bonusMax = Math.max(0, state.chips - (1 + TEXASHOLDEMBONUS_FLOP_MULTIPLIER) * anteAmount);
+  const anteMax = Math.floor(Math.max(0, state.chips - bonusAmount) / FLOP_BET_COST_MULTIPLIER / 10) * 10;
+  const bonusMax = Math.max(0, state.chips - FLOP_BET_COST_MULTIPLIER * anteAmount);
   const canBet = anteAmount >= 10 && anteAmount <= anteMax && bonusAmount <= bonusMax;
   const handleBet = () => {
     if (loading || !canBet) return;
