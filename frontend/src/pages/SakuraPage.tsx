@@ -23,6 +23,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { Card, SakuraBonus, SakuraPlayer } from '../types/card';
 import { SakuraPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { parseSakuraCommand, SAKURA_HELP } from '../utils/cli/commands/sakuraCommands';
 import { formatSakuraState } from '../utils/cli/formatters/sakuraFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -219,13 +220,21 @@ function SakuraPageContent() {
               ) : (
                 state.fieldCards.map((c, i) => {
                   const isCandidate = candidateSet.has(i);
+                  const fieldStatus = needsFieldPick
+                    ? t(isCandidate ? 'fieldChoiceCandidate' : 'fieldChoiceUnavailable')
+                    : '';
+                  const fieldLabel = [cardAlt(c), t('fieldPosition', { position: i }), fieldStatus]
+                    .filter(Boolean)
+                    .join(t('listSeparator'));
                   return (
                     <button
                       key={i}
                       type="button"
                       onClick={() => onFieldClick(i)}
-                      disabled={!needsFieldPick || !isCandidate}
-                      className={`rounded transition-all ${
+                      aria-label={fieldLabel}
+                      aria-disabled={!needsFieldPick || !isCandidate ? 'true' : undefined}
+                      aria-describedby={!needsFieldPick || !isCandidate ? 'sakura-field-disabled-reason' : undefined}
+                      className={`rounded transition-all aria-disabled:opacity-40 aria-disabled:cursor-not-allowed ${
                         isCandidate ? 'ring-2 ring-ds-success motion-safe:animate-pulse' : ''
                       } ${needsFieldPick && isCandidate ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
                       data-testid={`field-card-${i}`}
@@ -237,6 +246,9 @@ function SakuraPageContent() {
                 })
               )}
             </div>
+            <span id="sakura-field-disabled-reason" className="sr-only">
+              {t('fieldChoiceDisabledReason')}
+            </span>
             {needsFieldPick && (
               <div className="text-center text-sm text-ds-accent mt-2" data-testid="sakura-field-pick">
                 {t('pickField')}
