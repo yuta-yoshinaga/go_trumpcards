@@ -55105,6 +55105,9 @@ components:
         winningBid:
           type: integer
           description: The winning declaration (0=pass, 1=chiamo, 2=solo)
+        highestBid:
+          type: integer
+          description: The highest declaration made so far during bidding (0=none, 1=chiamo, 2=solo)
         currentTrick:
           type: array
           items:

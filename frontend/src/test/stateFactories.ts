@@ -1488,6 +1488,7 @@ const baseCalabresellaState: CalabresellaResponse = {
   forehandIdx: 0,
   soloistIdx: 0,
   winningBid: 1,
+  highestBid: 1,
   currentTrick: [],
   playerScores: [0, 0, 0],
   roundThirds: [0, 0, 0],

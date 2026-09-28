@@ -986,6 +986,9 @@ func (g *Calabresella) SetSoloistIdx(idx int) { g.soloistIdx = idx }
 // GetWinningBid 確定ビッド取得
 func (g *Calabresella) GetWinningBid() CalabresellaBid { return g.winningBid }
 
+// GetHighestBid returns the highest bid declared so far during the auction.
+func (g *Calabresella) GetHighestBid() CalabresellaBid { return g.highestBid() }
+
 // SetWinningBid 確定ビッド設定 (テスト用)
 func (g *Calabresella) SetWinningBid(b CalabresellaBid) { g.winningBid = b }
 
