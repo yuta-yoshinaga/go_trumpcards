@@ -479,6 +479,13 @@ function HeartsPageContent() {
                 messageParams={isTrickEnd && state.messageCode === 'hearts.trickEnd' ? undefined : state.messageParams}
               />
             </div>
+            <div data-testid="hearts-pass-progress-live" className="sr-only" role="status" aria-live="polite">
+              {isPassPhase &&
+                t('passProgressAnnouncement', {
+                  selected: selectedCardIndices.length,
+                  remaining: 3 - selectedCardIndices.length,
+                })}
+            </div>
 
             {/* Action log */}
             <ActionLogSection
