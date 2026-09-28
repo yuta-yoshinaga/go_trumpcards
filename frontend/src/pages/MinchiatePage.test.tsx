@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { minchiateApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeMinchiateState } from '../test/stateFactories';
 import { MINCHIATE_SURPLUS } from '../types/card';
@@ -136,10 +137,21 @@ describe('MinchiatePage', () => {
         ],
       });
 
+    it('shows the scarto selection progress in English', async () => {
+      await i18n.changeLanguage('en');
+      mockExec.mockResolvedValue(scartoHandState());
+      renderWithProviders(<MinchiatePage />);
+
+      expect(await screen.findByTestId('minchiate-scarto-progress')).toHaveTextContent('Selected 0/13 cards');
+      await i18n.changeLanguage('ja');
+    });
+
     it('prompts for the full surplus and dispatches every index', async () => {
       mockExec.mockResolvedValue(scartoHandState());
       renderWithProviders(<MinchiatePage />);
       expect(await screen.findByTestId('minchiate-scarto-prompt')).toHaveTextContent(String(MINCHIATE_SURPLUS));
+      const progress = screen.getByTestId('minchiate-scarto-progress');
+      expect(progress).toHaveTextContent('選択済み 0/13枚');
 
       expect(screen.getByRole('button', { name: '捨てる' })).toBeDisabled();
 
@@ -147,9 +159,11 @@ describe('MinchiatePage', () => {
       for (let i = 1; i < MINCHIATE_SURPLUS; i++) {
         fireEvent.click(screen.getByRole('button', { name: `${i} \u2660` }));
       }
+      expect(progress).toHaveTextContent('選択済み 12/13枚');
       expect(screen.getByRole('button', { name: '捨てる' })).toBeDisabled();
 
       fireEvent.click(screen.getByRole('button', { name: `${MINCHIATE_SURPLUS} \u2660` }));
+      expect(progress).toHaveTextContent('選択済み 13/13枚');
       mockExec.mockClear();
       mockExec.mockResolvedValue(scartoHandState());
       fireEvent.click(screen.getByRole('button', { name: '捨てる' }));
