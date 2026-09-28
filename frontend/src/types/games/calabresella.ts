@@ -64,6 +64,8 @@ export interface CalabresellaResponse extends BaseGameResponse {
   soloistIdx: number;
   /** The winning bid (0=none, 1=chiamo, 2=solo). */
   winningBid: number;
+  /** Highest declaration made so far in the auction (0=none, 1=chiamo, 2=solo). */
+  highestBid: number;
   currentTrick: CalabresellaTrickCard[];
   /**
    * The four monte (widow) cards, revealed to every player once the Soloist has

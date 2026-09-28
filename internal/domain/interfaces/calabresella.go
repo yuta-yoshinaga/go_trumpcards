@@ -63,6 +63,8 @@ type CalabresellaGame interface {
 	GetSoloistIdx() int
 	// GetWinningBid 確定ビッドを取得する
 	GetWinningBid() domain.CalabresellaBid
+	// GetHighestBid 現在までに宣言された最高ビッドを取得する
+	GetHighestBid() domain.CalabresellaBid
 	// GetCurrentBidderIdx 現在のビッド手番インデックスを取得する
 	GetCurrentBidderIdx() int
 	// GetPlayerScores プレイヤー別累積点を取得する

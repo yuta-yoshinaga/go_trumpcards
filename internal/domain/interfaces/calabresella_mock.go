@@ -170,6 +170,12 @@ func (_m *MockCalabresellaGame) GetWinningBid() domain.CalabresellaBid {
 	return ret.Get(0).(domain.CalabresellaBid)
 }
 
+// GetHighestBid モック
+func (_m *MockCalabresellaGame) GetHighestBid() domain.CalabresellaBid {
+	ret := _m.Called()
+	return ret.Get(0).(domain.CalabresellaBid)
+}
+
 // GetCurrentBidderIdx モック
 func (_m *MockCalabresellaGame) GetCurrentBidderIdx() int {
 	ret := _m.Called()

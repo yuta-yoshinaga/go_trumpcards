@@ -31,6 +31,7 @@ func setupCalabresellaWebMock() *interfaces.MockCalabresellaGame {
 	m.On("GetForehandIdx").Return(1)
 	m.On("GetSoloistIdx").Return(0)
 	m.On("GetWinningBid").Return(domain.CalabresellaBidChiamo)
+	m.On("GetHighestBid").Return(domain.CalabresellaBidSolo)
 	m.On("GetPlayerScores").Return([domain.CalabresellaPlayerCnt]int{0, 0, 0})
 	m.On("GetRoundThirds").Return([domain.CalabresellaPlayerCnt]int{0, 0, 0})
 	m.On("GetWinnerPlayer").Return(-1)
@@ -79,6 +80,7 @@ func TestCalabresellaWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 0, resObj.SoloistIdx)
 		assert.Equal(t, 1, resObj.ForehandIdx)
 		assert.Equal(t, int(domain.CalabresellaBidChiamo), resObj.WinningBid)
+		assert.Equal(t, int(domain.CalabresellaBidSolo), resObj.HighestBid)
 		assert.True(t, resObj.IsHumanTurn)
 	})
 
