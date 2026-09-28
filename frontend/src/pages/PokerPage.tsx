@@ -149,6 +149,10 @@ function PokerPageContent() {
     }
   }, [state, t]);
 
+  useEffect(() => {
+    if (error) pendingExchangeRef.current = null;
+  }, [error]);
+
   const handleExchange = useCallback(
     (indices: number[]) => {
       pendingExchangeRef.current = [...indices];

@@ -663,6 +663,52 @@ describe('PokerPage', () => {
     expect(liveRegion).toHaveAttribute('role', 'status');
   });
 
+  it('does not announce replacement cards from a later stand response after exchange fails', async () => {
+    mockExec.mockResolvedValue(exchangeState);
+    renderWithProviders(<PokerPage />);
+    const exchangeButton = await screen.findByRole('button', { name: '交換' });
+    const liveRegion = screen.getByTestId('pk-exchanged-cards-live');
+    fireEvent.click(screen.getByAltText('♠ A'));
+
+    mockExec.mockRejectedValueOnce(new Error('network error'));
+    fireEvent.click(exchangeButton);
+    await waitFor(() => expect(screen.getByText(NETWORK_ERROR_MESSAGE())).toBeInTheDocument());
+
+    mockExec.mockResolvedValue({
+      ...exchangeState,
+      phase: 3,
+      players: [
+        humanPlayer({ cards: [{ design: 'HEART', value: 12 }, ...humanPlayer().cards.slice(1)] }),
+        ...exchangeState.players.slice(1),
+      ],
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'スタンド' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('stand'));
+    await waitFor(() => expect(liveRegion).toBeEmptyDOMElement());
+  });
+
+  it('joins multiple replacement cards with the localized list separator', async () => {
+    mockExec.mockResolvedValue(exchangeState);
+    renderWithProviders(<PokerPage />);
+    const exchangeButton = await screen.findByRole('button', { name: '交換' });
+    fireEvent.click(screen.getByAltText('♠ A'));
+    fireEvent.click(screen.getByAltText('♥ 5'));
+    mockExec.mockResolvedValue({
+      ...exchangeState,
+      phase: 3,
+      players: [
+        humanPlayer({
+          cards: [{ design: 'HEART', value: 12 }, { design: 'DIAMOND', value: 9 }, ...humanPlayer().cards.slice(2)],
+        }),
+        ...exchangeState.players.slice(1),
+      ],
+    });
+    fireEvent.click(exchangeButton);
+    await waitFor(() =>
+      expect(screen.getByTestId('pk-exchanged-cards-live')).toHaveTextContent('交換後に引いたカード: ♥ Q、♦ 9'),
+    );
+  });
+
   it('calls stand command', async () => {
     mockExec.mockResolvedValue(exchangeState);
     renderWithProviders(<PokerPage />);
