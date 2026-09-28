@@ -926,6 +926,8 @@ describe('CrazyEightsPage', () => {
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hint'));
     const shown = await screen.findByTestId('ce-server-hint');
+    expect(shown).toHaveAttribute('role', 'status');
+    expect(shown).toHaveAttribute('aria-live', 'polite');
     expect(shown).toHaveTextContent('1');
     expect(shown).toHaveTextContent('スートが合う');
   });
@@ -941,12 +943,14 @@ describe('CrazyEightsPage', () => {
     expect(shown).toHaveTextContent('手札に一番多いスート');
   });
 
-  // 要求する前は出さない。常時表示だとフロント完結のツールチップと二重になる。
-  it('shows no server hint before the button is pressed', async () => {
+  it('keeps an empty polite live region before the button is pressed', async () => {
     renderWithProviders(<CrazyEightsPage />);
 
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
-    expect(screen.queryByTestId('ce-server-hint')).not.toBeInTheDocument();
+    const region = screen.getByTestId('ce-server-hint');
+    expect(region).toHaveAttribute('role', 'status');
+    expect(region).toHaveAttribute('aria-live', 'polite');
+    expect(region).toBeEmptyDOMElement();
   });
 });
 
