@@ -367,6 +367,14 @@ function SpoonsPageContent() {
               {grabWindowAnnouncement}
             </div>
 
+            <div className="sr-only" data-testid="spoons-round-loser-live" role="status" aria-live="polite">
+              {(isRoundEnd || isGameEnd) &&
+                state.roundLoserIdx >= 0 &&
+                t('roundResult.loser', {
+                  name: playerLabel(state.roundLoserIdx, state.roundLoserIdx === 0),
+                })}
+            </div>
+
             {/* Keep this live region mounted so the grabber is announced when the
                 time-limited grab window opens, and remains available in results. */}
             <div
