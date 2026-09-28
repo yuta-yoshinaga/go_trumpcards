@@ -36,6 +36,9 @@ import type { CliGameConfig } from '../utils/cli/types';
 import { paiGowAutoSplit, paiGowFoulCheck } from '../utils/paiGowFoul';
 
 /** High hand rank display name lookup. */
+/** Bet cap enforced by the domain (`PaiGowMaxBet`); bets are multiples of 10. */
+const PAIGOW_MAX_BET = 10000;
+
 const HIGH_HAND_RANK_KEYS: Record<number, string> = {
   0: 'highHandRank.0',
   1: 'highHandRank.1',
@@ -192,6 +195,8 @@ function PaiGowPageContent() {
   });
 
   if (!state) return <GameSkeleton gameKey="paigow" layout={{ kind: 'casino-table', sections: [7, 7] }} />;
+  // The largest bet the domain accepts: a multiple of 10, within the cap and the balance.
+  const maxBet = Math.min(Math.floor(state.chips / 10) * 10, PAIGOW_MAX_BET);
 
   const handleBet = () => {
     execApi('bet', betAmount);
@@ -389,7 +394,7 @@ function PaiGowPageContent() {
             {isBetPhase && (
               <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="pg-bet-controls">
                 <p data-testid="paigow-bet-guidance" className="text-ds-text-muted text-xs text-center">
-                  {t('betLimits', { chips: state.chips, amount: betAmount })}
+                  {t('betLimits', { chips: state.chips, amount: betAmount, max: maxBet })}
                 </p>
                 <ChipBetInput
                   id="paigow-bet-amount"
@@ -397,7 +402,7 @@ function PaiGowPageContent() {
                   value={betAmount}
                   onChange={setBetAmount}
                   min={10}
-                  max={Math.min(state.chips, 10000)}
+                  max={maxBet}
                   step={10}
                   disabled={loading}
                   showSteppers
