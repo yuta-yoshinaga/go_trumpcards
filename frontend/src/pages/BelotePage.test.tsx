@@ -236,6 +236,17 @@ describe('BelotePage', () => {
     await waitFor(() => expect(screen.getByTestId('belote-rebelote-badge')).toHaveAttribute('data-active', 'true'));
   });
 
+  it('identifies the team and points awarded Belote/Rebelote in the tracker and score table', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ phase: BelotePhase.PLAY, trumpSuit: 1, makerTeam: 0, roundBeloteBonus: [0, 20] }),
+    );
+    const { container } = renderWithProviders(<BelotePage />);
+    expect(await screen.findByTestId('belote-rebelote-badge')).toHaveTextContent('チーム1に20点');
+    const scoreTable = container.querySelector('[data-tutorial="be-score-table"]');
+    expect(scoreTable).not.toBeNull();
+    expect(scoreTable).toHaveTextContent('チーム1に20点');
+  });
+
   it('chimes and shows a confirmation banner when the belote bonus is freshly earned', async () => {
     mockExec.mockResolvedValue(
       makeState({ phase: BelotePhase.PLAY, trumpSuit: 1, trickNumber: 3, currentPlayerIdx: 0, makerTeam: 0 }),
