@@ -205,6 +205,8 @@ describe('PutPage', () => {
     renderWithProviders(<PutPage />);
     const acceptBtn = await screen.findByRole('button', { name: '受諾' });
     expect(screen.getByRole('button', { name: '拒否' })).toBeInTheDocument();
+    expect(screen.getByText('受諾すると賭け点は 2 点になります')).toBeInTheDocument();
+    expect(screen.getByText('拒否すると宣言者が現在の賭け点 1 点を獲得します')).toBeInTheDocument();
 
     mockExec.mockClear();
     fireEvent.click(acceptBtn);

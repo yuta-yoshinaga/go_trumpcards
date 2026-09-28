@@ -296,9 +296,13 @@ function PutPageContent() {
               <button type="button" className={btnSuccess} onClick={handleAccept} disabled={loading}>
                 {t('actions.accept')}
               </button>
+              <p className="text-ds-text-muted text-sm">
+                {t('respondOutcome.accept', { stake: state.pendingLevel + 1 })}
+              </p>
               <button type="button" className={btnDanger} onClick={handleDecline} disabled={loading}>
                 {t('actions.decline')}
               </button>
+              <p className="text-ds-text-muted text-sm">{t('respondOutcome.decline', { stake: state.handStake })}</p>
               {/* **応答フェーズに引き上げボタンは置かない。** プットの宣言は
                   1 段だけで、言われた側は受諾か降参かの二択。クローン元の
                   トゥルコは Retruco / Vale Cuatro へ伸ばせるのでここに
