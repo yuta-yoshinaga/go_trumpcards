@@ -227,6 +227,13 @@ function FreeCellPageContent() {
   // Auto-complete will deterministically win once every column is descending.
   const autoCompleteReady = freeCellAutoCompleteReady(state.tableau);
 
+  const hintedCard =
+    hint?.fromZone === 'tableau'
+      ? (state.tableau[hint.fromCol]?.[hint.cardIndex] ?? null)
+      : hint?.fromZone === 'freecell'
+        ? (state.freeCells[hint.fromCol] ?? null)
+        : null;
+
   const isSourceSelected = (zone: string, col?: number, cell?: number, cardIndex?: number) =>
     selectedSource !== null &&
     selectedSource.zone === zone &&
@@ -552,8 +559,8 @@ function FreeCellPageContent() {
             <div data-testid="freecell-hint-live" role="status" aria-live="polite">
               {hint && (
                 <div className="text-ds-warning text-sm mb-2" data-testid="fc-hint-line">
-                  {t('hintAvailable')}: {formatHintZone(t, hint.fromZone, hint.fromCol)} →{' '}
-                  {formatHintZone(t, hint.toZone, hint.toCol)}
+                  {t('hintAvailable')}: {hintedCard ? `${cardAlt(hintedCard)} — ` : ''}
+                  {formatHintZone(t, hint.fromZone, hint.fromCol)} → {formatHintZone(t, hint.toZone, hint.toCol)}
                 </div>
               )}
             </div>
