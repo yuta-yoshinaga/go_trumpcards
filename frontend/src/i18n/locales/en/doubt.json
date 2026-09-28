@@ -30,6 +30,7 @@
   "playButton": "Play",
   "tell": "Tell",
   "tellBadge": "Suspicious",
+  "tellAnnouncement": "A tell is showing for {{name}}",
   "settings": {
     "title": "Settings",
     "doubtTime": "Doubt Time:",

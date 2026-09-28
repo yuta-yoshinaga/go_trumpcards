@@ -223,7 +223,8 @@ function DoubtPageContent() {
   const isDoubtPhase = state.phase === DoubtPhase.DOUBT;
   const cpuPlayed = isDoubtPhase && state.lastAction !== null && !state.players[state.lastAction.playerIdx]?.isHuman;
 
-  const cpuTells = new Set(cpuPlayed && state.lastAction?.hasTell === true ? [state.lastAction.playerIdx] : []);
+  const tellPlayerIdx = cpuPlayed && state.lastAction?.hasTell === true ? state.lastAction.playerIdx : null;
+  const cpuTells = new Set(tellPlayerIdx !== null ? [tellPlayerIdx] : []);
 
   return (
     <GamePageShell
@@ -239,6 +240,15 @@ function DoubtPageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
+      <div
+        className="sr-only"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        data-testid="doubt-tell-announcement"
+      >
+        {tellPlayerIdx !== null ? t('tellAnnouncement', { name: playerName(tellPlayerIdx, false) }) : ''}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
