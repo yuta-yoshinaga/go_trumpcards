@@ -54,6 +54,11 @@
   "penaltyLegend": "罰点（少ないほうが勝ち）",
   "penalty": "{{n}} 点",
   "dealPoints": "{{n}} 点",
+  "history": {
+    "caption": "完了ディールの罰点履歴",
+    "deal": "ディール",
+    "contract": "種目"
+  },
   "dealerBadge": "親",
   "chooseContract": "この輪の種目を選んでください",
   "dealResult": "ディール結果（{{name}}）",
