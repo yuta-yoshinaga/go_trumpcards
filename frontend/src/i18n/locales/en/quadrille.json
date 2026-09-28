@@ -47,7 +47,7 @@
   "quadrilleBadge": "Quadrille",
   "partnerBadge": "Partner",
   "score": "Score: {{score}}",
-  "playerScore": "{{name}}: {{score}} pts",
+  "playerScore": "{{name}}: {{score}} pts ({{tricks}})",
   "playButton": "Play",
   "nextTrick": "Next Trick",
   "nextRound": "Next Deal",
