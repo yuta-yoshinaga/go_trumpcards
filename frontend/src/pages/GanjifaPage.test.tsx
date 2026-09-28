@@ -74,6 +74,13 @@ describe('GanjifaPage', () => {
     expect(readout).toHaveClass('text-ds-warning');
   });
 
+  it('identifies each hand card suit and its rank direction in the accessible name', async () => {
+    renderWithProviders(<GanjifaPage />);
+    expect(await screen.findByRole('button', { name: /12.*Taj.*数字が大きいほど強い/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /1.*Chang.*数字が小さいほど強い/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /7.*Shamsher.*数字が大きいほど強い/ })).toBeInTheDocument();
+  });
+
   // **色と文字だけでは反転が届かない。**向きはラウンドごとに入れ替わるので、
   // 支援技術の利用者は気づかないまま前の並び順で打ってしまう (#6449)。
   it('announces the rank direction through a live region when the round flips it', async () => {
@@ -128,7 +135,7 @@ describe('GanjifaPage', () => {
     expect(playButton).toBeDisabled();
 
     // Procedural cards get their accessible name from label + glyph ("12 \u265b").
-    fireEvent.click(screen.getByRole('button', { name: '12 \u265b' }));
+    fireEvent.click(screen.getByRole('button', { name: /12 \u265b/ }));
     mockExec.mockClear();
     mockExec.mockResolvedValue(playPhaseState);
     fireEvent.click(screen.getByRole('button', { name: '出す' }));

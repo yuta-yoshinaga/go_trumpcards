@@ -24,7 +24,7 @@ import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import { formatGanjifaSuit, type GanjifaResponse, isGanjifaStrongSuit } from '../types/card';
+import { formatGanjifaSuit, GANJIFA_SUIT_GLYPHS, type GanjifaResponse, isGanjifaStrongSuit } from '../types/card';
 import { GanjifaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { GANJIFA_HELP, parseGanjifaCommand } from '../utils/cli/commands/ganjifaCommands';
@@ -314,6 +314,14 @@ function GanjifaPageContent() {
                 dataTutorialPrefix="ganjifa"
                 validIndices={canPlay ? state.playableIndices : undefined}
                 restrictedTooltip={t('playButton')}
+                cardStatusFor={(idx) => {
+                  const card = humanPlayer.cards[idx];
+                  const suit = GANJIFA_SUIT_GLYPHS.indexOf(card?.glyph as (typeof GANJIFA_SUIT_GLYPHS)[number]);
+                  if (!card || suit < 1) return undefined;
+                  return t(isGanjifaStrongSuit(suit) ? 'handCardStrong' : 'handCardWeak', {
+                    suit: formatGanjifaSuit(suit),
+                  });
+                }}
               />
             )}
 
