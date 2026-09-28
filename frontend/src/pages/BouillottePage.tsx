@@ -192,7 +192,7 @@ function BouillottePageContent() {
         </>
       }
     >
-      <div className="sr-only" aria-live="polite" data-testid="bouillotte-raise-announcement">
+      <div className="sr-only" role="status" aria-live="polite" data-testid="bouillotte-raise-announcement">
         {raiseStatusText}
       </div>
       {cliEnabled ? (
