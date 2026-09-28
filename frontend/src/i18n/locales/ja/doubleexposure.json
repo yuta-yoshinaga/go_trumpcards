@@ -13,6 +13,7 @@
   "dealerHand": "ディーラー手札",
   "score": "スコア",
   "playerHand": "プレイヤー手札",
+  "hitAnnouncement": "{{card}}を引きました。現在のスコアは{{score}}です。",
   "hand": "ハンド {{idx}}",
   "currentHand": "現在のハンド",
   "insurance": "インシュランス:",

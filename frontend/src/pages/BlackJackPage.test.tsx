@@ -341,6 +341,20 @@ describe('BlackJackPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('hit'));
   });
 
+  it('announces the drawn card and updated score after a hit', async () => {
+    mockExec.mockResolvedValueOnce(actionPhaseState);
+    renderWithProviders(<BlackJackPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockResolvedValue({
+      ...actionPhaseState,
+      hands: [{ ...baseHand, score: 19, cards: [...baseHand.cards, { design: 'SPADE', value: 4 }] }],
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'ヒット' }));
+    expect(await screen.findByTestId('bj-hit-announcement')).toHaveTextContent(
+      '♠ 4を引きました。現在のスコアは19です。',
+    );
+  });
+
   it('calls stand command when Stand button is clicked', async () => {
     mockExec.mockResolvedValue(actionPhaseState);
     renderWithProviders(<BlackJackPage />);

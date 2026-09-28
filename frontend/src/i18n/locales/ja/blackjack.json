@@ -12,6 +12,7 @@
   "deckUnit": "{{count}}デッキ",
   "dealerHand": "ディーラー手札",
   "score": "スコア",
+  "hitAnnouncement": "{{card}}を引きました。現在のスコアは{{score}}です。",
   "playerHand": "プレイヤー手札",
   "hand": "ハンド {{idx}}",
   "currentHand": "現在のハンド",

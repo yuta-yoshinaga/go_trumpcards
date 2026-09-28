@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import type { BlackJackBetOptions, BlackJackConfigInput } from '../api/gameApi';
 import { blackjackApi, doubleexposureApi, spanish21Api } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
@@ -48,6 +48,7 @@ import type { BlackJackResponse } from '../types/card';
 import { BjDoubleDownBlock, BjPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { BLACKJACK_SIDE_BET_PAYOUTS } from '../utils/blackjackSideBetPayouts';
+import { cardAlt } from '../utils/cardAlt';
 import { BLACKJACK_HELP, parseBlackjackCommand } from '../utils/cli/commands/blackjackCommands';
 import { formatBlackjackState } from '../utils/cli/formatters/blackjackFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -194,6 +195,8 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
 
   const { cardWidth, isMobile } = useCardDimensions();
   const [message, setMessage] = useState('');
+  const [hitAnnouncement, setHitAnnouncement] = useState('');
+  const previousStateRef = useRef<BlackJackResponse | null>(null);
   const [betAmount, setBetAmount] = useState(10);
   const [dealerHitsSoft17, setDealerHitsSoft17] = useState(false);
   const [countingEnabled, setCountingEnabled] = useState(false);
@@ -207,17 +210,31 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
   const [surrenderRule, setSurrenderRule] = useState(0);
   const [autoAdvance, setAutoAdvance] = useState(0);
 
-  const onSuccess = useCallback((res: BlackJackResponse) => {
-    setMessage(res.message);
-    setDealerHitsSoft17(res.dealerHitsSoft17);
-    setCountingEnabled(res.countingEnabled);
-    setCpuPlayerCount(res.cpuPlayerCount);
-    setDoubleAfterSplit(res.doubleAfterSplit);
-    setCountingSystem(res.countingSystem);
-    setDeckPenetration(res.deckPenetration);
-    setSurrenderRule(res.surrenderRule);
-  }, []);
+  const onSuccess = useCallback(
+    (res: BlackJackResponse, args: Parameters<typeof apiClient.exec>) => {
+      setMessage(res.message);
+      if (args[0] === 'hit') {
+        const previous = previousStateRef.current;
+        const previousHandIndex = previous?.currentHandIdx ?? 0;
+        const previousHand = previous?.hands?.[previousHandIndex];
+        const updatedHand = res.hands?.[previousHandIndex];
+        if (previousHand && updatedHand && updatedHand.cards.length > previousHand.cards.length) {
+          const drawnCard = updatedHand.cards[updatedHand.cards.length - 1];
+          setHitAnnouncement(t('hitAnnouncement', { card: cardAlt(drawnCard), score: updatedHand.score }));
+        }
+      }
+      setDealerHitsSoft17(res.dealerHitsSoft17);
+      setCountingEnabled(res.countingEnabled);
+      setCpuPlayerCount(res.cpuPlayerCount);
+      setDoubleAfterSplit(res.doubleAfterSplit);
+      setCountingSystem(res.countingSystem);
+      setDeckPenetration(res.deckPenetration);
+      setSurrenderRule(res.surrenderRule);
+    },
+    [t],
+  );
   const { state, loading, error, exec, retry } = useGameApi(apiClient.exec, { onSuccess });
+  previousStateRef.current = state;
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode(variant);
@@ -616,6 +633,16 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
               {variant === 'spanish21' && phase === BjPhase.END
                 ? state?.bonuses?.map((key, i) => <span key={`${key}-${i}`}>{t(bonusBadgeKey(key))}</span>)
                 : null}
+            </div>
+
+            <div
+              className="sr-only"
+              data-testid="bj-hit-announcement"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+            >
+              {hitAnnouncement}
             </div>
 
             {/* Variant bonus badges (Spanish 21): 7-7-7 / 6-7-8 / 5+card 21 achievements. */}
