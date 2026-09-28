@@ -127,6 +127,24 @@ describe('DeuceToSevenPage', () => {
     await waitFor(() => expect(screen.getByText('あなたの勝ちです。')).toBeInTheDocument());
   });
 
+  it('shows each player hand and winnings in the showdown results', async () => {
+    mockExec.mockResolvedValue(
+      baseState({
+        phase: DeuceToSevenPhase.SHOWDOWN,
+        roundResults: [
+          { playerIdx: 0, handRank: 0, handName: 'Seven Low', wonAmount: 40 },
+          { playerIdx: 1, handRank: 1, handName: 'One Pair', wonAmount: 0 },
+        ],
+      }),
+    );
+    renderWithProviders(<DeuceToSevenPage />);
+
+    const results = await screen.findByTestId('round-results-visible');
+    expect(results).toHaveTextContent('あなた: Seven Low');
+    expect(results).toHaveTextContent('+40チップ');
+    expect(results).toHaveTextContent('CPU 1: One Pair');
+  });
+
   it('renders the human hand name translated for the current locale', async () => {
     mockExec.mockResolvedValue(
       baseState({
