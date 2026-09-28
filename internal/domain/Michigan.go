@@ -83,6 +83,13 @@ type MichiganHint struct {
 	Reason    string // ヒント理由キー ("forced"/"claim_boodle"/"lead_low")
 }
 
+// MichiganBoodleWin はこのラウンドに獲得したブードルの記録。
+type MichiganBoodleWin struct {
+	Card   *Card `json:"card"`
+	Seat   int   `json:"seat"`
+	Amount int   `json:"amount"`
+}
+
 // michiganState はゲーム進行状態。
 type michiganState struct {
 	phase           MichiganPhase
@@ -94,6 +101,7 @@ type michiganState struct {
 	seqHighValue    int // 現在のシーケンスで出た最大値 (0 = なし)
 	lastPlayerIdx   int // 直近に出したプレイヤー (ストップ時に新シーケンスを始める)
 	boodles         []*MichiganBoodle
+	roundBoodleWins []*MichiganBoodleWin
 	deadHand        []*Card // 伏せたデッドハンド (誰も持たず、決してプレイされない)
 	roundStartChips []int   // ラウンド開始時 (賭け前) の各プレイヤーのチップ
 	humanBetPlaced  bool    // 人間がこのラウンドのブードル賭けを済ませたか
@@ -177,6 +185,7 @@ func (g *Michigan) NextRound() {
 
 // startRound は 1 ラウンドを準備する: 状態クリア → CPU の自動ベット → 人間のベット待ち。
 func (g *Michigan) startRound() {
+	g.state.roundBoodleWins = make([]*MichiganBoodleWin, 0)
 	g.state.winnerIdx = -1
 	g.state.result = MichiganResultNone
 	g.state.seqSuit = 0
@@ -401,6 +410,7 @@ func (g *Michigan) doPlay(seat, idx int) {
 	for _, b := range g.state.boodles {
 		if b.claimedBy == -1 && b.card.GetDesign() == removed.GetDesign() && b.card.GetValue() == removed.GetValue() {
 			won := b.chips
+			g.state.roundBoodleWins = append(g.state.roundBoodleWins, &MichiganBoodleWin{Card: b.card, Seat: seat, Amount: won})
 			b.chips = 0
 			b.claimedBy = seat
 			if won > 0 {
@@ -714,6 +724,9 @@ func (g *Michigan) GetBoodle(i int) *MichiganBoodle {
 	return g.state.boodles[i]
 }
 
+// GetRoundBoodleWins は直近ラウンドに獲得したブードルの記録を返す。
+func (g *Michigan) GetRoundBoodleWins() []*MichiganBoodleWin { return g.state.roundBoodleWins }
+
 // GetSeqSuit は現在のシーケンスのスートを返す (0 = 新シーケンス待ち, 1..4 = 進行中)。
 func (g *Michigan) GetSeqSuit() int { return g.state.seqSuit }
 
@@ -787,27 +800,28 @@ func (g *Michigan) GetActionLog() []*ActionLogEntry { return g.state.actionLog }
 
 // michiganJSON is the JSON wire format for Michigan.
 type michiganJSON struct {
-	TrumpCards      *TrumpCards       `json:"tc"`
-	Players         []*MichiganPlayer `json:"ps"`
-	Config          MichiganConfig    `json:"cf"`
-	Phase           MichiganPhase     `json:"ph"`
-	RoundNumber     int               `json:"rn"`
-	DealerIdx       int               `json:"di"`
-	CurrentPlayer   int               `json:"ci"`
-	LeadPlayerIdx   int               `json:"li"`
-	SeqSuit         int               `json:"sq"`
-	SeqHighValue    int               `json:"sh"`
-	LastPlayerIdx   int               `json:"lp"`
-	Boodles         []*MichiganBoodle `json:"bd"`
-	DeadHand        []*Card           `json:"dh"`
-	RoundStartChips []int             `json:"rs"`
-	HumanBetPlaced  bool              `json:"hb"`
-	WinnerIdx       int               `json:"wi"`
-	MatchWinnerIdx  int               `json:"mw"`
-	Result          MichiganResult    `json:"re"`
-	GameEndFlag     bool              `json:"ge"`
-	Scored          bool              `json:"sc"`
-	ActionLog       []*ActionLogEntry `json:"al"`
+	TrumpCards      *TrumpCards          `json:"tc"`
+	Players         []*MichiganPlayer    `json:"ps"`
+	Config          MichiganConfig       `json:"cf"`
+	Phase           MichiganPhase        `json:"ph"`
+	RoundNumber     int                  `json:"rn"`
+	DealerIdx       int                  `json:"di"`
+	CurrentPlayer   int                  `json:"ci"`
+	LeadPlayerIdx   int                  `json:"li"`
+	SeqSuit         int                  `json:"sq"`
+	SeqHighValue    int                  `json:"sh"`
+	LastPlayerIdx   int                  `json:"lp"`
+	Boodles         []*MichiganBoodle    `json:"bd"`
+	RoundBoodleWins []*MichiganBoodleWin `json:"rbw"`
+	DeadHand        []*Card              `json:"dh"`
+	RoundStartChips []int                `json:"rs"`
+	HumanBetPlaced  bool                 `json:"hb"`
+	WinnerIdx       int                  `json:"wi"`
+	MatchWinnerIdx  int                  `json:"mw"`
+	Result          MichiganResult       `json:"re"`
+	GameEndFlag     bool                 `json:"ge"`
+	Scored          bool                 `json:"sc"`
+	ActionLog       []*ActionLogEntry    `json:"al"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -825,6 +839,7 @@ func (g *Michigan) MarshalJSON() ([]byte, error) {
 		SeqHighValue:    g.state.seqHighValue,
 		LastPlayerIdx:   g.state.lastPlayerIdx,
 		Boodles:         g.state.boodles,
+		RoundBoodleWins: g.state.roundBoodleWins,
 		DeadHand:        g.state.deadHand,
 		RoundStartChips: g.state.roundStartChips,
 		HumanBetPlaced:  g.state.humanBetPlaced,
@@ -885,6 +900,18 @@ func (g *Michigan) UnmarshalJSON(data []byte) error {
 	} else if len(boodles) != MichiganBoodleCount {
 		return errMichiganSnapshot
 	}
+	roundBoodleWins := j.RoundBoodleWins
+	if roundBoodleWins == nil {
+		roundBoodleWins = make([]*MichiganBoodleWin, 0)
+	}
+	if len(roundBoodleWins) > MichiganBoodleCount {
+		return errMichiganSnapshot
+	}
+	for _, win := range roundBoodleWins {
+		if win == nil || !michiganValidCard(win.Card) || win.Seat < 0 || win.Seat >= n || win.Amount < 0 {
+			return errMichiganSnapshot
+		}
+	}
 	for _, b := range boodles {
 		if b == nil || !michiganValidCard(b.card) || b.chips < 0 || b.claimedBy < -1 || b.claimedBy >= n {
 			return errMichiganSnapshot
@@ -942,6 +969,7 @@ func (g *Michigan) UnmarshalJSON(data []byte) error {
 		seqHighValue:    j.SeqHighValue,
 		lastPlayerIdx:   j.LastPlayerIdx,
 		boodles:         boodles,
+		roundBoodleWins: roundBoodleWins,
 		deadHand:        deadHand,
 		roundStartChips: rs,
 		humanBetPlaced:  j.HumanBetPlaced,

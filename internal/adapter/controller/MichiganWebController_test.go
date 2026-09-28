@@ -18,6 +18,7 @@ func mustMichiganOutputJSON(msg string) string {
 	out := &controller.MichiganWebOutput{
 		Players:         make([]*controller.MichiganWebOutputPlayer, 0),
 		Boodles:         make([]*controller.MichiganWebOutputBoodle, 0),
+		RoundBoodleWins: make([]*controller.MichiganWebOutputBoodleWin, 0),
 		PlayableIndices: make([]int, 0),
 		WinnerIdx:       -1,
 		MatchWinnerIdx:  -1,

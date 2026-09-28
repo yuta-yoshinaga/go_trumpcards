@@ -78045,6 +78045,18 @@ components:
                 type: boolean
               isWinner:
                 type: boolean
+        roundBoodleWins:
+          type: array
+          description: Boodles collected during the most recently completed round.
+          items:
+            type: object
+            properties:
+              card:
+                $ref: '#/components/schemas/Card'
+              seat:
+                type: integer
+              amount:
+                type: integer
         phase:
           type: integer
         roundNumber:
