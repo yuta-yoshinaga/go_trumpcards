@@ -478,7 +478,10 @@ function GermanSoloPageContent() {
 
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="germansolo-action-buttons">
               {canCallAce && (
-                <fieldset className="flex flex-wrap gap-2 items-center" data-testid="germansolo-ace-call">
+                <fieldset
+                  className="flex flex-wrap gap-2 items-center border-0 p-0 m-0 min-w-0"
+                  data-testid="germansolo-ace-call"
+                >
                   <legend className="text-ds-text-muted text-sm">{t('chooseAce')}</legend>
                   {state.callableAceSuits.map((suit) => (
                     <button
@@ -495,7 +498,10 @@ function GermanSoloPageContent() {
                 </fieldset>
               )}
               {canBid && pendingBid === null && (
-                <fieldset className="flex flex-wrap gap-2 items-center" data-testid="germansolo-bid-stage1">
+                <fieldset
+                  className="flex flex-wrap gap-2 items-center border-0 p-0 m-0 min-w-0"
+                  data-testid="germansolo-bid-stage1"
+                >
                   <legend className="text-ds-text-muted text-sm">{t('chooseBidType')}</legend>
                   {/* **サーバが弾く選択肢は出さない。** biddableBids は「この席が
                       いま上回れる契約」そのもの。定数を並べると、既に Solo が出て
@@ -517,7 +523,10 @@ function GermanSoloPageContent() {
                 </fieldset>
               )}
               {canBid && pendingBid !== null && (
-                <fieldset className="flex flex-wrap gap-2 items-center" data-testid="germansolo-bid-stage2">
+                <fieldset
+                  className="flex flex-wrap gap-2 items-center border-0 p-0 m-0 min-w-0"
+                  data-testid="germansolo-bid-stage2"
+                >
                   <legend className="text-ds-text-muted text-sm">
                     {t('chooseTrumpFor', { bid: t(BID_KEYS[pendingBid] ?? 'bidNone') })}
                   </legend>
