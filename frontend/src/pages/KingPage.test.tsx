@@ -110,8 +110,28 @@ describe('KingPage', () => {
     await waitFor(() => expect(screen.getByTestId('king-trump-prompt')).toBeInTheDocument());
     mockExec.mockClear();
     mockExec.mockResolvedValue(selectPhaseState);
-    fireEvent.click(screen.getByRole('button', { name: '♥' }));
+    fireEvent.click(screen.getByRole('button', { name: 'ハート' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('contract', { contract: 6, trumpSuit: 3 }));
+  });
+
+  it('gives each trump suit button a localized accessible name while keeping its symbol', async () => {
+    mockExec.mockResolvedValue(selectPhaseState);
+    renderWithProviders(<KingPage />);
+    fireEvent.click(await screen.findByRole('button', { name: /^キング（切り札） —/ }));
+
+    const jaNames = ['スペード', 'クラブ', 'ハート', 'ダイヤ'];
+    for (const [index, name] of jaNames.entries()) {
+      const button = screen.getByRole('button', { name });
+      expect(button).toHaveTextContent(['♠', '♣', '♥', '♦'][index]);
+    }
+
+    await i18n.changeLanguage('en');
+    const enNames = ['Spades', 'Clubs', 'Hearts', 'Diamonds'];
+    for (const [index, name] of enNames.entries()) {
+      const button = screen.getByRole('button', { name });
+      expect(button).toHaveTextContent(['♠', '♣', '♥', '♦'][index]);
+    }
+    await i18n.changeLanguage('ja');
   });
 
   it('shows a CPU-selecting message when the dealer is a CPU', async () => {
