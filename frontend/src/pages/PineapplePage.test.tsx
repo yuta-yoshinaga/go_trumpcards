@@ -253,6 +253,25 @@ describe('PineapplePage', () => {
     expect(screen.getByText('捨てるカードを選択してください')).toBeInTheDocument();
   });
 
+  it('announces CPU discards by player name when Crazy Pineapple discard completes', async () => {
+    const pending = { ...discardState, discardDone: [false, false, false, false] };
+    const completed = { ...discardState, discardDone: [true, true, true, true] };
+    mockCrazyExec.mockResolvedValueOnce(pending).mockResolvedValue(completed);
+    renderWithProviders(<PineapplePage variant="crazypineapple" />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+
+    const cardButton = screen.getAllByRole('button').find((btn) => btn.getAttribute('aria-pressed') !== null);
+    expect(cardButton).toBeDefined();
+    fireEvent.click(cardButton as HTMLButtonElement);
+    fireEvent.click(screen.getByRole('button', { name: '1枚捨ててください。' }));
+    fireEvent.click(screen.getByRole('button', { name: '確定' }));
+
+    const log = await screen.findByTestId('cp-cpu-discard-log');
+    expect(log).toHaveTextContent('CPU 1がディスカードしました');
+    expect(log).toHaveTextContent('CPU 2がディスカードしました');
+    expect(log).toHaveTextContent('CPU 3がディスカードしました');
+  });
+
   it('allows selecting a card and clicking discard', async () => {
     mockExec.mockResolvedValue(discardState);
     renderWithProviders(<PineapplePage />);
