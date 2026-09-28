@@ -17,6 +17,12 @@
   "round": "ラウンド {{n}}",
   "deck": "山札: {{count}}",
   "deckChanged": "山札の残りは{{count}}枚です。",
+  "listSeparator": "、",
+  "scoreLive": {
+    "captured": "{{name}}が獲得した札は{{count}}枚です",
+    "score": "{{name}}の得点は{{score}}点です",
+    "yaku": "{{name}}に役が成立しました: {{yaku}}"
+  },
   "koikoiCount": "こいこい: {{count}}回",
   "field": "場",
   "fieldEmpty": "（なし）",

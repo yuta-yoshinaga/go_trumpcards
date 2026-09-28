@@ -115,6 +115,17 @@ function KoiKoiPageContent() {
   } = useGameHint('koikoi', state);
   const previousDeckCount = useRef<number | null>(null);
   const [deckAnnouncement, setDeckAnnouncement] = useState('');
+  const previousPlayerStats = useRef<Map<number, { capturedCount: number; score: number; yaku: string[] }> | null>(
+    null,
+  );
+  const previousRoundNumber = useRef<number | null>(null);
+  const [scoreAnnouncement, setScoreAnnouncement] = useState('');
+
+  const resetScoreAnnouncementBaseline = () => {
+    previousPlayerStats.current = null;
+    previousRoundNumber.current = null;
+    setScoreAnnouncement('');
+  };
 
   // Fetch a fresh game on mount.
   // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount.
@@ -128,6 +139,46 @@ function KoiKoiPageContent() {
       setDeckAnnouncement(t('deckChanged', { count: state.remainingDeck }));
     }
     previousDeckCount.current = state.remainingDeck;
+  }, [state, t]);
+
+  useEffect(() => {
+    if (!state) return;
+    if (previousRoundNumber.current !== null && previousRoundNumber.current !== state.roundNumber) {
+      previousPlayerStats.current = null;
+      setScoreAnnouncement('');
+    }
+    previousRoundNumber.current = state.roundNumber;
+    const previous = previousPlayerStats.current;
+    const changes: string[] = [];
+    if (previous) {
+      for (const player of state.players) {
+        const before = previous.get(player.id);
+        if (!before) continue;
+        const name = t(player.isHuman ? 'you' : 'cpu');
+        if (player.capturedCount !== before.capturedCount) {
+          changes.push(t('scoreLive.captured', { name, count: player.capturedCount }));
+        }
+        if (player.score !== before.score) {
+          changes.push(t('scoreLive.score', { name, score: player.score }));
+        }
+        const newYaku = player.yaku.filter((yaku) => !before.yaku.includes(yaku.key));
+        if (newYaku.length > 0) {
+          changes.push(
+            t('scoreLive.yaku', {
+              name,
+              yaku: newYaku.map((yaku) => t(`yaku.${yaku.key}`, { defaultValue: yaku.key })).join(t('listSeparator')),
+            }),
+          );
+        }
+      }
+      if (changes.length > 0) setScoreAnnouncement(changes.join(t('listSeparator')));
+    }
+    previousPlayerStats.current = new Map(
+      state.players.map((player) => [
+        player.id,
+        { capturedCount: player.capturedCount, score: player.score, yaku: player.yaku.map((yaku) => yaku.key) },
+      ]),
+    );
   }, [state, t]);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('koikoi');
@@ -240,6 +291,15 @@ function KoiKoiPageContent() {
             </div>
             <div data-testid="koikoi-deck-live" role="status" aria-live="polite" aria-atomic="true" className="sr-only">
               {deckAnnouncement}
+            </div>
+            <div
+              data-testid="koikoi-score-live"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+              className="sr-only"
+            >
+              {scoreAnnouncement}
             </div>
 
             {/* CPU captured + yaku */}
@@ -440,7 +500,10 @@ function KoiKoiPageContent() {
                       value: String(o.value),
                       label: t(`settings.${o.label.toLowerCase()}`),
                     })),
-                    onSelect: (v: string) => handleConfigChange('cpuDifficulty', Number.parseInt(v, 10)),
+                    onSelect: (v: string) => {
+                      resetScoreAnnouncementBaseline();
+                      handleConfigChange('cpuDifficulty', Number.parseInt(v, 10));
+                    },
                   },
                   {
                     type: 'select' as const,
@@ -448,7 +511,10 @@ function KoiKoiPageContent() {
                     label: t('settings.targetScore'),
                     value: String(configInput.targetScore ?? 50),
                     options: TARGET_SCORE_OPTIONS.map((v) => ({ value: String(v), label: String(v) })),
-                    onSelect: (v: string) => handleConfigChange('targetScore', Number.parseInt(v, 10)),
+                    onSelect: (v: string) => {
+                      resetScoreAnnouncementBaseline();
+                      handleConfigChange('targetScore', Number.parseInt(v, 10));
+                    },
                   },
                   hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                 ],
@@ -459,18 +525,37 @@ function KoiKoiPageContent() {
           <GameFooter className={`${gameTheme.koikoi.footer} px-4 py-2.5`}>
             <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="koikoi-actions">
               {isRoundEnd && !isGameEnd && (
-                <button type="button" className={btnPrimary} onClick={handleNextRound} disabled={loading}>
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  onClick={() => {
+                    resetScoreAnnouncementBaseline();
+                    handleNextRound();
+                  }}
+                  disabled={loading}
+                >
                   {t('nextRound')}
                 </button>
               )}
               {isGameEnd && (
-                <button type="button" className={btnSuccess} onClick={handleResetWithConfig} disabled={loading}>
+                <button
+                  type="button"
+                  className={btnSuccess}
+                  onClick={() => {
+                    resetScoreAnnouncementBaseline();
+                    handleResetWithConfig();
+                  }}
+                  disabled={loading}
+                >
                   {t('newGame')}
                 </button>
               )}
               <GameResetButton
                 isGameEnd={isGameEnd}
-                onReset={handleResetWithConfig}
+                onReset={() => {
+                  resetScoreAnnouncementBaseline();
+                  handleResetWithConfig();
+                }}
                 requestConfirm={requestConfirm}
                 loading={loading}
                 dataTutorial="koikoi-reset-button"

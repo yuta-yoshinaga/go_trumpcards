@@ -57,6 +57,45 @@ describe('KoiKoiPage', () => {
     await waitFor(() => expect(live).toHaveTextContent('山札の残りは31枚です。'));
   });
 
+  it('announces only changed captures, yaku, and scores once', async () => {
+    const updated = makeKoiKoiState({
+      remainingDeck: 30,
+      players: playState.players.map((p) =>
+        p.isHuman ? { ...p, capturedCount: 2, score: 3, yaku: [{ key: 'tane', points: 1 }] } : p,
+      ),
+    });
+    mockExec.mockResolvedValueOnce(playState).mockResolvedValueOnce(updated).mockResolvedValueOnce(updated);
+    renderWithProviders(<KoiKoiPage />);
+    const live = await screen.findByTestId('koikoi-score-live');
+    expect(live).toBeEmptyDOMElement();
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+    await waitFor(() => expect(live).toHaveTextContent('あなたが獲得した札は2枚です'));
+    expect(live).toHaveTextContent('タネ');
+    expect(live).toHaveTextContent('得点は3点です');
+    const announcement = live.textContent;
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledTimes(3));
+    expect(live).toHaveTextContent(announcement ?? '');
+    expect(live.textContent).toBe(announcement);
+  });
+
+  it('announces captures, scores, and newly completed yaku for the CPU', async () => {
+    const updated = makeKoiKoiState({
+      players: playState.players.map((p) =>
+        p.isHuman ? p : { ...p, capturedCount: 4, score: 6, yaku: [{ key: 'tane', points: 1 }] },
+      ),
+    });
+    mockExec.mockResolvedValueOnce(playState).mockResolvedValueOnce(updated);
+    renderWithProviders(<KoiKoiPage />);
+    const live = await screen.findByTestId('koikoi-score-live');
+
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+
+    await waitFor(() => expect(live).toHaveTextContent('CPUが獲得した札は4枚です'));
+    expect(live).toHaveTextContent('CPUの得点は6点です');
+    expect(live).toHaveTextContent('CPUに役が成立しました: タネ');
+  });
+
   it('renders the loading fallback when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<KoiKoiPage />);
@@ -108,6 +147,91 @@ describe('KoiKoiPage', () => {
     mockExec.mockClear();
     fireEvent.click(btn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
+  });
+
+  it('does not announce cleared player stats in the first response of the next round', async () => {
+    const nextRound = makeKoiKoiState({ roundNumber: 2 });
+    mockExec.mockResolvedValueOnce(roundEndState).mockResolvedValueOnce(nextRound);
+    renderWithProviders(<KoiKoiPage />);
+    const live = await screen.findByTestId('koikoi-score-live');
+    fireEvent.click(await screen.findByRole('button', { name: '次のラウンド' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
+    await waitFor(() => expect(screen.getByText('ラウンド 2')).toBeInTheDocument());
+    expect(live).toBeEmptyDOMElement();
+  });
+
+  it('clears the score announcement when the round number changes in an API response', async () => {
+    const nextRound = makeKoiKoiState({ roundNumber: 2 });
+    mockExec.mockResolvedValueOnce(playState).mockResolvedValueOnce(nextRound);
+    renderWithProviders(<KoiKoiPage />);
+    const live = await screen.findByTestId('koikoi-score-live');
+
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+
+    await waitFor(() => expect(screen.getByText('ラウンド 2')).toBeInTheDocument());
+    expect(live).toBeEmptyDOMElement();
+  });
+
+  it('clears the score announcement baseline before resetting', async () => {
+    const scoredState = makeKoiKoiState({
+      players: playState.players.map((player) => (player.isHuman ? { ...player, capturedCount: 2, score: 3 } : player)),
+    });
+    mockExec.mockResolvedValueOnce(playState).mockResolvedValueOnce(scoredState).mockResolvedValueOnce(playState);
+    renderWithProviders(<KoiKoiPage />);
+    const live = await screen.findByTestId('koikoi-score-live');
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+    await waitFor(() => expect(live).toHaveTextContent('得点は3点です'));
+    fireEvent.click(await screen.findByRole('button', { name: 'リセット' }));
+    fireEvent.click(await screen.findByRole('button', { name: '確認' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', { config: { cpuDifficulty: 1, targetScore: 50 } }),
+    );
+    await waitFor(() => expect(live).toBeEmptyDOMElement());
+  });
+
+  it.each([
+    ['CPU difficulty', 'cpuDifficulty', '2'],
+    ['target score', 'targetScore', '100'],
+  ])('clears the score announcement baseline when %s changes', async (_label, setting, value) => {
+    const scoredState = makeKoiKoiState({
+      players: playState.players.map((player) => (player.isHuman ? { ...player, capturedCount: 2, score: 3 } : player)),
+    });
+    mockExec.mockResolvedValueOnce(playState).mockResolvedValueOnce(scoredState);
+    renderWithProviders(<KoiKoiPage />);
+    const live = await screen.findByTestId('koikoi-score-live');
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+    await waitFor(() => expect(live).toHaveTextContent('得点は3点です'));
+
+    fireEvent.click(screen.getByText('設定', { selector: 'summary' }));
+    fireEvent.change(screen.getByLabelText(setting === 'cpuDifficulty' ? 'CPU難易度' : '目標点'), {
+      target: { value },
+    });
+
+    expect(live).toBeEmptyDOMElement();
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', {
+        config: {
+          cpuDifficulty: setting === 'cpuDifficulty' ? 2 : 1,
+          targetScore: setting === 'targetScore' ? 100 : 50,
+        },
+      }),
+    );
+  });
+
+  it('clears the score announcement baseline when starting a new game after game end', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<KoiKoiPage />);
+    const live = await screen.findByTestId('koikoi-score-live');
+
+    fireEvent.click(screen.getByRole('button', { name: '新しいゲーム' }));
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', { config: { cpuDifficulty: 1, targetScore: 50 } }),
+    );
+    expect(live).toBeEmptyDOMElement();
   });
 
   it('shows base points, multiplier, and total in the round result', async () => {
