@@ -123,9 +123,11 @@ function BaseballPokerPageContent() {
     }[state.phase] ?? '';
 
   const human = state.seats[state.humanSeat];
-  // ドメインは買い増し額を所持チップ以下に制限して支払う。
-  const buyPayment = Math.max(0, Math.min(state.buyCost, human?.chips ?? 0));
-  const chipsAfterBuy = Math.max(0, (human?.chips ?? 0) - buyPayment);
+  const humanChips = human?.chips ?? 0;
+  // 買い増し画面では buyerSeat が有効な人間席を指す。ドメインは買い増し額を
+  // 所持チップ以下に制限するので、支払い後の残額も負にならない。
+  const buyPayment = isBuying ? Math.min(state.buyCost, humanChips) : 0;
+  const chipsAfterBuy = isBuying ? humanChips - buyPayment : 0;
   const humanWon = gameOver && state.winnerSeat === state.humanSeat;
 
   /**
@@ -181,7 +183,7 @@ function BaseballPokerPageContent() {
       headerExtra={
         <>
           <span data-testid="bb-chips">
-            {t('label.chips')}: {human?.chips ?? 0}
+            {t('label.chips')}: {humanChips}
           </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>

@@ -243,6 +243,15 @@ describe('BaseballPokerPage', () => {
     expect(screen.getByTestId('bb-buy-guide')).toHaveTextContent('50');
   });
 
+  it('人間席が応答にない場合は買い増し額とチップを0として表示する', async () => {
+    mockApi.mockResolvedValue(withState({ phase: BaseballPhase.BUY_IN, isBuying: true, humanSeat: 9, buyCost: 80 }));
+    renderWithProviders(<BaseballPokerPage />);
+    await waitFor(() => expect(screen.getByTestId('bb-pay')).toBeInTheDocument());
+    expect(screen.getByTestId('bb-chips')).toHaveTextContent('0');
+    expect(screen.getByTestId('bb-buy-cost')).toHaveTextContent('0');
+    expect(screen.getByTestId('bb-buy-remaining')).toHaveTextContent('0');
+  });
+
   // **降りるつもりが支払いに化けない。** 両方の返事を別々に送る。
   it('買い増しの返事をそのまま送る', async () => {
     mockApi.mockResolvedValue(
