@@ -26,6 +26,7 @@
   "noCapture": "This card cannot take anything",
   "takeGroup": "Take {{cards}}",
   "declareGroup": "Declare {{value}} ({{cards}})",
+  "listSeparator": ", ",
   "layOffButton": "Lay off",
   "score": "score {{n}}",
   "taken": "{{n}} taken",

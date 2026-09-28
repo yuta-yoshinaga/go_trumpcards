@@ -161,6 +161,14 @@ describe('DilotiPage', () => {
     );
   });
 
+  it('names the declared value and target card while keeping the visible table index', async () => {
+    renderWithProviders(<DilotiPage />);
+    await pickHand(1);
+    const button = await screen.findByTestId('diloti-declare-8-0');
+    expect(button).toHaveAttribute('aria-label', '8 を宣言（♣ 3）');
+    expect(button).toHaveTextContent('8 を宣言（0）');
+  });
+
   // **置けない札には「場に置く」を出さない。** 出すと押しても弾かれるだけの
   // ボタンになる ── 手札 2 (♣J) は場に ♦J があるので置けない。
   it('offers lay off only when the card may be laid off', async () => {

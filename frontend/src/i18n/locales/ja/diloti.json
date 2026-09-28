@@ -26,6 +26,7 @@
   "noCapture": "この札では取れません",
   "takeGroup": "{{cards}} を取る",
   "declareGroup": "{{value}} を宣言（{{cards}}）",
+  "listSeparator": "、",
   "layOffButton": "場に置く",
   "score": "得点 {{n}}",
   "taken": "取り札 {{n}} 枚",
