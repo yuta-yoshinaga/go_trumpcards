@@ -94,6 +94,35 @@ describe('LobaPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('drawdiscard'));
   });
 
+  it('selects the card added from the discard pile so it can be discarded next', async () => {
+    const beforeDraw = makeState({ phase: LobaPhase.DRAW, melds: [] });
+    const drawnCard = card('HEART', 9);
+    const afterDraw = makeState({
+      phase: LobaPhase.ACT,
+      discardTop: undefined,
+      melds: [],
+      players: [
+        seat(0, true, { cards: [...seat(0, true).cards, drawnCard] }),
+        seat(1, false),
+        seat(2, false),
+        seat(3, false),
+      ],
+    });
+    mockExec.mockReset().mockResolvedValueOnce(beforeDraw).mockResolvedValueOnce(afterDraw);
+    renderWithProviders(<LobaPage />);
+
+    await waitFor(() => expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: '捨て札を取る' }));
+
+    const getHand = () => screen.getAllByRole('button').filter((button) => button.dataset.hintAction === 'discard');
+    await waitFor(() => expect(getHand()[4]).toHaveAttribute('aria-pressed', 'true'));
+    const hand = getHand();
+    expect(hand[0]).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(screen.getByRole('button', { name: '捨てる' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', 4));
+  });
+
   it('needs three selected cards before it will meld', async () => {
     // 2 枚では押せない。押せてしまうとサーバー往復が無駄になる。
     renderWithProviders(<LobaPage />);
