@@ -153,6 +153,10 @@ const roundEndPhase: SkatResponse = {
     { design: 'DIAMOND', value: 7 },
     { design: 'DIAMOND', value: 8 },
   ],
+  skat: [
+    { design: 'HEART', value: 9 },
+    { design: 'CLOVER', value: 10 },
+  ],
 };
 
 const gameEndPhase: SkatResponse = {
@@ -182,6 +186,26 @@ beforeEach(() => {
 });
 
 describe('SkatPage', () => {
+  it('shows and distinguishes the original and final skat at round end', async () => {
+    mockExec.mockResolvedValue(roundEndPhase);
+    renderWithProviders(<SkatPage />);
+
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('ラウンド終了'));
+    expect(screen.getByTestId('original-skat-reveal')).toBeInTheDocument();
+    expect(screen.getByTestId('final-skat-reveal')).toBeInTheDocument();
+    expect(screen.getByText('開始時のスカート:')).toBeInTheDocument();
+    expect(screen.getByText('最終スカート:')).toBeInTheDocument();
+    expect(within(screen.getByTestId('final-skat-reveal')).getAllByRole('img')).toHaveLength(2);
+  });
+
+  it('does not reveal the final skat before the round ends', async () => {
+    mockExec.mockResolvedValue(playPhaseHumanTurn);
+    renderWithProviders(<SkatPage />);
+
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('プレイ'));
+    expect(screen.queryByTestId('final-skat-reveal')).not.toBeInTheDocument();
+  });
+
   it('shows the completed trick winner through the next trick and clears it for a new round', async () => {
     mockExec.mockResolvedValue({
       ...playPhaseHumanTurn,
@@ -628,9 +652,9 @@ describe('SkatPage', () => {
         <SkatPage />
       </MemoryRouter>,
     );
-    await waitFor(() => expect(screen.getByText(/スカート \(場札\)/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('開始時のスカート:')).toBeInTheDocument());
     // The two skat cards now render as real card images, not raw "DIAMOND 7" text.
-    const reveal = screen.getByTestId('skat-reveal');
+    const reveal = screen.getByTestId('original-skat-reveal');
     expect(within(reveal).getAllByRole('img')).toHaveLength(2);
     expect(reveal).not.toHaveTextContent('DIAMOND');
   });
