@@ -7,6 +7,7 @@
   "label.banker": "Banker",
   "label.youAreBanker": "You hold the bank",
   "label.payouts": "Arashi {{arashi}}x / pair {{pair}}x",
+  "label.payoutMeaning": "The multiplier is applied to your bet (a bet of 10 at 3x is 30). You receive that amount when you win and pay at the banker's multiplier when you lose. Won amount is the chip change at settlement.",
   "label.betPrompt": "Place a bet ({{min}} or more, in steps of 10)",
   "label.bankerBetExcluded": "The banker does not bet",
   "label.dealPrompt": "The bets are in — deal to continue",
