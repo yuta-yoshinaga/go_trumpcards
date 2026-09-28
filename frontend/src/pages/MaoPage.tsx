@@ -125,6 +125,7 @@ function MaoPageContent() {
   } = useMaoGame();
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
+  const chosenSuitKey = state ? SUIT_BUTTONS.find(({ suit }) => suit === state.chosenSuit)?.key : undefined;
   const [wordInput, setWordInput] = useState('');
   // Local log of say-word attempts and their outcome; the server never returns
   // this history, but the player types the word and the response's rulePenalty
@@ -320,8 +321,9 @@ function MaoPageContent() {
                     <div className="text-ds-text-muted text-sm relative">
                       <div>{t('discardTop')}</div>
                       {state.chosenSuit > 0 && (
-                        <div className="text-ds-warning">
-                          {t('chosenSuit')}: {suitSymbolAt(state.chosenSuit, '?')}
+                        <div className="text-ds-warning" data-testid="chosen-suit-status">
+                          {t('chosenSuit')}: {chosenSuitKey ? `${t(chosenSuitKey)} ` : ''}
+                          {suitSymbolAt(state.chosenSuit, '?')}
                         </div>
                       )}
                     </div>
