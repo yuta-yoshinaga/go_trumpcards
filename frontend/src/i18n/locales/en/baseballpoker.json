@@ -10,6 +10,7 @@
   "label.canCheck": "You may check",
   "label.buyIn": "A face-up 3. Pay {{amount}} to stay in?",
   "label.buyCost": "Price {{amount}}",
+  "label.buyRemaining": "Chips after payment {{amount}}",
   "label.yourHand": "Your hand",
   "label.seats": "Seats",
   "label.hidden": "face down",

@@ -216,9 +216,40 @@ describe('BaseballPokerPage', () => {
     expect(screen.getByTestId('bb-buyfold')).toBeInTheDocument();
     // 払う額を出す。
     expect(screen.getByTestId('bb-buy-guide')).toHaveTextContent('80');
+    expect(screen.getByTestId('bb-buy-summary')).toBeInTheDocument();
+    expect(screen.getByTestId('bb-buy-cost')).toHaveTextContent('80');
+    expect(screen.getByTestId('bb-buy-remaining')).toHaveTextContent('920');
     // ベットの手は出さない。
     expect(screen.queryByTestId('bb-check')).not.toBeInTheDocument();
     expect(screen.queryByTestId('bb-fold')).not.toBeInTheDocument();
+  });
+
+  it('買い増し額が所持チップを超える場合は支払額を上限化して残り0を表示する', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: BaseballPhase.BUY_IN,
+        isBuying: true,
+        isHumanTurn: false,
+        buyerSeat: 0,
+        buyCost: 80,
+        seats: [seat({ chips: 50, isTurn: false, isBuying: true }), cpuSeat()],
+      }),
+    );
+    renderWithProviders(<BaseballPokerPage />);
+    await waitFor(() => expect(screen.getByTestId('bb-pay')).toBeInTheDocument());
+
+    expect(screen.getByTestId('bb-buy-cost')).toHaveTextContent('50');
+    expect(screen.getByTestId('bb-buy-remaining')).toHaveTextContent('0');
+    expect(screen.getByTestId('bb-buy-guide')).toHaveTextContent('50');
+  });
+
+  it('人間席が応答にない場合は買い増し額とチップを0として表示する', async () => {
+    mockApi.mockResolvedValue(withState({ phase: BaseballPhase.BUY_IN, isBuying: true, humanSeat: 9, buyCost: 80 }));
+    renderWithProviders(<BaseballPokerPage />);
+    await waitFor(() => expect(screen.getByTestId('bb-pay')).toBeInTheDocument());
+    expect(screen.getByTestId('bb-chips')).toHaveTextContent('0');
+    expect(screen.getByTestId('bb-buy-cost')).toHaveTextContent('0');
+    expect(screen.getByTestId('bb-buy-remaining')).toHaveTextContent('0');
   });
 
   // **降りるつもりが支払いに化けない。** 両方の返事を別々に送る。
