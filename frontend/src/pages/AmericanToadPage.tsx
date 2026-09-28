@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useId, useMemo } from 'react';
 import type { americanToadApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -69,6 +69,7 @@ function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => stri
 }
 
 function AmericanToadPageContent() {
+  const selectSourceHintId = useId();
   const {
     t,
     tc,
@@ -227,8 +228,10 @@ function AmericanToadPageContent() {
             {col.length === 0 ? (
               <button
                 type="button"
-                onClick={() => game.handleSelectTarget(tableauColZone)}
-                disabled={!isPlaying || loading || !selectedSource || reserveHolds}
+                onClick={() => selectedSource && game.handleSelectTarget(tableauColZone)}
+                disabled={!isPlaying || loading || reserveHolds}
+                aria-disabled={!selectedSource || undefined}
+                aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                 aria-label={
                   reserveHolds
                     ? t('reservedColumnAriaLabel', { col: colIdx })
@@ -329,6 +332,9 @@ function AmericanToadPageContent() {
       }
     >
       <LandscapeBanner message={t('landscapeBanner')} />
+      <span id={selectSourceHintId} className="sr-only">
+        {tc('label.selectSourceFirst')}
+      </span>
 
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
@@ -386,8 +392,10 @@ function AmericanToadPageContent() {
                         {pile.length > 0 ? (
                           <button
                             type="button"
-                            onClick={() => game.handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
+                            onClick={() => selectedSource && game.handleSelectTarget(foundationZone)}
+                            disabled={!isPlaying || loading || isAutoCompleting}
+                            aria-disabled={!selectedSource || undefined}
+                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t('foundationAriaLabel', {
                               suit: FOUNDATION_SUITS[idx],
                               idx,
@@ -405,8 +413,10 @@ function AmericanToadPageContent() {
                         ) : (
                           <button
                             type="button"
-                            onClick={() => game.handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading || !selectedSource}
+                            onClick={() => selectedSource && game.handleSelectTarget(foundationZone)}
+                            disabled={!isPlaying || loading}
+                            aria-disabled={!selectedSource || undefined}
+                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx], idx })}
                             style={{ width: dims.cw, height: dims.ch }}
                             className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}

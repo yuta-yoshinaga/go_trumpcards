@@ -152,6 +152,21 @@ describe('BraidPage', () => {
     );
   });
 
+  it('keeps empty foundation targets focusable and explains selection before a source is chosen', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BraidPage />);
+    const btn = await screen.findByRole('button', { name: '空の組札0' });
+    expect(btn).not.toBeDisabled();
+    expect(btn).toHaveAttribute('aria-disabled', 'true');
+    const hintId = btn.getAttribute('aria-describedby');
+    expect(hintId).toBeTruthy();
+    expect(document.getElementById(hintId ?? '')).toHaveTextContent('先に移動する札を選んでください');
+    mockExec.mockClear();
+    fireEvent.click(btn);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('shows an empty braid slot once it runs out', async () => {
     mockExec.mockResolvedValue({ ...playingState, braid: [] });
     renderWithProviders(<BraidPage />);

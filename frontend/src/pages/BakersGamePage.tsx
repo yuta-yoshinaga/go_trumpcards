@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useId, useMemo, useState } from 'react';
 import type { bakersgameApi, FreeCellMoveZone } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -78,6 +78,7 @@ const BG_TUTORIAL_STEPS: TutorialStep[] = [
 export const BakersGamePage = withTutorial(BakersGamePageContent, 'bakersgame', BG_TUTORIAL_STEPS);
 /** Inner content of the Baker's Game page, wrapped by TutorialProvider. */
 function BakersGamePageContent() {
+  const selectSourceHintId = useId();
   const {
     t,
     tc,
@@ -274,6 +275,9 @@ function BakersGamePageContent() {
           <LandscapeBanner message={t('landscapeBanner')} />
 
           <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
+            <span id={selectSourceHintId} className="sr-only">
+              {tc('label.selectSourceFirst')}
+            </span>
             {/* Free cells + Foundation row */}
             <div className="flex gap-2 mb-3 items-start flex-wrap">
               {/* Free cells */}
@@ -329,7 +333,9 @@ function BakersGamePageContent() {
                           <button
                             type="button"
                             onClick={() => handleSelectTarget(freeCellZone)}
-                            disabled={!isPlaying || loading || !selectedSource}
+                            disabled={!isPlaying || loading}
+                            aria-disabled={!selectedSource || undefined}
+                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t('emptyFreecellAriaLabel', { idx: String(idx) })}
                             style={{ width: cardWidth, height: cardHeight }}
                             className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
@@ -362,7 +368,9 @@ function BakersGamePageContent() {
                           <button
                             type="button"
                             onClick={() => handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
+                            disabled={!isPlaying || loading || isAutoCompleting}
+                            aria-disabled={!selectedSource || undefined}
+                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t('foundationAriaLabel', {
                               suit: FOUNDATION_SUITS[idx],
                               cardCount: String(pile.length),
@@ -380,7 +388,9 @@ function BakersGamePageContent() {
                           <button
                             type="button"
                             onClick={() => handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading || !selectedSource}
+                            disabled={!isPlaying || loading}
+                            aria-disabled={!selectedSource || undefined}
+                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
                             style={{ width: cardWidth, height: cardHeight }}
                             className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
@@ -422,7 +432,9 @@ function BakersGamePageContent() {
                             <button
                               type="button"
                               onClick={() => handleSelectTarget(tableauColZone)}
-                              disabled={!isPlaying || loading || !selectedSource}
+                              disabled={!isPlaying || loading}
+                              aria-disabled={!selectedSource || undefined}
+                              aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                               style={{ height: cardHeight }}
                               data-testid={`bg-empty-col-${colIdx.toString()}`}
                               // 空き列だけ上限が低い。選んだ束が超えているなら、

@@ -158,6 +158,22 @@ describe('BeleagueredCastlePage', () => {
     expect(mockExec).not.toHaveBeenCalled();
   });
 
+  it('explains why a foundation target is unavailable before selecting a source', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BeleagueredCastlePage />);
+    const target = await screen.findByRole('button', { name: '♠ 組札 1枚' });
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const hintId = target.getAttribute('aria-describedby');
+    expect(hintId).toBeTruthy();
+    expect(document.getElementById(hintId ?? '')).toHaveTextContent('先に移動する札を選んでください');
+
+    mockExec.mockClear();
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('moves a selected card to a legal empty tableau column', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BeleagueredCastlePage />);

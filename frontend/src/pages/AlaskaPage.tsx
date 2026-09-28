@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useId, useMemo, useState } from 'react';
 import { type AlaskaMoveZone, alaskaHintApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -99,6 +99,7 @@ function formatAlaskaState(state: AlaskaResponse): string {
 export const AlaskaPage = withTutorial(AlaskaPageContent, 'alaska', RS_TUTORIAL_STEPS);
 /** Inner content of the Alaska page. */
 function AlaskaPageContent() {
+  const selectSourceHintId = useId();
   const {
     t,
     tc,
@@ -321,6 +322,9 @@ function AlaskaPageContent() {
         </>
       }
     >
+      <span id={selectSourceHintId} className="sr-only">
+        {tc('label.selectSourceFirst')}
+      </span>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -355,7 +359,9 @@ function AlaskaPageContent() {
                         isTarget ? 'hover:ring-2 hover:ring-ds-warning cursor-pointer' : ''
                       }`}
                       onClick={() => isTarget && handleSelectTarget('foundation', i)}
-                      disabled={!isPlaying || !isTarget}
+                      disabled={!isPlaying}
+                      aria-disabled={!isTarget || undefined}
+                      aria-describedby={!isTarget ? selectSourceHintId : undefined}
                       aria-label={
                         topCard
                           ? t('foundationAriaLabel', {
@@ -430,7 +436,9 @@ function AlaskaPageContent() {
                         }`}
                         style={{ width: rs.cw, height: rs.ch }}
                         onClick={() => selectedSource && handleSelectTarget('tableau', colIdx)}
-                        disabled={!isPlaying || !selectedSource}
+                        disabled={!isPlaying}
+                        aria-disabled={!selectedSource || undefined}
+                        aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                         aria-label={`${t('empty')} ${t('tableau')} ${colIdx}`}
                       >
                         {t('empty')}

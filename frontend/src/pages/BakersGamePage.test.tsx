@@ -637,35 +637,53 @@ describe('BakersGamePage', () => {
 
   // --- Empty targets disabled without source ---
 
-  it('foundation disabled when no source selected', async () => {
+  it('foundation targets remain focusable when no source selected', async () => {
     renderWithProviders(<BakersGamePage />);
     await waitFor(() => expect(screen.getByText('♠')).toBeInTheDocument());
 
     const aButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === 'A');
     for (const btn of aButtons) {
-      expect(btn).toBeDisabled();
+      expect(btn).not.toBeDisabled();
+      expect(btn).toHaveAttribute('aria-disabled', 'true');
     }
   });
 
-  it('empty tableau column disabled when no source selected', async () => {
+  it('empty tableau targets remain focusable when no source selected', async () => {
     renderWithProviders(<BakersGamePage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
     const kButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === '任意');
     for (const btn of kButtons) {
-      expect(btn).toBeDisabled();
+      expect(btn).not.toBeDisabled();
+      expect(btn).toHaveAttribute('aria-disabled', 'true');
     }
   });
 
-  it('empty freecell disabled when no source selected', async () => {
+  it('empty freecell targets remain focusable when no source selected', async () => {
     renderWithProviders(<BakersGamePage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
     const emptyButtons = screen.getAllByText('空');
     for (const btn of emptyButtons) {
       const button = btn.closest('button') as HTMLButtonElement;
-      expect(button).toBeDisabled();
+      expect(button).not.toBeDisabled();
+      expect(button).toHaveAttribute('aria-disabled', 'true');
     }
+  });
+
+  it('explains and ignores a target click before a source is selected', async () => {
+    mockExec.mockClear();
+    renderWithProviders(<BakersGamePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    const target = screen.getByTestId('bg-empty-col-2');
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const hintId = target.getAttribute('aria-describedby');
+    expect(hintId).toBeTruthy();
+    expect(document.getElementById(hintId!)).toHaveTextContent('先に移動する札を選んでください');
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
   });
 
   it('renders tutorial button', async () => {
