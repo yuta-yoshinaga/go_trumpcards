@@ -121,6 +121,34 @@ const endPhaseState: ChinesePokerResponse = {
 };
 
 describe('ChinesePokerPage', () => {
+  it('identifies the player or dealer in each result hand heading in Japanese and English', async () => {
+    mockExec.mockResolvedValue(endPhaseState);
+
+    for (const [language, player, dealer, front, rank] of [
+      ['ja', 'プレイヤー', 'ディーラー', 'フロント (3枚)', 'ハイカード'],
+      ['en', 'Player', 'Dealer', 'Front (3 cards)', 'High Card'],
+    ] as const) {
+      await i18n.changeLanguage(language);
+      const { unmount } = renderWithProviders(<ChinesePokerPage />);
+      await waitFor(() => expect(screen.getAllByRole('heading', { level: 2 })).toHaveLength(6));
+      const headingNames = screen.getAllByRole('heading', { level: 2 }).map((heading) => heading.textContent ?? '');
+      expect(
+        headingNames.some(
+          (name) => name.includes(player) && name.includes(front) && name.includes(rank) && name.includes('✅'),
+        ),
+      ).toBe(true);
+      expect(
+        headingNames.some(
+          (name) => name.includes(dealer) && name.includes(front) && name.includes(rank) && name.includes('❌'),
+        ),
+      ).toBe(true);
+      expect(screen.getAllByRole('img')).toHaveLength(26);
+      unmount();
+    }
+
+    await i18n.changeLanguage('ja');
+  });
+
   it('renders bet phase with bet button', async () => {
     mockExec.mockResolvedValue(betPhaseState);
     renderWithProviders(<ChinesePokerPage />);
