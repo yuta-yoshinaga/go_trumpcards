@@ -27,6 +27,7 @@
   "waitingForTurn": "Waiting for your next turn.",
   "goOut": "{{name}} went out for {{points}}",
   "cardsLeft": "{{name}}: {{n}} card(s) left",
+  "roundScore": "{{name}}: this round {{gained}} points / total {{total}} points",
   "unplayedKings": "Kings never played: {{n}} (2 each)",
   "heldWild": "{{name}} was left holding the Comet: -1",
   "winner": "{{name}} wins!",

@@ -27,6 +27,7 @@
   "waitingForTurn": "相手の手番です。次の手番までお待ちください。",
   "goOut": "{{name}} が上がり、{{points}} 点",
   "cardsLeft": "{{name}}: 残り {{n}} 枚",
+  "roundScore": "{{name}}: 今回 {{gained}} 点 / 累計 {{total}} 点",
   "unplayedKings": "出なかった K: {{n}} 枚（1 枚 2 点）",
   "heldWild": "{{name}} はコメットを抱えたまま: -1 点",
   "winner": "{{name}} の勝ち！",

@@ -286,6 +286,15 @@ function CometPageContent() {
                         })}
                       </div>
                     ))}
+                    {state.players.map((p, idx) => (
+                      <div key={p.id} data-testid={`comet-round-score-${idx}`}>
+                        {t('roundScore', {
+                          name: playerName(p.id, p.isHuman),
+                          gained: lastResult.gained[idx] > 0 ? `+${lastResult.gained[idx]}` : lastResult.gained[idx],
+                          total: p.score,
+                        })}
+                      </div>
+                    ))}
                     <div>{t('unplayedKings', { n: lastResult.unplayedKings })}</div>
                     {lastResult.heldWildIdx >= 0 && (
                       <div className="text-ds-error" data-testid="comet-held-wild">
