@@ -637,6 +637,32 @@ describe('PokerPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('exchange', expect.arrayContaining([0, 1])));
   });
 
+  it('announces the replacement cards in a separate polite live region after exchange', async () => {
+    mockExec.mockResolvedValue(exchangeState);
+    renderWithProviders(<PokerPage />);
+    const exchangeButton = await screen.findByRole('button', { name: '交換' });
+    const liveRegion = screen.getByTestId('pk-exchanged-cards-live');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion).toBeEmptyDOMElement();
+
+    fireEvent.click(screen.getByAltText('♠ A'));
+    mockExec.mockResolvedValue({
+      ...exchangeState,
+      phase: 3,
+      players: [
+        humanPlayer({
+          cards: [{ design: 'HEART', value: 12 }, ...humanPlayer().cards.slice(1)],
+        }),
+        ...exchangeState.players.slice(1),
+      ],
+    });
+    fireEvent.click(exchangeButton);
+
+    await waitFor(() => expect(liveRegion).toHaveTextContent('交換後に引いたカード: ♥ Q'));
+    expect(screen.getByTestId('pk-exchange-confirmability')).toBeInTheDocument();
+    expect(liveRegion).toHaveAttribute('role', 'status');
+  });
+
   it('calls stand command', async () => {
     mockExec.mockResolvedValue(exchangeState);
     renderWithProviders(<PokerPage />);

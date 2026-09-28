@@ -13,6 +13,8 @@
   "exchangeSelectedCount": "{{n}} selected",
   "exchangeConfirmable": "Confirm exchange of {{n}} selected cards",
   "exchangeNotConfirmable": "You cannot confirm an exchange with 0 cards. Choose Stand to continue without exchanging",
+  "exchangeReceivedCards": "Cards drawn after exchange: {{cards}}",
+  "listSeparator": ", ",
   "standLabel": "Stand",
   "standHint": "Stand pat — play your current hand",
   "drawOdds": "Draw Odds:",
