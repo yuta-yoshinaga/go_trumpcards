@@ -88,6 +88,13 @@ beforeEach(() => {
 });
 
 describe('SoloWhistPage', () => {
+  it('shows the dealer badge only beside the dealer seat', async () => {
+    renderWithProviders(<SoloWhistPage />);
+    const badge = await screen.findByText('ディーラー', { selector: 'span' });
+    expect(badge.parentElement).toHaveTextContent('CPU 3');
+    expect(screen.getAllByText('ディーラー', { selector: 'span' })).toHaveLength(1);
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<SoloWhistPage />);

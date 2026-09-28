@@ -31,6 +31,14 @@ beforeEach(() => {
 });
 
 describe('TeenPattiPage', () => {
+  it('shows the dealer badge alongside the dealer seat status', async () => {
+    renderWithProviders(<TeenPattiPage />);
+    const badge = await screen.findByText('ディーラー', { selector: 'span' });
+    expect(badge.parentElement).toHaveTextContent('CPU 3');
+    expect(badge.parentElement).toHaveTextContent('[ブラインド]');
+    expect(screen.getAllByText('ディーラー', { selector: 'span' })).toHaveLength(1);
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<TeenPattiPage />);

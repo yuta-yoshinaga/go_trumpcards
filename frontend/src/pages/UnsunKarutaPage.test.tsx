@@ -20,6 +20,15 @@ beforeEach(() => {
 });
 
 describe('UnsunKarutaPage', () => {
+  it('shows the dealer badge in the mobile player list only for the dealer', async () => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 375 });
+    renderWithProviders(<UnsunKarutaPage />);
+    fireEvent(window, new Event('resize'));
+    const badge = await screen.findByText('親', { selector: 'span' });
+    expect(badge.parentElement).toHaveTextContent('CPU 7');
+    expect(screen.getAllByText('親', { selector: 'span' })).toHaveLength(1);
+  });
+
   it('highlights the individual trick winner only until the next trick starts', async () => {
     const trickEnd = makeUnsunKarutaState({
       phase: 1,

@@ -21,6 +21,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { ANTE_OPTIONS, STARTING_CHIPS_OPTIONS, useTeenPattiGame } from '../hooks/useTeenPattiGame';
+import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -249,6 +250,11 @@ function TeenPattiPageContent() {
                   >
                     {playerLabel(p.id, p.isHuman)} — {t('chips', { amount: p.chips })} ·{' '}
                     {t('roundBet', { amount: p.roundBet })} · [{badge}]{p.handName ? ` · ${handName(p.handName)}` : ''}
+                    {p.id === state.dealerIdx && (
+                      <span className={`ml-2 px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>
+                        {t('dealerBadge')}
+                      </span>
+                    )}
                   </div>
                 );
               })}
