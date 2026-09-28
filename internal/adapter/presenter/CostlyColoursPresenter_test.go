@@ -158,6 +158,8 @@ func TestCostlyColoursCuiPresenter_Hint(t *testing.T) {
 }
 
 func TestCostlyColoursWebPresenter_Output(t *testing.T) {
+	oldLang := i18n.Lang()
+	t.Cleanup(func() { i18n.SetLang(oldLang) })
 	i18n.SetLang("ja")
 	p := new(presenter.CostlyColoursWebPresenter)
 	c := costlyGame()
@@ -169,6 +171,7 @@ func TestCostlyColoursWebPresenter_Output(t *testing.T) {
 	assert.Equal(t, float64(1), res["dealNumber"])
 	assert.Len(t, res["players"], domain.CostlyColoursPlayerCnt)
 	assert.Equal(t, float64(0), res["total"])
+	assert.Equal(t, []any{}, res["recentPlays"], "履歴が空でも null ではなく配列を返す")
 	// **表の 1 枚は渡す。** ショーの色役も J / 2 の 4 点もこれ次第。
 	require.NotNil(t, res["turnUp"], "表の 1 枚が渡っていない")
 

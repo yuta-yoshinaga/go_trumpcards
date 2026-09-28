@@ -90,12 +90,16 @@ func TestCostlyColoursInteractor_PlayRunsTheCpuAndComesBack(t *testing.T) {
 	ci, g := newCostlyReal()
 	require.Equal(t, "ok", ci.Reset())
 	require.Equal(t, "ok", ci.Mog(false))
+	g.GetPlayer(0).Reset()
+	g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 2, false))
+	g.GetPlayer(1).Reset()
+	g.GetPlayer(1).AddCard(domain.NewCard(domain.CardDesignClover, 2, false))
 	hand := g.GetPlayer(0).GetCardsSize()
-
-	h := g.GetHint()
-	require.GreaterOrEqual(t, h.HandIdx, 0)
-	require.Equal(t, "ok", ci.Play(h.HandIdx))
+	require.Equal(t, "ok", ci.Play(0))
 	assert.Equal(t, hand-1, g.GetPlayer(0).GetCardsSize(), "手札が減っていない")
+	require.Len(t, g.GetRecentPlays(), 2, "同じ応答に人間と CPU の出札が含まれる")
+	assert.Equal(t, 0, g.GetRecentPlays()[0].Seat)
+	assert.Equal(t, 1, g.GetRecentPlays()[1].Seat)
 }
 
 // **数え上げが始まったら交換はもう決められない。** インタラクターが

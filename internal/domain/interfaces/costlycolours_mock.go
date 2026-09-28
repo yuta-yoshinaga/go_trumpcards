@@ -96,6 +96,16 @@ func (_m *MockCostlyColoursGame) GetTotal() int {
 	return ret.Get(0).(int)
 }
 
+// GetRecentPlays モック
+func (_m *MockCostlyColoursGame) GetRecentPlays() []domain.CostlyColoursRecentPlay {
+	ret := _m.Called()
+	v, _ := ret.Get(0).([]domain.CostlyColoursRecentPlay)
+	return v
+}
+
+// ClearRecentPlays モック
+func (_m *MockCostlyColoursGame) ClearRecentPlays() { _m.Called() }
+
 // GetWentOut モック
 func (_m *MockCostlyColoursGame) GetWentOut() int {
 	ret := _m.Called()
