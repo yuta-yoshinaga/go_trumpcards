@@ -561,6 +561,7 @@ function TeamScoreTable({
             {t('team', { n: '' })}
           </th>
           <th scope="col">{tc('button.score')}</th>
+          <th scope="col">{t('teamTricks')}</th>
         </tr>
       </thead>
       <tbody>
@@ -568,6 +569,7 @@ function TeamScoreTable({
           <tr key={idx} className={idx === humanTeam ? 'text-ds-accent' : ''}>
             <td>{idx === humanTeam ? t('teamYou', { n: idx }) : t('team', { n: idx })}</td>
             <td className="text-center">{score}</td>
+            <td className="text-center">{state.teamTricks[idx]}</td>
           </tr>
         ))}
       </tbody>

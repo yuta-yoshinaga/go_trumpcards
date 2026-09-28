@@ -498,6 +498,19 @@ describe('OmiPage', () => {
     });
   });
 
+  it('shows round tricks alongside cumulative scores for both teams', async () => {
+    mockExec.mockResolvedValue({ ...roundEndState, teamTricks: [5, 3] });
+    renderWithProviders(<OmiPage />);
+    await waitFor(() => expect(screen.getByText('チームスコア')).toBeInTheDocument());
+
+    expect(screen.getByRole('columnheader', { name: '今ラウンドのトリック数' })).toBeInTheDocument();
+    const rows = screen.getAllByRole('row');
+    expect(rows[1]).toHaveTextContent('チーム 0 (あなた)');
+    expect(rows[1]).toHaveTextContent('5');
+    expect(rows[2]).toHaveTextContent('チーム 1');
+    expect(rows[2]).toHaveTextContent('3');
+  });
+
   // ─── Trump suit info ──────────────────────────────────────────────────────────
 
   it('shows trump suit info', async () => {
