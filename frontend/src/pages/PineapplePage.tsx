@@ -151,6 +151,8 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
   // on every repeated over-limit attempt, even with identical text.
   const [limitAnnounce, setLimitAnnounce] = useState('');
   const [limitNonce, setLimitNonce] = useState(0);
+  const previousDiscardDoneRef = useRef<boolean[] | null>(null);
+  const [cpuDiscardedPlayers, setCpuDiscardedPlayers] = useState<number[]>([]);
   // Mirror the selection in a ref so toggleDiscard can read it without listing
   // selectedDiscards as a dependency — otherwise the callback (and the global
   // keydown listener in useCardKeyboardNav) would be re-created on every toggle.
@@ -199,8 +201,21 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
       setSelectedDiscards([]);
       setDiscardConfirming(false);
       setLimitAnnounce('');
+      setCpuDiscardedPlayers([]);
     }
   }, [state?.isDiscardPhase]);
+
+  useEffect(() => {
+    if (!state) return;
+    const previous = previousDiscardDoneRef.current;
+    if (variant === 'crazypineapple' && state.isDiscardPhase && previous) {
+      const completed = state.discardDone.flatMap((done, idx) =>
+        done && !previous[idx] && !state.players[idx]?.isHuman ? [idx] : [],
+      );
+      if (completed.length > 0) setCpuDiscardedPlayers(completed);
+    }
+    previousDiscardDoneRef.current = state.discardDone;
+  }, [state, variant]);
 
   const getElapsed = useCallback(() => {
     if (!cpuMetaAI || turnStartRef.current === 0) return 0;
@@ -540,6 +555,20 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
 
             {/* CPU actions: toast on mobile, inline log on desktop */}
             {isMobile ? <CpuActionToast actions={state?.cpuActions} /> : <CpuActionLog actions={state?.cpuActions} />}
+            {variant === 'crazypineapple' && (
+              <div role="log" aria-live="polite" aria-label={t('cpuDiscard.logLabel')}>
+                {cpuDiscardedPlayers.length > 0 && (
+                  <div
+                    className="bg-black/30 rounded p-2 mb-3 text-ds-text-primary text-xs"
+                    data-testid="cp-cpu-discard-log"
+                  >
+                    {cpuDiscardedPlayers.map((idx) => (
+                      <div key={idx}>{t('cpuDiscard.completed', { player: findPlayerName(state.players, idx) })}</div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Round results */}
             {isShowdown && <RoundResults results={state?.roundResults} players={state?.players ?? []} />}
