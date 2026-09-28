@@ -453,6 +453,12 @@ describe('MaoPage', () => {
     expect(screen.getByTestId('chosen-suit-status')).toHaveTextContent('指定スート: スペード ♠');
   });
 
+  it('falls back to the symbol alone for a suit value it has no name for', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, chosenSuit: 9 });
+    renderWithProviders(<MaoPage />);
+    await waitFor(() => expect(screen.getByTestId('chosen-suit-status')).toHaveTextContent('指定スート: ?'));
+  });
+
   it('shows the chosen suit name in English when English is selected', async () => {
     await i18n.changeLanguage('en');
     try {
