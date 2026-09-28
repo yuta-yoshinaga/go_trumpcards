@@ -48,7 +48,7 @@ test.describe('German Whist E2E', () => {
 
   test('the hand stays at 13 cards through the first half', async ({ page }) => {
     await navigateTo(page, '/germanwhist');
-    const hand = page.getByRole('button', { name: /を出す|^Play / });
+    const hand = page.getByTestId('gw-hand-card');
     await expect(hand).toHaveCount(13, { timeout: TIMEOUT_TRANSITION });
 
     await legalCard(page).first().click();

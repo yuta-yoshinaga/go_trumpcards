@@ -295,6 +295,7 @@ describe('BalootPage', () => {
     renderWithProviders(<BalootPage />);
     const cards = await screen.findAllByRole('button', { name: /♠|♥|♦|♣/ });
     expect(cards[0]).toBeDisabled();
+    expect(cards[0]).toHaveAccessibleName(/を出す$/);
   });
 
   it('shows the hint when one is enabled', async () => {

@@ -310,7 +310,7 @@ function BhabhiPageContent() {
                           ? t(legalRing.has(idx) ? 'actions.playableAria' : 'actions.notPlayableAria', {
                               card: cardAlt(card),
                             })
-                          : undefined
+                          : t('actions.playAria', { card: cardAlt(card) })
                       }
                       aria-disabled={canAnnotatePlays && !legalRing.has(idx) ? true : undefined}
                       aria-describedby={

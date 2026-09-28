@@ -147,7 +147,7 @@ function GermanWhistPageContent() {
       : undefined;
 
   // Following suit is compulsory in both halves, so the legal set is always
-  // meaningful. As on the Schnapsen page this is an **additive ring**, not a
+  // meaningful.
   // Legal plays are supplied by the server. Keep turn/loading as native disabled
   // states and expose illegal plays with aria-disabled and an explicit reason.
   const legalRing = new Set(isHumanTurn ? state.validPlays : []);
@@ -266,6 +266,7 @@ function GermanWhistPageContent() {
                     <button
                       key={`${card.design}-${card.value}-${idx}`}
                       type="button"
+                      data-testid="gw-hand-card"
                       onClick={() => {
                         if (loading || !isHumanTurn || !legalRing.has(idx)) return;
                         handlePlay(idx);
@@ -276,7 +277,7 @@ function GermanWhistPageContent() {
                           ? t(legalRing.has(idx) ? 'actions.playableAria' : 'actions.notPlayableAria', {
                               card: cardAlt(card),
                             })
-                          : undefined
+                          : t('actions.playAria', { card: cardAlt(card) })
                       }
                       aria-disabled={canAnnotatePlays && !legalRing.has(idx) ? true : undefined}
                       aria-describedby={
