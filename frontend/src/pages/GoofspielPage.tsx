@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { goofspielApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -60,6 +60,50 @@ function GoofspielPageContent() {
   const { hint, hintEnabled, setHintEnabled } = useGameHint('goofspiel', state);
   const [playerCnt, setPlayerCnt] = useState(2);
   const [tieRule, setTieRule] = useState(0);
+  const [revealAnnouncement, setRevealAnnouncement] = useState('');
+  const announcedRevealKey = useRef<string | null>(null);
+
+  const revealKey =
+    state?.phase === GoofspielPhase.REVEAL && !state.gameEndFlag
+      ? JSON.stringify([
+          state.roundNumber,
+          state.players.map((player) => [player.id, player.revealedBid?.design, player.revealedBid?.value]),
+          state.lastWinnerIdx,
+          state.lastGained,
+        ])
+      : null;
+  const revealText =
+    revealKey && state
+      ? t('status.revealAnnouncement', {
+          bids: state.players
+            .map((player) =>
+              t('status.revealPlayer', {
+                name: player.id === 0 ? t('header.you') : t('header.cpu', { idx: String(player.id) }),
+                card: player.revealedBid ? cardAlt(player.revealedBid) : t('status.noReveal'),
+              }),
+            )
+            .join(t('listSeparator')),
+          result:
+            state.lastWinnerIdx < 0
+              ? t('status.tie')
+              : t('status.roundEnd', {
+                  name:
+                    state.lastWinnerIdx === 0 ? t('header.you') : t('header.cpu', { idx: String(state.lastWinnerIdx) }),
+                  n: String(state.lastGained),
+                }),
+        })
+      : '';
+
+  useEffect(() => {
+    if (!revealKey) {
+      announcedRevealKey.current = null;
+      setRevealAnnouncement('');
+      return;
+    }
+    if (announcedRevealKey.current === revealKey) return;
+    announcedRevealKey.current = revealKey;
+    setRevealAnnouncement(revealText);
+  }, [revealKey, revealText]);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('goofspiel');
   const cliConfig: CliGameConfig<GoofspielResponse, Parameters<typeof goofspielApi.exec>> = useMemo(
@@ -142,6 +186,9 @@ function GoofspielPageContent() {
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
+          <div role="status" aria-live="polite" data-testid="gs-reveal-announcement" className="sr-only">
+            {isReveal ? revealAnnouncement : ''}
+          </div>
           <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
             <div className="text-ds-text-primary text-center mb-2" data-testid="gs-header">
               <span className="mr-4">{t('header.round', { n: String(state.roundNumber) })}</span>

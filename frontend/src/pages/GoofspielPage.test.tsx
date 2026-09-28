@@ -176,6 +176,40 @@ describe('GoofspielPage', () => {
     expect(screen.getByTestId('gs-round-end')).toHaveTextContent(/CPU1 が 9 点/);
   });
 
+  it('announces revealed cards and the round result once, only after reveal', async () => {
+    const revealed = makeState({
+      phase: 1,
+      currentPrize: undefined,
+      lastWinnerIdx: 1,
+      lastGained: 9,
+      players: [
+        seat(0, { hasBid: true, revealedBid: card('SPADE', 3) }),
+        seat(1, { hasBid: true, revealedBid: card('CLOVER', 11) }),
+      ],
+    });
+    mockExec.mockResolvedValueOnce(revealed).mockResolvedValueOnce(revealed);
+    renderWithProviders(<GoofspielPage />);
+
+    const live = await screen.findByTestId('gs-reveal-announcement');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    await waitFor(() => expect(live).toHaveTextContent(/あなた.*♠ 3.*CPU1.*♣ J.*CPU1 が 9 点/));
+
+    // Same reveal returned by an action is the same announced state.
+    fireEvent.click(screen.getByTestId('gs-next-btn'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('next'));
+    expect(screen.getByTestId('gs-reveal-announcement')).toHaveTextContent(/あなた.*♠ 3.*CPU1.*♣ J.*CPU1 が 9 点/);
+  });
+
+  it('keeps the persistent reveal announcement empty before bids are revealed', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ phase: 0, lastWinnerIdx: -1, lastGained: 0, players: [seat(0, { hasBid: true }), seat(1)] }),
+    );
+    renderWithProviders(<GoofspielPage />);
+    const live = await screen.findByTestId('gs-reveal-announcement');
+    expect(live).toBeEmptyDOMElement();
+    expect(live).not.toHaveTextContent(/SPADE|CLOVER|3|11/);
+  });
+
   // **同点は誰も取りません。** 勝者が居ない結果を言い分けます。
   it('reports a tie as nobody taking the prize', async () => {
     mockExec.mockResolvedValue(makeState({ phase: 1, currentPrize: undefined, lastWinnerIdx: -1, lastGained: 0 }));
