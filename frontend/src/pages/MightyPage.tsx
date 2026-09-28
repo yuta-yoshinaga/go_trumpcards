@@ -263,6 +263,12 @@ function MightyPageContent() {
     (total, player) => total + (player.isDeclarer || player.isPartner ? player.pointCards : 0),
     0,
   );
+  const contractResultText = t('contractResult', {
+    required: state.highestBid,
+    actual: declarerSidePoints,
+    result: t(declarerSidePoints >= state.highestBid ? 'contractMade' : 'contractMissed'),
+    multiplier: state.winningBidNoTrump ? ` / ${t('contractNoTrumpMultiplier')}` : '',
+  });
   const showContractResult = isRoundEnd || isGameEnd;
 
   // Selected human card is a Joker?
@@ -465,12 +471,7 @@ function MightyPageContent() {
                     </div>
                     {showContractResult && (
                       <div className="text-ds-text-primary text-sm mt-1" data-testid="mighty-contract-result">
-                        {t('contractResult', {
-                          required: state.highestBid,
-                          actual: declarerSidePoints,
-                          result: t(declarerSidePoints >= state.highestBid ? 'contractMade' : 'contractMissed'),
-                          multiplier: state.winningBidNoTrump ? ` / ${t('contractNoTrumpMultiplier')}` : '',
-                        })}
+                        {contractResultText}
                       </div>
                     )}
                     <div className="overflow-x-auto -mx-2 px-2">
@@ -519,12 +520,7 @@ function MightyPageContent() {
                     </div>
                     {showContractResult && (
                       <div className="text-ds-text-primary text-sm mt-1" data-testid="mighty-contract-result">
-                        {t('contractResult', {
-                          required: state.highestBid,
-                          actual: declarerSidePoints,
-                          result: t(declarerSidePoints >= state.highestBid ? 'contractMade' : 'contractMissed'),
-                          multiplier: state.winningBidNoTrump ? ` / ${t('contractNoTrumpMultiplier')}` : '',
-                        })}
+                        {contractResultText}
                       </div>
                     )}
                     <div className="overflow-x-auto -mx-2 px-2">

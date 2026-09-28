@@ -665,7 +665,26 @@ describe('MightyPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
   });
 
-  it('shows the declarer side contract result after the round, including no-trump scoring', async () => {
+  it('shows a made contract without the no-trump multiplier', async () => {
+    mockCall.mockResolvedValue({
+      ...roundEndState,
+      players: roundEndState.players.map((player, index) =>
+        index === 0 ? { ...player, pointCards: 12 } : index === 1 ? { ...player, pointCards: 3 } : player,
+      ),
+    });
+    renderWithProviders(<MightyPage />);
+
+    expect(await screen.findByTestId('mighty-contract-result')).toHaveTextContent('必要点: 14 / 実得点: 15 / 達成');
+  });
+
+  it('shows a missed contract without the no-trump multiplier', async () => {
+    mockCall.mockResolvedValue(roundEndState);
+    renderWithProviders(<MightyPage />);
+
+    expect(await screen.findByTestId('mighty-contract-result')).toHaveTextContent('必要点: 14 / 実得点: 3 / 未達');
+  });
+
+  it('shows a made no-trump contract with its multiplier', async () => {
     mockCall.mockResolvedValue({
       ...roundEndState,
       winningBidNoTrump: true,
@@ -677,6 +696,15 @@ describe('MightyPage', () => {
 
     expect(await screen.findByTestId('mighty-contract-result')).toHaveTextContent(
       '必要点: 14 / 実得点: 15 / 達成 / ノートランプ: 得点2倍',
+    );
+  });
+
+  it('shows a missed no-trump contract with its multiplier', async () => {
+    mockCall.mockResolvedValue({ ...roundEndState, winningBidNoTrump: true });
+    renderWithProviders(<MightyPage />);
+
+    expect(await screen.findByTestId('mighty-contract-result')).toHaveTextContent(
+      '必要点: 14 / 実得点: 3 / 未達 / ノートランプ: 得点2倍',
     );
   });
 
