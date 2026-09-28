@@ -1,7 +1,8 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, freecellApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, FreeCellResponse } from '../types/card';
@@ -57,7 +58,8 @@ const withFoundationState: FreeCellResponse = {
 
 const withHintState: FreeCellResponse = {
   ...playingState,
-  hint: { fromZone: 'freecell', fromCol: -1, cardIndex: -1, toZone: 'tableau', toCol: 3 },
+  freeCells: [card('DIAMOND', 7), null, null, null],
+  hint: { fromZone: 'freecell', fromCol: 0, cardIndex: -1, toZone: 'tableau', toCol: 3 },
 };
 
 const withHintFromColState: FreeCellResponse = {
@@ -73,6 +75,10 @@ const withFreeCellCardState: FreeCellResponse = {
 beforeEach(() => {
   mockExec.mockResolvedValue(playingState);
   vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
+});
+
+afterEach(async () => {
+  await i18n.changeLanguage('ja');
 });
 
 describe('FreeCellPage', () => {
@@ -455,6 +461,7 @@ describe('FreeCellPage', () => {
   // --- Hint display ---
 
   it('hint display when hint is set', async () => {
+    mockExec.mockResolvedValue({ ...playingState, freeCells: [card('DIAMOND', 7), null, null, null] });
     renderWithProviders(<FreeCellPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
 
@@ -463,7 +470,23 @@ describe('FreeCellPage', () => {
 
     await waitFor(() => expect(screen.getAllByText(/ヒント/).length).toBeGreaterThanOrEqual(1));
     // Zone identifiers are localized (ja), not shown as raw English.
-    await waitFor(() => expect(screen.getByText(/フリーセル.*→.*タブロー 3/)).toBeInTheDocument());
+    const hintLine = await screen.findByTestId('fc-hint-line');
+    expect(hintLine.textContent).toBe('ヒント: ♦ 7 — フリーセル 0 → タブロー 3');
+  });
+
+  it('announces the hinted card in English and does not announce a card without a hint', async () => {
+    await i18n.changeLanguage('en');
+    renderWithProviders(<FreeCellPage />);
+    const liveRegion = await screen.findByTestId('freecell-hint-live');
+    expect(liveRegion).toBeEmptyDOMElement();
+
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: [[card('SPADE', 13)], [card('HEART', 12)], [], [], [], [], [], []],
+      hint: { fromZone: 'tableau', fromCol: 0, cardIndex: 0, toZone: 'foundation', toCol: -1 },
+    });
+    fireEvent.click(await screen.findByRole('button', { name: 'Hint' }));
+    expect(await screen.findByTestId('fc-hint-line')).toHaveTextContent('♠ K — Tableau 0 → Foundation');
   });
 
   // #5494: ゾーン識別子 ("tableau"/"freecell"/"foundation") をそのまま i18n キーに
