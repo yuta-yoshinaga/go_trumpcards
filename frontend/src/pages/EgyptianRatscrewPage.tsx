@@ -142,7 +142,7 @@ function EgyptianRatscrewPageContent() {
       return;
     }
     const reason =
-      state.lastSlapReason === EgyptianRatscrewSlapReason.SANDWICH
+      state.slappableReason === EgyptianRatscrewSlapReason.SANDWICH
         ? t('egyptianratscrew.slapReason.sandwich')
         : t('egyptianratscrew.slapReason.pair');
     setSlappableAnnounce(t('egyptianratscrew.slappableStarted', { reason }));
@@ -416,12 +416,12 @@ function EgyptianRatscrewPageContent() {
                     {t('egyptianratscrew.slappable')}
                   </div>
                 )}
-                {state.isSlappable && state.lastSlapReason !== EgyptianRatscrewSlapReason.NONE && (
+                {state.isSlappable && state.slappableReason !== EgyptianRatscrewSlapReason.NONE && (
                   <div
                     data-testid="er-slap-reason"
                     className={`mt-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${badgeWarningColors}`}
                   >
-                    {state.lastSlapReason === EgyptianRatscrewSlapReason.PAIR
+                    {state.slappableReason === EgyptianRatscrewSlapReason.PAIR
                       ? `👯 ${t('egyptianratscrew.slapReason.pair')}`
                       : `🥪 ${t('egyptianratscrew.slapReason.sandwich')}`}
                   </div>

@@ -76035,6 +76035,8 @@ components:
           type: boolean
         isSlappable:
           type: boolean
+        slappableReason:
+          type: integer
         centerPileSize:
           type: integer
         topCard:

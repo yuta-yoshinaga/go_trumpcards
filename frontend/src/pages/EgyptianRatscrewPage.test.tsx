@@ -53,6 +53,7 @@ const baseState: EgyptianRatscrewResponse = {
   isHumanTurn: true,
   isTopFaceCard: false,
   isSlappable: false,
+  slappableReason: EgyptianRatscrewSlapReason.NONE,
   centerPileSize: 0,
   topCard: null,
   players: [
@@ -170,7 +171,9 @@ describe('EgyptianRatscrewPage', () => {
       .mockResolvedValueOnce(baseState)
       .mockResolvedValueOnce({
         ...slappableState,
-        lastSlapReason: EgyptianRatscrewSlapReason.PAIR,
+        slappableReason: EgyptianRatscrewSlapReason.PAIR,
+        lastEventKind: EgyptianRatscrewEventKind.STEP,
+        lastSlapReason: EgyptianRatscrewSlapReason.NONE,
       })
       .mockResolvedValueOnce(baseState);
     renderWithProviders(<EgyptianRatscrewPage />);
@@ -180,6 +183,21 @@ describe('EgyptianRatscrewPage', () => {
     fireEvent.click(screen.getByTestId('step-button'));
     await waitFor(() =>
       expect(screen.getByTestId('er-slappable-announce')).toHaveTextContent('スラップ可能状態が解除されました'),
+    );
+  });
+
+  it('announces the current sandwich reason from a step response without a slap event', async () => {
+    mockExec.mockResolvedValueOnce(baseState).mockResolvedValueOnce({
+      ...slappableState,
+      slappableReason: EgyptianRatscrewSlapReason.SANDWICH,
+      lastEventKind: EgyptianRatscrewEventKind.STEP,
+      lastSlapReason: EgyptianRatscrewSlapReason.NONE,
+    });
+    renderWithProviders(<EgyptianRatscrewPage />);
+    await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('step-button'));
+    await waitFor(() =>
+      expect(screen.getByTestId('er-slappable-announce')).toHaveTextContent('サンドイッチが成立しました'),
     );
   });
 
@@ -308,13 +326,13 @@ describe('EgyptianRatscrewPage', () => {
   });
 
   it('shows a pair slap-reason badge while slappable', async () => {
-    mockExec.mockResolvedValueOnce({ ...slappableState, lastSlapReason: EgyptianRatscrewSlapReason.PAIR });
+    mockExec.mockResolvedValueOnce({ ...slappableState, slappableReason: EgyptianRatscrewSlapReason.PAIR });
     renderWithProviders(<EgyptianRatscrewPage />);
     await waitFor(() => expect(screen.getByTestId('er-slap-reason')).toHaveTextContent('ペア'));
   });
 
   it('labels the slap-reason badge as a sandwich when applicable', async () => {
-    mockExec.mockResolvedValueOnce({ ...slappableState, lastSlapReason: EgyptianRatscrewSlapReason.SANDWICH });
+    mockExec.mockResolvedValueOnce({ ...slappableState, slappableReason: EgyptianRatscrewSlapReason.SANDWICH });
     renderWithProviders(<EgyptianRatscrewPage />);
     await waitFor(() => expect(screen.getByTestId('er-slap-reason')).toHaveTextContent('サンドイッチ'));
   });

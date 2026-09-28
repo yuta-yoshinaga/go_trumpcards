@@ -243,6 +243,11 @@ func (g *EgyptianRatscrew) IsSlappable() bool {
 	return g.slapReason() != EgyptianRatscrewSlapReasonNone
 }
 
+// GetSlappableReason 場の現在のスラップ理由を返す。
+func (g *EgyptianRatscrew) GetSlappableReason() EgyptianRatscrewSlapReason {
+	return g.slapReason()
+}
+
 // slapReason 場のトップ列が成立させているスラップ理由を返す。
 // ペアとサンドイッチが同時に成立する場合 (例 5-5-5) はペアを優先。
 func (g *EgyptianRatscrew) slapReason() EgyptianRatscrewSlapReason {
