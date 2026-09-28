@@ -26,6 +26,8 @@
   "hintAvailable": "Hint available",
   "moveToFoundation": "→F",
   "moveToCol": "→{{col}}",
+  "dragTargetColumn": "Can move to column {{col}}",
+  "listSeparator": ", ",
   "moveTableauToFoundation": "Tableau → Foundation",
   "frontendHint": {
     "moveToFoundation": "A card can be moved to the foundation",

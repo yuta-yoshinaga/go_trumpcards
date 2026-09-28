@@ -607,6 +607,7 @@ describe('MrsMopPage', () => {
     const sourceButton = sourceCard.closest('button') as HTMLButtonElement;
     fireEvent.click(sourceButton);
     await waitFor(() => expect(sourceButton).toHaveAttribute('aria-pressed', 'true'));
+    expect(screen.getByTestId('mrsMop-selection-status')).toHaveTextContent(/移動先は|移動先はありません/);
 
     // Click ♥5 in col 1 (different column) — triggers handleSelectTarget → calls move
     mockExec.mockClear();
@@ -630,6 +631,7 @@ describe('MrsMopPage', () => {
     // Click ♠K again (same col 0) — triggers handleSelectSource which deselects
     fireEvent.click(cardButton);
     await waitFor(() => expect(cardButton).toHaveAttribute('aria-pressed', 'false'));
+    expect(screen.getByTestId('mrsMop-selection-status')).toHaveTextContent('');
   });
 
   // --- Frontend hint ---
