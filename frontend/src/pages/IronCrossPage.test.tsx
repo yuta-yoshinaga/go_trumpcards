@@ -89,6 +89,44 @@ beforeEach(() => {
 });
 
 describe('IronCrossPage', () => {
+  it('ショーダウンと終了時に席ごとの役名と最良5枚を表示し、未知ランクも残す', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: IronCrossPhase.SHOWDOWN,
+        isHumanTurn: false,
+        seats: [
+          seat({ handRank: 9, bestHand: [card(1), card(10), card(11), card(12), card(13)] }),
+          seat({ name: 'CPU1', isHuman: false, cards: [], isTurn: false, handRank: 42, bestHand: [card(8)] }),
+        ],
+      }),
+    );
+    renderWithProviders(<IronCrossPage />);
+    await waitFor(() => expect(screen.getByTestId('ic-seat-rank-0')).toHaveTextContent('ロイヤルフラッシュ'));
+    expect(screen.getByTestId('ic-seat-rank-1')).toHaveTextContent('不明 (42)');
+    expect(screen.getByTestId('ic-best-hand-0').children).toHaveLength(5);
+    expect(screen.getByTestId('ic-best-hand-1').children).toHaveLength(1);
+
+    mockApi.mockResolvedValueOnce(
+      withState({
+        phase: IronCrossPhase.GAME_END,
+        gameEndFlag: true,
+        isHumanTurn: false,
+        seats: [seat({ handRank: 1, bestHand: [card(2), card(2), card(4), card(5), card(6)] })],
+      }),
+    );
+    mockApi.mockResolvedValueOnce(
+      withState({
+        phase: IronCrossPhase.GAME_END,
+        gameEndFlag: true,
+        isHumanTurn: false,
+        seats: [seat({ handRank: 1, bestHand: [card(2), card(2), card(4), card(5), card(6)] })],
+      }),
+    );
+    renderWithProviders(<IronCrossPage />);
+    await waitFor(() => expect(screen.getAllByTestId('ic-seat-rank-0').at(-1)).toHaveTextContent('ワンペア'));
+    expect(screen.getAllByTestId('ic-best-hand-0').at(-1)).toBeInTheDocument();
+  });
+
   it('マウント時に reset を呼ぶ', async () => {
     mockApi.mockResolvedValue(base);
     renderWithProviders(<IronCrossPage />);

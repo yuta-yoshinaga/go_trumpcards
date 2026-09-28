@@ -52,6 +52,21 @@ const BOTTOM = 2;
 const LEFT = 3;
 const RIGHT = 4;
 
+/** Poker hand rank to the localized result label. */
+const HAND_RANK_KEYS: Readonly<Record<number, string>> = {
+  0: 'handRank.0',
+  1: 'handRank.1',
+  2: 'handRank.2',
+  3: 'handRank.3',
+  4: 'handRank.4',
+  5: 'handRank.5',
+  6: 'handRank.6',
+  7: 'handRank.7',
+  8: 'handRank.8',
+  9: 'handRank.9',
+  10: 'handRank.10',
+};
+
 /** Renders the Iron Cross game page (#5267). */
 export const IronCrossPage = withTutorial(IronCrossPageContent, 'ironcross', IC_TUTORIAL_STEPS);
 
@@ -135,6 +150,7 @@ function IronCrossPageContent() {
 
   const human = state.seats[state.humanSeat];
   const humanWon = gameOver && state.winnerSeat === state.humanSeat;
+  const showResults = isShowdown || gameOver;
 
   /** Renders one slot of the cross, or a placeholder while it is face down. */
   const previewIndexes =
@@ -289,6 +305,27 @@ function IronCrossPageContent() {
                       <span data-testid={`ic-won-${i}`}> · {t('label.won', { amount: seat.wonAmount })}</span>
                     )}
                   </span>
+                  {showResults && (
+                    <>
+                      <div className="text-ds-text-primary text-xs mt-1" data-testid={`ic-seat-rank-${i}`}>
+                        {t('label.handRank')}:{' '}
+                        {HAND_RANK_KEYS[seat.handRank]
+                          ? t(HAND_RANK_KEYS[seat.handRank])
+                          : t('label.unknownHandRank', { rank: seat.handRank })}
+                      </div>
+                      {seat.bestHand.length > 0 && (
+                        <div className="flex justify-center gap-1 flex-wrap mt-1" data-testid={`ic-best-hand-${i}`}>
+                          {seat.bestHand.map((card, k) => (
+                            <AnimatedCard
+                              key={`best-${i}-${card.design}-${card.value}-${k}`}
+                              card={card}
+                              width={Math.round(cardWidth * 0.7)}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  )}
                   {/* **CPU の手札はサーバが送っていない。** 届いていれば開く。 */}
                   {!seat.isHuman && (
                     <div className="flex justify-center gap-1 flex-wrap mt-1" data-testid={`ic-seat-cards-${i}`}>
