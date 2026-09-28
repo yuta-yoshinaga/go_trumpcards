@@ -329,6 +329,20 @@ describe('AccordionPage', () => {
     expect(mockExec).not.toHaveBeenCalled();
   });
 
+  it('exposes the selected pile with aria-pressed', async () => {
+    renderWithProviders(<AccordionPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const pile0 = screen.getByRole('button', { name: /^0:/ });
+    const pile1 = screen.getByRole('button', { name: /^1:/ });
+    expect(pile0).toHaveAttribute('aria-pressed', 'false');
+    expect(pile1).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(pile0);
+    expect(pile0).toHaveAttribute('aria-pressed', 'true');
+    expect(pile1).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('selecting pile 1 then clicking pile 0 (offset=1) dispatches a move', async () => {
     // Same rank 2 on pile 0 and 1 for a valid move
     mockExec.mockResolvedValue({
