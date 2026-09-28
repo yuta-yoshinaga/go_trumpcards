@@ -287,7 +287,7 @@ function StHelenaPageContent() {
   const foundationDestinationLabels = legalFoundationTargets.map((idx) =>
     t('foundationDestination', {
       suit: FOUNDATION_SUITS[idx % FOUNDATION_SUITS.length],
-      direction: t(idx < 4 ? 'direction.asc' : 'direction.desc'),
+      direction: t(idx < 4 ? 'destinationDirection.asc' : 'destinationDirection.desc'),
     }),
   );
 

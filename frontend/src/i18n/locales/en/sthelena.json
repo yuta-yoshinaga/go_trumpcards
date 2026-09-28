@@ -2,8 +2,8 @@
   "autoComplete": "Auto Complete",
   "autoCompleteNotReady": "Available when all tops can reach the foundations",
   "direction": {
-    "asc": "ascending",
-    "desc": "descending"
+    "asc": "Ascending",
+    "desc": "Descending"
   },
   "empty": "Empty",
   "emptyFoundationAriaLabel": "Empty {{direction}} foundation ({{suit}})",
@@ -56,5 +56,9 @@
   "restrictionsActive": "First deal: top 4 reach the king row, bottom 4 the ace row, sides either",
   "restrictionsLifted": "The destination restriction has been lifted",
   "listSeparator": ", ",
-  "foundationDestination": "{{suit}} {{direction}} foundation"
+  "foundationDestination": "{{suit}} {{direction}} foundation",
+  "destinationDirection": {
+    "asc": "ascending",
+    "desc": "descending"
+  }
 }
