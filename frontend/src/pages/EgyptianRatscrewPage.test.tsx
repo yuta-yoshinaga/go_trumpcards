@@ -165,6 +165,24 @@ describe('EgyptianRatscrewPage', () => {
     });
   });
 
+  it('announces slappable state transitions and the pair or sandwich reason', async () => {
+    mockExec
+      .mockResolvedValueOnce(baseState)
+      .mockResolvedValueOnce({
+        ...slappableState,
+        lastSlapReason: EgyptianRatscrewSlapReason.PAIR,
+      })
+      .mockResolvedValueOnce(baseState);
+    renderWithProviders(<EgyptianRatscrewPage />);
+    await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('step-button'));
+    await waitFor(() => expect(screen.getByTestId('er-slappable-announce')).toHaveTextContent('ペアが成立しました'));
+    fireEvent.click(screen.getByTestId('step-button'));
+    await waitFor(() =>
+      expect(screen.getByTestId('er-slappable-announce')).toHaveTextContent('スラップ可能状態が解除されました'),
+    );
+  });
+
   it('announces the human turn without a possessive in English', async () => {
     await i18n.changeLanguage('en');
     mockExec.mockResolvedValueOnce(baseState).mockResolvedValueOnce({
