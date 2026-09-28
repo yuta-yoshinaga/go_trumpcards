@@ -1,5 +1,15 @@
 {
   "title": "Carioca",
+  "settings": {
+    "playerCount": "Player count",
+    "cpuDifficulty": "CPU difficulty",
+    "difficulty": {
+      "0": "Easy",
+      "1": "Normal",
+      "2": "Hard"
+    },
+    "failContractPenalty": "Failed contract penalty"
+  },
   "phase": {
     "draw": "Draw",
     "play": "Play",
