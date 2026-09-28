@@ -635,6 +635,21 @@ describe('MightyPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
   });
 
+  it('shows the declarer side contract result after the round, including no-trump scoring', async () => {
+    mockCall.mockResolvedValue({
+      ...roundEndState,
+      winningBidNoTrump: true,
+      players: roundEndState.players.map((player, index) =>
+        index === 0 ? { ...player, pointCards: 12 } : index === 1 ? { ...player, pointCards: 3 } : player,
+      ),
+    });
+    renderWithProviders(<MightyPage />);
+
+    expect(await screen.findByTestId('mighty-contract-result')).toHaveTextContent(
+      '必要点: 14 / 実得点: 15 / 達成 / ノートランプ: 得点2倍',
+    );
+  });
+
   it('calls nextround when next round button clicked', async () => {
     mockCall.mockResolvedValue(roundEndState);
     renderWithProviders(<MightyPage />);

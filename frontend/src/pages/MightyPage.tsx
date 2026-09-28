@@ -259,6 +259,11 @@ function MightyPageContent() {
     : state.trumpSuit > 0
       ? t(`suitName.${SUIT_KEYS[state.trumpSuit]}`)
       : '';
+  const declarerSidePoints = state.players.reduce(
+    (total, player) => total + (player.isDeclarer || player.isPartner ? player.pointCards : 0),
+    0,
+  );
+  const showContractResult = isRoundEnd || isGameEnd;
 
   // Selected human card is a Joker?
   const selectedCardIsJoker =
@@ -458,6 +463,16 @@ function MightyPageContent() {
                     <div className="text-ds-text-muted text-sm mt-1" data-testid="mighty-point-limit">
                       {t('pointLimit', { limit: state.config.pointLimit })}
                     </div>
+                    {showContractResult && (
+                      <div className="text-ds-text-primary text-sm mt-1" data-testid="mighty-contract-result">
+                        {t('contractResult', {
+                          required: state.highestBid,
+                          actual: declarerSidePoints,
+                          result: t(declarerSidePoints >= state.highestBid ? 'contractMade' : 'contractMissed'),
+                          multiplier: state.winningBidNoTrump ? ` / ${t('contractNoTrumpMultiplier')}` : '',
+                        })}
+                      </div>
+                    )}
                     <div className="overflow-x-auto -mx-2 px-2">
                       <table className="w-full text-sm text-ds-text-muted min-w-[420px] mt-1">
                         <thead>
@@ -502,6 +517,16 @@ function MightyPageContent() {
                     <div className="text-ds-text-muted text-sm mt-1" data-testid="mighty-point-limit">
                       {t('pointLimit', { limit: state.config.pointLimit })}
                     </div>
+                    {showContractResult && (
+                      <div className="text-ds-text-primary text-sm mt-1" data-testid="mighty-contract-result">
+                        {t('contractResult', {
+                          required: state.highestBid,
+                          actual: declarerSidePoints,
+                          result: t(declarerSidePoints >= state.highestBid ? 'contractMade' : 'contractMissed'),
+                          multiplier: state.winningBidNoTrump ? ` / ${t('contractNoTrumpMultiplier')}` : '',
+                        })}
+                      </div>
+                    )}
                     <div className="overflow-x-auto -mx-2 px-2">
                       <table className="w-full text-sm text-ds-text-muted min-w-[420px]">
                         <thead>
