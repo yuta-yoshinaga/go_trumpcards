@@ -255,6 +255,30 @@ describe('PineapplePage', () => {
     expect(screen.getByText('捨てるカードを選択してください')).toBeInTheDocument();
   });
 
+  it('disables discard candidate buttons while the discard API call is pending', async () => {
+    mockExec.mockResolvedValue(discardState);
+    renderWithProviders(<PineapplePage />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    mockExec.mockClear();
+    const cards = screen.getAllByRole('button').filter((button) => button.getAttribute('aria-pressed') !== null);
+    fireEvent.click(cards[0]);
+    fireEvent.click(screen.getByRole('button', { name: '1枚捨ててください。' }));
+    let resolvePending!: (state: PineappleResponse) => void;
+    mockExec.mockReturnValue(
+      new Promise((resolve) => {
+        resolvePending = resolve;
+      }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: '確定' }));
+
+    await waitFor(() => expect(cards[0]).toBeDisabled());
+    fireEvent.click(cards[0]);
+    expect(cards[0]).toHaveAttribute('aria-pressed', 'false');
+    expect(cards[1]).toBeDisabled();
+    resolvePending(discardState);
+    mockExec.mockClear();
+  });
+
   it('announces CPU discards by player name when Crazy Pineapple discard completes', async () => {
     const pending = { ...discardState, discardDone: [false, false, false, false] };
     const completed = { ...discardState, discardDone: [true, true, true, true] };
