@@ -4,6 +4,7 @@
   "center": "Centre",
   "centerAriaLabel": "Centre foundation, {{count}} of 52",
   "cornerAriaLabel": "Corner foundation {{idx}}, {{count}} of 13",
+  "cornerPileCount": "{{count}} cards",
   "corners": "Corners",
   "draw": "Draw",
   "empty": "Empty",
