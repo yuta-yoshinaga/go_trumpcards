@@ -119,6 +119,17 @@ func (t *TrumpCards) GetRemainingCount() int {
 	return t.deckCnt - t.deckDrawCnt
 }
 
+// GetRemainingCountByDesign は山に残っている指定スートの枚数を返す。
+func (t *TrumpCards) GetRemainingCountByDesign(design int) int {
+	count := 0
+	for i := t.deckDrawCnt; i < t.deckCnt; i++ {
+		if t.deck[i] != nil && t.deck[i].GetDesign() == design {
+			count++
+		}
+	}
+	return count
+}
+
 // GetTotalCount 山札の総枚数
 func (t *TrumpCards) GetTotalCount() int {
 	return t.deckCnt
