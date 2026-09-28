@@ -285,7 +285,9 @@ function BelotePageContent() {
                     }${beloteJustConfirmed ? ' ring-2 ring-ds-success motion-safe:animate-pulse' : ''}`}
                   >
                     {t('tracker.beloteKing')} · {t('tracker.beloteQueen')}
-                    {hasBeloteBonus ? ` ${t('tracker.beloteBonus')}` : ''}
+                    {state.roundBeloteBonus.map((points, team) =>
+                      points > 0 ? ` ${t('tracker.beloteAwarded', { team: t('team', { n: team }), points })}` : '',
+                    )}
                   </span>
                 )}
               </div>
@@ -364,17 +366,25 @@ function BelotePageContent() {
                 <td className="text-center">{state.teamScores[1]}</td>
               </tr>
               <tr>
-                <td className="text-xs">{t('roundPoints', { points: state.roundPoints[0] })}</td>
-                <td className="text-center text-xs">{t('roundPoints', { points: state.roundPoints[1] })}</td>
+                {[0, 1].map((team) => (
+                  <td key={team} className={`text-xs${team === 1 ? ' text-center' : ''}`}>
+                    {t('roundPoints', { points: state.roundPoints[team] })}
+                    {state.roundBeloteBonus[team] > 0 && (
+                      <span className="block text-ds-warning">
+                        {t('tracker.beloteAwarded', {
+                          team: t('team', { n: team }),
+                          points: state.roundBeloteBonus[team],
+                        })}
+                      </span>
+                    )}
+                  </td>
+                ))}
               </tr>
             </tbody>
           </table>
           <div className="text-ds-text-muted text-sm mt-1" data-testid="belote-target-score">
             {t('targetScore', { score: state.config.targetScore })}
           </div>
-          {(state.roundBeloteBonus[0] > 0 || state.roundBeloteBonus[1] > 0) && (
-            <div className="text-xs text-ds-warning mt-1">{t('beloteRebelote')}</div>
-          )}
         </div>
 
         <RoundScoreAnnouncement

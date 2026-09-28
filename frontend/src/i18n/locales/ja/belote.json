@@ -34,12 +34,11 @@
   "partnership": "パートナー: {{partner}}",
   "trickCount": "獲得トリック: {{count}}",
   "roundPoints": "ラウンド: {{points}}点",
-  "beloteRebelote": "ベロート/レベロート +20",
   "tracker": {
     "dixDeDer": "最終トリック +{{points}}",
     "beloteKing": "切り札 K",
     "beloteQueen": "切り札 Q",
-    "beloteBonus": "+20",
+    "beloteAwarded": "{{team}}に{{points}}点",
     "beloteConfirmed": "ベロート・レベロート確定！ +20"
   },
   "orderUpButton": "取る",
