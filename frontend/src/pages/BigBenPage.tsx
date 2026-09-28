@@ -325,7 +325,7 @@ function BigBenPageContent() {
                           disabled={!isPlaying || loading || isAutoCompleting}
                           aria-disabled={!selectedSource || face.complete || undefined}
                           aria-describedby={!selectedSource ? selectSourceHintId : undefined}
-                          aria-label={t('faceAriaLabel', {
+                          aria-label={t(face.complete ? 'faceAriaLabelCompleted' : 'faceAriaLabel', {
                             idx,
                             hour: CLOCK_HOURS[idx],
                             target: face.targetRank,
