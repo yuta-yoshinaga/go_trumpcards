@@ -180,6 +180,16 @@ function TwentyNinePageContent() {
   // The seat holding that highest bid, so the bidder's name can be surfaced during bidding.
   const highestBidder = highestBid > 0 ? state.players[state.bids.indexOf(highestBid)] : undefined;
   const highestBidderName = highestBidder ? playerName(highestBidder.id, highestBidder.isHuman) : '';
+  const bidHistory = state.players.map((player, seat) => {
+    let committed = !isBidPhase;
+    if (isBidPhase) {
+      for (let step = 1; step < state.players.length; step++) {
+        if ((state.dealerIdx + step) % state.players.length === state.currentPlayerIdx) break;
+        if ((state.dealerIdx + step) % state.players.length === seat) committed = true;
+      }
+    }
+    return { player, seat, committed, bid: state.bids[seat] };
+  });
 
   const contractLabel = state.contract === 0 ? t('contractUndecided') : String(state.contract);
 
@@ -296,6 +306,20 @@ function TwentyNinePageContent() {
                   <div className="mt-1">
                     {t('yourTeam')}: {humanTeam === 0 ? t('team.a') : t('team.b')}
                   </div>
+                </div>
+
+                <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm" data-testid="tn29-bid-history">
+                  <div className="text-ds-text-primary text-xs mb-1">{t('bidHistory.title')}</div>
+                  {bidHistory.map(({ player, seat, committed, bid }) => (
+                    <div key={seat} className="py-0.5">
+                      {t('bidHistory.player', {
+                        seat,
+                        player: playerName(player.id, player.isHuman),
+                        team: seat % 2 === 0 ? t('team.a') : t('team.b'),
+                      })}
+                      : {committed ? (bid === 0 ? t('bid.pass') : bid) : t('bidHistory.pending')}
+                    </div>
+                  ))}
                 </div>
 
                 {/* Players grouped by team, with the declarer badge */}

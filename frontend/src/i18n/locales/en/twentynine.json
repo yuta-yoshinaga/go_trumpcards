@@ -53,6 +53,11 @@
   "bidHighest": "Highest bid: {{bid}} ({{player}})",
   "bidNone": "No bids yet",
   "bidDisabledReason": "Must exceed the current highest bid of {{currentBid}}",
+  "bidHistory": {
+    "title": "Bid history",
+    "player": "Seat {{seat}} {{player}} ({{team}})",
+    "pending": "Not yet bid"
+  },
   "bid": {
     "pass": "Pass",
     "sixteen": "16",
