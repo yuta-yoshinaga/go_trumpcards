@@ -4,7 +4,7 @@ import { useKlondikeTimer } from './useKlondikeTimer';
 
 describe('useKlondikeTimer', () => {
   beforeEach(() => {
-    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
+    vi.useFakeTimers({ toFake: ['Date', 'setInterval', 'clearInterval'] });
   });
 
   afterEach(() => {
@@ -24,6 +24,15 @@ describe('useKlondikeTimer', () => {
     expect(result.current.elapsedSeconds).toBe(3);
   });
 
+  it('counts elapsed wall-clock time when interval callbacks are throttled', () => {
+    const { result } = renderHook(() => useKlondikeTimer(true));
+    act(() => {
+      vi.setSystemTime(Date.now() + 12_000);
+      vi.advanceTimersByTime(1000);
+    });
+    expect(result.current.elapsedSeconds).toBe(13);
+  });
+
   it('stops incrementing when isPlaying becomes false', () => {
     const { result, rerender } = renderHook(({ playing }) => useKlondikeTimer(playing), {
       initialProps: { playing: true },
@@ -38,6 +47,17 @@ describe('useKlondikeTimer', () => {
       vi.advanceTimersByTime(3000);
     });
     expect(result.current.elapsedSeconds).toBe(2);
+  });
+
+  it('captures throttled wall-clock time when play ends', () => {
+    const { result, rerender } = renderHook(({ playing }) => useKlondikeTimer(playing), {
+      initialProps: { playing: true },
+    });
+    act(() => {
+      vi.setSystemTime(Date.now() + 12_000);
+      rerender({ playing: false });
+    });
+    expect(result.current.elapsedSeconds).toBe(12);
   });
 
   it('resetTimer resets to 0', () => {
