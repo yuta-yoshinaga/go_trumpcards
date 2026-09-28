@@ -92,7 +92,7 @@
     "actionButtons": "Choose your action: Bet, Call, Raise, Fold, or All In.",
     "potDisplay": "Shows the current pot size and blind levels.",
     "cpuArea": "CPU opponent information. Cards are revealed at showdown.",
-    "learningMode": "Learning mode shows equity and pot odds to help your decisions.",
+    "learningMode": "The betting decision info panel shows equity and pot odds.",
     "resetButton": "Press the reset button to start a new game.",
     "discardPhase": "Discard phase (after the flop betting round): select two of your 4 hole cards to discard."
   },
