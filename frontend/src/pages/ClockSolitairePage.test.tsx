@@ -392,6 +392,23 @@ describe('ClockSolitairePage', () => {
     await waitFor(() => expect(screen.getByTestId('cs-live-region')).toHaveTextContent(/3時/));
   });
 
+  it('announces the card just moved and clears it after undo', async () => {
+    restoreCliModeDefault();
+    mockExec
+      .mockReset()
+      .mockResolvedValueOnce({ ...playingState, currentCard: card('SPADE', 5) })
+      .mockResolvedValueOnce({ ...playingState, stepCount: 1, canUndo: true, currentCard: card('HEART', 3) })
+      .mockResolvedValueOnce({ ...playingState, canUndo: false, currentCard: card('SPADE', 5) });
+    renderWithProviders(<ClockSolitairePage />);
+    const live = await screen.findByTestId('cs-live-region');
+    fireEvent.click(await screen.findByTestId('cs-step-button'));
+    await waitFor(() => expect(live).toHaveTextContent('♠ 5'));
+    expect(live).toHaveTextContent('5時');
+    expect(live).not.toHaveTextContent('♥ 3');
+    fireEvent.click(await screen.findByTestId('cs-undo-button'));
+    await waitFor(() => expect(live).not.toHaveTextContent('♠ 5'));
+  });
+
   it('announces the centre pile for a king', async () => {
     localStorage.clear();
     mockExec.mockReset();

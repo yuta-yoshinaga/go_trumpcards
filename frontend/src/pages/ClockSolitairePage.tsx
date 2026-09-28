@@ -133,6 +133,8 @@ function ClockSolitairePageContent() {
 
   const [autoPlaySpeed, setAutoPlaySpeed] = useState<AutoPlaySpeed>(loadAutoPlaySpeed);
   const [autoPlaying, setAutoPlaying] = useState(false);
+  const previousStepStateRef = useRef<ClockSolitaireResponse | null | undefined>(undefined);
+  const [stepAnnouncement, setStepAnnouncement] = useState('');
 
   const handleStep = useCallback(() => execApi('step'), [execApi]);
   // Undo the last placed card. Stop autoplay first so the timed loop doesn't
@@ -190,6 +192,23 @@ function ClockSolitairePageContent() {
   }, [autoPlaying, execApi]);
 
   useMountReset(execApi);
+  useEffect(() => {
+    const previous = previousStepStateRef.current;
+    if (state && previous && state.stepCount !== previous.stepCount) {
+      if (state.stepCount === previous.stepCount + 1 && previous.currentCard) {
+        const cardName = cardAlt(previous.currentCard);
+        setStepAnnouncement(
+          previous.currentCard.value === 13
+            ? t('stepKingAnnouncement', { card: cardName })
+            : t('stepAnnouncement', { card: cardName, hour: previous.currentCard.value }),
+        );
+      } else {
+        // Undo and reset change the step count without placing the current card.
+        setStepAnnouncement('');
+      }
+    }
+    previousStepStateRef.current = state;
+  }, [state, t]);
   const { cardWidth, cardHeight } = useCardDimensions();
   const { hint, hintEnabled, setHintEnabled } = useGameHint('clocksolitaire', state);
 
@@ -269,6 +288,7 @@ function ClockSolitairePageContent() {
     } else {
       parts.push(state.message ?? '');
     }
+    if (stepAnnouncement) parts.push(stepAnnouncement);
     // The pulsing ring on the destination pile is visual only. The CUI presenter
     // already spells the same thing out every turn, so mirror it here (#4785).
     const value = state.currentCard?.value ?? 0;
