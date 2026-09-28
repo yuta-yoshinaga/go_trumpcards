@@ -507,6 +507,31 @@ describe('BinokelPage', () => {
     });
   });
 
+  it('shows scored melds as plain text in the meld area during play phase', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      playerMelds: [
+        [
+          {
+            type: 1,
+            points: 20,
+            cards: [
+              { design: 'HEART', value: 13 },
+              { design: 'HEART', value: 12 },
+            ],
+          },
+        ],
+        [],
+        [],
+      ],
+    });
+    const { container } = renderWithProviders(<BinokelPage />);
+    await waitFor(() => expect(container.querySelector('[data-tutorial="bn-meld-area"]')).not.toBeNull());
+    const meldArea = container.querySelector('[data-tutorial="bn-meld-area"]') as HTMLElement;
+    expect(within(meldArea).getByText('コモンマリッジ (20)')).toBeInTheDocument();
+    expect(within(meldArea).queryByRole('button')).not.toBeInTheDocument();
+  });
+
   it('plays card when card button is clicked in play phase', async () => {
     mockExec.mockResolvedValue(playPhaseState);
     renderWithProviders(<BinokelPage />);
