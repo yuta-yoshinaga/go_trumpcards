@@ -233,7 +233,7 @@ function CegoPageContent() {
               {
                 items: [
                   {
-                    type: 'number',
+                    type: 'select',
                     id: 'cpuDifficulty',
                     label: t('settings.cpuDifficulty'),
                     value: cegoConfig.cpuDifficulty,

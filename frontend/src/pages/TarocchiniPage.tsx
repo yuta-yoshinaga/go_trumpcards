@@ -170,7 +170,7 @@ function TarocchiniPageContent() {
               {
                 items: [
                   {
-                    type: 'number',
+                    type: 'select',
                     id: 'cpuDifficulty',
                     label: t('settings.cpuDifficulty'),
                     value: tarocchiniConfig.cpuDifficulty,

@@ -165,6 +165,14 @@ describe('ScartoPage', () => {
     );
   });
 
+  it('renders CPU difficulty as a select and match length as a number input', async () => {
+    renderWithProviders(<ScartoPage />);
+    fireEvent.click(await screen.findByText('設定'));
+
+    expect(screen.getByRole('combobox', { name: 'CPU難易度' })).toBeInTheDocument();
+    expect(screen.getByRole('spinbutton', { name: 'マッチのディール数' })).toBeInTheDocument();
+  });
+
   it('renders the play phase with the human cards and a dealer badge', async () => {
     renderWithProviders(<ScartoPage />);
     await waitFor(() => {

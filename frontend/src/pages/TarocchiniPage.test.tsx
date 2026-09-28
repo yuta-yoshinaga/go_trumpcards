@@ -48,6 +48,14 @@ describe('TarocchiniPage', () => {
     );
   });
 
+  it('renders CPU difficulty as a select and match length as a number input', async () => {
+    renderWithProviders(<TarocchiniPage />);
+    fireEvent.click(await screen.findByText('設定'));
+
+    expect(screen.getByRole('combobox', { name: 'CPU難易度' })).toBeInTheDocument();
+    expect(screen.getByRole('spinbutton', { name: 'ラウンド数' })).toBeInTheDocument();
+  });
+
   it('accepts multiples of four for the target rounds', async () => {
     renderWithProviders(<TarocchiniPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'Re ♠' })).toBeInTheDocument());
