@@ -19,7 +19,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { btnDanger, btnPrimary } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { GoofspielResponse } from '../types/card';
+import type { Card, GoofspielResponse } from '../types/card';
 import { GoofspielPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
@@ -79,7 +79,8 @@ function GoofspielPageContent() {
             .map((player) =>
               t('status.revealPlayer', {
                 name: player.id === 0 ? t('header.you') : t('header.cpu', { idx: String(player.id) }),
-                card: player.revealedBid ? cardAlt(player.revealedBid) : t('status.noReveal'),
+                // 公開フェーズでは全員が公開札を持つ (Goofspiel は全員が同時に 1 枚伏せて同時に開く)。
+                card: cardAlt(player.revealedBid as Card),
               }),
             )
             .join(t('listSeparator')),
@@ -186,7 +187,7 @@ function GoofspielPageContent() {
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
-          <div role="status" aria-live="polite" data-testid="gs-reveal-announcement" className="sr-only">
+          <div role="status" data-testid="gs-reveal-announcement" className="sr-only">
             {isReveal ? revealAnnouncement : ''}
           </div>
           <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
@@ -300,7 +301,7 @@ function GoofspielPageContent() {
 
             {/* **同点は誰も取らない。** 勝者が居ない結果を言い分けます。 */}
             {isReveal && (
-              <div className="mt-3 text-center text-ds-warning" role="status" data-testid="gs-round-end">
+              <div className="mt-3 text-center text-ds-warning" data-testid="gs-round-end">
                 {state.lastWinnerIdx < 0
                   ? t('status.tie')
                   : t('status.roundEnd', {

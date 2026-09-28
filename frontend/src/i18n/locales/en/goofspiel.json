@@ -31,7 +31,6 @@
   "status": {
     "revealPlayer": "{{name}}: {{card}}",
     "revealAnnouncement": "Revealed bids: {{bids}}. {{result}}",
-    "noReveal": "no card",
     "bid": "{{n}} points are at stake. Choose a card to bid face down.",
     "waiting": "You have bid. Waiting for everyone else.",
     "roundEnd": "{{name}} takes {{n}} points.",

@@ -31,7 +31,6 @@
   "status": {
     "revealPlayer": "{{name}}: {{card}}",
     "revealAnnouncement": "公開札は {{bids}}。{{result}}",
-    "noReveal": "札なし",
     "bid": "{{n}} 点が懸かっています。伏せる札を選んでください。",
     "waiting": "入札しました。全員が伏せるまで待ちます。",
     "roundEnd": "{{name}} が {{n}} 点を獲得しました。",
