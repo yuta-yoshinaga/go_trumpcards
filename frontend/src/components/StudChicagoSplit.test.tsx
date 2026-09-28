@@ -24,16 +24,15 @@ function result(overrides: Partial<SevenCardStudResult> & { playerIdx: number })
 }
 
 describe('StudChicagoSplit', () => {
-  it('renders nothing without results', () => {
+  it('keeps an empty live region mounted without results', () => {
     const { container } = renderWithProviders(<StudChicagoSplit results={undefined} players={players} />);
-    expect(container).toBeEmptyDOMElement();
+    expect(container.querySelector('[role="status"]')).toHaveAttribute('aria-live', 'polite');
+    expect(screen.queryByTestId('studchicago-split')).not.toBeInTheDocument();
   });
 
-  it('renders nothing when nobody won anything', () => {
-    const { container } = renderWithProviders(
-      <StudChicagoSplit results={[result({ playerIdx: 0 })]} players={players} />,
-    );
-    expect(container).toBeEmptyDOMElement();
+  it('keeps the live region empty when nobody won anything', () => {
+    renderWithProviders(<StudChicagoSplit results={[result({ playerIdx: 0 })]} players={players} />);
+    expect(screen.getByTestId('studchicago-live-region')).toBeEmptyDOMElement();
   });
 
   // **wonAmount は役とスペードの合計。** そのまま「役」として読むとスクープが
@@ -80,6 +79,22 @@ describe('StudChicagoSplit', () => {
     const scoop = screen.getByTestId('studchicago-scoop-badge');
     expect(scoop).toHaveTextContent('あなた');
     expect(scoop).toHaveTextContent('400');
+    expect(screen.getByRole('status')).toHaveTextContent('あなた が両取り！ +400');
+  });
+
+  it('announces the complete split in one stable live region', () => {
+    const split = [
+      result({ playerIdx: 0, wonAmount: 200 }),
+      result({ playerIdx: 1, wonAmount: 200, wonSpade: 200, spadeCard: card('SPADE', 1) }),
+    ];
+    const { rerender } = renderWithProviders(<StudChicagoSplit results={split} players={players} />);
+    const liveRegion = screen.getByRole('status');
+    expect(liveRegion).toHaveTextContent('役: あなた +200');
+    expect(liveRegion).toHaveTextContent('スペード: CPU 1 +200');
+
+    rerender(<StudChicagoSplit results={split} players={players} />);
+    expect(screen.getAllByRole('status')).toHaveLength(1);
+    expect(screen.getByRole('status')).toHaveTextContent('役: あなた +200');
   });
 
   // **誰も伏せ札にスペードを持っていなければ総取り。** バッジが無いことではなく、
@@ -87,6 +102,8 @@ describe('StudChicagoSplit', () => {
   it('says the high takes it all when no spade won', () => {
     renderWithProviders(<StudChicagoSplit results={[result({ playerIdx: 0, wonAmount: 400 })]} players={players} />);
     expect(screen.getByTestId('studchicago-hi-takes-all')).toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('役: あなた +400');
+    expect(screen.getByRole('status')).toHaveTextContent('役の勝者がポットを総取り');
   });
 
   it('does not say that when a spade did win', () => {
