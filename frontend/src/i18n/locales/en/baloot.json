@@ -34,7 +34,10 @@
     "nextRound": "Next round",
     "reset": "Reset",
     "giveUp": "Give up",
-    "playAria": "Play {{card}}"
+    "playAria": "Play {{card}}",
+    "playableAria": "{{card}}. Playable",
+    "notPlayableAria": "{{card}}. Not playable",
+    "notPlayableReason": "This card cannot be played now."
   },
   "dealerStuck": "You are the dealer. The dealer cannot pass.",
   "result": {

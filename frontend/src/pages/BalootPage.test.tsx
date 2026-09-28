@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { balootApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BalootResponse, Card } from '../types/card';
 import { BalootPage } from './BalootPage';
@@ -172,11 +173,27 @@ describe('BalootPage', () => {
     renderWithProviders(<BalootPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
 
-    const cards = await screen.findAllByRole('button', { name: /を出す/ });
+    const cards = await screen.findAllByRole('button', { name: /出せる札/ });
     mockExec.mockClear();
     fireEvent.click(cards[2]);
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 2));
+  });
+
+  it('announces playable and unplayable cards and guards the unplayable click', async () => {
+    mockExec.mockResolvedValue(playing({ validPlays: [0] }));
+    renderWithProviders(<BalootPage />);
+    const playable = await screen.findByRole('button', { name: /出せる札/ });
+    const unplayable = screen.getAllByRole('button', { name: /出せない札/ })[0];
+    expect(playable).not.toHaveAttribute('aria-disabled');
+    expect(unplayable).toHaveAttribute('aria-disabled', 'true');
+    expect(document.getElementById(unplayable.getAttribute('aria-describedby') ?? '')).toHaveTextContent(
+      'この札は現在出せません',
+    );
+    mockExec.mockClear();
+    fireEvent.click(unplayable);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('play', expect.anything());
   });
 
   // **チーム番号と Baloot 役は盤面から読めない。** 席ごとに出す。
@@ -276,7 +293,7 @@ describe('BalootPage', () => {
   it('disables the hand while it is a CPU turn', async () => {
     mockExec.mockResolvedValue(playing({ currentPlayerIdx: 1 } as Partial<BalootResponse>));
     renderWithProviders(<BalootPage />);
-    const cards = await screen.findAllByRole('button', { name: /を出す/ });
+    const cards = await screen.findAllByRole('button', { name: /♠|♥|♦|♣/ });
     expect(cards[0]).toBeDisabled();
   });
 

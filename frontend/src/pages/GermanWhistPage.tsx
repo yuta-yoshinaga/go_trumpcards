@@ -148,9 +148,10 @@ function GermanWhistPageContent() {
 
   // Following suit is compulsory in both halves, so the legal set is always
   // meaningful. As on the Schnapsen page this is an **additive ring**, not a
-  // disabled state: the server validates every play, and disabling cards makes
-  // the first clickable card in the hand a moving target for the e2e suite.
+  // Legal plays are supplied by the server. Keep turn/loading as native disabled
+  // states and expose illegal plays with aria-disabled and an explicit reason.
   const legalRing = new Set(isHumanTurn ? state.validPlays : []);
+  const canAnnotatePlays = isHumanTurn && !loading;
 
   const resultBanner = (() => {
     if (!isGameEnd) return null;
@@ -265,15 +266,31 @@ function GermanWhistPageContent() {
                     <button
                       key={`${card.design}-${card.value}-${idx}`}
                       type="button"
-                      onClick={() => handlePlay(idx)}
+                      onClick={() => {
+                        if (loading || !isHumanTurn || !legalRing.has(idx)) return;
+                        handlePlay(idx);
+                      }}
                       disabled={loading || !isHumanTurn}
-                      aria-label={t('actions.playAria', { card: cardAlt(card) })}
-                      className={`disabled:opacity-50 ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
+                      aria-label={
+                        canAnnotatePlays
+                          ? t(legalRing.has(idx) ? 'actions.playableAria' : 'actions.notPlayableAria', {
+                              card: cardAlt(card),
+                            })
+                          : undefined
+                      }
+                      aria-disabled={canAnnotatePlays && !legalRing.has(idx) ? true : undefined}
+                      aria-describedby={
+                        canAnnotatePlays && !legalRing.has(idx) ? 'germanwhist-unplayable-reason' : undefined
+                      }
+                      className={`disabled:opacity-50 aria-disabled:opacity-50 ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
                     >
                       <CardImage card={card} width={cardWidth} />
                     </button>
                   ))}
                 </div>
+                <span id="germanwhist-unplayable-reason" className="sr-only">
+                  {t('actions.notPlayableReason')}
+                </span>
               </div>
             )}
 

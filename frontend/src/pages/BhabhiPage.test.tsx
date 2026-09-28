@@ -119,11 +119,27 @@ describe('BhabhiPage', () => {
     renderWithProviders(<BhabhiPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
 
-    const cards = await screen.findAllByRole('button', { name: /を出す/ });
+    const cards = await screen.findAllByRole('button', { name: /出せる札/ });
     mockExec.mockClear();
     fireEvent.click(cards[2]);
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 2));
+  });
+
+  it('announces legal status and prevents playing an illegal card', async () => {
+    mockExec.mockResolvedValue(makeState({ validPlays: [0] }));
+    renderWithProviders(<BhabhiPage />);
+    const playable = await screen.findByRole('button', { name: /出せる札/ });
+    const unplayable = screen.getAllByRole('button', { name: /出せない札/ })[0];
+    expect(playable).not.toHaveAttribute('aria-disabled');
+    expect(unplayable).toHaveAttribute('aria-disabled', 'true');
+    expect(document.getElementById(unplayable.getAttribute('aria-describedby') ?? '')).toHaveTextContent(
+      'この札は現在出せません',
+    );
+    mockExec.mockClear();
+    fireEvent.click(unplayable);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('play', expect.anything());
   });
 
   // **直前の引き取りは盤面に痕跡が残らない。**
@@ -293,7 +309,7 @@ describe('BhabhiPage', () => {
   it('disables the hand while it is a CPU turn', async () => {
     mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1 }));
     renderWithProviders(<BhabhiPage />);
-    const cards = await screen.findAllByRole('button', { name: /を出す/ });
+    const cards = await screen.findAllByRole('button', { name: /♠|♥|♦|♣/ });
     expect(cards[0]).toBeDisabled();
   });
 

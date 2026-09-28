@@ -21,7 +21,10 @@
   "actions": {
     "reset": "リセット",
     "giveUp": "投了",
-    "playAria": "{{card}} を出す"
+    "playAria": "{{card}} を出す",
+    "playableAria": "{{card}}。出せる札",
+    "notPlayableAria": "{{card}}。出せない札",
+    "notPlayableReason": "この札は現在出せません。"
   },
   "settings": {
     "playerCnt": "参加人数",
