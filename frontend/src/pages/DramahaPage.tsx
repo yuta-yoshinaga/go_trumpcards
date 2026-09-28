@@ -576,7 +576,7 @@ function DramahaPageContent() {
                   {t('draw.onceOnly')}
                 </p>
                 <p className="text-ds-text-primary text-xs mb-2" data-testid="dramaha-draw-selected">
-                  {t('draw.selected', { count: selectedDraw.length })}
+                  {t('draw.selected', { count: selectedDraw.length, max: DRAMAHA_HOLE_CARDS })}
                 </p>
                 <div className="flex justify-center gap-2">
                   <button
