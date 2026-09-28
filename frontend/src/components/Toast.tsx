@@ -11,7 +11,7 @@ export interface ToastProps {
    */
   onDismiss?: () => void;
   /** aria-live politeness for the announcement region. Defaults to 'polite'. */
-  live?: 'polite' | 'assertive';
+  live?: 'polite' | 'assertive' | 'off';
   /** Forwarded to the root element for tests. */
   testId?: string;
 }
