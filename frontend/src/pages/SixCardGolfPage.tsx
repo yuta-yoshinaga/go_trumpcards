@@ -231,6 +231,7 @@ function SixCardGolfPageContent() {
                     phase={phase}
                     canFlip={state.canFlip}
                     isHumanTurn={isHumanTurn}
+                    loading={loading}
                     onFlipInitial={handleFlipInitial}
                     onSwap={handleSwap}
                     onFlip={handleFlip}
@@ -270,6 +271,7 @@ function SixCardGolfPageContent() {
                   type="button"
                   className={`px-3 py-1 rounded bg-ds-accent hover:bg-ds-accent-hover text-ds-text-on-accent text-sm ${focusRingWhite}`}
                   onClick={handleDrawStock}
+                  disabled={loading}
                 >
                   {t('button.drawStock')}
                 </button>
@@ -290,6 +292,7 @@ function SixCardGolfPageContent() {
                     type="button"
                     className={`mt-1 px-3 py-1 rounded bg-ds-success hover:bg-ds-success-hover text-white text-sm ${focusRingWhite}`}
                     onClick={handleDrawDiscard}
+                    disabled={loading}
                   >
                     {t('button.drawDiscard')}
                   </button>
@@ -304,6 +307,7 @@ function SixCardGolfPageContent() {
                   type="button"
                   className={`mt-1 px-3 py-1 rounded bg-ds-error hover:bg-ds-error-hover text-white text-sm ${focusRingWhite}`}
                   onClick={handleDiscard}
+                  disabled={loading}
                 >
                   {t('button.discard')}
                 </button>
@@ -318,6 +322,7 @@ function SixCardGolfPageContent() {
                 type="button"
                 className={`px-4 py-2 rounded bg-ds-warning hover:bg-ds-warning-hover text-ds-text-on-accent text-sm ${focusRingWhite}`}
                 onClick={handleSkipFlip}
+                disabled={loading}
               >
                 {t('button.skipFlip')}
               </button>
@@ -331,6 +336,7 @@ function SixCardGolfPageContent() {
                 type="button"
                 className={`px-4 py-2 rounded bg-ds-success hover:bg-ds-success-hover text-white ${focusRingWhite}`}
                 onClick={handleNextRound}
+                disabled={loading}
               >
                 {t('button.nextRound')}
               </button>
@@ -426,6 +432,7 @@ function GridSlotButton({
   phase,
   canFlip,
   isHumanTurn,
+  loading,
   onFlipInitial,
   onSwap,
   onFlip,
@@ -439,6 +446,7 @@ function GridSlotButton({
   phase: number;
   canFlip: boolean;
   isHumanTurn: boolean;
+  loading: boolean;
   onFlipInitial: (pos: number) => void;
   onSwap: (pos: number) => void;
   onFlip: (pos: number) => void;
@@ -473,7 +481,7 @@ function GridSlotButton({
       data-hinted={hinted ? 'true' : undefined}
       style={{ width: cardWidth + 8 }}
       onClick={handleClick}
-      disabled={!clickable}
+      disabled={loading || !clickable}
       aria-label={slot.faceUp && slot.card ? cardAlt(slot.card) : faceDownLabel}
     >
       {slot.faceUp && slot.card ? (
