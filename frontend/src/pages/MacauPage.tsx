@@ -438,6 +438,11 @@ function MacauPageContent() {
             <div className="flex gap-2 items-center flex-wrap" data-tutorial="macau-magic">
               {isHumanTurn && (
                 <div className="flex gap-2" data-tutorial="macau-play-draw">
+                  {state.drawPileCount === 0 && (
+                    <p id="macau-empty-stock-help" className="text-ds-text-muted text-sm" aria-live="off">
+                      {t('emptyStockDrawHelp')}
+                    </p>
+                  )}
                   <button
                     type="button"
                     className={btnPrimary}
@@ -451,6 +456,7 @@ function MacauPageContent() {
                     className={`${hasPenalty ? btnDanger : btnPrimary} relative`}
                     onClick={handleDraw}
                     disabled={loading}
+                    aria-describedby={state.drawPileCount === 0 ? 'macau-empty-stock-help' : undefined}
                   >
                     {hasPenalty ? t('takePenaltyButton', { count: state.penaltyDrawCount }) : t('drawButton')}
                     {hasPenalty && (

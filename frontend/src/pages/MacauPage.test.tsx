@@ -139,6 +139,19 @@ describe('MacauPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
   });
 
+  it('explains that an empty stock is recycled or passed and keeps draw available', async () => {
+    mockExec.mockResolvedValue({ ...playPhaseState, drawPileCount: 0 });
+    renderWithProviders(<MacauPage />);
+    const drawButton = await screen.findByRole('button', { name: '引く' });
+    const explanation = screen.getByText('山札が空です。捨て札から補充し、補充できない場合はパスします。');
+    expect(drawButton).toHaveAttribute('aria-describedby', 'macau-empty-stock-help');
+    expect(explanation).toHaveAttribute('id', 'macau-empty-stock-help');
+    expect(drawButton).not.toHaveAttribute('aria-disabled', 'true');
+    mockExec.mockClear();
+    fireEvent.click(drawButton);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
+  });
+
   it('shows penalty banner and take-penalty draw label when penalty active', async () => {
     mockExec.mockResolvedValue(penaltyState);
     renderWithProviders(<MacauPage />);
