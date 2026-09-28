@@ -30,6 +30,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { GANJIFA_HELP, parseGanjifaCommand } from '../utils/cli/commands/ganjifaCommands';
 import { formatGanjifaState } from '../utils/cli/formatters/ganjifaFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { ganjifaHandCardStatus } from '../utils/ganjifaHandStatus';
 import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -314,6 +315,7 @@ function GanjifaPageContent() {
                 dataTutorialPrefix="ganjifa"
                 validIndices={canPlay ? state.playableIndices : undefined}
                 restrictedTooltip={t('playButton')}
+                cardStatusFor={(idx) => ganjifaHandCardStatus(humanPlayer.cards[idx], t)}
               />
             )}
 
