@@ -10,6 +10,7 @@
   "label.canCheck": "チェックできます",
   "label.buyIn": "表の3が出ました。{{amount}} を払って続けますか",
   "label.buyCost": "支払い額 {{amount}}",
+  "label.buyRemaining": "支払い後の残りチップ {{amount}}",
   "label.yourHand": "あなたの手札",
   "label.seats": "席",
   "label.hidden": "伏せ",

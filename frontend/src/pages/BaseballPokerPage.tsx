@@ -123,6 +123,9 @@ function BaseballPokerPageContent() {
     }[state.phase] ?? '';
 
   const human = state.seats[state.humanSeat];
+  // ドメインは買い増し額を所持チップ以下に制限して支払う。
+  const buyPayment = Math.max(0, Math.min(state.buyCost, human?.chips ?? 0));
+  const chipsAfterBuy = Math.max(0, (human?.chips ?? 0) - buyPayment);
   const humanWon = gameOver && state.winnerSeat === state.humanSeat;
 
   /**
@@ -303,7 +306,12 @@ function BaseballPokerPageContent() {
               {isBuying && (
                 <>
                   <p className="text-ds-text-muted text-sm" data-testid="bb-buy-guide">
-                    {t('label.buyIn', { amount: state.buyCost })}
+                    {t('label.buyIn', { amount: buyPayment })}
+                  </p>
+                  <p className="text-ds-text-muted text-sm" data-testid="bb-buy-summary">
+                    <span data-testid="bb-buy-cost">{t('label.buyCost', { amount: buyPayment })}</span>
+                    {' · '}
+                    <span data-testid="bb-buy-remaining">{t('label.buyRemaining', { amount: chipsAfterBuy })}</span>
                   </p>
                   <div className="flex gap-2 flex-wrap justify-center">
                     <button
