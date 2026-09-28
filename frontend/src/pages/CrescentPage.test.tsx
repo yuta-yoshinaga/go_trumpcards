@@ -97,6 +97,22 @@ describe('CrescentPage', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent(/手数: 5/));
   });
 
+  it('keeps foundation targets focusable and explains that a source must be selected', async () => {
+    renderWithProviders(<CrescentPage />);
+    await screen.findByTestId('phase-indicator');
+    const target = screen.getAllByRole('button').find((button) => button.getAttribute('aria-disabled') === 'true');
+    expect(target).toBeDefined();
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const describedBy = target?.getAttribute('aria-describedby');
+    expect(describedBy).toBeTruthy();
+    expect(document.getElementById(describedBy ?? '')).toHaveTextContent('先に移動する札を選んでください');
+    mockExec.mockClear();
+    fireEvent.click(target as HTMLElement);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('renders ascending and descending foundation suit headers', async () => {
     renderWithProviders(<CrescentPage />);
     await waitFor(() => expect(screen.getAllByText(/♠ ↑/).length).toBeGreaterThanOrEqual(1));

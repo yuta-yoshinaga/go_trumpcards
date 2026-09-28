@@ -98,6 +98,22 @@ describe('DuchessPage', () => {
     }
   });
 
+  it('explains and ignores a move target before a source is selected', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<DuchessPage />);
+    const target = await screen.findByRole('button', { name: /空のタブロー列 2/ });
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const describedBy = target.getAttribute('aria-describedby');
+    expect(describedBy).toBeTruthy();
+    expect(document.getElementById(describedBy ?? '')).toHaveTextContent('先に移動する札を選んでください');
+
+    mockExec.mockClear();
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('draws from the stock', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<DuchessPage />);

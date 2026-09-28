@@ -72,6 +72,34 @@ describe('EasthavenPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('keeps an empty tableau target focusable and explains that a source must be selected', async () => {
+    mockExec.mockResolvedValue({ ...playingState, tableau: [[], ...playingState.tableau.slice(1)] });
+    renderWithProviders(<EasthavenPage />);
+    const btn = await screen.findByTestId('eh-empty-col-0');
+
+    expect(btn).not.toBeDisabled();
+    expect(btn).toHaveAttribute('aria-disabled', 'true');
+    const hintId = btn.getAttribute('aria-describedby');
+    expect(hintId).toBeTruthy();
+    expect(document.getElementById(hintId ?? '')).toHaveTextContent('先に移動する札を選んでください');
+
+    mockExec.mockClear();
+    btn.click();
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
+  it('keeps a foundation target focusable and explains that a source must be selected', async () => {
+    renderWithProviders(<EasthavenPage />);
+    const btn = await screen.findByRole('button', { name: '空の組札 (♠)' });
+
+    expect(btn).not.toBeDisabled();
+    expect(btn).toHaveAttribute('aria-disabled', 'true');
+    const hintId = btn.getAttribute('aria-describedby');
+    expect(hintId).toBeTruthy();
+    expect(document.getElementById(hintId ?? '')).toHaveTextContent('先に移動する札を選んでください');
+  });
+
   it('shows move count and stock', async () => {
     renderWithProviders(<EasthavenPage />);
     await waitFor(() => expect(screen.getByText(/手数/)).toBeInTheDocument());

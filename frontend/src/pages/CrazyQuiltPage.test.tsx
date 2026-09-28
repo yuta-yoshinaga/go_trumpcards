@@ -63,6 +63,22 @@ describe('CrazyQuiltPage', () => {
     expect(screen.queryByTestId('cq-cell-64')).not.toBeInTheDocument();
   });
 
+  it('keeps foundation targets focusable and explains that a source must be selected', async () => {
+    renderWithProviders(<CrazyQuiltPage />);
+    await screen.findByTestId('cq-cell-0');
+    const target = screen.getAllByRole('button').find((button) => button.getAttribute('aria-disabled') === 'true');
+    expect(target).toBeDefined();
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const describedBy = target?.getAttribute('aria-describedby');
+    expect(describedBy).toBeTruthy();
+    expect(document.getElementById(describedBy ?? '')).toHaveTextContent('先に移動する札を選んでください');
+    mockExec.mockClear();
+    fireEvent.click(target as HTMLElement);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('keeps every cell at the card dimensions while exposing orientation', async () => {
     renderWithProviders(<CrazyQuiltPage />);
     await waitFor(() => expect(screen.getByTestId('cq-cell-0')).toBeInTheDocument());

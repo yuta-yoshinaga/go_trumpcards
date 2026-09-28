@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useId, useMemo } from 'react';
 import type { crazyquiltApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -68,6 +68,7 @@ function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => stri
 }
 
 function CrazyQuiltPageContent() {
+  const selectSourceHintId = useId();
   const {
     t,
     tc,
@@ -279,6 +280,9 @@ function CrazyQuiltPageContent() {
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
+          <span id={selectSourceHintId} className="sr-only">
+            {tc('label.selectSourceFirst')}
+          </span>
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
             <div className="flex flex-wrap justify-center items-start gap-3 sm:gap-6 mb-3">
               <div className="flex flex-wrap justify-center gap-1 sm:gap-2" data-tutorial="cg-foundation">
@@ -309,7 +313,9 @@ function CrazyQuiltPageContent() {
                           <button
                             type="button"
                             onClick={() => game.handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
+                            disabled={!isPlaying || loading || isAutoCompleting}
+                            aria-disabled={!selectedSource || undefined}
+                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t(
                               ascending ? 'foundationAscendingAriaLabel' : 'foundationDescendingAriaLabel',
                               { suit: FOUNDATION_SUITS[idx], idx, count: pile.length },
@@ -328,7 +334,9 @@ function CrazyQuiltPageContent() {
                           <button
                             type="button"
                             onClick={() => game.handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading || !selectedSource}
+                            disabled={!isPlaying || loading}
+                            aria-disabled={!selectedSource || undefined}
+                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t(
                               ascending ? 'emptyFoundationAscendingAriaLabel' : 'emptyFoundationDescendingAriaLabel',
                               { suit: FOUNDATION_SUITS[idx], idx },

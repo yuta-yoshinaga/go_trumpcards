@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useId, useMemo } from 'react';
 import type { diplomatApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -67,6 +67,7 @@ function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => stri
 }
 
 function DiplomatPageContent() {
+  const selectSourceHintId = useId();
   const {
     t,
     tc,
@@ -205,7 +206,9 @@ function DiplomatPageContent() {
                 onClick={() => game.handleSelectTarget(pileZone)}
                 // **空き列は別の列か捨て札から埋める。**Congress と違って
                 // タブローも移動元にできる（Diplomat の主要な逃げ道）。
-                disabled={!isPlaying || loading || !selectedSource}
+                disabled={!isPlaying || loading}
+                aria-disabled={!selectedSource || undefined}
+                aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                 aria-label={t('emptyPileAriaLabel', { pile: pileIdx })}
                 style={{ height: dims.ch }}
                 className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center bg-transparent ${focusRingWhite}`}
@@ -295,6 +298,9 @@ function DiplomatPageContent() {
         </>
       }
     >
+      <span id={selectSourceHintId} className="sr-only">
+        {tc('label.selectSourceFirst')}
+      </span>
       <LandscapeBanner message={t('landscapeBanner')} />
 
       {cliEnabled ? (
