@@ -111,6 +111,33 @@ describe('StreetsAndAlleysPage', () => {
     expect(screen.getByRole('button', { name: /^♠ 5/ })).not.toHaveAttribute('data-target-candidate');
   });
 
+  it('announces legal destination count after source selection and clears it on deselection', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<StreetsAndAlleysPage />);
+    const announcement = await screen.findByTestId('sa-destination-announcement');
+    expect(announcement).toHaveAttribute('aria-live', 'polite');
+    expect(announcement).toHaveTextContent('');
+    fireEvent.click(await screen.findByRole('button', { name: /^♠ 5/ }));
+    await waitFor(() => expect(announcement).toHaveTextContent('7件'));
+    fireEvent.click(screen.getByRole('button', { name: /^♠ 5/ }));
+    await waitFor(() => expect(announcement.textContent).toBe(''));
+  });
+
+  it('announces when a selected card has no legal destinations', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: makeTableau([
+        [{ card: card('SPADE', 5), faceUp: true }],
+        ...Array.from({ length: 7 }, () => [{ card: card('HEART', 3), faceUp: true }]),
+      ]),
+    });
+    renderWithProviders(<StreetsAndAlleysPage />);
+    fireEvent.click(await screen.findByRole('button', { name: /^♠ 5/ }));
+    await waitFor(() =>
+      expect(screen.getByTestId('sa-destination-announcement')).toHaveTextContent('候補はありません'),
+    );
+  });
+
   it('preserves destination rings for empty tableau, tableau cards, and foundations', async () => {
     const previewState: StreetsAndAlleysResponse = {
       ...playingState,
