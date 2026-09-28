@@ -321,6 +321,17 @@ function MachiavelliPageContent() {
               <span className="mr-4">{t('round', { n: state.roundNumber, total: state.targetRounds })}</span>
               <span>{t('drawPile', { count: state.drawPileCount })}</span>
             </div>
+            <div
+              className="sr-only"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+              data-testid="machiavelli-draw-pile-live"
+            >
+              {state.drawPileCount === 0
+                ? t('drawPileEmpty')
+                : t('drawPileAnnouncement', { count: state.drawPileCount })}
+            </div>
 
             <div className={lgTwoColGrid}>
               {/* Left: shared table melds */}
