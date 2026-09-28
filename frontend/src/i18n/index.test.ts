@@ -35,6 +35,16 @@ describe('i18n lang sync', () => {
     expect(document.documentElement.lang).toBe('ja');
   });
 
+  it('uses singular and plural English wording for captured months', async () => {
+    await i18n.changeLanguage('en');
+
+    expect(i18n.t('mushi:capturedMonth', { month: 'January', count: 1 })).toBe('Month January (1 card)');
+    expect(i18n.t('mushi:capturedMonth', { month: 'January', count: 2 })).toBe('Month January (2 cards)');
+
+    await i18n.changeLanguage('ja');
+    expect(i18n.t('mushi:capturedMonth', { month: '1', count: 1 })).toBe('1月 (1枚)');
+  });
+
   it('derives at least 200 domain error message codes', () => {
     expect(allDomainErrorCodes.length).toBeGreaterThanOrEqual(200);
   });
