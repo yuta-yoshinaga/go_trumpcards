@@ -87,8 +87,11 @@ describe('SevensHumanArea', () => {
     const onPlay = vi.fn();
     render(<SevensHumanArea {...defaultProps} player={player} onPlay={onPlay} />);
     const button = screen.getByRole('button');
+    const disabledReason = screen.getByText('このカードは現在出せません');
     expect(button).toHaveAttribute('aria-disabled', 'true');
-    expect(button).toHaveAttribute('aria-describedby', 'sevens-card-disabled-reason');
+    expect(button).toHaveAttribute('aria-describedby', disabledReason.id);
+    expect(disabledReason.id).not.toBe('sevens-card-disabled-reason');
+    expect(button).toHaveAttribute('title', disabledReason.textContent);
     expect(button).not.toHaveAttribute('disabled');
     expect(button).not.toHaveAttribute('data-testid');
     fireEvent.click(button);
@@ -145,12 +148,15 @@ describe('SevensHumanArea', () => {
     expect(wrapper.className).toContain('border-game-status-active');
   });
 
-  it('non-playable card at current turn has reduced opacity', () => {
+  it('uses aria-disabled classes for non-playable card opacity and cursor', () => {
     // heart3 not adjacent to anything
     const player = makePlayer({ cards: [heart3] });
     render(<SevensHumanArea {...defaultProps} player={player} />);
     const btn = screen.getByRole('button');
-    expect(btn).toHaveStyle({ opacity: '0.5' });
+    expect(btn.className).toContain('aria-disabled:opacity-40');
+    expect(btn.className).toContain('aria-disabled:cursor-not-allowed');
+    expect(btn.style.opacity).toBe('');
+    expect(btn.style.cursor).toBe('');
   });
 
   it('handles player with no cards (empty hand)', () => {

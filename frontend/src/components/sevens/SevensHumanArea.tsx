@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCardDimensions } from '../../hooks/useCardDimensions';
 import { focusRingWhite } from '../../styles/buttonStyles';
@@ -38,6 +39,7 @@ function HumanArea({
   onPlay,
 }: HumanAreaProps) {
   const { t } = useTranslation('sevens');
+  const disabledReasonId = useId();
   const { cardWidth } = useCardDimensions();
   // Whether the human has at least one legal move this turn (cards or a joker placement).
   const anyPlayable =
@@ -61,7 +63,7 @@ function HumanArea({
     : isCurrentTurn
       ? 'border-2 border-game-status-active shadow-[0_0_12px_var(--color-game-status-active)]'
       : '';
-  const disabledReasonId = 'sevens-card-disabled-reason';
+  const disabledReason = t('cardDisabledReason');
   return (
     <div className={`${playerAreaClass}${conditionalClass ? ` ${conditionalClass}` : ''}`}>
       <div className="text-ds-text-primary font-bold mb-1">
@@ -113,7 +115,7 @@ function HumanArea({
                 if (!playable) return;
                 onPlay(i);
               }}
-              title={playable ? t('playTitle', { design: card.design, value: valueName(card.value) }) : undefined}
+              title={playable ? t('playTitle', { design: card.design, value: valueName(card.value) }) : disabledReason}
               // Number keys 1-9 (and 0 for the 10th card) directly play the matching
               // card (useCardKeyboardNav maps digit 0 → index 9); advertise the
               // shortcut only where it is a legal move this turn.
@@ -121,7 +123,6 @@ function HumanArea({
               style={{
                 background: 'none',
                 padding: 0,
-                cursor: playable ? 'pointer' : 'not-allowed',
                 borderRadius: 8,
                 ...playableCardStyle(playable),
                 // selectedCardStyle is the repo-wide "this hand card is selected"
@@ -131,7 +132,6 @@ function HumanArea({
                 // marker. Spread only when selected -- selectedCardStyle(false)
                 // would clobber the playable border on every other card.
                 ...(i === jokerCardIdx ? selectedCardStyle(true) : {}),
-                opacity: isCurrentTurn && !playable ? 0.5 : 1,
                 boxSizing: 'border-box',
               }}
               // Kept as its own attribute rather than folded into data-testid:
@@ -147,7 +147,7 @@ function HumanArea({
         })}
       </div>
       <span id={disabledReasonId} className="sr-only">
-        {t('cardDisabledReason')}
+        {disabledReason}
       </span>
     </div>
   );
