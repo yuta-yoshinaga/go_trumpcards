@@ -79,6 +79,23 @@ describe('KoiKoiPage', () => {
     expect(live.textContent).toBe(announcement);
   });
 
+  it('announces captures, scores, and newly completed yaku for the CPU', async () => {
+    const updated = makeKoiKoiState({
+      players: playState.players.map((p) =>
+        p.isHuman ? p : { ...p, capturedCount: 4, score: 6, yaku: [{ key: 'tane', points: 1 }] },
+      ),
+    });
+    mockExec.mockResolvedValueOnce(playState).mockResolvedValueOnce(updated);
+    renderWithProviders(<KoiKoiPage />);
+    const live = await screen.findByTestId('koikoi-score-live');
+
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+
+    await waitFor(() => expect(live).toHaveTextContent('CPUが獲得した札は4枚です'));
+    expect(live).toHaveTextContent('CPUの得点は6点です');
+    expect(live).toHaveTextContent('CPUに役が成立しました: タネ');
+  });
+
   it('renders the loading fallback when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<KoiKoiPage />);
@@ -143,6 +160,18 @@ describe('KoiKoiPage', () => {
     expect(live).toBeEmptyDOMElement();
   });
 
+  it('clears the score announcement when the round number changes in an API response', async () => {
+    const nextRound = makeKoiKoiState({ roundNumber: 2 });
+    mockExec.mockResolvedValueOnce(playState).mockResolvedValueOnce(nextRound);
+    renderWithProviders(<KoiKoiPage />);
+    const live = await screen.findByTestId('koikoi-score-live');
+
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+
+    await waitFor(() => expect(screen.getByText('ラウンド 2')).toBeInTheDocument());
+    expect(live).toBeEmptyDOMElement();
+  });
+
   it('clears the score announcement baseline before resetting', async () => {
     const scoredState = makeKoiKoiState({
       players: playState.players.map((player) => (player.isHuman ? { ...player, capturedCount: 2, score: 3 } : player)),
@@ -158,6 +187,51 @@ describe('KoiKoiPage', () => {
       expect(mockExec).toHaveBeenCalledWith('reset', { config: { cpuDifficulty: 1, targetScore: 50 } }),
     );
     await waitFor(() => expect(live).toBeEmptyDOMElement());
+  });
+
+  it.each([
+    ['CPU difficulty', 'cpuDifficulty', '2'],
+    ['target score', 'targetScore', '100'],
+  ])('clears the score announcement baseline when %s changes', async (_label, setting, value) => {
+    const scoredState = makeKoiKoiState({
+      players: playState.players.map((player) => (player.isHuman ? { ...player, capturedCount: 2, score: 3 } : player)),
+    });
+    mockExec.mockResolvedValueOnce(playState).mockResolvedValueOnce(scoredState);
+    renderWithProviders(<KoiKoiPage />);
+    const live = await screen.findByTestId('koikoi-score-live');
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+    await waitFor(() => expect(live).toHaveTextContent('得点は3点です'));
+
+    fireEvent.click(screen.getByText('設定', { selector: 'summary' }));
+    fireEvent.change(screen.getByLabelText(setting === 'cpuDifficulty' ? 'CPU難易度' : '目標点'), {
+      target: { value },
+    });
+
+    expect(live).toBeEmptyDOMElement();
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', {
+        config: {
+          cpuDifficulty: setting === 'cpuDifficulty' ? 2 : 1,
+          targetScore: setting === 'targetScore' ? 100 : 50,
+        },
+      }),
+    );
+  });
+
+  it('clears the score announcement baseline when starting a new game after game end', async () => {
+    mockExec.mockResolvedValue(gameEndState);
+    renderWithProviders(<KoiKoiPage />);
+    const live = await screen.findByTestId('koikoi-score-live');
+
+    fireEvent.click(screen.getByRole('button', { name: '新しいゲーム' }));
+
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('reset', { config: { cpuDifficulty: 1, targetScore: 50 } }),
+    );
+    expect(live).toBeEmptyDOMElement();
   });
 
   it('shows base points, multiplier, and total in the round result', async () => {
