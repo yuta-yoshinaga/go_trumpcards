@@ -36,6 +36,8 @@
   "win": "You win! Moves: {{moveCount}}",
   "lose": "CPU wins. Moves: {{moveCount}}",
   "playing": "Playing",
+  "goalRemaining_one": "{{count}} card left",
+  "goalRemaining_other": "{{count}} cards left",
   "noHint": "No hint",
   "hintAvailable": "Hint available",
   "settings": {

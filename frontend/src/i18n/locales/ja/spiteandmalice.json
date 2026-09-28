@@ -36,6 +36,7 @@
   "win": "あなたの勝ち！ 手数: {{moveCount}}",
   "lose": "CPUの勝ち 手数: {{moveCount}}",
   "playing": "プレイ中",
+  "goalRemaining": "残り{{count}}枚",
   "noHint": "ヒントはありません",
   "hintAvailable": "ヒントがあります",
   "settings": {
