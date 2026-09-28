@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { primeroApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makePrimeroState } from '../test/stateFactories';
 import { PrimeroPage } from './PrimeroPage';
@@ -147,6 +148,37 @@ describe('PrimeroPage', () => {
     const controls = await screen.findByTestId('primero-betting-controls');
     expect(controls).toHaveTextContent('自分の賭け額: 10');
     expect(controls).toHaveTextContent('コール必要額: 15');
+  });
+
+  it('shows the amount needed to raise separately from the amount needed to call', async () => {
+    mockExec.mockResolvedValue(
+      makePrimeroState({
+        phase: 0,
+        isHumanTurn: true,
+        currentBet: 25,
+        players: [
+          { ...makePrimeroState().players[0], isHuman: true, roundBet: 10 },
+          ...makePrimeroState().players.slice(1),
+        ],
+      }),
+    );
+    renderWithProviders(<PrimeroPage />);
+    const controls = await screen.findByTestId('primero-betting-controls');
+    expect(controls).toHaveTextContent('コール必要額: 15');
+    expect(controls).toHaveTextContent('レイズ必要額: 25');
+  });
+
+  it('shows the raise amount in English', async () => {
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      renderWithProviders(<PrimeroPage />);
+      const controls = await screen.findByTestId('primero-betting-controls');
+      expect(controls).toHaveTextContent('Amount to call: 0');
+      expect(controls).toHaveTextContent('Amount to raise: 10');
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
   });
 
   it('shows zero as the amount needed to call when already matched or ahead', async () => {
