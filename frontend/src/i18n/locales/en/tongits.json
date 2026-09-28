@@ -15,6 +15,7 @@
   },
   "round": "Round {{n}}",
   "drawPile": "Stock: {{count}}",
+  "drawPileAnnouncement": "{{count}} cards remain in the stock",
   "discardTop": "Discard",
   "cards": "{{count}} cards",
   "cumulativeScore": "Total: {{score}}",

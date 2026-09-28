@@ -148,6 +148,33 @@ describe('TongitsPage', () => {
     expect(screen.queryByRole('button', { name: '捨てる' })).not.toBeInTheDocument();
   });
 
+  it('announces the updated stock count only after drawing from the stock', async () => {
+    mockExec
+      .mockResolvedValueOnce(state({ phase: TongitsPhase.DRAW }))
+      .mockResolvedValueOnce(state({ phase: TongitsPhase.DISCARD, drawPileCount: 29 }));
+    renderWithProviders(<TongitsPage />);
+    const announcement = await screen.findByTestId('tongits-draw-pile-announcement');
+    expect(announcement).toBeEmptyDOMElement();
+    fireEvent.click(await screen.findByRole('button', { name: '山札から引く' }));
+    await waitFor(() => expect(announcement).toHaveTextContent('山札の残りは29枚です'));
+  });
+
+  it('does not announce stock count changes caused by another action', async () => {
+    mockExec
+      .mockResolvedValueOnce(state())
+      .mockResolvedValueOnce(state({ phase: TongitsPhase.DISCARD, drawPileCount: 29 }));
+    renderWithProviders(<TongitsPage />);
+    const announcement = await screen.findByTestId('tongits-draw-pile-announcement');
+    fireEvent.click(await screen.findByRole('button', { name: 'チャレンジ' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('challenge', undefined, undefined, undefined, undefined, undefined, [
+        true,
+        true,
+      ]),
+    );
+    expect(announcement).toBeEmptyDOMElement();
+  });
+
   it('does not draw from the discard pile during the discard phase', async () => {
     renderWithProviders(<TongitsPage />);
     const pile = await screen.findByTestId('tongits-discard-pile');
