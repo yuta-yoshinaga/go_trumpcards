@@ -221,6 +221,22 @@ function HandAndFootPageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+        data-testid="hf-meld-points-announcement"
+      >
+        {isMeldPhase && isHumanTurn
+          ? meldPointInfo.needInitial
+            ? t('meldPoints.initial', {
+                min: meldPointInfo.minMeld,
+                points: meldPointInfo.selectedPoints,
+              })
+            : t('meldPoints.selected', { points: meldPointInfo.selectedPoints })
+          : ''}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -482,7 +498,6 @@ function HandAndFootPageContent() {
                     // のにボタンはそれを見ておらず、サーバーのバリデーションで
                     // 弾かれて初めて気づく形だった。
                     disabled={loading || selectedCardIndices.length < 3 || meldPointInfo.below}
-                    aria-describedby={meldPointInfo.below ? 'hf-meld-points' : undefined}
                   >
                     {t('meldButton')}
                   </button>
