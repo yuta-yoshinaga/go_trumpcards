@@ -613,6 +613,19 @@ describe('StHelenaPage', () => {
     await waitFor(() => expect(status).toHaveTextContent('置ける場所はありません'));
   });
 
+  it('announces the suit and direction of legal foundation destinations', async () => {
+    localStorage.clear();
+    mockExec.mockReset();
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: sideTableau([{ card: card('SPADE', 2), faceUp: true }]),
+    });
+    renderWithProviders(<StHelenaPage />);
+    const status = await screen.findByTestId('cr-selection-status');
+    fireEvent.click(screen.getByAltText('♠ 2').closest('button') as HTMLButtonElement);
+    await waitFor(() => expect(status).toHaveTextContent('♠の昇順組札'));
+  });
+
   it('counts the legal destinations of a playable card', async () => {
     localStorage.clear();
     mockExec.mockReset();
