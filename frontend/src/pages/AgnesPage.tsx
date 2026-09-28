@@ -261,6 +261,17 @@ function AgnesPageContent() {
           <span className="text-sm text-ds-text-muted">
             {t('moveCount')}: {state.moveCount}
           </span>
+          <span className="sr-only" role="status" aria-live="polite" data-testid="agnes-drag-target-status">
+            {dnd.isDragging && draggedCard !== null
+              ? state.tableau
+                  .flatMap((col, idx) =>
+                    idx !== dnd.dragSource?.col && agnesCanPlaceOnTableau(draggedCard, col)
+                      ? [t('dragTargetColumn', { col: idx })]
+                      : [],
+                  )
+                  .join(t('listSeparator'))
+              : ''}
+          </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
       }

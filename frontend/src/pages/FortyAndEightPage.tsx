@@ -414,6 +414,7 @@ function FortyAndEightPageContent() {
                             disabled={!isPlaying || loading}
                             aria-disabled={!selectedSource || undefined}
                             aria-describedby={!selectedSource ? selectSourceHintId : undefined}
+                            aria-label={`${t('emptyTableauAriaLabel', { col: colIdx })}${isEligible ? t('tableauEligibleSuffix') : ''}`}
                             data-eligible-tableau={isEligible ? 'true' : undefined}
                             style={{ height: f8.ch }}
                             className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite} ${isEligible ? 'ring-2 ring-ds-info' : ''}`}
@@ -446,7 +447,7 @@ function FortyAndEightPageContent() {
                                       }
                                     }}
                                     disabled={!isPlaying || loading}
-                                    aria-label={cardAlt(tcard.card)}
+                                    aria-label={`${cardAlt(tcard.card)}${isEligibleCard ? t('tableauEligibleSuffix') : ''}`}
                                     aria-pressed={isSourceSelected('tableau', colIdx, cardIdx)}
                                     data-eligible-tableau={isEligibleCard ? 'true' : undefined}
                                     draggable={isPlaying && !loading}

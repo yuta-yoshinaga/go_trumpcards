@@ -233,6 +233,17 @@ function CrescentPageContent() {
       ? 0
       : state.foundation.filter((_, idx) => isFoundationTarget(idx)).length +
         state.tableau.filter((_, colIdx) => isTableauTarget(colIdx)).length;
+  const legalTargetNames =
+    selectedCard === null
+      ? []
+      : [
+          ...state.tableau.flatMap((_, colIdx) =>
+            isTableauTarget(colIdx) ? [t('selectionTableauTarget', { col: colIdx })] : [],
+          ),
+          ...state.foundation.flatMap((_, idx) =>
+            isFoundationTarget(idx) ? [t('selectionFoundationTarget', { pile: idx })] : [],
+          ),
+        ];
 
   return (
     <GamePageShell
@@ -260,7 +271,10 @@ function CrescentPageContent() {
           <span className="sr-only" role="status" aria-live="polite" data-testid="cr-selection-status">
             {isPlaying && selectedCard !== null
               ? legalTargetCount > 0
-                ? t('selectionMoves', { count: legalTargetCount })
+                ? t('selectionMovesWithTargets', {
+                    count: legalTargetCount,
+                    targets: legalTargetNames.join(t('listSeparator')),
+                  })
                 : t('selectionNoMoves')
               : ''}
           </span>
