@@ -400,7 +400,7 @@ function OsmosisPageContent() {
                   onClick={handleDraw}
                   disabled={!isPlaying || loading}
                   className="rounded border border-white/30"
-                  aria-label={t('stock')}
+                  aria-label={t('stockAriaLabel', { count: state.stockCount })}
                   style={{ width: cardWidth, height: cardHeight }}
                 >
                   {state.stockCount > 0 ? (

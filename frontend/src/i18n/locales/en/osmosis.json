@@ -47,5 +47,6 @@
     "stockWaste": "Click the stock to draw one card. Use the top of the waste on a foundation.",
     "actionButtons": "Action buttons: hint, auto-complete, undo, give up.",
     "resetButton": "Start a new game."
-  }
+  },
+  "stockAriaLabel": "Stock, {{count}} cards left"
 }
