@@ -14,6 +14,7 @@
     "score": "得点{{n}}",
     "lastCapture": "[最後に捕獲]",
     "you": "あなた",
+    "currentTurn": "手番中",
     "cpu": "CPU{{idx}}"
   },
   "actions": {
