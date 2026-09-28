@@ -293,5 +293,8 @@ describe('MinchiatePage', () => {
     expect(live).toHaveAttribute('aria-live', 'polite');
     // 隣に置いただけの実装は属性の検査を通る。**中にあること**を見る。
     expect(live).toContainElement(await screen.findByTestId('minchiate-scarto-prompt'));
+
+    const progress = await screen.findByTestId('minchiate-scarto-progress');
+    expect(progress.closest('[aria-live]')).toBeNull();
   });
 });

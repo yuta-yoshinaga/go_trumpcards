@@ -331,19 +331,20 @@ function MinchiatePageContent() {
                 変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。 */}
             <div data-testid="minchiate-prompt-live" role="status" aria-live="polite">
               {canScarto && (
-                <>
-                  <div className="mb-1 text-center text-sm text-ds-text-muted" data-testid="minchiate-scarto-prompt">
-                    {t('scartoPrompt', { count: MINCHIATE_SURPLUS })}
-                  </div>
-                  <div
-                    className="mb-1 text-center text-sm text-ds-text-primary tabular-nums"
-                    data-testid="minchiate-scarto-progress"
-                  >
-                    {t('scartoProgress', { selected: selectedCardIndices.length, count: MINCHIATE_SURPLUS })}
-                  </div>
-                </>
+                <div className="mb-1 text-center text-sm text-ds-text-muted" data-testid="minchiate-scarto-prompt">
+                  {t('scartoPrompt', { count: MINCHIATE_SURPLUS })}
+                </div>
               )}
             </div>
+
+            {canScarto && (
+              <div
+                className="mb-1 text-center text-sm text-ds-text-primary tabular-nums"
+                data-testid="minchiate-scarto-progress"
+              >
+                {t('scartoProgress', { selected: selectedCardIndices.length, count: MINCHIATE_SURPLUS })}
+              </div>
+            )}
 
             {humanPlayer && (
               <PlayerHandSection
