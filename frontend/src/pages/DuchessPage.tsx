@@ -69,6 +69,7 @@ function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => stri
 
 function DuchessPageContent() {
   const selectSourceHintId = useId();
+  const autoCompleteNotReadyId = useId();
   const {
     t,
     tc,
@@ -575,14 +576,21 @@ function DuchessPageContent() {
                   </button>
                   <button
                     type="button"
-                    className={`${btnSuccess}${autoCompleteReady && !loading && !isAutoCompleting ? ' animate-pulse ring-2 ring-ds-success' : ''}`}
-                    onClick={game.handleAutoComplete}
-                    disabled={loading || isAutoCompleting || !autoCompleteReady}
+                    className={`${btnSuccess}${autoCompleteReady && !loading && !isAutoCompleting ? ' animate-pulse ring-2 ring-ds-success' : ''} aria-disabled:opacity-50 aria-disabled:cursor-not-allowed`}
+                    onClick={() => {
+                      if (autoCompleteReady) game.handleAutoComplete();
+                    }}
+                    disabled={loading || isAutoCompleting}
+                    aria-disabled={autoCompleteReady ? undefined : 'true'}
+                    aria-describedby={autoCompleteReady ? undefined : autoCompleteNotReadyId}
                     data-testid="autocomplete-button"
                     title={autoCompleteReady ? undefined : t('autoCompleteNotReady')}
                   >
                     {t('autoComplete')}
                   </button>
+                  <span id={autoCompleteNotReadyId} className="sr-only">
+                    {t('autoCompleteNotReady')}
+                  </span>
                   <button
                     type="button"
                     className={btnDanger}
