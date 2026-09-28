@@ -24,7 +24,8 @@
   "hintAnnouncement": "Hint: move {{card}} to {{dest}}. {{confidence}}",
   "hintConfidenceFoundation": "Priority: high — a safe move to the foundation",
   "hintConfidenceTableau": "Priority: medium — a move that improves the tableau",
-  "selectedMoveCount": "Move {{count}} cards together",
+  "selectedMoveCount_one": "Move {{count}} card together",
+  "selectedMoveCount_other": "Move {{count}} cards together",
   "foundationAriaLabel": "{{suit}} foundation {{count}} cards",
   "emptyFoundationAriaLabel": "Empty foundation ({{suit}})",
   "suitNames": {

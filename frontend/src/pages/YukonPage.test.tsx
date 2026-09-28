@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { yukonApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, YukonResponse } from '../types/card';
@@ -71,6 +72,10 @@ beforeEach(() => {
   mockExec.mockResolvedValue(playingState);
 });
 
+afterEach(async () => {
+  await i18n.changeLanguage('ja');
+});
+
 describe('YukonPage', () => {
   it('adds the move count only to the selected tableau card label', async () => {
     renderWithProviders(<YukonPage />);
@@ -86,6 +91,35 @@ describe('YukonPage', () => {
     expect(heart8).toHaveAttribute('aria-label', '♥ 8 1枚をまとめて移動');
     expect(spade3).toHaveAttribute('aria-label', '♠ 3');
     expect(spade3.getAttribute('aria-label')).not.toContain('まとめて移動');
+  });
+
+  it('uses singular and plural English labels for selected tableau cards', async () => {
+    await i18n.changeLanguage('en');
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: [
+        [
+          { card: card('SPADE', 9), faceUp: true },
+          { card: card('SPADE', 8), faceUp: true },
+        ],
+        ...playingState.tableau.slice(1),
+      ],
+    });
+
+    renderWithProviders(<YukonPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    fireEvent.click(screen.getByRole('button', { name: '♠ 8' }));
+    expect(screen.getByRole('button', { name: '♠ 8 Move 1 card together' })).toHaveAttribute(
+      'aria-label',
+      '♠ 8 Move 1 card together',
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: '♠ 9' }));
+    expect(screen.getByRole('button', { name: '♠ 9 Move 2 cards together' })).toHaveAttribute(
+      'aria-label',
+      '♠ 9 Move 2 cards together',
+    );
   });
 
   it('keeps move targets focusable and explains that a source must be selected', async () => {
