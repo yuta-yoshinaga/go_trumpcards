@@ -11,6 +11,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
+import { LiveAnnouncement } from '../components/LiveAnnouncement';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -212,15 +213,10 @@ function PresidentPageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
-      <div
-        data-testid="president-revolution-live"
-        role="status"
-        aria-live="polite"
-        aria-atomic="true"
-        className="sr-only"
-      >
-        {state.revolutionActive ? t('flash.revolutionStart') : ''}
-      </div>
+      <LiveAnnouncement
+        testId="president-revolution-live"
+        message={state.revolutionActive ? t('flash.revolutionStart') : ''}
+      />
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
