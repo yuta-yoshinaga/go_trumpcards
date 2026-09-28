@@ -190,7 +190,6 @@ export function FiveCardStudPageContent({ gameKey }: { gameKey: FcsPageGameKey }
     Math.max(0, (state?.lastBet ?? 0) - (humanPlayer?.currentBet ?? 0)),
     humanPlayer?.chips ?? 0,
   );
-  const callPotOdds = callAmount > 0 ? ((callAmount / ((state?.pot ?? 0) + callAmount)) * 100).toFixed(1) : null;
   const minRaise = state?.minRaise ?? 0;
   const isMuckPhase = phase === FiveCardStudPhase.SHOWDOWN && state?.muckAvailable === true;
   const isRebuyPhase = phase === FiveCardStudPhase.REBUY && state?.rebuyPhaseType === FiveCardStudRebuyPhaseType.REBUY;
@@ -247,6 +246,7 @@ export function FiveCardStudPageContent({ gameKey }: { gameKey: FcsPageGameKey }
         layout={{ kind: 'community-poker', community: 4, opponents: 3, opponentCards: 2, footerHandSize: 2 }}
       />
     );
+  const callPotOdds = callAmount > 0 ? ((callAmount / (state.pot + callAmount)) * 100).toFixed(1) : null;
 
   // Reset raises the ante at a positive multiple, then increments handCount.
   // Therefore hand n is level floor((n - 1) / period) + 1, with this many
