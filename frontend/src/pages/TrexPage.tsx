@@ -26,6 +26,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { TrexResponse } from '../types/card';
 import { TrexPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { parseTrexCommand, TREX_HELP } from '../utils/cli/commands/trexCommands';
 import { formatTrexState } from '../utils/cli/formatters/trexFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -190,7 +191,16 @@ function TrexPageContent() {
                             data-testid={penalty !== 0 ? 'trex-penalty-card' : undefined}
                             title={penalty !== 0 ? t('penaltyCardWithPoints', { points: penalty }) : undefined}
                           >
-                            <AnimatedCard card={tc2.card} width={cardWidth} draggable={false} />
+                            <AnimatedCard
+                              card={tc2.card}
+                              width={cardWidth}
+                              draggable={false}
+                              ariaLabel={
+                                penalty !== 0
+                                  ? t('trickCardPenaltyAria', { card: cardAlt(tc2.card), points: penalty })
+                                  : undefined
+                              }
+                            />
                           </div>
                         );
                       })
