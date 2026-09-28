@@ -47,6 +47,7 @@
     "boardEmpty": "Board is empty",
     "yourTricks": "Tricks",
     "trumpCard": "Trump card",
+    "trumpBadge": "Trump",
     "selectTrump": "Pick a trump suit",
     "you": "You",
     "cpu": "CPU {{id}}",
