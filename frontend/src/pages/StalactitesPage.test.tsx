@@ -365,9 +365,25 @@ describe('StalactitesPage', () => {
     mockExec.mockResolvedValue(playingState);
     const aButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === 'A');
     if (aButtons.length > 0) {
+      expect(aButtons[0]).not.toHaveAttribute('aria-disabled');
+      expect(aButtons[0]).not.toHaveAttribute('aria-describedby');
       fireEvent.click(aButtons[0]);
       await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', expect.any(Object), expect.any(Object)));
     }
+  });
+
+  it('moves a selected tableau card to a filled foundation', async () => {
+    mockExec.mockResolvedValue(withFoundationState);
+    renderWithProviders(<StalactitesPage />);
+    const source = (await screen.findByAltText('♠ K')).closest('button') as HTMLButtonElement;
+    fireEvent.click(source);
+    await waitFor(() => expect(source.className).toContain('ring-2'));
+    const target = screen.getByRole('button', { name: '♠ 組札 (1枚)' });
+    expect(target).not.toHaveAttribute('aria-disabled');
+    expect(target).not.toHaveAttribute('aria-describedby');
+    mockExec.mockClear();
+    fireEvent.click(target);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', expect.any(Object), expect.any(Object)));
   });
 
   it('target selection via handleSelectTarget on empty stalactites click when source selected', async () => {
@@ -386,6 +402,8 @@ describe('StalactitesPage', () => {
     const emptyButtons = screen.getAllByText('空');
     if (emptyButtons.length > 0) {
       const emptyFcButton = emptyButtons[0].closest('button') as HTMLButtonElement;
+      expect(emptyFcButton).not.toHaveAttribute('aria-disabled');
+      expect(emptyFcButton).not.toHaveAttribute('aria-describedby');
       fireEvent.click(emptyFcButton);
       await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', expect.any(Object), expect.any(Object)));
     }
@@ -406,6 +424,8 @@ describe('StalactitesPage', () => {
     mockExec.mockResolvedValue(playingState);
     const kButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === 'K');
     if (kButtons.length > 0) {
+      expect(kButtons[0]).not.toHaveAttribute('aria-disabled');
+      expect(kButtons[0]).not.toHaveAttribute('aria-describedby');
       fireEvent.click(kButtons[0]);
       await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', expect.any(Object), expect.any(Object)));
     }

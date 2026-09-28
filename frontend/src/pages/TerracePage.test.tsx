@@ -149,7 +149,28 @@ describe('TerracePage', () => {
 
     const foundation = screen.getByRole('button', { name: '空の組札0' });
     expect(foundation).toBeEnabled();
+    expect(foundation).not.toHaveAttribute('aria-disabled');
+    expect(foundation).not.toHaveAttribute('aria-describedby');
     fireEvent.click(foundation);
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'reserve' }, { zone: 'foundation', col: 0 }),
+    );
+  });
+
+  it('sends the terrace top to a filled foundation', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [[card('HEART', 4)], ...playingState.foundation.slice(1)],
+    });
+    renderWithProviders(<TerracePage />);
+    const terrace = await screen.findByRole('button', { name: /^テラス .+ 残り2枚（組札にのみ出せます）$/ });
+    fireEvent.click(terrace);
+    await waitFor(() => expect(terrace).toHaveAttribute('aria-pressed', 'true'));
+    const target = screen.getByRole('button', { name: '組札0 1枚' });
+    expect(target).not.toHaveAttribute('aria-disabled');
+    expect(target).not.toHaveAttribute('aria-describedby');
+    mockExec.mockClear();
+    fireEvent.click(target);
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'reserve' }, { zone: 'foundation', col: 0 }),
     );

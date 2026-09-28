@@ -472,6 +472,8 @@ describe('WhiteheadPage', () => {
     // Click an empty column (K placeholder)
     const kButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === 'K');
     if (kButtons.length > 0) {
+      expect(kButtons[0]).not.toHaveAttribute('aria-disabled');
+      expect(kButtons[0]).not.toHaveAttribute('aria-describedby');
       fireEvent.click(kButtons[0]);
       await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', expect.any(Object), expect.any(Object)));
     }
@@ -493,6 +495,8 @@ describe('WhiteheadPage', () => {
     mockExec.mockResolvedValue(playingState);
     const aButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === 'A');
     if (aButtons.length > 0) {
+      expect(aButtons[0]).not.toHaveAttribute('aria-disabled');
+      expect(aButtons[0]).not.toHaveAttribute('aria-describedby');
       fireEvent.click(aButtons[0]);
       await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', expect.any(Object), expect.any(Object)));
     }
@@ -514,6 +518,8 @@ describe('WhiteheadPage', () => {
     mockExec.mockResolvedValue(withFoundationState);
     const foundationImg = screen.getByAltText('♠ A');
     const foundationButton = foundationImg.closest('button') as HTMLButtonElement;
+    expect(foundationButton).not.toHaveAttribute('aria-disabled');
+    expect(foundationButton).not.toHaveAttribute('aria-describedby');
     fireEvent.click(foundationButton);
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', expect.any(Object), expect.any(Object)));

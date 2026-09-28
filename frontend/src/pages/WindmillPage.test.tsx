@@ -81,6 +81,20 @@ describe('WindmillPage', () => {
     expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
   });
 
+  it('sends a selected sail card to an empty center', async () => {
+    mockExec.mockResolvedValue({ ...playingState, center: [] });
+    renderWithProviders(<WindmillPage />);
+    const sail = await screen.findByRole('button', { name: /: ♠ 9$/ });
+    fireEvent.click(sail);
+    await waitFor(() => expect(sail).toHaveAttribute('aria-pressed', 'true'));
+    const target = screen.getByRole('button', { name: '中央組札は空です' });
+    expect(target).not.toHaveAttribute('aria-disabled');
+    expect(target).not.toHaveAttribute('aria-describedby');
+    mockExec.mockClear();
+    fireEvent.click(target);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', { zone: 'sail', col: 0 }, { zone: 'center' }));
+  });
+
   it('calls reset on initial render', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<WindmillPage />);
@@ -137,6 +151,9 @@ describe('WindmillPage', () => {
     const sail = await screen.findByRole('button', { name: /: ♠ 9$/ });
     fireEvent.click(sail);
     await waitFor(() => expect(sail).toHaveAttribute('aria-pressed', 'true'));
+    const hintId = screen.getByRole('button', { name: '中央組札 1/52枚' }).getAttribute('aria-describedby');
+    expect(hintId).toBeNull();
+    expect(screen.getByRole('button', { name: '中央組札 1/52枚' })).not.toHaveAttribute('aria-disabled');
     mockExec.mockClear();
 
     fireEvent.click(screen.getByRole('button', { name: '中央組札 1/52枚' }));
@@ -149,9 +166,12 @@ describe('WindmillPage', () => {
     const sail = await screen.findByRole('button', { name: /: ♥ 4$/ });
     fireEvent.click(sail);
     await waitFor(() => expect(sail).toHaveAttribute('aria-pressed', 'true'));
+    const target = screen.getByRole('button', { name: '空の四隅組札2 (K のみ置けます)' });
+    expect(target).not.toHaveAttribute('aria-disabled');
+    expect(target).not.toHaveAttribute('aria-describedby');
     mockExec.mockClear();
 
-    fireEvent.click(screen.getByRole('button', { name: '空の四隅組札2 (K のみ置けます)' }));
+    fireEvent.click(target);
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'sail', col: 1 }, { zone: 'corner', col: 2 }),
     );
