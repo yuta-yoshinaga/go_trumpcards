@@ -290,13 +290,14 @@ describe('MonteCarloPage', () => {
     renderWithProviders(<MonteCarloPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
 
-    expect(screen.getByTestId('mc-cell-0-1')).toHaveAttribute('aria-label', '♥ 7');
-    expect(screen.getByTestId('mc-cell-2-2')).toHaveAttribute('aria-label', '♣ 5');
+    expect(screen.getByTestId('mc-cell-0-1')).toHaveAttribute('aria-label', '♥ 7 (行0、列1)');
+    expect(screen.getByTestId('mc-cell-2-2')).toHaveAttribute('aria-label', '♣ 5 (行2、列2)');
+    expect(screen.getByTestId('mc-cell-4-4')).toHaveAttribute('aria-label', '空 (行4、列4)');
 
     fireEvent.click(screen.getByTestId('mc-cell-0-0'));
 
-    expect(screen.getByTestId('mc-cell-0-1')).toHaveAttribute('aria-label', '♥ 7 (一致候補)');
-    expect(screen.getByTestId('mc-cell-2-2')).toHaveAttribute('aria-label', '♣ 5 (対象外)');
+    expect(screen.getByTestId('mc-cell-0-1')).toHaveAttribute('aria-label', '♥ 7 (一致候補) (行0、列1)');
+    expect(screen.getByTestId('mc-cell-2-2')).toHaveAttribute('aria-label', '♣ 5 (対象外) (行2、列2)');
     expect(screen.getByTestId('mc-cell-2-2')).toBeDisabled();
   });
 

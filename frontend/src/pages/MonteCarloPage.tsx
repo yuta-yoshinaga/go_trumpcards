@@ -281,8 +281,8 @@ function MonteCarloPageContent() {
                             cell.card
                               ? `${cardAlt(cell.card)}${isMatchingPair ? ` (${t('label.matchingCandidate')})` : ''}${
                                   dimmed ? ` (${t('label.notAValidTarget')})` : ''
-                                }`
-                              : `${t('label.empty')} ${rowIdx + 1}-${colIdx + 1}`
+                                } (${t('label.cellPosition', { row: rowIdx, col: colIdx })})`
+                              : `${t('label.empty')} (${t('label.cellPosition', { row: rowIdx, col: colIdx })})`
                           }
                           onClick={() => handleCellClick(rowIdx, colIdx)}
                           disabled={!isPlaying || loading || !filled || dimmed}
