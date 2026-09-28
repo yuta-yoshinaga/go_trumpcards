@@ -447,6 +447,16 @@ describe('BlackJackSwitchPage', () => {
     expect(screen.queryByTestId('hand-1-bj-badge')).not.toBeInTheDocument();
   });
 
+  it('shows a doubled badge only on the doubled hand', async () => {
+    mockApi.mockResolvedValue({
+      ...actionState,
+      hands: [{ ...actionState.hands[0], doubled: true }, actionState.hands[1]],
+    });
+    renderWithProviders(<BlackJackSwitchPage />);
+    expect(await screen.findByTestId('hand-0-doubled-badge')).toHaveTextContent('ダブルダウン済み');
+    expect(screen.queryByTestId('hand-1-doubled-badge')).not.toBeInTheDocument();
+  });
+
   it('marks the acting hand with a badge in ACTION phase', async () => {
     mockApi.mockResolvedValue({ ...actionState, currentHandIdx: 0 });
     renderWithProviders(<BlackJackSwitchPage />);
