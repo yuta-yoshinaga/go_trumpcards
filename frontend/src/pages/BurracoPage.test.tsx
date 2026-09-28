@@ -168,6 +168,24 @@ describe('BurracoPage', () => {
     expect(screen.getByRole('button', { name: 'スキップ' })).toBeInTheDocument();
   });
 
+  it('describes whether the selected cards form a meld and links the explanation to the button', async () => {
+    mockExec.mockResolvedValue(meldPhaseState);
+    renderWithProviders(<BurracoPage />);
+    const meldButton = await screen.findByRole('button', { name: 'メルドする' });
+    const explanation = screen.getByTestId('bu-meld-selection-reason');
+    expect(explanation).toHaveTextContent('メルドするカードを選択してください');
+    expect(meldButton).toHaveAttribute('aria-describedby', explanation.id);
+
+    const cards = screen.getAllByTestId(/^bu-hand-card-/);
+    fireEvent.click(cards[0]);
+    fireEvent.click(cards[1]);
+    fireEvent.click(cards[2]);
+    expect(explanation).toHaveTextContent('組み合わせとしては成立します。初回メルドは最低点が必要です');
+
+    fireEvent.click(cards[3]);
+    expect(explanation).toHaveTextContent('選択したカードではメルドできません');
+  });
+
   it('calls skipmeld command when skip button clicked', async () => {
     mockExec.mockResolvedValue(meldPhaseState);
     renderWithProviders(<BurracoPage />);
