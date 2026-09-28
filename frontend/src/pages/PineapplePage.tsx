@@ -688,7 +688,7 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                               onClick={() => toggleDiscard(idx)}
                               aria-pressed={canDiscard ? isSelected : undefined}
                               className={`${canDiscard ? 'cursor-pointer' : 'cursor-default'} ${inBest ? 'rounded-lg ring-2 ring-ds-success motion-safe:animate-pulse' : ''} ${isRecommendedDiscard ? 'rounded-lg ring-2 ring-ds-info' : ''} ${dim ? 'opacity-50' : ''}`}
-                              disabled={!canDiscard}
+                              disabled={!canDiscard || loading}
                               style={selectedCardStyle(canDiscard && isSelected)}
                               data-testid={inBest ? 'pn-best5-card' : undefined}
                             >
