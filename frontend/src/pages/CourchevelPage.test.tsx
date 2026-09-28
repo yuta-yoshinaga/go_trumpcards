@@ -1755,6 +1755,9 @@ describe('CourchevelPage', () => {
     renderWithProviders(<CourchevelPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.queryByTestId('cv-preflop-exposed-note')).not.toBeInTheDocument();
+    const live = screen.getByTestId('cv-preflop-exposed-status');
+    expect(live).toBeInTheDocument();
+    expect(live.textContent?.trim()).toBe('');
   });
 
   it('renders action shortcuts panel during betting phase', async () => {
