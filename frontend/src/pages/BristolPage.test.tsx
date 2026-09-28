@@ -64,6 +64,20 @@ describe('BristolPage', () => {
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
   });
 
+  it('keeps a live region mounted and announces the current move count', async () => {
+    mockExec.mockImplementation(async (command) =>
+      command === 'draw' ? { ...playingState, moveCount: 1 } : playingState,
+    );
+    renderWithProviders(<BristolPage />);
+    const liveRegion = await screen.findByTestId('br-move-count-live');
+    expect(liveRegion).toHaveAttribute('role', 'status');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion).toHaveTextContent('手数: 0');
+
+    fireEvent.click(screen.getByRole('button', { name: '山札' }));
+    await waitFor(() => expect(liveRegion).toHaveTextContent('手数: 1'));
+  });
+
   it('calls reset on mount', async () => {
     renderWithProviders(<BristolPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
