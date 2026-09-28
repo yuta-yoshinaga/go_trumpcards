@@ -5,7 +5,11 @@
   "betError": {
     "ante": "アンテは10〜10000の範囲で10単位で入力してください",
     "bonus": "{{label}}は0または10〜10000の範囲で10単位で入力してください",
-    "balance": "合計ベット{{total}}、所持チップ{{chips}}。合計ベットを所持チップ以内にしてください"
+    "balance": "合計ベット{{total}}、所持チップ{{chips}}。不足額{{shortfall}}。合計ベットを所持チップ以内にしてください"
+  },
+  "betSummary": {
+    "total": "合計ベット: {{amount}}",
+    "remaining": "ベット後の残高: {{amount}}"
   },
   "label": {
     "chips": "チップ",
