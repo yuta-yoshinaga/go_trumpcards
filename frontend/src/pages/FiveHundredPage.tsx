@@ -275,7 +275,11 @@ function FiveHundredPageContent() {
               {state.players
                 .filter((p) => !p.isHuman)
                 .map((p) => (
-                  <div key={p.id} className="text-center">
+                  <fieldset
+                    key={p.id}
+                    className="text-center border-0 p-0 min-w-0"
+                    aria-label={t('cpuHandAriaLabel', { player: tc('player.cpu', { id: p.id }), count: p.cardCount })}
+                  >
                     <div className="text-xs text-ds-text-muted mb-1 flex items-center justify-center gap-1">
                       <span>{tc('player.cpu', { id: p.id })}</span>
                       <span>
@@ -288,12 +292,12 @@ function FiveHundredPageContent() {
                         p.bid && <span className="ml-1">{t('playerBid', { bid: formatBid(p.bid) })}</span>
                       )}
                     </div>
-                    <div className="flex gap-0.5 justify-center">
+                    <div className="flex gap-0.5 justify-center" aria-hidden="true">
                       {Array.from({ length: Math.min(p.cardCount, 13) }, (_, i) => (
                         <AnimatedCardBack key={i} width={cardWidth * 0.4} />
                       ))}
                     </div>
-                  </div>
+                  </fieldset>
                 ))}
             </div>
 
