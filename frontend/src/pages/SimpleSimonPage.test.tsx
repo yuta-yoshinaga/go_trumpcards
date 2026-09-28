@@ -142,9 +142,9 @@ describe('SimpleSimonPage', () => {
 
   it('labels cards with name+position and reflects selection with aria-pressed', async () => {
     renderWithProviders(<SimpleSimonPage />);
-    // column[1] is ♠8 at the top → "♠ 8（列2・上から1枚目）".
+    // column[1] is ♠8 at the top and is itself a one-card movable run.
     const src = await screen.findByTestId('card-1-0');
-    expect(src).toHaveAttribute('aria-label', '♠ 8（列2・上から1枚目）');
+    expect(src).toHaveAttribute('aria-label', '♠ 8（列2・上から1枚目） 移動可能な連続札の先頭、1枚');
     expect(src).toHaveAttribute('aria-pressed', 'false');
     fireEvent.click(src);
     expect(screen.getByTestId('card-1-0')).toHaveAttribute('aria-pressed', 'true');
@@ -152,6 +152,38 @@ describe('SimpleSimonPage', () => {
     expect(screen.getByTestId('column-2-drop')).toHaveAttribute('aria-label', '列3（空）');
     // The selection guidance is a live region.
     expect(screen.getByTestId('ss-guidance')).toHaveAttribute('role', 'status');
+  });
+
+  it('announces the movable run start and length and updates it after a move', async () => {
+    const initial = makeState({
+      columns: (() => {
+        const columns: Card[][] = Array.from({ length: 10 }, () => []);
+        columns[0] = [card('SPADE', 9), card('SPADE', 8)];
+        columns[1] = [card('SPADE', 10)];
+        return columns;
+      })(),
+    });
+    const afterMove = makeState({
+      moveCount: 1,
+      columns: (() => {
+        const columns: Card[][] = Array.from({ length: 10 }, () => []);
+        columns[1] = [card('SPADE', 10), card('SPADE', 9), card('SPADE', 8)];
+        return columns;
+      })(),
+    });
+    mockExec.mockResolvedValueOnce(initial).mockResolvedValueOnce(afterMove);
+    renderWithProviders(<SimpleSimonPage />);
+
+    const runHead = await screen.findByTestId('card-0-0');
+    expect(runHead).toHaveAttribute('aria-label', '♠ 9（列1・上から1枚目） 移動可能な連続札の先頭、2枚');
+    fireEvent.click(runHead);
+    expect(runHead).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(screen.getByTestId('card-1-0'));
+
+    const movedRunHead = await screen.findByTestId('card-1-0');
+    await waitFor(() =>
+      expect(movedRunHead).toHaveAttribute('aria-label', '♠ 10（列2・上から1枚目） 移動可能な連続札の先頭、3枚'),
+    );
   });
 
   it('moves onto an empty column', async () => {
