@@ -232,7 +232,7 @@ function CrazyQuiltPageContent() {
         type="button"
         onClick={() => game.handleSelectSource(cellZone)}
         disabled={!isPlaying || loading || !available}
-        aria-label={cardAlt(card)}
+        aria-label={t('quiltCellAriaLabel', { cell: idx, card: cardAlt(card) })}
         aria-pressed={isSourceSelected('quilt', idx)}
         draggable={available && isPlaying && !loading}
         onDragStart={dnd.handleDragStart(cellZone)}

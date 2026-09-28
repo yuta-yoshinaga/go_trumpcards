@@ -58,6 +58,7 @@
   "directionAscending": "A から昇順",
   "directionDescending": "K から降順",
   "emptyCellAriaLabel": "空のマス {{cell}}",
+  "quiltCellAriaLabel": "マス {{cell}}、{{card}}",
   "listSeparator": "、",
   "keyboardDestinations": "有効な移動先: {{destinations}}",
   "noKeyboardDestinations": "有効な移動先はありません"
