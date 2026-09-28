@@ -104,6 +104,20 @@ describe('SevenBridgePage', () => {
     expect(screen.getByRole('button', { name: /捨てる|Discard/i })).toBeInTheDocument();
   });
 
+  it('describes the discard selection requirement and updates when one card is selected', async () => {
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<SevenBridgePage />);
+    const discard = await screen.findByRole('button', { name: /捨てる|Discard/i });
+
+    expect(discard).toHaveAttribute('aria-describedby', 'sb-discard-hint');
+    expect(screen.getByTestId('sb-discard-hint')).toHaveTextContent('カードを1枚だけ選択してください');
+    expect(discard).toBeDisabled();
+
+    fireEvent.click(screen.getByRole('button', { name: '♠ 9' }));
+    expect(screen.getByTestId('sb-discard-hint')).toHaveTextContent('選択枚数を満たしました。実行できます');
+    expect(discard).toBeEnabled();
+  });
+
   it('describes the pon/chi selection requirement and flips it to "met" via aria-describedby', async () => {
     mockExec.mockResolvedValue(drawState);
     renderWithProviders(<SevenBridgePage />);
