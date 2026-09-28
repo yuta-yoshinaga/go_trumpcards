@@ -31,6 +31,7 @@
   "scoreProgress": "{{score}}/{{limit}}",
   "playButton": "出す",
   "drawButton": "引く",
+  "emptyStockDrawHelp": "山札が空です。捨て札から補充し、補充できない場合はパスします。",
   "takePenaltyButton": "{{count}}枚引き受ける",
   "declareButton": "マカオ！",
   "skipDeclareButton": "宣言しない",
