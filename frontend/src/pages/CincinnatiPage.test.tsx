@@ -143,6 +143,25 @@ describe('CincinnatiPage', () => {
     expect(screen.getByTestId('cin-raise')).toBeInTheDocument();
   });
 
+  it('人間のベット手番でコール額のポット比を状態に追従させ、ゼロ値も定義する', async () => {
+    mockApi.mockResolvedValueOnce(withState({ toCall: 20, pot: 40, currentBet: 20 }));
+    mockApi.mockResolvedValueOnce(withState({ toCall: 15, pot: 75, currentBet: 20 }));
+    const { unmount } = renderWithProviders(<CincinnatiPage />);
+    expect(await screen.findByTestId('cin-call-pot-ratio')).toHaveTextContent('50%');
+    fireEvent.click(screen.getByTestId('cin-call'));
+    await waitFor(() => expect(screen.getByTestId('cin-call-pot-ratio')).toHaveTextContent('20%'));
+    unmount();
+
+    mockApi.mockResolvedValue(withState({ toCall: 0, pot: 40 }));
+    const zeroCall = renderWithProviders(<CincinnatiPage />);
+    expect(await screen.findByTestId('cin-call-pot-ratio')).toHaveTextContent('0%');
+    zeroCall.unmount();
+
+    mockApi.mockResolvedValue(withState({ toCall: 20, pot: 0, currentBet: 20 }));
+    renderWithProviders(<CincinnatiPage />);
+    expect(await screen.findByTestId('cin-call-pot-ratio')).toHaveTextContent('算出できません');
+  });
+
   // **レイズの可否はサーバが決める。** 上限に達したら出さない。
   it('レイズ上限に達したらレイズを出さない', async () => {
     mockApi.mockResolvedValue(withState({ toCall: 20, currentBet: 20, canRaise: false }));

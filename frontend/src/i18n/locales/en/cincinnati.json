@@ -9,6 +9,8 @@
   "label.community": "Board",
   "label.revealed": "{{revealed}} of {{total}} shown",
   "label.toCall": "{{amount}} to call",
+  "label.callPotRatio": "Call is {{percentage}}% of the pot",
+  "label.callPotRatioUnavailable": "Ratio unavailable because the pot is 0",
   "label.canCheck": "You may check",
   "label.yourHand": "Your hand",
   "label.seats": "Seats",
