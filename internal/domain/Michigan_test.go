@@ -135,6 +135,9 @@ func TestMichigan_PlaceHumanBet_Errors(t *testing.T) {
 func michiganSetupPlay(t *testing.T) *domain.Michigan {
 	t.Helper()
 	g := michiganNew3PlayerGame(t)
+	// finishBetting immediately lets the lead player act. Keep the human on lead
+	// so random CPU hands cannot claim boodles before each test installs its hands.
+	g.SetDealerIdx(g.GetPlayerCnt() - 1)
 	require.NoError(t, g.PlaceHumanBet(michiganEvenBet(g.GetBetBudget())))
 	// Clear the randomly dealt hands so tests can install deterministic ones.
 	for i := 0; i < g.GetPlayerCnt(); i++ {
@@ -145,6 +148,11 @@ func michiganSetupPlay(t *testing.T) *domain.Michigan {
 
 func TestMichigan_DoPlay_BoodleHitAndStopOnDeadHand(t *testing.T) {
 	g := michiganSetupPlay(t)
+	// Boodle cards are fixed (A♥, K♣, Q♦, J♠); explicitly reset all their
+	// amounts and claim states so only A♥ can be won in this scenario.
+	for i := 0; i < g.GetBoodleCnt(); i++ {
+		g.SetBoodleForTest(i, 0, -1)
+	}
 	michiganSetHand(g.GetPlayer(0), michiganCard(domain.CardDesignHeart, 1), michiganCard(domain.CardDesignSpade, 8))
 	michiganSetHand(g.GetPlayer(1), michiganCard(domain.CardDesignSpade, 5))
 	michiganSetHand(g.GetPlayer(2), michiganCard(domain.CardDesignClover, 9))
