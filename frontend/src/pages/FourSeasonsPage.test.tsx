@@ -284,6 +284,13 @@ describe('FourSeasonsPage', () => {
     expect(wasteButton).toHaveAttribute('aria-pressed', 'true');
   });
 
+  it('names the waste button with the empty label when the waste is empty', async () => {
+    mockExec.mockResolvedValue(makeState({ waste: [] }));
+    renderWithProviders(<FourSeasonsPage />);
+
+    expect(await screen.findByRole('button', { name: '捨て札: 空' })).toBeInTheDocument();
+  });
+
   it('clicking the selected pile again deselects it', async () => {
     renderWithProviders(<FourSeasonsPage />);
     await waitFor(() => expect(screen.getByTestId('fs-tableau-0')).toBeInTheDocument());
