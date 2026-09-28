@@ -9,6 +9,8 @@
   "label.community": "場",
   "label.revealed": "{{revealed}} / {{total}} 枚公開",
   "label.toCall": "コールに {{amount}}",
+  "label.callPotRatio": "コール額はポットの {{percentage}}%",
+  "label.callPotRatioUnavailable": "ポットが0のため比率を算出できません",
   "label.canCheck": "チェックできます",
   "label.yourHand": "あなたの手札",
   "label.seats": "席",
