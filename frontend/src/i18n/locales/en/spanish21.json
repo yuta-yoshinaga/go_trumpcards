@@ -13,6 +13,7 @@
   "dealerHand": "Dealer Hand",
   "score": "Score",
   "playerHand": "Player Hand",
+  "hitAnnouncement": "Drew {{card}}. Current score: {{score}}.",
   "hand": "Hand {{idx}}",
   "currentHand": "Current Hand",
   "insurance": "Insurance:",
