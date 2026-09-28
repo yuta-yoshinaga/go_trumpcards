@@ -263,6 +263,25 @@ describe('ThreeCardRummyPage', () => {
     expect(slip).toHaveTextContent('プレイに必要: 100');
   });
 
+  it('explains the ante lost on fold and that the low bonus is still evaluated', async () => {
+    mockExec.mockResolvedValue({ ...actionPhaseState, lowBonusBet: 50 });
+    renderWithProviders(<ThreeCardRummyPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument());
+
+    expect(screen.getByTestId('tcr-fold-consequence')).toHaveTextContent(
+      'フォールドするとアンテ 100 を失います。ローボーナス 50 は独立して評価されます。',
+    );
+  });
+
+  it('mentions only the lost ante when no low bonus was placed', async () => {
+    mockExec.mockResolvedValue({ ...actionPhaseState, lowBonusBet: 0 });
+    renderWithProviders(<ThreeCardRummyPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument());
+
+    expect(screen.getByTestId('tcr-fold-consequence')).toHaveTextContent('フォールドするとアンテ 100 を失います。');
+    expect(screen.getByTestId('tcr-fold-consequence')).not.toHaveTextContent('ローボーナス');
+  });
+
   // ── End phase ─────────────────────────────────────────────────────────────
 
   it('shows the result message and the payout breakdown at the end phase', async () => {

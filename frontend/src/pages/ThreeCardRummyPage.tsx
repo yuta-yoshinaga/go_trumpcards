@@ -358,13 +358,20 @@ function ThreeCardRummyPageContent() {
               </div>
             )}
             {isActionPhase && (
-              <div className="flex justify-center gap-2 pb-2" data-tutorial="tcr-action-buttons">
-                <button type="button" className={btnSuccess} onClick={handlePlay} disabled={loading}>
-                  {t('button.play')}
-                </button>
-                <button type="button" className={btnDanger} onClick={handleFold} disabled={loading}>
-                  {t('button.fold')}
-                </button>
+              <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="tcr-action-buttons">
+                <div className="flex justify-center gap-2">
+                  <button type="button" className={btnSuccess} onClick={handlePlay} disabled={loading}>
+                    {t('button.play')}
+                  </button>
+                  <button type="button" className={btnDanger} onClick={handleFold} disabled={loading}>
+                    {t('button.fold')}
+                  </button>
+                </div>
+                <p className="text-ds-text-muted text-sm text-center" data-testid="tcr-fold-consequence">
+                  {state.lowBonusBet > 0
+                    ? t('foldConsequence', { ante: state.anteBet, lowBonus: state.lowBonusBet })
+                    : t('foldConsequenceNoLowBonus', { ante: state.anteBet })}
+                </p>
               </div>
             )}
             {isEndPhase && (
