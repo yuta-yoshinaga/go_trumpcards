@@ -284,6 +284,12 @@ function GleekPageContent() {
                         {playerName(p.id, p.isHuman)}: {t('score', { score: p.score })}
                       </span>
                       {p.id === biddingSeatIdx && <span data-testid="gleek-bid-turn-label">{t('bidTurn')}</span>}
+                      {state.phase === GleekPhase.BID && (
+                        <span data-testid={`gleek-player-bid-${p.id.toString()}`}>
+                          {t('playerBid', { bid: p.bid })}
+                          {p.passed ? ` · ${t('playerPassed')}` : ''}
+                        </span>
+                      )}
                       {p.isBuyer && (
                         <span className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>{t('buyerBadge')}</span>
                       )}
