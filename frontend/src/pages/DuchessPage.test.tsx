@@ -321,6 +321,7 @@ describe('DuchessPage', () => {
     expect(btn).toBeEnabled();
     expect(btn).not.toHaveAttribute('aria-disabled');
     expect(btn).not.toHaveAccessibleDescription();
+    expect(screen.queryByText('組札を開始ランクより先へ進めると有効になります')).not.toBeInTheDocument();
 
     mockExec.mockClear();
     fireEvent.click(btn);

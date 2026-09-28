@@ -588,9 +588,11 @@ function DuchessPageContent() {
                   >
                     {t('autoComplete')}
                   </button>
-                  <span id={autoCompleteNotReadyId} className="sr-only">
-                    {t('autoCompleteNotReady')}
-                  </span>
+                  {!autoCompleteReady && (
+                    <span id={autoCompleteNotReadyId} className="sr-only">
+                      {t('autoCompleteNotReady')}
+                    </span>
+                  )}
                   <button
                     type="button"
                     className={btnDanger}
