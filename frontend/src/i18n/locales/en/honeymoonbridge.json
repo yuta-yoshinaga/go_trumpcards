@@ -22,6 +22,7 @@
     "declarer": "[declarer]",
     "dealer": "[dealer]",
     "you": "You",
+    "currentTurn": "Current turn",
     "cpu": "CPU{{idx}}",
     "drawnBadge": "drawn",
     "drawnAria": "drawn during the draw phase"

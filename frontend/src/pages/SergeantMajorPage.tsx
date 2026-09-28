@@ -229,12 +229,23 @@ function SergeantMajorPageContent() {
               {state.players.map((p) => (
                 <div
                   key={p.id}
-                  className="rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted"
+                  className={`rounded bg-black/30 px-3 py-2 text-sm text-ds-text-muted ${
+                    isHumanTurn && p.id === state.currentPlayerIdx ? 'ring-2 ring-ds-accent' : ''
+                  }`}
                   data-testid={`sm-seat-${p.id.toString()}`}
                 >
                   <span className="text-ds-text-primary">
                     {p.isHuman ? t('header.you') : t('header.cpu', { idx: String(p.id) })}
                   </span>
+                  {isHumanTurn && p.id === state.currentPlayerIdx && (
+                    <span
+                      className="ml-1 text-ds-accent"
+                      aria-current="step"
+                      data-testid={`sm-turn-${p.id.toString()}`}
+                    >
+                      {t('header.currentTurn')}
+                    </span>
+                  )}
                   {p.id === state.dealerIdx && <span className="ml-1 text-ds-accent">{t('header.dealer')}</span>}
                   {': '}
                   <span className="text-ds-accent">

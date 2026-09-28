@@ -252,6 +252,16 @@ describe('HoneymoonBridgePage', () => {
     expect(screen.getByTestId('hb-seat-0')).not.toHaveTextContent(/落札者/);
   });
 
+  it('marks the human seat during bidding and play only', async () => {
+    mockExec.mockResolvedValue(bidding());
+    const { unmount } = renderWithProviders(<HoneymoonBridgePage />);
+    expect(await screen.findByTestId('hb-turn-0')).toHaveAttribute('aria-current', 'step');
+    unmount();
+    mockExec.mockResolvedValue(playing());
+    renderWithProviders(<HoneymoonBridgePage />);
+    expect(await screen.findByTestId('hb-turn-0')).toHaveAttribute('aria-current', 'step');
+  });
+
   // **親はラウンドごとに交代し、引き合いの最初のリードを決める起点。**
   // どちらの面にも出ていなかった。
   it('marks the dealer as a separate role from the declarer', async () => {

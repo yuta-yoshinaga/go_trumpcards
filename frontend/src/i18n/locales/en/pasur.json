@@ -14,6 +14,7 @@
     "score": "score {{n}}",
     "lastCapture": "[last capture]",
     "you": "You",
+    "currentTurn": "Current turn",
     "cpu": "CPU{{idx}}"
   },
   "actions": {
