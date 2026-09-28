@@ -532,7 +532,7 @@ describe('OsmosisPage blocked foundation rows', () => {
     expect(row0.className).toContain('border-ds-error');
   });
 
-  it('leaves the accessible name alone when nothing is selected', async () => {
+  it('leaves the accessible name alone and describes the hint when nothing is selected', async () => {
     renderWithProviders(<OsmosisPage />);
     await waitFor(() => expect(screen.getByTestId('os-allowed-0')).toBeInTheDocument());
 
