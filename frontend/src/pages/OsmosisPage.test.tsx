@@ -99,6 +99,18 @@ describe('OsmosisPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
   });
 
+  it('includes the remaining stock count in the stock button name', async () => {
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.getByRole('button', { name: '山札 残り34枚' })).toBeInTheDocument();
+  });
+
+  it('announces when the stock is empty in the stock button name', async () => {
+    mockExec.mockResolvedValue({ ...playingState, stockCount: 0 });
+    renderWithProviders(<OsmosisPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '山札 残り0枚' })).toBeInTheDocument());
+  });
+
   it('selects waste then moves it to a foundation row', async () => {
     renderWithProviders(<OsmosisPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
