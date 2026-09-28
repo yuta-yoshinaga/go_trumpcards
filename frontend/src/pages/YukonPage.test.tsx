@@ -339,6 +339,17 @@ describe('YukonPage', () => {
       ],
     };
 
+    it('announces the number of cards in the selected move block', async () => {
+      mockExec.mockResolvedValue(blockState);
+      renderWithProviders(<YukonPage />);
+      await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+      const middle = screen.getByRole('button', { name: '♥ Q' });
+      fireEvent.click(middle);
+
+      expect(screen.getByRole('button', { name: '♥ Q 2枚をまとめて移動' })).toBeInTheDocument();
+    });
+
     it('highlights the selected card and every card below it as a block', async () => {
       mockExec.mockResolvedValue(blockState);
       renderWithProviders(<YukonPage />);

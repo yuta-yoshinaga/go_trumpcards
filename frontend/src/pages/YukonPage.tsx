@@ -497,7 +497,7 @@ function YukonPageContent() {
                                         }
                                       }}
                                       disabled={!isPlaying}
-                                      aria-label={`${tc.card ? cardAlt(tc.card) : ''}${hintAria}`}
+                                      aria-label={`${tc.card ? cardAlt(tc.card) : ''}${isSelected ? ` ${t('selectedMoveCount', { count: col.length - cardIdx })}` : ''}${hintAria}`}
                                     >
                                       {tc.card && <AnimatedCard card={tc.card} width={yk.cw} />}
                                     </button>
