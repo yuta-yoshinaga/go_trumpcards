@@ -1,5 +1,6 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import i18n from 'i18next';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { briscolaApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -54,6 +55,10 @@ beforeEach(() => {
   mockExec.mockResolvedValue(makeState());
 });
 
+afterEach(async () => {
+  await i18n.changeLanguage('ja');
+});
+
 describe('BriscolaPage', () => {
   it('calls reset on mount', async () => {
     renderWithProviders(<BriscolaPage />);
@@ -79,30 +84,42 @@ describe('BriscolaPage', () => {
 
   it('shows human hand as 3 play buttons', async () => {
     renderWithProviders(<BriscolaPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '♠ A を出す' })).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: '♥ 5 を出す' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '♦ J を出す' })).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ A (11点) を出す' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '♥ 5 (0点) を出す' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♦ J (2点) を出す' })).toBeInTheDocument();
+  });
+
+  it('includes Briscola card points in the accessible names in Japanese and English', async () => {
+    renderWithProviders(<BriscolaPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ A (11点) を出す' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '♥ 5 (0点) を出す' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♦ J (2点) を出す' })).toBeInTheDocument();
+
+    await i18n.changeLanguage('en');
+    expect(screen.getByRole('button', { name: 'Play ♠ A (11 points)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Play ♥ 5 (0 points)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Play ♦ J (2 points)' })).toBeInTheDocument();
   });
 
   it('renders hand and trump cards with the AnimatedCard component', async () => {
     renderWithProviders(<BriscolaPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '♠ A を出す' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ A (11点) を出す' })).toBeInTheDocument());
     // 3 hand cards + 1 face-up trump card are rendered as animated cards.
     expect(screen.getAllByTestId('animated-card')).toHaveLength(4);
   });
 
   it('fires play with the selected card index when a card is clicked', async () => {
     renderWithProviders(<BriscolaPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '♥ 5 を出す' })).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: '♥ 5 (0点) を出す' })).toBeInTheDocument());
 
     mockExec.mockClear();
-    fireEvent.click(screen.getByRole('button', { name: '♥ 5 を出す' }));
+    fireEvent.click(screen.getByRole('button', { name: '♥ 5 (0点) を出す' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 1));
   });
 
   it('keyboard: a number key highlights a card and Enter plays it', async () => {
     renderWithProviders(<BriscolaPage />);
-    const secondCard = await screen.findByRole('button', { name: '♥ 5 を出す' });
+    const secondCard = await screen.findByRole('button', { name: '♥ 5 (0点) を出す' });
     mockExec.mockClear();
     // "2" highlights the second hand card (index 1) without playing it.
     fireEvent.keyDown(document.body, { key: '2' });
@@ -115,7 +132,7 @@ describe('BriscolaPage', () => {
 
   it('keyboard: Escape clears the highlight and Enter then plays nothing', async () => {
     renderWithProviders(<BriscolaPage />);
-    const firstCard = await screen.findByRole('button', { name: '♠ A を出す' });
+    const firstCard = await screen.findByRole('button', { name: '♠ A (11点) を出す' });
     mockExec.mockClear();
     fireEvent.keyDown(document.body, { key: '1' });
     await waitFor(() => expect(firstCard).toHaveAttribute('aria-pressed', 'true'));
@@ -129,7 +146,7 @@ describe('BriscolaPage', () => {
   it('keyboard: number keys do nothing on a CPU turn', async () => {
     mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1 }));
     renderWithProviders(<BriscolaPage />);
-    const firstCard = await screen.findByRole('button', { name: '♠ A を出す' });
+    const firstCard = await screen.findByRole('button', { name: '♠ A (11点) を出す' });
     mockExec.mockClear();
     fireEvent.keyDown(document.body, { key: '1' });
     fireEvent.keyDown(document.body, { key: 'Enter' });
@@ -236,7 +253,7 @@ describe('BriscolaPage', () => {
     mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1 }));
     renderWithProviders(<BriscolaPage />);
     await waitFor(() => {
-      const btn = screen.getByRole('button', { name: '♠ A を出す' });
+      const btn = screen.getByRole('button', { name: '♠ A (11点) を出す' });
       expect(btn).toBeDisabled();
     });
   });

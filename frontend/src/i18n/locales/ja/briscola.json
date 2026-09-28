@@ -19,6 +19,7 @@
   },
   "actions": {
     "play": "出す",
+    "playCardAria": "{{card}} ({{points}}点) を出す",
     "next": "次のトリックへ",
     "reset": "リセット",
     "hint": "ヒント"
