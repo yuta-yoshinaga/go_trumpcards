@@ -43,10 +43,26 @@ describe('burracoMeldSelectionStatus', () => {
     ).toBe('invalid');
   });
 
+  it('checks each natural card against the rank of a new meld', () => {
+    expect(burracoMeldSelectionStatus([card(7), card(8), card(8)], [])).toBe('invalid');
+  });
+
+  it('rejects a black three when adding cards to an existing meld', () => {
+    expect(burracoMeldSelectionStatus([card(7), card(3, 'SPADE')], [meld(7, [card(7), card(7)])])).toBe('invalid');
+  });
+
+  it('allows an all-wild selection to form a new meld only when its conditions pass', () => {
+    expect(burracoMeldSelectionStatus([card(0, 'JOKER'), card(2), card(2)], [])).toBe('invalid');
+  });
+
   it('validates rank and the combined wild-card limit when adding to an existing meld', () => {
     const existing = [meld(7, [card(7), card(7), card(0, 'JOKER')])];
     expect(burracoMeldSelectionStatus([card(8)], existing)).toBe('invalid');
     expect(burracoMeldSelectionStatus([card(0, 'JOKER')], existing)).toBe('invalid');
+    expect(burracoMeldSelectionStatus([card(7), card(0, 'JOKER')], existing)).toBe('valid');
+    expect(burracoMeldSelectionStatus([card(7), card(0, 'JOKER'), card(0, 'JOKER'), card(0, 'JOKER')], existing)).toBe(
+      'invalid',
+    );
     expect(burracoMeldSelectionStatus([card(7)], existing)).toBe('valid');
   });
 

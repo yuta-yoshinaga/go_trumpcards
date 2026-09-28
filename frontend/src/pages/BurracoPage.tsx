@@ -158,7 +158,6 @@ function BurracoPageContent() {
     const selected = selectedCardIndices
       .map((i) => humanPlayer.cards[i])
       .filter((card): card is Card => card !== undefined);
-    if (selected.length !== selectedCardIndices.length) return 'invalid' as const;
     return burracoMeldSelectionStatus(selected, humanPlayer.melds);
   }, [selectedCardIndices, humanPlayer]);
 
