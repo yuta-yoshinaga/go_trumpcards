@@ -73,6 +73,9 @@ const HAND_RANK_KEYS: Record<number, string> = {
   9: 'handRank.9',
 };
 
+/** Chips required per ante for ante plus the 2× ante play bet (see internal/domain/CaribbeanStud.go:Play). */
+const ANTE_AND_PLAY_BET_MULTIPLIER = 3;
+
 /** Renders the Caribbean Stud Poker game page with betting, action, and result display. */
 export const CaribbeanStudPage = withTutorial(CaribbeanStudPageContent, 'caribbeanstud', CSP_TUTORIAL_STEPS);
 /** Inner content of the Caribbean Stud Poker page, wrapped by TutorialProvider. */
@@ -151,8 +154,12 @@ function CaribbeanStudPageContent() {
     execApi('bet', anteAmount, jackpotAmount);
   };
 
-  const maxAnteAmount = Math.max(0, Math.floor((state.chips - jackpotAmount) / 30) * 10);
-  const maxJackpotAmount = Math.max(0, state.chips - anteAmount * 3);
+  const maxAnteAmount = Math.max(
+    0,
+    Math.floor((state.chips - jackpotAmount) / (ANTE_AND_PLAY_BET_MULTIPLIER * 10)) * 10,
+  );
+  const maxJackpotAmount = Math.max(0, state.chips - anteAmount * ANTE_AND_PLAY_BET_MULTIPLIER);
+  const betExceedsChips = anteAmount * ANTE_AND_PLAY_BET_MULTIPLIER + jackpotAmount > state.chips;
 
   const handlePlay = () => {
     execApi('play');
@@ -419,7 +426,7 @@ function CaribbeanStudPageContent() {
                   <summary className="cursor-pointer text-ds-info">{t('dealerQualifyHelpTitle')}</summary>
                   <p className="pt-1">{t('dealerQualifyHelp')}</p>
                 </details>
-                <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
+                <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading || betExceedsChips}>
                   {t('button.bet')}
                 </button>
               </div>

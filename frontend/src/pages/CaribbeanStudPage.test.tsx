@@ -265,9 +265,25 @@ describe('CaribbeanStudPage', () => {
     fireEvent.change(anteInput, { target: { value: '300' } });
     expect(jackpotInput.max).toBe('100');
     fireEvent.change(jackpotInput, { target: { value: '200' } });
+    expect(jackpotInput.value).toBe('100');
 
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 300, 100));
+  });
+
+  it('disables betting when the ante and play bet exceed the available chips', async () => {
+    mockApi.mockResolvedValue({ ...betPhaseState, chips: 250 });
+    renderWithProviders(<CaribbeanStudPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 250')).toBeInTheDocument());
+
+    const anteInput = screen.getByLabelText('アンテ') as HTMLInputElement;
+    const betButton = screen.getByRole('button', { name: 'ベット' });
+    expect(anteInput.value).toBe('100');
+    expect(betButton).toBeDisabled();
+
+    fireEvent.change(anteInput, { target: { value: '80' } });
+    expect(anteInput.value).toBe('80');
+    expect(betButton).toBeEnabled();
   });
 
   it('steps the ante and jackpot amounts with the chip steppers', async () => {
