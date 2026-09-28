@@ -27,7 +27,7 @@ func mustCasinoWarOutputJSON(msg string) string {
 }
 
 func TestCasinoWarWebController_Method(t *testing.T) {
-	mockOutput := `{"burnCards":[],"phase":0,"chips":0,"ante":0,"warBet":0,"result":0,"totalPayout":0,"message":""}`
+	mockOutput := `{"burnCards":[],"phase":0,"chips":0,"ante":0,"warBet":0,"result":0,"totalPayout":0,"netChange":0,"message":""}`
 	expectedBody := mockOutput
 
 	cwMock := new(usecase.MockCasinoWarInteractor)

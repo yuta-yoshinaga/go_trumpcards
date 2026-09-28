@@ -246,6 +246,10 @@ function CasinoWarPageContent() {
                 <div className="font-bold">
                   {t('payout.total')}: {state.totalPayout}
                 </div>
+                <div data-testid="net-change" className="font-bold">
+                  {t('payout.netChange')}: {state.netChange > 0 ? '+' : ''}
+                  {state.netChange}
+                </div>
               </div>
             )}
 
