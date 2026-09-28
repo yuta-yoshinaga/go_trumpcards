@@ -159,6 +159,31 @@ function SambaPageContent() {
   const isHumanTurn =
     (isDrawPhase || isMeldPhase || isDiscardPhase) && state?.players[state.currentPlayerIdx]?.isHuman === true;
 
+  const [meldProgressMsg, setMeldProgressMsg] = useState('');
+  const previousHumanTeamMelds = useRef<Map<string, number> | null>(null);
+  useEffect(() => {
+    if (!state || !humanPlayer) return;
+    const teamMelds = state.players
+      .filter((player) => player.team === humanPlayer.team)
+      .flatMap((player) => player.melds.map((meld, index) => ({ key: `${player.id}-${index}`, meld })));
+    const currentLengths = new Map(teamMelds.map(({ key, meld }) => [key, meld.cards.length]));
+    const previousLengths = previousHumanTeamMelds.current;
+    previousHumanTeamMelds.current = currentLengths;
+    if (!previousLengths) return;
+
+    const updates = teamMelds
+      .filter(({ key, meld }) => meld.cards.length > (previousLengths.get(key) ?? 0))
+      .map(({ meld }) => {
+        const remaining = SAMBA_CANASTA_SIZE - meld.cards.length;
+        return remaining <= 0
+          ? t(meld.kind === 1 ? 'meldProgress.sambaComplete' : 'meldProgress.canastaComplete')
+          : t(meld.kind === 1 ? 'meldProgress.toSamba' : 'meldProgress.toCanasta', { n: remaining });
+      });
+    if (updates.length > 0) {
+      setMeldProgressMsg(t('meldProgressAnnouncement', { updates: updates.join(t('listSeparator')) }));
+    }
+  }, [state, humanPlayer, t]);
+
   const kbdConfirmAction = useCallback(() => {
     if (isDiscardPhase) handleDiscard();
     else if (isMeldPhase) handleMeldSelected();
@@ -256,6 +281,9 @@ function SambaPageContent() {
               {/* Self-contained live region announcing freeze/thaw transitions. */}
               <span className="sr-only" role="status" aria-live="polite" data-testid="sa-frozen-announce">
                 {frozenMsg}
+              </span>
+              <span className="sr-only" role="status" aria-live="polite" data-testid="sa-meld-progress-announce">
+                {meldProgressMsg}
               </span>
             </div>
             <div className="text-ds-text-muted text-center mb-2 text-sm" data-testid="sa-team-scores">
