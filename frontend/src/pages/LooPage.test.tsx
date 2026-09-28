@@ -133,6 +133,38 @@ describe('LooPage', () => {
     expect(screen.getByRole('button', { name: '降りる' })).toBeInTheDocument();
   });
 
+  it('shows current play, pass, and undecided totals only during the decide phase', async () => {
+    mockExec.mockResolvedValue(
+      makeLooState({
+        phase: LooPhase.DECIDE,
+        dealerIdx: 3,
+        decidePlayerIdx: 0,
+        players: [
+          { ...makeLooState().players[0], playing: false },
+          { ...makeLooState().players[1], playing: false },
+          { ...makeLooState().players[2], playing: true },
+          { ...makeLooState().players[3], playing: true },
+        ],
+      }),
+    );
+    renderWithProviders(<LooPage />);
+    expect(await screen.findByTestId('loo-decision-counts')).toHaveTextContent('参加: 0人');
+    expect(screen.getByTestId('loo-decision-counts')).toHaveTextContent('降り: 0人');
+    expect(screen.getByTestId('loo-decision-counts')).toHaveTextContent('未決定: 4人');
+
+    mockExec.mockResolvedValue(
+      makeLooState({
+        phase: LooPhase.DECIDE,
+        dealerIdx: 3,
+        decidePlayerIdx: 1,
+        players: [{ ...makeLooState().players[0], playing: true }, ...makeLooState().players.slice(1)],
+      }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: '参加' }));
+    await waitFor(() => expect(screen.getByTestId('loo-decision-counts')).toHaveTextContent('参加: 1人'));
+    expect(screen.getByTestId('loo-decision-counts')).toHaveTextContent('未決定: 3人');
+  });
+
   it('deciding to play dispatches decide with play=true', async () => {
     mockExec.mockResolvedValue(decidePhaseState);
     renderWithProviders(<LooPage />);
@@ -187,6 +219,7 @@ describe('LooPage', () => {
     renderWithProviders(<LooPage />);
     await waitFor(() => expect(screen.getByAltText('♥ Q')).toBeInTheDocument());
     expect(screen.queryByTestId('loo-pot-risk')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('loo-decision-counts')).not.toBeInTheDocument();
   });
 
   it('shows a CPU decide notice on a CPU decide turn', async () => {
