@@ -47,6 +47,23 @@ describe('EightGamePage', () => {
     expect(info).toHaveTextContent('テキサスホールデム');
   });
 
+  it.each([
+    ['holdem', '手札2枚と場の5枚'],
+    ['omahaHiLo', '手札から必ず2枚'],
+    ['razz', '最も弱い5枚役'],
+    ['stud', '場札のないゲーム'],
+    ['studHiLo', '7枚から強い役と条件を満たす弱い役'],
+    ['nlHoldem', 'チップの残りまで自由に賭けられます'],
+    ['plOmaha', '現在のポット額'],
+    ['tripleDraw', '最大3回交換できます'],
+  ])('shows a rules overview for %s', async (disciplineName, overview) => {
+    mockExec.mockResolvedValue(makeHorseState({ variant: 1, disciplineName }));
+    renderWithProviders(<EightGamePage />);
+    expect(
+      await screen.findByText((_, element) => element?.tagName === 'P' && element.textContent?.includes(overview)),
+    ).toBeInTheDocument();
+  });
+
   // **8 種目のほうは 4 人卓しか作れない。** 6 を選べると、6 種目目で理由も
   // 出さずにマッチが終わる卓が作れてしまう。
   it('offers four seats only', async () => {
