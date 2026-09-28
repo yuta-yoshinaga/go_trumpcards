@@ -232,7 +232,7 @@ function ScopaPageContent() {
                         key={i}
                         type="button"
                         onClick={() => isHumanTurn && toggleTable(i)}
-                        disabled={!isHumanTurn}
+                        disabled={loading || !isHumanTurn}
                         aria-pressed={tableIndices.includes(i)}
                         aria-label={`${cardAlt(c)}${
                           tableIndices.includes(i)
@@ -276,7 +276,7 @@ function ScopaPageContent() {
                     key={i}
                     type="button"
                     onClick={() => isHumanTurn && setHandIndex(handIndex === i ? null : i)}
-                    disabled={!isHumanTurn}
+                    disabled={loading || !isHumanTurn}
                     // 場札と同じ形。中身は AnimatedCard だけで、それ自体は
                     // alt も aria-label も持たないので、これが無いと自分が
                     // 何を持っているかすら読み上げられない (#6415)。

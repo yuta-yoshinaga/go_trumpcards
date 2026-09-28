@@ -215,6 +215,30 @@ describe('ScopaPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('p', { handIndex: 0, tableIndices: [] }));
   });
 
+  it('disables hand and table selection while a play request is pending', async () => {
+    let resolvePlay!: (state: ScopaResponse) => void;
+    renderWithProviders(<ScopaPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    mockExec.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolvePlay = resolve;
+        }),
+    );
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+    fireEvent.click(screen.getByTestId('lay-button'));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('p', { handIndex: 0, tableIndices: [] }));
+    expect(screen.getByTestId('hand-card-0')).toBeDisabled();
+    expect(screen.getByTestId('table-card-0')).toBeDisabled();
+
+    resolvePlay(makeState());
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).not.toBeDisabled());
+    expect(screen.getByTestId('table-card-0')).not.toBeDisabled();
+  });
+
   it('disables actions when it is not the human turn', async () => {
     mockExec.mockResolvedValue(makeState({ currentTurn: 1 }));
     renderWithProviders(<ScopaPage />);
