@@ -73,9 +73,12 @@ describe('TehonbikiPage', () => {
     expect(screen.getByRole('spinbutton', { name: '張り金' })).toBeInTheDocument();
 
     await i18n.changeLanguage('en');
-    expect(screen.getByRole('combobox', { name: 'Wager type' })).toBeInTheDocument();
-    expect(screen.getByRole('spinbutton', { name: 'Stake' })).toBeInTheDocument();
-    await i18n.changeLanguage('ja');
+    try {
+      expect(screen.getByRole('combobox', { name: 'Wager type' })).toBeInTheDocument();
+      expect(screen.getByRole('spinbutton', { name: 'Stake' })).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
   });
 
   it('summarizes the wager and clearly shows an empty number selection', async () => {
