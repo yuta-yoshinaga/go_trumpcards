@@ -373,6 +373,7 @@ describe('SpoonsPage', () => {
     expect(live).toHaveAttribute('aria-live', 'polite');
     expect(live).toHaveClass('sr-only');
     await waitFor(() => expect(live).toHaveTextContent('CPU 1 がスプーンを取れず、文字を1つ獲得しました。'));
+    expect(screen.getByText(/ラウンド結果/)).toBeInTheDocument();
   });
 
   it('shows the win message on game end when the human wins', async () => {
