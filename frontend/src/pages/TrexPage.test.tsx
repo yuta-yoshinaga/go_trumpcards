@@ -247,12 +247,15 @@ describe('TrexPage', () => {
 
     it('announces penalty points in English', async () => {
       await i18n.changeLanguage('en');
-      mockExec.mockResolvedValue(withTrick(TrexContract.KING_OF_HEARTS));
-      renderWithProviders(<TrexPage />);
-      await waitFor(() => expect(screen.getAllByTestId('trex-penalty-card')).toHaveLength(1));
-      expect(screen.getByAltText('♥ K, penalty -75 points')).toBeInTheDocument();
-      expect(screen.getByAltText('♦ 5')).toBeInTheDocument();
-      await i18n.changeLanguage('ja');
+      try {
+        mockExec.mockResolvedValue(withTrick(TrexContract.KING_OF_HEARTS));
+        renderWithProviders(<TrexPage />);
+        await waitFor(() => expect(screen.getAllByTestId('trex-penalty-card')).toHaveLength(1));
+        expect(screen.getByAltText('♥ K, penalty -75 points')).toBeInTheDocument();
+        expect(screen.getByAltText('♦ 5')).toBeInTheDocument();
+      } finally {
+        await i18n.changeLanguage('ja');
+      }
     });
 
     // **クイーンはスートを問わない。**♥Q だけ見ると 3 枚見落とす。
