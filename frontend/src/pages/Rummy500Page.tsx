@@ -328,6 +328,14 @@ function Rummy500PageContent() {
                   <div className="mt-1">
                     <div className="text-ds-text-muted text-xs mb-1">{t('laidMelds')}</div>
                     {p.laidMelds.map((meld, mIdx) => {
+                      const isHighAceRun =
+                        classifyRummy500Meld(meld.cards).kind === 'run' &&
+                        meld.cards.some((card) => card.value === 1) &&
+                        meld.cards.some((card) => card.value === 13);
+                      const meldScore = meld.cards.reduce((total, card) => {
+                        if (card.value === 1) return total + (isHighAceRun ? 15 : 1);
+                        return total + (card.value >= 10 ? 10 : card.value);
+                      }, 0);
                       const isLayoffTarget = layoffTarget?.owner === p.id && layoffTarget?.meldIdx === mIdx;
                       // **押せるボタンは必ず通る。**1 枚選んでいるあいだ、その札を
                       // 実際に置けるメルドだけを押せるようにする (#4832)。
@@ -369,6 +377,9 @@ function Rummy500PageContent() {
                               width={cardWidth * 0.6}
                             />
                           ))}
+                          <span className="self-center text-xs text-ds-text-muted">
+                            {t('meldScore', { score: meldScore })}
+                          </span>
                         </button>
                       );
                     })}

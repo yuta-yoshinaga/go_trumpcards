@@ -128,6 +128,47 @@ describe('Rummy500Page', () => {
     });
   });
 
+  it('shows each laid meld score and updates it when a card is laid off', async () => {
+    const initial: Rummy500Response = {
+      ...playPhaseState,
+      layoffTargets: [[{ owner: 1, meldIdx: 0 }]],
+      players: [
+        playPhaseState.players[0],
+        {
+          ...playPhaseState.players[1],
+          laidMelds: [
+            {
+              cards: [
+                { design: 'HEART', value: 7 },
+                { design: 'HEART', value: 8 },
+                { design: 'HEART', value: 9 },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    const afterLayoff: Rummy500Response = {
+      ...initial,
+      players: [
+        initial.players[0],
+        {
+          ...initial.players[1],
+          laidMelds: [{ cards: [...initial.players[1].laidMelds[0].cards, { design: 'HEART', value: 10 }] }],
+        },
+      ],
+    };
+    mockExec.mockResolvedValueOnce(initial).mockResolvedValueOnce(afterLayoff);
+    renderWithProviders(<Rummy500Page />);
+    const meld = await screen.findByTestId('layoff-meld-1-0');
+    expect(meld).toHaveTextContent('得点: 24');
+
+    fireEvent.click(document.querySelector('[data-tutorial="r5-player-hand"] button') as HTMLButtonElement);
+    fireEvent.click(meld);
+    fireEvent.click(screen.getByRole('button', { name: /^レイオフ$/ }));
+    await waitFor(() => expect(screen.getByTestId('layoff-meld-1-0')).toHaveTextContent('得点: 34'));
+  });
+
   it('shows draw stock button in Draw phase', async () => {
     renderWithProviders(<Rummy500Page />);
     await waitFor(() => {
