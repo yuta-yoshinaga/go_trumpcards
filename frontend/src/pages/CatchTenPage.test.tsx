@@ -57,6 +57,11 @@ beforeEach(() => {
 });
 
 describe('CatchTenPage', () => {
+  it('shows the configured target score alongside team scores', async () => {
+    renderWithProviders(<CatchTenPage />);
+    expect(await screen.findByText(/チームスコア · 目標: 41/)).toBeInTheDocument();
+  });
+
   it('badges trump honors, but not non-trumps or cards before trump is known', async () => {
     mockExec.mockResolvedValue(
       makeState({

@@ -32,7 +32,7 @@
     "a": "Team A",
     "b": "Team B"
   },
-  "teamScore": "{{team}}: {{score}} pts",
+  "teamScoreWithTarget": "{{team}}: {{score}} / target {{target}} pts",
   "playButton": "Play",
   "playRestriction": {
     "followSuit": "Follow the led suit",

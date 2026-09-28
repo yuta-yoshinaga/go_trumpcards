@@ -49,6 +49,13 @@ beforeEach(() => {
 });
 
 describe('MusPage pending stake announcement', () => {
+  it('shows team progress and remaining amarrakos', async () => {
+    mockExec.mockResolvedValue(makeMusState({ amarrakos: [12, 40] }));
+    renderWithProviders(<MusPage />);
+    expect(await screen.findByText(/チーム0: 12 \/ 40点、残り28点/)).toBeInTheDocument();
+    expect(screen.getByText(/チーム1: 40 \/ 40点、残り0点/)).toBeInTheDocument();
+  });
+
   // **賭け金は CPU の側でも動く。**envido / ordago で吊り上げられた瞬間を
   // 能動的に知る手立てが無かった (#6436)。
   it('announces the pending stake in a live region', async () => {
