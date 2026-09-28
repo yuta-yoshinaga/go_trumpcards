@@ -54463,7 +54463,7 @@ components:
           example: 0
         netChange:
           type: integer
-          description: Net chip change for the completed round after subtracting the ante and war bet.
+          description: Running net chip change for the current round; final only at round end, after subtracting the ante and war bet.
           example: 0
         message:
           type: string

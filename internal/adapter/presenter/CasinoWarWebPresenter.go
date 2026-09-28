@@ -34,6 +34,7 @@ func (cp *CasinoWarWebPresenter) Output(cw interfaces.CasinoWarGame, lastErr err
 	resObj.WarBet = cw.GetWarBet()
 	resObj.Result = int(cw.GetResult())
 	resObj.TotalPayout = cw.GetTotalPayout()
+	// NetChange is the running net for the current round and is final only at round end.
 	resObj.NetChange = cw.GetTotalPayout() - cw.GetAnte() - cw.GetWarBet()
 
 	if lastErr != nil {
