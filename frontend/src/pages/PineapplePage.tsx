@@ -939,6 +939,19 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
             )}
 
             {/* Settings + Reset */}
+            {variant === 'irishpoker' && (
+              <details className="mb-1">
+                <summary className="cursor-pointer select-none text-ds-text-primary text-sm font-bold py-1">
+                  {t('bettingInfo.title')}
+                </summary>
+                <div className="py-1">
+                  <p className="text-ds-text-muted text-xs mb-2">{t('bettingInfo.description')}</p>
+                  {state?.equity && state.potOdds != null && (
+                    <EquityDisplay equity={state.equity} potOdds={state.potOdds} />
+                  )}
+                </div>
+              </details>
+            )}
             <details className="mb-1" data-tutorial="pn-learning-mode" open={learningMode || undefined}>
               <summary className="cursor-pointer select-none text-ds-text-primary text-sm font-bold py-1">
                 {tc('settings.title')}
@@ -958,7 +971,7 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                     />
                   </label>
                 </div>
-                {learningMode && state?.equity && state.potOdds != null && (
+                {variant !== 'irishpoker' && learningMode && state?.equity && state.potOdds != null && (
                   <EquityDisplay equity={state.equity} potOdds={state.potOdds} />
                 )}
                 <div className="flex items-center gap-3">

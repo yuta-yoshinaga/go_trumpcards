@@ -1322,4 +1322,25 @@ describe('PineapplePage', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
     expect(screen.queryByTestId('addon-controls')).not.toBeInTheDocument();
   });
+
+  it('shows Irish equity in a collapsible panel without learning mode when values exist', async () => {
+    mockIrishExec.mockResolvedValue({
+      ...preFlopState,
+      equity: { winProbability: 0.42, handOdds: [] },
+      potOdds: 30,
+    });
+    renderWithProviders(<PineapplePage variant="irishpoker" />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.getByText('ベット判断の情報')).toBeInTheDocument();
+    expect(screen.getByTestId('equity-display')).toBeInTheDocument();
+    expect(screen.getByTestId('learning-mode-toggle').querySelector('input')).not.toBeChecked();
+  });
+
+  it('does not show Irish equity values when they are unavailable', async () => {
+    mockIrishExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<PineapplePage variant="irishpoker" />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.getByText('ベット判断の情報')).toBeInTheDocument();
+    expect(screen.queryByTestId('equity-display')).not.toBeInTheDocument();
+  });
 });

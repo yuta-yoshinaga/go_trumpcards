@@ -79,6 +79,10 @@
     "minusEV": "-EV (Negative Expected Value)",
     "handOdds": "Hand Odds"
   },
+  "bettingInfo": {
+    "title": "Betting decision info",
+    "description": "View equity and pot odds when they are available."
+  },
   "settings": {
     "cpuMetaAI": "Meta-AI (CPU learns your play style)"
   },

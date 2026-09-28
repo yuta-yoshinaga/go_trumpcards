@@ -79,6 +79,10 @@
     "minusEV": "-EV (期待値マイナス)",
     "handOdds": "ハンドオッズ"
   },
+  "bettingInfo": {
+    "title": "ベット判断の情報",
+    "description": "エクイティとポットオッズを確認できます。値は利用可能な場合に表示されます。"
+  },
   "settings": {
     "cpuMetaAI": "メタAI（CPUがプレイスタイルを学習）"
   },
