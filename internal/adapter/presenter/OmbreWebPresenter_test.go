@@ -32,6 +32,7 @@ func setupOmbreWebMock() *interfaces.MockOmbreGame {
 	m.On("GetForehandIdx").Return(1)
 	m.On("GetOmbreIdx").Return(0)
 	m.On("GetWinningBid").Return(domain.OmbreBidEntrar)
+	m.On("GetHighestBid").Return(domain.OmbreBidEntrar)
 	m.On("GetTrumpSuit").Return(domain.CardDesignHeart)
 	m.On("GetOutcome").Return(domain.OmbreOutcomeNone)
 	m.On("GetResult").Return(domain.OmbreResultNone)
@@ -84,6 +85,7 @@ func TestOmbreWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, domain.CardDesignHeart, resObj.TrumpSuit)
 		assert.Equal(t, 1, resObj.ForehandIdx)
 		assert.Equal(t, int(domain.OmbreBidEntrar), resObj.WinningBid)
+		assert.Equal(t, int(domain.OmbreBidEntrar), resObj.HighestBid)
 		assert.True(t, resObj.IsHumanTurn)
 	})
 

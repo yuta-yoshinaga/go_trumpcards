@@ -78422,6 +78422,8 @@ components:
           type: integer
         winningBid:
           type: integer
+        highestBid:
+          type: integer
         trumpSuit:
           type: integer
         currentTrick:

@@ -184,6 +184,7 @@ function OmbrePageContent() {
 
   // Stage 1 → pass immediately, or stage into trump selection for entrar/solo.
   const chooseBid = (bid: number) => {
+    if (bid > 0 && bid <= state.highestBid) return;
     if (bid === 0) {
       handleBid(0);
       return;
@@ -402,12 +403,29 @@ function OmbrePageContent() {
               {canBid && pendingBid === null && (
                 <div className="flex flex-wrap gap-2 items-center" data-testid="ombre-bid-stage1">
                   <span className="text-ds-text-muted text-sm">{t('chooseBidType')}:</span>
-                  <button type="button" className={btnPrimary} onClick={() => chooseBid(1)} disabled={loading}>
-                    {t('bidEntrar')}
-                  </button>
-                  <button type="button" className={btnPrimary} onClick={() => chooseBid(2)} disabled={loading}>
-                    {t('bidSolo')}
-                  </button>
+                  {([1, 2] as const).map((bid) => {
+                    const unavailable = bid <= state.highestBid;
+                    const reasonId = `ombre-bid-unavailable-${bid}`;
+                    return (
+                      <span key={bid}>
+                        <button
+                          type="button"
+                          className={btnPrimary}
+                          onClick={() => chooseBid(bid)}
+                          disabled={loading}
+                          aria-disabled={unavailable || undefined}
+                          aria-describedby={unavailable ? reasonId : undefined}
+                        >
+                          {t(BID_KEYS[bid])}
+                        </button>
+                        {unavailable && (
+                          <span id={reasonId} className="sr-only">
+                            {t('bidMustExceedWinningBid')}
+                          </span>
+                        )}
+                      </span>
+                    );
+                  })}
                   <button type="button" className={btnSecondary} onClick={() => chooseBid(0)} disabled={loading}>
                     {t('bidPass')}
                   </button>

@@ -340,6 +340,9 @@ func (g *Ombre) highestBid() OmbreBid {
 	return best
 }
 
+// GetHighestBid returns the highest bid declared so far, including during the auction.
+func (g *Ombre) GetHighestBid() OmbreBid { return g.highestBid() }
+
 // applyBid ビッドを適用し、全員が宣言し終えたら auction を締める。
 func (g *Ombre) applyBid(playerIdx int, bid OmbreBid, trumpSuit int) {
 	g.bids[playerIdx] = bid

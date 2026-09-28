@@ -53,6 +53,7 @@ type OmbreWebOutput struct {
 	ForehandIdx      int                        `json:"forehandIdx"`
 	OmbreIdx         int                        `json:"ombreIdx"`
 	WinningBid       int                        `json:"winningBid"`
+	HighestBid       int                        `json:"highestBid"`
 	TrumpSuit        int                        `json:"trumpSuit"`
 	CurrentTrick     []*WebOutputTrickCard      `json:"currentTrick"`
 	PlayerScores     [domain.OmbrePlayerCnt]int `json:"playerScores"`

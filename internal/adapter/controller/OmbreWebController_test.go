@@ -20,6 +20,7 @@ func mustOmbreOutputJSON(msg string) string {
 		CurrentTrick:    []*controller.WebOutputTrickCard{},
 		PlayableIndices: []int{},
 		OmbreIdx:        -1,
+		HighestBid:      int(domain.OmbreBidNone),
 		TrumpSuit:       -1,
 		LastTrickWinner: -1,
 		WinnerPlayer:    -1,
@@ -30,6 +31,16 @@ func mustOmbreOutputJSON(msg string) string {
 		panic(fmt.Sprintf("mustOmbreOutputJSON: %v", err))
 	}
 	return string(b)
+}
+
+func TestOmbreGoldenOutputIncludesHighestBid(t *testing.T) {
+	var body map[string]any
+	if err := json.Unmarshal([]byte(mustOmbreOutputJSON("")), &body); err != nil {
+		t.Fatal(err)
+	}
+	if value, ok := body["highestBid"]; !ok || value != float64(0) {
+		t.Fatalf("highestBid = %v, want 0", body["highestBid"])
+	}
 }
 
 func TestOmbreWebController_Method(t *testing.T) {
