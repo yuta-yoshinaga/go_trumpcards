@@ -151,6 +151,9 @@ function CaribbeanStudPageContent() {
     execApi('bet', anteAmount, jackpotAmount);
   };
 
+  const maxAnteAmount = Math.max(0, Math.floor((state.chips - jackpotAmount) / 30) * 10);
+  const maxJackpotAmount = Math.max(0, state.chips - anteAmount * 3);
+
   const handlePlay = () => {
     execApi('play');
   };
@@ -392,7 +395,7 @@ function CaribbeanStudPageContent() {
                   value={anteAmount}
                   onChange={setAnteAmount}
                   min={10}
-                  max={state.chips}
+                  max={maxAnteAmount}
                   step={10}
                   disabled={loading}
                   showSteppers
@@ -403,7 +406,7 @@ function CaribbeanStudPageContent() {
                   value={jackpotAmount}
                   onChange={setJackpotAmount}
                   min={0}
-                  max={state.chips}
+                  max={maxJackpotAmount}
                   step={10}
                   disabled={loading}
                   showSteppers

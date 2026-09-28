@@ -253,6 +253,23 @@ describe('CaribbeanStudPage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 200, 10));
   });
 
+  it('caps ante and jackpot so the call bet remains affordable', async () => {
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<CaribbeanStudPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1000')).toBeInTheDocument());
+
+    const anteInput = screen.getByLabelText('アンテ') as HTMLInputElement;
+    const jackpotInput = screen.getByLabelText('ジャックポット') as HTMLInputElement;
+    expect(anteInput.max).toBe('330');
+
+    fireEvent.change(anteInput, { target: { value: '300' } });
+    expect(jackpotInput.max).toBe('100');
+    fireEvent.change(jackpotInput, { target: { value: '200' } });
+
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 300, 100));
+  });
+
   it('steps the ante and jackpot amounts with the chip steppers', async () => {
     mockApi.mockResolvedValue(betPhaseState);
     renderWithProviders(<CaribbeanStudPage />);
