@@ -472,6 +472,42 @@ describe('BakersDozenPage legal targets', () => {
   });
 });
 
+describe('BakersDozenPage auto-complete announcements', () => {
+  it('announces the running state and then completion in its persistent live region', async () => {
+    let resolveAutoComplete: ((value: BakersDozenResponse) => void) | undefined;
+    mockExec.mockImplementation((command) => {
+      if (command === 'autocomplete') {
+        return new Promise((resolve) => {
+          resolveAutoComplete = resolve;
+        });
+      }
+      return Promise.resolve(playingState);
+    });
+    renderWithProviders(<BakersDozenPage />);
+    const button = await screen.findByTestId('autocomplete-button');
+    const live = screen.getByTestId('bd-autocomplete-live');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toBeEmptyDOMElement();
+
+    fireEvent.click(button);
+    expect(live).toHaveTextContent('自動完成中です');
+    await waitFor(() => expect(resolveAutoComplete).toBeDefined());
+    resolveAutoComplete?.({ ...playingState, phase: 1 });
+    await waitFor(() => expect(live).toHaveTextContent('自動完成が完了しました'));
+  });
+
+  it('announces interruption when the auto-complete request fails', async () => {
+    mockExec.mockImplementation((command) =>
+      command === 'autocomplete' ? Promise.reject(new Error('network failure')) : Promise.resolve(playingState),
+    );
+    renderWithProviders(<BakersDozenPage />);
+    fireEvent.click(await screen.findByTestId('autocomplete-button'));
+    const live = screen.getByTestId('bd-autocomplete-live');
+    expect(live).toHaveTextContent('自動完成中です');
+    await waitFor(() => expect(live).toHaveTextContent('自動完成が中断されました'));
+  });
+});
+
 // 選ぶ前に行き先が見える (#4454)。
 describe('BakersDozenPage destination preview', () => {
   const render = async () => {

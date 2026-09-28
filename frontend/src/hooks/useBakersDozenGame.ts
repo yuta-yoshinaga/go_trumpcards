@@ -1,13 +1,30 @@
 import { useCallback, useEffect, useState } from 'react';
 import { type BakersDozenMoveZone, bakersDozenApi } from '../api/gameApi';
 import type { BakersDozenHint } from '../types/card';
+import { BakersDozenPhase } from '../types/phases';
 import { useAutoCompleteState } from './useAutoCompleteState';
 import { useGameApi } from './useGameApi';
 import { useHintRequest } from './useHintRequest';
 
 /** Hook that manages Baker's Dozen game state, source selection, hints, and moves. */
 export function useBakersDozenGame() {
-  const { state, loading, error, exec: rawExec, retry } = useGameApi(bakersDozenApi.exec);
+  const [autoCompleteStatus, setAutoCompleteStatus] = useState<'inProgress' | 'finished' | 'interrupted' | null>(null);
+  const {
+    state,
+    loading,
+    error,
+    exec: rawExec,
+    retry,
+  } = useGameApi(bakersDozenApi.exec, {
+    onSuccess: (res, args) => {
+      if (args[0] === 'autocomplete') {
+        setAutoCompleteStatus(res.phase === BakersDozenPhase.GAME_CLEAR ? 'finished' : 'interrupted');
+      }
+    },
+  });
+  useEffect(() => {
+    if (error && autoCompleteStatus === 'inProgress') setAutoCompleteStatus('interrupted');
+  }, [error, autoCompleteStatus]);
   const [selectedSource, setSelectedSource] = useState<BakersDozenMoveZone | null>(null);
   const [hint, setHint] = useState<BakersDozenHint | null>(null);
   const [hintError, setHintError] = useState<string | null>(null);
@@ -42,6 +59,7 @@ export function useBakersDozenGame() {
     setSelectedSource(null);
     setHint(null);
     startAutoComplete();
+    setAutoCompleteStatus('inProgress');
     exec('autocomplete');
   }, [exec, startAutoComplete]);
 
@@ -97,6 +115,7 @@ export function useBakersDozenGame() {
     handleSelectSource,
     handleSelectTarget,
     isAutoCompleting,
+    autoCompleteStatus,
     retry,
   };
 }
