@@ -254,7 +254,13 @@ function TongitsPageContent() {
           />
 
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            <div role="status" aria-live="polite" aria-atomic="true" data-testid="tongits-draw-pile-announcement">
+            <div
+              className="sr-only"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+              data-testid="tongits-draw-pile-announcement"
+            >
               {drawPileAnnouncement && <span>{drawPileAnnouncement}</span>}
             </div>
             <div className="text-ds-text-primary text-center mb-2">
