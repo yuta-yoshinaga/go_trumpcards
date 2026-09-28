@@ -1541,6 +1541,7 @@ const baseOmbreState: OmbreResponse = {
   forehandIdx: 0,
   ombreIdx: 0,
   winningBid: 1,
+  highestBid: 1,
   trumpSuit: 1,
   currentTrick: [],
   playerScores: [0, 0, 0],
