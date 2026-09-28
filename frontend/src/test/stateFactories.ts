@@ -5003,6 +5003,7 @@ const dpCpuSeat = (id: number, isDealer = false, isTrumpChooser = false) => ({
   cardCount: 5,
   cards: [],
   gatheredCount: 0,
+  gatheredCards: [],
   isDealer,
   isTrumpChooser,
 });
@@ -5021,6 +5022,7 @@ const baseDehlaPakadState: DehlaPakadResponse = {
       cardCount: 5,
       cards: [dpCard('SPADE', 1), dpCard('SPADE', 10), dpCard('HEART', 13), dpCard('CLOVER', 4), dpCard('DIAMOND', 7)],
       gatheredCount: 0,
+      gatheredCards: [],
       isDealer: false,
       isTrumpChooser: true,
     },

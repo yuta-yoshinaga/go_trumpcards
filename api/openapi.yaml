@@ -75388,6 +75388,10 @@ components:
                   $ref: '#/components/schemas/Card'
               gatheredCount:
                 type: integer
+              gatheredCards:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Card"
               isDealer:
                 type: boolean
               isTrumpChooser:

@@ -122,6 +122,36 @@ describe('DehlaPakadPage', () => {
     expect(box).toHaveTextContent('味方 0 / 相手 1');
   });
 
+  it('shows captured ten cards under their teams, separately from the centre pile', async () => {
+    mockExec.mockResolvedValue(
+      makeDehlaPakadState({
+        ...playState,
+        centrePileCount: 4,
+        centrePileTens: 1,
+        players: playState.players.map((player, i) => ({
+          ...player,
+          gatheredCards:
+            i === 0
+              ? [
+                  { design: 'SPADE', value: 10, color: 'black' },
+                  { design: 'HEART', value: 10, color: 'red' },
+                ]
+              : i === 1
+                ? [{ design: 'DIAMOND', value: 10, color: 'red' }]
+                : [],
+        })),
+      }),
+    );
+    renderWithProviders(<DehlaPakadPage />);
+    const teamZero = await screen.findByTestId('dehlapakad-earned-tens-team-0');
+    const teamOne = screen.getByTestId('dehlapakad-earned-tens-team-1');
+    expect(teamZero).toHaveTextContent('組0 (2)');
+    expect(teamZero.querySelectorAll('img')).toHaveLength(2);
+    expect(teamOne).toHaveTextContent('組1 (1)');
+    expect(teamOne.querySelectorAll('img')).toHaveLength(1);
+    expect(screen.getByTestId('dehlapakad-centre-pile')).toHaveTextContent('中央に 4 枚');
+  });
+
   // **7 連勝もコートになる。** 出さないと、なぜ同じ組が勝ち続けているのかが
   // 数字にならない。
   it('surfaces a winning streak', async () => {

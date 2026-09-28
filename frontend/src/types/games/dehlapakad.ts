@@ -13,6 +13,8 @@ export interface DehlaPakadPlayer {
   cards: Card[];
   /** How many cards this seat has gathered in from the centre pile. */
   gatheredCount: number;
+  /** Cards this seat has gathered from the centre pile. */
+  gatheredCards: Card[];
   isDealer: boolean;
   /** True for the seat that calls the trump (the dealer's right). */
   isTrumpChooser: boolean;

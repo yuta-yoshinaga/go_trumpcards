@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import type { dehlaPakadApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardImage } from '../components/CardImage';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -270,6 +271,31 @@ function DehlaPakadPageContent() {
                     </div>
                   )}
                 </div>
+
+                <section
+                  className="mb-2 p-2 rounded bg-ds-surface text-ds-text-primary"
+                  data-testid="dehlapakad-earned-tens"
+                >
+                  <h3 className="text-sm mb-1">{t('earnedTens')}</h3>
+                  {[0, 1].map((team) => {
+                    const cards = state.players
+                      .filter((player) => player.team === team)
+                      .flatMap((player) => player.gatheredCards ?? [])
+                      .filter((card) => card.value === 10);
+                    return (
+                      <div key={team} className="mb-2" data-testid={`dehlapakad-earned-tens-team-${team}`}>
+                        <div className="text-sm">
+                          {t('team', { n: team })} ({cards.length})
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {cards.map((card, index) => (
+                            <CardImage key={`${card.design}-${card.value}-${index}`} card={card} width={36} />
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </section>
 
                 <div className="mb-2 p-2 rounded bg-black/30">
                   {state.players.map((p) => (
