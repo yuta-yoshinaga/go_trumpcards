@@ -307,6 +307,10 @@ function DilotiPageContent() {
                           onClick={() => declare(c.value, c.tableIdxs)}
                           disabled={loading}
                           data-testid={`diloti-declare-${c.value}-${c.tableIdxs.join('-')}`}
+                          aria-label={t('declareGroup', {
+                            value: c.value,
+                            cards: c.tableIdxs.map((i) => cardAlt(state.table[i])).join(t('listSeparator')),
+                          })}
                         >
                           {t('declareGroup', { value: c.value, cards: c.tableIdxs.join(', ') })}
                         </button>
