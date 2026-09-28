@@ -21,6 +21,7 @@
   "roundBet": "賭け: {{amount}}",
   "yourRoundBet": "自分の賭け額: {{amount}}",
   "callAmount": "コール必要額: {{amount}}",
+  "raiseAmount": "レイズ必要額: {{amount}}",
   "handLabel": "あなたの手札",
   "playersTitle": "プレイヤー",
   "playerRowLabel": "{{name}} — 状態: {{status}}",
