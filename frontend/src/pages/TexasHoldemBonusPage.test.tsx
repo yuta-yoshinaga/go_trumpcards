@@ -142,11 +142,22 @@ describe('TexasHoldemBonusPage', () => {
     expect(screen.getByTestId('thb-bet-summary')).toHaveTextContent('合計: 100 / 残り: 900');
 
     fireEvent.change(anteInput, { target: { value: '900' } });
-    expect(bonusInput).toHaveAttribute('max', '100');
-    fireEvent.change(bonusInput, { target: { value: '200' } });
-    expect(bonusInput).toHaveValue('100');
-    expect(anteInput).toHaveAttribute('max', '900');
-    expect(screen.getByTestId('thb-bet-summary')).toHaveTextContent('合計: 1000 / 残り: 0');
+    expect(anteInput).toHaveValue('330');
+    expect(bonusInput).toHaveAttribute('max', '10');
+    fireEvent.change(bonusInput, { target: { value: '10' } });
+    expect(bonusInput).toHaveValue('10');
+    expect(screen.getByTestId('thb-bet-summary')).toHaveTextContent('合計: 340 / 残り: 660');
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(mockApi).toHaveBeenLastCalledWith('bet', 330, 10));
+  });
+
+  it('prevents betting when the balance cannot cover the minimum ante and its play bet', async () => {
+    mockApi.mockResolvedValue({ ...betPhaseState, chips: 29 });
+    renderWithProviders(<TexasHoldemBonusPage />);
+    const bet = await screen.findByRole('button', { name: 'ベット' });
+    expect(bet).toHaveAttribute('aria-disabled', 'true');
+    fireEvent.click(bet);
+    expect(mockApi).toHaveBeenCalledTimes(1); // mount reset only
   });
 
   it('adjusts bet values when the chip balance decreases', async () => {
@@ -159,9 +170,9 @@ describe('TexasHoldemBonusPage', () => {
     fireEvent.change(bonusInput, { target: { value: '100' } });
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
 
-    await waitFor(() => expect(anteInput).toHaveValue('300'));
+    await waitFor(() => expect(anteInput).toHaveValue('100'));
     expect(bonusInput).toHaveValue('0');
-    expect(screen.getByTestId('thb-bet-summary')).toHaveTextContent('合計: 300 / 残り: 0');
+    expect(screen.getByTestId('thb-bet-summary')).toHaveTextContent('合計: 100 / 残り: 200');
   });
 
   it('explains that ante and bonus payouts are judged independently', async () => {

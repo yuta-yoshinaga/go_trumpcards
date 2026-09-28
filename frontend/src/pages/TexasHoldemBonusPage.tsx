@@ -101,9 +101,12 @@ function TexasHoldemBonusPageContent() {
   // biome-ignore lint/correctness/useExhaustiveDependencies: anteAmount is intentionally excluded.
   useEffect(() => {
     if (chips == null) return;
-    const nextAnte = Math.min(anteAmount, Math.max(10, chips));
-    setAnteAmount((current) => Math.min(current, Math.max(10, chips)));
-    setBonusAmount((current) => Math.min(current, Math.max(0, chips - nextAnte)));
+    const maxAnte = Math.floor(chips / (1 + TEXASHOLDEMBONUS_FLOP_MULTIPLIER) / 10) * 10;
+    const nextAnte = Math.min(anteAmount, maxAnte);
+    setAnteAmount((current) => Math.min(current, maxAnte));
+    setBonusAmount((current) =>
+      Math.min(current, Math.max(0, chips - (1 + TEXASHOLDEMBONUS_FLOP_MULTIPLIER) * nextAnte)),
+    );
   }, [chips]);
   const {
     hint: frontendHint,
@@ -164,9 +167,13 @@ function TexasHoldemBonusPageContent() {
 
   if (!state) return <GameSkeleton gameKey="texasholdembonus" layout={{ kind: 'casino-table', sections: [2, 5, 2] }} />;
 
-  const handleBet = () => execApi('bet', anteAmount, bonusAmount);
-  const anteMax = Math.max(10, state.chips - bonusAmount);
-  const bonusMax = Math.max(0, state.chips - anteAmount);
+  const anteMax = Math.floor(Math.max(0, state.chips - bonusAmount) / (1 + TEXASHOLDEMBONUS_FLOP_MULTIPLIER) / 10) * 10;
+  const bonusMax = Math.max(0, state.chips - (1 + TEXASHOLDEMBONUS_FLOP_MULTIPLIER) * anteAmount);
+  const canBet = anteAmount >= 10 && anteAmount <= anteMax && bonusAmount <= bonusMax;
+  const handleBet = () => {
+    if (loading || !canBet) return;
+    return execApi('bet', anteAmount, bonusAmount);
+  };
   const handlePlay = () => execApi('play');
   const handleFold = () => execApi('fold');
   const handleCheck = () => execApi('check');
@@ -430,7 +437,12 @@ function TexasHoldemBonusPageContent() {
                   disabled={loading}
                   showSteppers
                 />
-                <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
+                <button
+                  type="button"
+                  className={`${btnPrimary} aria-disabled:opacity-40 aria-disabled:cursor-not-allowed`}
+                  onClick={handleBet}
+                  aria-disabled={loading || !canBet}
+                >
                   {t('button.bet')}
                 </button>
               </div>
