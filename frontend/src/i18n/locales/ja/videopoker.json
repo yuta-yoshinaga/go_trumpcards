@@ -66,6 +66,7 @@
     "drawAll": "ホールドなし — 全て交換"
   },
   "card": "カード {{index}}",
+  "listSeparator": "、",
   "dealGuide": "コイン数を選んでディールしてゲーム開始",
   "wild": "ワイルド",
   "a11y": {

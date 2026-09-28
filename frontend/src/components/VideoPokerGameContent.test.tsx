@@ -1,5 +1,6 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import i18n from '../i18n';
 import { TutorialProvider } from '../providers/TutorialProvider';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, VideoPokerResponse } from '../types/card';
@@ -121,6 +122,40 @@ beforeEach(() => {
 });
 
 describe('VideoPokerGameContent', () => {
+  it('includes the card name and keeps position, hold, wild, and auto-selection details in card button names', async () => {
+    const wildHand: VideoPokerResponse = {
+      ...drawPhaseState,
+      hand: [card('SPADE', 2), ...drawPhaseState.hand.slice(1)],
+    };
+    mockExec.mockResolvedValue(wildHand);
+    renderContent('deuceswild');
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const firstCard = screen.getAllByRole('button').find((button) => button.getAttribute('aria-pressed') !== null);
+    expect(firstCard).toBeDefined();
+    if (!firstCard) throw new Error('Expected the first card button');
+    expect(firstCard).toHaveAccessibleName(/♠ 2.*カード 1.*カード1をホールド.*ワイルド.*自動ホールドで選択/);
+    fireEvent.click(firstCard);
+    await waitFor(() => expect(firstCard).toHaveAttribute('aria-pressed', 'false'));
+    expect(firstCard).toHaveAccessibleName(/♠ 2.*カード 1.*ワイルド/);
+  });
+
+  it('announces the same card details in English', async () => {
+    const wildHand: VideoPokerResponse = {
+      ...drawPhaseState,
+      hand: [card('SPADE', 2), ...drawPhaseState.hand.slice(1)],
+    };
+    mockExec.mockResolvedValue(wildHand);
+    await i18n.changeLanguage('en');
+    renderContent('deuceswild');
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const firstCard = screen.getAllByRole('button').find((button) => button.getAttribute('aria-pressed') !== null);
+    expect(firstCard).toBeDefined();
+    if (!firstCard) throw new Error('Expected the first card button');
+    expect(firstCard).toHaveAccessibleName(/♠ 2, Card 1, Hold card 1, WILD, selected by auto-hold/);
+    await i18n.changeLanguage('ja');
+  });
+
   it('calls reset on mount and renders bet phase', async () => {
     mockExec.mockResolvedValue(betPhaseState);
     renderContent();
