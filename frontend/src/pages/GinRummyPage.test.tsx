@@ -256,6 +256,8 @@ describe('GinRummyPage', () => {
     expect(screen.getByTestId('gr-hand-card-1')).toHaveAttribute('data-meld', 'meld');
     expect(screen.getByTestId('gr-hand-card-2')).toHaveAttribute('data-meld', 'meld');
     expect(screen.getByTestId('gr-hand-card-3')).toHaveAttribute('data-meld', 'deadwood');
+    expect(screen.getByTestId('gr-hand-card-0')).toHaveAttribute('aria-label', '♠ 5、メルド');
+    expect(screen.getByTestId('gr-hand-card-3')).toHaveAttribute('aria-label', '♥ K、デッドウッド');
     expect(screen.getByTestId('ginrummy-meld-legend')).toBeInTheDocument();
   });
 
@@ -1024,6 +1026,8 @@ describe('GinRummyPage', () => {
 
     await waitFor(() => expect(document.querySelectorAll('[data-layoff="yes"]')).toHaveLength(1));
     expect(document.querySelectorAll('[data-layoff="no"]').length).toBeGreaterThan(0);
+    expect(screen.getByTestId('gr-hand-card-0')).toHaveAttribute('aria-label', '♠ A、レイオフ可能');
+    expect(screen.getByTestId('gr-hand-card-1')).toHaveAttribute('aria-label', '♥ J、レイオフ不可');
   });
 
   it('does not mark layoffable cards outside the layoff phase', async () => {

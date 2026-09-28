@@ -496,7 +496,19 @@ function GinRummyPageContent() {
                     type="button"
                     key={`${card.design}-${card.value}-${idx}`}
                     onClick={() => toggleCard(idx)}
-                    aria-label={cardAlt(card)}
+                    aria-label={
+                      isDiscardPhase
+                        ? t('cardStatus', {
+                            card: cardAlt(card),
+                            status: t(meldedIndices.has(idx) ? 'meldLegend' : 'deadwoodLegend'),
+                          })
+                        : isLayoffPhase
+                          ? t('cardStatus', {
+                              card: cardAlt(card),
+                              status: t(layoffableIndices.has(idx) ? 'layoffableCard' : 'notLayoffableCard'),
+                            })
+                          : cardAlt(card)
+                    }
                     aria-pressed={selectedCardIndices.includes(idx)}
                     data-testid={`gr-hand-card-${idx}`}
                     data-meld={isDiscardPhase ? (meldedIndices.has(idx) ? 'meld' : 'deadwood') : undefined}
