@@ -136,6 +136,22 @@ function LooPageContent() {
   const canDecide = isDecidePhase && state.decidePlayerIdx === humanIdx && isHumanTurn;
   const canPlay = isPlayPhase && isHumanTurn;
 
+  const decideStartIdx = (state.dealerIdx + 1) % state.players.length;
+  const decideCursor = (state.decidePlayerIdx - decideStartIdx + state.players.length) % state.players.length;
+  const decisionCounts = state.players.reduce(
+    (counts, player, idx) => {
+      const order = (idx - decideStartIdx + state.players.length) % state.players.length;
+      if (order < decideCursor) {
+        if (player.playing) counts.play++;
+        else counts.pass++;
+      } else {
+        counts.undecided++;
+      }
+      return counts;
+    },
+    { play: 0, pass: 0, undecided: 0 },
+  );
+
   const trumpSymbol = state.trumpSuit >= 1 ? suitSymbolAt(state.trumpSuit, '-') : '-';
 
   const handleManualReset = () => {
@@ -341,6 +357,16 @@ function LooPageContent() {
               {canDecide && (
                 <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="loo-decide-prompt">
                   {t('decidePrompt')}
+                </div>
+              )}
+            </div>
+            <div data-testid="loo-decision-counts-live" role="status" aria-live="polite">
+              {isDecidePhase && (
+                <div
+                  className="mb-2 mx-auto max-w-md text-center text-sm text-ds-text-muted"
+                  data-testid="loo-decision-counts"
+                >
+                  {t('decisionCounts', decisionCounts)}
                 </div>
               )}
             </div>
