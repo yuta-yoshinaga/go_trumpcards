@@ -104,6 +104,22 @@ describe('BauernschnapsenPage', () => {
     expect(screen.queryByText('めくり札')).not.toBeInTheDocument();
   });
 
+  it('lists every player with their team, hand size, and trick count', async () => {
+    renderWithProviders(<BauernschnapsenPage />);
+    const players = await screen.findByTestId('bauernschnapsen-player-list');
+    const rows = players.querySelectorAll(':scope > div');
+    expect(rows).toHaveLength(5);
+    expect(players).toHaveTextContent('プレイヤー一覧');
+    expect(players).toHaveTextContent('あなた');
+    expect(players).toHaveTextContent('CPU 1');
+    expect(players).toHaveTextContent('CPU 2');
+    expect(players).toHaveTextContent('CPU 3');
+    expect(rows[1]).toHaveTextContent('あなた');
+    expect(rows[1]).toHaveTextContent('チーム0');
+    expect(rows[1]).toHaveTextContent('5枚');
+    expect(rows[1]).toHaveTextContent('獲得トリック: 0');
+  });
+
   it('shows an undecided trump during the contract phase instead of no trump', async () => {
     mockExec.mockResolvedValue(makeState({ phase: BauernschnapsenPhase.CONTRACT, trumpSuit: 0 }));
     renderWithProviders(<BauernschnapsenPage />);
