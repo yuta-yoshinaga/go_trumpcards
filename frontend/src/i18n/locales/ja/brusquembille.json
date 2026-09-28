@@ -56,5 +56,8 @@
   "noHint": "ヒントはありません",
   "settings": {
     "playerCount": "席数"
+  },
+  "accessibility": {
+    "followRequired": "山札がなくなったため、場と同じスートのカードを持っている場合はそのスートを出してください。出せないカードは薄く表示されます。"
   }
 }
