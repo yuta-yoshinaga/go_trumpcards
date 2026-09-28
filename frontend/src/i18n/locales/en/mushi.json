@@ -10,6 +10,7 @@
   "yourHand": "Your hand",
   "yourCaptured": "Your captures",
   "opponentCaptured": "CPU captures",
+  "capturedMonth": "{{month}} · {{count}} cards",
   "roundResult": "This round: {{delta}}",
   "nextRound": "Next round",
   "landscapeBanner": "Landscape mode recommended",
