@@ -15,6 +15,7 @@
   },
   "round": "ラウンド {{n}}",
   "drawPile": "山札: {{count}}枚",
+  "drawPileAnnouncement": "山札の残りは{{count}}枚です",
   "discardTop": "捨て札",
   "cards": "{{count}}枚",
   "cumulativeScore": "累計: {{score}}",

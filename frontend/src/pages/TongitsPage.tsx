@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { tongitsApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
@@ -111,6 +111,23 @@ function TongitsPageContent() {
     handleChallenge,
     handleNextRound,
   } = useTongitsGame();
+  const [drawPileAnnouncement, setDrawPileAnnouncement] = useState('');
+  const pendingStockDrawRef = useRef(false);
+  const previousDrawPileCountRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (!state) return;
+    if (previousDrawPileCountRef.current !== null && pendingStockDrawRef.current) {
+      if (state.drawPileCount !== previousDrawPileCountRef.current) {
+        setDrawPileAnnouncement(t('drawPileAnnouncement', { count: state.drawPileCount }));
+      }
+      pendingStockDrawRef.current = false;
+    }
+    previousDrawPileCountRef.current = state.drawPileCount;
+  }, [state, t]);
+  const announceStockDraw = useCallback(() => {
+    pendingStockDrawRef.current = true;
+    handleDrawStock();
+  }, [handleDrawStock]);
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -237,6 +254,9 @@ function TongitsPageContent() {
           />
 
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
+            <div role="status" aria-live="polite" aria-atomic="true" data-testid="tongits-draw-pile-announcement">
+              {drawPileAnnouncement && <span>{drawPileAnnouncement}</span>}
+            </div>
             <div className="text-ds-text-primary text-center mb-2">
               <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
               <span>{t('drawPile', { count: state.drawPileCount })}</span>
@@ -416,7 +436,7 @@ function TongitsPageContent() {
             <div className="flex gap-2 items-center flex-wrap">
               {isDrawPhase && isHumanTurn && (
                 <div className="flex gap-2" data-tutorial="tongits-draw-area">
-                  <button type="button" className={btnPrimary} onClick={handleDrawStock} disabled={loading}>
+                  <button type="button" className={btnPrimary} onClick={announceStockDraw} disabled={loading}>
                     {t('drawStockButton')}
                   </button>
                   <button
