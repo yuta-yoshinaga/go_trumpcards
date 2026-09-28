@@ -99,6 +99,22 @@ beforeEach(() => {
 });
 
 describe('PenguinPage', () => {
+  it('keeps an empty free-cell target focusable and explains that a source is needed', async () => {
+    renderWithProviders(<PenguinPage />);
+    const target = await screen.findByTestId('pg-freecell-empty-3');
+    mockExec.mockClear();
+
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const describedBy = target.getAttribute('aria-describedby');
+    expect(describedBy).toBeTruthy();
+    expect(document.getElementById(describedBy ?? '')).toHaveTextContent('先に移動する札を選んでください');
+
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   // --- Skeleton ---
 
   it('renders skeleton when state is null', () => {

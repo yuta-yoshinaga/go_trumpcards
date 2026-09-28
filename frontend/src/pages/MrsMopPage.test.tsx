@@ -419,14 +419,21 @@ describe('MrsMopPage', () => {
     expect(screen.getByRole('button', { name: '列2、空列' })).toBeInTheDocument();
   });
 
-  it('empty tableau column disabled when no source selected', async () => {
+  it('keeps an empty-column target focusable and explains that a source must be selected', async () => {
     renderWithProviders(<MrsMopPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
-    const emptyButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === '空');
-    for (const btn of emptyButtons) {
-      expect(btn).toBeDisabled();
-    }
+    const btn = screen.getByTestId('spd-empty-col-2');
+    mockExec.mockClear();
+    expect(btn).not.toBeDisabled();
+    expect(btn).toHaveAttribute('aria-disabled', 'true');
+    const descriptionId = btn.getAttribute('aria-describedby');
+    expect(descriptionId).toBeTruthy();
+    expect(document.getElementById(descriptionId!)).toHaveTextContent('先に移動する札を選んでください');
+
+    fireEvent.click(btn);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
   });
 
   it('pressing h triggers hint in PLAYING phase', async () => {

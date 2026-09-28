@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { matrimonyApi } from '../api/games/matrimony';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -68,6 +68,7 @@ function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => stri
 }
 
 function MatrimonyPageContent() {
+  const selectSourceHintId = useId();
   const {
     t,
     tc,
@@ -208,9 +209,14 @@ function MatrimonyPageContent() {
           {card === null ? (
             <button
               type="button"
-              onClick={() => game.handleSelectTarget(slotZone)}
+              onClick={() => {
+                if (!selectedSource || selectedSource.zone === 'tableau') return;
+                game.handleSelectTarget(slotZone);
+              }}
               // Only stock and waste can fill an empty slot.
-              disabled={!isPlaying || loading || !selectedSource || selectedSource.zone === 'tableau'}
+              disabled={!isPlaying || loading}
+              aria-disabled={!selectedSource || selectedSource.zone === 'tableau' || undefined}
+              aria-describedby={!selectedSource ? selectSourceHintId : undefined}
               aria-label={t('emptySlotAriaLabel', { slot })}
               style={{ width: dims.cw, height: dims.ch }}
               className={`rounded border-2 border-dashed border-white/20 text-game-text-muted text-[10px] flex items-center justify-center bg-transparent ${focusRingWhite}`}
@@ -271,6 +277,9 @@ function MatrimonyPageContent() {
       ) : (
         <>
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
+            <span id={selectSourceHintId} className="sr-only">
+              {tc('label.selectSourceFirst')}
+            </span>
             <div className="flex flex-wrap justify-center items-start gap-3 sm:gap-6 mb-3">
               <div className="flex flex-wrap justify-center gap-1 sm:gap-2" data-tutorial="cg-foundation">
                 {state.foundation.map((pile, idx) => {
@@ -288,7 +297,9 @@ function MatrimonyPageContent() {
                           <button
                             type="button"
                             onClick={() => game.handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
+                            disabled={!isPlaying || loading || isAutoCompleting}
+                            aria-disabled={!selectedSource || undefined}
+                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t('foundationAriaLabel', {
                               suit: FOUNDATION_LABELS[idx],
                               idx,
@@ -307,7 +318,9 @@ function MatrimonyPageContent() {
                           <button
                             type="button"
                             onClick={() => game.handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading || !selectedSource}
+                            disabled={!isPlaying || loading}
+                            aria-disabled={!selectedSource || undefined}
+                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_LABELS[idx], idx })}
                             style={{ width: dims.cw, height: dims.ch }}
                             className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}

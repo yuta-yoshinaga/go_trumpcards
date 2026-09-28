@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { MrsMopMoveZone, mrsMopApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -86,6 +86,7 @@ const SPD_TUTORIAL_STEPS: TutorialStep[] = [
 export const MrsMopPage = withTutorial(MrsMopPageContent, 'mrsmop', SPD_TUTORIAL_STEPS);
 /** Inner content of the MrsMop page, wrapped by TutorialProvider. */
 function MrsMopPageContent() {
+  const selectSourceHintId = useId();
   const {
     t,
     tc,
@@ -312,6 +313,9 @@ function MrsMopPageContent() {
 
           {/* Scrollable area */}
           <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
+            <span id={selectSourceHintId} className="sr-only">
+              {tc('label.selectSourceFirst')}
+            </span>
             {/* **山札の行は無い。**Mrs. Mop は 104 枚を配り切るので、クローン元
                 (Spider) の山札・配る操作・残り配り回数はどれも存在しない。
                 常に空の置き場を描くと「まだ配れる」と読めてしまう。 */}
@@ -349,7 +353,9 @@ function MrsMopPageContent() {
                               key={`empty-${colIdx.toString()}`}
                               type="button"
                               onClick={() => handleSelectTarget(tableauColZone)}
-                              disabled={!isPlaying || loading || !selectedSource}
+                              disabled={!isPlaying || loading}
+                              aria-disabled={!selectedSource || undefined}
+                              aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                               style={{ height: tableau.ch }}
                               data-testid={`spd-empty-col-${colIdx.toString()}`}
                               aria-label={t('emptyTableauPosition', { col: colIdx })}
