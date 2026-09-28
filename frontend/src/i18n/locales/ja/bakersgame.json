@@ -14,6 +14,7 @@
   "moveCount": "手数",
   "foundationProgress": "組札: {{count}}/52",
   "empty": "空",
+  "hintCardPosition": "カード位置 {{index}}",
   "hintAvailable": "ヒント",
   "doubleClickHint": "カードをダブルクリック（ダブルタップ）すると組札へ送れます",
   "foundationAriaLabel": "{{suit}} 組札 ({{cardCount}}枚)",
