@@ -28,7 +28,7 @@
     "a": "チームA",
     "b": "チームB"
   },
-  "teamScore": "{{team}}: {{score}}点",
+  "teamScore": "{{team}}: {{score}} / 目標 {{target}}点",
   "playButton": "出す",
   "declareMarriage": "結婚宣言 {{suit}}",
   "marriageAria": "{{suit}}のマリッジを宣言（{{points}}点）",
