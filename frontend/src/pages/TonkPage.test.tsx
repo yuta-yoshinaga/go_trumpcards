@@ -272,6 +272,33 @@ describe('TonkPage', () => {
     expect(badge).not.toHaveAttribute('data-knockable');
   });
 
+  it('shows deadwood and knock eligibility for each discard candidate using the server threshold', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          {
+            id: 0,
+            isHuman: true,
+            cardCount: 5,
+            cards: [card('SPADE', 3), card('HEART', 3), card('DIAMOND', 3), card('CLOVER', 9), card('SPADE', 11)],
+            roundScore: 0,
+            cumulativeScore: 0,
+          },
+          { id: 1, isHuman: false, cardCount: 5, cards: [], roundScore: 0, cumulativeScore: 0 },
+        ],
+        knockThreshold: 10,
+      }),
+    );
+    renderWithProviders(<TonkPage />);
+
+    expect(await screen.findByTestId('tonk-discard-candidate-0')).toHaveTextContent('25点');
+    expect(screen.getByTestId('tonk-discard-candidate-3')).toHaveTextContent('10点');
+    expect(screen.getByTestId('tonk-discard-candidate-3')).toHaveTextContent('ノック可能');
+    expect(screen.getByTestId('tonk-discard-candidate-4')).toHaveTextContent('9点');
+    expect(screen.getByTestId('tonk-discard-candidate-4')).toHaveTextContent('ノック可能');
+    expect(screen.getByTestId('tonk-discard-candidate-0')).toHaveTextContent('ノック不可');
+  });
+
   // **-1 は「まだ聞くべき場面でない」印。**0 と混同すると、ドローフェーズで
   // 「デッドウッド0 = ノック可能」と誤って案内してしまう。
   it('shows nothing outside the human discard turn', async () => {

@@ -64,6 +64,7 @@
   },
   "deadwood": {
     "current": "Best deadwood after discarding: {{value}}",
+    "candidate": "{{value}} pts",
     "score": "{{value}} pts",
     "knockable": "Can knock",
     "notKnockable": "Cannot knock (needs {{threshold}} or less)"
