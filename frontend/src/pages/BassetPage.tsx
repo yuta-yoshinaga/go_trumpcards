@@ -108,8 +108,12 @@ function BassetPageContent() {
                     );
                   })}
                 </fieldset>
+                <label className="sr-only" htmlFor="basset-bet-amount">
+                  {t('betAmount')}
+                </label>
                 <input
                   className="min-h-[44px] w-24 rounded bg-black/30 p-2"
+                  id="basset-bet-amount"
                   type="number"
                   min="10"
                   value={amount}
