@@ -212,6 +212,15 @@ function PresidentPageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
+      <div
+        data-testid="president-revolution-live"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+      >
+        {state.revolutionActive ? t('flash.revolutionStart') : ''}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
