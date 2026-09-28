@@ -59,6 +59,15 @@ beforeEach(() => {
 });
 
 describe('WhistPage', () => {
+  it('shows the configured target score alongside the team scores', async () => {
+    mockExec.mockResolvedValue(makeState({ teamScores: [12, 8], config: { cpuDifficulty: 1, pointLimit: 37 } }));
+    renderWithProviders(<WhistPage />);
+
+    expect(await screen.findByText(/目標スコア: 37/)).toHaveTextContent('チームスコア · 目標スコア: 37');
+    expect(screen.getByText('12')).toBeInTheDocument();
+    expect(screen.getByText('8')).toBeInTheDocument();
+  });
+
   it('shows the previous trick, its player and winner after advancing', async () => {
     const previous = [{ playerIdx: 0, card: card('SPADE', 1) }];
     mockExec.mockResolvedValue(makeState({ lastTrick: previous, lastTrickWinner: 0 }));

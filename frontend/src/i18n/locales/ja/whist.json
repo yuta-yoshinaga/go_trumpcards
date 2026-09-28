@@ -25,6 +25,7 @@
   "trickWinner": "勝者",
   "trickCardByPlayer": "{{name}}が出した{{card}}",
   "teamScores": "チームスコア",
+  "targetScore": "目標スコア: {{score}}",
   "scoreHeaderTeam": "チーム",
   "scoreHeaderPoints": "スコア",
   "team": "チーム {{n}}",
