@@ -166,12 +166,14 @@ describe('GermanSoloPage', () => {
     renderWithProviders(<GermanSoloPage />);
     // Stage 1: only contract buttons, no trump/confirm yet.
     await screen.findByTestId('germansolo-bid-stage1');
+    expect(screen.getByRole('group', { name: '契約を選択' })).toBeInTheDocument();
     expect(screen.queryByTestId('germansolo-bid-stage2')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'スペード' })).not.toBeInTheDocument();
 
     // Choose Frage → advance to stage 2 (trump + confirm/back).
     fireEvent.click(screen.getByRole('button', { name: 'フラーゲ' }));
     await screen.findByTestId('germansolo-bid-stage2');
+    expect(screen.getByRole('group', { name: 'フラーゲの切り札を選択' })).toBeInTheDocument();
     expect(screen.getByTestId('germansolo-bid-confirm')).toBeDisabled();
 
     // Pick spades (♠) as trump → confirm enabled.
@@ -383,6 +385,7 @@ describe('GermanSoloPage ace call', () => {
     );
     renderWithProviders(<GermanSoloPage />);
     await waitFor(() => expect(screen.getByTestId('germansolo-ace-call')).toBeInTheDocument());
+    expect(screen.getByRole('group', { name: '味方を呼ぶエースを選んでください' })).toBeInTheDocument();
 
     // 呼べるエースだけがボタンになる。
     expect(screen.getByRole('button', { name: 'クラブ' })).toBeInTheDocument();
