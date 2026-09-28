@@ -35,10 +35,10 @@ import { formatPaigowState } from '../utils/cli/formatters/paigowFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { paiGowAutoSplit, paiGowFoulCheck } from '../utils/paiGowFoul';
 
-/** High hand rank display name lookup. */
 /** Bet cap enforced by the domain (`PaiGowMaxBet`); bets are multiples of 10. */
 const PAIGOW_MAX_BET = 10000;
 
+/** High hand rank display name lookup. */
 const HIGH_HAND_RANK_KEYS: Record<number, string> = {
   0: 'highHandRank.0',
   1: 'highHandRank.1',
