@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 export interface LiveAnnouncementProps {
   /** What to announce. Empty means nothing is pending. */
   message: string;
+  /** Optional test selector for the live region. */
+  testId?: string;
   /**
    * Interrupt whatever the screen reader is saying. Reserve it for a prompt the
    * player cannot act correctly without — an irreversible one-time choice, not
@@ -26,7 +28,7 @@ export interface LiveAnnouncementProps {
  * The visible element stays as it is; this is an additional channel, so the
  * announcement never depends on how the visible copy is styled or positioned.
  */
-export function LiveAnnouncement({ message, assertive = false }: LiveAnnouncementProps) {
+export function LiveAnnouncement({ message, assertive = false, testId }: LiveAnnouncementProps) {
   const [announced, setAnnounced] = useState('');
 
   useEffect(() => {
@@ -42,6 +44,7 @@ export function LiveAnnouncement({ message, assertive = false }: LiveAnnouncemen
       aria-live={assertive ? 'assertive' : 'polite'}
       aria-atomic="true"
       className="sr-only"
+      data-testid={testId}
     >
       {announced}
     </div>

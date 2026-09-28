@@ -325,15 +325,10 @@ function AnacondaPageContent() {
               <span className="mr-4">{t('ante', { amount: state.ante })}</span>
               {isRollPhase && <span>{t('currentBet', { amount: state.currentBet })}</span>}
             </div>
-            <div
-              className="sr-only"
-              data-testid="anaconda-current-bet-live"
-              role="status"
-              aria-live="polite"
-              aria-atomic="true"
-            >
-              {isRollPhase ? t('currentBet', { amount: state.currentBet }) : ''}
-            </div>
+            <LiveAnnouncement
+              testId="anaconda-current-bet-live"
+              message={isRollPhase ? t('currentBet', { amount: state.currentBet }) : ''}
+            />
 
             {isPassPhase && humanTurn && (
               <div
@@ -571,6 +566,7 @@ function AnacondaPageContent() {
                 </>
               )}
               <LiveAnnouncement
+                testId="anaconda-raise-count-live"
                 message={
                   isRollPhase && humanTurn
                     ? raiseBlock === 'cap'

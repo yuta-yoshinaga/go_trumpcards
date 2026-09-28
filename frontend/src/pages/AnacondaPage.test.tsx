@@ -124,15 +124,12 @@ describe('AnacondaPage', () => {
 
   it('announces the raise count through the atomic polite live region', async () => {
     mockExec.mockResolvedValue(rollState);
-    const { container } = renderWithProviders(<AnacondaPage />);
+    renderWithProviders(<AnacondaPage />);
 
-    const live = await waitFor(() => {
-      const element = container.querySelector(
-        '[data-testid="anaconda-raise-count"][role="status"][aria-live="polite"]',
-      );
-      expect(element).not.toBeNull();
-      return element;
-    });
+    const live = await screen.findByTestId('anaconda-raise-count-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toHaveAttribute('aria-atomic', 'true');
     expect(live).toHaveTextContent('レイズ 0/3回');
   });
 
