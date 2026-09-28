@@ -1,5 +1,5 @@
 {
-  "callAmount": " ({{amount}})",
+  "callAmount": "({{amount}})",
   "phase": {
     "thirdStreet": "Third Street",
     "fourthStreet": "Fourth Street",

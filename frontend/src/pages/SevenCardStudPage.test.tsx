@@ -402,6 +402,16 @@ describe('SevenCardStudPage', () => {
     expect(callButton).toHaveTextContent('コール (30)');
   });
 
+  it('caps the displayed call amount at the human player chips', async () => {
+    mockExec.mockResolvedValue({
+      ...thirdStreetWithBetState,
+      players: [humanPlayer({ chips: 20 }), cpuPlayer(1), cpuPlayer(2), cpuPlayer(3)],
+    });
+    renderWithProviders(<SevenCardStudPage />);
+    const callButton = await screen.findByRole('button', { name: 'コール' });
+    expect(callButton).toHaveTextContent('コール (20)');
+  });
+
   it('hides betting controls when not active phase', async () => {
     mockExec.mockResolvedValue(showdownState);
     renderWithProviders(<SevenCardStudPage />);

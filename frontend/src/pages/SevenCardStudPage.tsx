@@ -712,9 +712,9 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
                   maxBetAmount={state?.maxBetAmount}
                   potSize={state?.pot}
                   hasOutstandingBet={hasOutstandingBet}
-                  callAmountLabel={t('callAmount', {
-                    amount: (state?.lastBet ?? 0) - (humanPlayer?.currentBet ?? 0),
-                  })}
+                  callAmountLabel={` ${t('callAmount', {
+                    amount: Math.min((state?.lastBet ?? 0) - (humanPlayer?.currentBet ?? 0), humanPlayer?.chips ?? 0),
+                  })}`}
                   loading={loading}
                   onCall={() => execApi('call', undefined, undefined, getElapsed())}
                   onRaise={() => execApi('raise', betAmount, undefined, getElapsed())}

@@ -18,7 +18,7 @@
   "currentLow": "現在のロー: {{low}}",
   "anteBringIn": "アンティ/ブリングイン",
   "bringIn": "ブリングイン",
-  "callAmount": " ({{amount}})",
+  "callAmount": "({{amount}})",
   "handNumber": "ハンド#{{count}} (レベルアップ:{{level}}ハンド毎)",
   "rebuy": {
     "prompt": "リバイしますか? ({{chips}}チップ, {{used}}/{{max}}回使用済)",
