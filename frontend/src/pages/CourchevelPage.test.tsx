@@ -1736,6 +1736,20 @@ describe('CourchevelPage', () => {
     expect(await screen.findByTestId('cv-preflop-exposed-note')).toBeInTheDocument();
   });
 
+  it('announces the exposed pre-flop card to a screen reader', async () => {
+    mockExec.mockResolvedValue({
+      ...preFlopState,
+      communityCards: [{ design: 'SPADE', value: 14 } as unknown as OmahaResponse['communityCards'][number]],
+    });
+    renderWithProviders(<CourchevelPage />);
+
+    const live = await screen.findByTestId('cv-preflop-exposed-status');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live.textContent?.trim()).toBeTruthy();
+    expect(live.textContent).toBe(screen.getByTestId('cv-preflop-exposed-note').textContent);
+  });
+
   it('drops the pre-flop note once the rest of the flop is out', async () => {
     mockExec.mockResolvedValue(flopState);
     renderWithProviders(<CourchevelPage />);
