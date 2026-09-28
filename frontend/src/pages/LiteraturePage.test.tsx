@@ -222,6 +222,24 @@ describe('LiteraturePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('claim', { halfSuit: 2, holders: [0, 0, 0, 0, 0, 0] }));
   });
 
+  it('shows all six current card placements in the claim confirmation', async () => {
+    renderWithProviders(<LiteraturePage />);
+    await screen.findByRole('button', { name: '宣言する' });
+
+    const holders = screen.getAllByLabelText(/^♠[0-9]+$/);
+    fireEvent.change(holders[0], { target: { value: '2' } });
+    fireEvent.change(holders[5], { target: { value: '4' } });
+    fireEvent.click(screen.getByRole('button', { name: '宣言する' }));
+
+    const dialog = screen.getByRole('alertdialog');
+    expect(dialog).toHaveTextContent('♠ 2: 席2');
+    expect(dialog).toHaveTextContent('♠ 3: 席0');
+    expect(dialog).toHaveTextContent('♠ 4: 席0');
+    expect(dialog).toHaveTextContent('♠ 5: 席0');
+    expect(dialog).toHaveTextContent('♠ 6: 席0');
+    expect(dialog).toHaveTextContent('♠ 7: 席4');
+  });
+
   // **無効は「相手に渡る」とは違う。**宣言の説明に書く。
   it('explains that misplacing within your own team cancels the claim', async () => {
     renderWithProviders(<LiteraturePage />);

@@ -26,6 +26,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { LiteratureClaim, LiteratureResponse } from '../types/card';
 import { LiteraturePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import {
   LITERATURE_HELP,
   literatureLocalCommand,
@@ -187,6 +188,9 @@ function LiteraturePageContent() {
 
   // 自チームの席だけが所在の候補になる。
   const ownTeamSeats = state.players.filter((p) => p.team === 0).map((p) => p.id);
+  const claimPlacements = (state.halfSuitCards[selectedHalf] ?? []).map(
+    (card, index) => `${cardAlt(card)}: ${t('seat', { n: claimHolders[index] ?? 0 })}`,
+  );
 
   const handleAsk = () => {
     if (!selectedCard) return;
@@ -498,7 +502,7 @@ function LiteraturePageContent() {
       <ConfirmDialog
         open={claimConfirmOpen}
         title={t('claimConfirmTitle')}
-        message={t('claimConfirmMessage')}
+        message={t('claimConfirmMessage', { placements: claimPlacements.join(t('listSeparator')) })}
         confirmLabel={tc('button.confirm')}
         cancelLabel={tc('button.cancel')}
         onConfirm={() => {
