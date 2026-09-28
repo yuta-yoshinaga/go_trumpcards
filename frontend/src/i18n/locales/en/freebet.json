@@ -10,6 +10,7 @@
   "label.dealer": "Dealer",
   "label.upCard": "Up-card",
   "label.yourHands": "Your hands",
+  "label.activeHand": "Active hand",
   "label.hand": "Hand {{idx}}",
   "label.score": "pts",
   "label.hidden": "Hidden card",
