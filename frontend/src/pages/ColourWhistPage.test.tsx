@@ -6,6 +6,7 @@ import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, ColourWhistResponse } from '../types/card';
 import { COLOUR_WHIST_NO_TRUMP } from '../types/games/colourwhist';
 import { ColourWhistContract, ColourWhistPhase } from '../types/phases';
+import { cardAlt } from '../utils/cardAlt';
 import { ColourWhistPage } from './ColourWhistPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -92,6 +93,13 @@ beforeEach(() => {
 });
 
 describe('ColourWhistPage', () => {
+  it('uses localized card names for hand buttons', async () => {
+    mockApi.mockResolvedValue(playState);
+    renderWithProviders(<ColourWhistPage />);
+    const handElement = await screen.findByTestId('colourwhist-hand');
+    expect(handElement.querySelector('button')).toHaveAttribute('aria-label', cardAlt({ design: 'SPADE', value: 1 }));
+  });
+
   it('resets on mount', async () => {
     mockApi.mockResolvedValue(bidState);
     renderWithProviders(<ColourWhistPage />);
