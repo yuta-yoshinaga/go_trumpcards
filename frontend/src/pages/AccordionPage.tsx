@@ -400,6 +400,7 @@ function AccordionPageContent() {
                       data-hover-target={isHoverTarget ? 'true' : 'false'}
                       data-legal-target={isLegalTarget ? 'true' : 'false'}
                       aria-label={`${baseLabel}${mergeSuffix}`}
+                      aria-pressed={isSelected}
                     >
                       {top && <AnimatedCard card={top} width={cardWidth} />}
                       <span className="absolute top-0 left-0 text-[10px] bg-black/40 text-ds-text-primary rounded-br px-1">
