@@ -543,7 +543,7 @@ describe('BlackJackPage', () => {
     await waitFor(() => {
       expect(screen.getByText(/ハンド 1/)).toBeInTheDocument();
       expect(screen.getByText(/ハンド 2/)).toBeInTheDocument();
-      expect(screen.getByText(/\(\*\)/)).toBeInTheDocument();
+      expect(screen.getByText('現在のハンド')).toBeInTheDocument();
     });
   });
 
@@ -1500,14 +1500,26 @@ describe('BlackJackPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('declineearlysurrender'));
   });
 
-  it('shows active hand marker (*) during early surrender phase', async () => {
+  it('labels the active hand during early surrender phase', async () => {
     const earlySurrenderState: BlackJackResponse = {
       ...actionPhaseState,
       phase: 6,
     };
     mockExec.mockResolvedValue(earlySurrenderState);
     renderWithProviders(<BlackJackPage />);
-    await waitFor(() => expect(screen.getByText(/プレイヤー手札 \(\*\)/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('現在のハンド')).toBeInTheDocument());
+  });
+
+  it('includes the current hand label in the heading name during action', async () => {
+    mockDoubleExposureExec.mockResolvedValue({
+      ...actionPhaseState,
+      hands: [{ ...baseHand }, { ...baseHand, score: 18 }],
+      currentHandIdx: 1,
+    });
+
+    renderWithProviders(<BlackJackPage variant="doubleexposure" />);
+
+    await screen.findByRole('heading', { name: /ハンド 2.*現在のハンド/ });
   });
 
   it('syncs surrenderRule from response', async () => {

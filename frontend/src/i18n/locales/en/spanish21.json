@@ -14,6 +14,7 @@
   "score": "Score",
   "playerHand": "Player Hand",
   "hand": "Hand {{idx}}",
+  "currentHand": "Current Hand",
   "insurance": "Insurance:",
   "suggestion": "Suggested:",
   "suggest": {
