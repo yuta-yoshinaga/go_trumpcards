@@ -344,6 +344,7 @@ function TablanetPageContent() {
                   <button
                     key={i}
                     type="button"
+                    aria-pressed={handIndex === i}
                     onClick={() => isHumanTurn && setHandIndex(handIndex === i ? null : i)}
                     disabled={!isHumanTurn}
                     className={`rounded transition-all ${
