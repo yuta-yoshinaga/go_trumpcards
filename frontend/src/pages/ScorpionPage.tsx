@@ -391,6 +391,20 @@ function ScorpionPageContent() {
             {tc('label.selectSourceFirst')}
           </span>
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
+            {state.stockCount > 0 && (
+              <div
+                className="relative mx-auto mb-3"
+                style={{ width: sc.cw + 8, height: sc.ch + 8 }}
+                data-testid="sc-stock-pile"
+                aria-hidden="true"
+              >
+                {Array.from({ length: Math.min(state.stockCount, 3) }, (_, index) => (
+                  <div key={index} className="absolute" style={{ left: index * 4, top: index * 4, zIndex: index }}>
+                    <AnimatedCardBack width={sc.cw} silent />
+                  </div>
+                ))}
+              </div>
+            )}
             <div className="flex gap-1 sm:gap-2 justify-center" data-tutorial="sc-tableau">
               {state.tableau.map((col, colIdx) => (
                 <div key={colIdx} className="flex flex-col items-center" style={{ width: sc.cw }}>
