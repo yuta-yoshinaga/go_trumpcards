@@ -268,6 +268,9 @@ function SevenTwentySevenPageContent() {
                 >
                   {playerLabel(p.id, p.isHuman)} — {t('chips', { amount: p.chips })} ·{' '}
                   {t('roundBet', { amount: p.roundBet })} · [{playerBadge(p)}]
+                  {isResultPhase
+                    ? ` · ${t('roundResult.netChange', { change: p.netChange > 0 ? `+${p.netChange}` : p.netChange < 0 ? `${p.netChange}` : '±0' })}`
+                    : ''}
                   {scoreLabel(p) ? ` · ${scoreLabel(p)}` : ''}
                 </div>
               ))}

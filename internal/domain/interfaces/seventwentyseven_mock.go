@@ -130,6 +130,11 @@ func (_m *MockSevenTwentySevenGame) GetChips() int {
 	return ret.Get(0).(int)
 }
 
+func (_m *MockSevenTwentySevenGame) GetRoundNetChange(i int) int {
+	ret := _m.Called(i)
+	return ret.Int(0)
+}
+
 // GetHint モック
 func (_m *MockSevenTwentySevenGame) GetHint() *domain.SevenTwentySevenHint {
 	ret := _m.Called()
