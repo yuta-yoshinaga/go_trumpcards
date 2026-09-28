@@ -60,6 +60,8 @@
     "title": "ラウンド結果",
     "winner": "勝者: {{name}}",
     "draw": "引き分け",
+    "announcementWinner": "{{name}}がラウンドに勝利。合計{{total}}点。",
+    "announcementDraw": "ラウンドは引き分け。合計{{total}}点。",
     "total": "基本 {{base}} × ゴー {{go}} × バク {{bak}} = {{total}}点"
   },
   "result": {

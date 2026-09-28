@@ -300,6 +300,16 @@ function GoStopPageContent() {
               )}
             </div>
 
+            <div data-testid="gostop-round-result-live" role="status" aria-live="polite" className="sr-only">
+              {state.lastRoundResult &&
+                (state.lastRoundResult.winner < 0
+                  ? t('roundResult.announcementDraw', { total: state.lastRoundResult.total })
+                  : t('roundResult.announcementWinner', {
+                      name: state.lastRoundResult.winner === (human?.id ?? 0) ? t('you') : t('cpu'),
+                      total: state.lastRoundResult.total,
+                    }))}
+            </div>
+
             {/* Go / Stop decision */}
             {isDecisionPhase && !isGameEnd && (
               <div

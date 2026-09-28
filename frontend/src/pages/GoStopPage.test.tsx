@@ -327,6 +327,20 @@ describe('GoStopPage', () => {
     expect(live).toContainElement(await screen.findByTestId('gostop-prompt'));
   });
 
+  it('announces the round winner and total from an always-mounted live region', async () => {
+    mockExec.mockResolvedValueOnce(playState).mockResolvedValue(roundEndState);
+    renderWithProviders(<GoStopPage />);
+
+    const live = (await screen.findAllByTestId('gostop-round-result-live'))[0];
+    expect(live).toBeDefined();
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toBeEmptyDOMElement();
+
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+    await waitFor(() => expect(live).toHaveTextContent('あなたがラウンドに勝利。合計14点。'));
+  });
+
   // **CPU対戦相手がいる場合のみCPU領域を描画する。**
   it('renders the CPU area only when a CPU player exists', async () => {
     mockExec.mockResolvedValue(playState);
