@@ -443,8 +443,8 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
                 server marks with isHiLo rather than the page guessing from the
                 route. */}
             {isShowdown && state.isHiLo && <StudHiLoSplit results={state.roundResults} players={state.players ?? []} />}
-            {isShowdown && state.isChicago && (
-              <StudChicagoSplit results={state.roundResults} players={state.players ?? []} />
+            {state.isChicago && (
+              <StudChicagoSplit results={isShowdown ? state.roundResults : undefined} players={state.players ?? []} />
             )}
 
             {/* Action log */}

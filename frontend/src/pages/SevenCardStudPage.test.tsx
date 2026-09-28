@@ -175,6 +175,14 @@ beforeEach(() => {
 });
 
 describe('SevenCardStudPage', () => {
+  it('keeps the Chicago result live region mounted before showdown', async () => {
+    vi.mocked(chicagoApi.exec).mockResolvedValueOnce({ ...thirdStreetState, isChicago: true } as SevenCardStudResponse);
+    renderWithProviders(<ChicagoPage />);
+    const liveRegion = await screen.findByTestId('studchicago-live-region');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion).toBeEmptyDOMElement();
+  });
+
   it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<SevenCardStudPage />);
