@@ -4,6 +4,7 @@
   "center": "中央",
   "centerAriaLabel": "中央組札 {{count}}/52枚",
   "cornerAriaLabel": "四隅組札{{idx}} {{count}}/13枚",
+  "cornerPileCount": "{{count}}枚",
   "corners": "四隅",
   "draw": "めくる",
   "empty": "空",

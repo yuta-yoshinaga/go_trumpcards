@@ -261,6 +261,9 @@ function WindmillPageContent() {
             </button>
           )}
         </DropZone>
+        <div className="mt-1 text-ds-text-muted text-xs tabular-nums" aria-hidden="true">
+          {t('cornerPileCount', { count: pile.length })}
+        </div>
       </div>
     );
   };
