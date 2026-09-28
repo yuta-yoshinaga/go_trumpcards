@@ -526,14 +526,16 @@ function CrazyEightsPageContent() {
                   </button>
                 </div>
               )}
-              {serverHint && (
-                <p className="mt-2 text-sm text-ds-accent" data-testid="ce-server-hint">
-                  {serverHint.suit !== undefined
-                    ? t('hintSuit', { suit: suitSymbolAt(serverHint.suit, '?') })
-                    : t('hintCard', { idx: serverHint.cardIndex })}{' '}
-                  ({t(`hintReason.${serverHint.reason}`)})
-                </p>
-              )}
+              <div role="status" aria-live="polite" data-testid="ce-server-hint">
+                {serverHint && (
+                  <p className="mt-2 text-sm text-ds-accent">
+                    {serverHint.suit !== undefined
+                      ? t('hintSuit', { suit: suitSymbolAt(serverHint.suit, '?') })
+                      : t('hintCard', { idx: serverHint.cardIndex })}{' '}
+                    ({t(`hintReason.${serverHint.reason}`)})
+                  </p>
+                )}
+              </div>
               <ErrorAlert message={hintError} onRetry={undefined} />
 
               {isChooseSuit && (
