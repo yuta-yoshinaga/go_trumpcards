@@ -12,6 +12,15 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockExec = vi.mocked(soloWhistApi.exec);
+const mobileFlag = { value: false };
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useCardDimensions: () => ({ ...actual.useCardDimensions(), isMobile: mobileFlag.value }),
+  };
+});
 
 // Default fixture: a human bid turn (bid phase).
 const bidPhaseState = makeSoloWhistState();
@@ -83,12 +92,21 @@ function makeProgressState(contract: number, won: number, cardCount: number) {
 
 beforeEach(() => {
   localStorage.clear();
+  mobileFlag.value = false;
   mockExec.mockReset();
   mockExec.mockResolvedValue(bidPhaseState);
 });
 
 describe('SoloWhistPage', () => {
   it('shows the dealer badge only beside the dealer seat', async () => {
+    renderWithProviders(<SoloWhistPage />);
+    const badge = await screen.findByText('ディーラー', { selector: 'span' });
+    expect(badge.parentElement).toHaveTextContent('CPU 3');
+    expect(screen.getAllByText('ディーラー', { selector: 'span' })).toHaveLength(1);
+  });
+
+  it('shows the dealer badge only beside the dealer seat on mobile', async () => {
+    mobileFlag.value = true;
     renderWithProviders(<SoloWhistPage />);
     const badge = await screen.findByText('ディーラー', { selector: 'span' });
     expect(badge.parentElement).toHaveTextContent('CPU 3');
