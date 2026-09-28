@@ -361,6 +361,7 @@ function BarbuPageContent() {
                       {isTrump && (
                         <span
                           data-testid="trump-card-badge"
+                          aria-hidden="true"
                           className="pointer-events-none absolute left-1 top-1 z-10 rounded border border-ds-accent bg-ds-surface px-1 py-0.5 text-xs font-bold leading-tight text-ds-text-primary"
                         >
                           {t('label.trumpBadge')}
