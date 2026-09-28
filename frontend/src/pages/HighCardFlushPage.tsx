@@ -369,6 +369,14 @@ function HighCardFlushPageContent() {
           </div>
 
           <GameFooter className={`${gameTheme.highcardflush.footer} px-4 pt-3`}>
+            <div role="status" aria-live="polite" className="text-center">
+              {isBetPhase && state && (
+                <div className="text-ds-text-primary text-sm" data-testid="hcf-bet-summary">
+                  {t('betSummary.total', { amount: betTotal })} ·{' '}
+                  {t('betSummary.remaining', { amount: Math.max(0, state.chips - betTotal) })}
+                </div>
+              )}
+            </div>
             <ErrorAlert message={error} onRetry={retry} />
             {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
             <SettingsPanel
@@ -458,7 +466,11 @@ function HighCardFlushPageContent() {
                   )}
                   {balanceInvalid && (
                     <p id="highcardflush-balance-error">
-                      {t('betError.balance', { total: betTotal, chips: state.chips })}
+                      {t('betError.balance', {
+                        total: betTotal,
+                        chips: state.chips,
+                        shortfall: betTotal - state.chips,
+                      })}
                     </p>
                   )}
                 </div>
