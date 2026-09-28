@@ -322,6 +322,7 @@ function CuckooPageContent() {
 
             <ActionLogSection
               isEndPhase={isGameEnd}
+              availableDuringPlay={isTurn || isRefuse}
               actionLog={actionLog}
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}

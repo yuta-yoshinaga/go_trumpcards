@@ -1,6 +1,6 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { cuckooApi } from '../api/gameApi';
+import { actionLogApi, cuckooApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { CuckooPlayer, CuckooResponse } from '../types/card';
@@ -106,9 +106,26 @@ const gameEndState = makeState({
 beforeEach(() => {
   mockExec.mockReset();
   mockExec.mockResolvedValue(turnState);
+  vi.mocked(actionLogApi.cuckoo).mockReset();
 });
 
 describe('CuckooPage', () => {
+  it.each([
+    ['turn', turnState],
+    ['refuse', refuseState],
+  ] as const)('opens and closes the current-round action log during the %s phase', async (_phase, phaseState) => {
+    mockExec.mockResolvedValue(phaseState);
+    vi.mocked(actionLogApi.cuckoo).mockResolvedValue({ entries: [] });
+    renderWithProviders(<CuckooPage />);
+
+    const openButton = await screen.findByRole('button', { name: '棋譜を見る' });
+    fireEvent.click(openButton);
+    await waitFor(() => expect(actionLogApi.cuckoo).toHaveBeenCalledTimes(1));
+    expect(await screen.findByText('棋譜はありません。')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '閉じる' }));
+    expect(await screen.findByRole('button', { name: '棋譜を見る' })).toBeInTheDocument();
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<CuckooPage />);
