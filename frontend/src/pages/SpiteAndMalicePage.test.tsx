@@ -75,6 +75,15 @@ beforeEach(() => {
 describe('SpiteAndMalicePage', () => {
   const foundationButtons = () => screen.getAllByRole('button', { name: /組札|Foundation/ });
 
+  it('highlights the human goal pile cards remaining', async () => {
+    renderWithProviders(<SpiteAndMalicePage />);
+
+    const remainingCount = await screen.findByText('残り20枚');
+    expect(remainingCount.className).toContain('text-lg');
+    expect(remainingCount.className).toContain('font-bold');
+    expect(remainingCount.className).toContain('text-ds-accent');
+  });
+
   it('marks only matching foundations after selecting a hand, goal, or side card', async () => {
     mockExec.mockResolvedValue({
       ...baseState,
