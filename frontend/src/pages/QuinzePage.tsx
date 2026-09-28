@@ -43,6 +43,11 @@ const QUINZE_TUTORIAL_STEPS: TutorialStep[] = [
 /** Renders the Quinze page and its banking-game controls. */
 export const QuinzePage = withTutorial(QuinzePageContent, 'quinze', QUINZE_TUTORIAL_STEPS);
 
+/** Formats a chip change with an explicit sign for positive values. */
+function formatSignedNet(value: number): string {
+  return value > 0 ? `+${value.toString()}` : value.toString();
+}
+
 function QuinzePageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('quinze');
@@ -95,12 +100,13 @@ function QuinzePageContent() {
    * Render one hand. Visibility comes from the server's `hidden` flag; the page
    * never re-derives it, so there is one place that can be wrong instead of two.
    */
-  const renderHand = (hand: QuinzeHand, label: string, keyPrefix: string) => (
+  const renderHand = (hand: QuinzeHand, label: string, keyPrefix: string, settlementId?: string) => (
     <div className="text-center">
       <div
         className="flex gap-1 justify-center"
         role="img"
         aria-label={hand.hidden ? label : t('seatAriaLabel', { name: label, total: hand.totalLabel })}
+        aria-describedby={settlementId}
       >
         {hand.cards.map((card, i) =>
           hand.hidden || !card ? (
@@ -175,9 +181,17 @@ function QuinzePageContent() {
                     ? t('hiddenBankerHandAriaLabel', { count: state.bankerHand.cards.length })
                     : t('bankerHandAriaLabel', { total: state.bankerHand.totalLabel }),
                   'banker',
+                  ended ? 'quinze-banker-settlement' : undefined,
                 )
               ) : (
                 <div className="text-game-text-muted text-sm">—</div>
+              )}
+              {ended && state.bankerHand && (
+                <span id="quinze-banker-settlement" className="sr-only">
+                  {t('settlement.banker', {
+                    net: formatSignedNet(-state.seats.reduce((sum, seat) => sum + (seat.hand?.payout ?? 0), 0)),
+                  })}
+                </span>
               )}
             </div>
 
@@ -197,6 +211,22 @@ function QuinzePageContent() {
                           ? t('hiddenHandAriaLabel', { name: seat.name, count: seat.hand.cards.length })
                           : seat.name,
                         `s${seatIdx.toString()}`,
+                        ended ? `quinze-seat-settlement-${seatIdx.toString()}` : undefined,
+                      )}
+                      {ended && (
+                        <span id={`quinze-seat-settlement-${seatIdx.toString()}`} className="sr-only">
+                          {t(
+                            seat.hand.payout > 0
+                              ? 'settlement.playerWin'
+                              : seat.hand.payout < 0
+                                ? 'settlement.playerLoss'
+                                : 'settlement.playerDraw',
+                            {
+                              bet: seat.hand.bet,
+                              payout: seat.hand.payout > 0 ? `+${seat.hand.payout}` : seat.hand.payout,
+                            },
+                          )}
+                        </span>
                       )}
                       <div className="text-game-text-muted text-xs mt-1">
                         {t('bet')}: {seat.hand.bet}
