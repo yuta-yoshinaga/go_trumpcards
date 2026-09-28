@@ -338,10 +338,23 @@ describe('TappTarockPage', () => {
     );
   });
 
-  it('reports a tied match', async () => {
+  it('styles a tied match neutrally', async () => {
     mockExec.mockResolvedValue(makeTappTarockState({ ...playState, phase: 5, gameEndFlag: true, winnerPlayer: -1 }));
     renderWithProviders(<TappTarockPage />);
-    expect(await screen.findByTestId('zw-result')).toHaveTextContent('引き分け');
+    const result = await screen.findByTestId('zw-result');
+    const message = result.children[1];
+    expect(message).toHaveTextContent('引き分け');
+    expect(message).toHaveClass('text-ds-text-muted');
+    expect(message).not.toHaveClass('text-ds-success');
+  });
+
+  it('styles a match with a winner using the success color', async () => {
+    mockExec.mockResolvedValue(makeTappTarockState({ ...playState, phase: 5, gameEndFlag: true, winnerPlayer: 0 }));
+    renderWithProviders(<TappTarockPage />);
+    const result = await screen.findByTestId('zw-result');
+    const message = result.children[1];
+    expect(message).toHaveTextContent('勝者: あなた');
+    expect(message).toHaveClass('text-ds-success');
   });
 
   it('surfaces an API error raised after the board is up', async () => {
