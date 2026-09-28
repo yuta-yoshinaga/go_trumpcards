@@ -395,6 +395,27 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
                         {t('showingHand', { hand: t(`hand.${showingHandKey(p.doorCards)}`) })}
                       </span>
                     )}
+                    {state.isHiLo &&
+                      !isShowdown &&
+                      !p.isHuman &&
+                      !p.folded &&
+                      (p.doorCards ?? []).some((card) => card.value <= 8) && (
+                        <span
+                          data-testid={`scs-opponent-low-${p.id}`}
+                          className="inline-block ml-2 text-xs text-ds-text-muted"
+                        >
+                          {t('opponentPublicLow', {
+                            low: [
+                              ...new Set(
+                                (p.doorCards ?? []).filter((card) => card.value <= 8).map((card) => card.value),
+                              ),
+                            ]
+                              .sort((a, b) => b - a)
+                              .map(valueName)
+                              .join('-'),
+                          })}
+                        </span>
+                      )}
                   </div>
                   {/* Door cards (always visible) */}
                   <div className="text-ds-text-muted text-xs mb-0.5">{t('doorCards')}</div>

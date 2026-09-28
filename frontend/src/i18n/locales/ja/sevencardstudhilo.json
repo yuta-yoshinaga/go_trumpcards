@@ -15,6 +15,7 @@
   "yourHand": "あなたの手札",
   "currentHand": "現在の役",
   "currentLow": "現在のロー: {{low}}",
+  "opponentPublicLow": "公開ロー候補: {{low}}",
   "anteBringIn": "アンティ/ブリングイン",
   "bringIn": "ブリングイン",
   "handNumber": "ハンド#{{count}} (レベルアップ:{{level}}ハンド毎)",
