@@ -1372,6 +1372,24 @@ describe('PineapplePage', () => {
     },
   );
 
+  it.each(['pineapple', 'crazypineapple'] as const)(
+    'shows equity in learning mode for %s when values exist',
+    async (variant) => {
+      const api = variant === 'pineapple' ? mockExec : mockCrazyExec;
+      api.mockResolvedValue({
+        ...preFlopState,
+        equity: { winProbability: 0.42, handOdds: [] },
+        potOdds: 30,
+      });
+      renderWithProviders(<PineapplePage variant={variant} />);
+
+      await waitFor(() => expect(screen.getByTestId('learning-mode-toggle')).toBeInTheDocument());
+      expect(screen.queryByTestId('equity-display')).not.toBeInTheDocument();
+      fireEvent.click(screen.getByLabelText('ラーニングモード'));
+      expect(screen.getByTestId('equity-display')).toBeInTheDocument();
+    },
+  );
+
   it('does not show Irish equity values when they are unavailable', async () => {
     mockIrishExec.mockResolvedValue(preFlopState);
     renderWithProviders(<PineapplePage variant="irishpoker" />);
