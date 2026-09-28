@@ -170,8 +170,43 @@ func TestMonteBank_SuitCountInLayout(t *testing.T) {
 	assert.Equal(t, 2, g.SuitCountInLayout(CardDesignSpade))
 	assert.Equal(t, 1, g.SuitCountInLayout(CardDesignHeart))
 	assert.Zero(t, g.SuitCountInLayout(CardDesignDiamond))
-	assert.Equal(t, MonteBankSuitSize-2, g.RemainingOfSuit(CardDesignSpade))
-	assert.Equal(t, MonteBankSuitSize, g.RemainingOfSuit(CardDesignDiamond))
+	assert.Equal(t, g.deck.GetRemainingCountByDesign(CardDesignSpade), g.RemainingOfSuit(CardDesignSpade))
+	assert.Equal(t, g.deck.GetRemainingCountByDesign(CardDesignDiamond), g.RemainingOfSuit(CardDesignDiamond))
+}
+
+func TestMonteBank_RemainingOfSuitMatchesUndrawnDeckAcrossRounds(t *testing.T) {
+	t.Parallel()
+
+	deck := NewTrumpCardsBriscola()
+	deck.deck = make([]*Card, 0, MonteBankDeckSize)
+	for value := 1; value <= MonteBankSuitSize; value++ {
+		for _, design := range []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond} {
+			deck.deck = append(deck.deck, mbCard(design, value))
+		}
+	}
+	deck.deckCnt = len(deck.deck)
+	deck.deckInit()
+	g := NewMonteBank(deck, NewMonteBankPlayer(1000), DefaultMonteBankConfig())
+	g.dealLayout()
+
+	assertRemainingMatchesDeck := func() {
+		t.Helper()
+		total := 0
+		for _, design := range []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond} {
+			got := g.RemainingOfSuit(design)
+			want := deck.GetRemainingCountByDesign(design)
+			assert.Equal(t, want, got)
+			assert.LessOrEqual(t, got, deck.GetRemainingCount())
+			total += got
+		}
+		assert.Equal(t, deck.GetRemainingCount(), total)
+	}
+
+	assertRemainingMatchesDeck()
+	require.NoError(t, g.PlaceBet(0, MonteBankMinBet))
+	require.NoError(t, g.NextRound())
+	assert.Equal(t, 2, g.GetRoundNumber())
+	assertRemainingMatchesDeck()
 }
 
 // --- 助言 ---

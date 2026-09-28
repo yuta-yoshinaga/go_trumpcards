@@ -202,6 +202,14 @@ function MonteBankPageContent() {
                   <span className="text-ds-text-muted text-xs" data-testid={`mb-remaining-${i}`}>
                     {t('label.remainingOfSuit', { count: entry.remainingOfSuit })}
                   </span>
+                  <span className="text-ds-text-primary text-xs" data-testid={`mb-probability-${i}`}>
+                    {t('label.nextGateProbability', {
+                      probability:
+                        state.remainingCards === 0
+                          ? t('label.probabilityUnavailable')
+                          : `${((entry.remainingOfSuit / state.remainingCards) * 100).toFixed(1)}%`,
+                    })}
+                  </span>
                 </button>
               ))}
             </div>
