@@ -25,7 +25,7 @@
   "playerAllIn": " [オールイン]",
   "playerBet": " ベット:{{bet}}",
   "cardLine": "  カード: {{card}}",
-  "cardHidden": "  カード: ??",
+  "cardHidden": "  カード: 相手には見えていますが、あなたには見えません",
   "equityLine": "  推定勝率: {{pct}}%",
   "betInfoLine": "  コール: {{call}} / ミニマムレイズ: {{minraise}} / 上限: {{max}}",
   "checkAvailableLine": "  チェック可能 / 上限: {{max}}",

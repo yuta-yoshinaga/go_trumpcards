@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, waitForLoaded } from './helpers';
+import { gameButton, navigateTo, waitForLoaded } from './helpers';
 
 test.describe('500 (Five Hundred) E2E', () => {
   test('starts a game: reset → bid controls → pass → reset', async ({ page }) => {
@@ -13,7 +13,7 @@ test.describe('500 (Five Hundred) E2E', () => {
     await waitForLoaded(page);
 
     // On the human's bid turn the pass button is available.
-    const passButton = page.getByRole('button', { name: 'パス' });
+    const passButton = gameButton(page, 'パス');
     await expect(passButton).toBeVisible({ timeout: 10_000 });
 
     // Pass and let the round progress.

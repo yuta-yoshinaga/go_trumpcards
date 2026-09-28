@@ -162,13 +162,21 @@ function GoofspielPageContent() {
               <div className="mb-4 flex flex-col items-center gap-1" data-testid="gs-prize" data-tutorial="gs-prize">
                 <div className="text-ds-text-muted text-sm">{t('header.prize')}</div>
                 <CardImage card={state.currentPrize} width={cardWidth} />
-                <div className="text-ds-accent font-semibold">
-                  {t('header.prizeValue', { n: String(state.prizeValue) })}
+                <div className="text-ds-accent font-semibold" data-testid="gs-current-prize-value">
+                  {t('header.currentPrizeValue', { n: String(state.currentPrize.value) })}
                 </div>
                 {carriedPrizes.length > 0 && (
                   <>
+                    <div className="text-ds-accent text-sm" data-testid="gs-prize-total">
+                      {t('header.prizeValue', { n: String(state.prizeValue) })}
+                    </div>
                     <div className="text-ds-warning text-sm" data-testid="gs-carried">
                       {t('header.carried', { n: String(carriedPrizes.length) })}
+                    </div>
+                    <div className="text-ds-warning text-sm" data-testid="gs-carried-value">
+                      {t('header.carriedValue', {
+                        n: String(carriedPrizes.reduce((total, prize) => total + prize.value, 0)),
+                      })}
                     </div>
                     {/* **積まれている札の強さが枚数からは読めない。** 現在の賞は
                         画像で出しているのに持ち越しだけ中身が見えないのは非対称。

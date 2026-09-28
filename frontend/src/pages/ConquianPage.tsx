@@ -19,7 +19,7 @@ import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
-import { CPU_DIFFICULTY_OPTIONS, TARGET_WINS_OPTIONS, useConquianGame } from '../hooks/useConquianGame';
+import { TARGET_WINS_OPTIONS, useConquianGame } from '../hooks/useConquianGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
@@ -174,10 +174,9 @@ function ConquianPageContent() {
   const handleManualReset = useCallback(() => {
     hideActionLog();
     void gameExec('reset', undefined, {
-      cpuDifficulty: conquianConfig.cpuDifficulty,
       targetWins: conquianConfig.targetWins,
     });
-  }, [gameExec, hideActionLog, conquianConfig.cpuDifficulty, conquianConfig.targetWins]);
+  }, [gameExec, hideActionLog, conquianConfig.targetWins]);
 
   const kbdConfirmAction = useCallback(() => {
     if (isMeldPhase) handleMeldSelected();
@@ -236,17 +235,6 @@ function ConquianPageContent() {
             groups={[
               {
                 items: [
-                  {
-                    type: 'select',
-                    id: 'cpuDifficulty',
-                    label: t('settings.cpuDifficulty'),
-                    value: conquianConfig.cpuDifficulty,
-                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
-                      value: o.value,
-                      label: t(`settings.${o.label.toLowerCase()}`),
-                    })),
-                    onSelect: (v) => handleConfigChange('cpuDifficulty', v),
-                  },
                   {
                     type: 'select',
                     id: 'targetWins',
@@ -412,11 +400,14 @@ function ConquianPageContent() {
           </div>
 
           <GameFooter className={`${gameTheme.conquian.footer} px-4 py-2.5`}>
-            {isMeldPhase && isHumanTurn && state.tookDiscard && (
-              <div className="text-xs font-bold mb-1 text-ds-info" data-testid="conquian-forced-use">
-                {t('forcedUse')}
-              </div>
-            )}
+            <div
+              className="text-xs font-bold mb-1 text-ds-info"
+              data-testid="conquian-forced-use"
+              role="status"
+              aria-live="polite"
+            >
+              {isMeldPhase && isHumanTurn && state.tookDiscard && t('forcedUse')}
+            </div>
             {humanPlayer && (
               <div className="mb-2 max-w-xs">{renderMeldProgress(humanPlayer, 'conquian-meld-progress')}</div>
             )}

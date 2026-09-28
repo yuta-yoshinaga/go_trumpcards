@@ -33,6 +33,7 @@
   "cardButton": "Take a card",
   "standButton": "Stand pat",
   "nextRound": "Next round",
+  "deckEmptyResult": "The deck ran out during this round.",
   "roundResult": {
     "title": "Round result",
     "carry": "Everyone busted both ways. Pot {{pot}} carries over (carry #{{count}})",

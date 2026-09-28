@@ -179,6 +179,44 @@ describe('CincinnatiPage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('fold'));
   });
 
+  it('ベットに直面していないとき b は bet を送り r は何もしない', async () => {
+    mockApi.mockResolvedValue(base);
+    renderWithProviders(<CincinnatiPage />);
+    await waitFor(() => expect(screen.getByTestId('cin-bet')).toBeInTheDocument());
+    expect(screen.getByTestId('cin-bet')).toHaveAttribute('aria-keyshortcuts', 'b');
+    fireEvent.click(screen.getByText('キーボードショートカット'));
+    expect(screen.getByTestId('cincinnati-kbd-shortcuts')).toHaveTextContent('bベットする');
+    expect(screen.getByTestId('cincinnati-kbd-shortcuts')).not.toHaveTextContent('rレイズ');
+
+    mockApi.mockClear();
+    fireEvent.keyDown(document, { key: 'b' });
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', { amount: 20 }));
+
+    mockApi.mockClear();
+    fireEvent.keyDown(document, { key: 'r' });
+    await flushPendingDispatch();
+    expect(mockApi).not.toHaveBeenCalledWith('raise', expect.anything());
+  });
+
+  it('ベットに直面しているとき r は raise を送り b は何もしない', async () => {
+    mockApi.mockResolvedValue(withState({ toCall: 20, currentBet: 20 }));
+    renderWithProviders(<CincinnatiPage />);
+    await waitFor(() => expect(screen.getByTestId('cin-raise')).toBeInTheDocument());
+    expect(screen.getByTestId('cin-raise')).toHaveAttribute('aria-keyshortcuts', 'r');
+    fireEvent.click(screen.getByText('キーボードショートカット'));
+    expect(screen.getByTestId('cincinnati-kbd-shortcuts')).toHaveTextContent('rレイズ');
+    expect(screen.getByTestId('cincinnati-kbd-shortcuts')).not.toHaveTextContent('bベットする');
+
+    mockApi.mockClear();
+    fireEvent.keyDown(document, { key: 'r' });
+    await waitFor(() => expect(mockApi).toHaveBeenCalledWith('raise', { amount: 20 }));
+
+    mockApi.mockClear();
+    fireEvent.keyDown(document, { key: 'b' });
+    await flushPendingDispatch();
+    expect(mockApi).not.toHaveBeenCalledWith('bet', expect.anything());
+  });
+
   it('自分の手番でないときは f キーで fold を送らない', async () => {
     mockApi.mockResolvedValue(withState({ isHumanTurn: false, turnSeat: 1 }));
     renderWithProviders(<CincinnatiPage />);

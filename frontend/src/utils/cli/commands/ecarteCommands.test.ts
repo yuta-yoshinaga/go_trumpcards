@@ -45,14 +45,6 @@ describe('parseEcarteCommand', () => {
     expect(parseEcarteCommand('next')).toEqual({ args: ['next'] });
   });
 
-  it('parses sd into a reset with difficulty config', () => {
-    expect(parseEcarteCommand('sd 2')).toEqual({ args: ['reset', { config: { cpuDifficulty: 2 } }] });
-  });
-
-  it('rejects an out-of-range sd', () => {
-    expect('error' in parseEcarteCommand('sd 9')).toBe(true);
-  });
-
   it('parses tg into a reset with target-score config', () => {
     expect(parseEcarteCommand('tg 5')).toEqual({ args: ['reset', { config: { targetScore: 5 } }] });
   });

@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, TIMEOUT_GAME_LOOP, waitForLoaded } from './helpers';
+import { gameButton, navigateTo, TIMEOUT_GAME_LOOP, waitForLoaded } from './helpers';
 
 test.describe('Trex E2E', () => {
   test('shows both rules and lets the king choose a contract', async ({ page }) => {
@@ -15,7 +15,7 @@ test.describe('Trex E2E', () => {
     // king the interactor resolves its choice inside the same request, so the
     // page arrives already playing -- "waiting for the king" is a fallback the
     // web flow normally skips, and depending on it made this test fail.
-    const contractButton = page.getByRole('button', { name: /♥K|ダイヤ|クイーン|トリック|ドミノ/ }).first();
+    const contractButton = gameButton(page, /♥K|ダイヤ|クイーン|トリック|ドミノ/).first();
     const handCard = page.locator('[data-hint-action="play"]').first();
     await expect(contractButton.or(handCard).first()).toBeVisible({ timeout: TIMEOUT_GAME_LOOP });
 
@@ -30,7 +30,7 @@ test.describe('Trex E2E', () => {
   test('can be reset mid-game', async ({ page }) => {
     await navigateTo(page, '/trex');
 
-    const contractButton = page.getByRole('button', { name: /♥K|ダイヤ|クイーン|トリック|ドミノ/ }).first();
+    const contractButton = gameButton(page, /♥K|ダイヤ|クイーン|トリック|ドミノ/).first();
     if (await contractButton.isVisible()) {
       await contractButton.click();
       await waitForLoaded(page);

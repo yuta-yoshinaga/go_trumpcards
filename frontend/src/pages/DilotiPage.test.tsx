@@ -192,6 +192,7 @@ describe('DilotiPage', () => {
       makeDilotiState({
         phase: 'roundEnd',
         isHumanTurn: false,
+        players: makeDilotiState().players.map((player, idx) => ({ ...player, score: idx === 0 ? 37 : 22 })),
         lastResult: {
           lines: [
             { key: 'cards', points: [4, 0] },
@@ -208,15 +209,29 @@ describe('DilotiPage', () => {
     expect(result).toHaveTextContent('最多枚数');
     expect(result).toHaveTextContent('クセリ');
     expect(result).toHaveTextContent('14 - 0');
+    expect(result).toHaveTextContent('あなた: 今回 14 / 累計 37');
+    expect(result).toHaveTextContent('CPU 1: 今回 0 / 累計 22');
+    expect(result).toHaveTextContent('ゲームは続きます');
 
     fireEvent.click(screen.getByTestId('diloti-next-round'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
   });
 
   it('shows the winner at game end', async () => {
-    mockExec.mockResolvedValue(makeDilotiState({ phase: 'gameEnd', gameEndFlag: true, winnerIdx: 0 }));
+    mockExec.mockResolvedValue(
+      makeDilotiState({
+        phase: 'gameEnd',
+        gameEndFlag: true,
+        winnerIdx: 0,
+        players: makeDilotiState().players.map((player, idx) => ({ ...player, score: idx === 0 ? 14 : 0 })),
+        lastResult: { lines: [], totals: [14, 0], cardCounts: [30, 22], xeris: [1, 0] },
+      }),
+    );
     renderWithProviders(<DilotiPage />);
     expect(await screen.findByTestId('diloti-winner')).toBeInTheDocument();
+    const result = screen.getByTestId('diloti-round-result');
+    expect(result).toHaveTextContent('あなた: 今回 14 / 累計 14');
+    expect(result).not.toHaveTextContent('ゲームは続きます');
   });
 
   // **ヒントのライブ領域は常設。** 出る側と出ない側の両方を見る。

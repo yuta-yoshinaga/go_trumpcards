@@ -1,5 +1,5 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fourteenoutApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -54,6 +54,10 @@ beforeEach(() => {
   vi.clearAllMocks();
   localStorage.clear();
   mockExec.mockResolvedValue(playingState);
+});
+
+afterEach(() => {
+  vi.useRealTimers();
 });
 
 describe('FourteenOutPage', () => {
@@ -215,6 +219,61 @@ describe('FourteenOutPage', () => {
     fireEvent.click(await screen.findByTestId('mc-col-0'));
     fireEvent.click(screen.getByTestId('mc-col-1'));
     await waitFor(() => expect(screen.getByTestId('mc-pair-toast')).toBeInTheDocument());
+  });
+
+  it('explains and briefly marks columns when the selected pair does not make 14', async () => {
+    renderWithProviders(<FourteenOutPage />);
+    const first = await screen.findByTestId('mc-col-0');
+    const second = screen.getByTestId('mc-col-2');
+
+    fireEvent.click(first);
+    fireEvent.click(second);
+
+    expect(await screen.findByTestId('mc-invalid-pair')).toHaveTextContent('合計が14になりません');
+    expect(first).toHaveAttribute('data-invalid-pair', 'true');
+    expect(second).toHaveAttribute('data-invalid-pair', 'true');
+    expect(screen.queryByTestId('mc-pair-toast')).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByTestId('mc-invalid-pair')).not.toBeInTheDocument(), { timeout: 2500 });
+  });
+
+  it('clears the invalid-pair notice when a valid pair is removed', async () => {
+    renderWithProviders(<FourteenOutPage />);
+    await screen.findByTestId('mc-col-0');
+    vi.useFakeTimers();
+
+    act(() => fireEvent.click(screen.getByTestId('mc-col-0')));
+    expect(screen.getByTestId('mc-col-0')).toHaveAttribute('aria-pressed', 'true');
+    act(() => fireEvent.click(screen.getByTestId('mc-col-2')));
+    expect(screen.getByTestId('mc-invalid-pair')).toBeInTheDocument();
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    act(() => fireEvent.click(screen.getByTestId('mc-col-0')));
+    expect(screen.getByTestId('mc-col-0')).toHaveAttribute('aria-pressed', 'true');
+    act(() => fireEvent.click(screen.getByTestId('mc-col-1')));
+
+    expect(screen.queryByTestId('mc-invalid-pair')).not.toBeInTheDocument();
+    expect(screen.getByTestId('mc-pair-toast')).toBeInTheDocument();
+  });
+
+  it('clears the pair-removed toast when an invalid pair is selected', async () => {
+    renderWithProviders(<FourteenOutPage />);
+    await screen.findByTestId('mc-col-0');
+    vi.useFakeTimers();
+
+    act(() => fireEvent.click(screen.getByTestId('mc-col-0')));
+    act(() => fireEvent.click(screen.getByTestId('mc-col-1')));
+    expect(screen.getByTestId('mc-pair-toast')).toBeInTheDocument();
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    act(() => fireEvent.click(screen.getByTestId('mc-col-0')));
+    act(() => fireEvent.click(screen.getByTestId('mc-col-2')));
+
+    expect(screen.queryByTestId('mc-pair-toast')).not.toBeInTheDocument();
+    expect(screen.getByTestId('mc-invalid-pair')).toBeInTheDocument();
   });
 
   // ペアを取り除く前は成功トーストを表示しない。

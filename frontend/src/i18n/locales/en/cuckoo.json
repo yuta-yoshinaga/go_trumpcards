@@ -22,7 +22,7 @@
   "refuseNoticeNoKing": "Someone is trying to swap with you. You don't hold a King, so you cannot refuse — please accept.",
   "acceptButton": "Accept",
   "nextRound": "Next round",
-  "roundLoser": "{{name}} held the lowest card and lost a life.",
+  "roundLoser": "{{name}} held the lowest card and lost a life. Current lives: {{lives}}",
   "roundLosersTitle": "This round's losers",
   "roundLowestValue": "Lowest value: {{value}}",
   "settings": {

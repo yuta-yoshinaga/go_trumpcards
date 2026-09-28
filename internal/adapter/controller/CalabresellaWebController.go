@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra
+//go:build !js || !wasm || extra9
 
 package controller
 
@@ -14,7 +14,8 @@ import (
 type CalabresellaWebInput struct {
 	BaseWebInput
 	// CardIndex プレイ/ディスカードするカードのインデックス
-	CardIndex *int `json:"cardIndex,omitempty"`
+	CardIndex   *int  `json:"cardIndex,omitempty"`
+	CardIndices []int `json:"cardIndices,omitempty"`
 	// Bid ビッド宣言 (0=pass, 1=chiamo, 2=solo)
 	Bid *int `json:"bid,omitempty"`
 	// Config ゲーム設定
@@ -116,10 +117,14 @@ func calabresellaDispatch(bc *baseController, w http.ResponseWriter, di usecase.
 		}
 		bc.writePresenterResponse(w, di.Bid(domain.CalabresellaBid(*param.Bid)))
 	case "d", "discard":
-		if !requireParam(bc, w, newDefault, param.CardIndex == nil, "param error: cardIndex is required.") {
+		if !requireParam(bc, w, newDefault, len(param.CardIndices) != domain.CalabresellaMonteSize && param.CardIndex == nil, "param error: cardIndices are required.") {
 			return true
 		}
-		bc.writePresenterResponse(w, di.Discard(*param.CardIndex))
+		if len(param.CardIndices) > 0 {
+			bc.writePresenterResponse(w, di.DiscardCards(param.CardIndices))
+		} else {
+			bc.writePresenterResponse(w, di.Discard(*param.CardIndex))
+		}
 	case "p", "play":
 		if !requireParam(bc, w, newDefault, param.CardIndex == nil, "param error: cardIndex is required.") {
 			return true

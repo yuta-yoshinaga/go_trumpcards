@@ -97,6 +97,17 @@ describe('DoubleKlondikePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('d'));
   });
 
+  it('announces the stock draw action and remaining card count', async () => {
+    renderWithProviders(<DoubleKlondikePage />);
+    expect(await screen.findByRole('button', { name: 'ストックをめくる、残り59枚' })).toBeInTheDocument();
+  });
+
+  it('announces when the stock is empty', async () => {
+    mockExec.mockResolvedValue(makeState({ stockCount: 0 }));
+    renderWithProviders(<DoubleKlondikePage />);
+    expect(await screen.findByRole('button', { name: 'ストックをめくる、空' })).toBeInTheDocument();
+  });
+
   it('moves the waste card onto a tableau column', async () => {
     renderWithProviders(<DoubleKlondikePage />);
     fireEvent.click(await screen.findByTestId('waste'));

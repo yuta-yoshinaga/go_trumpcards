@@ -78,7 +78,11 @@ func (p *AmericanToadCuiPresenter) Output(at interfaces.AmericanToadGame, lastEr
 			colCards := tableau[col]
 			b.WriteString(i18n.Tf("americantoad.columnLabel", "col", strconv.Itoa(col)))
 			if len(colCards) == 0 {
-				b.WriteString(" " + i18n.T("cuiEmptyCol"))
+				if len(reserve) > 0 {
+					b.WriteString(" " + i18n.T("americantoad.reservedColumnLabel") + " " + i18n.T("cuiEmptyCol") + " " + i18n.T("americantoad.reservedColumnDescription"))
+				} else {
+					b.WriteString(" " + i18n.T("cuiEmptyCol") + " " + i18n.T("americantoad.emptyColumnDescription"))
+				}
 			} else {
 				b.WriteString(americanToadColumnStr(colCards))
 			}

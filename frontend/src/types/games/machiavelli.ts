@@ -23,7 +23,6 @@ export interface MachiavelliMeld {
 /** Machiavelli game configuration. */
 export interface MachiavelliConfig {
   playerCount: number;
-  cpuDifficulty: number;
   targetRounds: number;
 }
 

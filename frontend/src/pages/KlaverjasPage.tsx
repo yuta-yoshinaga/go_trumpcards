@@ -27,6 +27,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { KlaverjasResponse } from '../types/card';
 import { KlaverjasPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { suitSymbolAt } from '../utils/cardAlt';
 import { KLAVERJAS_HELP, parseKlaverjasCommand } from '../utils/cli/commands/klaverjasCommands';
 import { formatKlaverjasState } from '../utils/cli/formatters/klaverjasFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -34,9 +35,6 @@ import { isRequestedHint } from '../utils/hintRequest';
 import { getKlaverjasPlayRestriction } from '../utils/klaverjasPlayRestriction';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
-
-/** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 unused). */
-const SUIT_SYMBOLS = ['', '♠', '♣', '♥', '♦'] as const;
 
 /**
  * Card strength and points, strongest first (sync: `Klaverjas.trumpStrength` /
@@ -195,11 +193,12 @@ function KlaverjasPageContent() {
   const isPlayPhase = state.phase === KlaverjasPhase.PLAY;
   const isTrickEnd = state.phase === KlaverjasPhase.TRICK_END;
   const isRoundEnd = state.phase === KlaverjasPhase.ROUND_END;
+  const showLastTrickResult = isTrickEnd || isRoundEnd;
   const isGameEnd = state.phase === KlaverjasPhase.GAME_END || state.gameEndFlag;
 
   const canPlay = isPlayPhase && isHumanTurn;
   const humanTeam = humanIdx % 2;
-  const trumpSymbol = SUIT_SYMBOLS[state.trumpSuit] ?? '?';
+  const trumpSymbol = suitSymbolAt(state.trumpSuit, '');
 
   const handleManualReset = () => {
     hideActionLog();
@@ -272,15 +271,19 @@ function KlaverjasPageContent() {
                   label={t('currentTrick')}
                   dataTutorial="klaverjas-trick-display"
                 />
-                {/* At TrickEnd leadPlayerIdx is the trick winner, so their team is shown before Next Trick. */}
-                {isTrickEnd && (
+                {/* Show the resolved trick result until the next trick starts. */}
+                {showLastTrickResult && state.lastTrickTeam >= 0 && (
                   <div
                     className="my-2 p-2 rounded bg-ds-accent/15 text-center text-sm font-semibold text-ds-accent"
                     role="status"
                     aria-live="polite"
                     data-testid="klaverjas-trick-winner"
                   >
-                    {t('trickWinner', { team: state.leadPlayerIdx % 2 === 0 ? t('team.a') : t('team.b') })}
+                    {t(state.lastTrickBonus > 0 ? 'trickResultWithBonus' : 'trickResult', {
+                      team: state.lastTrickTeam === 0 ? t('team.a') : t('team.b'),
+                      points: state.lastTrickPoints,
+                      bonus: state.lastTrickBonus,
+                    })}
                   </div>
                 )}
               </div>

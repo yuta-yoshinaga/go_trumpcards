@@ -1071,7 +1071,8 @@ func findAllPossibleMelds(cards []*Card) [][]*Card {
 	for _, c := range cards {
 		byRank[c.GetValue()] = append(byRank[c.GetValue()], c)
 	}
-	for _, group := range byRank {
+	for _, key := range sortedIntKeys(byRank) {
+		group := byRank[key]
 		if len(group) >= 3 {
 			melds = append(melds, group[:3])
 			if len(group) >= 4 {
@@ -1085,7 +1086,8 @@ func findAllPossibleMelds(cards []*Card) [][]*Card {
 	for _, c := range cards {
 		bySuit[c.GetDesign()] = append(bySuit[c.GetDesign()], c)
 	}
-	for _, group := range bySuit {
+	for _, key := range sortedIntKeys(bySuit) {
+		group := bySuit[key]
 		if len(group) < 3 {
 			continue
 		}

@@ -53,6 +53,8 @@ export interface MobileHandGridProps {
    * default tooltip.
    */
   cardTitleFor?: (idx: number) => string | undefined;
+  /** Optional per-card status appended to its accessible name. */
+  cardStatusFor?: (idx: number) => string | undefined;
   /** Optional badge to render in the top-left corner of a card (e.g. game-specific role marker). */
   cardBadgeFor?: (idx: number) => { glyph: string; title: string } | null;
   /**
@@ -89,6 +91,7 @@ export function MobileHandGrid({
   validIndices,
   restrictedTooltip,
   cardTitleFor,
+  cardStatusFor,
   cardBadgeFor,
   highlightIndices,
   trumpIndices,
@@ -132,6 +135,7 @@ export function MobileHandGrid({
               const legal = isLegal(globalIdx);
               const dimmed = highlightIndices != null && !highlighted && !isSelected && !restricted;
               const badge = cardBadgeFor?.(globalIdx);
+              const status = cardStatusFor?.(globalIdx);
               return (
                 <button
                   type="button"
@@ -140,7 +144,7 @@ export function MobileHandGrid({
                     if (!restricted) onToggle(globalIdx);
                   }}
                   // 携帯側も同じ理由でバッジの意味を読み上げに載せる (#6612)。
-                  aria-label={badge ? `${cardAlt(card)} (${badge.title})` : cardAlt(card)}
+                  aria-label={`${cardAlt(card)}${badge ? ` (${badge.title})` : ''}${status ? ` (${status})` : ''}`}
                   aria-pressed={isSelected}
                   // Use aria-disabled (not the HTML `disabled` attribute) so restricted
                   // cards remain focusable for keyboard / screen-reader users — they

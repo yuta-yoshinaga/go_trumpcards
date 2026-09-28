@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { macauApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
@@ -30,7 +30,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { MacauResponse } from '../types/card';
 import { CrazyEightsSuit, MacauPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { cardAlt } from '../utils/cardAlt';
+import { cardAlt, suitSymbolAt } from '../utils/cardAlt';
 import { MACAU_HELP, parseMacauCommand } from '../utils/cli/commands/macauCommands';
 import { formatMacauState } from '../utils/cli/formatters/macauFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -51,13 +51,6 @@ const SUIT_BUTTONS = [
   { suit: CrazyEightsSuit.HEART, key: 'suitHeart' },
   { suit: CrazyEightsSuit.DIAMOND, key: 'suitDiamond' },
 ] as const;
-
-const SUIT_SYMBOLS: Record<number, string> = {
-  [CrazyEightsSuit.SPADE]: '♠',
-  [CrazyEightsSuit.CLOVER]: '♣',
-  [CrazyEightsSuit.HEART]: '♥',
-  [CrazyEightsSuit.DIAMOND]: '♦',
-};
 
 /** Macau tutorial step definitions. */
 const MACAU_TUTORIAL_STEPS: TutorialStep[] = [
@@ -94,6 +87,8 @@ export const MacauPage = withTutorial(MacauPageContent, 'macau', MACAU_TUTORIAL_
 function MacauPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('macau');
+  const [mustDeclareAnnouncement, setMustDeclareAnnouncement] = useState('');
+  const wasHumanMustDeclare = useRef(false);
   const {
     state,
     loading,
@@ -156,6 +151,17 @@ function MacauPageContent() {
   });
 
   const phaseNames = usePhaseNames('macau', MACAU_PHASE_KEYS);
+  const isHumanMustDeclare =
+    state?.phase === MacauPhase.MUST_DECLARE && state.players[state.currentPlayerIdx]?.isHuman === true;
+
+  useEffect(() => {
+    if (isHumanMustDeclare && !wasHumanMustDeclare.current) {
+      setMustDeclareAnnouncement(t('mustDeclareBanner'));
+    } else if (!isHumanMustDeclare) {
+      setMustDeclareAnnouncement('');
+    }
+    wasHumanMustDeclare.current = isHumanMustDeclare;
+  }, [isHumanMustDeclare, t]);
 
   if (!state)
     return (
@@ -189,6 +195,9 @@ function MacauPageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
+      <div className="sr-only" role="status" aria-live="polite" data-testid="macau-must-declare-live">
+        {mustDeclareAnnouncement}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -245,7 +254,7 @@ function MacauPageContent() {
                         data-testid="chosen-suit-watermark"
                         className="pointer-events-none absolute inset-0 flex items-center justify-end pr-4 text-[6rem] leading-none opacity-15 text-ds-warning motion-safe:animate-suit-watermark"
                       >
-                        {SUIT_SYMBOLS[state.chosenSuit] ?? '?'}
+                        {suitSymbolAt(state.chosenSuit, '?')}
                       </span>
                     )}
                     <div className="relative">
@@ -255,7 +264,7 @@ function MacauPageContent() {
                       <div>{t('discardTop')}</div>
                       {state.chosenSuit > 0 && (
                         <div className="text-ds-warning">
-                          {t('chosenSuit')}: {SUIT_SYMBOLS[state.chosenSuit] ?? '?'}
+                          {t('chosenSuit')}: {suitSymbolAt(state.chosenSuit, '?')}
                         </div>
                       )}
                     </div>
@@ -305,10 +314,9 @@ function MacauPageContent() {
                   </div>
                 )}
 
-                {isMustDeclare && state.players[state.currentPlayerIdx]?.isHuman && (
+                {isHumanMustDeclare && (
                   <div
                     className={`my-2 p-2 rounded text-sm font-semibold ${badgeInfoColors}`}
-                    role="status"
                     data-testid="macau-must-declare-banner"
                   >
                     {t('mustDeclareBanner')}

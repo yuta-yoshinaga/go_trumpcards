@@ -376,7 +376,6 @@ func TestTrex_UnmarshalRejectsAndClampsHostileSnapshots(t *testing.T) {
 	for name, payload := range map[string]string{
 		"not json":         "{",
 		"seat count":       `{"pl":[],"cfg":{"cd":0},"ph":0,"ct":5}`,
-		"bad config":       `{"pl":[{},{},{},{}],"cfg":{"cd":99},"ph":0,"ct":5}`,
 		"unknown phase":    `{"pl":[{},{},{},{}],"cfg":{"cd":0},"ph":9,"ct":5}`,
 		"unknown contract": `{"pl":[{},{},{},{}],"cfg":{"cd":0},"ph":0,"ct":42}`,
 	} {

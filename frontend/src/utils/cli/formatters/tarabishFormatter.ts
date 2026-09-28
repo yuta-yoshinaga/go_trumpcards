@@ -1,5 +1,6 @@
 import type { TarabishPlayer, TarabishResponse } from '../../../types/card';
 import { TarabishPhase } from '../../../types/phases';
+import { suitSymbolAt } from '../../cardAlt';
 import { formatCard, formatHeader, formatPlayerName, formatSeparator } from '../formatterBase';
 
 const PHASE_NAMES: Record<number, string> = {
@@ -11,9 +12,6 @@ const PHASE_NAMES: Record<number, string> = {
 
 /** Tricks per round (nine cards each). */
 const TRICKS_PER_ROUND = 9;
-
-/** trumpSuit is a 1-based suit code, as elsewhere in this repo. */
-const SUIT_SYMBOLS: Record<number, string> = { 1: '♠', 2: '♣', 3: '♥', 4: '♦' };
 
 /** A seat's meld, spelled out rather than as a bare number. */
 function meldStr(p: TarabishPlayer): string {
@@ -39,7 +37,7 @@ export function formatTarabishState(state: TarabishResponse | null): string {
 
   if (state.trumpTakerIdx >= 0) {
     const who = formatPlayerName(state.trumpTakerIdx, state.players[state.trumpTakerIdx]?.isHuman ?? false);
-    lines.push(`trump: ${SUIT_SYMBOLS[state.trumpSuit] ?? '?'} (taken by ${who})`);
+    lines.push(`trump: ${suitSymbolAt(state.trumpSuit, '?')} (taken by ${who})`);
   } else if (state.upCard) {
     lines.push(`turned for trump: ${formatCard(state.upCard)}`);
   }

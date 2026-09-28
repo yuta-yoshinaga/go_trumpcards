@@ -32,6 +32,7 @@
     "note": "あくまで目安です。実際の獲得点は切り札宣言後のプレイ次第で変わります。"
   },
   "trumpPrompt": "あなたがビッドに勝ちました — 切り札を宣言してください。",
+  "trumpConfirmed": "切り札は{{suit}}に確定しました。",
   "bidderBadge": "ビッダー",
   "cards": "{{count}}枚",
   "tricks": "{{count}}トリック",

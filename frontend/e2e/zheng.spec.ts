@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, TIMEOUT_GAME_LOOP, waitForLoaded } from './helpers';
+import { gameButton, navigateTo, TIMEOUT_GAME_LOOP, waitForLoaded } from './helpers';
 
 test.describe('Zheng Shangyou E2E', () => {
   test('starts a game: reset → verify controls → toggle card selection', async ({ page }) => {
@@ -14,7 +14,7 @@ test.describe('Zheng Shangyou E2E', () => {
 
     // Verify game controls are visible. Pass may be legitimately disabled when
     // the human leads (empty table), so only assert visibility here.
-    const passButton = page.getByRole('button', { name: 'パス' });
+    const passButton = gameButton(page, 'パス');
     const playButton = page.getByRole('button', { name: '選択したカードを出す' });
     await expect(passButton).toBeVisible({ timeout: TIMEOUT_GAME_LOOP });
     await expect(playButton).toBeVisible();

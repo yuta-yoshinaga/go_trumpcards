@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra3
+//go:build !js || !wasm || extra10
 
 package presenter
 
@@ -154,6 +154,13 @@ func (p *RookCuiPresenter) Output(g interfaces.RookGame, lastErr error) string {
 		}
 		switch g.GetPhase() {
 		case domain.RookPhaseBid:
+			passedCount := 0
+			for i := 0; i < g.GetPlayerCnt(); i++ {
+				if g.GetPlayer(i).GetPassed() {
+					passedCount++
+				}
+			}
+			b.WriteString(i18n.Tf("rook.bidStatus", "remaining", strconv.Itoa(g.GetPlayerCnt()-passedCount), "passed", strconv.Itoa(passedCount)) + "\n")
 			bidIdx := g.GetBidPlayerIdx()
 			b.WriteString(i18n.Tf("rook.promptBid",
 				"name", cuiPlayerName(g.GetPlayer(bidIdx), bidIdx)) + "\n")

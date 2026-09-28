@@ -1,8 +1,8 @@
 import type { FortyFivesResponse } from '../../../types/card';
+import { suitSymbolAt } from '../../cardAlt';
 import { formatCard, formatHeader, formatIndexedCards, formatPlayerName, formatSeparator } from '../formatterBase';
 
 const PHASE_NAMES = ['Bid', 'Play', 'TrickEnd', 'RoundEnd', 'GameEnd'];
-const SUIT_SYMBOLS = ['none', '♠', '♣', '♥', '♦'];
 
 /** Formats a contract value (0=Pass, otherwise the bid amount). */
 function formatContract(contract: number): string {
@@ -22,7 +22,7 @@ export function formatFortyFivesState(state: FortyFivesResponse): string {
   lines.push(
     `round: ${state.roundNumber}  trick: ${state.trickNumber}  phase: ${PHASE_NAMES[state.phase] ?? state.phase}`,
   );
-  lines.push(`trump: ${SUIT_SYMBOLS[state.trumpSuit] ?? '?'}`);
+  lines.push(`trump: ${state.trumpSuit === 0 ? 'none' : suitSymbolAt(state.trumpSuit, '?')}`);
   if (state.declarerIdx >= 0) {
     const name = formatPlayerName(state.declarerIdx, state.players[state.declarerIdx]?.isHuman ?? false);
     lines.push(`declarer: ${name} (team ${teamOf(state.declarerIdx)}) — ${formatContract(state.contract)}`);

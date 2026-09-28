@@ -151,7 +151,7 @@ func TestScoponeInteractor_ResetWithConfigInvalid(t *testing.T) {
 	spMock := new(presenter.MockScoponePresenter)
 	spMock.On("Output", mock.Anything, mock.Anything).Return("invalid")
 	si := usecase.NewScoponeInteractor(newTestScopone(), spMock)
-	bad := domain.ScoponeConfig{CpuDifficulty: 99, TargetScore: 11}
+	bad := domain.ScoponeConfig{TargetScore: 11}
 	assert.NotEmpty(t, si.ResetWithConfig(bad))
 }
 

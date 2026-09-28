@@ -19,6 +19,7 @@
   },
   "partialPrefix": "途中",
   "partialTooltip": "スターター抜きで確定している点。スターターで増えることはあっても減りません",
+  "placementAnnouncement": "行{{rowNo}}が{{rowScore}}点、列{{colNo}}が{{colScore}}点、合計{{total}}点",
   "part": {
     "fifteens": "15が{{n}}",
     "pairs": "ペア{{n}}",

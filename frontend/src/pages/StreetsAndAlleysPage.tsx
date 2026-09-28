@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useId, useMemo } from 'react';
 import type { StreetsAndAlleysMoveZone, streetsAndAlleysApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -93,6 +93,7 @@ function StreetsAndAlleysPageContent() {
   } = useGamePageSetup('streetsandalleys');
   const game = useStreetsAndAlleysGame();
   const { state, loading, error, retry, hintError, selectedSource, hint, isAutoCompleting } = game;
+  const selectSourceHintId = useId();
 
   const {
     hint: frontendHint,
@@ -227,7 +228,9 @@ function StreetsAndAlleysPageContent() {
               <button
                 type="button"
                 onClick={() => game.handleSelectTarget(tableauColZone)}
-                disabled={!isPlaying || loading || !selectedSource}
+                disabled={!isPlaying || loading}
+                aria-disabled={!selectedSource || undefined}
+                aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                 style={{ height: dims.ch }}
                 data-target-candidate={legalTargets.tableau.has(colIdx) || undefined}
                 data-preview-target={legalTargets.tableau.has(colIdx) && preview.isPreview ? 'true' : undefined}
@@ -267,7 +270,7 @@ function StreetsAndAlleysPageContent() {
                           }
                         }}
                         disabled={!isPlaying || loading || (!isTop && !selectedSource)}
-                        aria-label={cardAlt(tc.card)}
+                        aria-label={t('tableauCardAriaLabel', { card: cardAlt(tc.card), col: colIdx })}
                         aria-pressed={isSelfSource}
                         data-target-candidate={isTargetCandidate || undefined}
                         data-preview-target={isTargetCandidate && preview.isPreview ? 'true' : undefined}
@@ -321,6 +324,9 @@ function StreetsAndAlleysPageContent() {
       }
     >
       <LandscapeBanner message={t('landscapeBanner')} />
+      <span id={selectSourceHintId} className="sr-only">
+        {tc('label.selectSourceFirst')}
+      </span>
 
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
@@ -348,7 +354,9 @@ function StreetsAndAlleysPageContent() {
                           <button
                             type="button"
                             onClick={() => game.handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
+                            disabled={!isPlaying || loading || isAutoCompleting}
+                            aria-disabled={!selectedSource || undefined}
+                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t('foundationAriaLabel', {
                               suit: FOUNDATION_SUITS[idx],
                               count: pile.length,
@@ -372,7 +380,9 @@ function StreetsAndAlleysPageContent() {
                           <button
                             type="button"
                             onClick={() => game.handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading || !selectedSource}
+                            disabled={!isPlaying || loading}
+                            aria-disabled={!selectedSource || undefined}
+                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
                             style={{ width: dims.cw, height: dims.ch }}
                             data-target-candidate={legalTargets.foundation.has(idx) || undefined}

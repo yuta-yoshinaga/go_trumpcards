@@ -10,6 +10,8 @@
     "firstColumn": "先に配る列",
     "dealtCount": "配った枚数",
     "road": "罫線",
+    "roadResults": "履歴の各結果",
+    "roadCounts": "アンダー {{andar}} 件、バハール {{bahar}} 件",
     "sideBet": "サイドベット",
     "sideAmount": "サイドベット額",
     "payoutTable": "配当表",

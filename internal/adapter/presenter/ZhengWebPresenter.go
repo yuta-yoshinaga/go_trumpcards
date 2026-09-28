@@ -1,4 +1,4 @@
-//go:build !js || !wasm || solo
+//go:build !js || !wasm || extra9
 
 package presenter
 
@@ -60,6 +60,10 @@ func (p *ZhengWebPresenter) Output(zg interfaces.ZhengGame, lastErr error) strin
 		pObj.Rank = player.GetRank()
 		pObj.CardCount = player.GetCardsSize()
 		pObj.Cards = playerCardsToOutput(player, player.GetIsHuman())
+		pObj.FinishCards = cardsToOutputOrEmpty(nil)
+		if player.GetIsFinished() {
+			pObj.FinishCards = cardsToOutputOrEmpty(player.GetFinishCards())
+		}
 		resObj.Players = append(resObj.Players, pObj)
 	}
 

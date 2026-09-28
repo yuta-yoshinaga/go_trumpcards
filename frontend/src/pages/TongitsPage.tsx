@@ -321,6 +321,19 @@ function TongitsPageContent() {
                   ))}
 
                 <div className="my-3 p-2 rounded bg-black/30" data-tutorial="tongits-score-table">
+                  {(isRoundEnd || isGameEnd) && (
+                    <div data-testid="tongits-round-result" className="mb-2">
+                      <div>
+                        {t('roundEndReasonLabel')}: {t(`roundEndReason.${state.roundEndReason}`)}
+                      </div>
+                      <div>
+                        {t('roundWinnerLabel')}:{' '}
+                        {state.roundWinner < 0
+                          ? t('roundDraw')
+                          : playerName(state.roundWinner, state.players[state.roundWinner]?.isHuman ?? false)}
+                      </div>
+                    </div>
+                  )}
                   <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
                   <table className="w-full text-sm text-ds-text-muted">
                     <thead>

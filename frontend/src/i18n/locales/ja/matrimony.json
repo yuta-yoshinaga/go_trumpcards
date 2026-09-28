@@ -22,6 +22,8 @@
   "hint": "ヒント",
   "autoComplete": "自動完成",
   "autoCompleteNotReady": "組札へ送れる札があると有効になります",
+  "autoCompleteInProgress": "自動完成を実行中です",
+  "autoCompleteFinished": "自動完成が終了しました。カードを移動してください",
   "undo": "元に戻す",
   "stalemate": "手詰まりです",
   "playing": "カードを移動してください",

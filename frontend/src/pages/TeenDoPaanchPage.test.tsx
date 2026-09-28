@@ -123,6 +123,7 @@ describe('TeenDoPaanchPage', () => {
 
   it('offers all four trump suits to the 5-target seat', async () => {
     renderWithProviders(<TeenDoPaanchPage />);
+    expect(await screen.findByTestId('td-trump-guidance')).toHaveTextContent(/スートを選んでください/);
     for (const suit of [1, 2, 3, 4]) {
       expect(await screen.findByTestId(`td-trump-${suit.toString()}-btn`)).toBeInTheDocument();
     }
@@ -165,6 +166,8 @@ describe('TeenDoPaanchPage', () => {
     mockExec.mockResolvedValue(playing({ trumpSuit: 4 } as Partial<TeenDoPaanchResponse>));
     renderWithProviders(<TeenDoPaanchPage />);
     expect(await screen.findByTestId('td-trump')).toHaveTextContent('♦');
+    expect(screen.getByTestId('td-trump-guidance')).toHaveTextContent(/カードを出してください/);
+    expect(screen.queryByTestId('td-trump-1-btn')).not.toBeInTheDocument();
   });
 
   // **前ラウンドの札のやり取りは盤面に痕跡が残らない。**
@@ -196,6 +199,17 @@ describe('TeenDoPaanchPage', () => {
     mockExec.mockClear();
     fireEvent.click(btn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('next'));
+  });
+
+  it('returns to the undecided trump prompt after changing rounds', async () => {
+    mockExec.mockImplementation(async (action) =>
+      action === 'next' ? makeState({ roundNumber: 2 }) : makeState({ phase: 2, trumpSuit: 3 }),
+    );
+    renderWithProviders(<TeenDoPaanchPage />);
+
+    fireEvent.click(await screen.findByRole('button', { name: '次のラウンドへ' }));
+    expect(await screen.findByTestId('td-trump-guidance')).toHaveTextContent(/スートを選んでください/);
+    expect(await screen.findByTestId('td-trump-1-btn')).toBeInTheDocument();
   });
 
   it('gives up when the give-up button is pressed', async () => {

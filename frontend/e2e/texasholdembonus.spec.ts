@@ -1,12 +1,12 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, waitForLoaded } from './helpers';
+import { gameButton, navigateTo, waitForLoaded } from './helpers';
 
 test.describe("Texas Hold'em Bonus Poker E2E", () => {
   test('plays a round: bet → play → check → check → result → reset', async ({ page }) => {
     await navigateTo(page, '/texasholdembonus');
 
     // BET phase: click ベット
-    const betButton = page.getByRole('button', { name: 'ベット' });
+    const betButton = gameButton(page, 'ベット');
     await expect(betButton).toBeVisible();
     await betButton.click();
     await waitForLoaded(page);
@@ -36,13 +36,13 @@ test.describe("Texas Hold'em Bonus Poker E2E", () => {
     // Reset back to bet phase
     await resetButton.click();
     await waitForLoaded(page);
-    await expect(page.getByRole('button', { name: 'ベット' })).toBeVisible();
+    await expect(gameButton(page, 'ベット')).toBeVisible();
   });
 
   test('fold flow: bet → fold → result → reset', async ({ page }) => {
     await navigateTo(page, '/texasholdembonus');
 
-    const betButton = page.getByRole('button', { name: 'ベット' });
+    const betButton = gameButton(page, 'ベット');
     await expect(betButton).toBeVisible();
     await betButton.click();
     await waitForLoaded(page);
@@ -57,22 +57,22 @@ test.describe("Texas Hold'em Bonus Poker E2E", () => {
 
     await resetButton.click();
     await waitForLoaded(page);
-    await expect(page.getByRole('button', { name: 'ベット' })).toBeVisible();
+    await expect(gameButton(page, 'ベット')).toBeVisible();
   });
 
   test('raise flow: bet → play → raise → raise → result', async ({ page }) => {
     await navigateTo(page, '/texasholdembonus');
 
-    await page.getByRole('button', { name: 'ベット' }).click();
+    await gameButton(page, 'ベット').click();
     await waitForLoaded(page);
 
     await page.getByRole('button', { name: /プレイ/ }).click();
     await waitForLoaded(page);
 
-    await page.getByRole('button', { name: /レイズ/ }).click();
+    await gameButton(page, /レイズ/).click();
     await waitForLoaded(page);
 
-    await page.getByRole('button', { name: /レイズ/ }).click();
+    await gameButton(page, /レイズ/).click();
     await waitForLoaded(page);
 
     await expect(page.getByRole('button', { name: '次のゲーム' })).toBeVisible({ timeout: 10_000 });

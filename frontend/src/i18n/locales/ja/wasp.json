@@ -17,6 +17,7 @@
   "empty": "空",
   "cardSelected": "選択中",
   "anyCard": "任意カード可",
+  "legalDestination": "移動先候補",
   "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
   "gameOver": "ゲームオーバー",
   "playing": "プレイ中",

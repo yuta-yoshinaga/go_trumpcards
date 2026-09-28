@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra5
+//go:build !js || !wasm || extra10
 
 package domain
 
@@ -38,13 +38,7 @@ func (p *CegoPlayer) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
 	}
-	if j.GamePlayer != nil {
-		p.GamePlayer = j.GamePlayer
-	} else {
-		p.GamePlayer = NewGamePlayer(false)
-	}
-	if j.TrickHolder != nil {
-		p.TrickHolder = *j.TrickHolder
-	}
+	p.GamePlayer = restoreGamePlayer(j.GamePlayer)
+	assignIfSet(&p.TrickHolder, j.TrickHolder)
 	return nil
 }

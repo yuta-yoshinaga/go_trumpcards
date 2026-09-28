@@ -54,6 +54,10 @@
     "title": "設定"
   },
   "betGuide": "アンテと任意のAAボーナスを設定してベット",
+  "betPreview": {
+    "required": "必要チップ合計（アンテ・ボーナス・コール）: {{amount}}",
+    "shortfall": "チップ不足: {{amount}}"
+  },
   "payoutRef": {
     "title": "配当表",
     "anteHeader": "アンテ配当",

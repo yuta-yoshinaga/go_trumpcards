@@ -160,6 +160,25 @@ describe('EstimationPage', () => {
     mockExec.mockResolvedValue(makeState({ phase: 1, trumpSuit: 3, restrictedBid: -1 }));
     renderWithProviders(<EstimationPage />);
     expect(await screen.findByTestId('est-bid-4-btn')).toBeEnabled();
+    expect(screen.queryByTestId('est-restricted-bid-explanation')).not.toBeInTheDocument();
+  });
+
+  it('shows and updates the visible reason for the barred call', async () => {
+    mockExec
+      .mockResolvedValueOnce(makeState({ phase: 1, trumpSuit: 3, restrictedBid: 4 }))
+      .mockResolvedValueOnce(makeState({ phase: 1, trumpSuit: 3, restrictedBid: 5 }));
+    renderWithProviders(<EstimationPage />);
+
+    const explanation = await screen.findByTestId('est-restricted-bid-explanation');
+    expect(explanation).toHaveAttribute('aria-live', 'polite');
+    expect(explanation).toHaveTextContent('宣言合計9に4を加えると全13トリックになるため選べません');
+
+    fireEvent.click(screen.getByTestId('est-bid-3-btn'));
+    await waitFor(() =>
+      expect(screen.getByTestId('est-restricted-bid-explanation')).toHaveTextContent(
+        '宣言合計8に5を加えると全13トリックになるため選べません',
+      ),
+    );
   });
 
   it('hides the call buttons once play starts', async () => {

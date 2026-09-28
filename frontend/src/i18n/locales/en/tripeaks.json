@@ -10,6 +10,8 @@
   "moveCount": "Moves",
   "score": "Score",
   "playableSummary": "Playable now: {{count}}",
+  "stockEmptyPlayable": "Stock empty: {{count}} card(s) can be removed",
+  "stockEmptyNoPlayable": "Stock empty: no cards can be removed",
   "drawRecommended": "Draw recommended",
   "bestScore": "Best",
   "newBest": "New best! {{score}} pts",

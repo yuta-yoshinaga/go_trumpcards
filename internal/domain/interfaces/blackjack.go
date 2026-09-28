@@ -1,4 +1,4 @@
-//go:build !js || !wasm || casino
+//go:build !js || !wasm || extra8
 
 package interfaces
 
@@ -21,6 +21,8 @@ type BlackJackGame interface {
 	PlayerStand() error
 	// PlayerDoubleDown プレイヤーがダブルダウンする
 	PlayerDoubleDown() error
+	// DoubleDownBlockReason ダブルダウンできない理由を取得する
+	DoubleDownBlockReason() domain.BJDoubleDownBlock
 	// PlayerSplit プレイヤーがスプリットする
 	PlayerSplit() error
 	// PlayerSurrender プレイヤーがサレンダーする

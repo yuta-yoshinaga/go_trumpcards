@@ -120,13 +120,13 @@ func TestGleek_HonourTableSumsToTheDeclaredTotal(t *testing.T) {
 	trump := domain.CardDesignHeart
 	total := 0
 	for _, v := range []int{1, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4} {
-		total += domain.GleekHonourValueForTest(gleekCard(trump, v), trump)
+		total += domain.GleekHonourValue(gleekCard(trump, v), trump)
 	}
 	assert.Equal(t, domain.GleekHonourTotal, total)
 
 	// 切り札以外の同じ札には点が付かない。
 	for _, v := range []int{1, 11, 6, 5, 4} {
-		assert.Zero(t, domain.GleekHonourValueForTest(gleekCard(domain.CardDesignSpade, v), trump))
+		assert.Zero(t, domain.GleekHonourValue(gleekCard(domain.CardDesignSpade, v), trump))
 	}
 }
 

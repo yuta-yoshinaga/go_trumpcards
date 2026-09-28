@@ -1,11 +1,11 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, TIMEOUT_ACTION, waitForLoaded } from './helpers';
+import { gameButton, navigateTo, TIMEOUT_ACTION, waitForLoaded } from './helpers';
 
 test.describe('Dragon Tiger E2E', () => {
   test('plays a round: bet on dragon → auto-resolve → reset', async ({ page }) => {
     await navigateTo(page, '/dragontiger');
 
-    const dragonBtn = page.getByRole('button', { name: 'ドラゴン' });
+    const dragonBtn = gameButton(page, 'ドラゴン');
     await expect(dragonBtn).toBeVisible();
     await dragonBtn.click();
     await waitForLoaded(page);
@@ -15,6 +15,6 @@ test.describe('Dragon Tiger E2E', () => {
     await expect(resetButton).toBeVisible({ timeout: TIMEOUT_ACTION });
     await resetButton.click();
     await waitForLoaded(page);
-    await expect(page.getByRole('button', { name: 'ドラゴン' })).toBeVisible();
+    await expect(gameButton(page, 'ドラゴン')).toBeVisible();
   });
 });

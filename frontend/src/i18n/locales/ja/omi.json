@@ -26,6 +26,8 @@
   "trumpCaller": "切り札宣言者",
   "maker": "メイカー: チーム {{team}}",
   "currentTrick": "現在のトリック",
+  "trickAnnouncementEntry": "{{player}}: {{card}}",
+  "listSeparator": "、",
   "partnership": "パートナー: {{partner}}",
   "trickCount": "トリック: {{count}}",
   "callTrumpButton": "切り札を宣言",

@@ -49,6 +49,8 @@
   "nextRound": "Next Round",
   "target": "Target: {{points}} pts",
   "progressLabel": "Progress: {{score}} / {{target}}",
+  "pointsRemaining": "Current score: {{points}} points remaining to target",
+  "targetReached": "Target reached with current score",
   "lastTrickBonus": "Last trick +10",
   "playPhase": {
     "lead": "Your turn — pick a card to lead.",

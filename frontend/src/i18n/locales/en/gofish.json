@@ -31,6 +31,7 @@
     "cpuWin": "Game over! CPU {{cpuId}} wins!"
   },
   "deck": "Deck: {{count}} cards",
+  "handCount": "Hand: {{count}} cards",
   "books": "Books: {{count}}",
   "knownRanksLabel": "Ranks they asked for",
   "bookRanksLabel": "Completed book ranks",

@@ -205,7 +205,12 @@ function OhHellPageContent() {
   // even though cardCount has been decremented for it.
   const humanIdx = state.players.findIndex((p) => p.isHuman);
   const humanInCurrentTrick = state.currentTrick.some((tc) => tc.playerIdx === humanIdx);
-  const showProgressChip = !isBidPhase && !isGameEnd && humanPlayer !== undefined && humanPlayer.bid >= 0;
+  const showProgressChip =
+    !isBidPhase && !isRoundEnd && !isGameEnd && humanPlayer !== undefined && humanPlayer.bid >= 0;
+  const remainingHumanTricks = humanPlayer ? humanPlayer.cardCount + (humanInCurrentTrick ? 1 : 0) : 0;
+  const bidUnreachable =
+    humanPlayer !== undefined &&
+    (humanPlayer.trickCount > humanPlayer.bid || humanPlayer.bid - humanPlayer.trickCount > remainingHumanTricks);
   // During bidding, summarize the table's placed bids vs the hand size.
   const bidSummary = isBidPhase
     ? ohHellBidSummary(
@@ -234,10 +239,15 @@ function OhHellPageContent() {
               className={`rounded-full px-2.5 py-1 text-xs font-medium ${progressChipColors(
                 humanPlayer.bid,
                 humanPlayer.trickCount,
-                humanPlayer.cardCount + (humanInCurrentTrick ? 1 : 0),
+                remainingHumanTricks,
               )}`}
             >
-              {t('bidProgress', { bid: humanPlayer.bid, won: humanPlayer.trickCount })}
+              {t('bidProgress', {
+                bid: humanPlayer.bid,
+                won: humanPlayer.trickCount,
+                remaining: remainingHumanTricks,
+              })}
+              {bidUnreachable && <span className="ml-1">({t('bidUnreachable')})</span>}
             </span>
           )}
           {bidSummary && (

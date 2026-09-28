@@ -6,7 +6,8 @@
   },
   "guide": {
     "selectHand": "Select a card from your hand",
-    "selectTable": "Select a table card"
+    "selectTable": "Select a table card",
+    "exchangeFlow": "Single exchange: select one card from your hand and one table card. Exchange all: replace all five hand cards. After the exchange, review your new hand and suit scores before choosing again."
   },
   "phase": {
     "play": "Playing",

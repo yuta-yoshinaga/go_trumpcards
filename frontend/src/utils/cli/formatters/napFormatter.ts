@@ -1,4 +1,5 @@
 import type { NapResponse } from '../../../types/card';
+import { suitSymbolAt } from '../../cardAlt';
 import {
   formatCard,
   formatHeader,
@@ -9,7 +10,6 @@ import {
 } from '../formatterBase';
 
 const PHASE_NAMES = ['Bid', 'Play', 'TrickEnd', 'RoundEnd', 'GameEnd'];
-const SUIT_SYMBOLS = ['none', '♠', '♣', '♥', '♦'];
 
 /** Maps a Nap contract/bid value (0/2/3/4/5) to its display name. */
 function contractName(value: number): string {
@@ -37,7 +37,7 @@ export function formatNapState(state: NapResponse): string {
   lines.push(
     `round: ${state.roundNumber}  trick: ${state.trickNumber}  phase: ${PHASE_NAMES[state.phase] ?? state.phase}`,
   );
-  lines.push(`trump: ${SUIT_SYMBOLS[state.trumpSuit] ?? '?'}`);
+  lines.push(`trump: ${suitSymbolAt(state.trumpSuit, 'none')}`);
   if (state.declarerIdx >= 0) {
     const name = formatPlayerName(state.declarerIdx, state.players[state.declarerIdx]?.isHuman ?? false);
     lines.push(`declarer: ${name} — ${contractName(state.contract)}`);

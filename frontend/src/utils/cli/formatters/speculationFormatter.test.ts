@@ -21,6 +21,7 @@ const base: SpeculationResponse = {
   roundNo: 0,
   winnerSeat: -1,
   gameEndFlag: false,
+  lastTrade: null,
   config: { players: 3, initialChips: 200, stake: 10, rounds: 5 },
   message: '',
 };

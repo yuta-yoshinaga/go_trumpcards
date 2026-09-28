@@ -1,5 +1,6 @@
 import type { ShelemPlayer, ShelemResponse } from '../../../types/card';
 import { ShelemPhase } from '../../../types/phases';
+import { suitSymbolAt } from '../../cardAlt';
 import { formatCard, formatHeader, formatPlayerName, formatSeparator } from '../formatterBase';
 
 const PHASE_NAMES: Record<number, string> = {
@@ -12,9 +13,6 @@ const PHASE_NAMES: Record<number, string> = {
 
 /** Tricks per round (twelve cards each). */
 const TRICKS_PER_ROUND = 12;
-
-/** trumpSuit is a 1-based suit code, as elsewhere in this repo. */
-const SUIT_SYMBOLS: Record<number, string> = { 1: '♠', 2: '♣', 3: '♥', 4: '♦' };
 
 /** A seat's standing in the bidding. */
 function roleStr(p: ShelemPlayer, declarer: boolean): string {
@@ -49,7 +47,7 @@ export function formatShelemState(state: ShelemResponse | null): string {
   } else {
     lines.push(`contract: undecided (bid at least ${state.minBid})`);
   }
-  if (state.trumpSuit > 0) lines.push(`trump: ${SUIT_SYMBOLS[state.trumpSuit] ?? '?'}`);
+  if (state.trumpSuit > 0) lines.push(`trump: ${suitSymbolAt(state.trumpSuit, '?')}`);
   if (state.widowSize > 0) lines.push(`widow: ${state.widowSize} cards face down`);
 
   lines.push('----------');

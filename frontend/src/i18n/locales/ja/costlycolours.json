@@ -22,6 +22,7 @@
   "total": "累計 {{n}} / 31",
   "score": "得点 {{n}}",
   "cards": "手札 {{n}} 枚",
+  "waitingForOpponent": "相手の手番です。お待ちください。",
   "dealerBadge": "親",
   "mogAccept": "交換する",
   "mogRefuse": "断る（相手に 1 点）",

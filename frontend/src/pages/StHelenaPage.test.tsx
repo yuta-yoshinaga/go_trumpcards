@@ -110,6 +110,19 @@ beforeEach(() => {
 });
 
 describe('StHelenaPage', () => {
+  it('keeps an unselected foundation target focusable and explains the required source', async () => {
+    renderWithProviders(<StHelenaPage />);
+    const btn = (await screen.findByAltText('♠ A')).closest('button') as HTMLButtonElement;
+    expect(btn).not.toBeDisabled();
+    expect(btn).toHaveAttribute('aria-disabled', 'true');
+    const hint = document.getElementById(btn.getAttribute('aria-describedby') ?? '');
+    expect(hint).toHaveTextContent('先に移動する札を選んでください');
+    mockExec.mockClear();
+    fireEvent.click(btn);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<StHelenaPage />);
@@ -219,7 +232,7 @@ describe('StHelenaPage', () => {
     renderWithProviders(<StHelenaPage />);
     fireEvent.click(await screen.findByRole('button', { name: 'ヒント' }));
 
-    const sourceButton = await screen.findByRole('button', { name: '♠ 4' });
+    const sourceButton = await screen.findByRole('button', { name: '♠ 4、列4' });
     expect(sourceButton.className).toContain('ring-ds-info');
     expect(screen.getByAltText('♠ 5').closest('[class*="ring-ds-success"]')).not.toBeNull();
     expect(screen.getByAltText('♥ 6').closest('[class*="ring-ds-success"]')).toBeNull();
@@ -255,7 +268,7 @@ describe('StHelenaPage', () => {
     );
     renderWithProviders(<StHelenaPage />);
     fireEvent.click(await screen.findByRole('button', { name: 'ヒント' }));
-    const source = await screen.findByRole('button', { name: '♠ 4' });
+    const source = await screen.findByRole('button', { name: '♠ 4、列4' });
     fireEvent.click(source);
     await waitFor(() => expect(source.className).toContain('ring-ds-warning'));
     expect(source.className).not.toContain('ring-ds-info');
@@ -283,6 +296,25 @@ describe('StHelenaPage', () => {
     const cardButton = cardImg.closest('button') as HTMLButtonElement;
     fireEvent.click(cardButton);
     await waitFor(() => expect(cardButton.className).toContain('ring-2'));
+  });
+
+  it('includes the zero-based tableau column in each card name and preserves pressed state', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: makeTableau({
+        0: [{ card: card('SPADE', 5), faceUp: true }],
+        1: [{ card: card('SPADE', 5), faceUp: true }],
+      }),
+    });
+    renderWithProviders(<StHelenaPage />);
+
+    const colZeroCard = await screen.findByRole('button', { name: '♠ 5、列0' });
+    const colOneCard = screen.getByRole('button', { name: '♠ 5、列1' });
+    expect(colZeroCard).toHaveAttribute('aria-pressed', 'false');
+    expect(colOneCard).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(colOneCard);
+    await waitFor(() => expect(colOneCard).toHaveAttribute('aria-pressed', 'true'));
+    expect(colZeroCard).toHaveAttribute('aria-pressed', 'false');
   });
 
   // **初回の配りの制限をページが守ること。**サーバは拒むが、押せてしまうと
@@ -403,8 +435,34 @@ describe('StHelenaPage', () => {
     mockExec.mockResolvedValue(playingState);
     const foundationImg = screen.getByAltText('♠ A');
     const foundationButton = foundationImg.closest('button') as HTMLButtonElement;
+    expect(foundationButton).not.toHaveAttribute('aria-disabled');
+    expect(foundationButton).not.toHaveAttribute('aria-describedby');
     fireEvent.click(foundationButton);
 
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith(
+        'move',
+        expect.objectContaining({ zone: 'tableau', col: SIDE_A }),
+        expect.objectContaining({ zone: 'foundation', col: 0 }),
+      ),
+    );
+  });
+
+  it('selects an empty foundation as a move target', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: sideTableau([{ card: card('SPADE', 1), faceUp: true }]),
+      foundation: [[], ...playingState.foundation.slice(1)],
+    });
+    renderWithProviders(<StHelenaPage />);
+    const source = (await screen.findByAltText('♠ A')).closest('button') as HTMLButtonElement;
+    fireEvent.click(source);
+    await waitFor(() => expect(source.className).toContain('ring-2'));
+    const target = screen.getByRole('button', { name: /空のasc組札/ });
+    expect(target).not.toHaveAttribute('aria-disabled');
+    expect(target).not.toHaveAttribute('aria-describedby');
+    mockExec.mockClear();
+    fireEvent.click(target);
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith(
         'move',

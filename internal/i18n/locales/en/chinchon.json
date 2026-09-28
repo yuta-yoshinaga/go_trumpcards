@@ -11,7 +11,6 @@
   "helpKnock": "  k <idx>              knock (discard then knock)",
   "helpLayoff": "  lo <idx,idx,...>     lay off",
   "helpNextRound": "  nr                   next round",
-  "helpSetDifficulty": "  sd [0-2]             CPU difficulty (0=Easy, 1=Normal, 2=Hard)",
   "helpSetPlayers": "  sp <2-4>             player count",
   "header": "Round: {{round}}  Stock: {{stock}}",
   "discardLine": "Discard: {{card}}",

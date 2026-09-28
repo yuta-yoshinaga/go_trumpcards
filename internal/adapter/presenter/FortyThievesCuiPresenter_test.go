@@ -131,6 +131,21 @@ func TestFortyThievesCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "[空]")
 	})
 
+	t.Run("empty column count is shown including zero", func(t *testing.T) {
+		p := new(FortyThievesCuiPresenter)
+
+		full := new(interfaces.MockFortyThievesGame)
+		setupFortyThievesCuiMockDefaults(full)
+		assert.Contains(t, p.Output(full, nil), "空き列数: 0")
+
+		empty := new(interfaces.MockFortyThievesGame)
+		setupFortyThievesCuiMockDefaults(empty)
+		empty.ExpectedCalls = filterCalls(empty.ExpectedCalls, "GetTableau")
+		var emptyTableau [domain.FortyThievesTableauCnt][]*domain.FortyThievesTableauCard
+		empty.On("GetTableau").Return(emptyTableau)
+		assert.Contains(t, p.Output(empty, nil), "空き列数: 10")
+	})
+
 	t.Run("foundation with cards", func(t *testing.T) {
 		fg := new(interfaces.MockFortyThievesGame)
 		setupFortyThievesCuiMockDefaults(fg)

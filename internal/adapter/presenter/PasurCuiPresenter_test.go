@@ -205,7 +205,7 @@ func TestPasurCuiPresenterCaptureOptions(t *testing.T) {
 	assert.Contains(t, out, "取れる組み合わせ:")
 	// **行を丸ごと見る。**添字だけを個別に探すと、盤面の他の数字に当たって
 	// 組み合わせが壊れていても通ってしまう。
-	assert.Contains(t, out, "  手札0 "+cuiCardStr(domain.NewCard(domain.CardDesignClover, 4, false))+" → 場札 0 / 1,2")
+	assert.Contains(t, out, "  手札0 "+cuiCardStr(domain.NewCard(domain.CardDesignClover, 4, false))+" → 場札 0（通常1点 + スール加算0点） / 1,2（通常1点 + スール加算0点）")
 	assert.NotContains(t, out, "  手札1", "手札1には捕獲候補が無いので出ない")
 	assert.NotContains(t, out, "取れる組み合わせはありません", "候補があるので「ありません」は出ない")
 }

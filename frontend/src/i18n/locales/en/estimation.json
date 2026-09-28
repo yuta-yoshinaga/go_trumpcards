@@ -36,7 +36,8 @@
     "bidAria": "Call {{n}} tricks",
     "bidDashAria": "Dash Call (zero tricks)",
     "bidBarredAria": "Cannot call {{n}} tricks: the calls would total exactly {{total}}",
-    "bidDashBarredAria": "Cannot make the Dash Call (zero tricks): the calls would total exactly {{total}}"
+    "bidDashBarredAria": "Cannot make the Dash Call (zero tricks): the calls would total exactly {{total}}",
+    "bidRestrictedExplanation": "The current call total of {{sum}} plus {{bid}} would make all {{total}} tricks, so this call is unavailable."
   },
   "result": {
     "win": "You win with {{score}}!",

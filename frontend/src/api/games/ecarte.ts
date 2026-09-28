@@ -6,7 +6,6 @@ import { gameExec } from '../gameExec';
 
 /** Configuration options for Écarté game settings. */
 export interface EcarteConfigInput {
-  cpuDifficulty?: number;
   targetScore?: number;
 }
 

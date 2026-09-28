@@ -109,8 +109,10 @@ func (p *KlaverjasCuiPresenter) Output(g interfaces.KlaverjasGame, lastErr error
 			b.WriteString(i18n.T("klaverjas.rankHelpPlain") + "\n")
 		case domain.KlaverjasPhaseTrickEnd:
 			b.WriteString(i18n.T("klaverjas.promptTrickEnd") + "\n")
+			writeKlaverjasLastTrickResult(b, g)
 			b.WriteString(i18n.T("klaverjas.promptTrickEndHelp") + "\n")
 		case domain.KlaverjasPhaseRoundEnd:
+			writeKlaverjasLastTrickResult(b, g)
 			pts := g.GetRoundCardPoints()
 			roem := g.GetRoundRoem()
 			b.WriteString(i18n.Tf("klaverjas.promptRoundEnd",
@@ -126,6 +128,26 @@ func (p *KlaverjasCuiPresenter) Output(g interfaces.KlaverjasGame, lastErr error
 			b.WriteString(i18n.T("klaverjas.promptRoundEndHelp") + "\n")
 		}
 	})
+}
+
+func writeKlaverjasLastTrickResult(b *strings.Builder, g interfaces.KlaverjasGame) {
+	team := g.GetLastTrickTeam()
+	if team < 0 {
+		return
+	}
+	teamLabel := "A"
+	if team == 1 {
+		teamLabel = "B"
+	}
+	key := "klaverjas.trickResult"
+	if g.GetLastTrickBonus() > 0 {
+		key = "klaverjas.trickResultWithBonus"
+	}
+	b.WriteString(i18n.Tf(key,
+		"team", teamLabel,
+		"points", strconv.Itoa(g.GetLastTrickPoints()),
+		"bonus", strconv.Itoa(g.GetLastTrickBonus()),
+	) + "\n")
 }
 
 // HintOutput emits the current Klaverjas hint.

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { SpideretteMoveZone, spideretteApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -70,6 +70,7 @@ const TABLEAU_COLS = 7;
 export const SpiderettePage = withTutorial(SpiderettePageContent, 'spiderette', SPDT_TUTORIAL_STEPS);
 
 function SpiderettePageContent() {
+  const selectSourceHintId = useId();
   const {
     t,
     tc,
@@ -286,6 +287,10 @@ function SpiderettePageContent() {
         <>
           <LandscapeBanner message={t('landscapeBanner')} />
 
+          <span id={selectSourceHintId} className="sr-only">
+            {tc('label.selectSourceFirst')}
+          </span>
+
           <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
             <div className="flex gap-2 mb-3 items-start">
               <div className="text-center" data-tutorial="spdt-stock-pile">
@@ -341,7 +346,9 @@ function SpiderettePageContent() {
                               key={`empty-${colIdx.toString()}-${emptyDealAttemptKey.toString()}`}
                               type="button"
                               onClick={() => handleSelectTarget(tableauColZone)}
-                              disabled={!isPlaying || loading || !selectedSource}
+                              disabled={!isPlaying || loading}
+                              aria-disabled={!selectedSource || undefined}
+                              aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                               style={{ height: tableau.ch }}
                               data-testid={`spdt-empty-col-${colIdx.toString()}`}
                               className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}${emptyDealAttemptKey > 0 ? ' animate-shake border-ds-warning text-ds-warning' : ''}`}
@@ -463,6 +470,11 @@ function SpiderettePageContent() {
 
           <GameFooter className={`${gameTheme.spiderette.footer} px-4 py-2.5`}>
             <ErrorAlert message={error ?? hintError} onRetry={retry} />
+            <div className="sr-only" role="status" aria-live="polite" data-testid="spiderette-stalemate-status">
+              {state.isStalemate && (state.undoToEscape ?? 0) > 0
+                ? t('stalemateWithEscape', { count: state.undoToEscape })
+                : ''}
+            </div>
             <div className="flex gap-2 items-center flex-wrap">
               {isPlaying && (
                 <div data-tutorial="spdt-controls">

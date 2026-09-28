@@ -117,16 +117,18 @@ function HandAndFootPageContent() {
   const isDiscardPhase = state?.phase === HandAndFootPhase.DISCARD;
   const isRoundEnd = state?.phase === HandAndFootPhase.ROUND_END;
   const isGameEnd = state?.phase === HandAndFootPhase.GAME_END || !!state?.gameEndFlag;
+  const isHumanTurn =
+    (isDrawPhase || isMeldPhase || isDiscardPhase) && state?.players[state.currentPlayerIdx]?.isHuman === true;
 
   const drawDiscardReason = useMemo(() => {
-    if (!isDrawPhase) return '';
+    if (!isDrawPhase || !isHumanTurn) return '';
     const n = selectedCardIndices.length;
     if (n > 2) return t('drawDiscardReason.tooMany');
-    if (n === 2) return '';
+    if (n === 2) return t(state?.isFrozen ? 'drawDiscardReason.frozenReady' : 'drawDiscardReason.ready');
     if (state?.isFrozen) return t('drawDiscardReason.frozen');
     if (n === 1) return t('drawDiscardReason.selectOneMore');
     return t('drawDiscardReason.selectTwo');
-  }, [isDrawPhase, selectedCardIndices.length, state?.isFrozen, t]);
+  }, [isDrawPhase, isHumanTurn, selectedCardIndices.length, state?.isFrozen, t]);
 
   // Whether the human may currently "go out", plus the first unmet requirement.
   // The web build always uses the default go-out rule (>=1 red/natural and >=1
@@ -175,9 +177,6 @@ function HandAndFootPageContent() {
       pointLimit: handAndFootConfig.pointLimit,
     });
   }, [gameExec, hideActionLog, handAndFootConfig.cpuDifficulty, handAndFootConfig.pointLimit]);
-  const isHumanTurn =
-    (isDrawPhase || isMeldPhase || isDiscardPhase) && state?.players[state.currentPlayerIdx]?.isHuman === true;
-
   const kbdConfirmAction = useCallback(() => {
     if (isDiscardPhase) handleDiscard();
     else if (isMeldPhase) handleMeldSelected();
@@ -446,21 +445,11 @@ function HandAndFootPageContent() {
                       data-frozen={state.isFrozen && selectedCardIndices.length === 2 && !loading ? 'true' : undefined}
                       onClick={handleDrawDiscard}
                       disabled={loading || selectedCardIndices.length !== 2}
-                      title={drawDiscardReason || undefined}
-                      aria-describedby={drawDiscardReason ? 'hf-draw-discard-reason' : undefined}
+                      aria-describedby="hf-draw-discard-reason"
                     >
                       {t('drawDiscardButton')}
                     </button>
                   </div>
-                  {drawDiscardReason && (
-                    <div
-                      id="hf-draw-discard-reason"
-                      data-testid="hf-draw-discard-reason"
-                      className="text-xs text-ds-text-muted"
-                    >
-                      {drawDiscardReason}
-                    </div>
-                  )}
                 </div>
               )}
               {isMeldPhase && isHumanTurn && (
@@ -546,6 +535,15 @@ function HandAndFootPageContent() {
                 requestConfirm={requestConfirm}
                 loading={loading}
               />
+            </div>
+            <div
+              id="hf-draw-discard-reason"
+              data-testid="hf-draw-discard-reason"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+            >
+              {drawDiscardReason && <span className="text-xs text-ds-text-muted">{drawDiscardReason}</span>}
             </div>
             <CardNavShortcutsPanel data-testid="hand-and-foot-kbd-shortcuts" />
           </GameFooter>

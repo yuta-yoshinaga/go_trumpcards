@@ -68,7 +68,7 @@ function makeState(overrides?: Partial<BidEuchreResponse>): BidEuchreResponse {
     handSize: 6,
     gameEndFlag: false,
     winnerTeam: -1,
-    config: { cpuDifficulty: 0, allowNoTrump: true },
+    config: { allowNoTrump: true },
     message: '',
     ...overrides,
   };
@@ -192,7 +192,7 @@ describe('BidEuchrePage', () => {
         phase: BidEuchrePhase.CHOOSE_TRUMP,
         declarerIdx: 0,
         trumpChosen: false,
-        config: { cpuDifficulty: 0, allowNoTrump: false },
+        config: { allowNoTrump: false },
       }),
     );
     renderWithProviders(<BidEuchrePage />);

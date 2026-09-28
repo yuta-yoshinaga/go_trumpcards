@@ -6,7 +6,6 @@ import { gameExec } from '../gameExec';
 
 /** Configuration options for Kaiser game settings. */
 export interface KaiserConfigInput {
-  cpuDifficulty?: number;
   /** Whether no-trump bids are offered (default true). */
   allowNoTrump?: boolean;
 }

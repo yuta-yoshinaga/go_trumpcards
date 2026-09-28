@@ -444,6 +444,15 @@ func TestAnaconda_JSONRoundTrip(t *testing.T) {
 	assert.Equal(t, g.GetRoundNumber(), got.GetRoundNumber())
 	assert.Equal(t, g.GetPassCount(), got.GetPassCount())
 	assert.Equal(t, g.GetPlayerCnt(), got.GetPlayerCnt())
+
+	// Persisted payout survives a JSON round trip.
+	var snapshot map[string]any
+	require.NoError(t, json.Unmarshal(data, &snapshot))
+	snapshot["lp"] = float64(120)
+	data, err = json.Marshal(snapshot)
+	require.NoError(t, err)
+	require.NoError(t, json.Unmarshal(data, &got))
+	assert.Equal(t, 120, got.GetLastPayout())
 }
 
 func TestAnaconda_UnmarshalValidation(t *testing.T) {
@@ -456,6 +465,7 @@ func TestAnaconda_UnmarshalValidation(t *testing.T) {
 		"invalid phase":   base + `,"ph":9}`,
 		"round zero":      base + `,"rn":0}`,
 		"negative pot":    base + `,"pt":-1}`,
+		"negative payout": base + `,"lp":-1}`,
 		"pass range":      base + `,"pn":9}`,
 		"roll range":      base + `,"ri":9}`,
 		"dealer range":    base + `,"di":9}`,

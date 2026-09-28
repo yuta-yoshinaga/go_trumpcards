@@ -29,6 +29,7 @@
   "chiButton": "Chi",
   "meldButton": "Meld",
   "requireTwo": "Select exactly 2 cards",
+  "ponChiSelectionProgress": "Pon/Chi selection: {{selected}}/{{required}} cards",
   "requireThree": "Select 3 or more cards",
   "requirementMet": "Selection requirement met — ready",
   "discardButton": "Discard",

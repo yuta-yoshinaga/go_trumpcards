@@ -842,12 +842,6 @@ func (b *Coinche) GetConfig() CoincheConfig { return b.config }
 // SetConfig 設定変更
 func (b *Coinche) SetConfig(cfg CoincheConfig) { b.config = cfg }
 
-// CardRankPublic カードランク取得 (テスト用公開メソッド)
-func (b *Coinche) CardRankPublic(card *Card) int { return b.cardRank(card) }
-
-// CardPointsPublic カード得点取得 (テスト用公開メソッド)
-func (b *Coinche) CardPointsPublic(card *Card) int { return coincheCardPoints(card, b.trumpSuit) }
-
 // --- Ranking + scoring helpers ---
 
 // coincheTrumpRank トランプスートのカードランク (高 = 強)

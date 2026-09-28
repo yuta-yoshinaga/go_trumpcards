@@ -22,13 +22,6 @@ func TestBuraWebInput_ToConfigWithNoConfigDoesNotPanic(t *testing.T) {
 	})
 }
 
-func TestBuraWebInput_ToConfigClampsAnOutOfRangeDifficulty(t *testing.T) {
-	bad := 99
-	input := BuraWebInput{Config: &BuraWebConfig{CpuDifficulty: &bad}}
-	cfg := input.ToConfig()
-	assert.NoError(t, cfg.Validate(), "an out-of-range difficulty must be clamped, not passed through")
-}
-
 func TestNewBuraDefaultOutput_CarriesTheWinThreshold(t *testing.T) {
 	// The page reads winThreshold off the response rather than hardcoding 31;
 	// an error response that omits it would render "claim 0".

@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { matrimonyApi } from '../api/games/matrimony';
 import { useGameHint } from '../hooks/useGameHint';
@@ -113,15 +113,50 @@ describe('MatrimonyPage', () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<MatrimonyPage />);
     const empty = await screen.findByRole('button', { name: /空の枠 3/ });
-    // まだ何も選んでいなければ、当然押せない。
-    expect(empty).toBeDisabled();
+    expect(empty).not.toBeDisabled();
+    expect(empty).toHaveAttribute('aria-disabled', 'true');
 
     fireEvent.click(screen.getByRole('button', { name: '枠 0 ♠ 9' }));
     await waitFor(() =>
       expect(screen.getByRole('button', { name: '枠 0 ♠ 9' })).toHaveAttribute('aria-pressed', 'true'),
     );
-    // タブローの札を選んでも押せないまま。
-    expect(empty).toBeDisabled();
+    // タブローの札を選んでも空き枠は aria-disabled のまま。
+    expect(empty).not.toBeDisabled();
+    expect(empty).toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('ignores an empty slot click while a tableau card is selected', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<MatrimonyPage />);
+    const empty = await screen.findByRole('button', { name: /空の枠 3/ });
+
+    fireEvent.click(screen.getByRole('button', { name: '枠 0 ♠ 9' }));
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: '枠 0 ♠ 9' })).toHaveAttribute('aria-pressed', 'true'),
+    );
+    expect(empty).toHaveAttribute('aria-disabled', 'true');
+
+    mockExec.mockClear();
+    fireEvent.click(empty);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
+  it('explains and ignores a foundation target click before source selection', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<MatrimonyPage />);
+    const targets = await screen.findAllByRole('button', { name: /空の組札/ });
+    const target = targets[0];
+    expect(target).toBeDefined();
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const hint = document.getElementById(target.getAttribute('aria-describedby') ?? '');
+    expect(hint).toHaveTextContent('先に移動する札を選んでください');
+
+    mockExec.mockClear();
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
   });
 
   // **ドラッグ経路も同じ規則を守る。**クリックはボタンを無効化して防いでいるが、
@@ -289,6 +324,32 @@ describe('MatrimonyPage', () => {
     });
     renderWithProviders(<MatrimonyPage />);
     await waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeEnabled());
+  });
+
+  it('announces auto-complete start and completion without announcing intermediate updates', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [[card('SPADE', 1)], [], [], [], [], [], [], []],
+    });
+    renderWithProviders(<MatrimonyPage />);
+    const button = await screen.findByTestId('autocomplete-button');
+    await waitFor(() => expect(button).toBeEnabled());
+
+    vi.useFakeTimers();
+    try {
+      fireEvent.click(button);
+      const status = screen.getByTestId('auto-complete-status');
+      expect(status).toHaveAttribute('role', 'status');
+      expect(status).toHaveAttribute('aria-live', 'polite');
+      expect(status).toHaveTextContent('自動完成を実行中です');
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(3000);
+      });
+      expect(status).toHaveTextContent('自動完成が終了しました。カードを移動してください');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('shows StalemateEscapeButton when the stalemate flag is set', async () => {

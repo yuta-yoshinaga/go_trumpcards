@@ -131,11 +131,9 @@ func TestTeenPattiWebController_ResetWithConfig(t *testing.T) {
 	mockOutput := `{"players":[]}`
 
 	t.Run("custom config passed through", func(t *testing.T) {
-		diff := 2
 		ante := 3
 		chips := 60
 		expected := domain.TeenPattiConfig{
-			CpuDifficulty: domain.TeenPattiCpuDifficultyHard,
 			Ante:          3,
 			StartingChips: 60,
 		}
@@ -146,24 +144,7 @@ func TestTeenPattiWebController_ResetWithConfig(t *testing.T) {
 
 		input := controller.TeenPattiWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "c1"},
-			Config:       &controller.TeenPattiWebConfig{CpuDifficulty: &diff, Ante: &ante, StartingChips: &chips},
-		}
-		recorded := execRequest(t, ctrl.Exec, &input)
-		recorded.CodeIs(http.StatusOK)
-		giMock.AssertCalled(t, "ResetWithConfig", expected)
-	})
-
-	t.Run("out of range difficulty falls back to default", func(t *testing.T) {
-		diff := 9
-		expected := domain.DefaultTeenPattiConfig()
-		giMock := new(usecase.MockTeenPattiInteractor)
-		giMock.On("ResetWithConfig", expected).Return(mockOutput)
-		ctrl := controller.NewTeenPattiWebController(func() uc.TeenPattiInteractorIF { return giMock })
-		defer ctrl.Stop()
-
-		input := controller.TeenPattiWebInput{
-			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "c2"},
-			Config:       &controller.TeenPattiWebConfig{CpuDifficulty: &diff},
+			Config:       &controller.TeenPattiWebConfig{Ante: &ante, StartingChips: &chips},
 		}
 		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)

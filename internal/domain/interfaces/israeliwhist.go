@@ -75,6 +75,8 @@ type IsraeliWhistGame interface {
 	GetDealerIdx() int
 	// GetCurrentTrick 現在のトリックを取得する
 	GetCurrentTrick() []*domain.TrickCard
+	// GetCurrentTrickWinnerIdx 現在のトリックの暫定勝者を取得する (-1: 空)
+	GetCurrentTrickWinnerIdx() int
 	// GetValidPlayIndices プレイ可能なカードのインデックスリストを返す
 	GetValidPlayIndices(playerIdx int) []int
 	// GetPlayerCnt プレイヤー数を取得する

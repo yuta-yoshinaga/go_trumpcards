@@ -29,6 +29,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { Card, MarjapussiResponse } from '../types/card';
 import { MarjapussiPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { suitSymbolAt } from '../utils/cardAlt';
 import { MARJAPUSSI_HELP, parseMarjapussiCommand } from '../utils/cli/commands/marjapussiCommands';
 import { formatMarjapussiState } from '../utils/cli/formatters/marjapussiFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -45,9 +46,7 @@ import { hintCheckboxItem } from '../utils/settingsItems';
  */
 const NEAR_WIN_RATIO = 0.8;
 
-const SUIT_SYMBOLS = ['-', '♠', '♣', '♥', '♦'] as const;
-
-/** Card design string → suit number (1=♠ 2=♣ 3=♥ 4=♦), to align with SUIT_SYMBOLS / trumpSuit. */
+/** Card design string → suit number (1=♠ 2=♣ 3=♥ 4=♦), to align with suitSymbolAt / trumpSuit. */
 const DESIGN_TO_SUIT: Readonly<Record<string, number>> = { SPADE: 1, CLOVER: 2, HEART: 3, DIAMOND: 4 };
 
 /** Card points: A=11, 10=10, K=4, Q=3, J=2, others=0. */
@@ -150,60 +149,33 @@ function MarjapussiPageContent() {
   const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('marjapussi', MARJAPUSSI_PHASE_KEYS);
 
-  // Latest marriage declaration tracking
   const prevRoundMarriageRef = useRef<number[]>([0, 0]);
   const prevRoundNumRef = useRef<number>(1);
-  const [latestMarriage, setLatestMarriage] = useState<{ playerIdx: number; suit: number; points: number } | null>(
-    null,
+  const [marriagesThisRound, setMarriagesThisRound] = useState<{ playerIdx: number; suit: number; points: number }[]>(
+    [],
   );
 
   useEffect(() => {
     if (!state) return;
-    const m0 = state.roundMarriage[0] ?? 0;
-    const m1 = state.roundMarriage[1] ?? 0;
-    if (state.roundNumber !== prevRoundNumRef.current || (m0 === 0 && m1 === 0 && state.trumpSuit === 0)) {
-      prevRoundMarriageRef.current = [m0, m1];
+    const current = [state.roundMarriage[0] ?? 0, state.roundMarriage[1] ?? 0];
+    const previous = prevRoundMarriageRef.current;
+    if (state.roundNumber !== prevRoundNumRef.current || current[0] < previous[0] || current[1] < previous[1]) {
+      prevRoundMarriageRef.current = current;
       prevRoundNumRef.current = state.roundNumber;
-      setLatestMarriage(null);
+      setMarriagesThisRound([]);
       return;
     }
 
-    const prevM = prevRoundMarriageRef.current;
-    const diff0 = m0 - (prevM[0] ?? 0);
-    const diff1 = m1 - (prevM[1] ?? 0);
-
+    const diff0 = current[0] - previous[0];
+    const diff1 = current[1] - previous[1];
     if (diff0 > 0 || diff1 > 0) {
-      const pts = diff0 > 0 ? diff0 : diff1;
       const team = diff0 > 0 ? 0 : 1;
-      const declaringPlayer =
-        state.leadPlayerIdx >= 0 && state.leadPlayerIdx % 2 === team ? state.leadPlayerIdx : team === 0 ? 0 : 1;
-      setLatestMarriage({
-        playerIdx: declaringPlayer,
-        suit: state.trumpSuit,
-        points: pts,
-      });
+      const points = diff0 > 0 ? diff0 : diff1;
+      const playerIdx = state.leadPlayerIdx >= 0 && state.leadPlayerIdx % 2 === team ? state.leadPlayerIdx : team;
+      setMarriagesThisRound((entries) => [...entries, { playerIdx, suit: state.trumpSuit, points }]);
     }
-
-    prevRoundMarriageRef.current = [m0, m1];
-    prevRoundNumRef.current = state.roundNumber;
+    prevRoundMarriageRef.current = current;
   }, [state]);
-
-  const activeMarriage = useMemo(() => {
-    if (latestMarriage) return latestMarriage;
-    if (!state) return null;
-    const m0 = state.roundMarriage[0] ?? 0;
-    const m1 = state.roundMarriage[1] ?? 0;
-    if (m0 === 0 && m1 === 0) return null;
-    const team = m0 > 0 ? 0 : 1;
-    const pts = team === 0 ? m0 : m1;
-    const playerIdx =
-      state.leadPlayerIdx >= 0 && state.leadPlayerIdx % 2 === team ? state.leadPlayerIdx : team === 0 ? 0 : 1;
-    return {
-      playerIdx,
-      suit: state.trumpSuit,
-      points: pts,
-    };
-  }, [latestMarriage, state]);
 
   if (!state)
     return <GameSkeleton gameKey="marjapussi" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 8 }} />;
@@ -218,7 +190,7 @@ function MarjapussiPageContent() {
   const isGameEnd = state.phase === MarjapussiPhase.GAME_END || state.gameEndFlag;
 
   const canPlay = isPlayPhase && isHumanTurn;
-  const trumpSymbol = state.trumpSuit > 0 ? (SUIT_SYMBOLS[state.trumpSuit] ?? '-') : t('trumpNone');
+  const trumpSymbol = state.trumpSuit > 0 ? suitSymbolAt(state.trumpSuit, '-') : t('trumpNone');
 
   // Suits where the human holds both K (13) and Q (12) — a marriage that sets
   // trump when led and scores 40 if same suit as current trump, 20 if different.
@@ -233,7 +205,7 @@ function MarjapussiPageContent() {
         })
         .map((suit) => {
           const points = state.trumpSuit > 0 && suit === state.trumpSuit ? 40 : 20;
-          return { symbol: SUIT_SYMBOLS[suit] ?? '-', points };
+          return { symbol: suitSymbolAt(suit, '-'), points };
         })
     : [];
 
@@ -306,23 +278,36 @@ function MarjapussiPageContent() {
               <span>{t('target', { points: target })}</span>
             </div>
 
-            {/* Latest Marriage Banner */}
-            <div
-              className="mb-2 p-1.5 rounded bg-black/20 text-center text-xs text-ds-text-muted"
-              data-testid="marjapussi-last-marriage"
+            <section
+              className="mb-2 rounded bg-ds-surface p-2 text-sm text-ds-text-primary"
+              data-testid="marjapussi-marriage-history"
+              aria-labelledby="marjapussi-marriage-history-heading"
             >
-              {activeMarriage ? (
-                <span>
-                  {t('lastMarriage', {
-                    player: playerName(activeMarriage.playerIdx, activeMarriage.playerIdx === humanIdx),
-                    suit: SUIT_SYMBOLS[activeMarriage.suit] ?? '-',
-                    points: activeMarriage.points,
-                  })}
-                </span>
+              <h2 id="marjapussi-marriage-history-heading" className="mb-1 font-semibold">
+                {t('marriageHistory')}
+              </h2>
+              {marriagesThisRound.length > 0 ? (
+                <ol className="space-y-1">
+                  {marriagesThisRound.map((marriage, index) => (
+                    <li
+                      key={`${index}-${marriage.playerIdx}-${marriage.suit}`}
+                      aria-current={index === marriagesThisRound.length - 1 ? 'true' : undefined}
+                      className={
+                        index === marriagesThisRound.length - 1 ? 'font-semibold text-ds-accent' : 'text-ds-text-muted'
+                      }
+                    >
+                      {t('marriageEntry', {
+                        player: playerName(marriage.playerIdx, marriage.playerIdx === humanIdx),
+                        suit: suitSymbolAt(marriage.suit, '-'),
+                        points: marriage.points,
+                      })}
+                    </li>
+                  ))}
+                </ol>
               ) : (
-                <span>{t('noMarriage')}</span>
+                <p className="text-ds-text-muted">{t('noMarriage')}</p>
               )}
-            </div>
+            </section>
 
             <div className={lgTwoColGrid}>
               {/* Left: play area */}

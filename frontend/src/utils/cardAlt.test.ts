@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import i18n from '../i18n';
 import type { CardDesign } from '../types/card';
-import { cardAlt, isRedSuitDesign, isSuitDesign, suitSymbol } from './cardAlt';
+import { cardAlt, isRedSuitDesign, isSuitDesign, suitSymbol, suitSymbolAt } from './cardAlt';
 
 describe('cardAlt', () => {
   it('returns localized joker text for JOKER', () => {
@@ -49,6 +49,25 @@ describe('suitSymbol', () => {
 
   it('falls back to the raw design for unknown designs', () => {
     expect(suitSymbol('JOKER')).toBe('JOKER');
+  });
+});
+
+describe('suitSymbolAt', () => {
+  it.each<[number, string]>([
+    [1, '♠'],
+    [2, '♣'],
+    [3, '♥'],
+    [4, '♦'],
+  ])('maps suit index %i to %s', (suit, symbol) => {
+    expect(suitSymbolAt(suit)).toBe(symbol);
+  });
+
+  it.each([0, 5, -1])('uses an empty fallback for invalid index %i by default', (suit) => {
+    expect(suitSymbolAt(suit)).toBe('');
+  });
+
+  it.each([0, 5, -1])('uses the supplied fallback for invalid index %i', (suit) => {
+    expect(suitSymbolAt(suit, '?')).toBe('?');
   });
 });
 

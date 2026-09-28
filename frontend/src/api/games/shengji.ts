@@ -5,9 +5,7 @@ import type { ShengJiResponse } from '../../types/card';
 import { gameExec } from '../gameExec';
 
 /** Configuration options for Sheng Ji game settings. */
-export interface ShengJiConfigInput {
-  cpuDifficulty?: number;
-}
+export type ShengJiConfigInput = Record<string, never>;
 
 /** Commands the /shengji/exec endpoint accepts. */
 export type ShengJiCommand = 'reset' | 'declare' | 'bury' | 'play' | 'next' | 'log';

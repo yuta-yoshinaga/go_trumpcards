@@ -83,12 +83,27 @@ describe('AmericanToadPage', () => {
     expect(screen.getByText(/山札の通し: 1\/2/)).toBeInTheDocument();
   });
 
+  it('keeps a move target focusable and explains why selection is needed', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<AmericanToadPage />);
+    const target = await screen.findByRole('button', { name: /空の組札0/ });
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const hintId = target.getAttribute('aria-describedby');
+    expect(hintId).toBeTruthy();
+    expect(document.getElementById(hintId ?? '')).toHaveTextContent('先に移動する札を選んでください');
+
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('renders eight foundations and eight columns', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<AmericanToadPage />);
     await waitFor(() => expect(screen.getAllByLabelText(/空の組札\d+/).length).toBe(8));
     for (let i = 0; i < 8; i++) {
-      expect(screen.getByText(`#${i}`)).toBeInTheDocument();
+      expect(screen.getByText(new RegExp(`^#${i}(?: · 予約)?$`))).toBeInTheDocument();
     }
   });
 
@@ -141,12 +156,15 @@ describe('AmericanToadPage', () => {
       name: '空のタブロー列 2 (リザーブから自動で埋まります)',
     });
     expect(locked).toBeDisabled();
+    expect(screen.getByText('#2 · 予約')).toBeInTheDocument();
+    expect(screen.getAllByText('リザーブから補充待ち').length).toBeGreaterThan(0);
     unmount();
 
     mockExec.mockResolvedValue({ ...playingState, reserve: [], waste: [card('HEART', 8)] });
     renderWithProviders(<AmericanToadPage />);
     const open = await screen.findByRole('button', { name: '空のタブロー列 2 (捨て札から埋められます)' });
-    // Still disabled with nothing selected; selecting the waste enables it.
+    expect(screen.getAllByText('捨て札から補充').length).toBeGreaterThan(0);
+    // The reserve is empty here, so this target is aria-disabled only until a source is selected.
     fireEvent.click(screen.getByRole('button', { name: '♥ 8' }));
     await waitFor(() => expect(open).toBeEnabled());
 

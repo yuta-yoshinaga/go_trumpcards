@@ -21,6 +21,7 @@
   "askTargetLabel": "Opponent",
   "askCardLabel": "Card",
   "askButton": "Ask",
+  "noAskableCards": "No cards are available to ask for.",
   "claimTitle": "Claim",
   "claimRules": "You place all six cards. MISNAMING A TEAMMATE CANCELS the half-suit — it goes to nobody. If an opponent holds even one, they take it.",
   "claimHalfLabel": "Half-suit",

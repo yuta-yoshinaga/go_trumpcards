@@ -142,7 +142,8 @@ func (p *President) groupByValue(player *PresidentPlayer) [][]int {
 		byValue[c.GetValue()] = append(byValue[c.GetValue()], i)
 	}
 	groups := make([][]int, 0, len(byValue))
-	for _, idxs := range byValue {
+	for _, value := range sortedIntKeys(byValue) {
+		idxs := byValue[value]
 		groups = append(groups, idxs)
 	}
 	return groups

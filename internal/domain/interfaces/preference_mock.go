@@ -161,6 +161,12 @@ func (_m *MockPreferenceGame) GetBids() [domain.PreferencePlayerCnt]domain.Prefe
 	return ret.Get(0).([domain.PreferencePlayerCnt]domain.PreferenceBid)
 }
 
+// GetBidDone モック
+func (_m *MockPreferenceGame) GetBidDone() [domain.PreferencePlayerCnt]bool {
+	ret := _m.Called()
+	return ret.Get(0).([domain.PreferencePlayerCnt]bool)
+}
+
 // GetTrumpSuit モック
 func (_m *MockPreferenceGame) GetTrumpSuit() int {
 	ret := _m.Called()

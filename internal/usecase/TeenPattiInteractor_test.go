@@ -52,7 +52,6 @@ func TestTeenPattiInteractor_ResetWithConfig(t *testing.T) {
 	spMock.On("Output", mock.Anything, mock.Anything).Return(teenPattiMockOutput)
 	gameMock := new(interfaces.MockTeenPattiGame)
 	cfg := domain.TeenPattiConfig{
-		CpuDifficulty: domain.TeenPattiCpuDifficultyHard,
 		Ante:          2,
 		StartingChips: 50,
 	}
@@ -74,8 +73,7 @@ func TestTeenPattiInteractor_ResetWithConfigInvalid(t *testing.T) {
 
 	ti := usecase.NewTeenPattiInteractor(gameMock, spMock)
 	bad := domain.TeenPattiConfig{
-		CpuDifficulty: domain.TeenPattiCpuDifficulty(99),
-		Ante:          1,
+		Ante:          0,
 		StartingChips: 30,
 	}
 	assert.Equal(t, teenPattiMockOutput, ti.ResetWithConfig(bad))

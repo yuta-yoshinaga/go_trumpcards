@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra7
+//go:build !js || !wasm || extra11
 
 package domain
 
@@ -36,17 +36,18 @@ const (
 
 // RedDog レッドドッグクラス
 type RedDog struct {
-	trumpCards   *TrumpCards
-	initialCards []*Card
-	thirdCard    *Card
-	chips        ChipHolder
-	ante         int
-	raise        int
-	spread       int
-	phase        int
-	gameEndFlag  bool
-	result       GameResult
-	totalPayout  int
+	trumpCards        *TrumpCards
+	initialCards      []*Card
+	thirdCard         *Card
+	chips             ChipHolder
+	ante              int
+	raise             int
+	spread            int
+	phase             int
+	gameEndFlag       bool
+	result            GameResult
+	totalPayout       int
+	appliedMultiplier int
 	actionLogBase
 }
 
@@ -77,6 +78,7 @@ func (rd *RedDog) Reset() {
 	rd.spread = 0
 	rd.result = 0
 	rd.totalPayout = 0
+	rd.appliedMultiplier = 0
 	rd.actionLog = nil
 	if rd.chips.GetChips() < RedDogMinBet {
 		rd.chips.SetChips(RedDogDefaultChips)
@@ -206,6 +208,7 @@ func (rd *RedDog) ResolveThird() {
 	case RedDogPhasePairThird:
 		if rankOf(rd.thirdCard) == rankOf(rd.initialCards[0]) {
 			rd.result = GameResultWin
+			rd.appliedMultiplier = RedDogPayPair
 			rd.totalPayout = rd.ante + rd.ante*RedDogPayPair
 		} else {
 			rd.result = GameResultDraw
@@ -220,6 +223,7 @@ func (rd *RedDog) ResolveThird() {
 		if r3 > r1 && r3 < r2 {
 			rd.result = GameResultWin
 			multiplier := rd.payoutMultiplier()
+			rd.appliedMultiplier = multiplier
 			totalBet := rd.ante + rd.raise
 			rd.totalPayout = totalBet + totalBet*multiplier
 		} else {
@@ -288,6 +292,9 @@ func (rd *RedDog) GetResult() GameResult { return rd.result }
 // GetTotalPayout 合計配当
 func (rd *RedDog) GetTotalPayout() int { return rd.totalPayout }
 
+// GetAppliedMultiplier returns the multiplier used for the settled winning payout, or 0 otherwise.
+func (rd *RedDog) GetAppliedMultiplier() int { return rd.appliedMultiplier }
+
 // GetChips チップ
 func (rd *RedDog) GetChips() int { return rd.chips.GetChips() }
 
@@ -311,35 +318,37 @@ func (rd *RedDog) SetChips(chips int) { rd.chips.SetChips(chips) }
 
 // redDogJSON は RedDog の JSON ワイヤーフォーマット
 type redDogJSON struct {
-	TrumpCards   *TrumpCards       `json:"tc"`
-	InitialCards []*Card           `json:"ic"`
-	ThirdCard    *Card             `json:"tr"`
-	Chips        *ChipHolder       `json:"ch"`
-	Ante         int               `json:"an"`
-	Raise        int               `json:"rs"`
-	Spread       int               `json:"sp"`
-	Phase        int               `json:"ps"`
-	GameEndFlag  bool              `json:"ge"`
-	Result       GameResult        `json:"gr"`
-	TotalPayout  int               `json:"tp"`
-	ActionLog    []*ActionLogEntry `json:"al"`
+	TrumpCards        *TrumpCards       `json:"tc"`
+	InitialCards      []*Card           `json:"ic"`
+	ThirdCard         *Card             `json:"tr"`
+	Chips             *ChipHolder       `json:"ch"`
+	Ante              int               `json:"an"`
+	Raise             int               `json:"rs"`
+	Spread            int               `json:"sp"`
+	Phase             int               `json:"ps"`
+	GameEndFlag       bool              `json:"ge"`
+	Result            GameResult        `json:"gr"`
+	TotalPayout       int               `json:"tp"`
+	AppliedMultiplier int               `json:"am"`
+	ActionLog         []*ActionLogEntry `json:"al"`
 }
 
 // MarshalJSON implements json.Marshaler.
 func (rd *RedDog) MarshalJSON() ([]byte, error) {
 	return json.Marshal(redDogJSON{
-		TrumpCards:   rd.trumpCards,
-		InitialCards: rd.initialCards,
-		ThirdCard:    rd.thirdCard,
-		Chips:        &rd.chips,
-		Ante:         rd.ante,
-		Raise:        rd.raise,
-		Spread:       rd.spread,
-		Phase:        rd.phase,
-		GameEndFlag:  rd.gameEndFlag,
-		Result:       rd.result,
-		TotalPayout:  rd.totalPayout,
-		ActionLog:    rd.actionLog,
+		TrumpCards:        rd.trumpCards,
+		InitialCards:      rd.initialCards,
+		ThirdCard:         rd.thirdCard,
+		Chips:             &rd.chips,
+		Ante:              rd.ante,
+		Raise:             rd.raise,
+		Spread:            rd.spread,
+		Phase:             rd.phase,
+		GameEndFlag:       rd.gameEndFlag,
+		Result:            rd.result,
+		TotalPayout:       rd.totalPayout,
+		AppliedMultiplier: rd.appliedMultiplier,
+		ActionLog:         rd.actionLog,
 	})
 }
 
@@ -374,6 +383,7 @@ func (rd *RedDog) UnmarshalJSON(data []byte) error {
 	rd.gameEndFlag = j.GameEndFlag
 	rd.result = j.Result
 	rd.totalPayout = j.TotalPayout
+	rd.appliedMultiplier = j.AppliedMultiplier
 	rd.actionLog = j.ActionLog
 	if rd.actionLog == nil {
 		rd.actionLog = make([]*ActionLogEntry, 0)

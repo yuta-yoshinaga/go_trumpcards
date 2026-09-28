@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import {
+  gameButton,
   isVisibleWithin,
   navigateTo,
   TIMEOUT_ACTION,
@@ -33,7 +34,7 @@ test.describe('Spanish 21 E2E', () => {
 
       // BET phase: the first wait after each deal gets the full game-loop
       // budget because the CPU may still be resolving the opening deal.
-      const betButton = page.getByRole('button', { name: 'ベット' });
+      const betButton = gameButton(page, 'ベット');
       await expect(betButton).toBeVisible({ timeout: TIMEOUT_GAME_LOOP });
       await betButton.click();
       await waitForLoaded(page);

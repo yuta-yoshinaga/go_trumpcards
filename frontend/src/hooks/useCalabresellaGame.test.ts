@@ -41,18 +41,25 @@ describe('useCalabresellaGame', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', { bid: 0 }));
   });
 
-  it('handleDiscard does nothing without exactly one selected card', async () => {
+  it('handleDiscard does nothing with fewer than four selected cards', async () => {
     const { result } = renderHook(() => useCalabresellaGame(), { wrapper: createWrapper() });
+    act(() => result.current.toggleCard(1));
+    act(() => result.current.toggleCard(2));
+    act(() => result.current.toggleCard(3));
     act(() => result.current.handleDiscard());
     await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });
 
-  it('handleDiscard dispatches discard for the single selected card', async () => {
+  it('handleDiscard dispatches discard for the four selected cards', async () => {
     const { result } = renderHook(() => useCalabresellaGame(), { wrapper: createWrapper() });
     act(() => result.current.toggleCard(1));
+    act(() => result.current.toggleCard(2));
+    act(() => result.current.toggleCard(3));
+    act(() => result.current.toggleCard(4));
     act(() => result.current.handleDiscard());
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('discard', { cardIndex: 1 }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledTimes(1));
+    expect(mockExec).toHaveBeenCalledWith('discard', { cardIndices: [1, 2, 3, 4] });
   });
 
   it('handlePlay does nothing without exactly one selected card', async () => {

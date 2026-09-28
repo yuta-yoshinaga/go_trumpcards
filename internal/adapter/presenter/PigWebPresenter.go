@@ -42,6 +42,18 @@ func (p *PigWebPresenter) buildBase(s interfaces.PigGame) *controller.PigWebOutp
 	resObj.RoundNumber = s.GetRoundNumber()
 	resObj.LetterTarget = domain.PigLetterTargetWord
 	resObj.PassCount = s.GetPassCount()
+	resObj.PassTargetIdx = -1
+	if s.GetPhase() == domain.PigPhasePass {
+		players := pigPlayers(s)
+		for i := range players {
+			if players[i].GetIsHuman() && !players[i].GetEliminated() {
+				if target := domain.PigNextActiveSeat(players, i); target != i {
+					resObj.PassTargetIdx = target
+				}
+				break
+			}
+		}
+	}
 	resObj.DeckSize = s.GetDeckSize()
 	resObj.CurrentPlayerIdx = s.GetCurrentPlayerIdx()
 	resObj.GameEndFlag = s.GetGameEndFlag()
@@ -57,9 +69,9 @@ func (p *PigWebPresenter) buildBase(s interfaces.PigGame) *controller.PigWebOutp
 
 // buildPlayersOutput プレイヤー情報を構築
 func (p *PigWebPresenter) buildPlayersOutput(s interfaces.PigGame) []*controller.PigWebOutputPlayer {
-	out := make([]*controller.PigWebOutputPlayer, 0)
-	for i := 0; i < s.GetPlayerCnt(); i++ {
-		player := s.GetPlayer(i)
+	players := pigPlayers(s)
+	out := make([]*controller.PigWebOutputPlayer, 0, len(players))
+	for i, player := range players {
 		out = append(out, &controller.PigWebOutputPlayer{
 			ID:            i,
 			IsHuman:       player.GetIsHuman(),

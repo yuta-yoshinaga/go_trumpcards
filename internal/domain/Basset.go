@@ -252,13 +252,6 @@ func (b *Basset) SetPhase(phase int) { b.phase = phase }
 // SetChips is a test helper.
 func (b *Basset) SetChips(chips int) { b.chips.SetChips(chips) }
 
-// SetDeckForTest replaces the deck order for deterministic tests.
-func (b *Basset) SetDeckForTest(cards []*Card) {
-	b.trumpCards = NewTrumpCardsWithSuits(0, []int{})
-	b.trumpCards.deck, b.trumpCards.deckCnt = cards, len(cards)
-	b.trumpCards.deckInit()
-}
-
 func (b *Basset) appendLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	b.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }

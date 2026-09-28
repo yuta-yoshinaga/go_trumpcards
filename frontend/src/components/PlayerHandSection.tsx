@@ -41,6 +41,8 @@ export interface PlayerHandSectionProps {
    * interaction. Returns `undefined` to fall back to the default tooltip.
    */
   cardTitleFor?: (idx: number) => string | undefined;
+  /** Optional per-card status appended to its accessible name. */
+  cardStatusFor?: (idx: number) => string | undefined;
   /**
    * Optional indices to visually highlight as actionable (e.g. exposable cards).
    * Highlighted cards get a warning border; when this list is provided, the
@@ -87,6 +89,7 @@ export function PlayerHandSection({
   validIndices,
   restrictedTooltip,
   cardTitleFor,
+  cardStatusFor,
   highlightIndices,
   trumpIndices,
   trumpTitle,
@@ -110,6 +113,7 @@ export function PlayerHandSection({
         validIndices={validIndices}
         restrictedTooltip={restrictedTooltip}
         cardTitleFor={cardTitleFor}
+        cardStatusFor={cardStatusFor}
         highlightIndices={highlightIndices}
         trumpIndices={trumpIndices}
         trumpTitle={trumpTitle}
@@ -131,6 +135,7 @@ export function PlayerHandSection({
         // Skip already-restricted cards so the two opacity classes never collide.
         const dimmed = highlightIndices != null && !highlighted && !isSelected && !restricted;
         const badge = cardBadgeFor?.(idx);
+        const status = cardStatusFor?.(idx);
         return (
           <button
             type="button"
@@ -142,7 +147,7 @@ export function PlayerHandSection({
             // pointer-events-none の span で、button の aria-label が
             // アクセシブル名を完全に上書きするため、付けないと「スペードの
             // キング」としか読まれず、結婚のチャンスが伝わらない (#6612)。
-            aria-label={badge ? `${cardAlt(card)} (${badge.title})` : cardAlt(card)}
+            aria-label={`${cardAlt(card)}${badge ? ` (${badge.title})` : ''}${status ? ` (${status})` : ''}`}
             aria-pressed={isSelected}
             // Use aria-disabled (not the HTML `disabled` attribute) so restricted
             // cards remain focusable for keyboard / screen-reader users — they

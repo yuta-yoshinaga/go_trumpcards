@@ -9,6 +9,7 @@ import type {
   HoldemResponse,
   HoldemResult,
   HoldemSidePot,
+  OmahaPotAwardData,
 } from './holdem';
 
 // --- Omaha Hold'em ---
@@ -24,6 +25,9 @@ export type OmahaResult = HoldemResult;
 
 /** Omaha side pot (same structure as Hold'em). */
 export type OmahaSidePot = HoldemSidePot;
+
+/** Omaha per-pot showdown payout record. */
+export type OmahaPotAward = OmahaPotAwardData;
 
 /** Omaha equity (same structure as Hold'em). */
 export type OmahaEquity = HoldemEquity;

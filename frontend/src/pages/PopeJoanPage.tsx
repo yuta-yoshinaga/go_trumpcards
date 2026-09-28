@@ -181,7 +181,9 @@ function PopeJoanPageContent() {
               {opponents.map((o) => (
                 <div key={`opp-${o.id.toString()}`} className="text-center">
                   <div className="text-game-text-muted text-xs mb-1">
-                    {t('seat', { name: `CPU${o.id.toString()}`, chips: o.chips, n: o.cardCount })}
+                    {playing
+                      ? t('seat', { name: `CPU${o.id.toString()}`, chips: o.chips, n: o.cardCount })
+                      : t('seatEnded', { name: `CPU${o.id.toString()}`, chips: o.chips })}
                     {/* **ディーラーは区画の種銭を負担し、めくり札が Pope/A/K/Q/J なら
                         その区画を総取りする。**毎ディール回るので印を付けないと追えない (#6520)。 */}
                     {o.id === state.dealerIdx && (
@@ -190,15 +192,17 @@ function PopeJoanPageContent() {
                     {/* Pope 保持者は支払いを免除されるので、伏せ手でも出す。 */}
                     {o.holdsPope && ` · ${t('holdsPope')}`}
                   </div>
-                  <div
-                    className="flex gap-1 justify-center flex-wrap"
-                    role="img"
-                    aria-label={t('opponentHandAriaLabel', { name: `CPU${o.id.toString()}`, n: o.cardCount })}
-                  >
-                    {Array.from({ length: o.cardCount }, (_, i) => (
-                      <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
-                    ))}
-                  </div>
+                  {playing && (
+                    <div
+                      className="flex gap-1 justify-center flex-wrap"
+                      role="img"
+                      aria-label={t('opponentHandAriaLabel', { name: `CPU${o.id.toString()}`, n: o.cardCount })}
+                    >
+                      {Array.from({ length: o.cardCount }, (_, i) => (
+                        <CardBack key={`opp-${o.id.toString()}-c${i.toString()}`} width={cardWidth} />
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

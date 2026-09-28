@@ -12,6 +12,7 @@
   "label.seats": "席",
   "label.score": "点",
   "label.delta": "収支",
+  "label.multiplier": "{{multiplier}}倍",
   "label.winner": "勝者",
   "phase.bet": "賭け",
   "phase.play": "プレイ",

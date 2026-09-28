@@ -10,6 +10,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestLaughAndLieDownConfigUnmarshalIgnoresRemovedDifficulty(t *testing.T) {
+	var cfg LaughAndLieDownConfig
+	require.NoError(t, json.Unmarshal([]byte(`{"cd":0}`), &cfg))
+	assert.Equal(t, DefaultLaughAndLieDownConfig(), cfg)
+}
+
 func lldCard(design, value int) *Card { return NewCard(design, value, true) }
 
 func TestLaughAndLieDown_TheDealIsEightEachAndTwelveFaceUp(t *testing.T) {
@@ -309,7 +315,6 @@ func TestLaughAndLieDown_UnmarshalRejectsAndClampsHostileSnapshots(t *testing.T)
 	for name, payload := range map[string]string{
 		"not json":      "{",
 		"seat count":    `{"pl":[],"cfg":{"cd":0},"ph":0}`,
-		"bad config":    `{"pl":[{},{},{},{},{}],"cfg":{"cd":99},"ph":0}`,
 		"unknown phase": `{"pl":[{},{},{},{},{}],"cfg":{"cd":0},"ph":9}`,
 	} {
 		t.Run(name, func(t *testing.T) {

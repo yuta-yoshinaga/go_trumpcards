@@ -335,14 +335,26 @@ function BelotePageContent() {
         {/* Team scores */}
         <div className="my-3 p-2 rounded bg-black/30" data-tutorial="be-score-table">
           <div className="text-ds-text-muted text-sm mb-1">{t('teamScores')}</div>
-          <table className="w-full text-sm text-ds-text-muted">
+          <table className="w-full table-fixed text-sm text-ds-text-muted">
             <thead>
               <tr>
-                <th scope="col" className="text-left">
+                <th scope="col" className="text-left break-words">
                   {t('team', { n: 0 })}
+                  <span className="block text-xs leading-tight">
+                    {state.players
+                      .filter((player) => player.team === 0)
+                      .map((player) => playerName(player.id, player.isHuman))
+                      .join(t('listSeparator'))}
+                  </span>
                 </th>
-                <th scope="col" className="text-center">
+                <th scope="col" className="text-center break-words">
                   {t('team', { n: 1 })}
+                  <span className="block text-xs leading-tight">
+                    {state.players
+                      .filter((player) => player.team === 1)
+                      .map((player) => playerName(player.id, player.isHuman))
+                      .join(t('listSeparator'))}
+                  </span>
                 </th>
               </tr>
             </thead>

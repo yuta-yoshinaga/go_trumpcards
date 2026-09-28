@@ -1,4 +1,4 @@
-//go:build !js || !wasm || classic
+//go:build !js || !wasm || extra8
 
 package presenter
 
@@ -134,6 +134,13 @@ func (p *SoloWhistCuiPresenter) writePrompt(b *strings.Builder, g interfaces.Sol
 		b.WriteString(i18n.T("solowhist.promptTrickEnd") + "\n")
 		b.WriteString(i18n.T("solowhist.promptTrickEndHelp") + "\n")
 	case domain.SoloWhistPhaseRoundEnd:
+		if g.GetDeclarerIdx() >= 0 && (g.GetContract() == domain.SoloWhistBidSolo || g.GetContract() == domain.SoloWhistBidAbundance) {
+			tricks := g.GetRoundTricks()
+			target := domain.SoloWhistBidTarget(g.GetContract())
+			b.WriteString(i18n.Tf("solowhist.roundContractResult",
+				"target", strconv.Itoa(target),
+				"won", strconv.Itoa(tricks[g.GetDeclarerIdx()])) + "\n")
+		}
 		promptKey := "solowhist.promptRoundEnd"
 		if g.GetDeclarerIdx() < 0 {
 			promptKey = "solowhist.promptRoundEndPassedOut"

@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra4
+//go:build !js || !wasm || extra8
 
 package presenter
 
@@ -71,8 +71,7 @@ func (p *ShengJiWebPresenter) Output(g interfaces.ShengJiGame, lastErr error) st
 		}
 	}
 
-	cfg := g.GetConfig()
-	resObj.Config = controller.ShengJiWebOutputConfig{CpuDifficulty: int(cfg.CpuDifficulty)}
+	resObj.Config = controller.ShengJiWebOutputConfig{}
 
 	resObj.Players = p.buildPlayersOutput(g)
 	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(g, lastErr)

@@ -53,7 +53,12 @@
   "roundResult": {
     "title": "Round Result",
     "teamA": "Team A: {{points}} pts",
-    "teamB": "Team B: {{points}} pts"
+    "teamB": "Team B: {{points}} pts",
+    "contract": "{{team}} (bid): contract {{contract}} pts / got {{got}} pts — {{status}}",
+    "status": {
+      "made": "Contract made",
+      "failed": "Contract failed"
+    }
   },
   "livePoints": {
     "title": "Live Points",

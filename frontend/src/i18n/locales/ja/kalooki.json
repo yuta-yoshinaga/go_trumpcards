@@ -36,6 +36,10 @@
   "meldAria": "{{player}}のメルド{{meld}}",
   "layoffTargetSummary": "→ レイオフ先: {{player}} メルド{{meld}}",
   "discard": "カードを捨てる",
+  "selection": {
+    "selected": "{{card}}、選択中",
+    "unselected": "{{card}}、未選択"
+  },
   "nextRound": "次のラウンドへ",
   "viewLog": "棋譜を表示",
   "tutorial": {

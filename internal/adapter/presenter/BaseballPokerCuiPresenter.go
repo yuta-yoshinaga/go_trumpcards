@@ -133,8 +133,14 @@ func (cp *BaseballPokerCuiPresenter) writeResult(sb *strings.Builder, c interfac
 	if len(results) == 0 {
 		return
 	}
+	won := make([]bool, len(players))
+	for _, result := range results {
+		if result.PlayerIdx >= 0 && result.PlayerIdx < len(won) {
+			won[result.PlayerIdx] = result.WonAmount > 0
+		}
+	}
 	sb.WriteString("----------\n")
-	for _, p := range players {
+	for i, p := range players {
 		if p == nil || p.GetFolded() {
 			continue
 		}
@@ -145,7 +151,8 @@ func (cp *BaseballPokerCuiPresenter) writeResult(sb *strings.Builder, c interfac
 		}
 		sb.WriteString(i18n.Tf("baseballpoker.showdownHandLine",
 			"name", p.GetName(),
-			"hand", hand) + "\n")
+			"hand", hand,
+			"result", i18n.T("baseballpoker."+map[bool]string{true: "showdownWinner", false: "showdownLoser"}[won[i]])) + "\n")
 	}
 	for i, r := range results {
 		if i >= len(players) {

@@ -96,6 +96,26 @@ describe('TwentyNinePage', () => {
     expect(readout).toHaveTextContent('まだ入札なし');
   });
 
+  it('shows the lead suit from the first card in the current trick', async () => {
+    mockExec.mockResolvedValue(
+      makeTwentyNineState({
+        phase: 1,
+        currentTrick: [
+          { playerIdx: 2, card: { design: 'HEART', value: 11 } },
+          { playerIdx: 3, card: { design: 'DIAMOND', value: 9 } },
+        ],
+      }),
+    );
+    renderWithProviders(<TwentyNinePage />);
+    expect(await screen.findByTestId('tn29-lead-suit')).toHaveTextContent('♥ ハート');
+  });
+
+  it('leaves the current-trick lead suit empty when no card has been played', async () => {
+    mockExec.mockResolvedValue(makeTwentyNineState({ phase: 1, currentTrick: [] }));
+    renderWithProviders(<TwentyNinePage />);
+    expect(await screen.findByTestId('tn29-lead-suit')).toBeEmptyDOMElement();
+  });
+
   it('shows the current highest bid and the bidder name during the bid phase', async () => {
     // CPU 2 (seat index 2) holds the highest bid of 20.
     mockExec.mockResolvedValue(makeTwentyNineState({ bids: [0, 0, 20, 0] }));

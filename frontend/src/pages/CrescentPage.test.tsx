@@ -51,6 +51,7 @@ const playingState: CrescentResponse = {
   moveCount: 5,
   canUndo: false,
   isStalemate: false,
+  noLegalMoves: false,
   message: '',
 };
 
@@ -96,6 +97,22 @@ describe('CrescentPage', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent(/手数: 5/));
   });
 
+  it('keeps foundation targets focusable and explains that a source must be selected', async () => {
+    renderWithProviders(<CrescentPage />);
+    await screen.findByTestId('phase-indicator');
+    const target = screen.getAllByRole('button').find((button) => button.getAttribute('aria-disabled') === 'true');
+    expect(target).toBeDefined();
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const describedBy = target?.getAttribute('aria-describedby');
+    expect(describedBy).toBeTruthy();
+    expect(document.getElementById(describedBy ?? '')).toHaveTextContent('先に移動する札を選んでください');
+    mockExec.mockClear();
+    fireEvent.click(target as HTMLElement);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('renders ascending and descending foundation suit headers', async () => {
     renderWithProviders(<CrescentPage />);
     await waitFor(() => expect(screen.getAllByText(/♠ ↑/).length).toBeGreaterThanOrEqual(1));
@@ -133,6 +150,28 @@ describe('CrescentPage', () => {
     const alert = await screen.findByRole('alert');
     expect(alert.textContent).toMatch(/手詰まり/);
     expect(alert.textContent).toMatch(/2/);
+  });
+
+  it('announces when a stalemate can be resolved with a redeal and updates after redealing', async () => {
+    mockExec.mockResolvedValue({ ...playingState, noLegalMoves: true, redealsRemaining: 2 });
+    renderWithProviders(<CrescentPage />);
+
+    const guidance = await screen.findByTestId('crescent-stalemate-redeal-status');
+    expect(guidance).toHaveAttribute('role', 'status');
+    expect(guidance).toHaveAttribute('aria-live', 'polite');
+    expect(guidance).toHaveTextContent(/手詰まり.*再配り.*2/);
+
+    mockExec.mockResolvedValue({ ...playingState, noLegalMoves: true, redealsRemaining: 1 });
+    fireEvent.click(screen.getByRole('button', { name: /再配り \(2\)/ }));
+    await waitFor(() => expect(guidance).toHaveTextContent(/手詰まり.*再配り.*1/));
+  });
+
+  it('keeps the stalemate redeal status region mounted and clears its message when not applicable', async () => {
+    mockExec.mockResolvedValue({ ...playingState, noLegalMoves: false, redealsRemaining: 2 });
+    renderWithProviders(<CrescentPage />);
+    const guidance = await screen.findByTestId('crescent-stalemate-redeal-status');
+    expect(guidance).toHaveAttribute('aria-live', 'polite');
+    expect(guidance).toBeEmptyDOMElement();
   });
 
   it('defaults the escape count to 0 when undoToEscape is absent', async () => {

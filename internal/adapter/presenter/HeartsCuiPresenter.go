@@ -121,6 +121,9 @@ func (p *HeartsCuiPresenter) Output(h interfaces.HeartsGame, lastErr error) stri
 				"name", cuiPlayerName(h.GetPlayer(currentIdx), currentIdx)) + "\n")
 			b.WriteString(i18n.T("hearts.promptPlayHelp") + "\n")
 		case domain.HeartsPhaseTrickEnd:
+			leadIdx := h.GetLeadPlayerIdx()
+			b.WriteString(i18n.Tf("hearts.trickResult",
+				"name", cuiPlayerName(h.GetPlayer(leadIdx), leadIdx)) + "\n")
 			b.WriteString(i18n.T("hearts.promptTrickEnd") + "\n")
 			b.WriteString(i18n.T("hearts.promptTrickEndHelp") + "\n")
 		case domain.HeartsPhaseRoundEnd:

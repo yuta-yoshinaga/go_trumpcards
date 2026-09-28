@@ -267,9 +267,15 @@ function SixBidSoloPageContent() {
             {state.trick.length > 0 && (
               <div className="mb-2 flex items-center gap-2" data-testid="sixbidsolo-trick">
                 <span className="text-ds-text-muted text-sm">{t('trick')}</span>
-                {state.trick.map((c, i) => (
-                  <CardImage key={`trick-${c.design}-${c.value}-${i}`} card={c} width={cardWidth} />
-                ))}
+                {state.trick.map((c, i) => {
+                  const player = state.players[(state.trickLeaderIdx + i) % state.players.length];
+                  return (
+                    <div key={`trick-${c.design}-${c.value}-${i}`} className="flex flex-col items-center">
+                      <span className="text-ds-text-muted text-xs">{playerLabel(player.id, player.isHuman)}</span>
+                      <CardImage card={c} width={cardWidth} />
+                    </div>
+                  );
+                })}
               </div>
             )}
 

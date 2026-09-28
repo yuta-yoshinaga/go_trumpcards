@@ -15,6 +15,7 @@
   "giveup": "Give Up",
   "empty": "Empty",
   "emptyDivanSlot": "Empty divan slot {{idx}}",
+  "divanCard": "Divan slot {{idx}}, {{card}}",
   "foundationSlot": "Foundation {{idx}}, top {{top}}",
   "foundationSlotComplete": "Foundation {{idx}}, top {{top}} (complete)",
   "emptyFoundationSlot": "Foundation {{idx}}, empty (build from K)",

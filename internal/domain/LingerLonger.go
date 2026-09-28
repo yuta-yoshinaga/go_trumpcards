@@ -649,12 +649,9 @@ func (l *LingerLonger) UnmarshalJSON(data []byte) error {
 	if len(j.Players) != j.Config.PlayerCnt {
 		return fmt.Errorf("players has %d entries for %d seats", len(j.Players), j.Config.PlayerCnt)
 	}
-	for name, idx := range map[string]int{
-		"current player": j.CurrentPlayerIdx,
-		"lead player":    j.LeadPlayerIdx,
-	} {
-		if idx < 0 || idx >= j.Config.PlayerCnt {
-			return fmt.Errorf("invalid %s: %d", name, idx)
+	for _, f := range []namedInt{{"current player", j.CurrentPlayerIdx}, {"lead player", j.LeadPlayerIdx}} {
+		if f.value < 0 || f.value >= j.Config.PlayerCnt {
+			return fmt.Errorf("invalid %s: %d", f.name, f.value)
 		}
 	}
 	if j.WinnerIdx < -1 || j.WinnerIdx >= j.Config.PlayerCnt {

@@ -6,7 +6,6 @@ import { gameExec } from '../gameExec';
 
 /** Configuration options for Conquian game settings. */
 export interface ConquianConfigInput {
-  cpuDifficulty?: number;
   targetWins?: number;
 }
 

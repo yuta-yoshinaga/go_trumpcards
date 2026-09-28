@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { grandfathersClockApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -59,6 +59,9 @@ function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => stri
 }
 
 function GrandfathersClockPageContent() {
+  const selectSourceHintId = useId();
+  const [autoCompleteAnnouncement, setAutoCompleteAnnouncement] = useState('');
+  const wasAutoCompleting = useRef(false);
   const {
     t,
     tc,
@@ -76,6 +79,15 @@ function GrandfathersClockPageContent() {
   } = useGamePageSetup('grandfathersclock');
   const game = useGrandfathersClockGame();
   const { state, loading, error, retry, hintError, selectedSource, hint, isAutoCompleting } = game;
+
+  useEffect(() => {
+    if (isAutoCompleting) {
+      setAutoCompleteAnnouncement(t('autoCompleteInProgress'));
+    } else if (wasAutoCompleting.current) {
+      setAutoCompleteAnnouncement(t('autoCompleteComplete'));
+    }
+    wasAutoCompleting.current = isAutoCompleting;
+  }, [isAutoCompleting, t]);
 
   const {
     hint: frontendHint,
@@ -203,7 +215,9 @@ function GrandfathersClockPageContent() {
               <button
                 type="button"
                 onClick={() => game.handleSelectTarget(tableauColZone)}
-                disabled={!isPlaying || loading || !selectedSource}
+                disabled={!isPlaying || loading}
+                aria-disabled={!selectedSource || undefined}
+                aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                 aria-label={t('emptyColumnAriaLabel', { col: colIdx })}
                 style={{ height: dims.ch }}
                 className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center bg-transparent ${focusRingWhite}`}
@@ -288,6 +302,13 @@ function GrandfathersClockPageContent() {
       }
     >
       <LandscapeBanner message={t('landscapeBanner')} />
+      <span id={selectSourceHintId} className="sr-only">
+        {tc('label.selectSourceFirst')}
+      </span>
+
+      <div className="sr-only" data-testid="gc-autocomplete-status" role="status" aria-live="polite">
+        {autoCompleteAnnouncement}
+      </div>
 
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
@@ -321,8 +342,9 @@ function GrandfathersClockPageContent() {
                             if (face.complete) return;
                             game.handleSelectTarget(faceZone);
                           }}
-                          disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
-                          aria-disabled={face.complete || undefined}
+                          disabled={!isPlaying || loading || isAutoCompleting}
+                          aria-disabled={!selectedSource || face.complete || undefined}
+                          aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                           aria-label={`${t('faceAriaLabel', {
                             idx,
                             hour: CLOCK_HOURS[idx],
@@ -362,6 +384,12 @@ function GrandfathersClockPageContent() {
                 );
               })}
             </div>
+
+            {isAutoCompleting && (
+              <p data-testid="gc-autocomplete-visible" className="text-ds-warning text-sm text-center mb-2">
+                {t('autoCompleteInProgress')}
+              </p>
+            )}
 
             <div className="flex gap-1 sm:gap-2 items-start" data-tutorial="gc-tableau">
               {Array.from({ length: TABLEAU_COLS }, (_, i) => i).map(renderTableauColumn)}

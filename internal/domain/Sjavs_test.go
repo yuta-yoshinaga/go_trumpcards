@@ -380,7 +380,6 @@ func TestSjavs_UnmarshalRejectsAndClampsHostileSnapshots(t *testing.T) {
 	for name, payload := range map[string]string{
 		"not json":      "{",
 		"seat count":    `{"pl":[],"cfg":{"cd":0},"ph":0}`,
-		"bad config":    `{"pl":[{},{},{},{}],"cfg":{"cd":99},"ph":0}`,
 		"unknown phase": `{"pl":[{},{},{},{}],"cfg":{"cd":0},"ph":9}`,
 	} {
 		t.Run(name, func(t *testing.T) {

@@ -4,6 +4,8 @@
     "round": "ラウンド",
     "stock": "山札",
     "discard": "捨て札",
+    "discardAvailable": "捨て札から引く",
+    "discardUnavailable": "引けません",
     "score": "スコア",
     "cumulative": "累計",
     "drawnCard": "引いたカード",

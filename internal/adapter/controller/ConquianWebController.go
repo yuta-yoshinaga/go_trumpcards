@@ -22,8 +22,7 @@ type ConquianWebInput struct {
 
 // ConquianWebConfig コンキャンWeb設定
 type ConquianWebConfig struct {
-	CpuDifficulty *int `json:"cpuDifficulty,omitempty"`
-	TargetWins    *int `json:"targetWins,omitempty"`
+	TargetWins *int `json:"targetWins,omitempty"`
 }
 
 // ConquianWebOutputMeld テーブルメルドのアウトプット
@@ -62,14 +61,12 @@ type ConquianWebOutput struct {
 
 // ConquianWebOutputConfig コンキャン設定アウトプット
 type ConquianWebOutputConfig struct {
-	CpuDifficulty int `json:"cpuDifficulty"`
-	TargetWins    int `json:"targetWins"`
+	TargetWins int `json:"targetWins"`
 }
 
 // ToConfig builds a ConquianConfig from the nested web config, applying bounds checking.
 func (c *ConquianWebConfig) ToConfig() domain.ConquianConfig {
 	cfg := domain.DefaultConquianConfig()
-	cfg.CpuDifficulty = domain.ConquianCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty, int(domain.ConquianCpuDifficultyEasy), int(domain.ConquianCpuDifficultyHard), int(cfg.CpuDifficulty)))
 	webutil.ApplyBoundedInt(&cfg.TargetWins, c.TargetWins, 1, 100)
 	return cfg
 }

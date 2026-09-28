@@ -1,4 +1,4 @@
-//go:build !js || !wasm || casino
+//go:build !js || !wasm || extra8
 
 package presenter
 
@@ -23,6 +23,7 @@ func (bjp *BlackJackWebPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 	resObj.Player.Chips = player.GetChips()
 
 	resObj.Phase = bj.GetPhase()
+	resObj.DoubleDownBlock = int(bj.DoubleDownBlockReason())
 	resObj.CurrentHandIdx = bj.GetCurrentHandIdx()
 	resObj.InsuranceBet = bj.GetInsuranceBet()
 	resObj.InsuranceAvailable = bj.IsInsuranceAvailable()

@@ -108,9 +108,28 @@ func (p *PigCuiPresenter) Output(s interfaces.PigGame, lastErr error) string {
 				sb.WriteString(i18n.T("pig.promptWaiting") + "\n")
 				return
 			}
-			sb.WriteString(i18n.T("pig.promptPass") + "\n")
+			players := pigPlayers(s)
+			humanIdx := 0
+			for i, player := range players {
+				if player.GetIsHuman() {
+					humanIdx = i
+					break
+				}
+			}
+			target := domain.PigNextActiveSeat(players, humanIdx)
+			if target != humanIdx {
+				sb.WriteString(i18n.Tf("pig.promptPass", "direction", i18n.T("pig.passDirectionLeft"), "name", cuiPlayerName(s.GetPlayer(target), target)) + "\n")
+			}
 		}
 	})
+}
+
+func pigPlayers(s interfaces.PigGame) []*domain.PigPlayer {
+	players := make([]*domain.PigPlayer, s.GetPlayerCnt())
+	for i := range players {
+		players[i] = s.GetPlayer(i)
+	}
+	return players
 }
 
 // HintOutput emits the current hint.

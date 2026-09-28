@@ -21,6 +21,9 @@
     "out": "降り",
     "undecided": "未定"
   },
+  "decision": {
+    "undecided": "参加するか降りるかを選んでください。未決定: {{count}}人。"
+  },
   "currentTrick": "現在のトリック",
   "actions": {
     "playIn": "参加する",

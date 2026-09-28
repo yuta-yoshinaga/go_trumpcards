@@ -56,6 +56,42 @@ func TestScoponeCuiPresenter_HintOutput(t *testing.T) {
 		}
 	})
 
+	t.Run("lists every hand card candidate and mandatory capture", func(t *testing.T) {
+		s := build(7, domain.CardDesignHeart, []*domain.Card{
+			domain.NewCard(domain.CardDesignClover, 3, false),
+			domain.NewCard(domain.CardDesignSpade, 4, false),
+		})
+		s.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+		s.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+		out := p.HintOutput(s)
+		if recommendation, list := strings.Index(out, "推奨:"), strings.Index(out, "取得候補一覧"); recommendation < 0 || list < 0 || recommendation > list {
+			t.Errorf("expected recommendation before candidate list, got: %s", out)
+		}
+		if !strings.Contains(out, "全取り") {
+			t.Errorf("expected scopa recommendation to be prioritized, got: %s", out)
+		}
+		for _, want := range []string{"手札0", "手札1", "手札2", "捕獲必須", "取得候補なし", "場に置けます", "♣3", "♠4"} {
+			if !strings.Contains(out, want) {
+				t.Errorf("expected candidate hint to contain %q, got: %s", want, out)
+			}
+		}
+	})
+
+	t.Run("no capture lists every hand as unavailable", func(t *testing.T) {
+		s := build(2, domain.CardDesignHeart, []*domain.Card{
+			domain.NewCard(domain.CardDesignDiamond, 7, false),
+			domain.NewCard(domain.CardDesignClover, 5, false),
+		})
+		s.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 3, false))
+		out := p.HintOutput(s)
+		if !strings.Contains(out, "捕獲できる手はありません") {
+			t.Errorf("expected no-capture recommendation first, got: %s", out)
+		}
+		if strings.Count(out, "取得候補なし") != 2 {
+			t.Errorf("expected no-capture line for both hand cards, got: %s", out)
+		}
+	})
+
 	t.Run("none outside player turn", func(t *testing.T) {
 		s := domain.NewDefaultScopone()
 		s.SetPhase(domain.ScoponePhaseRoundEnd)

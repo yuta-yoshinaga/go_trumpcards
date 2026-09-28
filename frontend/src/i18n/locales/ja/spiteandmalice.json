@@ -27,6 +27,7 @@
   "discardNeedHand": "先に手札のカードを選択してください",
   "discardReady": "手札を選択済みです。ディスカードできます",
   "autoComplete": "自動完成",
+  "autoCompleteHint": "組札に出せるカードを連続して自動でプレイします。手がなくなったら手動に戻り、ディスカードしてターンを終えてください。",
   "selectSource": "出すカードを選んでください",
   "selectFoundation": "出す組札を選んでください",
   "selectSide": "捨てるサイドパイルを選んでください",

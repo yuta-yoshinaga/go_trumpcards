@@ -107,6 +107,4 @@ export interface ShengJiResponse extends BaseGameResponse {
 }
 
 /** Settings echoed back with the game state. */
-export interface ShengJiConfigOutput {
-  cpuDifficulty: number;
-}
+export type ShengJiConfigOutput = Record<string, never>;

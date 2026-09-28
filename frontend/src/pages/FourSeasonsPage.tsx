@@ -40,6 +40,8 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 const TABLEAU_CNT = 5;
 const FOUNDATION_CNT = 4;
 const FOUNDATION_PILE_FULL = 13;
+const FOUNDATION_CELLS = ['1 / 1', '1 / 3', '3 / 1', '3 / 3'];
+const TABLEAU_CELLS = ['1 / 2', '2 / 1', '2 / 2', '2 / 3', '3 / 2'];
 
 /**
  * The rank a foundation needs next. Foundations build up **from the deal's base
@@ -276,9 +278,9 @@ function FourSeasonsPageContent() {
           />
           <LandscapeBanner message={t('landscapeBanner')} />
 
-          <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
-            <div className="mb-2 text-xs text-ds-text-muted">{t('foundations')}</div>
-            <div className="flex gap-2 mb-5 flex-wrap" data-tutorial="fs-foundations">
+          <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8 sm:grid sm:grid-cols-3 sm:content-start sm:gap-3">
+            <div className="mb-2 text-xs text-ds-text-muted sm:hidden">{t('foundations')}</div>
+            <div className="flex gap-2 mb-5 flex-wrap sm:contents">
               {Array.from({ length: FOUNDATION_CNT }, (_, idx) => {
                 const pile = state.foundation[idx] ?? [];
                 const top = pile[pile.length - 1];
@@ -287,7 +289,10 @@ function FourSeasonsPageContent() {
                 return (
                   <button
                     key={`f-${idx.toString()}`}
+                    data-tutorial={idx === 0 ? 'fs-foundations' : undefined}
+                    data-board-cell={FOUNDATION_CELLS[idx]}
                     type="button"
+                    style={{ gridArea: FOUNDATION_CELLS[idx] }}
                     className={`flex flex-col items-center p-1 rounded ${focusRingWhite} ${hintFoundation === idx ? 'ring-2 ring-ds-success animate-pulse' : ''} ${source ? 'cursor-pointer' : 'cursor-default'}`}
                     onClick={() => placeOn('foundation', idx)}
                     disabled={!isPlaying || loading || source === null}
@@ -328,9 +333,9 @@ function FourSeasonsPageContent() {
               })}
             </div>
 
-            <div className="mb-2 text-xs text-ds-text-muted">{t('cross')}</div>
-            <div className="flex gap-3 flex-wrap items-start" data-tutorial="fs-cross">
-              <div className="flex flex-col items-center">
+            <div className="mb-2 text-xs text-ds-text-muted sm:hidden">{t('cross')}</div>
+            <div className="flex gap-3 flex-wrap items-start sm:contents">
+              <div className="flex flex-col items-center sm:col-start-1 sm:row-start-4">
                 <div className="text-[11px] mb-0.5 text-ds-text-muted">
                   {t('stock')} ({state.stockCount})
                 </div>
@@ -355,7 +360,7 @@ function FourSeasonsPageContent() {
                 </button>
               </div>
 
-              <div className="flex flex-col items-center">
+              <div className="flex flex-col items-center sm:col-start-2 sm:row-start-4">
                 <div className="text-[11px] mb-0.5 text-ds-text-muted">{t('waste')}</div>
                 <button
                   type="button"
@@ -384,7 +389,13 @@ function FourSeasonsPageContent() {
                 const selected = source?.kind === 'tableau' && source.idx === idx;
                 const accepts = fourseasonsTableauNextRank(top?.value);
                 return (
-                  <div key={`t-${idx.toString()}`} className="flex flex-col items-center">
+                  <div
+                    key={`t-${idx.toString()}`}
+                    data-tutorial={idx === 2 ? 'fs-cross' : undefined}
+                    data-board-cell={TABLEAU_CELLS[idx]}
+                    style={{ gridArea: TABLEAU_CELLS[idx] }}
+                    className="flex flex-col items-center"
+                  >
                     <div className="text-[11px] mb-0.5 text-ds-text-muted">
                       T{idx} ({pile.length})
                     </div>
@@ -427,7 +438,7 @@ function FourSeasonsPageContent() {
               })}
             </div>
 
-            <div data-tutorial="fs-controls" className="mt-4">
+            <div data-tutorial="fs-controls" className="mt-4 sm:col-span-3 sm:row-start-5">
               <GameMessageBox
                 message={state.message}
                 messageCode={state.messageCode}

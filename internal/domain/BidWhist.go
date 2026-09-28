@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra7
+//go:build !js || !wasm || extra11
 
 package domain
 
@@ -1180,12 +1180,6 @@ func (g *BidWhist) GetConfig() BidWhistConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *BidWhist) SetConfig(cfg BidWhistConfig) { g.config = cfg }
-
-// CardRankPublic カードランク取得 (テスト用)
-func (g *BidWhist) CardRankPublic(card *Card) int { return g.cardRank(card) }
-
-// EffectiveSuitPublic 実効スート取得 (テスト用)
-func (g *BidWhist) EffectiveSuitPublic(card *Card) int { return g.effectiveSuit(card) }
 
 // --- Private helpers ---
 

@@ -24,6 +24,7 @@
   "score": "得点 {{n}}",
   "dealerBadge": "親",
   "passButton": "パス",
+  "waitingForTurn": "相手の手番です。次の手番までお待ちください。",
   "goOut": "{{name}} が上がり、{{points}} 点",
   "cardsLeft": "{{name}}: 残り {{n}} 枚",
   "unplayedKings": "出なかった K: {{n}} 枚（1 枚 2 点）",

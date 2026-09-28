@@ -72,6 +72,34 @@ describe('EasthavenPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('keeps an empty tableau target focusable and explains that a source must be selected', async () => {
+    mockExec.mockResolvedValue({ ...playingState, tableau: [[], ...playingState.tableau.slice(1)] });
+    renderWithProviders(<EasthavenPage />);
+    const btn = await screen.findByTestId('eh-empty-col-0');
+
+    expect(btn).not.toBeDisabled();
+    expect(btn).toHaveAttribute('aria-disabled', 'true');
+    const hintId = btn.getAttribute('aria-describedby');
+    expect(hintId).toBeTruthy();
+    expect(document.getElementById(hintId ?? '')).toHaveTextContent('先に移動する札を選んでください');
+
+    mockExec.mockClear();
+    btn.click();
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
+  it('keeps a foundation target focusable and explains that a source must be selected', async () => {
+    renderWithProviders(<EasthavenPage />);
+    const btn = await screen.findByRole('button', { name: '空の組札 (♠)' });
+
+    expect(btn).not.toBeDisabled();
+    expect(btn).toHaveAttribute('aria-disabled', 'true');
+    const hintId = btn.getAttribute('aria-describedby');
+    expect(hintId).toBeTruthy();
+    expect(document.getElementById(hintId ?? '')).toHaveTextContent('先に移動する札を選んでください');
+  });
+
   it('shows move count and stock', async () => {
     renderWithProviders(<EasthavenPage />);
     await waitFor(() => expect(screen.getByText(/手数/)).toBeInTheDocument());
@@ -91,6 +119,33 @@ describe('EasthavenPage', () => {
     renderWithProviders(<EasthavenPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     expect(screen.getByRole('button', { name: '配る' })).toBeDisabled();
+  });
+
+  it('shows the empty-column deal reason near the deal button only while dealing is blocked', async () => {
+    mockExec.mockResolvedValue({ ...playingState, tableau: [[], ...playingState.tableau.slice(1)] });
+    const { unmount } = renderWithProviders(<EasthavenPage />);
+    const reason = await screen.findByTestId('eh-empty-column-deal-reason');
+    expect(reason).toBeVisible();
+    expect(reason).toHaveTextContent('空の列をすべて埋めないと配れません');
+
+    unmount();
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<EasthavenPage />);
+    await screen.findByTestId('eh-stock');
+    expect(screen.queryByTestId('eh-empty-column-deal-reason')).not.toBeInTheDocument();
+  });
+
+  it('does not show the empty-column reason when the stock is empty or the game has ended', async () => {
+    mockExec.mockResolvedValue({ ...playingState, stockCount: 0, tableau: [[], ...playingState.tableau.slice(1)] });
+    const { unmount } = renderWithProviders(<EasthavenPage />);
+    await screen.findByTestId('eh-stock');
+    expect(screen.queryByTestId('eh-empty-column-deal-reason')).not.toBeInTheDocument();
+
+    unmount();
+    mockExec.mockResolvedValue({ ...gameOverState, tableau: [[], ...gameOverState.tableau.slice(1)] });
+    renderWithProviders(<EasthavenPage />);
+    await screen.findAllByText('ゲームオーバー');
+    expect(screen.queryByTestId('eh-empty-column-deal-reason')).not.toBeInTheDocument();
   });
 
   it('warns on empty stock and flags columns that still hide a face-down card', async () => {

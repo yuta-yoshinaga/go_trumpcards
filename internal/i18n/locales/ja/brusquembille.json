@@ -12,6 +12,7 @@
   "promptCurrentPlayer": "手番: {{name}}",
   "promptPlay": "play <idx>・・・カードを出す",
   "promptTrickEnd": "トリック終了",
+  "trickWinner": "{{name}}がトリックを獲得しました",
   "promptTrickEndHelp": "next・・・次のトリックへ",
   "hintNone": "ヒントはありません。",
   "hintCard": "[ヒント: [{{idx}}]{{card}} ({{reason}})]",

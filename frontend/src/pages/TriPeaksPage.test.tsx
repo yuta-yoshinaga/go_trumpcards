@@ -119,6 +119,22 @@ describe('TriPeaksPage playable summary', () => {
     expect(screen.getByTestId('tp-playable')).not.toHaveTextContent('ドロー推奨');
   });
 
+  it('announces removable cards after the stock is empty', async () => {
+    mockExec.mockResolvedValue({ ...playingState, stockCount: 0 });
+    renderWithProviders(<TriPeaksPage />);
+    await waitFor(() =>
+      expect(screen.getByTestId('tp-stock-empty-guidance')).toHaveTextContent('山札切れ: 1枚除去できます'),
+    );
+  });
+
+  it('announces when no cards can be removed after the stock is empty', async () => {
+    mockExec.mockResolvedValue({ ...playingState, waste: [card('CLOVER', 9)], stockCount: 0 });
+    renderWithProviders(<TriPeaksPage />);
+    await waitFor(() =>
+      expect(screen.getByTestId('tp-stock-empty-guidance')).toHaveTextContent('山札切れ: 除去できるカードはありません'),
+    );
+  });
+
   it('hides the summary once the game has ended', async () => {
     mockExec.mockResolvedValue(gameClearState);
     renderWithProviders(<TriPeaksPage />);

@@ -2,6 +2,7 @@
   "chips": "チップ: {{count}}",
   "turns": "ターン: {{played}}/{{total}}",
   "remaining": "残り: {{count}}",
+  "rankSelection": "ベット対象のランク",
   "bet": "賭け",
   "noBet": "賭けなし",
   "bankerCard": "親の札",

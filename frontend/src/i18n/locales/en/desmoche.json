@@ -18,6 +18,7 @@
   "nextRound": "Next round",
   "selected": "{{n}} selected",
   "selectHint": "Click cards to select, then Meld / Lay off / Discard. To rearrange, pick a card on the table and a target meld",
+  "actionGuide.draw": "Draw from the stock, or take the discard when one is available",
   "melded": "{{n}}/{{goal}} down",
   "opponentHand": "{{name}}: {{n}} card(s)",
   "opponentHandAriaLabel": "{{name}} holds {{n}} face-down card(s)",

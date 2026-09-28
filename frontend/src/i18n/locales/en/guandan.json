@@ -3,6 +3,8 @@
   "cpu": "CPU {{id}}",
   "seat": "Seat {{n}}",
   "team": "Team {{n}}",
+  "ally": "Ally",
+  "opponent": "Opponent",
   "playersTitle": "Players",
   "cardCount": "{{count}} cards",
   "outAt": "out #{{n}}",

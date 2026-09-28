@@ -71,6 +71,11 @@
   "a11y": {
     "holdOn": "Hold card {{index}}",
     "holdOff": "Release card {{index}}",
-    "kbdHint": "Press number keys 1-5 to toggle holding each card"
+    "kbdHint": "Press number keys 1-5 to toggle holding each card",
+    "enabled": "on",
+    "disabled": "off",
+    "autoHoldOn": "Auto-hold enabled",
+    "autoHoldOff": "Auto-hold disabled",
+    "autoSelected": "selected by auto-hold"
   }
 }

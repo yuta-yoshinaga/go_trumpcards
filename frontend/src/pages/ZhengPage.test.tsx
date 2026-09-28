@@ -220,7 +220,7 @@ describe('ZhengPage', () => {
       makeState({
         players: [
           player(0, true, [card('SPADE', 3)]),
-          player(1, false, [], { isFinished: true, rank: 1, cardCount: 0 }),
+          player(1, false, [], { isFinished: true, rank: 1, cardCount: 0, finishCards: [card('HEART', 9)] }),
           player(2, false, [], { cardCount: 5 }),
           player(3, false, [], { cardCount: 9 }),
         ],
@@ -258,7 +258,7 @@ describe('ZhengPage', () => {
       makeState({
         players: [
           player(0, true, [], { isFinished: true, rank: 2, cardCount: 0 }),
-          player(1, false, [], { isFinished: true, rank: 1, cardCount: 0 }),
+          player(1, false, [], { isFinished: true, rank: 1, cardCount: 0, finishCards: [card('HEART', 9)] }),
           player(2, false, [card('SPADE', 3)], { cardCount: 3 }),
           player(3, false, [], { cardCount: 8 }),
         ],
@@ -270,6 +270,7 @@ describe('ZhengPage', () => {
     expect(rows).toHaveLength(4);
     // CPU1 out first (1位), human out second (2位), then still-playing by fewest cards.
     expect(rows[0]).toHaveTextContent('1位');
+    expect(within(rows[0]).getByRole('img', { name: '上がり札: ♥ 9' })).toBeInTheDocument();
     expect(rows[1]).toHaveTextContent('2位');
     expect(rows[2]).toHaveTextContent('3枚');
     expect(rows[3]).toHaveTextContent('8枚');

@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { cincinnatiApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { ChipBetInput } from '../components/common/ChipBetInput';
@@ -11,6 +12,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
+import { KbdBadge } from '../components/KbdBadge';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
@@ -85,10 +87,12 @@ function CincinnatiPageContent() {
     () => [
       { key: 'k', action: () => execApi('check'), enabled: canAct && !facingBet },
       { key: 'c', action: () => execApi('call'), enabled: canAct && facingBet },
+      { key: 'b', action: handleBet, enabled: canAct && !facingBet, label: 'bet' },
+      { key: 'r', action: handleRaise, enabled: canAct && facingBet && !!state?.canRaise, label: 'raise' },
       { key: 'n', action: () => execApi('next'), enabled: isShowdown && !gameOver },
       { key: 'f', action: () => execApi('fold'), enabled: canAct },
     ],
-    [execApi, canAct, facingBet, isShowdown, gameOver],
+    [execApi, handleBet, handleRaise, canAct, facingBet, state?.canRaise, isShowdown, gameOver],
   );
   useActionKeyboardNav({ bindings: actionBindings, enabled: !!state && !loading });
 
@@ -246,6 +250,7 @@ function CincinnatiPageContent() {
           </div>
 
           <GameFooter className={`${gameTheme.cincinnati.footer} px-4 pt-3`}>
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="cincinnati-kbd-shortcuts" />
             <ErrorAlert message={error} onRetry={retry} />
             <SettingsPanel
               title={tc('settings.title')}
@@ -292,10 +297,12 @@ function CincinnatiPageContent() {
                           className={btnWarning}
                           data-testid="cin-raise"
                           data-hint-action="raise"
+                          aria-keyshortcuts="r"
                           onClick={handleRaise}
                           disabled={loading}
                         >
                           {t('button.raise')}
+                          <KbdBadge label="R" />
                         </button>
                       )
                     ) : (
@@ -304,10 +311,12 @@ function CincinnatiPageContent() {
                         className={btnWarning}
                         data-testid="cin-bet"
                         data-hint-action="bet"
+                        aria-keyshortcuts="b"
                         onClick={handleBet}
                         disabled={loading}
                       >
                         {t('button.bet')}
+                        <KbdBadge label="B" />
                       </button>
                     )}
                     <button

@@ -1,28 +1,17 @@
-//go:build !js || !wasm || extra6
+//go:build !js || !wasm || extra11
 
 package domain
 
-// ChineseTenCpuDifficulty は CPU の難易度レベル。
-type ChineseTenCpuDifficulty int
-
-// ChineseTenのCPU難易度定数
-const (
-	// ChineseTenCpuDifficultyNormal 標準難易度 (v1で唯一サポート)
-	ChineseTenCpuDifficultyNormal ChineseTenCpuDifficulty = iota
-)
-
 // ChineseTenConfig は撿紅點のゲーム設定。
 type ChineseTenConfig struct {
-	CpuDifficulty ChineseTenCpuDifficulty `json:"cd"`
 }
 
 // DefaultChineseTenConfig はデフォルト設定を返す。
 func DefaultChineseTenConfig() ChineseTenConfig {
-	return ChineseTenConfig{CpuDifficulty: ChineseTenCpuDifficultyNormal}
+	return ChineseTenConfig{}
 }
 
 // Validate は設定値のドメインバリデーション。
 func (c ChineseTenConfig) Validate() error {
-	return ValidateRange("CPU difficulty", int(c.CpuDifficulty),
-		int(ChineseTenCpuDifficultyNormal), int(ChineseTenCpuDifficultyNormal))
+	return nil
 }

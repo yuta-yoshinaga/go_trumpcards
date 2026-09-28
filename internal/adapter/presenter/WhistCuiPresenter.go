@@ -58,6 +58,15 @@ func (p *WhistCuiPresenter) Output(w interfaces.WhistGame, lastErr error) string
 			func(tc *domain.TrickCard) string { return cuiCardStr(tc.Card) },
 			func(idx int) string { return cuiPlayerName(w.GetPlayer(idx), idx) },
 		)
+		if lastTrick := w.GetLastTrick(); len(lastTrick) > 0 {
+			b.WriteString(i18n.T("whist.lastTrick") + "\n")
+			cuiTrickBlock(b, lastTrick,
+				func(tc *domain.TrickCard) int { return tc.PlayerIdx },
+				func(tc *domain.TrickCard) string { return cuiCardStr(tc.Card) },
+				func(idx int) string { return cuiPlayerName(w.GetPlayer(idx), idx) },
+			)
+			b.WriteString(i18n.Tf("whist.trickWinner", "name", cuiPlayerName(w.GetPlayer(w.GetLeadPlayerIdx()), w.GetLeadPlayerIdx())) + "\n")
+		}
 
 		cuiErrorBlock(b, lastErr)
 

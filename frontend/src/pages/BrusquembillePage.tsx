@@ -316,6 +316,8 @@ function BrusquembillePageContent() {
           players={state.players}
           cardWidth={cardWidth}
           label={t('currentTrick')}
+          winnerIdx={isTrickEnd ? state.leadPlayerIdx : undefined}
+          winnerLabel={t('trickWinnerBadge')}
           dataTutorial="brusquembille-trick"
         />
 

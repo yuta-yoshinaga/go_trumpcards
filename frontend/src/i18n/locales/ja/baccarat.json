@@ -18,6 +18,12 @@
     "reset": "リセット",
     "rebet": "再ベット ({{amount}})"
   },
+  "rebetBreakdown": {
+    "title": "再利用する賭け額",
+    "main": "{{type}}: {{amount}}",
+    "playerPair": "プレイヤーペア: {{amount}}",
+    "bankerPair": "バンカーペア: {{amount}}"
+  },
   "phase": {
     "bet": "ベットフェーズ",
     "end": "結果"

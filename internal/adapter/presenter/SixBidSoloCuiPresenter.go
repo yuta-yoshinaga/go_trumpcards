@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra4
+//go:build !js || !wasm || extra8
 
 package presenter
 
@@ -127,8 +127,9 @@ func (p *SixBidSoloCuiPresenter) Output(g interfaces.SixBidSoloGame, lastErr err
 
 		if trick := g.GetTrick(); len(trick) > 0 {
 			var t strings.Builder
-			for _, c := range trick {
-				t.WriteString(cuiCardStr(c) + " ")
+			for i, c := range trick {
+				seat := (g.GetTrickLeaderIdx() + i) % domain.SixBidSoloPlayerCnt
+				t.WriteString(cuiPlayerName(g.GetPlayer(seat), seat) + " " + cuiCardStr(c) + " ")
 			}
 			b.WriteString(i18n.Tf("sixbidsolo.trick", "cards", strings.TrimSpace(t.String())) + "\n")
 		}

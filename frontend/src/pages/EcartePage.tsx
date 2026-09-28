@@ -17,7 +17,7 @@ import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
-import { CPU_DIFFICULTY_OPTIONS, TARGET_SCORE_OPTIONS, useEcarteGame } from '../hooks/useEcarteGame';
+import { TARGET_SCORE_OPTIONS, useEcarteGame } from '../hooks/useEcarteGame';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
@@ -27,15 +27,13 @@ import { gameTheme } from '../styles/gameTheme';
 import type { EcarteResponse } from '../types/card';
 import { EcarteNegStep, EcartePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { suitSymbolAt } from '../utils/cardAlt';
 import { cardLabel } from '../utils/cardUtils';
 import { ECARTE_HELP, parseEcarteCommand } from '../utils/cli/commands/ecarteCommands';
 import { formatEcarteState } from '../utils/cli/formatters/ecarteFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
 import { hintCheckboxItem } from '../utils/settingsItems';
-
-/** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 = undeclared). */
-const SUIT_SYMBOLS = ['', '♠', '♣', '♥', '♦'] as const;
 
 /** Écarté tutorial step definitions. */
 const ECARTE_TUTORIAL_STEPS: TutorialStep[] = [
@@ -172,7 +170,7 @@ function EcartePageContent() {
   const discardReasonKey =
     discardCount === 0 ? 'discardReasonEmpty' : discardExceedsStock ? 'discardReasonExceed' : null;
 
-  const trumpSymbol = state.trumpSuit >= 1 && state.trumpSuit <= 4 ? SUIT_SYMBOLS[state.trumpSuit] : t('noTrump');
+  const trumpSymbol = state.trumpSuit >= 1 && state.trumpSuit <= 4 ? suitSymbolAt(state.trumpSuit, '') : t('noTrump');
   // 宣言ボーナスは自分が宣言できるときだけ意味があり、相手の手札は見えないため人間の手札だけを見る。
   const hasTrumpKingBonus =
     state.trumpCard?.value === 13 ||
@@ -207,17 +205,6 @@ function EcartePageContent() {
             groups={[
               {
                 items: [
-                  {
-                    type: 'select',
-                    id: 'cpuDifficulty',
-                    label: t('settings.cpuDifficulty'),
-                    value: ecarteConfig.cpuDifficulty,
-                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
-                      value: o.value,
-                      label: t(`settings.${o.label.toLowerCase()}`),
-                    })),
-                    onSelect: (v) => handleConfigChange('cpuDifficulty', v),
-                  },
                   {
                     type: 'select',
                     id: 'targetScore',
@@ -356,6 +343,9 @@ function EcartePageContent() {
                 </div>
               )}
             </div>
+            <div data-testid="ecarte-discard-live" className="sr-only" role="status" aria-live="polite">
+              {isDiscardStep && t('discardSelectionGuide', { count: selectedCardIndices.length })}
+            </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="ecarte-action-buttons">
@@ -455,7 +445,11 @@ function EcartePageContent() {
               {isDiscardStep && (
                 <>
                   <span className="text-xs text-ds-text-muted self-center mr-1">{t('discardPrompt')}</span>
-                  <span className="text-xs text-ds-text-primary self-center mr-1" data-testid="ecarte-discard-guide">
+                  <span
+                    className="text-xs text-ds-text-primary self-center mr-1"
+                    data-testid="ecarte-discard-guide"
+                    aria-hidden="true"
+                  >
                     {t('discardSelectionGuide', { count: selectedCardIndices.length })}
                   </span>
                   <button

@@ -1,5 +1,6 @@
 import type { TeenDoPaanchResponse } from '../../../types/card';
 import { TeenDoPaanchPhase } from '../../../types/phases';
+import { suitSymbolAt } from '../../cardAlt';
 import { formatCard, formatHeader, formatPlayerName, formatSeparator } from '../formatterBase';
 
 const PHASE_NAMES: Record<number, string> = {
@@ -8,9 +9,6 @@ const PHASE_NAMES: Record<number, string> = {
   [TeenDoPaanchPhase.ROUND_END]: 'ROUND END',
   [TeenDoPaanchPhase.GAME_END]: 'GAME END',
 };
-
-/** trumpSuit is a 1-based suit code, as elsewhere in this repo. */
-const SUIT_SYMBOLS: Record<number, string> = { 1: '♠', 2: '♣', 3: '♥', 4: '♦' };
 
 /** Format a 3-2-5 game state as terminal text. */
 export function formatTeenDoPaanchState(state: TeenDoPaanchResponse | null): string {
@@ -27,7 +25,7 @@ export function formatTeenDoPaanchState(state: TeenDoPaanchResponse | null): str
   lines.push('targets are assigned (3/2/5), not bid — making your number is all that scores');
   lines.push(
     state.trumpSuit > 0
-      ? `trump: ${SUIT_SYMBOLS[state.trumpSuit] ?? '?'}`
+      ? `trump: ${suitSymbolAt(state.trumpSuit, '?')}`
       : 'trump: undeclared (the 5-target seat chooses from its first five)',
   );
   // **前ラウンドの札のやり取りは盤面に痕跡が残らない。**

@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra3
+//go:build !js || !wasm || extra10
 
 // Package domain — カイザー (Kaiser) のドメインモデル。
 //
@@ -938,48 +938,6 @@ func (k *Kaiser) addLog(playerIdx int, actionType, detailCode string, detailPara
 	k.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
 }
 
-// SetPhaseForTest はテスト用にフェーズを設定する。
-func (k *Kaiser) SetPhaseForTest(p KaiserPhase) { k.phase = p }
-
-// SetHandForTest はテスト用に手札を差し替える。
-func (k *Kaiser) SetHandForTest(idx int, cards []*Card) {
-	setHandForTest(k.GetPlayer(idx), cards)
-}
-
-// SetContractForTest はテスト用に契約を設定する。
-func (k *Kaiser) SetContractForTest(declarer, value, suit int, contract KaiserContract) {
-	k.declarerIdx = declarer
-	k.highBid = &KaiserBid{Player: declarer, Value: value, Contract: contract}
-	k.trumpSuit = suit
-	k.contract = contract
-}
-
-// SetCurrentPlayerForTest はテスト用に手番を設定する。
-func (k *Kaiser) SetCurrentPlayerForTest(idx int) { k.currentIdx = idx }
-
-// SetTrickLeaderForTest はテスト用にリード席を設定する。
-func (k *Kaiser) SetTrickLeaderForTest(idx int) { k.trickLeader = idx }
-
-// SetHandPointsForTest はテスト用に局中の得点を設定する。
-func (k *Kaiser) SetHandPointsForTest(team, pts int) {
-	if team >= 0 && team < KaiserTeamCnt {
-		k.handPoints[team] = pts
-	}
-}
-
-// SetScoreForTest はテスト用に通算点を設定する。
-func (k *Kaiser) SetScoreForTest(team, score int) {
-	if team >= 0 && team < KaiserTeamCnt {
-		k.scores[team] = score
-	}
-}
-
-// SetTrickNumberForTest はテスト用に済んだトリック数を設定する。
-func (k *Kaiser) SetTrickNumberForTest(n int) { k.trickNumber = n }
-
-// FinishHandForTest はテスト用に精算を走らせる。
-func (k *Kaiser) FinishHandForTest() { k.finishHand() }
-
 // kaiserJSON is the JSON wire format for Kaiser.
 type kaiserJSON struct {
 	Players      []*KaiserPlayer    `json:"pl"`
@@ -1040,17 +998,14 @@ func (k *Kaiser) UnmarshalJSON(data []byte) error {
 	if j.Phase < KaiserPhaseBid || j.Phase > KaiserPhaseGameEnd {
 		return fmt.Errorf("bad phase: %d", j.Phase)
 	}
-	for name, v := range map[string]int{"dealer": j.DealerIdx, "current": j.CurrentIdx, "bid": j.BidIdx} {
-		if v < 0 || v >= KaiserPlayerCnt {
-			return fmt.Errorf("bad %s index: %d", name, v)
+	for _, f := range []namedInt{{"dealer", j.DealerIdx}, {"current", j.CurrentIdx}, {"bid", j.BidIdx}} {
+		if f.value < 0 || f.value >= KaiserPlayerCnt {
+			return fmt.Errorf("bad %s index: %d", f.name, f.value)
 		}
 	}
-	for name, v := range map[string]int{
-		"declarer": j.DeclarerIdx, "trick leader": j.TrickLeader,
-		"heart five": j.HeartFiveBy, "spade three": j.SpadeThreeBy,
-	} {
-		if v < -1 || v >= KaiserPlayerCnt {
-			return fmt.Errorf("bad %s index: %d", name, v)
+	for _, f := range []namedInt{{"declarer", j.DeclarerIdx}, {"trick leader", j.TrickLeader}, {"heart five", j.HeartFiveBy}, {"spade three", j.SpadeThreeBy}} {
+		if f.value < -1 || f.value >= KaiserPlayerCnt {
+			return fmt.Errorf("bad %s index: %d", f.name, f.value)
 		}
 	}
 	if j.WinnerTeam < -1 || j.WinnerTeam >= KaiserTeamCnt {

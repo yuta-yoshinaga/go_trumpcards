@@ -10,7 +10,7 @@ globs: ["**/*.go"]
 
 ## Lint
 
-- **Run `golangci-lint run ./...` before committing and ensure no warnings or errors**
+- **Run `golangci-lint run --build-tags test ./...` before committing and ensure no warnings or errors**
 
 ## Testing
 

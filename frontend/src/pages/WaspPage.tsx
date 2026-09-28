@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useId, useMemo, useState } from 'react';
 import { type WaspMoveZone, waspApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -195,6 +195,7 @@ function formatWaspState(state: WaspResponse): string {
 export const WaspPage = withTutorial(WaspPageContent, 'wasp', SC_TUTORIAL_STEPS);
 /** Inner content of the Wasp page. */
 function WaspPageContent() {
+  const selectSourceHintId = useId();
   const {
     t,
     tc,
@@ -433,6 +434,9 @@ function WaspPageContent() {
           <LandscapeBanner message={t('landscapeBanner')} />
 
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
+            <span id={selectSourceHintId} className="sr-only">
+              {tc('label.selectSourceFirst')}
+            </span>
             <div className="flex gap-1 sm:gap-2 justify-center" data-tutorial="sc-tableau">
               {state.tableau.map((col, colIdx) => (
                 <div key={colIdx} className="flex flex-col items-center" style={{ width: sc.cw }}>
@@ -451,9 +455,14 @@ function WaspPageContent() {
                           selectedSource ? 'ring-2 ring-ds-success cursor-pointer' : ''
                         }${emptyDealAttemptKey > 0 ? ' animate-shake border-ds-warning text-ds-warning' : ''}`}
                         style={{ width: sc.cw, height: sc.ch }}
-                        onClick={() => selectedSource && handleSelectTarget('tableau', colIdx)}
-                        disabled={!isPlaying || !selectedSource}
-                        aria-label={`${t('empty')} ${t('tableau')} ${colIdx} — ${t('anyCard')}`}
+                        onClick={() => {
+                          if (!selectedSource) return;
+                          handleSelectTarget('tableau', colIdx);
+                        }}
+                        disabled={!isPlaying}
+                        aria-disabled={!selectedSource || undefined}
+                        aria-describedby={!selectedSource ? selectSourceHintId : undefined}
+                        aria-label={`${t('empty')} ${t('tableau')} ${colIdx} — ${t('anyCard')}${selectedSource ? ` ${t('legalDestination')}` : ''}`}
                         data-testid={`sc-empty-col-${colIdx.toString()}`}
                       >
                         <span className="flex flex-col items-center leading-tight">
@@ -527,7 +536,13 @@ function WaspPageContent() {
                                   }}
                                   disabled={!isPlaying}
                                   aria-label={
-                                    tc.card ? `${cardAlt(tc.card)}${isSelected ? ` ${t('cardSelected')}` : ''}` : ''
+                                    tc.card
+                                      ? `${cardAlt(tc.card)}${isSelected ? ` ${t('cardSelected')}` : ''}${
+                                          isLast && legalTargets.has(colIdx) && selectedSource
+                                            ? ` ${t('legalDestination')}`
+                                            : ''
+                                        }`
+                                      : ''
                                   }
                                 >
                                   {tc.card && <AnimatedCard card={tc.card} width={sc.cw} />}

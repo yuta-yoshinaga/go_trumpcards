@@ -69,8 +69,8 @@ func TestMarriageCanDeclareRejectsUnmeldableHandWithThreePureSequences(t *testin
 		NewCard(CardDesignHeart, 7, false), NewCard(CardDesignHeart, 8, false), NewCard(CardDesignHeart, 9, false),
 		NewCard(CardDesignDiamond, 11, false), NewCard(CardDesignDiamond, 12, false), NewCard(CardDesignDiamond, 13, false),
 	}
-	for i := 0; i < 13; i++ {
-		cards = append(cards, NewCard(CardDesignClover, 1, false))
+	for _, rank := range []int{1, 1, 3, 3, 5, 5, 7, 7, 9, 9, 11, 11, 13} {
+		cards = append(cards, NewCard(CardDesignClover, rank, false))
 	}
 
 	if !MarriageHasPureSequences(cards, 0, 3) {
@@ -119,6 +119,28 @@ func TestMarriageCpuFindDeclareCard(t *testing.T) {
 	idx, ok := g.cpuFindDeclareCard(marriageCanDeclareTestPlayer(false, cards))
 	if !ok || idx != MarriageHandSize {
 		t.Fatalf("cpuFindDeclareCard() = (%d, %v), want (%d, true)", idx, ok, MarriageHandSize)
+	}
+}
+
+func TestMarriageFindDeclareCardKeepsFirstValidIndexWithDuplicateTypes(t *testing.T) {
+	cards := append(marriageValidDeclarationHand(), NewCard(CardDesignClover, 7, false))
+	// Duplicate a physical type so candidate pruning must preserve the lowest valid index.
+	cards[21] = NewCard(cards[20].GetDesign(), cards[20].GetValue(), false)
+	g := &Marriage{wildRank: 0}
+	player := marriageCanDeclareTestPlayer(false, cards)
+	got, gotOK := g.findDeclareCard(player)
+	var want int
+	wantOK := false
+	for f := 0; f < len(cards); f++ {
+		rem := append([]*Card(nil), cards[:f]...)
+		rem = append(rem, cards[f+1:]...)
+		if MarriageValidateDeclaration(rem, 0) {
+			want, wantOK = f, true
+			break
+		}
+	}
+	if gotOK != wantOK || gotOK && got != want {
+		t.Fatalf("findDeclareCard()=(%d,%v), old scan=(%d,%v)", got, gotOK, want, wantOK)
 	}
 }
 

@@ -23,14 +23,11 @@ import { btnDanger, btnPrimary } from '../styles/buttonStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { BhabhiResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
-import { cardAlt } from '../utils/cardAlt';
+import { cardAlt, suitSymbolAt } from '../utils/cardAlt';
 import { BHABHI_HELP, parseBhabhiCommand } from '../utils/cli/commands/bhabhiCommands';
 import { formatBhabhiState } from '../utils/cli/formatters/bhabhiFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
-
-/** Suit code (1=♠ 2=♣ 3=♥ 4=♦) to its symbol. */
-const SUIT_SYMBOLS: Readonly<Record<number, string>> = { 1: '♠', 2: '♣', 3: '♥', 4: '♦' };
 
 /** Table sizes the game accepts (sync: domain.BhabhiMin/MaxPlayers). */
 const PLAYER_COUNTS: readonly number[] = [3, 4, 5, 6, 7];
@@ -184,7 +181,7 @@ function BhabhiPageContent() {
             {/* **場札の枚数が、フォローできなかったときの罰そのもの。** */}
             <div className="text-ds-text-muted text-sm text-center mb-3" data-testid="bh-pile" data-tutorial="bh-pile">
               {state.leadSuit > 0
-                ? t('header.led', { suit: SUIT_SYMBOLS[state.leadSuit] ?? '?', n: String(state.pile.length) })
+                ? t('header.led', { suit: suitSymbolAt(state.leadSuit, '?'), n: String(state.pile.length) })
                 : t('header.noLead')}
             </div>
 

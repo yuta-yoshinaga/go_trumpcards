@@ -158,9 +158,18 @@ describe('SheepsheadPage', () => {
   });
 
   it('renders trick end with the next trick button', async () => {
-    mockExec.mockResolvedValue(trickEndState);
+    mockExec.mockResolvedValue(makeSheepsheadState({ ...trickEndState, leadPlayerIdx: 1 }));
     renderWithProviders(<SheepsheadPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
+    expect(screen.getByTestId('sh-trick-result')).toHaveTextContent('獲得者: CPU 1');
+    expect(screen.getByTestId('sh-trick-result')).toHaveTextContent('次のリード: CPU 1');
+  });
+
+  it('does not show the previous trick result after the next trick starts', async () => {
+    mockExec.mockResolvedValue(makeSheepsheadState({ phase: 3, leadPlayerIdx: 1 }));
+    renderWithProviders(<SheepsheadPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('sh-trick-result')).not.toBeInTheDocument();
   });
 
   it('shows live card-point progress with polite announcements during play and trick end', async () => {

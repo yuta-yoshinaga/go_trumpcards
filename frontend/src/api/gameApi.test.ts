@@ -2985,14 +2985,13 @@ describe('gameApi', () => {
       winnerIdx: -1,
       roundWinnerIdx: -1,
       message: '',
-      config: { playerCount: 4, cpuDifficulty: 1, targetRounds: 3 },
+      config: { playerCount: 4, targetRounds: 3 },
     };
 
     it('calls the correct URL with reset command and config', async () => {
       mockFetch.mockReturnValue(makeResponse(payload));
       const result = await machiavelliApi.exec('reset', undefined, {
         playerCount: 4,
-        cpuDifficulty: 1,
         targetRounds: 3,
       });
       expect(mockFetch).toHaveBeenCalledWith('/machiavelli/exec', {
@@ -3000,7 +2999,7 @@ describe('gameApi', () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           command: 'reset',
-          config: { playerCount: 4, cpuDifficulty: 1, targetRounds: 3 },
+          config: { playerCount: 4, targetRounds: 3 },
           sessionId,
         }),
       });
@@ -3070,19 +3069,19 @@ describe('gameApi', () => {
       roundWinnerIdx: -1,
       tookDiscard: false,
       message: '',
-      config: { cpuDifficulty: 1, targetWins: 3 },
+      config: { targetWins: 3 },
     };
 
     it('calls the correct URL with reset command and config', async () => {
       mockFetch.mockReturnValue(makeResponse(payload));
-      const result = await conquianApi.exec('reset', undefined, { cpuDifficulty: 1, targetWins: 3 });
+      const result = await conquianApi.exec('reset', undefined, { targetWins: 3 });
       expect(mockFetch).toHaveBeenCalledWith('/conquian/exec', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           command: 'reset',
           cardIndex: undefined,
-          config: { cpuDifficulty: 1, targetWins: 3 },
+          config: { targetWins: 3 },
           meldGroups: undefined,
           sessionId,
         }),
@@ -3143,13 +3142,12 @@ describe('gameApi', () => {
       knockerIdx: -1,
       knockerMelds: [],
       message: '',
-      config: { cpuDifficulty: 1, playerCount: 2, knockThreshold: 5, eliminationLimit: 100 },
+      config: { playerCount: 2, knockThreshold: 5, eliminationLimit: 100 },
     };
 
     it('calls the correct URL with reset command and config', async () => {
       mockFetch.mockReturnValue(makeResponse(payload));
       const result = await chinchonApi.exec('reset', undefined, {
-        cpuDifficulty: 1,
         playerCount: 2,
         knockThreshold: 5,
         eliminationLimit: 100,
@@ -3161,7 +3159,7 @@ describe('gameApi', () => {
           command: 'reset',
           cardIndex: undefined,
           cardIndices: undefined,
-          config: { cpuDifficulty: 1, playerCount: 2, knockThreshold: 5, eliminationLimit: 100 },
+          config: { playerCount: 2, knockThreshold: 5, eliminationLimit: 100 },
           sessionId,
         }),
       });

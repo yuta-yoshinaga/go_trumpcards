@@ -32,7 +32,8 @@
   "roundScore": "Round: {{score}}",
   "bid": "Bid {{n}}",
   "bidNone": "No bid",
-  "bidProgress": "Bid: {{bid}} / Won: {{won}}",
+  "bidProgress": "Bid: {{bid}} / Won: {{won}} / Remaining: {{remaining}}",
+  "bidUnreachable": "Unreachable",
   "bidTotal": "Total bids {{total}} / hand {{handSize}}",
   "bidOverUnder": {
     "over": "(over)",

@@ -88,6 +88,23 @@ beforeEach(() => {
 });
 
 describe('BelotePage', () => {
+  it('shows localized player names in fixed-width team score headers', async () => {
+    renderWithProviders(<BelotePage />);
+
+    const teamHeaders = await screen.findAllByRole('columnheader');
+    expect(teamHeaders).toHaveLength(2);
+    expect(teamHeaders[0]).toHaveTextContent('チーム0');
+    expect(teamHeaders[0]).toHaveTextContent('あなた');
+    expect(teamHeaders[0]).toHaveTextContent('CPU 2');
+    expect(teamHeaders[0].querySelector('span')).toHaveTextContent('あなた、CPU 2');
+    expect(teamHeaders[1]).toHaveTextContent('チーム1');
+    expect(teamHeaders[1]).toHaveTextContent('CPU 1');
+    expect(teamHeaders[1]).toHaveTextContent('CPU 3');
+    expect(teamHeaders[1].querySelector('span')).toHaveTextContent('CPU 1、CPU 3');
+    expect(teamHeaders[0].className).toContain('break-words');
+    expect(teamHeaders[0].closest('table')?.className).toContain('table-fixed');
+  });
+
   it('calls reset on mount with default config', async () => {
     renderWithProviders(<BelotePage />);
     await waitFor(() =>

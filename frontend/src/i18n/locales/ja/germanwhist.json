@@ -20,6 +20,13 @@
     "trickCount": "獲得トリック"
   },
   "currentTrick": "現在のトリック",
+  "leadSuit": "リードスート",
+  "suits": {
+    "SPADE": "スペード",
+    "CLOVER": "クラブ",
+    "HEART": "ハート",
+    "DIAMOND": "ダイヤ"
+  },
   "actions": {
     "reset": "リセット",
     "giveUp": "投了",

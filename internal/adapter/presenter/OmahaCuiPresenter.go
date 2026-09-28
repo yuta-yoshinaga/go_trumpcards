@@ -46,6 +46,15 @@ func omahaTitleKey(holeCards int, hiLo bool, preflopCommunity int) string {
 	return "omaha.helpTitle"
 }
 
+func omahaHumanPlayerIdx(o interfaces.OmahaGame) int {
+	for i := 0; i < o.GetPlayerCnt(); i++ {
+		if o.GetPlayer(i).GetIsHuman() {
+			return i
+		}
+	}
+	return -1
+}
+
 // Output renders the current game state for the active locale (#1699).
 func (p *OmahaCuiPresenter) Output(o interfaces.OmahaGame, lastErr error) string {
 	titleKey := omahaTitleKey(o.GetHoleCardCount(), o.GetIsHiLo(), o.GetPreflopCommunityCount())
@@ -264,6 +273,32 @@ func (p *OmahaCuiPresenter) Output(o interfaces.OmahaGame, lastErr error) string
 				}
 				b.WriteString("\n")
 			}
+			awards := o.GetPotAwards()
+			if len(awards) > 1 {
+				for n, a := range awards {
+					label := i18n.T("omaha.mainPot")
+					if n > 0 {
+						label = i18n.Tf("omaha.sidePot", "n", strconv.Itoa(n))
+					}
+					eligible := make([]string, 0, len(a.Eligible))
+					for _, idx := range a.Eligible {
+						eligible = append(eligible, cuiPlayerName(o.GetPlayer(idx), idx))
+					}
+					winners := make([]string, 0, len(a.HiWinners))
+					for i, idx := range a.HiWinners {
+						winners = append(winners, cuiPlayerName(o.GetPlayer(idx), idx)+" +"+strconv.Itoa(a.HiPayouts[i]))
+					}
+					b.WriteString(i18n.Tf("omaha.potAward", "pot", label, "amount", strconv.Itoa(a.Amount), "eligible", strings.Join(eligible, i18n.T("omaha.listSeparator")), "winners", strings.Join(winners, i18n.T("omaha.listSeparator"))))
+					if len(a.LoWinners) > 0 {
+						lows := make([]string, 0, len(a.LoWinners))
+						for i, idx := range a.LoWinners {
+							lows = append(lows, cuiPlayerName(o.GetPlayer(idx), idx)+" +"+strconv.Itoa(a.LoPayouts[i]))
+						}
+						b.WriteString(i18n.Tf("omaha.potAwardLow", "winners", strings.Join(lows, i18n.T("omaha.listSeparator"))))
+					}
+					b.WriteString("\n")
+				}
+			}
 		}
 
 		if o.IsMuckAvailable() {
@@ -276,21 +311,30 @@ func (p *OmahaCuiPresenter) Output(o interfaces.OmahaGame, lastErr error) string
 			switch o.GetRebuyPhaseType() {
 			case domain.OmahaRebuyPhaseRebuy:
 				rebuyCounts := o.GetRebuyCounts()
-				humanIdx := -1
-				for i := 0; i < o.GetPlayerCnt(); i++ {
-					if o.GetPlayer(i).GetIsHuman() {
-						humanIdx = i
-						break
-					}
-				}
+				humanIdx := omahaHumanPlayerIdx(o)
 				if humanIdx >= 0 {
+					currentChips := o.GetPlayer(humanIdx).GetChips()
+					used := rebuyCounts[humanIdx]
+					remaining := cfg.RebuyMaxCount - used
+					if remaining < 0 {
+						remaining = 0
+					}
 					b.WriteString(i18n.Tf("omaha.rebuyPrompt",
 						"chips", strconv.Itoa(cfg.RebuyChips),
-						"used", strconv.Itoa(rebuyCounts[humanIdx]),
+						"used", strconv.Itoa(used),
 						"max", strconv.Itoa(cfg.RebuyMaxCount)) + "\n")
+					b.WriteString(i18n.Tf("omaha.rebuyStack",
+						"current", strconv.Itoa(currentChips),
+						"after", strconv.Itoa(currentChips+cfg.RebuyChips),
+						"remaining", strconv.Itoa(remaining),
+						"separator", i18n.T("omaha.listSeparator")) + "\n")
 				}
 			case domain.OmahaRebuyPhaseAddon:
 				b.WriteString(i18n.Tf("omaha.addonPrompt", "chips", strconv.Itoa(cfg.AddonChips)) + "\n")
+				if humanIdx := omahaHumanPlayerIdx(o); humanIdx >= 0 {
+					b.WriteString(i18n.Tf("omaha.addonStack",
+						"after", strconv.Itoa(o.GetPlayer(humanIdx).GetChips()+cfg.AddonChips)) + "\n")
+				}
 			}
 		}
 

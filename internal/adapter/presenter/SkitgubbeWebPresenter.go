@@ -56,8 +56,7 @@ func (p *SkitgubbeWebPresenter) buildBase(c interfaces.SkitgubbeGame) *controlle
 		len(c.GetPile()) > 0 &&
 		len(valid) == 0
 
-	cfg := c.GetConfig()
-	resObj.Config = controller.SkitgubbeWebOutputConfig{CpuDifficulty: int(cfg.CpuDifficulty)}
+	resObj.Config = controller.SkitgubbeWebOutputConfig{}
 	resObj.Players = p.buildPlayersOutput(c)
 
 	// ヒントは通常のレスポンスにも載せる。HintOutput にしか設定しないと、

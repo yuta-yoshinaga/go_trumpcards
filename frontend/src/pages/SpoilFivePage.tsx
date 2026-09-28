@@ -28,6 +28,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { SpoilFiveResponse } from '../types/card';
 import { SpoilFivePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { suitSymbolAt } from '../utils/cardAlt';
 import { parseSpoilFiveCommand, SPOIL_FIVE_HELP } from '../utils/cli/commands/spoilFiveCommands';
 import { formatSpoilFiveState } from '../utils/cli/formatters/spoilFiveFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -37,9 +38,6 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** ラウンド勝利に必要なトリック数。`SpoilFiveWinTricks` (internal/domain/SpoilFive.go) と同じ。 */
 const SPOILFIVE_WIN_TRICKS = 3;
-
-/** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 unused). */
-const SUIT_SYMBOLS = ['', '♠', '♣', '♥', '♦'] as const;
 
 /** Suit number of Hearts (the ♥A is always a trump, so it needs special handling). */
 const HEART_SUIT = 3;
@@ -51,7 +49,7 @@ const HEART_SUIT = 3;
  * duplicated.
  */
 function spoilFiveTopTrumps(trumpSuit: number): string[] {
-  const t = SUIT_SYMBOLS[trumpSuit] ?? '?';
+  const t = suitSymbolAt(trumpSuit, '');
   const cards = [`5${t}`, `J${t}`, 'A♥'];
   if (trumpSuit !== HEART_SUIT) cards.push(`A${t}`);
   cards.push(`K${t}`, `Q${t}`);
@@ -179,7 +177,7 @@ function SpoilFivePageContent() {
   const isSpoil = isRoundEnd && state.roundWinnerIdx < 0;
 
   const canPlay = isPlayPhase && isHumanTurn;
-  const trumpSymbol = SUIT_SYMBOLS[state.trumpSuit] ?? '?';
+  const trumpSymbol = suitSymbolAt(state.trumpSuit, '');
   const topTrumps = spoilFiveTopTrumps(state.trumpSuit);
 
   const handleManualReset = () => {
@@ -342,7 +340,10 @@ function SpoilFivePageContent() {
 
                 {/* Round result */}
                 {(isRoundEnd || isGameEnd) && (
-                  <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
+                  <div
+                    className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                    data-testid="spoilfive-round-result"
+                  >
                     <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
                     {isSpoil ? (
                       <div>{t('roundResult.spoil')}</div>
@@ -358,6 +359,25 @@ function SpoilFivePageContent() {
                         </div>
                       )
                     )}
+                  </div>
+                )}
+                {isGameEnd && state.winnerPlayer >= 0 && (
+                  <div
+                    className="my-3 p-3 rounded bg-ds-surface-elevated text-ds-text-primary"
+                    data-testid="spoilfive-game-result"
+                  >
+                    <div className="font-semibold">{t('gameResult.title')}</div>
+                    <div>
+                      {t('gameResult.winner', {
+                        name: playerName(state.winnerPlayer, state.players[state.winnerPlayer]?.isHuman ?? false),
+                      })}
+                    </div>
+                    <div>
+                      {t('gameResult.score', {
+                        score: state.players[state.winnerPlayer]?.score ?? 0,
+                        target: state.config.targetPoints,
+                      })}
+                    </div>
                   </div>
                 )}
               </div>

@@ -43,6 +43,7 @@ func setupSoloWhistCuiMock() *interfaces.MockSoloWhistGame {
 	m.On("GetBidDone").Return([domain.SoloWhistPlayerCnt]bool{true, true, false, false})
 	m.On("GetWinnerPlayer").Return(-1)
 	m.On("GetPlayerScores").Return([domain.SoloWhistPlayerCnt]int{0, 0, 0, 0})
+	m.On("GetRoundTricks").Return([domain.SoloWhistPlayerCnt]int{0, 0, 0, 0}).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	m.On("GetDeclarerProgress").Return((*domain.SoloWhistDeclarerProgress)(nil)).Maybe()
 	m.On("GetConfig").Return(domain.DefaultSoloWhistConfig())
@@ -153,6 +154,28 @@ func TestSoloWhistCuiPresenterStatesTheTargetPoints(t *testing.T) {
 	// 目標点と判る語まで含めて見る。i18n.T で期待値も作らない (自己成就する)。
 	assert.Contains(t, out, "先取 "+strconv.Itoa(domain.DefaultSoloWhistConfig().TargetPoints)+"点",
 		"目標点が出力に出ていない")
+}
+
+func TestSoloWhistCuiPresenterShowsRoundContractResult(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	m, _ := setupSoloWhistCuiMockWithPlayers()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundTricks")
+	m.On("GetPhase").Return(domain.SoloWhistPhaseRoundEnd)
+	m.On("GetRoundTricks").Return([domain.SoloWhistPlayerCnt]int{8, 2, 2, 1})
+	out := new(presenter.SoloWhistCuiPresenter).Output(m, nil)
+	assert.Contains(t, out, "契約目標: 8トリック — 宣言者: 8トリック")
+
+	m2, _ := setupSoloWhistCuiMockWithPlayers()
+	m2.ExpectedCalls = removeMockCall(m2.ExpectedCalls, "GetPhase")
+	m2.ExpectedCalls = removeMockCall(m2.ExpectedCalls, "GetDeclarerIdx")
+	m2.On("GetPhase").Return(domain.SoloWhistPhaseRoundEnd)
+	m2.On("GetDeclarerIdx").Return(-1)
+	m2.On("GetContract").Return(domain.SoloWhistBidPass)
+	out = new(presenter.SoloWhistCuiPresenter).Output(m2, nil)
+	assert.NotContains(t, out, "契約目標:")
 }
 
 func TestSoloWhistCuiPresenter_HintOutput(t *testing.T) {

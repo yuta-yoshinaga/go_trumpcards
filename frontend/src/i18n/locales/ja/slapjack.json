@@ -26,7 +26,8 @@
   "slapjack": {
     "slap": "スラップ！",
     "jackOnTop": "Jだ！叩け！",
-    "jackAnnounce": "ジャックが出ました！スラップチャンス！",
+    "slapAvailableAnnounce": "スラップ可能です",
+    "slapUnavailableAnnounce": "スラップ不可になりました",
     "burst": {
       "jack": "ジャック！{{count}}枚獲得",
       "miss": "ミス！"

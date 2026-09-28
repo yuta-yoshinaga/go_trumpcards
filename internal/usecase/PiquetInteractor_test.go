@@ -58,7 +58,7 @@ func TestPiquetInteractor_Reset(t *testing.T) {
 
 func TestPiquetInteractor_ResetWithConfig_Valid(t *testing.T) {
 	gameMock, ppMock := setupPiquetMocks(domain.PiquetPhaseExchange)
-	cfg := domain.PiquetConfig{CpuDifficulty: domain.PiquetCpuDifficultyHard, DealsPerPartie: 6}
+	cfg := domain.PiquetConfig{DealsPerPartie: 6}
 	gameMock.On("SetConfig", cfg).Return()
 	gameMock.On("Reset").Return()
 
@@ -70,7 +70,7 @@ func TestPiquetInteractor_ResetWithConfig_Valid(t *testing.T) {
 
 func TestPiquetInteractor_ResetWithConfig_Invalid(t *testing.T) {
 	gameMock, ppMock := setupPiquetMocks(domain.PiquetPhaseExchange)
-	invalid := domain.PiquetConfig{CpuDifficulty: domain.PiquetCpuDifficultyNormal, DealsPerPartie: 0}
+	invalid := domain.PiquetConfig{DealsPerPartie: 0}
 
 	pi := usecase.NewPiquetInteractor(gameMock, ppMock)
 	result := pi.ResetWithConfig(invalid)
@@ -230,7 +230,7 @@ func TestPiquetInteractor_RealGameFlow(t *testing.T) {
 		domain.NewPiquetPlayer(false),
 	}
 	game := domain.NewPiquet(domain.NewTrumpCardsBelote(), players,
-		domain.PiquetConfig{DealsPerPartie: 1, CpuDifficulty: domain.PiquetCpuDifficultyNormal})
+		domain.PiquetConfig{DealsPerPartie: 1})
 	pp := new(presenter.MockPiquetPresenter)
 	pp.On("Output", mock.Anything, mock.Anything).Return(`out`)
 	pp.On("HintOutput", mock.Anything).Return(`hint`)

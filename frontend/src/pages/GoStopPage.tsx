@@ -24,6 +24,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { GoStopBreakdown, GoStopResponse } from '../types/card';
 import { GoStopPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { GOSTOP_HELP, parseGoStopCommand } from '../utils/cli/commands/gostopCommands';
 import { formatGoStopState } from '../utils/cli/formatters/gostopFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -247,6 +248,7 @@ function GoStopPageContent() {
                         } ${needsFieldPick && isCandidate ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
                         data-testid={`field-card-${i}`}
                         data-capture-candidate={isCandidate || undefined}
+                        aria-label={`${cardAlt(c)} — ${t(isCandidate ? 'captureCandidate' : 'notCaptureCandidate')}`}
                       >
                         <CardImage card={c} width={cardWidth * 0.9} />
                       </button>

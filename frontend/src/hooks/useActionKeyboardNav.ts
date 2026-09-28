@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { IGNORED_TAGS } from './keyboardNavUtils';
+import { IGNORED_TAGS, isModalOpen } from './keyboardNavUtils';
 
 /** One keyboard shortcut bound to a game action. */
 export interface ActionBinding {
@@ -45,6 +45,7 @@ export function useActionKeyboardNav({ bindings, enabled }: UseActionKeyboardNav
     if (!enabled) return;
 
     const handler = (e: KeyboardEvent) => {
+      if (isModalOpen()) return;
       const tag = (e.target as HTMLElement)?.tagName;
       if (tag && IGNORED_TAGS.has(tag)) return;
 

@@ -41,6 +41,7 @@ func horseFoldToHandEnd(t *testing.T, g *domain.Horse) {
 }
 
 func TestHorseCuiPresenter_Output(t *testing.T) {
+	t.Cleanup(func() { i18n.SetLang("ja") })
 	i18n.SetLang("ja")
 	p := &presenter.HorseCuiPresenter{}
 	g := newHorseForPresenter(t)
@@ -54,6 +55,17 @@ func TestHorseCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, out, g.GetSeatName(i))
 	}
 	assert.Contains(t, out, "ポット")
+	var actionRoundLine string
+	for _, line := range strings.Split(out, "\n") {
+		if strings.Contains(line, i18n.T("horse.actionBetting")) {
+			actionRoundLine = line
+			break
+		}
+	}
+	assert.Equal(t, i18n.Tf("horse.actionRound",
+		"round", i18n.T("horse.round.preflop"),
+		"action", i18n.T("horse.actionBetting")), actionRoundLine)
+	assert.Contains(t, out, i18n.T("horse.actionBetting"))
 }
 
 func TestHorseCuiPresenter_OutputShowsTheError(t *testing.T) {
@@ -381,6 +393,7 @@ func TestHorseCuiPresenter_OutputShowsMinRaise(t *testing.T) {
 			m.On("GetConfig").Return(domain.HorseConfig{Seats: 2, HandsPerDiscipline: 5, InitialChips: 1000})
 			m.On("GetDisciplineLetter").Return("H")
 			m.On("GetDiscipline").Return(domain.HorseHoldem)
+			m.On("GetTablePhase").Return(domain.HoldemPhaseFlop)
 			m.On("GetHandInDiscipline").Return(1)
 			m.On("GetHandNumber").Return(1)
 			m.On("GetCommunityCards").Return([]*domain.Card(nil))
@@ -431,6 +444,7 @@ func TestHorseCuiPresenter_OutputShowsMaxBetAmount(t *testing.T) {
 				m.On("GetConfig").Return(domain.HorseConfig{Seats: 2, HandsPerDiscipline: 5, InitialChips: 1000, Variant: domain.HorseVariantEightGame})
 				m.On("GetDisciplineLetter").Return("PLO")
 				m.On("GetDiscipline").Return(domain.HorsePLOmaha)
+				m.On("GetTablePhase").Return(domain.HoldemPhaseFlop)
 				m.On("GetHandInDiscipline").Return(1)
 				m.On("GetHandNumber").Return(6)
 				m.On("GetCommunityCards").Return([]*domain.Card(nil))

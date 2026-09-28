@@ -77,6 +77,25 @@ beforeEach(() => {
 });
 
 describe('ScorpionPage', () => {
+  it('keeps an empty column focusable and explains that a source must be selected', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: [playingState.tableau[0] ?? [], [], ...playingState.tableau.slice(2)],
+    });
+    renderWithProviders(<ScorpionPage />);
+    const target = await screen.findByTestId('sc-empty-col-1');
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const hintId = target.getAttribute('aria-describedby');
+    expect(hintId).toBeTruthy();
+    expect(document.getElementById(hintId ?? '')).toHaveTextContent('先に移動する札を選んでください');
+
+    mockExec.mockClear();
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('passes the completed suit mask to the badge', async () => {
     mockExec.mockResolvedValue({ ...playingState, completedSuitMask: 12 });
     renderWithProviders(<ScorpionPage />);

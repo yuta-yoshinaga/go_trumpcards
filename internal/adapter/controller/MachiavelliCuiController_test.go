@@ -100,15 +100,6 @@ func TestMachiavelliCuiController_Exec(t *testing.T) {
 		}))
 	})
 
-	t.Run("setdifficulty", func(t *testing.T) {
-		m := newMock()
-		c := controller.NewMachiavelliCuiController(m)
-		assert.Equal(t, mockOutput, c.Exec("sd 2"))
-		m.AssertCalled(t, "ResetWithConfig", mock.MatchedBy(func(cfg domain.MachiavelliConfig) bool {
-			return cfg.CpuDifficulty == domain.MachiavelliCpuDifficultyHard
-		}))
-	})
-
 	t.Run("setrounds", func(t *testing.T) {
 		m := newMock()
 		c := controller.NewMachiavelliCuiController(m)

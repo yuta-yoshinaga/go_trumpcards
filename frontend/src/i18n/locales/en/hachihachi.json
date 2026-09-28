@@ -4,7 +4,9 @@
   "cpu": "CPU{{n}}",
   "deck": "Stock: {{count}}",
   "field": "Field",
+  "fieldCaptureCandidate": "capture candidate",
   "fieldEmpty": "(empty)",
+  "fieldNotCaptureCandidate": "not a capture candidate",
   "hint": {
     "capture": "Capture a high-value field card",
     "discard_low": "Discard a low-value card"

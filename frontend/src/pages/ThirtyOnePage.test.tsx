@@ -65,6 +65,19 @@ describe('ThirtyOnePage', () => {
     expect(screen.getByTestId('knock-button')).toBeEnabled();
   });
 
+  it('labels the stock count and discard top for screen readers', async () => {
+    renderWithProviders(<ThirtyOnePage />);
+    expect(await screen.findByRole('img', { name: '山札、残り39枚' })).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: '捨て札: ♥ 2' })).toBeInTheDocument();
+  });
+
+  it('explains an empty stock and discard pile', async () => {
+    mockExec.mockResolvedValue(makeState({ drawPileCount: 0, discardTop: null }));
+    renderWithProviders(<ThirtyOnePage />);
+    expect(await screen.findByRole('img', { name: '山札、残り0枚' })).toBeInTheDocument();
+    expect(screen.getByText('捨て札は空です')).toBeInTheDocument();
+  });
+
   it('draws from stock when the button is clicked', async () => {
     renderWithProviders(<ThirtyOnePage />);
     fireEvent.click(await screen.findByTestId('draw-stock-button'));

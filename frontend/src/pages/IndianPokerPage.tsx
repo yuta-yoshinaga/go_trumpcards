@@ -38,6 +38,7 @@ import { flipSpring } from '../styles/motionPresets';
 import type { IndianPokerResponse } from '../types/card';
 import { IndianPokerPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { INDIANPOKER_HELP, parseIndianpokerCommand } from '../utils/cli/commands/indianpokerCommands';
 import { formatIndianpokerState } from '../utils/cli/formatters/indianpokerFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
@@ -296,7 +297,15 @@ function IndianPokerPageContent() {
                     </div>
                     <div className={isMobile ? 'flex justify-center' : 'flex flex-wrap gap-1'}>
                       {p.card ? (
-                        <AnimatedCard card={p.card} width={cardWidth} style={placeholderCardStyle} />
+                        <AnimatedCard
+                          card={p.card}
+                          ariaLabel={t('faceUpCardAriaLabel', {
+                            name: tc('player.cpu', { id: p.id }),
+                            card: cardAlt(p.card),
+                          })}
+                          width={cardWidth}
+                          style={placeholderCardStyle}
+                        />
                       ) : (
                         <AnimatedCardBack width={cardWidth} />
                       )}
@@ -350,10 +359,21 @@ function IndianPokerPageContent() {
                       transition={flipSpring}
                       data-testid="indianpoker-own-reveal"
                     >
-                      <AnimatedCard card={humanPlayer.card} width={cardWidth} style={placeholderCardStyle} silent />
+                      <AnimatedCard
+                        card={humanPlayer.card}
+                        ariaLabel={t('faceUpCardAriaLabel', {
+                          name: tc('player.you'),
+                          card: cardAlt(humanPlayer.card),
+                        })}
+                        width={cardWidth}
+                        style={placeholderCardStyle}
+                        silent
+                      />
                     </motion.div>
                   ) : !humanPlayer.folded ? (
-                    <AnimatedCardBack width={cardWidth} />
+                    <span role="img" aria-label={t('hiddenCardAriaLabel')}>
+                      <AnimatedCardBack width={cardWidth} />
+                    </span>
                   ) : null}
                 </div>
                 {hintEnabled && equityPct !== null && !humanFolded && (

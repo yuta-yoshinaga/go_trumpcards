@@ -26,7 +26,7 @@ RUN bun run build
 
 # Stage 2: Build Go binary
 # Pinned to a specific digest for reproducible builds
-FROM golang:1.26-alpine@sha256:d4c4845f5d60c6a974c6000ce58ae079328d03ab7f721a0734277e69905473e5 AS go-builder
+FROM golang:1.27-alpine@sha256:8a5910f31396cd4d89662f56c68b3ae31d374308270a1c3bd96672ee5ed43414 AS go-builder
 
 WORKDIR /app
 COPY go.mod go.sum ./

@@ -1,4 +1,5 @@
 import type { TuteResponse } from '../../../types/card';
+import { suitSymbolAt } from '../../cardAlt';
 import {
   formatCard,
   formatHeader,
@@ -9,7 +10,6 @@ import {
 } from '../formatterBase';
 
 const PHASE_NAMES = ['Play', 'TrickEnd', 'RoundEnd', 'GameEnd'];
-const SUIT_SYMBOLS = ['?', '♠', '♣', '♥', '♦'];
 
 /** Format a Tute game state as terminal text. */
 export function formatTuteState(state: TuteResponse): string {
@@ -19,7 +19,7 @@ export function formatTuteState(state: TuteResponse): string {
   lines.push(
     `round: ${state.roundNumber}  trick: ${state.trickNumber}  phase: ${PHASE_NAMES[state.phase] ?? state.phase}`,
   );
-  lines.push(`trump: ${SUIT_SYMBOLS[state.trumpSuit] ?? '?'}`);
+  lines.push(`trump: ${suitSymbolAt(state.trumpSuit, '?')}`);
   lines.push(`team scores: A=${state.teamScores[0] ?? 0}  B=${state.teamScores[1] ?? 0}`);
   lines.push('');
 
@@ -46,7 +46,7 @@ export function formatTuteState(state: TuteResponse): string {
 
   if (state.hint && isRequestedHint(state)) {
     const indices = state.hint.cardIndices ?? [];
-    const marriage = state.hint.marriage > 0 ? ` marriage=${SUIT_SYMBOLS[state.hint.marriage] ?? '?'}` : '';
+    const marriage = state.hint.marriage > 0 ? ` marriage=${suitSymbolAt(state.hint.marriage, '?')}` : '';
     lines.push(`HINT: card indices [${indices.join(', ')}]${marriage} (${state.hint.reason})`);
   }
 

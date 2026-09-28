@@ -27,7 +27,7 @@ function TehonbikiPageContent() {
   const phaseNames = usePhaseNames('tehonbiki', TEHONBIKI_PHASE_KEYS);
   const [betType, setBetType] = useState('single');
   const [numbers, setNumbers] = useState<number[]>([]);
-  const [bet, setBet] = useState(50);
+  const [bet, setBet] = useState('50');
   useEffect(() => {
     exec('reset');
   }, [exec]);
@@ -69,6 +69,17 @@ function TehonbikiPageContent() {
             </button>
           ))}
         </div>
+        <div role="status" aria-live="polite" aria-atomic="true">
+          {state.phase === 0 && (
+            <p className="mx-auto mb-4 max-w-xl rounded-lg border border-ds-border-subtle bg-ds-surface p-3">
+              {t('summary', {
+                numbers: numbers.length > 0 ? numbers.join(t('listSeparator')) : t('summary.noNumbers'),
+                betType: t(`betType.${betType}`),
+                bet: bet === '' ? t('summary.noBet') : bet,
+              })}
+            </p>
+          )}
+        </div>
         {state.phase === 0 ? (
           <>
             <select
@@ -83,8 +94,12 @@ function TehonbikiPageContent() {
               <option value="triple">{t('betType.triple')}</option>
               <option value="half">{t('betType.half')}</option>
             </select>
-            <input type="number" value={bet} onChange={(e) => setBet(Number(e.target.value))} />
-            <button className={btnPrimary} type="button" onClick={() => exec('bet', { numbers, betType, bet })}>
+            <input type="number" value={bet} onChange={(e) => setBet(e.target.value)} />
+            <button
+              className={btnPrimary}
+              type="button"
+              onClick={() => exec('bet', { numbers, betType, bet: Number(bet) })}
+            >
               {t('button.bet')}
             </button>
           </>

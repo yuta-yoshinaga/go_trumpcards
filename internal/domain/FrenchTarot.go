@@ -685,18 +685,7 @@ func (g *FrenchTarot) CpuPlay() {
 		return
 	}
 	idx := g.currentPlayerIdx
-	if g.players[idx].GetIsHuman() {
-		return
-	}
-	cardIdx := g.cpuSelectPlayCard(idx)
-	played := g.players[idx].RemoveCard(cardIdx)
-	// **出せる札が無ければ何もしない。**セレクタは候補ゼロのとき 0 を返し、
-	// 手札が空なら RemoveCard(0) は nil を返す。それを playCard に渡すと
-	// nil デリファレンスで HTTP ハンドラごと落ちる (#4606)。
-	if played == nil {
-		return
-	}
-	g.playCard(idx, played)
+	trickCpuPlay(idx, g.players[idx].GamePlayer, g.cpuSelectPlayCard, g.playCard)
 }
 
 // playCard カードをプレイする共通処理。
@@ -1789,15 +1778,6 @@ func (g *FrenchTarot) GetPlayableIndices(playerIdx int) []int {
 	return g.getValidPlayIndices(playerIdx)
 }
 
-// ComputeBreakdownPublic 現在のディールの得点内訳を返す (テスト用)。
-func (g *FrenchTarot) ComputeBreakdownPublic() FrenchTarotBreakdown { return g.computeBreakdown() }
-
-// TrickWinnerPublic 現在のトリックの勝者を返す (テスト用)。
-func (g *FrenchTarot) TrickWinnerPublic() int { return g.trickWinner() }
-
-// LedSuitPublic 現在のトリックのリードスートを返す (テスト用)。
-func (g *FrenchTarot) LedSuitPublic() int { return g.ledSuit() }
-
 // FrenchTarotScoreDeal はディール得点計算の純粋関数の公開ラッパー (テスト用)。
 func FrenchTarotScoreDeal(declHalf, bouts, petitSign, mult int) FrenchTarotBreakdown {
 	return frenchTarotScoreDeal(declHalf, bouts, petitSign, mult)
@@ -1805,24 +1785,6 @@ func FrenchTarotScoreDeal(declHalf, bouts, petitSign, mult int) FrenchTarotBreak
 
 // FrenchTarotTargetForBouts はブー数に対応する目標点を返す (テスト用)。
 func FrenchTarotTargetForBouts(bouts int) int { return frenchTarotTarget(bouts) }
-
-// FrenchTarotBidMultPublic は入札倍率を返す (テスト用)。
-func FrenchTarotBidMultPublic(bid FrenchTarotBid) int { return frenchTarotBidMult(bid) }
-
-// FrenchTarotCardHalfPointsPublic はカードのハーフポイントを返す (テスト用)。
-func FrenchTarotCardHalfPointsPublic(c *Card) int { return frenchTarotCardHalfPoints(c) }
-
-// FrenchTarotIsBoutPublic はカードがブーか返す (テスト用)。
-func FrenchTarotIsBoutPublic(c *Card) bool { return frenchTarotIsBout(c) }
-
-// FrenchTarotIsTrumpPublic はカードが切り札か返す (テスト用)。
-func FrenchTarotIsTrumpPublic(c *Card) bool { return frenchTarotIsTrump(c) }
-
-// FrenchTarotIsExcusePublic はカードがエクスキューズか返す (テスト用)。
-func FrenchTarotIsExcusePublic(c *Card) bool { return frenchTarotIsExcuse(c) }
-
-// BuildFrenchTarotDeckPublic は 78 枚デッキを構築する (テスト用)。
-func BuildFrenchTarotDeckPublic() []*Card { return buildFrenchTarotDeck() }
 
 // --- JSON ---
 

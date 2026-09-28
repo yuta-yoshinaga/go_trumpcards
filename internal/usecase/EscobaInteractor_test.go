@@ -149,7 +149,7 @@ func TestEscobaInteractor_ResetWithConfigInvalid(t *testing.T) {
 	spMock := new(presenter.MockEscobaPresenter)
 	spMock.On("Output", mock.Anything, mock.Anything).Return("invalid")
 	ei := usecase.NewEscobaInteractor(escobaNewTestGame(), spMock)
-	bad := domain.EscobaConfig{CpuDifficulty: 99, TargetScore: 10}
+	bad := domain.EscobaConfig{TargetScore: 0}
 	assert.NotEmpty(t, ei.ResetWithConfig(bad))
 }
 

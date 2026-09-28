@@ -27,6 +27,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { TuSacResponse } from '../types/card';
 import { TuSacPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { parseTuSacCommand, TUSAC_CLI_HELP } from '../utils/cli/commands/tusacCommands';
 import { formatTuSacState } from '../utils/cli/formatters/tusacFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -276,6 +277,7 @@ function TuSacPageContent() {
                     key={`hand-${i}-${card.design}-${card.value}`}
                     type="button"
                     data-testid={`tusac-card-${i}`}
+                    aria-label={t('label.handCardAria', { card: cardAlt(card), position: i + 1 })}
                     aria-pressed={selected.includes(i)}
                     className={`rounded transition-transform ${selected.includes(i) ? '-translate-y-2 ring-2 ring-ds-success' : ''}`}
                     onClick={() => toggleCard(i)}

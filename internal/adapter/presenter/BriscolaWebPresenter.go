@@ -48,10 +48,7 @@ func (p *BriscolaWebPresenter) buildBase(b interfaces.BriscolaGame) *controller.
 	resObj.GameEndFlag = b.GetGameEndFlag()
 	resObj.WinnerIdx = b.GetWinnerIdx()
 
-	cfg := b.GetConfig()
-	resObj.Config = controller.BriscolaWebOutputConfig{
-		CpuDifficulty: int(cfg.CpuDifficulty),
-	}
+	resObj.Config = controller.BriscolaWebOutputConfig{}
 
 	resObj.CurrentTrick = trickCardsToOutput(b.GetCurrentTrick())
 	resObj.Players = p.buildPlayersOutput(b)

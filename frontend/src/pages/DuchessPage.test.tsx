@@ -98,6 +98,22 @@ describe('DuchessPage', () => {
     }
   });
 
+  it('explains and ignores a move target before a source is selected', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<DuchessPage />);
+    const target = await screen.findByRole('button', { name: /空のタブロー列 2/ });
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const describedBy = target.getAttribute('aria-describedby');
+    expect(describedBy).toBeTruthy();
+    expect(document.getElementById(describedBy ?? '')).toHaveTextContent('先に移動する札を選んでください');
+
+    mockExec.mockClear();
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('draws from the stock', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<DuchessPage />);
@@ -105,6 +121,22 @@ describe('DuchessPage', () => {
     mockExec.mockClear();
     fireEvent.click(stock);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
+  });
+
+  it('shows remaining stock cards and how many a draw deals, including when empty', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<DuchessPage />);
+    await waitFor(() => expect(screen.getByText('残り35枚')).toBeInTheDocument());
+    expect(screen.getByText('めくると1枚配られます')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '山札 残り35枚' })).toBeInTheDocument();
+  });
+
+  it('shows an empty stock count and no draw hint when the stock is empty', async () => {
+    mockExec.mockResolvedValue({ ...playingState, stockCount: 0 });
+    renderWithProviders(<DuchessPage />);
+    await waitFor(() => expect(screen.getByText('残り0枚')).toBeInTheDocument());
+    expect(screen.getByText('山札は空です')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '山札 残り0枚' })).toBeDisabled();
   });
 
   // Until the base rank is set nothing else is legal, so the reserve fan is a

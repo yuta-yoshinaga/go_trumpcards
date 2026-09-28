@@ -495,6 +495,46 @@ describe('WizardPage', () => {
     });
   });
 
+  it('shows every player bid against confirmed tricks and reachability', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      currentTrick: [{ playerIdx: 1, card: { design: 'HEART', value: 5 } }],
+      players: [
+        { ...playPhaseState.players[0], cardCount: 4, bid: 2, trickCount: 0 },
+        { ...playPhaseState.players[1], cardCount: 4, bid: 1, trickCount: 1 },
+        { ...playPhaseState.players[2], cardCount: 5, bid: 2, trickCount: 2 },
+        { ...playPhaseState.players[3], cardCount: 5, bid: 0, trickCount: 1 },
+      ],
+    });
+    renderWithProviders(<WizardPage />);
+    const rows = await screen.findAllByTestId('bid-achievement-row');
+    expect(rows).toHaveLength(4);
+    expect(rows[0]).toHaveTextContent('あなた');
+    expect(rows[0]).toHaveTextContent('ビッド 2 / 確定獲得 0');
+    expect(rows[0]).toHaveTextContent('達成可能');
+    expect(rows[0].querySelector('span')?.className).toContain('border-ds-border-subtle');
+    expect(rows[1]).toHaveTextContent('ビッド 1 / 確定獲得 1');
+    expect(rows[1]).toHaveTextContent('達成可能');
+    expect(rows[1].querySelector('span')?.className).toContain('border-ds-success');
+    expect(rows[2]).toHaveTextContent('ビッド 2 / 確定獲得 2');
+    expect(rows[2]).toHaveTextContent('達成可能');
+    expect(rows[2].querySelector('span')?.className).toContain('border-ds-success');
+    expect(rows[3]).toHaveTextContent('ビッド 0 / 確定獲得 1');
+    expect(rows[3]).toHaveTextContent('達成不可');
+    expect(rows[3].querySelector('span')?.className).toContain('border-ds-warning');
+  });
+
+  it('colors an unreachable bid-progress badge red', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      players: [{ ...playPhaseState.players[0], cardCount: 1 }, ...playPhaseState.players.slice(1)],
+    });
+    renderWithProviders(<WizardPage />);
+    const rows = await screen.findAllByTestId('bid-achievement-row');
+    expect(rows[0]).toHaveTextContent('達成不可');
+    expect(rows[0].querySelector('span')?.className).toContain('border-ds-error');
+  });
+
   it('calls play command when play button is clicked', async () => {
     renderWithProviders(<WizardPage />);
     await waitFor(() => expect(screen.getByAltText('♠ A')).toBeInTheDocument());
@@ -616,7 +656,7 @@ describe('WizardPage', () => {
     });
   });
 
-  it('renders CPU info as collapsible details on mobile', async () => {
+  it('renders all-player info with a matching player count in the mobile summary', async () => {
     const originalWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
     try {
@@ -625,9 +665,11 @@ describe('WizardPage', () => {
       await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
       const allDetails = container.querySelectorAll('details');
       const cpuDetails = Array.from(allDetails).find((d) =>
-        d.querySelector('summary')?.textContent?.includes('CPU対戦相手'),
+        d.querySelector('summary')?.textContent?.includes('プレイヤー'),
       );
       expect(cpuDetails).toBeInTheDocument();
+      expect(cpuDetails?.querySelector('summary')).toHaveTextContent('プレイヤー (4)');
+      expect(cpuDetails?.querySelectorAll('[data-testid="bid-achievement-row"]')).toHaveLength(4);
     } finally {
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: originalWidth });
     }

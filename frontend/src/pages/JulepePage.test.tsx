@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { julepeApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, JulepeResponse } from '../types/card';
 import { JulepePage } from './JulepePage';
@@ -81,6 +82,20 @@ describe('JulepePage', () => {
     renderWithProviders(<JulepePage />);
     expect(await screen.findByTestId('rm-in-btn')).toBeInTheDocument();
     expect(screen.getByTestId('rm-out-btn')).toBeInTheDocument();
+  });
+
+  it('announces the undecided choice during the decision phase', async () => {
+    renderWithProviders(<JulepePage />);
+
+    expect(await screen.findByTestId('rm-decision-status')).toHaveTextContent(
+      '参加するか降りるかを選んでください。未決定: 4人。',
+    );
+    expect(screen.getByTestId('rm-seat-0')).toHaveTextContent('未定');
+  });
+
+  it('keeps only the reachable decision announcement translations', () => {
+    expect(Object.keys(i18n.getResourceBundle('ja', 'julepe').decision)).toEqual(['undecided']);
+    expect(Object.keys(i18n.getResourceBundle('en', 'julepe').decision)).toEqual(['undecided']);
   });
 
   it('hides the choices once play has started', async () => {

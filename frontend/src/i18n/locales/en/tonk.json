@@ -24,6 +24,8 @@
   "scoresRound": "Round",
   "scoresTotal": "Total",
   "drawStockButton": "Draw Stock",
+  "endRoundDrawButton": "End round as a draw",
+  "emptyStockDrawInfo": "Drawing from the empty stock ends the round in a draw. Draw from the discard pile to continue.",
   "drawDiscardButton": "Draw Discard",
   "drawDiscardCardLabel": "Draw from discard: {{card}}",
   "discardButton": "Discard",

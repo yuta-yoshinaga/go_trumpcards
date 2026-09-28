@@ -87,6 +87,40 @@ beforeEach(() => {
 });
 
 describe('SpoonsPage', () => {
+  it('announces grab window transitions once and matches whether grabbing is available', async () => {
+    mockExec.mockResolvedValueOnce(passState).mockResolvedValueOnce(grabState).mockResolvedValueOnce(passState);
+    renderWithProviders(<SpoonsPage />);
+
+    const live = await screen.findByTestId('spoons-grab-window-live');
+    expect(live).toBeEmptyDOMElement();
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+
+    fireEvent.click(await screen.findByRole('button', { name: '♠ A を渡す' }));
+    await waitFor(() => expect(live).toHaveTextContent('スプーンを取れます。'));
+    expect(screen.getByTestId('spoons-grab-button')).toBeEnabled();
+    // Grabbing closes the window, so this response announces that grabbing is unavailable.
+    fireEvent.click(screen.getByTestId('spoons-grab-button'));
+    await waitFor(() => expect(live).toHaveTextContent('スプーンを取れません。'));
+    expect(screen.queryByTestId('spoons-grab-button')).not.toBeInTheDocument();
+  });
+
+  it('announces only once when consecutive responses keep the grab window open', async () => {
+    mockExec.mockResolvedValueOnce(passState).mockResolvedValueOnce(grabState).mockResolvedValueOnce(grabState);
+    renderWithProviders(<SpoonsPage />);
+
+    const live = await screen.findByTestId('spoons-grab-window-live');
+    fireEvent.click(await screen.findByRole('button', { name: '♠ A を渡す' }));
+    await waitFor(() => expect(live).toHaveTextContent('スプーンを取れます。'));
+    expect(soundCalls('turnTick')).toBe(1);
+
+    fireEvent.click(await screen.findByTestId('spoons-grab-button'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('grab'));
+    expect(live).toHaveTextContent('スプーンを取れます。');
+    expect(soundCalls('turnTick')).toBe(1);
+    expect(live.textContent?.match(/スプーンを取れます。/g)).toHaveLength(1);
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<SpoonsPage />);

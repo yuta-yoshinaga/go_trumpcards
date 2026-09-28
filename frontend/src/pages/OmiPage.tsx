@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { omiApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
@@ -11,6 +11,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
+import { LiveAnnouncement } from '../components/LiveAnnouncement';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
@@ -143,6 +144,40 @@ function OmiPageContent() {
     [],
   );
   const { handleCommand } = useCliGame(apiExec, cliConfig, state, { addInput, addOutput, addError, clearLog });
+  const [trickAnnouncement, setTrickAnnouncement] = useState('');
+  const previousTrickRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!state) return;
+    const trickKey = JSON.stringify(state.currentTrick);
+    if (previousTrickRef.current === null) {
+      previousTrickRef.current = trickKey;
+      return;
+    }
+    if (previousTrickRef.current !== trickKey) {
+      const previousTrick = JSON.parse(previousTrickRef.current) as typeof state.currentTrick;
+      previousTrickRef.current = trickKey;
+      const trick = state.currentTrick;
+      const humanSeat = state.players.findIndex((p) => p.isHuman);
+      const isAppend =
+        trick.length > previousTrick.length &&
+        previousTrick.every((played, index) => JSON.stringify(played) === JSON.stringify(trick[index]));
+      // A new trick (the previous one was taken in the same response) is read in full.
+      if (trick.length > 0) {
+        setTrickAnnouncement(
+          trick
+            .slice(isAppend ? previousTrick.length : 0)
+            .map(({ playerIdx, card }) =>
+              t('trickAnnouncementEntry', {
+                player: playerName(playerIdx, playerIdx === humanSeat),
+                card: cardAlt(card),
+              }),
+            )
+            .join(t('listSeparator')),
+        );
+      }
+    }
+  }, [state, t]);
 
   const isPlayPhaseForKbd = state?.phase === OmiPhase.PLAY;
   const isHumanTurnForKbd = isPlayPhaseForKbd && state?.players[state.currentPlayerIdx]?.isHuman === true;
@@ -203,6 +238,7 @@ function OmiPageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
+      <LiveAnnouncement message={trickAnnouncement} />
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (

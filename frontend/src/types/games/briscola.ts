@@ -20,9 +20,7 @@ export interface BriscolaTrickCard {
 }
 
 /** Briscola game configuration. */
-export interface BriscolaConfig {
-  cpuDifficulty: number;
-}
+export type BriscolaConfig = Record<string, never>;
 
 /** A suggested hint for Briscola. */
 export interface BriscolaHint {

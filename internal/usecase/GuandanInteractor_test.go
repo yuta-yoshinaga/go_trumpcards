@@ -64,17 +64,6 @@ func TestGuandanInteractor_ResetWithConfig(t *testing.T) {
 		assert.Equal(t, guandanMockOutput, gi.ResetWithConfig(cfg))
 		gameMock.AssertCalled(t, "SetConfig", cfg)
 	})
-
-	t.Run("invalid config never reaches the game", func(t *testing.T) {
-		pMock := new(presenter.MockGuandanPresenter)
-		pMock.On("Output", mock.Anything, mock.Anything).Return(guandanMockOutput)
-		gameMock := new(interfaces.MockGuandanGame)
-
-		gi := usecase.NewGuandanInteractor(gameMock, pMock)
-		assert.Equal(t, guandanMockOutput, gi.ResetWithConfig(domain.GuandanConfig{CpuDifficulty: 9}))
-		gameMock.AssertNotCalled(t, "SetConfig", mock.Anything)
-		gameMock.AssertNotCalled(t, "Reset")
-	})
 }
 
 // **どのアクションも currentIdx の席として実行される。**

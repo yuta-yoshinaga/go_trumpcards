@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useId, useMemo } from 'react';
 import type { windmillApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -67,6 +67,7 @@ function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => stri
 }
 
 function WindmillPageContent() {
+  const selectSourceHintId = useId();
   const {
     t,
     tc,
@@ -114,7 +115,7 @@ function WindmillPageContent() {
   const dnd = useSolitaireDragDrop<WindmillMoveZone>({
     onMove: dispatchMove,
     isPlaying: !!isPlayingForKbd,
-    disabled: loading,
+    disabled: loading || isAutoCompleting,
   });
 
   const handleManualReset = useCallback(() => {
@@ -176,7 +177,7 @@ function WindmillPageContent() {
           <button
             type="button"
             onClick={() => game.handleSelectSource(sailZone)}
-            disabled={!isPlaying || loading}
+            disabled={!isPlaying || loading || isAutoCompleting}
             aria-label={t('sailAriaLabel', { card: cardAlt(card), idx })}
             aria-pressed={isSourceSelected('sail', idx)}
             draggable={isPlaying && !loading}
@@ -245,8 +246,13 @@ function WindmillPageContent() {
           ) : (
             <button
               type="button"
-              onClick={() => game.handleSelectTarget(cornerZone)}
-              disabled={!isPlaying || loading || !selectedSource}
+              onClick={() => {
+                if (!selectedSource) return;
+                game.handleSelectTarget(cornerZone);
+              }}
+              disabled={!isPlaying || loading || isAutoCompleting}
+              aria-disabled={!selectedSource || undefined}
+              aria-describedby={!selectedSource ? selectSourceHintId : undefined}
               aria-label={t('emptyCornerAriaLabel', { idx })}
               style={{ width: cardWidth, height: cardHeight }}
               className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
@@ -290,6 +296,9 @@ function WindmillPageContent() {
         </>
       }
     >
+      <span id={selectSourceHintId} className="sr-only">
+        {tc('label.selectSourceFirst')}
+      </span>
       <LandscapeBanner message={t('landscapeBanner')} />
 
       {cliEnabled ? (
@@ -309,8 +318,13 @@ function WindmillPageContent() {
                   {centerTop ? (
                     <button
                       type="button"
-                      onClick={() => game.handleSelectTarget(centerZone)}
-                      disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
+                      onClick={() => {
+                        if (!selectedSource) return;
+                        game.handleSelectTarget(centerZone);
+                      }}
+                      disabled={!isPlaying || loading || isAutoCompleting}
+                      aria-disabled={!selectedSource || undefined}
+                      aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                       aria-label={t('centerAriaLabel', { count: state.center.length })}
                       className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
                     >
@@ -319,8 +333,13 @@ function WindmillPageContent() {
                   ) : (
                     <button
                       type="button"
-                      onClick={() => game.handleSelectTarget(centerZone)}
-                      disabled={!isPlaying || loading || !selectedSource}
+                      onClick={() => {
+                        if (!selectedSource) return;
+                        game.handleSelectTarget(centerZone);
+                      }}
+                      disabled={!isPlaying || loading || isAutoCompleting}
+                      aria-disabled={!selectedSource || undefined}
+                      aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                       aria-label={t('emptyCenterAriaLabel')}
                       style={{ width: cardWidth, height: cardHeight }}
                       className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
@@ -356,7 +375,7 @@ function WindmillPageContent() {
                     <button
                       type="button"
                       onClick={() => game.handleSelectSource(wasteZone)}
-                      disabled={!isPlaying || loading}
+                      disabled={!isPlaying || loading || isAutoCompleting}
                       aria-label={cardAlt(wasteTop)}
                       aria-pressed={isSourceSelected('waste', undefined)}
                       draggable={isPlaying && !loading}

@@ -60,6 +60,13 @@ func (p *FortyThievesCuiPresenter) Output(ft interfaces.FortyThievesGame, lastEr
 
 		// Tableau
 		tableau := ft.GetTableau()
+		emptyColumns := 0
+		for col := range domain.FortyThievesTableauCnt {
+			if len(tableau[col]) == 0 {
+				emptyColumns++
+			}
+		}
+		b.WriteString(i18n.Tf("fortythieves.emptyColumnCount", "count", strconv.Itoa(emptyColumns)) + "\n")
 		for col := range domain.FortyThievesTableauCnt {
 			colCards := tableau[col]
 			b.WriteString(i18n.Tf("fortythieves.columnLabel", "col", strconv.Itoa(col)))

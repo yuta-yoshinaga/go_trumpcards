@@ -7,6 +7,8 @@
   "title": "Shamrocks",
   "foundation": "Foundation",
   "fan": "Fan",
+  "fanAriaLabel": "Fan {{index}}, top card: {{card}}",
+  "emptyFanAriaLabel": "Fan {{index}}, empty",
   "stuckDeadlock": "Stuck — no legal move remains",
   "moveCount": "Moves: {{count}}",
   "giveup": "Give up",

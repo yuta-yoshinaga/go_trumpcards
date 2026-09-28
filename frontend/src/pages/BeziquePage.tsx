@@ -15,7 +15,7 @@ import { PlayerHandSection } from '../components/PlayerHandSection';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
-import { CPU_DIFFICULTY_OPTIONS, TARGET_SCORE_OPTIONS, useBeziqueGame } from '../hooks/useBeziqueGame';
+import { TARGET_SCORE_OPTIONS, useBeziqueGame } from '../hooks/useBeziqueGame';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -29,15 +29,13 @@ import type { BeziqueMeld, BeziqueResponse } from '../types/card';
 import { BeziquePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { beziqueEndgameLegalIndices, beziqueSuitDesign } from '../utils/beziqueLegal';
+import { suitSymbolAt } from '../utils/cardAlt';
 import { cardLabel } from '../utils/cardUtils';
 import { BEZIQUE_HELP, parseBeziqueCommand } from '../utils/cli/commands/beziqueCommands';
 import { formatBeziqueState } from '../utils/cli/formatters/beziqueFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
 import { hintCheckboxItem } from '../utils/settingsItems';
-
-/** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 = undeclared). */
-const SUIT_SYMBOLS = ['', '♠', '♣', '♥', '♦'] as const;
 
 /** Suit-name i18n key suffixes indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 unused). */
 const SUIT_KEYS = ['', 'spade', 'club', 'heart', 'diamond'] as const;
@@ -157,7 +155,7 @@ function BeziquePageContent() {
   const isHumanMeldTurn = isMeldPhase && isHumanCurrent;
   const canPlay = isHumanPlayTurn;
 
-  const trumpSymbol = state.trumpSuit >= 1 && state.trumpSuit <= 4 ? SUIT_SYMBOLS[state.trumpSuit] : t('noTrump');
+  const trumpSymbol = state.trumpSuit >= 1 && state.trumpSuit <= 4 ? suitSymbolAt(state.trumpSuit, '') : t('noTrump');
 
   // Warn as the stock nears empty (but before the endgame actually begins): once it
   // hits 0 the game switches to phase 2 and the existing endgameNotice takes over.
@@ -176,7 +174,7 @@ function BeziquePageContent() {
   /** Builds a localized label for one declarable meld. */
   const meldLabel = (m: BeziqueMeld): string => {
     const name = t(`meldName.${MELD_NAME_KEYS[m.type] ?? 'marriage'}`);
-    const suit = m.type === 0 && m.suit >= 1 && m.suit <= 4 ? ` ${SUIT_SYMBOLS[m.suit]}` : '';
+    const suit = m.type === 0 && m.suit >= 1 && m.suit <= 4 ? ` ${suitSymbolAt(m.suit, '')}` : '';
     return `${name}${suit} (+${m.points})`;
   };
 
@@ -219,17 +217,6 @@ function BeziquePageContent() {
             groups={[
               {
                 items: [
-                  {
-                    type: 'select',
-                    id: 'cpuDifficulty',
-                    label: t('settings.cpuDifficulty'),
-                    value: beziqueConfig.cpuDifficulty,
-                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
-                      value: o.value,
-                      label: t(`settings.${o.label.toLowerCase()}`),
-                    })),
-                    onSelect: (v) => handleConfigChange('cpuDifficulty', v),
-                  },
                   {
                     type: 'select',
                     id: 'targetScore',

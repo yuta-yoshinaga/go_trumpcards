@@ -229,9 +229,25 @@ describe('PontoonPage', () => {
       }),
     );
     renderWithProviders(<PontoonPage />);
-    const payout = await screen.findByText('-100');
+    const payout = await screen.findByText('収支: -100');
     expect(payout).toHaveClass('text-ds-error');
     expect(payout).not.toHaveClass('text-ds-success');
+  });
+
+  it('shows a zero payout after the round', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 4,
+        seats: [
+          { name: 'あなた', isCpu: false, hands: [hand({ payout: 0 })] },
+          { name: 'CPU1', isCpu: true, hands: [] },
+          { name: 'CPU2', isCpu: true, hands: [] },
+        ],
+      }),
+    );
+    renderWithProviders(<PontoonPage />);
+    const payout = await screen.findByText('収支: 0');
+    expect(payout).toHaveClass('text-ds-text-muted');
   });
 
   it('marks the hand on turn', async () => {

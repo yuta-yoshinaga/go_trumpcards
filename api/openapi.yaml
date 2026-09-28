@@ -15783,7 +15783,6 @@ paths:
         | `reset`         | `r`  | Start / restart a game |
         | `next`          | `n`  | Start the next round |
         | `play`          | `p`  | Play a hand card to capture table cards or lay it |
-        | `setdifficulty` | `sd` | Set CPU difficulty (0-2) |
         | `settarget`     | `st` | Set the target score |
         | `hint`          | `h`  | Get a hint for the next move |
         | `log`           | `l`  | View action log |
@@ -15855,7 +15854,6 @@ paths:
         | `reset`         | `r`  | Start / restart a game |
         | `next`          | `n`  | Start the next round |
         | `play`          | `p`  | Play a hand card to capture table cards or lay it |
-        | `setdifficulty` | `sd` | Set CPU difficulty (0-2) |
         | `settarget`     | `st` | Set the target score |
         | `hint`          | `h`  | Get a hint for the next move |
         | `log`           | `l`  | View action log |
@@ -18187,9 +18185,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
       responses:
         '200':
           description: Current game state
@@ -18292,9 +18287,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
                     playerCnt:
                       type: integer
                       description: Seats, 3-8.
@@ -18394,9 +18386,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
                     targetRounds:
                       type: integer
                       description: Rounds per game, 1-12. Mushi is normally 12.
@@ -18493,9 +18482,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
       responses:
         '200':
           description: Current game state
@@ -19028,9 +19014,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
       responses:
         '200':
           description: Current game state
@@ -19133,9 +19116,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
       responses:
         '200':
           description: Current game state
@@ -19244,9 +19224,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
       responses:
         '200':
           description: Current game state
@@ -19349,9 +19326,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
       responses:
         '200':
           description: Current game state
@@ -19459,9 +19433,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
       responses:
         '200':
           description: Current game state
@@ -19569,9 +19540,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
       responses:
         '200':
           description: Current game state
@@ -19686,9 +19654,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
                     targetScore:
                       type: integer
                       description: Points that win the game (default 61).
@@ -19785,9 +19750,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
                     targetDeals:
                       type: integer
                       description: Deals played before the game is decided (default 5).
@@ -19881,9 +19843,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
                     targetDeals:
                       type: integer
                       description: Deals played before the game is decided (default 5).
@@ -19974,9 +19933,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
                     targetDeals:
                       type: integer
                       description: Deals played before the game is decided (default 5).
@@ -20071,9 +20027,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
                     stake:
                       type: integer
                       description: Stake each player antes per round (1-100, default 1).
@@ -20184,9 +20137,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
                     targetScore:
                       type: integer
                       description: Points needed to win (100-1000, default 501).
@@ -20306,9 +20256,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
                     allowNoTrump:
                       type: boolean
                       description: Whether no-trump bids are offered (default true).
@@ -20417,9 +20364,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
                     targetHands:
                       type: integer
                       description: Hands played before the game is decided (1-30, default 8).
@@ -20522,9 +20466,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
       responses:
         '200':
           description: Current game state
@@ -20620,9 +20561,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
                     allowNoTrump:
                       type: boolean
                       description: Whether the declarer may name a no-trump form.
@@ -20737,9 +20675,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
                     targetHands:
                       type: integer
                       description: Hands in a game (3-12).
@@ -21942,9 +21877,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
                     targetHands:
                       type: integer
                       description: Hands needed to win the game (1-10).
@@ -22052,9 +21984,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
       responses:
         '200':
           description: Current game state
@@ -22148,9 +22077,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
       responses:
         '200':
           description: Current game state
@@ -22257,9 +22183,6 @@ paths:
                 config:
                   type: object
                   properties:
-                    cpuDifficulty:
-                      type: integer
-                      description: "0=Normal (the only level in v1)"
       responses:
         '200':
           description: Current game state
@@ -27708,7 +27631,6 @@ paths:
         | `skip`            | `s`                    | Decline to declare a meld (Meld phase) |
         | `next`            | `n`, `nextround`       | Advance to the next trick or deal |
         | `hint`            | `h`                    | Request a play hint |
-        | `setdifficulty`   | `sd`                   | Set CPU difficulty (requires `difficulty` 0-2) |
         | `settarget`       | `st`                   | Set the target score (requires `target`) |
         | `log`             | `l`                    | View action log |
       operationId: beziqueExec
@@ -27806,7 +27728,6 @@ paths:
         | `play`            | `p`                    | Play a card by `cardIndex` (Play phase) |
         | `next`            | `n`, `nextround`       | Advance to the next trick or deal |
         | `hint`            | `h`                    | Request a play hint |
-        | `setdifficulty`   | `sd`                   | Set CPU difficulty (requires `difficulty` 0-2) |
         | `settarget`       | `tg`                   | Set the target score (requires `target`) |
         | `log`             | `l`                    | View action log |
       operationId: ecarteExec
@@ -27908,7 +27829,6 @@ paths:
         | `show`            | `sh`                   | Call a showdown (Seen player, two players remaining) |
         | `next`            | `n`, `nextround`       | Advance to the next deal |
         | `hint`            | `h`                    | Request an action hint |
-        | `setdifficulty`   | `sd`                   | Set CPU difficulty (requires `difficulty` 0-2) |
         | `setante`         | `sa`                   | Set the ante (requires `ante`) |
         | `setchips`        | `sc`                   | Set the starting chips (requires `startingChips`) |
         | `log`             | `l`                    | View action log |
@@ -28020,7 +27940,6 @@ paths:
         | `show`            | `sh`                   | Call a showdown (Seen player, two players remaining) |
         | `next`            | `n`, `nextround`       | Advance to the next deal |
         | `hint`            | `h`                    | Request an action hint |
-        | `setdifficulty`   | `sd`                   | Set CPU difficulty (requires `difficulty` 0-2) |
         | `setante`         | `sa`                   | Set the ante / boot (requires `ante`) |
         | `setchips`        | `sc`                   | Set the starting chips (requires `startingChips`) |
         | `log`             | `l`                    | View action log |
@@ -29570,7 +29489,7 @@ paths:
         |-----------------|---------|-------------|
         | `reset`         | `r`     | Start / restart a game |
         | `bid`           | `b`     | Declare a bid (requires `bid`: 0=pass, 1=chiamo, 2=solo) |
-        | `discard`       | `d`     | Discard a monte card (requires `cardIndex`; 4 times) |
+        | `discard`       | `d`     | Discard the 4 monte cards at once with `cardIndices` (exactly 4 distinct indices), or one card with `cardIndex` |
         | `play`          | `p`     | Play a card (requires `cardIndex`) |
         | `next`          | `n`     | Advance to the next trick |
         | `nextround`     | `nr`    | Advance to the next round |
@@ -29598,6 +29517,11 @@ paths:
                 cardIndex:
                   type: integer
                   description: Hand index of the card to play (for `play`) or discard (for `discard`).
+                cardIndices:
+                  type: array
+                  description: Exactly 4 distinct hand indices for discarding all monte cards at once (for `discard`).
+                  items:
+                    type: integer
                 config:
                   type: object
                   properties:
@@ -31762,8 +31686,6 @@ paths:
                   type: object
                   properties:
                     playerCount:
-                      type: integer
-                    cpuDifficulty:
                       type: integer
                     targetRounds:
                       type: integer
@@ -35677,8 +35599,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
         players:
           type: array
           items:
@@ -35771,9 +35691,6 @@ components:
             $ref: '#/components/schemas/ActionLogEntry'
         config:
           type: object
-          properties:
-            cpuDifficulty:
-              type: integer
         players:
           type: array
           items:
@@ -35878,9 +35795,6 @@ components:
             $ref: '#/components/schemas/ActionLogEntry'
         config:
           type: object
-          properties:
-            cpuDifficulty:
-              type: integer
         players:
           type: array
           items:
@@ -35986,9 +35900,6 @@ components:
             $ref: '#/components/schemas/ActionLogEntry'
         config:
           type: object
-          properties:
-            cpuDifficulty:
-              type: integer
         players:
           type: array
           items:
@@ -36146,11 +36057,6 @@ components:
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
           items:
             $ref: '#/components/schemas/ActionLogEntry'
-        config:
-          type: object
-          properties:
-            cpuDifficulty:
-              type: integer
         players:
           type: array
           items:
@@ -36288,8 +36194,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
         players:
           type: array
           items:
@@ -36805,8 +36709,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
             targetDeals:
               type: integer
         players:
@@ -36933,8 +36835,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
             targetDeals:
               type: integer
         players:
@@ -37052,8 +36952,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
             stake:
               type: integer
         players:
@@ -37166,8 +37064,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
             targetScore:
               type: integer
             allowSchmeiss:
@@ -37209,6 +37105,14 @@ components:
               handPoints:
                 type: integer
                 description: Points taken this deal, melds and bela included.
+              cardPoints:
+                type: integer
+              sequencePoints:
+                type: integer
+              belaPoints:
+                type: integer
+              lastTrickPoints:
+                type: integer
               score:
                 type: integer
               isMaker:
@@ -37302,8 +37206,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
             allowNoTrump:
               type: boolean
         players:
@@ -37451,8 +37353,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
             targetHands:
               type: integer
         players:
@@ -37613,8 +37513,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
         players:
           type: array
           items:
@@ -37931,8 +37829,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
             allowNoTrump:
               type: boolean
         message:
@@ -38105,8 +38001,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
             targetHands:
               type: integer
         message:
@@ -38224,8 +38118,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
             targetHands:
               type: integer
         message:
@@ -38402,8 +38294,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
     GuandanResponse:
       type: object
       description: Response payload for /guandan/exec
@@ -38540,8 +38430,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
     LiteratureResponse:
       type: object
       description: Response payload for /literature/exec
@@ -38653,8 +38541,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
         message:
           type: string
         messageCode:
@@ -38675,8 +38561,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
             playerCnt:
               type: integer
         players:
@@ -38819,8 +38703,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
             targetRounds:
               type: integer
         players:
@@ -38920,8 +38802,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
         players:
           type: array
           description: |
@@ -39948,6 +39828,11 @@ components:
             - `6` — Early Surrender phase (only when surrender rule = Early)
           enum: [1, 2, 3, 4, 5, 6]
           example: 4
+        doubleDownBlock:
+          type: integer
+          description: Double down block reason (0=available, 1=wrong phase, 2=not two cards, 3=split without DAS, 4=hand finished, 5=insufficient chips).
+          enum: [0, 1, 2, 3, 4, 5]
+          example: 0
         currentHandIdx:
           type: integer
           description: |
@@ -41044,6 +40929,7 @@ components:
       required:
         - players
         - currentTurn
+        - fieldClearedLeader
         - tableCards
         - lastPlayPlayerIdx
         - gameEndFlag
@@ -41079,6 +40965,10 @@ components:
           type: integer
           description: Index of the player whose turn it is
           example: 0
+        fieldClearedLeader:
+          type: integer
+          description: Index of the player who leads after the table clears, or -1
+          example: -1
         tableCards:
           type: array
           description: Cards currently on the table (last played set)
@@ -41381,14 +41271,8 @@ components:
     TrucoConfig:
       type: object
       required:
-        - cpuDifficulty
         - matchTarget
       properties:
-        cpuDifficulty:
-          type: integer
-          description: CPU difficulty (0=Normal)
-          enum: [0]
-          example: 0
         matchTarget:
           type: integer
           description: Points needed to win the match (default 15)
@@ -41597,14 +41481,8 @@ components:
     PutConfig:
       type: object
       required:
-        - cpuDifficulty
         - matchTarget
       properties:
-        cpuDifficulty:
-          type: integer
-          description: CPU difficulty (0=Normal)
-          enum: [0]
-          example: 0
         matchTarget:
           type: integer
           description: Points needed to win the match (default 15)
@@ -43111,6 +42989,19 @@ components:
           description: Side pots (created when players go all-in with different amounts)
           items:
             $ref: '#/components/schemas/HoldemSidePot'
+        potAwards:
+          type: array
+          description: Omaha showdown payouts by main and side pot
+          items:
+            type: object
+            required: [amount, eligible, hiWinners, hiPayouts, loWinners, loPayouts]
+            properties:
+              amount: { type: integer }
+              eligible: { type: array, items: { type: integer } }
+              hiWinners: { type: array, items: { type: integer } }
+              hiPayouts: { type: array, items: { type: integer } }
+              loWinners: { type: array, items: { type: integer } }
+              loPayouts: { type: array, items: { type: integer } }
         dealerIdx:
           type: integer
           description: Index of the dealer for this round
@@ -45511,14 +45402,6 @@ components:
     # -------------------------------------------------------------------------
     BriscolaConfig:
       type: object
-      description: Briscola game configuration. v1 only supports Normal difficulty.
-      properties:
-        cpuDifficulty:
-          type: integer
-          minimum: 0
-          maximum: 0
-          description: "0 = Normal (only level supported in v1)"
-
     BriscolaResponse:
       type: object
       description: Current state of the Briscola game.
@@ -45610,11 +45493,6 @@ components:
       type: object
       description: Brusquembille game configuration.
       properties:
-        cpuDifficulty:
-          type: integer
-          minimum: 0
-          maximum: 0
-          description: "0 = Normal (only level supported in v1)"
         playerCnt:
           type: integer
           minimum: 2
@@ -45721,13 +45599,8 @@ components:
     # -------------------------------------------------------------------------
     SchnapsenConfig:
       type: object
-      description: Schnapsen game configuration. v1 only supports Normal difficulty.
-      properties:
-        cpuDifficulty:
-          type: integer
-          minimum: 0
-          maximum: 0
-          description: "0 = Normal (only level supported in v1)"
+      description: Schnapsen game configuration.
+      properties: {}
 
     SchnapsenResponse:
       type: object
@@ -46166,6 +46039,9 @@ components:
         discardTop:
           description: The top card of the discard pile
           $ref: '#/components/schemas/Card'
+        discardPileCount:
+          type: integer
+          description: Number of cards in the discard pile
         drawPileCount:
           type: integer
           description: Number of cards remaining in the draw pile
@@ -46883,10 +46759,6 @@ components:
           type: object
           description: Optional game configuration (only used with `reset`).
           properties:
-            cpuDifficulty:
-              type: integer
-              minimum: 0
-              maximum: 2
             playerCount:
               type: integer
               minimum: 2
@@ -46979,8 +46851,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
             playerCount:
               type: integer
             knockThreshold:
@@ -47156,10 +47026,6 @@ components:
           type: object
           description: Optional game configuration (only used with `reset`).
           properties:
-            cpuDifficulty:
-              type: integer
-              minimum: 0
-              maximum: 2
             targetWins:
               type: integer
               minimum: 1
@@ -47246,8 +47112,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
             targetWins:
               type: integer
         message:
@@ -47325,6 +47189,8 @@ components:
         gameEndFlag: {type: boolean}
         winnerIdx: {type: integer}
         isTongits: {type: boolean}
+        roundEndReason: {type: integer, description: 0 none, 1 Tongits, 2 challenge, 3 stock out}
+        roundWinner: {type: integer, description: Player index or -1 for a draw}
         remainingPoints: {type: integer}
         config:
           type: object
@@ -48865,9 +48731,6 @@ components:
       type: object
       description: Piquet configuration (Web request payload)
       properties:
-        cpuDifficulty:
-          type: integer
-          description: 0=Easy, 1=Normal, 2=Hard
         dealsPerPartie:
           type: integer
           minimum: 1
@@ -54503,6 +54366,10 @@ components:
           type: integer
           description: Total payout returned to the player.
           example: 0
+        appliedMultiplier:
+          type: integer
+          description: Multiplier used for the settled winning payout, or 0 otherwise.
+          example: 0
         message:
           type: string
           description: Human-readable status or result message.
@@ -55144,6 +55011,9 @@ components:
           description: Top card of the discard pile, or null.
         drawPileCount:
           type: integer
+        discardPileCount:
+          type: integer
+          description: Number of cards in the discard pile, including its top card.
         penaltyDrawCount:
           type: integer
           description: Accumulated 7-stack penalty the current player must take or stack onto (0 = none).
@@ -56447,11 +56317,6 @@ components:
               type: integer
               description: Score required to win the match.
               example: 11
-            cpuDifficulty:
-              type: integer
-              description: CPU difficulty (0=easy, 1=normal, 2=hard).
-              minimum: 0
-              maximum: 2
         sessionId:
           type: string
           description: Client-generated session identifier (max 256 characters)
@@ -56579,8 +56444,8 @@ components:
       properties:
         command:
           type: string
-          description: Scopone command. Accepted values. `reset` (`r`), `next` (`n`), `play` (`p`), `setdifficulty` (`sd`), `settarget` (`st`), `log` (`l`).
-          enum: [reset, r, next, n, play, p, setdifficulty, sd, settarget, st, log, l, hint, h]
+          description: Scopone command. Accepted values. `reset` (`r`), `next` (`n`), `play` (`p`), `settarget` (`st`), `log` (`l`).
+          enum: [reset, r, next, n, play, p, settarget, st, log, l, hint, h]
           example: play
         handIndex:
           type: integer
@@ -56602,11 +56467,6 @@ components:
               type: integer
               description: Score required to win the match.
               example: 11
-            cpuDifficulty:
-              type: integer
-              description: CPU difficulty (0=easy, 1=normal, 2=hard).
-              minimum: 0
-              maximum: 2
         sessionId:
           type: string
           description: Client-generated session identifier (max 256 characters)
@@ -56677,7 +56537,6 @@ components:
           type: object
           properties:
             targetScore: { type: integer }
-            cpuDifficulty: { type: integer }
         cpuActions:
           type: array
           description: Actions taken by the CPUs since the last human action.
@@ -56752,8 +56611,8 @@ components:
       properties:
         command:
           type: string
-          description: Escoba command. Accepted values. `reset` (`r`), `next` (`n`), `play` (`p`), `setdifficulty` (`sd`), `settarget` (`st`), `log` (`l`).
-          enum: [reset, r, next, n, play, p, setdifficulty, sd, settarget, st, log, l, hint, h]
+          description: Escoba command. Accepted values. `reset` (`r`), `next` (`n`), `play` (`p`), `settarget` (`st`), `log` (`l`).
+          enum: [reset, r, next, n, play, p, settarget, st, log, l, hint, h]
           example: play
         handIndex:
           type: integer
@@ -56775,11 +56634,6 @@ components:
               type: integer
               description: Score required to win the match.
               example: 10
-            cpuDifficulty:
-              type: integer
-              description: CPU difficulty (0=easy, 1=normal, 2=hard).
-              minimum: 0
-              maximum: 2
         sessionId:
           type: string
           description: Client-generated session identifier (max 256 characters)
@@ -56851,7 +56705,6 @@ components:
           type: object
           properties:
             targetScore: { type: integer }
-            cpuDifficulty: { type: integer }
         cpuActions:
           type: array
           description: Actions taken by the CPUs since the last human action.
@@ -58229,6 +58082,12 @@ components:
           description: Card points taken this round per team, index 0 and 1.
           items:
             type: integer
+        lastTrickWinner:
+          type: integer
+          description: Seat that won the last resolved trick, or -1 before one resolves this round.
+        lastTrickPoints:
+          type: integer
+          description: Card points earned by the last resolved trick.
         teamTricks:
           type: array
           description: Tricks taken this round per team, index 0 and 1.
@@ -59397,6 +59256,23 @@ components:
               type: array
               items:
                 type: integer
+        captureScores:
+          type: array
+          description: >-
+            Per hand card, the normal and soor bonus points for each
+            corresponding capture option. The inner arrays align with
+            captureOptions; a soor bonus is added when the option empties the table.
+          items:
+            type: array
+            items:
+              type: object
+              properties:
+                normal:
+                  type: integer
+                  description: Points from the captured cards before a soor bonus.
+                soorBonus:
+                  type: integer
+                  description: Extra points awarded for emptying the table.
         deckRemaining:
           type: integer
         packsDealt:
@@ -59753,6 +59629,9 @@ components:
               result:
                 type: integer
                 description: "0=none, 1=win, 2=lose, 3=push, 4=blackjack"
+              payout:
+                type: integer
+                description: Total returned for this hand, including returned stake.
         activeHand:
           type: integer
         dealerCards:
@@ -61095,6 +60974,25 @@ components:
             - $ref: '#/components/schemas/Card'
           description: The best trump this seat holds; absent when it holds none
 
+    SpeculationTrade:
+      type: object
+      required: [buyerSeat, sellerSeat, price, card]
+      properties:
+        buyerSeat:
+          type: integer
+          description: Seat that bought the card
+        sellerSeat:
+          type: integer
+          description: Seat that sold the card
+        price:
+          type: integer
+          description: Agreed purchase price in chips
+        card:
+          allOf:
+            - $ref: '#/components/schemas/Card'
+          nullable: true
+          description: Card transferred in the purchase
+
     SpeculationResponse:
       type: object
       description: Current state of the Speculation game
@@ -61177,6 +61075,11 @@ components:
           type: boolean
           description: Whether every round has been played
           example: false
+        lastTrade:
+          allOf:
+            - $ref: '#/components/schemas/SpeculationTrade'
+          nullable: true
+          description: Most recent completed purchase in this round, or null when none occurred
         config:
           type: object
           description: The table settings in force
@@ -62527,6 +62430,9 @@ components:
         passCount:
           type: integer
           description: Passes made this round.
+        passTargetIdx:
+          type: integer
+          description: Next active seat to receive the human pass, or -1 when unavailable.
         deckSize:
           type: integer
           description: "Cards in play: players x 4, so 12 / 16 / 20 / 24."
@@ -62871,6 +62777,9 @@ components:
         roundPenalty:
           type: integer
           description: Penalty points taken this round. LOWER is better -- it wins the pool.
+        markedPenalty:
+          type: integer
+          description: Penalty points added for captured marked cards this round.
         trickCount:
           type: integer
         tookQuinola:
@@ -67955,6 +67864,15 @@ components:
           description: "Current trump suit: 1=♠, 2=♣, 3=♥, 4=♦"
           minimum: 1
           maximum: 4
+        lastTrickTeam:
+          type: integer
+          description: Team that won the most recently resolved trick, or -1 if none is active
+        lastTrickPoints:
+          type: integer
+          description: Card points in the most recently resolved trick, excluding the final trick bonus
+        lastTrickBonus:
+          type: integer
+          description: Bonus points awarded for the most recently resolved trick
         currentTrick:
           type: array
           items:
@@ -69892,9 +69810,8 @@ components:
           type: string
           description: |
             Game command. Accepted values: `reset` (`r`), `play` (`p`), `meld` (`m`),
-            `skip` (`s`), `next` (`n`, `nextround`), `hint` (`h`), `setdifficulty` (`sd`),
-            `settarget` (`st`), `log` (`l`).
-          enum: [reset, r, play, p, meld, m, skip, s, next, n, nextround, hint, h, setdifficulty, sd, settarget, st, log, l]
+            `skip` (`s`), `next` (`n`, `nextround`), `hint` (`h`), `settarget` (`st`), `log` (`l`).
+          enum: [reset, r, play, p, meld, m, skip, s, next, n, nextround, hint, h, settarget, st, log, l]
           example: reset
         cardIndex:
           type: integer
@@ -69904,11 +69821,6 @@ components:
           type: integer
           description: List index of the meld to declare. Required for the `meld` command.
           example: 0
-        difficulty:
-          type: integer
-          description: CPU difficulty level for `setdifficulty`. 0=Easy, 1=Normal, 2=Hard.
-          minimum: 0
-          maximum: 2
         target:
           type: integer
           description: Target score for `settarget`.
@@ -69917,10 +69829,6 @@ components:
           type: object
           description: Optional game configuration (only used with `reset`).
           properties:
-            cpuDifficulty:
-              type: integer
-              minimum: 0
-              maximum: 2
             targetScore:
               type: integer
               minimum: 1
@@ -70077,8 +69985,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
             targetScore:
               type: integer
 
@@ -70093,9 +69999,9 @@ components:
           description: |
             Game command. Accepted values: `reset` (`r`), `propose` (`pr`), `stand` (`st`),
             `accept` (`a`), `refuse` (`rf`), `discard` (`d`), `play` (`p`),
-            `next` (`n`, `nextround`), `hint` (`h`), `setdifficulty` (`sd`),
+            `next` (`n`, `nextround`), `hint` (`h`),
             `settarget` (`tg`), `log` (`l`).
-          enum: [reset, r, propose, pr, stand, st, accept, a, refuse, rf, discard, d, play, p, next, n, nextround, hint, h, setdifficulty, sd, settarget, tg, log, l]
+          enum: [reset, r, propose, pr, stand, st, accept, a, refuse, rf, discard, d, play, p, next, n, nextround, hint, h, settarget, tg, log, l]
           example: reset
         accept:
           type: boolean
@@ -70111,11 +70017,6 @@ components:
             type: integer
           description: Hand indices of the cards to discard and redraw. Used with the `discard` command.
           example: [3, 4]
-        difficulty:
-          type: integer
-          description: CPU difficulty level for `setdifficulty`. 0=Easy, 1=Normal, 2=Hard.
-          minimum: 0
-          maximum: 2
         target:
           type: integer
           description: Target score for `settarget`.
@@ -70124,10 +70025,6 @@ components:
           type: object
           description: Optional game configuration (only used with `reset`).
           properties:
-            cpuDifficulty:
-              type: integer
-              minimum: 0
-              maximum: 2
             targetScore:
               type: integer
               minimum: 1
@@ -70262,8 +70159,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
             targetScore:
               type: integer
 
@@ -70336,6 +70231,11 @@ components:
           items:
             type: integer
           description: Bid placed by each player in seat order (0=Pass, 1=Six, 2=Misere, 3=Seven, 4=Eight; -1=not yet bid)
+        bidDone:
+          type: array
+          items:
+            type: boolean
+          description: Whether each seat has submitted its bid, in seat order.
         currentTrick:
           type: array
           items:
@@ -70654,20 +70554,15 @@ components:
           description: |
             Game command. Accepted values: `reset` (`r`), `see` (`s`), `bet` (`b`),
             `raise` (`rs`), `fold` (`f`), `show` (`sh`), `next` (`n`, `nextround`),
-            `hint` (`h`), `setdifficulty` (`sd`), `setante` (`sa`), `setchips` (`sc`),
+            `hint` (`h`), `setante` (`sa`), `setchips` (`sc`),
             `log` (`l`).
-          enum: [reset, r, see, s, bet, b, raise, rs, fold, f, show, sh, next, n, nextround, hint, h, setdifficulty, sd, setante, sa, setchips, sc, log, l]
+          enum: [reset, r, see, s, bet, b, raise, rs, fold, f, show, sh, next, n, nextround, hint, h, setante, sa, setchips, sc, log, l]
           example: bet
         raiseStake:
           type: integer
           description: Amount to raise the stake by. Required for the `raise` command.
           minimum: 1
           example: 10
-        difficulty:
-          type: integer
-          description: CPU difficulty level for `setdifficulty`. 0=Easy, 1=Normal, 2=Hard.
-          minimum: 0
-          maximum: 2
         ante:
           type: integer
           description: Ante paid into the pot at the start of each deal, for `setante`.
@@ -70680,10 +70575,6 @@ components:
           type: object
           description: Optional game configuration (only used with `reset`).
           properties:
-            cpuDifficulty:
-              type: integer
-              minimum: 0
-              maximum: 2
             ante:
               type: integer
               minimum: 1
@@ -70791,8 +70682,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
             ante:
               type: integer
             startingChips:
@@ -70810,8 +70699,8 @@ components:
             Game command. Accepted values: `reset` (`r`), `see` (`s`), `bet` (`b`),
             `raise` (`rs`), `fold` (`f`), `show` (`sh`), `sideshow` (`ss`),
             `accept` (`ac`), `decline` (`dc`), `next` (`n`, `nextround`), `hint` (`h`),
-            `setdifficulty` (`sd`), `setante` (`sa`), `setchips` (`sc`), `log` (`l`).
-          enum: [reset, r, see, s, bet, b, raise, rs, fold, f, show, sh, sideshow, ss, accept, ac, decline, dc, next, n, nextround, hint, h, setdifficulty, sd, setante, sa, setchips, sc, log, l]
+            `setante` (`sa`), `setchips` (`sc`), `log` (`l`).
+          enum: [reset, r, see, s, bet, b, raise, rs, fold, f, show, sh, sideshow, ss, accept, ac, decline, dc, next, n, nextround, hint, h, setante, sa, setchips, sc, log, l]
           example: bet
         raiseStake:
           type: integer
@@ -70821,11 +70710,6 @@ components:
         accept:
           type: boolean
           description: Response to a side show request (true to accept, false to decline). Used with `accept` / `decline`.
-        difficulty:
-          type: integer
-          description: CPU difficulty level for `setdifficulty`. 0=Easy, 1=Normal, 2=Hard.
-          minimum: 0
-          maximum: 2
         ante:
           type: integer
           description: Ante (boot) paid into the pot at the start of each deal, for `setante`.
@@ -70838,10 +70722,6 @@ components:
           type: object
           description: Optional game configuration (only used with `reset`).
           properties:
-            cpuDifficulty:
-              type: integer
-              minimum: 0
-              maximum: 2
             ante:
               type: integer
               minimum: 1
@@ -70992,8 +70872,6 @@ components:
         config:
           type: object
           properties:
-            cpuDifficulty:
-              type: integer
             ante:
               type: integer
             startingChips:
@@ -72340,6 +72218,23 @@ components:
         canUndo:
           type: boolean
           description: True when the human's last move can be undone
+        tableauNext:
+          type: array
+          description: >-
+            What each tableau column will accept next. Clients match a selected card
+            against these conditions instead of re-deriving the placement rule.
+          items:
+            type: object
+            properties:
+              any:
+                type: boolean
+                description: True when any card is accepted (an empty column).
+              black:
+                type: boolean
+                description: Required card color when any is false.
+              value:
+                type: integer
+                description: Required rank when any is false.
         foundationNext:
           type: array
           description: >-
@@ -73324,6 +73219,9 @@ components:
           type: integer
         pot:
           type: integer
+        lastPayout:
+          type: integer
+          description: "Payout from the previous round."
         currentBet:
           type: integer
         raiseCount:
@@ -74074,6 +73972,8 @@ components:
           type: integer
         currentTrick:
           type: array
+        targetScore:
+          type: integer
         teamScores:
           type: array
           items:
@@ -75362,6 +75262,9 @@ components:
           type: boolean
         isStalemate:
           type: boolean
+        noLegalMoves:
+          type: boolean
+          description: True when no card can move, regardless of remaining redeals.
         undoToEscape:
           type: integer
         messageCode:
@@ -78086,8 +77989,6 @@ components:
           type: object
           properties:
             playerCount:
-              type: integer
-            cpuDifficulty:
               type: integer
             targetRounds:
               type: integer
@@ -81131,6 +81032,9 @@ components:
           type: integer
         contract:
           type: integer
+        contractRequirement:
+          type: integer
+          description: Points or tricks required to fulfill the current contract; 0 when not applicable.
         trumpSuit:
           type: integer
         talonCount:
@@ -81492,6 +81396,13 @@ components:
           type: array
           items:
             type: object
+        lastTrick:
+          type: array
+          items:
+            type: object
+        lastTrickWinner:
+          type: integer
+          description: Seat that took lastTrick, or -1 before the first trick.
         teamScores:
           type: array
           items:
@@ -81617,6 +81528,18 @@ components:
                     type: string
                   value:
                     type: integer
+        lastTrick:
+          type: array
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: "#/components/schemas/Card"
+        lastTrickWinner:
+          type: integer
+          description: "Player index of the last trick winner; -1 before any trick is completed."
         trumpSuit:
           type: integer
         dealerIdx:
@@ -81787,6 +81710,11 @@ components:
                 type: integer
               cards:
                 type: array
+                items:
+                  $ref: '#/components/schemas/Card'
+              finishCards:
+                type: array
+                description: Last cards played by this player when they finished.
                 items:
                   $ref: '#/components/schemas/Card'
         currentTurn:

@@ -97,6 +97,23 @@ function SlapjackPageContent() {
   // Screen-reader announcement for the slap outcome (who slapped + correct/miss).
   // The visual SlapBurst alone is invisible to assistive tech (#2607).
   const [slapAnnounce, setSlapAnnounce] = useState('');
+  const [jackAnnounce, setJackAnnounce] = useState('');
+  const prevSlapAvailableRef = useRef<boolean | null>(null);
+  useEffect(() => {
+    if (!state) {
+      prevSlapAvailableRef.current = null;
+      setJackAnnounce('');
+      return;
+    }
+    const slapAvailable = state.isTopJack;
+    if (prevSlapAvailableRef.current === null) {
+      prevSlapAvailableRef.current = slapAvailable;
+      if (slapAvailable) setJackAnnounce(t('slapjack.slapAvailableAnnounce'));
+    } else if (prevSlapAvailableRef.current !== slapAvailable) {
+      setJackAnnounce(slapAvailable ? t('slapjack.slapAvailableAnnounce') : t('slapjack.slapUnavailableAnnounce'));
+      prevSlapAvailableRef.current = slapAvailable;
+    }
+  }, [state, t]);
   const prevSlapEventRef = useRef<{ kind: number; player: number }>({ kind: -1, player: -1 });
   useEffect(() => {
     if (!state) {
@@ -266,7 +283,7 @@ function SlapjackPageContent() {
                 )}
                 {/* Screen-reader announcement for the flash slap chance. */}
                 <div className="sr-only" aria-live="assertive" aria-atomic="true" data-testid="sj-jack-announce">
-                  {state.isTopJack ? t('slapjack.jackAnnounce') : ''}
+                  {jackAnnounce}
                 </div>
                 {/* Screen-reader announcement for the slap outcome (#2607). */}
                 <div

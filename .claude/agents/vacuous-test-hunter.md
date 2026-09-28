@@ -92,8 +92,9 @@ cd frontend && bunx vitest run src/pages/XPage.test.tsx
 ```
 
 You are read-only with respect to the *deliverable*, but a scratch mutation you revert in the
-same step is evidence, and evidence beats an opinion. Restore the file with
-`git checkout -- <file>` before reporting, and confirm the tree is clean:
+same step is evidence, and evidence beats an opinion. `cp <file> <file>.bak` before the
+mutation and restore with `mv <file>.bak <file>` — never use the checkout command, which also
+discards other people's uncommitted work in the same file. Then confirm the tree is back to its prior state:
 `git status --short`. If you cannot cleanly revert, say so prominently at the top of the
 report.
 

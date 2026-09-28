@@ -56,7 +56,7 @@ function makeState(overrides?: Partial<KarnoffelResponse>): KarnoffelResponse {
     gameEndFlag: false,
     winnerTeam: -1,
     message: '',
-    config: { cpuDifficulty: 0, targetHands: 3 },
+    config: { targetHands: 3 },
     ...overrides,
   };
 }
@@ -143,6 +143,30 @@ describe('KarnoffelPage', () => {
     expect(hand[0]).toBeDisabled();
     expect(hand[1]).toBeEnabled();
     expect(hand[2]).toBeEnabled();
+  });
+
+  it('exposes hand selection and turn legality accessibly', async () => {
+    mockExec.mockResolvedValue(makeState({ validPlays: [1, 2] }));
+    renderWithProviders(<KarnoffelPage />);
+    await waitFor(() => expect(screen.getByTestId('karnoffel-play-notice')).toBeInTheDocument());
+
+    const hand = handButtons();
+    expect(hand[0]).toHaveAttribute('aria-pressed', 'false');
+    expect(hand[0]).toHaveAccessibleName(/この手番には出せません/);
+    expect(hand[1]).toHaveAttribute('aria-pressed', 'false');
+    expect(hand[1]).toHaveAccessibleName(/この手番に出せます/);
+
+    fireEvent.click(hand[1]);
+    expect(hand[1]).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('only describes turn legality during the human play phase', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: KarnoffelPhase.HAND_END, validPlays: [1] }));
+    renderWithProviders(<KarnoffelPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '次の局へ' })).toBeInTheDocument());
+
+    expect(handButtons()[0]).toHaveAttribute('aria-pressed', 'false');
+    expect(handButtons()[0]).not.toHaveAccessibleName(/この手番/);
   });
 
   // **パートナーは向かい合わせ。**

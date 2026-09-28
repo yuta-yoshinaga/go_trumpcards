@@ -32,7 +32,7 @@ const baseState: SchnapsenResponse = {
   gameEndFlag: false,
   winnerIdx: -1,
   winThreshold: 66,
-  config: { cpuDifficulty: 1 },
+  config: {},
 };
 
 describe('formatSchnapsenState', () => {

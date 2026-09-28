@@ -28,15 +28,13 @@ import { gameTheme } from '../styles/gameTheme';
 import type { ViraResponse } from '../types/card';
 import { ViraContract, ViraPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { suitSymbolAt } from '../utils/cardAlt';
 import { PREFERENCE_HELP, parseViraCommand } from '../utils/cli/commands/viraCommands';
 import { formatViraState } from '../utils/cli/formatters/viraFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
-
-/** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 = no trump). */
-const SUIT_SYMBOLS = ['', '♠', '♣', '♥', '♦'] as const;
 
 /**
  * Contract i18n key suffixes indexed by contract value
@@ -71,6 +69,10 @@ interface ContractProgress {
   won: number;
   /** Tricks the declarer needs (0 for Misère). */
   needed: number;
+  /** Tricks still available in the round. */
+  remaining: number;
+  /** Tricks still needed to reach the target, clamped at zero. */
+  short: number;
   /** Made / failed / still in progress. */
   status: ContractStatus;
   /** Whether the contract is Misère (win no tricks). */
@@ -99,7 +101,7 @@ function computeContractProgress(contract: number, won: number, remaining: numbe
   } else {
     status = 'progress';
   }
-  return { won, needed, status, isMisere };
+  return { won, needed, remaining, short: Math.max(needed - won, 0), status, isMisere };
 }
 
 /** Bid button options (Pass/Six/Misère/Seven/Eight). */
@@ -209,7 +211,7 @@ function ViraPageContent() {
   const isGameEnd = state.phase === ViraPhase.GAME_END || state.gameEndFlag;
 
   const canPlay = isPlayPhase && isHumanTurn;
-  const trumpSymbol = state.trumpSuit === 0 ? t('noTrump') : (SUIT_SYMBOLS[state.trumpSuit] ?? '?');
+  const trumpSymbol = state.trumpSuit === 0 ? t('noTrump') : suitSymbolAt(state.trumpSuit, '');
 
   // The current highest (non-pass) bid; a new non-pass bid must beat it.
   const highestBid = Math.max(0, ...state.bids);
@@ -316,8 +318,12 @@ function ViraPageContent() {
                 data-testid="vira-contract-progress"
               >
                 {contractProgress.isMisere
-                  ? t('progress.misere', { won: contractProgress.won })
-                  : t('progress.line', { won: contractProgress.won, needed: contractProgress.needed })}
+                  ? t('progress.misere', { won: contractProgress.won, remaining: contractProgress.remaining })
+                  : t('progress.line', {
+                      won: contractProgress.won,
+                      needed: contractProgress.needed,
+                      short: contractProgress.short,
+                    })}
                 {contractProgress.status === 'made' && ` — ${t('progress.made')}`}
                 {contractProgress.status === 'failed' && ` — ${t('progress.failed')}`}
               </div>

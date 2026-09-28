@@ -6,7 +6,6 @@ import { gameExec } from '../gameExec';
 
 /** Configuration options for Boston game settings. */
 export interface BostonConfigInput {
-  cpuDifficulty?: number;
   /** Hands played before the game is decided (1-30, default 8). */
   targetHands?: number;
 }

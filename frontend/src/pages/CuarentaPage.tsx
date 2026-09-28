@@ -205,15 +205,7 @@ function CuarentaPageContent() {
     if (a.isLimpia) badges.push(t('limpia'));
     const captured = a.capturedCards.length;
     return (
-      <div
-        key={`act-${a.playerIdx}`}
-        className="text-sm text-ds-text-muted flex items-center gap-2 flex-wrap py-0.5"
-        // On the human's freshest bonus play, announce the row so the caída/ronda/
-        // limpia badges reach SR users (they were visual/audio-only before).
-        role={celebrate && badges.length > 0 ? 'status' : undefined}
-        aria-live={celebrate && badges.length > 0 ? 'polite' : undefined}
-        data-testid={celebrate && badges.length > 0 ? 'cuarenta-bonus-announce' : undefined}
-      >
+      <div key={`act-${a.playerIdx}`} className="text-sm text-ds-text-muted flex items-center gap-2 flex-wrap py-0.5">
         <span className="font-semibold text-ds-text-primary">{playerLabel(a.playerIdx, a.playerIdx === 0)}</span>
         {a.playedCard && <CardImage card={a.playedCard} width={Math.round(cardWidth * 0.6)} />}
         <span>{captured > 0 ? t('captured', { count: captured }) : t('laidDown')}</span>
@@ -250,6 +242,23 @@ function CuarentaPageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
+      <div
+        className="sr-only"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        data-testid="cuarenta-bonus-announce"
+      >
+        {bonusCelebrationKey > 0 && humanBonus
+          ? [
+              humanAction.isCaida ? t('caida') : '',
+              humanAction.rondaBonus > 0 ? t('ronda', { bonus: humanAction.rondaBonus }) : '',
+              humanAction.isLimpia ? t('limpia') : '',
+            ]
+              .filter(Boolean)
+              .join('')
+          : ''}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (

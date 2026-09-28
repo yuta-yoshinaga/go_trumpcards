@@ -102,6 +102,26 @@ describe('CurdsAndWheyPage', () => {
     }
   });
 
+  it('undo shortcut matches the button and is unavailable without an undo', async () => {
+    mockExec.mockResolvedValue(makeState({ canUndo: true }));
+    const { unmount } = renderWithProviders(<CurdsAndWheyPage />);
+    const undoButton = await screen.findByTestId('undo-button');
+    expect(undoButton).toHaveAttribute('aria-keyshortcuts', 'z');
+
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'z' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('u'));
+
+    unmount();
+    mockExec.mockResolvedValue(makeState({ canUndo: false }));
+    renderWithProviders(<CurdsAndWheyPage />);
+    await screen.findByTestId('hint-button');
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'z' });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('u');
+  });
+
   it('marks only the movable-run cards as grabbable and blocks invalid source selection', async () => {
     // Column 3: ♠9 (not a run head), then ♥6 ♥5 ♥4 (a same-suit descending run).
     mockExec.mockResolvedValue(

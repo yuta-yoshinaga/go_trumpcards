@@ -26,14 +26,6 @@ func TestTrexWebInput_ToConfigWithNoConfigDoesNotPanic(t *testing.T) {
 	})
 }
 
-func TestTrexWebInput_ToConfigClampsAnOutOfRangeDifficulty(t *testing.T) {
-	bad := 99
-	cfg := controller.TrexWebInput{
-		Config: &controller.TrexWebConfig{CpuDifficulty: &bad},
-	}.ToConfig()
-	assert.NoError(t, cfg.Validate())
-}
-
 func TestNewTrexDefaultOutput(t *testing.T) {
 	// An error response still has to render: the page maps over runs, the
 	// contract list and the index arrays without guarding for absence.

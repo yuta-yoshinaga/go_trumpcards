@@ -70,6 +70,21 @@ func TestPageOneCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "play <idx>")
 	})
 
+	t.Run("empty draw pile explanation shown during play phase", func(t *testing.T) {
+		m, _ := setupPageOneCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDrawPileCount")
+		m.On("GetDrawPileCount").Return(0)
+
+		result := p.Output(m, nil)
+		assert.Contains(t, result, i18n.T("pageone.drawPileEmpty"))
+	})
+
+	t.Run("empty draw pile explanation omitted when cards remain", func(t *testing.T) {
+		m, _ := setupPageOneCuiMockWithPlayers()
+		result := p.Output(m, nil)
+		assert.NotContains(t, result, i18n.T("pageone.drawPileEmpty"))
+	})
+
 	t.Run("discard top shown", func(t *testing.T) {
 		m, _ := setupPageOneCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDiscardTop")
@@ -253,6 +268,17 @@ func TestPageOneCuiPresenter_HintOutput(t *testing.T) {
 		players[0].AddCard(c)
 		m.On("IsValidPlay", c).Return(false)
 		assert.Contains(t, p.HintOutput(m), i18n.T("pageone.hintDraw"))
+	})
+
+	t.Run("explains empty draw pile recycling when nothing is playable", func(t *testing.T) {
+		m, players := setupPageOneCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetDrawPileCount")
+		m.On("GetDrawPileCount").Return(0)
+		m.On("IsHumanTurn").Return(true)
+		c := domain.NewCard(domain.CardDesignSpade, 9, false)
+		players[0].AddCard(c)
+		m.On("IsValidPlay", c).Return(false)
+		assert.Contains(t, p.HintOutput(m), i18n.T("pageone.hintDrawEmpty"))
 	})
 
 	t.Run("no hint on a CPU turn", func(t *testing.T) {

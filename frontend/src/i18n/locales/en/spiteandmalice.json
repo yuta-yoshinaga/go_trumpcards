@@ -27,6 +27,7 @@
   "discardNeedHand": "Select a hand card first",
   "discardReady": "Hand card selected — ready to discard",
   "autoComplete": "Auto Complete",
+  "autoCompleteHint": "Automatically play every available card to a foundation. When no more plays are available, continue manually and discard to end your turn.",
   "selectSource": "Select a card to play",
   "selectFoundation": "Select a foundation",
   "selectSide": "Select a side pile to discard to",

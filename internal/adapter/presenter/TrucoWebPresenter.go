@@ -61,10 +61,8 @@ func (p *TrucoWebPresenter) buildBase(g interfaces.TrucoGame) *controller.TrucoW
 
 	resObj.MatchPoints = []int{g.GetPlayerMatchPoints(0), g.GetPlayerMatchPoints(1)}
 
-	cfg := g.GetConfig()
 	resObj.Config = controller.TrucoWebOutputConfig{
-		CpuDifficulty: int(cfg.CpuDifficulty),
-		MatchTarget:   g.GetMatchTarget(),
+		MatchTarget: g.GetMatchTarget(),
 	}
 
 	resObj.CurrentTrick = trickCardsToOutput(g.GetCurrentTrick())

@@ -369,11 +369,7 @@ func (a *Agnes) nextRank(r int) int {
 }
 
 func (a *Agnes) isSameColor(x, y *Card) bool {
-	return a.isBlack(x) == a.isBlack(y)
-}
-
-func (a *Agnes) isBlack(card *Card) bool {
-	return card.GetDesign() == CardDesignSpade || card.GetDesign() == CardDesignClover
+	return isBlack(x) == isBlack(y)
 }
 
 // autoFlipTableau タブローの末尾の裏カードを自動フリップ

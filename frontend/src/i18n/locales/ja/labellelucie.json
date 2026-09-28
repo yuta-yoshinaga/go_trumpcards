@@ -6,6 +6,14 @@
   },
   "title": "ラ・ベル・ルーシー",
   "foundation": "組札",
+  "foundationAriaLabel": "組札 {{suit}} {{count}}枚",
+  "emptyFoundationAriaLabel": "空の組札 {{index}}",
+  "suitNames": {
+    "spade": "スペード",
+    "clover": "クラブ",
+    "heart": "ハート",
+    "diamond": "ダイヤ"
+  },
   "fan": "扇",
   "redealsLeft": "残りシャッフル: {{count}}",
   "stuckRedeal": "手詰まり: 再ディール推奨",

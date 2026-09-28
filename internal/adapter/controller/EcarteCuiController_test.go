@@ -134,16 +134,6 @@ func TestEcarteCuiController_Exec(t *testing.T) {
 		m.AssertCalled(t, "NextRound")
 	})
 
-	t.Run("setdifficulty", func(t *testing.T) {
-		m := newMock()
-		c := controller.NewEcarteCuiController(m)
-		got := c.Exec("sd 2")
-		assert.Equal(t, mockOutput, got)
-		expected := domain.DefaultEcarteConfig()
-		expected.CpuDifficulty = domain.EcarteCpuDifficultyHard
-		m.AssertCalled(t, "ResetWithConfig", expected)
-	})
-
 	t.Run("settarget", func(t *testing.T) {
 		m := newMock()
 		c := controller.NewEcarteCuiController(m)

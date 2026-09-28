@@ -157,6 +157,8 @@ func TestReversis_MarkedCardsInOneTrickChargeBoth(t *testing.T) {
 	assert.True(t, p.GetTookQuinola())
 	assert.True(t, p.GetTookDiamondAce())
 	assert.Equal(t, 4+1+4+ReversisMarkedPenalty*2, p.GetRoundPenalty())
+	assert.Equal(t, 2*ReversisMarkedPenalty, p.GetMarkedPenalty())
+	assert.Equal(t, 4+1+4, p.GetRoundPenalty()-p.GetMarkedPenalty())
 	assert.Equal(t, chipsBefore-ReversisMarkedStake*2, p.GetChips())
 	assert.Equal(t, poolBefore+ReversisMarkedStake*2, r.GetPool())
 	marked := 0
@@ -166,6 +168,13 @@ func TestReversis_MarkedCardsInOneTrickChargeBoth(t *testing.T) {
 		}
 	}
 	assert.Equal(t, 2, marked)
+}
+
+func TestReversisMarkedPenaltyResetsAtRoundStart(t *testing.T) {
+	p := NewReversisPlayer(false)
+	p.AddMarkedPenalty(ReversisMarkedPenalty)
+	p.ResetRound()
+	assert.Zero(t, p.GetMarkedPenalty())
 }
 
 func TestReversis_DiamondAceCharges(t *testing.T) {
@@ -202,6 +211,7 @@ func TestReversis_UnmarkedTrickChargesNoStake(t *testing.T) {
 	r.resolveTrick()
 
 	assert.Equal(t, 0, r.GetPlayer(0).GetRoundPenalty(), "絵札が無ければ 0 点")
+	assert.Zero(t, r.GetPlayer(0).GetMarkedPenalty(), "印付き札が無ければ追加失点は 0 点")
 	assert.Equal(t, chipsBefore, r.GetPlayer(0).GetChips(), "チップは動かない")
 	assert.Equal(t, poolBefore, r.GetPool())
 	assert.False(t, r.GetPlayer(0).GetTookQuinola())
@@ -666,6 +676,7 @@ func TestReversis_JSONRoundTrip(t *testing.T) {
 	r := newTestReversis(t)
 	r.GetPlayer(0).SetChips(72)
 	r.GetPlayer(0).SetRoundPenalty(9)
+	r.GetPlayer(0).AddMarkedPenalty(2 * ReversisMarkedPenalty)
 	r.GetPlayer(0).SetTookQuinola(true)
 	r.GetPlayer(1).SetTookDiamondAce(true)
 	r.SetPoolForTest(35)
@@ -681,6 +692,7 @@ func TestReversis_JSONRoundTrip(t *testing.T) {
 
 	assert.Equal(t, 72, restored.GetPlayer(0).GetChips(), "チップが往復する")
 	assert.Equal(t, 9, restored.GetPlayer(0).GetRoundPenalty())
+	assert.Equal(t, 2*ReversisMarkedPenalty, restored.GetPlayer(0).GetMarkedPenalty())
 	assert.True(t, restored.GetPlayer(0).GetTookQuinola(), "印が往復する")
 	assert.True(t, restored.GetPlayer(1).GetTookDiamondAce())
 	assert.Equal(t, 35, restored.GetPool(), "プールが往復する")

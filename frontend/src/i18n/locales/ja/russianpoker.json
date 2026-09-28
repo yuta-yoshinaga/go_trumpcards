@@ -48,6 +48,13 @@
     "buy6th": "6枚目手数料 -{{fee}}",
     "forceExchange": "強制交換手数料 -{{fee}}"
   },
+  "foldCosts": {
+    "title": "フォールド時に返金されない費用: {{amount}}",
+    "ante": "アンテ {{amount}}",
+    "exchange": "交換手数料 {{amount}}",
+    "buy6th": "6枚目手数料 {{amount}}",
+    "forceExchange": "強制交換手数料 {{amount}}"
+  },
   "handRank": {
     "0": "ハイカード",
     "1": "ワンペア",

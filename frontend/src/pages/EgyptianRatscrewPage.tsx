@@ -18,7 +18,7 @@ import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
-import { useGameApi } from '../hooks/useGameApi';
+import { isRejectedAction, useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useMountReset } from '../hooks/useMountReset';
@@ -75,7 +75,30 @@ export const EgyptianRatscrewPage = withTutorial(EgyptianRatscrewPageContent, 'e
 function EgyptianRatscrewPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('egyptianratscrew');
-  const { state, loading, error, exec: execApi, retry } = useGameApi(egyptianRatscrewApi.exec);
+  const [stepAnnounce, setStepAnnounce] = useState('');
+  const {
+    state,
+    loading,
+    error,
+    exec: execApi,
+    retry,
+  } = useGameApi(egyptianRatscrewApi.exec, {
+    onSuccess: (res, args) => {
+      if (
+        args[0] !== 'step' ||
+        isRejectedAction(res) ||
+        res.gameEndFlag ||
+        res.phase === EgyptianRatscrewPhase.GAME_END
+      ) {
+        return;
+      }
+      const announceKey = res.isHumanTurn ? 'stepAnnounceYou' : 'stepAnnounceCpu';
+      const values = res.isHumanTurn
+        ? { count: res.centerPileSize }
+        : { count: res.centerPileSize, player: tc('player.cpu', { id: res.currentTurnIdx }) };
+      setStepAnnounce(t(`egyptianratscrew.${announceKey}`, values));
+    },
+  });
   const { cardWidth } = useCardDimensions();
   const { playSound } = useSound();
   const {
@@ -304,6 +327,15 @@ function EgyptianRatscrewPageContent() {
                 data-testid="er-slap-announce"
               >
                 {slapAnnounce}
+              </div>
+              <div
+                className="sr-only"
+                role="status"
+                aria-live="polite"
+                aria-atomic="true"
+                data-testid="er-step-announce"
+              >
+                {stepAnnounce}
               </div>
               <div className="text-center">
                 <div className="text-sm text-ds-text-primary font-semibold">

@@ -1,4 +1,4 @@
-//go:build !js || !wasm || casino
+//go:build !js || !wasm || casino || extra8
 
 package interfaces
 
@@ -62,6 +62,8 @@ type FreeBetBlackjackGame interface {
 	GetResults() []domain.FreeBetResult
 	// GetPayout このラウンドで戻ってきた総額
 	GetPayout() int
+	// GetHandPayouts 手札ごとの払い戻し
+	GetHandPayouts() []int
 	// GetChips 保有チップ数
 	GetChips() int
 	// GetRoundNumber ラウンド数

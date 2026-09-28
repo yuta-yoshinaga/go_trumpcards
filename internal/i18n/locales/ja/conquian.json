@@ -5,7 +5,6 @@
   "helpMeld": "  m <idx,..>;<idx>     メルドを並べる/付ける (グループは;区切り)",
   "helpDiscard": "  d <idx>              カードを捨てる",
   "helpNextRound": "  nr                   次のラウンドへ",
-  "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
   "helpSetWins": "  sw <n>               マッチ勝利数",
   "header": "ラウンド: {{round}}  山札: {{stock}}枚",
   "discardLine": "捨て札: {{card}}",

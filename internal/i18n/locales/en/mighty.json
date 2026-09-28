@@ -18,6 +18,8 @@
   "rolePartner": "[partner]",
   "playerLine": "{{name}}{{role}}: bid={{bid}} tricks={{tricks}} points={{points}} cum={{cum}} round={{round}} cards={{cards}}",
   "round": "Round: {{round}}  Trick: {{trick}}",
+  "teamPointCards": "Declarer side point cards: {{declarer}}  Opposition point cards: {{opposition}}",
+  "teamPointCardsHidden": "Declarer point cards: {{declarer}}  Other seats: {{other}} (partner hidden)",
   "trump": "Trump: {{suit}}",
   "trumpNoTrump": "No-Trump",
   "partnerCard": "Partner card: {{card}}",

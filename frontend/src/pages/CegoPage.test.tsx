@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { cegoApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeCegoState } from '../test/stateFactories';
 import { CegoPage } from './CegoPage';
@@ -172,6 +173,31 @@ describe('CegoPage', () => {
     renderWithProviders(<CegoPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'プレイ宣言' })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'パス' })).toBeInTheDocument();
+  });
+
+  it('binds and lists only the available bid shortcuts', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<CegoPage />);
+    await screen.findByRole('button', { name: 'プレイ宣言' });
+    const panel = screen.getByTestId('cego-kbd-shortcuts');
+    fireEvent.click(screen.getByText('キーボードショートカット'));
+    await waitFor(() => expect(panel).toHaveAttribute('open'));
+    expect(panel).toHaveTextContent('p');
+    expect(panel).toHaveTextContent('b');
+    expect(panel).not.toHaveTextContent('c');
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'b' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', { bid: 'play' }));
+  });
+
+  it('does not bind exchange until exactly one card is selected', async () => {
+    mockExec.mockResolvedValue(exchangePhaseState);
+    renderWithProviders(<CegoPage />);
+    await screen.findByTestId('cego-exchange-guide');
+    expect(screen.queryByTestId('cego-kbd-shortcuts')).not.toBeInTheDocument();
+    fireEvent.keyDown(document, { key: 'e' });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('exchange', expect.anything());
   });
 
   it('declaring dispatches bid with the play string', async () => {

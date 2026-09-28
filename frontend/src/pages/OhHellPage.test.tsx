@@ -169,7 +169,7 @@ describe('OhHellPage', () => {
     renderWithProviders(<OhHellPage />);
     // Human bid 2, won 0, 5 cards left \u2192 still achievable \u2192 neutral info colors.
     const chip = await screen.findByTestId('bid-progress-chip');
-    expect(chip).toHaveTextContent('\u5ba3\u8a00: 2 / \u7372\u5f97: 0');
+    expect(chip).toHaveTextContent('\u5ba3\u8a00: 2 / \u7372\u5f97: 0 / \u6b8b\u308a: 5');
     expect(chip.className).toContain('border-ds-border-subtle');
   });
 
@@ -180,7 +180,7 @@ describe('OhHellPage', () => {
     });
     renderWithProviders(<OhHellPage />);
     const chip = await screen.findByTestId('bid-progress-chip');
-    expect(chip).toHaveTextContent('\u5ba3\u8a00: 2 / \u7372\u5f97: 2');
+    expect(chip).toHaveTextContent('\u5ba3\u8a00: 2 / \u7372\u5f97: 2 / \u6b8b\u308a: 5');
     expect(chip.className).toContain('border-ds-success');
   });
 
@@ -192,6 +192,7 @@ describe('OhHellPage', () => {
     renderWithProviders(<OhHellPage />);
     const chip = await screen.findByTestId('bid-progress-chip');
     expect(chip.className).toContain('border-ds-warning');
+    expect(chip).toHaveTextContent('\u9054\u6210\u4e0d\u80fd');
   });
 
   it('colors the progress chip red when the bid is no longer reachable', async () => {
@@ -203,6 +204,7 @@ describe('OhHellPage', () => {
     // Needs 2 more tricks with only 1 card left.
     const chip = await screen.findByTestId('bid-progress-chip');
     expect(chip.className).toContain('border-ds-error');
+    expect(chip).toHaveTextContent('\u9054\u6210\u4e0d\u80fd');
   });
 
   it('does not turn red while the human card in the unresolved trick can still win', async () => {
@@ -214,8 +216,20 @@ describe('OhHellPage', () => {
     });
     renderWithProviders(<OhHellPage />);
     const chip = await screen.findByTestId('bid-progress-chip');
+    expect(chip).toHaveTextContent('\u5ba3\u8a00: 2 / \u7372\u5f97: 0 / \u6b8b\u308a: 2');
     expect(chip.className).toContain('border-ds-border-subtle');
     expect(chip.className).not.toContain('border-ds-error');
+    expect(chip).not.toHaveTextContent('\u9054\u6210\u4e0d\u80fd');
+  });
+
+  it('does not show the progress chip when there is no human player', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      players: playPhaseState.players.map((player) => ({ ...player, isHuman: false })),
+    });
+    renderWithProviders(<OhHellPage />);
+    await screen.findByRole('heading', { level: 1 });
+    expect(screen.queryByTestId('bid-progress-chip')).not.toBeInTheDocument();
   });
 
   it('hides the progress chip during the bid phase and at game end', async () => {
@@ -234,6 +248,13 @@ describe('OhHellPage', () => {
     mockExec.mockResolvedValue(gameEndByFlagState);
     renderWithProviders(<OhHellPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
+    expect(screen.queryByTestId('bid-progress-chip')).not.toBeInTheDocument();
+  });
+
+  it('hides the in-progress indicator after the round ends', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<OhHellPage />);
+    await screen.findByRole('heading', { level: 1 });
     expect(screen.queryByTestId('bid-progress-chip')).not.toBeInTheDocument();
   });
 

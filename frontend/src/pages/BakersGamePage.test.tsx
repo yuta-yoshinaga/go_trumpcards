@@ -637,35 +637,53 @@ describe('BakersGamePage', () => {
 
   // --- Empty targets disabled without source ---
 
-  it('foundation disabled when no source selected', async () => {
+  it('foundation targets remain focusable when no source selected', async () => {
     renderWithProviders(<BakersGamePage />);
     await waitFor(() => expect(screen.getByText('♠')).toBeInTheDocument());
 
     const aButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === 'A');
     for (const btn of aButtons) {
-      expect(btn).toBeDisabled();
+      expect(btn).not.toBeDisabled();
+      expect(btn).toHaveAttribute('aria-disabled', 'true');
     }
   });
 
-  it('empty tableau column disabled when no source selected', async () => {
+  it('empty tableau targets remain focusable when no source selected', async () => {
     renderWithProviders(<BakersGamePage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
     const kButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === '任意');
     for (const btn of kButtons) {
-      expect(btn).toBeDisabled();
+      expect(btn).not.toBeDisabled();
+      expect(btn).toHaveAttribute('aria-disabled', 'true');
     }
   });
 
-  it('empty freecell disabled when no source selected', async () => {
+  it('empty freecell targets remain focusable when no source selected', async () => {
     renderWithProviders(<BakersGamePage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
     const emptyButtons = screen.getAllByText('空');
     for (const btn of emptyButtons) {
       const button = btn.closest('button') as HTMLButtonElement;
-      expect(button).toBeDisabled();
+      expect(button).not.toBeDisabled();
+      expect(button).toHaveAttribute('aria-disabled', 'true');
     }
+  });
+
+  it('explains and ignores a target click before a source is selected', async () => {
+    mockExec.mockClear();
+    renderWithProviders(<BakersGamePage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    const target = screen.getByTestId('bg-empty-col-2');
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const hintId = target.getAttribute('aria-describedby');
+    expect(hintId).toBeTruthy();
+    expect(document.getElementById(hintId!)).toHaveTextContent('先に移動する札を選んでください');
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
   });
 
   it('renders tutorial button', async () => {
@@ -1080,9 +1098,116 @@ describe('BakersGamePage empty-column move limit', () => {
     renderWithProviders(<BakersGamePage />);
 
     fireEvent.click((await screen.findByAltText('♠ K')).closest('button') as HTMLButtonElement);
+    const allowedCard = (await screen.findByAltText('♠ K')).closest('button') as HTMLButtonElement;
+    expect(allowedCard).not.toHaveAttribute('data-supermove-blocked');
+    expect(allowedCard).not.toHaveAttribute('title');
     const emptyCol = await screen.findByTestId('bg-empty-col-1');
     expect(emptyCol).not.toHaveAttribute('data-empty-col-blocked');
     // 超過していない列の名前は元のまま ── 理由を足しっぱなしにしない。
     expect(emptyCol).toHaveAttribute('aria-label', '空のタブロー列 1（任意のカードを置けます）');
+  });
+});
+
+describe('BakersGamePage supermove slot guidance', () => {
+  it('asks only for a column when all free cells are already empty', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: [
+        [card('SPADE', 13), card('HEART', 12), card('CLOVER', 11)],
+        [card('DIAMOND', 10)],
+        [card('SPADE', 9)],
+        [card('HEART', 8)],
+        [card('CLOVER', 7)],
+        [card('DIAMOND', 6)],
+        [card('SPADE', 5)],
+        [card('HEART', 4)],
+      ],
+      freeCells: [null, null, null, null],
+      maxMovableCards: 1,
+      maxMovableCardsToEmptyColumn: 1,
+    });
+    renderWithProviders(<BakersGamePage />);
+
+    const blockedCard = (await screen.findByAltText('♠ K')).closest('button') as HTMLButtonElement;
+    expect(blockedCard.title).toContain('空き列1個');
+    expect(blockedCard.title).not.toContain('空きフリーセル');
+    expect(blockedCard.title).not.toContain('空きフリーセル1個');
+  });
+
+  it('omits additional guidance when no available slots can move the stack', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: [
+        Array.from({ length: 641 }, (_, index) => card('SPADE', 13 - (index % 13))),
+        [card('DIAMOND', 10)],
+        [card('SPADE', 9)],
+        [card('HEART', 8)],
+        [card('CLOVER', 7)],
+        [card('DIAMOND', 6)],
+        [card('SPADE', 5)],
+        [card('HEART', 4)],
+      ],
+      freeCells: [card('SPADE', 3), card('HEART', 2), card('CLOVER', 1), card('DIAMOND', 13)],
+      maxMovableCards: 1,
+      maxMovableCardsToEmptyColumn: 1,
+    });
+    renderWithProviders(<BakersGamePage />);
+
+    await waitFor(() => expect(screen.getAllByAltText('♠ K').length).toBeGreaterThan(0));
+    const blockedCard = screen
+      .getAllByAltText('♠ K')
+      .map((image) => image.closest('button'))
+      .find((button) => button?.getAttribute('data-supermove-blocked') === 'true') as HTMLButtonElement;
+    expect(blockedCard.title).toBe('一度に動かせるのは1枚までです');
+    expect(blockedCard.getAttribute('aria-label')).not.toContain('空きフリーセル');
+  });
+
+  it('explains the additional free cells needed for an over-limit stack', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: [
+        [card('SPADE', 13), card('HEART', 12), card('CLOVER', 11)],
+        [card('DIAMOND', 10)],
+        [card('SPADE', 9)],
+        [card('HEART', 8)],
+        [card('CLOVER', 7)],
+        [card('DIAMOND', 6)],
+        [card('SPADE', 5)],
+        [card('HEART', 4)],
+      ],
+      freeCells: [card('SPADE', 3), card('HEART', 2), card('CLOVER', 1), card('DIAMOND', 13)],
+      maxMovableCards: 1,
+      maxMovableCardsToEmptyColumn: 1,
+    });
+    renderWithProviders(<BakersGamePage />);
+
+    const blockedCard = (await screen.findByAltText('♠ K')).closest('button') as HTMLButtonElement;
+    expect(blockedCard).toHaveAttribute('data-supermove-blocked', 'true');
+    expect(blockedCard.title).toContain('空きフリーセル2個');
+    expect(blockedCard.title).not.toContain('空き列');
+  });
+
+  it('asks for both cells and columns when both are needed', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: [
+        [card('SPADE', 13), card('HEART', 12), card('CLOVER', 11), card('DIAMOND', 10), card('SPADE', 9)],
+        [card('HEART', 8)],
+        [card('CLOVER', 7)],
+        [card('DIAMOND', 6)],
+        [card('SPADE', 5)],
+        [card('HEART', 4)],
+        [card('CLOVER', 3)],
+        [card('DIAMOND', 2)],
+      ],
+      freeCells: [card('SPADE', 1), card('HEART', 3), card('CLOVER', 5), card('DIAMOND', 7)],
+      maxMovableCards: 1,
+      maxMovableCardsToEmptyColumn: 1,
+    });
+    renderWithProviders(<BakersGamePage />);
+
+    const blockedCard = (await screen.findByAltText('♠ K')).closest('button') as HTMLButtonElement;
+    expect(blockedCard.title).toContain('空きフリーセル2個');
+    expect(blockedCard.title).toContain('空き列1個');
   });
 });

@@ -97,6 +97,8 @@ func (p *CallBreakCuiPresenter) Output(cb interfaces.CallBreakGame, lastErr erro
 				"name", cuiPlayerName(cb.GetPlayer(currentIdx), currentIdx)) + "\n")
 			b.WriteString(i18n.T("callbreak.promptPlayHelp") + "\n")
 		case domain.CallBreakPhaseTrickEnd:
+			winnerIdx := cb.GetLeadPlayerIdx()
+			b.WriteString(i18n.Tf("callbreak.promptTrickWinner", "name", cuiPlayerName(cb.GetPlayer(winnerIdx), winnerIdx)) + "\n")
 			b.WriteString(i18n.T("callbreak.promptTrickEnd") + "\n")
 			b.WriteString(i18n.T("callbreak.promptTrickEndHelp") + "\n")
 		case domain.CallBreakPhaseRoundEnd:

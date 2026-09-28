@@ -26,6 +26,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { ZwickerResponse } from '../types/card';
 import { ZwickerPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { parseZwickerCommand, ZWICKER_HELP } from '../utils/cli/commands/zwickerCommands';
 import { formatZwickerState } from '../utils/cli/formatters/zwickerFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -234,6 +235,10 @@ function ZwickerPageContent() {
                         key={`tbl-${i.toString()}`}
                         type="button"
                         data-testid="zwicker-table-card"
+                        aria-label={t('cardAriaLabel', {
+                          card: cardAlt(card),
+                          values: card.values.join(t('listSeparator')),
+                        })}
                         aria-pressed={tableSel.includes(i)}
                         aria-disabled={!isHumanTurn}
                         onClick={() => isHumanTurn && toggle(tableSel, setTableSel, i)}
@@ -263,6 +268,10 @@ function ZwickerPageContent() {
                       key={`bld-${i.toString()}`}
                       type="button"
                       data-testid="zwicker-build"
+                      aria-label={t('buildAriaLabel', {
+                        cards: b.cards.map(cardAlt).join(t('listSeparator')),
+                        build: t('buildLabel', { value: b.value, owner: b.owner }),
+                      })}
                       aria-pressed={buildSel.includes(i)}
                       aria-disabled={!isHumanTurn}
                       onClick={() => isHumanTurn && toggle(buildSel, setBuildSel, i)}
@@ -311,6 +320,10 @@ function ZwickerPageContent() {
                     key={`hand-${i.toString()}`}
                     type="button"
                     data-hint-action="discard"
+                    aria-label={t('cardAriaLabel', {
+                      card: cardAlt(card),
+                      values: card.values.join(t('listSeparator')),
+                    })}
                     aria-pressed={handIdx === i}
                     aria-disabled={!isHumanTurn}
                     onClick={() => isHumanTurn && pickHand(i)}

@@ -1,11 +1,11 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { nertzApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { NertzResponse } from '../types/card';
 import { NertzPhase } from '../types/phases';
-import { NertzPage } from './NertzPage';
+import { NERTZ_COLLISION_FEEDBACK_MS, NertzPage } from './NertzPage';
 
 vi.mock('../api/gameApi', () => ({
   nertzApi: { exec: vi.fn() },
@@ -382,6 +382,57 @@ describe('NertzPage', () => {
     mockExec.mockResolvedValue({ ...playingState, foundations: grown });
     fireEvent.click(screen.getByLabelText(/組札0|Foundation 0/));
     await waitFor(() => expect(screen.getByTestId('nertz-announce').textContent).toMatch(/あなたが配置/));
+  });
+
+  it('clears placement-flash timers when unmounted', async () => {
+    vi.useFakeTimers();
+    const clearTimeoutSpy = vi.spyOn(window, 'clearTimeout');
+    const setTimeoutSpy = vi.spyOn(window, 'setTimeout');
+    try {
+      const grown: NertzResponse['foundations'] = Array.from({ length: 8 }, () => ({ suit: -1, size: 0 }));
+      grown[0] = { suit: 3, size: 1, top: { design: 'HEART', value: 1 } };
+      mockExec.mockResolvedValue({ ...playingState, foundations: grown });
+      const { unmount } = renderWithProviders(
+        <MemoryRouter initialEntries={['/nertz']}>
+          <NertzPage />
+        </MemoryRouter>,
+      );
+      await act(async () => vi.advanceTimersByTimeAsync(0));
+      expect(screen.getByTestId('nertz-foundation-flash-0')).toBeInTheDocument();
+      const placementTimer = setTimeoutSpy.mock.results.find(
+        (_result, index) => setTimeoutSpy.mock.calls[index][1] === NERTZ_COLLISION_FEEDBACK_MS,
+      )?.value;
+      expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), NERTZ_COLLISION_FEEDBACK_MS);
+      expect(placementTimer).toBeDefined();
+
+      unmount();
+      expect(clearTimeoutSpy.mock.calls.some(([timerId]) => timerId === placementTimer)).toBe(true);
+      await act(async () => vi.advanceTimersByTimeAsync(NERTZ_COLLISION_FEEDBACK_MS + 100));
+    } finally {
+      clearTimeoutSpy.mockRestore();
+      setTimeoutSpy.mockRestore();
+      vi.useRealTimers();
+    }
+  });
+
+  it('removes a placement flash after its feedback duration', async () => {
+    vi.useFakeTimers();
+    try {
+      const grown: NertzResponse['foundations'] = Array.from({ length: 8 }, () => ({ suit: -1, size: 0 }));
+      grown[0] = { suit: 3, size: 1, top: { design: 'HEART', value: 1 } };
+      mockExec.mockResolvedValue({ ...playingState, foundations: grown });
+      renderWithProviders(
+        <MemoryRouter initialEntries={['/nertz']}>
+          <NertzPage />
+        </MemoryRouter>,
+      );
+      await act(async () => vi.advanceTimersByTimeAsync(0));
+      expect(screen.getByTestId('nertz-foundation-flash-0')).toBeInTheDocument();
+      await act(async () => vi.advanceTimersByTimeAsync(NERTZ_COLLISION_FEEDBACK_MS));
+      expect(screen.queryByTestId('nertz-foundation-flash-0')).not.toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('announces a collision when a foundation move is rejected', async () => {

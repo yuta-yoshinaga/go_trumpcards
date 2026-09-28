@@ -43,6 +43,7 @@ export interface CrazyEightsResponse extends BaseGameResponse {
   roundNumber: number;
   currentPlayerIdx: number;
   discardTop: Card | null;
+  discardPileCount: number;
   drawPileCount: number;
   chosenSuit: number;
   gameEndFlag: boolean;

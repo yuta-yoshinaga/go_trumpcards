@@ -44,7 +44,7 @@ const baseState: ConquianResponse = {
   tookDiscard: true,
   message: '',
   messageCode: '',
-  config: { cpuDifficulty: 1, targetWins: 3 },
+  config: { targetWins: 3 },
 };
 
 describe('formatConquianState', () => {

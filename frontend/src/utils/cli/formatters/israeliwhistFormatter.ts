@@ -1,5 +1,6 @@
 import type { IsraeliWhistPlayer, IsraeliWhistResponse } from '../../../types/card';
 import { IsraeliWhistPhase } from '../../../types/phases';
+import { suitSymbolAt } from '../../cardAlt';
 import { formatSignedDelta } from '../../formatSignedDelta';
 import { formatCard, formatHeader, formatPlayerName, formatSeparator } from '../formatterBase';
 
@@ -13,9 +14,6 @@ const PHASE_NAMES: Record<number, string> = {
 
 /** Tricks per round (thirteen cards each). */
 const TRICKS_PER_ROUND = 13;
-
-/** trumpSuit is a 1-based suit code, as elsewhere in this repo. */
-const SUIT_SYMBOLS: Record<number, string> = { 1: '♠', 2: '♣', 3: '♥', 4: '♦' };
 
 /** A seat's standing in the auction, which the calling round does not replace. */
 function roleStr(p: IsraeliWhistPlayer, declarer: boolean): string {
@@ -41,8 +39,8 @@ export function formatIsraeliWhistState(state: IsraeliWhistResponse | null): str
 
   lines.push(
     state.trumpSuit > 0
-      ? `trump: ${SUIT_SYMBOLS[state.trumpSuit] ?? '?'} (won with ${state.highBid})`
-      : `auction: high bid ${state.highBid} ${SUIT_SYMBOLS[state.highSuit] ?? '-'}`,
+      ? `trump: ${suitSymbolAt(state.trumpSuit, '?')} (won with ${state.highBid})`
+      : `auction: high bid ${state.highBid} ${suitSymbolAt(state.highSuit, '-')}`,
   );
 
   // **押せない宣言があるなら先に言う。** 出してから拒否されるのでは遅い。

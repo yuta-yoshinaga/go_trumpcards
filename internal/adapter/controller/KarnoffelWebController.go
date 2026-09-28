@@ -19,8 +19,7 @@ type KarnoffelWebInput struct {
 
 // KarnoffelWebConfig カルニッフェル Web設定
 type KarnoffelWebConfig struct {
-	CpuDifficulty *int `json:"cpuDifficulty,omitempty"`
-	TargetHands   *int `json:"targetHands,omitempty"`
+	TargetHands *int `json:"targetHands,omitempty"`
 }
 
 // KarnoffelWebOutputPlayer カルニッフェル Webアウトプットプレイヤー
@@ -81,15 +80,12 @@ type KarnoffelWebOutput struct {
 
 // KarnoffelWebOutputConfig カルニッフェル設定アウトプット
 type KarnoffelWebOutputConfig struct {
-	CpuDifficulty int `json:"cpuDifficulty"`
-	TargetHands   int `json:"targetHands"`
+	TargetHands int `json:"targetHands"`
 }
 
 // ToConfig builds a KarnoffelConfig from the nested web config, applying bounds checking.
 func (c *KarnoffelWebConfig) ToConfig() domain.KarnoffelConfig {
 	cfg := domain.DefaultKarnoffelConfig()
-	cfg.CpuDifficulty = domain.KarnoffelCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty,
-		int(domain.KarnoffelCpuDifficultyNormal), int(domain.KarnoffelCpuDifficultyNormal), int(cfg.CpuDifficulty)))
 	cfg.TargetHands = webutil.BoundedIntPtr(c.TargetHands,
 		domain.KarnoffelMinTarget, domain.KarnoffelMaxTarget, cfg.TargetHands)
 	return cfg

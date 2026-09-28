@@ -68,6 +68,4 @@ export interface LiteratureResponse extends BaseGameResponse {
 }
 
 /** Settings echoed back with the game state. */
-export interface LiteratureConfigOutput {
-  cpuDifficulty: number;
-}
+export type LiteratureConfigOutput = Record<string, never>;

@@ -124,6 +124,26 @@ describe('FiftyOnePage', () => {
     expect(screen.getByRole('option', { name: '難しい' })).toBeInTheDocument();
   });
 
+  it('explains exchange choices and shows the updated score after exchange', async () => {
+    const updatedState: FiftyOneResponse = {
+      ...baseState,
+      players: baseState.players.map((player) => (player.isHuman ? { ...player, score: 28 } : player)),
+    };
+    mockExec.mockImplementation((command: string) => Promise.resolve(command === 'reset' ? baseState : updatedState));
+
+    const { FiftyOnePage } = await import('./FiftyOnePage');
+    renderWithProviders(<FiftyOnePage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    expect(screen.getByTestId('exchange-guidance')).toHaveTextContent(
+      '個別交換: 手札と場札を1枚ずつ選択。全交換: 手札5枚を交換。交換後は新しい手札とスート別得点を確認して、次のカードを選び直してください。',
+    );
+
+    fireEvent.click(screen.getByTestId('exchange-all-button'));
+    await waitFor(() => expect(screen.getByText('あなた — スコア: 28')).toBeInTheDocument());
+    expect(screen.getByTestId('suit-score-badges')).toBeInTheDocument();
+  });
+
   it('exchange all button calls exchangeall', async () => {
     const { FiftyOnePage } = await import('./FiftyOnePage');
     renderWithProviders(<FiftyOnePage />);

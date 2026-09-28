@@ -15,6 +15,7 @@ import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { SpeedSkeleton } from '../components/skeleton/SpeedSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { isModalOpen } from '../hooks/keyboardNavUtils';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -58,6 +59,8 @@ function SpeedPageContent() {
     useGamePageSetup('speed');
   const {
     state,
+    playedCardCount,
+    playAnnouncementNonce,
     loading,
     error,
     exec: gameExec,
@@ -115,6 +118,7 @@ function SpeedPageContent() {
   useEffect(() => {
     if (cliEnabled || !keyboardActive || loading) return;
     const onKey = (e: KeyboardEvent) => {
+      if (isModalOpen()) return;
       const target = e.target as HTMLElement | null;
       if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return;
       if (e.ctrlKey || e.altKey || e.metaKey) return;
@@ -200,6 +204,16 @@ function SpeedPageContent() {
         </>
       }
     >
+      <span
+        key={playAnnouncementNonce}
+        className="sr-only"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        data-testid="speed-play-count-announcement"
+      >
+        {playedCardCount === null ? '' : t('playedCardCount', { count: playedCardCount })}
+      </span>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (

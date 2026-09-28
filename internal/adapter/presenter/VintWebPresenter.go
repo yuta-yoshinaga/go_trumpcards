@@ -79,8 +79,7 @@ func (p *VintWebPresenter) Output(g interfaces.VintGame, lastErr error) string {
 		resObj.ValidPlays = append(resObj.ValidPlays, g.VintValidPlays(g.GetCurrentPlayerIdx())...)
 	}
 
-	cfg := g.GetConfig()
-	resObj.Config = controller.VintWebOutputConfig{CpuDifficulty: int(cfg.CpuDifficulty)}
+	resObj.Config = controller.VintWebOutputConfig{}
 
 	resObj.Players = p.buildPlayersOutput(g)
 	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(g, lastErr)

@@ -1,4 +1,4 @@
-//go:build !js || !wasm || classic
+//go:build !js || !wasm || extra8
 
 package presenter
 
@@ -56,6 +56,7 @@ func (p *ReversisWebPresenter) buildPlayersOutput(r interfaces.ReversisGame) []*
 			Cards:          playerCardsToOutput(player, player.GetIsHuman()),
 			Chips:          player.GetChips(),
 			RoundPenalty:   player.GetRoundPenalty(),
+			MarkedPenalty:  player.GetMarkedPenalty(),
 			TrickCount:     player.GetTrickCount(),
 			TookQuinola:    player.GetTookQuinola(),
 			TookDiamondAce: player.GetTookDiamondAce(),

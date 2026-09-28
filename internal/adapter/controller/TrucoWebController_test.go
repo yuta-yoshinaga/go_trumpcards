@@ -128,9 +128,4 @@ func TestTrucoWebConfig_ToConfig(t *testing.T) {
 		assert.Equal(t, domain.TrucoDefaultMatchTarget, c.ToConfig().MatchTarget)
 	})
 
-	t.Run("out-of-range difficulty clamps to default", func(t *testing.T) {
-		diff := 99
-		c := &controller.TrucoWebConfig{CpuDifficulty: &diff}
-		assert.Equal(t, domain.TrucoCpuDifficultyNormal, c.ToConfig().CpuDifficulty)
-	})
 }

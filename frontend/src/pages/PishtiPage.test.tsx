@@ -191,6 +191,42 @@ describe('PishtiPage', () => {
     await waitFor(() => expect(screen.getByText('場札なし')).toBeInTheDocument());
   });
 
+  it('announces the changed pile and capture once in a polite live region', async () => {
+    renderWithProviders(<PishtiPage />);
+    const announcement = await screen.findByTestId('pishti-pile-announcement');
+    expect(announcement).toHaveAttribute('aria-live', 'polite');
+    expect(announcement).toBeEmptyDOMElement();
+
+    mockExec.mockResolvedValueOnce(makeState({ pile: [], pileTop: null, pileCount: 0 }));
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+    await waitFor(() => expect(announcement).toHaveTextContent('場札更新。トップは場札なし、0枚。場札が取られました'));
+  });
+
+  it('does not announce a capture when reset replaces a six-card pile with four cards', async () => {
+    mockExec.mockResolvedValue(makeState({ pile: Array.from({ length: 6 }, () => card('HEART', 2)), pileCount: 6 }));
+    renderWithProviders(<PishtiPage />);
+    const announcement = await screen.findByTestId('pishti-pile-announcement');
+
+    mockExec.mockResolvedValueOnce(
+      makeState({ pile: Array.from({ length: 4 }, () => card('SPADE', 3)), pileTop: card('SPADE', 3), pileCount: 4 }),
+    );
+    fireEvent.change(await screen.findByLabelText('CPU難易度'), { target: { value: '2' } });
+
+    await waitFor(() => expect(announcement).toHaveTextContent('4枚'));
+    expect(announcement).not.toHaveTextContent('場札が取られました');
+  });
+
+  it('announces a capture when a three-card pile becomes empty', async () => {
+    mockExec.mockResolvedValue(makeState({ pile: Array.from({ length: 3 }, () => card('HEART', 2)), pileCount: 3 }));
+    renderWithProviders(<PishtiPage />);
+    const announcement = await screen.findByTestId('pishti-pile-announcement');
+
+    mockExec.mockResolvedValueOnce(emptyPileState);
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+
+    await waitFor(() => expect(announcement).toHaveTextContent('場札が取られました'));
+  });
+
   it('does not dispatch play when it is not the human turn', async () => {
     mockExec.mockResolvedValue(makeState({ currentTurn: 2 }));
     renderWithProviders(<PishtiPage />);

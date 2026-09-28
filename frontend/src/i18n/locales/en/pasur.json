@@ -26,7 +26,8 @@
     "giveUp": "Give up",
     "selectAria": "Select {{card}}",
     "takeSoor": "soor",
-    "takeSoorAria": "this choice empties the table, doubling the cards you take"
+    "takeSoorAria": "this choice empties the table, doubling the cards you take",
+    "scoreBreakdown": "Base {{normal}} + soor bonus {{bonus}} = {{total}} points"
   },
   "result": {
     "you": "You win!",

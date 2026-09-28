@@ -31,6 +31,7 @@
   "cards": "{{count}}枚",
   "tricks": "{{count}}個",
   "currentTrick": "現在のトリック",
+  "trickWinnerBadge": "勝者",
   "players": "プレイヤー",
   "you": "あなた",
   "cpu": "CPU {{id}}",

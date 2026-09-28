@@ -80,7 +80,9 @@
   },
   "skipMeldButton": "スキップ",
   "teamLabel": "チーム{{n}}",
-  "teamScores": "チーム0: {{a}} / チーム1: {{b}}",
+  "teamScoreSelf": "{{team}}（自チーム）: {{score}}",
+  "teamScoreOpponent": "{{team}}（相手チーム）: {{score}}",
+  "teamScores": "{{a}} / {{b}}",
   "tutorial": {
     "drawArea": "山札と捨て札エリアです。ここからカードを引きます。",
     "playerHand": "あなたの手札です。メルドやディスカードするカードを選びます。",

@@ -32,18 +32,10 @@ const CitadelMaxColumnLen = 6
 const CitadelFoundationCnt = 4
 
 // CitadelTableauCard タブロー上のカード
-type CitadelTableauCard struct {
-	Card   *Card `json:"c"`
-	FaceUp bool  `json:"f"`
-}
+type CitadelTableauCard = ColumnTableauCard
 
 // CitadelHint ヒント
-type CitadelHint struct {
-	FromCol   int    // タブロー列インデックス
-	CardIndex int    // 列内のカードインデックス
-	ToZone    string // "tableau" or "foundation"
-	ToCol     int    // タブロー列 or ファンデーションのインデックス
-}
+type CitadelHint = ColumnSolitaireHint
 
 // CitadelConfig Citadel ゲーム設定
 type CitadelConfig struct{}
@@ -155,29 +147,11 @@ func (c *Citadel) MoveTableauToTableau(fromCol, cardIndex, toCol int) error {
 	if c.phase != CitadelPhasePlaying {
 		return errors.New("game is not in playing phase")
 	}
-	if fromCol < 0 || fromCol >= CitadelTableauCnt {
-		return errors.New("invalid from column")
-	}
-	if toCol < 0 || toCol >= CitadelTableauCnt {
-		return errors.New("invalid to column")
-	}
-	if fromCol == toCol {
-		return errors.New("from and to columns are the same")
+	tc, cardIndex, err := columnValidateTableauMove(c.tableau[:], fromCol, cardIndex, toCol, c.canPlaceOnTableau)
+	if err != nil {
+		return err
 	}
 	fromCards := c.tableau[fromCol]
-	if cardIndex == -1 {
-		cardIndex = len(fromCards) - 1
-	}
-	if cardIndex < 0 || cardIndex >= len(fromCards) {
-		return errors.New("invalid card index")
-	}
-	if cardIndex != len(fromCards)-1 {
-		return errors.New("only the top card can be moved")
-	}
-	tc := fromCards[cardIndex]
-	if !c.canPlaceOnTableau(tc.Card, toCol) {
-		return errors.New("cannot place card on tableau")
-	}
 	c.takeSnapshot()
 	c.tableau[toCol] = append(c.tableau[toCol], tc)
 	c.tableau[fromCol] = fromCards[:cardIndex]
@@ -192,19 +166,12 @@ func (c *Citadel) MoveTableauToFoundation(col int) error {
 	if c.phase != CitadelPhasePlaying {
 		return errors.New("game is not in playing phase")
 	}
-	if col < 0 || col >= CitadelTableauCnt {
-		return errors.New("invalid column")
+	tc, fIdx, err := columnValidateTableauToFoundation(c.tableau[:], col, c.findFoundation)
+	if err != nil {
+		return err
 	}
-	fromCards := c.tableau[col]
-	if len(fromCards) == 0 {
-		return errors.New("tableau column is empty")
-	}
-	tc := fromCards[len(fromCards)-1]
 	card := tc.Card
-	fIdx := c.findFoundation(card)
-	if fIdx < 0 {
-		return errors.New("cannot place card on foundation")
-	}
+	fromCards := c.tableau[col]
 	c.takeSnapshot()
 	c.tableau[col] = fromCards[:len(fromCards)-1]
 	c.foundation[fIdx] = append(c.foundation[fIdx], card)
@@ -225,47 +192,7 @@ func (c *Citadel) GiveUp() {
 
 // GetHint ヒントを取得
 func (c *Citadel) GetHint() *CitadelHint {
-	if c.phase != CitadelPhasePlaying {
-		return nil
-	}
-	// 優先度1: タブローからファンデーションへ
-	for col := range CitadelTableauCnt {
-		if len(c.tableau[col]) == 0 {
-			continue
-		}
-		tc := c.tableau[col][len(c.tableau[col])-1]
-		fIdx := c.findFoundation(tc.Card)
-		if fIdx >= 0 {
-			return &CitadelHint{
-				FromCol:   col,
-				CardIndex: len(c.tableau[col]) - 1,
-				ToZone:    "foundation",
-				ToCol:     fIdx,
-			}
-		}
-	}
-	// 優先度2: タブローからタブローへ
-	for fromCol := range CitadelTableauCnt {
-		fromCards := c.tableau[fromCol]
-		if len(fromCards) == 0 {
-			continue
-		}
-		card := fromCards[len(fromCards)-1].Card
-		for toCol := range CitadelTableauCnt {
-			if toCol == fromCol {
-				continue
-			}
-			if c.canPlaceOnTableau(card, toCol) {
-				return &CitadelHint{
-					FromCol:   fromCol,
-					CardIndex: len(fromCards) - 1,
-					ToZone:    "tableau",
-					ToCol:     toCol,
-				}
-			}
-		}
-	}
-	return nil
+	return columnGetHint(c.phase == CitadelPhasePlaying, c.tableau[:], c.canPlaceOnTableau, c.findFoundation)
 }
 
 // AutoComplete オートコンプリート（全ての山から可能な限りファンデーションへ）
@@ -274,27 +201,7 @@ func (c *Citadel) AutoComplete() error {
 		return errors.New("game is not in playing phase")
 	}
 	c.takeSnapshot()
-	for {
-		moved := false
-		for col := range CitadelTableauCnt {
-			if len(c.tableau[col]) == 0 {
-				continue
-			}
-			tc := c.tableau[col][len(c.tableau[col])-1]
-			card := tc.Card
-			fIdx := c.findFoundation(card)
-			if fIdx < 0 {
-				continue
-			}
-			c.tableau[col] = c.tableau[col][:len(c.tableau[col])-1]
-			c.foundation[fIdx] = append(c.foundation[fIdx], card)
-			c.moveCount++
-			moved = true
-		}
-		if !moved {
-			break
-		}
-	}
+	c.moveCount += columnAutoCompleteMoves(c.tableau[:], c.foundation[:], c.findFoundation)
 	c.appendLog("autocomplete", "citadel.log.autoComplete", nil, nil)
 	c.checkGameClear()
 	c.checkStalemate()
@@ -303,7 +210,7 @@ func (c *Citadel) AutoComplete() error {
 
 // AllFaceUp 全カードが表向きかどうか（Citadel では常にtrue）
 func (c *Citadel) AllFaceUp() bool {
-	return true
+	return columnAllFaceUp(c.tableau[:])
 }
 
 // --- State getters/setters ---
@@ -391,41 +298,23 @@ func (c *Citadel) canPlaceOnTableau(card *Card, col int) bool {
 	return card.GetValue() == topCard.GetValue()-1
 }
 
-// canPlaceOnFoundation ファンデーションにカードを置けるか判定
-func (c *Citadel) canPlaceOnFoundation(card *Card, fIdx int) bool {
-	return canPlaceOnFoundationPile(c.foundation[fIdx], card)
-}
-
 // findFoundation カードを置けるファンデーションのインデックスを探す（見つからない場合-1）
 func (c *Citadel) findFoundation(card *Card) int {
-	for i := range CitadelFoundationCnt {
-		if c.canPlaceOnFoundation(card, i) {
-			return i
-		}
-	}
-	return -1
+	return columnFindFoundation(c.foundation[:], card)
 }
 
 // checkGameClear ゲームクリア判定
 func (c *Citadel) checkGameClear() {
-	for i := range CitadelFoundationCnt {
-		if len(c.foundation[i]) != CardValueMax {
-			return
-		}
+	if columnCheckGameClear(c.foundation[:]) {
+		c.phase = CitadelPhaseGameClear
 	}
-	c.phase = CitadelPhaseGameClear
 }
 
 // checkStalemate 手詰まり判定
 func (c *Citadel) checkStalemate() {
-	if c.phase != CitadelPhasePlaying {
-		return
+	if c.phase == CitadelPhasePlaying {
+		c.isStalemate = columnCheckStalemate(true, c.tableau[:], c.canPlaceOnTableau, c.findFoundation)
 	}
-	if c.GetHint() != nil {
-		c.isStalemate = false
-		return
-	}
-	c.isStalemate = true
 }
 
 // takeSnapshot 現在の状態をスナップショットとして保存

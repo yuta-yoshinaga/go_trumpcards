@@ -969,17 +969,14 @@ func colourWhistValidateWire(j *colourWhistJSON) error {
 		return fmt.Errorf("colourwhist: pass flags hold %d slots for %d seats",
 			len(j.Passed), ColourWhistPlayerCnt)
 	}
-	for name, seat := range map[string]int{"dealer": j.DealerIdx, "current turn": j.CurrentTurn} {
-		if seat < 0 || seat >= ColourWhistPlayerCnt {
-			return fmt.Errorf("colourwhist: %s index out of range: %d", name, seat)
+	for _, f := range []namedInt{{"dealer", j.DealerIdx}, {"current turn", j.CurrentTurn}} {
+		if f.value < 0 || f.value >= ColourWhistPlayerCnt {
+			return fmt.Errorf("colourwhist: %s index out of range: %d", f.name, f.value)
 		}
 	}
-	for name, seat := range map[string]int{
-		"declarer": j.DeclarerIdx, "partner": j.PartnerIdx,
-		"last trick winner": j.LastTrickWinner, "winner": j.WinnerIdx,
-	} {
-		if seat < -1 || seat >= ColourWhistPlayerCnt {
-			return fmt.Errorf("colourwhist: %s index out of range: %d", name, seat)
+	for _, f := range []namedInt{{"declarer", j.DeclarerIdx}, {"partner", j.PartnerIdx}, {"last trick winner", j.LastTrickWinner}, {"winner", j.WinnerIdx}} {
+		if f.value < -1 || f.value >= ColourWhistPlayerCnt {
+			return fmt.Errorf("colourwhist: %s index out of range: %d", f.name, f.value)
 		}
 	}
 	return colourWhistValidateContractShape(j)

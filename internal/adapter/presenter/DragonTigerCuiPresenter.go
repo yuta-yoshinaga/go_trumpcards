@@ -28,6 +28,18 @@ func (dp *DragonTigerCuiPresenter) Output(dt interfaces.DragonTigerGame, lastErr
 			b.WriteString(color.Yellow(i18n.Tf("dragontiger.bankrollRefilled",
 				"chips", strconv.Itoa(domain.DragonTigerDefaultChips))) + "\n")
 		}
+		if dt.GetPhase() == domain.DragonTigerPhaseBet {
+			for _, odds := range []struct {
+				typeKey string
+				value   int
+			}{
+				{"dragontiger.betTypeDragon", 1},
+				{"dragontiger.betTypeTiger", 1},
+				{"dragontiger.betTypeTie", domain.DragonTigerTiePayoutRate},
+			} {
+				b.WriteString(i18n.Tf("dragontiger.oddsLine", "type", i18n.T(odds.typeKey), "odds", strconv.Itoa(odds.value)) + "\n")
+			}
+		}
 
 		if dt.GetBetAmount() > 0 {
 			b.WriteString(i18n.Tf("dragontiger.betLine",
@@ -86,7 +98,7 @@ func (dp *DragonTigerCuiPresenter) Output(dt interfaces.DragonTigerGame, lastErr
 				betTypeKey = "dragontiger.betTypeTiger"
 			case domain.DragonTigerBetTie:
 				betTypeKey = "dragontiger.betTypeTie"
-				odds = 8
+				odds = domain.DragonTigerTiePayoutRate
 			}
 			b.WriteString(i18n.Tf("dragontiger.oddsLine", "type", i18n.T(betTypeKey), "odds", strconv.Itoa(odds)) + "\n")
 			b.WriteString(i18n.Tf("dragontiger.payoutLine", "payout", strconv.Itoa(dt.GetPayout())) + "\n")

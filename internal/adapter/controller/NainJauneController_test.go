@@ -26,10 +26,10 @@ func TestNainJauneWebInput_ToConfigWithNoConfigDoesNotPanic(t *testing.T) {
 	})
 }
 
-func TestNainJauneWebInput_ToConfigClampsOutOfRangeValues(t *testing.T) {
-	bad, huge := 99, 99999
+func TestNainJauneWebInput_ToConfigClampsOutOfRangeTargetDeals(t *testing.T) {
+	huge := 99999
 	cfg := controller.NainJauneWebInput{
-		Config: &controller.NainJauneWebConfig{CpuDifficulty: &bad, TargetDeals: &huge},
+		Config: &controller.NainJauneWebConfig{TargetDeals: &huge},
 	}.ToConfig()
 	assert.NoError(t, cfg.Validate())
 }

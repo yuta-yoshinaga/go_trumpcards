@@ -20,7 +20,10 @@
   },
   "label": {
     "stock": "山札",
+    "stockAria": "山札、残り{{count}}枚",
     "discardPile": "捨て札",
+    "discardTopAria": "捨て札: {{card}}",
+    "discardEmpty": "捨て札は空です",
     "lives": "ライフ",
     "score": "最高スート",
     "round": "ラウンド",

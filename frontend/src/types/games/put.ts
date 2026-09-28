@@ -20,7 +20,6 @@ export interface PutTrickCard {
 
 /** Put game configuration. */
 export interface PutConfig {
-  cpuDifficulty: number;
   matchTarget: number;
 }
 

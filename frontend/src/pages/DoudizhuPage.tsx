@@ -340,28 +340,38 @@ function DoudizhuPageContent() {
                   );
                 })}
               </div>
-              {selectionHint && (
-                <div className="mt-2 text-center text-xs" data-testid="ddz-combo-hint">
-                  {selectionHint.reason === 'notCombo' ? (
-                    <p role="status" data-testid="ddz-invalid-combo" className="font-medium text-ds-warning">
+              <div
+                className="mt-2 text-center text-xs"
+                data-testid="ddz-combo-hint"
+                role="status"
+                aria-live="polite"
+                aria-atomic="true"
+              >
+                {selectedCards.size > 0 && (
+                  <p data-testid="ddz-selection-count" className="font-medium text-ds-text-primary">
+                    {t('combo.selectionCount', { count: selectedCards.size })}
+                  </p>
+                )}
+                {selectionHint &&
+                  (selectionHint.reason === 'notCombo' ? (
+                    <p data-testid="ddz-invalid-combo" className="font-medium text-ds-warning">
                       {t('combo.notCombo')}
                     </p>
                   ) : selectionHint.reason === 'noBeat' ? (
-                    <p role="status" data-testid="ddz-no-beat" className="font-medium text-ds-warning">
+                    <p data-testid="ddz-no-beat" className="font-medium text-ds-warning">
                       {t('combo.noBeat')}
                     </p>
                   ) : (
                     selectionHint.combo && (
-                      <p role="status" data-testid="ddz-combo-type" className="font-semibold text-ds-info">
+                      <p data-testid="ddz-combo-type" className="font-semibold text-ds-info">
                         {`${t('combo.selectedLabel')}: ${t('combo.badge', {
                           type: t(`combo.type.${selectionHint.combo.type}`),
                           count: selectionHint.count,
                         })}`}
                       </p>
                     )
-                  )}
-                </div>
-              )}
+                  ))}
+              </div>
               {phase === 'play' && isHumanTurn && (
                 <div className="flex justify-center gap-2 mt-2">
                   {/* selectionHint has already decided this selection is illegal, so

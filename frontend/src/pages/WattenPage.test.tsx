@@ -64,6 +64,34 @@ beforeEach(() => {
 });
 
 describe('WattenPage', () => {
+  it('shows the latest completed trick with its winner and card owners', async () => {
+    mockExec.mockResolvedValue(
+      makeWattenState({
+        lastTrick: [
+          { playerIdx: 0, card: { design: 'SPADE', value: 1 } },
+          { playerIdx: 1, card: { design: 'HEART', value: 13 } },
+        ],
+        lastTrickWinner: 1,
+      }),
+    );
+    renderWithProviders(<WattenPage />);
+    const history = await screen.findByTestId('watten-trick-history');
+    expect(history).toHaveTextContent('直前のトリック');
+    expect(history).toHaveTextContent('CPU 1');
+    expect(history).toHaveTextContent('あなた');
+    expect(history).toHaveTextContent('CPU 1');
+    expect(history.querySelector('img[alt="♠ A"]')).toBeInTheDocument();
+    expect(history.querySelector('img[alt="♥ K"]')).toBeInTheDocument();
+    expect(history).toHaveAttribute('open');
+  });
+
+  it('does not show the previous deal trick in a new round', async () => {
+    mockExec.mockResolvedValue(makeWattenState({ roundNumber: 2, lastTrick: [], lastTrickWinner: -1 }));
+    renderWithProviders(<WattenPage />);
+    await waitFor(() => expect(screen.getByText('ディール 2')).toBeInTheDocument());
+    expect(screen.queryByTestId('watten-trick-history')).not.toBeInTheDocument();
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<WattenPage />);

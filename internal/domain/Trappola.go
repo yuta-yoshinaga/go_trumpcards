@@ -253,11 +253,6 @@ func trappolaFindDeclarations(playerIdx int, p *TrappolaPlayer) []TrappolaDeclar
 	return out
 }
 
-// TrappolaFindDeclarationsForTest は 1 席の手札から成立する役を返す (テスト用)。
-func TrappolaFindDeclarationsForTest(playerIdx int, p *TrappolaPlayer) []TrappolaDeclaration {
-	return trappolaFindDeclarations(playerIdx, p)
-}
-
 // GetDeclarations は現ラウンドで成立した役を返す。
 func (g *Trappola) GetDeclarations() []TrappolaDeclaration { return g.declarations }
 
@@ -269,23 +264,8 @@ func (g *Trappola) PlayerPlay(cardIndex int) error {
 	if g.phase != TrappolaPhasePlay {
 		return ErrWrongPhase
 	}
-	if !g.players[g.currentPlayerIdx].GetIsHuman() {
-		return ErrNotHumanTurn
-	}
-
-	player := g.players[g.currentPlayerIdx]
-	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainErrorCode(ErrInvalidCard, "trappola.errCardIndexOutOfRange", nil)
-	}
-
-	card := player.GetCard(cardIndex)
-	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
-		return err
-	}
-
-	played := player.RemoveCard(cardIndex)
-	g.playCard(g.currentPlayerIdx, played)
-	return nil
+	seat := g.currentPlayerIdx
+	return trickPlayerPlay(seat, g.players[seat].GamePlayer, cardIndex, "trappola.errCardIndexOutOfRange", g.validatePlay, g.playCard)
 }
 
 // CpuPlay 現在の手番がCPUの場合に1ターン実行
@@ -561,16 +541,6 @@ func trappolaStrength(value int) int {
 		return 0
 	}
 }
-
-// trappolaThirds カードの得点を 1/3点 単位で返す。A=3、2/3/J/Q/K=1、その他=0。
-// GetDeckForTest は山札を返す (テスト用)。
-func (g *Trappola) GetDeckForTest() *TrumpCards { return g.trumpCards }
-
-// TrappolaStrengthForTest は札位の強さを返す (テスト用)。
-func TrappolaStrengthForTest(value int) int { return trappolaStrength(value) }
-
-// TrappolaThirdsForTest はカード点 (1/3 点単位) を返す (テスト用)。
-func TrappolaThirdsForTest(value int) int { return trappolaThirds(value) }
 
 // trappolaThirds はカード点を 1/3 点単位で返す。
 //

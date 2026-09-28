@@ -139,18 +139,4 @@ func TestBeziqueWebConfig_ToConfig(t *testing.T) {
 		assert.Equal(t, domain.DefaultBeziqueConfig(), input.ToConfig())
 	})
 
-	t.Run("explicit hard difficulty and target", func(t *testing.T) {
-		diff := int(domain.BeziqueCpuDifficultyHard)
-		target := 500
-		c := &controller.BeziqueWebConfig{CpuDifficulty: &diff, TargetScore: &target}
-		got := c.ToConfig()
-		assert.Equal(t, domain.BeziqueCpuDifficultyHard, got.CpuDifficulty)
-		assert.Equal(t, 500, got.TargetScore)
-	})
-
-	t.Run("out-of-range difficulty clamps to default", func(t *testing.T) {
-		diff := 99
-		c := &controller.BeziqueWebConfig{CpuDifficulty: &diff}
-		assert.Equal(t, domain.DefaultBeziqueConfig().CpuDifficulty, c.ToConfig().CpuDifficulty)
-	})
 }

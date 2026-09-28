@@ -263,6 +263,28 @@ describe('SevenCardStudPage', () => {
     renderWithProviders(<SevenCardStudPage />);
     const badge = await screen.findByTestId('scs-current-hand');
     expect(badge).toHaveTextContent('現在の役: ワンペア');
+    expect(screen.getByTestId('scs-showing-hand-0')).toHaveTextContent('見えている札: ハイカード');
+  });
+
+  it('shows each opponent visible-card hand and hides it for folded opponents', async () => {
+    mockExec.mockResolvedValue({
+      ...thirdStreetState,
+      players: [
+        humanPlayer(),
+        cpuPlayer(1, {
+          doorCards: [
+            { design: 'DIAMOND', value: 2 },
+            { design: 'CLOVER', value: 2 },
+            { design: 'HEART', value: 9 },
+          ],
+        }),
+        cpuPlayer(2, { folded: true }),
+      ],
+    });
+    renderWithProviders(<SevenCardStudPage />);
+    expect(await screen.findByTestId('scs-showing-hand-1')).toHaveTextContent('見えている札: ワンペア');
+    expect(screen.getByTestId('scs-showing-hand-1')).toBeInTheDocument();
+    expect(screen.queryByTestId('scs-showing-hand-2')).not.toBeInTheDocument();
   });
 
   it('does not show the live strength badge at showdown (server handName takes over)', async () => {
@@ -951,6 +973,47 @@ describe('SevenCardStudPage keyboard shortcuts', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
     mockExec.mockClear();
     fireEvent.keyDown(document, { key: 'c' });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('binds muck and show only during muck phase and lists them in the shortcut panel', async () => {
+    mockExec.mockResolvedValue({ ...showdownState, phase: 6, muckAvailable: true });
+    renderWithProviders(<SevenCardStudPage />);
+    await waitFor(() => expect(screen.getByTestId('muck-controls')).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'm' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('muck'));
+
+    mockExec.mockClear();
+    mockExec.mockResolvedValue({ ...showdownState, phase: 6, muckAvailable: true });
+    fireEvent.keyDown(document, { key: 's' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('show'));
+
+    fireEvent.click(screen.getByText('キーボードショートカット'));
+    expect(screen.getByText('マックする')).toBeInTheDocument();
+    expect(screen.getByText('ショーする')).toBeInTheDocument();
+    expect(screen.getByText('m')).toBeInTheDocument();
+    expect(screen.getByText('s')).toBeInTheDocument();
+  });
+
+  it.each(['f', 'a', 'k', 'r', 'c'])('ignores betting shortcut %s during muck phase', async (key) => {
+    mockExec.mockResolvedValue({ ...showdownState, phase: 6, muckAvailable: true });
+    renderWithProviders(<SevenCardStudPage />);
+    await waitFor(() => expect(screen.getByTestId('muck-controls')).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('does not bind muck or show outside muck phase', async () => {
+    mockExec.mockResolvedValue(thirdStreetState);
+    renderWithProviders(<SevenCardStudPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'm' });
+    fireEvent.keyDown(document, { key: 's' });
     await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalled();
   });

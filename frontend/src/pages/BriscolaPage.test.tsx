@@ -41,7 +41,7 @@ function makeState(overrides: Partial<BriscolaResponse> = {}): BriscolaResponse 
     gameEndFlag: false,
     winnerIdx: -1,
     message: '',
-    config: { cpuDifficulty: 0 },
+    config: {},
     ...overrides,
   };
 }

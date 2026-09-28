@@ -4,6 +4,7 @@ package presenter_test
 
 import (
 	"errors"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -31,6 +32,9 @@ func setupKlaverjasCuiMock() *interfaces.MockKlaverjasGame {
 	m.On("GetTrickNumber").Return(1)
 	m.On("GetTrumpSuit").Return(domain.CardDesignSpade)
 	m.On("GetCurrentTrick").Return(([]*domain.TrickCard)(nil))
+	m.On("GetLastTrickTeam").Return(-1)
+	m.On("GetLastTrickPoints").Return(0)
+	m.On("GetLastTrickBonus").Return(0)
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.KlaverjasPhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -74,6 +78,40 @@ func TestKlaverjasCuiPresenter_Output(t *testing.T) {
 		m.On("GetPhase").Return(domain.KlaverjasPhaseTrickEnd)
 		result := p.Output(m, nil)
 		assert.NotEmpty(t, result)
+	})
+
+	t.Run("last trick result", func(t *testing.T) {
+		for _, tc := range []struct {
+			name                string
+			team, points, bonus int
+			want                string
+		}{
+			{name: "without bonus", team: 1, points: 32, want: "チームB がこのトリックで 32 点"},
+			{name: "with final trick bonus", team: 0, points: 20, bonus: 10, want: "チームA がこのトリックで 20 点 (最終トリック +10)"},
+			{name: "no prior trick", team: -1, points: 0, want: ""},
+		} {
+			t.Run(tc.name, func(t *testing.T) {
+				for _, phase := range []domain.KlaverjasPhase{domain.KlaverjasPhaseTrickEnd, domain.KlaverjasPhaseRoundEnd} {
+					t.Run(strconv.Itoa(int(phase)), func(t *testing.T) {
+						m, _ := setupKlaverjasCuiMockWithPlayers()
+						m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLastTrickTeam")
+						m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLastTrickPoints")
+						m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLastTrickBonus")
+						m.On("GetLastTrickTeam").Return(tc.team)
+						m.On("GetLastTrickPoints").Return(tc.points)
+						m.On("GetLastTrickBonus").Return(tc.bonus)
+						m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+						m.On("GetPhase").Return(phase)
+						result := p.Output(m, nil)
+						if tc.want == "" {
+							assert.NotContains(t, result, "このトリックで")
+						} else {
+							assert.Contains(t, result, tc.want)
+						}
+					})
+				}
+			})
+		}
 	})
 
 	t.Run("round end shows roem breakdown and total", func(t *testing.T) {

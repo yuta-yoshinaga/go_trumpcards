@@ -16,6 +16,7 @@
   "winLine": "{{handName}}! あなたの勝利です！",
   "noWin": "役なし。",
   "payoutLine": "払戻し: {{payout}}",
+  "netChangeLine": "純増減: {{net}}",
   "hintNone": "現在ヒントはありません。",
   "hintHold": "ホールド推奨: {{cards}} — {{reason}}（h <idx...> でホールド）",
   "hintHoldNone": "ホールド推奨なし。5枚すべて引き直しを検討してください。",

@@ -6,8 +6,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/syumai/workers"
-	"github.com/syumai/workers/cloudflare"
+	"github.com/syumai/workers-go"
+	"github.com/syumai/workers-go/cloudflare"
 
 	corsmw "github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/cors"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/games"

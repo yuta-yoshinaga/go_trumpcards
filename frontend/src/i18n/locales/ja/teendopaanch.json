@@ -22,6 +22,8 @@
   "currentTrick": "現在のトリック",
   "actions": {
     "trump": "切り札 {{suit}}",
+    "chooseTrump": "切り札にするスートを選んでください。",
+    "trumpSetNext": "切り札は {{suit}} に決まりました。カードを出してください。",
     "nextRound": "次のラウンドへ",
     "reset": "リセット",
     "giveUp": "投了",

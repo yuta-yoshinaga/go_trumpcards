@@ -314,7 +314,11 @@ function DaifugoPageContent() {
               </div>
               <div className="flex flex-wrap gap-1">
                 {!state.tableCards || state.tableCards.length === 0 ? (
-                  <span className="text-ds-text-muted">{t('tableEmpty')}</span>
+                  <span className="text-ds-text-muted">
+                    {t('tableEmpty')}
+                    {state.fieldClearedLeader >= 0 &&
+                      ` ${t('fieldClearedLeader', { name: findPlayerName(state.players, state.fieldClearedLeader) })}`}
+                  </span>
                 ) : (
                   state.tableCards.map((card) => (
                     <AnimatedCard key={`${card.design}-${card.value}`} card={card} width={cardWidth} />

@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra5
+//go:build !js || !wasm || extra10
 
 // Package domain チェゴ (Cego) のドメインモデル。
 //
@@ -655,20 +655,8 @@ func (g *Cego) PlayerPlay(cardIndex int) error {
 	if g.phase != CegoPhasePlay {
 		return ErrWrongPhase
 	}
-	if !g.players[g.currentPlayerIdx].GetIsHuman() {
-		return ErrNotHumanTurn
-	}
-	player := g.players[g.currentPlayerIdx]
-	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainErrorCode(ErrInvalidCard, "cego.errCardIndexOutOfRange", nil)
-	}
-	card := player.GetCard(cardIndex)
-	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
-		return err
-	}
-	played := player.RemoveCard(cardIndex)
-	g.playCard(g.currentPlayerIdx, played)
-	return nil
+	seat := g.currentPlayerIdx
+	return trickPlayerPlay(seat, g.players[seat].GamePlayer, cardIndex, "cego.errCardIndexOutOfRange", g.validatePlay, g.playCard)
 }
 
 // CpuPlay CPU プレイヤーが 1 ターン実行する。
@@ -677,18 +665,7 @@ func (g *Cego) CpuPlay() {
 		return
 	}
 	idx := g.currentPlayerIdx
-	if g.players[idx].GetIsHuman() {
-		return
-	}
-	cardIdx := g.cpuSelectPlayCard(idx)
-	played := g.players[idx].RemoveCard(cardIdx)
-	// **出せる札が無ければ何もしない。**セレクタは候補ゼロのとき 0 を返し、
-	// 手札が空なら RemoveCard(0) は nil を返す。それを playCard に渡すと
-	// nil デリファレンスで HTTP ハンドラごと落ちる (#4606)。
-	if played == nil {
-		return
-	}
-	g.playCard(idx, played)
+	trickCpuPlay(idx, g.players[idx].GamePlayer, g.cpuSelectPlayCard, g.playCard)
 }
 
 // playCard カードをプレイする共通処理。
@@ -1627,40 +1604,10 @@ func (g *Cego) GetPlayableIndices(playerIdx int) []int {
 	return g.getValidPlayIndices(playerIdx)
 }
 
-// ComputeBreakdownPublic 現在のディールの得点内訳を返す (テスト用)。
-func (g *Cego) ComputeBreakdownPublic() CegoBreakdown { return g.computeBreakdown() }
-
-// TrickWinnerPublic 現在のトリックの勝者を返す (テスト用)。
-func (g *Cego) TrickWinnerPublic() int { return g.trickWinner() }
-
-// LedSuitPublic 現在のトリックのリードスートを返す (テスト用)。
-func (g *Cego) LedSuitPublic() int { return g.ledSuit() }
-
 // CegoScoreDeal はディール得点計算の純粋関数の公開ラッパー (テスト用)。
 func CegoScoreDeal(declarerPoints int, mult int) CegoBreakdown {
 	return cegoScoreDeal(declarerPoints, mult)
 }
-
-// CegoBidMultPublic は入札倍率を返す (テスト用)。
-func CegoBidMultPublic(bid CegoBid) int { return cegoBidMult(bid) }
-
-// CegoCardPointsPublic はカードのカードポイントを返す (テスト用)。
-func CegoCardPointsPublic(c *Card) int { return cegoCardPoints(c) }
-
-// CegoIsTrullPublic はカードがトゥルルか返す (テスト用)。
-func CegoIsTrullPublic(c *Card) bool { return cegoIsTrull(c) }
-
-// CegoIsTrumpPublic はカードが切り札か返す (テスト用)。
-func CegoIsTrumpPublic(c *Card) bool { return cegoIsTrump(c) }
-
-// CegoIsSkusPublic はカードがスキュースか返す (テスト用)。
-func CegoIsSkusPublic(c *Card) bool { return cegoIsSkus(c) }
-
-// CegoIsKingPublic はカードがスートのキングか返す (テスト用)。
-func CegoIsKingPublic(c *Card) bool { return cegoIsKing(c) }
-
-// BuildCegoDeckPublic は 54 枚デッキを構築する (テスト用)。
-func BuildCegoDeckPublic() []*Card { return buildCegoDeck() }
 
 // --- JSON ---
 

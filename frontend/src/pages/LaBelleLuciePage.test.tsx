@@ -134,6 +134,42 @@ describe('LaBelleLuciePage', () => {
     expect(screen.getByTestId('foundation-0')).toBeInTheDocument();
   });
 
+  it('keeps an unselected foundation focusable and explains how to enable it', async () => {
+    renderWithProviders(<LaBelleLuciePage />);
+    const foundation = await screen.findByTestId('foundation-0');
+    expect(foundation).not.toBeDisabled();
+    expect(foundation).toHaveAttribute('aria-disabled', 'true');
+    const hintId = foundation.getAttribute('aria-describedby');
+    expect(hintId).toBeTruthy();
+    expect(document.getElementById(hintId ?? '')).toHaveTextContent('先に移動する札を選んでください');
+
+    mockExec.mockClear();
+    fireEvent.click(foundation);
+    await waitFor(() => expect(foundation).toHaveAttribute('aria-disabled', 'true'));
+    expect(mockExec).not.toHaveBeenCalledWith('ff');
+  });
+
+  it('gives empty foundations a numbered accessible name', async () => {
+    mockExec.mockResolvedValue(makeState({ foundation: [[], [card('HEART', 5)], [], []] }));
+    renderWithProviders(<LaBelleLuciePage />);
+    expect(await screen.findByRole('button', { name: '空の組札 1' })).toBeInTheDocument();
+  });
+
+  it('names occupied foundations by suit and card count', async () => {
+    mockExec.mockResolvedValue(makeState({ foundation: [[], [card('HEART', 5)], [], []] }));
+    renderWithProviders(<LaBelleLuciePage />);
+    await screen.findByTestId('foundation-1');
+    expect(screen.getByRole('button', { name: '組札 ハート 1枚' })).toBeInTheDocument();
+  });
+
+  it('names a clover foundation in Japanese without exposing its translation key', async () => {
+    mockExec.mockResolvedValue(makeState({ foundation: [[card('CLOVER', 5)], [], [], []] }));
+    renderWithProviders(<LaBelleLuciePage />);
+    const foundation = await screen.findByTestId('foundation-0');
+    expect(foundation).toHaveAccessibleName('組札 クラブ 1枚');
+    expect(foundation.getAttribute('aria-label')).not.toContain('suitNames.clover');
+  });
+
   it('selects a source fan then moves to another fan', async () => {
     renderWithProviders(<LaBelleLuciePage />);
     const src = await screen.findByTestId('fan-1');

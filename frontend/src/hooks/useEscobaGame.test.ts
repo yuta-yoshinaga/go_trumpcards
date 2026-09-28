@@ -78,21 +78,6 @@ describe('useEscobaGame', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('n'));
   });
 
-  it('handleConfigChange and reset send the config', async () => {
-    const { result } = renderHook(() => useEscobaGame(), { wrapper: createWrapper() });
-    await waitFor(() => expect(result.current.state).not.toBeNull());
-
-    act(() => result.current.handleConfigChange('cpuDifficulty', 2));
-    mockExec.mockClear();
-    act(() => result.current.handleResetWithConfig());
-    await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith(
-        'r',
-        expect.objectContaining({ config: expect.objectContaining({ cpuDifficulty: 2 }) }),
-      ),
-    );
-  });
-
   it('clearSelection resets hand and table selections', async () => {
     const { result } = renderHook(() => useEscobaGame(), { wrapper: createWrapper() });
     await waitFor(() => expect(result.current.state).not.toBeNull());

@@ -68,8 +68,9 @@ type Crescent struct {
 	moveCount        int
 	redealsRemaining int
 	actionLogBase
-	history     []*crescentSnapshot
-	isStalemate bool
+	history      []*crescentSnapshot
+	isStalemate  bool
+	noLegalMoves bool
 }
 
 // crescentSnapshot アンドゥ用スナップショット。
@@ -80,6 +81,7 @@ type crescentSnapshot struct {
 	moveCount        int
 	redealsRemaining int
 	isStalemate      bool
+	noLegalMoves     bool
 }
 
 // NewCrescent コンストラクタ。
@@ -103,6 +105,7 @@ func (cr *Crescent) Reset() {
 	cr.actionLog = nil
 	cr.history = nil
 	cr.isStalemate = false
+	cr.noLegalMoves = false
 
 	deck := make([]*Card, 0, CardCnt*2)
 	for cr.trumpCards.GetRemainingCount() > 0 {
@@ -356,6 +359,9 @@ func (cr *Crescent) GetGameEndFlag() bool { return cr.phase != CrescentPhasePlay
 // IsStalemate 手詰まり状態を返す。
 func (cr *Crescent) IsStalemate() bool { return cr.isStalemate }
 
+// HasNoLegalMoves reports whether no card can currently be moved, regardless of redeals.
+func (cr *Crescent) HasNoLegalMoves() bool { return cr.noLegalMoves }
+
 // SetIsStalemate テスト用手詰まり設定。
 func (cr *Crescent) SetIsStalemate(v bool) { cr.isStalemate = v }
 
@@ -484,8 +490,8 @@ func (cr *Crescent) checkCrescentStalemate() {
 	if cr.phase != CrescentPhasePlaying {
 		return
 	}
-	hasMove := cr.hasAnyLegalMove()
-	if hasMove {
+	cr.noLegalMoves = !cr.hasAnyLegalMove()
+	if !cr.noLegalMoves {
 		cr.isStalemate = false
 		return
 	}
@@ -533,6 +539,7 @@ func (cr *Crescent) takeSnapshot() {
 		moveCount:        cr.moveCount,
 		redealsRemaining: cr.redealsRemaining,
 		isStalemate:      cr.isStalemate,
+		noLegalMoves:     cr.noLegalMoves,
 	}
 	for i := range CrescentTableauCnt {
 		snap.tableau[i] = make([]*CrescentTableauCard, len(cr.tableau[i]))
@@ -555,6 +562,7 @@ func (cr *Crescent) restoreSnapshot(snap *crescentSnapshot) {
 	cr.moveCount = snap.moveCount
 	cr.redealsRemaining = snap.redealsRemaining
 	cr.isStalemate = snap.isStalemate
+	cr.noLegalMoves = snap.noLegalMoves
 }
 
 // appendLog 棋譜エントリを追加。
@@ -572,6 +580,7 @@ type crescentJSON struct {
 	RedealsRemaining int                                        `json:"rd"`
 	ActionLog        []*ActionLogEntry                          `json:"al"`
 	IsStalemate      bool                                       `json:"sl"`
+	NoLegalMoves     bool                                       `json:"nlm"`
 	History          []*crescentSnapshot                        `json:"hi,omitempty"`
 }
 
@@ -583,6 +592,7 @@ type crescentSnapshotJSON struct {
 	MoveCount        int                                        `json:"mc"`
 	RedealsRemaining int                                        `json:"rd"`
 	IsStalemate      bool                                       `json:"sl"`
+	NoLegalMoves     bool                                       `json:"nlm"`
 }
 
 // MarshalJSON crescentSnapshot 用シリアライザ。
@@ -594,6 +604,7 @@ func (s *crescentSnapshot) MarshalJSON() ([]byte, error) {
 		MoveCount:        s.moveCount,
 		RedealsRemaining: s.redealsRemaining,
 		IsStalemate:      s.isStalemate,
+		NoLegalMoves:     s.noLegalMoves,
 	})
 }
 
@@ -619,6 +630,7 @@ func (s *crescentSnapshot) UnmarshalJSON(data []byte) error {
 	s.moveCount = j.MoveCount
 	s.redealsRemaining = j.RedealsRemaining
 	s.isStalemate = j.IsStalemate
+	s.noLegalMoves = j.NoLegalMoves
 	return nil
 }
 
@@ -633,6 +645,7 @@ func (cr *Crescent) MarshalJSON() ([]byte, error) {
 		RedealsRemaining: cr.redealsRemaining,
 		ActionLog:        cr.actionLog,
 		IsStalemate:      cr.isStalemate,
+		NoLegalMoves:     cr.noLegalMoves,
 		History:          cr.history,
 	})
 }
@@ -678,5 +691,6 @@ func (cr *Crescent) UnmarshalJSON(data []byte) error {
 		cr.history = make([]*crescentSnapshot, 0)
 	}
 	cr.isStalemate = j.IsStalemate
+	cr.noLegalMoves = j.NoLegalMoves
 	return nil
 }

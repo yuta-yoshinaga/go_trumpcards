@@ -157,6 +157,8 @@ function LetItRidePageContent() {
   // Bets at risk in the decision/end phases: each live bet stakes `betAmount`.
   const activeBetCount = [state.bet1Active, state.bet2Active, state.bet3Active].filter(Boolean).length;
   const currentRisk = state.betAmount * activeBetCount;
+  const pullTargetActive = isFirstDecision ? state.bet3Active : isSecondDecision ? state.bet2Active : false;
+  const pullRisk = state.betAmount * Math.max(0, activeBetCount - (pullTargetActive ? 1 : 0));
 
   const phaseName = isBetPhase
     ? t('phase.bet')
@@ -371,16 +373,34 @@ function LetItRidePageContent() {
                 <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading}>
                   {t('button.bet')}
                 </button>
+                <div className="text-center text-ds-text-muted text-xs" data-testid="bet-outcome-preview">
+                  <div>{t('outcomePreview.betAmount', { amount: betAmount })}</div>
+                  <div>{t('outcomePreview.betRisk', { amount: betAmount * 3 })}</div>
+                </div>
               </div>
             )}
             {isDecisionPhase && (
-              <div className="flex justify-center gap-2 pb-2" data-tutorial="lir-action-buttons">
-                <button type="button" className={btnDanger} onClick={handlePull} disabled={loading}>
-                  {t('button.pull')}
-                </button>
-                <button type="button" className={btnSuccess} onClick={handleLetItRide} disabled={loading}>
-                  {t('button.letitride')}
-                </button>
+              <div className="flex justify-center gap-4 pb-2" data-tutorial="lir-action-buttons">
+                <div className="flex flex-col items-center gap-1">
+                  <button type="button" className={btnDanger} onClick={handlePull} disabled={loading}>
+                    {t('button.pull')}
+                  </button>
+                  {pullTargetActive && (
+                    <div className="text-center text-ds-text-muted text-xs" data-testid="pull-outcome-preview">
+                      <div>{t('outcomePreview.remainingBet', { amount: state.betAmount })}</div>
+                      <div>{t('outcomePreview.actionRisk', { amount: pullRisk })}</div>
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-col items-center gap-1">
+                  <button type="button" className={btnSuccess} onClick={handleLetItRide} disabled={loading}>
+                    {t('button.letitride')}
+                  </button>
+                  <div className="text-center text-ds-text-muted text-xs" data-testid="ride-outcome-preview">
+                    <div>{t('outcomePreview.remainingBet', { amount: state.betAmount })}</div>
+                    <div>{t('outcomePreview.actionRisk', { amount: currentRisk })}</div>
+                  </div>
+                </div>
               </div>
             )}
             {isEndPhase && (

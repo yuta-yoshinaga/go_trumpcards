@@ -6,7 +6,7 @@
   "helpGiveUp": "  g                        ギブアップ",
   "helpHint": "  h                        ヒント",
   "gridCard": "({{row}},{{col}}){{card}}",
-  "redealsLine": "再配り {{used}}/3 (残り{{remaining}})",
+  "redealsLine": "再配り残り: {{remaining}}",
   "hintMove": "ヒント: ({{fromRow}},{{fromCol}})→({{toRow}},{{toCol}})",
   "playing": "プレイ中",
   "stalemate": "手詰まり",

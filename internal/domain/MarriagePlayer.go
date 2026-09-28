@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra6
+//go:build !js || !wasm || extra11
 
 package domain
 
@@ -42,13 +42,7 @@ func (p *MarriagePlayer) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
 	}
-	if j.GamePlayer != nil {
-		p.GamePlayer = j.GamePlayer
-	} else {
-		p.GamePlayer = NewGamePlayer(false)
-	}
-	if j.RoundScoreHolder != nil {
-		p.RoundScoreHolder = *j.RoundScoreHolder
-	}
+	p.GamePlayer = restoreGamePlayer(j.GamePlayer)
+	assignIfSet(&p.RoundScoreHolder, j.RoundScoreHolder)
 	return nil
 }

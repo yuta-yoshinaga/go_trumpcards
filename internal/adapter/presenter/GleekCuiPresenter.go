@@ -77,7 +77,7 @@ func gleekPlayerStr(g interfaces.GleekGame, idx int) string {
 func gleekIndexedHandStr(player cuiCardList, trump int) string {
 	return formatCardList(player, func(c *domain.Card) string {
 		s := cuiCardStr(c)
-		if v := domain.GleekHonourValueForTest(c, trump); v > 0 {
+		if v := domain.GleekHonourValue(c, trump); v > 0 {
 			s += "(" + strconv.Itoa(v) + ")"
 		}
 		return s

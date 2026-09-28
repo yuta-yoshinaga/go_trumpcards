@@ -87,13 +87,18 @@ func TestCuckooCuiPresenter_Output(t *testing.T) {
 	})
 
 	t.Run("round end shows lowest", func(t *testing.T) {
-		m, _ := setupCuckooCuiMock()
+		m, players := setupCuckooCuiMock()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundLowest")
 		m.On("GetPhase").Return(domain.CuckooPhaseRoundEnd)
 		m.On("GetRoundLowest").Return(3)
+		players[0].SetLives(2)
+		players[2].SetLives(1)
+		m.On("GetRoundLosers").Return([]int{0, 2})
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "nr / nextround")
+		assert.Contains(t, result, "あなた：現在のライフ 2")
+		assert.Contains(t, result, "CPU 2：現在のライフ 1")
 	})
 
 	t.Run("eliminated player shown OUT", func(t *testing.T) {

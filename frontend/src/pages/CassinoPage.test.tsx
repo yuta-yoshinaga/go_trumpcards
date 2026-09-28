@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { cassinoApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CassinoResponse } from '../types/card';
 import { CassinoPage } from './CassinoPage';
@@ -157,6 +158,57 @@ describe('CassinoPage', () => {
         declaredValue: 5,
       }),
     );
+  });
+
+  it('runs the available actions from the advertised keyboard shortcuts', async () => {
+    renderWithProviders(<CassinoPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+    fireEvent.click(screen.getByTestId('cassino-action-shortcuts').querySelector('summary') as HTMLElement);
+    fireEvent.click(screen.getByTestId('table-card-0'));
+    expect(screen.getByTestId('cassino-action-shortcuts')).toHaveTextContent('t');
+    fireEvent.keyDown(document, { key: 't' });
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('take', { handIndex: 0, tableIndices: [0], buildIndices: [] }),
+    );
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('hand-card-1'));
+    fireEvent.click(screen.getByTestId('cassino-action-shortcuts').querySelector('summary') as HTMLElement);
+    fireEvent.click(screen.getByTestId('table-card-1'));
+    fireEvent.change(screen.getByTestId('build-value-select'), { target: { value: '9' } });
+    expect(screen.getByTestId('cassino-action-shortcuts')).toHaveTextContent('b');
+    fireEvent.keyDown(document.body, { key: 'b' });
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('build', { handIndex: 1, tableIndices: [1], declaredValue: 9 }),
+    );
+
+    mockExec.mockClear();
+    fireEvent.click(screen.getByTestId('hand-card-2'));
+    expect(screen.getByTestId('cassino-action-shortcuts')).toBeInTheDocument();
+    fireEvent.keyDown(document.body, { key: 'r' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('trail', { handIndex: 2 }));
+  });
+
+  it('does not run action shortcuts when actions are unavailable or a form control has focus', async () => {
+    renderWithProviders(<CassinoPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    mockExec.mockClear();
+
+    fireEvent.keyDown(document.body, { key: 't' });
+    fireEvent.keyDown(document.body, { key: 'b' });
+    fireEvent.keyDown(document.body, { key: 'r' });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+    fireEvent.click(screen.getByTestId('table-card-0'));
+    screen.getByTestId('build-value-select').focus();
+    fireEvent.keyDown(screen.getByTestId('build-value-select'), { key: 't' });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('take', expect.anything());
   });
 
   it('disables actions when it is not human turn', async () => {

@@ -1,6 +1,9 @@
 import { renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { registerOpenModal } from './keyboardNavUtils';
 import { useActionKeyboardNav } from './useActionKeyboardNav';
+
+let unregisterModal: (() => void) | undefined;
 
 function fire(key: string, target?: Partial<HTMLElement>) {
   const event = new KeyboardEvent('keydown', { key, bubbles: true });
@@ -12,6 +15,8 @@ function fire(key: string, target?: Partial<HTMLElement>) {
 
 describe('useActionKeyboardNav', () => {
   afterEach(() => {
+    unregisterModal?.();
+    unregisterModal = undefined;
     vi.restoreAllMocks();
   });
 
@@ -86,6 +91,17 @@ describe('useActionKeyboardNav', () => {
       }),
     );
 
+    fire('h');
+    expect(action).toHaveBeenCalledTimes(1);
+  });
+
+  it('blocks bound keys while a modal is open, then resumes them', () => {
+    const action = vi.fn();
+    renderHook(() => useActionKeyboardNav({ bindings: [{ key: 'h', action }], enabled: true }));
+    unregisterModal = registerOpenModal();
+    fire('h');
+    expect(action).not.toHaveBeenCalled();
+    unregisterModal();
     fire('h');
     expect(action).toHaveBeenCalledTimes(1);
   });

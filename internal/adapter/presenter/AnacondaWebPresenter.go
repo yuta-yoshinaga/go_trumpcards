@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra4
+//go:build !js || !wasm || extra8
 
 package presenter
 
@@ -80,6 +80,7 @@ func (p *AnacondaWebPresenter) buildBase(g interfaces.AnacondaGame) *controller.
 	resObj.PassCount = g.GetPassCount()
 	resObj.RollIndex = g.GetRollIndex()
 	resObj.Pot = g.GetPot()
+	resObj.LastPayout = g.GetLastPayout()
 	resObj.CurrentBet = g.GetCurrentBet()
 	resObj.RaiseCount = g.GetRaiseCount()
 	resObj.MaxRaises = g.GetMaxRaises()

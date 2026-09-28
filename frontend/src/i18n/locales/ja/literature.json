@@ -21,6 +21,7 @@
   "askTargetLabel": "相手",
   "askCardLabel": "札",
   "askButton": "要求する",
+  "noAskableCards": "要求できる札がありません",
   "claimTitle": "宣言",
   "claimRules": "6枚すべての所在を申告します。【自チーム内で言い間違えると無効】になり、どちらのものにもなりません。相手が1枚でも持っていれば相手の獲得です。",
   "claimHalfLabel": "組",

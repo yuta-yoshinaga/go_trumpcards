@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra7
+//go:build !js || !wasm || extra11
 
 package presenter
 
@@ -30,6 +30,7 @@ func (rp *RedDogWebPresenter) Output(rd interfaces.RedDogGame, lastErr error) st
 	resObj.Spread = rd.GetSpread()
 	resObj.Result = int(rd.GetResult())
 	resObj.TotalPayout = rd.GetTotalPayout()
+	resObj.AppliedMultiplier = rd.GetAppliedMultiplier()
 
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()

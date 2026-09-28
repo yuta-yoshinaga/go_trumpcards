@@ -227,8 +227,8 @@ function MushiPageContent() {
                     key={`hand-${i.toString()}`}
                     type="button"
                     data-hint-action="play"
-                    aria-disabled={!isHumanTurn || choosing}
-                    onClick={() => isHumanTurn && !choosing && game.handlePlay(i)}
+                    disabled={!isHumanTurn || choosing}
+                    onClick={() => game.handlePlay(i)}
                     className={[
                       'rounded transition-transform',
                       isHumanTurn && !choosing ? 'hover:-translate-y-2' : 'opacity-60',

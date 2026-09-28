@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra7
+//go:build !js || !wasm || extra11
 
 // Package domain ジャーマン・ソロ (German Solo) のドメインモデル。
 //
@@ -865,18 +865,7 @@ func (g *GermanSolo) CpuPlay() {
 		return
 	}
 	idx := g.currentPlayerIdx
-	if g.players[idx].GetIsHuman() {
-		return
-	}
-	cardIdx := g.cpuSelectPlayCard(idx)
-	played := g.players[idx].RemoveCard(cardIdx)
-	// **出せる札が無ければ何もしない。**セレクタは候補ゼロのとき 0 を返し、
-	// 手札が空なら RemoveCard(0) は nil を返す。それを playCard に渡すと
-	// nil デリファレンスで HTTP ハンドラごと落ちる (#4606)。
-	if played == nil {
-		return
-	}
-	g.playCard(idx, played)
+	trickCpuPlay(idx, g.players[idx].GamePlayer, g.cpuSelectPlayCard, g.playCard)
 }
 
 // playCard カードをプレイする共通処理。
@@ -1565,39 +1554,6 @@ func (g *GermanSolo) GetForehandIdx() int { return g.forehandIdx }
 
 // GetDeclarerIdx ジャーマン・ソロインデックス取得 (-1=未確定)
 func (g *GermanSolo) GetDeclarerIdx() int { return g.declarerIdx }
-
-// GetCallableAceSuitsForTest はテスト用に席 idx が呼べるエースのスートを返す。
-// GetCallableAceSuits と違いフェーズを問わない。
-func (g *GermanSolo) GetCallableAceSuitsForTest(idx int) []int {
-	return g.callableAceSuits(idx)
-}
-
-// SetPartnerForTest はテスト用に味方の席と公開状態を設定する。
-func (g *GermanSolo) SetPartnerForTest(idx int, revealed bool) {
-	g.partnerIdx = idx
-	g.partnerRevealed = revealed
-}
-
-// SetPlaysAloneForTest はテスト用に単独プレイを設定する。
-func (g *GermanSolo) SetPlaysAloneForTest(v bool) { g.playsAlone = v }
-
-// SetCalledAceSuitForTest はテスト用に呼ばれたエースのスートを設定する。
-func (g *GermanSolo) SetCalledAceSuitForTest(suit int) { g.calledAceSuit = suit }
-
-// CpuBidForTest はテスト用に席 idx に 1 回ビッドさせる (手番を問わない)。
-func (g *GermanSolo) CpuBidForTest(idx int) {
-	bid := g.cpuChooseBid(idx)
-	trump := -1
-	if bid != GermanSoloBidNone {
-		trump = g.cpuChooseTrump(idx)
-	}
-	g.bids[idx] = bid
-	g.bidActed[idx] = true
-	g.bidTrump[idx] = trump
-}
-
-// StartPlayForTest はテスト用にプレイフェーズを開始する。
-func (g *GermanSolo) StartPlayForTest() { g.startPlay() }
 
 // SetDeclarerIdx ジャーマン・ソロインデックス設定 (テスト用)
 func (g *GermanSolo) SetDeclarerIdx(idx int) { g.declarerIdx = idx }

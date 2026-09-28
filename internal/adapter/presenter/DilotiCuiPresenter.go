@@ -25,6 +25,7 @@ func (p *DilotiCuiPresenter) Output(g interfaces.DilotiGame, lastErr error) stri
 		p.writeTable(b, g)
 		cuiErrorBlock(b, lastErr)
 		if g.GetGameEndFlag() {
+			p.writeRoundResult(b, g)
 			p.writeGameEnd(b, g)
 			return
 		}
@@ -200,6 +201,20 @@ func (p *DilotiCuiPresenter) writeRoundResult(b *strings.Builder, g interfaces.D
 	}
 	b.WriteString("  " + i18n.Tf("diloti.resultTotal",
 		"a", strconv.Itoa(res.Totals[0]), "b", strconv.Itoa(res.Totals[1])) + "\n")
+	for i := 0; i < g.GetPlayerCnt(); i++ {
+		player := g.GetPlayer(i)
+		if player == nil {
+			continue
+		}
+		b.WriteString("  " + i18n.Tf("diloti.resultScoreSummary",
+			"name", dilotiSeatName(player.GetIsHuman(), i),
+			"round", strconv.Itoa(res.Totals[i]),
+			"total", strconv.Itoa(player.GetScore())) + "\n")
+	}
+	if g.GetGameEndFlag() {
+		return
+	}
+	b.WriteString(i18n.T("diloti.gameContinues") + "\n")
 	b.WriteString(i18n.T("diloti.nextRoundHint") + "\n")
 }
 

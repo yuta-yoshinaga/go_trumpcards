@@ -63,6 +63,10 @@ func setupKlaberjassWebMock(phase domain.KlaberjassPhase) (*interfaces.MockKlabe
 	m.On("KlaberjassValidPlays", 0).Return([]int{1})
 	for i := range players {
 		m.On("GetPlayer", i).Return(players[i])
+		m.On("GetCardPoints", i).Return(11 * (i + 1))
+		m.On("GetSequencePoints", i).Return(12 * (i + 1))
+		m.On("GetBelaPoints", i).Return(13 * (i + 1))
+		m.On("GetLastTrickPoints", i).Return(14 * (i + 1))
 		m.On("GetHandPoints", i).Return(10 * (i + 1))
 		m.On("GetScore", i).Return(100 * (i + 1))
 		m.On("GetSequences", i).Return([]*domain.KlaberjassSequence{
@@ -71,6 +75,16 @@ func setupKlaberjassWebMock(phase domain.KlaberjassPhase) (*interfaces.MockKlabe
 		})
 	}
 	return m, players
+}
+
+func TestKlaberjassWebPresenter_SendsPointBreakdownFromGetters(t *testing.T) {
+	m, _ := setupKlaberjassWebMock(domain.KlaberjassPhaseHandEnd)
+	out := parseKlaberjassOutput(t, new(presenter.KlaberjassWebPresenter).Output(m, nil))
+
+	assert.Equal(t, 11, out.Players[0].CardPoints)
+	assert.Equal(t, 12, out.Players[0].SequencePoints)
+	assert.Equal(t, 13, out.Players[0].BelaPoints)
+	assert.Equal(t, 14, out.Players[0].LastTrickPoints)
 }
 
 func parseKlaberjassOutput(t *testing.T, s string) *controller.KlaberjassWebOutput {
@@ -198,6 +212,10 @@ func TestKlaberjassWebPresenter_BeteHasItsOwnMessage(t *testing.T) {
 	m.On("IsHumanTurn").Return(false)
 	for i := range players {
 		m.On("GetPlayer", i).Return(players[i])
+		m.On("GetCardPoints", i).Return(0)
+		m.On("GetSequencePoints", i).Return(0)
+		m.On("GetBelaPoints", i).Return(0)
+		m.On("GetLastTrickPoints", i).Return(0)
 		m.On("GetHandPoints", i).Return(0)
 		m.On("GetScore", i).Return(0)
 		m.On("GetSequences", i).Return([]*domain.KlaberjassSequence{})
@@ -247,6 +265,10 @@ func TestKlaberjassWebPresenter_GameEnd(t *testing.T) {
 			m.On("IsHumanTurn").Return(false)
 			for i := range players {
 				m.On("GetPlayer", i).Return(players[i])
+				m.On("GetCardPoints", i).Return(0)
+				m.On("GetSequencePoints", i).Return(0)
+				m.On("GetBelaPoints", i).Return(0)
+				m.On("GetLastTrickPoints", i).Return(0)
 				m.On("GetHandPoints", i).Return(0)
 				m.On("GetScore", i).Return(0)
 				m.On("GetSequences", i).Return([]*domain.KlaberjassSequence{})

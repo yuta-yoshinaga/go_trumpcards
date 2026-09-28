@@ -22,8 +22,14 @@
   "playing": "Playing",
   "noHint": "No hint available",
   "hintAvailable": "Hint available",
-  "foundationAriaLabel": "Foundation {{suit}} {{count}} cards",
-  "emptyFoundationAriaLabel": "Empty Foundation ({{suit}})",
+  "foundationAriaLabel": "Foundation {{suit}} {{suitName}} {{count}} cards",
+  "emptyFoundationAriaLabel": "Empty Foundation ({{suit}} {{suitName}})",
+  "suitNames": {
+    "spade": "Spades",
+    "club": "Clubs",
+    "heart": "Hearts",
+    "diamond": "Diamonds"
+  },
   "drawMode": "Draw Mode",
   "drawMode1": "Draw 1",
   "drawMode3": "Draw 3",

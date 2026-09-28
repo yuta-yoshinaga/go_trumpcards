@@ -510,23 +510,6 @@ input:not([type]):focus-visible {
   transform: rotate(90deg);
 }
 
-/* Force nav category details open on tablet/small desktop (sm to lg) */
-@media (min-width: 640px) and (max-width: 1023px) {
-  .nav-category > summary {
-    pointer-events: none;
-    list-style: none;
-  }
-
-  .nav-category > summary::marker,
-  .nav-category > summary::-webkit-details-marker {
-    display: none;
-  }
-
-  .nav-category:not([open]) > *:not(summary) {
-    display: flex;
-  }
-}
-
 /* Memory card flip */
 .memory-card {
   perspective: 600px;

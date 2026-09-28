@@ -33,7 +33,7 @@ function base({ hand = [card('SPADE', 9), card('HEART', 8)], ...overrides }: Par
     spadeThreeBy: -1,
     gameEndFlag: false,
     message: '',
-    config: { cpuDifficulty: 1, targetScore: 52 },
+    config: { allowNoTrump: true },
     ...overrides,
   } as KaiserResponse;
 }

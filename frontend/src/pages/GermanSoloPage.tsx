@@ -360,6 +360,15 @@ function GermanSoloPageContent() {
                         <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
                           {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
                           {t('tricks', { count: p.trickCount })}
+                          {state.partnerIdx >= 0 && p.id === state.partnerIdx && (
+                            <span
+                              className={`ml-2 rounded px-1.5 py-0.5 text-xs ${badgeWarningColors}`}
+                              data-testid={`germansolo-partner-${p.id.toString()}`}
+                            >
+                              <span className="sr-only">{t('partnerAria')}</span>
+                              <span aria-hidden="true">{t('rolePartner')}</span>
+                            </span>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -370,6 +379,15 @@ function GermanSoloPageContent() {
                       <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
                         {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
                         {t('tricks', { count: p.trickCount })}
+                        {state.partnerIdx >= 0 && p.id === state.partnerIdx && (
+                          <span
+                            className={`ml-2 rounded px-1.5 py-0.5 text-xs ${badgeWarningColors}`}
+                            data-testid={`germansolo-partner-${p.id.toString()}`}
+                          >
+                            <span className="sr-only">{t('partnerAria')}</span>
+                            <span aria-hidden="true">{t('rolePartner')}</span>
+                          </span>
+                        )}
                       </div>
                     ))}
                   </div>

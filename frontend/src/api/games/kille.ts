@@ -6,7 +6,6 @@ import { gameExec } from '../gameExec';
 
 /** Configuration options for Kille game settings. */
 export interface KilleConfigInput {
-  cpuDifficulty?: number;
   /** Stake each player antes per round (1-100). */
   stake?: number;
 }

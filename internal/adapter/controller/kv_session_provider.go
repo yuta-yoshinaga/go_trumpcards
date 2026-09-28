@@ -6,18 +6,18 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/syumai/workers/cloudflare/kv"
+	"github.com/syumai/workers-go/cloudflare/kv"
 )
 
 const kvSessionTTL = 3600 // 1 hour in seconds
 
-// kvNullSentinel is the literal string returned by syumai/workers
+// kvNullSentinel is the literal string returned by syumai/workers-go
 // kv.GetString when the key does not exist. The underlying JS KV.get()
 // resolves to JS null on miss, and syscall/js Value.String() formats null
 // as "<null>" — so the binding surfaces that exact 6-byte string instead
 // of an empty result. Treat it as "key not found" alongside "".
 //
-// See: github.com/syumai/workers@v0.32.0/cloudflare/kv/get.go GetString.
+// See: github.com/syumai/workers-go@v0.36.0/cloudflare/kv/get.go GetString.
 const kvNullSentinel = "<null>"
 
 // KVSessionProvider stores session state in Cloudflare KV.

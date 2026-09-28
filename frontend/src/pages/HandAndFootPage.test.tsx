@@ -353,6 +353,8 @@ describe('HandAndFootPage', () => {
     renderWithProviders(<HandAndFootPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeInTheDocument());
     const reason = screen.getByTestId('hf-draw-discard-reason');
+    expect(reason).toHaveAttribute('aria-live', 'polite');
+    expect(screen.getByRole('button', { name: '捨て札を取る' })).toHaveAttribute('aria-describedby', reason.id);
     expect(reason).toHaveTextContent('手札からトップカードと同ランクの2枚を選択してください');
   });
 
@@ -369,11 +371,16 @@ describe('HandAndFootPage', () => {
     expect(screen.getByTestId('hf-draw-discard-reason')).toHaveTextContent(
       'フリーズ中はワイルドカードでの代用ができません',
     );
+    expect(screen.getByTestId('hf-draw-discard-reason')).toHaveAttribute('role', 'status');
   });
 
   it('switches the reason to selectOneMore once the player selects one card', async () => {
     renderWithProviders(<HandAndFootPage />);
-    await waitFor(() => expect(screen.getByTestId('hf-draw-discard-reason')).toBeInTheDocument());
+    await waitFor(() =>
+      expect(screen.getByTestId('hf-draw-discard-reason')).toHaveTextContent(
+        '手札からトップカードと同ランクの2枚を選択してください',
+      ),
+    );
     const handCards = screen.getAllByRole('button', { pressed: false }).filter((b) => b.hasAttribute('aria-pressed'));
     fireEvent.click(handCards[0]);
     expect(screen.getByTestId('hf-draw-discard-reason')).toHaveTextContent('もう1枚選択してください');
@@ -385,9 +392,28 @@ describe('HandAndFootPage', () => {
     const handCards = screen.getAllByRole('button', { pressed: false }).filter((b) => b.hasAttribute('aria-pressed'));
     fireEvent.click(handCards[0]);
     fireEvent.click(handCards[1]);
-    expect(screen.queryByTestId('hf-draw-discard-reason')).not.toBeInTheDocument();
+    expect(screen.getByTestId('hf-draw-discard-reason')).toHaveTextContent('2枚選択済みです。捨て札を取れます');
     expect(screen.getByRole('button', { name: '捨て札を取る' })).not.toBeDisabled();
-    expect(screen.getByRole('button', { name: '捨て札を取る' })).not.toHaveAttribute('aria-describedby');
+    expect(screen.getByRole('button', { name: '捨て札を取る' })).toHaveAttribute(
+      'aria-describedby',
+      screen.getByTestId('hf-draw-discard-reason').id,
+    );
+  });
+
+  it('announces frozen pile availability when two cards are selected', async () => {
+    mockExec.mockResolvedValue({ ...drawPhaseState, isFrozen: true });
+    renderWithProviders(<HandAndFootPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '捨て札を取る' })).toBeInTheDocument());
+    const handCards = screen.getAllByRole('button', { pressed: false }).filter((b) => b.hasAttribute('aria-pressed'));
+    fireEvent.click(handCards[0]);
+    fireEvent.click(handCards[1]);
+    expect(screen.getByTestId('hf-draw-discard-reason')).toHaveTextContent(
+      '2枚選択済みです。フリーズ中の捨て札を取れます',
+    );
+    expect(screen.getByRole('button', { name: '捨て札を取る' })).toHaveAttribute(
+      'aria-describedby',
+      'hf-draw-discard-reason',
+    );
   });
 
   it('warns when more than 2 cards are selected', async () => {

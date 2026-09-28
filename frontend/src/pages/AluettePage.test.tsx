@@ -47,10 +47,11 @@ describe('AluettePage', () => {
   it('always shows the luette table, strongest first', async () => {
     renderWithProviders(<AluettePage />);
     const legend = await screen.findByTestId('aluette-luettes');
-    expect(legend).toHaveTextContent('ムッシュー');
-    expect(legend).toHaveTextContent('プチ・ヌフ');
-    const text = legend.textContent ?? '';
-    expect(text.indexOf('ムッシュー')).toBeLessThan(text.indexOf('プチ・ヌフ'));
+    const items = Array.from(legend.querySelectorAll('ol li'));
+    expect(items).toHaveLength(6);
+    expect(items[0]).toHaveTextContent('1位 ムッシュー（♦3）');
+    expect(items[5]).toHaveTextContent('6位 プチ・ヌフ（♦9）');
+    expect(legend).toHaveTextContent('この6枚は札ごとに特別な強さを持ち、通常の札より常に強い札です。');
   });
 
   // 序列表はサーバーが送る。空で来ても落ちてはならない。

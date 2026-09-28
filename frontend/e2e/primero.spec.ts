@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { isVisibleWithin, navigateTo, TIMEOUT_ACTION, waitForLoaded } from './helpers';
+import { gameButton, isVisibleWithin, navigateTo, TIMEOUT_ACTION, waitForLoaded } from './helpers';
 
 test.describe('Primero E2E', () => {
   // Primero is a 4-card pot-vying game: the human calls, raises (vie), or
@@ -7,7 +7,7 @@ test.describe('Primero E2E', () => {
   test('plays a round: bet → resolve → next round', async ({ page }) => {
     await navigateTo(page, '/primero');
 
-    const callButton = page.getByRole('button', { name: /Call|コール/ });
+    const callButton = gameButton(page, /Call|コール/);
     const foldButton = page.getByRole('button', { name: /Fold|フォールド/ });
     await expect(callButton.or(foldButton).first()).toBeVisible({ timeout: TIMEOUT_ACTION });
 

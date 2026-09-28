@@ -764,7 +764,7 @@ func (t *Truco) playHintReason(playerIdx, chosenIdx int) string {
 	return "followDump"
 }
 
-// --- CPU AI (single-difficulty heuristic) ---
+// --- CPU AI heuristic ---
 
 // cpuActPlay CPU のプレイフェーズ行動: 宣言するか、カードを出す。
 func (t *Truco) cpuActPlay(idx int) {

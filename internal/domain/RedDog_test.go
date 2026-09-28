@@ -46,6 +46,7 @@ func TestRedDog_Reset(t *testing.T) {
 	assert.Equal(t, 0, rd.GetAnte())
 	assert.Equal(t, 0, rd.GetRaise())
 	assert.Equal(t, 0, rd.GetSpread())
+	assert.Equal(t, 0, rd.GetAppliedMultiplier())
 }
 
 func TestRedDog_Reset_RefillChips(t *testing.T) {
@@ -112,6 +113,7 @@ func TestRedDog_Bet_Consecutive_Push(t *testing.T) {
 	assert.True(t, rd.GetGameEndFlag())
 	assert.Equal(t, domain.GameResultDraw, rd.GetResult())
 	assert.Equal(t, 100, rd.GetTotalPayout()) // ante refunded
+	assert.Equal(t, 0, rd.GetAppliedMultiplier())
 	assert.Equal(t, domain.RedDogDefaultChips, rd.GetChips())
 }
 
@@ -133,6 +135,7 @@ func TestRedDog_Bet_PairThenMatch_Win(t *testing.T) {
 	assert.Equal(t, domain.GameResultWin, rd.GetResult())
 	// 11:1 on ante: 100 + 100*11 = 1200
 	assert.Equal(t, 1200, rd.GetTotalPayout())
+	assert.Equal(t, 11, rd.GetAppliedMultiplier())
 }
 
 func TestRedDog_Bet_PairThenNoMatch_Push(t *testing.T) {
@@ -148,6 +151,7 @@ func TestRedDog_Bet_PairThenNoMatch_Push(t *testing.T) {
 	assert.True(t, rd.GetGameEndFlag())
 	assert.Equal(t, domain.GameResultDraw, rd.GetResult())
 	assert.Equal(t, 100, rd.GetTotalPayout()) // ante refunded
+	assert.Equal(t, 0, rd.GetAppliedMultiplier())
 }
 
 func TestRedDog_Bet_Pair_DealsThirdFromDeck(t *testing.T) {
@@ -184,6 +188,7 @@ func TestRedDog_SpreadDecision_Spread1_Win(t *testing.T) {
 	assert.Equal(t, domain.GameResultWin, rd.GetResult())
 	// spread 1 → 5:1 on ante (no raise): 100 + 100*5 = 600
 	assert.Equal(t, 600, rd.GetTotalPayout())
+	assert.Equal(t, 5, rd.GetAppliedMultiplier())
 }
 
 func TestRedDog_SpreadDecision_Spread2_Win(t *testing.T) {
@@ -200,6 +205,7 @@ func TestRedDog_SpreadDecision_Spread2_Win(t *testing.T) {
 	assert.Equal(t, domain.GameResultWin, rd.GetResult())
 	// spread 2 → 4:1: 100 + 100*4 = 500
 	assert.Equal(t, 500, rd.GetTotalPayout())
+	assert.Equal(t, 4, rd.GetAppliedMultiplier())
 }
 
 func TestRedDog_SpreadDecision_Spread3_Win(t *testing.T) {
@@ -215,6 +221,7 @@ func TestRedDog_SpreadDecision_Spread3_Win(t *testing.T) {
 	require.NoError(t, rd.Stay())
 	// spread 3 → 2:1: 100 + 100*2 = 300
 	assert.Equal(t, 300, rd.GetTotalPayout())
+	assert.Equal(t, 2, rd.GetAppliedMultiplier())
 }
 
 func TestRedDog_SpreadDecision_Spread4_Win(t *testing.T) {
@@ -230,6 +237,7 @@ func TestRedDog_SpreadDecision_Spread4_Win(t *testing.T) {
 	require.NoError(t, rd.Stay())
 	// spread 4+ → 1:1: 100 + 100 = 200
 	assert.Equal(t, 200, rd.GetTotalPayout())
+	assert.Equal(t, 1, rd.GetAppliedMultiplier())
 }
 
 func TestRedDog_SpreadDecision_LargeSpread(t *testing.T) {
@@ -401,6 +409,7 @@ func TestRedDog_JSONRoundTrip(t *testing.T) {
 	assert.Equal(t, rd.GetSpread(), restored.GetSpread())
 	assert.Equal(t, rd.GetResult(), restored.GetResult())
 	assert.Equal(t, rd.GetTotalPayout(), restored.GetTotalPayout())
+	assert.Equal(t, rd.GetAppliedMultiplier(), restored.GetAppliedMultiplier())
 }
 
 func TestRedDog_UnmarshalJSON_InvalidData(t *testing.T) {

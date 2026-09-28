@@ -37,6 +37,12 @@ beforeEach(() => {
 });
 
 describe('EcartePage', () => {
+  it('shows the translated no-trump label before a trump is declared', async () => {
+    mockExec.mockResolvedValue(makeEcarteState({ trumpSuit: 0 }));
+    renderWithProviders(<EcartePage />);
+    expect(await screen.findByText('切り札: 未宣言')).toBeInTheDocument();
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<EcartePage />);
@@ -47,7 +53,7 @@ describe('EcartePage', () => {
     renderWithProviders(<EcartePage />);
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', {
-        config: { cpuDifficulty: 1, targetScore: 5 },
+        config: { targetScore: 5 },
       }),
     );
   });
@@ -241,7 +247,18 @@ describe('EcartePage', () => {
     fireEvent.click(card);
     expect(screen.getByTestId('ecarte-discard')).toBeEnabled();
     expect(screen.getByTestId('ecarte-discard-guide')).toHaveTextContent('1枚選択中');
+    expect(screen.getByTestId('ecarte-discard-live')).toHaveAttribute('role', 'status');
+    expect(screen.getByTestId('ecarte-discard-live')).toHaveTextContent('1枚選択中');
     expect(screen.queryByTestId('ecarte-discard-reason')).not.toBeInTheDocument();
+  });
+
+  it('keeps the discard status region mounted but empty outside the discard step', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<EcartePage />);
+
+    const status = await screen.findByTestId('ecarte-discard-live');
+    expect(status).toHaveAttribute('role', 'status');
+    expect(status).toBeEmptyDOMElement();
   });
 
   it('disables the discard button and shows the stock reason when selecting more than the stock', async () => {

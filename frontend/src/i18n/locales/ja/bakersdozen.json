@@ -24,6 +24,10 @@
   "gameOver": "ゲームオーバー",
   "hintAvailable": "ヒントがあります",
   "noHint": "ヒントはありません",
+  "destinationStatusLabel": "移動先",
+  "listSeparator": "、",
+  "destinationAnnouncement": "移動可能なタブロー列: {{tableau}}。組札の移動先: {{foundation}}。",
+  "noDestination": "なし",
   "tutorial": {
     "foundation": "4つの組札に同じスートのカードをA→Kの順に積み上げます。",
     "tableau": "13列の場札に4枚ずつカードが配られます。配り直し時にキングは自動的に各列の一番下に移動します。",

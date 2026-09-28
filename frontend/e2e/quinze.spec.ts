@@ -5,7 +5,7 @@ test.describe('Quinze E2E', () => {
   test('bets, deals, plays a turn, and settles', async ({ page }) => {
     await navigateTo(page, '/quinze');
 
-    await expect(page.getByText(/チップ/)).toBeVisible();
+    await expect(page.getByTestId('quinze-chips')).toBeVisible();
 
     const betButton = page.getByRole('button', { name: '100', exact: true });
     const dealButton = page.getByRole('button', { name: '配る', exact: true });

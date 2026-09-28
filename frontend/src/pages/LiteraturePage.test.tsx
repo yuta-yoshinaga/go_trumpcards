@@ -55,7 +55,7 @@ function makeState(overrides?: Partial<LiteratureResponse>): LiteratureResponse 
     gameEndFlag: false,
     winnerTeam: -1,
     message: '',
-    config: { cpuDifficulty: 0 },
+    config: {},
     ...overrides,
   };
 }
@@ -150,6 +150,34 @@ describe('LiteraturePage', () => {
     // ♠ 低位 (2-7) は消え、残り 7 組 × 6 枚 = 42 枚。
     expect(options).toHaveLength(42);
     expect(options.map((o) => o.textContent)).not.toContain('♠2');
+  });
+
+  it('explains when no cards can be asked for and restores the form when cards return', async () => {
+    mockExec.mockResolvedValueOnce(makeState({ halfSuits: Array(8).fill(1), openCount: 0 }));
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<LiteraturePage />);
+
+    expect(await screen.findByText('要求できる札がありません')).toBeInTheDocument();
+    const askStatus = screen.getByTestId('literature-ask-status');
+    expect(askStatus).toHaveTextContent('要求できる札がありません');
+    expect(screen.getByLabelText(/^札/)).toBeDisabled();
+    expect(screen.getByRole('button', { name: '要求する' })).toBeDisabled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(await screen.findByRole('button', { name: '確認' }));
+
+    expect(await screen.findByRole('button', { name: '要求する' })).toBeEnabled();
+    expect(screen.getByLabelText(/^札/)).toBeEnabled();
+    expect(screen.getByLabelText(/^札/).querySelectorAll('option')).toHaveLength(48);
+    expect(screen.getByTestId('literature-ask-status')).toBeEmptyDOMElement();
+  });
+
+  it('keeps the ask status region empty when askable cards are available', async () => {
+    renderWithProviders(<LiteraturePage />);
+
+    expect(await screen.findByLabelText(/^札/)).toBeEnabled();
+    expect(screen.getByTestId('literature-ask-status')).toBeInTheDocument();
+    expect(screen.getByTestId('literature-ask-status')).toBeEmptyDOMElement();
   });
 
   // **宣言は6枚すべての所在を申告する。**候補は自チームの席だけ。

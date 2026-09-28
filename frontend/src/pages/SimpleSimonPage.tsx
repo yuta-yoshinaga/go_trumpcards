@@ -222,13 +222,21 @@ function SimpleSimonPageContent() {
   const renderColumn = (column: Card[], col: number) => {
     const isDestination = Boolean(selected && selected.col !== col);
     const runStart = movableFromIndex(column);
+    const columnLabel = selected?.col === col ? t('columnSource') : isDestination ? t('columnDestination') : '';
     return (
       <div
         key={`col-${col}`}
-        className={`flex flex-col items-center rounded p-0.5 ${isDestination ? 'ring-1 ring-ds-success' : ''}`}
+        className="flex flex-col items-center rounded p-0.5"
         style={{ minHeight: Math.round(w * 1.4) }}
         data-testid={`column-${col}`}
       >
+        <div
+          className={`mb-1 flex min-h-6 w-full flex-col items-center justify-center rounded border px-0.5 text-ds-text-primary ${selected?.col === col ? 'border-ds-warning ring-1 ring-ds-warning bg-ds-surface' : isDestination ? 'border-ds-success ring-1 ring-ds-success bg-ds-surface' : 'border-ds-border-subtle bg-ds-surface'}`}
+          data-testid={`column-label-${col}`}
+        >
+          <span className="text-xs font-semibold tabular-nums">{t('columnNumber', { col: col + 1 })}</span>
+          {columnLabel && <span className="text-[10px] leading-tight text-ds-text-muted">{columnLabel}</span>}
+        </div>
         {column.length === 0 ? (
           <button
             type="button"

@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, waitForLoaded } from './helpers';
+import { gameButton, navigateTo, waitForLoaded } from './helpers';
 
 test.describe('Jass (Schieber) E2E', () => {
   test('navigates, resets, and plays through phase transitions', async ({ page }) => {
@@ -15,7 +15,7 @@ test.describe('Jass (Schieber) E2E', () => {
     await expect(page.getByText(/^トリック \d+$/).first()).toBeVisible();
     await expect(page.getByText('チームスコア').first()).toBeVisible();
 
-    const schiebenButton = page.getByRole('button', { name: 'シーバー' });
+    const schiebenButton = gameButton(page, 'シーバー');
     const playButton = page.getByRole('button', { name: '出す' });
     const nextTrickButton = page.getByRole('button', { name: '次のトリック' });
     const nextRoundButton = page.getByRole('button', { name: '次のラウンド' });

@@ -162,20 +162,8 @@ func (g *Sueca) PlayerPlay(cardIndex int) error {
 	if g.phase != SuecaPhasePlay {
 		return ErrWrongPhase
 	}
-	if !g.players[g.currentPlayerIdx].GetIsHuman() {
-		return ErrNotHumanTurn
-	}
-	player := g.players[g.currentPlayerIdx]
-	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainErrorCode(ErrInvalidCard, "sueca.errCardIndexOutOfRange", nil)
-	}
-	card := player.GetCard(cardIndex)
-	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
-		return err
-	}
-	played := player.RemoveCard(cardIndex)
-	g.playCard(g.currentPlayerIdx, played)
-	return nil
+	seat := g.currentPlayerIdx
+	return trickPlayerPlay(seat, g.players[seat].GamePlayer, cardIndex, "sueca.errCardIndexOutOfRange", g.validatePlay, g.playCard)
 }
 
 // CpuPlay 現在の手番が CPU の場合に 1 ターン実行する。
@@ -184,18 +172,7 @@ func (g *Sueca) CpuPlay() {
 		return
 	}
 	idx := g.currentPlayerIdx
-	if g.players[idx].GetIsHuman() {
-		return
-	}
-	cardIdx := g.cpuSelectPlayCard(idx)
-	played := g.players[idx].RemoveCard(cardIdx)
-	// **出せる札が無ければ何もしない。**セレクタは候補ゼロのとき 0 を返し、
-	// 手札が空なら RemoveCard(0) は nil を返す。それを playCard に渡すと
-	// nil デリファレンスで HTTP ハンドラごと落ちる (#4606)。
-	if played == nil {
-		return
-	}
-	g.playCard(idx, played)
+	trickCpuPlay(idx, g.players[idx].GamePlayer, g.cpuSelectPlayCard, g.playCard)
 }
 
 // playCard カードをプレイする共通処理。

@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, TIMEOUT_GAME_LOOP, TIMEOUT_TRANSITION, waitForLoaded } from './helpers';
+import { gameButton, navigateTo, TIMEOUT_GAME_LOOP, TIMEOUT_TRANSITION, waitForLoaded } from './helpers';
 
 test.describe('Ombre E2E', () => {
   test('loads, resets, and renders the play UI', async ({ page }) => {
@@ -21,8 +21,8 @@ test.describe('Ombre E2E', () => {
     // or — once the deal resolves via CPU play — the reset / next-game button).
     const anyControl = page
       .getByRole('button', { name: 'エントラール' })
-      .or(page.getByRole('button', { name: 'ソロ' }))
-      .or(page.getByRole('button', { name: 'パス' }))
+      .or(gameButton(page, 'ソロ'))
+      .or(gameButton(page, 'パス'))
       .or(page.getByRole('button', { name: '出す' }))
       .or(page.getByRole('button', { name: '次のトリック' }))
       .or(page.getByRole('button', { name: '次のディール' }))

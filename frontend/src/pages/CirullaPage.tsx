@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { cirullaApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -126,6 +126,12 @@ function CirullaPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('cirulla', state);
   const { cardWidth, isMobile } = useCardDimensions();
+  const [hoveredCapture, setHoveredCapture] = useState<number[] | null>(null);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Clear the hovered option whenever the selected hand changes.
+  useEffect(() => {
+    setHoveredCapture(null);
+  }, [selectedHandIdx]);
 
   if (!state)
     return (
@@ -217,7 +223,11 @@ function CirullaPageContent() {
                     <span className="text-ds-text-muted text-sm">{t('tableEmpty')}</span>
                   ) : (
                     state.table.map((c, i) => (
-                      <div key={`${c.design}-${c.value}-${i}`} className="flex flex-col items-center">
+                      <div
+                        key={`${c.design}-${c.value}-${i}`}
+                        data-testid={`cirulla-table-card-${i}`}
+                        className={`flex flex-col items-center rounded ${hoveredCapture?.includes(i) ? 'ring-2 ring-ds-warning' : ''}`}
+                      >
                         <CardImage card={c} width={cardWidth} />
                         <span className="text-xs text-ds-text-muted">{i}</span>
                       </div>
@@ -238,7 +248,12 @@ function CirullaPageContent() {
                           key={group.join('-')}
                           type="button"
                           className={btnPrimary}
-                          onClick={() => play(group)}
+                          onClick={() => {
+                            setHoveredCapture(null);
+                            play(group);
+                          }}
+                          onMouseEnter={() => setHoveredCapture(group)}
+                          onMouseLeave={() => setHoveredCapture(null)}
                           disabled={loading}
                           data-testid={`cirulla-take-${group.join('-')}`}
                           // **取り札ボタンの読み上げには場札の実際の名前が要る。** 索引だけでは

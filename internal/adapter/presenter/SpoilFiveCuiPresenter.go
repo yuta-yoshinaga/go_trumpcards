@@ -1,4 +1,4 @@
-//go:build !js || !wasm || classic
+//go:build !js || !wasm || extra8
 
 package presenter
 
@@ -81,11 +81,20 @@ func (p *SpoilFiveCuiPresenter) Output(g interfaces.SpoilFiveGame, lastErr error
 		if g.GetGameEndFlag() {
 			winner := g.GetWinnerPlayer()
 			var winnerStr string
+			var winnerScore string
 			if winner >= 0 {
-				winnerStr = cuiPlayerName(g.GetPlayer(winner), winner)
+				player := g.GetPlayer(winner)
+				if player != nil {
+					winnerStr = cuiPlayerName(player, winner)
+					winnerScore = strconv.Itoa(player.GetScore())
+				}
 			}
 			banner := i18n.Tf("spoilfive.gameEnd", "name", winnerStr)
 			b.WriteString(color.Green(banner) + "\n")
+			b.WriteString(i18n.Tf("spoilfive.gameResult",
+				"name", winnerStr,
+				"score", winnerScore,
+				"target", strconv.Itoa(g.GetConfig().TargetPoints)) + "\n")
 			return
 		}
 		switch g.GetPhase() {

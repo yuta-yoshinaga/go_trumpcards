@@ -205,6 +205,20 @@ func TestScartoCuiPresenter_ShowsTheAverageBreakdown(t *testing.T) {
 	assert.NotContains(t, out, "{{")
 }
 
+func TestScartoCuiPresenter_ShowsProvisionalAverageDuringPlay(t *testing.T) {
+	orig := color.NoColor()
+	color.SetNoColor(true)
+	defer color.SetNoColor(orig)
+	p := new(presenter.ScartoCuiPresenter)
+	g := scartoCuiGame()
+	g.SetPhase(domain.ScartoPhasePlay)
+	g.GetPlayer(0).AddTrick([]*domain.Card{domain.NewCard(domain.ScartoTrumpDesign, 1, false)})
+	out := p.Output(g, nil)
+	assert.Contains(t, out, i18n.T("scarto.roundInProgress"))
+	assert.Contains(t, out, i18n.Tf("scarto.roundEndAverage", "avg", "3"))
+	assert.NotContains(t, out, i18n.T("scarto.promptRoundEnd"))
+}
+
 // scartoTestPoints / scartoTestSigned mirror the presenter's number formatting so the
 // expected lines can be composed here without exporting the helpers.
 func scartoTestPoints(v float64) string {

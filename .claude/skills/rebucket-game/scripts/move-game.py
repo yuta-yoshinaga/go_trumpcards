@@ -27,7 +27,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[4]
-BUCKETS = ["casino", "classic", "solo", "extra", "extra2", "extra3", "extra4", "extra5", "extra6", "extra7"]
+BUCKETS = ["casino", "classic", "solo", "extra", "extra2", "extra3", "extra4", "extra5", "extra6", "extra7", "extra8", "extra9", "extra10", "extra11"]
 SRC_DIRS = ["internal/domain", "internal/usecase", "internal/adapter"]
 REGISTRY = ROOT / "internal/infrastructure/games/registry.go"
 REGISTRY_TEST = ROOT / "internal/infrastructure/games/registry_test.go"

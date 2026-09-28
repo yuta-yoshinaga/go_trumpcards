@@ -145,6 +145,25 @@ func TestSpeculation_AcceptingAnOfferMovesBothTheCardAndTheChips(t *testing.T) {
 	assert.Nil(t, g.GetPlayers()[0].GetBest(), "売った札は手元を離れる")
 	assert.Equal(t, card, g.GetPlayers()[1].GetBest(), "買い手が同じ札を持つ")
 	assert.Equal(t, 1, g.GetBestSeat())
+	trade := g.GetLastTrade()
+	require.NotNil(t, trade)
+	assert.Equal(t, 1, trade.BuyerSeat)
+	assert.Equal(t, 0, trade.SellerSeat)
+	assert.Equal(t, 30, trade.Price)
+	assert.Same(t, card, trade.Card)
+}
+
+func TestSpeculation_ResetClearsLastTrade(t *testing.T) {
+	g := newSpecTable(t, 0, specHand(0, 13), specHand(0, 2))
+	require.NoError(t, g.Flip())
+	g.SetPhase(SpeculationPhaseAuction)
+	g.SetOffer(1, 0, 30)
+	// Fund the buyer sufficiently for a successful purchase.
+	g.GetPlayers()[1].SetChips(100)
+	require.NoError(t, g.Accept())
+	require.NotNil(t, g.GetLastTrade())
+	g.Reset()
+	assert.Nil(t, g.GetLastTrade())
 }
 
 func TestSpeculation_DecliningMovesNothing(t *testing.T) {

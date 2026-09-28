@@ -84,7 +84,11 @@ func (p *PanCuiPresenter) Output(g interfaces.PanGame, lastErr error) string {
 			currentIdx := g.GetCurrentPlayerIdx()
 			b.WriteString(i18n.Tf("pan.promptDraw",
 				"name", cuiPlayerName(g.GetPlayer(currentIdx), currentIdx)) + "\n")
-			b.WriteString(i18n.T("pan.promptDrawHelpStock") + "\n")
+			if g.GetDrawPileCount() == 0 {
+				b.WriteString(i18n.T("pan.promptDrawHelpStockEmpty") + "\n")
+			} else {
+				b.WriteString(i18n.T("pan.promptDrawHelpStock") + "\n")
+			}
 			b.WriteString(i18n.T("pan.promptDrawHelpDiscard") + "\n")
 		case domain.PanPhasePlay:
 			currentIdx := g.GetCurrentPlayerIdx()

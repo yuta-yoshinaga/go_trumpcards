@@ -1,4 +1,5 @@
 import type { CinchResponse } from '../../../types/card';
+import { suitSymbolAt } from '../../cardAlt';
 import {
   formatCard,
   formatHeader,
@@ -9,7 +10,6 @@ import {
 } from '../formatterBase';
 
 const PHASE_NAMES = ['Bid', 'NameTrump', 'Play', 'TrickEnd', 'RoundEnd', 'GameEnd'];
-const SUIT_SYMBOLS = ['-', '♠', '♣', '♥', '♦'];
 
 /** Format a Cinch (Double Pedro) game state as terminal text. */
 export function formatCinchState(state: CinchResponse): string {
@@ -19,7 +19,7 @@ export function formatCinchState(state: CinchResponse): string {
   lines.push(
     `deal: ${state.roundNumber}  trick: ${state.trickNumber}/${state.totalTricks}  phase: ${PHASE_NAMES[state.phase] ?? state.phase}`,
   );
-  lines.push(`high bid: ${state.currentBid}  trump: ${SUIT_SYMBOLS[state.trumpSuit] ?? '-'}`);
+  lines.push(`high bid: ${state.currentBid}  trump: ${suitSymbolAt(state.trumpSuit, '-')}`);
   lines.push(`scores: ${state.players.map((p) => `P${p.id}=${p.totalScore}`).join('  ')}`);
   lines.push('');
 

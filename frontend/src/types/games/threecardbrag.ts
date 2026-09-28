@@ -32,7 +32,6 @@ export interface ThreeCardBragPlayer {
 
 /** Three Card Brag game configuration. */
 export interface ThreeCardBragConfig {
-  cpuDifficulty: number;
   /** Chips put in the pot by each player at the start of a deal. */
   ante: number;
   /** Chips each player begins the match with. */

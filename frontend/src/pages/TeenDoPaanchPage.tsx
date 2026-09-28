@@ -23,15 +23,12 @@ import { gameTheme } from '../styles/gameTheme';
 import type { TeenDoPaanchResponse } from '../types/card';
 import { TeenDoPaanchPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { cardAlt } from '../utils/cardAlt';
+import { cardAlt, suitSymbolAt } from '../utils/cardAlt';
 import { parseTeenDoPaanchCommand, TEENDOPAANCH_HELP } from '../utils/cli/commands/teendopaanchCommands';
 import { formatTeenDoPaanchState } from '../utils/cli/formatters/teendopaanchFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { findPlayerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
-
-/** Suit code (1=♠ 2=♣ 3=♥ 4=♦) to its symbol. */
-const SUIT_SYMBOLS: Readonly<Record<number, string>> = { 1: '♠', 2: '♣', 3: '♥', 4: '♦' };
 
 /** The four suits, in the order the trump buttons are offered. */
 const SUITS: readonly number[] = [1, 2, 3, 4];
@@ -167,9 +164,13 @@ function TeenDoPaanchPageContent() {
               <span className="mr-4" data-testid="td-round">
                 {t('header.round', { round: String(state.roundNumber), total: String(state.config.rounds) })}
               </span>
-              <span data-testid="td-trump" data-tutorial="td-trump">
+              <span
+                data-testid="td-trump"
+                data-tutorial="td-trump"
+                className={state.trumpSuit > 0 ? 'text-lg font-semibold text-ds-accent' : ''}
+              >
                 {state.trumpSuit > 0
-                  ? t('header.trump', { suit: SUIT_SYMBOLS[state.trumpSuit] ?? '?' })
+                  ? t('header.trump', { suit: suitSymbolAt(state.trumpSuit, '?') })
                   : t('header.trumpUndecided')}
               </span>
             </div>
@@ -293,7 +294,7 @@ function TeenDoPaanchPageContent() {
                     disabled={loading}
                     data-testid={`td-trump-${suit.toString()}-btn`}
                   >
-                    {t('actions.trump', { suit: SUIT_SYMBOLS[suit] ?? '?' })}
+                    {t('actions.trump', { suit: suitSymbolAt(suit, '?') })}
                   </button>
                 ))}
               {isRoundEnd && !isGameEnd && (
@@ -313,6 +314,15 @@ function TeenDoPaanchPageContent() {
                 <button type="button" className={btnDanger} onClick={handleGiveUp} disabled={loading}>
                   {t('actions.giveUp')}
                 </button>
+              )}
+            </div>
+
+            <div role="status" aria-live="polite" data-testid="td-trump-guidance">
+              {isHumanTrumpTurn && <span className="text-ds-text-primary">{t('actions.chooseTrump')}</span>}
+              {isHumanTurn && state.trumpSuit > 0 && (
+                <span className="text-ds-accent font-semibold">
+                  {t('actions.trumpSetNext', { suit: suitSymbolAt(state.trumpSuit, '?') })}
+                </span>
               )}
             </div>
 

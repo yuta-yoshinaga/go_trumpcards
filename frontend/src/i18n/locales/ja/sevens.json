@@ -36,6 +36,11 @@
   "keyHints": "数字キー: 対応する手札をプレイ",
   "mustPass": "出せるカードがありません — パスしてください",
   "passCount": "パス: {{used}}/{{max}}",
+  "passDisabled": {
+    "gameEnded": "ゲームが終了しています",
+    "notYourTurn": "あなたの手番ではありません",
+    "limitReached": "パスできる回数の上限に達しました"
+  },
   "passRemaining": "パス (残り{{count}}回)",
   "passUnlimited": "∞",
   "phase": {

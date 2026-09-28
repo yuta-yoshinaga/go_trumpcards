@@ -7,6 +7,7 @@
   "stock": "Stock",
   "waste": "Waste",
   "foundation": "Foundation",
+  "emptyFoundationAutoTarget": "Selecting an empty foundation automatically chooses a valid pile. Check the action log to see where the card went.",
   "tableau": "Tableau",
   "moveCount": "Moves",
   "draw": "Draw",

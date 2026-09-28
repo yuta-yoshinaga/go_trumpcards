@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useId, useMemo } from 'react';
 import type { crazyquiltApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -35,6 +35,7 @@ import { CRAZYQUILT_HELP, parseCrazyQuiltCommand } from '../utils/cli/commands/c
 import { formatCrazyQuiltState } from '../utils/cli/formatters/crazyquiltFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isCrazyQuiltVertical } from '../utils/crazyQuiltCells';
+import { crazyQuiltLegalTargets } from '../utils/crazyQuiltLegalTargets';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦', '♠', '♣', '♥', '♦'] as const;
@@ -67,6 +68,7 @@ function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => stri
 }
 
 function CrazyQuiltPageContent() {
+  const selectSourceHintId = useId();
   const {
     t,
     tc,
@@ -177,6 +179,32 @@ function CrazyQuiltPageContent() {
   const wasteZone: CrazyQuiltMoveZone = { zone: 'waste' };
   // キルトの札を選んでいる間だけ、捨て札が置き先になる。
   const quiltSelected = selectedSource?.zone === 'quilt';
+  const selectedCard =
+    selectedSource?.zone === 'quilt'
+      ? state.quilt[selectedSource.col ?? -1]
+      : selectedSource?.zone === 'waste'
+        ? wasteTop
+        : null;
+  const legalTargets = crazyQuiltLegalTargets(
+    state.foundation,
+    state.foundationAscending,
+    wasteTop,
+    selectedCard,
+    selectedSource?.zone === 'quilt',
+  );
+  const canReachWaste = legalTargets.waste;
+  const validFoundationTargets = legalTargets.foundation;
+  const destinationSummary = selectedSource
+    ? t('keyboardDestinations', {
+        destinations: (() => {
+          const destinations = [
+            ...validFoundationTargets.flatMap((valid, idx) => (valid ? [t('frontendHint.foundation', { idx })] : [])),
+            ...(canReachWaste ? [t('frontendHint.waste')] : []),
+          ];
+          return destinations.length > 0 ? destinations.join(t('listSeparator')) : t('noKeyboardDestinations');
+        })(),
+      })
+    : '';
 
   // キルトは 8×8。**取れるのは短辺が空いている札だけ**で、その判定は向きに
   // 依存する。サーバが `available` で送ってくるので、ここで再実装しない。
@@ -252,6 +280,9 @@ function CrazyQuiltPageContent() {
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
+          <span id={selectSourceHintId} className="sr-only">
+            {tc('label.selectSourceFirst')}
+          </span>
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
             <div className="flex flex-wrap justify-center items-start gap-3 sm:gap-6 mb-3">
               <div className="flex flex-wrap justify-center gap-1 sm:gap-2" data-tutorial="cg-foundation">
@@ -282,12 +313,15 @@ function CrazyQuiltPageContent() {
                           <button
                             type="button"
                             onClick={() => game.handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
+                            disabled={!isPlaying || loading || isAutoCompleting}
+                            aria-disabled={!selectedSource || undefined}
+                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t(
                               ascending ? 'foundationAscendingAriaLabel' : 'foundationDescendingAriaLabel',
                               { suit: FOUNDATION_SUITS[idx], idx, count: pile.length },
                             )}
-                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
+                            data-valid-destination={validFoundationTargets[idx] ? 'true' : undefined}
+                            className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${validFoundationTargets[idx] ? 'ring-2 ring-ds-success' : ''}`}
                           >
                             <AnimatedCard
                               card={pile[pile.length - 1]}
@@ -300,13 +334,16 @@ function CrazyQuiltPageContent() {
                           <button
                             type="button"
                             onClick={() => game.handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading || !selectedSource}
+                            disabled={!isPlaying || loading}
+                            aria-disabled={!selectedSource || undefined}
+                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t(
                               ascending ? 'emptyFoundationAscendingAriaLabel' : 'emptyFoundationDescendingAriaLabel',
                               { suit: FOUNDATION_SUITS[idx], idx },
                             )}
                             style={{ width: dims.cw, height: dims.ch }}
-                            className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
+                            data-valid-destination={validFoundationTargets[idx] ? 'true' : undefined}
+                            className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite} ${validFoundationTargets[idx] ? 'ring-2 ring-ds-success' : ''}`}
                           >
                             {/* 空の組札は「何から始まるか」がそのまま次に要る札。 */}
                             {ascending ? 'A' : 'K'}
@@ -378,7 +415,8 @@ function CrazyQuiltPageContent() {
                         onDragStart={dnd.handleDragStart(wasteZone)}
                         onDragEnd={dnd.handleDragEnd}
                         data-testid="cq-waste"
-                        className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waste', undefined) ? 'ring-2 ring-ds-warning' : ''} ${quiltSelected ? 'ring-2 ring-ds-info/70' : ''}`}
+                        data-valid-destination={canReachWaste ? 'true' : undefined}
+                        className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waste', undefined) ? 'ring-2 ring-ds-warning' : ''} ${quiltSelected ? 'ring-2 ring-ds-info/70' : ''} ${canReachWaste ? 'ring-2 ring-ds-success' : ''}`}
                       >
                         <AnimatedCard card={wasteTop} width={dims.cw} draggable={false} />
                       </button>
@@ -412,6 +450,11 @@ function CrazyQuiltPageContent() {
               られないことがある (#5955)。
             */}
             <div data-tutorial="cg-hint-display" data-testid="cg-hint-live" role="status" aria-live="polite">
+              {destinationSummary && (
+                <span className="sr-only" data-testid="cq-destinations">
+                  {destinationSummary}
+                </span>
+              )}
               {hint && (
                 <div className="text-ds-warning text-sm mb-2 mt-3">
                   {t('hintAvailable')}: {formatHintZone(t, hint.fromZone, hint.fromIdx)} →{' '}

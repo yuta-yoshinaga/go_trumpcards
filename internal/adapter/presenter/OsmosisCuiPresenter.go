@@ -70,6 +70,15 @@ func (p *OsmosisCuiPresenter) Output(o interfaces.OsmosisGame, lastErr error) st
 		} else {
 			b.WriteString(i18n.T("osmosis.wasteEmpty"))
 		}
+		b.WriteString("\n")
+		for i, pile := range reserve {
+			if len(pile) > 0 {
+				writeOsmosisCandidates(b, o, i18n.Tf("osmosis.hintFromReserve", "col", strconv.Itoa(i)), pile[len(pile)-1])
+			}
+		}
+		if len(waste) > 0 {
+			writeOsmosisCandidates(b, o, i18n.T("osmosis.hintFromWaste"), waste[len(waste)-1])
+		}
 		b.WriteString("\n----------\n")
 
 		cuiErrorBlock(b, lastErr)
@@ -90,6 +99,19 @@ func (p *OsmosisCuiPresenter) Output(o interfaces.OsmosisGame, lastErr error) st
 			b.WriteString(color.Red(i18n.T("cuiSolitaireGameOver")) + "\n")
 		}
 	})
+}
+
+func writeOsmosisCandidates(b *strings.Builder, o interfaces.OsmosisGame, source string, card *domain.Card) {
+	var rows []string
+	for i := range domain.OsmosisFoundationCnt {
+		if o.CanPlaceOnFoundation(card, i) {
+			rows = append(rows, strconv.Itoa(i))
+		}
+	}
+	if len(rows) == 0 {
+		return
+	}
+	b.WriteString(i18n.Tf("osmosis.candidateRows", "source", source, "rows", strings.Join(rows, i18n.T("osmosis.listSeparator"))) + "\n")
 }
 
 // osmosisRanksIn returns the set of card ranks present in a foundation pile.

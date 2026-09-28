@@ -658,9 +658,6 @@ func TestKilleConfigValidate(t *testing.T) {
 	if err := DefaultKilleConfig().Validate(); err != nil {
 		t.Fatalf("the default config should validate: %v", err)
 	}
-	if err := (KilleConfig{CpuDifficulty: 5, Stake: 1}).Validate(); err == nil {
-		t.Error("expected an error for an unknown difficulty")
-	}
 	if err := (KilleConfig{Stake: 0}).Validate(); err == nil {
 		t.Error("expected an error for a zero stake")
 	}
@@ -722,7 +719,7 @@ func TestKilleUnmarshalRejectsGarbage(t *testing.T) {
 	}{
 		{"not json", `{`},
 		{"wrong player count", `{"pl":[null,null],"cfg":{"cd":0,"st":1},"ph":0}`},
-		{"bad config", `{"pl":[{},{},{},{}],"cfg":{"cd":9,"st":1},"ph":0}`},
+		{"bad config", `{"pl":[{},{},{},{}],"cfg":{"cd":0,"st":0},"ph":0}`},
 		{"unknown phase", `{"pl":[{},{},{},{}],"cfg":{"cd":0,"st":1},"ph":9}`},
 		{"negative phase", `{"pl":[{},{},{},{}],"cfg":{"cd":0,"st":1},"ph":-1}`},
 	}

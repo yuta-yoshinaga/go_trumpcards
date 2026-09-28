@@ -102,6 +102,8 @@ type Watten struct {
 	trickNumber      int
 	currentPlayerIdx int
 	currentTrick     []*TrickCard
+	lastTrick        []*TrickCard
+	lastTrickWinner  int
 	dealerIdx        int
 	leadPlayerIdx    int
 	schlagRank       int // 宣言された Schlag ランク (0 = 未宣言)
@@ -124,15 +126,16 @@ type Watten struct {
 // NewWatten コンストラクタ
 func NewWatten(trumpCards *TrumpCards, players []*WattenPlayer, config WattenConfig) *Watten {
 	return &Watten{
-		trumpCards:     trumpCards,
-		players:        players,
-		config:         config,
-		winnerTeam:     -1,
-		dealWinnerTeam: -1,
-		raiserTeam:     -1,
-		responderIdx:   -1,
-		roundNumber:    0,
-		dealerIdx:      0,
+		trumpCards:      trumpCards,
+		players:         players,
+		config:          config,
+		winnerTeam:      -1,
+		lastTrickWinner: -1,
+		dealWinnerTeam:  -1,
+		raiserTeam:      -1,
+		responderIdx:    -1,
+		roundNumber:     0,
+		dealerIdx:       0,
 	}
 }
 
@@ -200,6 +203,8 @@ func (g *Watten) NextRound() {
 func (g *Watten) beginRound() {
 	g.trickNumber = 0
 	g.currentTrick = nil
+	g.lastTrick = nil
+	g.lastTrickWinner = -1
 	g.leadPlayerIdx = -1
 	g.schlagRank = 0
 	g.criticalSuit = 0
@@ -292,20 +297,8 @@ func (g *Watten) PlayerPlay(cardIndex int) error {
 	if g.phase != WattenPhasePlay {
 		return ErrWrongPhase
 	}
-	if !g.players[g.currentPlayerIdx].GetIsHuman() {
-		return ErrNotHumanTurn
-	}
-	player := g.players[g.currentPlayerIdx]
-	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainErrorCode(ErrInvalidCard, "watten.errCardIndexOutOfRange", nil)
-	}
-	card := player.GetCard(cardIndex)
-	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
-		return err
-	}
-	played := player.RemoveCard(cardIndex)
-	g.playCard(g.currentPlayerIdx, played)
-	return nil
+	seat := g.currentPlayerIdx
+	return trickPlayerPlay(seat, g.players[seat].GamePlayer, cardIndex, "watten.errCardIndexOutOfRange", g.validatePlay, g.playCard)
 }
 
 // CpuPlay CPUプレイヤーが1ターン実行する (リード時にレイズ判断を含む)。
@@ -351,6 +344,8 @@ func (g *Watten) ResolveTrick() {
 		return
 	}
 	winnerIdx := g.trickWinner()
+	g.lastTrick = append([]*TrickCard(nil), g.currentTrick...)
+	g.lastTrickWinner = winnerIdx
 	trickCards := make([]*Card, len(g.currentTrick))
 	for i, tc := range g.currentTrick {
 		trickCards[i] = tc.Card
@@ -628,9 +623,6 @@ func WattenPreviewTrumps(cards []*Card) WattenTrumpPreview {
 	return pv
 }
 
-// IsTrumpPublic テスト用公開ラッパー。
-func (g *Watten) IsTrumpPublic(c *Card) bool { return g.isTrump(c) }
-
 // schlagSuitOrder Schlag 同士の固定スート順 ♥>♦>♠>♣。
 func schlagSuitOrder(design int) int {
 	switch design {
@@ -687,9 +679,6 @@ func (g *Watten) cardRank(c *Card) int {
 		return wattenValueRank(c.GetValue())
 	}
 }
-
-// CardRankPublic テスト用公開メソッド。
-func (g *Watten) CardRankPublic(c *Card) int { return g.cardRank(c) }
 
 // --- Trick play helpers ---
 
@@ -1075,6 +1064,12 @@ func (g *Watten) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 // GetCurrentTrick 現在のトリック取得
 func (g *Watten) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
+// GetLastTrick returns the most recently completed trick in the current deal.
+func (g *Watten) GetLastTrick() []*TrickCard { return g.lastTrick }
+
+// GetLastTrickWinner returns the winning seat of the most recently completed trick, or -1.
+func (g *Watten) GetLastTrickWinner() int { return g.lastTrickWinner }
+
 // SetCurrentTrick トリック設定 (テスト用)
 func (g *Watten) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
 
@@ -1198,24 +1193,6 @@ func (g *Watten) SetConfig(cfg WattenConfig) { g.config = cfg }
 // GetConfigDeckHelper returns a fresh 32-card Watten deck (テスト用コンストラクタ補助)。
 func (g *Watten) GetConfigDeckHelper() *TrumpCards { return newWattenDeck() }
 
-// SetupRaiseForTest configures a pending-raise/respond state (テスト用)。
-func (g *Watten) SetupRaiseForTest(pending, raiserTeam, responderIdx int) {
-	g.phase = WattenPhaseRespond
-	g.pendingStake = pending
-	g.raiserTeam = raiserTeam
-	g.responderIdx = responderIdx
-}
-
-// SetTeamTricksForTest sets a team's trick count for the current deal (テスト用)。
-func (g *Watten) SetTeamTricksForTest(team, n int) {
-	if team >= 0 && team < WattenTeamCnt {
-		g.teamTricks[team] = n
-	}
-}
-
-// SetRaiseCountForTest sets the accepted raise count (テスト用)。
-func (g *Watten) SetRaiseCountForTest(n int) { g.raiseCount = n }
-
 // --- JSON ---
 
 // wattenJSON Watten の JSON 表現
@@ -1228,6 +1205,8 @@ type wattenJSON struct {
 	TrickNumber      int                `json:"tn"`
 	CurrentPlayerIdx int                `json:"cp"`
 	CurrentTrick     []*TrickCard       `json:"ct"`
+	LastTrick        []*TrickCard       `json:"lt"`
+	LastTrickWinner  int                `json:"lw"`
 	DealerIdx        int                `json:"di"`
 	LeadPlayerIdx    int                `json:"li"`
 	SchlagRank       int                `json:"sr"`
@@ -1258,6 +1237,8 @@ func (g *Watten) MarshalJSON() ([]byte, error) {
 		TrickNumber:      g.trickNumber,
 		CurrentPlayerIdx: g.currentPlayerIdx,
 		CurrentTrick:     g.currentTrick,
+		LastTrick:        g.lastTrick,
+		LastTrickWinner:  g.lastTrickWinner,
 		DealerIdx:        g.dealerIdx,
 		LeadPlayerIdx:    g.leadPlayerIdx,
 		SchlagRank:       g.schlagRank,
@@ -1313,6 +1294,23 @@ func (g *Watten) UnmarshalJSON(data []byte) error {
 			return NewDomainErrorCode(ErrInvalidPlay, "watten.errTrickPlayerIndexOutOfRange", nil)
 		}
 	}
+	if len(j.LastTrick) > WattenPlayerCnt {
+		return NewDomainErrorCode(ErrInvalidPlay, "watten.errTooManyTrickCards", nil)
+	}
+	for i, tc := range j.LastTrick {
+		if tc == nil || tc.Card == nil {
+			return NewDomainErrorCode(ErrInvalidPlay, "watten.errTrickCardNil", map[string]string{"idx": fmt.Sprintf("%d", i)})
+		}
+		if tc.PlayerIdx < 0 || tc.PlayerIdx >= WattenPlayerCnt {
+			return NewDomainErrorCode(ErrInvalidPlay, "watten.errTrickPlayerIndexOutOfRange", nil)
+		}
+	}
+	if j.LastTrickWinner < -1 || j.LastTrickWinner >= WattenPlayerCnt {
+		return NewDomainErrorCode(ErrInvalidPlay, "watten.errPlayerIndexOutOfRange", nil)
+	}
+	if len(j.LastTrick) == 0 {
+		j.LastTrickWinner = -1
+	}
 	if len(j.ActionLog) > wattenMaxSliceLen {
 		return NewDomainErrorCode(ErrInvalidPlay, "watten.errActionLogTooLarge", nil)
 	}
@@ -1359,6 +1357,8 @@ func (g *Watten) UnmarshalJSON(data []byte) error {
 	g.trickNumber = j.TrickNumber
 	g.currentPlayerIdx = j.CurrentPlayerIdx
 	g.currentTrick = j.CurrentTrick
+	g.lastTrick = j.LastTrick
+	g.lastTrickWinner = j.LastTrickWinner
 	g.dealerIdx = j.DealerIdx
 	g.leadPlayerIdx = j.LeadPlayerIdx
 	g.schlagRank = j.SchlagRank

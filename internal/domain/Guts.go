@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra7
+//go:build !js || !wasm || extra11
 
 // Package domain ガッツ (Guts) のドメインモデル。
 //
@@ -581,10 +581,6 @@ func (g *Guts) SetConfig(cfg GutsConfig) { g.config = cfg }
 
 // GetActionLog は棋譜を返す。
 func (g *Guts) GetActionLog() []*ActionLogEntry { return g.state.actionLog }
-
-// SettleForTest は in フラグを設定済みの状態でラウンドを解決する (テスト用)。乱数配札を
-// 迂回して勝敗解決・マッチ精算を決定的に検証するためのショートカット。
-func (g *Guts) SettleForTest() { g.settle() }
 
 // --- JSON Serialization ---
 

@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra
+//go:build !js || !wasm || extra9
 
 // Package domain ガイゲル (Gaigel) のドメインモデル。
 //
@@ -276,23 +276,8 @@ func (g *Gaigel) PlayerPlay(cardIndex int) error {
 	if g.phase != GaigelPhasePlay {
 		return ErrWrongPhase
 	}
-	if !g.players[g.currentPlayerIdx].GetIsHuman() {
-		return ErrNotHumanTurn
-	}
-
-	player := g.players[g.currentPlayerIdx]
-	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainErrorCode(ErrInvalidCard, "gaigel.errCardIndexOutOfRange", nil)
-	}
-
-	card := player.GetCard(cardIndex)
-	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
-		return err
-	}
-
-	played := player.RemoveCard(cardIndex)
-	g.playCard(g.currentPlayerIdx, played)
-	return nil
+	seat := g.currentPlayerIdx
+	return trickPlayerPlay(seat, g.players[seat].GamePlayer, cardIndex, "gaigel.errCardIndexOutOfRange", g.validatePlay, g.playCard)
 }
 
 // PlayerDeclareMarriage 人間プレイヤーがマリアージュ (K+Q 同スート) を宣言し、
@@ -762,12 +747,6 @@ func (g *Gaigel) GetMarriageIndices(playerIdx int) []int {
 	return out
 }
 
-// CardRankPublic カードランク取得 (テスト用公開メソッド)
-func (g *Gaigel) CardRankPublic(card *Card) int { return GaigelRankOrder(card) }
-
-// CardPointsPublic カード得点取得 (テスト用公開メソッド)
-func (g *Gaigel) CardPointsPublic(card *Card) int { return GaigelCardPoints(card) }
-
 // --- Hints ---
 
 // GetHint 人間プレイヤー (idx 0) へのヒントを取得する
@@ -1004,21 +983,6 @@ func (g *Gaigel) sortHand(p *GaigelPlayer) {
 }
 
 // --- Test-only helpers ---
-
-// AddRoundPointsForTest adds card points to a team for the current round (テスト用)。
-func (g *Gaigel) AddRoundPointsForTest(team, pts int) {
-	if team >= 0 && team < GaigelTeamCnt {
-		g.roundPoints[team] += pts
-	}
-}
-
-// RebeginRoundForTest re-deals and re-enters the play phase (テスト用)。
-func (g *Gaigel) RebeginRoundForTest() {
-	for _, p := range g.players {
-		p.ResetRound()
-	}
-	g.beginRound()
-}
 
 // GetConfigDeckHelper returns a fresh 48-card Gaigel deck (テスト用コンストラクタ補助)。
 func (g *Gaigel) GetConfigDeckHelper() *TrumpCards { return newGaigelDeck() }

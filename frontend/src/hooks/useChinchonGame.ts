@@ -7,18 +7,10 @@ import { useGameConfig } from './useGameConfig';
 
 /** Default Chinchón game configuration. */
 export const DEFAULT_CHINCHON_CONFIG: ChinchonConfig = {
-  cpuDifficulty: 1,
   playerCount: 2,
   knockThreshold: 5,
   eliminationLimit: 100,
 };
-
-/** CPU difficulty level options for Chinchón. */
-export const CPU_DIFFICULTY_OPTIONS = [
-  { value: 0, label: 'Easy' },
-  { value: 1, label: 'Normal' },
-  { value: 2, label: 'Hard' },
-] as const;
 
 /** Available player count options for Chinchón. */
 export const PLAYER_COUNT_OPTIONS = [2, 3, 4] as const;

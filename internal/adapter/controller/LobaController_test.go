@@ -26,14 +26,6 @@ func TestLobaWebInput_ToConfigWithNoConfigDoesNotPanic(t *testing.T) {
 	})
 }
 
-func TestLobaWebInput_ToConfigClampsAnOutOfRangeDifficulty(t *testing.T) {
-	bad := 99
-	cfg := controller.LobaWebInput{
-		Config: &controller.LobaWebConfig{CpuDifficulty: &bad},
-	}.ToConfig()
-	assert.NoError(t, cfg.Validate())
-}
-
 func TestNewLobaDefaultOutput(t *testing.T) {
 	// An error response still has to render: the page maps over melds and
 	// prints the knock-out threshold.

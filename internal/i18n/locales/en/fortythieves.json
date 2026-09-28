@@ -15,6 +15,7 @@
   "wasteCard": " | Waste: {{card}}",
   "wasteEmpty": " | Waste: [empty]",
   "columnLabel": "Column {{col}}:",
+  "emptyColumnCount": "Empty columns: {{count}}",
   "hintFromTableau": "tableau column {{col}}[{{idx}}]",
   "hintFromWaste": "waste",
   "hintToFoundation": "foundation",

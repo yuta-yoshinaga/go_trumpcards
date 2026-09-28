@@ -28,15 +28,6 @@ describe('EscobaPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('r'));
   });
 
-  it('renders CPU difficulty options with localized labels', async () => {
-    renderWithProviders(<EscobaPage />);
-    await waitFor(() => expect(mockExec).toHaveBeenCalled());
-    // Difficulty options are localized (ja), not the hardcoded Easy/Normal/Hard.
-    expect(screen.getByRole('option', { name: 'かんたん' })).toBeInTheDocument();
-    expect(screen.getByRole('option', { name: 'ふつう' })).toBeInTheDocument();
-    expect(screen.getByRole('option', { name: 'むずかしい' })).toBeInTheDocument();
-  });
-
   it('renders the human hand', async () => {
     renderWithProviders(<EscobaPage />);
     await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
@@ -54,6 +45,53 @@ describe('EscobaPage', () => {
     renderWithProviders(<EscobaPage />);
     await waitFor(() => expect(screen.getByTestId('escoba-card-values')).toBeInTheDocument());
     expect(screen.getByTestId('escoba-card-values')).toHaveTextContent('捕獲判定では、J=8、Q=9、K=10として数えます。');
+  });
+
+  it('identifies the exact selected capture combination and keeps an unmatched total neutral', async () => {
+    mockExec.mockResolvedValue(
+      makeEscobaState({
+        tableCards: [
+          { design: 'SPADE', value: 4 },
+          { design: 'HEART', value: 4 },
+          { design: 'CLOVER', value: 4 },
+        ],
+        handCaptures: [[[0, 1]], [], []],
+      }),
+    );
+    renderWithProviders(<EscobaPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+
+    fireEvent.click(screen.getByTestId('table-card-0'));
+    fireEvent.click(screen.getByTestId('table-card-1'));
+    expect(screen.getByTestId('escoba-matched-capture-1')).toBeInTheDocument();
+    expect(screen.getByTestId('escoba-matched-card-0')).toHaveTextContent('1');
+    expect(screen.getByTestId('escoba-matched-card-1')).toHaveTextContent('1');
+    expect(screen.getByTestId('escoba-sum-indicator')).toHaveClass('text-ds-success');
+
+    fireEvent.click(screen.getByTestId('table-card-1'));
+    fireEvent.click(screen.getByTestId('table-card-2'));
+    expect(screen.getByTestId('escoba-sum-indicator')).toHaveTextContent('合計 15 / 15');
+    expect(screen.getByTestId('escoba-sum-indicator')).not.toHaveClass('text-ds-success');
+    expect(screen.queryByTestId('escoba-matched-capture-1')).not.toBeInTheDocument();
+    expect(screen.getByTestId('take-button')).toBeInTheDocument();
+  });
+
+  it('distinguishes multiple capture combinations with separate identifiers', async () => {
+    mockExec.mockResolvedValue(makeEscobaState({ handCaptures: [[[0], [1]], [], []] }));
+    renderWithProviders(<EscobaPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('hand-card-0'));
+
+    fireEvent.click(screen.getByTestId('table-card-0'));
+    expect(screen.getByTestId('escoba-matched-capture-1')).toHaveClass('text-ds-success');
+    expect(screen.getByTestId('table-card-0')).toHaveClass('ring-ds-success');
+    expect(screen.queryByTestId('escoba-matched-capture-2')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId('table-card-0'));
+    fireEvent.click(screen.getByTestId('table-card-1'));
+    expect(screen.getByTestId('escoba-matched-capture-2')).toHaveClass('text-ds-info');
+    expect(screen.getByTestId('table-card-1')).toHaveClass('ring-ds-info');
   });
 
   it('renders per-player scores and stock', async () => {
@@ -197,25 +235,8 @@ describe('EscobaPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '確認' }));
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('r', {
-        config: { targetScore: 10, cpuDifficulty: 1 },
+        config: { targetScore: 10 },
       }),
-    );
-  });
-
-  it('changes CPU difficulty and includes it in the reset config', async () => {
-    renderWithProviders(<EscobaPage />);
-    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
-
-    const select = screen.getByLabelText(/CPU難易度|CPU Difficulty/);
-    fireEvent.change(select, { target: { value: '2' } });
-    mockExec.mockClear();
-    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
-    fireEvent.click(screen.getByRole('button', { name: '確認' }));
-    await waitFor(() =>
-      expect(mockExec).toHaveBeenCalledWith(
-        'r',
-        expect.objectContaining({ config: expect.objectContaining({ cpuDifficulty: 2 }) }),
-      ),
     );
   });
 

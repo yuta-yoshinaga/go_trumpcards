@@ -6,6 +6,14 @@
   },
   "title": "La Belle Lucie",
   "foundation": "Foundation",
+  "foundationAriaLabel": "Foundation {{suit}}, {{count}} cards",
+  "emptyFoundationAriaLabel": "Empty foundation {{index}}",
+  "suitNames": {
+    "spade": "Spades",
+    "clover": "Clubs",
+    "heart": "Hearts",
+    "diamond": "Diamonds"
+  },
   "fan": "Fan",
   "redealsLeft": "Redeals left: {{count}}",
   "stuckRedeal": "Stuck — redeal recommended",

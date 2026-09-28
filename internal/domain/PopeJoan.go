@@ -652,30 +652,6 @@ func (p *PopeJoan) GetConfig() PopeJoanConfig { return p.config }
 // SetConfig はゲーム設定をセットする。
 func (p *PopeJoan) SetConfig(c PopeJoanConfig) { p.config = c }
 
-// SetPhaseForTest はテスト用にフェーズを差し替える。
-func (p *PopeJoan) SetPhaseForTest(ph PopeJoanPhase) { p.phase = ph }
-
-// SetCurrentPlayerForTest はテスト用に手番を差し替える。
-func (p *PopeJoan) SetCurrentPlayerForTest(idx int) { p.currentIdx = idx }
-
-// SetTrumpSuitForTest はテスト用にトランプを差し替える。
-func (p *PopeJoan) SetTrumpSuitForTest(suit int) { p.trumpSuit = suit }
-
-// SetBoardForTest はテスト用に盤を差し替える。
-func (p *PopeJoan) SetBoardForTest(b PopeJoanBoard) { p.board = b }
-
-// SetRunForTest はテスト用に並びの状態を差し替える。
-func (p *PopeJoan) SetRunForTest(suit, rank int) { p.runSuit, p.runRank = suit, rank }
-
-// SetDealNumberForTest はテスト用にディール数を差し替える。
-func (p *PopeJoan) SetDealNumberForTest(n int) { p.dealNo = n }
-
-// SetTurnUpForTest はテスト用にめくり札を差し替える。
-func (p *PopeJoan) SetTurnUpForTest(c *Card) { p.turnUp = c }
-
-// ResolveTurnUpForTest はテスト用にめくり札の精算だけを走らせる。
-func (p *PopeJoan) ResolveTurnUpForTest() { p.resolveTurnUp() }
-
 // addLog は棋譜に 1 件追加する。
 func (p *PopeJoan) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	p.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)

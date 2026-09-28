@@ -603,6 +603,9 @@ export function FollowTheQueenPageContent({ gameKey }: { gameKey: StudPageGameKe
             {/* Betting controls */}
             {canAct && (
               <div data-tutorial="scs-action-buttons">
+                <p data-testid="ftq-betting-pot" className="mb-2 text-center text-ds-text-primary text-sm tabular-nums">
+                  {tc('label.pot')} <strong>{state.pot}</strong>
+                </p>
                 <BettingControls
                   inputId="followTheQueenBetAmount"
                   betAmount={betAmount}

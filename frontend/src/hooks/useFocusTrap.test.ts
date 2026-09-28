@@ -1,6 +1,7 @@
 import { act, renderHook } from '@testing-library/react';
 import type { RefObject } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { isModalOpen } from './keyboardNavUtils';
 import { useFocusTrap } from './useFocusTrap';
 
 /** Builds a container with `n` buttons, mounts it, and returns a ref to it. */
@@ -96,6 +97,29 @@ describe('useFocusTrap', () => {
     renderHook(() => useFocusTrap(ref, false, onClose));
     act(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' })));
     expect(onClose).not.toHaveBeenCalled();
+    cleanup();
+  });
+
+  it('registers an open modal and unregisters it on close and unmount', () => {
+    const { ref, cleanup } = mountContainer(1);
+    const { rerender, unmount } = renderHook(({ open }) => useFocusTrap(ref, open, () => {}), {
+      initialProps: { open: true },
+    });
+    expect(isModalOpen()).toBe(true);
+    rerender({ open: false });
+    expect(isModalOpen()).toBe(false);
+    rerender({ open: true });
+    expect(isModalOpen()).toBe(true);
+    unmount();
+    expect(isModalOpen()).toBe(false);
+    cleanup();
+  });
+
+  it('does not register non-modal panels with trap false', () => {
+    const { ref, cleanup } = mountContainer(1);
+    const { unmount } = renderHook(() => useFocusTrap(ref, true, () => {}, { trap: false }));
+    expect(isModalOpen()).toBe(false);
+    unmount();
     cleanup();
   });
   // Non-modal panels (a landmark `role="region"`, say) still want the open /

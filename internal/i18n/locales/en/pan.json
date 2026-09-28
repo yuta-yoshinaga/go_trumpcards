@@ -18,6 +18,7 @@
   "gameEnd": "Game over! {{name}} wins!",
   "promptDraw": "{{name}} to act (draw phase)",
   "promptDrawHelpStock": "ds: draw from stock",
+  "promptDrawHelpStockEmpty": "ds: stock is empty; drawing ends the round (discards are not recycled)",
   "promptDrawHelpDiscard": "dd: draw the discard top",
   "promptPlay": "{{name}} to act (play phase)",
   "promptPlayHelpMeld": "m <idx...>: lay down a meld (e.g. m 0 1 2)",

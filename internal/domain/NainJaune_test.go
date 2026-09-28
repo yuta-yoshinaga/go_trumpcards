@@ -460,9 +460,6 @@ func TestNainJauneConfigValidate(t *testing.T) {
 	if err := DefaultNainJauneConfig().Validate(); err != nil {
 		t.Fatalf("the default config should validate: %v", err)
 	}
-	if err := (NainJauneConfig{CpuDifficulty: 5, TargetDeals: 5}).Validate(); err == nil {
-		t.Error("expected an error for an unknown difficulty")
-	}
 	if err := (NainJauneConfig{TargetDeals: 0}).Validate(); err == nil {
 		t.Error("expected an error for zero deals")
 	}
@@ -517,7 +514,6 @@ func TestNainJauneUnmarshalRejectsGarbage(t *testing.T) {
 	}{
 		{"not json", `{`},
 		{"wrong player count", `{"pl":[null,null],"cfg":{"cd":0,"td":5},"ph":0}`},
-		{"bad config", `{"pl":[{},{},{},{}],"cfg":{"cd":9,"td":5},"ph":0}`},
 		{"unknown phase", `{"pl":[{},{},{},{}],"cfg":{"cd":0,"td":5},"ph":9}`},
 		// **runRank が範囲外だと出せる札が無くなって固まる。**
 		{"run rank too high", `{"pl":[{},{},{},{}],"cfg":{"cd":0,"td":5},"ph":0,"rr":99}`},

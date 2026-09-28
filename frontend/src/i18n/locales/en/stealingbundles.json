@@ -1,4 +1,5 @@
 {
+  "listSeparator": ", ",
   "phase": {
     "play": "Playing",
     "gameEnd": "Finished"
@@ -33,7 +34,11 @@
     "mustCapture": "A capture is available. You cannot place a card on the table.",
     "trailOnly": "No capture is available. Place a card on the table.",
     "waiting": "Waiting for the other players.",
-    "selected": "{{card}} selected. What would you like to do?"
+    "selected": "{{card}} selected. What would you like to do?",
+    "availableActions": "Available actions with {{card}}: {{actions}}.",
+    "noActions": "No actions are available",
+    "deselected": "Card selection cleared.",
+    "turnEnded": "Your turn has ended."
   },
   "result": {
     "you": "You win! You collected the most with {{n}} cards.",

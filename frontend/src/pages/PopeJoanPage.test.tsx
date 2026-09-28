@@ -73,6 +73,20 @@ describe('PopeJoanPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('shows opponent hand counts only while the deal is in play', async () => {
+    renderWithProviders(<PopeJoanPage />);
+    expect(await screen.findByRole('img', { name: 'CPU1 の手札 3 枚（裏向き）' })).toBeInTheDocument();
+  });
+
+  it('hides opponent hand counts after a deal ends and shows the end phase', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: PopeJoanPhase.DEAL_END, dealWinner: 2 }));
+    renderWithProviders(<PopeJoanPage />);
+    expect(await screen.findByTestId('popejoan-deal-result')).toHaveTextContent('席2');
+    expect(screen.getByText('ディール終了')).toBeInTheDocument();
+    expect(screen.getByText('CPU1: チップ-15')).toBeInTheDocument();
+    expect(screen.queryByRole('img', { name: /CPU1 の手札/ })).not.toBeInTheDocument();
+  });
+
   it('shows both rules permanently', async () => {
     renderWithProviders(<PopeJoanPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());

@@ -28,6 +28,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { TwentyNineResponse } from '../types/card';
 import { TwentyNinePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { suitSymbol, suitSymbolAt } from '../utils/cardAlt';
 import { parseTwentyNineCommand, TWENTY_NINE_HELP } from '../utils/cli/commands/twentyNineCommands';
 import { formatTwentyNineState } from '../utils/cli/formatters/twentyNineFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -35,9 +36,6 @@ import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { twentyNineContractProgress } from '../utils/twentyNineContract';
-
-/** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 = no trump). */
-const SUIT_SYMBOLS = ['', '♠', '♣', '♥', '♦'] as const;
 
 /** Bid button options (Pass / 16 / 20 / 24 / 28). */
 const BIDS: { value: number; key: string }[] = [
@@ -170,11 +168,12 @@ function TwentyNinePageContent() {
 
   const canPlay = isPlayPhase && isHumanTurn;
   // The trump suit is hidden until trumpRevealed flips true mid-play.
-  const revealedTrumpSymbol = state.trumpSuit === 0 ? t('noTrump') : (SUIT_SYMBOLS[state.trumpSuit] ?? '?');
+  const revealedTrumpSymbol = state.trumpSuit === 0 ? t('noTrump') : suitSymbolAt(state.trumpSuit, '');
   const isHumanDeclarer = state.declarerIdx >= 0 && humanIdx === state.declarerIdx;
   const trumpSymbol = !state.trumpRevealed && !isHumanDeclarer ? t('hiddenTrump') : revealedTrumpSymbol;
   const trumpDisplay =
     !state.trumpRevealed && isHumanDeclarer ? t('trumpVisibleToYou', { suit: trumpSymbol }) : trumpSymbol;
+  const leadCard = state.currentTrick[0]?.card;
 
   // The current highest (non-pass) bid; a new non-pass bid must beat it.
   const highestBid = Math.max(0, ...state.bids);
@@ -269,6 +268,16 @@ function TwentyNinePageContent() {
             <div className={lgTwoColGrid}>
               {/* Left: play area */}
               <div>
+                <div data-testid="tn29-lead-suit" className="mb-2 text-center text-ds-text-primary text-sm">
+                  {isPlayPhase && leadCard && (
+                    <span className="inline-flex items-center gap-2 rounded-lg bg-ds-surface px-3 py-1.5">
+                      {t('leadSuit', {
+                        symbol: suitSymbol(leadCard.design),
+                        suit: t(`suits.${leadCard.design.toLowerCase()}`),
+                      })}
+                    </span>
+                  )}
+                </div>
                 <TrickDisplay
                   currentTrick={state.currentTrick}
                   players={state.players}

@@ -103,10 +103,9 @@ func TestSixBidSoloWebController_ResetWithConfig(t *testing.T) {
 		siMock.AssertCalled(t, "ResetWithConfig", expected)
 	}
 
-	t.Run("out-of-range values fall back to defaults", func(t *testing.T) {
-		diff, hands := 9, 99
-		run(t, "cfg-1", &controller.SixBidSoloWebConfig{CpuDifficulty: &diff, TargetHands: &hands},
-			domain.DefaultSixBidSoloConfig())
+	t.Run("out-of-range hand count falls back to default", func(t *testing.T) {
+		hands := 99
+		run(t, "cfg-1", &controller.SixBidSoloWebConfig{TargetHands: &hands}, domain.DefaultSixBidSoloConfig())
 	})
 
 	// **config はワイヤ上で任意。**省略時に落ちるとフロントの reset が死ぬ。

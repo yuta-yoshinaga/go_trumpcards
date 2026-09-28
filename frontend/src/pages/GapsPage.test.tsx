@@ -118,9 +118,30 @@ describe('GapsPage', () => {
     expect(screen.queryByTestId('gaps-ghost-3-0')).not.toBeInTheDocument();
   });
 
+  it('renders a ghost rank without a suit symbol for an unknown design', async () => {
+    const gapNeeds = [
+      [{ kind: 'needed', design: 'JOKER', value: 4 } as unknown as GapsGhostHint, ...Array(12).fill(null)],
+      ...Array.from({ length: 3 }, () => Array(13).fill(null)),
+    ];
+    const grid = Array.from({ length: 4 }, () => Array(13).fill(null));
+    mockedRun.mockResolvedValue({ ...playingState, grid, gapNeeds });
+    renderWithProviders(<GapsPage />);
+    const ghost = await screen.findByTestId('gaps-ghost-0-0');
+    expect(ghost).toHaveTextContent('4');
+    expect(ghost).not.toHaveTextContent('♠');
+  });
+
   it('renders redeals remaining', async () => {
     renderWithProviders(<GapsPage />);
-    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent(/再配り残り: 3/));
+    const controls = await screen.findByTestId('gaps-controls');
+    expect(controls).toHaveTextContent(/再配り残り: 3/);
+  });
+
+  it('clearly shows zero redeals remaining beside the controls', async () => {
+    mockedRun.mockResolvedValue({ ...playingState, redealsRemaining: 0, redealsUsed: 3 });
+    renderWithProviders(<GapsPage />);
+    const controls = await screen.findByTestId('gaps-controls');
+    expect(controls).toHaveTextContent(/再配り残り: 0/);
   });
 
   it('calls run reset on mount', async () => {
@@ -337,18 +358,22 @@ describe('GapsPage', () => {
     );
   });
 
-  it('does not move when an unselected gap is clicked', async () => {
+  it('explains a focusable gap and ignores clicks before a source is selected', async () => {
     renderWithProviders(<GapsPage />);
     const target = await screen.findByTestId('gaps-cell-0-12');
 
-    expect(target).toBeDisabled();
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const hintId = target.getAttribute('aria-describedby');
+    expect(hintId).toBeTruthy();
+    expect(document.getElementById(hintId ?? '')).toHaveTextContent('先に移動する札を選んでください');
     mockedRun.mockClear();
     fireEvent.click(target);
     await flushPendingDispatch();
     expect(mockedRun).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
   });
 
-  it('keeps the gap drop handlers on an enabled wrapper while its click button is disabled', async () => {
+  it('keeps the gap drop handlers on an enabled wrapper while its click button is aria-disabled', async () => {
     const grid = makeGrid();
     grid[0] = [card('HEART', 5), ...Array.from({ length: 12 }, () => null)];
     mockedRun.mockResolvedValue({ ...playingState, grid });
@@ -358,7 +383,8 @@ describe('GapsPage', () => {
     const dropZone = target.parentElement;
     expect(dropZone).not.toBeNull();
     expect(dropZone).not.toHaveAttribute('disabled');
-    expect(target).toBeDisabled();
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
 
     const dataTransfer = {
       data: {} as Record<string, string>,

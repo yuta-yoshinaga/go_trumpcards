@@ -46,6 +46,7 @@ import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { findPlayerName } from '../utils/playerUtils';
 import { evaluateBestHand, pokerHandKey } from '../utils/pokerSquaresUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
+import { showingHandKey } from '../utils/showingHandKey';
 
 /** Seven Card Stud tutorial step definitions. */
 const SCS_TUTORIAL_STEPS: TutorialStep[] = [
@@ -264,7 +265,7 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
       {
         key: 'c',
         action: () => execApi('call', undefined, undefined, getElapsed()),
-        enabled: hasOutstandingBet,
+        enabled: canAct && hasOutstandingBet,
         label: 'call',
       },
       {
@@ -273,23 +274,36 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
           hasOutstandingBet
             ? execApi('raise', betAmount, undefined, getElapsed())
             : execApi('bet', betAmount, undefined, getElapsed()),
+        enabled: canAct,
         label: 'raiseOrBet',
       },
       {
         key: 'k',
         action: () => execApi('check', undefined, undefined, getElapsed()),
-        enabled: !hasOutstandingBet,
+        enabled: canAct && !hasOutstandingBet,
         label: 'check',
       },
-      { key: 'f', action: () => execApi('fold', undefined, undefined, getElapsed()), label: 'fold' },
-      { key: 'a', action: () => execApi('allin', undefined, undefined, getElapsed()), label: 'allin' },
+      {
+        key: 'f',
+        action: () => execApi('fold', undefined, undefined, getElapsed()),
+        enabled: canAct,
+        label: 'fold',
+      },
+      {
+        key: 'a',
+        action: () => execApi('allin', undefined, undefined, getElapsed()),
+        enabled: canAct,
+        label: 'allin',
+      },
+      { key: 'm', action: () => execApi('muck'), enabled: isMuckPhase, label: 'muck' },
+      { key: 's', action: () => execApi('show'), enabled: isMuckPhase, label: 'show' },
     ],
-    [execApi, hasOutstandingBet, betAmount, getElapsed],
+    [execApi, canAct, hasOutstandingBet, betAmount, getElapsed, isMuckPhase],
   );
 
   useActionKeyboardNav({
     bindings: actionBindings,
-    enabled: canAct && !loading,
+    enabled: (canAct || isMuckPhase) && !loading,
   });
 
   if (!state)
@@ -371,6 +385,14 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
                     {isShowdown && !p.folded && p.handName && (
                       <span className={`inline-block ml-2 text-xs font-bold rounded px-2 py-0.5 ${handNameBadgeClass}`}>
                         {p.handName}
+                      </span>
+                    )}
+                    {!isShowdown && !p.folded && !p.handName && showingHandKey(p.doorCards) !== null && (
+                      <span
+                        data-testid={`scs-showing-hand-${p.id}`}
+                        className="inline-block ml-2 text-xs text-ds-text-muted"
+                      >
+                        {t('showingHand', { hand: t(`hand.${showingHandKey(p.doorCards)}`) })}
                       </span>
                     )}
                   </div>
@@ -517,6 +539,16 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
                       {humanPlayer.handName}
                     </span>
                   )}
+                  {!isShowdown &&
+                    !humanPlayer.folded &&
+                    !humanPlayer.handName &&
+                    showingHandKey(humanPlayer.doorCards) !== null && (
+                      <span data-testid="scs-showing-hand-0" className="inline-block ml-2 text-xs text-ds-text-muted">
+                        {t('showingHand', {
+                          hand: t(`hand.${showingHandKey(humanPlayer.doorCards)}`),
+                        })}
+                      </span>
+                    )}
                   {isActive && !humanPlayer.folded && currentHandKey && (
                     <span
                       data-testid="scs-current-hand"

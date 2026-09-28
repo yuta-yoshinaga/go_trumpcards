@@ -59,6 +59,8 @@ type UltiGame interface {
 	GetDeclarerIdx() int
 	// GetContract コントラクトを取得する
 	GetContract() domain.UltiContract
+	// GetContractRequirement gets the points or tricks required by the current contract.
+	GetContractRequirement() int
 	// GetTrumpSuit 切り札スートを取得する (-1=なし, 1..4)
 	GetTrumpSuit() int
 	// GetTalonCount タロンの残り枚数を取得する

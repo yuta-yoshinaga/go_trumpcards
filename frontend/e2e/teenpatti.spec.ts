@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, TIMEOUT_GAME_LOOP, TIMEOUT_TRANSITION, waitForLoaded } from './helpers';
+import { gameButton, navigateTo, TIMEOUT_GAME_LOOP, TIMEOUT_TRANSITION, waitForLoaded } from './helpers';
 
 test.describe('Teen Patti E2E', () => {
   test('loads, resets, and renders the betting UI', async ({ page }) => {
@@ -23,7 +23,7 @@ test.describe('Teen Patti E2E', () => {
       .getByRole('button', { name: '手札を見る' })
       .or(page.getByRole('button', { name: /^ベット/ }))
       .or(page.getByRole('button', { name: 'フォールド' }))
-      .or(page.getByRole('button', { name: 'ショー' }))
+      .or(gameButton(page, 'ショー'))
       .or(page.getByRole('button', { name: 'サイドショー' }))
       .or(page.getByRole('button', { name: '次のディール' }))
       .or(page.getByRole('button', { name: /リセット|次のゲーム/ }))

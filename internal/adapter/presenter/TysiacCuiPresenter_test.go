@@ -245,7 +245,7 @@ func TestTysiacCuiPresenter_HighlightsThePlayerNearTheTarget(t *testing.T) {
 	humanLine := func(score int) string {
 		return i18n.Tf("tysiac.playerLine",
 			"name", color.Bold(i18n.T("cuiPlayerYou")), "role", i18n.T("tysiac.roleDeclarer"),
-			"cards", "0", "score", strconv.Itoa(score), "tricks", "0")
+			"cards", "0", "score", strconv.Itoa(score), "progress", i18n.Tf("tysiac.pointsRemaining", "points", strconv.Itoa(max(0, target-score))), "tricks", "0")
 	}
 
 	// **閾値の両側を踏む。**0.8 ちょうどでは付かない (Web も `> 0.8`)。
@@ -263,4 +263,15 @@ func TestTysiacCuiPresenter_HighlightsThePlayerNearTheTarget(t *testing.T) {
 		// 素の行としては出ている ── 「行ごと消えた」で通ってしまわないように。
 		assert.Contains(t, out, humanLine(justUnder))
 	})
+}
+
+func TestTysiacCuiPresenter_ShowsCurrentScoreProgress(t *testing.T) {
+	p := new(presenter.TysiacCuiPresenter)
+	m, _ := setupTysiacCuiMockWithPlayers()
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPlayerScores")
+	m.On("GetPlayerScores").Return([domain.TysiacPlayerCnt]int{250, 1000, 1100})
+	out := p.Output(m, nil)
+	assert.Contains(t, out, "現在得点: 目標まであと750点")
+	assert.Equal(t, 2, strings.Count(out, "現在得点で目標達成"))
+	assert.NotContains(t, out, "あと-100点")
 }

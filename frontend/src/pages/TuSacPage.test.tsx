@@ -119,6 +119,25 @@ describe('TuSacPage', () => {
     expect(screen.getByTestId('tusac-hand').children).toHaveLength(4);
   });
 
+  it('各手牌ボタンを牌名と表示順の番号で区別する', async () => {
+    const duplicate = card('卒', 'red', 7);
+    mockApi.mockResolvedValue(withState({ seats: [seat({ cards: [duplicate, duplicate] }), base.seats[1]] }));
+    renderWithProviders(<TuSacPage />);
+
+    const first = await screen.findByTestId('tusac-card-0');
+    const second = screen.getByTestId('tusac-card-1');
+    expect(first.getAttribute('aria-label')).toContain('卒');
+    expect(first.getAttribute('aria-label')).toMatch(/1/);
+    expect(second.getAttribute('aria-label')).toContain('卒');
+    expect(second.getAttribute('aria-label')).toMatch(/2/);
+    expect(first.getAttribute('aria-label')).not.toBe(second.getAttribute('aria-label'));
+    expect(first).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(second);
+    expect(second).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('status')).toHaveTextContent('1');
+  });
+
   // **相手の手札は届かない。** 枚数だけが分かる。
   it('相手は枚数だけを出す', async () => {
     mockApi.mockResolvedValue(base);

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useId, useMemo, useState } from 'react';
 import { type AlaskaMoveZone, alaskaHintApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -35,6 +35,7 @@ import type { AlaskaResponse } from '../types/card';
 import { AlaskaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { valueName } from '../utils/cardUtils';
 import { parseAlaskaCommand, RS_HELP } from '../utils/cli/commands/alaskaCommands';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
@@ -98,6 +99,7 @@ function formatAlaskaState(state: AlaskaResponse): string {
 export const AlaskaPage = withTutorial(AlaskaPageContent, 'alaska', RS_TUTORIAL_STEPS);
 /** Inner content of the Alaska page. */
 function AlaskaPageContent() {
+  const selectSourceHintId = useId();
   const {
     t,
     tc,
@@ -320,6 +322,9 @@ function AlaskaPageContent() {
         </>
       }
     >
+      <span id={selectSourceHintId} className="sr-only">
+        {tc('label.selectSourceFirst')}
+      </span>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -354,15 +359,25 @@ function AlaskaPageContent() {
                         isTarget ? 'hover:ring-2 hover:ring-ds-warning cursor-pointer' : ''
                       }`}
                       onClick={() => isTarget && handleSelectTarget('foundation', i)}
-                      disabled={!isPlaying || !isTarget}
+                      disabled={!isPlaying}
+                      aria-disabled={!isTarget || undefined}
+                      aria-describedby={!isTarget ? selectSourceHintId : undefined}
                       aria-label={
                         topCard
                           ? t('foundationAriaLabel', {
                               suit: FOUNDATION_SUITS[i],
                               count: pile.length,
+                              topCard: cardAlt(topCard),
+                              nextCondition:
+                                topCard.value < 13
+                                  ? t('foundationNextCard', {
+                                      card: `${FOUNDATION_SUITS[i]} ${valueName(topCard.value + 1)}`,
+                                    })
+                                  : t('foundationComplete'),
                             })
                           : t('emptyFoundationAriaLabel', {
                               suit: FOUNDATION_SUITS[i],
+                              nextCondition: t('foundationNextCard', { card: `${FOUNDATION_SUITS[i]} A` }),
                             })
                       }
                       style={{ width: rs.cw, height: rs.ch }}
@@ -421,7 +436,9 @@ function AlaskaPageContent() {
                         }`}
                         style={{ width: rs.cw, height: rs.ch }}
                         onClick={() => selectedSource && handleSelectTarget('tableau', colIdx)}
-                        disabled={!isPlaying || !selectedSource}
+                        disabled={!isPlaying}
+                        aria-disabled={!selectedSource || undefined}
+                        aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                         aria-label={`${t('empty')} ${t('tableau')} ${colIdx}`}
                       >
                         {t('empty')}

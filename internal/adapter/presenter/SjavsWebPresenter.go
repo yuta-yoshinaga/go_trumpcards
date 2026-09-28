@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra2
+//go:build !js || !wasm || extra9
 
 package presenter
 
@@ -86,8 +86,7 @@ func (p *SjavsWebPresenter) buildBase(c interfaces.SjavsGame) *controller.SjavsW
 		}
 	}
 
-	cfg := c.GetConfig()
-	resObj.Config = controller.SjavsWebOutputConfig{CpuDifficulty: int(cfg.CpuDifficulty)}
+	resObj.Config = controller.SjavsWebOutputConfig{}
 	resObj.Players = p.buildPlayersOutput(c)
 
 	// ヒントは通常のレスポンスにも載せる。HintOutput にしか設定しないと、

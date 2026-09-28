@@ -926,7 +926,8 @@ func findAllRummy500Melds(cards []*Card) [][]*Card {
 	for _, c := range cards {
 		byRank[c.GetValue()] = append(byRank[c.GetValue()], c)
 	}
-	for _, group := range byRank {
+	for _, rank := range sortedIntKeys(byRank) {
+		group := byRank[rank]
 		if len(group) >= 3 {
 			melds = append(melds, append([]*Card{}, group[:3]...))
 		}
@@ -940,7 +941,8 @@ func findAllRummy500Melds(cards []*Card) [][]*Card {
 	for _, c := range cards {
 		bySuit[c.GetDesign()] = append(bySuit[c.GetDesign()], c)
 	}
-	for _, group := range bySuit {
+	for _, suit := range sortedIntKeys(bySuit) {
+		group := bySuit[suit]
 		if len(group) < 3 {
 			continue
 		}

@@ -105,16 +105,15 @@ func TestConquianWebController_ResetWithConfig(t *testing.T) {
 	mockOutput := `{"players":[]}`
 
 	t.Run("custom config values are passed", func(t *testing.T) {
-		diff := 2
 		wins := 3
-		expected := domain.ConquianConfig{CpuDifficulty: domain.ConquianCpuDifficultyHard, TargetWins: 3}
+		expected := domain.ConquianConfig{TargetWins: 3}
 		siMock := new(usecase.MockConquianInteractor)
 		siMock.On("ResetWithConfig", expected).Return(mockOutput)
 		ctrl := controller.NewConquianWebController(func() uc.ConquianInteractorIF { return siMock })
 		defer ctrl.Stop()
 		input := controller.ConquianWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "c1"},
-			Config:       &controller.ConquianWebConfig{CpuDifficulty: &diff, TargetWins: &wins},
+			Config:       &controller.ConquianWebConfig{TargetWins: &wins},
 		}
 		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)
@@ -122,7 +121,6 @@ func TestConquianWebController_ResetWithConfig(t *testing.T) {
 	})
 
 	t.Run("out-of-range config falls back to defaults", func(t *testing.T) {
-		diff := 99
 		wins := 0
 		expected := domain.DefaultConquianConfig()
 		siMock := new(usecase.MockConquianInteractor)
@@ -131,7 +129,7 @@ func TestConquianWebController_ResetWithConfig(t *testing.T) {
 		defer ctrl.Stop()
 		input := controller.ConquianWebInput{
 			BaseWebInput: controller.BaseWebInput{Command: "reset", SessionID: "c2"},
-			Config:       &controller.ConquianWebConfig{CpuDifficulty: &diff, TargetWins: &wins},
+			Config:       &controller.ConquianWebConfig{TargetWins: &wins},
 		}
 		recorded := execRequest(t, ctrl.Exec, &input)
 		recorded.CodeIs(http.StatusOK)

@@ -7,7 +7,6 @@ import { MarjapussiPage } from './MarjapussiPage';
 
 vi.mock('../api/gameApi', () => ({
   marjapussiApi: { exec: vi.fn() },
-  actionLogApi: { marjapussi: vi.fn() },
 }));
 
 const mockExec = vi.mocked(marjapussiApi.exec);
@@ -110,14 +109,7 @@ describe('MarjapussiPage', () => {
     expect(screen.getByTestId('marjapussi-progress-team-1')).toBeInTheDocument();
   });
 
-  it('displays latest marriage declaration or none', async () => {
-    // マリッジ宣言なし
-    const { unmount: unmountNoMarriage } = renderWithProviders(<MarjapussiPage />);
-    const noMarriage = await screen.findByTestId('marjapussi-last-marriage');
-    expect(noMarriage).toHaveTextContent('直近のマリッジ宣言: なし');
-    unmountNoMarriage();
-
-    // マリッジ宣言あり (チーム0の人間が ♥ を宣言して 40点)
+  it('highlights the latest marriage declaration in the history', async () => {
     mockExec.mockResolvedValue(
       makeMarjapussiState({
         trumpSuit: 3,
@@ -125,12 +117,57 @@ describe('MarjapussiPage', () => {
         leadPlayerIdx: 0,
       }),
     );
-    const { unmount } = renderWithProviders(<MarjapussiPage />);
-    const declaredMarriage = await screen.findByTestId('marjapussi-last-marriage');
-    expect(declaredMarriage).toHaveTextContent('直近のマリッジ宣言');
-    expect(declaredMarriage).toHaveTextContent('♥');
-    expect(declaredMarriage).toHaveTextContent('40');
-    unmount();
+    renderWithProviders(<MarjapussiPage />);
+    const history = await screen.findByTestId('marjapussi-marriage-history');
+    const latestMarriage = history.querySelector('[aria-current="true"]');
+    expect(latestMarriage).toHaveTextContent('あなた が ♥ を宣言（+40点）');
+    expect(history.querySelectorAll('li')).toHaveLength(1);
+  });
+
+  it('shows no marriage in the history when there are no declarations', async () => {
+    renderWithProviders(<MarjapussiPage />);
+    const history = await screen.findByTestId('marjapussi-marriage-history');
+    expect(history).toHaveTextContent('直近のマリッジ宣言: なし');
+    expect(history.querySelector('[aria-current="true"]')).toBeNull();
+  });
+
+  it('records each marriage point increase in order and clears history for a new round', async () => {
+    mockExec
+      .mockResolvedValueOnce(makeMarjapussiState({ roundMarriage: [20, 0], trumpSuit: 1, leadPlayerIdx: 0 }))
+      .mockResolvedValueOnce(makeMarjapussiState({ roundMarriage: [40, 0], trumpSuit: 3, leadPlayerIdx: 0 }));
+    renderWithProviders(<MarjapussiPage />);
+    const history = await screen.findByTestId('marjapussi-marriage-history');
+    expect(history).toHaveTextContent('あなた が ♠ を宣言（+20点）');
+    fireEvent.click(screen.getByAltText('♥ Q'));
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+    await waitFor(() => expect(history).toHaveTextContent('あなた が ♥ を宣言（+20点）'));
+    expect(history.querySelectorAll('li')).toHaveLength(2);
+    expect(history.querySelector('[aria-current="true"]')).toHaveTextContent('♥');
+  });
+
+  it('clears marriage history when the round changes', async () => {
+    mockExec
+      .mockResolvedValueOnce(makeMarjapussiState({ phase: 2, roundMarriage: [40, 0], trumpSuit: 3, leadPlayerIdx: 0 }))
+      .mockResolvedValueOnce(makeMarjapussiState({ roundNumber: 2, roundMarriage: [0, 0], trumpSuit: 0 }));
+    renderWithProviders(<MarjapussiPage />);
+    const history = await screen.findByTestId('marjapussi-marriage-history');
+    expect(history).toHaveTextContent('あなた が ♥ を宣言（+40点）');
+    fireEvent.click(screen.getByRole('button', { name: '次のラウンド' }));
+    await waitFor(() => expect(history.querySelectorAll('li')).toHaveLength(0));
+    expect(history).toHaveTextContent('今ラウンドの結婚履歴');
+  });
+
+  it('clears marriage history when a new game starts at the same round number', async () => {
+    mockExec
+      .mockResolvedValueOnce(makeMarjapussiState({ roundMarriage: [20, 0], trumpSuit: 1, leadPlayerIdx: 0 }))
+      .mockResolvedValueOnce(makeMarjapussiState({ roundNumber: 1, roundMarriage: [0, 0], trumpSuit: 0 }));
+    renderWithProviders(<MarjapussiPage />);
+    const history = await screen.findByTestId('marjapussi-marriage-history');
+    expect(history.querySelectorAll('li')).toHaveLength(1);
+
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(screen.getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(history.querySelectorAll('li')).toHaveLength(0));
   });
 
   it('shows a marriage available banner when human has K and Q and is leading', async () => {

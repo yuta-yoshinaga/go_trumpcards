@@ -18,6 +18,12 @@
     "reset": "Reset",
     "rebet": "Rebet ({{amount}})"
   },
+  "rebetBreakdown": {
+    "title": "Wagers to repeat",
+    "main": "{{type}}: {{amount}}",
+    "playerPair": "Player Pair: {{amount}}",
+    "bankerPair": "Banker Pair: {{amount}}"
+  },
   "phase": {
     "bet": "Bet Phase",
     "end": "Result"

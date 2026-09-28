@@ -114,8 +114,7 @@ func TestBidEuchreWebController_ResetWithConfig(t *testing.T) {
 	}
 
 	t.Run("out-of-range values fall back to defaults", func(t *testing.T) {
-		diff := 9
-		run(t, "cfg-1", &controller.BidEuchreWebConfig{CpuDifficulty: &diff}, domain.DefaultBidEuchreConfig())
+		run(t, "cfg-1", &controller.BidEuchreWebConfig{}, domain.DefaultBidEuchreConfig())
 	})
 
 	// **config はワイヤ上で任意。**省略時に落ちるとフロントの reset が死ぬ。

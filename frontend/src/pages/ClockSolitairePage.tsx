@@ -396,7 +396,8 @@ function ClockSolitairePageContent() {
                 {(() => {
                   const centerPile = state.piles[12];
                   const centerTopCard = centerPile?.[centerPile.length - 1]?.card ?? null;
-                  const isCenterFlightTarget = state.currentCard?.value === 13;
+                  const isCenterFlightTarget =
+                    state.phase === 0 && (!state.currentCard || state.currentCard.value === 13);
                   return centerPile && centerPile.length > 0 ? (
                     <div
                       className={`relative rounded ${isCenterFlightTarget ? 'ring-2 ring-ds-warning animate-pulse' : ''}`}

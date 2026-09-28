@@ -1809,12 +1809,9 @@ func (s *Skat) UnmarshalJSON(data []byte) error {
 	if len(j.CurrentTrick) > SkatPlayerCnt {
 		return fmt.Errorf("skat: current trick has %d cards (max %d)", len(j.CurrentTrick), SkatPlayerCnt)
 	}
-	for name, n := range map[string]int{
-		"skat": len(j.Skat), "originalSkat": len(j.OriginalSkat),
-		"declarerHand": len(j.DeclarerHand), "actionLog": len(j.ActionLog),
-	} {
-		if n > skatMaxSliceLen {
-			return fmt.Errorf("skat: %s has %d entries (max %d)", name, n, skatMaxSliceLen)
+	for _, f := range []namedInt{{"skat", len(j.Skat)}, {"originalSkat", len(j.OriginalSkat)}, {"declarerHand", len(j.DeclarerHand)}, {"actionLog", len(j.ActionLog)}} {
+		if f.value > skatMaxSliceLen {
+			return fmt.Errorf("skat: %s has %d entries (max %d)", f.name, f.value, skatMaxSliceLen)
 		}
 	}
 
@@ -1826,16 +1823,10 @@ func (s *Skat) UnmarshalJSON(data []byte) error {
 	// declarerIdx も -1 で、まだ誰の手番でも誰が declarer でもない。
 	// ここを 0 以上に絞ると、**ビッド中に保存された盤を全部拒否する** ——
 	// 直そうとしたバグより悪い (既存の RestoreFromJSON テストが捕まえた)。
-	for name, idx := range map[string]int{
-		"currentPlayerIdx": j.CurrentPlayerIdx, "declarerIdx": j.DeclarerIdx,
-		"leadPlayerIdx": j.LeadPlayerIdx, "dealerIdx": j.DealerIdx,
-		"forehandIdx": j.ForehandIdx, "middlehandIdx": j.MiddlehandIdx,
-		"rearhandIdx": j.RearhandIdx, "bidderIdx": j.BidderIdx,
-		"responderIdx": j.ResponderIdx, "round1Winner": j.Round1Winner,
-	} {
-		if idx < -1 || idx >= SkatPlayerCnt {
+	for _, f := range []namedInt{{"currentPlayerIdx", j.CurrentPlayerIdx}, {"declarerIdx", j.DeclarerIdx}, {"leadPlayerIdx", j.LeadPlayerIdx}, {"dealerIdx", j.DealerIdx}, {"forehandIdx", j.ForehandIdx}, {"middlehandIdx", j.MiddlehandIdx}, {"rearhandIdx", j.RearhandIdx}, {"bidderIdx", j.BidderIdx}, {"responderIdx", j.ResponderIdx}, {"round1Winner", j.Round1Winner}} {
+		if f.value < -1 || f.value >= SkatPlayerCnt {
 			return fmt.Errorf("skat: %s %d is neither -1 nor a seat (0-%d)",
-				name, idx, SkatPlayerCnt-1)
+				f.name, f.value, SkatPlayerCnt-1)
 		}
 	}
 

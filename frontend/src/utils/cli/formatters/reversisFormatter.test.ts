@@ -11,6 +11,7 @@ const seat = (id: number, over: Record<string, unknown> = {}) => ({
   cards: id === 0 ? [card('HEART', 11), card('SPADE', 9)] : [],
   chips: 45,
   roundPenalty: 0,
+  markedPenalty: 0,
   trickCount: 0,
   tookQuinola: false,
   tookDiamondAce: false,

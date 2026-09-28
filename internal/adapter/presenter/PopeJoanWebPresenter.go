@@ -79,8 +79,7 @@ func (p *PopeJoanWebPresenter) buildBase(c interfaces.PopeJoanGame) *controller.
 	cfg := c.GetConfig()
 	resObj.TargetDeals = cfg.TargetDeals
 	resObj.Config = controller.PopeJoanWebOutputConfig{
-		CpuDifficulty: int(cfg.CpuDifficulty),
-		TargetDeals:   cfg.TargetDeals,
+		TargetDeals: cfg.TargetDeals,
 	}
 	resObj.Players = p.buildPlayersOutput(c)
 

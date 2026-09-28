@@ -28,15 +28,13 @@ import { gameTheme } from '../styles/gameTheme';
 import type { SoloWhistResponse } from '../types/card';
 import { SoloWhistContract, SoloWhistPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { suitSymbolAt } from '../utils/cardAlt';
 import { parseSoloWhistCommand, SOLO_WHIST_HELP } from '../utils/cli/commands/soloWhistCommands';
 import { formatSoloWhistState } from '../utils/cli/formatters/soloWhistFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
-
-/** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 = no trump). */
-const SUIT_SYMBOLS = ['', '♠', '♣', '♥', '♦'] as const;
 
 /** Contract i18n key suffixes indexed by contract value (0=Pass…3=Abundance). */
 const CONTRACT_KEYS = ['pass', 'solo', 'misere', 'abundance'] as const;
@@ -216,7 +214,7 @@ function SoloWhistPageContent() {
   const isGameEnd = state.phase === SoloWhistPhase.GAME_END || state.gameEndFlag;
 
   const canPlay = isPlayPhase && isHumanTurn;
-  const trumpSymbol = state.trumpSuit === 0 ? t('noTrump') : (SUIT_SYMBOLS[state.trumpSuit] ?? '?');
+  const trumpSymbol = state.trumpSuit === 0 ? t('noTrump') : suitSymbolAt(state.trumpSuit, '');
 
   // The current highest (non-pass) bid; a new non-pass bid must beat it.
   const highestBid = Math.max(0, ...state.bids);
@@ -397,6 +395,15 @@ function SoloWhistPageContent() {
                 {(isRoundEnd || isGameEnd) && (
                   <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
                     <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
+                    {declarer &&
+                      (state.contract === SoloWhistContract.SOLO || state.contract === SoloWhistContract.ABUNDANCE) && (
+                        <div className="mb-1 text-ds-text-primary" data-testid="solowhist-round-contract">
+                          {t('roundResult.contract', {
+                            target: CONTRACT_TARGET_TRICKS[state.contract],
+                            won: state.roundTricks[declarer.id] ?? 0,
+                          })}
+                        </div>
+                      )}
                     {state.players.map((p) => (
                       <div key={p.id}>
                         {t('roundResult.tricks', {

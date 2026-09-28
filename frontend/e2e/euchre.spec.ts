@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, waitForLoaded } from './helpers';
+import { gameButton, navigateTo, waitForLoaded } from './helpers';
 
 test.describe('Euchre E2E', () => {
   test('navigates, resets, and plays through phase transitions', async ({ page }) => {
@@ -20,7 +20,7 @@ test.describe('Euchre E2E', () => {
     await expect(page.getByText('チームスコア').first()).toBeVisible();
 
     const orderUpButton = page.getByRole('button', { name: 'オーダーアップ', exact: true });
-    const passButton = page.getByRole('button', { name: 'パス' });
+    const passButton = gameButton(page, 'パス');
     const playButton = page.getByRole('button', { name: '出す' });
     const discardButton = page.getByRole('button', { name: 'ディスカード' });
     const nextTrickButton = page.getByRole('button', { name: '次のトリック' });

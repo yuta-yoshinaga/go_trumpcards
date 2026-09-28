@@ -21,8 +21,7 @@ type EcarteWebInput struct {
 
 // EcarteWebConfig エカルテWeb設定
 type EcarteWebConfig struct {
-	CpuDifficulty *int `json:"cpuDifficulty,omitempty"`
-	TargetScore   *int `json:"targetScore,omitempty"`
+	TargetScore *int `json:"targetScore,omitempty"`
 }
 
 // EcarteWebOutputPlayer エカルテWebアウトプットプレイヤー
@@ -71,16 +70,12 @@ type EcarteWebOutput struct {
 
 // EcarteWebOutputConfig エカルテ設定アウトプット
 type EcarteWebOutputConfig struct {
-	CpuDifficulty int `json:"cpuDifficulty"`
-	TargetScore   int `json:"targetScore"`
+	TargetScore int `json:"targetScore"`
 }
 
 // ToConfig builds an EcarteConfig from the nested web config, applying bounds checking.
 func (c *EcarteWebConfig) ToConfig() domain.EcarteConfig {
 	cfg := domain.DefaultEcarteConfig()
-	cfg.CpuDifficulty = domain.EcarteCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty,
-		int(domain.EcarteCpuDifficultyEasy), int(domain.EcarteCpuDifficultyHard),
-		int(cfg.CpuDifficulty)))
 	cfg.TargetScore = webutil.BoundedIntPtr(c.TargetScore, 1, domain.EcarteMaxTargetScore, cfg.TargetScore)
 	return cfg
 }

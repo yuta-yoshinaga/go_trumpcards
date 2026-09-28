@@ -65,16 +65,6 @@ func TestShengJiInteractor_ResetWithConfig(t *testing.T) {
 		gameMock.AssertCalled(t, "SetConfig", cfg)
 	})
 
-	t.Run("invalid config never reaches the game", func(t *testing.T) {
-		pMock := new(presenter.MockShengJiPresenter)
-		pMock.On("Output", mock.Anything, mock.Anything).Return(shengJiMockOutput)
-		gameMock := new(interfaces.MockShengJiGame)
-
-		si := usecase.NewShengJiInteractor(gameMock, pMock)
-		assert.Equal(t, shengJiMockOutput, si.ResetWithConfig(domain.ShengJiConfig{CpuDifficulty: 9}))
-		gameMock.AssertNotCalled(t, "SetConfig", mock.Anything)
-		gameMock.AssertNotCalled(t, "Reset")
-	})
 }
 
 // **どのアクションも currentIdx の席として実行される。**

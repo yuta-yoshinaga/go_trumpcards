@@ -11,6 +11,7 @@
   "empty": "Empty",
   "foundationAriaLabel": "{{suit}} foundation {{count}} cards",
   "emptyFoundationAriaLabel": "Empty foundation ({{suit}})",
+  "tableauCardAriaLabel": "{{card}}, tableau column {{col}}",
   "foundationProgress": "{{count}}/13",
   "landscapeBanner": "Landscape mode recommended",
   "hint": "Hint",

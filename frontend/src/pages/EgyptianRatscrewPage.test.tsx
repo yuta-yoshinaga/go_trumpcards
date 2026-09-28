@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { egyptianRatscrewApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { EgyptianRatscrewResponse } from '../types/card';
 import { EgyptianRatscrewEventKind, EgyptianRatscrewPhase, EgyptianRatscrewSlapReason } from '../types/phases';
@@ -141,6 +142,64 @@ describe('EgyptianRatscrewPage', () => {
     await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
     fireEvent.click(screen.getByTestId('step-button'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('step'));
+  });
+
+  it('announces the pile size and next player after a successful step', async () => {
+    mockExec.mockResolvedValueOnce(baseState).mockResolvedValueOnce({
+      ...baseState,
+      centerPileSize: 1,
+      topCard: { design: 'HEART', value: 8 },
+      isHumanTurn: false,
+      currentTurnIdx: 1,
+    });
+    renderWithProviders(<EgyptianRatscrewPage />);
+    await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('step-button'));
+    await waitFor(() => {
+      const live = screen.getByTestId('er-step-announce');
+      expect(live).toHaveAttribute('role', 'status');
+      expect(live).toHaveAttribute('aria-live', 'polite');
+      expect(live).toHaveTextContent('場札1枚');
+      expect(live).toHaveTextContent('CPU');
+      expect(live).toHaveTextContent('場札1枚。CPU 1のターンです。');
+    });
+  });
+
+  it('announces the human turn without a possessive in English', async () => {
+    await i18n.changeLanguage('en');
+    mockExec.mockResolvedValueOnce(baseState).mockResolvedValueOnce({
+      ...baseState,
+      centerPileSize: 1,
+      topCard: { design: 'HEART', value: 8 },
+      isHumanTurn: true,
+    });
+    renderWithProviders(<EgyptianRatscrewPage />);
+    await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('step-button'));
+    await waitFor(() =>
+      expect(screen.getByTestId('er-step-announce')).toHaveTextContent('1 cards in the pile. Your turn.'),
+    );
+    await i18n.changeLanguage('ja');
+  });
+
+  it('does not announce a rejected or finished step', async () => {
+    mockExec
+      .mockResolvedValueOnce(baseState)
+      .mockResolvedValueOnce({ ...baseState, message: '操作できません', messageCode: '' });
+    renderWithProviders(<EgyptianRatscrewPage />);
+    await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('step-button'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('step'));
+    expect(screen.getByTestId('er-step-announce')).toBeEmptyDOMElement();
+  });
+
+  it('does not announce a step response that ends the game', async () => {
+    mockExec.mockResolvedValueOnce(baseState).mockResolvedValueOnce({ ...gameEndState, centerPileSize: 1 });
+    renderWithProviders(<EgyptianRatscrewPage />);
+    await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
+    fireEvent.click(screen.getByTestId('step-button'));
+    await waitFor(() => expect(screen.getByTestId('step-button')).toBeDisabled());
+    expect(screen.getByTestId('er-step-announce')).toBeEmptyDOMElement();
   });
 
   it('slap button calls exec with slap', async () => {
@@ -398,30 +457,30 @@ describe('EgyptianRatscrewPage CHANCE_WIN', () => {
   it('shows a burst and announces when the human wins the chance battle', async () => {
     mockExec.mockResolvedValue(chanceWinHumanState);
     renderWithProviders(<EgyptianRatscrewPage />);
+    const burst = await screen.findByTestId('slap-burst');
+    // 人間が奪ったので緑（correct）。
+    expect(burst).toHaveAttribute('data-outcome', 'correct');
+    expect(burst.textContent).toContain('チャンス勝ち！');
     await waitFor(() => {
       const announce = screen.getByTestId('er-slap-announce');
       // リテラル文字列で確認（i18n.T に依存しない）。
       expect(announce.textContent).toContain('チャンス勝ちで山札を総取り');
       expect(announce.textContent).toContain('あなた');
     });
-    const burst = screen.getByTestId('slap-burst');
-    // 人間が奪ったので緑（correct）。
-    expect(burst).toHaveAttribute('data-outcome', 'correct');
-    expect(burst.textContent).toContain('チャンス勝ち！');
   });
 
   it('shows a burst and announces when the CPU wins the chance battle', async () => {
     mockExec.mockResolvedValue(chanceWinCpuState);
     renderWithProviders(<EgyptianRatscrewPage />);
+    const burst = await screen.findByTestId('slap-burst');
+    // CPU が奪ったので赤（wrong）。
+    expect(burst).toHaveAttribute('data-outcome', 'wrong');
     await waitFor(() => {
       const announce = screen.getByTestId('er-slap-announce');
       expect(announce.textContent).toContain('チャンス勝ちで山札を総取り');
       // CPU が奪ったとき。
       expect(announce.textContent).toContain('CPU 1');
     });
-    const burst = screen.getByTestId('slap-burst');
-    // CPU が奪ったので赤（wrong）。
-    expect(burst).toHaveAttribute('data-outcome', 'wrong');
   });
 
   // 否定対照: CHANCE_WIN が誤スラップ（赤リング）の見た目にならないこと。
@@ -443,13 +502,13 @@ describe('EgyptianRatscrewPage CHANCE_WIN', () => {
       lastSlapReason: EgyptianRatscrewSlapReason.PAIR,
     });
     renderWithProviders(<EgyptianRatscrewPage />);
+    const burst = await screen.findByTestId('slap-burst');
+    expect(burst).toHaveAttribute('data-outcome', 'correct');
     await waitFor(() => {
       const announce = screen.getByTestId('er-slap-announce');
       expect(announce.textContent).toContain('スラップ成功');
       expect(announce.textContent).toContain('ペア');
     });
-    const burst = screen.getByTestId('slap-burst');
-    expect(burst).toHaveAttribute('data-outcome', 'correct');
   });
 
   it('still fires the burst and announce for a wrong slap', async () => {
@@ -459,11 +518,11 @@ describe('EgyptianRatscrewPage CHANCE_WIN', () => {
       lastEventPlayerIdx: 0,
     });
     renderWithProviders(<EgyptianRatscrewPage />);
+    const burst = await screen.findByTestId('slap-burst');
+    expect(burst).toHaveAttribute('data-outcome', 'wrong');
     await waitFor(() => {
       const announce = screen.getByTestId('er-slap-announce');
       expect(announce.textContent).toContain('スラップ失敗');
     });
-    const burst = screen.getByTestId('slap-burst');
-    expect(burst).toHaveAttribute('data-outcome', 'wrong');
   });
 });

@@ -82,6 +82,17 @@ describe('ZwickerPage', () => {
     expect(screen.getByText(/味方12 相手8/)).toBeInTheDocument();
   });
 
+  it('names hand, table, and build cards with their card identity and value', async () => {
+    renderWithProviders(<ZwickerPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    expect(screen.getByRole('button', { name: '♠ K（値4、14）' })).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByRole('button', { name: '♥ 4（値4）' })).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByRole('button', { name: /♠ 5.*♥ 4.*宣言9/ })).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(screen.getByRole('button', { name: '♠ K（値4、14）' }));
+    expect(screen.getByRole('button', { name: '♠ K（値4、14）' })).toHaveAttribute('aria-pressed', 'true');
+  });
+
   // **A と絵札は 2 択を持つ**ので、札を選んだだけでは取れない。
   it('asks which value a court card is used as before it will capture', async () => {
     renderWithProviders(<ZwickerPage />);

@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra2
+//go:build !js || !wasm || extra9
 
 // Package domain — ツヴィッカー (Zwicker) のドメインモデル。
 //
@@ -679,21 +679,6 @@ func (z *Zwicker) GetConfig() ZwickerConfig { return z.config }
 
 // SetConfig はゲーム設定をセットする。
 func (z *Zwicker) SetConfig(c ZwickerConfig) { z.config = c }
-
-// SetPhaseForTest はテスト用にフェーズを差し替える。
-func (z *Zwicker) SetPhaseForTest(p ZwickerPhase) { z.phase = p }
-
-// SetCurrentPlayerForTest はテスト用に手番を差し替える。
-func (z *Zwicker) SetCurrentPlayerForTest(idx int) { z.currentIdx = idx }
-
-// SetTableCardsForTest はテスト用に場を差し替える。
-func (z *Zwicker) SetTableCardsForTest(cards []*Card) { z.tableCards = cards }
-
-// SetTeamScoreForTest はテスト用に累計得点を差し替える。
-func (z *Zwicker) SetTeamScoreForTest(team, score int) { z.scores[team] = score }
-
-// SetDealStageForTest はテスト用に配り段階を差し替える。
-func (z *Zwicker) SetDealStageForTest(stage int) { z.dealStage = stage }
 
 // addLog は棋譜に 1 件追加する。
 func (z *Zwicker) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {

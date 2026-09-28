@@ -109,6 +109,11 @@ func (_m *MockCrescentGame) IsStalemate() bool {
 	return ret.Bool(0)
 }
 
+func (_m *MockCrescentGame) HasNoLegalMoves() bool {
+	ret := _m.Called()
+	return ret.Bool(0)
+}
+
 // GetGameEndFlag mocks the GetGameEndFlag call.
 func (_m *MockCrescentGame) GetGameEndFlag() bool {
 	ret := _m.Called()

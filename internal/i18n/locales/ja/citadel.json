@@ -7,7 +7,7 @@
   "helpAutoComplete": "  ac                   オートコンプリート",
   "foundationHeader": "組札: ",
   "columnLabel": "列{{col}}:",
-  "hintFrom": "タブロー列{{col}}[{{idx}}]",
+  "hintFrom": "タブロー列{{col}}[{{idx}}]{{card}}",
   "hintToFoundation": "組札",
   "hintToTableau": "タブロー列{{col}}",
   "hintLine": "ヒント: {{from}} → {{to}}",

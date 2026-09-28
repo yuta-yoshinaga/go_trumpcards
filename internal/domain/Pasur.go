@@ -77,6 +77,26 @@ func pasurCardScore(c *Card) int {
 	return score
 }
 
+// PasurCaptureScoreBreakdown separates the ordinary points from the extra
+// points awarded when a capture empties the table.
+type PasurCaptureScoreBreakdown struct {
+	Normal    int `json:"normal"`
+	SoorBonus int `json:"soorBonus"`
+}
+
+// PasurScoreCapture calculates capture points using the same card scoring as
+// the final player score.
+func PasurScoreCapture(cards []*Card, soor bool) PasurCaptureScoreBreakdown {
+	var result PasurCaptureScoreBreakdown
+	for _, card := range cards {
+		result.Normal += pasurCardScore(card)
+	}
+	if soor {
+		result.SoorBonus = result.Normal * (PasurSoorMultiplier - 1)
+	}
+	return result
+}
+
 // PasurHint はパスールの助言。
 type PasurHint struct {
 	// CardIndex は出すべき手札。
@@ -248,6 +268,45 @@ func (p *Pasur) GetCaptureOptions(playerIdx, cardIndex int) [][]int {
 	return out
 }
 
+// CaptureScoreFor は指定した捕獲候補の得点内訳を返す。
+func (p *Pasur) CaptureScoreFor(playerIdx, handIdx int, tableIndices []int) PasurCaptureScoreBreakdown {
+	if playerIdx < 0 || playerIdx >= len(p.players) {
+		return PasurCaptureScoreBreakdown{}
+	}
+	hand := p.players[playerIdx]
+	if handIdx < 0 || handIdx >= hand.GetCardsSize() {
+		return PasurCaptureScoreBreakdown{}
+	}
+	taken := p.cardsTakenForCapture(hand.GetCard(handIdx), tableIndices)
+	return PasurScoreCapture(taken, p.capturesWholeTable(tableIndices))
+}
+
+func (p *Pasur) cardsTakenForCapture(card *Card, tableIndices []int) []*Card {
+	taken := []*Card{card}
+	seen := make(map[int]bool, len(tableIndices))
+	for _, i := range tableIndices {
+		if i >= 0 && i < len(p.tableCards) {
+			seen[i] = true
+		}
+	}
+	for i, tableCard := range p.tableCards {
+		if seen[i] {
+			taken = append(taken, tableCard)
+		}
+	}
+	return taken
+}
+
+func (p *Pasur) capturesWholeTable(tableIndices []int) bool {
+	seen := make(map[int]bool, len(tableIndices))
+	for _, i := range tableIndices {
+		if i >= 0 && i < len(p.tableCards) {
+			seen[i] = true
+		}
+	}
+	return len(p.tableCards) > 0 && len(seen) == len(p.tableCards)
+}
+
 // PlayerPlay は人間が札を出す。tableIndices が空ならトレール（場に置く）。
 func (p *Pasur) PlayerPlay(cardIndex int, tableIndices []int) error {
 	if !p.IsHumanTurn() {
@@ -352,17 +411,17 @@ func pasurSameIndexSet(a, b []int) bool {
 
 // capture は場札を取る。
 func (p *Pasur) capture(playerIdx int, card *Card, tableIndices []int) {
-	taken := make([]*Card, 0, len(tableIndices)+1)
-	taken = append(taken, card)
+	soor := p.capturesWholeTable(tableIndices)
+	taken := p.cardsTakenForCapture(card, tableIndices)
 	remove := make(map[int]bool, len(tableIndices))
 	for _, i := range tableIndices {
-		remove[i] = true
+		if i >= 0 && i < len(p.tableCards) {
+			remove[i] = true
+		}
 	}
 	rest := make([]*Card, 0, len(p.tableCards))
 	for i, t := range p.tableCards {
-		if remove[i] {
-			taken = append(taken, t)
-		} else {
+		if !remove[i] {
 			rest = append(rest, t)
 		}
 	}
@@ -370,7 +429,7 @@ func (p *Pasur) capture(playerIdx int, card *Card, tableIndices []int) {
 	p.lastCaptureIdx = playerIdx
 
 	// **スールは「取った結果、場が空になった」こと。** 取った枚数ではありません。
-	if len(p.tableCards) == 0 {
+	if soor {
 		p.players[playerIdx].AddSoorCaptured(taken)
 		p.addLog(playerIdx, "soor", "pasur.log.soor", map[string]string{
 			"cards": strconv.Itoa(len(taken)),
@@ -437,14 +496,9 @@ func (p *Pasur) finishGame() {
 
 // scoreOf は 1 人の得点を返す。**スールで取った札は倍。**
 func (p *Pasur) scoreOf(pl *PasurPlayer) int {
-	score := 0
-	for _, c := range pl.GetCaptured() {
-		score += pasurCardScore(c)
-	}
-	for _, c := range pl.GetSoorCaptured() {
-		score += pasurCardScore(c) * PasurSoorMultiplier
-	}
-	return score
+	normal := PasurScoreCapture(pl.GetCaptured(), false)
+	soor := PasurScoreCapture(pl.GetSoorCaptured(), true)
+	return normal.Normal + soor.Normal + soor.SoorBonus
 }
 
 // GiveUp は投了する。

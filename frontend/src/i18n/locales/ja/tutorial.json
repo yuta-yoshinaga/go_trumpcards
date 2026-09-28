@@ -13,7 +13,9 @@
   "progress": {
     "title": "チュートリアル進捗",
     "completed": "完了",
-    "summary": "{{count}}/{{total}} ゲーム完了"
+    "summary": "{{count}}/{{total}} ゲーム完了",
+    "gameCompleted": "{{game}}（完了）",
+    "gamePending": "{{game}}（未完了）"
   },
   "firstVisit": {
     "title": "チュートリアル",

@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { tressetteApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
@@ -32,6 +32,7 @@ import type { TutorialStep } from '../types/tutorial';
 import { parseTressetteCommand, TRESSETTE_HELP } from '../utils/cli/commands/tressetteCommands';
 import { formatTressetteState } from '../utils/cli/formatters/tressetteFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatThirdPoints } from '../utils/formatThirdPoints';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
@@ -151,6 +152,36 @@ function TressettePageContent() {
   });
 
   const phaseNames = usePhaseNames('tressette', TRESSETTE_PHASE_KEYS);
+  const previousScoreRef = useRef<{ round: number; thirds: [number, number] } | null>(null);
+  const [scoreAnnouncement, setScoreAnnouncement] = useState('');
+  useEffect(() => {
+    if (!state) return;
+    const thirds: [number, number] = [state.teamRoundThirds[0] ?? 0, state.teamRoundThirds[1] ?? 0];
+    const previous = previousScoreRef.current;
+    previousScoreRef.current = { round: state.roundNumber, thirds };
+    if (!previous) return;
+    if (state.roundNumber !== previous.round) return;
+
+    const changes = [0, 1]
+      .map((team) => ({
+        team,
+        gained: Math.max(0, thirds[team] - previous.thirds[team]),
+      }))
+      .filter(({ gained }) => gained > 0);
+    if (changes.length === 0) return;
+    setScoreAnnouncement(
+      changes
+        .map(({ team, gained }) =>
+          t('scoreAnnouncement', {
+            team: team === 0 ? 'A' : 'B',
+            gained: formatThirdPoints(gained),
+            points: state.teamScores[team] ?? 0,
+            thirds: (state.teamRoundThirds[team] ?? 0) % 3,
+          }),
+        )
+        .join(t('listSeparator')),
+    );
+  }, [state, t]);
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
@@ -186,6 +217,9 @@ function TressettePageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
+      <span className="sr-only" data-testid="tr-score-live" role="status" aria-live="polite" aria-atomic="true">
+        {scoreAnnouncement}
+      </span>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (

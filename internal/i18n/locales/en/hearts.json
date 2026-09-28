@@ -18,6 +18,7 @@
   "promptPlay": "Turn: {{name}}",
   "promptPlayHelp": "play <idx> — play a card",
   "promptTrickEnd": "Trick ended",
+  "trickResult": "{{name}} won the trick and will lead next.",
   "promptTrickEndHelp": "next — advance to the next trick",
   "promptRoundEnd": "Round ended",
   "promptRoundEndHelp": "nr / nextround — advance to the next round",

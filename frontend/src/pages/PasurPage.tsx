@@ -238,7 +238,8 @@ function PasurPageContent() {
               <div className="mt-3" data-testid="ps-options">
                 <div className="text-ds-text-muted text-sm mb-1">{t('actions.pick')}</div>
                 <div className="flex flex-wrap gap-2">
-                  {pickedOptions.map((option) => {
+                  {pickedOptions.map((option, optionIdx) => {
+                    const breakdown = state.captureScores?.[picked]?.[optionIdx] ?? { normal: 0, soorBonus: 0 };
                     // **スールは「取った結果、場が空になる」こと** (domain の
                     // takeCards と同じ条件)。倍化を狙うなら、どの選択肢がそれに
                     // 当たるかがボタンから読めないと選べない (#5762)。
@@ -255,6 +256,13 @@ function PasurPageContent() {
                         {t('actions.take', {
                           cards: option.map((i) => cardAlt(state.table[i])).join(', '),
                         })}
+                        <span className="ml-2 text-ds-text-muted" data-testid={`ps-score-${option.join('-')}`}>
+                          {t('actions.scoreBreakdown', {
+                            normal: String(breakdown.normal),
+                            bonus: String(breakdown.soorBonus),
+                            total: String(breakdown.normal + breakdown.soorBonus),
+                          })}
+                        </span>
                         {isSoor && (
                           <span className="ml-1 font-bold" data-testid={`ps-soor-${option.join('-')}`}>
                             <span aria-hidden="true">[{t('actions.takeSoor')}]</span>

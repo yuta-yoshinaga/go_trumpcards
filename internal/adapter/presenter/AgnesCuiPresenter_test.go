@@ -84,6 +84,7 @@ func TestAgnesCuiPresenter_Output(t *testing.T) {
 		p := new(AgnesCuiPresenter)
 		result := p.Output(a, nil)
 		assert.Contains(t, result, "[空]")
+		assert.Contains(t, result, "ベースランク: 7")
 	})
 }
 

@@ -84,6 +84,7 @@ func TestRussianBankWebPresenter_Output(t *testing.T) {
 		for _, frag := range []string{`"phase"`, `"players"`, `"tableau"`, `"foundations"`, `"reserveCount"`, `"canCallStop"`, `"messageCode":"russianbank.playing"`} {
 			assert.Contains(t, out, frag)
 		}
+		assert.Contains(t, out, `"tableauNext"`, "presenter must include server-computed tableau placement targets")
 	})
 
 	// **送り先はスートで決まる。**画面が突き合わせられるよう、各台が次に受ける札

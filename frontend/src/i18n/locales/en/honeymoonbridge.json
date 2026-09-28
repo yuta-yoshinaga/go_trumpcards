@@ -27,6 +27,10 @@
     "drawnAria": "drawn during the draw phase"
   },
   "currentTrick": "Current trick",
+  "trickStatus": {
+    "draw": "Draw phase (replenish; tricks do not score)",
+    "play": "Contract play (tricks score)"
+  },
   "roundResult": {
     "made": "Contract made: {{took}} of the {{need}} tricks needed.",
     "down": "Contract down: only {{took}} of the {{need}} tricks needed.",

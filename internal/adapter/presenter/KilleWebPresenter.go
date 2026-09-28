@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra3
+//go:build !js || !wasm || extra10
 
 package presenter
 
@@ -44,8 +44,7 @@ func (p *KilleWebPresenter) Output(g interfaces.KilleGame, lastErr error) string
 
 	cfg := g.GetConfig()
 	resObj.Config = controller.KilleWebOutputConfig{
-		CpuDifficulty: int(cfg.CpuDifficulty),
-		Stake:         cfg.Stake,
+		Stake: cfg.Stake,
 	}
 
 	resObj.Players = p.buildPlayersOutput(g)

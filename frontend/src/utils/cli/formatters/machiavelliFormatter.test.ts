@@ -46,7 +46,7 @@ function makeState(overrides: Partial<MachiavelliResponse> = {}): MachiavelliRes
     gameEndFlag: false,
     winnerIdx: -1,
     roundWinnerIdx: -1,
-    config: { playerCount: 2, cpuDifficulty: 1, targetRounds: 5 },
+    config: { playerCount: 2, targetRounds: 5 },
     message: '',
     messageCode: '',
     messageParams: {},

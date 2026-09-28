@@ -17,6 +17,7 @@ const baseState: CrescentResponse = {
   moveCount: 3,
   canUndo: true,
   isStalemate: false,
+  noLegalMoves: false,
   message: '',
 };
 

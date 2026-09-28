@@ -33,7 +33,6 @@ export interface EscobaScoreDetail {
 
 /** Escoba game rule configuration. */
 export interface EscobaConfig {
-  cpuDifficulty: number;
   targetScore: number;
 }
 

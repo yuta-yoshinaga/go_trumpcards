@@ -313,6 +313,9 @@ function CostlyColoursPageContent() {
           </div>
 
           <GameFooter className={`${gameTheme.costlycolours.footer} px-4 py-2.5`}>
+            {!state.isHumanTurn && !isMogPhase && !isShow && !isGameEnd && (
+              <p className="text-ds-text-muted text-sm py-1">{t('waitingForOpponent')}</p>
+            )}
             {humanPlayer && (
               <PlayerHandSection
                 humanPlayer={humanPlayer}

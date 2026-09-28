@@ -6,7 +6,6 @@ import { gameExec } from '../gameExec';
 
 /** Configuration options for Karnöffel game settings. */
 export interface KarnoffelConfigInput {
-  cpuDifficulty?: number;
   /** Hands needed to win the game. */
   targetHands?: number;
 }

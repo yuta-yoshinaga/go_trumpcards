@@ -23,8 +23,10 @@
   "hintFromAria": "Hint: move this card to {{dest}}",
   "hintToAria": "Hint: destination for the hinted card",
   "hintAnnouncement": "Hint: move {{card}} to {{dest}}",
-  "foundationAriaLabel": "{{suit}} foundation {{count}} cards",
-  "emptyFoundationAriaLabel": "Empty foundation ({{suit}})",
+  "foundationAriaLabel": "{{suit}} foundation, {{count}} cards, top card {{topCard}}, {{nextCondition}}",
+  "emptyFoundationAriaLabel": "Empty foundation ({{suit}}), {{nextCondition}}",
+  "foundationNextCard": "next is {{card}}",
+  "foundationComplete": "complete",
   "stalemate": "Stalemate",
   "frontendHint": {
     "moveToFoundation": "A card can be moved to the foundation",

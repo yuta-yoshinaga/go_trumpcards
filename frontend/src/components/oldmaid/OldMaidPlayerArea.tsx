@@ -199,7 +199,14 @@ export function OldMaidPlayerArea({
       {!player.isFinished && (
         <div className="text-game-text-muted text-xs mb-1">{t('cardCount', { count: player.cardCount })}</div>
       )}
-      {showSelectable && !player.isFinished && <div className="text-game-text-highlight text-xs mb-1">{t('draw')}</div>}
+      {showSelectable && !player.isFinished && (
+        <>
+          <div className="text-game-text-highlight text-xs mb-1">{t('draw')}</div>
+          <p className="text-game-text-muted text-xs mb-1">
+            {t('keyboardDrawHint', { name: playerName(player.id, player.isHuman) })}
+          </p>
+        </>
+      )}
       <div
         className="flex flex-wrap gap-0.5 justify-center"
         {...(player.isHuman && !player.isFinished && onReorder

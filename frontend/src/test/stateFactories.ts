@@ -53,10 +53,12 @@ import type {
   NapResponse,
   OmbreResponse,
   PiedmonteseTarotResponse,
+  PigResponse,
   PreferenceResponse,
   PrimeroResponse,
   QuadrilleResponse,
   QuodlibetResponse,
+  RussianBankResponse,
   SakuraResponse,
   SambaPlayerData,
   SambaResponse,
@@ -65,6 +67,7 @@ import type {
   ScoponeResponse,
   SedmaResponse,
   SheepsheadResponse,
+  ShelemResponse,
   SoloWhistResponse,
   SpadesResponse,
   SpoilFiveResponse,
@@ -1109,6 +1112,9 @@ const baseKlaverjasState: KlaverjasResponse = {
   dealerIdx: 3,
   trumpSuit: 4,
   currentTrick: [],
+  lastTrickTeam: -1,
+  lastTrickPoints: 0,
+  lastTrickBonus: 0,
   teamScores: [0, 0],
   roundCardPoints: [0, 0],
   roundRoem: [0, 0],
@@ -1818,6 +1824,7 @@ const baseUltiState: UltiResponse = {
   dealerIdx: 2,
   declarerIdx: 0,
   contract: 1,
+  contractRequirement: 61,
   trumpSuit: 1,
   talonCount: 0,
   talonTaken: true,
@@ -2269,6 +2276,8 @@ const baseWattenState: WattenResponse = {
   responderIdx: -1,
   canRaise: true,
   currentTrick: [],
+  lastTrick: [],
+  lastTrickWinner: -1,
   teamScores: [0, 0],
   teamTricks: [0, 0],
   dealWinnerTeam: -1,
@@ -3175,7 +3184,7 @@ const baseBeziqueState: BeziqueResponse = {
   winnerIdx: -1,
   hint: null,
   message: '',
-  config: { cpuDifficulty: 1, targetScore: 1000 },
+  config: { targetScore: 1000 },
 };
 
 /**
@@ -3228,7 +3237,7 @@ const baseEcarteState: EcarteResponse = {
   winnerIdx: -1,
   hint: null,
   message: '',
-  config: { cpuDifficulty: 1, targetScore: 5 },
+  config: { targetScore: 5 },
 };
 
 /**
@@ -3279,7 +3288,7 @@ const baseThreeCardBragState: ThreeCardBragResponse = {
   isHumanTurn: true,
   hint: null,
   message: '',
-  config: { cpuDifficulty: 1, ante: 1, startingChips: 100 },
+  config: { ante: 1, startingChips: 100 },
 };
 
 /**
@@ -3336,7 +3345,7 @@ const baseTeenPattiState: TeenPattiResponse = {
   isHumanTurn: true,
   hint: null,
   message: '',
-  config: { cpuDifficulty: 1, ante: 1, startingChips: 100 },
+  config: { ante: 1, startingChips: 100 },
 };
 
 /**
@@ -3592,6 +3601,7 @@ const basePreferenceState: PreferenceResponse = {
   contract: 0,
   trumpSuit: 0,
   bids: [0, 0, 0],
+  bidDone: [false, false, false],
   currentTrick: [],
   playerScores: [0, 0, 0],
   roundTricks: [0, 0, 0],
@@ -3763,7 +3773,7 @@ const baseScoponeState: ScoponeResponse = {
   isHumanTurn: true,
   handCaptures: [[[1]], [], []],
   lastRoundDetail: null,
-  config: { cpuDifficulty: 1, targetScore: 11 },
+  config: { targetScore: 11 },
   message: '',
 };
 
@@ -3814,7 +3824,7 @@ const baseEscobaState: EscobaResponse = {
   isHumanTurn: true,
   handCaptures: [[[0, 1]], [], []],
   lastRoundDetail: null,
-  config: { cpuDifficulty: 1, targetScore: 10 },
+  config: { targetScore: 10 },
   message: '',
 };
 
@@ -3979,6 +3989,7 @@ const baseAnacondaState: AnacondaResponse = {
   passCount: 3,
   rollIndex: 0,
   pot: 40,
+  lastPayout: 0,
   currentBet: 0,
   raiseCount: 0,
   maxRaises: 3,
@@ -5634,4 +5645,120 @@ const baseBinokelState: BinokelResponse = {
  */
 export function makeBinokelState(overrides?: Partial<BinokelResponse>): BinokelResponse {
   return { ...baseBinokelState, ...overrides };
+}
+
+const baseShelemState: ShelemResponse = {
+  players: [],
+  phase: 0,
+  roundNumber: 1,
+  trickNumber: 0,
+  trumpSuit: 0,
+  declarerIdx: -1,
+  contract: 0,
+  shelemBid: false,
+  minBid: 55,
+  widowSize: 4,
+  discardCount: 4,
+  scores: [0, 0],
+  roundPoints: [0, 0],
+  lastTrickWinner: -1,
+  lastTrickPoints: 0,
+  teamTricks: [0, 0],
+  currentPlayerIdx: 0,
+  bidPlayerIdx: 0,
+  leadPlayerIdx: 0,
+  dealerIdx: 3,
+  currentTrick: [],
+  validPlays: [],
+  gameEndFlag: false,
+  winnerTeam: -1,
+  config: { target: 500 },
+  message: '',
+};
+
+/** Creates a Shelem response with sensible defaults. */
+export function makeShelemState(overrides?: Partial<ShelemResponse>): ShelemResponse {
+  return { ...baseShelemState, ...overrides };
+}
+
+/** Creates a Russian Bank state with an empty board and legal empty-pile targets. */
+export function makeRussianBankState(overrides?: Partial<RussianBankResponse>): RussianBankResponse {
+  return {
+    phase: 1,
+    currentPlayerIdx: 0,
+    gameEndFlag: false,
+    winnerIdx: -1,
+    isHumanTurn: true,
+    canCallStop: false,
+    canUndo: false,
+    moveCount: 0,
+    tableau: [[], [], [], []],
+    foundations: [[], [], [], [], [], [], [], []],
+    foundationNext: Array.from({ length: 8 }, () => ({ design: '', value: 1 })),
+    tableauNext: Array.from({ length: 4 }, () => ({ any: true, black: false, value: 0 })),
+    players: [
+      {
+        id: 0,
+        isHuman: true,
+        reserveCount: 13,
+        reserveTop: { design: 'DIAMOND', value: 7 },
+        handCount: 39,
+        wasteCount: 0,
+        stopPoints: 0,
+      },
+      {
+        id: 1,
+        isHuman: false,
+        reserveCount: 13,
+        reserveTop: { design: 'HEART', value: 8 },
+        handCount: 39,
+        wasteCount: 0,
+        stopPoints: 0,
+      },
+    ],
+    config: { cpuDifficulty: 1 },
+    message: '',
+    ...overrides,
+  };
+}
+
+/** Creates a Pig pass state with the human's next active recipient. */
+export function makePigState(overrides?: Partial<PigResponse>): PigResponse {
+  const hand: PigResponse['players'][number]['cards'] = [
+    { design: 'SPADE', value: 13 },
+    { design: 'HEART', value: 13 },
+    { design: 'CLOVER', value: 1 },
+    { design: 'DIAMOND', value: 12 },
+  ];
+  const players: PigResponse['players'] = Array.from({ length: 4 }, (_, id) => ({
+    id,
+    isHuman: id === 0,
+    cardCount: 4,
+    cards: id === 0 ? hand : [],
+    letters: 0,
+    letterWord: '',
+    eliminated: false,
+    hasSignalled: false,
+    noticedOrder: 0,
+    hasChosenPass: false,
+  }));
+  return {
+    players,
+    phase: 0,
+    validPlays: [0, 1, 2, 3],
+    signallerIdx: -1,
+    noticedCnt: 0,
+    roundLoserIdx: -1,
+    letterTarget: 'PIG',
+    roundNumber: 2,
+    passCount: 3,
+    passTargetIdx: 1,
+    deckSize: 16,
+    currentPlayerIdx: 0,
+    gameEndFlag: false,
+    winnerIdx: -1,
+    message: '',
+    config: { playerCnt: 4, cpuDifficulty: 1 },
+    ...overrides,
+  };
 }

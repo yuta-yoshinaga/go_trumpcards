@@ -1,5 +1,6 @@
 import { type RefObject, useEffect, useRef } from 'react';
 import { getFocusableElements } from '../utils/dom';
+import { registerOpenModal } from './keyboardNavUtils';
 
 /**
  * Traps focus inside `containerRef` while `open`, closes on Escape, and restores
@@ -39,6 +40,7 @@ export function useFocusTrap(
 
   useEffect(() => {
     if (!open || !containerRef.current) return;
+    const unregisterModal = trap ? registerOpenModal() : undefined;
     triggerRef.current = document.activeElement;
     const container = containerRef.current;
 
@@ -78,6 +80,7 @@ export function useFocusTrap(
     document.addEventListener('keydown', handleKeyDown);
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
+      unregisterModal?.();
       if (triggerRef.current instanceof HTMLElement) {
         triggerRef.current.focus();
       }

@@ -109,8 +109,3 @@ export function useIsMobile(): boolean {
 export function useIsLargeDesktop(): boolean {
   return useBreakpoint() === 'largeDesktop';
 }
-
-/** Hook that returns true when viewport is between sm and lg breakpoints (tablet/small desktop). */
-export function useIsMediumDesktop(): boolean {
-  return useBreakpoint() === 'desktop';
-}

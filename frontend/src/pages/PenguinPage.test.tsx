@@ -99,6 +99,22 @@ beforeEach(() => {
 });
 
 describe('PenguinPage', () => {
+  it('keeps an empty free-cell target focusable and explains that a source is needed', async () => {
+    renderWithProviders(<PenguinPage />);
+    const target = await screen.findByTestId('pg-freecell-empty-3');
+    mockExec.mockClear();
+
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const describedBy = target.getAttribute('aria-describedby');
+    expect(describedBy).toBeTruthy();
+    expect(document.getElementById(describedBy ?? '')).toHaveTextContent('先に移動する札を選んでください');
+
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   // --- Skeleton ---
 
   it('renders skeleton when state is null', () => {
@@ -112,6 +128,13 @@ describe('PenguinPage', () => {
   it('renders tableau without index headers', async () => {
     renderWithProviders(<PenguinPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+  });
+
+  it('labels each tableau column with its zero-based number and current card count', async () => {
+    renderWithProviders(<PenguinPage />);
+    expect(await screen.findByRole('group', { name: 'タブロー列0、1枚' })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'タブロー列2 (空)' })).toBeInTheDocument();
+    expect(screen.getByTestId('pg-tableau-0-0')).toHaveAccessibleName('♠ K');
   });
 
   it('renders empty tableau columns with prevRank placeholder (3 for baseRank=4)', async () => {

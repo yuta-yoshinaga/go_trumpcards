@@ -129,20 +129,6 @@ func TestTeenPattiCuiController_Exec(t *testing.T) {
 		m.AssertCalled(t, "NextRound")
 	})
 
-	t.Run("setdifficulty", func(t *testing.T) {
-		m := newMock()
-		c := controller.NewTeenPattiCuiController(m)
-		assert.Equal(t, mockOutput, c.Exec("sd 2"))
-		expected := domain.DefaultTeenPattiConfig()
-		expected.CpuDifficulty = domain.TeenPattiCpuDifficultyHard
-		m.AssertCalled(t, "ResetWithConfig", expected)
-	})
-
-	t.Run("setdifficulty invalid", func(t *testing.T) {
-		result := controller.NewTeenPattiCuiController(newMock()).Exec("sd 9")
-		assert.Contains(t, result, msgInvalidCpuDifficultyPrefix())
-	})
-
 	t.Run("setante", func(t *testing.T) {
 		m := newMock()
 		c := controller.NewTeenPattiCuiController(m)

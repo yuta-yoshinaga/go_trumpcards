@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { isVisibleWithin, navigateTo, TIMEOUT_GAME_LOOP, waitForLoaded } from './helpers';
+import { gameButton, isVisibleWithin, navigateTo, TIMEOUT_GAME_LOOP, waitForLoaded } from './helpers';
 
 test.describe('Boston E2E', () => {
   test('shows the interleaved ladder and progresses the hand', async ({ page }) => {
@@ -16,7 +16,7 @@ test.describe('Boston E2E', () => {
     await expect(page.getByTestId('boston-player')).toHaveCount(4, { timeout: TIMEOUT_GAME_LOOP });
 
     // The human may open the auction, or the CPUs may already have settled it.
-    const pass = page.getByRole('button', { name: 'パス' });
+    const pass = gameButton(page, 'パス');
     if (await isVisibleWithin(pass, TIMEOUT_GAME_LOOP)) {
       await pass.click();
       await waitForLoaded(page);

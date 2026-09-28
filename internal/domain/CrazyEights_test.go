@@ -82,6 +82,7 @@ func TestCrazyEights_Reset(t *testing.T) {
 
 	// Discard pile should have 1 card
 	assert.Len(t, g.GetDiscardPile(), 1)
+	assert.Equal(t, 1, g.GetDiscardPileCount())
 
 	// Draw pile: 52 - 20 (4*5) - 1 = 31
 	assert.Equal(t, 31, g.GetDrawPileCount())

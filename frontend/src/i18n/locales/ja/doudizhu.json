@@ -55,6 +55,7 @@
   },
   "combo": {
     "selectedLabel": "選択中",
+    "selectionCount": "{{count}}枚選択中",
     "badge": "{{type}}（{{count}}枚）",
     "notCombo": "有効な役になっていません — 選択を確認してください",
     "noBeat": "この役では場のカードに勝てません",

@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra
+//go:build !js || !wasm || extra9
 
 package interfaces
 
@@ -17,6 +17,8 @@ type CalabresellaGame interface {
 	CpuBid()
 	// PlayerDiscard 人間ソリストが monte 交換で1枚を捨てる
 	PlayerDiscard(cardIndex int) error
+	// PlayerDiscardCards 人間ソリストが指定した札をまとめて捨てる
+	PlayerDiscardCards(cardIndices []int) error
 	// PlayerPlay プレイヤーがカードを出す
 	PlayerPlay(cardIndex int) error
 	// CpuPlay CPUプレイヤーが1ターン実行する

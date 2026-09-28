@@ -74,16 +74,6 @@ func TestLiteratureInteractor_ResetWithConfig(t *testing.T) {
 		gameMock.AssertCalled(t, "SetConfig", cfg)
 	})
 
-	t.Run("invalid config never reaches the game", func(t *testing.T) {
-		pMock := new(presenter.MockLiteraturePresenter)
-		pMock.On("Output", mock.Anything, mock.Anything).Return(literatureMockOutput)
-		gameMock := new(interfaces.MockLiteratureGame)
-
-		li := usecase.NewLiteratureInteractor(gameMock, pMock)
-		assert.Equal(t, literatureMockOutput, li.ResetWithConfig(domain.LiteratureConfig{CpuDifficulty: 9}))
-		gameMock.AssertNotCalled(t, "SetConfig", mock.Anything)
-		gameMock.AssertNotCalled(t, "Reset")
-	})
 }
 
 // **要求も宣言も currentIdx から出る。**

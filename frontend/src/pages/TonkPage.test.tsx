@@ -58,6 +58,26 @@ beforeEach(() => {
 });
 
 describe('TonkPage', () => {
+  it('offers only the round-ending action at zero stock and keeps discard drawing available', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: TonkPhase.DRAW, drawPileCount: 0 }));
+    renderWithProviders(<TonkPage />);
+
+    expect(await screen.findByRole('button', { name: '山札切れでラウンドを終了' })).toBeEnabled();
+    expect(screen.queryByRole('button', { name: '山札から引く' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '捨て札から引く' })).toBeEnabled();
+    expect(
+      screen.getByText('山札から引くとラウンドは引き分けで終了します。捨て札から引けば続行できます。'),
+    ).toBeInTheDocument();
+  });
+
+  it('offers only stock drawing when stock remains', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: TonkPhase.DRAW, drawPileCount: 1 }));
+    renderWithProviders(<TonkPage />);
+
+    expect(await screen.findByRole('button', { name: '山札から引く' })).toBeEnabled();
+    expect(screen.queryByRole('button', { name: '山札切れでラウンドを終了' })).not.toBeInTheDocument();
+  });
+
   it('renders the Knock button without an undercut warning when opponents hold > 2 cards', async () => {
     renderWithProviders(<TonkPage />);
     const knock = await screen.findByRole('button', { name: /ノック/ });

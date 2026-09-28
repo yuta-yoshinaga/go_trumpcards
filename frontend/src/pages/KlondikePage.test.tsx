@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, klondikeApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, KlondikeResponse, KlondikeTableauCard } from '../types/card';
@@ -170,7 +171,7 @@ describe('KlondikePage', () => {
     renderWithProviders(<KlondikePage />);
     await waitFor(() => expect(screen.getByText('♠')).toBeInTheDocument());
 
-    for (const suit of ['♠', '♣', '♥', '♦']) {
+    for (const suit of ['♠ スペード', '♣ クラブ', '♥ ハート', '♦ ダイヤ']) {
       expect(screen.getByRole('button', { name: `空の組札 (${suit})` })).toBeInTheDocument();
     }
   });
@@ -181,10 +182,25 @@ describe('KlondikePage', () => {
     await waitFor(() => expect(screen.getByText('♠')).toBeInTheDocument());
 
     // Pile 0: 1 card (♠ A), pile 2: 2 cards (♥ A, ♥ 2), piles 1 and 3 empty
-    expect(screen.getByRole('button', { name: '♠ 組札 1枚' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '♥ 組札 2枚' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '空の組札 (♣)' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '空の組札 (♦)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♠ スペード 組札 1枚' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♥ ハート 組札 2枚' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '空の組札 (♣ クラブ)' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '空の組札 (♦ ダイヤ)' })).toBeInTheDocument();
+  });
+
+  it('announces empty foundation suits in English', async () => {
+    await i18n.changeLanguage('en');
+    try {
+      renderWithProviders(<KlondikePage />);
+      await waitFor(() =>
+        expect(screen.getByRole('button', { name: 'Empty Foundation (♠ Spades)' })).toBeInTheDocument(),
+      );
+      expect(screen.getByRole('button', { name: 'Empty Foundation (♣ Clubs)' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Empty Foundation (♥ Hearts)' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Empty Foundation (♦ Diamonds)' })).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
   });
 
   it('tableau face-up card button has aria-label with card name', async () => {
@@ -473,25 +489,42 @@ describe('KlondikePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', expect.any(Object), expect.any(Object)));
   });
 
-  it('foundation disabled when no source selected', async () => {
+  it('foundation targets remain focusable when no source is selected', async () => {
     renderWithProviders(<KlondikePage />);
     await waitFor(() => expect(screen.getByText('♠')).toBeInTheDocument());
 
-    // Empty foundation buttons should be disabled when no source selected
     const aButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === 'A');
     for (const btn of aButtons) {
-      expect(btn).toBeDisabled();
+      expect(btn).not.toBeDisabled();
+      expect(btn).toHaveAttribute('aria-disabled', 'true');
     }
   });
 
-  it('empty tableau column disabled when no source selected', async () => {
+  it('empty tableau targets remain focusable when no source is selected', async () => {
     renderWithProviders(<KlondikePage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
     const kButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === 'K');
     for (const btn of kButtons) {
-      expect(btn).toBeDisabled();
+      expect(btn).not.toBeDisabled();
+      expect(btn).toHaveAttribute('aria-disabled', 'true');
     }
+  });
+
+  it('explains and ignores a foundation target click before source selection', async () => {
+    renderWithProviders(<KlondikePage />);
+    const targets = await screen.findAllByRole('button', { name: /空の組札/ });
+    const target = targets[0];
+    expect(target).toBeDefined();
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const hint = document.getElementById(target.getAttribute('aria-describedby') ?? '');
+    expect(hint).toHaveTextContent('先に移動する札を選んでください');
+
+    mockExec.mockClear();
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
   });
 
   it('shows hint text from waste after clicking hint', async () => {

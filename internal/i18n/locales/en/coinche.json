@@ -30,6 +30,7 @@
   "promptTrickEnd": "Trick over",
   "promptTrickEndHelp": "n ... next trick",
   "promptRoundEnd": "Round over",
+  "roundCardPointsLine": "Round card points: Team 0={{t0}}  Team 1={{t1}}",
   "promptRoundEndHelp": "nr ... next round",
   "hintNone": "No hint available.",
   "hintBid": "[HINT: bid {{points}} in {{suit}} ({{reason}})]",

@@ -17,6 +17,8 @@
   "winnerLine": "{{column}} に基準札と同じランクが出ました",
   "payoutLine": "払い戻し: {{payout}}",
   "historyLine": "罫線: {{symbols}}",
+  "historyAndarSymbol": "A(アンダー)",
+  "historyBaharSymbol": "B(バハール)",
   "historyCounts": "アンダー {{andar}} / バハール {{bahar}}",
   "phaseBet": "賭け",
   "phaseEnd": "終了",

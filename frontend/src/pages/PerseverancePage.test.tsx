@@ -245,6 +245,45 @@ describe('PerseverancePage', () => {
     await waitFor(() => expect(screen.getByTestId('stalemate-escape-button')).toBeInTheDocument());
   });
 
+  it.each([
+    [true, 1, '盤面に合法手がありません。元に戻すか、配り直してください。'],
+    [true, 0, '盤面に合法手がありません。元に戻してください。'],
+    [false, 1, '盤面に合法手がありません。配り直してください。'],
+    [false, 0, '盤面に合法手がありません。ギブアップするか、新しいゲームを始めてください。'],
+  ])(
+    'explains available escape actions when stalemated (canUndo=%s, redeals=%s)',
+    async (canUndo, redealsLeft, expected) => {
+      mockExec.mockResolvedValue({ ...playingState, isStalemate: true, canUndo, redealsLeft });
+      renderWithProviders(<PerseverancePage />);
+      const explanation = await screen.findByText(expected);
+      expect(explanation.parentElement).toHaveAttribute('role', 'status');
+    },
+  );
+
+  it('preserves server errors in GameMessageBox while showing a separate stalemate explanation', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      isStalemate: true,
+      canUndo: false,
+      redealsLeft: 0,
+      message: '操作できません',
+      messageCode: 'perseverance.invalidMove',
+    });
+    renderWithProviders(<PerseverancePage />);
+    expect(await screen.findByText('操作できません')).toBeInTheDocument();
+    expect(screen.getByText(/ギブアップするか、新しいゲームを始めてください/).parentElement).toHaveAttribute(
+      'role',
+      'status',
+    );
+  });
+
+  it('does not show a stalemate explanation when redeals are exhausted but the game is live', async () => {
+    mockExec.mockResolvedValue({ ...playingState, isStalemate: false, redealsLeft: 0 });
+    renderWithProviders(<PerseverancePage />);
+    await screen.findByTestId('redeals-left');
+    expect(screen.queryByText(/盤面に合法手がありません/)).not.toBeInTheDocument();
+  });
+
   it('renders foundation pile top card', async () => {
     const withFoundation: PerseveranceResponse = {
       ...playingState,
@@ -382,6 +421,22 @@ describe('PerseverancePage', () => {
 // いた (#4795)。**13列 + 4組札で移動先候補が多い。姉妹の Wasp / Accordion は
 // 選択時に合法な移動先をリング表示している。
 describe('PerseverancePage legal targets', () => {
+  it('keeps a target focusable and explains why it cannot be used before source selection', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<PerseverancePage />);
+    const target = await screen.findByRole('button', { name: '空の組札 (♠)' });
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const hintId = target.getAttribute('aria-describedby');
+    expect(hintId).toBeTruthy();
+    expect(document.getElementById(hintId ?? '')).toHaveTextContent('先に移動する札を選んでください');
+
+    mockExec.mockClear();
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   const selectSpadeFive = async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<PerseverancePage />);

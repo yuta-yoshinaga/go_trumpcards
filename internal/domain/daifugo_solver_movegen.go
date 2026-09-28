@@ -224,7 +224,7 @@ func (s *daifugoSolver) generateSequencePlays(hand []*Card) []solverPlay {
 	var moves []solverPlay
 
 	// Group non-joker cards by suit
-	suitCards := make(map[int][]*Card) // suit -> cards
+	var suitCards [CardDesignMax + 1][]*Card
 	var jokers []*Card
 	for _, c := range hand {
 		if IsJoker(c) {
@@ -235,7 +235,11 @@ func (s *daifugoSolver) generateSequencePlays(hand []*Card) []solverPlay {
 		suitCards[suit] = append(suitCards[suit], c)
 	}
 
-	for _, cards := range suitCards {
+	for suit := CardDesignSpade; suit <= CardDesignMax; suit++ {
+		cards := suitCards[suit]
+		if len(cards) == 0 {
+			continue
+		}
 		// Sort by strength
 		sort.Slice(cards, func(i, j int) bool {
 			return s.cardStrength(cards[i].GetValue()) < s.cardStrength(cards[j].GetValue())
@@ -254,7 +258,7 @@ func (s *daifugoSolver) generateSequenceResponsePlays(hand []*Card, needed int, 
 	var moves []solverPlay
 
 	// Group non-joker cards by suit
-	suitCards := make(map[int][]*Card)
+	var suitCards [CardDesignMax + 1][]*Card
 	var jokers []*Card
 	for _, c := range hand {
 		if IsJoker(c) {
@@ -265,7 +269,11 @@ func (s *daifugoSolver) generateSequenceResponsePlays(hand []*Card, needed int, 
 		suitCards[suit] = append(suitCards[suit], c)
 	}
 
-	for _, cards := range suitCards {
+	for suit := CardDesignSpade; suit <= CardDesignMax; suit++ {
+		cards := suitCards[suit]
+		if len(cards) == 0 {
+			continue
+		}
 		sort.Slice(cards, func(i, j int) bool {
 			return s.cardStrength(cards[i].GetValue()) < s.cardStrength(cards[j].GetValue())
 		})

@@ -138,6 +138,9 @@ function SevenTwentySevenPageContent() {
   const isDrawPhase = state.phase === SevenTwentySevenPhase.DRAW;
   const isResultPhase = state.phase === SevenTwentySevenPhase.RESULT;
   const isGameEnd = state.gameEndFlag;
+  // The deck has 52 cards and every dealt card remains in a player's hand.
+  // When it empties, dealToDrawers marks everyone standing and settles the round.
+  const deckEmptied = isResultPhase && state.players.reduce((total, player) => total + player.cardCount, 0) >= 52;
   const humanWonMatch = state.matchWinnerIdx >= 0 && (state.players[state.matchWinnerIdx]?.isHuman ?? false);
   // 止まったあとは打つ手が無い（サーバがラウンドを回し切る）。
   const canAct = isDrawPhase && !isGameEnd && humanPlayer !== undefined && !humanPlayer.standing;
@@ -271,6 +274,15 @@ function SevenTwentySevenPageContent() {
             </div>
 
             {/* Revealed hands at result */}
+            {deckEmptied && (
+              <div
+                className="my-3 p-2 rounded bg-ds-surface-elevated text-ds-warning text-sm"
+                data-testid="s27-deck-empty"
+              >
+                {t('deckEmptyResult')}
+              </div>
+            )}
+
             {isResultPhase && (
               <div className="mb-2 p-2 rounded bg-black/30">
                 {state.players

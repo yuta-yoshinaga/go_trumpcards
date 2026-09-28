@@ -84,6 +84,25 @@ describe('CasinoWarPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: /ベット/ })).toBeInTheDocument());
   });
 
+  it('places the hint toggle in SettingsPanel and updates the hint display', async () => {
+    mockApi.mockResolvedValue(tieState);
+    renderWithProviders(<CasinoWarPage />);
+
+    await screen.findByRole('button', { name: /ウォー/ });
+    const settings = screen.getByText('設定').closest('details');
+    expect(settings).toBeInTheDocument();
+    fireEvent.click(settings?.querySelector('summary') as HTMLElement);
+
+    const checkbox = await screen.findByRole('checkbox');
+    expect(settings).toContainElement(checkbox);
+    expect(screen.getByTestId('card-area')).not.toContainElement(checkbox);
+    expect(screen.queryByTestId('hint-tooltip')).not.toBeInTheDocument();
+
+    fireEvent.click(checkbox);
+
+    expect(await screen.findByTestId('hint-tooltip')).toBeInTheDocument();
+  });
+
   it('advertises the bet keyboard shortcut on the button', async () => {
     mockApi.mockResolvedValue(betState);
     renderWithProviders(<CasinoWarPage />);

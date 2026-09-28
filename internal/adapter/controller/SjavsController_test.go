@@ -26,14 +26,6 @@ func TestSjavsWebInput_ToConfigWithNoConfigDoesNotPanic(t *testing.T) {
 	})
 }
 
-func TestSjavsWebInput_ToConfigClampsAnOutOfRangeDifficulty(t *testing.T) {
-	bad := 99
-	cfg := controller.SjavsWebInput{
-		Config: &controller.SjavsWebConfig{CpuDifficulty: &bad},
-	}.ToConfig()
-	assert.NoError(t, cfg.Validate())
-}
-
 func TestNewSjavsDefaultOutput(t *testing.T) {
 	// An error response still has to render: the page maps over the index
 	// arrays and reads the rubber counters without guarding for absence.

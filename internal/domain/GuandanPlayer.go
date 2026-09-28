@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra7
+//go:build !js || !wasm || extra11
 
 package domain
 
@@ -38,10 +38,6 @@ func (p *GuandanPlayer) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &j); err != nil {
 		return err
 	}
-	if j.GamePlayer != nil {
-		p.GamePlayer = j.GamePlayer
-	} else {
-		p.GamePlayer = NewGamePlayer(false)
-	}
+	p.GamePlayer = restoreGamePlayer(j.GamePlayer)
 	return nil
 }

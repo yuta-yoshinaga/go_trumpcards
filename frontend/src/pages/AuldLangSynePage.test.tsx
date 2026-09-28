@@ -13,8 +13,7 @@ import type { AuldLangSyneResponse, Card, CardDesign } from '../types/card';
  * role alone therefore matches two elements; the message box is the one built
  * from `glass-panel`, so the hint region is the other one.
  */
-const hintLiveRegion = () =>
-  screen.queryAllByRole('status').find((el) => !el.classList.contains('glass-panel')) ?? null;
+const hintLiveRegion = () => screen.queryByTestId('auldlangsyne-hint-live');
 
 import {
   AuldLangSynePage,
@@ -149,6 +148,21 @@ describe('AuldLangSynePage', () => {
   it('shows how many deals are left rather than the next card', async () => {
     renderWithProviders(<AuldLangSynePage />);
     await waitFor(() => expect(screen.getByTestId('als-deals-left')).toHaveTextContent('11'));
+  });
+
+  it('announces the remaining deals in a live region after dealing', async () => {
+    mockExec.mockImplementation(async (command) =>
+      command === 'deal' ? { ...playingState, stockCount: 40 } : playingState,
+    );
+    renderWithProviders(<AuldLangSynePage />);
+
+    const dealsStatus = await screen.findByTestId('als-deals-left');
+    expect(dealsStatus).toHaveAttribute('role', 'status');
+    expect(dealsStatus).toHaveAttribute('aria-live', 'polite');
+    expect(dealsStatus).toHaveTextContent('11');
+
+    fireEvent.click(screen.getByTestId('als-deal-button'));
+    await waitFor(() => expect(dealsStatus).toHaveTextContent('10'));
   });
 
   it('deals when the deal button is pressed', async () => {

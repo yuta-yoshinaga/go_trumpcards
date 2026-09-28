@@ -20,12 +20,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import {
-  ANTE_OPTIONS,
-  CPU_DIFFICULTY_OPTIONS,
-  STARTING_CHIPS_OPTIONS,
-  useThreeCardBragGame,
-} from '../hooks/useThreeCardBragGame';
+import { ANTE_OPTIONS, STARTING_CHIPS_OPTIONS, useThreeCardBragGame } from '../hooks/useThreeCardBragGame';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -184,6 +179,29 @@ function ThreeCardBragPageContent() {
 
   const playerLabel = (id: number, isHuman: boolean): string => (isHuman ? t('you') : t('cpu', { id }));
 
+  const turnStatus = isGameEnd
+    ? t('matchWinner', { name: playerLabel(state.matchWinnerIdx, state.matchWinnerIdx === humanIdx) })
+    : isRoundEnd
+      ? `${t('roundResult.title')}: ${t('roundResult.winner', {
+          name: playerLabel(state.roundWinnerIdx, state.roundWinnerIdx === humanIdx),
+          pot: state.pot,
+        })}`
+      : isBettingPhase && isHumanTurn
+        ? t('turnStatus.human', {
+            actions: [
+              !humanPlayer?.seen ? t('seeButton') : null,
+              t('betButton', { amount: betCost }),
+              canRaise ? t('raiseButton', { amount: raiseCost }) : null,
+              t('foldButton'),
+              state.canShow ? t('showButton') : null,
+            ]
+              .filter(Boolean)
+              .join(t('listSeparator')),
+          })
+        : t('turnStatus.other', {
+            name: playerLabel(state.currentPlayerIdx, state.players[state.currentPlayerIdx]?.isHuman ?? false),
+          });
+
   const handName = (key?: string): string => (key ? t(`hand.${key.toLowerCase()}`, { defaultValue: key }) : '');
 
   const handleManualReset = () => {
@@ -206,6 +224,9 @@ function ThreeCardBragPageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
+      <div data-testid="tcb-turn-live" role="status" aria-live="polite" className="sr-only">
+        {turnStatus}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -215,17 +236,6 @@ function ThreeCardBragPageContent() {
             groups={[
               {
                 items: [
-                  {
-                    type: 'select',
-                    id: 'cpuDifficulty',
-                    label: t('settings.cpuDifficulty'),
-                    value: threeCardBragConfig.cpuDifficulty,
-                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
-                      value: o.value,
-                      label: t(`settings.${o.label.toLowerCase()}`),
-                    })),
-                    onSelect: (v) => handleConfigChange('cpuDifficulty', v),
-                  },
                   {
                     type: 'select',
                     id: 'ante',

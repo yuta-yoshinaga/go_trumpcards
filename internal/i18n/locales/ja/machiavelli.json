@@ -5,7 +5,6 @@
   "helpLayoff": "  lo <meldIdx handIdx> 既存メルドに手札を1枚足す",
   "helpNextRound": "  nr                   次のラウンドへ",
   "helpSetPlayers": "  pc [2-5]             プレイヤー数",
-  "helpSetDifficulty": "  sd [0-2]             CPU難易度 (0=Easy, 1=Normal, 2=Hard)",
   "helpSetRounds": "  sr <n>               ラウンド数",
   "header": "ラウンド: {{round}}/{{total}}  山札: {{stock}}枚",
   "tableTitle": "場のメルド:",

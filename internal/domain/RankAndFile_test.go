@@ -418,6 +418,27 @@ func TestRankAndFile_MoveTableauToFoundation(t *testing.T) {
 		err := ft.MoveTableauToFoundation(0)
 		assert.NoError(t, err)
 		assert.Equal(t, 0, len(ft.GetTableau()[0]))
+		logs := ft.GetActionLog()
+		assert.Equal(t, "1", logs[len(logs)-1].DetailParams["foundation"])
+	})
+
+	t.Run("棋譜は3つ目の組札を記録する", func(t *testing.T) {
+		ft := newTestRankAndFile()
+		ft.Reset()
+		clearRFTableau(ft)
+		var foundation [domain.RankAndFileFoundationCnt][]*domain.Card
+		foundation[0] = []*domain.Card{makeRFCard(domain.CardDesignSpade, 1)}
+		foundation[1] = []*domain.Card{makeRFCard(domain.CardDesignHeart, 1)}
+		ft.SetFoundation(foundation)
+		var tableau [domain.RankAndFileTableauCnt][]*domain.RankAndFileTableauCard
+		tableau[0] = []*domain.RankAndFileTableauCard{makeRFTableauCard(domain.CardDesignDiamond, 1)}
+		ft.SetTableau(tableau)
+		ft.SetStock(nil)
+
+		err := ft.MoveTableauToFoundation(0)
+		assert.NoError(t, err)
+		logs := ft.GetActionLog()
+		assert.Equal(t, "3", logs[len(logs)-1].DetailParams["foundation"])
 	})
 
 	t.Run("move card to existing foundation pile", func(t *testing.T) {

@@ -45,11 +45,25 @@ func TestGapsCuiPresenter_Output_Playing(t *testing.T) {
 	p := &GapsCuiPresenter{}
 	out := p.Output(g, nil)
 	assert.Contains(t, out, "Gaps")
-	assert.Contains(t, out, "再配り 0/3")
+	assert.Contains(t, out, "再配り残り: 3")
+	assert.Greater(t, strings.Index(out, "手数: 0"), strings.Index(out, "----------"))
+	assert.Greater(t, strings.Index(out, "再配り残り: 3"), strings.Index(out, "手数: 0"))
 	assert.Contains(t, out, "[ . ]")
 	// Locked legend plus 3 markers on row 0 (one per locked card) → 4 asterisks.
 	assert.Contains(t, out, i18n.T("gaps.lockedLegend"))
 	assert.Equal(t, 4, strings.Count(out, "*"))
+}
+
+func TestGapsCuiPresenter_Output_Playing_NoRedealsRemaining(t *testing.T) {
+	g := setupGapsCuiMock()
+	for idx := len(g.ExpectedCalls) - 1; idx >= 0; idx-- {
+		if g.ExpectedCalls[idx].Method == "GetRedealsRemaining" {
+			g.ExpectedCalls = append(g.ExpectedCalls[:idx], g.ExpectedCalls[idx+1:]...)
+		}
+	}
+	g.On("GetRedealsRemaining").Return(0)
+	out := new(GapsCuiPresenter).Output(g, nil)
+	assert.Contains(t, out, "再配り残り: 0")
 }
 
 func TestGapsCuiPresenter_Output_GameClear(t *testing.T) {

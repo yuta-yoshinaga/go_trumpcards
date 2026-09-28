@@ -1078,21 +1078,17 @@ func TestFreeCellIsValidTableauSequence(t *testing.T) {
 // --- isAlternateColor / isBlack tests ---
 
 func TestFreeCellIsAlternateColor(t *testing.T) {
-	f := newTestFreeCell()
-
-	assert.True(t, f.isAlternateColor(makeCard(CardDesignSpade, 1), makeCard(CardDesignHeart, 1)))
-	assert.True(t, f.isAlternateColor(makeCard(CardDesignClover, 1), makeCard(CardDesignDiamond, 1)))
-	assert.False(t, f.isAlternateColor(makeCard(CardDesignSpade, 1), makeCard(CardDesignClover, 1)))
-	assert.False(t, f.isAlternateColor(makeCard(CardDesignHeart, 1), makeCard(CardDesignDiamond, 1)))
+	assert.True(t, isAlternateColor(makeCard(CardDesignSpade, 1), makeCard(CardDesignHeart, 1)))
+	assert.True(t, isAlternateColor(makeCard(CardDesignClover, 1), makeCard(CardDesignDiamond, 1)))
+	assert.False(t, isAlternateColor(makeCard(CardDesignSpade, 1), makeCard(CardDesignClover, 1)))
+	assert.False(t, isAlternateColor(makeCard(CardDesignHeart, 1), makeCard(CardDesignDiamond, 1)))
 }
 
 func TestFreeCellIsBlack(t *testing.T) {
-	f := newTestFreeCell()
-
-	assert.True(t, f.isBlack(makeCard(CardDesignSpade, 1)))
-	assert.True(t, f.isBlack(makeCard(CardDesignClover, 1)))
-	assert.False(t, f.isBlack(makeCard(CardDesignHeart, 1)))
-	assert.False(t, f.isBlack(makeCard(CardDesignDiamond, 1)))
+	assert.True(t, isBlack(makeCard(CardDesignSpade, 1)))
+	assert.True(t, isBlack(makeCard(CardDesignClover, 1)))
+	assert.False(t, isBlack(makeCard(CardDesignHeart, 1)))
+	assert.False(t, isBlack(makeCard(CardDesignDiamond, 1)))
 }
 
 // --- canPlaceOnTableau tests ---

@@ -175,6 +175,8 @@ function HighCardFlushPageContent() {
     flushBonusInvalid ||
     straightFlushInvalid ||
     anteAmount + flushBonusAmount + straightFlushAmount > state.chips;
+  const balanceInvalid = anteAmount + flushBonusAmount + straightFlushAmount > state.chips;
+  const betTotal = anteAmount + flushBonusAmount + straightFlushAmount;
 
   const phaseName = isBetPhase ? t('phase.bet') : isActionPhase ? t('phase.action') : t('phase.end');
 
@@ -398,7 +400,13 @@ function HighCardFlushPageContent() {
                   disabled={loading}
                   showSteppers
                   invalid={anteInvalid}
-                  describedBy={betInvalid ? 'highcardflush-bet-error' : undefined}
+                  describedBy={
+                    anteInvalid
+                      ? 'highcardflush-ante-error'
+                      : balanceInvalid
+                        ? 'highcardflush-balance-error'
+                        : undefined
+                  }
                 />
                 <ChipBetInput
                   id="hcf-flush-bonus"
@@ -411,7 +419,13 @@ function HighCardFlushPageContent() {
                   disabled={loading}
                   showSteppers
                   invalid={flushBonusInvalid}
-                  describedBy={betInvalid ? 'highcardflush-bet-error' : undefined}
+                  describedBy={
+                    flushBonusInvalid
+                      ? 'highcardflush-flush-bonus-error'
+                      : balanceInvalid
+                        ? 'highcardflush-balance-error'
+                        : undefined
+                  }
                 />
                 <ChipBetInput
                   id="hcf-straight-flush"
@@ -424,13 +438,30 @@ function HighCardFlushPageContent() {
                   disabled={loading}
                   showSteppers
                   invalid={straightFlushInvalid}
-                  describedBy={betInvalid ? 'highcardflush-bet-error' : undefined}
+                  describedBy={
+                    straightFlushInvalid
+                      ? 'highcardflush-straight-flush-error'
+                      : balanceInvalid
+                        ? 'highcardflush-balance-error'
+                        : undefined
+                  }
                 />
-                {betInvalid && (
-                  <p id="highcardflush-bet-error" role="alert" className="text-ds-error text-xs">
-                    {t('betError')}
-                  </p>
-                )}
+                <div role="alert" className="text-ds-error text-xs">
+                  {anteInvalid && <p id="highcardflush-ante-error">{t('betError.ante')}</p>}
+                  {flushBonusInvalid && (
+                    <p id="highcardflush-flush-bonus-error">{t('betError.bonus', { label: t('label.flushBonus') })}</p>
+                  )}
+                  {straightFlushInvalid && (
+                    <p id="highcardflush-straight-flush-error">
+                      {t('betError.bonus', { label: t('label.straightFlush') })}
+                    </p>
+                  )}
+                  {balanceInvalid && (
+                    <p id="highcardflush-balance-error">
+                      {t('betError.balance', { total: betTotal, chips: state.chips })}
+                    </p>
+                  )}
+                </div>
                 <button type="button" className={btnPrimary} onClick={handleBet} disabled={loading || betInvalid}>
                   {t('button.bet')}
                 </button>

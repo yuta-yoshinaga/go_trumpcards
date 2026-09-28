@@ -23,6 +23,7 @@
   },
   "playButton": "Play",
   "players": "Players",
+  "selectedTableTotal": "Selected table-card total: {{total}}",
   "result": {
     "title": "Final Scores",
     "winner": "Winner: {{names}}",

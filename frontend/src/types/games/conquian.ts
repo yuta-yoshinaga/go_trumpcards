@@ -20,7 +20,6 @@ export interface ConquianPlayerData {
 
 /** Conquian game configuration. */
 export interface ConquianConfig {
-  cpuDifficulty: number;
   targetWins: number;
 }
 

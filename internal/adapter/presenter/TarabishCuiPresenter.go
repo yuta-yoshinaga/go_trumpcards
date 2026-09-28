@@ -25,8 +25,24 @@ func tarabishPlayerStr(player *domain.TarabishPlayer, idx, trumpSuit int) string
 	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
 		b.WriteString(tarabishHandStr(player, trumpSuit) + "\n")
+		if trumpSuit == 0 {
+			b.WriteString(tarabishBidSuitCounts(player) + "\n")
+		}
 	}
 	return b.String()
+}
+
+func tarabishBidSuitCounts(player *domain.TarabishPlayer) string {
+	counts := [5]int{}
+	for i := range player.GetCardsSize() {
+		card := player.GetCard(i)
+		counts[card.GetDesign()]++
+	}
+	parts := make([]string, 0, 4)
+	for _, suit := range []int{domain.CardDesignSpade, domain.CardDesignClover, domain.CardDesignHeart, domain.CardDesignDiamond} {
+		parts = append(parts, i18n.Tf("tarabish.bidSuitCount", "suit", tarabishSuitName(suit), "count", strconv.Itoa(counts[suit])))
+	}
+	return i18n.Tf("tarabish.bidSuitCounts", "counts", strings.Join(parts, i18n.T("tarabish.listSeparator")))
 }
 
 // tarabishHandStr は手札を、切り札を踏まえた点数付きで並べる。

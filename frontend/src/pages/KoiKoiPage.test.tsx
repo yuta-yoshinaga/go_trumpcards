@@ -44,6 +44,19 @@ beforeEach(() => {
 });
 
 describe('KoiKoiPage', () => {
+  it('announces deck count changes without announcing the initial count', async () => {
+    mockExec.mockResolvedValueOnce(playState).mockResolvedValueOnce(makeKoiKoiState({ remainingDeck: 31 }));
+    renderWithProviders(<KoiKoiPage />);
+
+    const live = await screen.findByTestId('koikoi-deck-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toBeEmptyDOMElement();
+
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+    await waitFor(() => expect(live).toHaveTextContent('山札の残りは31枚です。'));
+  });
+
   it('renders the loading fallback when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<KoiKoiPage />);

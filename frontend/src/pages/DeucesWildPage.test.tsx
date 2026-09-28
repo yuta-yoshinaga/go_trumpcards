@@ -106,6 +106,7 @@ describe('DeucesWildPage', () => {
     mockExec.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce(drawPhaseState);
     await enterDrawPhaseWithAutoHoldOff();
 
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
     const cards = holdButtons();
     expect(cards[0]).toHaveAttribute('aria-pressed', 'false');
     fireEvent.keyDown(document.body, { key: '1' });

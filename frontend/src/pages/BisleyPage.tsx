@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useId, useMemo } from 'react';
 import type { bisleyApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -82,6 +82,7 @@ function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => stri
 }
 
 function BisleyPageContent() {
+  const selectSourceHintId = useId();
   const {
     t,
     tc,
@@ -337,7 +338,9 @@ function BisleyPageContent() {
                     <button
                       type="button"
                       onClick={() => game.handleSelectTarget(foundationZone)}
-                      disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
+                      disabled={!isPlaying || loading || isAutoCompleting}
+                      aria-disabled={!selectedSource || undefined}
+                      aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                       aria-label={
                         nextRankLabel
                           ? t(labelKey, { suit, count: pile.length, rank: nextRankLabel })
@@ -359,7 +362,9 @@ function BisleyPageContent() {
                     <button
                       type="button"
                       onClick={() => game.handleSelectTarget(foundationZone)}
-                      disabled={!isPlaying || loading || !selectedSource}
+                      disabled={!isPlaying || loading}
+                      aria-disabled={!selectedSource || undefined}
+                      aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                       aria-label={
                         nextRankLabel
                           ? t(emptyLabelKey, { suit, rank: nextRankLabel })
@@ -419,6 +424,9 @@ function BisleyPageContent() {
       ) : (
         <>
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
+            <span id={selectSourceHintId} className="sr-only">
+              {tc('label.selectSourceFirst')}
+            </span>
             <div className="flex flex-wrap justify-center gap-4 sm:gap-8 mb-3" data-tutorial="bisley-foundation">
               {renderFoundationRow('ace')}
               {renderFoundationRow('king')}

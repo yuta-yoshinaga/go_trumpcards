@@ -192,7 +192,8 @@ describe('NapPage', () => {
     mockExec.mockResolvedValue(playPhaseState);
     renderWithProviders(<NapPage />);
     const progress = await screen.findByTestId('nap-declarer-progress');
-    expect(progress).toHaveTextContent('宣言者: 0 / 3 トリック（残り5トリック）');
+    expect(progress).toHaveTextContent('宣言者（あなた）: 0 / 3 トリック（残り5トリック）');
+    expect(progress.closest('details')).toBeNull();
     expect(progress).toHaveAttribute('role', 'status');
     expect(progress).not.toHaveTextContent('達成不可');
     expect(progress.className).not.toContain('text-ds-error');
@@ -231,6 +232,7 @@ describe('NapPage', () => {
     renderWithProviders(<NapPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
     expect(screen.getByText('ラウンド結果')).toBeInTheDocument();
+    expect(screen.queryByTestId('nap-declarer-progress')).not.toBeInTheDocument();
   });
 
   it('renders the game end message', async () => {

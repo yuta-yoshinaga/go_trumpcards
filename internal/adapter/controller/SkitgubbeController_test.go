@@ -26,14 +26,6 @@ func TestSkitgubbeWebInput_ToConfigWithNoConfigDoesNotPanic(t *testing.T) {
 	})
 }
 
-func TestSkitgubbeWebInput_ToConfigClampsAnOutOfRangeDifficulty(t *testing.T) {
-	bad := 99
-	cfg := controller.SkitgubbeWebInput{
-		Config: &controller.SkitgubbeWebConfig{CpuDifficulty: &bad},
-	}.ToConfig()
-	assert.NoError(t, cfg.Validate())
-}
-
 func TestNewSkitgubbeDefaultOutput(t *testing.T) {
 	// An error response still has to render: the page maps over duel, pile and
 	// validIndices without guarding for absence, and reads trumpSuit directly.

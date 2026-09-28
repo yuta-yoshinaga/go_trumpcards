@@ -18,6 +18,7 @@
   "round": "Round {{n}}",
   "dealer": "Dealer: {{name}}",
   "pegCount": "Peg count: {{count}}/31",
+  "pegCountAnnouncement": "Peg count updated to {{count}}",
   "pegPreview": "{{from}} → {{to}} / 31",
   "pegRestrictedTooltip": "Playing this card would push the count over 31",
   "pegRestrictedAria": "cannot play (would exceed peg count of 31)",

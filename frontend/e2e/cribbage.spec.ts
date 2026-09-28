@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, waitForLoaded } from './helpers';
+import { gameButton, navigateTo, waitForLoaded } from './helpers';
 
 test.describe('Cribbage E2E', () => {
   test('navigates, resets, and plays through phase transitions', async ({ page }) => {
@@ -20,7 +20,7 @@ test.describe('Cribbage E2E', () => {
 
     const discardButton = page.getByRole('button', { name: 'クリブに捨てる' });
     const pegButton = page.getByRole('button', { name: 'カードを出す' });
-    const goButton = page.getByRole('button', { name: 'Go' });
+    const goButton = gameButton(page, 'Go');
     const showNextButton = page.getByRole('button', { name: '次を表示' });
     const nextRoundButton = page.getByRole('button', { name: '次のラウンド' });
     // Exclude cards marked aria-disabled (the 31-cap restriction added in #1872) so

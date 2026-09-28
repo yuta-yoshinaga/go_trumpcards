@@ -7,7 +7,6 @@
   },
   "settings": {
     "title": "設定",
-    "cpuDifficulty": "CPU難易度",
     "targetWins": "目標勝利数",
     "easy": "Easy",
     "normal": "Normal",

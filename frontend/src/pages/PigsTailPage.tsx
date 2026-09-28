@@ -25,6 +25,7 @@ import { badgeErrorColors } from '../styles/badgeStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { Card, PigsTailResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
+import { isSuitDesign, suitSymbol } from '../utils/cardAlt';
 import { valueName } from '../utils/cardUtils';
 import { parsePigtailCommand, pigtailHelp } from '../utils/cli/commands/pigtailCommands';
 import { formatPigtailState } from '../utils/cli/formatters/pigtailFormatter';
@@ -32,16 +33,9 @@ import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
 
-const SUIT_SYMBOLS: Record<string, string> = {
-  SPADE: '♠',
-  HEART: '♥',
-  DIAMOND: '♦',
-  CLOVER: '♣',
-};
-
 /** Render a center-pile card as suit symbol + rank (e.g. "♠A"), so the rank is visible. */
 function centerCardLabel(card: Card): string {
-  return `${SUIT_SYMBOLS[card.design] ?? '?'}${valueName(card.value)}`;
+  return `${isSuitDesign(card.design) ? suitSymbol(card.design) : '?'}${valueName(card.value)}`;
 }
 
 /** Max number of recent center-pile tops kept in the client-side tail strip. */
@@ -284,7 +278,9 @@ function PigsTailPageContent() {
               >
                 {playerName(state.humanAction.drawPlayerIdx, true)}:{' '}
                 {state.humanAction.drawnCard
-                  ? (SUIT_SYMBOLS[state.humanAction.drawnCard.design] ?? '?') + state.humanAction.drawnCard.value
+                  ? (isSuitDesign(state.humanAction.drawnCard.design)
+                      ? suitSymbol(state.humanAction.drawnCard.design)
+                      : '?') + state.humanAction.drawnCard.value
                   : '?'}
                 {state.humanAction.penaltyFlag
                   ? ` — ${t('label.penalty')} (+${state.humanAction.penaltyCount})`
@@ -301,7 +297,10 @@ function PigsTailPageContent() {
                     className={`text-xs px-2 py-1 rounded ${action.penaltyFlag ? badgeErrorColors : 'bg-black/30 text-ds-text-muted'}`}
                   >
                     {playerName(action.drawPlayerIdx, false)}:{' '}
-                    {action.drawnCard ? (SUIT_SYMBOLS[action.drawnCard.design] ?? '?') + action.drawnCard.value : '?'}
+                    {action.drawnCard
+                      ? (isSuitDesign(action.drawnCard.design) ? suitSymbol(action.drawnCard.design) : '?') +
+                        action.drawnCard.value
+                      : '?'}
                     {action.penaltyFlag
                       ? ` — ${t('label.penalty')} (+${action.penaltyCount})`
                       : ` — ${t('label.safe')}`}
@@ -352,6 +351,19 @@ function PigsTailPageContent() {
           {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
 
           <GameFooter className={`${gameTheme.pigtail.footer} px-4 py-2.5`}>
+            <div data-testid="pigtail-draw-guidance" className="mb-2 text-center text-xs text-ds-text-primary">
+              {state.centerCount > 0 && <p>{t('drawGuidance.penalty')}</p>}
+              <p>
+                {state.circleCount > 0
+                  ? t('drawGuidance.stock', { count: state.circleCount })
+                  : t('drawGuidance.emptyStock')}
+              </p>
+              <p>
+                {/* CPU turns run to completion inside the same request, so outside game end
+                    the response is always the human's turn. */}
+                {isGameEnd ? t('drawGuidance.gameEnded') : t('drawGuidance.yourTurn')}
+              </p>
+            </div>
             <div className="flex gap-2 justify-center items-center flex-wrap">
               <label className="flex items-center gap-1 text-ds-text-primary text-xs min-h-[44px]">
                 <input

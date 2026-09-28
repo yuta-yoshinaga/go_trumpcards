@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { TIMEOUT_TRANSITION, waitForLoaded } from './helpers';
+import { gameButton, TIMEOUT_TRANSITION, waitForLoaded } from './helpers';
 
 test.describe('Routing E2E', () => {
   test('/blackjack deep-link redirects to BlackJack at /', async ({ page }) => {
@@ -10,7 +10,7 @@ test.describe('Routing E2E', () => {
     await page.goto('/#/blackjack');
     await waitForLoaded(page);
     await expect(page).toHaveURL(/#\/?$/, { timeout: TIMEOUT_TRANSITION });
-    await expect(page.getByRole('button', { name: 'ベット' })).toBeVisible({
+    await expect(gameButton(page, 'ベット')).toBeVisible({
       timeout: TIMEOUT_TRANSITION,
     });
   });

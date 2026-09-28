@@ -57,8 +57,7 @@ func (p *KarnoffelWebPresenter) Output(g interfaces.KarnoffelGame, lastErr error
 	cfg := g.GetConfig()
 	resObj.TargetHands = cfg.TargetHands
 	resObj.Config = controller.KarnoffelWebOutputConfig{
-		CpuDifficulty: int(cfg.CpuDifficulty),
-		TargetHands:   cfg.TargetHands,
+		TargetHands: cfg.TargetHands,
 	}
 
 	resObj.Players = p.buildPlayersOutput(g)

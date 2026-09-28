@@ -154,10 +154,8 @@ export function DesktopSidebar() {
         )}
 
         <div aria-live="polite" className="sr-only">
-          {searchTerm &&
-            (filteredPaths && filteredPaths.size > 0
-              ? t('nav.searchResultCount', { count: filteredPaths.size })
-              : t('nav.noResults'))}
+          {filteredPaths &&
+            (filteredPaths.size > 0 ? t('nav.searchResultCount', { count: filteredPaths.size }) : t('nav.noResults'))}
         </div>
         {/* Search results or category list */}
         {filteredPaths ? (
@@ -179,6 +177,7 @@ export function DesktopSidebar() {
                     </Link>
                     <FavoriteToggleButton
                       path={path}
+                      gameLabel={t(routeLabel)}
                       pressed={isFavorite(path)}
                       onToggle={toggleFavorite}
                       className={() =>
@@ -217,6 +216,7 @@ export function DesktopSidebar() {
                       </Link>
                       <FavoriteToggleButton
                         path={path}
+                        gameLabel={t(routeLabel)}
                         pressed={isFavorite(path)}
                         onToggle={toggleFavorite}
                         className={() =>

@@ -22,6 +22,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { Card } from '../types/card';
 import { ShamrocksPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { hintCheckboxItem } from '../utils/settingsItems';
 import { fitsFoundation, shamrocksMovableFans } from '../utils/shamrocksLegalMove';
 
@@ -182,6 +183,7 @@ function ShamrocksPageContent() {
   const renderFan = (fan: Card[], idx: number) => {
     const isHintSource = hint?.fromFan === idx;
     const isHintDest = hint !== undefined && !hintFoundation && hint.toFan === idx;
+    const topCard = fan.at(-1);
     // **リングは 1 つだけ選ぶ。** Tailwind の ring-* は同じ box-shadow 変数を
     // 共有するので重ねられない —— 連結すると、生成された CSS の順序で
     // どちらが勝つかが決まり、選択中かつ移動可能な扇 (ふつうに起きる組み合わせ)
@@ -204,6 +206,10 @@ function ShamrocksPageContent() {
         style={{ minHeight: Math.round(w * 1.4) }}
         onClick={canAct ? () => pickFan(idx) : undefined}
         disabled={!canAct}
+        aria-label={
+          topCard ? t('fanAriaLabel', { index: idx, card: cardAlt(topCard) }) : t('emptyFanAriaLabel', { index: idx })
+        }
+        aria-pressed={selected === idx}
         data-testid={`fan-${idx}`}
         data-movable={movableFans.has(idx) ? 'true' : undefined}
         data-hint-source={isHintSource ? 'true' : undefined}

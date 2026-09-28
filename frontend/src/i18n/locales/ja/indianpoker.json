@@ -9,6 +9,8 @@
   },
   "yourCard": "あなたのカード",
   "hidden": "???",
+  "hiddenCardAriaLabel": "相手には見えていますが、あなたには見えないカード",
+  "faceUpCardAriaLabel": "{{name}}のカード: {{card}}",
   "ante": "アンティ",
   "settings": {
     "ante": "アンティ",

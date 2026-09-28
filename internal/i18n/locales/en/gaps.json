@@ -6,7 +6,7 @@
   "helpGiveUp": "  g                        give up",
   "helpHint": "  h                        hint",
   "gridCard": "({{row}},{{col}}){{card}}",
-  "redealsLine": "Redeals {{used}}/3 (remaining {{remaining}})",
+  "redealsLine": "Redeals left: {{remaining}}",
   "hintMove": "Hint: ({{fromRow}},{{fromCol}}) -> ({{toRow}},{{toCol}})",
   "playing": "Playing",
   "stalemate": "Stalemate",

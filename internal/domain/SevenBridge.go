@@ -756,7 +756,8 @@ func (g *SevenBridge) findBestMeldIndices(p *SevenBridgePlayer) ([]int, bool) {
 		v := p.GetCard(i).GetValue()
 		byRank[v] = append(byRank[v], i)
 	}
-	for _, group := range byRank {
+	for _, rank := range sortedIntKeys(byRank) {
+		group := byRank[rank]
 		if len(group) >= SevenBridgeMeldMinSize {
 			return group[:SevenBridgeMeldMinSize], true
 		}
@@ -766,7 +767,8 @@ func (g *SevenBridge) findBestMeldIndices(p *SevenBridgePlayer) ([]int, bool) {
 	for i := range n {
 		bySuit[p.GetCard(i).GetDesign()] = append(bySuit[p.GetCard(i).GetDesign()], i)
 	}
-	for _, group := range bySuit {
+	for _, suit := range sortedIntKeys(bySuit) {
+		group := bySuit[suit]
 		if len(group) < SevenBridgeMeldMinSize {
 			continue
 		}

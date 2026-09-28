@@ -94,6 +94,27 @@ func TestCoincheCuiPresenter_Output(t *testing.T) {
 	defer color.SetNoColor(origNoColor)
 	p := new(presenter.CoincheCuiPresenter)
 
+	t.Run("round end shows both teams' card points in Japanese and English", func(t *testing.T) {
+		origLang := i18n.Lang()
+		t.Cleanup(func() { i18n.SetLang(origLang) })
+		m, _ := setupCoincheCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundPoints")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundPoints")
+		m.On("GetPhase").Return(domain.CoinchePhaseRoundEnd)
+		m.On("GetRoundPoints", 0).Return(37)
+		m.On("GetRoundPoints", 1).Return(45)
+
+		i18n.SetLang("ja")
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "ラウンド獲得カード点: チーム0=37点  チーム1=45点")
+		assert.Contains(t, result, "チーム0: 0点  チーム1: 0点") // 累計点と区別できる。
+
+		i18n.SetLang("en")
+		result = p.Output(m, nil)
+		assert.Contains(t, result, "Round card points: Team 0=37  Team 1=45")
+	})
+
 	t.Run("initial state", func(t *testing.T) {
 		m, players := setupCoincheCuiMockWithPlayers()
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))

@@ -119,6 +119,9 @@ describe('IronCrossPage', () => {
     mockApi.mockResolvedValue(withState({ cross: [card(13), card(12), null, null, null], revealedCount: 2 }));
     renderWithProviders(<IronCrossPage />);
     await waitFor(() => expect(screen.getByTestId('ic-cross-0')).toBeInTheDocument());
+    const exposedCard = screen.getByAltText('♠ K');
+    expect(exposedCard).toBeInTheDocument();
+    expect(exposedCard.parentElement).not.toHaveAttribute('role', 'img');
     // 開いている位置には札があり、伏せている位置には無い。
     expect(screen.getByTestId('ic-cross-0').querySelector('img,svg,div')).not.toBeNull();
     expect(screen.getByTestId('ic-cross-2')).toBeEmptyDOMElement();
@@ -237,6 +240,31 @@ describe('IronCrossPage', () => {
 
   // 4 つのハンドラすべてが同じ状態を触る。**片方の列だけ配線を忘れる**のが
   // ありがちな取りこぼしなので、縦=フォーカス / 横=ホバーの側も見る。
+  it('選択プレビューを文字で示し、カードの名前にも列を含める', async () => {
+    mockApi.mockResolvedValue(
+      withState({
+        phase: IronCrossPhase.CHOOSE_LINE,
+        isChoosing: true,
+        isHumanTurn: false,
+        cross: [card(13), card(12), card(11), card(10), card(9)],
+        revealedCount: 5,
+      }),
+    );
+    renderWithProviders(<IronCrossPage />);
+    await waitFor(() => expect(screen.getByTestId('ic-vertical')).toBeInTheDocument());
+
+    fireEvent.focus(screen.getByTestId('ic-vertical'));
+    expect(screen.getByTestId('ic-cross-1')).toHaveAccessibleName('縦');
+    expect(screen.getByTestId('ic-cross-0')).toHaveAccessibleName('縦、横');
+    expect(screen.getAllByText('縦')).toHaveLength(2);
+    expect(screen.getByText('縦、横')).toBeInTheDocument();
+
+    fireEvent.blur(screen.getByTestId('ic-vertical'));
+    fireEvent.focus(screen.getByTestId('ic-horizontal'));
+    expect(screen.getByTestId('ic-cross-3')).toHaveAccessibleName('横');
+    expect(screen.getByTestId('ic-cross-0')).toHaveAccessibleName('縦、横');
+  });
+
   it('縦はフォーカスでも、横はホバーでも光る', async () => {
     mockApi.mockResolvedValue(
       withState({

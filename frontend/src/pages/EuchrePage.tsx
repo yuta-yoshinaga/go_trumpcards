@@ -272,8 +272,6 @@ function EuchrePageContent() {
             <div className="text-ds-text-primary text-center mb-2">
               <span className="mr-4">{t('round', { n: state.roundNumber })}</span>
               <span className="mr-4">{t('trick', { n: state.trickNumber })}</span>
-              {state.trumpSuit > 0 && <span>{t('trumpSuit', { suit: suitName(state.trumpSuit) })}</span>}
-              {state.trumpSuit === 0 && <span>{t('noTrump')}</span>}
             </div>
 
             <div className={lgTwoColGrid}>
@@ -313,13 +311,18 @@ function EuchrePageContent() {
                 )}
 
                 {/* Current trick */}
-                <TrickDisplay
-                  currentTrick={state.currentTrick}
-                  players={state.players}
-                  cardWidth={cardWidth}
-                  label={t('currentTrick')}
-                  dataTutorial="eu-trick-display"
-                />
+                <section>
+                  <div className="text-ds-text-primary text-sm text-center" aria-live="polite">
+                    {state.trumpSuit > 0 ? t('trumpSuit', { suit: suitName(state.trumpSuit) }) : t('noTrump')}
+                  </div>
+                  <TrickDisplay
+                    currentTrick={state.currentTrick}
+                    players={state.players}
+                    cardWidth={cardWidth}
+                    label={t('currentTrick')}
+                    dataTutorial="eu-trick-display"
+                  />
+                </section>
 
                 {/* Partnership info */}
                 {humanPlayer && (

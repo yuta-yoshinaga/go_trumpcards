@@ -90,6 +90,21 @@ function BuraPageContent() {
   // server will only reject.
   const selectedCards = selected.map((i) => human?.cards[i]).filter((c) => c != null);
   const sameSuit = selectedCards.every((c) => c.design === selectedCards[0]?.design);
+  const playReason = !isHumanTurn
+    ? ''
+    : selectedCards.length === 0
+      ? t('playReason.select')
+      : leadCount > 0
+        ? selectedCards.length < leadCount
+          ? t('playReason.responseTooFew', { n: leadCount })
+          : selectedCards.length > leadCount
+            ? t('playReason.responseTooMany', { n: leadCount })
+            : ''
+        : !sameSuit
+          ? t('playReason.leadSuit')
+          : selectedCards.length > 3
+            ? t('playReason.leadMax')
+            : '';
   const canPlay =
     isHumanTurn &&
     selected.length > 0 &&
@@ -245,9 +260,18 @@ function BuraPageContent() {
                 data-hint-action="play"
                 onClick={game.handlePlay}
                 disabled={loading || !canPlay}
+                aria-describedby={playReason ? 'bura-play-reason' : undefined}
               >
                 {leadCount > 0 ? t('respond', { n: leadCount }) : t('play')}
               </button>
+              <div
+                id="bura-play-reason"
+                role="status"
+                aria-live="polite"
+                className="basis-full text-sm text-ds-text-muted"
+              >
+                {playReason}
+              </div>
               <button
                 type="button"
                 className={btnSecondary}

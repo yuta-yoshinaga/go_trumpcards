@@ -26,6 +26,8 @@ func setupTongitsCuiMock() *interfaces.MockTongitsGame {
 	m.On("GetCurrentPlayerIdx").Return(0)
 	m.On("GetWinnerIdx").Return(-1)
 	m.On("GetIsTongits").Return(false)
+	m.On("GetRoundEndReason").Return(domain.TongitsRoundEndReasonNone)
+	m.On("GetRoundWinner").Return(-1)
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 
 	return m
@@ -145,6 +147,35 @@ func TestTongitsCuiPresenter_Output(t *testing.T) {
 		result := p.Output(m, nil)
 		assert.Contains(t, result, "ラウンド終了")
 		assert.Contains(t, result, "nr / nextround")
+	})
+
+	t.Run("round end prints reason and winner", func(t *testing.T) {
+		m, _ := setupTongitsCuiMockWithPlayers()
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundEndReason")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetRoundWinner")
+		m.On("GetPhase").Return(domain.TongitsPhaseRoundEnd)
+		m.On("GetRoundEndReason").Return(domain.TongitsRoundEndReasonStockOut)
+		m.On("GetRoundWinner").Return(-1)
+		result := p.Output(m, nil)
+		assert.Contains(t, result, "終了理由: 山札切れ")
+		assert.Contains(t, result, "勝者: 引き分け")
+	})
+
+	t.Run("game ending challenge prints reason and winner from domain", func(t *testing.T) {
+		players := makeTongitsPlayers()
+		g := domain.NewTongits(domain.NewTrumpCards(0), players, domain.DefaultTongitsConfig())
+		g.SetPhase(domain.TongitsPhaseDiscard)
+		g.SetCurrentPlayerIdx(0)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 5, false))
+		players[1].AddCard(domain.NewCard(domain.CardDesignHeart, 3, false))
+		players[2].AddCard(domain.NewCard(domain.CardDesignClover, 8, false))
+		assert.NoError(t, g.PlayerChallenge([]bool{true, true}))
+		assert.True(t, g.GetGameEndFlag())
+
+		result := p.Output(g, nil)
+		assert.Contains(t, result, "終了理由: チャレンジ")
+		assert.Contains(t, result, "勝者: CPU 1")
 	})
 
 	t.Run("round end with tongits on deal flag", func(t *testing.T) {

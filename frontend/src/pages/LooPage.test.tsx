@@ -40,6 +40,12 @@ beforeEach(() => {
 });
 
 describe('LooPage', () => {
+  it('shows - when no trump suit has been set', async () => {
+    mockExec.mockResolvedValue(makeLooState({ trumpSuit: 0 }));
+    renderWithProviders(<LooPage />);
+    expect(await screen.findByText('切り札: -')).toBeInTheDocument();
+  });
+
   it('renders loo-decide-buttons when it is human turn to decide', async () => {
     // 参加するか降りるかの選択フェーズで人間の手番ならボタンを出す
     const state = makeLooState({ phase: LooPhase.DECIDE, decidePlayerIdx: 0, isHumanTurn: true });

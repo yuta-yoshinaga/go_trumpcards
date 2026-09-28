@@ -38,6 +38,7 @@
   "kbd.take": "T",
   "kbd.goOut": "G",
   "kbd.next": "N",
+  "kbd.goOutOnDeal": "O",
   "tutorial.layouts": "Only these three shapes win - **three fives totals fifteen and is still not a go-out**",
   "tutorial.hand": "Split all fifteen into sequences of one suit. Cards of the same rank count for nothing",
   "tutorial.draw": "Draw from the stock or the discard, then throw one card if you cannot go out",

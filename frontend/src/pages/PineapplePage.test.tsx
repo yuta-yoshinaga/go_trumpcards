@@ -445,6 +445,59 @@ describe('PineapplePage', () => {
     expect(preview).toHaveTextContent('ワンペア');
   });
 
+  it('labels and announces the two Irish Poker cards as the playable hand after discard', async () => {
+    mockIrishExec
+      .mockResolvedValueOnce({
+        ...discardState,
+        initialDealCount: 4,
+        players: [
+          humanPlayer({
+            cards: [
+              { design: 'SPADE', value: 1 },
+              { design: 'HEART', value: 1 },
+              { design: 'DIAMOND', value: 5 },
+              { design: 'CLOVER', value: 8 },
+            ],
+          }),
+          cpuPlayer(1),
+          cpuPlayer(2),
+          cpuPlayer(3),
+        ],
+      })
+      .mockResolvedValueOnce({
+        ...preFlopState,
+        initialDealCount: 4,
+        players: [
+          humanPlayer({
+            cards: [
+              { design: 'SPADE', value: 1 },
+              { design: 'HEART', value: 1 },
+            ],
+          }),
+          cpuPlayer(1),
+          cpuPlayer(2),
+          cpuPlayer(3),
+        ],
+        discardDone: [true, true, true, true],
+        communityCards: discardState.communityCards,
+      });
+    renderWithProviders(<PineapplePage variant="irishpoker" />);
+    await screen.findByTestId('discard-controls');
+    fireEvent.click(screen.getByAltText('♦ 5').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByAltText('♣ 8').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByTestId('discard-controls').querySelector('button:not(:disabled)') as HTMLButtonElement);
+    await screen.findByTestId('discard-confirm');
+    fireEvent.click(screen.getByRole('button', { name: '確定' }));
+
+    expect(await screen.findByTestId('irishpoker-playable-hand-label')).toHaveTextContent('プレイに使う手札');
+    const live = screen.getByTestId('irishpoker-playable-hand-announce');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toHaveTextContent('プレイに使う手札');
+    expect(live).toHaveTextContent('♠ A');
+    expect(live).toHaveTextContent('♥ A');
+  });
+
   // #5490: 残す2枚と役はディスカード確定前の重要なフィードバックなのに、
   // 同じフッター内の上限超過通知 (pn-discard-limit-announce) が aria-live を
   // 持つのに対し、こちらは無音だった。
@@ -1157,29 +1210,49 @@ describe('PineapplePage', () => {
     mockCrazyExec.mockResolvedValue(crazyDiscardState);
     renderWithProviders(<PineapplePage variant="crazypineapple" />);
     await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+    const live = screen.getByTestId('cp-discard-preview-announce');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toBeEmptyDOMElement();
 
     // Select the recommended discard (index 2: 2♦)
     fireEvent.click(screen.getByAltText('♦ 2').closest('button') as HTMLButtonElement);
 
-    const live = await screen.findByTestId('cp-discard-preview-announce');
-    expect(live).toHaveAttribute('role', 'status');
-    expect(live).toHaveAttribute('aria-live', 'polite');
+    await waitFor(() => expect(live).toHaveTextContent('スリーカード'));
     expect(live).toHaveClass('sr-only');
     expect(live.textContent).toContain('スリーカード');
     expect(live.textContent).toContain('おすすめ');
+    expect(live.textContent).toContain('♦ 2');
+    expect(live.textContent).toContain('♠ 10');
+    expect(live.textContent).toContain('♥ 10');
 
     // Re-selecting toggles it off
     fireEvent.click(screen.getByAltText('♦ 2').closest('button') as HTMLButtonElement);
-    expect(screen.queryByTestId('cp-discard-preview-announce')).not.toBeInTheDocument();
+    expect(screen.getByTestId('cp-discard-preview-announce')).toBeEmptyDOMElement();
 
     // Select a non-recommended discard (index 1: 10♥)
     fireEvent.click(screen.getByAltText('♥ 10').closest('button') as HTMLButtonElement);
     const live2 = await screen.findByTestId('cp-discard-preview-announce');
     expect(live2.textContent).toContain('ワンペア');
+    expect(live2.textContent).toContain('♥ 10');
+    expect(live2.textContent).toContain('♠ 10');
+    expect(live2.textContent).toContain('♦ 2');
+    expect(live2.textContent).toContain('残すカード: ♠ 10、♦ 2');
+    expect(live2.textContent).not.toContain('残すカード: ♠ 10、♥ 10、♦ 2');
     expect(live2.textContent).not.toContain('おすすめ');
     // A key looked up in the wrong namespace comes back as the identifier itself,
     // which would still satisfy every assertion above except this one.
     expect(live2.textContent).not.toContain('cpPreviewAria');
+  });
+
+  it('omits the selected discard preview when the server provides no candidate', async () => {
+    mockCrazyExec.mockResolvedValue({ ...discardState, discardPreviews: [] });
+    renderWithProviders(<PineapplePage variant="crazypineapple" />);
+    await waitFor(() => expect(screen.getByTestId('discard-controls')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+
+    expect(screen.getByTestId('cp-discard-preview-announce')).toBeEmptyDOMElement();
   });
 
   // 複数枚のカードを捨てるゲーム（Irish Poker 等）の場合のみ、選択枚数カウントを表示する。

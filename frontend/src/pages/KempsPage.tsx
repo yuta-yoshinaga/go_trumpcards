@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { kempsApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -17,7 +17,7 @@ import { KEMPS_COUNTER_PENALTY } from '../constants/kemps';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
-import { useGameApi } from '../hooks/useGameApi';
+import { isRejectedAction, useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
@@ -111,7 +111,25 @@ export const KempsPage = withTutorial(KempsPageContent, 'kemps', KEMPS_TUTORIAL_
 function KempsPageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('kemps');
-  const { state, loading, error, exec, retry } = useGameApi(kempsApi.exec);
+  const [swapAnnouncement, setSwapAnnouncement] = useState('');
+  const swapCardsRef = useRef<{
+    handCard: KempsResponse['field'][number];
+    fieldCard: KempsResponse['field'][number];
+  } | null>(null);
+  const { state, loading, error, exec, retry } = useGameApi(kempsApi.exec, {
+    onSuccess: (response, [command, options]) => {
+      if (command !== 'swap' || !options) return;
+      const swappedCards = swapCardsRef.current;
+      swapCardsRef.current = null;
+      if (isRejectedAction(response) || !swappedCards) return;
+      setSwapAnnouncement(
+        t('swapComplete', {
+          handCard: cardAlt(swappedCards.fieldCard),
+          fieldCard: cardAlt(swappedCards.handCard),
+        }),
+      );
+    },
+  });
 
   const [cpuDifficulty, setCpuDifficulty] = useState(1);
   const [selectedHand, setSelectedHand] = useState<number | null>(null);
@@ -187,6 +205,10 @@ function KempsPageContent() {
   const handleFieldClick = (fieldIndex: number) => {
     if (!canSwap || selectedHand === null) return;
     const handIndex = selectedHand;
+    const human = state.players.find((player) => player.isHuman);
+    const handCard = human?.hand[handIndex];
+    const fieldCard = state.field[fieldIndex];
+    swapCardsRef.current = handCard && fieldCard ? { handCard, fieldCard } : null;
     setSelectedHand(null);
     exec('swap', { handIndex, fieldIndex });
   };
@@ -268,6 +290,9 @@ function KempsPageContent() {
             </div>
 
             {/* Shared field */}
+            <span className="sr-only" role="status" aria-live="polite" data-testid="kemps-swap-announcement">
+              {swapAnnouncement}
+            </span>
             <div className="mb-2 p-2 rounded bg-black/30" data-tutorial="kemps-field">
               <div className="mb-1 text-ds-text-primary text-sm">
                 {t('fieldLabel')}

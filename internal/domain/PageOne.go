@@ -416,11 +416,6 @@ func (g *PageOne) GetValidPlayIndices(playerIdx int) []int {
 // GetRecentPenalties 直前ターンで発生したペナルティ一覧を取得する
 func (g *PageOne) GetRecentPenalties() []PageOnePenalty { return g.recentPenalties }
 
-// ApplyDeclarePenaltyForTest は宣言ペナルティを適用する (テスト用)。
-func (g *PageOne) ApplyDeclarePenaltyForTest(playerIdx int) {
-	g.applyDeclarePenalty(playerIdx)
-}
-
 // --- Private methods ---
 
 // isValidPlay カードがプレイ可能か判定 (スートまたはランクが一致)

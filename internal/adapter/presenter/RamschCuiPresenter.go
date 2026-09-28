@@ -100,7 +100,22 @@ func (p *RamschCuiPresenter) Output(s interfaces.RamschGame, lastErr error) stri
 					"points", strconv.Itoa(s.GetCardPoints(loser)))) + "\n")
 			} else {
 				// 同点は全員が負う。誰か 1 人を選ぶ根拠が無い。
-				b.WriteString(color.Red(i18n.T("ramsch.roundTied")) + "\n")
+				tiedPlayers := make([]string, 0, s.GetPlayerCnt())
+				maxPoints := 0
+				for i := 0; i < s.GetPlayerCnt(); i++ {
+					if points := s.GetCardPoints(i); points > maxPoints {
+						maxPoints = points
+					}
+				}
+				for i := 0; i < s.GetPlayerCnt(); i++ {
+					if s.GetCardPoints(i) == maxPoints {
+						tiedPlayers = append(tiedPlayers, i18n.Tf("ramsch.roundTiedPlayer",
+							"name", cuiPlayerName(s.GetPlayer(i), i),
+							"points", strconv.Itoa(s.GetCardPoints(i))))
+					}
+				}
+				b.WriteString(color.Red(i18n.Tf("ramsch.roundTied",
+					"players", strings.Join(tiedPlayers, i18n.T("ramsch.listSeparator")))) + "\n")
 			}
 			b.WriteString(i18n.T("ramsch.promptNextRound") + "\n")
 		}

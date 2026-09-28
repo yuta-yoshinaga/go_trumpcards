@@ -75,6 +75,37 @@ describe('MadrassoPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
   });
 
+  it('shows current trick card points and attributes them to the winner after resolution', async () => {
+    mockExec.mockResolvedValue(
+      makeMadrassoState({
+        currentTrick: [
+          { playerIdx: 0, card: { design: 'SPADE', value: 3 } },
+          { playerIdx: 1, card: { design: 'SPADE', value: 1 } },
+        ],
+      }),
+    );
+    const { unmount } = renderWithProviders(<MadrassoPage />);
+
+    expect(await screen.findByTestId('madrasso-trick-points')).toHaveTextContent('このトリックのカード点: 21点');
+
+    mockExec.mockResolvedValue(
+      makeMadrassoState({
+        phase: 1,
+        currentTrick: [
+          { playerIdx: 0, card: { design: 'SPADE', value: 3 } },
+          { playerIdx: 1, card: { design: 'SPADE', value: 1 } },
+        ],
+        lastTrickWinner: 1,
+        teamRoundPoints: [0, 21],
+      }),
+    );
+    unmount();
+    renderWithProviders(<MadrassoPage />);
+
+    expect(await screen.findByTestId('madrasso-trick-points')).toHaveTextContent('チームBが獲得: 21点');
+    expect(screen.getByTestId('tr-round-points-1')).toHaveTextContent('21 / 121');
+  });
+
   it('renders round end with next round button', async () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<MadrassoPage />);

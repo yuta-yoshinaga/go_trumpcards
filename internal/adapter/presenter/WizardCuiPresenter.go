@@ -80,11 +80,19 @@ func wizardLegalIndices(player *domain.WizardPlayer, trick []*domain.TrickCard) 
 }
 
 // wizardPlayerStr returns the display string for a single Wizard player.
-func wizardPlayerStr(player *domain.WizardPlayer, i int, legal []bool) string {
+func wizardPlayerStr(player *domain.WizardPlayer, i int, legal []bool, remainingTricks int) string {
 	var b strings.Builder
 	bidStr := i18n.T("wizard.bidPending")
 	if player.GetBid() >= 0 {
 		bidStr = strconv.Itoa(player.GetBid())
+	}
+	progressStr := ""
+	if player.GetBid() >= 0 {
+		key := "wizard.bidReachable"
+		if player.GetTrickCount() > player.GetBid() || player.GetBid()-player.GetTrickCount() > remainingTricks {
+			key = "wizard.bidUnreachable"
+		}
+		progressStr = " " + i18n.Tf(key, "remaining", strconv.Itoa(remainingTricks))
 	}
 	b.WriteString(i18n.Tf("wizard.playerLine",
 		"name", cuiPlayerName(player, i),
@@ -93,6 +101,7 @@ func wizardPlayerStr(player *domain.WizardPlayer, i int, legal []bool) string {
 		"cum", strconv.Itoa(player.GetCumulativeScore()),
 		"round", strconv.Itoa(player.GetRoundScore()),
 		"cards", strconv.Itoa(player.GetCardsSize()),
+		"progress", progressStr,
 	))
 	b.WriteString("\n")
 	if player.GetIsHuman() && player.GetCardsSize() > 0 {
@@ -139,6 +148,7 @@ func (p *WizardCuiPresenter) Output(o interfaces.WizardGame, lastErr error) stri
 		b.WriteString(i18n.Tf("wizard.dealer",
 			"name", cuiPlayerName(o.GetPlayer(dealerIdx), dealerIdx)) + "\n")
 
+		trick := o.GetCurrentTrick()
 		legalShown := false
 		for i := 0; i < o.GetPlayerCnt(); i++ {
 			// 出せる札の印は、人間の手番のプレイフェーズだけ付ける。
@@ -147,16 +157,22 @@ func (p *WizardCuiPresenter) Output(o interfaces.WizardGame, lastErr error) stri
 			// 手番の判定は席番号で行う。IsHumanTurn() は「人間は 1 人」という
 			// 暗黙の前提に寄りかかる。
 			if pl != nil && pl.GetIsHuman() && o.GetPhase() == domain.WizardPhasePlay && i == o.GetCurrentPlayerIdx() {
-				legal = wizardLegalIndices(pl, o.GetCurrentTrick())
+				legal = wizardLegalIndices(pl, trick)
 				legalShown = legalShown || legal != nil
 			}
-			b.WriteString(wizardPlayerStr(pl, i, legal))
+			remainingTricks := pl.GetCardsSize()
+			for _, tc := range trick {
+				if tc.PlayerIdx == i {
+					remainingTricks++
+					break
+				}
+			}
+			b.WriteString(wizardPlayerStr(pl, i, legal, remainingTricks))
 		}
 
 		b.WriteString("----------\n")
 
 		// Current trick
-		trick := o.GetCurrentTrick()
 		cuiTrickBlock(b, trick,
 			func(tc *domain.TrickCard) int { return tc.PlayerIdx },
 			func(tc *domain.TrickCard) string { return wizardCuiCardStr(tc.Card) },

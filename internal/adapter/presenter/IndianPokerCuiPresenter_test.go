@@ -48,7 +48,7 @@ func TestIndianPokerCuiPresenter_Output(t *testing.T) {
 		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))
 
 		result := p.Output(ip, nil)
-		assert.Contains(t, result, "カード: ??")
+		assert.Contains(t, result, "カード: 相手には見えていますが、あなたには見えません")
 		assert.NotContains(t, result, "♠10")
 	})
 

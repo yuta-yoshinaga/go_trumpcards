@@ -290,7 +290,12 @@ function PinochlePageContent() {
                 {t('team')} 0: {state.teamScores[0]} / {t('team')} 1: {state.teamScores[1]}
               </span>
               <span>
-                {t('trumpSuit')}: {state.trumpSuit > 0 ? SUIT_LABELS[state.trumpSuit] : '-'}
+                {t('trumpSuit')}:{' '}
+                {state.trumpSuit > 0
+                  ? SUIT_LABELS[state.trumpSuit]
+                  : phase === PinochlePhase.TRUMP
+                    ? t('trumpSelecting')
+                    : t('trumpUndecided')}
               </span>
               {state.highestBid > 0 && (
                 <span className="ml-4">

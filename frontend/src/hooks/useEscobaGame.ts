@@ -5,7 +5,6 @@ import { useGameApi } from './useGameApi';
 
 const defaultConfigInput: EscobaConfigInput = {
   targetScore: 10,
-  cpuDifficulty: 1,
 };
 
 /** Hook that manages Escoba game state, selections, and action dispatch. */

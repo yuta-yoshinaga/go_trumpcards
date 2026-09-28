@@ -128,6 +128,13 @@ function FiveHundredPageContent() {
   } = useGameHint('fivehundred', state);
 
   const [bidTricks, setBidTricks] = useState(6);
+  const [focusedBidKind, setFocusedBidKind] = useState<1 | 2 | 3 | 4 | null>(null);
+  const conditionHandlers = (kind: 1 | 2 | 3 | 4) => ({
+    onFocus: () => setFocusedBidKind(kind),
+    onMouseEnter: () => setFocusedBidKind(kind),
+    onBlur: () => setFocusedBidKind(null),
+    onMouseLeave: () => setFocusedBidKind(null),
+  });
   const formatBid = (bid: NonNullable<FiveHundredResponse['highestBid']>): string => {
     switch (bid.kind) {
       case FiveHundredContract.SUIT:
@@ -428,6 +435,15 @@ function FiveHundredPageContent() {
             <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="fh-actions">
               {isHumanBidTurn && (
                 <>
+                  <p
+                    role="status"
+                    data-testid="fh-bid-condition"
+                    className="w-full text-center text-sm text-ds-text-muted"
+                  >
+                    {focusedBidKind === FiveHundredContract.MISERE || focusedBidKind === FiveHundredContract.OPEN_MISERE
+                      ? t('bidCondition.misere')
+                      : t('bidCondition.suit', { tricks: bidTricks })}
+                  </p>
                   <label
                     htmlFor="fh-bid-tricks"
                     className="text-xs text-ds-text-muted self-center"
@@ -451,6 +467,7 @@ function FiveHundredPageContent() {
                     <button
                       key={s.id}
                       type="button"
+                      {...conditionHandlers(FiveHundredContract.SUIT)}
                       onClick={() => bidSuit(bidTricks, s.id)}
                       disabled={loading}
                       data-testid={`fh-bid-suit-${s.id}`}
@@ -469,6 +486,7 @@ function FiveHundredPageContent() {
                   ))}
                   <button
                     type="button"
+                    {...conditionHandlers(FiveHundredContract.NO_TRUMP)}
                     onClick={() => bidNoTrump(bidTricks)}
                     disabled={loading}
                     data-testid="fh-bid-nt"
@@ -481,6 +499,7 @@ function FiveHundredPageContent() {
                   </button>
                   <button
                     type="button"
+                    {...conditionHandlers(FiveHundredContract.MISERE)}
                     onClick={bidMisere}
                     disabled={loading}
                     data-testid="fh-bid-misere"
@@ -493,6 +512,7 @@ function FiveHundredPageContent() {
                   </button>
                   <button
                     type="button"
+                    {...conditionHandlers(FiveHundredContract.OPEN_MISERE)}
                     onClick={bidOpenMisere}
                     disabled={loading}
                     data-testid="fh-bid-open-misere"

@@ -38,6 +38,7 @@
   "selectionNoMoves": "選択中のカードを置ける場所はありません",
   "stalemate": "手詰まり",
   "stalemateAlert": "手詰まりです。アンドゥ {{count}} 回で脱出できます",
+  "stalemateRedealAvailable": "手詰まりです。再配りできます（残り{{count}}回）",
   "tableau": "タブロー",
   "tutorial": {
     "foundations": "中央には 8 つの組札。前 4 つは A から昇順、後 4 つは K から降順 (各スート 1 列ずつ) です。",

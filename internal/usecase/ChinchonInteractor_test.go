@@ -72,7 +72,7 @@ func TestChinchonInteractor_ResetWithConfig(t *testing.T) {
 		pMock := chNewPresenterMock()
 		gameMock := new(interfaces.MockChinchonGame)
 		ci := usecase.NewChinchonInteractor(gameMock, pMock)
-		bad := domain.ChinchonConfig{CpuDifficulty: 99, PlayerCount: 4, KnockThreshold: 5, EliminationLimit: 100}
+		bad := domain.ChinchonConfig{PlayerCount: 1, KnockThreshold: 5, EliminationLimit: 100}
 		out := ci.ResetWithConfig(bad)
 		assert.Equal(t, chMockOut, out)
 		gameMock.AssertNotCalled(t, "Reset")

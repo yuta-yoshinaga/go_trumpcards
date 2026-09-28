@@ -1,8 +1,8 @@
 import type { TwentyNineResponse } from '../../../types/card';
+import { suitSymbolAt } from '../../cardAlt';
 import { formatCard, formatHeader, formatIndexedCards, formatPlayerName, formatSeparator } from '../formatterBase';
 
 const PHASE_NAMES = ['Bid', 'Play', 'TrickEnd', 'RoundEnd', 'GameEnd'];
-const SUIT_SYMBOLS = ['none', '♠', '♣', '♥', '♦'];
 
 /** Formats a contract value (0=Pass, otherwise the bid amount). */
 function formatContract(contract: number): string {
@@ -23,7 +23,7 @@ export function formatTwentyNineState(state: TwentyNineResponse): string {
     `round: ${state.roundNumber}  trick: ${state.trickNumber}  phase: ${PHASE_NAMES[state.phase] ?? state.phase}`,
   );
   // The trump is hidden until trumpRevealed flips true mid-play.
-  const trumpText = state.trumpRevealed ? (SUIT_SYMBOLS[state.trumpSuit] ?? '?') : 'hidden';
+  const trumpText = state.trumpRevealed ? suitSymbolAt(state.trumpSuit, 'none') : 'hidden';
   lines.push(`trump: ${trumpText}`);
   if (state.declarerIdx >= 0) {
     const name = formatPlayerName(state.declarerIdx, state.players[state.declarerIdx]?.isHuman ?? false);

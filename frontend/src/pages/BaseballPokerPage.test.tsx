@@ -403,6 +403,23 @@ describe('BaseballPokerPage', () => {
     expect(screen.getByTestId('bp-showdown-1')).toHaveTextContent('ツーペア');
   });
 
+  it('ショーダウンで役名と席ごとの勝敗を文字でも区別する', async () => {
+    const best = [card(10), card(11), card(12), card(13), card(1)];
+    mockApi.mockResolvedValue(
+      withState({
+        phase: BaseballPhase.SHOWDOWN,
+        isHumanTurn: false,
+        seats: [seat({ wonAmount: 80, handRank: 9, bestHand: best }), cpuSeat({ handRank: 2, bestHand: best })],
+      }),
+    );
+    renderWithProviders(<BaseballPokerPage />);
+
+    expect(await screen.findByTestId('bp-showdown-0')).toHaveTextContent('勝者');
+    expect(screen.getByTestId('bp-showdown-0')).toHaveTextContent('ロイヤルフラッシュ');
+    expect(screen.getByTestId('bp-showdown-1')).toHaveTextContent('敗者');
+    expect(screen.getByTestId('bp-showdown-1')).toHaveTextContent('ツーペア');
+  });
+
   // **負のコントロール: ショーダウン前は出さない。**
   // **ベスト札を持たせた盤で見る。** 既定のフィクスチャは bestHand が空なので、
   // フェーズの判定を外しても素通りしてしまう。

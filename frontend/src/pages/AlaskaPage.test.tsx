@@ -74,9 +74,36 @@ describe('AlaskaPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('keeps a move target focusable and explains why selection is needed', async () => {
+    renderWithProviders(<AlaskaPage />);
+    const target = await screen.findByRole('button', { name: /空の組札 \(♠\)/ });
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const hintId = target.getAttribute('aria-describedby');
+    expect(hintId).toBeTruthy();
+    expect(document.getElementById(hintId ?? '')).toHaveTextContent('先に移動する札を選んでください');
+
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('shows move count', async () => {
     renderWithProviders(<AlaskaPage />);
     await waitFor(() => expect(screen.getByText(/手数/)).toBeInTheDocument());
+  });
+
+  it('announces each foundation top card and the next legal card condition', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [[card('SPADE', 1), card('SPADE', 2)], [], [], [card('DIAMOND', 12), card('DIAMOND', 13)]],
+    });
+    renderWithProviders(<AlaskaPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    expect(screen.getByRole('button', { name: '♠ 組札 2枚、最後の札 ♠ 2、次は♠ 3' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '空の組札 (♣)、次は♣ A' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♦ 組札 2枚、最後の札 ♦ K、完成' })).toBeInTheDocument();
   });
 
   it('shows the face-down rule note and gives face-down cards concise positional labels', async () => {

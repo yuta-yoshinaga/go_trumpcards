@@ -22,6 +22,7 @@
   },
   "betLabel": "賭け金を選んでください",
   "betAmount": "{{amount}}",
+  "betUnavailable": "所持チップが不足しています",
   "dealAsBanker": "あなたが親です。配ってください",
   "placeBet": "賭け金を選んでください",
   "yourTurn": "引くか止めるかを選んでください",

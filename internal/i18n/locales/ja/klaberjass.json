@@ -25,6 +25,7 @@
   "promptPlay": "手番: {{name}}",
   "promptPlayHelp": "p <i> ・・・手札 i を出す（追随・切札・上乗せは強制です）",
   "beteLine": "宣言側が相手を上回れず、ベート。得点は全部相手のものになります",
+  "pointsBreakdown": "{{name}}: カード {{card}}、シーケンス {{sequence}}、ベラ {{bela}}、最終トリック {{lastTrick}}、合計 {{total}}",
   "sequenceWinner": "シーケンス役: {{name}} が総取り",
   "sequenceNobody": "シーケンス役: 引き分けでどちらも得点なし",
   "belaLine": "ベラ成立: {{name}}（+20）",

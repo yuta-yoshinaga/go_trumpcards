@@ -200,6 +200,26 @@ describe('LobaPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('next'));
   });
 
+  it('shows the resolved winner name for ordinary and clean rounds, and hides an unset winner', async () => {
+    for (const [winner, clean, expected] of [
+      [0, false, 'あなた'],
+      [2, false, 'CPU 2'],
+      [2, true, 'CPU 2'],
+    ] as const) {
+      mockExec.mockResolvedValue(makeState({ phase: LobaPhase.ROUND_END, roundWinner: winner, roundClean: clean }));
+      const { unmount } = renderWithProviders(<LobaPage />);
+      const result = await screen.findByTestId('loba-round-result');
+      expect(result).toHaveTextContent(expected);
+      expect(result).not.toHaveTextContent(/席\d/);
+      unmount();
+    }
+
+    mockExec.mockResolvedValue(makeState({ phase: LobaPhase.ROUND_END, roundWinner: -1 }));
+    renderWithProviders(<LobaPage />);
+    expect(await screen.findByText('ラウンド終了')).toBeInTheDocument();
+    expect(screen.queryByTestId('loba-round-result')).not.toBeInTheDocument();
+  });
+
   it('reports each outcome', async () => {
     for (const [winner, code, text] of [
       [0, 'loba.win', '最後まで残りました'],

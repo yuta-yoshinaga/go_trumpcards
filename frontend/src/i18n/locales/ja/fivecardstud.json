@@ -13,6 +13,10 @@
   "holeCards": "ホールカード",
   "yourHand": "あなたの手札",
   "anteBringIn": "アンティ/ブリングイン",
+  "betting": {
+    "callAmount": "コールに必要な額: {{amount}}",
+    "checkAvailable": "チェック可能"
+  },
   "handNumber": "ハンド#{{count}} (アンテレベル{{anteLevel}}; 次のレベルアップまで{{remaining}}ハンド; レベルアップ:{{level}}ハンド毎)",
   "rebuy": {
     "prompt": "リバイしますか? ({{chips}}チップ, {{used}}/{{max}}回使用済)",

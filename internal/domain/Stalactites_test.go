@@ -1214,21 +1214,17 @@ func TestStalactitesIsValidTableauSequence(t *testing.T) {
 // --- isAlternateColor / isBlack tests ---
 
 func TestStalactitesIsAlternateColor(t *testing.T) {
-	f := newTestStalactites()
-
-	assert.True(t, f.isAlternateColor(makeCardStal(CardDesignSpade, 1), makeCardStal(CardDesignHeart, 1)))
-	assert.True(t, f.isAlternateColor(makeCardStal(CardDesignClover, 1), makeCardStal(CardDesignDiamond, 1)))
-	assert.False(t, f.isAlternateColor(makeCardStal(CardDesignSpade, 1), makeCardStal(CardDesignClover, 1)))
-	assert.False(t, f.isAlternateColor(makeCardStal(CardDesignHeart, 1), makeCardStal(CardDesignDiamond, 1)))
+	assert.True(t, isAlternateColor(makeCardStal(CardDesignSpade, 1), makeCardStal(CardDesignHeart, 1)))
+	assert.True(t, isAlternateColor(makeCardStal(CardDesignClover, 1), makeCardStal(CardDesignDiamond, 1)))
+	assert.False(t, isAlternateColor(makeCardStal(CardDesignSpade, 1), makeCardStal(CardDesignClover, 1)))
+	assert.False(t, isAlternateColor(makeCardStal(CardDesignHeart, 1), makeCardStal(CardDesignDiamond, 1)))
 }
 
 func TestStalactitesIsBlack(t *testing.T) {
-	f := newTestStalactites()
-
-	assert.True(t, f.isBlack(makeCardStal(CardDesignSpade, 1)))
-	assert.True(t, f.isBlack(makeCardStal(CardDesignClover, 1)))
-	assert.False(t, f.isBlack(makeCardStal(CardDesignHeart, 1)))
-	assert.False(t, f.isBlack(makeCardStal(CardDesignDiamond, 1)))
+	assert.True(t, isBlack(makeCardStal(CardDesignSpade, 1)))
+	assert.True(t, isBlack(makeCardStal(CardDesignClover, 1)))
+	assert.False(t, isBlack(makeCardStal(CardDesignHeart, 1)))
+	assert.False(t, isBlack(makeCardStal(CardDesignDiamond, 1)))
 }
 
 // --- canPlaceOnTableau tests ---

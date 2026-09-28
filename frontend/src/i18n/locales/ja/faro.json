@@ -33,7 +33,11 @@
   "gameEnd": "チップが尽きました。ゲーム終了です。",
   "rankName": "ランク",
   "caseKeeperTitle": "ケースキーパー（各ランクの残り枚数）",
-  "caseKeeperCell": "{{rank}}：残り{{count}}枚",
+  "caseKeeperCell": "{{rank}}：残り{{count}}枚。{{status}}",
+  "caseKeeperDepleted": "賭けられません（カードがありません）",
+  "caseKeeperInsufficientChips": "賭けられません（{{mode}} {{amount}}チップに不足）",
+  "caseKeeperAvailable": "{{mode}} {{amount}}チップを賭けられます",
+  "normalTag": "通常ベット",
   "phase": {
     "betting": "ベット",
     "turn": "ターン",

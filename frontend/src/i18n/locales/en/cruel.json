@@ -13,6 +13,8 @@
   "giveup": "Give up",
   "hint": "Hint",
   "autoComplete": "Auto-complete",
+  "autoCompleteNotReady": "Available when a card can move to a foundation",
+  "autoCompleteReady": "Auto-complete is ready",
   "undo": "Undo",
   "empty": "Empty",
   "landscapeBanner": "Rotate to landscape for an easier view of the 12-column tableau",

@@ -48,6 +48,13 @@
     "buy6th": "6th-card fee -{{fee}}",
     "forceExchange": "Forced-exchange fee -{{fee}}"
   },
+  "foldCosts": {
+    "title": "Nonrefundable if you fold: {{amount}}",
+    "ante": "Ante {{amount}}",
+    "exchange": "Exchange fee {{amount}}",
+    "buy6th": "6th-card fee {{amount}}",
+    "forceExchange": "Forced-exchange fee {{amount}}"
+  },
   "handRank": {
     "0": "High Card",
     "1": "One Pair",

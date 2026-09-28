@@ -1,22 +1,27 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { horseApi } from '../api/gameApi';
+import { eightGameApi, horseApi } from '../api/gameApi';
+import { TutorialProvider } from '../providers/TutorialProvider';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeHorseState } from '../test/stateFactories';
-import { HorsePage } from './HorsePage';
+import { HorsePage, HorsePageContent } from './HorsePage';
 
 vi.mock('../api/gameApi', () => ({
   horseApi: { exec: vi.fn() },
+  eightGameApi: { exec: vi.fn() },
   actionLogApi: { horse: vi.fn() },
 }));
 
 const mockExec = vi.mocked(horseApi.exec);
+const mockEightExec = vi.mocked(eightGameApi.exec);
 
 const handState = makeHorseState();
 
 beforeEach(() => {
   mockExec.mockReset();
+  mockEightExec.mockReset();
   mockExec.mockResolvedValue(handState);
+  mockEightExec.mockResolvedValue(handState);
 });
 
 describe('HorsePage', () => {
@@ -35,6 +40,53 @@ describe('HorsePage', () => {
     expect(info).toHaveTextContent('ハンド 1/2');
     expect(info).toHaveTextContent('1種目目/全5種目');
     expect(screen.getByTestId('ho-pot')).toHaveTextContent('30');
+  });
+
+  it('puts the game, discipline, round, and action type beside the controls', async () => {
+    mockExec.mockResolvedValue(makeHorseState({ tablePhase: 1 }));
+    renderWithProviders(<HorsePage />);
+    expect(await screen.findByTestId('ho-action-context')).toHaveTextContent('H.O.R.S.E.');
+    expect(screen.getByTestId('ho-action-context')).toHaveTextContent('テキサスホールデム');
+    expect(screen.getByTestId('ho-action-context')).toHaveTextContent('プリフロップ');
+    expect(screen.getByTestId('ho-action-context')).toHaveTextContent('ベッティング');
+  });
+
+  it.each([
+    ['Hold’em end', { tablePhase: 6 }],
+    ['Hold’em rebuy', { tablePhase: 7 }],
+    ['Stud end', { discipline: 2, disciplineName: 'stud', tablePhase: 7 }],
+    ['Stud rebuy', { discipline: 2, disciplineName: 'stud', tablePhase: 8 }],
+    ['Triple Draw end', { discipline: 7, disciplineName: 'tripleDraw', tablePhase: 5 }],
+  ])('hides the table round after %s', async (_label, state) => {
+    mockExec.mockResolvedValue(makeHorseState(state));
+    renderWithProviders(<HorsePage />);
+    const context = await screen.findByTestId('ho-action-context');
+    expect(context).not.toHaveTextContent('ショーダウン');
+    expect(context).not.toHaveTextContent('ベッティング');
+  });
+
+  it('identifies Eight-Game Mix separately and marks draw turns', async () => {
+    mockEightExec.mockResolvedValue(
+      makeHorseState({
+        variant: 1,
+        discipline: 7,
+        disciplineLetter: '2-7',
+        disciplineName: 'tripleDraw',
+        isDrawPhase: true,
+        drawIndex: 2,
+        tablePhase: 3,
+      }),
+    );
+    renderWithProviders(
+      <TutorialProvider config={{ gameName: 'eightgame', steps: [] }}>
+        <HorsePageContent gameKey="eightgame" />
+      </TutorialProvider>,
+    );
+    const context = await screen.findByTestId('ho-action-context');
+    expect(context).toHaveTextContent('エイトゲーム・ミックス');
+    expect(context).toHaveTextContent('2-7 トリプルドロー');
+    expect(context).toHaveTextContent('引き直し');
+    expect(context).toHaveTextContent('2');
   });
 
   it('shows the discipline position for both rotations', async () => {

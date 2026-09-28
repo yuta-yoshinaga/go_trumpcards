@@ -422,7 +422,7 @@ Go + Clean Architecture で実装した383種類のトランプゲーム。CLI �
 
 | Tool | Version |
 |------|---------|
-| [Go](https://go.dev/) | 1.26.x |
+| [Go](https://go.dev/) | 1.27.x |
 | [Node.js](https://nodejs.org/) | 24.x |
 | [Bun](https://bun.sh/) | 1.3.10 |
 
@@ -500,8 +500,26 @@ trumpcards version               # バージョン情報を表示 (--version と
 trumpcards version --short       # バージョン番号のみ出力 (機械読み取り用)
 trumpcards help                  # ヘルプを表示
 trumpcards help blackjack        # 特定ゲームの操作方法を表示
+trumpcards games                 # 全ゲームを名前順で一覧表示
+trumpcards games --search solitaire --short  # 名前・エイリアス・説明文から検索
+trumpcards games --category casino           # Workerのバイナリサイズ区分で絞り込み
 PORT=3000 trumpcards web         # カスタムポートで起動 (環境変数)
 source <(trumpcards completion bash)  # Bash 補完を有効化
+```
+
+検索出力例 (`go run ./cmd/trumpcards games --search solitaire --short`):
+
+```text
+klondike
+spider
+golf
+clocksolitaire
+canfield
+yukon
+russiansolitaire
+montecarlo
+crescent
+osmosis
 ```
 
 インタラクティブモードと単一ゲーム CLI モードでは readline (`peterh/liner`) を使用しており、↑/↓ で履歴呼び出し、Tab で先頭トークン (共通コマンドや `switch` / `games`) の補完および `switch <Tab>` でゲーム名の補完、Ctrl+R で履歴インクリメンタル検索、左矢印で行内編集ができます。履歴は `~/.trumpcards_history` に永続化されます (issue #1608)。
@@ -543,7 +561,7 @@ Clean Architecture を採用。依存の方向は外側から内側への一方�
 cmd/
   trumpcards/         # CLIエントリーポイント（全ゲーム + Webサーバー）
   server/             # Webサーバー専用エントリーポイント
-  workers/            # Cloudflare Workers (WASM) エントリーポイント x10
+  workers/            # Cloudflare Workers (WASM) エントリーポイント x14
 internal/
   domain/             # コアビジネスロジック（最内層）
   usecase/            # アプリケーションビジネスルール

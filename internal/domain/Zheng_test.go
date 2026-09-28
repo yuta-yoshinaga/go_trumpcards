@@ -686,6 +686,13 @@ func TestZheng_FinishPlayerRankOrder(t *testing.T) {
 	assert.NoError(t, z.PlayerPlay([]int{0}))
 	assert.True(t, players[0].GetIsFinished())
 	assert.Equal(t, 1, players[0].GetRank())
+	assert.Equal(t, []*Card{zhengCard(3, CardDesignSpade)}, players[0].GetFinishCards())
+	assert.Empty(t, players[1].GetFinishCards())
+	assert.Empty(t, players[2].GetFinishCards())
+	assert.Empty(t, players[3].GetFinishCards())
+
+	z.Reset()
+	assert.Empty(t, players[0].GetFinishCards())
 }
 
 func TestZheng_PassClearAfterFinisher(t *testing.T) {
@@ -777,6 +784,7 @@ func TestZhengPlayer_JSON(t *testing.T) {
 	p := NewZhengPlayer(true)
 	p.AddCard(zhengCard(5, CardDesignSpade))
 	p.SetRank(1)
+	p.finishCards = []*Card{zhengCard(9, CardDesignHeart)}
 	data, err := json.Marshal(p)
 	require.NoError(t, err)
 	var restored ZhengPlayer
@@ -784,6 +792,7 @@ func TestZhengPlayer_JSON(t *testing.T) {
 	assert.True(t, restored.GetIsHuman())
 	assert.Equal(t, 1, restored.GetRank())
 	assert.Equal(t, 1, restored.GetCardsSize())
+	assert.Equal(t, p.GetFinishCards(), restored.GetFinishCards())
 }
 
 func TestZhengPlayer_JSON_NilRankedPlayer(t *testing.T) {
@@ -890,6 +899,19 @@ func TestZheng_UnmarshalJSON_Invalid(t *testing.T) {
 		{"rank out of range", func(t *testing.T) []byte {
 			z := newZhengTestGame()
 			z.players[0].SetRank(9)
+			return marshal(t, z)
+		}},
+		{"finish cards over limit", func(t *testing.T) []byte {
+			z := newZhengTestGame()
+			z.players[0].finishCards = make([]*Card, ZhengMaxCardsPerPlayer+1)
+			for i := range z.players[0].finishCards {
+				z.players[0].finishCards[i] = zhengCard(3, CardDesignSpade)
+			}
+			return marshal(t, z)
+		}},
+		{"invalid finish card", func(t *testing.T) []byte {
+			z := newZhengTestGame()
+			z.players[0].finishCards = []*Card{NewCard(9, 5, false)}
 			return marshal(t, z)
 		}},
 		{"invalid hand card design", func(t *testing.T) []byte {

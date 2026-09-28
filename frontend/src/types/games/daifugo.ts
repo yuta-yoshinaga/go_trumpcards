@@ -61,6 +61,7 @@ export interface DaifugoExchangeAction {
 export interface DaifugoResponse extends BaseGameResponse {
   players: DaifugoPlayerData[];
   currentTurn: number;
+  fieldClearedLeader: number;
   tableCards: Card[];
   lastPlayPlayerIdx: number;
   gameEndFlag: boolean;

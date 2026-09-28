@@ -585,21 +585,6 @@ func (s *Skitgubbe) GetConfig() SkitgubbeConfig { return s.config }
 // SetConfig はゲーム設定を差し替える。
 func (s *Skitgubbe) SetConfig(c SkitgubbeConfig) { s.config = c }
 
-// SetTrumpSuitForTest は切札を設定する (テスト用)。
-func (s *Skitgubbe) SetTrumpSuitForTest(suit int) { s.trumpSuit = suit }
-
-// SetPhaseForTest はフェーズを設定する (テスト用)。
-func (s *Skitgubbe) SetPhaseForTest(p SkitgubbePhase) { s.phase = p }
-
-// SetPileForTest は第2フェーズの場札を設定する (テスト用)。
-func (s *Skitgubbe) SetPileForTest(cards []*Card) { s.pile = cards }
-
-// SetStockForTest は山札を設定する (テスト用)。
-func (s *Skitgubbe) SetStockForTest(cards []*Card) { s.stock = cards }
-
-// SetCurrentPlayerForTest は手番を設定する (テスト用)。
-func (s *Skitgubbe) SetCurrentPlayerForTest(idx int) { s.currentIdx = idx }
-
 // ---- JSON ----
 
 // skitgubbeJSON は KV のワイヤ形式。Worker は毎リクエストここから組み直すので、

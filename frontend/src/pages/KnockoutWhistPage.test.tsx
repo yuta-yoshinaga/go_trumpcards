@@ -59,6 +59,34 @@ describe('KnockoutWhistPage', () => {
     });
   });
 
+  it('shows each active player current cards and the shared next-round card count during a round', async () => {
+    const state = makeKnockoutWhistState({
+      players: makeKnockoutWhistState().players.map((player, index) => ({
+        ...player,
+        cardCount: 5 - index,
+        eliminated: index === 2,
+      })),
+    });
+    mockExec.mockResolvedValue(state);
+    const { container } = renderWithProviders(<KnockoutWhistPage />);
+
+    const rows = await screen.findAllByTestId('kw-player-hand-count');
+    expect(rows).toHaveLength(3);
+    expect(rows[0]).toHaveTextContent('手札 5枚 · 次ラウンド 6枚');
+    expect(rows[1]).toHaveTextContent('手札 4枚 · 次ラウンド 6枚');
+    expect(container.querySelector('[data-eliminated="true"] [data-testid="kw-player-hand-count"]')).toBeNull();
+  });
+
+  it('does not show a next-round hand count during the final one-card round', async () => {
+    mockExec.mockResolvedValue(makeKnockoutWhistState({ handSize: 1 }));
+    renderWithProviders(<KnockoutWhistPage />);
+    await waitFor(() => expect(screen.getByAltText('♥ Q')).toBeInTheDocument());
+    const rows = screen.getAllByTestId('kw-player-hand-count');
+    expect(rows).toHaveLength(4);
+    expect(rows[0]).toHaveTextContent('手札 7枚');
+    expect(rows[0]).not.toHaveTextContent('次ラウンド');
+  });
+
   it('selecting a card then playing dispatches play', async () => {
     renderWithProviders(<KnockoutWhistPage />);
     const card = await screen.findByAltText('♥ Q');

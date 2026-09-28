@@ -14,6 +14,8 @@
   "autoCompleteNotReady": "Available when stock is empty and every card is face up",
   "undo": "Undo",
   "empty": "Empty",
+  "tableauCardPosition": "Column {{col}}, position {{idx}}, {{card}}",
+  "emptyTableauPosition": "Column {{col}}, empty column",
   "score": "Score",
   "difficulty": "Difficulty",
   "difficulty1": "1 Suit",

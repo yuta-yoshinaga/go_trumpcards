@@ -2,13 +2,13 @@
 
 package domain
 
-import "testing"
+import (
+	"encoding/json"
+	"testing"
+)
 
 func TestDefaultPutConfig(t *testing.T) {
 	c := DefaultPutConfig()
-	if c.CpuDifficulty != PutCpuDifficultyNormal {
-		t.Errorf("CpuDifficulty = %d, want Normal", c.CpuDifficulty)
-	}
 	if c.MatchTarget != PutDefaultMatchTarget {
 		t.Errorf("MatchTarget = %d, want %d", c.MatchTarget, PutDefaultMatchTarget)
 	}
@@ -25,7 +25,6 @@ func TestPutConfigValidate(t *testing.T) {
 		{"max target", PutConfig{MatchTarget: PutMaxMatchTarget}, false},
 		{"target too low", PutConfig{MatchTarget: 0}, true},
 		{"target too high", PutConfig{MatchTarget: PutMaxMatchTarget + 1}, true},
-		{"bad difficulty", PutConfig{CpuDifficulty: 99, MatchTarget: 15}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -46,5 +45,15 @@ func TestPutConfigNormalized(t *testing.T) {
 	}
 	if got := (PutConfig{MatchTarget: 30}).normalized().MatchTarget; got != 30 {
 		t.Errorf("normalized 30 -> %d, want 30", got)
+	}
+}
+
+func TestPutConfigUnmarshalLegacyConfig(t *testing.T) {
+	var cfg PutConfig
+	if err := json.Unmarshal([]byte(`{"cd":0,"mt":25}`), &cfg); err != nil {
+		t.Fatalf("unmarshal legacy config: %v", err)
+	}
+	if cfg.MatchTarget != 25 {
+		t.Errorf("MatchTarget = %d, want 25", cfg.MatchTarget)
 	}
 }

@@ -31,6 +31,7 @@ export const calabresellaApi = {
     command: CalabresellaCommand,
     opts?: {
       cardIndex?: number;
+      cardIndices?: number[];
       bid?: number;
       config?: CalabresellaConfigInput;
     },
@@ -38,6 +39,7 @@ export const calabresellaApi = {
     gameExec<CalabresellaResponse>('calabresella', {
       command,
       cardIndex: opts?.cardIndex,
+      cardIndices: opts?.cardIndices,
       bid: opts?.bid,
       config: opts?.config,
     }),

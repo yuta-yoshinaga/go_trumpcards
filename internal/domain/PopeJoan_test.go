@@ -589,9 +589,6 @@ func TestPopeJoanConfigValidate(t *testing.T) {
 	if err := DefaultPopeJoanConfig().Validate(); err != nil {
 		t.Fatalf("the default config should validate: %v", err)
 	}
-	if err := (PopeJoanConfig{CpuDifficulty: 5, TargetDeals: 5}).Validate(); err == nil {
-		t.Error("expected an error for an unknown difficulty")
-	}
 	if err := (PopeJoanConfig{TargetDeals: 0}).Validate(); err == nil {
 		t.Error("expected an error for zero deals")
 	}
@@ -646,7 +643,7 @@ func TestPopeJoanUnmarshalRejectsGarbage(t *testing.T) {
 	}{
 		{"not json", `{`},
 		{"wrong player count", `{"pl":[null,null],"cfg":{"cd":0,"td":5},"ph":0}`},
-		{"bad config", `{"pl":[{},{},{},{}],"cfg":{"cd":9,"td":5},"ph":0}`},
+		{"bad config", `{"pl":[{},{},{},{}],"cfg":{"cd":0,"td":0},"ph":0}`},
 		{"unknown phase", `{"pl":[{},{},{},{}],"cfg":{"cd":0,"td":5},"ph":9}`},
 		{"negative phase", `{"pl":[{},{},{},{}],"cfg":{"cd":0,"td":5},"ph":-1}`},
 	}

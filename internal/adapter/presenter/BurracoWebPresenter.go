@@ -158,7 +158,3 @@ func (p *BurracoWebPresenter) HintOutput(g interfaces.BurracoGame) string {
 func (p *BurracoWebPresenter) ActionLogOutput(g interfaces.BurracoGame) string {
 	return actionLogOutputJSON(g)
 }
-
-// BurracoWebHintReasonKeyForTest exposes the reason mapping to tests in the
-// external test package.
-func BurracoWebHintReasonKeyForTest(reason string) string { return burracoWebHintReasonKeys[reason] }

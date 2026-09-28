@@ -123,7 +123,11 @@ type Klaberjass struct {
 	trickNumber int
 
 	// handPoints はこのディールで各席が取った点 (役・ベラ・最終トリック込み)。
-	handPoints [KlaberjassPlayerCnt]int
+	handPoints      [KlaberjassPlayerCnt]int
+	cardPoints      [KlaberjassPlayerCnt]int
+	sequencePoints  [KlaberjassPlayerCnt]int
+	belaPoints      [KlaberjassPlayerCnt]int
+	lastTrickPoints [KlaberjassPlayerCnt]int
 	// sequences は各席が持っていたシーケンス。
 	sequences [KlaberjassPlayerCnt][]*KlaberjassSequence
 	// sequenceWinner はシーケンス勝負に勝った席 (-1 なら誰も得点しない)。
@@ -285,6 +289,10 @@ func (k *Klaberjass) beginDeal() {
 	k.trickNumber = 0
 	k.trickLeader = -1
 	k.handPoints = [KlaberjassPlayerCnt]int{}
+	k.cardPoints = [KlaberjassPlayerCnt]int{}
+	k.sequencePoints = [KlaberjassPlayerCnt]int{}
+	k.belaPoints = [KlaberjassPlayerCnt]int{}
+	k.lastTrickPoints = [KlaberjassPlayerCnt]int{}
 	k.sequences = [KlaberjassPlayerCnt][]*KlaberjassSequence{}
 	k.sequenceWinner = -1
 	k.belaHolder = -1
@@ -625,6 +633,7 @@ func (k *Klaberjass) collectSequences() {
 		total += s.Points
 	}
 	k.handPoints[winner] += total
+	k.sequencePoints[winner] += total
 	k.addLog(winner, "sequence", "klaberjass.log.sequence", map[string]string{"points": strconv.Itoa(total)}, nil)
 }
 
@@ -784,6 +793,7 @@ func (k *Klaberjass) noteBela(player int, card *Card) {
 	if k.belaKingPlayed && k.belaQueenPlayed && !k.belaScored {
 		k.belaScored = true
 		k.handPoints[player] += KlaberjassBelaBonus
+		k.belaPoints[player] += KlaberjassBelaBonus
 		k.addLog(player, "bela", "klaberjass.log.bela", nil, nil)
 	}
 }
@@ -819,6 +829,7 @@ func (k *Klaberjass) resolveTrick() {
 		points += KlaberjassCardPoints(c, k.trumpSuit)
 	}
 	k.handPoints[winner] += points
+	k.cardPoints[winner] += points
 	k.lastTrickWinner = winner
 	k.trickNumber++
 	k.trick = nil
@@ -835,6 +846,7 @@ func (k *Klaberjass) resolveTrick() {
 func (k *Klaberjass) finishHand() {
 	if k.lastTrickWinner >= 0 {
 		k.handPoints[k.lastTrickWinner] += KlaberjassLastTrickBonus
+		k.lastTrickPoints[k.lastTrickWinner] += KlaberjassLastTrickBonus
 	}
 	maker := k.makerIdx
 	opp := k.opponentOf(maker)
@@ -1100,6 +1112,38 @@ func (k *Klaberjass) GetHandPoints(idx int) int {
 	return k.handPoints[idx]
 }
 
+// GetCardPoints はこのディールの獲得カード点を返す。
+func (k *Klaberjass) GetCardPoints(idx int) int {
+	if idx < 0 || idx >= KlaberjassPlayerCnt {
+		return 0
+	}
+	return k.cardPoints[idx]
+}
+
+// GetSequencePoints はこのディールのシーケンス加点を返す。
+func (k *Klaberjass) GetSequencePoints(idx int) int {
+	if idx < 0 || idx >= KlaberjassPlayerCnt {
+		return 0
+	}
+	return k.sequencePoints[idx]
+}
+
+// GetBelaPoints はこのディールのベラ加点を返す。
+func (k *Klaberjass) GetBelaPoints(idx int) int {
+	if idx < 0 || idx >= KlaberjassPlayerCnt {
+		return 0
+	}
+	return k.belaPoints[idx]
+}
+
+// GetLastTrickPoints はこのディールの最終トリック加点を返す。
+func (k *Klaberjass) GetLastTrickPoints(idx int) int {
+	if idx < 0 || idx >= KlaberjassPlayerCnt {
+		return 0
+	}
+	return k.lastTrickPoints[idx]
+}
+
 // GetSequences は idx のシーケンス役を返す。
 func (k *Klaberjass) GetSequences(idx int) []*KlaberjassSequence {
 	if idx < 0 || idx >= KlaberjassPlayerCnt {
@@ -1155,52 +1199,6 @@ func (k *Klaberjass) GetConfig() KlaberjassConfig { return k.config }
 // SetConfig は設定をセットする。
 func (k *Klaberjass) SetConfig(c KlaberjassConfig) { k.config = c }
 
-// SetPhaseForTest はテスト用にフェーズを設定する。
-func (k *Klaberjass) SetPhaseForTest(p KlaberjassPhase) { k.phase = p }
-
-// SetTrumpForTest はテスト用に切札を設定する。
-func (k *Klaberjass) SetTrumpForTest(suit int) { k.trumpSuit = suit }
-
-// SetMakerForTest はテスト用にメイカーを設定する。
-func (k *Klaberjass) SetMakerForTest(idx int) { k.makerIdx = idx }
-
-// SetCurrentPlayerForTest はテスト用に手番を設定する。
-func (k *Klaberjass) SetCurrentPlayerForTest(idx int) { k.currentIdx = idx }
-
-// SetTrickLeaderForTest はテスト用にリード席を設定する。
-func (k *Klaberjass) SetTrickLeaderForTest(idx int) { k.trickLeader = idx }
-
-// SetHandForTest はテスト用に手札を差し替える。
-func (k *Klaberjass) SetHandForTest(idx int, cards []*Card) {
-	setHandForTest(k.GetPlayer(idx), cards)
-}
-
-// SetHandPointsForTest はテスト用にディール中の得点を設定する。
-func (k *Klaberjass) SetHandPointsForTest(idx, pts int) {
-	if idx >= 0 && idx < KlaberjassPlayerCnt {
-		k.handPoints[idx] = pts
-	}
-}
-
-// SetTurnUpForTest はテスト用に表向きカードを設定する。
-func (k *Klaberjass) SetTurnUpForTest(c *Card) { k.turnUpCard = c }
-
-// SetScoreForTest はテスト用に通算点を設定する。
-func (k *Klaberjass) SetScoreForTest(idx, score int) {
-	if idx >= 0 && idx < KlaberjassPlayerCnt {
-		k.scores[idx] = score
-	}
-}
-
-// FinishHandForTest はテスト用に精算を走らせる。
-func (k *Klaberjass) FinishHandForTest() { k.finishHand() }
-
-// CollectSequencesForTest はテスト用に役の比較を走らせる。
-func (k *Klaberjass) CollectSequencesForTest() { k.collectSequences() }
-
-// FindBelaForTest はテスト用にベラ保持者を探す。
-func (k *Klaberjass) FindBelaForTest() { k.findBela() }
-
 // addLog は棋譜を 1 行足す。
 func (k *Klaberjass) addLog(playerIdx int, actionType, detailCode string, detailParams map[string]string, cards []*Card) {
 	k.appendLogCode(playerIdx, actionType, detailCode, detailParams, cards)
@@ -1223,6 +1221,10 @@ type klaberjassJSON struct {
 	TrickLeader     int                      `json:"tl"`
 	TrickNumber     int                      `json:"tn"`
 	HandPoints      [KlaberjassPlayerCnt]int `json:"hp"`
+	CardPoints      [KlaberjassPlayerCnt]int `json:"cp"`
+	SequencePoints  [KlaberjassPlayerCnt]int `json:"sp"`
+	BelaPoints      [KlaberjassPlayerCnt]int `json:"blp"`
+	LastTrickPoints [KlaberjassPlayerCnt]int `json:"ltp"`
 	SequenceWinner  int                      `json:"sw"`
 	BelaHolder      int                      `json:"bh"`
 	BelaKingPlayed  bool                     `json:"bk"`
@@ -1251,7 +1253,7 @@ func (k *Klaberjass) MarshalJSON() ([]byte, error) {
 		BidPassCount: k.bidPassCount, SchmeissBy: k.schmeissBy,
 		TrumpSuit: k.trumpSuit, TurnUpCard: k.turnUpCard, MakerIdx: k.makerIdx,
 		Trick: k.trick, TrickLeader: k.trickLeader, TrickNumber: k.trickNumber,
-		HandPoints: k.handPoints, SequenceWinner: k.sequenceWinner,
+		HandPoints: k.handPoints, CardPoints: k.cardPoints, SequencePoints: k.sequencePoints, BelaPoints: k.belaPoints, LastTrickPoints: k.lastTrickPoints, SequenceWinner: k.sequenceWinner,
 		BelaHolder: k.belaHolder, BelaKingPlayed: k.belaKingPlayed,
 		BelaQueenPlayed: k.belaQueenPlayed, BelaScored: k.belaScored,
 		DixUsed: k.dixUsed, BeteFlag: k.beteFlag, LastTrickWinner: k.lastTrickWinner,
@@ -1275,21 +1277,14 @@ func (k *Klaberjass) UnmarshalJSON(data []byte) error {
 	if j.Phase < KlaberjassPhaseBidTurnUp || j.Phase > KlaberjassPhaseGameEnd {
 		return fmt.Errorf("bad phase: %d", j.Phase)
 	}
-	for name, v := range map[string]int{
-		"dealer": j.DealerIdx, "current": j.CurrentIdx, "bid": j.BidIdx,
-	} {
-		if v < 0 || v >= KlaberjassPlayerCnt {
-			return fmt.Errorf("bad %s index: %d", name, v)
+	for _, f := range []namedInt{{"dealer", j.DealerIdx}, {"current", j.CurrentIdx}, {"bid", j.BidIdx}} {
+		if f.value < 0 || f.value >= KlaberjassPlayerCnt {
+			return fmt.Errorf("bad %s index: %d", f.name, f.value)
 		}
 	}
-	for name, v := range map[string]int{
-		"maker": j.MakerIdx, "trick leader": j.TrickLeader,
-		"sequence winner": j.SequenceWinner, "bela holder": j.BelaHolder,
-		"last trick winner": j.LastTrickWinner, "schmeiss": j.SchmeissBy,
-		"winner": j.WinnerIdx,
-	} {
-		if v < -1 || v >= KlaberjassPlayerCnt {
-			return fmt.Errorf("bad %s index: %d", name, v)
+	for _, f := range []namedInt{{"maker", j.MakerIdx}, {"trick leader", j.TrickLeader}, {"sequence winner", j.SequenceWinner}, {"bela holder", j.BelaHolder}, {"last trick winner", j.LastTrickWinner}, {"schmeiss", j.SchmeissBy}, {"winner", j.WinnerIdx}} {
+		if f.value < -1 || f.value >= KlaberjassPlayerCnt {
+			return fmt.Errorf("bad %s index: %d", f.name, f.value)
 		}
 	}
 	// 0 は「未確定」。それ以外はスートの範囲でなければならない。
@@ -1315,6 +1310,10 @@ func (k *Klaberjass) UnmarshalJSON(data []byte) error {
 	k.trickLeader = j.TrickLeader
 	k.trickNumber = j.TrickNumber
 	k.handPoints = j.HandPoints
+	k.cardPoints = j.CardPoints
+	k.sequencePoints = j.SequencePoints
+	k.belaPoints = j.BelaPoints
+	k.lastTrickPoints = j.LastTrickPoints
 	k.sequenceWinner = j.SequenceWinner
 	k.belaHolder = j.BelaHolder
 	k.belaKingPlayed = j.BelaKingPlayed

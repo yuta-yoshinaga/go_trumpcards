@@ -145,20 +145,43 @@ function IronCrossPageContent() {
     const card: Card | null = state.cross[index] ?? null;
     const previewed = previewIndexes.includes(index);
     const ring = previewed ? ' ring-2 ring-ds-success' : '';
+    const previewLines = previewed
+      ? [
+          ...(state.verticalIndexes.includes(index) ? [t('label.vertical')] : []),
+          ...(state.horizontalIndexes.includes(index) ? [t('label.horizontal')] : []),
+        ]
+      : [];
+    const previewName = previewLines.join(t('listSeparator'));
+    const marker = previewed ? (
+      <span
+        aria-hidden="true"
+        className="absolute -top-2 left-1/2 z-10 -translate-x-1/2 rounded bg-ds-surface px-1 text-xs font-semibold text-ds-text-primary ring-1 ring-ds-border"
+      >
+        {previewName}
+      </span>
+    ) : null;
     if (!card) {
       return (
         <div
-          className={`rounded border-2 border-dashed border-ds-border${ring}`}
+          className={`relative rounded border-2 border-dashed border-ds-border${ring}`}
           style={{ width: cardWidth, height: Math.round(cardWidth * 1.4) }}
           data-testid={`ic-cross-${index}`}
           data-previewed={previewed ? 'true' : undefined}
           role="img"
-          aria-label={t('label.hidden')}
-        />
+          aria-label={[t('label.hidden'), ...previewLines].join(t('listSeparator'))}
+        >
+          {marker}
+        </div>
       );
     }
     return (
-      <div className={ring.trim()} data-testid={`ic-cross-${index}`} data-previewed={previewed ? 'true' : undefined}>
+      <div
+        className={`relative${ring}`}
+        data-testid={`ic-cross-${index}`}
+        data-previewed={previewed ? 'true' : undefined}
+        {...(previewName ? { role: 'img' as const, 'aria-label': previewName } : {})}
+      >
+        {marker}
         <AnimatedCard card={card} width={cardWidth} />
       </div>
     );

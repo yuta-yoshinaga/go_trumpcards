@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra4
+//go:build !js || !wasm || extra8
 
 package presenter
 
@@ -122,7 +122,6 @@ func newPiquetWebOutputBase(g interfaces.PiquetGame) *controller.PiquetWebOutput
 		GameEndFlag:          g.GetGameEndFlag(),
 		WinnerIdx:            g.GetWinnerIdx(),
 		Config: controller.PiquetWebOutputConfig{
-			CpuDifficulty:  int(cfg.CpuDifficulty),
 			DealsPerPartie: cfg.DealsPerPartie,
 		},
 	}

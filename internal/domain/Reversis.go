@@ -1,4 +1,4 @@
-//go:build !js || !wasm || classic
+//go:build !js || !wasm || extra8
 
 package domain
 
@@ -290,6 +290,7 @@ func (r *Reversis) resolveTrick() {
 // chargeMarked 印付きの札を取った罰。**追加失点とプールへの支払いの両方。**
 func (r *Reversis) chargeMarked(winner int, nameKey string, card *Card) {
 	r.players[winner].AddRoundPenalty(ReversisMarkedPenalty)
+	r.players[winner].AddMarkedPenalty(ReversisMarkedPenalty)
 	r.players[winner].AddChips(-ReversisMarkedStake)
 	r.pool += ReversisMarkedStake
 	r.appendLog(winner, "marked", "reversis.log.marked", map[string]string{"nameKey": nameKey, "penalty": strconv.Itoa(ReversisMarkedPenalty), "stake": strconv.Itoa(ReversisMarkedStake)}, []*Card{card})
@@ -766,13 +767,9 @@ func (r *Reversis) UnmarshalJSON(data []byte) error {
 	if len(j.CurrentTrick) > ReversisPlayerCnt {
 		return fmt.Errorf("current trick holds %d cards", len(j.CurrentTrick))
 	}
-	for name, idx := range map[string]int{
-		"current player": j.CurrentPlayerIdx,
-		"lead player":    j.LeadPlayerIdx,
-		"dealer":         j.DealerIdx,
-	} {
-		if idx < 0 || idx >= ReversisPlayerCnt {
-			return fmt.Errorf("invalid %s: %d", name, idx)
+	for _, f := range []namedInt{{"current player", j.CurrentPlayerIdx}, {"lead player", j.LeadPlayerIdx}, {"dealer", j.DealerIdx}} {
+		if f.value < 0 || f.value >= ReversisPlayerCnt {
+			return fmt.Errorf("invalid %s: %d", f.name, f.value)
 		}
 	}
 	if j.WinnerIdx < -1 || j.WinnerIdx >= ReversisPlayerCnt {

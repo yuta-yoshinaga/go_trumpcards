@@ -158,6 +158,63 @@ describe('TressettePage', () => {
     expect(team1.querySelectorAll('.bg-ds-accent')).toHaveLength(0);
   });
 
+  it('announces thirds gained from tricks, including one and one third points', async () => {
+    mockExec.mockImplementation(async (action) =>
+      action === 'play' ? makeTressetteState({ teamRoundThirds: [4, 0] }) : makeTressetteState(),
+    );
+    renderWithProviders(<TressettePage />);
+    const live = await screen.findByTestId('tr-score-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toBeEmptyDOMElement();
+    fireEvent.click(await screen.findByAltText('♠ 3'));
+    fireEvent.click(await screen.findByRole('button', { name: '出す' }));
+    await waitFor(() => expect(live).toHaveTextContent('チームAに1+1/3点加点。合計0点、今ラウンド1/3点'));
+    expect(screen.getByTestId('tr-thirds-0')).toHaveTextContent('3/3');
+
+    fireEvent.click(screen.getByAltText('♦ K'));
+    expect(live).toHaveTextContent('チームAに1+1/3点加点。合計0点、今ラウンド1/3点');
+  });
+
+  it('announces thirds gained by team B', async () => {
+    mockExec.mockImplementation(async (action) =>
+      action === 'play' ? makeTressetteState({ teamRoundThirds: [0, 2] }) : makeTressetteState(),
+    );
+    renderWithProviders(<TressettePage />);
+
+    fireEvent.click(await screen.findByAltText('♠ 3'));
+    fireEvent.click(await screen.findByRole('button', { name: '出す' }));
+
+    await waitFor(() =>
+      expect(screen.getByTestId('tr-score-live')).toHaveTextContent('チームBに2/3点加点。合計0点、今ラウンド2/3点'),
+    );
+  });
+
+  it('does not announce round settlement as newly gained points', async () => {
+    mockExec.mockImplementation(async (action) => {
+      return action === 'play'
+        ? makeTressetteState({ teamScores: [1, 0], teamRoundThirds: [0, 0], roundNumber: 2 })
+        : makeTressetteState({ teamRoundThirds: [2, 0] });
+    });
+    renderWithProviders(<TressettePage />);
+    const live = await screen.findByTestId('tr-score-live');
+    expect(live).toBeEmptyDOMElement();
+    fireEvent.click(await screen.findByAltText('♠ 3'));
+    fireEvent.click(await screen.findByRole('button', { name: '出す' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', undefined, 0));
+    await waitFor(() => expect(screen.getByTestId('tr-thirds-0')).toHaveTextContent('0/3'));
+    expect(live).not.toHaveTextContent('チームAに1点加点');
+    expect(live).toBeEmptyDOMElement();
+  });
+
+  it('keeps the score table visible', async () => {
+    mockExec.mockResolvedValue(makeTressetteState());
+    renderWithProviders(<TressettePage />);
+    const live = await screen.findByTestId('tr-score-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+  });
+
   it('shows the empty previous-trick message at the start of a round', async () => {
     mockExec.mockResolvedValue(makeTressetteState({ lastTrick: [], lastTrickWinner: -1 }));
     renderWithProviders(<TressettePage />);

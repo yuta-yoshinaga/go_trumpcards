@@ -445,6 +445,11 @@ function DurakPageContent() {
 
             {/* Action buttons */}
             <div className="text-center" data-tutorial="dk-action-buttons">
+              {selectedCardIdx !== null && humanPlayer?.cards[selectedCardIdx] && (
+                <p className="mb-1 text-sm text-ds-text-primary" data-testid="durak-selected-card">
+                  {t('selectedCard', { card: cardAlt(humanPlayer.cards[selectedCardIdx]) })}
+                </p>
+              )}
               <GameResetButton
                 isGameEnd={!!isGameEnd}
                 onReset={handleManualReset}

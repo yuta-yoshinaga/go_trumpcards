@@ -33,6 +33,7 @@
   "scoresTotal": "Total",
   "playButton": "Play",
   "drawButton": "Draw",
+  "passButton": "Pass",
   "nextRound": "Next Round",
   "suitSpade": "♠ Spades",
   "suitClover": "♣ Clubs",

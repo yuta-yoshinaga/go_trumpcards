@@ -109,9 +109,9 @@ function ChemindeFerPageContent() {
       { key: 'd', action: () => execApi(canPunterDecide ? 'pd' : 'bd'), enabled: canPunterDecide || canBankerDecide },
       { key: 's', action: () => execApi(canPunterDecide ? 'ps' : 'bs'), enabled: canPunterDecide || canBankerDecide },
       { key: 'n', action: () => execApi('next'), enabled: isRoundEnd && !gameOver },
-      { key: 'g', action: () => execApi('giveup'), enabled: !gameOver },
+      { key: 'g', action: confirmGiveUpAction, enabled: !gameOver },
     ],
-    [execApi, canPunterDecide, canBankerDecide, isRoundEnd, gameOver],
+    [execApi, confirmGiveUpAction, canPunterDecide, canBankerDecide, isRoundEnd, gameOver],
   );
   useActionKeyboardNav({ bindings: actionBindings, enabled: !!state && !loading });
 

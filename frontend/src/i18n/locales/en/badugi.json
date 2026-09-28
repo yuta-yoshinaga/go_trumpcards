@@ -18,7 +18,8 @@
   "cpuExchange": "CPU draws:",
   "cpuExchangeEntry": "Player {{idx}} (draw {{draw}}): exchanged {{count}}",
   "exchangeCount": "Drew: {{count}}",
-  "cardSelected": "(selected to exchange)",
+  "cardSelected": "selected as an exchange target",
+  "cardNotSelected": "not an exchange target",
   "subsetBest": "part of best hand",
   "subsetExchange": "exchange candidate",
   "settings": {

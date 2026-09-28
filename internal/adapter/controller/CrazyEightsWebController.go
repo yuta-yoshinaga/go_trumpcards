@@ -39,6 +39,7 @@ type CrazyEightsWebOutput struct {
 	RoundNumber      int                           `json:"roundNumber"`
 	CurrentPlayerIdx int                           `json:"currentPlayerIdx"`
 	DiscardTop       *WebOutputCard                `json:"discardTop"`
+	DiscardPileCount int                           `json:"discardPileCount"`
 	DrawPileCount    int                           `json:"drawPileCount"`
 	ChosenSuit       int                           `json:"chosenSuit"`
 	GameEndFlag      bool                          `json:"gameEndFlag"`

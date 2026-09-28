@@ -16,6 +16,7 @@
   },
   "round": "ラウンド {{n}}",
   "deck": "山札: {{count}}",
+  "deckChanged": "山札の残りは{{count}}枚です。",
   "koikoiCount": "こいこい: {{count}}回",
   "field": "場",
   "fieldEmpty": "（なし）",

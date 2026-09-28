@@ -101,6 +101,66 @@ describe('ChineseTenPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0));
   });
 
+  it('plays the zero based hand card bound to its number key and advertises it', async () => {
+    renderWithProviders(<ChineseTenPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    mockExec.mockClear();
+
+    const summary = screen.getByTestId('chineseten-kbd-shortcuts').querySelector('summary');
+    expect(summary).not.toBeNull();
+    fireEvent.click(summary as HTMLElement);
+    expect(screen.getByTestId('chineseten-kbd-shortcuts')).toHaveTextContent('1');
+    fireEvent.keyDown(document, { key: '2' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 1));
+  });
+
+  it('selects an offered layout card with its number key and ignores CPU turns', async () => {
+    mockExec.mockResolvedValueOnce(makeState({ phase: 1, pendingCard: card('SPADE', 1), selectableIndices: [1] }));
+    renderWithProviders(<ChineseTenPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    mockExec.mockClear();
+    mockExec.mockResolvedValueOnce(makeState({ currentPlayerIdx: 1 }));
+
+    fireEvent.keyDown(document, { key: '2' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('select', undefined, 1));
+    mockExec.mockClear();
+    await waitFor(() => expect(screen.getAllByRole('button').length).toBeGreaterThan(0));
+    fireEvent.keyDown(document, { key: '1' });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+  });
+
+  it('does not advertise shortcuts for layout cards after the first ten', async () => {
+    const layout = Array.from({ length: 11 }, (_, i) => card('SPADE', i + 1));
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 1,
+        pendingCard: card('HEART', 1),
+        layout,
+        selectableIndices: Array.from({ length: layout.length }, (_, i) => i),
+      }),
+    );
+    renderWithProviders(<ChineseTenPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    const panel = screen.getByTestId('chineseten-kbd-shortcuts');
+    fireEvent.click(panel.querySelector('summary') as HTMLElement);
+
+    expect(Array.from(panel.querySelectorAll('kbd'), (key) => key.textContent)).toEqual([
+      '1',
+      '2',
+      '3',
+      '4',
+      '5',
+      '6',
+      '7',
+      '8',
+      '9',
+      '0',
+    ]);
+    expect(panel).not.toHaveTextContent('11');
+  });
+
   it('only allows the layout cards the server marked selectable', async () => {
     // Both capture rules live on the server; the page must not accept a click
     // on a card it did not offer.

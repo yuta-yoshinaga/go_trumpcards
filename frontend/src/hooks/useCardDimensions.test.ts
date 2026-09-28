@@ -5,7 +5,6 @@ import {
   useBreakpoint,
   useCardDimensions,
   useIsLargeDesktop,
-  useIsMediumDesktop,
   useIsMobile,
   useWindowWidth,
 } from './useCardDimensions';
@@ -286,49 +285,6 @@ describe('useIsMobile', () => {
 
     act(() => {
       setWidth(800);
-      window.dispatchEvent(new Event('resize'));
-    });
-
-    expect(result.current).toBe(false);
-  });
-});
-
-describe('useIsMediumDesktop', () => {
-  const originalInnerWidth = window.innerWidth;
-
-  afterEach(() => setWidth(originalInnerWidth));
-
-  it('returns false when width is below sm breakpoint', () => {
-    setWidth(375);
-    const { result } = renderHook(() => useIsMediumDesktop());
-    expect(result.current).toBe(false);
-  });
-
-  it('returns true when width equals sm breakpoint (640px)', () => {
-    setWidth(640);
-    const { result } = renderHook(() => useIsMediumDesktop());
-    expect(result.current).toBe(true);
-  });
-
-  it('returns true when width is between sm and lg (800px)', () => {
-    setWidth(800);
-    const { result } = renderHook(() => useIsMediumDesktop());
-    expect(result.current).toBe(true);
-  });
-
-  it('returns false when width equals lg breakpoint (1024px)', () => {
-    setWidth(1024);
-    const { result } = renderHook(() => useIsMediumDesktop());
-    expect(result.current).toBe(false);
-  });
-
-  it('updates on resize', () => {
-    setWidth(800);
-    const { result } = renderHook(() => useIsMediumDesktop());
-    expect(result.current).toBe(true);
-
-    act(() => {
-      setWidth(1280);
       window.dispatchEvent(new Event('resize'));
     });
 

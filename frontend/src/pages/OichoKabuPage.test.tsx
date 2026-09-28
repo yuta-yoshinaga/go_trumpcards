@@ -117,6 +117,15 @@ describe('OichoKabuPage', () => {
     expect(screen.getByRole('button', { name: /勝負/ })).toBeInTheDocument();
   });
 
+  it('shows the committed bet beside the separately labeled balance while deciding', async () => {
+    mockApi.mockResolvedValue(drawState);
+    renderWithProviders(<OichoKabuPage />);
+    await screen.findByRole('button', { name: /引く/ });
+
+    expect(screen.getByText('賭け金: 100')).toBeInTheDocument();
+    expect(screen.getByText('チップ: 900')).toBeInTheDocument();
+  });
+
   it('triggers draw on draw click', async () => {
     mockApi.mockResolvedValue(drawState);
     renderWithProviders(<OichoKabuPage />);
@@ -150,6 +159,7 @@ describe('OichoKabuPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: /次のゲーム/ })).toBeInTheDocument());
     expect(screen.getByText(/親 — カブ/)).toBeInTheDocument();
     expect(screen.getByText(/200/)).toBeInTheDocument();
+    expect(screen.queryByText('賭け金: 100')).not.toBeInTheDocument();
   });
 
   it('exposes each hand rank by name and the result as a live region', async () => {

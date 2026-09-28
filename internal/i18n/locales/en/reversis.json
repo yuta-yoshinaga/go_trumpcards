@@ -7,6 +7,7 @@
   "poolLine": "Pool: {{pool}} chips (taken whole by the fewest penalty points)",
   "penaltyLine": "No trump. A=4 K=3 Q=2 J=1 in penalties. The J of hearts (Quinola) and the A of diamonds cost 5 more, plus 5 chips.",
   "playerLine": "{{name}}: {{chips}} chips, {{penalty}} penalty [{{marks}}], {{cards}} in hand",
+  "penaltyBreakdown": "{{name}} penalty breakdown: regular {{normal}} + special card bonus {{special}} = total {{total}}",
   "markQuinola": "J♥",
   "markDiamondAce": "A♦",
   "mark.quinola": "Quinola (J♥)",

@@ -6,16 +6,8 @@ import { useGameConfig } from './useGameConfig';
 
 /** Default Bezique game configuration. */
 export const DEFAULT_BEZIQUE_CONFIG: Required<BeziqueConfigInput> = {
-  cpuDifficulty: 1,
   targetScore: 1000,
 };
-
-/** CPU difficulty level options for Bezique. */
-export const CPU_DIFFICULTY_OPTIONS = [
-  { value: 0, label: 'Easy' },
-  { value: 1, label: 'Normal' },
-  { value: 2, label: 'Hard' },
-] as const;
 
 /** Available target-score options for Bezique (first player to reach wins). */
 export const TARGET_SCORE_OPTIONS = [500, 1000, 1500] as const;

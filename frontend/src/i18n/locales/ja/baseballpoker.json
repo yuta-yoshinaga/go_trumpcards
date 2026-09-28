@@ -21,6 +21,7 @@
   "label.won": "獲得 {{amount}}",
   "label.bestHand": "最良の5枚",
   "label.winner": "勝者",
+  "label.loser": "敗者",
   "phase.betting": "ベット",
   "phase.buyIn": "買い増し",
   "phase.showdown": "ショーダウン",

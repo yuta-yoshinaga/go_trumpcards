@@ -6,7 +6,6 @@ import { gameExec } from '../gameExec';
 
 /** Configuration options for Piquet game settings. */
 export interface PiquetConfigInput {
-  cpuDifficulty?: number;
   dealsPerPartie?: number;
 }
 

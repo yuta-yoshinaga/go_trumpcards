@@ -26,7 +26,6 @@ export interface ScoponeScoreDetail {
 
 /** Scopone game rule configuration. */
 export interface ScoponeConfig {
-  cpuDifficulty: number;
   targetScore: number;
 }
 

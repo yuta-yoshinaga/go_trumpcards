@@ -351,6 +351,11 @@ function CometPageContent() {
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="comet-action-buttons">
+              {isPlayPhase && !state.isHumanTurn && !isGameEnd && (
+                <span className="text-ds-text-muted text-sm" data-testid="comet-waiting">
+                  {t('waitingForTurn')}
+                </span>
+              )}
               {/* **パスは出せる札が無いときだけ。** 常に出しておくと、出せるのに
                   押して弾かれるだけのボタンになる。 */}
               {mustPass && (

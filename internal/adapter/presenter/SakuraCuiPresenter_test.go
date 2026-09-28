@@ -16,6 +16,7 @@ import (
 
 func TestSakuraCuiPresenter_Output_PlayPhase(t *testing.T) {
 	g := newSakuraForPresenter()
+	g.GetPlayer(0).AddTaken(domain.NewCard(domain.SakuraCurtainMonth, domain.SakuraCurtainIndex, false))
 	// **点数の表示は配りに任せない。** 光札が手札に来るかは配り次第なので、
 	// 確かめたい札を自分で足してから描画する。
 	g.GetPlayer(0).AddCard(domain.NewCard(domain.SakuraCurtainMonth, domain.SakuraCurtainIndex, false))
@@ -29,6 +30,8 @@ func TestSakuraCuiPresenter_Output_PlayPhase(t *testing.T) {
 	// **点数が札に添えられている。** 合計で競うゲームなので、点が読めないと打てない。
 	assert.Contains(t, out, "(20)", "光札の点数が出ていない")
 	assert.Contains(t, out, "(1)", "カス札の点数が出ていない")
+	assert.Contains(t, out, i18n.Tf("sakura.takenLine", "taken", ""))
+	assert.Contains(t, out, domain.KoiKoiCardLabel(domain.NewCard(domain.SakuraCurtainMonth, domain.SakuraCurtainIndex, false)), "取得済み札が表示されていない")
 }
 
 // ラベルが生キーのまま出ていないこと (ロケールが引けているか)。

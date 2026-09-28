@@ -87,6 +87,47 @@ beforeEach(() => {
 });
 
 describe('SpiderettePage', () => {
+  it('empty tableau targets stay focusable and explain source selection before a move', async () => {
+    renderWithProviders(<SpiderettePage />);
+
+    const btn = await screen.findByTestId('spdt-empty-col-2');
+    expect(btn).not.toBeDisabled();
+    expect(btn).toHaveAttribute('aria-disabled', 'true');
+    const describedBy = btn.getAttribute('aria-describedby');
+    expect(describedBy).toBeTruthy();
+    expect(document.getElementById(describedBy ?? '')).toHaveTextContent('先に移動する札を選んでください');
+
+    mockSend.mockClear();
+    fireEvent.click(btn);
+    await flushPendingDispatch();
+    expect(mockSend).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
+  it('announces stalemate escape moves and clears the announcement when resolved', async () => {
+    mockSend.mockResolvedValueOnce({ ...playingState, isStalemate: true, undoToEscape: 3, canUndo: true });
+    mockSend.mockResolvedValueOnce({ ...playingState, isStalemate: true, undoToEscape: 2, canUndo: true });
+    mockSend.mockResolvedValueOnce(playingState);
+    renderWithProviders(<SpiderettePage />);
+
+    const status = await screen.findByTestId('spiderette-stalemate-status');
+    expect(status).toHaveAttribute('role', 'status');
+    expect(status).toHaveAttribute('aria-live', 'polite');
+    expect(status).toHaveTextContent('手詰まりです。元に戻すボタンで3手戻ると脱出できます。');
+
+    fireEvent.click(screen.getByTestId('stalemate-escape-button'));
+    await waitFor(() => expect(status).toHaveTextContent('手詰まりです。元に戻すボタンで2手戻ると脱出できます。'));
+    fireEvent.click(screen.getByTestId('stalemate-escape-button'));
+    await waitFor(() => expect(status).toBeEmptyDOMElement());
+  });
+
+  it('does not announce an escape when a stalemate has no escape count', async () => {
+    mockSend.mockResolvedValueOnce({ ...playingState, isStalemate: true, canUndo: true });
+    renderWithProviders(<SpiderettePage />);
+
+    const status = await screen.findByTestId('spiderette-stalemate-status');
+    expect(status).toBeEmptyDOMElement();
+  });
+
   it('renders skeleton when no state', () => {
     mockSend.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<SpiderettePage />);

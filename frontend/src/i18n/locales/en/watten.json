@@ -27,6 +27,7 @@
   "suitHeart": "Hearts",
   "suitDiamond": "Diamonds",
   "currentTrick": "Current trick",
+  "trickHistory": { "title": "Previous trick", "cards": "Played cards", "winner": "Winner" },
   "players": "Players",
   "you": "You",
   "cards": "{{count}} cards",

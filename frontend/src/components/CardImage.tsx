@@ -108,10 +108,20 @@ export interface CardBackProps {
   disabled?: boolean;
   /** Only applies when onClick is provided (button mode). */
   ariaLabel?: string;
+  /** Description announced with the clickable card back. */
+  ariaDescribedBy?: string;
 }
 
 /** Renders a face-down card back image, optionally as a clickable button. */
-export function CardBack({ width, style, className, onClick, disabled = false, ariaLabel }: CardBackProps) {
+export function CardBack({
+  width,
+  style,
+  className,
+  onClick,
+  disabled = false,
+  ariaLabel,
+  ariaDescribedBy,
+}: CardBackProps) {
   const { t } = useTranslation('common');
   const effectiveAriaLabel = onClick ? ariaLabel || t('card.back') : undefined;
   const w = width ?? 80;
@@ -142,6 +152,7 @@ export function CardBack({ width, style, className, onClick, disabled = false, a
         onClick={onClick}
         disabled={disabled}
         aria-label={effectiveAriaLabel}
+        aria-describedby={ariaDescribedBy}
         className={`${focusRingWhite} rounded-md disabled:opacity-40 disabled:cursor-not-allowed`}
         style={{
           background: 'none',

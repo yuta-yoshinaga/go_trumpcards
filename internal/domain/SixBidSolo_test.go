@@ -4,6 +4,7 @@ package domain
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 )
 
@@ -1109,13 +1110,30 @@ func TestSixBidSoloConfigValidate(t *testing.T) {
 	if err := DefaultSixBidSoloConfig().Validate(); err != nil {
 		t.Errorf("the default config must validate: %v", err)
 	}
-	if err := (SixBidSoloConfig{CpuDifficulty: 9, TargetHands: SixBidSoloDefaultHands}).Validate(); err == nil {
-		t.Error("a bad difficulty must not validate")
-	}
 	for _, n := range []int{SixBidSoloMinHands - 1, SixBidSoloMaxHands + 1} {
 		if err := (SixBidSoloConfig{TargetHands: n}).Validate(); err == nil {
 			t.Errorf("%d hands must not validate", n)
 		}
+	}
+}
+
+func TestSixBidSoloUnmarshalLegacyConfigField(t *testing.T) {
+	s := NewDefaultSixBidSolo()
+	s.Reset()
+	data, err := json.Marshal(s)
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	legacy := strings.Replace(string(data), `"cf":{"th":6}`, `"cf":{"cd":0,"th":6}`, 1)
+	if legacy == string(data) {
+		t.Fatal("could not add legacy config field to serialized session")
+	}
+	var restored SixBidSolo
+	if err := json.Unmarshal([]byte(legacy), &restored); err != nil {
+		t.Fatalf("legacy session must unmarshal: %v", err)
+	}
+	if restored.GetConfig().TargetHands != SixBidSoloDefaultHands {
+		t.Errorf("target hands = %d, want %d", restored.GetConfig().TargetHands, SixBidSoloDefaultHands)
 	}
 }
 

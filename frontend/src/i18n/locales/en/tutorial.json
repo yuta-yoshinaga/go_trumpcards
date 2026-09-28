@@ -13,7 +13,9 @@
   "progress": {
     "title": "Tutorial Progress",
     "completed": "Completed",
-    "summary": "{{count}}/{{total}} games completed"
+    "summary": "{{count}}/{{total}} games completed",
+    "gameCompleted": "{{game}} (completed)",
+    "gamePending": "{{game}} (not completed)"
   },
   "firstVisit": {
     "title": "Tutorial",

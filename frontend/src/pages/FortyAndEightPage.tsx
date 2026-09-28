@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useId, useMemo } from 'react';
 import type { FortyAndEightMoveZone } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -80,6 +80,7 @@ function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => stri
 
 /** Inner content of the Forty and Eight page, wrapped by TutorialProvider. */
 function FortyAndEightPageContent() {
+  const selectSourceHintId = useId();
   const {
     t,
     tc,
@@ -214,6 +215,13 @@ function FortyAndEightPageContent() {
   const isGameClear = state.phase === FortyAndEightPhase.GAME_CLEAR;
   const isGameOver = state.phase === FortyAndEightPhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
+  const completedFoundationCount = isEnded ? state.foundation.filter((pile) => pile.length === 13).length : 0;
+  const foundationCardCount = isEnded ? state.foundation.reduce((count, pile) => count + pile.length, 0) : 0;
+  // Stock, every waste card, and every tableau card are disjoint zones. Waste's
+  // display only reveals its top card, but its state array contains the whole pile.
+  const remainingCardCount = isEnded
+    ? state.stockCount + state.waste.length + state.tableau.reduce((count, column) => count + column.length, 0)
+    : 0;
   const autoCompleteReady = state.stockCount === 0 && state.waste.length === 0 && isTableauAllFaceUp(state.tableau);
 
   const isSourceSelected = (zone: string, col?: number, cardIndex?: number) =>
@@ -249,6 +257,9 @@ function FortyAndEightPageContent() {
         </>
       }
     >
+      <span id={selectSourceHintId} className="sr-only">
+        {tc('label.selectSourceFirst')}
+      </span>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -336,7 +347,9 @@ function FortyAndEightPageContent() {
                           <button
                             type="button"
                             onClick={() => handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
+                            disabled={!isPlaying || loading || isAutoCompleting}
+                            aria-disabled={!selectedSource || undefined}
+                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={`${t('foundationAriaLabel', {
                               suit: FOUNDATION_SUITS[idx],
                               // Two piles per suit (idx pairs 0/1, 2/3, …); number
@@ -358,7 +371,9 @@ function FortyAndEightPageContent() {
                           <button
                             type="button"
                             onClick={() => handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading || !selectedSource}
+                            disabled={!isPlaying || loading}
+                            aria-disabled={!selectedSource || undefined}
+                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={`${t('emptyFoundationAriaLabel', {
                               suit: FOUNDATION_SUITS[idx],
                               pile: (idx % 2) + 1,
@@ -396,7 +411,9 @@ function FortyAndEightPageContent() {
                           <button
                             type="button"
                             onClick={() => handleSelectTarget(tableauColZone)}
-                            disabled={!isPlaying || loading || !selectedSource}
+                            disabled={!isPlaying || loading}
+                            aria-disabled={!selectedSource || undefined}
+                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             data-eligible-tableau={isEligible ? 'true' : undefined}
                             style={{ height: f8.ch }}
                             className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite} ${isEligible ? 'ring-2 ring-ds-info' : ''}`}
@@ -484,6 +501,22 @@ function FortyAndEightPageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
+
+            {isEnded && (
+              <section
+                data-testid="f8-end-summary"
+                className="mt-2 rounded-lg border border-ds-border-subtle bg-ds-surface/80 px-3 py-2 text-center text-sm text-ds-text-primary"
+              >
+                <h2 className="font-bold">{t(isGameClear ? 'endSummary.clearTitle' : 'endSummary.gameOverTitle')}</h2>
+                <p className="text-ds-text-muted">
+                  {t('endSummary.counts', {
+                    completed: completedFoundationCount,
+                    foundationCards: foundationCardCount,
+                    remaining: remainingCardCount,
+                  })}
+                </p>
+              </section>
+            )}
 
             {/* Action log */}
             <ActionLogSection

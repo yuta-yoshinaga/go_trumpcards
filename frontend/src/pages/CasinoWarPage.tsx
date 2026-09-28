@@ -36,6 +36,7 @@ import { CASINOWAR_HELP, parseCasinowarCommand } from '../utils/cli/commands/cas
 import { formatCasinowarState } from '../utils/cli/formatters/casinowarFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
+import { hintCheckboxItem } from '../utils/settingsItems';
 
 const CW_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -181,11 +182,6 @@ function CasinoWarPageContent() {
               messageParams={state.messageParams}
             />
 
-            <label className="flex items-center gap-1 text-ds-text-primary text-xs justify-center mb-2 cursor-pointer min-h-[44px]">
-              <input type="checkbox" checked={hintEnabled} onChange={(e) => setHintEnabled(e.target.checked)} />
-              {tc('hint.toggle', { ns: 'tutorial' })}
-            </label>
-
             {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
 
             {isBetPhase && (
@@ -313,7 +309,10 @@ function CasinoWarPageContent() {
 
           <GameFooter className={`${gameTheme.casinowar.footer} px-4 pt-3`}>
             <ErrorAlert message={error} onRetry={retry} />
-            <SettingsPanel title={tc('settings.title')} groups={[]} />
+            <SettingsPanel
+              title={tc('settings.title')}
+              groups={[{ items: [hintCheckboxItem(tc, hintEnabled, setHintEnabled)] }]}
+            />
             {isBetPhase && (
               <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="cw-bet-controls">
                 <ChipBetInput

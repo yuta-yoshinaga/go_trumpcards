@@ -34,9 +34,8 @@ func TestEcarteConfig_Validate(t *testing.T) {
 	cfg := domain.DefaultEcarteConfig()
 	assert.NoError(t, cfg.Validate())
 	assert.Equal(t, domain.EcarteDefaultTargetScore, cfg.TargetScore)
-	assert.Error(t, domain.EcarteConfig{CpuDifficulty: 99, TargetScore: 5}.Validate())
-	assert.Error(t, domain.EcarteConfig{CpuDifficulty: domain.EcarteCpuDifficultyNormal, TargetScore: 0}.Validate())
-	assert.Error(t, domain.EcarteConfig{CpuDifficulty: domain.EcarteCpuDifficultyNormal, TargetScore: 999}.Validate())
+	assert.Error(t, domain.EcarteConfig{TargetScore: 0}.Validate())
+	assert.Error(t, domain.EcarteConfig{TargetScore: 999}.Validate())
 }
 
 func TestEcarteRankOrder(t *testing.T) {

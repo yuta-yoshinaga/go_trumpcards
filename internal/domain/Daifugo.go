@@ -100,6 +100,8 @@ type DaifugoExchangeAction struct {
 // daifugoRoundState ラウンドごとにリセットされる状態
 type daifugoRoundState struct {
 	currentTurn         int                      // 現在の手番プレイヤーインデックス
+	fieldClearedLeader  int                      // 場流れでリード権を得たプレイヤー (-1 = なし)
+	fieldJustCleared    bool                     // 手番確定後にリーダーを記録する場流れフラグ
 	tableCards          []*Card                  // 場に出されているカード (nil = 場はクリア)
 	lastPlayPlayerIdx   int                      // 最後にカードを出したプレイヤーインデックス (-1 = なし)
 	gameEndFlag         bool                     // ゲーム終了フラグ
@@ -137,6 +139,7 @@ func NewDaifugo(trumpCards *TrumpCards, players []*DaifugoPlayer, config Daifugo
 		config:     config,
 		round: daifugoRoundState{
 			lastPlayPlayerIdx:   -1,
+			fieldClearedLeader:  -1,
 			pendingActionTarget: -1,
 		},
 	}
@@ -172,6 +175,7 @@ func (d *Daifugo) Reset() {
 
 	d.round = daifugoRoundState{
 		lastPlayPlayerIdx:   -1,
+		fieldClearedLeader:  -1,
 		pendingActionTarget: -1,
 	}
 	// sortMode は意図的にリセットしない: ユーザーの好みをラウンド間で維持する
@@ -227,6 +231,7 @@ func (d *Daifugo) PlayerPlay(indices []int) error {
 		d.appendLog(d.round.currentTurn, "pass", "daifugo.log.pass", nil, nil)
 		d.advanceTurn()
 		d.checkPassClear()
+		d.recordFieldClearedLeader()
 		return nil
 	}
 
@@ -277,6 +282,7 @@ func (d *Daifugo) PlayerPlay(indices []int) error {
 
 // playCards はカードプレイ後の共通処理を実行する
 func (d *Daifugo) playCards(playerIdx int, cards []*Card, isSeq bool, spadeThree bool) {
+	d.round.fieldClearedLeader = -1
 	d.updateSequenceLock(isSeq)
 	d.round.tableCards = cards
 	d.round.lastPlayPlayerIdx = playerIdx
@@ -319,6 +325,7 @@ func (d *Daifugo) playCards(playerIdx int, cards []*Card, isSeq bool, spadeThree
 			d.checkPassClear()
 		}
 	}
+	d.recordFieldClearedLeader()
 }
 
 // CpuPlay 現在の手番がCPUの場合に1ターン実行
@@ -347,6 +354,7 @@ func (d *Daifugo) CpuPlay() {
 		d.appendLog(playerIdx, "pass", "daifugo.log.pass", nil, nil)
 		d.advanceTurn()
 		d.checkPassClear()
+		d.recordFieldClearedLeader()
 	} else {
 		// 出すカードを取得 (スート縛り更新用)
 		selectedCards := make([]*Card, len(playIndices))
@@ -395,6 +403,7 @@ func (d *Daifugo) checkPassClear() {
 
 // clearTableState 場の状態をクリア (8切り、上がり時等に使用)
 func (d *Daifugo) clearTableState() {
+	d.round.fieldJustCleared = true
 	d.round.tableCards = nil
 	d.round.lastPlayPlayerIdx = -1
 	d.round.passCount = 0
@@ -405,6 +414,14 @@ func (d *Daifugo) clearTableState() {
 	d.round.numberLocked = false
 }
 
+// recordFieldClearedLeader records the lead after turn processing has settled.
+func (d *Daifugo) recordFieldClearedLeader() {
+	if d.round.fieldJustCleared {
+		d.round.fieldClearedLeader = d.round.currentTurn
+		d.round.fieldJustCleared = false
+	}
+}
+
 // IsHumanTurn 現在の手番が人間かどうか
 func (d *Daifugo) IsHumanTurn() bool {
 	return d.players[d.round.currentTurn].GetIsHuman()
@@ -412,6 +429,9 @@ func (d *Daifugo) IsHumanTurn() bool {
 
 // GetCurrentTurn 現在の手番プレイヤーインデックス取得
 func (d *Daifugo) GetCurrentTurn() int { return d.round.currentTurn }
+
+// GetFieldClearedLeader returns the player who gained the lead after the table cleared, or -1.
+func (d *Daifugo) GetFieldClearedLeader() int { return d.round.fieldClearedLeader }
 
 // GetGameEndFlag ゲーム終了フラグ取得
 func (d *Daifugo) GetGameEndFlag() bool { return d.round.gameEndFlag }
@@ -554,6 +574,7 @@ type daifugoJSON struct {
 	Config              DaifugoConfig            `json:"cf"`
 	SortMode            DaifugoSortMode          `json:"sm"`
 	CurrentTurn         int                      `json:"ct"`
+	FieldClearedLeader  *int                     `json:"fcl,omitempty"`
 	TableCards          []*Card                  `json:"tb"`
 	LastPlayPlayerIdx   int                      `json:"lp"`
 	GameEndFlag         bool                     `json:"ge"`
@@ -579,12 +600,14 @@ const daifugoMaxSliceLen = 1000
 
 // MarshalJSON implements json.Marshaler.
 func (d *Daifugo) MarshalJSON() ([]byte, error) {
+	fieldClearedLeader := d.round.fieldClearedLeader
 	return json.Marshal(daifugoJSON{
 		TrumpCards:          d.trumpCards,
 		Players:             d.players,
 		Config:              d.config,
 		SortMode:            d.sortMode,
 		CurrentTurn:         d.round.currentTurn,
+		FieldClearedLeader:  &fieldClearedLeader,
 		TableCards:          d.round.tableCards,
 		LastPlayPlayerIdx:   d.round.lastPlayPlayerIdx,
 		GameEndFlag:         d.round.gameEndFlag,
@@ -627,8 +650,13 @@ func (d *Daifugo) UnmarshalJSON(data []byte) error {
 	}
 	d.config = j.Config
 	d.sortMode = j.SortMode
+	fieldClearedLeader := -1
+	if j.FieldClearedLeader != nil {
+		fieldClearedLeader = *j.FieldClearedLeader
+	}
 	d.round = daifugoRoundState{
 		currentTurn:         j.CurrentTurn,
+		fieldClearedLeader:  fieldClearedLeader,
 		tableCards:          j.TableCards,
 		lastPlayPlayerIdx:   j.LastPlayPlayerIdx,
 		gameEndFlag:         j.GameEndFlag,

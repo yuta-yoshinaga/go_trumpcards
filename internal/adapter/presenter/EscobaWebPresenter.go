@@ -31,8 +31,7 @@ func (ewp *EscobaWebPresenter) Output(eg interfaces.EscobaGame, lastErr error) s
 
 	config := eg.GetConfig()
 	resObj.Config = controller.EscobaWebConfig{
-		TargetScore:   config.TargetScore,
-		CpuDifficulty: int(config.CpuDifficulty),
+		TargetScore: config.TargetScore,
 	}
 
 	resObj.TableCards = cardsToOutputOrEmpty(eg.GetTableCards())

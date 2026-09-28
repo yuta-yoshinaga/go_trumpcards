@@ -1,4 +1,4 @@
-//go:build !js || !wasm || casino
+//go:build !js || !wasm || extra8
 
 package presenter
 
@@ -200,6 +200,23 @@ func (bjp *BlackJackCuiPresenter) Output(bj interfaces.BlackJackGame, lastErr er
 		suggestion := bj.GetBasicStrategySuggestion()
 		if suggestion != domain.BJSuggestNone {
 			fmt.Fprintf(&b, "%s\n", color.Yellow(i18n.Tf("blackjack.hintLine", "action", bjp.suggestionStr(suggestion))))
+		}
+	}
+
+	if variant := bj.GetVariant(); variant != nil && variant.Name == domain.BJVariantDoubleExposure && !bj.GetGameEndFlag() {
+		key := "doubleexposure.doubleDownAvailable"
+		switch bj.DoubleDownBlockReason() {
+		case domain.BJDoubleDownBlockNotTwoCards:
+			key = "doubleexposure.doubleDownUnavailable.cards"
+		case domain.BJDoubleDownBlockInsufficientChips:
+			key = "doubleexposure.doubleDownUnavailable.chips"
+		case domain.BJDoubleDownBlockSplitNoDAS:
+			key = "doubleexposure.doubleDownUnavailable.split"
+		case domain.BJDoubleDownBlockHandFinished, domain.BJDoubleDownBlockWrongPhase:
+			key = ""
+		}
+		if key != "" {
+			fmt.Fprintf(&b, "%s\n", i18n.T(key))
 		}
 	}
 

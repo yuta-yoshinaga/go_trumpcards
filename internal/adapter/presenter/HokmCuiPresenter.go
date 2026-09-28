@@ -110,6 +110,7 @@ func (p *HokmCuiPresenter) Output(h interfaces.HokmGame, lastErr error) string {
 			} else {
 				sb.WriteString(i18n.T("hokm.hakemStays") + "\n")
 			}
+			sb.WriteString(i18n.T("hokm.promptNoMoreTricks") + "\n")
 			sb.WriteString(i18n.T("hokm.promptNext") + "\n")
 			return
 		}

@@ -14,6 +14,7 @@
   "contractUndecided": "契約: 未決定",
   "contractLine": "契約: {{tricks}} {{dir}} (切り札: {{trump}})",
   "teamScores": "チーム0: {{t0}}点 / チーム1: {{t1}}点",
+  "targetScoreLine": "勝利目標: {{score}}点",
   "teamShort": "T{{team}}",
   "passed": "パス",
   "currentTrick": "現在のトリック",

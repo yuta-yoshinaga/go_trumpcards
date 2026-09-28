@@ -22,6 +22,7 @@ import { useTienLenGame } from '../hooks/useTienLenGame';
 import { gameTheme } from '../styles/gameTheme';
 import type { TienLenResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import {
   formatTienLenState,
   parseTienLenCommand,
@@ -248,6 +249,8 @@ function TienLenPageContent() {
                       type="button"
                       onClick={() => isHumanTurn && toggleCardSelection(i)}
                       disabled={!isHumanTurn}
+                      aria-label={cardAlt(c)}
+                      aria-pressed={selected}
                       className={cardClass}
                       data-testid={`hand-card-${i}`}
                     >

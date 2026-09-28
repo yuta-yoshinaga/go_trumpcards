@@ -794,9 +794,6 @@ func TestKaiserConfigValidate(t *testing.T) {
 	if err := DefaultKaiserConfig().Validate(); err != nil {
 		t.Errorf("the default config must validate: %v", err)
 	}
-	if err := (KaiserConfig{CpuDifficulty: 9}).Validate(); err == nil {
-		t.Error("a bad difficulty must not validate")
-	}
 }
 
 func TestKaiserRoundTripsThroughJSON(t *testing.T) {

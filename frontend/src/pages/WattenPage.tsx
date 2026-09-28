@@ -282,6 +282,22 @@ function WattenPageContent() {
                   label={t('currentTrick')}
                   dataTutorial="watten-trick-display"
                 />
+                {state.lastTrick.length > 0 && (
+                  <details open className="my-3" data-testid="watten-trick-history">
+                    <summary className="text-ds-text-primary text-sm cursor-pointer py-2">
+                      {t('trickHistory.title')}
+                    </summary>
+                    <TrickDisplay
+                      currentTrick={[]}
+                      lastTrick={state.lastTrick}
+                      lastTrickWinner={state.lastTrickWinner}
+                      players={state.players}
+                      cardWidth={cardWidth}
+                      label={t('trickHistory.cards')}
+                      winnerLabel={t('trickHistory.winner')}
+                    />
+                  </details>
+                )}
               </div>
 
               {/* Right: info sidebar */}

@@ -321,8 +321,8 @@ func TestMushi_UnmarshalRejectsAndClampsHostileSnapshots(t *testing.T) {
 	data, err := json.Marshal(m)
 	require.NoError(t, err)
 
-	t.Run("invalid config", func(t *testing.T) {
-		hostile := replaceJSONNumber(t, string(data), `"cd":0`, `"cd":99`)
+	t.Run("invalid target rounds", func(t *testing.T) {
+		hostile := replaceJSONNumber(t, string(data), `"tr":12`, `"tr":99`)
 		assert.Error(t, json.Unmarshal([]byte(hostile), NewDefaultMushi()))
 	})
 

@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra2
+//go:build !js || !wasm || extra9
 
 package domain
 
@@ -58,12 +58,6 @@ func (r *Julepe) GetRequiredTricks() int {
 
 // GetBeast は次ラウンドのアンティが倍になる席を返す。
 func (r *Julepe) GetBeast() []bool { return r.beast }
-
-// GetBeastForTest は beast フラグを返す (テスト用)。
-func (r *Julepe) GetBeastForTest() []bool { return r.beast }
-
-// DealRoundForTest は次ラウンドの配りを実行する (テスト用)。
-func (r *Julepe) DealRoundForTest() { r.dealRound() }
 
 // JulepeRequiredTricks は参加人数 n に対する規定トリック数を返す。
 //
@@ -880,13 +874,9 @@ func (r *Julepe) UnmarshalJSON(data []byte) error {
 	if len(j.CurrentTrick) > n {
 		return fmt.Errorf("current trick holds %d cards for %d players", len(j.CurrentTrick), n)
 	}
-	for name, idx := range map[string]int{
-		"current player": j.CurrentPlayerIdx,
-		"lead player":    j.LeadPlayerIdx,
-		"dealer":         j.DealerIdx,
-	} {
-		if idx < 0 || idx >= n {
-			return fmt.Errorf("invalid %s: %d", name, idx)
+	for _, f := range []namedInt{{"current player", j.CurrentPlayerIdx}, {"lead player", j.LeadPlayerIdx}, {"dealer", j.DealerIdx}} {
+		if f.value < 0 || f.value >= n {
+			return fmt.Errorf("invalid %s: %d", f.name, f.value)
 		}
 	}
 	if j.WinnerIdx < -1 || j.WinnerIdx >= n {

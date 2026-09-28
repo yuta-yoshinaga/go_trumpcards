@@ -1,4 +1,4 @@
-//go:build !js || !wasm || casino
+//go:build !js || !wasm || extra8
 
 package presenter
 
@@ -85,6 +85,7 @@ func (vpp *VideoPokerCuiPresenter) Output(vp interfaces.VideoPokerGame, lastErr 
 			sb.WriteString(color.Red(i18n.T("videopoker.noWin")) + "\n")
 		}
 		sb.WriteString(i18n.Tf("videopoker.payoutLine", "payout", strconv.Itoa(vp.GetPayout())) + "\n")
+		sb.WriteString(i18n.Tf("videopoker.netChangeLine", "net", formatSigned(vp.GetPayout()-vp.GetBetAmount())) + "\n")
 		sb.WriteString("----------\n")
 	}
 

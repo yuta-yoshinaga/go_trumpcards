@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import type { cegoApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -14,6 +15,7 @@ import { PlayerHandSection } from '../components/PlayerHandSection';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { CEGO_KEEP_COUNT, CPU_DIFFICULTY_OPTIONS, TARGET_DEALS_OPTIONS, useCegoGame } from '../hooks/useCegoGame';
 import { useCliGame } from '../hooks/useCliGame';
@@ -135,25 +137,61 @@ function CegoPageContent() {
   const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('cego', CEGO_PHASE_KEYS);
 
+  const isBidPhase = state?.phase === CegoPhase.BID;
+  const isContractPhase = state?.phase === CegoPhase.CONTRACT;
+  const isExchangePhase = state?.phase === CegoPhase.EXCHANGE;
+  const isPlayPhase = state?.phase === CegoPhase.PLAY;
+  const isTrickEnd = state?.phase === CegoPhase.TRICK_END;
+  const isRoundEnd = state?.phase === CegoPhase.ROUND_END;
+
+  const canBid = isBidPhase && !!state?.isHumanBidTurn;
+  const canContract = isContractPhase && !!state?.isHumanContract;
+  const canExchange = isExchangePhase && !!state?.isHumanExchange;
+  const canPlay = isPlayPhase && !!state?.isHumanTurn;
+
+  const actionBindings = useMemo(
+    () => [
+      { key: 'p', action: handlePass, enabled: canBid, label: 'pass' },
+      { key: 'b', action: handleBid, enabled: canBid, label: 'bid' },
+      { key: 'c', action: () => handleContract('cego'), enabled: canContract, label: 'chooseCego' },
+      { key: 'h', action: () => handleContract('handspiel'), enabled: canContract, label: 'chooseHandspiel' },
+      {
+        key: 'e',
+        action: handleExchange,
+        enabled: canExchange && selectedCardIndices.length === CEGO_KEEP_COUNT,
+        label: 'exchange',
+      },
+      { key: 'Enter', action: handlePlay, enabled: canPlay && selectedCardIndices.length === 1, label: 'play' },
+      { key: 'n', action: handleNextTrick, enabled: isTrickEnd, label: 'nextTrick' },
+      { key: 'r', action: handleNextRound, enabled: isRoundEnd, label: 'nextRound' },
+    ],
+    [
+      handlePass,
+      handleBid,
+      handleContract,
+      handleExchange,
+      handlePlay,
+      handleNextTrick,
+      handleNextRound,
+      canBid,
+      canContract,
+      canExchange,
+      canPlay,
+      selectedCardIndices.length,
+      isTrickEnd,
+      isRoundEnd,
+    ],
+  );
+
+  useActionKeyboardNav({ bindings: actionBindings, enabled: !!state && !loading });
+
   if (!state)
     return <GameSkeleton gameKey="cego" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 11 }} />;
 
   const humanPlayer = state.players.find((p) => p.isHuman);
   const humanIdx = state.players.findIndex((p) => p.isHuman);
   const isHumanTurn = state.isHumanTurn;
-
-  const isBidPhase = state.phase === CegoPhase.BID;
-  const isContractPhase = state.phase === CegoPhase.CONTRACT;
-  const isExchangePhase = state.phase === CegoPhase.EXCHANGE;
-  const isPlayPhase = state.phase === CegoPhase.PLAY;
-  const isTrickEnd = state.phase === CegoPhase.TRICK_END;
-  const isRoundEnd = state.phase === CegoPhase.ROUND_END;
   const isGameEnd = state.phase === CegoPhase.GAME_END || state.gameEndFlag;
-
-  const canBid = isBidPhase && state.isHumanBidTurn;
-  const canContract = isContractPhase && state.isHumanContract;
-  const canExchange = isExchangePhase && state.isHumanExchange;
-  const canPlay = isPlayPhase && isHumanTurn;
 
   const contractLabel = t(CONTRACT_KEYS[state.contractType] ?? 'contractNone');
 
@@ -334,6 +372,7 @@ function CegoPageContent() {
 
           {/* Footer */}
           <GameFooter className={`${gameTheme.cego.footer} px-4 py-2.5`}>
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="cego-kbd-shortcuts" />
             {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
                 変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。 */}
             <div data-testid="cego-prompt-live" role="status" aria-live="polite">

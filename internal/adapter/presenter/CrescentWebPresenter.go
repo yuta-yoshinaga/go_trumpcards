@@ -18,6 +18,7 @@ func (p *CrescentWebPresenter) Output(cr interfaces.CrescentGame, lastErr error)
 	resObj := new(controller.CrescentWebOutput)
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, cr, int(cr.GetPhase()))
 	resObj.RedealsRemaining = cr.GetRedealsRemaining()
+	resObj.NoLegalMoves = cr.HasNoLegalMoves()
 
 	tableau := cr.GetTableau()
 	resObj.Tableau = make([][]*controller.CrescentWebOutputTableauCard, domain.CrescentTableauCnt)
@@ -86,6 +87,7 @@ func (p *CrescentWebPresenter) HintOutput(cr interfaces.CrescentGame) string {
 	resObj := new(controller.CrescentWebOutput)
 	populateSolitaireBase(&resObj.SolitaireWebOutputBase, cr, int(cr.GetPhase()))
 	resObj.RedealsRemaining = cr.GetRedealsRemaining()
+	resObj.NoLegalMoves = cr.HasNoLegalMoves()
 	resObj.Tableau = make([][]*controller.CrescentWebOutputTableauCard, 0)
 	resObj.Foundation = make([][]*controller.WebOutputCard, 0)
 

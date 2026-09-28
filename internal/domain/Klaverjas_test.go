@@ -285,6 +285,9 @@ func TestKlaverjas_ResolveTrickPointsAndLastBonus(t *testing.T) {
 		{PlayerIdx: 3, Card: klavCard(CardDesignClover, 7)},
 	})
 	g.ResolveTrick()
+	if g.GetLastTrickTeam() != 0 || g.GetLastTrickPoints() != 45 || g.GetLastTrickBonus() != 0 {
+		t.Errorf("last trick result = team %d, points %d, bonus %d; want 0, 45, 0", g.GetLastTrickTeam(), g.GetLastTrickPoints(), g.GetLastTrickBonus())
+	}
 	if g.GetRoundCardPoints()[0] != 45 {
 		t.Errorf("team0 should have 45 pts, got %v", g.GetRoundCardPoints())
 	}
@@ -299,11 +302,24 @@ func TestKlaverjas_ResolveTrickPointsAndLastBonus(t *testing.T) {
 	})
 	before := g.GetRoundCardPoints()[0]
 	g.ResolveTrick()
+	if g.GetLastTrickTeam() != 0 || g.GetLastTrickPoints() != 4 || g.GetLastTrickBonus() != KlaverjasLastTrickBonus {
+		t.Errorf("last trick result = team %d, points %d, bonus %d; want 0, 4, %d", g.GetLastTrickTeam(), g.GetLastTrickPoints(), g.GetLastTrickBonus(), KlaverjasLastTrickBonus)
+	}
 	if g.GetRoundCardPoints()[0] != before+4+KlaverjasLastTrickBonus {
 		t.Errorf("last trick should add 4+%d, got %v (before %d)", KlaverjasLastTrickBonus, g.GetRoundCardPoints(), before)
 	}
 	if g.GetPhase() != KlaverjasPhaseRoundEnd {
 		t.Errorf("phase = %v, want RoundEnd", g.GetPhase())
+	}
+}
+
+func TestKlaverjas_NextTrickClearsLastTrickResult(t *testing.T) {
+	g := newKlavGame(false)
+	g.lastTrickTeam, g.lastTrickPoints, g.lastTrickBonus = 0, 45, 0
+	g.SetPhase(KlaverjasPhaseTrickEnd)
+	g.NextTrick()
+	if g.GetLastTrickTeam() != -1 || g.GetLastTrickPoints() != 0 || g.GetLastTrickBonus() != 0 {
+		t.Errorf("last trick result was not cleared: team %d, points %d, bonus %d", g.GetLastTrickTeam(), g.GetLastTrickPoints(), g.GetLastTrickBonus())
 	}
 }
 
@@ -417,6 +433,29 @@ func TestKlaverjas_JSONRoundTrip(t *testing.T) {
 	}
 	if g2.GetPhase() != g.GetPhase() || g2.GetPlayerCnt() != KlaverjasPlayerCnt || g2.GetTrumpSuit() != g.GetTrumpSuit() {
 		t.Error("round trip mismatch")
+	}
+}
+
+func TestKlaverjas_UnmarshalLegacyStateDefaultsLastTrickTeam(t *testing.T) {
+	data, err := json.Marshal(newKlavGame(true))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var legacy map[string]json.RawMessage
+	if err := json.Unmarshal(data, &legacy); err != nil {
+		t.Fatal(err)
+	}
+	delete(legacy, "ltt")
+	data, err = json.Marshal(legacy)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var g Klaverjas
+	if err := json.Unmarshal(data, &g); err != nil {
+		t.Fatal(err)
+	}
+	if got := g.GetLastTrickTeam(); got != -1 {
+		t.Fatalf("GetLastTrickTeam() = %d, want -1", got)
 	}
 }
 

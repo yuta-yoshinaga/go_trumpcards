@@ -34,6 +34,7 @@
   "result.win": "You win the pot!",
   "result.lose": "You lost this round.",
   "result.cpuWin": "CPU {{player}} wins the pot.",
+  "result.payout": "{{name}} won the pot of {{amount}}.",
   "action.pass": "pass",
   "action.keep": "keep",
   "action.call": "call",

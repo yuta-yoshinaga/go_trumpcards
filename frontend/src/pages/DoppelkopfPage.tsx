@@ -397,16 +397,25 @@ function DoppelkopfPageContent() {
                 </button>
               )}
               {state.canAnnounce && (
-                <button
-                  type="button"
-                  className={btnSecondary}
-                  onClick={handleAnnounce}
-                  disabled={loading}
-                  aria-label={`${announceLabel} — ${t('announceDescription')}`}
-                  title={t('announceDescription')}
-                >
-                  {announceLabel}
-                </button>
+                <>
+                  <span data-testid="dk-announce-stage" className="text-ds-text-muted text-sm">
+                    {t('announceStage', {
+                      trick: state.trickNumber,
+                      team: teamLabel,
+                      cards: humanPlayer?.cardCount ?? 0,
+                    })}
+                  </span>
+                  <button
+                    type="button"
+                    className={btnSecondary}
+                    onClick={handleAnnounce}
+                    disabled={loading}
+                    aria-label={`${announceLabel} — ${t('announceDescription')}`}
+                    title={t('announceDescription')}
+                  >
+                    {announceLabel}
+                  </button>
+                </>
               )}
               {isTrickEnd && (
                 <button type="button" className={btnSuccess} onClick={handleNextTrick} disabled={loading}>

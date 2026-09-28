@@ -2,6 +2,7 @@
   "chips": "Chips: {{count}}",
   "turns": "Turns: {{played}}/{{total}}",
   "remaining": "Cards left: {{count}}",
+  "rankSelection": "Bet rank",
   "bet": "Bet",
   "noBet": "No bet placed",
   "bankerCard": "Banker card",

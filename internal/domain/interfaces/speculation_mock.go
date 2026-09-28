@@ -69,6 +69,14 @@ func (m *MockSpeculationGame) GetWinnerSeat() int { return m.Called().Int(0) }
 
 func (m *MockSpeculationGame) GetGameEndFlag() bool { return m.Called().Bool(0) }
 
+func (m *MockSpeculationGame) GetLastTrade() *domain.SpeculationTrade {
+	args := m.Called()
+	if v, ok := args.Get(0).(*domain.SpeculationTrade); ok {
+		return v
+	}
+	return nil
+}
+
 func (m *MockSpeculationGame) GetActionLog() []*domain.ActionLogEntry {
 	args := m.Called()
 	if v, ok := args.Get(0).([]*domain.ActionLogEntry); ok {

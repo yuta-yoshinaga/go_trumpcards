@@ -131,7 +131,6 @@ describe('BigBenPage', () => {
       foundation: faces.map((f, i) => ({ ...f, complete: i === 0 })),
     });
     renderWithProviders(<BigBenPage />);
-    // 移動元を選ぶまでは「選択待ち」で全部の文字盤が native disabled。
     // 完成した文字盤だけが別の理由で拒否されることを見たいので、まず選ぶ。
     const source = await screen.findByRole('button', { name: /^♠ 6（/ });
     fireEvent.click(source);
@@ -161,6 +160,22 @@ describe('BigBenPage', () => {
     fireEvent.click(screen.getByLabelText(/文字盤4 \(1時\)/));
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), { zone: 'foundation', col: 0 });
+  });
+
+  it('explains why a face target is unavailable before selecting a source', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BigBenPage />);
+    const target = await screen.findByLabelText(/文字盤0 \(9時\)/);
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const hintId = target.getAttribute('aria-describedby');
+    expect(hintId).toBeTruthy();
+    expect(document.getElementById(hintId ?? '')).toHaveTextContent('先に移動する札を選んでください');
+
+    mockExec.mockClear();
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
   });
 
   it('sends the face index with the move', async () => {

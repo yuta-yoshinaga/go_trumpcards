@@ -910,6 +910,14 @@ func (w *IsraeliWhist) GetHighSuit() int { return w.highSuit }
 // GetCurrentTrick 現在のトリック
 func (w *IsraeliWhist) GetCurrentTrick() []*TrickCard { return w.currentTrick }
 
+// GetCurrentTrickWinnerIdx returns the provisional winner, or -1 when the trick is empty.
+func (w *IsraeliWhist) GetCurrentTrickWinnerIdx() int {
+	if len(w.currentTrick) == 0 {
+		return -1
+	}
+	return w.trickWinner()
+}
+
 // GetCurrentPlayerIdx 現在の手番
 func (w *IsraeliWhist) GetCurrentPlayerIdx() int { return w.currentPlayerIdx }
 
@@ -1063,15 +1071,9 @@ func (w *IsraeliWhist) UnmarshalJSON(data []byte) error {
 	if len(j.CurrentTrick) > IsraeliWhistPlayerCnt {
 		return fmt.Errorf("current trick holds %d cards", len(j.CurrentTrick))
 	}
-	for name, idx := range map[string]int{
-		"current player": j.CurrentPlayerIdx,
-		"auction player": j.AuctionPlayerIdx,
-		"bid player":     j.BidPlayerIdx,
-		"lead player":    j.LeadPlayerIdx,
-		"dealer":         j.DealerIdx,
-	} {
-		if idx < 0 || idx >= IsraeliWhistPlayerCnt {
-			return fmt.Errorf("invalid %s: %d", name, idx)
+	for _, f := range []namedInt{{"current player", j.CurrentPlayerIdx}, {"auction player", j.AuctionPlayerIdx}, {"bid player", j.BidPlayerIdx}, {"lead player", j.LeadPlayerIdx}, {"dealer", j.DealerIdx}} {
+		if f.value < 0 || f.value >= IsraeliWhistPlayerCnt {
+			return fmt.Errorf("invalid %s: %d", f.name, f.value)
 		}
 	}
 	if j.DeclarerIdx < -1 || j.DeclarerIdx >= IsraeliWhistPlayerCnt {

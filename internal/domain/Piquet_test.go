@@ -867,7 +867,7 @@ func TestCpuPlaysFullDeal(t *testing.T) {
 		NewPiquetPlayer(false),
 		NewPiquetPlayer(false),
 	}
-	p := NewPiquet(NewTrumpCardsBelote(), players, PiquetConfig{DealsPerPartie: 1, CpuDifficulty: PiquetCpuDifficultyNormal})
+	p := NewPiquet(NewTrumpCardsBelote(), players, PiquetConfig{DealsPerPartie: 1})
 	p.Reset()
 
 	// Exchange phase: drive both CPUs

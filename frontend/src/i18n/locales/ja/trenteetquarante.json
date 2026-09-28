@@ -33,6 +33,7 @@
     "result": "結果"
   },
   "result": {
+    "betSummary": "賭け内容: {{bet}}（賭け金 {{stake}}）",
     "win": "勝利！",
     "lose": "敗北",
     "push": "プッシュ — 賭け金は返却されます。",
@@ -40,7 +41,7 @@
     "margin": "{{winner}} が {{diff}} 点差で勝ち（{{winnerTotal}} 対 {{loserTotal}}）"
   },
   "payout": {
-    "total": "収支"
+    "total": "総払戻額"
   },
   "refait": {
     "title": "ルフェ（31での引き分け）とは？",

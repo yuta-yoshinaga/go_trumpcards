@@ -1,16 +1,16 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, TIMEOUT_ACTION, TIMEOUT_TRANSITION, waitForLoaded } from './helpers';
+import { gameButton, navigateTo, TIMEOUT_ACTION, TIMEOUT_TRANSITION, waitForLoaded } from './helpers';
 
 test.describe('Tehonbiki E2E', () => {
   test('places a wager and starts the next round', async ({ page }) => {
     await navigateTo(page, '/tehonbiki');
     await expect(page.getByRole('button', { name: '張る' })).toBeVisible({ timeout: TIMEOUT_TRANSITION });
-    await expect(page.getByRole('button', { name: '1' })).toBeVisible();
+    await expect(gameButton(page, '1')).toBeVisible();
     await expect(page.getByRole('button', { name: '6' })).toBeVisible();
 
     // A single bet covers exactly one number, and nothing is selected up front,
     // so the wager is refused until the player picks one.
-    await page.getByRole('button', { name: '1' }).click();
+    await gameButton(page, '1').click();
     await page.getByRole('button', { name: '張る' }).click();
     await waitForLoaded(page);
     await expect(page.getByRole('button', { name: '次の勝負' })).toBeVisible({ timeout: TIMEOUT_ACTION });

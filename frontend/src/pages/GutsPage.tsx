@@ -372,6 +372,16 @@ function GutsPageContent() {
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="guts-action-buttons">
               {isDeclarePhase && !isGameEnd && (
                 <>
+                  {humanPlayer && (
+                    <div
+                      className="w-full rounded border border-ds-border bg-ds-surface px-3 py-2 text-sm text-ds-text-primary sm:w-auto"
+                      data-testid="guts-declare-money"
+                    >
+                      <span className="mr-3">{t('declareMoney.chips', { amount: humanPlayer.chips })}</span>
+                      <span className="mr-3">{t('declareMoney.bet', { amount: humanPlayer.roundBet })}</span>
+                      <span>{t('pot', { amount: state.pot })}</span>
+                    </div>
+                  )}
                   <button type="button" className={btnPrimary} onClick={handleIn} disabled={loading}>
                     {t('inButton')}
                   </button>

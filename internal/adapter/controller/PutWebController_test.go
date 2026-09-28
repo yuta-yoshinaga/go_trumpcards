@@ -128,9 +128,4 @@ func TestPutWebConfig_ToConfig(t *testing.T) {
 		assert.Equal(t, domain.PutDefaultMatchTarget, c.ToConfig().MatchTarget)
 	})
 
-	t.Run("out-of-range difficulty clamps to default", func(t *testing.T) {
-		diff := 99
-		c := &controller.PutWebConfig{CpuDifficulty: &diff}
-		assert.Equal(t, domain.PutCpuDifficultyNormal, c.ToConfig().CpuDifficulty)
-	})
 }

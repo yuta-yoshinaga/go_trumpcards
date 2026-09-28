@@ -280,6 +280,21 @@ describe('BisleyPage', () => {
     await waitFor(() => expect(sourceBtn).toHaveAttribute('aria-pressed', 'true'));
   });
 
+  it('keeps empty foundation targets focusable and explains selection before a source is chosen', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<BisleyPage />);
+    const btn = await screen.findByRole('button', { name: '空の降順組札 (♠)、次に置くべきカード K' });
+    expect(btn).not.toBeDisabled();
+    expect(btn).toHaveAttribute('aria-disabled', 'true');
+    const hintId = btn.getAttribute('aria-describedby');
+    expect(hintId).toBeTruthy();
+    expect(document.getElementById(hintId ?? '')).toHaveTextContent('先に移動する札を選んでください');
+    mockExec.mockClear();
+    fireEvent.click(btn);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('sends the descending zone when a King foundation is chosen as target', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BisleyPage />);

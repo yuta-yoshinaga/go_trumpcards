@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useState } from 'react';
 import type { EightOffMoveZone, eightoffApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -37,6 +37,7 @@ import { formatEightoffState } from '../utils/cli/formatters/eightoffFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { eightOffAutoCompleteReady } from '../utils/eightOffAutoComplete';
 import { eightOffFoundationTarget } from '../utils/eightOffFoundationTarget';
+import { eightOffTableauTargets } from '../utils/eightOffTableauTargets';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
@@ -91,6 +92,7 @@ const EO_TUTORIAL_STEPS: TutorialStep[] = [
 export const EightOffPage = withTutorial(EightOffPageContent, 'eightoff', EO_TUTORIAL_STEPS);
 /** Inner content of the Eight Off page, wrapped by TutorialProvider. */
 function EightOffPageContent() {
+  const selectSourceHintId = useId();
   const {
     t,
     tc,
@@ -254,6 +256,28 @@ function EightOffPageContent() {
   const emptyFreeCells = state.freeCells.filter((c) => c === null).length;
   const emptyTableauCols = state.tableau.filter((col: (Card | null)[]) => col.length === 0).length;
   const supermoveLimit = (1 + emptyFreeCells) * 2 ** emptyTableauCols;
+  const tableauTargets =
+    selectedSource?.zone === 'tableau' && selectedSource.col !== undefined && selectedSource.cardIndex !== undefined
+      ? eightOffTableauTargets(state.tableau, state.freeCells, selectedSource.col, selectedSource.cardIndex)
+      : null;
+  const tableauTargetLabels = tableauTargets?.map((column) => t('tableauColumnLabel', { column: column + 1 })) ?? [];
+  if (tableauTargets && selectedSource?.col !== undefined && selectedSource.cardIndex !== undefined) {
+    const selectedStack = state.tableau[selectedSource.col]?.slice(selectedSource.cardIndex) ?? [];
+    if (selectedStack.length === 1) {
+      const selectedCard = selectedStack[0];
+      const foundationTarget = selectedCard ? eightOffFoundationTarget(selectedCard, state.foundation) : null;
+      if (foundationTarget) tableauTargetLabels.push(t('foundation'));
+    }
+  }
+  const tableauMoveGuide =
+    tableauTargets === null
+      ? ''
+      : tableauTargetLabels.length > 0
+        ? t('tableauMoveGuide', {
+            source: (selectedSource?.col ?? 0) + 1,
+            targets: tableauTargetLabels.join(t('listSeparator')),
+          })
+        : t('noTableauMoveTargets', { source: (selectedSource?.col ?? 0) + 1 });
 
   const isSourceSelected = (zone: string, col?: number, cell?: number, cardIndex?: number) =>
     selectedSource !== null &&
@@ -308,6 +332,12 @@ function EightOffPageContent() {
           <LandscapeBanner message={t('landscapeBanner')} />
 
           <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
+            <span id={selectSourceHintId} className="sr-only">
+              {tc('label.selectSourceFirst')}
+            </span>
+            <div role="status" aria-live="polite" data-testid="eo-move-guide" className="mb-2 text-sm text-ds-info">
+              {tableauMoveGuide}
+            </div>
             {/* Free cells + Foundation row */}
             <div className="flex gap-2 mb-3 items-start flex-wrap">
               {/* Free cells */}
@@ -357,7 +387,9 @@ function EightOffPageContent() {
                           <button
                             type="button"
                             onClick={() => handleSelectTarget(freeCellZone)}
-                            disabled={!isPlaying || loading || !selectedSource}
+                            disabled={!isPlaying || loading}
+                            aria-disabled={!selectedSource || undefined}
+                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t('emptyFreecellAriaLabel', { idx: String(idx) })}
                             data-testid={`eo-freecell-empty-${idx.toString()}`}
                             style={{ width: cardWidth, height: cardHeight }}
@@ -391,7 +423,9 @@ function EightOffPageContent() {
                           <button
                             type="button"
                             onClick={() => handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
+                            disabled={!isPlaying || loading || isAutoCompleting}
+                            aria-disabled={!selectedSource || undefined}
+                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t('foundationAriaLabel', {
                               suit: FOUNDATION_SUITS[idx],
                               cardCount: String(pile.length),
@@ -410,7 +444,9 @@ function EightOffPageContent() {
                           <button
                             type="button"
                             onClick={() => handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading || !selectedSource}
+                            disabled={!isPlaying || loading}
+                            aria-disabled={!selectedSource || undefined}
+                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
                             data-testid={`eo-foundation-empty-${idx.toString()}`}
                             style={{ width: cardWidth, height: cardHeight }}
@@ -452,7 +488,9 @@ function EightOffPageContent() {
                             <button
                               type="button"
                               onClick={() => handleSelectTarget(tableauColZone)}
-                              disabled={!isPlaying || loading || !selectedSource}
+                              disabled={!isPlaying || loading}
+                              aria-disabled={!selectedSource || undefined}
+                              aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                               aria-label={t('emptyColumnAriaLabel', { rank: 'K' })}
                               style={{ height: cardHeight }}
                               className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}

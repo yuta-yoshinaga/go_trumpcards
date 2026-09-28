@@ -120,7 +120,11 @@ func (p *PinochleCuiPresenter) Output(g interfaces.PinochleGame, lastErr error) 
 		case trumpSuit > 0:
 			fmt.Fprintln(b, i18n.Tf("pinochle.trumpOnly", "suit", cuiSuitName(trumpSuit)))
 		default:
-			fmt.Fprintln(b, i18n.T("pinochle.trumpUndecided"))
+			if g.GetPhase() == domain.PinochlePhaseTrump {
+				fmt.Fprintln(b, i18n.T("pinochle.trumpSelecting"))
+			} else {
+				fmt.Fprintln(b, i18n.T("pinochle.trumpUndecided"))
+			}
 		}
 
 		if g.GetHighestBidder() >= 0 {

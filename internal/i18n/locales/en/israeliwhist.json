@@ -10,6 +10,7 @@
   "scoreTable": "Score: exact +(call^2 + 10); an exact 0 is +25; missing costs -(10 x the difference). All four exact or all four missing doubles either way.",
   "auctionLine": "Auction under way: high bid {{n}} ({{suit}})",
   "trumpLine": "Trump: {{suit}} (won with {{n}} tricks)",
+  "trickWinner": "Provisional trick winner: {{name}}",
   "playerLine": "{{name}}[{{role}}]: {{bid}}, {{tricks}} tricks, {{total}} total, {{cards}} in hand",
   "roundDelta": "this round: {{delta}}",
   "roleDeclarer": "won {{n}}",

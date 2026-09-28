@@ -20,12 +20,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import {
-  ANTE_OPTIONS,
-  CPU_DIFFICULTY_OPTIONS,
-  STARTING_CHIPS_OPTIONS,
-  useTeenPattiGame,
-} from '../hooks/useTeenPattiGame';
+import { ANTE_OPTIONS, STARTING_CHIPS_OPTIONS, useTeenPattiGame } from '../hooks/useTeenPattiGame';
 import { btnDanger, btnPrimary, btnSecondary, btnSuccess, btnWarning } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -203,17 +198,6 @@ function TeenPattiPageContent() {
             groups={[
               {
                 items: [
-                  {
-                    type: 'select',
-                    id: 'cpuDifficulty',
-                    label: t('settings.cpuDifficulty'),
-                    value: teenPattiConfig.cpuDifficulty,
-                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
-                      value: o.value,
-                      label: t(`settings.${o.label.toLowerCase()}`),
-                    })),
-                    onSelect: (v) => handleConfigChange('cpuDifficulty', v),
-                  },
                   {
                     type: 'select',
                     id: 'ante',
@@ -458,11 +442,11 @@ function TeenPattiPageContent() {
                       className={btnSecondary}
                       onClick={() => setRaiseStake((a) => Math.max(state.minRaise, a - 1))}
                       disabled={loading || raiseStake <= state.minRaise}
-                      aria-label="-"
+                      aria-label={t('raiseDecrease')}
                     >
                       −
                     </button>
-                    <span className="text-ds-text-primary text-sm min-w-[4rem] text-center">
+                    <span className="text-ds-text-primary text-sm min-w-[4rem] text-center" aria-live="polite">
                       {t('raisePrompt')} {raiseStake}
                     </span>
                     <button
@@ -473,7 +457,7 @@ function TeenPattiPageContent() {
                       // 気づいた。
                       onClick={() => setRaiseStake((a) => Math.min(state.maxRaise, a + 1))}
                       disabled={loading || raiseStake >= state.maxRaise}
-                      aria-label="+"
+                      aria-label={t('raiseIncrease')}
                     >
                       ＋
                     </button>

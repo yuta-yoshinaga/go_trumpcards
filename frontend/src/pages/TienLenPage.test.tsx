@@ -71,6 +71,23 @@ describe('TienLenPage', () => {
     expect(screen.getByTestId('play-button')).toBeDisabled(); // nothing selected yet
   });
 
+  it('exposes hand card names, selection state, and unavailable turn state', async () => {
+    renderWithProviders(<TienLenPage />);
+    const card0 = await screen.findByTestId('hand-card-0');
+    expect(card0).toHaveAttribute('aria-label', '♠ 3');
+    expect(card0).toHaveAttribute('aria-pressed', 'false');
+    expect(card0).toBeEnabled();
+
+    fireEvent.click(card0);
+    expect(card0).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('disables hand card selection outside the human turn', async () => {
+    mockExec.mockResolvedValue(makeState({ currentTurn: 1 }));
+    renderWithProviders(<TienLenPage />);
+    expect(await screen.findByTestId('hand-card-0')).toBeDisabled();
+  });
+
   it('selecting a card enables play and clicking plays it', async () => {
     renderWithProviders(<TienLenPage />);
     fireEvent.click(await screen.findByTestId('hand-card-0'));

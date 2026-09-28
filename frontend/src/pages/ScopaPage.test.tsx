@@ -160,6 +160,7 @@ describe('ScopaPage', () => {
   it('take button is disabled until both hand and table are selected', async () => {
     renderWithProviders(<ScopaPage />);
     await waitFor(() => expect(screen.getByTestId('take-button')).toBeInTheDocument());
+    expect(screen.getByTestId('sc-capture-instructions')).toHaveTextContent('候補の場札を選び、「取る」で確定');
     expect(screen.getByTestId('take-button')).toBeDisabled();
 
     fireEvent.click(screen.getByTestId('hand-card-0'));
@@ -167,6 +168,20 @@ describe('ScopaPage', () => {
 
     fireEvent.click(screen.getByTestId('table-card-0'));
     await waitFor(() => expect(screen.getByTestId('take-button')).not.toBeDisabled());
+  });
+
+  it('hides capture instructions during the CPU turn', async () => {
+    mockExec.mockResolvedValue(makeState({ currentTurn: 1, phase: 'cpuTurn' }));
+    renderWithProviders(<ScopaPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    expect(screen.queryByTestId('sc-capture-instructions')).not.toBeInTheDocument();
+  });
+
+  it('hides capture instructions after the game ends', async () => {
+    mockExec.mockResolvedValue(makeState({ gameEndFlag: true, phase: 'gameEnd' }));
+    renderWithProviders(<ScopaPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+    expect(screen.queryByTestId('sc-capture-instructions')).not.toBeInTheDocument();
   });
 
   it('lay button is enabled when a hand card is selected and no table card', async () => {

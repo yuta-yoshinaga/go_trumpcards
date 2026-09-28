@@ -8,7 +8,6 @@
   },
   "settings": {
     "title": "設定",
-    "cpuDifficulty": "CPU難易度",
     "playerCount": "プレイヤー人数",
     "eliminationLimit": "脱落点数",
     "knockThreshold": "ノック上限",

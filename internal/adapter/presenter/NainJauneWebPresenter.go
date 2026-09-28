@@ -91,8 +91,7 @@ func (p *NainJauneWebPresenter) buildBase(c interfaces.NainJauneGame) *controlle
 	cfg := c.GetConfig()
 	resObj.TargetDeals = cfg.TargetDeals
 	resObj.Config = controller.NainJauneWebOutputConfig{
-		CpuDifficulty: int(cfg.CpuDifficulty),
-		TargetDeals:   cfg.TargetDeals,
+		TargetDeals: cfg.TargetDeals,
 	}
 	resObj.Players = p.buildPlayersOutput(c)
 

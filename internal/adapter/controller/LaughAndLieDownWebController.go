@@ -5,7 +5,6 @@ package controller
 import (
 	"net/http"
 
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/webutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
@@ -21,7 +20,6 @@ type LaughAndLieDownWebInput struct {
 
 // LaughAndLieDownWebConfig ラフ・アンド・ライダウンWeb設定
 type LaughAndLieDownWebConfig struct {
-	CpuDifficulty *int `json:"cpuDifficulty,omitempty"`
 }
 
 // LaughAndLieDownWebOutputPlayer ラフ・アンド・ライダウンWebアウトプットプレイヤー
@@ -75,15 +73,11 @@ type LaughAndLieDownWebOutput struct {
 
 // LaughAndLieDownWebOutputConfig ラフ・アンド・ライダウン設定アウトプット
 type LaughAndLieDownWebOutputConfig struct {
-	CpuDifficulty int `json:"cpuDifficulty"`
 }
 
 // ToConfig builds a LaughAndLieDownConfig from the nested web config, applying bounds checking.
 func (c *LaughAndLieDownWebConfig) ToConfig() domain.LaughAndLieDownConfig {
 	cfg := domain.DefaultLaughAndLieDownConfig()
-	cfg.CpuDifficulty = domain.LaughAndLieDownCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty,
-		int(domain.LaughAndLieDownCpuDifficultyNormal), int(domain.LaughAndLieDownCpuDifficultyNormal),
-		int(cfg.CpuDifficulty)))
 	return cfg
 }
 

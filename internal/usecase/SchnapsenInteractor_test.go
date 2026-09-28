@@ -66,18 +66,6 @@ func TestSchnapsenInteractor_ResetWithConfig(t *testing.T) {
 	gameMock.AssertCalled(t, "SetConfig", cfg)
 }
 
-func TestSchnapsenInteractor_ResetWithConfig_ValidationError(t *testing.T) {
-	spMock := new(presenter.MockSchnapsenPresenter)
-	gameMock := new(interfaces.MockSchnapsenGame)
-	spMock.On("Output", gameMock, mock.MatchedBy(func(err error) bool { return err != nil })).Return("validation error")
-
-	si := usecase.NewSchnapsenInteractor(gameMock, spMock)
-	invalid := domain.SchnapsenConfig{CpuDifficulty: 99}
-	got := si.ResetWithConfig(invalid)
-	assert.Equal(t, "validation error", got)
-	gameMock.AssertNotCalled(t, "Reset")
-}
-
 func TestSchnapsenInteractor_Play_Valid(t *testing.T) {
 	mockOutput := `{"phase":0}`
 	spMock := new(presenter.MockSchnapsenPresenter)

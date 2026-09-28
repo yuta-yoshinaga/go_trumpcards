@@ -30,6 +30,11 @@ func signalExitCode(sig os.Signal, cleanup func()) int {
 	if cleanup != nil {
 		cleanup()
 	}
+	return posixSignalExitCode(sig)
+}
+
+// posixSignalExitCode returns the conventional POSIX exit code for sig.
+func posixSignalExitCode(sig os.Signal) int {
 	// POSIX convention: exit code = 128 + signal number (SIGINT=130, SIGTERM=143).
 	exitCode := 128
 	if sigNum, ok := sig.(syscall.Signal); ok {

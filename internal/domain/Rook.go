@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra3
+//go:build !js || !wasm || extra10
 
 package domain
 
@@ -442,20 +442,8 @@ func (g *Rook) PlayerPlay(cardIndex int) error {
 	if g.phase != RookPhasePlay {
 		return ErrWrongPhase
 	}
-	if !g.players[g.currentPlayerIdx].GetIsHuman() {
-		return ErrNotHumanTurn
-	}
-	player := g.players[g.currentPlayerIdx]
-	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainErrorCode(ErrInvalidCard, "rook.errCardIndexOutOfRange", nil)
-	}
-	card := player.GetCard(cardIndex)
-	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
-		return err
-	}
-	played := player.RemoveCard(cardIndex)
-	g.playCard(g.currentPlayerIdx, played)
-	return nil
+	seat := g.currentPlayerIdx
+	return trickPlayerPlay(seat, g.players[seat].GamePlayer, cardIndex, "rook.errCardIndexOutOfRange", g.validatePlay, g.playCard)
 }
 
 // CpuPlay CPUプレイヤーが1ターン実行する
@@ -1146,15 +1134,6 @@ func (g *Rook) GetConfig() RookConfig { return g.config }
 
 // SetConfig 設定変更
 func (g *Rook) SetConfig(cfg RookConfig) { g.config = cfg }
-
-// CardRankPublic カードランク取得 (テスト用)
-func (g *Rook) CardRankPublic(card *Card) int { return g.cardRank(card) }
-
-// EffectiveSuitPublic 実効スート取得 (テスト用)
-func (g *Rook) EffectiveSuitPublic(card *Card) int { return g.effectiveSuit(card) }
-
-// CardPointsPublic カード得点取得 (テスト用)
-func (g *Rook) CardPointsPublic(card *Card) int { return rookCardPoints(card) }
 
 // --- Private helpers ---
 

@@ -38,6 +38,7 @@
   "selectionNoMoves": "Selected card has no legal destination",
   "stalemate": "Stalemate",
   "stalemateAlert": "Stalemate. Undo {{count}} time(s) to escape.",
+  "stalemateRedealAvailable": "No moves are available. You can redeal ({{count}} remaining).",
   "tableau": "Tableau",
   "tutorial": {
     "foundations": "Eight foundations sit in the centre: four ascending from Ace and four descending from King, one per suit.",

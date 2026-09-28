@@ -150,6 +150,27 @@ describe('CuckooPage', () => {
     expect(losers).toHaveAttribute('aria-live', 'polite');
   });
 
+  it('shows each round loser with their current lives', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2,
+        roundLowest: 5,
+        roundLosers: [0, 2],
+        players: [
+          makePlayer({ id: 0, isHuman: true, lives: 2 }),
+          makePlayer({ id: 1, lives: 3 }),
+          makePlayer({ id: 2, lives: 1 }),
+          makePlayer({ id: 3, lives: 3 }),
+        ],
+      }),
+    );
+    renderWithProviders(<CuckooPage />);
+    const result = await screen.findByTestId('cuckoo-losers');
+    const loserRows = Array.from(result.querySelectorAll(':scope > div')).slice(2);
+    expect(loserRows[0]).toHaveTextContent('あなた が最も低いカードでライフを失いました。現在のライフ 2');
+    expect(loserRows[1]).toHaveTextContent('CPU 2 が最も低いカードでライフを失いました。現在のライフ 1');
+  });
+
   it('shows the round lowest value at round end', async () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<CuckooPage />);

@@ -15,7 +15,7 @@
   "faceDown": "[伏]",
   "totalInline": "(合計{{total}})",
   "betInline": "賭け{{bet}}",
-  "payoutInline": "→ {{payout}}",
+  "payoutInline": "収支: {{payout}}",
   "rankPontoon": "ポンツーン",
   "rankFiveCard": "ファイブカード・トリック",
   "rankBust": "バースト",

@@ -39,18 +39,31 @@ function renderNavBar(initialPath = '/') {
 function labelFor(labelKey: string): string {
   return i18n.t(labelKey);
 }
-
 afterEach(() => {
   i18n.changeLanguage('ja');
 });
 
 describe('NavBar', () => {
   it('renders navigation links for all game routes', () => {
-    renderNavBar();
+    const { container } = renderNavBar('/poker');
     const links = screen.getAllByRole('link');
     // game links + brand link
     expect(links.length).toBeGreaterThanOrEqual(gameRoutes.length);
+    const activeLinks = container.querySelectorAll('a[aria-current="page"]');
+    expect(activeLinks).toHaveLength(1);
+    expect(activeLinks[0]).toHaveAttribute('href', '/poker');
   });
+
+  for (const { path, labelKey } of gameRoutes) {
+    it(`marks ${labelKey} link as active when on ${path}`, () => {
+      const { container } = renderNavBar(path);
+      const current = Array.from(container.querySelectorAll<HTMLAnchorElement>('a[aria-current="page"]'));
+      expect(current).toHaveLength(1);
+      expect(current[0]).toHaveAttribute('aria-current', 'page');
+      expect(current[0]).toHaveAttribute('href', path);
+      expect(current[0]).toHaveTextContent(labelFor(labelKey));
+    });
+  }
 
   it('renders category labels for all categories', () => {
     renderNavBar();
@@ -59,17 +72,21 @@ describe('NavBar', () => {
     }
   });
 
-  for (const { path, labelKey } of gameRoutes) {
-    it(`marks ${labelKey} link as active when on ${path}`, () => {
-      renderNavBar(path);
-      // Exactly one link may carry aria-current, which also proves no other
-      // route's link has it.
-      const current = screen.getAllByRole('link').filter((link) => link.hasAttribute('aria-current'));
-      expect(current).toHaveLength(1);
-      expect(current[0]).toHaveAttribute('aria-current', 'page');
-      expect(current[0]).toHaveTextContent(labelFor(labelKey));
-    });
-  }
+  it('shows the compact menu, search, and favorite toggles at 800px', () => {
+    const original = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 800 });
+    window.dispatchEvent(new Event('resize'));
+    try {
+      renderNavBar('/');
+      const menu = screen.getByRole('button', { name: i18n.t('nav.openMenu') });
+      fireEvent.click(menu);
+      expect(screen.getByRole('searchbox', { name: i18n.t('nav.searchPlaceholder') })).toBeInTheDocument();
+      expect(screen.getAllByRole('button', { name: /お気に入り/ }).length).toBeGreaterThan(0);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
+      window.dispatchEvent(new Event('resize'));
+    }
+  });
 
   it('links point to correct hrefs', () => {
     renderNavBar();
@@ -194,11 +211,11 @@ describe('NavBar', () => {
       expect(nav).toHaveClass('hidden');
     });
 
-    it('language toggle is always accessible in mobile header', () => {
+    it('language toggle is always accessible in compact header', () => {
       renderNavBar();
-      // Language buttons exist even when nav is hidden (mobile header has its own)
+      // Language buttons are in the compact header even when nav is hidden.
       const jaBtns = screen.getAllByRole('button', { name: i18n.t('nav.switchToJa') });
-      expect(jaBtns.length).toBeGreaterThanOrEqual(2);
+      expect(jaBtns).toHaveLength(1);
     });
 
     it('moves focus to first interactive element when menu opens', () => {
@@ -355,21 +372,22 @@ describe('NavBar', () => {
       expect(tableDetails).toHaveAttribute('open');
     });
 
-    it('forces details open on medium desktop (sm-lg) when toggled closed', () => {
+    it('does not close other categories on mousedown inside a category at compact width', () => {
       const original = window.innerWidth;
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 800 });
       window.dispatchEvent(new Event('resize'));
-      renderNavBar('/');
-      const tableDetails = screen.getByText(labelFor('nav.category.table')).closest('details') as HTMLDetailsElement;
-      expect(tableDetails).toHaveAttribute('open');
-
-      // Simulate toggle to close — the onToggle handler should force it back open
-      tableDetails.open = false;
-      fireEvent(tableDetails, new Event('toggle'));
-      expect(tableDetails).toHaveAttribute('open');
-
-      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
-      window.dispatchEvent(new Event('resize'));
+      try {
+        renderNavBar('/');
+        fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.openMenu') }));
+        const tableDetails = screen.getByText(labelFor('nav.category.table')).closest('details') as HTMLDetailsElement;
+        const pokerDetails = screen.getByText(labelFor('nav.category.poker')).closest('details') as HTMLDetailsElement;
+        fireEvent.mouseDown(pokerDetails.querySelector('a') as HTMLElement);
+        expect(tableDetails).toHaveAttribute('open');
+        expect(pokerDetails).toHaveAttribute('open');
+      } finally {
+        Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
+        window.dispatchEvent(new Event('resize'));
+      }
     });
 
     it('does not close other categories on mousedown inside a category on mobile', () => {
@@ -394,27 +412,6 @@ describe('NavBar', () => {
       window.dispatchEvent(new Event('resize'));
     });
 
-    it('does not close other categories on mousedown inside a category on medium desktop', () => {
-      const original = window.innerWidth;
-      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 800 });
-      window.dispatchEvent(new Event('resize'));
-      renderNavBar('/');
-
-      const tableDetails = screen.getByText(labelFor('nav.category.table')).closest('details') as HTMLDetailsElement;
-      const pokerDetails = screen.getByText(labelFor('nav.category.poker')).closest('details') as HTMLDetailsElement;
-      // Force both open to simulate tablet state
-      tableDetails.open = true;
-      pokerDetails.open = true;
-
-      const pokerLink = pokerDetails.querySelector('a') as HTMLElement;
-      fireEvent.mouseDown(pokerLink);
-
-      expect(tableDetails).toHaveAttribute('open');
-      expect(pokerDetails).toHaveAttribute('open');
-      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
-      window.dispatchEvent(new Event('resize'));
-    });
-
     it('does not close dropdown when clicking inside it', () => {
       renderNavBar('/poker');
       const pokerDetails = screen.getByText(labelFor('nav.category.poker')).closest('details') as HTMLDetailsElement;
@@ -426,14 +423,6 @@ describe('NavBar', () => {
 
       expect(pokerDetails).toHaveAttribute('open');
     });
-
-    it('removes outside click listener on unmount', () => {
-      vi.spyOn(document, 'removeEventListener');
-      const { unmount } = renderNavBar();
-      unmount();
-      expect(document.removeEventListener).toHaveBeenCalledWith('mousedown', expect.any(Function));
-      vi.restoreAllMocks();
-    });
   });
 
   describe('favorites', () => {
@@ -443,8 +432,25 @@ describe('NavBar', () => {
       window.dispatchEvent(new Event('resize'));
       renderNavBar();
       fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.openMenu') }));
-      const starButtons = screen.getAllByRole('button', { name: i18n.t('nav.favoriteGames') });
+      const starButtons = screen.getAllByRole('button', { name: /をお気に入りに登録$/ });
       expect(starButtons.length).toBeGreaterThan(0);
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
+      window.dispatchEvent(new Event('resize'));
+    });
+
+    it('gives different games distinct favorite button names', () => {
+      const original = window.innerWidth;
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+      window.dispatchEvent(new Event('resize'));
+      renderNavBar();
+      fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.openMenu') }));
+      const hearts = screen.getByRole('button', {
+        name: i18n.t('nav.favoriteToggle', { game: i18n.t('nav.hearts') }),
+      });
+      const poker = screen.getByRole('button', {
+        name: i18n.t('nav.favoriteToggle', { game: i18n.t('nav.poker') }),
+      });
+      expect(hearts).not.toBe(poker);
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
       window.dispatchEvent(new Event('resize'));
     });
@@ -454,7 +460,7 @@ describe('NavBar', () => {
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 1280 });
       window.dispatchEvent(new Event('resize'));
       renderNavBar();
-      expect(screen.queryByRole('button', { name: i18n.t('nav.favoriteGames') })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /をお気に入りに登録$/ })).not.toBeInTheDocument();
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
       window.dispatchEvent(new Event('resize'));
     });
@@ -469,7 +475,7 @@ describe('NavBar', () => {
       // No favorites section initially
       expect(screen.queryByText(i18n.t('nav.favoriteGames'))).not.toBeInTheDocument();
       // Click the first star button
-      const starButtons = screen.getAllByRole('button', { name: i18n.t('nav.favoriteGames') });
+      const starButtons = screen.getAllByRole('button', { name: /をお気に入りに登録$/ });
       fireEvent.click(starButtons[0]);
       // Favorites section should appear
       expect(screen.getByText(i18n.t('nav.favoriteGames'))).toBeInTheDocument();
@@ -510,11 +516,11 @@ describe('NavBar', () => {
       window.dispatchEvent(new Event('resize'));
       renderNavBar();
       fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.openMenu') }));
-      const [firstStar] = screen.getAllByRole('button', { name: i18n.t('nav.favoriteGames') });
+      const [firstStar] = screen.getAllByRole('button', { name: /をお気に入りに登録$/ });
       expect(firstStar).toHaveAttribute('aria-pressed', 'false');
       expect(firstStar.className).toContain('text-ds-text-muted');
       fireEvent.click(firstStar);
-      const toggled = screen.getAllByRole('button', { name: i18n.t('nav.favoriteGames') })[0];
+      const toggled = screen.getAllByRole('button', { name: /をお気に入りに登録$/ })[0];
       expect(toggled).toHaveAttribute('aria-pressed', 'true');
       expect(toggled.className).toContain('text-ds-accent');
       expect(toggled.className).not.toContain('text-ds-text-muted');
@@ -689,6 +695,19 @@ describe('NavBar', () => {
       fireEvent.change(input, { target: { value: 'xyznonexistent' } });
       const noResultsElements = screen.getAllByText(i18n.t('nav.noResults'));
       expect(noResultsElements.length).toBeGreaterThanOrEqual(1);
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
+      window.dispatchEvent(new Event('resize'));
+    });
+
+    it('does not announce no results for whitespace-only search', () => {
+      const original = window.innerWidth;
+      Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: 375 });
+      window.dispatchEvent(new Event('resize'));
+      renderNavBar();
+      fireEvent.click(screen.getByRole('button', { name: i18n.t('nav.openMenu') }));
+      fireEvent.change(screen.getByPlaceholderText(i18n.t('nav.searchPlaceholder')), { target: { value: '  ' } });
+      expect(screen.queryByText(i18n.t('nav.noResults'))).toBeNull();
+      expect(screen.getByText(labelFor('nav.category.poker'))).toBeInTheDocument();
       Object.defineProperty(window, 'innerWidth', { writable: true, configurable: true, value: original });
       window.dispatchEvent(new Event('resize'));
     });

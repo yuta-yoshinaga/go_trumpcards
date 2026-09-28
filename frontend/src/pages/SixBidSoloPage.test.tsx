@@ -76,7 +76,7 @@ function makeState(overrides?: Partial<SixBidSoloResponse>): SixBidSoloResponse 
     gameEndFlag: false,
     winnerIdx: -1,
     message: '',
-    config: { cpuDifficulty: 0, targetHands: 6 },
+    config: { targetHands: 6 },
     ...overrides,
   };
 }
@@ -119,6 +119,19 @@ describe('SixBidSoloPage', () => {
     fireEvent.click(handButtons()[1]);
     fireEvent.click(screen.getByRole('button', { name: '出す' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 1 }));
+  });
+
+  it('shows each trick card with the player who played it', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        trick: [card('SPADE', 1), card('HEART', 10)],
+        trickLeaderIdx: 1,
+      }),
+    );
+    renderWithProviders(<SixBidSoloPage />);
+    await waitFor(() => expect(screen.getByTestId('sixbidsolo-trick')).toBeInTheDocument());
+    expect(screen.getByTestId('sixbidsolo-trick')).toHaveTextContent('CPU 1');
+    expect(screen.getByTestId('sixbidsolo-trick')).toHaveTextContent('CPU 2');
   });
 
   // **追随は強制。**サーバーが出せる札を決める。

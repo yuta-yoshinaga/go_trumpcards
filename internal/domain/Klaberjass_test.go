@@ -919,6 +919,12 @@ func TestKlaberjassCpuDrivesAFullDeal(t *testing.T) {
 			t.Fatalf("attempt %d: the deal never finished (phase %v)", attempt, k.GetPhase())
 		}
 		total := k.GetHandPoints(0) + k.GetHandPoints(1)
+		for player := range KlaberjassPlayerCnt {
+			breakdown := k.GetCardPoints(player) + k.GetSequencePoints(player) + k.GetBelaPoints(player) + k.GetLastTrickPoints(player)
+			if breakdown != k.GetHandPoints(player) {
+				t.Fatalf("attempt %d player %d: breakdown %d != hand points %d", attempt, player, breakdown, k.GetHandPoints(player))
+			}
+		}
 		if total <= 0 {
 			t.Fatalf("attempt %d: a finished deal must have scored something", attempt)
 		}
@@ -1040,9 +1046,8 @@ func TestKlaberjassConfigValidate(t *testing.T) {
 		t.Errorf("the default config must validate: %v", err)
 	}
 	for _, bad := range []KlaberjassConfig{
-		{CpuDifficulty: 9, TargetScore: 501},
-		{CpuDifficulty: KlaberjassCpuDifficultyNormal, TargetScore: 0},
-		{CpuDifficulty: KlaberjassCpuDifficultyNormal, TargetScore: 99999},
+		{TargetScore: 0},
+		{TargetScore: 99999},
 	} {
 		if err := bad.Validate(); err == nil {
 			t.Errorf("%+v must not validate", bad)

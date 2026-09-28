@@ -34,6 +34,20 @@ describe('useGameRouteSearch', () => {
     expect(result.current.filteredPaths?.size).toBe(0);
   });
 
+  it('ignores surrounding half-width and full-width whitespace', () => {
+    const plain = renderHook(() => useGameRouteSearch('blackjack')).result.current.filteredRoutes;
+    const padded = renderHook(() => useGameRouteSearch(' blackjack ')).result.current.filteredRoutes;
+    const fullWidth = renderHook(() => useGameRouteSearch('ブラック\u3000')).result.current.filteredRoutes;
+    expect(padded).toEqual(plain);
+    expect(fullWidth?.some((r) => r.labelKey === 'nav.blackjack')).toBe(true);
+  });
+
+  it('treats a whitespace-only term as no search', () => {
+    const { result } = renderHook(() => useGameRouteSearch(' \u3000 '));
+    expect(result.current.filteredRoutes).toBeNull();
+    expect(result.current.filteredPaths).toBeNull();
+  });
+
   it('is case-insensitive', () => {
     const a = renderHook(() => useGameRouteSearch('BLACKJACK')).result.current.filteredRoutes;
     const b = renderHook(() => useGameRouteSearch('blackjack')).result.current.filteredRoutes;

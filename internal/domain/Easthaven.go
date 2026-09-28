@@ -450,7 +450,7 @@ func (e *Easthaven) canPlaceOnTableau(card *Card, col int) bool {
 	}
 	topCard := top.Card
 	// 交互の色で降順
-	return e.isAlternateColor(card, topCard) && card.GetValue() == topCard.GetValue()-1
+	return isAlternateColor(card, topCard) && card.GetValue() == topCard.GetValue()-1
 }
 
 // canPlaceOnFoundation ファンデーションにカードを置けるか判定
@@ -482,7 +482,7 @@ func (e *Easthaven) isValidEasthavenSequence(cards []*KlondikeTableauCard) bool 
 		}
 		prev := cards[i-1].Card
 		curr := cards[i].Card
-		if !e.isAlternateColor(curr, prev) {
+		if !isAlternateColor(curr, prev) {
 			return false
 		}
 		if curr.GetValue() != prev.GetValue()-1 {
@@ -490,16 +490,6 @@ func (e *Easthaven) isValidEasthavenSequence(cards []*KlondikeTableauCard) bool 
 		}
 	}
 	return true
-}
-
-// isAlternateColor 交互の色かどうか判定
-func (e *Easthaven) isAlternateColor(card1, card2 *Card) bool {
-	return e.isBlack(card1) != e.isBlack(card2)
-}
-
-// isBlack 黒いカードかどうか
-func (e *Easthaven) isBlack(card *Card) bool {
-	return card.GetDesign() == CardDesignSpade || card.GetDesign() == CardDesignClover
 }
 
 // autoFlipTableau タブローの最上部の裏カードを自動フリップ

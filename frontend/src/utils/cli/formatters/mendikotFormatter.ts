@@ -1,5 +1,6 @@
 import type { MendikotResponse } from '../../../types/card';
 import { MendikotPhase } from '../../../types/phases';
+import { suitSymbolAt } from '../../cardAlt';
 import { formatCard, formatHeader, formatPlayerName, formatSeparator } from '../formatterBase';
 
 const PHASE_NAMES: Record<number, string> = {
@@ -7,9 +8,6 @@ const PHASE_NAMES: Record<number, string> = {
   [MendikotPhase.HAND_END]: 'HAND END',
   [MendikotPhase.GAME_END]: 'GAME END',
 };
-
-/** trumpSuit is a 1-based suit code, as elsewhere in this repo. */
-const SUIT_SYMBOLS: Record<number, string> = { 1: '♠', 2: '♣', 3: '♥', 4: '♦' };
 
 /** How the previous hand was decided, and what it was worth. */
 const HAND_END_TEXT: Record<string, (team: number) => string> = {
@@ -36,7 +34,7 @@ export function formatMendikotState(state: MendikotResponse | null): string {
   lines.push(`hand points: yours=${state.scores[0] ?? 0} theirs=${state.scores[1] ?? 0}`);
   lines.push(
     state.trumpSuit > 0
-      ? `trump: ${SUIT_SYMBOLS[state.trumpSuit] ?? '?'} (set by the first player who could not follow)`
+      ? `trump: ${suitSymbolAt(state.trumpSuit, '?')} (set by the first player who could not follow)`
       : 'trump: undecided (the first player who cannot follow sets it with the card they play)',
   );
 

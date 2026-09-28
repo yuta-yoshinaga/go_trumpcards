@@ -41,7 +41,7 @@ const drawPhaseState: ConquianResponse = {
   tookDiscard: false,
   message: '',
   messageCode: '',
-  config: { cpuDifficulty: 1, targetWins: 3 },
+  config: { targetWins: 3 },
 };
 
 const meldPhaseState: ConquianResponse = {
@@ -167,7 +167,6 @@ describe('ConquianPage', () => {
     renderWithProviders(<ConquianPage />);
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
-        cpuDifficulty: 1,
         targetWins: 3,
       }),
     );
@@ -343,14 +342,19 @@ describe('ConquianPage', () => {
   it('shows forced-use hint when discard was taken', async () => {
     mockExec.mockResolvedValue(meldPhaseTookDiscard);
     renderWithProviders(<ConquianPage />);
-    await waitFor(() => expect(screen.getByTestId('conquian-forced-use')).toBeInTheDocument());
+    const liveRegion = await screen.findByTestId('conquian-forced-use');
+    expect(liveRegion).toHaveAttribute('role', 'status');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion).toHaveTextContent('捨て札を引いたカードは必ずメルドに使ってください');
   });
 
-  it('does not show forced-use hint when discard was not taken', async () => {
+  it('keeps the forced-use live region empty when discard was not taken', async () => {
     mockExec.mockResolvedValue(meldPhaseState);
     renderWithProviders(<ConquianPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'メルドする' })).toBeInTheDocument());
-    expect(screen.queryByTestId('conquian-forced-use')).not.toBeInTheDocument();
+    const liveRegion = screen.getByRole('status');
+    expect(liveRegion).toBeInTheDocument();
+    expect(liveRegion).toBeEmptyDOMElement();
   });
 
   it('renders table melds and reveals CPU cards at round end', async () => {
@@ -438,7 +442,6 @@ describe('ConquianPage', () => {
 
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
-        cpuDifficulty: 1,
         targetWins: 3,
       }),
     );
@@ -450,7 +453,7 @@ describe('ConquianPage', () => {
 
     fireEvent.click(screen.getByText('設定'));
     const selects = screen.getAllByRole('combobox');
-    fireEvent.change(selects[1], { target: { value: '5' } });
+    fireEvent.change(selects[0], { target: { value: '5' } });
 
     mockExec.mockClear();
     mockExec.mockResolvedValue(drawPhaseState);
@@ -459,7 +462,6 @@ describe('ConquianPage', () => {
 
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
-        cpuDifficulty: 1,
         targetWins: 5,
       }),
     );

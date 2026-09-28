@@ -230,6 +230,25 @@ describe('KingPage', () => {
     expect(achieve).toHaveAccessibleName(new RegExp(i18n.t('king:contractType.achieve')));
   });
 
+  it('explains that used contracts are unavailable to keyboard and screen reader users', async () => {
+    const stateWithUsedContract = {
+      ...selectPhaseState,
+      usedContracts: [true, false, false, false, false, false, false],
+    };
+    mockExec.mockResolvedValue(stateWithUsedContract);
+    renderWithProviders(<KingPage />);
+
+    const used = await screen.findByTestId('king-contract-0');
+    const available = screen.getByTestId('king-contract-1');
+    expect(used).toBeDisabled();
+    expect(used).toHaveAccessibleName(new RegExp(i18n.t('king:contractUnavailable')));
+    expect(document.getElementById(used.getAttribute('aria-describedby') ?? '')).toHaveTextContent(
+      i18n.t('king:contractDesc.0'),
+    );
+    expect(available).toBeEnabled();
+    expect(available).not.toHaveAccessibleName(new RegExp(i18n.t('king:contractUnavailable')));
+  });
+
   // **King にはトリック終了で一旦止まるフェーズが無い。**CPU が続けて打つと
   // 直前のトリックは `currentTrick` が置き換わった瞬間に消える (#6487)。
   it('lets the player review the previous trick and who took it', async () => {

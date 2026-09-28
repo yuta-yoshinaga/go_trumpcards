@@ -50,5 +50,10 @@
   "round.fourth": "4th street",
   "round.fifth": "5th street",
   "round.sixth": "6th street",
-  "round.seventh": "7th street"
+  "round.seventh": "7th street",
+  "round.deal": "Deal",
+  "round.betting": "Betting",
+  "round.drawing": "Drawing",
+  "action.betting": "Betting turn",
+  "action.draw": "Draw turn ({{n}})"
 }

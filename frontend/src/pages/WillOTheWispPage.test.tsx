@@ -94,6 +94,44 @@ beforeEach(() => {
 });
 
 describe('WillOTheWispPage', () => {
+  it('keeps an empty tableau target focusable and explains that a source must be selected', async () => {
+    mockSend.mockResolvedValue({ ...playingState, tableau: makeTableau([[], ...playingState.tableau.slice(1)]) });
+    renderWithProviders(<WillOTheWispPage />);
+    const target = await screen.findByTestId('willothewisp-empty-col-0');
+
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const hintId = target.getAttribute('aria-describedby');
+    expect(hintId).toBeTruthy();
+    expect(document.getElementById(hintId ?? '')).toHaveTextContent('先に移動する札を選んでください');
+
+    mockSend.mockClear();
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockSend).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
+  it('moves a selected tableau card to an empty column', async () => {
+    mockSend.mockResolvedValue({ ...playingState, tableau: makeTableau([[], ...playingState.tableau.slice(1)]) });
+    renderWithProviders(<WillOTheWispPage />);
+    const source = await screen.findByTestId('willothewisp-card-1-1');
+    fireEvent.click(source);
+    await waitFor(() => expect(source).toHaveAttribute('aria-pressed', 'true'));
+    const target = screen.getByTestId('willothewisp-empty-col-0');
+    expect(target).not.toHaveAttribute('aria-disabled');
+    expect(target).not.toHaveAttribute('aria-describedby');
+
+    mockSend.mockClear();
+    fireEvent.click(target);
+    await waitFor(() =>
+      expect(mockSend).toHaveBeenCalledWith(
+        'move',
+        { zone: 'tableau', col: 1, cardIndex: 1 },
+        { zone: 'tableau', col: 0 },
+      ),
+    );
+  });
+
   it('renders skeleton when no state', () => {
     mockSend.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<WillOTheWispPage />);
@@ -150,10 +188,27 @@ describe('WillOTheWispPage', () => {
     const dealBtn = (await screen.findAllByRole('button', { name: '配る' }))[0];
     fireEvent.click(dealBtn);
     await waitFor(() => {
-      const warn = screen.getByText('空の列をすべて埋めないと配れません');
+      const warn = screen
+        .getAllByText('空の列をすべて埋めないと配れません')
+        .find((el) => el.getAttribute('role') === 'status');
+      expect(warn).toBeDefined();
       expect(warn).toHaveAttribute('role', 'status');
       expect(warn).toHaveAttribute('aria-live', 'assertive');
     });
+  });
+
+  it('shows the empty-column deal reason beside the stock and describes the stock control', async () => {
+    mockSend.mockResolvedValue({
+      ...playingState,
+      tableau: makeTableau([playingState.tableau[0], [], [], [], [], [], []]),
+    });
+    renderWithProviders(<WillOTheWispPage />);
+
+    const reason = await screen.findByText('空の列をすべて埋めないと配れません');
+    const stockPile = screen.getByTestId('animated-card-back').parentElement;
+    const stock = stockPile?.querySelector('button');
+    expect(reason).toBeVisible();
+    expect(stock).toHaveAttribute('aria-describedby', reason.id);
   });
 
   it('renders stock count', async () => {

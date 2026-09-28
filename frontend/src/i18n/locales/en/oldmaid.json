@@ -18,6 +18,7 @@
   },
   "cardCount": "{{count}} cards",
   "draw": "Draw",
+  "keyboardDrawHint": "{{name}}’s cards are numbered from left to right. Use Tab to focus a position, then press Enter or Space to draw.",
   "drawTarget": "← Target",
   "discardArea": "Discard Area",
   "lastDiscarded": "Recently Discarded",

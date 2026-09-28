@@ -166,6 +166,17 @@ describe('CaribbeanStudPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
     await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'フォールド' }).parentElement).toHaveClass('items-end');
+  });
+
+  it('shows the required play bet next to the call button', async () => {
+    mockApi.mockResolvedValueOnce(betPhaseState).mockResolvedValueOnce(actionPhaseState);
+    renderWithProviders(<CaribbeanStudPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+
+    const callButton = await screen.findByRole('button', { name: 'コール' });
+    expect(callButton.parentElement).toHaveTextContent('プレイベット: 200');
   });
 
   it('shows end phase with player wins', async () => {

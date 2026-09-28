@@ -1,12 +1,22 @@
 package domain
 
-import "testing"
+import (
+	"encoding/json"
+	"testing"
+)
+
+func TestTrucoConfigUnmarshalLegacyDifficulty(t *testing.T) {
+	var cfg TrucoConfig
+	if err := json.Unmarshal([]byte(`{"cd":0,"mt":15}`), &cfg); err != nil {
+		t.Fatalf("Unmarshal legacy config: %v", err)
+	}
+	if cfg.MatchTarget != 15 {
+		t.Errorf("MatchTarget = %d, want 15", cfg.MatchTarget)
+	}
+}
 
 func TestDefaultTrucoConfig(t *testing.T) {
 	c := DefaultTrucoConfig()
-	if c.CpuDifficulty != TrucoCpuDifficultyNormal {
-		t.Errorf("CpuDifficulty = %d, want Normal", c.CpuDifficulty)
-	}
 	if c.MatchTarget != TrucoDefaultMatchTarget {
 		t.Errorf("MatchTarget = %d, want %d", c.MatchTarget, TrucoDefaultMatchTarget)
 	}
@@ -23,7 +33,6 @@ func TestTrucoConfigValidate(t *testing.T) {
 		{"max target", TrucoConfig{MatchTarget: TrucoMaxMatchTarget}, false},
 		{"target too low", TrucoConfig{MatchTarget: 0}, true},
 		{"target too high", TrucoConfig{MatchTarget: TrucoMaxMatchTarget + 1}, true},
-		{"bad difficulty", TrucoConfig{CpuDifficulty: 99, MatchTarget: 15}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

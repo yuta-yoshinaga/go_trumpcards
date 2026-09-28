@@ -17,6 +17,7 @@
   "empty": "Empty",
   "cardSelected": "selected",
   "anyCard": "Any card",
+  "legalDestination": "Legal destination",
   "gameClear": "Game Clear! Moves: {{moveCount}}",
   "gameOver": "Game Over",
   "playing": "Playing",

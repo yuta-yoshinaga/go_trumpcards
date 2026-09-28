@@ -268,6 +268,7 @@ const endState: DramahaResponse = {
 beforeEach(() => {
   mockExec.mockResolvedValue(initState);
   mockUseIsLargeDesktop.mockReturnValue(false);
+  void i18n.changeLanguage('ja');
 });
 
 describe('DramahaPage', () => {
@@ -1606,6 +1607,23 @@ describe('DramahaPage draw round', () => {
     mockExec.mockResolvedValue(drawState);
     renderWithProviders(<DramahaPage />);
     await waitFor(() => expect(screen.getByText('ドロー')).toBeInTheDocument());
+  });
+
+  it('explains how to toggle draw selection with pointer and keyboard', async () => {
+    mockExec.mockResolvedValue(drawState);
+    renderWithProviders(<DramahaPage />);
+    await screen.findByTestId('draw-controls');
+    expect(screen.getByText(/選択中のカードをもう一度選ぶと選択解除できます/)).toBeInTheDocument();
+    expect(screen.getByText(/EnterまたはSpace/)).toBeInTheDocument();
+  });
+
+  it('shows the toggle instructions in English too', async () => {
+    await i18n.changeLanguage('en');
+    mockExec.mockResolvedValue(drawState);
+    renderWithProviders(<DramahaPage />);
+    await screen.findByTestId('draw-controls');
+    expect(screen.getByText(/Select a chosen card again to unselect it/)).toBeInTheDocument();
+    expect(screen.getByText(/press Enter or Space/)).toBeInTheDocument();
   });
 
   it('shows the draw controls and says the draw happens only once', async () => {

@@ -288,6 +288,9 @@ function DoubleKlondikePageContent() {
               onClick={canAct ? clickStock : undefined}
               disabled={!canAct}
               title={t('stock')}
+              aria-label={
+                state.stockCount > 0 ? t('stockDrawAriaLabel', { count: state.stockCount }) : t('stockEmptyAriaLabel')
+              }
               data-testid="stock"
             >
               {state.stockCount}

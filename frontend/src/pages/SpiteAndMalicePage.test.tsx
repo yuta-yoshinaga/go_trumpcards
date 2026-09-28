@@ -123,6 +123,21 @@ describe('SpiteAndMalicePage', () => {
     expect(foundationButtons().every((button) => button.getAttribute('data-playable') === null)).toBe(true);
   });
 
+  it('keeps an unselected foundation focusable and explains how to enable it', async () => {
+    renderWithProviders(<SpiteAndMalicePage />);
+    const foundation = (await screen.findAllByRole('button', { name: /組札|Foundation/ }))[0];
+    expect(foundation).not.toBeDisabled();
+    expect(foundation).toHaveAttribute('aria-disabled', 'true');
+    const hintId = foundation.getAttribute('aria-describedby');
+    expect(hintId).toBeTruthy();
+    expect(document.getElementById(hintId ?? '')).toHaveTextContent('先に移動する札を選んでください');
+
+    mockExec.mockClear();
+    fireEvent.click(foundation);
+    await waitFor(() => expect(foundation).toHaveAttribute('aria-disabled', 'true'));
+    expect(mockExec).not.toHaveBeenCalledWith('move');
+  });
+
   it('prioritizes the hint ring over the playable ring', async () => {
     mockExec.mockResolvedValue({
       ...baseState,
@@ -220,9 +235,10 @@ describe('SpiteAndMalicePage', () => {
     mockExec.mockResolvedValue(baseState);
     renderWithProviders(<SpiteAndMalicePage />);
     const discardBtns = await screen.findAllByRole('button', { name: 'ディスカード' });
-    expect(discardBtns[0]).toHaveAttribute('aria-describedby', 'sam-discard-hint');
+    expect(discardBtns[0].getAttribute('aria-describedby')).toContain('sam-discard-hint');
     // Nothing selected → the shared hint states the requirement and discard is disabled.
-    expect(discardBtns[0]).toBeDisabled();
+    expect(discardBtns[0]).not.toBeDisabled();
+    expect(discardBtns[0]).toHaveAttribute('aria-disabled', 'true');
     expect(screen.getByTestId('sam-discard-hint')).toHaveTextContent('先に手札');
     // Selecting a hand card (♠5) flips the hint to "ready" and enables discard.
     fireEvent.click(screen.getByRole('button', { name: /♠ 5/ }));
@@ -308,6 +324,9 @@ describe('SpiteAndMalicePage', () => {
     renderWithProviders(<SpiteAndMalicePage />);
     await waitFor(() => expect(screen.getByTestId('sam-autocomplete-btn')).toBeInTheDocument());
     expect(screen.getByTestId('sam-autocomplete-btn')).toBeDisabled();
+    expect(screen.getByTestId('sam-autocomplete-hint')).toHaveTextContent(
+      '組札に出せるカードを連続して自動でプレイします。手がなくなったら手動に戻り、ディスカードしてターンを終えてください。',
+    );
   });
 
   it('enables the autocomplete button when canAutoComplete=true and dispatches the command on click', async () => {

@@ -27,6 +27,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { SuecaResponse } from '../types/card';
 import { SuecaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt, suitSymbolAt } from '../utils/cardAlt';
 import { parseSuecaCommand, SUECA_HELP } from '../utils/cli/commands/suecaCommands';
 import { formatSuecaState } from '../utils/cli/formatters/suecaFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -37,8 +38,6 @@ import { hintCheckboxItem } from '../utils/settingsItems';
 /** Card points needed to win a Sueca round (majority of the 120 total). */
 const SUECA_WIN_POINTS = 61;
 
-/** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 unused). */
-const SUIT_SYMBOLS = ['', '♠', '♣', '♥', '♦'] as const;
 /** Suit id → `suitName.*` i18n key (1=♠ .. 4=♦). */
 const SUIT_KEYS = ['', 'spade', 'club', 'heart', 'diamond'] as const;
 
@@ -153,8 +152,11 @@ function SuecaPageContent() {
   const isGameEnd = state.phase === SuecaPhase.GAME_END || state.gameEndFlag;
 
   const canPlay = isPlayPhase && isHumanTurn;
+  // Sueca states always contain one human player, and selection indices come
+  // from that player's hand. Treat violations as invalid game state.
+  const selectedCardNames = selectedCardIndices.map((idx) => cardAlt(humanPlayer!.cards[idx]!));
   const humanTeam = humanIdx % 2;
-  const trumpSymbol = SUIT_SYMBOLS[state.trumpSuit] ?? '?';
+  const trumpSymbol = suitSymbolAt(state.trumpSuit, '');
   // Spoken trump: the suit name (not the ♠♣♥♦ glyph, which SRs read poorly).
   const trumpSuitName = SUIT_KEYS[state.trumpSuit] ? t(`suitName.${SUIT_KEYS[state.trumpSuit]}`) : trumpSymbol;
   const trumpAriaLabel = t('trump', { suit: trumpSuitName });
@@ -423,6 +425,12 @@ function SuecaPageContent() {
             )}
 
             <ErrorAlert message={error} onRetry={retry} />
+
+            <div data-testid="sueca-selection-status" role="status" aria-live="polite" aria-atomic="true">
+              {selectedCardNames.length > 0
+                ? t('selectedCards', { cards: selectedCardNames.join(t('listSeparator')) })
+                : t('noCardSelected')}
+            </div>
 
             {/*
               ライブ領域は**常設**。hint がある間だけ現れる内側の div に付けると、

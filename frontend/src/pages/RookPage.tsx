@@ -205,7 +205,7 @@ function RookPageContent() {
 
   // Bid-turn context: the standing high bid plus who is still in the auction.
   const bidStatus = rookBidStatus(state.players);
-  const passedNames = bidStatus.passed.map((p) => playerName(p.id, p.isHuman)).join(', ');
+  const passedNames = bidStatus.passed.map((p) => playerName(p.id, p.isHuman)).join(t('listSeparator'));
 
   const handleExchange = () => {
     if (selectedCardIndices.length === ROOK_DISCARD_COUNT && trumpChoice !== null) {
@@ -435,7 +435,9 @@ function RookPageContent() {
                       {' · '}
                       {t('bidStatus.remaining', { n: bidStatus.activeBidders })}
                     </div>
-                    {passedNames && <div>{t('bidStatus.passed', { names: passedNames })}</div>}
+                    {passedNames && (
+                      <div>{t('bidStatus.passed', { n: bidStatus.passed.length, names: passedNames })}</div>
+                    )}
                   </div>
                   <label
                     htmlFor="rook-bid"

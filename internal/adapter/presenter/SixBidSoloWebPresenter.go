@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra4
+//go:build !js || !wasm || extra8
 
 package presenter
 
@@ -94,8 +94,7 @@ func (p *SixBidSoloWebPresenter) Output(g interfaces.SixBidSoloGame, lastErr err
 	cfg := g.GetConfig()
 	resObj.TargetHands = cfg.TargetHands
 	resObj.Config = controller.SixBidSoloWebOutputConfig{
-		CpuDifficulty: int(cfg.CpuDifficulty),
-		TargetHands:   cfg.TargetHands,
+		TargetHands: cfg.TargetHands,
 	}
 
 	resObj.Players = p.buildPlayersOutput(g)

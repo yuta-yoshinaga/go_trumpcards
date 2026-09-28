@@ -79,7 +79,9 @@ function BlackJackSwitchPageContent() {
 
   // Defined above the loading early-return so the keyboard hook keeps a stable
   // call order. Double-down is only offered on a fresh two-card hand.
-  const canDoubleDown = isActionPhase && state?.hands[state.currentHandIdx]?.cards.length === 2;
+  const currentHand = state?.hands[state.currentHandIdx];
+  const canDoubleDown =
+    isActionPhase && !!currentHand && currentHand.cards.length === 2 && state.chips >= currentHand.bet;
   const handleBet = useCallback(() => execApi('bet', betAmount), [execApi, betAmount]);
   const handleSwitch = useCallback(() => execApi('switch'), [execApi]);
   const handleKeep = useCallback(() => execApi('keep'), [execApi]);

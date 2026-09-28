@@ -500,9 +500,6 @@ func (cs *CaribbeanDraw) GetChips() int { return cs.chips.GetChips() }
 // SetPhase フェーズ設定（テスト用）
 func (cs *CaribbeanDraw) SetPhase(phase int) { cs.phase = phase }
 
-// TrumpCardsForTest は山札を返す（テスト用）。ドローで引かれる札を仕込むのに使う。
-func (cs *CaribbeanDraw) TrumpCardsForTest() *TrumpCards { return cs.trumpCards }
-
 // SetPlayerHand プレイヤーハンド設定（テスト用）
 func (cs *CaribbeanDraw) SetPlayerHand(cards []*Card) { cs.playerHand = cards }
 

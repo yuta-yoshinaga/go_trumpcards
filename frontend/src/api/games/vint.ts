@@ -5,9 +5,7 @@ import type { VintResponse } from '../../types/card';
 import { gameExec } from '../gameExec';
 
 /** Configuration options for Vint game settings. */
-export interface VintConfigInput {
-  cpuDifficulty?: number;
-}
+export type VintConfigInput = Record<string, never>;
 
 /** Commands the /vint/exec endpoint accepts. */
 export type VintCommand = 'reset' | 'bid' | 'pass' | 'play' | 'next' | 'log';

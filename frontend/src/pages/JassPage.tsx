@@ -384,6 +384,11 @@ function JassPageContent() {
             isMobile={isMobile}
             dataTutorialPrefix="ja"
             validIndices={isHumanTurn ? state.validPlayIndices : undefined}
+            cardStatusFor={
+              isHumanTurn
+                ? (idx) => t(state.validPlayIndices.includes(idx) ? 'cardPlayable' : 'cardNotPlayable')
+                : undefined
+            }
           />
         )}
 

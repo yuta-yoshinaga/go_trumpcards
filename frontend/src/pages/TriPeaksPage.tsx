@@ -455,6 +455,15 @@ function TriPeaksPageContent() {
                 </div>
               )}
             </div>
+            <div data-testid="tp-stock-empty-guidance" role="status" aria-live="polite">
+              {isPlaying && state.stockCount === 0 && (
+                <div className="text-ds-warning text-sm mb-2 text-center">
+                  {playableCells.size > 0
+                    ? t('stockEmptyPlayable', { count: playableCells.size })
+                    : t('stockEmptyNoPlayable')}
+                </div>
+              )}
+            </div>
             <div className="flex justify-center">
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
             </div>

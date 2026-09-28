@@ -1019,14 +1019,9 @@ func (a *AllFours) UnmarshalJSON(data []byte) error {
 	if j.TrumpSuit < AllFoursTrumpUnset || j.TrumpSuit > CardDesignDiamond {
 		return fmt.Errorf("allfours: invalid trump suit: %d", j.TrumpSuit)
 	}
-	for name, idx := range map[string]int{
-		"currentPlayerIdx": j.CurrentPlayerIdx,
-		"leadPlayerIdx":    j.LeadPlayerIdx,
-		"winnerIdx":        j.WinnerIdx,
-		"giftAward":        j.GiftAward,
-	} {
-		if idx < -1 || idx >= AllFoursPlayerCnt {
-			return fmt.Errorf("allfours: invalid %s: %d", name, idx)
+	for _, f := range []namedInt{{"currentPlayerIdx", j.CurrentPlayerIdx}, {"leadPlayerIdx", j.LeadPlayerIdx}, {"winnerIdx", j.WinnerIdx}, {"giftAward", j.GiftAward}} {
+		if f.value < -1 || f.value >= AllFoursPlayerCnt {
+			return fmt.Errorf("allfours: invalid %s: %d", f.name, f.value)
 		}
 	}
 	a.trumpCards = j.TrumpCards

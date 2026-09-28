@@ -309,6 +309,16 @@ func TestBura_SurvivesAKVRoundTrip(t *testing.T) {
 	}
 }
 
+func TestBura_RestoresSnapshotWithLegacyCpuDifficultyField(t *testing.T) {
+	b := NewDefaultBura()
+	b.Reset()
+	data, err := json.Marshal(b)
+	require.NoError(t, err)
+	legacy := strings.Replace(string(data), "\"cf\":{}", "\"cf\":{\"cd\":0}", 1)
+	require.NotEqual(t, string(data), legacy, "snapshot config field not found")
+	require.NoError(t, json.Unmarshal([]byte(legacy), NewDefaultBura()))
+}
+
 // buraDriveOneTrick plays one full trick with whatever the current player
 // holds, leading a single card and answering with a legal response when one
 // exists. It returns false once the game can no longer progress.
@@ -597,15 +607,6 @@ func TestBura_UnmarshalRejectsAndClampsHostileSnapshots(t *testing.T) {
 
 	t.Run("no players", func(t *testing.T) {
 		assert.Error(t, json.Unmarshal([]byte(`{"pl":[]}`), NewDefaultBura()))
-	})
-
-	t.Run("invalid config", func(t *testing.T) {
-		b := NewDefaultBura()
-		b.Reset()
-		data, err := json.Marshal(b)
-		require.NoError(t, err)
-		hostile := replaceJSONNumber(t, string(data), `"cd":0`, `"cd":99`)
-		assert.Error(t, json.Unmarshal([]byte(hostile), NewDefaultBura()))
 	})
 
 	t.Run("out-of-range player indices are clamped, not trusted", func(t *testing.T) {

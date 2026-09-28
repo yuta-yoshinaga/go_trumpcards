@@ -153,6 +153,54 @@ describe('BostonPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 1 }));
   });
 
+  it('selects, plays, and clears cards with keyboard controls on the human play turn', async () => {
+    renderWithProviders(<BostonPage />);
+    await waitFor(() => expect(screen.getByTestId('boston-play-notice')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: '2' });
+    expect(handButtons()[1].className).toContain('ring-2');
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(handButtons()[1].className).not.toContain('ring-2');
+
+    fireEvent.keyDown(document, { key: '2' });
+    fireEvent.keyDown(document, { key: 'Enter' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 1 }));
+  });
+
+  it('does not play a selected card after the server marks it invalid', async () => {
+    const response = makeState();
+    mockExec.mockResolvedValue(response);
+    renderWithProviders(<BostonPage />);
+    await waitFor(() => expect(screen.getByTestId('boston-play-notice')).toBeInTheDocument());
+
+    fireEvent.keyDown(document, { key: '2' });
+    expect(handButtons()[1].className).toContain('ring-2');
+
+    // Simulate a newer server response while preserving the page's old selection.
+    response.validPlays = [0, 2];
+    fireEvent.click(screen.getByRole('checkbox', { name: 'ヒント表示' }));
+
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'Enter' });
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('play', expect.anything());
+  });
+
+  it('does not activate card keyboard controls during another player’s turn', async () => {
+    mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1 }));
+    renderWithProviders(<BostonPage />);
+    await waitFor(() => expect(screen.getByText('あなたの手札')).toBeInTheDocument());
+
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: '1' });
+    fireEvent.keyDown(document, { key: 'Enter' });
+    await flushPendingDispatch();
+    expect(handButtons()[0].className).not.toContain('ring-2');
+    expect(mockExec).not.toHaveBeenCalledWith('play', expect.anything());
+  });
+
   // **追随は強制。**サーバーが出せる札を決め、それ以外は押せない。
   it('disables cards the server did not list as playable', async () => {
     mockExec.mockResolvedValue(makeState({ validPlays: [2] }));

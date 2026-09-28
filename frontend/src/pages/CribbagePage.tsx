@@ -257,6 +257,15 @@ function CribbagePageContent() {
     !loading;
   const [autoGoNoticeVisible, setAutoGoNoticeVisible] = useState(false);
   const [hoveredPegValue, setHoveredPegValue] = useState<number | null>(null);
+  const previousPegCountRef = useRef<number | null>(null);
+  const [pegCountAnnouncement, setPegCountAnnouncement] = useState('');
+  useEffect(() => {
+    if (!state) return;
+    if (previousPegCountRef.current !== null && previousPegCountRef.current !== state.pegCount) {
+      setPegCountAnnouncement(t('pegCountAnnouncement', { count: state.pegCount }));
+    }
+    previousPegCountRef.current = state.pegCount;
+  }, [state, t]);
   // Reset the hover preview whenever the turn / phase rotates or an API call is in
   // flight — the hovered card may have just been removed from the DOM (onPointerLeave
   // doesn't fire in that case) and the preview values would otherwise stay stale.
@@ -552,6 +561,16 @@ function CribbagePageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
+
+            <div
+              className="sr-only"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+              data-testid="cb-peg-count-live"
+            >
+              {pegCountAnnouncement}
+            </div>
 
             <ActionLogSection
               isEndPhase={isGameEnd}

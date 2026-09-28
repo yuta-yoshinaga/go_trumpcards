@@ -1096,7 +1096,8 @@ func cariocaFindSetCandidates(size int, cards []*Card, used []bool) [][]int {
 		byRank[c.GetValue()] = append(byRank[c.GetValue()], i)
 	}
 	var result [][]int
-	for _, idxs := range byRank {
+	for _, rank := range sortedIntKeys(byRank) {
+		idxs := byRank[rank]
 		sort.Ints(idxs)
 		if len(idxs) >= size {
 			for _, combo := range chooseIntCombinations(idxs, size) {
@@ -1138,7 +1139,8 @@ func cariocaFindRunCandidates(size int, cards []*Card, used []bool) [][]int {
 	}
 	var result [][]int
 	seen := make(map[string]bool)
-	for _, byVal := range bySuit {
+	for _, suit := range sortedIntKeys(bySuit) {
+		byVal := bySuit[suit]
 		lookup := func(v int) (int, bool) {
 			if v == 14 {
 				idx, ok := byVal[1] // Ace-high
@@ -1286,7 +1288,8 @@ func cariocaFindExtraMeld(cards []*Card) ([]*Card, bool) {
 		}
 	}
 	// セット: 同ランク 3 枚、または 同ランク 2 枚 + ジョーカー。
-	for _, group := range byRank {
+	for _, rank := range sortedIntKeys(byRank) {
+		group := byRank[rank]
 		if len(group) >= CariocaSetSize {
 			pick := append([]*Card(nil), group[:CariocaSetSize]...)
 			if cariocaIsSet(pick) {
@@ -1295,7 +1298,8 @@ func cariocaFindExtraMeld(cards []*Card) ([]*Card, bool) {
 		}
 	}
 	if joker != nil {
-		for _, group := range byRank {
+		for _, rank := range sortedIntKeys(byRank) {
+			group := byRank[rank]
 			if len(group) >= CariocaSetSize-1 {
 				pick := append([]*Card(nil), group[:CariocaSetSize-1]...)
 				pick = append(pick, joker)
@@ -1306,7 +1310,8 @@ func cariocaFindExtraMeld(cards []*Card) ([]*Card, bool) {
 		}
 	}
 	// ラン: 同スート連続 4 枚、または 3 枚 + ジョーカー。
-	for _, byVal := range bySuit {
+	for _, suit := range sortedIntKeys(bySuit) {
+		byVal := bySuit[suit]
 		if pick, ok := cariocaFindRunInSuit(byVal, CariocaRunSize, joker); ok {
 			return pick, true
 		}

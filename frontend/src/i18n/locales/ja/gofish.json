@@ -31,6 +31,7 @@
     "cpuWin": "ゲーム終了！ CPU {{cpuId}}の勝ち！"
   },
   "deck": "山札: {{count}}枚",
+  "handCount": "手札: {{count}}枚",
   "books": "ブック: {{count}}",
   "knownRanksLabel": "既知の要求済みランク",
   "bookRanksLabel": "完成したブックのランク",

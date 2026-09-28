@@ -26,22 +26,6 @@ import (
 )
 
 func init() {
-	games.RegisterKVGame("anaconda", games.CategoryExtra4,
-		func() usecase.AnacondaInteractorIF {
-			return usecase.NewAnacondaInteractor(domain.NewDefaultAnaconda(), new(presenter.AnacondaWebPresenter))
-		},
-		func(data []byte) (usecase.AnacondaInteractorIF, error) {
-			return usecase.RestoreAnacondaInteractor(data, new(presenter.AnacondaWebPresenter))
-		},
-		controller.NewAnacondaWebControllerWithProvider)
-	games.RegisterKVGame("barbu", games.CategoryExtra4,
-		func() usecase.BarbuInteractorIF {
-			return usecase.NewBarbuInteractor(domain.NewDefaultBarbu(), new(presenter.BarbuWebPresenter))
-		},
-		func(data []byte) (usecase.BarbuInteractorIF, error) {
-			return usecase.RestoreBarbuInteractor(data, new(presenter.BarbuWebPresenter))
-		},
-		controller.NewBarbuWebControllerWithProvider)
 	games.RegisterKVGame("bezique", games.CategoryExtra4,
 		func() usecase.BeziqueInteractorIF {
 			return usecase.NewBeziqueInteractor(domain.NewDefaultBezique(), new(presenter.BeziqueWebPresenter))
@@ -50,14 +34,6 @@ func init() {
 			return usecase.RestoreBeziqueInteractor(data, new(presenter.BeziqueWebPresenter))
 		},
 		controller.NewBeziqueWebControllerWithProvider)
-	games.RegisterKVGame("chemindefer", games.CategoryExtra4,
-		func() usecase.ChemindeFerInteractorIF {
-			return usecase.NewChemindeFerInteractor(domain.NewDefaultChemindeFer(), new(presenter.ChemindeFerWebPresenter))
-		},
-		func(data []byte) (usecase.ChemindeFerInteractorIF, error) {
-			return usecase.RestoreChemindeFerInteractor(data, new(presenter.ChemindeFerWebPresenter))
-		},
-		controller.NewChemindeFerWebControllerWithProvider)
 	games.RegisterKVGame("dragontiger", games.CategoryExtra4,
 		func() usecase.DragonTigerInteractorIF {
 			return usecase.NewDragonTigerInteractor(domain.NewDefaultDragonTiger(), new(presenter.DragonTigerWebPresenter))
@@ -130,22 +106,6 @@ func init() {
 			return usecase.RestoreMendikotInteractor(data, new(presenter.MendikotWebPresenter))
 		},
 		controller.NewMendikotWebControllerWithProvider)
-	games.RegisterKVGame("ombre", games.CategoryExtra4,
-		func() usecase.OmbreInteractorIF {
-			return usecase.NewOmbreInteractor(domain.NewDefaultOmbre(), new(presenter.OmbreWebPresenter))
-		},
-		func(data []byte) (usecase.OmbreInteractorIF, error) {
-			return usecase.RestoreOmbreInteractor(data, new(presenter.OmbreWebPresenter))
-		},
-		controller.NewOmbreWebControllerWithProvider)
-	games.RegisterKVGame("piquet", games.CategoryExtra4,
-		func() usecase.PiquetInteractorIF {
-			return usecase.NewPiquetInteractor(domain.NewDefaultPiquet(), new(presenter.PiquetWebPresenter))
-		},
-		func(data []byte) (usecase.PiquetInteractorIF, error) {
-			return usecase.RestorePiquetInteractor(data, new(presenter.PiquetWebPresenter))
-		},
-		controller.NewPiquetWebControllerWithProvider)
 	games.RegisterKVGame("russianbank", games.CategoryExtra4,
 		func() usecase.RussianBankInteractorIF {
 			return usecase.NewRussianBankInteractor(domain.NewDefaultRussianBank(), new(presenter.RussianBankWebPresenter))
@@ -178,22 +138,6 @@ func init() {
 			return usecase.RestoreSergeantMajorInteractor(data, new(presenter.SergeantMajorWebPresenter))
 		},
 		controller.NewSergeantMajorWebControllerWithProvider)
-	games.RegisterKVGame("shengji", games.CategoryExtra4,
-		func() usecase.ShengJiInteractorIF {
-			return usecase.NewShengJiInteractor(domain.NewDefaultShengJi(), new(presenter.ShengJiWebPresenter))
-		},
-		func(data []byte) (usecase.ShengJiInteractorIF, error) {
-			return usecase.RestoreShengJiInteractor(data, new(presenter.ShengJiWebPresenter))
-		},
-		controller.NewShengJiWebControllerWithProvider)
-	games.RegisterKVGame("sixbidsolo", games.CategoryExtra4,
-		func() usecase.SixBidSoloInteractorIF {
-			return usecase.NewSixBidSoloInteractor(domain.NewDefaultSixBidSolo(), new(presenter.SixBidSoloWebPresenter))
-		},
-		func(data []byte) (usecase.SixBidSoloInteractorIF, error) {
-			return usecase.RestoreSixBidSoloInteractor(data, new(presenter.SixBidSoloWebPresenter))
-		},
-		controller.NewSixBidSoloWebControllerWithProvider)
 	games.RegisterKVGame("trenteetquarante", games.CategoryExtra4,
 		func() usecase.TrenteEtQuaranteInteractorIF {
 			return usecase.NewTrenteEtQuaranteInteractor(domain.NewDefaultTrenteEtQuarante(), new(presenter.TrenteEtQuaranteWebPresenter))

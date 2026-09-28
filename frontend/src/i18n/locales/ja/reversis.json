@@ -26,6 +26,9 @@
     "playAriaWithPoints": "{{card}}（{{points}}点）を出す"
   },
   "result": {
+    "penaltyBreakdown": "ラウンド失点の内訳",
+    "normalPenalty": "通常 {{points}} 点",
+    "specialPenalty": "特殊札追加 {{points}} 点",
     "youWin": "あなたの勝ち！ {{chips}}チップ",
     "cpuWin": "CPU{{idx}} の勝ち。 {{chips}}チップ",
     "tie": "同点で決着つかず。"

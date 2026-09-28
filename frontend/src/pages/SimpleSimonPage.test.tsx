@@ -51,6 +51,21 @@ describe('SimpleSimonPage', () => {
     renderWithProviders(<SimpleSimonPage />);
     await waitFor(() => expect(screen.getByTestId('column-0')).toBeInTheDocument());
     expect(screen.getByTestId('column-9')).toBeInTheDocument();
+    for (let col = 0; col < 10; col++) {
+      expect(screen.getByTestId(`column-label-${col}`)).toHaveTextContent(`列${col + 1}`);
+    }
+    expect(screen.getByTestId('column-label-0')).toHaveTextContent('列1');
+    expect(screen.getByTestId('column-label-9')).toHaveTextContent('列10');
+  });
+
+  it('marks the selected source and destination columns in their numbered headings', async () => {
+    renderWithProviders(<SimpleSimonPage />);
+    fireEvent.click(await screen.findByTestId('card-1-0'));
+
+    expect(screen.getByTestId('column-label-1')).toHaveTextContent('選択元');
+    expect(screen.getByTestId('column-label-0')).toHaveTextContent('移動先候補');
+    expect(screen.getByTestId('column-label-1')).toHaveClass('ring-ds-warning');
+    expect(screen.getByTestId('column-label-0')).toHaveClass('ring-ds-success');
   });
 
   it('selects a card then moves the run to another column', async () => {

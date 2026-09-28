@@ -125,7 +125,7 @@ bun run build && bun run check && bun run test
 type or test covers (design tokens, discover blurbs, message codes, hint coverage, markdown
 tables, mermaid diagrams, design-doc identifiers, dependency licences, trademark terms,
 asset provenance, …). The chain in `package.json`'s `check` script is the list -- read it
-rather than a number written here. This sentence said "seventeen" while the chain held 26.
+rather than a number written here.
 
 **Every guard that reports a discovered count must assert a floor under it.** A guard walks
 something and then reports on what it found; when the walk breaks, it finds nothing, nothing

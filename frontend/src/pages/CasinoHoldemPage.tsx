@@ -135,6 +135,9 @@ function CasinoHoldemPageContent() {
   const anteInvalid = Number.isNaN(anteAmount) || anteAmount < 10 || anteAmount % 10 !== 0;
   const bonusInvalid = Number.isNaN(bonusAmount) || bonusAmount < 0 || bonusAmount % 10 !== 0;
   const betInvalid = anteInvalid || bonusInvalid || anteAmount + bonusAmount > state.chips;
+  const callAmount = anteAmount * 2;
+  const totalChipsNeeded = anteAmount + bonusAmount + callAmount;
+  const chipShortfall = Math.max(0, totalChipsNeeded - state.chips);
 
   const phaseName = isBetPhase ? t('phase.bet') : isFlopPhase ? t('phase.flop') : t('phase.end');
 
@@ -357,6 +360,16 @@ function CasinoHoldemPageContent() {
                   invalid={bonusInvalid}
                   describedBy={betInvalid ? 'casinoholdem-bet-error' : undefined}
                 />
+                <div
+                  data-testid="ch-bet-total-preview"
+                  role="status"
+                  aria-live="polite"
+                  aria-atomic="true"
+                  className={`text-sm text-center ${chipShortfall > 0 ? 'text-ds-error font-bold' : 'text-ds-text-primary'}`}
+                >
+                  <p>{t('betPreview.required', { amount: totalChipsNeeded })}</p>
+                  {chipShortfall > 0 && <p>{t('betPreview.shortfall', { amount: chipShortfall })}</p>}
+                </div>
                 {betInvalid && (
                   <p id="casinoholdem-bet-error" role="alert" className="text-ds-error text-xs">
                     {t('betError')}

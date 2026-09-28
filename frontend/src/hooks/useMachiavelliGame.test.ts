@@ -52,7 +52,7 @@ const defaultState: MachiavelliResponse = {
   winnerIdx: -1,
   roundWinnerIdx: -1,
   message: '',
-  config: { playerCount: 4, cpuDifficulty: 1, targetRounds: 3 },
+  config: { playerCount: 4, targetRounds: 3 },
 };
 
 beforeEach(() => {
@@ -65,7 +65,6 @@ describe('useMachiavelliGame', () => {
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('reset', undefined, {
         playerCount: 4,
-        cpuDifficulty: 1,
         targetRounds: 3,
       }),
     );

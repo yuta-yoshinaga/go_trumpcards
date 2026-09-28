@@ -92,6 +92,12 @@ beforeEach(() => {
 });
 
 describe('CourtPiecePage', () => {
+  it('shows the translated no-trump label before a trump is declared', async () => {
+    mockExec.mockResolvedValue(makeCourtPieceState({ trumpSuit: 0 }));
+    renderWithProviders(<CourtPiecePage />);
+    expect(await screen.findByText('切り札: 未宣言')).toBeInTheDocument();
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<CourtPiecePage />);
@@ -318,6 +324,22 @@ describe('CourtPiecePage', () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<CourtPiecePage />);
     await waitFor(() => expect(screen.getByText('ゲーム終了！ あなたのチームの勝ち！')).toBeInTheDocument());
+  });
+
+  it('highlights the winning team score only after game end', async () => {
+    mockExec.mockResolvedValue({ ...gameEndState, winnerTeam: 1 });
+    renderWithProviders(<CourtPiecePage />);
+    await waitFor(() => expect(screen.getByTestId('cp-team-score-1')).toHaveClass('text-ds-accent'));
+    expect(screen.getByTestId('cp-team-score-1')).toHaveTextContent('勝者');
+    expect(screen.getByTestId('cp-team-score-0')).not.toHaveClass('text-ds-accent');
+  });
+
+  it('keeps both team scores unhighlighted during play', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<CourtPiecePage />);
+    await waitFor(() => expect(screen.getByTestId('cp-team-score-1')).toHaveTextContent('チームB: 0点'));
+    expect(screen.getByTestId('cp-team-score-1')).not.toHaveClass('text-ds-accent');
+    expect(screen.getByTestId('cp-team-score-0')).not.toHaveClass('text-ds-accent');
   });
 
   // **押していない人にヒントを見せない。**#4483 以降 `Output()` が毎回

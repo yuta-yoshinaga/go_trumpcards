@@ -1,4 +1,4 @@
-//go:build !js || !wasm || solo
+//go:build !js || !wasm || extra9
 
 // Package domain provides core game domain models.
 package domain

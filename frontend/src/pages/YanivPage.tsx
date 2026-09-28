@@ -298,7 +298,11 @@ function YanivPageContent() {
                             onClick={() => active && handleDrawPickup(i === 0 ? 0 : 1)}
                             disabled={!active || loading}
                             aria-disabled={blocked || undefined}
-                            aria-label={active ? t('pickup.endLabel') : undefined}
+                            aria-label={
+                              active
+                                ? t('pickup.endLabel', { card: cardAlt(c), position: i + 1 })
+                                : t('pickup.position', { card: cardAlt(c), position: i + 1 })
+                            }
                             className={
                               active
                                 ? 'rounded ring-2 ring-ds-info cursor-pointer hover:opacity-90'

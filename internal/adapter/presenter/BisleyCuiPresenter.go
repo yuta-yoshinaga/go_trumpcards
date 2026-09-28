@@ -30,6 +30,7 @@ func bisleyFoundationRow(b *strings.Builder, header string, piles [domain.Bisley
 			b.WriteString(" | ")
 		}
 		pile := piles[i]
+		fmt.Fprintf(b, "[%d]", i)
 		if len(pile) == 0 {
 			b.WriteString(i18n.T("cuiEmptyCol"))
 		} else {

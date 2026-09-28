@@ -1,4 +1,4 @@
-//go:build !js || !wasm || casino
+//go:build !js || !wasm || extra8 || casino
 
 package domain
 
@@ -87,14 +87,15 @@ type FreeBetBlackjack struct {
 	player *FreeBetBlackjackPlayer
 	config FreeBetBlackjackConfig
 
-	phase      FreeBetPhase
-	hands      []*BlackJackHand
-	freeBets   []int
-	results    []FreeBetResult
-	activeHand int
-	dealerHand *BlackJackHand
-	anteBet    int
-	payout     int
+	phase       FreeBetPhase
+	hands       []*BlackJackHand
+	freeBets    []int
+	results     []FreeBetResult
+	handPayouts []int
+	activeHand  int
+	dealerHand  *BlackJackHand
+	anteBet     int
+	payout      int
 	// dealerPushed22 はディーラーが 22 でバストしたか (表示用)。
 	dealerPushed22 bool
 	roundNumber    int
@@ -136,6 +137,7 @@ func (g *FreeBetBlackjack) startRound() {
 	g.hands = nil
 	g.freeBets = nil
 	g.results = nil
+	g.handPayouts = nil
 	g.activeHand = 0
 	g.dealerHand = nil
 	g.anteBet = 0
@@ -199,6 +201,7 @@ func (g *FreeBetBlackjack) PlaceBet(ante int) error {
 	g.hands = []*BlackJackHand{hand}
 	g.freeBets = []int{0}
 	g.results = []FreeBetResult{FreeBetResultNone}
+	g.handPayouts = []int{0}
 
 	g.dealerHand = NewBlackJackHand()
 	g.dealerHand.AddCard(g.shoe.DrawCard())
@@ -380,6 +383,7 @@ func (g *FreeBetBlackjack) insertAt(idx int, h *BlackJackHand, free int, r FreeB
 	g.freeBets[idx] = free
 
 	g.results = append(g.results, FreeBetResultNone)
+	g.handPayouts = append(g.handPayouts, 0)
 	copy(g.results[idx+1:], g.results[idx:])
 	g.results[idx] = r
 }
@@ -426,6 +430,7 @@ func (g *FreeBetBlackjack) settle() {
 	for i, h := range g.hands {
 		r, ret := g.settleHand(h, g.freeBets[i], dealerScore, dealerBJ)
 		g.results[i] = r
+		g.handPayouts[i] = ret
 		total += ret
 	}
 	g.payout = total
@@ -601,6 +606,9 @@ func (g *FreeBetBlackjack) GetResults() []FreeBetResult { return g.results }
 // GetPayout はこのラウンドで戻ってきた総額を返す。
 func (g *FreeBetBlackjack) GetPayout() int { return g.payout }
 
+// GetHandPayouts は手札ごとの払い戻し (賭け金の返却を含む) を返す。
+func (g *FreeBetBlackjack) GetHandPayouts() []int { return g.handPayouts }
+
 // GetChips は保有チップ数を返す。
 func (g *FreeBetBlackjack) GetChips() int { return g.player.GetChips() }
 
@@ -639,6 +647,7 @@ type freeBetJSON struct {
 	Hands          []*BlackJackHand        `json:"hd"`
 	FreeBets       []int                   `json:"fb"`
 	Results        []int                   `json:"rs"`
+	HandPayouts    []int                   `json:"hp,omitempty"`
 	ActiveHand     int                     `json:"ah"`
 	DealerHand     *BlackJackHand          `json:"dh"`
 	AnteBet        int                     `json:"an"`
@@ -658,7 +667,7 @@ func (g *FreeBetBlackjack) MarshalJSON() ([]byte, error) {
 	}
 	return json.Marshal(freeBetJSON{
 		Shoe: g.shoe, Player: g.player, Config: g.config,
-		Phase: int(g.phase), Hands: g.hands, FreeBets: g.freeBets, Results: results,
+		Phase: int(g.phase), Hands: g.hands, FreeBets: g.freeBets, Results: results, HandPayouts: g.handPayouts,
 		ActiveHand: g.activeHand, DealerHand: g.dealerHand, AnteBet: g.anteBet,
 		Payout: g.payout, DealerPushed22: g.dealerPushed22,
 		RoundNumber: g.roundNumber, GameEndFlag: g.gameEndFlag,
@@ -695,6 +704,10 @@ func (g *FreeBetBlackjack) UnmarshalJSON(data []byte) error {
 	g.results = make([]FreeBetResult, 0, len(j.Results))
 	for _, r := range j.Results {
 		g.results = append(g.results, FreeBetResult(r))
+	}
+	g.handPayouts = j.HandPayouts
+	if len(g.handPayouts) == 0 && len(g.hands) > 0 {
+		g.handPayouts = make([]int, len(g.hands))
 	}
 	g.activeHand = j.ActiveHand
 	g.dealerHand = j.DealerHand

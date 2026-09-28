@@ -21,7 +21,6 @@ export interface ChinchonMeld {
 
 /** Chinchón game configuration. */
 export interface ChinchonConfig {
-  cpuDifficulty: number;
   playerCount: number;
   knockThreshold: number;
   eliminationLimit: number;

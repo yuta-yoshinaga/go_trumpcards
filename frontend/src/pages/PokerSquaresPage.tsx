@@ -186,7 +186,7 @@ function PokerSquaresPageContent() {
       if (delta !== 0) {
         parts.push(
           t('previewRowAnnounce', {
-            row: crossHover.row + 1,
+            row: crossHover.row,
             hand: t(`hand.${pokerHandKey(preview.row.rank)}`),
             delta,
           }),
@@ -198,7 +198,7 @@ function PokerSquaresPageContent() {
       if (delta !== 0) {
         parts.push(
           t('previewColAnnounce', {
-            col: crossHover.col + 1,
+            col: crossHover.col,
             hand: t(`hand.${pokerHandKey(preview.col.rank)}`),
             delta,
           }),
@@ -210,7 +210,7 @@ function PokerSquaresPageContent() {
     if (preview?.rowPartial != null) {
       parts.push(
         t('previewRowPartialAnnounce', {
-          row: crossHover.row + 1,
+          row: crossHover.row,
           hand: t(`hand.${pokerHandKey(preview.rowPartial)}`),
         }),
       );
@@ -218,7 +218,7 @@ function PokerSquaresPageContent() {
     if (preview?.colPartial != null) {
       parts.push(
         t('previewColPartialAnnounce', {
-          col: crossHover.col + 1,
+          col: crossHover.col,
           hand: t(`hand.${pokerHandKey(preview.colPartial)}`),
         }),
       );
@@ -334,7 +334,13 @@ function PokerSquaresPageContent() {
                                 data-cross-hover={inCross ? 'true' : undefined}
                                 data-armed={isArmed ? 'true' : undefined}
                                 aria-label={
-                                  cell.card ? cardAlt(cell.card) : `${t('label.empty')} ${rowIdx + 1}-${colIdx + 1}`
+                                  cell.card
+                                    ? t('label.cellCardAria', {
+                                        card: cardAlt(cell.card),
+                                        row: rowIdx,
+                                        col: colIdx,
+                                      })
+                                    : t('label.cellEmptyAria', { row: rowIdx, col: colIdx })
                                 }
                                 onPointerDown={(event) => {
                                   pointerTypeRef.current = event.pointerType;

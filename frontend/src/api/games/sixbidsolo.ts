@@ -6,7 +6,6 @@ import { gameExec } from '../gameExec';
 
 /** Configuration options for Six-Bid Solo game settings. */
 export interface SixBidSoloConfigInput {
-  cpuDifficulty?: number;
   /** Hands in a game. */
   targetHands?: number;
 }

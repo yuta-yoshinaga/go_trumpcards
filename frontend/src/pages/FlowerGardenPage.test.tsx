@@ -80,6 +80,22 @@ describe('FlowerGardenPage', () => {
     expect(screen.getByText(/手数: 3/)).toBeInTheDocument();
   });
 
+  it('keeps move targets focusable and explains that a source must be selected first', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<FlowerGardenPage />);
+    const target = await screen.findByRole('button', { name: '♠ 組札 1枚' });
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const hintId = target.getAttribute('aria-describedby');
+    expect(hintId).toBeTruthy();
+    expect(document.getElementById(hintId ?? '')).toHaveTextContent('先に移動する札を選んでください');
+
+    mockExec.mockClear();
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('renders 4 foundation suits', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<FlowerGardenPage />);
@@ -219,6 +235,14 @@ describe('FlowerGardenPage', () => {
     // the number alone, so no slot is a nameless blank to a screen reader.
     await waitFor(() => expect(screen.getAllByLabelText(/リザーブ枠 \d+/).length).toBeGreaterThan(0));
     expect(screen.getAllByLabelText(/空のリザーブ枠 \d+/).length).toBeGreaterThan(0);
+  });
+
+  it('explains that only reserve slots containing cards can be selected', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<FlowerGardenPage />);
+    expect(await screen.findByText('カードのある枠を選択できます')).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: /リザーブ枠/ }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('img', { name: /空のリザーブ枠 \d+/ }).length).toBeGreaterThan(0);
   });
 
   // #5599: 「スートを問わない」という他のソリティアと違う規則が、初回だけ出る

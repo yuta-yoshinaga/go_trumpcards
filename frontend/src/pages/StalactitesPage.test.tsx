@@ -79,6 +79,28 @@ beforeEach(() => {
 });
 
 describe('StalactitesPage', () => {
+  it('keeps an unselected empty tableau target focusable and explains the required source', async () => {
+    renderWithProviders(<StalactitesPage />);
+    const btn = await screen.findByTestId('fc-empty-col-2');
+    expect(btn).not.toBeDisabled();
+    expect(btn).toHaveAttribute('aria-disabled', 'true');
+    const hint = document.getElementById(btn.getAttribute('aria-describedby') ?? '');
+    expect(hint).toHaveTextContent('先に移動する札を選んでください');
+    mockExec.mockClear();
+    fireEvent.click(btn);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
+  it('explains both bulk-move limits using the current empty cells and columns', async () => {
+    renderWithProviders(<StalactitesPage />);
+    const limit = await screen.findByTestId('fc-supermove-limit');
+    expect(limit).toHaveTextContent('一括移動上限: 320枚');
+    expect(limit).toHaveTextContent('空きセル4・空き列6');
+    expect(limit).toHaveTextContent('空き列へは160枚');
+    expect(limit).toHaveTextContent('空きセル4・経由できる空き列5');
+  });
+
   it('shows the persistent double-click foundation hint', async () => {
     renderWithProviders(<StalactitesPage />);
     expect(await screen.findByTestId('st-doubleclick-hint')).toHaveTextContent('ダブルクリック');
@@ -343,9 +365,25 @@ describe('StalactitesPage', () => {
     mockExec.mockResolvedValue(playingState);
     const aButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === 'A');
     if (aButtons.length > 0) {
+      expect(aButtons[0]).not.toHaveAttribute('aria-disabled');
+      expect(aButtons[0]).not.toHaveAttribute('aria-describedby');
       fireEvent.click(aButtons[0]);
       await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', expect.any(Object), expect.any(Object)));
     }
+  });
+
+  it('moves a selected tableau card to a filled foundation', async () => {
+    mockExec.mockResolvedValue(withFoundationState);
+    renderWithProviders(<StalactitesPage />);
+    const source = (await screen.findByAltText('♠ K')).closest('button') as HTMLButtonElement;
+    fireEvent.click(source);
+    await waitFor(() => expect(source.className).toContain('ring-2'));
+    const target = screen.getByRole('button', { name: '♠ 組札 (1枚)' });
+    expect(target).not.toHaveAttribute('aria-disabled');
+    expect(target).not.toHaveAttribute('aria-describedby');
+    mockExec.mockClear();
+    fireEvent.click(target);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', expect.any(Object), expect.any(Object)));
   });
 
   it('target selection via handleSelectTarget on empty stalactites click when source selected', async () => {
@@ -364,6 +402,8 @@ describe('StalactitesPage', () => {
     const emptyButtons = screen.getAllByText('空');
     if (emptyButtons.length > 0) {
       const emptyFcButton = emptyButtons[0].closest('button') as HTMLButtonElement;
+      expect(emptyFcButton).not.toHaveAttribute('aria-disabled');
+      expect(emptyFcButton).not.toHaveAttribute('aria-describedby');
       fireEvent.click(emptyFcButton);
       await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', expect.any(Object), expect.any(Object)));
     }
@@ -384,6 +424,8 @@ describe('StalactitesPage', () => {
     mockExec.mockResolvedValue(playingState);
     const kButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === 'K');
     if (kButtons.length > 0) {
+      expect(kButtons[0]).not.toHaveAttribute('aria-disabled');
+      expect(kButtons[0]).not.toHaveAttribute('aria-describedby');
       fireEvent.click(kButtons[0]);
       await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', expect.any(Object), expect.any(Object)));
     }
@@ -760,36 +802,39 @@ describe('StalactitesPage', () => {
     await waitFor(() => expect(cardButton).toHaveAttribute('aria-pressed', 'true'));
   });
 
-  // --- Empty targets disabled without source ---
+  // --- Empty targets stay focusable without source ---
 
-  it('foundation disabled when no source selected', async () => {
+  it('foundation targets are aria-disabled when no source selected', async () => {
     renderWithProviders(<StalactitesPage />);
     await waitFor(() => expect(screen.getByText('♠')).toBeInTheDocument());
 
     const aButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === 'A');
     for (const btn of aButtons) {
-      expect(btn).toBeDisabled();
+      expect(btn).not.toBeDisabled();
+      expect(btn).toHaveAttribute('aria-disabled', 'true');
     }
   });
 
-  it('empty tableau column disabled when no source selected', async () => {
+  it('empty tableau columns are aria-disabled when no source selected', async () => {
     renderWithProviders(<StalactitesPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
     const kButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === 'K');
     for (const btn of kButtons) {
-      expect(btn).toBeDisabled();
+      expect(btn).not.toBeDisabled();
+      expect(btn).toHaveAttribute('aria-disabled', 'true');
     }
   });
 
-  it('empty stalactites disabled when no source selected', async () => {
+  it('empty stalactites are aria-disabled when no source selected', async () => {
     renderWithProviders(<StalactitesPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
     const emptyButtons = screen.getAllByText('空');
     for (const btn of emptyButtons) {
       const button = btn.closest('button') as HTMLButtonElement;
-      expect(button).toBeDisabled();
+      expect(button).not.toBeDisabled();
+      expect(button).toHaveAttribute('aria-disabled', 'true');
     }
   });
 

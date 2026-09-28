@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, TIMEOUT_GAME_LOOP, TIMEOUT_TRANSITION, waitForLoaded } from './helpers';
+import { gameButton, navigateTo, TIMEOUT_GAME_LOOP, TIMEOUT_TRANSITION, waitForLoaded } from './helpers';
 
 test.describe('Quadrille E2E', () => {
   test('bids, calls a king, and plays through the phase transitions', async ({ page }) => {
@@ -15,8 +15,8 @@ test.describe('Quadrille E2E', () => {
     // 王呼びの行はどのフェーズでも出る (未指名 / 伏せ / 公開 / 単独)。
     await expect(page.getByTestId('quadrille-king-line')).toBeVisible({ timeout: TIMEOUT_TRANSITION });
 
-    const soloButton = page.getByRole('button', { name: 'ソロ' });
-    const passButton = page.getByRole('button', { name: 'パス' });
+    const soloButton = gameButton(page, 'ソロ');
+    const passButton = gameButton(page, 'パス');
     const kingCall = page.getByTestId('quadrille-king-call');
     const playButton = page.getByRole('button', { name: '出す' });
     const nextTrick = page.getByRole('button', { name: '次のトリック' });
@@ -51,7 +51,7 @@ test.describe('Quadrille E2E', () => {
 
       if (await soloButton.isVisible()) {
         await soloButton.click();
-        const spade = page.getByRole('button', { name: 'スペード' });
+        const spade = gameButton(page, 'スペード');
         if (await spade.isVisible()) {
           await spade.click();
         }

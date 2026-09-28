@@ -209,6 +209,7 @@ type openAPIBody struct {
 
 type openAPISchema struct {
 	Ref                  string                    `yaml:"$ref"`
+	Enum                 []any                     `yaml:"enum"`
 	Properties           map[string]*openAPISchema `yaml:"properties"`
 	Items                *openAPISchema            `yaml:"items"`
 	AllOf                []*openAPISchema          `yaml:"allOf"`

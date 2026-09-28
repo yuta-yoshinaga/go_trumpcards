@@ -330,7 +330,11 @@ function CanfieldPageContent() {
                   onClick={handleDraw}
                   disabled={!isPlaying || loading}
                   className="rounded border border-white/30"
-                  aria-label={t('stock')}
+                  aria-label={
+                    state.stockCount > 0
+                      ? t('stockCountAriaLabel', { count: state.stockCount })
+                      : t('stockEmptyAriaLabel')
+                  }
                   style={{ width: cardWidth, height: cardHeight }}
                 >
                   {state.stockCount > 0 ? (
@@ -378,6 +382,11 @@ function CanfieldPageContent() {
                   handleDragEnd={dnd.handleDragEnd}
                   isDragSource={dnd.isDragSource({ zone: 'reserve' })}
                   isHintSource={!!isHintFromReserve}
+                  ariaLabel={
+                    topReserve
+                      ? t('reserveCountAriaLabel', { card: cardAlt(topReserve), count: state.reserve.length })
+                      : t('reserveEmptyAriaLabel')
+                  }
                 />
                 <span className="mt-1 text-xs text-ds-text-muted">
                   {t('reserve')}: {state.reserve.length}
@@ -639,6 +648,7 @@ interface ReserveStackProps {
   handleDragEnd: () => void;
   isDragSource: boolean;
   isHintSource: boolean;
+  ariaLabel: string;
 }
 
 /** Reserve pile with visible stack-edge layers behind the top card.
@@ -655,6 +665,7 @@ function ReserveStack({
   handleDragEnd,
   isDragSource,
   isHintSource,
+  ariaLabel,
 }: ReserveStackProps) {
   const layers = Math.max(0, Math.min(count - 1, RESERVE_STACK_MAX_LAYERS));
   // Container is sized for the maximum stack so the top card sits at a
@@ -685,6 +696,7 @@ function ReserveStack({
         {topCard ? (
           <button
             type="button"
+            aria-label={ariaLabel}
             draggable={isPlaying && !loading}
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
@@ -694,6 +706,8 @@ function ReserveStack({
           </button>
         ) : (
           <div
+            role="img"
+            aria-label={ariaLabel}
             className="rounded border border-dashed border-white/30"
             style={{ width: cardWidth, height: cardHeight }}
           />

@@ -16,6 +16,10 @@
   "round": "Round {{n}}",
   "trick": "Trick {{n}}",
   "handSize": "Hand {{n}}",
+  "playerHandCount": {
+    "current": "Hand {{count}}",
+    "next": "Next round {{count}}"
+  },
   "trump": "Trump {{suit}}",
   "trumpSelectPrompt": "You won the round. Choose the trump suit for the next round:",
   "trumpSelectSuit": "Set trump to {{suit}}",

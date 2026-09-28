@@ -30,6 +30,12 @@ func (cp *SpeculationWebPresenter) Output(c interfaces.SpeculationGame, lastErr 
 	resObj.RoundNo = c.GetRoundNo()
 	resObj.WinnerSeat = c.GetWinnerSeat()
 	resObj.GameEndFlag = c.GetGameEndFlag()
+	if trade := c.GetLastTrade(); trade != nil {
+		resObj.LastTrade = &controller.SpeculationWebOutputTrade{
+			BuyerSeat: trade.BuyerSeat, SellerSeat: trade.SellerSeat,
+			Price: trade.Price, Card: cardToOutput(trade.Card),
+		}
+	}
 
 	cfg := c.GetConfig()
 	resObj.Config = &controller.SpeculationWebOutCfg{

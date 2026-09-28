@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useId, useMemo, useState } from 'react';
 import { type RussianSolitaireMoveZone, russianSolitaireApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -98,6 +98,7 @@ function formatRussianSolitaireState(state: RussianSolitaireResponse): string {
 export const RussianSolitairePage = withTutorial(RussianSolitairePageContent, 'russiansolitaire', RS_TUTORIAL_STEPS);
 /** Inner content of the Russian Solitaire page. */
 function RussianSolitairePageContent() {
+  const selectSourceHintId = useId();
   const {
     t,
     tc,
@@ -339,6 +340,9 @@ function RussianSolitairePageContent() {
           <LandscapeBanner message={t('landscapeBanner')} />
 
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
+            <span id={selectSourceHintId} className="sr-only">
+              {tc('label.selectSourceFirst')}
+            </span>
             {/* Foundation row */}
             <div className="flex gap-1 sm:gap-2 mb-3 items-start justify-center" data-tutorial="rs-foundation">
               {state.foundation.map((pile, i) => {
@@ -358,7 +362,9 @@ function RussianSolitairePageContent() {
                         isTarget ? 'hover:ring-2 hover:ring-ds-warning cursor-pointer' : ''
                       }`}
                       onClick={() => isTarget && handleSelectTarget('foundation', i)}
-                      disabled={!isPlaying || !isTarget}
+                      disabled={!isPlaying}
+                      aria-disabled={!isTarget || undefined}
+                      aria-describedby={!isTarget ? selectSourceHintId : undefined}
                       aria-label={
                         topCard
                           ? t('foundationAriaLabel', {
@@ -421,7 +427,9 @@ function RussianSolitairePageContent() {
                         }`}
                         style={{ width: rs.cw, height: rs.ch }}
                         onClick={() => selectedSource && handleSelectTarget('tableau', colIdx)}
-                        disabled={!isPlaying || !selectedSource}
+                        disabled={!isPlaying}
+                        aria-disabled={!selectedSource || undefined}
+                        aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                         aria-label={`${t('empty')} ${t('tableau')} ${colIdx}`}
                       >
                         {t('empty')}

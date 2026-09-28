@@ -36,7 +36,7 @@ function base({
     isHumanTurn: true,
     handCaptures: [[], []],
     message: '',
-    config: { cpuDifficulty: 1, targetScore: 21 },
+    config: { targetScore: 21 },
     ...overrides,
   } as EscobaResponse;
 }

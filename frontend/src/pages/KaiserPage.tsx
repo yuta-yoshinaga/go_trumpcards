@@ -341,6 +341,7 @@ function KaiserPageContent() {
                       key={`hand-${c.design}-${c.value}-${i}`}
                       type="button"
                       data-hint-action="play"
+                      aria-pressed={selected.includes(i)}
                       onClick={() => toggleSelect(i)}
                       disabled={loading || blockedByDiscard || blockedByPlay}
                       className={`rounded ${selected.includes(i) ? 'ring-2 ring-ds-accent' : ''} ${

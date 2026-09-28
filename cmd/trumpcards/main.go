@@ -284,11 +284,6 @@ func run() int {
 	// not English.
 	i18n.SetLang(detectBootstrapLang(os.Args[1:], os.Getenv("LANG")))
 
-	// buildHelpText reads i18n keys, so it must run after SetLang (issue #4309).
-	// detectBootstrapLang already accounts for --lang in os.Args, so `--help`
-	// and flag-error output render in the requested locale.
-	helpText := buildHelpText()
-
 	if err := flag.CommandLine.Parse(os.Args[1:]); err != nil {
 		// NB: -h / --help are registered above so flag.Parse handles them
 		// itself and returns nil; flag.ErrHelp is therefore unreachable here.
@@ -305,7 +300,7 @@ func run() int {
 	}
 
 	if *showHelp {
-		_, _ = fmt.Fprint(os.Stdout, helpText)
+		_, _ = fmt.Fprint(os.Stdout, buildHelpText())
 		return 0
 	}
 
@@ -384,18 +379,24 @@ func run() int {
 	commands := buildGameCommands()
 	commands["games"] = func() int {
 		var short, aliases, asJSON bool
-		var category string
+		var category, search string
 		fs, code, ok := parseSubFlags("games", subArgs, func(f *flag.FlagSet) {
 			f.BoolVar(&short, "short", false, "Print game names only")
 			f.BoolVar(&aliases, "aliases", false, "With --short, also print each alias on its own line (long output always includes aliases inline)")
 			f.BoolVar(&asJSON, "json", false, "Emit machine-readable JSON (array of {name, category, description, aliases})")
-			f.StringVar(&category, "category", "", "Filter by category: "+categoryFilterPipe)
+			f.StringVar(&category, "category", "", "Filter by Cloudflare Worker binary-size bucket: "+categoryFilterPipe)
+			f.StringVar(&search, "search", "", "Search names, aliases, and descriptions")
 		})
 		if !ok {
 			return code
 		}
+		category = strings.ToLower(strings.TrimSpace(category))
+		search = strings.TrimSpace(search)
 		if category != "" && !validCategory(category) {
 			fmt.Fprintln(os.Stderr, i18n.Tf("cliInvalidCategory", "category", category, "categories", categoryFilterList))
+			if suggestion := cuiutil.SuggestCommand(category, categoryDisplayNames(), 2); suggestion != "" {
+				fmt.Fprintf(os.Stderr, "  %s\n", i18n.Tf("didYouMean", "name", suggestion))
+			}
 			return 2
 		}
 		if asJSON {
@@ -407,13 +408,17 @@ func run() int {
 			if flagSetVisited(fs, "short", "aliases") {
 				fmt.Fprintln(os.Stderr, i18n.T("cliGamesJSONIgnoredFlags"))
 			}
-			if err := printGamesJSON(category, os.Stdout); err != nil {
+			if err := printGamesJSON(category, search, os.Stdout); err != nil {
 				fmt.Fprintln(os.Stderr, i18n.Tf("cliGamesJSONError", "err", err.Error()))
 				return 1
 			}
 			return 0
 		}
-		printGames(short, aliases, category, os.Stdout)
+		if !short && hasNoMatchingGames(category, search) {
+			fmt.Fprintln(os.Stderr, i18n.T("cliGamesNoMatches"))
+			return 0
+		}
+		printGames(short, aliases, category, search, os.Stdout)
 		return 0
 	}
 	commands["completion"] = func() int {
@@ -428,7 +433,7 @@ func run() int {
 		return runCompletion(fs.Args(), stdoutIsTTY, noHint)
 	}
 	commands["help"] = func() int {
-		return runHelpCommand(subArgs, helpText, os.Stdout, os.Stderr)
+		return runHelpCommand(subArgs, buildHelpText(), os.Stdout, os.Stderr)
 	}
 	commands["version"] = func() int {
 		var short bool
@@ -590,7 +595,10 @@ func run() int {
 		// command name so `trumpcards <game|subcmd> --lang en` matches the
 		// prepositional form. quiet is passed by pointer because a trailing -q
 		// must update the caller's value. See issues #1509, #4306.
-		trailing := applyTrailingGlobalFlags(flag.Args()[1:], &quiet, os.Stderr)
+		trailing, code, ok := applyTrailingGlobalFlags(flag.Args()[1:], &quiet, os.Stderr)
+		if !ok {
+			return code
+		}
 		if !subFlagCommands[arg] {
 			// `<game> --help` / `<game> -h`: Go's flag package stops parsing at
 			// the first non-flag argument, so these trailing flags land in Args().
@@ -598,7 +606,7 @@ func run() int {
 			// game. Subcommands in subFlagCommands are handled by parseSubFlags
 			// (which catches flag.ErrHelp).
 			if hasHelpFlag(trailing) {
-				return runHelpCommand([]string{arg}, helpText, os.Stdout, os.Stderr)
+				return runHelpCommand([]string{arg}, buildHelpText(), os.Stdout, os.Stderr)
 			}
 			if len(trailing) > 0 && !quiet {
 				fmt.Fprintln(os.Stderr, i18n.Tf("cliExtraArgsWarning", "args", strings.Join(trailing, " ")))
@@ -668,7 +676,9 @@ func resolveStartGame(flagValue string, stderr io.Writer) (string, int, bool) {
 		return v, 0, true
 	}
 	_, _ = fmt.Fprintln(stderr, i18n.Tf("cliUnknownGame", "name", v))
-	if suggestion := cuiutil.SuggestCommand(v, helpSuggestionCandidates(), 2); suggestion != "" {
+	if slices.Contains(builtinSubcommandNames, v) {
+		_, _ = fmt.Fprintf(stderr, "  %s\n", i18n.Tf("cliStartIsSubcommand", "name", v))
+	} else if suggestion := cuiutil.SuggestCommand(v, gameSuggestionCandidates(), 2); suggestion != "" {
 		_, _ = fmt.Fprintf(stderr, "  %s\n", i18n.Tf("didYouMean", "name", suggestion))
 	}
 	// Same one-line recovery hint as the top-level positional-arg path, so a
@@ -783,7 +793,30 @@ func runHelpCommand(args []string, helpText string, stdout, stderr io.Writer) in
 // alias (e.g. `gni` -> `gin`) instead of a far-off canonical name. See
 // issue #1555.
 func helpSuggestionCandidates() []string {
-	capacity := len(ui.GameNames()) + len(builtinSubcommandNames) + len(ui.GameAliases)
+	gameCandidates := gameSuggestionCandidates()
+	capacity := len(gameCandidates) + len(builtinSubcommandNames)
+	seen := make(map[string]struct{}, capacity)
+	out := make([]string, 0, capacity)
+	add := func(name string) {
+		if _, ok := seen[name]; ok {
+			return
+		}
+		seen[name] = struct{}{}
+		out = append(out, name)
+	}
+	for _, name := range gameCandidates {
+		add(name)
+	}
+	for _, name := range builtinSubcommandNames {
+		add(name)
+	}
+	return out
+}
+
+// gameSuggestionCandidates returns the deduplicated set of canonical game
+// names and game aliases accepted by --start.
+func gameSuggestionCandidates() []string {
+	capacity := len(ui.GameNames()) + len(ui.GameAliases)
 	seen := make(map[string]struct{}, capacity)
 	out := make([]string, 0, capacity)
 	add := func(name string) {
@@ -794,9 +827,6 @@ func helpSuggestionCandidates() []string {
 		out = append(out, name)
 	}
 	for _, name := range ui.GameNames() {
-		add(name)
-	}
-	for _, name := range builtinSubcommandNames {
 		add(name)
 	}
 	for alias := range ui.GameAliases {
@@ -854,7 +884,13 @@ func parseSubFlagsWithArgs(name string, args []string, setup func(*flag.FlagSet)
 // parseSubFlagsTo is the testable core of parseSubFlags: it parses args with a
 // subcommand FlagSet, wires the shared builtin help text as the usage, and
 // writes help/diagnostics to the given streams. takesPositional suppresses the
-// leftover-args warning for subcommands whose handler consumes fs.Args().
+// leftover-args warning for subcommands whose handler consumes fs.Args(). When
+// takesPositional is true, flags and positional arguments may appear in any
+// order before `--`; arguments after `--` are always positional.
+// Limitation: the split at the first `--` happens before flag parsing, so a
+// literal `--` used as a string flag value would be read as the separator.
+// Safe today because completion (the only takesPositional caller) has only a
+// bool flag; revisit before adding a string flag to a positional subcommand.
 func parseSubFlagsTo(name string, args []string, setup func(*flag.FlagSet), stdout, stderr io.Writer, takesPositional bool) (*flag.FlagSet, int, bool) {
 	fs := flag.NewFlagSet(name, flag.ContinueOnError)
 	fs.SetOutput(io.Discard) // suppress Go's raw English error/usage text
@@ -872,14 +908,41 @@ func parseSubFlagsTo(name string, args []string, setup func(*flag.FlagSet), stdo
 	// where the ErrHelp branch below already calls printHelp). Mirrors the
 	// top-level flag.CommandLine.Usage = func(){} in run(). See issue #4307.
 	fs.Usage = func() {}
-	if err := fs.Parse(args); err != nil {
-		if errors.Is(err, flag.ErrHelp) {
-			printHelp()
-			return nil, 0, false
+	parse := func(parseArgs []string) (bool, int) {
+		if err := fs.Parse(parseArgs); err != nil {
+			if errors.Is(err, flag.ErrHelp) {
+				printHelp()
+				return false, 0
+			}
+			_, _ = fmt.Fprintln(stderr, i18n.Tf("cliSubcommandFlagError", "cmd", name, "err", err.Error()))
+			_, _ = fmt.Fprintln(stderr, i18n.Tf("cliTryHelp", "cmd", name))
+			return false, 2
 		}
-		_, _ = fmt.Fprintln(stderr, i18n.Tf("cliSubcommandFlagError", "cmd", name, "err", err.Error()))
-		_, _ = fmt.Fprintln(stderr, i18n.Tf("cliTryHelp", "cmd", name))
-		return nil, 2, false
+		return true, 0
+	}
+	if takesPositional {
+		positional := make([]string, 0, len(args))
+		head, tail := args, []string(nil)
+		if sep := slices.Index(args, "--"); sep >= 0 {
+			head, tail = args[:sep], args[sep+1:]
+		}
+		for len(head) > 0 {
+			if ok, code := parse(head); !ok {
+				return nil, code, false
+			}
+			remaining := fs.Args()
+			if len(remaining) == 0 {
+				break
+			}
+			positional = append(positional, remaining[0])
+			head = remaining[1:]
+		}
+		positional = append(positional, tail...)
+		if ok, code := parse(append([]string{"--"}, positional...)); !ok {
+			return nil, code, false
+		}
+	} else if ok, code := parse(args); !ok {
+		return nil, code, false
 	}
 	if fs.NArg() > 0 && !takesPositional {
 		_, _ = fmt.Fprintln(stderr, i18n.Tf("cliExtraArgsWarning", "args", strings.Join(fs.Args(), " ")))
@@ -974,10 +1037,8 @@ func trailingFlagAny(arg string, names ...string) (inlineVal string, hasInline, 
 // top-level flag exactly: --no-color (or --color=never) beats --color=always
 // regardless of token order, an explicit --color=always beats NO_COLOR, and
 // NO_COLOR beats everything else (issues #1583, #4310). An invalid trailing
-// --color value emits the localized warning but does NOT abort the session —
-// the ambient state is already valid and a late typo shouldn't kill a game
-// that's about to run; applyColorMode's exit code is therefore
-// intentionally discarded here.
+// --color value emits the localized error and returns exit code 2, matching
+// the leading flag behavior (#8012).
 //
 // `--quiet`/`-q` writes through quietPtr so trailing position has the same
 // effect as the leading position — Go's `flag` package stops parsing at the
@@ -989,10 +1050,10 @@ func trailingFlagAny(arg string, names ...string) (inlineVal string, hasInline, 
 // `<game> --lang xyz -q` and `<game> -q --lang xyz` both suppress the
 // cliUnsupportedLang warning. Without the pre-pass, the single-pass
 // implementation would only suppress when -q appeared first.
-func applyTrailingGlobalFlags(args []string, quietPtr *bool, stderr io.Writer) []string {
+func applyTrailingGlobalFlags(args []string, quietPtr *bool, stderr io.Writer) (rest []string, code int, ok bool) {
 	quiet := resolveTrailingQuiet(args, *quietPtr)
 	*quietPtr = quiet
-	rest := make([]string, 0, len(args))
+	rest = make([]string, 0, len(args))
 	// Accumulate color flags across the entire scan so precedence matches
 	// applyColorMode's documented order rather than depending on which
 	// flag the user wrote last. trailingNoColor stays false unless
@@ -1010,7 +1071,7 @@ func applyTrailingGlobalFlags(args []string, quietPtr *bool, stderr io.Writer) [
 		// --lang / -lang [=value | <next arg>]: value flag.
 		if v, _, bare, ok := trailingFlag(a, "lang"); ok {
 			langVal := v
-			if bare && i+1 < len(args) {
+			if bare && i+1 < len(args) && !strings.HasPrefix(args[i+1], "-") {
 				langVal = args[i+1]
 				i++
 			}
@@ -1048,12 +1109,14 @@ func applyTrailingGlobalFlags(args []string, quietPtr *bool, stderr io.Writer) [
 		// deferred to applyColorMode after the scan for correct precedence.
 		if v, _, bare, ok := trailingFlag(a, "color"); ok {
 			colorVal := v
-			if bare && i+1 < len(args) {
+			if bare && i+1 < len(args) && !strings.HasPrefix(args[i+1], "-") {
 				colorVal = args[i+1]
 				i++
 			}
-			haveTrailingColor = true
-			trailingColor = colorVal
+			if !bare || colorVal != "" {
+				haveTrailingColor = true
+				trailingColor = colorVal
+			}
 			continue
 		}
 
@@ -1078,17 +1141,19 @@ func applyTrailingGlobalFlags(args []string, quietPtr *bool, stderr io.Writer) [
 	// don't change anything" contract — the top-level applyColorMode
 	// already ran in run() at startup and its result must remain.
 	if haveTrailingColor || trailingNoColor {
-		errSink := io.Discard
-		if !quiet {
-			errSink = stderr
-		}
+		// applyColorMode only writes errors here; quiet suppresses warnings above,
+		// never validation errors.
 		mode := trailingColor
 		if !haveTrailingColor {
 			mode = "auto" // --no-color alone with no --color value
 		}
-		_, _ = applyColorMode(mode, trailingNoColor, os.Getenv("NO_COLOR"), os.Stdout.Fd(), os.Stderr.Fd(), errSink)
+		var valid bool
+		code, valid = applyColorMode(mode, trailingNoColor, os.Getenv("NO_COLOR"), os.Stdout.Fd(), os.Stderr.Fd(), stderr)
+		if !valid {
+			return nil, code, false
+		}
 	}
-	return rest
+	return rest, 0, true
 }
 
 // resolveTrailingQuiet pre-scans args for -q / --quiet (and their =BOOL forms)
@@ -1130,12 +1195,6 @@ func hasHelpFlag(args []string) bool {
 	return false
 }
 
-// gameCategoryPreview is the number of representative game names rendered per
-// category in the top-level --help GAMES summary. Five names is enough to
-// hint at the variety in each category (e.g. casino → blackjack, baccarat,
-// poker, omaha, holdem) without pushing COMMANDS / OPTIONS off the screen.
-const gameCategoryPreview = 5
-
 // buildHelpText generates the CLI help text with the games section derived
 // from the registry.
 //
@@ -1144,33 +1203,15 @@ const gameCategoryPreview = 5
 // the common 24–40 line case. Now it presents a category-grouped summary
 // with a pointer to `trumpcards games` for the full list, mirroring the
 // `git --help` / `kubectl --help` / `cargo --help` style.
+// It reads i18n keys, so call it at the point of use, after SetLang and after
+// applyTrailingGlobalFlags; never cache it at startup, or a trailing --lang is
+// ignored (issues #4309, #8010).
 func buildHelpText() string {
 	var sb strings.Builder
-	categories := games.AllCategories()
-	// USAGE + GAMES intro (localized; the game/category counts and the accepted
-	// --category values are injected so they stay in lockstep with the registry).
+	// USAGE + GAMES intro (the game count comes directly from the CLI registry).
 	sb.WriteString(i18n.T("cli_help.usage"))
 	sb.WriteString(i18n.Tf("cli_help.gamesIntro",
-		"gameCount", strconv.Itoa(len(ui.GameRegistry())),
-		"catCount", strconv.Itoa(len(categories)),
-		"catPipe", categoryFilterPipe))
-	// Category summary block: language-neutral data (category name, count, and a
-	// preview of game names), so it is built here rather than translated.
-	for _, cat := range categories {
-		entries := games.ByCategory(cat)
-		preview := make([]string, 0, gameCategoryPreview)
-		for i, g := range entries {
-			if i >= gameCategoryPreview {
-				break
-			}
-			preview = append(preview, g.Name)
-		}
-		more := ""
-		if len(entries) > gameCategoryPreview {
-			more = ", …"
-		}
-		fmt.Fprintf(&sb, "  %-8s (%2d)  %s%s\n", cat.String(), len(entries), strings.Join(preview, ", "), more)
-	}
+		"gameCount", strconv.Itoa(len(ui.GameRegistry()))))
 	sb.WriteString(i18n.T("cli_help.commands"))
 	sb.WriteString(i18n.T("cli_help.options"))
 	sb.WriteString(i18n.Tf("cli_help.examples", "catPipe", categoryFilterPipe))
@@ -1239,22 +1280,22 @@ func detectBootstrapLang(args []string, langEnv string) string {
 // one per line — and if aliases is also true, every alias gets its own line.
 // The `aliases` flag is a no-op in long mode because aliases are always shown
 // inline there. If category is non-empty, output is restricted to games whose
-// games.Category matches; the caller is expected to have validated category
-// via validCategory before invoking. See issue #1535.
-func printGames(short, aliases bool, category string, w io.Writer) {
+// games.Category matches and names/aliases/descriptions contain search; the
+// caller is expected to normalize search and validate category before invoking.
+func printGames(short, aliases bool, category, search string, w io.Writer) {
 	if short {
-		printGamesShort(aliases, category, w)
+		printGamesShort(aliases, category, search, w)
 		return
 	}
-	printGamesLong(category, w)
+	printGamesLong(category, search, w)
 }
 
 // printGamesShort prints one game name per line (and, with aliases=true, each
 // alias on its own line), flat and unadorned so scripts can consume it. Honors
-// the --category filter.
-func printGamesShort(aliases bool, category string, w io.Writer) {
+// the --category and --search filters.
+func printGamesShort(aliases bool, category, search string, w io.Writer) {
 	var reverseAliases map[string][]string
-	if aliases {
+	if aliases || search != "" {
 		reverseAliases = buildReverseAliases()
 	}
 	// Only build the category index when a filter is active — otherwise the
@@ -1267,6 +1308,9 @@ func printGamesShort(aliases bool, category string, w io.Writer) {
 		if category != "" && categoryByName[name] != category {
 			continue
 		}
+		if !gameMatchesSearch(name, search, reverseAliases) {
+			continue
+		}
 		_, _ = fmt.Fprintln(w, name)
 		if aliases {
 			for _, alias := range reverseAliases[name] {
@@ -1276,47 +1320,73 @@ func printGamesShort(aliases bool, category string, w io.Writer) {
 	}
 }
 
-// printGamesLong prints the human-facing game list grouped by Cloudflare Worker
-// category, with an uppercase "CATEGORY (N):" heading before each group. The
-// name column is sized to the longest displayed name so long names (e.g.
+// printGamesLong prints the human-facing game list as one name-sorted list.
+// The name column is sized to the longest displayed name so long names (e.g.
 // ultimatetexasholdem, 19 chars) no longer push the description column out of
-// alignment on their row. Honors the --category filter (then only the matching
-// group prints). See issue #4311.
-func printGamesLong(category string, w io.Writer) {
+// alignment. Honors the --category and --search filters.
+func printGamesLong(category, search string, w io.Writer) {
 	reverseAliases := buildReverseAliases()
 	descs := ui.GameDescriptions()
 	categoryByName := gameCategoryByName()
 
-	// Bucket names by category, preserving GameNames() order within each group,
-	// and track the widest displayed name for a single shared column width
-	// (keeps the description column aligned across every group).
-	namesByCategory := make(map[string][]string)
 	width := 0
+	var names []string
 	for _, name := range ui.GameNames() {
 		cat := categoryByName[name]
 		if category != "" && cat != category {
 			continue
 		}
-		namesByCategory[cat] = append(namesByCategory[cat], name)
+		if !gameMatchesSearch(name, search, reverseAliases) {
+			continue
+		}
+		names = append(names, name)
 		if len(name) > width {
 			width = len(name)
 		}
 	}
 
-	for _, cat := range games.AllCategories() {
-		names := namesByCategory[cat.String()]
-		if len(names) == 0 {
-			continue
+	sort.Strings(names)
+	for _, name := range names {
+		line := fmt.Sprintf("  %-*s %s", width, name, descs[name])
+		if aliasList := reverseAliases[name]; len(aliasList) > 0 {
+			line += fmt.Sprintf("  [aliases: %s]", strings.Join(aliasList, ", "))
 		}
-		_, _ = fmt.Fprintf(w, "%s (%d):\n", strings.ToUpper(cat.String()), len(names))
-		for _, name := range names {
-			line := fmt.Sprintf("  %-*s %s", width, name, descs[name])
-			if aliasList := reverseAliases[name]; len(aliasList) > 0 {
-				line += fmt.Sprintf("  [aliases: %s]", strings.Join(aliasList, ", "))
-			}
-			_, _ = fmt.Fprintln(w, line)
+		_, _ = fmt.Fprintln(w, line)
+	}
+}
+
+// gameMatchesSearch matches name, aliases, and description case-insensitively; an empty search always matches.
+func gameMatchesSearch(name, search string, reverseAliases map[string][]string) bool {
+	if search == "" {
+		return true
+	}
+	needle := strings.ToLower(search)
+	if strings.Contains(strings.ToLower(name), needle) || strings.Contains(strings.ToLower(games.Description(name)), needle) {
+		return true
+	}
+	for _, alias := range reverseAliases[name] {
+		if strings.Contains(strings.ToLower(alias), needle) {
+			return true
 		}
 	}
+	return false
+}
+
+func hasNoMatchingGames(category, search string) bool {
+	if search == "" {
+		return false
+	}
+	aliases := buildReverseAliases()
+	categoryByName := gameCategoryByName()
+	for _, name := range ui.GameNames() {
+		if category != "" && categoryByName[name] != category {
+			continue
+		}
+		if gameMatchesSearch(name, search, aliases) {
+			return false
+		}
+	}
+	return true
 }
 
 // gameCategoryByName builds Name→Category-string from the games registry.
@@ -1346,12 +1416,12 @@ func buildReverseAliases() map[string][]string {
 	return rev
 }
 
-// printGamesJSON emits a JSON array describing every game (or only games in
-// the given category, if non-empty). Each entry is `{name, category,
+// printGamesJSON emits a JSON array describing every game (or only games
+// matching the category and search filters). Each entry is `{name, category,
 // description, aliases}`. Aliases is always a non-nil slice so the JSON
 // shape is stable: scripts can rely on `.aliases | length` working without a
 // null guard. See issue #1535.
-func printGamesJSON(category string, w io.Writer) error {
+func printGamesJSON(category, search string, w io.Writer) error {
 	type entry struct {
 		Name        string   `json:"name"`
 		Category    string   `json:"category"`
@@ -1364,6 +1434,9 @@ func printGamesJSON(category string, w io.Writer) error {
 	for _, g := range all {
 		cat := g.Category.String()
 		if category != "" && cat != category {
+			continue
+		}
+		if !gameMatchesSearch(g.Name, search, reverseAliases) {
 			continue
 		}
 		al := reverseAliases[g.Name]

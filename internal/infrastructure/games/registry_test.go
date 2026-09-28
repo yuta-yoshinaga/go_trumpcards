@@ -8,23 +8,27 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/infrastructure/ui"
 )
 
-// Expected per-bucket counts. The ten Cloudflare Workers each compile one
+// Expected per-bucket counts. The fourteen Cloudflare Workers each compile one
 // bucket's games, so a mismatch here means a game's Category is wrong and it
 // would route to a worker whose binary does not contain it -- a 404 at runtime,
 // not a build failure. Only expectedTotal is invariant; the rest move whenever
 // games are rebucketed for size (ADR-0036).
 const (
-	expectedCasino  = 51
-	expectedClassic = 40
-	expectedSolo    = 47
-	expectedExtra   = 33
-	expectedExtra2  = 41
-	expectedExtra3  = 32
-	expectedExtra4  = 36
-	expectedExtra5  = 31
-	expectedExtra6  = 36
-	expectedExtra7  = 36
-	expectedTotal   = expectedCasino + expectedClassic + expectedSolo + expectedExtra + expectedExtra2 + expectedExtra3 + expectedExtra4 + expectedExtra5 + expectedExtra6 + expectedExtra7
+	expectedCasino  = 36
+	expectedClassic = 29
+	expectedSolo    = 34
+	expectedExtra   = 23
+	expectedExtra2  = 33
+	expectedExtra3  = 24
+	expectedExtra4  = 29
+	expectedExtra5  = 24
+	expectedExtra6  = 26
+	expectedExtra7  = 26
+	expectedExtra8  = 31
+	expectedExtra9  = 29
+	expectedExtra10 = 19
+	expectedExtra11 = 20
+	expectedTotal   = expectedCasino + expectedClassic + expectedSolo + expectedExtra + expectedExtra2 + expectedExtra3 + expectedExtra4 + expectedExtra5 + expectedExtra6 + expectedExtra7 + expectedExtra8 + expectedExtra9 + expectedExtra10 + expectedExtra11
 )
 
 func TestAllReturnsExpectedTotal(t *testing.T) {
@@ -67,6 +71,10 @@ func TestByCategoryCounts(t *testing.T) {
 		{games.CategoryExtra5, expectedExtra5},
 		{games.CategoryExtra6, expectedExtra6},
 		{games.CategoryExtra7, expectedExtra7},
+		{games.CategoryExtra8, expectedExtra8},
+		{games.CategoryExtra9, expectedExtra9},
+		{games.CategoryExtra10, expectedExtra10},
+		{games.CategoryExtra11, expectedExtra11},
 	}
 	for _, c := range cases {
 		t.Run(c.cat.String(), func(t *testing.T) {
@@ -89,6 +97,10 @@ func TestCategoryString(t *testing.T) {
 		games.CategoryExtra5:  "extra5",
 		games.CategoryExtra6:  "extra6",
 		games.CategoryExtra7:  "extra7",
+		games.CategoryExtra8:  "extra8",
+		games.CategoryExtra9:  "extra9",
+		games.CategoryExtra10: "extra10",
+		games.CategoryExtra11: "extra11",
 	}
 	for cat, want := range cases {
 		if got := cat.String(); got != want {
@@ -172,7 +184,7 @@ func TestAllEntriesAreValid(t *testing.T) {
 		switch g.Category {
 		case games.CategoryCasino, games.CategoryClassic, games.CategorySolo,
 			games.CategoryExtra, games.CategoryExtra2, games.CategoryExtra3,
-			games.CategoryExtra4, games.CategoryExtra5, games.CategoryExtra6, games.CategoryExtra7:
+			games.CategoryExtra4, games.CategoryExtra5, games.CategoryExtra6, games.CategoryExtra7, games.CategoryExtra8, games.CategoryExtra9, games.CategoryExtra10, games.CategoryExtra11:
 			// valid
 		default:
 			t.Errorf("game %q has invalid Category %d", g.Name, int(g.Category))

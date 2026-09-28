@@ -44,6 +44,7 @@ type specBoard struct {
 	roundNo     int
 	winnerSeat  int
 	gameEnd     bool
+	lastTrade   *domain.SpeculationTrade
 	cfg         domain.SpeculationConfig
 	log         []*domain.ActionLogEntry
 }
@@ -102,6 +103,7 @@ func (b specBoard) mock() *interfaces.MockSpeculationGame {
 	m.On("GetRoundNo").Return(b.roundNo).Maybe()
 	m.On("GetWinnerSeat").Return(b.winnerSeat).Maybe()
 	m.On("GetGameEndFlag").Return(b.gameEnd).Maybe()
+	m.On("GetLastTrade").Return(b.lastTrade).Maybe()
 	m.On("GetActionLog").Return(b.log).Maybe()
 	return m
 }
@@ -559,6 +561,20 @@ func TestSpeculationWebPresenter_Output_EveryFieldIsPopulated(t *testing.T) {
 
 	assert.Empty(t, out.Message)
 	assert.Contains(t, raw, `"hiddenCount":2`)
+}
+
+func TestSpeculationWebPresenter_Output_LastTrade(t *testing.T) {
+	b := specDefaultBoard()
+	b.lastTrade = &domain.SpeculationTrade{BuyerSeat: 2, SellerSeat: 1, Price: 35, Card: specCard(domain.CardDesignHeart, 12)}
+	_, out := specWebOutput(t, b, nil)
+	require.NotNil(t, out.LastTrade)
+	assert.Equal(t, 2, out.LastTrade.BuyerSeat)
+	assert.Equal(t, 1, out.LastTrade.SellerSeat)
+	assert.Equal(t, 35, out.LastTrade.Price)
+	assert.Equal(t, "HEART", out.LastTrade.Card.Design)
+
+	_, noTrade := specWebOutput(t, specDefaultBoard(), nil)
+	assert.Nil(t, noTrade.LastTrade)
 }
 
 // TestSpeculationWebPresenter_Output_HidesFaceDownCards checks the raw JSON,

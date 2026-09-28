@@ -114,6 +114,15 @@ func TestPigPassGoesToTheLeftNeighbour(t *testing.T) {
 	assert.True(t, found, "席 0 が渡した札は席 1 に届く")
 }
 
+func TestPigNextActiveSeatMatchesPassRecipient(t *testing.T) {
+	for _, n := range []int{3, 4, 6} {
+		players := newPigSeats(n)
+		players[1].SetEliminated(true)
+		assert.Equal(t, 2, PigNextActiveSeat(players, 0), "%d seats skips eliminated receiver", n)
+		assert.Equal(t, 0, PigNextActiveSeat(players, n-1), "%d seats wraps around", n)
+	}
+}
+
 // **4 枚揃うと合図フェーズに移る。** 揃えた本人が最初に気づいた扱い。
 func TestPigFourOfAKindOpensTheSignal(t *testing.T) {
 	g := newPigForTest(t, 4)

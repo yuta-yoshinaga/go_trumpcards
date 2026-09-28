@@ -38,7 +38,7 @@
     "dragon": "ドラゴン",
     "tiger": "タイガー",
     "tie": "タイ",
-    "oddsBadge": "{{type}} ×{{odds}}",
+    "oddsBadge": "配当倍率: {{type}} {{odds}}:1",
     "win": "勝ち +{{amount}}",
     "loss": "負け -{{amount}}"
   },

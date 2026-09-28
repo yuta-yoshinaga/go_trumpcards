@@ -131,6 +131,42 @@ describe('PrimeroPage', () => {
     expect(screen.getByRole('button', { name: 'フォールド（降りる）' })).toBeInTheDocument();
   });
 
+  it('shows the human bet and non-negative amount needed to call in the betting controls', async () => {
+    mockExec.mockResolvedValue(
+      makePrimeroState({
+        phase: 0,
+        isHumanTurn: true,
+        currentBet: 25,
+        players: [
+          { ...makePrimeroState().players[0], isHuman: true, roundBet: 10 },
+          ...makePrimeroState().players.slice(1),
+        ],
+      }),
+    );
+    renderWithProviders(<PrimeroPage />);
+    const controls = await screen.findByTestId('primero-betting-controls');
+    expect(controls).toHaveTextContent('自分の賭け額: 10');
+    expect(controls).toHaveTextContent('コール必要額: 15');
+  });
+
+  it('shows zero as the amount needed to call when already matched or ahead', async () => {
+    mockExec.mockResolvedValue(
+      makePrimeroState({
+        phase: 0,
+        isHumanTurn: true,
+        currentBet: 10,
+        players: [
+          { ...makePrimeroState().players[0], isHuman: true, roundBet: 12 },
+          ...makePrimeroState().players.slice(1),
+        ],
+      }),
+    );
+    renderWithProviders(<PrimeroPage />);
+    const controls = await screen.findByTestId('primero-betting-controls');
+    expect(controls).toHaveTextContent('自分の賭け額: 12');
+    expect(controls).toHaveTextContent('コール必要額: 0');
+  });
+
   it('dispatches bet call when the Call button is clicked', async () => {
     renderWithProviders(<PrimeroPage />);
     const btn = await screen.findByRole('button', { name: 'コール' });

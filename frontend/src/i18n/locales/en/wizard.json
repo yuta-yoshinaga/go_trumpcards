@@ -26,7 +26,14 @@
   "roundScore": "Round: {{score}}",
   "bid": "Bid {{n}}",
   "bidNone": "No bid",
-  "bidProgress": "Bid: {{bid}} / Won: {{won}}",
+  "playersSummary": "Players ({{count}})",
+  "bidProgress": {
+    "header": "Bid: {{bid}} / Won: {{won}}",
+    "values": "Bid {{bid}} / Confirmed {{won}}",
+    "reachable": "Still possible",
+    "unreachable": "Unreachable",
+    "remaining": "{{count}} tricks left"
+  },
   "bidTotal": "Total bids {{total}} / hand {{handSize}}",
   "bidOverUnder": {
     "over": "(over)",

@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra5
+//go:build !js || !wasm || extra10
 
 // Package domain カドリール (Quadrille) のドメインモデル。
 //
@@ -665,20 +665,8 @@ func (g *Quadrille) PlayerPlay(cardIndex int) error {
 	if g.phase != QuadrillePhasePlay {
 		return ErrWrongPhase
 	}
-	if !g.players[g.currentPlayerIdx].GetIsHuman() {
-		return ErrNotHumanTurn
-	}
-	player := g.players[g.currentPlayerIdx]
-	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
-		return NewDomainErrorCode(ErrInvalidCard, "quadrille.errCardIndexOutOfRange", nil)
-	}
-	card := player.GetCard(cardIndex)
-	if err := g.validatePlay(g.currentPlayerIdx, card); err != nil {
-		return err
-	}
-	played := player.RemoveCard(cardIndex)
-	g.playCard(g.currentPlayerIdx, played)
-	return nil
+	seat := g.currentPlayerIdx
+	return trickPlayerPlay(seat, g.players[seat].GamePlayer, cardIndex, "quadrille.errCardIndexOutOfRange", g.validatePlay, g.playCard)
 }
 
 // CpuPlay 現在の手番が CPU の場合に 1 ターン実行する。
@@ -687,18 +675,7 @@ func (g *Quadrille) CpuPlay() {
 		return
 	}
 	idx := g.currentPlayerIdx
-	if g.players[idx].GetIsHuman() {
-		return
-	}
-	cardIdx := g.cpuSelectPlayCard(idx)
-	played := g.players[idx].RemoveCard(cardIdx)
-	// **出せる札が無ければ何もしない。**セレクタは候補ゼロのとき 0 を返し、
-	// 手札が空なら RemoveCard(0) は nil を返す。それを playCard に渡すと
-	// nil デリファレンスで HTTP ハンドラごと落ちる (#4606)。
-	if played == nil {
-		return
-	}
-	g.playCard(idx, played)
+	trickCpuPlay(idx, g.players[idx].GamePlayer, g.cpuSelectPlayCard, g.playCard)
 }
 
 // playCard カードをプレイする共通処理。
@@ -1396,27 +1373,6 @@ func (g *Quadrille) GetForehandIdx() int { return g.forehandIdx }
 
 // GetQuadrilleIdx カドリールインデックス取得 (-1=未確定)
 func (g *Quadrille) GetQuadrilleIdx() int { return g.quadrilleIdx }
-
-// GetCallableKingSuitsForTest はテスト用に席 idx が呼べる王のスートを返す。
-// GetCallableKingSuits と違いフェーズを問わない。
-func (g *Quadrille) GetCallableKingSuitsForTest(idx int) []int {
-	return g.callableKingSuits(idx)
-}
-
-// SetPartnerForTest はテスト用に味方の席と公開状態を設定する。
-func (g *Quadrille) SetPartnerForTest(idx int, revealed bool) {
-	g.partnerIdx = idx
-	g.partnerRevealed = revealed
-}
-
-// SetRoiSeulForTest はテスト用に単独プレイを設定する。
-func (g *Quadrille) SetRoiSeulForTest(v bool) { g.roiSeul = v }
-
-// SameSideForTest はテスト用に 2 席が同じ陣営かを返す。
-func (g *Quadrille) SameSideForTest(a, b int) bool { return g.sameSide(a, b) }
-
-// SetCalledKingSuitForTest はテスト用に呼ばれた王のスートを設定する。
-func (g *Quadrille) SetCalledKingSuitForTest(suit int) { g.calledKingSuit = suit }
 
 // SetQuadrilleIdx カドリールインデックス設定 (テスト用)
 func (g *Quadrille) SetQuadrilleIdx(idx int) { g.quadrilleIdx = idx }

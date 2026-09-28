@@ -261,10 +261,32 @@ describe('FortyFivesPage', () => {
   });
 
   it('hides the live points panel at round end in favor of the round result', async () => {
-    mockExec.mockResolvedValue(roundEndState);
+    mockExec.mockResolvedValue({ ...roundEndState, declarerIdx: 0, contract: 15 });
     renderWithProviders(<FortyFivesPage />);
     await waitFor(() => expect(screen.getByText('ラウンド結果')).toBeInTheDocument());
     expect(screen.queryByTestId('ff-live-points')).not.toBeInTheDocument();
+    const contractResult = screen.getByTestId('ff-contract-result');
+    expect(contractResult).toHaveTextContent('チームA');
+    expect(contractResult).toHaveTextContent('契約15点');
+    expect(contractResult).toHaveTextContent('獲得15点');
+    expect(contractResult).toHaveTextContent('契約達成');
+  });
+
+  it('does not show contract details in the round result when there was no contract', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<FortyFivesPage />);
+    const result = await screen.findByTestId('ff-round-result');
+    expect(result).toHaveTextContent('チームA: 15点');
+    expect(result).toHaveTextContent('チームB: 10点');
+    expect(result).not.toHaveTextContent('契約');
+  });
+
+  it('marks the contract as failed in the round result when the declarer fell short', async () => {
+    mockExec.mockResolvedValue({ ...roundEndState, declarerIdx: 0, contract: 20 });
+    renderWithProviders(<FortyFivesPage />);
+    const contractResult = await screen.findByTestId('ff-contract-result');
+    expect(contractResult).toHaveTextContent('獲得15点');
+    expect(contractResult).toHaveTextContent('契約未達');
   });
 
   // **押していない人にヒントを見せない。**#4483 以降 `Output()` が毎回

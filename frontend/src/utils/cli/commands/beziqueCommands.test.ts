@@ -30,10 +30,6 @@ describe('parseBeziqueCommand', () => {
     expect(parseBeziqueCommand('next')).toEqual({ args: ['next'] });
   });
 
-  it('parses sd into a reset with difficulty config', () => {
-    expect(parseBeziqueCommand('sd 2')).toEqual({ args: ['reset', { config: { cpuDifficulty: 2 } }] });
-  });
-
   it('rejects an out-of-range sd', () => {
     expect('error' in parseBeziqueCommand('sd 9')).toBe(true);
   });

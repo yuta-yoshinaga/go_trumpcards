@@ -18,6 +18,7 @@ function seat(id: number, isHuman: boolean, overrides?: Partial<ShengJiPlayer>):
 
 function makeState(overrides?: Partial<ShengJiResponse>): ShengJiResponse {
   return {
+    config: {},
     players: [seat(0, true), seat(1, false), seat(2, false), seat(3, false)],
     phase: ShengJiPhase.PLAY,
     handNumber: 1,
@@ -46,7 +47,6 @@ function makeState(overrides?: Partial<ShengJiResponse>): ShengJiResponse {
     gameEndFlag: false,
     winnerTeam: -1,
     message: '',
-    config: { cpuDifficulty: 0 },
     ...overrides,
   };
 }

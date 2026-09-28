@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useId, useMemo, useState } from 'react';
 import type { braidApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -76,6 +76,7 @@ function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => stri
 }
 
 function BraidPageContent() {
+  const selectSourceHintId = useId();
   const {
     t,
     tc,
@@ -269,7 +270,9 @@ function BraidPageContent() {
           <button
             type="button"
             onClick={() => game.handleSelectTarget(zone)}
-            disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
+            disabled={!isPlaying || loading || isAutoCompleting}
+            aria-disabled={!selectedSource || undefined}
+            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
             aria-label={emptyLabel}
             style={{ width: dims.cw, height: dims.ch }}
             className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
@@ -358,6 +361,9 @@ function BraidPageContent() {
               </div>
             )}
 
+            <span id={selectSourceHintId} className="sr-only">
+              {tc('label.selectSourceFirst')}
+            </span>
             <div className="flex flex-wrap justify-center items-start gap-3 sm:gap-6 mb-3">
               <div className="flex flex-wrap justify-center gap-1 sm:gap-2" data-tutorial="br-foundation">
                 {Array.from({ length: FOUNDATIONS }, (_, idx) => {
@@ -375,7 +381,9 @@ function BraidPageContent() {
                           <button
                             type="button"
                             onClick={() => game.handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
+                            disabled={!isPlaying || loading || isAutoCompleting}
+                            aria-disabled={!selectedSource || undefined}
+                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t('foundationAriaLabel', { idx, count: pile.length })}
                             data-hint-slot={isHintTo('foundation', idx) ? 'to' : undefined}
                             className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${hintRingClass('foundation', idx)}`}
@@ -391,7 +399,9 @@ function BraidPageContent() {
                           <button
                             type="button"
                             onClick={() => game.handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
+                            disabled={!isPlaying || loading || isAutoCompleting}
+                            aria-disabled={!selectedSource || undefined}
+                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t('emptyFoundationAriaLabel', { idx })}
                             style={{ width: dims.cw, height: dims.ch }}
                             data-hint-slot={isHintTo('foundation', idx) ? 'to' : undefined}
@@ -519,7 +529,7 @@ function BraidPageContent() {
               )}
             </div>
             <div className="flex justify-center">
-              <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
+              <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled && !hint} t={t} />
             </div>
 
             <GameMessageBox

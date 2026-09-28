@@ -1118,9 +1118,6 @@ func TestGuandanConfigValidate(t *testing.T) {
 	if err := DefaultGuandanConfig().Validate(); err != nil {
 		t.Errorf("the default config must validate: %v", err)
 	}
-	if err := (GuandanConfig{CpuDifficulty: 9}).Validate(); err == nil {
-		t.Error("a bad difficulty must not validate")
-	}
 }
 
 func TestGuandanRoundTripsThroughJSON(t *testing.T) {
@@ -1168,7 +1165,6 @@ func TestGuandanRejectsBadJSON(t *testing.T) {
 		{"bad finisher seat", `{` + base + `,"fi":[9]}`},
 		{"bad tribute seat", `{` + base + `,"tb":[{"From":9,"To":0}]}`},
 		{"unknown combination", `{` + base + `,"lb":{"Kind":99,"Rank":3,"Size":1}}`},
-		{"bad config", `{"pl":[{},{},{},{}],"cf":{"cd":99},"ph":0,"ci":0,"lp":-1,"wt":-1,"dt":0,"lc":2,"lv":[2,2]}`},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			var g Guandan

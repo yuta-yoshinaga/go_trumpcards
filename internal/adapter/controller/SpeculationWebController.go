@@ -57,9 +57,19 @@ type SpeculationWebOutput struct {
 	// WinnerSeat は直前のラウンドの勝者席。決着前・流局なら -1。
 	WinnerSeat  int  `json:"winnerSeat"`
 	GameEndFlag bool `json:"gameEndFlag"`
+	// LastTrade is the most recent completed purchase, or null when none occurred.
+	LastTrade *SpeculationWebOutputTrade `json:"lastTrade"`
 
 	Config *SpeculationWebOutCfg `json:"config,omitempty"`
 	WebOutputBase
+}
+
+// SpeculationWebOutputTrade describes a completed purchase.
+type SpeculationWebOutputTrade struct {
+	BuyerSeat  int            `json:"buyerSeat"`
+	SellerSeat int            `json:"sellerSeat"`
+	Price      int            `json:"price"`
+	Card       *WebOutputCard `json:"card"`
 }
 
 // SpeculationWebController スペキュレーションWebコントローラークラス
@@ -81,6 +91,7 @@ func newSpeculationDefaultOutput(msg string) *SpeculationWebOutput {
 		OfferFrom:     -1,
 		OfferTo:       -1,
 		WinnerSeat:    -1,
+		LastTrade:     nil,
 		WebOutputBase: WebOutputBase{Message: msg},
 	}
 }

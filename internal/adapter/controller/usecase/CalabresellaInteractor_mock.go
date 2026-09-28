@@ -37,6 +37,12 @@ func (_m *MockCalabresellaInteractor) Discard(cardIndex int) string {
 	return ret.Get(0).(string)
 }
 
+// DiscardCards モック
+func (_m *MockCalabresellaInteractor) DiscardCards(cardIndices []int) string {
+	ret := _m.Called(cardIndices)
+	return ret.Get(0).(string)
+}
+
 // Play モック
 func (_m *MockCalabresellaInteractor) Play(cardIndex int) string {
 	ret := _m.Called(cardIndex)

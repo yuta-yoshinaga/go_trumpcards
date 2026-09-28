@@ -252,6 +252,14 @@ function SkatPageContent() {
               label={t('currentTrick')}
               dataTutorial="sk-trick-display"
             />
+            {(isTrickEnd || (isPlay && state.trickNumber > 1)) &&
+              state.leadPlayerIdx >= 0 &&
+              state.players[state.leadPlayerIdx] && (
+                <p className="text-sm text-ds-text-muted" data-testid="last-trick-winner">
+                  {t('lastTrickWinner')}:{' '}
+                  {state.players[state.leadPlayerIdx].isHuman ? t('you') : `CPU ${state.leadPlayerIdx}`}
+                </p>
+              )}
 
             {/* Skat (face-up at round end) */}
             {state.originalSkat && state.originalSkat.length > 0 && (

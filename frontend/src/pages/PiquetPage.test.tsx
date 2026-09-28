@@ -70,7 +70,7 @@ function makeState(overrides: Partial<PiquetResponse> = {}): PiquetResponse {
     gameEndFlag: false,
     winnerIdx: -1,
     message: '',
-    config: { cpuDifficulty: 1, dealsPerPartie: 6 },
+    config: { dealsPerPartie: 6 },
     ...overrides,
   };
 }
@@ -151,6 +151,29 @@ describe('PiquetPage', () => {
     renderWithProviders(<PiquetPage />);
     // ja: "手札: 12 | トリック: 0 | ラウンド: 0 | マッチ: 0" (PlayerCard.playerStats)
     await waitFor(() => expect(screen.getAllByText(/手札: 12/).length).toBeGreaterThan(0));
+  });
+
+  it.each([
+    [PiquetExchangeTurn.ELDER, 0],
+    [PiquetExchangeTurn.YOUNGER, 1],
+  ])('shows hand counts and the selected exchange preview for turn %s', async (exchangeTurn, humanIdx) => {
+    const state = makeState({ exchangeTurn });
+    if (humanIdx === 1) {
+      state.players[0]!.isHuman = false;
+      state.players[1]!.isHuman = true;
+      state.players[1]!.cards = state.players[0]!.cards;
+    }
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<PiquetPage />);
+    await waitFor(() => {
+      const region = screen.getByTestId('piquet-exchange-counts');
+      expect(region).toHaveAttribute('aria-live', 'polite');
+      expect(region).toHaveTextContent('現在の手札: 12枚 / 選択中: 0枚 / 交換後: 12枚');
+    });
+    fireEvent.click(await screen.findByAltText('♠ K'));
+    expect(screen.getByTestId('piquet-exchange-counts')).toHaveTextContent(
+      '現在の手札: 12枚 / 選択中: 1枚 / 交換後: 12枚',
+    );
   });
 
   it('renders the declaration list with translated tied and fallback-scorer labels', async () => {

@@ -123,7 +123,17 @@ describe('LaughAndLieDownPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
 
     // 2 枚の合法手のうち、3 枚取りが提示されるのは 1 枚だけ。
-    expect(screen.getAllByRole('button', { name: '3枚取る' })).toHaveLength(1);
+    expect(screen.getAllByRole('button', { name: /ランクで3枚取る/ })).toHaveLength(1);
+  });
+
+  it('names the three-card take by rank and exposes its selected state', async () => {
+    mockExec.mockResolvedValue(makeState({ validIndices: [0], threeTakeIndices: [0] }));
+    renderWithProviders(<LaughAndLieDownPage />);
+
+    const toggle = await screen.findByRole('button', { name: '7のランクで3枚取る' });
+    expect(toggle).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(toggle);
+    expect(toggle).toHaveAttribute('aria-pressed', 'true');
   });
 
   // **CUI は「1枚 or 3枚」を書いている。**Web はカードを光らせるだけで
@@ -151,14 +161,14 @@ describe('LaughAndLieDownPage', () => {
       const toggle = await screen.findByRole('checkbox', { name: 'ヒント表示' });
       fireEvent.click(toggle);
 
-      await waitFor(() => expect(screen.getByRole('button', { name: '3枚取る' })).toBeInTheDocument());
+      await waitFor(() => expect(screen.getByRole('button', { name: /ランクで3枚取る/ })).toBeInTheDocument());
       expect(document.querySelectorAll('[data-hint-take-three="true"]')).toHaveLength(0);
     });
 
     it('leaves it unmarked while hints are off', async () => {
       mockExec.mockResolvedValue(armed(3));
       renderWithProviders(<LaughAndLieDownPage />);
-      await waitFor(() => expect(screen.getByRole('button', { name: '3枚取る' })).toBeInTheDocument());
+      await waitFor(() => expect(screen.getByRole('button', { name: /ランクで3枚取る/ })).toBeInTheDocument());
       expect(document.querySelectorAll('[data-hint-take-three="true"]')).toHaveLength(0);
     });
   });
@@ -168,7 +178,7 @@ describe('LaughAndLieDownPage', () => {
     renderWithProviders(<LaughAndLieDownPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
 
-    fireEvent.click(screen.getByRole('button', { name: '3枚取る' }));
+    fireEvent.click(screen.getByRole('button', { name: /ランクで3枚取る/ }));
     mockExec.mockClear();
 
     const handButtons = screen.getAllByRole('button').filter((b) => b.dataset.hintAction === 'play');

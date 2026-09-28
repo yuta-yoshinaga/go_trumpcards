@@ -20,8 +20,7 @@ type BeziqueWebInput struct {
 
 // BeziqueWebConfig ベジークWeb設定
 type BeziqueWebConfig struct {
-	CpuDifficulty *int `json:"cpuDifficulty,omitempty"`
-	TargetScore   *int `json:"targetScore,omitempty"`
+	TargetScore *int `json:"targetScore,omitempty"`
 }
 
 // BeziqueWebOutputPlayer ベジークWebアウトプットプレイヤー
@@ -76,16 +75,12 @@ type BeziqueWebOutput struct {
 
 // BeziqueWebOutputConfig ベジーク設定アウトプット
 type BeziqueWebOutputConfig struct {
-	CpuDifficulty int `json:"cpuDifficulty"`
-	TargetScore   int `json:"targetScore"`
+	TargetScore int `json:"targetScore"`
 }
 
 // ToConfig builds a BeziqueConfig from the nested web config, applying bounds checking.
 func (c *BeziqueWebConfig) ToConfig() domain.BeziqueConfig {
 	cfg := domain.DefaultBeziqueConfig()
-	cfg.CpuDifficulty = domain.BeziqueCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty,
-		int(domain.BeziqueCpuDifficultyEasy), int(domain.BeziqueCpuDifficultyHard),
-		int(cfg.CpuDifficulty)))
 	cfg.TargetScore = webutil.BoundedIntPtr(c.TargetScore, 100, domain.BeziqueMaxTargetScore, cfg.TargetScore)
 	return cfg
 }

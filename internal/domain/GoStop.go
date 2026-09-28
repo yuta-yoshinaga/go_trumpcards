@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra
+//go:build !js || !wasm || extra10
 
 // Package domain — ゴーストップ (Go-Stop / 고스톱; JA コッテ) のドメインモデル。
 //

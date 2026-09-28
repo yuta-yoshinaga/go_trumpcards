@@ -560,9 +560,6 @@ func (g *Ristikontra) GetConfig() RistikontraConfig { return g.config }
 // SetConfig は設定を変更する。
 func (g *Ristikontra) SetConfig(config RistikontraConfig) { g.config = config }
 
-// SetGameEndFlagForTest はテスト用に終了フラグを設定する。
-func (g *Ristikontra) SetGameEndFlagForTest(v bool) { g.state.gameEndFlag = v }
-
 // GetActionLog は棋譜を返す。
 func (g *Ristikontra) GetActionLog() []*ActionLogEntry { return g.state.actionLog }
 

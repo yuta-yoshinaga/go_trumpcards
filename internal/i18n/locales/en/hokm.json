@@ -18,6 +18,7 @@
   "promptHandEnd": "Team {{team}} reached {{need}} tricks and took the hand (+1).",
   "promptHandEndKot": "Team {{team}} let the others take nothing at all — that is a Kot, +2.",
   "promptNext": "next ... Start the next hand",
+  "promptNoMoreTricks": "There are no more tricks to play. Continue to the next hand.",
   "gameEndTeam0": "Game over! Your team wins ({{t0}} - {{t1}})!",
   "gameEndTeam1": "Game over! The other team wins ({{t0}} - {{t1}}).",
   "gameEndTie": "Game over! It's a tie ({{t0}} - {{t1}}).",

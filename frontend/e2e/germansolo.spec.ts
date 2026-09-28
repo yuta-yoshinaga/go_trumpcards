@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, TIMEOUT_GAME_LOOP, TIMEOUT_TRANSITION, waitForLoaded } from './helpers';
+import { gameButton, navigateTo, TIMEOUT_GAME_LOOP, TIMEOUT_TRANSITION, waitForLoaded } from './helpers';
 
 test.describe('German Solo E2E', () => {
   test('bids, calls an ace, and plays through the phase transitions', async ({ page }) => {
@@ -18,7 +18,7 @@ test.describe('German Solo E2E', () => {
     // **フラーゲを選ぶ。** 一番低い契約なので、CPU が先に高い宣言をしていない
     // 限り必ず選択肢に出る (出ていなければ下の分岐がパスに落ちる)。
     const frageButton = page.getByRole('button', { name: 'フラーゲ' });
-    const passButton = page.getByRole('button', { name: 'パス' });
+    const passButton = gameButton(page, 'パス');
     const aceCall = page.getByTestId('germansolo-ace-call');
     const playButton = page.getByRole('button', { name: '出す' });
     const nextTrick = page.getByRole('button', { name: '次のトリック' });
@@ -51,11 +51,11 @@ test.describe('German Solo E2E', () => {
 
       if (await frageButton.isVisible()) {
         await frageButton.click();
-        const spade = page.getByRole('button', { name: 'スペード' });
+        const spade = gameButton(page, 'スペード');
         if (await spade.isVisible()) {
           await spade.click();
         }
-        const confirm = page.getByRole('button', { name: /宣言|確定/ });
+        const confirm = gameButton(page, /宣言|確定/);
         if (await confirm.isVisible()) {
           await confirm.click();
         }

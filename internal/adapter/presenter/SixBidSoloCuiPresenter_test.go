@@ -40,6 +40,7 @@ func setupSixBidSoloCuiMock(o sixBidSoloMockOpts) *interfaces.MockSixBidSoloGame
 	})
 	m.On("SixBidSoloWidowPoints").Return(21)
 	m.On("GetTrick").Return([]*domain.Card{sbsTestCard(domain.CardDesignSpade, 13)})
+	m.On("GetTrickLeaderIdx").Return(1)
 	m.On("GetTrickNumber").Return(3)
 	m.On("GetGameEndFlag").Return(o.gameEnd)
 	m.On("GetWinnerIdx").Return(o.winner)
@@ -70,6 +71,11 @@ func TestSixBidSoloCuiPresenter_KeepsTheWidowFaceDown(t *testing.T) {
 	revealed := new(presenter.SixBidSoloCuiPresenter).Output(setupSixBidSoloCuiMock(o), nil)
 	assert.Contains(t, revealed, "21pt", "the widow's value is shown once it is revealed")
 	assert.NotContains(t, revealed, "伏せ 3枚")
+}
+
+func TestSixBidSoloCuiPresenter_ShowsTrickPlayerNames(t *testing.T) {
+	out := new(presenter.SixBidSoloCuiPresenter).Output(setupSixBidSoloCuiMock(defaultSixBidSoloOpts()), nil)
+	assert.Contains(t, out, "場: \x1b[1mCPU 1\x1b[0m ♠13")
 }
 
 // 他家の手札はプレイ中は見えない。

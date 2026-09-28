@@ -7,5 +7,9 @@
   "payoutRef.insurance": "インシュランス (2:1)",
   "payoutRef.push": "ディーラー勝利 (同点でもディーラーの勝ち)",
   "payoutRef.surrender": "サレンダー (ベットの半額返金)",
-  "payoutRef.bust": "バスト (21超過: 負け)"
+  "payoutRef.bust": "バスト (21超過: 負け)",
+  "doubleDownAvailable": "ダブルダウンは手札2枚で、追加ベット分のチップがあり、スプリット後はDASが有効な場合に可能です。",
+  "doubleDownUnavailable.cards": "ダブルダウンは手札が2枚のときだけ可能です。",
+  "doubleDownUnavailable.chips": "追加ベット分のチップが足りないため、ダブルダウンできません。",
+  "doubleDownUnavailable.split": "スプリット後のハンドではダブルダウンできません（DASが無効です）。"
 }

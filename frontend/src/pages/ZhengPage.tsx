@@ -22,6 +22,7 @@ import { useZhengGame } from '../hooks/useZhengGame';
 import { gameTheme } from '../styles/gameTheme';
 import type { ZhengResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import {
   formatZhengState,
   parseZhengCommand,
@@ -245,7 +246,20 @@ function ZhengPageContent() {
                     >
                       <span>{p.isHuman ? tc('player.you') : tc('player.cpu', { id: p.id })}</span>
                       {p.isFinished ? (
-                        <span className="font-bold text-ds-text-primary">{t(`rank.${p.rank}`)}</span>
+                        <span className="flex items-center gap-2 font-bold text-ds-text-primary">
+                          {t(`rank.${p.rank}`)}
+                          <span
+                            className="flex gap-0.5"
+                            role="img"
+                            aria-label={t('finishCards', {
+                              cards: (p.finishCards ?? []).map(cardAlt).join(t('listSeparator')),
+                            })}
+                          >
+                            {(p.finishCards ?? []).map((c, i) => (
+                              <AnimatedCard key={`${c.design}-${c.value}-${i}`} card={c} width={cardWidth * 0.45} />
+                            ))}
+                          </span>
+                        </span>
                       ) : (
                         <span className="text-ds-text-muted">{t('cardCount', { count: p.cardCount })}</span>
                       )}

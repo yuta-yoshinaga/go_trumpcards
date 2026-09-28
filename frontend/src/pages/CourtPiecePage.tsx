@@ -33,15 +33,13 @@ import { gameTheme } from '../styles/gameTheme';
 import type { CourtPieceResponse } from '../types/card';
 import { CourtPiecePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { suitSymbolAt } from '../utils/cardAlt';
 import { COURT_PIECE_HELP, parseCourtPieceCommand } from '../utils/cli/commands/courtPieceCommands';
 import { formatCourtPieceState } from '../utils/cli/formatters/courtPieceFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
 import { playerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
-
-/** Suit symbols indexed by suit number (1=♠ 2=♣ 3=♥ 4=♦; index 0 = undeclared). */
-const SUIT_SYMBOLS = ['', '♠', '♣', '♥', '♦'] as const;
 
 /** Tricks a team must take within a 13-trick round to win it (Sar); mirrors CourtPieceTricksToWin in internal/domain/CourtPiece.go. */
 const COURT_PIECE_TRICKS_TO_WIN = 7;
@@ -154,7 +152,7 @@ function CourtPiecePageContent() {
   // 非合法手もクリックでき、拒否の最終判断はバックエンドが持つ。
   const legalPlayIndices = canPlay ? state.playableIndices : undefined;
 
-  const trumpSymbol = state.trumpSuit === 0 ? t('noTrump') : (SUIT_SYMBOLS[state.trumpSuit] ?? '?');
+  const trumpSymbol = state.trumpSuit === 0 ? t('noTrump') : suitSymbolAt(state.trumpSuit, '');
 
   const handleManualReset = () => {
     hideActionLog();
@@ -247,8 +245,22 @@ function CourtPiecePageContent() {
               <div>
                 {/* Team match scores */}
                 <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-                  <div>{t('teamScore', { team: t('team.a'), score: state.teamScores[0] ?? 0 })}</div>
-                  <div>{t('teamScore', { team: t('team.b'), score: state.teamScores[1] ?? 0 })}</div>
+                  {([0, 1] as const).map((team) => {
+                    const isWinner = isGameEnd && state.winnerTeam === team;
+                    return (
+                      <div
+                        key={team}
+                        className={isWinner ? 'text-ds-accent font-semibold' : ''}
+                        data-testid={`cp-team-score-${team}`}
+                      >
+                        {t('teamScore', {
+                          team: team === 0 ? t('team.a') : t('team.b'),
+                          score: state.teamScores[team] ?? 0,
+                        })}
+                        {isWinner && <span className="ml-2">{t('winner')}</span>}
+                      </div>
+                    );
+                  })}
                   <div className="mt-1">
                     {t('yourTeam')}: {humanTeam === 0 ? t('team.a') : t('team.b')}
                   </div>
@@ -359,7 +371,7 @@ function CourtPiecePageContent() {
                 <div className="text-ds-warning text-sm mb-2">
                   {t('hintAvailable')}: {t(`hint.${state.hint.reason}`)}
                   {state.hint.cardIndex != null && ` ([${state.hint.cardIndex}])`}
-                  {state.hint.trumpSuit != null && ` (${SUIT_SYMBOLS[state.hint.trumpSuit] ?? '?'})`}
+                  {state.hint.trumpSuit != null && ` (${suitSymbolAt(state.hint.trumpSuit, '')})`}
                 </div>
               )}
             </div>

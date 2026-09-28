@@ -24,6 +24,7 @@
   "score": "score {{n}}",
   "dealerBadge": "Dealer",
   "passButton": "Pass",
+  "waitingForTurn": "Waiting for your next turn.",
   "goOut": "{{name}} went out for {{points}}",
   "cardsLeft": "{{name}}: {{n}} card(s) left",
   "unplayedKings": "Kings never played: {{n}} (2 each)",

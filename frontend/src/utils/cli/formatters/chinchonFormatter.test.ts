@@ -38,7 +38,7 @@ const baseState: ChinchonResponse = {
   layoffableIndices: [],
   message: '',
   messageCode: '',
-  config: { cpuDifficulty: 1, playerCount: 2, knockThreshold: 5, eliminationLimit: 100 },
+  config: { playerCount: 2, knockThreshold: 5, eliminationLimit: 100 },
 };
 
 describe('formatChinchonState', () => {

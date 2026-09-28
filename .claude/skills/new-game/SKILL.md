@@ -19,14 +19,9 @@ it as the source of truth. This file adds the moving parts that bite most often.
 
 - `<name>` — lowercase game id, no spaces (e.g. `fivehundred`, `sixcardgolf`). Used as the
   registry key, API route, i18n filename, and worker route. Must be unique.
-- `<category>` — exactly one of `casino` | `classic` | `solo`. **This is a binary-size
-  bucket, not a user-facing taxonomy.** It pins the game to one Cloudflare Worker WASM
-  binary. Pick the category whose worker still has gzip headroom under the 1 MB free-tier
-  limit, *not* the one that "feels" right thematically.
-  - ⚠️ The `classic` worker is historically at/near the 1 MB limit. Recent games
-    (Scopa, Barbu, Macau, Tien Len, Wasp, Thirty-One, Osmosis, Five Hundred) were all
-    bucketed `solo` or `casino` for headroom even when thematically trick-taking. When in
-    doubt, prefer `solo` (most headroom) and confirm with `make build-worker-<category>`.
+- `<category>` — one of the ten Worker buckets (see `registry.go`). Pick the bucket with
+  the most *measured* gzip headroom — run the `worker-budget-checker` agent or
+  `.claude/skills/rebucket-game/scripts/measure.sh`.
 - `<issue#>` (optional) — GitHub issue this closes; include `Closes #<n>` in the PR body.
 
 If `<name>` or `<category>` is missing, ask before scaffolding.
@@ -60,9 +55,9 @@ If `<name>` or `<category>` is missing, ask before scaffolding.
 
    | File | What to bump |
    |------|--------------|
-   | `internal/infrastructure/games/registry_test.go` | the matching `expectedCasino` / `expectedClassic` / `expectedSolo` const (line 16–18). `expectedTotal` is derived — do not touch it. |
-   | `frontend/src/hooks/useTutorialProgress.test.ts` | `totalCount).toBe(N)` (~line 12) |
-   | `frontend/src/components/tutorial/TutorialProgressPanel.test.tsx` | **three** assertions: `getByText(/N/)`, `links.length === N`, `incompleteMarkers.length === N` (~lines 22, 36, 49) |
+   | `internal/infrastructure/games/registry_test.go` | the `expected<Bucket>` const for your bucket (one per Worker). `expectedTotal` is derived — do not touch it. |
+   | `frontend/src/hooks/useTutorialProgress.test.ts` | `totalCount).toBe(N)` |
+   | `frontend/src/components/tutorial/TutorialProgressPanel.test.tsx` | **three** assertions: `getByText(/N/)`, `links.length === N`, `incompleteMarkers.length === N` |
 
    The three frontend assertions are **tsc-only** — `bun run check` (biome) does not catch a
    stale count, so without this audit they slip through to a failed CI run. The Go
@@ -78,25 +73,22 @@ If `<name>` or `<category>` is missing, ask before scaffolding.
    - `registry.go` → `{Name, Category, Description}`
    - `games_server.go` → `BindWebControllerFor("<name>", …)`
    - `internal/infrastructure/games/<category>/<category>.go` → `RegisterKVGame("<name>", games.Category…, …)`
-   - `frontend/src/api/gameApi.ts` `workerUrl` → `"<name>": "<category>"`
+   - `frontend/src/api/gameExec.ts` `workerUrl` → `"<name>": "<category>"`
 
 7. **Frontend route requires a `profile`.** Every `gameRoutes.ts` entry needs the
    `profile: GameProfile` field (4 axes; see `discoverAxes.ts` for option order) or tsc
    rejects the file. Also add `discover.blurb.<page-kebab>` + `discover.stretch_blurb.<page-kebab>`
    in both `i18n/locales/{ja,en}/discover.json`.
 
-8. **Verify, respecting this box's memory limits.** Per the project's RAM constraints,
-   **never run heavy builds/tests in parallel** — run one at a time and let CI gate the
-   ones that OOM locally (`internal/domain` test pkg, full `golangci-lint`, `bun run build`
-   tsc, E2E, tinygo worker-size). What *does* run locally: targeted `go test` on the new
-   non-domain packages, `goimports -w`, `biome check`, `vitest`, host `go build ./...`,
-   and `make build-worker-<category>` for the size check.
+8. **Verify locally with CI's scope:** `go test -tags test ./...`,
+   `golangci-lint run --build-tags test ./...`, `cd frontend && bun run build && bun run check && bun run typecheck && bun run test`,
+   and `.claude/skills/rebucket-game/scripts/measure.sh <category>` for the size check.
 
 9. **Gate before committing.** First re-run `bash .claude/skills/new-game/scripts/count-audit.sh`
    — it must print all ✅. Then invoke the `game-registration-checker` subagent (Agent tool,
    `subagent_type: "game-registration-checker"`) with the new `<name>` and `<category>`. It
    greps every touchpoint and diffs the count assertions read-only — catching the exact
-   failures above *before* the expensive, OOM-prone CI round-trip. Fix anything either flags,
+   failures above *before* the CI round-trip. Fix anything either flags,
    then commit.
 
 10. **Docs in the same commit.** README.md, CLAUDE.md (games list), docs/games.md,

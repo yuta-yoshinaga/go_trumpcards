@@ -1,4 +1,4 @@
-//go:build !js || !wasm || solo
+//go:build !js || !wasm || extra9
 
 // Package domain シュナプセン / Sixty-Six (Schnapsen / 66) のドメインモデル。
 //
@@ -785,7 +785,7 @@ func (s *Schnapsen) playHintReason(playerIdx, chosenIdx int) string {
 	return "follow_dump"
 }
 
-// --- CPU AI (single-difficulty heuristic) ---
+// --- CPU AI heuristic ---
 
 // cpuChooseMarriage CPU がリード時に宣言すべきマリアージュのカードインデックスを返す。
 // 切り札マリアージュを優先し、宣言時はランクの低い Q をリードする。

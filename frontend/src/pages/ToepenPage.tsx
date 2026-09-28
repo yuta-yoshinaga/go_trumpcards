@@ -166,10 +166,23 @@ function ToepenPageContent() {
               <div className="text-game-text-muted text-xs mb-1">
                 {state.currentTrick.length > 0 ? t('trick', { n: state.trickNumber + 1 }) : t('noTrick')}
               </div>
-              <div className="flex gap-1 justify-center">
-                {state.currentTrick.map((tc2, i) => (
-                  <AnimatedCard key={`trick-${i.toString()}`} card={tc2.card} width={cardWidth} draggable={false} />
-                ))}
+              <div className="flex gap-2 justify-center" data-testid="toepen-current-trick">
+                {state.currentTrick.map((tc2, i) => {
+                  const player = state.players[tc2.playerIdx];
+                  if (!player) return null;
+                  const playerName = player.isHuman ? t('you') : t('cpu', { n: player.id });
+                  return (
+                    <div
+                      key={`trick-${i.toString()}`}
+                      className="flex flex-col items-center gap-1"
+                      data-testid="toepen-trick-card"
+                    >
+                      <AnimatedCard card={tc2.card} width={cardWidth} draggable={false} />
+                      <span className="text-xs text-ds-text-primary">{playerName}</span>
+                      {player.folded && <span className="text-xs text-ds-text-muted">{t('folded')}</span>}
+                    </div>
+                  );
+                })}
               </div>
             </div>
 

@@ -71,6 +71,21 @@ beforeEach(() => {
 describe('CruelPage', () => {
   afterEach(() => localStorage.clear());
 
+  it('keeps a foundation target focusable and explains that a source must be selected', async () => {
+    renderWithProviders(<CruelPage />);
+    const target = await screen.findByTestId('cruel-foundation-0');
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const describedBy = target.getAttribute('aria-describedby');
+    expect(describedBy).toBeTruthy();
+    expect(document.getElementById(describedBy ?? '')).toHaveTextContent('先に移動する札を選んでください');
+
+    mockExec.mockClear();
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('renders heading', async () => {
     renderWithProviders(<CruelPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
@@ -388,12 +403,35 @@ describe('CruelPage autocomplete readiness', () => {
     mockExec.mockResolvedValue({ ...playingState, canAutoComplete: false });
     renderWithProviders(<CruelPage />);
     await waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeDisabled());
+    expect(screen.getByTestId('autocomplete-readiness')).toHaveTextContent('組札へ送れるカードがあると有効になります');
   });
 
   it('enables the button when a card can go to a foundation', async () => {
     mockExec.mockResolvedValue({ ...playingState, canAutoComplete: true });
     renderWithProviders(<CruelPage />);
     await waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeEnabled());
+    expect(screen.getByTestId('autocomplete-readiness')).toHaveTextContent('オートコンプリートを実行できます');
+  });
+
+  it('keeps the ready message during another pending action', async () => {
+    let resolveShift!: (value: CruelResponse) => void;
+    mockExec.mockImplementation((command) =>
+      command === 'shift'
+        ? new Promise<CruelResponse>((resolve) => {
+            resolveShift = resolve;
+          })
+        : Promise.resolve(playingState),
+    );
+    renderWithProviders(<CruelPage />);
+    const readiness = await screen.findByTestId('autocomplete-readiness');
+    await waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeEnabled());
+    expect(readiness).toHaveTextContent('オートコンプリートを実行できます');
+    fireEvent.click(screen.getByTestId('shift-button'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('shift'));
+    expect(readiness).toHaveTextContent('オートコンプリートを実行できます');
+    expect(readiness.closest('footer')).toBeNull();
+
+    resolveShift(playingState);
   });
 
   // **組札の中身から推測しない。** Cruel は開始時にエースを組札へ配るので、

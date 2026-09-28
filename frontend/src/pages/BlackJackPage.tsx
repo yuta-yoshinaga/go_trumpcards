@@ -45,7 +45,7 @@ import { btnDanger } from '../styles/buttonStyles';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { BlackJackResponse } from '../types/card';
-import { BjPhase } from '../types/phases';
+import { BjDoubleDownBlock, BjPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { BLACKJACK_SIDE_BET_PAYOUTS } from '../utils/blackjackSideBetPayouts';
 import { BLACKJACK_HELP, parseBlackjackCommand } from '../utils/cli/commands/blackjackCommands';
@@ -569,12 +569,35 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
                 {sideBetResults.map((r) => (
                   <div
                     key={r.betType}
+                    data-testid={
+                      variant === 'spanish21' && phase === BjPhase.END
+                        ? `spanish21-side-bet-breakdown-${r.betType}`
+                        : undefined
+                    }
                     className={`text-sm text-center px-3 py-1 rounded mb-1 ${r.payout > 0 ? 'bg-ds-warning/90 text-ds-text-on-accent font-bold' : 'bg-ds-surface-elevated/70 text-ds-text-primary'}`}
                   >
-                    {r.betType === BJ_SIDE_BET_PERFECT_PAIRS ? t('sideBet.perfectPairs') : t('sideBet.twentyOnePlus3')}:{' '}
-                    {r.payout > 0
-                      ? t('sideBet.win', { name: r.resultName, payout: r.payout })
-                      : t('sideBet.lose', { name: r.resultName, amount: r.betAmount })}
+                    {variant === 'spanish21' && phase === BjPhase.END ? (
+                      <>
+                        <div>
+                          {r.betType === BJ_SIDE_BET_PERFECT_PAIRS
+                            ? t('sideBet.perfectPairs')
+                            : t('sideBet.twentyOnePlus3')}
+                        </div>
+                        <div>{t('sideBet.breakdownBet', { amount: r.betAmount })}</div>
+                        {r.resultName && <div>{t('sideBet.breakdownCondition', { condition: r.resultName })}</div>}
+                        <div>{t('sideBet.breakdownPayout', { amount: r.payout > 0 ? r.betAmount + r.payout : 0 })}</div>
+                      </>
+                    ) : (
+                      <>
+                        {r.betType === BJ_SIDE_BET_PERFECT_PAIRS
+                          ? t('sideBet.perfectPairs')
+                          : t('sideBet.twentyOnePlus3')}
+                        :{' '}
+                        {r.payout > 0
+                          ? t('sideBet.win', { name: r.resultName, payout: r.payout })
+                          : t('sideBet.lose', { name: r.resultName, amount: r.betAmount })}
+                      </>
+                    )}
                   </div>
                 ))}
               </div>
@@ -710,6 +733,19 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
 
               {phase === BjPhase.ACTION && (
                 <div data-tutorial="bj-action-buttons">
+                  {variant === 'doubleexposure' &&
+                    state?.doubleDownBlock !== BjDoubleDownBlock.HAND_FINISHED &&
+                    state?.doubleDownBlock !== BjDoubleDownBlock.WRONG_PHASE && (
+                      <p className="mb-2 text-sm text-ds-text-muted">
+                        {state?.doubleDownBlock === BjDoubleDownBlock.NOT_TWO_CARDS
+                          ? t('doubleDownUnavailable.cards')
+                          : state?.doubleDownBlock === BjDoubleDownBlock.INSUFFICIENT_CHIPS
+                            ? t('doubleDownUnavailable.chips')
+                            : state?.doubleDownBlock === BjDoubleDownBlock.SPLIT_NO_DAS
+                              ? t('doubleDownUnavailable.split')
+                              : t('doubleDownAvailable')}
+                      </p>
+                    )}
                   <BjActionPhaseControls
                     loading={loading}
                     hintEnabled={hintEnabled}

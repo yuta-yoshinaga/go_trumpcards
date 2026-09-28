@@ -4,6 +4,8 @@
 
 Accepted
 
+Worker の Go バージョンについては ADR-0042 で更新する。
+
 ## Date
 
 2026-09-23

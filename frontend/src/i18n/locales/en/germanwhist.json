@@ -20,6 +20,13 @@
     "trickCount": "Tricks won"
   },
   "currentTrick": "Current trick",
+  "leadSuit": "Led suit",
+  "suits": {
+    "SPADE": "Spades",
+    "CLOVER": "Clubs",
+    "HEART": "Hearts",
+    "DIAMOND": "Diamonds"
+  },
   "actions": {
     "reset": "Reset",
     "giveUp": "Give up",

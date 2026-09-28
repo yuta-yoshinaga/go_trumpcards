@@ -107,11 +107,6 @@ func TestGuandanWebController_ResetWithConfig(t *testing.T) {
 		giMock.AssertCalled(t, "ResetWithConfig", expected)
 	}
 
-	t.Run("out-of-range values fall back to defaults", func(t *testing.T) {
-		diff := 9
-		run(t, "cfg-1", &controller.GuandanWebConfig{CpuDifficulty: &diff}, domain.DefaultGuandanConfig())
-	})
-
 	// **config はワイヤ上で任意。**省略時に落ちるとフロントの reset が死ぬ。
 	t.Run("nil config uses defaults", func(t *testing.T) {
 		run(t, "cfg-2", nil, domain.DefaultGuandanConfig())

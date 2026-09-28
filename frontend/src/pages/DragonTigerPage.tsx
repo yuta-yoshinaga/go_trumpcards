@@ -192,6 +192,20 @@ function DragonTigerPageContent() {
             {isBetPhase && (
               <div className="flex flex-col items-center justify-center py-4 gap-4">
                 <p className="text-ds-text-muted text-lg">{t('betGuide')}</p>
+                <div
+                  className="flex flex-wrap justify-center gap-2 text-ds-text-primary text-sm"
+                  data-testid="bet-odds"
+                >
+                  {[
+                    ['dragon', 1],
+                    ['tiger', 1],
+                    ['tie', 8],
+                  ].map(([type, odds]) => (
+                    <span key={type} className="rounded-full bg-ds-surface-elevated px-2 py-0.5 text-xs font-medium">
+                      {t('payout.oddsBadge', { type: t(`payout.${type}`), odds })}
+                    </span>
+                  ))}
+                </div>
               </div>
             )}
 

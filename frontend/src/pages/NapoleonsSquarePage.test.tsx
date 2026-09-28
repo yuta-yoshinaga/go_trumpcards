@@ -94,6 +94,23 @@ describe('NapoleonsSquarePage', () => {
     await waitFor(() => expect(screen.getAllByLabelText(/組札\d+ 1枚/).length).toBe(8));
   });
 
+  it('keeps an empty tableau target focusable and explains that a source is needed', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<NapoleonsSquarePage />);
+    const target = await screen.findByRole('button', { name: '空のタブロー列 2' });
+    mockExec.mockClear();
+
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const describedBy = target.getAttribute('aria-describedby');
+    expect(describedBy).toBeTruthy();
+    expect(document.getElementById(describedBy ?? '')).toHaveTextContent('先に移動する札を選んでください');
+
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('labels all twelve tableau columns with their 0-based index', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<NapoleonsSquarePage />);

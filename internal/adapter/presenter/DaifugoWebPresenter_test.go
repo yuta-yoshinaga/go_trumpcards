@@ -491,9 +491,14 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 		assert.NotContains(t, resObj.Message, "CPU 1")
 	})
 
-	setupDGMock := func() *interfaces.MockDaifugoGame {
+	setupDGMock := func(fieldClearedLeader ...int) *interfaces.MockDaifugoGame {
 		m := new(interfaces.MockDaifugoGame)
 		m.On("GetCurrentTurn").Return(0)
+		leader := -1
+		if len(fieldClearedLeader) > 0 {
+			leader = fieldClearedLeader[0]
+		}
+		m.On("GetFieldClearedLeader").Return(leader)
 		m.On("GetLastPlayPlayerIdx").Return(-1)
 		m.On("GetRevolutionActive").Return(false)
 		m.On("GetElevenBackActive").Return(false)
@@ -514,7 +519,7 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 	}
 
 	t.Run("success Output skips nil player in player loop", func(t *testing.T) {
-		m := setupDGMock()
+		m := setupDGMock(2)
 		m.On("GetPendingActionType").Return(domain.DaifugoPendingNone)
 		m.On("GetPendingActionTarget").Return(-1)
 		m.On("GetGameEndFlag").Return(false)
@@ -526,6 +531,7 @@ func TestDaifugoWebPresenter_Method(t *testing.T) {
 		err := json.Unmarshal([]byte(result), &resObj)
 		assert.NoError(t, err)
 		assert.Len(t, resObj.Players, 0) // nil player skipped
+		assert.Equal(t, 2, resObj.FieldClearedLeader)
 	})
 
 	t.Run("success buildResultMessage skips nil player", func(t *testing.T) {

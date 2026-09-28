@@ -1,8 +1,8 @@
 import type { CourtPieceResponse } from '../../../types/card';
+import { suitSymbolAt } from '../../cardAlt';
 import { formatCard, formatHeader, formatIndexedCards, formatPlayerName, formatSeparator } from '../formatterBase';
 
 const PHASE_NAMES = ['TrumpDeclaration', 'Play', 'TrickEnd', 'RoundEnd', 'GameEnd'];
-const SUIT_SYMBOLS = ['none', '♠', '♣', '♥', '♦'];
 
 /** Format a Court Piece (Rang) game state as terminal text. */
 export function formatCourtPieceState(state: CourtPieceResponse): string {
@@ -12,7 +12,7 @@ export function formatCourtPieceState(state: CourtPieceResponse): string {
   lines.push(
     `round: ${state.roundNumber}  trick: ${state.trickNumber}  phase: ${PHASE_NAMES[state.phase] ?? state.phase}`,
   );
-  const trumpText = state.trumpSuit === 0 ? 'undeclared' : (SUIT_SYMBOLS[state.trumpSuit] ?? '?');
+  const trumpText = state.trumpSuit === 0 ? 'undeclared' : suitSymbolAt(state.trumpSuit, '?');
   lines.push(`trump: ${trumpText}`);
   if (state.callerIdx >= 0) {
     const name = formatPlayerName(state.callerIdx, state.players[state.callerIdx]?.isHuman ?? false);
@@ -49,7 +49,9 @@ export function formatCourtPieceState(state: CourtPieceResponse): string {
 
   if (state.hint) {
     if (state.hint.trumpSuit != null) {
-      lines.push(`HINT: declare trump ${SUIT_SYMBOLS[state.hint.trumpSuit] ?? '?'} (${state.hint.reason})`);
+      lines.push(
+        `HINT: declare trump ${state.hint.trumpSuit === 0 ? 'none' : suitSymbolAt(state.hint.trumpSuit, '?')} (${state.hint.reason})`,
+      );
     } else if (state.hint.cardIndex != null) {
       lines.push(`HINT: play card index [${state.hint.cardIndex}] (${state.hint.reason})`);
     }

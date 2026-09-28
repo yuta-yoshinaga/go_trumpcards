@@ -23,6 +23,7 @@
   "noHint": "No hint available",
   "hintAvailable": "Hint available",
   "stalemate": "No more moves",
+  "stalemateWithEscape": "Stalemate. Use the Undo button to undo {{count}} moves and escape.",
   "dealsRemaining": "{{count}} deals remaining",
   "cannotDealEmptyColExists": "Fill every empty column before dealing",
   "tutorial": {

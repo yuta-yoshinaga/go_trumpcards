@@ -43,8 +43,6 @@ func tpSetHand(p *domain.TeenPattiPlayer, cards ...*domain.Card) {
 func TestTeenPattiConfig_Validate(t *testing.T) {
 	cfg := domain.DefaultTeenPattiConfig()
 	assert.NoError(t, cfg.Validate())
-	assert.Error(t, domain.TeenPattiConfig{CpuDifficulty: 99, Ante: 1, StartingChips: 30}.Validate())
-	assert.Error(t, domain.TeenPattiConfig{CpuDifficulty: 0, Ante: 0, StartingChips: 30}.Validate())
 }
 
 func TestNewDefaultTeenPatti(t *testing.T) {

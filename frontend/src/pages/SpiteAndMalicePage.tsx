@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useState } from 'react';
 import { spiteAndMaliceApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -151,6 +151,7 @@ export const SpiteAndMalicePage = withTutorial(SpiteAndMalicePageContent, 'spite
 type Selection = { kind: 'hand'; idx: number } | { kind: 'goal' } | { kind: 'side'; idx: number } | null;
 
 function SpiteAndMalicePageContent() {
+  const selectSourceHintId = useId();
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('spiteandmalice');
   const runApi = useCallback((...args: ApiArgs) => samRunner.exec(...args), []);
@@ -344,6 +345,9 @@ function SpiteAndMalicePageContent() {
           <LandscapeBanner message={t('landscapeBanner', { defaultValue: '' })} />
 
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8 space-y-4">
+            <span id={selectSourceHintId} className="sr-only">
+              {tc('label.selectSourceFirst')}
+            </span>
             <PlayerSummary
               label={t('label.cpu')}
               sidesLabel={t('label.cpuSides')}
@@ -370,6 +374,7 @@ function SpiteAndMalicePageContent() {
                     canPlaceSpiteAndMaliceCardOnFoundation(selectedCard.value, state.foundationTops[idx], pile.length)
                   }
                   selected={selection !== null}
+                  selectSourceHintId={selectSourceHintId}
                   onClick={() => handleFoundationClick(idx)}
                   ariaTop={(pileNo, card, top) =>
                     t('aria.foundationTop', { label: t('label.foundation'), n: pileNo, card, top })
@@ -426,6 +431,7 @@ function SpiteAndMalicePageContent() {
               ariaEmpty={(pileNo) => t('aria.sideEmpty', { label: t('label.side'), n: pileNo })}
               discardLabel={t('discard')}
               discardEnabled={selectionIsHand}
+              selectSourceHintId={selectSourceHintId}
               discardHint={selectionIsHand ? t('discardReady') : t('discardNeedHand')}
             />
           </div>
@@ -454,15 +460,23 @@ function SpiteAndMalicePageContent() {
               />
 
               {!isGameOver && isHumanTurn && (
-                <button
-                  type="button"
-                  className={btnPrimary}
-                  onClick={handleAutoComplete}
-                  disabled={loading || !state.canAutoComplete}
-                  data-testid="sam-autocomplete-btn"
-                >
-                  {t('autoComplete')}
-                </button>
+                <div className="flex flex-col items-center">
+                  <button
+                    type="button"
+                    className={btnPrimary}
+                    onClick={handleAutoComplete}
+                    disabled={loading || !state.canAutoComplete}
+                    data-testid="sam-autocomplete-btn"
+                  >
+                    {t('autoComplete')}
+                  </button>
+                  <p
+                    className="mt-1 max-w-sm text-center text-xs text-ds-text-muted"
+                    data-testid="sam-autocomplete-hint"
+                  >
+                    {t('autoCompleteHint')}
+                  </p>
+                </div>
               )}
             </GameFooter>
           </div>
@@ -548,6 +562,7 @@ function FoundationPile({
   highlight,
   playable,
   selected,
+  selectSourceHintId,
   onClick,
   ariaTop,
   ariaEmpty,
@@ -559,6 +574,7 @@ function FoundationPile({
   highlight: boolean;
   playable: boolean;
   selected: boolean;
+  selectSourceHintId: string;
   onClick: () => void;
   ariaTop: (n: number, card: string, top: number) => string;
   ariaEmpty: (n: number) => string;
@@ -574,7 +590,8 @@ function FoundationPile({
       data-playable={playable ? 'true' : undefined}
       className={`relative ${focusRingWhite} rounded-lg transition-transform ${baseRing} ${interactive}`}
       onClick={onClick}
-      disabled={!selected}
+      aria-disabled={!selected || undefined}
+      aria-describedby={!selected ? selectSourceHintId : undefined}
       aria-label={ariaLabel}
     >
       {top ? <AnimatedCard card={top} width={cardWidth} /> : <FaceDownSlot label={`F${idx + 1}`} width={cardWidth} />}
@@ -728,6 +745,7 @@ function SideRow({
   ariaEmpty,
   discardLabel,
   discardEnabled,
+  selectSourceHintId,
   discardHint,
 }: {
   sides: [Card[], Card[], Card[], Card[]];
@@ -740,6 +758,7 @@ function SideRow({
   label: string;
   discardLabel: string;
   discardEnabled: boolean;
+  selectSourceHintId: string;
   discardHint: string;
   ariaTop: (n: number, card: string, count: number) => string;
   ariaEmpty: (n: number) => string;
@@ -779,10 +798,10 @@ function SideRow({
               <button
                 type="button"
                 data-hint-action={`discard-${idx}`}
-                className={`${btnPrimary} text-xs px-2 py-1`}
+                className={`${btnPrimary} aria-disabled:opacity-70 aria-disabled:cursor-not-allowed aria-disabled:saturate-50 text-xs px-2 py-1`}
                 onClick={() => onDiscard(idx)}
-                disabled={!discardEnabled}
-                aria-describedby="sam-discard-hint"
+                aria-disabled={!discardEnabled || undefined}
+                aria-describedby={!discardEnabled ? `sam-discard-hint ${selectSourceHintId}` : 'sam-discard-hint'}
               >
                 {discardLabel}
               </button>

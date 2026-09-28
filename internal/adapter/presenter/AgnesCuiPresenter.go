@@ -45,7 +45,8 @@ func (p *AgnesCuiPresenter) Output(c interfaces.AgnesGame, lastErr error) string
 			}
 			pile := foundation[i]
 			if len(pile) == 0 {
-				b.WriteString(i18n.T("cuiEmptyCol"))
+				b.WriteString(i18n.Tf("agnes.baseRank",
+					"rank", strconv.Itoa(c.GetBaseRank())))
 			} else {
 				b.WriteString(cuiCardStr(pile[len(pile)-1]))
 			}

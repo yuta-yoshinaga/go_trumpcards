@@ -13,6 +13,8 @@
   "giveup": "ギブアップ",
   "hint": "ヒント",
   "autoComplete": "自動完成",
+  "autoCompleteNotReady": "組札へ送れるカードがあると有効になります",
+  "autoCompleteReady": "オートコンプリートを実行できます",
   "undo": "元に戻す",
   "empty": "空",
   "landscapeBanner": "横向きにすると12列のタブローが見やすくなります",

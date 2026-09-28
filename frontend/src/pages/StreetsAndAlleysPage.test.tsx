@@ -78,21 +78,37 @@ describe('StreetsAndAlleysPage', () => {
     expect(mockExec.mock.calls[0]?.[0]).toBe('reset');
   });
 
+  it('keeps a move target focusable and explains how to enable it before a source is selected', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<StreetsAndAlleysPage />);
+    const target = (await screen.findAllByLabelText(/組札 1枚/))[0];
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const descriptionId = target.getAttribute('aria-describedby');
+    expect(descriptionId).toBeTruthy();
+    expect(document.getElementById(descriptionId ?? '')).toHaveTextContent('先に移動する札を選んでください');
+
+    mockExec.mockClear();
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('highlights column tops as drop targets once a source card is selected', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<StreetsAndAlleysPage />);
     // No source selected yet → no target-candidate highlight.
-    const heart6 = await screen.findByRole('button', { name: '♥ 6' });
+    const heart6 = await screen.findByRole('button', { name: /^♥ 6/ });
     expect(heart6).not.toHaveAttribute('data-target-candidate');
     // Select the top of column 0 (♠5) as the move source.
-    fireEvent.click(screen.getByRole('button', { name: '♠ 5' }));
+    fireEvent.click(screen.getByRole('button', { name: /^♠ 5/ }));
     // Column 1's top (♥6) is now a drop target with the info ring.
     await waitFor(() =>
-      expect(screen.getByRole('button', { name: '♥ 6' })).toHaveAttribute('data-target-candidate', 'true'),
+      expect(screen.getByRole('button', { name: /^♥ 6/ })).toHaveAttribute('data-target-candidate', 'true'),
     );
-    expect(screen.getByRole('button', { name: '♥ 6' }).className).toContain('ring-ds-info');
+    expect(screen.getByRole('button', { name: /^♥ 6/ }).className).toContain('ring-ds-info');
     // The selected source card itself is not a target candidate.
-    expect(screen.getByRole('button', { name: '♠ 5' })).not.toHaveAttribute('data-target-candidate');
+    expect(screen.getByRole('button', { name: /^♠ 5/ })).not.toHaveAttribute('data-target-candidate');
   });
 
   it('preserves destination rings for empty tableau, tableau cards, and foundations', async () => {
@@ -114,8 +130,8 @@ describe('StreetsAndAlleysPage', () => {
     };
     mockExec.mockResolvedValue(previewState);
     renderWithProviders(<StreetsAndAlleysPage />);
-    const source = await screen.findByRole('button', { name: '♠ 2' });
-    const tableauTarget = screen.getByRole('button', { name: '♥ 3' });
+    const source = await screen.findByRole('button', { name: /^♠ 2/ });
+    const tableauTarget = screen.getByRole('button', { name: /^♥ 3/ });
     const emptyTableauTarget = screen.getAllByRole('button', { name: '空' })[0];
     const foundationTarget = screen.getAllByLabelText(/組札 1枚/)[0];
 
@@ -173,8 +189,8 @@ describe('StreetsAndAlleysPage', () => {
     renderWithProviders(<StreetsAndAlleysPage />);
 
     const emptyFoundation = await screen.findByRole('button', { name: '空の組札 (♠)' });
-    const ace = screen.getByRole('button', { name: '♠ A' });
-    const five = screen.getByRole('button', { name: '♦ 5' });
+    const ace = screen.getByRole('button', { name: /^♠ A/ });
+    const five = screen.getByRole('button', { name: /^♦ 5/ });
 
     fireEvent.mouseEnter(ace);
     await waitFor(() => expect(emptyFoundation).toHaveAttribute('data-target-candidate', 'true'));
@@ -196,7 +212,7 @@ describe('StreetsAndAlleysPage', () => {
   it('dims a tableau card while it is being dragged', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<StreetsAndAlleysPage />);
-    const top = await screen.findByRole('button', { name: '♠ 5' });
+    const top = await screen.findByRole('button', { name: /^♠ 5/ });
     // jsdom doesn't attach a DataTransfer to synthetic drag events, so provide one.
     fireEvent.dragStart(top, { dataTransfer: { setData: () => {}, effectAllowed: '' } });
     await waitFor(() => expect(top.className).toContain('opacity-50'));
@@ -346,10 +362,18 @@ describe('StreetsAndAlleysPage', () => {
     await waitFor(() => expect(screen.getByTestId('stalemate-escape-button')).toBeInTheDocument());
   });
 
+  it('includes the zero-based tableau column in each tableau card accessible name', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<StreetsAndAlleysPage />);
+
+    expect(await screen.findByRole('button', { name: '♠ 5、タブロー列0' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♥ 6、タブロー列1' })).toBeInTheDocument();
+  });
+
   it('selecting a tableau card marks it as selected', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<StreetsAndAlleysPage />);
-    const sourceBtn = await screen.findByRole('button', { name: '♠ 5' });
+    const sourceBtn = await screen.findByRole('button', { name: /^♠ 5/ });
     fireEvent.click(sourceBtn);
     await waitFor(() => expect(sourceBtn).toHaveAttribute('aria-pressed', 'true'));
   });
@@ -419,13 +443,13 @@ describe('StreetsAndAlleysPage', () => {
     expect(document.querySelectorAll('[data-target-candidate]')).toHaveLength(0);
 
     // ♠5 is the top of column 0. Legal: ♥6 (one rank higher) and the five empty columns.
-    fireEvent.click(screen.getByRole('button', { name: '♠ 5' }));
-    await waitFor(() => expect(screen.getByRole('button', { name: '♥ 6' })).toHaveAttribute('data-target-candidate'));
+    fireEvent.click(screen.getByRole('button', { name: /^♠ 5/ }));
+    await waitFor(() => expect(screen.getByRole('button', { name: /^♥ 6/ })).toHaveAttribute('data-target-candidate'));
 
     // ♦9 is a column top but 5 cannot go on a 9 — the old code ringed it anyway.
-    expect(screen.getByRole('button', { name: '♦ 9' })).not.toHaveAttribute('data-target-candidate');
+    expect(screen.getByRole('button', { name: /^♦ 9/ })).not.toHaveAttribute('data-target-candidate');
     // ♠K is buried under the source and is not one rank above a 5 — never a target.
-    expect(screen.getByRole('button', { name: '♠ K' })).not.toHaveAttribute('data-target-candidate');
+    expect(screen.getByRole('button', { name: /^♠ K/ })).not.toHaveAttribute('data-target-candidate');
     // The aces on the foundations need a 2, not a 5.
     for (const f of screen.getAllByLabelText(/組札/)) {
       expect(f).not.toHaveAttribute('data-target-candidate');
@@ -454,7 +478,7 @@ describe('StreetsAndAlleysPage', () => {
     renderWithProviders(<StreetsAndAlleysPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole('button', { name: '♠ 2' }));
+    fireEvent.click(screen.getByRole('button', { name: /^♠ 2/ }));
     await waitFor(() => {
       const rung = screen.getAllByLabelText(/組札/).filter((f) => f.hasAttribute('data-target-candidate'));
       expect(rung).toHaveLength(1);

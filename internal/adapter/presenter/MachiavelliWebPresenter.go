@@ -26,9 +26,8 @@ func (p *MachiavelliWebPresenter) Output(g interfaces.MachiavelliGame, lastErr e
 
 	cfg := g.GetConfig()
 	resObj.Config = controller.MachiavelliWebOutputConfig{
-		PlayerCount:   cfg.PlayerCount,
-		CpuDifficulty: int(cfg.CpuDifficulty),
-		TargetRounds:  cfg.TargetRounds,
+		PlayerCount:  cfg.PlayerCount,
+		TargetRounds: cfg.TargetRounds,
 	}
 
 	resObj.Table = machiavelliBuildTableOutput(g.GetTable())

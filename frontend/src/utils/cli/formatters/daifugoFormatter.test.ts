@@ -16,6 +16,7 @@ function makeState(overrides?: Partial<DaifugoResponse>): DaifugoResponse {
       { id: 1, isHuman: false, isFinished: false, rank: 0, cardCount: 5, cards: [] },
     ],
     currentTurn: 0,
+    fieldClearedLeader: -1,
     tableCards: [],
     lastPlayPlayerIdx: -1,
     gameEndFlag: false,

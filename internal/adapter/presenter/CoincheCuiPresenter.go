@@ -137,6 +137,9 @@ func (p *CoincheCuiPresenter) Output(b interfaces.CoincheGame, lastErr error) st
 			out.WriteString(i18n.T("coinche.promptTrickEndHelp") + "\n")
 		case domain.CoinchePhaseRoundEnd:
 			out.WriteString(i18n.T("coinche.promptRoundEnd") + "\n")
+			out.WriteString(i18n.Tf("coinche.roundCardPointsLine",
+				"t0", strconv.Itoa(b.GetRoundPoints(0)),
+				"t1", strconv.Itoa(b.GetRoundPoints(1))) + "\n")
 			out.WriteString(i18n.T("coinche.promptRoundEndHelp") + "\n")
 		}
 	})

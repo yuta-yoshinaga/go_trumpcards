@@ -66,18 +66,6 @@ func TestBriscolaInteractor_ResetWithConfig(t *testing.T) {
 	gameMock.AssertCalled(t, "SetConfig", cfg)
 }
 
-func TestBriscolaInteractor_ResetWithConfig_ValidationError(t *testing.T) {
-	bpMock := new(presenter.MockBriscolaPresenter)
-	gameMock := new(interfaces.MockBriscolaGame)
-	bpMock.On("Output", gameMock, mock.MatchedBy(func(err error) bool { return err != nil })).Return("validation error")
-
-	bi := usecase.NewBriscolaInteractor(gameMock, bpMock)
-	invalid := domain.BriscolaConfig{CpuDifficulty: 99}
-	got := bi.ResetWithConfig(invalid)
-	assert.Equal(t, "validation error", got)
-	gameMock.AssertNotCalled(t, "Reset")
-}
-
 func TestBriscolaInteractor_Play_Valid(t *testing.T) {
 	mockOutput := `{"phase":0}`
 	bpMock := new(presenter.MockBriscolaPresenter)

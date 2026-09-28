@@ -1,4 +1,4 @@
-//go:build !js || !wasm || solo
+//go:build !js || !wasm || extra9
 
 package domain
 
@@ -10,17 +10,20 @@ import (
 // ZhengPlayer 争上游プレイヤークラス
 type ZhengPlayer struct {
 	*RankedGamePlayer
+	finishCards []*Card
 }
 
 // zhengPlayerJSON is the JSON wire format for ZhengPlayer.
 type zhengPlayerJSON struct {
 	RankedGamePlayer *RankedGamePlayer `json:"rp"`
+	FinishCards      []*Card           `json:"fc,omitempty"`
 }
 
 // MarshalJSON implements json.Marshaler.
 func (p *ZhengPlayer) MarshalJSON() ([]byte, error) {
 	return json.Marshal(zhengPlayerJSON{
 		RankedGamePlayer: p.RankedGamePlayer,
+		FinishCards:      p.finishCards,
 	})
 }
 
@@ -32,11 +35,18 @@ func (p *ZhengPlayer) UnmarshalJSON(data []byte) error {
 	}
 	if j.RankedGamePlayer != nil {
 		p.RankedGamePlayer = j.RankedGamePlayer
+		p.finishCards = j.FinishCards
+		if p.finishCards == nil {
+			p.finishCards = make([]*Card, 0)
+		}
 	} else {
 		p.RankedGamePlayer = NewRankedGamePlayer(false)
 	}
 	return nil
 }
+
+// GetFinishCards returns the cards the player used to finish the round.
+func (p *ZhengPlayer) GetFinishCards() []*Card { return p.finishCards }
 
 // NewZhengPlayer コンストラクタ
 func NewZhengPlayer(isHuman bool) *ZhengPlayer {

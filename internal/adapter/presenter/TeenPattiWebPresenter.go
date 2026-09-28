@@ -95,7 +95,6 @@ func (p *TeenPattiWebPresenter) buildBase(g interfaces.TeenPattiGame) *controlle
 
 	cfg := g.GetConfig()
 	resObj.Config = controller.TeenPattiWebOutputConfig{
-		CpuDifficulty: int(cfg.CpuDifficulty),
 		Ante:          cfg.Ante,
 		StartingChips: cfg.StartingChips,
 	}

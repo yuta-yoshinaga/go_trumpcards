@@ -86,6 +86,20 @@ const withFoundationState: RankAndFileResponse = {
   foundation: [[card('SPADE', 1)], [], [card('HEART', 1), card('HEART', 2)], [], [], [], [], []],
 };
 
+const allFoundationsPopulatedState: RankAndFileResponse = {
+  ...playingState,
+  foundation: [
+    [card('SPADE', 1)],
+    [card('HEART', 1)],
+    [card('DIAMOND', 1)],
+    [card('CLOVER', 1)],
+    [card('SPADE', 2)],
+    [card('HEART', 2)],
+    [card('DIAMOND', 2)],
+    [card('CLOVER', 2)],
+  ],
+};
+
 const withHintState: RankAndFileResponse = {
   ...playingState,
   hint: { fromZone: 'waste', fromCol: -1, cardIndex: -1, toZone: 'tableau', toCol: 3 },
@@ -103,6 +117,24 @@ beforeEach(() => {
 });
 
 describe('RankAndFilePage', () => {
+  it('keeps a target focusable and explains why it cannot be used before source selection', async () => {
+    renderWithProviders(<RankAndFilePage />);
+    await waitFor(() => expect(screen.getAllByText('—')).toHaveLength(8));
+    const target = screen.getAllByRole('button').find((button) => button.textContent === 'A');
+    expect(target).toBeDefined();
+    const targetButton = target as HTMLButtonElement;
+    expect(targetButton).not.toBeDisabled();
+    expect(targetButton).toHaveAttribute('aria-disabled', 'true');
+    const hintId = targetButton.getAttribute('aria-describedby');
+    expect(hintId).toBeTruthy();
+    expect(document.getElementById(hintId ?? '')).toHaveTextContent('先に移動する札を選んでください');
+
+    mockExec.mockClear();
+    fireEvent.click(targetButton);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('shows the persistent double-click foundation hint', async () => {
     renderWithProviders(<RankAndFilePage />);
     expect(await screen.findByTestId('rf-doubleclick-hint')).toHaveTextContent('ダブルクリック');
@@ -152,6 +184,18 @@ describe('RankAndFilePage', () => {
     await waitFor(() => expect(screen.getAllByText('—').length).toBe(8));
     expect(screen.queryByText('♠')).not.toBeInTheDocument();
     expect(screen.queryByText('♦')).not.toBeInTheDocument();
+  });
+
+  it('explains that an empty foundation click selects a valid pile automatically', async () => {
+    renderWithProviders(<RankAndFilePage />);
+    expect(await screen.findByText(/空の組札を選ぶと、置ける組札が自動で選ばれます/)).toBeInTheDocument();
+  });
+
+  it('does not show the empty foundation auto-target hint when every foundation is populated', async () => {
+    mockExec.mockResolvedValue(allFoundationsPopulatedState);
+    renderWithProviders(<RankAndFilePage />);
+    await waitFor(() => expect(screen.getByAltText('♣ 2')).toBeInTheDocument());
+    expect(screen.queryByText(/空の組札を選ぶと、置ける組札が自動で選ばれます/)).not.toBeInTheDocument();
   });
 
   it('labels a populated foundation with the suit actually sitting on it', async () => {
@@ -414,10 +458,11 @@ describe('RankAndFilePage', () => {
     renderWithProviders(<RankAndFilePage />);
     await waitFor(() => expect(screen.getAllByText('—').length).toBe(8));
 
-    // Empty foundation buttons should be disabled when no source selected
+    // Empty foundation targets remain focusable but unavailable until a source is selected.
     const aButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === 'A');
     for (const btn of aButtons) {
-      expect(btn).toBeDisabled();
+      expect(btn).not.toBeDisabled();
+      expect(btn).toHaveAttribute('aria-disabled', 'true');
     }
   });
 

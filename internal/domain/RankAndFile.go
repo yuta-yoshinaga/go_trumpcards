@@ -281,7 +281,7 @@ func (ft *RankAndFile) MoveTableauToFoundation(col int) error {
 	// **札が減ったら必ずめくる。**Forty Thieves は全部表向きなので不要だった。
 	ft.autoFlipTop(col)
 	ft.moveCount++
-	ft.appendLog("move", "rankandfile.log.tableauToFoundation", map[string]string{"column": strconv.Itoa(col)}, []*Card{card})
+	ft.appendLog("move", "rankandfile.log.tableauToFoundation", map[string]string{"column": strconv.Itoa(col), "foundation": strconv.Itoa(fIdx + 1)}, []*Card{card})
 	ft.checkGameClear()
 	ft.checkRankAndFileStalemate()
 	return nil

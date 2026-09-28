@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useState } from 'react';
 import type { PenguinMoveZone, penguinApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -147,6 +147,7 @@ function PenguinPageContent() {
     handleSelectTarget,
     isAutoCompleting,
   } = usePenguinGame();
+  const selectSourceHintId = useId();
   // Screen-reader announcement for the hint (visually it is only ring highlights).
   // Driven off hintNonce so it fires once per hint request, reading the current
   // hint/state snapshot; a null hint after a request means no legal move exists.
@@ -323,6 +324,10 @@ function PenguinPageContent() {
         <>
           <LandscapeBanner message={t('landscapeBanner')} />
 
+          <span id={selectSourceHintId} className="sr-only">
+            {tc('label.selectSourceFirst')}
+          </span>
+
           <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
             {/* Free cells + Foundation row */}
             <div className="flex gap-2 mb-3 items-start flex-wrap">
@@ -372,7 +377,9 @@ function PenguinPageContent() {
                           <button
                             type="button"
                             onClick={() => handleSelectTarget(freeCellZone)}
-                            disabled={!isPlaying || loading || !selectedSource}
+                            disabled={!isPlaying || loading}
+                            aria-disabled={!selectedSource || undefined}
+                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t('emptyFreecellAriaLabel', { idx: String(idx) })}
                             data-testid={`pg-freecell-empty-${idx.toString()}`}
                             style={{ width: cardWidth, height: cardHeight }}
@@ -407,7 +414,9 @@ function PenguinPageContent() {
                             <button
                               type="button"
                               onClick={() => handleSelectTarget(foundationZone)}
-                              disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
+                              disabled={!isPlaying || loading || isAutoCompleting}
+                              aria-disabled={!selectedSource || undefined}
+                              aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                               aria-label={t('foundationAriaLabel', {
                                 suit: FOUNDATION_SUITS[idx],
                                 cardCount: String(pile.length),
@@ -426,7 +435,9 @@ function PenguinPageContent() {
                             <button
                               type="button"
                               onClick={() => handleSelectTarget(foundationZone)}
-                              disabled={!isPlaying || loading || !selectedSource}
+                              disabled={!isPlaying || loading}
+                              aria-disabled={!selectedSource || undefined}
+                              aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                               aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
                               data-testid={`pg-foundation-empty-${idx.toString()}`}
                               style={{ width: cardWidth, height: cardHeight }}
@@ -458,10 +469,18 @@ function PenguinPageContent() {
                 {state.tableau.map((col: (Card | null)[], colIdx: number) => {
                   const tableauColZone: PenguinMoveZone = { zone: 'tableau', col: colIdx };
                   return (
-                    <div
+                    <fieldset
                       key={`col-${colIdx.toString()}`}
+                      aria-label={
+                        col.length === 0
+                          ? t('tableauColumnEmptyAriaLabel', { col: String(colIdx) })
+                          : t('tableauColumnAriaLabel', {
+                              col: String(colIdx),
+                              count: t('tableauCardCount', { count: col.length }),
+                            })
+                      }
                       data-testid={`pg-col-${colIdx.toString()}`}
-                      className={`flex-1 min-w-0${isHintTarget('tableau', colIdx) ? ' rounded ring-2 ring-ds-success animate-pulse' : ''}`}
+                      className={`m-0 min-w-0 flex-1 border-0 p-0${isHintTarget('tableau', colIdx) ? ' rounded ring-2 ring-ds-success animate-pulse' : ''}`}
                     >
                       <DropZone
                         isDropTarget={dnd.isDropTarget(tableauColZone)}
@@ -475,7 +494,9 @@ function PenguinPageContent() {
                             <button
                               type="button"
                               onClick={() => handleSelectTarget(tableauColZone)}
-                              disabled={!isPlaying || loading || !selectedSource}
+                              disabled={!isPlaying || loading}
+                              aria-disabled={!selectedSource || undefined}
+                              aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                               aria-label={emptyColLabel}
                               style={{ height: cardHeight }}
                               data-testid={`pg-empty-col-${colIdx.toString()}`}
@@ -593,7 +614,7 @@ function PenguinPageContent() {
                           {col.length > 0 && <div style={{ height: (col.length - 1) * cardOverlap + cardHeight }} />}
                         </div>
                       </DropZone>
-                    </div>
+                    </fieldset>
                   );
                 })}
               </div>

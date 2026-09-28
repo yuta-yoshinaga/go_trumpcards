@@ -1,4 +1,5 @@
 import type { BeziqueResponse } from '../../../types/card';
+import { suitSymbolAt } from '../../cardAlt';
 import {
   formatCard,
   formatHeader,
@@ -9,13 +10,12 @@ import {
 } from '../formatterBase';
 
 const PHASE_NAMES = ['Play', 'Meld', 'RoundEnd', 'GameEnd'];
-const SUIT_SYMBOLS = ['none', '♠', '♣', '♥', '♦'];
 const MELD_NAMES = ['marriage', 'Bezique', 'four aces', 'four kings', 'four queens', 'four jacks'];
 
 /** Returns a short human-readable label for a meld (type + suit + points). */
 function meldLabel(m: { type: number; suit: number; points: number }): string {
   const base = MELD_NAMES[m.type] ?? `meld ${m.type}`;
-  const suit = m.suit >= 1 && m.suit <= 4 ? ` ${SUIT_SYMBOLS[m.suit]}` : '';
+  const suit = m.suit >= 1 && m.suit <= 4 ? ` ${suitSymbolAt(m.suit, 'none')}` : '';
   return `${base}${suit} (${m.points})`;
 }
 
@@ -27,7 +27,7 @@ export function formatBeziqueState(state: BeziqueResponse): string {
   lines.push(
     `deal: ${state.roundNumber}  trick: ${state.trickNumber}  phase: ${PHASE_NAMES[state.phase] ?? state.phase}`,
   );
-  const trumpText = state.trumpSuit >= 1 && state.trumpSuit <= 4 ? SUIT_SYMBOLS[state.trumpSuit] : 'undeclared';
+  const trumpText = state.trumpSuit >= 1 && state.trumpSuit <= 4 ? suitSymbolAt(state.trumpSuit, 'none') : 'undeclared';
   const trumpCardText = state.trumpCard ? ` (${formatCard(state.trumpCard)})` : '';
   lines.push(`trump: ${trumpText}${trumpCardText}`);
   lines.push(`stock: ${state.stockRemaining}${state.isEndgame ? '  [endgame — must follow]' : ''}`);

@@ -571,7 +571,7 @@ func (b *Briscola) playHintReason(playerIdx, chosenIdx int) string {
 	return "follow_dump"
 }
 
-// --- CPU AI (single-difficulty heuristic) ---
+// --- CPU AI (heuristic) ---
 
 // cpuSelectPlayCard CPU が出すべきカードのインデックスを選択する
 func (b *Briscola) cpuSelectPlayCard(playerIdx int) int {

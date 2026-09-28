@@ -26,7 +26,7 @@
   "playerLine": "{{name}}[T{{team}}]{{role}}: bid {{bid}}, took {{took}}, {{cards}} in hand",
   "roleDeclarer": "[declarer]",
   "roleDealer": "[dealer]",
-  "bidNone": "-",
+  "bidNone": "no bid",
   "bidPassed": "passed",
   "bidValue": "{{n}}",
   "promptBid": "Make a bid ({{min}}-{{max}}), or pass.",

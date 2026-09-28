@@ -30,7 +30,9 @@
     "fee": "交換手数料 {{cost}}（アンテと同額）。交換しなければ無料です。",
     "selected": "選択中: {{count}} / {{max}} 枚",
     "cardSelected": "交換する札として選択済み",
-    "maxReached": "交換できるのは最大{{max}}枚までです。"
+    "maxReached": "交換できるのは最大{{max}}枚までです。",
+    "selectionRequired": "交換する札を1枚以上選んでください。最大{{max}}枚まで選べます。",
+    "selectionReady": "{{count}}枚選択中です。最大{{max}}枚まで交換できます。"
   },
   "result": {
     "playerWins": "勝利！",

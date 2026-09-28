@@ -7,7 +7,6 @@
   },
   "settings": {
     "title": "Settings",
-    "cpuDifficulty": "CPU Difficulty",
     "ante": "Ante",
     "startingChips": "Starting Chips",
     "easy": "Easy",
@@ -24,6 +23,11 @@
   "cards": "{{count}} cards",
   "handLabel": "Your hand",
   "currentTurn": "Current turn: {{name}}",
+  "listSeparator": ", ",
+  "turnStatus": {
+    "human": "Your turn. Available actions: {{actions}}.",
+    "other": "{{name}}'s turn."
+  },
   "playersTitle": "Players",
   "badge": {
     "blind": "Blind",

@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra2
+//go:build !js || !wasm || extra9
 
 package presenter
 
@@ -75,8 +75,7 @@ func (p *BidEuchreWebPresenter) Output(g interfaces.BidEuchreGame, lastErr error
 
 	cfg := g.GetConfig()
 	resObj.Config = controller.BidEuchreWebOutputConfig{
-		CpuDifficulty: int(cfg.CpuDifficulty),
-		AllowNoTrump:  cfg.AllowNoTrump,
+		AllowNoTrump: cfg.AllowNoTrump,
 	}
 
 	resObj.Players = p.buildPlayersOutput(g)

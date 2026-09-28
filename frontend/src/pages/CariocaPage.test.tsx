@@ -226,9 +226,15 @@ describe('CariocaPage', () => {
     expect(addSlot).toBeDisabled();
 
     const cardButtons = screen.getAllByRole('button').filter((b) => b.querySelector('img'));
+    expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'false');
     fireEvent.click(cardButtons[0]);
+    expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'true');
+    expect(cardButtons[0]).toHaveClass('ring-2', 'ring-ds-warning', '-translate-y-2');
+    expect(cardButtons[1]).toHaveAttribute('aria-pressed', 'false');
+    expect(cardButtons[1]).not.toHaveClass('-translate-y-2');
     expect(addSlot).not.toBeDisabled();
     fireEvent.click(cardButtons[0]); // toggle off
+    expect(cardButtons[0]).toHaveAttribute('aria-pressed', 'false');
     expect(addSlot).toBeDisabled();
   });
 

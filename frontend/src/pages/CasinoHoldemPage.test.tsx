@@ -206,6 +206,24 @@ describe('CasinoHoldemPage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 200, 10));
   });
 
+  it('previews the total chips needed through a call and announces any shortfall', async () => {
+    mockApi.mockResolvedValue({ ...betPhaseState, chips: 350 });
+    renderWithProviders(<CasinoHoldemPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 350')).toBeInTheDocument());
+
+    const preview = screen.getByTestId('ch-bet-total-preview');
+    expect(preview).toHaveAttribute('role', 'status');
+    expect(preview).toHaveAttribute('aria-live', 'polite');
+    expect(preview).toHaveTextContent('必要チップ合計（アンテ・ボーナス・コール）: 300');
+    expect(preview).not.toHaveTextContent('チップ不足');
+
+    fireEvent.change(screen.getByLabelText('アンテ'), { target: { value: '120' } });
+    fireEvent.change(screen.getByLabelText('AAボーナス'), { target: { value: '20' } });
+    expect(preview).toHaveTextContent('必要チップ合計（アンテ・ボーナス・コール）: 380');
+    expect(preview).toHaveTextContent('チップ不足: 30');
+    expect(preview).toHaveClass('text-ds-error');
+  });
+
   it('shows a validation error and disables Bet for a non-multiple-of-10 ante', async () => {
     mockApi.mockResolvedValue(betPhaseState);
     renderWithProviders(<CasinoHoldemPage />);

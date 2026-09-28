@@ -46,7 +46,6 @@ func (p *KlaberjassWebPresenter) Output(g interfaces.KlaberjassGame, lastErr err
 	cfg := g.GetConfig()
 	resObj.TargetScore = cfg.TargetScore
 	resObj.Config = controller.KlaberjassWebOutputConfig{
-		CpuDifficulty: int(cfg.CpuDifficulty),
 		TargetScore:   cfg.TargetScore,
 		AllowSchmeiss: cfg.AllowSchmeiss,
 	}
@@ -102,16 +101,20 @@ func (p *KlaberjassWebPresenter) buildPlayersOutput(g interfaces.KlaberjassGame)
 			}
 		}
 		out = append(out, &controller.KlaberjassWebOutputPlayer{
-			ID:            i,
-			IsHuman:       player.GetIsHuman(),
-			CardCount:     player.GetCardsSize(),
-			Cards:         cards,
-			Sequences:     seqs,
-			HandPoints:    g.GetHandPoints(i),
-			Score:         g.GetScore(i),
-			IsMaker:       i == g.GetMakerIdx(),
-			IsDealer:      i == g.GetDealerIdx(),
-			IsCurrentTurn: g.GetPhase() == domain.KlaberjassPhasePlay && i == g.GetCurrentPlayerIdx(),
+			ID:              i,
+			IsHuman:         player.GetIsHuman(),
+			CardCount:       player.GetCardsSize(),
+			Cards:           cards,
+			Sequences:       seqs,
+			HandPoints:      g.GetHandPoints(i),
+			CardPoints:      g.GetCardPoints(i),
+			SequencePoints:  g.GetSequencePoints(i),
+			BelaPoints:      g.GetBelaPoints(i),
+			LastTrickPoints: g.GetLastTrickPoints(i),
+			Score:           g.GetScore(i),
+			IsMaker:         i == g.GetMakerIdx(),
+			IsDealer:        i == g.GetDealerIdx(),
+			IsCurrentTurn:   g.GetPhase() == domain.KlaberjassPhasePlay && i == g.GetCurrentPlayerIdx(),
 		})
 	}
 	return out

@@ -101,9 +101,9 @@ function CurdsAndWheyPageContent() {
     () => [
       { key: 'h', action: handleHint, label: 'hint' },
       { key: 'g', action: confirmGiveUpAction, label: 'giveUp' },
-      { key: 'z', action: handleUndo, label: 'undo' },
+      { key: 'z', action: handleUndo, label: 'undo', enabled: state?.canUndo ?? false },
     ],
-    [handleHint, confirmGiveUpAction, handleUndo],
+    [handleHint, confirmGiveUpAction, handleUndo, state?.canUndo],
   );
 
   const isClear = state?.phase === CurdsAndWheyPhase.GAME_CLEAR;
@@ -315,6 +315,7 @@ function CurdsAndWheyPageContent() {
               className={btnSecondary}
               onClick={handleUndo}
               disabled={loading}
+              aria-keyshortcuts="z"
               data-testid="undo-button"
             >
               {t('undo')}

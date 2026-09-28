@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra7
+//go:build !js || !wasm || extra11
 
 package domain
 
@@ -674,12 +674,6 @@ func (e *Euchre) GetConfig() EuchreConfig { return e.config }
 
 // SetConfig 設定変更
 func (e *Euchre) SetConfig(cfg EuchreConfig) { e.config = cfg }
-
-// CardRankPublic カードランク取得 (テスト用公開メソッド)
-func (e *Euchre) CardRankPublic(card *Card) int { return e.cardRank(card) }
-
-// EffectiveSuitPublic 実効スート取得 (テスト用公開メソッド)
-func (e *Euchre) EffectiveSuitPublic(card *Card) int { return e.effectiveSuit(card) }
 
 // --- Bower helpers ---
 

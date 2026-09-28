@@ -283,7 +283,11 @@ function CucumberPageContent() {
                       type="button"
                       onClick={() => handlePlay(idx)}
                       disabled={loading || !isHumanTurn}
-                      aria-label={t('actions.playAria', { card: cardAlt(card) })}
+                      aria-label={[
+                        t('actions.position', { position: String(idx + 1), total: String(human.cards.length) }),
+                        t(legalRing.has(idx) ? 'actions.playable' : 'actions.notPlayable'),
+                        t('actions.playAria', { card: cardAlt(card) }),
+                      ].join(t('listSeparator'))}
                       className={`disabled:opacity-50 ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
                     >
                       <CardImage card={card} width={cardWidth} />

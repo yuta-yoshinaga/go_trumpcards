@@ -94,9 +94,12 @@ func (p *CitadelCuiPresenter) HintOutput(bc interfaces.CitadelGame) string {
 	if hint == nil {
 		return i18n.T("cuiHintNone") + "\n"
 	}
+	tableau := bc.GetTableau()
+	card := tableau[hint.FromCol][hint.CardIndex].Card
 	from := i18n.Tf("citadel.hintFrom",
 		"col", strconv.Itoa(hint.FromCol),
-		"idx", strconv.Itoa(hint.CardIndex))
+		"idx", strconv.Itoa(hint.CardIndex),
+		"card", cuiCardStr(card))
 	var to string
 	if hint.ToZone == "foundation" {
 		to = i18n.T("citadel.hintToFoundation")

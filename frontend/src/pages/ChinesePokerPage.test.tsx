@@ -1,5 +1,6 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, ChinesePokerResponse } from '../types/card';
 import { ChinesePokerPhase } from '../types/phases';
@@ -17,6 +18,35 @@ import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { ChinesePokerPage } from './ChinesePokerPage';
 
 const mockExec = vi.mocked(chinesepokerApi.exec);
+
+describe('ChinesePokerPage hint setting', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('shows the shared Japanese and English label and updates hint state', async () => {
+    const setHintEnabled = vi.fn();
+    mockExec.mockResolvedValue(betPhaseState);
+    vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled });
+
+    for (const [language, label] of [
+      ['ja', 'ヒント表示'],
+      ['en', 'Show hints'],
+    ] as const) {
+      await i18n.changeLanguage(language);
+      const { unmount } = renderWithProviders(<ChinesePokerPage />);
+      fireEvent.click(await screen.findByText(language === 'ja' ? '設定' : 'Settings'));
+      const checkbox = await screen.findByRole('checkbox', { name: label });
+      expect(checkbox).not.toBeChecked();
+      expect(checkbox).toHaveAttribute('id', 'frontendHint');
+      fireEvent.click(checkbox);
+      expect(setHintEnabled).toHaveBeenCalledWith(true);
+      unmount();
+    }
+
+    await i18n.changeLanguage('ja');
+  });
+});
 
 const DESIGNS: CardDesign[] = ['SPADE', 'HEART', 'CLOVER', 'DIAMOND'];
 const card = (designIdx: number, value: number): Card => ({ design: DESIGNS[designIdx % 4], value });

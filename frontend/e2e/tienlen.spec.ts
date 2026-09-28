@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, waitForLoaded } from './helpers';
+import { gameButton, navigateTo, waitForLoaded } from './helpers';
 
 test.describe('Tien Len E2E', () => {
   test('starts a game: reset → verify controls → pass → reset', async ({ page }) => {
@@ -13,7 +13,7 @@ test.describe('Tien Len E2E', () => {
     await waitForLoaded(page);
 
     // Verify game controls are visible
-    const passButton = page.getByRole('button', { name: 'パス' });
+    const passButton = gameButton(page, 'パス');
     const playButton = page.getByRole('button', { name: '選択したカードを出す' });
     await expect(passButton).toBeVisible({ timeout: 10_000 });
     await expect(playButton).toBeVisible();

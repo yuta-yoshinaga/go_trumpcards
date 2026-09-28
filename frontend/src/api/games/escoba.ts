@@ -7,7 +7,6 @@ import { gameExec } from '../gameExec';
 /** Configuration options for Escoba game settings. */
 export interface EscobaConfigInput {
   targetScore?: number;
-  cpuDifficulty?: number;
 }
 
 /** Command verbs accepted by the Escoba /escoba/exec endpoint (short forms). */

@@ -85,7 +85,6 @@ func (p *ThreeCardBragWebPresenter) buildBase(g interfaces.ThreeCardBragGame) *c
 
 	cfg := g.GetConfig()
 	resObj.Config = controller.ThreeCardBragWebOutputConfig{
-		CpuDifficulty: int(cfg.CpuDifficulty),
 		Ante:          cfg.Ante,
 		StartingChips: cfg.StartingChips,
 	}

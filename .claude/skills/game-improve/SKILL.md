@@ -21,9 +21,7 @@ triggers:
 
 # game-improve — per-game improvement proposals → GitHub issues
 
-Codifies the 2026-06-07 batch that produced issues **#2161–#2292** (one
-proposal per game across all 132 games). Reuse it whenever the user wants
-per-game improvement proposals turned into GitHub issues.
+Generate one code-grounded improvement proposal per in-scope game and open it as a GitHub issue.
 
 ## What it produces
 
@@ -43,7 +41,7 @@ Titles are Japanese with a bracket tag: `[UI/UX]` `[機能]` `[アクセシビ�
 
 ## Decide scope first (AskUserQuestion unless the user already said)
 
-1. **対象範囲** — all games / one category (casino|classic|solo) / explicit list /
+1. **対象範囲** — all games / one category / explicit list /
    only games without an existing improvement issue.
 2. **提案数/game** — default 1 (most effective). 2–3 → one issue each.
 3. **作成タイミング** — immediate (`gh issue create` now) vs draft-then-confirm.
@@ -52,11 +50,10 @@ Titles are Japanese with a bracket tag: `[UI/UX]` `[機能]` `[アクセシビ�
 ## Workflow
 
 ### 1. Canonical game list (SSoT)
-Read `internal/infrastructure/games/registry.go`. Each entry is
+Read `internal/infrastructure/games/registry.go` (the SSoT). Each entry is
 `{Name, Category, Description}`. Name = short slug + URL segment; Description
-carries the Japanese name. There are 132 games as of 2026-06; never hardcode the
-count — derive it from the registry. `go run ./cmd/trumpcards games --short` also
-lists names.
+carries the Japanese name. Get the current game list with
+`go run ./cmd/trumpcards games --short`.
 
 ### 2. Dedupe against open issues
 `gh issue list --state open --limit 400 --json number,title`. Skip games that
@@ -68,9 +65,7 @@ Chunk the in-scope games into groups of ~16. Launch one `general-purpose`
 **sonnet** agent per group **in a single message** (parallel). Per-agent prompt
 must enforce:
 
-- **HARD RULE: no build/test/lint/tsc/go test/bun — Read/Grep/Glob only.**
-  Builds OOM this ~2 GB box (see memory `feedback_sequential_tasks`). Reading is
-  light, so parallel read-only agents are RAM-safe.
+- Agents are read-only (Read/Grep/Glob) — this is a proposal pass, not an implementation.
 - For each game: read `frontend/src/pages/<PascalCase>Page.tsx` and
   `internal/adapter/presenter/<PascalCase>CuiPresenter.go` (glob for casing);
   optionally the hook/components or `docs/manual/web/<game>.md`.
@@ -101,10 +96,10 @@ Use `scripts/create_issues.sh` (in this skill dir). It:
 - logs `game\turl\ttitle` to `created.log` and **skips already-logged games on
   rerun** (resumable if it dies mid-batch),
 - `sleep 3` between creates (~20/min) to dodge GitHub's secondary
-  content-creation rate limit. 132 issues ≈ 7 min — run in background.
+  content-creation rate limit. run in background.
 
-Verify gh first: `gh auth status`. Repo has **no custom labels** → create without
-`--label` (passing a missing label errors the whole call).
+Verify gh first: `gh auth status`. Choose labels from `gh label list` (for example,
+`ui/ux`, `cli-ux`, or `refactor`).
 
 For draft mode: render `all.json` to the user as a table and stop before step 5.
 

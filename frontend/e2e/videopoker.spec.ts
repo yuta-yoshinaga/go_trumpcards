@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, waitForLoaded } from './helpers';
+import { gameButton, navigateTo, waitForLoaded } from './helpers';
 
 test.describe('Video Poker E2E', () => {
   test('plays a round: deal → draw → result → reset', async ({ page }) => {
@@ -12,7 +12,7 @@ test.describe('Video Poker E2E', () => {
     await waitForLoaded(page);
 
     // DRAW phase: ドロー button should be visible
-    const drawButton = page.getByRole('button', { name: 'ドロー' });
+    const drawButton = gameButton(page, 'ドロー');
     await expect(drawButton).toBeVisible({ timeout: 10_000 });
     await drawButton.click();
     await waitForLoaded(page);

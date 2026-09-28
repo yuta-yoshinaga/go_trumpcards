@@ -1,11 +1,11 @@
 TINYGO ?= tinygo
 WASM_OPT ?= wasm-opt
-ASSETS_GEN := go run github.com/syumai/workers/cmd/workers-assets-gen
+ASSETS_GEN := go run github.com/syumai/workers-go/cmd/workers-assets-gen
 COVERAGE_DIR := build/coverage
 
-.PHONY: build-workers build-worker-casino build-worker-classic build-worker-solo build-worker-extra build-worker-extra2 build-worker-extra3 build-worker-extra4 build-worker-extra5 build-worker-extra6 build-worker-extra7 clean-workers deploy-workers coverage clean-cov
+.PHONY: build-workers build-worker-casino build-worker-classic build-worker-solo build-worker-extra build-worker-extra2 build-worker-extra3 build-worker-extra4 build-worker-extra5 build-worker-extra6 build-worker-extra7 build-worker-extra8 build-worker-extra9 build-worker-extra10 build-worker-extra11 clean-workers deploy-workers coverage clean-cov
 
-build-workers: build-worker-casino build-worker-classic build-worker-solo build-worker-extra build-worker-extra2 build-worker-extra3 build-worker-extra4 build-worker-extra5 build-worker-extra6 build-worker-extra7
+build-workers: build-worker-casino build-worker-classic build-worker-solo build-worker-extra build-worker-extra2 build-worker-extra3 build-worker-extra4 build-worker-extra5 build-worker-extra6 build-worker-extra7 build-worker-extra8 build-worker-extra9 build-worker-extra10 build-worker-extra11
 
 define build_worker
 	@echo "Building worker: $(1)"
@@ -25,11 +25,16 @@ define build_worker
 	# from shipping in every worker and keeps each binary under the 1 MB gzip
 	# free-tier limit (see issue #2126). Non-worker builds (server, CLI, tests)
 	# match `!js || !wasm`, so they still include all games.
-	$(TINYGO) build -tags $(1) -o workers/$(1)/build/app.wasm -target wasm -stack-size=128KB -no-debug -opt=z ./cmd/workers/$(1)
+	# encoding/json v2 (default in Go 1.27) calls reflect.SliceOf, which TinyGo does not implement (tinygo-org/tinygo#5740); build the Workers with json v1 (ADR-0043).
+	GOEXPERIMENT=nojsonv2 $(TINYGO) build -tags $(1) -o workers/$(1)/build/app.wasm -target wasm -stack-size=128KB -no-debug -opt=z ./cmd/workers/$(1)
 	$(WASM_OPT) --enable-bulk-memory --enable-nontrapping-float-to-int --enable-sign-ext -Oz workers/$(1)/build/app.wasm -o workers/$(1)/build/app.wasm
 	@RAW=$$(stat -c%s workers/$(1)/build/app.wasm); GZIP=$$(gzip -c workers/$(1)/build/app.wasm | wc -c); \
 	echo "  $(1): $$RAW bytes raw, $$GZIP bytes gzip"
 endef
+
+.PHONY: check-wasm-imports-casino check-wasm-imports-classic check-wasm-imports-solo check-wasm-imports-extra check-wasm-imports-extra2 check-wasm-imports-extra3 check-wasm-imports-extra4 check-wasm-imports-extra5 check-wasm-imports-extra6 check-wasm-imports-extra7 check-wasm-imports-extra8 check-wasm-imports-extra9 check-wasm-imports-extra10 check-wasm-imports-extra11
+check-wasm-imports-%:
+	bun scripts/check-wasm-imports.ts workers/$*/build
 
 build-worker-casino:
 	$(call build_worker,casino)
@@ -61,8 +66,20 @@ build-worker-extra6:
 build-worker-extra7:
 	$(call build_worker,extra7)
 
+build-worker-extra8:
+	$(call build_worker,extra8)
+
+build-worker-extra9:
+	$(call build_worker,extra9)
+
+build-worker-extra10:
+	$(call build_worker,extra10)
+
+build-worker-extra11:
+	$(call build_worker,extra11)
+
 clean-workers:
-	rm -rf workers/casino/build workers/classic/build workers/solo/build workers/extra/build workers/extra2/build workers/extra3/build workers/extra4/build workers/extra5/build workers/extra6/build workers/extra7/build
+	rm -rf workers/casino/build workers/classic/build workers/solo/build workers/extra/build workers/extra2/build workers/extra3/build workers/extra4/build workers/extra5/build workers/extra6/build workers/extra7/build workers/extra8/build workers/extra9/build workers/extra10/build workers/extra11/build
 
 # Deploys to production. CI passes `--env staging` for develop; this target does not,
 # so running it by hand publishes to the live workers.
@@ -77,6 +94,10 @@ deploy-workers: build-workers
 	cd workers/extra5 && bunx wrangler deploy
 	cd workers/extra6 && bunx wrangler deploy
 	cd workers/extra7 && bunx wrangler deploy
+	cd workers/extra8 && bunx wrangler deploy
+	cd workers/extra9 && bunx wrangler deploy
+	cd workers/extra10 && bunx wrangler deploy
+	cd workers/extra11 && bunx wrangler deploy
 
 coverage: ## Run tests with coverage, writing profile and HTML report to build/coverage/.
 	@mkdir -p $(COVERAGE_DIR)

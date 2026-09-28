@@ -101,6 +101,39 @@ describe('PochPage', () => {
     expect(marriage).toHaveTextContent('12');
   });
 
+  it('announces only pools whose chip totals changed', async () => {
+    renderWithProviders(<PochPage />);
+    await screen.findAllByTestId('poch-pool');
+    expect(screen.getByTestId('poch-pool-live')).toBeEmptyDOMElement();
+
+    mockExec.mockResolvedValueOnce(
+      makeState({
+        pools: POOLS.map((name, i) => ({ name, chips: i === 5 ? 15 : i === 8 ? 7 : 4 })),
+      }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: '賭ける' }));
+
+    await waitFor(() => expect(screen.getByTestId('poch-pool-live')).toHaveTextContent('マリッジ'));
+    expect(screen.getByTestId('poch-pool-live')).toHaveTextContent('15');
+    expect(screen.getByTestId('poch-pool-live')).toHaveTextContent('センター');
+    expect(screen.getByTestId('poch-pool-live')).toHaveTextContent('7');
+    expect(screen.getByTestId('poch-pool-live').textContent?.match(/マリッジ/g)).toHaveLength(1);
+    expect(screen.getByTestId('poch-pool-live').textContent?.match(/センター/g)).toHaveLength(1);
+    expect(screen.getByTestId('poch-pool-live')).not.toHaveTextContent('エース');
+  });
+
+  it('uses the reset response as a quiet pool baseline', async () => {
+    renderWithProviders(<PochPage />);
+    await screen.findAllByTestId('poch-pool');
+
+    mockExec.mockResolvedValueOnce(makeState({ pools: POOLS.map((name) => ({ name, chips: 6 })) }));
+    fireEvent.change(screen.getByLabelText('CPU難易度'), { target: { value: '2' } });
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, { cpuDifficulty: 2 }));
+    await waitFor(() => expect(screen.getAllByTestId('poch-pool')[0]).toHaveTextContent('6'));
+    expect(screen.getByTestId('poch-pool-live')).toBeEmptyDOMElement();
+  });
+
   // 第 1 段階は自動で解決するので、結果を出さないと何が起きたのか読めない。
   it('reports what stage one paid out', async () => {
     renderWithProviders(<PochPage />);

@@ -240,6 +240,17 @@ describe('IndianRummyPage', () => {
       expect(screen.getByRole('button', { name: '山札から引く' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: '捨て札から引く' })).toBeInTheDocument();
     });
+    expect(screen.getByTestId('indianrummy-discard-draw-target')).toHaveTextContent('対象: ♥ 7');
+    expect(screen.getByRole('button', { name: '山札から引く' })).not.toHaveTextContent('♥ 7');
+  });
+
+  it('updates the discard draw target from the server state', async () => {
+    renderWithProviders(<IndianRummyPage />);
+    await waitFor(() => expect(screen.getByTestId('indianrummy-discard-draw-target')).toHaveTextContent('♥ 7'));
+    mockExec.mockResolvedValue({ ...drawPhaseState, discardTop: { design: 'SPADE', value: 9 } });
+    fireEvent.click(screen.getByRole('button', { name: '捨て札から引く' }));
+    await waitFor(() => expect(screen.getByTestId('indianrummy-discard-draw-target')).toHaveTextContent('対象: ♠ 9'));
+    expect(screen.getByTestId('indianrummy-discard-draw-target')).not.toHaveTextContent('♥ 7');
   });
 
   it('draw discard button disabled when no discard top', async () => {

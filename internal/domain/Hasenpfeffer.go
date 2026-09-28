@@ -996,13 +996,9 @@ func (h *Hasenpfeffer) UnmarshalJSON(data []byte) error {
 	if len(j.ActionLog) > hasenpfefferMaxSliceLen {
 		return errors.New("hasenpfeffer: input array exceeds maximum allowed size")
 	}
-	for name, idx := range map[string]int{
-		"current player": j.CurrentPlayerIdx,
-		"lead player":    j.LeadPlayerIdx,
-		"dealer":         j.DealerIdx,
-	} {
-		if idx < 0 || idx >= HasenpfefferPlayerCnt {
-			return fmt.Errorf("invalid %s: %d", name, idx)
+	for _, f := range []namedInt{{"current player", j.CurrentPlayerIdx}, {"lead player", j.LeadPlayerIdx}, {"dealer", j.DealerIdx}} {
+		if f.value < 0 || f.value >= HasenpfefferPlayerCnt {
+			return fmt.Errorf("invalid %s: %d", f.name, f.value)
 		}
 	}
 	if j.WinnerTeam < -1 || j.WinnerTeam >= HasenpfefferTeamCnt {

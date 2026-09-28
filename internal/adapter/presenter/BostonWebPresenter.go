@@ -61,8 +61,7 @@ func (p *BostonWebPresenter) Output(g interfaces.BostonGame, lastErr error) stri
 
 	cfg := g.GetConfig()
 	resObj.Config = controller.BostonWebOutputConfig{
-		CpuDifficulty: int(cfg.CpuDifficulty),
-		TargetHands:   cfg.TargetHands,
+		TargetHands: cfg.TargetHands,
 	}
 
 	resObj.Players = p.buildPlayersOutput(g)

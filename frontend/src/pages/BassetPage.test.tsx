@@ -111,11 +111,30 @@ describe('BassetPage', () => {
   it('places the selected rank and amount as a bet', async () => {
     renderWithProviders(<BassetPage />);
     await screen.findByRole('button', { name: '賭ける' });
-    fireEvent.change(screen.getAllByRole('spinbutton')[0], { target: { value: '7' } });
-    fireEvent.change(screen.getAllByRole('spinbutton')[1], { target: { value: '25' } });
+    const rankButtons = screen.getAllByRole('button').filter((button) => button.hasAttribute('aria-pressed'));
+    expect(rankButtons).toHaveLength(13);
+    expect(rankButtons.map((button) => button.textContent)).toEqual([
+      'A',
+      '2',
+      '3',
+      '4',
+      '5',
+      '6',
+      '7',
+      '8',
+      '9',
+      '10',
+      'J',
+      'Q',
+      'K',
+    ]);
+    expect(screen.getByRole('button', { name: 'A' })).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(screen.getByRole('button', { name: 'K' }));
+    expect(screen.getByRole('button', { name: 'K' })).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '25' } });
     mockExec.mockClear();
     fireEvent.click(screen.getByRole('button', { name: '賭ける' }));
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', { rank: 7, amount: 25 }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bet', { rank: 13, amount: 25 }));
   });
 
   it('deals two cards and renders the turn result', async () => {

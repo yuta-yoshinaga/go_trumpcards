@@ -244,18 +244,31 @@ describe('SevensPage', () => {
     mockExec.mockResolvedValue(cpuTurnState);
     renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: /パス/ })).toBeDisabled());
+    expect(screen.getByText('あなたの手番ではありません')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /パス/, description: 'あなたの手番ではありません' })).toBeInTheDocument();
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 
   it('pass button is disabled when game has ended', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: /パス/ })).toBeDisabled());
+    expect(screen.getByText('ゲームが終了しています')).toBeInTheDocument();
   });
 
   it('pass button is disabled when passes are exhausted', async () => {
     mockExec.mockResolvedValue(passesExhaustedState);
     renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: /パス/ })).toBeDisabled());
+    expect(screen.getByText('パスできる回数の上限に達しました')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /パス/ })).toHaveAttribute('title', 'パスできる回数の上限に達しました');
+  });
+
+  it('does not show a disabled reason when passing is available', async () => {
+    renderWithProviders(<SevensPage />);
+    const button = await screen.findByRole('button', { name: /パス/ });
+    expect(button).toBeEnabled();
+    expect(screen.queryByTestId('pass-disabled-reason')).not.toBeInTheDocument();
   });
 
   it('calls play with -1 when pass button is clicked', async () => {

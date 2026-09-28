@@ -36,6 +36,10 @@
   "meldAria": "{{player}}'s meld {{meld}}",
   "layoffTargetSummary": "→ Lay-off target: {{player}} meld {{meld}}",
   "discard": "Discard a card",
+  "selection": {
+    "selected": "{{card}}, selected",
+    "unselected": "{{card}}, not selected"
+  },
   "nextRound": "Next round",
   "viewLog": "View log",
   "tutorial": {

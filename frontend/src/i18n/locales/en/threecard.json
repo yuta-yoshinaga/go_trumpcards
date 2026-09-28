@@ -57,6 +57,11 @@
     "title": "Settings"
   },
   "betGuide": "Set your ante and Pair Plus bet",
+  "betSummary": {
+    "total": "Total: {{amount}}",
+    "remaining": "Remaining: {{amount}}",
+    "adjusted": "The bet was adjusted to fit your chip balance."
+  },
   "payoutRef": {
     "title": "Payout Table",
     "anteBonusHeader": "Ante Bonus",

@@ -51,7 +51,19 @@ func TestOpenFaceChineseCuiPresenter_Output(t *testing.T) {
 		result := p.Output(m, nil)
 		// i18n is loaded (ja) in this test build → assert on rendered Japanese text.
 		assert.Contains(t, result, "ラウンド")
+		assert.Contains(t, result, "上段: ♥5（残り2枠）")
+		assert.Contains(t, result, "中段: -（残り5枠）")
+		assert.Contains(t, result, "下段: -（残り5枠）")
 		assert.NotEmpty(t, result)
+	})
+
+	t.Run("full rows are marked full", func(t *testing.T) {
+		m := setupOpenFaceChineseCuiMock()
+		human := m.GetPlayer(0)
+		human.SetFront([]*domain.Card{ofcCardP(domain.CardDesignHeart, 5), ofcCardP(domain.CardDesignSpade, 6), ofcCardP(domain.CardDesignClover, 7)})
+		human.SetMiddle([]*domain.Card{ofcCardP(domain.CardDesignHeart, 5), ofcCardP(domain.CardDesignSpade, 6), ofcCardP(domain.CardDesignClover, 7), ofcCardP(domain.CardDesignDiamond, 8), ofcCardP(domain.CardDesignSpade, 9)})
+		human.SetBack([]*domain.Card{ofcCardP(domain.CardDesignHeart, 5), ofcCardP(domain.CardDesignSpade, 6), ofcCardP(domain.CardDesignClover, 7), ofcCardP(domain.CardDesignDiamond, 8), ofcCardP(domain.CardDesignSpade, 9)})
+		assert.Contains(t, p.Output(m, nil), "満杯")
 	})
 
 	t.Run("round end prompt", func(t *testing.T) {

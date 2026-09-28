@@ -72,7 +72,7 @@ func TestEcarteInteractor_ResetWithConfig_ValidationError(t *testing.T) {
 	epMock.On("Output", gameMock, mock.MatchedBy(func(err error) bool { return err != nil })).Return("validation error")
 
 	ei := usecase.NewEcarteInteractor(gameMock, epMock)
-	invalid := domain.EcarteConfig{CpuDifficulty: 99, TargetScore: 5}
+	invalid := domain.EcarteConfig{TargetScore: 0}
 	got := ei.ResetWithConfig(invalid)
 	assert.Equal(t, "validation error", got)
 	gameMock.AssertNotCalled(t, "Reset")

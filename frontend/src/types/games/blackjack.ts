@@ -50,6 +50,8 @@ export interface BlackJackResponse extends BaseGameResponse {
   hands?: BlackJackHand[];
   currentHandIdx: number;
   phase: BlackJackPhase;
+  /** Why double down is blocked (0 means it is available). */
+  doubleDownBlock?: number;
   insuranceBet: number;
   insuranceAvailable: boolean;
   hintEnabled: boolean;

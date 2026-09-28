@@ -36,6 +36,9 @@
   },
   "teamScore": "{{team}}: {{score}} game pts",
   "playButton": "Play",
+  "selectedCards": "Selected: {{cards}}",
+  "noCardSelected": "No card selected",
+  "listSeparator": ", ",
   "nextTrick": "Next Trick",
   "nextRound": "Next Round",
   "livePoints": {

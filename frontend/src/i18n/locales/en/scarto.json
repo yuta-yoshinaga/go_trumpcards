@@ -45,6 +45,7 @@
   "outcomeLoss": "Below average",
   "roundResult": {
     "title": "Deal result",
+    "provisional": "Provisional (deal in progress)",
     "outcome": "Your result: {{outcome}}",
     "playerLine": "{{name}}: {{delta}} (total {{score}})",
     "average": "Table average: {{avg}} pts",

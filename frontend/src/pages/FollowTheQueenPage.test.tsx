@@ -199,7 +199,7 @@ describe('FollowTheQueenPage', () => {
   it('shows pot and the dealer name via playerName (CPU dealer)', async () => {
     mockExec.mockResolvedValue(thirdStreetState);
     renderWithProviders(<FollowTheQueenPage />);
-    await waitFor(() => expect(screen.getByText(/ポット:/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getAllByText(/ポット:/)).toHaveLength(2));
     expect(screen.getByText(/ディーラー:/)).toBeInTheDocument();
     // Dealer renders via playerName (CPU 3), not the raw index.
     expect(screen.getAllByText('CPU 3').length).toBeGreaterThan(0);
@@ -390,6 +390,19 @@ describe('FollowTheQueenPage', () => {
     expect(screen.getByRole('button', { name: 'チェック' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'オールイン' })).toBeInTheDocument();
+  });
+
+  it('shows the current pot beside betting controls and follows pot updates', async () => {
+    mockExec.mockResolvedValue(thirdStreetState);
+    renderWithProviders(<FollowTheQueenPage />);
+    await waitFor(() => expect(screen.getByTestId('ftq-betting-pot')).toHaveTextContent('ポット: 30'));
+    expect(
+      screen.getByTestId('ftq-betting-pot').compareDocumentPosition(screen.getByRole('button', { name: 'ベット' })),
+    ).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+
+    mockExec.mockResolvedValue({ ...thirdStreetState, pot: 50 });
+    fireEvent.click(screen.getByRole('button', { name: 'ベット' }));
+    await waitFor(() => expect(screen.getByTestId('ftq-betting-pot')).toHaveTextContent('ポット: 50'));
   });
 
   it('shows call/raise buttons when canAct and has outstanding bet', async () => {

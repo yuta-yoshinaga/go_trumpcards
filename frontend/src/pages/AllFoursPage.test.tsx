@@ -93,6 +93,43 @@ beforeEach(() => {
 });
 
 describe('AllFoursPage', () => {
+  it('announces an unplayed trick separately from a completed trick', async () => {
+    mockExec.mockResolvedValue(playState);
+    const { unmount } = renderWithProviders(<AllFoursPage />);
+    expect(await screen.findByTestId('af-trick-status')).toHaveTextContent('まだカードが出ていません');
+    unmount();
+
+    mockExec.mockResolvedValue({ ...playState, phase: AllFoursPhase.TRICK_END });
+    renderWithProviders(<AllFoursPage />);
+    expect(await screen.findByTestId('af-trick-status')).toHaveTextContent('トリックが終了しました');
+  });
+
+  it('announces a completed trick while its four cards remain visible', async () => {
+    mockExec.mockResolvedValue({
+      ...playState,
+      phase: AllFoursPhase.TRICK_END,
+      currentTrick: [
+        { playerIdx: 0, card: { design: 'HEART', value: 5 } },
+        { playerIdx: 1, card: { design: 'CLOVER', value: 6 } },
+        { playerIdx: 0, card: { design: 'DIAMOND', value: 7 } },
+        { playerIdx: 1, card: { design: 'SPADE', value: 8 } },
+      ],
+    });
+    renderWithProviders(<AllFoursPage />);
+
+    expect(await screen.findByText('トリックが終了しました')).toBeInTheDocument();
+    expect(screen.getAllByRole('figure')).toHaveLength(4);
+  });
+
+  it('associates each played card with its player in the accessible name', async () => {
+    mockExec.mockResolvedValueOnce({
+      ...playState,
+      currentTrick: [{ playerIdx: 0, card: { design: 'HEART', value: 5 } }],
+    });
+    renderWithProviders(<AllFoursPage />);
+    expect(await screen.findByRole('figure', { name: 'あなた: ♥ 5' })).toBeInTheDocument();
+  });
+
   it('renders the GameSkeleton while state is null', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<AllFoursPage />);

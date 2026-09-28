@@ -12,6 +12,15 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockExec = vi.mocked(germansoloApi.exec);
+const mobileFlag = { value: false };
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useCardDimensions: () => ({ ...actual.useCardDimensions(), isMobile: mobileFlag.value }),
+  };
+});
 
 const playPhaseState = makeGermanSoloState();
 const bidPhaseState = makeGermanSoloState({
@@ -47,6 +56,7 @@ const gameEndState = makeGermanSoloState({
 const cpuTurnState = makeGermanSoloState({ currentPlayerIdx: 1, isHumanTurn: false });
 
 beforeEach(() => {
+  mobileFlag.value = false;
   mockExec.mockReset();
   mockExec.mockResolvedValue(playPhaseState);
 });
@@ -407,6 +417,24 @@ describe('GermanSoloPage ace call', () => {
     const line = screen.getByTestId('germansolo-ace-line');
     expect(line).toHaveTextContent('味方');
     expect(line).not.toHaveTextContent('伏せられています');
+  });
+
+  it('shows an accessible partner badge only after reveal on mobile and desktop', async () => {
+    mockExec.mockResolvedValue(makeGermanSoloState({ playsAlone: false, calledAceSuit: 3, partnerIdx: -1 }));
+    const hiddenView = renderWithProviders(<GermanSoloPage />);
+    await screen.findByTestId('germansolo-ace-line');
+    expect(screen.queryByTestId('germansolo-partner-2')).not.toBeInTheDocument();
+    hiddenView.unmount();
+
+    for (const isMobile of [false, true]) {
+      mobileFlag.value = isMobile;
+      mockExec.mockResolvedValue(makeGermanSoloState({ playsAlone: false, calledAceSuit: 3, partnerIdx: 2 }));
+      const revealedView = renderWithProviders(<GermanSoloPage />);
+      const badge = await screen.findByTestId('germansolo-partner-2');
+      expect(badge).toHaveTextContent('味方');
+      expect(badge.querySelector('.sr-only')).toHaveTextContent('パートナー');
+      revealedView.unmount();
+    }
   });
 
   it('says playing alone for Solo and Tout', async () => {

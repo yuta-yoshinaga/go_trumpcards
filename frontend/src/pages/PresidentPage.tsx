@@ -331,6 +331,7 @@ function PresidentPageContent() {
                     type="button"
                     onClick={() => isHumanTurn && toggleCardSelection(i)}
                     disabled={!isHumanTurn}
+                    aria-pressed={selectedIndices.includes(i)}
                     className={`rounded transition-all ${
                       selectedIndices.includes(i) ? 'ring-2 ring-ds-info -translate-y-2' : ''
                     } ${isHumanTurn ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}

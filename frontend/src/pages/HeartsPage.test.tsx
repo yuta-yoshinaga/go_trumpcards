@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, heartsApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -68,6 +68,37 @@ describe('HeartsPage', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<HeartsPage />);
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
+  });
+
+  it('announces the trick winner as the next leader without duplicating the status message', async () => {
+    mockExec.mockResolvedValue(makeHeartsState({ phase: 2, leadPlayerIdx: 1 }));
+    renderWithProviders(<HeartsPage />);
+    expect(await screen.findByTestId('hearts-trick-result-live')).toHaveTextContent(
+      'CPU 1がトリックを獲得し、次のリードを担当します。',
+    );
+    expect(screen.getAllByText('CPU 1がトリックを獲得し、次のリードを担当します。')).toHaveLength(1);
+  });
+
+  it('hides the static trick-end message during TrickEnd', async () => {
+    mockExec.mockResolvedValue(makeHeartsState({ phase: 2, messageCode: 'hearts.trickEnd' }));
+    renderWithProviders(<HeartsPage />);
+    await screen.findByTestId('hearts-trick-result-live');
+    const messageBox = screen.getByTestId('hearts-trick-result-live').nextElementSibling as HTMLElement;
+    expect(within(messageBox).queryByText('トリック終了')).not.toBeInTheDocument();
+  });
+
+  it('shows an action error during TrickEnd', async () => {
+    mockExec.mockResolvedValue(makeHeartsState({ phase: 2, message: 'エラー文', messageCode: '' }));
+    renderWithProviders(<HeartsPage />);
+    const liveRegion = await screen.findByTestId('hearts-trick-result-live');
+    const messageBox = liveRegion.nextElementSibling as HTMLElement;
+    expect(within(messageBox).getByText('エラー文')).toBeInTheDocument();
+  });
+
+  it('does not announce a next leader at round end', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<HeartsPage />);
+    expect(await screen.findByTestId('hearts-trick-result-live')).toBeEmptyDOMElement();
   });
 
   it('calls reset on mount', async () => {

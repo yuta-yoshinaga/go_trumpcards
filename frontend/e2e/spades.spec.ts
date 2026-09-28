@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { navigateTo, waitForLoaded } from './helpers';
+import { gameButton, navigateTo, waitForLoaded } from './helpers';
 
 test.describe('Spades E2E', () => {
   test('navigates, resets, and plays through phase transitions', async ({ page }) => {
@@ -24,7 +24,7 @@ test.describe('Spades E2E', () => {
     // Verify score table is visible
     await expect(page.getByText('スコア', { exact: true }).first()).toBeVisible();
 
-    const bidButton = page.getByRole('button', { name: 'ビッド' });
+    const bidButton = gameButton(page, 'ビッド');
     const playButton = page.getByRole('button', { name: '出す' });
     const nextTrickButton = page.getByRole('button', { name: '次のトリック' });
     const nextRoundButton = page.getByRole('button', { name: '次のラウンド' });

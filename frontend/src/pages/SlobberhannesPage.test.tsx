@@ -121,6 +121,42 @@ describe('SlobberhannesPage', () => {
     expect(screen.getByTestId('sh-seat-0')).not.toHaveTextContent('無傷');
   });
 
+  it('shows the current round trick counts with scores at round and game end only', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 1,
+        players: [
+          seat(0, { score: -2, trickCount: 3, tookFirstTrick: true }),
+          seat(1, { score: 4, trickCount: 5 }),
+          seat(2, { trickCount: 0 }),
+          seat(3, { trickCount: 0 }),
+        ],
+      }),
+    );
+    const { unmount } = renderWithProviders(<SlobberhannesPage />);
+    expect(await screen.findByTestId('sh-seat-0')).toHaveTextContent('3トリック');
+    expect(screen.getByTestId('sh-seat-0')).toHaveTextContent('-2点');
+    expect(screen.getByTestId('sh-seat-1')).toHaveTextContent('5トリック');
+    unmount();
+
+    mockExec.mockResolvedValue(makeState({ players: [seat(0, { trickCount: 1 }), seat(1), seat(2), seat(3)] }));
+    const activeRender = renderWithProviders(<SlobberhannesPage />);
+    expect(await screen.findByTestId('sh-seat-0')).toBeInTheDocument();
+    expect(screen.getByTestId('sh-seat-0')).not.toHaveTextContent('トリック');
+    activeRender.unmount();
+
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 2,
+        gameEndFlag: true,
+        players: [seat(0, { score: -3, trickCount: 2 }), seat(1, { score: 7, trickCount: 6 }), seat(2), seat(3)],
+      }),
+    );
+    renderWithProviders(<SlobberhannesPage />);
+    expect(await screen.findByTestId('sh-seat-0')).toHaveTextContent('2トリック');
+    expect(screen.getByTestId('sh-seat-0')).toHaveTextContent('-3点');
+  });
+
   it('marks only the dealer seat', async () => {
     mockExec.mockResolvedValue(makeState({ dealerIdx: 2 }));
     renderWithProviders(<SlobberhannesPage />);

@@ -284,4 +284,26 @@ describe('MobileHandGrid', () => {
     expect(buttons[0]).not.toHaveAccessibleName(/\(/);
     expect(buttons[2]).not.toHaveAccessibleName(/\(/);
   });
+
+  it('appends each card status to its button accessible name when provided', () => {
+    render(
+      <MobileHandGrid
+        cards={makeCards(3)}
+        selectedIndices={[]}
+        onToggle={() => {}}
+        cardWidth={40}
+        cardStatusFor={(idx) => (idx === 1 ? '使用可能' : undefined)}
+      />,
+    );
+    const buttons = screen.getAllByRole('button');
+    expect(buttons[1]).toHaveAccessibleName(/\(使用可能\)$/);
+    expect(buttons[0]).not.toHaveAccessibleName(/\(使用可能\)$/);
+  });
+
+  it('does not append a status to card accessible names when cardStatusFor is omitted', () => {
+    render(<MobileHandGrid cards={makeCards(3)} selectedIndices={[]} onToggle={() => {}} cardWidth={40} />);
+    for (const button of screen.getAllByRole('button')) {
+      expect(button).not.toHaveAccessibleName(/\(使用可能\)$/);
+    }
+  });
 });

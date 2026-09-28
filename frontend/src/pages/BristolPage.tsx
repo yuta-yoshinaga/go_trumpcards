@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useId, useMemo, useState } from 'react';
 import { bristolApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -69,6 +69,7 @@ export const BristolPage = withTutorial(BristolPageContent, 'bristol', BR_TUTORI
 
 /** Inner content of the Bristol page. */
 function BristolPageContent() {
+  const selectSourceHintId = useId();
   const {
     t,
     tc,
@@ -277,6 +278,9 @@ function BristolPageContent() {
           <LandscapeBanner message={phaseName} />
 
           <div className="flex-1 overflow-y-auto px-4 pt-3 lg:px-8">
+            <span id={selectSourceHintId} className="sr-only">
+              {tc('label.selectSourceFirst')}
+            </span>
             {/* Foundations */}
             <div className="mb-3 flex items-start gap-2" data-tutorial="br-foundation">
               <span className="w-14 shrink-0 pt-2 text-xs text-ds-text-muted">{t('foundation')}</span>
@@ -296,13 +300,21 @@ function BristolPageContent() {
                       <button
                         type="button"
                         onClick={() => handleFoundationClick(i)}
-                        disabled={!isPlaying || !selected || loading}
+                        disabled={!isPlaying || loading}
+                        aria-disabled={!selected || undefined}
                         aria-label={
                           pile.length > 0
                             ? t('foundationAria', { num: i, card: cardAlt(pile[pile.length - 1]), count: pile.length })
                             : t('foundationAriaEmpty', { num: i })
                         }
-                        aria-describedby={previewSource ? placementDescriptionId : undefined}
+                        aria-describedby={
+                          [
+                            !selected ? selectSourceHintId : undefined,
+                            previewSource ? placementDescriptionId : undefined,
+                          ]
+                            .filter(Boolean)
+                            .join(' ') || undefined
+                        }
                         className={
                           previewSource && legalFoundation.has(i)
                             ? `rounded border p-0.5 ${focusRingWhite} ${targetBorder}`
@@ -358,10 +370,21 @@ function BristolPageContent() {
                         draggable={isPlaying && !loading && col.length > 0}
                         onDragStart={dnd.handleDragStart(zone)}
                         onDragEnd={dnd.handleDragEnd}
-                        onClick={() => handleTableauClick(colIdx)}
-                        disabled={!isPlaying || loading || (col.length === 0 && !selected)}
+                        onClick={() => {
+                          if (!selected && col.length === 0) return;
+                          handleTableauClick(colIdx);
+                        }}
+                        disabled={!isPlaying || loading}
+                        aria-disabled={(col.length === 0 && !selected) || undefined}
                         aria-label={t('tableauColAria', { num: colIdx + 1, count: col.length })}
-                        aria-describedby={previewSource ? placementDescriptionId : undefined}
+                        aria-describedby={
+                          [
+                            !selected && col.length === 0 ? selectSourceHintId : undefined,
+                            previewSource ? placementDescriptionId : undefined,
+                          ]
+                            .filter(Boolean)
+                            .join(' ') || undefined
+                        }
                         aria-pressed={isSelected(zone)}
                         {...preview.previewProps(zone)}
                         className={
@@ -432,13 +455,25 @@ function BristolPageContent() {
                           className={`relative rounded border-2 bg-transparent p-0 ${focusRingWhite} ${
                             isSelected(zone) ? 'border-ds-info' : 'border-transparent'
                           }`}
+                          style={{ width: cardWidth + 4, height: (pile.length - 1) * colOffset + cardHeight + 4 }}
                         >
-                          <AnimatedCard card={top} width={cardWidth} draggable={false} />
+                          {pile.map((card, cardIdx) => (
+                            <span
+                              key={`fan-card-${i}-${cardIdx}`}
+                              data-testid={`br-fan-card-${i}-${cardIdx}`}
+                              aria-hidden="true"
+                              className="absolute left-0 right-0"
+                              style={{ top: cardIdx * colOffset, zIndex: cardIdx }}
+                            >
+                              <AnimatedCard card={card} width={cardWidth} draggable={false} />
+                            </span>
+                          ))}
                           {pile.length >= 2 ? (
                             <span
                               aria-hidden="true"
                               data-testid={`br-fan-count-${i.toString()}`}
                               className="absolute bottom-0.5 right-0.5 px-1 rounded bg-ds-accent text-ds-text-on-accent text-[10px] font-bold shadow-sm pointer-events-none"
+                              style={{ zIndex: 1000 }}
                             >
                               {pile.length}
                             </span>

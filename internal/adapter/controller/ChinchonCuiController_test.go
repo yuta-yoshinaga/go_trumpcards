@@ -98,20 +98,6 @@ func TestChinchonCuiController_Exec(t *testing.T) {
 		m.AssertCalled(t, "NextRound")
 	})
 
-	t.Run("setdifficulty sd valid", func(t *testing.T) {
-		m := newMock()
-		c := controller.NewChinchonCuiController(m)
-		assert.Equal(t, mockOutput, c.Exec("sd 2"))
-		expected := domain.DefaultChinchonConfig()
-		expected.CpuDifficulty = domain.ChinchonCpuDifficultyHard
-		m.AssertCalled(t, "ResetWithConfig", expected)
-	})
-
-	t.Run("setdifficulty sd over 2", func(t *testing.T) {
-		result := controller.NewChinchonCuiController(newMock()).Exec("sd 3")
-		assert.Equal(t, msgInvalidCpuDifficulty("3"), result)
-	})
-
 	t.Run("setplayers sp valid", func(t *testing.T) {
 		m := newMock()
 		c := controller.NewChinchonCuiController(m)

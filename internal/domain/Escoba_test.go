@@ -34,8 +34,21 @@ func TestEscobaConfig_Validate(t *testing.T) {
 	cfg := domain.DefaultEscobaConfig()
 	assert.NoError(t, cfg.Validate())
 	assert.Equal(t, 10, cfg.TargetScore)
-	assert.Error(t, domain.EscobaConfig{CpuDifficulty: 99, TargetScore: 10}.Validate())
-	assert.Error(t, domain.EscobaConfig{CpuDifficulty: 0, TargetScore: 0}.Validate())
+	assert.Error(t, domain.EscobaConfig{TargetScore: 0}.Validate())
+}
+
+func TestEscoba_UnmarshalLegacyConfigWithCd(t *testing.T) {
+	e := newTestEscoba(true)
+	e.Reset()
+	data, err := json.Marshal(e)
+	require.NoError(t, err)
+	legacy := strings.Replace(string(data), `"cf":{`, `"cf":{"cd":0,`, 1)
+	require.NotEqual(t, string(data), legacy)
+
+	var restored domain.Escoba
+	require.NoError(t, json.Unmarshal([]byte(legacy), &restored))
+	assert.Equal(t, e.GetConfig().TargetScore, restored.GetConfig().TargetScore)
+	assert.NoError(t, restored.GetConfig().Validate())
 }
 
 func TestNewDefaultEscoba(t *testing.T) {
@@ -179,7 +192,7 @@ func TestEscoba_GettersAndNextRoundNoop(t *testing.T) {
 	assert.Equal(t, 0, e.GetDealerIdx())
 	assert.Equal(t, -1, e.GetLastCaptureIdx())
 	assert.NotNil(t, e.GetActionLog())
-	cfg := domain.EscobaConfig{CpuDifficulty: domain.EscobaCpuDifficultyHard, TargetScore: 21}
+	cfg := domain.EscobaConfig{TargetScore: 21}
 	e.SetConfig(cfg)
 	assert.Equal(t, cfg, e.GetConfig())
 	e.SetPhase(domain.EscobaPhasePlayerTurn)

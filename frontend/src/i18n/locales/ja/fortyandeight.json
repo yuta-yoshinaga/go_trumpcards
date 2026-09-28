@@ -26,6 +26,11 @@
   "playing": "カードを移動してください",
   "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
   "gameOver": "ゲームオーバー",
+  "endSummary": {
+    "clearTitle": "ゲームクリア時のまとめ",
+    "gameOverTitle": "ゲームオーバー時のまとめ",
+    "counts": "完成した組札: {{completed}} / 組札の札: {{foundationCards}}枚 / 未完成の札: {{remaining}}枚"
+  },
   "hintAvailable": "ヒントがあります",
   "noHint": "ヒントはありません",
   "tutorial": {

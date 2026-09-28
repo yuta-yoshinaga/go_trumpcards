@@ -9,6 +9,7 @@ import { GameMessageBox } from '../components/GameMessageBox';
 import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
+import { LiveAnnouncement } from '../components/LiveAnnouncement';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
@@ -35,6 +36,10 @@ const DEFAULT_MAX_ROUNDS = 500;
 
 /** Autoplay animation speed presets. */
 type AutoPlaySpeed = 'slow' | 'normal' | 'fast';
+
+function speedLabelKey(speed: AutoPlaySpeed): string {
+  return `settings.speed${speed[0].toUpperCase()}${speed.slice(1)}`;
+}
 
 /**
  * Delay (ms) between auto-advanced `step` calls per speed preset. A larger delay
@@ -123,20 +128,26 @@ function WarPageContent() {
 
   const [autoPlaySpeed, setAutoPlaySpeed] = useState<AutoPlaySpeed>(loadAutoPlaySpeed);
   const [autoPlaying, setAutoPlaying] = useState(false);
+  const [speedAnnouncement, setSpeedAnnouncement] = useState('');
 
   const handleStep = useCallback(() => execApi('step'), [execApi]);
   // Autoplay is driven client-side as a timed sequence of `step` calls (see the
   // effect below) so each round's reveal/war animation plays out; the button toggles it.
   const handleAutoPlay = useCallback(() => setAutoPlaying((prev) => !prev), []);
-  const handleSelectSpeed = useCallback((v: string) => {
-    const speed: AutoPlaySpeed = v === 'slow' || v === 'fast' ? v : 'normal';
-    setAutoPlaySpeed(speed);
-    try {
-      localStorage.setItem(AUTOPLAY_SPEED_STORAGE_KEY, speed);
-    } catch {
-      // Persistence is best-effort; ignore storage failures.
-    }
-  }, []);
+  const handleSelectSpeed = useCallback(
+    (v: string) => {
+      const speed: AutoPlaySpeed = v === 'slow' || v === 'fast' ? v : 'normal';
+      if (speed === autoPlaySpeed) return;
+      setAutoPlaySpeed(speed);
+      setSpeedAnnouncement(t('settings.speedChanged', { speed: t(speedLabelKey(speed)) }));
+      try {
+        localStorage.setItem(AUTOPLAY_SPEED_STORAGE_KEY, speed);
+      } catch {
+        // Persistence is best-effort; ignore storage failures.
+      }
+    },
+    [autoPlaySpeed, t],
+  );
   const handleReset = useCallback(() => {
     setAutoPlaying(false);
     return execApi('reset', { maxRounds });
@@ -433,6 +444,9 @@ function WarPageContent() {
                     id: 'autoPlaySpeed',
                     testId: 'autoplay-speed-select',
                     label: t('settings.speed'),
+                    ariaLabel: t('settings.speedSelected', {
+                      speed: t(speedLabelKey(autoPlaySpeed)),
+                    }),
                     tooltip: t('settings.speedHelp'),
                     value: autoPlaySpeed,
                     options: [
@@ -447,6 +461,7 @@ function WarPageContent() {
               },
             ]}
           />
+          <LiveAnnouncement message={speedAnnouncement} />
 
           <GameFooter className={`${gameTheme.war.footer} px-4 py-2.5`}>
             <div className="flex gap-2 justify-center">

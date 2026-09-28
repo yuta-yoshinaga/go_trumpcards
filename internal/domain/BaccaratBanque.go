@@ -374,18 +374,6 @@ func (b *BaccaratBanque) GetLastResult() *BaccaratBanqueCoupResult { return b.la
 // GetWinnerIdx は勝者の席を返す (-1 = バンカーの負け越し)。
 func (b *BaccaratBanque) GetWinnerIdx() int { return b.winnerIdx }
 
-// SetShoeForTest はシューを差し替える (テスト用)。
-func (b *BaccaratBanque) SetShoeForTest(cards []*Card) {
-	b.shoe = cards
-	b.drawIdx = 0
-}
-
-// SetPhaseForTest はフェーズを差し替える (テスト用)。
-func (b *BaccaratBanque) SetPhaseForTest(p string) { b.phase = p }
-
-// SettleForTest は決着させる (テスト用)。
-func (b *BaccaratBanque) SettleForTest() { b.settle() }
-
 // baccaratBanqueJSON is the JSON wire format for BaccaratBanque.
 type baccaratBanqueJSON struct {
 	Shoe        []*Card                   `json:"sh"`

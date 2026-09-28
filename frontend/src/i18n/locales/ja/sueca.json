@@ -36,6 +36,9 @@
   },
   "teamScore": "{{team}}: {{score}}ゲームポイント",
   "playButton": "出す",
+  "selectedCards": "選択中: {{cards}}",
+  "noCardSelected": "カード未選択",
+  "listSeparator": "、",
   "nextTrick": "次のトリック",
   "nextRound": "次のラウンド",
   "livePoints": {

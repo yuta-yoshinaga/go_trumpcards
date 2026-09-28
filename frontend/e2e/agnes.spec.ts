@@ -5,7 +5,7 @@ test.describe('Agnes Sorel E2E', () => {
   test('navigates and renders the game', async ({ page }) => {
     await navigateTo(page, '/agnes');
 
-    await expect(page.getByText(/ベースランク/)).toBeVisible();
+    await expect(page.getByTestId('agnes-base-rank')).toBeVisible();
     await expect(page.getByText(/手数/).first()).toBeVisible();
   });
 

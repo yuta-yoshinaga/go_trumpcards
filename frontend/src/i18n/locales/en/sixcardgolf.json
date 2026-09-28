@@ -4,6 +4,8 @@
     "round": "Round",
     "stock": "Stock",
     "discard": "Discard",
+    "discardAvailable": "Draw from discard",
+    "discardUnavailable": "Unavailable",
     "score": "Score",
     "cumulative": "Total",
     "drawnCard": "Drawn Card",

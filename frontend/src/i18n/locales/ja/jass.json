@@ -19,6 +19,8 @@
   "round": "ラウンド {{n}}",
   "trick": "トリック {{n}}",
   "cards": "{{count}}枚",
+  "cardPlayable": "プレイ可能",
+  "cardNotPlayable": "プレイ不可",
   "teamScores": "チームスコア",
   "team": "チーム{{n}}",
   "teamYou": "チーム{{n}} (あなた)",

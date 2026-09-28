@@ -188,6 +188,24 @@ describe('WaspPage', () => {
     expect(mockExec).not.toHaveBeenCalledWith('deal');
   });
 
+  it('keeps an empty move target focusable and explains the required source', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: [playingState.tableau[0], [], ...playingState.tableau.slice(2)],
+    });
+    renderWithProviders(<WaspPage />);
+    const target = await screen.findByTestId('sc-empty-col-1');
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const hint = document.getElementById(target.getAttribute('aria-describedby') ?? '');
+    expect(hint).toHaveTextContent('先に移動する札を選んでください');
+
+    mockExec.mockClear();
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('labels empty columns with the "any card" rule sublabel', async () => {
     const stateWithEmptyCol: WaspResponse = {
       ...playingState,
@@ -692,6 +710,30 @@ describe('WaspPage CLI legal command', () => {
 describe('WaspPage destination preview', () => {
   /** The ♥7 in column 5; ♥8 tops column 1, so it has exactly one legal target. */
   const heartSeven = () => screen.getByRole('button', { name: /♥ 7/ });
+
+  it('announces selected legal destinations, including empty columns, and clears them on deselect', async () => {
+    const stateWithEmptyColumn = {
+      ...playingState,
+      tableau: [...playingState.tableau.slice(0, 2), [], ...playingState.tableau.slice(3)],
+    };
+    mockExec.mockResolvedValue(stateWithEmptyColumn);
+    renderWithProviders(<WaspPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    fireEvent.click(screen.getByRole('button', { name: /♥ 7/ }));
+    expect(screen.getByTestId('wasp-legal-target')).toHaveAttribute(
+      'aria-label',
+      expect.stringContaining('移動先候補'),
+    );
+    expect(screen.getByTestId('sc-empty-col-2')).toHaveAttribute('aria-label', expect.stringContaining('移動先候補'));
+
+    fireEvent.click(screen.getByRole('button', { name: /♥ 7 選択中/ }));
+    expect(screen.queryByTestId('wasp-legal-target')).not.toBeInTheDocument();
+    expect(screen.getByTestId('sc-empty-col-2')).not.toHaveAttribute(
+      'aria-label',
+      expect.stringContaining('移動先候補'),
+    );
+  });
 
   it('highlights the destination while a card is hovered, and drops it on leave', async () => {
     renderWithProviders(<WaspPage />);

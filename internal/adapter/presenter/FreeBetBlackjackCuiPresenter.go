@@ -1,4 +1,4 @@
-//go:build !js || !wasm || casino
+//go:build !js || !wasm || extra8
 
 package presenter
 
@@ -101,11 +101,18 @@ func (cp *FreeBetBlackjackCuiPresenter) writeResult(sb *strings.Builder, c inter
 	if c.IsDealerPushed22() {
 		sb.WriteString(i18n.T("freebet.dealer22Line") + "\n")
 	}
+	payouts := c.GetHandPayouts()
 	for i, r := range c.GetResults() {
 		sb.WriteString(i18n.Tf("freebet.resultLine",
 			"idx", strconv.Itoa(i+1),
 			"result", i18n.T("freebet.result"+strings.ToUpper(domain.FreeBetResultName(r)[:1])+
 				domain.FreeBetResultName(r)[1:])) + "\n")
+		payout := 0
+		if i < len(payouts) {
+			payout = payouts[i]
+		}
+		sb.WriteString(i18n.Tf("freebet.handPayoutLine",
+			"idx", strconv.Itoa(i+1), "payout", strconv.Itoa(payout)) + "\n")
 	}
 	net := c.GetPayout() - staked
 	msg := i18n.Tf("freebet.netLine", "net", strconv.Itoa(net))
@@ -116,6 +123,8 @@ func (cp *FreeBetBlackjackCuiPresenter) writeResult(sb *strings.Builder, c inter
 	}
 	if c.GetGameEndFlag() {
 		sb.WriteString(i18n.T("freebet.brokeLine") + "\n")
+	} else {
+		sb.WriteString(i18n.T("freebet.nextLine") + "\n")
 	}
 }
 

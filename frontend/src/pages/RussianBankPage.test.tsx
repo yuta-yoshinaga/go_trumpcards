@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { russianbankApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
+import { makeRussianBankState } from '../test/stateFactories';
 import type { Card, RussianBankPlayer, RussianBankResponse } from '../types/card';
 import { RussianBankPage } from './RussianBankPage';
 
@@ -29,24 +30,7 @@ function makePlayer(overrides: Partial<RussianBankPlayer> = {}): RussianBankPlay
 }
 
 function makeState(overrides: Partial<RussianBankResponse> = {}): RussianBankResponse {
-  return {
-    phase: 1,
-    currentPlayerIdx: 0,
-    gameEndFlag: false,
-    winnerIdx: -1,
-    isHumanTurn: true,
-    canCallStop: false,
-    canUndo: false,
-    moveCount: 0,
-    tableau: [[], [], [], []],
-    foundations: [[], [], [], [], [], [], [], []],
-    // 空の台はどのスートのエースも受ける (design 空文字 = 任意)。
-    foundationNext: Array.from({ length: 8 }, () => ({ design: '', value: 1 })),
-    players: [makePlayer(), makePlayer({ id: 1, isHuman: false })],
-    config: { cpuDifficulty: 1 },
-    message: '',
-    ...overrides,
-  };
+  return makeRussianBankState({ players: [makePlayer(), makePlayer({ id: 1, isHuman: false })], ...overrides });
 }
 
 beforeEach(() => {
@@ -172,6 +156,51 @@ describe('RussianBankPage', () => {
     mockExec.mockClear();
     fireEvent.click(screen.getByTestId('tableau-2'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('mt', { zone: 0, fromOpp: false, col: 0, toCol: 2 }));
+  });
+
+  it('highlights only legal tableau destinations for the selected card', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [makePlayer({ reserveTop: card('DIAMOND', 7) }), makePlayer({ id: 1, isHuman: false })],
+        tableau: [[card('SPADE', 8)], [card('HEART', 8)], [], [card('CLOVER', 6)]],
+        tableauNext: [
+          { any: false, black: false, value: 7 },
+          { any: false, black: true, value: 7 },
+          { any: true, black: false, value: 0 },
+          { any: false, black: false, value: 5 },
+        ],
+      }),
+    );
+    renderWithProviders(<RussianBankPage />);
+    fireEvent.click(await screen.findByTestId('reserve-0'));
+    expect(screen.getByTestId('tableau-0').className).toContain('ring-ds-success');
+    expect(screen.getByTestId('tableau-2').className).toContain('ring-ds-success');
+    expect(screen.getByTestId('tableau-0')).toHaveTextContent('置ける');
+    expect(screen.getByTestId('tableau-1').className).not.toContain('ring-ds-success');
+    expect(screen.getByTestId('tableau-3').className).not.toContain('ring-ds-success');
+    fireEvent.click(screen.getByTestId('cancel-select'));
+    expect(screen.getByTestId('tableau-0').className).not.toContain('ring-ds-success');
+    expect(screen.getByTestId('tableau-0')).not.toHaveTextContent('置ける');
+  });
+
+  it('keeps the selected tableau source ring distinct from destinations', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        tableau: [[card('HEART', 8)], [card('SPADE', 9)], [], []],
+        tableauNext: [
+          { any: false, black: true, value: 7 },
+          { any: false, black: false, value: 8 },
+          { any: true, black: false, value: 0 },
+          { any: true, black: false, value: 0 },
+        ],
+      }),
+    );
+    renderWithProviders(<RussianBankPage />);
+    fireEvent.click(await screen.findByTestId('tableau-0'));
+    expect(screen.getByTestId('tableau-0').className).toContain('ring-1');
+    expect(screen.getByTestId('tableau-0')).not.toHaveTextContent('置ける');
+    expect(screen.getByTestId('tableau-1')).toHaveTextContent('置ける');
+    expect(screen.getByTestId('tableau-2')).toHaveTextContent('置ける');
   });
 
   it('discards to end the turn', async () => {

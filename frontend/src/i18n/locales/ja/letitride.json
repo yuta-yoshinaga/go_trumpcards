@@ -14,6 +14,12 @@
     "currentRisk": "現在のリスク合計",
     "community": "コミュニティカード"
   },
+  "outcomePreview": {
+    "betAmount": "各口のベット額: {{amount}}",
+    "betRisk": "ベット後のリスク合計: {{amount}}",
+    "remainingBet": "残る各口のベット額: {{amount}}",
+    "actionRisk": "操作後のリスク合計: {{amount}}"
+  },
   "button": {
     "bet": "ベット",
     "pull": "プル",

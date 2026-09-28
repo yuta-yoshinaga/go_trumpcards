@@ -47,6 +47,8 @@ type SpeculationGame interface {
 	GetWinnerSeat() int
 	// GetGameEndFlag はゲームが終わったかを返す。
 	GetGameEndFlag() bool
+	// GetLastTrade returns the most recent completed purchase in this round.
+	GetLastTrade() *domain.SpeculationTrade
 	// GetActionLog は棋譜を返す。
 	GetActionLog() []*domain.ActionLogEntry
 }

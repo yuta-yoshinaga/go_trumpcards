@@ -273,6 +273,23 @@ function SheepsheadPageContent() {
                   label={t('currentTrick')}
                   dataTutorial="sh-trick-display"
                 />
+                {isTrickEnd && state.leadPlayerIdx >= 0 && (
+                  <div
+                    className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                    data-testid="sh-trick-result"
+                  >
+                    <div>
+                      {t('trickResult.winner', {
+                        player: playerName(state.leadPlayerIdx, state.leadPlayerIdx === humanIdx),
+                      })}
+                    </div>
+                    <div>
+                      {t('trickResult.nextLead', {
+                        player: playerName(state.leadPlayerIdx, state.leadPlayerIdx === humanIdx),
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Right: info sidebar */}

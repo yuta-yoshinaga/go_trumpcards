@@ -5,7 +5,6 @@ package controller
 import (
 	"net/http"
 
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/webutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
@@ -21,7 +20,6 @@ type VintWebInput struct {
 
 // VintWebConfig ヴィント Web設定
 type VintWebConfig struct {
-	CpuDifficulty *int `json:"cpuDifficulty,omitempty"`
 }
 
 // VintWebOutputBid ヴィント Webアウトプット宣言
@@ -100,15 +98,11 @@ type VintWebOutput struct {
 
 // VintWebOutputConfig ヴィント設定アウトプット
 type VintWebOutputConfig struct {
-	CpuDifficulty int `json:"cpuDifficulty"`
 }
 
 // ToConfig builds a VintConfig from the nested web config, applying bounds checking.
 func (c *VintWebConfig) ToConfig() domain.VintConfig {
-	cfg := domain.DefaultVintConfig()
-	cfg.CpuDifficulty = domain.VintCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty,
-		int(domain.VintCpuDifficultyNormal), int(domain.VintCpuDifficultyNormal), int(cfg.CpuDifficulty)))
-	return cfg
+	return domain.DefaultVintConfig()
 }
 
 // ToConfig builds a VintConfig from the web input.

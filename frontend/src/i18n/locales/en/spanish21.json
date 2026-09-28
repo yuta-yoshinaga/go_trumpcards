@@ -79,7 +79,10 @@
     "perfectPairs": "Perfect Pairs",
     "twentyOnePlus3": "Poker Hand Bonus",
     "win": "{{name}} WIN +{{payout}}",
-    "lose": "{{name}} LOSE -{{amount}}"
+    "lose": "{{name}} LOSE -{{amount}}",
+    "breakdownBet": "Bet: {{amount}}",
+    "breakdownCondition": "Payout condition: {{condition}}",
+    "breakdownPayout": "Total returned: {{amount}}"
   },
   "status": {
     "bust": "BUST",

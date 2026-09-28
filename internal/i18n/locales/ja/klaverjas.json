@@ -10,6 +10,8 @@
   "promptPlay": "手番: {{name}}",
   "promptPlayHelp": "play <idx>・・・カードを出す（マストフォロー・切り札強制追い越し）",
   "promptTrickEnd": "トリック終了",
+  "trickResult": "チーム{{team}} がこのトリックで {{points}} 点",
+  "trickResultWithBonus": "チーム{{team}} がこのトリックで {{points}} 点 (最終トリック +{{bonus}})",
   "promptTrickEndHelp": "n / next・・・次のトリックへ",
   "promptRoundEnd": "ラウンド終了（チームA: {{ptsA}}点, チームB: {{ptsB}}点）",
   "promptRoundEndHelp": "nr / nextround・・・次のラウンドへ",

@@ -35,6 +35,8 @@ function makeState(overrides: Partial<TongitsResponse> = {}): TongitsResponse {
     gameEndFlag: false,
     winnerIdx: -1,
     isTongits: false,
+    roundEndReason: 0,
+    roundWinner: -1,
     remainingPoints: 10,
     config: { cpuDifficulty: 1, pointLimit: 100 },
     message: '',
@@ -102,6 +104,17 @@ describe('formatTongitsState', () => {
     expect(out).toContain('TONGITS declared on deal!');
     expect(out).toContain('あなた melds:');
     expect(out).toContain('♠7, ♥7, ♦7');
+  });
+
+  it('renders round end reason and winner in the CLI output', () => {
+    const out = formatTongitsState(makeState({ roundEndReason: 2, roundWinner: 1 }));
+    expect(out).toContain('終了理由: チャレンジ');
+    expect(out).toContain('勝者: CPU 1');
+  });
+
+  it('renders a round draw in the CLI output', () => {
+    const out = formatTongitsState(makeState({ roundEndReason: 3, roundWinner: -1 }));
+    expect(out).toContain('勝者: 引き分け');
   });
 
   it('appends the message and game winner', () => {

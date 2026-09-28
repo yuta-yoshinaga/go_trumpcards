@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { labellelucieApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -55,6 +55,7 @@ export const LaBelleLuciePage = withTutorial(LaBelleLuciePageContent, 'labellelu
 
 /** Inner content of the La Belle Lucie page, wrapped by TutorialProvider. */
 function LaBelleLuciePageContent() {
+  const selectSourceHintId = useId();
   const {
     t,
     tc,
@@ -258,6 +259,9 @@ function LaBelleLuciePageContent() {
       cancelGiveUp={cancelGiveUp}
     >
       <div className="flex-1 overflow-y-auto pt-3 px-3 lg:px-8">
+        <span id={selectSourceHintId} className="sr-only">
+          {tc('label.selectSourceFirst')}
+        </span>
         {/* Foundations */}
         <div className="mb-3" data-tutorial="ll-foundation">
           <span className="text-ds-text-muted text-[11px]">{t('foundation')}</span>
@@ -270,15 +274,27 @@ function LaBelleLuciePageContent() {
               <button
                 type="button"
                 key={`fnd-${i}`}
+                aria-label={
+                  pile.length > 0
+                    ? t('foundationAriaLabel', {
+                        suit: t(`suitNames.${pile[pile.length - 1].design.toLowerCase()}`),
+                        count: pile.length,
+                      })
+                    : t('emptyFoundationAriaLabel', { index: i + 1 })
+                }
                 className={`rounded ${selected !== null ? 'ring-1 ring-ds-success' : ''} ${canAct ? 'cursor-pointer' : ''}`}
                 onClick={selected !== null ? sendToFoundation : undefined}
-                disabled={selected === null}
+                aria-disabled={selected === null || undefined}
+                aria-describedby={selected === null ? selectSourceHintId : undefined}
                 data-testid={`foundation-${i}`}
               >
                 {pile.length > 0 ? (
-                  <CardImage card={pile[pile.length - 1]} width={w} />
+                  <span aria-hidden="true">
+                    <CardImage card={pile[pile.length - 1]} width={w} />
+                  </span>
                 ) : (
                   <div
+                    aria-hidden="true"
                     className="rounded border border-dashed border-white/25 bg-black/20"
                     style={{ width: w, height: Math.round(w * 1.4) }}
                   />

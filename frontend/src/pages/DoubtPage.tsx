@@ -17,6 +17,7 @@ import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { isModalOpen } from '../hooks/keyboardNavUtils';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCardKeyboardNav } from '../hooks/useCardKeyboardNav';
 import { useCardSwipeSelection } from '../hooks/useCardSwipeSelection';
@@ -173,6 +174,7 @@ function DoubtPageContent() {
   useEffect(() => {
     if (!isDoubtDecisionPhase || loading) return;
     const onKey = (e: KeyboardEvent) => {
+      if (isModalOpen()) return;
       const target = e.target as HTMLElement | null;
       if (
         target &&

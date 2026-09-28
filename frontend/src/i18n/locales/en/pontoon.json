@@ -46,7 +46,7 @@
   "bankerTurn": "Draw or stop as the banker",
   "roundOver": "{{result}}",
   "bankPasses": "A pontoon takes the bank",
-  "payout": "{{payout}}",
+  "payout": "Net: {{payout}}",
   "landscapeBanner": "Landscape mode recommended",
   "seatAriaLabel": "{{name}}'s hand, total {{total}}",
   "hiddenHandAriaLabel": "{{name}}'s hand is face down",

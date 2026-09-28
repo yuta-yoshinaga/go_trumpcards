@@ -22,6 +22,7 @@ func mustPigOutputJSON(msg string) string {
 		ValidPlays:    []int{},
 		SignallerIdx:  -1,
 		RoundLoserIdx: -1,
+		PassTargetIdx: -1,
 		WinnerIdx:     -1,
 		WebOutputBase: controller.WebOutputBase{Message: msg},
 	}

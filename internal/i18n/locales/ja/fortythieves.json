@@ -15,6 +15,7 @@
   "wasteCard": " | ウェイスト: {{card}}",
   "wasteEmpty": " | ウェイスト: [空]",
   "columnLabel": "列{{col}}:",
+  "emptyColumnCount": "空き列数: {{count}}",
   "hintFromTableau": "タブロー列{{col}}[{{idx}}]",
   "hintFromWaste": "ウェイスト",
   "hintToFoundation": "組札",

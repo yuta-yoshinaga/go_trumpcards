@@ -1,8 +1,7 @@
 import type { RollingStoneResponse } from '../../../types/card';
 import { RollingStonePhase } from '../../../types/phases';
+import { suitSymbolAt } from '../../cardAlt';
 import { formatCard, formatHeader, formatPlayerName, formatSeparator } from '../formatterBase';
-
-const SUIT_SYMBOLS: Record<number, string> = { 1: '♠', 2: '♣', 3: '♥', 4: '♦' };
 
 const PHASE_NAMES: Record<number, string> = {
   [RollingStonePhase.PLAY]: 'PLAY',
@@ -52,7 +51,7 @@ export function formatRollingStoneState(state: RollingStoneResponse | null): str
   // **出せる札が無いことははっきり言う。** 黙っていると打てない理由が分からない。
   if (state.mustPickUp) {
     lines.push(
-      `you cannot follow ${SUIT_SYMBOLS[state.leadSuit] ?? '?'} — pickup takes the ${state.currentTrick.length} cards on the table`,
+      `you cannot follow ${suitSymbolAt(state.leadSuit, '?')} — pickup takes the ${state.currentTrick.length} cards on the table`,
     );
   }
 

@@ -725,37 +725,55 @@ describe('FreeCellPage', () => {
     await waitFor(() => expect(cardButton).toHaveAttribute('aria-pressed', 'true'));
   });
 
-  // --- Empty targets disabled without source ---
+  // --- Empty targets marked unavailable without source ---
 
-  it('foundation disabled when no source selected', async () => {
+  it('foundation target remains focusable when no source selected', async () => {
     renderWithProviders(<FreeCellPage />);
     await waitFor(() => expect(screen.getByText('♠')).toBeInTheDocument());
 
     const aButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === 'A');
     for (const btn of aButtons) {
-      expect(btn).toBeDisabled();
+      expect(btn).not.toBeDisabled();
+      expect(btn).toHaveAttribute('aria-disabled', 'true');
     }
   });
 
-  it('empty tableau column disabled when no source selected', async () => {
+  it('empty tableau column remains focusable when no source selected', async () => {
     renderWithProviders(<FreeCellPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
     const kButtons = screen.getAllByRole('button').filter((btn) => btn.textContent === 'K');
     for (const btn of kButtons) {
-      expect(btn).toBeDisabled();
+      expect(btn).not.toBeDisabled();
+      expect(btn).toHaveAttribute('aria-disabled', 'true');
     }
   });
 
-  it('empty freecell disabled when no source selected', async () => {
+  it('empty freecell remains focusable when no source selected', async () => {
     renderWithProviders(<FreeCellPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
     const emptyButtons = screen.getAllByText('空');
     for (const btn of emptyButtons) {
       const button = btn.closest('button') as HTMLButtonElement;
-      expect(button).toBeDisabled();
+      expect(button).not.toBeDisabled();
+      expect(button).toHaveAttribute('aria-disabled', 'true');
     }
+  });
+
+  it('explains a focusable target and ignores clicks before a source is selected', async () => {
+    renderWithProviders(<FreeCellPage />);
+    const target = await screen.findByTestId('fc-empty-col-2');
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const hintId = target.getAttribute('aria-describedby');
+    expect(hintId).toBeTruthy();
+    expect(document.getElementById(hintId ?? '')).toHaveTextContent('先に移動する札を選んでください');
+
+    mockExec.mockClear();
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
   });
 
   it('renders tutorial button', async () => {
@@ -1031,6 +1049,15 @@ describe('FreeCellPage empty-column move limit', () => {
     // 空き列宛ての低い方も出す。
     expect(limit).toHaveTextContent('4');
     expect(limit).not.toHaveTextContent('320');
+  });
+
+  it('shows a zero empty-column limit when no empty column is available', async () => {
+    mockExec.mockResolvedValue({ ...playingState, maxMovableCards: 8, maxMovableCardsToEmptyColumn: 0 });
+    renderWithProviders(<FreeCellPage />);
+
+    const limit = await screen.findByTestId('fc-supermove-limit');
+    expect(limit).toHaveTextContent('8');
+    expect(limit).toHaveTextContent('0');
   });
 
   it('marks the empty column as out of reach for a stack that only the lower limit blocks', async () => {

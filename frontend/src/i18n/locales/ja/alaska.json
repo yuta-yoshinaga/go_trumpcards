@@ -23,8 +23,10 @@
   "hintFromAria": "ヒント: このカードを{{dest}}へ移動",
   "hintToAria": "ヒント: 移動先",
   "hintAnnouncement": "ヒント: {{card}}を{{dest}}へ移動",
-  "foundationAriaLabel": "{{suit}} 組札 {{count}}枚",
-  "emptyFoundationAriaLabel": "空の組札 ({{suit}})",
+  "foundationAriaLabel": "{{suit}} 組札 {{count}}枚、最後の札 {{topCard}}、{{nextCondition}}",
+  "emptyFoundationAriaLabel": "空の組札 ({{suit}})、{{nextCondition}}",
+  "foundationNextCard": "次は{{card}}",
+  "foundationComplete": "完成",
   "stalemate": "手詰まりです",
   "frontendHint": {
     "moveToFoundation": "組札へ移動できるカードがあります",

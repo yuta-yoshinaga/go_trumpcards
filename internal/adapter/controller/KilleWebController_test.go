@@ -79,9 +79,8 @@ func TestKilleWebController_ResetWithConfig(t *testing.T) {
 	})
 
 	t.Run("out-of-range values fall back to defaults", func(t *testing.T) {
-		diff := 9
 		stake := 0
-		run(t, "cfg-2", &controller.KilleWebConfig{CpuDifficulty: &diff, Stake: &stake}, domain.DefaultKilleConfig())
+		run(t, "cfg-2", &controller.KilleWebConfig{Stake: &stake}, domain.DefaultKilleConfig())
 	})
 
 	// **config はワイヤ上で任意。**省略時に落ちるとフロントの reset が死ぬ。

@@ -23,6 +23,7 @@ export interface PrsiResponse extends BaseGameResponse {
   currentPlayerIdx: number;
   discardTop: Card | null;
   drawPileCount: number;
+  discardPileCount: number;
   penaltyDrawCount: number;
   pendingSkips: number;
   gameEndFlag: boolean;

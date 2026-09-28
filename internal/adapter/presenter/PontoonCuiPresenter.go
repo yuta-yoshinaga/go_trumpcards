@@ -1,4 +1,4 @@
-//go:build !js || !wasm || extra
+//go:build !js || !wasm || extra9
 
 package presenter
 
@@ -86,7 +86,7 @@ func (pp *PontoonCuiPresenter) Output(p interfaces.PontoonGame, lastErr error) s
 			sb.WriteString(marker + s.GetName() + " " +
 				i18n.Tf("pontoon.betInline", "bet", strconv.Itoa(h.GetBet())) + " " +
 				pontoonHandLine(p, h, hide))
-			if ended && h.GetPayout() != 0 {
+			if ended {
 				sb.WriteString(" " + i18n.Tf("pontoon.payoutInline",
 					"payout", strconv.Itoa(h.GetPayout())))
 			}

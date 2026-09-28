@@ -1,6 +1,9 @@
 import { renderHook } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { registerOpenModal } from './keyboardNavUtils';
 import { useReflexShortcuts } from './useReflexShortcuts';
+
+let unregisterModal: (() => void) | undefined;
 
 function press(key: string, options: KeyboardEventInit = {}): boolean {
   const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...options });
@@ -8,6 +11,24 @@ function press(key: string, options: KeyboardEventInit = {}): boolean {
 }
 
 describe('useReflexShortcuts', () => {
+  afterEach(() => {
+    unregisterModal?.();
+    unregisterModal = undefined;
+  });
+
+  it('blocks reflex keys while a modal is open, then resumes them', () => {
+    const onStep = vi.fn();
+    const onSlap = vi.fn();
+    renderHook(() => useReflexShortcuts({ onStep, onSlap, enabled: true }));
+    unregisterModal = registerOpenModal();
+    press('Enter');
+    press(' ');
+    expect(onStep).not.toHaveBeenCalled();
+    expect(onSlap).not.toHaveBeenCalled();
+    unregisterModal();
+    press('Enter');
+    expect(onStep).toHaveBeenCalledTimes(1);
+  });
   it('triggers onStep on Enter / S / s', () => {
     const onStep = vi.fn();
     const onSlap = vi.fn();

@@ -48,7 +48,7 @@ const STUD_ROUND_KEYS = ['', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'sh
  * alternates draw and betting rounds. Phase numbers come from
  * `DeuceToSevenPhase*` (1=deal 2=bet 3=draw 4=showdown 5=end).
  */
-const DRAW_ROUND_KEYS = ['', 'deal', 'betting', 'drawing', 'showdown', 'showdown'] as const;
+const DRAW_ROUND_KEYS = ['', 'deal', 'betting', 'drawing', 'showdown', ''] as const;
 
 /** Disciplines whose betting rounds are named after community cards. */
 const COMMUNITY_DISCIPLINES = new Set(['holdem', 'omahaHiLo', 'nlHoldem', 'plOmaha']);
@@ -320,6 +320,13 @@ export function HorsePageContent({ gameKey }: { gameKey: HorsePageGameKey }) {
           />
 
           <GameFooter className={`${gameTheme[gameKey].footer} px-4 py-2.5`}>
+            <div className="text-center text-xs text-ds-text-muted" data-testid="ho-action-context">
+              <span className="text-ds-text-primary">{tc(`nav.${gameKey}`)}</span>
+              <span> · {disciplineName}</span>
+              {roundLabel && <span> · {roundLabel}</span>}
+              {isDrawTurn && <span> · {t('action.draw', { n: state.drawIndex })}</span>}
+              {roundLabel && isBetTurn && <span> · {t('action.betting')}</span>}
+            </div>
             <div className="flex gap-2 justify-center flex-wrap items-center" data-tutorial="ho-actions">
               {isDrawTurn && (
                 <div className="flex flex-col items-center gap-2" data-testid="ho-draw">

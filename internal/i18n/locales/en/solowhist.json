@@ -41,6 +41,7 @@
   "playPhase.follow": "Follow the led suit",
   "trickEnd": "Trick complete",
   "roundEnd": "Round complete",
+  "roundContractResult": "Contract target: {{target}} tricks — declarer: {{won}} tricks",
   "result.humanWin": "Game over! You win!",
   "result.cpuWin": "Game over! Player {{player}} wins!",
   "bidHistory": "Bids: {{bids}}",

@@ -5,7 +5,6 @@ import type { BaseGameResponse, Card } from '../common';
 
 /** Piquet game configuration. */
 export interface PiquetConfig {
-  cpuDifficulty: number;
   dealsPerPartie: number;
 }
 

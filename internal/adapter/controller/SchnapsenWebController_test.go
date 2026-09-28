@@ -129,15 +129,4 @@ func TestSchnapsenWebConfig_ToConfig(t *testing.T) {
 		assert.Equal(t, domain.DefaultSchnapsenConfig(), input.ToConfig())
 	})
 
-	t.Run("explicit normal difficulty", func(t *testing.T) {
-		diff := int(domain.SchnapsenCpuDifficultyNormal)
-		c := &controller.SchnapsenWebConfig{CpuDifficulty: &diff}
-		assert.Equal(t, domain.SchnapsenCpuDifficultyNormal, c.ToConfig().CpuDifficulty)
-	})
-
-	t.Run("out-of-range clamps to default", func(t *testing.T) {
-		diff := 99
-		c := &controller.SchnapsenWebConfig{CpuDifficulty: &diff}
-		assert.Equal(t, domain.SchnapsenCpuDifficultyNormal, c.ToConfig().CpuDifficulty)
-	})
 }

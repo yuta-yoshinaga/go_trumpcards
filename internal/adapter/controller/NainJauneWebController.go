@@ -19,8 +19,7 @@ type NainJauneWebInput struct {
 
 // NainJauneWebConfig ル・ナン・ジョーヌWeb設定
 type NainJauneWebConfig struct {
-	CpuDifficulty *int `json:"cpuDifficulty,omitempty"`
-	TargetDeals   *int `json:"targetDeals,omitempty"`
+	TargetDeals *int `json:"targetDeals,omitempty"`
 }
 
 // NainJauneWebOutputBox は盤の 1 区画。
@@ -89,16 +88,12 @@ type NainJauneWebOutput struct {
 
 // NainJauneWebOutputConfig ル・ナン・ジョーヌ設定アウトプット
 type NainJauneWebOutputConfig struct {
-	CpuDifficulty int `json:"cpuDifficulty"`
-	TargetDeals   int `json:"targetDeals"`
+	TargetDeals int `json:"targetDeals"`
 }
 
 // ToConfig builds a NainJauneConfig from the nested web config, applying bounds checking.
 func (c *NainJauneWebConfig) ToConfig() domain.NainJauneConfig {
 	cfg := domain.DefaultNainJauneConfig()
-	cfg.CpuDifficulty = domain.NainJauneCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty,
-		int(domain.NainJauneCpuDifficultyNormal), int(domain.NainJauneCpuDifficultyNormal),
-		int(cfg.CpuDifficulty)))
 	webutil.ApplyBoundedInt(&cfg.TargetDeals, c.TargetDeals, 1, 100)
 	return cfg
 }

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef } from 'react';
 import type { PerseveranceMoveZone, perseveranceApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -79,6 +79,7 @@ function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => stri
 
 /** Inner content of the Perseverance page, wrapped by TutorialProvider. */
 function PerseverancePageContent() {
+  const selectSourceHintId = useId();
   const {
     t,
     tc,
@@ -218,6 +219,17 @@ function PerseverancePageContent() {
   const isGameClear = state.phase === PerseverancePhase.GAME_CLEAR;
   const isGameOver = state.phase === PerseverancePhase.GAME_OVER;
   const isEnded = isGameClear || isGameOver;
+  const stalemateMessage = state.isStalemate
+    ? t(
+        state.canUndo
+          ? state.redealsLeft > 0
+            ? 'stalemateUndoRedeal'
+            : 'stalemateUndo'
+          : state.redealsLeft > 0
+            ? 'stalemateRedeal'
+            : 'stalemateNoEscape',
+      )
+    : undefined;
 
   // **選択後は押すまで正誤が分からず、クリック→サーバーエラーのループになって
   // いた (#4795)。**13列 + 4組札で移動先候補が多い。姉妹の Wasp / Accordion は
@@ -270,6 +282,9 @@ function PerseverancePageContent() {
       }
     >
       <LandscapeBanner message={t('landscapeBanner')} />
+      <span id={selectSourceHintId} className="sr-only">
+        {tc('label.selectSourceFirst')}
+      </span>
 
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
@@ -299,7 +314,9 @@ function PerseverancePageContent() {
                         <button
                           type="button"
                           onClick={() => handleSelectTarget(foundationZone)}
-                          disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
+                          disabled={!isPlaying || loading || isAutoCompleting}
+                          aria-disabled={!selectedSource || undefined}
+                          aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                           aria-label={t('foundationAriaLabel', {
                             suit: FOUNDATION_SUITS[idx],
                             count: pile.length,
@@ -317,7 +334,9 @@ function PerseverancePageContent() {
                         <button
                           type="button"
                           onClick={() => handleSelectTarget(foundationZone)}
-                          disabled={!isPlaying || loading || !selectedSource}
+                          disabled={!isPlaying || loading}
+                          aria-disabled={!selectedSource || undefined}
+                          aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                           aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
                           style={{ width: bd.cw, height: bd.ch }}
                           className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
@@ -478,6 +497,9 @@ function PerseverancePageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
+            <div role="status">
+              {stalemateMessage && <p className="text-center text-sm mb-2">{stalemateMessage}</p>}
+            </div>
 
             {/* Action log */}
             <ActionLogSection

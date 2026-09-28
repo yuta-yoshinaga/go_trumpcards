@@ -21,9 +21,8 @@ triggers:
 
 # propose-games — new-game candidates → GitHub issues
 
-Sibling of [[game-improve]]. game-improve improves the 132 existing games;
-**propose-games proposes games that are NOT yet implemented** and opens one
-new-game issue per candidate. Codifies the 2026-06-07 batch (45 candidates).
+Sibling of [[game-improve]]. **propose-games proposes games that are NOT yet implemented**
+and opens one new-game issue per candidate.
 
 ## Output shape
 
@@ -53,23 +52,16 @@ grep -oE '\{Name: "[^"]+"' internal/infrastructure/games/registry.go \
   | sed -E 's/.*"([^"]+)"/\1/' | sort > /tmp/newgames/existing.txt
 ```
 This is the **only** authoritative dedup list — never propose a slug already in it.
+For the current list, run `go run ./cmd/trumpcards games --short`.
 
 ### 2. Curate candidates (do this yourself — it's the value)
-Pick real, notable card games across diverse buckets so the batch isn't lopsided:
-trick-taking (regional: German Sheepshead/Doppelkopf, Spanish Mus/Tute, Italian
-Scopone, Czech Mariáš…), rummy/melding (Hand and Foot, Conquian, Chinchón),
-shedding/reflex (Mao, Spoons, Kemps), fishing (Pişti, Cuarenta), casino/vying
-(Three Card Brag, Teen Patti, Five Card Stud, Faro, OFC), solitaire (Russian Bank,
-La Belle Lucie, Simple Simon, Double Klondike, Black Hole), and — if special decks
-are in scope — French Tarot, Koi-Koi, Go-Stop. Watch near-duplicates: `threecard`
-= Three Card *Poker* (≠ Three Card Brag); `chinesepoker` = closed (≠ OFC); `scopa`
-(≠ Scopone); `cassino` (≠ Pişti); `klondike` (≠ Double Klondike).
+Pick candidates across varied axes: regional traditions, deck types, mechanic families,
+and player counts. Check for near-duplicates against the current registry.
 
 Write a seed JSON `/tmp/newgames/seeds.json` — array of
-`{slug, jp, en, origin, deck, players, mechanic, reuse, bucket}`. `reuse` =
-the existing game/component to model after (this is what makes proposals
-implementable, not hand-wavy). `bucket` recommendation: **classic worker is at
-the 1 MB gzip limit (#2126) → route new games to `casino` or `solo` only.**
+`{slug, jp, en, origin, deck, players, mechanic, reuse, bucket}`. `reuse` = the existing game/component to model after (this is what makes proposals
+implementable, not hand-wavy). `bucket`: leave it to `worker-budget-checker` at
+implementation time.
 
 Then verify zero collisions:
 ```sh
@@ -80,11 +72,9 @@ comm -12 <(jq -r '.[].slug' /tmp/newgames/seeds.json|sort -u) /tmp/newgames/exis
 Split seeds into groups of ~9; launch one `general-purpose` **sonnet** agent per
 group in a single message. Each reads its `seedgroup-<n>.json`, expands every seed
 into `{game,title,body}` following the template above, writes
-`/tmp/newgames/group-<n>.json`. Enforce: **no build/test/lint/go/bun** (Read/Grep
-/Glob only — OOM safety, see memory `feedback_sequential_tasks`); rules-accurate;
-~180–280 word bodies; special decks (tarot/hanafuda) must call out a NEW non-52
-Card/Deck domain type; social/real-time games (Mao/Spoons/Kemps) must describe a
-concrete 1-human-vs-CPU adaptation.
+`/tmp/newgames/group-<n>.json`. Enforce: read-only (Read/Grep/Glob); rules-accurate;
+~180–280 word bodies; non-standard decks must call out a NEW Card/Deck domain
+type; social/real-time games must describe a concrete 1-human-vs-CPU adaptation.
 
 ### 4. Validate + merge
 ```sh
@@ -100,9 +90,8 @@ Spot-check one body for rule accuracy + the special-deck/social callouts.
 ### 5. Create issues
 `FOOTER='...' SRC=/tmp/newgames/all.json bash scripts/create_issues.sh` (in this
 skill dir). Idempotent (skips games already in `created.log`), `sleep 3` between
-creates (GitHub secondary-rate-limit safety), `--body-file`, no `--label` (repo
-has none). Run in background; ~3s/issue. For draft mode, render `all.json` as a
-table and stop.
+creates (GitHub secondary-rate-limit safety), `--body-file`. Choose labels from `gh label list`. Run in background; ~3s/issue.
+For draft mode, render `all.json` as a table and stop.
 
 ### 6. Verify + report + remember
 ```sh

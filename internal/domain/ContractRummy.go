@@ -1127,7 +1127,8 @@ func findSetCandidates(size int, cards []*Card, used []bool) [][]int {
 		byRank[c.GetValue()] = append(byRank[c.GetValue()], i)
 	}
 	var result [][]int
-	for _, idxs := range byRank {
+	for _, rank := range sortedIntKeys(byRank) {
+		idxs := byRank[rank]
 		if len(idxs) < size {
 			continue
 		}
@@ -1158,7 +1159,8 @@ func findRunCandidates(size int, cards []*Card, used []bool) [][]int {
 		}
 	}
 	var result [][]int
-	for _, byVal := range bySuit {
+	for _, suit := range sortedIntKeys(bySuit) {
+		byVal := bySuit[suit]
 		if len(byVal) < size {
 			continue
 		}
@@ -1261,7 +1263,8 @@ func findExtraMeld(cards []*Card) []*Card {
 	for _, c := range cards {
 		byRank[c.GetValue()] = append(byRank[c.GetValue()], c)
 	}
-	for _, group := range byRank {
+	for _, rank := range sortedIntKeys(byRank) {
+		group := byRank[rank]
 		if len(group) >= 3 {
 			pick := make([]*Card, 3)
 			copy(pick, group[:3])
@@ -1278,7 +1281,8 @@ func findExtraMeld(cards []*Card) []*Card {
 			bySuit[c.GetDesign()][c.GetValue()] = c
 		}
 	}
-	for _, byVal := range bySuit {
+	for _, suit := range sortedIntKeys(bySuit) {
+		byVal := bySuit[suit]
 		values := make([]int, 0, len(byVal))
 		for v := range byVal {
 			values = append(values, v)

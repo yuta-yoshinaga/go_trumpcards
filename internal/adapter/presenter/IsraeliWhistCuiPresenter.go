@@ -90,6 +90,11 @@ func (p *IsraeliWhistCuiPresenter) Output(w interfaces.IsraeliWhistGame, lastErr
 			func(tc *domain.TrickCard) string { return cuiCardStr(tc.Card) },
 			func(idx int) string { return cuiPlayerName(w.GetPlayer(idx), idx) },
 		)
+		if len(w.GetCurrentTrick()) > 0 {
+			winnerIdx := w.GetCurrentTrickWinnerIdx()
+			sb.WriteString(i18n.Tf("israeliwhist.trickWinner",
+				"name", cuiPlayerName(w.GetPlayer(winnerIdx), winnerIdx)) + "\n")
+		}
 
 		cuiErrorBlock(sb, lastErr)
 

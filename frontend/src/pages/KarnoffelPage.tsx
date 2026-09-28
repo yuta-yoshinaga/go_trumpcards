@@ -300,6 +300,10 @@ function KarnoffelPageContent() {
                         ? 'devilLead'
                         : 'devilFollow'
                       : karnoffelRankKey(c, state.chosenSuit);
+                  const cardName = rankKey ? `${cardAlt(c)} (${t(`rankBadge.${rankKey}`)})` : cardAlt(c);
+                  const accessibleName = isPlay
+                    ? `${cardName}, ${t(canPlay(i) ? 'playableThisTurn' : 'notPlayableThisTurn')}`
+                    : cardName;
                   return (
                     <button
                       key={`hand-${c.design}-${c.value}-${i}`}
@@ -307,7 +311,8 @@ function KarnoffelPageContent() {
                       data-hint-action="play"
                       onClick={() => setSelected(i)}
                       disabled={loading || (isPlay && !canPlay(i))}
-                      aria-label={rankKey ? `${cardAlt(c)} (${t(`rankBadge.${rankKey}`)})` : cardAlt(c)}
+                      aria-pressed={selected === i}
+                      aria-label={accessibleName}
                       className={`relative rounded ${selected === i ? 'ring-2 ring-ds-accent' : ''} ${
                         isPlay && !canPlay(i) ? 'opacity-40' : ''
                       }`}

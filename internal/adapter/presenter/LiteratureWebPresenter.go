@@ -63,9 +63,6 @@ func (p *LiteratureWebPresenter) Output(g interfaces.LiteratureGame, lastErr err
 		resObj.LastClaim = literatureClaimOut(c)
 	}
 
-	cfg := g.GetConfig()
-	resObj.Config = controller.LiteratureWebOutputConfig{CpuDifficulty: int(cfg.CpuDifficulty)}
-
 	resObj.Players = p.buildPlayersOutput(g)
 	resObj.Message, resObj.MessageCode, resObj.MessageParams = p.buildMessage(g, lastErr)
 

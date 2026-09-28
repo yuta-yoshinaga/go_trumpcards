@@ -59,8 +59,6 @@ func (p *LobaWebPresenter) buildBase(c interfaces.LobaGame) *controller.LobaWebO
 		})
 	}
 
-	cfg := c.GetConfig()
-	resObj.Config = controller.LobaWebOutputConfig{CpuDifficulty: int(cfg.CpuDifficulty)}
 	resObj.Players = p.buildPlayersOutput(c)
 
 	// ヒントは通常のレスポンスにも載せる。HintOutput にしか設定しないと、

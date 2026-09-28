@@ -1,5 +1,5 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { grandfathersClockApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
@@ -63,6 +63,10 @@ const gameOverState: GrandfathersClockResponse = {
 };
 
 describe('GrandfathersClockPage', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
@@ -86,6 +90,21 @@ describe('GrandfathersClockPage', () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<GrandfathersClockPage />);
     await waitFor(() => expect(screen.getAllByLabelText(/文字盤\d+ \(\d+時\)/).length).toBe(12));
+  });
+
+  it('keeps a clock face target focusable and explains the missing source', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<GrandfathersClockPage />);
+    const target = await screen.findByLabelText(/文字盤0/);
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const hintId = target.getAttribute('aria-describedby');
+    expect(hintId).toBeTruthy();
+    expect(document.getElementById(hintId ?? '')).toHaveTextContent('先に移動する札を選んでください');
+    mockExec.mockClear();
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
   });
 
   // The target rank is what the player plans against, so it has to be on screen
@@ -247,6 +266,32 @@ describe('GrandfathersClockPage', () => {
     const btn = await screen.findByTestId('autocomplete-button');
     expect(btn).toBeEnabled();
     expect(btn.className).toContain('animate-pulse');
+  });
+
+  it('announces auto-complete start and completion and clears the visible status', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: faces.map((f, i) => (i === 0 ? { ...f, cards: [...f.cards, card('HEART', 3)] } : f)),
+    });
+    renderWithProviders(<GrandfathersClockPage />);
+    const button = await screen.findByTestId('autocomplete-button');
+    await waitFor(() => expect(button).toBeEnabled());
+
+    vi.useFakeTimers();
+    fireEvent.click(button);
+    const liveRegion = screen.getByTestId('gc-autocomplete-status');
+    expect(liveRegion).toHaveClass('sr-only');
+    expect(liveRegion).toHaveTextContent('自動完成中');
+    expect(screen.getByTestId('gc-autocomplete-visible')).toBeInTheDocument();
+    expect(button).toBeDisabled();
+
+    await act(async () => {
+      vi.advanceTimersByTime(3000);
+    });
+    expect(liveRegion).toHaveTextContent('自動完成が完了しました');
+    expect(screen.queryByTestId('gc-autocomplete-visible')).not.toBeInTheDocument();
+    expect(button).toBeEnabled();
+    vi.useRealTimers();
   });
 
   it('shows StalemateEscapeButton when the stalemate flag is set', async () => {

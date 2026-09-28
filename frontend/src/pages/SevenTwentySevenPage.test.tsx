@@ -59,6 +59,31 @@ beforeEach(() => {
 });
 
 describe('SevenTwentySevenPage', () => {
+  it('explains that an exhausted deck ended the draw and shows the next-round action', async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      phase: SevenTwentySevenPhase.RESULT,
+      players: [
+        player(0, { cardCount: 20 }),
+        player(1, { cardCount: 12 }),
+        player(2, { cardCount: 10 }),
+        player(3, { cardCount: 10 }),
+      ],
+    });
+    renderWithProviders(<SevenTwentySevenPage />);
+
+    expect(await screen.findByTestId('s27-deck-empty')).toHaveTextContent('このラウンドで山札がすべて配られました。');
+    expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument();
+  });
+
+  it('keeps the normal draw controls without an exhausted-deck notice', async () => {
+    renderWithProviders(<SevenTwentySevenPage />);
+
+    expect(await screen.findByRole('button', { name: 'カードを引く' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '止まる' })).toBeInTheDocument();
+    expect(screen.queryByTestId('s27-deck-empty')).not.toBeInTheDocument();
+  });
+
   // **2 つの目標を常に書く。** 7 と 27 のどちらに寄せるかがこのゲームそのもの。
   it('always states both targets and the unusual card values', async () => {
     renderWithProviders(<SevenTwentySevenPage />);

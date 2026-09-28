@@ -30,6 +30,10 @@ export interface TrickDisplayProps {
   cardWidth: number;
   /** Localised label, e.g. `t('currentTrick')`. */
   label: string;
+  /** Localised name of the first card's suit, when the caller wants to show it. */
+  leadSuit?: string;
+  /** Localised label for {@link leadSuit}. */
+  leadSuitLabel?: string;
   /** Value for the `data-tutorial` attribute (e.g. `"ht-trick-display"`). */
   dataTutorial?: string;
   /** When set (e.g. the trick winner at TRICK_END), that player's card gets a gold ring + WIN badge. */
@@ -49,6 +53,8 @@ export interface TrickDisplayProps {
   wrap?: boolean;
   /** Optional per-card role marker, rendered in both the visual and accessible card label. */
   cardBadgeFor?: (card: Card) => { glyph: string; title: string } | null;
+  /** Optional localized accessible name for each card, including its player. */
+  cardAriaLabelFor?: (player: TrickDisplayPlayer, card: Card) => string;
 }
 
 /**
@@ -67,6 +73,8 @@ export function TrickDisplay({
   players,
   cardWidth,
   label,
+  leadSuit,
+  leadSuitLabel,
   dataTutorial,
   winnerIdx,
   lastTrick,
@@ -74,6 +82,7 @@ export function TrickDisplay({
   winnerLabel,
   wrap = false,
   cardBadgeFor,
+  cardAriaLabelFor,
 }: TrickDisplayProps) {
   const displayedTrick = currentTrick.length > 0 ? currentTrick : (lastTrick ?? []);
   const displayedWinnerIdx = currentTrick.length > 0 ? winnerIdx : (lastTrickWinner ?? winnerIdx);
@@ -89,11 +98,17 @@ export function TrickDisplay({
   return (
     <div className="my-3 p-3 rounded bg-black/40" data-tutorial={dataTutorial}>
       <div className="text-ds-text-muted text-sm mb-1">{label}</div>
+      {leadSuit && leadSuitLabel && (
+        <div className="text-ds-text-primary text-sm mb-2" data-testid="trick-lead-suit">
+          {leadSuitLabel}: {leadSuit}
+        </div>
+      )}
       {/* wrap の既定は false。通常のトリックは席数までしか積まれないので
           1 行に収まり、これまでの見た目のまま。 */}
       <div className={wrap ? 'flex gap-2 flex-wrap' : 'flex gap-2'} data-testid="trick-display-cards">
         {displayedTrick.map((trickCard) => {
           const player = players[trickCard.playerIdx];
+          const displayPlayer = player ?? { id: trickCard.playerIdx, isHuman: false };
           const team = player?.team;
           const isAlly = hasTeams && team !== undefined && team === humanTeam;
           const isFoe = hasTeams && team !== undefined && team !== humanTeam;
@@ -112,6 +127,7 @@ export function TrickDisplay({
               ? 'text-ds-error font-semibold'
               : 'text-game-text-muted';
           const badge = cardBadgeFor?.(trickCard.card);
+          const cardLabel = cardAriaLabelFor?.(displayPlayer, trickCard.card) ?? cardAlt(trickCard.card);
           return (
             <div
               key={`trick-${trickCard.playerIdx}`}
@@ -124,7 +140,7 @@ export function TrickDisplay({
                 card={trickCard.card}
                 width={cardWidth}
                 wrapperClassName={wrapperClass || undefined}
-                ariaLabel={badge ? `${cardAlt(trickCard.card)} (${badge.title})` : undefined}
+                ariaLabel={badge ? `${cardLabel} (${badge.title})` : cardAriaLabelFor ? cardLabel : undefined}
               />
               {badge && <CardRoleBadge idx={trickCard.playerIdx} glyph={badge.glyph} title={badge.title} />}
               {isWinner && (

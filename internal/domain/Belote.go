@@ -687,12 +687,6 @@ func (b *Belote) GetConfig() BeloteConfig { return b.config }
 // SetConfig 設定変更
 func (b *Belote) SetConfig(cfg BeloteConfig) { b.config = cfg }
 
-// CardRankPublic カードランク取得 (テスト用公開メソッド)
-func (b *Belote) CardRankPublic(card *Card) int { return b.cardRank(card) }
-
-// CardPointsPublic カード得点取得 (テスト用公開メソッド)
-func (b *Belote) CardPointsPublic(card *Card) int { return beloteCardPoints(card, b.trumpSuit) }
-
 // --- Ranking + scoring helpers ---
 
 // beloteTrumpRank トランプスートのカードランク (高 = 強)

@@ -36,7 +36,7 @@ func driveToPhase(t *testing.T, phase domain.PiquetPhase) *domain.Piquet {
 		domain.NewPiquetPlayer(false),
 	}
 	g := domain.NewPiquet(domain.NewTrumpCardsBelote(), players,
-		domain.PiquetConfig{DealsPerPartie: 1, CpuDifficulty: domain.PiquetCpuDifficultyNormal})
+		domain.PiquetConfig{DealsPerPartie: 1})
 	g.Reset()
 	// Exchange autoruns to Declaration via CpuPlay
 	for g.GetPhase() == domain.PiquetPhaseExchange {

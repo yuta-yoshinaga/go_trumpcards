@@ -1,4 +1,4 @@
-//go:build !js || !wasm || classic
+//go:build !js || !wasm || extra8
 
 // Package domain ソロ・ホイスト (Solo Whist) のドメインモデル。
 //
@@ -42,8 +42,8 @@ const (
 	SoloWhistBidAbundance SoloWhistBid = 3
 )
 
-// soloWhistBidTarget 契約の目標トリック数を返す。
-func soloWhistBidTarget(b SoloWhistBid) int {
+// SoloWhistBidTarget は契約の目標トリック数を返す。
+func SoloWhistBidTarget(b SoloWhistBid) int {
 	switch b {
 	case SoloWhistBidSolo:
 		return 8
@@ -348,18 +348,7 @@ func (g *SoloWhist) CpuPlay() {
 		return
 	}
 	idx := g.currentPlayerIdx
-	if g.players[idx].GetIsHuman() {
-		return
-	}
-	cardIdx := g.cpuSelectPlayCard(idx)
-	played := g.players[idx].RemoveCard(cardIdx)
-	// **出せる札が無ければ何もしない。**セレクタは候補ゼロのとき 0 を返し、
-	// 手札が空なら RemoveCard(0) は nil を返す。それを playCard に渡すと
-	// nil デリファレンスで HTTP ハンドラごと落ちる (#4606)。
-	if played == nil {
-		return
-	}
-	g.playCard(idx, played)
+	trickCpuPlay(idx, g.players[idx].GamePlayer, g.cpuSelectPlayCard, g.playCard)
 }
 
 // playCard カードをプレイする共通処理。
@@ -444,9 +433,9 @@ func (g *SoloWhist) contractMade() bool {
 	case SoloWhistBidMisere:
 		return tricks == 0
 	case SoloWhistBidSolo:
-		return tricks >= soloWhistBidTarget(SoloWhistBidSolo)
+		return tricks >= SoloWhistBidTarget(SoloWhistBidSolo)
 	case SoloWhistBidAbundance:
-		return tricks >= soloWhistBidTarget(SoloWhistBidAbundance)
+		return tricks >= SoloWhistBidTarget(SoloWhistBidAbundance)
 	default:
 		return false
 	}
@@ -739,7 +728,7 @@ type SoloWhistDeclarerProgress struct {
 // 重要な情報が CUI に出ていなかった (#5649)。Web は solowhist-contract-progress
 // で常時出している。同じ入札制の Nap は #4763 で解決済み。
 //
-// 判定は contractMade / soloWhistBidTarget と同じ規則で組み立てる。写しを持つと
+// 判定は contractMade / SoloWhistBidTarget と同じ規則で組み立てる。写しを持つと
 // 「画面は達成と言っているのに負けた」が起きる。
 func (g *SoloWhist) GetDeclarerProgress() *SoloWhistDeclarerProgress {
 	if g.phase != SoloWhistPhasePlay && g.phase != SoloWhistPhaseTrickEnd {
@@ -755,7 +744,7 @@ func (g *SoloWhist) GetDeclarerProgress() *SoloWhistDeclarerProgress {
 	remaining := max(SoloWhistTrickCount-played, 0)
 	won := g.roundTricks[g.declarerIdx]
 	isMisere := g.contract == SoloWhistBidMisere
-	needed := soloWhistBidTarget(g.contract)
+	needed := SoloWhistBidTarget(g.contract)
 
 	made, unreachable := false, false
 	switch {

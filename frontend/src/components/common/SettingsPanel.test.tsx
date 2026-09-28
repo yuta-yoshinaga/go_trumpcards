@@ -72,6 +72,45 @@ describe('SettingsPanel', () => {
     expect(onSelect).toHaveBeenCalledWith('b');
   });
 
+  it('uses ariaLabel as the select accessible name when provided', () => {
+    render(
+      <SettingsPanel
+        title="Settings"
+        groups={[
+          {
+            items: [
+              {
+                type: 'select',
+                id: 'sel1',
+                label: 'Pick one',
+                ariaLabel: 'Choose a value',
+                value: 'a',
+                options: [{ value: 'a', label: 'Alpha' }],
+              },
+            ],
+          },
+        ]}
+      />,
+    );
+    expect(screen.getByRole('combobox', { name: 'Choose a value' })).toHaveAttribute('aria-label', 'Choose a value');
+  });
+
+  it('omits aria-label from a select when ariaLabel is not provided', () => {
+    render(
+      <SettingsPanel
+        title="Settings"
+        groups={[
+          {
+            items: [
+              { type: 'select', id: 'sel1', label: 'Pick one', value: 'a', options: [{ value: 'a', label: 'Alpha' }] },
+            ],
+          },
+        ]}
+      />,
+    );
+    expect(screen.getByRole('combobox', { name: 'Pick one' })).not.toHaveAttribute('aria-label');
+  });
+
   it('renders disabled checkbox', () => {
     render(
       <SettingsPanel

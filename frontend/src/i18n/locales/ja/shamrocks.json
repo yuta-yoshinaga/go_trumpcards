@@ -7,6 +7,8 @@
   "title": "シャムロックス",
   "foundation": "組札",
   "fan": "扇",
+  "fanAriaLabel": "扇 {{index}}、最上段は{{card}}",
+  "emptyFanAriaLabel": "扇 {{index}}、空",
   "stuckDeadlock": "手詰まり: 動かせる札がありません",
   "moveCount": "手数: {{count}}",
   "giveup": "ギブアップ",

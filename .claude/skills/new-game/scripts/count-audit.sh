@@ -7,7 +7,7 @@
 #
 # The #1 recurring new-game miss is forgetting one of these assertions: tsc only runs in CI
 # (`bun run check` is biome-only), so a stale frontend count slips past local checks and
-# fails the expensive, OOM-prone CI round-trip. Run this before committing instead.
+# fails the CI round-trip. Run this before committing instead.
 set -u
 
 cd "$(git rev-parse --show-toplevel 2>/dev/null || echo .)" || exit 2

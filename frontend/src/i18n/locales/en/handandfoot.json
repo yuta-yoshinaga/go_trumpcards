@@ -48,6 +48,8 @@
     "selectTwo": "Select 2 natural cards from your hand matching the top discard",
     "frozen": "Frozen: wild cards cannot substitute for naturals",
     "selectOneMore": "Select one more card",
+    "ready": "2 cards selected. You can pick up the discard pile",
+    "frozenReady": "2 cards selected. You can pick up the frozen discard pile",
     "tooMany": "Select at most 2 cards"
   },
   "goOutReason": {

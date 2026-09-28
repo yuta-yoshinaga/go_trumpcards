@@ -6,12 +6,12 @@
 # measured 594139 raw / 232016 gzip both locally and in CI. `make` is not
 # installed on every dev box, which is why this exists as a shell script.
 #
-# Usage: measure.sh [worker ...]     (default: all ten)
+# Usage: measure.sh [worker ...]     (default: all fourteen)
 set -euo pipefail
 
 cd "$(dirname "$0")/../../../.."
-export PATH="$HOME/sdk/go1.25.8/bin:$HOME/.local/opt/tinygo/bin:$PATH"
-export GOTOOLCHAIN=local          # pin the Go toolchain CI uses (1.25) so sizes match CI
+export PATH="$HOME/sdk/go1.27.1/bin:$HOME/.local/opt/tinygo/bin:$PATH"
+export GOTOOLCHAIN=local          # pin the Go toolchain CI uses (1.27) so sizes match CI
 LIMIT=1048576
 
 # Build the list as an array. `for w in "${@:-a b c}"` looks equivalent but is not:
@@ -19,13 +19,13 @@ LIMIT=1048576
 # once with all six names as a single string and tinygo gets one invalid -tags value.
 workers=("$@")
 if [ ${#workers[@]} -eq 0 ]; then
-  workers=(casino classic solo extra extra2 extra3 extra4 extra5 extra6 extra7)
+  workers=(casino classic solo extra extra2 extra3 extra4 extra5 extra6 extra7 extra8 extra9 extra10 extra11)
 fi
 
 for w in "${workers[@]}"; do
   mkdir -p "workers/$w/build"
-  go run github.com/syumai/workers/cmd/workers-assets-gen -mode=tinygo -o "workers/$w/build" >/dev/null
-  tinygo build -tags "$w" -o "workers/$w/build/app.wasm" -target wasm \
+  go run github.com/syumai/workers-go/cmd/workers-assets-gen -mode=tinygo -o "workers/$w/build" >/dev/null
+  GOEXPERIMENT=nojsonv2 tinygo build -tags "$w" -o "workers/$w/build/app.wasm" -target wasm \
     -stack-size=128KB -no-debug -opt=z "./cmd/workers/$w"
   wasm-opt --enable-bulk-memory --enable-nontrapping-float-to-int --enable-sign-ext \
     -Oz "workers/$w/build/app.wasm" -o "workers/$w/build/app.wasm"

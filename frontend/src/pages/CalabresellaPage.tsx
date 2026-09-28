@@ -353,7 +353,15 @@ function CalabresellaPageContent() {
               <PlayerHandSection
                 humanPlayer={humanPlayer}
                 selectedCardIndices={selectedCardIndices}
-                toggleCard={toggleCard}
+                toggleCard={(index) => {
+                  if (
+                    canDiscard &&
+                    !selectedCardIndices.includes(index) &&
+                    selectedCardIndices.length >= discardRemaining
+                  )
+                    return;
+                  toggleCard(index);
+                }}
                 cardWidth={cardWidth}
                 isMobile={isMobile}
                 dataTutorialPrefix="calabresella"
@@ -400,10 +408,10 @@ function CalabresellaPageContent() {
                   type="button"
                   className={btnPrimary}
                   onClick={handleDiscard}
-                  disabled={loading || selectedCardIndices.length !== 1}
+                  disabled={loading || selectedCardIndices.length !== discardRemaining}
                   data-testid="calabresella-discard-button"
                 >
-                  {discardRemaining > 0 ? `${t('discardCard')} (${discardRemaining})` : t('discardCard')}
+                  {discardRemaining > 0 ? t('discardCards', { count: discardRemaining }) : t('discardCard')}
                 </button>
               )}
               {canPlay && (

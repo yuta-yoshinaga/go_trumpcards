@@ -334,12 +334,18 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
     if (selectedDiscards.length !== discardCount) return null;
     const discardIdx = selectedDiscards[0];
     const cand = candidatePreviews?.[discardIdx];
-    if (!cand) return null;
+    if (!cand || !humanPlayer) return null;
+    const cards = humanPlayer.cards;
     return {
       handKey: cand.handKey,
       isRecommended: recommendedDiscards.has(discardIdx),
+      discardedCard: cardAlt(cards[discardIdx]),
+      keptCards: cards
+        .filter((_, i) => i !== discardIdx)
+        .map(cardAlt)
+        .join(t('listSeparator')),
     };
-  }, [variant, isDiscardPhase, selectedDiscards, discardCount, candidatePreviews, recommendedDiscards]);
+  }, [variant, isDiscardPhase, selectedDiscards, discardCount, candidatePreviews, recommendedDiscards, humanPlayer, t]);
 
   const actionBindings = useMemo(
     () => [
@@ -579,6 +585,14 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                 )}
                 <div className="text-ds-text-primary text-lg mb-1">
                   {t('yourHand')}
+                  {variant === 'irishpoker' && !isDiscardPhase && humanPlayer.cards?.length === 2 && (
+                    <span
+                      className="ml-2 inline-block rounded-full px-2 py-0.5 text-xs font-semibold bg-ds-surface-elevated text-ds-text-primary"
+                      data-testid="irishpoker-playable-hand-label"
+                    >
+                      {t('discard.playableHand')}
+                    </span>
+                  )}
                   <span className="ml-3 text-xs">
                     {tc('betting.chips')} {humanPlayer.chips}
                   </span>
@@ -604,6 +618,20 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
                     </span>
                   )}
                 </div>
+                {variant === 'irishpoker' && (
+                  <span
+                    className="sr-only"
+                    role="status"
+                    aria-live="polite"
+                    data-testid="irishpoker-playable-hand-announce"
+                  >
+                    {variant === 'irishpoker' && !isDiscardPhase && humanPlayer.cards?.length === 2
+                      ? t('discard.playableHandAria', {
+                          cards: humanPlayer.cards.map((c) => cardAlt(c)).join(t('listSeparator')),
+                        })
+                      : ''}
+                  </span>
+                )}
                 {/* Screen-reader description of the discard cap, associated with the
                     hand group so AT conveys the limit up front. */}
                 {canDiscard && (
@@ -704,20 +732,29 @@ function PineapplePageContent({ variant }: { variant: PineappleVariant }) {
 
             <ErrorAlert message={error} onRetry={retry} />
 
+            {/* The cp-discard-candidate / cp-discard-recommended badges are
+                visual only. This region is variant-exclusive with
+                irishpoker-discard-preview-announce, so only one of the two
+                can ever speak. */}
+            <div className="sr-only" role="status" aria-live="polite" data-testid="cp-discard-preview-announce">
+              {canDiscard &&
+                cpSelectedPreview &&
+                (cpSelectedPreview.isRecommended
+                  ? t('discard.cpPreviewAriaRecommended', {
+                      card: cpSelectedPreview.discardedCard,
+                      kept: cpSelectedPreview.keptCards,
+                      hand: t(`hand.${cpSelectedPreview.handKey}`),
+                    })
+                  : t('discard.cpPreviewAria', {
+                      card: cpSelectedPreview.discardedCard,
+                      kept: cpSelectedPreview.keptCards,
+                      hand: t(`hand.${cpSelectedPreview.handKey}`),
+                    }))}
+            </div>
+
             {/* Discard controls */}
             {canDiscard && (
               <div className="mb-2 text-center" data-testid="discard-controls" data-tutorial="pn-discard-controls">
-                {/* The cp-discard-candidate / cp-discard-recommended badges are
-                    visual only. This region is variant-exclusive with
-                    irishpoker-discard-preview-announce, so only one of the two
-                    can ever speak. */}
-                {cpSelectedPreview && (
-                  <div className="sr-only" role="status" aria-live="polite" data-testid="cp-discard-preview-announce">
-                    {cpSelectedPreview.isRecommended
-                      ? t('discard.cpPreviewAriaRecommended', { hand: t(`hand.${cpSelectedPreview.handKey}`) })
-                      : t('discard.cpPreviewAria', { hand: t(`hand.${cpSelectedPreview.handKey}`) })}
-                  </div>
-                )}
                 {discardPreview && (
                   <div className="mb-2 text-sm" data-testid="irishpoker-discard-preview">
                     {/* **見えている行は読み上げ向きではない。** ラベル・札・役が

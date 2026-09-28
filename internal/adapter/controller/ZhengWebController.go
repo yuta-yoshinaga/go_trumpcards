@@ -1,4 +1,4 @@
-//go:build !js || !wasm || solo
+//go:build !js || !wasm || extra9
 
 package controller
 
@@ -30,12 +30,13 @@ type ZhengWebInput struct {
 
 // ZhengWebOutputPlayer 争上游 Webアウトプットプレイヤー
 type ZhengWebOutputPlayer struct {
-	ID         int              `json:"id"`
-	IsHuman    bool             `json:"isHuman"`
-	IsFinished bool             `json:"isFinished"`
-	Rank       int              `json:"rank"`
-	CardCount  int              `json:"cardCount"`
-	Cards      []*WebOutputCard `json:"cards"`
+	ID          int              `json:"id"`
+	IsHuman     bool             `json:"isHuman"`
+	IsFinished  bool             `json:"isFinished"`
+	Rank        int              `json:"rank"`
+	CardCount   int              `json:"cardCount"`
+	Cards       []*WebOutputCard `json:"cards"`
+	FinishCards []*WebOutputCard `json:"finishCards"`
 }
 
 // ZhengWebOutputAction プレイヤー行動記録

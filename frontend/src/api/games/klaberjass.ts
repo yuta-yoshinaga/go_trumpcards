@@ -6,7 +6,6 @@ import { gameExec } from '../gameExec';
 
 /** Configuration options for Klaberjass game settings. */
 export interface KlaberjassConfigInput {
-  cpuDifficulty?: number;
   /** Points needed to win (100-1000, default 501). */
   targetScore?: number;
   /** Whether the schmeiss option is offered (default true). */

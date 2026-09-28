@@ -16,6 +16,8 @@
     "seatTens": "10を{{n}}枚",
     "took": "獲得{{n}}",
     "team": "T{{team}}",
+    "currentTurn": "[手番]",
+    "trumpDecider": "[切り札を決める番]",
     "chooser": "[切り札決定]",
     "you": "あなた",
     "cpu": "CPU{{idx}}"

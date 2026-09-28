@@ -8,6 +8,7 @@
   "label.youAreBanker": "You hold the bank",
   "label.payouts": "Arashi {{arashi}}x / pair {{pair}}x",
   "label.betPrompt": "Place a bet ({{min}} or more, in steps of 10)",
+  "label.bankerBetExcluded": "The banker does not bet",
   "label.dealPrompt": "The bets are in — deal to continue",
   "label.won": "{{amount}}",
   "label.winner": "Winner",

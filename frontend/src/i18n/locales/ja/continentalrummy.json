@@ -38,6 +38,7 @@
   "kbd.take": "T",
   "kbd.goOut": "G",
   "kbd.next": "N",
+  "kbd.goOutOnDeal": "O",
   "tutorial.layouts": "上がれるのはこの 3 通りだけ。**5+5+5 は合計 15 枚でも上がりになりません**",
   "tutorial.hand": "15 枚をすべて同スートの連番に割り切れたら上がりです。同ランクの組は数えません",
   "tutorial.draw": "山札か捨て札の頭から 1 枚引き、上がれないなら 1 枚捨てます",

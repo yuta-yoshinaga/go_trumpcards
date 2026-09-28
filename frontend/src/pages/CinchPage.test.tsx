@@ -141,14 +141,25 @@ describe('CinchPage', () => {
     expect(screen.getByRole('button', { name: 'ダイヤ' })).toBeInTheDocument();
   });
 
-  it('naming a trump suit dispatches trump with the suit index', async () => {
+  it('declaring a trump suit dispatches it once and announces the accepted suit', async () => {
     mockExec.mockResolvedValue(nameTrumpState);
     renderWithProviders(<CinchPage />);
     const spadeBtn = await screen.findByRole('button', { name: 'スペード' });
     mockExec.mockClear();
-    mockExec.mockResolvedValue(nameTrumpState);
+    mockExec.mockResolvedValue(makeCinchState({ phase: 2, trumpSuit: 1, isHumanTurn: true }));
     fireEvent.click(spadeBtn);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('trump', { trumpSuit: 1 }));
+    await waitFor(() =>
+      expect(screen.getByTestId('cinch-trump-selection-live')).toHaveTextContent('切り札はスペードに確定しました。'),
+    );
+    expect(screen.getByTestId('cinch-trump-selection-live').firstElementChild).toHaveClass(
+      'mb-1',
+      'text-center',
+      'text-sm',
+      'text-ds-accent',
+      'font-semibold',
+    );
+    expect(mockExec).toHaveBeenCalledTimes(1);
+    expect(mockExec).toHaveBeenCalledWith('trump', { trumpSuit: 1 });
   });
 
   it('colors red suits red and keeps black suits default on the trump buttons', async () => {
@@ -321,5 +332,19 @@ describe('CinchPage', () => {
     mockExec.mockResolvedValue(makeCinchState({ phase: 1, bidWinnerIdx: 1, isHumanTurn: false }));
     renderWithProviders(<CinchPage />);
     await waitFor(() => expect(screen.queryByTestId('cinch-trump-buttons')).not.toBeInTheDocument());
+  });
+
+  it('declares a selected trump in one click and announces the response trump', async () => {
+    mockExec.mockResolvedValue(nameTrumpState);
+    renderWithProviders(<CinchPage />);
+    const diamond = await screen.findByRole('button', { name: 'ダイヤ' });
+    mockExec.mockClear();
+    mockExec.mockResolvedValue(makeCinchState({ phase: 2, trumpSuit: 4, isHumanTurn: true }));
+    fireEvent.click(diamond);
+    await waitFor(() =>
+      expect(screen.getByTestId('cinch-trump-selection-live')).toHaveTextContent('切り札はダイヤに確定しました。'),
+    );
+    expect(mockExec).toHaveBeenCalledWith('trump', { trumpSuit: 4 });
+    expect(mockExec.mock.calls.filter(([command]) => command === 'trump')).toHaveLength(1);
   });
 });

@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { isVisibleWithin, navigateTo, TIMEOUT_ACTION, TIMEOUT_GAME_LOOP, waitForLoaded } from './helpers';
+import { gameButton, isVisibleWithin, navigateTo, TIMEOUT_ACTION, TIMEOUT_GAME_LOOP, waitForLoaded } from './helpers';
 
 test.describe('Kaiser E2E', () => {
   test('shows the scoring cards, bids and reaches play', async ({ page }) => {
@@ -30,7 +30,7 @@ test.describe('Kaiser E2E', () => {
       if (!(await isVisibleWithin(bidSeven, budget))) break;
       // Six is below the floor, so no such button should ever exist.
       await expect(page.getByRole('button', { name: '6 を宣言' })).toHaveCount(0);
-      await page.getByRole('button', { name: 'パス' }).click();
+      await gameButton(page, 'パス').click();
       await waitForLoaded(page);
     }
 

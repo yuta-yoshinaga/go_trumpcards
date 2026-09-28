@@ -77,6 +77,7 @@ describe('formatBidWhistState', () => {
     kittyIndices: [],
     currentTrick: [{ playerIdx: 0, card: { design: 'SPADE', value: 13 } as never }],
     teamScores: [2, 0],
+    targetScore: 7,
     gameEndFlag: false,
     winnerTeam: -1,
     config: { cpuDifficulty: 1, targetScore: 7 },

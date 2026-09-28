@@ -21,6 +21,31 @@ beforeEach(() => {
 });
 
 describe('CostlyColoursPage', () => {
+  it('shows a waiting note only while another player acts', async () => {
+    mockExec.mockResolvedValue(makeCostlyColoursState({ phase: 'play', isHumanTurn: false }));
+    const { unmount } = renderWithProviders(<CostlyColoursPage />);
+    expect(await screen.findByText('相手の手番です。お待ちください。')).toBeInTheDocument();
+    unmount();
+
+    mockExec.mockResolvedValue(makeCostlyColoursState({ phase: 'play', isHumanTurn: true }));
+    const humanTurn = renderWithProviders(<CostlyColoursPage />);
+    expect(await screen.findByTestId('costlycolours-total')).toBeInTheDocument();
+    expect(screen.queryByText('相手の手番です。お待ちください。')).not.toBeInTheDocument();
+    humanTurn.unmount();
+
+    for (const state of [
+      makeCostlyColoursState({ phase: 'mog', isHumanTurn: true }),
+      makeCostlyColoursState({ phase: 'show', isHumanTurn: true }),
+      makeCostlyColoursState({ phase: 'gameEnd', gameEndFlag: true, isHumanTurn: false }),
+    ]) {
+      mockExec.mockResolvedValue(state);
+      const page = renderWithProviders(<CostlyColoursPage />);
+      await screen.findByTestId(state.phase === 'gameEnd' ? 'costlycolours-winner' : 'costlycolours-total');
+      expect(screen.queryByText('相手の手番です。お待ちください。')).not.toBeInTheDocument();
+      page.unmount();
+    }
+  });
+
   it('marks J and 2 even during the MOG phase', async () => {
     mockExec.mockResolvedValue(
       makeCostlyColoursState({

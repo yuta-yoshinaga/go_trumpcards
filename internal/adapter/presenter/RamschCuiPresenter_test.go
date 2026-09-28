@@ -116,7 +116,18 @@ func TestRamschCuiPresenter_Output_SaysEveryoneTiedLoses(t *testing.T) {
 	g.ScoreRound()
 
 	out := p.Output(g, nil)
-	assert.Contains(t, out, i18n.T("ramsch.roundTied"))
+	assert.Contains(t, out, "最多が同点のため")
+	assert.Contains(t, out, i18n.Tf("ramsch.roundTiedPlayer", "name", "あなた", "points", "50"))
+	assert.Contains(t, out, i18n.Tf("ramsch.roundTiedPlayer", "name", "CPU 1", "points", "50"))
+	assert.NotContains(t, out, i18n.Tf("ramsch.roundTiedPlayer", "name", "CPU 2", "points", "20"))
+	assert.Contains(t, out, "、")
+
+	i18n.SetLang("en")
+	t.Cleanup(func() { i18n.SetLang("ja") })
+	enOut := p.Output(g, nil)
+	assert.Contains(t, enOut, i18n.Tf("ramsch.roundTiedPlayer", "name", "You", "points", "50"))
+	assert.Contains(t, enOut, i18n.Tf("ramsch.roundTiedPlayer", "name", "CPU 1", "points", "50"))
+	assert.Contains(t, enOut, ", ")
 }
 
 // ヒントは着手を指し、理由を添える。

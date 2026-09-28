@@ -527,12 +527,18 @@ function CaribbeanDrawPageContent() {
             )}
             {isDrawPhase && (
               <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="cd-draw-controls">
+                <p id="cd-draw-description" className="text-sm text-ds-text-muted">
+                  {selectedIndices.length === 0
+                    ? t('draw.selectionRequired', { max: MAX_EXCHANGE })
+                    : t('draw.selectionReady', { count: selectedIndices.length, max: MAX_EXCHANGE })}
+                </p>
                 <div className="flex justify-center gap-2">
                   <button
                     type="button"
                     className={btnWarning}
                     onClick={handleDraw}
                     disabled={loading || selectedIndices.length === 0}
+                    aria-describedby="cd-draw-description"
                     data-testid="cd-draw-button"
                   >
                     {t('button.draw', { cost: drawFee })}

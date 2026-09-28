@@ -451,19 +451,17 @@ function AccordionPageContent() {
               </div>
             )}
 
-            {state.hint && isRequestedHint(state) && (
-              <div
-                className="text-sm text-ds-accent bg-ds-surface/90 border border-ds-accent rounded px-3 py-1.5 mt-1"
-                role="status"
-                aria-live="polite"
-              >
-                {t('hintMove', {
-                  from: state.hint.fromIdx,
-                  to: state.hint.toIdx,
-                  reason: t(state.hint.fromIdx - state.hint.toIdx === 3 ? 'hintReasonOffset3' : 'hintReasonOffset1'),
-                })}
-              </div>
-            )}
+            <div role="status" aria-live="polite" data-testid="ac-hint-status">
+              {state.hint && isRequestedHint(state) && (
+                <div className="text-sm text-ds-accent bg-ds-surface/90 border border-ds-accent rounded px-3 py-1.5 mt-1">
+                  {t('hintMove', {
+                    from: state.hint.fromIdx,
+                    to: state.hint.toIdx,
+                    reason: t(state.hint.fromIdx - state.hint.toIdx === 3 ? 'hintReasonOffset3' : 'hintReasonOffset1'),
+                  })}
+                </div>
+              )}
+            </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
             <ActionLogSection

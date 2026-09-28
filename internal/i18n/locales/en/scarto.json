@@ -24,6 +24,7 @@
   "promptTrickEnd": "Trick complete",
   "promptTrickEndHelp": "n / next ... go to the next trick",
   "promptRoundEnd": "Deal complete ({{outcome}})",
+  "roundInProgress": "Provisional (deal in progress)",
   "roundEndAverage": "Table average: {{avg}}",
   "roundEndFormulaLine": "Swing = difference from the average x the number of players",
   "roundEndEarned": "{{name}}: took {{points}} (diff {{diff}} -> swing {{scaled}})",

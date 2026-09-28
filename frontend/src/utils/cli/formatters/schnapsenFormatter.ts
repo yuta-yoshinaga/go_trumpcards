@@ -1,5 +1,6 @@
 import type { SchnapsenResponse } from '../../../types/card';
 import { SchnapsenPhase } from '../../../types/phases';
+import { suitSymbolAt } from '../../cardAlt';
 import { formatCard, formatHeader, formatPlayerName, formatSeparator } from '../formatterBase';
 
 const PHASE_NAMES: Record<number, string> = {
@@ -7,9 +8,6 @@ const PHASE_NAMES: Record<number, string> = {
   [SchnapsenPhase.TRICK_END]: 'TRICK END',
   [SchnapsenPhase.GAME_END]: 'GAME END',
 };
-
-// Schnapsen trumpSuit is a 1-based suit code (see DESIGN_TO_SUIT on the page).
-const SUIT_SYMBOLS: Record<number, string> = { 1: '♠', 2: '♣', 3: '♥', 4: '♦' };
 
 /** Format a Schnapsen game state as terminal text. */
 export function formatSchnapsenState(state: SchnapsenResponse | null): string {
@@ -20,7 +18,7 @@ export function formatSchnapsenState(state: SchnapsenResponse | null): string {
   lines.push(
     `trick ${state.trickNumber} | phase: ${PHASE_NAMES[state.phase] ?? state.phase}${state.isEndgame ? ' (endgame)' : ''}`,
   );
-  const trump = state.trumpCard ? formatCard(state.trumpCard) : (SUIT_SYMBOLS[state.trumpSuit] ?? '?');
+  const trump = state.trumpCard ? formatCard(state.trumpCard) : suitSymbolAt(state.trumpSuit, '?');
   lines.push(`trump: ${trump} | stock: ${state.stockRemaining} | first to ${state.winThreshold}`);
   lines.push('----------');
 

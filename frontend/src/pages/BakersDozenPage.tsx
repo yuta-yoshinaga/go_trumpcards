@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef } from 'react';
 import type { BakersDozenMoveZone, bakersDozenApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -79,6 +79,7 @@ function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => stri
 
 /** Inner content of the Baker's Dozen page, wrapped by TutorialProvider. */
 function BakersDozenPageContent() {
+  const selectSourceHintId = useId();
   const {
     t,
     tc,
@@ -229,6 +230,14 @@ function BakersDozenPageContent() {
       ? state.tableau[previewSource.col]?.[previewSource.cardIndex]?.card
       : undefined;
   const legalTargets = bakersDozenLegalTargets(state.tableau, state.foundation, previewedCard);
+  const destinationAnnouncement = previewedCard
+    ? t('destinationAnnouncement', {
+        tableau: [...legalTargets.tableau].map((col) => col + 1).join(t('listSeparator')) || t('noDestination'),
+        foundation:
+          [...legalTargets.foundation].map((idx) => FOUNDATION_SUITS[idx]).join(t('listSeparator')) ||
+          t('noDestination'),
+      })
+    : '';
   /** Ring for a legal destination: softer while it is only a hover preview. */
   const targetRing = preview.isPreview ? ' rounded ring-2 ring-ds-success/70' : ' rounded ring-2 ring-ds-success';
 
@@ -270,6 +279,9 @@ function BakersDozenPageContent() {
         <>
           {/* Scrollable area */}
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
+            <span id={selectSourceHintId} className="sr-only">
+              {tc('label.selectSourceFirst')}
+            </span>
             <div className="text-center text-xs text-ds-warning mb-3 font-medium" data-tutorial="bd-rule">
               <div>{t('emptyColNote')}</div>
               <div>{t('kingRule')}</div>
@@ -297,7 +309,9 @@ function BakersDozenPageContent() {
                         <button
                           type="button"
                           onClick={() => handleSelectTarget(foundationZone)}
-                          disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
+                          disabled={!isPlaying || loading || isAutoCompleting}
+                          aria-disabled={!selectedSource || undefined}
+                          aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                           aria-label={t('foundationAriaLabel', {
                             suit: FOUNDATION_SUITS[idx],
                             count: pile.length,
@@ -315,7 +329,9 @@ function BakersDozenPageContent() {
                         <button
                           type="button"
                           onClick={() => handleSelectTarget(foundationZone)}
-                          disabled={!isPlaying || loading || !selectedSource}
+                          disabled={!isPlaying || loading}
+                          aria-disabled={!selectedSource || undefined}
+                          aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                           aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
                           style={{ width: bd.cw, height: bd.ch }}
                           className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
@@ -442,6 +458,16 @@ function BakersDozenPageContent() {
                   </div>
                 );
               })}
+            </div>
+
+            <div
+              data-testid="bd-destination-live"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+              aria-label={t('destinationStatusLabel')}
+            >
+              {destinationAnnouncement}
             </div>
 
             {/* Hint display */}

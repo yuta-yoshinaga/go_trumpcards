@@ -39,6 +39,7 @@ const betState: RedDogResponse = {
   spread: 0,
   result: 0,
   totalPayout: 0,
+  appliedMultiplier: 0,
   message: '',
 };
 
@@ -51,6 +52,7 @@ const spreadState: RedDogResponse = {
   spread: 4,
   result: 0,
   totalPayout: 0,
+  appliedMultiplier: 0,
   message: '',
 };
 
@@ -64,6 +66,7 @@ const winState: RedDogResponse = {
   spread: 4,
   result: 1,
   totalPayout: 200,
+  appliedMultiplier: 1,
   message: 'You win!',
 };
 
@@ -164,7 +167,7 @@ describe('RedDogPage', () => {
       expect(screen.getByTestId(`reddog-ghost-${r}`)).toBeInTheDocument();
     }
     // Text summary mirrors the ghost chips for at-a-glance / non-visual reading.
-    expect(screen.getByTestId('reddog-winners-text')).toHaveTextContent('6, 7, 8, 9');
+    expect(screen.getByTestId('reddog-winners-text')).toHaveTextContent('6、7、8、9');
   });
 
   it('marks the hit ghost chip in end phase', async () => {
@@ -186,7 +189,23 @@ describe('RedDogPage', () => {
   it('renders payout-breakdown in end phase', async () => {
     mockApi.mockResolvedValue(winState);
     renderWithProviders(<RedDogPage />);
-    await waitFor(() => expect(screen.getByTestId('payout-breakdown')).toBeInTheDocument());
+    const breakdown = await screen.findByTestId('payout-breakdown');
+    expect(breakdown).toHaveTextContent('当たりランク: 7');
+    expect(breakdown).toHaveTextContent('倍率: 1:1');
+    expect(breakdown).toHaveTextContent('合計配当: 200');
+  });
+
+  it('clearly shows no payout for a losing result', async () => {
+    mockApi.mockResolvedValue({
+      ...winState,
+      thirdCard: card('CLOVER', 12),
+      result: -1,
+      totalPayout: 0,
+      appliedMultiplier: 0,
+      message: 'You lose',
+    });
+    renderWithProviders(<RedDogPage />);
+    expect(await screen.findByTestId('payout-breakdown')).toHaveTextContent('配当なし');
   });
 
   it('does not render payout-breakdown outside end phase', async () => {

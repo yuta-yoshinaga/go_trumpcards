@@ -149,7 +149,7 @@ describe('RollingStonePage', () => {
 
   // **出せる札が無い局面は、手札を押させずに引き取らせる。**
   it('offers only the pickup when you cannot follow', async () => {
-    mockExec.mockResolvedValue(forcedPickUp());
+    mockExec.mockImplementation(async (action) => (action === 'pickup' ? makeState() : forcedPickUp()));
     renderWithProviders(<RollingStonePage />);
 
     // **枚数だけでは、なぜ出せないのかが分からない** (#5764)。追従できなかった
@@ -157,6 +157,7 @@ describe('RollingStonePage', () => {
     const banner = await screen.findByTestId('rs-must-pickup');
     expect(banner).toHaveTextContent('1');
     expect(banner).toHaveTextContent('♦');
+    expect(banner).toHaveTextContent(/現在のトリック.*手札/);
     const pickup = screen.getByTestId('rs-pickup-btn');
     expect(pickup).toBeEnabled();
     const cards = screen.getAllByRole('button', { name: /を出す$/ });
@@ -166,6 +167,10 @@ describe('RollingStonePage', () => {
     fireEvent.click(pickup);
     // **引き取りは別のコマンド。** cardIndex は送らない。
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('pickup'));
+    await waitFor(() => {
+      expect(screen.queryByTestId('rs-must-pickup')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('rs-pickup-btn')).not.toBeInTheDocument();
+    });
   });
 
   // 場が空のまま引き取りが立つことは規則上ありえないが、そのときでも

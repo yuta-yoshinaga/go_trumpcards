@@ -38,6 +38,7 @@
   "stalemate": "Stalemate",
   "stalemateAlert": "Stalemate. Undo {{count}} time(s) to escape.",
   "tableau": "Tableau",
+  "tableauCardAriaLabel": "{{card}}, column {{col}}",
   "tutorial": {
     "foundations": "Eight foundations sit in the middle, seeded with one king and one ace of each suit. **The king row builds down, the ace row up**, in suit. All 104 cards wins.",
     "tableau": "Twelve columns ring them. Only the top card moves, and it builds **up or down by rank ignoring suit**. **A king and an ace do not connect.** An empty column is never refilled.",

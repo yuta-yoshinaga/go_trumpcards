@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, crazyeightsApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { CrazyEightsResponse } from '../types/card';
 import { CrazyEightsPage } from './CrazyEightsPage';
@@ -34,6 +35,7 @@ const playPhaseState: CrazyEightsResponse = {
   roundNumber: 1,
   currentPlayerIdx: 0,
   discardTop: { design: 'HEART', value: 7 },
+  discardPileCount: 3,
   drawPileCount: 30,
   chosenSuit: 0,
   gameEndFlag: false,
@@ -86,6 +88,27 @@ const noDiscardState: CrazyEightsResponse = {
 const unknownSuitState: CrazyEightsResponse = {
   ...playPhaseState,
   chosenSuit: 99,
+};
+
+const emptyPileWithoutLegalPlayState: CrazyEightsResponse = {
+  ...playPhaseState,
+  drawPileCount: 0,
+  players: playPhaseState.players.map((player) =>
+    player.isHuman
+      ? {
+          ...player,
+          cards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'DIAMOND', value: 4 },
+          ],
+        }
+      : player,
+  ),
+};
+
+const emptyPileWithLegalPlayState: CrazyEightsResponse = {
+  ...playPhaseState,
+  drawPileCount: 0,
 };
 
 beforeEach(() => {
@@ -157,6 +180,32 @@ describe('CrazyEightsPage', () => {
       expect(screen.getByRole('button', { name: '出す' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: '引く' })).toBeInTheDocument();
     });
+  });
+
+  it('keeps the draw label when the draw pile is empty and the discard pile can be recycled', async () => {
+    mockExec.mockResolvedValue({ ...emptyPileWithoutLegalPlayState, discardPileCount: 3 });
+    renderWithProviders(<CrazyEightsPage />);
+    expect(await screen.findByRole('button', { name: '引く' })).toBeInTheDocument();
+  });
+
+  it('shows the pass label when both piles are empty after preserving the top discard', async () => {
+    mockExec.mockResolvedValue({ ...emptyPileWithLegalPlayState, discardPileCount: 1 });
+    renderWithProviders(<CrazyEightsPage />);
+    expect(await screen.findByRole('button', { name: 'パス' })).toBeInTheDocument();
+  });
+
+  it('keeps the draw label when cards remain in the pile', async () => {
+    mockExec.mockResolvedValue({ ...emptyPileWithoutLegalPlayState, drawPileCount: 2 });
+    renderWithProviders(<CrazyEightsPage />);
+    expect(await screen.findByRole('button', { name: '引く' })).toBeInTheDocument();
+  });
+
+  it('shows the pass label in English', async () => {
+    await i18n.changeLanguage('en');
+    mockExec.mockResolvedValue({ ...emptyPileWithoutLegalPlayState, discardPileCount: 1 });
+    renderWithProviders(<CrazyEightsPage />);
+    expect(await screen.findByRole('button', { name: 'Pass' })).toBeInTheDocument();
+    await i18n.changeLanguage('ja');
   });
 
   it('play button disabled when not 1 card selected', async () => {

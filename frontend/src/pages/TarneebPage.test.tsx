@@ -166,6 +166,19 @@ describe('TarneebPage', () => {
     expect(container.querySelector('[data-tutorial="tn-score-table"] table')).not.toBeNull();
   });
 
+  it('announces the selected bid in a permanently mounted live region', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<TarneebPage />);
+
+    const region = await screen.findByTestId('tarneeb-bid-live');
+    expect(region).toHaveAttribute('role', 'status');
+    expect(region).toHaveAttribute('aria-live', 'polite');
+    expect(region).toHaveTextContent('選択中のビッド: 7');
+
+    fireEvent.click(await screen.findByTestId('bid-option-9'));
+    expect(region).toHaveTextContent('選択中のビッド: 9');
+  });
+
   it('renders a bid button group from minBid to 13 and bids the selected value', async () => {
     renderWithProviders(<TarneebPage />);
     // minBid 7 → buttons 7..13, none below 7.

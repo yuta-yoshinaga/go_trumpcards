@@ -36,7 +36,7 @@ func TestPigCuiPresenterOutput(t *testing.T) {
 	assert.Len(t, regexp.MustCompile(`手札\d+枚 文字\[`).FindAllString(out, -1),
 		domain.PigDefaultPlayerCnt, "全員の席行に手札と文字が出る")
 	assert.Contains(t, out, strconv.Itoa(domain.PigDeckSize(domain.PigDefaultPlayerCnt)))
-	assert.Contains(t, out, i18n.T("pig.promptPass"))
+	assert.Contains(t, out, i18n.Tf("pig.promptPass", "direction", i18n.T("pig.passDirectionLeft"), "name", cuiPlayerName(g.GetPlayer(1), 1)))
 }
 
 // **選び終えた席に印を出す。** 同時に渡すので、待ちが発生します。
@@ -49,7 +49,26 @@ func TestPigCuiPresenterMarksWhoHasChosen(t *testing.T) {
 	out := p.Output(g, nil)
 	assert.Contains(t, out, i18n.T("pig.roleChosen"))
 	assert.Contains(t, out, i18n.T("pig.promptWaiting"))
-	assert.NotContains(t, out, i18n.T("pig.promptPass"), "もう選ぶ場面ではない")
+	assert.NotContains(t, out, "pass <idx>", "もう選ぶ場面ではない")
+}
+
+func TestPigCuiPresenterShowsActivePassRecipient(t *testing.T) {
+	p := new(PigCuiPresenter)
+	g := newPigForCui(t)
+	g.GetPlayer(1).SetEliminated(true)
+	out := p.Output(g, nil)
+	assert.Contains(t, out, i18n.Tf("pig.promptPass", "direction", i18n.T("pig.passDirectionLeft"), "name", cuiPlayerName(g.GetPlayer(2), 2)))
+}
+
+func TestPigCuiPresenterDoesNotPromptWhenHumanIsOwnPassTarget(t *testing.T) {
+	p := new(PigCuiPresenter)
+	g := newPigForCui(t)
+	for i := 1; i < g.GetPlayerCnt(); i++ {
+		g.GetPlayer(i).SetEliminated(true)
+	}
+
+	out := p.Output(g, nil)
+	assert.NotContains(t, out, "pass <idx>")
 }
 
 // **合図は声に出さない。** こちらから名乗る必要があることを出す。
@@ -62,7 +81,7 @@ func TestPigCuiPresenterPromptsForTheSignal(t *testing.T) {
 	assert.Contains(t, out, i18n.T("pig.promptSignal"))
 	assert.Contains(t, out, i18n.T("pig.promptSignalCmd"))
 	assert.Contains(t, out, fixedPart("pig.roleNoticed"))
-	assert.NotContains(t, out, i18n.T("pig.promptPass"))
+	assert.NotContains(t, out, "pass <idx>")
 
 	// 名乗ったあとは待ちの表示に変わる。
 	require.NoError(t, g.PlayerSignal())
@@ -98,13 +117,13 @@ func TestPigCuiPresenterShowsTheRoundResult(t *testing.T) {
 func TestPigCuiPresenterTellsTheHumanTheyAreOut(t *testing.T) {
 	p := new(PigCuiPresenter)
 	g := newPigForCui(t)
-	assert.Contains(t, p.Output(g, nil), i18n.T("pig.promptPass"))
+	assert.Contains(t, p.Output(g, nil), "pass <idx>")
 
 	g.GetPlayer(0).SetEliminated(true)
 	out := p.Output(g, nil)
 	assert.Contains(t, out, i18n.T("pig.promptEliminated"))
 	assert.Contains(t, out, i18n.T("pig.roleOut"))
-	assert.NotContains(t, out, i18n.T("pig.promptPass"))
+	assert.NotContains(t, out, "pass <idx>")
 }
 
 func TestPigCuiPresenterGameEndBanners(t *testing.T) {
@@ -120,7 +139,7 @@ func TestPigCuiPresenterGameEndBanners(t *testing.T) {
 	require.True(t, won.GetGameEndFlag())
 	out := p.Output(won, nil)
 	assert.Contains(t, out, i18n.T("pig.gameEndYou"))
-	assert.NotContains(t, out, i18n.T("pig.promptPass"), "終局後は促さない")
+	assert.NotContains(t, out, "pass <idx>", "終局後は促さない")
 
 	lost := newPigForCui(t)
 	lost.GiveUp()

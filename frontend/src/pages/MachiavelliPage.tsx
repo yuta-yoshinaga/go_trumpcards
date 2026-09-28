@@ -20,12 +20,7 @@ import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
-import {
-  CPU_DIFFICULTY_OPTIONS,
-  PLAYER_COUNT_OPTIONS,
-  TARGET_ROUNDS_OPTIONS,
-  useMachiavelliGame,
-} from '../hooks/useMachiavelliGame';
+import { PLAYER_COUNT_OPTIONS, TARGET_ROUNDS_OPTIONS, useMachiavelliGame } from '../hooks/useMachiavelliGame';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { btnOutline, btnPrimary, btnSecondary, btnSuccess } from '../styles/buttonStyles';
 import { focusRingCard, selectedCardStyle } from '../styles/cardStyles';
@@ -163,16 +158,9 @@ function MachiavelliPageContent() {
     hideActionLog();
     void gameExec('reset', undefined, {
       playerCount: machiavelliConfig.playerCount,
-      cpuDifficulty: machiavelliConfig.cpuDifficulty,
       targetRounds: machiavelliConfig.targetRounds,
     });
-  }, [
-    gameExec,
-    hideActionLog,
-    machiavelliConfig.playerCount,
-    machiavelliConfig.cpuDifficulty,
-    machiavelliConfig.targetRounds,
-  ]);
+  }, [gameExec, hideActionLog, machiavelliConfig.playerCount, machiavelliConfig.targetRounds]);
 
   // getMachiavelliHint already asks findHandMeld which cards form a meld and then
   // throws the indices away, leaving the hint to say "make a meld" without saying
@@ -256,13 +244,31 @@ function MachiavelliPageContent() {
   };
   const showRearrangePanel = isHumanTurn && rearrangeOpen && selectedCardIndices.length >= 1;
 
-  /** Describes a table meld for assistive tech: kind, size, and rank(s). */
-  const meldAria = (meld: { kind: number; cards: { design: string; value: number }[] }): string => {
+  /** Resolves kind and rank description for a table meld. */
+  const meldDetails = (meld: {
+    kind: number;
+    cards: { design: string; value: number }[];
+  }): {
+    kind: string;
+    rank: string;
+  } => {
     const kind = meld.kind === 0 ? t('meldKindSet') : t('meldKindRun');
     // A set shares one rank; a run spans a range from its first to last card.
     const first = valueName(meld.cards[0].value);
     const rank = meld.kind === 0 ? first : `${first}–${valueName(meld.cards[meld.cards.length - 1].value)}`;
+    return { kind, rank };
+  };
+
+  /** Describes a table meld for assistive tech: kind, size, and rank(s). */
+  const meldAria = (meld: { kind: number; cards: { design: string; value: number }[] }): string => {
+    const { kind, rank } = meldDetails(meld);
     return t('a11y.meldLabel', { kind, count: meld.cards.length, rank });
+  };
+
+  /** Short visual label for a table meld showing kind and constituent rank(s). */
+  const meldVisualLabel = (meld: { kind: number; cards: { design: string; value: number }[] }): string => {
+    const { kind, rank } = meldDetails(meld);
+    return t('meldSummary', { kind, rank });
   };
 
   return (
@@ -295,17 +301,6 @@ function MachiavelliPageContent() {
                     value: machiavelliConfig.playerCount,
                     options: PLAYER_COUNT_OPTIONS.map((v) => ({ value: v, label: String(v) })),
                     onSelect: (v) => handleConfigChange('playerCount', v),
-                  },
-                  {
-                    type: 'select',
-                    id: 'cpuDifficulty',
-                    label: t('settings.cpuDifficulty'),
-                    value: machiavelliConfig.cpuDifficulty,
-                    options: CPU_DIFFICULTY_OPTIONS.map((o) => ({
-                      value: o.value,
-                      label: t(`settings.${o.label.toLowerCase()}`),
-                    })),
-                    onSelect: (v) => handleConfigChange('cpuDifficulty', v),
                   },
                   {
                     type: 'select',
@@ -346,8 +341,11 @@ function MachiavelliPageContent() {
                             canLayoff ? 'ring-2 ring-ds-accent/70 p-1' : ''
                           }`}
                         >
-                          <span className="text-ds-text-muted text-xs w-14">
-                            {meld.kind === 0 ? t('meldKindSet') : t('meldKindRun')}
+                          <span
+                            className="text-ds-text-muted text-xs whitespace-nowrap min-w-16"
+                            data-testid={`machiavelli-meld-label-${meldIdx}`}
+                          >
+                            {meldVisualLabel(meld)}
                           </span>
                           <div className="flex flex-wrap gap-1">
                             {meld.cards.map((card, idx) => (

@@ -85,7 +85,6 @@ func TestTeenPattiWebPresenter_Output(t *testing.T) {
 		result := p.Output(m, nil)
 		var resObj controller.TeenPattiWebOutput
 		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
-		assert.Equal(t, int(domain.TeenPattiCpuDifficultyNormal), resObj.Config.CpuDifficulty)
 		assert.Equal(t, domain.TeenPattiDefaultAnte, resObj.Config.Ante)
 		assert.Equal(t, domain.TeenPattiDefaultStartingChips, resObj.Config.StartingChips)
 	})

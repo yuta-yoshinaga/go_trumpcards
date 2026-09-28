@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { shelemApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { renderWithProviders } from '../test/renderWithProviders';
+import { makeShelemState } from '../test/stateFactories';
 import type { Card, ShelemResponse } from '../types/card';
 import { ShelemPage } from './ShelemPage';
 
@@ -33,33 +34,11 @@ const seat = (id: number, over: Record<string, unknown> = {}) => ({
 });
 
 function makeState(overrides: Partial<ShelemResponse> = {}): ShelemResponse {
-  return {
+  return makeShelemState({
     players: [seat(0), seat(1), seat(2), seat(3)],
-    phase: 0,
-    roundNumber: 1,
-    trickNumber: 0,
-    trumpSuit: 0,
-    declarerIdx: -1,
-    contract: 0,
-    shelemBid: false,
-    minBid: 55,
-    widowSize: 4,
-    discardCount: 4,
-    scores: [0, 0],
-    roundPoints: [0, 0],
-    teamTricks: [0, 0],
-    currentPlayerIdx: 0,
-    bidPlayerIdx: 0,
-    leadPlayerIdx: 0,
-    dealerIdx: 3,
-    currentTrick: [],
     validPlays: [0, 1, 2],
-    gameEndFlag: false,
-    winnerTeam: -1,
-    config: { target: 500 },
-    message: '',
     ...overrides,
-  } as unknown as ShelemResponse;
+  });
 }
 
 /** A state where the contract is settled and it is the human's turn to play. */
@@ -90,6 +69,19 @@ describe('ShelemPage', () => {
     const box = await screen.findByTestId('sh-points');
     expect(box).toHaveTextContent(/A/);
     expect(box).toHaveTextContent(/100/);
+  });
+
+  it('shows the last trick points separately from the round total', async () => {
+    mockExec.mockResolvedValue(playing({ lastTrickWinner: 2, lastTrickPoints: 15, roundPoints: [40, 35] }));
+    renderWithProviders(<ShelemPage />);
+    expect(await screen.findByTestId('sh-last-trick')).toHaveTextContent('直前のトリック: T0 が +15 点 (合計 40 点)');
+  });
+
+  it('hides the last trick result before a trick resolves', async () => {
+    mockExec.mockResolvedValue(playing({ lastTrickWinner: -1, lastTrickPoints: 0 }));
+    renderWithProviders(<ShelemPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.queryByTestId('sh-last-trick')).not.toBeInTheDocument();
   });
 
   it('shows the face-down widow count before the declarer takes it', async () => {

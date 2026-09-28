@@ -26,14 +26,6 @@ func TestChineseTenWebInput_ToConfigWithNoConfigDoesNotPanic(t *testing.T) {
 	})
 }
 
-func TestChineseTenWebInput_ToConfigClampsAnOutOfRangeDifficulty(t *testing.T) {
-	bad := 99
-	cfg := controller.ChineseTenWebInput{
-		Config: &controller.ChineseTenWebConfig{CpuDifficulty: &bad},
-	}.ToConfig()
-	assert.NoError(t, cfg.Validate())
-}
-
 func TestNewChineseTenDefaultOutput(t *testing.T) {
 	// An error response still has to render: the page reads tieScore and
 	// selectableIndices without guarding for absence.

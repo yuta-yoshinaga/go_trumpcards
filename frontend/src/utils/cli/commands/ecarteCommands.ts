@@ -20,8 +20,6 @@ const VALID_COMMANDS = [
   'discard',
   'n',
   'next',
-  'sd',
-  'setdifficulty',
   'tg',
   'settarget',
   'h',
@@ -41,8 +39,8 @@ const VALID_COMMANDS = [
  * Écarté begins with an Exchange phase: the elder chooses `propose`/`stand`,
  * the dealer responds `accept`/`refuse`, then both `discard <i j k>` to draw
  * replacements. Once the stock empties, `play <idx>` resolves 5 must-follow
- * tricks; `next` advances to the following deal. `sd <0-2>` and `tg <n>` reset
- * the game with a new CPU difficulty / target score because config is only
+ * tricks; `next` advances to the following deal. `tg <n>` resets
+ * the game with a new target score because config is only
  * accepted on reset.
  */
 export function parseEcarteCommand(input: string): CliParseResult<EcarteCliArgs> {
@@ -75,12 +73,6 @@ export function parseEcarteCommand(input: string): CliParseResult<EcarteCliArgs>
     case 'n':
     case 'next':
       return { args: ['next'] };
-    case 'sd':
-    case 'setdifficulty': {
-      const level = Number.parseInt(args[0] ?? '', 10);
-      if (Number.isNaN(level) || level < 0 || level > 2) return { error: 'Usage: sd <0-2> (0=Easy 1=Normal 2=Hard)' };
-      return { args: ['reset', { config: { cpuDifficulty: level } }] };
-    }
     case 'tg':
     case 'settarget': {
       const target = Number.parseInt(args[0] ?? '', 10);
@@ -113,7 +105,6 @@ export const ECARTE_HELP: string[] = [
   'd <i j k>           - Discard cards and draw replacements',
   'p <idx>             - Play a card (Play phase)',
   'n / next            - Next deal',
-  'sd <0-2>            - Set CPU difficulty (resets game)',
   'tg <n>              - Set target score (resets game)',
   'h / hint            - Show hint',
   'l / log             - Show action log',

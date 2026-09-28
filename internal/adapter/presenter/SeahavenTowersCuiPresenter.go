@@ -1,4 +1,4 @@
-//go:build !js || !wasm || solo
+//go:build !js || !wasm || extra9
 
 package presenter
 
@@ -24,10 +24,11 @@ func (p *SeahavenTowersCuiPresenter) Output(s interfaces.SeahavenTowersGame, las
 		cells := s.GetFreeCells()
 		for i := 0; i < domain.SeahavenTowersCellCnt; i++ {
 			if i != 0 {
-				b.WriteString(" | ")
+				b.WriteString(i18n.T("seahaventowers.cellSeparator"))
 			}
+			b.WriteString(strconv.Itoa(i) + ": ")
 			if cells[i] == nil {
-				b.WriteString(i18n.T("cuiEmptyCol"))
+				b.WriteString(i18n.T("seahaventowers.emptyCellDestination"))
 			} else {
 				b.WriteString(cuiCardStr(cells[i]))
 			}
@@ -39,7 +40,7 @@ func (p *SeahavenTowersCuiPresenter) Output(s interfaces.SeahavenTowersGame, las
 		foundation := s.GetFoundation()
 		for i := 0; i < domain.SeahavenTowersFoundationCnt; i++ {
 			if i != 0 {
-				b.WriteString(" | ")
+				b.WriteString(i18n.T("seahaventowers.cellSeparator"))
 			}
 			pile := foundation[i]
 			if len(pile) == 0 {

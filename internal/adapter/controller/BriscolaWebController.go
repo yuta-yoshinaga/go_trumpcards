@@ -3,7 +3,6 @@ package controller
 import (
 	"net/http"
 
-	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller/webutil"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/usecase"
 )
@@ -16,9 +15,7 @@ type BriscolaWebInput struct {
 }
 
 // BriscolaWebConfig ブリスコラWeb設定
-type BriscolaWebConfig struct {
-	CpuDifficulty *int `json:"cpuDifficulty,omitempty"`
-}
+type BriscolaWebConfig struct{}
 
 // BriscolaWebOutputPlayer ブリスコラWebアウトプットプレイヤー
 type BriscolaWebOutputPlayer struct {
@@ -56,17 +53,11 @@ type BriscolaWebOutput struct {
 }
 
 // BriscolaWebOutputConfig ブリスコラ設定アウトプット
-type BriscolaWebOutputConfig struct {
-	CpuDifficulty int `json:"cpuDifficulty"`
-}
+type BriscolaWebOutputConfig struct{}
 
 // ToConfig builds a BriscolaConfig from the nested web config, applying bounds checking.
 func (c *BriscolaWebConfig) ToConfig() domain.BriscolaConfig {
-	cfg := domain.DefaultBriscolaConfig()
-	cfg.CpuDifficulty = domain.BriscolaCpuDifficulty(webutil.BoundedIntPtr(c.CpuDifficulty,
-		int(domain.BriscolaCpuDifficultyNormal), int(domain.BriscolaCpuDifficultyNormal),
-		int(cfg.CpuDifficulty)))
-	return cfg
+	return domain.DefaultBriscolaConfig()
 }
 
 // ToConfig builds a BriscolaConfig from the web input.

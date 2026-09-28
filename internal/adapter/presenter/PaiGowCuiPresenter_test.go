@@ -54,6 +54,25 @@ func TestPaiGowCuiPresenter_Output_BetPhase(t *testing.T) {
 	result := p.Output(m, nil)
 	assert.Contains(t, result, "チップ: 1000")
 	assert.Contains(t, result, "フェーズ: 賭け")
+	assert.Contains(t, result, "ベット条件: 残高 1000、最小 10、刻み幅 10、上限 10000")
+}
+
+func TestPaiGowCuiPresenter_Output_InvalidBetError(t *testing.T) {
+	m := new(interfaces.MockPaiGowGame)
+	setupPaiGowCuiMockDefaults(m)
+
+	result := (&PaiGowCuiPresenter{}).Output(m, domain.NewDomainError(domain.ErrInvalidAmount, "Invalid bet amount."))
+	assert.Contains(t, result, "10以上、10単位、10000以下")
+}
+
+func TestPaiGowCuiPresenter_Output_InsufficientBetError(t *testing.T) {
+	m := new(interfaces.MockPaiGowGame)
+	setupPaiGowCuiMockDefaults(m)
+	m.ExpectedCalls = removePaiGowMockCall(m.ExpectedCalls, "GetChips")
+	m.On("GetChips").Return(50).Maybe()
+
+	result := (&PaiGowCuiPresenter{}).Output(m, domain.NewDomainError(domain.ErrInsufficientChips, "Insufficient chips."))
+	assert.Contains(t, result, "ベット額が残高 50 を超えています")
 }
 
 func TestPaiGowCuiPresenter_Output_SetHandsPhase(t *testing.T) {
