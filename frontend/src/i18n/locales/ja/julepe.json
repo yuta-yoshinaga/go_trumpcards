@@ -31,7 +31,8 @@
     "nextRound": "次のラウンドへ",
     "reset": "リセット",
     "giveUp": "投了",
-    "playAria": "{{card}} を出す"
+    "playAria": "{{card}} を出す",
+    "playableAria": "{{card}} を出す（プレイ可能）"
   },
   "watching": "このラウンドは降りています。決着まで見ています。",
   "result": {
