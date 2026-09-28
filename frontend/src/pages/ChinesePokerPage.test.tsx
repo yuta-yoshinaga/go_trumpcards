@@ -132,8 +132,16 @@ describe('ChinesePokerPage', () => {
       const { unmount } = renderWithProviders(<ChinesePokerPage />);
       await waitFor(() => expect(screen.getAllByRole('heading', { level: 2 })).toHaveLength(6));
       const headingNames = screen.getAllByRole('heading', { level: 2 }).map((heading) => heading.textContent ?? '');
-      expect(headingNames.some((name) => name.includes(player) && name.includes(front) && name.includes(rank) && name.includes('✅'))).toBe(true);
-      expect(headingNames.some((name) => name.includes(dealer) && name.includes(front) && name.includes(rank) && name.includes('❌'))).toBe(true);
+      expect(
+        headingNames.some(
+          (name) => name.includes(player) && name.includes(front) && name.includes(rank) && name.includes('✅'),
+        ),
+      ).toBe(true);
+      expect(
+        headingNames.some(
+          (name) => name.includes(dealer) && name.includes(front) && name.includes(rank) && name.includes('❌'),
+        ),
+      ).toBe(true);
       expect(screen.getAllByRole('img')).toHaveLength(26);
       unmount();
     }
