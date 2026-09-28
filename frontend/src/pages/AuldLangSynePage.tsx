@@ -31,6 +31,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { AuldLangSyneResponse } from '../types/card';
 import { AuldLangSynePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { valueName } from '../utils/cardUtils';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { isRequestedHint } from '../utils/hintRequest';
@@ -485,7 +486,9 @@ function AuldLangSynePageContent() {
                   .join('・');
                 const wasteRanksLabel =
                   pile.length > 0 ? t('wasteRanksTooltip', { idx, ranks: wasteRanks }) : undefined;
-                const wasteAriaLabel = wasteRanksLabel ?? t('wasteEmptyAria', { idx });
+                const wasteAriaLabel = top
+                  ? t('wasteTopAria', { idx, card: cardAlt(top) })
+                  : t('wasteEmptyAria', { idx });
                 return (
                   <div key={`w-${idx.toString()}`} className="flex flex-col items-center">
                     <div className="text-[11px] mb-0.5 text-ds-text-muted">

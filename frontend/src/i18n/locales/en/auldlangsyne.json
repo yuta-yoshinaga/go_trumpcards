@@ -25,6 +25,7 @@
   "nextRankAria": "next required card {{rank}}",
   "upcomingRanksTooltip": "Upcoming cards: {{sequence}}",
   "wasteRanksTooltip": "Waste {{idx}} (top 3): {{ranks}}",
+  "wasteTopAria": "Waste {{idx}}: {{card}}",
   "wasteEmptyAria": "Waste {{idx}}: empty",
   "foundationCompleteAria": "complete",
   "gameClear": "Game Clear! Moves: {{moveCount}}",
