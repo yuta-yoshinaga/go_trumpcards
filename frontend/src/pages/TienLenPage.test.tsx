@@ -70,6 +70,7 @@ describe('TienLenPage', () => {
     const passButton = await screen.findByTestId('pass-button');
     expect(passButton).toHaveAttribute('aria-disabled', 'true');
     expect(passButton).toHaveAttribute('aria-describedby', 'tl-pass-unavailable');
+    expect(passButton).toHaveClass('aria-disabled:opacity-40', 'aria-disabled:cursor-not-allowed');
     expect(screen.getByText('場にカードがないためパスできません')).toBeInTheDocument();
     expect(screen.getByTestId('play-button')).toBeDisabled(); // nothing selected yet
   });
@@ -77,7 +78,9 @@ describe('TienLenPage', () => {
   it('allows passing when cards are on the table during the human turn', async () => {
     mockExec.mockResolvedValue(makeState({ tableCards: [card('SPADE', 4)] }));
     renderWithProviders(<TienLenPage />);
-    expect(await screen.findByTestId('pass-button')).not.toHaveAttribute('aria-disabled');
+    const passButton = await screen.findByTestId('pass-button');
+    expect(passButton).not.toHaveAttribute('aria-disabled');
+    expect(passButton).toHaveClass('aria-disabled:opacity-40', 'aria-disabled:cursor-not-allowed');
   });
 
   it('exposes hand card names, selection state, and unavailable turn state', async () => {
