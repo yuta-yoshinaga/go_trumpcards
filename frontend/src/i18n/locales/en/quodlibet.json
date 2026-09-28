@@ -54,6 +54,11 @@
   "penaltyLegend": "Penalty points (fewest wins)",
   "penalty": "{{n}} pts",
   "dealPoints": "{{n}} pts",
+  "history": {
+    "caption": "Completed deal penalty history",
+    "deal": "Deal",
+    "contract": "Contract"
+  },
   "dealerBadge": "Dealer",
   "chooseContract": "Choose a contract from this wheel",
   "dealResult": "Deal result ({{name}})",

@@ -263,6 +263,43 @@ function QuodlibetPageContent() {
                     </div>
                   ))}
                 </div>
+                {(isDealEnd || isGameEnd) && state.dealHistory.length > 0 && (
+                  <div className="overflow-x-auto" data-testid="quodlibet-score-history">
+                    <table className="w-full text-xs text-ds-text-muted border-collapse">
+                      <caption className="mb-1 text-xs text-ds-text-muted">{t('history.caption')}</caption>
+                      <thead>
+                        <tr>
+                          <th scope="col" className="px-2 py-1 text-center">
+                            {t('history.deal')}
+                          </th>
+                          <th scope="col" className="px-2 py-1 text-left">
+                            {t('history.contract')}
+                          </th>
+                          {state.players.map((p) => (
+                            <th key={p.id} scope="col" className="px-2 py-1 text-center">
+                              {playerName(p.id, p.isHuman)}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {state.dealHistory.map((deal, index) => (
+                          <tr key={`${deal.round}-${index}`} className="border-t border-ds-border">
+                            <td className="px-2 py-1 text-center">{index + 1}</td>
+                            <td className="px-2 py-1 whitespace-nowrap text-ds-text-primary">
+                              {t(`contractName.${deal.contractName}`)}
+                            </td>
+                            {state.players.map((p) => (
+                              <td key={p.id} className="px-2 py-1 text-center">
+                                {t('dealPoints', { n: deal.points[p.id] ?? 0 })}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
                 {state.players
                   .filter((p) => !p.isHuman && p.cards.length > 0)
                   .map((p) => (
