@@ -146,6 +146,7 @@ const trickEndPhase: SkatResponse = {
 const roundEndPhase: SkatResponse = {
   ...playPhaseHumanTurn,
   phase: SkatPhase.ROUND_END,
+  pickedSkat: true,
   declarerCardPoints: 75,
   defendersCardPoints: 45,
   gameValue: 18,
@@ -196,6 +197,15 @@ describe('SkatPage', () => {
     expect(screen.getByText('開始時のスカート:')).toBeInTheDocument();
     expect(screen.getByText('最終スカート:')).toBeInTheDocument();
     expect(within(screen.getByTestId('final-skat-reveal')).getAllByRole('img')).toHaveLength(2);
+  });
+
+  it('does not show the final skat at round end when the declarer did not pick it up', async () => {
+    mockExec.mockResolvedValue({ ...roundEndPhase, pickedSkat: false });
+    renderWithProviders(<SkatPage />);
+
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent('ラウンド終了'));
+    expect(screen.getByTestId('original-skat-reveal')).toBeInTheDocument();
+    expect(screen.queryByTestId('final-skat-reveal')).not.toBeInTheDocument();
   });
 
   it('does not reveal the final skat before the round ends', async () => {

@@ -272,7 +272,7 @@ function SkatPageContent() {
                 </div>
               </div>
             )}
-            {(isRoundEnd || isGameEnd) && state.skat && state.skat.length > 0 && (
+            {(isRoundEnd || isGameEnd) && state.pickedSkat && state.skat && state.skat.length > 0 && (
               <div className="bg-black/30 text-ds-text-primary p-3 rounded">
                 <div className="text-sm mb-1">{t('finalSkatLabel')}:</div>
                 <div className="flex gap-2" data-testid="final-skat-reveal">
