@@ -461,20 +461,22 @@ function UltiPageContent() {
             <div className="flex flex-wrap gap-2 items-center" data-tutorial="ulti-action-buttons">
               {canBid && (
                 <>
-                  <span className="text-ds-text-muted text-sm">{t('chooseTrump')}:</span>
-                  {TRUMP_CHOICES.map((c) => (
-                    <button
-                      key={c.code}
-                      type="button"
-                      className={selectedTrump === c.code ? btnPrimary : btnSecondary}
-                      onClick={() => setSelectedTrump(c.code)}
-                      disabled={loading}
-                      aria-label={t(SUIT_KEYS[c.code])}
-                      aria-pressed={selectedTrump === c.code}
-                    >
-                      {c.symbol}
-                    </button>
-                  ))}
+                  <fieldset className="flex items-center gap-2 border-0 p-0 m-0 min-w-0">
+                    <legend className="text-ds-text-muted text-sm">{t('chooseTrump')}</legend>
+                    {TRUMP_CHOICES.map((c) => (
+                      <button
+                        key={c.code}
+                        type="button"
+                        className={selectedTrump === c.code ? btnPrimary : btnSecondary}
+                        onClick={() => setSelectedTrump(c.code)}
+                        disabled={loading}
+                        aria-label={t(SUIT_KEYS[c.code])}
+                        aria-pressed={selectedTrump === c.code}
+                      >
+                        {c.symbol}
+                      </button>
+                    ))}
+                  </fieldset>
                   <button
                     type="button"
                     className={btnPrimary}
