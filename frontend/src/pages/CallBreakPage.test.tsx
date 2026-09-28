@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { callBreakApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeCallBreakState } from '../test/stateFactories';
 import type { CallBreakResponse } from '../types/card';
@@ -78,6 +79,15 @@ describe('fmtScore', () => {
 });
 
 describe('CallBreakPage', () => {
+  it('explains bags without claiming the game always has five rounds', async () => {
+    renderWithProviders(<CallBreakPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'チュートリアル' })).toBeInTheDocument());
+    const bagsInfo = i18n.t('tutorial.bagsInfo', { ns: 'callbreak' });
+    expect(bagsInfo).toContain('超過 1 トリック毎に +0.1 点');
+    expect(bagsInfo).toContain('バッグペナルティはなく');
+    expect(bagsInfo).not.toContain('5 ラウンド固定');
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<CallBreakPage />);
