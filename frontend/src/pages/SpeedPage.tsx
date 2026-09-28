@@ -268,7 +268,7 @@ function SpeedPageContent() {
                     type="button"
                     key={pi}
                     // Arrow keys play the selected card onto the left (0) / right (1) pile.
-                    aria-keyshortcuts={pi === 0 ? 'ArrowLeft' : 'ArrowRight'}
+                    aria-keyshortcuts={isStuck ? undefined : pi === 0 ? 'ArrowLeft' : 'ArrowRight'}
                     onClick={
                       isStuck
                         ? handleFlip
