@@ -115,6 +115,15 @@ func (_m *MockMichiganGame) GetBoodle(i int) *domain.MichiganBoodle {
 	return nil
 }
 
+// GetRoundBoodleWins モック
+func (_m *MockMichiganGame) GetRoundBoodleWins() []*domain.MichiganBoodleWin {
+	ret := _m.Called()
+	if v := ret.Get(0); v != nil {
+		return v.([]*domain.MichiganBoodleWin)
+	}
+	return nil
+}
+
 // GetSeqSuit モック
 func (_m *MockMichiganGame) GetSeqSuit() int {
 	ret := _m.Called()

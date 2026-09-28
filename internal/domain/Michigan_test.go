@@ -159,6 +159,16 @@ func TestMichigan_DoPlay_BoodleHitAndStopOnDeadHand(t *testing.T) {
 	assert.Equal(t, 0, g.GetBoodle(0).GetClaimedBy())
 	assert.Equal(t, 0, g.GetBoodle(0).GetChips())
 	assert.Equal(t, 150, g.GetPlayer(0).GetChips()) // collected 50
+	require.Len(t, g.GetRoundBoodleWins(), 1)
+	assert.Equal(t, 50, g.GetRoundBoodleWins()[0].Amount)
+	assert.Equal(t, 0, g.GetRoundBoodleWins()[0].Seat)
+	assert.Equal(t, domain.CardDesignHeart, g.GetRoundBoodleWins()[0].Card.GetDesign())
+	data, err := json.Marshal(g)
+	require.NoError(t, err)
+	var restored domain.Michigan
+	require.NoError(t, json.Unmarshal(data, &restored))
+	require.Len(t, restored.GetRoundBoodleWins(), 1)
+	assert.Equal(t, 50, restored.GetRoundBoodleWins()[0].Amount)
 	// Next card (heart 2) is in the dead hand -> STOP -> new sequence by last player.
 	assert.Equal(t, 0, g.GetSeqSuit())
 	assert.Equal(t, 0, g.GetCurrentPlayerIdx())
@@ -289,6 +299,7 @@ func TestMichigan_NextRound(t *testing.T) {
 	g.NextRound()
 	assert.Equal(t, domain.MichiganPhaseBet, g.GetPhase())
 	assert.Equal(t, 2, g.GetRoundNumber())
+	assert.Empty(t, g.GetRoundBoodleWins())
 	// NextRound is a no-op outside the Result phase.
 	rn := g.GetRoundNumber()
 	g.NextRound()

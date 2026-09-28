@@ -4135,6 +4135,7 @@ const baseMichiganState: MichiganResponse = {
     { card: { design: 'DIAMOND' as const, value: 12 }, chips: 2, claimedBy: -1 },
     { card: { design: 'SPADE' as const, value: 11 }, chips: 2, claimedBy: -1 },
   ],
+  roundBoodleWins: [],
   phase: 0,
   roundNumber: 1,
   ante: 8,

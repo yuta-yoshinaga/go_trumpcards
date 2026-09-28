@@ -329,13 +329,28 @@ function MichiganPageContent() {
             )}
 
             {/* Round result */}
-            {isResultPhase && state.winnerIdx >= 0 && (
+            {isResultPhase && (
               <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
                 <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
-                <div>
-                  {t('roundResult.winner', {
-                    name: playerLabel(state.winnerIdx, state.players[state.winnerIdx]?.isHuman ?? false),
-                  })}
+                {state.winnerIdx >= 0 && (
+                  <div>
+                    {t('roundResult.winner', {
+                      name: playerLabel(state.winnerIdx, state.players[state.winnerIdx]?.isHuman ?? false),
+                    })}
+                  </div>
+                )}
+                <div className="mt-1">
+                  {state.roundBoodleWins.length === 0
+                    ? t('roundResult.noBoodleWins')
+                    : state.roundBoodleWins.map((win, i) => (
+                        <div key={`${win.card.design}-${win.card.value}-${i}`}>
+                          {t('roundResult.boodleWin', {
+                            card: cardAlt(win.card),
+                            name: playerLabel(win.seat, state.players[win.seat]?.isHuman ?? false),
+                            amount: win.amount,
+                          })}
+                        </div>
+                      ))}
                 </div>
               </div>
             )}

@@ -92,6 +92,12 @@ func TestMichiganWebPresenter_ResultHumanLose(t *testing.T) {
 	assert.Equal(t, float64(domain.MichiganPhaseResult), decoded["phase"])
 	assert.Equal(t, "michigan.roundEndHumanLose", decoded["messageCode"])
 	assert.Equal(t, float64(1), decoded["winnerIdx"])
+	twins, ok := decoded["roundBoodleWins"].([]any)
+	require.True(t, ok)
+	require.Len(t, twins, 1)
+	win := twins[0].(map[string]any)
+	assert.Equal(t, float64(1), win["seat"])
+	assert.Equal(t, float64(30), win["amount"])
 	// At result phase every player's hand is revealed.
 	players, ok := decoded["players"].([]any)
 	require.True(t, ok)
