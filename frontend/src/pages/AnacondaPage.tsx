@@ -315,11 +315,24 @@ function AnacondaPageContent() {
           />
 
           <div className={`flex-1 overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`}>
-            <div className="text-ds-text-primary text-center mb-2" data-tutorial="anaconda-info">
+            <div
+              className="text-ds-text-primary text-center mb-2"
+              data-tutorial="anaconda-info"
+              data-testid="anaconda-info"
+            >
               <span className="mr-4">{t('round', { n: state.roundNumber, total: state.config.targetRounds })}</span>
               <span className="mr-4">{t('pot', { amount: state.pot })}</span>
               <span className="mr-4">{t('ante', { amount: state.ante })}</span>
               {isRollPhase && <span>{t('currentBet', { amount: state.currentBet })}</span>}
+            </div>
+            <div
+              className="sr-only"
+              data-testid="anaconda-current-bet-live"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+            >
+              {isRollPhase ? t('currentBet', { amount: state.currentBet }) : ''}
             </div>
 
             {isPassPhase && humanTurn && (
