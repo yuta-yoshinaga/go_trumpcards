@@ -10,6 +10,7 @@
   "label.dealer": "ディーラー",
   "label.upCard": "アップカード",
   "label.yourHands": "あなたの手札",
+  "label.activeHand": "操作対象の手札",
   "label.hand": "手札{{idx}}",
   "label.score": "点",
   "label.hidden": "伏せ札",
