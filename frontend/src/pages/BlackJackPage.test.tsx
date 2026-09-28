@@ -1509,7 +1509,7 @@ describe('BlackJackPage', () => {
     await waitFor(() => expect(screen.getByText('現在のハンド')).toBeInTheDocument());
   });
 
-  it('labels and describes the current hand during action', async () => {
+  it('includes the current hand label in the heading name during action', async () => {
     mockDoubleExposureExec.mockResolvedValue({
       ...actionPhaseState,
       hands: [{ ...baseHand }, { ...baseHand, score: 18 }],
@@ -1518,10 +1518,7 @@ describe('BlackJackPage', () => {
 
     renderWithProviders(<BlackJackPage variant="doubleexposure" />);
 
-    const heading = await screen.findByRole('heading', { name: /ハンド 2/ });
-    expect(heading).toHaveTextContent('現在のハンド');
-    expect(heading).toHaveAttribute('aria-describedby', 'bj-current-hand-1');
-    expect(screen.getByText('現在のハンド')).toHaveAttribute('id', 'bj-current-hand-1');
+    await screen.findByRole('heading', { name: /ハンド 2.*現在のハンド/ });
   });
 
   it('syncs surrenderRule from response', async () => {

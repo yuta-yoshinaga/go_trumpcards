@@ -512,45 +512,38 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
             {/* Player hands */}
             {phase !== BjPhase.BET && hands.length > 0 && (
               <div className="mb-2" data-tutorial="bj-player-hand">
-                {hands.map((hand, handIndex) => (
-                  <div key={`hand-${handIndex}`} className="mb-2">
-                    <h2
-                      className="text-ds-text-primary mt-0 mb-0.5"
-                      aria-describedby={
-                        handIndex === currentHandIdx && (phase === BjPhase.ACTION || phase === BjPhase.EARLY_SURRENDER)
-                          ? `bj-current-hand-${handIndex}`
-                          : undefined
-                      }
-                    >
-                      {hands.length > 1 ? t('hand', { idx: handIndex + 1 }) : t('playerHand')}
-                      {handIndex === currentHandIdx &&
-                        (phase === BjPhase.ACTION || phase === BjPhase.EARLY_SURRENDER) && (
-                          <span id={`bj-current-hand-${handIndex}`} className="ml-2 text-ds-accent font-medium">
-                            {t('currentHand')}
-                          </span>
-                        )}
-                      <HandStatusBadges
-                        busted={hand.busted}
-                        doubled={hand.doubled}
-                        isBlackJack={hand.isBlackJack}
-                        surrendered={hand.surrendered}
-                      />
-                    </h2>
-                    <p className="text-ds-text-primary mt-0 mb-0.5">
-                      {t('score')} {hand.score} / {tc('betting.currentBet')} {hand.bet}
-                    </p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {hand.cards.map((card, cardIdx) => (
-                        <AnimatedCard
-                          key={`hand-${handIndex}-${cardIdx}-${card.design}-${card.value}`}
-                          card={card}
-                          width={cardWidth}
-                          dealDelay={cardIdx * 0.12}
+                {hands.map((hand, handIndex) => {
+                  const isCurrentHand =
+                    handIndex === currentHandIdx && (phase === BjPhase.ACTION || phase === BjPhase.EARLY_SURRENDER);
+
+                  return (
+                    <div key={`hand-${handIndex}`} className="mb-2">
+                      <h2 className="text-ds-text-primary mt-0 mb-0.5">
+                        {hands.length > 1 ? t('hand', { idx: handIndex + 1 }) : t('playerHand')}
+                        {isCurrentHand && <span className="ml-2 text-ds-accent font-medium">{t('currentHand')}</span>}
+                        <HandStatusBadges
+                          busted={hand.busted}
+                          doubled={hand.doubled}
+                          isBlackJack={hand.isBlackJack}
+                          surrendered={hand.surrendered}
                         />
-                      ))}
+                      </h2>
+                      <p className="text-ds-text-primary mt-0 mb-0.5">
+                        {t('score')} {hand.score} / {tc('betting.currentBet')} {hand.bet}
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {hand.cards.map((card, cardIdx) => (
+                          <AnimatedCard
+                            key={`hand-${handIndex}-${cardIdx}-${card.design}-${card.value}`}
+                            card={card}
+                            width={cardWidth}
+                            dealDelay={cardIdx * 0.12}
+                          />
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
 
