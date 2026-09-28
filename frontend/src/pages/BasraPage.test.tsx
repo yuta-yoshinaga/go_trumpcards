@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { basraApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeBasraState } from '../test/stateFactories';
 import * as basraCaptures from '../utils/basraCaptures';
@@ -114,8 +115,11 @@ describe('BasraPage', () => {
 
   it('previews the capture set and shows the captured count on the button', async () => {
     renderWithProviders(<BasraPage />);
+    const handCard = await screen.findByTestId('hand-card-0');
+    expect(screen.getByTestId('basra-capture-preview')).toBeEmptyDOMElement();
     // Selecting hand card 0 (♥5) previews table card 0 (♠5, same rank) as capturable.
-    fireEvent.click(await screen.findByTestId('hand-card-0'));
+    fireEvent.click(handCard);
+    expect(screen.getByTestId('basra-capture-preview')).toHaveTextContent('捕獲候補: 1枚');
     expect(screen.getByTestId('table-card-0')).toHaveAttribute('data-capture-candidate', 'true');
     expect(screen.getByTestId('table-card-1')).not.toHaveAttribute('data-capture-candidate');
     // Selecting it makes the action button report the captured count.
@@ -185,6 +189,7 @@ describe('BasraPage', () => {
     fireEvent.click(await screen.findByTestId('hand-card-1'));
     expect(screen.getByTestId('table-card-0')).toHaveAttribute('data-capture-candidate', 'true');
     expect(screen.getByTestId('table-card-1')).toHaveAttribute('data-capture-candidate', 'true');
+    expect(screen.getByTestId('basra-capture-preview')).toHaveTextContent('捕獲候補: 2枚');
     expect(screen.getByRole('button', { name: '2枚捕獲' })).toBeInTheDocument();
   });
 
@@ -192,9 +197,26 @@ describe('BasraPage', () => {
     renderWithProviders(<BasraPage />);
     // Hand card 3 (♣3) captures nothing: no candidates highlighted, trail button only.
     fireEvent.click(await screen.findByTestId('hand-card-3'));
+    expect(screen.getByTestId('basra-capture-preview')).toHaveTextContent('捕獲候補なし。トレイルになります。');
     expect(screen.getByTestId('table-card-0')).not.toHaveAttribute('data-capture-candidate');
     expect(screen.getByRole('button', { name: 'トレイル' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /捕獲/ })).not.toBeInTheDocument();
+  });
+
+  it('shows the capture preview in English', async () => {
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      renderWithProviders(<BasraPage />);
+      fireEvent.click(await screen.findByTestId('hand-card-0'));
+      expect(screen.getByTestId('basra-capture-preview')).toHaveTextContent('Capture candidates: 1');
+      fireEvent.click(screen.getByTestId('hand-card-3'));
+      expect(screen.getByTestId('basra-capture-preview')).toHaveTextContent(
+        'No capture candidates. This card will trail.',
+      );
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
   });
 
   it('does not show the play button on a CPU turn', async () => {

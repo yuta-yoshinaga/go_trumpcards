@@ -33,6 +33,10 @@
     "sum": "合計値捕獲",
     "jackSweep": "ジャックで一掃"
   },
+  "capturePreview": {
+    "count": "捕獲候補: {{count}}枚",
+    "trail": "捕獲候補なし。トレイルになります。"
+  },
   "trailButton": "トレイル",
   "newGame": "新しいゲーム",
   "result": {
