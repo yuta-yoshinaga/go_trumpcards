@@ -42,6 +42,34 @@ beforeEach(() => {
 });
 
 describe('DoudizhuPage', () => {
+  it('disables bid controls while the bid request is pending', async () => {
+    const bidState: DoudizhuResponse = {
+      ...defaultState,
+      phase: 'bid',
+      landlordIdx: -1,
+      highestBid: 0,
+      currentTurn: 0,
+    };
+    mockExec.mockResolvedValue(bidState);
+    renderWithProviders(<DoudizhuPage />);
+    const bidButton = await screen.findByRole('button', { name: '1で叫ぶ' });
+    const passButton = screen.getByRole('button', { name: 'パス' });
+
+    let resolve!: (value: DoudizhuResponse) => void;
+    const pendingRequest = new Promise<DoudizhuResponse>((res) => {
+      resolve = res;
+    });
+    mockExec.mockReturnValueOnce(pendingRequest);
+    fireEvent.click(bidButton);
+
+    expect(bidButton).toBeDisabled();
+    expect(passButton).toBeDisabled();
+
+    resolve(bidState);
+    await waitFor(() => expect(bidButton).toBeEnabled());
+    expect(passButton).toBeEnabled();
+  });
+
   it('shows the resolved landlord label for the human player', async () => {
     mockExec.mockResolvedValue({
       ...defaultState,

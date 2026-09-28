@@ -294,11 +294,11 @@ function DoudizhuPageContent() {
               {[1, 2, 3]
                 .filter((v) => v > state.highestBid)
                 .map((v) => (
-                  <button key={v} type="button" className={btnWarning} onClick={() => handleBid(v)}>
+                  <button key={v} type="button" className={btnWarning} onClick={() => handleBid(v)} disabled={loading}>
                     {t(`button.bid${v}`)}
                   </button>
                 ))}
-              <button type="button" className={btnSecondary} onClick={() => handleBid(0)}>
+              <button type="button" className={btnSecondary} onClick={() => handleBid(0)} disabled={loading}>
                 {t('button.pass')}
               </button>
             </div>
@@ -380,12 +380,12 @@ function DoudizhuPageContent() {
                     type="button"
                     className={btnPrimary}
                     onClick={handlePlay}
-                    disabled={selectedCards.size === 0 || selectionHint?.reason != null}
+                    disabled={loading || selectedCards.size === 0 || selectionHint?.reason != null}
                   >
                     {t('button.play')}
                   </button>
                   {state.tableCards.length > 0 && (
-                    <button type="button" className={btnSecondary} onClick={handlePass}>
+                    <button type="button" className={btnSecondary} onClick={handlePass} disabled={loading}>
                       {t('button.pass')}
                     </button>
                   )}
