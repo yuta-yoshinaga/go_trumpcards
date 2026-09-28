@@ -71,6 +71,8 @@ type SchafkopfGame interface {
 	GetRoundMultiplier() int
 	// GetRoundPickerWon 直近ラウンドでピッカー組が勝ったかを取得する
 	GetRoundPickerWon() bool
+	// GetLastDealChipDelta returns the most recent deal's chip change for a seat.
+	GetLastDealChipDelta(i int) int
 	// GetWinnerIdx 勝者インデックスを取得する
 	GetWinnerIdx() int
 	// GetPlayerCnt プレイヤー数を取得する

@@ -48,7 +48,8 @@
     "pickerPoints": "Picker team points: {{points}}",
     "multiplier": "Multiplier: x{{multiplier}}",
     "pickerWon": "Picker team won",
-    "pickerLost": "Picker team lost"
+    "pickerLost": "Picker team lost",
+    "chipChanges": "Chip changes"
   },
   "passCount": "Passed: {{count}}",
   "hintAvailable": "Hint",

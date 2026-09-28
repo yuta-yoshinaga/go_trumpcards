@@ -123,6 +123,7 @@ func (p *SchafkopfWebPresenter) buildPlayersOutput(g interfaces.SchafkopfGame) [
 			Cards:      playerCardsToOutput(player, player.GetIsHuman()),
 			TrickCount: player.GetTrickCount(),
 			Chips:      player.GetChips(),
+			ChipDelta:  g.GetLastDealChipDelta(i),
 		})
 	}
 	return out

@@ -17,6 +17,7 @@ export interface SchafkopfPlayer {
   cards: Card[];
   trickCount: number;
   chips: number;
+  chipDelta: number;
 }
 
 /** A card played into the current Schafkopf trick. */

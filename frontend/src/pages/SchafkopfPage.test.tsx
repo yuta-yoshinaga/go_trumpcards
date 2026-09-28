@@ -33,6 +33,10 @@ const roundEndState = makeSchafkopfState({
   roundPickerPoints: 70,
   roundMultiplier: 2,
   roundPickerWon: true,
+  players: makeSchafkopfState().players.map((player, index) => ({
+    ...player,
+    chipDelta: [30, -10, -10, -10][index],
+  })),
 });
 const gameEndState = makeSchafkopfState({
   phase: 5,
@@ -177,6 +181,8 @@ describe('SchafkopfPage', () => {
     renderWithProviders(<SchafkopfPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
     expect(screen.getByText('ラウンド結果')).toBeInTheDocument();
+    expect(screen.getByText('あなた: +30')).toBeInTheDocument();
+    expect(screen.getByText('CPU 1: -10')).toBeInTheDocument();
   });
 
   it('renders the game end message', async () => {

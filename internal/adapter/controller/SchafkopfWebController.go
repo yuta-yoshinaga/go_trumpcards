@@ -43,6 +43,7 @@ type SchafkopfWebOutputPlayer struct {
 	Cards      []*WebOutputCard `json:"cards"`
 	TrickCount int              `json:"trickCount"`
 	Chips      int              `json:"chips"`
+	ChipDelta  int              `json:"chipDelta"`
 }
 
 // SchafkopfWebOutputHint ヒント出力
