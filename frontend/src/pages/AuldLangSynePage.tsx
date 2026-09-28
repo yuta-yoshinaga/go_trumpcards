@@ -478,8 +478,7 @@ function AuldLangSynePageContent() {
                 const selected = selectedWaste === idx;
                 const isHintSource = hintWaste === idx;
                 // Compact preview of the pile's upper cards (last <=3 array
-                // elements, ending at the playable top) for the hover/focus
-                // tooltip and screen-reader label.
+                // elements, ending at the playable top) for the title tooltip.
                 const wasteRanks = pile
                   .slice(-3)
                   .map((c) => valueName(c.value))
