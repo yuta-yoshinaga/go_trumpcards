@@ -30,7 +30,7 @@ func mustThreeCardOutputJSON(msg string) string {
 func threeCardIntPtr(v int) *int { return &v }
 
 func TestThreeCardWebController_Method(t *testing.T) {
-	mockOutput := `{"playerHand":[],"dealerHand":[],"phase":0,"chips":0,"anteBet":0,"pairPlusBet":0,"playBet":0,"result":0,"antePayout":0,"playPayout":0,"anteBonusPayout":0,"pairPlusPayout":0,"totalPayout":0,"dealerQualified":false,"playerHandRank":0,"dealerHandRank":0,"message":""}`
+	mockOutput := `{"playerHand":[],"dealerHand":[],"phase":0,"chips":0,"anteBet":0,"pairPlusBet":0,"playBet":0,"result":0,"antePayout":0,"playPayout":0,"anteBonusPayout":0,"pairPlusPayout":0,"totalPayout":0,"netChange":0,"dealerQualified":false,"playerHandRank":0,"dealerHandRank":0,"message":""}`
 	expectedBody := mockOutput
 
 	tiMock := new(usecase.MockThreeCardInteractor)

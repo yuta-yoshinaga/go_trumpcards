@@ -33,7 +33,9 @@
     "play": "プレイ",
     "anteBonus": "アンテボーナス",
     "pairPlus": "ペアプラス",
-    "total": "合計"
+    "total": "合計",
+    "totalBet": "賭け合計",
+    "netChange": "純損益"
   },
   "betSlip": {
     "ante": "アンテ",

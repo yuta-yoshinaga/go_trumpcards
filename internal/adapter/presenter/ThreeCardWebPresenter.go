@@ -29,6 +29,7 @@ func (tp *ThreeCardWebPresenter) Output(tc interfaces.ThreeCardGame, lastErr err
 	resObj.AnteBonusPayout = tc.GetAnteBonusPayout()
 	resObj.PairPlusPayout = tc.GetPairPlusPayout()
 	resObj.TotalPayout = tc.GetTotalPayout()
+	resObj.NetChange = tc.GetNetChange()
 	resObj.DealerQualified = tc.GetDealerQualified()
 	resObj.PlayerHandRank = tc.GetPlayerHandRank()
 	resObj.DealerHandRank = tc.GetDealerHandRank()
