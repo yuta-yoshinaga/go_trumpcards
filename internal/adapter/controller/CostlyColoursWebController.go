@@ -55,6 +55,14 @@ type CostlyColoursWebOutputResult struct {
 	Combos []string `json:"combos"`
 }
 
+// CostlyColoursWebOutputRecentPlay は直近の出札記録。
+type CostlyColoursWebOutputRecentPlay struct {
+	Seat   int            `json:"seat"`
+	Card   *WebOutputCard `json:"card"`
+	Total  int            `json:"total"`
+	Points int            `json:"points"`
+}
+
 // CostlyColoursWebOutput はコストリー・カラーズの Web アウトプット。
 type CostlyColoursWebOutput struct {
 	Players []*CostlyColoursWebOutputPlayer `json:"players"`
@@ -70,7 +78,8 @@ type CostlyColoursWebOutput struct {
 	// Pile は今の数え上げに出た札。
 	Pile []*WebOutputCard `json:"pile"`
 	// Total は今の数え上げの累計。**31 を超えられない。**
-	Total int `json:"total"`
+	Total       int                                 `json:"total"`
+	RecentPlays []*CostlyColoursWebOutputRecentPlay `json:"recentPlays"`
 	// WentOut は「ゴー」を宣言した席 (-1 = なし)。
 	WentOut int `json:"wentOut"`
 	// PlayableIdxs は人間が出せる手札の位置。
@@ -127,6 +136,7 @@ func newCostlyColoursDefaultOutput(msg string) *CostlyColoursWebOutput {
 	return &CostlyColoursWebOutput{
 		Players:       make([]*CostlyColoursWebOutputPlayer, 0),
 		Pile:          make([]*WebOutputCard, 0),
+		RecentPlays:   make([]*CostlyColoursWebOutputRecentPlay, 0),
 		PlayableIdxs:  make([]int, 0),
 		WentOut:       -1,
 		WinnerIdx:     -1,

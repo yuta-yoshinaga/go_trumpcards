@@ -20,6 +20,14 @@
   "countLabel": "数え上げ",
   "pileEmpty": "（まだ何も出ていません）",
   "total": "累計 {{n}} / 31",
+  "listSeparator": "、",
+  "announcement": {
+    "play": "{{name}}: {{card}}、累計 {{total}}{{pointsText}}",
+    "points_one": "、{{points}} 点獲得{{milestonePart}}",
+    "points_other": "、{{points}} 点獲得{{milestonePart}}",
+    "milestonePart": "（{{milestone}}）",
+    "milestone": { "15": "15 到達", "25": "25 到達", "31": "31 到達" }
+  },
   "score": "得点 {{n}}",
   "cards": "手札 {{n}} 枚",
   "waitingForOpponent": "相手の手番です。お待ちください。",

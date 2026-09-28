@@ -5543,6 +5543,7 @@ const baseCostlyColoursState: CostlyColoursResponse = {
   turnUp: cirCard('CLOVER', 10),
   pile: [],
   total: 0,
+  recentPlays: [],
   wentOut: -1,
   // 交換フェーズでは出せる札を渡さない。
   playableIdxs: [],

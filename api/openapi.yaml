@@ -75160,6 +75160,19 @@ components:
             $ref: '#/components/schemas/Card'
         total:
           type: integer
+        recentPlays:
+          type: array
+          items:
+            type: object
+            properties:
+              seat:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+              total:
+                type: integer
+              points:
+                type: integer
         wentOut:
           type: integer
         playableIdxs:

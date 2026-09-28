@@ -65,6 +65,8 @@ export interface CostlyColoursResponse extends BaseGameResponse {
   pile: Card[];
   /** Running count. Never above 31. */
   total: number;
+  /** Plays made in the latest command, including their post-play count and points. */
+  recentPlays: CostlyColoursRecentPlay[];
   /** Seat that said "go", or -1. */
   wentOut: number;
   /** Hand indices that fit under 31. Empty means go, or not the human's turn. */
@@ -79,4 +81,12 @@ export interface CostlyColoursResponse extends BaseGameResponse {
   hintAcceptMog: boolean;
   hintReason: string;
   config: CostlyColoursConfig;
+}
+
+/** One card played during the latest command. */
+export interface CostlyColoursRecentPlay {
+  seat: number;
+  card: Card;
+  total: number;
+  points: number;
 }

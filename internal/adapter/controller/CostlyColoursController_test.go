@@ -21,6 +21,7 @@ func mustCostlyColoursOutputJSON(msg string) string {
 	out := &controller.CostlyColoursWebOutput{
 		Players:       []*controller.CostlyColoursWebOutputPlayer{},
 		Pile:          []*controller.WebOutputCard{},
+		RecentPlays:   []*controller.CostlyColoursWebOutputRecentPlay{},
 		PlayableIdxs:  []int{},
 		WentOut:       -1,
 		WinnerIdx:     -1,

@@ -20,6 +20,14 @@
   "countLabel": "The count",
   "pileEmpty": "(nothing played yet)",
   "total": "Total {{n}} / 31",
+  "listSeparator": ", ",
+  "announcement": {
+    "play": "{{name}}: {{card}}, total {{total}}{{pointsText}}",
+    "points_one": ", {{points}} point scored{{milestonePart}}",
+    "points_other": ", {{points}} points scored{{milestonePart}}",
+    "milestonePart": " ({{milestone}})",
+    "milestone": { "15": "reached 15", "25": "reached 25", "31": "reached 31" }
+  },
   "score": "score {{n}}",
   "cards": "{{n}} card(s)",
   "waitingForOpponent": "Waiting for the other player.",

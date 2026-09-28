@@ -38,6 +38,10 @@ type CostlyColoursGame interface {
 	GetPile() []*domain.Card
 	// GetTotal 今の数え上げの累計を取得する
 	GetTotal() int
+	// GetRecentPlays は直近コマンドで出た札を取得する。
+	GetRecentPlays() []domain.CostlyColoursRecentPlay
+	// ClearRecentPlays は直近の出札記録を消去する。
+	ClearRecentPlays()
 	// GetWentOut 「ゴー」を宣言した席を取得する (-1 = なし)
 	GetWentOut() int
 	// GetDealNumber 現在のディールを取得する
