@@ -542,7 +542,7 @@ describe('BlackJackPage', () => {
     await waitFor(() => {
       expect(screen.getByText(/ハンド 1/)).toBeInTheDocument();
       expect(screen.getByText(/ハンド 2/)).toBeInTheDocument();
-      expect(screen.getByText(/\(\*\)/)).toBeInTheDocument();
+      expect(screen.getByText('現在のハンド')).toBeInTheDocument();
     });
   });
 
@@ -1499,14 +1499,29 @@ describe('BlackJackPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('declineearlysurrender'));
   });
 
-  it('shows active hand marker (*) during early surrender phase', async () => {
+  it('labels the active hand during early surrender phase', async () => {
     const earlySurrenderState: BlackJackResponse = {
       ...actionPhaseState,
       phase: 6,
     };
     mockExec.mockResolvedValue(earlySurrenderState);
     renderWithProviders(<BlackJackPage />);
-    await waitFor(() => expect(screen.getByText(/プレイヤー手札 \(\*\)/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText('現在のハンド')).toBeInTheDocument());
+  });
+
+  it('labels and describes the current hand during action', async () => {
+    mockDoubleExposureExec.mockResolvedValue({
+      ...actionPhaseState,
+      hands: [{ ...baseHand }, { ...baseHand, score: 18 }],
+      currentHandIdx: 1,
+    });
+
+    renderWithProviders(<BlackJackPage variant="doubleexposure" />);
+
+    const heading = await screen.findByRole('heading', { name: /ハンド 2/ });
+    expect(heading).toHaveTextContent('現在のハンド');
+    expect(heading).toHaveAttribute('aria-describedby', 'bj-current-hand-1');
+    expect(screen.getByText('現在のハンド')).toHaveAttribute('id', 'bj-current-hand-1');
   });
 
   it('syncs surrenderRule from response', async () => {

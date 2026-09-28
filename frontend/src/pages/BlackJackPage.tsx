@@ -514,11 +514,21 @@ function BlackJackPageContent({ variant = 'blackjack' }: BlackJackPageProps) {
               <div className="mb-2" data-tutorial="bj-player-hand">
                 {hands.map((hand, handIndex) => (
                   <div key={`hand-${handIndex}`} className="mb-2">
-                    <h2 className="text-ds-text-primary mt-0 mb-0.5">
+                    <h2
+                      className="text-ds-text-primary mt-0 mb-0.5"
+                      aria-describedby={
+                        handIndex === currentHandIdx && (phase === BjPhase.ACTION || phase === BjPhase.EARLY_SURRENDER)
+                          ? `bj-current-hand-${handIndex}`
+                          : undefined
+                      }
+                    >
                       {hands.length > 1 ? t('hand', { idx: handIndex + 1 }) : t('playerHand')}
                       {handIndex === currentHandIdx &&
-                        (phase === BjPhase.ACTION || phase === BjPhase.EARLY_SURRENDER) &&
-                        ' (*)'}
+                        (phase === BjPhase.ACTION || phase === BjPhase.EARLY_SURRENDER) && (
+                          <span id={`bj-current-hand-${handIndex}`} className="ml-2 text-ds-accent font-medium">
+                            {t('currentHand')}
+                          </span>
+                        )}
                       <HandStatusBadges
                         busted={hand.busted}
                         doubled={hand.doubled}
