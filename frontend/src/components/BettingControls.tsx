@@ -15,6 +15,8 @@ export interface BettingControlsProps {
   /** Current pot size; when positive, 1/2 Pot and Pot preset buttons are rendered. Max additionally requires a positive maxBetAmount. */
   potSize?: number;
   hasOutstandingBet: boolean;
+  /** Optional game-specific display of the chips needed to call. */
+  callAmountLabel?: string;
   loading: boolean;
   onCall: () => void;
   onRaise: () => void;
@@ -37,6 +39,7 @@ export function BettingControls({
   maxBetAmount,
   potSize,
   hasOutstandingBet,
+  callAmountLabel,
   loading,
   onCall,
   onRaise,
@@ -136,6 +139,7 @@ export function BettingControls({
             aria-keyshortcuts="c"
           >
             {t('action.call')}
+            {callAmountLabel && <span aria-hidden="true">{callAmountLabel}</span>}
             {kbd('C')}
           </button>
           <button
