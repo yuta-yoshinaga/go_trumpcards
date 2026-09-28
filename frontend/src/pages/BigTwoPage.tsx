@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
@@ -27,6 +27,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { BigTwoAction, BigTwoResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
 import { type BigTwoSortMode, bigTwoPlayTypeKey, classifyBigTwoPlay, sortedBigTwoHand } from '../utils/bigTwoSort';
+import { cardAlt } from '../utils/cardAlt';
 import { cardLabel } from '../utils/cardUtils';
 import {
   BIGTWO_HELP,
@@ -96,7 +97,6 @@ function BigTwoPageContent() {
   } = useBigTwoGame();
   const { cardWidth } = useCardDimensions();
   const [sortMode, setSortMode] = useState<BigTwoSortMode>('strength');
-  const [tablePlayAnnouncement, setTablePlayAnnouncement] = useState('');
   const {
     hint: frontendHint,
     hintEnabled: frontendHintEnabled,
@@ -117,18 +117,12 @@ function BigTwoPageContent() {
   );
   const { handleCommand } = useCliGame(callApi, cliConfig, state, { addInput, addOutput, addError, clearLog });
 
-  useEffect(() => {
-    if (!state || state.tableCards.length === 0) {
-      setTablePlayAnnouncement('');
-      return;
-    }
+  const tablePlayAnnouncement = useMemo(() => {
+    if (!state || state.tableCards.length === 0) return '';
     const playTypeKey = bigTwoPlayTypeKey(state.tablePlayType);
-    if (!playTypeKey) {
-      setTablePlayAnnouncement('');
-      return;
-    }
-    const cards = state.tableCards.map(cardLabel).join(t('listSeparator'));
-    setTablePlayAnnouncement(t('tablePlayAnnouncement', { cards, playType: t(`playType.${playTypeKey}`) }));
+    if (!playTypeKey) return '';
+    const cards = state.tableCards.map(cardAlt).join(t('listSeparator'));
+    return t('tablePlayAnnouncement', { cards, playType: t(`playType.${playTypeKey}`) });
   }, [state, t]);
 
   const onReset = useCallback(() => handleResetWithConfig(), [handleResetWithConfig]);

@@ -186,8 +186,14 @@ describe('BigTwoPage', () => {
 
     const announcement = await screen.findByTestId('bt-table-play-announcement');
     expect(announcement).toHaveAttribute('aria-live', 'polite');
-    expect(announcement).toHaveTextContent('SPADE 3、SPADE 5、SPADE 7、SPADE 9、SPADE 11');
+    expect(announcement).toHaveTextContent('♠ 3、♠ 5、♠ 7、♠ 9、♠ J');
     expect(announcement).toHaveTextContent('フラッシュ');
+  });
+
+  it('keeps the table-play announcement empty when the table has no cards', async () => {
+    renderWithProviders(<BigTwoPage />);
+    const announcement = await screen.findByTestId('bt-table-play-announcement');
+    expect(announcement).toBeEmptyDOMElement();
   });
 
   it('shows the table play-type label for the cards in play', async () => {
