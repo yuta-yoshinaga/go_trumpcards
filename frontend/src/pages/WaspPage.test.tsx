@@ -188,6 +188,24 @@ describe('WaspPage', () => {
     expect(mockExec).not.toHaveBeenCalledWith('deal');
   });
 
+  it('keeps an empty move target focusable and explains the required source', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      tableau: [playingState.tableau[0], [], ...playingState.tableau.slice(2)],
+    });
+    renderWithProviders(<WaspPage />);
+    const target = await screen.findByTestId('sc-empty-col-1');
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const hint = document.getElementById(target.getAttribute('aria-describedby') ?? '');
+    expect(hint).toHaveTextContent('先に移動する札を選んでください');
+
+    mockExec.mockClear();
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('labels empty columns with the "any card" rule sublabel', async () => {
     const stateWithEmptyCol: WaspResponse = {
       ...playingState,

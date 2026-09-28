@@ -86,6 +86,22 @@ describe('TerracePage', () => {
     expect(mockExec.mock.calls[0]?.[0]).toBe('reset');
   });
 
+  it('keeps a move target focusable and explains how to enable it before a source is selected', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<TerracePage />);
+    const target = await screen.findByRole('button', { name: '空の組札0' });
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const descriptionId = target.getAttribute('aria-describedby');
+    expect(descriptionId).toBeTruthy();
+    expect(document.getElementById(descriptionId ?? '')).toHaveTextContent('先に移動する札を選んでください');
+
+    mockExec.mockClear();
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('renders heading, base rank and move count', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<TerracePage />);
@@ -133,7 +149,28 @@ describe('TerracePage', () => {
 
     const foundation = screen.getByRole('button', { name: '空の組札0' });
     expect(foundation).toBeEnabled();
+    expect(foundation).not.toHaveAttribute('aria-disabled');
+    expect(foundation).not.toHaveAttribute('aria-describedby');
     fireEvent.click(foundation);
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenCalledWith('move', { zone: 'reserve' }, { zone: 'foundation', col: 0 }),
+    );
+  });
+
+  it('sends the terrace top to a filled foundation', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [[card('HEART', 4)], ...playingState.foundation.slice(1)],
+    });
+    renderWithProviders(<TerracePage />);
+    const terrace = await screen.findByRole('button', { name: /^テラス .+ 残り2枚（組札にのみ出せます）$/ });
+    fireEvent.click(terrace);
+    await waitFor(() => expect(terrace).toHaveAttribute('aria-pressed', 'true'));
+    const target = screen.getByRole('button', { name: '組札0 1枚' });
+    expect(target).not.toHaveAttribute('aria-disabled');
+    expect(target).not.toHaveAttribute('aria-describedby');
+    mockExec.mockClear();
+    fireEvent.click(target);
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'reserve' }, { zone: 'foundation', col: 0 }),
     );

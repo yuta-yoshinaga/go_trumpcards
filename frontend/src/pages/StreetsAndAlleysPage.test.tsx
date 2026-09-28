@@ -78,6 +78,22 @@ describe('StreetsAndAlleysPage', () => {
     expect(mockExec.mock.calls[0]?.[0]).toBe('reset');
   });
 
+  it('keeps a move target focusable and explains how to enable it before a source is selected', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<StreetsAndAlleysPage />);
+    const target = (await screen.findAllByLabelText(/組札 1枚/))[0];
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const descriptionId = target.getAttribute('aria-describedby');
+    expect(descriptionId).toBeTruthy();
+    expect(document.getElementById(descriptionId ?? '')).toHaveTextContent('先に移動する札を選んでください');
+
+    mockExec.mockClear();
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('highlights column tops as drop targets once a source card is selected', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<StreetsAndAlleysPage />);

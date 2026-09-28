@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useId, useMemo } from 'react';
 import type { terraceApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -83,6 +83,7 @@ function TerracePageContent() {
   } = useGamePageSetup('terrace');
   const game = useTerraceGame();
   const { state, loading, error, retry, hintError, selectedSource, hint, isAutoCompleting } = game;
+  const selectSourceHintId = useId();
   const isTerraceSourceSelected = selectedSource?.zone === 'reserve';
 
   const {
@@ -275,6 +276,9 @@ function TerracePageContent() {
       }
     >
       <LandscapeBanner message={t('landscapeBanner')} />
+      <span id={selectSourceHintId} className="sr-only">
+        {tc('label.selectSourceFirst')}
+      </span>
 
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
@@ -332,7 +336,9 @@ function TerracePageContent() {
                           <button
                             type="button"
                             onClick={() => game.handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
+                            disabled={!isPlaying || loading || isAutoCompleting}
+                            aria-disabled={!selectedSource || undefined}
+                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t('foundationAriaLabel', { idx, count: pile.length })}
                             className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
                           >
@@ -347,7 +353,9 @@ function TerracePageContent() {
                           <button
                             type="button"
                             onClick={() => game.handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
+                            disabled={!isPlaying || loading || isAutoCompleting}
+                            aria-disabled={!selectedSource || undefined}
+                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t('emptyFoundationAriaLabel', { idx })}
                             style={{ width: dims.cw, height: dims.ch }}
                             className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}

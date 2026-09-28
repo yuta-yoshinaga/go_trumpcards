@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useId, useMemo } from 'react';
 import type { StHelenaMoveZone, stHelenaApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -109,6 +109,7 @@ function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => stri
 const STHELENA_TOTAL_CARDS = 104;
 
 function StHelenaPageContent() {
+  const selectSourceHintId = useId();
   const {
     t,
     tc,
@@ -324,6 +325,9 @@ function StHelenaPageContent() {
           <LandscapeBanner message={t('landscapeBanner')} />
 
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
+            <span id={selectSourceHintId} className="sr-only">
+              {tc('label.selectSourceFirst')}
+            </span>
             {/* Foundations (4 ascending + 4 descending in two rows) */}
             <div className="flex flex-col gap-2 mb-4" data-tutorial="sthelena-foundations">
               {([0, 1] as const).map((rowIdx) => {
@@ -361,10 +365,18 @@ function StHelenaPageContent() {
                             {pile.length > 0 ? (
                               <button
                                 type="button"
-                                onClick={() => handleSelectTarget(foundationZone)}
+                                onClick={() => {
+                                  if (!selectedSource) return;
+                                  handleSelectTarget(foundationZone);
+                                }}
                                 disabled={
-                                  !isPlaying || loading || isAutoCompleting || !selectedSource || !canReach(idx)
+                                  !isPlaying ||
+                                  loading ||
+                                  isAutoCompleting ||
+                                  (selectedSource !== null && !canReach(idx))
                                 }
+                                aria-disabled={!selectedSource || undefined}
+                                aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                                 aria-label={t('foundationAriaLabel', {
                                   suit,
                                   direction: t(`direction.${directionKey}`),
@@ -378,8 +390,13 @@ function StHelenaPageContent() {
                             ) : (
                               <button
                                 type="button"
-                                onClick={() => handleSelectTarget(foundationZone)}
-                                disabled={!isPlaying || loading || !selectedSource || !canReach(idx)}
+                                onClick={() => {
+                                  if (!selectedSource) return;
+                                  handleSelectTarget(foundationZone);
+                                }}
+                                disabled={!isPlaying || loading || (selectedSource !== null && !canReach(idx))}
+                                aria-disabled={!selectedSource || undefined}
+                                aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                                 aria-label={t('emptyFoundationAriaLabel', { suit, direction: directionKey })}
                                 style={{ width: tableauDim.cw, height: tableauDim.ch }}
                                 className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}

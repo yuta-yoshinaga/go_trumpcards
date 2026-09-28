@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { StalactitesMoveZone, stalactitesApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -99,6 +99,7 @@ function formatHintZone(t: (key: string, opts?: Record<string, unknown>) => stri
 }
 
 function StalactitesPageContent() {
+  const selectSourceHintId = useId();
   const {
     t,
     tc,
@@ -295,6 +296,9 @@ function StalactitesPageContent() {
           <LandscapeBanner message={t('landscapeBanner')} />
 
           <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
+            <span id={selectSourceHintId} className="sr-only">
+              {tc('label.selectSourceFirst')}
+            </span>
             {/* Free cells + Foundation row */}
             <div className="flex gap-2 mb-3 items-start flex-wrap">
               {/* Free cells */}
@@ -342,8 +346,13 @@ function StalactitesPageContent() {
                         ) : (
                           <button
                             type="button"
-                            onClick={() => handleSelectTarget(stalactitesZone)}
-                            disabled={!isPlaying || loading || !selectedSource}
+                            onClick={() => {
+                              if (!selectedSource) return;
+                              handleSelectTarget(stalactitesZone);
+                            }}
+                            disabled={!isPlaying || loading}
+                            aria-disabled={!selectedSource || undefined}
+                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t('emptyCellAriaLabel', { idx: String(idx) })}
                             style={{ width: cardWidth, height: cardHeight }}
                             className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
@@ -375,8 +384,13 @@ function StalactitesPageContent() {
                         {pile.length > 0 ? (
                           <button
                             type="button"
-                            onClick={() => handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading || isAutoCompleting || !selectedSource}
+                            onClick={() => {
+                              if (!selectedSource) return;
+                              handleSelectTarget(foundationZone);
+                            }}
+                            disabled={!isPlaying || loading || isAutoCompleting}
+                            aria-disabled={!selectedSource || undefined}
+                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t('foundationAriaLabel', {
                               suit: FOUNDATION_SUITS[idx],
                               cardCount: String(pile.length),
@@ -393,8 +407,13 @@ function StalactitesPageContent() {
                         ) : (
                           <button
                             type="button"
-                            onClick={() => handleSelectTarget(foundationZone)}
-                            disabled={!isPlaying || loading || !selectedSource}
+                            onClick={() => {
+                              if (!selectedSource) return;
+                              handleSelectTarget(foundationZone);
+                            }}
+                            disabled={!isPlaying || loading}
+                            aria-disabled={!selectedSource || undefined}
+                            aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                             aria-label={t('emptyFoundationAriaLabel', { suit: FOUNDATION_SUITS[idx] })}
                             style={{ width: cardWidth, height: cardHeight }}
                             className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
@@ -444,8 +463,13 @@ function StalactitesPageContent() {
                           {col.length === 0 ? (
                             <button
                               type="button"
-                              onClick={() => handleSelectTarget(tableauColZone)}
-                              disabled={!isPlaying || loading || !selectedSource}
+                              onClick={() => {
+                                if (!selectedSource) return;
+                                handleSelectTarget(tableauColZone);
+                              }}
+                              disabled={!isPlaying || loading}
+                              aria-disabled={!selectedSource || undefined}
+                              aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                               aria-label={emptyColLabel(colIdx)}
                               style={{ height: cardHeight }}
                               data-testid={`fc-empty-col-${colIdx.toString()}`}

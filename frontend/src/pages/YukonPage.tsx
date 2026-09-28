@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useId, useMemo, useState } from 'react';
 import { type YukonMoveZone, yukonApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -102,6 +102,7 @@ function formatYukonState(state: YukonResponse): string {
 export const YukonPage = withTutorial(YukonPageContent, 'yukon', YK_TUTORIAL_STEPS);
 /** Inner content of the Yukon page. */
 function YukonPageContent() {
+  const selectSourceHintId = useId();
   const {
     t,
     tc,
@@ -338,6 +339,9 @@ function YukonPageContent() {
           <LandscapeBanner message={t('landscapeBanner')} />
 
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
+            <span id={selectSourceHintId} className="sr-only">
+              {tc('label.selectSourceFirst')}
+            </span>
             {/* Foundation row */}
             <div className="flex gap-1 sm:gap-2 mb-3 items-start justify-center" data-tutorial="yk-foundation">
               {state.foundation.map((pile, i) => {
@@ -357,7 +361,9 @@ function YukonPageContent() {
                         isTarget ? 'hover:ring-2 hover:ring-ds-warning cursor-pointer' : ''
                       }`}
                       onClick={() => isTarget && handleSelectTarget('foundation', i)}
-                      disabled={!isPlaying || !isTarget}
+                      disabled={!isPlaying}
+                      aria-disabled={!isTarget || undefined}
+                      aria-describedby={!isTarget ? selectSourceHintId : undefined}
                       aria-label={
                         topCard
                           ? t('foundationAriaLabel', {
@@ -405,7 +411,9 @@ function YukonPageContent() {
                         }`}
                         style={{ width: yk.cw, height: yk.ch }}
                         onClick={() => selectedSource && handleSelectTarget('tableau', colIdx)}
-                        disabled={!isPlaying || !selectedSource}
+                        disabled={!isPlaying}
+                        aria-disabled={!selectedSource || undefined}
+                        aria-describedby={!selectedSource ? selectSourceHintId : undefined}
                         aria-label={`${t('empty')} ${t('tableau')} ${colIdx}`}
                       >
                         {t('empty')}

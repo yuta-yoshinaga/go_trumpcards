@@ -72,6 +72,23 @@ beforeEach(() => {
 });
 
 describe('YukonPage', () => {
+  it('keeps move targets focusable and explains that a source must be selected', async () => {
+    renderWithProviders(<YukonPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+
+    const target = screen.getByRole('button', { name: '空の組札 (スペード)' });
+    expect(target).not.toBeDisabled();
+    expect(target).toHaveAttribute('aria-disabled', 'true');
+    const hintId = target.getAttribute('aria-describedby');
+    expect(hintId).toBeTruthy();
+    expect(document.getElementById(hintId ?? '')).toHaveTextContent('先に移動する札を選んでください');
+
+    fireEvent.click(target);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
   it('renders heading', async () => {
     renderWithProviders(<YukonPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
