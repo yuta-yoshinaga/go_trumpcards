@@ -16,6 +16,8 @@
   "hint": "ヒント",
   "undo": "元に戻す",
   "autoComplete": "オートコンプリート",
+  "autoCompleteStockRemaining": "山札が残っているため実行できません",
+  "autoCompleteNoPlayableWaste": "置けるウェイストがないため実行できません",
   "selectSource": "移動元を選択してください",
   "selectTarget": "移動先を選択してください",
   "deselect": "キャンセル",
