@@ -34,7 +34,7 @@
     "a": "Team A",
     "b": "Team B"
   },
-  "teamScore": "{{team}}: {{score}} game pts",
+  "teamScore": "{{team}}: {{score}} / {{target}} game pts",
   "playButton": "Play",
   "selectedCards": "Selected: {{cards}}",
   "noCardSelected": "No card selected",
