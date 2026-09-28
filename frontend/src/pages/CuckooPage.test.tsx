@@ -130,6 +130,7 @@ describe('CuckooPage', () => {
     vi.mocked(actionLogApi.cuckoo).mockResolvedValue({ entries: [] });
     renderWithProviders(<CuckooPage />);
 
+    await screen.findByText(/ラウンド 1/);
     fireEvent.click(await screen.findByRole('button', { name: '棋譜を見る' }));
     await screen.findByText('棋譜はありません。');
     mockExec.mockClear();
