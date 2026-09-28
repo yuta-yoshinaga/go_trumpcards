@@ -30,7 +30,9 @@
     "push": "引き分け"
   },
   "payout": {
-    "total": "合計配当"
+    "total": "合計配当",
+    "bet": "賭け金",
+    "netProfit": "純損益"
   },
   "dealerPolicy": {
     "label": "親のドロー方針",

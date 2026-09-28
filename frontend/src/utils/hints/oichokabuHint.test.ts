@@ -14,6 +14,7 @@ function state(overrides: Partial<OichoKabuResponse> = {}): OichoKabuResponse {
     bet: 100,
     result: 0,
     totalPayout: 0,
+    netChange: 0,
     message: '',
     ...overrides,
   };

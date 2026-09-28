@@ -53,6 +53,7 @@ func (p *OichoKabuWebPresenter) Output(o interfaces.OichoKabuGame, lastErr error
 	resObj.Bet = o.GetBet()
 	resObj.Result = int(o.GetResult())
 	resObj.TotalPayout = o.GetTotalPayout()
+	resObj.NetChange = o.GetTotalPayout() - o.GetBet()
 
 	if lastErr != nil {
 		resObj.Message = lastErr.Error()

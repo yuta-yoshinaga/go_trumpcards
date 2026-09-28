@@ -78420,6 +78420,9 @@ components:
           type: integer
         totalPayout:
           type: integer
+        netChange:
+          type: integer
+          description: Net chip change for the round (total payout minus bet).
         playerRank:
           type: integer
           description: "The player's hand value (its total modulo 10)."

@@ -224,6 +224,12 @@ function OichoKabuPageContent() {
                 <div className="font-bold">
                   {t('payout.total')}: {state.totalPayout}
                 </div>
+                <div>
+                  {t('payout.bet')}: {state.bet}
+                </div>
+                <div className="font-bold">
+                  {t('payout.netProfit')}: {state.netChange > 0 ? `+${state.netChange}` : state.netChange}
+                </div>
                 {(() => {
                   const policy = oichokabuDealerPolicy(state.bankerHand.length, state.bankerRank);
                   return (

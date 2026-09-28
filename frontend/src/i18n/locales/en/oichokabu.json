@@ -30,7 +30,9 @@
     "push": "Push"
   },
   "payout": {
-    "total": "Total payout"
+    "total": "Total payout",
+    "bet": "Bet",
+    "netProfit": "Net profit"
   },
   "dealerPolicy": {
     "label": "Banker draw rule",
