@@ -48,6 +48,17 @@ describe('TarocchiniPage', () => {
     );
   });
 
+  it('accepts multiples of four for the target rounds', async () => {
+    renderWithProviders(<TarocchiniPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Re ♠' })).toBeInTheDocument());
+    const rounds = screen.getByLabelText('ラウンド数') as HTMLInputElement;
+    expect(rounds).toHaveAttribute('min', '4');
+    expect(rounds).toHaveAttribute('step', '4');
+    expect(screen.getByText('4以上の4の倍数を指定してください。')).toBeInTheDocument();
+    fireEvent.change(rounds, { target: { value: '16' } });
+    expect(rounds.value).toBe('16');
+  });
+
   // 後出し優先は手札からは読めない唯一の情報なので、常時表示されている必要がある。
   it('always states the papi rule', async () => {
     renderWithProviders(<TarocchiniPage />);

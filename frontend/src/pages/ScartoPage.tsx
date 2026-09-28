@@ -20,12 +20,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import {
-  CPU_DIFFICULTY_OPTIONS,
-  SCARTO_DISCARD_COUNT,
-  TARGET_DEALS_OPTIONS,
-  useScartoGame,
-} from '../hooks/useScartoGame';
+import { CPU_DIFFICULTY_OPTIONS, SCARTO_DISCARD_COUNT, useScartoGame } from '../hooks/useScartoGame';
 import { badgeWarningColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
@@ -243,7 +238,7 @@ function ScartoPageContent() {
               {
                 items: [
                   {
-                    type: 'select',
+                    type: 'number',
                     id: 'cpuDifficulty',
                     label: t('settings.cpuDifficulty'),
                     value: scartoConfig.cpuDifficulty,
@@ -254,11 +249,13 @@ function ScartoPageContent() {
                     onSelect: (v) => handleConfigChange('cpuDifficulty', v),
                   },
                   {
-                    type: 'select',
+                    type: 'number',
                     id: 'targetDeals',
                     label: t('settings.targetDeals'),
                     value: scartoConfig.targetDeals,
-                    options: TARGET_DEALS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+                    min: 1,
+                    max: 100,
+                    description: t('settings.targetDealsGuide'),
                     onSelect: (v) => handleConfigChange('targetDeals', v),
                   },
                   hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),

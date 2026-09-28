@@ -17,7 +17,7 @@ import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
-import { CEGO_KEEP_COUNT, CPU_DIFFICULTY_OPTIONS, TARGET_DEALS_OPTIONS, useCegoGame } from '../hooks/useCegoGame';
+import { CEGO_KEEP_COUNT, CPU_DIFFICULTY_OPTIONS, useCegoGame } from '../hooks/useCegoGame';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
@@ -233,7 +233,7 @@ function CegoPageContent() {
               {
                 items: [
                   {
-                    type: 'select',
+                    type: 'number',
                     id: 'cpuDifficulty',
                     label: t('settings.cpuDifficulty'),
                     value: cegoConfig.cpuDifficulty,
@@ -244,11 +244,12 @@ function CegoPageContent() {
                     onSelect: (v) => handleConfigChange('cpuDifficulty', v),
                   },
                   {
-                    type: 'select',
+                    type: 'number',
                     id: 'targetDeals',
                     label: t('settings.targetDeals'),
                     value: cegoConfig.targetDeals,
-                    options: TARGET_DEALS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+                    min: 1,
+                    description: t('settings.targetDealsGuide'),
                     onSelect: (v) => handleConfigChange('targetDeals', v),
                   },
                   hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),

@@ -13,7 +13,8 @@
     "targetDeals": "マッチのディール数",
     "easy": "Easy",
     "normal": "Normal",
-    "hard": "Hard"
+    "hard": "Hard",
+    "targetDealsGuide": "1〜100の整数を指定してください。"
   },
   "round": "ディール {{n}}",
   "trick": "トリック {{n}}",

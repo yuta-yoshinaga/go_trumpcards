@@ -557,6 +557,11 @@ func TestScartoConfigValidate(t *testing.T) {
 	bad := cfg
 	bad.TargetDeals = 0
 	assert.Error(t, bad.Validate())
+	bad.TargetDeals = domain.ScartoMaxTargetDeals + 1
+	assert.Error(t, bad.Validate())
+	validMax := cfg
+	validMax.TargetDeals = domain.ScartoMaxTargetDeals
+	assert.NoError(t, validMax.Validate())
 	bad2 := cfg
 	bad2.CpuDifficulty = domain.ScartoCpuDifficulty(99)
 	assert.Error(t, bad2.Validate())

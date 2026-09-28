@@ -358,15 +358,18 @@ describe('ScartoPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', expect.anything()));
   });
 
-  it('changing the CPU difficulty and target-deals selects updates the config', async () => {
+  it('accepts target deal counts from 1 through 100', async () => {
     renderWithProviders(<ScartoPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'D ♥' })).toBeInTheDocument());
     const difficulty = screen.getByLabelText('CPU難易度') as HTMLSelectElement;
     fireEvent.change(difficulty, { target: { value: '2' } });
     expect(difficulty.value).toBe('2');
-    const deals = screen.getByLabelText('マッチのディール数') as HTMLSelectElement;
-    fireEvent.change(deals, { target: { value: '3' } });
-    expect(deals.value).toBe('3');
+    const deals = screen.getByLabelText('マッチのディール数') as HTMLInputElement;
+    expect(deals).toHaveAttribute('min', '1');
+    expect(deals).toHaveAttribute('max', '100');
+    expect(screen.getByText('1〜100の整数を指定してください。')).toBeInTheDocument();
+    fireEvent.change(deals, { target: { value: '100' } });
+    expect(deals.value).toBe('100');
   });
 
   it('renders the backend hint banner with its card indices', async () => {

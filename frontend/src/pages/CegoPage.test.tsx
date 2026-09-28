@@ -383,15 +383,17 @@ describe('CegoPage', () => {
     expect(screen.queryByRole('button', { name: '出す' })).not.toBeInTheDocument();
   });
 
-  it('changing the CPU difficulty and target-deals selects updates the config', async () => {
+  it('accepts any positive integer target deal count', async () => {
     renderWithProviders(<CegoPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'K ♥' })).toBeInTheDocument());
     const difficulty = screen.getByLabelText('CPU難易度') as HTMLSelectElement;
     fireEvent.change(difficulty, { target: { value: '2' } });
     expect(difficulty.value).toBe('2');
-    const deals = screen.getByLabelText('マッチのディール数') as HTMLSelectElement;
-    fireEvent.change(deals, { target: { value: '3' } });
-    expect(deals.value).toBe('3');
+    const deals = screen.getByLabelText('マッチのディール数') as HTMLInputElement;
+    expect(deals).toHaveAttribute('min', '1');
+    expect(screen.getByText('1以上の整数を指定してください。')).toBeInTheDocument();
+    fireEvent.change(deals, { target: { value: '9' } });
+    expect(deals.value).toBe('9');
   });
 
   it('renders the backend hint banner with its card indices', async () => {
