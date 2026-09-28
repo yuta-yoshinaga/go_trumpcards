@@ -98,6 +98,25 @@ describe('CariocaPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('changes settings and resets into the returned configuration', async () => {
+    renderWithProviders(<CariocaPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    fireEvent.click(screen.getByText(/Settings|設定/));
+    mockExec.mockResolvedValue({
+      ...drawState,
+      config: { ...drawState.config, playerCount: 5 },
+    });
+    fireEvent.change(screen.getByLabelText(/Player count|プレイヤー数/), { target: { value: '5' } });
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenLastCalledWith('reset', {
+        config: { playerCount: 5, cpuDifficulty: 1, failContractPenalty: 25 },
+      }),
+    );
+    await waitFor(() => expect(screen.getByLabelText(/Player count|プレイヤー数/)).toHaveValue('5'));
+    expect(screen.getByText(/Round 1 \/ 7|ラウンド 1 \/ 7/)).toBeInTheDocument();
+  });
+
   it('shows the round and contract banner', async () => {
     renderWithProviders(<CariocaPage />);
     await waitFor(() => expect(screen.getByText(/Round 1 \/ 7|ラウンド 1 \/ 7/)).toBeInTheDocument());
