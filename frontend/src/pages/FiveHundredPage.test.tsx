@@ -76,6 +76,29 @@ beforeEach(() => {
 });
 
 describe('FiveHundredPage', () => {
+  it('announces each CPU hand name and remaining card count while hiding decorative backs', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [
+          player(0, true, [card('SPADE', 5)]),
+          player(1, false, [], { cardCount: 3 }),
+          player(2, false, [], { cardCount: 2 }),
+          player(3, false, [], { cardCount: 1 }),
+        ],
+      }),
+    );
+
+    renderWithProviders(<FiveHundredPage />);
+
+    expect(await screen.findByRole('group', { name: 'CPU 1の手札 残り3枚' })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'CPU 2の手札 残り2枚' })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'CPU 3の手札 残り1枚' })).toBeInTheDocument();
+    expect(screen.getAllByTestId('animated-card-back')).toHaveLength(6);
+    for (const back of screen.getAllByTestId('animated-card-back')) {
+      expect(back.closest('[aria-hidden="true"]')).not.toBeNull();
+    }
+  });
+
   it('renders every bid format and the player bid branches', async () => {
     const base = makeFiveHundredState();
     mockExec.mockResolvedValue(
