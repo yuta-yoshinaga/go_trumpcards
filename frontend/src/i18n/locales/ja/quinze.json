@@ -37,8 +37,7 @@
   "settlement": {
     "banker": "親席、精算 {{net}}",
     "playerWin": "プレイヤー席、賭け金{{bet}}、払戻額{{payout}}、勝ち",
-    "playerLoss": "プレイヤー席、賭け金{{bet}}、払戻額{{payout}}、負け",
-    "playerDraw": "プレイヤー席、賭け金{{bet}}、払戻額{{payout}}、引き分け"
+    "playerLoss": "プレイヤー席、賭け金{{bet}}、払戻額{{payout}}、負け"
   },
   "tutorial": {
     "faceCards": "**J・Q・Kは10点**です。Aは1点、数字札は額面どおりに数えます。",

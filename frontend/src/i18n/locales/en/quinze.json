@@ -37,8 +37,7 @@
   "settlement": {
     "banker": "Banker seat, net {{net}}",
     "playerWin": "Player seat, bet {{bet}}, payout {{payout}}, win",
-    "playerLoss": "Player seat, bet {{bet}}, payout {{payout}}, loss",
-    "playerDraw": "Player seat, bet {{bet}}, payout {{payout}}, draw"
+    "playerLoss": "Player seat, bet {{bet}}, payout {{payout}}, loss"
   },
   "tutorial": {
     "faceCards": "**Jacks, queens, and kings are worth 10 points.** Aces are worth 1 and number cards keep their face value.",

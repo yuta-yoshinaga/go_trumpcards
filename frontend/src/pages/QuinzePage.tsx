@@ -31,6 +31,7 @@ import { parseQuinzeCommand, QUINZE_HELP } from '../utils/cli/commands/quinzeCom
 import { formatQuinzeState } from '../utils/cli/formatters/quinzeFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
+import { formatSignedDelta } from '../utils/formatSignedDelta';
 
 const BET_OPTIONS = [10, 50, 100, 500];
 
@@ -42,11 +43,6 @@ const QUINZE_TUTORIAL_STEPS: TutorialStep[] = [
 
 /** Renders the Quinze page and its banking-game controls. */
 export const QuinzePage = withTutorial(QuinzePageContent, 'quinze', QUINZE_TUTORIAL_STEPS);
-
-/** Formats a chip change with an explicit sign for positive values. */
-function formatSignedNet(value: number): string {
-  return value > 0 ? `+${value.toString()}` : value.toString();
-}
 
 function QuinzePageContent() {
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
@@ -189,7 +185,7 @@ function QuinzePageContent() {
               {ended && state.bankerHand && (
                 <span id="quinze-banker-settlement" className="sr-only">
                   {t('settlement.banker', {
-                    net: formatSignedNet(-state.seats.reduce((sum, seat) => sum + (seat.hand?.payout ?? 0), 0)),
+                    net: formatSignedDelta(-state.seats.reduce((sum, seat) => sum + (seat.hand?.payout ?? 0), 0)),
                   })}
                 </span>
               )}
@@ -215,17 +211,10 @@ function QuinzePageContent() {
                       )}
                       {ended && (
                         <span id={`quinze-seat-settlement-${seatIdx.toString()}`} className="sr-only">
-                          {t(
-                            seat.hand.payout > 0
-                              ? 'settlement.playerWin'
-                              : seat.hand.payout < 0
-                                ? 'settlement.playerLoss'
-                                : 'settlement.playerDraw',
-                            {
-                              bet: seat.hand.bet,
-                              payout: seat.hand.payout > 0 ? `+${seat.hand.payout}` : seat.hand.payout,
-                            },
-                          )}
+                          {t(seat.hand.payout > 0 ? 'settlement.playerWin' : 'settlement.playerLoss', {
+                            bet: seat.hand.bet,
+                            payout: formatSignedDelta(seat.hand.payout),
+                          })}
                         </span>
                       )}
                       <div className="text-game-text-muted text-xs mt-1">
