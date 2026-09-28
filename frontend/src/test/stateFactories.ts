@@ -58,6 +58,7 @@ import type {
   PrimeroResponse,
   QuadrilleResponse,
   QuodlibetResponse,
+  Rummy500Response,
   RussianBankResponse,
   SakuraResponse,
   SambaPlayerData,
@@ -5765,6 +5766,28 @@ export function makePigState(overrides?: Partial<PigResponse>): PigResponse {
     winnerIdx: -1,
     message: '',
     config: { playerCnt: 4, cpuDifficulty: 1 },
+    ...overrides,
+  };
+}
+
+/** Creates a Rummy 500 state with sensible defaults. */
+export function makeRummy500State(overrides?: Partial<Rummy500Response>): Rummy500Response {
+  return {
+    players: [
+      { id: 0, isHuman: true, cardCount: 0, cards: [], roundScore: 0, cumulativeScore: 0, laidMelds: [] },
+      { id: 1, isHuman: false, cardCount: 0, cards: [], roundScore: 0, cumulativeScore: 0, laidMelds: [] },
+    ],
+    layoffTargets: [],
+    phase: 0,
+    roundNumber: 1,
+    currentPlayerIdx: 0,
+    discardPile: [],
+    drawPileCount: 0,
+    gameEndFlag: false,
+    winnerIdx: -1,
+    roundEnderIdx: -1,
+    message: '',
+    config: { cpuDifficulty: 1, pointLimit: 500 },
     ...overrides,
   };
 }

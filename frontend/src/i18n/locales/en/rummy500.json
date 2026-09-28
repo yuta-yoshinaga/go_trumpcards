@@ -21,6 +21,7 @@
   "cumulativeScore": "Total: {{score}}",
   "roundScore": "Round: {{score}}",
   "laidMelds": "Laid melds",
+  "meldScore": "Score: {{score}}",
   "drawStockButton": "Draw from stock",
   "meldButton": "Meld",
   "invalidMeld": "Not a valid set or run",

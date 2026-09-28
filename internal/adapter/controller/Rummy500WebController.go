@@ -41,6 +41,7 @@ type Rummy500WebOutputPlayer struct {
 // Rummy500WebOutputMeld メルドのアウトプット
 type Rummy500WebOutputMeld struct {
 	Cards []*WebOutputCard `json:"cards"`
+	Score int              `json:"score"`
 }
 
 // Rummy500LayoffTarget は 1 枚のカードを置ける既存メルドの場所。

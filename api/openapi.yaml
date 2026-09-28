@@ -66397,6 +66397,8 @@ components:
     Rummy500Meld:
       type: object
       properties:
+        score:
+          type: integer
         cards:
           type: array
           items:
