@@ -65,7 +65,13 @@ function NainJaunePageContent() {
     if (dealOver && !prev.dealOver) {
       setLiveMsg(t('announceDealEnd'));
     } else if (awards > prev.awards) {
-      setLiveMsg(t('announceAward'));
+      const newAwards = state.awards.slice(prev.awards);
+      const awardLines = newAwards.map((award) =>
+        award.player === 0
+          ? t('awardLineYou', { box: t(`box.${award.box}`), chips: award.chips })
+          : t('awardLine', { player: award.player, box: t(`box.${award.box}`), chips: award.chips }),
+      );
+      setLiveMsg(awardLines.join(t('listSeparator')));
     } else if (turn && !prev.turn) {
       setLiveMsg(t('announceYourTurn'));
     }
