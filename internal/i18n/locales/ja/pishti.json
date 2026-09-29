@@ -17,6 +17,7 @@
   "promptHelp": "p <hand> で手札を場に出す (同ランクまたはJで場札を捕獲)",
   "result.scores": "ゲーム終了。スコア: {{scores}}",
   "provisional": "{{name}} 暫定: {{score}}点",
+  "scoreBreakdown": "（カード点 {{cards}}、Pişti賞 {{pisti}}点、最多捕獲 {{most}}点・暫定）",
   "provisionalNote": "※ カード点とピシュティ賞は確定済み。最多捕獲(+3)だけが残りの札で入れ替わりえます",
   "helpExamplePlay": "  p 0                      手札の 0 番のカードを出す",
   "log.dealtPileCards": "山札から{{count}}枚を配りました",

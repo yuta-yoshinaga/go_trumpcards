@@ -17,6 +17,7 @@
   "promptHelp": "p <hand> to play a card (capture the pile by matching rank or with a Jack)",
   "result.scores": "Game over. Scores: {{scores}}",
   "provisional": "{{name}} provisional: {{score}}",
+  "scoreBreakdown": " (cards {{cards}}, Pişti bonus {{pisti}}, most captured {{most}} provisional)",
   "provisionalNote": "Card points and pisti bonuses are already final; only the most-cards (+3) can still change hands",
   "helpExamplePlay": "  p 0                      play hand card 0",
   "log.dealtPileCards": "dealt {{count}} pile cards",

@@ -311,6 +311,11 @@ function PishtiPageContent() {
                       {p.id === provisionalLeaderSeat && <span className="ml-1 text-ds-accent">★</span>}
                     </span>
                   )}
+                  {!isGameEnd && (
+                    <span className="text-ds-text-muted text-xs" data-testid={`pishti-breakdown-${p.id}`}>
+                      {t('scoreBreakdown', { cards: p.cardPoints, pisti: p.pistiBonus, most: p.mostCapturedPoints })}
+                    </span>
+                  )}
                   {isGameEnd && (
                     <span className="text-ds-text-primary">{t('finalScore', { score: p.finalScore })}</span>
                   )}

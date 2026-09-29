@@ -77,9 +77,11 @@ func TestPishtiWebPresenter_ServesTheProvisionalScore(t *testing.T) {
 
 	var out struct {
 		Players []struct {
-			ID               int `json:"id"`
-			CapturedCount    int `json:"capturedCount"`
-			ProvisionalScore int `json:"provisionalScore"`
+			ID                 int `json:"id"`
+			CapturedCount      int `json:"capturedCount"`
+			ProvisionalScore   int `json:"provisionalScore"`
+			CardPoints         int `json:"cardPoints"`
+			MostCapturedPoints int `json:"mostCapturedPoints"`
 		} `json:"players"`
 	}
 	require.NoError(t, json.Unmarshal([]byte(p.Output(g, nil)), &out))
@@ -87,6 +89,8 @@ func TestPishtiWebPresenter_ServesTheProvisionalScore(t *testing.T) {
 
 	want := domain.PishtiScoreTenDiamonds + domain.PishtiScoreMostCards
 	assert.Equal(t, want, out.Players[0].ProvisionalScore)
+	assert.Equal(t, domain.PishtiScoreTenDiamonds, out.Players[0].CardPoints)
+	assert.Equal(t, domain.PishtiScoreMostCards, out.Players[0].MostCapturedPoints)
 	// **枚数からは出せない値であること。**1 枚しか捕っていないのに 6 点なので、
 	// capturedCount を足しただけの実装ではこの数にならない。
 	assert.Equal(t, 1, out.Players[0].CapturedCount)
