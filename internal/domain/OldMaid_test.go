@@ -1,12 +1,50 @@
 package domain_test
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/domain"
 
 	"github.com/stretchr/testify/assert"
 )
+
+func TestOldMaidDrawHistoryEntry_JSONCompatibility(t *testing.T) {
+	t.Run("legacy JSON without discarded cards", func(t *testing.T) {
+		const legacyJSON = `{"dp":1,"df":0,"di":1,"dr":false,"tf":false}`
+		var entry domain.OldMaidDrawHistoryEntry
+
+		err := json.Unmarshal([]byte(legacyJSON), &entry)
+
+		assert.NoError(t, err)
+		assert.NotNil(t, entry.DiscardedCards)
+		assert.Empty(t, entry.DiscardedCards)
+		assert.Equal(t, 1, entry.DiscardedPairs)
+	})
+
+	t.Run("two discarded cards round-trip", func(t *testing.T) {
+		entry := domain.OldMaidDrawHistoryEntry{
+			DiscardedCards: []*domain.Card{
+				domain.NewCard(domain.CardDesignSpade, 5, false),
+				domain.NewCard(domain.CardDesignClover, 5, true),
+			},
+		}
+
+		data, err := json.Marshal(&entry)
+		assert.NoError(t, err)
+
+		var got domain.OldMaidDrawHistoryEntry
+		err = json.Unmarshal(data, &got)
+
+		assert.NoError(t, err)
+		if assert.Len(t, got.DiscardedCards, 2) {
+			for i, want := range entry.DiscardedCards {
+				assert.Equal(t, want.GetDesign(), got.DiscardedCards[i].GetDesign())
+				assert.Equal(t, want.GetValue(), got.DiscardedCards[i].GetValue())
+			}
+		}
+	})
+}
 
 func TestOldMaid_GetLastDrawCard(t *testing.T) {
 	tc := domain.NewTrumpCards(1)
@@ -1115,6 +1153,11 @@ func TestOldMaid_DrawHistory(t *testing.T) {
 		assert.Equal(t, 0, history[0].DrawPlayerIdx)
 		assert.Equal(t, 1, history[0].DrawFromIdx)
 		assert.Equal(t, 1, history[0].DiscardedPairs)
+		assert.Len(t, history[0].DiscardedCards, 2)
+		assert.ElementsMatch(t, []int{domain.CardDesignSpade, domain.CardDesignClover}, []int{
+			history[0].DiscardedCards[0].GetDesign(),
+			history[0].DiscardedCards[1].GetDesign(),
+		})
 		assert.True(t, history[0].DrawerFinished)
 		assert.True(t, history[0].TargetFinished)
 	})

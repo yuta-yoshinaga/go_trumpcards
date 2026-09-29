@@ -418,6 +418,30 @@ describe('OldMaidPage', () => {
     });
   });
 
+  it('shows names of cards from past CPU discarded pairs in the action log', async () => {
+    const stateWithPastCpuPair: OldMaidResponse = {
+      ...humanTurnState,
+      cpuActions: [
+        {
+          drawPlayerIdx: 1,
+          drawFromIdx: 2,
+          drawnCard: null,
+          discardedPairs: 1,
+          discardedCards: [
+            { design: 'SPADE', value: 1 },
+            { design: 'HEART', value: 1 },
+          ],
+        },
+      ],
+    };
+    mockExec.mockResolvedValue(stateWithPastCpuPair);
+    await startGame();
+
+    const log = screen.getByText(/\[CPUの行動\]/).parentElement;
+    expect(log).toHaveTextContent('CPU 1がCPU 2から1枚引きました。1組捨てました（♠ A、♥ A）');
+    expect(log).not.toHaveTextContent('引いたカード');
+  });
+
   it('does not show drawn card in CPU actions log', async () => {
     const stateWithCpuActions: OldMaidResponse = {
       ...humanTurnState,

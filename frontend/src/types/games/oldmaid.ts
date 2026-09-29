@@ -65,6 +65,7 @@ export interface DrawHistoryEntry {
   drawPlayerIdx: number;
   drawFromIdx: number;
   discardedPairs: number;
+  discardedCards?: Card[];
   drawerFinished: boolean;
   targetFinished: boolean;
 }

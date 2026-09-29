@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { DrawHistoryEntry, OldMaidPlayerData } from '../../types/card';
+import { cardAlt } from '../../utils/cardAlt';
 import { findPlayerName } from '../../utils/playerUtils';
 
 // Inline hex palette (not Tailwind palette classes) so check-design-tokens.mjs
@@ -87,6 +88,11 @@ export function OldMaidDrawHistory({
                   data-testid="discard-burst"
                 >
                   💥
+                </span>
+              )}
+              {entry.discardedCards && entry.discardedCards.length > 0 && (
+                <span data-testid="discarded-card-names">
+                  {t('discardedCardNames', { cards: entry.discardedCards.map(cardAlt).join(t('listSeparator')) })}
                 </span>
               )}
               {entry.drawerFinished && (

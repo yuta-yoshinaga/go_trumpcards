@@ -75,6 +75,7 @@ func (owp *OldMaidWebPresenter) Output(om interfaces.OldMaidGame, lastErr error)
 			DrawPlayerIdx:  entry.DrawPlayerIdx,
 			DrawFromIdx:    entry.DrawFromIdx,
 			DiscardedPairs: entry.DiscardedPairs,
+			DiscardedCards: cardsToOutputOrEmpty(entry.DiscardedCards),
 			DrawerFinished: entry.DrawerFinished,
 			TargetFinished: entry.TargetFinished,
 		})
