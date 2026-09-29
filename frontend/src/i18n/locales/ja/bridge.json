@@ -43,6 +43,7 @@
   "contract": "コントラクト: {{level}}{{suit}}",
   "contractDoubled": "コントラクト: {{level}}{{suit}} (ダブル)",
   "contractRedoubled": "コントラクト: {{level}}{{suit}} (リダブル)",
+  "contractProgress": "{{team}} の獲得トリック: {{won}} / {{required}}（残り {{remaining}}）",
   "vulnerability": "バルネラビリティ",
   "vulnerable": "バル",
   "notVulnerable": "ノンバル",
