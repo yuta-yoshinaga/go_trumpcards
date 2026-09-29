@@ -12,6 +12,7 @@
   "hiddenHand": "非公開 {{count}}枚",
   "yourHand": "あなたの手札",
   "trick": "場",
+  "trickCardAria": "{{name}}が出した{{card}}",
   "tricksWon": "トリック {{n}}",
   "chips": "通算 {{n}}",
   "ladderTitle": "宣言表（上ほど強い）",

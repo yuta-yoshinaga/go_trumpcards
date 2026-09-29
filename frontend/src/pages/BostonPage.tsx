@@ -27,6 +27,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { BostonBidOption, BostonResponse } from '../types/card';
 import { BostonPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { BOSTON_HELP, parseBostonCommand } from '../utils/cli/commands/bostonCommands';
 import { formatBostonState } from '../utils/cli/formatters/bostonFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
@@ -307,9 +308,21 @@ function BostonPageContent() {
             {state.trick.length > 0 && (
               <div className="mb-2 flex items-center gap-2" data-testid="boston-trick">
                 <span className="text-ds-text-muted text-sm">{t('trick')}</span>
-                {state.trick.map((c, i) => (
-                  <CardImage key={`trick-${c.design}-${c.value}-${i}`} card={c} width={cardWidth} />
-                ))}
+                {state.trick.map((c, i) => {
+                  const playerIdx = (state.trickLeaderIdx + i) % state.players.length;
+                  const player = state.players[playerIdx];
+                  const name = playerLabel(player?.id ?? playerIdx, player?.isHuman ?? false);
+                  return (
+                    <div key={`trick-${c.design}-${c.value}-${i}`} className="text-center">
+                      <CardImage
+                        card={c}
+                        width={cardWidth}
+                        ariaLabel={t('trickCardAria', { card: cardAlt(c), name })}
+                      />
+                      <div className="text-xs mt-1 text-ds-text-muted">{name}</div>
+                    </div>
+                  );
+                })}
               </div>
             )}
 
