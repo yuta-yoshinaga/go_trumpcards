@@ -58,6 +58,21 @@ describe('ThirtyOnePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('offers 1–10 initial lives and passes the selected value to reset', async () => {
+    renderWithProviders(<ThirtyOnePage />);
+    const select = await screen.findByLabelText('初期ライフ');
+    expect(Array.from((select as HTMLSelectElement).options).map((option) => option.value)).toEqual(
+      Array.from({ length: 10 }, (_, index) => String(index + 1)),
+    );
+
+    fireEvent.change(select, { target: { value: '10' } });
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    fireEvent.click(await screen.findByRole('button', { name: '確認' }));
+    await waitFor(() =>
+      expect(mockExec).toHaveBeenLastCalledWith('reset', undefined, { cpuDifficulty: 1, initialLives: 10 }),
+    );
+  });
+
   it('shows draw and knock actions during the draw phase', async () => {
     renderWithProviders(<ThirtyOnePage />);
     expect(await screen.findByTestId('draw-stock-button')).toBeEnabled();
