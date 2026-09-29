@@ -85,7 +85,7 @@ describe('SomersetPage', () => {
 
   it('keeps move targets focusable and explains that a source must be selected', async () => {
     renderWithProviders(<SomersetPage />);
-    const target = await screen.findByRole('button', { name: '空のタブロー列 3' });
+    const target = await screen.findByRole('button', { name: '空のタブロー列 2' });
     expect(target).not.toBeDisabled();
     expect(target).toHaveAttribute('aria-disabled', 'true');
     const hintId = target.getAttribute('aria-describedby');
@@ -138,19 +138,29 @@ describe('SomersetPage', () => {
       tableau: customTableau,
     });
     renderWithProviders(<SomersetPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '♦ 9' })).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: '♣ 10' })).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole('button', { name: '♦ 9、列8・0枚目' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '♣ 10、列9・0枚目' })).toBeInTheDocument();
   });
 
   it('gives each empty tableau column a distinct column-numbered aria-label', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<SomersetPage />);
-    // Columns 3 and 8 (1-based) are empty and each reads distinctly, unlike the
+    // Columns 2 and 7 (zero-based) are empty and each reads distinctly, unlike the
     // previous shared "empty" text.
-    await waitFor(() => expect(screen.getByRole('button', { name: '空のタブロー列 3' })).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: '空のタブロー列 8' })).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole('button', { name: '空のタブロー列 2' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '空のタブロー列 7' })).toBeInTheDocument();
     // The two filled columns (1, 2) are not rendered as empty-column buttons.
-    expect(screen.queryByRole('button', { name: '空のタブロー列 1' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '空のタブロー列 0' })).not.toBeInTheDocument();
+  });
+
+  it('includes zero-based tableau column and card position in each card accessible name', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<SomersetPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ K、列0・0枚目' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '♠ 5、列0・1枚目' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♥ 6、列1・0枚目' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '空のタブロー列 2' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♠ 組札 1枚' })).toBeInTheDocument();
   });
 
   it('renders giveup button when playing', async () => {
@@ -266,7 +276,7 @@ describe('SomersetPage', () => {
   it('selecting a tableau card marks it as selected', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<SomersetPage />);
-    const sourceBtn = await screen.findByRole('button', { name: '♠ 5' });
+    const sourceBtn = await screen.findByRole('button', { name: '♠ 5、列0・1枚目' });
     fireEvent.click(sourceBtn);
     await waitFor(() => expect(sourceBtn).toHaveAttribute('aria-pressed', 'true'));
   });
@@ -283,7 +293,7 @@ describe('SomersetPage', () => {
     it('marks nothing until a card is selected', async () => {
       mockExec.mockResolvedValue(playingState);
       renderWithProviders(<SomersetPage />);
-      await screen.findByRole('button', { name: '♠ 5' });
+      await screen.findByRole('button', { name: '♠ 5、列0・1枚目' });
       expect(document.querySelectorAll('[data-legal-target="true"]')).toHaveLength(0);
     });
 
@@ -292,7 +302,7 @@ describe('SomersetPage', () => {
     it('marks the ranks-down column and every empty column, but not the source column', async () => {
       mockExec.mockResolvedValue(playingState);
       renderWithProviders(<SomersetPage />);
-      fireEvent.click(await screen.findByRole('button', { name: '♠ 5' }));
+      fireEvent.click(await screen.findByRole('button', { name: '♠ 5、列0・1枚目' }));
       await waitFor(() => expect(markedColumns()).toContain('#1'));
       expect(markedColumns().sort()).toEqual(['#1', '#2', '#3', '#4', '#5', '#6', '#7', '#8', '#9']);
     });
@@ -306,7 +316,7 @@ describe('SomersetPage', () => {
         foundation: [[], [], [], []],
       });
       renderWithProviders(<SomersetPage />);
-      fireEvent.click(await screen.findByRole('button', { name: '♠ A' }));
+      fireEvent.click(await screen.findByRole('button', { name: '♠ A、列0・0枚目' }));
 
       await waitFor(() =>
         expect(
@@ -321,7 +331,7 @@ describe('SomersetPage', () => {
     it('marks a foundation only for the card that continues it', async () => {
       mockExec.mockResolvedValue(playingState);
       const { unmount } = renderWithProviders(<SomersetPage />);
-      fireEvent.click(await screen.findByRole('button', { name: '♠ 5' }));
+      fireEvent.click(await screen.findByRole('button', { name: '♠ 5、列0・1枚目' }));
       await waitFor(() => expect(markedColumns()).toContain('#1'));
       expect(document.querySelectorAll('[data-legal-target="true"]')).toHaveLength(9);
       unmount();
@@ -331,7 +341,7 @@ describe('SomersetPage', () => {
         tableau: makeTableau([[{ card: card('SPADE', 2), faceUp: true }]]),
       });
       renderWithProviders(<SomersetPage />);
-      fireEvent.click(await screen.findByRole('button', { name: '♠ 2' }));
+      fireEvent.click(await screen.findByRole('button', { name: '♠ 2、列0・0枚目' }));
       await waitFor(() => expect(document.querySelectorAll('[data-legal-target="true"]').length).toBeGreaterThan(9));
     });
   });
@@ -386,7 +396,7 @@ describe('SomersetPage destination preview', () => {
   const render = async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<SomersetPage />);
-    return screen.findByRole('button', { name: '♠ 5' });
+    return screen.findByRole('button', { name: '♠ 5、列0・1枚目' });
   };
   const targets = () => document.querySelectorAll('[data-legal-target="true"]');
   const previews = () => document.querySelectorAll('[data-preview-target="true"]');

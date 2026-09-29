@@ -267,7 +267,7 @@ function SomersetPageContent() {
                 disabled={!isPlaying || loading}
                 aria-disabled={!selectedSource || undefined}
                 aria-describedby={!selectedSource ? selectSourceHintId : undefined}
-                aria-label={t('emptyColumnAriaLabel', { col: colIdx + 1 })}
+                aria-label={t('emptyColumnAriaLabel', { col: colIdx })}
                 style={{ height: dims.ch }}
                 className={`w-full rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center bg-transparent ${focusRingWhite}`}
               >
@@ -301,7 +301,11 @@ function SomersetPageContent() {
                           }
                         }}
                         disabled={!isPlaying || loading || (!isTop && !selectedSource)}
-                        aria-label={cardAlt(tc.card)}
+                        aria-label={t('cardAriaLabel', {
+                          card: cardAlt(tc.card),
+                          col: colIdx,
+                          pos: cardIdx,
+                        })}
                         aria-pressed={isSourceSelected('tableau', colIdx, cardIdx)}
                         draggable={isPlaying && !loading && isTop}
                         onDragStart={dnd.handleDragStart(cardZone)}
