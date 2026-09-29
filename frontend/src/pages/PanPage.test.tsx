@@ -291,6 +291,22 @@ describe('PanPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
   });
 
+  it('shows the round end reason and Pan declarer when applicable', async () => {
+    mockExec.mockResolvedValue({
+      ...roundEndState,
+      panDeclarerIdx: 1,
+      players: [player(), player({ id: 1, isHuman: false })],
+    });
+    renderWithProviders(<PanPage />);
+    expect(await screen.findByTestId('pan-round-end-reason')).toHaveTextContent('CPU 1がパンを宣言してラウンド終了');
+  });
+
+  it('shows stock out as the round end reason when there was no Pan declarer', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<PanPage />);
+    expect(await screen.findByTestId('pan-round-end-reason')).toHaveTextContent('山札切れでラウンド終了');
+  });
+
   it('shows game end with action log button', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<PanPage />);

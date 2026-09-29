@@ -418,6 +418,16 @@ function PanPageContent() {
               </div>
             </div>
 
+            {state.phase === PanPhase.ROUND_END && (
+              <div className="text-ds-text-primary text-center my-2" data-testid="pan-round-end-reason">
+                {state.panDeclarerIdx >= 0
+                  ? t('roundEndByPan', {
+                      name: playerName(state.panDeclarerIdx, state.players[state.panDeclarerIdx]?.isHuman ?? false),
+                    })
+                  : t('roundEndByStockOut')}
+              </div>
+            )}
+
             <GameMessageBox
               message={state.message}
               messageCode={state.messageCode}
