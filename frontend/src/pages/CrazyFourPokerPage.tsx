@@ -322,6 +322,14 @@ function CrazyFourPokerPageContent() {
                     max={Math.max(0, state.chips - ante * 2)}
                     step={CRAZY_FOUR_POKER_ANTE_UNIT}
                   />
+                  <section className="text-ds-text-primary text-sm text-center" data-testid="c4p-wager-summary">
+                    <h2 className="font-bold">{t('wagerSummary.title')}</h2>
+                    <p>{t('wagerSummary.ante', { amount: ante })}</p>
+                    <p>{t('wagerSummary.superBonus', { amount: ante })}</p>
+                    <p>{t('wagerSummary.required', { amount: ante * 2 })}</p>
+                    <p>{t('wagerSummary.optional', { amount: queensUp })}</p>
+                    <p className="font-bold">{t('wagerSummary.total', { amount: ante * 2 + queensUp })}</p>
+                  </section>
                   {/* **賭ける前に見えなければ意味がない** (#5775)。何が当たれば
                       何倍かを知って額を決めるもの。倍率はサーバの配当表そのまま。 */}
                   {/* **Super Bonus はアンティに必ず付く。** 任意の Queens Up は
