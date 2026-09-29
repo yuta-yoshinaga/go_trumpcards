@@ -156,6 +156,24 @@ describe('ZwickerPage', () => {
     );
   });
 
+  it('shows selected capture targets and lets each target be deselected there', async () => {
+    renderWithProviders(<ZwickerPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    expect(screen.queryByTestId('zwicker-capture-selection')).not.toBeInTheDocument();
+    fireEvent.click(screen.getAllByTestId('zwicker-table-card')[0]);
+    fireEvent.click(screen.getAllByTestId('zwicker-build')[0]);
+
+    const selection = screen.getByTestId('zwicker-capture-selection');
+    expect(selection).toHaveTextContent('場札 0');
+    expect(selection).toHaveTextContent('ビルド 0');
+    fireEvent.click(screen.getByRole('button', { name: '場札 0 を選択解除' }));
+    expect(selection).not.toHaveTextContent('場札 0');
+    expect(selection).toHaveTextContent('ビルド 0');
+    fireEvent.click(screen.getByRole('button', { name: 'ビルド 0 を選択解除' }));
+    expect(screen.queryByTestId('zwicker-capture-selection')).not.toBeInTheDocument();
+  });
+
   it('will not capture nothing', async () => {
     renderWithProviders(<ZwickerPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
