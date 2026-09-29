@@ -41,12 +41,10 @@ const DIFFICULTY_OPTIONS = [
   { value: '2', label: 'Hard' },
 ];
 
-const LIVES_OPTIONS = [
-  { value: '2', label: '2' },
-  { value: '3', label: '3' },
-  { value: '4', label: '4' },
-  { value: '5', label: '5' },
-];
+const LIVES_OPTIONS = Array.from({ length: 10 }, (_, index) => {
+  const lives = index + 1;
+  return { value: String(lives), label: String(lives) };
+});
 
 /** Tutorial steps for the Thirty-One game. */
 const TO_TUTORIAL_STEPS: TutorialStep[] = [
