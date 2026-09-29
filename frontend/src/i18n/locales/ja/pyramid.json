@@ -7,6 +7,7 @@
   "title": "ピラミッド",
   "stock": "山札",
   "waste": "ウェイスト",
+  "wasteCount": "{{count}}枚",
   "moveCount": "手数",
   "draw": "引く",
   "drawStock": "引く（山札の残り{{count}}枚）",
