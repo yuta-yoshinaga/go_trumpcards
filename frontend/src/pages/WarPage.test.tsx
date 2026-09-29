@@ -345,11 +345,11 @@ describe('WarPage', () => {
     const select = (await screen.findByTestId('autoplay-speed-select')) as HTMLSelectElement;
     expect(select.value).toBe('normal');
     expect(select).toHaveAccessibleName('演出速度：普通');
-    expect(screen.getByRole('status')).toBeEmptyDOMElement();
+    expect(screen.getByTestId('war-speed-announcement')).toBeEmptyDOMElement();
     fireEvent.change(select, { target: { value: 'slow' } });
     expect(select.value).toBe('slow');
     expect(select).toHaveAccessibleName('演出速度：ゆっくり');
-    expect(screen.getByRole('status')).toHaveTextContent('速度をゆっくりに変更しました');
+    expect(screen.getByTestId('war-speed-announcement')).toHaveTextContent('速度をゆっくりに変更しました');
     expect(localStorage.getItem('war:autoPlaySpeed')).toBe('slow');
     fireEvent.click(screen.getByTestId('autoplay-button'));
     expect(screen.getByTestId('autoplay-button')).toHaveAttribute('aria-pressed', 'true');
@@ -359,7 +359,7 @@ describe('WarPage', () => {
     renderWithProviders(<WarPage />);
     const select = await screen.findByTestId('autoplay-speed-select');
     fireEvent.change(select, { target: { value: 'normal' } });
-    expect(screen.getByRole('status')).toBeEmptyDOMElement();
+    expect(screen.getByTestId('war-speed-announcement')).toBeEmptyDOMElement();
     expect(localStorage.getItem('war:autoPlaySpeed')).toBeNull();
   });
 
@@ -434,5 +434,27 @@ describe('WarPage', () => {
     // GameMessageBox は role="status" / aria-live="polite" を内蔵している。
     expect(box).toHaveAttribute('aria-live', 'polite');
     expect(box).toHaveAttribute('role', 'status');
+  });
+
+  it('announces both revealed cards during the reveal phase', async () => {
+    mockExec.mockResolvedValueOnce({
+      ...baseState,
+      playerRevealed: { design: 'SPADE', value: 7 },
+      cpuRevealed: { design: 'HEART', value: 10 },
+    });
+    renderWithProviders(<WarPage />);
+
+    const announcement = await screen.findByTestId('war-card-announcement');
+    expect(announcement).toHaveTextContent('あなたのカードは♠ 7、CPUのカードは♥ 10');
+    expect(announcement).toHaveAttribute('role', 'status');
+    expect(announcement).toHaveClass('sr-only');
+  });
+
+  it('does not announce a card until both cards are revealed', async () => {
+    mockExec.mockResolvedValueOnce({ ...baseState, playerRevealed: { design: 'SPADE', value: 7 } });
+    renderWithProviders(<WarPage />);
+
+    const announcement = await screen.findByTestId('war-card-announcement');
+    expect(announcement).toBeEmptyDOMElement();
   });
 });
