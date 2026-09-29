@@ -27,7 +27,7 @@ func FiveCardStudRankCards(best []*Card, rank int, soko bool) []*Card {
 		switch rank {
 		case SokoHandHighCard:
 			return highestCard(best)
-		case SokoHandOnePair:
+		case SokoHandOnePair, SokoHandTwoPair:
 			return selectGroups(2)
 		case SokoHandFourStraight:
 			return fourStraightCards(best)
@@ -44,8 +44,6 @@ func FiveCardStudRankCards(best []*Card, rank int, soko bool) []*Card {
 					return out
 				}
 			}
-		case SokoHandTwoPair:
-			return selectGroups(2)
 		case SokoHandThreeOfAKind:
 			return selectGroups(3)
 		case SokoHandFourOfAKind:
@@ -58,9 +56,7 @@ func FiveCardStudRankCards(best []*Card, rank int, soko bool) []*Card {
 	switch rank {
 	case PokerHandHighCard:
 		return highestCard(best)
-	case PokerHandOnePair:
-		return selectGroups(2)
-	case PokerHandTwoPair:
+	case PokerHandOnePair, PokerHandTwoPair:
 		return selectGroups(2)
 	case PokerHandThreeOfAKind:
 		return selectGroups(3)

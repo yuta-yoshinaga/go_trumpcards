@@ -35,11 +35,16 @@ func TestFiveCardStudRankCards(t *testing.T) {
 		{"soko four of a kind", []*Card{card(0, 8), card(1, 8), card(2, 8), card(3, 8), card(0, 9)}, SokoHandFourOfAKind, true, []*Card{card(0, 8), card(1, 8), card(2, 8), card(3, 8)}},
 		{"soko four straight ace low", []*Card{card(0, 1), card(1, 2), card(2, 3), card(3, 4), card(0, 9)}, SokoHandFourStraight, true, []*Card{card(0, 1), card(1, 2), card(2, 3), card(3, 4)}},
 		{"soko four flush", []*Card{card(0, 2), card(0, 5), card(0, 7), card(0, 9), card(1, 13)}, SokoHandFourFlush, true, []*Card{card(0, 2), card(0, 5), card(0, 7), card(0, 9)}},
+		{"soko four flush without four-card suit", []*Card{card(0, 2), card(1, 5), card(2, 7), card(3, 9), card(0, 13)}, SokoHandFourFlush, true, []*Card{}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := FiveCardStudRankCards(tt.hand, tt.rank, tt.soko)
 			assertCardsEqual(t, tt.want, got)
+			if tt.name == "soko four flush without four-card suit" {
+				assert.NotNil(t, got)
+				assert.Empty(t, got)
+			}
 		})
 	}
 
