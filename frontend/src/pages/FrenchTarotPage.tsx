@@ -172,9 +172,9 @@ function FrenchTarotPageContent() {
   const isChienPhase = state.phase === FrenchTarotPhase.CHIEN;
   const isPlayPhase = state.phase === FrenchTarotPhase.PLAY;
   const isTrickEnd = state.phase === FrenchTarotPhase.TRICK_END;
-  const trickPoints = state.trickHalfPoints / 2;
   const isRoundEnd = state.phase === FrenchTarotPhase.ROUND_END;
   const isGameEnd = state.phase === FrenchTarotPhase.GAME_END || state.gameEndFlag;
+  const trickPoints = state.trickHalfPoints / 2;
 
   const canBid = isBidPhase && state.isHumanBidTurn;
   const canDiscard = isChienPhase && state.isHumanDiscard;
@@ -288,7 +288,7 @@ function FrenchTarotPageContent() {
                   >
                     {t('trickSummary', {
                       points: Number.isInteger(trickPoints) ? trickPoints : trickPoints.toFixed(1),
-                      bouts: state.trickBouts,
+                      count: state.trickBouts,
                     })}
                   </div>
                 )}

@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { frenchtarotApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeFrenchTarotState } from '../test/stateFactories';
 import { FrenchTarotPage } from './FrenchTarotPage';
@@ -139,6 +140,19 @@ describe('FrenchTarotPage', () => {
     renderWithProviders(<FrenchTarotPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(screen.queryByTestId('frenchtarot-trick-summary')).not.toBeInTheDocument();
+  });
+
+  it('uses singular and plural bout text in English', async () => {
+    await i18n.changeLanguage('en');
+    mockExec.mockResolvedValue(makeFrenchTarotState({ phase: 3, trickHalfPoints: 11, trickBouts: 1 }));
+    const { unmount } = renderWithProviders(<FrenchTarotPage />);
+    expect(await screen.findByTestId('frenchtarot-trick-summary')).toHaveTextContent('This trick: 5.5 points, 1 bout');
+    unmount();
+
+    mockExec.mockResolvedValue(makeFrenchTarotState({ phase: 3, trickHalfPoints: 11, trickBouts: 2 }));
+    renderWithProviders(<FrenchTarotPage />);
+    expect(await screen.findByTestId('frenchtarot-trick-summary')).toHaveTextContent('This trick: 5.5 points, 2 bouts');
+    await i18n.changeLanguage('ja');
   });
 
   it('keeps each player’s tricks and captured points visible on mobile while cards stay collapsed', async () => {

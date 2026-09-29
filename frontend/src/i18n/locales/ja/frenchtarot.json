@@ -29,7 +29,7 @@
   "tricks": "{{count}}トリック",
   "points": "{{points}}点",
   "score": "得点: {{score}}",
-  "trickSummary": "このトリック: {{points}}点・ブー {{bouts}}枚",
+  "trickSummary": "このトリック: {{points}}点・ブー {{count}}枚",
   "currentTrick": "現在のトリック",
   "previousTrickWinner": "{{name}} が獲得",
   "players": "プレイヤー",
