@@ -12,6 +12,7 @@
   "ascending": "昇順",
   "descending": "降順",
   "moveCount": "手数",
+  "foundationProgress": "組札 {{count}}/104",
   "giveup": "ギブアップ",
   "hint": "ヒント",
   "undo": "元に戻す",

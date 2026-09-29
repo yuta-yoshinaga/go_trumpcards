@@ -245,6 +245,7 @@ function SlyFoxPageContent() {
           <span>
             {t('moveCount')}: {state.moveCount}
           </span>
+          <span data-testid="slyfox-foundation-progress">{t('foundationProgress', { count: foundationCount })}</span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
       }
