@@ -341,6 +341,7 @@ function ShengJiPageContent() {
                   <button
                     key={`hand-${c.design}-${c.value}-${i}`}
                     type="button"
+                    aria-pressed={selected.includes(i)}
                     onClick={() => canSelect && toggle(i)}
                     disabled={!canSelect}
                     className={`rounded transition-all ${selected.includes(i) ? 'ring-2 ring-ds-info -translate-y-2' : ''} ${
