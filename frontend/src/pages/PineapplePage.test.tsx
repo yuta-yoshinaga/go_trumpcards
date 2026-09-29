@@ -1350,7 +1350,9 @@ describe('PineapplePage', () => {
     renderWithProviders(<PineapplePage variant="irishpoker" />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
     expect(screen.getByText('ベット判断の情報')).toBeInTheDocument();
+    fireEvent.click(screen.getByText('ベット判断の情報'));
     expect(screen.getByTestId('equity-display')).toBeInTheDocument();
+    expect(screen.getByTestId('equity-display')).toBeVisible();
     expect(screen.queryByTestId('learning-mode-toggle')).not.toBeInTheDocument();
     expect(screen.getByTestId('tutorial-learning-target')).toHaveAttribute(
       'data-target',
