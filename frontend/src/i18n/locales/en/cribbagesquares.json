@@ -19,7 +19,10 @@
   },
   "partialPrefix": "so far",
   "partialTooltip": "Locked in without the starter. The starter can only add to it.",
-  "placementAnnouncement": "Row {{rowNo}}: {{rowScore}} points; column {{colNo}}: {{colScore}} points; combined: {{total}} points",
+  "listSeparator": ", ",
+  "noScoredParts": "no scoring items",
+  "placementAnnouncementPartial": "Partial score before the starter is revealed. Row {{rowNo}}: {{rowScore}} points ({{rowParts}}); column {{colNo}}: {{colScore}} points ({{colParts}}); combined: {{total}} points",
+  "placementAnnouncement": "Row {{rowNo}}: {{rowScore}} points ({{rowParts}}); column {{colNo}}: {{colScore}} points ({{colParts}}); combined: {{total}} points",
   "part": {
     "fifteens": "15s {{n}}",
     "pairs": "pairs {{n}}",
