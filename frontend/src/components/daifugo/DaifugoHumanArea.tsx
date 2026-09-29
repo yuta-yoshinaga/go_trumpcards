@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { useCardDimensions } from '../../hooks/useCardDimensions';
 import { focusRingCard, playableRingStyle, selectedCardStyle } from '../../styles/cardStyles';
 import type { DaifugoPlayerData } from '../../types/card';
+import { cardAlt } from '../../utils/cardAlt';
 import { playerName } from '../../utils/playerUtils';
 import { CardImage } from '../CardImage';
 import { StatusBadge } from '../StatusBadge';
@@ -39,6 +40,7 @@ export function DaifugoHumanArea({
   // Only mark during the human's turn: the indices are computed for whoever is
   // to move, and a stale set on a CPU turn would point at the wrong cards.
   const playable = isCurrentTurn && playableIndices ? new Set(playableIndices) : null;
+  const hasPlayableInfo = playable !== null;
   const conditionalClass = player.isFinished
     ? 'opacity-50'
     : isCurrentTurn
@@ -69,11 +71,21 @@ export function DaifugoHumanArea({
             type="button"
             data-card-index={i}
             data-playable={playable?.has(i) ? 'true' : undefined}
+            aria-label={
+              playable
+                ? t(playable.has(i) ? 'actions.playableAria' : 'actions.notPlayableAria', { card: cardAlt(card) })
+                : undefined
+            }
+            aria-disabled={playable && !playable.has(i) ? true : undefined}
+            aria-describedby={playable && !playable.has(i) ? 'daifugo-unplayable-reason' : undefined}
             aria-pressed={selectedIndices.includes(i)}
             disabled={!isCurrentTurn}
             draggable={isCurrentTurn}
-            className={`${focusRingCard} touch-none`}
-            onClick={() => onToggle(i)}
+            className={`${focusRingCard} touch-none aria-disabled:opacity-50`}
+            onClick={() => {
+              if (playable && !playable.has(i)) return;
+              onToggle(i);
+            }}
             onPointerDown={isCurrentTurn && onSwipeStart ? () => onSwipeStart(i) : undefined}
             onDragStart={(e) => {
               e.dataTransfer.setData('cardIndex', String(i));
@@ -94,6 +106,11 @@ export function DaifugoHumanArea({
             <CardImage card={card} width={cardWidth} />
           </button>
         ))}
+        {hasPlayableInfo && (
+          <span id="daifugo-unplayable-reason" className="sr-only">
+            {t('actions.notPlayableReason')}
+          </span>
+        )}
       </div>
     </div>
   );

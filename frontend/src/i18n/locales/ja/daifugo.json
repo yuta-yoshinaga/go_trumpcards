@@ -17,6 +17,11 @@
   "tableEmpty": "（なし）",
   "lastPlayedBy": "（{{name}} が出した）",
   "playButton": "選択して出す",
+  "actions": {
+    "playableAria": "{{card}}。出せる札",
+    "notPlayableAria": "{{card}}。出せない札",
+    "notPlayableReason": "この札は現在出せません。"
+  },
   "passButton": "渡す",
   "clearSelectionButton": "選択解除",
   "discardButton": "捨てる",
