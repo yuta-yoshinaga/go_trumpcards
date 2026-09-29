@@ -84,7 +84,10 @@ function TuSacPageContent() {
   const gameOver = !!state?.gameEndFlag;
   const canAct = !!state?.isHumanTurn && !gameOver;
 
-  const clearSelection = useCallback(() => setSelected([]), []);
+  const clearSelection = useCallback(() => {
+    setSelected([]);
+    setSelectionChanged(false);
+  }, []);
 
   const toggleCard = useCallback((index: number) => {
     setSelectionChanged(true);

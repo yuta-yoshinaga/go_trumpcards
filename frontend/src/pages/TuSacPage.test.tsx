@@ -297,6 +297,20 @@ describe('TuSacPage', () => {
     expect(screen.getByTestId('tusac-selected')).toHaveTextContent('選択を解除しました');
   });
 
+  it('メルドで選択を消した後は読み上げを空にする', async () => {
+    mockApi.mockResolvedValue(withState({ phase: TuSacPhase.DISCARD }));
+    renderWithProviders(<TuSacPage />);
+    await waitFor(() => expect(screen.getByTestId('tusac-card-0')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByTestId('tusac-card-0'));
+    fireEvent.click(screen.getByTestId('tusac-card-1'));
+    fireEvent.click(screen.getByTestId('tusac-card-2'));
+    expect(screen.getByTestId('tusac-selected')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId('tusac-meld'));
+    await waitFor(() => expect(screen.getByRole('status')).toBeEmptyDOMElement());
+  });
+
   it('ラウンドと山の残りを出す', async () => {
     mockApi.mockResolvedValue(withState({ roundNumber: 3, stockCount: 7 }));
     renderWithProviders(<TuSacPage />);
