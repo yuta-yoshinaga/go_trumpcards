@@ -39,6 +39,8 @@ type SevenCardStudGame interface {
 	GetRaiseCount() int
 	// GetRoundResults ラウンド結果を取得する
 	GetRoundResults() []domain.SevenCardStudResult
+	// GetRoundNetChange returns the player's chip change since the current hand began.
+	GetRoundNetChange(playerIdx int) int
 	// GetCpuActions CPU行動記録を取得する
 	GetCpuActions() []domain.SevenCardStudCpuAction
 	// GetConfig ゲーム設定を取得する

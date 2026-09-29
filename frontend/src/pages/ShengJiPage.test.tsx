@@ -211,6 +211,21 @@ describe('ShengJiPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndexes: [0, 1] }));
   });
 
+  it('announces hand card selection and deselection while keeping its card name', async () => {
+    renderWithProviders(<ShengJiPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
+
+    const cardButton = screen.getByTestId('hand-card-0');
+    expect(cardButton).toHaveAttribute('aria-pressed', 'false');
+    expect(cardButton).toHaveAccessibleName('♠ 2');
+
+    fireEvent.click(cardButton);
+    expect(cardButton).toHaveAttribute('aria-pressed', 'true');
+
+    fireEvent.click(cardButton);
+    expect(cardButton).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('previews a valid pair and warns for an invalid selection', async () => {
     mockExec.mockResolvedValue(
       makeState({

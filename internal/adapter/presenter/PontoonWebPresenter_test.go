@@ -18,6 +18,7 @@ import (
 func setupPontoonWebMockDefaults(g *interfaces.MockPontoonGame) {
 	g.On("GetPhase").Return(domain.PontoonPhasePlayerTurn).Maybe()
 	g.On("GetChips").Return(900).Maybe()
+	g.On("GetDrawPileCount").Return(24).Maybe()
 	g.On("GetBankerIdx").Return(1).Maybe()
 	g.On("IsHumanBanker").Return(false).Maybe()
 	g.On("GetActiveSeat").Return(0).Maybe()
@@ -287,6 +288,7 @@ func TestPontoonWebPresenter_CarriesBothStickThresholds(t *testing.T) {
 	result := parsePontoonOutput(t, new(PontoonWebPresenter).Output(g, nil))
 	assert.Equal(t, domain.PontoonStickMin, result.StickMin)
 	assert.Equal(t, domain.PontoonCpuStickMin, result.CpuStickMin)
+	assert.Equal(t, 24, result.DrawPileCount)
 	// ゼロ値と区別が付かない検査にしない。
 	assert.NotZero(t, result.CpuStickMin)
 }

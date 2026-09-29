@@ -508,6 +508,9 @@ function SpiderPageContent() {
               message={state.message}
               messageCode={state.messageCode}
               messageParams={state.messageParams}
+              alwaysVisible
+              bareWhenEmpty
+              testId="spider-game-message"
             />
 
             {/* Personal-best badge on the clear screen (#3062). */}

@@ -250,9 +250,9 @@ func (g *MonteBank) SuitCountInLayout(design int) int {
 	return n
 }
 
-// RemainingOfSuit は場札を除いた残りに指定スートが何枚あるかを返す。
+// RemainingOfSuit は山に実際に残っている指定スートの枚数を返す。
 func (g *MonteBank) RemainingOfSuit(design int) int {
-	return MonteBankSuitSize - g.SuitCountInLayout(design)
+	return g.deck.GetRemainingCountByDesign(design)
 }
 
 // GetConfig はゲーム設定を返す。

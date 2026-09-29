@@ -249,8 +249,22 @@ function SuecaPageContent() {
                   >
                     <span aria-hidden="true">{t('trump', { suit: trumpSymbol })}</span>
                   </div>
-                  <div>{t('teamScore', { team: t('team.a'), score: state.teamGamePoints[0] ?? 0 })}</div>
-                  <div>{t('teamScore', { team: t('team.b'), score: state.teamGamePoints[1] ?? 0 })}</div>
+                  <div data-testid="sueca-team-game-points">
+                    <div>
+                      {t('teamScore', {
+                        team: t('team.a'),
+                        score: state.teamGamePoints[0],
+                        target: state.config.targetGamePoints,
+                      })}
+                    </div>
+                    <div>
+                      {t('teamScore', {
+                        team: t('team.b'),
+                        score: state.teamGamePoints[1],
+                        target: state.config.targetGamePoints,
+                      })}
+                    </div>
+                  </div>
                   <div className="mt-1">
                     {t('yourTeam')}: {humanTeam === 0 ? t('team.a') : t('team.b')}
                   </div>

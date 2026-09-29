@@ -88,6 +88,22 @@ describe('TablanetPage', () => {
     });
   });
 
+  it('exposes the selected hand card with aria-pressed', async () => {
+    renderWithProviders(<TablanetPage />);
+    const firstCard = await screen.findByTestId('hand-card-0');
+    const secondCard = screen.getByTestId('hand-card-1');
+
+    expect(firstCard).toHaveAttribute('aria-pressed', 'false');
+    expect(secondCard).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(firstCard);
+    expect(firstCard).toHaveAttribute('aria-pressed', 'true');
+    expect(secondCard).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(firstCard);
+    expect(firstCard).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('shows the selected table-card rank total and updates it as cards are toggled', async () => {
     renderWithProviders(<TablanetPage />);
     await screen.findByTestId('hand-card-0');

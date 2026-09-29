@@ -129,7 +129,38 @@ function PokerPageContent() {
   const [bettingLimit, setBettingLimit] = useState(0);
   const [isLowball, setIsLowball] = useState(false);
   const [cpuMetaAI, setCpuMetaAI] = useState(false);
+  const [exchangeAnnouncement, setExchangeAnnouncement] = useState('');
+  const pendingExchangeRef = useRef<number[] | null>(null);
+  const previousStateRef = useRef(state);
   const turnStartRef = useRef(0);
+
+  useEffect(() => {
+    const previousState = previousStateRef.current;
+    previousStateRef.current = state;
+    const exchangedIndices = pendingExchangeRef.current;
+    if (!state || !previousState || !exchangedIndices || state.phase === PokerPhase.EXCHANGE) return;
+    pendingExchangeRef.current = null;
+    const newCards = exchangedIndices
+      .map((index) => state.players?.find((player) => player.isHuman)?.cards?.[index])
+      .filter((card) => card !== undefined)
+      .map(cardAlt);
+    if (newCards.length > 0) {
+      setExchangeAnnouncement(t('exchangeReceivedCards', { cards: newCards.join(t('listSeparator')) }));
+    }
+  }, [state, t]);
+
+  useEffect(() => {
+    if (error) pendingExchangeRef.current = null;
+  }, [error]);
+
+  const handleExchange = useCallback(
+    (indices: number[]) => {
+      pendingExchangeRef.current = [...indices];
+      setExchangeAnnouncement('');
+      void exec('exchange', indices);
+    },
+    [exec],
+  );
 
   // Sync the raise amount to the current minimum only when that minimum actually
   // changes (a raise, or a new round). Keying on `state` would re-run on every CPU
@@ -173,8 +204,8 @@ function PokerPageContent() {
     cardCount,
     onToggle: toggleCard,
     onConfirm: useCallback(() => {
-      if (canExchange && !loading && selected.length > 0) exec('exchange', selected);
-    }, [canExchange, loading, exec, selected]),
+      if (canExchange && !loading && selected.length > 0) handleExchange(selected);
+    }, [canExchange, loading, handleExchange, selected]),
     onClear: clearSelection,
     enabled: canExchange,
   });
@@ -227,6 +258,15 @@ function PokerPageContent() {
         </>
       }
     >
+      <div
+        className="sr-only"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        data-testid="pk-exchanged-cards-live"
+      >
+        {exchangeAnnouncement}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -460,7 +500,7 @@ function PokerPageContent() {
                   type="button"
                   className={`${btnWarning} min-w-[90px]`}
                   disabled={loading || selected.length === 0}
-                  onClick={() => exec('exchange', selected)}
+                  onClick={() => handleExchange(selected)}
                 >
                   {t('exchangeLabel')}
                 </button>

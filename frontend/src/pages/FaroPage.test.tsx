@@ -56,7 +56,12 @@ const callState = makeState({
   phase: 3,
   callCards: [card('SPADE', 3), card('HEART', 9), card('DIAMOND', 12)],
 });
-const roundEndWinState = makeState({ phase: 4, totalPayout: 200, chips: 1200 });
+const roundEndWinState = makeState({
+  phase: 4,
+  totalPayout: 200,
+  chips: 1200,
+  callWon: true,
+});
 const gameEndState = makeState({ phase: 5, gameEndFlag: true, chips: 0 });
 
 beforeEach(() => {
@@ -253,10 +258,18 @@ describe('FaroPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('call', { order: [] }));
   });
 
+  it('shows a negative round net in the header when the round ends in a loss', async () => {
+    mockExec.mockResolvedValue({ ...roundEndWinState, totalPayout: -100, callWon: false });
+    renderWithProviders(<FaroPage />);
+    await screen.findByTestId('next-button');
+    expect(document.querySelector('[data-tutorial="faro-info"]')).toHaveTextContent('今回の収支: -100');
+  });
+
   it('shows a next button at round end and dispatches next', async () => {
     mockExec.mockResolvedValue(roundEndWinState);
     renderWithProviders(<FaroPage />);
     const nextBtn = await screen.findByTestId('next-button');
+    expect(document.querySelector('[data-tutorial="faro-info"]')).toHaveTextContent('今回の収支: +200');
     mockExec.mockClear();
     fireEvent.click(nextBtn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('next'));

@@ -1045,6 +1045,7 @@ describe('useGameHint', () => {
       warBet: 0,
       result: 0,
       totalPayout: 0,
+      netChange: 0,
       message: '',
     };
     const { result } = renderHook(() => useGameHint('casinowar', state));
@@ -1062,6 +1063,7 @@ describe('useGameHint', () => {
       warBet: 0,
       result: 0,
       totalPayout: 0,
+      netChange: 0,
       message: '',
     };
     const { result } = renderHook(() => useGameHint('casinowar', state));

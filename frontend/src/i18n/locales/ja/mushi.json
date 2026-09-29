@@ -10,6 +10,7 @@
   "yourHand": "あなたの手札",
   "yourCaptured": "あなたの取り札",
   "opponentCaptured": "CPU の取り札",
+  "capturedMonth": "{{month}}月 ({{count}}枚)",
   "roundResult": "このラウンド: {{delta}}",
   "nextRound": "次のラウンド",
   "landscapeBanner": "横画面での表示を推奨します",

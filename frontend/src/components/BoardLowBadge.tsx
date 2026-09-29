@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import { badgeInfoColors, badgeSuccessColors } from '../styles/badgeStyles';
 import type { Card } from '../types/card';
 import { type BoardLowStatus, boardLowPossibility } from '../utils/omahaLowCards';
@@ -26,22 +27,37 @@ export interface BoardLowBadgeProps {
  */
 export function BoardLowBadge({ communityCards, t, testId = 'omahahilo-board-low-badge' }: BoardLowBadgeProps) {
   const { status, needed } = boardLowPossibility(communityCards);
+  const previousStatus = useRef<BoardLowStatus | undefined>(undefined);
+  const [announcement, setAnnouncement] = useState('');
   const aria =
     status === 'live'
       ? t('boardLow.ariaLive')
       : status === 'possible'
         ? t('boardLow.ariaPossible', { needed })
         : t('boardLow.ariaImpossible');
+
+  useEffect(() => {
+    if (previousStatus.current !== undefined && previousStatus.current !== status) {
+      setAnnouncement(aria);
+    }
+    previousStatus.current = status;
+  }, [aria, status]);
+
   return (
-    <span
-      className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold ${BOARD_LOW_STATUS_CLASS[status]}`}
-      data-testid={testId}
-      data-status={status}
-      title={aria}
-    >
-      <span aria-hidden="true">{t('boardLow.label')}:</span>
-      <span aria-hidden="true">{t(`boardLow.${status}`)}</span>
-      <span className="sr-only">{aria}</span>
-    </span>
+    <>
+      <span
+        className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold ${BOARD_LOW_STATUS_CLASS[status]}`}
+        data-testid={testId}
+        data-status={status}
+        title={aria}
+      >
+        <span aria-hidden="true">{t('boardLow.label')}:</span>
+        <span aria-hidden="true">{t(`boardLow.${status}`)}</span>
+        <span className="sr-only">{aria}</span>
+      </span>
+      <span data-testid="board-low-announcement" className="sr-only" aria-live="polite" aria-atomic="true">
+        {announcement}
+      </span>
+    </>
   );
 }

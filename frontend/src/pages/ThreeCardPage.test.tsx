@@ -32,6 +32,7 @@ const betPhaseState: ThreeCardResponse = {
   anteBonusPayout: 0,
   pairPlusPayout: 0,
   totalPayout: 0,
+  netChange: 0,
   dealerQualified: false,
   playerHandRank: 0,
   dealerHandRank: 0,
@@ -61,6 +62,7 @@ const endPhasePlayerWins: ThreeCardResponse = {
   anteBonusPayout: 0,
   pairPlusPayout: 0,
   totalPayout: 400,
+  netChange: 200,
   dealerQualified: true,
   playerHandRank: 1,
   dealerHandRank: 1,
@@ -74,6 +76,7 @@ const endPhaseDealerWins: ThreeCardResponse = {
   antePayout: 0,
   playPayout: 0,
   totalPayout: 0,
+  netChange: -200,
   message: 'ディーラー勝利！',
   messageCode: 'threecard.result.dealerWins',
 };
@@ -85,6 +88,7 @@ const endPhaseFold: ThreeCardResponse = {
   antePayout: 0,
   playPayout: 0,
   totalPayout: 0,
+  netChange: -100,
   dealerHand: [],
   dealerQualified: false,
   dealerHandRank: 0,
@@ -98,6 +102,7 @@ const endPhasePush: ThreeCardResponse = {
   antePayout: 100,
   playPayout: 100,
   totalPayout: 200,
+  netChange: 0,
   message: '引き分け！',
   messageCode: 'threecard.result.push',
 };
@@ -196,6 +201,8 @@ describe('ThreeCardPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'プレイ' }));
     await waitFor(() => expect(screen.getByText('勝利！')).toBeInTheDocument());
     expect(screen.getByTestId('payout-breakdown')).toBeInTheDocument();
+    expect(screen.getByTestId('payout-breakdown')).toHaveTextContent('賭け合計: 200');
+    expect(screen.getByTestId('payout-breakdown')).toHaveTextContent('純損益: +200');
     expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument();
   });
 
@@ -206,6 +213,7 @@ describe('ThreeCardPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'プレイ' }));
     await waitFor(() => expect(screen.getByText('ディーラー勝利！')).toBeInTheDocument());
+    expect(screen.getByTestId('payout-breakdown')).toHaveTextContent('純損益: -200');
   });
 
   it('shows end phase with fold', async () => {
@@ -215,6 +223,8 @@ describe('ThreeCardPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'フォールド' }));
     await waitFor(() => expect(screen.getByText('フォールド')).toBeInTheDocument());
+    expect(screen.getByTestId('payout-breakdown')).toHaveTextContent('賭け合計: 100');
+    expect(screen.getByTestId('payout-breakdown')).toHaveTextContent('純損益: -100');
   });
 
   it('shows end phase with push', async () => {
@@ -224,6 +234,7 @@ describe('ThreeCardPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'プレイ' }));
     await waitFor(() => expect(screen.getByText('引き分け！')).toBeInTheDocument());
+    expect(screen.getByTestId('payout-breakdown')).toHaveTextContent('純損益: 0');
   });
 
   it('shows end phase with dealer not qualified', async () => {

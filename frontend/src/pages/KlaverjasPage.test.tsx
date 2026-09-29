@@ -45,6 +45,13 @@ beforeEach(() => {
 });
 
 describe('KlaverjasPage', () => {
+  it('shows each team score against the configured match target', async () => {
+    mockExec.mockResolvedValue(makeKlaverjasState({ teamScores: [420, 300] }));
+    renderWithProviders(<KlaverjasPage />);
+    expect(await screen.findByText('チームA: 420点 / 目標 1501点')).toBeInTheDocument();
+    expect(screen.getByText('チームB: 300点 / 目標 1501点')).toBeInTheDocument();
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<KlaverjasPage />);

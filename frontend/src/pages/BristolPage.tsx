@@ -258,6 +258,15 @@ function BristolPageContent() {
           <span className="text-sm text-ds-text-muted">
             {t('moveCount')}: {state.moveCount}
           </span>
+          <span
+            className="sr-only"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+            data-testid="br-move-count-live"
+          >
+            {t('moveCount')}: {state.moveCount}
+          </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
       }

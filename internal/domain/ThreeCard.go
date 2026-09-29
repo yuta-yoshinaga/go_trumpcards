@@ -357,6 +357,11 @@ func (tc *ThreeCard) GetTotalPayout() int {
 	return tc.antePayout + tc.playPayout + tc.anteBonusPayout + tc.pairPlusPayout
 }
 
+// GetNetChange returns the round's payout minus all bets placed in that round.
+func (tc *ThreeCard) GetNetChange() int {
+	return tc.GetTotalPayout() - tc.anteBet - tc.pairPlusBet - tc.playBet
+}
+
 // GetDealerQualified ディーラークオリファイ
 func (tc *ThreeCard) GetDealerQualified() bool { return tc.dealerQualified }
 

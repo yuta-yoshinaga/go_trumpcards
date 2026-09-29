@@ -62,6 +62,10 @@ func TestSevenTwentySeven_TheRoundFinishesItselfOnceTheHumanStands(t *testing.T)
 // **7 側と 27 側で別々に勝者が出る。** 片方だけの実装では、ポットが割れない。
 func TestSevenTwentySeven_BothSidesGetAWinnerAndSplitThePot(t *testing.T) {
 	g := newTestS27()
+	start := make([]int, g.GetPlayerCnt())
+	for i := range start {
+		start[i] = g.GetPlayer(i).GetChips() + g.GetAnte()
+	}
 	// p0: K Q K = 1.5 点 → 7 側に最も近い（27 側では遠い）
 	g.SetHandForTest(0, []*Card{s27(CardDesignSpade, 13), s27(CardDesignHeart, 12), s27(CardDesignClover, 13)})
 	// p1: 6 → 6 点。7 側でこちらが勝つ。
@@ -83,6 +87,21 @@ func TestSevenTwentySeven_BothSidesGetAWinnerAndSplitThePot(t *testing.T) {
 	assert.Equal(t, before[2]+50, g.GetPlayer(2).GetChips(), "27 側が半分を受け取っていない")
 	assert.Equal(t, before[0], g.GetPlayer(0).GetChips(), "どちらも取っていない席が貰っている")
 	assert.Equal(t, before[3], g.GetPlayer(3).GetChips())
+	assert.Equal(t, 40, g.GetRoundNetChange(1), "7-side winner net of ante")
+	assert.Equal(t, -10, g.GetRoundNetChange(0), "loser net of ante")
+	assert.Equal(t, start[1], g.GetPlayer(1).GetChips()-g.GetRoundNetChange(1))
+}
+
+func TestSevenTwentySeven_RoundNetChangeIncludesTiedSplit(t *testing.T) {
+	g := newTestS27()
+	for i := 0; i < g.GetPlayerCnt(); i++ {
+		g.SetHandForTest(i, []*Card{s27(CardDesignSpade, 6)})
+	}
+	g.SetPotForTest(40)
+	g.StandEveryoneForTest()
+	g.SettleForTest()
+	assert.Equal(t, 0, g.GetRoundNetChange(0), "seat 0's half-ante loss and split payout cancel")
+	assert.Equal(t, 0, g.GetRoundNetChange(1))
 }
 
 // **両取り (スクープ) は総取り。** A-A-5 は 7 にも 27 にもできる、このゲームの華。

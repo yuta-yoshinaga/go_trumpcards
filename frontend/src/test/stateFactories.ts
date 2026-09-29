@@ -23,6 +23,7 @@ import type {
   DilotiResponse,
   DoppelkopfResponse,
   EcarteResponse,
+  EgyptianRatscrewResponse,
   EscobaResponse,
   FiveHundredResponse,
   FortyFivesResponse,
@@ -49,6 +50,7 @@ import type {
   MarjapussiResponse,
   MichiganResponse,
   MinchiateResponse,
+  MississippiStudResponse,
   MusResponse,
   NapResponse,
   OmbreResponse,
@@ -58,6 +60,7 @@ import type {
   PrimeroResponse,
   QuadrilleResponse,
   QuodlibetResponse,
+  Rummy500Response,
   RussianBankResponse,
   SakuraResponse,
   SambaPlayerData,
@@ -92,6 +95,37 @@ import type {
   WattenResponse,
   ZwanzigerrufenResponse,
 } from '../types/card';
+
+/** Creates a default Egyptian Ratscrew state. */
+export function makeEgyptianRatscrewState(overrides?: Partial<EgyptianRatscrewResponse>): EgyptianRatscrewResponse {
+  return {
+    phase: 0,
+    gameEndFlag: false,
+    winnerIdx: -1,
+    currentTurnIdx: 0,
+    isHumanTurn: true,
+    isTopFaceCard: false,
+    isSlappable: false,
+    slappableReason: 0,
+    centerPileSize: 0,
+    topCard: null,
+    players: [
+      { name: 'You', isHuman: true, stockSize: 26 },
+      { name: 'CPU', isHuman: false, stockSize: 26 },
+    ],
+    cpuDifficulty: 1,
+    chanceRemaining: 0,
+    faceChances: { jack: 1, queen: 2, king: 3, ace: 4 },
+    chanceFromIdx: -1,
+    pendingKind: 0,
+    pendingDeadlineMs: 0,
+    lastEventKind: 0,
+    lastEventPlayerIdx: 0,
+    lastSlapReason: 0,
+    message: '',
+    ...overrides,
+  };
+}
 
 /** Base Hearts player data for player 0 (human). */
 const heartsHumanPlayer = {
@@ -766,10 +800,11 @@ const baseSchafkopfState: SchafkopfResponse = {
       ],
       trickCount: 0,
       chips: 100,
+      chipDelta: 0,
     },
-    { id: 1, isHuman: false, cardCount: 8, cards: [], trickCount: 0, chips: 100 },
-    { id: 2, isHuman: false, cardCount: 8, cards: [], trickCount: 0, chips: 100 },
-    { id: 3, isHuman: false, cardCount: 8, cards: [], trickCount: 0, chips: 100 },
+    { id: 1, isHuman: false, cardCount: 8, cards: [], trickCount: 0, chips: 100, chipDelta: 0 },
+    { id: 2, isHuman: false, cardCount: 8, cards: [], trickCount: 0, chips: 100, chipDelta: 0 },
+    { id: 3, isHuman: false, cardCount: 8, cards: [], trickCount: 0, chips: 100, chipDelta: 0 },
   ],
   phase: 2,
   roundNumber: 1,
@@ -1488,6 +1523,7 @@ const baseCalabresellaState: CalabresellaResponse = {
   forehandIdx: 0,
   soloistIdx: 0,
   winningBid: 1,
+  highestBid: 1,
   currentTrick: [],
   playerScores: [0, 0, 0],
   roundThirds: [0, 0, 0],
@@ -1541,6 +1577,7 @@ const baseOmbreState: OmbreResponse = {
   forehandIdx: 0,
   ombreIdx: 0,
   winningBid: 1,
+  highestBid: 1,
   trumpSuit: 1,
   currentTrick: [],
   playerScores: [0, 0, 0],
@@ -3167,6 +3204,7 @@ const baseBeziqueState: BeziqueResponse = {
   ],
   dealPoints: [0, 0],
   dealMeldPoints: [0, 0],
+  lastTrickBonus: [0, 0],
   matchScore: [0, 0],
   phase: 0,
   roundNumber: 1,
@@ -4135,6 +4173,7 @@ const baseMichiganState: MichiganResponse = {
     { card: { design: 'DIAMOND' as const, value: 12 }, chips: 2, claimedBy: -1 },
     { card: { design: 'SPADE' as const, value: 11 }, chips: 2, claimedBy: -1 },
   ],
+  roundBoodleWins: [],
   phase: 0,
   roundNumber: 1,
   ante: 8,
@@ -5003,6 +5042,7 @@ const dpCpuSeat = (id: number, isDealer = false, isTrumpChooser = false) => ({
   cardCount: 5,
   cards: [],
   gatheredCount: 0,
+  gatheredCards: [],
   isDealer,
   isTrumpChooser,
 });
@@ -5021,6 +5061,7 @@ const baseDehlaPakadState: DehlaPakadResponse = {
       cardCount: 5,
       cards: [dpCard('SPADE', 1), dpCard('SPADE', 10), dpCard('HEART', 13), dpCard('CLOVER', 4), dpCard('DIAMOND', 7)],
       gatheredCount: 0,
+      gatheredCards: [],
       isDealer: false,
       isTrumpChooser: true,
     },
@@ -5543,6 +5584,7 @@ const baseCostlyColoursState: CostlyColoursResponse = {
   turnUp: cirCard('CLOVER', 10),
   pile: [],
   total: 0,
+  recentPlays: [],
   wentOut: -1,
   // 交換フェーズでは出せる札を渡さない。
   playableIdxs: [],
@@ -5759,6 +5801,52 @@ export function makePigState(overrides?: Partial<PigResponse>): PigResponse {
     winnerIdx: -1,
     message: '',
     config: { playerCnt: 4, cpuDifficulty: 1 },
+    ...overrides,
+  };
+}
+
+/** Creates a Mississippi Stud ante phase state. */
+export function makeMississippiStudState(overrides?: Partial<MississippiStudResponse>): MississippiStudResponse {
+  return {
+    playerHand: [],
+    communityCards: [],
+    communityRevealed: [false, false, false],
+    phase: 1,
+    chips: 1000,
+    anteAmount: 0,
+    streetMultipliers: [0, 0, 0],
+    folded: false,
+    totalBet: 0,
+    result: 0,
+    handRank: 0,
+    payoutMultiplier: 0,
+    antePayout: 0,
+    streetPayouts: [0, 0, 0],
+    totalPayout: 0,
+    netChange: 0,
+    message: '',
+    ...overrides,
+  };
+}
+
+/** Creates a Rummy 500 state with sensible defaults. */
+export function makeRummy500State(overrides?: Partial<Rummy500Response>): Rummy500Response {
+  return {
+    players: [
+      { id: 0, isHuman: true, cardCount: 0, cards: [], roundScore: 0, cumulativeScore: 0, laidMelds: [] },
+      { id: 1, isHuman: false, cardCount: 0, cards: [], roundScore: 0, cumulativeScore: 0, laidMelds: [] },
+    ],
+    layoffTargets: [],
+    phase: 0,
+    roundNumber: 1,
+    currentPlayerIdx: 0,
+    discardPile: [],
+    drawPileCount: 0,
+    gameEndFlag: false,
+    winnerIdx: -1,
+    roundEnderIdx: -1,
+    message: '',
+    config: { cpuDifficulty: 1, pointLimit: 500 },
     ...overrides,
   };
 }

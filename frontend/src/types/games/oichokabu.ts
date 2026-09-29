@@ -26,4 +26,6 @@ export interface OichoKabuResponse extends BaseGameResponse {
   bet: number;
   result: number;
   totalPayout: number;
+  /** Net chip change for the round: total payout minus the wager. */
+  netChange: number;
 }

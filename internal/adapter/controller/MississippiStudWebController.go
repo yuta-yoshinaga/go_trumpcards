@@ -32,6 +32,7 @@ type MississippiStudWebOutput struct {
 	AntePayout        int              `json:"antePayout"`
 	StreetPayouts     []int            `json:"streetPayouts"`
 	TotalPayout       int              `json:"totalPayout"`
+	NetChange         int              `json:"netChange"`
 	WebOutputBase
 }
 

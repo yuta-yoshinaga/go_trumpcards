@@ -2,6 +2,7 @@
   "title": "手本引き",
   "label.chips": "チップ",
   "label.parentCard": "親の札",
+  "label.betType": "賭け方",
   "label.bet": "張り金",
   "listSeparator": "、",
   "summary": "選択内容: 数字 {{numbers}}、賭け方 {{betType}}、賭け額 {{bet}}",

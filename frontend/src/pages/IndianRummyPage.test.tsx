@@ -328,7 +328,7 @@ describe('IndianRummyPage', () => {
     mockExec.mockResolvedValue(declareValidState);
     renderWithProviders(<IndianRummyPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '宣言' })).toBeInTheDocument());
-    expect(screen.queryByTestId('indianrummy-declare-preview')).not.toBeInTheDocument();
+    expect(screen.getByTestId('indianrummy-declare-preview')).toBeEmptyDOMElement();
   });
 
   it('shows a valid declare preview when the remaining 13 cards form a valid declaration', async () => {
@@ -694,7 +694,7 @@ describe('IndianRummyPage', () => {
     const status = await screen.findByTestId('indianrummy-hand-status');
     expect(status).toHaveTextContent('デッドウッド');
     // カードを 1 枚も選んでいない状態で出ている。
-    expect(screen.queryByTestId('indianrummy-declare-preview')).not.toBeInTheDocument();
+    expect(screen.getByTestId('indianrummy-declare-preview')).toBeEmptyDOMElement();
   });
 
   it('does not show the hand status outside the discard phase', async () => {

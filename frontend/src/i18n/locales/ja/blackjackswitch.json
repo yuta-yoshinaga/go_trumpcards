@@ -31,6 +31,7 @@
   "badge": {
     "bust": "バースト",
     "bj": "BJ",
+    "doubled": "ダブルダウン済み",
     "acting": "操作中"
   },
   "result": {

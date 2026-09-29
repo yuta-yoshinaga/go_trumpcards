@@ -172,6 +172,8 @@ describe('FortyFivesPage', () => {
     mockExec.mockResolvedValue(makeFortyFivesState({ trumpSuit: 1 }));
     renderWithProviders(<FortyFivesPage />);
     const legend = await screen.findByTestId('ff-trump-legend');
+    expect(screen.getByRole('heading', { name: '切り札の強さ順' })).toBeInTheDocument();
+    expect(legend.closest('details')).toBeNull();
     expect(legend).toHaveTextContent('♠5>♠J>♥A>♠A>♠K>♠Q>♠10>♠9>♠8>♠7>♠6>♠4>♠3>♠2');
     expect(legend).toHaveTextContent('色付きの上位3枚はフォロー義務が免除される特別な札です。');
   });

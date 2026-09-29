@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { costlycoloursApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -130,6 +130,40 @@ function CostlyColoursPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('costlycolours', state);
   const { cardWidth, isMobile } = useCardDimensions();
+  const [playAnnouncement, setPlayAnnouncement] = useState('');
+  const announcedPlays = useRef('');
+
+  useEffect(() => {
+    if (!state?.recentPlays.length) {
+      announcedPlays.current = '';
+      setPlayAnnouncement('');
+      return;
+    }
+    const key = JSON.stringify(state.recentPlays);
+    if (key === announcedPlays.current) return;
+    announcedPlays.current = key;
+    setPlayAnnouncement(
+      state.recentPlays
+        .map((play) => {
+          const player = state.players.find((p) => p.id === play.seat);
+          const milestone = [15, 25, 31].includes(play.total) ? t(`announcement.milestone.${play.total}`) : '';
+          return t('announcement.play', {
+            name: playerName(play.seat, player?.isHuman ?? play.seat === 0),
+            card: cardAlt(play.card),
+            total: play.total,
+            pointsText:
+              play.points > 0
+                ? t('announcement.points', {
+                    count: play.points,
+                    points: play.points,
+                    milestonePart: milestone ? t('announcement.milestonePart', { milestone }) : '',
+                  })
+                : '',
+          });
+        })
+        .join(t('listSeparator')),
+    );
+  }, [state, t]);
 
   if (!state)
     return (
@@ -344,6 +378,9 @@ function CostlyColoursPageContent() {
                   {state.hintHandIdx >= 0 && ` ([${state.hintHandIdx}])`}
                 </div>
               )}
+            </div>
+            <div data-testid="costlycolours-play-live" role="status" aria-live="polite">
+              {playAnnouncement && <span className="sr-only">{playAnnouncement}</span>}
             </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 

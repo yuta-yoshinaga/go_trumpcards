@@ -136,6 +136,43 @@ describe('MonteBankPage', () => {
     expect(screen.getByTestId('mb-count-0')).toHaveTextContent('2');
   });
 
+  it('各場札に現在の山残り枚数から計算した次ゲートの確率を出す', async () => {
+    mockApi.mockResolvedValue({
+      ...base,
+      remainingCards: 36,
+      layout: [entry({ remainingOfSuit: 9 }), entry({ card: card('HEART', 5), remainingOfSuit: 6 })],
+    });
+    renderWithProviders(<MonteBankPage />);
+
+    await waitFor(() => expect(screen.getByTestId('mb-probability-0')).toBeInTheDocument());
+    expect(screen.getByTestId('mb-probability-0')).toHaveTextContent('25.0%');
+    expect(screen.getByTestId('mb-probability-1')).toHaveTextContent('16.7%');
+
+    fireEvent.click(screen.getByTestId('mb-layout-1'));
+    expect(screen.getByTestId('mb-layout-1')).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByTestId('mb-probability-1')).toHaveTextContent('16.7%');
+  });
+
+  it('山の同スート残り枚数以下の分母で確率が100%を超えない', async () => {
+    mockApi.mockResolvedValue({
+      ...base,
+      remainingCards: 8,
+      layout: [entry({ remainingOfSuit: 8 }), entry({ card: card('HEART', 5), remainingOfSuit: 7 })],
+    });
+    renderWithProviders(<MonteBankPage />);
+
+    await waitFor(() => expect(screen.getByTestId('mb-probability-0')).toHaveTextContent('100.0%'));
+    expect(screen.getByTestId('mb-probability-1')).toHaveTextContent('87.5%');
+  });
+
+  it('山札が空なら確率の代わりに定義済みの値を表示する', async () => {
+    mockApi.mockResolvedValue(withState({ remainingCards: 0 }));
+    renderWithProviders(<MonteBankPage />);
+
+    await waitFor(() => expect(screen.getByTestId('mb-probability-0')).toBeInTheDocument());
+    expect(screen.getByTestId('mb-probability-0')).toHaveTextContent('—');
+  });
+
   // **選んだ位置は 0 始まりでそのまま送る。** 0 は正当な値。
   it('既定では場札0に賭ける', async () => {
     mockApi.mockResolvedValue(base);

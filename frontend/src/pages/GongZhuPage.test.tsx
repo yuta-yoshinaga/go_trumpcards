@@ -11,6 +11,15 @@ vi.mock('../api/gameApi', () => ({
 }));
 
 const mockExec = vi.mocked(gongzhuApi.exec);
+const mobileFlag = { value: false };
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useCardDimensions: () => ({ ...actual.useCardDimensions(), isMobile: mobileFlag.value }),
+  };
+});
 
 const playPhaseState = makeGongZhuState();
 const exposePhaseState = makeGongZhuState({ phase: 0, trickNumber: 0, exposableIndices: [0, 1] });
@@ -26,10 +35,36 @@ const gameEndState = makeGongZhuState({ phase: 4, gameEndFlag: true, winnerIdx: 
 const cpuTurnState = makeGongZhuState({ currentPlayerIdx: 1 });
 
 beforeEach(() => {
+  mobileFlag.value = false;
   mockExec.mockResolvedValue(playPhaseState);
 });
 
 describe('GongZhuPage', () => {
+  it('always shows opponent names and both scores in the mobile opponent list', async () => {
+    mobileFlag.value = true;
+    mockExec.mockResolvedValue(
+      makeGongZhuState({
+        players: makeGongZhuState().players.map((player) =>
+          player.id === 1
+            ? { ...player, cumulativeScore: 125, roundScore: -25 }
+            : player.id === 2
+              ? { ...player, cumulativeScore: -75, roundScore: 50 }
+              : player,
+        ),
+      }),
+    );
+    renderWithProviders(<GongZhuPage />);
+
+    const opponentList = await screen.findByTestId('gz-mobile-opponent-scores');
+    expect(opponentList).toHaveTextContent('CPU 1');
+    expect(opponentList).toHaveTextContent('累計: 125');
+    expect(opponentList).toHaveTextContent('ラウンド: -25');
+    expect(opponentList).toHaveTextContent('CPU 2');
+    expect(opponentList).toHaveTextContent('累計: -75');
+    expect(opponentList).toHaveTextContent('ラウンド: 50');
+    expect(opponentList.closest('details')).toBeNull();
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<GongZhuPage />);

@@ -41,6 +41,9 @@ func setupSchafkopfWebMock() *interfaces.MockSchafkopfGame {
 	m.On("GetRoundPickerPoints").Return(0)
 	m.On("GetRoundMultiplier").Return(1)
 	m.On("GetRoundPickerWon").Return(false)
+	for i := 0; i < 5; i++ {
+		m.On("GetLastDealChipDelta", i).Return(0).Maybe()
+	}
 	m.On("GetWinnerIdx").Return(-1)
 	m.On("GetConfig").Return(domain.DefaultSchafkopfConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
@@ -83,6 +86,7 @@ func TestSchafkopfWebPresenter_Output(t *testing.T) {
 		// human cards visible, CPU hidden
 		assert.Len(t, resObj.Players[0].Cards, 1)
 		assert.Len(t, resObj.Players[1].Cards, 0)
+		assert.Equal(t, 0, resObj.Players[0].ChipDelta)
 	})
 
 	t.Run("config values", func(t *testing.T) {

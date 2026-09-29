@@ -61,6 +61,8 @@ type OmbreGame interface {
 	GetOmbreIdx() int
 	// GetWinningBid 確定ビッドを取得する
 	GetWinningBid() domain.OmbreBid
+	// GetHighestBid returns the highest bid declared so far, including during the auction.
+	GetHighestBid() domain.OmbreBid
 	// GetTrumpSuit 切り札スートを取得する (-1=未確定, 1..4)
 	GetTrumpSuit() int
 	// GetCurrentBidderIdx 現在のビッド手番インデックスを取得する

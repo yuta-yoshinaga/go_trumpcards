@@ -10,6 +10,16 @@ vi.mock('../api/gameApi', () => ({
   actionLogApi: { catchten: vi.fn() },
 }));
 
+const mobileFlag = { value: false };
+
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../hooks/useCardDimensions')>();
+  return {
+    ...actual,
+    useCardDimensions: () => ({ ...actual.useCardDimensions(), isMobile: mobileFlag.value }),
+  };
+});
+
 const mockExec = vi.mocked(catchtenApi.exec);
 
 const card = (design: string, value: number): Card => ({ design, value }) as unknown as Card;
@@ -53,10 +63,25 @@ const playState = makeState();
 const gameEndState = makeState({ phase: 3, gameEndFlag: true, winnerTeam: 0 });
 
 beforeEach(() => {
+  mobileFlag.value = false;
   mockExec.mockResolvedValue(playState);
 });
 
 describe('CatchTenPage', () => {
+  it('shows the configured target score alongside team scores', async () => {
+    renderWithProviders(<CatchTenPage />);
+    expect(await screen.findByText(/チームスコア · 目標: 41/)).toBeInTheDocument();
+  });
+
+  it('shows the configured target score in the mobile team-score summary', async () => {
+    mobileFlag.value = true;
+    renderWithProviders(<CatchTenPage />);
+    const scoreHeading = await screen.findByText(/チームスコア · 目標: 41/);
+    const summary = scoreHeading.closest('summary');
+    expect(summary).toBeInTheDocument();
+    expect(summary).toHaveTextContent('目標: 41');
+  });
+
   it('badges trump honors, but not non-trumps or cards before trump is known', async () => {
     mockExec.mockResolvedValue(
       makeState({

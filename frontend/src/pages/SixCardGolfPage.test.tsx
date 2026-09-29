@@ -74,6 +74,81 @@ describe('SixCardGolfPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith({ command: 'reset' }));
   });
 
+  it('disables card slots and turn actions while an API request is pending', async () => {
+    let resolveAction!: (state: SixCardGolfResponse) => void;
+    mockExec
+      .mockResolvedValueOnce(
+        makeState({
+          phase: 2,
+          drawnCard: card(8),
+          players: [
+            {
+              id: 0,
+              isHuman: true,
+              grid: [slot(5), slot(3), slot(7), slot(5), slot(9), slot(2)],
+              roundScore: 0,
+              cumulativeScore: 0,
+              allFaceUp: false,
+            },
+            {
+              id: 1,
+              isHuman: false,
+              grid: [slot(5), slot(3), slot(7), slot(5), slot(9), slot(2)],
+              roundScore: 0,
+              cumulativeScore: 0,
+              allFaceUp: false,
+            },
+          ],
+        }),
+      )
+      .mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolveAction = resolve;
+          }),
+      );
+    renderWithProviders(<SixCardGolfPage />);
+
+    await screen.findByRole('button', { name: '捨てる' });
+    const swapSlots = screen.getAllByRole('button', { name: '♠ 5' });
+    fireEvent.click(screen.getByRole('button', { name: '捨てる' }));
+
+    await waitFor(() => {
+      for (const button of swapSlots) expect(button).toBeDisabled();
+    });
+    expect(screen.getByRole('button', { name: '捨てる' })).toBeDisabled();
+
+    resolveAction(
+      makeState({
+        phase: 2,
+        drawnCard: card(8),
+        players: [
+          {
+            id: 0,
+            isHuman: true,
+            grid: [slot(5), slot(3), slot(7), slot(5), slot(9), slot(2)],
+            roundScore: 0,
+            cumulativeScore: 0,
+            allFaceUp: false,
+          },
+          {
+            id: 1,
+            isHuman: false,
+            grid: [slot(5), slot(3), slot(7), slot(5), slot(9), slot(2)],
+            roundScore: 0,
+            cumulativeScore: 0,
+            allFaceUp: false,
+          },
+        ],
+      }),
+    );
+    await waitFor(() =>
+      expect(screen.getAllByRole('button', { name: '♠ 5' }).some((button) => !button.hasAttribute('disabled'))).toBe(
+        true,
+      ),
+    );
+  });
+
   it('shows per-column score badges at round over, marking matched pairs', async () => {
     renderWithProviders(<SixCardGolfPage />);
     const breakdown = await screen.findByTestId('scg-column-scores');

@@ -3,6 +3,8 @@
   "label": {
     "chips": "Chips",
     "bet": "Bet",
+    "player": "Player",
+    "dealer": "Dealer",
     "front": "Front (3 cards)",
     "middle": "Middle (5 cards)",
     "back": "Back (5 cards)",

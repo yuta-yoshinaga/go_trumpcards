@@ -3,6 +3,7 @@
   "turns": "ターン: {{played}}/{{total}}",
   "remaining": "残り: {{count}}",
   "rankSelection": "ベット対象のランク",
+  "betAmount": "賭け金",
   "bet": "賭け",
   "noBet": "賭けなし",
   "bankerCard": "親の札",

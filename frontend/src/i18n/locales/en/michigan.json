@@ -46,7 +46,9 @@
   "nextRound": "Next Round",
   "roundResult": {
     "title": "Round Result",
-    "winner": "{{name}} emptied their hand to end the round."
+    "winner": "{{name}} emptied their hand to end the round.",
+    "boodleWin": "{{card}}: {{name}} collected {{amount}} chips",
+    "noBoodleWins": "No boodles were collected this round."
   },
   "hint": {
     "forced": "The next card is forced — play it.",

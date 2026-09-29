@@ -25,6 +25,7 @@ type OichoKabuWebOutput struct {
 	Bet         int              `json:"bet"`
 	Result      int              `json:"result"`
 	TotalPayout int              `json:"totalPayout"`
+	NetChange   int              `json:"netChange"`
 	WebOutputBase
 }
 

@@ -1,4 +1,4 @@
-import { useCallback, useId, useMemo } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { bisleyApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -100,6 +100,17 @@ function BisleyPageContent() {
   } = useGamePageSetup('bisley');
   const game = useBisleyGame();
   const { state, loading, error, retry, hintError, selectedSource, hint, isAutoCompleting } = game;
+  const wasAutoCompleting = useRef(false);
+  const [autoCompleteAnnouncement, setAutoCompleteAnnouncement] = useState('');
+
+  useEffect(() => {
+    if (isAutoCompleting) {
+      setAutoCompleteAnnouncement('autoCompleteStarted');
+    } else if (wasAutoCompleting.current) {
+      setAutoCompleteAnnouncement('autoCompleteCompleted');
+    }
+    wasAutoCompleting.current = isAutoCompleting;
+  }, [isAutoCompleting]);
 
   const {
     hint: frontendHint,
@@ -448,6 +459,9 @@ function BisleyPageContent() {
                   {formatHintZone(t, hint.toZone, hint.toIdx)}
                 </div>
               )}
+            </div>
+            <div className="sr-only" data-testid="bisley-autocomplete-live" role="status" aria-live="polite">
+              {autoCompleteAnnouncement && t(autoCompleteAnnouncement)}
             </div>
             <div className="flex justify-center">
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />

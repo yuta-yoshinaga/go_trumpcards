@@ -31,6 +31,7 @@
   "scoreProgress": "{{score}}/{{limit}}",
   "playButton": "Play",
   "drawButton": "Draw",
+  "emptyStockDrawHelp": "The stock is empty. Discards will be recycled; if none can be recycled, you will pass.",
   "takePenaltyButton": "Take {{count}}",
   "declareButton": "Macau!",
   "skipDeclareButton": "Don't declare",

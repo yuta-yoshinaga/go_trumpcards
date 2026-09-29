@@ -64,6 +64,8 @@ export interface OmbreResponse extends BaseGameResponse {
   ombreIdx: number;
   /** The winning bid (0=pass/none, 1=entrar, 2=solo). */
   winningBid: number;
+  /** Highest bid declared so far, including during the auction. */
+  highestBid: number;
   /** The trump suit (1=♠ 2=♣ 3=♥ 4=♦), or -1 until chosen. */
   trumpSuit: number;
   currentTrick: OmbreTrickCard[];

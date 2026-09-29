@@ -423,6 +423,7 @@ function FourCardPokerPageContent() {
             )}
             {isActionPhase && (
               <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="fcp-action-buttons">
+                <p className="text-ds-warning text-sm text-center">{t('foldWarning', { amount: state.anteBet })}</p>
                 <div className="flex flex-wrap justify-center gap-2">
                   {[1, 2, 3].map((mult) => (
                     <button

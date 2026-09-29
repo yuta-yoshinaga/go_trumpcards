@@ -159,6 +159,9 @@ function KingoPageContent() {
             <p className="text-ds-text-muted text-center text-xs mb-1" data-testid="kingo-payouts">
               {t('label.payouts', { arashi: state.payoutArashi, pair: state.payoutPair })}
             </p>
+            <p className="text-ds-text-muted text-center text-xs mb-1" data-testid="kingo-payout-meaning">
+              {t('label.payoutMeaning')}
+            </p>
             <p className="text-ds-text-muted text-center text-xs mb-3" data-testid="kingo-notice">
               {t('notice')}
             </p>

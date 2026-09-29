@@ -294,12 +294,12 @@ describe('BrusquembillePage', () => {
     await waitFor(() => expect(screen.getByText(/トランプ: 使い切り/)).toBeInTheDocument());
   });
 
-  it('disables play buttons when it is not the human turn', async () => {
+  it('marks play buttons unavailable when it is not the human turn', async () => {
     mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1 }));
     renderWithProviders(<BrusquembillePage />);
     await waitFor(() => {
       const btn = screen.getByRole('button', { name: '♠ A を出す' });
-      expect(btn).toBeDisabled();
+      expect(btn).toHaveAttribute('aria-disabled', 'true');
     });
   });
 
@@ -385,15 +385,26 @@ describe('BrusquembillePage', () => {
 // 合法かどうかはバックエンドが決める (validIndices) —— ここで規則を
 // 書き直すと二重管理になる。
 describe('BrusquembillePage legal moves', () => {
-  it('disables the cards the backend says are illegal', async () => {
-    mockExec.mockResolvedValue(makeState({ validIndices: [1], followRequired: true }));
+  it('explains the follow-suit rule and keeps illegal cards focusable with an accessible reason', async () => {
+    mockExec.mockResolvedValue(makeState({ stockRemaining: 0, validIndices: [1], followRequired: true }));
     renderWithProviders(<BrusquembillePage />);
     await waitFor(() => expect(screen.getAllByRole('button', { name: /を出す/ }).length).toBeGreaterThan(0));
 
     const cards = screen.getAllByRole('button', { name: /を出す/ });
-    expect(cards[0]).toBeDisabled();
-    expect(cards[1]).toBeEnabled();
-    expect(cards[2]).toBeDisabled();
+    const explanation = screen.getByRole('status');
+    expect(explanation).toHaveTextContent(
+      '山札がなくなったため、場と同じスートのカードを持っている場合はそのスートを出してください。',
+    );
+    expect(cards[0]).toHaveAttribute('aria-disabled', 'true');
+    expect(cards[0]).toHaveAttribute('aria-describedby');
+    expect(cards[1]).not.toHaveAttribute('aria-disabled', 'true');
+    expect(cards[2]).toHaveAttribute('aria-disabled', 'true');
+    expect(cards[0]).toBeEnabled();
+
+    mockExec.mockClear();
+    fireEvent.click(cards[0]);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('play', 0);
   });
 
   it('leaves every card playable while the stock lasts', async () => {
@@ -403,7 +414,9 @@ describe('BrusquembillePage legal moves', () => {
 
     for (const card of screen.getAllByRole('button', { name: /を出す/ })) {
       expect(card).toBeEnabled();
+      expect(card).not.toHaveAttribute('aria-disabled', 'true');
     }
+    expect(screen.queryByTestId('brusquembille-follow-guidance')).not.toBeInTheDocument();
   });
 });
 

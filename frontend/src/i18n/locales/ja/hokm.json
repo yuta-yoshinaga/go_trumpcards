@@ -33,7 +33,8 @@
     "nextHand": "次のハンドへ",
     "reset": "リセット",
     "giveUp": "投了",
-    "playAria": "{{card}} を出す"
+    "playAria": "{{card}} を出す",
+    "playUnavailable": "自分の手番で出せる札ではありません"
   },
   "result": {
     "youWin": "あなたのチームの勝ち！ {{t0}} － {{t1}}",

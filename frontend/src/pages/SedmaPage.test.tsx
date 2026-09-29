@@ -233,4 +233,11 @@ describe('SedmaPage wild seven', () => {
     const nine = screen.getByRole('button', { name: '♥ 9' });
     expect(nine).not.toHaveAttribute('data-trump');
   });
+
+  it('marks the dealer in the existing player row', async () => {
+    mockExec.mockResolvedValue(makeSedmaState({ dealerIdx: 2 }));
+    renderWithProviders(<SedmaPage />);
+    expect(await screen.findAllByTestId('sedma-dealer-badge')).toHaveLength(1);
+    expect(screen.getByTestId('sedma-dealer-badge').parentElement).toHaveAttribute('data-testid', 'sedma-player-2');
+  });
 });

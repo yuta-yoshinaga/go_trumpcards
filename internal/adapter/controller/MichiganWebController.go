@@ -62,6 +62,13 @@ type MichiganWebOutputBoodle struct {
 	ClaimedBy int            `json:"claimedBy"` // -1 = 未獲得
 }
 
+// MichiganWebOutputBoodleWin は今ラウンドに獲得したブードルの出力。
+type MichiganWebOutputBoodleWin struct {
+	Card   *WebOutputCard `json:"card"`
+	Seat   int            `json:"seat"`
+	Amount int            `json:"amount"`
+}
+
 // MichiganWebOutputHint はヒント出力。
 type MichiganWebOutputHint struct {
 	CardIndex int    `json:"cardIndex"`
@@ -78,30 +85,31 @@ type MichiganWebOutputConfig struct {
 
 // MichiganWebOutput はミシガン Web アウトプット。
 type MichiganWebOutput struct {
-	Players          []*MichiganWebOutputPlayer `json:"players"`
-	Boodles          []*MichiganWebOutputBoodle `json:"boodles"`
-	Phase            int                        `json:"phase"`
-	RoundNumber      int                        `json:"roundNumber"`
-	Ante             int                        `json:"ante"`
-	Chips            int                        `json:"chips"`
-	BetBudget        int                        `json:"betBudget"`
-	HumanBetPlaced   bool                       `json:"humanBetPlaced"`
-	CurrentPlayerIdx int                        `json:"currentPlayerIdx"`
-	DealerIdx        int                        `json:"dealerIdx"`
-	LeadPlayerIdx    int                        `json:"leadPlayerIdx"`
-	SeqSuit          int                        `json:"seqSuit"`
-	SeqSuitName      string                     `json:"seqSuitName"`
-	SeqHighValue     int                        `json:"seqHighValue"`
-	NeedNewSequence  bool                       `json:"needNewSequence"`
-	DeadHandCount    int                        `json:"deadHandCount"`
-	IsHumanTurn      bool                       `json:"isHumanTurn"`
-	PlayableIndices  []int                      `json:"playableIndices"`
-	WinnerIdx        int                        `json:"winnerIdx"`
-	MatchWinnerIdx   int                        `json:"matchWinnerIdx"`
-	Result           int                        `json:"result"`
-	GameEndFlag      bool                       `json:"gameEndFlag"`
-	Hint             *MichiganWebOutputHint     `json:"hint,omitempty"`
-	Config           MichiganWebOutputConfig    `json:"config"`
+	Players          []*MichiganWebOutputPlayer    `json:"players"`
+	Boodles          []*MichiganWebOutputBoodle    `json:"boodles"`
+	RoundBoodleWins  []*MichiganWebOutputBoodleWin `json:"roundBoodleWins"`
+	Phase            int                           `json:"phase"`
+	RoundNumber      int                           `json:"roundNumber"`
+	Ante             int                           `json:"ante"`
+	Chips            int                           `json:"chips"`
+	BetBudget        int                           `json:"betBudget"`
+	HumanBetPlaced   bool                          `json:"humanBetPlaced"`
+	CurrentPlayerIdx int                           `json:"currentPlayerIdx"`
+	DealerIdx        int                           `json:"dealerIdx"`
+	LeadPlayerIdx    int                           `json:"leadPlayerIdx"`
+	SeqSuit          int                           `json:"seqSuit"`
+	SeqSuitName      string                        `json:"seqSuitName"`
+	SeqHighValue     int                           `json:"seqHighValue"`
+	NeedNewSequence  bool                          `json:"needNewSequence"`
+	DeadHandCount    int                           `json:"deadHandCount"`
+	IsHumanTurn      bool                          `json:"isHumanTurn"`
+	PlayableIndices  []int                         `json:"playableIndices"`
+	WinnerIdx        int                           `json:"winnerIdx"`
+	MatchWinnerIdx   int                           `json:"matchWinnerIdx"`
+	Result           int                           `json:"result"`
+	GameEndFlag      bool                          `json:"gameEndFlag"`
+	Hint             *MichiganWebOutputHint        `json:"hint,omitempty"`
+	Config           MichiganWebOutputConfig       `json:"config"`
 	WebOutputBase
 }
 
@@ -118,6 +126,7 @@ func newMichiganDefaultOutput(msg string) *MichiganWebOutput {
 	return &MichiganWebOutput{
 		Players:         make([]*MichiganWebOutputPlayer, 0),
 		Boodles:         make([]*MichiganWebOutputBoodle, 0),
+		RoundBoodleWins: make([]*MichiganWebOutputBoodleWin, 0),
 		PlayableIndices: make([]int, 0),
 		WinnerIdx:       -1,
 		MatchWinnerIdx:  -1,

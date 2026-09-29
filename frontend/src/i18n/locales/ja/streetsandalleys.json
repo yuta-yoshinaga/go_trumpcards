@@ -12,6 +12,8 @@
   "foundationAriaLabel": "{{suit}} 組札 {{count}}枚",
   "emptyFoundationAriaLabel": "空の組札 ({{suit}})",
   "tableauCardAriaLabel": "{{card}}、タブロー列{{col}}",
+  "legalDestinationCount": "移動先の候補は{{count}}件です",
+  "noLegalDestinations": "移動先の候補はありません",
   "foundationProgress": "{{count}}/13",
   "landscapeBanner": "横画面での表示を推奨します",
   "hint": "ヒント",

@@ -2,6 +2,7 @@
   "title": "Tehonbiki",
   "label.chips": "Chips",
   "label.parentCard": "Parent card",
+  "label.betType": "Wager type",
   "label.bet": "Stake",
   "listSeparator": ", ",
   "summary": "Your bet: numbers {{numbers}}, wager type {{betType}}, amount {{bet}}",

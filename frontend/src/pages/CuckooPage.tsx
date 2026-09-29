@@ -147,12 +147,12 @@ function CuckooPageContent() {
   const kbHumanHasKing = state?.players.find((p) => p.isHuman)?.card?.value === CUCKOO_KING_VALUE;
   const actionBindings = useMemo(
     () => [
-      { key: 'k', action: () => exec('keep'), enabled: kbIsHumanTurn },
-      { key: 's', action: () => exec('swap'), enabled: kbIsHumanTurn },
-      { key: 'r', action: () => exec('refuse'), enabled: kbIsRefuseTarget && kbHumanHasKing },
-      { key: 'a', action: () => exec('accept'), enabled: kbIsRefuseTarget },
+      { key: 'k', action: () => exec('keep'), enabled: kbIsHumanTurn && !actionLog },
+      { key: 's', action: () => exec('swap'), enabled: kbIsHumanTurn && !actionLog },
+      { key: 'r', action: () => exec('refuse'), enabled: kbIsRefuseTarget && kbHumanHasKing && !actionLog },
+      { key: 'a', action: () => exec('accept'), enabled: kbIsRefuseTarget && !actionLog },
     ],
-    [exec, kbIsHumanTurn, kbIsRefuseTarget, kbHumanHasKing],
+    [exec, kbIsHumanTurn, kbIsRefuseTarget, kbHumanHasKing, actionLog],
   );
   useActionKeyboardNav({ bindings: actionBindings, enabled: !!state && !loading });
 
@@ -322,6 +322,7 @@ function CuckooPageContent() {
 
             <ActionLogSection
               isEndPhase={isGameEnd}
+              availableDuringPlay={isTurn || isRefuse}
               actionLog={actionLog}
               showActionLog={showActionLog}
               hideActionLog={hideActionLog}

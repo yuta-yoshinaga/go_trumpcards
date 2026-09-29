@@ -409,7 +409,7 @@ describe('CrescentPage', () => {
     renderWithProviders(<CrescentPage />);
     const status = await screen.findByTestId('cr-selection-status');
     fireEvent.click(screen.getByAltText('♠ 2').closest('button') as HTMLButtonElement);
-    await waitFor(() => expect(status).toHaveTextContent(/置ける場所が\d+箇所/));
+    await waitFor(() => expect(status).toHaveTextContent(/置ける場所が\d+箇所.*組札0/));
   });
 });
 

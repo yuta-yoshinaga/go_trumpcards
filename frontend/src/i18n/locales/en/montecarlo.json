@@ -18,7 +18,8 @@
     "stalemate": "No moves available",
     "win": "All 52 cards removed!",
     "loss": "Game Over",
-    "empty": "empty"
+    "empty": "empty",
+    "cellPosition": "row {{row}}, column {{col}}"
   },
   "button": {
     "deal": "Deal",

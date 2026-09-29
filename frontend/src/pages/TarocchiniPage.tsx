@@ -20,7 +20,7 @@ import { useCliMode } from '../hooks/useCliMode';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
-import { CPU_DIFFICULTY_OPTIONS, TARGET_ROUNDS_OPTIONS, useTarocchiniGame } from '../hooks/useTarocchiniGame';
+import { CPU_DIFFICULTY_OPTIONS, useTarocchiniGame } from '../hooks/useTarocchiniGame';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -181,11 +181,13 @@ function TarocchiniPageContent() {
                     onSelect: (v) => handleConfigChange('cpuDifficulty', v),
                   },
                   {
-                    type: 'select',
+                    type: 'number',
                     id: 'targetRounds',
                     label: t('settings.targetRounds'),
                     value: tarocchiniConfig.targetRounds,
-                    options: TARGET_ROUNDS_OPTIONS.map((v) => ({ value: v, label: String(v) })),
+                    min: 4,
+                    step: 4,
+                    description: t('settings.targetRoundsGuide'),
                     onSelect: (v) => handleConfigChange('targetRounds', v),
                   },
                   hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),

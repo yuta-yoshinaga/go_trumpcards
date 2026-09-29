@@ -390,6 +390,7 @@ function FortressPageContent() {
                             aria-label={t('foundationAriaLabel', {
                               suit: FOUNDATION_SUITS[idx],
                               count: pile.length,
+                              topCard: cardAlt(pile[pile.length - 1]),
                             })}
                             className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}${
                               isFoundationHintTarget ? ' ring-2 ring-ds-success motion-safe:animate-pulse' : ''

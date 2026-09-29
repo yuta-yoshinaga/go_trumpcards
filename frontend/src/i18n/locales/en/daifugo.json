@@ -17,6 +17,11 @@
   "tableEmpty": "(empty)",
   "lastPlayedBy": "(played by {{name}})",
   "playButton": "Play Selected",
+  "actions": {
+    "playableAria": "{{card}}. Playable",
+    "notPlayableAria": "{{card}}. Not playable",
+    "notPlayableReason": "This card cannot be played now."
+  },
   "passButton": "Pass",
   "clearSelectionButton": "Clear selection",
   "discardButton": "Discard",

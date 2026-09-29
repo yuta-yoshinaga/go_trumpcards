@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { bidWhistApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -482,5 +482,21 @@ describe('BidWhistPage', () => {
     renderWithProviders(<BidWhistPage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
     expect(screen.queryByTestId('nextround-button')).not.toBeInTheDocument();
+  });
+
+  it('marks the current dealer seat', async () => {
+    mockExec.mockResolvedValue(makeState({ dealerIdx: 1 }));
+    renderWithProviders(<BidWhistPage />);
+    expect(await screen.findAllByTestId('bidwhist-dealer-badge')).toHaveLength(1);
+  });
+
+  it('marks the human seat when the human is the dealer', async () => {
+    mockExec.mockResolvedValue(makeState({ dealerIdx: 0 }));
+    renderWithProviders(<BidWhistPage />);
+
+    expect(await screen.findAllByTestId('bidwhist-dealer-badge')).toHaveLength(1);
+    const humanRow = document.querySelector<HTMLElement>('[data-tutorial="bw-hand"]');
+    if (!humanRow) throw new Error('Human hand row was not rendered');
+    expect(within(humanRow).getByTestId('bidwhist-dealer-badge')).toBeInTheDocument();
   });
 });

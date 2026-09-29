@@ -195,6 +195,12 @@ func (_m *MockSchafkopfGame) GetRoundPickerWon() bool {
 	return ret.Get(0).(bool)
 }
 
+// GetLastDealChipDelta モック
+func (_m *MockSchafkopfGame) GetLastDealChipDelta(i int) int {
+	ret := _m.Called(i)
+	return ret.Get(0).(int)
+}
+
 // GetWinnerIdx モック
 func (_m *MockSchafkopfGame) GetWinnerIdx() int {
 	ret := _m.Called()

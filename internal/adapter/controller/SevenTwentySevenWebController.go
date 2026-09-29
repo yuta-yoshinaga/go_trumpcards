@@ -43,9 +43,10 @@ func (p SevenTwentySevenWebInput) ToConfig() domain.SevenTwentySevenConfig {
 
 // SevenTwentySevenWebOutputPlayer は 1 プレイヤーの出力。
 type SevenTwentySevenWebOutputPlayer struct {
-	ID      int  `json:"id"`
-	IsHuman bool `json:"isHuman"`
-	Chips   int  `json:"chips"`
+	ID        int  `json:"id"`
+	IsHuman   bool `json:"isHuman"`
+	Chips     int  `json:"chips"`
+	NetChange int  `json:"netChange"`
 	// Standing は「もう引かない」と宣言済みか。
 	Standing bool `json:"standing"`
 	// LowScore / HighScore は 7 側 / 27 側の得点を表示用の文字列で返す

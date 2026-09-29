@@ -58,6 +58,13 @@ beforeEach(() => {
 });
 
 describe('PolignacPage', () => {
+  it('announces playable cards while retaining each card name', async () => {
+    mockExec.mockResolvedValue(makeState({ validPlays: [1] }));
+    renderWithProviders(<PolignacPage />);
+    expect(await screen.findAllByRole('button', { name: /プレイ可能/ })).toHaveLength(1);
+    expect(screen.getAllByRole('button', { name: /を出す/ })).toHaveLength(3);
+  });
+
   it('resets on mount', async () => {
     renderWithProviders(<PolignacPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));

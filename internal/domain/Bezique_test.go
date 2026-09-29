@@ -277,6 +277,43 @@ func TestBezique_JSONRoundTrip(t *testing.T) {
 	assert.Equal(t, b.GetStockRemaining(), b2.GetStockRemaining())
 }
 
+func TestBezique_LastTrickBonusAndDealReset(t *testing.T) {
+	deck := domain.NewTrumpCardsBezique()
+	for deck.GetRemainingCount() > 0 {
+		deck.DrawCard()
+	}
+	b := domain.NewBezique(deck, []*domain.BeziquePlayer{domain.NewBeziquePlayer(true), domain.NewBeziquePlayer(false)}, domain.DefaultBeziqueConfig())
+	b.SetPhase(domain.BeziquePhasePlay)
+	b.SetTrumpSuit(domain.CardDesignSpade)
+	b.SetTrumpCard(nil)
+	b.SetCurrentPlayerIdx(0)
+	b.SetCurrentTrick([]*domain.TrickCard{{PlayerIdx: 1, Card: bzCard(domain.CardDesignHeart, 7)}})
+	bzSetHand(b.GetPlayer(0), bzCard(domain.CardDesignSpade, 1))
+	bzSetHand(b.GetPlayer(1))
+
+	require.NoError(t, b.PlayerPlay(0))
+	assert.Equal(t, domain.BeziquePhaseRoundEnd, b.GetPhase())
+	assert.Equal(t, domain.BeziqueLastTrickBonus, b.GetLastTrickBonus(0))
+	assert.Zero(t, b.GetLastTrickBonus(1))
+
+	b.NextRound()
+	assert.Zero(t, b.GetLastTrickBonus(0))
+	assert.Zero(t, b.GetLastTrickBonus(1))
+}
+
+func TestBezique_JSONRoundTripPreservesLastTrickBonus(t *testing.T) {
+	b := newTestBezique(true)
+	b.Reset()
+	data, err := json.Marshal(b)
+	require.NoError(t, err)
+	data = []byte(strings.Replace(string(data), `"ltb":[0,0]`, `"ltb":[10,0]`, 1))
+	require.Contains(t, string(data), `"ltb":[10,0]`)
+	var restored domain.Bezique
+	require.NoError(t, json.Unmarshal(data, &restored))
+	assert.Equal(t, domain.BeziqueLastTrickBonus, restored.GetLastTrickBonus(0))
+	assert.Zero(t, restored.GetLastTrickBonus(1))
+}
+
 func TestBezique_UnmarshalRejectsInvalid(t *testing.T) {
 	b := newTestBezique(true)
 	b.Reset()

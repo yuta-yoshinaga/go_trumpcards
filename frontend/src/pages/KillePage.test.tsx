@@ -160,6 +160,38 @@ describe('KillePage', () => {
     expect(showdown).toHaveTextContent('最弱で脱落');
   });
 
+  it('summarizes showdown losers and announces the game winner at game end', async () => {
+    const showdownState = makeState({
+      phase: KillePhase.SHOWDOWN,
+      winnerIdx: 2,
+      pot: 17,
+      loserIdxs: [1, 3],
+      players: [seat(0, true), seat(1, false, { isOut: true }), seat(2, false), seat(3, false, { isOut: true })],
+    });
+    mockExec.mockResolvedValue(showdownState);
+    renderWithProviders(<KillePage />);
+    const showdown = await screen.findByTestId('kille-showdown');
+    expect(showdown).toHaveAttribute('role', 'status');
+    expect(showdown).toHaveAttribute('aria-live', 'polite');
+    expect(showdown).toHaveTextContent('このショーダウンで CPU 1、CPU 3 が脱落しました。');
+    expect(showdown).toHaveTextContent('CPU 1 が脱落しました');
+    expect(showdown).not.toHaveTextContent('勝ちです');
+
+    mockExec.mockResolvedValue(
+      makeState({
+        ...showdownState,
+        phase: KillePhase.GAME_END,
+        gameEndFlag: true,
+        winnerIdx: 2,
+        pot: 0,
+      }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: /次のラウンドへ/ }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
+    await waitFor(() => expect(showdown).toHaveTextContent('CPU 2 の勝ちです。'));
+    expect(showdown).not.toHaveTextContent('ポット');
+  });
+
   it('offers the buy-back at its current price', async () => {
     mockExec.mockResolvedValue(
       makeState({

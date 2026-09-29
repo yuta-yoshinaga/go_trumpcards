@@ -88,6 +88,12 @@ describe('SergeantMajorPage', () => {
     }
   });
 
+  it('marks the current seat during play', async () => {
+    mockExec.mockResolvedValue(playing());
+    renderWithProviders(<SergeantMajorPage />);
+    expect(await screen.findByTestId('sm-turn-0')).toHaveAttribute('aria-current', 'step');
+  });
+
   it('marks the dealer', async () => {
     mockExec.mockResolvedValue(playing({ dealerIdx: 1 } as Partial<SergeantMajorResponse>));
     renderWithProviders(<SergeantMajorPage />);

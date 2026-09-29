@@ -123,6 +123,20 @@ describe('UltiPage', () => {
     expect(screen.getByRole('button', { name: 'ドゥルマルス' })).toBeInTheDocument();
   });
 
+  it('names the trump suit group and preserves suit state and contract descriptions', async () => {
+    mockExec.mockResolvedValue(bidPhaseState);
+    renderWithProviders(<UltiPage />);
+
+    const trumpGroup = await screen.findByRole('group', { name: '切り札' });
+    const spadeButton = screen.getByRole('button', { name: 'スペード' });
+    expect(trumpGroup).toContainElement(spadeButton);
+    expect(spadeButton).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(spadeButton);
+    expect(spadeButton).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'パルティ' })).toHaveAttribute('aria-describedby', 'ulti-bid-desc-party');
+  });
+
   it('Ulti is disabled until a trump suit is picked, then dispatches bid with the suit', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<UltiPage />);

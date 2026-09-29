@@ -108,6 +108,11 @@ func (_m *MockSevenCardStudGame) GetRoundResults() []domain.SevenCardStudResult 
 	return nil
 }
 
+func (_m *MockSevenCardStudGame) GetRoundNetChange(playerIdx int) int {
+	ret := _m.Called(playerIdx)
+	return ret.Int(0)
+}
+
 func (_m *MockSevenCardStudGame) GetCpuActions() []domain.SevenCardStudCpuAction {
 	ret := _m.Called()
 	if val, ok := ret.Get(0).([]domain.SevenCardStudCpuAction); ok {

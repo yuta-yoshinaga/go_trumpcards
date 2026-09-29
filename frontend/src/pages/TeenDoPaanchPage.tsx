@@ -130,7 +130,7 @@ function TeenDoPaanchPageContent() {
         ? t('phase.trump')
         : t('phase.play');
 
-  // 出せる札に緑の枠を足すだけで、押せなくはしない（サーバが必ず検証する）。
+  // 出せない札もフォーカスできるようにし、理由を読み上げる。クリックしても出せない。
   const legalRing = new Set(isHumanTurn ? state.validPlays : []);
 
   const resultBanner = (() => {
@@ -261,19 +261,30 @@ function TeenDoPaanchPageContent() {
                   {t('header.you')}: {human.cardCount}
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {human.cards.map((card, idx) => (
-                    <button
-                      key={`${card.design}-${card.value}-${idx}`}
-                      type="button"
-                      onClick={() => handlePlay(idx)}
-                      disabled={loading || !isHumanTurn}
-                      aria-label={t('actions.playAria', { card: cardAlt(card) })}
-                      className={`disabled:opacity-50 ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
-                    >
-                      <CardImage card={card} width={cardWidth} />
-                    </button>
-                  ))}
+                  {human.cards.map((card, idx) => {
+                    const playable = legalRing.has(idx);
+                    const blocked = isHumanTurn && !playable;
+                    return (
+                      <button
+                        key={`${card.design}-${card.value}-${idx}`}
+                        type="button"
+                        onClick={() => {
+                          if (playable) handlePlay(idx);
+                        }}
+                        disabled={loading || !isHumanTurn}
+                        aria-label={t('actions.playAria', { card: cardAlt(card) })}
+                        aria-disabled={blocked ? true : undefined}
+                        aria-describedby={blocked ? 'td-play-unavailable' : undefined}
+                        className={`${blocked ? 'aria-disabled:cursor-not-allowed aria-disabled:opacity-50' : 'disabled:opacity-50'} ${playable ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
+                      >
+                        <CardImage card={card} width={cardWidth} />
+                      </button>
+                    );
+                  })}
                 </div>
+                <span id="td-play-unavailable" className="sr-only">
+                  {t('actions.playUnavailable')}
+                </span>
               </div>
             )}
 

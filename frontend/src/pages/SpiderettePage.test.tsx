@@ -87,6 +87,16 @@ beforeEach(() => {
 });
 
 describe('SpiderettePage', () => {
+  it('labels empty tableau targets with their zero-based column index', async () => {
+    renderWithProviders(<SpiderettePage />);
+
+    const firstEmptyColumn = await screen.findByTestId('spdt-empty-col-2');
+    const secondEmptyColumn = screen.getByTestId('spdt-empty-col-3');
+    expect(firstEmptyColumn).toHaveAccessibleName('空の場札列 2');
+    expect(secondEmptyColumn).toHaveAccessibleName('空の場札列 3');
+    expect(firstEmptyColumn).not.toHaveAccessibleName(secondEmptyColumn.getAttribute('aria-label') ?? '');
+  });
+
   it('empty tableau targets stay focusable and explain source selection before a move', async () => {
     renderWithProviders(<SpiderettePage />);
 

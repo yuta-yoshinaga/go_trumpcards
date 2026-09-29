@@ -37,7 +37,8 @@
     "nextRound": "次のラウンドへ",
     "reset": "リセット",
     "giveUp": "投了",
-    "playAria": "{{card}} を出す"
+    "playAria": "{{card}} を出す",
+    "playUnavailable": "自分の手番で出せる札ではありません"
   },
   "result": {
     "win": "あなたの勝ち！ {{score}}点",

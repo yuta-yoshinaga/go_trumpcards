@@ -36,8 +36,10 @@ type DehlaPakadWebOutputPlayer struct {
 	CardCount int              `json:"cardCount"`
 	Cards     []*WebOutputCard `json:"cards"`
 	// GatheredCount はこの席が中央の山を引き取った札の枚数。
-	GatheredCount int  `json:"gatheredCount"`
-	IsDealer      bool `json:"isDealer"`
+	GatheredCount int `json:"gatheredCount"`
+	// GatheredCards はこの席が中央の山から引き取った札。
+	GatheredCards []*WebOutputCard `json:"gatheredCards"`
+	IsDealer      bool             `json:"isDealer"`
 	// IsTrumpChooser はこの席が切り札を決めるか。
 	IsTrumpChooser bool `json:"isTrumpChooser"`
 }

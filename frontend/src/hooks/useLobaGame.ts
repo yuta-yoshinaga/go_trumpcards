@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { lobaApi } from '../api/gameApi';
 import { useGameApi } from './useGameApi';
 
@@ -9,7 +9,23 @@ import { useGameApi } from './useGameApi';
  * card fits an existing one, are both decided by the server.
  */
 export function useLobaGame() {
-  const { state, loading, error, exec: rawExec, retry } = useGameApi(lobaApi.exec);
+  const pendingDiscardIndex = useRef<number | null>(null);
+  const [drawnDiscardIndex, setDrawnDiscardIndex] = useState<number | null>(null);
+  const {
+    state,
+    loading,
+    error,
+    exec: rawExec,
+    retry,
+  } = useGameApi(lobaApi.exec, {
+    onSuccess: (response, args) => {
+      const index = pendingDiscardIndex.current;
+      pendingDiscardIndex.current = null;
+      if (args[0] !== 'drawdiscard' || index === null) return;
+      const human = response.players.find((player) => player.isHuman);
+      if (human && human.cards.length > index) setDrawnDiscardIndex(index);
+    },
+  });
 
   const runApi = useCallback((...args: Parameters<typeof rawExec>) => rawExec(...args), [rawExec]);
 
@@ -26,8 +42,11 @@ export function useLobaGame() {
   }, [runApi]);
 
   const handleDrawDiscard = useCallback(() => {
+    const human = state?.players.find((player) => player.isHuman);
+    pendingDiscardIndex.current = human?.cards.length ?? null;
+    setDrawnDiscardIndex(null);
     runApi('drawdiscard');
-  }, [runApi]);
+  }, [runApi, state]);
 
   const handleMeld = useCallback(
     (cardIndices: number[]) => {
@@ -62,6 +81,7 @@ export function useLobaGame() {
     handleReset,
     handleDrawStock,
     handleDrawDiscard,
+    drawnDiscardIndex,
     handleMeld,
     handleLayOff,
     handleDiscard,

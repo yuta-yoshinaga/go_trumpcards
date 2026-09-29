@@ -53,6 +53,12 @@
   "selectContractPrompt": "あなたが親です — このディールのコントラクトを選んでください。",
   "selectContractCpu": "CPU {{id}} がコントラクトを選んでいます…",
   "selectTrumpPrompt": "キング（切り札）の切り札スートを選んでください。",
+  "trumpSuit": {
+    "1": "スペード",
+    "2": "クラブ",
+    "3": "ハート",
+    "4": "ダイヤ"
+  },
   "selectButton": "選択",
   "cards": "{{count}}枚",
   "tricks": "{{count}}トリック",

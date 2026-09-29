@@ -556,6 +556,14 @@ describe('SpiderPage', () => {
     await waitFor(() => expect(screen.getByText(/ヒントがあります/)).toBeInTheDocument());
   });
 
+  it('keeps the message live region mounted before a message arrives', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<SpiderPage />);
+    const region = await screen.findByTestId('spider-game-message');
+    expect(region).toHaveAttribute('role', 'status');
+    expect(region).toBeEmptyDOMElement();
+  });
+
   it('displays message with messageCode', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
@@ -563,7 +571,8 @@ describe('SpiderPage', () => {
       messageCode: 'spider.playing',
     });
     renderWithProviders(<SpiderPage />);
-    await waitFor(() => expect(screen.getAllByText('プレイ中').length).toBeGreaterThanOrEqual(1));
+    const region = await screen.findByTestId('spider-game-message');
+    await waitFor(() => expect(region).toHaveTextContent('プレイ中'));
   });
 
   it('stock card back is clickable during playing phase', async () => {

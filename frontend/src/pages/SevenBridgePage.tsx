@@ -449,11 +449,15 @@ function SevenBridgePageContent() {
                   >
                     {t('layoffButton')}
                   </button>
+                  <span id="sb-discard-hint" className="sr-only" data-testid="sb-discard-hint">
+                    {selectedCardIndices.length === 1 ? t('requirementMet') : t('discardRequireOne')}
+                  </span>
                   <button
                     type="button"
                     className={btnSuccess}
                     onClick={handleDiscard}
                     disabled={loading || selectedCardIndices.length !== 1}
+                    aria-describedby="sb-discard-hint"
                     data-tutorial="sb-discard-button"
                   >
                     {t('discardButton')}

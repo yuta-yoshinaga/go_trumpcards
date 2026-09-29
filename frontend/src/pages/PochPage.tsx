@@ -177,11 +177,19 @@ function PochPageContent() {
             </div>
 
             <div className="text-center mb-3">
-              <div className="text-game-text-muted text-xs mb-1">{t('turnUp')}</div>
+              <div className="text-ds-text-muted text-xs mb-1">{t('turnUp')}</div>
               {state.turnUp ? (
-                <div className="flex justify-center">
-                  <AnimatedCard card={state.turnUp} width={cardWidth} draggable={false} />
-                </div>
+                <fieldset
+                  aria-label={t('paySuitAriaLabel', { suit: t(`suit.${state.turnUp.design}`) })}
+                  className="border-0 p-0 m-0 min-w-0 flex flex-col items-center gap-1"
+                >
+                  <div className="flex justify-center">
+                    <AnimatedCard card={state.turnUp} width={cardWidth} draggable={false} />
+                  </div>
+                  <span className="text-ds-text-primary text-xs font-medium">
+                    {t('paySuit', { suit: t(`suit.${state.turnUp.design}`) })}
+                  </span>
+                </fieldset>
               ) : (
                 <span className="text-game-text-muted text-xs">—</span>
               )}

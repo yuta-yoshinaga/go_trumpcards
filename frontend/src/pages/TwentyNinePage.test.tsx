@@ -124,6 +124,23 @@ describe('TwentyNinePage', () => {
     expect(readout).toHaveTextContent('現在の最高ビッド: 20（CPU 2）');
   });
 
+  it('shows committed bids and passes by seat during bidding and keeps them during play', async () => {
+    mockExec.mockResolvedValue(makeTwentyNineState({ dealerIdx: 3, currentPlayerIdx: 2, bids: [0, 16, 0, 0] }));
+    const { unmount } = renderWithProviders(<TwentyNinePage />);
+    const history = await screen.findByTestId('tn29-bid-history');
+    expect(history).toHaveTextContent('CPU 1');
+    expect(history).toHaveTextContent('パス');
+    expect(history).toHaveTextContent('CPU 2');
+    expect(history).toHaveTextContent('16');
+    expect(history).toHaveTextContent('チームB');
+    expect(history).toHaveTextContent('未入札');
+
+    unmount();
+    mockExec.mockResolvedValue(makeTwentyNineState({ phase: 1, bids: [0, 16, 24, 0] }));
+    renderWithProviders(<TwentyNinePage />);
+    await waitFor(() => expect(screen.getByTestId('tn29-bid-history')).toHaveTextContent('24'));
+  });
+
   it('updates the highest-bid readout as bids change', async () => {
     renderWithProviders(<TwentyNinePage />);
     await waitFor(() => expect(screen.getByTestId('tn29-highest-bid')).toHaveTextContent('まだ入札なし'));

@@ -14,6 +14,8 @@
   },
   "round": "ラウンド {{n}}/{{total}}",
   "drawPile": "山札: {{count}}枚",
+  "drawPileAnnouncement": "山札の残り: {{count}}枚",
+  "drawPileEmpty": "山札切れ",
   "table": "場のメルド",
   "tableEmpty": "まだメルドはありません",
   "meldKindSet": "セット",

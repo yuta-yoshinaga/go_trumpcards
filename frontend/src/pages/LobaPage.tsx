@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { lobaApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardBack } from '../components/CardImage';
@@ -52,6 +52,12 @@ function LobaPageContent() {
   // selection has to be explicit rather than click-to-play.
   const [selected, setSelected] = useState<number[]>([]);
   const [meldTarget, setMeldTarget] = useState<number | null>(null);
+
+  useEffect(() => {
+    const drawnIndex = game.drawnDiscardIndex;
+    if (drawnIndex !== null)
+      setSelected((previous) => (previous.includes(drawnIndex) ? previous : [...previous, drawnIndex]));
+  }, [game.drawnDiscardIndex]);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('loba');
   const cliConfig: CliGameConfig<LobaResponse, Parameters<typeof lobaApi.exec>> = useMemo(

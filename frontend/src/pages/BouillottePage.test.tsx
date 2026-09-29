@@ -313,6 +313,22 @@ describe('BouillottePage', () => {
   // **レイズが消えた理由を書く。**回数上限とチップ不足を区別できないと、
   // 突然選択肢を奪われたように見える (#4924)。
   describe('raise cap readout', () => {
+    it('announces raise availability changes through a persistent live region', async () => {
+      mockExec.mockResolvedValue(
+        makeBouillotteState({ phase: 0, isHumanTurn: true, canRaise: false, raiseCount: 3, maxRaises: 3 }),
+      );
+      renderWithProviders(<BouillottePage />);
+      const announcement = await screen.findByTestId('bouillotte-raise-announcement');
+      expect(announcement).toHaveAttribute('aria-live', 'polite');
+      expect(announcement).toHaveTextContent('レイズ上限（3回）に達しました');
+    });
+
+    it('keeps the live region mounted when it is not the human betting turn', async () => {
+      mockExec.mockResolvedValue(cpuTurnState);
+      renderWithProviders(<BouillottePage />);
+      expect(await screen.findByTestId('bouillotte-raise-announcement')).toBeInTheDocument();
+    });
+
     it('shows the current count against the cap while raising is still open', async () => {
       mockExec.mockResolvedValue(
         makeBouillotteState({ phase: 0, isHumanTurn: true, canRaise: true, raiseCount: 1, maxRaises: 3 }),

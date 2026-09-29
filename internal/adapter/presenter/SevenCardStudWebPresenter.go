@@ -105,6 +105,7 @@ func (p *SevenCardStudWebPresenter) buildPlayersOutput(s interfaces.SevenCardStu
 			ID:            i,
 			IsHuman:       player.GetIsHuman(),
 			Chips:         player.GetChips(),
+			NetChange:     s.GetRoundNetChange(i),
 			CurrentBet:    player.GetCurrentBet(),
 			Folded:        player.GetFolded(),
 			AllIn:         player.GetAllIn(),

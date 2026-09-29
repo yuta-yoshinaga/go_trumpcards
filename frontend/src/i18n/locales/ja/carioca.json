@@ -1,5 +1,15 @@
 {
   "title": "カリオカ",
+  "settings": {
+    "playerCount": "プレイヤー数",
+    "cpuDifficulty": "CPU の強さ",
+    "difficulty": {
+      "0": "弱い",
+      "1": "普通",
+      "2": "強い"
+    },
+    "failContractPenalty": "コントラクト未達ペナルティ"
+  },
   "phase": {
     "draw": "ドロー",
     "play": "プレイ",

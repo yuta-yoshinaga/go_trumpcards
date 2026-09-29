@@ -10,6 +10,8 @@
   "undo": "元に戻す",
   "redeal": "再配り",
   "redealKeepLabel": "再配り ({{used}}/{{total}}) — {{locked}}枚維持",
+  "redealConfirmTitle": "再配りを確認",
+  "redealConfirmMessage": "再配りを行うと、ロック済みカード以外の配置が変わります。残り回数: {{remaining}}",
   "giveup": "ギブアップ",
   "hint": "ヒント",
   "kbd": {

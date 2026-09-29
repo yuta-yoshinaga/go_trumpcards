@@ -28,7 +28,7 @@
     "a": "Team A",
     "b": "Team B"
   },
-  "teamScore": "{{team}}: {{score}} pts",
+  "teamScore": "{{team}}: {{score}} / target {{target}} pts",
   "playButton": "Play",
   "declareMarriage": "Marriage {{suit}}",
   "marriageAria": "Declare {{suit}} marriage ({{points}} points)",

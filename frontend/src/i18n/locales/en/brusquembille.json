@@ -56,5 +56,8 @@
   "noHint": "No hint available",
   "settings": {
     "playerCount": "Players"
+  },
+  "accessibility": {
+    "followRequired": "The stock is empty. If you have a card in the suit led, you must play that suit. Unplayable cards appear dimmed."
   }
 }

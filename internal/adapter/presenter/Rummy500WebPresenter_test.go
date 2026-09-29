@@ -110,6 +110,7 @@ func TestRummy500WebPresenter_Output(t *testing.T) {
 		})
 		out := p.Output(m, nil)
 		assert.Contains(t, out, `"laidMelds":[`)
+		assert.Contains(t, out, `"score":21`)
 	})
 
 	// **押せるボタンが必ず通るように。**どのメルドのボタンも常に押せて、置けるかは

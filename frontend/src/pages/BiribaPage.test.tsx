@@ -150,6 +150,39 @@ describe('BiribaPage', () => {
     expect(screen.getByTestId('ca-discard-pile-cards').querySelectorAll('img')).toHaveLength(3);
   });
 
+  it('keeps the discard pile viewer closed after a redraw in the same draw phase', async () => {
+    renderWithProviders(<BiribaPage />);
+    const viewer = await screen.findByTestId('ca-discard-pile-viewer');
+    expect(viewer).toHaveAttribute('open');
+
+    fireEvent.click(viewer.querySelector('summary') as HTMLElement);
+    expect(viewer).not.toHaveAttribute('open');
+
+    fireEvent.click(screen.getByTestId('bu-sort-rank'));
+    expect(screen.getByTestId('ca-discard-pile-viewer')).not.toHaveAttribute('open');
+  });
+
+  it('opens the discard pile viewer again on the next draw phase', async () => {
+    renderWithProviders(<BiribaPage />);
+    const viewer = await screen.findByTestId('ca-discard-pile-viewer');
+    fireEvent.click(viewer.querySelector('summary') as HTMLElement);
+    expect(viewer).not.toHaveAttribute('open');
+
+    mockExec.mockResolvedValue(meldPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: '山札から引く' }));
+    await screen.findByRole('button', { name: 'スキップ' });
+
+    mockExec.mockResolvedValue(discardPhaseState);
+    fireEvent.click(screen.getByRole('button', { name: 'スキップ' }));
+    await screen.findByRole('button', { name: '捨てる' });
+
+    mockExec.mockResolvedValue(drawPhaseState);
+    fireEvent.click(document.querySelector('[data-tutorial="ca-player-hand"] button') as HTMLElement);
+    fireEvent.click(screen.getByRole('button', { name: '捨てる' }));
+
+    await waitFor(() => expect(screen.getByTestId('ca-discard-pile-viewer')).toHaveAttribute('open'));
+  });
+
   it('shows an empty message when the discard pile is empty', async () => {
     mockExec.mockResolvedValue({ ...drawPhaseState, discardTop: null, discardPile: [], discardPileCount: 0 });
     renderWithProviders(<BiribaPage />);

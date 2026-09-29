@@ -91,16 +91,17 @@ type Schafkopf struct {
 	pickerIdx     int
 	// contract は採用された契約、soloSuit は Solo で選ばれた切り札スート。
 	// **切り札の構成が契約で変わる**ので、盤面の一部として持つ。
-	contract        SchafkopfContract
-	soloSuit        int  // ピッカー (-1 = 未確定)
-	partnerIdx      int  // 相棒 (-1 = 単独 or 未確定)
-	calledSuit      int  // 呼びスート (0 = 未確定/単独)
-	partnerRevealed bool // 呼びカードがプレイされ相棒が判明したか
-	roundPickerPts  int  // 直近ラウンドのピッカー組得点
-	roundMultiplier int  // 直近ラウンドの倍率 (1/2/3)
-	roundPickerWon  bool // 直近ラウンドでピッカー組が勝ったか
-	gameEndFlag     bool
-	winnerIdx       int // ゲーム勝者 (-1 = 未確定)
+	contract          SchafkopfContract
+	soloSuit          int   // ピッカー (-1 = 未確定)
+	partnerIdx        int   // 相棒 (-1 = 単独 or 未確定)
+	calledSuit        int   // 呼びスート (0 = 未確定/単独)
+	partnerRevealed   bool  // 呼びカードがプレイされ相棒が判明したか
+	roundPickerPts    int   // 直近ラウンドのピッカー組得点
+	roundMultiplier   int   // 直近ラウンドの倍率 (1/2/3)
+	roundPickerWon    bool  // 直近ラウンドでピッカー組が勝ったか
+	lastDealChipDelta []int // 直近ラウンドの席ごとのチップ増減
+	gameEndFlag       bool
+	winnerIdx         int // ゲーム勝者 (-1 = 未確定)
 	actionLogBase
 }
 
@@ -156,6 +157,7 @@ func (g *Schafkopf) NextRound() {
 
 // startRound 手札・ブラインドを配り、ピックフェーズを開始する。
 func (g *Schafkopf) startRound() {
+	g.lastDealChipDelta = make([]int, len(g.players))
 	g.trickNumber = 1
 	g.currentTrick = nil
 	g.pickerIdx = -1
@@ -507,6 +509,7 @@ func (g *Schafkopf) appendLog(playerIdx int, actionType, detailCode string, deta
 // ピッカー組勝利時: 各ディフェンダーが unit*mult を支払い、相棒ありなら
 // ピッカー 2 : 相棒 1 の比で受け取る。単独なら全額ピッカーへ。敗北時は符号反転。
 func (g *Schafkopf) settleChips(pickerWon bool, mult int) {
+	g.lastDealChipDelta = make([]int, len(g.players))
 	unit := g.config.BaseChips * mult
 	sign := 1
 	if !pickerWon {
@@ -523,16 +526,24 @@ func (g *Schafkopf) settleChips(pickerWon bool, mult int) {
 		}
 		defenders++
 		// ディフェンダー: 敗北側なら支払い、勝利側なら受け取り。
-		g.players[i].AddChips(-sign * unit)
+		delta := -sign * unit
+		g.players[i].AddChips(delta)
+		g.lastDealChipDelta[i] += delta
 	}
 	pot := defenders * unit
 	if g.partnerIdx >= 0 {
 		// 宣言側 2 人で山分け。奇数なら端数はピッカーへ寄せる (総量は保つ)。
 		partnerShare := pot / 2
-		g.players[g.partnerIdx].AddChips(sign * partnerShare)
-		g.players[g.pickerIdx].AddChips(sign * (pot - partnerShare))
+		partnerDelta := sign * partnerShare
+		pickerDelta := sign * (pot - partnerShare)
+		g.players[g.partnerIdx].AddChips(partnerDelta)
+		g.lastDealChipDelta[g.partnerIdx] += partnerDelta
+		g.players[g.pickerIdx].AddChips(pickerDelta)
+		g.lastDealChipDelta[g.pickerIdx] += pickerDelta
 	} else {
-		g.players[g.pickerIdx].AddChips(sign * pot)
+		delta := sign * pot
+		g.players[g.pickerIdx].AddChips(delta)
+		g.lastDealChipDelta[g.pickerIdx] += delta
 	}
 }
 
@@ -1002,6 +1013,14 @@ func (g *Schafkopf) GetRoundMultiplier() int { return g.roundMultiplier }
 // GetRoundPickerWon 直近ラウンドでピッカー組が勝ったか取得
 func (g *Schafkopf) GetRoundPickerWon() bool { return g.roundPickerWon }
 
+// GetLastDealChipDelta returns the chip change for a seat in the most recent deal.
+func (g *Schafkopf) GetLastDealChipDelta(i int) int {
+	if i < 0 || i >= len(g.lastDealChipDelta) {
+		return 0
+	}
+	return g.lastDealChipDelta[i]
+}
+
 // GetGameEndFlag ゲーム終了フラグ取得
 func (g *Schafkopf) GetGameEndFlag() bool { return g.gameEndFlag }
 
@@ -1280,45 +1299,47 @@ type schafkopfJSON struct {
 	PickerIdx        int                `json:"pk"`
 	// 契約は切り札の構成そのもの。落とすと復元後に Rufspiel に化け、
 	// Wenz/Solo の盤面で切り札が総入れ替えになる。
-	Contract        SchafkopfContract `json:"co"`
-	SoloSuit        int               `json:"ss"`
-	PartnerIdx      int               `json:"pt"`
-	CalledSuit      int               `json:"cs"`
-	PartnerRevealed bool              `json:"pr"`
-	RoundPickerPts  int               `json:"rp"`
-	RoundMultiplier int               `json:"rm"`
-	RoundPickerWon  bool              `json:"rw"`
-	GameEndFlag     bool              `json:"ge"`
-	WinnerIdx       int               `json:"wi"`
-	ActionLog       []*ActionLogEntry `json:"al"`
+	Contract          SchafkopfContract `json:"co"`
+	SoloSuit          int               `json:"ss"`
+	PartnerIdx        int               `json:"pt"`
+	CalledSuit        int               `json:"cs"`
+	PartnerRevealed   bool              `json:"pr"`
+	RoundPickerPts    int               `json:"rp"`
+	RoundMultiplier   int               `json:"rm"`
+	RoundPickerWon    bool              `json:"rw"`
+	LastDealChipDelta []int             `json:"ldcd"`
+	GameEndFlag       bool              `json:"ge"`
+	WinnerIdx         int               `json:"wi"`
+	ActionLog         []*ActionLogEntry `json:"al"`
 }
 
 // MarshalJSON implements json.Marshaler.
 func (g *Schafkopf) MarshalJSON() ([]byte, error) {
 	return json.Marshal(schafkopfJSON{
-		TrumpCards:       g.trumpCards,
-		Players:          g.players,
-		Config:           g.config,
-		Phase:            g.phase,
-		RoundNumber:      g.roundNumber,
-		TrickNumber:      g.trickNumber,
-		CurrentPlayerIdx: g.currentPlayerIdx,
-		CurrentTrick:     g.currentTrick,
-		LeadPlayerIdx:    g.leadPlayerIdx,
-		DealerIdx:        g.dealerIdx,
-		PassCount:        g.passCount,
-		PickerIdx:        g.pickerIdx,
-		Contract:         g.contract,
-		SoloSuit:         g.soloSuit,
-		PartnerIdx:       g.partnerIdx,
-		CalledSuit:       g.calledSuit,
-		PartnerRevealed:  g.partnerRevealed,
-		RoundPickerPts:   g.roundPickerPts,
-		RoundMultiplier:  g.roundMultiplier,
-		RoundPickerWon:   g.roundPickerWon,
-		GameEndFlag:      g.gameEndFlag,
-		WinnerIdx:        g.winnerIdx,
-		ActionLog:        g.actionLog,
+		TrumpCards:        g.trumpCards,
+		Players:           g.players,
+		Config:            g.config,
+		Phase:             g.phase,
+		RoundNumber:       g.roundNumber,
+		TrickNumber:       g.trickNumber,
+		CurrentPlayerIdx:  g.currentPlayerIdx,
+		CurrentTrick:      g.currentTrick,
+		LeadPlayerIdx:     g.leadPlayerIdx,
+		DealerIdx:         g.dealerIdx,
+		PassCount:         g.passCount,
+		PickerIdx:         g.pickerIdx,
+		Contract:          g.contract,
+		SoloSuit:          g.soloSuit,
+		PartnerIdx:        g.partnerIdx,
+		CalledSuit:        g.calledSuit,
+		PartnerRevealed:   g.partnerRevealed,
+		RoundPickerPts:    g.roundPickerPts,
+		RoundMultiplier:   g.roundMultiplier,
+		RoundPickerWon:    g.roundPickerWon,
+		LastDealChipDelta: g.lastDealChipDelta,
+		GameEndFlag:       g.gameEndFlag,
+		WinnerIdx:         g.winnerIdx,
+		ActionLog:         g.actionLog,
 	})
 }
 
@@ -1367,6 +1388,10 @@ func (g *Schafkopf) UnmarshalJSON(data []byte) error {
 	g.roundPickerPts = j.RoundPickerPts
 	g.roundMultiplier = j.RoundMultiplier
 	g.roundPickerWon = j.RoundPickerWon
+	g.lastDealChipDelta = j.LastDealChipDelta
+	if g.lastDealChipDelta == nil {
+		g.lastDealChipDelta = make([]int, len(g.players))
+	}
 	g.gameEndFlag = j.GameEndFlag
 	g.winnerIdx = j.WinnerIdx
 	g.actionLog = j.ActionLog

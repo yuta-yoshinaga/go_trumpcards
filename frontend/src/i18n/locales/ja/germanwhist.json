@@ -30,7 +30,10 @@
   "actions": {
     "reset": "リセット",
     "giveUp": "投了",
-    "playAria": "{{card}} を出す"
+    "playAria": "{{card}} を出す",
+    "playableAria": "{{card}}。出せる札",
+    "notPlayableAria": "{{card}}。出せない札",
+    "notPlayableReason": "この札は現在出せません。"
   },
   "result": {
     "youWin": "あなたの勝ち！ 後半 {{p0}}-{{p1}}",

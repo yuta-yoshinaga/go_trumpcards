@@ -25,6 +25,7 @@
   "handLabel": "あなたの手札",
   "currentTurn": "現在の手番: {{name}}",
   "playersTitle": "プレイヤー",
+  "dealerBadge": "ディーラー",
   "badge": {
     "blind": "ブラインド",
     "seen": "シーン",

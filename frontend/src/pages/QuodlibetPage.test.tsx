@@ -227,6 +227,38 @@ describe('QuodlibetPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextdeal'));
   });
 
+  it('shows completed deal penalties by seat and keeps the full history at game end', async () => {
+    const deals = Array.from({ length: 12 }, (_, i) => ({
+      contract: i % 4,
+      contractName: ['plus', 'minus', 'badNeighbour', 'alarich'][i % 4],
+      round: Math.floor(i / 4),
+      dealerIdx: i % 4,
+      points: [i + 1, 2, 3, 4],
+    }));
+    const totals = [deals.reduce((sum, deal) => sum + deal.points[0], 0), 24, 36, 48];
+    mockExec.mockResolvedValue(
+      makeQuodlibetState({
+        phase: 'gameEnd',
+        gameEndFlag: true,
+        dealNumber: 12,
+        dealHistory: deals,
+        players: contractState.players.map((player, i) => ({ ...player, penalty: totals[i] })),
+      }),
+    );
+    renderWithProviders(<QuodlibetPage />);
+
+    const history = await screen.findByTestId('quodlibet-score-history');
+    expect(history.querySelectorAll('tbody tr')).toHaveLength(12);
+    expect(history).toHaveTextContent('プラス');
+    for (const [i, total] of totals.entries()) {
+      const seatRows = history.querySelectorAll(`tbody tr td:nth-child(${i + 3})`);
+      expect(
+        Array.from(seatRows).reduce((sum, cell) => sum + Number(cell.textContent?.match(/[0-9]+/)?.[0] ?? 0), 0),
+      ).toBe(total);
+    }
+    expect(screen.getByTestId('quodlibet-scores')).toHaveTextContent(`${totals[0]} 点`);
+  });
+
   it('names the seats on the fewest penalty points at the end', async () => {
     mockExec.mockResolvedValue(
       makeQuodlibetState({ phase: 'gameEnd', gameEndFlag: true, isContractPhase: false, winners: [2] }),

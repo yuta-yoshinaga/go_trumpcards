@@ -26,6 +26,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { HorseResponse } from '../types/card';
 import { HorsePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { EIGHT_GAME_HELP, HORSE_HELP, parseHorseCommand } from '../utils/cli/commands/horseCommands';
 import { formatHorseState } from '../utils/cli/formatters/horseFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -226,6 +227,12 @@ export function HorsePageContent({ gameKey }: { gameKey: HorsePageGameKey }) {
               <span data-testid="ho-pot">{t('pot', { pot: state.pot })}</span>
             </div>
 
+            {gameKey === 'eightgame' && (
+              <p className="mx-auto max-w-3xl rounded-md bg-ds-surface px-3 py-2 text-center text-sm text-ds-text-muted">
+                {t(`rules.${state.disciplineName}`)}
+              </p>
+            )}
+
             {state.communityCards.length > 0 && (
               <div className="flex flex-col items-center gap-1" data-testid="ho-community">
                 <div className="text-xs text-ds-text-muted">{t('community')}</div>
@@ -340,7 +347,7 @@ export function HorsePageContent({ gameKey }: { gameKey: HorsePageGameKey }) {
                           key={`${card.design}-${card.value}`}
                           className={`rounded ${selected ? 'ring-2 ring-ds-accent' : ''}`}
                           aria-pressed={selected}
-                          aria-label={t('draw.toggle', { n: idx })}
+                          aria-label={cardAlt(card)}
                           data-testid={`ho-draw-card-${idx}`}
                           disabled={loading}
                           onClick={() =>

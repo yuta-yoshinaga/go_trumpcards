@@ -13,6 +13,8 @@
   "exchangeSelectedCount": "選択 {{n}} 枚",
   "exchangeConfirmable": "選択した {{n}} 枚を交換して確定できます",
   "exchangeNotConfirmable": "0枚では交換確定できません。交換せず進む場合は「スタンド」を選択してください",
+  "exchangeReceivedCards": "交換後に引いたカード: {{cards}}",
+  "listSeparator": "、",
   "standLabel": "スタンド",
   "standHint": "交換せず今の手札で勝負します",
   "drawOdds": "ドローオッズ:",

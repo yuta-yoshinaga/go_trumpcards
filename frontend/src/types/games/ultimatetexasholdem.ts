@@ -25,6 +25,7 @@ export interface UltimateTexasHoldemResponse extends BaseGameResponse {
   playPayout: number;
   tripsPayout: number;
   totalPayout: number;
+  netChange: number;
   playerHandRank: number;
   dealerHandRank: number;
 }

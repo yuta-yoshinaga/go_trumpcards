@@ -174,6 +174,28 @@ describe('BigTwoPage', () => {
     expect(screen.queryByTestId('bt-selected-playtype')).not.toBeInTheDocument();
   });
 
+  it('announces the cards and play type currently on the table', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        tableCards: [card('SPADE', 3), card('SPADE', 5), card('SPADE', 7), card('SPADE', 9), card('SPADE', 11)],
+        tablePlayType: 5,
+        currentTurn: 1,
+      }),
+    );
+    renderWithProviders(<BigTwoPage />);
+
+    const announcement = await screen.findByTestId('bt-table-play-announcement');
+    expect(announcement).toHaveAttribute('aria-live', 'polite');
+    expect(announcement).toHaveTextContent('♠ 3、♠ 5、♠ 7、♠ 9、♠ J');
+    expect(announcement).toHaveTextContent('フラッシュ');
+  });
+
+  it('keeps the table-play announcement empty when the table has no cards', async () => {
+    renderWithProviders(<BigTwoPage />);
+    const announcement = await screen.findByTestId('bt-table-play-announcement');
+    expect(announcement).toBeEmptyDOMElement();
+  });
+
   it('shows the table play-type label for the cards in play', async () => {
     mockExec.mockResolvedValue(
       makeState({

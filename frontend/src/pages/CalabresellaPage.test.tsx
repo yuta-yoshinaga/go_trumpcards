@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { calabresellaApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeCalabresellaState } from '../test/stateFactories';
 import { CalabresellaPage } from './CalabresellaPage';
@@ -18,6 +19,7 @@ const bidPhaseState = makeCalabresellaState({
   currentBidderIdx: 0,
   isHumanTurn: true,
   winningBid: 0,
+  highestBid: 0,
 });
 // A realistic discard phase: the soloist holds 16 cards (took the 4-card monte) and must
 // discard down to the regulation 12, so 4 discards remain. Keeps ♥Q for selection tests.
@@ -114,6 +116,39 @@ describe('CalabresellaPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'キアーモ' })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'ソロ' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'パス' })).toBeInTheDocument();
+  });
+
+  it('marks bids at or below the winning bid unavailable while keeping pass available', async () => {
+    mockExec.mockResolvedValue({ ...bidPhaseState, highestBid: 1 });
+    renderWithProviders(<CalabresellaPage />);
+    const chiamo = await screen.findByRole('button', { name: 'キアーモ' });
+    const solo = screen.getByRole('button', { name: 'ソロ' });
+    const pass = screen.getByRole('button', { name: 'パス' });
+    expect(chiamo).toHaveAttribute('aria-disabled', 'true');
+    expect(chiamo).toHaveAttribute('aria-describedby', 'calabresella-bid-unavailable-reason');
+    expect(solo).not.toHaveAttribute('aria-disabled', 'true');
+    expect(pass).not.toHaveAttribute('aria-disabled', 'true');
+    mockExec.mockClear();
+    fireEvent.click(chiamo);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
+    fireEvent.click(solo);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', { bid: 2 }));
+  });
+
+  it('makes both bids unavailable at solo while keeping pass available', async () => {
+    mockExec.mockResolvedValue({ ...bidPhaseState, highestBid: 2 });
+    renderWithProviders(<CalabresellaPage />);
+    expect(await screen.findByRole('button', { name: 'キアーモ' })).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByRole('button', { name: 'ソロ' })).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByRole('button', { name: 'パス' })).not.toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('allows both bids when no declaration has been made', async () => {
+    mockExec.mockResolvedValue({ ...bidPhaseState, highestBid: 0 });
+    renderWithProviders(<CalabresellaPage />);
+    expect(await screen.findByRole('button', { name: 'キアーモ' })).not.toHaveAttribute('aria-disabled', 'true');
+    expect(screen.getByRole('button', { name: 'ソロ' })).not.toHaveAttribute('aria-disabled', 'true');
   });
 
   it('declaring chiamo dispatches bid with bid=1', async () => {

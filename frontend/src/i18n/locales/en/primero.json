@@ -21,6 +21,7 @@
   "roundBet": "Bet: {{amount}}",
   "yourRoundBet": "Your bet: {{amount}}",
   "callAmount": "Amount to call: {{amount}}",
+  "raiseAmount": "Amount to raise: {{amount}}",
   "handLabel": "Your hand",
   "playersTitle": "Players",
   "playerRowLabel": "{{name}} — status: {{status}}",

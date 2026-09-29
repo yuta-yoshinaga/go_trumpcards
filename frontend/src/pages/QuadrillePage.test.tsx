@@ -75,15 +75,22 @@ describe('QuadrillePage', () => {
   });
 
   it('marks only the revealed partner and keeps the Quadrille badge distinct', async () => {
-    mockExec.mockResolvedValue(makeQuadrilleState({ partnerIdx: 2 }));
+    mockExec.mockResolvedValue(
+      makeQuadrilleState({
+        partnerIdx: 2,
+        players: makeQuadrilleState().players.map((player) =>
+          player.id === 2 ? { ...player, score: 7, trickCount: 3 } : player,
+        ),
+      }),
+    );
     renderWithProviders(<QuadrillePage />);
 
-    const partnerName = await screen.findByText('CPU 2: 得点: 0');
+    const partnerName = await screen.findByText('CPU 2: 7点（3トリック）');
     const partnerRow = partnerName.parentElement;
     expect(partnerRow).not.toBeNull();
     expect(partnerRow?.querySelector('[data-role="partner"]')).toHaveTextContent('パートナー');
     expect(document.querySelectorAll('[data-role="partner"]')).toHaveLength(1);
-    const quadrilleName = screen.getByText('あなた: 得点: 0');
+    const quadrilleName = screen.getByText('あなた: 0点（0トリック）');
     expect(within(quadrilleName.parentElement as HTMLElement).getByText('カドリール')).toBeInTheDocument();
     expect(screen.queryByText('partnerBadge')).not.toBeInTheDocument();
   });

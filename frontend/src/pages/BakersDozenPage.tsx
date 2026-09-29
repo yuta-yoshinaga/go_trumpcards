@@ -113,6 +113,7 @@ function BakersDozenPageContent() {
     handleSelectSource,
     handleSelectTarget,
     isAutoCompleting,
+    autoCompleteStatus,
   } = useBakersDozenGame();
 
   // Card-move SFX: play `cardPlace` whenever the server confirms a successful
@@ -468,6 +469,10 @@ function BakersDozenPageContent() {
               aria-label={t('destinationStatusLabel')}
             >
               {destinationAnnouncement}
+            </div>
+
+            <div data-testid="bd-autocomplete-live" role="status" aria-live="polite" aria-atomic="true">
+              {autoCompleteStatus && <span className="sr-only">{t(`autoCompleteStatus.${autoCompleteStatus}`)}</span>}
             </div>
 
             {/* Hint display */}

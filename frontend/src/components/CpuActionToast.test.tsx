@@ -18,43 +18,45 @@ describe('CpuActionToast', () => {
     vi.useRealTimers();
   });
 
-  it('renders nothing when actions is undefined', () => {
-    const { container } = render(<CpuActionToast actions={undefined} />);
-    expect(container.firstChild).toBeNull();
+  it('renders an empty sr-only status region when actions is undefined', () => {
+    render(<CpuActionToast actions={undefined} />);
+    expect(screen.getByTestId('cpu-action-announcement')).toHaveClass('sr-only');
+    expect(screen.getByTestId('cpu-action-announcement')).toBeEmptyDOMElement();
   });
 
-  it('renders nothing when actions is empty', () => {
-    const { container } = render(<CpuActionToast actions={[]} />);
-    expect(container.firstChild).toBeNull();
+  it('renders an empty sr-only status region when actions is empty', () => {
+    render(<CpuActionToast actions={[]} />);
+    expect(screen.getByTestId('cpu-action-announcement')).toBeEmptyDOMElement();
   });
 
   it('renders toast when actions appear', () => {
     const actions = [{ playerIdx: 1, action: 2, amount: 0 }];
     render(<CpuActionToast actions={actions} />);
-    expect(screen.getByRole('status')).toBeInTheDocument();
+    expect(screen.getByTestId('cpu-action-announcement')).toHaveAttribute('aria-live', 'polite');
+    expect(screen.getByTestId('cpu-action-toast')).toBeInTheDocument();
     expect(mockT).toHaveBeenCalledWith('player.player', { idx: 1 });
   });
 
   it('auto-dismisses after the long duration (6s)', () => {
     const actions = [{ playerIdx: 1, action: 2, amount: 0 }];
     render(<CpuActionToast actions={actions} />);
-    expect(screen.getByRole('status')).toBeInTheDocument();
+    expect(screen.getByTestId('cpu-action-toast')).toBeInTheDocument();
 
     act(() => {
       vi.advanceTimersByTime(5999);
     });
-    expect(screen.getByRole('status')).toBeInTheDocument();
+    expect(screen.getByTestId('cpu-action-toast')).toBeInTheDocument();
 
     act(() => {
       vi.advanceTimersByTime(1);
     });
-    expect(screen.queryByRole('status')).toBeNull();
+    expect(screen.queryByTestId('cpu-action-toast')).toBeNull();
   });
 
   it('resets timer when new actions arrive', () => {
     const actions1 = [{ playerIdx: 1, action: 2, amount: 0 }];
     const { rerender } = render(<CpuActionToast actions={actions1} />);
-    expect(screen.getByRole('status')).toBeInTheDocument();
+    expect(screen.getByTestId('cpu-action-toast')).toBeInTheDocument();
 
     act(() => {
       vi.advanceTimersByTime(3000);
@@ -70,32 +72,33 @@ describe('CpuActionToast', () => {
     act(() => {
       vi.advanceTimersByTime(5000);
     });
-    expect(screen.getByRole('status')).toBeInTheDocument();
+    expect(screen.getByTestId('cpu-action-toast')).toBeInTheDocument();
 
     // Past the 6s window since the last update
     act(() => {
       vi.advanceTimersByTime(1001);
     });
-    expect(screen.queryByRole('status')).toBeNull();
+    expect(screen.queryByTestId('cpu-action-toast')).toBeNull();
   });
 
   it('shows amount when present', () => {
     const actions = [{ playerIdx: 2, action: 3, amount: 100 }];
     render(<CpuActionToast actions={actions} />);
-    expect(screen.getByText(/100/)).toBeInTheDocument();
+    expect(screen.getByTestId('cpu-action-toast')).toHaveTextContent('100');
   });
 
   it('has aria-live polite attribute', () => {
     const actions = [{ playerIdx: 1, action: 2, amount: 0 }];
     render(<CpuActionToast actions={actions} />);
-    expect(screen.getByRole('status')).toHaveAttribute('aria-live', 'polite');
+    expect(screen.getByTestId('cpu-action-announcement')).toHaveAttribute('aria-live', 'polite');
+    expect(screen.getByTestId('cpu-action-toast')).toHaveAttribute('aria-live', 'off');
   });
 
   it('dismisses when the close button is clicked', () => {
     const actions = [{ playerIdx: 1, action: 2, amount: 0 }];
     render(<CpuActionToast actions={actions} />);
     fireEvent.click(screen.getByRole('button', { name: 'button.dismiss' }));
-    expect(screen.queryByRole('status')).toBeNull();
+    expect(screen.queryByTestId('cpu-action-toast')).toBeNull();
   });
 
   it('has a 44x44px close button (WCAG 2.5.5)', () => {
@@ -112,13 +115,13 @@ describe('CpuActionToast', () => {
     act(() => {
       fireEvent.keyDown(window, { key: 'Escape' });
     });
-    expect(screen.queryByRole('status')).toBeNull();
+    expect(screen.queryByTestId('cpu-action-toast')).toBeNull();
   });
 
   it('uses an opaque surface background (DESIGN.md Opacity rule)', () => {
     const actions = [{ playerIdx: 1, action: 2, amount: 0 }];
     render(<CpuActionToast actions={actions} />);
-    const cls = screen.getByRole('status').className;
+    const cls = screen.getByTestId('cpu-action-toast').className;
     expect(cls).toContain('bg-ds-surface-elevated');
     expect(cls).not.toContain('bg-black/');
   });
@@ -134,7 +137,7 @@ describe('CpuActionToast', () => {
     act(() => {
       fireEvent.keyDown(window, { key: 'Escape' });
     });
-    expect(screen.getByRole('status')).toBeInTheDocument();
+    expect(screen.getByTestId('cpu-action-toast')).toBeInTheDocument();
 
     document.body.removeChild(dialog);
   });
@@ -206,7 +209,7 @@ describe('CpuActionToast', () => {
     const actions = [{ playerIdx: 1, action: 2, amount: 0 }];
     const { rerender } = render(<CpuActionToast actions={undefined} />);
     rerender(<CpuActionToast actions={actions} />);
-    expect(screen.getByRole('status')).toBeInTheDocument();
+    expect(screen.getByTestId('cpu-action-toast')).toBeInTheDocument();
 
     act(() => {
       fireEvent.keyDown(window, { key: 'Escape' });
@@ -218,6 +221,6 @@ describe('CpuActionToast', () => {
   it('always applies the slide-down animation (reduced motion is handled by CSS)', () => {
     const actions = [{ playerIdx: 1, action: 2, amount: 0 }];
     render(<CpuActionToast actions={actions} />);
-    expect(screen.getByRole('status').className).toContain('slideDown');
+    expect(screen.getByTestId('cpu-action-toast').className).toContain('slideDown');
   });
 });

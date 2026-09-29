@@ -265,29 +265,32 @@ function SlobberhannesPageContent() {
                   {t('header.you')}: {human.cardCount}
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {human.cards.map((card, idx) => (
-                    <button
-                      key={`${card.design}-${card.value}-${idx}`}
-                      type="button"
-                      onClick={() => handlePlay(idx)}
-                      disabled={loading || !isHumanTurn}
-                      aria-label={
-                        idx === queenInHandIdx
-                          ? `${t('actions.playAria', { card: cardAlt(card) })} - ${t('warn.queenInHand')}`
-                          : t('actions.playAria', { card: cardAlt(card) })
-                      }
-                      className={`disabled:opacity-50 ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''} ${
-                        idx === queenInHandIdx ? 'rounded-lg outline outline-2 outline-ds-error' : ''
-                      }`}
-                    >
-                      <CardImage card={card} width={cardWidth} />
-                      {idx === queenInHandIdx && (
-                        <span className="sr-only" data-testid="sh-queen-in-hand">
-                          {t('warn.queenInHand')}
-                        </span>
-                      )}
-                    </button>
-                  ))}
+                  {human.cards.map((card, idx) => {
+                    const label = isHumanTurn
+                      ? t(legalRing.has(idx) ? 'actions.playAriaPlayable' : 'actions.playAriaUnplayable', {
+                          card: cardAlt(card),
+                        })
+                      : t('actions.playAria', { card: cardAlt(card) });
+                    return (
+                      <button
+                        key={`${card.design}-${card.value}-${idx}`}
+                        type="button"
+                        onClick={() => handlePlay(idx)}
+                        disabled={loading || !isHumanTurn}
+                        aria-label={`${label}${idx === queenInHandIdx ? ` - ${t('warn.queenInHand')}` : ''}`}
+                        className={`disabled:opacity-50 ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''} ${
+                          idx === queenInHandIdx ? 'rounded-lg outline outline-2 outline-ds-error' : ''
+                        }`}
+                      >
+                        <CardImage card={card} width={cardWidth} />
+                        {idx === queenInHandIdx && (
+                          <span className="sr-only" data-testid="sh-queen-in-hand">
+                            {t('warn.queenInHand')}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}

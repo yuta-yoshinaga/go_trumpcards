@@ -192,10 +192,12 @@ function FreeBetPageContent() {
                   <div
                     key={`hand-${i}-${h.cards.length}-${h.score}`}
                     data-testid={`fb-hand-${i}`}
+                    aria-current={isPlayPhase && i === state.activeHand ? 'true' : undefined}
                     className={`mb-2 rounded px-2 py-1 ${
                       isPlayPhase && i === state.activeHand ? 'ring-2 ring-ds-success' : ''
                     }`}
                   >
+                    {isPlayPhase && i === state.activeHand && <span className="sr-only">{t('label.activeHand')}</span>}
                     <div className="flex justify-center gap-1 flex-wrap">
                       {h.cards.map((card, k) => (
                         <AnimatedCard key={`h${i}-${card.design}-${card.value}-${k}`} card={card} width={cardWidth} />

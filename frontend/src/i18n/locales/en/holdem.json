@@ -96,5 +96,7 @@
     "strongHandRank": "Strong hand — raise recommended",
     "decentHandRank": "Decent hand — call recommended",
     "weakHandRank": "Weak hand — fold recommended"
-  }
+  },
+  "communityCardsRevealed": "Community cards revealed: {{cards}}",
+  "listSeparator": ", "
 }

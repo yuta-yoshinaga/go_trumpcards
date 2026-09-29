@@ -97,6 +97,23 @@ describe('MushiPage', () => {
     expect(screen.getByText('CPU の手札 2 枚')).toBeInTheDocument();
   });
 
+  it('groups captured cards by month and shows each non-empty month count', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        players: [human({ captured: [card(3, 1, 1), card(3, 2, 0), card(8, 4, 2)] }), cpu({ captured: [] })],
+      }),
+    );
+    renderWithProviders(<MushiPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    expect(screen.getByText('3月 (2枚)')).toBeInTheDocument();
+    expect(screen.getByText('8月 (1枚)')).toBeInTheDocument();
+    expect(screen.queryByText('1月 (0枚)')).not.toBeInTheDocument();
+    expect(screen.getAllByText('短冊')).toHaveLength(2);
+    expect(screen.getByText('種')).toBeInTheDocument();
+    expect(screen.getByText('10')).toBeInTheDocument();
+  });
+
   it('removes hand cards from the tab order outside a playable human turn', async () => {
     mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1 }));
     renderWithProviders(<MushiPage />);

@@ -126,6 +126,16 @@ describe('ScorpionPage', () => {
     expect(screen.getByRole('button', { name: '♥ 8' })).toBeInTheDocument();
   });
 
+  it('shows a face-down stock pile while stock remains and keeps the deal action visible', async () => {
+    renderWithProviders(<ScorpionPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const pile = screen.getByTestId('sc-stock-pile');
+    expect(pile.querySelectorAll('img[src="/images/z01.png"]')).toHaveLength(3);
+    expect(screen.getByText(/ストック: 3/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '配る' })).toBeInTheDocument();
+  });
+
   it('shows move count and stock', async () => {
     renderWithProviders(<ScorpionPage />);
     await waitFor(() => expect(screen.getByText(/手数/)).toBeInTheDocument());

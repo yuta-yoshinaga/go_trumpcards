@@ -168,6 +168,7 @@ func TestDehlaPakadWebPresenter_Output(t *testing.T) {
 	i18n.SetLang("ja")
 	p := new(presenter.DehlaPakadWebPresenter)
 	d := dehlaPakadGame()
+	d.GetPlayer(0).AddTrick([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 10, false)})
 
 	var res map[string]any
 	require.NoError(t, json.Unmarshal([]byte(p.Output(d, nil)), &res))
@@ -188,6 +189,9 @@ func TestDehlaPakadWebPresenter_Output(t *testing.T) {
 	players := res["players"].([]any)
 	human := players[0].(map[string]any)
 	assert.Len(t, human["cards"], domain.DehlaPakadFirstBatch, "宣言前は 5 枚だけ")
+	gatheredCards := human["gatheredCards"].([]any)
+	require.Len(t, gatheredCards, 1)
+	assert.Equal(t, float64(10), gatheredCards[0].(map[string]any)["value"])
 	assert.Equal(t, true, human["isTrumpChooser"])
 	cpu := players[1].(map[string]any)
 	assert.Empty(t, cpu["cards"], "CPU の手札が見えている")

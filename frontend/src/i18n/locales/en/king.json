@@ -53,6 +53,12 @@
   "selectContractPrompt": "You are the dealer — choose this deal's contract.",
   "selectContractCpu": "CPU {{id}} is choosing a contract…",
   "selectTrumpPrompt": "Choose the trump suit for King (Trump).",
+  "trumpSuit": {
+    "1": "Spades",
+    "2": "Clubs",
+    "3": "Hearts",
+    "4": "Diamonds"
+  },
   "selectButton": "Select",
   "cards": "{{count}} cards",
   "tricks": "{{count}} tricks",

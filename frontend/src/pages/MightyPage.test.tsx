@@ -6,6 +6,22 @@ import { renderWithProviders } from '../test/renderWithProviders';
 import type { MightyHint, MightyResponse } from '../types/card';
 import { MightyPage } from './MightyPage';
 
+vi.mock('../hooks/useCardDimensions', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../hooks/useCardDimensions')>()),
+  useCardDimensions: vi.fn(() => ({
+    cardHeight: 84,
+    cardOverlap: 22,
+    cardWidth: 60,
+    cpuCardWidth: 50,
+    footerCardWidth: 54,
+    solitaireMinColWidth: 0,
+    isMobile: false,
+  })),
+}));
+
+const { useCardDimensions } = await import('../hooks/useCardDimensions');
+const mockUseCardDimensions = vi.mocked(useCardDimensions);
+
 vi.mock('../api/gameApi', () => ({
   mightyApi: { exec: vi.fn() },
   actionLogApi: { mighty: vi.fn() },
@@ -231,6 +247,15 @@ const humanWithJokerState: MightyResponse = {
 
 beforeEach(() => {
   mockCall.mockResolvedValue(playPhaseState);
+  mockUseCardDimensions.mockReturnValue({
+    cardHeight: 84,
+    cardOverlap: 22,
+    cardWidth: 60,
+    cpuCardWidth: 50,
+    footerCardWidth: 54,
+    solitaireMinColWidth: 0,
+    isMobile: false,
+  });
 });
 
 describe('MightyPage', () => {
@@ -630,9 +655,78 @@ describe('MightyPage', () => {
   });
 
   it('shows next round button on round end', async () => {
-    mockCall.mockResolvedValue(roundEndState);
+    mockCall.mockResolvedValue({
+      ...roundEndState,
+      players: roundEndState.players.map((player, index) =>
+        index === 0 ? { ...player, pointCards: 12 } : index === 1 ? { ...player, pointCards: 3 } : player,
+      ),
+    });
     renderWithProviders(<MightyPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のラウンド' })).toBeInTheDocument());
+  });
+
+  it('shows a made contract without the no-trump multiplier', async () => {
+    mockCall.mockResolvedValue({
+      ...roundEndState,
+      players: roundEndState.players.map((player, index) =>
+        index === 0 ? { ...player, pointCards: 12 } : index === 1 ? { ...player, pointCards: 3 } : player,
+      ),
+    });
+    renderWithProviders(<MightyPage />);
+
+    expect(await screen.findByTestId('mighty-contract-result')).toHaveTextContent('必要点: 14 / 実得点: 15 / 達成');
+  });
+
+  it('shows a missed contract without the no-trump multiplier', async () => {
+    mockCall.mockResolvedValue(roundEndState);
+    renderWithProviders(<MightyPage />);
+
+    expect(await screen.findByTestId('mighty-contract-result')).toHaveTextContent('必要点: 14 / 実得点: 3 / 未達');
+  });
+
+  it('shows a made no-trump contract with its multiplier', async () => {
+    mockCall.mockResolvedValue({
+      ...roundEndState,
+      winningBidNoTrump: true,
+      players: roundEndState.players.map((player, index) =>
+        index === 0 ? { ...player, pointCards: 12 } : index === 1 ? { ...player, pointCards: 3 } : player,
+      ),
+    });
+    renderWithProviders(<MightyPage />);
+
+    expect(await screen.findByTestId('mighty-contract-result')).toHaveTextContent(
+      '必要点: 14 / 実得点: 15 / 達成 / ノートランプ: 得点2倍',
+    );
+  });
+
+  it('shows a missed no-trump contract with its multiplier', async () => {
+    mockCall.mockResolvedValue({ ...roundEndState, winningBidNoTrump: true });
+    renderWithProviders(<MightyPage />);
+
+    expect(await screen.findByTestId('mighty-contract-result')).toHaveTextContent(
+      '必要点: 14 / 実得点: 3 / 未達 / ノートランプ: 得点2倍',
+    );
+  });
+
+  it('shows the contract result in the mobile score table', async () => {
+    mockUseCardDimensions.mockReturnValue({
+      cardHeight: 60,
+      cardOverlap: 20,
+      cardWidth: 40,
+      cpuCardWidth: 34,
+      footerCardWidth: 36,
+      solitaireMinColWidth: 52,
+      isMobile: true,
+    });
+    mockCall.mockResolvedValue({
+      ...roundEndState,
+      players: roundEndState.players.map((player, index) =>
+        index === 0 ? { ...player, pointCards: 12 } : index === 1 ? { ...player, pointCards: 3 } : player,
+      ),
+    });
+    renderWithProviders(<MightyPage />);
+
+    expect(await screen.findByTestId('mighty-contract-result')).toHaveTextContent('達成');
   });
 
   it('calls nextround when next round button clicked', async () => {

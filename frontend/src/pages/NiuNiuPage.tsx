@@ -150,6 +150,9 @@ function NiuNiuPageContent() {
           <span className="text-sm text-ds-text-muted">
             {t('chips')}: {state.chips}
           </span>
+          <span className="text-sm text-ds-text-muted">
+            {t('drawPileCount')}: {state.drawPileCount}
+          </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>
       }

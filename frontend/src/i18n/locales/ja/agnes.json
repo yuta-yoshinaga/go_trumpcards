@@ -26,6 +26,8 @@
   "hintAvailable": "ヒントがあります",
   "moveToFoundation": "→組",
   "moveToCol": "→{{col}}",
+  "dragTargetColumn": "列{{col}}に移動できます",
+  "listSeparator": "、",
   "moveTableauToFoundation": "場札→組札",
   "frontendHint": {
     "moveToFoundation": "組札へ移動できるカードがあります",

@@ -66,6 +66,7 @@
     "drawAll": "No strong holds — draw all"
   },
   "card": "Card {{index}}",
+  "listSeparator": ", ",
   "dealGuide": "Select coins and deal to start",
   "wild": "WILD",
   "a11y": {

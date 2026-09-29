@@ -28,6 +28,8 @@ test.describe('Gaps E2E', () => {
     const redealButton = page.getByRole('button', { name: /再配り/ });
     await expect(redealButton).toBeVisible();
     await redealButton.click();
+    await expect(page.getByRole('alertdialog')).toContainText('残り回数: 3');
+    await page.getByRole('button', { name: '確認' }).click();
     await waitForLoaded(page);
     // After one redeal, the counter should reflect 1/3.
     await expect(page.getByText(/1\/3/)).toBeVisible();

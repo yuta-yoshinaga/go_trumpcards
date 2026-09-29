@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { sambaApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeSambaState } from '../test/stateFactories';
 import { SambaPage } from './SambaPage';
@@ -308,6 +309,143 @@ describe('SambaPage', () => {
     const sambaProgress = screen.getByTestId('sa-meld-progress-0-1');
     expect(sambaProgress).toHaveTextContent('サンバ成立！');
     expect(sambaProgress.className).toContain('animate-pulse');
+  });
+
+  it('announces human-team meld progress updates in Japanese', async () => {
+    const base = makeSambaState();
+    const initial = makeSambaState({
+      players: [
+        {
+          ...base.players[0],
+          melds: [
+            {
+              cards: Array.from({ length: 4 }, () => ({ design: 'SPADE' as const, value: 4 })),
+              kind: 0,
+              isNatural: true,
+              isCanasta: false,
+              isSamba: false,
+              rank: 4,
+            },
+          ],
+        },
+        ...base.players.slice(1),
+      ],
+    });
+    const updated = makeSambaState({
+      players: [
+        {
+          ...initial.players[0],
+          melds: [
+            {
+              ...initial.players[0].melds[0],
+              cards: [...initial.players[0].melds[0].cards, { design: 'HEART', value: 4 }],
+            },
+          ],
+        },
+        ...initial.players.slice(1),
+      ],
+    });
+    const completed = makeSambaState({
+      players: [
+        {
+          ...updated.players[0],
+          melds: [
+            {
+              ...updated.players[0].melds[0],
+              cards: Array.from({ length: 7 }, () => ({ design: 'SPADE' as const, value: 4 })),
+            },
+          ],
+        },
+        ...updated.players.slice(1),
+      ],
+    });
+    mockExec.mockResolvedValueOnce(initial).mockResolvedValueOnce(updated).mockResolvedValueOnce(completed);
+    renderWithProviders(<SambaPage />);
+
+    const announce = await screen.findByTestId('sa-meld-progress-announce');
+    expect(announce).toHaveAttribute('role', 'status');
+    expect(announce).toHaveAttribute('aria-live', 'polite');
+    expect(announce).toHaveTextContent('');
+    fireEvent.click(screen.getByRole('button', { name: '山札から引く' }));
+    await waitFor(() => expect(announce).toHaveTextContent('あなたのチームのメルド: あと2枚でカナスタ'));
+    fireEvent.click(screen.getByRole('button', { name: '山札から引く' }));
+    await waitFor(() => expect(announce).toHaveTextContent('あなたのチームのメルド: カナスタ成立！'));
+  });
+
+  it('announces human-team meld progress updates in English', async () => {
+    const base = makeSambaState();
+    const initial = makeSambaState({
+      players: [
+        {
+          ...base.players[0],
+          melds: [
+            {
+              cards: Array.from({ length: 4 }, () => ({ design: 'SPADE' as const, value: 4 })),
+              kind: 0,
+              isNatural: true,
+              isCanasta: false,
+              isSamba: false,
+              rank: 4,
+            },
+          ],
+        },
+        ...base.players.slice(1),
+      ],
+    });
+    const updated = makeSambaState({
+      players: [
+        {
+          ...initial.players[0],
+          melds: [
+            {
+              ...initial.players[0].melds[0],
+              cards: [...initial.players[0].melds[0].cards, { design: 'HEART', value: 4 }],
+            },
+          ],
+        },
+        ...initial.players.slice(1),
+      ],
+    });
+    mockExec.mockResolvedValueOnce(initial).mockResolvedValueOnce(updated);
+    await i18n.changeLanguage('en');
+    try {
+      renderWithProviders(<SambaPage />);
+      const announce = await screen.findByTestId('sa-meld-progress-announce');
+      fireEvent.click(screen.getByRole('button', { name: 'Draw from stock' }));
+      await waitFor(() => expect(announce).toHaveTextContent("Your team's meld: 2 more for Canasta"));
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
+  });
+
+  it('does not announce opponent meld updates', async () => {
+    const base = makeSambaState();
+    const initial = makeSambaState({ players: [base.players[0], { ...base.players[1], melds: [] }] });
+    const opponentUpdate = makeSambaState({
+      players: [
+        base.players[0],
+        {
+          ...base.players[1],
+          melds: [
+            {
+              cards: Array.from({ length: 5 }, () => ({ design: 'SPADE' as const, value: 4 })),
+              kind: 0,
+              isNatural: true,
+              isCanasta: false,
+              isSamba: false,
+              rank: 4,
+            },
+          ],
+        },
+      ],
+    });
+    mockExec.mockResolvedValueOnce(initial).mockResolvedValueOnce(opponentUpdate);
+    renderWithProviders(<SambaPage />);
+
+    const announce = await screen.findByTestId('sa-meld-progress-announce');
+    fireEvent.click(screen.getByRole('button', { name: '山札から引く' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('drawstock'));
+    expect(announce).toHaveTextContent('');
   });
 
   it('localizes the CPU hand-count label at round end', async () => {

@@ -40,6 +40,13 @@ export interface MichiganBoodle {
   claimedBy: number;
 }
 
+/** A boodle collected during the most recently completed round. */
+export interface MichiganBoodleWin {
+  card: Card;
+  seat: number;
+  amount: number;
+}
+
 /** Michigan local-rule configuration. */
 export interface MichiganConfig {
   /** Number of players at the table (3–8). */
@@ -76,6 +83,8 @@ export interface MichiganHint {
 export interface MichiganResponse extends BaseGameResponse {
   players: MichiganPlayer[];
   boodles: MichiganBoodle[];
+  /** Boodles collected in the current result round, including zero chip wins. */
+  roundBoodleWins: MichiganBoodleWin[];
   /** Game phase: 0=Bet, 1=Play, 2=Result. */
   phase: MichiganPhaseValue;
   roundNumber: number;

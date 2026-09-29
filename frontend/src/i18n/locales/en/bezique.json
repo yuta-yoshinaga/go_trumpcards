@@ -51,7 +51,8 @@
   },
   "roundResult": {
     "title": "Deal Result (points won)",
-    "line": "{{name}}: {{points}} pts"
+    "line": "{{name}}: {{points}} pts",
+    "lastTrickBonus": "(including the {{points}}-point last-trick bonus)"
   },
   "hintAvailable": "Hint",
   "hint": {

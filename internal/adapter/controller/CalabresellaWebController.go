@@ -53,6 +53,7 @@ type CalabresellaWebOutput struct {
 	ForehandIdx      int                               `json:"forehandIdx"`
 	SoloistIdx       int                               `json:"soloistIdx"`
 	WinningBid       int                               `json:"winningBid"`
+	HighestBid       int                               `json:"highestBid"`
 	CurrentTrick     []*WebOutputTrickCard             `json:"currentTrick"`
 	Monte            []*WebOutputCard                  `json:"monte,omitempty"`
 	PlayerScores     [domain.CalabresellaPlayerCnt]int `json:"playerScores"`

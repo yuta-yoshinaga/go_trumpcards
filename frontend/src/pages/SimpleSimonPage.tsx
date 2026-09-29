@@ -254,6 +254,8 @@ function SimpleSimonPageContent() {
             // Grabbable = head of a valid movable run in this column. In a
             // destination column every card just forwards to the move.
             const grabbable = i >= runStart;
+            const runStartLabel =
+              i === runStart ? ` ${t('movableRunStartAria', { count: column.length - runStart })}` : '';
             const clickable = isDestination || grabbable;
             // Highlight the movable-run boundary only while this column can be a
             // source (no selection, or the selection is here).
@@ -280,7 +282,7 @@ function SimpleSimonPageContent() {
                 disabled={!canAct || !clickable}
                 data-testid={`card-${col}-${i}`}
                 data-grabbable={grabbable}
-                aria-label={t('cardPosAria', { card: cardAlt(c), col: col + 1, pos: i + 1 })}
+                aria-label={`${t('cardPosAria', { card: cardAlt(c), col: col + 1, pos: i + 1 })}${runStartLabel}`}
                 aria-pressed={inSelectedRun}
               >
                 <CardImage card={c} width={w} />

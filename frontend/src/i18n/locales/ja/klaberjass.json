@@ -11,6 +11,8 @@
   "playersTitle": "プレイヤー",
   "score": "通算 {{n}}",
   "handPoints": "今回 {{n}}",
+  "scoreUpdate": "更新後の通算 {{score}}",
+  "listSeparator": "、",
   "hiddenHand": "非公開 {{count}}枚",
   "yourHand": "あなたの手札",
   "trick": "場",

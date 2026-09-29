@@ -133,6 +133,7 @@ function ContractRummyPageContent() {
   const [selectedCards, setSelectedCards] = useState<number[]>([]);
   // Slots being assembled for the contract meld (one card-set per slot).
   const [contractSlots, setContractSlots] = useState<number[][]>([]);
+  const requiredSlots = state?.contractSlots.length ?? 0;
   // Layoff target: { playerIdx, meldIdx }.
   const [layoffTarget, setLayoffTarget] = useState<{ playerIdx: number; meldIdx: number } | null>(null);
 
@@ -187,10 +188,10 @@ function ContractRummyPageContent() {
   }, [execApi, selectedCards, clearSelection]);
 
   const handleAddSlot = useCallback(() => {
-    if (selectedCards.length === 0) return;
+    if (selectedCards.length === 0 || contractSlots.length >= requiredSlots) return;
     setContractSlots((prev) => [...prev, [...selectedCards]]);
     setSelectedCards([]);
-  }, [selectedCards]);
+  }, [selectedCards, contractSlots.length, requiredSlots]);
 
   const handleRemoveLastSlot = useCallback(() => {
     setContractSlots((prev) => prev.slice(0, -1));
@@ -297,6 +298,7 @@ function ContractRummyPageContent() {
   // enabling submit on a contract with zero slots.
   const allSlotsSatisfied =
     humanPlayer != null && slotEvaluations.length > 0 && slotEvaluations.every((ev) => ev.satisfied);
+  const slotsAtLimit = requiredSlots > 0 && contractSlots.length >= requiredSlots;
 
   if (!state) {
     return (
@@ -544,11 +546,18 @@ function ContractRummyPageContent() {
                 <button
                   type="button"
                   onClick={handleAddSlot}
-                  disabled={selectedCards.length === 0}
-                  className={btnOutline}
+                  disabled={selectedCards.length === 0 && !slotsAtLimit}
+                  aria-disabled={slotsAtLimit || undefined}
+                  aria-describedby={slotsAtLimit ? 'cr-slot-limit' : undefined}
+                  className={`${btnOutline} ${slotsAtLimit ? 'aria-disabled:opacity-50 aria-disabled:cursor-not-allowed' : ''}`}
                 >
                   {t('addSlot')}
                 </button>
+                {slotsAtLimit && (
+                  <p id="cr-slot-limit" className="text-sm text-ds-warning">
+                    {t('slotLimitReached')}
+                  </p>
+                )}
                 <button
                   type="button"
                   onClick={handleRemoveLastSlot}

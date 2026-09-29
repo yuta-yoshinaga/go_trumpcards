@@ -27,6 +27,7 @@ import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useIsMobile } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
+import { useCommunityCardAnnouncement } from '../hooks/useCommunityCardAnnouncement';
 import { useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
@@ -139,6 +140,8 @@ function HoldemPageContent() {
   const turnStartRef = useRef(0);
 
   useMountReset(exec);
+
+  const communityCardsAnnouncement = useCommunityCardAnnouncement(state?.communityCards ?? [], t);
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
@@ -288,6 +291,9 @@ function HoldemPageContent() {
         </>
       }
     >
+      <div aria-live="polite" aria-atomic="true" className="sr-only" data-testid="community-cards-announcement">
+        {communityCardsAnnouncement}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (

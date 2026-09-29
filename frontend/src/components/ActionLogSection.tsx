@@ -7,13 +7,21 @@ import { ActionLogPanel } from './ActionLogPanel';
 /** Props for {@link ActionLogSection}. */
 export interface ActionLogSectionProps {
   isEndPhase: boolean;
+  /** Allows the log trigger during active play for pages that opt in. */
+  availableDuringPlay?: boolean;
   actionLog: ActionLogEntry[] | null;
   showActionLog: () => void;
   hideActionLog: () => void;
 }
 
 /** Renders the action log view button and panel, shown at end phase. */
-export function ActionLogSection({ isEndPhase, actionLog, showActionLog, hideActionLog }: ActionLogSectionProps) {
+export function ActionLogSection({
+  isEndPhase,
+  availableDuringPlay = false,
+  actionLog,
+  showActionLog,
+  hideActionLog,
+}: ActionLogSectionProps) {
   const { t: tc } = useTranslation('common');
   const triggerRef = useRef<HTMLButtonElement>(null);
   const wasOpen = useRef(false);
@@ -33,7 +41,7 @@ export function ActionLogSection({ isEndPhase, actionLog, showActionLog, hideAct
 
   return (
     <>
-      {isEndPhase && !actionLog && (
+      {(isEndPhase || availableDuringPlay) && !actionLog && (
         <div className="text-center my-2">
           <button type="button" ref={triggerRef} className={btnSecondary} onClick={showActionLog}>
             {tc('actionLog.view')}

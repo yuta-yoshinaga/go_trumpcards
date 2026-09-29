@@ -118,6 +118,35 @@ function EgyptianRatscrewPageContent() {
     label: '',
   });
   const [slapAnnounce, setSlapAnnounce] = useState('');
+  const [slappableAnnounce, setSlappableAnnounce] = useState('');
+  const prevSlappableRef = useRef<boolean | undefined>(undefined);
+  useEffect(() => {
+    if (!state) {
+      prevSlappableRef.current = undefined;
+      setSlappableAnnounce('');
+      return;
+    }
+    const previous = prevSlappableRef.current;
+    prevSlappableRef.current = state.isSlappable;
+    if (previous === undefined || previous === state.isSlappable) return;
+    // The slap outcome region describes the result when the pile changes as
+    // part of a slap. Avoid announcing the same transition twice.
+    if (
+      state.lastEventKind === EgyptianRatscrewEventKind.SLAP_CORRECT ||
+      state.lastEventKind === EgyptianRatscrewEventKind.SLAP_WRONG ||
+      state.lastEventKind === EgyptianRatscrewEventKind.CHANCE_WIN
+    )
+      return;
+    if (!state.isSlappable) {
+      setSlappableAnnounce(t('egyptianratscrew.slappableEnded'));
+      return;
+    }
+    const reason =
+      state.slappableReason === EgyptianRatscrewSlapReason.SANDWICH
+        ? t('egyptianratscrew.slapReason.sandwich')
+        : t('egyptianratscrew.slapReason.pair');
+    setSlappableAnnounce(t('egyptianratscrew.slappableStarted', { reason }));
+  }, [state, t]);
   const prevSlapEventRef = useRef<{ kind: number; player: number }>({ kind: -1, player: -1 });
   useEffect(() => {
     if (!state) {
@@ -337,6 +366,15 @@ function EgyptianRatscrewPageContent() {
               >
                 {stepAnnounce}
               </div>
+              <div
+                className="sr-only"
+                role="status"
+                aria-live="polite"
+                aria-atomic="true"
+                data-testid="er-slappable-announce"
+              >
+                {slappableAnnounce}
+              </div>
               <div className="text-center">
                 <div className="text-sm text-ds-text-primary font-semibold">
                   {t('label.pileCount', { count: state.centerPileSize })}
@@ -378,12 +416,12 @@ function EgyptianRatscrewPageContent() {
                     {t('egyptianratscrew.slappable')}
                   </div>
                 )}
-                {state.isSlappable && state.lastSlapReason !== EgyptianRatscrewSlapReason.NONE && (
+                {state.isSlappable && state.slappableReason !== EgyptianRatscrewSlapReason.NONE && (
                   <div
                     data-testid="er-slap-reason"
                     className={`mt-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${badgeWarningColors}`}
                   >
-                    {state.lastSlapReason === EgyptianRatscrewSlapReason.PAIR
+                    {state.slappableReason === EgyptianRatscrewSlapReason.PAIR
                       ? `👯 ${t('egyptianratscrew.slapReason.pair')}`
                       : `🥪 ${t('egyptianratscrew.slapReason.sandwich')}`}
                   </div>

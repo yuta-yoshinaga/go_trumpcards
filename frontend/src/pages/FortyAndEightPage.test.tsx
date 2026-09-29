@@ -519,9 +519,11 @@ describe('FortyAndEightPage', () => {
     const spadeJackButton = screen.getByAltText('♠ J').closest('button') as HTMLButtonElement;
 
     expect(spadeKingButton).toHaveAttribute('data-eligible-tableau', 'true');
+    expect(spadeKingButton).toHaveAccessibleName(/選択したカードの移動先候補/);
     expect(spadeKingButton.className).toContain('ring-ds-info');
 
     expect(cloverSevenButton).not.toHaveAttribute('data-eligible-tableau');
+    expect(cloverSevenButton).not.toHaveAccessibleName(/移動先候補/);
     expect(cloverSevenButton.className).not.toContain('ring-ds-info');
 
     expect(heartQueenButton).not.toHaveAttribute('data-eligible-tableau');

@@ -406,4 +406,14 @@ describe('DragonTigerPage history capping (issue #6381)', () => {
     const trendBar = await screen.findByTestId('dragontiger-trend-bar');
     expect(trendBar).toHaveTextContent('25');
   });
+
+  it('announces each visible history result with its original round position', async () => {
+    const history = [DragonTigerHistoryResult.TIE, DragonTigerHistoryResult.DRAGON, DragonTigerHistoryResult.TIGER];
+    mockApi.mockResolvedValueOnce({ ...dragonWinState, history });
+    renderWithProviders(<DragonTigerPage />);
+
+    expect(await screen.findByLabelText('1ラウンド目: 引き分け')).toBeInTheDocument();
+    expect(screen.getByLabelText('2ラウンド目: ドラゴンの勝ち')).toBeInTheDocument();
+    expect(screen.getByLabelText('3ラウンド目: タイガーの勝ち')).toBeInTheDocument();
+  });
 });

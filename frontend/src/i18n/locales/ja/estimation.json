@@ -33,6 +33,7 @@
     "reset": "リセット",
     "giveUp": "投了",
     "playAria": "{{card}} を出す",
+    "playUnavailable": "自分の手番で出せる札ではありません",
     "bidAria": "{{n}}トリック宣言",
     "bidDashAria": "Dash Call（0トリック宣言）",
     "bidBarredAria": "{{n}}トリック宣言は選べません（全員の宣言の合計が{{total}}になるため）",

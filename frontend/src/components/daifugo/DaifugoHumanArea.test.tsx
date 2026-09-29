@@ -348,4 +348,47 @@ describe('DaifugoHumanArea playable marks', () => {
     expect(card.style.outline).not.toBe('');
     expect(card.style.transform).toBe('translateY(-8px)');
   });
+
+  it('announces playable status, describes and ignores known unplayable cards', () => {
+    const onToggle = vi.fn();
+    render(
+      <DaifugoHumanArea
+        player={makePlayer({ cardCount: 2, cards: cards(2) })}
+        selectedIndices={[]}
+        onToggle={onToggle}
+        isCurrentTurn={true}
+        onDragCard={vi.fn()}
+        playableIndices={[0]}
+      />,
+    );
+    const playable = screen.getByRole('button', { name: /出せる札/ });
+    const unplayable = screen.getByRole('button', { name: /出せない札/ });
+    expect(playable).not.toHaveAttribute('aria-disabled');
+    expect(unplayable).toHaveAttribute('aria-disabled', 'true');
+    expect(document.getElementById(unplayable.getAttribute('aria-describedby') ?? '')).toHaveTextContent(
+      'この札は現在出せません',
+    );
+    fireEvent.click(unplayable);
+    expect(onToggle).not.toHaveBeenCalled();
+    fireEvent.click(playable);
+    expect(onToggle).toHaveBeenCalledWith(0);
+  });
+
+  it('preserves the original card behavior when playable indices are omitted', () => {
+    const onToggle = vi.fn();
+    render(
+      <DaifugoHumanArea
+        player={makePlayer()}
+        selectedIndices={[]}
+        onToggle={onToggle}
+        isCurrentTurn={true}
+        onDragCard={vi.fn()}
+      />,
+    );
+    const card = screen.getAllByRole('button')[0];
+    expect(card).not.toHaveAttribute('aria-disabled');
+    expect(card).not.toHaveAttribute('aria-describedby');
+    fireEvent.click(card);
+    expect(onToggle).toHaveBeenCalledWith(0);
+  });
 });

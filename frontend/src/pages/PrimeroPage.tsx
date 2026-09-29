@@ -388,6 +388,7 @@ function PrimeroPageContent() {
                   <div className="w-full text-ds-text-primary text-sm" data-testid="primero-betting-controls">
                     <span className="mr-4">{t('yourRoundBet', { amount: humanPlayer.roundBet })}</span>
                     <span>{t('callAmount', { amount: Math.max(0, state.currentBet - humanPlayer.roundBet) })}</span>
+                    {state.canRaise && <span className="ml-4">{t('raiseAmount', { amount: raiseNeeded })}</span>}
                   </div>
                   <button type="button" className={btnPrimary} onClick={handleCall} disabled={loading}>
                     {t('callButton')}

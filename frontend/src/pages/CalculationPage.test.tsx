@@ -136,13 +136,51 @@ describe('CalculationPage', () => {
     await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument());
   });
 
-  it('autocomplete button is disabled while stock is non-empty', async () => {
+  it('explains that autocomplete requires an empty stock and blocks activation', async () => {
     renderWithProviders(<CalculationPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    expect(screen.getByTestId('autocomplete-button')).toBeDisabled();
+    const btn = screen.getByTestId('autocomplete-button');
+    expect(btn).toHaveAttribute('aria-disabled', 'true');
+    expect(btn).toHaveAttribute('aria-describedby', 'calculation-autocomplete-disabled-reason');
+    expect(screen.getByText('山札が残っているため実行できません')).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'オートコンプリート', description: '山札が残っているため実行できません' }),
+    ).toBe(btn);
+    expect(btn).not.toBeDisabled();
+    expect(btn).toHaveAttribute('title', '山札が残っているため実行できません');
+    mockExec.mockClear();
+    fireEvent.click(btn);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('autocomplete');
   });
 
-  it('autocomplete button enables when stock is empty and wastes are non-empty', async () => {
+  it('keeps autocomplete natively disabled while its request is loading', async () => {
+    const readyState: CalculationResponse = {
+      ...playingState,
+      stockCount: 0,
+      stockTop: undefined,
+      wastes: [[card('SPADE', 6)], [], [], []],
+    };
+    mockExec.mockResolvedValueOnce(readyState);
+    let resolveAutocomplete!: (response: CalculationResponse) => void;
+    mockExec.mockReturnValueOnce(
+      new Promise<CalculationResponse>((resolve) => {
+        resolveAutocomplete = resolve;
+      }),
+    );
+    renderWithProviders(<CalculationPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const btn = screen.getByTestId('autocomplete-button');
+    fireEvent.click(btn);
+    await waitFor(() => expect(btn).toBeDisabled());
+    expect(btn).not.toHaveAttribute('aria-disabled', 'true');
+
+    resolveAutocomplete(readyState);
+    await waitFor(() => expect(btn).not.toBeDisabled());
+  });
+
+  it('explains when no waste card can be played', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
       stockCount: 0,
@@ -152,7 +190,24 @@ describe('CalculationPage', () => {
     renderWithProviders(<CalculationPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     const btn = screen.getByTestId('autocomplete-button');
+    expect(btn).toHaveAttribute('aria-disabled', 'true');
+    expect(btn).toHaveAttribute('title', '置けるウェイストがないため実行できません');
+  });
+
+  it('autocomplete button enables when stock is empty and wastes are non-empty', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      stockCount: 0,
+      stockTop: undefined,
+      wastes: [[card('SPADE', 6)], [], [], []],
+    });
+    renderWithProviders(<CalculationPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const btn = screen.getByTestId('autocomplete-button');
     expect(btn).not.toBeDisabled();
+    expect(btn).not.toHaveAttribute('aria-disabled', 'true');
+    expect(btn).not.toHaveAttribute('aria-describedby');
+    expect(btn).not.toHaveAttribute('title');
     fireEvent.click(btn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
   });

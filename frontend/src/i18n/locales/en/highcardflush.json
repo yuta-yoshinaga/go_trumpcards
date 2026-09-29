@@ -5,7 +5,11 @@
   "betError": {
     "ante": "Ante must be between 10 and 10000 in steps of 10",
     "bonus": "{{label}} must be 0 or between 10 and 10000 in steps of 10",
-    "balance": "Total bet: {{total}}. Chips available: {{chips}}. Keep the total bet within your chips"
+    "balance": "Total bet: {{total}}. Chips available: {{chips}}. Shortfall: {{shortfall}}. Keep the total bet within your chips"
+  },
+  "betSummary": {
+    "total": "Total bet: {{amount}}",
+    "remaining": "Balance after bet: {{amount}}"
   },
   "label": {
     "chips": "Chips",

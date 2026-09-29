@@ -1626,6 +1626,27 @@ describe('DramahaPage draw round', () => {
     expect(screen.getByText(/press Enter or Space/)).toBeInTheDocument();
   });
 
+  it('shows the selected and maximum exchange counts and the available actions', async () => {
+    mockExec.mockResolvedValue(drawState);
+    renderWithProviders(<DramahaPage />);
+    await screen.findByTestId('draw-controls');
+
+    expect(screen.getByTestId('dramaha-draw-selected')).toHaveTextContent('選択中: 0 / 5枚');
+    expect(screen.getByTestId('dramaha-draw-exchange')).toHaveTextContent('0枚を交換');
+    expect(screen.getByTestId('dramaha-draw-standpat')).toHaveTextContent('交換しない');
+  });
+
+  it('shows the selected and maximum exchange counts in English', async () => {
+    await i18n.changeLanguage('en');
+    mockExec.mockResolvedValue(drawState);
+    renderWithProviders(<DramahaPage />);
+    await screen.findByTestId('draw-controls');
+
+    expect(screen.getByTestId('dramaha-draw-selected')).toHaveTextContent('Selected: 0 / 5');
+    expect(screen.getByTestId('dramaha-draw-exchange')).toHaveTextContent('Exchange 0');
+    expect(screen.getByTestId('dramaha-draw-standpat')).toHaveTextContent('Stand pat');
+  });
+
   it('shows the draw controls and says the draw happens only once', async () => {
     mockExec.mockResolvedValue(drawState);
     renderWithProviders(<DramahaPage />);

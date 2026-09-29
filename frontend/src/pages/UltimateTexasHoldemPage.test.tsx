@@ -34,6 +34,7 @@ const betPhaseState: UltimateTexasHoldemResponse = {
   playPayout: 0,
   tripsPayout: 0,
   totalPayout: 0,
+  netChange: 0,
   playerHandRank: 0,
   dealerHandRank: 0,
   message: '',
@@ -73,6 +74,7 @@ const endPlayerWins: UltimateTexasHoldemResponse = {
   playPayout: 200,
   tripsPayout: 0,
   totalPayout: 200 + (100 + 100 * 500) + 200,
+  netChange: 50200,
   playerHandRank: 9,
   dealerHandRank: 0,
   message: '勝利！',
@@ -82,12 +84,14 @@ const endPlayerWins: UltimateTexasHoldemResponse = {
 
 const endDealerWins: UltimateTexasHoldemResponse = {
   ...endPlayerWins,
+  tripsBet: 50,
   result: -1,
   dealerQualified: true,
   antePayout: 0,
   blindPayout: 0,
   playPayout: 0,
   totalPayout: 0,
+  netChange: -350,
   playerHandRank: 0,
   dealerHandRank: 1,
   message: 'ディーラー勝利！',
@@ -99,6 +103,7 @@ const endFold: UltimateTexasHoldemResponse = {
   phase: 5,
   folded: true,
   result: -1,
+  netChange: -200,
   message: 'フォールド',
   messageCode: 'ultimatetexasholdem.result.fold',
 };
@@ -110,6 +115,7 @@ const endPush: UltimateTexasHoldemResponse = {
   blindPayout: 100,
   playPayout: 100,
   totalPayout: 300,
+  netChange: 0,
   message: '引き分け！',
   messageCode: 'ultimatetexasholdem.result.push',
 };
@@ -199,6 +205,7 @@ describe('UltimateTexasHoldemPage', () => {
     mockApi.mockResolvedValue(endPlayerWins);
     renderWithProviders(<UltimateTexasHoldemPage />);
     await waitFor(() => expect(screen.getByText('勝利！')).toBeInTheDocument());
+    expect(screen.getByTestId('payout-breakdown')).toHaveTextContent('純損益: +50200');
     expect(screen.getByTestId('payout-breakdown')).toBeInTheDocument();
   });
 
@@ -218,6 +225,12 @@ describe('UltimateTexasHoldemPage', () => {
     mockApi.mockResolvedValue(endDealerWins);
     renderWithProviders(<UltimateTexasHoldemPage />);
     await waitFor(() => expect(screen.getByText('ディーラー勝利！')).toBeInTheDocument());
+    const breakdown = screen.getByTestId('payout-breakdown');
+    expect(breakdown).toHaveTextContent('アンテ: 0');
+    expect(breakdown).toHaveTextContent('ブラインド: 0');
+    expect(breakdown).toHaveTextContent('プレイ: 0');
+    expect(breakdown).toHaveTextContent('トリップス: 0');
+    expect(breakdown).toHaveTextContent('純損益: -350');
   });
 
   it('shows end phase with fold', async () => {

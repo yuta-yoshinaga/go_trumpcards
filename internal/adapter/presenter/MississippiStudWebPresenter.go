@@ -31,6 +31,7 @@ func (mp *MississippiStudWebPresenter) Output(g interfaces.MississippiStudGame, 
 	resObj.AntePayout = g.GetAntePayout()
 	resObj.StreetPayouts = mississippiStudStreetPayoutsSlice(g)
 	resObj.TotalPayout = g.GetTotalPayout()
+	resObj.NetChange = g.GetNetChange()
 
 	switch {
 	case lastErr != nil:

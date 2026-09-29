@@ -6,6 +6,7 @@
   "emptyColumnAriaLabel": "空のタブロー列 {{col}}",
   "emptyFaceAriaLabel": "空の文字盤{{idx}} ({{hour}}時)",
   "faceAriaLabel": "文字盤{{idx}} ({{hour}}時) 目標{{target}} {{count}}枚",
+  "faceAriaLabelCompleted": "文字盤{{idx}} ({{hour}}時) 目標{{target}} {{count}}枚・完成",
   "facesComplete": "完成 {{count}}/{{total}}",
   "foundation": "文字盤",
   "frontendHint": {

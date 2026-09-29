@@ -19,15 +19,6 @@ export const CPU_DIFFICULTY_OPTIONS = [
 ] as const;
 
 /**
- * Round-count options for Tarocchini.
- *
- * **Multiples of the player count only.** The deal rotates each round, so a
- * non-multiple ends the match with someone having taken the scarto more often
- * than the rest — the backend rejects it outright.
- */
-export const TARGET_ROUNDS_OPTIONS = [4, 8, 12] as const;
-
-/**
  * Hook that manages Tarocchini game state: the dealer's scarto, the play
  * action, and trick/round advancement.
  *
@@ -47,6 +38,7 @@ export function useTarocchiniGame() {
 
   /** Resets the game, applying the current config. */
   const reset = useCallback(() => {
+    if (!Number.isInteger(config.targetRounds) || config.targetRounds < 4 || config.targetRounds % 4 !== 0) return;
     void exec('reset', { config });
   }, [exec, config]);
 

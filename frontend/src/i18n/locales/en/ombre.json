@@ -23,6 +23,7 @@
   "bidEntrar": "Entrar",
   "bidSolo": "Solo",
   "bidPass": "Pass",
+  "bidMustExceedWinningBid": "The bid must exceed the current winning bid.",
   "bidPhase": "Bidding — first choose your bid (entrar / solo / pass), then pick a trump suit.",
   "chooseTrump": "Trump",
   "chooseBidType": "Choose bid",

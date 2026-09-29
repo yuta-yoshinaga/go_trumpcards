@@ -7,6 +7,7 @@
   "title": "Four Seasons",
   "stock": "Stock",
   "waste": "Waste",
+  "wasteCardAria": "Waste: {{card}}",
   "cross": "Cross",
   "foundation": "Foundation",
   "foundations": "Foundations (corners)",

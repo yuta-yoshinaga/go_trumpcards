@@ -11,6 +11,8 @@
   "playersTitle": "Players",
   "score": "Game {{n}}",
   "handPoints": "Hand {{n}}",
+  "scoreUpdate": "updated game score {{score}}",
+  "listSeparator": ", ",
   "hiddenHand": "hidden ({{count}})",
   "yourHand": "Your hand",
   "trick": "Trick",

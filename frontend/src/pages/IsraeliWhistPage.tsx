@@ -181,7 +181,6 @@ function IsraeliWhistPageContent() {
           ? t('phase.bid')
           : t('phase.play');
 
-  // 出せる札に緑の枠を足すだけで、押せなくはしない（サーバが必ず検証する）。
   const legalRing = new Set(isHumanTurn ? state.validPlays : []);
 
   /** A seat's standing in the auction, which the calling round does not replace. */
@@ -313,19 +312,29 @@ function IsraeliWhistPageContent() {
                   {t('header.you')}: {human.cardCount}
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {human.cards.map((card, idx) => (
-                    <button
-                      key={`${card.design}-${card.value}-${idx}`}
-                      type="button"
-                      onClick={() => handlePlay(idx)}
-                      disabled={loading || !isHumanTurn}
-                      aria-label={t('actions.playAria', { card: cardAlt(card) })}
-                      className={`disabled:opacity-50 ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
-                    >
-                      <CardImage card={card} width={cardWidth} />
-                    </button>
-                  ))}
+                  {human.cards.map((card, idx) => {
+                    const unplayable = isHumanTurn && !legalRing.has(idx);
+                    return (
+                      <button
+                        key={`${card.design}-${card.value}-${idx}`}
+                        type="button"
+                        disabled={loading || !isHumanTurn}
+                        onClick={() => {
+                          if (!unplayable) handlePlay(idx);
+                        }}
+                        aria-disabled={unplayable || undefined}
+                        aria-describedby={unplayable ? 'iw-play-unavailable' : undefined}
+                        aria-label={t('actions.playAria', { card: cardAlt(card) })}
+                        className={`disabled:opacity-50 disabled:cursor-not-allowed aria-disabled:opacity-50 aria-disabled:cursor-not-allowed ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
+                      >
+                        <CardImage card={card} width={cardWidth} />
+                      </button>
+                    );
+                  })}
                 </div>
+                <span id="iw-play-unavailable" className="sr-only">
+                  {t('actions.playUnavailable')}
+                </span>
               </div>
             )}
 

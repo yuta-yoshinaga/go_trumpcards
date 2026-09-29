@@ -18,6 +18,7 @@
     "score": "累計{{n}}",
     "dealer": "[親/ノルマ8]",
     "you": "あなた",
+    "currentTurn": "手番中",
     "cpu": "CPU{{idx}}",
     "kittyBadge": "キティ",
     "kittyAria": "キティから入ってきた札",

@@ -105,7 +105,8 @@ describe('BakersDozenPage', () => {
     expect(target).toHaveAttribute('aria-disabled', 'true');
     const hintId = target.getAttribute('aria-describedby');
     expect(hintId).toBeTruthy();
-    expect(document.getElementById(hintId!)).toHaveTextContent('先に移動する札を選んでください');
+    if (!hintId) throw new Error('Expected target to reference an explanatory hint');
+    expect(document.getElementById(hintId)).toHaveTextContent('先に移動する札を選んでください');
     fireEvent.click(target);
     await flushPendingDispatch();
     expect(mockExec).not.toHaveBeenCalledWith('move', expect.anything(), expect.anything());
@@ -469,6 +470,42 @@ describe('BakersDozenPage legal targets', () => {
     const emptyFoundation = screen.getByRole('button', { name: '空の組札 (♠)' });
     expect(emptyFoundation.closest('[data-legal-target="true"]')).toBeNull();
     expect(emptyFoundation).toBeEnabled();
+  });
+});
+
+describe('BakersDozenPage auto-complete announcements', () => {
+  it('announces the running state and then completion in its persistent live region', async () => {
+    let resolveAutoComplete: ((value: BakersDozenResponse) => void) | undefined;
+    mockExec.mockImplementation((command) => {
+      if (command === 'autocomplete') {
+        return new Promise((resolve) => {
+          resolveAutoComplete = resolve;
+        });
+      }
+      return Promise.resolve(playingState);
+    });
+    renderWithProviders(<BakersDozenPage />);
+    const button = await screen.findByTestId('autocomplete-button');
+    const live = screen.getByTestId('bd-autocomplete-live');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toBeEmptyDOMElement();
+
+    fireEvent.click(button);
+    expect(live).toHaveTextContent('自動完成中です');
+    await waitFor(() => expect(resolveAutoComplete).toBeDefined());
+    resolveAutoComplete?.({ ...playingState, phase: 1 });
+    await waitFor(() => expect(live).toHaveTextContent('自動完成が完了しました'));
+  });
+
+  it('announces interruption when the auto-complete request fails', async () => {
+    mockExec.mockImplementation((command) =>
+      command === 'autocomplete' ? Promise.reject(new Error('network failure')) : Promise.resolve(playingState),
+    );
+    renderWithProviders(<BakersDozenPage />);
+    fireEvent.click(await screen.findByTestId('autocomplete-button'));
+    const live = screen.getByTestId('bd-autocomplete-live');
+    expect(live).toHaveTextContent('自動完成中です');
+    await waitFor(() => expect(live).toHaveTextContent('自動完成が中断されました'));
   });
 });
 

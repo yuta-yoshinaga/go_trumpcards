@@ -91,6 +91,41 @@ describe('GleekPage', () => {
     expect(screen.getByTestId('gleek-player-0')).not.toContainElement(screen.getByTestId('gleek-bid-turn-label'));
   });
 
+  it('shows each seat bid and dropped-out status during the auction only', async () => {
+    mockExec.mockResolvedValue(
+      makeGleekState({
+        ...bidPhaseState,
+        players: bidPhaseState.players.map((player, index) => ({
+          ...player,
+          bid: [12, 16, 0][index],
+          passed: [false, false, true][index],
+        })),
+      }),
+    );
+    renderWithProviders(<GleekPage />);
+
+    expect(await screen.findByTestId('gleek-player-0')).toHaveTextContent('入札額: 12');
+    expect(screen.getByTestId('gleek-player-1')).toHaveTextContent('入札額: 16');
+    expect(screen.getByTestId('gleek-player-2')).toHaveTextContent('入札額: 0');
+    expect(screen.getByTestId('gleek-player-2')).toHaveTextContent('降り');
+  });
+
+  it('updates displayed bids when the auction state changes', async () => {
+    mockExec.mockResolvedValueOnce(bidPhaseState).mockResolvedValueOnce(
+      makeGleekState({
+        ...bidPhaseState,
+        highestBid: 14,
+        nextBidAmount: 16,
+        players: bidPhaseState.players.map((player, index) => (index === 0 ? { ...player, bid: 14 } : player)),
+      }),
+    );
+    renderWithProviders(<GleekPage />);
+    const raise = await screen.findByRole('button', { name: '14 まで競り上げる' });
+    fireEvent.click(raise);
+
+    await waitFor(() => expect(screen.getByTestId('gleek-player-0')).toHaveTextContent('入札額: 14'));
+  });
+
   // **段階の点は出さないと見えない。** ラフとメルドで動いた点が画面に無いと、
   // 累積点だけが理由なく動いているように見える。
   it('shows the stock, the ruff and both meld kinds', async () => {
@@ -173,6 +208,7 @@ describe('GleekPage', () => {
     renderWithProviders(<GleekPage />);
     expect(await screen.findByTestId('gleek-player-0')).toHaveTextContent('あなた');
     expect(screen.queryByTestId('gleek-bid-turn-label')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('gleek-player-bid-0')).not.toBeInTheDocument();
   });
 
   it('dropping out dispatches bid 0', async () => {

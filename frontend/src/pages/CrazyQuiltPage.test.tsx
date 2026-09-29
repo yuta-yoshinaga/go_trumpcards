@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { crazyquiltApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, CrazyQuiltResponse } from '../types/card';
@@ -61,6 +62,22 @@ describe('CrazyQuiltPage', () => {
     await waitFor(() => expect(screen.getByTestId('cq-cell-0')).toBeInTheDocument());
     expect(screen.getByTestId('cq-cell-63')).toBeInTheDocument();
     expect(screen.queryByTestId('cq-cell-64')).not.toBeInTheDocument();
+  });
+
+  it('includes the zero-based cell and card in quilt card names in Japanese and English', async () => {
+    await i18n.changeLanguage('ja');
+    const { unmount } = renderWithProviders(<CrazyQuiltPage />);
+    const jaCell = await screen.findByTestId('cq-cell-0');
+    expect(jaCell).toHaveAccessibleName('マス 0、♠ A');
+    expect(screen.getByTestId('cq-cell-5')).toHaveTextContent('空のマス 5');
+
+    unmount();
+    await i18n.changeLanguage('en');
+    renderWithProviders(<CrazyQuiltPage />);
+    const enCell = await screen.findByTestId('cq-cell-0');
+    expect(enCell).toHaveAccessibleName('Cell 0, ♠ A');
+    expect(screen.getByTestId('cq-cell-5')).toHaveTextContent('Empty cell 5');
+    await i18n.changeLanguage('ja');
   });
 
   it('keeps foundation targets focusable and explains that a source must be selected', async () => {

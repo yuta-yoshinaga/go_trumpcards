@@ -62,6 +62,11 @@ func (_m *MockPontoonGame) GetPhase() int {
 	return ret.Int(0)
 }
 
+func (_m *MockPontoonGame) GetDrawPileCount() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}
+
 func (_m *MockPontoonGame) GetChips() int {
 	ret := _m.Called()
 	return ret.Int(0)

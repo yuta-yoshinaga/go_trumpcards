@@ -41,5 +41,7 @@
     "rankandfileMove": "This card can move",
     "rankandfileDraw": "Nothing else can move — draw from the stock"
   },
-  "cannotGrab": "cannot be picked up"
+  "cannotGrab": "cannot be picked up",
+  "moveTargetCount": "{{count}} legal move destinations",
+  "noMoveTargets": "No legal move destinations"
 }

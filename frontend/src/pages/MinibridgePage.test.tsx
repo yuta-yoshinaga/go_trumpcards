@@ -125,6 +125,14 @@ describe('MinibridgePage', () => {
     expect(screen.getByTestId('mb-seat-0')).not.toHaveTextContent(/デクレアラー/);
   });
 
+  it('marks the current human controlled seat, including the dummy', async () => {
+    mockExec.mockResolvedValue(
+      playing({ currentPlayerIdx: 2, dummyIdx: 2, declarerIdx: 0 } as Partial<MinibridgeResponse>),
+    );
+    renderWithProviders(<MinibridgePage />);
+    expect(await screen.findByTestId('mb-turn-2')).toHaveAttribute('aria-current', 'step');
+  });
+
   it('marks the dealer on the correct seat', async () => {
     mockExec.mockResolvedValue(makeState({ dealerIdx: 2 }));
     renderWithProviders(<MinibridgePage />);

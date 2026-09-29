@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-/** A single setting item (checkbox or select) in the settings panel. */
+/** A single setting item in the settings panel. */
 export interface SettingsItem {
-  type: 'checkbox' | 'select';
+  type: 'checkbox' | 'select' | 'number';
   id: string;
   label: string;
   tooltip?: string;
+  /** Visible helper text, also associated with the control for screen readers. */
+  description?: string;
   /** Optional accessible name override for the underlying input/select element. */
   ariaLabel?: string;
   // checkbox
@@ -19,6 +21,9 @@ export interface SettingsItem {
   disabled?: boolean;
   /** Optional `data-testid` applied to the underlying input/select element. */
   testId?: string;
+  min?: number;
+  max?: number;
+  step?: number;
 }
 
 /** A group of related settings items with optional title. */
@@ -119,6 +124,29 @@ export function SettingsPanel({ title, groups }: SettingsPanelProps) {
                       />
                       {item.label}
                     </label>
+                    {renderHelp(item)}
+                  </span>
+                ) : item.type === 'number' ? (
+                  <span key={item.id} className="flex flex-wrap items-center gap-2 min-h-[44px] px-1">
+                    <label htmlFor={item.id}>{item.label}</label>
+                    <input
+                      id={item.id}
+                      type="number"
+                      value={item.value}
+                      min={item.min}
+                      max={item.max}
+                      step={item.step}
+                      onChange={(e) => item.onSelect?.(e.target.value)}
+                      className="bg-ds-surface-elevated text-ds-text-primary rounded px-2 py-2 min-h-[44px] w-24"
+                      aria-describedby={item.description ? `${item.id}-description` : undefined}
+                      aria-label={item.ariaLabel}
+                      data-testid={item.testId}
+                    />
+                    {item.description && (
+                      <span id={`${item.id}-description`} className="basis-full text-xs text-ds-text-muted">
+                        {item.description}
+                      </span>
+                    )}
                     {renderHelp(item)}
                   </span>
                 ) : (

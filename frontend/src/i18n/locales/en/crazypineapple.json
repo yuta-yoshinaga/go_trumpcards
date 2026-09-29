@@ -13,6 +13,10 @@
   "communityCards": "Community Cards",
   "yourHand": "Your Hand",
   "discardUpcoming": "You will discard one card after the flop betting round",
+  "cpuDiscard": {
+    "logLabel": "CPU discards",
+    "completed": "{{player}} discarded a card"
+  },
   "handNumber": "Hand #{{count}} (Level up: every {{level}} hands)",
   "discard": {
     "prompt": "Discard one card.",

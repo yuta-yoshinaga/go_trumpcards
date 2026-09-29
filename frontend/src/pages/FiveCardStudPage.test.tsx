@@ -292,7 +292,7 @@ describe('FiveCardStudPage', () => {
     renderWithProviders(<FiveCardStudPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'レイズ' })).toBeInTheDocument();
-    expect(screen.getByText('コールに必要な額: 40')).toBeInTheDocument();
+    expect(screen.queryByText(/必要ポットオッズ/)).not.toBeInTheDocument();
   });
 
   it("caps the displayed call amount at the human player's remaining chips", async () => {
@@ -304,11 +304,29 @@ describe('FiveCardStudPage', () => {
     await waitFor(() => expect(screen.getByText('コールに必要な額: 15')).toHaveAttribute('role', 'status'));
   });
 
+  it('shows Soko pot odds based on the call amount and resulting pot', async () => {
+    mockSokoExec.mockResolvedValue(secondStreetWithBetState);
+    renderWithProviders(
+      <TutorialWrapper gameName="soko" steps={[]}>
+        <FiveCardStudPageContent gameKey="soko" />
+      </TutorialWrapper>,
+    );
+    await waitFor(() =>
+      expect(
+        screen
+          .getAllByRole('status')
+          .map((element) => element.textContent)
+          .join(' '),
+      ).toContain('コールに必要な額: 40、必要ポットオッズ: 57.1%'),
+    );
+  });
+
   it('shows check availability instead of a call amount when no bet is outstanding', async () => {
     mockExec.mockResolvedValue(secondStreetState);
     renderWithProviders(<FiveCardStudPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'チェック' })).toBeInTheDocument());
     expect(screen.getByText('チェック可能')).toBeInTheDocument();
+    expect(screen.queryByText(/必要ポットオッズ/)).not.toBeInTheDocument();
     expect(screen.queryByText(/コールに必要な額/)).not.toBeInTheDocument();
   });
 

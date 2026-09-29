@@ -40,6 +40,7 @@ function makeState(overrides?: Partial<PontoonResponse>): PontoonResponse {
     bankerIdx: 1,
     isHumanBanker: false,
     chips: 900,
+    drawPileCount: 24,
     activeSeat: 0,
     activeHand: 0,
     nextBanker: -1,
@@ -68,6 +69,12 @@ describe('PontoonPage', () => {
     renderWithProviders(<PontoonPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
     expect(mockExec.mock.calls[0]?.[0]).toBe('reset');
+  });
+
+  it('shows the undealt cards remaining in the round', async () => {
+    mockExec.mockResolvedValue(makeState({ drawPileCount: 24 }));
+    renderWithProviders(<PontoonPage />);
+    await waitFor(() => expect(screen.getByText('山札の残り: 24')).toBeInTheDocument());
   });
 
   it('renders chips and the banker', async () => {

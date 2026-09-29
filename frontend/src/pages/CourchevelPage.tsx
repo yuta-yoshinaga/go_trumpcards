@@ -250,6 +250,15 @@ function CourchevelPageContent() {
                       {t('exposedNotice')}
                     </div>
                   )}
+                  <div
+                    className="sr-only"
+                    role="status"
+                    aria-live="polite"
+                    aria-atomic="true"
+                    data-testid="cv-preflop-exposed-status"
+                  >
+                    {phase === OmahaPhase.PRE_FLOP && state?.communityCards?.length ? t('exposedNotice') : ''}
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     {state?.communityCards?.length
                       ? state.communityCards.map((card, idx) => {

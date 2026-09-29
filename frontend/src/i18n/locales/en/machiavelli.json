@@ -14,6 +14,8 @@
   },
   "round": "Round {{n}}/{{total}}",
   "drawPile": "Stock: {{count}} cards",
+  "drawPileAnnouncement": "Cards remaining in stock: {{count}}",
+  "drawPileEmpty": "The stock is empty",
   "table": "Table melds",
   "tableEmpty": "No melds yet",
   "meldKindSet": "Set",

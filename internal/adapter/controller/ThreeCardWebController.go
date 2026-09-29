@@ -30,6 +30,7 @@ type ThreeCardWebOutput struct {
 	AnteBonusPayout int              `json:"anteBonusPayout"`
 	PairPlusPayout  int              `json:"pairPlusPayout"`
 	TotalPayout     int              `json:"totalPayout"`
+	NetChange       int              `json:"netChange"`
 	DealerQualified bool             `json:"dealerQualified"`
 	PlayerHandRank  int              `json:"playerHandRank"`
 	DealerHandRank  int              `json:"dealerHandRank"`

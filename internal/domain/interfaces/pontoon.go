@@ -30,6 +30,8 @@ type PontoonGame interface {
 	GetPhase() int
 	// GetChips 人間のチップを取得する
 	GetChips() int
+	// GetDrawPileCount 現在の局で未配布のカード枚数を取得する
+	GetDrawPileCount() int
 	// GetSeats 全席を取得する
 	GetSeats() []*domain.PontoonSeat
 	// GetBankerIdx 親の席番号を取得する

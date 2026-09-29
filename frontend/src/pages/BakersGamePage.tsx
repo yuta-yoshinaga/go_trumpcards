@@ -580,7 +580,11 @@ function BakersGamePageContent() {
                   {/* Zone identifiers (tableau/freecell/foundation) double as i18n
                       keys, so they localize instead of showing raw English. */}
                   {t('hintAvailable')}: {t(hint.fromZone)}
-                  {hint.fromCol >= 0 ? ` ${hint.fromCol}` : ''} → {t(hint.toZone)}
+                  {hint.fromCol >= 0 ? ` ${hint.fromCol}` : ''}
+                  {hint.fromZone === 'tableau' && hint.cardIndex >= 0
+                    ? ` ${t('hintCardPosition', { index: hint.cardIndex })}`
+                    : ''}{' '}
+                  → {t(hint.toZone)}
                   {hint.toCol >= 0 ? ` ${hint.toCol}` : ''}
                 </div>
               )}

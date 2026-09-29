@@ -28,6 +28,7 @@
   "teamScore": "チーム{{n}}: {{score}}",
   "dealerBadge": "親",
   "scartoPrompt": "捨てる{{count}}枚を選んでください（切札とマットは選べません）",
+  "scartoProgress": "選択済み {{selected}}/{{count}}枚",
   "scartoButton": "捨てる",
   "scartoDone": "スカルト済み: {{count}}枚",
   "playButton": "出す",

@@ -369,6 +369,9 @@ function Rummy500PageContent() {
                               width={cardWidth * 0.6}
                             />
                           ))}
+                          <span className="self-center text-xs text-ds-text-muted">
+                            {t('meldScore', { score: meld.score })}
+                          </span>
                         </button>
                       );
                     })}

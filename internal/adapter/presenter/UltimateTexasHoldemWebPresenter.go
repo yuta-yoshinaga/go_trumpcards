@@ -38,6 +38,7 @@ func (up *UltimateTexasHoldemWebPresenter) Output(g interfaces.UltimateTexasHold
 	resObj.PlayPayout = g.GetPlayPayout()
 	resObj.TripsPayout = g.GetTripsPayout()
 	resObj.TotalPayout = g.GetTotalPayout()
+	resObj.NetChange = g.GetNetChange()
 	resObj.PlayerHandRank = g.GetPlayerHandRank()
 	resObj.DealerHandRank = g.GetDealerHandRank()
 

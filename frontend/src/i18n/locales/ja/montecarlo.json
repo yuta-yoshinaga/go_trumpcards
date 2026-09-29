@@ -18,7 +18,8 @@
     "stalemate": "手詰まり",
     "win": "全52枚を取り除きました！",
     "loss": "ゲームオーバー",
-    "empty": "空"
+    "empty": "空",
+    "cellPosition": "行{{row}}、列{{col}}"
   },
   "button": {
     "deal": "山札から補充",

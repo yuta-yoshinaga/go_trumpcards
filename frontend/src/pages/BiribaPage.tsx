@@ -127,6 +127,18 @@ function BiribaPageContent() {
   const isDiscardPhase = state?.phase === BiribaPhase.DISCARD;
   const isRoundEnd = state?.phase === BiribaPhase.ROUND_END;
   const isGameEnd = state?.phase === BiribaPhase.GAME_END || !!state?.gameEndFlag;
+  const [discardPileViewerOpen, setDiscardPileViewerOpen] = useState(false);
+  const previousPhaseRef = useRef<number | undefined>(undefined);
+
+  useEffect(() => {
+    if (!state) return;
+    if (state.phase === BiribaPhase.DRAW && previousPhaseRef.current !== BiribaPhase.DRAW) {
+      setDiscardPileViewerOpen(true);
+    } else if (state.phase !== BiribaPhase.DRAW && previousPhaseRef.current === BiribaPhase.DRAW) {
+      setDiscardPileViewerOpen(false);
+    }
+    previousPhaseRef.current = state.phase;
+  }, [state]);
 
   // Biriba uses the Canasta discard-pile mechanism: two natural cards matching
   // the top card are required to take the pile.
@@ -335,7 +347,8 @@ function BiribaPageContent() {
                 <details
                   className="my-3 rounded bg-black/30 p-2"
                   data-testid="ca-discard-pile-viewer"
-                  open={isDrawPhase}
+                  open={discardPileViewerOpen}
+                  onToggle={(event) => setDiscardPileViewerOpen(event.currentTarget.open)}
                 >
                   <summary className="cursor-pointer select-none text-sm text-ds-text-muted">
                     {t('discardPileViewer', { count: state.discardPile.length })}

@@ -114,11 +114,12 @@ type SevenTwentySevenHint struct {
 
 // sevenTwentySevenState はゲーム進行状態。
 type sevenTwentySevenState struct {
-	phase       SevenTwentySevenPhase
-	roundNumber int
-	pot         int // 現在のラウンドのポット
-	carryPot    int // 次ラウンドへ持ち越す種銭 (全員が両側とも超えたラウンドのポット)
-	carryCount  int // 両側とも全滅してポットが連続繰り越しになった回数
+	phase           SevenTwentySevenPhase
+	roundNumber     int
+	pot             int // 現在のラウンドのポット
+	carryPot        int // 次ラウンドへ持ち越す種銭 (全員が両側とも超えたラウンドのポット)
+	carryCount      int // 両側とも全滅してポットが連続繰り越しになった回数
+	roundStartChips []int
 	// lowWinner / highWinner は 7 側 / 27 側それぞれの勝者 (-1 = 該当なし)。
 	// 同一人物なら総取り。どちらも -1 ならポットは次ラウンドへ持ち越す。
 	lowWinner      int
@@ -202,6 +203,10 @@ func (g *SevenTwentySeven) NextRound() {
 
 // startRound は 1 ラウンドを準備する: 脱落判定・アンティ徴収・配札・宣言フェーズへ遷移。
 func (g *SevenTwentySeven) startRound() {
+	g.state.roundStartChips = make([]int, len(g.players))
+	for i, p := range g.players {
+		g.state.roundStartChips[i] = p.GetChips()
+	}
 	// ラウンド単位の状態をクリア。
 	g.state.lowWinner = -1
 	g.state.highWinner = -1
@@ -637,6 +642,14 @@ func (g *SevenTwentySeven) GetChips() int {
 	return chipsOfFirst(g.players)
 }
 
+// GetRoundNetChange は指定席のラウンド開始時からのチップ差を返す。
+func (g *SevenTwentySeven) GetRoundNetChange(i int) int {
+	if i < 0 || i >= len(g.players) || i >= len(g.state.roundStartChips) {
+		return 0
+	}
+	return g.players[i].GetChips() - g.state.roundStartChips[i]
+}
+
 // GetConfig はローカルルール設定を返す。
 func (g *SevenTwentySeven) GetConfig() SevenTwentySevenConfig { return g.config }
 
@@ -660,35 +673,37 @@ type sevenTwentySevenJSON struct {
 	CarryCount  int                       `json:"cc"`
 	// **勝者は 2 人いる。** 7 側と 27 側それぞれ。同一人物なら総取り。
 	// 片方を落とすと、復元した盤で「なぜ半分しか貰えていないのか」が消える。
-	LowWinner      int                    `json:"lw"`
-	HighWinner     int                    `json:"hw"`
-	DrawRound      int                    `json:"dr"`
-	MatchWinnerIdx int                    `json:"mw"`
-	Result         SevenTwentySevenResult `json:"re"`
-	GameEndFlag    bool                   `json:"ge"`
-	Scored         bool                   `json:"sc"`
-	ActionLog      []*ActionLogEntry      `json:"al"`
+	LowWinner       int                    `json:"lw"`
+	HighWinner      int                    `json:"hw"`
+	DrawRound       int                    `json:"dr"`
+	MatchWinnerIdx  int                    `json:"mw"`
+	Result          SevenTwentySevenResult `json:"re"`
+	GameEndFlag     bool                   `json:"ge"`
+	Scored          bool                   `json:"sc"`
+	RoundStartChips []int                  `json:"rsc,omitempty"`
+	ActionLog       []*ActionLogEntry      `json:"al"`
 }
 
 // MarshalJSON implements json.Marshaler.
 func (g *SevenTwentySeven) MarshalJSON() ([]byte, error) {
 	return json.Marshal(sevenTwentySevenJSON{
-		TrumpCards:     g.trumpCards,
-		Players:        g.players,
-		Config:         g.config,
-		Phase:          g.state.phase,
-		RoundNumber:    g.state.roundNumber,
-		Pot:            g.state.pot,
-		CarryPot:       g.state.carryPot,
-		CarryCount:     g.state.carryCount,
-		LowWinner:      g.state.lowWinner,
-		HighWinner:     g.state.highWinner,
-		DrawRound:      g.state.drawRound,
-		MatchWinnerIdx: g.state.matchWinnerIdx,
-		Result:         g.state.result,
-		GameEndFlag:    g.state.gameEndFlag,
-		Scored:         g.state.scored,
-		ActionLog:      g.state.actionLog,
+		TrumpCards:      g.trumpCards,
+		Players:         g.players,
+		Config:          g.config,
+		Phase:           g.state.phase,
+		RoundNumber:     g.state.roundNumber,
+		Pot:             g.state.pot,
+		CarryPot:        g.state.carryPot,
+		CarryCount:      g.state.carryCount,
+		LowWinner:       g.state.lowWinner,
+		HighWinner:      g.state.highWinner,
+		DrawRound:       g.state.drawRound,
+		MatchWinnerIdx:  g.state.matchWinnerIdx,
+		Result:          g.state.result,
+		GameEndFlag:     g.state.gameEndFlag,
+		Scored:          g.state.scored,
+		RoundStartChips: g.state.roundStartChips,
+		ActionLog:       g.state.actionLog,
 	})
 }
 
@@ -747,19 +762,20 @@ func (g *SevenTwentySeven) UnmarshalJSON(data []byte) error {
 	g.players = j.Players
 	g.config = j.Config
 	g.state = sevenTwentySevenState{
-		phase:          j.Phase,
-		roundNumber:    j.RoundNumber,
-		pot:            j.Pot,
-		carryPot:       j.CarryPot,
-		carryCount:     j.CarryCount,
-		lowWinner:      j.LowWinner,
-		highWinner:     j.HighWinner,
-		drawRound:      j.DrawRound,
-		matchWinnerIdx: j.MatchWinnerIdx,
-		result:         j.Result,
-		gameEndFlag:    j.GameEndFlag,
-		scored:         j.Scored,
-		actionLogBase:  actionLogBase{actionLog: j.ActionLog},
+		phase:           j.Phase,
+		roundNumber:     j.RoundNumber,
+		pot:             j.Pot,
+		carryPot:        j.CarryPot,
+		carryCount:      j.CarryCount,
+		lowWinner:       j.LowWinner,
+		highWinner:      j.HighWinner,
+		drawRound:       j.DrawRound,
+		matchWinnerIdx:  j.MatchWinnerIdx,
+		result:          j.Result,
+		gameEndFlag:     j.GameEndFlag,
+		scored:          j.Scored,
+		roundStartChips: j.RoundStartChips,
+		actionLogBase:   actionLogBase{actionLog: j.ActionLog},
 	}
 	if g.state.actionLog == nil {
 		g.state.actionLog = make([]*ActionLogEntry, 0)

@@ -31,6 +31,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { BurracoResponse, Card } from '../types/card';
 import { BurracoPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { burracoMeldSelectionStatus } from '../utils/burracoMeld';
 import {
   type BurracoSortMode,
   loadBurracoSortMode,
@@ -151,6 +152,21 @@ function BurracoPageContent() {
     }
     return drawDiscardProblem === null ? '' : t(`drawDiscardReason.${drawDiscardProblem}`);
   }, [isDrawPhase, state?.isFrozen, drawDiscardProblem, t]);
+
+  const meldSelectionStatus = useMemo(() => {
+    if (!humanPlayer) return 'select' as const;
+    const selected = selectedCardIndices
+      .map((i) => humanPlayer.cards[i])
+      .filter((card): card is Card => card !== undefined);
+    return burracoMeldSelectionStatus(selected, humanPlayer.melds);
+  }, [selectedCardIndices, humanPlayer]);
+
+  const meldSelectionReason =
+    meldSelectionStatus === 'select'
+      ? t('meldSelectionReason.select')
+      : meldSelectionStatus === 'valid'
+        ? t(humanPlayer?.hasInitMeld ? 'meldSelectionReason.valid' : 'meldSelectionReason.validInitial')
+        : t('meldSelectionReason.invalid');
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
@@ -577,12 +593,20 @@ function BurracoPageContent() {
                     className={btnPrimary}
                     onClick={handleMeldSelected}
                     disabled={loading || selectedCardIndices.length < 3}
+                    aria-describedby="bu-meld-selection-reason"
                   >
                     {t('meldButton')}
                   </button>
                   <button type="button" className={btnOutline} onClick={handleSkipMeld} disabled={loading}>
                     {t('skipMeldButton')}
                   </button>
+                  <span
+                    id="bu-meld-selection-reason"
+                    data-testid="bu-meld-selection-reason"
+                    className="text-xs text-ds-text-muted"
+                  >
+                    {meldSelectionReason}
+                  </span>
                 </>
               )}
               {isDiscardPhase && isHumanTurn && (

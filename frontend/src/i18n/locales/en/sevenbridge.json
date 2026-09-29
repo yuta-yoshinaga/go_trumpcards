@@ -32,6 +32,7 @@
   "ponChiSelectionProgress": "Pon/Chi selection: {{selected}}/{{required}} cards",
   "requireThree": "Select 3 or more cards",
   "requirementMet": "Selection requirement met — ready",
+  "discardRequireOne": "Select exactly 1 card",
   "discardButton": "Discard",
   "layoffButton": "Layoff",
   "layoffTarget": "Target",

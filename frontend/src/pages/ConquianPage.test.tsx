@@ -546,6 +546,7 @@ describe('ConquianPage', () => {
     // **足せるメルドだけが押せる。**2 つあるうち候補は 1 つ。
     const targets = document.querySelectorAll('[data-layoff-target]');
     expect(targets.length).toBe(1);
+    expect(targets[0]).toHaveAccessibleName('2 番目のメルドに足す: ♦ 3、♦ 4、♦ 5、♦ 6、♦ 7、♦ 8');
     mockExec.mockClear();
     fireEvent.click(targets[0] as HTMLElement);
 

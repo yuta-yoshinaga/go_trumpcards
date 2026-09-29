@@ -32,6 +32,8 @@
   "nextTrick": "次のトリック",
   "nextRound": "次のラウンド",
   "target": "全{{rounds}}ラウンド",
+  "handCardStrong": "{{suit}}、数字が大きいほど強い",
+  "handCardWeak": "{{suit}}、数字が小さいほど強い",
   "trumpGroupStrong": "切り札は強い群 — 数字が大きいほど強い（12が最強）",
   "trumpGroupWeak": "切り札は弱い群 — 数字が小さいほど強い（1が最強）",
   "roundResult": {

@@ -168,6 +168,13 @@ function TonkPageContent() {
   const isHumanTurn = (isDrawPhase || isDiscardPhase) && state.players[state.currentPlayerIdx]?.isHuman === true;
   const knockerDeadwoodScore = calcTonkDeadwoodValue(state.knockerDeadwood);
   const opponentDeadwoodScore = calcTonkDeadwoodValue(state.opponentDeadwood);
+  const discardCandidateValues =
+    humanPlayer && isDiscardPhase && isHumanTurn
+      ? humanPlayer.cards.map((_, idx) =>
+          calcTonkDeadwoodValue(humanPlayer.cards.filter((__, cardIdx) => cardIdx !== idx)),
+        )
+      : [];
+  const bestDiscardCandidateValue = discardCandidateValues.length > 0 ? Math.min(...discardCandidateValues) : -1;
 
   // When exactly one card is selected to discard, highlight which of the remaining
   // four cards already form a meld (set or run) so the player can knock with confidence.
@@ -430,31 +437,50 @@ function TonkPageContent() {
                 {humanPlayer.cards.map((card, idx) => {
                   const isCardSelected = selectedCardIndices.includes(idx);
                   const isMeldCard = !isCardSelected && meldHighlight.has(idx);
+                  const candidateValue = discardCandidateValues[idx];
+                  const candidateKnockable = candidateValue <= state.knockThreshold;
                   return (
-                    <button
-                      type="button"
-                      key={`${card.design}-${card.value}-${idx}`}
-                      onClick={() => toggleCard(idx)}
-                      aria-label={cardAlt(card)}
-                      aria-pressed={isCardSelected}
-                      data-meld={isMeldCard ? 'true' : undefined}
-                      data-testid={`tonk-hand-${idx.toString()}`}
-                      className={`transition-transform ${focusRingCard}`}
-                      style={{
-                        background: 'none',
-                        padding: 0,
-                        borderRadius: 8,
-                        // Selection wins; otherwise green-highlight cards that already form a meld.
-                        ...(isCardSelected
-                          ? selectedCardStyle(true)
-                          : isMeldCard
-                            ? playableCardStyle(true)
-                            : selectedCardStyle(false)),
-                        boxSizing: 'border-box',
-                      }}
-                    >
-                      <AnimatedCard card={card} width={cardWidth} />
-                    </button>
+                    <div key={`${card.design}-${card.value}-${idx}`} className="flex flex-col items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => toggleCard(idx)}
+                        aria-label={cardAlt(card)}
+                        aria-pressed={isCardSelected}
+                        data-meld={isMeldCard ? 'true' : undefined}
+                        data-testid={`tonk-hand-${idx.toString()}`}
+                        className={`transition-transform ${focusRingCard}`}
+                        style={{
+                          background: 'none',
+                          padding: 0,
+                          borderRadius: 8,
+                          // Selection wins; otherwise green-highlight cards that already form a meld.
+                          ...(isCardSelected
+                            ? selectedCardStyle(true)
+                            : isMeldCard
+                              ? playableCardStyle(true)
+                              : selectedCardStyle(false)),
+                          boxSizing: 'border-box',
+                        }}
+                      >
+                        <AnimatedCard card={card} width={cardWidth} />
+                      </button>
+                      {candidateValue !== undefined && (
+                        <span
+                          className={`text-xs text-center ${
+                            candidateKnockable ? 'text-ds-success' : 'text-ds-text-muted'
+                          } ${candidateValue === bestDiscardCandidateValue ? 'font-bold' : ''}`}
+                          data-testid={`tonk-discard-candidate-${idx.toString()}`}
+                          data-best={candidateValue === bestDiscardCandidateValue ? 'true' : undefined}
+                          data-knockable={candidateKnockable ? 'true' : undefined}
+                        >
+                          {t('deadwood.score', { value: candidateValue })}
+                          <br />
+                          {candidateKnockable
+                            ? t('deadwood.knockable')
+                            : t('deadwood.notKnockable', { threshold: state.knockThreshold })}
+                        </span>
+                      )}
+                    </div>
                   );
                 })}
               </div>

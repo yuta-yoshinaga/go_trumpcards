@@ -34,6 +34,11 @@
   "hiddenHandAriaLabel": "{{name}} の手は伏せられています {{count}}枚",
   "bankerHandAriaLabel": "親の手 合計{{total}}",
   "hiddenBankerHandAriaLabel": "親の手は伏せられています {{count}}枚",
+  "settlement": {
+    "banker": "親席、精算 {{net}}",
+    "playerWin": "プレイヤー席、賭け金{{bet}}、払戻額{{payout}}、勝ち",
+    "playerLoss": "プレイヤー席、賭け金{{bet}}、払戻額{{payout}}、負け"
+  },
   "tutorial": {
     "faceCards": "**J・Q・Kは10点**です。Aは1点、数字札は額面どおりに数えます。",
     "target": "目標は**15**。超えたらバーストです。**同点は親の勝ち**なので、親と同じ点で止まっても負けます。",

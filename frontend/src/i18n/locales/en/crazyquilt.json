@@ -58,6 +58,7 @@
   "directionAscending": "up from the Ace",
   "directionDescending": "down from the King",
   "emptyCellAriaLabel": "Empty cell {{cell}}",
+  "quiltCellAriaLabel": "Cell {{cell}}, {{card}}",
   "listSeparator": ", ",
   "keyboardDestinations": "Valid destinations: {{destinations}}",
   "noKeyboardDestinations": "No valid destinations"

@@ -29,6 +29,7 @@
     "resetButton": "Start a new game."
   },
   "cardPosAria": "{{card}} (column {{col}}, position {{pos}})",
+  "movableRunStartAria": "movable run start, {{count}} cards",
   "emptyColAria": "column {{col}} (empty)",
   "frontendHint": {
     "simplesimonMove": "Cards in this column can move to another"

@@ -46,7 +46,9 @@
   "nextRound": "次のラウンド",
   "roundResult": {
     "title": "ラウンド結果",
-    "winner": "{{name}} が手札を出し切ってラウンドを終えました。"
+    "winner": "{{name}} が手札を出し切ってラウンドを終えました。",
+    "boodleWin": "{{card}}: {{name}} が {{amount}} チップ獲得",
+    "noBoodleWins": "今回獲得されたブードルはありません。"
   },
   "hint": {
     "forced": "次の札は強制です — 出しましょう。",

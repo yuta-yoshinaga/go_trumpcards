@@ -101,6 +101,12 @@ describe('PasurPage', () => {
     expect(screen.getByTestId('ps-seat-3')).toBeInTheDocument();
   });
 
+  it('marks the current human seat', async () => {
+    mockExec.mockResolvedValue(makeState());
+    renderWithProviders(<PasurPage />);
+    expect(await screen.findByTestId('ps-turn-0')).toHaveAttribute('aria-current', 'step');
+  });
+
   // **場に残った札の行き先が読めること。**
   it('marks the last capturer only once someone has captured', async () => {
     const { unmount } = renderWithProviders(<PasurPage />);

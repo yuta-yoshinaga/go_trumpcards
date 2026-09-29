@@ -281,13 +281,15 @@ describe('AgnesPage', () => {
     const dataTransfer = { setData: vi.fn(), effectAllowed: '', dropEffect: '' };
     fireEvent.dragStart(screen.getByAltText('♣ 6').closest('button') as HTMLButtonElement, { dataTransfer });
     await waitFor(() => expect(document.querySelectorAll('[data-eligible="true"]')).toHaveLength(1));
-
     const eligible = document.querySelector('[data-eligible="true"]') as HTMLElement;
     expect(eligible.parentElement).toHaveClass('border-2', 'border-ds-success');
     expect(eligible.parentElement).not.toHaveClass('ring-2');
     expect(screen.getByAltText('♠ 7').closest('button')?.closest('[data-eligible="true"]')).not.toBeNull();
     expect(screen.getByAltText('♥ 8').closest('button')?.closest('[data-eligible="true"]')).toBeNull();
     expect(screen.getByAltText('♣ 6').closest('button')?.closest('[data-eligible="true"]')).toBeNull();
+    expect(screen.getByTestId('agnes-drag-target-status')).toHaveTextContent('列0に移動できます');
+    fireEvent.dragEnd(screen.getByAltText('♣ 6').closest('button') as HTMLButtonElement);
+    await waitFor(() => expect(screen.getByTestId('agnes-drag-target-status')).toHaveTextContent(''));
   });
 
   it('does not highlight destinations when no drag is in progress', async () => {

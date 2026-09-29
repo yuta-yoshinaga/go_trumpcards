@@ -13,6 +13,7 @@
   "tablePlayedBy": "Played by {{name}}",
   "playButton": "Play Selected",
   "passButton": "Pass",
+  "passUnavailable": "You cannot pass when there are no cards on the table.",
   "invalidCombo": "Not a valid combination (single, pair, triple, straight, double-sequence, or four of a kind)",
   "selectedPlayLabel": "Selected",
   "comboBadge": "{{type}} ({{count}} cards)",

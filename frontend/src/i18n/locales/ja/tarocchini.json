@@ -12,7 +12,8 @@
     "targetRounds": "ラウンド数",
     "easy": "Easy",
     "normal": "Normal",
-    "hard": "Hard"
+    "hard": "Hard",
+    "targetRoundsGuide": "4以上の4の倍数を指定してください。"
   },
   "round": "ラウンド {{n}}",
   "trick": "トリック {{n}}",

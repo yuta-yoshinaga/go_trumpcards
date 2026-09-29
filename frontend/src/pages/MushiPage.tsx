@@ -208,11 +208,34 @@ function MushiPageContent() {
                   <div className="text-game-text-muted text-xs mb-0.5">
                     {p.isHuman ? t('yourCaptured') : t('opponentCaptured')} ({p.capturedPoints} pt)
                   </div>
-                  <div className="flex gap-0.5 justify-center flex-wrap">
+                  <div className="flex gap-2 justify-center flex-wrap">
                     {p.captured.length === 0 ? (
                       <span className="text-game-text-muted text-xs">—</span>
                     ) : (
-                      p.captured.map((card, i) => renderCard(card, `cap-${p.id.toString()}-${i.toString()}`))
+                      Object.entries(
+                        p.captured.reduce<Record<number, MushiCard[]>>((groups, card) => {
+                          const monthCards = groups[card.month] ?? [];
+                          monthCards.push(card);
+                          groups[card.month] = monthCards;
+                          return groups;
+                        }, {}),
+                      )
+                        .sort(([monthA], [monthB]) => Number(monthA) - Number(monthB))
+                        .map(([month, cards]) => (
+                          <div
+                            key={`cap-${p.id.toString()}-month-${month.toString()}`}
+                            className="border-l-2 border-ds-border pl-2"
+                          >
+                            <div className="text-game-text-muted text-xs mb-1">
+                              {t('capturedMonth', { month, count: cards.length })}
+                            </div>
+                            <div className="flex gap-0.5 justify-center flex-wrap">
+                              {cards.map((card, i) =>
+                                renderCard(card, `cap-${p.id.toString()}-${month.toString()}-${i.toString()}`),
+                              )}
+                            </div>
+                          </div>
+                        ))
                     )}
                   </div>
                 </div>

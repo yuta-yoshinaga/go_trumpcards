@@ -543,6 +543,50 @@ func TestSchafkopf_ScoreRoundPickerWinsAndChipsZeroSum(t *testing.T) {
 	}
 }
 
+func TestSchafkopf_SettleChipsRecordsPerSeatDelta(t *testing.T) {
+	tests := []struct {
+		name      string
+		pickerWon bool
+		partner   int
+		want      []int
+	}{
+		{name: "picker wins alone", pickerWon: true, partner: -1, want: []int{6, -2, -2, -2}},
+		{name: "picker and partner win", pickerWon: true, partner: 1, want: []int{2, 2, -2, -2}},
+		{name: "picker loses", pickerWon: false, partner: -1, want: []int{-6, 2, 2, 2}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := newSKGame(false)
+			g.config.BaseChips = 2
+			g.pickerIdx, g.partnerIdx = 0, tt.partner
+			g.settleChips(tt.pickerWon, 1)
+			sum := 0
+			for i, want := range tt.want {
+				if got := g.GetLastDealChipDelta(i); got != want {
+					t.Errorf("seat %d delta = %d, want %d", i, got, want)
+				}
+				sum += g.GetLastDealChipDelta(i)
+			}
+			if sum != 0 {
+				t.Errorf("deltas sum to %d, want 0", sum)
+			}
+			data, err := json.Marshal(g)
+			if err != nil {
+				t.Fatal(err)
+			}
+			restored := new(Schafkopf)
+			if err := json.Unmarshal(data, restored); err != nil {
+				t.Fatal(err)
+			}
+			for i, want := range tt.want {
+				if got := restored.GetLastDealChipDelta(i); got != want {
+					t.Errorf("restored seat %d delta = %d, want %d", i, got, want)
+				}
+			}
+		})
+	}
+}
+
 func TestSchafkopf_MultiplierSchneiderSchwarz(t *testing.T) {
 	if schafkopfMultiplier(35, false) != 1 {
 		t.Error("normal should be x1")

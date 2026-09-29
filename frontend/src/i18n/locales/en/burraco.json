@@ -56,6 +56,12 @@
   },
   "frozenIndicator": "❄️ Frozen",
   "selectMeld": "Select cards to meld",
+  "meldSelectionReason": {
+    "select": "Select cards to meld",
+    "valid": "The selected cards can be melded",
+    "validInitial": "This is a valid combination. The initial meld must meet the minimum point requirement.",
+    "invalid": "The selected cards cannot be melded"
+  },
   "result": {
     "humanWin": "You win!",
     "cpuWin": "CPU {{cpuId}} wins!"

@@ -48,6 +48,21 @@ func TestNewSevenCardStud(t *testing.T) {
 	assert.Equal(t, -1, s.GetBringInPlayerIdx())
 }
 
+func TestSevenCardStudGetRoundNetChange(t *testing.T) {
+	s := newTestSevenCardStud()
+	s.startingChips = []int{100, 100, 100}
+	s.players[0].SetChips(145)
+	s.players[1].SetChips(60)
+	s.players[2].SetChips(75) // folded players still have a round net change
+	s.players[2].SetFolded(true)
+
+	assert.Equal(t, 45, s.GetRoundNetChange(0))
+	assert.Equal(t, -40, s.GetRoundNetChange(1))
+	assert.Equal(t, -25, s.GetRoundNetChange(2))
+	assert.Equal(t, 0, s.GetRoundNetChange(-1))
+	assert.Equal(t, 0, s.GetRoundNetChange(99))
+}
+
 func TestSevenCardStud_Reset(t *testing.T) {
 	s := newTestSevenCardStud()
 	for _, p := range s.players {

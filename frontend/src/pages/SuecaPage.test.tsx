@@ -35,6 +35,20 @@ beforeEach(() => {
 });
 
 describe('SuecaPage', () => {
+  it('shows cumulative team game points against the configured target', async () => {
+    mockExec.mockResolvedValue(
+      makeSuecaState({
+        teamGamePoints: [2, 3],
+        config: { cpuDifficulty: 1, targetGamePoints: 7 },
+      }),
+    );
+    renderWithProviders(<SuecaPage />);
+
+    const sidebar = await screen.findByTestId('sueca-team-game-points');
+    expect(sidebar).toHaveTextContent('チームA: 2 / 7ゲームポイント');
+    expect(sidebar).toHaveTextContent('チームB: 3 / 7ゲームポイント');
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<SuecaPage />);

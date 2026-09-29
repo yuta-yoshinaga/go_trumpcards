@@ -146,6 +146,7 @@ function TienLenPageContent() {
   const isGameEnd = state.gameEndFlag;
   const humanWon = isGameEnd && state.players[0]?.rank === 1;
   const isHumanTurn = state.currentTurn === 0 && !isGameEnd;
+  const canPass = isHumanTurn && state.tableCards.length > 0 && !loading;
   const human = state.players[0];
   const selectedCards = selectedIndices.map((i) => human.cards[i]).filter((c): c is NonNullable<typeof c> => c != null);
   const selectedCombo = classifyTienLenCombo(selectedCards);
@@ -324,13 +325,23 @@ function TienLenPageContent() {
               </button>
               <button
                 type="button"
-                onClick={handlePass}
+                onClick={() => {
+                  if (!canPass) return;
+                  handlePass();
+                }}
                 disabled={loading || !isHumanTurn}
-                className="px-4 py-2 rounded-lg bg-ds-warning hover:bg-ds-warning text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+                aria-disabled={isHumanTurn && state.tableCards.length === 0 ? 'true' : undefined}
+                aria-describedby={isHumanTurn && state.tableCards.length === 0 ? 'tl-pass-unavailable' : undefined}
+                className="px-4 py-2 rounded-lg bg-ds-warning hover:bg-ds-warning text-white font-medium disabled:opacity-40 disabled:cursor-not-allowed aria-disabled:opacity-40 aria-disabled:cursor-not-allowed text-sm"
                 data-testid="pass-button"
               >
                 {t('passButton')}
               </button>
+              {isHumanTurn && state.tableCards.length === 0 && (
+                <span id="tl-pass-unavailable" className="sr-only">
+                  {t('passUnavailable')}
+                </span>
+              )}
               <GameResetButton
                 isGameEnd={isGameEnd}
                 onReset={onReset}

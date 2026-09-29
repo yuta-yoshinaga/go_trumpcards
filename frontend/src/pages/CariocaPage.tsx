@@ -3,6 +3,7 @@ import { cariocaApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
+import { SettingsPanel } from '../components/common/SettingsPanel';
 import { ErrorAlert } from '../components/ErrorAlert';
 import { GameFooter } from '../components/GameFooter';
 import { GameMessageBox } from '../components/GameMessageBox';
@@ -214,6 +215,14 @@ function CariocaPageContent() {
     clearSelection();
   }, [execApi, clearSelection]);
 
+  const handleConfigChange = useCallback(
+    (config: { playerCount: number; cpuDifficulty: number; failContractPenalty: number }) => {
+      void execApi('reset', { config });
+      clearSelection();
+    },
+    [execApi, clearSelection],
+  );
+
   const phaseName = useMemo(() => {
     if (!state) return '';
     return phaseNames[state.phase] ?? '';
@@ -264,6 +273,55 @@ function CariocaPageContent() {
       ) : (
         <>
           {error && <ErrorAlert message={error} onRetry={retry} />}
+
+          <SettingsPanel
+            title={tc('settings.title')}
+            groups={[
+              {
+                items: [
+                  {
+                    type: 'select',
+                    id: 'carioca-player-count',
+                    label: t('settings.playerCount'),
+                    value: state.config.playerCount,
+                    options: [3, 4, 5, 6].map((value) => ({ value, label: String(value) })),
+                    onSelect: (value) =>
+                      handleConfigChange({
+                        playerCount: Number(value),
+                        cpuDifficulty: state.config.cpuDifficulty,
+                        failContractPenalty: state.config.failContractPenalty,
+                      }),
+                  },
+                  {
+                    type: 'select',
+                    id: 'carioca-cpu-difficulty',
+                    label: t('settings.cpuDifficulty'),
+                    value: state.config.cpuDifficulty,
+                    options: [0, 1, 2].map((value) => ({ value, label: t(`settings.difficulty.${value}`) })),
+                    onSelect: (value) =>
+                      handleConfigChange({
+                        playerCount: state.config.playerCount,
+                        cpuDifficulty: Number(value),
+                        failContractPenalty: state.config.failContractPenalty,
+                      }),
+                  },
+                  {
+                    type: 'select',
+                    id: 'carioca-fail-contract-penalty',
+                    label: t('settings.failContractPenalty'),
+                    value: state.config.failContractPenalty,
+                    options: [0, 25, 50, 100].map((value) => ({ value, label: String(value) })),
+                    onSelect: (value) =>
+                      handleConfigChange({
+                        playerCount: state.config.playerCount,
+                        cpuDifficulty: state.config.cpuDifficulty,
+                        failContractPenalty: Number(value),
+                      }),
+                  },
+                ],
+              },
+            ]}
+          />
 
           {/* Scrollable state display. Carioca had no play area at all, so its
           content grew the document by 333px at 375x667; the pinned action row,

@@ -32,6 +32,8 @@
   "nextTrick": "Next Trick",
   "nextRound": "Next Round",
   "target": "{{rounds}} rounds total",
+  "handCardStrong": "{{suit}}, higher numbers are stronger",
+  "handCardWeak": "{{suit}}, lower numbers are stronger",
   "trumpGroupStrong": "Trump is a strong suit — higher numbers are stronger (12 high)",
   "trumpGroupWeak": "Trump is a weak suit — lower numbers are stronger (1 high)",
   "roundResult": {

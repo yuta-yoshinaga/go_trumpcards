@@ -1070,6 +1070,7 @@
     "dealer": "Dealer:",
     "networkError": "A network error occurred. Please try again.",
     "chipsWon": "+{{amount}} chips",
+    "netChange": "Net: {{amount}} chips",
     "kicker": "Kicker: {{kickers}}",
     "mucked": "Mucked",
     "player": "Player",

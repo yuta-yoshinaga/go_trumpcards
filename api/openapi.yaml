@@ -35344,6 +35344,9 @@ components:
             When true the human holds the bank, does not stake, and decides last.
         chips:
           type: integer
+        drawPileCount:
+          type: integer
+          description: Cards not yet dealt in the current round.
         activeSeat:
           type: integer
         activeHand:
@@ -35554,6 +35557,9 @@ components:
           type: integer
         chips:
           type: integer
+        drawPileCount:
+          type: integer
+          description: Number of undealt cards remaining in the 52-card shoe.
         maxMultiplier:
           type: integer
           description: |
@@ -50588,6 +50594,7 @@ components:
         - anteBonusPayout
         - pairPlusPayout
         - totalPayout
+        - netChange
         - dealerQualified
         - playerHandRank
         - dealerHandRank
@@ -50653,6 +50660,10 @@ components:
         totalPayout:
           type: integer
           description: Total payout for the current round (sum of all payouts)
+          example: 0
+        netChange:
+          type: integer
+          description: Net change for the round (total payout minus all bets)
           example: 0
         dealerQualified:
           type: boolean
@@ -50888,6 +50899,7 @@ components:
         - anteBonusPayout
         - acesUpPayout
         - totalPayout
+        - netChange
         - playerHandRank
         - dealerHandRank
         - message
@@ -52995,6 +53007,9 @@ components:
           type: boolean
         chips:
           type: integer
+        netChange:
+          type: integer
+          description: Net chip change since this round began, before antes were taken
         standing:
           type: boolean
           description: Whether this player has said "no more cards" for the round
@@ -53364,6 +53379,7 @@ components:
         - holeCards
         - doorCards
         - chips
+        - netChange
         - currentBet
         - folded
         - allIn
@@ -53405,6 +53421,9 @@ components:
           description: Current chip count
           minimum: 0
           example: 990
+        netChange:
+          type: integer
+          description: Net chip change since this hand started, including antes and bets.
         currentBet:
           type: integer
           description: Current round bet amount
@@ -54461,6 +54480,10 @@ components:
           type: integer
           description: Total payout returned to the player.
           example: 0
+        netChange:
+          type: integer
+          description: Running net chip change for the current round; final only at round end, after subtracting the ante and war bet.
+          example: 0
         message:
           type: string
           description: Human-readable status or result message.
@@ -55105,6 +55128,9 @@ components:
         winningBid:
           type: integer
           description: The winning declaration (0=pass, 1=chiamo, 2=solo)
+        highestBid:
+          type: integer
+          description: The highest declaration made so far during bidding (0=none, 1=chiamo, 2=solo)
         currentTrick:
           type: array
           items:
@@ -64442,6 +64468,10 @@ components:
           type: integer
           description: Sum of antePayout + blindPayout + playPayout + tripsPayout
           example: 0
+        netChange:
+          type: integer
+          description: Sum of all payouts minus all bets placed during the round
+          example: 0
         playerHandRank:
           type: integer
           description: Player's best 5-card hand rank
@@ -64513,6 +64543,7 @@ components:
         - antePayout
         - streetPayouts
         - totalPayout
+        - netChange
         - message
       properties:
         entries:
@@ -64593,6 +64624,10 @@ components:
         totalPayout:
           type: integer
           description: Total payout returned to the player
+          example: 0
+        netChange:
+          type: integer
+          description: Net chip change for the round (total payout minus total bet)
           example: 0
         message:
           type: string
@@ -66394,6 +66429,8 @@ components:
     Rummy500Meld:
       type: object
       properties:
+        score:
+          type: integer
         cards:
           type: array
           items:
@@ -66961,6 +66998,9 @@ components:
               chips:
                 type: integer
                 description: Current chip count for this player
+              chipDelta:
+                type: integer
+                description: Chip change for this player in the most recent deal
         phase:
           type: integer
           description: "Game phase: 0=Pick, 1=Call, 2=Play, 3=TrickEnd, 4=RoundEnd, 5=GameEnd"
@@ -69869,6 +69909,11 @@ components:
           type: integer
         isEndgame:
           type: boolean
+        lastTrickBonus:
+          type: array
+          description: Last-trick bonus points each seat scored in the current deal, in seating order.
+          items:
+            type: integer
         dealMeldPoints:
           type: array
           description: "Meld points each seat scored in the current deal, in seating order."
@@ -75160,6 +75205,19 @@ components:
             $ref: '#/components/schemas/Card'
         total:
           type: integer
+        recentPlays:
+          type: array
+          items:
+            type: object
+            properties:
+              seat:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+              total:
+                type: integer
+              points:
+                type: integer
         wentOut:
           type: integer
         playableIdxs:
@@ -75388,6 +75446,10 @@ components:
                   $ref: '#/components/schemas/Card'
               gatheredCount:
                 type: integer
+              gatheredCards:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Card"
               isDealer:
                 type: boolean
               isTrumpChooser:
@@ -76015,6 +76077,8 @@ components:
           type: boolean
         isSlappable:
           type: boolean
+        slappableReason:
+          type: integer
         centerPileSize:
           type: integer
         topCard:
@@ -78025,6 +78089,18 @@ components:
                 type: boolean
               isWinner:
                 type: boolean
+        roundBoodleWins:
+          type: array
+          description: Boodles collected during the most recently completed round.
+          items:
+            type: object
+            properties:
+              card:
+                $ref: '#/components/schemas/Card'
+              seat:
+                type: integer
+              amount:
+                type: integer
         phase:
           type: integer
         roundNumber:
@@ -78388,6 +78464,9 @@ components:
           type: integer
         totalPayout:
           type: integer
+        netChange:
+          type: integer
+          description: Running net chip change for the current round; final at round end.
         playerRank:
           type: integer
           description: "The player's hand value (its total modulo 10)."
@@ -78421,6 +78500,8 @@ components:
         forehandIdx:
           type: integer
         winningBid:
+          type: integer
+        highestBid:
           type: integer
         trumpSuit:
           type: integer

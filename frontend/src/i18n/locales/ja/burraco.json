@@ -56,6 +56,12 @@
   },
   "frozenIndicator": "❄️ フリーズ",
   "selectMeld": "メルドするカードを選択してください",
+  "meldSelectionReason": {
+    "select": "メルドするカードを選択してください",
+    "valid": "選択したカードでメルドできます",
+    "validInitial": "組み合わせとしては成立します。初回メルドは最低点が必要です",
+    "invalid": "選択したカードではメルドできません"
+  },
   "result": {
     "humanWin": "あなたの勝利！",
     "cpuWin": "CPU {{cpuId}} の勝利！"

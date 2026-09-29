@@ -41,7 +41,11 @@
     "blind": "ブラインド",
     "play": "プレイ",
     "trips": "トリップス",
-    "total": "合計"
+    "total": "合計",
+    "netChange": "純損益",
+    "win": "勝ち",
+    "push": "プッシュ",
+    "loss": "負け"
   },
   "handRank": {
     "0": "ハイカード",

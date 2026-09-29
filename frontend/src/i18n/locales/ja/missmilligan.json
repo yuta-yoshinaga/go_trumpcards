@@ -57,5 +57,6 @@
   "waiveReadyAriaLabel": "保持枠は空です。山札を使い切ったので保持できます",
   "waived": "保持",
   "waivedAriaLabel": "保持中の札 {{count}}枚",
+  "waivedCount": "{{count}}枚",
   "waiving": "保持中の札を場に戻してください"
 }

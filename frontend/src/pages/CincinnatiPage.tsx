@@ -261,6 +261,15 @@ function CincinnatiPageContent() {
             <div className="flex flex-col items-center gap-2 pb-2" data-tutorial="cin-actions">
               {canAct && (
                 <>
+                  <p className="text-ds-text-muted text-sm" data-testid="cin-call-pot-ratio">
+                    {state.toCall === 0
+                      ? t('label.callPotRatio', { percentage: 0 })
+                      : state.pot === 0
+                        ? t('label.callPotRatioUnavailable')
+                        : t('label.callPotRatio', {
+                            percentage: Math.round((state.toCall / state.pot) * 100),
+                          })}
+                  </p>
                   <p className="text-ds-text-muted text-sm" data-testid="cin-bet-guide">
                     {facingBet ? t('label.toCall', { amount: state.toCall }) : t('label.canCheck')}
                   </p>

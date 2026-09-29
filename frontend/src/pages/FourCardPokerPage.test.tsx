@@ -164,6 +164,7 @@ describe('FourCardPokerPage', () => {
     expect(screen.getByTestId('play-2x')).toBeInTheDocument();
     expect(screen.getByTestId('play-3x')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'フォールド' })).toBeInTheDocument();
+    expect(screen.getByText('フォールドするとアンテ 100 を失います')).toBeInTheDocument();
     // The select-box multiplier control is gone.
     expect(screen.queryByLabelText(/プレイ倍率/)).not.toBeInTheDocument();
   });

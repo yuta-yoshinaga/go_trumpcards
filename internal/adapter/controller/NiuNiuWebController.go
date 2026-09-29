@@ -43,10 +43,11 @@ type NiuNiuWebOutputSeat struct {
 
 // NiuNiuWebOutput 闘牛 Web アウトプット
 type NiuNiuWebOutput struct {
-	Seats      []*NiuNiuWebOutputSeat `json:"seats"`
-	BankerHand *NiuNiuWebOutputHand   `json:"bankerHand,omitempty"`
-	BankerIdx  int                    `json:"bankerIdx"`
-	Chips      int                    `json:"chips"`
+	Seats         []*NiuNiuWebOutputSeat `json:"seats"`
+	BankerHand    *NiuNiuWebOutputHand   `json:"bankerHand,omitempty"`
+	BankerIdx     int                    `json:"bankerIdx"`
+	Chips         int                    `json:"chips"`
+	DrawPileCount int                    `json:"drawPileCount"`
 	// MaxMultiplier は最大の配当倍率。**賭けられる上限は残高そのものではなく
 	// 残高÷これ**になる。親が牛牛なら賭け金の 3 倍を取られるので、残高ちょうどを
 	// 賭けると払えない。クライアントにこの割り算を再発明させないために送る。

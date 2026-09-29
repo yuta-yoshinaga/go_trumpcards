@@ -200,6 +200,38 @@ describe('AllFoursPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', undefined, undefined, 0));
   });
 
+  it('announces which hand card is selected and updates when selection changes', async () => {
+    mockExec.mockResolvedValueOnce({
+      ...playState,
+      players: [
+        {
+          ...playState.players[0],
+          cards: [
+            { design: 'HEART', value: 5 },
+            { design: 'SPADE', value: 3 },
+          ],
+        },
+        playState.players[1],
+      ],
+      validPlayIndices: [0, 1],
+    });
+    renderWithProviders(<AllFoursPage />);
+
+    const firstCard = await screen.findByRole('button', { name: '♥5' });
+    const secondCard = screen.getByRole('button', { name: '♠3' });
+    expect(firstCard).toHaveAttribute('aria-label', '♥5');
+    expect(firstCard).toHaveAttribute('aria-pressed', 'false');
+    expect(secondCard).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(firstCard);
+    expect(firstCard).toHaveAttribute('aria-pressed', 'true');
+    expect(secondCard).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(secondCard);
+    expect(firstCard).toHaveAttribute('aria-pressed', 'false');
+    expect(secondCard).toHaveAttribute('aria-pressed', 'true');
+  });
+
   it('reads out the trump suit and turn-up by name', async () => {
     renderWithProviders(<AllFoursPage />); // trumpSuit 3 = ♥, turnUp ♥7
     expect(await screen.findByRole('img', { name: '切り札: ハート' })).toBeInTheDocument();

@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { sakuraApi } from '../api/gameApi';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeSakuraState } from '../test/stateFactories';
 import { SakuraPage } from './SakuraPage';
@@ -125,6 +126,34 @@ describe('SakuraPage', () => {
     mockExec.mockClear();
     fireEvent.click(screen.getByTestId('field-card-1'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0, fieldIndex: 1 }));
+  });
+
+  it('announces each field card name, position, and whether it is a choice', async () => {
+    mockExec.mockResolvedValue(
+      makeSakuraState({
+        captureOptions: { 0: [0, 1] },
+        choiceOptions: { 0: [0, 1] },
+        fieldCards: [
+          { ...playState.fieldCards[0], label: '松に鶴' },
+          { ...playState.fieldCards[1], label: '梅に鶯' },
+          { ...playState.fieldCards[2], label: '桜に幕' },
+        ],
+      }),
+    );
+    renderWithProviders(<SakuraPage />);
+    fireEvent.click(await screen.findByTestId('hand-card-0'));
+
+    expect(screen.getByRole('button', { name: '松に鶴 🌸、場札0、選択候補' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '梅に鶯 🌕、場札1、選択候補' })).toBeInTheDocument();
+    const unavailable = screen.getByRole('button', { name: '桜に幕、場札2、候補ではありません' });
+    expect(unavailable).toHaveAttribute('aria-disabled', 'true');
+    expect(unavailable).toHaveAttribute('aria-describedby', 'sakura-field-disabled-reason');
+    expect(unavailable).toHaveClass('aria-disabled:opacity-40', 'aria-disabled:cursor-not-allowed');
+    expect(unavailable).not.toBeDisabled();
+    mockExec.mockClear();
+    fireEvent.click(unavailable);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
   });
 
   // **3 枚一致では選ばせない。** まとめて取るのでどれを押しても結果が変わらず、

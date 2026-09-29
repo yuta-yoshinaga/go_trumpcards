@@ -303,6 +303,7 @@ function ZhengPageContent() {
                       type="button"
                       onClick={() => isHumanTurn && toggleCardSelection(i)}
                       disabled={!isHumanTurn}
+                      aria-pressed={selected}
                       className={cardClass}
                       data-testid={`hand-card-${i}`}
                     >

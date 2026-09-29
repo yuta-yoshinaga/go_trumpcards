@@ -22,6 +22,7 @@ function makeState(overrides: Partial<MississippiStudResponse> = {}): Mississipp
     antePayout: 0,
     streetPayouts: [0, 0, 0],
     totalPayout: 0,
+    netChange: 0,
     message: '',
     ...overrides,
   };
