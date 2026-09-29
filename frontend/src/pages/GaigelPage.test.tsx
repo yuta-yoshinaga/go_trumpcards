@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { gaigelApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -98,6 +98,34 @@ describe('GaigelPage', () => {
     renderWithProviders(<GaigelPage />);
     await waitFor(() => expect(screen.getByText('チームスコア')).toBeInTheDocument());
     expect(screen.getByText('山札: 28')).toBeInTheDocument();
+  });
+
+  it('labels score rows and relates each team score to its column header', async () => {
+    mockExec.mockResolvedValue(makeState({ teamScores: [21, 34], roundPoints: [11, 17], roundMarriage: [20, 0] }));
+    renderWithProviders(<GaigelPage />);
+
+    const table = await screen.findByRole('table');
+    const rowHeaders = within(table).getAllByRole('rowheader');
+    expect(rowHeaders.map((header) => header.textContent)).toEqual(['累計得点', 'ラウンド点', 'マリッジ点']);
+    expect(rowHeaders.map((header) => header.getAttribute('scope'))).toEqual(['row', 'row', 'row']);
+    expect(within(table).getByRole('columnheader', { name: 'チーム0' })).toBeInTheDocument();
+    expect(within(table).getByRole('columnheader', { name: 'チーム1' })).toBeInTheDocument();
+    expect(within(table).getByRole('row', { name: /累計得点/ })).toHaveTextContent('21');
+    expect(within(table).getByRole('row', { name: /ラウンド点/ })).toHaveTextContent('11');
+    expect(within(table).getByRole('row', { name: /マリッジ点/ })).toHaveTextContent('20');
+  });
+
+  it('keeps cumulative and round row headers when the marriage row is hidden', async () => {
+    renderWithProviders(<GaigelPage />);
+
+    const table = await screen.findByRole('table');
+    expect(
+      within(table)
+        .getAllByRole('rowheader')
+        .map((header) => header.textContent),
+    ).toEqual(['累計得点', 'ラウンド点']);
+    expect(within(table).getByRole('row', { name: /累計得点/ })).toBeInTheDocument();
+    expect(within(table).getByRole('row', { name: /ラウンド点/ })).toBeInTheDocument();
   });
 
   it('renders the face-up turn-up card when the stock still holds it', async () => {
