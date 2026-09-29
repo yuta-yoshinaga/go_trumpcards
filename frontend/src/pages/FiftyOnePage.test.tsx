@@ -87,8 +87,8 @@ describe('FiftyOnePage', () => {
     const { FiftyOnePage } = await import('./FiftyOnePage');
     renderWithProviders(<FiftyOnePage />);
     // Hand ♠A and table ♠K are distinct, labeled, selectable buttons.
-    const handAce = await screen.findByRole('button', { name: '♠ A' });
-    const tableKing = screen.getByRole('button', { name: '♠ K' });
+    const handAce = await screen.findByRole('button', { name: '♠ A、手札0枚目' });
+    const tableKing = screen.getByRole('button', { name: '♠ K、場札0枚目' });
     expect(handAce).toHaveAttribute('aria-pressed', 'false');
     expect(tableKing).toHaveAttribute('aria-pressed', 'false');
 
@@ -190,12 +190,12 @@ describe('FiftyOnePage', () => {
     expect(screen.getByText('手札を選択してください')).toBeInTheDocument();
 
     // Hand selected → prompt for a table card.
-    fireEvent.click(screen.getByRole('button', { name: '♠ A' }));
+    fireEvent.click(screen.getByRole('button', { name: '♠ A、手札0枚目' }));
     expect(screen.getByText('場札を選択してください')).toBeInTheDocument();
     expect(screen.queryByText('手札を選択してください')).not.toBeInTheDocument();
 
     // Both selected → guide disappears, button enabled.
-    fireEvent.click(screen.getByRole('button', { name: '♠ K' }));
+    fireEvent.click(screen.getByRole('button', { name: '♠ K、場札0枚目' }));
     expect(screen.queryByText(/を選択してください/)).not.toBeInTheDocument();
     expect(screen.getByTestId('exchange-button')).not.toBeDisabled();
   });
@@ -223,8 +223,8 @@ describe('FiftyOnePage', () => {
     renderWithProviders(<FiftyOnePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
 
-    fireEvent.click(screen.getByRole('button', { name: '♠ A' }));
-    fireEvent.click(screen.getByRole('button', { name: '♠ K' }));
+    fireEvent.click(screen.getByRole('button', { name: '♠ A、手札0枚目' }));
+    fireEvent.click(screen.getByRole('button', { name: '♠ K、場札0枚目' }));
     mockPlaySound.mockClear();
     fireEvent.click(screen.getByTestId('exchange-button'));
     // The central tap plays after the exec resolves, so await it.
@@ -332,8 +332,8 @@ describe('FiftyOnePage keyboard shortcuts', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
 
     // Select hand card index 0 and table card index 0
-    fireEvent.click(screen.getByRole('button', { name: '♠ A' }));
-    fireEvent.click(screen.getByRole('button', { name: '♠ K' }));
+    fireEvent.click(screen.getByRole('button', { name: '♠ A、手札0枚目' }));
+    fireEvent.click(screen.getByRole('button', { name: '♠ K、場札0枚目' }));
 
     mockExec.mockClear();
     fireEvent.keyDown(document, { key: 'p' });
@@ -414,8 +414,8 @@ describe('FiftyOnePage keyboard shortcuts', () => {
     expect(panel).toHaveTextContent('ストップをかける');
 
     // Select hand card index 0 and table card index 0 to enable exchange
-    fireEvent.click(screen.getByRole('button', { name: '♠ A' }));
-    fireEvent.click(screen.getByRole('button', { name: '♠ K' }));
+    fireEvent.click(screen.getByRole('button', { name: '♠ A、手札0枚目' }));
+    fireEvent.click(screen.getByRole('button', { name: '♠ K、場札0枚目' }));
 
     // 'p' -> exchange
     expect(panel).toHaveTextContent('カードを交換する');

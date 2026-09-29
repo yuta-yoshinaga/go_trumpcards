@@ -268,7 +268,7 @@ function FiftyOnePageContent() {
                       type="button"
                       onClick={() => isHumanTurn && setSelectedTableIdx(isSelected ? null : i)}
                       disabled={!isHumanTurn}
-                      aria-label={cardAlt(c)}
+                      aria-label={t('label.tableCardPosition', { card: cardAlt(c), pos: i })}
                       aria-pressed={isHumanTurn ? isSelected : undefined}
                       className={`rounded transition-all ${
                         isSelected ? 'ring-2 ring-ds-warning -translate-y-1' : ''
@@ -335,7 +335,7 @@ function FiftyOnePageContent() {
                       type="button"
                       onClick={() => isHumanTurn && setSelectedHandIdx(isSelected ? null : i)}
                       disabled={!isHumanTurn}
-                      aria-label={cardAlt(c)}
+                      aria-label={t('label.handCardPosition', { card: cardAlt(c), pos: i })}
                       aria-pressed={isHumanTurn ? isSelected : undefined}
                       className={`rounded transition-all ${
                         isSelected ? 'ring-2 ring-ds-info -translate-y-2' : ''

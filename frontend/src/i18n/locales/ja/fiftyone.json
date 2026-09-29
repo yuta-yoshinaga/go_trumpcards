@@ -17,6 +17,8 @@
     "tableCards": "場札",
     "score": "スコア",
     "hand": "手札",
+    "handCardPosition": "{{card}}、手札{{pos}}枚目",
+    "tableCardPosition": "{{card}}、場札{{pos}}枚目",
     "selectCard": "カードを選択",
     "stopCalled": "ストップ宣言済み",
     "yourTurn": "あなたのターン",
