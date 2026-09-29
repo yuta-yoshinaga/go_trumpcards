@@ -1,6 +1,7 @@
 import { type DragEvent, useCallback, useMemo } from 'react';
 import { type CanfieldMoveZone, canfieldApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { AutoCompleteReadyBadge } from '../components/AutoCompleteReadyBadge';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
@@ -16,6 +17,7 @@ import { LandscapeBanner } from '../components/LandscapeBanner';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { AnimatedCardBack } from '../components/motion/AnimatedCardBack';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -151,6 +153,20 @@ function CanfieldPageContent() {
   const handleHint = useCallback(() => execApi('hint'), [execApi]);
   const handleAutoComplete = useCallback(() => execApi('autocomplete'), [execApi]);
   const handleUndo = useCallback(() => execApi('undo'), [execApi]);
+
+  const actionBindings = useMemo(
+    () => [
+      { key: 'd', action: handleDraw, label: 'draw' },
+      { key: 'h', action: handleHint, label: 'hint' },
+      { key: 'g', action: confirmGiveUpAction, label: 'giveUp' },
+      { key: 'z', action: handleUndo, label: 'undo', enabled: !!state?.canUndo },
+    ],
+    [handleDraw, handleHint, confirmGiveUpAction, handleUndo, state?.canUndo],
+  );
+  useActionKeyboardNav({
+    bindings: actionBindings,
+    enabled: state?.phase === CanfieldPhase.PLAYING && !loading && !actionLog && !confirmOpen && !giveUpConfirmOpen,
+  });
 
   const handleMoveReserveToFoundation = useCallback(
     () => execApi('move', { zone: 'reserve' }, { zone: 'foundation' }),
@@ -625,6 +641,7 @@ function CanfieldPageContent() {
                 className={focusRingWhite}
               />
             </div>
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="canfield-kbd-shortcuts" />
           </GameFooter>
         </>
       )}

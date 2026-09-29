@@ -55,6 +55,18 @@ beforeEach(() => {
 });
 
 describe('CanfieldPage', () => {
+  it('advertises and runs the shared draw shortcut', async () => {
+    renderWithProviders(<CanfieldPage />);
+    const shortcuts = await screen.findByTestId('canfield-kbd-shortcuts');
+    fireEvent.click(within(shortcuts).getByText('キーボードショートカット'));
+    expect(within(shortcuts).getByText('山札をめくる')).toBeInTheDocument();
+    mockExec.mockClear();
+
+    fireEvent.keyDown(document, { key: 'd' });
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
+  });
+
   it('renders heading', async () => {
     renderWithProviders(<CanfieldPage />);
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument());
