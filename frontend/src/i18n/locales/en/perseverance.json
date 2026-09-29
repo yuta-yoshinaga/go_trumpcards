@@ -47,5 +47,12 @@
     "giveUp": "G"
   },
   "redealsLeft": "Redeals left: {{count}}",
-  "redeal": "Gather & redeal"
+  "redeal": "Gather & redeal",
+  "stats": {
+    "title": "Session results",
+    "games": "Games cleared: {{count}}",
+    "moves": "Total moves: {{count}}",
+    "redeals": "Redeals remaining at clear: {{count}}",
+    "clear": "Clear results"
+  }
 }
