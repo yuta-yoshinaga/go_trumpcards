@@ -422,9 +422,13 @@ function GolfPageContent() {
               </div>
 
               <div className="text-center">
-                <div className="text-game-text-muted text-xs mb-1">{t('waste')}</div>
+                <div className="text-game-text-muted text-xs mb-1">
+                  {t('waste')} <span id="golf-waste-count">{t('wasteCount', { count: state.waste.length })}</span>
+                </div>
                 {state.waste.length > 0 ? (
-                  <AnimatedCard card={state.waste[state.waste.length - 1]} width={effectiveCardWidth} />
+                  <div aria-describedby="golf-waste-count">
+                    <AnimatedCard card={state.waste[state.waste.length - 1]} width={effectiveCardWidth} />
+                  </div>
                 ) : (
                   <div
                     style={{ width: effectiveCardWidth, height: cardHeight }}

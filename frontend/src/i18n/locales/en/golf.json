@@ -7,6 +7,8 @@
   "title": "Golf Solitaire",
   "stock": "Stock",
   "waste": "Waste",
+  "wasteCount_one": "{{count}} card",
+  "wasteCount_other": "{{count}} cards",
   "moveCount": "Moves",
   "combo": "Combo ×{{count}}",
   "draw": "Draw",
