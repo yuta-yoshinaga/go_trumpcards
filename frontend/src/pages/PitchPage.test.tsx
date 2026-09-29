@@ -127,6 +127,18 @@ describe('PitchPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: /出す/ })).toBeInTheDocument());
   });
 
+  it('announces selected hand cards as pressed and toggles them off', async () => {
+    mockApi.mockResolvedValue(playState);
+    renderWithProviders(<PitchPage />);
+    const cards = await screen.findAllByRole('button', { name: /^[♠♥]/ });
+
+    expect(cards[0]).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(cards[0]);
+    expect(cards[0]).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(cards[0]);
+    expect(cards[0]).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('bid phase: pressing "p" passes and "2" bids two', async () => {
     mockApi.mockResolvedValue(bidState);
     renderWithProviders(<PitchPage />);
