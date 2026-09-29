@@ -103,6 +103,27 @@ describe('NarcoticPage', () => {
     expect(colDivs.length).toBe(4);
   });
 
+  it('shows a text indicator for each top card movable state and updates it after a move', async () => {
+    mockExec.mockResolvedValueOnce(playingState).mockResolvedValueOnce({
+      ...playingState,
+      columns: [
+        [makeCard(card('SPADE', 5), { top: true, movable: true })],
+        [makeCard(card('SPADE', 9), { top: true })],
+        [],
+        [makeCard(card('DIAMOND', 6), { top: true })],
+      ],
+    });
+    renderWithProviders(<NarcoticPage />);
+    await waitFor(() => expect(screen.getByTestId('narcotic-movable-1')).toHaveTextContent('移動可能'));
+    expect(screen.getByTestId('narcotic-movable-0')).toHaveTextContent('移動不可');
+    expect(screen.getByTestId('narcotic-movable-2')).toHaveTextContent('移動不可');
+    expect(screen.getByTestId('narcotic-movable-3')).toHaveTextContent('移動不可');
+
+    fireEvent.click(screen.getByRole('button', { name: '山札をめくる（残り44枚）' }));
+    await waitFor(() => expect(screen.getByTestId('narcotic-movable-0')).toHaveTextContent('移動可能'));
+    expect(screen.getByTestId('narcotic-movable-1')).toHaveTextContent('移動不可');
+  });
+
   it('renders the discard pile with progress and the top card', async () => {
     renderWithProviders(<NarcoticPage />);
     await waitFor(() => expect(screen.getByTestId('narcotic-discard-pile')).toBeInTheDocument());
