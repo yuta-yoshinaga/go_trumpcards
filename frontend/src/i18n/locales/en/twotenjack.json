@@ -23,6 +23,7 @@
   "tricks": "Tricks: {{count}}",
   "capturedPoints": "Points: {{count}}",
   "currentTrick": "Current Trick",
+  "trickWinner": "{{name}} won the trick",
   "scores": "Scores",
   "scoresTeam": "Team",
   "scoresCaptured": "Captured",

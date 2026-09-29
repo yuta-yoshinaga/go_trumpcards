@@ -80,6 +80,29 @@ afterEach(() => {
 });
 
 describe('TwoTenJackPage', () => {
+  it('announces the resolved trick winner when the winner is not the leader', async () => {
+    mockExec.mockResolvedValue(
+      makeTwoTenJackState({
+        phase: 2,
+        leadPlayerIdx: 3,
+        currentTrick: [
+          { playerIdx: 0, card: { design: 'DIAMOND', value: 3 } },
+          { playerIdx: 1, card: { design: 'HEART', value: 5 } },
+          { playerIdx: 2, card: { design: 'CLOVER', value: 7 } },
+          { playerIdx: 3, card: { design: 'SPADE', value: 9 } },
+        ],
+      }),
+    );
+
+    renderWithProviders(<TwoTenJackPage />);
+
+    const liveRegion = await screen.findByTestId('twotenjack-trick-winner-live');
+    expect(liveRegion).toHaveAttribute('role', 'status');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion).toHaveTextContent('CPU 3');
+    expect(liveRegion).not.toHaveTextContent('あなた');
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<TwoTenJackPage />);
