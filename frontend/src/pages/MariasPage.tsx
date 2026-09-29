@@ -300,15 +300,15 @@ function MariasPageContent() {
                             points: state.roundCardPoints[p.id] ?? 0,
                           })}
                         </div>
-                        <div>
-                          {t('roundResult.marriage', {
-                            name: playerName(p.id, p.isHuman),
-                            points: state.roundMarriage[p.id] ?? 0,
-                          })}
-                          {(state.roundMarriage[p.id] ?? 0) > 0 && (
+                        {(state.roundMarriage[p.id] ?? 0) > 0 && (
+                          <div>
+                            {t('roundResult.marriage', {
+                              name: playerName(p.id, p.isHuman),
+                              points: state.roundMarriage[p.id] ?? 0,
+                            })}
                             <span className="ml-1">({marriageDetails(p.id)})</span>
-                          )}
-                        </div>
+                          </div>
+                        )}
                       </div>
                     ))}
                     {/* Soloist-vs-Defenders total comparison. Each side total is
@@ -327,13 +327,16 @@ function MariasPageContent() {
                       const soloistTotal = sideTotal(true);
                       const defenderTotal = sideTotal(false);
                       const soloistWon = soloistTotal > defenderTotal;
+                      const highlightWinner = (isRoundEnd || isGameEnd) && soloistWon;
                       return (
                         <div className="mt-1 pt-1 border-t border-ds-border-subtle" data-testid="marias-side-totals">
-                          <span className={soloistWon ? 'text-ds-warning font-semibold' : ''}>
+                          <span className={highlightWinner ? 'text-ds-warning font-semibold' : ''}>
                             {t('roundResult.soloistTotal', { points: soloistTotal })}
                           </span>
                           <span className="mx-1">/</span>
-                          <span className={soloistWon ? '' : 'text-ds-warning font-semibold'}>
+                          <span
+                            className={(isRoundEnd || isGameEnd) && !soloistWon ? 'text-ds-warning font-semibold' : ''}
+                          >
                             {t('roundResult.defenderTotal', { points: defenderTotal })}
                           </span>
                         </div>

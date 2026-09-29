@@ -214,6 +214,10 @@ describe('MariasPage', () => {
     expect(screen.getByText('あなた マリッジ: 40')).toBeInTheDocument();
     expect(row).toHaveTextContent('ソリスト: 65点');
     expect(row).toHaveTextContent('ディフェンダー合計: 45点');
+    expect(screen.queryByText('CPU 1 マリッジ: 0')).not.toBeInTheDocument();
+    expect(screen.queryByText('CPU 2 マリッジ: 0')).not.toBeInTheDocument();
+    expect(screen.getByText('ソリスト: 65点')).not.toHaveClass('text-ds-warning');
+    expect(screen.getByText('ディフェンダー合計: 45点')).not.toHaveClass('text-ds-warning');
   });
 
   it('shows confirmed points and side totals after a trick ends', async () => {
