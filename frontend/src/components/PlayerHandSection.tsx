@@ -57,6 +57,8 @@ export interface PlayerHandSectionProps {
   trumpIndices?: number[];
   /** Accessible label / tooltip describing why the ringed cards are marked (e.g. "trump"). */
   trumpTitle?: string;
+  /** Optional text appended to ringed cards' accessible names. */
+  trumpAccessibleLabel?: string;
   /**
    * Optional indices of cards that are legal to play this turn. When provided,
    * these cards get an additive success ring (`ring-ds-success`) so the player
@@ -93,6 +95,7 @@ export function PlayerHandSection({
   highlightIndices,
   trumpIndices,
   trumpTitle,
+  trumpAccessibleLabel,
   legalIndices,
   cardBadgeFor,
 }: PlayerHandSectionProps) {
@@ -117,6 +120,7 @@ export function PlayerHandSection({
         highlightIndices={highlightIndices}
         trumpIndices={trumpIndices}
         trumpTitle={trumpTitle}
+        trumpAccessibleLabel={trumpAccessibleLabel}
         legalIndices={legalIndices}
         cardBadgeFor={cardBadgeFor}
       />
@@ -147,7 +151,7 @@ export function PlayerHandSection({
             // pointer-events-none の span で、button の aria-label が
             // アクセシブル名を完全に上書きするため、付けないと「スペードの
             // キング」としか読まれず、結婚のチャンスが伝わらない (#6612)。
-            aria-label={`${cardAlt(card)}${badge ? ` (${badge.title})` : ''}${status ? ` (${status})` : ''}`}
+            aria-label={`${cardAlt(card)}${trump && trumpAccessibleLabel ? ` (${trumpAccessibleLabel})` : ''}${badge ? ` (${badge.title})` : ''}${status ? ` (${status})` : ''}`}
             aria-pressed={isSelected}
             // Use aria-disabled (not the HTML `disabled` attribute) so restricted
             // cards remain focusable for keyboard / screen-reader users — they
