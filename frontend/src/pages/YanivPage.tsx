@@ -180,6 +180,8 @@ function YanivPageContent() {
   const caller = isRoundEnd ? state.players[state.callerIdx] : undefined;
   const callerName = caller?.isHuman ? tc('player.you') : caller ? tc('player.cpu', { id: caller.id }) : '';
   const canYaniv = isHumanTurn && isDiscard && human.handTotal <= 5;
+  const yanivAvailabilityKey =
+    human.handTotal > 5 ? 'yanivUnavailableTotal' : canYaniv ? 'yanivAvailable' : 'yanivUnavailableTurn';
   const phaseName = isGameEnd
     ? t('phase.end')
     : isRoundEnd
@@ -422,7 +424,7 @@ function YanivPageContent() {
             <div className="mb-2 text-center text-xs text-ds-text-primary" data-testid="yaniv-guidance">
               {t('yanivGuidance', {
                 total: human.handTotal,
-                availability: t(canYaniv ? 'yanivAvailable' : 'yanivUnavailable'),
+                availability: t(yanivAvailabilityKey),
               })}
             </div>
             <div className="flex gap-2 justify-center flex-wrap" data-tutorial="y-action-buttons">

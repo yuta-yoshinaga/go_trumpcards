@@ -138,7 +138,15 @@ describe('YanivPage', () => {
     const guidance = await screen.findByTestId('yaniv-guidance');
     expect(guidance).toHaveTextContent('手札合計: 8');
     expect(guidance).toHaveTextContent('5以下で宣言可能');
-    expect(guidance).toHaveTextContent('宣言できません');
+    expect(guidance).toHaveTextContent('合計が5を超えているため宣言できません。');
+  });
+
+  it('explains that Yaniv can only be declared on the human discard turn', async () => {
+    mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1 }));
+    renderWithProviders(<YanivPage />);
+    const guidance = await screen.findByTestId('yaniv-guidance');
+    expect(guidance).toHaveTextContent('手札合計: 3');
+    expect(guidance).toHaveTextContent('自分の捨て札フェーズで宣言できます。');
   });
 
   it('explains the Yaniv threshold on the hand-total badge via a tooltip', async () => {
