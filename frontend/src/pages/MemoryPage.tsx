@@ -234,6 +234,8 @@ function MemoryPageContent() {
     return t(state.lastMatchResult ? 'announce.match' : 'announce.mismatch', {
       first: cardAlt(c1),
       second: cardAlt(c2),
+      firstPosition: state.firstFlipPos + 1,
+      secondPosition: state.secondFlipPos + 1,
     });
   }, [state, t]);
 

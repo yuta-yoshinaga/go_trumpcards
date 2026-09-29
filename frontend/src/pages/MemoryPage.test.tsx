@@ -706,7 +706,7 @@ describe('MemoryPage', () => {
     const region = await screen.findByTestId('mem-flip-announce');
     expect(region).toHaveAttribute('aria-live', 'polite');
     expect(region).toHaveAttribute('role', 'status');
-    await waitFor(() => expect(region).toHaveTextContent('♠ A / ♥ A — 一致'));
+    await waitFor(() => expect(region).toHaveTextContent('1枚目の♠ A / 2枚目の♥ A — 一致'));
   });
 
   it('announces a mismatch result in the polite live region', async () => {
@@ -720,7 +720,7 @@ describe('MemoryPage', () => {
     });
     renderWithProviders(<MemoryPage />);
     const region = await screen.findByTestId('mem-flip-announce');
-    await waitFor(() => expect(region).toHaveTextContent('♠ A / ♥ 5 — 不一致'));
+    await waitFor(() => expect(region).toHaveTextContent('1枚目の♠ A / 2枚目の♥ 5 — 不一致'));
   });
 
   it('keeps the live region empty outside the result phase', async () => {
