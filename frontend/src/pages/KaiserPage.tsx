@@ -302,7 +302,9 @@ function KaiserPageContent() {
                   return (
                     <div key={`trick-${c.design}-${c.value}-${i}`} className="flex flex-col items-center gap-1">
                       <CardImage card={c} width={cardWidth} ariaLabel={`${name}${t('listSeparator')}${cardAlt(c)}`} />
-                      <span className="text-ds-text-muted text-xs">{name}</span>
+                      <span aria-hidden="true" className="text-ds-text-muted text-xs">
+                        {name}
+                      </span>
                     </div>
                   );
                 })}

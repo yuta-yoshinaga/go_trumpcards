@@ -392,6 +392,7 @@ describe('KaiserPage', () => {
     expect(trick).toHaveTextContent('CPU 3');
     expect(trick).toHaveTextContent('あなた');
     expect(screen.getByAltText('CPU 2、♠ A')).toBeInTheDocument();
+    expect(trick.querySelector('span[aria-hidden="true"]')).toHaveTextContent('CPU 2');
     unmount();
 
     mockExec.mockResolvedValue(makeState({ trick: [] }));
