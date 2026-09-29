@@ -53,6 +53,37 @@ describe('ScoponePage', () => {
     expect(screen.getByTestId('team-score-1')).toBeInTheDocument();
   });
 
+  it('shows the last capturer and team at round end', async () => {
+    mockExec.mockResolvedValue(makeScoponeState({ phase: 'roundEnd', lastCaptureIdx: 2, isHumanTurn: false }));
+    renderWithProviders(<ScoponePage />);
+    expect(await screen.findByTestId('last-capturer')).toHaveTextContent('最後の捕獲者: CPU 2（チーム0）');
+  });
+
+  it('shows the human as the last capturer and team at round end', async () => {
+    const state = makeScoponeState({ phase: 'roundEnd', lastCaptureIdx: 0, isHumanTurn: false });
+    const humanPlayer = state.players.find((player) => player.id === state.lastCaptureIdx);
+    expect(humanPlayer?.isHuman).toBe(true);
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<ScoponePage />);
+    expect(await screen.findByTestId('last-capturer')).toHaveTextContent(
+      `最後の捕獲者: ${i18n.t('player.you', { ns: 'common', lng: 'ja' })}（チーム${humanPlayer?.team}）`,
+    );
+  });
+
+  it('does not show a last capturer when nobody captured', async () => {
+    mockExec.mockResolvedValue(makeScoponeState({ phase: 'roundEnd', lastCaptureIdx: -1, isHumanTurn: false }));
+    renderWithProviders(<ScoponePage />);
+    await waitFor(() => expect(screen.getByTestId('team-score-0')).toBeInTheDocument());
+    expect(screen.queryByTestId('last-capturer')).not.toBeInTheDocument();
+  });
+
+  it('renders the last capturer in English', async () => {
+    await i18n.changeLanguage('en');
+    mockExec.mockResolvedValue(makeScoponeState({ phase: 'roundEnd', lastCaptureIdx: 2, isHumanTurn: false }));
+    renderWithProviders(<ScoponePage />);
+    expect(await screen.findByTestId('last-capturer')).toHaveTextContent('Last capture: CPU 2 (Team 0)');
+  });
+
   it('renders the scoring categories before the round ends', async () => {
     renderWithProviders(<ScoponePage />);
     const rules = await screen.findByTestId('scopone-score-rules');
