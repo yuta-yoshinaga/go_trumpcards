@@ -1018,6 +1018,30 @@ func (g *Cribbage) UnmarshalJSON(data []byte) error {
 	g.pegGoState = j.PegGoState
 	g.lastPegPlayer = j.LastPegPlayer
 	g.playerPeggedCards = [CribbagePlayerCnt][]*Card{j.PlayerPegCards0, j.PlayerPegCards1}
+	if len(g.pegPlayedBy) != len(g.pegPlayedCards) {
+		// 旧セッションには提出者情報がないため、プレイヤー別履歴から復元する。
+		g.pegPlayedBy = make([]int, 0, len(g.pegPlayedCards))
+		for _, played := range g.pegPlayedCards {
+			owner := -1
+			for playerIdx, cards := range g.playerPeggedCards {
+				for _, card := range cards {
+					if card.GetDesign() == played.GetDesign() && card.GetValue() == played.GetValue() {
+						owner = playerIdx
+						break
+					}
+				}
+				if owner >= 0 {
+					break
+				}
+			}
+			if owner < 0 {
+				g.pegPlayedCards = make([]*Card, 0)
+				g.pegPlayedBy = make([]int, 0)
+				break
+			}
+			g.pegPlayedBy = append(g.pegPlayedBy, owner)
+		}
+	}
 	g.showPhaseStep = j.ShowPhaseStep
 	g.handScoreDetails = [3]*CribbageScoreDetail{j.HandScoreDetail0, j.HandScoreDetail1, j.HandScoreDetail2}
 	g.gameEndFlag = j.GameEndFlag

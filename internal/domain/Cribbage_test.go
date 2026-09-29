@@ -3,6 +3,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -16,6 +17,52 @@ func newTestCribbage() *Cribbage {
 		NewCribbagePlayer(false), // CPU (index 1)
 	}
 	return NewCribbage(NewTrumpCards(0), players, config)
+}
+
+func TestCribbage_UnmarshalJSON_PegPlayedBy(t *testing.T) {
+	t.Run("legacy JSON restores owners", func(t *testing.T) {
+		g := newTestCribbage()
+		g.pegPlayedCards = []*Card{cCard(CardDesignSpade, 1), cCard(CardDesignHeart, 2)}
+		g.playerPeggedCards = [CribbagePlayerCnt][]*Card{
+			{cCard(CardDesignSpade, 1)},
+			{cCard(CardDesignHeart, 2)},
+		}
+		data, err := json.Marshal(g)
+		require.NoError(t, err)
+		var fields map[string]json.RawMessage
+		require.NoError(t, json.Unmarshal(data, &fields))
+		delete(fields, "pb")
+		data, err = json.Marshal(fields)
+		require.NoError(t, err)
+
+		var restored Cribbage
+		require.NoError(t, json.Unmarshal(data, &restored))
+		assert.Equal(t, []int{0, 1}, restored.GetPegPlayedBy())
+	})
+
+	t.Run("round trip retains owners", func(t *testing.T) {
+		g := newTestCribbage()
+		g.pegPlayedCards = []*Card{cCard(CardDesignSpade, 1), cCard(CardDesignHeart, 2)}
+		g.pegPlayedBy = []int{1, 0}
+		data, err := json.Marshal(g)
+		require.NoError(t, err)
+
+		var restored Cribbage
+		require.NoError(t, json.Unmarshal(data, &restored))
+		assert.Equal(t, []int{1, 0}, restored.GetPegPlayedBy())
+	})
+
+	t.Run("unmatched card clears both histories", func(t *testing.T) {
+		g := newTestCribbage()
+		g.pegPlayedCards = []*Card{cCard(CardDesignSpade, 1)}
+		data, err := json.Marshal(g)
+		require.NoError(t, err)
+
+		var restored Cribbage
+		require.NoError(t, json.Unmarshal(data, &restored))
+		assert.Empty(t, restored.GetPegPlayedCards())
+		assert.Empty(t, restored.GetPegPlayedBy())
+	})
 }
 
 func newTestCribbageWithDifficulty(d CribbageCpuDifficulty) *Cribbage {

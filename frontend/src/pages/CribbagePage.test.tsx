@@ -281,7 +281,7 @@ describe('CribbagePage', () => {
     });
     renderWithProviders(<CribbagePage />);
     await waitFor(() => {
-      expect(screen.getAllByText('あなた').length).toBeGreaterThan(1);
+      expect(within(screen.getAllByRole('figure')[0]).getByText('あなた')).toBeInTheDocument();
       expect(screen.getByText('CPU')).toBeInTheDocument();
     });
     expect(screen.getByRole('figure', { name: /提出者: あなた/ })).toBeInTheDocument();
