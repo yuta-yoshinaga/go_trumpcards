@@ -254,6 +254,49 @@ describe('NainJaunePage', () => {
         expect(screen.getByTestId('nainjaune-turn-announce')).toHaveTextContent('ディールが終了しました'),
       );
     });
+
+    it('announces the latest award with player, box, and chip count only when awards grow', async () => {
+      mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1 }));
+      renderWithProviders(<NainJaunePage />);
+      await screen.findByTestId('nainjaune-turn-announce');
+
+      mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1, awards: [{ box: 'dwarf', player: 2, chips: 25 }] }));
+      fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+      fireEvent.click(screen.getByRole('button', { name: '確認' }));
+
+      const live = screen.getByTestId('nainjaune-turn-announce');
+      await waitFor(() => expect(live).toHaveTextContent('席2 が ♦7 黄色い小人 を獲得（25）'));
+
+      // Receiving the same awards state again must not replace/repeat the award notice.
+      mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1, awards: [{ box: 'dwarf', player: 2, chips: 25 }] }));
+      fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+      fireEvent.click(screen.getByRole('button', { name: '確認' }));
+      await waitFor(() => expect(live).toHaveTextContent('席2 が ♦7 黄色い小人 を獲得（25）'));
+    });
+
+    it('announces every award added in the same update', async () => {
+      mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1 }));
+      renderWithProviders(<NainJaunePage />);
+      await screen.findByTestId('nainjaune-turn-announce');
+
+      mockExec.mockResolvedValue(
+        makeState({
+          currentPlayerIdx: 1,
+          awards: [
+            { box: 'ten', player: 1, chips: 10 },
+            { box: 'dwarf', player: 2, chips: 25 },
+          ],
+        }),
+      );
+      fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+      fireEvent.click(screen.getByRole('button', { name: '確認' }));
+
+      await waitFor(() =>
+        expect(screen.getByTestId('nainjaune-turn-announce')).toHaveTextContent(
+          '席1 が ♦10 を獲得（10）、席2 が ♦7 黄色い小人 を獲得（25）',
+        ),
+      );
+    });
   });
   // **同じ画面で呼び方を変えない。**手札セクションは「あなたの手札」と呼ぶのに、
   // 獲得通知と出し切り通知だけが「席0が」と出ていた (#6521)。
