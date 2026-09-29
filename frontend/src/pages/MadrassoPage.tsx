@@ -340,7 +340,9 @@ function MadrassoPageContent() {
                     <tbody>
                       {teamLabels.map((label, idx) => (
                         <tr key={label} className={humanPlayer && humanPlayer.teamId === idx ? 'text-ds-accent' : ''}>
-                          <td>{t('teamLabel', { team: label })}</td>
+                          <th scope="row" className="text-left font-normal">
+                            {t('teamLabel', { team: label })}
+                          </th>
                           <td className="text-center">{state.teamScores[idx] ?? 0}</td>
                           <td className="text-center" data-testid={`tr-round-points-${idx.toString()}`}>
                             {t('roundPointsOf', {
