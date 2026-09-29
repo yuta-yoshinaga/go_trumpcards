@@ -15,6 +15,7 @@
     "out": "[脱落]",
     "noticed": "[{{order}}番目に気づいた]",
     "chosen": "[選択済み]",
+    "signalling": "[合図中]",
     "you": "あなた",
     "cpu": "CPU{{idx}}"
   },
