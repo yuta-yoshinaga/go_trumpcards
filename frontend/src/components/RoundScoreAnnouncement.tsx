@@ -11,6 +11,8 @@ export interface RoundScoreEntry {
 export interface RoundScoreAnnouncementProps {
   active: boolean;
   entries: RoundScoreEntry[];
+  /** Separator used between entries; defaults to the shared English separator. */
+  separator?: string;
 }
 
 /**
@@ -18,7 +20,7 @@ export interface RoundScoreAnnouncementProps {
  * round ends. The visible score table remains unchanged; this component is
  * the announcement channel for assistive tech.
  */
-export function RoundScoreAnnouncement({ active, entries }: RoundScoreAnnouncementProps) {
+export function RoundScoreAnnouncement({ active, entries, separator = ', ' }: RoundScoreAnnouncementProps) {
   const { t } = useTranslation('common');
   const details = entries
     .map((e) =>
@@ -28,7 +30,7 @@ export function RoundScoreAnnouncement({ active, entries }: RoundScoreAnnounceme
         total: e.cumulativeScore,
       }),
     )
-    .join(', ');
+    .join(separator);
   return (
     <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
       {active ? t('roundScoreAnnouncement.message', { details }) : ''}
