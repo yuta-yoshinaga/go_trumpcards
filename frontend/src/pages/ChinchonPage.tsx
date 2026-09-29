@@ -386,6 +386,7 @@ function ChinchonPageContent() {
                           {t('scoresPlayer')}
                         </th>
                         <th scope="col">{t('scoresRound')}</th>
+                        {isRoundEnd || isGameEnd ? <th scope="col">{t('scoresBreakdown')}</th> : null}
                         <th scope="col">{t('scoresTotal')}</th>
                       </tr>
                     </thead>
@@ -397,6 +398,23 @@ function ChinchonPageContent() {
                         >
                           <td>{playerName(p.id, p.isHuman)}</td>
                           <td className="text-center">{p.roundScore}</td>
+                          {isRoundEnd || isGameEnd ? (
+                            <td data-testid={`ch-score-breakdown-${p.id}`} className="px-1 text-xs">
+                              {state.wonByChinchon && state.winnerIdx === p.id
+                                ? t('scoreChinchon')
+                                : (() => {
+                                    const role =
+                                      state.knockerIdx === p.id
+                                        ? 'scoreKnocker'
+                                        : state.knockerIdx >= 0
+                                          ? 'scoreAfterLayoff'
+                                          : 'scoreDeadwood';
+                                    const breakdown =
+                                      p.roundDeadwoodCards.map(cardAlt).join(t('listSeparator')) || t('noDeadwood');
+                                    return t(role, { breakdown, score: p.roundScore });
+                                  })()}
+                            </td>
+                          ) : null}
                           <td className="text-center">{p.cumulativeScore}</td>
                         </tr>
                       ))}

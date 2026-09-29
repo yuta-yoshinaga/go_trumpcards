@@ -46812,6 +46812,10 @@ components:
                   $ref: '#/components/schemas/Card'
               roundScore:
                 type: integer
+              roundDeadwoodCards:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Card'
               cumulativeScore:
                 type: integer
               eliminated:
@@ -46842,6 +46846,9 @@ components:
         knockerIdx:
           type: integer
           description: Index of the player who knocked (-1 if not applicable)
+        wonByChinchon:
+          type: boolean
+          description: Whether the winner won by Chinchon
         knockerMelds:
           type: array
           description: "Knocker's melds (array of card groups), used as layoff targets"

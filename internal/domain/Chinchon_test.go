@@ -176,6 +176,7 @@ func TestChinchon_ChinchonInstantWinOnDiscard(t *testing.T) {
 	assert.True(t, g.GetGameEndFlag())
 	assert.Equal(t, domain.ChinchonPhaseGameEnd, g.GetPhase())
 	assert.Equal(t, 0, g.GetWinnerIdx())
+	assert.True(t, g.GetWonByChinchon())
 }
 
 func TestChinchon_ChinchonSevenJAdjacency(t *testing.T) {
@@ -348,14 +349,14 @@ func TestChinchon_KnockAndScore(t *testing.T) {
 	g := newTestChinchon(2)
 	g.Reset()
 	chClearState(g)
-	// プレイヤー0: ♠A-2-3 ラン + ♥5-6-7 ラン + 捨てる1枚 → デッドウッド0でノック。
+	// プレイヤー0: ♠A-2-3 ラン + 低いデッドウッド3枚 + 捨てる1枚 → 4点でノック。
 	chSetHand(g.GetPlayer(0),
 		chCard(domain.CardDesignSpade, 1),
 		chCard(domain.CardDesignSpade, 2),
 		chCard(domain.CardDesignSpade, 3),
-		chCard(domain.CardDesignHeart, 5),
-		chCard(domain.CardDesignHeart, 6),
-		chCard(domain.CardDesignHeart, 7),
+		chCard(domain.CardDesignHeart, 1),
+		chCard(domain.CardDesignDiamond, 1),
+		chCard(domain.CardDesignClover, 2),
 		chCard(domain.CardDesignDiamond, 13), // 捨てる
 	)
 	// プレイヤー1: 高デッドウッド。
@@ -371,13 +372,16 @@ func TestChinchon_KnockAndScore(t *testing.T) {
 	g.SetCurrentPlayerIdx(0)
 	g.SetPhase(domain.ChinchonPhaseDiscard)
 	require.NoError(t, g.PlayerKnock(6))
-	assert.Equal(t, 0, g.GetPlayer(0).GetRoundScore())
+	assert.Equal(t, 4, domain.CalcDeadwoodValue(g.GetKnockerDeadwood()))
 	assert.Equal(t, domain.ChinchonPhaseLayoff, g.GetPhase())
 	// プレイヤー1がレイオフをスキップしてスコアリング。
 	g.SetCurrentPlayerIdx(1)
 	require.NoError(t, g.PlayerLayoff(nil))
 	assert.Greater(t, g.GetPlayer(1).GetCumulativeScore(), 0)
-	assert.Equal(t, 0, g.GetPlayer(0).GetCumulativeScore())
+	assert.Equal(t, 4, g.GetPlayer(0).GetRoundScore())
+	assert.Equal(t, 4, g.GetPlayer(0).GetCumulativeScore())
+	assert.Equal(t, g.GetKnockerDeadwood(), g.GetRoundDeadwood()[0])
+	assert.Equal(t, g.GetPlayer(0).GetRoundScore(), domain.CalcDeadwoodValue(g.GetRoundDeadwood()[0]))
 }
 
 func TestChinchon_Layoff(t *testing.T) {
@@ -497,10 +501,24 @@ func TestChinchon_Elimination(t *testing.T) {
 func TestChinchon_NextRound(t *testing.T) {
 	g := newTestChinchon(2)
 	g.Reset()
+	// Restore prior-round values through the persisted session format.
+	data, err := g.MarshalJSON()
+	require.NoError(t, err)
+	var state map[string]json.RawMessage
+	require.NoError(t, json.Unmarshal(data, &state))
+	deadwood, err := json.Marshal([][]*domain.Card{{chCard(domain.CardDesignHeart, 2)}, nil})
+	require.NoError(t, err)
+	state["rd"] = deadwood
+	state["wc"] = json.RawMessage("true")
+	data, err = json.Marshal(state)
+	require.NoError(t, err)
+	require.NoError(t, g.UnmarshalJSON(data))
 	g.SetPhase(domain.ChinchonPhaseRoundEnd)
 	g.NextRound()
 	assert.Equal(t, 2, g.GetRoundNumber())
 	assert.Equal(t, domain.ChinchonPhaseDraw, g.GetPhase())
+	assert.Empty(t, g.GetRoundDeadwood())
+	assert.False(t, g.GetWonByChinchon())
 }
 
 func TestChinchon_NextRound_WrongPhase(t *testing.T) {
@@ -539,6 +557,15 @@ func TestChinchon_JSONRoundTrip(t *testing.T) {
 	g.Reset()
 	data, err := g.MarshalJSON()
 	require.NoError(t, err)
+	var state map[string]json.RawMessage
+	require.NoError(t, json.Unmarshal(data, &state))
+	deadwood, err := json.Marshal([][]*domain.Card{{chCard(domain.CardDesignHeart, 2)}, nil})
+	require.NoError(t, err)
+	state["rd"] = deadwood
+	state["wc"] = json.RawMessage("true")
+	data, err = json.Marshal(state)
+	require.NoError(t, err)
+	require.NoError(t, g.UnmarshalJSON(data))
 
 	var restored domain.Chinchon
 	require.NoError(t, restored.UnmarshalJSON(data))
@@ -546,6 +573,8 @@ func TestChinchon_JSONRoundTrip(t *testing.T) {
 	assert.Equal(t, g.GetPhase(), restored.GetPhase())
 	assert.Equal(t, g.GetRoundNumber(), restored.GetRoundNumber())
 	assert.Equal(t, g.GetDrawPileCount(), restored.GetDrawPileCount())
+	assert.Equal(t, g.GetRoundDeadwood(), restored.GetRoundDeadwood())
+	assert.Equal(t, g.GetWonByChinchon(), restored.GetWonByChinchon())
 }
 
 func TestChinchon_UnmarshalRejectsInvalid(t *testing.T) {

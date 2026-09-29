@@ -28,6 +28,8 @@ func setupChinchonWebMock(phase domain.ChinchonPhase, ended bool, winner, knocke
 	m.On("GetWinnerIdx").Return(winner)
 	m.On("GetKnockerIdx").Return(knocker)
 	m.On("GetKnockerMelds").Return(([][]*domain.Card)(nil))
+	m.On("GetRoundDeadwood").Return([][]*domain.Card{{domain.NewCard(domain.CardDesignHeart, 2, false)}, nil})
+	m.On("GetWonByChinchon").Return(ended && winner == 0)
 	m.On("GetConfig").Return(domain.DefaultChinchonConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	m.On("GetPlayerCnt").Return(2)
@@ -51,6 +53,8 @@ func TestChinchonWebPresenter_Output(t *testing.T) {
 		assert.Len(t, parsed.Players, 2)
 		// CPU hand hidden during play.
 		assert.Empty(t, parsed.Players[1].Cards)
+		assert.Len(t, parsed.Players[0].RoundDeadwoodCards, 1)
+		assert.False(t, parsed.WonByChinchon)
 	})
 
 	t.Run("layoff reveals knocker melds and CPU hand", func(t *testing.T) {
@@ -65,6 +69,8 @@ func TestChinchonWebPresenter_Output(t *testing.T) {
 		m.On("GetCurrentPlayerIdx").Return(1)
 		m.On("GetWinnerIdx").Return(-1)
 		m.On("GetKnockerIdx").Return(0)
+		m.On("GetRoundDeadwood").Return([][]*domain.Card{nil, nil})
+		m.On("GetWonByChinchon").Return(false)
 		m.On("GetKnockerMelds").Return([][]*domain.Card{{
 			domain.NewCard(domain.CardDesignSpade, 1, false),
 			domain.NewCard(domain.CardDesignSpade, 2, false),
@@ -90,6 +96,7 @@ func TestChinchonWebPresenter_Output(t *testing.T) {
 		var parsed controller.ChinchonWebOutput
 		require.NoError(t, json.Unmarshal([]byte(out), &parsed))
 		assert.True(t, parsed.GameEndFlag)
+		assert.True(t, parsed.WonByChinchon)
 		assert.Equal(t, "chinchon.result.humanWin", parsed.MessageCode)
 	})
 

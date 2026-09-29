@@ -19,6 +19,7 @@ import (
 func mustChinchonOutputJSON(msg string) string {
 	out := &controller.ChinchonWebOutput{
 		Players:           []*controller.ChinchonWebOutputPlayer{},
+		WonByChinchon:     false,
 		WinnerIdx:         -1,
 		KnockerIdx:        -1,
 		KnockerMelds:      []*controller.ChinchonWebOutputMeld{},
