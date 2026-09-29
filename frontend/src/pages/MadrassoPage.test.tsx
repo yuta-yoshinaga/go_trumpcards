@@ -34,6 +34,15 @@ beforeEach(() => {
 });
 
 describe('MadrassoPage', () => {
+  it('uses team names as row headers while retaining score column headers', async () => {
+    renderWithProviders(<MadrassoPage />);
+
+    expect(await screen.findByRole('rowheader', { name: 'チームA' })).toBeInTheDocument();
+    expect(screen.getByRole('rowheader', { name: 'チームB' })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: '得点' })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: '今ラウンド' })).toBeInTheDocument();
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<MadrassoPage />);
