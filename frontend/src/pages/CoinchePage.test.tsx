@@ -91,6 +91,22 @@ beforeEach(() => {
 });
 
 describe('CoinchePage', () => {
+  it('labels cumulative and round score rows in Japanese and English', async () => {
+    renderWithProviders(<CoinchePage />);
+    await waitFor(() => expect(screen.getByRole('rowheader', { name: '累計得点' })).toHaveAttribute('scope', 'row'));
+    expect(screen.getByRole('rowheader', { name: 'ラウンド得点' })).toHaveAttribute('scope', 'row');
+
+    const i18n = (await import('../i18n')).default;
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage('en');
+    try {
+      expect(await screen.findByRole('rowheader', { name: 'Cumulative score' })).toHaveAttribute('scope', 'row');
+      expect(screen.getByRole('rowheader', { name: 'Round score' })).toHaveAttribute('scope', 'row');
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
+  });
+
   it('calls reset on mount with default config', async () => {
     renderWithProviders(<CoinchePage />);
     await waitFor(() =>
