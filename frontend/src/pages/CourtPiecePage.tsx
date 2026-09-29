@@ -243,6 +243,17 @@ function CourtPiecePageContent() {
 
               {/* Right: info sidebar */}
               <div>
+                <div data-testid="cp-trick-winner-live" className="sr-only" role="status" aria-live="polite">
+                  {(isTrickEnd || isRoundEnd || isGameEnd) && state.players[state.leadPlayerIdx]
+                    ? t('trickWinnerAnnouncement', {
+                        name: playerName(
+                          state.players[state.leadPlayerIdx].id,
+                          state.players[state.leadPlayerIdx].isHuman,
+                        ),
+                        team: state.players[state.leadPlayerIdx].team === 0 ? t('team.a') : t('team.b'),
+                      })
+                    : ''}
+                </div>
                 {/* Team match scores */}
                 <div className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
                   {([0, 1] as const).map((team) => {

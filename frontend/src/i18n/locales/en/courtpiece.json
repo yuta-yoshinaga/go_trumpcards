@@ -22,6 +22,7 @@
   "tricks": "{{count}} tricks",
   "currentTrick": "Current Trick",
   "trickWinnerBadge": "Won",
+  "trickWinnerAnnouncement": "{{name}} of {{team}} won the trick",
   "trickEmpty": "(no cards yet)",
   "players": "Players",
   "you": "You",
