@@ -287,9 +287,11 @@ function MariasPageContent() {
                 )}
 
                 {/* Round result: per-player card points + marriage */}
-                {(isRoundEnd || isGameEnd) && (
+                {(isPlayPhase || isTrickEnd || isRoundEnd || isGameEnd) && (
                   <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-                    <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
+                    <div className="mb-1 text-ds-text-primary">
+                      {t(isRoundEnd || isGameEnd ? 'roundResult.title' : 'roundResult.progressTitle')}
+                    </div>
                     {state.players.map((p) => (
                       <div key={p.id}>
                         <div>
@@ -325,13 +327,16 @@ function MariasPageContent() {
                       const soloistTotal = sideTotal(true);
                       const defenderTotal = sideTotal(false);
                       const soloistWon = soloistTotal > defenderTotal;
+                      const highlightWinner = (isRoundEnd || isGameEnd) && soloistWon;
                       return (
                         <div className="mt-1 pt-1 border-t border-ds-border-subtle" data-testid="marias-side-totals">
-                          <span className={soloistWon ? 'text-ds-warning font-semibold' : ''}>
+                          <span className={highlightWinner ? 'text-ds-warning font-semibold' : ''}>
                             {t('roundResult.soloistTotal', { points: soloistTotal })}
                           </span>
                           <span className="mx-1">/</span>
-                          <span className={soloistWon ? '' : 'text-ds-warning font-semibold'}>
+                          <span
+                            className={(isRoundEnd || isGameEnd) && !soloistWon ? 'text-ds-warning font-semibold' : ''}
+                          >
                             {t('roundResult.defenderTotal', { points: defenderTotal })}
                           </span>
                         </div>

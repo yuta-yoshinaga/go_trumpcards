@@ -46,6 +46,7 @@
   "lastTrickBonus": "ラストトリック +10",
   "roundResult": {
     "title": "ラウンド結果",
+    "progressTitle": "ラウンド途中経過（確定済み）",
     "cardPoints": "{{name}} カード点: {{points}}",
     "marriage": "{{name}} マリッジ: {{points}}",
     "soloistTotal": "ソリスト: {{points}}点",
