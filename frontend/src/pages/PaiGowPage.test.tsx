@@ -377,9 +377,24 @@ describe('PaiGowPage', () => {
     expect(screen.getByRole('textbox', { name: 'ベット' })).toHaveAttribute('max', '50');
     expect(screen.getByTestId('paigow-bet-guidance')).toHaveTextContent('残高: 50');
     expect(screen.getByTestId('paigow-bet-guidance')).toHaveTextContent('入力額: 100');
-    expect(screen.getByTestId('paigow-bet-guidance')).toHaveTextContent('10以上、10単位、最大10,000');
+    expect(screen.getByTestId('paigow-bet-guidance')).toHaveTextContent('10以上、10単位、最大50');
     expect(screen.getByRole('alert')).toHaveTextContent('残高を超えています');
     expect(screen.getByRole('button', { name: 'ベット' })).toBeDisabled();
+  });
+
+  it('rounds the maximum down to a multiple of 10 when the balance is not one', async () => {
+    mockExec.mockResolvedValue({ ...betPhaseState, chips: 1234 });
+    renderWithProviders(<PaiGowPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 1234')).toBeInTheDocument());
+    expect(screen.getByTestId('paigow-bet-guidance')).toHaveTextContent('最大1230');
+  });
+
+  it('shows the 10,000 bet cap when the balance is at least 10,000', async () => {
+    mockExec.mockResolvedValue({ ...betPhaseState, chips: 15000 });
+    renderWithProviders(<PaiGowPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 15000')).toBeInTheDocument());
+    expect(screen.getByTestId('paigow-bet-guidance')).toHaveTextContent('最大10000');
+    expect(screen.getByRole('textbox', { name: 'ベット' })).toHaveAttribute('max', '10000');
   });
 
   it('resets after end phase', async () => {

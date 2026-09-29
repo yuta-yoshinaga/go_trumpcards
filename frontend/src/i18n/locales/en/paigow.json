@@ -55,7 +55,7 @@
     "title": "Settings"
   },
   "betGuide": "Set your bet amount",
-  "betLimits": "Balance: {{chips}} / Bet amount: {{amount}}. Minimum 10, increments of 10, maximum 10,000",
+  "betLimits": "Balance: {{chips}} / Bet amount: {{amount}}. Minimum 10, increments of 10, maximum {{max}}",
   "selectLowHand": "Select 2 cards for your low hand",
   "selectedCount": "{{count}} / 2 selected",
   "foulWarning": "Foul: the low hand outranks the high hand",

@@ -55,7 +55,7 @@
     "title": "設定"
   },
   "betGuide": "ベット額を設定してベット",
-  "betLimits": "残高: {{chips}} / 入力額: {{amount}}。10以上、10単位、最大10,000",
+  "betLimits": "残高: {{chips}} / 入力額: {{amount}}。10以上、10単位、最大{{max}}",
   "selectLowHand": "2枚選択してローハンドをセット",
   "selectedCount": "{{count}} / 2 選択中",
   "foulWarning": "反則：ローハンドがハイハンドより強くなっています",
