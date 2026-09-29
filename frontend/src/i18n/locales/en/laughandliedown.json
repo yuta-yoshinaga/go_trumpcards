@@ -18,6 +18,7 @@
   "landscapeBanner": "Landscape mode recommended",
   "phase.play": "In progress",
   "phase.end": "Finished",
+  "yourTurn": "It is your turn",
   "notYourTurnTooltip": "It is not your turn to play",
   "notYourTurnAria": "not your turn",
   "noMatchingRankTooltip": "No card of this rank is on the table (any single match is enough to play it)",

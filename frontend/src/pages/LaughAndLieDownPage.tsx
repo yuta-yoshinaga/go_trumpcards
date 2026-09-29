@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { laughandliedownApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardBack } from '../components/CardImage';
@@ -48,6 +48,15 @@ function LaughAndLieDownPageContent() {
     useGamePageSetup('laughandliedown');
   const game = useLaughAndLieDownGame();
   const { state, loading, error, retry } = game;
+  const isHumanTurn = !!state && state.phase !== LaughAndLieDownPhase.GAME_END && state.currentPlayerIdx === 0;
+  const previousHumanTurn = useRef<boolean | null>(null);
+  const [turnAnnouncement, setTurnAnnouncement] = useState('');
+
+  useEffect(() => {
+    if (!state) return;
+    if (previousHumanTurn.current === false && isHumanTurn) setTurnAnnouncement(t('yourTurn'));
+    previousHumanTurn.current = isHumanTurn;
+  }, [isHumanTurn, state, t]);
 
   // Which hand card is armed for a three-card take. The take size is a real
   // choice only when the server offered it, so it lives next to the card
@@ -84,7 +93,6 @@ function LaughAndLieDownPageContent() {
   const ended = state.phase === LaughAndLieDownPhase.GAME_END;
   const human = state.players.find((p) => p.isHuman);
   const opponents = state.players.filter((p) => !p.isHuman);
-  const isHumanTurn = !ended && state.currentPlayerIdx === 0;
 
   // Both the match rule and the three-card option come from the server, which
   // owns them. Recounting the table here would put the rule in two places.
@@ -103,6 +111,12 @@ function LaughAndLieDownPageContent() {
     const take = threeArmed === i && threeTakes.has(i) ? 3 : 1;
     setThreeArmed(null);
     game.handlePlay(i, take);
+  };
+
+  const reset = () => {
+    previousHumanTurn.current = null;
+    setTurnAnnouncement('');
+    game.handleReset();
   };
 
   return (
@@ -125,6 +139,9 @@ function LaughAndLieDownPageContent() {
         </>
       }
     >
+      <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
+        {turnAnnouncement}
+      </div>
       <LandscapeBanner message={t('landscapeBanner')} />
 
       <SettingsPanel
@@ -283,7 +300,7 @@ function LaughAndLieDownPageContent() {
             <div className="flex gap-2 items-center flex-wrap">
               <GameResetButton
                 isGameEnd={ended}
-                onReset={game.handleReset}
+                onReset={reset}
                 requestConfirm={requestConfirm}
                 loading={loading}
                 dataTutorial="lld-reset-button"

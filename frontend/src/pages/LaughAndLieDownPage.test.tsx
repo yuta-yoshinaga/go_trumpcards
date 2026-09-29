@@ -73,6 +73,15 @@ describe('LaughAndLieDownPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('keeps a polite turn status empty on the initial human turn', async () => {
+    renderWithProviders(<LaughAndLieDownPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const status = screen.getByRole('status');
+    expect(status).toHaveAttribute('aria-live', 'polite');
+    expect(status).toHaveClass('sr-only');
+    expect(status).toBeEmptyDOMElement();
+  });
+
   it('shows the pot, the dealer and both rules permanently', async () => {
     renderWithProviders(<LaughAndLieDownPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
