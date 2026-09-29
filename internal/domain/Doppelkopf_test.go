@@ -474,6 +474,22 @@ func TestDoppelkopf_IsTeamKnownFromPublicPlay(t *testing.T) {
 	}
 }
 
+func TestDoppelkopf_IsTeamKnownDeducesTheRestFromTwoKnownRe(t *testing.T) {
+	g := newDKGame(true)
+	g.SetReTeam([DoppelkopfPlayerCnt]bool{true, false, true, false})
+	g.playCard(0, dkCard(CardDesignClover, 12))
+
+	if !g.IsTeamKnown(2, 1) || !g.IsTeamKnown(2, 3) {
+		t.Fatal("Re viewer should know both remaining players are Kontra")
+	}
+	if g.IsTeamKnown(1, 3) {
+		t.Fatal("Kontra viewer should not know the other Kontra player with only one known Re")
+	}
+	if g.IsTeamKnown(-1, 0) || g.IsTeamKnown(0, 4) {
+		t.Fatal("out-of-range player indices should not have a known team")
+	}
+}
+
 func TestDoppelkopf_AnnouncementAndKnownTeamPersistence(t *testing.T) {
 	g := newDKGame(true)
 	g.SetReTeam([DoppelkopfPlayerCnt]bool{true, false, true, false})
