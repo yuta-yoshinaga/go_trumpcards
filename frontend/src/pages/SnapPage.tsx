@@ -91,6 +91,7 @@ function SnapPageContent() {
   const isRunning = state !== null && !state.gameEndFlag;
   useEffect(() => {
     if (!isCpuPending) return;
+    setClockNow(Date.now());
     const id = window.setInterval(() => setClockNow(Date.now()), 250);
     return () => window.clearInterval(id);
   }, [isCpuPending]);
@@ -192,8 +193,8 @@ function SnapPageContent() {
                 data-testid="sp-pending"
               >
                 {state.pendingKind === SnapPendingKind.SNAP
-                  ? t('header.pendingSnap', { seconds: String(pendingSeconds) })
-                  : t('header.pendingStep', { seconds: String(pendingSeconds) })}
+                  ? t('header.pendingSnap', { seconds: pendingSeconds })
+                  : t('header.pendingStep', { seconds: pendingSeconds })}
               </div>
             )}
 

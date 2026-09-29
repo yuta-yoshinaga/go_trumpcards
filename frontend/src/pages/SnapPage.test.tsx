@@ -163,6 +163,38 @@ describe('SnapPage', () => {
     if (pendingKind === 1) expect(status).toHaveTextContent(/期限前にスナップ/);
   });
 
+  it('starts a new booking countdown from the current time', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(10_000);
+    mockExec.mockImplementation(async (command) =>
+      makeState({
+        pendingKind: command === 'step' ? 1 : 0,
+        pendingDeadlineMs: command === 'step' ? Date.now() + 3_000 : 0,
+      }),
+    );
+    renderWithProviders(<SnapPage />);
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(mockExec).toHaveBeenCalledWith('reset');
+    expect(screen.queryByTestId('sp-pending')).not.toBeInTheDocument();
+
+    vi.setSystemTime(70_000);
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('sp-step-btn'));
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    const status = screen.getByTestId('sp-pending');
+    expect(status).toHaveTextContent(/CPUの宣言予約中/);
+    // Not /3秒/: that also matches the stale 63秒 this test guards against.
+    expect(status).toHaveTextContent(/(^|\D)3秒/);
+  });
+
   it('keeps the live announcement unchanged while the visible countdown ticks', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     vi.setSystemTime(10_000);
