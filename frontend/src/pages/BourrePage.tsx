@@ -420,6 +420,7 @@ function BourrePageContent() {
                     <button
                       key={`hand-${c.design}-${c.value}-${i}`}
                       type="button"
+                      aria-pressed={phase === 'draw' ? isSelected : undefined}
                       className={
                         isSelected
                           ? 'transition-transform -translate-y-2 ring-2 ring-ds-warning rounded'
