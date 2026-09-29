@@ -78,19 +78,20 @@ function AndarBaharPageContent() {
   const isBetPhase = state?.phase === AndarBaharPhase.BET;
   const isEndPhase = state?.phase === AndarBaharPhase.END;
   const sideBetSelected = sideBand !== AndarBaharSideBand.NONE;
-  const mainBetMax = Math.max(0, (state?.chips ?? 0) - (sideBetSelected ? sideAmount : 0));
-  const sideBetMax = Math.max(0, (state?.chips ?? 0) - betAmount);
+  const chips = state?.chips ?? 0;
+  const mainBetMax = Math.max(0, chips - (sideBetSelected ? sideAmount : 0));
+  const sideBetMax = Math.max(0, chips - betAmount);
 
   const handleBet = useCallback(
     (target: number) => {
       const stake = sideBand === AndarBaharSideBand.NONE ? 0 : sideAmount;
-      if (!state || betAmount + stake > state.chips) return;
+      if (betAmount + stake > chips) return;
       setLastBet({ amount: betAmount, target });
       // **賭けていない帯は送らない。** band 0 は「1 枚目」という有効な値なので、
       // 金額 0 のまま送るとサーバに拒否されます。
       return execApi('bet', betAmount, target, stake, stake > 0 ? sideBand : AndarBaharSideBand.NONE);
     },
-    [execApi, betAmount, sideAmount, sideBand, state],
+    [execApi, betAmount, sideAmount, sideBand, chips],
   );
 
   const canRebet = lastBet !== null && lastBet.amount > 0 && !!state && lastBet.amount <= state.chips;
