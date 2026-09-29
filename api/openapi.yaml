@@ -35464,6 +35464,9 @@ components:
           type: boolean
         chips:
           type: integer
+        drawPileCount:
+          type: integer
+          description: Number of cards not yet dealt from this round's shuffled deck.
         activeSeat:
           type: integer
         nextBanker:

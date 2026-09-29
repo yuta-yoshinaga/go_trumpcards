@@ -27,6 +27,7 @@ const baseState: SetteEMezzoResponse = {
   bankerIdx: 1,
   isHumanBanker: false,
   chips: 1000,
+  drawPileCount: 40,
   activeSeat: 0,
   nextBanker: -1,
   lastResult: '',

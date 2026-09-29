@@ -60,6 +60,7 @@ func (sp *SetteEMezzoWebPresenter) Output(s interfaces.SetteEMezzoGame, lastErr 
 	resObj.BankerIdx = s.GetBankerIdx()
 	resObj.IsHumanBanker = s.IsHumanBanker()
 	resObj.Chips = s.GetChips()
+	resObj.DrawPileCount = s.GetDrawPileCount()
 	resObj.ActiveSeat = s.GetActiveSeat()
 	resObj.NextBanker = s.GetNextBanker()
 	resObj.LastResult = s.GetLastResult()

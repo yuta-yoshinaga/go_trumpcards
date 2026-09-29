@@ -38,6 +38,7 @@ func semHandFromJSON(src string) *domain.SetteEMezzoHand {
 func setupSemWebMockDefaults(g *interfaces.MockSetteEMezzoGame) {
 	g.On("GetPhase").Return(domain.SetteEMezzoPhasePlayerTurn).Maybe()
 	g.On("GetChips").Return(900).Maybe()
+	g.On("GetDrawPileCount").Return(27).Maybe()
 	g.On("GetBankerIdx").Return(1).Maybe()
 	g.On("IsHumanBanker").Return(false).Maybe()
 	g.On("GetActiveSeat").Return(0).Maybe()
@@ -77,6 +78,7 @@ func TestSetteEMezzoWebPresenter_Output(t *testing.T) {
 		result := parseSemOutput(t, new(SetteEMezzoWebPresenter).Output(g, nil))
 		assert.Equal(t, domain.SetteEMezzoPhasePlayerTurn, result.Phase)
 		assert.Equal(t, 900, result.Chips)
+		assert.Equal(t, 27, result.DrawPileCount)
 		assert.Len(t, result.Seats, 3)
 		assert.Equal(t, -1, result.NextBanker)
 		assert.Equal(t, "settemezzo.yourTurn", result.MessageCode)

@@ -45,6 +45,8 @@ export interface SetteEMezzoResponse extends BaseGameResponse {
   /** While true the human banks: no stake, and they decide the draw at the end. */
   isHumanBanker: boolean;
   chips: number;
+  /** Cards in the shuffled deck that have not yet been dealt this round. */
+  drawPileCount: number;
   activeSeat: number;
   /** Seat that takes the bank next deal, or -1. Only an exact 7.5 moves it. */
   nextBanker: number;

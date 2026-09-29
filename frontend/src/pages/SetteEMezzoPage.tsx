@@ -167,6 +167,9 @@ function SetteEMezzoPageContent() {
           <span className="text-sm text-ds-text-muted">
             {t('chips')}: {state.chips}
           </span>
+          <span className="text-sm text-ds-text-muted" data-testid="settemezzo-draw-pile-count">
+            {t('drawPileCount')}: {state.drawPileCount}
+          </span>
           <span className="text-sm text-ds-text-muted">
             {t('banker')}: {bankerName}
           </span>
