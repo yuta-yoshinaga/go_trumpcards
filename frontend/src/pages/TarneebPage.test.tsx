@@ -112,6 +112,28 @@ describe('TarneebPage', () => {
     expect(cellsOf('相手チーム')).toEqual(['相手チーム', '2', '2', '5']);
   });
 
+  it('announces both teams’ round score changes and totals only at round end', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: TarneebPhase.ROUND_END }));
+    renderWithProviders(<TarneebPage />);
+
+    await waitFor(() =>
+      expect(
+        screen
+          .getAllByRole('status')
+          .some((region) => /あなたのチーム.*4.*10.*相手チーム.*2.*5/.test(region.textContent ?? '')),
+      ).toBe(true),
+    );
+  });
+
+  it('keeps the score announcement live region empty during normal play', async () => {
+    renderWithProviders(<TarneebPage />);
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, undefined, expect.any(Object)));
+    const announcement = screen.getAllByRole('status').find((region) => region.getAttribute('aria-atomic') === 'true');
+    expect(announcement).toBeInTheDocument();
+    expect(announcement).toBeEmptyDOMElement();
+  });
+
   it('displays round score (including negative scores for failed bids) instead of trick count in the score table', async () => {
     // Team 0 failed bid: bid 8, took 3+1=4 tricks -> roundScore is -8.
     // Team 1 defenders: took 6+3=9 tricks -> roundScore is +9.

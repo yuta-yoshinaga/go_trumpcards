@@ -12,6 +12,7 @@ import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { PlayerHandSection } from '../components/PlayerHandSection';
+import { RoundScoreAnnouncement } from '../components/RoundScoreAnnouncement';
 import { ScrollFadeHint } from '../components/ScrollFadeHint';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { TrickDisplay } from '../components/TrickDisplay';
@@ -441,6 +442,15 @@ function TarneebPageContent() {
             )}
 
             <ErrorAlert message={error ?? hintError} onRetry={retry} />
+
+            <RoundScoreAnnouncement
+              active={isRoundEnd || isGameEnd}
+              entries={state.teamScores.map((cumulativeScore, i) => ({
+                name: i === humanPlayer?.team ? t('yourTeam') : t('opponentTeam'),
+                roundScore: teamBreakdown[i].roundScore,
+                cumulativeScore,
+              }))}
+            />
 
             <div data-testid="tarneeb-bid-live" role="status" aria-live="polite">
               {isHumanBidTurn && t('selectedBid', { n: bidValue })}
