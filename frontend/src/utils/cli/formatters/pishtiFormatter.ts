@@ -21,7 +21,12 @@ export function formatPishtiState(state: PishtiResponse): string {
   state.players.forEach((p, i) => {
     const name = formatPlayerName(i, p.isHuman);
     const turn = i === state.currentTurn && !state.gameEndFlag ? ' <- turn' : '';
-    lines.push(`${name}: hand ${p.cardCount} / captured ${p.capturedCount} / Pişti ${p.pistiBonus}${turn}`);
+    const provisional = state.gameEndFlag
+      ? ''
+      : ` / cards ${p.cardPoints} / most ${p.mostCapturedPoints} (provisional)`;
+    lines.push(
+      `${name}: hand ${p.cardCount} / captured ${p.capturedCount} / Pişti ${p.pistiBonus}${provisional}${turn}`,
+    );
   });
   lines.push('----------');
 

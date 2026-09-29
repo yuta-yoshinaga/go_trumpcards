@@ -53,10 +53,11 @@ describe('formatPishtiState', () => {
     expect(out).toContain('pile: top=');
   });
 
-  it('renders captured/Pişti lines and the turn prompt', () => {
+  it('renders captured/Pişti/provisional lines and the turn prompt', () => {
     const out = formatPishtiState(makeState());
     expect(out).toContain('captured 0');
     expect(out).toContain('Pişti 0');
+    expect(out).toContain('cards 0 / most 0 (provisional)');
     expect(out).toContain('your turn');
     expect(out).toContain('your hand');
   });
@@ -79,5 +80,18 @@ describe('formatPishtiState', () => {
     expect(out).toContain('Game Over');
     expect(out).toContain('11 pts');
     expect(out).toContain('Winner');
+    expect(out).not.toContain('(provisional)');
+  });
+
+  it('shows the provisional breakdown for a player with card points and most-captured points', () => {
+    const out = formatPishtiState(
+      makeState({
+        players: [
+          makePlayer({ id: 0, isHuman: true, cardPoints: 3, mostCapturedPoints: 3 }),
+          ...makeState().players.slice(1),
+        ],
+      }),
+    );
+    expect(out).toContain('cards 3 / most 3 (provisional)');
   });
 });
