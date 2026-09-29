@@ -5,11 +5,11 @@ test.describe('Trash E2E', () => {
   test('navigates to trash and renders the initial board', async ({ page }) => {
     await navigateTo(page, '/trash');
 
-    // Both player rows should expose all 10 face-down slots via aria-label.
-    const faceDownSlots = page.getByRole('button', { name: /face-down/ });
+    // Both player rows should expose all 10 face-down slots via localized aria-label.
+    const faceDownSlots = page.getByRole('button', { name: /裏向き|face-down/i });
     await expect(faceDownSlots.first()).toBeVisible({ timeout: TIMEOUT_TRANSITION });
     // 20 slot buttons total (10 opponent + 10 self); allow for a larger count
-    // if future UI additions add more face-down affordances.
+    // if future UI additions add more localized face-down affordances.
     await expect.poll(async () => await faceDownSlots.count()).toBeGreaterThanOrEqual(20);
 
     // Reset button is always visible.
@@ -31,7 +31,7 @@ test.describe('Trash E2E', () => {
     }
 
     // Board is still rendered after reset.
-    const faceDownSlots = page.getByRole('button', { name: /face-down/ });
+    const faceDownSlots = page.getByRole('button', { name: /裏向き|face-down/i });
     await expect(faceDownSlots.first()).toBeVisible({ timeout: TIMEOUT_TRANSITION });
   });
 });
