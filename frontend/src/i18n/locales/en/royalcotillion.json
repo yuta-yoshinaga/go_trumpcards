@@ -8,6 +8,8 @@
   "tableau": "Tableau",
   "stock": "Stock",
   "waste": "Waste",
+  "wasteCount_one": "{{count}} card",
+  "wasteCount_other": "{{count}} cards",
   "draw": "Draw",
   "moveCount": "Moves",
   "giveup": "Give up",

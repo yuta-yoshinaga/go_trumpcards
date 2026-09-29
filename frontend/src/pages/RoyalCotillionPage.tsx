@@ -178,6 +178,7 @@ function RoyalCotillionPageContent() {
     selectedSource !== null && selectedSource.zone === zone && selectedSource.col === col;
 
   const wasteTop = state.waste.length > 0 ? state.waste[state.waste.length - 1] : null;
+  const wasteCountId = 'royal-cotillion-waste-count';
   const wasteZone: RoyalCotillionMoveZone = { zone: 'waste' };
   const stockZone: RoyalCotillionMoveZone = { zone: 'stock' };
 
@@ -429,13 +430,16 @@ function RoyalCotillionPageContent() {
                   </button>
                 </div>
                 <div className="text-center">
-                  <div className="text-game-text-muted text-xs mb-1">{t('waste')}</div>
+                  <div className="text-game-text-muted text-xs mb-1">
+                    {t('waste')} <span id={wasteCountId}>{t('wasteCount', { count: state.waste.length })}</span>
+                  </div>
                   {wasteTop ? (
                     <button
                       type="button"
                       onClick={() => game.handleSelectSource(wasteZone)}
                       disabled={!isPlaying || loading}
                       aria-label={cardAlt(wasteTop)}
+                      aria-describedby={wasteCountId}
                       aria-pressed={isSourceSelected('waste', undefined)}
                       draggable={isPlaying && !loading}
                       onDragStart={dnd.handleDragStart(wasteZone)}
@@ -448,6 +452,7 @@ function RoyalCotillionPageContent() {
                     <div
                       role="img"
                       aria-label={t('emptyWasteAriaLabel')}
+                      aria-describedby={wasteCountId}
                       style={{ width: dims.cw, height: dims.ch }}
                       className="rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center"
                     >
