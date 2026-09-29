@@ -4,6 +4,7 @@ import { trucoApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, TrucoResponse } from '../types/card';
+import { cardAlt } from '../utils/cardAlt';
 import { TrucoPage } from './TrucoPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -134,6 +135,31 @@ describe('TrucoPage', () => {
     renderWithProviders(<TrucoPage />);
     await waitFor(() => expect(screen.getByTestId('truco-header')).toBeInTheDocument());
     expect(screen.queryByTestId('truco-trick-history')).not.toBeInTheDocument();
+  });
+
+  it('announces each card in the current baza through a permanent polite live region', async () => {
+    renderWithProviders(<TrucoPage />);
+    const live = await screen.findByTestId('truco-trick-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toBeEmptyDOMElement();
+
+    mockExec.mockResolvedValueOnce(makeState({ currentTrick: [{ playerIdx: 0, card: card('SPADE', 1) }] }));
+    fireEvent.keyDown(document, { key: '1' });
+    await waitFor(() => expect(live).toHaveTextContent('あなた:'));
+    expect(live).toHaveTextContent(`あなた: ${cardAlt(card('SPADE', 1))}`);
+
+    mockExec.mockResolvedValueOnce(
+      makeState({
+        currentTrick: [
+          { playerIdx: 0, card: card('SPADE', 1) },
+          { playerIdx: 1, card: card('HEART', 5) },
+        ],
+      }),
+    );
+    fireEvent.keyDown(document, { key: '1' });
+    await waitFor(() => expect(live).toHaveTextContent('CPU:'));
+    expect(live.textContent).toBe(`あなた: ${cardAlt(card('SPADE', 1))}、CPU: ${cardAlt(card('HEART', 5))}`);
   });
 
   it('exposes the tutorial target elements for the guided tour', async () => {
