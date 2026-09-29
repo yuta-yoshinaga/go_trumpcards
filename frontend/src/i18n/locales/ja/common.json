@@ -4314,6 +4314,7 @@
     "clear": "カードの選択を解除",
     "action": {
       "accept": "受ける",
+      "attack": "攻撃する",
       "allin": "オールイン",
       "ask": "カードを要求する",
       "autoComplete": "自動で完成させる",
@@ -4331,12 +4332,14 @@
       "chooseHandspiel": "ハントシュピールを選ぶ",
       "clearSelection": "選択を解除する",
       "deal": "カードを配る",
+      "defend": "防御する",
       "decline": "降りる",
       "declineearlysurrender": "アーリーサレンダーを断る",
       "declineinsurance": "インシュランスを断る",
       "doubledown": "ダブルダウン",
       "draw": "山札をめくる",
       "takeDiscard": "捨て札を取る",
+      "takeTable": "場札を引き取る",
       "earlysurrender": "アーリーサレンダー",
       "exchange": "カードを交換する",
       "exchangeAll": "全交換する",
@@ -4385,6 +4388,7 @@
       "truco": "トゥルーコを宣言する",
       "twist": "ツイスト",
       "undo": "一手戻す",
+      "transfer": "転送する",
       "put": "Put を宣言する（賭け点が倍になる）"
     }
   },
