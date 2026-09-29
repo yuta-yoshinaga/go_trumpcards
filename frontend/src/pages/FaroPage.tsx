@@ -213,7 +213,11 @@ function FaroPageContent() {
               data-tutorial="faro-info"
             >
               <span className="font-semibold text-ds-warning">{t('chips', { count: state.chips })}</span>
-              <span className="text-ds-text-primary">{t('payout', { amount: state.totalPayout })}</span>
+              <span className="text-ds-text-primary">
+                {t('payout', {
+                  amount: state.totalPayout > 0 ? `+${state.totalPayout}` : String(state.totalPayout),
+                })}
+              </span>
               <span className="text-ds-text-muted">
                 {t('turns', { played: state.turnsPlayed, total: state.turnsTotal })}
               </span>
@@ -450,7 +454,6 @@ function FaroPageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
-
             <ActionLogSection
               isEndPhase={isGameEnd}
               actionLog={actionLog}
