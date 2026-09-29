@@ -257,25 +257,33 @@ function ShamrocksPageContent() {
             data-testid="ll-foundation-row"
             data-hint-foundation={hintFoundation ? 'true' : undefined}
           >
-            {state.foundation.map((pile, i) => (
-              <button
-                type="button"
-                key={`fnd-${i}`}
-                className={`rounded ${foundationAcceptsSelected(pile) ? 'ring-1 ring-ds-success cursor-pointer' : ''}`}
-                onClick={foundationAcceptsSelected(pile) ? sendToFoundation : undefined}
-                disabled={!canAct || !foundationAcceptsSelected(pile)}
-                data-testid={`foundation-${i}`}
-              >
-                {pile.length > 0 ? (
-                  <CardImage card={pile[pile.length - 1]} width={w} />
-                ) : (
-                  <div
-                    className="rounded border border-dashed border-white/25 bg-black/20"
-                    style={{ width: w, height: Math.round(w * 1.4) }}
-                  />
-                )}
-              </button>
-            ))}
+            {state.foundation.map((pile, i) => {
+              const topCard = pile.at(-1);
+              return (
+                <button
+                  type="button"
+                  key={`fnd-${i}`}
+                  className={`rounded ${foundationAcceptsSelected(pile) ? 'ring-1 ring-ds-success cursor-pointer' : ''}`}
+                  onClick={foundationAcceptsSelected(pile) ? sendToFoundation : undefined}
+                  disabled={!canAct || !foundationAcceptsSelected(pile)}
+                  aria-label={
+                    topCard
+                      ? t('foundationAriaLabel', { card: cardAlt(topCard) })
+                      : t('emptyFoundationAriaLabel', { index: i + 1 })
+                  }
+                  data-testid={`foundation-${i}`}
+                >
+                  {pile.length > 0 ? (
+                    <CardImage card={pile[pile.length - 1]} width={w} />
+                  ) : (
+                    <div
+                      className="rounded border border-dashed border-white/25 bg-black/20"
+                      style={{ width: w, height: Math.round(w * 1.4) }}
+                    />
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
 

@@ -6,6 +6,8 @@
   },
   "title": "シャムロックス",
   "foundation": "組札",
+  "foundationAriaLabel": "組札、最上札 {{card}}",
+  "emptyFoundationAriaLabel": "組札 {{index}}、空",
   "fan": "扇",
   "fanAriaLabel": "扇 {{index}}、最上段は{{card}}",
   "emptyFanAriaLabel": "扇 {{index}}、空",

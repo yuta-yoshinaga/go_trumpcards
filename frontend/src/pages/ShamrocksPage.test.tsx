@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { shamrocksApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, ShamrocksResponse } from '../types/card';
 import { ShamrocksPage } from './ShamrocksPage';
@@ -32,6 +33,28 @@ beforeEach(() => {
 });
 
 describe('ShamrocksPage', () => {
+  it('announces each empty foundation by position and empty state', async () => {
+    renderWithProviders(<ShamrocksPage />);
+
+    expect(await screen.findByRole('button', { name: '組札 1、空' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '組札 2、空' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '組札 3、空' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '組札 4、空' })).toBeInTheDocument();
+  });
+
+  it('announces the suit and top card of occupied foundations in Japanese and English', async () => {
+    mockExec.mockResolvedValue(makeState({ foundation: [[card('SPADE', 1)], [card('CLOVER', 2)], [], []] }));
+    renderWithProviders(<ShamrocksPage />);
+
+    expect(await screen.findByRole('button', { name: '組札、最上札 ♠ A' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '組札、最上札 ♣ 2' })).toBeInTheDocument();
+
+    await i18n.changeLanguage('en');
+    expect(await screen.findByRole('button', { name: 'Foundation, top card ♠ A' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Foundation, top card ♣ 2' })).toBeInTheDocument();
+    await i18n.changeLanguage('ja');
+  });
+
   it('announces an empty fan by its zero-based position', async () => {
     mockExec.mockResolvedValue(makeState({ fans: [[card('SPADE', 9)], [], [card('DIAMOND', 1)]] }));
     renderWithProviders(<ShamrocksPage />);
