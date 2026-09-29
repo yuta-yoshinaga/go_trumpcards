@@ -30,7 +30,7 @@
   "addGroup": "グループに追加",
   "stagedGroupsTitle": "組成中のメルド",
   "groupLabel": "グループ{{n}}",
-  "groupOpeningPoints": "グループ{{n}}: 開設点に{{points}}点加算",
+  "groupOpeningPoints": "開設点に{{points}}点加算",
   "removeGroupAria": "グループ{{n}}を取り消す",
   "meld": "メルドを場に出す",
   "layoff": "レイオフ",

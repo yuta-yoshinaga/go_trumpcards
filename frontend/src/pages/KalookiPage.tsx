@@ -495,16 +495,17 @@ function KalookiPageContent() {
                       className="flex items-center gap-2 flex-wrap p-2 rounded border border-white/30 bg-black/20"
                     >
                       <span className="text-white text-xs font-semibold">{t('groupLabel', { n: gi + 1 })}</span>
-                      <span className="text-ds-warning text-xs font-semibold">
-                        {t('groupOpeningPoints', {
-                          n: gi + 1,
-                          points: kalookiMeldValue(
-                            group
-                              .map((cardIdx) => humanPlayer.cards[cardIdx])
-                              .filter((card): card is Card => card !== undefined),
-                          ),
-                        })}
-                      </span>
+                      {!humanPlayer.hasOpened && (
+                        <span className="text-ds-warning text-xs font-semibold">
+                          {t('groupOpeningPoints', {
+                            points: kalookiMeldValue(
+                              group
+                                .map((cardIdx) => humanPlayer.cards[cardIdx])
+                                .filter((card): card is Card => card !== undefined),
+                            ),
+                          })}
+                        </span>
+                      )}
                       <div className="flex flex-wrap gap-1">
                         {group.map((cardIdx) => {
                           const c = humanPlayer.cards[cardIdx];
