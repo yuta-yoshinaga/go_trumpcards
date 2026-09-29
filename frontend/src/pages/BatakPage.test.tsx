@@ -4,7 +4,7 @@ import { batakApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeBatakState } from '../test/stateFactories';
-import type { BatakResponse } from '../types/card';
+import type { BatakResponse, BatakTrickCard } from '../types/card';
 import { BatakPage } from './BatakPage';
 
 vi.mock('../api/gameApi', () => ({
@@ -594,5 +594,86 @@ describe('BatakPage', () => {
       expect(region).toHaveTextContent('-');
       expect(region).not.toHaveTextContent('{{');
     });
+  });
+});
+
+describe('BatakPage trick winner badge', () => {
+  const settledTrick: BatakTrickCard[] = [
+    { playerIdx: 0, card: { design: 'DIAMOND', value: 3 } },
+    { playerIdx: 1, card: { design: 'HEART', value: 5 } },
+    { playerIdx: 2, card: { design: 'SPADE', value: 10 } },
+    { playerIdx: 3, card: { design: 'CLOVER', value: 2 } },
+  ];
+
+  it('marks the trick winner once the trick ends', async () => {
+    mockExec.mockResolvedValue({
+      ...trickEndState,
+      leadPlayerIdx: 2,
+      currentTrick: settledTrick,
+    });
+    renderWithProviders(<BatakPage />);
+    const badge = await screen.findByTestId('trick-winner-badge');
+    expect(badge).toBeInTheDocument();
+    expect(badge).toHaveTextContent('勝者');
+    expect(badge.parentElement).toHaveAttribute('data-trick-winner', 'true');
+    expect(screen.getAllByTestId('trick-display-cards')[0].querySelectorAll('[data-trick-winner="true"]')).toHaveLength(
+      1,
+    );
+  });
+
+  it('follows leadPlayerIdx rather than a fixed seat', async () => {
+    const badgedCardAlt = async () => {
+      const badge = await screen.findByTestId('trick-winner-badge');
+      const cell = badge.closest('[data-trick-winner]');
+      return cell?.querySelector('img')?.getAttribute('alt') ?? null;
+    };
+
+    mockExec.mockResolvedValue({
+      ...trickEndState,
+      leadPlayerIdx: 0,
+      currentTrick: settledTrick,
+    });
+    const { unmount } = renderWithProviders(<BatakPage />);
+    const first = await badgedCardAlt();
+    expect(first).toBeTruthy();
+    unmount();
+
+    mockExec.mockResolvedValue({
+      ...trickEndState,
+      leadPlayerIdx: 1,
+      currentTrick: settledTrick,
+    });
+    renderWithProviders(<BatakPage />);
+    expect(await badgedCardAlt()).not.toBe(first);
+  });
+
+  it('stays quiet while the trick is still being played', async () => {
+    mockExec.mockResolvedValue({
+      ...trickEndState,
+      phase: 1,
+      leadPlayerIdx: 1,
+      currentTrick: settledTrick,
+    });
+    renderWithProviders(<BatakPage />);
+    await waitFor(() => expect(screen.getAllByRole('img').length).toBeGreaterThan(0));
+    expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument();
+  });
+
+  it('removes the trick winner display after starting the next trick', async () => {
+    mockExec.mockResolvedValue({
+      ...trickEndState,
+      leadPlayerIdx: 2,
+      currentTrick: settledTrick,
+    });
+    renderWithProviders(<BatakPage />);
+    await screen.findByTestId('trick-winner-badge');
+
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      trickNumber: 2,
+      currentTrick: [],
+    });
+    fireEvent.click(screen.getByRole('button', { name: '次のトリック' }));
+    await waitFor(() => expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument());
   });
 });

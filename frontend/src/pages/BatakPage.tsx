@@ -279,6 +279,8 @@ function BatakPageContent() {
                   players={state.players}
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
+                  winnerIdx={isTrickEnd ? state.leadPlayerIdx : undefined}
+                  winnerLabel={t('trickWinnerBadge')}
                   dataTutorial="batak-trick-display"
                 />
               </div>
