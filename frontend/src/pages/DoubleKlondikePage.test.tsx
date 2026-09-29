@@ -53,6 +53,24 @@ describe('DoubleKlondikePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('shows stalemate guidance and announces it through a persistent live region', async () => {
+    mockExec.mockResolvedValue(makeState({ isStalemate: true }));
+    renderWithProviders(<DoubleKlondikePage />);
+
+    await screen.findByTestId('column-0');
+    const announcement = screen.getByRole('status');
+    expect(announcement).toBeInTheDocument();
+    expect(announcement).toHaveTextContent('手詰まりです。元に戻すか、新しいゲームを始めてください。');
+    expect(screen.getAllByText('手詰まりです。元に戻すか、新しいゲームを始めてください。')).toHaveLength(2);
+  });
+
+  it('keeps the stalemate live region empty when play can continue', async () => {
+    renderWithProviders(<DoubleKlondikePage />);
+
+    await screen.findByTestId('column-0');
+    expect(await screen.findByRole('status')).toBeEmptyDOMElement();
+  });
+
   it('renders the 9 tableau columns and 8 foundations', async () => {
     renderWithProviders(<DoubleKlondikePage />);
     await waitFor(() => expect(screen.getByTestId('column-0')).toBeInTheDocument());

@@ -26,6 +26,7 @@
   "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
   "gameOver": "ゲームオーバー",
   "playing": "プレイ中",
+  "stalemateGuidance": "手詰まりです。元に戻すか、新しいゲームを始めてください。",
   "noHint": "ヒントはありません",
   "hintAvailable": "ヒントがあります",
   "tutorial": {

@@ -26,6 +26,7 @@
   "gameClear": "Game Clear! Moves: {{moveCount}}",
   "gameOver": "Game Over",
   "playing": "Playing",
+  "stalemateGuidance": "No more moves are available. Undo a move or start a new game.",
   "noHint": "No hint available",
   "hintAvailable": "A hint is available",
   "tutorial": {
