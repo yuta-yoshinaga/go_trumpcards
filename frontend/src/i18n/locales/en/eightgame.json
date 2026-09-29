@@ -65,7 +65,6 @@
   "round.drawing": "Draw",
   "draw": {
     "prompt": "Draw {{n}} - pick the cards to exchange",
-    "toggle": "Select card {{n}}",
     "exchange": "Exchange {{count}}",
     "stand": "Stand pat"
   },
