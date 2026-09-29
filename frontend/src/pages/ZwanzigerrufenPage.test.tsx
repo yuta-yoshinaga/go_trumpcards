@@ -55,6 +55,57 @@ describe('ZwanzigerrufenPage', () => {
     expect(await screen.findByTestId('zw-info')).toHaveTextContent('ディール 1/4');
   });
 
+  it('shows the lead suit of the current trick and clears it when the trick is empty', async () => {
+    mockExec.mockResolvedValue(
+      makeZwanzigerrufenState({
+        ...playState,
+        currentTrick: [
+          { playerIdx: 1, card: { design: 'HEART', value: 3, glyph: '♥', label: '3', color: 'red', deck: 'tarot' } },
+        ],
+      }),
+    );
+    const { unmount } = renderWithProviders(<ZwanzigerrufenPage />);
+    expect(await screen.findByTestId('trick-lead-suit')).toHaveTextContent('リードスート: ♥');
+    unmount();
+
+    mockExec.mockResolvedValue(playState);
+    renderWithProviders(<ZwanzigerrufenPage />);
+    expect(await screen.findByTestId('zw-info')).toBeInTheDocument();
+    expect(screen.queryByTestId('trick-lead-suit')).not.toBeInTheDocument();
+  });
+
+  it('shows the Tarock label when the lead card is a trump', async () => {
+    mockExec.mockResolvedValue(
+      makeZwanzigerrufenState({
+        ...playState,
+        currentTrick: [
+          {
+            playerIdx: 1,
+            card: { design: 'SPADE', value: 21, glyph: '✦', label: '21', color: 'purple', deck: 'tarot' },
+          },
+        ],
+      }),
+    );
+    renderWithProviders(<ZwanzigerrufenPage />);
+    expect(await screen.findByTestId('trick-lead-suit')).toHaveTextContent('リードスート: タロック（切り札）');
+  });
+
+  it('shows the Tarock label when the lead card is the Sküs', async () => {
+    mockExec.mockResolvedValue(
+      makeZwanzigerrufenState({
+        ...playState,
+        currentTrick: [
+          {
+            playerIdx: 1,
+            card: { design: 'SPADE', value: 21, glyph: '★', label: '21', color: 'purple', deck: 'tarot' },
+          },
+        ],
+      }),
+    );
+    renderWithProviders(<ZwanzigerrufenPage />);
+    expect(await screen.findByTestId('trick-lead-suit')).toHaveTextContent('リードスート: タロック（切り札）');
+  });
+
   // **入札できるのは 20番呼びとソロだけ。** トリシャーケンは全員パスの結果なので
   // ボタンにしない。
   it('offers only rufer, solo and pass in the auction', async () => {

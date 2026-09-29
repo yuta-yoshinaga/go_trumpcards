@@ -26,6 +26,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { ZwanzigerrufenResponse } from '../types/card';
 import { ZwanzigerrufenBid, ZwanzigerrufenPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { isSuitDesign, suitSymbol } from '../utils/cardAlt';
 import { parseZwanzigerrufenCommand, ZWANZIGERRUFEN_HELP } from '../utils/cli/commands/zwanzigerrufenCommands';
 import { formatZwanzigerrufenState } from '../utils/cli/formatters/zwanzigerrufenFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -230,6 +231,15 @@ function ZwanzigerrufenPageContent() {
 
             <TrickDisplay
               currentTrick={state.currentTrick}
+              leadSuit={
+                state.currentTrick.length > 0
+                  ? isSuitDesign(state.currentTrick[0].card.design) &&
+                    !['✦', '★'].includes(String(state.currentTrick[0].card.glyph))
+                    ? suitSymbol(state.currentTrick[0].card.design)
+                    : t('leadTarock')
+                  : undefined
+              }
+              leadSuitLabel={t('leadSuit')}
               players={state.players.map((p) => ({ id: p.id, name: seatName(p.id), isHuman: p.isHuman }))}
               cardWidth={cardWidth}
               label={t('currentTrick')}
