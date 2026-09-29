@@ -34,6 +34,7 @@ import { isRequestedHint } from '../utils/hintRequest';
 import {
   evaluateFiveCardHand,
   evaluatePartialHand,
+  PokerHand,
   pokerHandKey,
   pokerSquaresRankToScore,
 } from '../utils/pokerSquaresUtils';
@@ -287,6 +288,38 @@ function PokerSquaresPageContent() {
               },
             ]}
           />
+
+          {isPlaying && (
+            <details className="px-4 pt-2">
+              <summary className="text-ds-text-primary text-sm cursor-pointer select-none inline-flex items-center gap-1.5 hover:text-ds-accent transition-colors py-1">
+                {t('scoreReference.title')}
+              </summary>
+              <div className="glass-panel rounded-lg p-3 mt-1 text-sm text-ds-text-primary overflow-x-auto">
+                <table data-testid="ps-score-table" className="w-full text-left">
+                  <thead>
+                    <tr>
+                      <th scope="col" className="pb-1 pr-4 font-semibold">
+                        {t('scoreReference.hand')}
+                      </th>
+                      <th scope="col" className="pb-1 text-right font-semibold">
+                        {t('scoreReference.score')}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.values(PokerHand).map((rank) => (
+                      <tr key={rank}>
+                        <th scope="row" className="py-0.5 pr-4 font-normal">
+                          {t(`hand.${pokerHandKey(rank)}`)}
+                        </th>
+                        <td className="py-0.5 text-right tabular-nums">{pokerSquaresRankToScore(rank)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </details>
+          )}
 
           <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
             {state && (
