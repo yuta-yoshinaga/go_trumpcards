@@ -292,6 +292,15 @@ describe('TerracePage', () => {
     await waitFor(() => expect(screen.getByLabelText('捨て札は空です')).toBeInTheDocument());
   });
 
+  it('shows the waste count and describes the top card with it', async () => {
+    mockExec.mockResolvedValue({ ...playingState, waste: [card('DIAMOND', 4), card('CLOVER', 9), card('HEART', 2)] });
+    renderWithProviders(<TerracePage />);
+
+    const count = await screen.findByText('3枚');
+    expect(count).toHaveAttribute('id', 'terrace-waste-count');
+    expect(screen.getByRole('button', { name: '♥ 2' })).toHaveAttribute('aria-describedby', 'terrace-waste-count');
+  });
+
   it('disables the stock once it runs out', async () => {
     mockExec.mockResolvedValue({ ...playingState, stockCount: 0 });
     renderWithProviders(<TerracePage />);
