@@ -298,7 +298,7 @@ function ContractRummyPageContent() {
   // enabling submit on a contract with zero slots.
   const allSlotsSatisfied =
     humanPlayer != null && slotEvaluations.length > 0 && slotEvaluations.every((ev) => ev.satisfied);
-  const slotsAtLimit = contractSlots.length >= requiredSlots;
+  const slotsAtLimit = requiredSlots > 0 && contractSlots.length >= requiredSlots;
 
   if (!state) {
     return (
@@ -546,7 +546,7 @@ function ContractRummyPageContent() {
                 <button
                   type="button"
                   onClick={handleAddSlot}
-                  disabled={selectedCards.length === 0}
+                  disabled={selectedCards.length === 0 && !slotsAtLimit}
                   aria-disabled={slotsAtLimit || undefined}
                   aria-describedby={slotsAtLimit ? 'cr-slot-limit' : undefined}
                   className={`${btnOutline} ${slotsAtLimit ? 'aria-disabled:opacity-50 aria-disabled:cursor-not-allowed' : ''}`}
