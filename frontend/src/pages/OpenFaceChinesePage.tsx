@@ -217,6 +217,7 @@ function OpenFaceChinesePageContent() {
     `${t(`rows.${rowNames[row]}`)} ${rowStatus([player.front, player.middle, player.back][row], ROW_CAPACITIES[row])}`;
 
   const playerName = (player: OpenFaceChinesePlayer) => (player.isHuman ? t('you') : t('cpu', { n: player.id }));
+  const playersById = new Map(state.players.map((player) => [player.id, player]));
 
   /**
    * Renders a single row of a player's board, padding empty slots up to `capacity`.
@@ -469,8 +470,9 @@ function OpenFaceChinesePageContent() {
                         const row = rowNames[detail.row];
                         const rankKey = (detail.row === ROW_FRONT ? FRONT_RANK_KEYS : FIVE_CARD_RANK_KEYS)[detail.rank];
                         const outcome = detail.comparisons.map((comparison) => {
-                          const opponent = state.players.find((candidate) => candidate.id === comparison.opponentId);
-                          const opponentName = opponent ? playerName(opponent) : '';
+                          const opponentName = playerName(
+                            playersById.get(comparison.opponentId) as OpenFaceChinesePlayer,
+                          );
                           return t(comparison.outcome > 0 ? 'rowWin' : comparison.outcome < 0 ? 'rowLoss' : 'rowDraw', {
                             opponent: opponentName,
                           });

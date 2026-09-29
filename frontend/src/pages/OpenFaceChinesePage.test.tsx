@@ -136,6 +136,7 @@ describe('OpenFaceChinesePage', () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<OpenFaceChinesePage />);
     expect(await screen.findByTestId('row-result-0-front')).toHaveTextContent('トップ（3枚）');
+    expect(screen.getByTestId('row-result-0-front')).toHaveTextContent('CPU 1 に勝ち');
     expect(screen.getByTestId('row-result-0-middle')).toHaveTextContent('引き分け');
     expect(screen.getByTestId('round-score-total-0')).toHaveTextContent(
       '行得点 3 + スクープ 3 + ロイヤリティ差 4 = ラウンド得点 10',
@@ -214,6 +215,19 @@ describe('OpenFaceChinesePage', () => {
     mockExec.mockClear();
     fireEvent.click(btn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('place', { row: 1 }));
+  });
+
+  it('shows a lost row comparison for the losing player', async () => {
+    mockExec.mockResolvedValue({
+      ...roundEndState,
+      players: roundEndState.players.map((p) =>
+        p.id === 1
+          ? { ...p, rowDetails: [{ row: 0, rank: 1, score: -1, comparisons: [{ opponentId: 0, outcome: -1 }] }] }
+          : p,
+      ),
+    });
+    renderWithProviders(<OpenFaceChinesePage />);
+    expect(await screen.findByTestId('row-result-1-front')).toHaveTextContent('に負け');
   });
 
   it('places into the bottom row', async () => {
