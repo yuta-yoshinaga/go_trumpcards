@@ -4314,6 +4314,7 @@
     "clear": "Clear the card selection",
     "action": {
       "accept": "Accept",
+      "attack": "Attack",
       "allin": "All in",
       "ask": "Ask for a card",
       "autoComplete": "Auto-complete",
@@ -4331,12 +4332,14 @@
       "chooseHandspiel": "Choose Handspiel",
       "clearSelection": "Clear the selection",
       "deal": "Deal",
+      "defend": "Defend",
       "decline": "Decline",
       "declineearlysurrender": "Decline early surrender",
       "declineinsurance": "Decline insurance",
       "doubledown": "Double down",
       "draw": "Draw from the stock",
       "takeDiscard": "Take the discard",
+      "takeTable": "Take the table cards",
       "earlysurrender": "Early surrender",
       "exchange": "Exchange cards",
       "exchangeAll": "Exchange all cards",
@@ -4385,6 +4388,7 @@
       "truco": "Call Truco",
       "twist": "Twist",
       "undo": "Undo one move",
+      "transfer": "Transfer",
       "put": "Declare Put (doubles the stake)"
     }
   },

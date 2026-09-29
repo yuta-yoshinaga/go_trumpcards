@@ -209,6 +209,21 @@ describe('DurakPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('attack', 0));
   });
 
+  it('runs the selected-card attack shortcut and advertises it', async () => {
+    renderWithProviders(<DurakPage />);
+    const card = await screen.findByRole('button', { name: '♠ A' });
+    fireEvent.click(card);
+    fireEvent.click(screen.getByText('キーボードショートカット'));
+    expect(screen.getByTestId('durak-kbd-shortcuts')).toHaveTextContent('a');
+    expect(screen.getByTestId('durak-kbd-shortcuts')).toHaveTextContent('攻撃する');
+    expect(screen.getByTestId('durak-kbd-shortcuts')).not.toHaveTextContent('カードを出す');
+    mockExec.mockClear();
+
+    fireEvent.keyDown(document, { key: 'a' });
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('attack', 0));
+  });
+
   it('calls pass on pass button click', async () => {
     const stateWithPairs: DurakResponse = {
       ...baseState,

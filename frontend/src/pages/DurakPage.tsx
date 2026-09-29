@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -12,6 +13,7 @@ import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
@@ -138,6 +140,77 @@ function DurakPageContent() {
     handleTake();
   }, [playSound, handleTake]);
 
+  const humanPlayer = state?.players.find((p) => p.isHuman);
+  const isAttacker = state && humanPlayer ? state.attackerIdx === humanPlayer.id : false;
+  const isDefender = state && humanPlayer ? state.defenderIdx === humanPlayer.id : false;
+  const isGameEnd = state?.gameEndFlag ?? false;
+  const showAttackBtn = !!state && !isGameEnd && isAttacker && state.phase === PHASE_ATTACK;
+  const showDefendBtn = !!state && !isGameEnd && isDefender && state.phase === PHASE_DEFEND;
+  const showPassBtn =
+    !!state && !isGameEnd && isAttacker && state.phase === PHASE_ATTACK && state.tablePairs.length > 0;
+  const showTakeBtn = !!state && !isGameEnd && isDefender && state.phase === PHASE_DEFEND;
+  const showTransferBtn =
+    !!state &&
+    !isGameEnd &&
+    isDefender &&
+    state.phase === PHASE_DEFEND &&
+    state.config.transferEnabled &&
+    state.tablePairs.length > 0 &&
+    state.tablePairs.every((p) => p.defense === null);
+
+  const actionBindings = useMemo(
+    () => [
+      {
+        key: 'a',
+        action: handleAttackWithSound,
+        enabled: showAttackBtn && selectedCardIdx !== null,
+        label: 'attack',
+      },
+      {
+        key: 'd',
+        action: handleDefendWithSound,
+        enabled: showDefendBtn && selectedCardIdx !== null && selectedAttackIdx !== null,
+        label: 'defend',
+      },
+      {
+        key: 'p',
+        action: handlePass,
+        enabled: showPassBtn,
+        label: 'pass',
+      },
+      {
+        key: 't',
+        action: handleTakeWithSound,
+        enabled: showTakeBtn,
+        label: 'takeTable',
+      },
+      {
+        key: 'v',
+        action: handleTransfer,
+        enabled: showTransferBtn && selectedCardIdx !== null,
+        label: 'transfer',
+      },
+    ],
+    [
+      handleAttackWithSound,
+      handleDefendWithSound,
+      handlePass,
+      handleTakeWithSound,
+      handleTransfer,
+      showAttackBtn,
+      showDefendBtn,
+      showPassBtn,
+      showTakeBtn,
+      showTransferBtn,
+      selectedAttackIdx,
+      selectedCardIdx,
+    ],
+  );
+  useActionKeyboardNav({
+    bindings: actionBindings,
+    enabled: !!state && !loading && !cliEnabled && !confirmOpen,
+  });
+
   if (!state)
     return (
       <GameSkeleton
@@ -154,11 +227,7 @@ function DurakPageContent() {
       />
     );
 
-  const humanPlayer = state.players.find((p) => p.isHuman);
   const cpuPlayers = state.players.filter((p) => !p.isHuman);
-  const isAttacker = humanPlayer ? state.attackerIdx === humanPlayer.id : false;
-  const isDefender = humanPlayer ? state.defenderIdx === humanPlayer.id : false;
-  const isGameEnd = state.gameEndFlag;
 
   const phaseName = isGameEnd
     ? t('phase.gameEnd')
@@ -171,18 +240,6 @@ function DurakPageContent() {
           : '';
 
   const isHumanTurn = !isGameEnd && humanPlayer !== undefined && state.currentTurn === humanPlayer.id;
-
-  const showAttackBtn = !isGameEnd && isAttacker && state.phase === PHASE_ATTACK;
-  const showDefendBtn = !isGameEnd && isDefender && state.phase === PHASE_DEFEND;
-  const showPassBtn = !isGameEnd && isAttacker && state.phase === PHASE_ATTACK && state.tablePairs.length > 0;
-  const showTakeBtn = !isGameEnd && isDefender && state.phase === PHASE_DEFEND;
-  const showTransferBtn =
-    !isGameEnd &&
-    isDefender &&
-    state.phase === PHASE_DEFEND &&
-    state.config.transferEnabled &&
-    state.tablePairs.length > 0 &&
-    state.tablePairs.every((p) => p.defense === null);
 
   const suitSymbol = (suit: string) => {
     switch (suit) {
@@ -509,6 +566,7 @@ function DurakPageContent() {
                   {t('transferButton')}
                 </button>
               )}
+              <ActionShortcutsPanel bindings={actionBindings} data-testid="durak-kbd-shortcuts" />
               {/* **他のトリック系はサーバー計算の理由付きヒントを持つのに、
                   Durak には無く、クライアント完結の簡易ヒューリスティックだけ
                   だった (#4740)。** */}
