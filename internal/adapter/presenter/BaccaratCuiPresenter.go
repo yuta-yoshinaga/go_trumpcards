@@ -16,6 +16,9 @@ import (
 // so a long shoe does not overflow the terminal line.
 const baccaratHistoryMaxShown = 30
 
+// baccaratRecentLookback is the number of recent non-tie results used for the trend split.
+const baccaratRecentLookback = 12
+
 // baccaratHistorySymbols maps the big-road history to a P/B/T symbol string.
 func baccaratHistorySymbols(history []int) string {
 	syms := make([]string, len(history))
@@ -159,6 +162,14 @@ func (bp *BaccaratCuiPresenter) Output(b interfaces.BaccaratGame, lastErr error)
 			"p", strconv.Itoa(pCount),
 			"b", strconv.Itoa(bCount),
 			"t", strconv.Itoa(tCount)) + "\n")
+		if recentCount, recentPlayer, _ := baccaratRecentCounts(history); recentCount > 0 {
+			playerPct := (recentPlayer*100 + recentCount/2) / recentCount
+			bankerPct := 100 - playerPct
+			sb.WriteString(i18n.Tf("baccarat.historyRecent",
+				"count", strconv.Itoa(recentCount),
+				"pPct", strconv.Itoa(playerPct),
+				"bPct", strconv.Itoa(bankerPct)) + "\n")
+		}
 
 		// **Web の ShoeStatsPanel は連勝数も出しているのに CUI には無かった。**
 		// ロードマップと並んでシューの流れを読む材料になる (#4688)。
@@ -170,6 +181,21 @@ func (bp *BaccaratCuiPresenter) Output(b interfaces.BaccaratGame, lastErr error)
 	}
 
 	return sb.String()
+}
+
+// baccaratRecentCounts returns the counts from the latest non-tie outcomes, matching RoadmapTrendBar.
+func baccaratRecentCounts(history []int) (count, player, banker int) {
+	for i := len(history) - 1; i >= 0 && count < baccaratRecentLookback; i-- {
+		switch history[i] {
+		case domain.BaccaratResultPlayer:
+			player++
+			count++
+		case domain.BaccaratResultBanker:
+			banker++
+			count++
+		}
+	}
+	return count, player, banker
 }
 
 // ActionLogOutput 棋譜をテキスト出力

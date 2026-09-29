@@ -5,6 +5,7 @@
   "sideBetWin": "{{type}}: hit +{{payout}}",
   "sideBetLose": "{{type}}: miss",
   "historyCounts": "totals: P:{{p}} B:{{b}} T:{{t}}",
+  "historyRecent": "Recent (ties excluded): {{count}} results P:{{pPct}}% B:{{bPct}}%",
   "historyHeader": "History: {{symbols}}",
   "phaseLine": "phase: {{phase}}",
   "valueLine": "value: {{value}}",

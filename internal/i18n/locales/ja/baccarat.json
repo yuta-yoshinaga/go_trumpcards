@@ -5,6 +5,7 @@
   "sideBetWin": "{{type}}: 的中 +{{payout}}",
   "sideBetLose": "{{type}}: 外れ",
   "historyCounts": "集計: P:{{p}} B:{{b}} T:{{t}}",
+  "historyRecent": "直近（タイを除く）: {{count}} 件 P:{{pPct}}% B:{{bPct}}%",
   "historyHeader": "履歴: {{symbols}}",
   "phaseLine": "フェーズ: {{phase}}",
   "valueLine": "値: {{value}}",
