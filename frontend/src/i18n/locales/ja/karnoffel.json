@@ -13,6 +13,7 @@
   "playableThisTurn": "この手番に出せます",
   "notPlayableThisTurn": "この手番には出せません",
   "trick": "場",
+  "seatPlayer": "席{{idx}}: {{name}}",
   "tricksWon": "トリック {{n}}",
   "handsWon": "{{n}}局",
   "targetNote": "{{n}}局先取で勝ちです。1局は{{need}}トリック先取で決まります。",

@@ -320,4 +320,16 @@ describe('KarnoffelPage', () => {
     renderWithProviders(<KarnoffelPage />);
     expect(await screen.findByTestId('karnoffel-trick')).toBeInTheDocument();
   });
+
+  it('shows the zero-based player seat above each trick card as the trick grows', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ trick: [card('HEART', 7), card('SPADE', 6), card('CLOVER', 5)], trickLeaderIdx: 2 }),
+    );
+    renderWithProviders(<KarnoffelPage />);
+
+    const trick = await screen.findByTestId('karnoffel-trick');
+    expect(trick).toHaveTextContent('席2: CPU 2');
+    expect(trick).toHaveTextContent('席3: CPU 3');
+    expect(trick).toHaveTextContent('席0: あなた');
+  });
 });
