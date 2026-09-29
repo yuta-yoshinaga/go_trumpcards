@@ -23,6 +23,7 @@
   "tricks": "トリック: {{count}}",
   "capturedPoints": "獲得点: {{count}}",
   "currentTrick": "現在のトリック",
+  "trickWinner": "{{name}}がトリックに勝ちました",
   "scores": "スコア",
   "scoresTeam": "チーム",
   "scoresCaptured": "獲得点",

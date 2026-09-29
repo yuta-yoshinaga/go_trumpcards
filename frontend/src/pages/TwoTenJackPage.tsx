@@ -173,6 +173,8 @@ function TwoTenJackPageContent() {
   const isPlayPhase = state.phase === TwoTenJackPhase.PLAY;
   const isTrickEnd = state.phase === TwoTenJackPhase.TRICK_END;
   const isRoundEnd = state.phase === TwoTenJackPhase.ROUND_END;
+  const trickWinner =
+    (isTrickEnd || isRoundEnd) && state.leadPlayerIdx >= 0 ? state.players[state.leadPlayerIdx] : undefined;
   const isGameEnd = state.phase === TwoTenJackPhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
   const isHumanDeclarer = isDeclarePhase && state.players[state.declarerIdx]?.isHuman === true;
@@ -265,6 +267,9 @@ function TwoTenJackPageContent() {
                   label={t('currentTrick')}
                   dataTutorial="tt-trick-display"
                 />
+                <div role="status" aria-live="polite" className="sr-only" data-testid="twotenjack-trick-winner-live">
+                  {trickWinner ? t('trickWinner', { name: playerName(trickWinner.id, trickWinner.isHuman) }) : ''}
+                </div>
               </div>
 
               <div>
