@@ -58,7 +58,10 @@ function BanLuckPageContent() {
   const previousHumanTurn = useRef<boolean | undefined>(undefined);
 
   useEffect(() => {
-    const humanTurn = state?.phase === BanLuckPhase.PLAY && state.isHumanTurn;
+    // Before the first response there is nothing to compare against; recording
+    // `false` here would make the first loaded human turn count as a transition.
+    if (state?.phase === undefined) return;
+    const humanTurn = state.phase === BanLuckPhase.PLAY && state.isHumanTurn;
     if (previousHumanTurn.current === false && humanTurn) setTurnAnnouncement(true);
     else if (!humanTurn) setTurnAnnouncement(false);
     previousHumanTurn.current = humanTurn;
