@@ -506,9 +506,10 @@ function PitchPageContent() {
                       <button
                         key={`${c.design}-${c.value}-${idx}`}
                         type="button"
-                        onClick={() => canSelect && setSelectedCardIdx(idx)}
+                        onClick={() => canSelect && setSelectedCardIdx(isSelected ? null : idx)}
                         disabled={!canSelect}
                         aria-label={cardLabel(c)}
+                        aria-pressed={isSelected}
                         className={`min-w-[44px] min-h-[44px] rounded transition-all
                           ${isSelected ? 'ring-2 ring-ds-accent' : ''}
                           ${canSelect ? 'opacity-100' : 'opacity-50 cursor-not-allowed'}
