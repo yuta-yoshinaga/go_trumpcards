@@ -78,7 +78,7 @@
     "info": "Round, contract (declarer and type), trump, and each player's score are shown here. The first player to reach the target points (default 30) wins. The ★ marks the declarer.",
     "trick": "Cards played to the current trick appear here. You must follow the led suit, ace high. The highest card wins the trick.",
     "hand": "This is your hand. During play, click a playable card and press Play.",
-    "actions": "In the bidding phase, buttons appear for Pass / Six (6 tricks) / Misère (0 tricks, no trump) / Seven (7 tricks) / Eight (8 tricks). Bids rank Pass < Six < Misère < Seven < Eight, and only a bid higher than the current highest is selectable. The highest bidder becomes the declarer and plays against the other 2 defenders."
+    "actions": "In the bidding phase, the buttons are Pass / Gask (7 tricks) / Solo (8 tricks) / Misère (0 tricks, no trump) / Vira (10 tricks). Bids rank Pass < Gask < Solo < Misère < Vira. A non-Pass bid must exceed the current highest bid. The highest bidder becomes the declarer and plays against the other two defenders."
   },
   "bidHighest": "Highest bid: {{name}}",
   "bidNone": "none",
