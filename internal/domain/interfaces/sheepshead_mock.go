@@ -108,6 +108,18 @@ func (_m *MockSheepsheadGame) GetTrickNumber() int {
 	return ret.Get(0).(int)
 }
 
+// GetLastTrickWinner モック
+func (_m *MockSheepsheadGame) GetLastTrickWinner() int {
+	ret := _m.Called()
+	return ret.Get(0).(int)
+}
+
+// GetCompletedTrickCount モック
+func (_m *MockSheepsheadGame) GetCompletedTrickCount() int {
+	ret := _m.Called()
+	return ret.Get(0).(int)
+}
+
 // GetCurrentPlayerIdx モック
 func (_m *MockSheepsheadGame) GetCurrentPlayerIdx() int {
 	ret := _m.Called()

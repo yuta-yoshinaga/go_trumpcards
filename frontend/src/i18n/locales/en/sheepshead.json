@@ -18,6 +18,7 @@
   },
   "round": "Round {{n}}",
   "trick": "Trick {{n}}",
+  "trickWonAnnouncement": "{{name}} won the trick",
   "cards": "{{count}} cards",
   "tricks": "{{count}} tricks",
   "chips": "{{count}} chips",

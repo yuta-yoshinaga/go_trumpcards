@@ -865,6 +865,8 @@ const baseSheepsheadState: SheepsheadResponse = {
   phase: 3,
   roundNumber: 1,
   trickNumber: 1,
+  lastTrickWinner: -1,
+  completedTrickCount: 0,
   currentPlayerIdx: 0,
   leadPlayerIdx: 0,
   dealerIdx: 4,

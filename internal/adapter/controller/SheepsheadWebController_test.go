@@ -26,6 +26,7 @@ func mustSheepsheadOutputJSON(msg string) string {
 		PickerIdx:          -1,
 		PartnerIdx:         -1,
 		WinnerIdx:          -1,
+		LastTrickWinner:    -1,
 		WebOutputBase:      controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)

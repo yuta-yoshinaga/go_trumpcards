@@ -43,6 +43,10 @@ type SheepsheadGame interface {
 	GetRoundNumber() int
 	// GetTrickNumber 現在のトリック番号を取得する
 	GetTrickNumber() int
+	// GetLastTrickWinner returns the most recently completed trick winner, or -1.
+	GetLastTrickWinner() int
+	// GetCompletedTrickCount returns the completed trick count for this round.
+	GetCompletedTrickCount() int
 	// GetCurrentPlayerIdx 現在のプレイヤーインデックスを取得する
 	GetCurrentPlayerIdx() int
 	// GetCurrentTrick 現在のトリックを取得する

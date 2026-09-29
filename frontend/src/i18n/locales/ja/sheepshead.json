@@ -18,6 +18,7 @@
   },
   "round": "ラウンド {{n}}",
   "trick": "トリック {{n}}",
+  "trickWonAnnouncement": "{{name}} がトリックを取りました",
   "cards": "{{count}}枚",
   "tricks": "{{count}}トリック",
   "chips": "{{count}}チップ",

@@ -41,6 +41,8 @@ func (p *SheepsheadWebPresenter) buildBase(g interfaces.SheepsheadGame) *control
 	resObj.Phase = int(g.GetPhase())
 	resObj.RoundNumber = g.GetRoundNumber()
 	resObj.TrickNumber = g.GetTrickNumber()
+	resObj.LastTrickWinner = g.GetLastTrickWinner()
+	resObj.CompletedTrickCount = g.GetCompletedTrickCount()
 	resObj.CurrentPlayerIdx = g.GetCurrentPlayerIdx()
 	resObj.LeadPlayerIdx = g.GetLeadPlayerIdx()
 	resObj.DealerIdx = g.GetDealerIdx()
