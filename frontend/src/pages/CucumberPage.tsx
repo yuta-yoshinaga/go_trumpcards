@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { cucumberApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -65,6 +65,8 @@ function CucumberPageContent() {
   const { hint, hintEnabled, setHintEnabled } = useGameHint('cucumber', state);
   const [playerCnt, setPlayerCnt] = useState(4);
   const [targetScore, setTargetScore] = useState(30);
+  const previousTurnRef = useRef<number | null | undefined>(undefined);
+  const [turnAnnouncement, setTurnAnnouncement] = useState('');
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('cucumber');
   const cliConfig: CliGameConfig<CucumberResponse, Parameters<typeof cucumberApi.exec>> = useMemo(
@@ -81,6 +83,25 @@ function CucumberPageContent() {
   useEffect(() => {
     void dispatch('reset');
   }, [dispatch]);
+
+  const activeTurnIdx = state?.phase === CucumberPhase.PLAY && !state.gameEndFlag ? state.currentPlayerIdx : null;
+  useEffect(() => {
+    if (activeTurnIdx === null) {
+      previousTurnRef.current = null;
+      return;
+    }
+    if (
+      previousTurnRef.current !== undefined &&
+      previousTurnRef.current !== null &&
+      previousTurnRef.current !== activeTurnIdx
+    ) {
+      if (state?.players[activeTurnIdx]) {
+        const name = activeTurnIdx === 0 ? t('header.you') : t('header.cpu', { idx: String(activeTurnIdx) });
+        setTurnAnnouncement(t('status.turnChanged', { name }));
+      }
+    }
+    previousTurnRef.current = activeTurnIdx;
+  }, [activeTurnIdx, state, t]);
 
   const handleReset = useCallback(() => {
     hideActionLog();
@@ -116,7 +137,6 @@ function CucumberPageContent() {
   const legalRing = new Set(isHumanTurn ? state.validPlays : []);
 
   const seatName = (idx: number) => (idx === 0 ? t('header.you') : t('header.cpu', { idx: String(idx) }));
-
   const phaseName = (() => {
     if (isGameEnd) return t('phase.gameEnd');
     if (isRoundEnd) return t('phase.roundEnd');
@@ -185,6 +205,7 @@ function CucumberPageContent() {
             )}
 
             <LiveAnnouncement message={state.trickNumber + 1 === state.totalTricks ? t('status.finalTrick') : ''} />
+            <LiveAnnouncement message={turnAnnouncement} testId="cu-turn-announcement" />
 
             {/* **失点がそのまま順位。** 少ないほうが良い。 */}
             <div className="flex flex-wrap justify-center gap-2 mb-4" data-tutorial="cu-seats">

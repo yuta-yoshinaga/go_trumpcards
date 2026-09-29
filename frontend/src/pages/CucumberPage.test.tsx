@@ -65,6 +65,33 @@ describe('CucumberPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
+  it('announces a changed turn once, without announcing the initial turn', async () => {
+    mockExec.mockResolvedValueOnce(makeState()).mockResolvedValueOnce(makeState({ currentPlayerIdx: 2 }));
+    renderWithProviders(<CucumberPage />);
+
+    const announcement = await screen.findByTestId('cu-turn-announcement');
+    expect(announcement).toHaveTextContent('');
+
+    fireEvent.click((await screen.findAllByRole('button', { name: /を出す/ }))[1]);
+    await waitFor(() => expect(announcement).toHaveTextContent('CPU2の番です。'));
+
+    expect(await screen.findByTestId('cu-seat-2')).toHaveAttribute('data-current-turn', 'true');
+    expect(announcement).toHaveTextContent('CPU2の番です。');
+  });
+
+  it('keeps the turn announcement alongside the final-trick announcement', async () => {
+    mockExec
+      .mockResolvedValueOnce(makeState())
+      .mockResolvedValueOnce(
+        makeState({ currentPlayerIdx: 2, trickNumber: 6, lastTrickWinnerIdx: 1, lastPenalty: 13 }),
+      );
+    renderWithProviders(<CucumberPage />);
+
+    fireEvent.click((await screen.findAllByRole('button', { name: /を出す/ }))[1]);
+    await waitFor(() => expect(screen.getByTestId('cu-turn-announcement')).toHaveTextContent('CPU2の番です。'));
+    expect(screen.getByTestId('cu-final-trick')).toBeInTheDocument();
+  });
+
   // **スート無関係・失点は最終トリックだけ、が規則そのもの。**
   // **失点が出るのは最終トリックだけ** (#5768)。あと何回で失点判定かが
   // ヘッダーから読めなければ、番号だけ出しても意味がない。
