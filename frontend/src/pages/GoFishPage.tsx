@@ -246,6 +246,13 @@ function GoFishPageContent() {
             <div className="text-ds-text-primary text-center mb-2 flex items-center justify-center gap-4">
               <span>{t('deck', { count: state.deckRemaining })}</span>
             </div>
+            {state.deckRemaining === 0 &&
+              state.phase === GoFishPhase.PLAY &&
+              state.players[state.currentTurn]?.isHuman && (
+                <p className="text-ds-text-muted text-center text-sm mb-2" data-testid="gofish-empty-deck-guidance">
+                  {t('emptyDeckGuidance')}
+                </p>
+              )}
 
             <div className="sr-only" role="status" aria-live="polite" data-testid="gf-kbd-announce">
               {kbdAnnounce}

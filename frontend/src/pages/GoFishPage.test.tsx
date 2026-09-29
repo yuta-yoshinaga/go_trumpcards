@@ -109,6 +109,26 @@ describe('GoFishPage', () => {
     await waitFor(() => expect(screen.getByText(/30/)).toBeInTheDocument());
   });
 
+  it('explains how to continue when the deck is empty on the human turn', async () => {
+    mockExec.mockResolvedValue({ ...baseState, deckRemaining: 0 });
+    renderWithProviders(<GoFishPage />);
+    expect(await screen.findByText(/成功すれば続けて要求できます/)).toBeInTheDocument();
+    expect(screen.getByText(/失敗時はカードを引かず、ターンが終了します/)).toBeInTheDocument();
+  });
+
+  it('keeps the empty deck guidance hidden when cards remain', async () => {
+    renderWithProviders(<GoFishPage />);
+    await waitFor(() => expect(screen.getByText(/30/)).toBeInTheDocument());
+    expect(screen.queryByText(/成功すれば続けて要求できます/)).not.toBeInTheDocument();
+  });
+
+  it('keeps the empty deck guidance hidden during a CPU turn', async () => {
+    mockExec.mockResolvedValue({ ...baseState, currentTurn: 1, deckRemaining: 0 });
+    renderWithProviders(<GoFishPage />);
+    await waitFor(() => expect(screen.getByText(/山札: 0枚/)).toBeInTheDocument());
+    expect(screen.queryByText(/成功すれば続けて要求できます/)).not.toBeInTheDocument();
+  });
+
   it('shows ask button on human turn', async () => {
     renderWithProviders(<GoFishPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '要求する' })).toBeInTheDocument());
