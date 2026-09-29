@@ -21,6 +21,8 @@ func setupPinochleWebMock() *interfaces.MockPinochleGame {
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
 	m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
+	m.On("GetLastTrick").Return([]*domain.TrickCard(nil))
+	m.On("GetLastTrickWinner").Return(-1)
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.PinochlePhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -117,6 +119,8 @@ func TestPinochleWebPresenter_Output(t *testing.T) {
 		m.On("GetRoundNumber").Return(1)
 		m.On("GetTrickNumber").Return(12)
 		m.On("GetCurrentTrick").Return([]*domain.TrickCard(nil))
+		m.On("GetLastTrick").Return([]*domain.TrickCard(nil))
+		m.On("GetLastTrickWinner").Return(-1)
 		m.On("GetGameEndFlag").Return(true)
 		m.On("GetPhase").Return(domain.PinochlePhaseGameEnd)
 		m.On("GetCurrentPlayerIdx").Return(0)
@@ -235,4 +239,19 @@ func TestPinochleWebPresenterOutputCarriesTheMeldTable(t *testing.T) {
 		assert.Equal(t, int(e.Type), resObj.MeldTable[i].Type, "entry %d type", i)
 		assert.Equal(t, e.Points, resObj.MeldTable[i].Points, "entry %d points", i)
 	}
+}
+
+func TestPinochleWebPresenterOutputCarriesLastTrick(t *testing.T) {
+	m, _ := setupPinochleWebMockWithPlayers()
+	plays := []*domain.TrickCard{{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignSpade, 1, false)}}
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLastTrick")
+	m.On("GetLastTrick").Return(plays)
+	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetLastTrickWinner")
+	m.On("GetLastTrickWinner").Return(2)
+
+	var output controller.PinochleWebOutput
+	require.NoError(t, json.Unmarshal([]byte(new(presenter.PinochleWebPresenter).Output(m, nil)), &output))
+	require.Len(t, output.LastTrick, 1)
+	assert.Equal(t, 2, output.LastTrick[0].PlayerIdx)
+	assert.Equal(t, 2, output.LastTrickWinner)
 }

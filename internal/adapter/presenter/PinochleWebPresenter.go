@@ -74,6 +74,8 @@ func (p *PinochleWebPresenter) buildBase(g interfaces.PinochleGame, lastErr erro
 
 	trick := g.GetCurrentTrick()
 	resObj.CurrentTrick = trickCardsToOutput(trick)
+	resObj.LastTrick = trickCardsToOutput(g.GetLastTrick())
+	resObj.LastTrickWinner = g.GetLastTrickWinner()
 	resObj.Players = p.buildPlayersOutput(g)
 	resObj.PlayerMelds = p.buildMeldsOutput(g)
 

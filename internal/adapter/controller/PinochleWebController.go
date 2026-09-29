@@ -66,6 +66,8 @@ type PinochleWebOutput struct {
 	HighestBid       int                         `json:"highestBid"`
 	HighestBidder    int                         `json:"highestBidder"`
 	CurrentTrick     []*WebOutputTrickCard       `json:"currentTrick"`
+	LastTrick        []*WebOutputTrickCard       `json:"lastTrick"`
+	LastTrickWinner  int                         `json:"lastTrickWinner"`
 	TeamScores       [2]int                      `json:"teamScores"`
 	GameEndFlag      bool                        `json:"gameEndFlag"`
 	WinnerTeam       int                         `json:"winnerTeam"`
@@ -117,10 +119,12 @@ var NewPinochleWebController, NewPinochleWebControllerWithProvider = webControll
 
 func newPinochleDefaultOutput(msg string) *PinochleWebOutput {
 	return &PinochleWebOutput{
-		Players:       make([]*PinochleWebOutputPlayer, 0),
-		CurrentTrick:  make([]*WebOutputTrickCard, 0),
-		WinnerTeam:    -1,
-		WebOutputBase: WebOutputBase{Message: msg},
+		Players:         make([]*PinochleWebOutputPlayer, 0),
+		CurrentTrick:    make([]*WebOutputTrickCard, 0),
+		LastTrick:       make([]*WebOutputTrickCard, 0),
+		LastTrickWinner: -1,
+		WinnerTeam:      -1,
+		WebOutputBase:   WebOutputBase{Message: msg},
 	}
 }
 

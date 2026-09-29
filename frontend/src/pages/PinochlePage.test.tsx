@@ -41,6 +41,8 @@ const bidPhaseState: PinochleResponse = {
   highestBid: 0,
   highestBidder: -1,
   currentTrick: [],
+  lastTrick: [],
+  lastTrickWinner: -1,
   teamScores: [0, 0],
   gameEndFlag: false,
   winnerTeam: -1,
@@ -129,6 +131,29 @@ describe('PinochlePage', () => {
     renderWithProviders(<PinochlePage />);
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
     expect(screen.queryByText('考え中...')).not.toBeInTheDocument();
+  });
+
+  it('shows the previous trick and its winner while the current trick is empty', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      currentTrick: [],
+      lastTrick: [
+        { playerIdx: 0, card: { design: 'SPADE', value: 1 } },
+        { playerIdx: 1, card: { design: 'SPADE', value: 12 } },
+        { playerIdx: 2, card: { design: 'SPADE', value: 13 } },
+        { playerIdx: 3, card: { design: 'DIAMOND', value: 1 } },
+      ],
+      lastTrickWinner: 0,
+    });
+    renderWithProviders(<PinochlePage />);
+
+    await waitFor(() =>
+      expect(
+        document.querySelector('[data-tutorial="pn-trick-display"]')?.querySelectorAll('[data-testid="animated-card"]'),
+      ).toHaveLength(4),
+    );
+    const display = document.querySelector('[data-tutorial="pn-trick-display"]');
+    expect(within(display as HTMLElement).getByTestId('trick-winner-badge')).toHaveTextContent('WIN');
   });
 
   it('calls reset on mount', async () => {

@@ -48674,6 +48674,19 @@ components:
                 type: integer
               card:
                 $ref: '#/components/schemas/Card'
+        lastTrick:
+          type: array
+          description: Plays in the most recently completed trick.
+          items:
+            type: object
+            properties:
+              playerIdx:
+                type: integer
+              card:
+                $ref: '#/components/schemas/Card'
+        lastTrickWinner:
+          type: integer
+          description: Player index of the most recently completed trick winner, or -1 when none.
         teamScores:
           type: array
           items:

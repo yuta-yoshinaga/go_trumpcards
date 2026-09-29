@@ -4,6 +4,7 @@ package domain
 
 import (
 	"encoding/json"
+	"reflect"
 	"testing"
 )
 
@@ -1333,6 +1334,50 @@ func TestPinochle_NextTrick(t *testing.T) {
 	}
 	if g.GetTrickNumber() != 2 {
 		t.Errorf("expected trick number 2, got %d", g.GetTrickNumber())
+	}
+}
+
+func TestPinochle_KeepsLastTrickUntilNewDeal(t *testing.T) {
+	g := setupPlayPhase(t)
+	plays := []int{0, 0, 0, 0}
+	for playerIdx, cardIdx := range plays {
+		if err := g.doPlay(playerIdx, cardIdx); err != nil {
+			t.Fatalf("play %d: %v", playerIdx, err)
+		}
+	}
+	g.ResolveTrick()
+	g.NextTrick()
+
+	if len(g.GetCurrentTrick()) != 0 {
+		t.Fatalf("current trick length after NextTrick = %d, want 0", len(g.GetCurrentTrick()))
+	}
+	if got := g.GetLastTrick(); len(got) != PinochlePlayerCnt {
+		t.Fatalf("last trick length = %d, want %d", len(got), PinochlePlayerCnt)
+	}
+	for i, play := range g.GetLastTrick() {
+		if play.PlayerIdx != i {
+			t.Errorf("last trick play %d player = %d, want %d", i, play.PlayerIdx, i)
+		}
+	}
+	if got := g.GetLastTrickWinner(); got != 0 {
+		t.Errorf("last trick winner = %d, want 0", got)
+	}
+
+	snapshot, err := json.Marshal(g)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var restored Pinochle
+	if err := json.Unmarshal(snapshot, &restored); err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(g.GetLastTrick(), restored.GetLastTrick()) || restored.GetLastTrickWinner() != 0 {
+		t.Fatal("JSON round-trip did not preserve the last trick and winner")
+	}
+
+	g.Reset()
+	if len(g.GetLastTrick()) != 0 || g.GetLastTrickWinner() != -1 {
+		t.Errorf("new deal retained last trick: cards=%d winner=%d", len(g.GetLastTrick()), g.GetLastTrickWinner())
 	}
 }
 
