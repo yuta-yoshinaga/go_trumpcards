@@ -118,6 +118,19 @@ describe('ColoradoPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
   });
 
+  it('shows the waste count, including zero, and describes it for screen readers', async () => {
+    mockExec.mockResolvedValue(makeState({ waste: [card('HEART', 6), card('CLOVER', 9), card('DIAMOND', 2)] }));
+    const { unmount } = renderWithProviders(<ColoradoPage />);
+    await waitFor(() => expect(screen.getByTestId('co-waste-count')).toHaveTextContent('3枚'));
+    expect(screen.getByTestId('co-waste-button')).toHaveAttribute('aria-describedby', 'co-waste-count');
+
+    unmount();
+    mockExec.mockResolvedValue(makeState({ waste: [] }));
+    renderWithProviders(<ColoradoPage />);
+    await waitFor(() => expect(screen.getByTestId('co-waste-count')).toHaveTextContent('0枚'));
+    expect(screen.getByTestId('co-waste-button')).toHaveAccessibleDescription('0枚');
+  });
+
   it('disables the draw button once the stock is empty', async () => {
     mockExec.mockResolvedValue(makeState({ stockCount: 0 }));
     renderWithProviders(<ColoradoPage />);

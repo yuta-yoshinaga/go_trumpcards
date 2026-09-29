@@ -374,11 +374,15 @@ function ColoradoPageContent() {
 
               <div className="flex flex-col items-center">
                 <div className="text-[11px] mb-0.5 text-ds-text-muted">{t('waste')}</div>
+                <span id="co-waste-count" data-testid="co-waste-count" className="text-xs text-ds-text-muted">
+                  {t('wasteCount', { count: state.waste.length })}
+                </span>
                 <button
                   type="button"
                   onClick={toggleWaste}
                   disabled={!isPlaying || loading || !wasteTop}
                   aria-pressed={source?.kind === 'waste'}
+                  aria-describedby="co-waste-count"
                   data-testid="co-waste-button"
                   className={`p-0 border-0 bg-transparent rounded ${focusRingWhite} ${source?.kind === 'waste' ? 'ring-2 ring-ds-warning' : ''} ${hintWaste ? 'ring-2 ring-ds-success animate-pulse' : ''}`}
                 >
