@@ -12,7 +12,11 @@
     "you": "あなた",
     "cpu": "CPU{{idx}}",
     "yourTurn": "あなたがめくる番",
-    "outOfCards": "札切れ"
+    "outOfCards": "札切れ",
+    "pendingSnap": "CPUの宣言予約中（約{{seconds}}秒後）。期限前にスナップを宣言できます。",
+    "pendingStep": "CPUのめくり予約中（約{{seconds}}秒後）。",
+    "pendingSnapStart": "CPUの宣言が予約されました。期限前にスナップを宣言できます。",
+    "pendingStepStart": "CPUのめくりが予約されました。"
   },
   "event": {
     "step": "{{name}} がめくりました",

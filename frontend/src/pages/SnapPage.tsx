@@ -67,6 +67,7 @@ function SnapPageContent() {
   const { hint, hintEnabled, setHintEnabled } = useGameHint('snap', state);
   const [playerCnt, setPlayerCnt] = useState(2);
   const [difficulty, setDifficulty] = useState(1);
+  const [clockNow, setClockNow] = useState(() => Date.now());
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('snap');
   const cliConfig: CliGameConfig<SnapResponse, Parameters<typeof snapApi.exec>> = useMemo(
@@ -88,6 +89,12 @@ function SnapPageContent() {
   // ので、「CPU の手番だけ」に絞ると CPU が永久に宣言しなくなる。
   const isCpuPending = state !== null && state.pendingKind !== SnapPendingKind.NONE;
   const isRunning = state !== null && !state.gameEndFlag;
+  useEffect(() => {
+    if (!isCpuPending) return;
+    setClockNow(Date.now());
+    const id = window.setInterval(() => setClockNow(Date.now()), 250);
+    return () => window.clearInterval(id);
+  }, [isCpuPending]);
   useEffect(() => {
     if (!isRunning || !isCpuPending) return;
     const id = window.setInterval(() => {
@@ -118,6 +125,7 @@ function SnapPageContent() {
   }
 
   const isGameEnd = state.phase === SnapPhase.GAME_END || state.gameEndFlag;
+  const pendingSeconds = Math.max(0, Math.ceil((state.pendingDeadlineMs - clockNow) / 1000));
 
   const eventLine = (() => {
     const name =
@@ -171,6 +179,24 @@ function SnapPageContent() {
             >
               {t('header.rule')}
             </div>
+
+            <div className="sr-only" role="status" aria-live="polite" data-testid="sp-pending-announcement">
+              {isCpuPending && !isGameEnd
+                ? state.pendingKind === SnapPendingKind.SNAP
+                  ? t('header.pendingSnapStart')
+                  : t('header.pendingStepStart')
+                : ''}
+            </div>
+            {isCpuPending && !isGameEnd && (
+              <div
+                className="mb-3 rounded bg-ds-surface px-3 py-2 text-ds-text-primary text-center"
+                data-testid="sp-pending"
+              >
+                {state.pendingKind === SnapPendingKind.SNAP
+                  ? t('header.pendingSnap', { seconds: pendingSeconds })
+                  : t('header.pendingStep', { seconds: pendingSeconds })}
+              </div>
+            )}
 
             <div className="text-center mb-3" data-testid="sp-pile" data-tutorial="sp-pile">
               <div className="text-ds-text-muted text-sm mb-1">
