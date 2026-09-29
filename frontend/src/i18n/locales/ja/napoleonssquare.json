@@ -5,10 +5,11 @@
   "draw": "めくる",
   "empty": "空",
   "emptyColumnAriaLabel": "空のタブロー列 {{col}}",
-  "emptyFoundationAriaLabel": "空の組札{{idx}} ({{suit}})",
+  "emptyFoundationAriaLabel": "空の組札{{idx}} ({{suit}}){{nextRank}}",
   "emptyWasteAriaLabel": "捨て札は空です",
   "foundation": "組札",
-  "foundationAriaLabel": "{{suit}} 組札{{idx}} {{count}}枚",
+  "foundationAriaLabel": "{{suit}} 組札{{idx}} {{count}}枚{{nextRank}}",
+  "nextRankAria": "、次に必要なランク {{rank}}",
   "frontendHint": {
     "tableau": "タブロー列{{col}}",
     "foundation": "組札{{idx}}",

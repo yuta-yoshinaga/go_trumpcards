@@ -31,6 +31,7 @@ import type { NapoleonsSquareMoveZone, NapoleonsSquareResponse } from '../types/
 import { NapoleonsSquarePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { cardAlt } from '../utils/cardAlt';
+import { valueName } from '../utils/cardUtils';
 import { NAPOLEONSSQUARE_HELP, parseNapoleonsSquareCommand } from '../utils/cli/commands/napoleonssquareCommands';
 import { formatNapoleonsSquareState } from '../utils/cli/formatters/napoleonssquareFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -317,6 +318,8 @@ function NapoleonsSquarePageContent() {
               <div className="flex flex-wrap justify-center gap-1 sm:gap-2" data-tutorial="ns-foundation">
                 {state.foundation.map((pile, idx) => {
                   const foundationZone: NapoleonsSquareMoveZone = { zone: 'foundation', col: idx };
+                  const nextRank = (pile[pile.length - 1]?.value ?? 0) + 1;
+                  const nextRankLabel = nextRank <= 13 ? valueName(nextRank) : null;
                   return (
                     <div key={`f-${idx.toString()}`} className="text-center">
                       <div className="text-game-text-muted text-xs mb-1">{FOUNDATION_SUITS[idx]}</div>
@@ -337,6 +340,7 @@ function NapoleonsSquarePageContent() {
                               suit: FOUNDATION_SUITS[idx],
                               idx,
                               count: pile.length,
+                              nextRank: nextRankLabel ? t('nextRankAria', { rank: nextRankLabel }) : '',
                             })}
                             className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite}`}
                           >
@@ -357,6 +361,7 @@ function NapoleonsSquarePageContent() {
                             aria-label={t('emptyFoundationAriaLabel', {
                               suit: FOUNDATION_SUITS[idx],
                               idx,
+                              nextRank: t('nextRankAria', { rank: valueName(1) }),
                             })}
                             style={{ width: dims.cw, height: dims.ch }}
                             className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
