@@ -305,6 +305,30 @@ describe('TysiacPage', () => {
     expect(banner.textContent).toMatch(/リード/);
   });
 
+  it('announces marriage candidates and the no-candidate state in the persistent prompt live region', async () => {
+    const noMarriageState = makeTysiacState({
+      players: [
+        { ...playPhaseState.players[0], cards: [{ design: 'SPADE', value: 1 }] },
+        ...playPhaseState.players.slice(1),
+      ],
+    });
+    mockExec.mockResolvedValueOnce(playPhaseState).mockResolvedValueOnce(noMarriageState);
+    renderWithProviders(<TysiacPage />);
+
+    const live = await screen.findByTestId('tysiac-prompt-live');
+    expect(live).toHaveAttribute('role', 'status');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(await screen.findByTestId('tysiac-marriage-announcement')).toHaveTextContent('♥ K-Q (+100)');
+
+    fireEvent.click(await screen.findByAltText('♥ Q'));
+    fireEvent.click(await screen.findByRole('button', { name: '出す' }));
+
+    expect(await screen.findByTestId('tysiac-marriage-announcement')).toHaveTextContent('マリッジ候補なし');
+    expect(screen.getByTestId('tysiac-prompt-live')).toContainElement(
+      screen.getByTestId('tysiac-marriage-announcement'),
+    );
+  });
+
   // **催促は常設のライブ領域の中にある (#6880)。** フェーズ切り替えで現れる
   // テキストなので、領域が無いとスクリーンリーダには何も届かない。領域を
   // 出現と同時に付けても読み上げられないため、常設にして中身だけ差し替える。

@@ -28,6 +28,8 @@
   "bidPass": "Pass",
   "giveCard": "Give card",
   "marriageAvailable": "Marriage available: {{list}} (scores only when you LEAD the K or Q)",
+  "marriageUnavailable": "No marriage candidates",
+  "listSeparator": ", ",
   "cards": "{{count}} cards",
   "tricks": "{{count}} tricks",
   "currentTrick": "Current Trick",
