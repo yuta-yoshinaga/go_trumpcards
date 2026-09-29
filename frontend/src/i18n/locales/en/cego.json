@@ -15,7 +15,8 @@
     "targetDeals": "Deals per Match",
     "easy": "Easy",
     "normal": "Normal",
-    "hard": "Hard"
+    "hard": "Hard",
+    "targetDealsGuide": "Enter a whole number of at least 1."
   },
   "round": "Deal {{n}}",
   "trick": "Trick {{n}}",

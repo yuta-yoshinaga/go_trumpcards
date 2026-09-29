@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { tarocchiniApi } from '../api/gameApi';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { makeTarocchiniState } from '../test/stateFactories';
-import { DEFAULT_TAROCCHINI_CONFIG, TARGET_ROUNDS_OPTIONS, useTarocchiniGame } from './useTarocchiniGame';
+import { DEFAULT_TAROCCHINI_CONFIG, useTarocchiniGame } from './useTarocchiniGame';
 
 vi.mock('../api/gameApi', () => ({
   tarocchiniApi: { exec: vi.fn() },
@@ -42,12 +42,12 @@ describe('useTarocchiniGame', () => {
     );
   });
 
-  // ディーラーは 1 局ごとに回る。倍数でない局数はバックエンドが弾くので、
-  // 選択肢に出してはならない。
-  it('offers only round counts that are a multiple of the player count', () => {
-    for (const rounds of TARGET_ROUNDS_OPTIONS) {
-      expect(rounds % 4).toBe(0);
-    }
+  it('does not send a target round count that is not a multiple of four', async () => {
+    const { result } = renderHook(() => useTarocchiniGame(), { wrapper: createWrapper() });
+    act(() => result.current.handleConfigChange('targetRounds', '5'));
+    act(() => result.current.reset());
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalled();
   });
 
   it('buries exactly two cards', async () => {
