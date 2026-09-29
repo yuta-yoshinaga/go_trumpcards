@@ -139,6 +139,12 @@ describe('GrandfathersClockPage', () => {
     }
   });
 
+  it('announces that any card can be placed in an empty tableau column', async () => {
+    mockExec.mockResolvedValue({ ...playingState, tableau: makeTableau([]) });
+    renderWithProviders(<GrandfathersClockPage />);
+    expect(await screen.findByRole('button', { name: '空のタブロー列 0。任意のカードを置けます' })).toBeInTheDocument();
+  });
+
   it('shows how many faces are done', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
@@ -303,8 +309,10 @@ describe('GrandfathersClockPage', () => {
   it('labels empty columns 0-based, matching the visible #n headers', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<GrandfathersClockPage />);
-    await waitFor(() => expect(screen.getByRole('button', { name: '空のタブロー列 2' })).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: '空のタブロー列 7' })).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: '空のタブロー列 2。任意のカードを置けます' })).toBeInTheDocument(),
+    );
+    expect(screen.getByRole('button', { name: '空のタブロー列 7。任意のカードを置けます' })).toBeInTheDocument();
   });
 
   it.each([
