@@ -54469,6 +54469,10 @@ components:
           type: integer
           description: Total payout returned to the player.
           example: 0
+        netChange:
+          type: integer
+          description: Running net chip change for the current round; final only at round end, after subtracting the ante and war bet.
+          example: 0
         message:
           type: string
           description: Human-readable status or result message.

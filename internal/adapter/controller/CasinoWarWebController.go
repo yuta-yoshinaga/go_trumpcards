@@ -27,6 +27,7 @@ type CasinoWarWebOutput struct {
 	WarBet        int              `json:"warBet"`
 	Result        int              `json:"result"`
 	TotalPayout   int              `json:"totalPayout"`
+	NetChange     int              `json:"netChange"`
 	WebOutputBase
 }
 
