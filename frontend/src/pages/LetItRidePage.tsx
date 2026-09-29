@@ -220,7 +220,7 @@ function LetItRidePageContent() {
             {isBetPhase && (
               <div className="flex flex-col items-center justify-center py-4 gap-4">
                 <p className="text-ds-text-muted text-lg">{t('betGuide')}</p>
-                <details className="bg-black/30 rounded-lg w-full max-w-sm">
+                <details className="bg-ds-surface rounded-lg w-full max-w-sm" data-testid="payout-reference">
                   <summary className="cursor-pointer select-none px-4 py-2 text-ds-text-primary font-bold text-sm">
                     {t('payoutRef.title')}
                   </summary>
@@ -376,6 +376,19 @@ function LetItRidePageContent() {
                 <div className="text-center text-ds-text-muted text-xs" data-testid="bet-outcome-preview">
                   <div>{t('outcomePreview.betAmount', { amount: betAmount })}</div>
                   <div>{t('outcomePreview.betRisk', { amount: betAmount * 3 })}</div>
+                </div>
+                <div
+                  className="rounded-lg bg-ds-surface px-3 py-2 text-center text-ds-text-muted text-xs"
+                  data-testid="featured-payouts"
+                >
+                  <div className="font-bold text-ds-text-primary mb-1">{t('payoutRef.header')}</div>
+                  <ul className="space-y-0.5">
+                    {(['payRoyalFlush', 'payFourOfAKind', 'payFullHouse', 'payPairTensOrBetter'] as const).map(
+                      (key) => (
+                        <li key={key}>{t(`payoutRef.${key}`)}</li>
+                      ),
+                    )}
+                  </ul>
                 </div>
               </div>
             )}

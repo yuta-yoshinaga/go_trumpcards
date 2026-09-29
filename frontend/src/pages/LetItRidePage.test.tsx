@@ -185,6 +185,24 @@ describe('LetItRidePage', () => {
     expect(screen.getByText('配当表')).toBeInTheDocument();
   });
 
+  it('shows key payouts beside the bet controls while keeping the full table expandable', async () => {
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<LetItRidePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+
+    const featured = screen.getByTestId('featured-payouts');
+    expect(featured).toHaveTextContent('ロイヤルフラッシュ: 1000:1');
+    expect(featured).toHaveTextContent('フォーカード: 50:1');
+    expect(featured).toHaveTextContent('フルハウス: 11:1');
+    expect(featured).toHaveTextContent('ペア（10以上）: 1:1');
+
+    const details = screen.getByTestId('payout-reference') as HTMLDetailsElement;
+    expect(details.open).toBe(false);
+    fireEvent.click(details.querySelector('summary') as HTMLElement);
+    expect(details).toHaveTextContent('ストレートフラッシュ: 200:1');
+    expect(details).toHaveTextContent('ツーペア: 2:1');
+  });
+
   it('explains the 3-bet split and pull-back rule in bet phase', async () => {
     mockApi.mockResolvedValue(betPhaseState);
     renderWithProviders(<LetItRidePage />);
