@@ -53168,6 +53168,9 @@ components:
           type: boolean
         leadPlayerIdx:
           type: integer
+        trickWinnerIdx:
+          type: integer
+          description: Winner of the current complete trick, or -1 when unavailable.
         message:
           type: string
         messageCode:

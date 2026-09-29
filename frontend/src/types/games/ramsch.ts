@@ -69,6 +69,7 @@ export interface RamschResponse extends BaseGameResponse {
   durchmarschIdx: number;
   gameEndFlag: boolean;
   leadPlayerIdx: number;
+  trickWinnerIdx: number;
   config: RamschConfig;
   hint?: RamschHint;
 }

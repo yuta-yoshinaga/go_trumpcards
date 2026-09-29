@@ -385,3 +385,19 @@ func TestRamsch_TheMatchEndsWhenSomeoneHitsThePenaltyLimit(t *testing.T) {
 	assert.Greater(t, g2.GetPlayer(0).GetCumulativeScore(), g2.GetPlayer(1).GetCumulativeScore(),
 		"上限に達した人より失点の少ない人がいる")
 }
+
+func TestRamsch_GetTrickWinnerIdx(t *testing.T) {
+	g := NewDefaultRamsch()
+	g.Reset()
+	if got := g.GetTrickWinnerIdx(); got != -1 {
+		t.Fatalf("incomplete trick winner = %d, want -1", got)
+	}
+	g.SetCurrentTrickForTest([]*TrickCard{
+		{PlayerIdx: 0, Card: rc(CardDesignHeart, 1)},
+		{PlayerIdx: 1, Card: rc(CardDesignClover, ramschValueJack)},
+		{PlayerIdx: 2, Card: rc(CardDesignSpade, 13)},
+	})
+	if got := g.GetTrickWinnerIdx(); got != 1 {
+		t.Fatalf("trick winner = %d, want 1", got)
+	}
+}
