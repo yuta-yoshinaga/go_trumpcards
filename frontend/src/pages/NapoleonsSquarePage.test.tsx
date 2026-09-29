@@ -94,6 +94,18 @@ describe('NapoleonsSquarePage', () => {
     await waitFor(() => expect(screen.getAllByLabelText(/組札\d+ 1枚/).length).toBe(8));
   });
 
+  it('announces the next rank on empty, built, and complete foundations', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      foundation: [[], [card('SPADE', 1), card('SPADE', 2)], [card('HEART', 13)], ...aces.slice(3)],
+    });
+    renderWithProviders(<NapoleonsSquarePage />);
+
+    expect(await screen.findByRole('button', { name: '空の組札0 (♠)、次に必要なランク A' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♣ 組札1 2枚、次に必要なランク 3' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♥ 組札2 1枚' })).toBeInTheDocument();
+  });
+
   it('keeps an empty tableau target focusable and explains that a source is needed', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<NapoleonsSquarePage />);
@@ -290,7 +302,7 @@ describe('NapoleonsSquarePage waste, hints and CLI mode', () => {
     mockExec.mockClear();
 
     // Foundation 3 is the diamond pile of the first deck.
-    fireEvent.click(screen.getByRole('button', { name: '♦ 組札3 1枚' }));
+    fireEvent.click(screen.getByRole('button', { name: '♦ 組札3 1枚、次に必要なランク 2' }));
     await waitFor(() =>
       expect(mockExec).toHaveBeenCalledWith('move', { zone: 'waste' }, { zone: 'foundation', col: 3 }),
     );
