@@ -1,4 +1,5 @@
 {
+  "mainPot": "Main pot: {{amount}} chips (eligible: {{eligiblePlayers}})",
   "sidePot": "Side pot {{index}}: {{amount}} chips (eligible: {{eligiblePlayers}})",
   "phase": {
     "init": "Init",
