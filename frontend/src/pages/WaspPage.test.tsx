@@ -118,12 +118,16 @@ describe('WaspPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     expect(screen.queryByRole('button', { name: /選択中/ })).not.toBeInTheDocument();
     // Select the top card of a column.
-    fireEvent.click(screen.getByRole('button', { name: '♠ K' }));
-    await waitFor(() => expect(screen.getByRole('button', { name: '♠ K 選択中' })).toBeInTheDocument());
+    const cardButton = screen.getByRole('button', { name: '♠ K' });
+    expect(cardButton).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(cardButton);
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: '♠ K 選択中' })).toHaveAttribute('aria-pressed', 'true'),
+    );
     // Re-clicking deselects and restores the plain label.
     fireEvent.click(screen.getByRole('button', { name: '♠ K 選択中' }));
     await waitFor(() => expect(screen.queryByRole('button', { name: /選択中/ })).not.toBeInTheDocument());
-    expect(screen.getByRole('button', { name: '♠ K' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♠ K' })).toHaveAttribute('aria-pressed', 'false');
   });
 
   it('shows game clear phase', async () => {
