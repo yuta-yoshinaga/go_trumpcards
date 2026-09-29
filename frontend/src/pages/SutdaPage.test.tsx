@@ -147,9 +147,73 @@ describe('SutdaPage', () => {
       }),
     );
     renderWithProviders(<SutdaPage />);
-    expect(await screen.findByTestId('sutda-result')).toHaveTextContent('70');
+    expect(await screen.findByTestId('sutda-result')).toHaveTextContent('あなた（70）');
+    expect(screen.getByTestId('sutda-result')).toHaveTextContent('合計 70');
     fireEvent.click(screen.getByTestId('sutda-next-hand'));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nexthand'));
+  });
+
+  it('shows each split-pot share and gives the odd chip to the first winner', async () => {
+    mockExec.mockResolvedValue(
+      makeSutdaState({
+        phase: 'showdown',
+        isShowdown: true,
+        isHumanTurn: false,
+        players: [
+          {
+            id: 0,
+            isHuman: true,
+            cardCount: 2,
+            cards: [],
+            chips: 1026,
+            bet: 0,
+            folded: false,
+            revealed: true,
+            handName: 'ali',
+            handRank: 10,
+            isDealer: false,
+          },
+          {
+            id: 1,
+            isHuman: false,
+            cardCount: 2,
+            cards: [],
+            chips: 1025,
+            bet: 0,
+            folded: false,
+            revealed: true,
+            handName: 'ali',
+            handRank: 10,
+            isDealer: false,
+          },
+          {
+            id: 2,
+            isHuman: false,
+            cardCount: 2,
+            cards: [],
+            chips: 900,
+            bet: 0,
+            folded: false,
+            revealed: true,
+            handName: 'kkeut5',
+            handRank: 5,
+            isDealer: true,
+          },
+        ],
+        lastResult: {
+          winners: [0, 1],
+          pot: 51,
+          handNames: ['ali', 'ali', 'kkeut5'],
+          folded: [false, false, false],
+        },
+      }),
+    );
+    renderWithProviders(<SutdaPage />);
+    const result = await screen.findByTestId('sutda-result');
+    expect(result).toHaveTextContent('あなた（26）、CPU 1（25）');
+    expect(result).toHaveTextContent('合計 51');
+    expect(screen.getByTestId('sutda-chips-0')).toHaveTextContent('1026');
+    expect(screen.getByTestId('sutda-chips-1')).toHaveTextContent('1025');
   });
 
   it('names the winner at the end of the table', async () => {
