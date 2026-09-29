@@ -275,6 +275,19 @@ describe('CongressPage', () => {
     await waitFor(() => expect(screen.getByLabelText('捨て札は空です')).toBeInTheDocument());
   });
 
+  it('shows the waste count and describes it from the waste card', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      waste: [card('DIAMOND', 4), card('CLOVER', 7)],
+    });
+    renderWithProviders(<CongressPage />);
+
+    const count = await screen.findByText('2枚');
+    expect(count).toHaveAttribute('id', 'congress-waste-count');
+    const wasteCard = screen.getByRole('button', { name: /♣.*7/ });
+    expect(wasteCard).toHaveAttribute('aria-describedby', 'congress-waste-count');
+  });
+
   it('disables the stock once it runs out', async () => {
     mockExec.mockResolvedValue({ ...playingState, stockCount: 0 });
     renderWithProviders(<CongressPage />);
