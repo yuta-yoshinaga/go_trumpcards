@@ -7,6 +7,7 @@
   "title": "ゴルフ",
   "stock": "山札",
   "waste": "捨て札",
+  "wasteCount": "{{count}}枚",
   "moveCount": "手数",
   "combo": "コンボ ×{{count}}",
   "draw": "引く",
