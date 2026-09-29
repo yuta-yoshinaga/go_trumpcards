@@ -30,6 +30,7 @@ function makeState(overrides?: Partial<SetteEMezzoResponse>): SetteEMezzoRespons
     bankerIdx: 1,
     isHumanBanker: false,
     chips: 900,
+    drawPileCount: 34,
     activeSeat: 0,
     nextBanker: -1,
     lastResult: '',

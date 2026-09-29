@@ -28,6 +28,8 @@ type SetteEMezzoGame interface {
 	GetPhase() int
 	// GetChips 人間のチップを取得する
 	GetChips() int
+	// GetDrawPileCount 未配布の山札枚数を取得する
+	GetDrawPileCount() int
 	// GetSeats 全席を取得する
 	GetSeats() []*domain.SetteEMezzoSeat
 	// GetBankerIdx 親の席番号を取得する

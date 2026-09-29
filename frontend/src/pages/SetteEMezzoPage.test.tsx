@@ -42,6 +42,7 @@ function makeState(overrides?: Partial<SetteEMezzoResponse>): SetteEMezzoRespons
     bankerIdx: 1,
     isHumanBanker: false,
     chips: 900,
+    drawPileCount: 34,
     activeSeat: 0,
     nextBanker: -1,
     lastResult: '',
@@ -77,6 +78,12 @@ describe('SetteEMezzoPage', () => {
     expect(screen.getByText(/親: CPU1/)).toBeInTheDocument();
     // 7.5 comes from the server in halves so it is not hardcoded twice.
     expect(screen.getByText(/目標: 7\.5/)).toBeInTheDocument();
+  });
+
+  it('shows undealt cards from the current shuffled round', async () => {
+    mockExec.mockResolvedValue(makeState({ drawPileCount: 27 }));
+    renderWithProviders(<SetteEMezzoPage />);
+    expect(await screen.findByTestId('settemezzo-draw-pile-count')).toHaveTextContent('山札の残り: 27');
   });
 
   it('announces the banker change and betting action through the live message box', async () => {

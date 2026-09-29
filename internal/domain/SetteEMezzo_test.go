@@ -38,6 +38,11 @@ func semHand(bet int, cards ...*Card) *SetteEMezzoHand {
 
 func TestSetteEMezzo_Reset(t *testing.T) {
 	s := newTestSetteEMezzo()
+	assert.Equal(t, SetteEMezzoDeckSize, s.GetDrawPileCount())
+	s.trumpCards.DrawCard()
+	assert.Equal(t, SetteEMezzoDeckSize-1, s.GetDrawPileCount())
+	s.Reset()
+	assert.Equal(t, SetteEMezzoDeckSize, s.GetDrawPileCount(), "each round starts from a freshly shuffled full deck")
 
 	if s.GetPhase() != SetteEMezzoPhaseBet {
 		t.Errorf("phase = %d, want bet", s.GetPhase())
