@@ -13,6 +13,7 @@
   "hiddenHand": "{{count}} hidden",
   "yourHand": "Your hand",
   "trick": "Trick",
+  "trickCardByPlayer": "{{card}} played by {{name}}",
   "tricksWon": "tricks {{n}}",
   "noKittyNote": "THERE IS NO KITTY. All 24 cards are dealt out, six each, so the only hidden cards are the other players' hands.",
   "scoreTitle": "Score",

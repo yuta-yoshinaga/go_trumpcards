@@ -13,6 +13,7 @@
   "hiddenHand": "非公開 {{count}}枚",
   "yourHand": "あなたの手札",
   "trick": "場",
+  "trickCardByPlayer": "{{name}}が出した{{card}}",
   "tricksWon": "トリック {{n}}",
   "noKittyNote": "【キティはありません。】24枚を4人に6枚ずつ配り切るので、伏せられているのは他家の手札だけです。",
   "scoreTitle": "スコア",
