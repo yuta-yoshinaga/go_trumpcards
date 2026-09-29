@@ -14,6 +14,7 @@
   "notPlayableThisTurn": "Not playable this turn",
   "trick": "Trick",
   "seatPlayer": "Seat {{idx}}: {{name}}",
+  "listSeparator": ", ",
   "tricksWon": "tricks {{n}}",
   "handsWon": "{{n}} hands",
   "targetNote": "First to {{n}} hands wins. A hand goes to whoever takes {{need}} tricks.",

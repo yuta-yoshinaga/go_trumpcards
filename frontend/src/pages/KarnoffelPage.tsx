@@ -252,12 +252,13 @@ function KarnoffelPageContent() {
                 {state.trick.map((c, i) => {
                   const seatIdx = (state.trickLeaderIdx + i) % state.players.length;
                   const player = state.players.find((p) => p.id === seatIdx);
+                  const name = t('seatPlayer', { idx: seatIdx, name: playerLabel(seatIdx, player?.isHuman ?? false) });
                   return (
                     <div key={`trick-${c.design}-${c.value}-${i}`} className="flex flex-col items-center">
-                      <span className="mb-1 text-ds-text-muted text-xs">
-                        {t('seatPlayer', { idx: seatIdx, name: playerLabel(seatIdx, player?.isHuman ?? false) })}
+                      <span className="mb-1 text-ds-text-muted text-xs" aria-hidden="true">
+                        {name}
                       </span>
-                      <CardImage card={c} width={cardWidth} />
+                      <CardImage card={c} width={cardWidth} ariaLabel={`${name}${t('listSeparator')}${cardAlt(c)}`} />
                     </div>
                   );
                 })}

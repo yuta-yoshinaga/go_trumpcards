@@ -331,5 +331,6 @@ describe('KarnoffelPage', () => {
     expect(trick).toHaveTextContent('席2: CPU 2');
     expect(trick).toHaveTextContent('席3: CPU 3');
     expect(trick).toHaveTextContent('席0: あなた');
+    expect(screen.getByRole('img', { name: '席2: CPU 2、♥ 7' })).toBeInTheDocument();
   });
 });
