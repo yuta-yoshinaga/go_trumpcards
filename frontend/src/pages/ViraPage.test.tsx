@@ -1,6 +1,7 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { viraApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import { makeViraState } from '../test/stateFactories';
@@ -110,6 +111,29 @@ describe('ViraPage', () => {
     expect(screen.getByTestId('bid-2')).toBeInTheDocument();
     expect(screen.getByTestId('bid-3')).toBeInTheDocument();
     expect(screen.getByTestId('bid-4')).toBeInTheDocument();
+  });
+
+  it('explains Vira bid buttons, targets, ranking, and declarer roles in the tutorial', async () => {
+    localStorage.clear();
+    renderWithProviders(<ViraPage />);
+    fireEvent.click(await screen.findByRole('button', { name: 'チュートリアル' }));
+    const tutorial = await screen.findByRole('dialog');
+    fireEvent.click(screen.getByRole('button', { name: '次へ' }));
+    fireEvent.click(screen.getByRole('button', { name: '次へ' }));
+    fireEvent.click(screen.getByRole('button', { name: '次へ' }));
+    const actions = within(tutorial).getByRole('status');
+    expect(actions).toHaveTextContent(
+      'パス／ガスク（7トリック）／ソロ（8トリック）／ミゼール（0トリック・切り札なし）／ヴィーラ（10トリック）',
+    );
+    expect(actions).toHaveTextContent('パス＜ガスク＜ソロ＜ミゼール＜ヴィーラ');
+    expect(actions).toHaveTextContent('宣言者となり、残り2人のディフェンダーと対戦');
+    await i18n.changeLanguage('en');
+    expect(actions).toHaveTextContent(
+      'Pass / Gask (7 tricks) / Solo (8 tricks) / Misère (0 tricks, no trump) / Vira (10 tricks)',
+    );
+    expect(actions).toHaveTextContent('Pass < Gask < Solo < Misère < Vira');
+    expect(actions).toHaveTextContent('becomes the declarer and plays against the other two defenders');
+    await i18n.changeLanguage('ja');
   });
 
   it('dispatches a bid when a bid button is clicked', async () => {
