@@ -768,9 +768,14 @@ func (r *RollingStone) UnmarshalJSON(data []byte) error {
 		return fmt.Errorf("current trick holds %d cards", len(j.CurrentTrick))
 	}
 	// **枚数だけでなく中身も見る (#5310 の再発防止)。**
-	for _, tc := range j.CurrentTrick {
-		if tc == nil || tc.Card == nil || tc.PlayerIdx < 0 || tc.PlayerIdx >= j.Config.PlayerCnt {
-			return errors.New("invalid current trick entry")
+	for _, trick := range []struct {
+		name  string
+		cards []*TrickCard
+	}{{"current", j.CurrentTrick}, {"last", j.LastTrick}} {
+		for _, tc := range trick.cards {
+			if tc == nil || tc.Card == nil || tc.PlayerIdx < 0 || tc.PlayerIdx >= j.Config.PlayerCnt {
+				return fmt.Errorf("invalid %s trick entry", trick.name)
+			}
 		}
 	}
 	if len(j.ActionLog) > rollingStoneMaxSliceLen {

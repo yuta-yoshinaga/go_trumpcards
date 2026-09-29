@@ -77,6 +77,7 @@ function RollingStonePageContent() {
     if (state.trickNumber === previous.number) {
       appended = state.currentTrick.slice(previous.trick.length);
     } else if (state.trickNumber === previous.number + 1) {
+      // When one response completes multiple tricks, only the latest completed trick is announced.
       appended = state.lastTrick.slice(previous.trick.length);
       resolved = true;
     } else {
