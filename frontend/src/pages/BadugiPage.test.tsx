@@ -172,6 +172,26 @@ describe('BadugiPage', () => {
     await waitFor(() => expect(screen.getByText('あなたの勝ちです。')).toBeInTheDocument());
   });
 
+  it('lists each showdown result with its hand name and winnings', async () => {
+    mockExec.mockResolvedValue(
+      baseState({
+        phase: BadugiPhase.END,
+        gameEndFlag: true,
+        roundResults: [
+          { playerIdx: 0, handSize: 4, handName: 'Badugi', wonAmount: 40 },
+          { playerIdx: 1, handSize: 3, handName: '3-card', wonAmount: 0 },
+        ],
+      }),
+    );
+    renderWithProviders(<BadugiPage />);
+    expect(await screen.findByTestId('bg-round-results')).toHaveTextContent('あなた');
+    expect(screen.getByTestId('bg-round-results')).toHaveTextContent('バドゥーギ');
+    expect(screen.getByTestId('bg-round-results')).toHaveTextContent('獲得: 40チップ');
+    expect(screen.getByTestId('bg-round-results')).toHaveTextContent('CPU 1');
+    expect(screen.getByTestId('bg-round-results')).toHaveTextContent('3カード');
+    expect(screen.getByTestId('bg-round-results')).toHaveTextContent('獲得: 0チップ');
+  });
+
   // **サーバの handName は英語の生値。**バドゥーギの役名はポーカー役表と対応
   // しないので共通の訳表が無く、Web だけ英語のまま残っていた (#4987 の続き)。
   it('shows the localized hand name at showdown, not the raw English one', async () => {

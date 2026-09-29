@@ -50,6 +50,10 @@
     "folded": "You folded.",
     "gameOver": "Game over."
   },
+  "roundResults": {
+    "title": "Round results",
+    "wonAmount": "Won: {{amount}} chips"
+  },
   "handName": {
     "1": "1-card",
     "2": "2-card",
