@@ -70,13 +70,27 @@ describe('CucumberPage', () => {
     renderWithProviders(<CucumberPage />);
 
     const announcement = await screen.findByTestId('cu-turn-announcement');
-    expect(announcement).toHaveTextContent('');
+    expect(announcement).toBeEmptyDOMElement();
 
     fireEvent.click((await screen.findAllByRole('button', { name: /を出す/ }))[1]);
     await waitFor(() => expect(announcement).toHaveTextContent('CPU2の番です。'));
 
     expect(await screen.findByTestId('cu-seat-2')).toHaveAttribute('data-current-turn', 'true');
     expect(announcement).toHaveTextContent('CPU2の番です。');
+  });
+
+  it('clears the turn announcement when the phase leaves play', async () => {
+    mockExec.mockResolvedValueOnce(makeState()).mockResolvedValueOnce(makeState({ currentPlayerIdx: 2 }));
+    renderWithProviders(<CucumberPage />);
+
+    const announcement = await screen.findByTestId('cu-turn-announcement');
+    fireEvent.click((await screen.findAllByRole('button', { name: /を出す/ }))[1]);
+    await waitFor(() => expect(announcement).toHaveTextContent('CPU2の番です。'));
+
+    mockExec.mockResolvedValueOnce(makeState({ phase: 2, currentPlayerIdx: 2, gameEndFlag: true }));
+    fireEvent.click(screen.getByRole('button', { name: '投了' }));
+    await waitFor(() => expect(mockExec).toHaveBeenLastCalledWith('giveup'));
+    await waitFor(() => expect(announcement).toBeEmptyDOMElement());
   });
 
   it('keeps the turn announcement alongside the final-trick announcement', async () => {

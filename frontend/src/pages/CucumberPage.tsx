@@ -88,6 +88,7 @@ function CucumberPageContent() {
   useEffect(() => {
     if (activeTurnIdx === null) {
       previousTurnRef.current = null;
+      setTurnAnnouncement('');
       return;
     }
     if (
@@ -95,13 +96,11 @@ function CucumberPageContent() {
       previousTurnRef.current !== null &&
       previousTurnRef.current !== activeTurnIdx
     ) {
-      if (state?.players[activeTurnIdx]) {
-        const name = activeTurnIdx === 0 ? t('header.you') : t('header.cpu', { idx: String(activeTurnIdx) });
-        setTurnAnnouncement(t('status.turnChanged', { name }));
-      }
+      const name = activeTurnIdx === 0 ? t('header.you') : t('header.cpu', { idx: String(activeTurnIdx) });
+      setTurnAnnouncement(t('status.turnChanged', { name }));
     }
     previousTurnRef.current = activeTurnIdx;
-  }, [activeTurnIdx, state, t]);
+  }, [activeTurnIdx, t]);
 
   const handleReset = useCallback(() => {
     hideActionLog();
@@ -137,6 +136,7 @@ function CucumberPageContent() {
   const legalRing = new Set(isHumanTurn ? state.validPlays : []);
 
   const seatName = (idx: number) => (idx === 0 ? t('header.you') : t('header.cpu', { idx: String(idx) }));
+
   const phaseName = (() => {
     if (isGameEnd) return t('phase.gameEnd');
     if (isRoundEnd) return t('phase.roundEnd');
