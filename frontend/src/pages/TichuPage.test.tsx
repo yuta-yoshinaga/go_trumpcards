@@ -140,6 +140,24 @@ describe('TichuPage', () => {
     expect(screen.getByText(/グランドティチュー/)).toBeInTheDocument();
   });
 
+  it('shows the current table play owner and team, then clears it when the table resets', async () => {
+    mockExec
+      .mockResolvedValueOnce(
+        makeState({
+          tableCards: [{ design: 'HEART', value: 7 }],
+          tableCombo: 'single',
+          lastPlayIdx: 1,
+        }),
+      )
+      .mockResolvedValueOnce(makeState({ tableCards: [], tableCombo: '', lastPlayIdx: -1 }));
+    renderWithProviders(<TichuPage />);
+    expect(await screen.findByTestId('tichu-table-owner')).toHaveTextContent('CPU 1');
+    expect(screen.getByTestId('tichu-table-owner')).toHaveTextContent('チーム 1');
+    fireEvent.click(screen.getByRole('button', { name: 'パス' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith(expect.objectContaining({ command: 'p', indices: [] })));
+    await waitFor(() => expect(screen.queryByTestId('tichu-table-owner')).not.toBeInTheDocument());
+  });
+
   it('play phase: shows the human Tichu declaration badge', async () => {
     mockExec.mockResolvedValue(
       makeState({

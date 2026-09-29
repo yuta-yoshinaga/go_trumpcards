@@ -6,6 +6,7 @@
   "bombCardAriaLabel": "{{card}}（ボム構成カード）",
   "label": {
     "table": "場",
+    "playedBy": "{{player}}（チーム {{team}}）",
     "bombs": "爆弾",
     "team": "チーム",
     "cards": "枚",
