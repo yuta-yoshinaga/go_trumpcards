@@ -296,13 +296,7 @@ function CassinoPageContent() {
                         data-testid={`table-card-${i}`}
                         data-take-candidate={isCandidate || undefined}
                         aria-pressed={tableIndices.includes(i)}
-                        aria-label={`${cardAlt(c)}${
-                          tableIndices.includes(i)
-                            ? ` ${t('label.selected')}`
-                            : isCandidate
-                              ? ` ${t('label.takeCandidate')}`
-                              : ''
-                        }`}
+                        aria-label={`${cardAlt(c)}${isCandidate ? ` ${t('label.takeCandidate')}` : ''}`}
                       >
                         <AnimatedCard card={c} width={cardWidth * 0.9} />
                       </button>
@@ -340,13 +334,7 @@ function CassinoPageContent() {
                         data-testid={`build-${i}`}
                         data-take-candidate={isCandidate || undefined}
                         aria-pressed={buildIndices.includes(i)}
-                        aria-label={`${buildLabel}${
-                          buildIndices.includes(i)
-                            ? ` ${t('label.selected')}`
-                            : isCandidate
-                              ? ` ${t('label.takeCandidate')}`
-                              : ''
-                        }`}
+                        aria-label={`${buildLabel}${isCandidate ? ` ${t('label.takeCandidate')}` : ''}`}
                       >
                         {buildLabel}
                       </button>
@@ -391,6 +379,7 @@ function CassinoPageContent() {
                     onClick={() => isHumanTurn && setHandIndex(handIndex === i ? null : i)}
                     disabled={!isHumanTurn}
                     aria-pressed={handIndex === i}
+                    aria-label={cardAlt(c)}
                     className={`rounded transition-all ${
                       handIndex === i ? 'ring-2 ring-ds-info -translate-y-2' : ''
                     } ${isHumanTurn ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}

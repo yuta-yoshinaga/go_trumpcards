@@ -65,6 +65,7 @@ describe('CassinoPage', () => {
     await waitFor(() => expect(screen.getByTestId('hand-card-0')).toBeInTheDocument());
     expect(screen.getByTestId('hand-card-1')).toBeInTheDocument();
     expect(screen.getByTestId('hand-card-2')).toBeInTheDocument();
+    expect(screen.getByTestId('hand-card-0')).toHaveAccessibleName('♠ 3');
   });
 
   it('exposes pressed state for selectable hand, table, and build cards', async () => {
@@ -116,7 +117,7 @@ describe('CassinoPage', () => {
     expect(screen.getByTestId('table-card-1')).toBeInTheDocument();
   });
 
-  it('labels table cards with content, take-candidate, and selected state', async () => {
+  it('labels table cards with content and take-candidate while exposing selection as pressed state', async () => {
     renderWithProviders(<CassinoPage />);
     await waitFor(() => expect(screen.getByTestId('table-card-0')).toBeInTheDocument());
     // Base label = card content only.
@@ -126,9 +127,23 @@ describe('CassinoPage', () => {
     await waitFor(() => expect(screen.getByTestId('table-card-1')).toHaveAttribute('aria-label', '♥ 5 テイク候補'));
     // The non-matching ♠2 keeps its plain label.
     expect(screen.getByTestId('table-card-0')).toHaveAttribute('aria-label', '♠ 2');
-    // Selecting the candidate flips its label to "selected".
+    // Selecting the candidate keeps its card name and exposes selection via aria-pressed.
     fireEvent.click(screen.getByTestId('table-card-1'));
-    await waitFor(() => expect(screen.getByTestId('table-card-1')).toHaveAttribute('aria-label', '♥ 5 選択中'));
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: '♥ 5', pressed: true })).toBeInTheDocument();
+    });
+  });
+
+  it('keeps selected build button name and exposes selection as pressed state', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ builds: [{ cards: [card('SPADE', 2)], value: 5, ownerIdx: 0, isMulti: false }] as never }),
+    );
+    renderWithProviders(<CassinoPage />);
+    const build = await screen.findByTestId('build-0');
+    const name = build.getAttribute('aria-label');
+    expect(name).toBeTruthy();
+    fireEvent.click(build);
+    expect(screen.getByRole('button', { name: name!, pressed: true })).toBeInTheDocument();
   });
 
   it('take button is disabled until both hand and table are selected', async () => {
