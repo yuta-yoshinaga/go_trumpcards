@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { pigtailApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
 import { CircularDeck } from '../components/CircularDeck';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
@@ -13,6 +14,7 @@ import { HintTooltip } from '../components/hint/HintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { type ActionBinding, useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
 import { useGameApi } from '../hooks/useGameApi';
@@ -100,6 +102,18 @@ function PigsTailPageContent() {
 
   // CLI mode
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('pigtail');
+  const canDraw =
+    !!state &&
+    !loading &&
+    !cliEnabled &&
+    actionLog === null &&
+    !state.gameEndFlag &&
+    state.players[state.currentTurn]?.isHuman === true;
+  const actionBindings = useMemo<ActionBinding[]>(
+    () => [{ key: 'd', action: handleDraw, label: 'draw', enabled: canDraw }],
+    [handleDraw, canDraw],
+  );
+  useActionKeyboardNav({ bindings: actionBindings, enabled: canDraw });
   type PtArgs = Parameters<typeof pigtailApi.exec>;
   // pigtailHelp() reads i18n internally, so depend on i18n.language to
   // re-localize the CLI help after a runtime language switch.
@@ -351,6 +365,7 @@ function PigsTailPageContent() {
           {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
 
           <GameFooter className={`${gameTheme.pigtail.footer} px-4 py-2.5`}>
+            <ActionShortcutsPanel bindings={actionBindings} data-testid="pigtail-kbd-shortcuts" />
             <div data-testid="pigtail-draw-guidance" className="mb-2 text-center text-xs text-ds-text-primary">
               {state.centerCount > 0 && <p>{t('drawGuidance.penalty')}</p>}
               <p>
