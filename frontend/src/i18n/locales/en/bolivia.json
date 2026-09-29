@@ -29,6 +29,10 @@
     "discardHighSafe": "Discard a high-rank card the opponent cannot use"
   },
   "meldButton": "Meld",
+  "addMeldGroupButton": "Add group",
+  "meldGroup": "Group {{n}} ({{count}} cards)",
+  "inMeldGroup": "In group {{n}}",
+  "removeMeldGroup": "Deselect group {{n}} ({{count}} cards)",
   "meldPhase": "Meld cards or skip.",
   "meldPoints": {
     "initial": "Min initial meld: {{min}} / selected: {{points}}",

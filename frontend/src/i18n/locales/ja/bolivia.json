@@ -29,6 +29,10 @@
     "discardHighSafe": "相手に使われにくい高ランクのカードを捨てる"
   },
   "meldButton": "メルドする",
+  "addMeldGroupButton": "グループを追加",
+  "meldGroup": "グループ{{n}}（{{count}}枚）",
+  "inMeldGroup": "グループ{{n}}に追加済み",
+  "removeMeldGroup": "グループ{{n}}（{{count}}枚）を選択解除",
   "meldPhase": "メルドを出すか、スキップしてください。",
   "meldPoints": {
     "initial": "初回メルド最低点: {{min}} / 選択合計: {{points}}",
