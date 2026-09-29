@@ -91,5 +91,8 @@
     "balanced": "BAL",
     "balancedTooltip": "バランス型のスタイル"
   },
-  "bringIn": "ブリングイン"
+  "bringIn": "ブリングイン",
+  "mainPot": "メインポット: {{amount}}チップ（対象: {{eligiblePlayers}}）",
+  "sidePot": "サイドポット{{index}}: {{amount}}チップ（対象: {{eligiblePlayers}}）",
+  "listSeparator": "、"
 }
