@@ -126,6 +126,11 @@ func (m *MockMississippiStudGame) GetTotalPayout() int {
 	return args.Int(0)
 }
 
+func (m *MockMississippiStudGame) GetNetChange() int {
+	args := m.Called()
+	return args.Int(0)
+}
+
 func (m *MockMississippiStudGame) GetChips() int {
 	args := m.Called()
 	return args.Int(0)

@@ -33,6 +33,7 @@ const antePhaseState: MississippiStudResponse = {
   antePayout: 0,
   streetPayouts: [0, 0, 0],
   totalPayout: 0,
+  netChange: 0,
   message: '',
 };
 
@@ -83,6 +84,7 @@ const endPhaseWin: MississippiStudResponse = {
   antePayout: 200,
   streetPayouts: [600, 200, 200],
   totalPayout: 1200,
+  netChange: 600,
   message: 'Player wins!',
   messageCode: 'mississippistud.result.playerWins',
 };
@@ -96,6 +98,7 @@ const endPhaseLoss: MississippiStudResponse = {
   antePayout: 0,
   streetPayouts: [0, 0, 0],
   totalPayout: 0,
+  netChange: -600,
   message: 'Player loses.',
   messageCode: 'mississippistud.result.playerLoses',
 };
@@ -107,6 +110,7 @@ const endPhaseFold: MississippiStudResponse = {
   streetMultipliers: [0, 0, 0],
   folded: true,
   totalBet: 100,
+  netChange: -100,
 };
 
 beforeEach(() => {
@@ -288,6 +292,7 @@ describe('MississippiStudPage', () => {
     renderWithProviders(<MississippiStudPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
     expect(screen.getByTestId('payout-breakdown')).toHaveTextContent('合計配当: 1200');
+    expect(screen.getByTestId('payout-breakdown')).toHaveTextContent('差引損益: +600');
   });
 
   it('shows hand rank label in end phase', async () => {
@@ -302,6 +307,14 @@ describe('MississippiStudPage', () => {
     renderWithProviders(<MississippiStudPage />);
     await waitFor(() => expect(screen.getByTestId('payout-breakdown')).toBeInTheDocument());
     expect(screen.getByTestId('payout-breakdown')).toHaveTextContent('合計配当: 0');
+    expect(screen.getByTestId('payout-breakdown')).toHaveTextContent('差引損益: -600');
+  });
+
+  it('shows the net loss after folding based on total bet and payout', async () => {
+    mockApi.mockResolvedValue(endPhaseFold);
+    renderWithProviders(<MississippiStudPage />);
+    await waitFor(() => expect(screen.getByTestId('payout-breakdown')).toBeInTheDocument());
+    expect(screen.getByTestId('payout-breakdown')).toHaveTextContent('差引損益: -100');
   });
 
   it('reset button fires reset without confirm dialog', async () => {

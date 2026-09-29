@@ -64516,6 +64516,7 @@ components:
         - antePayout
         - streetPayouts
         - totalPayout
+        - netChange
         - message
       properties:
         entries:
@@ -64596,6 +64597,10 @@ components:
         totalPayout:
           type: integer
           description: Total payout returned to the player
+          example: 0
+        netChange:
+          type: integer
+          description: Net chip change for the round (total payout minus total bet)
           example: 0
         message:
           type: string

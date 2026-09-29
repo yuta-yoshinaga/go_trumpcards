@@ -35,6 +35,7 @@ func setupMississippiStudWebMockDefaults(m *interfaces.MockMississippiStudGame, 
 	m.On("GetAntePayout").Return(0).Maybe()
 	m.On("GetStreetPayouts").Return([domain.MississippiStudStreetCnt]int{}).Maybe()
 	m.On("GetTotalPayout").Return(0).Maybe()
+	m.On("GetNetChange").Return(0).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
 }
 
@@ -106,6 +107,7 @@ func TestMississippiStudWebPresenter_Output_ThirdSt_MasksCommunity(t *testing.T)
 	m.On("GetAntePayout").Return(0)
 	m.On("GetStreetPayouts").Return([domain.MississippiStudStreetCnt]int{})
 	m.On("GetTotalPayout").Return(0)
+	m.On("GetNetChange").Return(0)
 
 	result := parseMississippiStudOutput(t, p.Output(m, nil))
 	assert.Len(t, result.PlayerHand, 2)
@@ -146,12 +148,14 @@ func TestMississippiStudWebPresenter_Output_EndWin(t *testing.T) {
 	m.On("GetAntePayout").Return(200)
 	m.On("GetStreetPayouts").Return([domain.MississippiStudStreetCnt]int{600, 200, 200})
 	m.On("GetTotalPayout").Return(1200)
+	m.On("GetNetChange").Return(600)
 
 	result := parseMississippiStudOutput(t, p.Output(m, nil))
 	assert.Equal(t, domain.MississippiStudPhaseEnd, result.Phase)
 	assert.Equal(t, "Player wins!", result.Message)
 	assert.Equal(t, "mississippistud.result.playerWins", result.MessageCode)
 	assert.Equal(t, 1200, result.TotalPayout)
+	assert.Equal(t, 600, result.NetChange)
 	assert.Equal(t, []int{3, 1, 1}, result.StreetMultipliers)
 	assert.Equal(t, []bool{true, true, true}, result.CommunityRevealed)
 }
@@ -175,6 +179,7 @@ func TestMississippiStudWebPresenter_Output_EndPush(t *testing.T) {
 	m.On("GetAntePayout").Return(0)
 	m.On("GetStreetPayouts").Return([domain.MississippiStudStreetCnt]int{})
 	m.On("GetTotalPayout").Return(0)
+	m.On("GetNetChange").Return(0)
 
 	result := parseMississippiStudOutput(t, p.Output(m, nil))
 	assert.Equal(t, "Push.", result.Message)
@@ -200,6 +205,7 @@ func TestMississippiStudWebPresenter_Output_EndLose(t *testing.T) {
 	m.On("GetAntePayout").Return(0)
 	m.On("GetStreetPayouts").Return([domain.MississippiStudStreetCnt]int{})
 	m.On("GetTotalPayout").Return(0)
+	m.On("GetNetChange").Return(-100)
 
 	result := parseMississippiStudOutput(t, p.Output(m, nil))
 	assert.Equal(t, "Player loses.", result.Message)

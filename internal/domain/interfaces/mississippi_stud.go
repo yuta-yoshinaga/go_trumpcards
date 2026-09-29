@@ -50,6 +50,8 @@ type MississippiStudGame interface {
 	GetStreetPayouts() [domain.MississippiStudStreetCnt]int
 	// GetTotalPayout 合計配当を取得する
 	GetTotalPayout() int
+	// GetNetChange チップの純増減を取得する
+	GetNetChange() int
 	// GetChips チップを取得する
 	GetChips() int
 	// GetChipsRefilled 直前の Reset が残高を補充したかを返す
