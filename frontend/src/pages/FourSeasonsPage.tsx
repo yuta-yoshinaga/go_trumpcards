@@ -30,6 +30,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { FourSeasonsResponse } from '../types/card';
 import { FourSeasonsPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { valueName } from '../utils/cardUtils';
 import { parseFourSeasonsCommand } from '../utils/cli/commands/fourseasonsCommands';
 import { formatFourSeasonsState } from '../utils/cli/formatters/fourseasonsFormatter';
@@ -366,6 +367,7 @@ function FourSeasonsPageContent() {
                   type="button"
                   onClick={toggleWaste}
                   disabled={!isPlaying || loading || !wasteTop}
+                  aria-label={t('wasteCardAria', { card: wasteTop ? cardAlt(wasteTop) : t('empty') })}
                   aria-pressed={source?.kind === 'waste'}
                   data-testid="fs-waste-button"
                   className={`p-0 border-0 bg-transparent rounded ${focusRingWhite} ${source?.kind === 'waste' ? 'ring-2 ring-ds-warning' : ''} ${hintWaste ? 'ring-2 ring-ds-success animate-pulse' : ''}`}
