@@ -26,9 +26,11 @@ import { gameTheme } from '../styles/gameTheme';
 import type { BuraResponse } from '../types/card';
 import { BuraPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { BURA_HELP, parseBuraCommand } from '../utils/cli/commands/buraCommands';
 import { formatBuraState } from '../utils/cli/formatters/buraFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
+import { findPlayerName } from '../utils/playerUtils';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 const BURA_TUTORIAL_STEPS: TutorialStep[] = [
@@ -81,6 +83,7 @@ function BuraPageContent() {
   const opponents = state.players.filter((p) => !p.isHuman);
   const isHumanTurn = !ended && state.currentPlayerIdx === 0;
   const leadCount = state.currentLead.length;
+  const leadPlayerName = leadCount > 0 ? findPlayerName(state.players, state.leadPlayerIdx) : '';
   // The server also ships the exact indices it recommends; the tooltip only
   // carries the reason, so read them off the state response directly.
   const hintedIndices = new Set(state.hint?.cardIndices ?? []);
@@ -192,9 +195,18 @@ function BuraPageContent() {
               <div className="text-game-text-muted text-xs mb-1">
                 {leadCount > 0 ? t('ledCards', { n: leadCount }) : t('noLead')}
               </div>
+              {leadCount > 0 && (
+                <div className="text-ds-text-primary text-sm mb-1">{t('leadPlayer', { name: leadPlayerName })}</div>
+              )}
               <div className="flex gap-1 justify-center">
                 {state.currentLead.map((card, i) => (
-                  <AnimatedCard key={`lead-${i.toString()}`} card={card} width={cardWidth} draggable={false} />
+                  <AnimatedCard
+                    key={`lead-${i.toString()}`}
+                    card={card}
+                    ariaLabel={t('leadCardAriaLabel', { name: leadPlayerName, card: cardAlt(card) })}
+                    width={cardWidth}
+                    draggable={false}
+                  />
                 ))}
               </div>
             </div>

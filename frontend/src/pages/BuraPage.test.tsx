@@ -75,6 +75,25 @@ describe('BuraPage', () => {
     expect(cardButtons).toHaveLength(3);
   });
 
+  it('identifies the lead player visually and in each card label, and hides it with no lead', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ currentLead: [card('DIAMOND', 13), card('DIAMOND', 12)], leadPlayerIdx: 1 }),
+    );
+    renderWithProviders(<BuraPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    expect(screen.getByText('CPU 1が出しました')).toBeInTheDocument();
+    expect(screen.getByAltText('CPU 1が出したカード: ♦ K')).toBeInTheDocument();
+    expect(screen.getByAltText('CPU 1が出したカード: ♦ Q')).toBeInTheDocument();
+
+    cleanup();
+    mockExec.mockResolvedValue(makeState({ currentLead: [], leadPlayerIdx: 0 }));
+    renderWithProviders(<BuraPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.getByText('あなたがリードします')).toBeInTheDocument();
+    expect(screen.queryByText(/が出しました$/)).not.toBeInTheDocument();
+  });
+
   it('plays the selected cards and clears the selection', async () => {
     renderWithProviders(<BuraPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());

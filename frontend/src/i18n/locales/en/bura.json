@@ -9,6 +9,8 @@
   "opponentHand": "CPU hand: {{n}} cards",
   "opponentHandAriaLabel": "CPU hand, {{n}} cards face down",
   "ledCards": "Led: {{n}} card(s)",
+  "leadPlayer": "Led by {{name}}",
+  "leadCardAriaLabel": "Card led by {{name}}: {{card}}",
   "noLead": "You lead",
   "yourHand": "Your hand",
   "play": "Play",
