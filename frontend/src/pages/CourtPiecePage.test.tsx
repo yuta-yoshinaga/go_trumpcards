@@ -92,6 +92,38 @@ beforeEach(() => {
 });
 
 describe('CourtPiecePage', () => {
+  it('keeps the winner announcement region mounted before a trick ends', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<CourtPiecePage />);
+
+    const announcement = await screen.findByTestId('cp-trick-winner-live');
+    expect(announcement).toHaveAttribute('role', 'status');
+    expect(announcement).toHaveAttribute('aria-live', 'polite');
+    expect(announcement).toBeEmptyDOMElement();
+  });
+
+  it('keeps a polite winner announcement region mounted and announces the winner and team after a trick', async () => {
+    mockExec.mockResolvedValue(
+      makeCourtPieceState({
+        phase: 2,
+        trumpSuit: 3,
+        leadPlayerIdx: 2,
+        currentTrick: [
+          { playerIdx: 0, card: { design: 'SPADE', value: 5 } },
+          { playerIdx: 1, card: { design: 'SPADE', value: 7 } },
+          { playerIdx: 2, card: { design: 'SPADE', value: 12 } },
+          { playerIdx: 3, card: { design: 'SPADE', value: 8 } },
+        ],
+      }),
+    );
+    renderWithProviders(<CourtPiecePage />);
+
+    const announcement = await screen.findByTestId('cp-trick-winner-live');
+    expect(announcement).toHaveAttribute('role', 'status');
+    expect(announcement).toHaveAttribute('aria-live', 'polite');
+    expect(announcement).toHaveTextContent('CPU 2がチームAのトリックを獲得');
+  });
+
   it('shows the translated no-trump label before a trump is declared', async () => {
     mockExec.mockResolvedValue(makeCourtPieceState({ trumpSuit: 0 }));
     renderWithProviders(<CourtPiecePage />);
