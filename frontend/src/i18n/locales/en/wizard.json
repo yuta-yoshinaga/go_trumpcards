@@ -47,6 +47,8 @@
     "under": "{{delta}} under"
   },
   "currentTrick": "Current Trick",
+  "trickAnnouncementEntry": "{{player}}: {{card}}",
+  "listSeparator": ", ",
   "scores": "Scores",
   "scoresPlayer": "Player",
   "scoresBid": "Bid",
