@@ -339,16 +339,7 @@ func toepenContains(xs []int, v int) bool {
 
 // resolveTrick はトリックを解決する。切札が無いので、リードスートの最強札が取る。
 func (t *Toepen) resolveTrick() {
-	winner := -1
-	best := -1
-	for _, tc := range t.trick {
-		if tc.Card == nil || tc.Card.GetDesign() != t.leadSuit {
-			continue
-		}
-		if r := ToepenRankOrder(tc.Card); r > best {
-			best, winner = r, tc.PlayerIdx
-		}
-	}
+	winner := t.CurrentTrickWinner()
 	if winner < 0 && len(t.trick) > 0 {
 		winner = t.trick[0].PlayerIdx
 	}
@@ -364,6 +355,21 @@ func (t *Toepen) resolveTrick() {
 	if t.trickNumber >= ToepenHandSize || t.handExhausted() {
 		t.finishHand()
 	}
+}
+
+// CurrentTrickWinner は現在のトリックでリードスートの最強札を出したプレイヤーを返す。
+// トリックが空、またはリードスートに従う札がない場合は -1 を返す。
+func (t *Toepen) CurrentTrickWinner() int {
+	winner, best := -1, -1
+	for _, tc := range t.trick {
+		if tc.Card == nil || tc.Card.GetDesign() != t.leadSuit {
+			continue
+		}
+		if rank := ToepenRankOrder(tc.Card); rank > best {
+			winner, best = tc.PlayerIdx, rank
+		}
+	}
+	return winner
 }
 
 // handExhausted は誰かの手札が尽きたかを返す。

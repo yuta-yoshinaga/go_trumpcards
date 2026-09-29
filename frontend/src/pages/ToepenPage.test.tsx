@@ -52,6 +52,7 @@ function makeState(overrides?: Partial<ToepenResponse>): ToepenResponse {
     leadPlayerIdx: 0,
     dealerIdx: 0,
     currentTrick: [],
+    currentTrickWinnerIdx: -1,
     leadSuit: -1,
     trickNumber: 0,
     handNumber: 1,
@@ -112,6 +113,23 @@ describe('ToepenPage', () => {
     expect(trick).toHaveTextContent('CPU2');
     expect(trick).toHaveTextContent('[降参]');
     expect(trick.querySelectorAll('[data-testid="toepen-trick-card"]')).toHaveLength(2);
+  });
+
+  it('visually marks and announces the server-reported current trick winner', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        currentTrick: [
+          { playerIdx: 0, card: card('SPADE', 10) },
+          { playerIdx: 2, card: card('HEART', 11) },
+        ],
+        currentTrickWinnerIdx: 2,
+      }),
+    );
+    renderWithProviders(<ToepenPage />);
+    const cards = await screen.findAllByTestId('toepen-trick-card');
+    expect(cards[0]).toHaveAttribute('data-winning', 'false');
+    expect(cards[1]).toHaveAttribute('data-winning', 'true');
+    expect(cards[1].firstElementChild).toHaveAttribute('aria-label', expect.stringContaining('暫定勝ち札'));
   });
 
   it('only plays the cards the server marked legal', async () => {

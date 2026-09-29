@@ -60,6 +60,8 @@ func (_m *MockToepenGame) GetCurrentTrick() []*domain.TrickCard {
 	return nil
 }
 
+func (_m *MockToepenGame) CurrentTrickWinner() int { return _m.Called().Int(0) }
+
 func (_m *MockToepenGame) GetLeadSuit() int { return _m.Called().Int(0) }
 
 func (_m *MockToepenGame) GetTrickNumber() int { return _m.Called().Int(0) }

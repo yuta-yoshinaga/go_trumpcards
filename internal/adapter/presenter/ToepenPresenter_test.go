@@ -41,6 +41,7 @@ func toepenStub(phase domain.ToepenPhase, winner int, gameEnd bool) *interfaces.
 	g.On("GetLeadPlayerIdx").Return(0)
 	g.On("GetDealerIdx").Return(0)
 	g.On("GetCurrentTrick").Return([]*domain.TrickCard{})
+	g.On("CurrentTrickWinner").Return(-1)
 	g.On("GetLeadSuit").Return(-1)
 	g.On("GetTrickNumber").Return(0)
 	g.On("GetStake").Return(1)
@@ -91,6 +92,12 @@ func TestToepenWebPresenter_ShipsTheFollowSuitDecision(t *testing.T) {
 	assert.Len(t, out["validPlayIndices"], len(tp.GetValidPlayIndices(0)))
 	assert.Equal(t, float64(domain.ToepenMaxLives), out["maxLives"])
 	assert.Equal(t, float64(1), out["stake"])
+}
+
+func TestToepenWebPresenter_ReportsCurrentTrickWinnerFromDomain(t *testing.T) {
+	g := toepenStub(domain.ToepenPhasePlay, -1, false)
+	out := toepenDecode(t, new(ToepenWebPresenter).Output(g, nil))
+	assert.Equal(t, float64(-1), out["currentTrickWinnerIdx"])
 }
 
 func TestToepenWebPresenter_ReportsTheOutcome(t *testing.T) {
@@ -156,6 +163,7 @@ func TestToepenWebPresenter_HintCoversEveryBranch(t *testing.T) {
 		gg.On("GetLeadPlayerIdx").Return(0)
 		gg.On("GetDealerIdx").Return(0)
 		gg.On("GetCurrentTrick").Return([]*domain.TrickCard{})
+		gg.On("CurrentTrickWinner").Return(-1)
 		gg.On("GetLeadSuit").Return(-1)
 		gg.On("GetTrickNumber").Return(0)
 		gg.On("GetStake").Return(1)
@@ -185,6 +193,7 @@ func TestToepenWebPresenter_HintCoversEveryBranch(t *testing.T) {
 		g.On("GetLeadPlayerIdx").Return(0)
 		g.On("GetDealerIdx").Return(0)
 		g.On("GetCurrentTrick").Return([]*domain.TrickCard{})
+		g.On("CurrentTrickWinner").Return(-1)
 		g.On("GetLeadSuit").Return(-1)
 		g.On("GetTrickNumber").Return(0)
 		g.On("GetStake").Return(1)
@@ -229,6 +238,7 @@ func TestToepenWebPresenter_HintCoversEveryBranch(t *testing.T) {
 				g.On("GetLeadPlayerIdx").Return(0)
 				g.On("GetDealerIdx").Return(0)
 				g.On("GetCurrentTrick").Return([]*domain.TrickCard{})
+				g.On("CurrentTrickWinner").Return(-1)
 				g.On("GetLeadSuit").Return(-1)
 				g.On("GetTrickNumber").Return(0)
 				g.On("GetStake").Return(2)
@@ -261,6 +271,7 @@ func TestToepenWebPresenter_SkipsANilSeatAndRendersTheLog(t *testing.T) {
 	g.On("GetLeadPlayerIdx").Return(0)
 	g.On("GetDealerIdx").Return(0)
 	g.On("GetCurrentTrick").Return([]*domain.TrickCard{})
+	g.On("CurrentTrickWinner").Return(-1)
 	g.On("GetLeadSuit").Return(-1)
 	g.On("GetTrickNumber").Return(0)
 	g.On("GetStake").Return(1)

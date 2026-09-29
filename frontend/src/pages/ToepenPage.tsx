@@ -171,13 +171,22 @@ function ToepenPageContent() {
                   const player = state.players[tc2.playerIdx];
                   if (!player) return null;
                   const playerName = player.isHuman ? t('you') : t('cpu', { n: player.id });
+                  const isWinningCard = state.currentTrickWinnerIdx === tc2.playerIdx;
                   return (
                     <div
                       key={`trick-${i.toString()}`}
-                      className="flex flex-col items-center gap-1"
+                      className={`flex flex-col items-center gap-1 ${isWinningCard ? 'rounded ring-2 ring-ds-warning p-1' : ''}`}
                       data-testid="toepen-trick-card"
+                      data-winning={isWinningCard}
                     >
-                      <AnimatedCard card={tc2.card} width={cardWidth} draggable={false} />
+                      <div
+                        role="img"
+                        aria-label={
+                          isWinningCard ? `${cardAlt(tc2.card)} (${t('currentTrickWinner')})` : cardAlt(tc2.card)
+                        }
+                      >
+                        <AnimatedCard card={tc2.card} width={cardWidth} draggable={false} />
+                      </div>
                       <span className="text-xs text-ds-text-primary">{playerName}</span>
                       {player.folded && <span className="text-xs text-ds-text-muted">{t('folded')}</span>}
                     </div>

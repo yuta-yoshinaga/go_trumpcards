@@ -34,6 +34,21 @@ func TestToepen_RankOrder(t *testing.T) {
 	assert.Equal(t, 0, ToepenRankOrder(nil))
 }
 
+func TestToepen_CurrentTrickWinner(t *testing.T) {
+	tp := NewDefaultToepen()
+	tp.trick = nil
+	tp.leadSuit = CardDesignSpade
+	assert.Equal(t, -1, tp.CurrentTrickWinner(), "empty trick")
+
+	tp.trick = []*TrickCard{
+		{PlayerIdx: 0, Card: toepenCard(CardDesignSpade, 7)},
+		{PlayerIdx: 1, Card: toepenCard(CardDesignHeart, 10)}, // off-suit high card cannot win
+		{PlayerIdx: 2, Card: toepenCard(CardDesignSpade, 9)},
+		{PlayerIdx: 3, Card: toepenCard(CardDesignSpade, 10)},
+	}
+	assert.Equal(t, 3, tp.CurrentTrickWinner(), "highest lead-suit rank wins")
+}
+
 func TestToepen_DeckIsThirtyTwoCards(t *testing.T) {
 	deck := newToepenDeck()
 	assert.Len(t, deck, ToepenDeckSize)

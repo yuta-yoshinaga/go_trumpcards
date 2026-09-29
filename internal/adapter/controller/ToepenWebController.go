@@ -45,12 +45,13 @@ type ToepenWebOutputHint struct {
 
 // ToepenWebOutput トゥーペンWebアウトプット
 type ToepenWebOutput struct {
-	Players          []*ToepenWebOutputPlayer `json:"players"`
-	Phase            int                      `json:"phase"`
-	CurrentPlayerIdx int                      `json:"currentPlayerIdx"`
-	LeadPlayerIdx    int                      `json:"leadPlayerIdx"`
-	DealerIdx        int                      `json:"dealerIdx"`
-	CurrentTrick     []*WebOutputTrickCard    `json:"currentTrick"`
+	Players               []*ToepenWebOutputPlayer `json:"players"`
+	Phase                 int                      `json:"phase"`
+	CurrentPlayerIdx      int                      `json:"currentPlayerIdx"`
+	LeadPlayerIdx         int                      `json:"leadPlayerIdx"`
+	DealerIdx             int                      `json:"dealerIdx"`
+	CurrentTrick          []*WebOutputTrickCard    `json:"currentTrick"`
+	CurrentTrickWinnerIdx int                      `json:"currentTrickWinnerIdx"`
 	// LeadSuit は -1 なら未決。
 	LeadSuit    int `json:"leadSuit"`
 	TrickNumber int `json:"trickNumber"`

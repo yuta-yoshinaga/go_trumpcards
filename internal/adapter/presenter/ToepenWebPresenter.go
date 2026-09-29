@@ -36,6 +36,7 @@ func (p *ToepenWebPresenter) buildBase(t interfaces.ToepenGame) *controller.Toep
 	resObj.GameEndFlag = t.GetGameEndFlag()
 	resObj.WinnerIdx = t.GetWinnerIdx()
 	resObj.CurrentTrick = trickCardsToOutput(t.GetCurrentTrick())
+	resObj.CurrentTrickWinnerIdx = t.CurrentTrickWinner()
 
 	// フォロー義務の判定はここで一度だけ行う。クライアントに再実装させると
 	// 規則の実装が 2 つになり、答えも 2 つになる。
