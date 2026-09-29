@@ -140,17 +140,22 @@ function SheepsheadPageContent() {
   const { cardWidth, isMobile } = useCardDimensions();
   const phaseNames = usePhaseNames('sheepshead', SHEEPSHEAD_PHASE_KEYS);
   const [trickAnnouncement, setTrickAnnouncement] = useState('');
-  const previousCompletedTrickCount = useRef(0);
+  const previousCompletedTrickCount = useRef<number | null>(null);
 
   useEffect(() => {
-    if (state && state.completedTrickCount > previousCompletedTrickCount.current && state.lastTrickWinner >= 0) {
+    if (!state) return;
+    if (previousCompletedTrickCount.current === null) {
+      previousCompletedTrickCount.current = state.completedTrickCount;
+      return;
+    }
+    if (state.completedTrickCount > previousCompletedTrickCount.current && state.lastTrickWinner >= 0) {
       setTrickAnnouncement(
         t('trickWonAnnouncement', {
           name: playerName(state.lastTrickWinner, state.players[state.lastTrickWinner]?.isHuman ?? false),
         }),
       );
     }
-    if (state) previousCompletedTrickCount.current = state.completedTrickCount;
+    previousCompletedTrickCount.current = state.completedTrickCount;
   }, [state, t]);
 
   // Keyboard hand navigation: number keys toggle a card, Enter confirms,
