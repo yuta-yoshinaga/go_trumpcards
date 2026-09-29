@@ -33,6 +33,8 @@ func setupBeziqueWebMock(trumpCard *domain.Card) *interfaces.MockBeziqueGame {
 	m.On("GetWinnerIdx").Return(-1)
 	m.On("GetConfig").Return(domain.DefaultBeziqueConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
+	m.On("GetLastTrickBonus", 0).Return(0)
+	m.On("GetLastTrickBonus", 1).Return(0)
 	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
 	// **base だけに置く。**removeMockCall は最初の 1 件しか外さない。
 	m.On("GetHint").Return(nil).Maybe()
@@ -118,6 +120,7 @@ func TestBeziqueWebPresenter_Output_MeldPhaseListsMelds(t *testing.T) {
 	var out controller.BeziqueWebOutput
 	_ = json.Unmarshal([]byte(got), &out)
 	assert.Len(t, out.AvailableMelds, 1)
+	assert.Equal(t, []int{0, 0}, out.LastTrickBonus)
 	assert.Equal(t, 40, out.AvailableMelds[0].Points)
 	assert.Equal(t, "bezique.meldPhase", out.MessageCode)
 }
@@ -132,6 +135,8 @@ func TestBeziqueWebPresenter_Output_GameEnd(t *testing.T) {
 	m.On("GetDealPoints", 1).Return(0)
 	m.On("GetDealMeldPoints", 0).Return(0)
 	m.On("GetDealMeldPoints", 1).Return(0)
+	m.On("GetLastTrickBonus", 0).Return(0)
+	m.On("GetLastTrickBonus", 1).Return(0)
 	m.On("GetMatchScore", 0).Return(1010)
 	m.On("GetMatchScore", 1).Return(800)
 	m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetGameEndFlag")

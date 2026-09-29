@@ -59,6 +59,8 @@ export interface BeziqueResponse extends BaseGameResponse {
   dealPoints: number[];
   /** Of the deal points, the portion from melds (trick portion = dealPoints - dealMeldPoints). */
   dealMeldPoints: number[];
+  /** Last-trick bonus points scored by each seat in this deal. */
+  lastTrickBonus: number[];
   /** Cumulative match score, indexed by seat. */
   matchScore: number[];
   phase: BeziquePhaseValue;

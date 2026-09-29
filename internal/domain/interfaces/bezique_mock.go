@@ -130,6 +130,11 @@ func (m *MockBeziqueGame) GetDealMeldPoints(i int) int {
 	return args.Int(0)
 }
 
+func (m *MockBeziqueGame) GetLastTrickBonus(i int) int {
+	args := m.Called(i)
+	return args.Int(0)
+}
+
 func (m *MockBeziqueGame) GetMatchScore(i int) int {
 	args := m.Called(i)
 	return args.Int(0)
