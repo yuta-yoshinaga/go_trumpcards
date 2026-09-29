@@ -258,6 +258,24 @@ describe('OhHellPage', () => {
     expect(screen.queryByTestId('bid-progress-chip')).not.toBeInTheDocument();
   });
 
+  it('announces each player bid and won tricks with round and cumulative scores', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<OhHellPage />);
+    await waitFor(() => {
+      expect(
+        screen
+          .getAllByRole('status')
+          .some((status) => status.classList.contains('sr-only') && status.textContent?.includes('ビッド 2')),
+      ).toBe(true);
+    });
+    const announcement = screen.getAllByRole('status').find((status) => status.classList.contains('sr-only'));
+    expect(announcement).toBeDefined();
+    expect(announcement?.textContent).toContain('ビッド 2、獲得トリック 0');
+    expect(announcement?.textContent).toContain('ビッド 1、獲得トリック 1');
+    expect(announcement?.textContent).toContain('+3');
+    expect(announcement?.textContent).toContain('合計 10');
+  });
+
   it('renders bid phase as a button group of bid choices', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<OhHellPage />);

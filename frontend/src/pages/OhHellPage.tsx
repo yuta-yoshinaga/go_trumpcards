@@ -479,7 +479,10 @@ function OhHellPageContent() {
                 <RoundScoreAnnouncement
                   active={isRoundEnd || isGameEnd}
                   entries={state.players.map((p) => ({
-                    name: playerName(p.id, p.isHuman),
+                    name: `${playerName(p.id, p.isHuman)} ${t('scoreAnnouncementDetails', {
+                      bid: p.bid >= 0 ? p.bid : t('bidNone'),
+                      tricks: p.trickCount,
+                    })}`,
                     roundScore: p.roundScore,
                     cumulativeScore: p.cumulativeScore,
                   }))}
