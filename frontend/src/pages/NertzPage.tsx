@@ -265,7 +265,7 @@ function NertzPageContent() {
     const scoreChanges =
       previousScores?.roundNumber === state.roundNumber
         ? state.players.flatMap((player, idx) => {
-            const delta = player.score - previousScores.scores[idx];
+            const delta = player.score - (previousScores.scores[idx] ?? player.score);
             if (player.isHuman || delta === 0) return [];
             return [
               t('scoreAnnounce.cpu', {
@@ -312,7 +312,9 @@ function NertzPageContent() {
         placementFlashTimersRef.current.set(idx, timerId);
       }
     }
-    setFoundationAnnounce(announcements.join(t('listSeparator')));
+    if (announcements.length > 0) {
+      setFoundationAnnounce(announcements.join(t('listSeparator')));
+    }
     prevFoundationSizesRef.current = state.foundations.map((f) => f.size);
     prevCpuScoresRef.current = {
       roundNumber: state.roundNumber,

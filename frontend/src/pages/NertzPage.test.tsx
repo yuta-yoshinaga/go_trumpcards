@@ -380,20 +380,23 @@ describe('NertzPage', () => {
       ...increased,
       players: increased.players.map((p, i) => ({ ...p, score: i === 0 ? 0 : 10 })),
     };
-    mockExec.mockResolvedValueOnce(initial).mockResolvedValueOnce(increased).mockResolvedValue(decreased);
-    renderWithProviders(
-      <MemoryRouter initialEntries={['/nertz']}>
-        <NertzPage />
-      </MemoryRouter>,
-    );
-    await waitFor(() => expect(screen.getByAltText('♥ 7')).toBeInTheDocument());
-    expect(screen.getByTestId('nertz-announce')).toBeEmptyDOMElement();
-    await waitFor(() => expect(screen.getByTestId('nertz-announce').textContent).toMatch(/CPU1.*\+4.*12.*組札3/), {
-      timeout: 2000,
-    });
-    await waitFor(() => expect(screen.getByTestId('nertz-announce').textContent).toMatch(/CPU1.*-2.*10/), {
-      timeout: 3000,
-    });
+    vi.useFakeTimers();
+    try {
+      mockExec.mockResolvedValueOnce(initial).mockResolvedValueOnce(increased).mockResolvedValueOnce(decreased);
+      renderWithProviders(
+        <MemoryRouter initialEntries={['/nertz']}>
+          <NertzPage />
+        </MemoryRouter>,
+      );
+      await act(async () => vi.advanceTimersByTimeAsync(0));
+      expect(screen.getByTestId('nertz-announce')).toBeEmptyDOMElement();
+      await act(async () => vi.advanceTimersByTimeAsync(700));
+      expect(screen.getByTestId('nertz-announce').textContent).toMatch(/CPU1.*\+4.*12.*組札3/);
+      await act(async () => vi.advanceTimersByTimeAsync(700));
+      expect(screen.getByTestId('nertz-announce').textContent).toMatch(/CPU1.*-2.*10/);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("announces the human's own foundation placement", async () => {
@@ -500,15 +503,20 @@ describe('NertzPage', () => {
   });
 
   it('starts CPU tick polling while round is active', async () => {
-    renderWithProviders(
-      <MemoryRouter initialEntries={['/nertz']}>
-        <NertzPage />
-      </MemoryRouter>,
-    );
-    await waitFor(() => expect(screen.getByAltText('♥ 7')).toBeInTheDocument());
-    mockExec.mockClear();
-    mockExec.mockResolvedValue(playingState);
-    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('tick'), { timeout: 2000 });
+    vi.useFakeTimers();
+    try {
+      renderWithProviders(
+        <MemoryRouter initialEntries={['/nertz']}>
+          <NertzPage />
+        </MemoryRouter>,
+      );
+      await act(async () => vi.advanceTimersByTimeAsync(0));
+      mockExec.mockClear();
+      await act(async () => vi.advanceTimersByTimeAsync(700));
+      expect(mockExec).toHaveBeenCalledWith('tick');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('pressing "d" draws stock for the human', async () => {
