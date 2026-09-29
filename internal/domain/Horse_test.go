@@ -200,9 +200,17 @@ func TestHorse_ChipsCarryAcrossDisciplines(t *testing.T) {
 // 卓が作れない以上、そこで区切るのが誤魔化しの無い扱いになる。
 func TestHorse_ABustEndsTheMatch(t *testing.T) {
 	t.Parallel()
-	g := NewHorse(HorseConfig{Seats: 4, InitialChips: HorseDefaultChips, HandsPerDiscipline: 1})
-	g.Reset()
-	horseFoldOutHand(t, g)
+	var g *Horse
+	for attempts := 0; attempts < 1000; attempts++ {
+		candidate := NewHorse(HorseConfig{Seats: 4, InitialChips: HorseDefaultChips, HandsPerDiscipline: 1})
+		candidate.Reset()
+		horseFoldOutHand(t, candidate)
+		if !candidate.GetGameEndFlag() {
+			g = candidate
+			break
+		}
+	}
+	require.NotNil(t, g, "マッチが継続する配りが見つからなかった")
 	g.SetSeatChips(2, 0)
 	require.NoError(t, g.NextHand())
 
