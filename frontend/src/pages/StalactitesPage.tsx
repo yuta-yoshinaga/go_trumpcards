@@ -221,6 +221,32 @@ function StalactitesPageContent() {
   });
 
   const [hoveredStack, setHoveredStack] = useState<{ col: number; cardIdx: number } | null>(null);
+  const previousSelectionRef = useRef(false);
+  const [moveLimitAnnouncement, setMoveLimitAnnouncement] = useState('');
+
+  const announcementStackSize =
+    selectedSource?.zone === 'tableau' && selectedSource.col !== undefined && selectedSource.cardIndex !== undefined
+      ? (state?.tableau[selectedSource.col]?.length ?? 0) - selectedSource.cardIndex
+      : selectedSource
+        ? 1
+        : 0;
+  useEffect(() => {
+    const hasSelection = selectedSource !== null;
+    if (!hasSelection && !previousSelectionRef.current) return;
+    previousSelectionRef.current = hasSelection;
+    setMoveLimitAnnouncement(
+      hasSelection
+        ? t('selectedMoveLimitAnnouncement', {
+            size: announcementStackSize,
+            limit: state?.maxMovableCards ?? 0,
+            emptyLimit: state?.maxMovableCardsToEmptyColumn ?? 0,
+          })
+        : t('clearedMoveLimitAnnouncement', {
+            limit: state?.maxMovableCards ?? 0,
+            emptyLimit: state?.maxMovableCardsToEmptyColumn ?? 0,
+          }),
+    );
+  }, [selectedSource, announcementStackSize, state?.maxMovableCards, state?.maxMovableCardsToEmptyColumn, t]);
 
   if (!state) return <GameSkeleton gameKey="stalactites" layout={{ kind: 'tableau', topRow: 8, tableau: 8 }} />;
 
@@ -443,6 +469,9 @@ function StalactitesPageContent() {
                   {t('supermoveToEmptyConditions', { cells: emptyCellCount, cols: emptyColumnCount - 1 })}
                 </span>
               )}
+            </div>
+            <div className="sr-only" data-testid="stalactites-move-limit-live" role="status" aria-live="polite">
+              {moveLimitAnnouncement}
             </div>
 
             {/* Tableau */}

@@ -24,6 +24,8 @@
   "supermoveLimitConditions": "（空きセル{{cells}}・空き列{{cols}}）",
   "supermoveToEmpty": "（空き列へは{{limit}}枚）",
   "supermoveToEmptyConditions": "（空きセル{{cells}}・経由できる空き列{{cols}}）",
+  "selectedMoveLimitAnnouncement": "{{size}}枚の束を選択中。通常の移動上限は{{limit}}枚、空き列への上限は{{emptyLimit}}枚です。",
+  "clearedMoveLimitAnnouncement": "束の選択を解除しました。通常の移動上限は{{limit}}枚、空き列への上限は{{emptyLimit}}枚です。",
   "emptyColumnAriaLabel": "空き列 {{idx}}（K のみ置けます）",
   "emptyColLimitTooltip": "空き列へ動かせるのは{{limit}}枚まで（選択中: {{size}}枚）",
   "tutorial": {
