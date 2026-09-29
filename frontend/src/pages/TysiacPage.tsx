@@ -387,6 +387,15 @@ function TysiacPageContent() {
             {/* 領域は**常設**。中身だけ差し替える ── 出現と同時に付けた領域は
                 変化として扱われず読み上げられない (#5955)。CalabresellaPage と同じ形 (#6880)。 */}
             <div data-testid="tysiac-prompt-live" role="status" aria-live="polite">
+              {isPlayPhase && (
+                <span className="sr-only" data-testid="tysiac-marriage-announcement">
+                  {marriages.length > 0
+                    ? t('marriageAvailable', {
+                        list: marriages.map((m) => `${m.symbol} K-Q (+${m.points})`).join(t('listSeparator')),
+                      })
+                    : t('marriageUnavailable')}
+                </span>
+              )}
               {isBidPhase && (
                 <div className="mb-1 text-center" data-testid="tysiac-bid-prompt">
                   <div className="text-sm text-ds-accent font-semibold">{t('bidPhase')}</div>
@@ -411,7 +420,7 @@ function TysiacPageContent() {
             {marriages.length > 0 && (
               <div className="mb-1 text-center text-sm text-ds-accent font-semibold" data-testid="tysiac-marriage">
                 {t('marriageAvailable', {
-                  list: marriages.map((m) => `${m.symbol} K-Q (+${m.points})`).join('  '),
+                  list: marriages.map((m) => `${m.symbol} K-Q (+${m.points})`).join(t('listSeparator')),
                 })}
               </div>
             )}
