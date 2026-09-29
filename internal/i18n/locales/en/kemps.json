@@ -8,7 +8,7 @@
   "helpNext": "  n, next              advance to the next round",
   "labelHuman": "You",
   "labelCpu": "CPU",
-  "roundLine": "Round {{round}}  Team A: {{teamA}}  Team B: {{teamB}}",
+  "roundLine": "Round {{round}}  Team A: {{teamA}}  Team B: {{teamB}}  Target: {{target}} points",
   "signalLine": "Your signal: {{signal}}",
   "signalSound": "Sound",
   "signalBlink": "Blink",
