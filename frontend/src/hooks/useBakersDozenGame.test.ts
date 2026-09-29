@@ -31,12 +31,12 @@ const baseState: BakersDozenResponse = {
 
 describe('useBakersDozenGame', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    mockExec.mockReset();
     mockExec.mockResolvedValue(baseState);
   });
 
   afterEach(() => {
-    vi.clearAllMocks();
+    mockExec.mockReset();
   });
 
   it('calls reset on mount', async () => {
@@ -66,6 +66,55 @@ describe('useBakersDozenGame', () => {
 
     act(() => result.current.handleAutoComplete());
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
+  });
+
+  it('announces in-progress again when retrying a failed auto-complete', async () => {
+    const { result } = renderHook(() => useBakersDozenGame(), { wrapper: makeWrapper() });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockRejectedValueOnce(new Error('network failure'));
+
+    await act(async () => {
+      await result.current.handleAutoComplete();
+    });
+    await waitFor(() => expect(result.current.autoCompleteStatus).toBe('interrupted'));
+
+    let finishRetry: ((response: BakersDozenResponse) => void) | undefined;
+    mockExec.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finishRetry = resolve;
+        }),
+    );
+    let retryPromise: Promise<void> | undefined;
+    act(() => {
+      retryPromise = result.current.retry();
+    });
+    expect(result.current.autoCompleteStatus).toBe('inProgress');
+    expect(mockExec).toHaveBeenLastCalledWith('autocomplete');
+    await waitFor(() => expect(finishRetry).toBeDefined());
+    await act(async () => {
+      finishRetry?.({ ...baseState, phase: 1 });
+      await retryPromise;
+    });
+  });
+
+  it('clears the auto-complete status when resetting', async () => {
+    const { result } = renderHook(() => useBakersDozenGame(), { wrapper: makeWrapper() });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockResolvedValue({ ...baseState, phase: 1 });
+
+    await act(async () => {
+      result.current.handleAutoComplete();
+      await Promise.resolve();
+    });
+    await waitFor(() => expect(result.current.autoCompleteStatus).toBe('finished'));
+
+    await act(async () => {
+      result.current.handleReset();
+      await Promise.resolve();
+    });
+    await waitFor(() => expect(mockExec).toHaveBeenLastCalledWith('reset'));
+    expect(result.current.autoCompleteStatus).toBeNull();
   });
 
   it('handleUndoEscape dispatches undo_n with count', async () => {
