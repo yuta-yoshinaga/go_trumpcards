@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { popejoanApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardBack } from '../components/CardImage';
@@ -49,6 +49,9 @@ function PopeJoanPageContent() {
   const { state, loading, error, retry } = game;
 
   const [handIdx, setHandIdx] = useState<number | null>(null);
+  const [announcement, setAnnouncement] = useState('');
+  const announcedAwardCount = useRef(0);
+  const announcedDeal = useRef('');
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('popejoan');
   const cliConfig: CliGameConfig<PopeJoanResponse, Parameters<typeof popejoanApi.exec>> = useMemo(
@@ -68,8 +71,53 @@ function PopeJoanPageContent() {
     setHintEnabled: setFrontendHintEnabled,
   } = useGameHint('popejoan', state);
 
+  useEffect(() => {
+    if (!state) return;
+
+    if (state.awards.length < announcedAwardCount.current) {
+      announcedAwardCount.current = 0;
+    }
+    if (state.awards.length > announcedAwardCount.current) {
+      const newAwards = state.awards.slice(announcedAwardCount.current);
+      announcedAwardCount.current = state.awards.length;
+      setAnnouncement(
+        newAwards
+          .map((a) =>
+            a.byTurnUp
+              ? t('awardTurnUpLine', {
+                  player: a.player,
+                  compartment: t(`compartment.${a.compartment}`),
+                  chips: a.chips,
+                })
+              : t('awardLine', {
+                  player: a.player,
+                  compartment: t(`compartment.${a.compartment}`),
+                  chips: a.chips,
+                }),
+          )
+          .join(t('listSeparator')),
+      );
+      return;
+    }
+
+    if (state.phase === PopeJoanPhase.DEAL_END && state.dealWinner >= 0) {
+      const dealKey = `${state.dealNo}:${state.dealWinner}`;
+      if (dealKey !== announcedDeal.current) {
+        announcedDeal.current = dealKey;
+        setAnnouncement(t('dealResult', { n: state.dealWinner }));
+      }
+    }
+  }, [state, t]);
+
   if (!state) {
-    return <GameSkeleton gameKey="popejoan" layout={{ kind: 'tableau', topRow: 3, tableau: 4 }} />;
+    return (
+      <>
+        <div className="sr-only" role="status" aria-live="polite" aria-atomic="true" data-testid="popejoan-live">
+          {announcement}
+        </div>
+        <GameSkeleton gameKey="popejoan" layout={{ kind: 'tableau', topRow: 3, tableau: 4 }} />
+      </>
+    );
   }
 
   const ended = state.phase === PopeJoanPhase.GAME_END;
@@ -104,6 +152,9 @@ function PopeJoanPageContent() {
         </>
       }
     >
+      <div className="sr-only" role="status" aria-live="polite" aria-atomic="true" data-testid="popejoan-live">
+        {announcement}
+      </div>
       <LandscapeBanner message={t('landscapeBanner')} />
 
       <SettingsPanel
