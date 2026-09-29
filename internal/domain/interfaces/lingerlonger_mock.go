@@ -61,6 +61,14 @@ func (m *MockLingerLongerGame) GetCurrentTrick() []*domain.TrickCard {
 	return nil
 }
 
+func (m *MockLingerLongerGame) GetLastTrick() []*domain.TrickCard {
+	args := m.Called()
+	if v := args.Get(0); v != nil {
+		return v.([]*domain.TrickCard)
+	}
+	return nil
+}
+
 func (m *MockLingerLongerGame) GetPlayer(i int) *domain.LingerLongerPlayer {
 	args := m.Called(i)
 	if v := args.Get(0); v != nil {

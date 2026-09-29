@@ -37,6 +37,7 @@ func TestLingerLongerWebPresenterOutput(t *testing.T) {
 	assert.Equal(t, float64(-1), m["lastDrawIdx"], "まだ誰も補充していない")
 	assert.Zero(t, m["discarded"])
 	assert.Zero(t, m["eliminatedCnt"])
+	assert.Empty(t, m["lastTrick"])
 
 	players := m["players"].([]any)
 	n := domain.DefaultLingerLongerConfig().PlayerCnt
@@ -75,6 +76,9 @@ func TestLingerLongerWebPresenterCarriesTheDraw(t *testing.T) {
 	assert.Equal(t, float64(1), m["players"].([]any)[1].(map[string]any)["cardCount"])
 	// 出し切ったトリックは場から抜ける。
 	assert.Equal(t, float64(l.GetPlayerCnt()), m["discarded"])
+	trick := m["lastTrick"].([]any)
+	require.Len(t, trick, l.GetPlayerCnt())
+	assert.Equal(t, float64(0), trick[0].(map[string]any)["playerIdx"])
 }
 
 func TestLingerLongerWebPresenterMessages(t *testing.T) {

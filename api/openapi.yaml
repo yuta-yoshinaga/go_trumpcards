@@ -62566,6 +62566,11 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/LingerLongerTrickCard'
+        lastTrick:
+          type: array
+          description: Plays in the most recently completed trick.
+          items:
+            $ref: '#/components/schemas/LingerLongerTrickCard'
         currentPlayerIdx:
           type: integer
         leadPlayerIdx:
