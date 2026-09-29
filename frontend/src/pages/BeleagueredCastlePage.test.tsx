@@ -145,18 +145,18 @@ describe('BeleagueredCastlePage', () => {
   it('gives each empty tableau column a distinct column-numbered aria-label', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BeleagueredCastlePage />);
-    // Columns 3 and 8 (1-based) are empty and each reads distinctly, unlike the
+    // Columns 2 and 7 (0-based) are empty and each reads distinctly, unlike the
     // previous shared "empty" text.
-    await waitFor(() => expect(screen.getByRole('button', { name: '空のタブロー列 3' })).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: '空のタブロー列 8' })).toBeInTheDocument();
-    // The two filled columns (1, 2) are not rendered as empty-column buttons.
-    expect(screen.queryByRole('button', { name: '空のタブロー列 1' })).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole('button', { name: '空のタブロー列 2' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '空のタブロー列 7' })).toBeInTheDocument();
+    // The two filled columns (0, 1) are not rendered as empty-column buttons.
+    expect(screen.queryByRole('button', { name: '空のタブロー列 0' })).not.toBeInTheDocument();
   });
 
   it('keeps empty tableau columns focusable before a card is selected and ignores clicks', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BeleagueredCastlePage />);
-    const emptyColumn = await screen.findByRole('button', { name: '空のタブロー列 3' });
+    const emptyColumn = await screen.findByRole('button', { name: '空のタブロー列 2' });
     expect(emptyColumn).toBeEnabled();
     emptyColumn.focus();
     expect(emptyColumn).toHaveFocus();
@@ -187,7 +187,7 @@ describe('BeleagueredCastlePage', () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BeleagueredCastlePage />);
     fireEvent.click(await screen.findByRole('button', { name: /^♠ 5/ }));
-    const emptyColumn = await screen.findByRole('button', { name: '空のタブロー列 3' });
+    const emptyColumn = await screen.findByRole('button', { name: '空のタブロー列 2' });
     expect(emptyColumn).toBeEnabled();
 
     fireEvent.click(emptyColumn);
