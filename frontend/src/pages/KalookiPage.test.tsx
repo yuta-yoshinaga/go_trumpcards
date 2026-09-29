@@ -512,10 +512,12 @@ describe('KalookiPage', () => {
 
     stageGroup(0, 3); // three 5s = 15
     expect(screen.getByTestId('kalooki-opening-progress')).toHaveTextContent('15 / 51');
+    expect(screen.getByTestId('kalooki-staged-group-0')).toHaveTextContent('グループ1: 開設点に15点加算');
 
     stageGroup(3, 3); // three kings = 30, so 45 — still short of 51
     const progress = screen.getByTestId('kalooki-opening-progress');
     expect(progress).toHaveTextContent('45 / 51');
+    expect(screen.getByTestId('kalooki-staged-group-1')).toHaveTextContent('グループ2: 開設点に30点加算');
     expect(progress.className).not.toContain('text-ds-success');
   });
 });
