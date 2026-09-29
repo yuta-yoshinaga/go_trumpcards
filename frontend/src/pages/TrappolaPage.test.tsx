@@ -58,6 +58,18 @@ describe('TrappolaPage', () => {
     });
   });
 
+  it('exposes each team name as a row header for its score cells', async () => {
+    renderWithProviders(<TrappolaPage />);
+
+    const teamA = await screen.findByRole('rowheader', { name: 'チームA' });
+    expect(teamA).toHaveAttribute('scope', 'row');
+    expect(teamA.closest('tr')).toHaveTextContent('チームA');
+    expect(teamA.closest('tr')).toHaveTextContent('0');
+    expect(screen.getByRole('columnheader', { name: '得点' })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: '今ラウンド(サーズ)' })).toBeInTheDocument();
+    expect(screen.getByRole('rowheader', { name: 'チームB' })).toHaveAttribute('scope', 'row');
+  });
+
   it('selecting a card then playing dispatches play', async () => {
     renderWithProviders(<TrappolaPage />);
     const card = await screen.findByAltText('♠ A');
