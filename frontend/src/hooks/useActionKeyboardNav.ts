@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { IGNORED_TAGS, isModalOpen } from './keyboardNavUtils';
 
 /** One keyboard shortcut bound to a game action. */
@@ -41,15 +41,19 @@ export interface UseActionKeyboardNavOptions {
 
 /** Hook that binds keyboard shortcuts to game actions. */
 export function useActionKeyboardNav({ bindings, enabled }: UseActionKeyboardNavOptions): void {
-  useEffect(() => {
-    if (!enabled) return;
+  const bindingsRef = useRef(bindings);
+  const enabledRef = useRef(enabled);
+  bindingsRef.current = bindings;
+  enabledRef.current = enabled;
 
+  useEffect(() => {
     const handler = (e: KeyboardEvent) => {
+      if (!enabledRef.current) return;
       if (isModalOpen()) return;
       const tag = (e.target as HTMLElement)?.tagName;
       if (tag && IGNORED_TAGS.has(tag)) return;
 
-      const binding = bindings.find((b) => b.key === e.key);
+      const binding = bindingsRef.current.find((b) => b.key === e.key);
       if (binding && binding.enabled !== false) {
         binding.action();
       }
@@ -57,5 +61,5 @@ export function useActionKeyboardNav({ bindings, enabled }: UseActionKeyboardNav
 
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
-  }, [enabled, bindings]);
+  }, []);
 }
