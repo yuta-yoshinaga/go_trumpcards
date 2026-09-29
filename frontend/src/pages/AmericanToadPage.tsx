@@ -451,13 +451,21 @@ function AmericanToadPageContent() {
                   </button>
                 </div>
                 <div className="text-center">
-                  <div className="text-game-text-muted text-xs mb-1">{t('waste')}</div>
+                  <div className="text-game-text-muted text-xs mb-1">
+                    {t('waste')}
+                    {wasteTop && (
+                      <span id="american-toad-waste-count" className="ml-1">
+                        {t('wasteCount', { count: state.waste.length })}
+                      </span>
+                    )}
+                  </div>
                   {wasteTop ? (
                     <button
                       type="button"
                       onClick={() => game.handleSelectSource(wasteZone)}
                       disabled={!isPlaying || loading}
                       aria-label={cardAlt(wasteTop)}
+                      aria-describedby="american-toad-waste-count"
                       aria-pressed={isSourceSelected('waste', undefined, undefined)}
                       draggable={isPlaying && !loading}
                       onDragStart={dnd.handleDragStart(wasteZone)}

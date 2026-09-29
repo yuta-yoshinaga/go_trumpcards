@@ -83,6 +83,18 @@ describe('AmericanToadPage', () => {
     expect(screen.getByText(/山札の通し: 1\/2/)).toBeInTheDocument();
   });
 
+  it('shows and announces the total number of waste cards', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      waste: [card('HEART', 8), card('SPADE', 3)],
+    });
+    renderWithProviders(<AmericanToadPage />);
+
+    expect(await screen.findByText('2枚')).toBeInTheDocument();
+    const wasteCard = screen.getByRole('button', { name: '♠ 3' });
+    expect(wasteCard).toHaveAccessibleDescription('2枚');
+  });
+
   it('keeps a move target focusable and explains why selection is needed', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<AmericanToadPage />);
