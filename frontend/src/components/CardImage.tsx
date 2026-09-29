@@ -27,6 +27,8 @@ export interface CardImageProps {
   card: Card;
   /** Optional accessible name override, used when a game-specific marker is present. */
   ariaLabel?: string;
+  /** Optional description reference for the rendered card. */
+  ariaDescribedBy?: string;
   width?: number;
   style?: React.CSSProperties;
   className?: string;
@@ -51,6 +53,7 @@ const noCalloutStyle = {
 export function CardImage({
   card,
   ariaLabel,
+  ariaDescribedBy,
   width,
   style,
   className,
@@ -65,6 +68,7 @@ export function CardImage({
       <CardFace
         card={card}
         ariaLabel={ariaLabel}
+        ariaDescribedBy={ariaDescribedBy}
         width={width}
         style={style}
         className={className}
@@ -79,6 +83,7 @@ export function CardImage({
     <img
       src={getImagePath(card)}
       alt={ariaLabel ?? cardAlt(card)}
+      aria-describedby={ariaDescribedBy}
       width={CARD_NATURAL_WIDTH}
       height={CARD_NATURAL_HEIGHT}
       loading="lazy"

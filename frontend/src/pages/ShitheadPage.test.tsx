@@ -81,6 +81,28 @@ beforeEach(() => {
 });
 
 describe('ShitheadPage', () => {
+  it('shows the discard pile count and describes the top card with it', async () => {
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/shithead']}>
+        <ShitheadPage />
+      </MemoryRouter>,
+    );
+    const count = await screen.findByTestId('sh-discard-count');
+    expect(count).toHaveTextContent('1枚');
+    expect(screen.getByAltText('♥ 5')).toHaveAttribute('aria-describedby', count.id);
+  });
+
+  it('shows zero discard cards while preserving the empty pile marker', async () => {
+    mockExec.mockResolvedValue({ ...humanTurnState, discardPile: [] });
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/shithead']}>
+        <ShitheadPage />
+      </MemoryRouter>,
+    );
+    expect(await screen.findByTestId('sh-discard-count')).toHaveTextContent('0枚');
+    expect(screen.getByTestId('sh-discard-count').parentElement).toHaveTextContent('—');
+  });
+
   it('shows loading message before state arrives', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(
