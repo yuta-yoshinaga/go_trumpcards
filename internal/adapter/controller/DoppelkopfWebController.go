@@ -36,7 +36,8 @@ type DoppelkopfWebOutputPlayer struct {
 	TrickCount int              `json:"trickCount"`
 	Chips      int              `json:"chips"`
 	// IsRe プレイヤーが Re チームかどうか (チーム公開後のみ true になりうる)
-	IsRe bool `json:"isRe"`
+	IsRe      bool `json:"isRe"`
+	TeamKnown bool `json:"teamKnown"`
 }
 
 // DoppelkopfWebOutput ドッペルコップのWebアウトプット

@@ -67187,6 +67187,9 @@ components:
               isRe:
                 type: boolean
                 description: "True when this seat is on the Re team. Only meaningful once the teams are revealed."
+              teamKnown:
+                type: boolean
+                description: True when the viewer knows this player's team.
               id:
                 type: integer
               isHuman:

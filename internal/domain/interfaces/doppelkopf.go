@@ -55,6 +55,8 @@ type DoppelkopfGame interface {
 	IsSoloRe() bool
 	// AreTeamsRevealed チームが公開済みかを返す
 	AreTeamsRevealed() bool
+	// IsTeamKnown viewerIdx に playerIdx のチームが知られているかを返す
+	IsTeamKnown(viewerIdx, playerIdx int) bool
 	// IsReAnnounced Re 宣言済みかを返す
 	IsReAnnounced() bool
 	// IsKontraAnnounced Kontra 宣言済みかを返す

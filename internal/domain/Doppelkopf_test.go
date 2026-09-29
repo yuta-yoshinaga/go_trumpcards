@@ -451,6 +451,50 @@ func TestDoppelkopf_JSONRoundTrip(t *testing.T) {
 	}
 }
 
+func TestDoppelkopf_IsTeamKnownFromPublicPlay(t *testing.T) {
+	g := newDKGame(true)
+	g.SetReTeam([DoppelkopfPlayerCnt]bool{true, false, true, false})
+	g.playCard(0, dkCard(CardDesignClover, 12))
+	if !g.IsTeamKnown(1, 0) {
+		t.Fatal("played queen holder should be known")
+	}
+	if g.IsTeamKnown(1, 2) {
+		t.Fatal("unshown Re player should remain unknown")
+	}
+	if !g.IsTeamKnown(2, 2) {
+		t.Fatal("viewer should always know their own team")
+	}
+	g.playCard(2, dkCard(CardDesignClover, 12))
+	for viewer := 0; viewer < DoppelkopfPlayerCnt; viewer++ {
+		for player := 0; player < DoppelkopfPlayerCnt; player++ {
+			if !g.IsTeamKnown(viewer, player) {
+				t.Fatalf("team %d should be known to viewer %d", player, viewer)
+			}
+		}
+	}
+}
+
+func TestDoppelkopf_AnnouncementAndKnownTeamPersistence(t *testing.T) {
+	g := newDKGame(true)
+	g.SetReTeam([DoppelkopfPlayerCnt]bool{true, false, true, false})
+	g.applyAnnounce(2)
+	if !g.IsTeamKnown(0, 2) {
+		t.Fatal("announcement should reveal the announcer")
+	}
+	g.clubQueensPlayed = 1
+	data, err := json.Marshal(g)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var restored Doppelkopf
+	if err := json.Unmarshal(data, &restored); err != nil {
+		t.Fatal(err)
+	}
+	if !restored.teamShown[2] || restored.clubQueensPlayed != 1 {
+		t.Fatalf("known team state not persisted: shown=%v queens=%d", restored.teamShown, restored.clubQueensPlayed)
+	}
+}
+
 func TestDoppelkopf_ResolveTrickStoresPointsAndResetClearsThem(t *testing.T) {
 	g := newDKGame(true)
 	g.SetPhase(DoppelkopfPhaseTrickEnd)

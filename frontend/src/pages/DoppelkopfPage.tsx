@@ -274,7 +274,7 @@ function DoppelkopfPageContent() {
                       {state.players.map((p) => (
                         <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
                           {playerName(p.id, p.isHuman)}
-                          {state.teamsRevealed && ` [${p.isRe ? t('team.re') : t('team.kontra')}]`}:{' '}
+                          {(state.teamsRevealed || p.teamKnown) && ` [${p.isRe ? t('team.re') : t('team.kontra')}]`}:{' '}
                           {t('chips', { count: p.chips })} | {t('tricks', { count: p.trickCount })}
                         </div>
                       ))}
@@ -285,7 +285,7 @@ function DoppelkopfPageContent() {
                     {state.players.map((p) => (
                       <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
                         {playerName(p.id, p.isHuman)}
-                        {state.teamsRevealed && ` [${p.isRe ? t('team.re') : t('team.kontra')}]`}:{' '}
+                        {(state.teamsRevealed || p.teamKnown) && ` [${p.isRe ? t('team.re') : t('team.kontra')}]`}:{' '}
                         {t('chips', { count: p.chips })} | {t('tricks', { count: p.trickCount })}
                       </div>
                     ))}

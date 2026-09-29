@@ -16,6 +16,8 @@ export interface DoppelkopfPlayer {
   chips: number;
   /** Whether this player is on the Re team. False until teams are revealed. */
   isRe: boolean;
+  /** Whether this viewer knows the player's team. */
+  teamKnown: boolean;
 }
 
 /** A card played into the current Doppelkopf trick. */
