@@ -137,6 +137,39 @@ func TestShortDeckCuiPresenter_Output(t *testing.T) {
 		assert.Contains(t, result, "♥13")
 	})
 
+	t.Run("human provisional hand shown during betting", func(t *testing.T) {
+		h, players := makeShortDeckForPresenter()
+		h.SetPhase(domain.ShortDeckPhaseFlop)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		players[0].SetHandRank(42)
+		h.SetCommunityCards([]*domain.Card{
+			domain.NewCard(domain.CardDesignClover, 6, false),
+			domain.NewCard(domain.CardDesignDiamond, 9, false),
+			domain.NewCard(domain.CardDesignSpade, 10, false),
+		})
+
+		result := p.Output(h, nil)
+		assert.Contains(t, result, "現在の役: スリーカード")
+		assert.Equal(t, 42, players[0].GetHandRank())
+	})
+
+	t.Run("folded human provisional hand hidden", func(t *testing.T) {
+		h, players := makeShortDeckForPresenter()
+		h.SetPhase(domain.ShortDeckPhaseFlop)
+		players[0].AddCard(domain.NewCard(domain.CardDesignSpade, 6, false))
+		players[0].AddCard(domain.NewCard(domain.CardDesignHeart, 6, false))
+		players[0].SetFolded(true)
+		h.SetCommunityCards([]*domain.Card{
+			domain.NewCard(domain.CardDesignClover, 6, false),
+			domain.NewCard(domain.CardDesignDiamond, 9, false),
+			domain.NewCard(domain.CardDesignSpade, 10, false),
+		})
+
+		result := p.Output(h, nil)
+		assert.NotContains(t, result, "現在の役:")
+	})
+
 	t.Run("human cards hidden when folded", func(t *testing.T) {
 		h, players := makeShortDeckForPresenter()
 		h.SetPhase(domain.ShortDeckPhasePreFlop)
