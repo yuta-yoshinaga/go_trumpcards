@@ -7,6 +7,7 @@
   "title": "トリピークス",
   "stock": "山札",
   "waste": "捨て札",
+  "wasteCount": "{{count}}枚",
   "moveCount": "手数",
   "score": "スコア",
   "playableSummary": "今出せるカード: {{count}}枚",

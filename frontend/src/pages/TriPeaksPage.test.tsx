@@ -202,6 +202,14 @@ describe('TriPeaksPage', () => {
     expect(imgs.length).toBeGreaterThanOrEqual(1);
   });
 
+  it('shows the waste count and describes the waste card with it', async () => {
+    renderWithProviders(<TriPeaksPage />);
+    const count = await screen.findByText('1枚');
+    expect(count).toHaveAttribute('id', 'tripeaks-waste-count');
+    const wasteCard = document.querySelector('img[aria-describedby="tripeaks-waste-count"]');
+    expect(wasteCard).toHaveAttribute('aria-describedby', 'tripeaks-waste-count');
+  });
+
   it('renders empty waste', async () => {
     mockExec.mockResolvedValue({ ...playingState, waste: [] });
     renderWithProviders(<TriPeaksPage />);
