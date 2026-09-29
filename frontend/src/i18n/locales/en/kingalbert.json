@@ -12,6 +12,7 @@
   "empty": "Empty",
   "emptyReserveSlot": "Empty reserve slot {{idx}}",
   "reserveCardAriaLabel": "{{card}} (reserve slot {{idx}})",
+  "tableauCardAriaLabel": "{{card}}, column {{col}}, position {{pos}}",
   "foundationAriaLabel": "{{suit}} foundation {{count}} cards",
   "emptyFoundationAriaLabel": "Empty foundation ({{suit}})",
   "landscapeBanner": "Landscape mode recommended",

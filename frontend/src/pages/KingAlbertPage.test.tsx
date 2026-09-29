@@ -108,6 +108,14 @@ describe('KingAlbertPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '♦ 7（リザーブ枠 0）' })).toBeInTheDocument());
   });
 
+  it('includes zero-based tableau column and position in each card accessible name', async () => {
+    mockExec.mockResolvedValue(playingState);
+    renderWithProviders(<KingAlbertPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ K、列0・0枚目' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '♥ 5、列0・1枚目' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♣ 6、列1・0枚目' })).toBeInTheDocument();
+  });
+
   it('includes the card name and slot number in reserve card accessible names', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
@@ -212,15 +220,17 @@ describe('KingAlbertPage', () => {
     expect(document.querySelectorAll('[data-target-candidate]')).toHaveLength(0);
 
     // ♥5 (列0の最上段) を選ぶ。置けるのは ♣6 (交互の色で1つ上) と空き列だけ。
-    fireEvent.click(screen.getByRole('button', { name: '♥ 5' }));
-    await waitFor(() => expect(screen.getByRole('button', { name: '♣ 6' })).toHaveAttribute('data-target-candidate'));
+    fireEvent.click(screen.getByRole('button', { name: '♥ 5、列0・1枚目' }));
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: '♣ 6、列1・0枚目' })).toHaveAttribute('data-target-candidate'),
+    );
 
     // ♥5 は組札 (♥A の上) には置けない ── 2 でないので。
     for (const f of screen.getAllByLabelText(/組札/)) {
       expect(f).not.toHaveAttribute('data-target-candidate');
     }
     // 自分の下の札も、自分自身の列も候補ではない。
-    expect(screen.getByRole('button', { name: '♠ K' })).not.toHaveAttribute('data-target-candidate');
+    expect(screen.getByRole('button', { name: '♠ K、列0・0枚目' })).not.toHaveAttribute('data-target-candidate');
     // 空き列 7 本 + ♣6 = 8 箇所ちょうど。
     expect(document.querySelectorAll('[data-target-candidate]')).toHaveLength(8);
   });
