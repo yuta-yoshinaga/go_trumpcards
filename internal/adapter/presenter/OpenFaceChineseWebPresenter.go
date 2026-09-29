@@ -66,7 +66,7 @@ func (p *OpenFaceChineseWebPresenter) buildPlayersOutput(g interfaces.OpenFaceCh
 		if player == nil {
 			continue
 		}
-		out = append(out, &controller.OpenFaceChineseWebOutputPlayer{
+		outPlayer := &controller.OpenFaceChineseWebOutputPlayer{
 			ID:          i,
 			IsHuman:     player.GetIsHuman(),
 			Front:       cardsToOutputOrEmpty(player.GetFront()),
@@ -78,7 +78,22 @@ func (p *OpenFaceChineseWebPresenter) buildPlayersOutput(g interfaces.OpenFaceCh
 			Fouled:      player.GetFouled(),
 			Fantasyland: player.GetFantasyland(),
 			TotalScore:  player.GetTotalScore(),
-		})
+			RowDetails:  make([]controller.OpenFaceChineseWebOutputRowDetail, 0),
+		}
+		if g.GetPhase() == domain.OpenFaceChinesePhaseRoundEnd || g.GetGameEndFlag() {
+			breakdown := g.RoundBreakdown(i)
+			outPlayer.RowDetails = make([]controller.OpenFaceChineseWebOutputRowDetail, 0, len(breakdown.Rows))
+			outPlayer.ScoopScore = breakdown.ScoopScore
+			outPlayer.RoyaltyAdjustment = breakdown.RoyaltyAdjustment
+			for _, row := range breakdown.Rows {
+				detail := controller.OpenFaceChineseWebOutputRowDetail{Row: row.Row, Rank: row.Rank, Score: row.Score, Comparisons: make([]controller.OpenFaceChineseWebOutputRowComparison, 0, len(row.Comparisons))}
+				for _, comparison := range row.Comparisons {
+					detail.Comparisons = append(detail.Comparisons, controller.OpenFaceChineseWebOutputRowComparison{OpponentID: comparison.OpponentIdx, Outcome: comparison.Outcome})
+				}
+				outPlayer.RowDetails = append(outPlayer.RowDetails, detail)
+			}
+		}
+		out = append(out, outPlayer)
 	}
 	return out
 }

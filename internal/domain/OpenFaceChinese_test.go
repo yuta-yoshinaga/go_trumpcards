@@ -19,6 +19,23 @@ func newOfcGame(playerCount int, human bool) *OpenFaceChinese {
 	return NewOpenFaceChinese(NewTrumpCards(0), players, cfg)
 }
 
+func TestOpenFaceChineseRowScoringDetails(t *testing.T) {
+	a := NewOpenFaceChinesePlayer(true)
+	b := NewOpenFaceChinesePlayer(false)
+	a.SetFront([]*Card{ofcCard(CardDesignSpade, 2), ofcCard(CardDesignHeart, 2), ofcCard(CardDesignClover, 4)})
+	b.SetFront([]*Card{ofcCard(CardDesignSpade, 2), ofcCard(CardDesignHeart, 5), ofcCard(CardDesignClover, 9)})
+	if got := OpenFaceChineseRowRank(a, OpenFaceChineseRowFront); got != ThreeCardHandPair {
+		t.Fatalf("row rank = %d, want pair (%d)", got, ThreeCardHandPair)
+	}
+	if got := OpenFaceChineseCompareRow(a, b, OpenFaceChineseRowFront); got != 1 {
+		t.Fatalf("row comparison = %d, want win (1)", got)
+	}
+	b.SetFront(a.GetFront())
+	if got := OpenFaceChineseCompareRow(a, b, OpenFaceChineseRowFront); got != 0 {
+		t.Fatalf("equal row comparison = %d, want tie (0)", got)
+	}
+}
+
 // ofcFillRows sets all three rows directly (test helper).
 func ofcFillRows(p *OpenFaceChinesePlayer, front, middle, back []*Card) {
 	p.SetFront(front)
@@ -286,6 +303,100 @@ func TestOpenFaceChinese_ScoreRoundZeroSum(t *testing.T) {
 	}
 	if sum != 0 {
 		t.Errorf("3-player round score sum = %d, want 0 (zero-sum)", sum)
+	}
+}
+
+func TestOpenFaceChinese_RoundBreakdownSumsToRoundScore(t *testing.T) {
+	tests := []struct {
+		name       string
+		playerRows [][3][]*Card
+		wantTie    bool
+	}{
+		{
+			name: "two player scoop",
+			playerRows: [][3][]*Card{
+				{
+					[]*Card{ofcCard(CardDesignSpade, 1), ofcCard(CardDesignHeart, 1), ofcCard(CardDesignClover, 13)},
+					[]*Card{ofcCard(CardDesignSpade, 13), ofcCard(CardDesignHeart, 13), ofcCard(CardDesignClover, 13), ofcCard(CardDesignDiamond, 6), ofcCard(CardDesignSpade, 7)},
+					[]*Card{ofcCard(CardDesignSpade, 1), ofcCard(CardDesignSpade, 10), ofcCard(CardDesignSpade, 8), ofcCard(CardDesignSpade, 5), ofcCard(CardDesignSpade, 3)},
+				},
+				{
+					[]*Card{ofcCard(CardDesignSpade, 2), ofcCard(CardDesignHeart, 5), ofcCard(CardDesignClover, 9)},
+					[]*Card{ofcCard(CardDesignSpade, 2), ofcCard(CardDesignHeart, 4), ofcCard(CardDesignClover, 6), ofcCard(CardDesignDiamond, 8), ofcCard(CardDesignSpade, 10)},
+					[]*Card{ofcCard(CardDesignHeart, 2), ofcCard(CardDesignDiamond, 4), ofcCard(CardDesignClover, 6), ofcCard(CardDesignHeart, 9), ofcCard(CardDesignDiamond, 11)},
+				},
+			},
+		},
+		{
+			name: "three players with tie and foul",
+			playerRows: [][3][]*Card{
+				{
+					[]*Card{ofcCard(CardDesignSpade, 9), ofcCard(CardDesignHeart, 9), ofcCard(CardDesignClover, 2)},
+					[]*Card{ofcCard(CardDesignSpade, 11), ofcCard(CardDesignHeart, 11), ofcCard(CardDesignClover, 5), ofcCard(CardDesignDiamond, 7), ofcCard(CardDesignSpade, 8)},
+					[]*Card{ofcCard(CardDesignSpade, 12), ofcCard(CardDesignHeart, 12), ofcCard(CardDesignClover, 4), ofcCard(CardDesignDiamond, 6), ofcCard(CardDesignSpade, 7)},
+				},
+				{
+					[]*Card{ofcCard(CardDesignSpade, 1), ofcCard(CardDesignHeart, 1), ofcCard(CardDesignClover, 1)},
+					[]*Card{ofcCard(CardDesignSpade, 2), ofcCard(CardDesignHeart, 5), ofcCard(CardDesignClover, 7), ofcCard(CardDesignDiamond, 9), ofcCard(CardDesignSpade, 11)},
+					[]*Card{ofcCard(CardDesignHeart, 3), ofcCard(CardDesignDiamond, 6), ofcCard(CardDesignClover, 8), ofcCard(CardDesignHeart, 10), ofcCard(CardDesignDiamond, 12)},
+				},
+				{
+					[]*Card{ofcCard(CardDesignDiamond, 9), ofcCard(CardDesignClover, 9), ofcCard(CardDesignHeart, 2)},
+					[]*Card{ofcCard(CardDesignSpade, 10), ofcCard(CardDesignHeart, 10), ofcCard(CardDesignClover, 3), ofcCard(CardDesignDiamond, 5), ofcCard(CardDesignSpade, 7)},
+					[]*Card{ofcCard(CardDesignSpade, 13), ofcCard(CardDesignHeart, 13), ofcCard(CardDesignClover, 4), ofcCard(CardDesignDiamond, 6), ofcCard(CardDesignSpade, 8)},
+				},
+			},
+			wantTie: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := newOfcGame(len(tt.playerRows), true)
+			for i, rows := range tt.playerRows {
+				ofcFillRows(g.GetPlayer(i), rows[0], rows[1], rows[2])
+			}
+			g.scoreRound()
+
+			for i := 0; i < g.GetPlayerCnt(); i++ {
+				bd := g.RoundBreakdown(i)
+				sum := bd.ScoopScore + bd.RoyaltyAdjustment
+				for _, row := range bd.Rows {
+					sum += row.Score
+				}
+				if got := g.GetPlayer(i).GetRoundScore(); sum != got {
+					t.Errorf("player %d breakdown sum = %d, round score = %d", i, sum, got)
+				}
+			}
+
+			if tt.wantTie {
+				bd := g.RoundBreakdown(0)
+				for _, row := range bd.Rows {
+					if row.Row != OpenFaceChineseRowFront {
+						continue
+					}
+					foundTie := false
+					for _, comparison := range row.Comparisons {
+						if comparison.OpponentIdx == 2 && comparison.Outcome == 0 {
+							foundTie = true
+						}
+					}
+					if !foundTie {
+						t.Error("player 0 front row has no tie comparison with player 2")
+					}
+				}
+				for _, row := range g.RoundBreakdown(1).Rows {
+					for _, comparison := range row.Comparisons {
+						if comparison.OpponentIdx != 0 && comparison.OpponentIdx != 2 {
+							continue
+						}
+						if comparison.Outcome != -1 {
+							t.Errorf("fouled player 1 row %d vs player %d outcome = %d, want -1", row.Row, comparison.OpponentIdx, comparison.Outcome)
+						}
+					}
+				}
+			}
+		})
 	}
 }
 

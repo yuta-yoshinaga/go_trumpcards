@@ -40,6 +40,9 @@ function makePlayer(overrides: Partial<OpenFaceChinesePlayer> = {}): OpenFaceChi
     fouled: false,
     fantasyland: false,
     totalScore: 0,
+    rowDetails: [],
+    scoopScore: 0,
+    royaltyAdjustment: 0,
     ...overrides,
   };
 }
@@ -71,11 +74,18 @@ const roundEndState = makeState({
       front: [card('SPADE', 2), card('HEART', 3), card('CLOVER', 4)],
       middle: [card('SPADE', 5), card('HEART', 6), card('CLOVER', 7), card('DIAMOND', 8), card('SPADE', 9)],
       back: [card('SPADE', 10), card('HEART', 11), card('CLOVER', 12), card('DIAMOND', 13), card('SPADE', 1)],
-      roundScore: 6,
+      roundScore: 10,
       royalty: 4,
-      totalScore: 6,
+      totalScore: 10,
+      scoopScore: 3,
+      royaltyAdjustment: 4,
+      rowDetails: [
+        { row: 0, rank: 1, score: 1, comparisons: [{ opponentId: 1, outcome: 1 }] },
+        { row: 1, rank: 0, score: 1, comparisons: [{ opponentId: 1, outcome: 0 }] },
+        { row: 2, rank: 0, score: 1, comparisons: [{ opponentId: 1, outcome: 1 }] },
+      ],
     }),
-    makePlayer({ id: 1, isHuman: false, roundScore: -6, fouled: true, totalScore: -6 }),
+    makePlayer({ id: 1, isHuman: false, roundScore: -10, fouled: true, totalScore: -10 }),
   ],
 });
 const gameEndState = makeState({
@@ -120,6 +130,16 @@ describe('OpenFaceChinesePage', () => {
     await waitFor(() => expect(screen.getByTestId('player-0')).toBeInTheDocument());
     expect(screen.getByTestId('player-1')).toBeInTheDocument();
     expect(screen.getByText(/ラウンド: 1/)).toBeInTheDocument();
+  });
+
+  it('shows row breakdowns, a visibly distinct tie, and the score equation after scoring', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<OpenFaceChinesePage />);
+    expect(await screen.findByTestId('row-result-0-front')).toHaveTextContent('トップ（3枚）');
+    expect(screen.getByTestId('row-result-0-middle')).toHaveTextContent('引き分け');
+    expect(screen.getByTestId('round-score-total-0')).toHaveTextContent(
+      '行得点 3 + スクープ 3 + ロイヤリティ差 4 = ラウンド得点 10',
+    );
   });
 
   it('renders the three place buttons during placing', async () => {
@@ -215,12 +235,38 @@ describe('OpenFaceChinesePage', () => {
     mockExec.mockResolvedValue(roundEndState);
     renderWithProviders(<OpenFaceChinesePage />);
     await waitFor(() => expect(screen.getByTestId('round-score-0')).toBeInTheDocument());
+    expect(screen.getByTestId('row-result-0-front')).toHaveTextContent('トップ（3枚） ハイカード CPU 1 に勝ち 1点');
+    expect(screen.getByTestId('row-result-0-front')).not.toHaveTextContent('ワンペア');
+    expect(screen.getByTestId('player-1')).toHaveTextContent('CPU 1');
+    expect(screen.getByTestId('round-score-total-0')).toHaveTextContent('スクープ 3');
+    expect(screen.getByTestId('round-score-total-0')).toHaveTextContent('ロイヤリティ差 4');
     expect(screen.getByText(/ロイヤリティ: \+4/)).toBeInTheDocument();
     expect(screen.getByText('ファウル（無効な並び）')).toBeInTheDocument();
     const nextBtn = screen.getByTestId('next-button');
     mockExec.mockClear();
     fireEvent.click(nextBtn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nextround'));
+  });
+
+  it('distinguishes a tied row comparison from a win or loss', async () => {
+    const tied = makeState({
+      ...roundEndState,
+      players: roundEndState.players.map((player) =>
+        player.id === 0
+          ? {
+              ...player,
+              rowDetails: player.rowDetails?.map((detail) =>
+                detail.row === 1
+                  ? { ...detail, comparisons: [{ opponentId: 1, outcome: 0, score: 0 }], score: 0 }
+                  : detail,
+              ),
+            }
+          : player,
+      ),
+    });
+    mockExec.mockResolvedValue(tied);
+    renderWithProviders(<OpenFaceChinesePage />);
+    expect(await screen.findByTestId('row-result-0-middle')).toHaveTextContent('引き分け');
   });
 
   it('shows the game-over label at game end', async () => {

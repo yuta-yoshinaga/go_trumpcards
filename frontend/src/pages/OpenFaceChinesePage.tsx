@@ -41,6 +41,31 @@ const ROW_BACK = 2;
 /** Maximum number of cards each board row holds (front=3, middle=5, back=5). Mirrors the domain. */
 const ROW_CAPACITIES = [3, 5, 5] as const;
 
+/** Maps domain three-card hand ranks to their translation keys. */
+const FRONT_RANK_KEYS: Record<number, string> = {
+  1: 'highCard',
+  2: 'pair',
+  3: 'flush',
+  4: 'straight',
+  5: 'threeOfAKind',
+  6: 'straightFlush',
+};
+
+/** Maps domain five-card hand ranks to their translation keys. */
+const FIVE_CARD_RANK_KEYS: Record<number, string> = {
+  0: 'highCard',
+  1: 'onePair',
+  2: 'twoPair',
+  3: 'threeOfAKind',
+  4: 'straight',
+  5: 'flush',
+  6: 'fullHouse',
+  7: 'fourOfAKind',
+  8: 'straightFlush',
+  9: 'royalFlush',
+  10: 'fiveOfAKind',
+};
+
 /** Returns true when the given row of a player's board is already full and cannot accept a card. */
 export function isOfcRowFull(player: OpenFaceChinesePlayer | null, row: number): boolean {
   if (!player) return false;
@@ -439,7 +464,36 @@ function OpenFaceChinesePageContent() {
                     )}
                   </div>
                   {isRoundEnd && (
-                    <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs">
+                    <div className="mt-2 flex flex-col gap-1 text-xs" data-testid={`round-score-breakdown-${p.id}`}>
+                      {p.rowDetails.map((detail) => {
+                        const row = rowNames[detail.row];
+                        const rankKey = (detail.row === ROW_FRONT ? FRONT_RANK_KEYS : FIVE_CARD_RANK_KEYS)[detail.rank];
+                        const outcome = detail.comparisons.map((comparison) => {
+                          const opponent = state.players.find((candidate) => candidate.id === comparison.opponentId);
+                          const opponentName = opponent ? playerName(opponent) : '';
+                          return t(comparison.outcome > 0 ? 'rowWin' : comparison.outcome < 0 ? 'rowLoss' : 'rowDraw', {
+                            opponent: opponentName,
+                          });
+                        });
+                        return (
+                          <div key={detail.row} data-testid={`row-result-${p.id}-${row}`}>
+                            {t('rowScoreDetail', {
+                              row: t(`rows.${row}`),
+                              rank: t(`handRanks.${rankKey}`),
+                              result: outcome.join(t('listSeparator')),
+                              score: detail.score,
+                            })}
+                          </div>
+                        );
+                      })}
+                      <span data-testid={`round-score-total-${p.id}`}>
+                        {t('roundScoreEquation', {
+                          rows: p.rowDetails.reduce((sum, detail) => sum + detail.score, 0),
+                          scoop: p.scoopScore,
+                          royalty: p.royaltyAdjustment,
+                          round: p.roundScore,
+                        })}
+                      </span>
                       <span className="text-ds-text-primary" data-testid={`round-score-${p.id}`}>
                         {t('roundScore', { score: p.roundScore })}
                       </span>

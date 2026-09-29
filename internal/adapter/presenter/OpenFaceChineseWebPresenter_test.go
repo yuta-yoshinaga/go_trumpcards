@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/adapter/controller"
@@ -27,6 +28,7 @@ func setupOpenFaceChineseWebMock() (*interfaces.MockOpenFaceChineseGame, []*doma
 	m.On("IsHumanTurn").Return(true)
 	m.On("GetCurrentCard").Return(domain.NewCard(domain.CardDesignSpade, 13, false))
 	m.On("GetConfig").Return(domain.DefaultOpenFaceChineseConfig())
+	m.On("RoundBreakdown", mock.Anything).Return(domain.OpenFaceChineseBreakdown{Rows: make([]domain.OpenFaceChineseRowBreakdown, 0)})
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	human := domain.NewOpenFaceChinesePlayer(true)
 	human.SetPending([]*domain.Card{domain.NewCard(domain.CardDesignSpade, 13, false)})

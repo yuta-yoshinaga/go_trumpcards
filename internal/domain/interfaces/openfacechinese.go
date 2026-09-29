@@ -17,6 +17,8 @@ type OpenFaceChineseGame interface {
 	CpuPlay()
 	// ScoreRound 全段が埋まっていればラウンドを採点する
 	ScoreRound()
+	// RoundBreakdown returns scoring components for a player's completed round.
+	RoundBreakdown(playerIdx int) domain.OpenFaceChineseBreakdown
 
 	// GetConfig ゲーム設定を取得する
 	GetConfig() domain.OpenFaceChineseConfig
