@@ -405,12 +405,16 @@ function DiplomatPageContent() {
                 </div>
                 <div className="text-center">
                   <div className="text-game-text-muted text-xs mb-1">{t('waste')}</div>
+                  <div id="diplomat-waste-count" className="text-game-text-muted text-xs mb-1">
+                    {t('wasteCount', { count: state.waste.length })}
+                  </div>
                   {wasteTop ? (
                     <button
                       type="button"
                       onClick={() => game.handleSelectSource(wasteZone)}
                       disabled={!isPlaying || loading}
                       aria-label={cardAlt(wasteTop)}
+                      aria-describedby="diplomat-waste-count"
                       aria-pressed={isSourceSelected('waste', undefined)}
                       draggable={isPlaying && !loading}
                       onDragStart={dnd.handleDragStart(wasteZone)}
@@ -423,6 +427,7 @@ function DiplomatPageContent() {
                     <div
                       role="img"
                       aria-label={t('emptyWasteAriaLabel')}
+                      aria-describedby="diplomat-waste-count"
                       style={{ width: dims.cw, height: dims.ch }}
                       className="rounded border-2 border-dashed border-white/20 text-game-text-muted text-xs flex items-center justify-center"
                     >

@@ -19,6 +19,7 @@
   "stockAriaLabel": "山札 残り{{count}}枚",
   "emptyStockAriaLabel": "山札は空です（めくり直しはありません）",
   "emptyWasteAriaLabel": "捨て札は空です",
+  "wasteCount": "{{count}}枚",
   "stockRules": "山札は1枚ずつ捨て札へ移り、めくり直しはありません。捨て札の一番上はそのまま移動に使えます。",
   "landscapeBanner": "横画面での表示を推奨します",
   "hint": "ヒント",

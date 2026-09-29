@@ -233,6 +233,16 @@ describe('DiplomatPage', () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<DiplomatPage />);
     await waitFor(() => expect(screen.getByLabelText('捨て札は空です')).toBeInTheDocument());
+    expect(screen.getByText('0枚')).toHaveAttribute('id', 'diplomat-waste-count');
+    expect(screen.getByLabelText('捨て札は空です')).toHaveAttribute('aria-describedby', 'diplomat-waste-count');
+  });
+
+  it('shows the waste count and describes the top card with it', async () => {
+    mockExec.mockResolvedValue({ ...playingState, waste: [card('DIAMOND', 4), card('HEART', 7)] });
+    renderWithProviders(<DiplomatPage />);
+    const wasteCard = await screen.findByRole('button', { name: '♥ 7' });
+    expect(screen.getByText('2枚')).toHaveAttribute('id', 'diplomat-waste-count');
+    expect(wasteCard).toHaveAttribute('aria-describedby', 'diplomat-waste-count');
   });
 
   it('disables the stock once it runs out', async () => {
