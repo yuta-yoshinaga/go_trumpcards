@@ -330,8 +330,14 @@ function ThreeCardPageContent() {
                     {t('payout.pairPlus')}: {state.pairPlusPayout}
                   </div>
                 )}
+                <div>
+                  {t('payout.totalBet')}: {state.anteBet + state.pairPlusBet + state.playBet}
+                </div>
                 <div className="font-bold mt-1">
                   {t('payout.total')}: {state.totalPayout}
+                </div>
+                <div className="font-bold">
+                  {t('payout.netChange')}: {state.netChange > 0 ? `+${state.netChange}` : state.netChange}
                 </div>
               </div>
             )}

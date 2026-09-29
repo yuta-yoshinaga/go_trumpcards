@@ -17,6 +17,7 @@ function makeState(overrides: Partial<ThreeCardResponse> = {}): ThreeCardRespons
     anteBonusPayout: 0,
     pairPlusPayout: 0,
     totalPayout: 0,
+    netChange: 0,
     dealerQualified: false,
     playerHandRank: 1,
     dealerHandRank: 0,

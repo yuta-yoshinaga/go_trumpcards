@@ -44,6 +44,8 @@ type ThreeCardGame interface {
 	GetPairPlusPayout() int
 	// GetTotalPayout 合計配当を取得する
 	GetTotalPayout() int
+	// GetNetChange 純損益を取得する
+	GetNetChange() int
 	// GetDealerQualified ディーラークオリファイを取得する
 	GetDealerQualified() bool
 	// GetPlayerHandRank プレイヤーハンドランクを取得する

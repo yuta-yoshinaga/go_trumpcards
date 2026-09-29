@@ -33,7 +33,9 @@
     "play": "Play",
     "anteBonus": "Ante Bonus",
     "pairPlus": "Pair Plus",
-    "total": "Total"
+    "total": "Total",
+    "totalBet": "Total Bet",
+    "netChange": "Net Change"
   },
   "betSlip": {
     "ante": "Ante",

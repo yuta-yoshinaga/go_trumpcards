@@ -20,6 +20,18 @@ func TestNewDefaultThreeCard(t *testing.T) {
 	assert.Nil(t, tc.GetDealerHand())
 }
 
+func TestThreeCard_GetNetChange(t *testing.T) {
+	tc := domain.NewDefaultThreeCard()
+	require.NoError(t, tc.Bet(100, 0))
+	require.NoError(t, tc.Fold())
+	assert.Equal(t, -100, tc.GetNetChange())
+
+	tc.Reset()
+	require.NoError(t, tc.Bet(100, 0))
+	require.NoError(t, tc.Play())
+	assert.Equal(t, tc.GetTotalPayout()-200, tc.GetNetChange())
+}
+
 func TestThreeCard_Reset(t *testing.T) {
 	tc := domain.NewDefaultThreeCard()
 	// Play a round
