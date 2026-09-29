@@ -341,6 +341,30 @@ describe('FollowTheQueenPage', () => {
     await waitFor(() => expect(screen.getByText('結果:')).toBeInTheDocument());
   });
 
+  it('shows the main pot and side pots with eligible player names in showdown', async () => {
+    mockExec.mockResolvedValue({
+      ...showdownState,
+      sidePots: [
+        { amount: 300, eligiblePlayers: [0, 1, 2] },
+        { amount: 100, eligiblePlayers: [0, 2] },
+        { amount: 50, eligiblePlayers: [2] },
+      ],
+    });
+    renderWithProviders(<FollowTheQueenPage />);
+    await waitFor(() =>
+      expect(screen.getByText('メインポット: 300チップ（対象: あなた、CPU 1、CPU 2）')).toBeInTheDocument(),
+    );
+    expect(screen.getByText('サイドポット1: 100チップ（対象: あなた、CPU 2）')).toBeInTheDocument();
+    expect(screen.getByText('サイドポット2: 50チップ（対象: CPU 2）')).toBeInTheDocument();
+  });
+
+  it('does not show pot details when showdown has a single pot entry', async () => {
+    mockExec.mockResolvedValue({ ...showdownState, sidePots: [{ amount: 150, eligiblePlayers: [0, 1] }] });
+    renderWithProviders(<FollowTheQueenPage />);
+    await waitFor(() => expect(screen.getByText('ショーダウン')).toBeInTheDocument());
+    expect(screen.queryByText(/メインポット|サイドポット/)).not.toBeInTheDocument();
+  });
+
   it('does not show round results when not in showdown', async () => {
     mockExec.mockResolvedValue(thirdStreetState);
     renderWithProviders(<FollowTheQueenPage />);
