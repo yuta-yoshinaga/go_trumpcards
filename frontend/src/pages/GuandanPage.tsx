@@ -344,6 +344,7 @@ function GuandanPageContent() {
                     type="button"
                     onClick={() => (isPlay || isTribute) && toggle(i)}
                     disabled={!isPlay && !isTribute}
+                    aria-pressed={selected.includes(i)}
                     className={`rounded transition-all ${selected.includes(i) ? 'ring-2 ring-ds-info -translate-y-2' : ''} ${
                       isPlay || isTribute ? 'cursor-pointer hover:opacity-90' : 'cursor-default'
                     }`}
