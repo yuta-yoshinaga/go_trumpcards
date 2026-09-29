@@ -102,5 +102,6 @@
     "winners": "Winners",
     "low": "Low"
   },
-  "listSeparator": ", "
+  "listSeparator": ", ",
+  "communityCardsRevealed": "Community cards revealed: {{cards}}"
 }

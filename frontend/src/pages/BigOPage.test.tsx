@@ -264,6 +264,14 @@ beforeEach(() => {
 });
 
 describe('BigOPage', () => {
+  it('announces newly revealed community cards', async () => {
+    mockExec.mockResolvedValue(flopState);
+    renderWithProviders(<BigOPage />);
+    expect(await screen.findByTestId('community-cards-announcement')).toHaveTextContent(
+      'コミュニティカードが公開されました: ♠ 10、♥ 5、♦ 8',
+    );
+  });
+
   it('renders skeleton before first API response', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<BigOPage />);

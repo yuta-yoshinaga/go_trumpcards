@@ -23,6 +23,7 @@ import { PokerTableLayout } from '../components/PokerTableLayout';
 import { RoundResults } from '../components/RoundResults';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
+import { useCommunityCardAnnouncement } from '../hooks/useCommunityCardAnnouncement';
 import { useCommunityPokerGame } from '../hooks/useCommunityPokerGame';
 import { badgeInfoColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSecondary } from '../styles/buttonStyles';
@@ -155,6 +156,7 @@ function OmahaPageContent() {
     cli: { parseCommand: parseOmahaCommand, formatResponse: formatOmahaState, helpText: OMAHA_HELP },
     resetConfig: omahaResetConfig,
   });
+  const communityCardsAnnouncement = useCommunityCardAnnouncement(state?.communityCards ?? [], t);
 
   // At showdown, highlight the human's winning 5 cards under Omaha's
   // must-use-exactly-2-hole + 3-board rule (dim the rest).
@@ -216,6 +218,9 @@ function OmahaPageContent() {
         </>
       }
     >
+      <div aria-live="polite" aria-atomic="true" className="sr-only" data-testid="community-cards-announcement">
+        {communityCardsAnnouncement}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
