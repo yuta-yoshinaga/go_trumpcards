@@ -94,6 +94,47 @@ describe('CinchPage', () => {
     expect(screen.getByRole('button', { name: '1' })).toBeInTheDocument();
   });
 
+  it('shows each player bid status during bidding and updates it from the response', async () => {
+    mockExec.mockResolvedValue(
+      makeCinchState({
+        phase: 0,
+        bidPlayerIdx: 0,
+        bidWinnerIdx: -1,
+        currentBid: 0,
+        players: [
+          { id: 0, isHuman: true, cardCount: 9, cards: [], trickCount: 0, bid: -1, totalScore: 0 },
+          { id: 1, isHuman: false, cardCount: 9, cards: [], trickCount: 0, bid: 0, totalScore: 0 },
+          { id: 2, isHuman: false, cardCount: 9, cards: [], trickCount: 0, bid: 4, totalScore: 0 },
+          { id: 3, isHuman: false, cardCount: 9, cards: [], trickCount: 0, bid: -1, totalScore: 0 },
+        ],
+      }),
+    );
+    renderWithProviders(<CinchPage />);
+
+    const bids = await screen.findByTestId('cinch-bid-status');
+    expect(bids).toHaveTextContent('あなた: 未入札');
+    expect(bids).toHaveTextContent('CPU 1: パス');
+    expect(bids).toHaveTextContent('CPU 2: 4');
+    expect(bids).toHaveTextContent('CPU 3: 未入札');
+
+    mockExec.mockResolvedValue(
+      makeCinchState({
+        phase: 0,
+        bidPlayerIdx: 1,
+        players: [
+          { id: 0, isHuman: true, cardCount: 9, cards: [], trickCount: 0, bid: 5, totalScore: 0 },
+          { id: 1, isHuman: false, cardCount: 9, cards: [], trickCount: 0, bid: -1, totalScore: 0 },
+          { id: 2, isHuman: false, cardCount: 9, cards: [], trickCount: 0, bid: 4, totalScore: 0 },
+          { id: 3, isHuman: false, cardCount: 9, cards: [], trickCount: 0, bid: 0, totalScore: 0 },
+        ],
+      }),
+    );
+    fireEvent.click(await screen.findByRole('button', { name: '5' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('bid', { bid: 5 }));
+    await waitFor(() => expect(bids).toHaveTextContent('あなた: 5'));
+    expect(bids).toHaveTextContent('CPU 3: パス');
+  });
+
   it('passing dispatches bid with bid=0', async () => {
     mockExec.mockResolvedValue(bidPhaseState);
     renderWithProviders(<CinchPage />);

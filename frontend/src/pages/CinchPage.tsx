@@ -276,6 +276,20 @@ function CinchPageContent() {
                   ))}
                 </div>
 
+                {isBidPhase && (
+                  <div
+                    className="mb-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm"
+                    data-testid="cinch-bid-status"
+                  >
+                    {state.players.map((p) => (
+                      <div key={p.id} className="py-0.5">
+                        {playerName(p.id, p.isHuman)}:{' '}
+                        {p.bid < 0 ? t('bidStatus.unbid') : p.bid === 0 ? t('bidStatus.pass') : p.bid}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 {/* Players: cards / tricks */}
                 {isMobile ? (
                   <details className="mb-2 p-2 rounded bg-black/30">
