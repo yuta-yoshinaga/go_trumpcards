@@ -44,8 +44,12 @@ func (p *ContinentalRummyWebPresenter) buildBase(g interfaces.ContinentalRummyGa
 	// **1 回だけ解いて回す (レビュー指摘)。** 呼び出しごとに解き直すと、
 	// 同じ分割探索が 1 レスポンス中で何度も走るうえ、いつか食い違う。
 	resObj.GoOutIdx = -1
-	if idx, ok := g.CanGoOut(); ok {
-		resObj.GoOutIdx = idx
+	resObj.GoOutGroups = make([][]int, 0)
+	if hand := g.GetPlayer(domain.ContinentalRummyHumanIdx).GetHand(); len(hand) > 0 {
+		if idx, groups, ok := domain.FindContinentalRummyDiscardGroups(hand); ok {
+			resObj.GoOutIdx = idx
+			resObj.GoOutGroups = groups
+		}
 	}
 	// 引く前に、配られた 15 枚のまま上がれるならそれも伝える。
 	resObj.CanGoOutOnDeal = g.CanGoOutOnTheDeal()

@@ -104,6 +104,7 @@ function ContinentalRummyPageContent() {
   const goOutIdx = state?.goOutIdx ?? -1;
   // **引かずに上がるほうが重い (10 点 vs 7 点)。** 別の入口として出す。
   const canGoOutOnDeal = canDraw && !!state?.canGoOutOnDeal;
+  const canShowGoOutGroups = canDiscard && goOutIdx >= 0;
 
   const handleGoOut = useCallback(() => {
     if (goOutIdx >= 0) execApi('goout', { handIndex: goOutIdx });
@@ -331,6 +332,14 @@ function ContinentalRummyPageContent() {
                 dataTutorialPrefix="continentalrummy"
                 validIndices={canDiscard ? legalIndices : undefined}
                 legalIndices={canDiscard ? legalIndices : undefined}
+                highlightIndices={canShowGoOutGroups ? state.goOutGroups.flat() : undefined}
+                cardBadgeFor={(idx) => {
+                  if (!canShowGoOutGroups) return null;
+                  if (idx === goOutIdx) return { glyph: '×', title: t('discardCard') };
+                  // goOutGroups covers every hand index except goOutIdx, so a run always exists here.
+                  const run = state.goOutGroups.findIndex((group) => group.includes(idx)) + 1;
+                  return { glyph: String(run), title: t('runLabel', { n: run }) };
+                }}
                 restrictedTooltip={t('restrictedTooltip')}
               />
             )}

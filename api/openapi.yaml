@@ -75194,6 +75194,13 @@ components:
         goOutIdx:
           type: integer
           description: "Hand position to discard in order to go out, or -1 when the hand cannot. Solved on the server so the fifteen-card split is not re-derived in the page."
+        goOutGroups:
+          type: array
+          items:
+            type: array
+            items:
+              type: integer
+          description: "Hand indices grouped into legal runs after discarding goOutIdx; empty when the hand cannot go out."
         canGoOutOnDeal:
           type: boolean
           description: "Whether the dealt hand already goes out without drawing. That pays more than going out after a draw, so it is a separate entry point."

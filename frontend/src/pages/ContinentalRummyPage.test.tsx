@@ -54,6 +54,26 @@ describe('ContinentalRummyPage', () => {
     expect(screen.getByTestId('cont-nosets')).toHaveTextContent('セット');
   });
 
+  it('highlights the server supplied run cards only when a go-out exists', async () => {
+    mockExec.mockResolvedValue(discardState);
+    renderWithProviders(<ContinentalRummyPage />);
+    await screen.findByTestId('cont-goout');
+    const hand = document.querySelector('[data-tutorial="continentalrummy-player-hand"]');
+    expect(hand).toBeInTheDocument();
+    expect(hand?.querySelectorAll('.ring-ds-success').length).toBeGreaterThanOrEqual(15);
+    for (let runIndex = 1; runIndex <= 5; runIndex++) {
+      expect(screen.getAllByRole('button', { name: new RegExp(`連番${runIndex}`) })).toHaveLength(3);
+    }
+    expect(screen.getByRole('button', { name: /捨てる札/ })).toBeInTheDocument();
+  });
+
+  it('shows no run markers when the hand cannot go out', async () => {
+    mockExec.mockResolvedValue(makeContinentalRummyState({ goOutIdx: -1, goOutGroups: [] }));
+    renderWithProviders(<ContinentalRummyPage />);
+    await screen.findByTestId('cont-discard-notice');
+    expect(screen.queryByRole('button', { name: /連番[1-5]/ })).not.toBeInTheDocument();
+  });
+
   it('shows the stock, the discard top and every seat', async () => {
     renderWithProviders(<ContinentalRummyPage />);
     expect(await screen.findByTestId('cont-stock')).toHaveTextContent('30');

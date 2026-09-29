@@ -9,6 +9,8 @@
   "discardNotice": "Not a go-out yet - tap a card to throw one.",
   "waitNotice": "Waiting for the other seats",
   "restrictedTooltip": "You cannot discard right now",
+  "runLabel": "Run {{n}}",
+  "discardCard": "Discard this card",
   "washout": "The stock is spent and nobody went out - the round is washed out.",
   "wentOut": "{{name}} went out",
   "collected": "{{per}} from each opponent, {{total}} in all",

@@ -77,7 +77,8 @@ type ContinentalRummyWebOutput struct {
 	//
 	// **上がれるかはページ側で解き直さない。** 15 枚の分割問題なので、規則が
 	// 2 か所に増えるとどこかで食い違う。
-	GoOutIdx int `json:"goOutIdx"`
+	GoOutIdx    int     `json:"goOutIdx"`
+	GoOutGroups [][]int `json:"goOutGroups"`
 	// CanGoOutOnDeal は引かずに、配られた 15 枚のまま上がれるか。
 	//
 	// **こちらは札を捨てない上がり。** 引いたあとの上がりとは加点が違う
@@ -131,6 +132,7 @@ func newContinentalRummyDefaultOutput(msg string) *ContinentalRummyWebOutput {
 		Layouts:        domain.ContinentalRummyLayouts(),
 		WinnerIdx:      -1,
 		GoOutIdx:       -1,
+		GoOutGroups:    make([][]int, 0),
 		HintDiscardIdx: -1,
 		WebOutputBase:  WebOutputBase{Message: msg},
 	}

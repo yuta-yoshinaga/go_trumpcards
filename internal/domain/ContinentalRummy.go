@@ -528,6 +528,32 @@ func continentalGoOutDiscard(hand []*Card) (int, bool) {
 	return -1, false
 }
 
+// FindContinentalRummyDiscardGroups returns the run card indices after the go-out discard.
+func FindContinentalRummyDiscardGroups(hand []*Card) (int, [][]int, bool) {
+	idx, ok := continentalGoOutDiscard(hand)
+	if !ok {
+		return -1, nil, false
+	}
+	rest := make([]*Card, 0, ContinentalRummyHandSize)
+	original := make([]int, 0, ContinentalRummyHandSize)
+	for i, card := range hand {
+		if i != idx {
+			rest = append(rest, card)
+			original = append(original, i)
+		}
+	}
+	groups, ok := FindContinentalRummyGoOut(rest)
+	if !ok {
+		return -1, nil, false
+	}
+	for gi := range groups {
+		for ci := range groups[gi] {
+			groups[gi][ci] = original[groups[gi][ci]]
+		}
+	}
+	return idx, groups, true
+}
+
 // continentalRummyJSON は保存用の姿。
 //
 // **非公開フィールドしか無い型は MarshalJSON が無いと `{}` になる。**
