@@ -33,6 +33,7 @@
   "bidProgress.nilFail": "Nil failed",
   "bagWarning": "Bags {{bags}}/{{threshold}} — watch out",
   "currentTrick": "Current Trick",
+  "trickWinnerBadge": "Winner",
   "scores": "Scores",
   "scoresPlayer": "Player",
   "scoresBid": "Bid",

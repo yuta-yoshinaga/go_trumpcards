@@ -61,6 +61,29 @@ beforeEach(() => {
 });
 
 describe('SpadesPage', () => {
+  it('marks the resolved trick winner when the winner is not the previous leader', async () => {
+    mockExec.mockResolvedValue(
+      makeSpadesState({
+        phase: 2,
+        leadPlayerIdx: 2,
+        currentTrick: [
+          { playerIdx: 0, card: { design: 'DIAMOND', value: 3 } },
+          { playerIdx: 1, card: { design: 'HEART', value: 5 } },
+          { playerIdx: 2, card: { design: 'SPADE', value: 2 } },
+          { playerIdx: 3, card: { design: 'CLOVER', value: 9 } },
+        ],
+      }),
+    );
+    renderWithProviders(<SpadesPage />);
+
+    const cards = await screen.findByTestId('trick-display-cards');
+    const winner = cards.querySelector('[data-trick-winner="true"]');
+    expect(winner).toBeInTheDocument();
+    expect(winner).toHaveTextContent('CPU 2');
+    expect(winner).toHaveTextContent('勝ち');
+    expect(cards.querySelectorAll('[data-trick-winner="true"]')).toHaveLength(1);
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<SpadesPage />);
