@@ -25,6 +25,7 @@ const mockExec = vi.mocked(manilleApi.exec);
 const playPhaseState = makeManilleState();
 const trickEndState = makeManilleState({
   phase: 1,
+  trickCardPoints: 9,
   currentTrick: [
     { playerIdx: 0, card: { design: 'HEART', value: 12 } },
     { playerIdx: 1, card: { design: 'CLOVER', value: 13 } },
@@ -91,7 +92,7 @@ describe('ManillePage', () => {
     mockExec.mockResolvedValue(trickEndState);
     renderWithProviders(<ManillePage />);
     const banner = await screen.findByTestId('manille-trick-winner');
-    expect(banner).toHaveTextContent('あなた（チームA）がトリック獲得');
+    expect(banner).toHaveTextContent('あなた（チームA）がトリック獲得（9点）');
     expect(banner).toHaveClass('text-ds-accent');
     expect(banner).toHaveAttribute('role', 'status');
     expect(banner).toHaveAttribute('aria-live', 'polite');
@@ -226,11 +227,12 @@ describe('ManillePage round progress', () => {
 
   // ラウンドが終われば既存の結果表示が引き継ぐ。二重に出さない。
   it('hides the running panel once the round has ended', async () => {
-    mockExec.mockResolvedValue(makeManilleState({ phase: 2, roundCardPoints: [35, 25] }));
+    mockExec.mockResolvedValue(makeManilleState({ phase: 2, roundCardPoints: [35, 25], trickCardPoints: 8 }));
     renderWithProviders(<ManillePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
 
     expect(screen.queryByTestId('manille-round-points')).not.toBeInTheDocument();
     expect(screen.getByText(/ラウンド結果/)).toBeInTheDocument();
+    expect(screen.getByTestId('manille-trick-winner')).toHaveTextContent('8点');
   });
 });
