@@ -23,6 +23,13 @@
   "cardNotPlayable": "プレイ不可",
   "teamScores": "チームスコア",
   "team": "チーム{{n}}",
+  "scoreRows": {
+    "cumulative": "累計",
+    "round": "ラウンド",
+    "weis": "Weis",
+    "stock": "Stöck",
+    "lastTrick": "ラストトリック"
+  },
   "teamYou": "チーム{{n}} (あなた)",
   "trumpSuit": "切り札: {{suit}}",
   "noTrump": "切り札未決定",
