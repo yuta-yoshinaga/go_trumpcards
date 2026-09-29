@@ -81,6 +81,7 @@ const playPhaseState: NapoleonResponse = {
   trickNumber: 1,
   currentPlayerIdx: 0,
   bidPlayerIdx: 0,
+  leadPlayerIdx: 0,
   currentTrick: [],
   trumpSuit: 1,
   adjutantCard: { design: 'HEART', value: 1 },
@@ -483,6 +484,14 @@ describe('NapoleonPage', () => {
     await waitFor(() =>
       expect(screen.getByRole('button', { name: '\u6b21\u306e\u30c8\u30ea\u30c3\u30af' })).toBeInTheDocument(),
     );
+  });
+
+  it('highlights the trick winner when the winner is not the leader', async () => {
+    mockExec.mockResolvedValue({ ...trickEndState, leadPlayerIdx: 1 });
+    const { container } = renderWithProviders(<NapoleonPage />);
+    await waitFor(() => expect(screen.getByTestId('trick-winner-badge')).toBeInTheDocument());
+    expect(container.querySelector('[data-trick-winner="true"]')).toBeInTheDocument();
+    expect(container.querySelectorAll('[data-trick-winner="true"]')).toHaveLength(1);
   });
 
   it('shows next round button on round end', async () => {
