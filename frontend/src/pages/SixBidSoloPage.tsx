@@ -331,6 +331,7 @@ function SixBidSoloPageContent() {
                     key={`hand-${c.design}-${c.value}-${i}`}
                     type="button"
                     data-hint-action="play"
+                    aria-pressed={selected === i}
                     onClick={() => setSelected(i)}
                     disabled={loading || (isPlay && !canPlay(i))}
                     className={`rounded ${selected === i ? 'ring-2 ring-ds-accent' : ''} ${

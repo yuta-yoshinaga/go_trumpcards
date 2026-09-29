@@ -121,6 +121,19 @@ describe('SixBidSoloPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 1 }));
   });
 
+  it('announces hand-card selection and deselection', async () => {
+    renderWithProviders(<SixBidSoloPage />);
+    await waitFor(() => expect(handButtons()).toHaveLength(3));
+
+    const hand = handButtons();
+    expect(hand[0]).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(hand[0]);
+    expect(hand[0]).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(hand[1]);
+    expect(hand[0]).toHaveAttribute('aria-pressed', 'false');
+    expect(hand[1]).toHaveAttribute('aria-pressed', 'true');
+  });
+
   it('shows each trick card with the player who played it', async () => {
     mockExec.mockResolvedValue(
       makeState({
