@@ -340,7 +340,7 @@ function MadrassoPageContent() {
                     <tbody>
                       {teamLabels.map((label, idx) => (
                         <tr key={label} className={humanPlayer && humanPlayer.teamId === idx ? 'text-ds-accent' : ''}>
-                          <th scope="row" className="text-left">
+                          <th scope="row" className="text-left font-normal">
                             {t('teamLabel', { team: label })}
                           </th>
                           <td className="text-center">{state.teamScores[idx] ?? 0}</td>

@@ -37,8 +37,8 @@ describe('MadrassoPage', () => {
   it('uses team names as row headers while retaining score column headers', async () => {
     renderWithProviders(<MadrassoPage />);
 
-    expect(await screen.findByRole('rowheader', { name: 'チームA' })).toBeInTheDocument();
-    expect(screen.getByRole('rowheader', { name: 'チームB' })).toBeInTheDocument();
+    expect(await screen.findByRole('rowheader', { name: 'チームA' })).toHaveClass('text-left', 'font-normal');
+    expect(screen.getByRole('rowheader', { name: 'チームB' })).toHaveClass('text-left', 'font-normal');
     expect(screen.getByRole('columnheader', { name: '得点' })).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: '今ラウンド' })).toBeInTheDocument();
   });
