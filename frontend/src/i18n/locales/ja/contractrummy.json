@@ -19,6 +19,7 @@
   "drawStock": "山札から引く",
   "drawDiscard": "捨て札を取る",
   "addSlot": "スロットに追加",
+  "slotLimitReached": "必要なスロット数に達しました",
   "removeLastSlot": "最後のスロットを取り消す",
   "submitContract": "コントラクトを場に出す",
   "meldExtra": "追加メルド",

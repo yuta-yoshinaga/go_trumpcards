@@ -19,6 +19,7 @@
   "drawStock": "Draw from stock",
   "drawDiscard": "Take discard",
   "addSlot": "Add to slot",
+  "slotLimitReached": "The required number of slots has been reached",
   "removeLastSlot": "Undo last slot",
   "submitContract": "Submit contract",
   "meldExtra": "Lay extra meld",
