@@ -14,6 +14,7 @@
   "bidPrompt": "Bid your longest trump suit (at least {{min}}; yours is {{longest}})",
   "bidMark": "{{n}}",
   "trick": "Trick",
+  "trickCardAriaLabel": "{{player}}: {{card}}",
   "handPoints": "This hand: Team 0 {{a}} / Team 1 {{b}} (120 in all)",
   "team": "Team {{n}}",
   "opponentHand": "{{name}}: {{n}} card(s)",

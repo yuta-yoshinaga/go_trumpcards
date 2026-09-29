@@ -117,6 +117,33 @@ describe('SjavsPage', () => {
     await waitFor(() => expect(screen.getAllByText(/切札13枚/).length).toBeGreaterThan(0));
   });
 
+  it('labels each trick card with its player visually and accessibly', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: SjavsPhase.PLAY,
+        trick: [
+          { playerIdx: 1, card: card('SPADE', 7) },
+          { playerIdx: 2, card: card('HEART', 9) },
+        ],
+      }),
+    );
+    renderWithProviders(<SjavsPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    expect(screen.getByText('CPU 1')).toBeInTheDocument();
+    expect(screen.getByText('CPU 2')).toBeInTheDocument();
+    expect(screen.getByAltText('CPU 1: ♠ 7')).toBeInTheDocument();
+    expect(screen.getByAltText('CPU 2: ♥ 9')).toBeInTheDocument();
+  });
+
+  it('shows no player labels when the trick is empty', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: SjavsPhase.PLAY, trick: [] }));
+    renderWithProviders(<SjavsPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+
+    expect(screen.queryByText('CPU 1')).not.toBeInTheDocument();
+  });
+
   it('offers only the bid lengths the rules allow', async () => {
     // 5 枚未満は申告できず、自分の最長を超える申告もできない。
     renderWithProviders(<SjavsPage />);
