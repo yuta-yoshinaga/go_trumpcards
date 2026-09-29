@@ -20,6 +20,7 @@ func mustPiedmonteseTarotOutputJSON(msg string) string {
 	out := &controller.PiedmonteseTarotWebOutput{
 		Players:         []*controller.PiedmonteseTarotWebOutputPlayer{},
 		CurrentTrick:    []*controller.WebOutputTrickCard{},
+		ScartoCards:     []*controller.WebOutputCard{},
 		PlayableIndices: []int{},
 		PlayerScores:    []int{},
 		DealScores:      []int{},

@@ -45,6 +45,7 @@
   "outcomeLoss": "平均より下",
   "roundResult": {
     "title": "ディール結果",
+    "scartoCards": "スカルト（捨て札）",
     "outcome": "あなたの結果: {{outcome}}",
     "playerLine": "{{name}}: {{delta}}（累計 {{score}}）",
     "total": "卓のカード点合計: {{total}}点（78点）",

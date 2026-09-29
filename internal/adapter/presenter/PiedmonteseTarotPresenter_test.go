@@ -147,6 +147,44 @@ func TestPiedmonteseTarotCuiPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestPiedmonteseTarotWebPresenter_OutputIncludesScartoAtRoundEnd(t *testing.T) {
+	g := piedmonteseGame(4)
+	card, err := json.Marshal(domain.NewCard(domain.CardDesignHeart, 2, false))
+	require.NoError(t, err)
+	state, err := json.Marshal(g)
+	require.NoError(t, err)
+	var fields map[string]json.RawMessage
+	require.NoError(t, json.Unmarshal(state, &fields))
+	fields["ph"] = json.RawMessage("3")
+	fields["sc"] = json.RawMessage("[" + string(card) + "]")
+	state, err = json.Marshal(fields)
+	require.NoError(t, err)
+	require.NoError(t, json.Unmarshal(state, g))
+
+	var out struct {
+		ScartoCards []struct {
+			Design string `json:"design"`
+			Value  int    `json:"value"`
+			Glyph  string `json:"glyph"`
+			Deck   string `json:"deck"`
+		} `json:"scartoCards"`
+	}
+	require.NoError(t, json.Unmarshal([]byte((&presenter.PiedmonteseTarotWebPresenter{}).Output(g, nil)), &out))
+	require.Len(t, out.ScartoCards, 1)
+	assert.Equal(t, "HEART", out.ScartoCards[0].Design)
+	assert.Equal(t, 2, out.ScartoCards[0].Value)
+	assert.Equal(t, "♥", out.ScartoCards[0].Glyph)
+	assert.Equal(t, "tarot", out.ScartoCards[0].Deck)
+
+	// During a live deal the buried cards are not included in the Web response.
+	fields["ph"] = json.RawMessage("1")
+	state, err = json.Marshal(fields)
+	require.NoError(t, err)
+	require.NoError(t, json.Unmarshal(state, g))
+	require.NoError(t, json.Unmarshal([]byte((&presenter.PiedmonteseTarotWebPresenter{}).Output(g, nil)), &out))
+	assert.Empty(t, out.ScartoCards)
+}
+
 func TestPiedmonteseTarotWebPresenter_Output(t *testing.T) {
 	p := new(presenter.PiedmonteseTarotWebPresenter)
 

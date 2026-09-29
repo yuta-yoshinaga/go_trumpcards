@@ -2086,6 +2086,7 @@ const basePiedmonteseTarotState: PiedmonteseTarotResponse = {
   leadPlayerIdx: 0,
   dealerIdx: 3,
   scartoCount: 2,
+  scartoCards: [],
   talonSize: 2,
   currentTrick: [],
   playerScores: [0, 0, 0, 0],

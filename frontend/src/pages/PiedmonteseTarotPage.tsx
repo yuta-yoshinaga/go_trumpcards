@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import type { piedmonteseTarotApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { CardImage } from '../components/CardImage';
 import { CliTerminal } from '../components/cli/CliTerminal';
 import { CliToggle } from '../components/cli/CliToggle';
 import { SettingsPanel } from '../components/common/SettingsPanel';
@@ -33,6 +34,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { PiedmonteseTarotResponse } from '../types/card';
 import { PiedmonteseTarotPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { PIEDMONTESE_TAROT_HELP, parsePiedmonteseTarotCommand } from '../utils/cli/commands/piedmonteseTarotCommands';
 import { formatPiedmonteseTarotState } from '../utils/cli/formatters/piedmonteseTarotFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -336,6 +338,21 @@ function PiedmonteseTarotPageContent() {
                   >
                     <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
                     <div>{t('roundResult.outcome', { outcome: t(OUTCOME_KEYS[state.outcome] ?? 'outcomeNone') })}</div>
+                    {state.scartoCards.length > 0 && (
+                      <div className="mt-1" data-testid="piedmontesetarot-scarto-cards">
+                        <div>{t('roundResult.scartoCards')}</div>
+                        <div className="flex flex-wrap gap-1">
+                          {state.scartoCards.map((card, i) => (
+                            <CardImage
+                              key={`${card.design}-${card.value}-${i}`}
+                              card={card}
+                              ariaLabel={cardAlt(card)}
+                              width={42}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     {state.players.map((p, i) => {
                       const delta = state.dealScores[i] ?? 0;
                       return (

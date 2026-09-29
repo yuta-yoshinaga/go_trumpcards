@@ -76,6 +76,8 @@ export interface PiedmonteseTarotResponse extends BaseGameResponse {
   dealerIdx: number;
   /** Cards the dealer has already buried this deal (0 until the scarto is done). */
   scartoCount: number;
+  /** Cards the dealer buried; populated only after the deal ends. */
+  scartoCards: Card[];
   /** Cards the dealer must bury: 2 at four seats, 3 at three seats. */
   talonSize: number;
   currentTrick: PiedmonteseTarotTrickCard[];

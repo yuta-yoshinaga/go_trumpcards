@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { piedmonteseTarotApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
@@ -107,6 +107,10 @@ const roundEndState = makePiedmonteseTarotState({
   isHumanTurn: false,
   playableIndices: [],
   outcome: 1,
+  scartoCards: [
+    suit(2, 'HEART', '♥', '2'),
+    { design: 'JOKER' as const, value: 21, glyph: '✦', label: '21', color: 'purple', deck: 'tarot' },
+  ],
   dealScores: [12, -4, -4, -4],
   players: makePiedmonteseTarotState().players.map((p, i) => ({
     ...p,
@@ -117,12 +121,28 @@ const roundEndState = makePiedmonteseTarotState({
   })),
 });
 
+const roundEndWithoutScartoState = makePiedmonteseTarotState({ ...roundEndState, scartoCards: [] });
+
 beforeEach(() => {
   mockExec.mockReset();
   mockExec.mockResolvedValue(playState);
 });
 
 describe('PiedmonteseTarotPage', () => {
+  it('shows the buried cards in the round result with accessible card names', async () => {
+    mockExec.mockResolvedValue(roundEndState);
+    renderWithProviders(<PiedmonteseTarotPage />);
+    const scartoCards = await screen.findByTestId('piedmontesetarot-scarto-cards');
+    expect(within(scartoCards).getByRole('img', { name: '2 ♥' })).toBeInTheDocument();
+    expect(within(scartoCards).getByRole('img', { name: '21 ✦' })).toBeInTheDocument();
+  });
+
+  it('does not show an empty buried cards list when there is no scarto', async () => {
+    mockExec.mockResolvedValue(roundEndWithoutScartoState);
+    renderWithProviders(<PiedmonteseTarotPage />);
+    expect(await screen.findByTestId('piedmontesetarot-result')).toBeInTheDocument();
+    expect(screen.queryByTestId('piedmontesetarot-scarto-cards')).not.toBeInTheDocument();
+  });
   it('calls reset on mount with the configured table', async () => {
     renderWithProviders(<PiedmonteseTarotPage />);
     await waitFor(() =>

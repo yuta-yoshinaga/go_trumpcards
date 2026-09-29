@@ -54,6 +54,8 @@ type PiedmonteseTarotGame interface {
 	GetDealerIdx() int
 	// GetScartoCount 親が捨てた札の枚数を取得する
 	GetScartoCount() int
+	// GetScarto 親が捨てた札を取得する
+	GetScarto() []*domain.Card
 	// TalonSize タロン (親が捨てる枚数) を取得する
 	TalonSize() int
 	// HandSize 1 人の手札枚数を取得する
