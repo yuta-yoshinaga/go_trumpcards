@@ -48,6 +48,19 @@ func TestNiuNiu_Reset(t *testing.T) {
 	}
 }
 
+func TestNiuNiu_GetDrawPileCount(t *testing.T) {
+	n := newTestNiuNiu()
+	if got := n.GetDrawPileCount(); got != 52 {
+		t.Fatalf("draw pile after reset = %d, want 52", got)
+	}
+	if err := n.PlaceBet(NiuNiuMinBet); err != nil {
+		t.Fatal(err)
+	}
+	if got := n.GetDrawPileCount(); got != 52-NiuNiuSeatCnt*NiuNiuHandSize {
+		t.Fatalf("draw pile after deal = %d, want %d", got, 52-NiuNiuSeatCnt*NiuNiuHandSize)
+	}
+}
+
 // A brand-new session must open on the betting phase with a CPU banking --
 // `banker`'s zero value is the human seat, and starting there would end the
 // round before the player ever placed a stake.

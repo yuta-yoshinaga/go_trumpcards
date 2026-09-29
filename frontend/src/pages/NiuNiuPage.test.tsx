@@ -42,6 +42,7 @@ function makeState(overrides?: Partial<NiuNiuResponse>): NiuNiuResponse {
     bankerHand: hiddenHand(0),
     bankerIdx: 3,
     chips: 900,
+    drawPileCount: 32,
     maxMultiplier: 3,
     bankerRankKey: '',
     phase: 1,
@@ -66,6 +67,12 @@ describe('NiuNiuPage', () => {
     mockExec.mockResolvedValue(makeState());
     renderWithProviders(<NiuNiuPage />);
     await waitFor(() => expect(screen.getByText(/チップ: 900/)).toBeInTheDocument());
+  });
+
+  it('shows the undealt shoe count', async () => {
+    mockExec.mockResolvedValue(makeState({ drawPileCount: 32 }));
+    renderWithProviders(<NiuNiuPage />);
+    await waitFor(() => expect(screen.getByText('山札の残り: 32')).toBeInTheDocument());
   });
 
   // The server withholds a hidden hand's cards; the page renders backs from

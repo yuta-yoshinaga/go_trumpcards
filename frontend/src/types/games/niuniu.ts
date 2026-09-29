@@ -46,6 +46,8 @@ export interface NiuNiuResponse extends BaseGameResponse {
   bankerHand?: NiuNiuHand;
   bankerIdx: number;
   chips: number;
+  /** Number of undealt cards remaining in the shoe. */
+  drawPileCount: number;
   /**
    * Largest payout multiplier in the table. A stake is only legal if the stack
    * covers `stake * maxMultiplier`, because a banker's Niu Niu takes three

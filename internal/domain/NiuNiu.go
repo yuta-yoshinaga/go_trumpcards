@@ -434,6 +434,9 @@ func (n *NiuNiu) GetPhase() int { return n.phase }
 // GetChips 人間のチップ
 func (n *NiuNiu) GetChips() int { return n.chips.GetChips() }
 
+// GetDrawPileCount は山札に残っている未配布カード数を返す。
+func (n *NiuNiu) GetDrawPileCount() int { return n.trumpCards.GetRemainingCount() }
+
 // GetMaxMultiplier 最大の配当倍率。賭けられる上限は残高をこれで割った額になる。
 func (n *NiuNiu) GetMaxMultiplier() int { return NiuNiuMaxMultiplier }
 

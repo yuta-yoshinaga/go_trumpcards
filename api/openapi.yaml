@@ -35554,6 +35554,9 @@ components:
           type: integer
         chips:
           type: integer
+        drawPileCount:
+          type: integer
+          description: Number of undealt cards remaining in the 52-card shoe.
         maxMultiplier:
           type: integer
           description: |

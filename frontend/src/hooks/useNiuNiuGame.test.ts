@@ -27,6 +27,7 @@ const baseState: NiuNiuResponse = {
   ],
   bankerIdx: 3,
   chips: 1000,
+  drawPileCount: 52,
   maxMultiplier: 3,
   bankerRankKey: '',
   phase: 1,

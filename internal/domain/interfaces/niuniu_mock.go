@@ -30,6 +30,11 @@ func (_m *MockNiuNiuGame) GetChips() int {
 	return ret.Int(0)
 }
 
+func (_m *MockNiuNiuGame) GetDrawPileCount() int {
+	ret := _m.Called()
+	return ret.Int(0)
+}
+
 func (_m *MockNiuNiuGame) GetSeats() []*domain.NiuNiuSeat {
 	ret := _m.Called()
 	v := ret.Get(0)
