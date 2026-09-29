@@ -41,6 +41,7 @@
   "newGame": "新しいゲーム",
   "roundResult": {
     "title": "ディール結果",
+    "declarer": "宣言者: {{name}}",
     "thrownIn": "全員パスのため流局しました。得点は動きません。",
     "wonPoints": "成功！ {{got}}点（必要 {{target}}点）",
     "lostPoints": "失敗。{{got}}点（必要 {{target}}点）",
