@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { bisleyApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
@@ -250,6 +250,7 @@ describe('BisleyPage', () => {
   });
 
   it('announces auto-complete start and completion in a persistent live region', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
     mockExec.mockResolvedValue({
       ...playingState,
       aceFoundations: [
@@ -260,17 +261,24 @@ describe('BisleyPage', () => {
       ],
     });
     const { unmount } = renderWithProviders(<BisleyPage />);
-    await vi.waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeEnabled());
-    const liveRegion = screen.getByTestId('bisley-autocomplete-live');
-    expect(liveRegion).toHaveAttribute('role', 'status');
-    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
-    expect(liveRegion).toHaveClass('sr-only');
-    expect(liveRegion).toBeEmptyDOMElement();
+    try {
+      await vi.waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeEnabled());
+      const liveRegion = screen.getByTestId('bisley-autocomplete-live');
+      expect(liveRegion).toHaveAttribute('role', 'status');
+      expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+      expect(liveRegion).toHaveClass('sr-only');
+      expect(liveRegion).toBeEmptyDOMElement();
 
-    fireEvent.click(screen.getByTestId('autocomplete-button'));
-    expect(liveRegion).toHaveTextContent('自動完成を開始しました');
-    await waitFor(() => expect(liveRegion).toHaveTextContent('自動完成の処理が終わりました'), { timeout: 4000 });
-    unmount();
+      fireEvent.click(screen.getByTestId('autocomplete-button'));
+      expect(liveRegion).toHaveTextContent('自動完成を開始しました');
+      act(() => {
+        vi.advanceTimersByTime(3001);
+      });
+      expect(liveRegion).toHaveTextContent('自動完成の処理が終わりました');
+    } finally {
+      unmount();
+      vi.useRealTimers();
+    }
   });
 
   it('enables auto-complete as soon as a descending pile opens', async () => {
