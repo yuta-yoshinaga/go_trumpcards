@@ -5,6 +5,7 @@
   "you": "You",
   "opponent": "CPU",
   "layout": "Layout",
+  "layoutPosition": "Position {{position}}",
   "choosePrompt": "Choose which card to take",
   "opponentHand": "CPU hand: {{n}} cards",
   "opponentHandAriaLabel": "CPU hand, {{n}} cards face down",
