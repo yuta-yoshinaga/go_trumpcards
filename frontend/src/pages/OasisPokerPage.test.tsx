@@ -402,6 +402,58 @@ describe('OasisPokerPage keyboard shortcuts', () => {
     expect(screen.queryByTestId('oasis-exchange-fee-line')).not.toBeInTheDocument();
   });
 
+  it('politely announces the updated exchange count and fee only after card selection changes', async () => {
+    mockApi.mockResolvedValue(exchangePhaseState);
+    renderWithProviders(<OasisPokerPage />);
+    const announcement = await screen.findByTestId('oasis-exchange-fee-announcement');
+
+    expect(announcement).toHaveAttribute('aria-live', 'polite');
+    expect(announcement).toBeEmptyDOMElement();
+
+    const card0 = screen.getByTestId('player-card-0');
+    fireEvent.click(card0);
+    expect(announcement).toHaveTextContent('選択中: 1枚');
+    expect(announcement).toHaveTextContent('手数料: 1枚あたりアンテ × 100 = 100');
+
+    fireEvent.click(card0);
+    expect(announcement).toHaveTextContent('選択中: 0枚');
+    expect(announcement).toHaveTextContent('手数料: 1枚あたりアンテ × 100 = 0');
+  });
+
+  it('clears the selection announcement when the phase changes and starts the next exchange empty', async () => {
+    mockApi
+      .mockResolvedValueOnce(exchangePhaseState)
+      .mockResolvedValueOnce(actionPhaseState)
+      .mockResolvedValueOnce(endPhasePlayerWins)
+      .mockResolvedValueOnce(betPhaseState)
+      .mockResolvedValueOnce(exchangePhaseState);
+    renderWithProviders(<OasisPokerPage />);
+    const announcement = await screen.findByTestId('oasis-exchange-fee-announcement');
+    fireEvent.click(screen.getByTestId('player-card-0'));
+    expect(announcement).toHaveTextContent('選択中: 1枚');
+
+    fireEvent.keyDown(document, { key: 's' });
+    await waitFor(() => expect(screen.getByRole('button', { name: 'コール' })).toBeInTheDocument());
+    expect(announcement).toBeEmptyDOMElement();
+
+    fireEvent.keyDown(document, { key: 'p' });
+    await waitFor(() => expect(screen.getByRole('button', { name: '次のゲーム' })).toBeInTheDocument());
+    fireEvent.keyDown(document, { key: 'r' });
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ベット' })).toBeInTheDocument());
+    fireEvent.keyDown(document, { key: 'b' });
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ステイ' })).toBeInTheDocument());
+    expect(announcement).toBeEmptyDOMElement();
+  });
+
+  it('keeps the exchange fee announcement empty outside the exchange phase', async () => {
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<OasisPokerPage />);
+    const announcement = await screen.findByTestId('oasis-exchange-fee-announcement');
+
+    expect(announcement).toHaveAttribute('aria-live', 'polite');
+    expect(announcement).toBeEmptyDOMElement();
+  });
+
   // #5595: 配当率も交換手数料も書いてあるのに、**アンティがプッシュになる理由**
   // （ディーラーの成立条件）だけどこにも無かった。
   describe('dealer qualification rule', () => {
