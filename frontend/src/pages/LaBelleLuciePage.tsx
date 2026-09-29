@@ -120,6 +120,8 @@ function LaBelleLuciePageContent() {
   const isOver = state.phase === LaBelleLuciePhase.GAME_OVER;
   const isEnd = isClear || isOver;
   const canAct = !isEnd;
+  const foundationCardCount = state.foundation.reduce((total, pile) => total + pile.length, 0);
+  const remainingCardCount = 52 - foundationCardCount;
 
   // **どの扇が動かせるかは、ヒント (4秒で消える) を押さないと分からなかった** (#5678)。
   // 同バッチの他ゲームと同じく「押す前に分かる」形にする。ヒントの強調とは別の
@@ -310,6 +312,11 @@ function LaBelleLuciePageContent() {
         </div>
 
         <div className="mt-2 text-ds-text-muted text-xs">
+          <span data-testid="ll-progress">
+            {t('foundationProgress', { count: foundationCardCount })} ·{' '}
+            {t('remainingCards', { count: remainingCardCount })}
+          </span>
+          {' · '}
           {t('redealsLeft', { count: state.redealsLeft })} · {t('moveCount', { count: state.moveCount })}
         </div>
         {stuck && (

@@ -134,6 +134,38 @@ describe('LaBelleLuciePage', () => {
     expect(screen.getByTestId('foundation-0')).toBeInTheDocument();
   });
 
+  it('shows foundation progress and remaining cards from the current board', async () => {
+    renderWithProviders(<LaBelleLuciePage />);
+    expect(await screen.findByTestId('ll-progress')).toHaveTextContent('組札: 0/52');
+
+    mockExec.mockResolvedValueOnce(makeState({ foundation: [[card('DIAMOND', 1)], [], [], []], canUndo: true }));
+    fireEvent.click(screen.getByTestId('fan-2'));
+    fireEvent.click(screen.getByTestId('foundation-0'));
+    await waitFor(() => expect(screen.getByTestId('ll-progress')).toHaveTextContent('組札: 1/52'));
+    expect(screen.getByTestId('ll-progress')).toHaveTextContent('残り: 51');
+
+    mockExec.mockResolvedValueOnce(makeState());
+    fireEvent.click(screen.getByTestId('undo-button'));
+    await waitFor(() => expect(screen.getByTestId('ll-progress')).toHaveTextContent('組札: 0/52'));
+
+    mockExec.mockResolvedValueOnce(
+      makeState({ foundation: [[card('DIAMOND', 1), card('DIAMOND', 2)], [card('HEART', 1)], [], []] }),
+    );
+    fireEvent.click(screen.getByTestId('redeal-button'));
+    await waitFor(() => expect(screen.getByTestId('ll-progress')).toHaveTextContent('組札: 3/52'));
+    expect(screen.getByTestId('ll-progress')).toHaveTextContent('残り: 49');
+
+    const fullFoundation = [
+      ...(['SPADE', 'HEART', 'CLOVER', 'DIAMOND'] as const).map((suit) =>
+        Array.from({ length: 13 }, (_, i) => card(suit, i + 1)),
+      ),
+    ];
+    mockExec.mockResolvedValueOnce(makeState({ foundation: fullFoundation, phase: 1 }));
+    fireEvent.click(screen.getByTestId('autocomplete-button'));
+    await waitFor(() => expect(screen.getByTestId('ll-progress')).toHaveTextContent('組札: 52/52'));
+    expect(screen.getByTestId('ll-progress')).toHaveTextContent('残り: 0');
+  });
+
   it('keeps an unselected foundation focusable and explains how to enable it', async () => {
     renderWithProviders(<LaBelleLuciePage />);
     const foundation = await screen.findByTestId('foundation-0');
