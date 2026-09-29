@@ -140,6 +140,8 @@ type Pinochle struct {
 	trickNumber      int
 	currentPlayerIdx int
 	currentTrick     []*TrickCard
+	lastTrick        []*TrickCard
+	lastTrickWinner  int // -1 = none
 	dealerIdx        int
 	trumpSuit        int // 切り札スート (CardDesignSpade等)
 	highestBid       int // 現在の最高ビッド
@@ -156,13 +158,14 @@ type Pinochle struct {
 // NewPinochle コンストラクタ
 func NewPinochle(trumpCards *TrumpCards, players []*PinochlePlayer, config PinochleConfig) *Pinochle {
 	return &Pinochle{
-		trumpCards:    trumpCards,
-		players:       players,
-		config:        config,
-		winnerTeam:    -1,
-		roundNumber:   0,
-		dealerIdx:     0,
-		highestBidder: -1,
+		trumpCards:      trumpCards,
+		players:         players,
+		config:          config,
+		winnerTeam:      -1,
+		lastTrickWinner: -1,
+		roundNumber:     0,
+		dealerIdx:       0,
+		highestBidder:   -1,
 	}
 }
 
@@ -236,6 +239,8 @@ func (p *Pinochle) dealRound() {
 		}
 	}
 	p.currentTrick = nil
+	p.lastTrick = nil
+	p.lastTrickWinner = -1
 }
 
 // ─── Getters ────────────────────────────────────────────
@@ -254,6 +259,12 @@ func (p *Pinochle) GetCurrentPlayerIdx() int { return p.currentPlayerIdx }
 
 // GetCurrentTrick 現在のトリックを取得
 func (p *Pinochle) GetCurrentTrick() []*TrickCard { return p.currentTrick }
+
+// GetLastTrick は直近に解決したトリックを返す。
+func (p *Pinochle) GetLastTrick() []*TrickCard { return p.lastTrick }
+
+// GetLastTrickWinner は直近に解決したトリックの勝者を返す。
+func (p *Pinochle) GetLastTrickWinner() int { return p.lastTrickWinner }
 
 // GetDealerIdx ディーラーインデックスを取得
 func (p *Pinochle) GetDealerIdx() int { return p.dealerIdx }
@@ -1131,6 +1142,8 @@ func (p *Pinochle) ResolveTrick() {
 	}
 
 	winner := p.trickWinner()
+	p.lastTrick = append([]*TrickCard(nil), p.currentTrick...)
+	p.lastTrickWinner = winner
 
 	// トリックのカードポイントを計算
 	trickPoints := 0
@@ -1318,6 +1331,8 @@ type pinochleJSON struct {
 	TrickNumber      int                                `json:"tn"`
 	CurrentPlayerIdx int                                `json:"ci"`
 	CurrentTrick     []*TrickCard                       `json:"ct"`
+	LastTrick        []*TrickCard                       `json:"lt"`
+	LastTrickWinner  int                                `json:"lw"`
 	DealerIdx        int                                `json:"di"`
 	TrumpSuit        int                                `json:"ts"`
 	HighestBid       int                                `json:"hb"`
@@ -1342,6 +1357,8 @@ func (p *Pinochle) MarshalJSON() ([]byte, error) {
 		TrickNumber:      p.trickNumber,
 		CurrentPlayerIdx: p.currentPlayerIdx,
 		CurrentTrick:     p.currentTrick,
+		LastTrick:        p.lastTrick,
+		LastTrickWinner:  p.lastTrickWinner,
 		DealerIdx:        p.dealerIdx,
 		TrumpSuit:        p.trumpSuit,
 		HighestBid:       p.highestBid,
@@ -1373,6 +1390,17 @@ func (p *Pinochle) UnmarshalJSON(data []byte) error {
 	p.trickNumber = j.TrickNumber
 	p.currentPlayerIdx = j.CurrentPlayerIdx
 	p.currentTrick = j.CurrentTrick
+	if p.currentTrick == nil {
+		p.currentTrick = make([]*TrickCard, 0)
+	}
+	p.lastTrick = j.LastTrick
+	if p.lastTrick == nil {
+		p.lastTrick = make([]*TrickCard, 0)
+	}
+	p.lastTrickWinner = j.LastTrickWinner
+	if len(p.lastTrick) == 0 {
+		p.lastTrickWinner = -1
+	}
 	p.dealerIdx = j.DealerIdx
 	p.trumpSuit = j.TrumpSuit
 	p.highestBid = j.HighestBid

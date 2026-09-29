@@ -51,6 +51,10 @@ type PinochleGame interface {
 	GetCurrentPlayerIdx() int
 	// GetCurrentTrick 現在のトリックを取得する
 	GetCurrentTrick() []*domain.TrickCard
+	// GetLastTrick 直近に解決したトリックを取得する
+	GetLastTrick() []*domain.TrickCard
+	// GetLastTrickWinner 直近に解決したトリックの勝者を取得する
+	GetLastTrickWinner() int
 	// GetLeadPlayerIdx リードプレイヤーインデックスを取得する
 	GetLeadPlayerIdx() int
 	// GetBidPlayerIdx ビッドプレイヤーインデックスを取得する

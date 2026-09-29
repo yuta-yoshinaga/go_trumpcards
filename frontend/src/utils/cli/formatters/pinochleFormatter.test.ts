@@ -31,6 +31,8 @@ function makeState(overrides?: Partial<PinochleResponse>): PinochleResponse {
     highestBid: 250,
     highestBidder: 0,
     currentTrick: [],
+    lastTrick: [],
+    lastTrickWinner: -1,
     teamScores: [120, 80],
     gameEndFlag: false,
     winnerTeam: -1,

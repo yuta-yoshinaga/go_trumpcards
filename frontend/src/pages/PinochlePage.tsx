@@ -13,6 +13,7 @@ import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { AnimatedCard } from '../components/motion/AnimatedCard';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
+import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -338,26 +339,15 @@ function PinochlePageContent() {
             </div>
 
             {/* Current Trick */}
-            {state.currentTrick?.length > 0 && (
-              <div className="mb-3 p-2 rounded bg-black/40" data-tutorial="pn-trick-display">
-                <div className="text-ds-text-muted text-sm mb-1">{t('table')}:</div>
-                <div className="flex gap-2 justify-center">
-                  {state.currentTrick.map((tc, i) => {
-                    const isHuman = state.players[tc.playerIdx]?.isHuman === true;
-                    return (
-                      <div key={i} className="text-center">
-                        <AnimatedCard card={tc.card} width={cardWidth * 0.8} />
-                        <div
-                          className={`text-xs mt-1 ${isHuman ? 'text-ds-accent font-semibold' : 'text-ds-text-muted'}`}
-                        >
-                          {playerName(tc.playerIdx, isHuman)}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+            <TrickDisplay
+              currentTrick={state.currentTrick ?? []}
+              lastTrick={state.lastTrick.map(({ playerIdx, card }) => ({ playerIdx, card }))}
+              lastTrickWinner={state.lastTrickWinner}
+              players={state.players.map(({ id, isHuman, team }) => ({ id, isHuman, team }))}
+              cardWidth={cardWidth * 0.8}
+              label={`${t('table')}:`}
+              dataTutorial="pn-trick-display"
+            />
 
             {/* Meld reference: ビッド額を決める段階で「自分の手にいくら分の目が
                 あるか」を見る先がどこにも無かった (#5519)。点数はサーバが送る
