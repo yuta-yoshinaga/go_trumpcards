@@ -350,7 +350,7 @@ function BarbuPageContent() {
                       type="button"
                       onClick={() => isHumanPlay && setHandIndex(handIndex === i ? null : i)}
                       disabled={!isHumanPlay || !playable}
-                      className={`rounded border-2 transition-all ${isTrump ? 'border-ds-accent' : 'border-transparent'} ${
+                      className={`relative rounded border-2 transition-all ${isTrump ? 'border-ds-accent' : 'border-transparent'} ${
                         handIndex === i ? 'ring-2 ring-ds-info -translate-y-2' : ''
                       } ${isHumanPlay && playable ? 'cursor-pointer hover:opacity-90' : 'opacity-50 cursor-default'}`}
                       data-testid={`hand-card-${i}`}
@@ -358,6 +358,15 @@ function BarbuPageContent() {
                       aria-label={isTrump ? `${cardAlt(c)} (${t('label.trumpCard')})` : cardAlt(c)}
                     >
                       <AnimatedCard card={c} width={cardWidth} />
+                      {isTrump && (
+                        <span
+                          data-testid="trump-card-badge"
+                          aria-hidden="true"
+                          className="pointer-events-none absolute left-1 top-1 z-10 rounded border border-ds-accent bg-ds-surface px-1 py-0.5 text-xs font-bold leading-tight text-ds-text-primary"
+                        >
+                          {t('label.trumpBadge')}
+                        </span>
+                      )}
                     </button>
                   );
                 })}
