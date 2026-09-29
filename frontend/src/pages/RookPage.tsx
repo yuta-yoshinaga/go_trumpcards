@@ -23,6 +23,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { RookResponse } from '../types/card';
 import { RookPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { formatRookState, parseRookCommand, ROOK_HELP, type RookCliArgs } from '../utils/cli/commands/rookCommands';
 import type { CliGameConfig } from '../utils/cli/types';
 import { playerName } from '../utils/playerUtils';
@@ -323,9 +324,20 @@ function RookPageContent() {
                 {state.currentTrick.length === 0 ? (
                   <span className="text-ds-text-muted text-sm self-center">{t('trickEmpty')}</span>
                 ) : (
-                  state.currentTrick.map((tcard) => (
-                    <AnimatedCard key={tcard.playerIdx} card={tcard.card} width={cardWidth * 0.9} />
-                  ))
+                  state.currentTrick.map((tcard) => {
+                    const player = state.players[tcard.playerIdx];
+                    const name = playerName(player.id, player.isHuman);
+                    return (
+                      <div key={tcard.playerIdx} className="text-center">
+                        <AnimatedCard
+                          card={tcard.card}
+                          width={cardWidth * 0.9}
+                          ariaLabel={t('trickPlay', { name, card: cardAlt(tcard.card) })}
+                        />
+                        <div className="text-xs mt-1 text-ds-text-muted">{name}</div>
+                      </div>
+                    );
+                  })
                 )}
               </div>
             </div>
