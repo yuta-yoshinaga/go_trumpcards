@@ -12,6 +12,7 @@
   "ascending": "ascending",
   "descending": "descending",
   "moveCount": "Moves",
+  "foundationProgress": "Foundations {{count}}/104",
   "giveup": "Give Up",
   "hint": "Hint",
   "undo": "Undo",

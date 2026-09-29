@@ -79,6 +79,21 @@ describe('SlyFoxPage', () => {
     mockExec.mockResolvedValue(makeState());
   });
 
+  it('shows and updates the total foundation progress while playing', async () => {
+    const initial = makeState();
+    const updated = makeState({
+      foundation: [[card('SPADE', 1), card('SPADE', 2)], [], [], [], [card('SPADE', 13)], [], [], []],
+    });
+    mockExec.mockImplementation(async (command) => (command === 'reset' ? initial : updated));
+    renderWithProviders(<SlyFoxPage />);
+
+    const progress = await screen.findByTestId('slyfox-foundation-progress');
+    expect(progress).toHaveTextContent('組札 2/104');
+    fireEvent.click(screen.getByTestId('co-tableau-0'));
+    fireEvent.click(screen.getByTestId('co-foundation-0'));
+    await waitFor(() => expect(progress).toHaveTextContent('組札 3/104'));
+  });
+
   it('resets on mount', async () => {
     renderWithProviders(<SlyFoxPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
