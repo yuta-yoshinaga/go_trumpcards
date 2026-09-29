@@ -30,6 +30,7 @@
   "addGroup": "Add group",
   "stagedGroupsTitle": "Staged melds",
   "groupLabel": "Group {{n}}",
+  "groupOpeningPoints": "{{points}} points toward opening",
   "removeGroupAria": "Remove group {{n}}",
   "meld": "Lay down meld",
   "layoff": "Lay off",

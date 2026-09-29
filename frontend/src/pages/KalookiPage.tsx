@@ -31,7 +31,7 @@ import { KALOOKI_HELP, parseKalookiCommand } from '../utils/cli/commands/kalooki
 import { formatKalookiState } from '../utils/cli/formatters/kalookiFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
-import { kalookiOpeningPoints } from '../utils/kalookiScore';
+import { kalookiMeldValue, kalookiOpeningPoints } from '../utils/kalookiScore';
 import { hintCheckboxItem } from '../utils/settingsItems';
 
 /** Phase identifiers for Kalooki (sync: internal/domain/Kalooki.go). */
@@ -495,6 +495,17 @@ function KalookiPageContent() {
                       className="flex items-center gap-2 flex-wrap p-2 rounded border border-white/30 bg-black/20"
                     >
                       <span className="text-white text-xs font-semibold">{t('groupLabel', { n: gi + 1 })}</span>
+                      {!humanPlayer.hasOpened && (
+                        <span className="text-ds-warning text-xs font-semibold">
+                          {t('groupOpeningPoints', {
+                            points: kalookiMeldValue(
+                              group
+                                .map((cardIdx) => humanPlayer.cards[cardIdx])
+                                .filter((card): card is Card => card !== undefined),
+                            ),
+                          })}
+                        </span>
+                      )}
                       <div className="flex flex-wrap gap-1">
                         {group.map((cardIdx) => {
                           const c = humanPlayer.cards[cardIdx];
