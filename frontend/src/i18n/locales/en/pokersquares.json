@@ -47,6 +47,11 @@
     "straightFlush": "Straight Flush",
     "royalFlush": "Royal Flush"
   },
+  "scoreReference": {
+    "title": "Hands and scores",
+    "hand": "Hand",
+    "score": "Score"
+  },
   "previewRowAnnounce": "Row {{row}} completes {{hand}} for {{delta}} points",
   "previewColAnnounce": "Column {{col}} completes {{hand}} for {{delta}} points",
   "previewPartialPrefix": "~",

@@ -113,6 +113,20 @@ describe('PokerSquaresPage', () => {
     expect(screen.getByText(/次に置くカード/)).toBeInTheDocument();
   });
 
+  it('shows the poker hand scoring reference while playing', async () => {
+    mockApi.mockResolvedValue(playingState);
+    renderWithProviders(<PokerSquaresPage />);
+
+    const table = await screen.findByTestId('ps-score-table');
+    expect(table).toHaveTextContent('ハイカード');
+    expect(table).toHaveTextContent('0');
+    expect(table).toHaveTextContent('ワンペア');
+    expect(table).toHaveTextContent('2');
+    expect(table).toHaveTextContent('ロイヤルフラッシュ');
+    expect(table).toHaveTextContent('100');
+    expect(table.querySelectorAll('tbody tr')).toHaveLength(10);
+  });
+
   it('announces zero-based row and column coordinates for empty and filled cells', async () => {
     const board = emptyBoard();
     board[2][3] = { card: card('SPADE', 1) };

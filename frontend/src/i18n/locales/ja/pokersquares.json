@@ -47,6 +47,11 @@
     "straightFlush": "ストレートフラッシュ",
     "royalFlush": "ロイヤルフラッシュ"
   },
+  "scoreReference": {
+    "title": "役と得点",
+    "hand": "役",
+    "score": "得点"
+  },
   "previewRowAnnounce": "行 {{row}} が{{hand}}で完成し、{{delta}}点獲得します",
   "previewColAnnounce": "列 {{col}} が{{hand}}で完成し、{{delta}}点獲得します",
   "previewPartialPrefix": "〜",
