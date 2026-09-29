@@ -106,37 +106,33 @@ describe('StealingBundlesPage', () => {
     expect(live).not.toHaveTextContent('手番が終了');
   });
 
-  it('announces the player when the turn changes, without announcing the initial state', async () => {
+  it('announces each human response after the initial state and clears on game end', async () => {
     mockExec.mockResolvedValueOnce(makeState());
-    mockExec.mockResolvedValueOnce(makeState({ currentPlayerIdx: 2 }));
+    mockExec.mockResolvedValueOnce(makeState());
+    mockExec.mockResolvedValueOnce(makeState());
+    mockExec.mockResolvedValueOnce(makeState({ phase: 1, gameEndFlag: true, winnerIdx: 0 }));
     renderWithProviders(<StealingBundlesPage />);
-    await screen.findByTestId('sb-table');
 
-    const turnLive = screen.getByTestId('sb-turn-announcement');
-    expect(turnLive).toBeEmptyDOMElement();
-    expect(screen.getByTestId('sb-action-announcement')).toBeEmptyDOMElement();
+    const initial = await screen.findByTestId('sb-turn-announcement');
+    expect(initial).toBeEmptyDOMElement();
+
+    const playTake = async () => {
+      selectCard(0);
+      fireEvent.click(screen.getByTestId('sb-take-btn'));
+      await waitFor(() => expect(screen.getByTestId('sb-turn-announcement')).toHaveTextContent('あなたの番です。'));
+    };
+
+    await playTake();
+    const firstAnnouncement = screen.getByTestId('sb-turn-announcement');
+    await playTake();
+    const secondAnnouncement = screen.getByTestId('sb-turn-announcement');
+    expect(secondAnnouncement).toHaveTextContent('あなたの番です。');
+    expect(secondAnnouncement).not.toBe(firstAnnouncement);
 
     selectCard(0);
     fireEvent.click(screen.getByTestId('sb-take-btn'));
-    await waitFor(() => expect(turnLive).toHaveTextContent('CPU2 の番です'));
-    expect(screen.getByTestId('sb-action-announcement')).toHaveTextContent('手番が終了');
-  });
-
-  it('announces the human turn with the dedicated human translation', async () => {
-    mockExec.mockResolvedValueOnce(makeState());
-    mockExec.mockResolvedValueOnce(
-      makeState({
-        currentPlayerIdx: 1,
-        players: [seat(0), seat(1, { isHuman: true }), seat(2), seat(3)],
-      }),
-    );
-    renderWithProviders(<StealingBundlesPage />);
-    await screen.findByTestId('sb-table');
-
-    const turnLive = screen.getByTestId('sb-turn-announcement');
-    selectCard(0);
-    fireEvent.click(screen.getByTestId('sb-take-btn'));
-    await waitFor(() => expect(turnLive).toHaveTextContent('あなたの番です。'));
+    await waitFor(() => expect(screen.getByTestId('sb-turn-announcement')).toBeEmptyDOMElement());
+    expect(mockExec).toHaveBeenCalledTimes(4);
   });
 
   it('announces trailing as the only action when no capture is available', async () => {

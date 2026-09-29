@@ -73,19 +73,26 @@ function StealingBundlesPageContent() {
   const [selected, setSelected] = useState<number | null>(null);
   const [actionAnnouncement, setActionAnnouncement] = useState('');
   const [turnAnnouncement, setTurnAnnouncement] = useState('');
-  const previousPlayerIdx = useRef<number | null>(null);
+  const [turnAnnouncementNonce, setTurnAnnouncementNonce] = useState(0);
+  const previousState = useRef<StealingBundlesResponse | null>(null);
+  const resetPending = useRef(false);
 
   useEffect(() => {
     if (!state) return;
-    if (previousPlayerIdx.current !== null && previousPlayerIdx.current !== state.currentPlayerIdx) {
-      const player = state.players[state.currentPlayerIdx];
-      setTurnAnnouncement(
-        player?.isHuman
-          ? t('status.turnYou')
-          : t('status.turnCpu', { name: t('header.cpu', { idx: String(state.currentPlayerIdx) }) }),
-      );
+    const previous = previousState.current;
+    previousState.current = state;
+    if (previous === null || resetPending.current) {
+      resetPending.current = false;
+      setTurnAnnouncement('');
+      return;
     }
-    previousPlayerIdx.current = state.currentPlayerIdx;
+    const inProgress = state.phase !== StealingBundlesPhase.GAME_END && !state.gameEndFlag;
+    if (inProgress && state.players[state.currentPlayerIdx]?.isHuman) {
+      setTurnAnnouncement(t('status.turnYou'));
+      setTurnAnnouncementNonce((nonce) => nonce + 1);
+    } else {
+      setTurnAnnouncement('');
+    }
   }, [state, t]);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('stealingbundles');
@@ -107,6 +114,7 @@ function StealingBundlesPageContent() {
   const handleReset = useCallback(() => {
     hideActionLog();
     setSelected(null);
+    resetPending.current = true;
     void dispatch('reset', undefined, undefined, { playerCnt });
   }, [dispatch, hideActionLog, playerCnt]);
 
@@ -199,7 +207,13 @@ function StealingBundlesPageContent() {
           <div className="sr-only" role="status" aria-live="polite" data-testid="sb-action-announcement">
             {actionAnnouncement}
           </div>
-          <div className="sr-only" role="status" aria-live="polite" data-testid="sb-turn-announcement">
+          <div
+            key={turnAnnouncementNonce}
+            className="sr-only"
+            role="status"
+            aria-live="polite"
+            data-testid="sb-turn-announcement"
+          >
             {turnAnnouncement}
           </div>
           <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
