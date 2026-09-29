@@ -263,4 +263,10 @@ describe('NapPage', () => {
     renderWithProviders(<NapPage />);
     expect(await screen.findByText(/\(\[0\]\)/)).toBeInTheDocument();
   });
+
+  it('marks only the dealer alongside any declarer badge', async () => {
+    mockExec.mockResolvedValue(makeNapState({ dealerIdx: 2 }));
+    renderWithProviders(<NapPage />);
+    expect(await screen.findAllByTestId('nap-dealer-badge')).toHaveLength(1);
+  });
 });

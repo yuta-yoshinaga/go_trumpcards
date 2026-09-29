@@ -21,6 +21,7 @@ import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { usePhaseNames } from '../hooks/usePhaseNames';
 import { CPU_DIFFICULTY_OPTIONS, TARGET_POINTS_OPTIONS, useSedmaGame } from '../hooks/useSedmaGame';
+import { badgeInfoColors } from '../styles/badgeStyles';
 import { btnPrimary, btnSuccess } from '../styles/buttonStyles';
 import { lgCardAreaConstraint, lgTwoColGrid } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
@@ -176,6 +177,11 @@ function SedmaPageContent() {
         </span>
         <span className="sr-only">{teamName}: </span>
         {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} | {t('tricks', { count: p.trickCount })}
+        {state.dealerIdx === p.id && (
+          <span className={`ml-2 px-1.5 py-0.5 rounded text-xs ${badgeInfoColors}`} data-testid="sedma-dealer-badge">
+            {t('dealerBadge')}
+          </span>
+        )}
       </div>
     );
   };
