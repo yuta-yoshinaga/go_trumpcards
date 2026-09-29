@@ -375,6 +375,16 @@ describe('PigsTailPage', () => {
     expect(mockExec).toHaveBeenCalled();
   });
 
+  it('draws with d and shows the draw shortcut', async () => {
+    renderWithProviders(<PigsTailPage />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    fireEvent.click(screen.getByText('キーボードショートカット'));
+    expect(screen.getByTestId('pigtail-kbd-shortcuts')).toHaveTextContent('d');
+    mockExec.mockClear();
+    fireEvent.keyDown(document, { key: 'd' });
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
+  });
+
   it('shows game end message when game is over', async () => {
     mockExec.mockResolvedValue(gameEndState);
     renderWithProviders(<PigsTailPage />);
