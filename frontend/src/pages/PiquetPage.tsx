@@ -358,6 +358,9 @@ function PlayerCard({ label, player, carteBlanche }: PlayerCardProps) {
         {t('playerStats', {
           hand: player.cardCount,
           tricks: player.trickCount,
+          declaration: player.declScore,
+          trickScore: player.trickScore,
+          bonus: player.bonusScore,
           round: player.roundScore,
           match: player.matchScore,
         })}

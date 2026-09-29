@@ -30,7 +30,7 @@
   "partieEnd": "Partie ended",
   "partieWinner": "★ Partie winner: player {{idx}}",
   "playHeader": "Play phase",
-  "playerStats": "Hand: {{hand}} | Tricks: {{tricks}} | Round: {{round}} | Match: {{match}}",
+  "playerStats": "Hand: {{hand}} | Tricks: {{tricks}} | Declaration: {{declaration}} | Trick points: {{trickScore}} | Bonus: {{bonus}} | Round: {{round}} | Match: {{match}}",
   "roleElder": "Elder",
   "roleYounger": "Younger",
   "roundEnd": "Round ended",
