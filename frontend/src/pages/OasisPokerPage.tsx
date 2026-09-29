@@ -88,6 +88,7 @@ function OasisPokerPageContent() {
   const [anteAmount, setAnteAmount] = useState(100);
   const [jackpotAmount, setJackpotAmount] = useState(0);
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
+  const [exchangeAnnouncement, setExchangeAnnouncement] = useState('');
 
   const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec: execApi, retry } = useGameApi(oasispokerApi.exec);
@@ -113,25 +114,36 @@ function OasisPokerPageContent() {
   const isEndPhase = state?.phase === OasisPokerPhase.END;
 
   const toggleSelected = (idx: number) => {
-    setSelectedIndices((prev) =>
-      prev.includes(idx) ? prev.filter((i) => i !== idx) : [...prev, idx].sort((a, b) => a - b),
+    const next = selectedIndices.includes(idx)
+      ? selectedIndices.filter((i) => i !== idx)
+      : [...selectedIndices, idx].sort((a, b) => a - b);
+    setSelectedIndices(next);
+    setExchangeAnnouncement(
+      t('exchangeSelectionAnnouncement', {
+        count: next.length,
+        ante: state?.anteBet ?? 0,
+        fee: (state?.anteBet ?? 0) * next.length,
+      }),
     );
   };
 
   const handleBet = () => {
     if (!state || anteAmount + jackpotAmount > state.chips) return;
     setSelectedIndices([]);
+    setExchangeAnnouncement('');
     execApi('bet', anteAmount, jackpotAmount);
   };
 
   const handleExchange = () => {
     const toExchange = [...selectedIndices];
     setSelectedIndices([]);
+    setExchangeAnnouncement('');
     execApi('exchange', undefined, undefined, toExchange);
   };
 
   const handleStand = () => {
     setSelectedIndices([]);
+    setExchangeAnnouncement('');
     execApi('stand');
   };
 
@@ -226,6 +238,9 @@ function OasisPokerPageContent() {
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
         <>
+          <div className="sr-only" role="status" aria-live="polite" data-testid="oasis-exchange-fee-announcement">
+            {isExchangePhase ? exchangeAnnouncement : ''}
+          </div>
           <div
             data-testid="card-area"
             className={[`overflow-y-auto pt-3 px-4 lg:px-8 ${lgCardAreaConstraint}`, !isBetPhase && 'flex-1']

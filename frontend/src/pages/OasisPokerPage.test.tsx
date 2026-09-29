@@ -402,6 +402,33 @@ describe('OasisPokerPage keyboard shortcuts', () => {
     expect(screen.queryByTestId('oasis-exchange-fee-line')).not.toBeInTheDocument();
   });
 
+  it('politely announces the updated exchange count and fee only after card selection changes', async () => {
+    mockApi.mockResolvedValue(exchangePhaseState);
+    renderWithProviders(<OasisPokerPage />);
+    const announcement = await screen.findByTestId('oasis-exchange-fee-announcement');
+
+    expect(announcement).toHaveAttribute('aria-live', 'polite');
+    expect(announcement).toBeEmptyDOMElement();
+
+    const card0 = screen.getByTestId('player-card-0');
+    fireEvent.click(card0);
+    expect(announcement).toHaveTextContent('選択中: 1枚');
+    expect(announcement).toHaveTextContent('手数料: 1枚あたりアンテ × 100 = 100');
+
+    fireEvent.click(card0);
+    expect(announcement).toHaveTextContent('選択中: 0枚');
+    expect(announcement).toHaveTextContent('手数料: 1枚あたりアンテ × 100 = 0');
+  });
+
+  it('keeps the exchange fee announcement empty outside the exchange phase', async () => {
+    mockApi.mockResolvedValue(betPhaseState);
+    renderWithProviders(<OasisPokerPage />);
+    const announcement = await screen.findByTestId('oasis-exchange-fee-announcement');
+
+    expect(announcement).toHaveAttribute('aria-live', 'polite');
+    expect(announcement).toBeEmptyDOMElement();
+  });
+
   // #5595: 配当率も交換手数料も書いてあるのに、**アンティがプッシュになる理由**
   // （ディーラーの成立条件）だけどこにも無かった。
   describe('dealer qualification rule', () => {
