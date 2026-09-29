@@ -12,7 +12,6 @@ export function usePerseveranceGame() {
   const [hint, setHint] = useState<PerseveranceHint | null>(null);
   const [hintError, setHintError] = useState<string | null>(null);
   const { isAutoCompleting, startAutoComplete } = useAutoCompleteState();
-
   const exec = useCallback((...args: Parameters<typeof rawExec>) => rawExec(...args), [rawExec]);
 
   useEffect(() => {
