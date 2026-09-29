@@ -7,6 +7,8 @@
   "title": "Colorado",
   "stock": "Stock",
   "waste": "Waste",
+  "wasteCount_one": "{{count}} card",
+  "wasteCount_other": "{{count}} cards",
   "tableau": "Tableau",
   "foundation": "Foundation",
   "foundations": "Foundations (↑=A→K, ↓=K→A)",

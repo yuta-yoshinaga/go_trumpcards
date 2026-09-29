@@ -7,6 +7,7 @@
   "title": "コロラド",
   "stock": "山札",
   "waste": "捨て札",
+  "wasteCount": "{{count}}枚",
   "tableau": "場札",
   "foundation": "組札",
   "foundations": "組札（↑=A→K、↓=K→A）",
