@@ -16,6 +16,8 @@
   "hint": "Hint",
   "undo": "Undo",
   "autoComplete": "Auto complete",
+  "autoCompleteStockRemaining": "Cannot run while cards remain in the stock",
+  "autoCompleteNoPlayableWaste": "No waste card can be played",
   "selectSource": "Select source",
   "selectTarget": "Select target",
   "deselect": "Cancel",
