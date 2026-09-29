@@ -9,7 +9,7 @@
   "moveCount": "手数",
   "giveup": "ギブアップ",
   "empty": "空",
-  "foundationAriaLabel": "{{suit}} 組札 {{count}}枚",
+  "foundationAriaLabel": "{{suit}} 組札 {{count}}枚、最上位の札 {{topCard}}",
   "emptyFoundationAriaLabel": "空の組札 ({{suit}})",
   "emptyColumnAriaLabel": "空のタブロー列 {{col}}",
   "landscapeBanner": "横画面での表示を推奨します",

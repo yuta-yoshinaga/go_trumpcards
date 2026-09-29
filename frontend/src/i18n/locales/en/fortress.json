@@ -9,7 +9,7 @@
   "moveCount": "Moves",
   "giveup": "Give Up",
   "empty": "Empty",
-  "foundationAriaLabel": "{{suit}} foundation {{count}} cards",
+  "foundationAriaLabel": "{{suit}} foundation {{count}} cards, top card {{topCard}}",
   "emptyFoundationAriaLabel": "Empty foundation ({{suit}})",
   "emptyColumnAriaLabel": "Empty tableau column {{col}}",
   "landscapeBanner": "Landscape mode recommended",

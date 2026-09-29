@@ -93,6 +93,17 @@ describe('FortressPage', () => {
     await waitFor(() => expect(screen.getAllByLabelText(/組札 1枚/).length).toBe(4));
   });
 
+  it('includes the top card in a non-empty foundation label and keeps suit on empty foundations', async () => {
+    mockExec.mockResolvedValueOnce(playingState);
+    const { unmount } = renderWithProviders(<FortressPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ 組札 1枚、最上位の札 ♠ A' })).toBeInTheDocument());
+
+    mockExec.mockResolvedValueOnce({ ...playingState, foundation: [[], [], [], []] });
+    unmount();
+    renderWithProviders(<FortressPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '空の組札 (♠)' })).toBeInTheDocument());
+  });
+
   it('labels all ten tableau columns with their 0-based index (matching hint text)', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<FortressPage />);
