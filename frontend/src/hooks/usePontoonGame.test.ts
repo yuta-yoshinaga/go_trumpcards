@@ -27,6 +27,7 @@ const baseState: PontoonResponse = {
   bankerIdx: 1,
   isHumanBanker: false,
   chips: 1000,
+  drawPileCount: 52,
   activeSeat: 0,
   activeHand: 0,
   nextBanker: -1,

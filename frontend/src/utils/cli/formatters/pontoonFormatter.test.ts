@@ -29,6 +29,7 @@ function makeState(overrides?: Partial<PontoonResponse>): PontoonResponse {
     bankerIdx: 1,
     isHumanBanker: false,
     chips: 900,
+    drawPileCount: 24,
     activeSeat: 0,
     activeHand: 0,
     nextBanker: -1,

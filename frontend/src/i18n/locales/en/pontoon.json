@@ -5,6 +5,7 @@
     "bankerTurn": "Banker's turn",
     "end": "Settled"
   },
+  "drawPileCount": "Undealt cards",
   "chips": "Chips",
   "banker": "Banker",
   "bankerIsYou": "you",

@@ -35344,6 +35344,9 @@ components:
             When true the human holds the bank, does not stake, and decides last.
         chips:
           type: integer
+        drawPileCount:
+          type: integer
+          description: Cards not yet dealt in the current round.
         activeSeat:
           type: integer
         activeHand:

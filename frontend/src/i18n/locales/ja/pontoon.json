@@ -5,6 +5,7 @@
     "bankerTurn": "親の手番",
     "end": "精算"
   },
+  "drawPileCount": "山札の残り",
   "chips": "チップ",
   "banker": "親",
   "bankerIsYou": "あなた",

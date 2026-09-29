@@ -75,6 +75,7 @@ func (pp *PontoonWebPresenter) Output(p interfaces.PontoonGame, lastErr error) s
 	resObj.BankerIdx = p.GetBankerIdx()
 	resObj.IsHumanBanker = p.IsHumanBanker()
 	resObj.Chips = p.GetChips()
+	resObj.DrawPileCount = p.GetDrawPileCount()
 	resObj.ActiveSeat = p.GetActiveSeat()
 	resObj.ActiveHand = p.GetActiveHand()
 	resObj.NextBanker = p.GetNextBanker()

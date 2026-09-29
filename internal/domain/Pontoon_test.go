@@ -37,6 +37,19 @@ func pontoonHandOf(bet int, vals ...int) *PontoonHand {
 	return h
 }
 
+func TestPontoon_DrawPileCountTracksCardsDealt(t *testing.T) {
+	p := newTestPontoon()
+	if got := p.GetDrawPileCount(); got != 52 {
+		t.Fatalf("fresh draw pile = %d, want 52", got)
+	}
+	if err := p.PlaceBet(100); err != nil {
+		t.Fatal(err)
+	}
+	if got := p.GetDrawPileCount(); got >= 52 {
+		t.Fatalf("draw pile after deal = %d, want fewer than 52", got)
+	}
+}
+
 func TestPontoon_Reset(t *testing.T) {
 	p := newTestPontoon()
 
