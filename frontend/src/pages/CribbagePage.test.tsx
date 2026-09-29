@@ -40,6 +40,7 @@ const discardPhaseState: CribbageResponse = {
   starter: null,
   pegCount: 0,
   pegPlayedCards: [],
+  pegPlayedBy: [],
   showPhaseStep: 0,
   handScoreDetails: [null, null, null],
   gameEndFlag: false,
@@ -67,6 +68,7 @@ const peggingPhaseState: CribbageResponse = {
   starter: { design: 'SPADE', value: 10 },
   pegCount: 0,
   pegPlayedCards: [],
+  pegPlayedBy: [],
 };
 
 // Cut phase with the human as the non-dealer cutter (dealer=1 → cutter=0).
@@ -266,6 +268,24 @@ describe('CribbagePage', () => {
     mockExec.mockResolvedValue({ ...peggingPhaseState, starter: { design: 'HEART', value: 11 } });
     renderWithProviders(<CribbagePage />);
     await waitFor(() => expect(screen.getByTestId('cb-his-heels')).toBeInTheDocument());
+  });
+
+  it('shows and labels each pegging card with its submitter', async () => {
+    mockExec.mockResolvedValue({
+      ...peggingPhaseState,
+      pegPlayedCards: [
+        { design: 'SPADE', value: 1 },
+        { design: 'HEART', value: 2 },
+      ],
+      pegPlayedBy: [0, 1],
+    });
+    renderWithProviders(<CribbagePage />);
+    await waitFor(() => {
+      expect(within(screen.getAllByRole('figure')[0]).getByText('あなた')).toBeInTheDocument();
+      expect(screen.getByText('CPU')).toBeInTheDocument();
+    });
+    expect(screen.getByRole('figure', { name: /提出者: あなた/ })).toBeInTheDocument();
+    expect(screen.getByRole('figure', { name: /提出者: CPU/ })).toBeInTheDocument();
   });
 
   it('renders peg and go buttons when human pegging turn', async () => {

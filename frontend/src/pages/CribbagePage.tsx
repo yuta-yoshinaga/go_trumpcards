@@ -424,13 +424,21 @@ function CribbagePageContent() {
                       {t('pegPlayedCards')} - {t('pegCount', { count: state.pegCount })}
                     </div>
                     <div className="flex flex-wrap gap-1">
-                      {state.pegPlayedCards.map((card, idx) => (
-                        <AnimatedCard
-                          key={`peg-${card.design}-${card.value}-${idx}`}
-                          card={card}
-                          width={cardWidth * 0.8}
-                        />
-                      ))}
+                      {state.pegPlayedCards.map((card, idx) => {
+                        const submitter = t(
+                          state.players[state.pegPlayedBy[idx]].isHuman ? 'pegSubmitterHuman' : 'pegSubmitterCpu',
+                        );
+                        return (
+                          <figure
+                            key={`peg-${card.design}-${card.value}-${idx}`}
+                            className="flex flex-col items-center gap-1"
+                            aria-label={`${cardAlt(card)}, ${t('pegSubmittedBy', { player: submitter })}`}
+                          >
+                            <AnimatedCard card={card} width={cardWidth * 0.8} />
+                            <span className="text-ds-text-muted text-xs">{submitter}</span>
+                          </figure>
+                        );
+                      })}
                     </div>
                   </div>
                 )}

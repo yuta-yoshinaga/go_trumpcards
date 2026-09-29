@@ -22,6 +22,7 @@ func setupCribbageWebMock() *interfaces.MockCribbageGame {
 	m.On("GetStarter").Return((*domain.Card)(nil))
 	m.On("GetPegCount").Return(0)
 	m.On("GetPegPlayedCards").Return(([]*domain.Card)(nil))
+	m.On("GetPegPlayedBy").Return([]int{})
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.CribbagePhaseDiscard)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -200,6 +201,8 @@ func TestCribbageWebPresenter_Output(t *testing.T) {
 		m.On("GetPegPlayedCards").Return([]*domain.Card{
 			domain.NewCard(domain.CardDesignSpade, 5, false),
 		})
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPegPlayedBy")
+		m.On("GetPegPlayedBy").Return([]int{1})
 
 		result := p.Output(m, nil)
 		var resObj controller.CribbageWebOutput
@@ -207,6 +210,7 @@ func TestCribbageWebPresenter_Output(t *testing.T) {
 
 		assert.Len(t, resObj.PegPlayedCards, 1)
 		assert.Equal(t, "SPADE", resObj.PegPlayedCards[0].Design)
+		assert.Equal(t, []int{1}, resObj.PegPlayedBy)
 	})
 
 	t.Run("hand score details", func(t *testing.T) {
