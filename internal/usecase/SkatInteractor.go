@@ -118,6 +118,9 @@ func (si *SkatInteractor) Play(cardIndex int) string {
 	if err := si.Game.PlayerPlay(cardIndex); err != nil {
 		return si.sp.Output(si.Game, err)
 	}
+	if si.Game.GetPhase() == domain.SkatPhaseTrickEnd {
+		si.Game.ResolveTrick()
+	}
 	si.runCpuTurns()
 	return si.sp.Output(si.Game, nil)
 }
