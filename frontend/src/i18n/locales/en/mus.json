@@ -28,7 +28,7 @@
   "opponent": "Opponent",
   "playerLine": "{{name}} (Team {{team}}, {{role}}): {{cards}} cards",
   "amarrakos": "Amarrakos",
-  "amarrakosTeam": "Team {{team}}: {{score}}",
+  "amarrakosProgress": "Team {{team}}: {{score}} / {{target}}, {{remaining}} remaining",
   "pendingStake": "Pending bet: {{amount}}",
   "ordagoLabel": "Órdago (all-in)",
   "musPrompt": "Call Mus (exchange) or Corte (play)?",

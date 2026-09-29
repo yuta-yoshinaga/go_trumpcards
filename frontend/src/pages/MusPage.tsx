@@ -220,7 +220,12 @@ function MusPageContent() {
               <div className="mb-1 text-ds-text-primary">{t('amarrakos')}</div>
               {state.amarrakos.map((score, team) => (
                 <div key={`team-${team}`} className={team === state.humanTeam ? 'text-ds-text-primary' : ''}>
-                  {t('amarrakosTeam', { team, score })}
+                  {t('amarrakosProgress', {
+                    team,
+                    score,
+                    target: state.config.targetAmarrakos,
+                    remaining: Math.max(0, state.config.targetAmarrakos - score),
+                  })}
                   {team === state.humanTeam ? ` (${t('yourTeam')})` : ''}
                 </div>
               ))}

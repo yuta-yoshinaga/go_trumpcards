@@ -22,6 +22,7 @@
   "roundScore": "ラウンド: {{score}}",
   "currentTrick": "現在のトリック",
   "teamScores": "チームスコア",
+  "targetScore": "目標: {{score}}",
   "scoreHeaderTeam": "チーム",
   "scoreHeaderPoints": "スコア",
   "team": "チーム {{n}}",

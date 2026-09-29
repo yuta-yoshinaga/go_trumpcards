@@ -32,7 +32,7 @@
     "a": "チームA",
     "b": "チームB"
   },
-  "teamScore": "{{team}}: {{score}}点",
+  "teamScoreWithTarget": "{{team}}: {{score}}点 / 目標 {{target}}点",
   "playButton": "出す",
   "playRestriction": {
     "followSuit": "リードスートに従ってください",
