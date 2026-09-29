@@ -17,6 +17,7 @@
   "compartment.intrigue": "Intrigue",
   "awardLine": "Seat {{player}} takes {{compartment}} ({{chips}})",
   "awardTurnUpLine": "Seat {{player}} takes {{compartment}} from the turn-up ({{chips}})",
+  "listSeparator": ", ",
   "seat": "{{name}}: {{chips}} chips, {{n}} card(s)",
   "seatEnded": "{{name}}: {{chips}} chips",
   "holdsPope": "holds the Pope (excused payment)",
