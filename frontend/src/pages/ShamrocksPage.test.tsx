@@ -36,10 +36,10 @@ describe('ShamrocksPage', () => {
   it('announces each empty foundation by position and empty state', async () => {
     renderWithProviders(<ShamrocksPage />);
 
-    expect(await screen.findByRole('button', { name: '組札 1、空' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: '組札 0、空' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '組札 1、空' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '組札 2、空' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '組札 3、空' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '組札 4、空' })).toBeInTheDocument();
   });
 
   it('announces the suit and top card of occupied foundations in Japanese and English', async () => {
@@ -49,10 +49,13 @@ describe('ShamrocksPage', () => {
     expect(await screen.findByRole('button', { name: '組札、最上札 ♠ A' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '組札、最上札 ♣ 2' })).toBeInTheDocument();
 
-    await i18n.changeLanguage('en');
-    expect(await screen.findByRole('button', { name: 'Foundation, top card ♠ A' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Foundation, top card ♣ 2' })).toBeInTheDocument();
-    await i18n.changeLanguage('ja');
+    try {
+      await i18n.changeLanguage('en');
+      expect(await screen.findByRole('button', { name: 'Foundation, top card ♠ A' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Foundation, top card ♣ 2' })).toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
   });
 
   it('announces an empty fan by its zero-based position', async () => {

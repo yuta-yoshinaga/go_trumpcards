@@ -269,12 +269,12 @@ function ShamrocksPageContent() {
                   aria-label={
                     topCard
                       ? t('foundationAriaLabel', { card: cardAlt(topCard) })
-                      : t('emptyFoundationAriaLabel', { index: i + 1 })
+                      : t('emptyFoundationAriaLabel', { index: i })
                   }
                   data-testid={`foundation-${i}`}
                 >
-                  {pile.length > 0 ? (
-                    <CardImage card={pile[pile.length - 1]} width={w} />
+                  {topCard ? (
+                    <CardImage card={topCard} width={w} />
                   ) : (
                     <div
                       className="rounded border border-dashed border-white/25 bg-black/20"
