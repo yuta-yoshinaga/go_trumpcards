@@ -68141,6 +68141,9 @@ components:
                 type: integer
               card:
                 $ref: '#/components/schemas/Card'
+        trickCardPoints:
+          type: integer
+          description: Card points in the current or just-completed trick
         teamScores:
           type: array
           items:

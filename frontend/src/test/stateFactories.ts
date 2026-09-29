@@ -1205,6 +1205,7 @@ const baseManilleState: ManilleResponse = {
   trumpSuit: 4,
   currentTrick: [],
   teamScores: [0, 0],
+  trickCardPoints: 0,
   roundCardPoints: [0, 0],
   playableIndices: [0, 1, 2],
   gameEndFlag: false,

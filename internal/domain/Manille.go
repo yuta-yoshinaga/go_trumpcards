@@ -543,6 +543,15 @@ func (g *Manille) SetTeamScores(s [ManilleTeamCnt]int) { g.teamScores = s }
 // GetRoundCardPoints 現ラウンドのカード得点取得
 func (g *Manille) GetRoundCardPoints() [ManilleTeamCnt]int { return g.roundCardPts }
 
+// GetCurrentTrickPoints returns the card points in the retained current trick.
+func (g *Manille) GetCurrentTrickPoints() int {
+	points := 0
+	for _, tc := range g.currentTrick {
+		points += manilleCardPoints(tc.Card)
+	}
+	return points
+}
+
 // SetRoundCardPoints 現ラウンドのカード得点設定 (テスト用)
 func (g *Manille) SetRoundCardPoints(s [ManilleTeamCnt]int) { g.roundCardPts = s }
 

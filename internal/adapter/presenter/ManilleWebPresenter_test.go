@@ -20,6 +20,7 @@ func setupManilleWebMock() *interfaces.MockManilleGame {
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetTrickNumber").Return(1)
 	m.On("GetCurrentTrick").Return(([]*domain.TrickCard)(nil))
+	m.On("GetCurrentTrickPoints").Return(0).Maybe()
 	m.On("GetGameEndFlag").Return(false)
 	m.On("GetPhase").Return(domain.ManillePhasePlay)
 	m.On("GetCurrentPlayerIdx").Return(0)
@@ -101,10 +102,13 @@ func TestManilleWebPresenter_Output(t *testing.T) {
 		m, _ := setupManilleWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 		m.On("GetPhase").Return(domain.ManillePhaseTrickEnd)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentTrickPoints")
+		m.On("GetCurrentTrickPoints").Return(9)
 		result := p.Output(m, nil)
 		var resObj controller.ManilleWebOutput
 		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
 		assert.Equal(t, "manille.trickEnd", resObj.MessageCode)
+		assert.Equal(t, 9, resObj.TrickCardPoints)
 	})
 
 	t.Run("round end message code", func(t *testing.T) {

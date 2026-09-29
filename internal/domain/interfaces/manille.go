@@ -41,6 +41,8 @@ type ManilleGame interface {
 	GetCurrentPlayerIdx() int
 	// GetCurrentTrick 現在のトリックを取得する
 	GetCurrentTrick() []*domain.TrickCard
+	// GetCurrentTrickPoints 現在または直前のトリックのカード得点を取得する
+	GetCurrentTrickPoints() int
 	// GetLeadPlayerIdx リードプレイヤーインデックスを取得する
 	GetLeadPlayerIdx() int
 	// GetDealerIdx ディーラーインデックスを取得する

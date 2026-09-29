@@ -23,7 +23,7 @@
   "you": "You",
   "cpu": "CPU {{id}}",
   "yourTeam": "Your Team",
-  "trickWinner": "{{name}} ({{team}}) won the trick",
+  "trickWinner": "{{name}} ({{team}}) won the trick ({{points}} points)",
   "team": {
     "a": "Team A",
     "b": "Team B"

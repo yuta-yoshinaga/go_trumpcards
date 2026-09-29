@@ -248,7 +248,7 @@ function ManillePageContent() {
                   dataTutorial="manille-trick-display"
                 />
                 {/* At TrickEnd leadPlayerIdx is the trick winner (they lead next), so show who took it. */}
-                {isTrickEnd &&
+                {(isTrickEnd || isRoundEnd) &&
                   (() => {
                     const winnerIdx = state.leadPlayerIdx;
                     const isMyTeam = winnerIdx % 2 === humanTeam;
@@ -264,6 +264,7 @@ function ManillePageContent() {
                         {t('trickWinner', {
                           name: playerName(winnerIdx, state.players[winnerIdx]?.isHuman ?? false),
                           team: winnerIdx % 2 === 0 ? t('team.a') : t('team.b'),
+                          points: state.trickCardPoints,
                         })}
                       </div>
                     );
