@@ -719,7 +719,7 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
             {hintEnabled && hint && <HintTooltip reason={t(hint.reason)} confidence={hint.confidence} />}
 
             {/* Betting controls */}
-            {canAct && (
+            {canAct && state && humanPlayer && (
               <div data-tutorial="scs-action-buttons">
                 <BettingControls
                   inputId="sevenCardStudBetAmount"
@@ -729,6 +729,9 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
                   maxBetAmount={state?.maxBetAmount}
                   potSize={state?.pot}
                   hasOutstandingBet={hasOutstandingBet}
+                  callAmountLabel={` ${t('callAmount', {
+                    amount: Math.min(state.lastBet - humanPlayer.currentBet, humanPlayer.chips),
+                  })}`}
                   loading={loading}
                   onCall={() => execApi('call', undefined, undefined, getElapsed())}
                   onRaise={() => execApi('raise', betAmount, undefined, getElapsed())}

@@ -18,6 +18,7 @@
   "currentLow": "Current low: {{low}}",
   "anteBringIn": "Ante/Bring-in",
   "bringIn": "Bring-in",
+  "callAmount": "({{amount}})",
   "handNumber": "Hand #{{count}} (Level up: every {{level}} hands)",
   "rebuy": {
     "prompt": "Rebuy? ({{chips}} chips, {{used}}/{{max}} used)",

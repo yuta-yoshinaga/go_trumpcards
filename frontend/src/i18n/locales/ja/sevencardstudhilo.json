@@ -1,4 +1,5 @@
 {
+  "callAmount": "({{amount}})",
   "phase": {
     "thirdStreet": "サードストリート",
     "fourthStreet": "フォースストリート",
