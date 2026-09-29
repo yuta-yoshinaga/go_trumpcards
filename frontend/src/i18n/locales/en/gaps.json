@@ -10,6 +10,8 @@
   "undo": "Undo",
   "redeal": "Redeal",
   "redealKeepLabel": "Redeal ({{used}}/{{total}}) — keeps {{locked}}",
+  "redealConfirmTitle": "Confirm redeal",
+  "redealConfirmMessage": "Redealing changes the positions of all unlocked cards. Redeals remaining: {{remaining}}",
   "giveup": "Give Up",
   "hint": "Hint",
   "kbd": {
