@@ -269,8 +269,13 @@ function DoubleAttackPageContent() {
                   <div className="text-ds-text-primary text-sm tabular-nums" data-testid="da-bustit-payouts">
                     <p className="font-medium">{t('bustItPayoutTitle')}</p>
                     <ul>
-                      {state.bustItPayouts.map(({ cards, multiplier }) => (
-                        <li key={cards}>{t('bustItPayoutRow', { cards, payout: `${multiplier}:1` })}</li>
+                      {state.bustItPayouts.map(({ cards, multiplier }, index) => (
+                        <li key={cards}>
+                          {t(index === state.bustItPayouts.length - 1 ? 'bustItPayoutRowOrMore' : 'bustItPayoutRow', {
+                            cards,
+                            payout: `${multiplier}:1`,
+                          })}
+                        </li>
                       ))}
                     </ul>
                   </div>

@@ -91,6 +91,15 @@ beforeEach(() => {
 });
 
 describe('DoubleAttackPage', () => {
+  it('marks the final Bust It payout row as covering that many cards or more', async () => {
+    mockApi.mockResolvedValue(withState({ phase: DoubleAttackPhase.BET }));
+    renderWithProviders(<DoubleAttackPage />);
+
+    const payoutTable = await screen.findByTestId('da-bustit-payouts');
+    expect(payoutTable).toHaveTextContent('3枚: 1:1');
+    expect(payoutTable).toHaveTextContent('8枚以上: 500:1');
+  });
+
   // ディーラーのアップカードは、カードが配られた以降のフェーズで表示される
   it('shows dealer cards when dealer has cards', async () => {
     mockApi.mockResolvedValue(withState({ phase: DoubleAttackPhase.PLAY, dealerCards: [card(10)] }));
@@ -122,7 +131,7 @@ describe('DoubleAttackPage', () => {
     const payouts = await screen.findByTestId('da-bustit-payouts');
     expect(payouts).toHaveTextContent('Bust It の配当（ディーラーがバスト）');
     expect(payouts).toHaveTextContent('3枚: 1:1');
-    expect(payouts).toHaveTextContent('8枚: 500:1');
+    expect(payouts).toHaveTextContent('8枚以上: 500:1');
   });
 
   it('配るはアンティと Bust It を送る', async () => {

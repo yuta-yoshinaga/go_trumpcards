@@ -229,9 +229,9 @@ func TestDoubleAttackWebPresenter_BustItPayoutsComeFromDomainRules(t *testing.T)
 		} `json:"bustItPayouts"`
 	}
 	require.NoError(t, json.Unmarshal([]byte(cp.Output(g, nil)), &got))
-	require.Len(t, got.Payouts, domain.DoubleAttackBustItMaxCards-2)
+	require.Len(t, got.Payouts, domain.DoubleAttackBustItMaxCards-domain.DoubleAttackBustItMinCards+1)
 	for i, row := range got.Payouts {
-		cards := i + 3
+		cards := i + domain.DoubleAttackBustItMinCards
 		assert.Equal(t, cards, row.Cards)
 		assert.Equal(t, domain.DoubleAttackBustItPayout(cards), row.Multiplier)
 	}
