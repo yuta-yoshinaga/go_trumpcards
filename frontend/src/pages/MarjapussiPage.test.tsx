@@ -286,4 +286,55 @@ describe('MarjapussiPage', () => {
     expect(live).toHaveAttribute('aria-live', 'polite');
     expect(live).toContainElement(await screen.findByTestId('marjapussi-play-prompt'));
   });
+
+  it('does not announce team scores on the first render', async () => {
+    renderWithProviders(<MarjapussiPage />);
+
+    const live = await screen.findByTestId('marjapussi-score-live');
+    await screen.findByAltText('♥ Q');
+    expect(live).toBeEmptyDOMElement();
+  });
+
+  it('does not announce team scores when a response keeps both scores unchanged', async () => {
+    const unchangedScores = makeMarjapussiState({ teamScores: [100, 200] });
+    mockExec.mockResolvedValueOnce(unchangedScores).mockResolvedValueOnce(unchangedScores);
+    renderWithProviders(<MarjapussiPage />);
+
+    const live = await screen.findByTestId('marjapussi-score-live');
+    fireEvent.click(await screen.findByAltText('♥ Q'));
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0 }));
+    expect(live).toBeEmptyDOMElement();
+  });
+
+  it('announces the team label and new score when one team score changes', async () => {
+    mockExec
+      .mockResolvedValueOnce(makeMarjapussiState({ teamScores: [100, 200] }))
+      .mockResolvedValueOnce(makeMarjapussiState({ teamScores: [125, 200] }));
+    renderWithProviders(<MarjapussiPage />);
+
+    fireEvent.click(await screen.findByAltText('♥ Q'));
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('marjapussi-score-live')).toHaveTextContent('チーム 0（あなた & CPU 2） の得点: 125点');
+    });
+  });
+
+  it('announces both team scores when both change in one update', async () => {
+    mockExec
+      .mockResolvedValueOnce(makeMarjapussiState({ teamScores: [100, 200] }))
+      .mockResolvedValueOnce(makeMarjapussiState({ teamScores: [125, 225] }));
+    renderWithProviders(<MarjapussiPage />);
+
+    fireEvent.click(await screen.findByAltText('♥ Q'));
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('marjapussi-score-live')).toHaveTextContent(
+        'チーム 0（あなた & CPU 2） の得点: 125点、チーム 1（CPU 1 & CPU 3） の得点: 225点',
+      );
+    });
+  });
 });
