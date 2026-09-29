@@ -67,6 +67,34 @@ describe('CassinoPage', () => {
     expect(screen.getByTestId('hand-card-2')).toBeInTheDocument();
   });
 
+  it('exposes pressed state for selectable hand, table, and build cards', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ builds: [{ cards: [card('SPADE', 2)], value: 5, ownerIdx: 0, isMulti: false }] as never }),
+    );
+    renderWithProviders(<CassinoPage />);
+    const handCard = await screen.findByTestId('hand-card-0');
+    const tableCard = screen.getByTestId('table-card-0');
+    const build = screen.getByTestId('build-0');
+
+    expect(handCard).toHaveAttribute('aria-pressed', 'false');
+    expect(tableCard).toHaveAttribute('aria-pressed', 'false');
+    expect(build).toHaveAttribute('aria-pressed', 'false');
+
+    fireEvent.click(handCard);
+    fireEvent.click(tableCard);
+    fireEvent.click(build);
+    expect(handCard).toHaveAttribute('aria-pressed', 'true');
+    expect(tableCard).toHaveAttribute('aria-pressed', 'true');
+    expect(build).toHaveAttribute('aria-pressed', 'true');
+
+    fireEvent.click(handCard);
+    fireEvent.click(tableCard);
+    fireEvent.click(build);
+    expect(handCard).toHaveAttribute('aria-pressed', 'false');
+    expect(tableCard).toHaveAttribute('aria-pressed', 'false');
+    expect(build).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('renders the human and CPU stat lines via i18n (no hardcoded 枚/pt)', async () => {
     const players = [
       { id: 0, isHuman: true, cardCount: 3, cards: [], capturedCount: 5, sweepCount: 2, totalScore: 7 },
