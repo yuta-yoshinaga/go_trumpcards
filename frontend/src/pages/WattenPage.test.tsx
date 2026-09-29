@@ -150,7 +150,9 @@ describe('WattenPage', () => {
     // Base hand (♥K, ♦7, ♠A): Max + Spitz are permanent trumps → count 2 before any pick.
     expect(screen.getByTestId('watten-trump-count')).toHaveTextContent('あなたの強札: 2枚');
     // The permanent trumps are ringed in the hand.
-    expect(screen.getByRole('button', { name: '♥ K' })).toHaveAttribute('data-trump', 'true');
+    expect(screen.getByRole('button', { name: '♥ K (切り札)' })).toHaveAttribute('data-trump', 'true');
+    expect(screen.getByRole('button', { name: '♦ 7 (切り札)' })).toHaveAttribute('data-trump', 'true');
+    expect(screen.getByRole('button', { name: '♠ A' })).not.toHaveAttribute('data-trump');
   });
 
   it('updates the top-trump preview and hand ring when a Schlag rank is picked', async () => {
@@ -162,7 +164,7 @@ describe('WattenPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'A' }));
     // ♠A now becomes a Schlag trump → count rises to 3 and the card is ringed.
     expect(screen.getByTestId('watten-trump-count')).toHaveTextContent('あなたの強札: 3枚');
-    expect(screen.getByRole('button', { name: '♠ A' })).toHaveAttribute('data-trump', 'true');
+    expect(screen.getByRole('button', { name: '♠ A (切り札)' })).toHaveAttribute('data-trump', 'true');
   });
 
   it('selecting a card then playing dispatches play', async () => {

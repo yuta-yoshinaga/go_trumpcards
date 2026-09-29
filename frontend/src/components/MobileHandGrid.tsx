@@ -70,6 +70,8 @@ export interface MobileHandGridProps {
   trumpIndices?: number[];
   /** Accessible tooltip describing why the ringed cards are marked (e.g. "trump"). */
   trumpTitle?: string;
+  /** Optional text appended to ringed cards' accessible names. */
+  trumpAccessibleLabel?: string;
   /**
    * Optional indices of cards legal to play this turn. When provided, these
    * cards get an additive success ring so the player can see the legal plays.
@@ -96,6 +98,7 @@ export function MobileHandGrid({
   highlightIndices,
   trumpIndices,
   trumpTitle,
+  trumpAccessibleLabel,
   legalIndices,
 }: MobileHandGridProps) {
   const viewportWidth = useWindowWidth();
@@ -144,7 +147,7 @@ export function MobileHandGrid({
                     if (!restricted) onToggle(globalIdx);
                   }}
                   // 携帯側も同じ理由でバッジの意味を読み上げに載せる (#6612)。
-                  aria-label={`${cardAlt(card)}${badge ? ` (${badge.title})` : ''}${status ? ` (${status})` : ''}`}
+                  aria-label={`${cardAlt(card)}${trump && trumpAccessibleLabel ? ` (${trumpAccessibleLabel})` : ''}${badge ? ` (${badge.title})` : ''}${status ? ` (${status})` : ''}`}
                   aria-pressed={isSelected}
                   // Use aria-disabled (not the HTML `disabled` attribute) so restricted
                   // cards remain focusable for keyboard / screen-reader users — they

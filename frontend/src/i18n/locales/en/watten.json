@@ -42,6 +42,7 @@
   "chooseCritical": "Trump suit",
   "declareButton": "Declare",
   "trumpRing": "Top trump",
+  "trumpCardDescription": "trump",
   "trumpPanel": {
     "title": "Top-trump preview",
     "rule": "Once declared, the ranking runs Max (♥K) > Belli (♦K) > Spitz (♦7), then the cards of the Schlag rank, then the remaining critical-suit cards. Below are your hand's top trumps for the current choice.",

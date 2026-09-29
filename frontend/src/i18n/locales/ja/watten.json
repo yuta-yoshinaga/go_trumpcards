@@ -42,6 +42,7 @@
   "chooseCritical": "切り札スート",
   "declareButton": "宣言",
   "trumpRing": "強札（トランプ）",
+  "trumpCardDescription": "切り札",
   "trumpPanel": {
     "title": "強札プレビュー",
     "rule": "宣言すると、永久最強札 Max（♥K）＞ Belli（♦K）＞ Spitz（♦7）に続き、Schlag ランクの札、切り札スートの残り札の順で強くなります。下はいまの選択での手札の強札です。",

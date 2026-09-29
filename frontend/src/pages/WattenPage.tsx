@@ -462,6 +462,7 @@ function WattenPageContent() {
                 dataTutorialPrefix="watten"
                 trumpIndices={trumpIndices.length > 0 ? trumpIndices : undefined}
                 trumpTitle={t('trumpRing')}
+                trumpAccessibleLabel={t('trumpCardDescription')}
               />
             )}
 
