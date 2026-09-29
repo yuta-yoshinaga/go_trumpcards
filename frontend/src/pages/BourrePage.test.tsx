@@ -371,11 +371,38 @@ describe('BourrePage', () => {
     const { container } = renderWithProviders(<BourrePage />);
     await waitFor(() => expect(screen.getByText(/CPU 1/)).toBeInTheDocument());
     const cardBtn = container.querySelector('[data-tutorial="bourre-hand"] button');
+    expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(cardBtn as Element);
+    expect(cardBtn).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(cardBtn as Element);
+    expect(cardBtn).toHaveAttribute('aria-pressed', 'false');
     fireEvent.click(cardBtn as Element);
     fireEvent.click(screen.getByRole('button', { name: /交換する/ }));
     await waitFor(() => {
       expect(mockExec).toHaveBeenCalledWith(expect.objectContaining({ command: 'draw', indices: [0] }));
     });
+  });
+
+  it('does not expose a pressed state outside the draw phase', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: 'play',
+        currentPlayerIdx: 0,
+        validPlays: [0],
+        players: [
+          player({ id: 0, isHuman: true, cards: [{ design: 'SPADE', value: 9 }] }),
+          player({ id: 1 }),
+          player({ id: 2 }),
+          player({ id: 3 }),
+          player({ id: 4 }),
+        ],
+      }),
+    );
+    const { container } = renderWithProviders(<BourrePage />);
+    await waitFor(() => expect(screen.getByText(/CPU 1/)).toBeInTheDocument());
+    const cardBtn = container.querySelector('[data-tutorial="bourre-hand"] button');
+    expect(cardBtn).toBeInTheDocument();
+    expect(cardBtn).not.toHaveAttribute('aria-pressed');
   });
 
   it('draw phase: keep all dispatches an empty draw', async () => {
