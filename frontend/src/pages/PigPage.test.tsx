@@ -95,6 +95,18 @@ describe('PigPage', () => {
     expect(screen.getByTestId('pig-seat-3')).toHaveTextContent('文字[-/PIG]');
   });
 
+  it('labels the signaller seat only during the signal phase', async () => {
+    mockExec.mockResolvedValue(liveSignal());
+    const { unmount } = renderWithProviders(<PigPage />);
+    expect(await screen.findByTestId('pig-seat-2')).toHaveTextContent('合図中');
+    expect(screen.getByTestId('pig-seat-1')).not.toHaveTextContent('合図中');
+    unmount();
+
+    mockExec.mockResolvedValue(makePigState({ phase: 0, signallerIdx: 2 } as Partial<PigResponse>));
+    renderWithProviders(<PigPage />);
+    expect(await screen.findByTestId('pig-seat-2')).not.toHaveTextContent('合図中');
+  });
+
   // **選び終えた席・気づいた席・脱落した席は盤面に痕跡が残らない。**
   it('marks who has chosen, who noticed and who is out', async () => {
     const { unmount } = renderWithProviders(<PigPage />);

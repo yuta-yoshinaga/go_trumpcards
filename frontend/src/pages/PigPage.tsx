@@ -208,6 +208,9 @@ function PigPageContent() {
                   data-testid={`pig-seat-${p.id.toString()}`}
                 >
                   <span className="text-ds-text-primary">{seatName(p.id)}</span>
+                  {state.phase === PigPhase.SIGNAL && p.id === state.signallerIdx && (
+                    <span className="ml-1 text-ds-warning">{t('header.signalling')}</span>
+                  )}
                   {p.eliminated && <span className="ml-1 text-ds-error">{t('header.out')}</span>}
                   {!p.eliminated && p.noticedOrder > 0 && (
                     <span className="ml-1 text-ds-success">
