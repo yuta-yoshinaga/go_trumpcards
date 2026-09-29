@@ -171,10 +171,14 @@ describe('OichoKabuPage', () => {
     ['win', winState, '純損益: +100'],
     ['loss', { ...bankerDrewState, chips: 900 }, '純損益: -100'],
     ['push', { ...winState, result: 0, chips: 1000, totalPayout: 100, netChange: 0, message: 'Push.' }, '純損益: 0'],
-  ])('shows signed net profit for a %s', async (_name, state, expected) => {
+  ])('shows signed net profit for a %s', async (name, state, expected) => {
     mockApi.mockResolvedValue(state);
     renderWithProviders(<OichoKabuPage />);
-    expect(await screen.findByTestId('payout-breakdown')).toHaveTextContent(expected);
+    const payout = await screen.findByTestId('payout-breakdown');
+    expect(payout).toHaveTextContent(expected);
+    if (name === 'loss') {
+      expect(payout).not.toHaveTextContent('純損益: +-100');
+    }
   });
 
   it('exposes each hand rank by name and the result as a live region', async () => {
