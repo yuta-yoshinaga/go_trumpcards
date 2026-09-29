@@ -361,7 +361,7 @@ function NapoleonsSquarePageContent() {
                             aria-label={t('emptyFoundationAriaLabel', {
                               suit: FOUNDATION_SUITS[idx],
                               idx,
-                              nextRank: nextRankLabel ? t('nextRankAria', { rank: nextRankLabel }) : '',
+                              nextRank: t('nextRankAria', { rank: valueName(1) }),
                             })}
                             style={{ width: dims.cw, height: dims.ch }}
                             className={`rounded border-2 border-dashed border-white/30 text-game-text-muted text-xs flex items-center justify-center ${focusRingWhite}`}
