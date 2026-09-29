@@ -60,6 +60,14 @@ const base: DoubleAttackResponse = {
   bustItBet: 0,
   payout: 0,
   bustItPayout: 0,
+  bustItPayouts: [
+    { cards: 3, multiplier: 1 },
+    { cards: 4, multiplier: 2 },
+    { cards: 5, multiplier: 8 },
+    { cards: 6, multiplier: 25 },
+    { cards: 7, multiplier: 100 },
+    { cards: 8, multiplier: 500 },
+  ],
   chips: 1000,
   roundNumber: 1,
   remainingCards: 384,
@@ -106,6 +114,15 @@ describe('DoubleAttackPage', () => {
     mockApi.mockResolvedValue(base);
     renderWithProviders(<DoubleAttackPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '配る' })).toBeInTheDocument());
+  });
+
+  it('賭ける前にサーバーから受け取った Bust It 配当を表示する', async () => {
+    mockApi.mockResolvedValue(base);
+    renderWithProviders(<DoubleAttackPage />);
+    const payouts = await screen.findByTestId('da-bustit-payouts');
+    expect(payouts).toHaveTextContent('Bust It の配当（ディーラーがバスト）');
+    expect(payouts).toHaveTextContent('3枚: 1:1');
+    expect(payouts).toHaveTextContent('8枚: 500:1');
   });
 
   it('配るはアンティと Bust It を送る', async () => {

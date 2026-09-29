@@ -36,6 +36,12 @@ func (cp *DoubleAttackBlackjackWebPresenter) Output(c interfaces.DoubleAttackBla
 	resObj.BustItBet = c.GetBustItBet()
 	resObj.Payout = c.GetPayout()
 	resObj.BustItPayout = c.GetBustItPayout()
+	resObj.BustItPayouts = make([]controller.DoubleAttackBustItPayout, 0, domain.DoubleAttackBustItMaxCards-2)
+	for cards := 3; cards <= domain.DoubleAttackBustItMaxCards; cards++ {
+		resObj.BustItPayouts = append(resObj.BustItPayouts, controller.DoubleAttackBustItPayout{
+			Cards: cards, Multiplier: domain.DoubleAttackBustItPayout(cards),
+		})
+	}
 	resObj.Chips = c.GetChips()
 	resObj.RoundNumber = c.GetRoundNumber()
 	resObj.RemainingCards = c.GetRemainingCards()

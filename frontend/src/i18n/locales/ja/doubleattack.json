@@ -1,6 +1,8 @@
 {
   "title": "追加ベット・ブラックジャック",
   "betGuide": "アンティを決めてください。Bust It は任意です",
+  "bustItPayoutTitle": "Bust It の配当（ディーラーがバスト）",
+  "bustItPayoutRow": "{{cards}}枚: {{payout}}",
   "attackGuide": "アップカードを見て、アンティと同額まで賭け増しできます",
   "attackNotice": "※ ディーラーの2枚目は、あなたが決めた後に配られます",
   "playGuide": "ヒット・スタンド・ダブル・スプリットから選んでください",

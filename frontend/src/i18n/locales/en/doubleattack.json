@@ -1,6 +1,8 @@
 {
   "title": "Extra Bet Blackjack",
   "betGuide": "Choose your ante. Bust It is optional",
+  "bustItPayoutTitle": "Bust It payouts (dealer busts)",
+  "bustItPayoutRow": "{{cards}} cards: {{payout}}",
   "attackGuide": "Having seen the up-card, you may add up to the ante",
   "attackNotice": "note: the dealer's second card comes after you decide",
   "playGuide": "Hit, stand, double or split",
