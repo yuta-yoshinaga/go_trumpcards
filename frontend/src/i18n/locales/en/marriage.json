@@ -20,6 +20,12 @@
   "wildBadge": "WILD",
   "wildAria": "(wild)",
   "discardTop": "Discard",
+  "discardHistory": {
+    "show": "Show discard history",
+    "hide": "Hide discard history",
+    "title": "Discard history",
+    "top": "Current top"
+  },
   "cards": "{{count}} cards",
   "cumulativeScore": "Total: {{score}}",
   "deadwoodShort": "Deadwood {{score}}",

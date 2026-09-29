@@ -49,6 +49,10 @@ const drawPhaseState: MarriageResponse = {
   currentPlayerIdx: 0,
   dealerIdx: 0,
   discardTop: { design: 'HEART', value: 7 },
+  discardPile: [
+    { design: 'SPADE', value: 4 },
+    { design: 'HEART', value: 7 },
+  ],
   drawPileCount: 40,
   wildJoker: { design: 'CLOVER', value: 5 },
   wildRank: 5,
@@ -348,6 +352,18 @@ describe('MarriagePage', () => {
       expect(screen.getByRole('button', { name: '山札から引く' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: '捨て札から引く' })).toBeInTheDocument();
     });
+  });
+
+  it('opens discard history and marks the current top card', async () => {
+    renderWithProviders(<MarriagePage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: '捨て札の履歴を表示' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: '捨て札の履歴を表示' }));
+
+    expect(screen.getByTestId('marriage-discard-history')).toBeInTheDocument();
+    expect(screen.getByText('捨て札の履歴')).toBeInTheDocument();
+    expect(screen.getByAltText('♠ 4')).toBeInTheDocument();
+    expect(screen.getByText('現在のトップ')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '捨て札の履歴を非表示' })).toBeInTheDocument();
   });
 
   it('draw discard button disabled when no discard top', async () => {

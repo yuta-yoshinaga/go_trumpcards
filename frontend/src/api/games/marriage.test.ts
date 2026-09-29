@@ -14,6 +14,7 @@ describe('marriageApi', () => {
     currentPlayerIdx: 0,
     dealerIdx: 0,
     discardTop: null,
+    discardPile: [],
     drawPileCount: 0,
     wildJoker: null,
     wildRank: 0,

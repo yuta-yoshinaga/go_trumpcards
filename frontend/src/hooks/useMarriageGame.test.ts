@@ -51,6 +51,7 @@ const defaultState: MarriageResponse = {
   currentPlayerIdx: 0,
   dealerIdx: 0,
   discardTop: { design: 'HEART', value: 7 },
+  discardPile: [{ design: 'HEART', value: 7 }],
   drawPileCount: 40,
   wildJoker: { design: 'CLOVER', value: 5 },
   wildRank: 5,
