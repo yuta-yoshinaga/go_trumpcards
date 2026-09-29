@@ -28,6 +28,7 @@
   "upcomingRanksDetailAria": "組札{{idx}}の先読みランク一覧: {{sequence}}",
   "wasteRanksTooltip": "ウェイスト{{idx}}（上3枚）: {{ranks}}",
   "wasteEmptyAria": "ウェイスト{{idx}}: 空",
+  "wasteEmptyStockTargetAria": "ウェイスト{{idx}}: 空。ストックのカードをここへ移せます",
   "stockTopAria": "山札のトップ: {{card}}",
   "foundationCompleteAria": "完成",
   "gameClear": "ゲームクリア！ 手数: {{moveCount}}",
