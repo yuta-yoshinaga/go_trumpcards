@@ -375,7 +375,11 @@ function ThreeThirteenPageContent() {
                   ))}
 
                 {/* Score table */}
-                <div className="my-3 p-2 rounded bg-black/30" data-tutorial="tt-score-table">
+                <div
+                  className="my-3 p-2 rounded bg-black/30"
+                  data-tutorial="tt-score-table"
+                  data-testid="threethirteen-score-table"
+                >
                   <div className="text-ds-text-muted text-sm mb-1">{t('scores')}</div>
                   <table className="w-full text-sm text-ds-text-muted">
                     <thead>
@@ -384,6 +388,7 @@ function ThreeThirteenPageContent() {
                           {t('scoresPlayer')}
                         </th>
                         <th scope="col">{t('scoresRound')}</th>
+                        {(isRoundEnd || isGameEnd) && <th scope="col">{t('scoresDeadwood')}</th>}
                         <th scope="col">{t('scoresTotal')}</th>
                       </tr>
                     </thead>
@@ -392,6 +397,7 @@ function ThreeThirteenPageContent() {
                         <tr key={p.id} className={p.isHuman ? 'text-ds-accent' : ''}>
                           <td>{playerName(p.id, p.isHuman)}</td>
                           <td className="text-center">{p.roundScore}</td>
+                          {(isRoundEnd || isGameEnd) && <td className="text-center">{p.deadwood}</td>}
                           <td className="text-center">{p.cumulativeScore}</td>
                         </tr>
                       ))}
