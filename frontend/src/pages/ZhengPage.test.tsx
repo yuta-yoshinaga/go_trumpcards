@@ -188,9 +188,13 @@ describe('ZhengPage', () => {
   it('toggles card selection on and off', async () => {
     renderWithProviders(<ZhengPage />);
     const card0 = await screen.findByTestId('hand-card-0');
+    expect(card0).toHaveAttribute('aria-pressed', 'false');
+    expect(card0.querySelector('img')).toHaveAttribute('alt');
     fireEvent.click(card0);
+    expect(card0).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByTestId('play-button')).toBeEnabled();
     fireEvent.click(card0);
+    expect(card0).toHaveAttribute('aria-pressed', 'false');
     expect(screen.getByTestId('play-button')).toBeDisabled();
   });
 
