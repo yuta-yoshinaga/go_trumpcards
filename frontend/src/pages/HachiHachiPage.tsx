@@ -264,6 +264,7 @@ function HachiHachiPageContent() {
                       type="button"
                       onClick={() => onHandClick(i)}
                       disabled={!isPlayPhase || !isHumanTurn}
+                      aria-pressed={handIndex === i}
                       className={`rounded transition-all ${
                         handIndex === i ? 'ring-2 ring-ds-info -translate-y-2' : ''
                       } ${isPlayPhase && isHumanTurn && playable ? 'cursor-pointer hover:opacity-90' : 'cursor-default'}`}
