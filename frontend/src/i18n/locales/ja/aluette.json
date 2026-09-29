@@ -19,6 +19,7 @@
   "cards": "{{count}}枚",
   "tricks": "{{count}}トリック",
   "currentTrick": "現在のトリック",
+  "trickWinnerAnnouncement": "{{name}}がトリックを取りました",
   "players": "プレイヤー",
   "team": "チーム{{n}}",
   "teamScore": "チーム{{n}}: {{score}}",

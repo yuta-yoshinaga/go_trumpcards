@@ -131,6 +131,20 @@ describe('AluettePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('next'));
   });
 
+  it('announces the previous trick winner in a persistent polite live region', async () => {
+    mockExec.mockResolvedValue(playState);
+    const playing = renderWithProviders(<AluettePage />);
+    const idle = await screen.findByTestId('aluette-trick-winner-live');
+    expect(idle).toHaveAttribute('aria-live', 'polite');
+    expect(idle).toHaveAttribute('role', 'status');
+    expect(idle).toHaveTextContent('');
+    playing.unmount();
+
+    mockExec.mockResolvedValue(makeAluetteState({ phase: 1, lastTrickWinner: 2, isHumanTurn: false }));
+    renderWithProviders(<AluettePage />);
+    expect(await screen.findByTestId('aluette-trick-winner-live')).toHaveTextContent('CPU 2がトリックを取りました');
+  });
+
   // #5714: メーヌの勝敗は**チーム合計が3以上か**で決まる (4-1 でも 3-2 でも 1 点)。
   // 個人トリック数の羅列だけでは、自分で足し算しないと結果が分からなかった。
   it('sums each team and names the mene winner', async () => {

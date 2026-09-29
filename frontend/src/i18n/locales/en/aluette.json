@@ -19,6 +19,7 @@
   "cards": "{{count}} cards",
   "tricks": "{{count}} tricks",
   "currentTrick": "Current Trick",
+  "trickWinnerAnnouncement": "{{name}} won the trick",
   "players": "Players",
   "team": "Team {{n}}",
   "teamScore": "Team {{n}}: {{score}}",
