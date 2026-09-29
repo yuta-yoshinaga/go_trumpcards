@@ -97,6 +97,42 @@ describe('MatrimonyPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('draw'));
   });
 
+  it('announces stock destinations when an empty slot is available', async () => {
+    mockExec.mockResolvedValue({ ...playingState, waste: [card('HEART', 4)] });
+    renderWithProviders(<MatrimonyPage />);
+    await screen.findByRole('button', { name: /山札 残り88枚/ });
+    const live = screen.getByTestId('source-move-live');
+    expect(live).toBeEmptyDOMElement();
+
+    fireEvent.click(screen.getByRole('button', { name: '枠 0 ♠ 9' }));
+    fireEvent.click(screen.getByRole('button', { name: '山札 残り88枚' }));
+    expect(live).toHaveTextContent('山札を選択しました。移動先は空き枠です。空き枠を選択して移動します。');
+  });
+
+  it('announces when stock has no empty slot destination', async () => {
+    mockExec.mockResolvedValue({ ...playingState, tableau: makeTableau([]) });
+    renderWithProviders(<MatrimonyPage />);
+    const stock = await screen.findByRole('button', { name: /山札 残り88枚/ });
+    const live = screen.getByTestId('source-move-live');
+    fireEvent.click(screen.getByRole('button', { name: '枠 0 ♦ 7' }));
+    fireEvent.click(stock);
+    expect(live).toHaveTextContent('山札を選択しました。移動先にできる空き枠はありません。');
+  });
+
+  it('announces waste destinations as empty slots or foundations and clears after a move', async () => {
+    mockExec.mockResolvedValue({ ...playingState, waste: [card('HEART', 4)] });
+    renderWithProviders(<MatrimonyPage />);
+    await screen.findByRole('button', { name: /山札 残り88枚/ });
+    const live = screen.getByTestId('source-move-live');
+    fireEvent.click(screen.getByRole('button', { name: '♥ 4' }));
+    expect(live).toHaveTextContent('ウェイストを選択しました。移動先は空き枠または組札です。');
+
+    mockExec.mockResolvedValue(playingState);
+    fireEvent.click(screen.getByRole('button', { name: '空の枠 3 (山札か捨て札から埋められます)' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', { zone: 'waste' }, { zone: 'tableau', col: 3 }));
+    expect(live).toBeEmptyDOMElement();
+  });
+
   // An empty pile takes only a stock or waste card, so the label says so and a
   // tableau selection must not be droppable there.
   it('labels an empty slot with where it can be filled from', async () => {
