@@ -39,6 +39,7 @@ export interface TressetteResponse extends BaseGameResponse {
   trickNumber: number;
   currentPlayerIdx: number;
   currentTrick: TressetteTrickCard[];
+  currentTrickThirds: number;
   lastTrick: TressetteTrickCard[];
   lastTrickWinner: number;
   leadPlayerIdx: number;

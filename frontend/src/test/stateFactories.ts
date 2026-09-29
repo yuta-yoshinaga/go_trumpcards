@@ -618,6 +618,7 @@ const baseTressetteState: TressetteResponse = {
   trickNumber: 1,
   currentPlayerIdx: 0,
   currentTrick: [],
+  currentTrickThirds: 0,
   lastTrick: [],
   lastTrickWinner: -1,
   leadPlayerIdx: 0,

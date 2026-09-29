@@ -273,6 +273,17 @@ func (g *Tressette) SetCurrentPlayerIdx(idx int) { g.currentPlayerIdx = idx }
 // GetCurrentTrick 現在のトリック取得
 func (g *Tressette) GetCurrentTrick() []*TrickCard { return g.currentTrick }
 
+// CurrentTrickThirds 現在のトリックのカード得点を1/3点単位で返す。
+func (g *Tressette) CurrentTrickThirds() int {
+	thirds := 0
+	for _, tc := range g.currentTrick {
+		if tc != nil && tc.Card != nil {
+			thirds += tressetteThirds(tc.Card.GetValue())
+		}
+	}
+	return thirds
+}
+
 // SetCurrentTrick トリック設定 (テスト用)
 func (g *Tressette) SetCurrentTrick(trick []*TrickCard) { g.currentTrick = trick }
 

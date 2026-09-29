@@ -16,15 +16,16 @@ import (
 
 func mustTressetteOutputJSON(msg string) string {
 	out := &controller.TressetteWebOutput{
-		Players:         []*controller.TressetteWebOutputPlayer{},
-		CurrentTrick:    []*controller.WebOutputTrickCard{},
-		LastTrick:       []*controller.WebOutputTrickCard{},
-		LastTrickWinner: -1,
-		TeamScores:      []int{},
-		TeamRoundThirds: []int{},
-		PlayableIndices: []int{},
-		WinnerTeam:      -1,
-		WebOutputBase:   controller.WebOutputBase{Message: msg},
+		Players:            []*controller.TressetteWebOutputPlayer{},
+		CurrentTrick:       []*controller.WebOutputTrickCard{},
+		CurrentTrickThirds: 0,
+		LastTrick:          []*controller.WebOutputTrickCard{},
+		LastTrickWinner:    -1,
+		TeamScores:         []int{},
+		TeamRoundThirds:    []int{},
+		PlayableIndices:    []int{},
+		WinnerTeam:         -1,
+		WebOutputBase:      controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {
