@@ -360,6 +360,7 @@ function CoinchePageContent() {
           <table className="w-full text-sm text-ds-text-muted">
             <thead>
               <tr>
+                <th scope="col" />
                 <th scope="col" className="text-left">
                   {t('team', { n: 0 })}
                 </th>
