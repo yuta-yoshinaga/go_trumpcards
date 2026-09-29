@@ -146,10 +146,9 @@ function SutdaPageContent() {
   const canAct = isBetPhase && state.isHumanTurn;
   const lastResult = state.lastResult;
   const showdownWinners = lastResult?.winners.map((winner, index) => {
-    const { pot, winners } = lastResult;
     return t('winnerShare', {
       name: playerName(winner, winner === 0),
-      amount: Math.floor(pot / winners.length) + (index < pot % winners.length ? 1 : 0),
+      amount: lastResult.shares[index] ?? 0,
     });
   });
 

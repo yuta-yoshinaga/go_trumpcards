@@ -80712,6 +80712,11 @@ components:
               type: array
               items:
                 type: integer
+            shares:
+              type: array
+              description: Chip amount received by each winner, in the same order as winners.
+              items:
+                type: integer
             pot:
               type: integer
             folded:

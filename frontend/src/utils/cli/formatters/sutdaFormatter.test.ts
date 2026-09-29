@@ -63,6 +63,7 @@ describe('formatSutdaState', () => {
       makeSutdaState({
         lastResult: {
           winners: [0, 1],
+          shares: [35, 35],
           pot: 70,
           handNames: ['gwang38', 'gwang38', 'kkeut5'],
           folded: [false, false, true],

@@ -140,6 +140,7 @@ describe('SutdaPage', () => {
         isHumanTurn: false,
         lastResult: {
           winners: [0],
+          shares: [70],
           pot: 70,
           handNames: ['gwang38', 'mangtong', 'kkeut5'],
           folded: [false, false, false],
@@ -202,6 +203,7 @@ describe('SutdaPage', () => {
         ],
         lastResult: {
           winners: [0, 1],
+          shares: [26, 25],
           pot: 51,
           handNames: ['ali', 'ali', 'kkeut5'],
           folded: [false, false, false],
