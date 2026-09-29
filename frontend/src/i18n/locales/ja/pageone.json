@@ -55,5 +55,7 @@
     "drawCard": "出せるカードがないため、山札から1枚引きます",
     "declare": "手札が残り1枚 — 「ページワン！」宣言を推奨（忘れると2枚引くペナルティ）"
   },
-  "playableAria": "出せます"
+  "playableAria": "出せます",
+  "handCardAria": "{{card}}、位置 {{position}}枚目",
+  "handCardPlayableAria": "{{card}}（{{playable}}）、位置 {{position}}枚目"
 }
