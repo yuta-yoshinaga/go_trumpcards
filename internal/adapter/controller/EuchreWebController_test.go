@@ -17,10 +17,11 @@ import (
 
 func mustEuchreOutputJSON(msg string) string {
 	out := &controller.EuchreWebOutput{
-		Players:       []*controller.EuchreWebOutputPlayer{},
-		CurrentTrick:  []*controller.WebOutputTrickCard{},
-		WinnerTeam:    -1,
-		WebOutputBase: controller.WebOutputBase{Message: msg},
+		Players:        []*controller.EuchreWebOutputPlayer{},
+		CurrentTrick:   []*controller.WebOutputTrickCard{},
+		WinnerTeam:     -1,
+		TrickWinnerIdx: -1,
+		WebOutputBase:  controller.WebOutputBase{Message: msg},
 	}
 	b, err := json.Marshal(out)
 	if err != nil {
@@ -30,7 +31,7 @@ func mustEuchreOutputJSON(msg string) string {
 }
 
 func TestEuchreWebController_Method(t *testing.T) {
-	mockOutput := `{"players":[],"phase":0,"roundNumber":0,"trickNumber":0,"currentPlayerIdx":0,"bidPlayerIdx":0,"dealerIdx":0,"trumpSuit":0,"faceUpCard":null,"makerTeam":0,"goingAlone":false,"goingAlonePlayerIdx":0,"currentTrick":[],"teamScores":[0,0],"gameEndFlag":false,"winnerTeam":0,"leadPlayerIdx":0,"message":"","config":{"cpuDifficulty":0,"pointLimit":0}}`
+	mockOutput := `{"players":[],"phase":0,"roundNumber":0,"trickNumber":0,"currentPlayerIdx":0,"bidPlayerIdx":0,"dealerIdx":0,"trumpSuit":0,"faceUpCard":null,"makerTeam":0,"goingAlone":false,"goingAlonePlayerIdx":0,"currentTrick":[],"teamScores":[0,0],"gameEndFlag":false,"winnerTeam":0,"leadPlayerIdx":0,"trickWinnerIdx":0,"message":"","config":{"cpuDifficulty":0,"pointLimit":0}}`
 	expectedBody := mockOutput
 
 	eiMock := new(usecase.MockEuchreInteractor)

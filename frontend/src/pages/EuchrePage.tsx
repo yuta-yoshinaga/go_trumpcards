@@ -320,6 +320,7 @@ function EuchrePageContent() {
                     players={state.players}
                     cardWidth={cardWidth}
                     label={t('currentTrick')}
+                    winnerIdx={isTrickEnd && state.trickWinnerIdx >= 0 ? state.trickWinnerIdx : undefined}
                     dataTutorial="eu-trick-display"
                   />
                 </section>

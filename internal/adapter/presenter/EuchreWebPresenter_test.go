@@ -33,6 +33,7 @@ func setupEuchreWebMock() *interfaces.MockEuchreGame {
 	m.On("GetTeamScore", 1).Return(0)
 	m.On("GetWinnerTeam").Return(-1)
 	m.On("GetLeadPlayerIdx").Return(0)
+	m.On("GetCurrentTrickWinner").Return(-1)
 	m.On("GetConfig").Return(domain.DefaultEuchreConfig())
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil))
 	// **Output() も受動ヒントを埋める**ようになった (#4483)。既定は「ヒント無し」。
@@ -335,12 +336,15 @@ func TestEuchreWebPresenter_Output(t *testing.T) {
 		m, _ := setupEuchreWebMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 		m.On("GetPhase").Return(domain.EuchrePhaseTrickEnd)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetCurrentTrickWinner")
+		m.On("GetCurrentTrickWinner").Return(2)
 
 		result := p.Output(m, nil)
 		var resObj controller.EuchreWebOutput
 		_ = json.Unmarshal([]byte(result), &resObj)
 
 		assert.Equal(t, "euchre.trickEnd", resObj.MessageCode)
+		assert.Equal(t, 2, resObj.TrickWinnerIdx)
 	})
 
 	t.Run("round end messageCode", func(t *testing.T) {

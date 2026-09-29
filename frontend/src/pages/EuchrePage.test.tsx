@@ -67,6 +67,7 @@ const playPhaseState: EuchreResponse = {
   gameEndFlag: false,
   winnerTeam: -1,
   leadPlayerIdx: 0,
+  trickWinnerIdx: -1,
   message: '',
   config: { cpuDifficulty: 1, pointLimit: 10 },
 };
@@ -116,6 +117,7 @@ const discardPhaseState: EuchreResponse = {
 const trickEndState: EuchreResponse = {
   ...playPhaseState,
   phase: 4,
+  trickWinnerIdx: 1,
   currentTrick: [
     { playerIdx: 0, card: { design: 'DIAMOND', value: 3 } },
     { playerIdx: 1, card: { design: 'HEART', value: 5 } },
@@ -357,6 +359,10 @@ describe('EuchrePage', () => {
     await waitFor(() =>
       expect(screen.getByRole('button', { name: '\u6b21\u306e\u30c8\u30ea\u30c3\u30af' })).toBeInTheDocument(),
     );
+    expect(screen.getByTestId('trick-winner-badge')).toHaveTextContent('WIN');
+    const trickCards = screen.getByTestId('trick-display-cards').children;
+    expect(trickCards[0]).not.toHaveAttribute('data-trick-winner', 'true');
+    expect(trickCards[1]).toHaveAttribute('data-trick-winner', 'true');
   });
 
   it('shows next round button on round end', async () => {
