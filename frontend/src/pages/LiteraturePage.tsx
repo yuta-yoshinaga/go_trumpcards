@@ -188,8 +188,8 @@ function LiteraturePageContent() {
 
   // 自チームの席だけが所在の候補になる。
   const ownTeamSeats = state.players.filter((p) => p.team === 0).map((p) => p.id);
-  const claimPlacements = (state.halfSuitCards[selectedHalf] ?? []).map(
-    (card, index) => `${cardAlt(card)}: ${t('seat', { n: claimHolders[index] ?? 0 })}`,
+  const claimPlacements = state.halfSuitCards[selectedHalf].map(
+    (card, index) => `${cardAlt(card)}: ${t('seat', { n: claimHolders[index] })}`,
   );
 
   const handleAsk = () => {
