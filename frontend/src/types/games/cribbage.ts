@@ -40,6 +40,7 @@ export interface CribbageResponse extends BaseGameResponse {
   starter: Card | null;
   pegCount: number;
   pegPlayedCards: Card[];
+  pegPlayedBy: number[];
   showPhaseStep: number;
   handScoreDetails: (CribbageScoreDetail | null)[];
   gameEndFlag: boolean;

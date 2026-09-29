@@ -5217,6 +5217,7 @@ paths:
                     crib: []
                     pegCount: 0
                     pegPlayedCards: []
+                    pegPlayedBy: []
                     showPhaseStep: 0
                     handScoreDetails: [null, null, null]
                     gameEndFlag: false
@@ -50455,6 +50456,7 @@ components:
         - crib
         - pegCount
         - pegPlayedCards
+        - pegPlayedBy
         - showPhaseStep
         - handScoreDetails
         - gameEndFlag
@@ -50505,6 +50507,11 @@ components:
           description: Cards played in the current pegging sequence
           items:
             $ref: '#/components/schemas/Card'
+        pegPlayedBy:
+          type: array
+          description: Player index for each card in pegPlayedCards
+          items:
+            type: integer
         showPhaseStep:
           type: integer
           description: "Show phase step: 0 = non-dealer hand, 1 = dealer hand, 2 = crib"

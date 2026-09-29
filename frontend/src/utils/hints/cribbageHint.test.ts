@@ -17,6 +17,7 @@ function makeState(overrides: Partial<CribbageResponse> = {}): CribbageResponse 
     starter: null,
     pegCount: 0,
     pegPlayedCards: [],
+    pegPlayedBy: [],
     showPhaseStep: 0,
     handScoreDetails: [null, null],
     gameEndFlag: false,

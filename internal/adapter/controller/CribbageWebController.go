@@ -55,6 +55,7 @@ type CribbageWebOutput struct {
 	Starter          *WebOutputCard                   `json:"starter"`
 	PegCount         int                              `json:"pegCount"`
 	PegPlayedCards   []*WebOutputCard                 `json:"pegPlayedCards"`
+	PegPlayedBy      []int                            `json:"pegPlayedBy"`
 	ShowPhaseStep    int                              `json:"showPhaseStep"`
 	HandScoreDetails [3]*CribbageWebOutputScoreDetail `json:"handScoreDetails"`
 	GameEndFlag      bool                             `json:"gameEndFlag"`
@@ -94,6 +95,7 @@ var NewCribbageWebController, NewCribbageWebControllerWithProvider = webControll
 func newCribbageDefaultOutput(msg string) *CribbageWebOutput {
 	return &CribbageWebOutput{
 		Players:        make([]*CribbageWebOutputPlayer, 0),
+		PegPlayedBy:    make([]int, 0),
 		Crib:           make([]*WebOutputCard, 0),
 		PegPlayedCards: make([]*WebOutputCard, 0),
 		WinnerIdx:      -1,

@@ -196,6 +196,17 @@ func TestCribbage_BothDiscard_TransitionsToCut(t *testing.T) {
 	assert.NotNil(t, g.GetStarter())
 }
 
+func TestCribbage_DoCut_ClearsPeggingHistory(t *testing.T) {
+	g := newTestCribbage()
+	g.pegPlayedCards = []*Card{cCard(CardDesignSpade, 1)}
+	g.pegPlayedBy = []int{0}
+
+	g.doCut()
+
+	assert.Nil(t, g.pegPlayedCards)
+	assert.Nil(t, g.pegPlayedBy)
+}
+
 func TestCribbage_PlayerCut_WrongPhase(t *testing.T) {
 	g := newTestCribbage()
 	g.SetPhase(CribbagePhaseDiscard)
@@ -242,6 +253,7 @@ func TestCribbage_PlayerPeg_Success(t *testing.T) {
 	err := g.PlayerPeg(0)
 	assert.NoError(t, err)
 	assert.Equal(t, 3, g.players[0].GetCardsSize())
+	assert.Equal(t, []int{0}, g.GetPegPlayedBy())
 }
 
 func TestCribbage_PlayerPeg_WrongPhase(t *testing.T) {

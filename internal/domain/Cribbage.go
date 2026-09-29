@@ -59,6 +59,7 @@ type Cribbage struct {
 	// ペギング状態
 	pegCount       int     // 現在の合計 (0-31)
 	pegPlayedCards []*Card // 現在のペギングシーケンスで出されたカード
+	pegPlayedBy    []int   // 各カードを出したプレイヤーのインデックス
 	pegGoState     int     // 0=通常, 1=一方がGoを宣言, 2=両方がGoを宣言
 	lastPegPlayer  int     // 最後にカードを出したプレイヤー
 	// ペギング中の各プレイヤーの出したカード (手札から除外済み)
@@ -133,6 +134,7 @@ func (g *Cribbage) startRound() {
 	g.starter = nil
 	g.pegCount = 0
 	g.pegPlayedCards = nil
+	g.pegPlayedBy = nil
 	g.pegGoState = 0
 	g.lastPegPlayer = -1
 	g.playerPeggedCards = [CribbagePlayerCnt][]*Card{}
@@ -275,6 +277,7 @@ func (g *Cribbage) doCut() {
 	g.currentPlayerIdx = 1 - g.dealerIdx // 非ディーラーが先攻
 	g.pegCount = 0
 	g.pegPlayedCards = nil
+	g.pegPlayedBy = nil
 	g.pegGoState = 0
 	g.lastPegPlayer = -1
 }
@@ -311,6 +314,7 @@ func (g *Cribbage) doPeg(playerIdx int, cardIndex int) error {
 	p.RemoveCard(cardIndex)
 	g.pegCount += cardVal
 	g.pegPlayedCards = append(g.pegPlayedCards, card)
+	g.pegPlayedBy = append(g.pegPlayedBy, playerIdx)
 	g.playerPeggedCards[playerIdx] = append(g.playerPeggedCards[playerIdx], card)
 	g.lastPegPlayer = playerIdx
 	g.pegGoState = 0
@@ -400,6 +404,7 @@ func (g *Cribbage) canAnyPlayerPeg() bool {
 func (g *Cribbage) resetPegSequence() {
 	g.pegCount = 0
 	g.pegPlayedCards = nil
+	g.pegPlayedBy = nil
 	g.pegGoState = 0
 	g.lastPegPlayer = -1
 }
@@ -807,6 +812,9 @@ func (g *Cribbage) GetPegCount() int { return g.pegCount }
 // GetPegPlayedCards ペギングで出されたカード取得
 func (g *Cribbage) GetPegPlayedCards() []*Card { return g.pegPlayedCards }
 
+// GetPegPlayedBy ペギングで各カードを出したプレイヤーのインデックスを取得
+func (g *Cribbage) GetPegPlayedBy() []int { return g.pegPlayedBy }
+
 // GetShowPhaseStep ショーフェーズのステップ取得
 func (g *Cribbage) GetShowPhaseStep() int { return g.showPhaseStep }
 
@@ -910,6 +918,7 @@ type cribbageJSON struct {
 	DrawPile         []*Card              `json:"dp"`
 	PegCount         int                  `json:"pc"`
 	PegPlayedCards   []*Card              `json:"pp"`
+	PegPlayedBy      []int                `json:"pb"`
 	PegGoState       int                  `json:"pg"`
 	LastPegPlayer    int                  `json:"lp"`
 	PlayerPegCards0  []*Card              `json:"p0"`
@@ -945,6 +954,7 @@ func (g *Cribbage) MarshalJSON() ([]byte, error) {
 		DrawPile:         g.drawPile,
 		PegCount:         g.pegCount,
 		PegPlayedCards:   g.pegPlayedCards,
+		PegPlayedBy:      g.pegPlayedBy,
 		PegGoState:       g.pegGoState,
 		LastPegPlayer:    g.lastPegPlayer,
 		PlayerPegCards0:  g.playerPeggedCards[0],
@@ -1000,6 +1010,10 @@ func (g *Cribbage) UnmarshalJSON(data []byte) error {
 	g.pegPlayedCards = j.PegPlayedCards
 	if g.pegPlayedCards == nil {
 		g.pegPlayedCards = make([]*Card, 0)
+	}
+	g.pegPlayedBy = j.PegPlayedBy
+	if g.pegPlayedBy == nil {
+		g.pegPlayedBy = make([]int, 0)
 	}
 	g.pegGoState = j.PegGoState
 	g.lastPegPlayer = j.LastPegPlayer
