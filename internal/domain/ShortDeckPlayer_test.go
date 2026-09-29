@@ -57,6 +57,59 @@ func TestShortDeckPlayer_EvalBestHand_HighCard(t *testing.T) {
 	assert.Equal(t, 5, len(p.GetBestHand()))
 }
 
+func TestShortDeckBestHandRank_IsPureAndMatchesPlayerEvaluation(t *testing.T) {
+	tests := []struct {
+		name  string
+		cards []*domain.Card
+	}{
+		{
+			name: "three of a kind",
+			cards: []*domain.Card{
+				domain.NewCard(domain.CardDesignSpade, 6, false),
+				domain.NewCard(domain.CardDesignHeart, 6, false),
+				domain.NewCard(domain.CardDesignClover, 6, false),
+				domain.NewCard(domain.CardDesignDiamond, 9, false),
+				domain.NewCard(domain.CardDesignSpade, 10, false),
+			},
+		},
+		{
+			name: "short deck flush",
+			cards: []*domain.Card{
+				domain.NewCard(domain.CardDesignSpade, 6, false),
+				domain.NewCard(domain.CardDesignSpade, 8, false),
+				domain.NewCard(domain.CardDesignSpade, 9, false),
+				domain.NewCard(domain.CardDesignSpade, 11, false),
+				domain.NewCard(domain.CardDesignSpade, 13, false),
+			},
+		},
+		{
+			name: "fewer than five cards",
+			cards: []*domain.Card{
+				domain.NewCard(domain.CardDesignSpade, 6, false),
+				domain.NewCard(domain.CardDesignHeart, 8, false),
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			player := domain.NewShortDeckPlayer(true, domain.HoldemStyleTAG)
+			for _, card := range tt.cards[:min(2, len(tt.cards))] {
+				player.AddCard(card)
+			}
+			community := tt.cards[min(2, len(tt.cards)):]
+			player.SetHandRank(42)
+			originalBest := []*domain.Card{domain.NewCard(domain.CardDesignClover, 13, false)}
+			player.SetBestHand(originalBest)
+
+			got := domain.ShortDeckBestHandRank(tt.cards)
+			assert.Equal(t, 42, player.GetHandRank())
+			assert.Equal(t, originalBest, player.GetBestHand())
+			assert.Equal(t, player.EvalBestHand(community), got)
+		})
+	}
+}
+
 func TestShortDeckPlayer_EvalBestHand_OnePair(t *testing.T) {
 	p := domain.NewShortDeckPlayer(true, domain.HoldemStyleTAG)
 	p.AddCard(domain.NewCard(domain.CardDesignSpade, 10, false))

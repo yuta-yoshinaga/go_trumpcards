@@ -110,6 +110,15 @@ func (p *ShortDeckCuiPresenter) Output(o interfaces.ShortDeckGame, lastErr error
 
 			if player.GetIsHuman() && !player.GetFolded() {
 				b.WriteString(i18n.Tf("shortdeck.humanHand", "cards", cuiCardListStrEmoji(player)) + "\n")
+				if player.GetCardsSize()+len(cc) >= 5 {
+					cards := make([]*domain.Card, 0, player.GetCardsSize()+len(cc))
+					for cardIdx := 0; cardIdx < player.GetCardsSize(); cardIdx++ {
+						cards = append(cards, player.GetCard(cardIdx))
+					}
+					cards = append(cards, cc...)
+					rank := domain.ShortDeckBestHandRank(cards)
+					b.WriteString(i18n.Tf("shortdeck.humanCurrentHand", "hand", cuiShortDeckHandName(rank)) + "\n")
+				}
 			}
 		}
 

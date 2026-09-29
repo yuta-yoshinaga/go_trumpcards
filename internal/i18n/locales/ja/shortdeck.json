@@ -25,6 +25,7 @@
   "playerAllIn": " [オールイン]",
   "playerBet": " ベット:{{bet}}",
   "humanHand": "  手札: {{cards}}",
+  "humanCurrentHand": "  現在の役: {{hand}}",
   "cpuActionsHeader": "[CPU行動]",
   "cpuActionLine": "  {{name}}: {{action}}",
   "cpuActionAmount": " ({{amount}})",

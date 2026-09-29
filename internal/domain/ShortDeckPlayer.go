@@ -182,14 +182,22 @@ func (sp *ShortDeckPlayer) EvalBestHand(communityCards []*Card) int {
 	all := make([]*Card, 0, len(sp.cards)+len(communityCards))
 	all = append(all, sp.cards...)
 	all = append(all, communityCards...)
+	sp.handRank, sp.bestHand = shortDeckBestHand(all)
+	return sp.handRank
+}
 
-	if len(all) < 5 {
-		sp.handRank = ShortDeckHandHighCard
-		sp.bestHand = nil
-		return sp.handRank
+// ShortDeckBestHandRank evaluates the best Short Deck hand rank in cards without changing player state.
+func ShortDeckBestHandRank(cards []*Card) int {
+	rank, _ := shortDeckBestHand(cards)
+	return rank
+}
+
+func shortDeckBestHand(cards []*Card) (int, []*Card) {
+	if len(cards) < 5 {
+		return ShortDeckHandHighCard, nil
 	}
 
-	combos := combinations(all, 5)
+	combos := combinations(cards, 5)
 	bestRank := -1
 	var bestCards []*Card
 
@@ -202,7 +210,5 @@ func (sp *ShortDeckPlayer) EvalBestHand(communityCards []*Card) int {
 		}
 	}
 
-	sp.handRank = bestRank
-	sp.bestHand = bestCards
-	return sp.handRank
+	return bestRank, bestCards
 }
