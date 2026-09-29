@@ -319,7 +319,11 @@ function QuadrillePageContent() {
                               : ''
                         }
                       >
-                        {playerName(p.id, p.isHuman)}: {t('score', { score: p.score })}
+                        {t('playerScore', {
+                          name: playerName(p.id, p.isHuman),
+                          score: p.score,
+                          tricks: t('tricks', { count: p.trickCount }),
+                        })}
                       </span>
                       {p.isQuadrille && (
                         <span className={`px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>
