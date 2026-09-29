@@ -205,6 +205,30 @@ describe('MariasPage', () => {
     expect(defenders).not.toHaveClass('text-ds-warning');
   });
 
+  it('shows confirmed per-player points and side totals during play', async () => {
+    mockExec.mockResolvedValue(makeMariasState({ roundCardPoints: [25, 15, 10], roundMarriage: [40, 0, 20] }));
+    renderWithProviders(<MariasPage />);
+    const row = await screen.findByTestId('marias-side-totals');
+    expect(screen.getByText('ラウンド途中経過（確定済み）')).toBeInTheDocument();
+    expect(screen.getByText('あなた カード点: 25')).toBeInTheDocument();
+    expect(screen.getByText('あなた マリッジ: 40')).toBeInTheDocument();
+    expect(row).toHaveTextContent('ソリスト: 65点');
+    expect(row).toHaveTextContent('ディフェンダー合計: 45点');
+  });
+
+  it('shows confirmed points and side totals after a trick ends', async () => {
+    mockExec.mockResolvedValue(
+      makeMariasState({
+        phase: 1,
+        roundCardPoints: [20, 15, 10],
+        roundMarriage: [40, 0, 0],
+      }),
+    );
+    renderWithProviders(<MariasPage />);
+    expect(await screen.findByTestId('marias-side-totals')).toHaveTextContent('ソリスト: 60点');
+    expect(screen.getByText('あなた カード点: 20')).toBeInTheDocument();
+  });
+
   it('highlights the Defenders when their combined total wins the round', async () => {
     // Soloist (seat 0): 20 + 0 = 20. Defenders (seats 1,2): 50 + 50 = 100.
     mockExec.mockResolvedValue(makeMariasState({ phase: 2, roundCardPoints: [20, 50, 50], roundMarriage: [0, 0, 0] }));

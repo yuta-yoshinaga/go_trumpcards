@@ -287,9 +287,11 @@ function MariasPageContent() {
                 )}
 
                 {/* Round result: per-player card points + marriage */}
-                {(isRoundEnd || isGameEnd) && (
+                {(isPlayPhase || isTrickEnd || isRoundEnd || isGameEnd) && (
                   <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm">
-                    <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
+                    <div className="mb-1 text-ds-text-primary">
+                      {t(isRoundEnd || isGameEnd ? 'roundResult.title' : 'roundResult.progressTitle')}
+                    </div>
                     {state.players.map((p) => (
                       <div key={p.id}>
                         <div>
@@ -298,15 +300,15 @@ function MariasPageContent() {
                             points: state.roundCardPoints[p.id] ?? 0,
                           })}
                         </div>
-                        {(state.roundMarriage[p.id] ?? 0) > 0 && (
-                          <div>
-                            {t('roundResult.marriage', {
-                              name: playerName(p.id, p.isHuman),
-                              points: state.roundMarriage[p.id] ?? 0,
-                            })}
+                        <div>
+                          {t('roundResult.marriage', {
+                            name: playerName(p.id, p.isHuman),
+                            points: state.roundMarriage[p.id] ?? 0,
+                          })}
+                          {(state.roundMarriage[p.id] ?? 0) > 0 && (
                             <span className="ml-1">({marriageDetails(p.id)})</span>
-                          </div>
-                        )}
+                          )}
+                        </div>
                       </div>
                     ))}
                     {/* Soloist-vs-Defenders total comparison. Each side total is
