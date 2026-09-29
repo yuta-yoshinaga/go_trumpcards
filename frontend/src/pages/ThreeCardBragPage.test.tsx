@@ -37,6 +37,55 @@ describe('ThreeCardBragPage', () => {
     expect(screen.getByTestId('skeleton')).toBeInTheDocument();
   });
 
+  it('shows the human hand and hand name in the showdown hands list', async () => {
+    mockExec.mockResolvedValue(
+      makeThreeCardBragState({
+        phase: 1,
+        isShowdown: true,
+        players: [
+          {
+            id: 0,
+            isHuman: true,
+            chips: 96,
+            seen: true,
+            folded: false,
+            out: false,
+            roundBet: 2,
+            cardCount: 3,
+            handName: 'prial',
+            cards: [
+              { design: 'SPADE', value: 13 },
+              { design: 'HEART', value: 13 },
+              { design: 'CLOVER', value: 13 },
+            ],
+          },
+          {
+            id: 1,
+            isHuman: false,
+            chips: 104,
+            seen: false,
+            folded: false,
+            out: false,
+            roundBet: 2,
+            cardCount: 3,
+            handName: 'highcard',
+            cards: [
+              { design: 'SPADE', value: 2 },
+              { design: 'HEART', value: 5 },
+              { design: 'CLOVER', value: 9 },
+            ],
+          },
+        ],
+      }),
+    );
+    renderWithProviders(<ThreeCardBragPage />);
+
+    const revealedHands = await screen.findByTestId('tcb-showdown-hands');
+    expect(revealedHands).toHaveTextContent('あなた — プライアル（スリーカード）');
+    expect(revealedHands).toHaveTextContent('CPU 1 — ハイカード');
+    expect(revealedHands.querySelectorAll('img')).toHaveLength(6);
+  });
+
   it('calls reset on mount with the default config', async () => {
     renderWithProviders(<ThreeCardBragPage />);
     await waitFor(() =>
