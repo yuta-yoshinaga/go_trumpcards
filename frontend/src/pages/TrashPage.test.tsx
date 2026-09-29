@@ -164,7 +164,7 @@ describe('TrashPage', () => {
   it('renders 10 slots per player', async () => {
     renderWithProviders(<TrashPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    const slotButtons = screen.getAllByRole('button', { name: /face-down|\d+:/ });
+    const slotButtons = screen.getAllByRole('button', { name: /裏向き|\d+:/ });
     expect(slotButtons.length).toBeGreaterThanOrEqual(20);
   });
 
@@ -196,15 +196,26 @@ describe('TrashPage', () => {
     // Human slots are rendered below the opponent row — take the first face-down human slot
     // by matching its aria-label. Indices 1-10 exist for each player; pick a later one to
     // hit the human row rather than the opponent.
-    const humanSlot = screen.getAllByRole('button', { name: '5: face-down' })[1];
+    const humanSlot = screen.getAllByRole('button', { name: /5: 裏向き/ })[1];
     fireEvent.click(humanSlot);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('place', 5));
+  });
+
+  it('announces wild placement availability in each human face-down slot name', async () => {
+    mockExec.mockResolvedValue(awaitWildState);
+    renderWithProviders(<TrashPage />);
+    await waitFor(() => expect(screen.getAllByText(/ワイルド配置/).length).toBeGreaterThan(0));
+
+    const placeableSlots = screen.getAllByRole('button', { name: /配置可能/ });
+    expect(placeableSlots).toHaveLength(10);
+    expect(placeableSlots[0]).toHaveAccessibleName('1: 裏向き、配置可能');
+    expect(placeableSlots[9]).toHaveAccessibleName('10: 裏向き、配置可能');
   });
 
   it('ignores slot clicks outside the await-wild phase', async () => {
     renderWithProviders(<TrashPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    const slot = screen.getAllByRole('button', { name: '3: face-down' })[1];
+    const slot = screen.getAllByRole('button', { name: '3: 裏向き' })[1];
     fireEvent.click(slot);
     // Only the mount-time reset call is expected.
     expect(mockExec).toHaveBeenCalledTimes(1);
@@ -262,7 +273,7 @@ describe('TrashPage', () => {
     mockExec.mockResolvedValue(pendingFour);
     renderWithProviders(<TrashPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    const slot4s = screen.getAllByRole('button', { name: '4: face-down' });
+    const slot4s = screen.getAllByRole('button', { name: '4: 裏向き' });
     const playerSlot4 = slot4s[1];
     expect(playerSlot4.dataset.pendingTarget).toBe('true');
     expect(playerSlot4.className).toContain('ring-ds-warning');
@@ -276,7 +287,7 @@ describe('TrashPage', () => {
     mockExec.mockResolvedValue(pendingAce);
     renderWithProviders(<TrashPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    const slot1s = screen.getAllByRole('button', { name: '1: face-down' });
+    const slot1s = screen.getAllByRole('button', { name: '1: 裏向き' });
     expect(slot1s[1].dataset.pendingTarget).toBe('true');
   });
 
@@ -285,7 +296,7 @@ describe('TrashPage', () => {
     mockExec.mockResolvedValue(pendingTen);
     renderWithProviders(<TrashPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    const slot10s = screen.getAllByRole('button', { name: '10: face-down' });
+    const slot10s = screen.getAllByRole('button', { name: '10: 裏向き' });
     expect(slot10s[1].dataset.pendingTarget).toBe('true');
   });
 
@@ -295,7 +306,7 @@ describe('TrashPage', () => {
     mockExec.mockResolvedValue(pendingK);
     renderWithProviders(<TrashPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    const allSlots = screen.getAllByRole('button', { name: /face-down/ });
+    const allSlots = screen.getAllByRole('button', { name: /裏向き/ });
     for (const slot of allSlots) {
       expect(slot.dataset.pendingTarget).toBe('false');
     }
@@ -306,7 +317,7 @@ describe('TrashPage', () => {
     mockExec.mockImplementation(async () => cpuPending);
     renderWithProviders(<TrashPage />);
     await waitFor(() => expect(screen.getAllByText(/CPUのターン/).length).toBeGreaterThan(0));
-    for (const slot of screen.getAllByRole('button', { name: /face-down/ })) {
+    for (const slot of screen.getAllByRole('button', { name: /裏向き/ })) {
       expect(slot.dataset.pendingTarget).toBe('false');
     }
   });
