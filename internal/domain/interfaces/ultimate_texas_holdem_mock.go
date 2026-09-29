@@ -131,6 +131,11 @@ func (m *MockUltimateTexasHoldemGame) GetTotalPayout() int {
 	return args.Int(0)
 }
 
+func (m *MockUltimateTexasHoldemGame) GetNetChange() int {
+	args := m.Called()
+	return args.Int(0)
+}
+
 func (m *MockUltimateTexasHoldemGame) GetPlayerHandRank() int {
 	args := m.Called()
 	return args.Int(0)

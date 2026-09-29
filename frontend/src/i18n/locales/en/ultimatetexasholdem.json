@@ -41,7 +41,11 @@
     "blind": "Blind",
     "play": "Play",
     "trips": "Trips",
-    "total": "Total"
+    "total": "Total",
+    "netChange": "Net change",
+    "win": "Win",
+    "push": "Push",
+    "loss": "Loss"
   },
   "handRank": {
     "0": "High card",

@@ -52,6 +52,8 @@ type UltimateTexasHoldemGame interface {
 	GetTripsPayout() int
 	// GetTotalPayout 合計配当を取得する
 	GetTotalPayout() int
+	// GetNetChange ラウンドの純損益を取得する
+	GetNetChange() int
 	// GetPlayerHandRank プレイヤーハンドランクを取得する
 	GetPlayerHandRank() int
 	// RecommendPlay 現在のフェーズでの推奨アクションを取得する

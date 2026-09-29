@@ -32,6 +32,7 @@ func setupUltimateTexasHoldemWebMockDefaults(m *interfaces.MockUltimateTexasHold
 	m.On("GetPlayPayout").Return(0).Maybe()
 	m.On("GetTripsPayout").Return(0).Maybe()
 	m.On("GetTotalPayout").Return(0).Maybe()
+	m.On("GetNetChange").Return(0).Maybe()
 	m.On("GetPlayerHandRank").Return(0).Maybe()
 	m.On("GetDealerHandRank").Return(0).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
@@ -108,6 +109,7 @@ func TestUltimateTexasHoldemWebPresenter_Output_PreFlop_DealerMasked(t *testing.
 	m.On("GetPlayPayout").Return(0).Maybe()
 	m.On("GetTripsPayout").Return(0).Maybe()
 	m.On("GetTotalPayout").Return(0).Maybe()
+	m.On("GetNetChange").Return(0).Maybe()
 	m.On("GetPlayerHandRank").Return(0).Maybe()
 	m.On("GetDealerHandRank").Return(0).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
@@ -153,6 +155,7 @@ func TestUltimateTexasHoldemWebPresenter_Output_End_PlayerWins(t *testing.T) {
 	m.On("GetPlayPayout").Return(800).Maybe()
 	m.On("GetTripsPayout").Return(0).Maybe()
 	m.On("GetTotalPayout").Return(1100).Maybe()
+	m.On("GetNetChange").Return(400).Maybe()
 	m.On("GetPlayerHandRank").Return(domain.PokerHandOnePair).Maybe()
 	m.On("GetDealerHandRank").Return(0).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()
@@ -163,6 +166,7 @@ func TestUltimateTexasHoldemWebPresenter_Output_End_PlayerWins(t *testing.T) {
 	assert.Len(t, result.DealerHand, 2)
 	assert.Equal(t, 7, result.DealerHand[0].Value, "dealer cards revealed at end")
 	assert.Equal(t, 1100, result.TotalPayout)
+	assert.Equal(t, 400, result.NetChange)
 }
 
 func setupUltimateTexasHoldemWebEndPhaseMock(m *interfaces.MockUltimateTexasHoldemGame, folded bool, result domain.GameResult) {
@@ -184,6 +188,7 @@ func setupUltimateTexasHoldemWebEndPhaseMock(m *interfaces.MockUltimateTexasHold
 	m.On("GetPlayPayout").Return(0).Maybe()
 	m.On("GetTripsPayout").Return(0).Maybe()
 	m.On("GetTotalPayout").Return(0).Maybe()
+	m.On("GetNetChange").Return(-200).Maybe()
 	m.On("GetPlayerHandRank").Return(0).Maybe()
 	m.On("GetDealerHandRank").Return(0).Maybe()
 	m.On("GetActionLog").Return(([]*domain.ActionLogEntry)(nil)).Maybe()

@@ -100,6 +100,30 @@ func TestUltimateTexasHoldem_Reset_NoRefillAboveThreshold(t *testing.T) {
 	assert.False(t, u.GetChipsRefilled())
 }
 
+func TestUltimateTexasHoldem_GetNetChange(t *testing.T) {
+	tests := []struct {
+		name    string
+		payouts [4]int
+		bets    [4]int
+		want    int
+	}{
+		{name: "win", payouts: [4]int{200, 100, 400, 0}, bets: [4]int{100, 100, 200, 0}, want: 300},
+		{name: "loss", payouts: [4]int{0, 0, 0, 0}, bets: [4]int{100, 100, 400, 50}, want: -650},
+		{name: "push and fold", payouts: [4]int{100, 100, 0, 150}, bets: [4]int{100, 100, 100, 50}, want: 0},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			u := domain.NewDefaultUltimateTexasHoldem()
+			u.SetAnteBet(tt.bets[0])
+			u.SetBlindBet(tt.bets[1])
+			u.SetPlayBet(tt.bets[2])
+			u.SetTripsBet(tt.bets[3])
+			u.SetPayouts(tt.payouts[0], tt.payouts[1], tt.payouts[2], tt.payouts[3])
+			assert.Equal(t, tt.want, u.GetNetChange())
+		})
+	}
+}
+
 func TestUltimateTexasHoldem_Reset_RefillFlagIsNotPersisted(t *testing.T) {
 	u := domain.NewDefaultUltimateTexasHoldem()
 	u.SetChips(0)

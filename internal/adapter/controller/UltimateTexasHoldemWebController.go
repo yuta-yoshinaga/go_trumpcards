@@ -35,6 +35,7 @@ type UltimateTexasHoldemWebOutput struct {
 	PlayPayout      int              `json:"playPayout"`
 	TripsPayout     int              `json:"tripsPayout"`
 	TotalPayout     int              `json:"totalPayout"`
+	NetChange       int              `json:"netChange"`
 	PlayerHandRank  int              `json:"playerHandRank"`
 	DealerHandRank  int              `json:"dealerHandRank"`
 	WebOutputBase

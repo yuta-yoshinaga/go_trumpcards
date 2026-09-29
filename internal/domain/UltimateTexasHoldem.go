@@ -649,6 +649,11 @@ func (u *UltimateTexasHoldem) GetTotalPayout() int {
 	return u.antePayout + u.blindPayout + u.playPayout + u.tripsPayout
 }
 
+// GetNetChange returns round payouts minus all bets placed, including returned stakes in payouts.
+func (u *UltimateTexasHoldem) GetNetChange() int {
+	return u.GetTotalPayout() - u.anteBet - u.blindBet - u.playBet - u.tripsBet
+}
+
 // GetPlayerHandRank プレイヤーハンドランク
 func (u *UltimateTexasHoldem) GetPlayerHandRank() int { return u.playerHandRank }
 
