@@ -59,6 +59,17 @@ describe('ScoponePage', () => {
     expect(await screen.findByTestId('last-capturer')).toHaveTextContent('最後の捕獲者: CPU 2（チーム0）');
   });
 
+  it('shows the human as the last capturer and team at round end', async () => {
+    const state = makeScoponeState({ phase: 'roundEnd', lastCaptureIdx: 0, isHumanTurn: false });
+    const humanPlayer = state.players.find((player) => player.id === state.lastCaptureIdx);
+    expect(humanPlayer?.isHuman).toBe(true);
+    mockExec.mockResolvedValue(state);
+    renderWithProviders(<ScoponePage />);
+    expect(await screen.findByTestId('last-capturer')).toHaveTextContent(
+      `最後の捕獲者: ${i18n.t('player.you', { ns: 'common', lng: 'ja' })}（チーム${humanPlayer?.team}）`,
+    );
+  });
+
   it('does not show a last capturer when nobody captured', async () => {
     mockExec.mockResolvedValue(makeScoponeState({ phase: 'roundEnd', lastCaptureIdx: -1, isHumanTurn: false }));
     renderWithProviders(<ScoponePage />);
