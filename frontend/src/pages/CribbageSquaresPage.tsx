@@ -112,13 +112,13 @@ function CribbageSquaresPageContent() {
       if (command !== 'place' || typeof row !== 'number' || typeof col !== 'number') return;
       if (!result.board[row]?.[col]?.card) return;
       const isComplete = result.phase === CribbageSquaresPhase.COMPLETE;
-      const rowDetail = isComplete ? result.rowDetails?.[row] : result.rowPartialDetails?.[row];
-      const colDetail = isComplete ? result.colDetails?.[col] : result.colPartialDetails?.[col];
+      const rowDetail = isComplete ? result.rowDetails[row] : result.rowPartialDetails[row];
+      const colDetail = isComplete ? result.colDetails[col] : result.colPartialDetails[col];
       const breakdownLabel = (key: string, n: number) => t(`part.${key}`, { n });
       const rowParts = cribbageBreakdownParts(rowDetail, breakdownLabel).join(t('listSeparator')) || t('noScoredParts');
       const colParts = cribbageBreakdownParts(colDetail, breakdownLabel).join(t('listSeparator')) || t('noScoredParts');
-      const rowScore = rowDetail?.total ?? 0;
-      const colScore = colDetail?.total ?? 0;
+      const rowScore = rowDetail.total;
+      const colScore = colDetail.total;
       setPlacementAnnouncement(
         t(isComplete ? 'placementAnnouncement' : 'placementAnnouncementPartial', {
           rowNo: row + 1,
