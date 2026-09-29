@@ -57,6 +57,8 @@ export interface RollingStoneResponse extends BaseGameResponse {
   /** Hand indices you may legally play. Following suit is compulsory. */
   validPlays: number[];
   currentTrick: RollingStoneTrickCard[];
+  /** Most recently resolved trick, retained across the next play response. */
+  lastTrick: RollingStoneTrickCard[];
   currentPlayerIdx: number;
   leadPlayerIdx: number;
   /** Tricks resolved so far. Pickups count too — they end a trick as well. */

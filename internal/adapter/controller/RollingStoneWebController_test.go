@@ -21,6 +21,7 @@ func mustRollingStoneOutputJSON(msg string) string {
 		Players:       []*controller.RollingStoneWebOutputPlayer{},
 		ValidPlays:    []int{},
 		CurrentTrick:  []*controller.WebOutputTrickCard{},
+		LastTrick:     []*controller.WebOutputTrickCard{},
 		LastPickupIdx: -1,
 		WinnerIdx:     -1,
 		WebOutputBase: controller.WebOutputBase{Message: msg},

@@ -59492,6 +59492,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/RollingStoneTrickCard'
+        lastTrick:
+          type: array
+          items:
+            $ref: '#/components/schemas/RollingStoneTrickCard'
         currentPlayerIdx:
           type: integer
         leadPlayerIdx:

@@ -41,6 +41,7 @@ func (p *RollingStoneWebPresenter) buildBase(s interfaces.RollingStoneGame) *con
 	resObj.LeadSuit = s.GetLeadSuit()
 	resObj.ValidPlays = intSliceOrEmpty(s.GetValidPlayIndices(0))
 	resObj.CurrentTrick = trickCardsToOutput(s.GetCurrentTrick())
+	resObj.LastTrick = trickCardsToOutput(s.GetLastTrick())
 	resObj.CurrentPlayerIdx = s.GetCurrentPlayerIdx()
 	resObj.LeadPlayerIdx = s.GetLeadPlayerIdx()
 	resObj.TrickNumber = s.GetTrickNumber()

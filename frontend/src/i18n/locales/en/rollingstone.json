@@ -17,6 +17,9 @@
     "mustPickUp": "You have no {{suit}} to follow with. Pick up the {{n}} card(s) in the current trick and add them to your hand."
   },
   "currentTrick": "Current trick",
+  "listSeparator": ", ",
+  "cardPlayed": "{{name}}: {{card}}",
+  "trickResolved": "The trick was resolved.",
   "actions": {
     "pickUp": "Take the {{n}} cards",
     "players": "Players",

@@ -514,6 +514,18 @@ func TestRollingStone_JSONRoundTrip(t *testing.T) {
 	}
 }
 
+func TestRollingStone_LastTrickSurvivesSnapshot(t *testing.T) {
+	r := newTestRollingStone(t)
+	r.lastTrick = []*TrickCard{{PlayerIdx: 2, Card: NewCard(CardDesignHeart, 11, false)}}
+	assert.Equal(t, r.lastTrick, r.GetLastTrick())
+
+	data, err := json.Marshal(r)
+	require.NoError(t, err)
+	var restored RollingStone
+	require.NoError(t, json.Unmarshal(data, &restored))
+	assert.Equal(t, r.GetLastTrick(), restored.GetLastTrick())
+}
+
 // **壊れたスナップショットは弾く。**
 //
 // このコーデックは 9 PR 連続で「個々のフィールドは範囲内だが組み合わせが

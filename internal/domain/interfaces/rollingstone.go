@@ -37,6 +37,7 @@ type RollingStoneGame interface {
 	GetValidPlayIndices(playerIdx int) []int
 	// GetCurrentTrick 現在のトリックを取得する
 	GetCurrentTrick() []*domain.TrickCard
+	GetLastTrick() []*domain.TrickCard
 	// GetCurrentPlayerIdx 現在のプレイヤーインデックスを取得する
 	GetCurrentPlayerIdx() int
 	// GetLeadPlayerIdx リード席を取得する

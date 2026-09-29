@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { rollingstoneApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -62,6 +62,45 @@ function RollingStonePageContent() {
   const { cardWidth } = useCardDimensions();
   const { hint, hintEnabled, setHintEnabled } = useGameHint('rollingstone', state);
   const [playerCnt, setPlayerCnt] = useState(4);
+  const [trickAnnouncement, setTrickAnnouncement] = useState('');
+  const announcedTrickRef = useRef<{ trick: RollingStoneResponse['currentTrick']; number: number } | null>(null);
+
+  useEffect(() => {
+    if (!state) return;
+    const previous = announcedTrickRef.current;
+    if (previous === null) {
+      announcedTrickRef.current = { trick: state.currentTrick, number: state.trickNumber };
+      return;
+    }
+    let appended: RollingStoneResponse['currentTrick'];
+    let resolved = false;
+    if (state.trickNumber === previous.number) {
+      appended = state.currentTrick.slice(previous.trick.length);
+    } else if (state.trickNumber === previous.number + 1) {
+      appended = state.lastTrick.slice(previous.trick.length);
+      resolved = true;
+    } else {
+      appended = state.currentTrick;
+    }
+    if (appended.length > 0) {
+      const played = appended
+        .map(({ playerIdx, card }) => {
+          const name = playerIdx === 0 ? t('header.you') : t('header.cpu', { idx: String(playerIdx) });
+          return t('cardPlayed', { name, card: cardAlt(card) });
+        })
+        .join(t('listSeparator'));
+      const nextTrick = state.currentTrick
+        .map(({ playerIdx, card }) => {
+          const name = playerIdx === 0 ? t('header.you') : t('header.cpu', { idx: String(playerIdx) });
+          return t('cardPlayed', { name, card: cardAlt(card) });
+        })
+        .join(t('listSeparator'));
+      setTrickAnnouncement(
+        resolved ? `${played}${t('listSeparator')}${t('trickResolved')}${t('listSeparator')}${nextTrick}` : played,
+      );
+    }
+    announcedTrickRef.current = { trick: state.currentTrick, number: state.trickNumber };
+  }, [state, t]);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('rollingstone');
   const cliConfig: CliGameConfig<RollingStoneResponse, Parameters<typeof rollingstoneApi.exec>> = useMemo(
@@ -206,6 +245,9 @@ function RollingStonePageContent() {
                 cardWidth={cardWidth}
                 label={t('currentTrick')}
               />
+            </div>
+            <div aria-live="polite" aria-atomic="true" className="sr-only" data-testid="rs-trick-announcement">
+              {trickAnnouncement}
             </div>
 
             {resultBanner && (
