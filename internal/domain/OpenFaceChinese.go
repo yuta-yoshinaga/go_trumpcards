@@ -639,6 +639,7 @@ func OpenFaceChineseCompareRow(a, b *OpenFaceChinesePlayer, row int) int {
 	}
 }
 
+// ofcSign は比較結果を -1 / 0 / 1 に正規化する。
 func ofcSign(value int) int {
 	if value > 0 {
 		return 1
