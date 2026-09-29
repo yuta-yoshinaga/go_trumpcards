@@ -193,6 +193,33 @@ describe('JassPage', () => {
     await waitFor(() => expect(screen.getByText('チームスコア')).toBeInTheDocument());
   });
 
+  it('associates every score row with a row heading, including conditional rows', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: JassPhase.ROUND_END,
+        teamScores: [40, 25],
+        roundPoints: [35, 20],
+        roundWeisPoints: [20, 0],
+        roundStockPoints: [0, 5],
+        lastTrickWinner: 0,
+      }),
+    );
+    renderWithProviders(<JassPage />);
+
+    const rowHeadings = await screen.findAllByRole('rowheader');
+    expect(rowHeadings.map((heading) => heading.textContent)).toEqual([
+      '累計',
+      'ラウンド',
+      'Weis',
+      'Stöck',
+      'ラストトリック',
+    ]);
+    for (const heading of rowHeadings) {
+      expect(heading).toHaveAttribute('scope', 'row');
+      expect(heading).toHaveClass('sr-only');
+    }
+  });
+
   it('shows the Weis panel with per-team totals and a counted marker when Weis is declared', async () => {
     mockExec.mockResolvedValue(makeState({ phase: JassPhase.TRICK_END, trumpSuit: 1, roundWeisPoints: [20, 0] }));
     renderWithProviders(<JassPage />);

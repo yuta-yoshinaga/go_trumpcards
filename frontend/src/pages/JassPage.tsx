@@ -263,6 +263,7 @@ function JassPageContent() {
           <table className="w-full text-sm text-ds-text-muted">
             <thead>
               <tr>
+                <th scope="col" className="sr-only" />
                 <th scope="col" className="text-left">
                   {t('team', { n: 0 })}
                 </th>
@@ -273,15 +274,24 @@ function JassPageContent() {
             </thead>
             <tbody>
               <tr>
+                <th scope="row" className="sr-only">
+                  {t('scoreRows.cumulative')}
+                </th>
                 <td className="text-ds-accent">{state.teamScores[0]}</td>
                 <td className="text-center">{state.teamScores[1]}</td>
               </tr>
               <tr>
+                <th scope="row" className="sr-only">
+                  {t('scoreRows.round')}
+                </th>
                 <td className="text-xs">{t('roundPoints', { points: state.roundPoints[0] })}</td>
                 <td className="text-center text-xs">{t('roundPoints', { points: state.roundPoints[1] })}</td>
               </tr>
               {state.config.enableWeis && (state.roundWeisPoints[0] > 0 || state.roundWeisPoints[1] > 0) && (
                 <tr>
+                  <th scope="row" className="sr-only">
+                    {t('scoreRows.weis')}
+                  </th>
                   <td className="text-xs text-ds-warning">{t('weisPoints', { points: state.roundWeisPoints[0] })}</td>
                   <td className="text-center text-xs text-ds-warning">
                     {t('weisPoints', { points: state.roundWeisPoints[1] })}
@@ -290,6 +300,9 @@ function JassPageContent() {
               )}
               {(state.roundStockPoints[0] > 0 || state.roundStockPoints[1] > 0) && (
                 <tr>
+                  <th scope="row" className="sr-only">
+                    {t('scoreRows.stock')}
+                  </th>
                   <td className="text-xs">{t('stockPoints', { points: state.roundStockPoints[0] })}</td>
                   <td className="text-center text-xs">{t('stockPoints', { points: state.roundStockPoints[1] })}</td>
                 </tr>
@@ -301,6 +314,9 @@ function JassPageContent() {
                   途中で出すと、まだ誰も取っていないボーナスを名指しすることになる。 */}
               {lastTrickBonusTeam >= 0 && (
                 <tr data-testid="ja-last-trick-bonus">
+                  <th scope="row" className="sr-only">
+                    {t('scoreRows.lastTrick')}
+                  </th>
                   <td className="text-xs">
                     {lastTrickBonusTeam === 0 ? t('lastTrickBonus', { points: state.config.lastTrickBonus }) : ''}
                   </td>
