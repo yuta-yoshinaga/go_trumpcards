@@ -122,6 +122,12 @@ describe('FortyThievesPage', () => {
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toHaveTextContent(/手数: 5/));
   });
 
+  it('includes the tableau column number in empty column button names', async () => {
+    renderWithProviders(<FortyThievesPage />);
+    expect(await screen.findByRole('button', { name: '空の場札列 2' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '空の場札列 3' })).toBeInTheDocument();
+  });
+
   it('renders waste card', async () => {
     renderWithProviders(<FortyThievesPage />);
     await waitFor(() => expect(screen.getByText('ウェイスト')).toBeInTheDocument());
