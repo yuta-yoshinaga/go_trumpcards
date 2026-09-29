@@ -165,6 +165,8 @@ describe('SkitgubbePage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
 
     const pickUp = screen.getByRole('button', { name: '引き取る' });
+    expect(pickUp).not.toHaveAttribute('aria-describedby');
+    expect(screen.queryByText('上回れる札がありません')).not.toBeInTheDocument();
     mockExec.mockClear();
     fireEvent.click(pickUp);
     await flushPendingDispatch();
@@ -176,8 +178,11 @@ describe('SkitgubbePage', () => {
     renderWithProviders(<SkitgubbePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
 
+    const pickUp = screen.getByRole('button', { name: '引き取る' });
+    expect(pickUp).toHaveAttribute('aria-describedby', 'sg-pickup-hint');
+    expect(document.getElementById('sg-pickup-hint')).toHaveTextContent('上回れる札がありません');
     mockExec.mockClear();
-    fireEvent.click(screen.getByRole('button', { name: '引き取る' }));
+    fireEvent.click(pickUp);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('pickup'));
   });
 
