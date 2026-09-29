@@ -331,12 +331,30 @@ describe('BidEuchrePage', () => {
   it('shows the trick area only when cards have been played to the trick', async () => {
     mockExec.mockResolvedValue(makeState({ trick: [card('SPADE', 1)] }));
     const { unmount } = renderWithProviders(<BidEuchrePage />);
-    await waitFor(() => expect(screen.getByTestId('bideuchre-trick')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('trick-display-cards')).toBeInTheDocument());
     unmount();
 
     mockExec.mockResolvedValue(makeState({ trick: [] }));
     renderWithProviders(<BidEuchrePage />);
-    await waitFor(() => expect(screen.queryByTestId('bideuchre-trick')).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByTestId('trick-display-cards')).not.toBeInTheDocument());
+  });
+
+  it('labels trick cards with the player in seat order starting at the leader', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        trick: [card('SPADE', 1), card('HEART', 11)],
+        trickLeaderIdx: 2,
+      }),
+    );
+    renderWithProviders(<BidEuchrePage />);
+
+    await waitFor(() => expect(screen.getByTestId('trick-display-cards').querySelectorAll('img')).toHaveLength(2));
+    const trickCards = screen.getByTestId('trick-display-cards');
+    expect([...trickCards.querySelectorAll('img')].map((img) => img.getAttribute('alt'))).toEqual([
+      'CPU 2が出した♠ A',
+      'CPU 3が出した♥ J',
+    ]);
+    expect(trickCards).toHaveTextContent('CPU 2CPU 3');
   });
 
   // **人間の入札手番のときだけビッドの注意書きが表示される。**

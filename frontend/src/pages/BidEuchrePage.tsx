@@ -11,6 +11,7 @@ import { GamePageShell } from '../components/GamePageShell';
 import { GameResetButton } from '../components/GameResetButton';
 import { FrontendHintTooltip } from '../components/hint/FrontendHintTooltip';
 import { GameSkeleton } from '../components/skeleton/GameSkeleton';
+import { TrickDisplay } from '../components/TrickDisplay';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
@@ -26,10 +27,12 @@ import { gameTheme } from '../styles/gameTheme';
 import type { BidEuchreResponse } from '../types/card';
 import { BidEuchrePhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { BIDEUCHRE_HELP, parseBidEuchreCommand } from '../utils/cli/commands/bideuchreCommands';
 import { formatBidEuchreState } from '../utils/cli/formatters/bideuchreFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig } from '../utils/cli/types';
+import { playerName } from '../utils/playerUtils';
 
 /** Declarations, in menu order. **Two of them are no-trump forms.** */
 const TRUMPS = [0, 1, 2, 3, 4, 5];
@@ -245,14 +248,19 @@ function BidEuchrePageContent() {
             </div>
 
             {/* Trick */}
-            {state.trick.length > 0 && (
-              <div className="mb-2 flex items-center gap-2" data-testid="bideuchre-trick">
-                <span className="text-ds-text-muted text-sm">{t('trick')}</span>
-                {state.trick.map((c, i) => (
-                  <CardImage key={`trick-${c.design}-${c.value}-${i}`} card={c} width={cardWidth} />
-                ))}
-              </div>
-            )}
+            <TrickDisplay
+              currentTrick={state.trick.map((card, i) => ({
+                playerIdx: (state.trickLeaderIdx + i) % state.players.length,
+                card,
+              }))}
+              players={state.players}
+              cardWidth={cardWidth}
+              label={t('trick')}
+              dataTutorial="bideuchre-trick"
+              cardAriaLabelFor={(player, card) =>
+                t('trickCardByPlayer', { name: playerName(player.id, player.isHuman), card: cardAlt(card) })
+              }
+            />
 
             {/* Settlement */}
             {(isHandEnd || isGameEnd) && result && (
