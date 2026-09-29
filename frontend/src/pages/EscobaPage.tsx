@@ -215,6 +215,12 @@ function EscobaPageContent() {
     handIndex !== null && isHumanTurn ? matchedCaptureCandidate(state.handCaptures, handIndex, tableIndices) : null;
   const phaseName = isGameEnd ? t('phase.gameEnd') : t(`phase.${state.phase}`, t('phase.play'));
   const detail = state.lastRoundDetail;
+  const lastCapturer = isRoundEnd ? state.players[state.lastCaptureIdx] : undefined;
+  const lastCapturerName = lastCapturer
+    ? lastCapturer.isHuman
+      ? tc('player.you')
+      : tc('player.cpu', { id: lastCapturer.id })
+    : '';
 
   return (
     <GamePageShell
@@ -464,6 +470,12 @@ function EscobaPageContent() {
                     </tr>
                   </tbody>
                 </table>
+              </div>
+            )}
+
+            {lastCapturer && (
+              <div className="text-center text-sm font-semibold" data-testid="last-capture">
+                {t('roundDetail.lastCapture', { player: lastCapturerName })}
               </div>
             )}
 

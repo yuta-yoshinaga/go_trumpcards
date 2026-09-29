@@ -52,6 +52,7 @@
   },
   "roundDetail": {
     "title": "Round Score Breakdown",
+    "lastCapture": "Last capturer: {{player}}",
     "cards": "Most cards",
     "espadas": "Most espadas (♠)",
     "sevens": "Most sevens",
