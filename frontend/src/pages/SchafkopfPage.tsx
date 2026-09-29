@@ -338,6 +338,16 @@ function SchafkopfPageContent() {
                     <div>{t('roundResult.pickerPoints', { points: state.roundPickerPoints })}</div>
                     <div>{t('roundResult.multiplier', { multiplier: state.roundMultiplier })}</div>
                     <div>{state.roundPickerWon ? t('roundResult.pickerWon') : t('roundResult.pickerLost')}</div>
+                    <div className="mt-1">{t('roundResult.chipChanges')}</div>
+                    {state.players.map((p) => {
+                      const delta = p.chipDelta;
+                      const formatted = delta > 0 ? `+${delta}` : delta < 0 ? `${delta}` : '±0';
+                      return (
+                        <div key={p.id}>
+                          {playerName(p.id, p.isHuman)}: {formatted}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>

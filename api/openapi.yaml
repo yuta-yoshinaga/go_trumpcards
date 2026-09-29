@@ -66966,6 +66966,9 @@ components:
               chips:
                 type: integer
                 description: Current chip count for this player
+              chipDelta:
+                type: integer
+                description: Chip change for this player in the most recent deal
         phase:
           type: integer
           description: "Game phase: 0=Pick, 1=Call, 2=Play, 3=TrickEnd, 4=RoundEnd, 5=GameEnd"
