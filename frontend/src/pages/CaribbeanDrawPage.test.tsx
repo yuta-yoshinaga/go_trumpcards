@@ -393,6 +393,29 @@ describe('CaribbeanDrawPage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('bet', 200, 10));
   });
 
+  it('previews the ante and jackpot total and prevents an unaffordable bet', async () => {
+    mockApi.mockResolvedValue({ ...betPhaseState, chips: 100 });
+    renderWithProviders(<CaribbeanDrawPage />);
+    await waitFor(() => expect(screen.getByText('チップ: 100')).toBeInTheDocument());
+
+    const preview = screen.getByTestId('cd-bet-total-preview');
+    expect(preview).toHaveAttribute('role', 'status');
+    expect(preview).toHaveAttribute('aria-live', 'polite');
+    expect(preview).toHaveTextContent('必要チップ合計（アンテ・ジャックポット）: 100');
+    expect(screen.getByRole('button', { name: 'ベット' })).not.toHaveAttribute('aria-disabled', 'true');
+
+    fireEvent.change(screen.getByLabelText('ジャックポット'), { target: { value: '20' } });
+    expect(preview).toHaveTextContent('必要チップ合計（アンテ・ジャックポット）: 120');
+    expect(preview).toHaveTextContent('チップ不足: 20');
+    const bet = screen.getByRole('button', { name: 'ベット' });
+    expect(bet).toHaveAttribute('aria-disabled', 'true');
+    expect(bet).toHaveAttribute('aria-describedby', 'cd-bet-error');
+
+    fireEvent.click(bet);
+    expect(mockApi).toHaveBeenCalledTimes(1); // mount reset only
+    expect(screen.getByRole('alert')).toHaveTextContent('所持チップが不足しているためベットできません');
+  });
+
   it('steps the ante and jackpot amounts with the chip steppers', async () => {
     mockApi.mockResolvedValue(betPhaseState);
     renderWithProviders(<CaribbeanDrawPage />);
