@@ -82,7 +82,9 @@ function TehonbikiPageContent() {
         </div>
         {state.phase === 0 ? (
           <>
+            <label htmlFor="tehonbiki-bet-type">{t('label.betType')}</label>
             <select
+              id="tehonbiki-bet-type"
               value={betType}
               onChange={(e) => {
                 setBetType(e.target.value);
@@ -94,7 +96,8 @@ function TehonbikiPageContent() {
               <option value="triple">{t('betType.triple')}</option>
               <option value="half">{t('betType.half')}</option>
             </select>
-            <input type="number" value={bet} onChange={(e) => setBet(e.target.value)} />
+            <label htmlFor="tehonbiki-bet-amount">{t('label.bet')}</label>
+            <input id="tehonbiki-bet-amount" type="number" value={bet} onChange={(e) => setBet(e.target.value)} />
             <button
               className={btnPrimary}
               type="button"
