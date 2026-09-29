@@ -3415,6 +3415,7 @@
     "rankandfile.stalemate": "No moves can lead to a win. Please undo or give up.",
     "reddog.result.pairLoses": "Player loses. The initial cards were a pair, so the spread decision was skipped and the result was decided directly by the third card (11:1 payout).",
     "reddog.result.pairPush": "Push! The initial cards were a pair, so the spread decision was skipped and the result was decided directly by the third card (11:1 payout).",
+    "reddog.result.consecutivePush": "Push! The first two cards were consecutive, so the round pushed automatically (ante returned).",
     "reddog.result.pairWins": "You win! The initial cards were a pair, so the spread decision was skipped and the result was decided directly by the third card (11:1 payout).",
     "reddog.result.playerLoses": "Player loses.",
     "reddog.result.playerWins": "You win!",

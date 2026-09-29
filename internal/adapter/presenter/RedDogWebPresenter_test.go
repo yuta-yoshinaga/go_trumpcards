@@ -168,7 +168,7 @@ func TestRedDogWebPresenter_Output_EndPairPush(t *testing.T) {
 	m.On("GetResult").Return(domain.GameResultDraw)
 	m.On("GetChips").Return(1000)
 	m.On("GetPhase").Return(domain.RedDogPhaseEnd)
-	m.On("GetThirdCard").Return((*domain.Card)(nil))
+	m.On("GetThirdCard").Return(domain.NewCard(domain.CardDesignClover, 7, false))
 	m.On("GetAnte").Return(100)
 	m.On("GetRaise").Return(0)
 	m.On("GetSpread").Return(0)
@@ -209,7 +209,7 @@ func TestRedDogWebPresenter_Output_EndPush(t *testing.T) {
 	m.On("GetChips").Return(1000)
 	m.On("GetPhase").Return(domain.RedDogPhaseEnd)
 	m.On("GetInitialCards").Return(([]*domain.Card)(nil))
-	m.On("GetThirdCard").Return((*domain.Card)(nil))
+	m.On("GetThirdCard").Return(domain.NewCard(domain.CardDesignClover, 7, false))
 	m.On("GetGameEndFlag").Return(true)
 	m.On("GetAnte").Return(100)
 	m.On("GetRaise").Return(0)
@@ -220,6 +220,30 @@ func TestRedDogWebPresenter_Output_EndPush(t *testing.T) {
 	r := parseRedDogOutput(t, p.Output(m, nil))
 	assert.Equal(t, "Push.", r.Message)
 	assert.Equal(t, "reddog.result.push", r.MessageCode)
+}
+
+func TestRedDogWebPresenter_Output_EndConsecutivePush(t *testing.T) {
+	p := new(RedDogWebPresenter)
+	m := new(interfaces.MockRedDogGame)
+	setupRedDogWebMockDefaults(m)
+	m.ExpectedCalls = nil
+	m.On("GetChips").Return(1000)
+	m.On("GetPhase").Return(domain.RedDogPhaseEnd)
+	m.On("GetInitialCards").Return([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 5, false),
+		domain.NewCard(domain.CardDesignHeart, 6, false),
+	})
+	m.On("GetThirdCard").Return((*domain.Card)(nil))
+	m.On("GetGameEndFlag").Return(true)
+	m.On("GetAnte").Return(100)
+	m.On("GetRaise").Return(0)
+	m.On("GetSpread").Return(0)
+	m.On("GetResult").Return(domain.GameResultDraw)
+	m.On("GetTotalPayout").Return(100)
+	m.On("GetAppliedMultiplier").Return(0)
+
+	r := parseRedDogOutput(t, p.Output(m, nil))
+	assert.Equal(t, "reddog.result.consecutivePush", r.MessageCode)
 }
 
 func TestRedDogWebPresenter_ActionLogOutput(t *testing.T) {
