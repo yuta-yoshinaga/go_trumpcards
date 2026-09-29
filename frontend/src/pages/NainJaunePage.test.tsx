@@ -274,6 +274,18 @@ describe('NainJaunePage', () => {
       await waitFor(() => expect(live).toHaveTextContent('席2 が ♦7 黄色い小人 を獲得（25）'));
     });
 
+    it('announces a newly added human award as you in the live region', async () => {
+      mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1 }));
+      renderWithProviders(<NainJaunePage />);
+      const live = await screen.findByTestId('nainjaune-turn-announce');
+
+      mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1, awards: [{ box: 'dwarf', player: 0, chips: 20 }] }));
+      fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+      fireEvent.click(screen.getByRole('button', { name: '確認' }));
+
+      await waitFor(() => expect(live).toHaveTextContent('あなたが ♦7 黄色い小人 を獲得（20）'));
+    });
+
     it('announces every award added in the same update', async () => {
       mockExec.mockResolvedValue(makeState({ currentPlayerIdx: 1 }));
       renderWithProviders(<NainJaunePage />);
