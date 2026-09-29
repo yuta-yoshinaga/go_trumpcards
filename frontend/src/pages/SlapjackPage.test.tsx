@@ -130,6 +130,19 @@ describe('SlapjackPage', () => {
     expect(screen.getAllByText(/26/).length).toBeGreaterThan(0);
   });
 
+  it('shows accessible stock progress for both players and clamps an empty stock to zero', async () => {
+    mockExec.mockResolvedValueOnce(gameEndState);
+    renderWithProviders(<SlapjackPage />);
+    const cpuProgress = await screen.findByRole('progressbar', { name: 'CPU 1のストック残り 0枚' });
+    const humanProgress = screen.getByRole('progressbar', { name: 'あなたのストック残り 52枚' });
+    expect(cpuProgress).toHaveAttribute('aria-valuemin', '0');
+    expect(cpuProgress).toHaveAttribute('aria-valuemax', '52');
+    expect(cpuProgress).toHaveAttribute('aria-valuenow', '0');
+    expect(cpuProgress.firstElementChild).toHaveStyle({ width: '0%' });
+    expect(humanProgress).toHaveAttribute('aria-valuenow', '52');
+    expect(humanProgress.firstElementChild).toHaveStyle({ width: '100%' });
+  });
+
   it('step button calls exec with step', async () => {
     renderWithProviders(<SlapjackPage />);
     await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
@@ -289,7 +302,7 @@ describe('SlapjackPage', () => {
   it('reset settings select fires reset with cpuDifficulty config', async () => {
     renderWithProviders(<SlapjackPage />);
     await waitFor(() => expect(screen.getByTestId('step-button')).toBeInTheDocument());
-    const select = screen.getByLabelText(/CPU/i) as HTMLSelectElement;
+    const select = screen.getByLabelText('CPU難易度') as HTMLSelectElement;
     fireEvent.change(select, { target: { value: '2' } });
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', { config: { cpuDifficulty: 2 } }));
   });

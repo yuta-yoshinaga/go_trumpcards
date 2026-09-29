@@ -13,6 +13,7 @@
   },
   "label": {
     "stock": "Stock",
+    "stockProgressAria": "{{player}} stock remaining: {{count}} cards",
     "pileCount": "Pile: {{count}}"
   },
   "settings": {
