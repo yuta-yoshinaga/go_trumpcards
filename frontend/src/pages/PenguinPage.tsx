@@ -626,6 +626,13 @@ function PenguinPageContent() {
             <div key={hintNonce} className="sr-only" role="status" aria-live="polite" data-testid="pg-hint-announce">
               {hintAnnounce}
             </div>
+            <div role="status" aria-live="polite" data-testid="pg-auto-complete-status">
+              {isAutoCompleting && (
+                <p className="mx-auto mb-2 w-fit rounded px-3 py-1 text-sm font-medium text-ds-text-primary bg-ds-surface-elevated">
+                  {t('autoCompleteInProgress')}
+                </p>
+              )}
+            </div>
             <div className="flex justify-center">
               <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
             </div>
