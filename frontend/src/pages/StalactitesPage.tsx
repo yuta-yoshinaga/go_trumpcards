@@ -221,6 +221,32 @@ function StalactitesPageContent() {
   });
 
   const [hoveredStack, setHoveredStack] = useState<{ col: number; cardIdx: number } | null>(null);
+  const previousSelectionRef = useRef(false);
+  const [moveLimitAnnouncement, setMoveLimitAnnouncement] = useState('');
+
+  useEffect(() => {
+    if (!state) return;
+    const hasSelection = selectedSource !== null;
+    if (!hasSelection && !previousSelectionRef.current) return;
+    previousSelectionRef.current = hasSelection;
+    const selectedStackSize =
+      selectedSource?.zone === 'tableau' && selectedSource.col !== undefined && selectedSource.cardIndex !== undefined
+        ? state.tableau[selectedSource.col].length - selectedSource.cardIndex
+        : 0;
+    const announcementStackSize = selectedSource?.zone === 'tableau' ? selectedStackSize : selectedSource ? 1 : 0;
+    setMoveLimitAnnouncement(
+      hasSelection
+        ? t('selectedMoveLimitAnnouncement', {
+            size: announcementStackSize,
+            limit: state.maxMovableCards,
+            emptyLimit: state.maxMovableCardsToEmptyColumn,
+          })
+        : t('clearedMoveLimitAnnouncement', {
+            limit: state.maxMovableCards,
+            emptyLimit: state.maxMovableCardsToEmptyColumn,
+          }),
+    );
+  }, [selectedSource, state, t]);
 
   if (!state) return <GameSkeleton gameKey="stalactites" layout={{ kind: 'tableau', topRow: 8, tableau: 8 }} />;
 
@@ -240,13 +266,13 @@ function StalactitesPageContent() {
   const emptyColumnCount = state.tableau.filter((col) => col.length === 0).length;
 
   // 選択中の束の枚数。空き列が受け取れるかはこれと emptyColLimit で決まる。
-  const selectedStackSize =
-    selectedSource?.zone === 'tableau' && selectedSource.col !== undefined && selectedSource.cardIndex !== undefined
-      ? (state.tableau[selectedSource.col]?.length ?? 0) - selectedSource.cardIndex
-      : 0;
   // **名前が無く、超過の理由も title にしかなかった。**中身は文字の `K` だけなので
   // 支援技術には「K」としか読まれず、列も特定できない。ボタンは disabled では
   // ないので押せそうに見えたままだった (#6814)。BakersGame / FreeCell と同じ形。
+  const selectedStackSize =
+    selectedSource?.zone === 'tableau' && selectedSource.col !== undefined && selectedSource.cardIndex !== undefined
+      ? state.tableau[selectedSource.col].length - selectedSource.cardIndex
+      : 0;
   const emptyColBlocked = selectedStackSize > emptyColLimit;
   const emptyColLabel = (colIdx: number): string => {
     const base = t('emptyColumnAriaLabel', { idx: String(colIdx) });
@@ -443,6 +469,9 @@ function StalactitesPageContent() {
                   {t('supermoveToEmptyConditions', { cells: emptyCellCount, cols: emptyColumnCount - 1 })}
                 </span>
               )}
+            </div>
+            <div className="sr-only" data-testid="stalactites-move-limit-live" role="status" aria-live="polite">
+              {moveLimitAnnouncement}
             </div>
 
             {/* Tableau */}
