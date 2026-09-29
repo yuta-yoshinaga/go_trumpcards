@@ -137,9 +137,9 @@ describe('BeleagueredCastlePage', () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BeleagueredCastlePage />);
 
-    expect(await screen.findByRole('button', { name: '♠ K、列0・0枚目' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '♠ 5、列0・1枚目' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '♥ 6、列1・0枚目' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: '♠ K、列0・位置0' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♠ 5、列0・位置1' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♥ 6、列1・位置0' })).toBeInTheDocument();
   });
 
   it('gives each empty tableau column a distinct column-numbered aria-label', async () => {

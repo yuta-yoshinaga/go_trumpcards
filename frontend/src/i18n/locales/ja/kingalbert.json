@@ -12,7 +12,7 @@
   "empty": "空",
   "emptyReserveSlot": "空のリザーブ枠 {{idx}}",
   "reserveCardAriaLabel": "{{card}}（リザーブ枠 {{idx}}）",
-  "tableauCardAriaLabel": "{{card}}、列{{col}}・{{pos}}枚目",
+  "tableauCardAriaLabel": "{{card}}、列{{col}}・位置{{pos}}",
   "foundationAriaLabel": "{{suit}} 組札 {{count}}枚",
   "emptyFoundationAriaLabel": "空の組札 ({{suit}})",
   "landscapeBanner": "横画面での表示を推奨します",

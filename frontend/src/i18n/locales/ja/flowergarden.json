@@ -37,7 +37,7 @@
   "rulesNote": "スートは無視。1つ下のランクだけ重ねられます（空のベッドには任意のカード）。",
   "stalemate": "手詰まりです",
   "tableau": "フラワーベッド",
-  "tableauCardAriaLabel": "{{card}}、列{{col}}・{{pos}}枚目",
+  "tableauCardAriaLabel": "{{card}}、列{{col}}・位置{{pos}}",
   "tutorial": {
     "foundation": "ブーケの隣に4つの空の組札があります。同じスートでA→Kの順に積み上げます。",
     "reserve": "ブーケには16枚の表向きカードが1枚ずつ置かれます。フラワーベッドや組札へ出せますが、一度出すと二度と戻せません。",

@@ -115,8 +115,8 @@ describe('PageOnePage', () => {
 
     const unavailableCard = await screen.findByRole('button', { name: /位置 0/ });
     const playableCard = screen.getByRole('button', { name: /位置 1/ });
-    expect(unavailableCard).toHaveAccessibleName('♠ A、位置 0枚目');
-    expect(playableCard).toHaveAccessibleName('♥ J（出せます）、位置 1枚目');
+    expect(unavailableCard).toHaveAccessibleName('♠ A、位置 0');
+    expect(playableCard).toHaveAccessibleName('♥ J（出せます）、位置 1');
   });
 
   it('explains the empty draw pile fallback while keeping draw available', async () => {

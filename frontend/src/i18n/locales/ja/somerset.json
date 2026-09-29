@@ -12,7 +12,7 @@
   "foundationAriaLabel": "{{suit}} 組札 {{count}}枚",
   "emptyFoundationAriaLabel": "空の組札 ({{suit}})",
   "emptyColumnAriaLabel": "空のタブロー列 {{col}}",
-  "cardAriaLabel": "{{card}}、列{{col}}・{{pos}}枚目",
+  "cardAriaLabel": "{{card}}、列{{col}}・位置{{pos}}",
   "landscapeBanner": "横画面での表示を推奨します",
   "hint": "ヒント",
   "autoComplete": "自動完成",
