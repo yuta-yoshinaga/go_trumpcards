@@ -16,6 +16,8 @@ type NiuNiuGame interface {
 	GetPhase() int
 	// GetChips 人間のチップを取得する
 	GetChips() int
+	// GetDrawPileCount 山札の未配布カード数を取得する
+	GetDrawPileCount() int
 	// GetMaxMultiplier 最大の配当倍率を取得する
 	GetMaxMultiplier() int
 	// GetSeats 全席を取得する
