@@ -35,9 +35,10 @@ import { placeholderCardStyle } from '../styles/cardStyles';
 import { handNameBadgeClass } from '../styles/gameConstants';
 import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
-import type { FiveCardStudResponse } from '../types/card';
+import type { Card, FiveCardStudResponse } from '../types/card';
 import { FiveCardStudPhase, FiveCardStudRebuyPhaseType } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { FIVECARDSTUD_HELP, parseFiveCardStudCommand } from '../utils/cli/commands/fiveCardStudCommands';
 import { formatFiveCardStudState } from '../utils/cli/formatters/fiveCardStudFormatter';
 import { hintLocalCommand } from '../utils/cli/hintText';
@@ -183,6 +184,25 @@ export function FiveCardStudPageContent({ gameKey }: { gameKey: FcsPageGameKey }
   const isShowdown = phase === FiveCardStudPhase.SHOWDOWN || phase === FiveCardStudPhase.END;
   const humanPlayer = state?.players?.find((p) => p.isHuman);
   const humanFolded = humanPlayer?.folded ?? false;
+  const isBestHandCard = (player: FiveCardStudResponse['players'][number], card: Card) =>
+    isShowdown &&
+    !player.folded &&
+    player.bestHandCore.some((best) => best.design === card.design && best.value === card.value);
+  const renderPlayerCard = (player: FiveCardStudResponse['players'][number], card: Card) => {
+    const inBestHand = isBestHandCard(player, card);
+    const image = <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />;
+    return inBestHand ? (
+      <span
+        role="img"
+        aria-label={`${cardAlt(card)}、${t('bestHandCard')}`}
+        className="inline-block rounded ring-2 ring-ds-success"
+      >
+        {image}
+      </span>
+    ) : (
+      image
+    );
+  };
   const humanAllIn = humanPlayer?.allIn ?? false;
   const canAct = isActive && !humanFolded && !humanAllIn && state?.currentTurn === humanPlayer?.id;
   const hasOutstandingBet = (state?.lastBet ?? 0) > (humanPlayer?.currentBet ?? 0);
@@ -365,15 +385,10 @@ export function FiveCardStudPageContent({ gameKey }: { gameKey: FcsPageGameKey }
                               className="inline-block rounded ring-2 ring-ds-accent motion-safe:animate-pulse"
                               data-testid={`latest-door-cpu-${p.id}`}
                             >
-                              <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
+                              {renderPlayerCard(p, card)}
                             </span>
                           ) : (
-                            <AnimatedCard
-                              key={`${card.design}-${card.value}`}
-                              card={card}
-                              width={cardWidth}
-                              style={placeholderCardStyle}
-                            />
+                            <span key={`${card.design}-${card.value}`}>{renderPlayerCard(p, card)}</span>
                           ),
                         )
                       : !p.folded &&
@@ -384,12 +399,7 @@ export function FiveCardStudPageContent({ gameKey }: { gameKey: FcsPageGameKey }
                   <div className="flex flex-wrap gap-1">
                     {isShowdown && !p.folded && p.holeCards?.length
                       ? p.holeCards.map((card) => (
-                          <AnimatedCard
-                            key={`${card.design}-${card.value}`}
-                            card={card}
-                            width={cardWidth}
-                            style={placeholderCardStyle}
-                          />
+                          <span key={`${card.design}-${card.value}`}>{renderPlayerCard(p, card)}</span>
                         ))
                       : !p.folded && <AnimatedCardBack width={cardWidth} />}
                   </div>
@@ -474,15 +484,10 @@ export function FiveCardStudPageContent({ gameKey }: { gameKey: FcsPageGameKey }
                             className="inline-block rounded ring-2 ring-ds-accent motion-safe:animate-pulse"
                             data-testid="latest-door-human"
                           >
-                            <AnimatedCard card={card} width={cardWidth} style={placeholderCardStyle} />
+                            {renderPlayerCard(humanPlayer, card)}
                           </span>
                         ) : (
-                          <AnimatedCard
-                            key={`${card.design}-${card.value}`}
-                            card={card}
-                            width={cardWidth}
-                            style={placeholderCardStyle}
-                          />
+                          <span key={`${card.design}-${card.value}`}>{renderPlayerCard(humanPlayer, card)}</span>
                         ),
                       )
                     : !humanPlayer.folded &&

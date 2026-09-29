@@ -35,6 +35,7 @@ const humanPlayer = (overrides: Partial<FiveCardStudPlayerData> = {}): FiveCardS
   handRank: 0,
   handName: '',
   bestHand: [],
+  bestHandCore: [],
   playStyleName: '',
   totalHands: 0,
   vpip: 0,
@@ -60,6 +61,7 @@ const cpuPlayer = (id: number, overrides: Partial<FiveCardStudPlayerData> = {}):
   handRank: 0,
   handName: '',
   bestHand: [],
+  bestHandCore: [],
   playStyleName: 'タイト',
   totalHands: 0,
   vpip: 0,
@@ -133,9 +135,37 @@ const secondStreetWithBetState: FiveCardStudResponse = {
 const showdownState: FiveCardStudResponse = {
   ...baseState,
   players: [
-    humanPlayer({ handName: 'ワンペア', currentBet: 0, chips: 950 }),
-    cpuPlayer(1, { handName: 'ツーペア', folded: false, holeCards: [{ design: 'SPADE', value: 5 }] }),
-    cpuPlayer(2, { folded: true }),
+    humanPlayer({
+      handName: 'ワンペア',
+      currentBet: 0,
+      chips: 950,
+      bestHand: [{ design: 'SPADE', value: 1 }],
+      bestHandCore: [],
+    }),
+    cpuPlayer(1, {
+      handRank: 1,
+      handName: 'ワンペア',
+      folded: false,
+      holeCards: [{ design: 'SPADE', value: 5 }],
+      doorCards: [
+        { design: 'HEART', value: 5 },
+        { design: 'DIAMOND', value: 2 },
+        { design: 'CLOVER', value: 7 },
+        { design: 'DIAMOND', value: 8 },
+      ],
+      bestHand: [
+        { design: 'SPADE', value: 5 },
+        { design: 'HEART', value: 5 },
+        { design: 'DIAMOND', value: 2 },
+        { design: 'CLOVER', value: 7 },
+        { design: 'DIAMOND', value: 8 },
+      ],
+      bestHandCore: [
+        { design: 'SPADE', value: 5 },
+        { design: 'HEART', value: 5 },
+      ],
+    }),
+    cpuPlayer(2, { folded: true, doorCards: [{ design: 'HEART', value: 13 }] }),
   ],
   pot: 0,
   dealerIdx: 2,
@@ -143,7 +173,7 @@ const showdownState: FiveCardStudResponse = {
   phase: 5,
   roundResults: [
     { playerIdx: 0, handRank: 1, handName: 'ワンペア', kickers: 'A', bestHand: [], wonAmount: 0, mucked: false },
-    { playerIdx: 1, handRank: 2, handName: 'ツーペア', kickers: '8', bestHand: [], wonAmount: 200, mucked: false },
+    { playerIdx: 1, handRank: 1, handName: 'ワンペア', kickers: '8', bestHand: [], wonAmount: 200, mucked: false },
   ],
   message: 'CPU 1 の勝ち',
 };
@@ -254,6 +284,7 @@ describe('FiveCardStudPage', () => {
     expect(screen.getByAltText('♠ A')).toBeInTheDocument();
     expect(screen.getAllByText('ドアカード').length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText('ホールカード').length).toBeGreaterThanOrEqual(1);
+    expect(screen.queryByLabelText('♠ A、役の構成札')).not.toBeInTheDocument();
   });
 
   it('highlights the latest door card for the human and each CPU', async () => {
@@ -273,9 +304,17 @@ describe('FiveCardStudPage', () => {
   it('reveals CPU hand name and hole card during showdown and shows round results', async () => {
     mockExec.mockResolvedValue(showdownState);
     renderWithProviders(<FiveCardStudPage />);
-    await waitFor(() => expect(screen.getByText('ツーペア')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getAllByText('ワンペア')).toHaveLength(2));
     expect(screen.getByAltText('♠ 5')).toBeInTheDocument();
     expect(screen.getByText('結果:')).toBeInTheDocument();
+    expect(screen.getByLabelText('♠ 5、役の構成札')).toBeInTheDocument();
+    expect(screen.getByLabelText('♥ 5、役の構成札')).toBeInTheDocument();
+    expect(screen.getAllByRole('img', { name: /役の構成札/ })).toHaveLength(2);
+    expect(screen.queryByLabelText('♦ 2、役の構成札')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('♣ 7、役の構成札')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('♦ 8、役の構成札')).not.toBeInTheDocument();
+    expect(screen.getByAltText('♥ K')).toBeInTheDocument();
+    expect(screen.queryByLabelText('♥ K、役の構成札')).not.toBeInTheDocument();
   });
 
   it('shows bet/check buttons when canAct and no outstanding bet', async () => {
