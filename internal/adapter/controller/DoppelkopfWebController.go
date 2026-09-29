@@ -35,7 +35,7 @@ type DoppelkopfWebOutputPlayer struct {
 	Cards      []*WebOutputCard `json:"cards"`
 	TrickCount int              `json:"trickCount"`
 	Chips      int              `json:"chips"`
-	// IsRe プレイヤーが Re チームかどうか (チーム公開後のみ true になりうる)
+	// IsRe プレイヤーが Re チームかどうか (TeamKnown のときだけ true になりうる。公開前は判明分のみ)
 	IsRe      bool `json:"isRe"`
 	TeamKnown bool `json:"teamKnown"`
 }
