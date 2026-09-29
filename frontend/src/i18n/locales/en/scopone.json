@@ -17,6 +17,7 @@
     "tableEmpty": "No table cards",
     "teamScores": "Team Scores",
     "team": "Team {{team}}",
+    "lastCapture": "Last capture: {{player}} ({{team}})",
     "yourTeam": "Your Team",
     "cpuStats": "Hand {{cards}} / Captured {{captured}} / Scopa {{scopa}}",
     "humanStats": "Hand {{cards}} / Captured {{captured}} / Scopa {{scopa}}",

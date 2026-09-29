@@ -17,6 +17,7 @@
     "tableEmpty": "場札なし",
     "teamScores": "チームスコア",
     "team": "チーム{{team}}",
+    "lastCapture": "最後の捕獲者: {{player}}（{{team}}）",
     "yourTeam": "あなたのチーム",
     "cpuStats": "手札{{cards}}枚 / 捕獲{{captured}}枚 / スコパ{{scopa}}",
     "humanStats": "手札{{cards}}枚 / 捕獲{{captured}}枚 / スコパ{{scopa}}",
