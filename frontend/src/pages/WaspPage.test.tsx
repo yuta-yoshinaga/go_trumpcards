@@ -113,20 +113,18 @@ describe('WaspPage', () => {
     expect(container.querySelector('button[aria-label=""]')).toBeInTheDocument();
   });
 
-  it("adds a 'selected' hint to the aria-label of the picked card and removes it on deselect", async () => {
+  it('exposes card selection through aria-pressed without changing the card name', async () => {
     renderWithProviders(<WaspPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    expect(screen.queryByRole('button', { name: /選択中/ })).not.toBeInTheDocument();
     // Select the top card of a column.
     const cardButton = screen.getByRole('button', { name: '♠ K' });
     expect(cardButton).toHaveAttribute('aria-pressed', 'false');
     fireEvent.click(cardButton);
     await waitFor(() =>
-      expect(screen.getByRole('button', { name: '♠ K 選択中' })).toHaveAttribute('aria-pressed', 'true'),
+      expect(screen.getByRole('button', { name: '♠ K', pressed: true })).toHaveAttribute('aria-pressed', 'true'),
     );
-    // Re-clicking deselects and restores the plain label.
-    fireEvent.click(screen.getByRole('button', { name: '♠ K 選択中' }));
-    await waitFor(() => expect(screen.queryByRole('button', { name: /選択中/ })).not.toBeInTheDocument());
+    // Re-clicking deselects and restores the unpressed state.
+    fireEvent.click(screen.getByRole('button', { name: '♠ K', pressed: true }));
     expect(screen.getByRole('button', { name: '♠ K' })).toHaveAttribute('aria-pressed', 'false');
   });
 
@@ -731,7 +729,7 @@ describe('WaspPage destination preview', () => {
     );
     expect(screen.getByTestId('sc-empty-col-2')).toHaveAttribute('aria-label', expect.stringContaining('移動先候補'));
 
-    fireEvent.click(screen.getByRole('button', { name: /♥ 7 選択中/ }));
+    fireEvent.click(screen.getByRole('button', { name: '♥ 7', pressed: true }));
     expect(screen.queryByTestId('wasp-legal-target')).not.toBeInTheDocument();
     expect(screen.getByTestId('sc-empty-col-2')).not.toHaveAttribute(
       'aria-label',

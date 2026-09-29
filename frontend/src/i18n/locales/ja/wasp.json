@@ -15,7 +15,6 @@
   "autoComplete": "自動完成",
   "undo": "元に戻す",
   "empty": "空",
-  "cardSelected": "選択中",
   "anyCard": "任意カード可",
   "legalDestination": "移動先候補",
   "gameClear": "ゲームクリア！ 手数: {{moveCount}}",

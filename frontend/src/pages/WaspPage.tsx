@@ -538,7 +538,7 @@ function WaspPageContent() {
                                   aria-pressed={isSelected}
                                   aria-label={
                                     tc.card
-                                      ? `${cardAlt(tc.card)}${isSelected ? ` ${t('cardSelected')}` : ''}${
+                                      ? `${cardAlt(tc.card)}${
                                           isLast && legalTargets.has(colIdx) && selectedSource
                                             ? ` ${t('legalDestination')}`
                                             : ''
