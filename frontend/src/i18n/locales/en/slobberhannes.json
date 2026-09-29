@@ -32,7 +32,9 @@
     "reset": "Reset",
     "nextRound": "Next round",
     "giveUp": "Give up",
-    "playAria": "Play {{card}}"
+    "playAria": "Play {{card}}",
+    "playAriaPlayable": "Playable card, play {{card}}",
+    "playAriaUnplayable": "Unplayable card, play {{card}}"
   },
   "result": {
     "youWin": "You win! {{score}} points",

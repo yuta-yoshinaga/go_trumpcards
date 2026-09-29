@@ -292,7 +292,13 @@ function RamsPageContent() {
                       type="button"
                       onClick={() => handlePlayCard(idx)}
                       disabled={loading || !isHumanTurn}
-                      aria-label={t('actions.playAria', { card: cardAlt(card) })}
+                      aria-label={
+                        isHumanTurn
+                          ? t(legalRing.has(idx) ? 'actions.playAriaPlayable' : 'actions.playAriaUnplayable', {
+                              card: cardAlt(card),
+                            })
+                          : t('actions.playAria', { card: cardAlt(card) })
+                      }
                       className={`disabled:opacity-50 ${legalRing.has(idx) ? 'rounded-lg ring-2 ring-ds-success' : ''}`}
                     >
                       <CardImage card={card} width={cardWidth} />
