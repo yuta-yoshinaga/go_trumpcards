@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { teendopaanchApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, TeenDoPaanchResponse } from '../types/card';
 import { TeenDoPaanchPage } from './TeenDoPaanchPage';
@@ -155,6 +156,32 @@ describe('TeenDoPaanchPage', () => {
     fireEvent.click(cards[2]);
 
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 2));
+  });
+
+  it('announces only server-legal cards and updates the state after a play', async () => {
+    mockExec.mockResolvedValueOnce(playing({ validPlays: [0, 2] } as Partial<TeenDoPaanchResponse>));
+    mockExec.mockResolvedValueOnce(playing({ validPlays: [1] } as Partial<TeenDoPaanchResponse>));
+    renderWithProviders(<TeenDoPaanchPage />);
+
+    const cards = await screen.findAllByRole('button', { name: /を出す/ });
+    expect(cards[0]).not.toHaveAttribute('aria-disabled', 'true');
+    expect(cards[0]).toHaveAccessibleName(/を出す/);
+    expect(cards[1]).toHaveAttribute('aria-disabled', 'true');
+    expect(cards[1]).toHaveAttribute('aria-describedby', 'td-play-unavailable');
+    expect(cards[2]).not.toHaveAttribute('aria-disabled', 'true');
+
+    mockExec.mockClear();
+    fireEvent.click(cards[1]);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('play', 1);
+
+    fireEvent.click(cards[0]);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', 0));
+    await waitFor(() => {
+      expect(cards[0]).toHaveAttribute('aria-disabled', 'true');
+      expect(cards[1]).not.toHaveAttribute('aria-disabled', 'true');
+      expect(cards[2]).toHaveAttribute('aria-disabled', 'true');
+    });
   });
 
   // 切り札は未宣言と確定の両側を踏む。
