@@ -32,6 +32,9 @@
   "gameOverSummary": "Reached {{count}}/52 cards on the foundations ({{percent}}%)",
   "hintAvailable": "A hint is available",
   "noHint": "No hint available",
+  "sourceMoveAnnouncement": "{{source}} selected. The available destination is an empty slot. Select an empty slot to move.",
+  "sourceMoveNoDestination": "{{source}} selected. There are no empty slots available as a destination.",
+  "wasteMoveAnnouncement": "Waste selected. It can move to an empty slot or a foundation.",
   "tutorial": {
     "foundation": "There are four foundations: two build down by suit from ♠Q, past A to K, and two build up by suit from ♦J, past K to A. Ranks wrap around, and all four foundations reaching 13 cards each (52 cards total) wins the game.",
     "tableau": "Sixteen tableau slots, dealt **one card each** (the other 88 are the stock). Tableau cards can **only be sent to the foundations**, not built on the tableau. Empty slots are refilled **from the stock or waste**.",

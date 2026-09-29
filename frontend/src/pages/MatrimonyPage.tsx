@@ -407,6 +407,18 @@ function MatrimonyPageContent() {
                 </div>
               )}
             </div>
+            <div className="sr-only" data-testid="source-move-live" role="status" aria-live="polite">
+              {selectedSource && (selectedSource.zone === 'stock' || selectedSource.zone === 'waste')
+                ? selectedSource.zone === 'waste'
+                  ? t('wasteMoveAnnouncement')
+                  : t(
+                      state.tableau.some((card) => card === null)
+                        ? 'sourceMoveAnnouncement'
+                        : 'sourceMoveNoDestination',
+                      { source: t(selectedSource.zone) },
+                    )
+                : ''}
+            </div>
             <div className="sr-only" data-testid="auto-complete-status" role="status" aria-live="polite">
               {autoCompleteStatus}
             </div>
