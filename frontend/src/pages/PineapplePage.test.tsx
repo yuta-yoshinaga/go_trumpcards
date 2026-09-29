@@ -7,6 +7,24 @@ import type { PineappleResponse } from '../types/card';
 import { HoldemRebuyPhaseType, PineapplePhase } from '../types/phases';
 import { PineapplePage } from './PineapplePage';
 
+vi.mock('../components/tutorial/TutorialButton', () => ({ TutorialButton: () => null }));
+vi.mock('../providers/TutorialProvider', () => ({
+  TutorialProvider: ({
+    children,
+    config,
+  }: {
+    children: React.ReactNode;
+    config: { steps: { messageKey: string; target: string }[] };
+  }) => (
+    <div
+      data-testid="tutorial-learning-target"
+      data-target={config.steps.find((step) => step.messageKey === 'tutorial.learningMode')?.target}
+    >
+      {children}
+    </div>
+  ),
+}));
+
 vi.mock('../api/gameApi', () => ({
   pineappleApi: { exec: vi.fn() },
   irishPokerApi: { exec: vi.fn() },
@@ -1366,5 +1384,76 @@ describe('PineapplePage', () => {
     renderWithProviders(<PineapplePage />);
     await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
     expect(screen.queryByTestId('addon-controls')).not.toBeInTheDocument();
+  });
+
+  it('shows Irish equity in a collapsible panel without learning mode when values exist', async () => {
+    mockIrishExec.mockResolvedValue({
+      ...preFlopState,
+      equity: { winProbability: 0.42, handOdds: [] },
+      potOdds: 30,
+    });
+    renderWithProviders(<PineapplePage variant="irishpoker" />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.getByText('ベット判断の情報')).toBeInTheDocument();
+    fireEvent.click(screen.getByText('ベット判断の情報'));
+    expect(screen.getByTestId('equity-display')).toBeInTheDocument();
+    expect(screen.getByTestId('equity-display')).toBeVisible();
+    expect(screen.queryByTestId('learning-mode-toggle')).not.toBeInTheDocument();
+    expect(screen.getByTestId('tutorial-learning-target')).toHaveAttribute(
+      'data-target',
+      '[data-tutorial="pn-betting-info"]',
+    );
+  });
+
+  it.each(['pineapple', 'crazypineapple'] as const)(
+    'keeps learning mode and its tutorial target for %s',
+    async (variant) => {
+      const api = variant === 'pineapple' ? mockExec : mockCrazyExec;
+      api.mockResolvedValue(preFlopState);
+      renderWithProviders(<PineapplePage variant={variant} />);
+      await waitFor(() => expect(screen.getByTestId('learning-mode-toggle')).toBeInTheDocument());
+      expect(screen.getByTestId('tutorial-learning-target')).toHaveAttribute(
+        'data-target',
+        '[data-tutorial="pn-learning-mode"]',
+      );
+    },
+  );
+
+  it.each(['pineapple', 'crazypineapple'] as const)(
+    'shows equity in learning mode for %s when values exist',
+    async (variant) => {
+      const api = variant === 'pineapple' ? mockExec : mockCrazyExec;
+      api.mockResolvedValue({
+        ...preFlopState,
+        equity: { winProbability: 0.42, handOdds: [] },
+        potOdds: 30,
+      });
+      renderWithProviders(<PineapplePage variant={variant} />);
+
+      await waitFor(() => expect(screen.getByTestId('learning-mode-toggle')).toBeInTheDocument());
+      expect(screen.queryByTestId('equity-display')).not.toBeInTheDocument();
+      fireEvent.click(screen.getByLabelText('ラーニングモード'));
+      expect(screen.getByTestId('equity-display')).toBeInTheDocument();
+    },
+  );
+
+  it('does not show Irish equity values when they are unavailable', async () => {
+    mockIrishExec.mockResolvedValue(preFlopState);
+    renderWithProviders(<PineapplePage variant="irishpoker" />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.getByText('ベット判断の情報')).toBeInTheDocument();
+    expect(screen.queryByTestId('equity-display')).not.toBeInTheDocument();
+  });
+
+  it('does not show Irish equity when pot odds are unavailable', async () => {
+    mockIrishExec.mockResolvedValue({
+      ...preFlopState,
+      equity: { winProbability: 0.42, handOdds: [] },
+      potOdds: undefined,
+    });
+    renderWithProviders(<PineapplePage variant="irishpoker" />);
+    await waitFor(() => expect(screen.getByTestId('phase-indicator')).toBeInTheDocument());
+    expect(screen.getByText('ベット判断の情報')).toBeInTheDocument();
+    expect(screen.queryByTestId('equity-display')).not.toBeInTheDocument();
   });
 });
