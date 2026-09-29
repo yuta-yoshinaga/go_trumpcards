@@ -154,6 +154,27 @@ describe('SutdaPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('nexthand'));
   });
 
+  it('shows the winner name without an amount when saved shares are missing', async () => {
+    mockExec.mockResolvedValue(
+      makeSutdaState({
+        phase: 'showdown',
+        isShowdown: true,
+        isHumanTurn: false,
+        lastResult: {
+          winners: [0],
+          shares: [],
+          pot: 70,
+          handNames: ['gwang38', 'mangtong', 'kkeut5'],
+          folded: [false, false, false],
+        },
+      }),
+    );
+    renderWithProviders(<SutdaPage />);
+    const result = await screen.findByTestId('sutda-result');
+    expect(result).toHaveTextContent('あなた');
+    expect(result).not.toHaveTextContent('（0）');
+  });
+
   it('shows each split-pot share and gives the odd chip to the first winner', async () => {
     mockExec.mockResolvedValue(
       makeSutdaState({

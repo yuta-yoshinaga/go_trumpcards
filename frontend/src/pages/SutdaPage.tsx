@@ -146,9 +146,11 @@ function SutdaPageContent() {
   const canAct = isBetPhase && state.isHumanTurn;
   const lastResult = state.lastResult;
   const showdownWinners = lastResult?.winners.map((winner, index) => {
+    const amount = lastResult.shares[index];
+    if (amount === undefined) return playerName(winner, winner === 0);
     return t('winnerShare', {
       name: playerName(winner, winner === 0),
-      amount: lastResult.shares[index] ?? 0,
+      amount,
     });
   });
 
