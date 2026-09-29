@@ -310,17 +310,25 @@ describe('DuchessPage', () => {
   // #5557: 活性条件はドメインの `canAutoComplete`。組札の枚数は条件ではない —
   // 種札を置かないので 1 枚でも次を送れることがあり、逆に高く積まれていても
   // 送れる札が無ければ AutoComplete は失敗する。
-  it('enables auto-complete when the server says a card can move, even with one card on a pile', async () => {
+  it('allows auto-complete when the server says a card can move', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
       foundation: [[card('SPADE', 5)], [], [], []],
       canAutoComplete: true,
     });
     renderWithProviders(<DuchessPage />);
-    await waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeEnabled());
+    const btn = await screen.findByTestId('autocomplete-button');
+    expect(btn).toBeEnabled();
+    expect(btn).not.toHaveAttribute('aria-disabled');
+    expect(btn).not.toHaveAccessibleDescription();
+    expect(screen.queryByText('組札を開始ランクより先へ進めると有効になります')).not.toBeInTheDocument();
+
+    mockExec.mockClear();
+    fireEvent.click(btn);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
   });
 
-  it('disables auto-complete when the server says nothing can move, however tall the pile', async () => {
+  it('announces why auto-complete is unavailable and ignores clicks', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
       foundation: [[card('SPADE', 5), card('SPADE', 6), card('SPADE', 7)], [], [], []],
@@ -328,15 +336,24 @@ describe('DuchessPage', () => {
     });
     renderWithProviders(<DuchessPage />);
     const btn = await screen.findByTestId('autocomplete-button');
-    expect(btn).toBeDisabled();
+    expect(btn).toBeEnabled();
+    expect(btn).toHaveAttribute('aria-disabled', 'true');
+    expect(btn).toHaveAccessibleDescription('組札を開始ランクより先へ進めると有効になります');
     expect(btn).toHaveAttribute('title');
+
+    mockExec.mockClear();
+    fireEvent.click(btn);
+    await flushPendingDispatch();
+    expect(mockExec).not.toHaveBeenCalledWith('autocomplete');
   });
 
   // 基準ランク未選択の局面は従来どおり押せない (サーバも false を返す)。
-  it('stays disabled while the base rank is still unchosen', async () => {
+  it('announces auto-complete is unavailable while the base rank is still unchosen', async () => {
     mockExec.mockResolvedValue({ ...playingState, awaitingBaseRank: true, canAutoComplete: false });
     renderWithProviders(<DuchessPage />);
-    await waitFor(() => expect(screen.getByTestId('autocomplete-button')).toBeDisabled());
+    const btn = await screen.findByTestId('autocomplete-button');
+    expect(btn).toBeEnabled();
+    expect(btn).toHaveAttribute('aria-disabled', 'true');
   });
 
   it('shows StalemateEscapeButton when the stalemate flag is set', async () => {
