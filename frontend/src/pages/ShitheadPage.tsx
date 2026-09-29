@@ -202,6 +202,7 @@ function ShitheadPageContent() {
                       <AnimatedCard
                         card={state.discardPile[state.discardPile.length - 1]}
                         width={Math.round(cardWidth * 0.7)}
+                        ariaDescribedBy="sh-discard-count"
                       />
                       {(() => {
                         const topValue = state.discardPile[state.discardPile.length - 1]?.value ?? 0;
@@ -221,6 +222,9 @@ function ShitheadPageContent() {
                       })()}
                     </>
                   )}
+                  <span id="sh-discard-count" data-testid="sh-discard-count">
+                    {t('labels.wasteCount', { count: state.discardPile.length })}
+                  </span>
                 </span>
                 <span>
                   {t('labels.stock')}: {state.stockSize}

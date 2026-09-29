@@ -23,6 +23,8 @@ function inkColor(color?: string): string {
 export interface CardFaceProps {
   card: Card;
   ariaLabel?: string;
+  /** Optional description reference for the rendered card. */
+  ariaDescribedBy?: string;
   width?: number;
   style?: React.CSSProperties;
   className?: string;
@@ -52,6 +54,7 @@ const noCalloutStyle = {
 export function CardFace({
   card,
   ariaLabel,
+  ariaDescribedBy,
   width,
   style,
   className,
@@ -79,6 +82,7 @@ export function CardFace({
     <div
       role="img"
       aria-label={ariaLabel ?? defaultAriaLabel}
+      aria-describedby={ariaDescribedBy}
       className={className}
       draggable={draggable}
       onDragStart={onDragStart}
