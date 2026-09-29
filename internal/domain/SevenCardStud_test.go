@@ -59,6 +59,8 @@ func TestSevenCardStudGetRoundNetChange(t *testing.T) {
 	assert.Equal(t, 45, s.GetRoundNetChange(0))
 	assert.Equal(t, -40, s.GetRoundNetChange(1))
 	assert.Equal(t, -25, s.GetRoundNetChange(2))
+	assert.Equal(t, 0, s.GetRoundNetChange(-1))
+	assert.Equal(t, 0, s.GetRoundNetChange(99))
 }
 
 func TestSevenCardStud_Reset(t *testing.T) {

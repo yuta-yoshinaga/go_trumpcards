@@ -32,17 +32,32 @@ describe('RoundResults', () => {
     expect(visible().getByText(/\+100チップ/)).toBeInTheDocument();
   });
 
-  it('renders signed net changes including zero while keeping gross winnings', () => {
+  it('renders signed net changes from players including zero while keeping gross winnings', () => {
     const results = [
-      { playerIdx: 0, handName: 'Pair', wonAmount: 120, netChange: 120 },
-      { playerIdx: 1, handName: 'High card', wonAmount: 0, netChange: -40 },
-      { playerIdx: 2, handName: 'High card', wonAmount: 0, netChange: 0 },
+      { playerIdx: 0, handName: 'Pair', wonAmount: 120 },
+      { playerIdx: 1, handName: 'High card', wonAmount: 0 },
+      { playerIdx: 2, handName: 'High card', wonAmount: 0 },
     ];
-    render(<RoundResults results={results} players={players} />);
+    render(
+      <RoundResults
+        results={results}
+        players={[
+          { ...players[0], netChange: 120 },
+          { ...players[1], netChange: -40 },
+          { ...players[2], netChange: 0 },
+        ]}
+      />,
+    );
     expect(visible().getByText(/差引 \+120 チップ/)).toBeInTheDocument();
     expect(visible().getByText(/差引 -40 チップ/)).toBeInTheDocument();
     expect(visible().getByText(/差引 ±0 チップ/)).toBeInTheDocument();
     expect(visible().getByText(/\+120チップ/)).toBeInTheDocument();
+  });
+
+  it('does not render a net change when the player has none', () => {
+    const results = [{ playerIdx: 0, handName: 'Pair', wonAmount: 0 }];
+    render(<RoundResults results={results} players={players} />);
+    expect(visible().queryByText(/差引/)).not.toBeInTheDocument();
   });
 
   it('renders CPU player with index', () => {

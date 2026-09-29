@@ -53364,6 +53364,7 @@ components:
         - holeCards
         - doorCards
         - chips
+        - netChange
         - currentBet
         - folded
         - allIn

@@ -436,12 +436,7 @@ export function SevenCardStudPageContent({ gameKey }: { gameKey: StudPageGameKey
             {isMobile ? <CpuActionToast actions={state?.cpuActions} /> : <CpuActionLog actions={state?.cpuActions} />}
 
             {/* Round results */}
-            {isShowdown && (
-              <RoundResults
-                results={state?.roundResults?.map((r) => ({ ...r, netChange: state?.players[r.playerIdx]?.netChange }))}
-                players={state?.players ?? []}
-              />
-            )}
+            {isShowdown && <RoundResults results={state?.roundResults} players={state?.players ?? []} />}
 
             {/* Hi/Lo split breakdown. Without it the pot silently halves and
                 nothing on screen says why. Only rendered for Hi-Lo, which the
