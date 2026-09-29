@@ -1115,6 +1115,11 @@ func TestOldMaid_DrawHistory(t *testing.T) {
 		assert.Equal(t, 0, history[0].DrawPlayerIdx)
 		assert.Equal(t, 1, history[0].DrawFromIdx)
 		assert.Equal(t, 1, history[0].DiscardedPairs)
+		assert.Len(t, history[0].DiscardedCards, 2)
+		assert.ElementsMatch(t, []int{domain.CardDesignSpade, domain.CardDesignClover}, []int{
+			history[0].DiscardedCards[0].GetDesign(),
+			history[0].DiscardedCards[1].GetDesign(),
+		})
 		assert.True(t, history[0].DrawerFinished)
 		assert.True(t, history[0].TargetFinished)
 	})

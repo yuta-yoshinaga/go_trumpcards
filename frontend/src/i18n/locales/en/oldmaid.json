@@ -26,6 +26,8 @@
   "drewCard": "{{from}} drew from {{target}}",
   "drewCardWithLabel": "{{from}} drew from {{target}} ({{card}})",
   "discardedPairs": ". Discarded {{count}} pair(s)",
+  "discardedCardNames": " ({{cards}})",
+  "listSeparator": ", ",
   "yourTurn": "Your turn! Click a card from {{target}} to draw.",
   "removedCard": "Removed Card: {{card}}",
   "history": {

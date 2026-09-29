@@ -32,6 +32,7 @@ import { lgCardAreaConstraint } from '../styles/gameStyles';
 import { gameTheme } from '../styles/gameTheme';
 import type { CpuAction, OldMaidResponse } from '../types/card';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { cardLabel } from '../utils/cardUtils';
 import { OLDMAID_HELP, parseOldmaidCommand } from '../utils/cli/commands/oldmaidCommands';
 import { formatOldmaidState } from '../utils/cli/formatters/oldmaidFormatter';
@@ -341,7 +342,14 @@ function OldMaidPageContent() {
                     const target = findPlayerName(state.players, action.drawFromIdx);
                     let msg = t('drewCard', { from, target });
                     // CPU drawn card is intentionally hidden to preserve game fairness
-                    if (action.discardedPairs > 0) msg += t('discardedPairs', { count: action.discardedPairs });
+                    if (action.discardedPairs > 0) {
+                      msg += t('discardedPairs', { count: action.discardedPairs });
+                      if (action.discardedCards?.length) {
+                        msg += t('discardedCardNames', {
+                          cards: action.discardedCards.map(cardAlt).join(t('listSeparator')),
+                        });
+                      }
+                    }
                     return msg;
                   }),
                 ].join('\n')}
