@@ -16,6 +16,7 @@
   "autoCompleteNotReady": "Available when stock is empty and every card is face up",
   "undo": "Undo",
   "empty": "Empty",
+  "emptyColumnAriaLabel": "Empty tableau column {{col}}",
   "score": "Score",
   "gameClear": "Game Clear! Moves: {{moveCount}} Score: {{score}}",
   "gameOver": "Game Over",
