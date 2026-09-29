@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { actionLogApi, threethirteenApi } from '../api/gameApi';
 import { NETWORK_ERROR_MESSAGE } from '../constants/messages';
@@ -93,6 +93,33 @@ describe('ThreeThirteenPage', () => {
     mockExec.mockResolvedValue(discardPhaseState);
     renderWithProviders(<ThreeThirteenPage />);
     await waitFor(() => expect(screen.getByTestId('threethirteen-deadwood-indicator')).toBeInTheDocument());
+  });
+
+  it('shows every player deadwood in the score table only after the round ends', async () => {
+    mockExec.mockResolvedValue({
+      ...roundEndState,
+      players: [
+        { ...roundEndState.players[0], deadwood: 6 },
+        { ...roundEndState.players[1], deadwood: 17 },
+      ],
+    });
+    renderWithProviders(<ThreeThirteenPage />);
+
+    const table = await screen.findByTestId('threethirteen-score-table');
+    expect(table).toHaveTextContent('デッドウッド');
+    // Read the deadwood column cell by cell: '6' alone would also match other scores.
+    const headers = within(table)
+      .getAllByRole('columnheader')
+      .map((th) => th.textContent);
+    const deadwoodCol = headers.indexOf('デッドウッド');
+    const rows = within(table).getAllByRole('row').slice(1);
+    expect(rows.map((row) => within(row).getAllByRole('cell')[deadwoodCol]?.textContent)).toEqual(['6', '17']);
+
+    cleanup();
+    mockExec.mockResolvedValue(drawPhaseState);
+    renderWithProviders(<ThreeThirteenPage />);
+    const activeTable = await screen.findByTestId('threethirteen-score-table');
+    expect(activeTable).not.toHaveTextContent('デッドウッド');
   });
 
   it('shows predicted post-discard deadwood that changes with card selection', async () => {
