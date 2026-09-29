@@ -38,6 +38,7 @@ func (p *LingerLongerWebPresenter) buildBase(s interfaces.LingerLongerGame) *con
 	resObj.ValidPlays = intSliceOrEmpty(s.GetValidPlayIndices(0))
 	resObj.StockSize = s.GetStockSize()
 	resObj.CurrentTrick = trickCardsToOutput(s.GetCurrentTrick())
+	resObj.LastTrick = trickCardsToOutput(s.GetLastTrick())
 	resObj.CurrentPlayerIdx = s.GetCurrentPlayerIdx()
 	resObj.LeadPlayerIdx = s.GetLeadPlayerIdx()
 	resObj.TrickNumber = s.GetTrickNumber()

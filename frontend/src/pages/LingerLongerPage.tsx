@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { lingerlongerApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -61,6 +61,8 @@ function LingerLongerPageContent() {
     retry,
   } = useGameApi<LingerLongerResponse, Parameters<typeof lingerlongerApi.exec>>(lingerlongerApi.exec);
   const { cardWidth } = useCardDimensions();
+  const previousTrickState = useRef<LingerLongerResponse | null>(null);
+  const [trickAnnouncement, setTrickAnnouncement] = useState('');
   const { hint, hintEnabled, setHintEnabled } = useGameHint('lingerlonger', state);
   const [playerCnt, setPlayerCnt] = useState(4);
 
@@ -79,6 +81,32 @@ function LingerLongerPageContent() {
   useEffect(() => {
     void dispatch('reset');
   }, [dispatch]);
+
+  useEffect(() => {
+    if (!state) return;
+    const previous = previousTrickState.current;
+    previousTrickState.current = state;
+    if (!previous || state.trickNumber < previous.trickNumber) return;
+
+    const trickAdvancedBy = state.trickNumber - previous.trickNumber;
+    const newCards =
+      trickAdvancedBy === 0 ? state.currentTrick.slice(previous.currentTrick.length) : state.currentTrick;
+    const toAnnouncement = (plays: typeof state.currentTrick) =>
+      plays.map(({ playerIdx, card }) => {
+        const player = state.players[playerIdx];
+        const name = player?.isHuman ? t('header.you') : t('header.cpu', { idx: String(player?.id ?? playerIdx) });
+        return t('announcement.cardPlayed', { name, card: cardAlt(card) });
+      });
+    const announcements =
+      trickAdvancedBy === 1
+        ? [
+            ...toAnnouncement(state.lastTrick.slice(previous.currentTrick.length)),
+            t('announcement.trickResolved'),
+            ...toAnnouncement(newCards),
+          ]
+        : toAnnouncement(newCards);
+    if (announcements.length > 0) setTrickAnnouncement(announcements.join(t('listSeparator')));
+  }, [state, t]);
 
   const handleReset = useCallback(() => {
     hideActionLog();
@@ -243,6 +271,7 @@ function LingerLongerPageContent() {
               </div>
             )}
             <LiveAnnouncement message={isEliminated ? t('result.eliminated') : ''} />
+            <LiveAnnouncement message={trickAnnouncement} testId="ll-trick-announcement" />
 
             {human && human.cards.length > 0 && (
               <div className="mt-4" data-tutorial="ll-hand">

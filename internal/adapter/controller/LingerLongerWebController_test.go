@@ -21,6 +21,7 @@ func mustLingerLongerOutputJSON(msg string) string {
 		Players:       []*controller.LingerLongerWebOutputPlayer{},
 		ValidPlays:    []int{},
 		CurrentTrick:  []*controller.WebOutputTrickCard{},
+		LastTrick:     []*controller.WebOutputTrickCard{},
 		LastDrawIdx:   -1,
 		WinnerIdx:     -1,
 		WebOutputBase: controller.WebOutputBase{Message: msg},
@@ -33,7 +34,7 @@ func mustLingerLongerOutputJSON(msg string) string {
 }
 
 func TestLingerLongerWebController_Method(t *testing.T) {
-	mockOutput := `{"players":[],"phase":0,"validPlays":[],"currentTrick":[],"message":""}`
+	mockOutput := `{"players":[],"phase":0,"validPlays":[],"currentTrick":[],"lastTrick":[],"message":""}`
 
 	liMock := new(usecase.MockLingerLongerInteractor)
 	liMock.On("ResetWithConfig", domain.DefaultLingerLongerConfig()).Return(mockOutput)
