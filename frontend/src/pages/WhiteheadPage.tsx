@@ -45,6 +45,11 @@ import { isTableauAllFaceUp } from '../utils/solitaireUtils';
 
 const FOUNDATION_SUITS = ['♠', '♣', '♥', '♦'] as const;
 
+/** Translate known Whitehead hint zones and preserve unknown identifiers. */
+function whiteheadZoneLabel(t: (key: string) => string, zone: string): string {
+  return zone === 'stock' || zone === 'waste' || zone === 'foundation' || zone === 'tableau' ? t(zone) : zone;
+}
+
 /** Whitehead tutorial step definitions. */
 const KL_TUTORIAL_STEPS: TutorialStep[] = [
   {
@@ -581,7 +586,8 @@ function WhiteheadPageContent() {
                         </span>
                       )}
                       <span>
-                        {hint.fromCol >= 0 ? `${t('tableau')} ${hint.fromCol}` : t('waste')} → {hint.toZone}
+                        {whiteheadZoneLabel(t, hint.fromZone)}
+                        {hint.fromCol >= 0 ? ` ${hint.fromCol}` : ''} → {whiteheadZoneLabel(t, hint.toZone)}
                         {hint.toCol >= 0 ? ` ${hint.toCol}` : ''}
                       </span>
                     </div>
