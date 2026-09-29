@@ -556,6 +556,7 @@ function AlaskaPageContent() {
                 {t('gameOverSummary', {
                   count: foundationCount,
                   percent: Math.round((foundationCount / 52) * 100),
+                  moveCount: state.moveCount,
                 })}
               </p>
             )}

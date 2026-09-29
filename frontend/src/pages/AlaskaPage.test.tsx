@@ -160,6 +160,7 @@ describe('AlaskaPage', () => {
   it('shows the foundation progress summary on game over', async () => {
     const gameOverWithFoundation: AlaskaResponse = {
       ...gameOverState,
+      moveCount: 57,
       foundation: [[card('SPADE', 1), card('SPADE', 2)], [card('CLOVER', 1)], [card('HEART', 1)], []],
     };
     mockExec.mockResolvedValue(gameOverWithFoundation); // 4 cards on foundations → 4/52 (8%)
@@ -167,6 +168,7 @@ describe('AlaskaPage', () => {
     const summary = await screen.findByTestId('alaska-gameover-summary');
     expect(summary).toHaveTextContent('4/52');
     expect(summary).toHaveTextContent('8%');
+    expect(summary).toHaveTextContent('57手');
   });
 
   it('does not show the progress summary when not game over', async () => {
