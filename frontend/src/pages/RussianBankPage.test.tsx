@@ -312,7 +312,9 @@ describe('RussianBankPage', () => {
     mockExec.mockResolvedValue(makeState({ canCallStop: true }));
     renderWithProviders(<RussianBankPage />);
 
-    expect(await screen.findByTestId('rb-stop-available')).toBeInTheDocument();
+    expect(await screen.findByTestId('rb-stop-available')).toHaveTextContent(
+      'CPU が強制手を取りこぼしています。ストップするとあなたの stop が 1 増え、両者のリザーブ残数が同じで停滞した場合の勝敗判定に使われます。',
+    );
     expect(screen.getByTestId('stop-button')).toBeInTheDocument();
   });
 

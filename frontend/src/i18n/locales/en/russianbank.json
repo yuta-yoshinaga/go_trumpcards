@@ -45,5 +45,5 @@
     "russianbankToFoundation": "This card can go to a foundation",
     "russianbankToTableau": "This card can move to another column"
   },
-  "stopAvailable": "The CPU missed a forced move — call Stop to penalise it"
+  "stopAvailable": "The CPU missed a forced move. Calling Stop adds 1 to your stop count, which breaks a tie if play stalls with both reserves the same size."
 }
