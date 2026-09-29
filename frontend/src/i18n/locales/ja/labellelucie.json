@@ -20,6 +20,8 @@
   "stuckDeadlock": "これ以上動かせる手がありません。ギブアップしますか？",
   "redealsLeftBadge": "残り{{count}}回",
   "moveCount": "手数: {{count}}",
+  "foundationProgress": "組札: {{count}}/52",
+  "remainingCards": "残り: {{count}}",
   "redeal": "集めて配り直す",
   "giveup": "ギブアップ",
   "hint": "ヒント",

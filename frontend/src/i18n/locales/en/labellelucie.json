@@ -20,6 +20,8 @@
   "stuckDeadlock": "No moves left — give up?",
   "redealsLeftBadge": "{{count}} left",
   "moveCount": "Moves: {{count}}",
+  "foundationProgress": "Foundation: {{count}}/52",
+  "remainingCards": "Remaining: {{count}}",
   "redeal": "Gather & redeal",
   "giveup": "Give up",
   "hint": "Hint",
