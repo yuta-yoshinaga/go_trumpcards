@@ -2,6 +2,7 @@
   "settings": {
     "cpuDifficulty": "CPU難易度",
     "startChips": "開始チップ",
+    "betAmount": "賭け金",
     "difficulty": { "0": "Easy", "1": "Normal", "2": "Hard" }
   },
   "title": "バカラ・バンク",

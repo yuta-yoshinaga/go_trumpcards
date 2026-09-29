@@ -4,13 +4,16 @@ import { useGameApi } from './useGameApi';
 import { useGameConfig } from './useGameConfig';
 
 /** Default Baccarat Banque settings. */
-export const DEFAULT_BACCARAT_BANQUE_CONFIG = { cpuDifficulty: 1, startChips: 1000 };
+export const DEFAULT_BACCARAT_BANQUE_CONFIG = { cpuDifficulty: 1, startChips: 1000, betAmount: 50 };
 
 /** Available CPU difficulty levels for Baccarat Banque. */
 export const BACCARAT_BANQUE_DIFFICULTY_OPTIONS = [0, 1, 2] as const;
 
 /** Available starting chip amounts for Baccarat Banque. */
 export const BACCARAT_BANQUE_START_CHIPS_OPTIONS = [500, 1000, 5000] as const;
+
+/** Available per-tableau bet amounts for Baccarat Banque. */
+export const BACCARAT_BANQUE_BET_AMOUNT_OPTIONS = [10, 50, 100, 500] as const;
 
 /** Manages Baccarat Banque state and settings. */
 export function useBaccaratBanqueGame() {

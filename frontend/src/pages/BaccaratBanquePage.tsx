@@ -15,6 +15,7 @@ import { GameSkeleton } from '../components/skeleton/GameSkeleton';
 import { withTutorial } from '../components/tutorial/withTutorial';
 import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import {
+  BACCARAT_BANQUE_BET_AMOUNT_OPTIONS,
   BACCARAT_BANQUE_DIFFICULTY_OPTIONS,
   BACCARAT_BANQUE_START_CHIPS_OPTIONS,
   useBaccaratBanqueGame,
@@ -285,6 +286,15 @@ function BaccaratBanquePageContent() {
                       options: BACCARAT_BANQUE_START_CHIPS_OPTIONS.map((value) => ({ value, label: String(value) })),
                       onSelect: (value) => handleConfigChange('startChips', value),
                       testId: 'baccaratbanque-startChips',
+                    },
+                    {
+                      type: 'select',
+                      id: 'baccaratbanque-betAmount',
+                      label: t('settings.betAmount'),
+                      value: config.betAmount,
+                      options: BACCARAT_BANQUE_BET_AMOUNT_OPTIONS.map((value) => ({ value, label: String(value) })),
+                      onSelect: (value) => handleConfigChange('betAmount', value),
+                      testId: 'baccaratbanque-betAmount',
                     },
                     hintCheckboxItem(tc, frontendHintEnabled, setFrontendHintEnabled),
                   ],
