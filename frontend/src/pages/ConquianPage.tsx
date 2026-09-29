@@ -298,7 +298,14 @@ function ConquianPageContent() {
                             key={`meld-${p.id}-${mi}`}
                             type="button"
                             disabled={!canLayoff}
-                            aria-label={canLayoff ? t('layoffToMeld', { n: mi + 1 }) : undefined}
+                            aria-label={
+                              canLayoff
+                                ? t('layoffToMeld', {
+                                    n: mi + 1,
+                                    cards: m.cards.map(cardAlt).join(t('listSeparator')),
+                                  })
+                                : undefined
+                            }
                             data-layoff-target={canLayoff ? mi : undefined}
                             onClick={() => canLayoff && handleMeldSelected(mi)}
                             className={[
