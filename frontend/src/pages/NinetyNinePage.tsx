@@ -408,10 +408,13 @@ function NinetyNinePageContent() {
                   active={isRoundEnd || isGameEnd}
                   separator={t('listSeparator')}
                   entries={state.players.map((p) => ({
-                    name: `${playerName(p.id, p.isHuman)}${t('listSeparator')}${t('roundScoreAnnouncementResult', {
-                      bid: p.bid >= 0 ? p.bid : t('bidNone'),
-                      tricks: p.trickCount,
-                    })}`,
+                    name: t('roundScoreAnnouncementName', {
+                      name: playerName(p.id, p.isHuman),
+                      result:
+                        p.bid >= 0
+                          ? t('roundScoreAnnouncementResult', { bid: p.bid, tricks: p.trickCount })
+                          : t('roundScoreAnnouncementResultNoBid', { tricks: p.trickCount }),
+                    }),
                     roundScore: p.roundScore,
                     cumulativeScore: p.cumulativeScore,
                   }))}

@@ -117,12 +117,15 @@ beforeEach(() => {
 
 describe('NinetyNinePage', () => {
   it('announces each player bid, won tricks, round score, and cumulative score at round end', async () => {
-    mockExec.mockResolvedValue(roundEndState);
+    mockExec.mockResolvedValue({
+      ...roundEndState,
+      players: roundEndState.players.map((p, i) => (i === 1 ? { ...p, bid: -1 } : p)),
+    });
     renderWithProviders(<NinetyNinePage />);
 
     await waitFor(() =>
       expect(screen.getByRole('status')).toHaveTextContent(
-        'ラウンド終了。あなた、ビッド 3、獲得 0 トリック: +0 (合計 0)、CPU 1、ビッド 2、獲得 1 トリック: +0 (合計 10)、CPU 2、ビッド 4、獲得 2 トリック: +0 (合計 20)',
+        'ラウンド終了。あなた（ビッド 3、獲得 0 トリック）: +0 (合計 0)、CPU 1（ビッドなし、獲得 1 トリック）: +0 (合計 10)、CPU 2（ビッド 4、獲得 2 トリック）: +0 (合計 20)',
       ),
     );
   });
