@@ -710,7 +710,7 @@ describe('SevensPage', () => {
     renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByAltText('ジョーカー')).toBeInTheDocument());
     const jokerBtn = screen.getByAltText('ジョーカー').closest('button');
-    expect(jokerBtn).toBeDisabled();
+    expect(jokerBtn).toHaveAttribute('aria-disabled', 'true');
   });
 
   it('shows cancel button when joker card is selected for placement', async () => {
@@ -1055,7 +1055,7 @@ describe('SevensPage', () => {
     renderWithProviders(<SevensPage />);
     await waitFor(() => expect(screen.getByAltText('ジョーカー')).toBeInTheDocument());
     const jokerBtn = screen.getByAltText('ジョーカー').closest('button');
-    expect(jokerBtn).toBeDisabled();
+    expect(jokerBtn).toHaveAttribute('aria-disabled', 'true');
   });
 
   it('shows joker played without target info when targetSuit is 0', async () => {

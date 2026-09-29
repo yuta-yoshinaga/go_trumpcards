@@ -80,14 +80,22 @@ describe('SevensHumanArea', () => {
     expect(playableCards.length).toBeGreaterThanOrEqual(1);
   });
 
-  it('non-playable card has no testid and is disabled', () => {
+  it('non-playable card remains focusable, exposes its disabled reason, and cannot be played', () => {
     // heart3 is not adjacent to heart7 placement
     const player = makePlayer({ cards: [heart3] });
     // tablePlaced where heart suit has only 7 placed; 3 is not adjacent
-    render(<SevensHumanArea {...defaultProps} player={player} />);
-    const buttons = screen.getAllByRole('button');
-    expect(buttons[0]).toBeDisabled();
-    expect(buttons[0]).not.toHaveAttribute('data-testid');
+    const onPlay = vi.fn();
+    render(<SevensHumanArea {...defaultProps} player={player} onPlay={onPlay} />);
+    const button = screen.getByRole('button');
+    const disabledReason = screen.getByText('このカードは現在出せません');
+    expect(button).toHaveAttribute('aria-disabled', 'true');
+    expect(button).toHaveAttribute('aria-describedby', disabledReason.id);
+    expect(disabledReason.id).not.toBe('sevens-card-disabled-reason');
+    expect(button).toHaveAttribute('title', disabledReason.textContent);
+    expect(button).not.toHaveAttribute('disabled');
+    expect(button).not.toHaveAttribute('data-testid');
+    fireEvent.click(button);
+    expect(onPlay).not.toHaveBeenCalled();
   });
 
   it('clicking a playable card calls onPlay with card index', () => {
@@ -98,19 +106,21 @@ describe('SevensHumanArea', () => {
     expect(onPlay).toHaveBeenCalledTimes(1);
   });
 
-  it('cards are disabled when not current turn', () => {
+  it('cards remain focusable and are marked disabled when not current turn', () => {
     render(<SevensHumanArea {...defaultProps} isCurrentTurn={false} />);
     const buttons = screen.getAllByRole('button');
     for (const btn of buttons) {
-      expect(btn).toBeDisabled();
+      expect(btn).toHaveAttribute('aria-disabled', 'true');
+      expect(btn).not.toHaveAttribute('disabled');
     }
   });
 
-  it('cards are disabled when loading', () => {
+  it('cards remain focusable and are marked disabled when loading', () => {
     render(<SevensHumanArea {...defaultProps} loading={true} />);
     const buttons = screen.getAllByRole('button');
     for (const btn of buttons) {
-      expect(btn).toBeDisabled();
+      expect(btn).toHaveAttribute('aria-disabled', 'true');
+      expect(btn).not.toHaveAttribute('disabled');
     }
   });
 
@@ -138,12 +148,15 @@ describe('SevensHumanArea', () => {
     expect(wrapper.className).toContain('border-game-status-active');
   });
 
-  it('non-playable card at current turn has reduced opacity', () => {
+  it('uses aria-disabled classes for non-playable card opacity and cursor', () => {
     // heart3 not adjacent to anything
     const player = makePlayer({ cards: [heart3] });
     render(<SevensHumanArea {...defaultProps} player={player} />);
     const btn = screen.getByRole('button');
-    expect(btn).toHaveStyle({ opacity: '0.5' });
+    expect(btn.className).toContain('aria-disabled:opacity-40');
+    expect(btn.className).toContain('aria-disabled:cursor-not-allowed');
+    expect(btn.style.opacity).toBe('');
+    expect(btn.style.cursor).toBe('');
   });
 
   it('handles player with no cards (empty hand)', () => {
