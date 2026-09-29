@@ -295,6 +295,44 @@ function ZwickerPageContent() {
                   ))}
                 </div>
               )}
+
+              {(tableSel.length > 0 || buildSel.length > 0) && (
+                <div data-testid="zwicker-capture-selection" className="mt-3 rounded-lg bg-ds-surface p-3 text-sm">
+                  <div className="text-ds-text-primary font-medium">{t('captureSelection')}</div>
+                  <div className="mt-2 flex flex-wrap justify-center gap-2">
+                    {tableSel.map((index) => {
+                      const card = state.tableCards[index];
+                      if (!card) return null;
+                      return (
+                        <button
+                          key={`selected-table-${index.toString()}`}
+                          type="button"
+                          className="min-h-11 rounded bg-ds-surface-elevated px-3 text-ds-text-primary hover:bg-ds-surface-elevated-hover"
+                          aria-label={t('removeTableSelection', { index })}
+                          onClick={() => toggle(tableSel, setTableSel, index)}
+                        >
+                          {t('selectedTableCard', { index, card: cardAlt(card) })}
+                        </button>
+                      );
+                    })}
+                    {buildSel.map((index) => {
+                      const build = state.builds[index];
+                      if (!build) return null;
+                      return (
+                        <button
+                          key={`selected-build-${index.toString()}`}
+                          type="button"
+                          className="min-h-11 rounded bg-ds-surface-elevated px-3 text-ds-text-primary hover:bg-ds-surface-elevated-hover"
+                          aria-label={t('removeBuildSelection', { index })}
+                          onClick={() => toggle(buildSel, setBuildSel, index)}
+                        >
+                          {t('selectedBuild', { index, value: build.value })}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
 
             {roundOver && state.lastRound && (
