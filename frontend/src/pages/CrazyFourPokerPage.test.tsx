@@ -128,6 +128,27 @@ describe('CrazyFourPokerPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '配る' })).toBeInTheDocument());
   });
 
+  it('賭け入力に応じて必須分と任意分の投入合計を更新する', async () => {
+    mockApi.mockResolvedValue(base);
+    renderWithProviders(<CrazyFourPokerPage />);
+
+    const summary = await screen.findByTestId('c4p-wager-summary');
+    expect(summary).toHaveTextContent('アンティ: 50');
+    expect(summary).toHaveTextContent('必須 Super Bonus: 50');
+    expect(summary).toHaveTextContent('必須分: 100');
+    expect(summary).toHaveTextContent('任意 Queens Up: 0');
+    expect(summary).toHaveTextContent('合計: 100');
+
+    fireEvent.change(screen.getByLabelText('アンティ'), { target: { value: '100' } });
+    fireEvent.change(screen.getByLabelText('Queens Up'), { target: { value: '30' } });
+
+    expect(summary).toHaveTextContent('アンティ: 100');
+    expect(summary).toHaveTextContent('必須 Super Bonus: 100');
+    expect(summary).toHaveTextContent('必須分: 200');
+    expect(summary).toHaveTextContent('任意 Queens Up: 30');
+    expect(summary).toHaveTextContent('合計: 230');
+  });
+
   // **アンティを送ると同額の Super Bonus が付く**ので、送るのはアンティだけ。
   it('配るはアンティと Queens Up を送る', async () => {
     mockApi.mockResolvedValue(base);
