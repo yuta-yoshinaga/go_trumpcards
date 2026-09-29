@@ -288,6 +288,20 @@ describe('CongressPage', () => {
     expect(wasteCard).toHaveAttribute('aria-describedby', 'congress-waste-count');
   });
 
+  it('selects the top waste card as a move source', async () => {
+    mockExec.mockResolvedValue({
+      ...playingState,
+      waste: [card('DIAMOND', 4), card('CLOVER', 7)],
+    });
+    renderWithProviders(<CongressPage />);
+
+    const wasteCard = await screen.findByRole('button', { name: /♣.*7/ });
+    fireEvent.click(wasteCard);
+
+    await waitFor(() => expect(wasteCard).toHaveAttribute('aria-pressed', 'true'));
+    expect(wasteCard).toHaveClass('ring-ds-warning');
+  });
+
   it('disables the stock once it runs out', async () => {
     mockExec.mockResolvedValue({ ...playingState, stockCount: 0 });
     renderWithProviders(<CongressPage />);
