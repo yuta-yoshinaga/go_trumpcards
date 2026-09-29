@@ -13,6 +13,7 @@
   },
   "label": {
     "stock": "ストック",
+    "stockProgressAria": "{{player}}のストック残り {{count}}枚",
     "pileCount": "場に{{count}}枚"
   },
   "settings": {

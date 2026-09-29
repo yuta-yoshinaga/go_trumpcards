@@ -211,6 +211,7 @@ function SlapjackPageContent() {
   const humanWon = isGameEnd && state.winnerIdx === 0;
   const human = state.players[0];
   const cpu = state.players[1];
+  const stockProgress = (stockSize: number) => Math.min(52, Math.max(0, stockSize));
 
   const phaseName = isGameEnd ? t('phase.end') : state.isTopJack ? t('phase.slap') : t('phase.play');
   const lastEvent = state.lastEventKind;
@@ -242,6 +243,22 @@ function SlapjackPageContent() {
               <div className="text-center">
                 <div className="text-xs text-ds-text-muted">
                   {tc('player.cpu', { id: 1 })} — {t('label.stock')}: {cpu.stockSize}
+                </div>
+                <div
+                  className="mx-auto mt-1 h-2 w-32 overflow-hidden rounded-full bg-ds-surface-elevated"
+                  role="progressbar"
+                  aria-label={t('label.stockProgressAria', {
+                    player: tc('player.cpu', { id: 1 }),
+                    count: cpu.stockSize,
+                  })}
+                  aria-valuemin={0}
+                  aria-valuemax={52}
+                  aria-valuenow={stockProgress(cpu.stockSize)}
+                >
+                  <div
+                    className="h-full rounded-full bg-ds-accent"
+                    style={{ width: `${(stockProgress(cpu.stockSize) / 52) * 100}%` }}
+                  />
                 </div>
                 {cpu.stockSize > 0 ? (
                   <AnimatedCardBack width={cardWidth * 0.9} />
@@ -303,6 +320,19 @@ function SlapjackPageContent() {
               <div className="text-center">
                 <div className="text-xs text-ds-text-muted">
                   {tc('player.you')} — {t('label.stock')}: {human.stockSize}
+                </div>
+                <div
+                  className="mx-auto mt-1 h-2 w-32 overflow-hidden rounded-full bg-ds-surface-elevated"
+                  role="progressbar"
+                  aria-label={t('label.stockProgressAria', { player: tc('player.you'), count: human.stockSize })}
+                  aria-valuemin={0}
+                  aria-valuemax={52}
+                  aria-valuenow={stockProgress(human.stockSize)}
+                >
+                  <div
+                    className="h-full rounded-full bg-ds-accent"
+                    style={{ width: `${(stockProgress(human.stockSize) / 52) * 100}%` }}
+                  />
                 </div>
                 {human.stockSize > 0 ? (
                   <AnimatedCardBack width={cardWidth * 0.9} />
