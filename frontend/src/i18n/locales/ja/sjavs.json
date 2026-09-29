@@ -14,6 +14,7 @@
   "bidPrompt": "切札スート長を申告してください（{{min}}枚以上、あなたの最長は{{longest}}枚）",
   "bidMark": "{{n}}枚",
   "trick": "場",
+  "trickCardAriaLabel": "{{player}}: {{card}}",
   "handPoints": "今ハンド: チーム0 {{a}} / チーム1 {{b}}（合計120）",
   "team": "チーム{{n}}",
   "opponentHand": "{{name}}: 手札{{n}}枚",
