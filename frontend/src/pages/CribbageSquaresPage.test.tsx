@@ -99,18 +99,22 @@ describe('CribbageSquaresPage', () => {
       makeState({
         board,
         placedCount: 2,
-        rowPartialDetails: [zero(), { ...zero(), total: 4 }, zero(), zero()],
-        colPartialDetails: [zero(), zero(), { ...zero(), total: 2 }, zero()],
+        rowPartialDetails: [zero(), { ...zero(), fifteens: 2, pairs: 2, total: 4 }, zero(), zero()],
+        colPartialDetails: [zero(), zero(), { ...zero(), pairs: 2, total: 2 }, zero()],
       }),
     );
     fireEvent.click(screen.getByTestId('cell-1-2'));
-    await waitFor(() => expect(live).toHaveTextContent('行2が4点、列3が2点、合計6点'));
+    await waitFor(() =>
+      expect(live).toHaveTextContent(
+        'スターター公開前の途中得点。行2が4点（15が2、ペア2）、列3が2点（ペア2）、合計6点',
+      ),
+    );
 
     // A state refresh such as undo must not repeat a placement announcement.
     mockExec.mockResolvedValue(makeState());
     fireEvent.click(screen.getByRole('button', { name: '元に戻す' }));
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('undo'));
-    expect(live).toHaveTextContent('行2が4点、列3が2点、合計6点');
+    expect(live).toHaveTextContent('スターター公開前の途中得点。行2が4点（15が2、ペア2）、列3が2点（ペア2）、合計6点');
   });
 
   it('does not announce non-placement commands or placements missing from the returned board', async () => {
@@ -139,6 +143,8 @@ describe('CribbageSquaresPage', () => {
         phase: 1,
         rowScores: [0, 12, 0, 0],
         colScores: [0, 0, 8, 0],
+        rowDetails: [zero(), { ...zero(), fifteens: 4, pairs: 2, total: 6 }, zero(), zero()],
+        colDetails: [zero(), zero(), { ...zero(), runs: 8, total: 8 }, zero()],
         rowPartialDetails: [zero(), { ...zero(), total: 4 }, zero(), zero()],
         colPartialDetails: [zero(), zero(), { ...zero(), total: 2 }, zero()],
       }),
@@ -146,7 +152,9 @@ describe('CribbageSquaresPage', () => {
 
     fireEvent.click(screen.getByTestId('cell-1-2'));
     await waitFor(() =>
-      expect(screen.getByTestId('cs-placement-announcement')).toHaveTextContent('行2が12点、列3が8点、合計20点'),
+      expect(screen.getByTestId('cs-placement-announcement')).toHaveTextContent(
+        '行2が12点（15が4、ペア2）、列3が8点（ラン8）、合計20点',
+      ),
     );
   });
 

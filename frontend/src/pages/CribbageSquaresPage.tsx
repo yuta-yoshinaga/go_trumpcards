@@ -111,20 +111,22 @@ function CribbageSquaresPageContent() {
     onSuccess: (result, [command, row, col]) => {
       if (command !== 'place' || typeof row !== 'number' || typeof col !== 'number') return;
       if (!result.board[row]?.[col]?.card) return;
-      const rowScore =
-        result.phase === CribbageSquaresPhase.COMPLETE
-          ? result.rowScores[row]
-          : (result.rowPartialDetails[row]?.total ?? 0);
-      const colScore =
-        result.phase === CribbageSquaresPhase.COMPLETE
-          ? result.colScores[col]
-          : (result.colPartialDetails[col]?.total ?? 0);
+      const isComplete = result.phase === CribbageSquaresPhase.COMPLETE;
+      const rowDetail = isComplete ? result.rowDetails?.[row] : result.rowPartialDetails?.[row];
+      const colDetail = isComplete ? result.colDetails?.[col] : result.colPartialDetails?.[col];
+      const breakdownLabel = (key: string, n: number) => t(`part.${key}`, { n });
+      const rowParts = cribbageBreakdownParts(rowDetail, breakdownLabel).join(t('listSeparator')) || t('noScoredParts');
+      const colParts = cribbageBreakdownParts(colDetail, breakdownLabel).join(t('listSeparator')) || t('noScoredParts');
+      const rowScore = isComplete ? result.rowScores[row] : (result.rowPartialDetails[row]?.total ?? 0);
+      const colScore = isComplete ? result.colScores[col] : (result.colPartialDetails[col]?.total ?? 0);
       setPlacementAnnouncement(
-        t('placementAnnouncement', {
+        t(isComplete ? 'placementAnnouncement' : 'placementAnnouncementPartial', {
           rowNo: row + 1,
           rowScore,
+          rowParts,
           colNo: col + 1,
           colScore,
+          colParts,
           total: rowScore + colScore,
         }),
       );
