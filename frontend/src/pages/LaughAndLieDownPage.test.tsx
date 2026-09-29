@@ -73,13 +73,35 @@ describe('LaughAndLieDownPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
-  it('keeps a polite turn status empty on the initial human turn', async () => {
+  it('announces each later human-turn response and clears on game end', async () => {
+    mockExec
+      .mockResolvedValueOnce(makeState())
+      .mockResolvedValueOnce(makeState())
+      .mockResolvedValueOnce(makeState())
+      .mockResolvedValueOnce(makeState({ phase: LaughAndLieDownPhase.GAME_END, gameEndFlag: true }));
     renderWithProviders(<LaughAndLieDownPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
-    const status = screen.getByRole('status');
-    expect(status).toHaveAttribute('aria-live', 'polite');
-    expect(status).toHaveClass('sr-only');
-    expect(status).toBeEmptyDOMElement();
+    const initialStatus = screen.getByRole('status');
+    expect(initialStatus).toHaveAttribute('aria-live', 'polite');
+    expect(initialStatus).toHaveClass('sr-only');
+    expect(initialStatus).toBeEmptyDOMElement();
+
+    const playButton = () => {
+      const button = screen.getAllByRole('button').find((candidate) => candidate.dataset.hintAction === 'play');
+      if (!button) throw new Error('Expected a playable hand card');
+      return button;
+    };
+    fireEvent.click(playButton());
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('あなたの番です'));
+
+    const firstAnnouncement = screen.getByRole('status');
+    fireEvent.click(playButton());
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('あなたの番です'));
+    expect(screen.getByRole('status')).not.toBe(firstAnnouncement);
+
+    fireEvent.click(playButton());
+    await waitFor(() => expect(screen.getByRole('status')).toBeEmptyDOMElement());
+    expect(mockExec).toHaveBeenCalledTimes(4);
   });
 
   it('shows the pot, the dealer and both rules permanently', async () => {

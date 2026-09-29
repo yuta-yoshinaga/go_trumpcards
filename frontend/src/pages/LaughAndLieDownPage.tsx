@@ -49,13 +49,22 @@ function LaughAndLieDownPageContent() {
   const game = useLaughAndLieDownGame();
   const { state, loading, error, retry } = game;
   const isHumanTurn = !!state && state.phase !== LaughAndLieDownPhase.GAME_END && state.currentPlayerIdx === 0;
-  const previousHumanTurn = useRef<boolean | null>(null);
+  const previousState = useRef<LaughAndLieDownResponse | null>(null);
   const [turnAnnouncement, setTurnAnnouncement] = useState('');
+  const [announcementNonce, setAnnouncementNonce] = useState(0);
 
   useEffect(() => {
     if (!state) return;
-    if (previousHumanTurn.current === false && isHumanTurn) setTurnAnnouncement(t('yourTurn'));
-    previousHumanTurn.current = isHumanTurn;
+    if (previousState.current === null) {
+      previousState.current = state;
+      return;
+    }
+    if (previousState.current !== state) {
+      const shouldAnnounce = isHumanTurn && state.phase !== LaughAndLieDownPhase.GAME_END;
+      setTurnAnnouncement(shouldAnnounce ? t('yourTurn') : '');
+      if (shouldAnnounce) setAnnouncementNonce((nonce) => nonce + 1);
+    }
+    previousState.current = state;
   }, [isHumanTurn, state, t]);
 
   // Which hand card is armed for a three-card take. The take size is a real
@@ -114,7 +123,7 @@ function LaughAndLieDownPageContent() {
   };
 
   const reset = () => {
-    previousHumanTurn.current = null;
+    previousState.current = null;
     setTurnAnnouncement('');
     game.handleReset();
   };
@@ -139,7 +148,7 @@ function LaughAndLieDownPageContent() {
         </>
       }
     >
-      <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
+      <div key={announcementNonce} role="status" aria-live="polite" aria-atomic="true" className="sr-only">
         {turnAnnouncement}
       </div>
       <LandscapeBanner message={t('landscapeBanner')} />
