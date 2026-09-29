@@ -19,6 +19,8 @@
   "stockAriaLabel": "Stock, {{count}} cards left",
   "emptyStockAriaLabel": "The stock is empty (there is no redeal)",
   "emptyWasteAriaLabel": "The waste is empty",
+  "wasteCount_one": "{{count}} card",
+  "wasteCount_other": "{{count}} cards",
   "stockRules": "The stock turns one card at a time to the waste, with no redeal. The top waste card can be moved directly.",
   "landscapeBanner": "Landscape mode recommended",
   "hint": "Hint",
