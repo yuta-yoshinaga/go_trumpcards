@@ -19,6 +19,11 @@
   "teamScores": "Team Scores",
   "team": "Team {{n}}",
   "teamYou": "Team {{n}} (You)",
+  "scoreRows": {
+    "cumulative": "Cumulative score",
+    "round": "Round points",
+    "marriage": "Marriage points"
+  },
   "trumpSuit": "Trump: {{suit}}",
   "noTrump": "Trump not set",
   "endgameNotice": "Phase 2: the stock is empty — you must now follow the led suit and trump when you can",
@@ -26,8 +31,6 @@
   "turnUpCard": "Turn-up card",
   "currentTrick": "Current Trick",
   "trickCount": "Tricks: {{count}}",
-  "roundPoints": "Round: {{points}} pts",
-  "marriagePoints": "Marriage: {{points}} pts",
   "marriageButton": "Marriage",
   "marriageBadge": "Marriage available ({{points}} points: King + Queen)",
   "declareMarriage": "Declare King + Queen for bonus points",

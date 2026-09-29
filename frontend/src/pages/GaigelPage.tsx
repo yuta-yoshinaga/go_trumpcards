@@ -261,6 +261,7 @@ function GaigelPageContent() {
           <table className="w-full text-sm text-ds-text-muted">
             <thead>
               <tr>
+                <th scope="col" />
                 <th scope="col" className="text-left">
                   {t('team', { n: 0 })}
                 </th>
@@ -271,19 +272,26 @@ function GaigelPageContent() {
             </thead>
             <tbody>
               <tr>
+                <th scope="row" className="text-left">
+                  {t('scoreRows.cumulative')}
+                </th>
                 <td className="text-ds-accent">{state.teamScores[0]}</td>
                 <td className="text-center">{state.teamScores[1]}</td>
               </tr>
               <tr>
-                <td className="text-xs">{t('roundPoints', { points: state.roundPoints[0] })}</td>
-                <td className="text-center text-xs">{t('roundPoints', { points: state.roundPoints[1] })}</td>
+                <th scope="row" className="text-left text-xs">
+                  {t('scoreRows.round')}
+                </th>
+                <td className="text-xs">{state.roundPoints[0]}</td>
+                <td className="text-center text-xs">{state.roundPoints[1]}</td>
               </tr>
               {(state.roundMarriage[0] > 0 || state.roundMarriage[1] > 0) && (
                 <tr>
-                  <td className="text-xs text-ds-warning">{t('marriagePoints', { points: state.roundMarriage[0] })}</td>
-                  <td className="text-center text-xs text-ds-warning">
-                    {t('marriagePoints', { points: state.roundMarriage[1] })}
-                  </td>
+                  <th scope="row" className="text-left text-xs text-ds-warning">
+                    {t('scoreRows.marriage')}
+                  </th>
+                  <td className="text-xs text-ds-warning">{state.roundMarriage[0]}</td>
+                  <td className="text-center text-xs text-ds-warning">{state.roundMarriage[1]}</td>
                 </tr>
               )}
             </tbody>
