@@ -305,6 +305,11 @@ function KoenigrufenPageContent() {
             </div>
 
             <div className={lgTwoColGrid}>
+              <span className="sr-only" role="status" aria-live="polite" data-testid="koenigrufen-trick-winner-status">
+                {isTrickEnd && state.lastTrickWinner >= 0
+                  ? t('previousTrickWinner', { name: findPlayerName(state.players, state.lastTrickWinner) })
+                  : ''}
+              </span>
               {/* Left: play area */}
               <div>
                 <TrickDisplay
