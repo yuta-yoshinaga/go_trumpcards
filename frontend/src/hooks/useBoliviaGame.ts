@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { boliviaApi } from '../api/gameApi';
 import type { BoliviaConfig } from '../types/card';
 import { useCardSelection } from './useCardSelection';
@@ -31,10 +31,12 @@ export const POINT_LIMIT_OPTIONS = [5000, 7500, 10000, 15000] as const;
 /** Hook that manages Bolivia game state and player actions. */
 export function useBoliviaGame() {
   const { selected: selectedCardIndices, toggle: toggleCard, clear: clearSelection } = useCardSelection();
+  const [meldGroups, setMeldGroups] = useState<number[][]>([]);
   const { config: boliviaConfig, handleConfigChange } = useGameConfig<BoliviaConfig>(DEFAULT_BOLIVIA_CONFIG);
 
   const onSuccess = useCallback(() => {
     clearSelection();
+    setMeldGroups([]);
   }, [clearSelection]);
   const { state, loading, error, exec: rawExec, retry } = useGameApi(boliviaApi.exec, { onSuccess });
 
@@ -54,9 +56,20 @@ export function useBoliviaGame() {
   }, [gameExec, selectedCardIndices]);
 
   const handleMeldSelected = useCallback(() => {
+    const groups = [...meldGroups, ...(selectedCardIndices.length > 0 ? [selectedCardIndices] : [])];
+    if (groups.length === 0 || groups.some((group) => group.length < 3)) return;
+    gameExec('meld', undefined, undefined, undefined, groups);
+  }, [gameExec, meldGroups, selectedCardIndices]);
+
+  const handleAddMeldGroup = useCallback(() => {
     if (selectedCardIndices.length < 3) return;
-    gameExec('meld', undefined, undefined, undefined, [selectedCardIndices]);
-  }, [gameExec, selectedCardIndices]);
+    setMeldGroups((groups) => [...groups, selectedCardIndices]);
+    clearSelection();
+  }, [clearSelection, selectedCardIndices]);
+
+  const handleRemoveMeldGroup = useCallback((groupIndex: number) => {
+    setMeldGroups((groups) => groups.filter((_, index) => index !== groupIndex));
+  }, []);
 
   const handleSkipMeld = useCallback(() => {
     gameExec('skipmeld');
@@ -83,11 +96,14 @@ export function useBoliviaGame() {
     boliviaConfig,
     handleConfigChange,
     selectedCardIndices,
+    meldGroups,
     toggleCard,
     clearSelection,
     handleDrawStock,
     handleDrawDiscard,
     handleMeldSelected,
+    handleAddMeldGroup,
+    handleRemoveMeldGroup,
     handleSkipMeld,
     handleDiscard,
     handleGoOut,
