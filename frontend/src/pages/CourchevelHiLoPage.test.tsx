@@ -1634,6 +1634,29 @@ describe('CourchevelHiLoPage', () => {
       expect(screen.getByTestId('equity-display')).toBeInTheDocument();
     });
 
+    it('shows low share percentage when learning mode is on and lowProbability exists', async () => {
+      mockExec.mockResolvedValue({
+        ...preFlopState,
+        equity: { winProbability: 0.75, lowProbability: 0.42, handOdds: [] },
+        potOdds: 33.3,
+      });
+      renderWithProviders(<CourchevelHiLoPage />);
+      await waitFor(() => expect(screen.getByTestId('learning-mode-toggle')).toBeInTheDocument());
+
+      fireEvent.click(screen.getByLabelText('ラーニングモード'));
+      expect(screen.getByTestId('low-probability')).toHaveTextContent('42%');
+    });
+
+    it('does not show low share when lowProbability is absent', async () => {
+      mockExec.mockResolvedValue(stateWithEquity);
+      renderWithProviders(<CourchevelHiLoPage />);
+      await waitFor(() => expect(screen.getByTestId('learning-mode-toggle')).toBeInTheDocument());
+
+      fireEvent.click(screen.getByLabelText('ラーニングモード'));
+      expect(screen.getByTestId('equity-display')).toBeInTheDocument();
+      expect(screen.queryByTestId('low-probability')).not.toBeInTheDocument();
+    });
+
     it('hides equity display when learning mode is toggled off', async () => {
       mockExec.mockResolvedValue(stateWithEquity);
       renderWithProviders(<CourchevelHiLoPage />);
