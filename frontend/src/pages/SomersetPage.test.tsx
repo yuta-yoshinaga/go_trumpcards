@@ -85,7 +85,7 @@ describe('SomersetPage', () => {
 
   it('keeps move targets focusable and explains that a source must be selected', async () => {
     renderWithProviders(<SomersetPage />);
-    const target = await screen.findByRole('button', { name: '空のタブロー列 3' });
+    const target = await screen.findByRole('button', { name: '空のタブロー列 2' });
     expect(target).not.toBeDisabled();
     expect(target).toHaveAttribute('aria-disabled', 'true');
     const hintId = target.getAttribute('aria-describedby');
@@ -145,12 +145,12 @@ describe('SomersetPage', () => {
   it('gives each empty tableau column a distinct column-numbered aria-label', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<SomersetPage />);
-    // Columns 3 and 8 (1-based) are empty and each reads distinctly, unlike the
+    // Columns 2 and 7 (zero-based) are empty and each reads distinctly, unlike the
     // previous shared "empty" text.
-    await waitFor(() => expect(screen.getByRole('button', { name: '空のタブロー列 3' })).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: '空のタブロー列 8' })).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole('button', { name: '空のタブロー列 2' })).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: '空のタブロー列 7' })).toBeInTheDocument();
     // The two filled columns (1, 2) are not rendered as empty-column buttons.
-    expect(screen.queryByRole('button', { name: '空のタブロー列 1' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '空のタブロー列 0' })).not.toBeInTheDocument();
   });
 
   it('includes zero-based tableau column and card position in each card accessible name', async () => {
@@ -159,7 +159,7 @@ describe('SomersetPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '♠ K、列0・0枚目' })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: '♠ 5、列0・1枚目' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '♥ 6、列1・0枚目' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '空のタブロー列 3' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '空のタブロー列 2' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '♠ 組札 1枚' })).toBeInTheDocument();
   });
 
