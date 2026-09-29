@@ -33,6 +33,7 @@
   "bidProgress.nilFail": "ニル失敗",
   "bagWarning": "バッグ {{bags}}/{{threshold}} 注意",
   "currentTrick": "現在のトリック",
+  "trickWinnerBadge": "勝ち",
   "scores": "スコア",
   "scoresPlayer": "プレイヤー",
   "scoresBid": "ビッド",

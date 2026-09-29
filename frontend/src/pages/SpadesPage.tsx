@@ -345,6 +345,12 @@ function SpadesPageContent() {
                   players={state.players}
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
+                  winnerIdx={
+                    state.phase === SpadesPhase.TRICK_END || state.phase === SpadesPhase.ROUND_END
+                      ? state.leadPlayerIdx
+                      : undefined
+                  }
+                  winnerLabel={t('trickWinnerBadge')}
                   dataTutorial="sp-trick-display"
                 />
               </div>
