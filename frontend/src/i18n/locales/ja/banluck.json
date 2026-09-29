@@ -3,6 +3,7 @@
   "betGuide": "賭け金を決めてください",
   "bankerBetNotice": "※ あなたは親です。親は賭けません（0 のままで配れます）",
   "playGuide": "引くか止めるかを選んでください",
+  "yourTurn": "あなたの番です",
   "mustHitNotice": "親は{{min}}未満では止まれません。引いてください",
   "label.chips": "チップ",
   "label.bet": "賭け",
