@@ -206,6 +206,22 @@ function CanastaPageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+        data-testid="ca-meld-points-announcement"
+      >
+        {isMeldPhase && isHumanTurn
+          ? meldPointInfo.needInitial
+            ? t('meldPoints.initial', {
+                min: meldPointInfo.minMeld,
+                points: meldPointInfo.selectedPoints,
+              })
+            : t('meldPoints.selected', { points: meldPointInfo.selectedPoints })
+          : ''}
+      </div>
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (

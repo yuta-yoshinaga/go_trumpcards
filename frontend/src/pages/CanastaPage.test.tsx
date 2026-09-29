@@ -181,6 +181,22 @@ describe('CanastaPage', () => {
     expect(info).not.toHaveTextContent('初回メルド最低点');
   });
 
+  it('announces selected meld points in a permanent live region', async () => {
+    mockExec.mockResolvedValue(meldPhaseState);
+    renderWithProviders(<CanastaPage />);
+
+    const announcement = await screen.findByTestId('ca-meld-points-announcement');
+    expect(announcement).toHaveAttribute('role', 'status');
+    expect(announcement).toHaveAttribute('aria-live', 'polite');
+    expect(announcement).toHaveTextContent('初回メルド最低点: 50 / 選択合計: 0');
+    expect(announcement).toHaveClass('sr-only');
+
+    fireEvent.click(screen.getByRole('button', { name: '♠ 7' }));
+    await waitFor(() => expect(announcement).toHaveTextContent('初回メルド最低点: 50 / 選択合計: 5'));
+    fireEvent.click(screen.getByRole('button', { name: '♠ 7' }));
+    await waitFor(() => expect(announcement).toHaveTextContent('初回メルド最低点: 50 / 選択合計: 0'));
+  });
+
   // **最低点に届かない選択でボタンが押せてしまい、サーバのバリデーションで
   // 弾かれて初めて気づく形だった** (#6165)。警告テキストは既に出ていた。
   it('blocks the meld while the selection is under the initial minimum', async () => {
