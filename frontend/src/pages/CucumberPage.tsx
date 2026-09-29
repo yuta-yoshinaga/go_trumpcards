@@ -65,8 +65,10 @@ function CucumberPageContent() {
   const { hint, hintEnabled, setHintEnabled } = useGameHint('cucumber', state);
   const [playerCnt, setPlayerCnt] = useState(4);
   const [targetScore, setTargetScore] = useState(30);
-  const previousTurnRef = useRef<number | null | undefined>(undefined);
+  const previousStateRef = useRef<CucumberResponse | null>(null);
+  const resetPendingRef = useRef(false);
   const [turnAnnouncement, setTurnAnnouncement] = useState('');
+  const [turnAnnouncementNonce, setTurnAnnouncementNonce] = useState(0);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('cucumber');
   const cliConfig: CliGameConfig<CucumberResponse, Parameters<typeof cucumberApi.exec>> = useMemo(
@@ -84,26 +86,30 @@ function CucumberPageContent() {
     void dispatch('reset');
   }, [dispatch]);
 
-  const activeTurnIdx = state?.phase === CucumberPhase.PLAY && !state.gameEndFlag ? state.currentPlayerIdx : null;
   useEffect(() => {
-    if (activeTurnIdx === null) {
-      previousTurnRef.current = null;
+    if (!state || previousStateRef.current === state) return;
+
+    const previousState = previousStateRef.current;
+    previousStateRef.current = state;
+    if (previousState === null || resetPendingRef.current) {
+      resetPendingRef.current = false;
       setTurnAnnouncement('');
       return;
     }
-    if (
-      previousTurnRef.current !== undefined &&
-      previousTurnRef.current !== null &&
-      previousTurnRef.current !== activeTurnIdx
-    ) {
-      const name = activeTurnIdx === 0 ? t('header.you') : t('header.cpu', { idx: String(activeTurnIdx) });
-      setTurnAnnouncement(t('status.turnChanged', { name }));
+
+    const humanTurn =
+      state.phase === CucumberPhase.PLAY && !state.gameEndFlag && state.players[state.currentPlayerIdx].isHuman;
+    if (humanTurn) {
+      setTurnAnnouncement(t('status.yourTurn'));
+      setTurnAnnouncementNonce((nonce) => nonce + 1);
+    } else {
+      setTurnAnnouncement('');
     }
-    previousTurnRef.current = activeTurnIdx;
-  }, [activeTurnIdx, t]);
+  }, [state, t]);
 
   const handleReset = useCallback(() => {
     hideActionLog();
+    resetPendingRef.current = true;
     void dispatch('reset', undefined, { playerCnt, targetScore });
   }, [dispatch, hideActionLog, playerCnt, targetScore]);
 
@@ -123,7 +129,12 @@ function CucumberPageContent() {
   }, [dispatch]);
 
   if (!state) {
-    return <GameSkeleton gameKey="cucumber" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 7 }} />;
+    return (
+      <>
+        <LiveAnnouncement key={turnAnnouncementNonce} message={turnAnnouncement} testId="cu-turn-announcement" />
+        <GameSkeleton gameKey="cucumber" layout={{ kind: 'trick-taking', trickArea: true, footerHandSize: 7 }} />
+      </>
+    );
   }
 
   const human = state.players.find((p) => p.isHuman);
@@ -164,6 +175,7 @@ function CucumberPageContent() {
       cancelReset={cancelReset}
       headerExtra={<CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />}
     >
+      <LiveAnnouncement key={turnAnnouncementNonce} message={turnAnnouncement} testId="cu-turn-announcement" />
       {cliEnabled ? (
         <CliTerminal logEntries={logEntries} onCommand={handleCommand} disabled={loading} />
       ) : (
@@ -205,7 +217,6 @@ function CucumberPageContent() {
             )}
 
             <LiveAnnouncement message={state.trickNumber + 1 === state.totalTricks ? t('status.finalTrick') : ''} />
-            <LiveAnnouncement message={turnAnnouncement} testId="cu-turn-announcement" />
 
             {/* **失点がそのまま順位。** 少ないほうが良い。 */}
             <div className="flex flex-wrap justify-center gap-2 mb-4" data-tutorial="cu-seats">

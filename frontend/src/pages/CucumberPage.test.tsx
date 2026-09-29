@@ -65,45 +65,31 @@ describe('CucumberPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
   });
 
-  it('announces a changed turn once, without announcing the initial turn', async () => {
-    mockExec.mockResolvedValueOnce(makeState()).mockResolvedValueOnce(makeState({ currentPlayerIdx: 2 }));
+  it('announces every human turn response and clears the announcement at game end', async () => {
+    mockExec
+      .mockResolvedValueOnce(makeState())
+      .mockResolvedValueOnce(makeState())
+      .mockResolvedValueOnce(makeState({ trickNumber: 3 }))
+      .mockResolvedValueOnce(makeState({ phase: 2, gameEndFlag: true }));
     renderWithProviders(<CucumberPage />);
 
     const announcement = await screen.findByTestId('cu-turn-announcement');
     expect(announcement).toBeEmptyDOMElement();
 
     fireEvent.click((await screen.findAllByRole('button', { name: /を出す/ }))[1]);
-    await waitFor(() => expect(announcement).toHaveTextContent('CPU2の番です。'));
+    await waitFor(() => expect(screen.getByTestId('cu-turn-announcement')).toHaveTextContent('あなたの番です'));
 
-    expect(await screen.findByTestId('cu-seat-2')).toHaveAttribute('data-current-turn', 'true');
-    expect(announcement).toHaveTextContent('CPU2の番です。');
-  });
-
-  it('clears the turn announcement when the phase leaves play', async () => {
-    mockExec.mockResolvedValueOnce(makeState()).mockResolvedValueOnce(makeState({ currentPlayerIdx: 2 }));
-    renderWithProviders(<CucumberPage />);
-
-    const announcement = await screen.findByTestId('cu-turn-announcement');
+    const previousAnnouncement = screen.getByTestId('cu-turn-announcement');
     fireEvent.click((await screen.findAllByRole('button', { name: /を出す/ }))[1]);
-    await waitFor(() => expect(announcement).toHaveTextContent('CPU2の番です。'));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledTimes(3));
+    await waitFor(() => expect(screen.getByTestId('cu-turn-announcement')).toHaveTextContent('あなたの番です'));
+    const repeatedAnnouncement = screen.getByTestId('cu-turn-announcement');
+    expect(repeatedAnnouncement).not.toBe(previousAnnouncement);
 
-    mockExec.mockResolvedValueOnce(makeState({ phase: 2, currentPlayerIdx: 2, gameEndFlag: true }));
     fireEvent.click(screen.getByRole('button', { name: '投了' }));
     await waitFor(() => expect(mockExec).toHaveBeenLastCalledWith('giveup'));
-    await waitFor(() => expect(announcement).toBeEmptyDOMElement());
-  });
-
-  it('keeps the turn announcement alongside the final-trick announcement', async () => {
-    mockExec
-      .mockResolvedValueOnce(makeState())
-      .mockResolvedValueOnce(
-        makeState({ currentPlayerIdx: 2, trickNumber: 6, lastTrickWinnerIdx: 1, lastPenalty: 13 }),
-      );
-    renderWithProviders(<CucumberPage />);
-
-    fireEvent.click((await screen.findAllByRole('button', { name: /を出す/ }))[1]);
-    await waitFor(() => expect(screen.getByTestId('cu-turn-announcement')).toHaveTextContent('CPU2の番です。'));
-    expect(screen.getByTestId('cu-final-trick')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId('cu-turn-announcement')).toBeEmptyDOMElement());
+    expect(mockExec).toHaveBeenCalledTimes(4);
   });
 
   // **スート無関係・失点は最終トリックだけ、が規則そのもの。**
