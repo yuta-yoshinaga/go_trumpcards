@@ -21,6 +21,31 @@ const baseProps = {
 };
 
 describe('PlayerHandSection (desktop)', () => {
+  it('appends the accessible label only to trump cards', () => {
+    const cards: Card[] = [
+      { design: 'SPADE', value: 1 },
+      { design: 'HEART', value: 2 },
+    ];
+    render(
+      <PlayerHandSection
+        {...baseProps}
+        humanPlayer={{ cards }}
+        isMobile={false}
+        trumpIndices={[0]}
+        trumpAccessibleLabel="切り札"
+      />,
+    );
+    const buttons = screen.getAllByRole('button');
+    expect(buttons[0]).toHaveAccessibleName(/ \(切り札\)$/);
+    expect(buttons[1]).not.toHaveAccessibleName(/切り札/);
+  });
+
+  it('does not append a suffix to trump cards when trumpAccessibleLabel is omitted', () => {
+    const cards: Card[] = [{ design: 'SPADE', value: 1 }];
+    render(<PlayerHandSection {...baseProps} humanPlayer={{ cards }} isMobile={false} trumpIndices={[0]} />);
+    expect(screen.getByRole('button')).not.toHaveAccessibleName(/ \([^)]*\)$/);
+  });
+
   it('renders one button per card', () => {
     render(<PlayerHandSection {...baseProps} isMobile={false} />);
     expect(screen.getAllByRole('button')).toHaveLength(5);
