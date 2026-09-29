@@ -74,6 +74,13 @@ describe('ContinentalRummyPage', () => {
     expect(screen.queryByRole('button', { name: /連番[1-5]/ })).not.toBeInTheDocument();
   });
 
+  it('does not show a zero run marker for an uncovered hand index', async () => {
+    mockExec.mockResolvedValue(makeContinentalRummyState({ goOutIdx: 0, goOutGroups: [] }));
+    renderWithProviders(<ContinentalRummyPage />);
+    await screen.findByTestId('cont-goout');
+    expect(screen.queryByRole('button', { name: /連番0/ })).not.toBeInTheDocument();
+  });
+
   it('shows the stock, the discard top and every seat', async () => {
     renderWithProviders(<ContinentalRummyPage />);
     expect(await screen.findByTestId('cont-stock')).toHaveTextContent('30');

@@ -338,6 +338,7 @@ function ContinentalRummyPageContent() {
                   if (idx === goOutIdx) return { glyph: '×', title: t('discardCard') };
                   // goOutGroups covers every hand index except goOutIdx, so a run always exists here.
                   const run = state.goOutGroups.findIndex((group) => group.includes(idx)) + 1;
+                  if (run === 0) return null;
                   return { glyph: String(run), title: t('runLabel', { n: run }) };
                 }}
                 restrictedTooltip={t('restrictedTooltip')}
