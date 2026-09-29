@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useId, useMemo, useState } from 'react';
 import { type GapsMoveZone, gapsApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { SettingsPanel } from '../components/common/SettingsPanel';
 import { DropZone } from '../components/DropZone';
 import { ErrorAlert } from '../components/ErrorAlert';
@@ -117,6 +118,13 @@ function GapsPageContent() {
     void run('redeal');
   }, [run]);
 
+  const [redealConfirmOpen, setRedealConfirmOpen] = useState(false);
+  const requestRedeal = useCallback(() => setRedealConfirmOpen(true), []);
+  const confirmRedeal = useCallback(() => {
+    setRedealConfirmOpen(false);
+    handleRedeal();
+  }, [handleRedeal]);
+
   const handleGiveUp = useCallback(() => {
     void run('giveup');
   }, [run]);
@@ -174,15 +182,15 @@ function GapsPageContent() {
   const actionBindings = useMemo(
     () => [
       { key: 'z', action: handleUndo, enabled: canUndo },
-      { key: 'd', action: handleRedeal, enabled: canRedeal },
+      { key: 'd', action: requestRedeal, enabled: canRedeal },
       { key: 'h', action: handleHint },
       { key: 'g', action: confirmGiveUpAction },
     ],
-    [handleUndo, handleRedeal, handleHint, confirmGiveUpAction, canUndo, canRedeal],
+    [handleUndo, requestRedeal, handleHint, confirmGiveUpAction, canUndo, canRedeal],
   );
   useActionKeyboardNav({
     bindings: actionBindings,
-    enabled: !!isPlaying && !loading,
+    enabled: !!isPlaying && !loading && !redealConfirmOpen,
   });
 
   if (!state) return <GameSkeleton gameKey="gaps" layout={{ kind: 'tiered-rows', rows: [13, 13, 13, 13] }} />;
@@ -217,6 +225,15 @@ function GapsPageContent() {
         </>
       }
     >
+      <ConfirmDialog
+        open={redealConfirmOpen}
+        title={t('redealConfirmTitle')}
+        message={t('redealConfirmMessage', { remaining: state.redealsRemaining })}
+        confirmLabel={tc('button.confirm')}
+        cancelLabel={tc('button.cancel')}
+        onConfirm={confirmRedeal}
+        onCancel={() => setRedealConfirmOpen(false)}
+      />
       <LandscapeBanner message={t('landscapeBanner')} />
 
       <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
@@ -400,7 +417,7 @@ function GapsPageContent() {
               <button
                 type="button"
                 className={btnPrimary}
-                onClick={handleRedeal}
+                onClick={requestRedeal}
                 disabled={loading || state.redealsRemaining <= 0}
                 data-testid="gaps-redeal-button"
                 aria-keyshortcuts="d"
