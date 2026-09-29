@@ -103,7 +103,9 @@ describe('NapoleonsSquarePage', () => {
 
     expect(await screen.findByRole('button', { name: '空の組札0 (♠)、次に必要なランク A' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '♣ 組札1 2枚、次に必要なランク 3' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '♥ 組札2 1枚' })).toBeInTheDocument();
+    const completeFoundation = screen.getByRole('button', { name: '♥ 組札2 1枚' });
+    expect(completeFoundation).toBeInTheDocument();
+    expect(completeFoundation).not.toHaveAccessibleName(/次に必要なランク/);
   });
 
   it('keeps an empty tableau target focusable and explains that a source is needed', async () => {
