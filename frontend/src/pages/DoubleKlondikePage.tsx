@@ -270,6 +270,14 @@ function DoubleKlondikePageContent() {
       cancelGiveUp={cancelGiveUp}
     >
       <div className="flex-1 overflow-y-auto pt-3 px-2 lg:px-6">
+        <div role="status" aria-live="polite" className="sr-only">
+          {state.isStalemate ? t('stalemateGuidance') : ''}
+        </div>
+        {state.isStalemate && (
+          <div className="mb-3 rounded border border-ds-border bg-ds-surface p-3 text-ds-text-primary">
+            {t('stalemateGuidance')}
+          </div>
+        )}
         <div className="text-ds-text-muted text-xs mb-1">
           {t('stockCount', { count: state.stockCount })} · {t('moveCount', { count: state.moveCount })} ·{' '}
           <span data-testid="dk-progress">
