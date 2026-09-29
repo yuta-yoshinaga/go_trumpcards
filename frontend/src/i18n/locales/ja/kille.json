@@ -25,6 +25,9 @@
   "reenterExhausted": "買い戻しは3回までです。",
   "nextRound": "次のラウンドへ",
   "showdownTitle": "公開",
+  "listSeparator": "、",
+  "showdownSummary": "このショーダウンで {{names}} が脱落しました。",
+  "gameWinner": "{{name}} の勝ちです。",
   "loserLine": "{{name}} が脱落しました（{{reason}}）",
   "eventsTitle": "このラウンドの交換",
   "event": {
