@@ -52,6 +52,7 @@
   },
   "roundDetail": {
     "title": "ラウンド得点内訳",
+    "lastCapture": "最後の捕獲者: {{player}}",
     "cards": "最多カード",
     "espadas": "最多エスパーダ (♠)",
     "sevens": "最多の7",

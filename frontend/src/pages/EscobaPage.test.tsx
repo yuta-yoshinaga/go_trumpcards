@@ -185,6 +185,7 @@ describe('EscobaPage', () => {
     mockExec.mockResolvedValue(
       makeEscobaState({
         phase: 'roundEnd',
+        lastCaptureIdx: 2,
         isHumanTurn: false,
         lastRoundDetail: {
           cards: [1, 0, 0, 0],
@@ -201,6 +202,7 @@ describe('EscobaPage', () => {
     renderWithProviders(<EscobaPage />);
     await waitFor(() => expect(screen.getByTestId('round-detail')).toBeInTheDocument());
     expect(screen.getByTestId('next-round-button')).toBeInTheDocument();
+    expect(screen.getByTestId('last-capture')).toHaveTextContent('最後の捕獲者: CPU 2');
 
     // **列見出しだけが `P0` の英字リテラルだった。**同じページの他はすべて
     // tc('player.*') を通っていて、日本語 UI でここだけ表記がずれていた (#6458)。
@@ -214,6 +216,28 @@ describe('EscobaPage', () => {
       expect(th).toHaveAttribute('scope', 'col');
       expect(th.textContent).not.toMatch(/^P\d/);
     }
+  });
+
+  it('omits the last capturer when there was no valid capture', async () => {
+    mockExec.mockResolvedValue(makeEscobaState({ phase: 'roundEnd', lastCaptureIdx: -1, isHumanTurn: false }));
+    renderWithProviders(<EscobaPage />);
+    await waitFor(() => expect(screen.getByTestId('next-round-button')).toBeInTheDocument());
+    expect(screen.queryByTestId('last-capture')).not.toBeInTheDocument();
+  });
+
+  it('shows the human as last capturer in Japanese', async () => {
+    mockExec.mockResolvedValue(makeEscobaState({ phase: 'roundEnd', lastCaptureIdx: 0, isHumanTurn: false }));
+    renderWithProviders(<EscobaPage />);
+    await waitFor(() => expect(screen.getByTestId('next-round-button')).toBeInTheDocument());
+    expect(screen.getByTestId('last-capture')).toHaveTextContent('最後の捕獲者: あなた');
+  });
+
+  it('localizes the last capturer in English', async () => {
+    await i18n.changeLanguage('en');
+    mockExec.mockResolvedValue(makeEscobaState({ phase: 'roundEnd', lastCaptureIdx: 0, isHumanTurn: false }));
+    renderWithProviders(<EscobaPage />);
+    await waitFor(() => expect(screen.getByTestId('next-round-button')).toBeInTheDocument());
+    expect(screen.getByTestId('last-capture')).toHaveTextContent('Last capturer: You');
   });
 
   it('next-round button dispatches "n"', async () => {
