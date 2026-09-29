@@ -13,6 +13,7 @@
   "hiddenHand": "非公開 {{count}}枚",
   "yourHand": "あなたの手札",
   "trick": "場",
+  "trickCardLabel": "{{card}}（{{name}}）",
   "tricksWon": "トリック {{n}}",
   "noDummyNote": "【ダミーはありません。】味方の手札も最後まで伏せられます。",
   "ladderTitle": "宣言の序列（かっこ内はレベル1の単価）",
