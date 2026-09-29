@@ -237,6 +237,24 @@ function ChinchonPageContent() {
       />
     );
 
+  const scoreBreakdown = (p: ChinchonResponse['players'][number]): string => {
+    if (state.wonByChinchon) {
+      if (state.winnerIdx === p.id) return t('scoreChinchon');
+      return '—';
+    }
+
+    let role: 'scoreKnocker' | 'scoreAfterLayoff' | 'scoreDeadwood';
+    if (state.knockerIdx === p.id) {
+      role = 'scoreKnocker';
+    } else if (state.knockerIdx >= 0) {
+      role = 'scoreAfterLayoff';
+    } else {
+      role = 'scoreDeadwood';
+    }
+    const breakdown = p.roundDeadwoodCards.map(cardAlt).join(t('listSeparator')) || t('noDeadwood');
+    return t(role, { breakdown, score: p.roundScore });
+  };
+
   const humanPlayer = state.players.find((p) => p.isHuman);
   const isDrawPhase = state.phase === ChinchonPhase.DRAW;
   const isDiscardPhase = state.phase === ChinchonPhase.DISCARD;
@@ -400,19 +418,7 @@ function ChinchonPageContent() {
                           <td className="text-center">{p.roundScore}</td>
                           {isRoundEnd || isGameEnd ? (
                             <td data-testid={`ch-score-breakdown-${p.id}`} className="px-1 text-xs">
-                              {state.wonByChinchon && state.winnerIdx === p.id
-                                ? t('scoreChinchon')
-                                : (() => {
-                                    const role =
-                                      state.knockerIdx === p.id
-                                        ? 'scoreKnocker'
-                                        : state.knockerIdx >= 0
-                                          ? 'scoreAfterLayoff'
-                                          : 'scoreDeadwood';
-                                    const breakdown =
-                                      p.roundDeadwoodCards.map(cardAlt).join(t('listSeparator')) || t('noDeadwood');
-                                    return t(role, { breakdown, score: p.roundScore });
-                                  })()}
+                              {scoreBreakdown(p)}
                             </td>
                           ) : null}
                           <td className="text-center">{p.cumulativeScore}</td>

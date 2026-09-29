@@ -149,6 +149,7 @@ describe('ChinchonPage', () => {
     mockExec.mockResolvedValue({ ...gameEndState, wonByChinchon: true });
     renderWithProviders(<ChinchonPage />);
     expect(await screen.findByText('チンチョン勝利: 0点')).toBeInTheDocument();
+    expect(screen.getByTestId('ch-score-breakdown-1')).toHaveTextContent('—');
   });
 
   it('shows live deadwood indicator during discard phase', async () => {
