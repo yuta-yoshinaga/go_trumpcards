@@ -4,6 +4,7 @@
     "round": "Round",
     "moveCount": "Moves",
     "score": "Score",
+    "listSeparator": ", ",
     "scoreBarAria": "{{player}}: {{score}} of {{target}}",
     "you": "You",
     "cpu": "CPU",
@@ -65,6 +66,9 @@
     "human": "You placed on foundation {{foundation}}",
     "cpu": "CPU placed on foundation {{foundation}}",
     "collision": "Move to foundation {{foundation}} rejected"
+  },
+  "scoreAnnounce": {
+    "cpu": "{{player}} score {{delta}} (total {{score}})"
   },
   "zones": {
     "nertz": "Nertz",

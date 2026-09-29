@@ -366,6 +366,36 @@ describe('NertzPage', () => {
     });
   });
 
+  it('announces CPU score increases and decreases with signed deltas, but not initial scores', async () => {
+    const initial = {
+      ...playingState,
+      players: playingState.players.map((p, i) => ({ ...p, score: i === 0 ? 0 : 8 })),
+    };
+    const increased = {
+      ...initial,
+      players: initial.players.map((p, i) => ({ ...p, score: i === 0 ? 0 : 12 })),
+      foundations: initial.foundations.map((f, i) => (i === 2 ? { ...f, suit: 3, size: 1 } : f)),
+    };
+    const decreased = {
+      ...increased,
+      players: increased.players.map((p, i) => ({ ...p, score: i === 0 ? 0 : 10 })),
+    };
+    mockExec.mockResolvedValueOnce(initial).mockResolvedValueOnce(increased).mockResolvedValue(decreased);
+    renderWithProviders(
+      <MemoryRouter initialEntries={['/nertz']}>
+        <NertzPage />
+      </MemoryRouter>,
+    );
+    await waitFor(() => expect(screen.getByAltText('♥ 7')).toBeInTheDocument());
+    expect(screen.getByTestId('nertz-announce')).toBeEmptyDOMElement();
+    await waitFor(() => expect(screen.getByTestId('nertz-announce').textContent).toMatch(/CPU1.*\+4.*12.*組札3/), {
+      timeout: 2000,
+    });
+    await waitFor(() => expect(screen.getByTestId('nertz-announce').textContent).toMatch(/CPU1.*-2.*10/), {
+      timeout: 3000,
+    });
+  });
+
   it("announces the human's own foundation placement", async () => {
     renderWithProviders(
       <MemoryRouter initialEntries={['/nertz']}>
