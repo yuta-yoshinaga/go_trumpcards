@@ -46,6 +46,7 @@ type PontoonWebOutput struct {
 	// IsHumanBanker が真の局は、人間がベットせず最後に引き止めを決める。
 	IsHumanBanker bool `json:"isHumanBanker"`
 	Chips         int  `json:"chips"`
+	DrawPileCount int  `json:"drawPileCount"`
 	ActiveSeat    int  `json:"activeSeat"`
 	ActiveHand    int  `json:"activeHand"`
 	// NextBanker は次局の親（未定なら -1）。

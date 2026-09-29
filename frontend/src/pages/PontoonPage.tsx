@@ -194,6 +194,10 @@ function PontoonPageContent() {
       ) : (
         <>
           <div className="flex-1 overflow-y-auto pt-3 px-2 sm:px-4 lg:px-8">
+            <div className="text-center mb-2 text-sm text-ds-text-muted">
+              {t('drawPileCount')}: {state.drawPileCount}
+            </div>
+
             <div className="text-center mb-4" data-tutorial="pt-banker">
               <div className="text-game-text-muted text-xs mb-1">{t('bankerHand')}</div>
               {state.bankerHand ? (

@@ -666,6 +666,9 @@ func (p *Pontoon) GetPhase() int { return p.phase }
 // GetChips 人間のチップ
 func (p *Pontoon) GetChips() int { return p.chips.GetChips() }
 
+// GetDrawPileCount returns the number of cards not yet dealt in this round.
+func (p *Pontoon) GetDrawPileCount() int { return p.trumpCards.GetRemainingCount() }
+
 // GetSeats 全席を取得する
 func (p *Pontoon) GetSeats() []*PontoonSeat { return p.seats }
 
