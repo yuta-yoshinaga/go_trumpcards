@@ -31,7 +31,6 @@
   "turnUpCard": "Turn-up card",
   "currentTrick": "Current Trick",
   "trickCount": "Tricks: {{count}}",
-  "marriagePoints": "Marriage: {{points}} pts",
   "marriageButton": "Marriage",
   "marriageBadge": "Marriage available ({{points}} points: King + Queen)",
   "declareMarriage": "Declare King + Queen for bonus points",

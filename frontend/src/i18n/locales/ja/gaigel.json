@@ -31,7 +31,6 @@
   "turnUpCard": "めくり札",
   "currentTrick": "現在のトリック",
   "trickCount": "獲得トリック: {{count}}",
-  "marriagePoints": "マリッジ: {{points}}点",
   "marriageButton": "マリッジ",
   "marriageBadge": "マリッジ可能 ({{points}}点: キング+クイーン)",
   "declareMarriage": "キング+クイーンを宣言してボーナス点を獲得",
