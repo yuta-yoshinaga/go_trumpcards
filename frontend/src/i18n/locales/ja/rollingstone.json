@@ -17,6 +17,9 @@
     "mustPickUp": "フォローできる {{suit}} の札がありません。現在のトリック {{n}} 枚を引き取り、自分の手札に加えてください。"
   },
   "currentTrick": "現在のトリック",
+  "listSeparator": "、",
+  "cardPlayed": "{{name}}: {{card}}",
+  "trickResolved": "トリックが解決しました。",
   "actions": {
     "pickUp": "場札 {{n}} 枚を引き取る",
     "players": "人数",

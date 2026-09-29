@@ -108,6 +108,7 @@ type RollingStone struct {
 	actionLogBase
 
 	currentTrick     []*TrickCard
+	lastTrick        []*TrickCard
 	currentPlayerIdx int
 	leadPlayerIdx    int
 	trickNumber      int
@@ -164,6 +165,7 @@ func (r *RollingStone) Reset() {
 	}
 	r.phase = RollingStonePhasePlay
 	r.currentTrick = nil
+	r.lastTrick = nil
 	r.trickNumber = 0
 	r.finishedCnt = 0
 	r.discarded = 0
@@ -366,6 +368,7 @@ func (r *RollingStone) pickUp(playerIdx int) error {
 	}
 
 	taken := make([]*Card, 0, len(r.currentTrick))
+	r.lastTrick = append([]*TrickCard(nil), r.currentTrick...)
 	for _, tc := range r.currentTrick {
 		taken = append(taken, tc.Card)
 		r.players[playerIdx].AddCard(tc.Card)
@@ -413,6 +416,7 @@ func (r *RollingStone) checkStalemate() bool {
 // resolveTrick はトリックを解決する。**取っても得点にはなりません。**
 func (r *RollingStone) resolveTrick() {
 	winner := r.trickWinner()
+	r.lastTrick = append([]*TrickCard(nil), r.currentTrick...)
 	cards := make([]*Card, 0, len(r.currentTrick))
 	for _, tc := range r.currentTrick {
 		cards = append(cards, tc.Card)
@@ -618,6 +622,9 @@ func (r *RollingStone) GetGameEndFlag() bool { return r.gameEndFlag }
 // GetCurrentTrick は現在のトリックを返す。
 func (r *RollingStone) GetCurrentTrick() []*TrickCard { return r.currentTrick }
 
+// GetLastTrick は直近に解決したトリックを返す。
+func (r *RollingStone) GetLastTrick() []*TrickCard { return r.lastTrick }
+
 // GetCurrentPlayerIdx は現在の手番を返す。
 func (r *RollingStone) GetCurrentPlayerIdx() int { return r.currentPlayerIdx }
 
@@ -663,6 +670,7 @@ type rollingStoneJSON struct {
 	Config           RollingStoneConfig    `json:"cf"`
 	Phase            RollingStonePhase     `json:"ph"`
 	CurrentTrick     []*TrickCard          `json:"ct"`
+	LastTrick        []*TrickCard          `json:"lt"`
 	CurrentPlayerIdx int                   `json:"ci"`
 	LeadPlayerIdx    int                   `json:"li"`
 	TrickNumber      int                   `json:"tn"`
@@ -681,7 +689,7 @@ type rollingStoneJSON struct {
 func (r *RollingStone) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&rollingStoneJSON{
 		TrumpCards: r.trumpCards, Players: r.players, Config: r.config, Phase: r.phase,
-		CurrentTrick: r.currentTrick, CurrentPlayerIdx: r.currentPlayerIdx,
+		CurrentTrick: r.currentTrick, LastTrick: r.lastTrick, CurrentPlayerIdx: r.currentPlayerIdx,
 		LeadPlayerIdx: r.leadPlayerIdx, TrickNumber: r.trickNumber,
 		FinishedCnt: r.finishedCnt, Discarded: r.discarded, GameEndFlag: r.gameEndFlag,
 		WinnerIdx: r.winnerIdx, WinReason: r.winReason,
@@ -760,9 +768,14 @@ func (r *RollingStone) UnmarshalJSON(data []byte) error {
 		return fmt.Errorf("current trick holds %d cards", len(j.CurrentTrick))
 	}
 	// **枚数だけでなく中身も見る (#5310 の再発防止)。**
-	for _, tc := range j.CurrentTrick {
-		if tc == nil || tc.Card == nil || tc.PlayerIdx < 0 || tc.PlayerIdx >= j.Config.PlayerCnt {
-			return errors.New("invalid current trick entry")
+	for _, trick := range []struct {
+		name  string
+		cards []*TrickCard
+	}{{"current", j.CurrentTrick}, {"last", j.LastTrick}} {
+		for _, tc := range trick.cards {
+			if tc == nil || tc.Card == nil || tc.PlayerIdx < 0 || tc.PlayerIdx >= j.Config.PlayerCnt {
+				return fmt.Errorf("invalid %s trick entry", trick.name)
+			}
 		}
 	}
 	if len(j.ActionLog) > rollingStoneMaxSliceLen {
@@ -822,6 +835,7 @@ func (r *RollingStone) UnmarshalJSON(data []byte) error {
 	r.trumpCards = j.TrumpCards
 	r.players, r.config, r.phase = j.Players, j.Config, j.Phase
 	r.currentTrick, r.currentPlayerIdx = j.CurrentTrick, j.CurrentPlayerIdx
+	r.lastTrick = j.LastTrick
 	r.leadPlayerIdx, r.trickNumber = j.LeadPlayerIdx, j.TrickNumber
 	r.finishedCnt, r.discarded, r.gameEndFlag = j.FinishedCnt, j.Discarded, j.GameEndFlag
 	r.winnerIdx, r.lastPickupIdx, r.actionLog = j.WinnerIdx, j.LastPickupIdx, j.ActionLog

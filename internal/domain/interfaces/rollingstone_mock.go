@@ -65,6 +65,13 @@ func (m *MockRollingStoneGame) GetCurrentTrick() []*domain.TrickCard {
 	return nil
 }
 
+func (m *MockRollingStoneGame) GetLastTrick() []*domain.TrickCard {
+	if v := m.Called().Get(0); v != nil {
+		return v.([]*domain.TrickCard)
+	}
+	return nil
+}
+
 func (m *MockRollingStoneGame) GetPlayer(i int) *domain.RollingStonePlayer {
 	args := m.Called(i)
 	if v := args.Get(0); v != nil {

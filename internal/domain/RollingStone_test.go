@@ -514,6 +514,32 @@ func TestRollingStone_JSONRoundTrip(t *testing.T) {
 	}
 }
 
+func TestRollingStone_LastTrickSurvivesSnapshot(t *testing.T) {
+	r := newTestRollingStone(t)
+	r.lastTrick = []*TrickCard{{PlayerIdx: 2, Card: NewCard(CardDesignHeart, 11, false)}}
+	assert.Equal(t, r.lastTrick, r.GetLastTrick())
+
+	data, err := json.Marshal(r)
+	require.NoError(t, err)
+	var restored RollingStone
+	require.NoError(t, json.Unmarshal(data, &restored))
+	assert.Equal(t, r.GetLastTrick(), restored.GetLastTrick())
+}
+
+func TestRollingStone_OldSnapshotWithoutLastTrickRestoresEmpty(t *testing.T) {
+	r := newTestRollingStone(t)
+	data, err := json.Marshal(r)
+	require.NoError(t, err)
+	var snapshot map[string]json.RawMessage
+	require.NoError(t, json.Unmarshal(data, &snapshot))
+	delete(snapshot, "lt")
+	data, err = json.Marshal(snapshot)
+	require.NoError(t, err)
+	var restored RollingStone
+	require.NoError(t, json.Unmarshal(data, &restored))
+	assert.Empty(t, restored.GetLastTrick())
+}
+
 // **壊れたスナップショットは弾く。**
 //
 // このコーデックは 9 PR 連続で「個々のフィールドは範囲内だが組み合わせが
@@ -568,6 +594,12 @@ func TestRollingStone_UnmarshalRejectsBrokenSnapshots(t *testing.T) {
 		}},
 		{"a trick entry with a bad seat", func(m map[string]any) {
 			m["ct"] = []any{map[string]any{"playerIdx": 9, "card": map[string]any{"d": 1, "v": 9, "j": false}}}
+		}},
+		{"a last trick entry with no card", func(m map[string]any) {
+			m["lt"] = []any{nil}
+		}},
+		{"a last trick entry with a bad seat", func(m map[string]any) {
+			m["lt"] = []any{map[string]any{"playerIdx": 9, "card": map[string]any{"d": 1, "v": 9, "j": false}}}
 		}},
 		// **札は人数 × 8 枚しかない（#5314 の形）。**
 		{"a card appears from nowhere", func(m map[string]any) {

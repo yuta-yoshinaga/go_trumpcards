@@ -38,6 +38,7 @@ function makeState(overrides: Partial<RollingStoneResponse> = {}): RollingStoneR
     mustPickUp: false,
     validPlays: [0, 1],
     currentTrick: [],
+    lastTrick: [],
     currentPlayerIdx: 0,
     leadPlayerIdx: 0,
     trickNumber: 2,
@@ -73,6 +74,57 @@ describe('RollingStonePage', () => {
   it('resets on mount', async () => {
     renderWithProviders(<RollingStonePage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  it('announces cards added to the trick without duplicating the visible trick', async () => {
+    mockExec.mockResolvedValueOnce(makeState());
+    mockExec.mockResolvedValueOnce(
+      makeState({
+        currentTrick: [
+          { playerIdx: 0, card: hand[0] },
+          { playerIdx: 1, card: card('HEART', 11) },
+        ],
+        currentPlayerIdx: 2,
+      }),
+    );
+    renderWithProviders(<RollingStonePage />);
+    const playButton = await screen.findByRole('button', { name: '♠ 9 を出す' });
+    fireEvent.click(playButton);
+    expect(await screen.findByTestId('rs-trick-announcement')).toHaveTextContent('あなた: ♠ 9、CPU1: ♥ J');
+    expect(screen.getByTestId('rs-trick-announcement')).toHaveClass('sr-only');
+  });
+
+  it('announces the final card, resolution, and new trick when one response advances a trick', async () => {
+    mockExec.mockResolvedValueOnce(
+      makeState({
+        currentTrick: [
+          { playerIdx: 0, card: hand[0] },
+          { playerIdx: 1, card: card('SPADE', 10) },
+          { playerIdx: 2, card: card('SPADE', 11) },
+        ],
+        trickNumber: 2,
+      }),
+    );
+    mockExec.mockResolvedValueOnce(
+      makeState({
+        currentTrick: [{ playerIdx: 2, card: card('HEART', 9) }],
+        lastTrick: [
+          { playerIdx: 0, card: hand[0] },
+          { playerIdx: 1, card: card('SPADE', 10) },
+          { playerIdx: 2, card: card('SPADE', 11) },
+          { playerIdx: 3, card: card('SPADE', 12) },
+        ],
+        trickNumber: 3,
+        currentPlayerIdx: 0,
+      }),
+    );
+    renderWithProviders(<RollingStonePage />);
+    fireEvent.click(await screen.findByRole('button', { name: '♠ 9 を出す' }));
+    await waitFor(() =>
+      expect(screen.getByTestId('rs-trick-announcement')).toHaveTextContent(
+        'CPU3: ♠ Q、トリックが解決しました。、CPU2: ♥ 9',
+      ),
+    );
   });
 
   // **勝利条件が逆さまなのが規則そのもの。**

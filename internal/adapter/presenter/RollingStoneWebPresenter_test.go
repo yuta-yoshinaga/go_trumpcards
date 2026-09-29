@@ -34,6 +34,7 @@ func TestRollingStoneWebPresenterOutput(t *testing.T) {
 	assert.Equal(t, float64(domain.RollingStonePhasePlay), m["phase"])
 	assert.Equal(t, float64(-1), m["winnerIdx"])
 	assert.Equal(t, float64(-1), m["lastPickupIdx"])
+	assert.Empty(t, m["lastTrick"])
 	assert.Zero(t, m["discarded"])
 	assert.False(t, m["mustPickUp"].(bool), "場が空なら引き取りは起きない")
 	// **デッキ枚数は人数で変わる。** 4 人なら 32 枚。
