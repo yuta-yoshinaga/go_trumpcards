@@ -82,6 +82,9 @@ func (hi *HeartsInteractor) Play(cardIndex int) string {
 	if err != nil {
 		return hi.hp.Output(hi.Game, err)
 	}
+	if hi.Game.GetPhase() == domain.HeartsPhaseTrickEnd {
+		hi.Game.ResolveTrick()
+	}
 	hi.runCpuTurns()
 	return hi.hp.Output(hi.Game, nil)
 }

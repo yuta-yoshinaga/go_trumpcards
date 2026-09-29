@@ -82,6 +82,9 @@ func (pi *PitchInteractor) Play(cardIndex int) string {
 	if err != nil {
 		return pi.pp.Output(pi.Game, err)
 	}
+	if pi.Game.GetPhase() == domain.PitchPhaseTrickEnd {
+		pi.Game.ResolveTrick()
+	}
 	pi.runCpuTurns()
 	return pi.pp.Output(pi.Game, nil)
 }

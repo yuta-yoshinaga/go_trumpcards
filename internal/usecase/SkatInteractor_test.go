@@ -196,6 +196,37 @@ func TestSkatInteractor_PlayAndNextTrickRound(t *testing.T) {
 	})
 }
 
+func TestSkatInteractor_PlayLastCardResolvesTrick(t *testing.T) {
+	g := domain.NewDefaultSkat()
+	g.Reset()
+	for i := 0; i < g.GetPlayerCnt(); i++ {
+		g.GetPlayer(i).Reset()
+	}
+	g.GetPlayer(0).SetIsDeclarer(true)
+	g.SetCurrentTrick([]*domain.TrickCard{
+		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 7, false)},
+		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignSpade, 8, false)},
+	})
+	g.SetCurrentPlayerIdx(0)
+	g.SetPhase(domain.SkatPhasePlay)
+	g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 1, false))
+
+	p := new(presenter.MockSkatPresenter)
+	p.On("Output", mock.Anything, mock.Anything).Return(skatMockOutput)
+	si := usecase.NewSkatInteractor(g, p)
+	si.Play(0)
+
+	assert.Equal(t, domain.SkatPhaseTrickEnd, g.GetPhase())
+	totalTricks := 0
+	totalPoints := 0
+	for i := 0; i < g.GetPlayerCnt(); i++ {
+		totalTricks += g.GetPlayer(i).GetTrickCount()
+		totalPoints += g.GetPlayer(i).GetCardPoints()
+	}
+	assert.Equal(t, 1, totalTricks)
+	assert.Greater(t, totalPoints, 0)
+}
+
 func TestSkatInteractor_HintAndActionLogAndConfig(t *testing.T) {
 	sp, g := newSkatMocks()
 	cfg := domain.DefaultSkatConfig()

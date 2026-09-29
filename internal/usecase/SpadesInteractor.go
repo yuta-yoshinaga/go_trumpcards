@@ -82,6 +82,9 @@ func (si *SpadesInteractor) Play(cardIndex int) string {
 	if err != nil {
 		return si.sp.Output(si.Game, err)
 	}
+	if si.Game.GetPhase() == domain.SpadesPhaseTrickEnd {
+		si.Game.ResolveTrick()
+	}
 	si.runCpuTurns()
 	return si.sp.Output(si.Game, nil)
 }

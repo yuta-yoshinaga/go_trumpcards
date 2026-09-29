@@ -82,6 +82,9 @@ func (ci *CallBreakInteractor) Play(cardIndex int) string {
 	if err != nil {
 		return ci.sp.Output(ci.Game, err)
 	}
+	if ci.Game.GetPhase() == domain.CallBreakPhaseTrickEnd {
+		ci.Game.ResolveTrick()
+	}
 	ci.runCpuTurns()
 	return ci.sp.Output(ci.Game, nil)
 }

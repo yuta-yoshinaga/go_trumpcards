@@ -254,6 +254,32 @@ func TestMightyInteractor_Play(t *testing.T) {
 	})
 }
 
+func TestMightyInteractor_PlayLastCardResolvesTrick(t *testing.T) {
+	g := domain.NewDefaultMighty()
+	g.Reset()
+	for i := 0; i < g.GetPlayerCnt(); i++ {
+		g.GetPlayer(i).Reset()
+	}
+	g.SetCurrentTrick([]*domain.MightyTrickCard{
+		{PlayerIdx: 1, Card: domain.NewCard(domain.CardDesignSpade, 2, false)},
+		{PlayerIdx: 2, Card: domain.NewCard(domain.CardDesignSpade, 3, false)},
+		{PlayerIdx: 3, Card: domain.NewCard(domain.CardDesignSpade, 4, false)},
+		{PlayerIdx: 4, Card: domain.NewCard(domain.CardDesignSpade, 5, false)},
+	})
+	g.SetCurrentPlayerIdx(0)
+	g.SetPhase(domain.MightyPhasePlay)
+	g.SetTrickNumber(1)
+	g.GetPlayer(0).AddCard(domain.NewCard(domain.CardDesignSpade, 13, false))
+
+	_, mp := newMightyMocks()
+	mp.On("Output", mock.Anything, mock.Anything).Return(mightyMockOutput)
+	mi := usecase.NewMightyInteractor(g, mp)
+	mi.Play(0)
+
+	assert.Equal(t, domain.MightyPhaseRoundEnd, g.GetPhase())
+	assert.Equal(t, 1, g.GetPlayer(0).GetTrickCount())
+}
+
 func TestMightyInteractor_PlayJokerLead(t *testing.T) {
 	t.Run("game ended short-circuits", func(t *testing.T) {
 		g, mp := newMightyMocks()

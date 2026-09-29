@@ -77,6 +77,9 @@ func (gi *GongZhuInteractor) Play(cardIndex int) string {
 	if err != nil {
 		return gi.gp.Output(gi.Game, err)
 	}
+	if gi.Game.GetPhase() == domain.GongZhuPhaseTrickEnd {
+		gi.Game.ResolveTrick()
+	}
 	gi.runCpuTurns()
 	return gi.gp.Output(gi.Game, nil)
 }
