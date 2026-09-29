@@ -28,6 +28,7 @@
   "upcomingRanksDetailAria": "Upcoming ranks for foundation {{idx}}: {{sequence}}",
   "wasteRanksTooltip": "Waste {{idx}} (top 3): {{ranks}}",
   "wasteEmptyAria": "Waste {{idx}}: empty",
+  "wasteEmptyStockTargetAria": "Waste {{idx}}: empty. The stock card can be moved here",
   "stockTopAria": "Stock top: {{card}}",
   "foundationCompleteAria": "Complete",
   "gameClear": "Game Clear! Moves: {{moveCount}}",

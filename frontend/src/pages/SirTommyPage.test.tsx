@@ -240,6 +240,15 @@ describe('SirTommyPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', { zone: 'stock' }, { zone: 'waste', idx: 1 }));
   });
 
+  it('announces that an empty waste can receive stock only while stock is selected', async () => {
+    renderWithProviders(<SirTommyPage />);
+    const waste = await screen.findByTestId('calc-waste-button-0');
+
+    expect(waste).toHaveAttribute('aria-label', 'ウェイスト0: 空');
+    fireEvent.click(screen.getByTestId('calc-stock-button'));
+    expect(waste).toHaveAttribute('aria-label', 'ウェイスト0: 空。ストックのカードをここへ移せます');
+  });
+
   it('selecting a waste and clicking a foundation dispatches a waste→foundation move', async () => {
     mockExec.mockResolvedValue({
       ...playingState,
