@@ -24,6 +24,10 @@
   "bidCpu": "CPU {{id}} がビッド中です…",
   "trumpCpu": "CPU {{id}} が切り札を選択中です…",
   "bidPass": "パス",
+  "bidStatus": {
+    "unbid": "未入札",
+    "pass": "パス"
+  },
   "bidStrength": {
     "range": "手札の推定獲得点: {{min}}〜{{max}}点（切り札次第の目安）",
     "best": "最有力の切り札: {{symbol}} {{suit}}（{{points}}点分を保持）",
