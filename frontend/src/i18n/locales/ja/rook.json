@@ -24,6 +24,7 @@
   "passed": "パス",
   "pointsSuffix": "点",
   "currentTrick": "現在のトリック",
+  "trickPlay": "{{name}}が出した{{card}}",
   "trickEmpty": "(まだカードがありません)",
   "listSeparator": "、",
   "bidStatus": {

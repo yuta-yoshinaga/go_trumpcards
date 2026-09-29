@@ -24,6 +24,7 @@
   "passed": "pass",
   "pointsSuffix": " pts",
   "currentTrick": "Current trick",
+  "trickPlay": "{{card}} played by {{name}}",
   "trickEmpty": "(no cards yet)",
   "listSeparator": ", ",
   "bidStatus": {
