@@ -126,11 +126,14 @@ describe('CitadelPage', () => {
     expect(screen.getByRole('button', { name: '空のタブロー列 3' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: '空のタブロー列 0' })).not.toBeInTheDocument();
 
-    await i18n.changeLanguage('en');
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Empty tableau column 2' })).toBeInTheDocument());
-    expect(screen.getByRole('button', { name: 'Empty tableau column 3' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Empty tableau column 0' })).not.toBeInTheDocument();
-    await i18n.changeLanguage('ja');
+    try {
+      await i18n.changeLanguage('en');
+      await waitFor(() => expect(screen.getByRole('button', { name: 'Empty tableau column 2' })).toBeInTheDocument());
+      expect(screen.getByRole('button', { name: 'Empty tableau column 3' })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Empty tableau column 0' })).not.toBeInTheDocument();
+    } finally {
+      await i18n.changeLanguage('ja');
+    }
   });
 
   it('renders giveup button when playing', async () => {
