@@ -290,7 +290,7 @@ describe('EasthavenPage', () => {
     renderWithProviders(<EasthavenPage />);
     const live = await screen.findByTestId('eh-move-live');
     expect(live).toHaveAttribute('aria-live', 'polite');
-    expect(live).toHaveTextContent('');
+    expect(live).toBeEmptyDOMElement();
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
     mockExec.mockClear();
     screen.getByRole('button', { name: '♠ K' }).click();
@@ -310,7 +310,7 @@ describe('EasthavenPage', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: '♠ K' }).className).toContain('ring-ds-warning'));
     screen.getByRole('button', { name: '♥ 8' }).click();
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', expect.anything(), expect.anything()));
-    expect(live).toHaveTextContent('');
+    expect(live).toBeEmptyDOMElement();
   });
 
   it('toggles the empty-column aria-label when a source is selected', async () => {
