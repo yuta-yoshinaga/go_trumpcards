@@ -276,6 +276,28 @@ describe('PenguinPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('autocomplete'));
   });
 
+  it('announces while auto-complete is running and clears the announcement afterward', async () => {
+    renderWithProviders(<PenguinPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'オートコンプリート' })).toBeInTheDocument());
+
+    const region = screen.getByTestId('pg-auto-complete-status');
+    expect(region).toHaveAttribute('role', 'status');
+    expect(region).toHaveAttribute('aria-live', 'polite');
+    expect(region).toBeEmptyDOMElement();
+
+    let resolveAutoComplete!: (state: PenguinResponse) => void;
+    mockExec.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolveAutoComplete = resolve;
+      }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'オートコンプリート' }));
+
+    expect(await screen.findByText('自動完了を実行中')).toBeInTheDocument();
+    resolveAutoComplete(playingState);
+    await waitFor(() => expect(region).toBeEmptyDOMElement());
+  });
+
   it('handleGiveUp called on giveup button click via confirm dialog', async () => {
     renderWithProviders(<PenguinPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'ギブアップ' })).toBeInTheDocument());

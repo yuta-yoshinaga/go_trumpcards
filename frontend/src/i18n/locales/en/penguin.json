@@ -10,6 +10,7 @@
   "giveup": "Give Up",
   "hint": "Hint",
   "autoComplete": "Auto Complete",
+  "autoCompleteInProgress": "Auto-complete in progress",
   "undo": "Undo",
   "moveCount": "Moves",
   "baseRank": "Base Rank",
