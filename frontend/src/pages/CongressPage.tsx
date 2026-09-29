@@ -393,19 +393,25 @@ function CongressPageContent() {
                 <div className="text-center">
                   <div className="text-game-text-muted text-xs mb-1">{t('waste')}</div>
                   {wasteTop ? (
-                    <button
-                      type="button"
-                      onClick={() => game.handleSelectSource(wasteZone)}
-                      disabled={!isPlaying || loading}
-                      aria-label={cardAlt(wasteTop)}
-                      aria-pressed={isSourceSelected('waste', undefined)}
-                      draggable={isPlaying && !loading}
-                      onDragStart={dnd.handleDragStart(wasteZone)}
-                      onDragEnd={dnd.handleDragEnd}
-                      className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waste', undefined) ? 'ring-2 ring-ds-warning' : ''}`}
-                    >
-                      <AnimatedCard card={wasteTop} width={dims.cw} draggable={false} />
-                    </button>
+                    <>
+                      <div id="congress-waste-count" className="text-game-text-muted text-xs mb-1">
+                        {t('wasteCount', { count: state.waste.length })}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => game.handleSelectSource(wasteZone)}
+                        disabled={!isPlaying || loading}
+                        aria-label={cardAlt(wasteTop)}
+                        aria-describedby="congress-waste-count"
+                        aria-pressed={isSourceSelected('waste', undefined)}
+                        draggable={isPlaying && !loading}
+                        onDragStart={dnd.handleDragStart(wasteZone)}
+                        onDragEnd={dnd.handleDragEnd}
+                        className={`p-0 border-0 bg-transparent cursor-pointer rounded ${focusRingWhite} ${isSourceSelected('waste', undefined) ? 'ring-2 ring-ds-warning' : ''}`}
+                      >
+                        <AnimatedCard card={wasteTop} width={dims.cw} draggable={false} />
+                      </button>
+                    </>
                   ) : (
                     <div
                       role="img"
