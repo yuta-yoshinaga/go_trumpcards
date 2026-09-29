@@ -179,6 +179,23 @@ beforeEach(() => {
 });
 
 describe('BridgePage', () => {
+  it('shows declarer team contract progress using completed tricks only', async () => {
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      players: playPhaseState.players.map((player) => ({
+        ...player,
+        trickCount: player.team === 0 ? 1 : 0,
+      })),
+      currentTrick: [
+        { playerIdx: 0, card: { design: 'SPADE', value: 1 } },
+        { playerIdx: 1, card: { design: 'HEART', value: 5 } },
+      ],
+    });
+    renderWithProviders(<BridgePage />);
+
+    expect(await screen.findByText('チーム 0 の獲得トリック: 2 / 7（残り 5）')).toBeInTheDocument();
+  });
+
   it('shows the resolved winner badge at the lead player seat', async () => {
     mockExec.mockResolvedValue(trickEndState);
     renderWithProviders(<BridgePage />);

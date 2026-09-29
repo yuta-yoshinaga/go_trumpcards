@@ -205,6 +205,14 @@ function BridgePageContent() {
   const isGameEnd = state.phase === BridgePhase.GAME_END || state.gameEndFlag;
   const isHumanTurn = isPlayPhase && state.players[state.currentPlayerIdx]?.isHuman === true;
   const isHumanBidTurn = isBidPhase && state.players[state.bidPlayerIdx]?.isHuman === true;
+  const declarerTeam = state.players[state.declarerIdx]?.team;
+  const declarerTricks =
+    declarerTeam === undefined
+      ? 0
+      : state.players
+          .filter((player) => player.team === declarerTeam)
+          .reduce((total, player) => total + player.trickCount, 0);
+  const requiredTricks = state.contractLevel + 6;
 
   // Auction legality: mirror internal/domain/Bridge.go so illegal controls are
   // disabled before a request is sent.
@@ -288,6 +296,17 @@ function BridgePageContent() {
                 </span>
               )}
             </div>
+
+            {(isPlayPhase || isTrickEnd) && state.contractLevel > 0 && declarerTeam !== undefined && (
+              <div className="text-ds-text-primary text-center text-sm mb-2 tabular-nums">
+                {t('contractProgress', {
+                  team: t('team', { n: declarerTeam }),
+                  won: declarerTricks,
+                  required: requiredTricks,
+                  remaining: Math.max(requiredTricks - declarerTricks, 0),
+                })}
+              </div>
+            )}
 
             {/* Vulnerability */}
             <div className="text-ds-text-muted text-center text-sm mb-2">
