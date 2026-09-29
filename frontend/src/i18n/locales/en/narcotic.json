@@ -16,6 +16,8 @@
   "remove": "Discard all four",
   "removeAll": "Discard all four",
   "move": "Stack",
+  "movable": "Movable",
+  "notMovable": "Not movable",
   "redeal": "Gather & redeal",
   "giveup": "Give Up",
   "hint": "Hint",
