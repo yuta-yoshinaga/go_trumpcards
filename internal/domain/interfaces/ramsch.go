@@ -72,6 +72,8 @@ type RamschGame interface {
 	GetDurchmarschIdx() int
 	// GetLeadPlayerIdx returns the lead player's index.
 	GetLeadPlayerIdx() int
+	// GetTrickWinnerIdx returns the winner of the visible full trick, or -1.
+	GetTrickWinnerIdx() int
 
 	// GetPlayerCnt returns the player count.
 	GetPlayerCnt() int

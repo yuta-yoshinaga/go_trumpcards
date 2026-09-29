@@ -47,6 +47,7 @@ func (p *RamschWebPresenter) buildBaseOutput(s interfaces.RamschGame) *controlle
 	resObj.DurchmarschIdx = s.GetDurchmarschIdx()
 	resObj.GameEndFlag = s.GetGameEndFlag()
 	resObj.LeadPlayerIdx = s.GetLeadPlayerIdx()
+	resObj.TrickWinnerIdx = s.GetTrickWinnerIdx()
 
 	// **伏せ札はラウンドが終わるまで見せない。** 最終トリックの獲得者が
 	// 受け取る 2 枚なので、中身が分かると「最後を取るか避けるか」の判断が

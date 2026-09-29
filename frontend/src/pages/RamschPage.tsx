@@ -201,6 +201,8 @@ function RamschPageContent() {
               players={state.players.map((p) => ({ id: p.id, isHuman: p.isHuman }))}
               cardWidth={cardWidth}
               label={t('currentTrick')}
+              winnerIdx={isTrickEnd ? state.trickWinnerIdx : undefined}
+              winnerLabel={t('trickWinnerBadge')}
               dataTutorial="sk-trick-display"
             />
 
