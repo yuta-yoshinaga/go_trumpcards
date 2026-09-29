@@ -49891,6 +49891,9 @@ components:
           type: integer
         leadPlayerIdx:
           type: integer
+        trickWinnerIdx:
+          type: integer
+          description: "Winning player index for a completed trick, or -1 otherwise"
         goingAlone:
           type: boolean
           description: "Whether the maker is playing alone, with their partner sitting the hand out."

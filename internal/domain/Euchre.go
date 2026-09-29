@@ -1365,6 +1365,14 @@ func (e *Euchre) currentTrickWinnerIdx() int {
 	return e.trickWinner()
 }
 
+// GetCurrentTrickWinner returns the winning player index when the trick is complete, or -1 otherwise.
+func (e *Euchre) GetCurrentTrickWinner() int {
+	if e.phase != EuchrePhaseTrickEnd || len(e.currentTrick) == 0 {
+		return -1
+	}
+	return e.trickWinner()
+}
+
 // euchreJSON is the JSON wire format for Euchre.
 type euchreJSON struct {
 	TrumpCards          *TrumpCards        `json:"tc"`

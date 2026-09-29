@@ -57,6 +57,8 @@ type EuchreGame interface {
 	GetCurrentPlayerIdx() int
 	// GetCurrentTrick 現在のトリックを取得する
 	GetCurrentTrick() []*domain.TrickCard
+	// GetCurrentTrickWinner 現在のトリックの勝者インデックスを取得する（未完了時は-1）
+	GetCurrentTrickWinner() int
 	// GetLeadPlayerIdx リードプレイヤーインデックスを取得する
 	GetLeadPlayerIdx() int
 	// GetBidPlayerIdx ビッドプレイヤーインデックスを取得する
