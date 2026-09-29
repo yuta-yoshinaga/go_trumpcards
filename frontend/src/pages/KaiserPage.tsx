@@ -26,6 +26,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { KaiserResponse } from '../types/card';
 import { KaiserPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { KAISER_HELP, parseKaiserCommand } from '../utils/cli/commands/kaiserCommands';
 import { formatKaiserState } from '../utils/cli/formatters/kaiserFormatter';
 import type { CliGameConfig } from '../utils/cli/types';
@@ -294,9 +295,17 @@ function KaiserPageContent() {
             {state.trick.length > 0 && (
               <div className="mb-2 flex items-center gap-2" data-testid="kaiser-trick">
                 <span className="text-ds-text-muted text-sm">{t('trick')}</span>
-                {state.trick.map((c, i) => (
-                  <CardImage key={`trick-${c.design}-${c.value}-${i}`} card={c} width={cardWidth} />
-                ))}
+                {state.trick.map((c, i) => {
+                  const playerIdx = (state.trickLeaderIdx + i) % state.players.length;
+                  const player = state.players[playerIdx];
+                  const name = playerLabel(playerIdx, player.isHuman);
+                  return (
+                    <div key={`trick-${c.design}-${c.value}-${i}`} className="flex flex-col items-center gap-1">
+                      <CardImage card={c} width={cardWidth} ariaLabel={`${name}${t('listSeparator')}${cardAlt(c)}`} />
+                      <span className="text-ds-text-muted text-xs">{name}</span>
+                    </div>
+                  );
+                })}
               </div>
             )}
 
