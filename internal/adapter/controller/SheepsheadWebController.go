@@ -53,14 +53,16 @@ type SheepsheadWebOutputHint struct {
 
 // SheepsheadWebOutput シープスヘッドのWebアウトプット
 type SheepsheadWebOutput struct {
-	Players          []*SheepsheadWebOutputPlayer `json:"players"`
-	Phase            int                          `json:"phase"`
-	RoundNumber      int                          `json:"roundNumber"`
-	TrickNumber      int                          `json:"trickNumber"`
-	CurrentPlayerIdx int                          `json:"currentPlayerIdx"`
-	LeadPlayerIdx    int                          `json:"leadPlayerIdx"`
-	DealerIdx        int                          `json:"dealerIdx"`
-	CurrentTrick     []*WebOutputTrickCard        `json:"currentTrick"`
+	Players             []*SheepsheadWebOutputPlayer `json:"players"`
+	Phase               int                          `json:"phase"`
+	RoundNumber         int                          `json:"roundNumber"`
+	TrickNumber         int                          `json:"trickNumber"`
+	LastTrickWinner     int                          `json:"lastTrickWinner"`
+	CompletedTrickCount int                          `json:"completedTrickCount"`
+	CurrentPlayerIdx    int                          `json:"currentPlayerIdx"`
+	LeadPlayerIdx       int                          `json:"leadPlayerIdx"`
+	DealerIdx           int                          `json:"dealerIdx"`
+	CurrentTrick        []*WebOutputTrickCard        `json:"currentTrick"`
 	// BlindCount ブラインドの枚数 (ピックフェーズ中は枚数のみ公開)
 	BlindCount         int                      `json:"blindCount"`
 	Buried             []*WebOutputCard         `json:"buried"`
@@ -125,6 +127,7 @@ func newSheepsheadDefaultOutput(msg string) *SheepsheadWebOutput {
 		PickerIdx:       -1,
 		PartnerIdx:      -1,
 		WinnerIdx:       -1,
+		LastTrickWinner: -1,
 		WebOutputBase:   WebOutputBase{Message: msg},
 	}
 }

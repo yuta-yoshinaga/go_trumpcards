@@ -66872,6 +66872,12 @@ components:
           type: integer
         trickNumber:
           type: integer
+        lastTrickWinner:
+          type: integer
+          description: Index of the most recently completed trick winner, or -1 before any trick completes in the round
+        completedTrickCount:
+          type: integer
+          description: Number of completed tricks in the current round
         currentPlayerIdx:
           type: integer
         leadPlayerIdx:

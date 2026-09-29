@@ -69,6 +69,26 @@ describe('SheepsheadPage', () => {
     });
   });
 
+  it('announces a newly completed trick winner and leaves the text unchanged without a new trick', async () => {
+    const completed = makeSheepsheadState({ completedTrickCount: 1, lastTrickWinner: 1 });
+    mockExec.mockResolvedValueOnce(playPhaseState).mockResolvedValue(completed);
+    renderWithProviders(<SheepsheadPage />);
+    const live = await screen.findByTestId('sheepshead-trick-live');
+    expect(live).toHaveTextContent('');
+
+    fireEvent.click(await screen.findByAltText('♠ A'));
+    fireEvent.click(await screen.findByRole('button', { name: '出す' }));
+    await waitFor(() => expect(live).toHaveTextContent('CPU 1 がトリックを取りました'));
+    const announcement = live.textContent;
+
+    // A subsequent response with the same completed-trick count must not replace the announcement.
+    mockExec.mockResolvedValue(playPhaseState);
+    fireEvent.click(await screen.findByAltText('♦ K'));
+    fireEvent.click(await screen.findByRole('button', { name: '出す' }));
+    await waitFor(() => expect(mockExec).toHaveBeenCalledTimes(3));
+    expect(live).toHaveTextContent(announcement ?? '');
+  });
+
   it('selecting a card then playing dispatches play', async () => {
     renderWithProviders(<SheepsheadPage />);
     const card = await screen.findByAltText('♠ A');
