@@ -91,6 +91,27 @@ describe('ChineseTenPage', () => {
     expect(screen.getByText('CPU の手札 3 枚')).toBeInTheDocument();
   });
 
+  it('shows each layout card position from zero and includes it in the accessible name', async () => {
+    renderWithProviders(<ChineseTenPage />);
+    await waitFor(() => expect(screen.getAllByRole('button').length).toBeGreaterThan(0));
+
+    const firstLayoutCard = screen.getByAltText('♠ 9').closest('button');
+    const secondLayoutCard = screen.getByAltText('♦ 9').closest('button');
+    expect(firstLayoutCard).toHaveTextContent('位置 0');
+    expect(secondLayoutCard).toHaveTextContent('位置 1');
+    expect(firstLayoutCard).toHaveAttribute('aria-label', expect.stringContaining('位置 0'));
+    expect(secondLayoutCard).toHaveAttribute('aria-label', expect.stringContaining('位置 1'));
+  });
+
+  it('selects the layout index shown on the card', async () => {
+    mockExec.mockResolvedValue(makeState({ phase: 1, pendingCard: card('SPADE', 1), selectableIndices: [1] }));
+    renderWithProviders(<ChineseTenPage />);
+    await waitFor(() => expect(screen.getByAltText('♦ 9')).toBeInTheDocument());
+
+    fireEvent.click(screen.getByAltText('♦ 9').closest('button')!);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('select', undefined, 1));
+  });
+
   it('plays a hand card', async () => {
     renderWithProviders(<ChineseTenPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalled());
