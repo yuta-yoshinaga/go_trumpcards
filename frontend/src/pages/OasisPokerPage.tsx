@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { oasispokerApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { ActionShortcutsPanel } from '../components/ActionShortcutsPanel';
@@ -108,6 +108,11 @@ function OasisPokerPageContent() {
 
   useMountReset(execApi);
 
+  const phase = state?.phase;
+  useEffect(() => {
+    if (phase !== undefined) setExchangeAnnouncement('');
+  }, [phase]);
+
   const isBetPhase = state?.phase === OasisPokerPhase.BET;
   const isExchangePhase = state?.phase === OasisPokerPhase.EXCHANGE;
   const isActionPhase = state?.phase === OasisPokerPhase.ACTION;
@@ -130,20 +135,17 @@ function OasisPokerPageContent() {
   const handleBet = () => {
     if (!state || anteAmount + jackpotAmount > state.chips) return;
     setSelectedIndices([]);
-    setExchangeAnnouncement('');
     execApi('bet', anteAmount, jackpotAmount);
   };
 
   const handleExchange = () => {
     const toExchange = [...selectedIndices];
     setSelectedIndices([]);
-    setExchangeAnnouncement('');
     execApi('exchange', undefined, undefined, toExchange);
   };
 
   const handleStand = () => {
     setSelectedIndices([]);
-    setExchangeAnnouncement('');
     execApi('stand');
   };
 
