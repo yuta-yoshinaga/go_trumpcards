@@ -95,6 +95,11 @@ const withHintTableauState: WhiteheadResponse = {
   hint: { fromZone: 'tableau', fromCol: 0, cardIndex: 0, toZone: 'foundation', toCol: -1 },
 };
 
+const withHintUnknownZoneState: WhiteheadResponse = {
+  ...playingState,
+  hint: { fromZone: 'mystery-zone', fromCol: -1, cardIndex: -1, toZone: 'tableau', toCol: 2 },
+};
+
 beforeEach(() => {
   mockExec.mockResolvedValue(playingState);
   vi.mocked(useGameHint).mockReturnValue({ hint: null, hintEnabled: false, setHintEnabled: vi.fn() });
@@ -557,6 +562,7 @@ describe('WhiteheadPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
 
     await waitFor(() => expect(screen.getByText(/ヒントがあります/)).toBeInTheDocument());
+    expect(screen.getByText(/ウェイスト → 場札 3/)).toBeInTheDocument();
     // The hint band shows the source card image (not just an abstract string).
     expect(screen.getByTestId('kl-hint-card')).toBeInTheDocument();
   });
@@ -586,9 +592,20 @@ describe('WhiteheadPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
 
     await waitFor(() => expect(screen.getByText(/ヒントがあります/)).toBeInTheDocument());
-    expect(screen.getByText(/場札 0/)).toBeInTheDocument();
+    expect(screen.getByText(/場札 0 → 組札/)).toBeInTheDocument();
     // The source tableau card (SPADE 13) is shown as a card image.
     expect(screen.getByTestId('kl-hint-card')).toBeInTheDocument();
+  });
+
+  it('shows an unknown hint zone as its raw identifier', async () => {
+    renderWithProviders(<WhiteheadPage />);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'ヒント' })).toBeInTheDocument());
+
+    mockExec.mockResolvedValue(withHintUnknownZoneState);
+    fireEvent.click(screen.getByRole('button', { name: 'ヒント' }));
+
+    await waitFor(() => expect(screen.getByText(/ヒントがあります/)).toBeInTheDocument());
+    expect(screen.getByText(/mystery-zone → 場札 2/)).toBeInTheDocument();
   });
 
   it('ring-highlights the hint source (info) and destination (success) on the board', async () => {
