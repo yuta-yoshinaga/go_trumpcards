@@ -47,6 +47,8 @@
     "under": "{{delta}} 不足"
   },
   "currentTrick": "現在のトリック",
+  "trickAnnouncementEntry": "{{player}}: {{card}}",
+  "listSeparator": "、",
   "scores": "スコア",
   "scoresPlayer": "プレイヤー",
   "scoresBid": "ビッド",

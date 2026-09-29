@@ -163,6 +163,28 @@ const followSuitState: WizardResponse = {
 };
 
 describe('WizardPage', () => {
+  it('announces cards added to the current trick in a permanent polite live region', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<WizardPage />);
+    const liveRegion = await screen.findByTestId('wizard-trick-live');
+    expect(liveRegion).toHaveAttribute('role', 'status');
+    expect(liveRegion).toHaveAttribute('aria-live', 'polite');
+    expect(liveRegion).toBeEmptyDOMElement();
+
+    mockExec.mockResolvedValue({
+      ...playPhaseState,
+      currentTrick: [
+        { playerIdx: 0, card: { design: 'SPADE', value: 1 } },
+        { playerIdx: 1, card: { design: 'HEART', value: 5 } },
+      ],
+    });
+    fireEvent.click(screen.getByAltText('♠ A').closest('button') as HTMLButtonElement);
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+
+    await waitFor(() => expect(liveRegion).toHaveTextContent('あなた: ♠ A、CPU 1: ♥ 5'));
+    expect(liveRegion).toHaveClass('sr-only');
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<WizardPage />);
