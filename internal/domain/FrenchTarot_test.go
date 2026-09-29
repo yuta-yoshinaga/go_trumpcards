@@ -44,6 +44,24 @@ func frenchTarotTrickCards(cards ...*domain.TrickCard) []*domain.TrickCard {
 	return cards
 }
 
+func TestFrenchTarotCurrentTrickSummary(t *testing.T) {
+	g := frenchTarotNewReset()
+	g.SetCurrentTrick(frenchTarotTrickCards(
+		&domain.TrickCard{Card: frenchTarotExcuseCard()},
+		&domain.TrickCard{Card: frenchTarotTrumpCard(21)},
+		&domain.TrickCard{Card: frenchTarotTrumpCard(1)},
+		&domain.TrickCard{Card: frenchTarotSuitCard(domain.CardDesignHeart, domain.FrenchTarotKingValue)},
+		&domain.TrickCard{Card: frenchTarotSuitCard(domain.CardDesignHeart, 13)},
+	))
+	half, bouts := g.CurrentTrickSummary()
+	assert.Equal(t, 43, half)
+	assert.Equal(t, 3, bouts)
+
+	g.SetCurrentTrick(frenchTarotTrickCards(&domain.TrickCard{Card: frenchTarotSuitCard(domain.CardDesignHeart, 2)}))
+	_, bouts = g.CurrentTrickSummary()
+	assert.Zero(t, bouts)
+}
+
 // --- Deck ---
 
 func TestFrenchTarotDeckIs78(t *testing.T) {

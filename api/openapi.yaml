@@ -76714,6 +76714,12 @@ components:
           type: integer
         contract:
           type: integer
+        trickHalfPoints:
+          type: integer
+          description: Half-point total for the current trick.
+        trickBouts:
+          type: integer
+          description: Bout (oudler) count for the current trick.
         currentTrick:
           type: array
           items:

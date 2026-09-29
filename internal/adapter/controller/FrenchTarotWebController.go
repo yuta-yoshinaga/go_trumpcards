@@ -67,6 +67,8 @@ type FrenchTarotWebOutput struct {
 	ChienRevealed    bool                             `json:"chienRevealed"`
 	StashOwner       int                              `json:"stashOwner"`
 	CurrentTrick     []*WebOutputTrickCard            `json:"currentTrick"`
+	TrickHalfPoints  int                              `json:"trickHalfPoints"`
+	TrickBouts       int                              `json:"trickBouts"`
 	PlayerScores     [domain.FrenchTarotPlayerCnt]int `json:"playerScores"`
 	LastTrickWinner  int                              `json:"lastTrickWinner"`
 	Outcome          int                              `json:"outcome"`

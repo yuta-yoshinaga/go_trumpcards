@@ -96,6 +96,11 @@ func (_m *MockFrenchTarotGame) GetTrickNumber() int { return _m.Called().Int(0) 
 func (_m *MockFrenchTarotGame) GetCurrentPlayerIdx() int { return _m.Called().Int(0) }
 
 // GetCurrentTrick モック
+func (_m *MockFrenchTarotGame) CurrentTrickSummary() (int, int) {
+	args := _m.Called()
+	return args.Int(0), args.Int(1)
+}
+
 func (_m *MockFrenchTarotGame) GetCurrentTrick() []*domain.TrickCard {
 	return _m.Called().Get(0).([]*domain.TrickCard)
 }

@@ -121,6 +121,26 @@ beforeEach(() => {
 });
 
 describe('FrenchTarotPage', () => {
+  it('shows the trick points and bouts at trick end, including zero bouts', async () => {
+    mockExec.mockResolvedValue(makeFrenchTarotState({ phase: 3, trickHalfPoints: 11, trickBouts: 1 }));
+    const { unmount } = renderWithProviders(<FrenchTarotPage />);
+    expect(await screen.findByTestId('frenchtarot-trick-summary')).toHaveTextContent('5.5点');
+    expect(screen.getByTestId('frenchtarot-trick-summary')).toHaveTextContent('1枚');
+    unmount();
+
+    mockExec.mockResolvedValue(makeFrenchTarotState({ phase: 3, trickHalfPoints: 0, trickBouts: 0 }));
+    renderWithProviders(<FrenchTarotPage />);
+    expect(await screen.findByTestId('frenchtarot-trick-summary')).toHaveTextContent('0点');
+    expect(screen.getByTestId('frenchtarot-trick-summary')).toHaveTextContent('0枚');
+  });
+
+  it('does not show the trick summary outside trick end', async () => {
+    mockExec.mockResolvedValue(makeFrenchTarotState({ phase: 2, trickHalfPoints: 11, trickBouts: 1 }));
+    renderWithProviders(<FrenchTarotPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalled());
+    expect(screen.queryByTestId('frenchtarot-trick-summary')).not.toBeInTheDocument();
+  });
+
   it('keeps each player’s tricks and captured points visible on mobile while cards stay collapsed', async () => {
     mobileFlag.value = true;
     mockExec.mockResolvedValue(

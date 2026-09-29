@@ -129,6 +129,7 @@ func (p *FrenchTarotWebPresenter) buildBase(g interfaces.FrenchTarotGame) *contr
 
 	resObj.Chien = p.buildChienOutput(g)
 	resObj.CurrentTrick = trickCardsToOutputWithFace(g.GetCurrentTrick(), frenchTarotFace)
+	resObj.TrickHalfPoints, resObj.TrickBouts = g.CurrentTrickSummary()
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj
 }
