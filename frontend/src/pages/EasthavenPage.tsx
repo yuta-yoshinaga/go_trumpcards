@@ -22,7 +22,7 @@ import { useActionKeyboardNav } from '../hooks/useActionKeyboardNav';
 import { useCardDimensions, useWindowWidth } from '../hooks/useCardDimensions';
 import { useCliGame } from '../hooks/useCliGame';
 import { useCliMode } from '../hooks/useCliMode';
-import { useGameApi } from '../hooks/useGameApi';
+import { isRejectedAction, useGameApi } from '../hooks/useGameApi';
 import { useGameHint } from '../hooks/useGameHint';
 import { useGamePageSetup } from '../hooks/useGamePageSetup';
 import { useGiveUpConfirm } from '../hooks/useGiveUpConfirm';
@@ -100,6 +100,7 @@ function EasthavenPageContent() {
     confirmGiveUp,
     cancelGiveUp,
   } = useGamePageSetup('easthaven');
+  const [moveAnnouncement, setMoveAnnouncement] = useState('');
   const {
     state,
     setState,
@@ -107,7 +108,13 @@ function EasthavenPageContent() {
     error,
     exec: apiExec,
     retry,
-  } = useGameApi<EasthavenResponse, Parameters<typeof easthavenApi.exec>>((...args) => easthavenApi.exec(...args));
+  } = useGameApi<EasthavenResponse, Parameters<typeof easthavenApi.exec>>((...args) => easthavenApi.exec(...args), {
+    onSuccess: (res, args) => {
+      if (args[0] !== 'move' || isRejectedAction(res)) return;
+      const foundationCount = res.foundation.reduce((count, pile) => count + pile.length, 0);
+      setMoveAnnouncement(t('moveAnnouncement', { moveCount: res.moveCount, foundationCount }));
+    },
+  });
 
   useMountReset(apiExec);
 
@@ -586,6 +593,9 @@ function EasthavenPageContent() {
                 同じままだと再告知されない。 */}
             <div role="status" aria-live="polite" className="sr-only" data-testid="eh-deal-blocked-live">
               {emptyDealAttemptKey > 0 && <span key={emptyDealAttemptKey}>{t('cannotDealEmptyColExists')}</span>}
+            </div>
+            <div role="status" aria-live="polite" className="sr-only" data-testid="eh-move-live">
+              {moveAnnouncement}
             </div>
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
 
