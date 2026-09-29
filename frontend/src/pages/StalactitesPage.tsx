@@ -231,7 +231,7 @@ function StalactitesPageContent() {
     previousSelectionRef.current = hasSelection;
     const selectedStackSize =
       selectedSource?.zone === 'tableau' && selectedSource.col !== undefined && selectedSource.cardIndex !== undefined
-        ? (state.tableau[selectedSource.col]?.length ?? 0) - selectedSource.cardIndex
+        ? state.tableau[selectedSource.col].length - selectedSource.cardIndex
         : 0;
     const announcementStackSize = selectedSource?.zone === 'tableau' ? selectedStackSize : selectedSource ? 1 : 0;
     setMoveLimitAnnouncement(
@@ -271,7 +271,7 @@ function StalactitesPageContent() {
   // ないので押せそうに見えたままだった (#6814)。BakersGame / FreeCell と同じ形。
   const selectedStackSize =
     selectedSource?.zone === 'tableau' && selectedSource.col !== undefined && selectedSource.cardIndex !== undefined
-      ? (state.tableau[selectedSource.col]?.length ?? 0) - selectedSource.cardIndex
+      ? state.tableau[selectedSource.col].length - selectedSource.cardIndex
       : 0;
   const emptyColBlocked = selectedStackSize > emptyColLimit;
   const emptyColLabel = (colIdx: number): string => {
