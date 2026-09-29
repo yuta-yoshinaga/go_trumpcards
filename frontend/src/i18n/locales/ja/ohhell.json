@@ -31,6 +31,7 @@
   "cumulativeScore": "累計: {{score}}",
   "roundScore": "ラウンド: {{score}}",
   "bid": "ビッド {{n}}",
+  "scoreAnnouncementDetails": "ビッド {{bid}}、獲得トリック {{tricks}}",
   "bidNone": "未ビッド",
   "bidProgress": "宣言: {{bid}} / 獲得: {{won}} / 残り: {{remaining}}",
   "bidUnreachable": "達成不能",

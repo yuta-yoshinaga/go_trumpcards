@@ -31,6 +31,7 @@
   "cumulativeScore": "Total: {{score}}",
   "roundScore": "Round: {{score}}",
   "bid": "Bid {{n}}",
+  "scoreAnnouncementDetails": "Bid {{bid}}, tricks won {{tricks}}",
   "bidNone": "No bid",
   "bidProgress": "Bid: {{bid}} / Won: {{won}} / Remaining: {{remaining}}",
   "bidUnreachable": "Unreachable",
