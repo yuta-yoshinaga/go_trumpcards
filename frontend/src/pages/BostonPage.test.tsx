@@ -402,6 +402,24 @@ describe('BostonPage', () => {
     await waitFor(() => expect(screen.queryByTestId('boston-trick')).not.toBeInTheDocument());
   });
 
+  it('shows each trick card with its player from the leader seat and in its accessible name', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        trick: [card('SPADE', 1), card('HEART', 2)],
+        trickLeaderIdx: 2,
+      }),
+    );
+    renderWithProviders(<BostonPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    const trick = screen.getByTestId('boston-trick');
+    const images = trick.querySelectorAll('img');
+    expect(trick).toHaveTextContent('CPU 2');
+    expect(trick).toHaveTextContent('CPU 3');
+    expect(images[0]).toHaveAttribute('alt', expect.stringMatching(/CPU 2/));
+    expect(images[1]).toHaveAttribute('alt', expect.stringMatching(/CPU 3/));
+  });
+
   // **人間の入札手番でのみ注意事項を出す。**他人の手番やプレイ中には出ない。
   it('renders the bid notice only on human bid turn', async () => {
     mockExec.mockResolvedValue(makeState({ phase: BostonPhase.BID, bidPlayerIdx: 0, gameEndFlag: false }));

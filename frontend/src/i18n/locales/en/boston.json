@@ -12,6 +12,7 @@
   "hiddenHand": "hidden ({{count}})",
   "yourHand": "Your hand",
   "trick": "Trick",
+  "trickCardAria": "{{card}} played by {{name}}",
   "tricksWon": "Tricks {{n}}",
   "chips": "Chips {{n}}",
   "ladderTitle": "The bidding ladder (highest last)",
