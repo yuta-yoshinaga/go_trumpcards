@@ -422,7 +422,7 @@ function PanPageContent() {
               <div className="text-ds-text-primary text-center my-2" data-testid="pan-round-end-reason">
                 {state.panDeclarerIdx >= 0
                   ? t('roundEndByPan', {
-                      name: playerName(state.panDeclarerIdx, state.players[state.panDeclarerIdx]?.isHuman ?? false),
+                      name: playerName(state.panDeclarerIdx, state.players[state.panDeclarerIdx].isHuman),
                     })
                   : t('roundEndByStockOut')}
               </div>
