@@ -236,11 +236,19 @@ describe('TuSacPage', () => {
 
     fireEvent.click(screen.getByTestId('tusac-card-1'));
     expect(live).toHaveTextContent('1');
+    expect(live).toHaveTextContent('車');
+    expect(screen.getByTestId('tusac-card-1')).toHaveAttribute('aria-pressed', 'true');
     fireEvent.click(screen.getByTestId('tusac-card-3'));
     expect(live).toHaveTextContent('2');
+    expect(live.textContent).toContain('、');
+    expect(screen.getByTestId('tusac-card-3')).toHaveAttribute('aria-pressed', 'true');
     // 解除でも更新される。
     fireEvent.click(screen.getByTestId('tusac-card-3'));
     expect(live).toHaveTextContent('1');
+    expect(screen.getByTestId('tusac-card-3')).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(screen.getByTestId('tusac-card-1'));
+    expect(live).toHaveTextContent('選択を解除しました');
+    expect(screen.getByTestId('tusac-card-1')).toHaveAttribute('aria-pressed', 'false');
   });
 
   it('選んだ位置をそのまま送る', async () => {
@@ -286,7 +294,7 @@ describe('TuSacPage', () => {
     expect(screen.getByTestId('tusac-card-0')).toHaveAttribute('aria-pressed', 'true');
     fireEvent.click(screen.getByTestId('tusac-card-0'));
     expect(screen.getByTestId('tusac-card-0')).toHaveAttribute('aria-pressed', 'false');
-    expect(screen.queryByTestId('tusac-selected')).not.toBeInTheDocument();
+    expect(screen.getByTestId('tusac-selected')).toHaveTextContent('選択を解除しました');
   });
 
   it('ラウンドと山の残りを出す', async () => {
