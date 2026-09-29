@@ -49,7 +49,16 @@ const cpuTurnState = makePreferenceState({
   isHumanTurn: false,
   currentPlayerIdx: 1,
 });
-const trickEndState = makePreferenceState({ phase: 2, isHumanBidTurn: false });
+const trickEndState = makePreferenceState({
+  phase: 2,
+  isHumanBidTurn: false,
+  leadPlayerIdx: 2,
+  currentTrick: [
+    { playerIdx: 0, card: { design: 'HEART', value: 9 } },
+    { playerIdx: 1, card: { design: 'HEART', value: 10 } },
+    { playerIdx: 2, card: { design: 'HEART', value: 1 } },
+  ],
+});
 const roundEndState = makePreferenceState({ phase: 3, isHumanBidTurn: false, roundTricks: [6, 2, 2] });
 const gameEndState = makePreferenceState({
   phase: 4,
@@ -180,6 +189,15 @@ describe('PreferencePage', () => {
     mockExec.mockResolvedValue(trickEndState);
     renderWithProviders(<PreferencePage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '次のトリック' })).toBeInTheDocument());
+    expect(screen.getByTestId('trick-winner-badge')).toHaveTextContent('勝者');
+    expect(screen.getByTestId('trick-display-cards').querySelector('[data-trick-winner="true"]')).toBeInTheDocument();
+  });
+
+  it('does not show a winner during ordinary play', async () => {
+    mockExec.mockResolvedValue(playPhaseState);
+    renderWithProviders(<PreferencePage />);
+    await waitFor(() => expect(screen.getByAltText('♥ Q')).toBeInTheDocument());
+    expect(screen.queryByTestId('trick-winner-badge')).not.toBeInTheDocument();
   });
 
   it('renders round end with the next round button and the round result', async () => {

@@ -322,6 +322,8 @@ function PreferencePageContent() {
                   players={state.players}
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
+                  winnerIdx={isTrickEnd ? state.leadPlayerIdx : undefined}
+                  winnerLabel={t('trickWinner')}
                   dataTutorial="preference-trick-display"
                 />
               </div>
