@@ -173,6 +173,25 @@ describe('PopeJoanPage', () => {
     await waitFor(() => expect(screen.getByTestId('popejoan-live')).toHaveTextContent('席2 が出し切りました'));
   });
 
+  it('announces new awards and the deal result from the same response', async () => {
+    renderWithProviders(<PopeJoanPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+
+    mockExec.mockResolvedValueOnce(
+      makeState({
+        phase: PopeJoanPhase.DEAL_END,
+        awards: [{ compartment: 'pope', player: 0, chips: 6, byTurnUp: false }],
+        dealWinner: 2,
+      }),
+    );
+    pickHand(0);
+    fireEvent.click(screen.getByRole('button', { name: '出す' }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('popejoan-live')).toHaveTextContent('席0 が ポープ を獲得（6）、席2 が出し切りました');
+    });
+  });
+
   it('plays exactly one card', async () => {
     renderWithProviders(<PopeJoanPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: '出す' })).toBeInTheDocument());

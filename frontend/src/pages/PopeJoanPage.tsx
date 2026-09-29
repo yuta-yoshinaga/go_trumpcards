@@ -77,36 +77,36 @@ function PopeJoanPageContent() {
     if (state.awards.length < announcedAwardCount.current) {
       announcedAwardCount.current = 0;
     }
+    const parts: string[] = [];
     if (state.awards.length > announcedAwardCount.current) {
       const newAwards = state.awards.slice(announcedAwardCount.current);
       announcedAwardCount.current = state.awards.length;
-      setAnnouncement(
-        newAwards
-          .map((a) =>
-            a.byTurnUp
-              ? t('awardTurnUpLine', {
-                  player: a.player,
-                  compartment: t(`compartment.${a.compartment}`),
-                  chips: a.chips,
-                })
-              : t('awardLine', {
-                  player: a.player,
-                  compartment: t(`compartment.${a.compartment}`),
-                  chips: a.chips,
-                }),
-          )
-          .join(t('listSeparator')),
+      parts.push(
+        ...newAwards.map((a) =>
+          a.byTurnUp
+            ? t('awardTurnUpLine', {
+                player: a.player,
+                compartment: t(`compartment.${a.compartment}`),
+                chips: a.chips,
+              })
+            : t('awardLine', {
+                player: a.player,
+                compartment: t(`compartment.${a.compartment}`),
+                chips: a.chips,
+              }),
+        ),
       );
-      return;
     }
 
     if (state.phase === PopeJoanPhase.DEAL_END && state.dealWinner >= 0) {
       const dealKey = `${state.dealNo}:${state.dealWinner}`;
       if (dealKey !== announcedDeal.current) {
         announcedDeal.current = dealKey;
-        setAnnouncement(t('dealResult', { n: state.dealWinner }));
+        parts.push(t('dealResult', { n: state.dealWinner }));
       }
     }
+
+    if (parts.length > 0) setAnnouncement(parts.join(t('listSeparator')));
   }, [state, t]);
 
   if (!state) {
