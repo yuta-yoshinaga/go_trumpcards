@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { trexApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, TrexPlayer, TrexResponse } from '../types/card';
@@ -240,6 +241,21 @@ describe('TrexPage', () => {
       mockExec.mockResolvedValue(withTrick(TrexContract.KING_OF_HEARTS));
       renderWithProviders(<TrexPage />);
       await waitFor(() => expect(screen.getAllByTestId('trex-penalty-card')).toHaveLength(1));
+      expect(screen.getByAltText('♥ K、失点 -75 点')).toBeInTheDocument();
+      expect(screen.getByAltText('♦ 5')).toBeInTheDocument();
+    });
+
+    it('announces penalty points in English', async () => {
+      await i18n.changeLanguage('en');
+      try {
+        mockExec.mockResolvedValue(withTrick(TrexContract.KING_OF_HEARTS));
+        renderWithProviders(<TrexPage />);
+        await waitFor(() => expect(screen.getAllByTestId('trex-penalty-card')).toHaveLength(1));
+        expect(screen.getByAltText('♥ K, penalty -75 points')).toBeInTheDocument();
+        expect(screen.getByAltText('♦ 5')).toBeInTheDocument();
+      } finally {
+        await i18n.changeLanguage('ja');
+      }
     });
 
     // **クイーンはスートを問わない。**♥Q だけ見ると 3 枚見落とす。
