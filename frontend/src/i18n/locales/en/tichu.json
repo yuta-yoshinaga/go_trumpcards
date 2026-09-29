@@ -6,6 +6,7 @@
   "bombCardAriaLabel": "{{card}} (part of a bomb)",
   "label": {
     "table": "Table",
+    "playedBy": "{{player}} (Team {{team}})",
     "bombs": "Bombs",
     "team": "Team",
     "cards": "cards",

@@ -316,6 +316,14 @@ function TichuPageContent() {
                   <AnimatedCard key={`table-${c.design}-${c.value}`} card={c} width={cardWidth * 0.8} />
                 ))}
                 <span className="text-ds-text-primary text-xs ml-2">{state.tableCombo}</span>
+                {state.players[state.lastPlayIdx] && (
+                  <span data-testid="tichu-table-owner" className="text-ds-text-muted text-xs ml-2">
+                    {t('label.playedBy', {
+                      player: playerName(state.players[state.lastPlayIdx].id, state.players[state.lastPlayIdx].isHuman),
+                      team: state.players[state.lastPlayIdx].team,
+                    })}
+                  </span>
+                )}
               </>
             ) : (
               <span className="text-ds-text-muted text-sm">{t('label.table')}: ---</span>
