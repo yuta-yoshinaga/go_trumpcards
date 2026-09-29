@@ -224,12 +224,11 @@ function StalactitesPageContent() {
   const previousSelectionRef = useRef(false);
   const [moveLimitAnnouncement, setMoveLimitAnnouncement] = useState('');
 
-  const announcementStackSize =
+  const selectedStackSize =
     selectedSource?.zone === 'tableau' && selectedSource.col !== undefined && selectedSource.cardIndex !== undefined
       ? (state?.tableau[selectedSource.col]?.length ?? 0) - selectedSource.cardIndex
-      : selectedSource
-        ? 1
-        : 0;
+      : 0;
+  const announcementStackSize = selectedSource?.zone === 'tableau' ? selectedStackSize : selectedSource ? 1 : 0;
   useEffect(() => {
     const hasSelection = selectedSource !== null;
     if (!hasSelection && !previousSelectionRef.current) return;
@@ -266,10 +265,6 @@ function StalactitesPageContent() {
   const emptyColumnCount = state.tableau.filter((col) => col.length === 0).length;
 
   // 選択中の束の枚数。空き列が受け取れるかはこれと emptyColLimit で決まる。
-  const selectedStackSize =
-    selectedSource?.zone === 'tableau' && selectedSource.col !== undefined && selectedSource.cardIndex !== undefined
-      ? (state.tableau[selectedSource.col]?.length ?? 0) - selectedSource.cardIndex
-      : 0;
   // **名前が無く、超過の理由も title にしかなかった。**中身は文字の `K` だけなので
   // 支援技術には「K」としか読まれず、列も特定できない。ボタンは disabled では
   // ないので押せそうに見えたままだった (#6814)。BakersGame / FreeCell と同じ形。
