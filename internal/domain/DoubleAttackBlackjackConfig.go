@@ -70,6 +70,9 @@ var doubleAttackBustItPayouts = map[int]int{
 	8: 500, // 8 枚以上
 }
 
+// DoubleAttackBustItMinCards は配当表が個別に持つ最小の枚数。
+const DoubleAttackBustItMinCards = 3
+
 // DoubleAttackBustItMaxCards は配当表が個別に持つ最大の枚数。これ以上は同じ配当。
 const DoubleAttackBustItMaxCards = 8
 

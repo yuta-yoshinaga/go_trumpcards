@@ -75,6 +75,8 @@ export interface DoubleAttackResponse extends BaseGameResponse {
   bustItBet: number;
   payout: number;
   bustItPayout: number;
+  /** Server-defined Bust It payout by dealer bust card count; the last row covers 8+. */
+  bustItPayouts: { cards: number; multiplier: number }[];
   chips: number;
   roundNumber: number;
   remainingCards: number;

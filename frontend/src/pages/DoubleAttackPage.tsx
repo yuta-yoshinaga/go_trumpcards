@@ -266,6 +266,19 @@ function DoubleAttackPageContent() {
                     onChange={setBustIt}
                     max={Math.max(0, state.chips - ante)}
                   />
+                  <div className="text-ds-text-primary text-sm tabular-nums" data-testid="da-bustit-payouts">
+                    <p className="font-medium">{t('bustItPayoutTitle')}</p>
+                    <ul>
+                      {state.bustItPayouts.map(({ cards, multiplier }, index) => (
+                        <li key={cards}>
+                          {t(index === state.bustItPayouts.length - 1 ? 'bustItPayoutRowOrMore' : 'bustItPayoutRow', {
+                            cards,
+                            payout: `${multiplier}:1`,
+                          })}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                   <button type="button" className={btnPrimary} onClick={handleDeal} disabled={loading}>
                     {t('button.deal')}
                   </button>

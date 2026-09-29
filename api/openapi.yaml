@@ -59696,6 +59696,16 @@ components:
           type: integer
         bustItPayout:
           type: integer
+        bustItPayouts:
+          type: array
+          description: Server-defined Bust It payout multipliers by dealer bust card count; 8 covers 8 or more cards.
+          items:
+            type: object
+            properties:
+              cards:
+                type: integer
+              multiplier:
+                type: integer
         chips:
           type: integer
         roundNumber:

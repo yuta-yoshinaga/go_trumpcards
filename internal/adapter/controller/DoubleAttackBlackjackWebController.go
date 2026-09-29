@@ -39,6 +39,12 @@ type DoubleAttackWebOutputHand struct {
 	Result    int  `json:"result"`
 }
 
+// DoubleAttackBustItPayout は Bust It 配当表の1行。
+type DoubleAttackBustItPayout struct {
+	Cards      int `json:"cards"`
+	Multiplier int `json:"multiplier"`
+}
+
 // DoubleAttackBlackjackWebOutput 追加ベット・ブラックジャックWebアウトプット
 type DoubleAttackBlackjackWebOutput struct {
 	Phase int                          `json:"phase"`
@@ -51,18 +57,19 @@ type DoubleAttackBlackjackWebOutput struct {
 	// DealerHoleDealt は 2 枚目が配られたか。false の間は情報が伏せられている。
 	DealerHoleDealt bool `json:"dealerHoleDealt"`
 	// MaxAttackBet は追加ベットの上限 (アンティまで)。ページはこれに従うこと。
-	MaxAttackBet   int  `json:"maxAttackBet"`
-	CanDouble      bool `json:"canDouble"`
-	CanSplit       bool `json:"canSplit"`
-	AnteBet        int  `json:"anteBet"`
-	AttackBet      int  `json:"attackBet"`
-	BustItBet      int  `json:"bustItBet"`
-	Payout         int  `json:"payout"`
-	BustItPayout   int  `json:"bustItPayout"`
-	Chips          int  `json:"chips"`
-	RoundNumber    int  `json:"roundNumber"`
-	RemainingCards int  `json:"remainingCards"`
-	GameEndFlag    bool `json:"gameEndFlag"`
+	MaxAttackBet   int                        `json:"maxAttackBet"`
+	CanDouble      bool                       `json:"canDouble"`
+	CanSplit       bool                       `json:"canSplit"`
+	AnteBet        int                        `json:"anteBet"`
+	AttackBet      int                        `json:"attackBet"`
+	BustItBet      int                        `json:"bustItBet"`
+	Payout         int                        `json:"payout"`
+	BustItPayout   int                        `json:"bustItPayout"`
+	BustItPayouts  []DoubleAttackBustItPayout `json:"bustItPayouts"`
+	Chips          int                        `json:"chips"`
+	RoundNumber    int                        `json:"roundNumber"`
+	RemainingCards int                        `json:"remainingCards"`
+	GameEndFlag    bool                       `json:"gameEndFlag"`
 
 	Config *DoubleAttackWebOutCfg `json:"config,omitempty"`
 	WebOutputBase
