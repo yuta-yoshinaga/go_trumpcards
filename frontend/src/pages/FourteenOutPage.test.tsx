@@ -229,7 +229,7 @@ describe('FourteenOutPage', () => {
     fireEvent.click(first);
     fireEvent.click(second);
 
-    expect(await screen.findByTestId('mc-invalid-pair')).toHaveTextContent('合計が14になりません');
+    expect(await screen.findByTestId('mc-invalid-pair')).toHaveTextContent('列0と列2の選んだ2枚の合計が14になりません');
     expect(first).toHaveAttribute('data-invalid-pair', 'true');
     expect(second).toHaveAttribute('data-invalid-pair', 'true');
     expect(screen.queryByTestId('mc-pair-toast')).not.toBeInTheDocument();

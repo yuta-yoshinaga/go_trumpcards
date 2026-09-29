@@ -321,7 +321,10 @@ function FourteenOutPageContent() {
                 data-testid="mc-invalid-pair"
                 className="mb-2 text-center text-ds-error text-sm font-medium"
               >
-                {t('label.invalidPair')}
+                {t('label.invalidPair', {
+                  first: t('label.column', { n: invalidPairColumns[0] }),
+                  second: t('label.column', { n: invalidPairColumns[1] }),
+                })}
               </div>
             )}
 
