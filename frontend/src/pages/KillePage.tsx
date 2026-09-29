@@ -307,24 +307,39 @@ function KillePageContent() {
             </div>
 
             {/* Showdown */}
-            {(isShowdown || isGameEnd) && state.loserIdxs.length > 0 && (
-              <div
-                className={`mb-2 p-2 rounded text-sm ${badgeWarningColors}`}
-                data-testid="kille-showdown"
-                role="status"
-                aria-live="polite"
-              >
-                <div className="mb-1">{t('showdownTitle')}</div>
-                {state.loserIdxs.map((idx) => (
-                  <div key={`loser-${idx}`}>
-                    {t('loserLine', {
-                      name: playerLabel(idx, idx === 0),
-                      reason: outReason(state.players[idx]),
-                    })}
-                  </div>
-                ))}
-              </div>
-            )}
+            <div
+              className={
+                (isShowdown || isGameEnd) && state.loserIdxs.length > 0
+                  ? `mb-2 p-2 rounded text-sm ${badgeWarningColors}`
+                  : 'sr-only'
+              }
+              data-testid="kille-showdown"
+              role="status"
+              aria-live="polite"
+            >
+              {(isShowdown || isGameEnd) && (state.loserIdxs.length > 0 || (isGameEnd && state.winnerIdx >= 0)) && (
+                <>
+                  <div className="mb-1">{t('showdownTitle')}</div>
+                  {isGameEnd && state.winnerIdx >= 0 ? (
+                    <div>{t('gameWinner', { name: playerLabel(state.winnerIdx, state.winnerIdx === 0) })}</div>
+                  ) : (
+                    <div>
+                      {t('showdownSummary', {
+                        names: state.loserIdxs.map((idx) => playerLabel(idx, idx === 0)).join(t('listSeparator')),
+                      })}
+                    </div>
+                  )}
+                  {state.loserIdxs.map((idx) => (
+                    <div key={`loser-${idx}`}>
+                      {t('loserLine', {
+                        name: playerLabel(idx, idx === 0),
+                        reason: outReason(state.players[idx]),
+                      })}
+                    </div>
+                  ))}
+                </>
+              )}
+            </div>
 
             {/* The pack, for reference: a single suit means denomination is everything. */}
             <div className="mb-2 p-2 rounded bg-black/20 text-xs" data-testid="kille-ladder">

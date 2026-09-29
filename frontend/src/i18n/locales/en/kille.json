@@ -25,6 +25,9 @@
   "reenterExhausted": "You may buy back in at most three times.",
   "nextRound": "Next round",
   "showdownTitle": "Showdown",
+  "listSeparator": ", ",
+  "showdownSummary": "Out this showdown: {{names}}.",
+  "gameWinner": "{{name}} wins the game.",
   "loserLine": "{{name}} goes out ({{reason}})",
   "eventsTitle": "Exchanges this round",
   "event": {
