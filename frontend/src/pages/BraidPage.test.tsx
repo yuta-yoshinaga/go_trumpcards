@@ -88,6 +88,13 @@ describe('BraidPage', () => {
     expect(screen.getByText(/手数: 3/)).toBeInTheDocument();
   });
 
+  it('shows the number of cards in the waste', async () => {
+    mockExec.mockResolvedValue({ ...playingState, waste: [card('HEART', 2), card('SPADE', 6)] });
+    renderWithProviders(<BraidPage />);
+    expect(await screen.findByText('2枚')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '♠ 6' })).toHaveAccessibleDescription('2枚');
+  });
+
   it('renders eight foundations, four fields and eight helpers', async () => {
     mockExec.mockResolvedValue(playingState);
     renderWithProviders(<BraidPage />);

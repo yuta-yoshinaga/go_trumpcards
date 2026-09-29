@@ -439,12 +439,16 @@ function BraidPageContent() {
                 </div>
                 <div className="text-center">
                   <div className="text-game-text-muted text-xs mb-1">{t('waste')}</div>
+                  <div id="braid-waste-count" className="text-game-text-muted text-xs mb-1">
+                    {t('wasteCount', { count: state.waste.length })}
+                  </div>
                   {wasteTop ? (
                     <button
                       type="button"
                       onClick={() => game.handleSelectSource(wasteZone)}
                       disabled={!isPlaying || loading}
                       aria-label={cardAlt(wasteTop)}
+                      aria-describedby="braid-waste-count"
                       aria-pressed={isSourceSelected('waste', undefined)}
                       draggable={isPlaying && !loading}
                       onDragStart={dnd.handleDragStart(wasteZone)}
