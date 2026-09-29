@@ -360,6 +360,7 @@ function CoinchePageContent() {
           <table className="w-full text-sm text-ds-text-muted">
             <thead>
               <tr>
+                <th scope="col" />
                 <th scope="col" className="text-left">
                   {t('team', { n: 0 })}
                 </th>
@@ -370,10 +371,16 @@ function CoinchePageContent() {
             </thead>
             <tbody>
               <tr>
+                <th scope="row" className="text-left font-normal">
+                  {t('cumulativeScoreLabel')}
+                </th>
                 <td className="text-ds-accent">{state.teamScores[0]}</td>
                 <td className="text-center">{state.teamScores[1]}</td>
               </tr>
               <tr>
+                <th scope="row" className="text-left font-normal">
+                  {t('roundScoreLabel')}
+                </th>
                 <td className="text-xs">{t('roundPoints', { points: state.roundPoints[0] })}</td>
                 <td className="text-center text-xs">{t('roundPoints', { points: state.roundPoints[1] })}</td>
               </tr>
