@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { bigBenApi } from '../api/gameApi';
 import { useGameHint } from '../hooks/useGameHint';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { BigBenResponse, BigBenTableauCard, Card, CardDesign } from '../types/card';
@@ -141,6 +142,34 @@ describe('BigBenPage', () => {
     expect(face).not.toBeDisabled();
     // ラベルは読み上げ可能なまま (目標ランクと枚数を含む)。
     expect(face.getAttribute('aria-label')).toMatch(/9時/);
+  });
+
+  it.each([
+    {
+      language: 'ja',
+      completedLabel: '文字盤0 (9時) 目標1 1枚・完成',
+      unfinishedLabel: '文字盤1 (10時) 目標2 1枚',
+    },
+    {
+      language: 'en',
+      completedLabel: "Clock face 0 (9 o'clock), target 1, 1 cards, completed",
+      unfinishedLabel: "Clock face 1 (10 o'clock), target 2, 1 cards",
+    },
+  ])('uses the completed face label in $language', async ({ language, completedLabel, unfinishedLabel }) => {
+    const previousLanguage = i18n.language;
+    await i18n.changeLanguage(language);
+    try {
+      mockExec.mockResolvedValue({
+        ...playingState,
+        foundation: faces.map((f, i) => ({ ...f, complete: i === 0 })),
+      });
+      renderWithProviders(<BigBenPage />);
+
+      expect(await screen.findByRole('button', { name: completedLabel })).toHaveAttribute('aria-label', completedLabel);
+      expect(screen.getByRole('button', { name: unfinishedLabel })).toHaveAttribute('aria-label', unfinishedLabel);
+    } finally {
+      await i18n.changeLanguage(previousLanguage);
+    }
   });
 
   // **拒否は維持する。**フォーカスできることと、動かせることは別。
