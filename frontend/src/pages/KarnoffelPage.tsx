@@ -251,8 +251,8 @@ function KarnoffelPageContent() {
                 <span className="text-ds-text-muted text-sm">{t('trick')}</span>
                 {state.trick.map((c, i) => {
                   const seatIdx = (state.trickLeaderIdx + i) % state.players.length;
-                  const player = state.players.find((p) => p.id === seatIdx);
-                  const name = t('seatPlayer', { idx: seatIdx, name: playerLabel(seatIdx, player?.isHuman ?? false) });
+                  const isHuman = state.players.some((p) => p.id === seatIdx && p.isHuman);
+                  const name = t('seatPlayer', { idx: seatIdx, name: playerLabel(seatIdx, isHuman) });
                   return (
                     <div key={`trick-${c.design}-${c.value}-${i}`} className="flex flex-col items-center">
                       <span className="mb-1 text-ds-text-muted text-xs" aria-hidden="true">
