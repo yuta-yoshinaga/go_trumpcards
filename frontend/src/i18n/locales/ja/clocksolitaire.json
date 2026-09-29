@@ -25,7 +25,9 @@
     "speedFast": "高速"
   },
   "step": "ステップ",
+  "stepAnnouncement": "{{card}}を{{hour}}時の山に配置しました",
   "stepCount": "ステップ数",
+  "stepKingAnnouncement": "{{card}}を中央（K）の山に配置しました",
   "stopAutoplay": "停止",
   "title": "クロックソリティア",
   "tutorial": {

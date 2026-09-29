@@ -25,7 +25,9 @@
     "speedFast": "Fast"
   },
   "step": "Step",
+  "stepAnnouncement": "Moved {{card}} to the {{hour}} o’clock pile",
   "stepCount": "Steps",
+  "stepKingAnnouncement": "Moved {{card}} to the center (K) pile",
   "stopAutoplay": "Stop",
   "title": "Clock Solitaire",
   "tutorial": {
