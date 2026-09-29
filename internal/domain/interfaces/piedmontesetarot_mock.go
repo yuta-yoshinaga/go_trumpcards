@@ -169,6 +169,15 @@ func (_m *MockPiedmonteseTarotGame) GetDiscardableIndices() []int {
 	return nil
 }
 
+// GetScarto モック
+func (_m *MockPiedmonteseTarotGame) GetScarto() []*domain.Card {
+	ret := _m.Called()
+	if v, ok := ret.Get(0).([]*domain.Card); ok {
+		return v
+	}
+	return nil
+}
+
 // GetHint モック
 func (_m *MockPiedmonteseTarotGame) GetHint() *domain.PiedmonteseTarotHint {
 	ret := _m.Called()

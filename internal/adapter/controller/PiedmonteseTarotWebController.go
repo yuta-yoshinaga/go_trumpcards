@@ -56,6 +56,7 @@ type PiedmonteseTarotWebOutput struct {
 	LeadPlayerIdx    int                                `json:"leadPlayerIdx"`
 	DealerIdx        int                                `json:"dealerIdx"`
 	ScartoCount      int                                `json:"scartoCount"`
+	ScartoCards      []*WebOutputCard                   `json:"scartoCards"`
 	// TalonSize は親が捨てる枚数 (席数で変わる: 4 人なら 2、3 人なら 3)。
 	TalonSize       int                   `json:"talonSize"`
 	CurrentTrick    []*WebOutputTrickCard `json:"currentTrick"`
@@ -120,6 +121,7 @@ func newPiedmonteseTarotDefaultOutput(msg string) *PiedmonteseTarotWebOutput {
 	return &PiedmonteseTarotWebOutput{
 		Players:         make([]*PiedmonteseTarotWebOutputPlayer, 0),
 		CurrentTrick:    make([]*WebOutputTrickCard, 0),
+		ScartoCards:     make([]*WebOutputCard, 0),
 		PlayableIndices: make([]int, 0),
 		PlayerScores:    make([]int, 0),
 		DealScores:      make([]int, 0),

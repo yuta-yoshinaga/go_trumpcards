@@ -78899,6 +78899,11 @@ components:
         scartoCount:
           type: integer
           description: "Cards the dealer has buried so far this deal."
+        scartoCards:
+          type: array
+          description: "Cards the dealer buried, populated only after the deal ends."
+          items:
+            $ref: '#/components/schemas/Card'
         talonSize:
           type: integer
           description: "Cards the burial takes: 2 at four seats, 3 at three seats. Never hardcode it."
