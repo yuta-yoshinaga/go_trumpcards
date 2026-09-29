@@ -234,7 +234,7 @@ function ZwanzigerrufenPageContent() {
               leadSuit={
                 state.currentTrick.length > 0
                   ? isSuitDesign(state.currentTrick[0].card.design) &&
-                    !['✦', '★'].includes(state.currentTrick[0].card.glyph ?? '')
+                    !['✦', '★'].includes(String(state.currentTrick[0].card.glyph))
                     ? suitSymbol(state.currentTrick[0].card.design)
                     : t('leadTarock')
                   : undefined
