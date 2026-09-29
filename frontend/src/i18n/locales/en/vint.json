@@ -13,6 +13,7 @@
   "hiddenHand": "hidden ({{count}})",
   "yourHand": "Your hand",
   "trick": "Trick",
+  "trickCardLabel": "{{card}} ({{name}})",
   "tricksWon": "Tricks {{n}}",
   "noDummyNote": "There is NO DUMMY — even your partner's hand stays concealed to the end.",
   "ladderTitle": "Bidding order (level-1 trick value in brackets)",

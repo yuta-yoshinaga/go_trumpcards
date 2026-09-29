@@ -342,6 +342,26 @@ describe('VintPage', () => {
     await waitFor(() => expect(screen.queryByTestId('vint-trick')).not.toBeInTheDocument());
   });
 
+  it('shows each trick card under its leader-relative player and includes the player in its accessible name', async () => {
+    mockExec.mockResolvedValue(
+      makeState({
+        trickLeaderIdx: 2,
+        trick: [card('SPADE', 1), card('HEART', 2)],
+      }),
+    );
+    renderWithProviders(<VintPage />);
+
+    await waitFor(() => expect(screen.getByTestId('vint-trick')).toBeInTheDocument());
+
+    const trick = screen.getByTestId('vint-trick');
+    expect(trick).toHaveTextContent('CPU 2');
+    expect(trick).toHaveTextContent('CPU 3');
+    const cards = trick.querySelectorAll('img');
+    expect(cards).toHaveLength(2);
+    expect(cards[0]).toHaveAccessibleName('♠ A（CPU 2）');
+    expect(cards[1]).toHaveAccessibleName('♥ 2（CPU 3）');
+  });
+
   // **人間の入札手番でのみ注意事項を出す。**他人の手番やプレイ中には出ない。
   it('renders the bid notice only on human bid turn', async () => {
     mockExec.mockResolvedValue(makeState({ phase: VintPhase.BID, bidPlayerIdx: 0, gameEndFlag: false }));
