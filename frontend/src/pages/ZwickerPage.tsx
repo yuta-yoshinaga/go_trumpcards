@@ -302,7 +302,6 @@ function ZwickerPageContent() {
                   <div className="mt-2 flex flex-wrap justify-center gap-2">
                     {tableSel.map((index) => {
                       const card = state.tableCards[index];
-                      if (!card) return null;
                       return (
                         <button
                           key={`selected-table-${index.toString()}`}
@@ -317,7 +316,6 @@ function ZwickerPageContent() {
                     })}
                     {buildSel.map((index) => {
                       const build = state.builds[index];
-                      if (!build) return null;
                       return (
                         <button
                           key={`selected-build-${index.toString()}`}
