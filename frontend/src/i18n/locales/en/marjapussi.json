@@ -25,6 +25,8 @@
   "team0": "Team 0 (You & CPU 2)",
   "team1": "Team 1 (CPU 1 & CPU 3)",
   "teamScore": "Team Score: {{score}}",
+  "teamScoreUpdated": "{{team}} score: {{score}}",
+  "listSeparator": ", ",
   "progressLabel": "Progress: {{score}} / {{target}}",
   "marriageAvailable": "Marriage available: {{list}} (lead K or Q while holding both to declare)",
   "marriageHistory": "Marriage history this round",
