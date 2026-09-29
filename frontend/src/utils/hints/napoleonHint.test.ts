@@ -84,6 +84,7 @@ function makeState(overrides: Partial<NapoleonResponse> = {}): NapoleonResponse 
     trickNumber: 1,
     currentPlayerIdx: 0,
     bidPlayerIdx: 0,
+    leadPlayerIdx: 0,
     currentTrick: [],
     trumpSuit: 1,
     adjutantCard: null,

@@ -427,6 +427,7 @@ function NapoleonPageContent() {
                 {/* Current trick */}
                 <TrickDisplay
                   currentTrick={state.currentTrick}
+                  winnerIdx={isTrickEnd ? state.leadPlayerIdx : undefined}
                   players={state.players}
                   cardWidth={cardWidth}
                   label={t('currentTrick')}
