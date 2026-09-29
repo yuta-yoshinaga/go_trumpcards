@@ -52995,6 +52995,9 @@ components:
           type: boolean
         chips:
           type: integer
+        netChange:
+          type: integer
+          description: Net chip change since this round began, before antes were taken
         standing:
           type: boolean
           description: Whether this player has said "no more cards" for the round

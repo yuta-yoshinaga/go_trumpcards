@@ -22,6 +22,7 @@ const player = (
   id,
   isHuman: id === 0,
   chips: 200,
+  netChange: 0,
   standing: false,
   out: false,
   roundBet: 10,
@@ -59,6 +60,17 @@ beforeEach(() => {
 });
 
 describe('SevenTwentySevenPage', () => {
+  it("shows every seat's server provided round chip change in the result", async () => {
+    mockExec.mockResolvedValue({
+      ...baseState,
+      phase: SevenTwentySevenPhase.RESULT,
+      players: [player(0, { netChange: 30 }), player(1, { netChange: -10 }), player(2, { netChange: 0 }), player(3)],
+    });
+    renderWithProviders(<SevenTwentySevenPage />);
+    await waitFor(() => expect(screen.getByTestId('s27-player-0')).toHaveTextContent('+30 チップ'));
+    expect(screen.getByTestId('s27-player-1')).toHaveTextContent('-10 チップ');
+    expect(screen.getByTestId('s27-player-2')).toHaveTextContent('±0 チップ');
+  });
   it('explains that an exhausted deck ended the draw and shows the next-round action', async () => {
     mockExec.mockResolvedValue({
       ...baseState,

@@ -36,6 +36,7 @@
   "deckEmptyResult": "The deck ran out during this round.",
   "roundResult": {
     "title": "Round result",
+    "netChange": "{{change}} chips",
     "carry": "Everyone busted both ways. Pot {{pot}} carries over (carry #{{count}})",
     "scoop": "{{name}} scooped both sides and takes the whole pot",
     "lowWinner": "Low (7): {{name}} ({{score}})",

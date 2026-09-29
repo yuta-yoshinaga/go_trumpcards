@@ -36,6 +36,7 @@
   "deckEmptyResult": "このラウンドで山札がすべて配られました。",
   "roundResult": {
     "title": "ラウンド結果",
+    "netChange": "{{change}} チップ",
     "carry": "全員が両側とも超えました。ポット {{pot}} は次のラウンドへ持ち越し（{{count}} 回目）",
     "scoop": "{{name}} が両側を制して総取りしました",
     "lowWinner": "7側: {{name}}（{{score}}）",
