@@ -334,7 +334,11 @@ function PageOnePageContent() {
                       type="button"
                       key={`${card.design}-${card.value}-${idx}`}
                       onClick={() => toggleCard(idx)}
-                      aria-label={playable ? `${cardAlt(card)} (${t('playableAria')})` : cardAlt(card)}
+                      aria-label={t(playable ? 'handCardPlayableAria' : 'handCardAria', {
+                        card: cardAlt(card),
+                        playable: t('playableAria'),
+                        position: idx,
+                      })}
                       aria-pressed={selectedCardIndices.includes(idx)}
                       data-playable={playable || undefined}
                       className={`transition-transform ${focusRingCard} ${
