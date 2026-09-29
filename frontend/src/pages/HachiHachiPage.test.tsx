@@ -88,6 +88,17 @@ describe('HachiHachiPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndex: 0, fieldIndex: 1 }));
   });
 
+  it('exposes hand selection and clearing through aria-pressed', async () => {
+    mockExec.mockResolvedValue(makeHachiHachiState({ captureOptions: { 0: [0, 1] } }));
+    renderWithProviders(<HachiHachiPage />);
+    const handCard = await screen.findByTestId('hand-card-0');
+    expect(handCard).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(handCard);
+    expect(handCard).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(handCard).toHaveAttribute('aria-pressed', 'false');
+  });
+
   it('names each field card and exposes whether it is a capture candidate', async () => {
     const state = makeHachiHachiState({ captureOptions: { 0: [0, 1] } });
     mockExec.mockResolvedValue({ ...state, fieldCards: [...state.fieldCards, state.fieldCards[1]] });
