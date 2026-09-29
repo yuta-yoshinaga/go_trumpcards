@@ -27,6 +27,9 @@ func setupDoppelkopfWebMock() *interfaces.MockDoppelkopfGame {
 	m.On("GetDealerIdx").Return(0)
 	m.On("IsSoloRe").Return(false)
 	m.On("AreTeamsRevealed").Return(false)
+	for i := 0; i < domain.DoppelkopfPlayerCnt; i++ {
+		m.On("IsTeamKnown", 0, i).Return(i == 0).Maybe()
+	}
 	m.On("IsReAnnounced").Return(false)
 	m.On("IsKontraAnnounced").Return(false)
 	m.On("CanHumanAnnounce").Return(false)
@@ -242,6 +245,36 @@ func TestDoppelkopfWebPresenter_Output(t *testing.T) {
 		assert.NoError(t, json.Unmarshal([]byte(result), &resObj))
 		assert.True(t, resObj.YouAreRe)
 	})
+}
+
+func TestDoppelkopfWebPresenter_TeamKnownControlsIsRe(t *testing.T) {
+	p := new(presenter.DoppelkopfWebPresenter)
+	m, _ := setupDoppelkopfWebMockWithPlayers()
+	filtered := m.ExpectedCalls[:0]
+	for _, call := range m.ExpectedCalls {
+		if call.Method != "IsTeamKnown" {
+			filtered = append(filtered, call)
+		}
+	}
+	m.ExpectedCalls = filtered
+	for i := 0; i < domain.DoppelkopfPlayerCnt; i++ {
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "IsRe")
+	}
+	m.On("IsRe", 0).Return(false)
+	m.On("IsRe", 1).Return(true)
+	m.On("IsRe", 2).Return(true)
+	m.On("IsRe", 3).Return(false)
+	m.On("IsTeamKnown", 0, 0).Return(true)
+	m.On("IsTeamKnown", 0, 1).Return(false)
+	m.On("IsTeamKnown", 0, 2).Return(true)
+	m.On("IsTeamKnown", 0, 3).Return(false)
+	result := p.Output(m, nil)
+	var output controller.DoppelkopfWebOutput
+	assert.NoError(t, json.Unmarshal([]byte(result), &output))
+	assert.False(t, output.Players[1].TeamKnown)
+	assert.False(t, output.Players[1].IsRe)
+	assert.True(t, output.Players[2].TeamKnown)
+	assert.True(t, output.Players[2].IsRe)
 }
 
 func TestDoppelkopfWebPresenter_HintOutput(t *testing.T) {

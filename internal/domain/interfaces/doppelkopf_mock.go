@@ -147,6 +147,12 @@ func (_m *MockDoppelkopfGame) AreTeamsRevealed() bool {
 	return ret.Get(0).(bool)
 }
 
+// IsTeamKnown モック
+func (_m *MockDoppelkopfGame) IsTeamKnown(viewerIdx, playerIdx int) bool {
+	ret := _m.Called(viewerIdx, playerIdx)
+	return ret.Bool(0)
+}
+
 // IsReAnnounced モック
 func (_m *MockDoppelkopfGame) IsReAnnounced() bool {
 	ret := _m.Called()

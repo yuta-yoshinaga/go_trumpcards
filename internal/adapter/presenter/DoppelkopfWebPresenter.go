@@ -108,16 +108,20 @@ func (p *DoppelkopfWebPresenter) playableIndices(g interfaces.DoppelkopfGame) []
 // buildPlayersOutput プレイヤー情報を構築
 func (p *DoppelkopfWebPresenter) buildPlayersOutput(g interfaces.DoppelkopfGame) []*controller.DoppelkopfWebOutputPlayer {
 	out := make([]*controller.DoppelkopfWebOutputPlayer, 0)
-	revealed := g.AreTeamsRevealed()
+	humanIdx := -1
+	for i := 0; i < g.GetPlayerCnt(); i++ {
+		if player := g.GetPlayer(i); player != nil && player.GetIsHuman() {
+			humanIdx = i
+			break
+		}
+	}
 	for i := 0; i < g.GetPlayerCnt(); i++ {
 		player := g.GetPlayer(i)
 		if player == nil {
 			continue
 		}
-		isRe := false
-		if revealed {
-			isRe = g.IsRe(i)
-		}
+		known := g.IsTeamKnown(humanIdx, i)
+		isRe := known && g.IsRe(i)
 		out = append(out, &controller.DoppelkopfWebOutputPlayer{
 			ID:         i,
 			IsHuman:    player.GetIsHuman(),
@@ -126,6 +130,7 @@ func (p *DoppelkopfWebPresenter) buildPlayersOutput(g interfaces.DoppelkopfGame)
 			TrickCount: player.GetTrickCount(),
 			Chips:      player.GetChips(),
 			IsRe:       isRe,
+			TeamKnown:  known,
 		})
 	}
 	return out

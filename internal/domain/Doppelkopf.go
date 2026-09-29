@@ -74,6 +74,8 @@ type Doppelkopf struct {
 	lastTrickPoints  int
 	dealerIdx        int
 	reTeam           [DoppelkopfPlayerCnt]bool // Re チームのメンバー
+	teamShown        [DoppelkopfPlayerCnt]bool // 公開情報でチームが判明したプレイヤー
+	clubQueensPlayed int                       // このラウンドで出た ♣Q の枚数 (2 なら Re 全員が判明)
 	soloRe           bool                      // 1 人が ♣Q を 2 枚持つソロ Re
 	teamsRevealed    bool                      // ラウンド終了時にチームを公開したか
 	reAnnounced      bool                      // Re 宣言済みか
@@ -139,6 +141,8 @@ func (g *Doppelkopf) startRound() {
 	g.reTeam = [DoppelkopfPlayerCnt]bool{}
 	g.soloRe = false
 	g.teamsRevealed = false
+	g.teamShown = [DoppelkopfPlayerCnt]bool{}
+	g.clubQueensPlayed = 0
 	g.reAnnounced = false
 	g.kontraAnnounced = false
 	g.roundRePts = 0
@@ -224,6 +228,7 @@ func (g *Doppelkopf) canAnnounce(playerIdx int) bool {
 
 // applyAnnounce playerIdx の自チーム宣言を反映する。
 func (g *Doppelkopf) applyAnnounce(playerIdx int) {
+	g.teamShown[playerIdx] = true
 	if g.reTeam[playerIdx] {
 		g.reAnnounced = true
 		g.appendLog(playerIdx, "announce_re", "doppelkopf.log.announceRe", map[string]string{"name": playerName(g.players, playerIdx)}, nil)
@@ -260,6 +265,10 @@ func (g *Doppelkopf) CpuPlay() {
 
 // playCard カードをプレイする共通処理。
 func (g *Doppelkopf) playCard(playerIdx int, card *Card) {
+	if card.GetDesign() == CardDesignClover && card.GetValue() == 12 {
+		g.teamShown[playerIdx] = true
+		g.clubQueensPlayed++
+	}
 	g.currentTrick = append(g.currentTrick, &TrickCard{PlayerIdx: playerIdx, Card: card})
 	g.appendLog(playerIdx, "play", "doppelkopf.log.play", map[string]string{"name": playerName(g.players, playerIdx), "card": cardStr(card)}, []*Card{card})
 
@@ -268,6 +277,23 @@ func (g *Doppelkopf) playCard(playerIdx int, card *Card) {
 	} else {
 		g.currentPlayerIdx = (g.currentPlayerIdx + 1) % DoppelkopfPlayerCnt
 	}
+}
+
+// IsTeamKnown 指定プレイヤーのチームが viewerIdx に知られているかを返す。
+func (g *Doppelkopf) IsTeamKnown(viewerIdx, playerIdx int) bool {
+	if playerIdx < 0 || playerIdx >= DoppelkopfPlayerCnt || viewerIdx < 0 || viewerIdx >= DoppelkopfPlayerCnt {
+		return false
+	}
+	if g.teamsRevealed || playerIdx == viewerIdx || g.teamShown[playerIdx] || g.clubQueensPlayed == 2 {
+		return true
+	}
+	knownRe := 0
+	for p := 0; p < DoppelkopfPlayerCnt; p++ {
+		if g.reTeam[p] && (g.teamShown[p] || p == viewerIdx) {
+			knownRe++
+		}
+	}
+	return knownRe == 2
 }
 
 // ResolveTrick トリックを解決して勝者を決定する。
@@ -926,6 +952,8 @@ type doppelkopfJSON struct {
 	ReTeam           [DoppelkopfPlayerCnt]bool `json:"rt"`
 	SoloRe           bool                      `json:"sr"`
 	TeamsRevealed    bool                      `json:"tv"`
+	TeamShown        [DoppelkopfPlayerCnt]bool `json:"ts"`
+	ClubQueensPlayed int                       `json:"cq"`
 	ReAnnounced      bool                      `json:"ra"`
 	KontraAnnounced  bool                      `json:"ka"`
 	RoundRePts       int                       `json:"rp"`
@@ -953,6 +981,8 @@ func (g *Doppelkopf) MarshalJSON() ([]byte, error) {
 		ReTeam:           g.reTeam,
 		SoloRe:           g.soloRe,
 		TeamsRevealed:    g.teamsRevealed,
+		TeamShown:        g.teamShown,
+		ClubQueensPlayed: g.clubQueensPlayed,
 		ReAnnounced:      g.reAnnounced,
 		KontraAnnounced:  g.kontraAnnounced,
 		RoundRePts:       g.roundRePts,
@@ -1003,6 +1033,8 @@ func (g *Doppelkopf) UnmarshalJSON(data []byte) error {
 	g.reTeam = j.ReTeam
 	g.soloRe = j.SoloRe
 	g.teamsRevealed = j.TeamsRevealed
+	g.teamShown = j.TeamShown
+	g.clubQueensPlayed = j.ClubQueensPlayed
 	g.reAnnounced = j.ReAnnounced
 	g.kontraAnnounced = j.KontraAnnounced
 	g.roundRePts = j.RoundRePts
