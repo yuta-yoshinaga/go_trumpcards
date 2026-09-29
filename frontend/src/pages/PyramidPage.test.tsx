@@ -85,6 +85,16 @@ beforeEach(() => {
 });
 
 describe('PyramidPage', () => {
+  it('announces the waste count when its top card receives focus', async () => {
+    mockExec.mockResolvedValue({ ...playingState, waste: [card('CLOVER', 3), card('SPADE', 13)] });
+    renderWithProviders(<PyramidPage />);
+
+    const wasteCard = await screen.findByRole('button', { name: '♠ K （単独除去可能なK）' });
+    const count = screen.getByText('2枚');
+    expect(count).toHaveAttribute('id', 'pyramid-waste-count');
+    expect(wasteCard).toHaveAttribute('aria-describedby', 'pyramid-waste-count');
+  });
+
   it('conveys blocked / selected / pair-candidate state in the card aria-labels', async () => {
     renderWithProviders(<PyramidPage />);
     await screen.findByLabelText('♠ 10');
