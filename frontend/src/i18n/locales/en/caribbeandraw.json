@@ -64,6 +64,11 @@
     "title": "Settings"
   },
   "betGuide": "Set your ante and optional jackpot side bet",
+  "betError": "You cannot bet because you do not have enough chips",
+  "betPreview": {
+    "required": "Total chips required (ante and jackpot): {{amount}}",
+    "shortfall": "Additional chips needed: {{amount}}"
+  },
   "payoutRef": {
     "title": "Payout Table",
     "playHeader": "Play Bet (on Call)",

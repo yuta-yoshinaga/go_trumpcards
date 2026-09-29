@@ -64,6 +64,11 @@
     "title": "設定"
   },
   "betGuide": "アンテと任意のジャックポットを設定してベット",
+  "betError": "所持チップが不足しているためベットできません",
+  "betPreview": {
+    "required": "必要チップ合計（アンテ・ジャックポット）: {{amount}}",
+    "shortfall": "チップ不足: {{amount}}"
+  },
   "payoutRef": {
     "title": "配当表",
     "playHeader": "プレイ配当（コール時）",
