@@ -82,6 +82,28 @@ func TestKempsCuiPresenter_Output(t *testing.T) {
 	})
 }
 
+func TestKempsCuiPresenter_ShowsConfiguredTargetScore(t *testing.T) {
+	origLang := i18n.Lang()
+	t.Cleanup(func() { i18n.SetLang(origLang) })
+
+	g := setupKempsTest()
+	cfg := g.GetConfig()
+	cfg.TargetScore = 8
+	g.SetConfig(cfg)
+	p := new(presenter.KempsCuiPresenter)
+
+	i18n.SetLang("ja")
+	assert.Contains(t, p.Output(g, nil), "目標8点")
+
+	i18n.SetLang("en")
+	assert.Contains(t, p.Output(g, nil), "Target: 8 points")
+
+	cfg.TargetScore = 12
+	g.SetConfig(cfg)
+	assert.Contains(t, p.Output(g, nil), "Target: 12 points")
+	assert.NotContains(t, p.Output(g, nil), "Target: 8 points")
+}
+
 func TestKempsCuiPresenter_ActionLogOutput(t *testing.T) {
 	p := new(presenter.KempsCuiPresenter)
 	g := setupKempsTest()

@@ -21,7 +21,8 @@ func (p *KempsCuiPresenter) Output(g interfaces.KempsGame, lastErr error) string
 		b.WriteString(i18n.Tf("kemps.roundLine",
 			"round", strconv.Itoa(g.GetRoundNumber()),
 			"teamA", strconv.Itoa(g.GetTeamScore(domain.KempsTeamOf(0))),
-			"teamB", strconv.Itoa(g.GetTeamScore(1-domain.KempsTeamOf(0)))) + "\n")
+			"teamB", strconv.Itoa(g.GetTeamScore(1-domain.KempsTeamOf(0))),
+			"target", strconv.Itoa(g.GetConfig().TargetScore)) + "\n")
 		b.WriteString(i18n.Tf("kemps.signalLine",
 			"signal", kempsSignalName(g.GetSignalType())) + "\n")
 		b.WriteString("----------\n")

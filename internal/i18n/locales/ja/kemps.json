@@ -8,7 +8,7 @@
   "helpNext": "  n, next              次のラウンドへ進む",
   "labelHuman": "あなた",
   "labelCpu": "CPU",
-  "roundLine": "ラウンド{{round}}  チームA: {{teamA}}点  チームB: {{teamB}}点",
+  "roundLine": "ラウンド{{round}}  チームA: {{teamA}}点  チームB: {{teamB}}点  目標{{target}}点",
   "signalLine": "あなたのシグナル: {{signal}}",
   "signalSound": "音",
   "signalBlink": "瞬き",
