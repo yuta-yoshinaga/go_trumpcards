@@ -12,7 +12,11 @@
     "you": "You",
     "cpu": "CPU{{idx}}",
     "yourTurn": "Your turn to turn a card",
-    "outOfCards": "out of cards"
+    "outOfCards": "out of cards",
+    "pendingSnap": "CPU call booked (about {{seconds}}s remaining). You can call Snap before the deadline.",
+    "pendingStep": "CPU turn booked (about {{seconds}}s remaining).",
+    "pendingSnapStart": "CPU call booked. You can call Snap before the deadline.",
+    "pendingStepStart": "CPU turn booked."
   },
   "event": {
     "step": "{{name}} turned a card over",

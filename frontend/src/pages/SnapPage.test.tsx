@@ -149,6 +149,60 @@ describe('SnapPage', () => {
     expect(mockExec).not.toHaveBeenCalledWith('tick');
   });
 
+  it.each([
+    [1, /CPUの宣言予約中/],
+    [2, /CPUのめくり予約中/],
+  ])('shows the booked CPU action and approximate remaining time for kind %s', async (pendingKind, expected) => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.setSystemTime(10_000);
+    mockExec.mockResolvedValue(makeState({ pendingKind, pendingDeadlineMs: 12_400 }));
+    renderWithProviders(<SnapPage />);
+    const status = await screen.findByTestId('sp-pending');
+    expect(status).toHaveTextContent(expected);
+    expect(status).toHaveTextContent(/3秒/);
+    if (pendingKind === 1) expect(status).toHaveTextContent(/期限前にスナップ/);
+  });
+
+  it('keeps the live announcement unchanged while the visible countdown ticks', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.setSystemTime(10_000);
+    mockExec.mockResolvedValue(makeState({ pendingKind: 2, pendingDeadlineMs: 12_400 }));
+    renderWithProviders(<SnapPage />);
+    const announcement = await screen.findByTestId('sp-pending-announcement');
+    const startingText = announcement.textContent;
+    expect(startingText).toMatch(/CPUのめくりが予約されました/);
+    expect(screen.getByTestId('sp-pending')).toHaveTextContent(/3秒/);
+
+    await act(async () => vi.advanceTimersByTime(1_000));
+
+    expect(announcement).toHaveTextContent(startingText ?? '');
+    expect(screen.getByTestId('sp-pending')).toHaveTextContent(/2秒/);
+  });
+
+  it('announces when a CPU booking starts', async () => {
+    mockExec.mockImplementation(async (command) =>
+      makeState({ pendingKind: command === 'step' ? 1 : 0, pendingDeadlineMs: Date.now() + 2_000 }),
+    );
+    renderWithProviders(<SnapPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.getByTestId('sp-pending-announcement')).toBeEmptyDOMElement();
+
+    fireEvent.click(screen.getByTestId('sp-step-btn'));
+
+    expect(await screen.findByTestId('sp-pending-announcement')).toHaveTextContent(/CPUの宣言が予約されました/);
+  });
+
+  it('clears the booked action display when the reservation is resolved', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    mockExec.mockImplementation(async (command) =>
+      makeState({ pendingKind: command === 'reset' ? 1 : 0, pendingDeadlineMs: Date.now() + 1_000 }),
+    );
+    renderWithProviders(<SnapPage />);
+    expect(await screen.findByTestId('sp-pending')).toHaveTextContent(/CPUの宣言予約中/);
+    await act(async () => vi.advanceTimersByTime(150));
+    expect(screen.queryByTestId('sp-pending')).not.toBeInTheDocument();
+  });
+
   it('stops polling once the game ends', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     mockExec.mockResolvedValue(makeState({ pendingKind: 1, gameEndFlag: true, phase: 1, winnerIdx: 0 }));
