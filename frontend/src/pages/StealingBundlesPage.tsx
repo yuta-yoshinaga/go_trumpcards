@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { stealingbundlesApi } from '../api/gameApi';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardImage } from '../components/CardImage';
@@ -72,6 +72,21 @@ function StealingBundlesPageContent() {
   const [playerCnt, setPlayerCnt] = useState(4);
   const [selected, setSelected] = useState<number | null>(null);
   const [actionAnnouncement, setActionAnnouncement] = useState('');
+  const [turnAnnouncement, setTurnAnnouncement] = useState('');
+  const previousPlayerIdx = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!state) return;
+    if (previousPlayerIdx.current !== null && previousPlayerIdx.current !== state.currentPlayerIdx) {
+      const player = state.players[state.currentPlayerIdx];
+      setTurnAnnouncement(
+        player?.isHuman
+          ? t('status.turnYou')
+          : t('status.turnCpu', { name: t('header.cpu', { idx: String(state.currentPlayerIdx) }) }),
+      );
+    }
+    previousPlayerIdx.current = state.currentPlayerIdx;
+  }, [state, t]);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('stealingbundles');
   const cliConfig: CliGameConfig<StealingBundlesResponse, Parameters<typeof stealingbundlesApi.exec>> = useMemo(
@@ -183,6 +198,9 @@ function StealingBundlesPageContent() {
         <>
           <div className="sr-only" role="status" aria-live="polite" data-testid="sb-action-announcement">
             {actionAnnouncement}
+          </div>
+          <div className="sr-only" role="status" aria-live="polite" data-testid="sb-turn-announcement">
+            {turnAnnouncement}
           </div>
           <div className="flex-1 overflow-y-auto pt-3 px-4 lg:px-8">
             <div className="text-ds-text-primary text-center mb-2" data-testid="sb-header">
