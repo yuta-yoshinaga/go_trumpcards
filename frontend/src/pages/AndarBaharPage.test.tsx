@@ -155,6 +155,39 @@ describe('AndarBaharPage', () => {
     );
   });
 
+  it('limits both stakes by the remaining chips and never submits an over-budget pair', async () => {
+    mockApi.mockResolvedValue({ ...betState, chips: 200 });
+    renderWithProviders(<AndarBaharPage />);
+
+    const mainInput = (await screen.findByLabelText('ベット額')) as HTMLInputElement;
+    expect(mainInput.max).toBe('200');
+    fireEvent.change(mainInput, { target: { value: '150' } });
+    fireEvent.change(screen.getByLabelText('サイドベット'), {
+      target: { value: String(AndarBaharSideBand.SIX_TO_TEN) },
+    });
+
+    const sideInput = (await screen.findByLabelText('サイドベット額')) as HTMLInputElement;
+    expect(sideInput.max).toBe('50');
+    fireEvent.change(sideInput, { target: { value: '100' } });
+    expect(sideInput).toHaveValue('50');
+
+    fireEvent.change(mainInput, { target: { value: '180' } });
+    expect(mainInput).toHaveValue('150');
+    expect(sideInput).toHaveValue('50');
+    fireEvent.click(screen.getByRole('button', { name: /アンダーに賭ける/ }));
+    await waitFor(() =>
+      expect(mockApi).toHaveBeenCalledWith('bet', 150, AndarBaharColumn.ANDAR, 50, AndarBaharSideBand.SIX_TO_TEN),
+    );
+  });
+
+  it('uses the full chip balance for the main stake when no side bet is selected', async () => {
+    mockApi.mockResolvedValue({ ...betState, chips: 200 });
+    renderWithProviders(<AndarBaharPage />);
+    const mainInput = (await screen.findByLabelText('ベット額')) as HTMLInputElement;
+    expect(mainInput.max).toBe('200');
+    expect(screen.queryByLabelText('サイドベット額')).not.toBeInTheDocument();
+  });
+
   it('shows server-provided side-band probabilities beside payouts', async () => {
     mockApi.mockResolvedValue(betState);
     renderWithProviders(<AndarBaharPage />);
