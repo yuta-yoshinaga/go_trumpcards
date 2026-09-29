@@ -30,7 +30,7 @@
   "partieEnd": "パルティ終了",
   "partieWinner": "★ パルティ勝者: プレイヤー {{idx}}",
   "playHeader": "プレイフェーズ",
-  "playerStats": "手札: {{hand}} | トリック: {{tricks}} | ラウンド: {{round}} | マッチ: {{match}}",
+  "playerStats": "手札: {{hand}} | トリック: {{tricks}} | 宣言点: {{declaration}} | トリック点: {{trickScore}} | ボーナス点: {{bonus}} | ラウンド: {{round}} | マッチ: {{match}}",
   "roleElder": "Elder",
   "roleYounger": "Younger",
   "roundEnd": "ラウンド終了",

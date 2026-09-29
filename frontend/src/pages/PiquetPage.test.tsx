@@ -147,10 +147,20 @@ describe('PiquetPage', () => {
   });
 
   it('renders the translated per-player stats line', async () => {
-    mockExec.mockResolvedValue(makeState());
+    const state = makeState();
+    Object.assign(state.players[0]!, { declScore: 4, trickScore: 8, bonusScore: 10, roundScore: 22 });
+    Object.assign(state.players[1]!, { declScore: 3, trickScore: 6, bonusScore: 2, roundScore: 11 });
+    mockExec.mockResolvedValue(state);
     renderWithProviders(<PiquetPage />);
-    // ja: "手札: 12 | トリック: 0 | ラウンド: 0 | マッチ: 0" (PlayerCard.playerStats)
     await waitFor(() => expect(screen.getAllByText(/手札: 12/).length).toBeGreaterThan(0));
+    expect(screen.getByText(/宣言点: 4/)).toBeInTheDocument();
+    expect(screen.getByText(/トリック点: 8/)).toBeInTheDocument();
+    expect(screen.getByText(/ボーナス点: 10/)).toBeInTheDocument();
+    expect(screen.getByText(/ラウンド: 22/)).toBeInTheDocument();
+    expect(screen.getByText(/宣言点: 3/)).toBeInTheDocument();
+    expect(screen.getByText(/トリック点: 6/)).toBeInTheDocument();
+    expect(screen.getByText(/ボーナス点: 2/)).toBeInTheDocument();
+    expect(screen.getByText(/ラウンド: 11/)).toBeInTheDocument();
   });
 
   it.each([
