@@ -1,5 +1,8 @@
 {
   "handTotalHelp": "Declare Yaniv when your hand total is 5 or less; any excess becomes penalty points.",
+  "yanivGuidance": "Hand total: {{total}}. Declare Yaniv at 5 or less. {{availability}}",
+  "yanivAvailable": "Yaniv is available.",
+  "yanivUnavailable": "Yaniv is unavailable.",
   "button": {
     "discard": "Discard",
     "yaniv": "Yaniv!",

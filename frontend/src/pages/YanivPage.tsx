@@ -419,6 +419,12 @@ function YanivPageContent() {
                 ⚠️ {discardWarning}
               </div>
             )}
+            <div className="mb-2 text-center text-xs text-ds-text-primary" data-testid="yaniv-guidance">
+              {t('yanivGuidance', {
+                total: human.handTotal,
+                availability: t(canYaniv ? 'yanivAvailable' : 'yanivUnavailable'),
+              })}
+            </div>
             <div className="flex gap-2 justify-center flex-wrap" data-tutorial="y-action-buttons">
               <button
                 type="button"

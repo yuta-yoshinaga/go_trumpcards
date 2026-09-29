@@ -121,6 +121,26 @@ describe('YanivPage', () => {
     expect(yanivBtn.className).toContain('animate-pulse');
   });
 
+  it('shows the hand total, Yaniv threshold, and current availability beside the button', async () => {
+    renderWithProviders(<YanivPage />);
+    const guidance = await screen.findByTestId('yaniv-guidance');
+    expect(guidance).toHaveTextContent('手札合計: 3');
+    expect(guidance).toHaveTextContent('5以下で宣言可能');
+    expect(guidance).toHaveTextContent('宣言できます');
+    expect(screen.getByTestId('yaniv-button').parentElement?.parentElement).toContainElement(guidance);
+  });
+
+  it('shows Yaniv as unavailable when the hand total exceeds 5', async () => {
+    mockExec.mockResolvedValue(
+      makeState({ players: [player(0, true, [card('SPADE', 8)], { handTotal: 8 }), ...makeState().players.slice(1)] }),
+    );
+    renderWithProviders(<YanivPage />);
+    const guidance = await screen.findByTestId('yaniv-guidance');
+    expect(guidance).toHaveTextContent('手札合計: 8');
+    expect(guidance).toHaveTextContent('5以下で宣言可能');
+    expect(guidance).toHaveTextContent('宣言できません');
+  });
+
   it('explains the Yaniv threshold on the hand-total badge via a tooltip', async () => {
     renderWithProviders(<YanivPage />);
     const badge = await screen.findByTestId('hand-total-badge');
