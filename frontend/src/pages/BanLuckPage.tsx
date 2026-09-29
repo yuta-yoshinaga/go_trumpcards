@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { banluckApi } from '../api/gameApi';
 import { ActionLogPanel } from '../components/ActionLogPanel';
 import { CliTerminal } from '../components/cli/CliTerminal';
@@ -52,8 +52,20 @@ function BanLuckPageContent() {
     useGamePageSetup('banluck');
 
   const [bet, setBet] = useState(50);
+  const [turnAnnouncement, setTurnAnnouncement] = useState(false);
   const { cardWidth } = useCardDimensions();
   const { state, loading, error, exec: execApi, retry } = useGameApi(banluckApi.exec);
+  const previousHumanTurn = useRef<boolean | undefined>(undefined);
+
+  useEffect(() => {
+    // Before the first response there is nothing to compare against; recording
+    // `false` here would make the first loaded human turn count as a transition.
+    if (state?.phase === undefined) return;
+    const humanTurn = state.phase === BanLuckPhase.PLAY && state.isHumanTurn;
+    if (previousHumanTurn.current === false && humanTurn) setTurnAnnouncement(true);
+    else if (!humanTurn) setTurnAnnouncement(false);
+    previousHumanTurn.current = humanTurn;
+  }, [state?.isHumanTurn, state?.phase]);
 
   const { cliEnabled, toggleCli, logEntries, addInput, addOutput, addError, clearLog } = useCliMode('banluck');
   const cliConfig: CliGameConfig<BanLuckResponse, Parameters<typeof banluckApi.exec>> = useMemo(
@@ -129,6 +141,9 @@ function BanLuckPageContent() {
         <>
           <span data-testid="bl-chips">
             {t('label.chips')}: {human?.chips ?? 0}
+          </span>
+          <span className="sr-only" role="status" aria-live="polite" aria-atomic="true" data-testid="bl-turn-live">
+            {turnAnnouncement ? t('yourTurn') : ''}
           </span>
           <CliToggle cliEnabled={cliEnabled} onToggle={toggleCli} />
         </>

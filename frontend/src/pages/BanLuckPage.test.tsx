@@ -157,6 +157,34 @@ describe('BanLuckPage', () => {
     await waitFor(() => expect(mockApi).toHaveBeenCalledWith('hit'));
   });
 
+  it('初回表示では読み上げず、人間の手番への遷移でライブ領域を知らせる', async () => {
+    mockApi.mockResolvedValueOnce(base).mockResolvedValueOnce(playing());
+    renderWithProviders(<BanLuckPage />);
+
+    const announce = await screen.findByTestId('bl-turn-live');
+    expect(announce).toHaveAttribute('aria-live', 'polite');
+    expect(announce).toBeEmptyDOMElement();
+
+    fireEvent.click(screen.getByRole('button', { name: '配る' }));
+    await waitFor(() => expect(announce).toHaveTextContent('あなたの番です'));
+  });
+
+  it('最初の状態が人間の手番なら読み上げず、手番を離れて戻ったときに知らせる', async () => {
+    mockApi.mockResolvedValueOnce(playing()).mockResolvedValueOnce(base).mockResolvedValueOnce(playing());
+    renderWithProviders(<BanLuckPage />);
+
+    const announce = await screen.findByTestId('bl-turn-live');
+    expect(announce).toHaveAttribute('aria-live', 'polite');
+    expect(announce).toBeEmptyDOMElement();
+
+    fireEvent.click(screen.getByRole('button', { name: '引く' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: '配る' })).toBeInTheDocument());
+    expect(announce).toBeEmptyDOMElement();
+
+    fireEvent.click(screen.getByRole('button', { name: '配る' }));
+    await waitFor(() => expect(announce).toHaveTextContent('あなたの番です'));
+  });
+
   // **止まれるかどうかはサーバの値に従う。** ページが点数から計算し直すと、
   // 規則が 2 か所に分かれてズレる (#5304)。
   it('義務があるときは止めるボタンを出さない', async () => {
