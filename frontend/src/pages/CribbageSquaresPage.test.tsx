@@ -117,6 +117,22 @@ describe('CribbageSquaresPage', () => {
     expect(live).toHaveTextContent('スターター公開前の途中得点。行2が4点（15が2、ペア2）、列3が2点（ペア2）、合計6点');
   });
 
+  it('uses the no-scored-parts fallback for zero-score details', async () => {
+    renderWithProviders(<CribbageSquaresPage />);
+    await waitFor(() => expect(screen.getByTestId('cell-1-2')).toBeEnabled());
+
+    const board = makeState().board;
+    board[1][2] = { card: card('HEART', 10) };
+    mockExec.mockResolvedValue(makeState({ board, placedCount: 2 }));
+    fireEvent.click(screen.getByTestId('cell-1-2'));
+
+    await waitFor(() =>
+      expect(screen.getByTestId('cs-placement-announcement')).toHaveTextContent(
+        'スターター公開前の途中得点。行2が0点（得点項目なし）、列3が0点（得点項目なし）、合計0点',
+      ),
+    );
+  });
+
   it('does not announce non-placement commands or placements missing from the returned board', async () => {
     renderWithProviders(<CribbageSquaresPage />);
     await waitFor(() => expect(screen.getByTestId('cell-1-2')).toBeEnabled());
@@ -141,7 +157,7 @@ describe('CribbageSquaresPage', () => {
       makeState({
         board,
         phase: 1,
-        rowScores: [0, 12, 0, 0],
+        rowScores: [0, 6, 0, 0],
         colScores: [0, 0, 8, 0],
         rowDetails: [zero(), { ...zero(), fifteens: 4, pairs: 2, total: 6 }, zero(), zero()],
         colDetails: [zero(), zero(), { ...zero(), runs: 8, total: 8 }, zero()],
@@ -153,7 +169,7 @@ describe('CribbageSquaresPage', () => {
     fireEvent.click(screen.getByTestId('cell-1-2'));
     await waitFor(() =>
       expect(screen.getByTestId('cs-placement-announcement')).toHaveTextContent(
-        '行2が12点（15が4、ペア2）、列3が8点（ラン8）、合計20点',
+        '行2が6点（15が4、ペア2）、列3が8点（ラン8）、合計14点',
       ),
     );
   });

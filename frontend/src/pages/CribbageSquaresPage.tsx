@@ -117,8 +117,8 @@ function CribbageSquaresPageContent() {
       const breakdownLabel = (key: string, n: number) => t(`part.${key}`, { n });
       const rowParts = cribbageBreakdownParts(rowDetail, breakdownLabel).join(t('listSeparator')) || t('noScoredParts');
       const colParts = cribbageBreakdownParts(colDetail, breakdownLabel).join(t('listSeparator')) || t('noScoredParts');
-      const rowScore = isComplete ? result.rowScores[row] : (result.rowPartialDetails[row]?.total ?? 0);
-      const colScore = isComplete ? result.colScores[col] : (result.colPartialDetails[col]?.total ?? 0);
+      const rowScore = rowDetail?.total ?? 0;
+      const colScore = colDetail?.total ?? 0;
       setPlacementAnnouncement(
         t(isComplete ? 'placementAnnouncement' : 'placementAnnouncementPartial', {
           rowNo: row + 1,
