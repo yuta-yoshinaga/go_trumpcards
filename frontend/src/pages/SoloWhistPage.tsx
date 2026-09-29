@@ -376,6 +376,11 @@ function SoloWhistPageContent() {
                         <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
                           {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
                           {t('tricks', { count: p.trickCount })}
+                          {p.id === state.dealerIdx && (
+                            <span className={`ml-2 px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>
+                              {t('dealerBadge')}
+                            </span>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -386,6 +391,11 @@ function SoloWhistPageContent() {
                       <div key={p.id} className="text-ds-text-muted text-sm py-0.5">
                         {playerName(p.id, p.isHuman)}: {t('cards', { count: p.cardCount })} |{' '}
                         {t('tricks', { count: p.trickCount })}
+                        {p.id === state.dealerIdx && (
+                          <span className={`ml-2 px-1.5 py-0.5 rounded text-xs ${badgeWarningColors}`}>
+                            {t('dealerBadge')}
+                          </span>
+                        )}
                       </div>
                     ))}
                   </div>

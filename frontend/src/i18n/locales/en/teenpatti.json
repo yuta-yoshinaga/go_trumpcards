@@ -25,6 +25,7 @@
   "handLabel": "Your hand",
   "currentTurn": "Current turn: {{name}}",
   "playersTitle": "Players",
+  "dealerBadge": "Dealer",
   "badge": {
     "blind": "Blind",
     "seen": "Seen",
