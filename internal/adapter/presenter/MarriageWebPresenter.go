@@ -30,6 +30,13 @@ func (p *MarriageWebPresenter) Output(g interfaces.MarriageGame, lastErr error) 
 	if top := g.GetDiscardTop(); top != nil {
 		resObj.DiscardTop = cardToOutput(top)
 	}
+	discardPile := g.GetDiscardPile()
+	resObj.DiscardPile = make([]*controller.WebOutputCard, 0, len(discardPile))
+	for _, card := range discardPile {
+		if out := cardToOutput(card); out != nil {
+			resObj.DiscardPile = append(resObj.DiscardPile, out)
+		}
+	}
 	if wj := g.GetWildJoker(); wj != nil {
 		resObj.WildJoker = cardToOutput(wj)
 	}

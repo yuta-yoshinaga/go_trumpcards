@@ -27,6 +27,10 @@ func setupMarriageWebMock(phase domain.MarriagePhase, gameEnd bool) (*interfaces
 	m.On("GetDrawPileCount").Return(60)
 	m.On("GetDealerIdx").Return(0)
 	m.On("GetDiscardTop").Return(domain.NewCard(domain.CardDesignHeart, 7, false))
+	m.On("GetDiscardPile").Return([]*domain.Card{
+		domain.NewCard(domain.CardDesignSpade, 4, false),
+		domain.NewCard(domain.CardDesignHeart, 7, false),
+	})
 	m.On("GetWildJoker").Return(domain.NewCard(domain.CardDesignDiamond, 9, false))
 	m.On("GetWildRank").Return(9)
 	m.On("GetGameEndFlag").Return(gameEnd)
@@ -71,6 +75,9 @@ func TestMarriageWebPresenter_Output(t *testing.T) {
 		assert.Equal(t, 1, out.RoundNumber)
 		assert.Equal(t, 3, out.TargetRounds)
 		assert.Equal(t, 9, out.WildRank)
+		assert.Len(t, out.DiscardPile, 2)
+		assert.Equal(t, 4, out.DiscardPile[0].Value)
+		assert.Equal(t, 7, out.DiscardPile[1].Value)
 		assert.Equal(t, 3, out.Players[0].Maal)
 		assert.NotNil(t, out.WildJoker)
 		assert.Equal(t, "marriage.drawPhase", out.MessageCode)

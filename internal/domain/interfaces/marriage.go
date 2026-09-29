@@ -45,6 +45,8 @@ type MarriageGame interface {
 	GetDealerIdx() int
 	// GetDiscardTop 捨て札の一番上のカード
 	GetDiscardTop() *domain.Card
+	// GetDiscardPile 捨て札の履歴（古い順）
+	GetDiscardPile() []*domain.Card
 	// GetDrawPileCount 山札の残り枚数
 	GetDrawPileCount() int
 	// GetWildJoker ワイルドジョーカーカード（nil の場合あり）

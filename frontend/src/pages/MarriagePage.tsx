@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { marriageApi } from '../api/games/marriage';
 import { ActionLogSection } from '../components/ActionLogSection';
 import { CardNavShortcutsPanel } from '../components/CardNavShortcutsPanel';
@@ -103,6 +103,7 @@ const MARRIAGE_TUTORIAL_STEPS: TutorialStep[] = [
 export const MarriagePage = withTutorial(MarriagePageContent, 'marriage', MARRIAGE_TUTORIAL_STEPS);
 /** Inner content of the Marriage page, wrapped by TutorialProvider. */
 function MarriagePageContent() {
+  const [showDiscardHistory, setShowDiscardHistory] = useState(false);
   const { t, tc, actionLog, showActionLog, hideActionLog, confirmOpen, requestConfirm, confirmReset, cancelReset } =
     useGamePageSetup('marriage');
   const {
@@ -307,6 +308,34 @@ function MarriagePageContent() {
                     <div className="text-ds-text-muted text-sm">
                       <div>{t('discardTop')}</div>
                     </div>
+                  </div>
+                )}
+                {isDrawPhase && isHumanTurn && (
+                  <div className="my-2">
+                    <button
+                      type="button"
+                      className={btnPrimary}
+                      aria-expanded={showDiscardHistory}
+                      onClick={() => setShowDiscardHistory((shown) => !shown)}
+                    >
+                      {t(showDiscardHistory ? 'discardHistory.hide' : 'discardHistory.show')}
+                    </button>
+                    {showDiscardHistory && (
+                      <div className="mt-2 p-3 rounded bg-ds-surface" data-testid="marriage-discard-history">
+                        <div className="text-ds-text-muted text-sm mb-2">{t('discardHistory.title')}</div>
+                        <div className="flex flex-wrap gap-2">
+                          {state.discardPile.map((card, idx) => {
+                            const isTop = idx === state.discardPile.length - 1;
+                            return (
+                              <div key={`discard-${card.design}-${card.value}-${idx}`} className="text-center">
+                                <AnimatedCard card={card} width={cardWidth * 0.8} />
+                                {isTop && <div className="text-xs text-ds-accent">{t('discardHistory.top')}</div>}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

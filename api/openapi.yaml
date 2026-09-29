@@ -77484,6 +77484,11 @@ components:
           type: integer
         discardTop:
           $ref: '#/components/schemas/Card'
+        discardPile:
+          type: array
+          description: Discard history ordered from oldest to current top.
+          items:
+            $ref: '#/components/schemas/Card'
         gameEndFlag:
           type: boolean
         winnerIdx:
