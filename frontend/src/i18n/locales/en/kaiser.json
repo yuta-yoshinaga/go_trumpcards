@@ -19,6 +19,7 @@
   "hiddenHand": "hidden ({{count}})",
   "yourHand": "Your hand",
   "trick": "Trick",
+  "listSeparator": ", ",
   "scoreTitle": "Score",
   "handPoints": "This hand: {{t0}} to {{t1}}",
   "gameScores": "Game: {{t0}} to {{t1}}",

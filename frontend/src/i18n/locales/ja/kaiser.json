@@ -19,6 +19,7 @@
   "hiddenHand": "非公開 {{count}}枚",
   "yourHand": "あなたの手札",
   "trick": "場",
+  "listSeparator": "、",
   "scoreTitle": "得点",
   "handPoints": "この局: {{t0}} 対 {{t1}}",
   "gameScores": "通算: {{t0}} 対 {{t1}}",

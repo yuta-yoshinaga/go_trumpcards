@@ -379,9 +379,20 @@ describe('KaiserPage', () => {
 
   // **場に出たカードがある場合のみトリック領域を描画する。**まだ誰も出していない時は出ない。
   it('renders the trick area only when there are cards in the trick', async () => {
-    mockExec.mockResolvedValue(makeState({ trick: [card('SPADE', 1)] }));
+    mockExec.mockResolvedValue(
+      makeState({
+        trick: [card('SPADE', 1), card('HEART', 2), card('CLOVER', 3)],
+        trickLeaderIdx: 2,
+      }),
+    );
     const { unmount } = renderWithProviders(<KaiserPage />);
     await waitFor(() => expect(screen.getByTestId('kaiser-trick')).toBeInTheDocument());
+    const trick = screen.getByTestId('kaiser-trick');
+    expect(trick).toHaveTextContent('CPU 2');
+    expect(trick).toHaveTextContent('CPU 3');
+    expect(trick).toHaveTextContent('あなた');
+    expect(screen.getByAltText('CPU 2、♠ A')).toBeInTheDocument();
+    expect(trick.querySelector('span[aria-hidden="true"]')).toHaveTextContent('CPU 2');
     unmount();
 
     mockExec.mockResolvedValue(makeState({ trick: [] }));
