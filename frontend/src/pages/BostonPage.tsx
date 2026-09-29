@@ -311,7 +311,7 @@ function BostonPageContent() {
                 {state.trick.map((c, i) => {
                   const playerIdx = (state.trickLeaderIdx + i) % state.players.length;
                   const player = state.players[playerIdx];
-                  const name = playerLabel(player?.id ?? playerIdx, player?.isHuman ?? false);
+                  const name = playerLabel(player.id, player.isHuman);
                   return (
                     <div key={`trick-${c.design}-${c.value}-${i}`} className="text-center">
                       <CardImage
