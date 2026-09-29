@@ -253,6 +253,25 @@ function BadugiPageContent() {
         <>
           {/* Scrollable: CPU players + logs */}
           <div className={`flex-1 overflow-y-auto pt-4 px-5 lg:px-8 ${lgCardAreaConstraint}`}>
+            {isEnd && state?.roundResults && state.roundResults.length > 0 && (
+              <section
+                data-testid="bg-round-results"
+                aria-label={t('roundResults.title')}
+                className="mb-3 rounded-lg p-3 bg-ds-surface text-ds-text-primary"
+              >
+                <h2 className="font-bold mb-2">{t('roundResults.title')}</h2>
+                <ul className="space-y-1">
+                  {state.roundResults.map((result) => (
+                    <li key={result.playerIdx} className="flex justify-between gap-4">
+                      <span>
+                        {findPlayerName(state.players, result.playerIdx)}: {badugiHandName(result.handSize, t)}
+                      </span>
+                      <span className="tabular-nums">{t('roundResults.wonAmount', { amount: result.wonAmount })}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
             {/* CPU players */}
             {(() => {
               const cpuCards = cpuPlayers.map((p) => (

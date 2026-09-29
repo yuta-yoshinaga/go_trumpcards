@@ -50,6 +50,10 @@
     "folded": "あなたはフォールドしました。",
     "gameOver": "ゲーム終了"
   },
+  "roundResults": {
+    "title": "ラウンド結果",
+    "wonAmount": "獲得: {{amount}}チップ"
+  },
   "handName": {
     "1": "1カード",
     "2": "2カード",
