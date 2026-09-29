@@ -37,6 +37,7 @@
   "rulesNote": "Suit is ignored — only the next rank down stacks. An empty bed takes any card.",
   "stalemate": "Stalemate",
   "tableau": "Flower bed",
+  "tableauCardAriaLabel": "{{card}}, column {{col}}, position {{pos}}",
   "tutorial": {
     "foundation": "Four empty foundations sit beside the bouquet. Build each pile by suit from Ace to King.",
     "reserve": "The bouquet holds sixteen single face-up cards. They can leave for the flower beds or a foundation, but nothing ever moves back into the bouquet.",
