@@ -6,6 +6,8 @@
   },
   "title": "Shamrocks",
   "foundation": "Foundation",
+  "foundationAriaLabel": "Foundation, top card {{card}}",
+  "emptyFoundationAriaLabel": "Foundation {{index}}, empty",
   "fan": "Fan",
   "fanAriaLabel": "Fan {{index}}, top card: {{card}}",
   "emptyFanAriaLabel": "Fan {{index}}, empty",
