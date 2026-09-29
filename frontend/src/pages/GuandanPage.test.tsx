@@ -171,6 +171,34 @@ describe('GuandanPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('play', { cardIndexes: [0, 2] }));
   });
 
+  it('exposes selected hand cards as pressed in play and tribute phases', async () => {
+    const { unmount } = renderWithProviders(<GuandanPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-0')).toHaveAttribute('aria-pressed', 'false'));
+
+    const playCard = screen.getByTestId('hand-card-0');
+    fireEvent.click(playCard);
+    expect(playCard).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(playCard);
+    expect(playCard).toHaveAttribute('aria-pressed', 'false');
+    unmount();
+
+    mockExec.mockResolvedValue(
+      makeState({
+        phase: GuandanPhase.TRIBUTE,
+        handNumber: 2,
+        tributes: [{ from: 3, to: 0, card: card('SPADE', 1), returned: null }],
+      }),
+    );
+    renderWithProviders(<GuandanPage />);
+    await waitFor(() => expect(screen.getByTestId('hand-card-1')).toHaveAttribute('aria-pressed', 'false'));
+
+    const tributeCard = screen.getByTestId('hand-card-1');
+    fireEvent.click(tributeCard);
+    expect(tributeCard).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(tributeCard);
+    expect(tributeCard).toHaveAttribute('aria-pressed', 'false');
+  });
+
   // **選び直せる。**一度選んだ札を外せないと役が組めない。
   it('deselects a card that is clicked twice', async () => {
     renderWithProviders(<GuandanPage />);
