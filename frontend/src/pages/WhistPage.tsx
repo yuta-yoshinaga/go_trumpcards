@@ -326,7 +326,7 @@ function WhistPageContent() {
                     open={isRoundEnd || isGameEnd || undefined}
                   >
                     <summary className="cursor-pointer select-none text-ds-text-muted text-sm">
-                      {t('teamScores')}
+                      {t('teamScores')} · {t('targetScore', { score: state.config.pointLimit })}
                     </summary>
                     <div className="overflow-x-auto -mx-2 px-2">
                       <table className="w-full text-sm text-ds-text-muted min-w-[240px] mt-1">
@@ -358,7 +358,9 @@ function WhistPageContent() {
                   </details>
                 ) : (
                   <div className="my-3 p-2 rounded bg-black/30 relative" data-tutorial="wh-score-table">
-                    <div className="text-ds-text-muted text-sm mb-1">{t('teamScores')}</div>
+                    <div className="text-ds-text-muted text-sm mb-1">
+                      {t('teamScores')} · {t('targetScore', { score: state.config.pointLimit })}
+                    </div>
                     <div className="overflow-x-auto -mx-2 px-2">
                       <table className="w-full text-sm text-ds-text-muted min-w-[240px]">
                         <thead>
