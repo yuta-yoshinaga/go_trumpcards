@@ -418,6 +418,21 @@ describe('BinokelPage', () => {
     // Clicking the active badge a second time clears the highlight.
     fireEvent.click(screen.getByTestId('bn-meld-badge-0'));
     expect(screen.getByLabelText('♥ K')).not.toHaveAttribute('data-meld-highlighted');
+
+    const badge = screen.getByTestId('bn-meld-badge-0');
+    fireEvent.mouseEnter(badge);
+    expect(badge).toHaveAttribute('data-active', 'true');
+    expect(screen.getByLabelText('♥ K')).toHaveAttribute('data-meld-highlighted', 'true');
+
+    fireEvent.mouseLeave(badge);
+    fireEvent.focus(badge);
+    expect(badge).toHaveAttribute('data-active', 'true');
+    expect(screen.getByLabelText('♥ Q')).toHaveAttribute('data-meld-highlighted', 'true');
+
+    const meldArea = badge.closest('[data-tutorial="bn-meld-area"]') as HTMLElement;
+    fireEvent.mouseLeave(meldArea);
+    expect(badge).not.toHaveAttribute('data-active');
+    expect(screen.getByLabelText('♥ K')).not.toHaveAttribute('data-meld-highlighted');
   });
 
   it('renders a persistent meld-card badge ("M") on every card that scored in a meld', async () => {
