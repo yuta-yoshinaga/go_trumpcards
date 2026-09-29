@@ -146,6 +146,20 @@ describe('RedDogPage', () => {
     expect(screen.getByText(/200/)).toBeInTheDocument();
   });
 
+  it('renders the consecutive-card push message from its messageCode', async () => {
+    mockApi.mockResolvedValue({
+      ...winState,
+      phase: RedDogPhase.END,
+      result: 0,
+      message: 'Push.',
+      messageCode: 'reddog.result.consecutivePush',
+    });
+    renderWithProviders(<RedDogPage />);
+    expect(
+      await screen.findByText('引き分け！ 最初の2枚が連番だったため自動でプッシュになりました（アンテ返却）。'),
+    ).toBeInTheDocument();
+  });
+
   it('does not render an empty settings panel', async () => {
     mockApi.mockResolvedValue(betState);
     renderWithProviders(<RedDogPage />);

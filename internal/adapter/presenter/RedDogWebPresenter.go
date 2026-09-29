@@ -54,6 +54,8 @@ func (rp *RedDogWebPresenter) Output(rd interfaces.RedDogGame, lastErr error) st
 			resObj.MessageCode = "reddog.result.push"
 			if pair {
 				resObj.MessageCode = "reddog.result.pairPush"
+			} else if rd.GetThirdCard() == nil {
+				resObj.MessageCode = "reddog.result.consecutivePush"
 			}
 		}
 	}
