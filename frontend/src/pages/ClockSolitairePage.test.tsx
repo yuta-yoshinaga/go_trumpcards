@@ -1,4 +1,4 @@
-import { act, fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { clocksolitaireApi } from '../api/gameApi';
 import { useCliMode } from '../hooks/useCliMode';
@@ -407,6 +407,35 @@ describe('ClockSolitairePage', () => {
     expect(live).not.toHaveTextContent('♥ 3');
     fireEvent.click(await screen.findByTestId('cs-undo-button'));
     await waitFor(() => expect(live).not.toHaveTextContent('♠ 5'));
+  });
+
+  it('announces the center pile when the moved card is a king', async () => {
+    restoreCliModeDefault();
+    mockExec
+      .mockReset()
+      .mockResolvedValueOnce({ ...playingState, currentCard: card('SPADE', 13) })
+      .mockResolvedValueOnce({ ...playingState, stepCount: 1, currentCard: card('HEART', 3) });
+    renderWithProviders(<ClockSolitairePage />);
+    const live = await screen.findByTestId('cs-live-region');
+    fireEvent.click(await screen.findByTestId('cs-step-button'));
+    await waitFor(() => expect(live).toHaveTextContent('♠ Kを中央（K）の山に配置しました'));
+  });
+
+  it('clears the step announcement after reset', async () => {
+    restoreCliModeDefault();
+    mockExec
+      .mockReset()
+      .mockResolvedValueOnce(playingState)
+      .mockResolvedValueOnce({ ...playingState, stepCount: 1, canUndo: true, currentCard: card('HEART', 3) })
+      .mockResolvedValueOnce(playingState);
+    renderWithProviders(<ClockSolitairePage />);
+    const live = await screen.findByTestId('cs-live-region');
+    fireEvent.click(await screen.findByTestId('cs-step-button'));
+    await waitFor(() => expect(live).toHaveTextContent('♠ 5を5時の山に配置しました'));
+    fireEvent.click(screen.getByRole('button', { name: 'リセット' }));
+    const confirm = await screen.findByRole('alertdialog');
+    fireEvent.click(within(confirm).getByRole('button', { name: '確認' }));
+    await waitFor(() => expect(live).not.toHaveTextContent('♠ 5を5時の山に配置しました'));
   });
 
   it('announces the centre pile for a king', async () => {
