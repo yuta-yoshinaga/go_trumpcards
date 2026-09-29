@@ -28,7 +28,6 @@
   "callSlot": "Position {{n}}",
   "callWon": "Call won!",
   "callLost": "Call lost.",
-  "roundNet": "Round net: {{amount}}",
   "next": "Next deal",
   "win": "You won chips!",
   "gameEnd": "Out of chips. Game over.",

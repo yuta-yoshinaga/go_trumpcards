@@ -258,17 +258,18 @@ describe('FaroPage', () => {
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('call', { order: [] }));
   });
 
-  it('shows a negative round net when the round ends in a loss', async () => {
+  it('shows a negative round net in the header when the round ends in a loss', async () => {
     mockExec.mockResolvedValue({ ...roundEndWinState, totalPayout: -100, callWon: false });
     renderWithProviders(<FaroPage />);
-    expect(await screen.findByTestId('faro-round-net')).toHaveTextContent('今回の収支: -100');
+    await screen.findByTestId('next-button');
+    expect(document.querySelector('[data-tutorial="faro-info"]')).toHaveTextContent('今回の収支: -100');
   });
 
   it('shows a next button at round end and dispatches next', async () => {
     mockExec.mockResolvedValue(roundEndWinState);
     renderWithProviders(<FaroPage />);
-    expect(await screen.findByTestId('faro-round-net')).toHaveTextContent('今回の収支: +200');
     const nextBtn = await screen.findByTestId('next-button');
+    expect(document.querySelector('[data-tutorial="faro-info"]')).toHaveTextContent('今回の収支: +200');
     mockExec.mockClear();
     fireEvent.click(nextBtn);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('next'));
