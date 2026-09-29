@@ -41,6 +41,7 @@
   "newGame": "New game",
   "roundResult": {
     "title": "Deal result",
+    "declarer": "Declarer: {{name}}",
     "thrownIn": "Everyone passed, so the deal is thrown in. No scores change.",
     "wonPoints": "Made! {{got}} points (needed {{target}})",
     "lostPoints": "Failed. {{got}} points (needed {{target}})",

@@ -292,6 +292,9 @@ function TrogguPageContent() {
             {isRoundEnd && (
               <div className="my-2 p-2 rounded bg-black/30 text-ds-text-muted text-sm" data-testid="tg-round-result">
                 <div className="mb-1 text-ds-text-primary">{t('roundResult.title')}</div>
+                {state.breakdown && (
+                  <div className="mb-1">{t('roundResult.declarer', { name: seatName(state.declarerIdx) })}</div>
+                )}
                 <div className="text-ds-success mb-1">{roundResultLine()}</div>
                 {state.breakdown?.seats.map((delta, i) => (
                   <div key={i} data-testid={`tg-round-seat-${i}`}>

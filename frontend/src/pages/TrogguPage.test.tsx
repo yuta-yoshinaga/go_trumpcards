@@ -205,6 +205,7 @@ describe('TrogguPage', () => {
     );
     renderWithProviders(<TrogguPage />);
     const result = await screen.findByTestId('tg-round-result');
+    expect(result).toHaveTextContent('宣言者: あなた');
     expect(result).toHaveTextContent('60点');
     expect(result).not.toHaveTextContent('トリック');
     expect(screen.getByTestId('tg-round-seat-0')).toHaveTextContent('60');
@@ -241,7 +242,9 @@ describe('TrogguPage', () => {
   it('reports a thrown-in deal', async () => {
     mockExec.mockResolvedValue(makeTrogguState({ phase: 3, breakdown: null }));
     renderWithProviders(<TrogguPage />);
-    expect(await screen.findByTestId('tg-round-result')).toHaveTextContent('流局');
+    const result = await screen.findByTestId('tg-round-result');
+    expect(result).toHaveTextContent('流局');
+    expect(result).not.toHaveTextContent('宣言者');
   });
 
   it('shows the final scores and restarts with the chosen settings', async () => {
