@@ -99,9 +99,6 @@ When adding a new game, follow this checklist to avoid post-feat fix commits. Co
 
     Two traps worth knowing before you edit this file:
 
-    - **It is CRLF** -- the only such file in the repo. Anything that rewrites it must preserve the line
-      endings, keep the trailing newline, and leave zero LF-only lines, or the diff becomes every line.
-      Check `git diff --numstat` **and** that the change in CR count matches it.
     - **`reset` alone does not exercise every field.** A hint block, a round summary and the action log only
       appear after play, so `TestOpenAPIMatchesLiveResponses` drives several commands. If it fails, the finding
       is real even when a re-run goes green: it only inspects fields that actually came back, so it can

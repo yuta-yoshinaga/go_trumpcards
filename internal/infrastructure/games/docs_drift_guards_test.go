@@ -118,7 +118,7 @@ func TestGamesDocBulletCountMatchesRegistry(t *testing.T) {
 // openapiTagRe captures a tag declared in the root `tags:` block of
 // api/openapi.yaml. The two-space indent distinguishes these declarations from
 // the eight-space per-operation `tags:` references.
-var openapiTagRe = regexp.MustCompile(`(?m)^  - name: ([a-z0-9]+)\r?$`)
+var openapiTagRe = regexp.MustCompile(`(?m)^  - name: ([a-z0-9]+)$`)
 
 // TestOpenAPITagsMatchRegistry asserts that the root `tags:` block declares
 // exactly one tag per registered game.
@@ -129,8 +129,7 @@ var openapiTagRe = regexp.MustCompile(`(?m)^  - name: ([a-z0-9]+)\r?$`)
 // game as a tag, so an undeclared tag renders in Swagger UI with no
 // description.
 //
-// api/openapi.yaml is CRLF, hence the trailing \r? -- without it an anchored
-// pattern matches nothing and this guard would pass while checking zero tags.
+// The anchored pattern matches only declarations in the root tags block.
 func TestOpenAPITagsMatchRegistry(t *testing.T) {
 	data, err := os.ReadFile(filepath.Join(repoRoot, "api/openapi.yaml"))
 	if err != nil {
