@@ -1,6 +1,7 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { laughandliedownApi } from '../api/gameApi';
+import i18n from '../i18n';
 import { flushPendingDispatch } from '../test/flushPendingDispatch';
 import { renderWithProviders } from '../test/renderWithProviders';
 import type { Card, CardDesign, LaughAndLieDownPlayer, LaughAndLieDownResponse } from '../types/card';
@@ -71,6 +72,66 @@ describe('LaughAndLieDownPage', () => {
   it('resets on mount', async () => {
     renderWithProviders(<LaughAndLieDownPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+  });
+
+  it('announces each later human-turn response and clears on game end', async () => {
+    mockExec
+      .mockResolvedValueOnce(makeState())
+      .mockResolvedValueOnce(makeState())
+      .mockResolvedValueOnce(makeState())
+      .mockResolvedValueOnce(makeState({ phase: LaughAndLieDownPhase.GAME_END, gameEndFlag: true }));
+    renderWithProviders(<LaughAndLieDownPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    const initialStatus = screen.getByRole('status');
+    expect(initialStatus).toHaveAttribute('aria-live', 'polite');
+    expect(initialStatus).toHaveClass('sr-only');
+    expect(initialStatus).toBeEmptyDOMElement();
+
+    const playButton = () => {
+      const button = screen.getAllByRole('button').find((candidate) => candidate.dataset.hintAction === 'play');
+      if (!button) throw new Error('Expected a playable hand card');
+      return button;
+    };
+    fireEvent.click(playButton());
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('あなたの番です'));
+
+    const firstAnnouncement = screen.getByRole('status');
+    fireEvent.click(playButton());
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('あなたの番です'));
+    expect(screen.getByRole('status')).not.toBe(firstAnnouncement);
+
+    fireEvent.click(playButton());
+    await waitFor(() => expect(screen.getByRole('status')).toBeEmptyDOMElement());
+    expect(mockExec).toHaveBeenCalledTimes(4);
+  });
+
+  it('does not repeat the turn announcement when the language changes without a new state', async () => {
+    mockExec.mockResolvedValueOnce(makeState()).mockResolvedValueOnce(makeState());
+    renderWithProviders(<LaughAndLieDownPage />);
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    expect(screen.getByRole('status')).toBeEmptyDOMElement();
+
+    const playButton = screen.getAllByRole('button').find((candidate) => candidate.dataset.hintAction === 'play');
+    if (!playButton) throw new Error('Expected a playable hand card');
+    fireEvent.click(playButton);
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('あなたの番です'));
+
+    const announcement = screen.getByRole('status');
+    expect(mockExec).toHaveBeenCalledTimes(2);
+
+    try {
+      await act(async () => {
+        await i18n.changeLanguage('en');
+      });
+
+      expect(screen.getByRole('status')).toBe(announcement);
+      expect(screen.getByRole('status')).toHaveTextContent('あなたの番です');
+      expect(mockExec).toHaveBeenCalledTimes(2);
+    } finally {
+      await act(async () => {
+        await i18n.changeLanguage('ja');
+      });
+    }
   });
 
   it('shows the pot, the dealer and both rules permanently', async () => {

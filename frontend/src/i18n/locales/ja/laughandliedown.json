@@ -18,6 +18,7 @@
   "landscapeBanner": "横画面での表示を推奨します",
   "phase.play": "進行中",
   "phase.end": "終了",
+  "yourTurn": "あなたの番です",
   "notYourTurnTooltip": "いまは自分の手番ではありません",
   "notYourTurnAria": "手番ではありません",
   "noMatchingRankTooltip": "場に同じランクの札が1枚もありません（1枚でもあれば出せます）",
