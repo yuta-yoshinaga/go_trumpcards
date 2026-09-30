@@ -32,6 +32,12 @@ Shared building blocks:
 | `TutorialWrapper` | Tutorial provider + i18n init (always wraps the exported `XPage`) |
 | `useCliMode` + `useCliGame` + `<CliTerminal>` + `<CliToggle>` | CLI fallback mode, available on most pages. Per-game parsing/formatting lives in `src/utils/cli/commands/<game>Commands.ts` + `src/utils/cli/formatters/<game>Formatter.ts` |
 
+## Traps that tests do not catch
+
+- **Pages reused by other pages.** Some pages render another game's content component (e.g. `SokoPage` renders `FiveCardStudPageContent`). When you change a page's props or response type, also run the tests of every page that imports it: `grep -l "from './XPage'" src/pages`.
+- **Do not re-implement game rules in a page.** Points, trick winners, pot splits and hand ranks belong to `internal/domain`. Expose them as a response field instead of recomputing them in TSX; copies drift (the `domain-rule-duplication-auditor` agent checks a diff).
+- **CPU turns usually run server-side.** Most interactors play every CPU turn inside the human's action, so each response already has the human to act. UI keyed on a turn *change* never fires in real play, and tests mocking a CPU-to-act state describe a state the server never returns. Check the interactor first (`server-driven-turn-auditor`).
+
 ## Package Manager Rule
 
 **Always use `bun` instead of `npm`/`node`, and `bunx` instead of `npx`.** This project uses Bun as the sole JavaScript runtime, package manager, and script runner. Never invoke `node ./node_modules/...` directly — use `bun` or `bunx` instead.
