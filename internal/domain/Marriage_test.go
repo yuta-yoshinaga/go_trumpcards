@@ -139,12 +139,12 @@ func TestMarriage_CardPoints(t *testing.T) {
 
 func TestMarriage_WildRoles(t *testing.T) {
 	tiplu := marriageCard(domain.CardDesignSpade, 13)
-	assert.True(t, domain.MarriageIsTiplu(marriageCard(domain.CardDesignSpade, 13), tiplu))
-	assert.True(t, domain.MarriageIsPoplu(marriageCard(domain.CardDesignSpade, 1), tiplu))
-	assert.True(t, domain.MarriageIsJhiplu(marriageCard(domain.CardDesignSpade, 12), tiplu))
+	assert.True(t, domain.MarriageMaalOf(marriageCard(domain.CardDesignSpade, 13), tiplu) == domain.MarriageMaalTiplu)
+	assert.True(t, domain.MarriageMaalOf(marriageCard(domain.CardDesignSpade, 1), tiplu) == domain.MarriageMaalPoplu)
+	assert.True(t, domain.MarriageMaalOf(marriageCard(domain.CardDesignSpade, 12), tiplu) == domain.MarriageMaalJhiplu)
 	assert.True(t, domain.MarriageIsAlter(marriageCard(domain.CardDesignHeart, 13), tiplu))
-	assert.False(t, domain.MarriageIsPoplu(marriageCard(domain.CardDesignHeart, 1), tiplu))
-	assert.False(t, domain.MarriageIsJhiplu(marriageCard(domain.CardDesignHeart, 12), tiplu))
+	assert.False(t, domain.MarriageMaalOf(marriageCard(domain.CardDesignHeart, 1), tiplu) == domain.MarriageMaalPoplu)
+	assert.False(t, domain.MarriageMaalOf(marriageCard(domain.CardDesignHeart, 12), tiplu) == domain.MarriageMaalJhiplu)
 }
 
 func TestMarriage_MaalClassificationAndPoints(t *testing.T) {

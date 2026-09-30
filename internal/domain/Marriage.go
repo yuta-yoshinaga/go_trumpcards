@@ -747,21 +747,6 @@ func marriageCollectCards(p *MarriagePlayer) []*Card {
 
 // --- Wild / points ---
 
-// MarriageIsTiplu reports whether card is the tiplu.
-func MarriageIsTiplu(card, tiplu *Card) bool {
-	return MarriageMaalOf(card, tiplu) == MarriageMaalTiplu
-}
-
-// MarriageIsPoplu は tiplu の次ランク（K の次は A）かを返す。
-func MarriageIsPoplu(card, tiplu *Card) bool {
-	return MarriageMaalOf(card, tiplu) == MarriageMaalPoplu
-}
-
-// MarriageIsJhiplu は tiplu の前ランク（A の前は K）かを返す。
-func MarriageIsJhiplu(card, tiplu *Card) bool {
-	return MarriageMaalOf(card, tiplu) == MarriageMaalJhiplu
-}
-
 // MarriageIsAlter は tiplu と同じランクで別スートのカードかを返す。
 func MarriageIsAlter(card, tiplu *Card) bool {
 	return MarriageMaalOf(card, tiplu) == MarriageMaalAlter
