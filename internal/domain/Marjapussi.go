@@ -334,7 +334,7 @@ func (g *Marjapussi) ResolveTrick() {
 	pts := 0
 	for i, tc := range g.currentTrick {
 		trickCards[i] = tc.Card
-		pts += marjapussiCardPoints(tc.Card)
+		pts += AceTenCardPoints(tc.Card)
 	}
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.roundCardPts[winnerTeam] += pts
@@ -346,7 +346,7 @@ func (g *Marjapussi) ResolveTrick() {
 		// 8 トリック目 (最終トリック) の勝者チームが pussi 4 枚を獲得し、その札点を加算
 		pussiPts := 0
 		for _, c := range g.pussi {
-			pussiPts += marjapussiCardPoints(c)
+			pussiPts += AceTenCardPoints(c)
 		}
 		g.roundCardPts[winnerTeam] += pussiPts
 		g.appendLogCode(winnerIdx, "pussi_win", "marjapussi.log.pussiWin", map[string]string{"team": strconv.Itoa(winnerTeam), "points": strconv.Itoa(pussiPts)}, g.pussi)
@@ -519,25 +519,7 @@ func marjapussiStrength(value int) int {
 
 // CardPoint カードポイント (A=11, 10=10, K=4, Q=3, J=2, 9..6=0)。
 func (g *Marjapussi) CardPoint(card *Card) int {
-	return marjapussiCardPoints(card)
-}
-
-// marjapussiCardPoints カードポイント。A=11, 10=10, K=4, Q=3, J=2, 9..6=0。
-func marjapussiCardPoints(card *Card) int {
-	switch card.GetValue() {
-	case 1:
-		return 11
-	case 10:
-		return 10
-	case 13:
-		return 4
-	case 12:
-		return 3
-	case 11:
-		return 2
-	default:
-		return 0
-	}
+	return AceTenCardPoints(card)
 }
 
 // marjapussiMarriagePoints 結婚点 (切り札スートなら 40、それ以外なら 20)。
@@ -625,7 +607,7 @@ func (g *Marjapussi) cpuPlaySmart(playerIdx int, valid []int) int {
 			return idx
 		}
 		return pickLowest(player, valid, func(c *Card) int {
-			return marjapussiCardPoints(c)*100 + g.marjapussiRank(c)
+			return AceTenCardPoints(c)*100 + g.marjapussiRank(c)
 		})
 	}
 
@@ -638,7 +620,7 @@ func (g *Marjapussi) cpuPlaySmart(playerIdx int, valid []int) int {
 	if isPartnerWinning {
 		return pickLowest(player, valid, func(c *Card) int {
 			rank := g.marjapussiRank(c)
-			pts := marjapussiCardPoints(c)
+			pts := AceTenCardPoints(c)
 			if rank > topRank {
 				// 味方より強い札を出してしまう場合はペナルティ (重ね勝ち防止)
 				return 10000 + rank
@@ -651,14 +633,14 @@ func (g *Marjapussi) cpuPlaySmart(playerIdx int, valid []int) int {
 	// 相手が勝っている場合: 勝てる最小の札を探す
 	trickPts := 0
 	for _, tc := range g.currentTrick {
-		trickPts += marjapussiCardPoints(tc.Card)
+		trickPts += AceTenCardPoints(tc.Card)
 	}
 	winners := filterIndices(valid, func(idx int) bool { return g.marjapussiRank(player.GetCard(idx)) > topRank })
 	if len(winners) > 0 {
 		return pickLowest(player, winners, func(c *Card) int { return g.marjapussiRank(c) })
 	}
 	return pickLowest(player, valid, func(c *Card) int {
-		return marjapussiCardPoints(c)*100 + g.marjapussiRank(c)
+		return AceTenCardPoints(c)*100 + g.marjapussiRank(c)
 	})
 }
 

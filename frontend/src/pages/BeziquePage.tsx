@@ -50,7 +50,7 @@ const MELD_NAME_KEYS = ['marriage', 'bezique', 'fourAces', 'fourKings', 'fourQue
  */
 const STOCK_LOW_THRESHOLD = 4;
 
-// Keep these values synchronized with domain.BeziqueCardPoints. The frontend
+// Keep these values synchronized with domain.AceTenCardPoints. The frontend
 // bundle cannot import Go domain code, so the i18n sentence receives them here.
 const BEZIQUE_TRICK_POINT_VALUES = {
   ace: 11,

@@ -1,5 +1,5 @@
 {
-  "note": "Tarabish card values: the trump suit uses its own table (J=20 Jass, 9=14 Menel). Asserted by frontend/src/utils/tarabishPoints.golden.test.ts and TestTarabishCardPoints_GoldenVectors.",
+  "note": "Tarabish card values: the trump suit uses its own table (J=20 Jass, 9=14 Menel). Asserted by frontend/src/utils/tarabishPoints.golden.test.ts and TestJassFamilyCardPoints_GoldenVectors.",
   "cases": [
     {
       "name": "SPADE 1 with trump 1",

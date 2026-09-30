@@ -23,8 +23,8 @@ func kjReady(t *testing.T, trump int) *Klaberjass {
 	return k
 }
 
-// TestKlaberjassCardPoints pins the point ladder the issue only half states.
-func TestKlaberjassCardPoints(t *testing.T) {
+// TestKlaberJassFamilyCardPoints pins the point ladder the issue only half states.
+func TestKlaberJassFamilyCardPoints(t *testing.T) {
 	const trump = CardDesignSpade
 	for _, tc := range []struct {
 		name string
@@ -50,7 +50,7 @@ func TestKlaberjassCardPoints(t *testing.T) {
 		{"nil", nil, 0},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			if got := KlaberjassCardPoints(tc.card, trump); got != tc.want {
+			if got := KlaberJassFamilyCardPoints(tc.card, trump); got != tc.want {
 				t.Errorf("points = %d, want %d", got, tc.want)
 			}
 		})
@@ -66,11 +66,11 @@ func TestKlaberjassPackTotalIsOneSixtyTwo(t *testing.T) {
 	total := 0
 	for _, suit := range []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond} {
 		for _, v := range []int{1, 7, 8, 9, 10, 11, 12, 13} {
-			total += KlaberjassCardPoints(kjCard(suit, v), trump)
+			total += KlaberJassFamilyCardPoints(kjCard(suit, v), trump)
 		}
 	}
-	if total != KlaberjassCardPointsTotal {
-		t.Fatalf("the pack holds %d card points, want %d", total, KlaberjassCardPointsTotal)
+	if total != KlaberJassFamilyCardPointsTotal {
+		t.Fatalf("the pack holds %d card points, want %d", total, KlaberJassFamilyCardPointsTotal)
 	}
 	if got := total + KlaberjassLastTrickBonus; got != 162 {
 		t.Errorf("total with the last trick = %d, want 162 (the issue says 163)", got)
@@ -78,7 +78,7 @@ func TestKlaberjassPackTotalIsOneSixtyTwo(t *testing.T) {
 	// 切札スートだけで 62 点、平のスートは各 30 点。
 	trumpOnly := 0
 	for _, v := range []int{1, 7, 8, 9, 10, 11, 12, 13} {
-		trumpOnly += KlaberjassCardPoints(kjCard(trump, v), trump)
+		trumpOnly += KlaberJassFamilyCardPoints(kjCard(trump, v), trump)
 	}
 	if trumpOnly != 62 {
 		t.Errorf("the trump suit holds %d, want 62", trumpOnly)

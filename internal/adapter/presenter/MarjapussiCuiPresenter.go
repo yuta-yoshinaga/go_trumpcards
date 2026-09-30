@@ -139,7 +139,7 @@ func (p *MarjapussiCuiPresenter) Output(g interfaces.MarjapussiGame, lastErr err
 				if log.ActionType == "pussi_win" {
 					pussiTeam = log.PlayerIdx % domain.MarjapussiTeamCnt
 					for _, c := range log.Cards {
-						pussiPts += marjapussiCardPoints(c)
+						pussiPts += domain.AceTenCardPoints(c)
 					}
 				}
 			}
@@ -151,27 +151,6 @@ func (p *MarjapussiCuiPresenter) Output(g interfaces.MarjapussiGame, lastErr err
 			b.WriteString(i18n.T("marjapussi.promptRoundEndHelp") + "\n")
 		}
 	})
-}
-
-// marjapussiCardPoints カードポイント (A=11, 10=10, K=4, Q=3, J=2, その他=0)。
-func marjapussiCardPoints(c *domain.Card) int {
-	if c == nil {
-		return 0
-	}
-	switch c.GetValue() {
-	case 1:
-		return 11
-	case 10:
-		return 10
-	case 13:
-		return 4
-	case 12:
-		return 3
-	case 11:
-		return 2
-	default:
-		return 0
-	}
 }
 
 // HintOutput emits the current Marjapussi hint.

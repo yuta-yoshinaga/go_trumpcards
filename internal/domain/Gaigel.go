@@ -141,30 +141,6 @@ func newGaigelDeck() *TrumpCards {
 	return t
 }
 
-// GaigelCardPoints カードの得点を返す (A=11,10=10,K=4,Q=3,J=2,7=0)。
-// SchnapsenCardPoints と同一の値だが、schnapsen は別ワーカー (solo) のビルドタグ
-// 配下にあり extra ワーカーからは参照できないため、ここで同じ switch を再実装する。
-// グローバルマップを避けて全 Cloudflare Worker WASM バイナリのサイズを抑える。
-func GaigelCardPoints(c *Card) int {
-	if c == nil {
-		return 0
-	}
-	switch c.GetValue() {
-	case 1: // Ace
-		return 11
-	case 10: // Ten
-		return 10
-	case 13: // King
-		return 4
-	case 12: // Queen
-		return 3
-	case 11: // Jack
-		return 2
-	default: // 7
-		return 0
-	}
-}
-
 // GaigelRankOrder カードのスート内順位を返す (大きいほど強い; A>10>K>Q>J>7)。
 func GaigelRankOrder(c *Card) int {
 	if c == nil {
@@ -408,7 +384,7 @@ func (g *Gaigel) ResolveTrick() {
 	trickPoints := 0
 	for i, tc := range g.currentTrick {
 		trickCards[i] = tc.Card
-		trickPoints += GaigelCardPoints(tc.Card)
+		trickPoints += AceTenCardPoints(tc.Card)
 	}
 
 	g.players[winnerIdx].AddTrick(trickCards)
@@ -771,7 +747,7 @@ func (g *Gaigel) GetHint() *GaigelHint {
 // playHintReason ヒント理由キーを判定する
 func (g *Gaigel) playHintReason(playerIdx, chosenIdx int) string {
 	card := g.players[playerIdx].GetCard(chosenIdx)
-	pts := GaigelCardPoints(card)
+	pts := AceTenCardPoints(card)
 	if len(g.currentTrick) == 0 {
 		if card.GetDesign() == g.trumpSuit {
 			return "lead_trump"
@@ -855,7 +831,7 @@ func (g *Gaigel) cpuLead(playerIdx int, legal []int) int {
 
 // gaigelLeadScore 値が小さいほど「リードに適している」(トランプ・高得点札を温存する)
 func gaigelLeadScore(c *Card, trumpSuit int) int {
-	score := GaigelCardPoints(c)*10 + GaigelRankOrder(c)
+	score := AceTenCardPoints(c)*10 + GaigelRankOrder(c)
 	if c.GetDesign() == trumpSuit {
 		score += 1000
 	}
@@ -875,7 +851,7 @@ func (g *Gaigel) cpuFollow(playerIdx int, legal []int) int {
 		best := legal[0]
 		bestPts := -1
 		for _, i := range legal {
-			pts := GaigelCardPoints(player.GetCard(i))
+			pts := AceTenCardPoints(player.GetCard(i))
 			if pts > bestPts {
 				bestPts = pts
 				best = i
@@ -903,7 +879,7 @@ func (g *Gaigel) cpuFollow(playerIdx int, legal []int) int {
 			dumpIdx = i
 		}
 	}
-	if winIdx >= 0 && GaigelCardPoints(leadCard) >= 10 {
+	if winIdx >= 0 && AceTenCardPoints(leadCard) >= 10 {
 		return winIdx
 	}
 	if !g.legalAllowsDump(playerIdx, legal) && winIdx >= 0 {

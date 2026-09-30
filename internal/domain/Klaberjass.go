@@ -58,12 +58,12 @@ const (
 	KlaberjassFiftyPoints = 50
 )
 
-// KlaberjassCardPointsTotal は 32 枚すべてのカード点の合計。
+// KlaberJassFamilyCardPointsTotal は 32 枚すべてのカード点の合計。
 //
 // **1 ディールで争う点数ではない。**2 人戦では 18〜19 枚しか配られないので、
 // 実際に場に出る点数は配りごとに変わる。issue #4395 の「163 点」は、この総点
 // (162 = 152 + 最終トリック 10) とも、実際に争う点とも一致しない。
-const KlaberjassCardPointsTotal = 152
+const KlaberJassFamilyCardPointsTotal = 152
 
 // KlaberjassPhase はゲームフェーズ。
 type KlaberjassPhase int
@@ -185,8 +185,8 @@ func klaberjassSeqRank(c *Card) int {
 	return c.GetValue()
 }
 
-// KlaberjassCardPoints は札の点数を返す。
-func KlaberjassCardPoints(c *Card, trumpSuit int) int {
+// KlaberJassFamilyCardPoints は札の点数を返す。
+func KlaberJassFamilyCardPoints(c *Card, trumpSuit int) int {
 	if c == nil {
 		return 0
 	}
@@ -827,7 +827,7 @@ func (k *Klaberjass) resolveTrick() {
 
 	points := 0
 	for _, c := range k.trick {
-		points += KlaberjassCardPoints(c, k.trumpSuit)
+		points += KlaberJassFamilyCardPoints(c, k.trumpSuit)
 	}
 	k.handPoints[winner] += points
 	k.cardPoints[winner] += points
@@ -962,7 +962,7 @@ func (k *Klaberjass) KlaberjassCpuPlay(idx int) int {
 		// リードは一番点の低い札から。
 		best, bestPts := valid[0], 1<<30
 		for _, i := range valid {
-			if pts := KlaberjassCardPoints(p.GetCard(i), k.trumpSuit); pts < bestPts {
+			if pts := KlaberJassFamilyCardPoints(p.GetCard(i), k.trumpSuit); pts < bestPts {
 				best, bestPts = i, pts
 			}
 		}
@@ -973,7 +973,7 @@ func (k *Klaberjass) KlaberjassCpuPlay(idx int) int {
 	cheap, cheapPts := valid[0], 1<<30
 	for _, i := range valid {
 		c := p.GetCard(i)
-		pts := KlaberjassCardPoints(c, k.trumpSuit)
+		pts := KlaberJassFamilyCardPoints(c, k.trumpSuit)
 		if klaberjassBeats(c, lead, k.trumpSuit) && pts > winPts {
 			winning, winPts = i, pts
 		}

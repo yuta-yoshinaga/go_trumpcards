@@ -94,14 +94,14 @@ func TestSchnapsen_CardPointsAndRank(t *testing.T) {
 	}
 	for _, c := range cases {
 		cd := schnCard(domain.CardDesignSpade, c.val)
-		if got := domain.SchnapsenCardPoints(cd); got != c.pts {
-			t.Errorf("SchnapsenCardPoints(val=%d) = %d, want %d", c.val, got, c.pts)
+		if got := domain.AceTenCardPoints(cd); got != c.pts {
+			t.Errorf("AceTenCardPoints(val=%d) = %d, want %d", c.val, got, c.pts)
 		}
 		if got := domain.SchnapsenRankOrder(cd); got != c.rank {
 			t.Errorf("SchnapsenRankOrder(val=%d) = %d, want %d", c.val, got, c.rank)
 		}
 	}
-	if domain.SchnapsenCardPoints(nil) != 0 || domain.SchnapsenRankOrder(nil) != 0 {
+	if domain.AceTenCardPoints(nil) != 0 || domain.SchnapsenRankOrder(nil) != 0 {
 		t.Error("nil card should return 0 for points and rank")
 	}
 }

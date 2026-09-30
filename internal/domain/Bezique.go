@@ -109,28 +109,6 @@ type BeziqueHint struct {
 	Reason    string // ヒント理由キー
 }
 
-// BeziqueCardPoints カードのトリック得点を返す (A=11,10=10,K=4,Q=3,J=2; その他=0)。
-// 表示文言の配点表はこの switch と同期すること。
-func BeziqueCardPoints(c *Card) int {
-	if c == nil {
-		return 0
-	}
-	switch c.GetValue() {
-	case 1:
-		return 11
-	case 10:
-		return 10
-	case 13:
-		return 4
-	case 12:
-		return 3
-	case 11:
-		return 2
-	default:
-		return 0
-	}
-}
-
 // BeziqueRankOrder カードのスート内順位を返す (大きいほど強い; A>10>K>Q>J>9>8>7)。
 func BeziqueRankOrder(c *Card) int {
 	if c == nil {
@@ -565,7 +543,7 @@ func (b *Bezique) resolveTrick() {
 	trickPoints := 0
 	for i, tc := range b.currentTrick {
 		trickCards[i] = tc.Card
-		trickPoints += BeziqueCardPoints(tc.Card)
+		trickPoints += AceTenCardPoints(tc.Card)
 	}
 	b.players[winnerIdx].AddTrick(trickCards)
 	b.dealPoints[winnerIdx] += trickPoints
@@ -905,7 +883,7 @@ func (b *Bezique) playHintReason(playerIdx, chosenIdx int) string {
 		if card.GetDesign() == b.trumpSuit {
 			return "lead_trump"
 		}
-		if BeziqueCardPoints(card) == 0 {
+		if AceTenCardPoints(card) == 0 {
 			return "lead_low"
 		}
 		return "lead_value"
@@ -955,7 +933,7 @@ func (b *Bezique) cpuLead(playerIdx int, legal []int) int {
 
 // beziqueKeepScore 値が小さいほど「手放してよい」(トランプ・高得点・役札を温存)。
 func beziqueKeepScore(c *Card, trumpSuit int) int {
-	score := BeziqueCardPoints(c)*10 + BeziqueRankOrder(c)
+	score := AceTenCardPoints(c)*10 + BeziqueRankOrder(c)
 	// 役に使える札 (K,Q,J,A) を温存
 	switch c.GetValue() {
 	case 1, 11, 12, 13:
@@ -992,7 +970,7 @@ func (b *Bezique) cpuFollow(playerIdx int, legal []int) int {
 			dumpIdx = i
 		}
 	}
-	if winIdx >= 0 && (BeziqueCardPoints(leadCard) >= 10 || leadCard.GetDesign() == b.trumpSuit) {
+	if winIdx >= 0 && (AceTenCardPoints(leadCard) >= 10 || leadCard.GetDesign() == b.trumpSuit) {
 		return winIdx
 	}
 	if !b.legalAllowsDump(playerIdx, legal) && winIdx >= 0 {

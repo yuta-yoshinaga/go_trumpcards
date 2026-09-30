@@ -44,14 +44,14 @@ func TestBeziqueDeck64(t *testing.T) {
 	assert.Equal(t, 64, d.GetRemainingCount())
 }
 
-func TestBeziqueCardPointsAndRank(t *testing.T) {
-	assert.Equal(t, 11, domain.BeziqueCardPoints(bzCard(domain.CardDesignSpade, 1)))
-	assert.Equal(t, 10, domain.BeziqueCardPoints(bzCard(domain.CardDesignSpade, 10)))
-	assert.Equal(t, 0, domain.BeziqueCardPoints(bzCard(domain.CardDesignSpade, 7)))
+func TestAceTenCardPointsAndRank(t *testing.T) {
+	assert.Equal(t, 11, domain.AceTenCardPoints(bzCard(domain.CardDesignSpade, 1)))
+	assert.Equal(t, 10, domain.AceTenCardPoints(bzCard(domain.CardDesignSpade, 10)))
+	assert.Equal(t, 0, domain.AceTenCardPoints(bzCard(domain.CardDesignSpade, 7)))
 	// A > 10 > K
 	assert.Greater(t, domain.BeziqueRankOrder(bzCard(domain.CardDesignSpade, 1)), domain.BeziqueRankOrder(bzCard(domain.CardDesignSpade, 10)))
 	assert.Greater(t, domain.BeziqueRankOrder(bzCard(domain.CardDesignSpade, 10)), domain.BeziqueRankOrder(bzCard(domain.CardDesignSpade, 13)))
-	assert.Equal(t, 0, domain.BeziqueCardPoints(nil))
+	assert.Equal(t, 0, domain.AceTenCardPoints(nil))
 	assert.Equal(t, 0, domain.BeziqueRankOrder(nil))
 }
 

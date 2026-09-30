@@ -6,7 +6,7 @@ package domain
 func (g *Bauernschnapsen) CardRankPublic(card *Card) int { return BauernschnapsenRankOrder(card) }
 
 // CardPointsPublic カード得点取得 (テスト用公開メソッド)
-func (g *Bauernschnapsen) CardPointsPublic(card *Card) int { return BauernschnapsenCardPoints(card) }
+func (g *Bauernschnapsen) CardPointsPublic(card *Card) int { return AceTenCardPoints(card) }
 
 // AddRoundPointsForTest adds card points to a team for the current round (テスト用)。
 func (g *Bauernschnapsen) AddRoundPointsForTest(team, pts int) {
