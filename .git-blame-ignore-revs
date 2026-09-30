@@ -1,0 +1,8 @@
+# Revisions that `git blame` should skip: pure formatting rewrites that touch
+# (nearly) every line of a file and carry no behaviour change.
+# GitHub reads this file automatically; locally run
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# chore: normalize line endings to LF (#9395) -- CRLF->LF rewrite of
+# api/openapi.yaml, Dockerfile, .dockerignore and .repomixignore.
+50f49c632e0bfc5a68306fe46a07ff2da14b729e
