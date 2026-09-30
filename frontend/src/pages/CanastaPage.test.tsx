@@ -47,6 +47,7 @@ const basePlayers: CanastaPlayerData[] = [
 ];
 
 const drawPhaseState: CanastaResponse = {
+  minMeld: 50,
   players: basePlayers,
   phase: 0,
   roundNumber: 1,
@@ -163,10 +164,10 @@ describe('CanastaPage', () => {
   });
 
   it('shows the initial-meld minimum and selected total in the meld phase', async () => {
-    mockExec.mockResolvedValue(meldPhaseState); // score 0 → min 50; hasInitMeld false
+    mockExec.mockResolvedValue({ ...meldPhaseState, minMeld: 90 }); // score 0 → min 50; hasInitMeld false
     renderWithProviders(<CanastaPage />);
     const info = await screen.findByTestId('ca-meld-points');
-    expect(info).toHaveTextContent('初回メルド最低点: 50');
+    expect(info).toHaveTextContent('初回メルド最低点: 90');
     expect(info).toHaveTextContent('選択合計: 0');
   });
 
@@ -182,19 +183,19 @@ describe('CanastaPage', () => {
   });
 
   it('announces selected meld points in a permanent live region', async () => {
-    mockExec.mockResolvedValue(meldPhaseState);
+    mockExec.mockResolvedValue({ ...meldPhaseState, minMeld: 90 });
     renderWithProviders(<CanastaPage />);
 
     const announcement = await screen.findByTestId('ca-meld-points-announcement');
     expect(announcement).toHaveAttribute('role', 'status');
     expect(announcement).toHaveAttribute('aria-live', 'polite');
-    expect(announcement).toHaveTextContent('初回メルド最低点: 50 / 選択合計: 0');
+    expect(announcement).toHaveTextContent('初回メルド最低点: 90 / 選択合計: 0');
     expect(announcement).toHaveClass('sr-only');
 
     fireEvent.click(screen.getByRole('button', { name: '♠ 7' }));
-    await waitFor(() => expect(announcement).toHaveTextContent('初回メルド最低点: 50 / 選択合計: 5'));
+    await waitFor(() => expect(announcement).toHaveTextContent('初回メルド最低点: 90 / 選択合計: 5'));
     fireEvent.click(screen.getByRole('button', { name: '♠ 7' }));
-    await waitFor(() => expect(announcement).toHaveTextContent('初回メルド最低点: 50 / 選択合計: 0'));
+    await waitFor(() => expect(announcement).toHaveTextContent('初回メルド最低点: 90 / 選択合計: 0'));
   });
 
   // **最低点に届かない選択でボタンが押せてしまい、サーバのバリデーションで

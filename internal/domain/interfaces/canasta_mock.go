@@ -70,3 +70,6 @@ func (m *MockCanastaGame) GetHint() *domain.CanastaHint {
 	}
 	return ret.(*domain.CanastaHint)
 }
+
+// GetMinimumMeldValue モック
+func (m *MockCanastaGame) GetMinimumMeldValue(playerIdx int) int { return m.Called(playerIdx).Int(0) }

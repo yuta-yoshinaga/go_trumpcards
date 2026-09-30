@@ -56,6 +56,7 @@ type HandAndFootWebOutputTeam struct {
 
 // HandAndFootWebOutput ハンドアンドフットWebアウトプット
 type HandAndFootWebOutput struct {
+	MinMeld          int                           `json:"minMeld"`
 	Players          []*HandAndFootWebOutputPlayer `json:"players"`
 	Teams            []*HandAndFootWebOutputTeam   `json:"teams"`
 	Phase            int                           `json:"phase"`

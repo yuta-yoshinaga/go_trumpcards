@@ -423,7 +423,7 @@ func (g *Canasta) PlayerDrawFromDiscard(naturalPairIndices []int) error {
 	// 初回メルド要件チェック: 捨て札の山を取る場合、初回メルドの最低点を満たすメルドが必要
 	if !player.hasInitMeld {
 		// トップカード + ペアで最低3枚のメルドが作れる: その点数をチェック
-		meldValue := CanastaCardValue(topCard) + CanastaCardValue(card0) + CanastaCardValue(card1)
+		meldValue := CanastaFamilyCardValue(topCard) + CanastaFamilyCardValue(card0) + CanastaFamilyCardValue(card1)
 		minReq := g.minimumMeldValue(g.currentPlayerIdx)
 		if meldValue < minReq {
 			return NewDomainErrorCode(ErrInvalidPlay, "canasta.errInitialMeldMinimumNotMet", map[string]string{"min": strconv.Itoa(minReq), "score": strconv.Itoa(meldValue)})
@@ -566,7 +566,7 @@ func (g *Canasta) PlayerMeld(meldGroups [][]int) error {
 
 		if isInitialMeld {
 			for _, c := range grp.cards {
-				totalMeldValue += CanastaCardValue(c)
+				totalMeldValue += CanastaFamilyCardValue(c)
 			}
 		}
 	}
@@ -808,7 +808,7 @@ func (g *Canasta) cpuDraw() {
 					// 初回メルド要件チェック
 					canPickUp := true
 					if !player.hasInitMeld {
-						meldValue := CanastaCardValue(topCard) + CanastaCardValue(player.GetCard(pairIndices[0])) + CanastaCardValue(player.GetCard(pairIndices[1]))
+						meldValue := CanastaFamilyCardValue(topCard) + CanastaFamilyCardValue(player.GetCard(pairIndices[0])) + CanastaFamilyCardValue(player.GetCard(pairIndices[1]))
 						minReq := g.minimumMeldValue(g.currentPlayerIdx)
 						canPickUp = meldValue >= minReq
 					}
@@ -875,7 +875,7 @@ func (g *Canasta) cpuMeld() {
 		totalValue := 0
 		for _, group := range meldGroups {
 			for _, c := range group {
-				totalValue += CanastaCardValue(c)
+				totalValue += CanastaFamilyCardValue(c)
 			}
 		}
 		minReq := g.minimumMeldValue(g.currentPlayerIdx)
@@ -1159,7 +1159,7 @@ func (g *Canasta) cpuBestDiscardNormal(player *CanastaPlayer) int {
 			continue
 		}
 		cnt := rankCount[c.GetValue()]
-		val := CanastaCardValue(c)
+		val := CanastaFamilyCardValue(c)
 		if cnt == 1 && val < bestValue {
 			bestValue = val
 			bestIdx = i
@@ -1175,7 +1175,7 @@ func (g *Canasta) cpuBestDiscardNormal(player *CanastaPlayer) int {
 		if CanastaIsRed3(c) || CanastaIsWild(c) {
 			continue
 		}
-		val := CanastaCardValue(c)
+		val := CanastaFamilyCardValue(c)
 		if val < bestValue {
 			bestValue = val
 			bestIdx = i
@@ -1204,7 +1204,7 @@ func (g *Canasta) scoreRound(goOutPlayerIdx int, goOutBonus int) {
 		// メルドのカード点数
 		for _, m := range player.melds {
 			for _, c := range m.Cards {
-				score += CanastaCardValue(c)
+				score += CanastaFamilyCardValue(c)
 			}
 			// カナスタボーナス
 			if m.IsCanasta() {
@@ -1233,7 +1233,7 @@ func (g *Canasta) scoreRound(goOutPlayerIdx int, goOutBonus int) {
 
 		// 手札のカード点数を減算
 		for j := 0; j < player.GetCardsSize(); j++ {
-			score -= CanastaCardValue(player.GetCard(j))
+			score -= CanastaFamilyCardValue(player.GetCard(j))
 		}
 
 		player.SetRoundScore(score)
@@ -1473,17 +1473,7 @@ func validateBiribaSequence(cards []*Card) error {
 
 // minimumMeldValue 初回メルドの最低点を返す
 func (g *Canasta) minimumMeldValue(playerIdx int) int {
-	score := g.players[playerIdx].GetCumulativeScore()
-	switch {
-	case score < 0:
-		return 15
-	case score < 1500:
-		return 50
-	case score < 3000:
-		return 90
-	default:
-		return 120
-	}
+	return CanastaMinMeld(g.players[playerIdx].GetCumulativeScore())
 }
 
 // --- Card type helpers ---
@@ -1503,25 +1493,12 @@ func CanastaIsBlack3(card *Card) bool {
 	return card.GetValue() == 3 && (card.GetDesign() == CardDesignSpade || card.GetDesign() == CardDesignClover)
 }
 
-// CanastaCardValue カードの点数を返す
-func CanastaCardValue(card *Card) int {
-	if card.GetDesign() == CardDesignJoker {
-		return 50
+// GetMinimumMeldValue 初回メルドの最低点を返す。
+func (g *Canasta) GetMinimumMeldValue(playerIdx int) int {
+	if playerIdx < 0 || playerIdx >= len(g.players) {
+		return 0
 	}
-	v := card.GetValue()
-	if v == 2 {
-		return 20
-	}
-	if v == 1 { // Ace
-		return 20
-	}
-	if v == 3 && (card.GetDesign() == CardDesignSpade || card.GetDesign() == CardDesignClover) {
-		return 5 // 黒3
-	}
-	if v >= 8 {
-		return 10
-	}
-	return 5
+	return g.minimumMeldValue(playerIdx)
 }
 
 // --- State getters ---

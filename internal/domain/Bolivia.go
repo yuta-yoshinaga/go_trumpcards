@@ -381,7 +381,7 @@ func (g *Bolivia) PlayerDrawFromDiscard(naturalPairIndices []int) error {
 	}
 
 	if !player.hasInitMeld {
-		meldValue := BoliviaCardValue(topCard) + BoliviaCardValue(card0) + BoliviaCardValue(card1)
+		meldValue := CanastaFamilyCardValue(topCard) + CanastaFamilyCardValue(card0) + CanastaFamilyCardValue(card1)
 		minReq := g.minimumMeldValue(g.currentPlayerIdx)
 		if meldValue < minReq {
 			return NewDomainErrorCode(ErrInvalidPlay, "bolivia.errInitialMeldMinimumNotMet", map[string]string{"min": strconv.Itoa(minReq), "score": strconv.Itoa(meldValue)})
@@ -493,7 +493,7 @@ func (g *Bolivia) PlayerMeld(meldGroups [][]int) error {
 		resolutions = append(resolutions, res)
 		if isInitialMeld {
 			for _, c := range grp.cards {
-				totalMeldValue += BoliviaCardValue(c)
+				totalMeldValue += CanastaFamilyCardValue(c)
 			}
 		}
 	}
@@ -789,7 +789,7 @@ func (g *Bolivia) cpuDraw() {
 				if pairIndices != nil {
 					canPickUp := true
 					if !player.hasInitMeld {
-						meldValue := BoliviaCardValue(topCard) + BoliviaCardValue(player.GetCard(pairIndices[0])) + BoliviaCardValue(player.GetCard(pairIndices[1]))
+						meldValue := CanastaFamilyCardValue(topCard) + CanastaFamilyCardValue(player.GetCard(pairIndices[0])) + CanastaFamilyCardValue(player.GetCard(pairIndices[1]))
 						minReq := g.minimumMeldValue(g.currentPlayerIdx)
 						canPickUp = meldValue >= minReq
 					}
@@ -860,7 +860,7 @@ func (g *Bolivia) cpuMeld() {
 		totalValue := 0
 		for _, grp := range groups {
 			for _, c := range grp.cards {
-				totalValue += BoliviaCardValue(c)
+				totalValue += CanastaFamilyCardValue(c)
 			}
 		}
 		minReq := g.minimumMeldValue(g.currentPlayerIdx)
@@ -1226,7 +1226,7 @@ func (g *Bolivia) cpuBestDiscardSmart(player *BoliviaPlayer) int {
 			continue
 		}
 		if rankCount[c.GetValue()] == 1 {
-			val := BoliviaCardValue(c)
+			val := CanastaFamilyCardValue(c)
 			if val < bestValue {
 				bestValue = val
 				bestIdx = i
@@ -1242,7 +1242,7 @@ func (g *Bolivia) cpuBestDiscardSmart(player *BoliviaPlayer) int {
 		if BoliviaIsRed3(c) || BoliviaIsWild(c) {
 			continue
 		}
-		val := BoliviaCardValue(c)
+		val := CanastaFamilyCardValue(c)
 		if val < bestValue {
 			bestValue = val
 			bestIdx = i
@@ -1264,7 +1264,7 @@ func (g *Bolivia) scoreRound(goOutPlayerIdx int, goOutBonus int) {
 		score := 0
 		for _, m := range player.melds {
 			for _, c := range m.Cards {
-				score += BoliviaCardValue(c)
+				score += CanastaFamilyCardValue(c)
 			}
 			if m.IsCanasta() {
 				if m.IsNatural {
@@ -1302,7 +1302,7 @@ func (g *Bolivia) scoreRound(goOutPlayerIdx int, goOutBonus int) {
 		}
 
 		for j := 0; j < player.GetCardsSize(); j++ {
-			score -= BoliviaCardValue(player.GetCard(j))
+			score -= CanastaFamilyCardValue(player.GetCard(j))
 		}
 
 		team := player.team
@@ -1490,23 +1490,7 @@ func (g *Bolivia) minimumMeldValue(playerIdx int) int {
 	if team >= 0 && team < len(g.teamScores) {
 		score = g.teamScores[team]
 	}
-	return BoliviaMinimumMeldValue(score)
-}
-
-// BoliviaMinimumMeldValue はチーム累積点から初回メルドの最低点を返す。
-// Web 側は frontend/src/utils/boliviaScore.ts の boliviaMinMeld で同じ表を持っており、
-// 両者の一致は internal/infrastructure/games のガードが見る。
-func BoliviaMinimumMeldValue(cumulativeScore int) int {
-	switch {
-	case cumulativeScore < 0:
-		return 15
-	case cumulativeScore < 1500:
-		return 50
-	case cumulativeScore < 3000:
-		return 90
-	default:
-		return 120
-	}
+	return CanastaMinMeld(score)
 }
 
 // GetMinimumMeldValue は playerIdx のチームに課される初回メルドの最低点を返す。
@@ -1532,27 +1516,6 @@ func BoliviaIsRed3(card *Card) bool {
 // BoliviaIsBlack3 黒3かどうか (スペード3またはクローバー3)
 func BoliviaIsBlack3(card *Card) bool {
 	return card.GetValue() == 3 && (card.GetDesign() == CardDesignSpade || card.GetDesign() == CardDesignClover)
-}
-
-// BoliviaCardValue カードの点数を返す
-func BoliviaCardValue(card *Card) int {
-	if card.GetDesign() == CardDesignJoker {
-		return 50
-	}
-	v := card.GetValue()
-	if v == 2 {
-		return 20
-	}
-	if v == 1 { // Ace
-		return 20
-	}
-	if v == 3 && (card.GetDesign() == CardDesignSpade || card.GetDesign() == CardDesignClover) {
-		return 5 // 黒3
-	}
-	if v >= 8 {
-		return 10
-	}
-	return 5
 }
 
 // boliviaEscaleraValue はシーケンス判定用のカード値を返す。エースは高位(14)扱いで

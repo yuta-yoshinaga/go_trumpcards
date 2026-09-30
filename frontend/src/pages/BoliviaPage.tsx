@@ -31,7 +31,7 @@ import type { BoliviaResponse, Card } from '../types/card';
 import { BOLIVIA_MELD_KIND } from '../types/games/bolivia';
 import { BoliviaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
-import { boliviaMinMeld, boliviaSelectionPoints } from '../utils/boliviaScore';
+import { canastaFamilySelectionPoints } from '../utils/canastaFamilyScore';
 import { cardAlt } from '../utils/cardAlt';
 import { BOLIVIA_HELP, parseBoliviaCommand } from '../utils/cli/commands/boliviaCommands';
 import { formatBoliviaState } from '../utils/cli/formatters/boliviaFormatter';
@@ -146,11 +146,11 @@ function BoliviaPageContent() {
     const selectedCards = [...meldGroups.flat(), ...selectedCardIndices]
       .map((i) => humanPlayer.cards[i])
       .filter((c): c is Card => Boolean(c));
-    const selectedPoints = boliviaSelectionPoints(selectedCards);
+    const selectedPoints = canastaFamilySelectionPoints(selectedCards);
     const needInitial = !humanPlayer.hasInitMeld;
-    const minMeld = boliviaMinMeld(humanPlayer.cumulativeScore);
+    const minMeld = state.minMeld;
     return { selectedPoints, needInitial, minMeld, below: needInitial && selectedPoints < minMeld };
-  }, [isMeldPhase, humanPlayer, meldGroups, selectedCardIndices]);
+  }, [isMeldPhase, humanPlayer, meldGroups, selectedCardIndices, state?.minMeld]);
 
   const handleManualReset = useCallback(() => {
     hideActionLog();

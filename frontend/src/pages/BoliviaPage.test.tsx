@@ -186,10 +186,10 @@ describe('BoliviaPage', () => {
   });
 
   it('shows the initial-meld minimum and selected total in the meld phase', async () => {
-    mockExec.mockResolvedValue(meldPhaseState); // team score 0 → min 50; hasInitMeld false
+    mockExec.mockResolvedValue({ ...meldPhaseState, minMeld: 90 }); // team score 0 → min 50; hasInitMeld false
     renderWithProviders(<BoliviaPage />);
     const info = await screen.findByTestId('sa-meld-points');
-    expect(info).toHaveTextContent('初回メルド最低点: 50');
+    expect(info).toHaveTextContent('初回メルド最低点: 90');
     expect(info).toHaveTextContent('選択合計: 0');
   });
 

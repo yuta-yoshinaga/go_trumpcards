@@ -48,6 +48,7 @@ const baseTeams: HandAndFootTeamData[] = [
 ];
 
 const drawPhaseState: HandAndFootResponse = {
+  minMeld: 50,
   players: basePlayers,
   teams: baseTeams,
   phase: 0,
@@ -165,7 +166,7 @@ describe('HandAndFootPage', () => {
   });
 
   it('shows meld phase buttons', async () => {
-    mockExec.mockResolvedValue(meldPhaseState);
+    mockExec.mockResolvedValue({ ...meldPhaseState, minMeld: 90 });
     renderWithProviders(<HandAndFootPage />);
     await waitFor(() => expect(screen.getByRole('button', { name: 'メルドする' })).toBeInTheDocument());
     expect(screen.getByRole('button', { name: 'スキップ' })).toBeInTheDocument();
@@ -173,19 +174,19 @@ describe('HandAndFootPage', () => {
 
   it('shows the initial-meld minimum and updates the running total as cards are selected', async () => {
     // Team 0 has no melds and cumulative score 0 -> initial-meld minimum is 50.
-    mockExec.mockResolvedValue(meldPhaseState);
+    mockExec.mockResolvedValue({ ...meldPhaseState, minMeld: 90 });
     renderWithProviders(<HandAndFootPage />);
     await waitFor(() => expect(screen.getByTestId('hf-meld-points')).toBeInTheDocument());
     const readout = screen.getByTestId('hf-meld-points');
     // Nothing selected: total 0, below the 50 minimum -> warning styling.
-    expect(readout).toHaveTextContent('初回メルド最低点: 50 / 選択合計: 0');
+    expect(readout).toHaveTextContent('初回メルド最低点: 90 / 選択合計: 0');
     expect(readout.className).toContain('text-ds-warning');
 
     // Select the two 10s (10 points each) -> running total 20.
     fireEvent.click(screen.getByRole('button', { name: '♠ 10' }));
     fireEvent.click(screen.getByRole('button', { name: '♣ 10' }));
     await waitFor(() => expect(screen.getByTestId('hf-meld-points')).toHaveTextContent('選択合計: 20'));
-    expect(screen.getByTestId('hf-meld-points')).toHaveTextContent('初回メルド最低点: 50 / 選択合計: 20');
+    expect(screen.getByTestId('hf-meld-points')).toHaveTextContent('初回メルド最低点: 90 / 選択合計: 20');
   });
 
   it('announces meld points in a live region without duplicating the meld button description', async () => {
@@ -226,6 +227,7 @@ describe('HandAndFootPage', () => {
     // 累計マイナス -> 最低点 15。7 が3枚でちょうど 15 なので**境界そのもの**。
     mockExec.mockResolvedValue({
       ...meldPhaseState,
+      minMeld: 15,
       players: [{ ...basePlayers[0], cumulativeScore: -10 }, basePlayers[1]],
     });
     renderWithProviders(<HandAndFootPage />);
@@ -243,6 +245,7 @@ describe('HandAndFootPage', () => {
   it('still blocks a meld of fewer than three cards', async () => {
     mockExec.mockResolvedValue({
       ...meldPhaseState,
+      minMeld: 15,
       players: [{ ...basePlayers[0], cumulativeScore: -10 }, basePlayers[1]],
     });
     renderWithProviders(<HandAndFootPage />);
@@ -259,6 +262,7 @@ describe('HandAndFootPage', () => {
     // Negative cumulative score -> minimum 15; selecting the two 10s totals 20.
     mockExec.mockResolvedValue({
       ...meldPhaseState,
+      minMeld: 15,
       players: [{ ...basePlayers[0], cumulativeScore: -10 }, basePlayers[1]],
     });
     renderWithProviders(<HandAndFootPage />);

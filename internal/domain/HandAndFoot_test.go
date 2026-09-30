@@ -963,8 +963,8 @@ func TestHandAndFoot_UnmarshalJSON_InvalidPlayerCount(t *testing.T) {
 	assert.Error(t, err)
 }
 
-// **Web の canastaMinMeld と同じ帯であること (#4836)。**
-func TestCanastaMinMeld(t *testing.T) {
+// **Web の初回メルド判定 と同じ帯であること (#4836)。**
+func TestHandAndFootSharedMinimumMeld(t *testing.T) {
 	assert.Equal(t, 15, domain.CanastaMinMeld(-50))
 	assert.Equal(t, 50, domain.CanastaMinMeld(0))
 	assert.Equal(t, 50, domain.CanastaMinMeld(1499))

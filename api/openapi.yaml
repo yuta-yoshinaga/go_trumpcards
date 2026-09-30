@@ -48025,6 +48025,9 @@ components:
       type: object
       description: Current state of the Canasta game
       properties:
+        minMeld:
+          type: integer
+          description: Minimum points required for the human player's initial meld
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -48180,6 +48183,9 @@ components:
       type: object
       description: Current state of the Hand and Foot game
       properties:
+        minMeld:
+          type: integer
+          description: Minimum points required for the human player's initial meld
         entries:
           type: array
           description: "Present only in the reply to the `log` command, which returns the action log instead of the game state."
@@ -74229,6 +74235,9 @@ components:
       additionalProperties: true
       description: Game state after the command was processed.
       properties:
+        minMeld:
+          type: integer
+          description: Minimum points required for the human player's initial meld
         messageCode:
           type: string
         teamScores:
@@ -79807,6 +79816,9 @@ components:
       additionalProperties: true
       description: Game state after the command was processed.
       properties:
+        minMeld:
+          type: integer
+          description: Minimum points required for the human player's initial meld
         completedMelds:
           type: array
           description: >-

@@ -40,6 +40,8 @@ export interface HandAndFootPlayerData {
 
 /** Full Hand and Foot game state returned from the API. */
 export interface HandAndFootResponse extends BaseGameResponse {
+  /** Server-calculated minimum for the human player’s initial meld. */
+  minMeld: number;
   players: HandAndFootPlayerData[];
   teams: HandAndFootTeamData[];
   phase: number;

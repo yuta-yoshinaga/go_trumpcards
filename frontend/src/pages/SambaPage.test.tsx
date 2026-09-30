@@ -88,12 +88,12 @@ describe('SambaPage', () => {
   });
 
   it('shows the initial-meld minimum and selected total in the meld phase', async () => {
-    mockExec.mockResolvedValue(meldPhaseState); // team score 0 → min 50; hasInitMeld false
+    mockExec.mockResolvedValue({ ...meldPhaseState, minMeld: 90 }); // the server's minimum wins; hasInitMeld false
     renderWithProviders(<SambaPage />);
     const info = await screen.findByTestId('sa-meld-points');
-    expect(info).toHaveTextContent('初回メルド必要点: 50');
+    expect(info).toHaveTextContent('初回メルド必要点: 90');
     expect(info).toHaveTextContent('選択合計: 0');
-    expect(info).toHaveTextContent('あと50点不足しています');
+    expect(info).toHaveTextContent('あと90点不足しています');
     const hand = document.querySelector('[data-tutorial="sa-player-hand"] button');
     expect(hand).toHaveAttribute('aria-describedby', 'sa-meld-points');
   });

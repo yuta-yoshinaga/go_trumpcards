@@ -14,6 +14,8 @@ type HandAndFootWebPresenter struct{}
 // Output ゲーム状態をJSON出力
 func (p *HandAndFootWebPresenter) Output(g interfaces.HandAndFootGame, lastErr error) string {
 	resObj := new(controller.HandAndFootWebOutput)
+	// HandAndFoot では最低点を強制しないが、初回メルドの表示値として返す。
+	resObj.MinMeld = domain.CanastaMinMeld(g.GetPlayer(0).GetCumulativeScore())
 	resObj.Phase = int(g.GetPhase())
 	resObj.RoundNumber = g.GetRoundNumber()
 	resObj.CurrentPlayerIdx = g.GetCurrentPlayerIdx()

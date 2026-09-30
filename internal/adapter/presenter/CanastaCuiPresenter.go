@@ -12,21 +12,6 @@ import (
 	"github.com/yuta-yoshinaga/go_trumpcards/internal/i18n"
 )
 
-// canastaMinMeld returns the minimum points required for a player's initial
-// meld, tiered by their cumulative score (mirrors the web canastaMinMeld).
-func canastaMinMeld(cumulativeScore int) int {
-	switch {
-	case cumulativeScore < 0:
-		return 15
-	case cumulativeScore < 1500:
-		return 50
-	case cumulativeScore < 3000:
-		return 90
-	default:
-		return 120
-	}
-}
-
 // canastaPlayerStr returns the display string for a single Canasta player.
 func canastaPlayerStr(player *domain.CanastaPlayer, i int, showCards bool) string {
 	var b strings.Builder
@@ -137,7 +122,7 @@ func (p *CanastaCuiPresenter) Output(g interfaces.CanastaGame, lastErr error) st
 			// memorize the 15/50/90/120 bands (mirrors the web ca-meld-points).
 			if cur := g.GetPlayer(currentIdx); cur != nil && cur.GetIsHuman() && !cur.GetHasInitMeld() {
 				b.WriteString(color.Yellow(i18n.Tf("canasta.initialMeldRequirement",
-					"min", strconv.Itoa(canastaMinMeld(cur.GetCumulativeScore())),
+					"min", strconv.Itoa(g.GetMinimumMeldValue(currentIdx)),
 					"score", strconv.Itoa(cur.GetCumulativeScore()))) + "\n")
 			}
 			b.WriteString(i18n.T("canasta.promptMeldHelp") + "\n")

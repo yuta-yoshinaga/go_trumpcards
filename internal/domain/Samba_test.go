@@ -169,7 +169,7 @@ func TestSambaIsRed3AndBlack3(t *testing.T) {
 	assert.False(t, domain.SambaIsBlack3(sambaCard(domain.CardDesignHeart, 3)))
 }
 
-func TestSambaCardValue(t *testing.T) {
+func TestSambaSharedCardValue(t *testing.T) {
 	tests := []struct {
 		card   *domain.Card
 		expect int
@@ -183,7 +183,7 @@ func TestSambaCardValue(t *testing.T) {
 		{sambaCard(domain.CardDesignSpade, 3), 5},
 	}
 	for _, tt := range tests {
-		assert.Equal(t, tt.expect, domain.SambaCardValue(tt.card))
+		assert.Equal(t, tt.expect, domain.CanastaFamilyCardValue(tt.card))
 	}
 }
 
@@ -972,7 +972,7 @@ func TestSambaPlayer_ResetRound(t *testing.T) {
 
 // #5702: 初回メルドの最低点はチーム累積点の帯で決まる。CUI と Web の両方が
 // この値を出すので、帯の境界そのものをここで固定する。
-func TestSambaMinimumMeldValue(t *testing.T) {
+func TestSambaSharedMinimumMeld(t *testing.T) {
 	cases := []struct {
 		score int
 		want  int
@@ -983,7 +983,7 @@ func TestSambaMinimumMeldValue(t *testing.T) {
 		{3000, 120}, {10000, 120},
 	}
 	for _, c := range cases {
-		assert.Equal(t, c.want, domain.SambaMinimumMeldValue(c.score), "score %d", c.score)
+		assert.Equal(t, c.want, domain.CanastaMinMeld(c.score), "score %d", c.score)
 	}
 }
 

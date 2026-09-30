@@ -20,6 +20,7 @@ import (
 
 func setupCanastaCuiMock() *interfaces.MockCanastaGame {
 	m := new(interfaces.MockCanastaGame)
+	m.On("GetMinimumMeldValue", mock.Anything).Return(50)
 	m.On("GetRoundNumber").Return(1)
 	m.On("GetDrawPileCount").Return(54)
 	m.On("GetDiscardPileCount").Return(0)
@@ -136,7 +137,10 @@ func TestCanastaCuiPresenter_Output(t *testing.T) {
 		m, players := setupCanastaCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 		m.On("GetPhase").Return(domain.CanastaPhaseMeld)
-		players[0].SetCumulativeScore(1500) // 1500-2999 band -> 90
+		players[0].SetCumulativeScore(1500)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetMinimumMeldValue")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetMinimumMeldValue")
+		m.On("GetMinimumMeldValue", 0).Return(90) // 1500-2999 band -> 90
 		players[0].SetHasInitMeld(false)
 
 		result := p.Output(m, nil)
@@ -147,7 +151,10 @@ func TestCanastaCuiPresenter_Output(t *testing.T) {
 		m, players := setupCanastaCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 		m.On("GetPhase").Return(domain.CanastaPhaseMeld)
-		players[0].SetCumulativeScore(-100) // negative band -> 15
+		players[0].SetCumulativeScore(-100)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetMinimumMeldValue")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetMinimumMeldValue")
+		m.On("GetMinimumMeldValue", 0).Return(15) // negative band -> 15
 		players[0].SetHasInitMeld(false)
 
 		result := p.Output(m, nil)
@@ -158,7 +165,10 @@ func TestCanastaCuiPresenter_Output(t *testing.T) {
 		m, players := setupCanastaCuiMockWithPlayers()
 		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetPhase")
 		m.On("GetPhase").Return(domain.CanastaPhaseMeld)
-		players[0].SetCumulativeScore(3000) // 3000+ band -> 120
+		players[0].SetCumulativeScore(3000)
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetMinimumMeldValue")
+		m.ExpectedCalls = removeMockCall(m.ExpectedCalls, "GetMinimumMeldValue")
+		m.On("GetMinimumMeldValue", 0).Return(120) // 3000+ band -> 120
 		players[0].SetHasInitMeld(false)
 
 		result := p.Output(m, nil)

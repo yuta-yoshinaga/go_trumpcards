@@ -34,6 +34,8 @@ export interface CanastaPlayerData {
 
 /** Full Canasta game state returned from the API. */
 export interface CanastaResponse extends BaseGameResponse {
+  /** Server-calculated minimum for the human player’s initial meld. */
+  minMeld: number;
   players: CanastaPlayerData[];
   phase: number;
   roundNumber: number;

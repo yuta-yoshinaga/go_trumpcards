@@ -31,7 +31,7 @@ import type { CanastaResponse, Card } from '../types/card';
 import { CanastaPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
 import { canastaDrawDiscardProblem } from '../utils/canastaDrawDiscard';
-import { canastaMinMeld, canastaSelectionPoints } from '../utils/canastaScore';
+import { canastaFamilySelectionPoints } from '../utils/canastaFamilyScore';
 import { cardAlt } from '../utils/cardAlt';
 import { CANASTA_HELP, parseCanastaCommand } from '../utils/cli/commands/canastaCommands';
 import { formatCanastaState } from '../utils/cli/formatters/canastaFormatter';
@@ -151,11 +151,11 @@ function CanastaPageContent() {
       return { selectedPoints: 0, needInitial: false, minMeld: 0, below: false };
     }
     const selectedCards = selectedCardIndices.map((i) => humanPlayer.cards[i]).filter((c): c is Card => Boolean(c));
-    const selectedPoints = canastaSelectionPoints(selectedCards);
+    const selectedPoints = canastaFamilySelectionPoints(selectedCards);
     const needInitial = !humanPlayer.hasInitMeld;
-    const minMeld = canastaMinMeld(humanPlayer.cumulativeScore);
+    const minMeld = state.minMeld;
     return { selectedPoints, needInitial, minMeld, below: needInitial && selectedPoints < minMeld };
-  }, [isMeldPhase, humanPlayer, selectedCardIndices]);
+  }, [isMeldPhase, humanPlayer, selectedCardIndices, state?.minMeld]);
 
   const handleManualReset = useCallback(() => {
     hideActionLog();
