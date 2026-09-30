@@ -9,6 +9,7 @@ export interface ChinchonPlayerData {
   isHuman: boolean;
   cardCount: number;
   cards: Card[];
+  roundDeadwoodCards: Card[];
   roundScore: number;
   cumulativeScore: number;
   eliminated: boolean;
@@ -37,6 +38,7 @@ export interface ChinchonResponse extends BaseGameResponse {
   gameEndFlag: boolean;
   winnerIdx: number;
   knockerIdx: number;
+  wonByChinchon: boolean;
   knockerMelds: ChinchonMeld[];
   layoffableIndices: number[];
   config: ChinchonConfig;

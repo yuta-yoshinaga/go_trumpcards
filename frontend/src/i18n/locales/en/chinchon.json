@@ -25,7 +25,13 @@
   "scores": "Scores",
   "scoresPlayer": "Player",
   "scoresRound": "Round",
+  "scoresBreakdown": "Breakdown",
   "scoresTotal": "Total",
+  "listSeparator": ", ",
+  "scoreKnocker": "Deadwood at knock: {{breakdown}} = {{score}} pts",
+  "scoreAfterLayoff": "Deadwood after layoff: {{breakdown}} = {{score}} pts",
+  "scoreDeadwood": "Deadwood: {{breakdown}} = {{score}} pts",
+  "scoreChinchon": "Chinchón win: 0 pts",
   "drawStockButton": "Draw Stock",
   "drawDiscardButton": "Draw Discard",
   "discardButton": "Discard",
@@ -60,5 +66,6 @@
     "chinchonTakeDiscard": "The discard connects with your hand — take it",
     "chinchonDrawStock": "The discard connects with nothing — draw from the stock",
     "chinchonDiscardHeavy": "Your heaviest unconnected card. You are scored on what stays in hand"
-  }
+  },
+  "noDeadwood": "none"
 }

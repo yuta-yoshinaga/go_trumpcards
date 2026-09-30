@@ -21,6 +21,7 @@ func (p *ChinchonWebPresenter) Output(g interfaces.ChinchonGame, lastErr error) 
 	resObj.GameEndFlag = g.GetGameEndFlag()
 	resObj.WinnerIdx = g.GetWinnerIdx()
 	resObj.KnockerIdx = g.GetKnockerIdx()
+	resObj.WonByChinchon = g.GetWonByChinchon()
 	resObj.LayoffableIndices = make([]int, 0)
 	if resObj.Phase == int(domain.ChinchonPhaseLayoff) {
 		resObj.LayoffableIndices = append(resObj.LayoffableIndices, g.GetLayoffableIndices()...)
@@ -65,13 +66,20 @@ func (p *ChinchonWebPresenter) buildPlayersOutput(g interfaces.ChinchonGame) []*
 		player := g.GetPlayer(i)
 		showCards := player.GetIsHuman() || revealAll
 		pObj := &controller.ChinchonWebOutputPlayer{
-			ID:              i,
-			IsHuman:         player.GetIsHuman(),
-			CardCount:       player.GetCardsSize(),
-			Cards:           playerCardsToOutput(player, showCards),
-			RoundScore:      player.GetRoundScore(),
-			CumulativeScore: player.GetCumulativeScore(),
-			Eliminated:      player.GetEliminated(),
+			ID:                 i,
+			IsHuman:            player.GetIsHuman(),
+			CardCount:          player.GetCardsSize(),
+			Cards:              playerCardsToOutput(player, showCards),
+			RoundDeadwoodCards: make([]*controller.WebOutputCard, 0),
+			RoundScore:         player.GetRoundScore(),
+			CumulativeScore:    player.GetCumulativeScore(),
+			Eliminated:         player.GetEliminated(),
+		}
+		deadwood := g.GetRoundDeadwood()
+		if i < len(deadwood) {
+			for _, card := range deadwood[i] {
+				pObj.RoundDeadwoodCards = append(pObj.RoundDeadwoodCards, cardToOutput(card))
+			}
 		}
 		out = append(out, pObj)
 	}

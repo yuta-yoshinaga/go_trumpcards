@@ -21,6 +21,7 @@ const drawPhaseState: ChinchonResponse = {
       id: 0,
       isHuman: true,
       cardCount: 7,
+      roundDeadwoodCards: [],
       cards: [
         { design: 'SPADE', value: 1 },
         { design: 'HEART', value: 11 },
@@ -29,7 +30,16 @@ const drawPhaseState: ChinchonResponse = {
       cumulativeScore: 0,
       eliminated: false,
     },
-    { id: 1, isHuman: false, cardCount: 7, cards: [], roundScore: 3, cumulativeScore: 10, eliminated: false },
+    {
+      id: 1,
+      isHuman: false,
+      cardCount: 7,
+      cards: [],
+      roundDeadwoodCards: [],
+      roundScore: 3,
+      cumulativeScore: 10,
+      eliminated: false,
+    },
   ],
   phase: 0,
   roundNumber: 1,
@@ -39,6 +49,7 @@ const drawPhaseState: ChinchonResponse = {
   gameEndFlag: false,
   winnerIdx: -1,
   knockerIdx: -1,
+  wonByChinchon: false,
   knockerMelds: [],
   layoffableIndices: [],
   message: '',
@@ -97,6 +108,48 @@ describe('ChinchonPage', () => {
   it('calls reset on mount', async () => {
     renderWithProviders(<ChinchonPage />);
     await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset', undefined, RESET_CONFIG));
+  });
+
+  it('shows server round deadwood cards and scores after knock and layoff', async () => {
+    const scoredState: ChinchonResponse = {
+      ...roundEndState,
+      knockerIdx: 0,
+      players: [
+        {
+          ...drawPhaseState.players[0],
+          cards: [
+            { design: 'SPADE', value: 5 },
+            { design: 'CLOVER', value: 3 },
+          ],
+          roundDeadwoodCards: [
+            { design: 'SPADE', value: 5 },
+            { design: 'CLOVER', value: 3 },
+          ],
+          roundScore: 8,
+        },
+        {
+          ...drawPhaseState.players[1],
+          cards: [{ design: 'DIAMOND', value: 2 }],
+          roundDeadwoodCards: [{ design: 'DIAMOND', value: 2 }],
+          roundScore: 2,
+        },
+      ],
+    };
+    mockExec.mockResolvedValue(scoredState);
+    renderWithProviders(<ChinchonPage />);
+
+    expect(await screen.findByText('デッドウッド（ノック時）: ♠ 5、♣ 3 = 8点')).toBeInTheDocument();
+    expect(screen.getByText('デッドウッド（レイオフ後）: ♦ 2 = 2点')).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: '内訳' })).toBeInTheDocument();
+    expect(screen.getByRole('cell', { name: '8' })).toBeInTheDocument();
+    expect(screen.getByRole('cell', { name: '0' })).toBeInTheDocument();
+  });
+
+  it('shows the server Chinchón win breakdown for the winner', async () => {
+    mockExec.mockResolvedValue({ ...gameEndState, wonByChinchon: true });
+    renderWithProviders(<ChinchonPage />);
+    expect(await screen.findByText('チンチョン勝利: 0点')).toBeInTheDocument();
+    expect(screen.getByTestId('ch-score-breakdown-1')).toHaveTextContent('—');
   });
 
   it('shows live deadwood indicator during discard phase', async () => {
@@ -345,9 +398,36 @@ describe('ChinchonPage', () => {
       ...drawPhaseState,
       players: [
         drawPhaseState.players[0],
-        { id: 1, isHuman: false, cardCount: 7, cards: [], roundScore: 0, cumulativeScore: 0, eliminated: false },
-        { id: 2, isHuman: false, cardCount: 7, cards: [], roundScore: 0, cumulativeScore: 0, eliminated: false },
-        { id: 3, isHuman: false, cardCount: 7, cards: [], roundScore: 0, cumulativeScore: 0, eliminated: false },
+        {
+          id: 1,
+          isHuman: false,
+          cardCount: 7,
+          cards: [],
+          roundDeadwoodCards: [],
+          roundScore: 0,
+          cumulativeScore: 0,
+          eliminated: false,
+        },
+        {
+          id: 2,
+          isHuman: false,
+          cardCount: 7,
+          cards: [],
+          roundDeadwoodCards: [],
+          roundScore: 0,
+          cumulativeScore: 0,
+          eliminated: false,
+        },
+        {
+          id: 3,
+          isHuman: false,
+          cardCount: 7,
+          cards: [],
+          roundDeadwoodCards: [],
+          roundScore: 0,
+          cumulativeScore: 0,
+          eliminated: false,
+        },
       ],
       config: { ...drawPhaseState.config, playerCount: 4 },
     };
@@ -366,7 +446,16 @@ describe('ChinchonPage', () => {
       ...drawPhaseState,
       players: [
         drawPhaseState.players[0],
-        { id: 1, isHuman: false, cardCount: 0, cards: [], roundScore: 0, cumulativeScore: 120, eliminated: true },
+        {
+          id: 1,
+          isHuman: false,
+          cardCount: 0,
+          cards: [],
+          roundDeadwoodCards: [],
+          roundScore: 0,
+          cumulativeScore: 120,
+          eliminated: true,
+        },
       ],
     };
     mockExec.mockResolvedValue(eliminatedState);

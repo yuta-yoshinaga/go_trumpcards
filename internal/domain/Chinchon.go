@@ -120,6 +120,8 @@ type Chinchon struct {
 	knockerIdx      int       // ノックしたプレイヤー (-1 = ノックなし)
 	knockerMelds    [][]*Card // ノッカーのメルド (レイオフ用)
 	knockerDeadwood []*Card   // ノッカーのデッドウッド
+	roundDeadwood   [][]*Card // ラウンドスコアの根拠となった各プレイヤーのデッドウッド
+	wonByChinchon   bool      // チンチョンによる勝利か
 	layoffQueue     []int     // 残りのレイオフ対象プレイヤー (順番)
 }
 
@@ -212,6 +214,8 @@ func (g *Chinchon) resetRoundState() {
 	g.knockerIdx = -1
 	g.knockerMelds = nil
 	g.knockerDeadwood = nil
+	g.roundDeadwood = nil
+	g.wonByChinchon = false
 	g.layoffQueue = nil
 }
 
@@ -474,17 +478,20 @@ func (g *Chinchon) layoffCard(card *Card) {
 // 各プレイヤーは残りデッドウッドを累積点に加算する (ノッカーは自身のデッドウッドのみ)。
 // 累積点が EliminationLimit を超えたプレイヤーは脱落。残り1人になればマッチ終了。
 func (g *Chinchon) scoreRound() {
+	g.roundDeadwood = make([][]*Card, len(g.players))
 	for i, p := range g.players {
 		if p.GetEliminated() {
 			continue
 		}
 		var deadwoodValue int
 		if i == g.knockerIdx {
-			deadwoodValue = CalcDeadwoodValue(g.knockerDeadwood)
+			g.roundDeadwood[i] = append([]*Card(nil), g.knockerDeadwood...)
+			deadwoodValue = CalcDeadwoodValue(g.roundDeadwood[i])
 		} else {
 			cards := handCards(p)
 			_, dw := chinchonFindBestMelds(cards)
-			deadwoodValue = CalcDeadwoodValue(dw)
+			g.roundDeadwood[i] = append([]*Card(nil), dw...)
+			deadwoodValue = CalcDeadwoodValue(g.roundDeadwood[i])
 		}
 		p.SetRoundScore(deadwoodValue)
 		p.CommitRoundScore()
@@ -510,6 +517,8 @@ func (g *Chinchon) endRoundDraw() {
 	g.appendLog(-1, "draw", "chinchon.log.draw", nil, nil)
 	g.knockerIdx = -1
 	g.knockerDeadwood = nil
+	g.wonByChinchon = false
+	g.roundDeadwood = nil
 	g.scoreRound()
 }
 
@@ -534,6 +543,7 @@ func (g *Chinchon) checkChinchon(idx int) bool {
 	if hasChinchon(handCards(p)) {
 		g.appendLog(idx, "chinchon", "chinchon.log.chinchon", map[string]string{"name": playerName(g.players, idx)}, nil)
 		g.winnerIdx = idx
+		g.wonByChinchon = true
 		g.gameEndFlag = true
 		g.phase = ChinchonPhaseGameEnd
 		return true
@@ -811,6 +821,12 @@ func (g *Chinchon) SetKnockerMelds(melds [][]*Card) { g.knockerMelds = melds }
 // GetKnockerDeadwood ノッカーのデッドウッド取得
 func (g *Chinchon) GetKnockerDeadwood() []*Card { return g.knockerDeadwood }
 
+// GetRoundDeadwood ラウンドスコアの根拠となった各プレイヤーのデッドウッドを取得する。
+func (g *Chinchon) GetRoundDeadwood() [][]*Card { return g.roundDeadwood }
+
+// GetWonByChinchon チンチョンによる勝利かどうかを取得する。
+func (g *Chinchon) GetWonByChinchon() bool { return g.wonByChinchon }
+
 // SetKnockerDeadwood ノッカーのデッドウッド設定 (テスト用)
 func (g *Chinchon) SetKnockerDeadwood(deadwood []*Card) { g.knockerDeadwood = deadwood }
 
@@ -875,6 +891,8 @@ type chinchonJSON struct {
 	KnockerMelds     [][]*Card         `json:"km"`
 	KnockerDeadwood  []*Card           `json:"kd"`
 	LayoffQueue      []int             `json:"lq"`
+	RoundDeadwood    [][]*Card         `json:"rd"`
+	WonByChinchon    bool              `json:"wc"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -894,6 +912,8 @@ func (g *Chinchon) MarshalJSON() ([]byte, error) {
 		KnockerMelds:     g.knockerMelds,
 		KnockerDeadwood:  g.knockerDeadwood,
 		LayoffQueue:      g.layoffQueue,
+		RoundDeadwood:    g.roundDeadwood,
+		WonByChinchon:    g.wonByChinchon,
 	})
 }
 
@@ -974,6 +994,8 @@ func (g *Chinchon) UnmarshalJSON(data []byte) error {
 		g.knockerDeadwood = make([]*Card, 0)
 	}
 	g.layoffQueue = j.LayoffQueue
+	g.roundDeadwood = j.RoundDeadwood
+	g.wonByChinchon = j.WonByChinchon
 	if g.layoffQueue == nil {
 		g.layoffQueue = make([]int, 0)
 	}
