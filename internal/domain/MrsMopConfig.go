@@ -24,8 +24,3 @@ const (
 type MrsMopConfig struct {
 	Difficulty MrsMopDifficulty
 }
-
-// DefaultMrsMopConfig デフォルト設定（4スート = 本来の Mrs. Mop）
-func DefaultMrsMopConfig() MrsMopConfig {
-	return MrsMopConfig{Difficulty: MrsMopDifficulty4Suit}
-}

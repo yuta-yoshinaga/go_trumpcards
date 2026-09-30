@@ -704,12 +704,6 @@ func TestMrsMopIsValidSequence(t *testing.T) {
 	})
 }
 
-func TestDefaultMrsMopConfig(t *testing.T) {
-	cfg := DefaultMrsMopConfig()
-	// **既定は4スート = 本来の Mrs. Mop。**クローン元の Spider は1スート既定。
-	assert.Equal(t, MrsMopDifficulty4Suit, cfg.Difficulty)
-}
-
 func TestMrsMopStalemateCheckNotPlayingPhase(t *testing.T) {
 	tc := NewTrumpCardsWithSuits(MrsMopTotalCards, []int{CardDesignSpade})
 	s := NewMrsMop(tc)

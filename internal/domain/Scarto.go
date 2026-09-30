@@ -1134,11 +1134,6 @@ func (g *Scarto) GetPlayableIndices(playerIdx int) []int {
 	return g.getValidPlayIndices(playerIdx)
 }
 
-// --- Test / helper public wrappers ---
-
-// ScartoSettleDeal はディール精算の純粋関数の公開ラッパー (テスト用)。
-func ScartoSettleDeal(half [ScartoPlayerCnt]int) [ScartoPlayerCnt]int { return scartoSettleDeal(half) }
-
 // --- JSON ---
 
 // scartoJSON is the JSON wire format for Scarto.

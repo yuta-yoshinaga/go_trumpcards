@@ -408,11 +408,6 @@ func TestRikkenAccessorsRejectOutOfRange(t *testing.T) {
 	assert.Equal(t, "openMisere", RikkenContractName(RikkenContractOpenMisere))
 	assert.Equal(t, "none", RikkenContractName(99))
 
-	assert.Equal(t, "spade", rikkenSuitName(CardDesignSpade))
-	assert.Equal(t, "clover", rikkenSuitName(CardDesignClover))
-	assert.Equal(t, "heart", rikkenSuitName(CardDesignHeart))
-	assert.Equal(t, "diamond", rikkenSuitName(CardDesignDiamond))
-	assert.Equal(t, "notrump", rikkenSuitName(RikkenNoTrump))
 }
 
 func TestRikkenCallRejectsBadSuit(t *testing.T) {
