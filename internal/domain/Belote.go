@@ -464,7 +464,7 @@ func (b *Belote) ResolveTrick() {
 	trickPoints := 0
 	for i, tc := range b.currentTrick {
 		trickCards[i] = tc.Card
-		trickPoints += beloteCardPoints(tc.Card, b.trumpSuit)
+		trickPoints += JassFamilyCardPoints(tc.Card, b.trumpSuit)
 	}
 
 	b.players[winnerIdx].AddTrick(trickCards)
@@ -733,45 +733,6 @@ func beloteNonTrumpRank(value int) int {
 		return 2
 	case 7:
 		return 1
-	}
-	return 0
-}
-
-// beloteCardPoints トランプスートを踏まえたカード点数を返す
-// 切り札: J=20, 9=14, A=11, 10=10, K=4, Q=3, 8=0, 7=0
-// 非切り札: A=11, 10=10, K=4, Q=3, J=2, 9=0, 8=0, 7=0
-func beloteCardPoints(c *Card, trumpSuit int) int {
-	if c == nil {
-		return 0
-	}
-	if c.GetDesign() == trumpSuit {
-		switch c.GetValue() {
-		case 11:
-			return 20
-		case 9:
-			return 14
-		case 1:
-			return 11
-		case 10:
-			return 10
-		case 13:
-			return 4
-		case 12:
-			return 3
-		}
-		return 0
-	}
-	switch c.GetValue() {
-	case 1:
-		return 11
-	case 10:
-		return 10
-	case 13:
-		return 4
-	case 12:
-		return 3
-	case 11:
-		return 2
 	}
 	return 0
 }
@@ -1280,7 +1241,7 @@ func (b *Belote) cpuPlayChoose(playerIdx int, valid []int) int {
 		best := valid[0]
 		bestPts := -1
 		for _, idx := range valid {
-			pts := beloteCardPoints(player.GetCard(idx), b.trumpSuit)
+			pts := JassFamilyCardPoints(player.GetCard(idx), b.trumpSuit)
 			if pts > bestPts {
 				bestPts = pts
 				best = idx
@@ -1310,7 +1271,7 @@ func (b *Belote) cpuPlayChoose(playerIdx int, valid []int) int {
 	worst := valid[0]
 	worstPts := 9999
 	for _, idx := range valid {
-		pts := beloteCardPoints(player.GetCard(idx), b.trumpSuit)
+		pts := JassFamilyCardPoints(player.GetCard(idx), b.trumpSuit)
 		if pts < worstPts {
 			worstPts = pts
 			worst = idx

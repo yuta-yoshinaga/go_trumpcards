@@ -33,12 +33,12 @@ func TestBauernschnapsen_DeckAndPoints(t *testing.T) {
 	assert.Equal(t, 20, deck.GetTotalCount())
 
 	// Card points.
-	assert.Equal(t, 11, domain.BauernschnapsenCardPoints(domain.NewCard(domain.CardDesignSpade, 1, false)))
-	assert.Equal(t, 10, domain.BauernschnapsenCardPoints(domain.NewCard(domain.CardDesignSpade, 10, false)))
-	assert.Equal(t, 4, domain.BauernschnapsenCardPoints(domain.NewCard(domain.CardDesignSpade, 13, false)))
-	assert.Equal(t, 3, domain.BauernschnapsenCardPoints(domain.NewCard(domain.CardDesignSpade, 12, false)))
-	assert.Equal(t, 2, domain.BauernschnapsenCardPoints(domain.NewCard(domain.CardDesignSpade, 11, false)))
-	assert.Equal(t, 0, domain.BauernschnapsenCardPoints(nil))
+	assert.Equal(t, 11, domain.AceTenCardPoints(domain.NewCard(domain.CardDesignSpade, 1, false)))
+	assert.Equal(t, 10, domain.AceTenCardPoints(domain.NewCard(domain.CardDesignSpade, 10, false)))
+	assert.Equal(t, 4, domain.AceTenCardPoints(domain.NewCard(domain.CardDesignSpade, 13, false)))
+	assert.Equal(t, 3, domain.AceTenCardPoints(domain.NewCard(domain.CardDesignSpade, 12, false)))
+	assert.Equal(t, 2, domain.AceTenCardPoints(domain.NewCard(domain.CardDesignSpade, 11, false)))
+	assert.Equal(t, 0, domain.AceTenCardPoints(nil))
 
 	// Total = 120 (シュナプセン / 66 と同じ)。**7 は配らないので 0 点札は無い。**
 	total := (11 + 10 + 4 + 3 + 2) * 4
@@ -61,7 +61,7 @@ func TestBauernschnapsen_DeckPointsAddUp(t *testing.T) {
 			break
 		}
 		seen++
-		total += domain.BauernschnapsenCardPoints(c)
+		total += domain.AceTenCardPoints(c)
 	}
 	assert.Equal(t, 20, seen, "20 枚配り切る")
 	assert.Equal(t, domain.BauernschnapsenRoundCardPointsTotal, total,

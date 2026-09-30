@@ -380,24 +380,6 @@ func (p *Pinochle) cardRank(card *Card) int {
 	return 100 + base
 }
 
-// pinochleCardPointValue カードのポイント値を返す
-func pinochleCardPointValue(card *Card) int {
-	switch card.GetValue() {
-	case 1: // Ace
-		return 11
-	case 10:
-		return 10
-	case 13: // King
-		return 4
-	case 12: // Queen
-		return 3
-	case 11: // Jack
-		return 2
-	default:
-		return 0
-	}
-}
-
 // ─── Meld Evaluation ────────────────────────────────────
 
 // evaluateMelds 手札からメルドを検出する
@@ -781,7 +763,7 @@ func (p *Pinochle) cpuEstimateTrickPoints(playerIdx, trumpSuit int) int {
 		card := p.players[playerIdx].GetCard(i)
 		if card.GetDesign() == trumpSuit {
 			// トランプカードはポイントを獲得する可能性が高い
-			points += pinochleCardPointValue(card)
+			points += AceTenCardPoints(card)
 		} else if card.GetValue() == 1 { // 非トランプのAce
 			points += 5 // 半分くらいの確率で取れる見積もり
 		}
@@ -1101,9 +1083,9 @@ func (p *Pinochle) cpuPlayHard(playerIdx int, validIndices []int) int {
 	if len(p.currentTrick) == PinochlePlayerCnt-1 && currentWinnerTeam == myTeam {
 		// パートナーが勝っている → ポイントの高いカードを出す
 		bestIdx := validIndices[0]
-		bestPoints := pinochleCardPointValue(player.GetCard(bestIdx))
+		bestPoints := AceTenCardPoints(player.GetCard(bestIdx))
 		for _, vi := range validIndices[1:] {
-			pts := pinochleCardPointValue(player.GetCard(vi))
+			pts := AceTenCardPoints(player.GetCard(vi))
 			if pts > bestPoints {
 				bestPoints = pts
 				bestIdx = vi
@@ -1149,7 +1131,7 @@ func (p *Pinochle) ResolveTrick() {
 	trickPoints := 0
 	trickCards := make([]*Card, 0, PinochlePlayerCnt)
 	for _, tc := range p.currentTrick {
-		trickPoints += pinochleCardPointValue(tc.Card)
+		trickPoints += AceTenCardPoints(tc.Card)
 		trickCards = append(trickCards, tc.Card)
 	}
 

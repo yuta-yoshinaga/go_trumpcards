@@ -615,9 +615,9 @@ func TestPinochleCardPointValue(t *testing.T) {
 	}
 	for _, tt := range tests {
 		card := NewCard(CardDesignSpade, tt.value, false)
-		got := pinochleCardPointValue(card)
+		got := AceTenCardPoints(card)
 		if got != tt.expected {
-			t.Errorf("pinochleCardPointValue(value=%d) = %d, want %d", tt.value, got, tt.expected)
+			t.Errorf("AceTenCardPoints(value=%d) = %d, want %d", tt.value, got, tt.expected)
 		}
 	}
 }

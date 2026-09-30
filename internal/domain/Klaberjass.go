@@ -185,43 +185,6 @@ func klaberjassSeqRank(c *Card) int {
 	return c.GetValue()
 }
 
-// KlaberjassCardPoints は札の点数を返す。
-func KlaberjassCardPoints(c *Card, trumpSuit int) int {
-	if c == nil {
-		return 0
-	}
-	if c.GetDesign() == trumpSuit {
-		switch c.GetValue() {
-		case 11: // Jass
-			return 20
-		case 9: // Menel
-			return 14
-		case 1:
-			return 11
-		case 10:
-			return 10
-		case 13:
-			return 4
-		case 12:
-			return 3
-		}
-		return 0
-	}
-	switch c.GetValue() {
-	case 1:
-		return 11
-	case 10:
-		return 10
-	case 13:
-		return 4
-	case 12:
-		return 3
-	case 11:
-		return 2
-	}
-	return 0
-}
-
 // klaberjassTrickRank はトリックの強さを返す。
 //
 // **切札だけ順序が違う。**J (20) と 9 (14) が A の上に割り込む。
@@ -827,7 +790,7 @@ func (k *Klaberjass) resolveTrick() {
 
 	points := 0
 	for _, c := range k.trick {
-		points += KlaberjassCardPoints(c, k.trumpSuit)
+		points += JassFamilyCardPoints(c, k.trumpSuit)
 	}
 	k.handPoints[winner] += points
 	k.cardPoints[winner] += points
@@ -962,7 +925,7 @@ func (k *Klaberjass) KlaberjassCpuPlay(idx int) int {
 		// リードは一番点の低い札から。
 		best, bestPts := valid[0], 1<<30
 		for _, i := range valid {
-			if pts := KlaberjassCardPoints(p.GetCard(i), k.trumpSuit); pts < bestPts {
+			if pts := JassFamilyCardPoints(p.GetCard(i), k.trumpSuit); pts < bestPts {
 				best, bestPts = i, pts
 			}
 		}
@@ -973,7 +936,7 @@ func (k *Klaberjass) KlaberjassCpuPlay(idx int) int {
 	cheap, cheapPts := valid[0], 1<<30
 	for _, i := range valid {
 		c := p.GetCard(i)
-		pts := KlaberjassCardPoints(c, k.trumpSuit)
+		pts := JassFamilyCardPoints(c, k.trumpSuit)
 		if klaberjassBeats(c, lead, k.trumpSuit) && pts > winPts {
 			winning, winPts = i, pts
 		}

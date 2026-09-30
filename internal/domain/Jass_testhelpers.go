@@ -6,7 +6,7 @@ package domain
 func (g *Jass) CardRankPublic(card *Card) int { return g.cardRank(card) }
 
 // CardPointsPublic カード得点取得 (テスト用公開メソッド)
-func (g *Jass) CardPointsPublic(card *Card) int { return jassCardPoints(card, g.trumpSuit) }
+func (g *Jass) CardPointsPublic(card *Card) int { return JassFamilyCardPoints(card, g.trumpSuit) }
 
 // ResolveWeisForTest sets the trump/forehand and runs Weis resolution (テスト用)。
 func (g *Jass) ResolveWeisForTest(trumpSuit, forehandIdx int) {

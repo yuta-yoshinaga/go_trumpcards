@@ -14,7 +14,7 @@ const DESIGN_ORDER: Readonly<Record<string, number>> = { SPADE: 1, CLOVER: 2, HE
  * **Only the trump suit swaps tables** (J=20 Jass, 9=14 Menel), which is the
  * whole point of this family — the same jack is worth 20 or 2 depending on the
  * suit called, so a hand read without it invites feeding the wrong card to a
- * partner (#5749). Mirrors `TarabishCardPoints` in `internal/domain/Tarabish.go`;
+ * partner (#5749). Mirrors `JassFamilyCardPoints` in `internal/domain/jass_family_points.go`;
  * the golden vectors in `__fixtures__/tarabishPoints.golden.json` are asserted
  * from both sides.
  * @param card - The card to score.

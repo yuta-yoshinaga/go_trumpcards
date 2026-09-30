@@ -84,7 +84,7 @@ func TestTarabishTeamOf(t *testing.T) {
 // --- 点数 ---
 
 // **切り札だけ序列が変わる。** J=20 と 9=14 が A を追い越す。
-func TestTarabishCardPoints_Trump(t *testing.T) {
+func TestJassFamilyCardPoints_Trump(t *testing.T) {
 	trump := CardDesignHeart
 	for _, tc := range []struct {
 		value int
@@ -96,13 +96,13 @@ func TestTarabishCardPoints_Trump(t *testing.T) {
 		{8, 0, "8"}, {7, 0, "7"}, {6, 0, "6"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			assert.Equal(t, tc.want, TarabishCardPoints(NewCard(trump, tc.value, false), trump))
+			assert.Equal(t, tc.want, JassFamilyCardPoints(NewCard(trump, tc.value, false), trump))
 		})
 	}
 }
 
 // 非切り札では J は 2 点、9 は 0 点まで落ちる。
-func TestTarabishCardPoints_Plain(t *testing.T) {
+func TestJassFamilyCardPoints_Plain(t *testing.T) {
 	trump := CardDesignHeart
 	for _, tc := range []struct {
 		value int
@@ -113,10 +113,10 @@ func TestTarabishCardPoints_Plain(t *testing.T) {
 		{11, 2, "J"}, {9, 0, "9"}, {6, 0, "6"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			assert.Equal(t, tc.want, TarabishCardPoints(NewCard(CardDesignSpade, tc.value, false), trump))
+			assert.Equal(t, tc.want, JassFamilyCardPoints(NewCard(CardDesignSpade, tc.value, false), trump))
 		})
 	}
-	assert.Equal(t, 0, TarabishCardPoints(nil, trump))
+	assert.Equal(t, 0, JassFamilyCardPoints(nil, trump))
 }
 
 // **カード点の合計は 152。** 切り札 62 + 非切り札 30×3。
@@ -125,7 +125,7 @@ func TestTarabish_TotalCardPointsIs152(t *testing.T) {
 	total := 0
 	for _, suit := range []int{CardDesignSpade, CardDesignClover, CardDesignHeart, CardDesignDiamond} {
 		for _, v := range ShortDeckValues {
-			total += TarabishCardPoints(NewCard(suit, v, false), trump)
+			total += JassFamilyCardPoints(NewCard(suit, v, false), trump)
 		}
 	}
 	assert.Equal(t, 152, total, "切り札62 + 非切り札30×3")
@@ -825,7 +825,7 @@ func TestTarabish_CpuLeadPrefersNonTrumpOnTie(t *testing.T) {
 
 // **切り札だけ点数表が入れ替わる** (#5749)。手札に出す点と精算の点が
 // 同じ関数から来ることを、TS と共有する黄金ベクタで固定する。
-func TestTarabishCardPoints_GoldenVectors(t *testing.T) {
+func TestJassFamilyCardPoints_GoldenVectors(t *testing.T) {
 	raw, err := os.ReadFile(filepath.Join(
 		"..", "..", "frontend", "src", "utils", "__fixtures__", "tarabishPoints.golden.json"))
 	if err != nil {
@@ -855,7 +855,7 @@ func TestTarabishCardPoints_GoldenVectors(t *testing.T) {
 		if !ok {
 			t.Fatalf("%s: unknown design %q", c.Name, c.Design)
 		}
-		if got := TarabishCardPoints(NewCard(design, c.Value, true), c.TrumpSuit); got != c.Points {
+		if got := JassFamilyCardPoints(NewCard(design, c.Value, true), c.TrumpSuit); got != c.Points {
 			t.Errorf("%s: got %d, want %d", c.Name, got, c.Points)
 		}
 	}

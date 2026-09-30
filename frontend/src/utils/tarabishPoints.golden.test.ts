@@ -4,9 +4,9 @@ import golden from './__fixtures__/tarabishPoints.golden.json';
 import { tarabishCardPoints } from './tarabishPoints';
 
 /**
- * The point table lives twice: `TarabishCardPoints` in
- * `internal/domain/Tarabish.go` (which scores the round) and this module (which
- * labels the hand). `TestTarabishCardPoints_GoldenVectors` asserts the same
+ * The point table lives twice: `JassFamilyCardPoints` in
+ * `internal/domain/jass_family_points.go` (which scores the round) and this module (which
+ * labels the hand). `TestJassFamilyCardPoints_GoldenVectors` asserts the same
  * vectors from the Go side, so changing one alone fails that side.
  */
 describe('tarabishCardPoints golden vectors (shared with the Go domain)', () => {

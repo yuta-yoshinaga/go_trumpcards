@@ -245,7 +245,7 @@ func (g *Marias) ResolveTrick() {
 	pts := 0
 	for i, tc := range g.currentTrick {
 		trickCards[i] = tc.Card
-		pts += mariasCardPoints(tc.Card)
+		pts += AceTenCardPoints(tc.Card)
 	}
 	g.players[winnerIdx].AddTrick(trickCards)
 	g.roundCardPts[winnerIdx] += pts
@@ -403,24 +403,6 @@ func mariasStrength(value int) int {
 	}
 }
 
-// mariasCardPoints カードポイント。A=11, 10=10, K=4, Q=3, J=2, 他=0。
-func mariasCardPoints(card *Card) int {
-	switch card.GetValue() {
-	case 1:
-		return 11
-	case 10:
-		return 10
-	case 13:
-		return 4
-	case 12:
-		return 3
-	case 11:
-		return 2
-	default:
-		return 0
-	}
-}
-
 // getValidPlayIndices プレイ可能なカードのインデックスリストを返す。
 func (g *Marias) getValidPlayIndices(playerIdx int) []int {
 	return validPlayIndices(g.players[playerIdx], func(c *Card) bool { return g.validatePlay(playerIdx, c) == nil })
@@ -489,21 +471,21 @@ func (g *Marias) cpuPlaySmart(playerIdx int, valid []int) int {
 	player := g.players[playerIdx]
 	if len(g.currentTrick) == 0 {
 		return pickLowest(player, valid, func(c *Card) int {
-			return mariasCardPoints(c)*100 + g.mariasRank(c)
+			return AceTenCardPoints(c)*100 + g.mariasRank(c)
 		})
 	}
 	winnerIdx := g.trickWinner()
 	topRank := g.trickTopRank(winnerIdx)
 	trickPts := 0
 	for _, tc := range g.currentTrick {
-		trickPts += mariasCardPoints(tc.Card)
+		trickPts += AceTenCardPoints(tc.Card)
 	}
 	winners := filterIndices(valid, func(idx int) bool { return g.mariasRank(player.GetCard(idx)) > topRank })
 	if trickPts > 0 && len(winners) > 0 {
 		return pickLowest(player, winners, func(c *Card) int { return g.mariasRank(c) })
 	}
 	return pickLowest(player, valid, func(c *Card) int {
-		return mariasCardPoints(c)*100 + g.mariasRank(c)
+		return AceTenCardPoints(c)*100 + g.mariasRank(c)
 	})
 }
 
