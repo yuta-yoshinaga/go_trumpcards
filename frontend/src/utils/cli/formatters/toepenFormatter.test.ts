@@ -34,6 +34,7 @@ function makeState(overrides?: Partial<ToepenResponse>): ToepenResponse {
     leadPlayerIdx: 0,
     dealerIdx: 0,
     currentTrick: [],
+    currentTrickWinnerIdx: -1,
     leadSuit: -1,
     trickNumber: 1,
     handNumber: 2,

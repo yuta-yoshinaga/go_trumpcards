@@ -38610,6 +38610,9 @@ components:
           type: integer
         dealerIdx:
           type: integer
+        currentTrickWinnerIdx:
+          type: integer
+          description: Seat currently winning the trick, or -1 when no card is winning.
         currentTrick:
           type: array
           description: Cards played into the trick so far, in play order.

@@ -33,5 +33,6 @@
   "you": "You",
   "yourHand": "Your hand",
   "toepedBy": "{{name}} toeps -- the stake is {{stake}}",
+  "currentTrickWinner": "currently winning card",
   "lastTrickWinner": "Last trick winner: {{name}}"
 }
