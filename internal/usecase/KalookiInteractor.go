@@ -60,62 +60,27 @@ func (ci *KalookiInteractor) ResetWithConfig(cfg domain.KalookiConfig) string {
 
 // DrawFromStock 山札からカードを引く
 func (ci *KalookiInteractor) DrawFromStock() string {
-	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
-		return out
-	}
-	if err := ci.Game.PlayerDrawFromStock(); err != nil {
-		return ci.gp.Output(ci.Game, err)
-	}
-	ci.runCpuTurns()
-	return ci.gp.Output(ci.Game, nil)
+	return humanAction(ci.Game, ci.gp, func() error { return ci.Game.PlayerDrawFromStock() }, ci.runCpuTurns)
 }
 
 // DrawFromDiscard 捨て札トップからカードを引く
 func (ci *KalookiInteractor) DrawFromDiscard() string {
-	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
-		return out
-	}
-	if err := ci.Game.PlayerDrawFromDiscard(); err != nil {
-		return ci.gp.Output(ci.Game, err)
-	}
-	ci.runCpuTurns()
-	return ci.gp.Output(ci.Game, nil)
+	return humanAction(ci.Game, ci.gp, func() error { return ci.Game.PlayerDrawFromDiscard() }, ci.runCpuTurns)
 }
 
 // Meld メルド群を場に出す
 func (ci *KalookiInteractor) Meld(meldGroups [][]int) string {
-	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
-		return out
-	}
-	if err := ci.Game.PlayerMeld(meldGroups); err != nil {
-		return ci.gp.Output(ci.Game, err)
-	}
-	ci.runCpuTurns()
-	return ci.gp.Output(ci.Game, nil)
+	return humanAction(ci.Game, ci.gp, func() error { return ci.Game.PlayerMeld(meldGroups) }, ci.runCpuTurns)
 }
 
 // Layoff 既存メルドにカードを 1 枚追加する
 func (ci *KalookiInteractor) Layoff(targetPlayerIdx, meldIdx, cardIndex int) string {
-	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
-		return out
-	}
-	if err := ci.Game.PlayerLayoff(targetPlayerIdx, meldIdx, cardIndex); err != nil {
-		return ci.gp.Output(ci.Game, err)
-	}
-	ci.runCpuTurns()
-	return ci.gp.Output(ci.Game, nil)
+	return humanAction(ci.Game, ci.gp, func() error { return ci.Game.PlayerLayoff(targetPlayerIdx, meldIdx, cardIndex) }, ci.runCpuTurns)
 }
 
 // Discard カードを捨てる
 func (ci *KalookiInteractor) Discard(cardIndex int) string {
-	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
-		return out
-	}
-	if err := ci.Game.PlayerDiscard(cardIndex); err != nil {
-		return ci.gp.Output(ci.Game, err)
-	}
-	ci.runCpuTurns()
-	return ci.gp.Output(ci.Game, nil)
+	return humanAction(ci.Game, ci.gp, func() error { return ci.Game.PlayerDiscard(cardIndex) }, ci.runCpuTurns)
 }
 
 // NextRound 次のラウンドへ進む

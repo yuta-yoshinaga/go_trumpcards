@@ -81,12 +81,7 @@ func (ti *MadrassoInteractor) NextTrick() string {
 // NextRound ラウンドをスコアリングして次のラウンドへ進む
 func (ti *MadrassoInteractor) NextRound() string {
 	ti.Game.ScoreRound()
-	if out, blocked := guardGameEnd(ti.Game, ti.tp); blocked {
-		return out
-	}
-	ti.Game.NextRound()
-	ti.runCpuTurns()
-	return ti.tp.Output(ti.Game, nil)
+	return advanceRound(ti.Game, ti.tp, ti.runCpuTurns)
 }
 
 // GetConfig 現在の設定を取得

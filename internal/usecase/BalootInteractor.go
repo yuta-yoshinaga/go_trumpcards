@@ -95,14 +95,7 @@ func (bi *BalootInteractor) declare(act func() error) string {
 
 // Play カードをプレイ
 func (bi *BalootInteractor) Play(cardIndex int) string {
-	if out, blocked := guardNotPlayable(bi.Game, bi.bp); blocked {
-		return out
-	}
-	if err := bi.Game.PlayerPlay(cardIndex); err != nil {
-		return bi.bp.Output(bi.Game, err)
-	}
-	bi.runCpuTurns()
-	return bi.bp.Output(bi.Game, nil)
+	return humanAction(bi.Game, bi.bp, func() error { return bi.Game.PlayerPlay(cardIndex) }, bi.runCpuTurns)
 }
 
 // NextRound 次のラウンドへ進む

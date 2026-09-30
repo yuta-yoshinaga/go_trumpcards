@@ -94,12 +94,7 @@ func (si *SoloWhistInteractor) NextTrick() string {
 // NextRound ラウンドをスコアリングして次のラウンドへ進む
 func (si *SoloWhistInteractor) NextRound() string {
 	si.Game.ScoreRound()
-	if out, blocked := guardGameEnd(si.Game, si.sp); blocked {
-		return out
-	}
-	si.Game.NextRound()
-	si.advanceCpu()
-	return si.sp.Output(si.Game, nil)
+	return advanceRound(si.Game, si.sp, si.advanceCpu)
 }
 
 // GetConfig 現在の設定を取得

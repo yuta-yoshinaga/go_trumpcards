@@ -98,14 +98,7 @@ func (fi *RookInteractor) ExchangeNest(discardIndices []int, trumpColor int) str
 
 // Play カードをプレイ
 func (fi *RookInteractor) Play(cardIndex int) string {
-	if out, blocked := guardNotPlayable(fi.Game, fi.fp); blocked {
-		return out
-	}
-	if err := fi.Game.PlayerPlay(cardIndex); err != nil {
-		return fi.fp.Output(fi.Game, err)
-	}
-	fi.runCpuTurns()
-	return fi.fp.Output(fi.Game, nil)
+	return humanAction(fi.Game, fi.fp, func() error { return fi.Game.PlayerPlay(cardIndex) }, fi.runCpuTurns)
 }
 
 // NextTrick トリックを解決して次のトリックへ進む
@@ -122,12 +115,7 @@ func (fi *RookInteractor) NextTrick() string {
 // NextRound ラウンドをスコアリングして次のラウンドへ進む
 func (fi *RookInteractor) NextRound() string {
 	fi.Game.ScoreRound()
-	if out, blocked := guardGameEnd(fi.Game, fi.fp); blocked {
-		return out
-	}
-	fi.Game.NextRound()
-	fi.advanceCpu()
-	return fi.fp.Output(fi.Game, nil)
+	return advanceRound(fi.Game, fi.fp, fi.advanceCpu)
 }
 
 // GetConfig 現在の設定を取得

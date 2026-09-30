@@ -94,12 +94,7 @@ func (ti *TwentyNineInteractor) NextTrick() string {
 // NextRound ラウンドをスコアリングして次のラウンドへ進む
 func (ti *TwentyNineInteractor) NextRound() string {
 	ti.Game.ScoreRound()
-	if out, blocked := guardGameEnd(ti.Game, ti.sp); blocked {
-		return out
-	}
-	ti.Game.NextRound()
-	ti.advanceCpu()
-	return ti.sp.Output(ti.Game, nil)
+	return advanceRound(ti.Game, ti.sp, ti.advanceCpu)
 }
 
 // GetConfig 現在の設定を取得

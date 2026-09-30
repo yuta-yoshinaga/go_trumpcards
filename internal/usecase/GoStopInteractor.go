@@ -56,26 +56,12 @@ func (ki *GoStopInteractor) ResetWithConfig(cfg domain.GoStopConfig) string {
 
 // Play 手札を出す。
 func (ki *GoStopInteractor) Play(handIdx, fieldIdx int) string {
-	if out, blocked := guardNotPlayable(ki.Game, ki.cp); blocked {
-		return out
-	}
-	if err := ki.Game.PlayerPlay(handIdx, fieldIdx); err != nil {
-		return ki.cp.Output(ki.Game, err)
-	}
-	ki.advance()
-	return ki.cp.Output(ki.Game, nil)
+	return humanAction(ki.Game, ki.cp, func() error { return ki.Game.PlayerPlay(handIdx, fieldIdx) }, ki.advance)
 }
 
 // Decide ゴー/ストップ決断。
 func (ki *GoStopInteractor) Decide(goDecision bool) string {
-	if out, blocked := guardNotPlayable(ki.Game, ki.cp); blocked {
-		return out
-	}
-	if err := ki.Game.PlayerDecide(goDecision); err != nil {
-		return ki.cp.Output(ki.Game, err)
-	}
-	ki.advance()
-	return ki.cp.Output(ki.Game, nil)
+	return humanAction(ki.Game, ki.cp, func() error { return ki.Game.PlayerDecide(goDecision) }, ki.advance)
 }
 
 // NextRound 次のラウンドを開始する。

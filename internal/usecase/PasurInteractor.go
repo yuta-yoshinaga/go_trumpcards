@@ -54,14 +54,7 @@ func (pi *PasurInteractor) ResetWithConfig(cfg domain.PasurConfig) string {
 
 // Play カードをプレイ
 func (pi *PasurInteractor) Play(cardIndex int, tableIndices []int) string {
-	if out, blocked := guardNotPlayable(pi.Game, pi.sp); blocked {
-		return out
-	}
-	if err := pi.Game.PlayerPlay(cardIndex, tableIndices); err != nil {
-		return pi.sp.Output(pi.Game, err)
-	}
-	pi.advance()
-	return pi.sp.Output(pi.Game, nil)
+	return humanAction(pi.Game, pi.sp, func() error { return pi.Game.PlayerPlay(cardIndex, tableIndices) }, pi.advance)
 }
 
 // GiveUp 投了する

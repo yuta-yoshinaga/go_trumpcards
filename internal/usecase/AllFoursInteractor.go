@@ -92,14 +92,7 @@ func (ai *AllFoursInteractor) RespondBeg(run bool) string {
 
 // Play カードをプレイ
 func (ai *AllFoursInteractor) Play(cardIndex int) string {
-	if out, blocked := guardNotPlayable(ai.Game, ai.pp); blocked {
-		return out
-	}
-	if err := ai.Game.PlayerPlay(cardIndex); err != nil {
-		return ai.pp.Output(ai.Game, err)
-	}
-	ai.runCpuTurns()
-	return ai.pp.Output(ai.Game, nil)
+	return humanAction(ai.Game, ai.pp, func() error { return ai.Game.PlayerPlay(cardIndex) }, ai.runCpuTurns)
 }
 
 // NextTrick 現在のトリックを解決してから次のトリックへ進める。
@@ -121,12 +114,7 @@ func (ai *AllFoursInteractor) NextTrick() string {
 // NextRound ラウンドをスコアリングして次のディールへ進む
 func (ai *AllFoursInteractor) NextRound() string {
 	ai.Game.ScoreRound()
-	if out, blocked := guardGameEnd(ai.Game, ai.pp); blocked {
-		return out
-	}
-	ai.Game.NextRound()
-	ai.runCpuTurns()
-	return ai.pp.Output(ai.Game, nil)
+	return advanceRound(ai.Game, ai.pp, ai.runCpuTurns)
 }
 
 // GetConfig 現在の設定を取得

@@ -62,26 +62,12 @@ func (ci *Rummy500Interactor) ResetWithConfig(cfg domain.Rummy500Config) string 
 
 // DrawFromStock 山札からカードを引く
 func (ci *Rummy500Interactor) DrawFromStock() string {
-	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
-		return out
-	}
-	if err := ci.Game.PlayerDrawFromStock(); err != nil {
-		return ci.gp.Output(ci.Game, err)
-	}
-	ci.runCpuTurns()
-	return ci.gp.Output(ci.Game, nil)
+	return humanAction(ci.Game, ci.gp, func() error { return ci.Game.PlayerDrawFromStock() }, ci.runCpuTurns)
 }
 
 // DrawFromDiscard 捨て札からカードを引く
 func (ci *Rummy500Interactor) DrawFromDiscard(idx int) string {
-	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
-		return out
-	}
-	if err := ci.Game.PlayerDrawFromDiscard(idx); err != nil {
-		return ci.gp.Output(ci.Game, err)
-	}
-	ci.runCpuTurns()
-	return ci.gp.Output(ci.Game, nil)
+	return humanAction(ci.Game, ci.gp, func() error { return ci.Game.PlayerDrawFromDiscard(idx) }, ci.runCpuTurns)
 }
 
 // Meld メルド
@@ -108,14 +94,7 @@ func (ci *Rummy500Interactor) Layoff(meldOwner, meldIdx, cardIndex int) string {
 
 // Discard カードを捨ててターンを終える
 func (ci *Rummy500Interactor) Discard(cardIndex int) string {
-	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
-		return out
-	}
-	if err := ci.Game.PlayerDiscard(cardIndex); err != nil {
-		return ci.gp.Output(ci.Game, err)
-	}
-	ci.runCpuTurns()
-	return ci.gp.Output(ci.Game, nil)
+	return humanAction(ci.Game, ci.gp, func() error { return ci.Game.PlayerDiscard(cardIndex) }, ci.runCpuTurns)
 }
 
 // NextRound 次のラウンドへ進む

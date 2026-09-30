@@ -94,12 +94,7 @@ func (fi *FortyFivesInteractor) NextTrick() string {
 // NextRound ラウンドをスコアリングして次のラウンドへ進む
 func (fi *FortyFivesInteractor) NextRound() string {
 	fi.Game.ScoreRound()
-	if out, blocked := guardGameEnd(fi.Game, fi.sp); blocked {
-		return out
-	}
-	fi.Game.NextRound()
-	fi.advanceCpu()
-	return fi.sp.Output(fi.Game, nil)
+	return advanceRound(fi.Game, fi.sp, fi.advanceCpu)
 }
 
 // GetConfig 現在の設定を取得

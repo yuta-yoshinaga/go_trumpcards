@@ -91,14 +91,7 @@ func (ti *TarabishInteractor) bid(take bool) string {
 
 // Play カードをプレイ
 func (ti *TarabishInteractor) Play(cardIndex int) string {
-	if out, blocked := guardNotPlayable(ti.Game, ti.tp); blocked {
-		return out
-	}
-	if err := ti.Game.PlayerPlay(cardIndex); err != nil {
-		return ti.tp.Output(ti.Game, err)
-	}
-	ti.runCpuTurns()
-	return ti.tp.Output(ti.Game, nil)
+	return humanAction(ti.Game, ti.tp, func() error { return ti.Game.PlayerPlay(cardIndex) }, ti.runCpuTurns)
 }
 
 // NextRound 次のラウンドへ進む

@@ -56,26 +56,12 @@ func (ri *RollingStoneInteractor) ResetWithConfig(cfg domain.RollingStoneConfig)
 
 // Play カードをプレイ
 func (ri *RollingStoneInteractor) Play(cardIndex int) string {
-	if out, blocked := guardNotPlayable(ri.Game, ri.sp); blocked {
-		return out
-	}
-	if err := ri.Game.PlayerPlay(cardIndex); err != nil {
-		return ri.sp.Output(ri.Game, err)
-	}
-	ri.advance()
-	return ri.sp.Output(ri.Game, nil)
+	return humanAction(ri.Game, ri.sp, func() error { return ri.Game.PlayerPlay(cardIndex) }, ri.advance)
 }
 
 // PickUp 場札を引き取る
 func (ri *RollingStoneInteractor) PickUp() string {
-	if out, blocked := guardNotPlayable(ri.Game, ri.sp); blocked {
-		return out
-	}
-	if err := ri.Game.PlayerPickUp(); err != nil {
-		return ri.sp.Output(ri.Game, err)
-	}
-	ri.advance()
-	return ri.sp.Output(ri.Game, nil)
+	return humanAction(ri.Game, ri.sp, func() error { return ri.Game.PlayerPickUp() }, ri.advance)
 }
 
 // GiveUp 投了する

@@ -58,50 +58,22 @@ func (ci *MachiavelliInteractor) ResetWithConfig(cfg domain.MachiavelliConfig) s
 
 // Draw 山札からカードを引く（ターン終了）
 func (ci *MachiavelliInteractor) Draw() string {
-	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
-		return out
-	}
-	if err := ci.Game.PlayerDraw(); err != nil {
-		return ci.gp.Output(ci.Game, err)
-	}
-	ci.runCpuTurns()
-	return ci.gp.Output(ci.Game, nil)
+	return humanAction(ci.Game, ci.gp, func() error { return ci.Game.PlayerDraw() }, ci.runCpuTurns)
 }
 
 // Play 新しい場（メルド群）と追加する手札インデックスを提出する
 func (ci *MachiavelliInteractor) Play(refs [][]domain.MachiavelliCardRef, handIndices []int) string {
-	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
-		return out
-	}
-	if err := ci.Game.PlayerPlay(refs, handIndices); err != nil {
-		return ci.gp.Output(ci.Game, err)
-	}
-	ci.runCpuTurns()
-	return ci.gp.Output(ci.Game, nil)
+	return humanAction(ci.Game, ci.gp, func() error { return ci.Game.PlayerPlay(refs, handIndices) }, ci.runCpuTurns)
 }
 
 // NewMeld 手札インデックスから新しいメルドを 1 つ場に出す
 func (ci *MachiavelliInteractor) NewMeld(handIndices []int) string {
-	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
-		return out
-	}
-	if err := ci.Game.PlayerNewMeld(handIndices); err != nil {
-		return ci.gp.Output(ci.Game, err)
-	}
-	ci.runCpuTurns()
-	return ci.gp.Output(ci.Game, nil)
+	return humanAction(ci.Game, ci.gp, func() error { return ci.Game.PlayerNewMeld(handIndices) }, ci.runCpuTurns)
 }
 
 // Layoff 手札 1 枚を既存メルドに追加する
 func (ci *MachiavelliInteractor) Layoff(meldIdx, handIndex int) string {
-	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
-		return out
-	}
-	if err := ci.Game.PlayerLayoff(meldIdx, handIndex); err != nil {
-		return ci.gp.Output(ci.Game, err)
-	}
-	ci.runCpuTurns()
-	return ci.gp.Output(ci.Game, nil)
+	return humanAction(ci.Game, ci.gp, func() error { return ci.Game.PlayerLayoff(meldIdx, handIndex) }, ci.runCpuTurns)
 }
 
 // NextRound 次のラウンドへ進む

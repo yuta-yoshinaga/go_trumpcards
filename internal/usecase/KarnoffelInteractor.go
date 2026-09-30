@@ -52,14 +52,7 @@ func (ki *KarnoffelInteractor) ResetWithConfig(cfg domain.KarnoffelConfig) strin
 
 // PlayCard 手札を1枚出す
 func (ki *KarnoffelInteractor) PlayCard(idx int) string {
-	if out, blocked := guardNotPlayable(ki.Game, ki.gp); blocked {
-		return out
-	}
-	if err := ki.Game.PlayCard(ki.Game.GetCurrentPlayerIdx(), idx); err != nil {
-		return ki.gp.Output(ki.Game, err)
-	}
-	ki.runCpuTurns()
-	return ki.gp.Output(ki.Game, nil)
+	return humanAction(ki.Game, ki.gp, func() error { return ki.Game.PlayCard(ki.Game.GetCurrentPlayerIdx(), idx) }, ki.runCpuTurns)
 }
 
 // NextHand 次の局へ進む

@@ -124,14 +124,7 @@ func (ci *TongitsInteractor) Sapaw(targetPlayerIdx, meldIdx, cardIndex int) stri
 
 // Challenge ドロー (challenge) を宣言する。他家が全員応じたら残り点で決着する
 func (ci *TongitsInteractor) Challenge(agreed []bool) string {
-	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
-		return out
-	}
-	if err := ci.Game.PlayerChallenge(agreed); err != nil {
-		return ci.gp.Output(ci.Game, err)
-	}
-	ci.runCpuTurns()
-	return ci.gp.Output(ci.Game, nil)
+	return humanAction(ci.Game, ci.gp, func() error { return ci.Game.PlayerChallenge(agreed) }, ci.runCpuTurns)
 }
 
 // NextRound 次のラウンドへ進む

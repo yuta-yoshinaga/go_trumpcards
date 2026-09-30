@@ -62,74 +62,32 @@ func (ci *ContractRummyInteractor) ResetWithConfig(cfg domain.ContractRummyConfi
 
 // DrawFromStock 山札からカードを引く
 func (ci *ContractRummyInteractor) DrawFromStock() string {
-	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
-		return out
-	}
-	if err := ci.Game.PlayerDrawFromStock(); err != nil {
-		return ci.gp.Output(ci.Game, err)
-	}
-	ci.runCpuTurns()
-	return ci.gp.Output(ci.Game, nil)
+	return humanAction(ci.Game, ci.gp, func() error { return ci.Game.PlayerDrawFromStock() }, ci.runCpuTurns)
 }
 
 // DrawFromDiscard 捨て札トップからカードを引く
 func (ci *ContractRummyInteractor) DrawFromDiscard() string {
-	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
-		return out
-	}
-	if err := ci.Game.PlayerDrawFromDiscard(); err != nil {
-		return ci.gp.Output(ci.Game, err)
-	}
-	ci.runCpuTurns()
-	return ci.gp.Output(ci.Game, nil)
+	return humanAction(ci.Game, ci.gp, func() error { return ci.Game.PlayerDrawFromDiscard() }, ci.runCpuTurns)
 }
 
 // MeldContract コントラクトを達成するメルドを場に出す
 func (ci *ContractRummyInteractor) MeldContract(indicesPerSlot [][]int) string {
-	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
-		return out
-	}
-	if err := ci.Game.PlayerMeldContract(indicesPerSlot); err != nil {
-		return ci.gp.Output(ci.Game, err)
-	}
-	ci.runCpuTurns()
-	return ci.gp.Output(ci.Game, nil)
+	return humanAction(ci.Game, ci.gp, func() error { return ci.Game.PlayerMeldContract(indicesPerSlot) }, ci.runCpuTurns)
 }
 
 // MeldExtra コントラクト達成後の追加メルドを場に出す
 func (ci *ContractRummyInteractor) MeldExtra(indices []int) string {
-	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
-		return out
-	}
-	if err := ci.Game.PlayerMeldExtra(indices); err != nil {
-		return ci.gp.Output(ci.Game, err)
-	}
-	ci.runCpuTurns()
-	return ci.gp.Output(ci.Game, nil)
+	return humanAction(ci.Game, ci.gp, func() error { return ci.Game.PlayerMeldExtra(indices) }, ci.runCpuTurns)
 }
 
 // Layoff 既存メルドにカードを 1 枚追加する
 func (ci *ContractRummyInteractor) Layoff(targetPlayerIdx, meldIdx, cardIndex int) string {
-	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
-		return out
-	}
-	if err := ci.Game.PlayerLayoff(targetPlayerIdx, meldIdx, cardIndex); err != nil {
-		return ci.gp.Output(ci.Game, err)
-	}
-	ci.runCpuTurns()
-	return ci.gp.Output(ci.Game, nil)
+	return humanAction(ci.Game, ci.gp, func() error { return ci.Game.PlayerLayoff(targetPlayerIdx, meldIdx, cardIndex) }, ci.runCpuTurns)
 }
 
 // Discard カードを捨てる
 func (ci *ContractRummyInteractor) Discard(cardIndex int) string {
-	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
-		return out
-	}
-	if err := ci.Game.PlayerDiscard(cardIndex); err != nil {
-		return ci.gp.Output(ci.Game, err)
-	}
-	ci.runCpuTurns()
-	return ci.gp.Output(ci.Game, nil)
+	return humanAction(ci.Game, ci.gp, func() error { return ci.Game.PlayerDiscard(cardIndex) }, ci.runCpuTurns)
 }
 
 // NextRound 次のラウンドへ進む

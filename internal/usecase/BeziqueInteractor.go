@@ -61,38 +61,17 @@ func (bi *BeziqueInteractor) ResetWithConfig(cfg domain.BeziqueConfig) string {
 
 // Play カードをプレイ
 func (bi *BeziqueInteractor) Play(cardIndex int) string {
-	if out, blocked := guardNotPlayable(bi.Game, bi.bp); blocked {
-		return out
-	}
-	if err := bi.Game.PlayerPlay(cardIndex); err != nil {
-		return bi.bp.Output(bi.Game, err)
-	}
-	bi.runCpuTurns()
-	return bi.bp.Output(bi.Game, nil)
+	return humanAction(bi.Game, bi.bp, func() error { return bi.Game.PlayerPlay(cardIndex) }, bi.runCpuTurns)
 }
 
 // DeclareMeld 役を宣言する
 func (bi *BeziqueInteractor) DeclareMeld(meldIndex int) string {
-	if out, blocked := guardNotPlayable(bi.Game, bi.bp); blocked {
-		return out
-	}
-	if err := bi.Game.PlayerDeclareMeld(meldIndex); err != nil {
-		return bi.bp.Output(bi.Game, err)
-	}
-	bi.runCpuTurns()
-	return bi.bp.Output(bi.Game, nil)
+	return humanAction(bi.Game, bi.bp, func() error { return bi.Game.PlayerDeclareMeld(meldIndex) }, bi.runCpuTurns)
 }
 
 // SkipMeld 役宣言をパスする
 func (bi *BeziqueInteractor) SkipMeld() string {
-	if out, blocked := guardNotPlayable(bi.Game, bi.bp); blocked {
-		return out
-	}
-	if err := bi.Game.PlayerSkipMeld(); err != nil {
-		return bi.bp.Output(bi.Game, err)
-	}
-	bi.runCpuTurns()
-	return bi.bp.Output(bi.Game, nil)
+	return humanAction(bi.Game, bi.bp, func() error { return bi.Game.PlayerSkipMeld() }, bi.runCpuTurns)
 }
 
 // NextRound 次のディールへ進む

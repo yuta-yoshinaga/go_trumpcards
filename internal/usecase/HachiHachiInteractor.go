@@ -54,14 +54,7 @@ func (ki *HachiHachiInteractor) ResetWithConfig(cfg domain.HachiHachiConfig) str
 
 // Play 手札を出す。
 func (ki *HachiHachiInteractor) Play(handIdx, fieldIdx int) string {
-	if out, blocked := guardNotPlayable(ki.Game, ki.cp); blocked {
-		return out
-	}
-	if err := ki.Game.PlayerPlay(handIdx, fieldIdx); err != nil {
-		return ki.cp.Output(ki.Game, err)
-	}
-	ki.advance()
-	return ki.cp.Output(ki.Game, nil)
+	return humanAction(ki.Game, ki.cp, func() error { return ki.Game.PlayerPlay(handIdx, fieldIdx) }, ki.advance)
 }
 
 // NextRound 次のラウンドを開始する。

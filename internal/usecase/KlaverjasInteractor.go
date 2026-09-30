@@ -81,12 +81,7 @@ func (ki *KlaverjasInteractor) NextTrick() string {
 // NextRound ラウンドをスコアリングして次のラウンドへ進む
 func (ki *KlaverjasInteractor) NextRound() string {
 	ki.Game.ScoreRound()
-	if out, blocked := guardGameEnd(ki.Game, ki.kp); blocked {
-		return out
-	}
-	ki.Game.NextRound()
-	ki.runCpuTurns()
-	return ki.kp.Output(ki.Game, nil)
+	return advanceRound(ki.Game, ki.kp, ki.runCpuTurns)
 }
 
 // GetConfig 現在の設定を取得

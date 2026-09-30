@@ -112,12 +112,7 @@ func (wi *WattenInteractor) Respond(hold bool) string {
 // NextRound ディールをスコアリングして次のディールへ進む
 func (wi *WattenInteractor) NextRound() string {
 	wi.Game.ScoreRound()
-	if out, blocked := guardGameEnd(wi.Game, wi.wp); blocked {
-		return out
-	}
-	wi.Game.NextRound()
-	wi.runCpu()
-	return wi.wp.Output(wi.Game, nil)
+	return advanceRound(wi.Game, wi.wp, wi.runCpu)
 }
 
 // GetConfig 現在の設定を取得

@@ -90,12 +90,7 @@ func (ti *MarjapussiInteractor) NextTrick() string {
 // NextRound ラウンドをスコアリングして次のラウンドへ進む
 func (ti *MarjapussiInteractor) NextRound() string {
 	ti.Game.ScoreRound()
-	if out, blocked := guardGameEnd(ti.Game, ti.tp); blocked {
-		return out
-	}
-	ti.Game.NextRound()
-	ti.advance()
-	return ti.tp.Output(ti.Game, nil)
+	return advanceRound(ti.Game, ti.tp, ti.advance)
 }
 
 // GetConfig 現在の設定を取得

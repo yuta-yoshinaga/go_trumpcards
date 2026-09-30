@@ -58,50 +58,22 @@ func (ci *ThreeThirteenInteractor) ResetWithConfig(cfg domain.ThreeThirteenConfi
 
 // DrawFromStock 山札からカードを引く
 func (ci *ThreeThirteenInteractor) DrawFromStock() string {
-	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
-		return out
-	}
-	if err := ci.Game.PlayerDrawFromStock(); err != nil {
-		return ci.gp.Output(ci.Game, err)
-	}
-	ci.runCpuTurns()
-	return ci.gp.Output(ci.Game, nil)
+	return humanAction(ci.Game, ci.gp, func() error { return ci.Game.PlayerDrawFromStock() }, ci.runCpuTurns)
 }
 
 // DrawFromDiscard 捨て札トップからカードを引く
 func (ci *ThreeThirteenInteractor) DrawFromDiscard() string {
-	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
-		return out
-	}
-	if err := ci.Game.PlayerDrawFromDiscard(); err != nil {
-		return ci.gp.Output(ci.Game, err)
-	}
-	ci.runCpuTurns()
-	return ci.gp.Output(ci.Game, nil)
+	return humanAction(ci.Game, ci.gp, func() error { return ci.Game.PlayerDrawFromDiscard() }, ci.runCpuTurns)
 }
 
 // Discard カードを捨てる
 func (ci *ThreeThirteenInteractor) Discard(cardIndex int) string {
-	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
-		return out
-	}
-	if err := ci.Game.PlayerDiscard(cardIndex); err != nil {
-		return ci.gp.Output(ci.Game, err)
-	}
-	ci.runCpuTurns()
-	return ci.gp.Output(ci.Game, nil)
+	return humanAction(ci.Game, ci.gp, func() error { return ci.Game.PlayerDiscard(cardIndex) }, ci.runCpuTurns)
 }
 
 // Knock カードを捨ててノックする
 func (ci *ThreeThirteenInteractor) Knock(cardIndex int) string {
-	if out, blocked := guardNotPlayable(ci.Game, ci.gp); blocked {
-		return out
-	}
-	if err := ci.Game.PlayerKnock(cardIndex); err != nil {
-		return ci.gp.Output(ci.Game, err)
-	}
-	ci.runCpuTurns()
-	return ci.gp.Output(ci.Game, nil)
+	return humanAction(ci.Game, ci.gp, func() error { return ci.Game.PlayerKnock(cardIndex) }, ci.runCpuTurns)
 }
 
 // NextRound 次のラウンドへ進む
