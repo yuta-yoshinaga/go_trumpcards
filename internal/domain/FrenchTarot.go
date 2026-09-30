@@ -1010,6 +1010,20 @@ func frenchTarotCardHalfPoints(c *Card) int {
 	}
 }
 
+// CurrentTrickSummary 現在のトリックのハーフポイント合計とブー数を返す。
+func (g *FrenchTarot) CurrentTrickSummary() (halfPoints int, bouts int) {
+	for _, tc := range g.currentTrick {
+		if tc == nil {
+			continue
+		}
+		halfPoints += frenchTarotCardHalfPoints(tc.Card)
+		if frenchTarotIsBout(tc.Card) {
+			bouts++
+		}
+	}
+	return halfPoints, bouts
+}
+
 // --- Trick logic ---
 
 // ledSuit 現在のトリックのリードスートを返す。最初の非エクスキューズ札の design。

@@ -29,6 +29,8 @@
   "tricks": "{{count}} tricks",
   "points": "{{points}} pts",
   "score": "Score: {{score}}",
+  "trickSummary_one": "This trick: {{points}} points, {{count}} bout",
+  "trickSummary_other": "This trick: {{points}} points, {{count}} bouts",
   "currentTrick": "Current Trick",
   "previousTrickWinner": "Won by {{name}}",
   "players": "Players",

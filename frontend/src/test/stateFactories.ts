@@ -1937,6 +1937,8 @@ const baseFrenchTarotState: FrenchTarotResponse = {
   chienRevealed: false,
   stashOwner: 0,
   currentTrick: [],
+  trickHalfPoints: 0,
+  trickBouts: 0,
   playerScores: [0, 0, 0, 0],
   lastTrickWinner: -1,
   outcome: 0,

@@ -53,6 +53,8 @@ type FrenchTarotGame interface {
 	GetTrickNumber() int
 	// GetCurrentPlayerIdx 現在のプレイヤーインデックスを取得する
 	GetCurrentPlayerIdx() int
+	// CurrentTrickSummary 現在のトリックのハーフポイント合計とブー数を取得する
+	CurrentTrickSummary() (halfPoints int, bouts int)
 	// GetCurrentTrick 現在のトリックを取得する
 	GetCurrentTrick() []*domain.TrickCard
 	// GetLastTrickWinner 直前トリックの勝者を取得する (-1=なし)

@@ -80,6 +80,8 @@ export interface FrenchTarotResponse extends BaseGameResponse {
   /** Seat index that receives the chien's stashed card points (declarer or -1). */
   stashOwner: number;
   currentTrick: FrenchTarotTrickCard[];
+  trickHalfPoints: number;
+  trickBouts: number;
   /** Cumulative match score per player — [p0, p1, p2, p3]. */
   playerScores: number[];
   /** Seat index of the last trick winner, or -1. */
