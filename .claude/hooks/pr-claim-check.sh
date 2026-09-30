@@ -7,12 +7,35 @@ printf '%s' "$payload" | jq -e . >/dev/null 2>&1 || { echo '{}'; exit 0; }
 cmd=$(printf '%s' "$payload" | jq -r '.tool_input.command // ""' 2>/dev/null) || { echo '{}'; exit 0; }
 if ! printf '%s' "$cmd" | grep -Eq '(^|[;&|[:space:]])gh[[:space:]]+pr[[:space:]]+(create|edit|comment)([[:space:]]|$)'; then echo '{}'; exit 0; fi
 body=''
+extract_heredoc() {
+  local text=$1 delimiter strip line found=0 i start=0
+  local heredoc_re="<<(-?)[[:space:]]*[\'\"]?([A-Za-z_][A-Za-z0-9_]*)[\'\"]?"
+  if [[ "$text" =~ $heredoc_re ]]; then
+    strip=${BASH_REMATCH[1]}; delimiter=${BASH_REMATCH[2]}
+  else return 1; fi
+  local -a lines=() body_lines=()
+  mapfile -t lines <<< "$text"
+  for ((i=0; i<${#lines[@]}; i++)); do
+    if [[ ${lines[i]} == *'<<'* ]]; then start=$((i+1)); break; fi
+  done
+  for ((i=start; i<${#lines[@]}; i++)); do
+    line=${lines[i]}
+    [[ $strip == - ]] && line=${line#"$(printf '\t')"}
+    if [[ $line == "$delimiter" ]]; then found=1; break; fi
+    body_lines+=("${lines[i]}")
+  done
+  (( found )) || return 1
+  body=$(printf '%s\n' "${body_lines[@]}")
+}
 if [[ "$cmd" =~ --body-file[[:space:]]+([^[:space:]]+) ]]; then
   path=${BASH_REMATCH[1]}; path=${path#\"}; path=${path%\"}; path=${path#\'}; path=${path%\'}
-  [ "$path" = '-' ] && { echo '{}'; exit 0; }
-  [ -r "$path" ] || { echo '{}'; exit 0; }
-  body=$(cat -- "$path" 2>/dev/null) || { echo '{}'; exit 0; }
-elif [[ "$cmd" =~ --body[[:space:]]+\"([^\"]*)\" ]]; then body=${BASH_REMATCH[1]}
+  if [ "$path" = '-' ]; then extract_heredoc "$cmd" || { echo '{}'; exit 0; }; else
+    [ -r "$path" ] || { echo '{}'; exit 0; }
+    body=$(cat -- "$path" 2>/dev/null) || { echo '{}'; exit 0; }
+  fi
+elif [[ "$cmd" =~ --body[[:space:]]+\"([^\"]*)\" ]]; then
+  body=${BASH_REMATCH[1]}
+  [[ "$body" == *'<<'* ]] && extract_heredoc "$body" || true
 elif [[ "$cmd" =~ --body[[:space:]]+\'([^\']*)\' ]]; then body=${BASH_REMATCH[1]}
 else echo '{}'; exit 0
 fi
@@ -28,7 +51,7 @@ while IFS= read -r fragment; do
     count=$(printf '%s' "$segment" | perl -CSD -ne '$n = () = /[\p{Hiragana}\p{Katakana}\p{Han}]/g; print $n')
     [ "$count" -ge 3 ] || continue
     base=$(git merge-base origin/develop HEAD 2>/dev/null) || base=''
-    if ! git grep -F -q -- "$segment" 2>/dev/null && { [ -z "$base" ] || ! git diff "$base" --unified=0 2>/dev/null | grep '^+' | grep -F -q -- "$segment"; }; then unverified+=("$segment"); fi
+    if ! git grep --untracked -F -q -- "$segment" 2>/dev/null && { [ -z "$base" ] || ! git diff "$base" --unified=0 2>/dev/null | grep '^+' | grep -F -q -- "$segment"; }; then unverified+=("$segment"); fi
   done <<< "$fragment"
 done < <(printf '%s\n' "$body" | grep -oE '`[^`]+`|「[^」]+」' | sed -E 's/^`|`$|^「|」$//g')
 if [ ${#unverified[@]} -gt 0 ]; then

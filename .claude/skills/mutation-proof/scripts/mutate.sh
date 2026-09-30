@@ -8,8 +8,8 @@ file=$1 old=$2 new=$3; shift 3
 shift
 [[ $# -gt 0 && -f "$file" ]] || usage
 backup=$(mktemp) || exit 2
-cp -p -- "$file" "$backup" || { rm -f "$backup"; exit 2; }
-restore() { cp -p -- "$backup" "$file"; rm -f -- "$backup"; }
+cp -- "$file" "$backup" || { rm -f "$backup"; exit 2; }
+restore() { cp -- "$backup" "$file"; rm -f -- "${backup}" "${backup}".*; }
 trap restore EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM

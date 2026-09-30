@@ -20,8 +20,21 @@ run deny 'digit split missing quote' 'gh pr create --body "`このトリック�
 run deny 'missing quote' 'gh pr create --body "`上段 ハイカード に勝ち`"'
 run pass 'skip marker' 'gh pr create --body "`上段 ハイカード に勝ち` claim-check: skip"'
 run pass 'ASCII quote' 'gh pr create --body "`someIdentifier`"'
-printf '`存在しない引用`\n' > "$TMP/body.md"
-run deny 'body file missing quote' 'gh pr create --body-file body.md'
+printf '`別の引用文字列`\n' > "$TMP/body.md"
+run pass 'body file quote in untracked file' 'gh pr create --body-file body.md'
+run pass 'heredoc body file existing quote' "gh pr create --body-file - <<'EOF'
+\`このトリック\`
+EOF"
+run deny 'heredoc body file missing quote' "gh pr create --body-file - <<'EOF'
+\`存在しない引用\`
+EOF"
+run deny 'body command heredoc missing quote' "gh pr create --body \"$(cat <<'EOF'
+\`存在しない引用\`
+EOF
+)\""
+printf '{"newQuote":"未追跡の引用文字列"}\n' > locales/new.json
+run pass 'untracked file quote' 'gh pr create --body "`未追跡の引用文字列`"'
+rm locales/new.json
 run pass 'non-gh command' 'echo "`存在しない引用`"'
 run pass 'gh pr view' 'gh pr view --body "`存在しない引用`"'
 [ "$fail" -eq 0 ] || exit 1
