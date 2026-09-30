@@ -646,6 +646,7 @@ describe('SpeedPage elapsed / best time', () => {
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     localStorage.removeItem('speed_best_time_1');
   });
 
@@ -669,35 +670,51 @@ describe('SpeedPage elapsed / best time', () => {
   });
 
   it('records and announces a new best time on a human win', async () => {
-    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.useFakeTimers();
+    const gameStartedAt = new Date('2025-01-01T00:00:00.000Z');
+    vi.setSystemTime(gameStartedAt);
     mockExec.mockResolvedValueOnce(playState).mockResolvedValue(gameEndState);
     renderWithProviders(<SpeedPage />);
-    await waitFor(() => expect(screen.getByText('手札')).toBeInTheDocument());
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(screen.getByText('手札')).toBeInTheDocument();
     await act(async () => {
       await vi.advanceTimersByTimeAsync(3000);
     });
+    vi.setSystemTime(new Date(gameStartedAt.getTime() + 3000));
     // Smart-click SPADE 4 auto-plays to pile 0; the response ends the game as a human win.
-    fireEvent.click(screen.getByRole('button', { name: '♠ 4 (今すぐ出せる)' }));
-    await waitFor(() => expect(screen.getByTestId('speed-clear-time')).toBeInTheDocument());
-    expect(screen.getByTestId('speed-clear-time')).toHaveTextContent('ベスト更新');
-    expect(Number(localStorage.getItem('speed_best_time_1'))).toBeGreaterThanOrEqual(3000);
-    vi.useRealTimers();
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: '♠ 4 (今すぐ出せる)' }));
+      await Promise.resolve();
+    });
+    expect(screen.getByTestId('speed-clear-time')).toBeInTheDocument();
+    expect(screen.getByTestId('speed-clear-time')).toHaveTextContent('ベスト更新! 00:03');
+    expect(localStorage.getItem('speed_best_time_1')).toBe('3000');
   });
 
   it('keeps a faster stored best when the new win is slower', async () => {
-    vi.useFakeTimers({ shouldAdvanceTime: true });
+    vi.useFakeTimers();
+    const gameStartedAt = new Date('2025-01-01T00:00:00.000Z');
+    vi.setSystemTime(gameStartedAt);
     localStorage.setItem('speed_best_time_1', '1000');
     mockExec.mockResolvedValueOnce(playState).mockResolvedValue(gameEndState);
     renderWithProviders(<SpeedPage />);
-    await waitFor(() => expect(screen.getByText('手札')).toBeInTheDocument());
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(screen.getByText('手札')).toBeInTheDocument();
     await act(async () => {
       await vi.advanceTimersByTimeAsync(3000);
     });
-    fireEvent.click(screen.getByRole('button', { name: '♠ 4 (今すぐ出せる)' }));
-    await waitFor(() => expect(screen.getByTestId('speed-clear-time')).toBeInTheDocument());
+    vi.setSystemTime(new Date(gameStartedAt.getTime() + 3000));
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: '♠ 4 (今すぐ出せる)' }));
+      await Promise.resolve();
+    });
+    expect(screen.getByTestId('speed-clear-time')).toBeInTheDocument();
     expect(screen.getByTestId('speed-clear-time')).not.toHaveTextContent('ベスト更新');
     expect(localStorage.getItem('speed_best_time_1')).toBe('1000');
-    vi.useRealTimers();
   });
 });
 
