@@ -1,6 +1,6 @@
 import type { dragontigerApi } from '../../../api/gameApi';
 import { DragonTigerBetType } from '../../../types/phases';
-import { parseIntArg, splitCommand, suggestCommand } from '../commandParserBase';
+import { parseIntArg, splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 type DragonTigerArgs = Parameters<typeof dragontigerApi.exec>;
@@ -61,11 +61,8 @@ export function parseDragonTigerCommand(input: string): CliParseResult<DragonTig
     case 'r':
     case 'reset':
       return { args: ['reset'] };
-    default: {
-      const suggestion = suggestCommand(cmd, VALID_COMMANDS);
-      if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
-      return { error: `Unknown command: ${cmd}` };
-    }
+    default:
+      return unknownCommand(cmd, VALID_COMMANDS);
   }
 }
 

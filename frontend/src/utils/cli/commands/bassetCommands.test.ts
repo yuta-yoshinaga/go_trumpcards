@@ -37,7 +37,7 @@ describe('parseBassetCommand', () => {
   it('suggests a close command and reports an unknown command', () => {
     const near = parseBassetCommand('bett');
     expect('error' in near).toBe(true);
-    if ('error' in near) expect(near.error).toBe('Unknown command: bett. Did you mean bet?');
+    if ('error' in near) expect(near.error).toBe('Unknown command: bett. Did you mean: bet?');
     const unknown = parseBassetCommand('xyz');
     expect(unknown).toEqual({ error: 'Unknown command: xyz' });
   });

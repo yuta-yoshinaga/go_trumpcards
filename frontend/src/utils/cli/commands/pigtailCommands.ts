@@ -5,7 +5,7 @@ import type { CliParseResult } from '../types';
 
 type PigtailArgs = Parameters<typeof pigtailApi.exec>;
 
-const VALID_COMMANDS = ['draw', 'reset'];
+const VALID_COMMANDS = ['d', 'draw', 'r', 'reset'];
 
 /** Localized CLI help lines for Pig's Tail (resolved via the i18n instance). */
 export function pigtailHelp(): string[] {

@@ -1,10 +1,10 @@
 import type { laughandliedownApi } from '../../../api/gameApi';
-import { splitCommand, suggestCommand } from '../commandParserBase';
+import { splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 type LaughAndLieDownArgs = Parameters<typeof laughandliedownApi.exec>;
 
-const VALID_COMMANDS = ['p', 'play', 'log', 'r', 'reset', 'help', '?'];
+const VALID_COMMANDS = ['p', 'play', 'log', 'r', 'reset', 'help', '?', 'h', 'hint'];
 
 /** Parse a Laugh and Lie Down CLI command into API exec arguments. */
 export function parseLaughAndLieDownCommand(input: string): CliParseResult<LaughAndLieDownArgs> {
@@ -31,11 +31,8 @@ export function parseLaughAndLieDownCommand(input: string): CliParseResult<Laugh
     case 'h':
     case 'hint':
       return { args: ['hint'] };
-    default: {
-      const suggestion = suggestCommand(cmd, VALID_COMMANDS);
-      if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
-      return { error: `Unknown command: ${cmd}` };
-    }
+    default:
+      return unknownCommand(cmd, VALID_COMMANDS);
   }
 }
 

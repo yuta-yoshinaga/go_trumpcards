@@ -1,10 +1,10 @@
 import type { skitgubbeApi } from '../../../api/gameApi';
-import { splitCommand, suggestCommand } from '../commandParserBase';
+import { splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 type SkitgubbeArgs = Parameters<typeof skitgubbeApi.exec>;
 
-const VALID_COMMANDS = ['p', 'play', 'u', 'pickup', 'log', 'r', 'reset', 'help', '?'];
+const VALID_COMMANDS = ['p', 'play', 'u', 'pickup', 'log', 'r', 'reset', 'help', '?', 'h', 'hint'];
 
 /** Parse a Skitgubbe CLI command into API exec arguments. */
 export function parseSkitgubbeCommand(input: string): CliParseResult<SkitgubbeArgs> {
@@ -31,11 +31,8 @@ export function parseSkitgubbeCommand(input: string): CliParseResult<SkitgubbeAr
     case 'h':
     case 'hint':
       return { args: ['hint'] };
-    default: {
-      const suggestion = suggestCommand(cmd, VALID_COMMANDS);
-      if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
-      return { error: `Unknown command: ${cmd}` };
-    }
+    default:
+      return unknownCommand(cmd, VALID_COMMANDS);
   }
 }
 

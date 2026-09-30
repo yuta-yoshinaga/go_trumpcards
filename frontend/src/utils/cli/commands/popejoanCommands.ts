@@ -1,10 +1,10 @@
 import type { popejoanApi } from '../../../api/gameApi';
-import { splitCommand, suggestCommand } from '../commandParserBase';
+import { splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 type PopeJoanArgs = Parameters<typeof popejoanApi.exec>;
 
-const VALID_COMMANDS = ['p', 'play', 'n', 'next', 'log', 'r', 'reset', 'help', '?'];
+const VALID_COMMANDS = ['p', 'play', 'n', 'next', 'log', 'r', 'reset', 'help', '?', 'h', 'hint'];
 
 /** Parse a Pope Joan CLI command into API exec arguments. */
 export function parsePopeJoanCommand(input: string): CliParseResult<PopeJoanArgs> {
@@ -29,11 +29,8 @@ export function parsePopeJoanCommand(input: string): CliParseResult<PopeJoanArgs
     case 'h':
     case 'hint':
       return { args: ['hint'] };
-    default: {
-      const suggestion = suggestCommand(cmd, VALID_COMMANDS);
-      if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
-      return { error: `Unknown command: ${cmd}` };
-    }
+    default:
+      return unknownCommand(cmd, VALID_COMMANDS);
   }
 }
 

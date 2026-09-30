@@ -1,5 +1,5 @@
 import type { casinoholdemApi } from '../../../api/gameApi';
-import { parseIntArg, splitCommand, suggestCommand } from '../commandParserBase';
+import { parseIntArg, splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 type CasinoHoldemArgs = Parameters<typeof casinoholdemApi.exec>;
@@ -36,11 +36,8 @@ export function parseCasinoholdemCommand(input: string): CliParseResult<CasinoHo
     case 'h':
     case 'hint':
       return { args: ['hint'] };
-    default: {
-      const suggestion = suggestCommand(cmd, VALID_COMMANDS);
-      if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
-      return { error: `Unknown command: ${cmd}` };
-    }
+    default:
+      return unknownCommand(cmd, VALID_COMMANDS);
   }
 }
 

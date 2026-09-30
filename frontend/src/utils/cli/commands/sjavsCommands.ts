@@ -1,10 +1,10 @@
 import type { sjavsApi } from '../../../api/gameApi';
-import { splitCommand, suggestCommand } from '../commandParserBase';
+import { splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 type SjavsArgs = Parameters<typeof sjavsApi.exec>;
 
-const VALID_COMMANDS = ['b', 'bid', 'p', 'play', 'n', 'next', 'log', 'r', 'reset', 'help', '?'];
+const VALID_COMMANDS = ['b', 'bid', 'p', 'play', 'n', 'next', 'log', 'r', 'reset', 'help', '?', 'h', 'hint'];
 
 /** Parse a Sjavs CLI command into API exec arguments. */
 export function parseSjavsCommand(input: string): CliParseResult<SjavsArgs> {
@@ -39,11 +39,8 @@ export function parseSjavsCommand(input: string): CliParseResult<SjavsArgs> {
     case 'h':
     case 'hint':
       return { args: ['hint'] };
-    default: {
-      const suggestion = suggestCommand(cmd, VALID_COMMANDS);
-      if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
-      return { error: `Unknown command: ${cmd}` };
-    }
+    default:
+      return unknownCommand(cmd, VALID_COMMANDS);
   }
 }
 

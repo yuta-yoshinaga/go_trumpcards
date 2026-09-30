@@ -1,5 +1,5 @@
 import type { sakuraApi } from '../../../api/gameApi';
-import { parseIntArg, splitCommand, suggestCommand } from '../commandParserBase';
+import { parseIntArg, splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 type SakuraArgs = Parameters<typeof sakuraApi.exec>;
@@ -66,12 +66,8 @@ export function parseSakuraCommand(input: string): CliParseResult<SakuraArgs> {
     case 'r':
     case 'reset':
       return { args: ['reset'] };
-    default: {
-      const suggestion = suggestCommand(cmd, VALID_COMMANDS);
-      return {
-        error: suggestion ? `Unknown command: ${cmd}. Did you mean: ${suggestion}?` : `Unknown command: ${cmd}`,
-      };
-    }
+    default:
+      return unknownCommand(cmd, VALID_COMMANDS);
   }
 }
 

@@ -75,4 +75,8 @@ describe('parseFourSeasonsCommand', () => {
     expect(result).toHaveProperty('error');
     expect('error' in result && result.error).toBeTruthy();
   });
+
+  it('includes the unknown command when suggesting a near miss', () => {
+    expect(parseFourSeasonsCommand('hont')).toEqual({ error: 'Unknown command: hont. Did you mean: hint?' });
+  });
 });

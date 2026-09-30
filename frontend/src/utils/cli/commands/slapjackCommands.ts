@@ -5,7 +5,7 @@ import type { CliParseResult } from '../types';
 
 type SlapjackArgs = Parameters<typeof slapjackApi.exec>;
 
-const VALID_COMMANDS = ['step', 'slap', 'tick', 'reset', 'log'];
+const VALID_COMMANDS = ['j', 'l', 'r', 's', 'step', 'slap', 'tick', 'reset', 'log'];
 
 /** Localized CLI help lines for Slap Jack (resolved via the i18n instance). */
 export function slapjackHelp(): string[] {

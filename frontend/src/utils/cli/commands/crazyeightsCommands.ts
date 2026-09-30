@@ -1,11 +1,11 @@
 import type { crazyeightsApi } from '../../../api/gameApi';
-import { parseIntArg, splitCommand, suggestCommand } from '../commandParserBase';
+import { parseIntArg, splitCommand, unknownCommand } from '../commandParserBase';
 import { STANDARD_SUIT_MAP as SUIT_MAP } from '../suitMaps';
 import type { CliParseResult } from '../types';
 
 type CrazyEightsArgs = Parameters<typeof crazyeightsApi.exec>;
 
-const VALID_COMMANDS = ['p', 'play', 'd', 'draw', 'suit', 'nr', 'nextround', 'r', 'reset', 'help', '?'];
+const VALID_COMMANDS = ['p', 'play', 'd', 'draw', 'suit', 'nr', 'nextround', 'r', 'reset', 'help', '?', 'h', 'hint'];
 
 /** Parse a Crazy Eights CLI command into API exec arguments. */
 export function parseCrazyeightsCommand(input: string): CliParseResult<CrazyEightsArgs> {
@@ -36,11 +36,8 @@ export function parseCrazyeightsCommand(input: string): CliParseResult<CrazyEigh
     case 'h':
     case 'hint':
       return { args: ['hint'] };
-    default: {
-      const suggestion = suggestCommand(cmd, VALID_COMMANDS);
-      if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
-      return { error: `Unknown command: ${cmd}` };
-    }
+    default:
+      return unknownCommand(cmd, VALID_COMMANDS);
   }
 }
 

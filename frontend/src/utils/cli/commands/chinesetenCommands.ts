@@ -1,10 +1,10 @@
 import type { chinesetenApi } from '../../../api/gameApi';
-import { splitCommand, suggestCommand } from '../commandParserBase';
+import { splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 type ChineseTenArgs = Parameters<typeof chinesetenApi.exec>;
 
-const VALID_COMMANDS = ['p', 'play', 's', 'select', 'log', 'r', 'reset', 'help', '?'];
+const VALID_COMMANDS = ['p', 'play', 's', 'select', 'log', 'r', 'reset', 'help', '?', 'h', 'hint'];
 
 /** Parse a Chinese Ten CLI command into API exec arguments. */
 export function parseChineseTenCommand(input: string): CliParseResult<ChineseTenArgs> {
@@ -38,11 +38,8 @@ export function parseChineseTenCommand(input: string): CliParseResult<ChineseTen
     case 'h':
     case 'hint':
       return { args: ['hint'] };
-    default: {
-      const suggestion = suggestCommand(cmd, VALID_COMMANDS);
-      if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
-      return { error: `Unknown command: ${cmd}` };
-    }
+    default:
+      return unknownCommand(cmd, VALID_COMMANDS);
   }
 }
 

@@ -1,6 +1,6 @@
 import type { blackjackApi } from '../../../api/gameApi';
 import type { BlackJackBetOptions } from '../../../api/games/blackjack';
-import { parseIntArg, splitCommand, suggestCommand } from '../commandParserBase';
+import { parseIntArg, splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 type BjArgs = Parameters<typeof blackjackApi.exec>;
@@ -47,6 +47,10 @@ const VALID_COMMANDS = [
   'reset',
   'help',
   '?',
+  'togglehint',
+  'togglesoft17',
+  'togglecounting',
+  'toggledas',
 ];
 
 /** Parse a BlackJack CLI command into API exec arguments. */
@@ -157,11 +161,8 @@ export function parseBlackjackCommand(input: string): CliParseResult<BjArgs> {
       if ('error' in parsed) return { error: 'Usage: ssr <0-2>' };
       return { args: ['setsurrenderrule', parsed.value] };
     }
-    default: {
-      const suggestion = suggestCommand(cmd, VALID_COMMANDS);
-      if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
-      return { error: `Unknown command: ${cmd}` };
-    }
+    default:
+      return unknownCommand(cmd, VALID_COMMANDS);
   }
 }
 

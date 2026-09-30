@@ -1,5 +1,5 @@
 import type { shitheadApi } from '../../../api/gameApi';
-import { parseIntSlice, splitCommand, suggestCommand } from '../commandParserBase';
+import { parseIntSlice, splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 type ShitheadArgs = Parameters<typeof shitheadApi.exec>;
@@ -26,11 +26,8 @@ export function parseShitheadCommand(input: string): CliParseResult<ShitheadArgs
     case 'r':
     case 'reset':
       return { args: ['reset'] };
-    default: {
-      const suggestion = suggestCommand(cmd, VALID_COMMANDS);
-      if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
-      return { error: `Unknown command: ${cmd}` };
-    }
+    default:
+      return unknownCommand(cmd, VALID_COMMANDS);
   }
 }
 

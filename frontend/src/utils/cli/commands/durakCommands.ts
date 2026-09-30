@@ -1,5 +1,5 @@
 import type { durakApi } from '../../../api/gameApi';
-import { parseIntArg, splitCommand, suggestCommand } from '../commandParserBase';
+import { parseIntArg, splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 type DurakArgs = Parameters<typeof durakApi.exec>;
@@ -73,11 +73,8 @@ export function parseDurakCommand(input: string): CliParseResult<DurakArgs> {
     case 'h':
     case 'hint':
       return { args: ['hint'] };
-    default: {
-      const suggestion = suggestCommand(cmd, DURAK_COMMANDS);
-      if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
-      return { error: `Unknown command: ${cmd}` };
-    }
+    default:
+      return unknownCommand(cmd, DURAK_COMMANDS);
   }
 }
 

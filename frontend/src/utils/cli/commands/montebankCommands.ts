@@ -1,5 +1,5 @@
 import type { montebankApi } from '../../../api/gameApi';
-import { parseIntArg, splitCommand, suggestCommand } from '../commandParserBase';
+import { parseIntArg, splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 type MonteBankArgs = Parameters<typeof montebankApi.exec>;
@@ -44,10 +44,7 @@ export function parseMonteBankCommand(input: string): CliParseResult<MonteBankAr
     case 'r':
     case 'reset':
       return { args: ['reset'] };
-    default: {
-      const suggestion = suggestCommand(cmd, VALID_COMMANDS);
-      if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
-      return { error: `Unknown command: ${cmd}` };
-    }
+    default:
+      return unknownCommand(cmd, VALID_COMMANDS);
   }
 }

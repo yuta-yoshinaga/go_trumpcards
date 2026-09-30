@@ -1,6 +1,6 @@
 import type { andarbaharApi } from '../../../api/gameApi';
 import { AndarBaharColumn, AndarBaharSideBand } from '../../../types/phases';
-import { parseIntArg, splitCommand, suggestCommand } from '../commandParserBase';
+import { parseIntArg, splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 type AndarBaharArgs = Parameters<typeof andarbaharApi.exec>;
@@ -76,11 +76,8 @@ export function parseAndarBaharCommand(input: string): CliParseResult<AndarBahar
     case 'r':
     case 'reset':
       return { args: ['reset'] };
-    default: {
-      const suggestion = suggestCommand(cmd, VALID_COMMANDS);
-      if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
-      return { error: `Unknown command: ${cmd}` };
-    }
+    default:
+      return unknownCommand(cmd, VALID_COMMANDS);
   }
 }
 

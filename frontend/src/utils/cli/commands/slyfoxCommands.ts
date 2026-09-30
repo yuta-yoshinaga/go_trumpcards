@@ -1,5 +1,5 @@
 import type { slyFoxApi } from '../../../api/gameApi';
-import { parseIntArg, splitCommand, suggestCommand } from '../commandParserBase';
+import { parseIntArg, splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 type SlyFoxArgs = Parameters<typeof slyFoxApi.exec>;
@@ -82,6 +82,6 @@ export function parseSlyFoxCommand(input: string): CliParseResult<SlyFoxArgs> {
       return { error: 'Usage: m t <slot> (there is no waste, and the stock is not a move source)' };
     }
     default:
-      return { error: suggestCommand(cmd, VALID_COMMANDS) ?? `Unknown command: ${cmd}` };
+      return unknownCommand(cmd, VALID_COMMANDS);
   }
 }

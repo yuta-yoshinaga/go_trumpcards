@@ -1,5 +1,5 @@
 import type { coloradoApi } from '../../../api/gameApi';
-import { parseIntArg, splitCommand, suggestCommand } from '../commandParserBase';
+import { parseIntArg, splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 type ColoradoArgs = Parameters<typeof coloradoApi.exec>;
@@ -86,6 +86,6 @@ export function parseColoradoCommand(input: string): CliParseResult<ColoradoArgs
       return { error: 'Usage: m w|t|s ...' };
     }
     default:
-      return { error: suggestCommand(cmd, VALID_COMMANDS) ?? `Unknown command: ${cmd}` };
+      return unknownCommand(cmd, VALID_COMMANDS);
   }
 }
