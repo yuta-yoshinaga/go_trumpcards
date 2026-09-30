@@ -41,6 +41,8 @@ type TressetteGame interface {
 	GetCurrentPlayerIdx() int
 	// GetCurrentTrick 現在のトリックを取得する
 	GetCurrentTrick() []*domain.TrickCard
+	// CurrentTrickThirds 現在のトリックのカード得点を1/3点単位で取得する
+	CurrentTrickThirds() int
 	// GetLeadPlayerIdx リードプレイヤーインデックスを取得する
 	GetLeadPlayerIdx() int
 	// GetTeamScores チーム別累積点を取得する

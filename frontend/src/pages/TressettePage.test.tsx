@@ -45,6 +45,25 @@ beforeEach(() => {
 });
 
 describe('TressettePage', () => {
+  it('shows the changing card points in the current trick and labels an empty trick as zero', async () => {
+    mockExec.mockResolvedValue(
+      makeTressetteState({
+        currentTrick: [
+          { playerIdx: 0, card: { design: 'SPADE', value: 1 } },
+          { playerIdx: 1, card: { design: 'HEART', value: 3 } },
+        ],
+        currentTrickThirds: 4,
+      }),
+    );
+    const { unmount } = renderWithProviders(<TressettePage />);
+    expect(await screen.findByTestId('tr-current-trick-points')).toHaveTextContent('このトリックのカード得点: 4/3点');
+
+    unmount();
+    mockExec.mockResolvedValue(makeTressetteState());
+    renderWithProviders(<TressettePage />);
+    expect(await screen.findByTestId('tr-current-trick-points')).toHaveTextContent('このトリックのカード得点: 0点');
+  });
+
   it('renders skeleton when no state', () => {
     mockExec.mockReturnValue(new Promise(() => undefined));
     renderWithProviders(<TressettePage />);

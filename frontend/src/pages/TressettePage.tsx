@@ -266,6 +266,12 @@ function TressettePageContent() {
               <span data-testid="tr-target">{t('target', { points: state.config.targetPoints })}</span>
             </div>
 
+            <output className="text-ds-text-primary text-center text-sm mb-2" data-testid="tr-current-trick-points">
+              {state.currentTrick.length === 0
+                ? t('currentTrickPointsEmpty')
+                : t('currentTrickPoints', { thirds: state.currentTrickThirds })}
+            </output>
+
             <div className={lgTwoColGrid}>
               {/* Left: play area */}
               <div>

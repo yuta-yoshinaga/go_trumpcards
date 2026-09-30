@@ -102,6 +102,12 @@ func (_m *MockTressetteGame) GetCurrentTrick() []*domain.TrickCard {
 	return ret.Get(0).([]*domain.TrickCard)
 }
 
+// CurrentTrickThirds モック
+func (_m *MockTressetteGame) CurrentTrickThirds() int {
+	ret := _m.Called()
+	return ret.Get(0).(int)
+}
+
 // GetLeadPlayerIdx モック
 func (_m *MockTressetteGame) GetLeadPlayerIdx() int {
 	ret := _m.Called()

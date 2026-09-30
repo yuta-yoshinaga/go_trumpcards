@@ -54,6 +54,7 @@ func (p *TressetteWebPresenter) buildBase(g interfaces.TressetteGame) *controlle
 	}
 
 	resObj.CurrentTrick = trickCardsToOutput(g.GetCurrentTrick())
+	resObj.CurrentTrickThirds = g.CurrentTrickThirds()
 	resObj.LastTrick, resObj.LastTrickWinner = p.buildLastTrickOutput(g)
 	resObj.Players = p.buildPlayersOutput(g)
 	return resObj

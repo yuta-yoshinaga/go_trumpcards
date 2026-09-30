@@ -35,21 +35,22 @@ type TressetteWebOutputPlayer struct {
 
 // TressetteWebOutput トレセッテのWebアウトプット
 type TressetteWebOutput struct {
-	Players          []*TressetteWebOutputPlayer `json:"players"`
-	Phase            int                         `json:"phase"`
-	RoundNumber      int                         `json:"roundNumber"`
-	TrickNumber      int                         `json:"trickNumber"`
-	CurrentPlayerIdx int                         `json:"currentPlayerIdx"`
-	CurrentTrick     []*WebOutputTrickCard       `json:"currentTrick"`
-	LastTrick        []*WebOutputTrickCard       `json:"lastTrick"`
-	LastTrickWinner  int                         `json:"lastTrickWinner"`
-	LeadPlayerIdx    int                         `json:"leadPlayerIdx"`
-	TeamScores       []int                       `json:"teamScores"`
-	TeamRoundThirds  []int                       `json:"teamRoundThirds"`
-	PlayableIndices  []int                       `json:"playableIndices"`
-	GameEndFlag      bool                        `json:"gameEndFlag"`
-	WinnerTeam       int                         `json:"winnerTeam"`
-	Hint             *WebOutputCardHint          `json:"hint,omitempty"`
+	Players            []*TressetteWebOutputPlayer `json:"players"`
+	Phase              int                         `json:"phase"`
+	RoundNumber        int                         `json:"roundNumber"`
+	TrickNumber        int                         `json:"trickNumber"`
+	CurrentPlayerIdx   int                         `json:"currentPlayerIdx"`
+	CurrentTrick       []*WebOutputTrickCard       `json:"currentTrick"`
+	CurrentTrickThirds int                         `json:"currentTrickThirds"`
+	LastTrick          []*WebOutputTrickCard       `json:"lastTrick"`
+	LastTrickWinner    int                         `json:"lastTrickWinner"`
+	LeadPlayerIdx      int                         `json:"leadPlayerIdx"`
+	TeamScores         []int                       `json:"teamScores"`
+	TeamRoundThirds    []int                       `json:"teamRoundThirds"`
+	PlayableIndices    []int                       `json:"playableIndices"`
+	GameEndFlag        bool                        `json:"gameEndFlag"`
+	WinnerTeam         int                         `json:"winnerTeam"`
+	Hint               *WebOutputCardHint          `json:"hint,omitempty"`
 	WebOutputBase
 	Config TressetteWebOutputConfig `json:"config"`
 }

@@ -47723,6 +47723,9 @@ components:
                 type: integer
               card:
                 $ref: '#/components/schemas/Card'
+        currentTrickThirds:
+          type: integer
+          description: Card points in the current trick, in thirds of a point
         leadPlayerIdx:
           type: integer
         teamScores:

@@ -26,6 +26,8 @@
   "cards": "{{count}} cards",
   "tricks": "{{count}} tricks",
   "currentTrick": "Current Trick",
+  "currentTrickPoints": "Card points in this trick: {{thirds}}/3",
+  "currentTrickPointsEmpty": "Card points in this trick: 0 points",
   "previousTrick": "Previous Trick",
   "previousTrickEmpty": "No previous trick yet this round",
   "previousTrickWinner": "Won by {{name}}",
