@@ -60,6 +60,62 @@ func TestFindContinentalRummyGoOut_LegalLayouts(t *testing.T) {
 	})
 }
 
+func TestFindContinentalRummyDiscardGroups(t *testing.T) {
+	hand := append(contHand(contRun(CardDesignSpade, 2, 3), contRun(CardDesignHeart, 5, 3), contRun(CardDesignClover, 8, 3), contRun(CardDesignDiamond, 3, 3), contRun(CardDesignSpade, 10, 3)), contCard(CardDesignHeart, 13))
+	idx, groups, ok := FindContinentalRummyDiscardGroups(hand)
+	require.True(t, ok)
+	assert.Equal(t, 15, idx)
+	assert.Len(t, groups, 5)
+	seen := make(map[int]bool)
+	for _, group := range groups {
+		cards := make([]*Card, 0, len(group))
+		for _, handIndex := range group {
+			require.NotEqual(t, idx, handIndex, "捨て札が連番に含まれている")
+			require.False(t, seen[handIndex], "手札 %d が複数の連番に含まれている", handIndex)
+			seen[handIndex] = true
+			cards = append(cards, hand[handIndex])
+		}
+		assert.True(t, IsContinentalRummyRun(cards), "組 %v が連番ではない", group)
+	}
+	require.Len(t, seen, len(hand)-1, "捨て札以外の手札をすべて覆う")
+	for handIndex := range hand {
+		if handIndex != idx {
+			assert.True(t, seen[handIndex], "手札 %d がどの連番にも含まれていない", handIndex)
+		}
+	}
+	_, groups, ok = FindContinentalRummyDiscardGroups([]*Card{contCard(CardDesignSpade, 2)})
+	assert.False(t, ok)
+	assert.Nil(t, groups)
+}
+
+func TestFindContinentalRummyDiscardGroups_DiscardAtFirstIndex(t *testing.T) {
+	hand := append([]*Card{contCard(CardDesignHeart, 13)}, contHand(
+		contRun(CardDesignSpade, 2, 3), contRun(CardDesignHeart, 5, 3),
+		contRun(CardDesignClover, 8, 3), contRun(CardDesignDiamond, 3, 3),
+		contRun(CardDesignSpade, 10, 3))...)
+
+	idx, groups, ok := FindContinentalRummyDiscardGroups(hand)
+	require.True(t, ok)
+	require.Equal(t, 0, idx)
+	seen := make(map[int]bool)
+	for _, group := range groups {
+		cards := make([]*Card, 0, len(group))
+		for _, handIndex := range group {
+			require.NotEqual(t, idx, handIndex, "discard is included in a run")
+			require.False(t, seen[handIndex], "hand index %d appears more than once", handIndex)
+			seen[handIndex] = true
+			cards = append(cards, hand[handIndex])
+		}
+		assert.True(t, IsContinentalRummyRun(cards), "group %v is not a run", group)
+	}
+	require.Len(t, seen, len(hand)-1)
+	for handIndex := range hand {
+		if handIndex != idx {
+			assert.True(t, seen[handIndex], "hand index %d is not covered", handIndex)
+		}
+	}
+}
+
 // **一番小さい番号の札が最大の組に入るとは限らない (レビュー指摘)。**
 //
 // 起点の組の大きさを「並べ替えた表の先頭」に固定していたころ、この手は

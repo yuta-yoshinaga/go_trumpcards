@@ -94,6 +94,8 @@ export interface ContinentalRummyResponse extends BaseGameResponse {
    * page would put the rule in a second place and let the two disagree.
    */
   goOutIdx: number;
+  /** Hand indices grouped into legal runs when a go-out discard exists. */
+  goOutGroups: number[][];
   /**
    * Whether the dealt fifteen already go out, before drawing.
    *
