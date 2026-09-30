@@ -218,12 +218,12 @@ function BadugiPageContent() {
           <span>
             {tc('label.pot')} <strong>{state?.pot ?? 0}</strong>
           </span>
-          {state.sidePots.length > 0 && (
+          {state.sidePots.length > 1 && (
             <div className="text-xs">
               {state.sidePots.map((sidePot, index) => (
                 <div key={`side-pot-${index}`}>
-                  {t('sidePot', {
-                    index: index + 1,
+                  {t(index === 0 ? 'mainPot' : 'sidePot', {
+                    index,
                     amount: sidePot.amount,
                     eligiblePlayers: sidePot.eligiblePlayers
                       .map((playerIdx) => findPlayerName(state.players, playerIdx))

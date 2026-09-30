@@ -92,10 +92,29 @@ describe('BadugiPage', () => {
     expect(screen.queryByText(/サイドポット|Side pot/)).not.toBeInTheDocument();
   });
 
-  it('lists side pots with eligible player names', async () => {
-    mockExec.mockResolvedValue(baseState({ sidePots: [{ amount: 25, eligiblePlayers: [0, 2] }] }));
+  it('does not list the main pot when there are no side pots', async () => {
+    mockExec.mockResolvedValue(baseState({ sidePots: [{ amount: 40, eligiblePlayers: [0, 1, 2, 3] }] }));
     renderWithProviders(<BadugiPage />);
-    expect(await screen.findByText('サイドポット1: 25チップ（受給資格: あなた, CPU 2）')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText('40')).toBeInTheDocument());
+    expect(screen.queryByText(/メインポット|サイドポット/)).not.toBeInTheDocument();
+  });
+
+  it('labels the first split pot as main and subsequent pots as numbered side pots', async () => {
+    mockExec.mockResolvedValue(
+      baseState({
+        sidePots: [
+          { amount: 25, eligiblePlayers: [0, 1, 2, 3] },
+          { amount: 15, eligiblePlayers: [0, 2] },
+          { amount: 10, eligiblePlayers: [2] },
+        ],
+      }),
+    );
+    renderWithProviders(<BadugiPage />);
+    expect(
+      await screen.findByText('メインポット: 25チップ（受給資格: あなた, CPU 1, CPU 2, CPU 3）'),
+    ).toBeInTheDocument();
+    expect(screen.getByText('サイドポット1: 15チップ（受給資格: あなた, CPU 2）')).toBeInTheDocument();
+    expect(screen.getByText('サイドポット2: 10チップ（受給資格: CPU 2）')).toBeInTheDocument();
   });
 
   it('renders the pre-draw badge on the initial deal', async () => {
