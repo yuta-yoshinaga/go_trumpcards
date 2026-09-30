@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 	"strconv"
 )
 
@@ -289,7 +290,7 @@ func (h *HoneymoonBridge) play(playerIdx, cardIndex int) error {
 	if cardIndex < 0 || cardIndex >= p.GetCardsSize() {
 		return fmt.Errorf("invalid card index: %d", cardIndex)
 	}
-	if !honeymoonBridgeContains(h.GetValidPlayIndices(playerIdx), cardIndex) {
+	if !slices.Contains(h.GetValidPlayIndices(playerIdx), cardIndex) {
 		return errors.New("must follow the led suit")
 	}
 
@@ -698,16 +699,6 @@ func (h *HoneymoonBridge) GetHint() *HoneymoonBridgeHint {
 		reason = "honeymoonbridgeDraw"
 	}
 	return &HoneymoonBridgeHint{CardIndex: &idx, Reason: reason}
-}
-
-// honeymoonBridgeContains は xs が v を含むかを返す。
-func honeymoonBridgeContains(xs []int, v int) bool {
-	for _, x := range xs {
-		if x == v {
-			return true
-		}
-	}
-	return false
 }
 
 // addLog は棋譜に 1 行足す。

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"slices"
 )
 
 // 卓とデッキの形。**French Tarot と同じ 78 枚タローデッキを使う。**
@@ -409,7 +410,7 @@ func (g *Troggu) PlayerPlayCard(handIdx int) error {
 	if handIdx < 0 || handIdx >= p.GetCardsSize() {
 		return NewDomainError(ErrInvalidCard, fmt.Sprintf("hand index %d out of range", handIdx))
 	}
-	if !trogguContains(g.GetValidPlayIndices(g.currentPlayerIdx), handIdx) {
+	if !slices.Contains(g.GetValidPlayIndices(g.currentPlayerIdx), handIdx) {
 		return NewDomainError(ErrInvalidPlay, "that card does not follow the lead")
 	}
 	g.playCard(g.currentPlayerIdx, handIdx)
@@ -768,16 +769,6 @@ func (g *Troggu) appendLog(playerIdx int, actionType, detailCode string, detailP
 }
 
 // --- 補助 ---
-
-// trogguContains スライスに値が含まれるか。
-func trogguContains(s []int, v int) bool {
-	for _, x := range s {
-		if x == v {
-			return true
-		}
-	}
-	return false
-}
 
 // sortAllHands 全員の手札を並べ替える。
 func (g *Troggu) sortAllHands() {

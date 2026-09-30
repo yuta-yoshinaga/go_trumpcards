@@ -26,6 +26,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"slices"
 )
 
 // BostonPlayerCnt はプレイヤー数。
@@ -361,7 +362,7 @@ func (b *Boston) PlayCard(player, idx int) error {
 	if p == nil || idx < 0 || idx >= p.GetCardsSize() {
 		return fmt.Errorf("bad card index: %d", idx)
 	}
-	if !bostonContains(b.BostonValidPlays(player), idx) {
+	if !slices.Contains(b.BostonValidPlays(player), idx) {
 		return fmt.Errorf("that card may not be played")
 	}
 
@@ -500,16 +501,6 @@ func (b *Boston) NextHand() error {
 	b.dealerIdx = (b.dealerIdx + 1) % BostonPlayerCnt
 	b.beginHand()
 	return nil
-}
-
-// bostonContains は s に v が含まれるかを返す。
-func bostonContains(s []int, v int) bool {
-	for _, x := range s {
-		if x == v {
-			return true
-		}
-	}
-	return false
 }
 
 // ---- CPU ----

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"math/rand"
+	"slices"
 	"strconv"
 )
 
@@ -673,7 +674,7 @@ func (s *SixBidSolo) PlayCard(player, idx int) error {
 	if p == nil || idx < 0 || idx >= p.GetCardsSize() {
 		return errors.New("there is no such card")
 	}
-	if !sixBidSoloContains(s.SixBidSoloValidPlays(player), idx) {
+	if !slices.Contains(s.SixBidSoloValidPlays(player), idx) {
 		return errors.New("you must follow suit")
 	}
 	c := p.GetCard(idx)
@@ -753,16 +754,6 @@ func sixBidSoloBeats(c, best, lead *Card, trumpSuit int) bool {
 		return true
 	}
 	return sixBidSoloRank(c) > sixBidSoloRank(best)
-}
-
-// sixBidSoloContains は s に v が含まれるかを返す。
-func sixBidSoloContains(s []int, v int) bool {
-	for _, x := range s {
-		if x == v {
-			return true
-		}
-	}
-	return false
 }
 
 // SixBidSoloWidowPoints はウィドウのカード点を返す。

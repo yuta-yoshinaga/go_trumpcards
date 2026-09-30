@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 	"strconv"
 )
 
@@ -525,7 +526,7 @@ func (m *Minibridge) play(playerIdx, cardIndex int) error {
 	if cardIndex < 0 || cardIndex >= p.GetCardsSize() {
 		return NewDomainErrorCode(ErrInvalidCard, "minibridge.errCardIndexOutOfRange", nil)
 	}
-	if !minibridgeContains(m.GetValidPlayIndices(playerIdx), cardIndex) {
+	if !slices.Contains(m.GetValidPlayIndices(playerIdx), cardIndex) {
 		return errors.New("must follow the led suit")
 	}
 
@@ -595,16 +596,6 @@ func (m *Minibridge) beats(challenger, champion *Card) bool {
 		// champion は必ずリードスートか切り札なので、ここに来る challenger は負け。
 		return false
 	}
-}
-
-// minibridgeContains は xs が v を含むかを返す。
-func minibridgeContains(xs []int, v int) bool {
-	for _, x := range xs {
-		if x == v {
-			return true
-		}
-	}
-	return false
 }
 
 // chooseCpuCard は CPU の手。**取れるなら取り、取れないなら安く出す。**

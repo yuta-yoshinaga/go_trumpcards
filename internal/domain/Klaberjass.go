@@ -30,6 +30,7 @@ package domain
 import (
 	"encoding/json"
 	"fmt"
+	"slices"
 	"sort"
 	"strconv"
 )
@@ -757,7 +758,7 @@ func (k *Klaberjass) PlayCard(player, idx int) error {
 		return fmt.Errorf("bad card index: %d", idx)
 	}
 	valid := k.KlaberjassValidPlays(player)
-	if !klaberjassContains(valid, idx) {
+	if !slices.Contains(valid, idx) {
 		return fmt.Errorf("that card may not be played")
 	}
 
@@ -1052,16 +1053,6 @@ func (k *Klaberjass) CpuPlay() {
 			_ = k.PlayCard(idx, i)
 		}
 	}
-}
-
-// klaberjassContains は s に v が含まれるかを返す。
-func klaberjassContains(s []int, v int) bool {
-	for _, x := range s {
-		if x == v {
-			return true
-		}
-	}
-	return false
 }
 
 // ---- 公開アクセサ ----

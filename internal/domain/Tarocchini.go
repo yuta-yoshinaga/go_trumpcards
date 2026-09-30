@@ -25,6 +25,7 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"slices"
 	"sort"
 )
 
@@ -542,21 +543,11 @@ func (g *Tarocchini) PlayerPlay(cardIndex int) error {
 	if cardIndex < 0 || cardIndex >= player.GetCardsSize() {
 		return NewDomainErrorCode(ErrInvalidCard, "tarocchini.errCardIndexOutOfRange", nil)
 	}
-	if !tarocchiniContains(g.GetValidPlayIndices(g.currentPlayerIdx), cardIndex) {
+	if !slices.Contains(g.GetValidPlayIndices(g.currentPlayerIdx), cardIndex) {
 		return NewDomainErrorCode(ErrInvalidPlay, "tarocchini.errFollowLeadSuit", nil)
 	}
 	g.playCard(g.currentPlayerIdx, player.RemoveCard(cardIndex))
 	return nil
-}
-
-// tarocchiniContains slice に値が含まれるか。
-func tarocchiniContains(xs []int, v int) bool {
-	for _, x := range xs {
-		if x == v {
-			return true
-		}
-	}
-	return false
 }
 
 // CpuPlay 現在の手番が CPU の場合に 1 枚出す。

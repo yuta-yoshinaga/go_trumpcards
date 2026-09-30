@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"math/rand"
+	"slices"
 	"sort"
 	"strconv"
 )
@@ -897,7 +898,7 @@ func (g *Guandan) advanceTurn() {
 // **上昇量は 1 / 2 / 4。**上位独占が +4 であることがこのゲームの動機。
 func (g *Guandan) finishHand() {
 	for i := range GuandanPlayerCnt {
-		if !guandanContains(g.finished, i) {
+		if !slices.Contains(g.finished, i) {
 			g.finished = append(g.finished, i)
 		}
 	}
@@ -943,16 +944,6 @@ func (g *Guandan) finishHand() {
 		next = GuandanMaxLevel
 	}
 	g.levels[team] = next
-}
-
-// guandanContains は s に v が含まれるかを返す。
-func guandanContains(s []int, v int) bool {
-	for _, x := range s {
-		if x == v {
-			return true
-		}
-	}
-	return false
 }
 
 // NextHand は次の局を配る。

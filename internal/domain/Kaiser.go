@@ -30,6 +30,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"slices"
 	"strconv"
 )
 
@@ -525,7 +526,7 @@ func (k *Kaiser) PlayCard(player, idx int) error {
 	if p == nil || idx < 0 || idx >= p.GetCardsSize() {
 		return fmt.Errorf("bad card index: %d", idx)
 	}
-	if !kaiserContains(k.KaiserValidPlays(player), idx) {
+	if !slices.Contains(k.KaiserValidPlays(player), idx) {
 		return fmt.Errorf("that card may not be played")
 	}
 
@@ -652,16 +653,6 @@ func (k *Kaiser) NextHand() error {
 	k.dealerIdx = (k.dealerIdx + 1) % KaiserPlayerCnt
 	k.beginHand()
 	return nil
-}
-
-// kaiserContains は s に v が含まれるかを返す。
-func kaiserContains(s []int, v int) bool {
-	for _, x := range s {
-		if x == v {
-			return true
-		}
-	}
-	return false
 }
 
 // ---- CPU ----

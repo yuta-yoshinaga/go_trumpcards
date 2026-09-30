@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 	"strconv"
 )
 
@@ -224,7 +225,7 @@ func (l *LingerLonger) play(playerIdx, cardIndex int) error {
 	if playerIdx != l.currentPlayerIdx {
 		return ErrNotHumanTurn
 	}
-	if !lingerLongerContains(l.GetValidPlayIndices(playerIdx), cardIndex) {
+	if !slices.Contains(l.GetValidPlayIndices(playerIdx), cardIndex) {
 		if cardIndex < 0 || cardIndex >= l.players[playerIdx].GetCardsSize() {
 			return NewDomainErrorCode(ErrInvalidCard, "lingerlonger.errCardIndexOutOfRange", nil)
 		}
@@ -336,16 +337,6 @@ func (l *LingerLonger) trickWinner() int {
 		}
 	}
 	return best.PlayerIdx
-}
-
-// lingerLongerContains は xs が v を含むかを返す。
-func lingerLongerContains(xs []int, v int) bool {
-	for _, x := range xs {
-		if x == v {
-			return true
-		}
-	}
-	return false
 }
 
 // 勝因。**このゲームの主題は「持ちこたえる」ことなので、勝因を取り違えると
