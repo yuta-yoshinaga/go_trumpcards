@@ -58,6 +58,7 @@ func TestHandAndFootWebPresenter_Output(t *testing.T) {
 		require := assert.New(t)
 		require.NoError(json.Unmarshal([]byte(result), &resObj))
 		require.Equal(4, len(resObj.Players))
+		require.Equal(50, resObj.MinMeld)
 		require.Equal(2, len(resObj.Teams))
 		require.False(resObj.GameEndFlag)
 		require.Equal(0, resObj.CurrentPlayerIdx)
@@ -214,6 +215,14 @@ func TestHandAndFootWebPresenter_Output(t *testing.T) {
 		_ = json.Unmarshal([]byte(result), &resObj)
 		assert.Equal(t, "handandfoot.roundEnd", resObj.MessageCode)
 	})
+	t.Run("minimum meld reflects the 90 point band", func(t *testing.T) {
+		m, players := setupHandAndFootWebMockWithPlayers()
+		players[0].SetCumulativeScore(1500)
+		var resObj controller.HandAndFootWebOutput
+		assert.NoError(t, json.Unmarshal([]byte(p.Output(m, nil)), &resObj))
+		assert.Equal(t, 90, resObj.MinMeld)
+	})
+
 }
 
 func TestHandAndFootWebPresenter_ActionLogOutput(t *testing.T) {

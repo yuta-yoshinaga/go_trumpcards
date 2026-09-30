@@ -31,6 +31,8 @@ type CanastaGame interface {
 	// SetConfig ゲーム設定をセットする
 	SetConfig(cfg domain.CanastaConfig)
 
+	// GetMinimumMeldValue 初回メルドに要する最低点を取得する
+	GetMinimumMeldValue(playerIdx int) int
 	// GetGameEndFlag ゲーム終了フラグを取得する
 	GetGameEndFlag() bool
 	// GetPhase 現在のフェーズを取得する

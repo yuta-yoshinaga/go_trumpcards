@@ -61,6 +61,7 @@ type BoliviaWebOutputMeld struct {
 
 // BoliviaWebOutput ボリビアWebアウトプット
 type BoliviaWebOutput struct {
+	MinMeld          int                       `json:"minMeld"`
 	Players          []*BoliviaWebOutputPlayer `json:"players"`
 	TeamScores       []int                     `json:"teamScores"`
 	Phase            int                       `json:"phase"`

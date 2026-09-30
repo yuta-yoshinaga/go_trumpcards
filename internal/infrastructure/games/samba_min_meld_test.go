@@ -15,7 +15,7 @@ import (
 //
 // `frontend/src/utils/sambaScore.ts` spells the 15/50/90/120 ladder as literals
 // so the page can show "必要点数" while the human picks cards; the CUI prints the
-// same number from `SambaMinimumMeldValue` (#5702). Move a threshold in the
+// same number from `CanastaMinMeld` (#5702). Move a threshold in the
 // domain and the page would keep promising the old one, with the mismatch only
 // surfacing as a rejected meld.
 func TestSambaWebMinMeldMatchesTheDomain(t *testing.T) {
@@ -44,17 +44,17 @@ func TestSambaWebMinMeldMatchesTheDomain(t *testing.T) {
 			t.Fatalf("threshold %q: %v", b[1], err)
 		}
 		// 境界の 1 点下はこの分岐に入る値。
-		if got := domain.SambaMinimumMeldValue(bound - 1); strconv.Itoa(got) != b[2] {
+		if got := domain.CanastaMinMeld(bound - 1); strconv.Itoa(got) != b[2] {
 			t.Errorf("web says %s points below %d, domain says %d", b[2], bound, got)
 		}
 		// **境界そのものも見る。**値だけを比べると、同じ値が続く帯の中へ境界を
 		// 動かした web の変更 (3000 -> 2000 など) が素通りする。
-		if got := domain.SambaMinimumMeldValue(bound); strconv.Itoa(got) == b[2] {
+		if got := domain.CanastaMinMeld(bound); strconv.Itoa(got) == b[2] {
 			t.Errorf("web breaks at %d but the domain still requires %s points there", bound, b[2])
 		}
 	}
 	last := fallback[len(fallback)-1][1]
-	if got := domain.SambaMinimumMeldValue(1_000_000); strconv.Itoa(got) != last {
+	if got := domain.CanastaMinMeld(1_000_000); strconv.Itoa(got) != last {
 		t.Errorf("web's fallback is %s points, domain says %d", last, got)
 	}
 }

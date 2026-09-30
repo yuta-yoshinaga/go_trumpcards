@@ -55,6 +55,7 @@ type SambaWebOutputMeld struct {
 
 // SambaWebOutput サンバWebアウトプット
 type SambaWebOutput struct {
+	MinMeld          int                     `json:"minMeld"`
 	Players          []*SambaWebOutputPlayer `json:"players"`
 	TeamScores       []int                   `json:"teamScores"`
 	Phase            int                     `json:"phase"`

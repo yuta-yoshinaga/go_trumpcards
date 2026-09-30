@@ -50,6 +50,7 @@ type CanastaWebOutputMeld struct {
 
 // CanastaWebOutput カナスタWebアウトプット
 type CanastaWebOutput struct {
+	MinMeld          int                       `json:"minMeld"`
 	Players          []*CanastaWebOutputPlayer `json:"players"`
 	Phase            int                       `json:"phase"`
 	RoundNumber      int                       `json:"roundNumber"`

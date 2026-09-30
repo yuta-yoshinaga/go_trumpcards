@@ -174,7 +174,7 @@ func TestCanastaIsBlack3(t *testing.T) {
 	}
 }
 
-func TestCanastaCardValue(t *testing.T) {
+func TestFamilyCardValue(t *testing.T) {
 	tests := []struct {
 		name   string
 		card   *domain.Card
@@ -192,7 +192,7 @@ func TestCanastaCardValue(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.expect, domain.CanastaCardValue(tt.card))
+			assert.Equal(t, tt.expect, domain.CanastaFamilyCardValue(tt.card))
 		})
 	}
 }
@@ -611,10 +611,12 @@ func TestCanasta_MinimumMeldValue(t *testing.T) {
 	g := newTestCanasta()
 	g.Reset()
 
-	// Score < 0 → 15
-	g.GetPlayer(0).SetCumulativeScore(-100)
-	// We can't call minimumMeldValue directly, but we test it through PlayerMeld behavior
-	// Score 0 → 50 (tested in TestCanasta_PlayerMeld_InitialMeldMinimum)
+	for _, tc := range []struct{ score, want int }{{-100, 15}, {0, 50}, {1500, 90}, {3000, 120}} {
+		g.GetPlayer(0).SetCumulativeScore(tc.score)
+		assert.Equal(t, tc.want, g.GetMinimumMeldValue(0))
+	}
+	assert.Equal(t, 0, g.GetMinimumMeldValue(-1))
+	assert.Equal(t, 0, g.GetMinimumMeldValue(99))
 }
 
 // --- CanastaMeld ---

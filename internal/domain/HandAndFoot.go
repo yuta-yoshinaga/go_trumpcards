@@ -283,22 +283,6 @@ func (g *HandAndFoot) teamCanastaCounts(team int) (red, black int) {
 	return red, black
 }
 
-// CanastaMinMeld はキャナスタ系の初回メルド最低点を累積得点から返す。
-// Web の canastaMinMeld と同じ帯 (マイナス 15 / 1500 未満 50 / 3000 未満 90 /
-// それ以上 120)。表示専用で、ドメインはこの最低点を強制しない。
-func CanastaMinMeld(cumulativeScore int) int {
-	switch {
-	case cumulativeScore < 0:
-		return 15
-	case cumulativeScore < 1500:
-		return 50
-	case cumulativeScore < 3000:
-		return 90
-	default:
-		return 120
-	}
-}
-
 // HandAndFootGoOutStatus は上がり条件の充足状況。UI が「なぜ今上がれないか」を
 // 説明するために使う (#4836)。
 type HandAndFootGoOutStatus struct {
@@ -974,7 +958,7 @@ func (g *HandAndFoot) cpuBestDiscard(player *HandAndFootPlayer) int {
 			continue
 		}
 		cnt := rankCount[c.GetValue()]
-		val := CanastaCardValue(c)
+		val := CanastaFamilyCardValue(c)
 		if cnt == 1 && val < bestValue {
 			bestValue = val
 			bestIdx = i
@@ -989,7 +973,7 @@ func (g *HandAndFoot) cpuBestDiscard(player *HandAndFootPlayer) int {
 		if CanastaIsRed3(c) || CanastaIsWild(c) {
 			continue
 		}
-		val := CanastaCardValue(c)
+		val := CanastaFamilyCardValue(c)
 		if val < bestValue {
 			bestValue = val
 			bestIdx = i
@@ -1010,7 +994,7 @@ func (g *HandAndFoot) scoreRound(goOutTeam int) {
 		score := 0
 		for _, m := range g.teamMelds[t] {
 			for _, c := range m.Cards {
-				score += CanastaCardValue(c)
+				score += CanastaFamilyCardValue(c)
 			}
 			if m.IsCanasta() {
 				if m.IsNatural {
@@ -1032,10 +1016,10 @@ func (g *HandAndFoot) scoreRound(goOutTeam int) {
 		player := g.players[i]
 		team := HandAndFootTeamOf(i)
 		for j := 0; j < player.GetCardsSize(); j++ {
-			teamScores[team] -= CanastaCardValue(player.GetCard(j))
+			teamScores[team] -= CanastaFamilyCardValue(player.GetCard(j))
 		}
 		for _, c := range player.GetFoot() {
-			teamScores[team] -= CanastaCardValue(c)
+			teamScores[team] -= CanastaFamilyCardValue(c)
 		}
 	}
 

@@ -14,6 +14,7 @@ type CanastaWebPresenter struct{}
 // Output ゲーム状態をJSON出力
 func (p *CanastaWebPresenter) Output(g interfaces.CanastaGame, lastErr error) string {
 	resObj := new(controller.CanastaWebOutput)
+	resObj.MinMeld = g.GetMinimumMeldValue(0)
 	resObj.Phase = int(g.GetPhase())
 	resObj.RoundNumber = g.GetRoundNumber()
 	resObj.CurrentPlayerIdx = g.GetCurrentPlayerIdx()

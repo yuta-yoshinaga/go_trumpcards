@@ -497,7 +497,7 @@ func TestBolivia_ScoringPaysEachMeldKindItsOwnBonus(t *testing.T) {
 		if meld != nil {
 			players[0].SetMelds([]*BoliviaMeld{meld})
 			for _, c := range meld.Cards {
-				cards += BoliviaCardValue(c)
+				cards += CanastaFamilyCardValue(c)
 			}
 		}
 		before := g.GetTeamScore(0)
