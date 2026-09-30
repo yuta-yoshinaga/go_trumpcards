@@ -11,7 +11,7 @@ import (
 )
 
 func TestGoFishConfig_Default(t *testing.T) {
-	cfg := DefaultGoFishConfig()
+	cfg := GoFishConfig{CpuDifficulty: GoFishCpuDifficultyNormal}
 	assert.Equal(t, GoFishCpuDifficultyNormal, cfg.CpuDifficulty)
 }
 

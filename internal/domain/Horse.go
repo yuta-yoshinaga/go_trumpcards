@@ -141,16 +141,6 @@ func NewHorse(config HorseConfig) *Horse {
 // NewDefaultHorse は既定の卓を構築する。
 func NewDefaultHorse() *Horse { return NewHorse(DefaultHorseConfig()) }
 
-// NewEightGame は Eight-Game Mix の卓を構築する。
-//
-// **オーケストレータは H.O.R.S.E. と同じもの。** 違うのは回す種目の並びだけで、
-// チップの持ち回しも精算も 1 つの実装が担当する ── 8 種目ぶんの進行を別に
-// 書くと、同じ規則を 2 か所で保つことになる。
-func NewEightGame(config HorseConfig) *Horse {
-	config.Variant = HorseVariantEightGame
-	return NewHorse(config)
-}
-
 // NewDefaultEightGame は既定の Eight-Game Mix 卓を構築する。
 func NewDefaultEightGame() *Horse { return NewHorse(DefaultEightGameConfig()) }
 

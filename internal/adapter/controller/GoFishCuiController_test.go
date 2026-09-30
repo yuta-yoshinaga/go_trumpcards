@@ -15,7 +15,7 @@ import (
 
 func newGoFishCuiController() (*controller.GoFishCuiController, *mockusecase.MockGoFishInteractor) {
 	giMock := new(mockusecase.MockGoFishInteractor)
-	giMock.On("GetConfig").Return(domain.DefaultGoFishConfig())
+	giMock.On("GetConfig").Return(domain.GoFishConfig{CpuDifficulty: domain.GoFishCpuDifficultyNormal})
 	giMock.On("Reset", mock.Anything).Return("reset output")
 	giMock.On("Ask", 1, 3).Return("ask output")
 	giMock.On("ActionLog").Return("action log output")
@@ -55,7 +55,7 @@ func TestGoFishCuiController_Ask_InvalidRank(t *testing.T) {
 
 func TestGoFishCuiController_SetDifficulty(t *testing.T) {
 	giMock := new(mockusecase.MockGoFishInteractor)
-	giMock.On("GetConfig").Return(domain.DefaultGoFishConfig())
+	giMock.On("GetConfig").Return(domain.GoFishConfig{CpuDifficulty: domain.GoFishCpuDifficultyNormal})
 	giMock.On("Reset", mock.MatchedBy(func(cfg domain.GoFishConfig) bool {
 		return cfg.CpuDifficulty == domain.GoFishCpuDifficultyHard
 	})).Return("hard output")

@@ -73,7 +73,7 @@ func TestGoFishCuiPresenter_Output_GameEnd(t *testing.T) {
 	m.On("GetWinnerIdx").Return(0)
 	m.On("GetTurnNumber").Return(20)
 	m.On("GetDeckRemaining").Return(0)
-	m.On("GetConfig").Return(domain.DefaultGoFishConfig())
+	m.On("GetConfig").Return(domain.GoFishConfig{CpuDifficulty: domain.GoFishCpuDifficultyNormal})
 	m.On("GetLastAskPlayerIdx").Return(-1)
 	m.On("GetCpuActions").Return(([]*domain.GoFishCpuAction)(nil))
 	m.On("GetHumanAction").Return((*domain.GoFishCpuAction)(nil))

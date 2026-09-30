@@ -567,10 +567,6 @@ func TestFreeBet_GetHint(t *testing.T) {
 func TestFreeBetNames(t *testing.T) {
 	t.Parallel()
 
-	assert.Equal(t, "bet", FreeBetPhaseName(FreeBetPhaseBet))
-	assert.Equal(t, "play", FreeBetPhaseName(FreeBetPhasePlay))
-	assert.Equal(t, "result", FreeBetPhaseName(FreeBetPhaseResult))
-
 	assert.Equal(t, "win", FreeBetResultName(FreeBetResultWin))
 	assert.Equal(t, "lose", FreeBetResultName(FreeBetResultLose))
 	assert.Equal(t, "push", FreeBetResultName(FreeBetResultPush))

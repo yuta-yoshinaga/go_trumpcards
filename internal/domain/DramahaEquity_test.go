@@ -16,7 +16,7 @@ func TestCalcDramahaEquity(t *testing.T) {
 			NewCard(CardDesignHeart, 13, false),
 		}
 		rng := rand.New(rand.NewSource(42))
-		result := CalcDramahaEquity(humanCards, nil, 1, 5000, rng)
+		result := calcDramahaEquityWithHoleCount(humanCards, nil, 1, 5000, rng)
 		// Double suited AA-KK is very strong in Dramaha
 		assert.Greater(t, result.Equity, 0.50)
 		assert.Less(t, result.Equity, 0.95)
@@ -41,7 +41,7 @@ func TestCalcDramahaEquity(t *testing.T) {
 			NewCard(CardDesignClover, 6, false),
 		}
 		rng := rand.New(rand.NewSource(42))
-		result := CalcDramahaEquity(humanCards, communityCards, 1, 5000, rng)
+		result := calcDramahaEquityWithHoleCount(humanCards, communityCards, 1, 5000, rng)
 		// **AA-KK-Q は 2-7-9-4-6 のレインボー盤で「エースのワンペア」止まり。**
 		// オマハ式に手札ちょうど 2 枚を使うので、ポケットペアは盤が塗り替わらない
 		// 限り 1 ペアにしかならない (元のコメントの "two pair" は誤り)。
@@ -62,7 +62,7 @@ func TestCalcDramahaEquity(t *testing.T) {
 			NewCard(CardDesignSpade, 12, false),
 		}
 		rng := rand.New(rand.NewSource(42))
-		result := CalcDramahaEquity(humanCards, nil, 0, 5000, rng)
+		result := calcDramahaEquityWithHoleCount(humanCards, nil, 0, 5000, rng)
 		assert.Equal(t, 1.0, result.Equity)
 	})
 
@@ -77,7 +77,7 @@ func TestCalcDramahaEquity(t *testing.T) {
 			NewCard(CardDesignSpade, 12, false),
 		}
 		rng := rand.New(rand.NewSource(42))
-		result := CalcDramahaEquity(humanCards, nil, 1, 0, rng)
+		result := calcDramahaEquityWithHoleCount(humanCards, nil, 1, 0, rng)
 		assert.Equal(t, 0.0, result.Equity)
 	})
 
@@ -97,7 +97,7 @@ func TestCalcDramahaEquity(t *testing.T) {
 			NewCard(CardDesignSpade, 9, false),
 		}
 		rng := rand.New(rand.NewSource(42))
-		result := CalcDramahaEquity(humanCards, communityCards, 1, 5000, rng)
+		result := calcDramahaEquityWithHoleCount(humanCards, communityCards, 1, 5000, rng)
 		sum := 0.0
 		for _, h := range result.HandOdds {
 			sum += h.Probability
@@ -115,7 +115,7 @@ func TestCalcDramahaEquity(t *testing.T) {
 			// 起こりえない不利な比較になる。
 			NewCard(CardDesignSpade, 12, false),
 		}
-		result := CalcDramahaEquity(humanCards, nil, 1, 100, nil)
+		result := calcDramahaEquityWithHoleCount(humanCards, nil, 1, 100, nil)
 		assert.Greater(t, result.Equity, 0.0)
 	})
 }
@@ -137,7 +137,7 @@ func TestCalcDramahaEquity_HandOdds(t *testing.T) {
 			NewCard(CardDesignSpade, 9, false),
 		}
 		rng := rand.New(rand.NewSource(42))
-		result := CalcDramahaEquity(humanCards, communityCards, 1, 1000, rng)
+		result := calcDramahaEquityWithHoleCount(humanCards, communityCards, 1, 1000, rng)
 
 		assert.Len(t, result.HandOdds, len(PokerHandNames))
 		for i, ho := range result.HandOdds {
@@ -170,7 +170,7 @@ func TestCalcDramahaEquity_NeededCardsExceedsPool(t *testing.T) {
 			NewCard(CardDesignClover, 6, false),
 		}
 		rng := rand.New(rand.NewSource(42))
-		result := CalcDramahaEquity(humanCards, communityCards, 12, 100, rng)
+		result := calcDramahaEquityWithHoleCount(humanCards, communityCards, 12, 100, rng)
 		// All simulations skipped → wins=0 → equity=0
 		assert.Equal(t, 0.0, result.Equity)
 	})
@@ -193,7 +193,7 @@ func TestCalcDramahaEquity_RiverExact(t *testing.T) {
 			NewCard(CardDesignClover, 5, false),
 		}
 		rng := rand.New(rand.NewSource(42))
-		result := CalcDramahaEquity(humanCards, communityCards, 1, 5000, rng)
+		result := calcDramahaEquityWithHoleCount(humanCards, communityCards, 1, 5000, rng)
 		assert.Equal(t, 1.0, result.Equity)
 	})
 }
@@ -212,7 +212,7 @@ func TestCalcDramahaEquity_ParallelResultsInExpectedRange(t *testing.T) {
 			NewCard(CardDesignSpade, 9, false),
 		}
 		rng := rand.New(rand.NewSource(42))
-		result := CalcDramahaEquity(humanCards, communityCards, 1, 50000, rng)
+		result := calcDramahaEquityWithHoleCount(humanCards, communityCards, 1, 50000, rng)
 		// AA-KK double suited on a low flop should have reasonable equity
 		assert.Greater(t, result.Equity, 0.30)
 		assert.Less(t, result.Equity, 0.99)
@@ -238,10 +238,10 @@ func TestCalcDramahaEquity_DeterministicWithSeededRng(t *testing.T) {
 			NewCard(CardDesignSpade, 12, false),
 		}
 		rng1 := rand.New(rand.NewSource(123))
-		result1 := CalcDramahaEquity(humanCards, nil, 1, 1000, rng1)
+		result1 := calcDramahaEquityWithHoleCount(humanCards, nil, 1, 1000, rng1)
 
 		rng2 := rand.New(rand.NewSource(123))
-		result2 := CalcDramahaEquity(humanCards, nil, 1, 1000, rng2)
+		result2 := calcDramahaEquityWithHoleCount(humanCards, nil, 1, 1000, rng2)
 
 		assert.Equal(t, result1.Equity, result2.Equity)
 		for i := range result1.HandOdds {
@@ -265,6 +265,6 @@ func BenchmarkCalcDramahaEquity(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		rng := rand.New(rand.NewSource(int64(i)))
-		CalcDramahaEquity(humanCards, communityCards, 1, 50000, rng)
+		calcDramahaEquityWithHoleCount(humanCards, communityCards, 1, 50000, rng)
 	}
 }

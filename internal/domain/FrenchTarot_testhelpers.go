@@ -28,3 +28,8 @@ func FrenchTarotIsExcusePublic(c *Card) bool { return frenchTarotIsExcuse(c) }
 
 // BuildFrenchTarotDeckPublic は 78 枚デッキを構築する (テスト用)。
 func BuildFrenchTarotDeckPublic() []*Card { return buildFrenchTarotDeck() }
+
+// FrenchTarotScoreDeal はディール得点計算の純粋関数の公開ラッパー (テスト用)。
+func FrenchTarotScoreDeal(declHalf, bouts, petitSign, mult int) FrenchTarotBreakdown {
+	return frenchTarotScoreDeal(declHalf, bouts, petitSign, mult)
+}

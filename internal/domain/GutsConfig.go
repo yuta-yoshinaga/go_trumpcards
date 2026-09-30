@@ -16,11 +16,6 @@ const (
 	GutsDeclarationIn GutsDeclaration = 1
 )
 
-// GutsDeclarationValid は宣言種別が有効な列挙値かどうかを返す。
-func GutsDeclarationValid(d GutsDeclaration) bool {
-	return d == GutsDeclarationOut || d == GutsDeclarationIn
-}
-
 // Guts の設定既定値・境界値。
 const (
 	// GutsDefaultPlayerCount はデフォルトのプレイヤー数 (人間 1 + CPU 3)。

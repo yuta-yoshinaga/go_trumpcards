@@ -563,18 +563,6 @@ func (g *EgyptianRatscrew) checkStuck() {
 	g.endGame(-1)
 }
 
-// slapReasonLabel スラップ理由のログ用ラベル
-func slapReasonLabel(r EgyptianRatscrewSlapReason) string {
-	switch r {
-	case EgyptianRatscrewSlapReasonPair:
-		return "pair"
-	case EgyptianRatscrewSlapReasonSandwich:
-		return "sandwich"
-	default:
-		return "none"
-	}
-}
-
 // --- JSON ---
 
 // egyptianRatscrewJSON is the JSON wire format for EgyptianRatscrew.

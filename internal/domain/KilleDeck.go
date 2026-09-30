@@ -146,9 +146,6 @@ func killeItoa(n int) string {
 	return string(rune('0'+n/10)) + string(rune('0'+n%10))
 }
 
-// KilleIsPicture は絵札 (Inn 以上) かを返す。
-func KilleIsPicture(r KilleRank) bool { return r >= KilleInn }
-
 // NewKilleCard は種から札を作る。
 func NewKilleCard(r KilleRank) *Card { return NewCard(KilleDesign, int(r), true) }
 

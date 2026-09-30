@@ -479,7 +479,7 @@ func TestHorse_HandIsSettledWhenNoHumanActionWasNeeded(t *testing.T) {
 	t.Parallel()
 	stuckShaped := 0
 	for range 200 {
-		g := NewEightGame(HorseConfig{Seats: 4, InitialChips: HorseDefaultChips, HandsPerDiscipline: 1})
+		g := NewHorse(HorseConfig{Variant: HorseVariantEightGame, Seats: 4, InitialChips: HorseDefaultChips, HandsPerDiscipline: 1})
 		g.Reset()
 		g.discipline = HorseStudHiLo
 		// アンティ (1) でちょうど出し切る席にする。
@@ -511,7 +511,7 @@ func TestHorse_HandIsSettledWhenNoHumanActionWasNeeded(t *testing.T) {
 // では落ちない)。決着の記録の方を見る ── 門が無いと `handEnd` が 2 行積まれる。
 func TestHorse_SettleIsIdempotent(t *testing.T) {
 	t.Parallel()
-	g := NewEightGame(HorseConfig{Seats: 4, InitialChips: HorseDefaultChips, HandsPerDiscipline: 1})
+	g := NewHorse(HorseConfig{Variant: HorseVariantEightGame, Seats: 4, InitialChips: HorseDefaultChips, HandsPerDiscipline: 1})
 	g.Reset()
 	// 普通に 1 ハンド打ち切る。配りに依らずここで決着まで行く。
 	for range 200 {

@@ -1792,11 +1792,6 @@ func (g *FrenchTarot) GetPlayableIndices(playerIdx int) []int {
 	return g.getValidPlayIndices(playerIdx)
 }
 
-// FrenchTarotScoreDeal はディール得点計算の純粋関数の公開ラッパー (テスト用)。
-func FrenchTarotScoreDeal(declHalf, bouts, petitSign, mult int) FrenchTarotBreakdown {
-	return frenchTarotScoreDeal(declHalf, bouts, petitSign, mult)
-}
-
 // FrenchTarotTargetForBouts はブー数に対応する目標点を返す (テスト用)。
 func FrenchTarotTargetForBouts(bouts int) int { return frenchTarotTarget(bouts) }
 

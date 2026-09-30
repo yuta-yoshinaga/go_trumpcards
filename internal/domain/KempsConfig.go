@@ -31,9 +31,6 @@ const KempsTeamCnt = 2
 // 偶数席 (0,2) = チーム A、奇数席 (1,3) = チーム B。
 func KempsTeamOf(i int) int { return i % 2 }
 
-// KempsPartnerOf はプレイヤー i のパートナー席 (対角) を返す。
-func KempsPartnerOf(i int) int { return (i + 2) % KempsPlayerCnt }
-
 // KempsCpuDifficulty は CPU の難易度。
 type KempsCpuDifficulty int
 

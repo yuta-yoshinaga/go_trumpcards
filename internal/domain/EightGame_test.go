@@ -55,7 +55,7 @@ func eightGamePlayHand(t *testing.T, g *Horse) int {
 func TestEightGame_EveryDisciplineCanBePlayed(t *testing.T) {
 	t.Parallel()
 	for _, d := range HorseRotation(HorseVariantEightGame) {
-		g := NewEightGame(HorseConfig{Seats: 4, InitialChips: HorseDefaultChips, HandsPerDiscipline: 1})
+		g := NewHorse(HorseConfig{Variant: HorseVariantEightGame, Seats: 4, InitialChips: HorseDefaultChips, HandsPerDiscipline: 1})
 		g.Reset()
 		g.discipline = d
 		g.startHand()
@@ -70,7 +70,7 @@ func TestEightGame_EveryDisciplineCanBePlayed(t *testing.T) {
 func TestEightGame_AdvancesInRotationOrder(t *testing.T) {
 	t.Parallel()
 	rotation := HorseRotation(HorseVariantEightGame)
-	g := NewEightGame(HorseConfig{Seats: 4, InitialChips: HorseDefaultChips, HandsPerDiscipline: 1})
+	g := NewHorse(HorseConfig{Variant: HorseVariantEightGame, Seats: 4, InitialChips: HorseDefaultChips, HandsPerDiscipline: 1})
 	g.Reset()
 	got := make([]HorseDiscipline, 0, len(rotation)+1)
 	for range len(rotation) + 1 {
@@ -87,7 +87,7 @@ func TestEightGame_AdvancesInRotationOrder(t *testing.T) {
 func TestEightGame_EveryDisciplineConservesChips(t *testing.T) {
 	t.Parallel()
 	for range 25 {
-		g := NewEightGame(HorseConfig{Seats: 4, InitialChips: HorseDefaultChips, HandsPerDiscipline: 1})
+		g := NewHorse(HorseConfig{Variant: HorseVariantEightGame, Seats: 4, InitialChips: HorseDefaultChips, HandsPerDiscipline: 1})
 		g.Reset()
 		for range len(HorseRotation(HorseVariantEightGame)) {
 			if g.GetGameEndFlag() {
@@ -144,7 +144,7 @@ func TestEightGame_RotationOrder(t *testing.T) {
 // 先に回したリミット種目とまったく同じ卓になる。
 func TestEightGame_NoLimitAndPotLimitTablesUseTheirLimits(t *testing.T) {
 	t.Parallel()
-	g := NewEightGame(DefaultEightGameConfig())
+	g := NewHorse(DefaultEightGameConfig())
 	g.Reset()
 
 	g.discipline = HorseNLHoldem
@@ -172,7 +172,7 @@ func TestEightGame_NoLimitAndPotLimitTablesUseTheirLimits(t *testing.T) {
 // ベットの最中に手札が入れ替わる。
 func TestEightGame_ExchangeOnlyWorksInTheDrawDiscipline(t *testing.T) {
 	t.Parallel()
-	g := NewEightGame(DefaultEightGameConfig())
+	g := NewHorse(DefaultEightGameConfig())
 	g.Reset()
 	require.Equal(t, HorseHoldem, g.GetDiscipline())
 	assert.False(t, g.IsDrawPhase(), "ホールデムに引き直しは無い")
@@ -186,7 +186,7 @@ func TestEightGame_TripleDrawReachesADrawTurn(t *testing.T) {
 	t.Parallel()
 	drew := false
 	for range 20 {
-		g := NewEightGame(DefaultEightGameConfig())
+		g := NewHorse(DefaultEightGameConfig())
 		g.Reset()
 		g.discipline = HorseTripleDraw
 		g.startHand()
@@ -218,7 +218,7 @@ func TestEightGame_TripleDrawReachesADrawTurn(t *testing.T) {
 // 表示に混ぜると相手の手が全部読める。
 func TestEightGame_TripleDrawHidesTheOpponentsHand(t *testing.T) {
 	t.Parallel()
-	g := NewEightGame(DefaultEightGameConfig())
+	g := NewHorse(DefaultEightGameConfig())
 	g.Reset()
 	g.discipline = HorseTripleDraw
 	g.startHand()
@@ -256,7 +256,7 @@ func TestEightGame_OnlyFourSeatsAreAccepted(t *testing.T) {
 // 復元した卓は 5 種目しか回さなくなる (8 種目のはずが H.O.R.S.E. になる)。
 func TestEightGame_SurvivesASaveAndRestore(t *testing.T) {
 	t.Parallel()
-	g := NewEightGame(DefaultEightGameConfig())
+	g := NewHorse(DefaultEightGameConfig())
 	g.Reset()
 	g.discipline = HorseTripleDraw
 	g.startHand()
@@ -277,7 +277,7 @@ func TestEightGame_SurvivesASaveAndRestore(t *testing.T) {
 // 2-7 Triple Draw の途中から復元できてしまう。
 func TestHorse_RestoreRejectsADisciplineOutsideTheRotation(t *testing.T) {
 	t.Parallel()
-	g := NewEightGame(DefaultEightGameConfig())
+	g := NewHorse(DefaultEightGameConfig())
 	g.Reset()
 	g.discipline = HorseTripleDraw
 	g.startHand()
@@ -418,7 +418,7 @@ func TestEightGame_NextHandWalksTheWholeRotation(t *testing.T) {
 	// 通し切れた回だけを見れば、並びの検査はそのまま成立する。
 	var seen []HorseDiscipline
 	for attempt := 0; attempt < 25 && len(seen) < len(want); attempt++ {
-		g := NewEightGame(HorseConfig{Seats: 4, InitialChips: HorseDefaultChips, HandsPerDiscipline: 1})
+		g := NewHorse(HorseConfig{Variant: HorseVariantEightGame, Seats: 4, InitialChips: HorseDefaultChips, HandsPerDiscipline: 1})
 		g.Reset()
 		run := make([]HorseDiscipline, 0, len(want))
 		for range len(want) {
