@@ -30,6 +30,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"slices"
 	"strconv"
 )
 
@@ -336,7 +337,7 @@ func (v *Vint) PlayCard(player, idx int) error {
 	if p == nil || idx < 0 || idx >= p.GetCardsSize() {
 		return fmt.Errorf("bad card index: %d", idx)
 	}
-	if !vintContains(v.VintValidPlays(player), idx) {
+	if !slices.Contains(v.VintValidPlays(player), idx) {
 		return fmt.Errorf("that card may not be played")
 	}
 
@@ -513,16 +514,6 @@ func (v *Vint) NextHand() error {
 	v.dealerIdx = (v.dealerIdx + 1) % VintPlayerCnt
 	v.beginHand()
 	return nil
-}
-
-// vintContains は s に val が含まれるかを返す。
-func vintContains(s []int, val int) bool {
-	for _, x := range s {
-		if x == val {
-			return true
-		}
-	}
-	return false
 }
 
 // ---- CPU ----

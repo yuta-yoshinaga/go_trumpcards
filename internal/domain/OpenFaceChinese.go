@@ -35,6 +35,7 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"slices"
 )
 
 // OpenFaceChineseHandSize 1 プレイヤーが置くカード総数 (3+5+5)
@@ -316,28 +317,18 @@ func (g *OpenFaceChinese) cpuPlaceSmart(p *OpenFaceChinesePlayer, card *Card, op
 	// 強い札（J 以上）は空きがあれば下段、次に中段。
 	if v >= 11 {
 		for _, row := range []int{OpenFaceChineseRowBack, OpenFaceChineseRowMiddle, OpenFaceChineseRowFront} {
-			if containsInt(open, row) {
+			if slices.Contains(open, row) {
 				return row
 			}
 		}
 	}
 	// 弱い札は上段、次に中段、最後に下段。
 	for _, row := range []int{OpenFaceChineseRowFront, OpenFaceChineseRowMiddle, OpenFaceChineseRowBack} {
-		if containsInt(open, row) {
+		if slices.Contains(open, row) {
 			return row
 		}
 	}
 	return open[0]
-}
-
-// containsInt slice に v が含まれるか。
-func containsInt(s []int, v int) bool {
-	for _, x := range s {
-		if x == v {
-			return true
-		}
-	}
-	return false
 }
 
 // ofcRankValue カード値（A=14）を返す。

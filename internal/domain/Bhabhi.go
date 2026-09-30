@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 )
 
 // BhabhiPhase はバービーのゲームフェーズ。
@@ -239,7 +240,7 @@ func (b *Bhabhi) play(playerIdx, cardIndex int) error {
 	if cardIndex < 0 || cardIndex >= p.GetCardsSize() {
 		return fmt.Errorf("invalid card index: %d", cardIndex)
 	}
-	if !bhabhiContains(b.GetValidPlayIndices(playerIdx), cardIndex) {
+	if !slices.Contains(b.GetValidPlayIndices(playerIdx), cardIndex) {
 		return errors.New("must follow the led suit")
 	}
 
@@ -581,16 +582,6 @@ func (b *Bhabhi) GetHint() *BhabhiHint {
 type BhabhiHint struct {
 	CardIndex *int
 	Reason    string
-}
-
-// bhabhiContains は xs が v を含むかを返す。
-func bhabhiContains(xs []int, v int) bool {
-	for _, x := range xs {
-		if x == v {
-			return true
-		}
-	}
-	return false
 }
 
 // --- アクセサ ---------------------------------------------------------------

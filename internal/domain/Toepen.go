@@ -38,6 +38,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"slices"
 	"strconv"
 )
 
@@ -302,7 +303,7 @@ func (t *Toepen) PlayCard(player, handIdx int) error {
 		return fmt.Errorf("no such player: %d", player)
 	}
 	valid := t.GetValidPlayIndices(player)
-	if !toepenContains(valid, handIdx) {
+	if !slices.Contains(valid, handIdx) {
 		return fmt.Errorf("card index %d is not playable; you must follow suit", handIdx)
 	}
 
@@ -323,18 +324,6 @@ func (t *Toepen) PlayCard(player, handIdx int) error {
 	}
 	t.currentIdx = next
 	return nil
-}
-
-// toepenContains はスライスに値が含まれるかを返す。domain には同名の containsInt が
-// あるが casino タグのファイル (OpenFaceChinese.go) にあり、extra3 ビルドから見えない
-// うえ非 WASM ビルドでは衝突する。
-func toepenContains(xs []int, v int) bool {
-	for _, x := range xs {
-		if x == v {
-			return true
-		}
-	}
-	return false
 }
 
 // resolveTrick はトリックを解決する。切札が無いので、リードスートの最強札が取る。

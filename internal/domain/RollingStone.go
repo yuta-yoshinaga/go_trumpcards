@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 	"strconv"
 )
 
@@ -305,7 +306,7 @@ func (r *RollingStone) play(playerIdx, cardIndex int) error {
 	if len(valid) == 0 {
 		return errors.New("cannot follow: you must pick the trick up")
 	}
-	if !rollingStoneContains(valid, cardIndex) {
+	if !slices.Contains(valid, cardIndex) {
 		return errors.New("must follow the led suit")
 	}
 
@@ -457,16 +458,6 @@ func (r *RollingStone) trickWinner() int {
 		}
 	}
 	return best.PlayerIdx
-}
-
-// rollingStoneContains は xs が v を含むかを返す。
-func rollingStoneContains(xs []int, v int) bool {
-	for _, x := range xs {
-		if x == v {
-			return true
-		}
-	}
-	return false
 }
 
 // nextActive は i の次の、まだ上がっていない席を返す。

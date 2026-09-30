@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 	"strconv"
 )
 
@@ -218,20 +219,6 @@ func (s *StealingBundles) GetStealTargets(playerIdx, cardIndex int) []int {
 	return out
 }
 
-// stealingBundlesContains は xs に v が含まれるかを返す。
-//
-// **他ゲームの同名ヘルパは使えません。** 近いものが LingerLonger にありますが、
-// あちらは `extra` タグの中なので、このファイル (`extra3`) から呼ぶとホスト
-// ビルドだけ通って Worker のビルドが落ちます。
-func stealingBundlesContains(xs []int, v int) bool {
-	for _, x := range xs {
-		if x == v {
-			return true
-		}
-	}
-	return false
-}
-
 // handCard は席 playerIdx の cardIndex 番目を返す (範囲外なら nil)。
 func (s *StealingBundles) handCard(playerIdx, cardIndex int) *Card {
 	if playerIdx < 0 || playerIdx >= len(s.players) {
@@ -335,7 +322,7 @@ func (s *StealingBundles) steal(playerIdx, cardIndex, victimIdx int) error {
 	if victimIdx < 0 || victimIdx >= len(s.players) || victimIdx == playerIdx {
 		return fmt.Errorf("奪う相手の席が正しくありません: %d", victimIdx)
 	}
-	if !stealingBundlesContains(s.GetStealTargets(playerIdx, cardIndex), victimIdx) {
+	if !slices.Contains(s.GetStealTargets(playerIdx, cardIndex), victimIdx) {
 		if s.handCard(playerIdx, cardIndex) == nil {
 			return fmt.Errorf("手札の位置が範囲外です: %d", cardIndex)
 		}

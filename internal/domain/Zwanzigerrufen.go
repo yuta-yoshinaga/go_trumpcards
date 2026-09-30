@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"slices"
 	"strconv"
 )
 
@@ -585,22 +586,12 @@ func (g *Zwanzigerrufen) cpuSelectDiscards(idx int) []int {
 			break
 		}
 		c := p.GetCard(i)
-		if koenigrufenIsKing(c) || koenigrufenIsTrull(c) || zwanzigerrufenContains(out, i) {
+		if koenigrufenIsKing(c) || koenigrufenIsTrull(c) || slices.Contains(out, i) {
 			continue
 		}
 		out = append(out, i)
 	}
 	return out
-}
-
-// zwanzigerrufenContains スライスに値が含まれるか。
-func zwanzigerrufenContains(s []int, v int) bool {
-	for _, x := range s {
-		if x == v {
-			return true
-		}
-	}
-	return false
 }
 
 // --- プレイ ---
@@ -629,7 +620,7 @@ func (g *Zwanzigerrufen) PlayerPlayCard(handIdx int) error {
 	if handIdx < 0 || handIdx >= p.GetCardsSize() {
 		return NewDomainError(ErrInvalidCard, fmt.Sprintf("hand index %d out of range", handIdx))
 	}
-	if !zwanzigerrufenContains(g.GetValidPlayIndices(g.currentPlayerIdx), handIdx) {
+	if !slices.Contains(g.GetValidPlayIndices(g.currentPlayerIdx), handIdx) {
 		return NewDomainError(ErrInvalidPlay, "that card does not follow the lead")
 	}
 	g.playCard(g.currentPlayerIdx, handIdx)
