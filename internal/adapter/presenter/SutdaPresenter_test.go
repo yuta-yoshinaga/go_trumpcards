@@ -183,6 +183,11 @@ func TestSutdaWebPresenter_ShowsEveryHandAtTheShowdown(t *testing.T) {
 	last := res["lastResult"].(map[string]any)
 	assert.Positive(t, last["pot"])
 	assert.NotEmpty(t, last["winners"])
+	expectedShares := make([]any, len(s.GetLastResult().Shares))
+	for i, share := range s.GetLastResult().Shares {
+		expectedShares[i] = float64(share)
+	}
+	assert.Equal(t, expectedShares, last["shares"])
 	assert.Len(t, last["handNames"], domain.SutdaDefaultSeats)
 	// 降りていない席は開いている。
 	for _, raw := range res["players"].([]any) {

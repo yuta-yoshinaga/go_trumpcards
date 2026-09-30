@@ -144,6 +144,15 @@ function SutdaPageContent() {
   const isShowdown = state.phase === SutdaPhase.SHOWDOWN;
   const isGameEnd = state.phase === SutdaPhase.GAME_END || state.gameEndFlag;
   const canAct = isBetPhase && state.isHumanTurn;
+  const lastResult = state.lastResult;
+  const showdownWinners = lastResult?.winners.map((winner, index) => {
+    const amount = lastResult.shares[index];
+    if (amount === undefined) return playerName(winner, winner === 0);
+    return t('winnerShare', {
+      name: playerName(winner, winner === 0),
+      amount,
+    });
+  });
 
   const handleManualReset = () => {
     hideActionLog();
@@ -278,7 +287,7 @@ function SutdaPageContent() {
             {state.lastResult && (isShowdown || isGameEnd) && (
               <div className="my-3 p-2 rounded bg-black/30 text-ds-text-muted text-sm" data-testid="sutda-result">
                 {t('showdownResult', {
-                  names: state.lastResult.winners.map((w) => playerName(w, w === 0)).join(', '),
+                  names: showdownWinners?.join(t('listSeparator')),
                   pot: state.lastResult.pot,
                 })}
               </div>

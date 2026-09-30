@@ -65,7 +65,9 @@
   "raiseButton": "Raise (+{{n}}, {{left}} left)",
   "foldButton": "Fold",
   "nextHand": "Next hand",
-  "showdownResult": "Showdown: {{names}} takes {{pot}}.",
+  "showdownResult": "Showdown: {{names}} win {{pot}} in total.",
+  "winnerShare": "{{name}} ({{amount}})",
+  "listSeparator": ", ",
   "winner": "{{name}} takes the table",
   "action": {
     "call": "call",

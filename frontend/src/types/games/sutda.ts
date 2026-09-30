@@ -30,6 +30,7 @@ export interface SutdaPlayer {
 /** One hand's result. */
 export interface SutdaResult {
   winners: number[];
+  shares: number[];
   pot: number;
   /** Stable hand identifiers, indexed by seat. */
   handNames: string[];
