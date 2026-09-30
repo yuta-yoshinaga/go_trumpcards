@@ -285,6 +285,34 @@ describe('EasthavenPage', () => {
     );
   });
 
+  it('announces successful moves in a persistent live region', async () => {
+    mockExec.mockResolvedValue({ ...playingState, moveCount: 1 });
+    renderWithProviders(<EasthavenPage />);
+    const live = await screen.findByTestId('eh-move-live');
+    expect(live).toHaveAttribute('aria-live', 'polite');
+    expect(live).toBeEmptyDOMElement();
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    screen.getByRole('button', { name: '♠ K' }).click();
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ K' }).className).toContain('ring-ds-warning'));
+    screen.getByRole('button', { name: '♥ 8' }).click();
+    await waitFor(() => expect(live).toHaveTextContent('移動しました。手数 1、組札 0枚'));
+    expect(mockExec).toHaveBeenCalledWith('move', expect.anything(), expect.anything());
+  });
+
+  it('does not announce a rejected move as successful', async () => {
+    mockExec.mockResolvedValue({ ...playingState, message: 'illegal', messageCode: '' });
+    renderWithProviders(<EasthavenPage />);
+    const live = await screen.findByTestId('eh-move-live');
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('reset'));
+    mockExec.mockClear();
+    screen.getByRole('button', { name: '♠ K' }).click();
+    await waitFor(() => expect(screen.getByRole('button', { name: '♠ K' }).className).toContain('ring-ds-warning'));
+    screen.getByRole('button', { name: '♥ 8' }).click();
+    await waitFor(() => expect(mockExec).toHaveBeenCalledWith('move', expect.anything(), expect.anything()));
+    expect(live).toBeEmptyDOMElement();
+  });
+
   it('toggles the empty-column aria-label when a source is selected', async () => {
     mockExec.mockResolvedValue({
       ...playingState,

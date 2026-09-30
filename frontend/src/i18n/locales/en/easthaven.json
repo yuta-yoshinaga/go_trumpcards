@@ -9,6 +9,7 @@
   "tableau": "Tableau",
   "stock": "Stock",
   "moveCount": "Moves",
+  "moveAnnouncement": "Move made. Moves {{moveCount}}, foundation cards {{foundationCount}}",
   "giveup": "Give Up",
   "hint": "Hint",
   "deal": "Deal",
