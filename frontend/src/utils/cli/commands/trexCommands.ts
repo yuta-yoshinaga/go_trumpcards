@@ -1,10 +1,26 @@
 import type { trexApi } from '../../../api/gameApi';
-import { splitCommand, suggestCommand } from '../commandParserBase';
+import { splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 type TrexArgs = Parameters<typeof trexApi.exec>;
 
-const VALID_COMMANDS = ['c', 'choose', 'p', 'play', 's', 'pass', 'n', 'next', 'log', 'r', 'reset', 'help', '?'];
+const VALID_COMMANDS = [
+  'c',
+  'choose',
+  'p',
+  'play',
+  's',
+  'pass',
+  'n',
+  'next',
+  'log',
+  'r',
+  'reset',
+  'help',
+  '?',
+  'h',
+  'hint',
+];
 
 /** Parse a Trex CLI command into API exec arguments. */
 export function parseTrexCommand(input: string): CliParseResult<TrexArgs> {
@@ -42,11 +58,8 @@ export function parseTrexCommand(input: string): CliParseResult<TrexArgs> {
     case 'h':
     case 'hint':
       return { args: ['hint'] };
-    default: {
-      const suggestion = suggestCommand(cmd, VALID_COMMANDS);
-      if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
-      return { error: `Unknown command: ${cmd}` };
-    }
+    default:
+      return unknownCommand(cmd, VALID_COMMANDS);
   }
 }
 

@@ -1,6 +1,6 @@
 import type { botifarraApi } from '../../../api/gameApi';
 import { BOTIFARRA_NO_TRUMP } from '../../../types/games/botifarra';
-import { parseIntArg, splitCommand, suggestCommand } from '../commandParserBase';
+import { parseIntArg, splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 type BotifarraArgs = Parameters<typeof botifarraApi.exec>;
@@ -89,11 +89,8 @@ export function parseBotifarraCommand(input: string): CliParseResult<BotifarraAr
     case 'r':
     case 'reset':
       return { args: ['reset'] };
-    default: {
-      const suggestion = suggestCommand(cmd, VALID_COMMANDS);
-      if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
-      return { error: `Unknown command: ${cmd}` };
-    }
+    default:
+      return unknownCommand(cmd, VALID_COMMANDS);
   }
 }
 

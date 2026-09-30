@@ -1,10 +1,10 @@
 import type { buraApi } from '../../../api/gameApi';
-import { splitCommand, suggestCommand } from '../commandParserBase';
+import { splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 type BuraArgs = Parameters<typeof buraApi.exec>;
 
-const VALID_COMMANDS = ['p', 'play', 'c', 'claim', 'd', 'declare', 'log', 'r', 'reset', 'help', '?'];
+const VALID_COMMANDS = ['p', 'play', 'c', 'claim', 'd', 'declare', 'log', 'r', 'reset', 'h', 'hint', 'help', '?'];
 
 /**
  * Parse a Bura CLI command into API exec arguments.
@@ -44,11 +44,8 @@ export function parseBuraCommand(input: string): CliParseResult<BuraArgs> {
     case 'h':
     case 'hint':
       return { args: ['hint'] };
-    default: {
-      const suggestion = suggestCommand(cmd, VALID_COMMANDS);
-      if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
-      return { error: `Unknown command: ${cmd}` };
-    }
+    default:
+      return unknownCommand(cmd, VALID_COMMANDS);
   }
 }
 

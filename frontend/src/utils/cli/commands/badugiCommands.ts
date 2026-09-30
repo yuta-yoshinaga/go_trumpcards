@@ -1,5 +1,5 @@
 import type { badugiApi } from '../../../api/gameApi';
-import { parseIntArg, parseIntSlice, splitCommand, suggestCommand } from '../commandParserBase';
+import { parseIntArg, parseIntSlice, splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 type BadugiArgs = Parameters<typeof badugiApi.exec>;
@@ -73,11 +73,8 @@ export function parseBadugiCommand(input: string): CliParseResult<BadugiArgs> {
     case 'h':
     case 'hint':
       return { args: ['hint'] };
-    default: {
-      const suggestion = suggestCommand(cmd, VALID_COMMANDS);
-      if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
-      return { error: `Unknown command: ${cmd}` };
-    }
+    default:
+      return unknownCommand(cmd, VALID_COMMANDS);
   }
 }
 

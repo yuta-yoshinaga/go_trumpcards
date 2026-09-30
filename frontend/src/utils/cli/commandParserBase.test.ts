@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseIntArg, parseIntSlice, splitCommand, suggestCommand } from './commandParserBase';
+import { parseIntArg, parseIntSlice, splitCommand, suggestCommand, unknownCommand } from './commandParserBase';
 
 describe('splitCommand', () => {
   it('splits a simple command', () => {
@@ -96,5 +96,15 @@ describe('suggestCommand', () => {
 
   it('returns exact match', () => {
     expect(suggestCommand('bet', commands)).toBe('bet');
+  });
+});
+
+describe('unknownCommand', () => {
+  it('includes a close typo suggestion', () => {
+    expect(unknownCommand('hnit', ['hint', 'help'])).toEqual({ error: 'Unknown command: hnit. Did you mean: hint?' });
+  });
+
+  it('returns the plain error when no command is close', () => {
+    expect(unknownCommand('zzzzzzzzz', ['hint', 'help'])).toEqual({ error: 'Unknown command: zzzzzzzzz' });
   });
 });

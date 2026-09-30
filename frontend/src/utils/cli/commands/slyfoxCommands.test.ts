@@ -73,6 +73,10 @@ describe('parseSlyFoxCommand', () => {
     expect('error' in result && result.error).toContain('deal');
   });
 
+  it('includes the unknown command when suggesting a near miss', () => {
+    expect(parseSlyFoxCommand('deak')).toEqual({ error: 'Unknown command: deak. Did you mean: deal?' });
+  });
+
   it('reports an unknown command', () => {
     const result = parseSlyFoxCommand('zzz');
     expect('error' in result && result.error).toContain('zzz');

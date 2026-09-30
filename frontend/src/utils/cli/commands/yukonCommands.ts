@@ -1,5 +1,5 @@
 import type { yukonApi } from '../../../api/gameApi';
-import { splitCommand, suggestCommand } from '../commandParserBase';
+import { splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 type YukonArgs = Parameters<typeof yukonApi.exec>;
@@ -45,11 +45,8 @@ export function parseYukonCommand(input: string): CliParseResult<YukonArgs> {
       }
       return { error: 'Usage: m <fromCol> [cardIdx] <toCol>' };
     }
-    default: {
-      const suggestion = suggestCommand(cmd, VALID_COMMANDS);
-      if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
-      return { error: `Unknown command: ${cmd}` };
-    }
+    default:
+      return unknownCommand(cmd, VALID_COMMANDS);
   }
 }
 

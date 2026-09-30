@@ -1,5 +1,5 @@
 import type { klondikeApi } from '../../../api/gameApi';
-import { parseIntArg, splitCommand, suggestCommand } from '../commandParserBase';
+import { parseIntArg, splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 type KlondikeArgs = Parameters<typeof klondikeApi.exec>;
@@ -55,11 +55,8 @@ export function parseKlondikeCommand(input: string): CliParseResult<KlondikeArgs
     case 'm':
     case 'move':
       return parseMoveCommand(args);
-    default: {
-      const suggestion = suggestCommand(cmd, VALID_COMMANDS);
-      if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
-      return { error: `Unknown command: ${cmd}` };
-    }
+    default:
+      return unknownCommand(cmd, VALID_COMMANDS);
   }
 }
 

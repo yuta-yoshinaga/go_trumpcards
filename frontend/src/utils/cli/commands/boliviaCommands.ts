@@ -1,5 +1,5 @@
 import type { boliviaApi } from '../../../api/gameApi';
-import { parseIntArg, parseIntSlice, splitCommand, suggestCommand } from '../commandParserBase';
+import { parseIntArg, parseIntSlice, splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 type BoliviaArgs = Parameters<typeof boliviaApi.exec>;
@@ -66,11 +66,8 @@ export function parseBoliviaCommand(input: string): CliParseResult<BoliviaArgs> 
     case 'r':
     case 'reset':
       return { args: ['reset'] };
-    default: {
-      const suggestion = suggestCommand(cmd, VALID_COMMANDS);
-      if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
-      return { error: `Unknown command: ${cmd}` };
-    }
+    default:
+      return unknownCommand(cmd, VALID_COMMANDS);
   }
 }
 

@@ -1,4 +1,4 @@
-import { parseIntArg, splitCommand, suggestCommand } from '../commandParserBase';
+import { parseIntArg, splitCommand, unknownCommand } from '../commandParserBase';
 
 /** Shared betting command aliases used by Holdem, Omaha, ShortDeck, Pineapple, IndianPoker. */
 const BETTING_COMMANDS = [
@@ -63,11 +63,8 @@ export function parseBettingCommand(
     case 'r':
     case 'reset':
       return { command: 'reset' };
-    default: {
-      const suggestion = suggestCommand(cmd, allCommands);
-      if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
-      return { error: `Unknown command: ${cmd}` };
-    }
+    default:
+      return unknownCommand(cmd, allCommands);
   }
 }
 

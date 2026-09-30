@@ -1,6 +1,6 @@
 import type { nertzApi } from '../../../api/gameApi';
 import type { NertzMoveZone } from '../../../types/card';
-import { parseIntArg, splitCommand, suggestCommand } from '../commandParserBase';
+import { parseIntArg, splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 type NertzArgs = Parameters<typeof nertzApi.exec>;
@@ -53,11 +53,8 @@ export function parseNertzCommand(input: string): CliParseResult<NertzArgs> {
     case 'm':
     case 'move':
       return parseMoveCommand(args);
-    default: {
-      const suggestion = suggestCommand(cmd, VALID_COMMANDS);
-      if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
-      return { error: `Unknown command: ${cmd}` };
-    }
+    default:
+      return unknownCommand(cmd, VALID_COMMANDS);
   }
 }
 

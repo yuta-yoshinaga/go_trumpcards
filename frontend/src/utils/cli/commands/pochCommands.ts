@@ -1,10 +1,26 @@
 import type { pochApi } from '../../../api/gameApi';
-import { splitCommand, suggestCommand } from '../commandParserBase';
+import { splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 type PochArgs = Parameters<typeof pochApi.exec>;
 
-const VALID_COMMANDS = ['b', 'bet', 'f', 'fold', 'p', 'play', 'n', 'next', 'log', 'r', 'reset', 'help', '?'];
+const VALID_COMMANDS = [
+  'b',
+  'bet',
+  'f',
+  'fold',
+  'p',
+  'play',
+  'n',
+  'next',
+  'log',
+  'r',
+  'reset',
+  'help',
+  '?',
+  'h',
+  'hint',
+];
 
 /** Parse a Poch CLI command into API exec arguments. */
 export function parsePochCommand(input: string): CliParseResult<PochArgs> {
@@ -35,11 +51,8 @@ export function parsePochCommand(input: string): CliParseResult<PochArgs> {
     case 'h':
     case 'hint':
       return { args: ['hint'] };
-    default: {
-      const suggestion = suggestCommand(cmd, VALID_COMMANDS);
-      if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
-      return { error: `Unknown command: ${cmd}` };
-    }
+    default:
+      return unknownCommand(cmd, VALID_COMMANDS);
   }
 }
 

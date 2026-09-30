@@ -1,4 +1,4 @@
-import { parseIntArg, parseIntSlice, splitCommand, suggestCommand } from '../commandParserBase';
+import { parseIntArg, parseIntSlice, splitCommand, unknownCommand } from '../commandParserBase';
 
 const VP_COMMANDS = ['b', 'bet', 'hold', 'r', 'reset', 'help', '?'];
 
@@ -23,11 +23,8 @@ export function parseVideoPokerCommand(
     case 'r':
     case 'reset':
       return { command: 'reset' };
-    default: {
-      const suggestion = suggestCommand(cmd, VP_COMMANDS);
-      if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
-      return { error: `Unknown command: ${cmd}` };
-    }
+    default:
+      return unknownCommand(cmd, VP_COMMANDS);
   }
 }
 

@@ -1,5 +1,5 @@
 import type { lingerlongerApi } from '../../../api/gameApi';
-import { parseIntArg, splitCommand, suggestCommand } from '../commandParserBase';
+import { parseIntArg, splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 type LingerLongerArgs = Parameters<typeof lingerlongerApi.exec>;
@@ -29,11 +29,8 @@ export function parseLingerLongerCommand(input: string): CliParseResult<LingerLo
     case 'r':
     case 'reset':
       return { args: ['reset'] as LingerLongerArgs };
-    default: {
-      const suggestion = suggestCommand(cmd, VALID_COMMANDS);
-      if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
-      return { error: `Unknown command: ${cmd}` };
-    }
+    default:
+      return unknownCommand(cmd, VALID_COMMANDS);
   }
 }
 

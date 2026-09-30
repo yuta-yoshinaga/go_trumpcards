@@ -59,3 +59,9 @@ describe('parseBuraCommand', () => {
     }
   });
 });
+
+describe('unknown Bura commands', () => {
+  it('suggests hint for a typo', () => {
+    expect(parseBuraCommand('hnit')).toEqual({ error: 'Unknown command: hnit. Did you mean: hint?' });
+  });
+});

@@ -1,5 +1,5 @@
 import type { germanwhistApi } from '../../../api/gameApi';
-import { parseIntArg, splitCommand, suggestCommand } from '../commandParserBase';
+import { parseIntArg, splitCommand, unknownCommand } from '../commandParserBase';
 import type { CliParseResult } from '../types';
 
 type GermanWhistArgs = Parameters<typeof germanwhistApi.exec>;
@@ -29,11 +29,8 @@ export function parseGermanWhistCommand(input: string): CliParseResult<GermanWhi
     case 'r':
     case 'reset':
       return { args: ['reset'] as GermanWhistArgs };
-    default: {
-      const suggestion = suggestCommand(cmd, VALID_COMMANDS);
-      if (suggestion) return { error: `Unknown command: ${cmd}. Did you mean: ${suggestion}?` };
-      return { error: `Unknown command: ${cmd}` };
-    }
+    default:
+      return unknownCommand(cmd, VALID_COMMANDS);
   }
 }
 
