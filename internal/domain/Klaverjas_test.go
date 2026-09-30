@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"errors"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func klavCard(design, value int) *Card { return NewCard(design, value, false) }
@@ -484,3 +486,20 @@ func TestKlaverjas_UnmarshalErrors(t *testing.T) {
 
 // 表は実際の勝敗判定と同じ順序でなければ意味がない。**強い順に並んでいること**を
 // 判定関数そのもので確かめる (表を手で書き写しただけでは、順序が逆でも通る)。
+
+// TestKlaverjasRankTable pins both ladders the rank-help guard compares the
+// CUI and web text against: strongest first, with each card's points.
+func TestKlaverjasRankTable(t *testing.T) {
+	for _, tc := range []struct {
+		name    string
+		isTrump bool
+		want    []KlaverjasRankRow
+	}{
+		{"trump", true, []KlaverjasRankRow{{11, 20}, {9, 14}, {1, 11}, {10, 10}, {13, 4}, {12, 3}, {8, 0}, {7, 0}}},
+		{"plain", false, []KlaverjasRankRow{{1, 11}, {10, 10}, {13, 4}, {12, 3}, {11, 2}, {9, 0}, {8, 0}, {7, 0}}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.want, KlaverjasRankTable(tc.isTrump))
+		})
+	}
+}

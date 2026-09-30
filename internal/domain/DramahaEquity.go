@@ -9,11 +9,7 @@ import (
 // calcDramahaEquityWithHoleCount はドラマハ系エクイティ計算の共通実装。
 // holeCardCount で相手プレイヤーに配布するホールカード枚数を指定する
 // ドラマハは常に 5 枚 (DramahaHoleCards)。
-func calcDramahaEquityWithHoleCount(humanCards, communityCards []*Card, activePlayers, simulations int, rng *rand.Rand, holeCardCounts ...int) HoldemEquityResult {
-	holeCardCount := DramahaHoleCards
-	if len(holeCardCounts) > 0 {
-		holeCardCount = holeCardCounts[0]
-	}
+func calcDramahaEquityWithHoleCount(humanCards, communityCards []*Card, activePlayers, simulations int, rng *rand.Rand, holeCardCount int) HoldemEquityResult {
 	dramahaEval := func(holeCards, simCommunity []*Card) (int, []*Card) {
 		return evalBestFromDramaha(holeCards, simCommunity)
 	}
