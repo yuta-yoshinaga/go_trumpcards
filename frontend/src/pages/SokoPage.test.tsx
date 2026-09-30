@@ -2,7 +2,7 @@ import { screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fiveCardStudApi, sokoApi } from '../api/gameApi';
 import { renderWithProviders } from '../test/renderWithProviders';
-import type { FiveCardStudResponse } from '../types/card';
+import type { Card, FiveCardStudResponse } from '../types/card';
 import { FiveCardStudPhase } from '../types/phases';
 import { FiveCardStudPage } from './FiveCardStudPage';
 import { SokoPage } from './SokoPage';
@@ -18,7 +18,7 @@ const mockStud = vi.mocked(fiveCardStudApi.exec);
 
 const card = (design: 'SPADE' | 'HEART' | 'CLOVER' | 'DIAMOND', value: number) => ({ design, value });
 
-function seat(id: number, isHuman: boolean, handName = '') {
+function seat(id: number, isHuman: boolean, handName = '', bestHandCore: Card[] = []) {
   return {
     id,
     isHuman,
@@ -32,6 +32,7 @@ function seat(id: number, isHuman: boolean, handName = '') {
     holeCards: [card('SPADE', 2)],
     doorCards: [card('SPADE', 5), card('SPADE', 9), card('SPADE', 13), card('HEART', 13)],
     handName,
+    bestHandCore,
     totalHands: 0,
   };
 }
@@ -106,7 +107,10 @@ describe('SokoPage', () => {
     mockSoko.mockResolvedValue(
       makeState({
         phase: FiveCardStudPhase.SHOWDOWN,
-        players: [seat(0, true, 'Four-Card Flush'), seat(1, false, 'One Pair')],
+        players: [
+          seat(0, true, 'Four-Card Flush', [card('SPADE', 2), card('SPADE', 5), card('SPADE', 9), card('SPADE', 13)]),
+          seat(1, false, 'One Pair'),
+        ],
       } as unknown as Partial<FiveCardStudResponse>),
     );
     renderWithProviders(<SokoPage />);
