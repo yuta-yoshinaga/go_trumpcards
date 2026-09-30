@@ -26,6 +26,7 @@ import { gameTheme } from '../styles/gameTheme';
 import type { WarResponse } from '../types/card';
 import { WarPhase } from '../types/phases';
 import type { TutorialStep } from '../types/tutorial';
+import { cardAlt } from '../utils/cardAlt';
 import { hintLocalCommand } from '../utils/cli/hintText';
 import type { CliGameConfig, CliParseResult } from '../utils/cli/types';
 import { hintCheckboxItem } from '../utils/settingsItems';
@@ -263,6 +264,14 @@ function WarPageContent() {
       : state.phase === WarPhase.RESOLVED
         ? t('phase.resolved')
         : t('phase.reveal');
+  const revealedCardsAnnouncement =
+    state.phase === WarPhase.REVEAL && state.playerRevealed && state.cpuRevealed
+      ? t('cardsRevealed', {
+          playerCard: cardAlt(state.playerRevealed),
+          cpuCard: cardAlt(state.cpuRevealed),
+          separator: t('listSeparator'),
+        })
+      : '';
 
   return (
     <GamePageShell
@@ -416,6 +425,7 @@ function WarPageContent() {
               messageCode={state.messageCode}
               messageParams={state.messageParams}
             />
+            <LiveAnnouncement message={revealedCardsAnnouncement} testId="war-card-announcement" />
             <FrontendHintTooltip hint={frontendHint} enabled={frontendHintEnabled} t={t} />
           </div>
 
@@ -461,7 +471,7 @@ function WarPageContent() {
               },
             ]}
           />
-          <LiveAnnouncement message={speedAnnouncement} />
+          <LiveAnnouncement message={speedAnnouncement} testId="war-speed-announcement" />
 
           <GameFooter className={`${gameTheme.war.footer} px-4 py-2.5`}>
             <div className="flex gap-2 justify-center">

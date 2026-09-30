@@ -20,6 +20,8 @@
     "roundProgress": "ラウンド: {{played}} / {{max}}（上限で保有枚数の多い方が勝ち）",
     "maxRounds": "最大ラウンド"
   },
+  "listSeparator": "、",
+  "cardsRevealed": "あなたのカードは{{playerCard}}{{separator}}CPUのカードは{{cpuCard}}",
   "settings": {
     "maxRounds": "最大ラウンド数",
     "maxRoundsHelp": "戦争（引き分け）の連鎖で理論上ゲームが無限に続くのを防ぐための上限です。どちらかの手札が尽きるか、最大ラウンドに到達するとゲーム終了です。",

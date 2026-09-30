@@ -20,6 +20,8 @@
     "roundProgress": "Round {{played}} of {{max}} (at the cap the larger total wins)",
     "maxRounds": "Max rounds"
   },
+  "listSeparator": ", ",
+  "cardsRevealed": "Your card is {{playerCard}}{{separator}}CPU's card is {{cpuCard}}",
   "settings": {
     "maxRounds": "Max rounds",
     "maxRoundsHelp": "A cap that prevents the game from running forever through chains of wars (ties). The game ends when either player runs out of cards or the max round is reached.",
