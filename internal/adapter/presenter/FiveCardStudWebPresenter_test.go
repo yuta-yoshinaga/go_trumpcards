@@ -118,7 +118,11 @@ func TestFiveCardStudWebPresenter_Output(t *testing.T) {
 		s, players := setup()
 		s.SetPhase(domain.FiveCardStudPhaseShowdown)
 		players[1].AddHoleCard(domain.NewCard(domain.CardDesignSpade, 5, false))
-		players[1].SetHandRank(domain.PokerHandOnePair)
+		players[1].AddDoorCard(domain.NewCard(domain.CardDesignHeart, 5, false))
+		players[1].AddDoorCard(domain.NewCard(domain.CardDesignClover, 7, false))
+		players[1].AddDoorCard(domain.NewCard(domain.CardDesignDiamond, 9, false))
+		players[1].AddDoorCard(domain.NewCard(domain.CardDesignSpade, 12, false))
+		players[1].EvalBestHand()
 
 		result := p.Output(s, nil)
 		var out controller.FiveCardStudWebOutput
@@ -128,6 +132,8 @@ func TestFiveCardStudWebPresenter_Output(t *testing.T) {
 		assert.Len(t, cpu.HoleCards, 1)
 		assert.Equal(t, domain.PokerHandOnePair, cpu.HandRank)
 		assert.Equal(t, "One Pair", cpu.HandName)
+		assert.Len(t, cpu.BestHand, 5)
+		assert.Len(t, cpu.BestHandCore, 2)
 	})
 
 	t.Run("CPU cards visible at end phase", func(t *testing.T) {

@@ -16,6 +16,7 @@ export interface FiveCardStudPlayerData {
   handRank: number;
   handName: string;
   bestHand: Card[];
+  bestHandCore: Card[];
   playStyleName: string;
   totalHands: number;
   vpip: number;

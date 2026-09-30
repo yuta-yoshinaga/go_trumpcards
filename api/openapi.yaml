@@ -53504,6 +53504,11 @@ components:
           description: Best 5-card hand (only populated at showdown)
           items:
             $ref: '#/components/schemas/Card'
+        bestHandCore:
+          type: array
+          description: Cards that form the made hand, populated only at showdown for non-folded players.
+          items:
+            $ref: '#/components/schemas/Card'
         lowBestHand:
           type: array
           description: |
