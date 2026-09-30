@@ -90,11 +90,6 @@ type Faro struct {
 	actionLogBase
 }
 
-// NewFaro はトランプデッキを受け取りファロを生成する。
-func NewFaro(trumpCards *TrumpCards) *Faro {
-	return NewFaroWithConfig(trumpCards, DefaultFaroConfig())
-}
-
 // NewFaroWithConfig は設定付きでファロを生成する。
 func NewFaroWithConfig(trumpCards *TrumpCards, config FaroConfig) *Faro {
 	if err := config.Validate(); err != nil {

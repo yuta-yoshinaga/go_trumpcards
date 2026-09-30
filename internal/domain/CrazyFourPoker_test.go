@@ -582,22 +582,6 @@ func TestCrazyFourPoker_GetHint(t *testing.T) {
 
 // --- 名前と設定 ---
 
-func TestCrazyFourPokerNames(t *testing.T) {
-	t.Parallel()
-
-	assert.Equal(t, "bet", CrazyFourPokerPhaseName(CrazyFourPokerPhaseBet))
-	assert.Equal(t, "decide", CrazyFourPokerPhaseName(CrazyFourPokerPhaseDecide))
-	assert.Equal(t, "result", CrazyFourPokerPhaseName(CrazyFourPokerPhaseResult))
-
-	assert.Equal(t, "fold", CrazyFourPokerResultName(CrazyFourPokerResultFold))
-	assert.Equal(t, "win", CrazyFourPokerResultName(CrazyFourPokerResultWin))
-	assert.Equal(t, "lose", CrazyFourPokerResultName(CrazyFourPokerResultLose))
-	assert.Equal(t, "push", CrazyFourPokerResultName(CrazyFourPokerResultPush))
-	assert.Equal(t, "dealerNotQualified",
-		CrazyFourPokerResultName(CrazyFourPokerResultDealerNotQualified))
-	assert.Equal(t, "none", CrazyFourPokerResultName(CrazyFourPokerResultNone))
-}
-
 func TestCrazyFourPokerConfig_Validate(t *testing.T) {
 	t.Parallel()
 

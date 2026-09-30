@@ -738,22 +738,6 @@ func crazyEightsCardScore(card *Card) int {
 	}
 }
 
-// suitName スート名を返す
-func suitName(suit int) string {
-	switch suit {
-	case CardDesignSpade:
-		return "♠"
-	case CardDesignClover:
-		return "♣"
-	case CardDesignHeart:
-		return "♥"
-	case CardDesignDiamond:
-		return "♦"
-	default:
-		return "?"
-	}
-}
-
 // crazyEightsJSON is the JSON wire format for CrazyEights.
 type crazyEightsJSON struct {
 	TrumpCards       *TrumpCards          `json:"tc"`

@@ -4,7 +4,6 @@ package domain
 
 import (
 	"encoding/json"
-	"fmt"
 )
 
 // ボティファラの卓の大きさ (2 対 2 固定)。
@@ -108,19 +107,4 @@ func BotifarraRank(c *Card) int {
 		return 0
 	}
 	return botifarraStrength[c.GetValue()]
-}
-
-// botifarraValidateDeckPoints は点の合計が定数と合っていることを確かめる。
-//
-// **配り方や札の構成を変えたら必ずここで落ちます。** 60 点という定数は
-// 「1 スート 15 点 × 4 スート」から来ていて、デッキが変わると黙って壊れます。
-func botifarraValidateDeckPoints() error {
-	perSuit := 0
-	for _, p := range botifarraCardPoints {
-		perSuit += p
-	}
-	if got := perSuit * 4; got != BotifarraCardPoints {
-		return fmt.Errorf("botifarra: deck holds %d card points, want %d", got, BotifarraCardPoints)
-	}
-	return nil
 }

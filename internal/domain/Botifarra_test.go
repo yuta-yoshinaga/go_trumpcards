@@ -95,8 +95,6 @@ func TestBotifarraDealsTwelveEachWithNothingLeft(t *testing.T) {
 func TestBotifarraDeckPointsMatchTheConstant(t *testing.T) {
 	t.Parallel()
 
-	require.NoError(t, botifarraValidateDeckPoints())
-
 	deck := NewTrumpCardsReversis()
 	total := 0
 	for range 48 {

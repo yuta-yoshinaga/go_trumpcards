@@ -692,11 +692,6 @@ func machiavelliCardPoints(card *Card) int {
 	return v
 }
 
-// MachiavelliCardPoints はデッドウッド計算に使うカード点を返す（外部公開用）。
-func MachiavelliCardPoints(card *Card) int {
-	return machiavelliCardPoints(card)
-}
-
 // machiavelliCloneTable テーブルを（メルドとスライスを）浅い要素コピーで複製する。
 func machiavelliCloneTable(table [][]*Card) [][]*Card {
 	out := make([][]*Card, len(table))
@@ -760,11 +755,6 @@ func machiavelliConserves(oldTable [][]*Card, played []*Card, newTable [][]*Card
 }
 
 // --- Meld validators (joker-less) ---
-
-// MachiavelliIsValidMeld は cards が有効なメルド（セットまたはラン、3+ 枚）か判定する（外部公開）。
-func MachiavelliIsValidMeld(cards []*Card) bool {
-	return machiavelliIsValidMeld(cards)
-}
 
 func machiavelliIsValidMeld(cards []*Card) bool {
 	if len(cards) < MachiavelliMeldMin {

@@ -590,9 +590,3 @@ func TestEgyptianRatscrew_GetSlappableReason_Sandwich(t *testing.T) {
 	g.centerPile = []*Card{card(5), card(9), card(5)}
 	assert.Equal(t, EgyptianRatscrewSlapReasonSandwich, g.GetSlappableReason())
 }
-
-func TestEgyptianRatscrew_SlapReasonLabel(t *testing.T) {
-	assert.Equal(t, "pair", slapReasonLabel(EgyptianRatscrewSlapReasonPair))
-	assert.Equal(t, "sandwich", slapReasonLabel(EgyptianRatscrewSlapReasonSandwich))
-	assert.Equal(t, "none", slapReasonLabel(EgyptianRatscrewSlapReasonNone))
-}

@@ -1737,11 +1737,6 @@ func (g *Koenigrufen) GetPlayableIndices(playerIdx int) []int {
 	return g.getValidPlayIndices(playerIdx)
 }
 
-// KoenigrufenScoreDeal はディール得点計算の純粋関数の公開ラッパー (テスト用)。
-func KoenigrufenScoreDeal(teamPoints int, solo bool, mult int) KoenigrufenBreakdown {
-	return koenigrufenScoreDeal(teamPoints, solo, mult)
-}
-
 // --- JSON ---
 
 // koenigrufenJSON is the JSON wire format for Koenigrufen.

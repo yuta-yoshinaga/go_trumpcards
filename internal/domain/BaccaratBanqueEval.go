@@ -97,17 +97,6 @@ func BaccaratBanquePunterRule(cards []*Card) string {
 	}
 }
 
-// BaccaratBanqueBankerRule はバンカーが 3 枚目をどう扱うかを返す。
-//
-// **バンカーはどの合計でも自由。** プント・バンコのような固定表は無く、
-// 両方の子の結果を見てから決められる ── ナチュラルのときだけ引けない。
-func BaccaratBanqueBankerRule(cards []*Card) string {
-	if BaccaratBanqueIsNatural(cards) {
-		return BaccaratBanqueDrawNatural
-	}
-	return BaccaratBanqueDrawFree
-}
-
 // 1 つの子との勝敗。
 const (
 	// BaccaratBanqueOutcomeBankerWin はバンカーの勝ち。

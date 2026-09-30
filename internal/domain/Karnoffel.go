@@ -128,14 +128,6 @@ var karnoffelChosenOrder = []int{
 	13, 12, 10, 9, 8,       // 特権の無い切札
 }
 
-// karnoffelChosenRank は選ばれたスートの札の役職序列を返す。
-func karnoffelChosenRank(c *Card) int {
-	if c == nil {
-		return 0
-	}
-	return karnoffelChosenRankOf(c.GetValue())
-}
-
 // karnoffelPartialBeats は部分切札 (3/4/5) が相手札に勝てるかを返す。
 //
 // **3 は K に、4 は K・Q に、5 は絵札すべてに負ける。**選ばれたスートを出せば

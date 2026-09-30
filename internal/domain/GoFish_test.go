@@ -27,7 +27,7 @@ func newTestGoFish() *GoFish {
 	g.phase = GoFishPhasePlay
 	g.currentTurn = 0
 	g.turnNumber = 1
-	g.config = DefaultGoFishConfig()
+	g.config = GoFishConfig{CpuDifficulty: GoFishCpuDifficultyNormal}
 	return g
 }
 

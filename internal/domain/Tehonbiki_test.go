@@ -101,7 +101,7 @@ func TestTehonbikiPlaceBetRejectsInvalidInputs(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			g := NewTehonbiki(nil, NewTehonbikiPlayer(1000), DefaultTehonbikiConfig())
+			g := NewDefaultTehonbikiWithPlayer(NewTehonbikiPlayer(1000), DefaultTehonbikiConfig())
 			if err := g.PlaceBet(tt.numbers, tt.kind, tt.bet); err == nil {
 				t.Fatal("invalid bet was accepted")
 			}
@@ -136,7 +136,7 @@ func TestTehonbikiPlaceBetInsufficientChips(t *testing.T) {
 }
 
 func TestTehonbikiNextRoundAndGetters(t *testing.T) {
-	g := NewTehonbiki(nil, NewTehonbikiPlayer(1000), DefaultTehonbikiConfig())
+	g := NewDefaultTehonbikiWithPlayer(NewTehonbikiPlayer(1000), DefaultTehonbikiConfig())
 	if g.GetHint() == nil || g.GetConfig() != DefaultTehonbikiConfig() || g.GetRoundNumber() != 1 {
 		t.Fatal("initial getters returned unexpected state")
 	}

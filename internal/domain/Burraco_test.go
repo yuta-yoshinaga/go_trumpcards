@@ -17,10 +17,10 @@ import (
 
 func newTestBurraco() *domain.Burraco {
 	players := []*domain.BurracoPlayer{
-		domain.NewBurracoPlayer(true),
-		domain.NewBurracoPlayer(false),
+		domain.NewCanastaPlayer(true),
+		domain.NewCanastaPlayer(false),
 	}
-	return domain.NewBurraco(domain.NewTrumpCardsWithDecks(2, 4), players, domain.DefaultBurracoConfig())
+	return domain.NewCanasta(domain.NewTrumpCardsWithDecks(2, 4), players, domain.DefaultBurracoConfig())
 }
 
 func TestNewDefaultBurraco(t *testing.T) {
@@ -195,7 +195,7 @@ func TestBurraco_JSON_RoundTrip_PreservesPozzetti(t *testing.T) {
 }
 
 func TestBurracoPlayer_TookPozzetto_JSON(t *testing.T) {
-	p := domain.NewBurracoPlayer(true)
+	p := domain.NewCanastaPlayer(true)
 	p.SetTookPozzetto(true)
 
 	data, err := json.Marshal(p)

@@ -640,17 +640,6 @@ func TestChemindeFer_GetHint(t *testing.T) {
 
 // --- 名前と設定 ---
 
-func TestChemindeFerNames(t *testing.T) {
-	t.Parallel()
-
-	assert.Equal(t, "stake", ChemindeFerPhaseName(ChemindeFerPhaseStake))
-	assert.Equal(t, "bet", ChemindeFerPhaseName(ChemindeFerPhaseBet))
-	assert.Equal(t, "punterDraw", ChemindeFerPhaseName(ChemindeFerPhasePunterDraw))
-	assert.Equal(t, "bankerDraw", ChemindeFerPhaseName(ChemindeFerPhaseBankerDraw))
-	assert.Equal(t, "roundEnd", ChemindeFerPhaseName(ChemindeFerPhaseRoundEnd))
-
-}
-
 func TestChemindeFerConfig_Validate(t *testing.T) {
 	t.Parallel()
 

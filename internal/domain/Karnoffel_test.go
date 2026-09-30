@@ -292,13 +292,13 @@ func TestKarnoffelChosenSuitRanking(t *testing.T) {
 	descending := []int{KarnoffelKarnoffel, KarnoffelPope, KarnoffelKaiser,
 		KarnoffelOberstecher, KarnoffelUnterstecher, KarnoffelFarbenstecher, 13, 12, 10, 9, 8}
 	for i := 1; i < len(descending); i++ {
-		hi := karnoffelChosenRank(knCard(chosen, descending[i-1]))
-		lo := karnoffelChosenRank(knCard(chosen, descending[i]))
+		hi := karnoffelChosenRankOf(knCard(chosen, descending[i-1]).GetValue())
+		lo := karnoffelChosenRankOf(knCard(chosen, descending[i]).GetValue())
 		if hi <= lo {
 			t.Errorf("chosen-suit %d must outrank %d", descending[i-1], descending[i])
 		}
 	}
-	if karnoffelChosenRank(nil) != 0 {
+	if karnoffelChosenRankOf(0) != 0 {
 		t.Error("a nil card has no rank")
 	}
 }

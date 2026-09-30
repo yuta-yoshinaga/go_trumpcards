@@ -704,19 +704,6 @@ func (s *Schnapsen) determineWinner() int {
 	}
 }
 
-// SchnapsenDetermineWinner 66 点ルールでの勝者を返す公開ヘルパー。
-// どちらも 66 未満なら lastTrickWinner を勝者とする。
-func SchnapsenDetermineWinner(p0, p1, lastTrickWinner int) int {
-	switch {
-	case p0 >= SchnapsenWinThreshold:
-		return 0
-	case p1 >= SchnapsenWinThreshold:
-		return 1
-	default:
-		return lastTrickWinner
-	}
-}
-
 // sortAllHands 全プレイヤーの手札をソートする
 func (s *Schnapsen) sortAllHands() {
 	sortEachHand(s.players, s.sortHand)

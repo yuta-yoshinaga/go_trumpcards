@@ -1604,11 +1604,6 @@ func (g *Cego) GetPlayableIndices(playerIdx int) []int {
 	return g.getValidPlayIndices(playerIdx)
 }
 
-// CegoScoreDeal はディール得点計算の純粋関数の公開ラッパー (テスト用)。
-func CegoScoreDeal(declarerPoints int, mult int) CegoBreakdown {
-	return cegoScoreDeal(declarerPoints, mult)
-}
-
 // --- JSON ---
 
 // cegoJSON is the JSON wire format for Cego.

@@ -19,7 +19,7 @@ func TestGoFishWebController_Method(t *testing.T) {
 	mockOutput := `{"players":[],"phase":0,"currentTurn":0,"gameEndFlag":false,"winnerIdx":-1,"turnNumber":1,"deckRemaining":32,"message":"","config":{"cpuDifficulty":1}}`
 	giMock := new(mockusecase.MockGoFishInteractor)
 	giMock.On("Reset", mock.Anything).Return(mockOutput)
-	giMock.On("GetConfig").Return(domain.DefaultGoFishConfig())
+	giMock.On("GetConfig").Return(domain.GoFishConfig{CpuDifficulty: domain.GoFishCpuDifficultyNormal})
 	giMock.On("Ask", 1, 3).Return(mockOutput)
 	giMock.On("ActionLog").Return(`{"entries":[]}`)
 	giMock.On("Hint").Return(mockOutput)

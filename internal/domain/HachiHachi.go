@@ -873,9 +873,6 @@ func HachiHachiCardRibbonColor(c *Card) HachiHachiRibbonColor { return hachihach
 // HachiHachiCardLabel は札の短い日本語ラベル ("松·光" 等) を返す。
 func HachiHachiCardLabel(c *Card) string { return hachihachiCardStr(c) }
 
-// HachiHachiCardPoints は札の素点を返す。
-func HachiHachiCardPoints(c *Card) int { return hachihachiCardPoints(c) }
-
 // --- 状態アクセサ ---
 
 // IsHumanTurn は現在プレイの手番が人間かどうかを返す。

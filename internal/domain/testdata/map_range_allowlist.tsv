@@ -8,7 +8,6 @@ BigTwoEval.go	bigTwoFullHouseStrength	freq	independent	フルハウスにおい�
 Binokel.go	BinokelMeldTable	binokelMeldPoints	independent	要素をスライスに集めた後、点数と役の種別で決定的にソートしているため表示順は変わらない。
 BlackJackVariant.go	spanishSuitBonus	suits	independent	要素数が1つであることが事前に len(suits) == 1 で保証されているため反復順序の揺れは起きない。
 Bolivia.go	*Bolivia.PlayerMeld	allIndices	independent	削除対象のインデックスを集めて降順ソートしてから処理するため順序に影響されない。
-BotifarraConfig.go	botifarraValidateDeckPoints	botifarraCardPoints	independent	マップの値の合計を計算しているだけであり、加算順序が変わっても最終的な合計値は変わらない。
 Canasta.go	*Canasta.PlayerMeld	allIndices	independent	削除するインデックスを降順ソートしてから処理するため処理順序の影響を受けない。
 CaribbeanDraw.go	caribbeanDrawPairValue	freq	independent	条件を満たす最大のランク（キー）を求めており、キーは一意であるため常に同じ最大値が得られる。
 Carioca.go	*Carioca.applyContractMeld	allSeen	independent	集めたインデックスを降順ソートしてからカードの削除処理に使うため順序に依存しない。

@@ -75,16 +75,6 @@ func TestBaccaratBanquePunterRule(t *testing.T) {
 }
 
 // **バンカーはどの合計でも自由。** プント・バンコのような固定表は無い。
-func TestBaccaratBanqueBankerRule(t *testing.T) {
-	for total := 0; total <= 7; total++ {
-		assert.Equal(t, BaccaratBanqueDrawFree, BaccaratBanqueBankerRule(bbHandTotalling(total)),
-			"合計 %d でバンカーの裁量が失われている", total)
-	}
-	for total := 8; total <= 9; total++ {
-		assert.Equal(t, BaccaratBanqueDrawNatural, BaccaratBanqueBankerRule(bbHandTotalling(total)))
-	}
-}
-
 // **左右は別勘定。** 片方が勝ってもう片方が負けることがある。
 func TestBaccaratBanqueCompare(t *testing.T) {
 	assert.Equal(t, BaccaratBanqueOutcomeBankerWin, BaccaratBanqueCompare(7, 5))

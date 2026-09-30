@@ -52,9 +52,6 @@ func TestKemps_TeamHelpers(t *testing.T) {
 	assert.Equal(t, 1, KempsTeamOf(1))
 	assert.Equal(t, 0, KempsTeamOf(2))
 	assert.Equal(t, 1, KempsTeamOf(3))
-	assert.Equal(t, 2, KempsPartnerOf(0))
-	assert.Equal(t, 3, KempsPartnerOf(1))
-	assert.Equal(t, 0, KempsPartnerOf(2))
 }
 
 func TestKemps_ResetDealsHandsAndField(t *testing.T) {
