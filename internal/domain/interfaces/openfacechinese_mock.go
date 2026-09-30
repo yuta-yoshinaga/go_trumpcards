@@ -39,6 +39,12 @@ func (_m *MockOpenFaceChineseGame) ScoreRound() {
 	_m.Called()
 }
 
+// RoundBreakdown mock.
+func (_m *MockOpenFaceChineseGame) RoundBreakdown(playerIdx int) domain.OpenFaceChineseBreakdown {
+	ret := _m.Called(playerIdx)
+	return ret.Get(0).(domain.OpenFaceChineseBreakdown)
+}
+
 // GetConfig モック
 func (_m *MockOpenFaceChineseGame) GetConfig() domain.OpenFaceChineseConfig {
 	ret := _m.Called()

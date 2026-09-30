@@ -17,6 +17,9 @@ const player = (overrides: Partial<OpenFaceChinesePlayer> = {}): OpenFaceChinese
   fouled: false,
   fantasyland: false,
   totalScore: 0,
+  rowDetails: [],
+  scoopScore: 0,
+  royaltyAdjustment: 0,
   ...overrides,
 });
 

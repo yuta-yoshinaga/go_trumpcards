@@ -27,6 +27,20 @@ export interface OpenFaceChinesePlayer {
   fantasyland: boolean;
   /** Cumulative score across all rounds. */
   totalScore: number;
+  /** Per-row hand rank and opponent comparisons, present after scoring. */
+  rowDetails: OpenFaceChineseRowDetail[];
+  /** Scoop bonus from all opponents. */
+  scoopScore: number;
+  /** Net royalty points exchanged with all opponents. */
+  royaltyAdjustment: number;
+}
+
+/** Scoring detail for one OFC row. */
+export interface OpenFaceChineseRowDetail {
+  row: number;
+  rank: number;
+  score: number;
+  comparisons: { opponentId: number; outcome: -1 | 0 | 1 }[];
 }
 
 /** Open Face Chinese Poker (OFC) config echoed back by the server. */

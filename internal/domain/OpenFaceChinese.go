@@ -522,38 +522,132 @@ func ofcPlayerRoyalty(p *OpenFaceChinesePlayer) int {
 // ofcCompareScore プレイヤー a 視点での対 b 得点を返す。1 段勝ち +1、スクープ (3 段勝ち)
 // で追加 +3 のボーナス。ファウルは各段で負け、両者ファウルは相殺 (0)。
 func ofcCompareScore(a, b *OpenFaceChinesePlayer) int {
-	switch {
-	case a.fouled && b.fouled:
-		return 0
-	case a.fouled:
-		return -6 // 相手の 3 段勝ち +3 スクープ
-	case b.fouled:
-		return 6
-	}
-	wins := 0
-	if c := compareThreeCardHands(a.front, b.front); c > 0 {
-		wins++
-	} else if c < 0 {
-		wins--
-	}
-	if c := cpCompareFiveCardHands(a.middle, b.middle); c > 0 {
-		wins++
-	} else if c < 0 {
-		wins--
-	}
-	if c := cpCompareFiveCardHands(a.back, b.back); c > 0 {
-		wins++
-	} else if c < 0 {
-		wins--
-	}
-	score := wins
+	wins := OpenFaceChineseCompareRow(a, b, OpenFaceChineseRowFront) + OpenFaceChineseCompareRow(a, b, OpenFaceChineseRowMiddle) + OpenFaceChineseCompareRow(a, b, OpenFaceChineseRowBack)
+	return wins + ofcScoopBonus(wins)
+}
+
+// ofcScoopBonus 3 段の勝敗合計 wins に対するスクープボーナスを返す (3 段全勝 +3、全敗 -3)。
+func ofcScoopBonus(wins int) int {
 	switch wins {
 	case 3:
-		score += 3 // スクープ
+		return 3
 	case -3:
-		score -= 3
+		return -3
 	}
-	return score
+	return 0
+}
+
+// OpenFaceChineseRowComparison is one player's result against an opponent on a row.
+type OpenFaceChineseRowComparison struct {
+	OpponentIdx int
+	Outcome     int
+}
+
+// OpenFaceChineseRowBreakdown describes a row's rank, comparisons, and summed score.
+type OpenFaceChineseRowBreakdown struct {
+	Row         int
+	Rank        int
+	Comparisons []OpenFaceChineseRowComparison
+	Score       int
+}
+
+// OpenFaceChineseBreakdown contains the row and bonus components of a player's round score.
+type OpenFaceChineseBreakdown struct {
+	Rows              []OpenFaceChineseRowBreakdown
+	ScoopScore        int
+	RoyaltyAdjustment int
+}
+
+// RoundBreakdown returns each row comparison and the bonus components for a player's round score.
+func (g *OpenFaceChinese) RoundBreakdown(playerIdx int) OpenFaceChineseBreakdown {
+	out := OpenFaceChineseBreakdown{Rows: make([]OpenFaceChineseRowBreakdown, 0, 3)}
+	player := g.GetPlayer(playerIdx)
+	if player == nil {
+		return out
+	}
+	for row := OpenFaceChineseRowFront; row <= OpenFaceChineseRowBack; row++ {
+		detail := OpenFaceChineseRowBreakdown{Row: row, Rank: OpenFaceChineseRowRank(player, row), Comparisons: make([]OpenFaceChineseRowComparison, 0)}
+		for opponentIdx := 0; opponentIdx < g.GetPlayerCnt(); opponentIdx++ {
+			if opponentIdx == playerIdx {
+				continue
+			}
+			opponent := g.GetPlayer(opponentIdx)
+			if opponent == nil {
+				continue
+			}
+			outcome := OpenFaceChineseCompareRow(player, opponent, row)
+			detail.Comparisons = append(detail.Comparisons, OpenFaceChineseRowComparison{OpponentIdx: opponentIdx, Outcome: outcome})
+			detail.Score += outcome
+		}
+		out.Rows = append(out.Rows, detail)
+	}
+	for opponentIdx := 0; opponentIdx < g.GetPlayerCnt(); opponentIdx++ {
+		if opponentIdx == playerIdx {
+			continue
+		}
+		opponent := g.GetPlayer(opponentIdx)
+		if opponent == nil {
+			continue
+		}
+		out.RoyaltyAdjustment += player.GetRoyalty() - opponent.GetRoyalty()
+		wins := 0
+		for _, row := range out.Rows {
+			wins += OpenFaceChineseCompareRow(player, opponent, row.Row)
+		}
+		out.ScoopScore += ofcScoopBonus(wins)
+	}
+	return out
+}
+
+// OpenFaceChineseRowRank returns the displayed poker rank for one row (0=front, 1=middle, 2=back).
+func OpenFaceChineseRowRank(p *OpenFaceChinesePlayer, row int) int {
+	if p == nil {
+		return 0
+	}
+	switch row {
+	case OpenFaceChineseRowFront:
+		return evalThreeCardHand(p.front)
+	case OpenFaceChineseRowMiddle:
+		return evalFiveCardHand(p.middle)
+	case OpenFaceChineseRowBack:
+		return evalFiveCardHand(p.back)
+	default:
+		return 0
+	}
+}
+
+// OpenFaceChineseCompareRow compares one row, returning 1 for a win, -1 for a loss, and 0 for a tie.
+func OpenFaceChineseCompareRow(a, b *OpenFaceChinesePlayer, row int) int {
+	if a == nil || b == nil || (a.fouled && b.fouled) {
+		return 0
+	}
+	if a.fouled {
+		return -1
+	}
+	if b.fouled {
+		return 1
+	}
+	switch row {
+	case OpenFaceChineseRowFront:
+		return ofcSign(compareThreeCardHands(a.front, b.front))
+	case OpenFaceChineseRowMiddle:
+		return ofcSign(cpCompareFiveCardHands(a.middle, b.middle))
+	case OpenFaceChineseRowBack:
+		return ofcSign(cpCompareFiveCardHands(a.back, b.back))
+	default:
+		return 0
+	}
+}
+
+// ofcSign は比較結果を -1 / 0 / 1 に正規化する。
+func ofcSign(value int) int {
+	if value > 0 {
+		return 1
+	}
+	if value < 0 {
+		return -1
+	}
+	return 0
 }
 
 // ofcQualifiesFantasyland 上段が QQ 以上（クイーンのペア以上、またはスリーカード）の場合 true。

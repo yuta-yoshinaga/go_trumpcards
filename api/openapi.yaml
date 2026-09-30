@@ -72251,6 +72251,37 @@ components:
               totalScore:
                 type: integer
                 description: Cumulative score across all rounds
+              rowDetails:
+                type: array
+                description: Per-row hand rank and comparison results; empty during play
+                items:
+                  type: object
+                  properties:
+                    row:
+                      type: integer
+                      description: Row index (0 front, 1 middle, 2 back)
+                    rank:
+                      type: integer
+                      description: Poker hand rank for this row
+                    score:
+                      type: integer
+                      description: Net points from this row against all opponents
+                    comparisons:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          opponentId:
+                            type: integer
+                          outcome:
+                            type: integer
+                            description: 1 win, 0 tie, -1 loss
+              scoopScore:
+                type: integer
+                description: Net scoop bonus from all opponents
+              royaltyAdjustment:
+                type: integer
+                description: Net royalty points exchanged with all opponents
         config:
           type: object
           description: Echoed game configuration

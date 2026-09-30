@@ -28,17 +28,34 @@ type OpenFaceChineseWebConfig struct {
 
 // OpenFaceChineseWebOutputPlayer オープンフェイス・チャイニーズポーカー (OFC) のWebアウトプットプレイヤー
 type OpenFaceChineseWebOutputPlayer struct {
-	ID          int              `json:"id"`
-	IsHuman     bool             `json:"isHuman"`
-	Front       []*WebOutputCard `json:"front"`
-	Middle      []*WebOutputCard `json:"middle"`
-	Back        []*WebOutputCard `json:"back"`
-	Pending     []*WebOutputCard `json:"pending"`
-	RoundScore  int              `json:"roundScore"`
-	Royalty     int              `json:"royalty"`
-	Fouled      bool             `json:"fouled"`
-	Fantasyland bool             `json:"fantasyland"`
-	TotalScore  int              `json:"totalScore"`
+	ID                int                                 `json:"id"`
+	IsHuman           bool                                `json:"isHuman"`
+	Front             []*WebOutputCard                    `json:"front"`
+	Middle            []*WebOutputCard                    `json:"middle"`
+	Back              []*WebOutputCard                    `json:"back"`
+	Pending           []*WebOutputCard                    `json:"pending"`
+	RoundScore        int                                 `json:"roundScore"`
+	Royalty           int                                 `json:"royalty"`
+	Fouled            bool                                `json:"fouled"`
+	Fantasyland       bool                                `json:"fantasyland"`
+	TotalScore        int                                 `json:"totalScore"`
+	RowDetails        []OpenFaceChineseWebOutputRowDetail `json:"rowDetails"`
+	ScoopScore        int                                 `json:"scoopScore"`
+	RoyaltyAdjustment int                                 `json:"royaltyAdjustment"`
+}
+
+// OpenFaceChineseWebOutputRowDetail reports a row hand and its comparisons against opponents.
+type OpenFaceChineseWebOutputRowDetail struct {
+	Row         int                                     `json:"row"`
+	Rank        int                                     `json:"rank"`
+	Score       int                                     `json:"score"`
+	Comparisons []OpenFaceChineseWebOutputRowComparison `json:"comparisons"`
+}
+
+// OpenFaceChineseWebOutputRowComparison reports one opponent's row result.
+type OpenFaceChineseWebOutputRowComparison struct {
+	OpponentID int `json:"opponentId"`
+	Outcome    int `json:"outcome"`
 }
 
 // OpenFaceChineseWebOutputHint ヒント出力
