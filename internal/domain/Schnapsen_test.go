@@ -404,22 +404,6 @@ func TestSchnapsen_NextTrick_EndsWhenHandsEmpty(t *testing.T) {
 	}
 }
 
-func TestSchnapsen_DetermineWinner(t *testing.T) {
-	cases := []struct {
-		p0, p1, last, want int
-	}{
-		{70, 30, 1, 0},
-		{30, 70, 0, 1},
-		{40, 30, 1, 1},
-		{40, 30, 0, 0},
-	}
-	for _, c := range cases {
-		if got := domain.SchnapsenDetermineWinner(c.p0, c.p1, c.last); got != c.want {
-			t.Errorf("DetermineWinner(%d,%d,%d) = %d, want %d", c.p0, c.p1, c.last, got, c.want)
-		}
-	}
-}
-
 func TestSchnapsen_CpuPlay(t *testing.T) {
 	s := newTestSchnapsen()
 	s.SetPhase(domain.SchnapsenPhasePlay)

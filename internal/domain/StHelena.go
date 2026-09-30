@@ -517,12 +517,6 @@ func stHelenaFoundationSuit(fIdx int) int {
 	return suits[fIdx%StHelenaAscendingFoundationCnt]
 }
 
-// StHelenaFoundationSuit ファンデーション ID から対応スートを返す (公開ヘルパ)。
-func StHelenaFoundationSuit(fIdx int) int { return stHelenaFoundationSuit(fIdx) }
-
-// StHelenaIsAscendingFoundation 昇順ファンデーションかを返す。
-func StHelenaIsAscendingFoundation(fIdx int) bool { return fIdx < StHelenaAscendingFoundationCnt }
-
 // checkGameClear ゲームクリア判定。
 func (cr *StHelena) checkGameClear() {
 	total := 0

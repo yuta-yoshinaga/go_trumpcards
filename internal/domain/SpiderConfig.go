@@ -19,8 +19,3 @@ const (
 type SpiderConfig struct {
 	Difficulty SpiderDifficulty
 }
-
-// DefaultSpiderConfig デフォルト設定（1スート）
-func DefaultSpiderConfig() SpiderConfig {
-	return SpiderConfig{Difficulty: SpiderDifficulty1Suit}
-}
